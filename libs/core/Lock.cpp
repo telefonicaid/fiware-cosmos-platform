@@ -1,3 +1,12 @@
+/* ****************************************************************************
+*
+* FILE                 Lock.cpp - 
+*
+* AUTHOR               Ken Zangelin, Andreu Urruela
+*
+* CREATION DATE        Oct 5 2010
+*
+*/
 #include <sys/time.h>            /* struct timeval                  */
 #include <pthread.h>             /* pthread_mutex_init, ...         */
 

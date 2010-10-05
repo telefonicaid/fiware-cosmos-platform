@@ -1,7 +1,8 @@
 SET (HEADERS
 	AUCommandLine.h
 	AUConsole.h
-	AULocker.h
+	ThreadStopPoint.h
+	LockDebugger.h
 	StopLock.h
 	Lock.h
 	Data.h
@@ -47,7 +48,7 @@ SET (INSTALL_HEADERS
 
 SET (SOURCES
 	Lock.cpp
-	AULocker.cpp
+	LockDebugger.cpp
 	KVManager.cpp
 	KVManagerLogs.cpp
 	KVQueue.cpp

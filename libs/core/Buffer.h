@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include "AUCommandLine.h"
-#include "AULocker.h"
 #include "AUConsole.h"
 #include "Format.h"
 #include "Factory.h"

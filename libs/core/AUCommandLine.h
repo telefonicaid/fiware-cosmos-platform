@@ -386,11 +386,11 @@ public:
 		
 		if ( value[value.size()-1] == 'M' )
 		{
-			base = AU_SIZE_1M;
+			base = SS_SIZE_1M;
 			value = value.substr(0, value.size()-1);
 		} else if ( value[value.size()-1] == 'G' )
 		{
-			base = AU_SIZE_1G;
+			base = SS_SIZE_1G;
 			value = value.substr(0, value.size()-1);
 		}
 		

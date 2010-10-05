@@ -1,5 +1,5 @@
 ADD_SUBDIRECTORY(samsonModuleParser)
 ADD_SUBDIRECTORY(samsonClient)
 ADD_SUBDIRECTORY(samson)
-ADD_SUBDIRECTORY(delilah)
+#ADD_SUBDIRECTORY(delilah)
 

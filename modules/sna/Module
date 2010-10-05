@@ -1,0 +1,72 @@
+Module sna
+{
+	title	"SNA operations (cdrs, graph, cliques, communities,...)"
+	author	"Andreu Urruela"
+	version "0.1"
+}
+
+
+data Date
+{
+     uint8 year;
+     uint8 month;
+     uint8 day;
+     uint8 week_day;
+
+#     extern bool isEqual( MRData_Date *date );
+#     extern void computeDayOfTheWeek( );
+}
+
+data Time
+{
+     uint8 hour;
+     uint8 minute;
+     uint8 seconds;
+
+#     extern bool isEqual( MRData_Time *time );
+}
+
+data CDR
+{
+     uint node;
+     sna.Date date;
+     Time time;
+     uint duration;
+
+#     extern bool isEqual( MRData_CDR *cdr );
+}
+
+
+map parse_cdrs
+{
+        in system.String system.Void
+        out base.UInt sna.CDR
+
+	file ModuleImpl.cpp
+
+}
+
+map spread_cdrs_to_links
+{
+        in  base.UInt sna.CDR
+        out base.UInt2 system.Void
+
+        help
+        {
+                "Spread cdrs at the input in the sense that emit two key-values at the output for each cdr."
+                "For every CDR (A-B) two key-values are emitted A,B and B,A"
+                "This operation is tippically concatenated with sna_compute_graph to generate the graph from cdrs."
+        }
+
+	file ModuleImpl.cpp
+}
+
+reduce accumulate_links
+{
+	in base.UInt2 system.Void
+	in base.UInt2 base.UInt
+
+	out base.UInt2 base.UInt
+
+	file ModuleImpl.cpp
+}

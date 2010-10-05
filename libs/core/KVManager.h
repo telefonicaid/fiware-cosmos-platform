@@ -22,7 +22,7 @@
 #include "MemoryController.h"
 #include "KVManagerLogs.h"
 #include <samson.pb.h>
-#include "AULocker.h"
+#include "Lock.h"                /* Lock                            */
 #include "Format.h"
 
 

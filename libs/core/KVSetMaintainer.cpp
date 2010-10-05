@@ -1,4 +1,3 @@
-#include "KVSetMaintainer.h"
 #include "SSManager.h"
 #include "KVSet.h"
 #include "KVManager.h"
@@ -6,6 +5,8 @@
 #include "SSLogger.h"
 #include "TaskManager.h"
 #include "SSMonitor.h"
+#include "AULocker.h"            /* au::LockDebugger                */
+#include "KVSetMaintainer.h"     /* Own interface                   */
 
 
 

@@ -2,6 +2,8 @@ SET (HEADERS
 	AUCommandLine.h
 	AUConsole.h
 	AULocker.h
+	StopLock.h
+	Lock.h
 	Data.h
 	Factory.h
 	Format.h
@@ -44,6 +46,7 @@ SET (INSTALL_HEADERS
 )
 
 SET (SOURCES
+	Lock.cpp
 	AULocker.cpp
 	KVManager.cpp
 	KVManagerLogs.cpp

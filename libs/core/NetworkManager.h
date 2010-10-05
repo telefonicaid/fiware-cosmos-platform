@@ -3,13 +3,13 @@
 
 #include <assert.h>
 #include <set>
-#include <sstream>                /* ostringstream    */
+#include <sstream>               /* ostringstream                   */
 
 #include "samsonLogMsg.h"
 #include "samson.pb.h"
 #include "KVSetBuffer.h"
-#include "Sockets.h"              /* au::Socket       */
-#include "AULocker.h"             /* Lock             */
+#include "Sockets.h"             /* au::Socket                      */
+#include "Lock.h"                /* Lock                            */
 
 
 

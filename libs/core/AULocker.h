@@ -6,42 +6,24 @@
  It allows to check if someone is blocked using lock
  */
 
-#pragma once
-
 #include <assert.h>
 #include <sys/time.h>
 #include <set>
 #include <map>
 #include <iostream>
 
+#include "StopLock.h"       /* StopLock                 */
+
+
 namespace au {
 
-
-class Lock;
 	
+class Lock;
+
 /**
  Class to implement the classical mehcanism to be stoped for a condition
  Works in conjuntion with Lock
  */
-
-class StopLock
-{
-	friend class Lock;
-	pthread_cond_t condition;
-	Lock *lock;
-	
-public:	
-	
-	StopLock( Lock *_lock  )
-	{
-		lock = _lock;
-		pthread_cond_init(&condition, NULL);
-	}
-	
-};
-	
-
-class Lock;
 
 class LockDebugger
 {
@@ -72,30 +54,8 @@ public:
 	
 
 };
-	
-class Lock 
-{
-	pthread_mutex_t _lock;
-	
-public:	
 
-	std::string description;
-	
-	Lock();
-	~Lock();
-	
-	void lock();
-	void unlock();
-	
-	void unlock_waiting_in_stopLock( StopLock *stopLock );
-	void unlock_waiting_in_stopLock( StopLock *stopLock , int max_seconds );
-	void wakeUpStopLock( StopLock *stopLock );
-	void wakeUpAllStopLock( StopLock *stopLock );
-	
-};
 
-	
-	
 /**
  ThreadStopPoint is the classical mehcanish to stop some threads to wait for something.
  On the other hand there is a thread-safe function to wake up all elements

@@ -20,7 +20,7 @@
 #include <deque>
 
 #include "AUCommandLine.h"
-#include "AULocker.h"            /* Lock */
+#include "Lock.h"                /* Lock                            */
 
 
 

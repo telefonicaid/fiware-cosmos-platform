@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include "ParameterMonitor.h"
-#include "AULocker.h"             /* au::Lock */
+#include "Lock.h"                /* Lock                            */
 
 
 namespace ss {

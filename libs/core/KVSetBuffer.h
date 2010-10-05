@@ -9,10 +9,10 @@
 #include <pthread.h>
 #include <string>
 
-#include "au.h"
 #include "KVFormat.h"
 #include "samson.pb.h"
 #include "samson.h"
+#include "common.h"      /* AU_SIZE_100M */
 
 
 

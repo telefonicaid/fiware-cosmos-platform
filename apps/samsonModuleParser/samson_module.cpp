@@ -1,8 +1,8 @@
-#include "au.h"
 #include "DataType.h"
 #include "DataContainer.h"
-#include "samson_module.h"
 #include "samson_lib.h"
+#include "AUCommandLine.h"      /* AUCommandLine   */
+#include "samson_module.h"      /* Own interface   */
 
 
 

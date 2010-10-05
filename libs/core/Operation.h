@@ -2,8 +2,8 @@
 #define SAMSON_OPERATION_H
 
 #include <math.h>
+#include <sstream>       /* std::ostringstream */
 
-#include "au.h"
 #include "KVFormat.h"
 #include "Data.h"
 

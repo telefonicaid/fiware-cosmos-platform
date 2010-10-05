@@ -1,5 +1,5 @@
-#ifndef AU_H
-#define AU_H
+#ifndef SAMSON_BUFFER_H
+#define SAMSON_BUFFER_H
 
 #include <stdio.h>
 
@@ -13,7 +13,7 @@
 
 
 
-namespace au {
+namespace ss {
 
 /**
  

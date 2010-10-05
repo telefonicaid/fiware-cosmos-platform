@@ -19,13 +19,12 @@
 #include <deque>
 #include <iostream>
 
-#include "au.h"
 #include "samson.pb.h"
 #include "NetworkManager.h"
 #include "KVFormat.h"
 #include "KVSet.h"
 #include "KVManager.h"
-
+#include "AUConsole.h"         /* Console */
 
 
 namespace ss {

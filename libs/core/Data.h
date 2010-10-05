@@ -2,9 +2,10 @@
 #define SAMSON_DATA_H
 
 #include <math.h>
+#include <stdlib.h>      /* malloc */
+#include <string.h>      /* memcpy */
 
 #include "KVFormat.h"
-#include "au.h"
 
 
 

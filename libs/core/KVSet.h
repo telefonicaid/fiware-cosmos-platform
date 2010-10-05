@@ -1,15 +1,20 @@
 #ifndef SAMSON_KV_SET_H
 #define SAMSON_KV_SET_H
 
+#include <sys/types.h>
+#include <sys/stat.h>           /* stat          */
+#include <unistd.h>
 #include <list>
 #include <set>
 #include <string>
+#include <sstream>              /* ostringstream */
 
 #include "samsonLogMsg.h"
 #include "KVFormat.h"
 #include "KVSetBuffer.h"
 #include "Data.h"
 #include "samson.pb.h"
+#include "Format.h"
 
 
 
@@ -55,18 +60,17 @@ namespace ss {
 		 Constructor used when a KVSet is created by a particular task from a KVSetBuffer
 		 */
 		
-		KVSetData( KVSetBufferBase * _buffer , std::string _file_name )
+		KVSetData(KVSetBufferBase* _buffer, std::string _file_name)
 		{
-			
 			DataBuffer b = _buffer->getDataBuffer();
-			
-			buffer = b.buffer;
+
+			buffer     = b.buffer;
 			bufferSize = b.size;
 
 			
 			// Read the header
-			header_size = *((size_t*)buffer);
-			header.ParseFromArray( buffer + sizeof(size_t) , header_size );
+			header_size = *((size_t*) buffer);
+			header.ParseFromArray(buffer + sizeof(size_t) , header_size);
 
 			// Get the pointer to the current data
 			dataBuffer = buffer + sizeof(size_t) + header_size;

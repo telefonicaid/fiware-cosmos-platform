@@ -19,10 +19,14 @@
 #include <curses.h>
 #include <deque>
 
+#include "AUCommandLine.h"
+#include "AULocker.h"            /* Lock */
+
 
 
 namespace au {
 
+static char au_clearScreen[] = { 0x1b, '[', '2', 'J', 0x1b, '[', '0', ';' ,'0','H', 0 };
 	
 class ConsoleCommand
 {

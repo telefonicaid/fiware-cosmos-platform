@@ -2,8 +2,8 @@
 #define samson_module_h
 
 #include <string>
+#include <map>
 
-#include "au.h"
 #include "Operation.h"
 #include "Data.h"
 

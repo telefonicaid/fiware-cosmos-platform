@@ -3,11 +3,15 @@
 
 #include <assert.h>
 #include <set>
+#include <sstream>                /* ostringstream    */
 
 #include "samsonLogMsg.h"
-#include "au.h"
 #include "samson.pb.h"
 #include "KVSetBuffer.h"
+#include "Sockets.h"              /* au::Socket       */
+#include "AULocker.h"             /* Lock             */
+
+
 
 /**
  SAMSON Memory Manager

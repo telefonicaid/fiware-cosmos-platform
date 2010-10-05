@@ -1,7 +1,6 @@
 #include <string>
 
 #include "samsonLogMsg.h"
-#include "au.h"
 #include "KVManagerLogs.h"
 #include "samson.h"
 #include "KVManager.h"

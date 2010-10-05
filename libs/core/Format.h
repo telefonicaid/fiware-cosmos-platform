@@ -1,6 +1,9 @@
 #ifndef SAMSON_FORMAT_H
 #define SAMSON_FORMAT_H
 
+#include <stdio.h>             /* sprintf */
+
+
 
 namespace au {
 

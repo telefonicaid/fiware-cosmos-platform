@@ -1,4 +1,10 @@
-#include "au.h"
+#include "AUCommandLine.h"
+#include "AULocker.h"
+#include "AUConsole.h"
+#include "Format.h"
+#include "Factory.h"
+#include "common.h"
+#include "Sockets.h"
 
 au::Lock lock;
 au::Lock lock2;

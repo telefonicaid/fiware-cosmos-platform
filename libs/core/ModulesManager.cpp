@@ -10,8 +10,9 @@
 #include "samson.h"
 #include "samson_lib.h"
 #include "SSLogger.h"
-#include "ModulesManager.h"
 #include "Module.h"
+#include "AUCommandLine.h"      /* AUCommandLine */
+#include "ModulesManager.h"     /* Own interface */
 
 
 

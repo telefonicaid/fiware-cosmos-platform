@@ -1,7 +1,7 @@
 #ifndef SAMSON_MODULES_MANAGER_H
 #define SAMSON_MODULES_MANAGER_H
 
-#include "au.h"
+#include "AULocker.h"
 
 
 

@@ -29,7 +29,7 @@ SET (HEADERS
 	Task.h
 	TaskManager.h
 	Tasks.h
-	au.h
+	Buffer.h
 	common.h
 	samson.h
 	samson_lib.h
@@ -65,7 +65,6 @@ SET (SOURCES
 	Task.cpp
 	TaskManager.cpp
 	Tasks.cpp
-	au.cpp
 	samson.cpp
 )
 

@@ -15,5 +15,6 @@
 #include "Module.h"
 #include "KVFormat.h"
 #include "samsonVersion.h"
+#include "Factory.h"              /* au::factory */
 
 #endif

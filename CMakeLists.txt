@@ -1,0 +1,12 @@
+PROJECT(Samson)
+
+SET (CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Rogue")
+set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror")
+
+cmake_minimum_required(VERSION 2.6)
+
+ENABLE_TESTING()
+
+ADD_SUBDIRECTORY(libs)
+ADD_SUBDIRECTORY(apps)
+ADD_SUBDIRECTORY(modules)

@@ -69,7 +69,7 @@ SET (SOURCES
 	samson.cpp
 )
 
-include_directories("${PROJECT_SOURCE_DIR}/libs/protocol")
+include_directories("${PROJECT_BINARY_DIR}/libs/protocol")
 include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 
 ADD_LIBRARY(samsonCoreStatic STATIC ${SOURCES} ${HEADERS})

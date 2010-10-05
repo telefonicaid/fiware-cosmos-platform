@@ -11,8 +11,7 @@
 
 #include "KVFormat.h"
 #include "samson.pb.h"
-#include "samson.h"
-#include "common.h"      /* AU_SIZE_100M */
+#include "samson.h"       /* MAX_SIZE_KEY_VALUE */
 
 
 

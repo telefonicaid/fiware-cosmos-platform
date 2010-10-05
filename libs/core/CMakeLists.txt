@@ -30,7 +30,7 @@ SET (HEADERS
 	TaskManager.h
 	Tasks.h
 	Buffer.h
-	common.h
+	BufferSizes.h
 	samson.h
 	samson_lib.h
 )

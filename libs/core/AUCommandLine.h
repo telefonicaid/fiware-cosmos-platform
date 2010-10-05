@@ -37,7 +37,7 @@
 #include <cstdlib>
 #include <map>
 
-#include "common.h"
+#include "BufferSizes.h"
 
 
 // #define AUCommandLine_DEBUG

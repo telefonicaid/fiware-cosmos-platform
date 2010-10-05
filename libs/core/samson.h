@@ -30,6 +30,7 @@
 * 
 * SAMSON Manager  (SSManager) is the general component to manage a samson node
 */
+#include "BufferSizes.h"  /* AU_SIZE_100M */
  
 
 

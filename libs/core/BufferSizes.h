@@ -1,5 +1,5 @@
-#ifndef SAMSON_COMMON_H
-#define SAMSON_COMMON_H
+#ifndef SAMSON_BUFFER_SIZE_H
+#define SAMSON_BUFFER_SIZE_H
 
 
 #define AU_SIZE_1M      1024*1024
@@ -11,7 +11,5 @@
 #define AU_SIZE_1G      1024*1024*1024
 #define AU_SIZE_2G      (size_t)(2)*SIZE_1G
 #define AU_SIZE_10G     (size_t)(10)*SIZE_1G
-
-extern char au_clearScreen[200];
 
 #endif

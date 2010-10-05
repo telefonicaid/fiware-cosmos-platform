@@ -12,10 +12,11 @@
 * LOG_ERROR - 
 */
 #define LOG_ERROR(s)                                                          \
+do                                                                            \
 {                                                                             \
 	printf("%s[%d]:%s: ", __FILE__, __LINE__, __FUNCTION__);                  \
 	printf s;                                                                 \
 	printf("\n");                                                             \
-}
+} while (0)
 
 #endif

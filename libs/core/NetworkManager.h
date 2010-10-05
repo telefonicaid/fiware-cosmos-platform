@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <set>
 
+#include "samsonLogMsg.h"
 #include "au.h"
 #include "samson.pb.h"
 #include "KVSetBuffer.h"
@@ -114,7 +115,12 @@ namespace ss {
 		{
 			// Create the thread
 			int ans = pthread_create(&thread, NULL, thread_task<NetworkManager>, this);	
-			assert(ans==0);
+
+			if (ans != 0)
+			{
+				LOG_ERROR(("pthread_create error"));
+				assert(0);
+			}
 		}
 		
 	public:
@@ -195,8 +201,12 @@ namespace ss {
 					lock.unlock();
 					
 					int ans = pthread_create(&connection->thread, NULL, thread_task<NetworkConnection>, connection);	
-					assert(ans==0);
-					 
+
+					if (ans != 0)
+					{
+						LOG_ERROR(("pthread_create error"));
+						assert(0);
+					}
 				}
 			}
 			catch ( au::SocketException& e )
@@ -255,7 +265,12 @@ namespace ss {
 		{
 			// Create the thread
 			int ans = pthread_create(&thread, NULL, thread_task<SimpleNetworkManager>, this);	
-			assert(ans==0);
+
+			if (ans != 0)
+			{
+				LOG_ERROR(("pthread_create error"));
+				assert(0);
+			}
 		}
 		
 	public:
@@ -336,8 +351,12 @@ namespace ss {
 					lock.unlock();
 					
 					int ans = pthread_create(&connection->thread, NULL, thread_task<SimpleNetworkConnection>, connection);	
-					assert(ans==0);
-					
+
+					if (ans != 0)
+					{
+						LOG_ERROR(("pthread_create error"));
+						assert(0);
+					}
 				}
 			}
 			catch ( au::SocketException& e )

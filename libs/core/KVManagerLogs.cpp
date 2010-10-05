@@ -1,5 +1,6 @@
 #include <string>
 
+#include "samsonLogMsg.h"
 #include "au.h"
 #include "KVManagerLogs.h"
 #include "samson.h"
@@ -314,14 +315,37 @@ namespace ss
 	{
 		char buffer[ 100000 ];
 		size_t size = operation->ByteSize();
-		assert( size < 100000 );
+
+		if (size >= 100000)
+		{
+			LOG_ERROR(("size too big: %d", size));
+			assert( size < 100000 );
+		}
+
 		bool ans = operation->SerializeToArray(buffer, size );
-		assert( ans );
+		if (!ans)
+		{
+			LOG_ERROR(("SerializeToArray failed"));
+			assert( ans );
+		}
 		
 		// Write on disk
-		fwrite(&size, 1, sizeof( size ), file);
-		size_t size_writen = fwrite(buffer, 1, size, file);
-		assert( size_writen == size );
+		size_t size_written;
+
+		size_written = fwrite(&size, 1, sizeof(size), file);
+		if (size_written != sizeof(size))
+		{
+			LOG_ERROR(("written %d bytes (%d wanted)", size_written, sizeof(size)));
+			assert(0);
+		}
+
+		size_written = fwrite(buffer, 1, size, file);
+		if (size_written != size)
+		{
+            LOG_ERROR(("written %d bytes (%d wanted)", size_written, size));
+            assert(0);
+		}
+
 		fflush(file);
 	}
 	

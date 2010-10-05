@@ -75,7 +75,11 @@ namespace ss {
 		
 		assert(message.IsInitialized());
 		bool ans = message.SerializeToArray(message_buffer, header.message_length );
-		assert( ans );
+		if (!ans)
+		{
+			LOG_ERROR(("error serializing message"));
+			assert(0);
+		}
 
 		// Send content to the socket
 		socket->send( (char*)&header, sizeof( header ) );

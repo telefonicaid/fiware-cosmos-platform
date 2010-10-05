@@ -50,7 +50,12 @@ namespace ss {
 	void runKVSetMaintainer()
 	{
 		int ans = pthread_create(&mantainer_thread, NULL, memory_thread_task, NULL);	
-		assert(ans==0);
+
+		if (ans != 0)
+		{
+			LOG_ERROR(("pthread_create error"));
+			assert(0);
+		}	
 	}
 	
 #pragma mark AUTOMATIC TASKS THREAD
@@ -76,7 +81,12 @@ namespace ss {
 	void runAutomaticTasksScheduler()
 	{
 		int ans = pthread_create(&automatic_tasks_thread, NULL, automatic_tasks, NULL);	
-		assert(ans==0);
+
+		if (ans != 0)
+		{
+			LOG_ERROR(("pthread_create error"));
+			assert(0);
+		}	
 	}
 	
 
@@ -122,7 +132,12 @@ namespace ss {
 		{
 			info.core_id = i;
 			int ans = pthread_create(&workers_thread[i], NULL, core_thread_task, &info);	
-			assert(ans==0);
+
+			if (ans != 0)
+			{
+				LOG_ERROR(("pthread_create error"));
+				assert(0);
+			}
 		}
 	}
 
@@ -143,7 +158,12 @@ namespace ss {
 	{
 		//Monitoring thread
 		int ans = pthread_create(&monitoring_thread, NULL, monitoring_thread_task, NULL);
-		assert(ans==0);
+
+		if (ans != 0)
+		{
+			LOG_ERROR(("pthread_create error"));
+			assert(0);
+		}	
 	}
 	
 	

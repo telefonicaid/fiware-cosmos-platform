@@ -27,9 +27,24 @@ namespace ss {
 		
 		if( bufferSize > 0 )	// Prevent 0-sized KVSets
 		{
-			FILE *_file = fopen(file_name.c_str(), "w");
-			int ans = fwrite(buffer, bufferSize, 1, _file);
-			assert( ans == 1);
+			FILE*  _file = fopen(file_name.c_str(), "w");
+			int    ans;
+
+			if (_file == NULL)
+			{
+				LOG_ERROR(("error opening '%s' for writing: %s", file_name.c_str(), strerror(errno)));
+				return;
+			}
+
+			ans = fwrite(buffer, bufferSize, 1, _file);
+			if (ans != 1)
+			{
+				if (ans == -1)
+					LOG_ERROR(("fwrite: %s", strerror(errno)));
+				else
+					LOG_ERROR(("fwrite: written %d bytes instead of %d", ans, 1));
+			}
+
 			fclose(_file);
 		}
 		
@@ -50,16 +65,28 @@ namespace ss {
 		
 		buffer	= (char *) malloc( bufferSize );
 		
-		FILE *_file = fopen(file_name.c_str(), "r");
-		assert( _file ); 
-		int ans = fread(buffer, bufferSize, 1, _file);
-		assert( ans == 1);
+		FILE*  _file = fopen(file_name.c_str(), "r");
+		int    ans;
+
+		if (_file == NULL)
+		{
+			LOG_ERROR(("error opening '%s' for reading: %s", file_name.c_str(), strerror(errno)));
+			return;
+		}
+
+		ans = fread(buffer, bufferSize, 1, _file);
+		if (ans != 1)
+		{
+			if (ans == -1)
+				LOG_ERROR(("fwrite: %s", strerror(errno)));
+			else
+				LOG_ERROR(("fwrite: written %d bytes instead of %d", ans, 1));
+		}
+
 		fclose(_file);
 		
 		// This is done inside KVManager for better lock mechanishm
 		//on_memory = true;
-		
-		
 	}
 	
 	size_t KVSetData::freeBuffer( )

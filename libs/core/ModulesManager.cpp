@@ -245,12 +245,13 @@ namespace ss
 	
 	DataInstance *ModulesManager::newDataInstance( std::string name )
 	{
-		DataInstance* tmp;
+		DataInstance* tmp = NULL;
+
 		lock.lock();
 
-		Module * module = _getModule( name );
+		Module* module = _getModule( name );
 		
-		if( module ) 
+		if ( module ) 
 			tmp = module->newDataInstance( getObjectName( name ) );
 		
 		lock.unlock();

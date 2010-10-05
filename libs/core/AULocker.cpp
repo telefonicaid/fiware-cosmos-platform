@@ -1,4 +1,6 @@
 #include <sstream>
+
+#include "samsonLogMsg.h"
 #include "AULocker.h"
 
 
@@ -85,11 +87,17 @@ namespace au {
 	
 	void LockDebugger::add_lock( Lock* new_lock )
 	{
-		
 		// Lock private data
-		int ans = pthread_mutex_lock(&_lock);	// Block until the mutex is free
-		assert( ans == 0 );						// Make sure there are no errors with lock
-		
+
+		// Block until the mutex is free
+		int ans = pthread_mutex_lock(&_lock);
+
+		// Make sure there are no errors with lock
+		if (ans != 0)
+		{
+			LOG_ERROR(("pthread_mutex_lock error"));
+			assert(ans == 0);
+		}
 		
 		std::set<Lock*> *locksVector = getLocksVector();
 
@@ -106,6 +114,7 @@ namespace au {
 		// We do not autoblock
 		if (locksVector->find( new_lock ) !=  locksVector->end() )
 			std::cout << "Autolock detected " << locksVector->size() << std::endl;
+
 		assert( locksVector->find( new_lock ) ==  locksVector->end() );
 		
 		// We are not blocked
@@ -126,8 +135,12 @@ namespace au {
 		
 		// Lock private data
 		int ans = pthread_mutex_lock(&_lock);	// Block until the mutex is free
-		assert( ans == 0 );						// Make sure there are no errors with lock
-		
+
+		if (ans != 0)
+		{
+			LOG_ERROR(("pthread_mutex_lock error"));
+			assert(ans == 0);
+		}
 		
 		std::set<Lock*> *locksVector = getLocksVector();
 
@@ -160,16 +173,15 @@ namespace au {
 	void LockDebugger::setThreadTitle(std::string title)
 	{
 		void *data = pthread_getspecific( LockDebugger::shared()->key_title );
-		assert( !data );	// Only put the name on the thread once
+
+		if (!data)
+		{
+			LOG_ERROR(("pthread_getspecific returned NULL"));
+			assert(!data);  // Only put the name on the thread once
+		}
 	
 		pthread_setspecific( lockDebugger->key_title  , new std::string( title ) );
-		
-	
 	}
-	
-	
-
-
 
 	Lock::Lock()
 	{
@@ -187,7 +199,12 @@ namespace au {
 		LockDebugger::shared()->add_lock( this );
 #endif
 		int ans = pthread_mutex_lock(&_lock);	// Block until the mutex is free
-		assert( ans == 0 );						// Make sure there are no errors with lock
+
+		if (ans != 0)
+		{
+			LOG_ERROR(("pthread_mutex_lock error"));
+			assert(ans == 0);
+		}
 	}
 	
 	void Lock::unlock()

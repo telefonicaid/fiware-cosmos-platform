@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 
+#include "samsonLogMsg.h"
 #include "KVFormat.h"
 #include "KVSetBuffer.h"
 #include "Data.h"
@@ -91,17 +92,40 @@ namespace ss {
 			bufferSize = file_status.st_size;
 			
 			// Read the header to get basic information
-			FILE *file = fopen( file_name.c_str() , "r" );
-			fread(&header_size, 1, sizeof(size_t), file);
-			char buffer[10000];
-			fread(buffer, 1,header_size , file);
-			header.ParseFromArray( buffer , header_size );
-			fclose(file);
+			size_t  nb;
+			FILE*   file = fopen( file_name.c_str() , "r" );
+
+			if (file == NULL)
+			{
+				LOG_ERROR(("error opening '%s' for reading: %s", file_name.c_str(), strerror(errno)));
+			}
+			else
+			{
+				nb = fread(&header_size, 1, sizeof(size_t), file);
+
+				if (nb != sizeof(size_t))
+				{
+				}
+				else
+				{
+					char buffer[10000];
+
+					nb = fread(buffer, 1, header_size, file);
+					if (nb != header_size)
+					{
+						LOG_ERROR(("read only %d bytes (expected %d)", nb, header_size));
+					}
+					else
+					{
+						header.ParseFromArray( buffer , header_size );
 			
-			on_memory = false;
-			on_disk = true;
-			
-		
+						on_memory = false;
+						on_disk = true;
+					}
+				}
+
+				fclose(file);
+			}
 		}
 		
 		/**

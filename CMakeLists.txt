@@ -16,8 +16,8 @@ endif (NOT CMAKE_BUILD_TYPE)
 set(error 0)
 
 execute_process(COMMAND            echo $USER
-			    COMMAND            tr 'a-z' 'A-Z'
-				OUTPUT_VARIABLE    USER)
+                COMMAND            tr 'a-z' 'A-Z'
+                OUTPUT_VARIABLE    USER)
 
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
   MESSAGE("cmake: DEBUG compilation")

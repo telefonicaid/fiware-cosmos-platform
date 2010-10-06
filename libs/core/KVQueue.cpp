@@ -1,8 +1,9 @@
-#include "KVQueue.h"
 #include "samson.h"
 #include "KVFormat.h"
-#include "KVSet.h"
+#include "KVSet.h"               /* KVSet                                    */
 #include "KvInfo.h"              /* KVInfo                                   */
+#include "KVQueueProcess.h"      /* KVQueueProcess                           */
+#include "KVQueue.h"             /* Own interface                            */
 
 
 
@@ -16,40 +17,6 @@ namespace ss {
 		output_queues = _output_queues;
 	}
 
-#pragma mark KVSetVector
-	
-	size_t KVSetVector::getNumKVs()
-	{
-		size_t total = 0 ;
-		for (size_t i = 0  ; i  < size() ; i++)
-		{
-			total += (*this)[i]->getNumKVs();
-			//total += at(i)->num_kvs;
-		}
-		return total;
-	}
-	
-	
-#pragma mark KVInfo
-	
-	void KVInfo::addKVInfoData( KVInfoData *_data)
-	{
-		data.add( _data );
-		
-	}
-	
-	void KVInfo::removeKVInfoData( KVInfoData *_data)
-	{
-		data.remove(_data);
-		
-	}
-	
-
-	
-
-	
-	
-	
 #pragma mark KVQueue
 	
 	
@@ -117,8 +84,5 @@ namespace ss {
 			if( hashSets[hash].size() > 0)
 				return hashSets[hash][0];
 		return NULL;
-	}	
-	
-	
-	
+	}
 }

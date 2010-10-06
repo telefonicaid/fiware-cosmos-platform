@@ -10,7 +10,9 @@
 *
 */
 #include <sys/types.h>           /* size_t                                   */
+
 #include "KvInfoData.h"          /* KVInfoData                               */
+#include "ParameterMonitor.h"    /* ParameterMonitor                         */
 
 
 
@@ -61,8 +63,15 @@ namespace ss
 			return "unknown parameter";
 		}
 		
-		void addKVInfoData( KVInfoData *_data );
-		void removeKVInfoData( KVInfoData *_data );
+		void addKVInfoData( KVInfoData *_data )
+		{
+			data.add( _data );
+		}
+
+		void removeKVInfoData( KVInfoData *_data )
+		{
+			data.remove(_data);
+		}
 		
 	};
 

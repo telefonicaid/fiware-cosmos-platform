@@ -8,6 +8,7 @@
 #include "KVFormat.h"
 #include "ParameterMonitor.h"
 #include "Format.h"
+#include "KvInfo.h"              /* KVInfo                                   */
 
 
 
@@ -89,121 +90,18 @@ namespace ss {
 	public:		
 		KVSetVector* duplicate( )
 		{
-			KVSetVector*tmp = new KVSetVector( format );
+			KVSetVector* tmp = new KVSetVector( format );
 			tmp->insert( tmp->end() , begin() , end() ); 
 			
 			return tmp;
 		}
 		
 		size_t getNumKVs();
-		
 	};			
 	
 
 
-	/**
-	 Basic information to add of remove counters
-	 */
 	
-	class KVInfoData
-	{
-	public:
-		
-		size_t num_kvs;
-		size_t size;
-		size_t size_on_memory;
-		size_t size_on_disk;
-		
-		KVInfoData()
-		{
-			num_kvs = 0;
-			size = 0;
-			size_on_memory = 0;
-			size_on_disk = 0;
-		}
-		
-		KVInfoData( size_t _num_kvs , size_t _size , size_t _size_on_memory , size_t _size_on_disk )
-		{
-			num_kvs = _num_kvs;
-			size = _size;
-			size_on_memory = _size_on_memory;
-			size_on_disk = _size_on_disk;
-		}
-		
-		void add( KVInfoData *data )
-		{
-			num_kvs += data->num_kvs;
-			size += data->size;
-			size_on_memory += data->size_on_memory;
-			size_on_disk += data->size_on_disk;
-		}
-		
-		void remove( KVInfoData *data )
-		{
-			num_kvs -= data->num_kvs;
-			size -= data->size;
-			size_on_memory -= data->size_on_memory;
-			size_on_disk -= data->size_on_disk;
-		}
-		
-	};
-	
-	/**
-	 Information about the content of a Queue
-	 It receives the rigth notification to keep information about this queue
-	 */
-	
-	class KVInfo
-	{
-	public:
-		
-		KVInfoData data;
-
-		// Monitor to hold historics
-		ParameterMonitor p_num_kvs;
-		ParameterMonitor p_size;
-		ParameterMonitor p_size_on_memory;
-		ParameterMonitor p_size_on_disk;
-		
-		
-		void sample()
-		{
-			p_num_kvs.push( (double)data.num_kvs / 1000000.0 );
-			p_size.push( (double)data.size  / 1000000.0 );
-			p_size_on_disk.push((double)data.size_on_disk  / ( (double)data.size + 1.0)  );
-			p_size_on_memory.push( (double)data.size_on_memory  / ((double)data.size + 1.0) );
-		}
-		
-		std::string strKVInfo()
-		{
-			std::ostringstream	o;
-			o << " [ KVS: " << au::Format::string( data.num_kvs );
-			o << " S: " << au::Format::string( data.size  );
-			o << " MU: " << au::Format::string( data.size_on_memory );
-			o << " DU: " << au::Format::string( data.size_on_disk );
-			o << " ]" ;
-			return o.str();
-		}
-		
-		std::string getParameter( std::string name , int scale )
-		{
-			if( name == "size" )
-				return p_size.str( scale );
-			if( name == "num_kvs" )
-				return p_size.str( scale );
-			if( name == "size_on_memory" )
-				return p_size_on_memory.str( scale );
-			if( name == "size_on_disk" )
-				return p_size_on_disk.str( scale );
-			
-			return "unknown parameter";
-		}
-		
-		void addKVInfoData( KVInfoData *_data );
-		void removeKVInfoData( KVInfoData *_data );
-		
-	};
-
 	/*
 		KVQueue:
 	 

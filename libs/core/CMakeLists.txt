@@ -42,6 +42,8 @@ SET (HEADERS
 	KVSET.h
 	DataInstance.h
 	kvVector.h
+	KvInfoData.h
+	KvInfo.h
 )
 
 SET (INSTALL_HEADERS

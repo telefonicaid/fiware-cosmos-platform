@@ -1,13 +1,14 @@
 #include <math.h>
 #include <algorithm>
 
-#include "KVSet.h"
 #include "Task.h"
 #include "Data.h"
 #include "samson.h"
 #include "Task.h"
 #include "KVQueue.h"
 #include "ModulesManager.h"
+#include "KvInfo.h"              /* KVInfo                                   */
+#include "KVSet.h"               /* Own interface                            */
 
 
 

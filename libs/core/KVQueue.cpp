@@ -2,6 +2,7 @@
 #include "samson.h"
 #include "KVFormat.h"
 #include "KVSet.h"
+#include "KvInfo.h"              /* KVInfo                                   */
 
 
 

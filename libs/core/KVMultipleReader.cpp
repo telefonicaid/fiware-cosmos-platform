@@ -8,6 +8,7 @@
 */
 #include <assert.h>              /* assert                                   */
 
+#include "KVSetStruct.h"         /* KVSetStruct                              */
 #include "KVReaderCompare.h"     /* compareFullByKey, compareByKey           */
 #include "KVMultipleReader.h"    /* Own interface                            */
 
@@ -36,7 +37,7 @@ namespace ss {
 	}
 
 	
-	KVSET* KVMultipleReader::getNextReduceSets()
+	KVSetStruct* KVMultipleReader::getNextReduceSets()
 	{
 /*		
 		std::cout << "Get next reduce set " << std::endl;

@@ -359,7 +359,7 @@ namespace ss {
 
 	}	
 	
-#pragma mark ADD KVSETs to the MAnager
+#pragma mark ADD KVSets to the Manager
 
 	
 	KVSet* KVManager::addKVSet( size_t task_id , KVSetBufferBase *buffer )

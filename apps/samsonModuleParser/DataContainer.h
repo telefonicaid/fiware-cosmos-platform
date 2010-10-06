@@ -102,7 +102,7 @@ namespace ss
 				nameSpaceLocal = my_namespace + name + "::";
 			
 			if( (type == "map") || (type == "reduce") )
-				o << "void " << nameSpaceLocal <<    "run(  ss::KVSET* inputs , std::vector<ss::KVWriter*>& outputs )";
+				o << "void " << nameSpaceLocal <<    "run(  ss::KVSetStruct* inputs , std::vector<ss::KVWriter*>& outputs )";
 			if( type == "generator" )
 				o << "void "<< nameSpaceLocal << "run( std::vector<ss::KVWriter *>& writers )";
 			

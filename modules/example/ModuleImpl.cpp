@@ -27,7 +27,7 @@ Outputs: base.UInt-base.UInt
 */
 
 
-void ss::example::map::run(  ss::KVSET* inputs , std::vector<ss::KVWriter*>& outputs )
+void ss::example::map::run(  ss::KVSetStruct* inputs , std::vector<ss::KVWriter*>& outputs )
 {
 	ss::base::UInt key,value;
 	
@@ -51,7 +51,7 @@ Outputs: base.UInt-system.Void
 */
 
 
-void ss::example::r::run(  ss::KVSET* inputs , std::vector<ss::KVWriter*>& outputs )
+void ss::example::r::run(  ss::KVSetStruct* inputs , std::vector<ss::KVWriter*>& outputs )
 {
 	// Your code goes here
 }

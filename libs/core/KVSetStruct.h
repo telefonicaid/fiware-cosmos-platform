@@ -1,9 +1,9 @@
-#ifndef SAMSON_KV_SET_H
-#define SAMSON_KV_SET_H
+#ifndef SAMSON_KV_SET_STRUCT_H
+#define SAMSON_KV_SET_STRUCT_H
 
 /* ****************************************************************************
 *
-* FILE               KVSET.h - basic type to work with key-values
+* FILE               KVSetStruct.h - basic type to work with key-values
 *
 *
 *
@@ -17,11 +17,11 @@
 
 namespace ss
 {	
-	typedef struct KVSET
+	typedef struct KVSetStruct
 	{
 		KV**    kvs;       // Vector containing Key-values (pointers to row data and hash code)
 		size_t  num_kvs;
-	} KVSET;
+	} KVSetStruct;
 }
 
 #endif

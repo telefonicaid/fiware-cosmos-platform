@@ -18,7 +18,7 @@ Outputs: base.UInt-sna.CDR
 */
 
 
-void ss::sna::parse_cdrs::run(  ss::KVSET* inputs , std::vector<ss::KVWriter*>& outputs )
+void ss::sna::parse_cdrs::run(  ss::KVSetStruct* inputs , std::vector<ss::KVWriter*>& outputs )
 {
 	ss::system::String s;
 	ss::base::UInt node;
@@ -56,7 +56,7 @@ Outputs: base.UInt2-system.Void
 */
 
 
-void ss::sna::spread_cdrs_to_links::run(  ss::KVSET* inputs , std::vector<ss::KVWriter*>& outputs )
+void ss::sna::spread_cdrs_to_links::run(  ss::KVSetStruct* inputs , std::vector<ss::KVWriter*>& outputs )
 {
 	ss::base::UInt node;
 	ss::sna::CDR cdr;
@@ -98,7 +98,7 @@ Outputs: base.UInt2-base.UInt
 */
 
 
-void ss::sna::accumulate_links::run(  ss::KVSET* inputs , std::vector<ss::KVWriter*>& outputs )
+void ss::sna::accumulate_links::run(  ss::KVSetStruct* inputs , std::vector<ss::KVWriter*>& outputs )
 {
 	ss::base::UInt2 key;
 	ss::base::UInt total;

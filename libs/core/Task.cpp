@@ -1,6 +1,7 @@
 #include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
 #include "KVReader.h"            /* KVReader                                 */
 #include "KVMultipleReader.h"    /* KVMultipleReader                         */
+#include "KVSetStruct.h"         /* KVSetStruct                              */
 #include "TaskBase.h"            /* TaskBase                                 */
 #include "Task.h"                /* Own interface                            */
 
@@ -285,8 +286,9 @@ namespace ss
 				// Sort and group inputs
 				superVector->initReduceSets();
 				
-				KVSET * sets = superVector->getNextReduceSets();
-				while( sets )
+				KVSetStruct* sets = superVector->getNextReduceSets();
+
+				while (sets)
 				{
 					reducer->run(sets , writers );
 					sets = superVector->getNextReduceSets();
@@ -377,7 +379,7 @@ namespace ss
 	{
 		// Generate input superVector
 		KVMultipleReader* superVector = new KVMultipleReader( groups );
-		KVSET *sets = superVector->getFullSets();
+		KVSetStruct* sets = superVector->getFullSets();
 
 		// Take the common format to identify key-value
 		KVFormat format = input_queues_format[0];

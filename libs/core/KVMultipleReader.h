@@ -3,11 +3,12 @@
 
 /* ****************************************************************************
 *
-* KVMultipleReader.h - hold a set of KVSets with common key-type
+* KVMultipleReader.h - hold a set of KVSetStructs with common key-type
 *
 *
 */
 #include "KVReader.h"            /* KVReader                                 */
+#include "KVSetStruct.h"         /* KVSetStruct                              */
 
 
 
@@ -17,11 +18,11 @@ namespace ss
     {
 		std::vector<KVReader*> vectors;
 
-		int     num;                // Number of sets at the input ( max 100 )
-		size_t  index[100];         // Index for each input
-		bool    participate[100];   // Flag to indicate that this set participate in this round of sets
-		bool    finish[100];        // Flag to indicate that this input is finish (no more kvs)
-		KVSET   sets[100];          // Used for output
+		int           num;                // Number of sets at the input ( max 100 )
+		size_t        index[100];         // Index for each input
+		bool          participate[100];   // Flag to indicate that this set participate in this round of sets
+		bool          finish[100];        // Flag to indicate that this input is finish (no more kvs)
+		KVSetStruct   sets[100];          // Used for output
 
 	public:
 		KVFormat format;            // Format for the key-value
@@ -38,7 +39,7 @@ namespace ss
 		 Get the full set of key-values without sorting for map operations
 		 */
 
-		KVSET* getFullSets()
+		KVSetStruct* getFullSets()
 		{
 			for (size_t i = 0 ; i < vectors.size() ; i++)
 			{
@@ -64,7 +65,7 @@ namespace ss
 			
 		}
 		
-		KVSET* getNextReduceSets();
+		KVSetStruct* getNextReduceSets();
 		
 		
 		

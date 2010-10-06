@@ -7,7 +7,6 @@
 #include <string>                /* std::string                              */
 
 #include "KV.h"                  /* KV                                       */
-#include "KVSET.h"               /* KVSET                                    */
 #include "KVVector.h"            /* KVVector                                 */
 #include "DataInstance.h"        /* DataInstance                             */
 

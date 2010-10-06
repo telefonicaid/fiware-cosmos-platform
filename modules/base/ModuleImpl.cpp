@@ -13,7 +13,7 @@ Outputs: base.UInt-base.UInt
 */
 
 
-void ss::base::example_map::run(  ss::KVSET* inputs , std::vector<ss::KVWriter*>& outputs )
+void ss::base::example_map::run(  ss::KVSetStruct* inputs , std::vector<ss::KVWriter*>& outputs )
 {
 	// Your code goes here
 	

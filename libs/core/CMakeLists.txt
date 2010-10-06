@@ -40,7 +40,7 @@ SET (HEADERS
 	samsonModuleHeader.h
 	samsonTypes.h
 	KV.h
-	KVSET.h
+	KVSetStruct.h
 	DataInstance.h
 	KVVector.h
 	KvInfoData.h

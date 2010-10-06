@@ -102,7 +102,7 @@ namespace ss {
 	}
 	
 	
-#pragma mark KVSETBASE
+#pragma mark KVSetBase
 	
 	KVSetBase::KVSetBase()
 	{
@@ -167,7 +167,7 @@ namespace ss {
 
 	
 	
-#pragma mark KVSET
+#pragma mark KVSet
 
 	
 	KVSet::KVSet( size_t _id , size_t _task_id,  std::string fileName,  KVSetBufferBase * buffer ) : KVSetData( buffer, fileName )

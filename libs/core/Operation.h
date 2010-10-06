@@ -4,7 +4,7 @@
 #include <math.h>
 #include <sstream>               /* std::ostringstream                       */
 
-#include "KVSET.h"               /* KVSET                                    */
+#include "KVSetStruct.h"         /* KVSetStruct                              */
 #include "KVWriter.h"            /* KVWriter                                 */
 #include "KVFormat.h"            /* KVFormat                                 */
 
@@ -71,7 +71,7 @@ namespace ss {
 		/**
 		 Main function to overload by the map
 		 */
-		virtual void run(KVSET* inputs , std::vector<KVWriter*>& outputs )=0;
+		virtual void run(KVSetStruct* inputs , std::vector<KVWriter*>& outputs )=0;
 
 	};
 
@@ -297,7 +297,7 @@ namespace ss {
 		/**
 		 Main function to overload by the map
 		 */
-		virtual void run(KVSET* inputs, std::vector<KVWriter*>& outputs) = 0;
+		virtual void run(KVSetStruct* inputs, std::vector<KVWriter*>& outputs) = 0;
 		
 	};
 }

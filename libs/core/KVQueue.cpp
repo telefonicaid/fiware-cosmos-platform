@@ -1,5 +1,5 @@
 #include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
-#include "KVFormat.h"
+#include <samson/KVFormat.h>
 #include "KVSet.h"               /* KVSet                                    */
 #include "KvInfo.h"              /* KVInfo                                   */
 #include "KVQueueProcess.h"      /* KVQueueProcess                           */

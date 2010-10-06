@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
-#include "KVFormat.h"
+#include <samson/KVFormat.h>
 #include "ParameterMonitor.h"
 #include "Format.h"
 #include "KVSetVector.h"         /* KVSetVector                              */

@@ -1,7 +1,7 @@
 #ifndef SAMSON_KV_READER_COMPARE_H
 #define SAMSON_KV_READER_COMPARE_H
 
-#include "KV.h"                  /* KV                                       */
+#include <samson/KV.h>                  /* KV                                       */
 
 
 

@@ -6,9 +6,9 @@
 #include <string.h>              /* memcpy                                   */
 #include <string>                /* std::string                              */
 
-#include "KV.h"                  /* KV                                       */
-#include "KVVector.h"            /* KVVector                                 */
-#include "DataInstance.h"        /* DataInstance                             */
+#include <samson/KV.h>                  /* KV                                       */
+#include <samson/KVVector.h>            /* KVVector                                 */
+#include <samson/DataInstance.h>        /* DataInstance                             */
 
 
 

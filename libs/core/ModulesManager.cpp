@@ -12,12 +12,12 @@
 #include <ios>
 #include <string>
 
-#include "samsonVersion.h"       /* SAMSON_VERSION                           */
-#include "samsonDirectories.h"   /* SAMSON_MODULES_DIRECTORY                 */
+#include <samson/samsonVersion.h>   /* SAMSON_VERSION                           */
+#include "samsonDirectories.h"		/* SAMSON_MODULES_DIRECTORY                 */
 #include "SSLogger.h"
-#include "Module.h"
-#include "AUCommandLine.h"       /* AUCommandLine                            */
-#include "ModulesManager.h"      /* Own interface                            */
+#include <samson/Module.h>
+#include "AUCommandLine.h"			/* AUCommandLine                            */
+#include "ModulesManager.h"			/* Own interface                            */
 
 
 

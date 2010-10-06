@@ -11,7 +11,7 @@
 
 #include "BufferSizes.h"         /* MAX_SIZE_KEY_VALUE                       */
 #include "samson.pb.h"
-#include "KVFormat.h"
+#include <samson/KVFormat.h>
 
 
 

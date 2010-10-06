@@ -8,7 +8,7 @@
 *
 */
 #include "KVReader.h"            /* KVReader                                 */
-#include "KVSetStruct.h"         /* KVSetStruct                              */
+#include <samson/KVSetStruct.h>         /* KVSetStruct                              */
 
 
 

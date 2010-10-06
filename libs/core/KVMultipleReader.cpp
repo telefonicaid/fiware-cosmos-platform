@@ -8,7 +8,7 @@
 */
 #include <assert.h>              /* assert                                   */
 
-#include "KVSetStruct.h"         /* KVSetStruct                              */
+#include <samson/KVSetStruct.h>  /* KVSetStruct                              */
 #include "KVReaderCompare.h"     /* compareFullByKey, compareByKey           */
 #include "KVMultipleReader.h"    /* Own interface                            */
 

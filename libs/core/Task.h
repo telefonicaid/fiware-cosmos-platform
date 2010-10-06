@@ -14,8 +14,8 @@
 #include "SSLogger.h"
 #include "KVManager.h"
 #include "KVQueueWriter.h"
-#include "KVWriter.h"            /* KVWriter                                 */
-#include "Operation.h"           /* Operation                                */
+#include <samson/KVWriter.h>            /* KVWriter                                 */
+#include <samson/Operation.h>           /* Operation                                */
 
 
 

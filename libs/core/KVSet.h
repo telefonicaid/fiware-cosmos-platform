@@ -10,12 +10,12 @@
 #include <sstream>               /* ostringstream                            */
 
 #include "samsonLogMsg.h"
-#include "KVFormat.h"            /* KVFormat                                 */
+#include <samson/KVFormat.h>     /* KVFormat                                 */
 #include "KVSetBuffer.h"
 #include "samson.pb.h"
-#include "Data.h"                /* Data                                     */
+#include <samson/Data.h>         /* Data                                     */
 #include "Format.h"              /* au::Format                               */
-#include "KVVector.h"            /* KVVector                                 */
+#include <samson/KVVector.h>     /* KVVector                                 */
 
 
 

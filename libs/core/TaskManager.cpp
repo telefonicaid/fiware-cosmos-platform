@@ -1,4 +1,4 @@
-#include "samsonVersion.h"       /* SAMSON_VERSION                           */
+#include <samson/samsonVersion.h>       /* SAMSON_VERSION                           */
 #include "KVManager.h"
 #include "SSManager.h"
 #include "SSLogger.h"

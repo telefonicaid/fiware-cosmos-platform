@@ -13,8 +13,7 @@
 #include <string.h>              /* strerror                                 */
 #include <errno.h>               /* errno                                    */
 
-#include "samsonLogMsg.h"        /* LOG_ERROR                                */
-#include "KV.h"                  /* KV                                       */
+#include <samson/KV.h>                  /* KV                                       */
 
 
 
@@ -31,8 +30,10 @@ namespace ss
 			num_kvs = _num_kvs;
 			kvs     = (KV*) malloc(num_kvs * sizeof(KV));
 
+			/*
 			if (kvs == NULL)
 				LOG_ERROR(("error allocating KV Vector of %llu items: %s", (unsigned long long int) _num_kvs, strerror(errno)));
+			 */
 		}
 		
 		~KVVector()

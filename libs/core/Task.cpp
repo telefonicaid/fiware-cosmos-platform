@@ -1,7 +1,7 @@
 #include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
 #include "KVReader.h"            /* KVReader                                 */
 #include "KVMultipleReader.h"    /* KVMultipleReader                         */
-#include "KVSetStruct.h"         /* KVSetStruct                              */
+#include <samson/KVSetStruct.h>         /* KVSetStruct                              */
 #include "TaskBase.h"            /* TaskBase                                 */
 #include "Task.h"                /* Own interface                            */
 

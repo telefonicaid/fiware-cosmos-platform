@@ -1,17 +1,19 @@
 all:
-	./scripts/build
-	sudo ./scripts/build install	
+	make prepare
+	make -C build
+
+prepare:	
+	./scripts/prepareBuild
 
 install:
-	sudo ./scripts/build install
+	sudo make -C build install
 
 clean:
 	make -C build clean
 
 xcode:	
-	mkdir -p xcode_proj
-	cd xcode_proj;cmake -G Xcode ..
+	./scripts/prepareXcode
 
 reset:
-	rm -Rf build
-	rm -Rf xcode_proj
+	sudo rm -Rf build/*
+	sudo rm -Rf xcode_proj

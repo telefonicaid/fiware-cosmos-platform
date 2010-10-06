@@ -1,6 +1,6 @@
 #include <string>
 
-#include "KVFormat.h"            /* KVFormat                                 */
+#include <samson/KVFormat.h>     /* KVFormat                                 */
 #include "KVQueueProcess.h"      /* KVQueueProcess                           */
 #include "KVQueue.h"             /* KVQueue                                  */
 #include "Task.h"                /* Task                            */

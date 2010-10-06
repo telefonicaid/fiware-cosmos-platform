@@ -6,8 +6,8 @@
 *  Copyright 2010 TID. All rights reserved.
 *
 */
-#include "Data.h"
-#include "Module.h"
+#include <samson/Data.h>
+#include <samson/Module.h>
 #include "KVSet.h"
 #include "ModulesManager.h"
 #include "KVQueue.h"

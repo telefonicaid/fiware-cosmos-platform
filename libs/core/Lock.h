@@ -17,7 +17,6 @@
 #include "StopLock.h"            /* StopLock                                 */
 
 
-
 namespace au {
 
 class Lock 

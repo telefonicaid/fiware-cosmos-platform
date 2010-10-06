@@ -1,6 +1,5 @@
 package ss.protocol;
 
-
 message Message
 {
 	required int32 code = 1;
@@ -16,23 +15,25 @@ message Message
 	optional bool error=202;		// Flag to indicat if there was an error
 }
 
-// KSet header
-
-message KVSetHeader
-{
-	required int64 num_kvs=1;		// Number of kvs in this set
-	required int64 size=2;			// Size of this KVSet not including this header ( payload size )
-	required Format format=3;		// Format for each key-value pair
-	required bool txtFormat=4;		// Flag to indicate that this is a txt file
-	required bool hashFormat=5;		// Flag to indiciate that we follow hash-sizeKey-Key-SizeValue-Value format 
-}
-
-// KVManager log system
 message Format
 {
 	required string	key=1;			// Format for the key ( this is only for double check )
 	required string	value=2;		// Format for the value ( this is only for double check )
 }
+
+message KVSetHeader
+{
+        required int64 num_kvs=1;               // Number of kvs in this set
+        required int64 size=2;                  // Size of this KVSet not including this header ( payload size )
+        required Format format=3;               // Format for each key-value pair
+	required int32 style=4;			// Serialization style (0 default )
+	required int32 magic_number=100;	// Magic number format validation
+
+	optional bool txtformat=101;		// To be removed
+	optional bool hashFormat=102;		// To be removed	  
+}
+
+
 
 message Set
 {
@@ -71,4 +72,20 @@ message KVManagerOperation
 	
 	repeated uint64 NewSet=200;		// List of sets created by a particular task
 	repeated uint64 SavedSet=201;		// List of sets saved to disk
+}
+
+
+message cdr
+{
+	required uint64 a = 1;
+	required uint64 b = 2;
+}
+
+message String
+{
+	required string txt = 1;
+}
+
+message Void
+{
 }

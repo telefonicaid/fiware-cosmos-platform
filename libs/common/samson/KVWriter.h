@@ -1,7 +1,7 @@
 #ifndef KV_WRITER_H
 #define KV_WRITER_H
 
-#include "DataInstance.h"        /* DataInstance                             */
+#include <samson/DataInstance.h>        /* DataInstance                             */
 
 
 

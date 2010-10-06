@@ -1,7 +1,7 @@
 #include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
 #include "KVManager.h"
 #include "KVSet.h"
-#include "Operation.h"
+#include <samson/Operation.h>
 #include "ModulesManager.h"
 #include "TaskManager.h"
 #include "Task.h"                /* Task                                     */

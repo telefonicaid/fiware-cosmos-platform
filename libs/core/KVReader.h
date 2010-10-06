@@ -12,9 +12,9 @@
 #include <algorithm>
 #include <vector>                /* vector                                   */
 
-#include "KVVector.h"            /* KVVector                                 */
-#include "Data.h"                /* Data                                     */
-#include "KVFormat.h"            /* KVFormat                                 */
+#include <samson/KVVector.h>     /* KVVector                                 */
+#include <samson/Data.h>                /* Data                                     */
+#include <samson/KVFormat.h>            /* KVFormat                                 */
 
 
 

@@ -36,7 +36,7 @@ SET (HEADERS
 	Buffer.h
 	BufferSizes.h
 	samson.h
-	samson_lib.h
+	samsonModuleHeader.h
 	samsonTypes.h
 	KV.h
 	KVSET.h

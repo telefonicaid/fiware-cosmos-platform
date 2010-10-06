@@ -1,11 +1,12 @@
-#ifndef SAMSON_LIB_H
-#define SAMSON_LIB_H
+#ifndef SAMSON_MODULE_HEADER_H
+#define SAMSON_MODULE_HEADER_H
 
 /* ****************************************************************************
 *
-* samson_lib.h - starting point for the modules definitions
+* FILE                 samsonModuleHeader.h
 *
 *
+* This is a header file that is automatically included by modules.
 *
 */
 #include "samsonVersion.h"       /* SAMSON_VERSION                           */

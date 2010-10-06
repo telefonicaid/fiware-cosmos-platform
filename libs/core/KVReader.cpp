@@ -10,7 +10,6 @@
 #include "Module.h"
 #include "KVSet.h"
 #include "ModulesManager.h"
-#include "samson.h"
 #include "KVQueue.h"
 #include "Lock.h"                /* Lock                                     */
 #include "KVReader.h"            /* Own interface                            */

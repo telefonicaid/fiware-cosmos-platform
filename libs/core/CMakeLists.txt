@@ -35,7 +35,7 @@ SET (HEADERS
 	Task.h
 	Buffer.h
 	BufferSizes.h
-	samson.h
+	samsonTuning.h
 	samsonModuleHeader.h
 	samsonTypes.h
 	KV.h
@@ -52,7 +52,7 @@ SET (INSTALL_HEADERS
 	KVFormat.h
 	Module.h
 	Operation.h
-	samson_lib.h
+	samsonModuleHeader.h
 )
 
 SET (SOURCES

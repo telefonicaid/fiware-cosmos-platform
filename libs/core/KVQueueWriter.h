@@ -9,7 +9,7 @@
 *
 *
 */
-#include "samson.h"
+#include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
 #include "KVWriter.h"            /* KVWriter                                 */
 #include "KVFormat.h"            /* KVFormat                                 */
 

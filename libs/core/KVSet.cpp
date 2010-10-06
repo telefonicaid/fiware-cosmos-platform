@@ -2,7 +2,6 @@
 #include <algorithm>
 
 #include "Data.h"
-#include "samson.h"
 #include "KVQueue.h"
 #include "ModulesManager.h"
 #include "KvInfo.h"              /* KVInfo                                   */

@@ -1,7 +1,6 @@
-#include "NetworkManager.h"
-#include "SSMonitor.h"
-#include "TaskBase.h"            /* TaskBase                        */
-#include "Task.h"                /* Own interface                   */
+#include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
+#include "TaskBase.h"            /* TaskBase                                 */
+#include "Task.h"                /* Own interface                            */
 
 
 

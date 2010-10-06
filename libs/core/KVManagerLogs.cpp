@@ -1,23 +1,8 @@
-#include <string>
+#include <string>                /* std::string                              */
 
-#if 0
-#include "samson.h"
-#include "KVManager.h"
-#include "MemoryController.h"
-#include "KVQueue.h"
-#include "KVSet.h"
-#include "KVSetsManager.h"
-#include "KVFormat.h"
-#include "Data.h"
-#include "Module.h"
-#include "KVFormat.h"
-#include "SSLogger.h"
-#include "SSMonitor.h"
-#include "KVSetBuffer.h"
-#include "TaskManager.h"
-#endif
-
-#include "samsonLogMsg.h"
+#include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
+#include "samsonLogMsg.h"        /* LOG_ERROR, ...                           */
+#include "samsonDirectories.h"   /* SAMSON_WORKSPACE_DIRECTORY               */
 #include "Task.h"                /* Task                                     */
 #include "KVManagerLogs.h"       /* Own interface                            */
 

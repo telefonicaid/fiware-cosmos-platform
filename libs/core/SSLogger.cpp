@@ -1,7 +1,7 @@
-#include <sstream>
+#include <sstream>               /* std::stringstream                        */
 
-#include "samson.h"
-#include "KVSet.h"
+#include "samsonDirectories.h"   /* SAMSON_LOG_DIRECTORY                     */
+#include "KVSet.h"               /* KVSet                                    */
 #include "Task.h"                /* Task                                     */
 #include "SSLogger.h"            /* Own interface                            */
 

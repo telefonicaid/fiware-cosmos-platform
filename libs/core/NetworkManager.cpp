@@ -1,3 +1,4 @@
+#include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
 #include "KVManager.h"
 #include "KVSet.h"
 #include "Operation.h"

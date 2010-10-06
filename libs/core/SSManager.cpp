@@ -7,7 +7,7 @@
 #include <iostream>
 
 #include "samsonVersion.h"       /* SAMSON_VERSION                           */
-#include "samson.h"
+#include "samsonDirectories.h"   /* SAMSON_*_DIRECTORY                       */
 #include "NetworkManager.h"
 #include "TaskManager.h"
 #include "Module.h"

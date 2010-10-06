@@ -30,32 +30,8 @@
 * 
 * SAMSON Manager  (SSManager) is the general component to manage a samson node
 */
-#include "BufferSizes.h"  /* SS_SIZE_100M */
- 
-
-
-// Provisional constants
-#define MAX_SIZE_KEY_VALUE      SS_SIZE_100M            // Maximum size of the key-value pair (for streaming reasons)
-
-// Default directories to work
-
-#define SAMSON_BASE_DIRECTORY           "/var/samson"
-#define SAMSON_WORKSPACE_DIRECTORY      "/var/samson/workspace"
-#define SAMSON_LOG_DIRECTORY            "/var/samson/log"
-#define SAMSON_DATA_DIRECTORY           "/var/samson/data"
-#define SAMSON_MODULES_DIRECTORY        "/var/samson/modules"
-
-
-#define SAMSON_MAX_KVSET_SIZE           16*1024*1024
 #define NUM_SETS_PER_STORAGE            10
 #define SAMSON_DEFAULT_MEMORY           "2G"
 #define SAMSON_DEFAULT_CORES            2
-
-/**
- As a rule of thumb, memory >> cores * num_storages * max_kv_set 
-*/
-
-
-// #define DEBUG_TASK_MANAGER
 
 #endif

@@ -1,7 +1,6 @@
-#include "KVSetBuffer.h"
-#include "samson.h"
-#include "KVManager.h"
-
+#include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
+#include "KVSetBuffer.h"         /* KVSetBuffer                              */
+#include "KVManager.h"           /* KVManager                                */
 #include "Task.h"                /* Task                                     */
 #include "KVQueueWriter.h"       /* Own interface                            */
 

@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-#include "samson.h"
+#include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
 #include "KVFormat.h"
 #include "ParameterMonitor.h"
 #include "Format.h"

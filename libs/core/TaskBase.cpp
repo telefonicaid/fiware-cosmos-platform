@@ -1,6 +1,5 @@
 #include <assert.h>
 
-#include "samson.h"
 #include "KVSet.h"
 #include "TaskManager.h"
 #include "TaskBase.h"            /* Own interface                   */

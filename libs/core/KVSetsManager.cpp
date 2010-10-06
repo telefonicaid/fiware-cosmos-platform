@@ -1,5 +1,6 @@
 #include <sstream>
 
+#include "samsonDirectories.h"   /* SAMSON_DATA_DIRECTORY                    */
 #include "KVSet.h"
 #include "SSMonitor.h"
 #include "KVQueue.h"

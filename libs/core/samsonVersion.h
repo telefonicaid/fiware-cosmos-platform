@@ -3,12 +3,13 @@
 
 /* ****************************************************************************
 *
-* samsonVersion.h - starting point for the modules definitions
+* FILE                    samsonVersion.h - software version of samson
 *
 *
 *
 */
-#pragma once
+
+
 
 #define SAMSON_VERSION				"0.1.2"
 

@@ -13,7 +13,7 @@
 #include <string>
 
 #include "samsonVersion.h"       /* SAMSON_VERSION                           */
-#include "samson.h"
+#include "samsonDirectories.h"   /* SAMSON_MODULES_DIRECTORY                 */
 #include "SSLogger.h"
 #include "Module.h"
 #include "AUCommandLine.h"       /* AUCommandLine                            */

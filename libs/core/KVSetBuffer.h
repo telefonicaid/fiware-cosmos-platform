@@ -9,9 +9,9 @@
 #include <pthread.h>
 #include <string>
 
-#include "KVFormat.h"
+#include "BufferSizes.h"         /* MAX_SIZE_KEY_VALUE                       */
 #include "samson.pb.h"
-#include "samson.h"       /* MAX_SIZE_KEY_VALUE */
+#include "KVFormat.h"
 
 
 

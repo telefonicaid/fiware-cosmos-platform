@@ -1,12 +1,11 @@
-#include "DataType.h"
-#include "DataContainer.h"
-#include "samson_lib.h"
-#include "AUCommandLine.h"      /* AUCommandLine   */
-#include "samson_module.h"      /* Own interface   */
+#include "samsonVersion.h"     /* SAMSON_VERSION                             */
+#include "samson_module.h"     /* Own interface                              */
+#include "Data.h"              /* DataInstance                               */
+#include "AUCommandLine.h"     /* AUCommandLine                              */
 
 
 
-void create_module_file( std::string module_name  , std::string fileName )
+void create_module_file(std::string module_name, std::string fileName)
 {
 	
 	ofstream o( fileName.c_str() );

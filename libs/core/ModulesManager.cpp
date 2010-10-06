@@ -1,3 +1,8 @@
+/* ****************************************************************************
+*
+* FILE                 ModulesManager.cpp - 
+*
+*/
 #include <dlfcn.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -7,12 +12,12 @@
 #include <ios>
 #include <string>
 
+#include "samsonVersion.h"       /* SAMSON_VERSION                           */
 #include "samson.h"
-#include "samson_lib.h"
 #include "SSLogger.h"
 #include "Module.h"
-#include "AUCommandLine.h"      /* AUCommandLine */
-#include "ModulesManager.h"     /* Own interface */
+#include "AUCommandLine.h"       /* AUCommandLine                            */
+#include "ModulesManager.h"      /* Own interface                            */
 
 
 

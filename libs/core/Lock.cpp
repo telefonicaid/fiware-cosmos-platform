@@ -2,17 +2,17 @@
 *
 * FILE                 Lock.cpp - 
 *
-* AUTHOR               Ken Zangelin, Andreu Urruela
+* AUTHOR               Andreu Urruela, Ken Zangelin
 *
 * CREATION DATE        Oct 5 2010
 *
 */
-#include <sys/time.h>            /* struct timeval                  */
-#include <pthread.h>             /* pthread_mutex_init, ...         */
+#include <sys/time.h>            /* struct timeval                           */
+#include <pthread.h>             /* pthread_mutex_init, ...                  */
 
-#include "samsonLogMsg.h"        /* LOG_ERROR, ...                  */
-#include "StopLock.h"            /* StopLock                        */
-#include "Lock.h"                /* Own interface                   */
+#include "samsonLogMsg.h"        /* LOG_ERROR, ...                           */
+#include "StopLock.h"            /* StopLock                                 */
+#include "Lock.h"                /* Own interface                            */
 
 
 

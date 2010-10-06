@@ -1,11 +1,11 @@
-#ifndef samson_module_h
-#define samson_module_h
+#ifndef SAMSON_MODULE_H
+#define SAMSON_MODULE_H
 
 #include <string>
 #include <map>
 
-#include "Operation.h"
-#include "Data.h"
+#include "Operation.h"           /* Operation                                */
+#include "Data.h"                /* Data                                     */
 
 
 
@@ -18,21 +18,20 @@ namespace ss
 		std::string name;		// Name of this container
 		std::string version;	// Version of this module
 		std::string author;		// Author of this module (mail included to report bugs)
-		
-		std::map<std::string , Operation*> operations;	// Vector containing operations ( map, generate, reduce )
-		std::map<std::string , Data*> datas;			// Vector containing datas			
+
+		std::map<std::string, Operation*>  operations;	// Vector containing operations (map, generate, reduce)
+		std::map<std::string, Data*>      datas;		// Vector containing data			
 		
 		friend class ModulesManager;
 			
 		void *hndl;	// Pointer for the dlOpen
 		
-		Module( std::string _name , std::string _version , std::string _author )
+		Module(std::string _name, std::string _version, std::string _author)
 		{
-			name = _name;
+			name    = _name;
 			version = _version;
-			author = _author;
-			
-			hndl = NULL;
+			author  = _author;
+			hndl    = NULL;
 		}
 		
 	public:		

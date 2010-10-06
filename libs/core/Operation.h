@@ -2,10 +2,11 @@
 #define SAMSON_OPERATION_H
 
 #include <math.h>
-#include <sstream>       /* std::ostringstream */
+#include <sstream>               /* std::ostringstream                       */
 
-#include "KVFormat.h"
-#include "Data.h"
+#include "KVSET.h"               /* KVSET                                    */
+#include "KVWriter.h"            /* KVWriter                                 */
+#include "KVFormat.h"            /* KVFormat                                 */
 
 
 
@@ -13,13 +14,12 @@ namespace ss {
 
 	/**
 	 
-	 \class SSOperation
+	 \class ss::Operation
 	 Generic class for all custom operations.\n\n
-	 Depending on the type of operation is desired you should subclass SSGenerator....\n
+	 Depending on the type of operation is desired you should subclass ss::Generator....\n
 	 MRJobExtension is not intended to subclass directly.\n\n	 
 	 
 	 */
-	class KVWriter;
 	
 	class OperationInstance
 	{
@@ -54,50 +54,77 @@ namespace ss {
 	
 	typedef void* (*CreationFunction)();
 	
+
+	/**
+	 
+	 \class Map
+	 
+	 A Map consist in creating one or more KVStorages from another one.
+	 The map operation takes one KVSet at the input and process each key-value individually using the map functions
+	 This class should be subclasses to create custom "mapper".\n
+	 
+	 */	
+
+	class Map : public OperationInstance
+	{
+	public:
+		/**
+		 Main function to overload by the map
+		 */
+		virtual void run(KVSET* inputs , std::vector<KVWriter*>& outputs )=0;
+
+	};
+
+
+
 	class Operation
 	{
 		
 	public:
 		typedef enum  
 		{ 
-			map , 
+			map,
 			reduce,
 			generator,
 			script,
 			unknown
-			
 		} Type;
 
+
 		// Basic stuff
-		std::string _name;						//!< Name of the operation
-		Type _type;								//!< Identifier of the operation
+		std::string      _name;					//!< Name of the operation
+		Type             _type;					//!< Identifier of the operation
+
 		CreationFunction _creationFunction;		//!< Function to create new instances
+
 		std::vector<KVFormat> inputFormats;		//!< Formats of the key-value at the inputs
 		std::vector<KVFormat> outputFormats;	//!< Format of the key-value at the outputs
 		
+
 		// Code in lines (scripts)
 		std::vector<std::string> code;			//!< Code for scripts
 		
+
 		// Auxiliar stuff
 		std::string _helpMessage;				//!< Help message shown on screen
 		std::string _helpLine;					//!< Help in a line
 		bool top;								//!< Flag to indicate that this is a top operation and should be listed in the help
 		bool dynamic_input_formats;				//!< Flag to indicate that the format of the inputs will be fixed by real input data-sets
 		
+
 		/**
 		 Inform about the type of operation it is
 		 */
 		
-		Operation( std::string name , Type type , CreationFunction creationFunction )
+		Operation(std::string name, Type type, CreationFunction creationFunction)
 		{
-			_type = type;
+			_type             = type;
 			_creationFunction = creationFunction;
 
-			top = false;
-			_name = name;
-			_helpLine = "";
-			_helpMessage = "Help comming soon\n";
-			
+			top               = false;
+			_name             = name;
+			_helpLine         = "";
+			_helpMessage      = "Help comming soon\n";
 		}
 
 		Operation( std::string name , Type type )
@@ -251,26 +278,7 @@ namespace ss {
 		
 	};
 	
-	/**
-	 
-	 \class Map
-	 
-	 A Map consist in creating one or more KVStorages from another one.
-	 The map operation takes one KVSet at the input and process each key-value individually using the map functions
-	 This class should be subclasses to create custom "mapper".\n
-	 
-	 */
-	
-	class Map : public OperationInstance
-	{
-	public:
-		/**
-		 Main function to overload by the map
-		 */
-		virtual void run( KVSET* inputs , std::vector<KVWriter*>& outputs )=0;
 
-	};
-	
 
 	/**
 	 
@@ -289,7 +297,7 @@ namespace ss {
 		/**
 		 Main function to overload by the map
 		 */
-		virtual void run(  KVSET* inputs , std::vector<KVWriter*>& outputs )=0;
+		virtual void run(KVSET* inputs, std::vector<KVWriter*>& outputs) = 0;
 		
 	};
 }

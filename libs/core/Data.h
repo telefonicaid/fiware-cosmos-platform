@@ -1,78 +1,27 @@
 #ifndef SAMSON_DATA_H
 #define SAMSON_DATA_H
 
-#include <math.h>
-#include <stdlib.h>      /* malloc */
-#include <string.h>      /* memcpy */
+#include <math.h>                /*                                          */
+#include <stdlib.h>              /* malloc                                   */
+#include <string.h>              /* memcpy                                   */
+#include <string>                /* std::string                              */
 
-#include "KVFormat.h"
+#include "KV.h"                  /* KV                                       */
+#include "KVSET.h"               /* KVSET                                    */
+#include "kvVector.h"            /* KVVector                                 */
+#include "DataInstance.h"        /* DataInstance                             */
 
 
-
-/**
- Basic data types used in SAMSON
- */
-
-typedef size_t			ss_uint64;
-typedef unsigned int	ss_uint32;
-typedef unsigned char	ss_uint8;
-typedef int				ss_int32;
-typedef char			ss_int8;
-typedef float			ss_float;
-typedef double			ss_double;
-typedef size_t			ss_uint;		// Variable length unsigned integuer
 
 namespace ss {
-
-	/**
-	 Basic type to work with key-values
-	 It consists in a hash code of the key and pointers to the key and value raw data
-	 */
-	
-	typedef struct
-	{
-		size_t key_size;
-		size_t value_size;
-		char *key;
-		char *value;
-	} KV;
-	
-	/**
-	 Vector of KVs
-	 Variables num_kvs and kvs are not suppoused to be modified from outside this class
-	 */
-	
-	class KVVector
-	{
-	public:
-		
-		KV *kvs;
-		size_t num_kvs;
-		
-		KVVector( size_t _num_kvs )
-		{
-			num_kvs = _num_kvs;
-			kvs = (KV*) malloc( num_kvs*sizeof(KV) );
-		}
-		
-		~KVVector()
-		{
-			free( kvs );
-		}		
-	};
 	
 	/**
 	 Structure used as interface for the generator/map/reduce operations 
 	 */
-	
-	typedef struct
-	{
-		KV **kvs;			// Vector containing Key-values ( pointers to row data and hash code )
-		size_t num_kvs;
-	} KVSET;
+
 	
 	/**
-	 Variable length integuer definition
+	 Variable length integer definition
 	 */
 	
 	inline int staticVarIntParse( char *data , size_t* value)
@@ -125,21 +74,6 @@ namespace ss {
 		}
 		return offset;		
 	}
-	
-
-	/**
-	 Data used to parse and serialize content
-	 */
-
-	class DataInstance 
-	{
-	public:
-		
-		virtual int parse(char *data)=0;													// Parse input buffer (return bytes read)
-		virtual int serialize(char *data)=0;												// Serialize to a vector (returns bytes writed)
-		virtual int getPartition(int max_num_partitions)=0;									// Hash function when this is used as key
-		virtual std::string str()=0;														// Function  to get a debug-like string with the content
-	};
 
 	// Static functions necessary for a Data
 	typedef DataInstance* (*DataCreationFunction)();						// Creation function
@@ -213,7 +147,7 @@ namespace ss {
 	};
 		
 	
-	// Spetial data types
+	// Special data types
 	
 	namespace system {
 		
@@ -344,11 +278,6 @@ namespace ss {
 	 General interface to emit Key-values at the output
 	 */
 	
-	class KVWriter
-	{
-	public:
-		virtual void emit( DataInstance * key , DataInstance * value)=0;
-	};
 	
 	
 	

@@ -1,20 +1,21 @@
-#ifndef SAMSON_KV_SET_H
-#define SAMSON_KV_SET_H
+#ifndef SAMSON_KV_Set_H
+#define SAMSON_KV_Set_H
 
 #include <sys/types.h>
-#include <sys/stat.h>           /* stat          */
+#include <sys/stat.h>            /* stat                                     */
 #include <unistd.h>
 #include <list>
 #include <set>
 #include <string>
-#include <sstream>              /* ostringstream */
+#include <sstream>               /* ostringstream                            */
 
 #include "samsonLogMsg.h"
-#include "KVFormat.h"
+#include "KVFormat.h"            /* KVFormat                                 */
 #include "KVSetBuffer.h"
-#include "Data.h"
 #include "samson.pb.h"
-#include "Format.h"
+#include "Data.h"                /* Data                                     */
+#include "Format.h"              /* au::Format                               */
+#include "kvVector.h"            /* KVVector                                 */
 
 
 

@@ -6,19 +6,19 @@
 #include <string>
 #include <iostream>
 
-#include "SSManager.h"
+#include "samsonVersion.h"       /* SAMSON_VERSION                           */
+#include "samson.h"
 #include "NetworkManager.h"
 #include "TaskManager.h"
 #include "Module.h"
 #include "MemoryController.h"
 #include "KVManager.h"
-#include "samson.h"
 #include "Tasks.h"
 #include "SSMonitor.h"
 #include "ModulesManager.h"
 #include "SSLogger.h"
 #include "KVSetMaintainer.h"
-#include "samson_lib.h"
+#include "SSManager.h"           /* Own interface                            */
 
 
 

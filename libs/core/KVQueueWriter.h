@@ -1,8 +1,17 @@
 #ifndef SAMSON_KV_QUEUE_WRITER_H
 #define SAMSON_KV_QUEUE_WRITER_H
 
-#include "samson_lib.h"
+/* ****************************************************************************
+*
+* FILE                  KVQueueWriter.h - 
+*
+*
+*
+*
+*/
 #include "samson.h"
+#include "KVWriter.h"            /* KVWriter                                 */
+#include "KVFormat.h"            /* KVFormat                                 */
 
 
 

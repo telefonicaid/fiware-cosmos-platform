@@ -15,6 +15,7 @@ SET (HEADERS
 	KVQueueWriter.h
 	KVQueuesManager.h
 	KVReader.h
+	KVWriter.h
 	KVSet.h
 	KVSetBuffer.h
 	KVSetMaintainer.h
@@ -36,6 +37,11 @@ SET (HEADERS
 	BufferSizes.h
 	samson.h
 	samson_lib.h
+	samsonTypes.h
+	KV.h
+	KVSET.h
+	DataInstance.h
+	kvVector.h
 )
 
 SET (INSTALL_HEADERS

@@ -14,6 +14,8 @@
 #include "SSLogger.h"
 #include "KVManager.h"
 #include "KVQueueWriter.h"
+#include "KVWriter.h"            /* KVWriter                                 */
+#include "Operation.h"           /* Operation                                */
 
 
 
@@ -210,7 +212,7 @@ namespace ss {
 		
 		void finishInputOtput()
 		{
-			// Close KVWriters
+			// Close KV writers
 			
 			for (int i = 0 ; i < (int)output_queues.size() ; i++)
 			{

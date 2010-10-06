@@ -8,13 +8,13 @@
 *
 *
 */
-#pragma once
-
-#include "Data.h"
+#include "samsonVersion.h"       /* SAMSON_VERSION                           */
+#include "samsonTypes.h"         /* ss_*                                     */
+#include "DataInstance.h"        /* DataInstance                             */
+#include "Data.h"                /* Data                                     */
 #include "Operation.h"
 #include "Module.h"
 #include "KVFormat.h"
-#include "samsonVersion.h"
-#include "Factory.h"              /* au::factory */
+#include "Factory.h"             /* au::factory                              */
 
 #endif

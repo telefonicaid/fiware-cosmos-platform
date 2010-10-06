@@ -1,21 +1,25 @@
 #include <string>
 
+#include "KVFormat.h"            /* KVFormat                                 */
+#include "KVQueue.h"             /* KVQueue                                  */
+#include "Tasks.h"               /* Task                                     */
+#include "KVSet.h"               /* KvSet                                    */
+#include "KVManager.h"           /* Own interface                            */
+
+#if 0
 #include "samson.h"
-#include "KVManager.h"
-#include "Task.h"
 #include "MemoryController.h"
-#include "KVQueue.h"
 #include "KVSet.h"
 #include "KVSetsManager.h"
 #include "KVFormat.h"
 #include "Data.h"
 #include "Module.h"
-#include "KVFormat.h"
 #include "SSLogger.h"
 #include "SSMonitor.h"
 #include "KVSetBuffer.h"
 #include "TaskManager.h"
 #include "Tasks.h"
+#endif
 
 
 

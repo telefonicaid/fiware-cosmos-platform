@@ -1,20 +1,19 @@
-/*
- *  KVReader.cpp
- *  mr_platform
- *
- *  Created by ANDREU URRUELA PLANAS on 4/12/10.
- *  Copyright 2010 TID. All rights reserved.
- *
- */
-#include "KVReader.h"
+/* ****************************************************************************
+*
+* FILE              KVReader.cpp
+*
+*  Created by ANDREU URRUELA PLANAS on 4/12/10.
+*  Copyright 2010 TID. All rights reserved.
+*
+*/
 #include "Data.h"
 #include "Module.h"
 #include "KVSet.h"
 #include "ModulesManager.h"
 #include "samson.h"
 #include "KVQueue.h"
-#include "Lock.h"                /* Lock                            */
-#include "KVReader.h"            /* Own interface                   */
+#include "Lock.h"                /* Lock                                     */
+#include "KVReader.h"            /* Own interface                            */
 
 
 

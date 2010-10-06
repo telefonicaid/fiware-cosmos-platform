@@ -1,7 +1,7 @@
-#include "samsonVersion.h"     /* SAMSON_VERSION                             */
-#include "samson_module.h"     /* Own interface                              */
-#include "Data.h"              /* DataInstance                               */
-#include "AUCommandLine.h"     /* AUCommandLine                              */
+#include <samson/samsonVersion.h>   /* SAMSON_VERSION                             */
+#include "samson_module.h"			/* Own interface                              */
+#include <samson/Data.h>            /* DataInstance                               */
+#include "AUCommandLine.h"			/* AUCommandLine                              */
 
 
 

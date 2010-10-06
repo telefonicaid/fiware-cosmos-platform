@@ -11,7 +11,7 @@
  */
 #include <algorithm>
 
-#include "kvVector.h"            /* KVVector                                 */
+#include "KVVector.h"            /* KVVector                                 */
 #include "Data.h"                /* Data                                     */
 
 

@@ -41,18 +41,24 @@ SET (HEADERS
 	KV.h
 	KVSET.h
 	DataInstance.h
-	kvVector.h
+	KVVector.h
 	KvInfoData.h
 	KvInfo.h
 	KVQueueProcess.h
 )
 
 SET (INSTALL_HEADERS
-	Data.h
-	KVFormat.h
-	Module.h
-	Operation.h
 	samsonModuleHeader.h
+
+	samsonVersion.h
+	samsonTypes.h
+	DataInstance.h
+	Data.h
+	Operation.h
+	KVFormat.h
+	Factory.h
+
+	Module.h
 )
 
 SET (SOURCES

@@ -15,7 +15,7 @@
 #include "samson.pb.h"
 #include "Data.h"                /* Data                                     */
 #include "Format.h"              /* au::Format                               */
-#include "kvVector.h"            /* KVVector                                 */
+#include "KVVector.h"            /* KVVector                                 */
 
 
 

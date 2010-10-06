@@ -1,9 +1,9 @@
-#ifndef SAMSON_H
-#define SAMSON_H
+#ifndef SAMSON_TUNING_H
+#define SAMSON_TUNING_H
 
 /* ****************************************************************************
 *
-* FILE                  samson.h
+* FILE                  samsonTuning.h
 *
 *     Created by ANDREU URRUELA PLANAS on 7/27/10.
 *     Copyright 2010 TID. All rights reserved.
@@ -30,6 +30,9 @@
 * 
 * SAMSON Manager  (SSManager) is the general component to manage a samson node
 */
+
+
+
 #define NUM_SETS_PER_STORAGE            10
 #define SAMSON_DEFAULT_MEMORY           "2G"
 #define SAMSON_DEFAULT_CORES            2

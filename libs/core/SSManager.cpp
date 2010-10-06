@@ -8,6 +8,7 @@
 
 #include "samsonVersion.h"       /* SAMSON_VERSION                           */
 #include "samsonDirectories.h"   /* SAMSON_*_DIRECTORY                       */
+#include "samsonTuning.h"        /* SAMSON_DEFAULT_MEMORY/CORES              */
 #include "NetworkManager.h"
 #include "TaskManager.h"
 #include "Module.h"

@@ -8,7 +8,7 @@
 
 #include "KV.h"                  /* KV                                       */
 #include "KVSET.h"               /* KVSET                                    */
-#include "kvVector.h"            /* KVVector                                 */
+#include "KVVector.h"            /* KVVector                                 */
 #include "DataInstance.h"        /* DataInstance                             */
 
 

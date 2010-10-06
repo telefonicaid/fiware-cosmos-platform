@@ -3,7 +3,7 @@
 
 /* ****************************************************************************
 *
-* FILE            kvVector.h - vector of KVs
+* FILE            kVVector.h - vector of KVs
 *
 *
 * NOTES

@@ -2,7 +2,7 @@
 #define SAMSON_KV_FORMAT_H
 
 /*
-*  KVFormat.h
+*  KVFormat.h - define key-value format
 *  mr_platform
 *
 *  Created by ANDREU URRUELA PLANAS on 4/12/10.
@@ -17,8 +17,6 @@
 #pragma mark ************************************************
 #pragma mark KVFormat key-value format definition
 #pragma mark ************************************************
-
-/* Class to define key-value format */
 
 namespace ss {
 

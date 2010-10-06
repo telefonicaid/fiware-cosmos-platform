@@ -16,9 +16,9 @@
 
 
 /**
- Task manager is the element in charge on mantaining the queu of tasks
- Add / Remove tasks
- Destroy tasks
+   Task manager is the element in charge of mantaining the queue of tasks
+     Add / Remove tasks
+     Destroy tasks
  */
 
 namespace ss {

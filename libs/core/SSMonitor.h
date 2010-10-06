@@ -25,16 +25,13 @@ namespace ss {
 		ParameterMonitor *cores;
 
 		std::map<std::string,ParameterMonitor*> parameters;
-		std::map<std::string, KVQueue*> queues;					// Only for monitoring
-		
+		std::map<std::string, KVQueue*> queues;					// Only for monitoring		
 		
 		SSMonitor();
 		~SSMonitor();
 		
 	public:
-		
-		static SSMonitor* shared();
-		
+		static SSMonitor* shared();		
 		std::string get( );
 
 	private:
@@ -42,8 +39,8 @@ namespace ss {
 		std::string _getSystemPlot( );
 		std::string _getData( std::string label , std::string parameter , int scale );
 		std::string _getValues( std::string name , int scale );
+
 	public:
-		
 		// Function called by thread
 		void run();
 		
@@ -52,12 +49,7 @@ namespace ss {
 		
 	private:
 		KVQueue * findKVQueue( std::string queue_name );
-
-		
 	};
-	
-	
 }
-
 
 #endif

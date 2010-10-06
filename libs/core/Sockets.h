@@ -28,7 +28,6 @@ namespace au {
 
 	class SocketException
 	{
-		
 	public:
 		SocketException ( std::string s ) : m_s ( s ) {};
 		~SocketException (){};
@@ -36,9 +35,7 @@ namespace au {
 		std::string description() { return m_s; }
 		
 	private:
-		
 		std::string m_s;
-		
 	};
 
 
@@ -87,22 +84,18 @@ namespace au {
 	class ClientSocket : public Socket
 	{
 	public:
-		
 		ClientSocket ( std::string host, int port );
 		virtual ~ClientSocket(){};
-		
 	};
 
 	class ServerSocket : public Socket
 	{
 	public:
-		
-		ServerSocket ( int port );
-		ServerSocket (){};
+		ServerSocket (int port);
+		ServerSocket() { };
 		virtual ~ServerSocket();
 		
-		void accept ( ServerSocket * );
-		
+		void accept(ServerSocket*);
 	};
 
 }

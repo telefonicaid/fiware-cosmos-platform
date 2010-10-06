@@ -1,5 +1,5 @@
-#ifndef SAMSON_TASKS_H
-#define SAMSON_TASKS_H
+#ifndef SAMSON_TASK_H
+#define SAMSON_TASK_H
 
 #include <algorithm>
 
@@ -101,34 +101,18 @@ namespace ss {
 	public:		
 		bool run()
 		{
-			
-			switch (taskType) {
-				case TASK_TYPE_SHOW:
-					return runShow();
-					break;
-				case TASK_TYPE_MAP_REDUCE:
-					return runMapReduce();
-					break;
-				case TASK_TYPE_GENERATOR:
-					return runGenerator();
-					break;
-				case TASK_TYPE_SUB_MAP_REDUCE:
-					return runSubMapReduce();
-					break;
-				case TASK_TYPE_SCRIPT:
-					return runScript();
-					break;
-				case TASK_TYPE_SPREAD:
-					return runSpread();
-					break;
-				default:
-					break;
+			switch (taskType)
+			{
+			case TASK_TYPE_SHOW:             return runShow();
+			case TASK_TYPE_MAP_REDUCE:       return runMapReduce();
+			case TASK_TYPE_GENERATOR:        return runGenerator();
+			case TASK_TYPE_SUB_MAP_REDUCE:   return runSubMapReduce();
+			case TASK_TYPE_SCRIPT:           return runScript();
+			case TASK_TYPE_SPREAD:           return runSpread();
 			}
-			
 
 			assert(false);
 			return true;
-			
 		}
 		
 		

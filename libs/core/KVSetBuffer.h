@@ -36,7 +36,7 @@ namespace ss {
 	};
 
 	/**
-	 Standart KVSetBuffer
+	 Standard KVSetBuffer
 	 */
 	
 	class KVSetBuffer : public KVSetBufferBase

@@ -47,4 +47,5 @@ public:
 	static void setThreadTitle(std::string);
 };
 }
+
 #endif

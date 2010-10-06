@@ -65,16 +65,7 @@ namespace ss {
 		 */
 		
 		size_t getNumKVS_WithSameKey( size_t index );
-		
 	};
-	
-	/** 
-	 Class used to hold a set of KVSets with common key-type
-	 */
-	
-							 
-	
-	
 }
 
 #endif

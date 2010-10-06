@@ -1,5 +1,5 @@
-#ifndef SAMSON_TASK_H
-#define SAMSON_TASK_H
+#ifndef SAMSON_TASK_BASE_H
+#define SAMSON_TASK_BASE_H
 
 #include "KVSetVector.h"         /* KVSetVector                     */
 

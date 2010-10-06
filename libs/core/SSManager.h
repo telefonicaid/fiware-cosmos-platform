@@ -27,7 +27,6 @@ namespace ss {
 	 General element of a samson-node
 		- Create all the elements in memory
 		- Create all necessary threads
-	 
 	  */
 
 	

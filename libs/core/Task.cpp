@@ -1,4 +1,6 @@
 #include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
+#include "KVReader.h"            /* KVReader                                 */
+#include "KVMultipleReader.h"    /* KVMultipleReader                         */
 #include "TaskBase.h"            /* TaskBase                                 */
 #include "Task.h"                /* Own interface                            */
 

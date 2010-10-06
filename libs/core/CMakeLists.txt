@@ -15,6 +15,7 @@ SET (HEADERS
 	KVQueueWriter.h
 	KVQueuesManager.h
 	KVReader.h
+	KVMultipleReader.h
 	KVWriter.h
 	KVSet.h
 	KVSetBuffer.h
@@ -70,6 +71,8 @@ SET (SOURCES
 	KVQueueWriter.cpp
 	KVQueuesManager.cpp
 	KVReader.cpp
+	KVMultipleReader.cpp
+	KVReaderCompare.h
 	KVSet.cpp
 	KVSetBuffer.cpp
 	KVSetMaintainer.cpp

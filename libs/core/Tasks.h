@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-#include "Task.h"
+#include "TaskBase.h"            /* TaskBase                        */
 #include "TaskManager.h"
 #include "SSManager.h"
 #include "KVReader.h"
@@ -284,7 +284,7 @@ namespace ss {
 			
 		}			
 
-#pragma mark Submit new commands ( as childrens )
+#pragma mark Submit new commands ( as children )
 
 		void runCommand( std::string command );
 		

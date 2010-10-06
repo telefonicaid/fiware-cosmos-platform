@@ -3,7 +3,6 @@
 #include "KVQueuesManager.h"
 #include "samson.h"
 #include "KVManager.h"
-#include "Task.h"
 #include "MemoryController.h"
 #include "KVQueue.h"
 #include "KVSet.h"

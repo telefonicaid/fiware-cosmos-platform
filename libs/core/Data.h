@@ -199,7 +199,7 @@ namespace ss {
 		 Data to hold an string
 		 */
 
-		class  String : public DataInstance
+		class String : public DataInstance
 		{
 		public:
 			

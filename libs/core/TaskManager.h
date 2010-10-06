@@ -10,9 +10,7 @@
 #include <iostream>
 #include <deque>
 
-#include "Task.h"
 #include "Tasks.h"
-#include "Data.h"
 #include "Lock.h"                /* Lock                            */
 
 

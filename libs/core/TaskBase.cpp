@@ -1,13 +1,16 @@
 #include <assert.h>
 
-#include "Task.h"
 #include "samson.h"
 #include "KVSet.h"
 #include "TaskManager.h"
+#include "TaskBase.h"            /* Own interface                   */
+
 
 
 namespace ss {
-	
+
+	class Task;
+
 	TaskBase::TaskBase( size_t id , Task * parentTask  )
 	{
 		status = definition;	// Initial status of definition of the task

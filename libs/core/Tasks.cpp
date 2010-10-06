@@ -1,6 +1,7 @@
-#include "Tasks.h"
 #include "NetworkManager.h"
 #include "SSMonitor.h"
+#include "TaskBase.h"            /* TaskBase                        */
+#include "Tasks.h"               /* Own interface                   */
 
 
 

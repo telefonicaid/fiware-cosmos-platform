@@ -30,7 +30,7 @@ SET (HEADERS
 	SSManager.h
 	SSMonitor.h
 	Sockets.h
-	Task.h
+	TaskBase.h
 	TaskManager.h
 	Tasks.h
 	Buffer.h
@@ -75,7 +75,7 @@ SET (SOURCES
 	SSManager.cpp
 	SSMonitor.cpp
 	Sockets.cpp
-	Task.cpp
+	TaskBase.cpp
 	TaskManager.cpp
 	Tasks.cpp
 	samson.cpp

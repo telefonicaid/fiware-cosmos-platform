@@ -1,10 +1,10 @@
-#include "NetworkManager.h"
 #include "KVManager.h"
 #include "KVSet.h"
 #include "Operation.h"
 #include "ModulesManager.h"
 #include "TaskManager.h"
-#include "Tasks.h"
+#include "Task.h"                /* Task                                     */
+#include "NetworkManager.h"      /* Own interface                            */
 
 
 

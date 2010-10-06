@@ -1,9 +1,9 @@
 #include <sstream>
 
-#include "SSLogger.h"
 #include "samson.h"
-#include "Tasks.h"
 #include "KVSet.h"
+#include "Task.h"                /* Task                                     */
+#include "SSLogger.h"            /* Own interface                            */
 
 
 

@@ -1,6 +1,5 @@
 #include <string>
 
-#include "KVQueuesManager.h"
 #include "samson.h"
 #include "KVManager.h"
 #include "MemoryController.h"
@@ -15,7 +14,8 @@
 #include "SSMonitor.h"
 #include "KVSetBuffer.h"
 #include "TaskManager.h"
-#include "Tasks.h"
+#include "Task.h"                /* Task                                     */
+#include "KVQueuesManager.h"     /* Own interface                            */
 
 
 

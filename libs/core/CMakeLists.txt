@@ -32,7 +32,7 @@ SET (HEADERS
 	Sockets.h
 	TaskBase.h
 	TaskManager.h
-	Tasks.h
+	Task.h
 	Buffer.h
 	BufferSizes.h
 	samson.h
@@ -77,7 +77,7 @@ SET (SOURCES
 	Sockets.cpp
 	TaskBase.cpp
 	TaskManager.cpp
-	Tasks.cpp
+	Task.cpp
 	samson.cpp
 )
 

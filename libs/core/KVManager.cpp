@@ -3,7 +3,7 @@
 #include "KVFormat.h"            /* KVFormat                                 */
 #include "KVQueueProcess.h"      /* KVQueueProcess                           */
 #include "KVQueue.h"             /* KVQueue                                  */
-#include "Tasks.h"               /* Task                                     */
+#include "Task.h"                /* Task                            */
 #include "KVSet.h"               /* KvSet                                    */
 #include "KVManager.h"           /* Own interface                            */
 

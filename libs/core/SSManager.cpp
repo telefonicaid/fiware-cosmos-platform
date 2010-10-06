@@ -13,11 +13,11 @@
 #include "Module.h"
 #include "MemoryController.h"
 #include "KVManager.h"
-#include "Tasks.h"
 #include "SSMonitor.h"
 #include "ModulesManager.h"
 #include "SSLogger.h"
 #include "KVSetMaintainer.h"
+#include "Task.h"                /* Task                                     */
 #include "SSManager.h"           /* Own interface                            */
 
 

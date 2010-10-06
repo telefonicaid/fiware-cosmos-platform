@@ -1,7 +1,6 @@
 #include <string>
 
-#include "samsonLogMsg.h"
-#include "KVManagerLogs.h"
+#if 0
 #include "samson.h"
 #include "KVManager.h"
 #include "MemoryController.h"
@@ -16,7 +15,11 @@
 #include "SSMonitor.h"
 #include "KVSetBuffer.h"
 #include "TaskManager.h"
-#include "Tasks.h"
+#endif
+
+#include "samsonLogMsg.h"
+#include "Task.h"                /* Task                                     */
+#include "KVManagerLogs.h"       /* Own interface                            */
 
 
 

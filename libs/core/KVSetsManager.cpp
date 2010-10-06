@@ -1,11 +1,11 @@
 #include <sstream>
 
-#include "KVSetsManager.h"
 #include "KVSet.h"
 #include "SSMonitor.h"
 #include "KVQueue.h"
 #include "SSLogger.h"
-#include "Tasks.h"
+#include "Task.h"                /* Task                                     */
+#include "KVSetsManager.h"       /* Own interface                            */
 
 
 

@@ -1,8 +1,9 @@
-#include "KVQueueWriter.h"
 #include "KVSetBuffer.h"
 #include "samson.h"
 #include "KVManager.h"
-#include "Tasks.h"
+
+#include "Task.h"                /* Task                                     */
+#include "KVQueueWriter.h"       /* Own interface                            */
 
 
 

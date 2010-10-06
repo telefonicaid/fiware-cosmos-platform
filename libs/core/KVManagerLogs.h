@@ -41,6 +41,8 @@ namespace ss {
 		KVManagerLog( )
 		{
 		}
+
+		virtual ~KVManagerLog(){}
 		
 		KVManagerLog( size_t task_id , int task_code )
 		{
@@ -151,7 +153,9 @@ namespace ss {
 	class KVManagerLogs
 	{
 		FILE *log;														//!< Log to save all activity for crash-recovery and hot-start
-		
+
+	public:
+		virtual ~KVManagerLogs(){}
 	protected:
 		
 		void setupFromLog( KVManager *manager );						//!< Restore previous state using log information

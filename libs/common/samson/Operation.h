@@ -28,7 +28,11 @@ namespace ss {
 		OperationInstance()
 		{
 		}
-		
+
+		virtual ~OperationInstance()
+		{
+		}
+
 		/** 
 		 Optional method that can be implemented by custom operation. This method is called with the command line parameters
 		 specified by the user in the MR Console.
@@ -139,6 +143,10 @@ namespace ss {
 			
 		}
 		
+		virtual ~Operation()
+		{
+		}
+
 		void setHelpLine( std::string line )
 		{
 			_helpLine = line;

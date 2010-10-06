@@ -33,6 +33,7 @@ namespace ss {
 	{
 	public:
 		virtual DataBuffer getDataBuffer()=0;
+		virtual ~KVSetBufferBase(){}
 	};
 
 	/**
@@ -89,7 +90,7 @@ namespace ss {
 		}
 
 		
-		~KVSetBuffer()
+		virtual ~KVSetBuffer()
 		{
 			free(buffer);
 			free(buffer_key);

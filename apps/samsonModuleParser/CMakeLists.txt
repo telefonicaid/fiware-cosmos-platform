@@ -13,6 +13,7 @@ SET (SOURCES
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/core")
+include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/protocol")
 link_directories("${PROJECT_BINARY_DIR}/libs/core")
 link_directories("${PROJECT_BINARY_DIR}/libs/protocol")

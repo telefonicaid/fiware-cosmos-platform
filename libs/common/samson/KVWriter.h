@@ -11,6 +11,7 @@ namespace ss {
 	{
 	public:
 		virtual void emit(DataInstance* key, DataInstance* value) = 0;
+		virtual ~KVWriter(){}
 	};
 }
 

@@ -21,6 +21,7 @@ namespace ss {
 		virtual int          serialize(char *data)                = 0; // Serialize to a vector (returns bytes writed)
 		virtual int          getPartition(int max_num_partitions) = 0; // Hash function when this is used as key
 		virtual std::string  str()                                = 0; // Function  to get a debug-like string with the content
+		virtual ~DataInstance(){}
 	};
 } // ss namespace
 

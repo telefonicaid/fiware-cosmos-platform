@@ -229,6 +229,8 @@ public:
 		ncurses = _ncurses;
 	}
 	
+	virtual ~Console(){}
+
 	void clearConsole()
 	{
 		if ( ncurses )

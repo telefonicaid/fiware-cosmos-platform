@@ -2,7 +2,7 @@
 
 	Module Base Module for the SAMSON platform (base)
 
-	File: Module.h
+	File: /home/andreu/test/01/modules/base/Module.h
 	NOTE: This file has been generated with the samson_module tool, please do not modify
 
 */

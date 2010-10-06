@@ -2,7 +2,7 @@
 
 	Module SNA operations (cdrs, graph, cliques, communities,...) (sna)
 
-	File: /Users/andreu/devel/svn_trunk_samson/modules/sna/Module.h
+	File: /home/andreu/test/01/modules/sna/Module.h
 	NOTE: This file has been generated with the samson_module tool, please do not modify
 
 */

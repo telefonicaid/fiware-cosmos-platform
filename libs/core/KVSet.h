@@ -117,7 +117,7 @@ namespace ss {
 					nb = fread(buffer, 1, header_size, file);
 					if (nb != header_size)
 					{
-						LOG_ERROR(("read only %d bytes (expected %d)", nb, header_size));
+						LOG_ERROR(("read only %llu bytes (expected %llu)", (long long unsigned int) nb, (long long unsigned int) header_size));
 					}
 					else
 					{

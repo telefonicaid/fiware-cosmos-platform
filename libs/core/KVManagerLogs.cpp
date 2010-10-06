@@ -317,11 +317,11 @@ namespace ss
 
 		if (size >= 100000)
 		{
-			LOG_ERROR(("size too big: %d", size));
+			LOG_ERROR(("size too big: %llu", (long long unsigned int) size));
 			assert( size < 100000 );
 		}
 
-		bool ans = operation->SerializeToArray(buffer, size );
+		bool ans = operation->SerializeToArray(buffer, size);
 		if (!ans)
 		{
 			LOG_ERROR(("SerializeToArray failed"));
@@ -334,14 +334,14 @@ namespace ss
 		size_written = fwrite(&size, 1, sizeof(size), file);
 		if (size_written != sizeof(size))
 		{
-			LOG_ERROR(("written %d bytes (%d wanted)", size_written, sizeof(size)));
+			LOG_ERROR(("written %llu bytes (%llu wanted)", (long long unsigned int) size_written, (long long unsigned int) sizeof(size)));
 			assert(0);
 		}
 
 		size_written = fwrite(buffer, 1, size, file);
 		if (size_written != size)
 		{
-            LOG_ERROR(("written %d bytes (%d wanted)", size_written, size));
+            LOG_ERROR(("written %llu bytes (%llu wanted)", (long long unsigned int) size_written, (long long unsigned int) size));
             assert(0);
 		}
 

@@ -10,6 +10,7 @@
 #include <iostream>
 #include <deque>
 
+#include "CommandResponse.h"     /* CommandResponse                 */
 #include "Task.h"                /* Task                            */
 #include "Lock.h"                /* Lock                            */
 
@@ -23,12 +24,6 @@
 
 namespace ss {
 
-    typedef struct
-	{
-		std::string message;		// Message ( normal or error )
-		bool error;					// Flag to indiciate if there was error in the commnad
-	} CommandResponse;
-	
 	void* core_thread_task(void* p);
 	
 	class TaskManager
@@ -132,9 +127,6 @@ namespace ss {
 		bool _start_process( Task * task );
 		void _stop_process( Task * task ,  bool finished );	
 		void _removeTask( Task* task );
-		
-
-		
 	};
 }
 

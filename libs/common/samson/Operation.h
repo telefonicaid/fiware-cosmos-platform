@@ -2,11 +2,11 @@
 #define SAMSON_OPERATION_H
 
 #include <math.h>
-#include <sstream>               /* std::ostringstream                       */
+#include <sstream>                 /* std::ostringstream                     */
 
-#include <samson/KVSetStruct.h>         /* KVSetStruct                              */
-#include <samson/KVWriter.h>            /* KVWriter                                 */
-#include <samson/KVFormat.h>            /* KVFormat                                 */
+#include "samson/KVSetStruct.h"    /* KVSetStruct                            */
+#include "samson/KVWriter.h"       /* KVWriter                               */
+#include "samson/KVFormat.h"       /* KVFormat                               */
 
 
 

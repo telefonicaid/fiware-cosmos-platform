@@ -37,7 +37,7 @@ namespace ss {
 	
 	
 	/**
-	 Manager of the IO for netwokr
+	 Manager of the IO for network
 	 */
 	
 	class NetworkManager

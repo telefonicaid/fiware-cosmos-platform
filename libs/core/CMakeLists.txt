@@ -33,6 +33,8 @@ SET (HEADERS
 	KvInfoData.h
 	KvInfo.h
 	KVQueueProcess.h
+	Packet.h
+	DataBuffer.h
 )
 
 SET (SOURCES
@@ -61,6 +63,7 @@ SET (SOURCES
 	TaskManager.cpp
 	Task.cpp
 	samson.cpp
+	Packet.cpp
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")

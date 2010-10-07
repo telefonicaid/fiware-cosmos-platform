@@ -1,9 +1,9 @@
-#include <string>
+#include <string>                /* string                                   */
 
 #include <samson/KVFormat.h>     /* KVFormat                                 */
 #include "KVQueueProcess.h"      /* KVQueueProcess                           */
 #include "KVQueue.h"             /* KVQueue                                  */
-#include "Task.h"                /* Task                            */
+#include "Task.h"                /* Task                                     */
 #include "KVSet.h"               /* KvSet                                    */
 #include "KVManager.h"           /* Own interface                            */
 

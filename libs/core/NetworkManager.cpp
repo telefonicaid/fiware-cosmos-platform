@@ -1,10 +1,11 @@
 #include "samsonTuning.h"        /* NUM_SETS_PER_STORAGE                     */
 #include "KVManager.h"
 #include "KVSet.h"
-#include <samson/Operation.h>
+#include "samson/Operation.h"    /* Operation                                */
 #include "ModulesManager.h"
 #include "TaskManager.h"
 #include "Task.h"                /* Task                                     */
+#include "Packet.h"              /* Packet                                   */
 #include "NetworkManager.h"      /* Own interface                            */
 
 
@@ -22,75 +23,6 @@ namespace ss {
 	}
 	
 	
-	bool packet::read(au::Socket *socket)
-	{
-		message_header header;
-		char * message_buffer;
-		
-		// Read header
-		ssize_t size = socket->recv_waiting((char*)&header , sizeof( message_header ) );
-		
-		message_buffer = (char*) malloc( header.message_length );
-		
-		if( size != sizeof( message_header) )
-			return false;
-		
-		// Message ( protocol buffers )
-		socket->recv_waiting(message_buffer , header.message_length );
-		
-		// Parse from the buffer
-		message.ParseFromArray(message_buffer, header.message_length);
-		
-		if( header.buffer_length > 0 )
-		{
-			// Create a txt based document
-			KVSetTxTBuffer *kvSetBuffer = new KVSetTxTBuffer( header.buffer_length );
-			
-			// Get the buffer where income socket data is stored
-			char *buffer = kvSetBuffer->getTxtDataBuffer();
-
-			// Read data into the dedicated buffer
-			socket->recv_waiting( buffer  , header.buffer_length );
-			
-			kvSetBuffer->close();
-			
-			KVSet *set = KVManager::shared()->addKVSet( 0, kvSetBuffer );
-			KVManager::shared()->addKVSetToKVQueue( 0, set , message.queue() , rand()%NUM_SETS_PER_STORAGE );
-			
-			delete kvSetBuffer;
-		}
-		
-		free( message_buffer );
-		
-		return true;
-	}
-	
-	void packet::send( au::Socket *socket  )
-	{
-		message_header header;
-		header.message_length = message.ByteSize();
-		header.buffer_length = dataBuffer.size;
-
-		// serialize the message
-		char *message_buffer = (char*) malloc( header.message_length );		
-		
-		assert(message.IsInitialized());
-		bool ans = message.SerializeToArray(message_buffer, header.message_length );
-		if (!ans)
-		{
-			LOG_ERROR(("error serializing message"));
-			assert(0);
-		}
-
-		// Send content to the socket
-		socket->send( (char*)&header, sizeof( header ) );
-		socket->send(message_buffer , header.message_length );
-		if( dataBuffer.size > 0 )
-			socket->send( dataBuffer.buffer  , dataBuffer.size );
-
-		
-		free( message_buffer );
-	}	
 	
 	void NetworkConnection::run_thread()
 	{
@@ -98,7 +30,7 @@ namespace ss {
 		{
 			while ( !finished )
 			{  
-				packet p;
+				Packet p;
 				
 				if( p.read( this ) )
 				{
@@ -120,7 +52,7 @@ namespace ss {
 		}
 	}	
 
-	void NetworkConnection::processMessageCommand( packet &p )
+	void NetworkConnection::processMessageCommand( Packet &p )
 	{
 		if( !p.message.has_command() )
 		{
@@ -133,7 +65,7 @@ namespace ss {
 		//taskManager->addTask( new Task( p.message.command() ) );
 
 		// Write back a message with the answer
-		packet p2;
+		Packet p2;
 		p2.message.set_code(2);
 		p2.message.set_answer( response.message );
 		p2.message.set_error( response.error );
@@ -143,7 +75,7 @@ namespace ss {
 		
 	}
 	
-	void NetworkConnection::processMessageForIncommingData( packet &p )
+	void NetworkConnection::processMessageForIncommingData( Packet &p )
 	{
 		if( !p.message.has_queue() )
 		{
@@ -155,7 +87,7 @@ namespace ss {
 	}
 	
 	
-	void NetworkConnection::processMessage( packet &p )
+	void NetworkConnection::processMessage( Packet &p )
 	{
 		// Processing this message
 		switch (p.message.code() ) {

@@ -11,7 +11,8 @@
 
 #include "BufferSizes.h"         /* MAX_SIZE_KEY_VALUE                       */
 #include "samson.pb.h"
-#include <samson/KVFormat.h>
+#include "DataBuffer.h"          /* DataBuffer                               */
+#include "samson/KVFormat.h"
 
 
 
@@ -24,11 +25,6 @@ namespace ss {
 	 Buffer used to hold data on memory while producing data in a particular task
 	 */
 	 
-	typedef struct{
-		char *buffer;
-		size_t size;
-	} DataBuffer;
-	
 	class KVSetBufferBase
 	{
 	public:

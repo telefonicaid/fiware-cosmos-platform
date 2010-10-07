@@ -158,37 +158,25 @@ namespace ss
 		
 		if( cmdLine.get_flag_bool("console") )
 		{
-			
-			// Run the cosole
+			// Run the console
 			console = new SSManagerConsole( false );
 			console->run();
 			delete console;
 		}
 		else if( cmdLine.get_flag_bool("nconsole") )
 		{
-			// Run the ncurses cosole
+			// Run the ncurses console
 			console = new SSManagerConsole( true );
 			console->run();
 			delete console;
 		}
 		else
 		{
-			while( !finish )
+			while (!finish)
 				sleep(1);
 		}
-		
-		
-		SSLogger::log( SSLogger::message , "SAMSON Platform finish normally" );
+
+		SSLogger::log(SSLogger::message , "SAMSON Platform finished normally");
 		exit(0);
 	}
-	
-	
-	
-
-	
-	
-
-	
-	
 }
-

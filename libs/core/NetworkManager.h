@@ -3,19 +3,19 @@
 
 #include <assert.h>
 #include <set>
-#include <sstream>               /* ostringstream                   */
+#include <sstream>               /* ostringstream                            */
 
-#include "samsonLogMsg.h"
-#include "samson.pb.h"
-#include "KVSetBuffer.h"
-#include "Sockets.h"             /* au::Socket                      */
-#include "Lock.h"                /* Lock                            */
+#include "samsonLogMsg.h"        /* LOG_ERROR                                */
+#include "KVSetBuffer.h"         /* KVSetBuffer                              */
+#include "Sockets.h"             /* au::Socket                               */
+#include "Packet.h"              /* Packet                                   */
+#include "Lock.h"                /* Lock                                     */
 
 
 
 /**
- SAMSON Memory Manager
- */
+ SAMSON Network Manager
+*/
 
 
 #define SAMSON_PORT			9999
@@ -29,43 +29,9 @@ namespace ss {
 	{
 		((T*)p)->run_thread();
 		return NULL;
-	}
-	
-	struct message_header
-	{
-		size_t message_length;	// Lenght of the message in protocol-buffer
-		size_t buffer_length;	// Length of the data-buffer
-	};
-	
+	}	
 
 
-	/**
-	 Packet to send/receive across SAMSON nodes / uploader
-	 */
-	
-	class packet
-	{
-		
-	public:
-		
-		protocol::Message message;		// Message indicating queue / format / etc..
-		DataBuffer dataBuffer;			// Buffer of data read/sent to the network
-		
-		packet()
-		{
-			dataBuffer.buffer = NULL;
-			dataBuffer.size = 0;
-		}
-		
-		~packet()
-		{
-		}
-	
-		bool read( au::Socket *socket );
-		void send( au::Socket *socket );
-		
-	};
-	
 
 	/**
 	 Incoming connection
@@ -84,9 +50,9 @@ namespace ss {
 			set_non_blocking(true);	//!< non bloquing threads to be able to see if new messages are comming without bloquing
 		}
 		
-		void processMessage( packet &p );
-		void processMessageForIncommingData( packet &p );
-		void processMessageCommand( packet &p );
+		void processMessage( Packet &p );
+		void processMessageForIncommingData( Packet &p );
+		void processMessageCommand( Packet &p );
 		void run_thread();
 
 		std::string str( )

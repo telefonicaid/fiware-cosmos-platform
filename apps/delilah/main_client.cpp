@@ -21,7 +21,8 @@
 
 #include "samson.pb.h"
 #include "NetworkManager.h"
-#include <samson/KVFormat.h>
+#include "Packet.h"
+#include "samson/KVFormat.h"
 #include "KVSet.h"
 #include "KVManager.h"
 #include "AUConsole.h"         /* Console */
@@ -73,7 +74,7 @@ namespace ss {
 			
 			writeOnConsole( "Preparing general packet" );
 
-			packet p;
+			Packet p;
 			p.message.set_description( "Load file" );
 			p.message.set_queue( queue );					// Set the queue name
 			p.message.set_code( 0 );
@@ -168,7 +169,7 @@ namespace ss {
 			
 			// Normal command send directly to the platform
 			
-			packet p;
+			Packet p;
 			p.message.set_code( 1 ); // txt command
 			p.message.set_description( "Command" + command );
 			p.message.set_command( command );
@@ -176,7 +177,7 @@ namespace ss {
 			
 			
 			// recieve the answer of this packet
-			packet p2;
+			Packet p2;
 			p2.read( client );
 			
 			assert( p2.message.code() == 2);

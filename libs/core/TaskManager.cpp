@@ -1,11 +1,12 @@
-#include <samson/samsonVersion.h>       /* SAMSON_VERSION                           */
+#include "samson/samsonVersion.h"  /* SAMSON_VERSION                         */
 #include "KVManager.h"
 #include "SSManager.h"
 #include "SSLogger.h"
 #include "SSMonitor.h"
 #include "NetworkManager.h"
-#include "LockDebugger.h"        /* au::LockDebugger                         */
-#include "TaskManager.h"         /* Own interface                            */
+#include "LockDebugger.h"          /* au::LockDebugger                       */
+#include "TaskManager.h"           /* Own interface                          */
+
 
 
 namespace ss {

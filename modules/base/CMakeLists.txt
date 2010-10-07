@@ -1,17 +1,18 @@
 SET (SOURCES
-	Module.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 	ModuleImpl.cpp
 )
 
 SET (HEADERS
-	 Module.h
+	${CMAKE_CURRENT_BINARY_DIR}/Module.h
 )
 
 # Generate 'Module.cpp' and 'Module.h' from ''Module''
 add_custom_command (
-  OUTPUT           ${CMAKE_SOURCE_SOURCE_DIR}/Module.cpp
-  OUTPUT           ${CMAKE_SOURCE_SOURCE_DIR}/Module.h
+  OUTPUT           ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
+  OUTPUT           ${CMAKE_CURRENT_BINARY_DIR}/Module.h
   COMMAND          ${PROJECT_BINARY_DIR}/apps/samsonModuleParser/samsonModuleParser ${CMAKE_CURRENT_SOURCE_DIR}/Module
+  COMMAND          /bin/cp ${CMAKE_CURRENT_SOURCE_DIR}/Module.cpp ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
   MAIN_DEPENDENCY  Module
 )
 

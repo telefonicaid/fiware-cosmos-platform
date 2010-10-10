@@ -11,31 +11,38 @@
 #pragma once
 
 #include <string>	// std::string...
-#include <sstream>	// std::ostringstream
 
 namespace ss {
 
 	class EndPoint
 	{
-		// ?
+		std::string description;
 		
 	public:
 		
 		EndPoint()
 		{
+			description = "unknown";
+		}
+
+		/**
+		 Create an endpoint from a string
+		 It is suppoused to be in server:port format
+		 */
+		
+		EndPoint( std::string txt )
+		{
+			description = txt;
 		}
 		
 		EndPoint( int port)
 		{
-			// Local endpoint with a port
-		
+			description = "localhost" + port;
 		}
 		
 		std::string str()
 		{
-			std::ostringstream o;
-			o << "Server:port";
-			return o.str();
+			return description;
 			
 		}
 		

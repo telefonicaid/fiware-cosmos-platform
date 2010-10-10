@@ -1,11 +1,8 @@
 SET (HEADERS
-SamsonWorker.h
-SamsonController.h
 )
 
 SET (SOURCES
-SamsonWorker.cpp
-SamsonController.cpp
+    core.cpp
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")

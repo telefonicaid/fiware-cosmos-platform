@@ -1,4 +1,4 @@
-ADD_SUBDIRECTORY(samsonModuleParser)
-ADD_SUBDIRECTORY(samson)
+ADD_SUBDIRECTORY(samsonWorker)
+ADD_SUBDIRECTORY(samsonController)
 ADD_SUBDIRECTORY(delilah)
-
+ADD_SUBDIRECTORY(samsonModuleParser)

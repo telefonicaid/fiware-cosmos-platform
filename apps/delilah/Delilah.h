@@ -19,27 +19,32 @@ namespace ss {
 	 Main class for the samson worker element
 	 */
 	
-	class SamsonWorker : public PacketReceiverInterface , public PacketSenderInterface
+	class Delilah : public PacketReceiverInterface , public PacketSenderInterface
 	{
 		ss::NetworkInterface network;
 		
 	public:
-		SamsonWorker( int arg , const char *argv[] )
+		
+		Delilah( int arg , const char *argv[] )
 		{
 			// Parse input command lines
 			au::CommandLine commandLine;
+			commandLine.set_flag_string("controller" , "no_controller");
 			commandLine.parse(arg , argv);
-			commandLine.set_flag_int("port", 1234);		 // -port to indicate the local port to start the worker ( 1234 default port )
-			commandLine.parse(arg, argv);
 			
-			int port = commandLine.get_flag_int( "port" );
-			std::cout << "Samson worker running at port " << port << std::endl;
+			// Get the controller
+			std::string controller = commandLine.get_flag_string( "controller" );
 			
-			// Define the endpoints of the network interface
-			ss::EndPoint controllerEndPoint;								// Get the endPoint controller from somewhere
-			ss::EndPoint myEndPoint( commandLine.get_flag_int("port") );	// My endpoint using the port in the command line
+			if( controller == "no_controller" )
+			{
+				std::cerr  << "Please specify controller direction with -controller server:port" << std::endl;
+				exit(0);
+			}
+
+			std::cout << "Delaila running. Controller: " << controller << std::endl;
 			
-			network.initAsSamsonWorker( myEndPoint , controllerEndPoint );	
+			ss::EndPoint controllerEndPoint(controller);		// Get the endPoint controller from somewhere
+			network.initAsDelailah(controllerEndPoint);
 			
 		}
 		

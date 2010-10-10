@@ -1,7 +1,13 @@
 
 
 #include "SamsonWorker.h"		// Own interfce
+#include <iostream>				// std::cout ...
 #include "packet.h"				// ss::Packet
+#include "network.h"			// NetworkInterface
+#include "packet.h"				// Packet
+#include "endpoint.h"			// EndPoint
+#include "CommandLine.h"		// CommandLine
+#include "SamsonWorker.h"		// ss::SamsonWorker
 
 
 namespace ss {
@@ -42,5 +48,19 @@ namespace ss {
 		// Do something
 	}
 	
+	
+}
+
+/**
+ Main routire for the samsonWorker
+ */
+
+int main(int arg , const char *argv[])
+{
+
+	// Run the worker
+	ss::SamsonWorker worker( arg , argv );
+	worker.run();
+
 	
 }

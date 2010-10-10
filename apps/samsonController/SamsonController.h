@@ -33,14 +33,22 @@ namespace ss {
 			commandLine.parse(arg, argv);
 			
 			int port = commandLine.get_flag_int( "port" );
-			std::cout << "Samson controller running at port " << port << std::endl;
 			
 			// Define the endpoints of the network interface
-			ss::EndPoint controllerEndPoint;								// Get the endPoint controller from somewhere
 			ss::EndPoint myEndPoint( commandLine.get_flag_int("port") );	// My endpoint using the port in the command line
 			
+			// Get the list of workers from the command line
 			std::vector<EndPoint> workerEndPoints;
-			// Get the list of workers somehoow
+			
+			for (int i = 1 ; i < commandLine.get_num_arguments() ; i++)
+				workerEndPoints.push_back( EndPoint( commandLine.get_argument( i ) ) );
+
+			
+			std::cout << "Samson controller running at port " << port << std::endl;
+			std::cout << "List of workers:\n";
+			for (size_t i = 0 ; i < workerEndPoints.size() ; i++)
+				std::cout << workerEndPoints[i].str() << std::endl;
+			
 			
 			network.initAsSamsonController( myEndPoint , workerEndPoints );	
 			

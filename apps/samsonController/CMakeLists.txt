@@ -1,5 +1,9 @@
 SET (SOURCES
-	main.cpp
+    SamsonController.cpp
+)
+
+SET (HEADERS
+    SamsonController.h
 )
 
 
@@ -10,8 +14,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 
 
 # SAMSON Executable
-ADD_EXECUTABLE(samson ${SOURCES})
-TARGET_LINK_LIBRARIES(samson samsonNetworkStatic samsonCoreStatic samsonCommonStatic  protobuf pthread dl curses)
+ADD_EXECUTABLE(samsonController ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(samsonController samsonNetworkStatic samsonCoreStatic samsonCommonStatic  protobuf pthread dl curses)
 
-INSTALL(TARGETS               samson
+INSTALL(TARGETS               samsonController
         RUNTIME DESTINATION   bin)

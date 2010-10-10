@@ -1,7 +1,13 @@
 
 
-#include "SamsonController.h"			// Own interface
+#include <iostream>				// std::cout ...
 #include "packet.h"						// ss::Packet
+#include "network.h"			// NetworkInterface
+#include "packet.h"				// Packet
+#include "endpoint.h"			// EndPoint
+#include "CommandLine.h"		// CommandLine
+#include "SamsonController.h"	// own interface ss::SamsonController
+
 
 namespace ss {
 
@@ -43,5 +49,17 @@ namespace ss {
 		// Do something
 	}
 	
+	
+}
+
+/**
+ Main routine for the samsonController
+ */
+
+int main(int arg , const char *argv[])
+{
+
+	ss::SamsonController controller( arg , argv );
+	controller.run();
 	
 }

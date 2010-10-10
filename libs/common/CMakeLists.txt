@@ -1,11 +1,17 @@
 SET (HEADERS
-samsonLogMsg.h
-CommandLine.hConsole.hFormat.hLockDebugger.h
-Lock.hStopLock.h
+	samsonLogMsg.h
+	CommandLine.h
+	Console.h
+	Format.h
+	LockDebugger.h
+	Lock.h
+	StopLock.h
 )
 
 SET (SOURCES
-LockDebugger.cppLock.cpp)
+	LockDebugger.cpp
+	Lock.cpp
+)
 
 ADD_LIBRARY(samsonCommonStatic STATIC ${SOURCES} ${HEADERS} )
 ADD_LIBRARY(samsonCommonShared SHARED ${SOURCES} ${HEADERS} )

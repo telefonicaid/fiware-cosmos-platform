@@ -1,16 +1,15 @@
 SET (SOURCES
-	main_client.cpp
+	delilah.cpp
 )
 
-include_directories("${PROJECT_SOURCE_DIR}/libs/common")
-include_directories("${PROJECT_SOURCE_DIR}/libs/core")
-include_directories("${PROJECT_BINARY_DIR}/libs/protocol")
-link_directories("${PROJECT_BINARY_DIR}/libs/core")
-link_directories("${PROJECT_BINARY_DIR}/libs/protocol")
 
-# SAMSON Client
-ADD_EXECUTABLE(samsonClient ${SOURCES})
-TARGET_LINK_LIBRARIES(samsonClient samsonProtocols samsonCore protobuf pthread dl curses)
+include_directories("${PROJECT_SOURCE_DIR}/libs/network")
+include_directories("${PROJECT_BINARY_DIR}/libs/network")
 
-INSTALL(TARGETS               samsonClient
+
+# SAMSON Executable
+ADD_EXECUTABLE(delilah ${SOURCES})
+TARGET_LINK_LIBRARIES(delilah samsonNetworkStatic samsonCoreStatic samsonCommonStatic   protobuf pthread dl curses)
+
+INSTALL(TARGETS               delilah
         RUNTIME DESTINATION   bin)

@@ -9,7 +9,11 @@
 *
 */
 #include <stdio.h>              /* !sprintf                                  */
+
+#if !defined(__APPLE__)
 #include <malloc.h>             /* free                                      */
+#endif
+
 #include <errno.h>              /* errno                                     */
 #include <string.h>             /* strerror                                  */
 #include <stdarg.h>             /* ellipses                                  */

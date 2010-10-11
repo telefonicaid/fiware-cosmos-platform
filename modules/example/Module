@@ -1,0 +1,44 @@
+Module example
+{
+	title	"Example module to play with samson"
+	author	"Andreu Urruela"
+	version "0.1"
+}
+
+
+data example
+{
+	system.UInt a;
+	vector system.UInt b;
+	system.Int32 c;
+}
+
+generator generator
+{
+	out base.UInt base.UInt	
+	file ModuleImpl.cpp
+}
+
+map map
+{
+	in base.UInt base.UInt
+	out base.UInt base.UInt
+
+	file ModuleImpl.cpp
+
+	help
+	{
+		"Simple map"
+	}
+}
+
+reduce r
+{
+	in base.UInt base.UInt2
+	out base.UInt system.Void
+
+	file ModuleImpl.cpp
+
+	helpLine	"This is another example of what it is possible ;"
+
+}

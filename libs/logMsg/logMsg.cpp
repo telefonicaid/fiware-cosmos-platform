@@ -37,7 +37,9 @@
 #include <string.h>             /* strncat, strdup, memset                   */
 #include <stdarg.h>             /* va_start, va_arg, va_end                  */
 #include <stdlib.h>             /* atoi                                      */
+#if !defined(__APPLE__)
 #include <malloc.h>             /* free                                      */
+#endif
 #include <fcntl.h>              /* O_RDWR, O_TRUNC, O_CREAT                  */
 #include <ctype.h>              /* isprint                                   */
 #include <sys/stat.h>           /* fstat, S_IFDIR                            */

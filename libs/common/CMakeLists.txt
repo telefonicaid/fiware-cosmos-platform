@@ -13,8 +13,8 @@ SET (SOURCES
 	Lock.cpp
 )
 
-ADD_LIBRARY(samsonCommonStatic STATIC ${SOURCES} ${HEADERS} )
-ADD_LIBRARY(samsonCommonShared SHARED ${SOURCES} ${HEADERS} )
+ADD_LIBRARY(samsonCommonStatic STATIC ${SOURCES} ${HEADERS} ${HEADERES_SAMSON} )
+ADD_LIBRARY(samsonCommonShared SHARED ${SOURCES} ${HEADERS} ${HEADERES_SAMSON} )
 
 TARGET_LINK_LIBRARIES( samsonCommonStatic  protobuf )
 TARGET_LINK_LIBRARIES( samsonCommonShared  protobuf )

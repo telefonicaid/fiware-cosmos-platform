@@ -1,3 +1,5 @@
+#ifndef COMMAND_LINE_H
+#define COMMAND_LINE_H
 
 /* ****************************************************************************
 *
@@ -29,13 +31,14 @@
 *   * Use one of the parse(.) methods to parse the incomming command line
 *   * Use get_flag_X methods to access content
 */
+#include <stdio.h>             // fprintf, stderr, ...
 #include <sstream>
 #include <string>
 #include <vector>
 #include <cstdlib>
 #include <map>
 
-#pragma once
+
 
 namespace au {
 
@@ -481,3 +484,5 @@ namespace au {
 
 	};
 }
+
+#endif

@@ -1,15 +1,21 @@
 SET (HEADERS
 	samson.pb.h
 	network.h
-	packet.h
-	endpoint.h
+	Packet.h
+	Endpoint.h
+	iomInit.h
+	iomServerOpen.h
+	iomConnect.h
 )
 
 SET (SOURCES
-	 samson.pb.cc
-	 network.cpp
-	packet.cpp
-	endpoint.cpp
+	samson.pb.cc
+	network.cpp
+	Packet.cpp
+	Endpoint.cpp
+	iomInit.cpp
+	iomServerOpen.cpp
+	iomConnect.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''
@@ -20,9 +26,10 @@ add_custom_command (
   MAIN_DEPENDENCY samson.proto
 )
 
-include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_BINARY_DIR}/libs/network")
+include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
+include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 
 
 ADD_LIBRARY(samsonNetworkStatic STATIC ${SOURCES} ${HEADERS} )

@@ -1,10 +1,7 @@
-
-
 #include <iostream>				// std::cout ...
-#include "packet.h"						// ss::Packet
+#include "Packet.h"				// ss::Packet
 #include "network.h"			// NetworkInterface
-#include "packet.h"				// Packet
-#include "endpoint.h"			// EndPoint
+#include "Endpoint.h"			// EndPoint
 #include "CommandLine.h"		// CommandLine
 #include "SamsonController.h"	// own interface ss::SamsonController
 
@@ -39,14 +36,14 @@ namespace ss {
 		while( true )
 		{
 			
-			std::vector<EndPoint> workers = network.samsonWorkersEndPoints();
+			std::vector<Endpoint> workers = network.samsonWorkerEndpoints();
 			
 			Packet p;
 			p.message.set_command("Hello there from controller");	// Init the command inside the message
 			p.buffer.initPacketBuffer(200);							// Init with the buffer with 100 garbage bytes
 			
-			for (std::vector<EndPoint>::iterator e = workers.begin() ; e != workers.end() ; e++)
-				network.send(&p, *e, NULL);
+			for (std::vector<Endpoint>::iterator e = workers.begin() ; e != workers.end() ; e++)
+				network.send(&p, &*e, NULL);
 			
 			sleep(1);
 		}
@@ -57,10 +54,10 @@ namespace ss {
 
 	
 	
-	void SamsonController::receive( Packet *p , EndPoint fromEndPoint )
+	void SamsonController::receive( Packet *p , Endpoint* fromEndPoint )
 	{
 		// Do something with it
-		std::cout << "Packet received from " << fromEndPoint.str() << " -> " << p->str();
+		std::cout << "Packet received from " << fromEndPoint->str() << " -> " << p->str();
 	}
 
 	void SamsonController::notificationSent( size_t id , bool success )
@@ -75,10 +72,8 @@ namespace ss {
  Main routine for the samsonController
  */
 
-int main(int arg , const char *argv[])
+int main(int arg, const char* argv[])
 {
-
-	ss::SamsonController controller( arg , argv );
+	ss::SamsonController controller(arg, argv);
 	controller.run();
-	
 }

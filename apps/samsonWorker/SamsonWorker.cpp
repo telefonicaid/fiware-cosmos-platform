@@ -2,12 +2,12 @@
 
 #include "SamsonWorker.h"		// Own interfce
 #include <iostream>				// std::cout ...
-#include "packet.h"				// ss::Packet
+#include "Packet.h"				// ss::Packet
 #include "network.h"			// NetworkInterface
-#include "packet.h"				// Packet
-#include "endpoint.h"			// EndPoint
+#include "Endpoint.h"			// Endpoint
 #include "CommandLine.h"		// CommandLine
 #include "SamsonWorker.h"		// ss::SamsonWorker
+
 
 
 namespace ss {
@@ -43,7 +43,7 @@ namespace ss {
 			p.message.set_command("Hello there");	// Init the command inside the message
 			p.buffer.initPacketBuffer(100);			// Init with the buffer with 100 garbage bytes
 			
-			network.send( &p , network.controller() , NULL );
+			network.send(&p, network.controllerGet(), NULL);
 			
 			sleep(2);
 		}
@@ -51,10 +51,10 @@ namespace ss {
 	}
 
 
-	void SamsonWorker::receive( Packet *p , EndPoint fromEndPoint )
+	void SamsonWorker::receive( Packet* p, Endpoint* fromEndPoint )
 	{
 		// Do something with it
-		std::cout << "Packet received from " << fromEndPoint.str() << " -> " << p->str();
+		std::cout << "Packet received from " << fromEndPoint->str() << " -> " << p->str();
 	}
 	
 	void SamsonWorker::notificationSent( size_t id , bool success )

@@ -1,12 +1,11 @@
-
+#include <iostream>				// std::cout ...
 
 #include "Delilah.h"			// Own interfce
-#include "packet.h"				// ss::Packet
-#include <iostream>				// std::cout ...
+#include "Packet.h"				// ss::Packet
 #include "network.h"			// NetworkInterface
-#include "packet.h"				// Packet
-#include "endpoint.h"			// EndPoint
+#include "Endpoint.h"			// Endpoint
 #include "CommandLine.h"		// CommandLine
+
 
 
 namespace ss {
@@ -39,21 +38,21 @@ namespace ss {
 		// Testing to sent something to the controller
 		while( true )
 		{
-			ss::Packet p;
+			Packet p;
 			p.message.set_command("Hello there");	// Init the command inside the message
 			p.buffer.initPacketBuffer(100);			// Init with the buffer with 100 garbage bytes
 			
-			network.send( &p , network.controller() , NULL );
+			network.send( &p, network.controllerGet(), NULL );
 			
 			sleep(2);
 		}		
 	}
 	
 
-	void Delilah::receive( Packet *p , EndPoint fromEndPoint )
+	void Delilah::receive( Packet *p , Endpoint* fromEndpoint )
 	{
 		// Do something with it
-		std::cout << "Delailah received a packet from " << fromEndPoint.str() << " -> " << p->str();
+		std::cout << "Delilah received a packet from " << fromEndpoint->str() << " -> " << p->str();
 	}
 	
 	void Delilah::notificationSent( size_t id , bool success )
@@ -65,8 +64,6 @@ namespace ss {
 
 int main(int arg , const char *argv[])
 {
-	// Run delailah
-	ss::Delilah delailah( arg , argv );
-	delailah.run();
-	
+	ss::Delilah delilah( arg , argv );
+	delilah.run();
 }

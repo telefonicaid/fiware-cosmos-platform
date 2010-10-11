@@ -1,41 +1,42 @@
-/* ****************************************************************************
- *
- * FILE                     SamsonWorker.h
- *
- * DESCRIPTION				Main class for the worker elemen
- *
- * ***************************************************************************/
+#ifndef DELILAH_H
+#define DELILAH_H
 
-#pragma once
+/* ****************************************************************************
+*
+* FILE                     Delilah.h
+*
+* DESCRIPTION			   Client application for Samson
+*
+*/
 #include <iostream>				// std::cout
 #include "network.h"			// NetworkInterface
-#include "endpoint.h"			// EndPoint
+#include "Endpoint.h"			// Endpoint
 #include "CommandLine.h"		// au::CommandLine
 
 
 namespace ss {
 	
 	/**
-	 Main class for the samson worker element
+	   Main class for the samson client element
 	 */
-	
-	class Delilah : public PacketReceiverInterface , public PacketSenderInterface
+
+	class Delilah : public PacketReceiverInterface, public PacketSenderInterface
 	{
 		ss::NetworkInterface network;
 		
 	public:
 		
-		Delilah( int arg , const char *argv[] )
+		Delilah( int arg, const char *argv[] )
 		{
 			// Parse input command lines
 			au::CommandLine commandLine;
-			commandLine.set_flag_string("controller" , "no_controller");
-			commandLine.parse(arg , argv);
+			commandLine.set_flag_string("controller", "no_controller");
+			commandLine.parse(arg, argv);
 			
 			// Get the controller
-			std::string controller = commandLine.get_flag_string( "controller" );
+			std::string controller = commandLine.get_flag_string("controller");
 			
-			if( controller == "no_controller" )
+			if (controller == "no_controller")
 			{
 				std::cerr  << "Please specify controller direction with -controller server:port" << std::endl;
 				exit(0);
@@ -43,8 +44,8 @@ namespace ss {
 
 			std::cout << "Delaila running. Controller: " << controller << std::endl;
 			
-			ss::EndPoint controllerEndPoint(controller);		// Get the endPoint controller from somewhere
-			network.initAsDelailah(controllerEndPoint);
+			ss::Endpoint controllerEndpoint(controller);		// Get the endPoint controller from somewhere
+			network.initAsDelailah(controllerEndpoint);
 			
 		}
 		
@@ -55,13 +56,11 @@ namespace ss {
 		void test();
 		
 		// PacketReceiverInterface
-		virtual void receive( Packet *p , EndPoint fromEndPoint );
+		virtual void receive(Packet* p, Endpoint* fromEndpoint);
 
 		// PacketSenderInterface
-		virtual void notificationSent( size_t id , bool success );
-		
-		
-		
+		virtual void notificationSent(size_t id, bool success);
 	};
-	
 }
+
+#endif

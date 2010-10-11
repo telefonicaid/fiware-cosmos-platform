@@ -1,15 +1,16 @@
-/* ****************************************************************************
- *
- * FILE                     SamsonController.h
- *
- * DESCRIPTION				Main class for the worker elemen
- *
- * ***************************************************************************/
+#ifndef SAMSON_CONTROLLER_H
+#define SAMSON_CONTROLLER_H
 
-#pragma once
+/* ****************************************************************************
+*
+* FILE                     SamsonController.h
+*
+* DESCRIPTION				Main class for the worker elemen
+*
+*/
 #include <iostream>				// std::cout
 #include "network.h"			// NetworkInterface
-#include "endpoint.h"			// EndPoint
+#include "Endpoint.h"			// Endpoint
 #include "CommandLine.h"		// au::CommandLine
 
 namespace ss {
@@ -32,13 +33,13 @@ namespace ss {
 			commandLine.parse(arg, argv);
 						
 			// Define the endpoints of the network interface
-			ss::EndPoint myEndPoint( commandLine.get_flag_int("port") );	// My endpoint using the port in the command line
+			ss::Endpoint myEndPoint( commandLine.get_flag_int("port") );	// My endpoint using the port in the command line
 			
 			// Get the list of workers from the command line
-			std::vector<EndPoint> workerEndPoints;
+			std::vector<Endpoint> workerEndPoints;
 			
 			for (int i = 1 ; i < commandLine.get_num_arguments() ; i++)
-				workerEndPoints.push_back( EndPoint( commandLine.get_argument( i ) ) );
+				workerEndPoints.push_back( Endpoint( commandLine.get_argument( i ) ) );
 
 			network.initAsSamsonController( myEndPoint , workerEndPoints );	
 			
@@ -58,7 +59,7 @@ namespace ss {
 		
 		
 		// PacketReceiverInterface
-		virtual void receive( Packet *p , EndPoint fromEndPoint );
+		virtual void receive( Packet *p , Endpoint* fromEndPoint );
 		
 		// PacketSenderInterface
 		virtual void notificationSent( size_t id , bool success );
@@ -68,3 +69,5 @@ namespace ss {
 	};
 	
 }
+
+#endif

@@ -14,6 +14,8 @@
 
 namespace ss {
 	
+	class Endpoint;
+	
 	class PacketBuffer
 	{
 		char *data;
@@ -74,6 +76,22 @@ namespace ss {
 	
 		Packet(){}
 	
+		
+		/**
+		 Add information to the header
+		 */
+		void setMessageCode( int c);
+		void addEndpoint( Endpoint *e );
+		void addEndPoints( std::vector<Endpoint> &_es );
+		
+		/**
+		 Get information from the header
+		 */
+		
+		int getNumEndpoints();
+		Endpoint getEndpoint( int i );
+		
+		
 		/** 
 		 Debug string with information about the packet
 		 */

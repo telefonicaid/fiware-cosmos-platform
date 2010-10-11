@@ -20,9 +20,9 @@ SET (SOURCES
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''
 add_custom_command (
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/samson.pb.cc
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/samson.pb.h
-  COMMAND /usr/local/bin/protoc ${CMAKE_CURRENT_SOURCE_DIR}/samson.proto --cpp_out=${CMAKE_CURRENT_BINARY_DIR} --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/samson.pb.cc
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/samson.pb.h
+  COMMAND /usr/local/bin/protoc ${CMAKE_CURRENT_SOURCE_DIR}/samson.proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
   MAIN_DEPENDENCY samson.proto
 )
 

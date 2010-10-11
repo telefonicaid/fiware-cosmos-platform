@@ -70,12 +70,19 @@ namespace ss {
 		int worker( EndPoint endPoint );				// Identify the worker of this endPoint ( 0 if the controller )
 		
 		std::vector<EndPoint> endPoints();				// Get a list of all endPoints
-		std::vector<EndPoint> samsonWorkersPoints();	// Get a list of the samsonWorkers endPoints
+		std::vector<EndPoint> samsonWorkersEndPoints();	// Get a list of the samsonWorkers endPoints
 		
 		// Sent a packet ( return a unique id to inform the notifier latter )
 		size_t send( Packet *p , EndPoint endPoint , PacketSenderInterface *sender );
-		
 
+		/**
+		 This function is expected to return only if quit() function is called
+		 */
+		void run();										// Main run loop control to the network interface
+
+		// Syspend the network interface, close everything and return the "run" call
+		void quit();
+		
 	};
 
 	

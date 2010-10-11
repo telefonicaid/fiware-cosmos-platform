@@ -11,8 +11,23 @@
 
 namespace ss {
 
+	
+	void* runTest(void *p)
+	{
+		((SamsonController*)p)->test();
+		return NULL;
+	}
+	
 	void SamsonController::run()
 	{
+		pthread_t p;
+		pthread_create(&p, NULL, runTest, this);
+		network.run();
+	}
+	
+	void SamsonController::test()
+	{
+	
 		// Testing receiving packets and sending to all the workers
 		
 		while( ! network.ready() )
@@ -24,7 +39,7 @@ namespace ss {
 		while( true )
 		{
 			
-			std::vector<EndPoint> workers = network.samsonWorkersPoints();
+			std::vector<EndPoint> workers = network.samsonWorkersEndPoints();
 			
 			Packet p;
 			p.message.set_command("Hello there from controller");	// Init the command inside the message
@@ -37,6 +52,10 @@ namespace ss {
 		}
 		
 	}
+	
+	
+
+	
 	
 	void SamsonController::receive( Packet *p , EndPoint fromEndPoint )
 	{

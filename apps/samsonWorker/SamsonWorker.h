@@ -57,6 +57,9 @@ namespace ss {
 		// Main routine
 		void run();
 
+		// Test routine
+		void test();
+		
 		// PacketReceiverInterface
 		virtual void receive( Packet *p , EndPoint fromEndPoint );
 

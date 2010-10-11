@@ -13,7 +13,21 @@
 namespace ss {
 
 
+	void* runTest(void *p)
+	{
+		((SamsonWorker*)p)->test();
+		return NULL;
+	}
+	
 	void SamsonWorker::run()
+	{
+		pthread_t p;
+		pthread_create(&p, NULL, runTest, this);
+		network.run();
+	}
+	
+	
+	void SamsonWorker::test()
 	{
 		
 		while( ! network.ready() )

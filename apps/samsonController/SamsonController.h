@@ -14,7 +14,6 @@
 
 namespace ss {
 	
-	
 	/**
 	 Main class for the samson worker element
 	 */
@@ -31,9 +30,7 @@ namespace ss {
 			commandLine.parse(arg , argv);
 			commandLine.set_flag_int("port", 1235);		 // -port to indicate the local port to start the worker ( 1234 default port )
 			commandLine.parse(arg, argv);
-			
-			int port = commandLine.get_flag_int( "port" );
-			
+						
 			// Define the endpoints of the network interface
 			ss::EndPoint myEndPoint( commandLine.get_flag_int("port") );	// My endpoint using the port in the command line
 			
@@ -43,20 +40,23 @@ namespace ss {
 			for (int i = 1 ; i < commandLine.get_num_arguments() ; i++)
 				workerEndPoints.push_back( EndPoint( commandLine.get_argument( i ) ) );
 
+			network.initAsSamsonController( myEndPoint , workerEndPoints );	
 			
-			std::cout << "Samson controller running at port " << port << std::endl;
+			std::cout << "Samson controller running at port " << commandLine.get_flag_int("port") << std::endl;
 			std::cout << "List of workers:\n";
 			for (size_t i = 0 ; i < workerEndPoints.size() ; i++)
 				std::cout << workerEndPoints[i].str() << std::endl;
 			
 			
-			network.initAsSamsonController( myEndPoint , workerEndPoints );	
-			
 		}
 		
-		// 
+		// Main run loop
 		void run();
 
+		
+		void test();
+		
+		
 		// PacketReceiverInterface
 		virtual void receive( Packet *p , EndPoint fromEndPoint );
 		

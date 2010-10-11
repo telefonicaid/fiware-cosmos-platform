@@ -11,10 +11,25 @@
 
 namespace ss {
 
-
+	void* runTest(void *p)
+	{
+		((Delilah*)p)->test();
+		return NULL;
+	}
+	
+	
 	void Delilah::run()
 	{
-		
+		// Run a test in a paralel thread
+		pthread_t t;
+		pthread_create(&t, NULL, runTest, this);
+
+		// Main run_loop to the network interface
+		network.run();	
+	}
+
+	void Delilah::test()
+	{
 		while( ! network.ready() )
 		{
 			std::cout << "Waiting for the network interface to be ready" << std::endl;
@@ -31,10 +46,9 @@ namespace ss {
 			network.send( &p , network.controller() , NULL );
 			
 			sleep(2);
-		}
-		
+		}		
 	}
-
+	
 
 	void Delilah::receive( Packet *p , EndPoint fromEndPoint )
 	{

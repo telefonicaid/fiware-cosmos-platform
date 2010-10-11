@@ -35,17 +35,17 @@ namespace ss
 	
 	EndPoint NetworkInterface::me()
 	{
-		return EndPoint();
+		return EndPoint("?");
 	}
 	
 	EndPoint NetworkInterface::controller()
 	{
-		return EndPoint();
+		return EndPoint("?");
 	}
 	
 	EndPoint NetworkInterface::worker( int i )
 	{
-		return EndPoint();
+		return EndPoint("?");
 	}
 	
 	
@@ -61,7 +61,7 @@ namespace ss
 		return v;
 	}
 	
-	std::vector<EndPoint> NetworkInterface::samsonWorkersPoints()
+	std::vector<EndPoint> NetworkInterface::samsonWorkersEndPoints()
 	{
 		std::vector<EndPoint> v;
 		return v;
@@ -83,6 +83,18 @@ namespace ss
 	{
 		return false;
 	}
+
+	void NetworkInterface::run()
+	{
+		while (true) {
+			sleep(1);
+		}
+	}
+	
+	void NetworkInterface::quit()
+	{
+	}
+	
 	
 	
 }

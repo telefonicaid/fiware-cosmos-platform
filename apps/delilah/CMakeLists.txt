@@ -1,9 +1,11 @@
 SET (SOURCES
 	Delilah.cpp
+	DelilahConsole.cpp
 )
 
 SET (HEADERS
     Delilah.h
+    DelilahConsole.h
 )
 
 

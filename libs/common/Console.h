@@ -26,6 +26,9 @@
 
 namespace au {
 
+	
+							   
+	
 static char au_clearScreen[] = { 0x1b, '[', '2', 'J', 0x1b, '[', '0', ';' ,'0','H', 0 };
 	
 class ConsoleCommand
@@ -337,6 +340,14 @@ public:
 			std::cerr << message << std::endl;
 		
 		
+	}
+	
+	
+	static bool checkArgs( int arg , char *argv[])
+	{
+		au::CommandLine c;
+		c.set_flag_boolean("console");
+		return !c.get_flag_bool("console");
 	}
 	
 	

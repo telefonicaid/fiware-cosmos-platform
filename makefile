@@ -8,6 +8,10 @@ prepare:
 install:
 	sudo make -C build install
 
+mi:
+	make
+	make install
+
 clean:
 	make -C build clean
 
@@ -17,6 +21,8 @@ xcode:
 reset:
 	sudo rm -Rf build/*
 	sudo rm -Rf xcode_proj
+	sudo rm -f modules/example/Module.*
+	sudo rm -f libs/network/samson.pb.*
 
 
 module:

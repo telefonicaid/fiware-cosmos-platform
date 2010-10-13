@@ -20,7 +20,8 @@ message Message
 
 	optional string command=200;		// optimal string to send a txt command
 	optional string answer=201;		// optinal string to receive a txt answer
-	optional bool error=202;		// Flag to indicat if there was an error
+	optional bool   error=202;		// Flag to indicat if there was an error
+	optional int32  sender_id=203;		// Id of the packet sender ( delilah )
 
 	optional EndPointVector endPoints=300;	// Vector of endPoints ( network interface )
 

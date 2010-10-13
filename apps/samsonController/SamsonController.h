@@ -44,9 +44,8 @@ namespace ss {
 			commandLine.set_flag_string("t",      "0-255");
 			commandLine.parse(arg, argv);
 			
-			const char* trace = commandLine.get_flag_string("t").c_str();
 			LmStatus s;
-			if ((s = lmTraceSet((char*) trace)) != LmsOk)
+			if ((s = lmTraceSet((char*) commandLine.get_flag_string("t").c_str())) != LmsOk)
 			   EXIT(1, ("lmTraceSet: %s", lmStrerror(s)));
 			
 			// Load setup
@@ -56,14 +55,6 @@ namespace ss {
 			// Define the endpoints of the network interface
 			ss::Endpoint myEndPoint( commandLine.get_flag_int("port") );	// My endpoint using the port in the command line
 			LM_T(LMT_CONFIG, ("workerEndPoints.size: %d", workerEndPoints.size()));
-
-#if 0
-			// Get the list of workers from the command line
-			std::vector<Endpoint> workerEndPoints;
-
-			for (int i = 1 ; i < commandLine.get_num_arguments() ; i++)
-				workerEndPoints.push_back( Endpoint( commandLine.get_argument( i ) ) );
-#endif
 
 			network.initAsSamsonController( myEndPoint , workerEndPoints );	
 		}

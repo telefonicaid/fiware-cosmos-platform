@@ -64,23 +64,35 @@ namespace ss {
 	};
 	
 	/** 
-	 Unique packet type sent over the network between controller, samson and delailah
+	 Unique packet type sent over the network between controller, samson and delilah
 	 */
 
 	class Packet
 	{
-
 	public:
+		typedef enum MessageCode
+		{
+			Hello,
+			WorkerVector
+		} MessageCode;
+
+		char* msgCodeName(MessageCode);
+
 		network::Message message;		// Message with necessary fields ( codified with Google Protocol Buffers )
 		PacketBuffer buffer;
 	
-		Packet(){}
+		Packet() {}
+
+		Packet(MessageCode c)
+		{
+			setMessageCode(c);
+		}
 	
 		
 		/**
 		 Add information to the header
 		 */
-		void setMessageCode( int c);
+		void setMessageCode(MessageCode c);
 		void addEndpoint( Endpoint *e );
 		void addEndPoints( std::vector<Endpoint> &_es );
 		
@@ -96,7 +108,6 @@ namespace ss {
 		 Debug string with information about the packet
 		 */
 		std::string str();
-		
 	};
 	
 }

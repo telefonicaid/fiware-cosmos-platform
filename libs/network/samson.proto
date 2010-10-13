@@ -2,9 +2,9 @@ package ss.network;
 
 message EndPoint
 {
-	required string ip=1;	// Server
-	required sint32 port=2;	// Port
-	optional string name=3;	// Name for debugging	
+	required string ip=1;     // Server
+	required sint32 port=2;   // Port
+	optional string name=3;   // Name for debugging
 }
 
 
@@ -15,15 +15,15 @@ message EndPointVector
 
 message Message
 {
-	required int32 code = 1;		// Type of packet	
-	required string description=2;		// Debug description
+	required int32 code = 1;                // Type of packet
+	required string description=2;          // Debug description
 
-	optional string command=200;		// optimal string to send a txt command
-	optional string answer=201;		// optinal string to receive a txt answer
-	optional bool   error=202;		// Flag to indicat if there was an error
-	optional int32  sender_id=203;		// Id of the packet sender ( delilah )
+	optional string command=200;            // optimal string to send a txt command
+	optional string answer=201;             // optinal string to receive a txt answer
+	optional bool   error=202;              // Flag to indicat if there was an error
+	optional int32  sender_id=203;          // Id of the packet sender ( delilah )
 
-	optional EndPointVector endPoints=300;	// Vector of endPoints ( network interface )
+	optional EndPointVector endPoints=300;  // Vector of endPoints ( network interface )
 
 }
 

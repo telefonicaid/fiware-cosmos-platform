@@ -1,8 +1,8 @@
 /* ****************************************************************************
- *
- * FILE                     network.h - Definition for the network interface
- *
- * ***************************************************************************/
+*
+* FILE                     network.h - Definition for the network interface
+*
+*/
 
 #pragma once
 
@@ -28,7 +28,7 @@ class Packet;
 class PacketReceiverInterface
 {
 public:
-	// Notification that a particular sent finished
+	// Notification that a particular send finished
 	virtual void receive(Packet* packet, Endpoint* from) = 0;
 };
 
@@ -76,9 +76,9 @@ public:
 
 	bool ready();                                   // Inform about everything ready
                                                     // The controller expects all the workers to be connected
-                                                    // The worker expects to be connetced with all the workers and the controller
+                                                    // The worker expects to be connected with all the workers and the controller
                                                     // Delailah expects to be connected with all the workers and the contorller
-        
+
 	Endpoint* meGet();                              // Get my endPoint
 	Endpoint* controllerGet();                      // Get the endPoint of the controller
 	Endpoint* workerGet(int i);                     // Get the endPoint of the "i-th" worker

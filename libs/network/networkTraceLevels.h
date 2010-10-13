@@ -20,5 +20,7 @@
 #define LMT_ACCEPT     55
 #define LMT_ENDPOINTS  56
 #define LMT_READ       57
+#define LMT_WORKERS    58
+#define LMT_WRITE      59
 
 #endif

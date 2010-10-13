@@ -13,11 +13,14 @@
 #include "networkTraceLevels.h" // LMT_NWRUN, ...
 
 #include "Endpoint.h"			// Endpoint
+#include "MsgHeader.h"          // MsgHeader
 #include "Packet.h"				// Packet
 #include "iomInit.h"            // iomInit
 #include "iomServerOpen.h"      // iomServerOpen
 #include "iomConnect.h"         // iomConnect
 #include "iomAccept.h"          // iomAccept
+#include "iomMsgSend.h"         // iomMsgSend
+#include "iomMsgRead.h"         // iomMsgRead
 #include "network.h"			// Own interface
 
 
@@ -61,7 +64,8 @@ void NetworkInterface::init(Endpoint myEndpoint)
 	if (me == NULL)
 		LM_XP(1, ("unable to allocate room for Endpoint 'me'"));
 
-	me->fd = iomServerOpen(me->port);
+	me->name = "accepter";
+	me->fd   = iomServerOpen(me->port);
 	if (me->fd == -1)
 		LM_XP(1, ("unable to open port %d for listening", me->port));
 
@@ -85,7 +89,6 @@ void NetworkInterface::initAsSamsonController(Endpoint myEndpoint, std::vector<E
 	LM_T(LMT_SELECT, ("endpointV.size: %d", endpointV.size()));
 
 	init(myEndpoint);
-	myEndpoint.name = "accepter";
 
 	ix = 0;
 	for (ix = 0; ix < endpoints.size(); ix++)
@@ -104,17 +107,40 @@ void NetworkInterface::initAsSamsonController(Endpoint myEndpoint, std::vector<E
 /* ****************************************************************************
 *
 * initAsSamsonWorker - 
+*
+* NOTE
 */
 void NetworkInterface::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint)
 {
+	Packet  packet(Packet::WorkerVector);
+	Packet  ackPacket;
+
 	init(myEndpoint);
 
 	myEndpoint.name   = "accepter";
-
 	controller        = new Endpoint(controllerEndpoint);
 	controller->name  = "controller";
 
 	iomInit(controller);
+
+	/* ask controller for list of workers */
+	iomMsgSend(controller, &packet, NULL, 0);
+	// delete(packet);
+	iomMsgRead(controller, &ackPacket, NULL, 0);
+
+	if (!ackPacket.message.has_endpoints())
+		LM_X(1, ("controller didn't give me the Worker Vector ..."));
+
+	int ix;
+
+	for (ix = 0; ix < ackPacket.getNumEndpoints(); ix++)
+	{
+		Endpoint e(ackPacket.getEndpoint(ix));
+
+		LM_T(LMT_WORKERS, ("Connect to worker %d: %s ...", e.name.c_str()));
+	}
+
+	// delete ackPacket;
 }
 
 
@@ -226,18 +252,6 @@ bool NetworkInterface::ready()
 {
 	return iAmReady;
 }
-
-
-
-/* ****************************************************************************
-*
-* MsgHeader - 
-*/
-typedef struct MsgHeader
-{
-	unsigned int headerLen;
-	unsigned int dataLen;
-} MsgHeader;
 
 
 

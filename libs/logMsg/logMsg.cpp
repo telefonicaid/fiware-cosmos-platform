@@ -242,6 +242,45 @@ LmxFp lmxFp     = NULL;
 
 /* ****************************************************************************
 *
+* lmProgName - 
+*/
+char* lmProgName(char* pn, int levels, bool pid)
+{
+	char*        start;
+	static char  pName[128];
+
+	if (pn == NULL)
+		return NULL;
+
+	if (levels < 1)
+		levels = 1;
+
+	start = &pn[strlen(pn) - 1];
+	while (start > pn)
+	{
+		if (*start == '/')
+			levels--;
+		if (levels == 0)
+			break;
+		--start;
+	}
+
+	if (*start == '/')
+		++start;
+
+	strncpy(pName, start, sizeof(pName));
+	if (pid == true)
+	{
+		char  pid[8];
+		strncat(pName, "_", sizeof(pName));
+		sprintf(pid, "%d", (int) getpid());
+		strncat(pName, pid, sizeof(pName));		
+	}
+
+	return pName;
+}
+/* ****************************************************************************
+*
 * lmTraceIsSet - 
 */
 bool lmTraceIsSet(int level)
@@ -749,48 +788,6 @@ LmStatus lmInit(void)
 	initDone = true;
 
 	return LmsOk;
-}
-
-
-
-/* ****************************************************************************
-*
-* lmProgName - 
-*/
-char* lmProgName(char* pn, int levels, bool pid)
-{
-	char*        start;
-	static char  pName[128];
-
-	if (pn == NULL)
-		return NULL;
-
-	if (levels < 1)
-		levels = 1;
-
-	start = &pn[strlen(pn) - 1];
-	while (start > pn)
-	{
-		if (*start == '/')
-			levels--;
-		if (levels == 0)
-			break;
-		--start;
-	}
-
-	if (*start == '/')
-		++start;
-
-	strncpy(pName, start, sizeof(pName));
-	if (pid == true)
-	{
-		char  pid[8];
-		strncat(pName, "_", sizeof(pName));
-		sprintf(pid, "%d", (int) getpid());
-		strncat(pName, pid, sizeof(pName));		
-	}
-
-	return pName;
 }
 
 
@@ -1365,8 +1362,8 @@ LmStatus lmFdRegister(int fd, const char* format, const char* timeFormat, const 
 
 	if ((strcmp(info, "stdout") == 0) ||  (strcmp(info, "stderr") == 0))
 	{
-	   if (indexP)
-	   lmSd = *indexP;
+		if (indexP)
+			lmSd = *indexP;
 	}
 
 	return LmsOk;
@@ -1426,7 +1423,7 @@ LmStatus lmPathRegister(const char* path, const char* format, const char* timeFo
 	fds[index].type = Fichero;
 
 	if (indexP)
-	   *indexP = index;
+		*indexP = index;
 
 	return LmsOk;
 }

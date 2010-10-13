@@ -24,7 +24,8 @@
 *
 * globals
 */
-extern int inSigHandler;
+extern int    inSigHandler;
+extern char*  progName;
 
 
 
@@ -967,6 +968,14 @@ extern LmStatus lmInitX(char* progName, char* tLevel, int* i1P, int* i2P);
 * lmStrerror - 
 */
 extern const char* lmStrerror(LmStatus s);
+
+
+
+/* ****************************************************************************
+*
+* lmProgName - 
+*/
+extern char* lmProgName(char* pn, int levels, bool pid);
 
 
 

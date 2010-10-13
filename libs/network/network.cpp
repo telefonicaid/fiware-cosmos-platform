@@ -10,6 +10,8 @@
 #include <sys/select.h>         // select
 
 #include "logMsg.h"             // LM_*
+#include "networkTraceLevels.h" // LMT_NWRUN, ...
+
 #include "Endpoint.h"			// Endpoint
 #include "Packet.h"				// Packet
 #include "iomInit.h"            // iomInit
@@ -65,13 +67,14 @@ void NetworkInterface::init(Endpoint myEndpoint)
 
 
 
+#define LOG_FORMAT "TYPE:EXEC:FILE[LINE]:FUNC: TEXT"
 /* ****************************************************************************
 *
 * initAsSamsonController - 
 */
 void NetworkInterface::initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> endpoints)
 {
-	unsigned int ix;
+	unsigned int  ix;
 
 	init(myEndpoint);
 
@@ -88,6 +91,7 @@ void NetworkInterface::initAsSamsonController(Endpoint myEndpoint, std::vector<E
 */
 void NetworkInterface::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint)
 {
+	printf("IN %s\n", __FUNCTION__);
 	init(myEndpoint);
 	controller = new Endpoint(controllerEndpoint);
 
@@ -102,6 +106,7 @@ void NetworkInterface::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controll
 */
 void NetworkInterface::initAsDelailah(Endpoint controllerEndpoint)
 {
+	printf("IN %s\n", __FUNCTION__);
 	controller = new Endpoint(controllerEndpoint);
 
 	iomInit(controller);
@@ -216,6 +221,8 @@ void NetworkInterface::run()
     struct timeval  timeVal;
 	int             max;
 
+	LM_T(LMT_NWRUN, ("IN"));
+
 	while (1)
 	{
 		do
@@ -226,19 +233,19 @@ void NetworkInterface::run()
 			FD_ZERO(&rFds);
 			max = 0;
 
-			if (me->state == Endpoint::Listening)
+			if (me && (me->state == Endpoint::Listening))
 			{
 				FD_SET(me->fd, &rFds);
 				max = MAX(max, me->fd);
 			}
 
-			if (controller->state == Endpoint::Connected)
+			if (controller && (controller->state == Endpoint::Connected))
 			{
 				FD_SET(controller->fd, &rFds);
 				max = MAX(max, controller->fd);
 			}
 
-			if (delilah->state == Endpoint::Connected)
+			if (delilah && (delilah->state == Endpoint::Connected))
 			{
 				FD_SET(delilah->fd, &rFds);
 				max = MAX(max, delilah->fd);

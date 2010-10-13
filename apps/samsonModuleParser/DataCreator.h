@@ -30,7 +30,10 @@ namespace ss {
 	 public:
 
 		// Name of the module
-		std::string fileName;
+		std::string moduleFileName;
+
+		// Output of the module
+		std::string outputFileName;
 		
 		// Read the content of the file into a string
 		std::string content;
@@ -46,7 +49,7 @@ namespace ss {
 		 Constructor: name of the file to parse
 		 */
 		
-		DataCreator( std::string _fileName );
+		DataCreator( std::string moduleFileName , std::string outputFileName );
 		
 		/**
 		 Read the content of the file into a string

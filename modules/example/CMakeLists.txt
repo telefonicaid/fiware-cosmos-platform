@@ -12,8 +12,8 @@ SET (HEADERS
 add_custom_command (
   OUTPUT           ${CMAKE_CURRENT_SOURCE_DIR}/Module.h
   OUTPUT	   ${CMAKE_CURRENT_SOURCE_DIR}/Module.cpp
-  COMMAND          ${PROJECT_BINARY_DIR}/apps/samsonModuleParser/samsonModuleParser ${CMAKE_CURRENT_SOURCE_DIR}/Module
-  MAIN_DEPENDENCY  Module
+  COMMAND          ${PROJECT_BINARY_DIR}/apps/samsonModuleParser/samsonModuleParser ${CMAKE_CURRENT_SOURCE_DIR}/example.module -output ${CMAKE_CURRENT_SOURCE_DIR}/Module
+  MAIN_DEPENDENCY  example.module
 )
 
 ADD_LIBRARY(example MODULE ${SOURCES} ${HEADERS})

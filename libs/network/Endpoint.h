@@ -33,6 +33,7 @@ public:
 	int             fd;
 	unsigned short  port;
 	State           state;
+	char*           stateName(void);
 
 public:
 	Endpoint(unsigned short port);

@@ -39,6 +39,8 @@ namespace ss {
 			sleep(1);
 		}
 		
+		return;
+
 		while( true )
 		{
 			

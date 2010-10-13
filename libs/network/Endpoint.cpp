@@ -42,17 +42,18 @@ Endpoint::Endpoint(std::string ipAndPort)
 	{
 		this->name  = "local accepter";
 		this->port  = atoi(ipAndPort.c_str());
+		this->ip    = "127.0.0.1";
 	}
 	else
 	{
+		this->name  = ipAndPort;
+
 		*port = 0;
 		++port;
-
-		this->name  = ipAndPort;
+		this->ip    = ipAndPort;
 		this->port  = atoi(port);
 	}
 
-	this->ip    = "127.0.0.1";
 	this->fd    = -1;
 	this->state = Taken;
 }
@@ -70,6 +71,22 @@ Endpoint::Endpoint(unsigned short port)
 	this->port  = port;
 	this->fd    = -1;
 	this->state = Taken;
+}
+
+
+
+char* Endpoint::stateName(void)
+{
+	switch (state)
+	{
+	case Free:            return (char*) "Free";
+	case Taken:           return (char*) "Taken";
+	case Connected:       return (char*) "Connected";
+	case Listening:       return (char*) "Listening";
+	case Disconnected:    return (char*) "Disconnected";
+	}
+
+	return (char*) "Unknown";
 }
 
 }

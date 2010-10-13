@@ -16,6 +16,7 @@
 #include "Packet.h"				// Packet
 #include "iomInit.h"            // iomInit
 #include "iomServerOpen.h"      // iomServerOpen
+#include "iomConnect.h"         // iomConnect
 #include "iomAccept.h"          // iomAccept
 #include "network.h"			// Own interface
 
@@ -33,13 +34,14 @@ namespace ss
 NetworkInterface::NetworkInterface()
 {
 	receiver = NULL;
+	iAmReady = false;
 }
 
 
 
 /* ****************************************************************************
 *
-* Constructor 
+* setPacketReceiver - 
 */
 void NetworkInterface::setPacketReceiver(PacketReceiverInterface* _receiver)
 {
@@ -83,12 +85,17 @@ void NetworkInterface::initAsSamsonController(Endpoint myEndpoint, std::vector<E
 	LM_T(LMT_SELECT, ("endpointV.size: %d", endpointV.size()));
 
 	init(myEndpoint);
+	myEndpoint.name = "accepter";
 
 	ix = 0;
 	for (ix = 0; ix < endpoints.size(); ix++)
 	{
+		char name[32];
 		LM_T(LMT_ENDPOINTS, ("endpointV.ip: '%s'", endpointV[ix].ip.c_str()));
 		endpoints[ix].state = Endpoint::Taken;
+
+		snprintf(name, sizeof(name), "worker %d", ix);
+		endpoints[ix].name = name;
 	}
 }
 
@@ -101,7 +108,11 @@ void NetworkInterface::initAsSamsonController(Endpoint myEndpoint, std::vector<E
 void NetworkInterface::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint)
 {
 	init(myEndpoint);
-	controller = new Endpoint(controllerEndpoint);
+
+	myEndpoint.name   = "accepter";
+
+	controller        = new Endpoint(controllerEndpoint);
+	controller->name  = "controller";
 
 	iomInit(controller);
 }
@@ -114,8 +125,9 @@ void NetworkInterface::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controll
 */
 void NetworkInterface::initAsDelailah(Endpoint controllerEndpoint)
 {
-	controller = new Endpoint(controllerEndpoint);
-
+	controller        = new Endpoint(controllerEndpoint);
+    controller->name  = "controller";
+	
 	iomInit(controller);
 }
 	
@@ -212,7 +224,61 @@ size_t NetworkInterface::send(Packet* p, Endpoint* endpoint, PacketSenderInterfa
 */
 bool NetworkInterface::ready()
 {
-	return false;
+	return iAmReady;
+}
+
+
+
+/* ****************************************************************************
+*
+* MsgHeader - 
+*/
+typedef struct MsgHeader
+{
+	unsigned int headerLen;
+	unsigned int dataLen;
+} MsgHeader;
+
+
+
+/* ****************************************************************************
+*
+* msgTreat - 
+*/
+void NetworkInterface::msgTreat(Endpoint* epP)
+{
+	MsgHeader header;
+	int       nb;
+	
+	LM_T(LMT_SELECT, ("treating incoming connection from '%s'", epP->name.c_str()));
+
+	nb = read(epP->fd, &header, sizeof(header));
+
+	if (nb == -1)
+		LM_XP(1, ("reading header from '%s'", epP->name.c_str()));
+	
+	if (nb == 0)
+	{
+		LM_T(LMT_READ, ("read 0 bytes from '%s' - connection closed", epP->name.c_str()));
+		close(epP->fd);
+		epP->state = Endpoint::Taken;
+		epP->fd    = -1;
+
+		if (epP == controller)
+		{
+			LM_W(("controller died ... trying to reconnect !"));
+			while (controller->fd == -1)
+			{
+				controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
+				sleep(1);
+			}
+
+			controller->state = Endpoint::Connected;
+		}
+	}
+
+	LM_T(LMT_READ, ("reading %d bytes Google Protocol Buffer Header", header.headerLen));
+	LM_T(LMT_READ, ("reading %d bytes data", header.dataLen));
 }
 
 
@@ -265,8 +331,8 @@ void NetworkInterface::run()
 			LM_T(LMT_SELECT, ("endpointV.size: %d", endpointV.size()));
 			for (ix = 0; ix < endpointV.size(); ix++)
 			{
-				LM_T(LMT_SELECT, ("checking endpoint %d (state %d)", ix, endpointV[ix].state));
-				if (endpointV[ix].state == Endpoint::Connected)
+				LM_T(LMT_SELECT, ("checking endpoint %d (state '%s')", ix, endpointV[ix].stateName()));
+				if ((endpointV[ix].state == Endpoint::Connected) && (endpointV[ix].fd >= 0))
 				{
 					FD_SET(endpointV[ix].fd, &rFds);
 					max = MAX(max, endpointV[ix].fd);
@@ -291,7 +357,10 @@ void NetworkInterface::run()
 		else
 		{
 			if (controller && (controller->state == Endpoint::Connected) && FD_ISSET(controller->fd, &rFds))
+			{
 				LM_T(LMT_SELECT, ("incoming message from controller"));
+				msgTreat(controller);
+			}
 			else if (me && (me->state == Endpoint::Listening) && FD_ISSET(me->fd, &rFds))
 			{
 				int   fd;
@@ -303,20 +372,55 @@ void NetworkInterface::run()
 					LM_P(("iomAccept(%d)", me->fd));
 				else
 					endpointAdd(fd, hostName);
+
+				checkInitDone();
 			}
 			else if ((delilah->state == Endpoint::Connected) && FD_ISSET(delilah->fd, &rFds))
+			{
 				LM_T(LMT_SELECT, ("incoming message from delilah"));
+				msgTreat(delilah);
+			}
 			else
 			{
 				unsigned int ix;
 				for (ix = 0; ix < endpointV.size(); ix++)
 				{
+					if ((endpointV[ix].state != Endpoint::Connected) || (endpointV[ix].fd < 0))
+						continue;
+
 					if (FD_ISSET(endpointV[ix].fd, &rFds))
+					{
 						LM_T(LMT_SELECT, ("incoming message from worker %d", ix));
+						msgTreat(&endpointV[ix]);
+					}
 				}
 			}
 		}
 	}
+}
+
+
+
+/* ****************************************************************************
+*
+* checkInitDone - 
+*/
+void NetworkInterface::checkInitDone(void)
+{
+	unsigned int ix = 0;
+
+	while (ix < endpointV.size())
+    {
+        if (endpointV[ix].state <= Endpoint::Taken)
+		{
+			iAmReady = false;
+			return;
+		}
+
+		++ix;
+	}
+
+	iAmReady = true;
 }
 
 
@@ -334,7 +438,7 @@ void NetworkInterface::endpointAdd(int fd, char* hostName)
 
 	while (ix < endpointV.size())
 	{
-		if (endpointV[ix].state == Endpoint::Free)
+		if (endpointV[ix].state > Endpoint::Taken)
 		{
 			++ix;
 			continue;
@@ -347,11 +451,10 @@ void NetworkInterface::endpointAdd(int fd, char* hostName)
 			endpointV[ix].state = Endpoint::Connected;
 
 			LM_T(LMT_ENDPOINT, ("Set fd %d for endpoint '%s'", fd, endpointV[ix].ip.c_str()));
+			break;
 		}
 		++ix;
 	}
-
-	exit(1);
 }
 
 

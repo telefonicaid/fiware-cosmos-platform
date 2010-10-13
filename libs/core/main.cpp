@@ -1,9 +1,11 @@
+#include <algorithm>           // sort 
+#include <iostream>            //
+#include <vector>
 
-
-#include <iostream>
 #include "ModulesManager.h"
 #include "samson/Data.h"
-#include <vector>
+
+
 
 #define KV_BUFFER_SIZE			1024*1024*256
 #define KV_BUFFER_MAX_NUM_KVS	 1024*1024*64

@@ -11,8 +11,8 @@
 
 #include "logMsg.h"             // LM_*
 #include "Endpoint.h"			// Endpoint
-#include "iomConnect.h"         // iomConnect
 #include "iomInit.h"            // Own interface
+#include "iomConnect.h"         // iomConnect
 
 
 

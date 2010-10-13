@@ -100,7 +100,11 @@ public:
 	void quit();
 
 private:
+	bool iAmReady;
+
 	void endpointAdd(int fd, char* hostName);
+	void msgTreat(Endpoint* epP);
+	void checkInitDone(void);
 };
 
 	

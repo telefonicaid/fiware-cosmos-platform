@@ -180,7 +180,7 @@ namespace au {
 			// Copy the original command
 			command = _command;
 
-			std::string delimiters = " \t,\n";	//All possible delimiters
+			std::string delimiters = " \t\n";	//All possible delimiters
 			
 			// Skip delimiters at beginning.
 			std::string::size_type lastPos = command.find_first_not_of(delimiters, 0);

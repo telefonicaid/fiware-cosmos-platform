@@ -14,13 +14,12 @@ SET (SOURCES
 )
 
 ADD_LIBRARY(samsonCommonStatic STATIC ${SOURCES} ${HEADERS} ${HEADERES_SAMSON} )
-ADD_LIBRARY(samsonCommonShared SHARED ${SOURCES} ${HEADERS} ${HEADERES_SAMSON} )
-
 TARGET_LINK_LIBRARIES( samsonCommonStatic  protobuf )
-TARGET_LINK_LIBRARIES( samsonCommonShared  protobuf )
-
-SET_TARGET_PROPERTIES(samsonCommonShared PROPERTIES OUTPUT_NAME samsonCommon)
 SET_TARGET_PROPERTIES(samsonCommonStatic PROPERTIES OUTPUT_NAME samsonCommon)
+
+ADD_LIBRARY(samsonCommonShared SHARED ${SOURCES} ${HEADERS} ${HEADERES_SAMSON} )
+TARGET_LINK_LIBRARIES( samsonCommonShared  protobuf )
+SET_TARGET_PROPERTIES(samsonCommonShared PROPERTIES OUTPUT_NAME samsonCommon)
 
 
 

@@ -19,6 +19,7 @@ samson_module.h
 )
 
 
+include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 
 # SAMSON Executable

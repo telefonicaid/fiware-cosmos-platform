@@ -18,5 +18,8 @@ add_custom_command (
 
 ADD_LIBRARY(example MODULE ${SOURCES} ${HEADERS})
 
+include_directories("${PROJECT_SOURCE_DIR}/libs/module")
+
+
 INSTALL(TARGETS example DESTINATION /var/samson/modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/example)

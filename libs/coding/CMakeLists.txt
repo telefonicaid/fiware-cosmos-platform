@@ -7,6 +7,7 @@ SET (SOURCES
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
+include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 
 ADD_LIBRARY(samsonCodingStatic STATIC ${SOURCES} ${HEADERS} )
 ADD_LIBRARY(samsonCodingShared SHARED ${SOURCES} ${HEADERS} )

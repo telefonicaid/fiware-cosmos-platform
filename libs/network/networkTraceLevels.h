@@ -13,8 +13,8 @@
 
 
 
-#define LMT_NWRUN 51
+#define LMT_NWRUN   51
+#define LMT_SELECT  52
+#define LMT_FDS     53
 
 #endif
-
- 

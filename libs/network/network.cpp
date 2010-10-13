@@ -58,9 +58,11 @@ void NetworkInterface::init(Endpoint myEndpoint)
 	if (me == NULL)
 		LM_XP(1, ("unable to allocate room for Endpoint 'me'"));
 
-	me->fd   = iomServerOpen(me->port);
+	me->fd = iomServerOpen(me->port);
 	if (me->fd == -1)
 		LM_XP(1, ("unable to open port %d for listening", me->port));
+
+	LM_T(LMT_FDS, ("opened fd %d to accept incoming connections", me->fd));
 
 	me->state = Endpoint::Listening;
 }
@@ -221,7 +223,7 @@ void NetworkInterface::run()
     struct timeval  timeVal;
 	int             max;
 
-	LM_T(LMT_NWRUN, ("IN"));
+	LM_T(LMT_NWRUN, ("running"));
 
 	while (1)
 	{
@@ -237,18 +239,21 @@ void NetworkInterface::run()
 			{
 				FD_SET(me->fd, &rFds);
 				max = MAX(max, me->fd);
+				LM_T(LMT_SELECT, ("Added my listen fd %d to fd-list", me->fd));
 			}
 
 			if (controller && (controller->state == Endpoint::Connected))
 			{
 				FD_SET(controller->fd, &rFds);
 				max = MAX(max, controller->fd);
+				LM_T(LMT_SELECT, ("Added controller fd %d to fd-list", controller->fd));
 			}
 
 			if (delilah && (delilah->state == Endpoint::Connected))
 			{
 				FD_SET(delilah->fd, &rFds);
 				max = MAX(max, delilah->fd);
+				LM_T(LMT_SELECT, ("Added delilah fd %d to fd-list", delilah->fd));
 			}
 
 			unsigned int ix;
@@ -258,10 +263,13 @@ void NetworkInterface::run()
 				{
 					FD_SET(endpointV[ix].fd, &rFds);
 					max = MAX(max, endpointV[ix].fd);
+					LM_T(LMT_SELECT, ("Added worker fd %d to fd-list", endpointV[ix].fd));
 				}
 			}
 			
+			LM_T(LMT_SELECT, ("Awaiting on select (%d.%06d seconds timeout)", timeVal.tv_sec, timeVal.tv_usec));
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);
+			LM_T(LMT_SELECT, ("select returned %d", fds));
 		} while ((fds == -1) && (errno == EINTR));
 
 		if (fds == -1)
@@ -275,19 +283,19 @@ void NetworkInterface::run()
 		}
 		else
 		{
-			if ((controller->state == Endpoint::Connected) && FD_ISSET(controller->fd, &rFds))
-				;
-			else if ((me->state == Endpoint::Listening) && FD_ISSET(me->fd, &rFds))
-				;
+			if (controller && (controller->state == Endpoint::Connected) && FD_ISSET(controller->fd, &rFds))
+				LM_T(LMT_SELECT, ("incoming message from controller"));
+			else if (me && (me->state == Endpoint::Listening) && FD_ISSET(me->fd, &rFds))
+				LM_T(LMT_SELECT, ("incoming message from me"));
 			else if ((delilah->state == Endpoint::Connected) && FD_ISSET(delilah->fd, &rFds))
-				;
+				LM_T(LMT_SELECT, ("incoming message from delilah"));
 			else
 			{
 				unsigned int ix;
 				for (ix = 0; ix < endpointV.size(); ix++)
 				{
 					if (FD_ISSET(endpointV[ix].fd, &rFds))
-						;
+						LM_T(LMT_SELECT, ("incoming message from worker %d", ix));
 				}
 			}
 		}

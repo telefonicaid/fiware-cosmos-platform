@@ -35,7 +35,7 @@ namespace ss {
 		
 		while( ! network.ready() )
 		{
-			std::cout << "Waiting for the network interface to be ready" << std::endl;
+			LM_T(LMT_READY, ("Awaiting network interface ready"));
 			sleep(1);
 		}
 		
@@ -98,8 +98,10 @@ int main(int argc, const char* argv[])
 		EXIT(1, ("lmTraceSet: %s", lmStrerror(s)));
 
 	LM_F(("set trace levels to '%s'", trace));
+#if 0
 	for (int ix = 0; ix < 256; ix++)
 		LM_T(ix,  ("Testing trace level %d", ix));
+#endif
 
 	ss::SamsonController controller(argc, argv);
 	controller.run();

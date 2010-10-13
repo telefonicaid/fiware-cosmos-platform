@@ -14,6 +14,7 @@
 #include <sys/un.h>             // sockaddr_un
 #include <netinet/in.h>         // struct sockaddr_in
 #include <fcntl.h>              // F_SETFD
+#include <cstdlib>              // free
 
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_NWRUN, ...

@@ -12,6 +12,7 @@ SET (HEADERS
 	samson/samsonModuleHeader.h
 	samson/samsonTypes.h
 	samson/var_int.h
+	samson/samsonVersion.h 
 )
 
 

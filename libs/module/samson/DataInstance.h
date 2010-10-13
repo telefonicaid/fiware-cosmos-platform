@@ -94,6 +94,9 @@ namespace system {
 			void operator= (size_t _value) {
 				value = _value;
 			}			
+			void operator= (int _value) {
+				value = _value;
+			}			
 			
 		}; 	
 	
@@ -170,14 +173,23 @@ namespace system {
 	
 	class Int32 : public FixedLengthDataInstance<int>
 	{
+	public:
 		int hash(int max_num_partitions){
 			return abs(value)%max_num_partitions;
 		}
+		
+		void operator= (size_t _value) {
+			value = _value;
+		}			
+		void operator= (int _value) {
+			value = _value;
+		}			
 		
 	};
 
 	class Double : public FixedLengthDataInstance<double>
 	{
+	public:
 		int hash(int max_num_partitions){
 			return abs(value)%max_num_partitions;
 		}

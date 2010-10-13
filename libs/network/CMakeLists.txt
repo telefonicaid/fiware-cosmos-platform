@@ -6,6 +6,7 @@ SET (HEADERS
 	iomInit.h
 	iomServerOpen.h
 	iomConnect.h
+	iomAccept.h
 )
 
 SET (SOURCES
@@ -16,6 +17,7 @@ SET (SOURCES
 	iomInit.cpp
 	iomServerOpen.cpp
 	iomConnect.cpp
+	iomAccept.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''

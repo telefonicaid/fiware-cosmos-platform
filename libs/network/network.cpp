@@ -16,6 +16,7 @@
 #include "Packet.h"				// Packet
 #include "iomInit.h"            // iomInit
 #include "iomServerOpen.h"      // iomServerOpen
+#include "iomAccept.h"          // iomAccept
 #include "network.h"			// Own interface
 
 
@@ -69,7 +70,6 @@ void NetworkInterface::init(Endpoint myEndpoint)
 
 
 
-#define LOG_FORMAT "TYPE:EXEC:FILE[LINE]:FUNC: TEXT"
 /* ****************************************************************************
 *
 * initAsSamsonController - 
@@ -78,11 +78,18 @@ void NetworkInterface::initAsSamsonController(Endpoint myEndpoint, std::vector<E
 {
 	unsigned int  ix;
 
+	LM_T(LMT_SELECT, ("endpointV.size: %d", endpointV.size()));
+	endpointV = endpoints;
+	LM_T(LMT_SELECT, ("endpointV.size: %d", endpointV.size()));
+
 	init(myEndpoint);
 
 	ix = 0;
 	for (ix = 0; ix < endpoints.size(); ix++)
+	{
+		LM_T(LMT_ENDPOINTS, ("endpointV.ip: '%s'", endpointV[ix].ip.c_str()));
 		endpoints[ix].state = Endpoint::Taken;
+	}
 }
 
 
@@ -93,7 +100,6 @@ void NetworkInterface::initAsSamsonController(Endpoint myEndpoint, std::vector<E
 */
 void NetworkInterface::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint)
 {
-	printf("IN %s\n", __FUNCTION__);
 	init(myEndpoint);
 	controller = new Endpoint(controllerEndpoint);
 
@@ -108,7 +114,6 @@ void NetworkInterface::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controll
 */
 void NetworkInterface::initAsDelailah(Endpoint controllerEndpoint)
 {
-	printf("IN %s\n", __FUNCTION__);
 	controller = new Endpoint(controllerEndpoint);
 
 	iomInit(controller);
@@ -257,8 +262,10 @@ void NetworkInterface::run()
 			}
 
 			unsigned int ix;
+			LM_T(LMT_SELECT, ("endpointV.size: %d", endpointV.size()));
 			for (ix = 0; ix < endpointV.size(); ix++)
 			{
+				LM_T(LMT_SELECT, ("checking endpoint %d (state %d)", ix, endpointV[ix].state));
 				if (endpointV[ix].state == Endpoint::Connected)
 				{
 					FD_SET(endpointV[ix].fd, &rFds);
@@ -266,7 +273,7 @@ void NetworkInterface::run()
 					LM_T(LMT_SELECT, ("Added worker fd %d to fd-list", endpointV[ix].fd));
 				}
 			}
-			
+
 			LM_T(LMT_SELECT, ("Awaiting on select (%d.%06d seconds timeout)", timeVal.tv_sec, timeVal.tv_usec));
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);
 			LM_T(LMT_SELECT, ("select returned %d", fds));
@@ -286,7 +293,17 @@ void NetworkInterface::run()
 			if (controller && (controller->state == Endpoint::Connected) && FD_ISSET(controller->fd, &rFds))
 				LM_T(LMT_SELECT, ("incoming message from controller"));
 			else if (me && (me->state == Endpoint::Listening) && FD_ISSET(me->fd, &rFds))
-				LM_T(LMT_SELECT, ("incoming message from me"));
+			{
+				int   fd;
+				char  hostName[128];
+
+				LM_T(LMT_SELECT, ("incoming message from my listener - I accept ..."));
+				fd = iomAccept(me, hostName, sizeof(hostName));
+				if (fd == -1)
+					LM_P(("iomAccept(%d)", me->fd));
+				else
+					endpointAdd(fd, hostName);
+			}
 			else if ((delilah->state == Endpoint::Connected) && FD_ISSET(delilah->fd, &rFds))
 				LM_T(LMT_SELECT, ("incoming message from delilah"));
 			else
@@ -300,6 +317,41 @@ void NetworkInterface::run()
 			}
 		}
 	}
+}
+
+
+
+/* ****************************************************************************
+*
+* endpointAdd - 
+*/
+void NetworkInterface::endpointAdd(int fd, char* hostName)
+{
+	unsigned int ix = 0;
+
+	LM_T(LMT_ENDPOINT, ("adding endpoint '%s' with fd %d", hostName, fd));
+	LM_T(LMT_ENDPOINT, ("I have %d endpoints", endpointV.size()));
+
+	while (ix < endpointV.size())
+	{
+		if (endpointV[ix].state == Endpoint::Free)
+		{
+			++ix;
+			continue;
+		}
+
+		LM_T(LMT_ENDPOINT, ("comparing '%s' to '%s'", endpointV[ix].ip.c_str(), hostName));
+		if (strcmp(endpointV[ix].ip.c_str(), hostName) == 0)
+		{
+			endpointV[ix].fd    = fd;
+			endpointV[ix].state = Endpoint::Connected;
+
+			LM_T(LMT_ENDPOINT, ("Set fd %d for endpoint '%s'", fd, endpointV[ix].ip.c_str()));
+		}
+		++ix;
+	}
+
+	exit(1);
 }
 
 

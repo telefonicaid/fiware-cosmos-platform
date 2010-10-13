@@ -98,6 +98,9 @@ public:
 
 	// Syspend the network interface, close everything and return the "run" call
 	void quit();
+
+private:
+	void endpointAdd(int fd, char* hostName);
 };
 
 	

@@ -9,10 +9,18 @@
 *
 */
 #include <iostream>				// std::cout
+
+#include "logMsg.h"             // lmInit, LM_*
+#include "traceLevels.h"        // LMT_*
+
+#include "Macros.h"             // EXIT, ...
 #include "network.h"			// NetworkInterface
 #include "Endpoint.h"			// Endpoint
 #include "CommandLine.h"		// au::CommandLine
 #include "samsonDirectories.h"	// File to load setup
+
+
+
 namespace ss {
 	
 	/**
@@ -31,23 +39,33 @@ namespace ss {
 			// Parse input command lines
 			au::CommandLine commandLine;
 			commandLine.parse(arg , argv);
-			commandLine.set_flag_int("port", SAMSON_CONTROLLER_DEFAULT_PORT);	// -port to indicate the local port to start
-			commandLine.set_flag_string("setup",SAMSON_SETUP_FILE );			// Setup filename
+			commandLine.set_flag_int("port",      SAMSON_CONTROLLER_DEFAULT_PORT);    // -port to indicate the local port to start
+			commandLine.set_flag_string("setup",  SAMSON_SETUP_FILE );                // Setup filename
+			commandLine.set_flag_string("t",      "0-255");
 			commandLine.parse(arg, argv);
 			
+			const char* trace = commandLine.get_flag_string("t").c_str();
+			LmStatus s;
+			if ((s = lmTraceSet((char*) trace)) != LmsOk)
+			   EXIT(1, ("lmTraceSet: %s", lmStrerror(s)));
+			
 			// Load setup
-			loadSetup(  commandLine.get_flag_string("setup") );
+			LM_T(LMT_CONFIG, ("calling loadSetup"));			
+			loadSetup(commandLine.get_flag_string("setup") );
 			
 			// Define the endpoints of the network interface
 			ss::Endpoint myEndPoint( commandLine.get_flag_int("port") );	// My endpoint using the port in the command line
-			
+			LM_T(LMT_CONFIG, ("workerEndPoints.size: %d", workerEndPoints.size()));
+
+#if 0
+			// Get the list of workers from the command line
+			std::vector<Endpoint> workerEndPoints;
+
+			for (int i = 1 ; i < commandLine.get_num_arguments() ; i++)
+				workerEndPoints.push_back( Endpoint( commandLine.get_argument( i ) ) );
+#endif
+
 			network.initAsSamsonController( myEndPoint , workerEndPoints );	
-			
-			std::cout << "Samson controller running at port " << commandLine.get_flag_int("port") << std::endl;
-			std::cout << "List of workers:\n";
-			for (size_t i = 0 ; i < workerEndPoints.size() ; i++)
-				std::cout << workerEndPoints[i].str() << std::endl;			
-			
 		}
 		
 		// Main run loop
@@ -60,17 +78,16 @@ namespace ss {
 		
 		void loadSetup(std::string fileName)
 		{
+			LM_T(LMT_CONFIG, ("IN"));
+
 			FILE *file = fopen(fileName.c_str(),"r");
-			if( !file )
-			{
-				LM_W(("Setup file not found %s", SAMSON_SETUP_FILE ));
-				return;
-			}
+			if (!file)
+				LM_RVE(("Config file '%s' not found", fileName.c_str()));
 			
 			workerEndPoints.clear();
 			
 			char line[2000];
-			while( fgets(line, 2000, file) )
+			while( fgets(line, sizeof(line), file))
 			{
 				au::CommandLine c;
 				c.parse(line);
@@ -82,11 +99,14 @@ namespace ss {
 				if( mainCommand[0] == '#' )
 					continue;
 				
-				if ( mainCommand == "worker")
-					if( c.get_num_arguments()>=2 )	
-						workerEndPoints.push_back( Endpoint( c.get_argument( 1 ) ) );
-					
-				
+				if (mainCommand == "worker")
+				{
+					if (c.get_num_arguments() >= 2)	
+					{
+						workerEndPoints.push_back(Endpoint( c.get_argument( 1 ) ) );
+						LM_T(LMT_CONFIG, ("added worker: '%s'", c.get_argument(1).c_str()));
+					}
+				}					
 			}
 				  
 			

@@ -4,264 +4,313 @@
 
 #include "ModulesManager.h"
 #include "samson/Data.h"
+#include "KVWriterToBuffer.h"
+#include "KVFileSaver.h"
+#include "coding.h"
+#include <vector>
+#include <map>
+#include <stdio.h>
+#include <sstream>
 
 
 
-#define KV_BUFFER_SIZE			1024*1024*256
-#define KV_BUFFER_MAX_NUM_KVS	 1024*1024*64
-#define KV_MAX_SIZE				 	  64*1024
-#define KV_NUM_HASHGROUPS			  64*1024	
-
-#define KV_HASH_GROUP_VECTOR_SIZE	(sizeof(HashGroupInfo)*KV_NUM_HASHGROUPS)
 
 namespace ss {
 
 
-	typedef struct
-	{
-		size_t size;
-	} HashGroupInfo;
-
-
-	// Buffer to send data across SAMSON platform
-	//
-	// [ HashGroupInfo vector ][ Key - vale data ]
-	
-	
 	/**
-	 KVHashGroup:		Structure to emit key-values and sort latter by hashGroup
+	 Vector of sizes in each Hasg Group
 	 */
 	
-	typedef unsigned short ss_hg;
-	
-	typedef struct
+	class HGVector
 	{
-		size_t offset;				// Position in the buffer where this key-value is stored
-		unsigned int size;			// Size of the key-value in bytes
-		ss_hg hashGroup;	// HashGroup of the key value
-	} KVHashGroup;
-	
-	bool KVHashGroupSorter(KVHashGroup *a, KVHashGroup *b) {
-		return a->hashGroup < b->hashGroup;
-	}
-	
-	
-	class KVFileSaver
-	{
-		std::vector<char*> buffers;	// Store of buffers received
-		size_t total_size;
+	public:
+		ss_hg_info *hg;		// Hash groups information
+		
+		size_t size;		// Total size
+		size_t kvs;			// Total number of kvs
+		
+		HGVector( std::string fileName )
+		{
+			hg	= (ss_hg_info*) malloc( KV_HASH_GROUP_VECTOR_SIZE );
+			
+			FILE *file = fopen( fileName.c_str() , "r" );
+			fread( hg, 1 , KV_HASH_GROUP_VECTOR_SIZE , file ); 
+			fclose( file );
 
-		HashGroupInfo *hgs;
+			// totals
+			size = 0;
+			kvs = 0;
+			for (int i = 0 ;i< KV_NUM_HASHGROUPS ;i++)
+			{
+				size += hg[i].size;
+				kvs += hg[i].kvs;
+			}
+			
+			
+		}
+		
+		HGVector()
+		{
+			hg	= (ss_hg_info*) malloc( KV_HASH_GROUP_VECTOR_SIZE );
+			for (int i = 0 ;  i < KV_NUM_HASHGROUPS ; i++)
+			{
+				hg[i].size = 0;
+				hg[i].kvs = 0;
+			}
+			size = 0;
+			kvs = 0;
+			
+		}
+		
+		~HGVector()
+		{
+			free( hg );
+		}
+		
+		void add( HGVector *v )
+		{
+			for (int i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
+			{
+				hg[i].size += v->hg[i].size;
+				hg[i].kvs += v->hg[i].kvs;
+			}
+			
+			size += v->size;
+			kvs += v->kvs;
+		}
+		
+	};
+	
+	/**
+	 Information about a file and its hash-group sizes distribution
+	 */
+	
+	class KVFile
+	{
+
+	public:
+		std::string fileName;		// FileName
+		HGVector info;				// Hash Group Size vector
+		
+		KVFile( std::string _fileName ) : info( _fileName )
+		{
+			fileName = _fileName;
+		}
+		
+		std::string str()
+		{
+			std::ostringstream o;
+			o << "FILE: " << fileName << " ";
+			for (int i = 0 ; i < 10 ; i++)
+				o << info.hg[i].size << " ";
+			o << "...\n";
+			return o.str();
+		}
+		
+	};
+	
+	/**
+	 Information about all the files that form a queue
+	 */
+	
+	class KVQueue
+	{
+		std::vector<KVFile*> files;
+		HGVector info;				// Total information of this queue ( size and kvs per hash-group and total)
+
+		friend class KVDataManager;
 		
 	public:
 		
-		KVFileSaver()
+		void add( KVFile *file )
 		{
-			hgs = (HashGroupInfo*) malloc( KV_NUM_HASHGROUPS * sizeof(HashGroupInfo) );
+			info.add(&file->info);			// Increase the total counters
+			files.push_back( file );
 		}
 		
-		~KVFileSaver()
+	};
+	
+	/**
+	 Segment inside th hash-group range
+	 */
+	
+	class Segment
+	{
+	public:
+		int hg_from;
+		int hg_to;
+		
+		Segment()
 		{
-			free(hgs);
+			hg_from = -1;
+			hg_to = -1;
 		}
 		
-		void add( char*b )
+		Segment( int _hg_from , int _hg_to )
 		{
-			buffers.push_back( b );
+			hg_from = _hg_from;
+			hg_to = _hg_to;
+		}
 
-			// Monitorize the total size
-			HashGroupInfo *_hgs = (HashGroupInfo *)b;
-			for (int i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
-			{
-				hgs[i].size += _hgs[i].size;
-				total_size += _hgs[i].size;
-			}
+		
+	};
+	
+	/**
+	 Global manager of data in a SAMSON WORKER
+	 */
+	
+	class KVDataManager
+	{
+		// Vector of queues
+		std::map< std::string , KVQueue*> queues;
+		
+		KVQueue* findKVQueue( std::string name)
+		{
+			std::map< std::string , KVQueue*>::iterator q = queues.find( name );
+			if( q == queues.end() )
+				return NULL;
+			else
+				return q->second;
 		}
 		
-		void save( std::string fileName )
-		{
-			char *buffer = (char *) malloc( total_size );
-			size_t bufferSize = 0;
-			
-			size_t *offset = (size_t*) malloc( buffers.size() * sizeof(size_t));
-			for (unsigned int f = 0 ; f < buffers.size() ; f++ )
-				offset[f] = KV_HASH_GROUP_VECTOR_SIZE;
+	public:
 		
-			for (int i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
+		/**
+		 Get a lit of segments about how to dividie this queue to process data contained in them
+		 The number of segments, the number of sub-operations to process them
+		 */
+		
+		std::vector<Segment> getSegmentsForQueues( std::vector<std::string> queues , size_t max_memory_per_segment )
+		{
+			
+			HGVector info;
+			for ( std::vector<std::string>::iterator q = queues.begin(); q < queues.end() ; q++)
 			{
-				for (unsigned int f = 0 ; f < buffers.size() ; f++ )
-				{
-					char *b = buffers[f];
-					size_t size = ((HashGroupInfo*)b)[i].size;
-					
-					memcpy(buffer+bufferSize, b+offset[f], size);
-					offset[f]+=size;
-					bufferSize+=size;
-					
-				}
+				KVQueue *queue = findKVQueue( *q );
+				info.add(&queue->info);
 			}
-			assert( bufferSize == total_size );
+				
 			
+			std::vector<Segment> segments;
 			
-			std::cout << "Saving a file of size " << total_size << " bytes( pluss "<< KV_HASH_GROUP_VECTOR_SIZE << " bytes)\n";
-			
-			
-			
-			// Simple test to read the first hash-group
+			size_t total_size_for_segment;
+			int from = 0;
+			for (int i = 0; i < KV_NUM_HASHGROUPS ; i++)
 			{
+				total_size_for_segment+= info.hg[i].size;
+				
+				if (total_size_for_segment > max_memory_per_segment)
+				{
+					// New segment
+					segments.push_back( Segment(from , i ) );
+					from = i+1;
+				}
+				
+			}
+			
+			// last segment
+			if( from < KV_NUM_HASHGROUPS)
+				segments.push_back( Segment(from , (int)KV_NUM_HASHGROUPS ) );
+			
+			return segments;
+		}
+		
+		
+		/**
+		 Get data for a particular queue & segment
+		 */
+		/*
+		std::vector<KVFileSegment> getData( std::string queue_name , Segment segment )
+		{
+			KVQueue *queue = findKVQueue( queue_name );
+
+			
+			KVFileSegment fileSegment;
+			fileSegment.
+		}
+		*/
+		
+	};
+
+	
+	/** 
+	 Extract information
+	 */
+	
+	
+	class KVFileSegment
+	{
+	public:
+		KVFile *file;
+		Segment segment;
+
+		// Buffer to load data when necessary
+		Buffer *b;
+		
+		KVFileSegment( KVFile *_file , Segment _segment)
+		{
+			file = _file;
+			segment = _segment;
+		}
+		
+		void load()
+		{
+			size_t offset = 0;
+			size_t size = 0;
+			
+			for (int i = 0 ; i < segment.hg_from ; i++)
+				offset += file->info.hg[i].size;
+			for (int i = segment.hg_from ; i < segment.hg_to ; i++)
+				size += file->info.hg[i].size; 
+			
+			b = MemoryManager::shared()->newPrivateBuffer( size);
+
+			FILE *_file = fopen( file->fileName.c_str() , "r" );
+			fseek(_file, KV_HASH_GROUP_VECTOR_SIZE + offset, SEEK_SET);
+			fread(b->getData(), 1, size, _file);
+			fclose(_file);
+		}
+		
+	};
+	
+	class KVReader
+	{
+	public:
+		KVReader( std::vector<KVFileSegment> segments , Data *dataKey , Data *dataValue )
+		{
+			
+			for (size_t i = 0 ; i < segments.size() ; i++)
+			{
+				segments[i].load();
+				
+				// Parse and show data
+				
 				ss::system::UInt a;
 				ss::system::Int32 b;
-				size_t s = hgs[0].size;
+				
 				size_t offset = 0;
-				std::cout << "Reading ket-values of HG 0 with " << s << " bytes\n";
-				while (offset<s)
+				size_t size = segments[i].b->getSize();
+				char *buffer = segments[i].b->getData();
+				
+				while (offset<size)
 				{
 					offset+= a.parse( buffer + offset );
 					offset+= b.parse( buffer + offset );
 					
 					std::cout << "OFF:" << offset << " -> " << a.str() << "\n";
 				}
+				
 			}
 			
 		}
 		
 		
-		
-		
-		
 	};
-	
-	class KVWriterToBuffer
-	{
-		
-		// Internal buffer to store key-values
-		char * _data;
-		size_t _size;
-		
-		// Vector of generated key-values
-		KVHashGroup* _kvs;
-		size_t _num_kvs;
-		
-		// Vector of pointers of the structures
-		KVHashGroup** __kvs;
-		
-		char *_tmp_data;
-		
-		KVFileSaver tmp;
-		
-	public:
-		
-		KVWriterToBuffer( )
-		{
-			// Init the buffer data
-			_size = 0;
-			_data = (char*) malloc(KV_BUFFER_SIZE);
-			
-			// Init the kvs buffer
-			_kvs = (KVHashGroup*) malloc(KV_BUFFER_MAX_NUM_KVS *sizeof(KVHashGroup) );
-			_num_kvs = 0;
 
-			// Init the vector of pointsd
-			__kvs = (KVHashGroup**) malloc(KV_BUFFER_MAX_NUM_KVS * sizeof(KVHashGroup*) );
-			
-			// Init the tmp buffer to serialize key-values
-			_tmp_data = (char*) malloc( KV_MAX_SIZE );
-		}
-		
-		~KVWriterToBuffer()
-		{
-			free( _data );
-			free( _tmp_data );
-		}
-		
-		virtual void emit(DataInstance* key, DataInstance* value)
-		{
-			size_t key_size = key->serialize(_tmp_data);
-			size_t value_size = value->serialize(_tmp_data+key_size);
-			size_t total_size = key_size + value_size;
 
-			if( (_size + total_size) > KV_BUFFER_SIZE )
-				processBuffer();
-
-			// Store the new key-value
-			_kvs[_num_kvs].offset = _size;
-			_kvs[_num_kvs].size = total_size;
-			_kvs[_num_kvs].hashGroup = key->hash(KV_NUM_HASHGROUPS);
-			__kvs[_num_kvs] = &_kvs[_num_kvs];
-			_num_kvs++;
-			
-			// Copy the new key-value to the buffer
-			memcpy(_data+_size, _tmp_data, total_size);
-			_size += total_size;
-			
-			
-			if( _num_kvs >= KV_BUFFER_MAX_NUM_KVS)
-				processBuffer();
-			
-		}
-		
-		void processBuffer()
-		{
-			std::cout << "Porcessing buffer of size " << _size << " bytes and " << _num_kvs << " key-values\n";
-			
-			// Sort the buffer so that key-values with the same data-group are toguether
-			std::sort( __kvs , __kvs+_num_kvs , KVHashGroupSorter);
-			
-
-			// Prepare the buffer to "send"
-			char *buffer = (char*) malloc( KV_HASH_GROUP_VECTOR_SIZE + _size );
-			
-			HashGroupInfo *hgs = (HashGroupInfo*)buffer;
-			char *dataBuffer = buffer + KV_HASH_GROUP_VECTOR_SIZE;
-			size_t dataBufferSize = 0;
-			
-			size_t pos = 0;
-			for (int i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
-			{
-				size_t total_size = 0 ;
-				size_t total_num_kvs = 0;
-				
-				
-				while( (pos < _num_kvs) && (__kvs[pos]->hashGroup == i) )
-				{
-					memcpy( dataBuffer + dataBufferSize  , _data + __kvs[pos]->offset, __kvs[pos]->size);
-					dataBufferSize += __kvs[pos]->size;
-					
-					total_size += __kvs[pos]->size;
-					total_num_kvs++;
-					
-					pos++;
-
-				}
-				
-				hgs[i].size = total_size;
-				//hgs[i].num_kvs = total_num_kvs;
-			}
-
-			assert( dataBufferSize == _size );	// Make sure we have copied all key-values
-			
-			
-			tmp.add(buffer);
-			
-			// Do something witht he buffer
-			_size = 0;
-			_num_kvs =0 ;
-		}
-		
-		virtual void close()
-		{
-			// Process the last piece of data ( if any )
-			if( _size > 0 )
-				processBuffer();
-			
-			
-			tmp.save("");
-		}
-		
-	};
-	
-	
 }
+
 
 
 int main( int argc , char *argv[] )
@@ -269,19 +318,21 @@ int main( int argc , char *argv[] )
 	std::cout << "Test\n";
 	
 	ss::ModulesManager mm;
-
-	
 	ss::Data *data = mm.getData("example.example");
 	
 	if( data )
 		std::cout << data->help();
+
+	
+	// Example of a file saver to save everything to disk
+	ss::KVFileSaver fileSaver;
 	
 	
 	ss::system::UInt a;
 	ss::system::Int32 b;
-	ss::KVWriterToBuffer output;
+	ss::KVWriterGeneral output(5,&fileSaver);	// Number of servers
 	
-	for (size_t i = 0 ; i < 10000000 ; i++)
+	for (size_t i = 0 ; i < 100000 ; i++)
 	{
 		a = i;
 		b = i;
@@ -290,5 +341,21 @@ int main( int argc , char *argv[] )
 		output.emit( &a , &b );
 	}
 	output.close();
+
+	
+
+	fileSaver.save("/Users/andreu/test_data.bin");
+	
+/*	
+	std::cout << "Preparing file to read\n";
+	ss::KVFile file("/Users/andreu/test_data.bin");
+	std::cout << file.str();
+	std::vector<ss::KVFileSegment> segments;
+	segments.push_back( ss::KVFileSegment(&file , ss::Segment(0 , 2) ) );
+	ss::KVReader r( segments , NULL ,NULL);
+*/	
 	
 }
+
+ 
+

@@ -1,19 +1,41 @@
 SET (HEADERS
+    KVFileSaver.h
+    KVWriterToBuffer.h
     coding.h
+    BufferSinkInterface.h
 )
 
 SET (SOURCES
+    KVFileSaver.cpp
+    KVWriterToBuffer.cpp
     coding.cpp
 )
 
+
+SET (STATIC_LIBS
+    samsonCommonStatic
+    samsonMemoryStatic
+)
+
+SET (SHARED_LIBS
+    samsonCommonShared
+    samsonMemoryShared
+)
+
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
+include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
+include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 
 ADD_LIBRARY(samsonCodingStatic STATIC ${SOURCES} ${HEADERS} )
 ADD_LIBRARY(samsonCodingShared SHARED ${SOURCES} ${HEADERS} )
 
+TARGET_LINK_LIBRARIES(samsonCodingStatic ${STATIC_LIBS})
+TARGET_LINK_LIBRARIES(samsonCodingShared ${SHARED_LIBS})
+
 SET_TARGET_PROPERTIES(samsonCodingShared PROPERTIES OUTPUT_NAME samsonCoding)
 SET_TARGET_PROPERTIES(samsonCodingStatic PROPERTIES OUTPUT_NAME samsonCoding)
+
 
 
 

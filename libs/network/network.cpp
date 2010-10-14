@@ -96,6 +96,7 @@ void NetworkInterface::initAsSamsonController(Endpoint myEndpoint, std::vector<E
 	for (ix = 0; ix < endpoints.size(); ix++)
 	{
 		char name[32];
+
 		LM_T(LMT_ENDPOINTS, ("endpointV.ip: '%s'", endpointV[ix].ip.c_str()));
 		endpoints[ix].state = Endpoint::Taken;
 
@@ -127,7 +128,6 @@ void NetworkInterface::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controll
 
 	/* ask controller for list of workers */
 	iomMsgSend(controller, &packet, NULL, 0);
-	// delete(packet);
 	iomMsgRead(controller, &ackPacket, controller);
 
 	if (!ackPacket.message.has_endpoints())
@@ -137,10 +137,21 @@ void NetworkInterface::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controll
 
 	for (ix = 0; ix < ackPacket.getNumEndpoints(); ix++)
 	{
-		Endpoint e(ackPacket.getEndpoint(ix));
+		int       fd;
+		Endpoint  endpoint = Endpoint(ackPacket.getEndpoint(ix));
 
-		LM_T(LMT_WORKERS, ("Connect to worker %d: %s ...", e.name.c_str()));
+		LM_T(LMT_WORKERS, ("Connect to worker %d: %s (host %s, port %d)", ix, endpoint.name.c_str(), endpoint.ip.c_str(), endpoint.port));
+		fd = iomConnect(endpoint.ip.c_str(), endpoint.port);
+		if (fd != -1)
+		{
+			endpoint.fd    = fd;
+			endpoint.state = Endpoint::Connected;
+		}
+
+		endpointV.push_back(endpoint);
 	}
+
+	LM_T(LMT_WORKERS, ("I now have %d workers in my vector", endpointV.size()));
 
 	// delete ackPacket;
 }
@@ -339,18 +350,18 @@ void NetworkInterface::run()
 			unsigned int ix;
 			for (ix = 0; ix < endpointV.size(); ix++)
 			{
-				LM_T(LMT_SELECT, ("checking endpoint %d (state '%s')", ix, endpointV[ix].stateName()));
 				if ((endpointV[ix].state == Endpoint::Connected) && (endpointV[ix].fd >= 0))
 				{
 					FD_SET(endpointV[ix].fd, &rFds);
 					max = MAX(max, endpointV[ix].fd);
-					LM_T(LMT_SELECT, ("Added worker fd %d to fd-list", endpointV[ix].fd));
+					LM_T(LMT_SELECT, ("added worker %d (%s:%d) - state '%s'", ix, endpointV[ix].ip.c_str(), endpointV[ix].port, endpointV[ix].stateName()));
 				}
+				else
+					LM_T(LMT_SELECT, ("Not adding worker %d (%s:%d) - state '%s'", ix, endpointV[ix].ip.c_str(), endpointV[ix].port, endpointV[ix].stateName()));
 			}
 
-			LM_T(LMT_SELECT, ("Awaiting on select (%d.%06d seconds timeout)", timeVal.tv_sec, timeVal.tv_usec));
+			LM_T(LMT_SELECT, ("-----------------------------------------------"));
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);
-			LM_T(LMT_SELECT, ("select returned %d", fds));
 		} while ((fds == -1) && (errno == EINTR));
 
 		if (fds == -1)

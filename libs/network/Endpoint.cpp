@@ -5,10 +5,13 @@
 * DESCRIPTION				Class for endpoints
 *
 */
-#include <string.h>         // strchr
-#include <stdlib.h>         // atoi
+#include <string.h>             // strchr
+#include <stdlib.h>             // atoi
 
-#include "Endpoint.h"       // Own interface
+#include "logMsg.h"             // LM_*
+#include "networkTraceLevels.h" // LMT_*, ...
+
+#include "Endpoint.h"           // Own interface
 
 
 

@@ -79,15 +79,14 @@ int Packet::getNumEndpoints()
 *
 * getEndpoint - 
 */
-Endpoint Packet::getEndpoint( int i )
+Endpoint Packet::getEndpoint(int i)
 {
 	network::EndPointVector v = message.endpoints();
 	::ss::network::EndPoint e = v.item(i);
-	
-	std::ostringstream o;
-	o << e.ip() << ":" << e.port();
 
-	Endpoint ep(o.str());
+	LM_T(LMT_INIT_EP, ("Creating new endpoint with the '%s:%d'", e.ip().c_str(), e.port()));
+	Endpoint ep(std::string("noname"), e.ip(), e.port(), -1);
+
 	return ep;
 }
 	

@@ -280,11 +280,12 @@ void NetworkInterface::msgTreat(Endpoint* epP)
 		if (controller != NULL)
 			LM_X(1, ("Got a WorkerVector request from '%s' but I'm not the controller ...", epP->name.c_str()));
 
-		LM_T(LMT_MSG, ("Got a WorkerVector message from '%s'", epP->name.c_str()));
+		LM_T(LMT_MSG, ("Got a WorkerVector message from '%s' (I have %d workers in my vector)", epP->name.c_str(), endpointV.size()));
 		Packet ack;
 
 		ack.setMessageCode(Packet::WorkerVector);
 		ack.addEndPoints(endpointV);
+		LM_T(LMT_WRITE, ("sending ack with entire worker vector"));
 		iomMsgSend(epP, &ack);
 	}
 }

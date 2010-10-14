@@ -5,11 +5,14 @@
 * DESCRIPTION              Definition of the packet to be exchange in the samson-ecosystem
 *
 */
-#include <sstream>         // std::ostringstream
+#include <sstream>              // std::ostringstream
 
-#include "Format.h"        // au::Format
-#include "Endpoint.h"      // Endpoint
-#include "Packet.h"        // Own interface
+#include "logMsg.h"             // LM_*
+#include "networkTraceLevels.h" // LMT_WRITE, ...
+
+#include "Format.h"             // au::Format
+#include "Endpoint.h"           // Endpoint
+#include "Packet.h"             // Own interface
 
 
 namespace ss
@@ -28,28 +31,35 @@ void Packet::setMessageCode(MessageCode code)
 
 /* ****************************************************************************
 *
-* addEndPoints - 
+* addEndpoint - 
 */
-void Packet::addEndPoints( std::vector<Endpoint>& _es )
+void Packet::addEndpoint(Endpoint* ep)
 {
-	for (size_t i = 0 ; i < _es.size() ; i++)
-		addEndpoint( &_es[i] );
+	network::EndPointVector  v = message.endpoints();
+	::ss::network::EndPoint* e = v.add_item();
+
+	e->set_ip(ep->ip);
+	e->set_port(ep->port);
+	e->set_name(ep->name);
+
+	LM_T(LMT_WRITE, ("size of message: %d", message.ByteSize()));
 }
 	
 
 
 /* ****************************************************************************
 *
-* addEndpoint - 
+* addEndPoints - 
 */
-void Packet::addEndpoint( Endpoint *_e )
+void Packet::addEndPoints(std::vector<Endpoint>& eps)
 {
-	network::EndPointVector  v = message.endpoints();
-	::ss::network::EndPoint* e = v.add_item();
+	LM_T(LMT_WRITE, ("Adding %d endpoints", eps.size()));
 
-	e->set_ip(_e->ip);
-	e->set_port(_e->port);
-	e->set_name(_e->name);
+	for (size_t i = 0; i < eps.size(); i++)
+	{
+		LM_T(LMT_WRITE, ("Adding endpoint %d: '%s'", i, eps[i].name.c_str()));
+		addEndpoint(&eps[i]);
+	}
 }
 	
 
@@ -76,8 +86,9 @@ Endpoint Packet::getEndpoint( int i )
 	
 	std::ostringstream o;
 	o << e.ip() << ":" << e.port();
-	Endpoint _e( o.str() );
-	return _e;
+
+	Endpoint ep(o.str());
+	return ep;
 }
 	
 

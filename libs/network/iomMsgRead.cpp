@@ -62,8 +62,14 @@ int iomMsgRead(ss::Endpoint* epP, ss::Packet* packetP, ss::Endpoint* controller,
 		LM_W(("Got a message from '%s' with ZERO header len ...", epP->name.c_str()));
 	else
 	{
-		char* buffer;
+#if 0
+		LM_M(("calling ParseFromFileDescriptor"));
+		if (packetP->message.ParseFromFileDescriptor(epP->fd) != true)
+			LM_RP(1, ("ParseFromFileDescriptor(fd=%d) failed", epP->fd));
+		LM_M(("ParseFromFileDescriptor done"));
+#else
 		int   nb;
+		char* buffer;
 
 		buffer = (char*) malloc(header.headerLen);
 		if (buffer == NULL)
@@ -77,8 +83,10 @@ int iomMsgRead(ss::Endpoint* epP, ss::Packet* packetP, ss::Endpoint* controller,
 		LM_T(LMT_READ, ("read %d bytes from '%s'", nb, epP->name.c_str()));
 		LM_READS(epP->name.c_str(), "protocol buffer", buffer, nb, LmfByte);
 
-		if (packetP->message.ParseFromString(std::string(buffer)) == false)
+		if (packetP->message.ParseFromArray(buffer, nb) == false)
 			LM_E(("ParseFromString failed!"));
+#endif
+
 	}
 
 	if (header.dataLen == 0)

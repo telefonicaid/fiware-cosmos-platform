@@ -35,8 +35,8 @@ void Packet::setMessageCode(MessageCode code)
 */
 void Packet::addEndpoint(Endpoint* ep)
 {
-	network::EndPointVector  v = message.endpoints();
-	::ss::network::EndPoint* e = v.add_item();
+	network::EndPointVector  *v = message.mutable_endpoints();
+	::ss::network::EndPoint* e = v->add_item();
 
 	e->set_ip(ep->ip);
 	e->set_port(ep->port);

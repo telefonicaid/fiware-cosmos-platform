@@ -16,16 +16,10 @@
 
 
 
-namespace ss
-{
-
-
 /* ****************************************************************************
 *
 * iomAccept -  connect to the controller
 */
-extern int iomAccept(Endpoint* listener, char* hostName, int hostNameLen);
-
-}
+extern int iomAccept(ss::Endpoint* listener, char* hostName, int hostNameLen);
 
 #endif

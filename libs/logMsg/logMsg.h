@@ -741,7 +741,7 @@ do {                                                                    \
 * LM_READS - read buffer presentation
 */
 #define LM_READS(_to, _desc, _buf, _sz, _form)  \
-   lmBufferPresent((char*) __FUNCTION__, _to, _desc, _buf, _sz, _form, 'r')
+   lmBufferPresent((char*) __FUNCTION__, (char*) _to, (char*) _desc, _buf, _sz, _form, 'r')
 
 
 
@@ -761,7 +761,7 @@ do {                                                                    \
 * LM_WRITES - written buffer presentation
 */
 #define LM_WRITES(_to, _desc, _buf, _sz, _form)  \
-   lmBufferPresent((char*) __FUNCTION__, _to, _desc, _buf, _sz, _form, 'w')
+   lmBufferPresent((char*) __FUNCTION__, (char*) _to, (char*) _desc, (char*) _buf, _sz, _form, 'w')
 
 #endif
 

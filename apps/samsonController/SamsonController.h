@@ -36,27 +36,41 @@ namespace ss {
 	public:
 		SamsonController( int arg , const char *argv[] )
 		{
+			int          port;
+			std::string  trace;
+			std::string  setup;
+
 			// Parse input command lines
 			au::CommandLine commandLine;
 			commandLine.parse(arg , argv);
-			commandLine.set_flag_int("port",      SAMSON_CONTROLLER_DEFAULT_PORT);    // -port to indicate the local port to start
-			commandLine.set_flag_string("setup",  SAMSON_SETUP_FILE );                // Setup filename
-			commandLine.set_flag_string("t",      "0-255");
+
+			commandLine.set_flag_int("port",      SAMSON_CONTROLLER_DEFAULT_PORT);
+			commandLine.set_flag_string("setup",  SAMSON_SETUP_FILE );
+			commandLine.set_flag_string("t",      "255");
+            commandLine.set_flag_boolean("r");
+            commandLine.set_flag_boolean("w");
+
 			commandLine.parse(arg, argv);
 			
+            port       = commandLine.get_flag_int("port");
+			setup      = commandLine.get_flag_string("setup");
+            trace      = commandLine.get_flag_string("t");
+            lmReads    = commandLine.get_flag_bool("r");
+            lmWrites   = commandLine.get_flag_bool("w");
+
 			LmStatus s;
-			if ((s = lmTraceSet((char*) commandLine.get_flag_string("t").c_str())) != LmsOk)
-			   EXIT(1, ("lmTraceSet: %s", lmStrerror(s)));
+            if ((s = lmTraceSet((char*) trace.c_str())) != LmsOk)
+				EXIT(1, ("lmTraceSet: %s", lmStrerror(s)));
 			
 			// Load setup
 			LM_T(LMT_CONFIG, ("calling loadSetup"));			
-			loadSetup(commandLine.get_flag_string("setup") );
+			loadSetup(setup);
 			
 			// Define the endpoints of the network interface
-			ss::Endpoint myEndPoint( commandLine.get_flag_int("port") );	// My endpoint using the port in the command line
+			ss::Endpoint myEndPoint(port); // My endpoint using the port in the command line
 			LM_T(LMT_CONFIG, ("workerEndPoints.size: %d", workerEndPoints.size()));
 
-			network.initAsSamsonController( myEndPoint , workerEndPoints );	
+			network.initAsSamsonController(myEndPoint, workerEndPoints);
 		}
 		
 		// Main run loop

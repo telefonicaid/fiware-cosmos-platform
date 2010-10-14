@@ -16,22 +16,15 @@
 
 
 
-namespace ss
-{
-
-
-
 /* ****************************************************************************
 *
 * iomInit -  worker init
 */
-void iomInit(Endpoint* controller)
+void iomInit(ss::Endpoint* controller)
 {
 	controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
 	if (controller->fd == -1)
 		LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
 
-	controller->state = Endpoint::Connected;
-}
-
+	controller->state = ss::Endpoint::Connected;
 }

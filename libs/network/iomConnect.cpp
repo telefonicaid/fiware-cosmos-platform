@@ -19,10 +19,6 @@
 
 
 
-namespace ss {
-
-
-
 /* ***************************************************************************
 *
 * iomConnect - 
@@ -52,6 +48,4 @@ int iomConnect(const char* ip, unsigned short port)
 	}
 
 	return fd;
-}
-
 }

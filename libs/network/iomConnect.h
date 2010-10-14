@@ -15,16 +15,10 @@
 
 
 
-namespace ss
-{
-
-
 /* ****************************************************************************
 *
 * iomConnect -  connect to the controller
 */
 extern int iomConnect(const char* ip, unsigned short port);
-
-}
 
 #endif

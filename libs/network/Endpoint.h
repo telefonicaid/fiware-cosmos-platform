@@ -34,6 +34,7 @@ public:
 	unsigned short  port;
 	State           state;
 	char*           stateName(void);
+	void            reset();
 
 public:
 	Endpoint(unsigned short port);

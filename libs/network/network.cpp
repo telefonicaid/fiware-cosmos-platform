@@ -36,8 +36,10 @@ namespace ss
 */
 NetworkInterface::NetworkInterface()
 {
-	receiver = NULL;
-	iAmReady = false;
+	receiver   = NULL;
+	iAmReady   = false;
+	controller = NULL;
+	delilah    = NULL;
 }
 
 
@@ -126,7 +128,7 @@ void NetworkInterface::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controll
 	/* ask controller for list of workers */
 	iomMsgSend(controller, &packet, NULL, 0);
 	// delete(packet);
-	iomMsgRead(controller, &ackPacket, NULL, 0);
+	iomMsgRead(controller, &ackPacket, controller);
 
 	if (!ackPacket.message.has_endpoints())
 		LM_X(1, ("controller didn't give me the Worker Vector ..."));
@@ -261,38 +263,30 @@ bool NetworkInterface::ready()
 */
 void NetworkInterface::msgTreat(Endpoint* epP)
 {
-	MsgHeader header;
-	int       nb;
-	
+	Packet outPacket;
+
 	LM_T(LMT_SELECT, ("treating incoming connection from '%s'", epP->name.c_str()));
+	if (iomMsgRead(epP, &outPacket, controller) != 0)
+		LM_RVE(("iomMsgRead: error reading message from '%s'", epP->name.c_str()));
 
-	nb = read(epP->fd, &header, sizeof(header));
-
-	if (nb == -1)
-		LM_XP(1, ("reading header from '%s'", epP->name.c_str()));
-	
-	if (nb == 0)
+	Packet::MessageCode msgCode = (Packet::MessageCode) outPacket.message.code();
+	switch (msgCode)
 	{
-		LM_T(LMT_READ, ("read 0 bytes from '%s' - connection closed", epP->name.c_str()));
-		close(epP->fd);
-		epP->state = Endpoint::Taken;
-		epP->fd    = -1;
+	case Packet::Hello:
+		LM_X(1, ("Got a Hello message from '%s'", epP->name.c_str()));
+		break;
 
-		if (epP == controller)
-		{
-			LM_W(("controller died ... trying to reconnect !"));
-			while (controller->fd == -1)
-			{
-				controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
-				sleep(1);
-			}
+	case Packet::WorkerVector:
+		if (controller != NULL)
+			LM_X(1, ("Got a WorkerVector request from '%s' but I'm not the controller ...", epP->name.c_str()));
 
-			controller->state = Endpoint::Connected;
-		}
+		LM_T(LMT_MSG, ("Got a WorkerVector message from '%s'", epP->name.c_str()));
+		Packet ack;
+
+		ack.setMessageCode(Packet::WorkerVector);
+		ack.addEndPoints(endpointV);
+		iomMsgSend(epP, &ack);
 	}
-
-	LM_T(LMT_READ, ("reading %d bytes Google Protocol Buffer Header", header.headerLen));
-	LM_T(LMT_READ, ("reading %d bytes data", header.dataLen));
 }
 
 
@@ -314,7 +308,7 @@ void NetworkInterface::run()
 	{
 		do
 		{
-			timeVal.tv_sec  = 2;
+			timeVal.tv_sec  = 5;
 			timeVal.tv_usec = 0;
 
 			FD_ZERO(&rFds);
@@ -327,14 +321,14 @@ void NetworkInterface::run()
 				LM_T(LMT_SELECT, ("Added my listen fd %d to fd-list", me->fd));
 			}
 
-			if (controller && (controller->state == Endpoint::Connected))
+			if ((controller != NULL) && (controller->state == Endpoint::Connected))
 			{
 				FD_SET(controller->fd, &rFds);
 				max = MAX(max, controller->fd);
 				LM_T(LMT_SELECT, ("Added controller fd %d to fd-list", controller->fd));
 			}
 
-			if (delilah && (delilah->state == Endpoint::Connected))
+			if ((delilah != NULL) && (delilah->state == Endpoint::Connected))
 			{
 				FD_SET(delilah->fd, &rFds);
 				max = MAX(max, delilah->fd);
@@ -342,7 +336,6 @@ void NetworkInterface::run()
 			}
 
 			unsigned int ix;
-			LM_T(LMT_SELECT, ("endpointV.size: %d", endpointV.size()));
 			for (ix = 0; ix < endpointV.size(); ix++)
 			{
 				LM_T(LMT_SELECT, ("checking endpoint %d (state '%s')", ix, endpointV[ix].stateName()));
@@ -389,7 +382,7 @@ void NetworkInterface::run()
 
 				checkInitDone();
 			}
-			else if ((delilah->state == Endpoint::Connected) && FD_ISSET(delilah->fd, &rFds))
+			else if ((delilah != NULL) && (delilah->state == Endpoint::Connected) && FD_ISSET(delilah->fd, &rFds))
 			{
 				LM_T(LMT_SELECT, ("incoming message from delilah"));
 				msgTreat(delilah);
@@ -465,10 +458,13 @@ void NetworkInterface::endpointAdd(int fd, char* hostName)
 			endpointV[ix].state = Endpoint::Connected;
 
 			LM_T(LMT_ENDPOINT, ("Set fd %d for endpoint '%s'", fd, endpointV[ix].ip.c_str()));
-			break;
+			return;
 		}
 		++ix;
 	}
+
+	LM_W(("No endpoint found ..."));
+	close(fd);
 }
 
 

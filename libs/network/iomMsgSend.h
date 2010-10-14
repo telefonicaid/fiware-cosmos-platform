@@ -19,6 +19,6 @@
 *
 * iomMsgSend - send a message to a peer and await the reply
 */
-extern int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, void* data, int dataLen);
+extern int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, void* data = NULL, int dataLen = 0);
 
 #endif

@@ -1442,6 +1442,11 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 	int   sz;
 	int   nb;
 	char  format[FORMAT_LEN + 1];
+	char* tmP;
+
+	tmP = strrchr((char*) file, '/');
+	if (tmP != NULL)
+	   file = &tmP[1];
 
 	if (inSigHandler && (type != 'X' || type != 'x'))
 	{

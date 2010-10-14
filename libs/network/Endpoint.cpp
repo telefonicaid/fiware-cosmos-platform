@@ -75,6 +75,10 @@ Endpoint::Endpoint(unsigned short port)
 
 
 
+/* ****************************************************************************
+*
+* stateName - 
+*/
 char* Endpoint::stateName(void)
 {
 	switch (state)
@@ -87,6 +91,19 @@ char* Endpoint::stateName(void)
 	}
 
 	return (char*) "Unknown";
+}
+
+
+
+/* ****************************************************************************
+*
+* reset - 
+*/
+void Endpoint::reset(void)
+{
+	close(fd);
+	fd = -1;
+	state = Taken;
 }
 
 }

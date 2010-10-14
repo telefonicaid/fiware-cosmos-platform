@@ -22,5 +22,6 @@
 #define LMT_READ       57
 #define LMT_WORKERS    58
 #define LMT_WRITE      59
+#define LMT_MSG        60
 
 #endif

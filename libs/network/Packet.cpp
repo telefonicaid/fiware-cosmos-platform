@@ -44,11 +44,12 @@ void Packet::addEndPoints( std::vector<Endpoint>& _es )
 */
 void Packet::addEndpoint( Endpoint *_e )
 {
-	network::EndPointVector v = message.endpoints();
-	::ss::network::EndPoint *e = v.add_item();
-	e->set_ip( _e->ip );
-	e->set_port( _e->port );
-	e->set_name(_e->name );
+	network::EndPointVector  v = message.endpoints();
+	::ss::network::EndPoint* e = v.add_item();
+
+	e->set_ip(_e->ip);
+	e->set_port(_e->port);
+	e->set_name(_e->name);
 }
 	
 

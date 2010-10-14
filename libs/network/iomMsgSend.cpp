@@ -67,21 +67,22 @@ int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, void* data, int dataLen)
 	if (s == -1)
 	{
 		LM_P(("writev(%s)", epP->name.c_str()));
-		close(epP->fd);
-		epP->fd    = -1;
-		epP->state = ss::Endpoint::Free;
+		epP->reset();
 		return -1;
 	}
 
 	if (s == 0)
 	{
 		LM_E(("writev(%s) returned ZERO bytes written", epP->name.c_str()));
-		close(epP->fd);
-		epP->fd    = -1;
-		epP->state = ss::Endpoint::Free;
+		epP->reset();
 		return -1;
 	}
 
 	LM_T(LMT_WRITE, ("written %d bytes to '%s'", s, epP->name.c_str()));
+	LM_WRITES(epP->name.c_str(), "message header",  ioVec[0].iov_base, ioVec[0].iov_len, LmfByte);
+	LM_WRITES(epP->name.c_str(), "protocol buffer", ioVec[1].iov_base, ioVec[1].iov_len, LmfByte);
+	if (ioVec[2].iov_len != 0)
+		LM_WRITES(epP->name.c_str(), "KV data",         ioVec[2].iov_base, ioVec[2].iov_len, LmfByte);
+
 	return 0;
 }	

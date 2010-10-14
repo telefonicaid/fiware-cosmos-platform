@@ -19,6 +19,6 @@
 *
 * iomMsgRead - read a message to a peer and await the reply
 */
-extern int iomMsgRead(ss::Endpoint* epP, ss::Packet* packetP, void* data, int dataLen);
+extern int iomMsgRead(ss::Endpoint* epP, ss::Packet* packetP, ss::Endpoint* controller, void* data = NULL, int dataLen = 0);
 
 #endif

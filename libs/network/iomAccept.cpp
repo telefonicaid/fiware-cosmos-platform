@@ -22,16 +22,11 @@
 
 
 
-namespace ss
-{
-
-
-
 /* ****************************************************************************
 *
 * iomAccept -  worker accept
 */
-int iomAccept(Endpoint* listener, char* hostName, int hostNameLen)
+int iomAccept(ss::Endpoint* listener, char* hostName, int hostNameLen)
 {
 	struct sockaddr_in  peer;
 	unsigned int        len;
@@ -62,6 +57,4 @@ int iomAccept(Endpoint* listener, char* hostName, int hostNameLen)
 		strncpy(hostName, hName, hostNameLen);
 
 	return fd;
-}
-
 }

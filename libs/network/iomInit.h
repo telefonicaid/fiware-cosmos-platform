@@ -11,20 +11,15 @@
 *
 */
 #include <vector>               // vector
+
 #include "Endpoint.h"			// Endpoint
 
-
-
-namespace ss
-{
 
 
 /* ****************************************************************************
 *
 * iomInit -  connect to the controller
 */
-extern void iomInit(Endpoint* controller);
-
-}
+extern void iomInit(ss::Endpoint* controller);
 
 #endif

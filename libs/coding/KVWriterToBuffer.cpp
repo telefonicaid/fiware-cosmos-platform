@@ -1,8 +1,10 @@
-
+#include <assert.h>						// assert()
+#include <algorithm>                    // std::sort
 
 #include "KVWriterToBuffer.h"			// Own interface
 #include "MemoryManager.h"				// ss::MemoryManager
-#include <assert.h>						// assert()
+
+
 
 namespace ss {
 

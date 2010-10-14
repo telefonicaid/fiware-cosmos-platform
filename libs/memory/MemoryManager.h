@@ -1,14 +1,17 @@
-
 #ifndef _H_MEMORY_MANAGER
 #define _H_MEMORY_MANAGER
 
-#include "Buffer.h"		// ss::Buffer
-#include "Lock.h"		// au::Lock
+#include <stdio.h>              // perror
 #include <sys/types.h>
 #include <sys/ipc.h> 
 #include <sys/shm.h> 
-#include <map>			// std::map
-#include <iostream>		// std::cout
+#include <map>                 // std::map
+#include <iostream>            // std::cout
+
+#include "Buffer.h"            // ss::Buffer
+#include "Lock.h"              // au::Lock
+
+
 
 #define SS_SHARED_MEMORY_KEY_ID					872934	// the first one
 

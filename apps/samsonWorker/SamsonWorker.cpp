@@ -34,9 +34,12 @@ void SamsonWorker::test()
 	while( ! network.ready() )
 	{
 		LM_T(LMT_READY, ("Awaiting network interface ready"));
-		sleep(1);
+		sleep(5);
 	}
 		
+	LM_T(LMT_READY, ("*********** READY !!! ***********"));
+	return;
+
 	// Testing to sent something to the controller
 	while( true )
 	{

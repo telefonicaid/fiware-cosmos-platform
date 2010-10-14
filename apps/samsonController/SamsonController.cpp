@@ -36,9 +36,10 @@ namespace ss {
 		while( ! network.ready() )
 		{
 			LM_T(LMT_READY, ("Awaiting network interface ready"));
-			sleep(1);
+			sleep(5);
 		}
-		
+
+		LM_T(LMT_READY, ("*********** READY !!! ***********"));
 		return;
 
 		while( true )

@@ -29,7 +29,7 @@ namespace ss {
 	class Delilah : public PacketReceiverInterface, public PacketSenderInterface
 	{
 		ss::NetworkInterface network;		// Network interface
-		DelilahConsole* console;			// Console to work with delailah in command-line mode
+		DelilahConsole* console;			// Console to work with delilah in command-line mode
 
 		size_t	local_id;					// Internal counter to keep count of the commands sent to the controller
 		
@@ -73,11 +73,11 @@ namespace ss {
 				exit(0);
 			}
 
-			std::cout << "Delaila running. Controller: " << controller << std::endl;
+			std::cout << "Delilah running. Controller: " << controller << std::endl;
 			
-			ss::Endpoint controllerEndpoint(controller);		// Get the endPoint controller from somewhere
-			if( !testFlag )
-				network.initAsDelailah(controllerEndpoint);
+			ss::Endpoint controllerEndpoint(Endpoint::Controller, controller);
+			if (!testFlag)
+				network.initAsDelilah(controllerEndpoint);
 			
 		}
 		

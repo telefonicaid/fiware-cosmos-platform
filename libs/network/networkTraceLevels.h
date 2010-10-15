@@ -24,5 +24,6 @@
 #define LMT_WRITE      59
 #define LMT_MSG        60
 #define LMT_INIT_EP    61
+#define LMT_CONFIG     62
 
 #endif

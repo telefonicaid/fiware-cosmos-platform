@@ -1,16 +1,19 @@
+#ifndef PACKET_H
+#define PACKET_H
 
 /* ****************************************************************************
- *
- * FILE                     packet.h
- *
- * DESCRIPTION				Definition of the pakcet to be exchange in the samson-ecosystem
- *
- * ***************************************************************************/
+*
+* FILE                      packet.h
+*
+* DESCRIPTION				Definition of the packet to be exchanged in the samson-ecosystem
+*
+*/
+#include <assert.h>	         // assert
 
-#pragma once
+#include "samson.pb.h"       // google protocol buffers
+#include "Endpoint.h"        // Endpoint
 
-#include "samson.pb.h"
-#include <assert.h>		// assert
+
 
 namespace ss {
 	
@@ -76,6 +79,13 @@ namespace ss {
 			WorkerVector
 		} MessageCode;
 
+		typedef enum MessageType
+		{
+		   Req,
+		   Ack,
+		   Nak
+		} MessageType;
+
 		char* msgCodeName(MessageCode);
 
 		network::Message message;		// Message with necessary fields ( codified with Google Protocol Buffers )
@@ -85,29 +95,26 @@ namespace ss {
 
 		Packet(MessageCode c)
 		{
-			setMessageCode(c);
+			messageCodeSet(c);
 		}
-	
-		
+
+
+		void      messageCodeSet(MessageCode code);
+		void      messageTypeSet(MessageType type);
+
+		void      endpointAdd(Endpoint* e);
+		Endpoint  endpointGet(int i);
+		void      endpointVectorAdd(std::vector<Endpoint>& es);
+		int       endpointVecSize(void);
+
+		void      helloAdd(char*  name, int  connectedWorkers, Endpoint::Type  type, char*   ip = NULL, unsigned short  port = 0);
+		void      helloGet(char** name, int* connectedWorkers, Endpoint::Type* typeP, char** ip,        unsigned short* port);
+
 		/**
-		 Add information to the header
-		 */
-		void setMessageCode(MessageCode c);
-		void addEndpoint( Endpoint *e );
-		void addEndPoints( std::vector<Endpoint> &_es );
-		
-		/**
-		 Get information from the header
-		 */
-		
-		int getNumEndpoints();
-		Endpoint getEndpoint( int i );
-		
-		
-		/** 
 		 Debug string with information about the packet
 		 */
 		std::string str();
 	};
-	
 }
+
+#endif

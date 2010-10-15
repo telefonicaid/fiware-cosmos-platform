@@ -65,8 +65,8 @@ namespace ss {
 			std::cout << "Samson worker running at port " << port << " controller: " << controller << std::endl;
 			
 			// Get the endpoints necessary to start network interface
-			ss::Endpoint controllerEndPoint(controller);				  // Get the endPoint controller from somewhere
-			ss::Endpoint myEndPoint(commandLine.get_flag_int("port"));    // My endpoint using the port in the command line
+			ss::Endpoint controllerEndPoint(Endpoint::Controller, controller);
+			ss::Endpoint myEndPoint(Endpoint::Listener, port);
 			
 			network.initAsSamsonWorker(myEndPoint, controllerEndPoint);
 		}

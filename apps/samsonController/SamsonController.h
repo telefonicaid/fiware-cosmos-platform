@@ -67,7 +67,8 @@ namespace ss {
 			loadSetup(setup);
 			
 			// Define the endpoints of the network interface
-			ss::Endpoint myEndPoint(port); // My endpoint using the port in the command line
+			ss::Endpoint myEndPoint(Endpoint::Listener, port);
+
 			LM_T(LMT_CONFIG, ("workerEndPoints.size: %d", workerEndPoints.size()));
 
 			network.initAsSamsonController(myEndPoint, workerEndPoints);
@@ -108,7 +109,7 @@ namespace ss {
 				{
 					if (c.get_num_arguments() >= 2)	
 					{
-						workerEndPoints.push_back(Endpoint( c.get_argument( 1 ) ) );
+						workerEndPoints.push_back(Endpoint(Endpoint::Worker, c.get_argument(1)));
 						LM_T(LMT_CONFIG, ("added worker: '%s'", c.get_argument(1).c_str()));
 					}
 				}					

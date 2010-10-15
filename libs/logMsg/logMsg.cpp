@@ -1662,6 +1662,9 @@ int lmBufferPresent
 	char  tmp[80];
 	char  msg[160];
 
+	if (size > 0x800)
+		size = 0x800;
+
 	if (lmOk(type, type) != LmsOk)
 		return LmsOk;
 

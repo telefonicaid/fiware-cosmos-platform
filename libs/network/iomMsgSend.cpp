@@ -33,6 +33,13 @@ int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, void* data, int dataLen)
 	ssize_t       s;
 	char*         outputVec;
 
+	ioVec[0].iov_len = 0;
+	ioVec[1].iov_len = 0;
+	ioVec[2].iov_len = 0;
+
+	if ((data != NULL) || (dataLen != 0))
+		LM_X(1, ("try to send %d bytes of KV data to '%s'", dataLen, epP->name.c_str()));
+
 	header.headerLen = packetP->message.ByteSize();
 	header.dataLen   = dataLen;
 	outputVec        = (char*) malloc(header.headerLen);
@@ -81,7 +88,8 @@ int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, void* data, int dataLen)
 	LM_T(LMT_WRITE, ("written %d bytes to '%s'", s, epP->name.c_str()));
 	LM_WRITES(epP->name.c_str(), "message header",  ioVec[0].iov_base, ioVec[0].iov_len, LmfByte);
 	LM_WRITES(epP->name.c_str(), "protocol buffer", ioVec[1].iov_base, ioVec[1].iov_len, LmfByte);
-	if (ioVec[2].iov_len != 0)
+
+	if ((vecs == 3) && (ioVec[2].iov_len != 0))
 		LM_WRITES(epP->name.c_str(), "KV data",         ioVec[2].iov_base, ioVec[2].iov_len, LmfByte);
 
 	return 0;

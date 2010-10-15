@@ -25,7 +25,7 @@
 *
 * iomMsgRead - read a message from an endpoint
 */
-int iomMsgRead(ss::Endpoint* epP, ss::Packet* packetP, ss::Endpoint* controller, void* data, int dataLen)
+int iomMsgRead(ss::Endpoint* epP, ss::Packet* packetP, void* data, int dataLen)
 {
 	int        nb;
 	MsgHeader  header;
@@ -38,21 +38,7 @@ int iomMsgRead(ss::Endpoint* epP, ss::Packet* packetP, ss::Endpoint* controller,
 	if (nb == 0)
 	{
 		LM_T(LMT_READ, ("read 0 bytes from '%s' - connection closed", epP->name.c_str()));
-		epP->reset();
-
-		if (epP == controller)
-		{
-			LM_W(("controller died ... trying to reconnect !"));
-			while (controller->fd == -1)
-			{
-				controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
-				sleep(1);
-			}
-
-			controller->state = ss::Endpoint::Connected;
-		}
-
-		return -1;
+		return -2;
 	}
 
 	LM_T(LMT_READ, ("read %d bytes from '%s'", nb, epP->name.c_str()));
@@ -62,12 +48,6 @@ int iomMsgRead(ss::Endpoint* epP, ss::Packet* packetP, ss::Endpoint* controller,
 		LM_W(("Got a message from '%s' with ZERO header len ...", epP->name.c_str()));
 	else
 	{
-#if 0
-		LM_M(("calling ParseFromFileDescriptor"));
-		if (packetP->message.ParseFromFileDescriptor(epP->fd) != true)
-			LM_RP(1, ("ParseFromFileDescriptor(fd=%d) failed", epP->fd));
-		LM_M(("ParseFromFileDescriptor done"));
-#else
 		int   nb;
 		char* buffer;
 
@@ -84,9 +64,7 @@ int iomMsgRead(ss::Endpoint* epP, ss::Packet* packetP, ss::Endpoint* controller,
 		LM_READS(epP->name.c_str(), "protocol buffer", buffer, nb, LmfByte);
 
 		if (packetP->message.ParseFromArray(buffer, nb) == false)
-			LM_E(("ParseFromString failed!"));
-#endif
-
+			LM_X(1, ("ParseFromString failed!"));
 	}
 
 	if (header.dataLen == 0)

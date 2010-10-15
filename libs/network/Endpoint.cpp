@@ -7,6 +7,7 @@
 */
 #include <string.h>             // strchr
 #include <stdlib.h>             // atoi
+#include <unistd.h>             // gethostname
 
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_*, ...
@@ -18,17 +19,22 @@
 namespace ss {
 
 
+
 /* ****************************************************************************
 *
-* Constructor
+* hostnameGet - 
 */
-Endpoint::Endpoint(std::string name, std::string ip, unsigned short port, int fd)
+void Endpoint::hostnameGet(void)
 {
-	this->name  = name;
-	this->ip    = ip;
-	this->port  = port;
-	this->fd    = fd;
-	this->state = (fd == -1)? Taken : Connected;
+	char hn[128];
+
+	if (gethostname(hn, sizeof(hn)) == 0)
+	{
+		hostname = std::string(hn);
+		LM_T(LMT_CONFIG, ("hostname: '%s'", hostname.c_str()));
+	}
+	else
+		LM_P(("gethostname"));
 }
 
 
@@ -37,7 +43,26 @@ Endpoint::Endpoint(std::string name, std::string ip, unsigned short port, int fd
 *
 * Constructor
 */
-Endpoint::Endpoint(std::string ipAndPort)
+Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short port, int fd)
+{
+	this->name     = name;
+	this->type     = type;
+	this->ip       = ip;
+	this->port     = port;
+	this->fd       = fd;
+	this->state    = (fd == -1)? Taken : Connected;
+	this->workers  = 0;
+
+	hostnameGet();
+}
+
+
+
+/* ****************************************************************************
+*
+* Constructor
+*/
+Endpoint::Endpoint(Type type, std::string ipAndPort)
 {
 	char* port = strchr((char*) ipAndPort.c_str(), ':');
 
@@ -57,8 +82,12 @@ Endpoint::Endpoint(std::string ipAndPort)
 		this->port  = atoi(port);
 	}
 
-	this->fd    = -1;
-	this->state = Taken;
+	this->fd       = -1;
+	this->state    = Taken;
+	this->workers  = 0;
+	this->type     = type;
+
+	hostnameGet();
 }
 
 
@@ -67,13 +96,17 @@ Endpoint::Endpoint(std::string ipAndPort)
 *
 * Constructor
 */
-Endpoint::Endpoint(unsigned short port)
+Endpoint::Endpoint(Type type, unsigned short port)
 {
-	this->name  = "no name";
-	this->ip    = "localhost";
-	this->port  = port;
-	this->fd    = -1;
-	this->state = Taken;
+	this->name     = "no name";
+	this->ip       = "localhost";
+	this->port     = port;
+	this->fd       = -1;
+	this->state    = Taken;
+	this->workers  = 0;
+	this->type     = type;
+
+	hostnameGet();
 }
 
 
@@ -105,8 +138,9 @@ char* Endpoint::stateName(void)
 void Endpoint::reset(void)
 {
 	close(fd);
-	fd = -1;
-	state = Taken;
+
+	fd     = -1;
+	state  = Taken;
 }
 
 }

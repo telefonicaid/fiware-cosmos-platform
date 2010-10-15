@@ -63,8 +63,8 @@ class NetworkInterface
 	Endpoint*                delilah;
 	std::vector<Endpoint>    endpointV;
 
-	void init(Endpoint me);
-
+	void init(Endpoint* me);
+	void ipSet(char* ip);
 public:
 	NetworkInterface();
 		
@@ -72,12 +72,12 @@ public:
 
 	void initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> peers);
 	void initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint);
-	void initAsDelailah(Endpoint controllerEndpoint);
+	void initAsDelilah(Endpoint controllerEndpoint);
 
 	bool ready();                                   // Inform about everything ready
                                                     // The controller expects all the workers to be connected
                                                     // The worker expects to be connected with all the workers and the controller
-                                                    // Delailah expects to be connected with all the workers and the contorller
+                                                    // Delilah expects to be connected with all the workers and the contorller
 
 	Endpoint* meGet();                              // Get my endPoint
 	Endpoint* controllerGet();                      // Get the endPoint of the controller
@@ -105,6 +105,8 @@ private:
 	void endpointAdd(int fd, char* hostName);
 	void msgTreat(Endpoint* epP);
 	void checkInitDone(void);
+
+	void helloSend(Endpoint* epP);
 };
 
 	

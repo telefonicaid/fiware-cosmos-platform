@@ -27,19 +27,35 @@ public:
 		Disconnected
 	} State;
 
+	typedef enum Type
+	{
+		Unknown,
+		Listener,
+		Controller,
+		Worker,
+		Delilah,
+		ConfigTool
+	} Type;
+
 public:
 	std::string     name;
+	std::string     hostname;
 	std::string     ip;
 	int             fd;
 	unsigned short  port;
 	State           state;
+	int             workers;
+	Type            type;
+
 	char*           stateName(void);
 	void            reset();
+	void            hostnameGet(void);
 
 public:
-	Endpoint(unsigned short port);
-	Endpoint(std::string ipAndPort);
-	Endpoint(std::string name, std::string ip, unsigned short port, int fd);
+	Endpoint(Type type, Endpoint* epP);
+	Endpoint(Type type, unsigned short port);
+	Endpoint(Type type, std::string ipAndPort);
+	Endpoint(Type type, std::string name, std::string ip, unsigned short port, int fd);
 	std::string str() { return name; }
 };
 

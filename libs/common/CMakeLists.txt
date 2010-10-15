@@ -1,4 +1,5 @@
 SET (HEADERS
+	samsonDirectories.h
 	samsonLogMsg.h
 	CommandLine.h
 	Console.h

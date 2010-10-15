@@ -32,8 +32,3 @@ ADD_LIBRARY(samsonMemoryShared SHARED ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(samsonMemoryShared  ${LIBS_SHARED} )
 SET_TARGET_PROPERTIES(samsonMemoryShared PROPERTIES OUTPUT_NAME samsonMemory)
 
-
-ADD_EXECUTABLE(samsonMemoryTest test.cpp ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonMemoryTest  ${LIBS_STATIC} pthread)
-INSTALL(TARGETS               samsonMemoryTest
-        RUNTIME DESTINATION   bin)

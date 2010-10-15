@@ -5,8 +5,11 @@
 #include <sys/types.h>
 #include <sys/ipc.h> 
 #include <sys/shm.h> 
-#include <map>                 // std::map
-#include <iostream>            // std::cout
+#include <map>						// std::map
+#include <iostream>					// std::cout
+#include "samsonDirectories.h"		// SAMSON_SETUP_FILE
+#include "CommandLine.h"			// au::CommandLine
+
 
 #include "Buffer.h"            // ss::Buffer
 #include "Lock.h"              // au::Lock
@@ -47,6 +50,33 @@ namespace ss {
 			// Load from file...
 			num_cores = 2;
 			shared_memory_per_core = 536870912;
+			
+			FILE *file = fopen( SAMSON_SETUP_FILE , "r" );
+			char line[2000];
+			if( file )
+			{
+				
+				while (fgets(line,2000,file)) 
+				{
+					au::CommandLine c;
+					c.parse(line);
+					
+					// Skip comments
+					if( c.get_num_arguments() == 0)
+						continue;
+					if( c.get_argument(0).c_str()[0] == '#' )
+						continue;
+
+					
+					if( c.get_num_arguments() < 2)
+						continue;
+					
+					if( c.get_argument(0) == "shm_size_per_core" )
+						shared_memory_per_core = atoll( c.get_argument(1).c_str() );
+				}
+				
+			}
+			
 		}
 	};
 	

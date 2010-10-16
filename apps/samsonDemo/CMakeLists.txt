@@ -1,9 +1,15 @@
 SET (SOURCES
-    main_samsonController.cpp
+    main_SamsonDemo.cpp
+    FakeEndpoint.cpp
+    NetworkFake.cpp
+    NetworkFakeCenter.ccp
 )
 
 SET (HEADERS
-
+    FakeEndpoint.h
+    NetworkFake.h
+    NetworkFakeCenter.h
+    traceLevels.h
 )
 
 
@@ -12,14 +18,12 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_BINARY_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/core")
-include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
-
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
-
 # SAMSON Executable
-ADD_EXECUTABLE(samsonController ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(samsonController samsonNetworkStatic samsonCoreStatic samsonCommonStatic lm protobuf pthread dl curses)
+ADD_EXECUTABLE(samsonDemo ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(samsonDemo samsonNetworkStatic samsonCoreStatic samsonCommonStatic lm protobuf pthread dl curses)
 
-INSTALL(TARGETS               samsonController
+INSTALL(TARGETS               samsonDemo
         RUNTIME DESTINATION   bin)
+

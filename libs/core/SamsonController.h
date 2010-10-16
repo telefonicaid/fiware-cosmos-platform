@@ -11,14 +11,14 @@
 #include <iostream>				// std::cout
 
 #include "logMsg.h"             // lmInit, LM_*
-#include "traceLevels.h"        // LMT_*
 
 #include "Macros.h"             // EXIT, ...
-#include "network.h"			// NetworkInterface
+#include "Network.h"			// NetworkInterface
 #include "Endpoint.h"			// Endpoint
 #include "CommandLine.h"		// au::CommandLine
 #include "samsonDirectories.h"	// File to load setup
 
+#define LMT_CONFIG    22
 
 
 namespace ss {
@@ -31,15 +31,18 @@ namespace ss {
 	{
 		std::vector<Endpoint> workerEndPoints;			// Vector of workers from the setup file	
 		
-		ss::NetworkInterface network;
+		NetworkInterface *network;
 		
 	public:
-		SamsonController( int arg , const char *argv[] )
+		SamsonController( int arg , const char *argv[] ,  NetworkInterface *_network )
 		{
+			
+			network = _network;
+			
 			int          port;
 			std::string  trace;
 			std::string  setup;
-
+			
 			// Parse input command lines
 			au::CommandLine commandLine;
 			commandLine.parse(arg , argv);
@@ -71,8 +74,9 @@ namespace ss {
 
 			LM_T(LMT_CONFIG, ("workerEndPoints.size: %d", workerEndPoints.size()));
 
-			network.initAsSamsonController(myEndPoint, workerEndPoints);
+			network->initAsSamsonController(myEndPoint, workerEndPoints);
 		}
+		
 		
 		// Main run loop
 		void run();

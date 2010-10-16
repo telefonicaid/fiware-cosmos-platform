@@ -1,6 +1,7 @@
 SET (HEADERS
 	samson.pb.h
-	network.h
+	Network.h
+	NetworkInterface.h
 	Packet.h
 	Endpoint.h
 	iomInit.h
@@ -13,7 +14,7 @@ SET (HEADERS
 
 SET (SOURCES
 	samson.pb.cc
-	network.cpp
+	Network.cpp
 	Packet.cpp
 	Endpoint.cpp
 	iomInit.cpp

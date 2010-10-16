@@ -1,9 +1,8 @@
 SET (SOURCES
-	SamsonWorker.cpp
+    main_samsonWorker.cpp
 )
 
 SET (HEADERS
-	SamsonWorker.h
 )
 
 

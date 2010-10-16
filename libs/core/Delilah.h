@@ -10,9 +10,8 @@
 */
 #include <iostream>				// std::cout
 #include "logMsg.h"             // lmInit, LM_*
-#include "traceLevels.h"        // LMT_*
 #include "Macros.h"             // EXIT, ...
-#include "network.h"			// NetworkInterface
+#include "Network.h"			// NetworkInterface
 #include "Endpoint.h"			// Endpoint
 #include "CommandLine.h"		// au::CommandLine
 #include "CommandLine.h"		// au::CommandLine
@@ -28,7 +27,7 @@ namespace ss {
 
 	class Delilah : public PacketReceiverInterface, public PacketSenderInterface
 	{
-		ss::NetworkInterface network;		// Network interface
+		NetworkInterface* network;			// Network interface
 		DelilahConsole* console;			// Console to work with delilah in command-line mode
 
 		size_t	local_id;					// Internal counter to keep count of the commands sent to the controller
@@ -39,8 +38,10 @@ namespace ss {
 		
 	public:
 		
-		Delilah( int arg, const char *argv[] )
+		Delilah( int arg, const char *argv[] ,NetworkInterface *_network )
 		{
+			network = _network;
+			
 			finish = false;				// Global flag to finish threads
 			local_id = 0;				// Init the counter of messages sent to the controller
 			
@@ -77,9 +78,10 @@ namespace ss {
 			
 			ss::Endpoint controllerEndpoint(Endpoint::Controller, controller);
 			if (!testFlag)
-				network.initAsDelilah(controllerEndpoint);
+				network->initAsDelilah(controllerEndpoint);
 			
 		}
+		
 		
 		// Main routine
 		void run();
@@ -97,7 +99,7 @@ namespace ss {
 		{
 			finish = true;
 			console->quit();
-			network.quit();
+			network->quit();
 		}
 		
 		void showMessage(std::string m )

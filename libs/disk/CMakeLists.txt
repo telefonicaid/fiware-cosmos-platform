@@ -1,9 +1,21 @@
 SET (HEADERS
-    DiskManager.h
+
+	DeviceDiskAccessManager.h
+	DeviceDiskAccessStatistics.h
+	DiskManager.h
+	DiskManagerDelegate.h
+	DiskOperation.h
+	DiskOperationsManager.h
+	FileAccess.h
 )
 
 SET (SOURCES
-    DiskManager.cpp
+	DeviceDiskAccessManager.cpp
+	DeviceDiskAccessStatistics.cpp
+	DiskManager.cpp
+	DiskOperation.cpp
+	DiskOperationsManager.cpp
+	FileAccess.cpp
 )
 
 SET( LIBS_STATIC
@@ -29,5 +41,6 @@ SET_TARGET_PROPERTIES(samsonDiskStatic PROPERTIES OUTPUT_NAME samsonDisk)
 ADD_LIBRARY(samsonDiskShared SHARED ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(samsonDiskShared  ${LIBS_SHARED} )
 SET_TARGET_PROPERTIES(samsonDiskShared PROPERTIES OUTPUT_NAME samsonDisk)
+
 
 

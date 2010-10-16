@@ -1,10 +1,11 @@
 
 #include <iostream>
-#include "Console.h"			// au::Console
-#include "DiskManager.h"		// ss::DiskManager
-#include <set>					// std::set
-#include "Lock.h"				// au::Lock
-#include "CommandLine.h"		// au::CommandLine
+#include "Console.h"				// au::Console
+#include "DiskManager.h"			// ss::DiskManager
+#include "DiskOperationsManager.h"	// ss::DiskOperationsManager
+#include <set>						// std::set
+#include "Lock.h"					// au::Lock
+#include "CommandLine.h"			// au::CommandLine
 
 
 //#define DIR1  "/Volumes/UNTITLED 1/"
@@ -44,20 +45,32 @@ int main( int arg , const char *argv[] )
 	ss::DiskOperationsManager operationsManager;
 	
 	// Add some operations for testing writing...
-		for (size_t f = 0 ; f < directories.size() ; f++)
+	for (size_t f = 0 ; f < directories.size() ; f++)
+	{
+		for (int i = 0 ; i < files ; i++)
 		{
-			for (int i = 0 ; i < files ; i++)
-			{
-				std::ostringstream fileName;
-				fileName << directories[f] << "file_" << i;
-				operationsManager.write( buffer , size ,  fileName.str() );
-			}
+			std::ostringstream fileName;
+			fileName << directories[f] << "file_" << i;
+			
+			operationsManager.write( buffer , size ,  fileName.str() );
 		}
+	}
+
 
 	
-
-
+	// Add some operations for testing reading...
+	for (size_t f = 0 ; f < directories.size() ; f++)
+	{
+		for (int i = 0 ; i < files ; i++)
+		{
+			std::ostringstream fileName;
+			fileName << directories[f] << "file_" << i;
+			
+			operationsManager.read( buffer , size,  fileName.str() , 0 );
+		}
+	}
 	operationsManager.waitUntilComplete();
+	
 	
 	
 	

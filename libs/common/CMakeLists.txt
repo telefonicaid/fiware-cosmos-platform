@@ -7,11 +7,13 @@ SET (HEADERS
 	LockDebugger.h
 	Lock.h
 	StopLock.h
+	SamsonSetup.h
 )
 
 SET (SOURCES
 	LockDebugger.cpp
 	Lock.cpp
+	SamsonSetup.cpp
 )
 
 ADD_LIBRARY(samsonCommonStatic STATIC ${SOURCES} ${HEADERS} ${HEADERES_SAMSON} )

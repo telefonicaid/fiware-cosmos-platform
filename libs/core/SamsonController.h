@@ -61,13 +61,9 @@ namespace ss {
 			
             port       = commandLine.get_flag_int("port");
 			setup      = commandLine.get_flag_string("setup");
-            trace      = commandLine.get_flag_string("t");
             lmReads    = commandLine.get_flag_bool("r");
             lmWrites   = commandLine.get_flag_bool("w");
 
-			LmStatus s;
-            if ((s = lmTraceSet((char*) trace.c_str())) != LmsOk)
-				EXIT(1, ("lmTraceSet: %s", lmStrerror(s)));
 			
 			// Load setup
 			LM_T(LMT_CONFIG, ("calling loadSetup"));			

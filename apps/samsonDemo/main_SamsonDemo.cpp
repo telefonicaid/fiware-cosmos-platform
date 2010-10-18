@@ -4,6 +4,7 @@
 #include "SamsonController.h"	// ss:: SasonController
 #include <vector>				// std::vector
 #include <sstream>				// std::ostringstream
+#include "traces.h"				// Traces stuff: samsonInitTrace(.) , ...
 #include "Endpoint.h"			// ss::EndPoint
 
 #include "FakeEndpoint.h"
@@ -22,42 +23,24 @@ const char* worker_argv[] = { "-controller" , "what_ever"};
 
 int main(int argc, const char *argv[])
 {
-	LmStatus  s;
-	char*     trace = (char*) "0-255";
+	// Init the trace system
+	ss::samsonInitTrace( argc , argv );
 	
-	progName = lmProgName((char*) argv[0], 1, false);
-	
-	if ((s = lmPathRegister("/tmp/", "DEF", "DEF", NULL)) != LmsOk)
-		EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
-	if ((s = lmFdRegister(1, "TYPE: TEXT", "DEF", "controller", NULL)) != LmsOk)
-		EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
-	if  ((s = lmInit()) != LmsOk)
-		EXIT(1, ("lmInit: %s", lmStrerror(s)));
-	
-	if ((argc >= 3) && (strcmp(argv[1], "-t") == 0))
-		trace = (char*) argv[2];
-	if ((s = lmTraceSet(trace)) != LmsOk)
-		EXIT(1, ("lmTraceSet: %s", lmStrerror(s)));
-	
-	LM_F(("set trace levels to '%s'", trace));
-	for (int ix = 0; ix < 256; ix++)
-		LM_T(ix,  ("Testing trace level %d", ix));
-	
+	LM_T( TRACE_SAMSON_DEMO , ("Starting samsom demo") );
 	
 	au::CommandLine commandLine;
 	commandLine.set_flag_int("workers", 2);			// Number of workers by command line ( default 2 )
 	commandLine.set_flag_boolean("ncurses");
 
+	// Command line to extract the number of workers from command line arguments
 	commandLine.parse(argc , argv);
 	int num_workers = commandLine.get_flag_int("workers");
 	
 	// Fake network element with N workers
 	ss::NetworkFakeCenter center(num_workers);		
-
 	
-	// Creat the one controller, one dalilah and N workers
+	// Create one controller, one dalilah and N workers
 	ss::SamsonController controller ( argc, argv ,center.getNetwork( -1 )  );
-
 	
 	const char **_dalilah_argv;
 	int _dalilah_argc;
@@ -83,7 +66,8 @@ int main(int argc, const char *argv[])
 	dalilah.run();
 	for (int i = 0 ; i < num_workers ; i ++ )
 		workers[i]->run();
-	
+
+	// Keep alive while dalila is alive
 	while(!dalilah.finish)
 		sleep(1);
 	

@@ -8,13 +8,18 @@ SET (HEADERS
 	Lock.h
 	StopLock.h
 	SamsonSetup.h
+	traces.h
 )
 
 SET (SOURCES
 	LockDebugger.cpp
 	Lock.cpp
 	SamsonSetup.cpp
+	traces.cpp
 )
+
+include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
+
 
 ADD_LIBRARY(samsonCommonStatic STATIC ${SOURCES} ${HEADERS} ${HEADERS_SAMSON})
 TARGET_LINK_LIBRARIES(samsonCommonStatic  protobuf)

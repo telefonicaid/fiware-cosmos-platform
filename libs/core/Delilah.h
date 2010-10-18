@@ -16,6 +16,10 @@
 #include "CommandLine.h"		// au::CommandLine
 #include "CommandLine.h"		// au::CommandLine
 #include "DelilahConsole.h"		// ss::DelilahConsole
+#include "traces.h"				// TRACE_DALILAH
+
+
+
 
 namespace ss {
 	
@@ -48,13 +52,8 @@ namespace ss {
 			// Parse input command lines
 			au::CommandLine commandLine;
 			commandLine.set_flag_string("controller", "no_controller");
-			commandLine.set_flag_string("t",      "0-255");
 			commandLine.set_flag_boolean("console");				// tmp flag for testing
 			commandLine.parse(arg, argv);
-			
-			LmStatus s;
-			if ((s = lmTraceSet((char*) commandLine.get_flag_string("t").c_str())) != LmsOk)
-				EXIT(1, ("lmTraceSet: %s", lmStrerror(s)));
 
 			// Create console
 			console =  new DelilahConsole( this , !commandLine.get_flag_bool("console") );
@@ -68,7 +67,7 @@ namespace ss {
 				exit(0);
 			}
 
-			std::cout << "Delilah running. Controller: " << controller << std::endl;
+			LM_T( TRACE_DALILAH , ("Delilah running. Controller: %s",controller.c_str() ) );
 			
 			ss::Endpoint controllerEndpoint(Endpoint::Controller, controller);
 			network->initAsDelilah(controllerEndpoint);

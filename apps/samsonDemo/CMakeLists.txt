@@ -9,7 +9,6 @@ SET (HEADERS
     FakeEndpoint.h
     NetworkFake.h
     NetworkFakeCenter.h
-    traceLevels.h
 )
 
 

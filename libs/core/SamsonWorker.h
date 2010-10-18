@@ -17,6 +17,7 @@
 #include "CommandLine.h"		// au::CommandLine
 #include "logMsg.h"				// 
 #include "Macros.h"				// EXIT
+#include "traces.h"				// Trace levels
 
 namespace ss {
 	
@@ -52,13 +53,9 @@ namespace ss {
 
 			port       = commandLine.get_flag_int("port");
 			controller = commandLine.get_flag_string("controller");
-			trace      = commandLine.get_flag_string("t");
 			lmReads    = commandLine.get_flag_bool("r");
 			lmWrites   = commandLine.get_flag_bool("w");
 
-            LmStatus s;
-            if ((s = lmTraceSet((char*) trace.c_str())) != LmsOk)
-				EXIT(1, ("lmTraceSet: %s", lmStrerror(s)));
 
 			if (controller == "no_controller")
 			{
@@ -66,8 +63,8 @@ namespace ss {
 				exit(0);
 			}
 			
-			std::cout << "Samson worker running at port " << port << " controller: " << controller << std::endl;
-			
+			LM_T( TRACE_SAMSON_WORKER , ("Samson worker running at port %d controller: %s", port , controller.c_str() ));
+					
 			// Get the endpoints necessary to start network interface
 			ss::Endpoint controllerEndPoint(Endpoint::Controller, controller);
 			ss::Endpoint myEndPoint(Endpoint::Listener, port);

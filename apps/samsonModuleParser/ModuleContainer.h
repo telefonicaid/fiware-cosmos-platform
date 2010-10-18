@@ -1,13 +1,13 @@
+#ifndef MODULE_CONTAINER_H
+#define MODULE_CONTAINER_H
+
 /* ****************************************************************************
- *
- * FILE                     ModuleContainer.h
- *
- * DESCRIPTION				Information about a module (module definition)
- *
- * ***************************************************************************/
-
-#pragma once
-
+*
+* FILE                     ModuleContainer.h
+*
+* DESCRIPTION				Information about a module (module definition)
+*
+*/
 #include <unistd.h>             /* _exit, ...                              */
 #include <string.h>             /* strtok, strcpy, ...                     */
 #include <cstdio>
@@ -128,3 +128,5 @@ namespace ss
 	};
 
 }
+
+#endif

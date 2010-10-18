@@ -1,5 +1,3 @@
-
-
 #ifndef _H_DISK_OPERATION
 #define _H_DISK_OPERATION
 
@@ -48,4 +46,5 @@ namespace ss {
 	};
 	
 }
+
 #endif

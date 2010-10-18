@@ -1,4 +1,3 @@
-
 #ifndef _H_DISK_MANAGER_DELEGATE
 #define _H_DISK_MANAGER_DELEGATE
 
@@ -27,7 +26,8 @@ namespace ss {
 	{
 	public:
 		// Notify that this operation has finished
-		virtual void diskManagerNotifyFinish( size_t id , bool success )=0;	
+		virtual void diskManagerNotifyFinish(size_t id, bool success) = 0;	
+		virtual ~DiskManagerDelegate() {};
 	};
 	
 }

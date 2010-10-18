@@ -1,4 +1,3 @@
-
 #ifndef _H_BUFFER
 #define _H_BUFFER
 
@@ -62,4 +61,5 @@ namespace ss {
 	};
 
 }
+
 #endif

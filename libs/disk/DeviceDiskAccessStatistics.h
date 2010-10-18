@@ -1,4 +1,3 @@
-
 #ifndef _H_DEVICE_DISK_ACCESS_STATISTICS
 #define _H_DEVICE_DISK_ACCESS_STATISTICS
 
@@ -49,32 +48,38 @@ namespace ss {
 			}
 			else
 			{
-				average_size = 0.8*average_size + 0.2*size;
-				average_time = 0.8*average_time + 0.2*time;
+				average_size = (size_t) 0.8 * average_size + (size_t) 0.2 * size;
+				average_time = 0.8 * average_time + 0.2 * time;
 			}
 			
 		}
 		
 		size_t getRate()
 		{
-			if( size == 0)
-				return 0;
+			if (size == 0)
+			   return (size_t) 0;
 			else
-				return ( size / time );
+				return (size_t) (size / time);
 		}
 		
 		size_t getAverageRate()
 		{
-			if( average_size == 0)
+			if (average_size == 0)
 				return 0;
 			else
-				return ( average_size / average_time );
+				return (size_t) (average_size / average_time);
 		}
 		
 		std::string str()
 		{
 			std::ostringstream o;
-			o << "S:" << au::Format::string( size ) << " T:" << au::Format::time_string( time ) << "("<<  au::Format::string( getRate()) << ")";
+			o << 
+				"S:" <<
+				au::Format::string( size ) <<
+				" T:" << au::Format::time_string( (int) time ) <<
+				"("<<  au::Format::string(
+					getRate()) << ")";
+
 			//o << "S:" << au::Format::string( average_size ) << " T:" << au::Format::time_string( average_time ) << "("<<  au::Format::string( getAverageRate()) << ")";
 			return o.str();
 		}

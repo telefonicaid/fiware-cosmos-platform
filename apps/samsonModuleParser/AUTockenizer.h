@@ -1,12 +1,13 @@
-/* ****************************************************************************
- *
- * FILE                     AUTockenizer.h
- *
- * DESCRIPTION				Tockenizer to parse files describing modules
- *
- * ***************************************************************************/
+#ifndef AU_TOKENIZER_H
+#define AU_TOKENIZER_H
 
-#pragma once
+/* ****************************************************************************
+*
+* FILE                     AUTockenizer.h
+*
+* DESCRIPTION			   Tockenizer to parse files describing modules
+*
+*/
 
 
 
@@ -111,7 +112,7 @@ namespace ss {
 		
 		/**
 		 
-		 Functions to tockenie the input string
+		 Functions to tockenize the input string
 		 
 		 */
 		
@@ -282,3 +283,5 @@ namespace ss {
 	};
 	
 }
+
+#endif

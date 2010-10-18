@@ -1,13 +1,15 @@
-
 #ifndef _H_FAKE_ENDPOINT
 #define _H_FAKE_ENDPOINT
+
+#include <vector>				// std::vector
+#include <sstream>				// std::ostringstream
 
 #include "Delilah.h"			// ss:Delilah
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "SamsonController.h"	// ss:: SasonController
-#include <vector>				// std::vector
-#include <sstream>				// std::ostringstream
 #include "Endpoint.h"			// ss::EndPoint
+
+
 
 namespace ss {
 	

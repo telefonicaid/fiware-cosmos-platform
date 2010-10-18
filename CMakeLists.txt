@@ -19,6 +19,8 @@ execute_process(COMMAND            echo $USER
                 COMMAND            tr 'a-z' 'A-Z'
                 OUTPUT_VARIABLE    USER)
 
+add_definitions(-DLM_ON)
+
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
   MESSAGE("cmake: DEBUG compilation")
   add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
@@ -31,8 +33,6 @@ else (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 
-
-add_definitions(-DLM_ON)
 set(CMAKE_CXX_FLAGS, "-fPIC")
 
 

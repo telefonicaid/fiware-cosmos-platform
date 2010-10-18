@@ -1,15 +1,14 @@
-
-
 /* ****************************************************************************
- *
- * FILE                     DataCreator.cpp
- *
- * DESCRIPTION				Creation of Data headeres
- *
- * ***************************************************************************/
-
+*
+* FILE                     DataCreator.cpp
+*
+* DESCRIPTION			   Creation of Data headers
+*
+*/
 #include "DataCreator.h"		// Own interface
 #include "AUTockenizer.h"		// AUTockenizer
+
+
 
 namespace ss {
 
@@ -366,5 +365,4 @@ namespace ss {
 			outputFileStream << outputStream.str();
 		}
 	}
-
 }

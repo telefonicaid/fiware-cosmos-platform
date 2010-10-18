@@ -9,7 +9,8 @@ namespace ss
 	class BufferSinkInterface
 	{
 	 public:
-	  virtual void newBuffer( Buffer * buffer )=0;
+		virtual void newBuffer( Buffer * buffer )=0;
+		virtual ~BufferSinkInterface() {}
 	};
 }
 

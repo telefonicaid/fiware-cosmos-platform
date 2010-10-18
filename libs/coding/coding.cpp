@@ -1,4 +1,3 @@
-
 #include <samson/Data.h>
 #include <samson/DataInstance.h>
 #include <samson/Factory.h>

@@ -1,8 +1,9 @@
-
-#include "DiskManager.h"				// Own interface
 #include "DiskManagerDelegate.h"		// DiskManagerDelegate
 #include "DiskOperation.h"				// DiskOperation
 #include "DeviceDiskAccessManager.h"	// DeviceDiskAccessManager
+#include "DiskManager.h"				// Own interface
+
+
 
 namespace ss {
 
@@ -111,5 +112,4 @@ namespace ss {
 		return true;
 		
 	}
-	
 }

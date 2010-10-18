@@ -1,9 +1,9 @@
-
-#include "DeviceDiskAccessManager.h"		// Own interface
 #include "DiskOperation.h"					// DiskOperation
 #include "FileAccess.h"						// FileAccess
 #include "DiskManagerDelegate.h"			// DiskManagerDelegate
 #include "SamsonSetup.h"					// SamsonSetup
+#include "DeviceDiskAccessManager.h"		// Own interface
+
 
 
 namespace ss {

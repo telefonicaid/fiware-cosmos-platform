@@ -2,12 +2,15 @@
 #ifndef _H_NETWORK_FAKE
 #define _H_NETWORK_FAKE
 
+#include <vector>				// std::vector
+#include <sstream>				// std::ostringstream
+
 #include "Delilah.h"			// ss:Delilah
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "SamsonController.h"	// ss:: SasonController
-#include <vector>				// std::vector
-#include <sstream>				// std::ostringstream
 #include "Endpoint.h"			// ss::EndPoint
+
+
 
 namespace ss {
 	

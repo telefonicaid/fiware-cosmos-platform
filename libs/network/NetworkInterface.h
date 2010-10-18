@@ -14,6 +14,7 @@ namespace ss {
 	public:
 		// Notification that a particular send finished
 		virtual void receive(Packet* packet, Endpoint* from) = 0;
+		virtual ~PacketReceiverInterface() {};
 	};
 	
 	
@@ -27,6 +28,7 @@ namespace ss {
 	public:
 		// Notification that the packet has been sent
 		virtual void notificationSent(size_t id, bool success) = 0;
+		virtual ~PacketSenderInterface() {};
 	};
 	
 	/* ****************************************************************************
@@ -37,10 +39,11 @@ namespace ss {
 	class  NetworkInterface
 	{
 	public:
-		
-		virtual void initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> peers)=0;
-		virtual void initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint)=0;
-		virtual void initAsDelilah(Endpoint controllerEndpoint)=0;
+		virtual ~NetworkInterface() {};
+
+		virtual void initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> peers) = 0;
+		virtual void initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint) = 0;
+		virtual void initAsDelilah(Endpoint controllerEndpoint) = 0;
 		
 		// Set the receiver element
 		virtual void setPacketReceiverInterface( PacketReceiverInterface* receiver){};

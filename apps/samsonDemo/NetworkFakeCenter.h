@@ -8,9 +8,10 @@
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "SamsonController.h"	// ss:: SasonController
 #include "FakeEndpoint.h"		// ss::EndPoint
+#include "NetworkFake.h"        // NetworkFake
+
 
 namespace ss {
-	
 	
 	class NetworkFakeCenter
 	{
@@ -31,7 +32,7 @@ namespace ss {
 				// Create a fake Network interface element
 				workers.push_back( new NetworkFake(i , this) );
 				
-				// Create the rigth endpoint
+				// Create the right endpoint
 				std::ostringstream _name;
 				_name << "worker_" << i;
 				workerEndPoint.push_back( new FakeEndpoint(_name.str() ) );

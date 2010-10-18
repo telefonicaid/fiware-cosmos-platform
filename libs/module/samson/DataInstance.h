@@ -190,8 +190,9 @@ namespace system {
 	class Double : public FixedLengthDataInstance<double>
 	{
 	public:
-		int hash(int max_num_partitions){
-			return abs(value)%max_num_partitions;
+		int hash(int max_num_partitions)
+		{
+			return abs((int) value) % max_num_partitions;
 		}
 		
 	};

@@ -1,14 +1,14 @@
 /* ****************************************************************************
- *
- * FILE                     DelilahConsole.h
- *
- * DESCRIPTION			   Console terminal for delilah
- *
- */
-
-
-#include "DelilahConsole.h"		// Own interface
+*
+* FILE                     DelilahConsole.h
+*
+* DESCRIPTION			   Console terminal for delilah
+*
+*/
 #include "Delilah.h"			// ss::Delailh
+#include "DelilahConsole.h"		// Own interface
+
+
 
 namespace ss
 {

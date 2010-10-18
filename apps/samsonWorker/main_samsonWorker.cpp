@@ -1,6 +1,7 @@
-
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "traceLevels.h"        // LMT_*
+
+
 
 /**
  Main routine for the samsonWorker
@@ -19,7 +20,8 @@ int main(int argc, const char *argv[])
 	if  ((s = lmInit()) != LmsOk)
 		EXIT(1, ("lmInit: %s", lmStrerror(s)));
 	
-	ss::Network network;			// Real network element
+	ss::Network      network;   // Real network element
 	ss::SamsonWorker worker(argc, argv, &network);
+
 	worker.run();
 }

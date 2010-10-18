@@ -68,4 +68,3 @@ void SamsonWorker::notificationSent( size_t id , bool success )
 }
 
 }
-

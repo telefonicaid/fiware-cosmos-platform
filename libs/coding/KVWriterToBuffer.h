@@ -1,20 +1,22 @@
-/* ****************************************************************************
- *
- * FILE                 KVWriterToBuffer.h - 
- *
- */
-
 #ifndef _H_KVWriterToBuffer
 #define _H_KVWriterToBuffer
 
-#include "coding.h"					// ss_hg, ss_hg_size, etc..
+/* ****************************************************************************
+*
+* FILE                 KVWriterToBuffer.h - 
+*
+*/
+#include <iostream>					// std::cout
 #include <vector>					// std::vector
 #include <set>						// std::set
+
+#include "coding.h"					// ss_hg, ss_hg_size, etc..
 #include "samson/KVWriter.h"		// KVWriter
-#include <iostream>					// std::cout
 #include "Lock.h"					// au::Lock
 #include "BufferSinkInterface.h"	// ss::BufferSinkInterface
 #include "MemoryManager.h"			// ss::MemoryManager
+
+
 
 namespace ss {
 
@@ -201,6 +203,5 @@ namespace ss {
 	};
 	
 }
-
 
 #endif

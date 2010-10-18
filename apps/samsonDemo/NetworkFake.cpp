@@ -1,6 +1,7 @@
+#include "NetworkFakeCenter.h"       // NetworkFakeCenter
+#include "NetworkFake.h"             // Own interface
 
-#include "NetworkFake.h"
-#include "NetworkFakeCenter.h"
+
 
 namespace ss {
 

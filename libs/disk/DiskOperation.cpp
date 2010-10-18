@@ -1,5 +1,3 @@
-
-
 #include "DiskOperation.h"			// Own interface
 #include "DiskManagerDelegate.h"	// DiskManagerDelegate
 
@@ -56,6 +54,4 @@ namespace ss {
 		// Something wrong...
 		return false;
 	}
-	
-	
 }

@@ -1,4 +1,3 @@
-
 #ifndef _H_DEVICE_DISK_ACCESS_MANAGER
 #define _H_DEVICE_DISK_ACCESS_MANAGER
 
@@ -65,4 +64,5 @@ namespace ss {
 		
 	};
 }
+
 #endif

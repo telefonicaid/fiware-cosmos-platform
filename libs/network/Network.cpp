@@ -22,7 +22,7 @@
 #include "iomAccept.h"          // iomAccept
 #include "iomMsgSend.h"         // iomMsgSend
 #include "iomMsgRead.h"         // iomMsgRead
-#include "network.h"			// Own interface
+#include "Network.h"			// Own interface
 
 
 

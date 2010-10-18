@@ -1,13 +1,13 @@
-
 #ifndef _H_NETWORK_FAKE_CENTER
 #define _H_NETWORK_FAKE_CENTER
+
+#include <vector>				// std::vector
+#include <sstream>				// std::ostringstream
 
 #include "Delilah.h"			// ss:Delilah
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "SamsonController.h"	// ss:: SasonController
-#include <vector>				// std::vector
-#include <sstream>				// std::ostringstream
-#include "FakeEndPoint.h"			// ss::EndPoint
+#include "FakeEndpoint.h"		// ss::EndPoint
 
 namespace ss {
 	

@@ -1,9 +1,11 @@
-
 #include <iostream>
+
 #include "MemoryManager.h"
 #include "Console.h"			// au::Console
 #include "Buffer.h"				// ss:BUffer
-#include "DiskManager.H"		// ss::DiskManager
+#include "DiskManager.h"		// ss::DiskManager
+
+
 
 class TestConsole : public au::Console
 {

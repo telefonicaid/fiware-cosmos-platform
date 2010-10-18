@@ -1,10 +1,9 @@
-
-
-#include "SamsonSetup.h"		// Own interface
-#include "samsonDirectories.h"	// SAMSON_SETUP_FILE
 #include <stdio.h>
-#include "CommandLine.h"		// au::CommandLine
 #include <iostream>				// std::cerr
+
+#include "samsonDirectories.h"	// SAMSON_SETUP_FILE
+#include "CommandLine.h"		// au::CommandLine
+#include "SamsonSetup.h"		// Own interface
 
 namespace ss
 {

@@ -1,13 +1,16 @@
-
 #ifndef _H_SAMSON_SETUP
 #define _H_SAMSON_SETUP
 
 #include <map>				// std::map
 #include <string>			// std::string
 #include <iostream>			// std::cout
+#include <stdlib.h>         // atoll
+
 
 
 #define SETUP_max_open_files_per_device "max_open_files_per_device"
+
+
 
 namespace ss {
 	

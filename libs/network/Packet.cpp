@@ -29,6 +29,13 @@ void Packet::messageCodeSet(MessageCode code)
 	message.set_code(code);
 }
 	
+	
+int Packet::messageCodeGet()
+{
+	return message.code();
+}
+
+	
 
 
 /* ****************************************************************************
@@ -172,6 +179,10 @@ char* Packet::msgCodeName(MessageCode code)
 	{
 	case Hello:            return (char*) "Hello";
 	case WorkerVector:     return (char*) "WorkerVector";
+	case WorkerTask:		return (char*) "WorketTask";
+	case WorkerTaskConfirmation:		return (char*) "WorketTaskConfirmation";
+	case DalilahCommand:				return (char*) "DalilahCommand";
+	case DalilahCommandResponse:		return (char*) "DalilahCommandResponse";
 	}
 
 	return (char*) "UnknownMsgCode";

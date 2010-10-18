@@ -6,6 +6,7 @@ SET (HEADERS
     DelilahConsole.h
     WorkerDataManager.h
     ControllerDataManager.h
+    ControllerTaskManager.h
 )
 
 SET (SOURCES
@@ -16,6 +17,7 @@ SET (SOURCES
     DelilahConsole.cpp
     WorkerDataManager.cpp
     ControllerDataManager.cpp
+    ControllerTaskManager.cpp
 )
 
 SET (STATIC_LIBS

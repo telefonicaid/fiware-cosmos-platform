@@ -28,6 +28,42 @@ message Hello
 }
 
 
+// Message from dalilah to controller
+
+message DalilahCommand
+{
+	required int64 task_id = 1;	// Local id of this task by dalilah
+	required string command = 2;	// Command to perform by the platform
+
+}
+
+// Answer form the controller to dalilah
+
+message DalilahCommandResponse
+{
+	required int64 task_id = 1;	// Local id of this task by dalilah
+	required string answer = 2;	// TXT answer of the command
+	required bool error=3;	       	// Flag indicating if there was an error in the command	
+}
+
+
+// Message from the controller workers
+
+message WorkerTask
+{
+	required string command = 1;	// Command to perform by the worker
+	required int64 task_id = 2;	// Id of the top level ( controller ) task
+}
+
+// Confirmation from workers to the controller
+
+message WorkerTaskConfirmation
+{
+	required int64 task_id = 1;	// Id of the opt level (controller ) task
+	required bool error=2;	  	// Error in the operation
+
+	// Additional information ( like queue size changes, etc... )
+}
 
 message Message
 {
@@ -38,9 +74,15 @@ message Message
 	optional EndPointVector endPoints = 300;          // Vector of endPoints ( network interface )
 	optional Hello          hello     = 301;          // Hello message
 
+	optional WorkerTask	task	  = 302;	  // Work task message
+	optional WorkerTaskConfirmation task_confirmation = 303;  // Work rask confirmation message
+
 	optional string command           = 200;          // optimal string to send a txt command
 	optional string answer            = 201;          // optinal string to receive a txt answer
 	optional bool   error             = 202;          // Flag to indicat if there was an error
 	optional int32  sender_id         = 203;          // Id of the packet sender ( delilah )
+
+
+
 }
 

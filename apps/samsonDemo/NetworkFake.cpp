@@ -52,23 +52,23 @@ namespace ss {
 		return center->getEndpoint(i);
 	}
 	
-	 int NetworkFake::worker( Endpoint endPoint )
+	 int NetworkFake::worker( Endpoint* endPoint )
 	{
 		assert( false );
 		return 0;
 	}
 	
-	 std::vector<Endpoint> NetworkFake::endPoints()
+	 std::vector<Endpoint*> NetworkFake::endPoints()
 	{
 		assert(false);	// Not implemented
-		std::vector<Endpoint> a;
+		std::vector<Endpoint*> a;
 		return a;
 	}
 	
-	 std::vector<Endpoint> NetworkFake::samsonWorkerEndpoints()
+	 std::vector<Endpoint*> NetworkFake::samsonWorkerEndpoints()
 	{
 		assert(false);	// Not implemented
-		std::vector<Endpoint> a;
+		std::vector<Endpoint*> a;
 		return a;
 	}
 	

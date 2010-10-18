@@ -58,10 +58,10 @@ public:
 	Endpoint* controllerGet();                      // Get the endPoint of the controller
 	Endpoint* workerGet(int i);                     // Get the endPoint of the "i-th" worker
 
-	int worker( Endpoint endPoint );                // Identify the worker of this endPoint ( 0 if the controller )
+	int worker( Endpoint* endPoint );                // Identify the worker of this endPoint ( 0 if the controller )
 
-	std::vector<Endpoint> endPoints();              // Get a list of all endPoints
-	std::vector<Endpoint> samsonWorkerEndpoints();  // Get a list of the samsonWorkers endpoints
+	std::vector<Endpoint*> endPoints();              // Get a list of all endPoints
+	std::vector<Endpoint*> samsonWorkerEndpoints();  // Get a list of the samsonWorkers endpoints
 
 	// Send a packet (return a unique id to inform the notifier later)
 	size_t send(Packet* packet, Endpoint* endpoint, PacketSenderInterface* sender);

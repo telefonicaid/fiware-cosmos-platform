@@ -76,7 +76,11 @@ namespace ss {
 		typedef enum MessageCode
 		{
 			Hello,
-			WorkerVector
+			WorkerVector,
+			DalilahCommand,					// Message sent from dalilah to controller
+			DalilahCommandResponse,			// Answer from the controller
+			WorkerTask,						// Task sent from controller to each worker
+			WorkerTaskConfirmation			// Confirmation sent form workers to the controller
 		} MessageCode;
 
 		typedef enum MessageType
@@ -102,6 +106,8 @@ namespace ss {
 		void      messageCodeSet(MessageCode code);
 		void      messageTypeSet(MessageType type);
 
+		int messageCodeGet();
+		
 		void      endpointAdd(Endpoint* e);
 		Endpoint  endpointGet(int i);
 		void      endpointVectorAdd(std::vector<Endpoint>& es);

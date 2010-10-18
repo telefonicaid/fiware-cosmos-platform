@@ -35,9 +35,9 @@ namespace ss {
 		virtual Endpoint* meGet();
 		virtual Endpoint* controllerGet();
 		virtual Endpoint* workerGet(int i);
-		virtual int worker( Endpoint endPoint );
-		virtual std::vector<Endpoint> endPoints();
-		virtual std::vector<Endpoint> samsonWorkerEndpoints();
+		virtual int worker( Endpoint* endPoint );
+		virtual std::vector<Endpoint*> endPoints();
+		virtual std::vector<Endpoint*> samsonWorkerEndpoints();
 		virtual size_t send(Packet* packet, Endpoint* endpoint, PacketSenderInterface* sender);
 		virtual void run();
 		virtual void quit();

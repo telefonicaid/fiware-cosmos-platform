@@ -17,8 +17,10 @@
 #include "samsonDirectories.h"			// File to load setup
 #include "ControllerDataManager.h"		// ss::ControllerDataManager
 #include "ModulesManager.h"				// ss::ModulesManager
+#include "ControllerTaskManager.h"		// ss::ControllerTaskManager
+#include "traces.h"						// LMT_CONFIG, ...
 
-#define LMT_CONFIG    22
+//#define LMT_CONFIG    22
 
 
 namespace ss {
@@ -34,10 +36,12 @@ namespace ss {
 		NetworkInterface *network;						// Network interface
 		ControllerDataManager data;						// Data manager for the controller
 		ModulesManager modulesManager;					// Manager of the modules ( to check data types and map/reduce/scripts functions)
-
+		ControllerTaskManager taskManager;				// Task manager of the controller
+		
+		friend class ControllerTaskManager;
 		
 	public:
-		SamsonController( int arg , const char *argv[] ,  NetworkInterface *_network )
+		SamsonController( int arg , const char *argv[] ,  NetworkInterface *_network ) : 	taskManager( this )
 		{
 			
 			network = _network;
@@ -125,9 +129,14 @@ namespace ss {
 		}
 		
 		
-		
 		// Send a message back to dalilah
 		void sendDalilahAnswer( size_t sender_id , Endpoint *dalilahEndPoint , bool error , std::string answer_message );
+		
+		// Send a message to a worker with a particular task
+		void sendWorkerTasks( ControllerTask *task );
+		void sendWorkerTask( Endpoint * worker , size_t task_id , std::string command );
+		
+		
 		
 		
 		// PacketReceiverInterface

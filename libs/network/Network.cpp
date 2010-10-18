@@ -313,7 +313,7 @@ Endpoint* Network::workerGet(int i)
 *
 * worker - 
 */
-int Network::worker( Endpoint endPoint )
+int Network::worker( Endpoint* endPoint )
 {
 	return -1;
 }
@@ -324,9 +324,12 @@ int Network::worker( Endpoint endPoint )
 *
 * 
 */
-std::vector<Endpoint> Network::endPoints()
+std::vector<Endpoint*> Network::endPoints()
 {
-	return endpointV;
+	std::vector<Endpoint*> tmp;
+	for (size_t i = 0 ; i < endpointV.size() ; i++)
+		tmp.push_back( &endpointV[i] );
+	return tmp;
 }
 	
 
@@ -335,9 +338,12 @@ std::vector<Endpoint> Network::endPoints()
 *
 * samsonWorkerEndpoints - 
 */
-std::vector<Endpoint> Network::samsonWorkerEndpoints()
+std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 {
-    return endpointV;
+	std::vector<Endpoint*> tmp;
+	for (size_t i = 0 ; i < endpointV.size() ; i++)
+		tmp.push_back( &endpointV[i] );
+	return tmp;
 }
 	
 
@@ -470,6 +476,8 @@ void Network::msgTreat(Endpoint* epP)
 
 			iomMsgSend(epP, &ack, NULL, 0);
 		}
+		default:
+			assert(false);
 	}
 }
 

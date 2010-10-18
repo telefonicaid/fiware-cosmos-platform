@@ -53,10 +53,10 @@ namespace ss {
 		virtual Endpoint* meGet()=0;                              // Get my endPoint
 		virtual Endpoint* controllerGet()=0;                      // Get the endPoint of the controller
 		virtual Endpoint* workerGet(int i)=0;                     // Get the endPoint of the "i-th" worker
-		virtual int worker( Endpoint endPoint )=0;                // Identify the worker of this endPoint ( 0 if the controller )
+		virtual int worker( Endpoint* endPoint )=0;               // Identify the worker of this endPoint ( 0 if the controller )
 		
-		virtual std::vector<Endpoint> endPoints()=0;              // Get a list of all endPoints
-		virtual std::vector<Endpoint> samsonWorkerEndpoints()=0;  // Get a list of the samsonWorkers endpoints
+		virtual std::vector<Endpoint*> endPoints()=0;              // Get a list of all endPoints
+		virtual std::vector<Endpoint*> samsonWorkerEndpoints()=0;  // Get a list of the samsonWorkers endpoints
 		
 		// Send a packet (return a unique id to inform the notifier later)
 		virtual size_t send(Packet* packet, Endpoint* endpoint, PacketSenderInterface* sender)=0;

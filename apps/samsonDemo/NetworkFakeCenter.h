@@ -17,34 +17,44 @@ namespace ss {
 	{
 	public:
 		
-		std::vector<NetworkFake*> workers;
-		NetworkFake *controller;
-		NetworkFake *dalilah;
-		
-		std::vector<FakeEndpoint*> workerEndPoint;
-		FakeEndpoint *controllerEndPoint;
-		FakeEndpoint *dalilahEndPoint;
+		std::map<int,NetworkFake*> network; 
+		std::map<int,FakeEndpoint*> endpoint; 
 		
 		NetworkFakeCenter( int num_workers )
 		{
 			for (int i = 0 ; i < num_workers ; i++)
 			{
 				// Create a fake Network interface element
-				workers.push_back( new NetworkFake(i , this) );
+				network.insert( std::pair<int,NetworkFake*>( i , new NetworkFake(i , this) ) );
 				
 				// Create the right endpoint
-				std::ostringstream _name;
-				_name << "worker_" << i;
-				workerEndPoint.push_back( new FakeEndpoint(_name.str() ) );
+				endpoint.insert( std::pair<int,FakeEndpoint*>( i , new FakeEndpoint("worker" , i ) ) );
 			}
-			
-			controllerEndPoint = new FakeEndpoint("controller");
-			controller = new NetworkFake(-1 , this);
-			
-			dalilahEndPoint = new FakeEndpoint("dalilah");
-			dalilah = new NetworkFake(-2 , this);
+
+			network.insert( std::pair<int,NetworkFake*>( -1 , new NetworkFake(-1 , this) ) );
+			endpoint.insert( std::pair<int,FakeEndpoint*>( -1 , new FakeEndpoint("controller" , -1 ) ) );
+
+			network.insert( std::pair<int,NetworkFake*>( -2 , new NetworkFake(-2 , this) ) );
+			endpoint.insert( std::pair<int,FakeEndpoint*>( -2 , new FakeEndpoint("dalilah" , -2 ) ) );
 			
 		}
+		
+		
+		NetworkFake* getNetwork( int worker_id )
+		{
+			std::map<int,NetworkFake*>::iterator i =  network.find( worker_id );
+			assert( i != network.end() );
+			return i->second;
+		}
+		
+		FakeEndpoint* getEndpoint( int worker_id )
+		{
+			std::map<int,FakeEndpoint*>::iterator i =  endpoint.find( worker_id );
+			assert( i != endpoint.end() );
+			return i->second;
+		}
+		
+		
 		
 	};
 }

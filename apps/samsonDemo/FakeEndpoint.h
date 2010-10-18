@@ -21,10 +21,13 @@ namespace ss {
 	public:
 		
 		std::string name;
+		int worker_id;
 		
-		FakeEndpoint( std::string _name ) : Endpoint( Listener , "" )
+		FakeEndpoint( std::string _name , int _worker_id ) : Endpoint( Listener , "" )
 		{
+			worker_id = _worker_id;
 			name = _name;
+			
 		}
 		
 	};

@@ -38,6 +38,7 @@ namespace ss {
 		{
 			
 			network = _network;
+			network->setPacketReceiverInterface(this);
 			
 			int          port;
 			std::string  trace;

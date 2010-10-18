@@ -24,11 +24,18 @@ namespace ss
 		std::string mainCommand = commandLine.get_argument(0);
 		
 		if( mainCommand == "quit" )
-			delailh->quit();
+			dalilah->quit();
 		else
 		{
-			writeWarningOnConsole( "Method evalCommand not implemented yet completelly");
-			writeWarningOnConsole( std::string("Message to process: ") + command );
+			// Eval what to do with this command
+			
+			size_t code = dalilah->sendMessageToContorller( command );
+			std::ostringstream o;
+			o << "Sent command to controller (id="<<code<<") : " << command;
+			writeOnConsole(o.str());
+			
+			
+			
 		}
 	}
 }

@@ -299,7 +299,7 @@ public:
 	void writeWarningOnConsole( std::string message )
 	{
 		if( ncurses )
-			addLine( ConsoleLineWarning , message );
+			addLines( ConsoleLineWarning , getLines(message) );
 		else
 			std::cerr << message << std::endl;
 
@@ -308,7 +308,7 @@ public:
 	void writeErrorOnConsole( std::string message )
 	{
 		if( ncurses )
-			addLine( ConsoleLineError , message );
+			addLines( ConsoleLineError , getLines(message) );
 		else
 			std::cerr << "Error: " << message << std::endl;
 
@@ -317,7 +317,7 @@ public:
 	void writeOnConsole( std::string message )
 	{
 		if( ncurses )
-			addLine( ConsoleLineNormal , message );
+			addLines( ConsoleLineNormal , getLines(message) );
 		else
 			std::cerr << message << std::endl;
 	}
@@ -493,22 +493,18 @@ private:
 		
 	}
 	
-	void addLine( int type , std::string txt )
+	static std::vector<std::string> getLines( std::string txt )
 	{
-		ConsoleLine line;
-		line.type = type;
-		line.txt = txt;
+		std::vector<std::string> lines;
 
-		lock.lock();
-		
-		lines.push_front( line );
-		if( (int)lines.size() > nrows )
-			lines.pop_back();
-		
-		_print();
 
-		lock.unlock();
+		std::istringstream input( txt );
+		std::string line;
+		while(std::getline(input, line)) {
+			lines.push_back( line );
+		}
 		
+		return lines;
 	}
 
 	void addLines( int type , std::vector<std::string> txts )

@@ -34,13 +34,13 @@ namespace ss {
 		
 	public:
 		bool finish;						// Global flag used by all threads to detect to stop
-		bool testFlag;							// Flag to test ( debug only (
 		
 	public:
 		
 		Delilah( int arg, const char *argv[] ,NetworkInterface *_network )
 		{
-			network = _network;
+			network = _network;			// Keep a pointer to our network interface element
+			network->setPacketReceiverInterface(this);
 			
 			finish = false;				// Global flag to finish threads
 			local_id = 0;				// Init the counter of messages sent to the controller
@@ -49,7 +49,6 @@ namespace ss {
 			au::CommandLine commandLine;
 			commandLine.set_flag_string("controller", "no_controller");
 			commandLine.set_flag_string("t",      "0-255");
-			commandLine.set_flag_boolean("test");				// tmp flag for testing
 			commandLine.set_flag_boolean("console");				// tmp flag for testing
 			commandLine.parse(arg, argv);
 			
@@ -57,13 +56,8 @@ namespace ss {
 			if ((s = lmTraceSet((char*) commandLine.get_flag_string("t").c_str())) != LmsOk)
 				EXIT(1, ("lmTraceSet: %s", lmStrerror(s)));
 
-			// Test flag for debuggin
-			testFlag = commandLine.get_flag_bool("test");
-			
-			
 			// Create console
 			console =  new DelilahConsole( this , !commandLine.get_flag_bool("console") );
-			
 			
 			// Get the controller
 			std::string controller = commandLine.get_flag_string("controller");
@@ -77,8 +71,7 @@ namespace ss {
 			std::cout << "Delilah running. Controller: " << controller << std::endl;
 			
 			ss::Endpoint controllerEndpoint(Endpoint::Controller, controller);
-			if (!testFlag)
-				network->initAsDelilah(controllerEndpoint);
+			network->initAsDelilah(controllerEndpoint);
 			
 		}
 		
@@ -86,9 +79,6 @@ namespace ss {
 		// Main routine
 		void run();
 
-		// Simple test sending packets
-		void test();
-		
 		// Run console
 		void runConsole()
 		{

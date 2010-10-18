@@ -20,38 +20,18 @@ namespace ss {
 		return NULL;
 	}
 	
-	void* runTest(void *p)
-	{
-		((Delilah*)p)->test();
-		return NULL;
-	}
-	
-	
 	void Delilah::run()
 	{
-		// Run a test in a paralel thread
-		pthread_t t;
-		pthread_create(&t, NULL, runTest, this);
 		
 		// Run a console
 		pthread_t t2;
 		pthread_create(&t2, NULL, runThreadConsole, this);
 		
-
-		if( testFlag ) 
-		{
-			while( !finish )
-				sleep(1);
-		}
-		else
-		{
-			// Main run_loop to the network interface
-			network->run();	
-		}
-		
+		// Main run_loop to the network interface
+		network->run();	
 		
 	}
-
+/*
 	void Delilah::test()
 	{
 		while( ! network->ready() && !finish )
@@ -73,9 +53,9 @@ namespace ss {
 			sleep(2);
 		}		
 	}
+*/	
 	
-	
-	size_t Delilah::sendMessageToContorller(std::string message)
+	size_t Delilah::sendMessageToContorller( std::string message )
 	{
 		Packet p;
 		p.message.set_code( 0 );
@@ -91,16 +71,17 @@ namespace ss {
 	{
 		// Todo with the received packet
 		std::ostringstream txt;
-		txt << "Received message for the packed " << id << ": " << message;
+		txt << "----------------------------------------------------------------" << std::endl;
+		txt << "Answer for command " << id << ": " << std::endl;
+		txt << "----------------------------------------------------------------" << std::endl;
+		txt << message << std::endl;
+		txt << "----------------------------------------------------------------" << std::endl;
 		console->writeOnConsole( txt.str()  );
 	}
 	
 
 	void Delilah::receive( Packet *p , Endpoint* fromEndpoint )
 	{
-		// Do something with it
-		std::cout << "Delilah received a packet from " << fromEndpoint->str() << " -> " << p->str();
-		
 		std::string message = p->message.answer();
 		size_t id = p->message.sender_id();
 		receivedMessage( id , message );

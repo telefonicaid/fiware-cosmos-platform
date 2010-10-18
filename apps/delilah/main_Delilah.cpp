@@ -25,8 +25,7 @@ int main(int argc, const char *argv[])
 	for (int ix = 0; ix < 256; ix++)
 		LM_T(ix,  ("Testing trace level %d", ix));
 	
-	ss::Network network;						// Real network interface element
-
-	ss::Delilah delilah( argc, argv , &network  );
-	delilah.run();
+	ss::Network network;								// Real network interface element
+	ss::Delilah delilah( argc, argv , &network  );		// Dalilah instance
+	delilah.run();										// Main run loop
 }

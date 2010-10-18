@@ -17,12 +17,12 @@ namespace ss {
 
 	class DelilahConsole : public au::Console
 	{
-		Delilah* delailh;	// Pointer to the main class
+		Delilah* dalilah;	// Pointer to the main class
 		
 	public:
-		DelilahConsole(  Delilah* _delailh  , bool ncurses) : au::Console( ncurses )
+		DelilahConsole(  Delilah* _dalilah  , bool ncurses) : au::Console( ncurses )
 		{
-			delailh = _delailh;
+			dalilah = _dalilah;
 		}
 		
 		virtual std::string getPrompt()

@@ -12,6 +12,12 @@ mi:
 	make
 	make install
 
+i:
+	make install
+
+d:
+	samsonDemo -ncurses
+
 clean:
 	make -C build clean
 

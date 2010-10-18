@@ -31,11 +31,12 @@ namespace ss {
 	public:
 		SamsonWorker(int argc, const char* argv[] , NetworkInterface *_network)
 		{
+			network = _network;
+			network->setPacketReceiverInterface(this);
+			
 			int          port;
 			std::string  controller;
 			std::string  trace;
-
-			network = _network;
 			
 			// Parse input command lines
 			au::CommandLine commandLine;

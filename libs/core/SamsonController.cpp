@@ -59,14 +59,28 @@ namespace ss {
 		
 	}
 	
-	
-
-	
-	
 	void SamsonController::receive( Packet *p , Endpoint* fromEndPoint )
 	{
-		// Do something with it
-		std::cout << "Packet received from " << fromEndPoint->str() << " -> " << p->str();
+		
+		au::CommandLine cmdLine;
+		cmdLine.parse( p->message.command() );
+
+		if( cmdLine.get_num_arguments() == 0)
+			return;
+
+		if( cmdLine.get_argument(0) == "status" )
+		{
+			// Get status of controller
+			Packet p2;
+			p2.message.set_code( 0 );
+			p2.message.set_answer("Status of controller");
+			p2.message.set_sender_id( p->message.sender_id() );
+			
+			network->send(&p2, fromEndPoint, this);
+		
+		}
+		
+		
 	}
 
 	void SamsonController::notificationSent( size_t id , bool success )

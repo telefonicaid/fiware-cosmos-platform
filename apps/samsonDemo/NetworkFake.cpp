@@ -74,13 +74,19 @@ namespace ss {
 	
 	 size_t NetworkFake::send(Packet* packet, Endpoint* endpoint, PacketSenderInterface* sender)
 	{
+		
+		// Add packet in the list of the center
+
+		center->addPacket(new NetworkFakeCenterPacket( *packet, meGet() , endpoint , sender ) );
+
+/*		
 		// We look the endpoint worker id and use that to send the packet
 		FakeEndpoint *e = (FakeEndpoint*) endpoint;
 		NetworkFake* network = center->getNetwork( e->worker_id  );
 
 		// Send to the other side
 		network->receiver->receive(packet, meGet() );
-		
+*/		
 		
 		return 0;
 	}

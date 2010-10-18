@@ -9,9 +9,31 @@
 #include "SamsonController.h"	// ss:: SasonController
 #include "FakeEndpoint.h"		// ss::EndPoint
 #include "NetworkFake.h"        // NetworkFake
-
+#include "Packet.h"				// ss::Packet
+#include <list>					// std::list
 
 namespace ss {
+	
+	
+	class NetworkFakeCenterPacket
+	{
+	public:
+		
+		Packet packet; 
+		Endpoint* me;
+		Endpoint* endpoint;
+		PacketSenderInterface* sender;
+		
+		NetworkFakeCenterPacket( 	Packet _packet,Endpoint*_me ,  Endpoint* _endpoint , PacketSenderInterface* _sender )
+		{
+			me = _me;
+			endpoint = _endpoint;
+			
+			packet = _packet;
+			sender = _sender;
+		}
+								 
+	};
 	
 	class NetworkFakeCenter
 	{
@@ -19,6 +41,9 @@ namespace ss {
 		
 		std::map<int,NetworkFake*> network; 
 		std::map<int,FakeEndpoint*> endpoint; 
+
+		au::Lock lock; // Lock to protect the pending packet list
+		std::vector<NetworkFakeCenterPacket*> pendingPackets;
 		
 		NetworkFakeCenter( int num_workers )
 		{
@@ -54,6 +79,49 @@ namespace ss {
 			return i->second;
 		}
 		
+		
+		void run(bool *finish)
+		{
+			while( !(*finish) )
+			{
+				// Send packets to the rigth directions
+		
+				lock.lock();
+				std::vector<NetworkFakeCenterPacket*> sendingPackets;
+				sendingPackets.insert( sendingPackets.end() , pendingPackets.begin() , pendingPackets.end() );
+				pendingPackets.clear();
+				lock.unlock();
+				
+				for (std::vector<NetworkFakeCenterPacket*>::iterator p = sendingPackets.begin() ; p < sendingPackets.end() ; p++)
+				{
+					NetworkFakeCenterPacket* pp = *p;
+					processPendingPacket(pp);
+					delete pp;
+				}
+				
+				
+				sleep(1);
+			}
+		
+		}
+		
+		void addPacket(NetworkFakeCenterPacket *p)
+		{
+			std::cout << "New packet\n";
+			lock.lock();
+			pendingPackets.push_back(p);
+			lock.unlock();
+		}
+		
+		
+		void processPendingPacket(NetworkFakeCenterPacket *p)
+		{
+			std::cout << "Sending packet\n";
+			// We look the endpoint worker id and use that to send the packet
+			FakeEndpoint *e = (FakeEndpoint*) p->endpoint;
+			NetworkFake* network = getNetwork( e->worker_id  );
+			network->receiver->receive(&p->packet, p->me );
+		}
 		
 		
 	};

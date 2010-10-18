@@ -67,9 +67,8 @@ int main(int argc, const char *argv[])
 	for (int i = 0 ; i < num_workers ; i ++ )
 		workers[i]->run();
 
-	// Keep alive while dalila is alive
-	while(!dalilah.finish)
-		sleep(1);
+	// Keep alive while dalila is alive ( sending packets in the background )
+	center.run(  &dalilah.finish );
 	
 						  
 }

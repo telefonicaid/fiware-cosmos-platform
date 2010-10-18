@@ -4,6 +4,8 @@ SET (HEADERS
     SamsonController.h
     Delilah.h
     DelilahConsole.h
+    WorkerDataManager.h
+    ControllerDataManager.h
 )
 
 SET (SOURCES
@@ -12,6 +14,8 @@ SET (SOURCES
     SamsonController.cpp
     Delilah.cpp
     DelilahConsole.cpp
+    WorkerDataManager.cpp
+    ControllerDataManager.cpp
 )
 
 SET (STATIC_LIBS

@@ -8,15 +8,15 @@
 * DESCRIPTION				Main class for the worker elemen
 *
 */
-#include <iostream>				// std::cout
-
-#include "logMsg.h"             // lmInit, LM_*
-
-#include "Macros.h"             // EXIT, ...
-#include "Network.h"			// NetworkInterface
-#include "Endpoint.h"			// Endpoint
-#include "CommandLine.h"		// au::CommandLine
-#include "samsonDirectories.h"	// File to load setup
+#include <iostream>						// std::cout
+#include "logMsg.h"						// lmInit, LM_*
+#include "Macros.h"						// EXIT, ...
+#include "Network.h"					// NetworkInterface
+#include "Endpoint.h"					// Endpoint
+#include "CommandLine.h"				// au::CommandLine
+#include "samsonDirectories.h"			// File to load setup
+#include "ControllerDataManager.h"		// ss::ControllerDataManager
+#include "ModulesManager.h"				// ss::ModulesManager
 
 #define LMT_CONFIG    22
 
@@ -31,7 +31,10 @@ namespace ss {
 	{
 		std::vector<Endpoint> workerEndPoints;			// Vector of workers from the setup file	
 		
-		NetworkInterface *network;
+		NetworkInterface *network;						// Network interface
+		ControllerDataManager data;						// Data manager for the controller
+		ModulesManager modulesManager;					// Manager of the modules ( to check data types and map/reduce/scripts functions)
+
 		
 	public:
 		SamsonController( int arg , const char *argv[] ,  NetworkInterface *_network )
@@ -125,12 +128,20 @@ namespace ss {
 			fclose(file);
 		}
 		
+		
+		
+		// Send a message back to dalilah
+		void sendDalilahAnswer( size_t sender_id , Endpoint *dalilahEndPoint , bool error , std::string answer_message );
+		
+		
 		// PacketReceiverInterface
 		virtual void receive( Packet *p , Endpoint* fromEndPoint );
 		
 		// PacketSenderInterface
 		virtual void notificationSent( size_t id , bool success );
 
+		
+		
 		
 		
 	};

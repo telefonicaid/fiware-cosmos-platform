@@ -11,6 +11,8 @@ namespace ss {
 		au::CommandLine commandLine;
 		commandLine.set_flag_string("t", "");
 		
+		commandLine.parse(argc, argv);
+
 		std::string trace = commandLine.get_flag_string("t");
 		
 		LmStatus  s;

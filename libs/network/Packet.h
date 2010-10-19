@@ -75,7 +75,7 @@ namespace ss {
 	public:
 		typedef enum MessageCode
 		{
-			Hello,
+			Hello        = 0x51,
 			WorkerVector,
 			DalilahCommand,					// Message sent from dalilah to controller
 			DalilahCommandResponse,			// Answer from the controller
@@ -85,7 +85,7 @@ namespace ss {
 
 		typedef enum MessageType
 		{
-		   Req,
+		   Req = 0x61,
 		   Ack,
 		   Nak
 		} MessageType;

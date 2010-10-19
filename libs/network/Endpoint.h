@@ -33,8 +33,7 @@ public:
 		Listener,
 		Controller,
 		Worker,
-		Delilah,
-		ConfigTool
+		Delilah
 	} Type;
 
 public:
@@ -52,7 +51,7 @@ public:
 	void            hostnameGet(void);
 
 public:
-	Endpoint(Type type, Endpoint* epP);
+	Endpoint(void) {};
 	Endpoint(Type type, unsigned short port);
 	Endpoint(Type type, std::string ipAndPort);
 	Endpoint(Type type, std::string name, std::string ip, unsigned short port, int fd);

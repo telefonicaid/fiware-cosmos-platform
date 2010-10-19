@@ -43,7 +43,6 @@ namespace ss {
 	public:
 		SamsonController( int arg , const char *argv[] ,  NetworkInterface *_network ) : 	taskManager( this )
 		{
-			
 			network = _network;
 			network->setPacketReceiverInterface(this);
 			

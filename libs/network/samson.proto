@@ -67,9 +67,10 @@ message WorkerTaskConfirmation
 
 message Message
 {
-	required int32 code               = 1;            // message code
-	required int32 msgType            = 2;            // message type (Req, Ack, Nak)
-	// required string description    = 3;            // Debug description
+	required int32   code               = 1;            // message code
+	required int32   msgType            = 2;            // message type (Req, Ack, Nak)
+	required string  sender             = 3;            // name of sender
+	// required string description    = 4;            // Debug description
 
 	optional EndPointVector endPoints = 300;          // Vector of endPoints ( network interface )
 	optional Hello          hello     = 301;          // Hello message

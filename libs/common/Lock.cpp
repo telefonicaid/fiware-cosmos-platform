@@ -7,12 +7,12 @@
 * CREATION DATE        Oct 5 2010
 *
 */
-#include <sys/time.h>            /* struct timeval                           */
-#include <pthread.h>             /* pthread_mutex_init, ...                  */
+#include <sys/time.h>            // struct timeval
+#include <pthread.h>             // pthread_mutex_init, ...
 
-#include "samsonLogMsg.h"        /* LOG_ERROR, ...                           */
-#include "StopLock.h"            /* StopLock                                 */
-#include "Lock.h"                /* Own interface                            */
+#include "logMsg.h"              // LM_*
+#include "StopLock.h"            // StopLock
+#include "Lock.h"                // Own interface
 
 
 
@@ -37,21 +37,21 @@ namespace au
 
 		if (ans != 0)
 		{
-			LOG_ERROR(("pthread_mutex_lock error"));
+			LM_E(("pthread_mutex_lock returned %d: %s", ans, strerror(errno)));
 			assert(ans == 0);
 		}
 	}
-	
+
 	void Lock::unlock()
 	{
-		
+
 #ifdef DEBUG_SS_THREADS		
 		LockDebugger::shared()->remove_lock( this );
 #endif		
 		pthread_mutex_unlock(&_lock);
 	}
-	
-	
+
+
 	void Lock::unlock_waiting_in_stopLock( StopLock *stopLock )
 	{
 #ifdef DEBUG_SS_THREADS		

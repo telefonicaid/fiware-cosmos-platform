@@ -20,7 +20,6 @@ SET (SOURCES
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 
-
 ADD_LIBRARY(samsonCommonStatic STATIC ${SOURCES} ${HEADERS} ${HEADERS_SAMSON})
 TARGET_LINK_LIBRARIES(samsonCommonStatic  protobuf)
 SET_TARGET_PROPERTIES(samsonCommonStatic PROPERTIES OUTPUT_NAME samsonCommon)

@@ -1,8 +1,8 @@
-
-
 #include "ControllerTaskManager.h"		// Own interface
-#include "SamsonController.h";			// ss::SamsonController
+#include "SamsonController.h"			// ss::SamsonController
 #include "CommandLine.h"				// au::CommandLine
+
+
 
 namespace ss
 {
@@ -94,6 +94,4 @@ namespace ss
 		 
 		return true;
 	}
-	
-	
 }

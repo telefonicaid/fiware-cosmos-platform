@@ -38,8 +38,9 @@ class Network : public NetworkInterface
 	Endpoint*                delilah;
 	std::vector<Endpoint>    endpointV;
 
-	void init(Endpoint* me);
+	void init(Endpoint* me, bool server);
 	void ipSet(char* ip);
+
 public:
 	Network();
 		
@@ -77,11 +78,10 @@ public:
 private:
 	bool iAmReady;
 
-	void endpointAdd(int fd, char* hostName);
+	void endpointAdd(Endpoint* epP);
 	void msgTreat(Endpoint* epP);
 	void checkInitDone(void);
-
-	void helloSend(Endpoint* epP);
+	int  helloSend(Endpoint* epP);
 };
 
 	

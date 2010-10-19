@@ -33,7 +33,7 @@ int iomMsgRead(ss::Endpoint* epP, ss::Packet* packetP, void* data, int dataLen)
     nb = read(epP->fd, &header, sizeof(header));
 	
 	if (nb == -1)
-		LM_XP(1, ("reading header from '%s'", epP->name.c_str()));
+		LM_RE(1, ("reading header from '%s'", epP->name.c_str()));
 
 	if (nb == 0)
 	{
@@ -53,18 +53,25 @@ int iomMsgRead(ss::Endpoint* epP, ss::Packet* packetP, void* data, int dataLen)
 
 		buffer = (char*) malloc(header.headerLen);
 		if (buffer == NULL)
-			LM_XP(1, ("malloc(%d)", header.headerLen));
+			LM_X(1, ("malloc(%d)", header.headerLen));
 
 		LM_T(LMT_READ, ("reading %d bytes Google Protocol Buffer", header.headerLen));
 		nb = read(epP->fd, buffer, header.headerLen);
 		if (nb == -1)
 			LM_RP(1, ("read(%d bytes from '%s'", header.headerLen,  epP->name.c_str()));
 
+	LM_M(("buffer[0-4]: 0x%x, 0x%x, 0x%x, 0x%x",
+		  buffer[0] & 0xFF,
+		  buffer[1] & 0xFF,
+		  buffer[2] & 0xFF,
+		  buffer[3] & 0xFF
+			));
+
 		LM_T(LMT_READ, ("read %d bytes from '%s'", nb, epP->name.c_str()));
 		LM_READS(epP->name.c_str(), "protocol buffer", buffer, nb, LmfByte);
 
 		if (packetP->message.ParseFromArray(buffer, nb) == false)
-			LM_X(1, ("ParseFromString failed!"));
+			LM_RE(1, ("ParseFromString failed!"));
 	}
 
 	if (header.dataLen == 0)

@@ -25,7 +25,7 @@
 *
 * iomMsgSend - send a message to an endpoint
 */
-int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, void* data, int dataLen)
+int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, char* sender, void* data, int dataLen)
 {
 	MsgHeader     header;
 	struct iovec  ioVec[3];
@@ -39,6 +39,8 @@ int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, void* data, int dataLen)
 
 	if ((data != NULL) || (dataLen != 0))
 		LM_X(1, ("try to send %d bytes of KV data to '%s'", dataLen, epP->name.c_str()));
+
+	packetP->message.set_sender(sender);
 
 	header.headerLen = packetP->message.ByteSize();
 	header.dataLen   = dataLen;
@@ -65,7 +67,14 @@ int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, void* data, int dataLen)
 	ioVec[0].iov_len   = sizeof(header);
 
 	if (packetP->message.SerializeToArray(outputVec, header.headerLen) == false)
-	   LM_X(1, ("SerializeToArray failed"));
+	   LM_RE(1, ("SerializeToArray failed"));
+
+	LM_M(("outputVec[0-4]: 0x%x, 0x%x, 0x%x, 0x%x",
+		  outputVec[0] & 0xFF,
+		  outputVec[1] & 0xFF,
+		  outputVec[2] & 0xFF,
+		  outputVec[3] & 0xFF
+			));
 
 	ioVec[1].iov_base  = outputVec;
 	ioVec[1].iov_len   = packetP->message.ByteSize();

@@ -52,11 +52,12 @@ namespace ss {
 			// Parse input command lines
 			au::CommandLine commandLine;
 			commandLine.set_flag_string("controller", "no_controller");
+
 			commandLine.set_flag_boolean("console");				// tmp flag for testing
 			commandLine.parse(arg, argv);
 
 			// Create console
-			console =  new DelilahConsole( this , !commandLine.get_flag_bool("console") );
+			console = new DelilahConsole(this, !console);
 			
 			// Get the controller
 			std::string controller = commandLine.get_flag_string("controller");
@@ -71,7 +72,6 @@ namespace ss {
 			
 			ss::Endpoint controllerEndpoint(Endpoint::Controller, controller);
 			network->initAsDelilah(controllerEndpoint);
-			
 		}
 		
 		

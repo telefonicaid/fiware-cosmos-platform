@@ -10,7 +10,6 @@
 * CREATION DATE            Oct 13 2010
 *
 */
-#include "Endpoint.h"           // Endpoint
 #include "Packet.h"             // Packet
 
 
@@ -19,6 +18,6 @@
 *
 * iomMsgRead - read a message to a peer and await the reply
 */
-extern int iomMsgRead(ss::Endpoint* epP, ss::Packet* packetP, void* data = NULL, int dataLen = 0);
+extern int iomMsgRead(int fd, char* name, ss::Packet* packetP, void* data = NULL, int dataLen = 0);
 
 #endif

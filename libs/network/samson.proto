@@ -2,20 +2,19 @@ package ss.network;
 
 message Hello
 {
-	required string  name    = 1;  // The name of the endpoint
-	required sint32  workers = 2;  // Number of workers connected to endpoint
-	required sint32  type    = 3;  // enum Endpoint::Type
-	optional string  ip      = 4;  // IP address
-	optional sint32  port    = 5;  // Listen port
-
+	required sint32  type    = 1;    // enum Endpoint::Type
+	required sint32  port    = 2;    // Listen port
+	required sint32  workers = 3;    // Number of workers connected to endpoint
+	required string  name    = 4;    // The name of the endpoint
+	required string  ip      = 5;    // IP address
 }
 
 
 message EndPoint
 {
-	required string  ip   = 1;   // Server
-	required sint32  port = 2;   // Port
-	required sint32  type = 3;   // Endpoint::Type
+	required sint32  port = 1;   // Port
+	required sint32  type = 2;   // Endpoint::Type
+	required string  ip   = 3;   // Server
 	optional string  name = 4;   // Name for debugging
 }
 
@@ -33,8 +32,8 @@ message EndPointVector
 
 message WorkerTask
 {
-	required string command = 1;	// Command to perform by the worker
-	required int64 task_id 	= 2;	// Id of the top level ( controller ) task
+	required int64 task_id 	= 1;	// Id of the top level ( controller ) task
+	required string command = 2;	// Command to perform by the worker
 }
 
 // Confirmation from workers to the controller

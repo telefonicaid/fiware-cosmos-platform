@@ -75,16 +75,16 @@ void Network::init(Endpoint* myEndpoint, bool server)
 	if (me == NULL)
 		LM_XP(1, ("unable to allocate room for Endpoint 'me'"));
 
-	me->type     = Endpoint::Unknown;
+	me->type     = myEndpoint->type;
 	me->workers  = 0;
 	me->name     = progName;
 	me->state    = Endpoint::Connected; /* not really true ... */
+	me->port     = myEndpoint->port;
 
 	if (server)
 	{
 		me->fd       = iomServerOpen(me->port);
 		me->state    = Endpoint::Listening;
-		me->type     = Endpoint::Listener;
 
 		if (me->fd == -1)
 			LM_XP(1, ("unable to open port %d for listening", me->port));
@@ -150,6 +150,26 @@ void Network::ipSet(char* ip)
 
 /* ****************************************************************************
 *
+* helloSend - 
+*/
+int Network::helloSend(int fd, char* name)
+{
+	Packet req;
+
+	LM_T(LMT_WRITE, ("sending hello req (name: '%s')", me->name.c_str()));
+
+	req.messageTypeSet(ss::network::Message_Type_Hello);
+	req.messageInfoSet(ss::network::Message_Info_Msg);
+
+	req.helloAdd((char*) me->name.c_str(), me->workers, me->type, (char*) me->ip.c_str(), me->port);
+
+	return iomMsgSend(fd, name, &req, progName, NULL, 0);
+}
+
+
+
+/* ****************************************************************************
+*
 * initAsSamsonController - 
 */
 void Network::initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> endpoints)
@@ -157,7 +177,7 @@ void Network::initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> 
 	unsigned int  ix;
 
 	endpointV = endpoints;
-
+	
 	init(&myEndpoint, true);
 	LM_T(LMT_SELECT, ("me->name: '%s'", me->name.c_str()));
 
@@ -178,26 +198,6 @@ void Network::initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> 
 
 /* ****************************************************************************
 *
-* helloSend - 
-*/
-int Network::helloSend(Endpoint* ep)
-{
-	Packet req;
-
-	LM_T(LMT_WRITE, ("sending hello req (name: '%s')", me->name.c_str()));
-
-	req.messageTypeSet(ss::network::Message_Type_Hello);
-	req.messageInfoSet(ss::network::Message_Info_Msg);
-
-	req.helloAdd((char*) me->name.c_str(), me->workers, me->type, (char*) me->ip.c_str(), me->port);
-
-	return iomMsgSend(ep, &req, progName, NULL, 0);
-}
-
-
-
-/* ****************************************************************************
-*
 * initAsSamsonWorker - 
 *
 * NOTE
@@ -207,57 +207,17 @@ void Network::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoin
 	Packet  packet(ss::network::Message_Type_WorkerVector);
 	Packet  ackPacket;
 
-	init(&myEndpoint, true);
-
 	myEndpoint.name   = "accepter";
 	controller        = new Endpoint(controllerEndpoint);
 	controller->name  = "controller";
 
-	iomInit(controller);
+	init(&myEndpoint, true);
 
-	helloSend(controller);
-	msgTreat(controller);
+    controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
+    if (controller->fd == -1)
+        LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
 
-	/* ask controller for list of workers */
-	packet.message.set_info(ss::network::Message_Info_Msg);
-	iomMsgSend(controller, &packet, progName, NULL, 0);
-
-	/* Should probably call msgTreat here ... */
-	iomMsgRead(controller, &ackPacket);
-
-	if (!ackPacket.message.has_endpoints())
-		LM_X(1, ("controller didn't give me the Worker Vector ..."));
-
-	int ix;
-	for (ix = 0; ix < ackPacket.endpointVecSize(); ix++)
-	{
-		Endpoint endpoint = Endpoint(ackPacket.endpointGet(ix));
-
-		LM_T(LMT_ENDPOINT, ("comparing '%s' to '%s' or '%s'    AND    %d to %d",
-							endpoint.ip.c_str(),
-							me->ip.c_str(),
-							me->hostname.c_str(),
-							endpoint.port,
-							me->port));
-
-		if (((strcmp(endpoint.ip.c_str(), me->ip.c_str()) == 0) || (strcmp(endpoint.ip.c_str(), me->hostname.c_str()) == 0)) && (endpoint.port == me->port))
-		{
-			LM_T(LMT_WORKERS, ("NOT connecting to myself ..."));
-			continue;
-		}
-
-		LM_T(LMT_WORKERS, ("Connect to worker %d: %s (host %s, port %d)", ix, endpoint.name.c_str(), endpoint.ip.c_str(), endpoint.port));
-		endpoint.fd = iomConnect(endpoint.ip.c_str(), endpoint.port);
-		if (endpoint.fd != -1)
-		{
-			endpoint.state = Endpoint::Connected;
-			helloSend(&endpoint);
-		}
-
-		endpointV.push_back(endpoint);
-	}
-
-	LM_T(LMT_WORKERS, ("I now have %d workers in my vector", endpointV.size()));
+    controller->state = ss::Endpoint::Connected;
 }
 
 
@@ -276,7 +236,13 @@ void Network::initAsDelilah(Endpoint controllerEndpoint)
 
 	init(myEndpoint, false);
 	me->type = Endpoint::Delilah;
-	iomInit(controller);
+	me->port = 1; /* not to be used */
+
+	controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
+	if (controller->fd == -1)
+		LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
+
+	controller->state = ss::Endpoint::Connected;
 }
 	
 	
@@ -387,18 +353,19 @@ bool Network::ready()
 *
 * msgTreat - 
 */
-void Network::msgTreat(Endpoint* ep)
+void Network::msgTreat(int fd, char* name)
 {
-	Packet  req;
-	Packet  ack;
-	int     s;
+	Packet    req;
+	Packet    ack;
+	int       s;
+	Endpoint* ep = endpointLookupByFd(fd);
 
-	LM_T(LMT_SELECT, ("treating incoming connection from '%s'", ep->name.c_str()));
-	if ((s = iomMsgRead(ep, &req)) != 0)
+	LM_T(LMT_SELECT, ("treating incoming connection from '%s'", name));
+	if ((s = iomMsgRead(fd, name, &req)) != 0)
 	{
 		if (s == -2) /* Connection closed */
 		{
-			if (ep == controller)
+			if ((ep != NULL) && (ep == controller))
 			{
 				LM_W(("controller died ... trying to reconnect !"));
 
@@ -412,26 +379,26 @@ void Network::msgTreat(Endpoint* ep)
 				}
 
 				controller->state = ss::Endpoint::Connected;
-				helloSend(controller);
 				return;
 			}
-			else if (ep == delilah)
+			else if ((ep != NULL) && (ep == delilah))
 			{
 				delilah = NULL;
 			}
-			else /* Worker closed connection */
+			else if (ep != NULL)
 			{
 				--me->workers;
 			}
 
-			ep->reset();
+			if (ep != NULL)
+				ep->reset();
 		}
 
-		LM_RVE(("iomMsgRead: error reading message from '%s'", ep->name.c_str()));
+		LM_RVE(("iomMsgRead: error reading message from '%s'", name));
 	}
 
-	ss::network::Message_Type msgType = (ss::network::Message_Type) req.message.type();
-	ss::network::Message_Info msgInfo = (ss::network::Message_Info) req.message.info();
+	ss::network::Message_Type msgType = /* (ss::network::Message_Type) */ req.message.type();
+	ss::network::Message_Info msgInfo = /* (ss::network::Message_Info) */ req.message.info();
 
 	switch (msgType)
 	{
@@ -443,15 +410,8 @@ void Network::msgTreat(Endpoint* ep)
 		Endpoint::Type       epType;
 
 		req.helloGet(&name, &workers, &epType, &ip, &port);
-		ep->name    = std::string(name);
-		ep->workers = workers;
-		ep->type    = epType;
-
-		if (port != 0)
-			ep->port    = port;
-		if (ip[0] != 0)
-			ep->ip = std::string(ip);
-
+		endpointAdd(fd, name, workers, epType, ip, port);
+		LM_M(("epType == %d", epType));
 		free(name);
 		free(ip);
 
@@ -464,15 +424,26 @@ void Network::msgTreat(Endpoint* ep)
 			ack.message.set_info(ss::network::Message_Info_Ack);
 			ack.helloAdd((char*) me->name.c_str(), me->workers, me->type, (char*) me->ip.c_str(), me->port);
 
-			iomMsgSend(ep, &ack, progName, NULL, 0);
+			iomMsgSend(fd, name, &ack, progName, NULL, 0);
+		}
+
+		if ((ep != NULL) && (ep == controller))
+		{
+			Packet packet;
+
+			// Ask controller for list of workers
+			packet.message.set_type(ss::network::Message_Type_WorkerVector);
+			packet.message.set_info(ss::network::Message_Info_Msg);
+
+			iomMsgSend(controller->fd, (char*) controller->name.c_str(), &packet, progName, NULL, 0);
 		}
 		break;
 
 	case ss::network::Message_Type_WorkerVector:
 		if (controller != NULL)
-			LM_X(1, ("Got a WorkerVector request from '%s' but I'm not the controller ...", ep->name.c_str()));
+			LM_X(1, ("Got a WorkerVector request from '%s' but I'm not the controller ...", name));
 
-		LM_T(LMT_MSG, ("Got a WorkerVector message from '%s' (I have %d workers in my vector)", ep->name.c_str(), endpointV.size()));
+		LM_T(LMT_MSG, ("Got a WorkerVector message from '%s' (I have %d workers in my vector)", name, endpointV.size()));
 
 		LM_T(LMT_WRITE, ("sending ack with entire worker vector"));
 
@@ -482,62 +453,12 @@ void Network::msgTreat(Endpoint* ep)
 			ack.message.set_info(ss::network::Message_Info_Ack);
 			ack.endpointVectorAdd(endpointV);
 
-			iomMsgSend(ep, &ack, progName, NULL, 0);
+			iomMsgSend(fd, name, &ack, progName, NULL, 0);
 		}
 
 	default:
 		assert(0);
 	}
-}
-
-
-
-/* ****************************************************************************
-*
-* helloReceive - 
-*/
-int helloReceive(Endpoint* ep)
-{
-    Packet  req;
-	int     s;
-
-	if ((s = iomMsgRead(ep, &req)) != 0)
-	{
-		if (s == -2)
-		{
-			LM_W(("connection closed by '%s'!", ep->name.c_str()));
-			return -2;
-		}
-		
-		LM_P(("iomMsgRead"));
-		return -1;
-	}
-	
-	ss::network::Message_Type msgType = (ss::network::Message_Type) req.message.type();
-	ss::network::Message_Info msgInfo = (ss::network::Message_Info) req.message.info();
-
-	if (msgType != ss::network::Message_Type_Hello)
-		LM_RE(1, ("Not a Hello"));
-
-	if (msgInfo != ss::network::Message_Info_Ack)
-		LM_RE(1, ("Not a Hello Ack (msgInfo: %d). Expected a msg info of %d (msg type: %d)",
-				  msgInfo, ss::network::Message_Info_Ack, msgType));
-
-	char*                name;
-	int                  workers;
-	unsigned short       port;
-	char*                ip;
-	Endpoint::Type       epType;
-
-	req.helloGet(&name, &workers, &epType, &ip, &port);
-
-	ep->name    = name;
-	ep->workers = workers;
-	ep->ip      = ip;
-	ep->port    = port;
-	ep->type    = epType;
-
-	return 0;
 }
 
 
@@ -617,7 +538,7 @@ void Network::run()
 			if (controller && (controller->state == Endpoint::Connected) && FD_ISSET(controller->fd, &rFds))
 			{
 				LM_T(LMT_SELECT, ("incoming message from controller"));
-				msgTreat(controller);
+				msgTreat(controller->fd, (char*) controller->name.c_str());
 			}
 			else if (me && (me->state == Endpoint::Listening) && FD_ISSET(me->fd, &rFds))
 			{
@@ -629,54 +550,12 @@ void Network::run()
 				if (fd == -1)
 					LM_P(("iomAccept(%d)", me->fd));
 				else
-				{
-					Endpoint ep;
-
-					ep.fd   = fd;
-					ep.name = "workerOrDelilah";
-
-					if (helloSend(&ep) != 0)
-					{
-						LM_E(("helloSend to %s failed", ep.name.c_str()));
-						continue;
-					}
-
-					iomMsgAwait(&ep, 5, 0);
-					if (helloReceive(&ep) != 0)
-					{
-						LM_E(("helloReceive from %s failed", ep.name.c_str()));
-						close(ep.fd);
-                        continue;
-					}
-
-					if (ep.type == Endpoint::Worker)
-					{
-						endpointAdd(&ep); /* (fd, hostName); */
-						++me->workers;
-					}
-					else if (ep.type == Endpoint::Delilah)
-					{
-						if (delilah != NULL)
-						{
-							LM_W(("Already connected to a Delilah, rejecting connection"));
-							close(ep.fd);
-						}
-						else
-							delilah = new Endpoint(ep);
-					}
-					else
-					{
-						LM_E(("Endpoint type %d (not Worker, not Delilah ...) - rejecting connection"));
-						close(ep.fd);
-					}
-				}
-
-				checkInitDone();
+					helloSend(fd, hostName);
 			}
 			else if ((delilah != NULL) && (delilah->state == Endpoint::Connected) && FD_ISSET(delilah->fd, &rFds))
 			{
 				LM_T(LMT_SELECT, ("incoming message from delilah"));
-				msgTreat(delilah);
+				msgTreat(delilah->fd, (char*) delilah->name.c_str());
 			}
 			else
 			{
@@ -689,7 +568,7 @@ void Network::run()
 					if (FD_ISSET(endpointV[ix].fd, &rFds))
 					{
 						LM_T(LMT_SELECT, ("incoming message from worker %d", ix));
-						msgTreat(&endpointV[ix]);
+						msgTreat(endpointV[ix].fd, (char*) endpointV[ix].name.c_str());
 					}
 				}
 			}
@@ -725,14 +604,53 @@ void Network::checkInitDone(void)
 
 /* ****************************************************************************
 *
+* endpointLookupByFd - 
+*/
+Endpoint* Network::endpointLookupByFd(int fd)
+{
+    unsigned int ix = 0;
+
+	if (fd < 0)
+		return NULL;
+
+    while (ix < endpointV.size())
+	{
+        if (endpointV[ix].fd == fd)
+			return &endpointV[ix];
+	}
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * endpointAdd - 
 */
-void Network::endpointAdd(Endpoint* ep)
+void Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port)
 {
 	unsigned int ix = 0;
 
-	LM_T(LMT_ENDPOINT, ("adding endpoint '%s' with fd %d", ep->hostname.c_str(), ep->fd));
-	LM_T(LMT_ENDPOINT, ("I have %d endpoints", endpointV.size()));
+	LM_T(LMT_ENDPOINT, ("adding endpoint '%s' of type %d (fd %d)   (I have %d endpoints)", name, type, fd, endpointV.size()));
+
+	if (type == Endpoint::Controller)
+	{
+		if (controller == NULL)
+		{
+			LM_M(("Creating controller"));
+			controller = new Endpoint();
+		}
+
+		controller->name  = std::string(name);
+		controller->type  = type;
+		controller->ip    = ip;
+		controller->port  = port;
+		controller->state = Endpoint::Connected;
+		controller->fd    = fd;
+
+		return;
+	}
 
 	while (ix < endpointV.size())
 	{
@@ -742,23 +660,26 @@ void Network::endpointAdd(Endpoint* ep)
 			continue;
 		}
 
-		LM_T(LMT_ENDPOINT, ("comparing '%s' to '%s' AND '%s'", ep->hostname.c_str(), endpointV[ix].ip.c_str(), endpointV[ix].hostname.c_str()));
-		LM_TODO(("better this comparison, and also compare ports"));
-		if ((strncmp(endpointV[ix].ip.c_str(),       ep->hostname.c_str(), strlen(endpointV[ix].ip.c_str()))       == 0)
-		||  (strncmp(endpointV[ix].hostname.c_str(), ep->hostname.c_str(), strlen(endpointV[ix].hostname.c_str())) == 0))
+		LM_T(LMT_ENDPOINT, ("comparing '%s' to '%s' AND '%s'", name, endpointV[ix].ip.c_str(), endpointV[ix].hostname.c_str()));
+		if ((endpointV[ix].port == port) &&
+			((strncmp(endpointV[ix].ip.c_str(),       name, strlen(endpointV[ix].ip.c_str()))       == 0)
+		 ||  (strncmp(endpointV[ix].hostname.c_str(), name, strlen(endpointV[ix].hostname.c_str())) == 0)))
 		{
-			endpointV[ix]       = *ep;
+			endpointV[ix].name  = std::string(name);
+			endpointV[ix].type  = type;
+			endpointV[ix].ip    = ip;
+			endpointV[ix].port  = port;
 			endpointV[ix].state = Endpoint::Connected;
+			endpointV[ix].fd    = fd;
 
-			LM_T(LMT_ENDPOINT, ("Set fd %d for endpoint '%s'", ep->fd, endpointV[ix].ip.c_str()));
+			LM_T(LMT_ENDPOINT, ("Set fd %d for endpoint '%s'", fd, endpointV[ix].ip.c_str()));
 			return;
 		}
 		++ix;
 	}
 
 	LM_W(("No endpoint found ..."));
-	close(ep->fd);
-	ep->fd = -1;
+	close(fd);
 }
 
 

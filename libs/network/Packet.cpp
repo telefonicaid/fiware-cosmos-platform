@@ -160,12 +160,8 @@ void Packet::helloGet(char** nameP, int* connectedWorkersP, Endpoint::Type* type
 	*nameP             = strdup(hello.name().c_str());
 	*connectedWorkersP = hello.workers();
 	*typeP             = (Endpoint::Type) hello.type();
-
-	if (ipP != NULL)
-		*ipP = strdup(hello.ip().c_str());
-
-	if (portP != NULL)
-		*portP = hello.port();
+	*ipP               = strdup(hello.ip().c_str());
+	*portP             = hello.port();
 }
 
 

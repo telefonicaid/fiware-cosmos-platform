@@ -25,7 +25,7 @@
 *
 * iomMsgSend - send a message to an endpoint
 */
-int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, char* sender, void* data, int dataLen)
+int iomMsgSend(int fd, char* name, ss::Packet* packetP, char* sender, void* data, int dataLen)
 {
 	MsgHeader     header;
 	struct iovec  ioVec[3];
@@ -38,7 +38,7 @@ int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, char* sender, void* data,
 	ioVec[2].iov_len = 0;
 
 	if ((data != NULL) || (dataLen != 0))
-		LM_X(1, ("try to send %d bytes of KV data to '%s'", dataLen, epP->name.c_str()));
+		LM_X(1, ("try to send %d bytes of KV data to '%s'", dataLen, name));
 
 	packetP->message.set_sendername(sender);
 
@@ -79,27 +79,25 @@ int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, char* sender, void* data,
 	ioVec[1].iov_base  = outputVec;
 	ioVec[1].iov_len   = packetP->message.ByteSize();
 	
-	s = writev(epP->fd, ioVec, vecs);
+	s = writev(fd, ioVec, vecs);
 	if (s == -1)
 	{
-		LM_P(("writev(%s)", epP->name.c_str()));
-		epP->reset();
+		LM_P(("writev(%s)", name));
 		return -1;
 	}
 
 	if (s == 0)
 	{
-		LM_E(("writev(%s) returned ZERO bytes written", epP->name.c_str()));
-		epP->reset();
+		LM_E(("writev(%s) returned ZERO bytes written", name));
 		return -1;
 	}
 
-	LM_T(LMT_WRITE, ("written %d bytes to '%s'", s, epP->name.c_str()));
-	LM_WRITES(epP->name.c_str(), "message header",  ioVec[0].iov_base, ioVec[0].iov_len, LmfByte);
-	LM_WRITES(epP->name.c_str(), "protocol buffer", ioVec[1].iov_base, ioVec[1].iov_len, LmfByte);
+	LM_T(LMT_WRITE, ("written %d bytes to '%s'", s, name));
+	LM_WRITES(name, "message header",  ioVec[0].iov_base, ioVec[0].iov_len, LmfByte);
+	LM_WRITES(name, "protocol buffer", ioVec[1].iov_base, ioVec[1].iov_len, LmfByte);
 
 	if ((vecs == 3) && (ioVec[2].iov_len != 0))
-		LM_WRITES(epP->name.c_str(), "KV data",         ioVec[2].iov_base, ioVec[2].iov_len, LmfByte);
+		LM_WRITES(name, "KV data",         ioVec[2].iov_base, ioVec[2].iov_len, LmfByte);
 
 	return 0;
 }	

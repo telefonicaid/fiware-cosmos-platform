@@ -67,7 +67,7 @@ namespace ss {
 					
 			// Get the endpoints necessary to start network interface
 			ss::Endpoint controllerEndPoint(Endpoint::Controller, controller);
-			ss::Endpoint myEndPoint(Endpoint::Listener, port);
+			ss::Endpoint myEndPoint(Endpoint::Worker, port);
 			
 			network->initAsSamsonWorker(myEndPoint, controllerEndPoint);
 		}

@@ -73,7 +73,7 @@ namespace ss {
 			loadSetup(setup);
 			
 			// Define the endpoints of the network interface
-			ss::Endpoint myEndPoint(Endpoint::Listener, port);
+			ss::Endpoint myEndPoint(Endpoint::Controller, port);
 
 			LM_T(LMT_CONFIG, ("workerEndPoints.size: %d", workerEndPoints.size()));
 

@@ -78,10 +78,12 @@ public:
 private:
 	bool iAmReady;
 
-	void endpointAdd(Endpoint* epP);
-	void msgTreat(Endpoint* epP);
+	void       endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port);
+	Endpoint*  endpointLookupByFd(int fd);
+
+	void msgTreat(int fd, char* name);
 	void checkInitDone(void);
-	int  helloSend(Endpoint* epP);
+	int  helloSend(int fd, char* name);
 };
 
 	

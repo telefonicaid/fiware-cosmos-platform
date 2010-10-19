@@ -18,6 +18,7 @@ add_custom_command (
 
 ADD_LIBRARY(example MODULE ${SOURCES} ${HEADERS})
 
+include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 
 

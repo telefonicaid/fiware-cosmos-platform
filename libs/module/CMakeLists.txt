@@ -20,6 +20,10 @@ SET (SOURCES
 	main.cpp
 )
 
+
+include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
+
+
 ADD_LIBRARY(samsonModuleStatic STATIC ${SOURCES} ${HEADERS} )
 ADD_LIBRARY(samsonModuleShared SHARED ${SOURCES} ${HEADERS} )
 

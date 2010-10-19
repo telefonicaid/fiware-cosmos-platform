@@ -73,46 +73,24 @@ namespace ss {
 	class Packet
 	{
 	public:
-		typedef enum MessageCode
-		{
-			Hello        = 0x51,
-			WorkerVector,
-			DalilahCommand,					// Message sent from dalilah to controller
-			DalilahCommandResponse,			// Answer from the controller
-			WorkerTask,						// Task sent from controller to each worker
-			WorkerTaskConfirmation			// Confirmation sent form workers to the controller
-		} MessageCode;
-
-		typedef enum MessageType
-		{
-		   Req = 0x61,
-		   Ack,
-		   Nak
-		} MessageType;
-
-		char* msgCodeName(MessageCode);
+		char* msgTypeName(ss::network::Message_Type type);
 
 		network::Message message;		// Message with necessary fields ( codified with Google Protocol Buffers )
 		PacketBuffer buffer;
 	
 		Packet() {};
 
-		Packet( network::Message_Type type )
+		Packet(ss::network::Message_Type type)
 		{
-			message.set_type( type );
+			message.set_type(type);
 		}
 		
 		
-		Packet(MessageCode c)
-		{
-			messageCodeSet(c);
-		}
+		void      messageTypeSet(ss::network::Message_Type type);
+		int       messageTypeGet();
 
-
-		void      messageCodeSet(MessageCode code);
-		void      messageTypeSet(MessageType type);
-
-		int messageCodeGet();
+		void      messageInfoSet(ss::network::Message_Info info);
+		int       messageInfoGet();
 		
 		void      endpointAdd(Endpoint* e);
 		Endpoint  endpointGet(int i);

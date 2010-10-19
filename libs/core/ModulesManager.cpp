@@ -25,7 +25,7 @@ namespace ss
 
 	ModulesManager::ModulesManager()
 	{
-		addModules();
+		// addModules();
 	}
 	
 	void ModulesManager::addModules()
@@ -317,7 +317,7 @@ namespace ss
 			 
 		 }
 		 
-		 // Print datas suported
+		 // Print datas supported
 		 o << "\n";
 		 o << "\tdatas: ";
 		 for( std::map<std::string , Data*>::iterator i = module->datas.begin() ; i != module->datas.end() ; i++)

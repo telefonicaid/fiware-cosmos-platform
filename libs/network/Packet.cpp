@@ -22,32 +22,47 @@ namespace ss
 
 /* ****************************************************************************
 *
-* messageCodeSet - 
+* messageTypeSet - 
 */
-void Packet::messageCodeSet(MessageCode code)
+void Packet::messageTypeSet(ss::network::Message_Type type)
 {
-	message.set_code(code);
+	message.set_type(type);
 }
-	
-	
-int Packet::messageCodeGet()
-{
-	return message.code();
-}
-
 	
 
 
 /* ****************************************************************************
 *
-* messageTypeSet - 
+* messageTypeGet - 
 */
-void Packet::messageTypeSet(MessageType type)
+int Packet::messageTypeGet()
 {
-	message.set_msgtype(type);
+	return message.type();
+}
+
+	
+
+/* ****************************************************************************
+*
+* messageInfoSet - 
+*/
+void Packet::messageInfoSet(ss::network::Message_Info info)
+{
+	message.set_info(info);
 }
 	
 
+
+/* ****************************************************************************
+*
+* messageInfoGet - 
+*/
+int Packet::messageInfoGet()
+{
+	return message.info();
+}
+
+	
 
 /* ****************************************************************************
 *
@@ -110,7 +125,7 @@ Endpoint Packet::endpointGet(int i)
 
 	return ep;
 }
-	
+
 
 
 /* ****************************************************************************
@@ -119,7 +134,7 @@ Endpoint Packet::endpointGet(int i)
 */
 void Packet::helloAdd(char* name, int connectedWorkers, Endpoint::Type type, char* ip, unsigned short port)
 {
-	network::Hello*    hP = message.mutable_hello();
+	ss::network::Hello* hP = message.mutable_hello();
 
 	hP->set_name(name);
 	hP->set_workers(connectedWorkers);
@@ -140,8 +155,7 @@ void Packet::helloAdd(char* name, int connectedWorkers, Endpoint::Type type, cha
 */
 void Packet::helloGet(char** nameP, int* connectedWorkersP, Endpoint::Type* typeP, char** ipP, unsigned short* portP)
 {
-	network::Hello hello = message.hello();
-
+	ss::network::Hello hello = message.hello();
 
 	*nameP             = strdup(hello.name().c_str());
 	*connectedWorkersP = hello.workers();
@@ -171,21 +185,21 @@ std::string Packet::str()
 
 /* ****************************************************************************
 *
-* msgCodeName - 
+* msgTypeName - 
 */
-char* Packet::msgCodeName(MessageCode code)
+char* Packet::msgTypeName(ss::network::Message_Type type)
 {
-	switch (code)
+	switch (type)
 	{
-	case Hello:            return (char*) "Hello";
-	case WorkerVector:     return (char*) "WorkerVector";
-	case WorkerTask:		return (char*) "WorketTask";
-	case WorkerTaskConfirmation:		return (char*) "WorketTaskConfirmation";
-	case DalilahCommand:				return (char*) "DalilahCommand";
-	case DalilahCommandResponse:		return (char*) "DalilahCommandResponse";
+	case ss::network::Message_Type_Hello:                       return (char*) "Hello";
+	case ss::network::Message_Type_WorkerVector:                return (char*) "WorkerVector";
+	case ss::network::Message_Type_WorkerTask:		            return (char*) "WorkerTask";
+	case ss::network::Message_Type_WorkerTaskConfirmation:		return (char*) "WorkerTaskConfirmation";
+	case ss::network::Message_Type_Command:				        return (char*) "Command";
+	case ss::network::Message_Type_CommandResponse:		        return (char*) "CommandResponse";
 	}
 
-	return (char*) "UnknownMsgCode";
+	return (char*) "UnknownMsgType";
 }
 
 }

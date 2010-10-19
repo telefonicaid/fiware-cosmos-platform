@@ -40,7 +40,7 @@ int iomMsgSend(ss::Endpoint* epP, ss::Packet* packetP, char* sender, void* data,
 	if ((data != NULL) || (dataLen != 0))
 		LM_X(1, ("try to send %d bytes of KV data to '%s'", dataLen, epP->name.c_str()));
 
-	packetP->message.set_sender(sender);
+	packetP->message.set_sendername(sender);
 
 	header.headerLen = packetP->message.ByteSize();
 	header.dataLen   = dataLen;

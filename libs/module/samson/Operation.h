@@ -2,12 +2,12 @@
 #define SAMSON_OPERATION_H
 
 #include <math.h>
-#include <sstream>                 /* std::ostringstream                     */
+#include <sstream>                 // std::ostringstream
 
-#include "samson/KVSetStruct.h"    /* KVSetStruct                            */
-#include "samson/KVWriter.h"       /* KVWriter                               */
-#include "samson/KVFormat.h"       /* KVFormat                               */
-
+#include "samson/KVSetStruct.h"    // KVSetStruct
+#include "samson/KVWriter.h"       // KVWriter
+#include "samson/KVFormat.h"       // KVFormat
+#include "logMsg.h"                // LM_*
 
 
 namespace ss {
@@ -128,7 +128,9 @@ namespace ss {
 			top               = false;
 			_name             = name;
 			_helpLine         = "";
-			_helpMessage      = "Help comming soon\n";
+			_helpMessage      = "Help coming soon\n";
+
+			LM_M(("name: %s", _name.c_str()));
 		}
 
 		Operation( std::string name , Type type )
@@ -139,12 +141,14 @@ namespace ss {
 			top = false;
 			_name = name;
 			_helpLine = "";
-			_helpMessage = "Help comming soon\n";
-			
+			_helpMessage = "Help coming soon\n";
+
+			LM_M(("name: %s", _name.c_str()));
 		}
 		
 		virtual ~Operation()
 		{
+			LM_M(("name: %s", _name.c_str()));
 		}
 
 		void setHelpLine( std::string line )
@@ -169,6 +173,7 @@ namespace ss {
 		
 		std::string getName()
 		{
+			LM_M(("IN"));
 			return _name;
 		}
 		

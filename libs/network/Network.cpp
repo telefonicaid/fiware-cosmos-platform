@@ -182,12 +182,12 @@ void Network::initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> 
 */
 int Network::helloSend(Endpoint* ep)
 {
-	Packet  req;
-	
+	Packet req;
+
 	LM_T(LMT_WRITE, ("sending hello req (name: '%s')", me->name.c_str()));
 
-	req.messageCodeSet(Packet::Hello);
-	req.messageTypeSet(Packet::Req);
+	req.messageTypeSet(ss::network::Message_Type_Hello);
+	req.messageInfoSet(ss::network::Message_Info_Msg);
 
 	req.helloAdd((char*) me->name.c_str(), me->workers, me->type, (char*) me->ip.c_str(), me->port);
 
@@ -204,7 +204,7 @@ int Network::helloSend(Endpoint* ep)
 */
 void Network::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint)
 {
-	Packet  packet(Packet::WorkerVector);
+	Packet  packet(ss::network::Message_Type_WorkerVector);
 	Packet  ackPacket;
 
 	init(&myEndpoint, true);
@@ -219,7 +219,7 @@ void Network::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoin
 	msgTreat(controller);
 
 	/* ask controller for list of workers */
-	packet.messageTypeSet(Packet::Req);
+	packet.message.set_info(ss::network::Message_Info_Msg);
 	iomMsgSend(controller, &packet, progName, NULL, 0);
 
 	/* Should probably call msgTreat here ... */
@@ -430,12 +430,12 @@ void Network::msgTreat(Endpoint* ep)
 		LM_RVE(("iomMsgRead: error reading message from '%s'", ep->name.c_str()));
 	}
 
-	Packet::MessageCode msgCode = (Packet::MessageCode) req.message.code();
-	Packet::MessageType msgType = (Packet::MessageType) req.message.msgtype();
+	ss::network::Message_Type msgType = (ss::network::Message_Type) req.message.type();
+	ss::network::Message_Info msgInfo = (ss::network::Message_Info) req.message.info();
 
-	switch (msgCode)
+	switch (msgType)
 	{
-	case Packet::Hello:
+	case ss::network::Message_Type_Hello:
 		char*                name;
 		int                  workers;
 		unsigned short       port;
@@ -455,19 +455,20 @@ void Network::msgTreat(Endpoint* ep)
 		free(name);
 		free(ip);
 
-		if (msgType == Packet::Req)
+		if (msgInfo == ss::network::Message_Info_Msg)
 		{
-			LM_T(LMT_WRITE, ("sending Hello ack (name: '%s') - msg code: 0x%x, msg type: 0x%x",  me->name.c_str(), Packet::Hello, Packet::Ack));
+			LM_T(LMT_WRITE, ("sending Hello ack (name: '%s') - msg type: 0x%x, msg type: 0x%x",  me->name.c_str(),
+							 ss::network::Message_Type_Hello, ss::network::Message_Info_Ack));
 
-			ack.messageCodeSet(Packet::Hello);
-			ack.messageTypeSet(Packet::Ack);
+			ack.message.set_type(ss::network::Message_Type_Hello);
+			ack.message.set_info(ss::network::Message_Info_Ack);
 			ack.helloAdd((char*) me->name.c_str(), me->workers, me->type, (char*) me->ip.c_str(), me->port);
 
 			iomMsgSend(ep, &ack, progName, NULL, 0);
 		}
 		break;
 
-	case Packet::WorkerVector:
+	case ss::network::Message_Type_WorkerVector:
 		if (controller != NULL)
 			LM_X(1, ("Got a WorkerVector request from '%s' but I'm not the controller ...", ep->name.c_str()));
 
@@ -475,16 +476,17 @@ void Network::msgTreat(Endpoint* ep)
 
 		LM_T(LMT_WRITE, ("sending ack with entire worker vector"));
 
-		if (msgType == Packet::Req)
+		if (msgInfo == ss::network::Message_Info_Msg)
 		{
-			ack.messageCodeSet(Packet::WorkerVector);
-			ack.messageTypeSet(Packet::Ack);
+			ack.message.set_type(ss::network::Message_Type_WorkerVector);
+			ack.message.set_info(ss::network::Message_Info_Ack);
 			ack.endpointVectorAdd(endpointV);
 
 			iomMsgSend(ep, &ack, progName, NULL, 0);
 		}
-		default:
-			assert(false);
+
+	default:
+		assert(0);
 	}
 }
 
@@ -511,14 +513,15 @@ int helloReceive(Endpoint* ep)
 		return -1;
 	}
 	
-	Packet::MessageCode msgCode = (Packet::MessageCode) req.message.code();
-	Packet::MessageType msgType = (Packet::MessageType) req.message.msgtype();
+	ss::network::Message_Type msgType = (ss::network::Message_Type) req.message.type();
+	ss::network::Message_Info msgInfo = (ss::network::Message_Info) req.message.info();
 
-	if (msgCode != Packet::Hello)
+	if (msgType != ss::network::Message_Type_Hello)
 		LM_RE(1, ("Not a Hello"));
 
-	if (msgType != Packet::Ack)
-		LM_RE(1, ("Not a Hello Ack (msgType: %d). Expected a msg type of %d (msg code: %d)", msgType, Packet::Ack, msgCode));
+	if (msgInfo != ss::network::Message_Info_Ack)
+		LM_RE(1, ("Not a Hello Ack (msgInfo: %d). Expected a msg info of %d (msg type: %d)",
+				  msgInfo, ss::network::Message_Info_Ack, msgType));
 
 	char*                name;
 	int                  workers;

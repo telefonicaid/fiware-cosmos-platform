@@ -1,22 +1,5 @@
 package ss.network;
 
-message EndPoint
-{
-	required string  ip   = 1;   // Server
-	required sint32  port = 2;   // Port
-	required sint32  type = 3;   // Port
-	optional string  name = 4;   // Name for debugging
-}
-
-
-
-message EndPointVector
-{
-	repeated EndPoint item=1;
-}
-
-
-
 message Hello
 {
 	required string  name    = 1;  // The name of the endpoint
@@ -26,6 +9,25 @@ message Hello
 	optional sint32  port    = 5;  // Listen port
 
 }
+
+
+message EndPoint
+{
+	required string  ip   = 1;   // Server
+	required sint32  port = 2;   // Port
+	required sint32  type = 3;   // Endpoint::Type
+	optional string  name = 4;   // Name for debugging
+}
+
+
+
+message EndPointVector
+{
+	repeated EndPoint item = 1;
+}
+
+
+
 
 // Message from the controller workers
 
@@ -69,34 +71,49 @@ message Message
 {
 	enum Type
 	{
-		Hello			= 1;
-		Command 		= 5;
-		CommandResponse 	= 6;
-		WorkerTask 		= 7;
-		WorkerTaskConfirmation 	= 8;
-	}
+		Hello			        = 1;
+		WorkerVector            = 2;
+		Command 		        = 3;
+		CommandResponse         = 4;
+		WorkerTask 		        = 5;
+		WorkerTaskConfirmation 	= 6;
+	};
 
-	// Message type
-	required Type type= 98;	
+	enum Info
+	{
+		Msg	   = 0x4d;
+		Evt    = 0x45;
+		Ack    = 0x41;
+		Nak    = 0x4e;
+	};
 
-	// Old fields to be removed
-	required int32   code               = 1;            // message code
-	required int32   msgType            = 2;            // message type (Req, Ack, Nak)
-	required string  sender             = 3;            // name of sender
-	// required string description    = 4;            // Debug description
-
-
-	optional EndPointVector endPoints = 5;          // Vector of endPoints ( network interface )
-
-	// Optional messages ( coherent with message type )
-	optional Hello hello     	  = 99;             // Hello message
-	optional Command command	  = 100;	   // Command message
-	optional CommandResponse command_response = 101;   // Command response message
-	optional WorkerTask	worker_task	  = 102;	  // Work task message
-	optional WorkerTaskConfirmation worker_task_confirmation = 103;  // Work task confirmation message
+	enum Sender
+	{
+		Worker     = 0x57;
+		Controller = 0x43;
+		Delilah    = 0x44;
+	};
 
 
 
+	//
+	// Message Header
+	//
+	required Type    type       = 1;
+	required Info    info       = 2;
+	optional Sender  sender     = 3;
+	required string  sendername = 4;
 
+
+	//
+	// Message Data (only one of these structures per message
+	//
+	optional Hello                  hello     	              = 101;  // Hello message
+	optional EndPointVector         endPoints                 = 102;  // Vector of endPoints
+	optional Command                command	              	  = 103;  // Command message
+	optional CommandResponse        command_response 		  = 104;  // Command response message
+	optional WorkerTask	            worker_task	          	  = 105;  // Work task message
+	optional WorkerTaskConfirmation worker_task_confirmation  = 106;  // Work task confirmation message
 }
+
 

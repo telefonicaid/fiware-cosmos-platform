@@ -33,9 +33,9 @@ namespace ss {
 	{
 		std::vector<Endpoint> workerEndPoints;			// Vector of workers from the setup file	
 		
-		NetworkInterface *network;						// Network interface
+		NetworkInterface*     network;					// Network interface
 		ControllerDataManager data;						// Data manager for the controller
-		ModulesManager modulesManager;					// Manager of the modules ( to check data types and map/reduce/scripts functions)
+		ModulesManager        modulesManager;			// Manager of the modules ( to check data types and map/reduce/scripts functions)
 		ControllerTaskManager taskManager;				// Task manager of the controller
 		
 		friend class ControllerTaskManager;

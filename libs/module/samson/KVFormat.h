@@ -12,8 +12,6 @@
 #include <string>
 #include <vector>
 
-
-
 #pragma mark ************************************************
 #pragma mark KVFormat key-value format definition
 #pragma mark ************************************************

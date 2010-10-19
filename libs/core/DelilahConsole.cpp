@@ -32,7 +32,7 @@ namespace ss
 			size_t code = dalilah->sendMessageToController( command );
 			std::ostringstream o;
 			o << "Sent command to controller (id="<<code<<") : " << command;
-			writeOnConsole(o.str());
+			writeWarningOnConsole(o.str());
 			
 			
 			

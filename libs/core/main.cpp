@@ -318,6 +318,7 @@ int main( int argc , char *argv[] )
 	std::cout << "Test\n";
 	
 	ss::ModulesManager mm;
+	mm.checkData("system.UInt");
 	ss::Data *data = mm.getData("example.example");
 	
 	if( data )

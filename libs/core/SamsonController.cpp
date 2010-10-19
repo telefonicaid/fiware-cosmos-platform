@@ -9,7 +9,8 @@
 #include "CommandLine.h"		// CommandLine
 #include "SamsonController.h"	// own interface ss::SamsonController
 #include "ModulesManager.h"		// ss:ModulesManager
-#include "ControllerTaskManager.h"		// ss:ControllerTask
+#include "ControllerTaskManager.h"		// ss:ControllerTaskManager
+#include "ControllerTask.h"				// ss:ControllerTask
 
 namespace ss {
 
@@ -58,7 +59,7 @@ namespace ss {
 	}
 	
 	
-	void SamsonController::sendDalilahAnswer( size_t sender_id ,  Endpoint *dalilahEndPoint , bool error , std::string answer_message  )
+	void SamsonController::sendDalilahAnswer( size_t sender_id , int dalilahIdentifier , bool error , bool finished, std::string answer_message )
 	{
 		// Get status of controller
 		Packet p2( network::Message_Type_CommandResponse );
@@ -66,19 +67,20 @@ namespace ss {
 		network::CommandResponse *response = p2.message.mutable_command_response();
 		response->set_response( answer_message );
 		response->set_error( error );
+		response->set_finish( finished );
 		response->set_sender_id( sender_id );
 		
-		network->send(&p2, dalilahEndPoint, this);
+		network->send(&p2, dalilahIdentifier , this);
 	}
 	
 	void SamsonController::sendWorkerTasks( ControllerTask *task )
 	{
 		 // Send messages to the workers indicating the operation to do ( waiting the confirmation from all of them )
-		 for (size_t i = 0 ; i < workerEndPoints.size() ; i++)
-			 sendWorkerTask( &workerEndPoints[i] , task->getId() , task->getCurrentCommand() );
+		 for (int i = 0 ; i < network->getNumWorkers() ; i++)
+			 sendWorkerTask( i , task->getId() , task->getCurrentCommand() );
 	}	
 	
-	void SamsonController::sendWorkerTask( Endpoint * worker , size_t task_id , std::string command )
+	void SamsonController::sendWorkerTask( int workerIdentifier , size_t task_id , std::string command )
 	{
 		// Get status of controller
 		Packet p2( network::Message_Type_WorkerTask );
@@ -87,11 +89,11 @@ namespace ss {
 		t->set_command( command );
 		t->set_task_id( task_id );
 		
-		network->send(&p2, worker, this);
+		network->send(&p2, workerIdentifier, this);
 	}
 	
 	
-	void SamsonController::receive( Packet *p , Endpoint* fromEndPoint )
+	void SamsonController::receive( Packet *p , int fromIdentifier )
 	{
 		
 		if( p->message.type() == network::Message_Type_Command )
@@ -110,29 +112,30 @@ namespace ss {
 				output << "Status of controller" << std::endl;			
 				output << "====================" << std::endl;
 				output << data.status();
+				output << taskManager.status();
 				
 				
 				// Get status of controller
-				sendDalilahAnswer( p->message.command().sender_id() , fromEndPoint , false , output.str() );
+				sendDalilahAnswer( p->message.command().sender_id() , fromIdentifier , false , true, output.str() );
 				return;
 			}
 			
 			// Try to schedule the command
-			bool success = taskManager.addTask(  p->message.command().command() , output  );
+			bool success = taskManager.addTask( fromIdentifier ,  p->message.command().command() , output  );
 			
-			// Send something back to dalilah
-			sendDalilahAnswer( p->message.command().sender_id() , fromEndPoint , !success , output.str() );
+			// Send something back to dalilah ( if error -> it is also finish )
+			sendDalilahAnswer( p->message.command().sender_id() , fromIdentifier , !success , !success,  output.str() );
 			
 			return;
 		}
 		
+		// A confirmation from a worker is received
+		
 		if( p->message.type() == network::Message_Type_WorkerTaskConfirmation )
 		{
-			// A confirmation from a worker is received
 			
 			size_t task_id = p->message.worker_task_confirmation().task_id();
-			int worker_id = network->worker(fromEndPoint);
-			
+			int worker_id = fromIdentifier;
 			taskManager.notifyWorkerConfirmation( task_id , worker_id );			
 		}
 		

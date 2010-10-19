@@ -52,12 +52,12 @@ namespace ss {
 			// Parse input command lines
 			au::CommandLine commandLine;
 			commandLine.set_flag_string("controller", "no_controller");
-
-			commandLine.set_flag_boolean("console");				// tmp flag for testing
+			commandLine.set_flag_boolean("console");				
+			
 			commandLine.parse(arg, argv);
 
 			// Create console
-			console = new DelilahConsole(this, !console);
+			console = new DelilahConsole(this, !commandLine.get_flag_bool("console"));
 			
 			// Get the controller
 			std::string controller = commandLine.get_flag_string("controller");
@@ -70,8 +70,9 @@ namespace ss {
 
 			LM_T( TRACE_DALILAH , ("Delilah running. Controller: %s",controller.c_str() ) );
 			
-			ss::Endpoint controllerEndpoint(Endpoint::Controller, controller);
-			network->initAsDelilah(controllerEndpoint);
+			//ss::Endpoint controllerEndpoint(Endpoint::Controller, controller);
+			//network->initAsDelilah(controllerEndpoint);
+			network->initAsDelilah(controller);
 		}
 		
 		
@@ -102,12 +103,12 @@ namespace ss {
 		 */
 		
 		size_t sendMessageToController(std::string message);
-		void receivedMessage( size_t id , std::string message );
+		void receivedMessage( size_t id , bool error , bool finished , std::string message );
 		
 		
 		
 		// PacketReceiverInterface
-		virtual void receive(Packet* p, Endpoint* fromEndpoint);
+		virtual void receive(Packet* packet, int from);
 
 		// PacketSenderInterface
 		virtual void notificationSent(size_t id, bool success);

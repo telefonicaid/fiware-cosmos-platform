@@ -31,7 +31,8 @@ namespace ss {
 	
 	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface
 	{
-		std::vector<Endpoint> workerEndPoints;			// Vector of workers from the setup file	
+
+		// Elements inside the SamsonController
 		
 		NetworkInterface*     network;					// Network interface
 		ControllerDataManager data;						// Data manager for the controller
@@ -43,12 +44,15 @@ namespace ss {
 	public:
 		SamsonController( int arg , const char *argv[] ,  NetworkInterface *_network ) : 	taskManager( this )
 		{
+			
+			std::string  setupFileName;						// Filename with setup information
+			int          port;								// Local port where this controller listen
+			
+			
 			network = _network;
 			network->setPacketReceiverInterface(this);
 			
-			int          port;
 			std::string  trace;
-			std::string  setup;
 			
 			// Parse input command lines
 			au::CommandLine commandLine;
@@ -62,22 +66,22 @@ namespace ss {
 
 			commandLine.parse(arg, argv);
 			
-            port       = commandLine.get_flag_int("port");
-			setup      = commandLine.get_flag_string("setup");
-            lmReads    = commandLine.get_flag_bool("r");
-            lmWrites   = commandLine.get_flag_bool("w");
-
+            port			= commandLine.get_flag_int("port");
+			setupFileName   = commandLine.get_flag_string("setup");
+            lmReads			= commandLine.get_flag_bool("r");
+            lmWrites		= commandLine.get_flag_bool("w");
 			
+
 			// Load setup
 			LM_T(LMT_CONFIG, ("calling loadSetup"));			
-			loadSetup(setup);
+			//std::vector <Endpoint> workerEndPoints = loadSetup(setupFileName);
+			std::vector <std::string> workerPeers = getworkerPeers(setupFileName);
 			
 			// Define the endpoints of the network interface
-			ss::Endpoint myEndPoint(Endpoint::Controller, port);
-
-			LM_T(LMT_CONFIG, ("workerEndPoints.size: %d", workerEndPoints.size()));
-
-			network->initAsSamsonController(myEndPoint, workerEndPoints);
+			
+			LM_T(LMT_CONFIG, ("workerEndPoints.size: %d", workerPeers.size()));
+			network->initAsSamsonController(port, workerPeers);
+			//network->initAsSamsonController(myEndPoint, workerEndPoints);
 		}
 		
 		
@@ -88,17 +92,63 @@ namespace ss {
 		void test();
 		
 		
-		
-		void loadSetup(std::string fileName)
+		std::vector <std::string> getworkerPeers( std::string fileName )
 		{
+			std::vector <std::string> workerPeers;
+			
+			LM_T(LMT_CONFIG, ("IN"));
+			
+			FILE *file = fopen(fileName.c_str(),"r");
+			if (!file)
+			{
+				LM_E(("Config file '%s' not found", fileName.c_str()));
+				return workerPeers;
+			}
+			
+			workerPeers.clear();
+			char line[2000];
+			while( fgets(line, sizeof(line), file))
+			{
+				au::CommandLine c;
+				c.parse(line);
+				
+				if( c.get_num_arguments() == 0 )
+					continue;
+				
+				std::string mainCommand = c.get_argument(0);
+				if( mainCommand[0] == '#' )
+					continue;
+				
+				if (mainCommand == "worker")
+				{
+					if (c.get_num_arguments() >= 2)	
+					{
+						workerPeers.push_back(c.get_argument(1) );;
+						LM_T(LMT_CONFIG, ("added worker: '%s'", c.get_argument(1).c_str()));
+					}
+				}					
+			}
+			
+			fclose(file);
+			
+			return workerPeers;
+		}
+		
+		
+		std::vector <Endpoint> loadSetup(std::string fileName)
+		{
+			std::vector <Endpoint> workerEndPoints;
+			
 			LM_T(LMT_CONFIG, ("IN"));
 
 			FILE *file = fopen(fileName.c_str(),"r");
 			if (!file)
-				LM_RVE(("Config file '%s' not found", fileName.c_str()));
+			{
+				LM_E(("Config file '%s' not found", fileName.c_str()));
+				return workerEndPoints;
+			}
 			
 			workerEndPoints.clear();
-			
 			char line[2000];
 			while( fgets(line, sizeof(line), file))
 			{
@@ -122,24 +172,21 @@ namespace ss {
 				}					
 			}
 				  
-			
-			
 			fclose(file);
+			
+			return workerEndPoints;
 		}
 		
 		
 		// Send a message back to dalilah
-		void sendDalilahAnswer( size_t sender_id , Endpoint *dalilahEndPoint , bool error , std::string answer_message );
+		void sendDalilahAnswer( size_t sender_id , int dalilahIdentifier , bool error , bool finished, std::string answer_message );
 		
 		// Send a message to a worker with a particular task
 		void sendWorkerTasks( ControllerTask *task );
-		void sendWorkerTask( Endpoint * worker , size_t task_id , std::string command );
-		
-		
-		
+		void sendWorkerTask( int  workerIdentifier , size_t task_id , std::string command );
 		
 		// PacketReceiverInterface
-		virtual void receive( Packet *p , Endpoint* fromEndPoint );
+		void receive( Packet *p , int fromIdentifier );
 		
 		// PacketSenderInterface
 		virtual void notificationSent( size_t id , bool success );

@@ -11,21 +11,22 @@ namespace ss {
 		center = _center;
 	}
 	
-	
-	 void NetworkFake::initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> peers)
+	void NetworkFake::initAsSamsonController(int port, std::vector<std::string> peers)
 	{
 		// Nothing to do
 	}
 	
-	 void NetworkFake::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint)
+	void NetworkFake::initAsSamsonWorker(int localPort, std::string controllerEndpoint)
 	{
 		// Nothing to do
 	}
 	
-	 void NetworkFake::initAsDelilah(Endpoint controllerEndpoint)
+	void NetworkFake::initAsDelilah(std::string controllerEndpoint)
 	{
 		// Nothing to do
 	}
+	
+	
 	
 	// Set the receiver element
 	 void NetworkFake::setPacketReceiverInterface( PacketReceiverInterface* _receiver)
@@ -38,56 +39,33 @@ namespace ss {
 		return true;
 	}
 	
-	 Endpoint* NetworkFake::meGet()
+	// Get identifiers of known elements
+	int NetworkFake::controllerGetIdentifier()
 	{
-		return center->getEndpoint(worker_id);
+		return -1;
 	}
-	 Endpoint* NetworkFake::controllerGet()
+
+	int NetworkFake::workerGetIdentifier(int i)
 	{
-		return center->getEndpoint(-1);
+		return i;
 	}
-	
-	 Endpoint* NetworkFake::workerGet(int i)
+
+	int NetworkFake::getMyidentifier()
 	{
-		return center->getEndpoint(i);
-	}
-	
-	 int NetworkFake::worker( Endpoint* endPoint )
-	{
-		assert( false );
-		return 0;
+		return worker_id;
 	}
 	
-	 std::vector<Endpoint*> NetworkFake::endPoints()
+	int NetworkFake::getNumWorkers()
 	{
-		assert(false);	// Not implemented
-		std::vector<Endpoint*> a;
-		return a;
+		return center->num_workers;
 	}
 	
-	 std::vector<Endpoint*> NetworkFake::samsonWorkerEndpoints()
+	// Send a packet (return a unique id to inform the notifier later)
+	size_t NetworkFake::send(Packet* packet, int toIdentifier, PacketSenderInterface* sender)
 	{
-		assert(false);	// Not implemented
-		std::vector<Endpoint*> a;
-		return a;
-	}
-	
-	 size_t NetworkFake::send(Packet* packet, Endpoint* endpoint, PacketSenderInterface* sender)
-	{
-		
 		// Add packet in the list of the center
+		center->addPacket(new NetworkFakeCenterPacket( *packet, getMyidentifier() , toIdentifier , sender ) );
 
-		center->addPacket(new NetworkFakeCenterPacket( *packet, meGet() , endpoint , sender ) );
-
-/*		
-		// We look the endpoint worker id and use that to send the packet
-		FakeEndpoint *e = (FakeEndpoint*) endpoint;
-		NetworkFake* network = center->getNetwork( e->worker_id  );
-
-		// Send to the other side
-		network->receiver->receive(packet, meGet() );
-*/		
-		
 		return 0;
 	}
 	

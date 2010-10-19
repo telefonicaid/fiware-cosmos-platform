@@ -66,10 +66,10 @@ namespace ss {
 			LM_T( TRACE_SAMSON_WORKER , ("Samson worker running at port %d controller: %s", port , controller.c_str() ));
 					
 			// Get the endpoints necessary to start network interface
-			ss::Endpoint controllerEndPoint(Endpoint::Controller, controller);
-			ss::Endpoint myEndPoint(Endpoint::Worker, port);
+
 			
-			network->initAsSamsonWorker(myEndPoint, controllerEndPoint);
+			//network->initAsSamsonWorker(myEndPoint, controllerEndPoint);
+			network->initAsSamsonWorker( port , controller );
 		}
 		
 		
@@ -80,7 +80,7 @@ namespace ss {
 		void test();
 		
 		// PacketReceiverInterface
-		virtual void receive(Packet* p, Endpoint* fromEndPoint);
+		virtual void receive(Packet* packet, int from);
 
 		// PacketSenderInterface
 		virtual void notificationSent(size_t id, bool success);

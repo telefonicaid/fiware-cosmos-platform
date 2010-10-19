@@ -46,15 +46,27 @@ public:
 		
 	void setPacketReceiver(PacketReceiverInterface* receiver);
 
-	void initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> peers);
-	void initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint);
-	void initAsDelilah(Endpoint controllerEndpoint);
-
+	virtual void initAsSamsonController(int port, std::vector<std::string> peers);
+	virtual void initAsSamsonWorker(int localPort, std::string controllerEndpoint);
+	virtual void initAsDelilah(std::string controllerEndpoint);
+	
+	virtual void setPacketReceiverInterface( PacketReceiverInterface* receiver);
+	
+	
 	bool ready();                                   // Inform about everything ready
                                                     // The controller expects all the workers to be connected
                                                     // The worker expects to be connected with all the workers and the controller
                                                     // Delilah expects to be connected with all the workers and the contorller
 
+	// Get identifiers of known elements
+	virtual int controllerGetIdentifier(){return 0;};		// Get the identifier of the controller
+	virtual int workerGetIdentifier(int i){return 0;};		// Get the identifier of the i-th worker
+	virtual int getMyidentifier(){return 0;};				// Get my identifier
+	virtual int getNumWorkers(){return 0;};					// Get the number of workers
+	
+	// Send a packet (return a unique id to inform the notifier later)
+	virtual size_t send(Packet* packet, int toIdentifier, PacketSenderInterface* sender){return 0;};
+	
 	Endpoint* meGet();                              // Get my endPoint
 	Endpoint* controllerGet();                      // Get the endPoint of the controller
 	Endpoint* workerGet(int i);                     // Get the endPoint of the "i-th" worker

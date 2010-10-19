@@ -26,8 +26,6 @@ message EndPointVector
 }
 
 
-
-
 // Message from the controller workers
 
 message WorkerTask
@@ -59,9 +57,11 @@ message Command
 
 message CommandResponse
 {
-	optional string response          = 1;          // Answer for the command
-	optional bool   error             = 2;          // Flag to indicat if there was an error
-	optional int32  sender_id         = 3;          // Id of the packet sender ( delilah )
+	required string response          = 1;          // Answer for the command
+	required bool  error              = 2;          // Flag to indicat if there was an error
+	required bool  finish		  = 3;		// Flag to indicate if the command is finished ( with or without error)	
+
+	optional int32  sender_id         = 4;          // Id of the packet sender ( delilah )
 }
 
 // General message
@@ -86,13 +86,13 @@ message Message
 		Nak    = 0x4e;
 	};
 
+
 	enum Sender
 	{
 		Worker     = 0x57;
 		Controller = 0x43;
 		Delilah    = 0x44;
 	};
-
 
 
 	//

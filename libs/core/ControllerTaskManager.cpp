@@ -1,13 +1,14 @@
 #include "ControllerTaskManager.h"		// Own interface
+#include "ControllerTask.h"				// ss::ControllerTask
 #include "SamsonController.h"			// ss::SamsonController
 #include "CommandLine.h"				// au::CommandLine
-
-
+#include "Endpoint.h"					// ss::Endpoint
+#include "Packet.h"						// ss::Packet
 
 namespace ss
 {
 
-	bool ControllerTaskManager::addTask( std::string command , std::ostringstream& output )
+	bool ControllerTaskManager::addTask( int fromIdentifier, std::string command , std::ostringstream& output )
 	{
 		ControllerTask *_task=NULL;
 		
@@ -23,12 +24,11 @@ namespace ss
 			{
 				if( checkAddQueueCommand( command , output ) ) 
 				{
-					_task = new ControllerTask( current_task_id++ ,  command , controller->workerEndPoints.size() );
-					
-					// Add individual command depending on the command
-					// At the moment the same command is the unique line
+					// Create the tast adding the necessary commands inside
+					_task = new ControllerTask( fromIdentifier,  current_task_id++ ,  command , controller->network->getNumWorkers() );
 					_task->addCommand( command );	
-					
+
+					// Insert the task into the list
 					task.insert( std::pair< size_t , ControllerTask*>( _task->getId()  , _task) );
 					output << "Scheduled with global task id " << _task->getId();
 				}
@@ -40,6 +40,8 @@ namespace ss
 		if( _task )
 		{
 			// Run task
+			_task->run();
+			
 			if( _task->isReady() )
 			{
 				_task->processCommand();
@@ -57,15 +59,32 @@ namespace ss
 		lock.lock();
 		std::map< size_t , ControllerTask*>::iterator t =  task.find( task_id);
 		if( t!= task.end() )
+		{
 			t->second->notifyWorkerConfirmation( worker_id );
+			
+			if (t->second->isFinished())
+			{
+				// Send a message back to the dalilah that ordered this comman ( if still connected )
+				controller->sendDalilahAnswer( t->second->getId() , t->second->getFromIdentifier(), false, true,  "OK!");
+
+				// Update this in the data controller
+				controller->data.updateWithFinishedTask( t->second );
+				
+				// Delete the task from the task manager
+				delete t->second;
+				task.erase( t );
+			}
+			
+		}
 		lock.unlock();
 		
 	}
 	
-	
-	
 	bool ControllerTaskManager::checkAddQueueCommand(std::string command ,  std::ostringstream& output )
 	{
+		
+		std::cout << "COMMAND :" << command;
+		
 		au::CommandLine cmdLine;
 		cmdLine.parse(command);
 		
@@ -94,4 +113,18 @@ namespace ss
 		 
 		return true;
 	}
+	
+	
+	std::string ControllerTaskManager::status()
+	{
+		std::stringstream o;
+		o << "Task Manager:" << std::endl;
+		std::map< size_t , ControllerTask*>::iterator t;
+		for (t = task.begin() ; t != task.end() ; t++)
+			o << t->second->str() << std::endl;
+		return o.str();
+		
+	}
+	
+	
 }

@@ -17,6 +17,7 @@ add_custom_command (
 )
 
 ADD_LIBRARY(example MODULE ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES( example logMsgStatic )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")

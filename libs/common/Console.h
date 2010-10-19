@@ -254,9 +254,9 @@ public:
 	
 	void runCommand( std::string command )
 	{
-		std::stringstream run_command;
-		run_command << "Run: " << command;
-		writeOnConsole( run_command.str() );
+		//std::stringstream run_command;
+		//run_command << "Run: " << command;
+		//writeOnConsole( run_command.str() );
 		
 		// Proper command of the console
 		CommandLine cmdLine;

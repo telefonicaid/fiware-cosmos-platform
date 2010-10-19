@@ -27,21 +27,35 @@ namespace ss {
 		
 		NetworkFake( int _worker_id , NetworkFakeCenter *_center );
 		
-		virtual void initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> peers);
-		virtual void initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint);
-		virtual void initAsDelilah(Endpoint controllerEndpoint);
-		virtual void setPacketReceiverInterface( PacketReceiverInterface* _receiver);
-		virtual bool ready();
-		virtual Endpoint* meGet();
-		virtual Endpoint* controllerGet();
-		virtual Endpoint* workerGet(int i);
-		virtual int worker( Endpoint* endPoint );
-		virtual std::vector<Endpoint*> endPoints();
-		virtual std::vector<Endpoint*> samsonWorkerEndpoints();
-		virtual size_t send(Packet* packet, Endpoint* endpoint, PacketSenderInterface* sender);
-		virtual void run();
-		virtual void quit();
+		// New interface
+		// ------------------------------------------------------------------------------------------------
+		// Note: All of them will end up being pure virtual functions
 		
+		// Inform about everything ready to start
+		virtual bool ready();                                   
+		
+		// Init function ( one and only one of them should be called )
+		virtual void initAsSamsonController(int port, std::vector<std::string> peers);
+		virtual void initAsSamsonWorker(int localPort, std::string controllerEndpoint);
+		virtual void initAsDelilah(std::string controllerEndpoint);
+		
+		// Set the receiver element ( this should be notified about the packaked )
+		virtual void setPacketReceiverInterface( PacketReceiverInterface* receiver);
+		
+		// Get identifiers of known elements
+		virtual int controllerGetIdentifier();		// Get the identifier of the controller
+		virtual int workerGetIdentifier(int i);		// Get the identifier of the i-th worker
+		virtual int getMyidentifier();				// Get my identifier
+		virtual int getNumWorkers();					// Get the number of workers
+		
+		// Send a packet (return a unique id to inform the notifier later)
+		virtual size_t send(Packet* packet, int toIdentifier, PacketSenderInterface* sender);
+		
+		// Main run loop control to the network interface
+		virtual void run();           
+		
+		// Syspend the network interface, close everything and return the "run" call
+		virtual void quit();	
 	};
 	
 }

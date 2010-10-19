@@ -11,6 +11,8 @@
 #include "NetworkFake.h"        // NetworkFake
 #include "Packet.h"				// ss::Packet
 #include <list>					// std::list
+#include "traces.h"				// LMT_FAKE_NETWORK
+#include <iostream>				// std::cout
 
 namespace ss {
 	
@@ -20,15 +22,14 @@ namespace ss {
 	public:
 		
 		Packet packet; 
-		Endpoint* me;
-		Endpoint* endpoint;
+		int from;
+		int to;
 		PacketSenderInterface* sender;
 		
-		NetworkFakeCenterPacket( 	Packet _packet,Endpoint*_me ,  Endpoint* _endpoint , PacketSenderInterface* _sender )
+		NetworkFakeCenterPacket( 	Packet _packet, int _from , int _to , PacketSenderInterface* _sender )
 		{
-			me = _me;
-			endpoint = _endpoint;
-			
+			from = _from;
+			to = _to;
 			packet = _packet;
 			sender = _sender;
 		}
@@ -45,8 +46,12 @@ namespace ss {
 		au::Lock lock; // Lock to protect the pending packet list
 		std::vector<NetworkFakeCenterPacket*> pendingPackets;
 		
-		NetworkFakeCenter( int num_workers )
+		int num_workers;
+		
+		NetworkFakeCenter( int _num_workers )
 		{
+			num_workers = _num_workers;
+			
 			for (int i = 0 ; i < num_workers ; i++)
 			{
 				// Create a fake Network interface element
@@ -107,7 +112,6 @@ namespace ss {
 		
 		void addPacket(NetworkFakeCenterPacket *p)
 		{
-			std::cout << "New packet\n";
 			lock.lock();
 			pendingPackets.push_back(p);
 			lock.unlock();
@@ -116,11 +120,9 @@ namespace ss {
 		
 		void processPendingPacket(NetworkFakeCenterPacket *p)
 		{
-			std::cout << "Sending packet\n";
 			// We look the endpoint worker id and use that to send the packet
-			FakeEndpoint *e = (FakeEndpoint*) p->endpoint;
-			NetworkFake* network = getNetwork( e->worker_id  );
-			network->receiver->receive(&p->packet, p->me );
+			NetworkFake* network = getNetwork( p->to  );
+			network->receiver->receive(&p->packet, p->from );
 		}
 		
 		

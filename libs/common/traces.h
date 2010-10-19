@@ -11,6 +11,8 @@
 #define LMT_READY		21
 #define LMT_CONFIG		22
 
+#define LMT_FAKE_NETWORK	200
+
 
 namespace ss {
 	void samsonInitTrace( int argc, const char *argv[] );

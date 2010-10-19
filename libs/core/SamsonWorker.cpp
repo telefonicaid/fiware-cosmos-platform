@@ -53,10 +53,21 @@ void SamsonWorker::test()
 }
 
 
-void SamsonWorker::receive( Packet* p, Endpoint* fromEndPoint )
+void SamsonWorker::receive(Packet* p, int from)
 {
-	// Do something with it
-	std::cout << "Packet received from " << fromEndPoint->str() << " -> " << p->str();
+	
+	if( p->message.type() == network::Message_Type_WorkerTask )
+	{
+		// Sent a confirmation just to test everything is ok
+		Packet p2( network::Message_Type_WorkerTaskConfirmation );
+		
+		network::WorkerTaskConfirmation * confirmation = p2.message.mutable_worker_task_confirmation();
+		confirmation->set_task_id( p->message.worker_task().task_id() );
+		confirmation->set_error( false );
+		
+		network->send(&p2, network->controllerGetIdentifier(), this);
+	}
+	
 }
 	
 

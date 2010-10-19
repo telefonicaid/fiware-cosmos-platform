@@ -7,6 +7,7 @@ SET (HEADERS
     WorkerDataManager.h
     ControllerDataManager.h
     ControllerTaskManager.h
+    ControllerTask.h
 )
 
 SET (SOURCES
@@ -18,6 +19,7 @@ SET (SOURCES
     WorkerDataManager.cpp
     ControllerDataManager.cpp
     ControllerTaskManager.cpp
+    ControllerTask.cpp
 )
 
 SET (STATIC_LIBS

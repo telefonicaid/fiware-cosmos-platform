@@ -57,38 +57,49 @@ namespace ss {
 	
 	size_t Delilah::sendMessageToController( std::string message )
 	{
-		Packet p( network::Message_Type_Command);
+		Packet p( network::Message_Type_Command );
 		
 		network::Command * command = p.message.mutable_command();
 		command->set_sender_id( local_id++ );
 		command->set_command( message );
 		
-		network->send(&p, network->controllerGet(), this);
+		network->send(&p, network->controllerGetIdentifier(), this);
 		
 		return (local_id-1);
 	}
 	
-	void Delilah::receivedMessage( size_t id , std::string message )
+	void Delilah::receivedMessage( size_t id , bool error , bool finished , std::string message )
 	{
 		// Todo with the received packet
 		std::ostringstream txt;
 		txt << "----------------------------------------------------------------" << std::endl;
-		txt << "Answer for command " << id << ": " << std::endl;
+		txt << "Answer for command " << id << ": ";
+		
+		if( finished )
+			txt << "(FINISHED)";
+		txt << std::endl;
 		txt << "----------------------------------------------------------------" << std::endl;
 		txt << message << std::endl;
 		txt << "----------------------------------------------------------------" << std::endl;
-		console->writeOnConsole( txt.str()  );
+		
+		if( error )
+			console->writeErrorOnConsole( txt.str()  );
+		else
+			console->writeOnConsole( txt.str()  );
 	}
 	
 
-	void Delilah::receive( Packet *p , Endpoint* fromEndpoint )
+	void Delilah::receive(Packet* p, int from)
 	{
 		
 		if( p->message.type() == network::Message_Type_CommandResponse )
 		{
 			std::string message = p->message.command_response().response();
+			bool error = p->message.command_response().error();
+			bool finish = p->message.command_response().finish();
 			size_t id = p->message.command_response().sender_id();
-			receivedMessage( id , message );
+			
+			receivedMessage( id , error,finish, message );
 		}
 	}
 	

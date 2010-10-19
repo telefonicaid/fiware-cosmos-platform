@@ -24,7 +24,7 @@
 #include "iomMsgRead.h"         // iomMsgRead
 #include "iomMsgAwait.h"        // iomMsgAwait
 #include "Network.h"			// Own interface
-
+#include <vector>				// ss::vector
 
 
 namespace ss
@@ -95,6 +95,16 @@ void Network::init(Endpoint* myEndpoint, bool server)
 	ipSet(NULL);
 }
 
+/* ****************************************************************************
+ *
+ * setPacketReceiverInterface - set the element to be notified when packages arrive
+ */
+	
+void Network::setPacketReceiverInterface( PacketReceiverInterface* _receiver)
+{
+	receiver = _receiver;
+}
+	
 
 
 /* ****************************************************************************
@@ -146,7 +156,7 @@ void Network::ipSet(char* ip)
 	fclose(fP);
 }
 
-
+	
 
 /* ****************************************************************************
 *
@@ -172,25 +182,28 @@ int Network::helloSend(int fd, char* name)
 *
 * initAsSamsonController - 
 */
-void Network::initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> endpoints)
+void Network::initAsSamsonController(int port, std::vector<std::string> peers)
 {
 	unsigned int  ix;
 
-	endpointV = endpoints;
+	for (size_t i = 0 ; i < peers.size() ; i++)
+		endpointV.push_back( Endpoint(Endpoint::Worker, peers[i] ) ); 
+	
+	Endpoint myEndpoint(Endpoint::Listener, port);
 	
 	init(&myEndpoint, true);
 	LM_T(LMT_SELECT, ("me->name: '%s'", me->name.c_str()));
 
 	ix = 0;
-	for (ix = 0; ix < endpoints.size(); ix++)
+	for (ix = 0; ix < endpointV.size(); ix++)
 	{
 		char name[32];
 
 		LM_T(LMT_ENDPOINTS, ("endpointV.ip: '%s'", endpointV[ix].ip.c_str()));
-		endpoints[ix].state = Endpoint::Taken;
+		endpointV[ix].state = Endpoint::Taken;
 
 		snprintf(name, sizeof(name), "worker %d", ix);
-		endpoints[ix].name = name;
+		endpointV[ix].name = name;
 	}
 }
 
@@ -202,13 +215,16 @@ void Network::initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> 
 *
 * NOTE
 */
-void Network::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint)
+void Network::initAsSamsonWorker(int port, std::string _controller)
 {
+
+	Endpoint myEndpoint(Endpoint::Listener, port);
 	Packet  packet(ss::network::Message_Type_WorkerVector);
+
 	Packet  ackPacket;
 
 	myEndpoint.name   = "accepter";
-	controller        = new Endpoint(controllerEndpoint);
+	controller        = new Endpoint( Endpoint::Controller, _controller );
 	controller->name  = "controller";
 
 	init(&myEndpoint, true);
@@ -226,11 +242,11 @@ void Network::initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoin
 *
 * initAsDelilah - 
 */
-void Network::initAsDelilah(Endpoint controllerEndpoint)
+void Network::initAsDelilah(std::string _controller)
 {
 	Endpoint* myEndpoint = new Endpoint(Endpoint::Delilah, "delilah");
 
-	controller        = new Endpoint(controllerEndpoint);
+	controller        = new Endpoint( Endpoint::Controller, _controller );
     controller->name  = "controller";
 	controller->type  = Endpoint::Controller;
 
@@ -327,8 +343,6 @@ std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 */
 size_t Network::send(Packet* p, Endpoint* endpoint, PacketSenderInterface* sender)
 {
-	// Right now, local loop
-	receiver->receive(p, endpoint);
 
 	if (sender)
 		sender->notificationSent(0, true);

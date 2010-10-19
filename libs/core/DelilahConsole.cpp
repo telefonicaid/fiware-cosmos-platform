@@ -29,7 +29,7 @@ namespace ss
 		{
 			// Eval what to do with this command
 			
-			size_t code = dalilah->sendMessageToContorller( command );
+			size_t code = dalilah->sendMessageToController( command );
 			std::ostringstream o;
 			o << "Sent command to controller (id="<<code<<") : " << command;
 			writeOnConsole(o.str());

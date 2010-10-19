@@ -101,7 +101,7 @@ namespace ss {
 		 Basic interface to send and receive messages
 		 */
 		
-		size_t sendMessageToContorller(std::string message);
+		size_t sendMessageToController(std::string message);
 		void receivedMessage( size_t id , std::string message );
 		
 		

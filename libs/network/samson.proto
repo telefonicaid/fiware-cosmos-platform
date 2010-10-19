@@ -27,32 +27,12 @@ message Hello
 
 }
 
-
-// Message from dalilah to controller
-
-message DalilahCommand
-{
-	required int64 task_id = 1;	// Local id of this task by dalilah
-	required string command = 2;	// Command to perform by the platform
-
-}
-
-// Answer form the controller to dalilah
-
-message DalilahCommandResponse
-{
-	required int64 task_id = 1;	// Local id of this task by dalilah
-	required string answer = 2;	// TXT answer of the command
-	required bool error=3;	       	// Flag indicating if there was an error in the command	
-}
-
-
 // Message from the controller workers
 
 message WorkerTask
 {
 	required string command = 1;	// Command to perform by the worker
-	required int64 task_id = 2;	// Id of the top level ( controller ) task
+	required int64 task_id 	= 2;	// Id of the top level ( controller ) task
 }
 
 // Confirmation from workers to the controller
@@ -60,28 +40,61 @@ message WorkerTask
 message WorkerTaskConfirmation
 {
 	required int64 task_id = 1;	// Id of the opt level (controller ) task
-	required bool error=2;	  	// Error in the operation
+	required bool error    = 2;	// Error in the operation
 
 	// Additional information ( like queue size changes, etc... )
 }
 
+// Command from dalilah to controller
+
+message Command
+{
+	optional string command           = 1;          // optimal string to send a txt command
+	optional bool   error             = 2;          // Flag to indicat if there was an error
+	optional int32  sender_id         = 3;          // Id of the packet sender ( delilah )
+}
+
+// response from controller to dalilah
+
+message CommandResponse
+{
+	optional string response          = 1;          // Answer for the command
+	optional bool   error             = 2;          // Flag to indicat if there was an error
+	optional int32  sender_id         = 3;          // Id of the packet sender ( delilah )
+}
+
+// General message
+
 message Message
 {
+	enum Type
+	{
+		Hello			= 1;
+		Command 		= 5;
+		CommandResponse 	= 6;
+		WorkerTask 		= 7;
+		WorkerTaskConfirmation 	= 8;
+	}
+
+	// Message type
+	required Type type= 98;	
+
+	// Old fields to be removed
 	required int32   code               = 1;            // message code
 	required int32   msgType            = 2;            // message type (Req, Ack, Nak)
 	required string  sender             = 3;            // name of sender
 	// required string description    = 4;            // Debug description
 
-	optional EndPointVector endPoints = 300;          // Vector of endPoints ( network interface )
-	optional Hello          hello     = 301;          // Hello message
 
-	optional WorkerTask	task	  = 302;	  // Work task message
-	optional WorkerTaskConfirmation task_confirmation = 303;  // Work rask confirmation message
+	optional EndPointVector endPoints = 5;          // Vector of endPoints ( network interface )
 
-	optional string command           = 200;          // optimal string to send a txt command
-	optional string answer            = 201;          // optinal string to receive a txt answer
-	optional bool   error             = 202;          // Flag to indicat if there was an error
-	optional int32  sender_id         = 203;          // Id of the packet sender ( delilah )
+	// Optional messages ( coherent with message type )
+	optional Hello hello     	  = 99;             // Hello message
+	optional Command command	  = 100;	   // Command message
+	optional CommandResponse command_response = 101;   // Command response message
+	optional WorkerTask	worker_task	  = 102;	  // Work task message
+	optional WorkerTaskConfirmation worker_task_confirmation = 103;  // Work task confirmation message
+
 
 
 

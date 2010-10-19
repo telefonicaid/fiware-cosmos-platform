@@ -95,8 +95,14 @@ namespace ss {
 		network::Message message;		// Message with necessary fields ( codified with Google Protocol Buffers )
 		PacketBuffer buffer;
 	
-		Packet() {}
+		Packet() {};
 
+		Packet( network::Message_Type type )
+		{
+			message.set_type( type );
+		}
+		
+		
 		Packet(MessageCode c)
 		{
 			messageCodeSet(c);

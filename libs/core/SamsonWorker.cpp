@@ -44,12 +44,10 @@ void SamsonWorker::test()
 	// Testing to sent something to the controller
 	while( true )
 	{
-		ss::Packet p;
-		p.message.set_command("Hello there");	// Init the command inside the message
-		p.buffer.initPacketBuffer(100);			// Init with the buffer with 100 garbage bytes
-			
-		network->send(&p, network->controllerGet(), NULL);
-			
+		//ss::Packet p;
+		//p.message.set_command("Hello there");	// Init the command inside the message
+		//p.buffer.initPacketBuffer(100);			// Init with the buffer with 100 garbage bytes
+		//network->send(&p, network->controllerGet(), NULL);
 		sleep(2);
 	}
 }

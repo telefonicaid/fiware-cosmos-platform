@@ -44,15 +44,14 @@ namespace ss {
 		while( true )
 		{
 			
+/*
 			std::vector<Endpoint*> workers = network->samsonWorkerEndpoints();
-			
 			Packet p;
 			p.message.set_command("Hello there from controller");	// Init the command inside the message
-			p.buffer.initPacketBuffer(200);							// Init with the buffer with 100 garbage bytes
-			
+			p.buffer.initPacketBuffer(200);							// Init with the buffer with 100 garbage bytes			
 			for (std::vector<Endpoint*>::iterator e = workers.begin() ; e != workers.end() ; e++)
 				network->send(&p, *e, NULL);
-			
+			*/
 			sleep(1);
 		}
 		
@@ -62,11 +61,13 @@ namespace ss {
 	void SamsonController::sendDalilahAnswer( size_t sender_id ,  Endpoint *dalilahEndPoint , bool error , std::string answer_message  )
 	{
 		// Get status of controller
-		Packet p2;
-		p2.message.set_code( 0 );
-		p2.message.set_answer( answer_message );
-		p2.message.set_error( error );
-		p2.message.set_sender_id( sender_id );
+		Packet p2( network::Message_Type_CommandResponse );
+		
+		network::CommandResponse *response = p2.message.mutable_command_response();
+		response->set_response( answer_message );
+		response->set_error( error );
+		response->set_sender_id( sender_id );
+		
 		network->send(&p2, dalilahEndPoint, this);
 	}
 	
@@ -80,10 +81,9 @@ namespace ss {
 	void SamsonController::sendWorkerTask( Endpoint * worker , size_t task_id , std::string command )
 	{
 		// Get status of controller
-		Packet p2;
-		p2.message.set_code( 0 );
+		Packet p2( network::Message_Type_WorkerTask );
 
-		network::WorkerTask *t = p2.message.mutable_task();
+		network::WorkerTask *t = p2.message.mutable_worker_task();
 		t->set_command( command );
 		t->set_task_id( task_id );
 		
@@ -94,11 +94,11 @@ namespace ss {
 	void SamsonController::receive( Packet *p , Endpoint* fromEndPoint )
 	{
 		
-		if( p->messageCodeGet() == Packet::DalilahCommand )
+		if( p->message.type() == network::Message_Type_Command )
 		{
 			
 			au::CommandLine cmdLine;
-			cmdLine.parse( p->message.command() );
+			cmdLine.parse( p->message.command().command() );
 			std::ostringstream output;					// General output string buffer
 			
 			if( cmdLine.get_num_arguments() == 0)
@@ -113,24 +113,24 @@ namespace ss {
 				
 				
 				// Get status of controller
-				sendDalilahAnswer( p->message.sender_id() , fromEndPoint , false , output.str() );
+				sendDalilahAnswer( p->message.command().sender_id() , fromEndPoint , false , output.str() );
 				return;
 			}
 			
 			// Try to schedule the command
-			bool success = taskManager.addTask( p->message.command() , output  );
+			bool success = taskManager.addTask(  p->message.command().command() , output  );
 			
 			// Send something back to dalilah
-			sendDalilahAnswer( p->message.sender_id() , fromEndPoint , !success , output.str() );
+			sendDalilahAnswer( p->message.command().sender_id() , fromEndPoint , !success , output.str() );
 			
 			return;
 		}
 		
-		if( p->messageCodeGet() == Packet::WorkerTaskConfirmation )
+		if( p->message.type() == network::Message_Type_WorkerTaskConfirmation )
 		{
 			// A confirmation from a worker is received
 			
-			size_t task_id = p->message.task_confirmation().task_id();
+			size_t task_id = p->message.worker_task_confirmation().task_id();
 			int worker_id = network->worker(fromEndPoint);
 			
 			taskManager.notifyWorkerConfirmation( task_id , worker_id );			

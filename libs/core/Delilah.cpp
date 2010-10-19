@@ -55,12 +55,13 @@ namespace ss {
 	}
 */	
 	
-	size_t Delilah::sendMessageToContorller( std::string message )
+	size_t Delilah::sendMessageToController( std::string message )
 	{
-		Packet p;
-		p.message.set_code( 0 );
-		p.message.set_sender_id( local_id++ );
-		p.message.set_command( message );
+		Packet p( network::Message_Type_Command);
+		
+		network::Command * command = p.message.mutable_command();
+		command->set_sender_id( local_id++ );
+		command->set_command( message );
 		
 		network->send(&p, network->controllerGet(), this);
 		
@@ -82,9 +83,13 @@ namespace ss {
 
 	void Delilah::receive( Packet *p , Endpoint* fromEndpoint )
 	{
-		std::string message = p->message.answer();
-		size_t id = p->message.sender_id();
-		receivedMessage( id , message );
+		
+		if( p->message.type() == network::Message_Type_CommandResponse )
+		{
+			std::string message = p->message.command_response().response();
+			size_t id = p->message.command_response().sender_id();
+			receivedMessage( id , message );
+		}
 	}
 	
 	void Delilah::notificationSent( size_t id , bool success )

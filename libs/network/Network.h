@@ -36,6 +36,7 @@ class Network : public NetworkInterface
 	Endpoint*                me;
 	Endpoint*                controller;
 	Endpoint*                delilah;
+	Endpoint*                temporal;
 	std::vector<Endpoint>    endpointV;
 
 	void init(Endpoint* me, bool server);

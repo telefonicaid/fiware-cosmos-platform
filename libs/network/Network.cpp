@@ -9,6 +9,7 @@
 */
 #include <sys/select.h>         // select
 #include <string>               // string
+#include <vector>				// ss::vector
 
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_*
@@ -24,7 +25,7 @@
 #include "iomMsgRead.h"         // iomMsgRead
 #include "iomMsgAwait.h"        // iomMsgAwait
 #include "Network.h"			// Own interface
-#include <vector>				// ss::vector
+
 
 
 namespace ss
@@ -45,10 +46,12 @@ namespace ss
 */
 Network::Network()
 {
-	receiver   = NULL;
 	iAmReady   = false;
+
+	receiver   = NULL;
 	controller = NULL;
 	delilah    = NULL;
+	temporal   = NULL;
 }
 
 
@@ -374,7 +377,7 @@ void Network::msgTreat(int fd, char* name)
 	int       s;
 	Endpoint* ep = endpointLookupByFd(fd);
 
-	LM_T(LMT_SELECT, ("treating incoming connection from '%s'", name));
+	LM_T(LMT_SELECT, ("treating incoming message from '%s'", name));
 	if ((s = iomMsgRead(fd, name, &req)) != 0)
 	{
 		if (s == -2) /* Connection closed */
@@ -425,9 +428,14 @@ void Network::msgTreat(int fd, char* name)
 
 		req.helloGet(&name, &workers, &epType, &ip, &port);
 		endpointAdd(fd, name, workers, epType, ip, port);
+
+		if (temporal)
+		{
+		   free(temporal);
+		   temporal = NULL;
+		}
+
 		LM_M(("epType == %d", epType));
-		free(name);
-		free(ip);
 
 		if (msgInfo == ss::network::Message_Info_Msg)
 		{
@@ -441,6 +449,9 @@ void Network::msgTreat(int fd, char* name)
 			iomMsgSend(fd, name, &ack, progName, NULL, 0);
 		}
 
+		free(name);
+		free(ip);
+
 		if ((ep != NULL) && (ep == controller))
 		{
 			Packet packet;
@@ -451,17 +462,19 @@ void Network::msgTreat(int fd, char* name)
 
 			iomMsgSend(controller->fd, (char*) controller->name.c_str(), &packet, progName, NULL, 0);
 		}
+		else
+			LM_M(("not controller: ep: %p, controller: %p", ep, controller));
 		break;
 
 	case ss::network::Message_Type_WorkerVector:
+		LM_T(LMT_MSG, ("Got a WorkerVector message from '%s' (I have %d workers in my vector)", name, endpointV.size()));
+
 		if (controller != NULL)
 			LM_X(1, ("Got a WorkerVector request from '%s' but I'm not the controller ...", name));
 
-		LM_T(LMT_MSG, ("Got a WorkerVector message from '%s' (I have %d workers in my vector)", name, endpointV.size()));
-
 		LM_T(LMT_WRITE, ("sending ack with entire worker vector"));
 
-		if (msgInfo == ss::network::Message_Info_Msg)
+		if ((me->type == Endpoint::Controller) && (msgInfo == ss::network::Message_Info_Msg))
 		{
 			ack.message.set_type(ss::network::Message_Type_WorkerVector);
 			ack.message.set_info(ss::network::Message_Info_Ack);
@@ -514,6 +527,13 @@ void Network::run()
 				LM_T(LMT_SELECT, ("Added controller fd %d to fd-list", controller->fd));
 			}
 
+			if ((temporal != NULL) && (temporal->state == Endpoint::Connected))
+			{
+				FD_SET(temporal->fd, &rFds);
+				max = MAX(max, temporal->fd);
+				LM_T(LMT_SELECT, ("Added temporal fd %d to fd-list", temporal->fd));
+			}
+
 			if ((delilah != NULL) && (delilah->state == Endpoint::Connected))
 			{
 				FD_SET(delilah->fd, &rFds);
@@ -528,10 +548,20 @@ void Network::run()
 				{
 					FD_SET(endpointV[ix].fd, &rFds);
 					max = MAX(max, endpointV[ix].fd);
-					LM_T(LMT_SELECT, ("added worker %d (%s - %s:%d) - state '%s'", ix, endpointV[ix].name.c_str(), endpointV[ix].ip.c_str(), endpointV[ix].port, endpointV[ix].stateName()));
+					LM_T(LMT_SELECT, ("added worker %d (%s - %s:%d) - state '%s'",
+									  ix,
+									  endpointV[ix].name.c_str(),
+									  endpointV[ix].ip.c_str(),
+									  endpointV[ix].port,
+									  endpointV[ix].stateName()));
 				}
 				else
-					LM_T(LMT_SELECT, ("Not adding worker %d (%s - %s:%d) - state '%s'", ix, endpointV[ix].name.c_str(), endpointV[ix].ip.c_str(), endpointV[ix].port, endpointV[ix].stateName()));
+					LM_T(LMT_SELECT, ("Not adding worker %d (%s - %s:%d) - state '%s'",
+									  ix,
+									  endpointV[ix].name.c_str(),
+									  endpointV[ix].ip.c_str(),
+									  endpointV[ix].port,
+									  endpointV[ix].stateName()));
 			}
 
 			LM_T(LMT_SELECT, ("-----------------------------------------------"));
@@ -565,11 +595,19 @@ void Network::run()
 					LM_P(("iomAccept(%d)", me->fd));
 				else
 					helloSend(fd, hostName);
+				temporal = new Endpoint();
+				temporal->state = Endpoint::Connected;
+				temporal->fd    = fd;
 			}
 			else if ((delilah != NULL) && (delilah->state == Endpoint::Connected) && FD_ISSET(delilah->fd, &rFds))
 			{
 				LM_T(LMT_SELECT, ("incoming message from delilah"));
 				msgTreat(delilah->fd, (char*) delilah->name.c_str());
+			}
+			else if ((temporal != NULL) && (temporal->state == Endpoint::Connected) && FD_ISSET(temporal->fd, &rFds))
+			{
+				LM_T(LMT_SELECT, ("incoming message from temporal"));
+				msgTreat(temporal->fd, (char*) temporal->name.c_str());
 			}
 			else
 			{

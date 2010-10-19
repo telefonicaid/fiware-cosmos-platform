@@ -25,7 +25,7 @@ namespace ss
 
 	ModulesManager::ModulesManager()
 	{
-		 addModules();
+		// addModules();
 	}
 	
 	void ModulesManager::addModules()

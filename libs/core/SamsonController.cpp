@@ -1,16 +1,18 @@
-#include <iostream>				// std::cout ...
+#include <iostream>				        // std::cout ...
 
-#include "logMsg.h"             // lmInit, LM_*
+#include "logMsg.h"                     // lmInit, LM_*
 
-#include "Macros.h"             // EXIT, ...
-#include "Packet.h"				// ss::Packet
-#include "Network.h"			// NetworkInterface
-#include "Endpoint.h"			// EndPoint
-#include "CommandLine.h"		// CommandLine
-#include "SamsonController.h"	// own interface ss::SamsonController
-#include "ModulesManager.h"		// ss:ModulesManager
+#include "Macros.h"                     // EXIT, ...
+#include "Packet.h"				        // ss::Packet
+#include "Network.h"			        // NetworkInterface
+#include "Endpoint.h"			        // EndPoint
+#include "CommandLine.h"		        // CommandLine
+#include "ModulesManager.h"		        // ss:ModulesManager
 #include "ControllerTaskManager.h"		// ss:ControllerTaskManager
 #include "ControllerTask.h"				// ss:ControllerTask
+#include "SamsonController.h"	        // Own interface ss::SamsonController
+
+
 
 namespace ss {
 
@@ -33,7 +35,7 @@ namespace ss {
 	
 		// Testing receiving packets and sending to all the workers
 		
-		while( ! network->ready() )
+		while (!network->ready())
 		{
 			LM_T(LMT_READY, ("Awaiting network interface ready"));
 			sleep(5);
@@ -42,17 +44,16 @@ namespace ss {
 		LM_T(LMT_READY, ("*********** READY !!! ***********"));
 		return;
 
-		while( true )
+		while (true)
 		{
-			
-/*
+#if 0
 			std::vector<Endpoint*> workers = network->samsonWorkerEndpoints();
 			Packet p;
 			p.message.set_command("Hello there from controller");	// Init the command inside the message
 			p.buffer.initPacketBuffer(200);							// Init with the buffer with 100 garbage bytes			
 			for (std::vector<Endpoint*>::iterator e = workers.begin() ; e != workers.end() ; e++)
 				network->send(&p, *e, NULL);
-			*/
+#endif
 			sleep(1);
 		}
 		
@@ -148,6 +149,3 @@ namespace ss {
 	
 	
 }
-
-
-

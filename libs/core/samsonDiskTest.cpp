@@ -56,7 +56,7 @@ int main( int arg , const char *argv[] )
 		}
 	}
 
-
+	operationsManager.waitUntilComplete();
 	
 	// Add some operations for testing reading...
 	for (size_t f = 0 ; f < directories.size() ; f++)

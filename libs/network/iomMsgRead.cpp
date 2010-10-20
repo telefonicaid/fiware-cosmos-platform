@@ -60,18 +60,11 @@ int iomMsgRead(int fd, char* name, ss::Packet* packetP, void* data, int dataLen)
 		if (nb == -1)
 			LM_RP(1, ("read(%d bytes from '%s'", header.headerLen,  name));
 
-	LM_M(("buffer[0-4]: 0x%x, 0x%x, 0x%x, 0x%x",
-		  buffer[0] & 0xFF,
-		  buffer[1] & 0xFF,
-		  buffer[2] & 0xFF,
-		  buffer[3] & 0xFF
-			));
-
 		LM_T(LMT_READ, ("read %d bytes from '%s'", nb, name));
 		LM_READS(name, "protocol buffer", buffer, nb, LmfByte);
 
 		if (packetP->message.ParseFromArray(buffer, nb) == false)
-			LM_RE(1, ("ParseFromString failed!"));
+			LM_X(1, ("ParseFromString failed!"));
 	}
 
 	if (header.dataLen == 0)

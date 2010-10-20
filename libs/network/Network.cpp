@@ -603,6 +603,8 @@ void Network::run()
 
 	while (1)
 	{
+		unsigned int ix;
+
 		do
 		{
 			timeVal.tv_sec  = 5;
@@ -617,32 +619,6 @@ void Network::run()
 				max = MAX(max, delilah->fd);
 				LM_T(LMT_SELECT, ("Added delilah fd %d to fd-list", delilah->fd));
 			}
-
-			unsigned int ix;
-			for (ix = 0; ix < endpointV.size(); ix++)
-			{
-				if ((endpointV[ix].state == Endpoint::Connected || endpointV[ix].state == Endpoint::Listening) && (endpointV[ix].fd >= 0))
-				{
-					FD_SET(endpointV[ix].fd, &rFds);
-					max = MAX(max, endpointV[ix].fd);
-					LM_T(LMT_SELECT, ("added worker %d (%s - %s:%d) - state '%s' (fd: %d)",
-									  ix,
-									  endpointV[ix].name.c_str(),
-									  endpointV[ix].ip.c_str(),
-									  endpointV[ix].port,
-									  endpointV[ix].stateName(),
-									  endpointV[ix].fd));
-				}
-				else
-					LM_T(LMT_SELECT, ("Not adding worker %d (%s - %s:%d) - state '%s' (fd: %d)",
-									  ix,
-									  endpointV[ix].name.c_str(),
-									  endpointV[ix].ip.c_str(),
-									  endpointV[ix].port,
-									  endpointV[ix].stateName(),
-									  endpointV[ix].fd));
-			}
-
 
 			for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
 			{
@@ -691,12 +667,7 @@ void Network::run()
 		}
 		else
 		{
-			if (controller && (controller->state == Endpoint::Connected) && FD_ISSET(controller->fd, &rFds))
-			{
-				LM_T(LMT_SELECT, ("incoming message from controller"));
-				msgTreat(controller->fd, (char*) controller->name.c_str());
-			}
-			else if (listener && (listener->state == Endpoint::Listening) && FD_ISSET(listener->fd, &rFds))
+			if (listener && (listener->state == Endpoint::Listening) && FD_ISSET(listener->fd, &rFds))
 			{
 				int        fd;
 				char       hostName[128];
@@ -714,37 +685,15 @@ void Network::run()
 				tmp->fd    = fd;
 				tmp->name  = std::string("tmp:") + std::string(hostName);
 			}
-			else if ((delilah != NULL) && (delilah->state == Endpoint::Connected) && FD_ISSET(delilah->fd, &rFds))
-			{
-				LM_T(LMT_SELECT, ("incoming message from delilah"));
-				msgTreat(delilah->fd, (char*) delilah->name.c_str());
-			}
 			else
 			{
 				unsigned int ix;
-
-				// Treat Workers
-				for (ix = 0; ix < endpointV.size(); ix++)
-				{
-					if ((endpointV[ix].state != Endpoint::Connected) || (endpointV[ix].fd < 0))
-						continue;
-
-					if (FD_ISSET(endpointV[ix].fd, &rFds))
-					{
-						LM_T(LMT_SELECT, ("incoming message from worker %d", ix));
-						msgTreat(endpointV[ix].fd, (char*) endpointV[ix].name.c_str());
-						FD_CLR(endpointV[ix].fd, &rFds);
-					}
-				}
 
 				// Treat endpoint for endpoint vector - skipping the first three ... (me, listener, and controller)
 				// For now, only temporal endpoints are in endpoint vector
 				for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]) ; ix++)
 				{
-					if (endpoint[ix] == NULL)
-						continue;
-
-					if (endpoint[ix]->fd < 0)
+					if ((endpoint[ix] == NULL) || (endpoint[ix]->fd < 0))
 						continue;
 
 					if (FD_ISSET(endpoint[ix]->fd, &rFds))
@@ -801,10 +750,10 @@ void Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, 
 		if (controller == NULL)
 		{
 			LM_M(("Creating controller"));
-			endpoint[1 + 1 + Workers] = new Endpoint();
-			if (endpoint[1 + 1 + Workers] == NULL)
+			endpoint[2] = new Endpoint();
+			if (endpoint[2] == NULL)
 				LM_XP(1, ("new Endpoint"));
-			controller = endpoint[1 + 1 + Workers];
+			controller = endpoint[2];
 		}
 
 		controller->name  = std::string(name);
@@ -815,38 +764,6 @@ void Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, 
 		controller->fd    = fd;
 
 		return;
-	}
-
-	LM_T(LMT_ENDPOINT, ("endpointV.size: %d", endpointV.size()));
-
-	while (ix < endpointV.size())
-	{
-		if (endpointV[ix].state > Endpoint::Taken)
-		{
-			++ix;
-			LM_T(LMT_ENDPOINT, ("Endpoint %s:%d occupied", endpointV[ix].ip.c_str(), endpointV[ix].port));
-			continue;
-		}
-
-
-		LM_T(LMT_ENDPOINT, ("comparing IPs: '%s' to '%s' AND '%s'", ip.c_str(), endpointV[ix].ip.c_str(), endpointV[ix].hostname.c_str()));
-		LM_T(LMT_ENDPOINT, ("comparing ports: %d to %d", port, endpointV[ix].port));
-
-		if ((endpointV[ix].port == port) &&	((strcmp(ip.c_str(), endpointV[ix].ip.c_str()) == 0) || (strcmp(ip.c_str(), endpointV[ix].hostname.c_str()) == 0)))
-		{
-			endpointV[ix].name  = std::string(name);
-			endpointV[ix].type  = type;
-			endpointV[ix].ip    = std::string(ip);
-			endpointV[ix].port  = port;
-			endpointV[ix].state = Endpoint::Connected;
-			endpointV[ix].fd    = fd;
-
-			LM_T(LMT_ENDPOINT, ("Set fd %d for endpoint '%s'", fd, endpointV[ix].ip.c_str()));
-			found = true;
-			break;
-		}
-
-		++ix;
 	}
 
 	LM_T(LMT_ENDPOINT, ("looping over endpoint vector (%d slots) ...", sizeof(endpoint) / sizeof(endpoint[0])));
@@ -926,6 +843,7 @@ Endpoint* Network::endpointLookupByFd(int fd)
 	if (fd < 0)
 		return NULL;
 
+#if 0
 	if ((listener != NULL) && (fd == listener->fd))
 		return listener;
 
@@ -934,20 +852,18 @@ Endpoint* Network::endpointLookupByFd(int fd)
 
 	if ((delilah != NULL) && (fd == delilah->fd))
 		return delilah;
-
-	while (ix < endpointV.size())
-	{
-		if (endpointV[ix].fd == fd)
-			return &endpointV[ix];
-		++ix;
-	}
+#endif
 
 	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
 	{
+		if (endpoint[ix] == NULL)
+			continue;
+
 		if (endpoint[ix]->fd == fd)
-            return endpoint[ix];
+			return endpoint[ix];
 	}
 
+	LM_E(("endpoint (fd:%d) not found", fd));
 	return NULL;
 }
 
@@ -961,26 +877,25 @@ Endpoint* Network::endpointLookupByIpAndPort(const char* ip, unsigned short port
 {
 	unsigned int ix = 0;
 
+#if 0
 	if ((listener != NULL) && (strcmp((char*) ip, listener->ip.c_str()) == 0) && (listener->port == port))
 		return listener;
 	if ((controller != NULL) && (strcmp((char*) ip, controller->ip.c_str()) == 0) && (controller->port == port))
 		return controller;
 	if ((delilah != NULL) && (strcmp((char*) ip, delilah->ip.c_str()) == 0) && (delilah->port == port))
 		return delilah;
-
-	while (ix < endpointV.size())
-	{
-		if ((endpointV[ix].port == port) && (strcmp(endpointV[ix].ip.c_str(), ip) == 0))
-			return &endpointV[ix];
-		++ix;
-	}
+#endif
 
 	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
 	{
+		if (endpoint[ix] == NULL)
+			continue;
+
 		if ((endpoint[ix]->port == port) && (strcmp(endpoint[ix]->ip.c_str(), ip) == 0))
 			return endpoint[ix];
 	}
 
+	LM_E(("endpoint %s:%d not found", ip, port));
 	return NULL;
 }
 

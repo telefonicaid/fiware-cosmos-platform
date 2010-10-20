@@ -3,7 +3,7 @@ package ss.network;
 message Hello
 {
 	required sint32  type    = 1;    // enum Endpoint::Type
-	required sint32  port    = 2;    // Listen port
+	optional sint32  port    = 2;    // Listen port
 	required sint32  workers = 3;    // Number of workers connected to endpoint
 	required string  name    = 4;    // The name of the endpoint
 	required string  ip      = 5;    // IP address

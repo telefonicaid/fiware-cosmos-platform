@@ -30,6 +30,7 @@ public:
 	typedef enum Type
 	{
 		Unknown,
+		Temporal,
 		Listener,
 		Controller,
 		Worker,

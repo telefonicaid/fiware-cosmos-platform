@@ -34,12 +34,13 @@ class Network : public NetworkInterface
 	PacketReceiverInterface* receiver;
 
 	Endpoint*                me;
+	Endpoint*                listener;
 	Endpoint*                controller;
 	Endpoint*                delilah;
 	Endpoint*                temporal;
 	std::vector<Endpoint>    endpointV;
 
-	void init(Endpoint* me, bool server);
+	void init(Endpoint::Type, unsigned short port = 0);
 	void ipSet(char* ip);
 
 public:
@@ -68,6 +69,7 @@ public:
 	// Send a packet (return a unique id to inform the notifier later)
 	virtual size_t send(Packet* packet, int toIdentifier, PacketSenderInterface* sender){return 0;};
 	
+	Endpoint* listenerGet();                        // Get listener endPoint
 	Endpoint* meGet();                              // Get my endPoint
 	Endpoint* controllerGet();                      // Get the endPoint of the controller
 	Endpoint* workerGet(int i);                     // Get the endPoint of the "i-th" worker
@@ -93,6 +95,7 @@ private:
 
 	void       endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port);
 	Endpoint*  endpointLookupByFd(int fd);
+	Endpoint*  endpointLookupByIpAndPort(const char* ip, unsigned short port);
 
 	void msgTreat(int fd, char* name);
 	void checkInitDone(void);

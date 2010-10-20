@@ -69,13 +69,6 @@ int iomMsgSend(int fd, char* name, ss::Packet* packetP, char* sender, void* data
 	if (packetP->message.SerializeToArray(outputVec, header.headerLen) == false)
 	   LM_RE(1, ("SerializeToArray failed"));
 
-	LM_M(("outputVec[0-4]: 0x%x, 0x%x, 0x%x, 0x%x",
-		  outputVec[0] & 0xFF,
-		  outputVec[1] & 0xFF,
-		  outputVec[2] & 0xFF,
-		  outputVec[3] & 0xFF
-			));
-
 	ioVec[1].iov_base  = outputVec;
 	ioVec[1].iov_len   = packetP->message.ByteSize();
 	
@@ -92,7 +85,7 @@ int iomMsgSend(int fd, char* name, ss::Packet* packetP, char* sender, void* data
 		return -1;
 	}
 
-	LM_T(LMT_WRITE, ("written %d bytes to '%s'", s, name));
+	LM_T(LMT_WRITE, ("written %d bytes to '%s' (fd %d)", s, name, fd));
 	LM_WRITES(name, "message header",  ioVec[0].iov_base, ioVec[0].iov_len, LmfByte);
 	LM_WRITES(name, "protocol buffer", ioVec[1].iov_base, ioVec[1].iov_len, LmfByte);
 

@@ -32,7 +32,7 @@ void SamsonWorker::run()
 	
 void SamsonWorker::test()
 {
-	while( ! network->ready() )
+	while (!network->ready())
 	{
 		LM_T(LMT_READY, ("Awaiting network interface ready"));
 		sleep(5);

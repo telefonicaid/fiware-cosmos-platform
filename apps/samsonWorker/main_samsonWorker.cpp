@@ -8,7 +8,7 @@
 
 int main(int argc, const char *argv[])
 {
-	ss::samsonInitTrace(argc , argv);
+	ss::samsonInitTrace(argc , argv, true);
 	
 	ss::Network      network;   // Real network element
 	ss::SamsonWorker worker(argc, argv, &network);

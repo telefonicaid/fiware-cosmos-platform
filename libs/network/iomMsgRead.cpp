@@ -41,7 +41,7 @@ int iomMsgRead(int fd, char* name, ss::Packet* packetP, void* data, int dataLen)
 		return -2;
 	}
 
-	LM_T(LMT_READ, ("read %d bytes from '%s'", nb, name));
+	LM_T(LMT_READ, ("read %d bytes from '%s' (fd %d)", nb, name, fd));
 	LM_READS(name, "message header", &header, sizeof(header), LmfByte);
 
 	if (header.headerLen == 0)

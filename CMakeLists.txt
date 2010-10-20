@@ -20,6 +20,7 @@ execute_process(COMMAND            echo $USER
                 OUTPUT_VARIABLE    USER)
 
 add_definitions(-DLM_ON)
+add_definitions(-fPIC)
 
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
   MESSAGE("cmake: DEBUG compilation")
@@ -33,7 +34,8 @@ else (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 
-set(CMAKE_CXX_FLAGS, "-fPIC")
+# set(CMAKE_CXX_FLAGS, "-fPIC")
+# set(CMAKE_C_FLAGS, "-fPIC")
 
 
 #

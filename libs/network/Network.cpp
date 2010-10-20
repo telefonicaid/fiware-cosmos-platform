@@ -55,6 +55,8 @@ Network::Network()
 	controller = NULL;
 	delilah    = NULL;
 	temporal   = NULL;
+
+	memset(endpoint, 0, sizeof(endpoint));
 }
 
 
@@ -96,20 +98,23 @@ void Network::setPacketReceiver(PacketReceiverInterface* _receiver)
 */
 void Network::init(Endpoint::Type type, unsigned short port)
 {
-	me = new Endpoint();
+	endpoint[0] = new Endpoint(type, port);
+	if (endpoint[0] == NULL)
+		LM_XP(1, ("new Endpoint"));
+	me = endpoint[0];
 
 	if (me == NULL)
 		LM_XP(1, ("unable to allocate room for Endpoint 'me'"));
 
-	me->type     = type;
-	me->workers  = 0;
 	me->name     = progName;
 	me->state    = Endpoint::Connected; /* not really true ... */
-	me->port     = port;
 
 	if (port != 0)
 	{
-		listener = new Endpoint(*me);
+		endpoint[1] = new Endpoint(*me);
+		if (endpoint[1] == NULL)
+			LM_XP(1, ("new Endpoint"));
+		listener = endpoint[1];
 
 		listener->fd       = iomServerOpen(listener->port);
 		listener->state    = Endpoint::Listening;
@@ -244,23 +249,25 @@ void Network::initAsSamsonController(int port, std::vector<std::string> peers)
 
 /* ****************************************************************************
 *
-* initAsSamsonWorker - 
+* initAsSamsonWorker -
 *
 * NOTE
 */
-void Network::initAsSamsonWorker(int port, std::string _controller)
+void Network::initAsSamsonWorker(int port, std::string controllerName)
 {
 	init(Endpoint::Worker, port);
 	LM_M(("I am a '%s', my name: '%s', ip: %s", endpointType(me->type), me->name.c_str(), me->ip.c_str()));
 
-	controller        = new Endpoint(Endpoint::Controller, _controller);
-	controller->name  = "controller";
+	endpoint[1 + 1 + Workers] = new Endpoint(Endpoint::Controller, controllerName);
+	if (endpoint[1 + 1 + Workers] == NULL)
+		LM_XP(1, ("new Endpoint"));
+	controller = endpoint[1 + 1 + Workers];
 
-    controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
-    if (controller->fd == -1)
+	controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
+	if (controller->fd == -1)
 		LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
 
-    controller->state = ss::Endpoint::Connected;
+	controller->state = ss::Endpoint::Connected;
 }
 
 
@@ -269,14 +276,15 @@ void Network::initAsSamsonWorker(int port, std::string _controller)
 *
 * initAsDelilah - 
 */
-void Network::initAsDelilah(std::string _controller)
+void Network::initAsDelilah(std::string controllerName)
 {
-	LM_M(("delilah calling init()"));
 	init(Endpoint::Delilah);
 	LM_M(("I am a '%s', my name: '%s', ip: %s", endpointType(me->type), me->name.c_str(), me->ip.c_str()));
 
-	controller        = new Endpoint(Endpoint::Controller, _controller);
-    controller->name  = "controller";
+	endpoint[1 + 1 + Workers] = new Endpoint(Endpoint::Controller, controllerName);
+	if (endpoint[1 + 1 + Workers] == NULL)
+		LM_XP(1, ("new Endpoint"));
+	controller = endpoint[1 + 1 + Workers];
 
 	controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
 	if (controller->fd == -1)
@@ -576,7 +584,7 @@ void Network::run()
 {
 	int             fds;
 	fd_set          rFds;
-    struct timeval  timeVal;
+	struct timeval  timeVal;
 	int             max;
 
 	LM_T(LMT_NWRUN, ("running"));
@@ -717,8 +725,8 @@ void Network::checkInitDone(void)
 	unsigned int ix = 0;
 
 	while (ix < endpointV.size())
-    {
-        if (endpointV[ix].state <= Endpoint::Taken)
+	{
+		if (endpointV[ix].state <= Endpoint::Taken)
 		{
 			iAmReady = false;
 			return;
@@ -738,7 +746,7 @@ void Network::checkInitDone(void)
 */
 Endpoint* Network::endpointLookupByFd(int fd)
 {
-    unsigned int ix = 0;
+	unsigned int ix = 0;
 
 	if (fd < 0)
 		return NULL;
@@ -755,9 +763,9 @@ Endpoint* Network::endpointLookupByFd(int fd)
 	if ((delilah != NULL) && (fd == delilah->fd))
 		return delilah;
 
-    while (ix < endpointV.size())
+	while (ix < endpointV.size())
 	{
-        if (endpointV[ix].fd == fd)
+		if (endpointV[ix].fd == fd)
 			return &endpointV[ix];
 		++ix;
 	}
@@ -773,7 +781,7 @@ Endpoint* Network::endpointLookupByFd(int fd)
 */
 Endpoint* Network::endpointLookupByIpAndPort(const char* ip, unsigned short port)
 {
-    unsigned int ix = 0;
+	unsigned int ix = 0;
 
 	if ((listener != NULL) && (strcmp((char*) ip, listener->ip.c_str()) == 0) && (listener->port == port))
 		return listener;
@@ -784,7 +792,7 @@ Endpoint* Network::endpointLookupByIpAndPort(const char* ip, unsigned short port
 	if ((delilah != NULL) && (strcmp((char*) ip, delilah->ip.c_str()) == 0) && (delilah->port == port))
 		return delilah;
 
-    while (ix < endpointV.size())
+	while (ix < endpointV.size())
 	{
 		if ((endpointV[ix].port == port) && (strcmp(endpointV[ix].ip.c_str(), ip) == 0))
 			return &endpointV[ix];
@@ -811,7 +819,10 @@ void Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, 
 		if (controller == NULL)
 		{
 			LM_M(("Creating controller"));
-			controller = new Endpoint();
+			endpoint[1 + 1 + Workers] = new Endpoint();
+			if (endpoint[1 + 1 + Workers] == NULL)
+				LM_XP(1, ("new Endpoint"));
+			controller = endpoint[1 + 1 + Workers];
 		}
 
 		controller->name  = std::string(name);

@@ -23,22 +23,30 @@ class Packet;
 
 /* ****************************************************************************
 *
+* Number of instances of each endpoint type
+*/
+typedef enum EndpointTypeInstances
+{
+	Mes           =  1,
+	Listeners     =  1,
+	Workers       = 20,
+	Controllers   =  1,
+	Delilahs      = 20,
+	Temporals     = 20
+} EndpointTypeInstances;
+
+
+
+/* ****************************************************************************
+*
 * Network - main element that interconnects
 *                      o samsonController
 *                      o samsonWorker
 *                      o delilah
 */
-	
 class Network : public NetworkInterface
 {
 	PacketReceiverInterface* receiver;
-
-	Endpoint*                me;
-	Endpoint*                listener;
-	Endpoint*                controller;
-	Endpoint*                delilah;
-	Endpoint*                temporal;
-	std::vector<Endpoint>    endpointV;
 
 	void init(Endpoint::Type, unsigned short port = 0);
 	void ipSet(char* ip);
@@ -61,10 +69,10 @@ public:
                                                     // Delilah expects to be connected with all the workers and the contorller
 
 	// Get identifiers of known elements
-	virtual int controllerGetIdentifier(){return 0;};		// Get the identifier of the controller
-	virtual int workerGetIdentifier(int i){return 0;};		// Get the identifier of the i-th worker
-	virtual int getMyidentifier(){return 0;};				// Get my identifier
-	virtual int getNumWorkers(){return 0;};					// Get the number of workers
+	virtual int controllerGetIdentifier()  { return 0; };	// Get the identifier of the controller
+	virtual int workerGetIdentifier(int i) { return 0; };	// Get the identifier of the i-th worker
+	virtual int getMyidentifier()          { return 0; };	// Get my identifier
+	virtual int getNumWorkers()            { return 0; };	// Get the number of workers
 	
 	// Send a packet (return a unique id to inform the notifier later)
 	virtual size_t send(Packet* packet, int toIdentifier, PacketSenderInterface* sender){return 0;};
@@ -91,11 +99,21 @@ public:
 	void quit();
 
 private:
-	bool iAmReady;
+	Endpoint* endpoint[Mes + Listeners + Workers + Controllers + Delilahs + Temporals];
+	Endpoint* listener;
+	Endpoint* me;
+	Endpoint* controller;
+
+	Endpoint*                delilah;
+	Endpoint*                temporal;
+	std::vector<Endpoint>    endpointV;
+
+	bool      iAmReady;
 
 	void       endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port);
 	Endpoint*  endpointLookupByFd(int fd);
 	Endpoint*  endpointLookupByIpAndPort(const char* ip, unsigned short port);
+	Endpoint*  endpointFreeGet(Endpoint::Type type);
 
 	void msgTreat(int fd, char* name);
 	void checkInitDone(void);

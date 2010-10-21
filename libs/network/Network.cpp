@@ -115,7 +115,6 @@ Network::Network()
 	me         = NULL;
 	listener   = NULL;
 	controller = NULL;
-	delilah    = NULL;
 
 	memset(endpoint, 0, sizeof(endpoint));
 }
@@ -509,8 +508,6 @@ void Network::endpointRemove(Endpoint* ep)
 {
 	unsigned int ix;
 
-	ep->reset();
-
 	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
 	{
 		if (endpoint[ix] == NULL)
@@ -518,8 +515,20 @@ void Network::endpointRemove(Endpoint* ep)
 
 		if (endpoint[ix] == ep)
 		{
-			delete ep;
-			endpoint[ix] = NULL;
+			LM_M(("Not closing fd %d", ep->fd));
+			// close(ep->fd);
+
+			if (ep->type == Endpoint::Worker)
+			{
+				ep->fd    = -1;
+				ep->state = Endpoint::Taken;
+                ep->name  = std::string("To be a worker");
+			}
+			else
+			{	
+				delete ep;
+				endpoint[ix] = NULL;
+			}
 		}
 	}
 }
@@ -533,7 +542,6 @@ void Network::endpointRemove(Endpoint* ep)
 void Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port)
 {
 	unsigned int  ix    = 0;
-	bool          found = false;
 
 	LM_T(LMT_ENDPOINT, ("adding endpoint '%s' of type %d (%s) (fd %d)   (I have %d endpoints)", name, type, endpointType(type), fd, endpointV.size()));
 
@@ -557,6 +565,38 @@ void Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, 
 		return;
 	}
 
+
+	// if Worker, we just might be reconnecting ...
+	if (type == Endpoint::Worker)
+	{
+		LM_T(LMT_ENDPOINT, ("looping over endpoint vector (%d slots) ... (the fd is %d)", sizeof(endpoint) / sizeof(endpoint[0]), fd));
+		for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+		{
+			if (endpoint[ix] == NULL)
+				continue;
+			if (endpoint[ix]->type != Endpoint::Worker)
+				continue;
+			if (endpoint[ix]->state != Endpoint::Taken)
+				continue;
+			if (strcmp(endpoint[ix]->ip.c_str(), ip.c_str()) != 0)
+				continue;
+			if (endpoint[ix]->port != port)
+				continue;
+
+			// Found it !
+			endpoint[ix]->name  = std::string(name);
+			endpoint[ix]->type  = type;
+			endpoint[ix]->ip    = std::string(ip);
+			endpoint[ix]->port  = port;
+			endpoint[ix]->state = Endpoint::Connected;
+			endpoint[ix]->fd    = fd;
+
+			LM_T(LMT_ENDPOINT, ("Set fd %d for endpoint %d: '%s'", fd, ix, endpoint[ix]->ip.c_str()));
+			LM_TODO(("Any Temporal Endpoint pending ... ?"));
+			return;
+		}
+	}
+
 	LM_T(LMT_ENDPOINT, ("looping over endpoint vector (%d slots) ...", sizeof(endpoint) / sizeof(endpoint[0])));
 	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
 	{
@@ -577,15 +617,12 @@ void Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, 
 			endpoint[ix]->fd    = fd;
 
 			LM_T(LMT_ENDPOINT, ("Set fd %d for endpoint '%s'", fd, endpoint[ix]->ip.c_str()));
-			found = true;
+			return;
 		}
 	}
 
-	if (!found)
-	{
-		LM_W(("No endpoint found for '%s' %s:%d ...", name, ip.c_str(), port));
-		close(fd);
-	}
+	LM_W(("No endpoint found for '%s' %s:%d ...", name, ip.c_str(), port));
+	close(fd);
 }
 
 
@@ -657,17 +694,13 @@ void Network::msgTreat(int fd, char* name)
 				controller->state = ss::Endpoint::Connected;
 				return;
 			}
-			else if ((ep != NULL) && (ep == delilah))
-			{
-				delilah = NULL;
-			}
 			else if (ep != NULL)
 			{
-				--me->workers;
-			}
-
-			if (ep != NULL)
+				if (ep->type == Endpoint::Worker)
+					--me->workers;
+				close(ep->fd);
 				endpointRemove(ep);
+			}
 		}
 
 		LM_RVE(("iomMsgRead: error reading message from '%s'", name));
@@ -820,13 +853,6 @@ void Network::run()
 			FD_ZERO(&rFds);
 			max = 0;
 
-			if ((delilah != NULL) && (delilah->state == Endpoint::Connected))
-			{
-				FD_SET(delilah->fd, &rFds);
-				max = MAX(max, delilah->fd);
-				LM_T(LMT_SELECT, ("Added delilah fd %d to fd-list", delilah->fd));
-			}
-
 			for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
 			{
 				if (endpoint[ix] == NULL)
@@ -837,9 +863,9 @@ void Network::run()
 					FD_SET(endpoint[ix]->fd, &rFds);
 					max = MAX(max, endpoint[ix]->fd);
 					
-					LM_T(LMT_SELECT, ("added '%s' endpoint %d (%s - %s:%d) - state '%s' (fd: %d)",
-									  endpointType(endpoint[ix]->type),
+					LM_T(LMT_SELECT, ("+ endpoint %02d %-15s %-20s %20s:%05d %20s (fd: %d)",
 									  ix,
+									  endpointType(endpoint[ix]->type),
 									  endpoint[ix]->name.c_str(),
 									  endpoint[ix]->ip.c_str(),
 									  endpoint[ix]->port,
@@ -848,9 +874,9 @@ void Network::run()
 				}
 				else
 				{
-					LM_T(LMT_SELECT, ("Not adding '%s' endpoint %d (%s - %s:%d) - state '%s' (fd: %d)",
-									  endpointType(endpoint[ix]->type),
+					LM_T(LMT_SELECT, ("- endpoint %02d %-15s %-20s %20s:%05d %20s (fd: %d)",
 									  ix,
+									  endpointType(endpoint[ix]->type),
 									  endpoint[ix]->name.c_str(),
 									  endpoint[ix]->ip.c_str(),
 									  endpoint[ix]->port,
@@ -859,6 +885,7 @@ void Network::run()
 				}
 			}
 
+			LM_T(LMT_SELECT, ("------- calling select ----------------------------------------"));
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);
 			LM_T(LMT_SELECT, ("------- select returned %d ----------------------------------------", fds));
 		} while ((fds == -1) && (errno == EINTR));

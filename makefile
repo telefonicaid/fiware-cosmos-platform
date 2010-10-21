@@ -43,3 +43,9 @@ core:
 example:
 	touch modules/example/Module
 	make -C build/modules/example
+
+qt:
+	make -C build/apps/delilahQt
+
+clean_qt:
+	make -C build/apps/delilahQt clean

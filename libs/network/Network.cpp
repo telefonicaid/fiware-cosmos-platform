@@ -82,9 +82,9 @@ static char* msgInfoName(ss::network::Message_Info info)
 
 /* ****************************************************************************
 *
-* endpointType - 
+* endpointTypeName - 
 */
-static const char* endpointType(Endpoint::Type type)
+static const char* endpointTypeName(Endpoint::Type type)
 {
 	switch (type)
 	{
@@ -96,7 +96,6 @@ static const char* endpointType(Endpoint::Type type)
 	case Endpoint::Delilah:       return "Delilah";
 	}
 
-	LM_M(("type: %d", type));
 	return "UnknownEndpointType";
 }
 
@@ -131,6 +130,17 @@ void Network::setPacketReceiver(PacketReceiverInterface* _receiver)
 }
 
 	
+
+/* ****************************************************************************
+*
+* setPacketReceiverInterface - set the element to be notified when packages arrive
+*/
+void Network::setPacketReceiverInterface(PacketReceiverInterface* _receiver)
+{
+	receiver = _receiver;
+}
+	
+
 
 /* ****************************************************************************
 *
@@ -169,17 +179,6 @@ void Network::init(Endpoint::Type type, unsigned short port)
 	ipSet(NULL);
 }
 
-
-
-/* ****************************************************************************
-*
-* setPacketReceiverInterface - set the element to be notified when packages arrive
-*/
-void Network::setPacketReceiverInterface(PacketReceiverInterface* _receiver)
-{
-	receiver = _receiver;
-}
-	
 
 
 /* ****************************************************************************
@@ -246,7 +245,7 @@ int Network::helloSend(int fd, char* name)
 {
 	Packet req;
 
-	LM_T(LMT_WRITE, ("sending hello req (name: '%s', type: %s (%d))", me->name.c_str(), endpointType(me->type), me->type));
+	LM_T(LMT_WRITE, ("sending hello req (name: '%s', type: %s (%d))", me->name.c_str(), endpointTypeName(me->type), me->type));
 
 	req.messageTypeSet(ss::network::Message_Type_Hello);
 	req.messageInfoSet(ss::network::Message_Info_Msg);
@@ -275,7 +274,7 @@ void Network::initAsSamsonController(int port, std::vector<std::string> peers)
 	init(Endpoint::Controller, port);
 	listener->name = "Listener";
 
-	LM_M(("I am a '%s', my name: '%s', ip: %s", endpointType(me->type), me->name.c_str(), me->ip.c_str()));
+	LM_M(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
 
 	ix = 0;
 	for (ix = 0; ix < endpointV.size(); ix++)
@@ -301,7 +300,7 @@ void Network::initAsSamsonController(int port, std::vector<std::string> peers)
 void Network::initAsSamsonWorker(int port, std::string controllerName)
 {
 	init(Endpoint::Worker, port);
-	LM_M(("I am a '%s', my name: '%s', ip: %s", endpointType(me->type), me->name.c_str(), me->ip.c_str()));
+	LM_M(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
 
 	endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
 	if (endpoint[2] == NULL)
@@ -324,7 +323,7 @@ void Network::initAsSamsonWorker(int port, std::string controllerName)
 void Network::initAsDelilah(std::string controllerName)
 {
 	init(Endpoint::Delilah);
-	LM_M(("I am a '%s', my name: '%s', ip: %s", endpointType(me->type), me->name.c_str(), me->ip.c_str()));
+	LM_M(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
 
 	endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
 	if (endpoint[2] == NULL)
@@ -379,9 +378,9 @@ Endpoint* Network::controllerGet()
 *
 * worker - 
 */
-Endpoint* Network::workerGet(int i)
+Endpoint* Network::workerGet(int workerId)
 {
-	return &endpointV[i];
+	return endpoint[workerId];
 }
 
 
@@ -389,10 +388,18 @@ Endpoint* Network::workerGet(int i)
 
 /* ****************************************************************************
 *
-* worker - 
+* workerIdGet - 
 */
-int Network::worker( Endpoint* endPoint )
+int Network::workerIdGet(Endpoint* ep)
 {
+	unsigned int ix;
+
+	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+	{
+		if (endpoint[ix] == ep)
+			return ix;
+	}
+
 	return -1;
 }
 	
@@ -404,10 +411,18 @@ int Network::worker( Endpoint* endPoint )
 */
 std::vector<Endpoint*> Network::endPoints()
 {
-	std::vector<Endpoint*> tmp;
-	for (size_t i = 0 ; i < endpointV.size() ; i++)
-		tmp.push_back( &endpointV[i] );
-	return tmp;
+    unsigned int            ix;
+	std::vector<Endpoint*>  v;
+
+	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		v.push_back(endpoint[ix]);
+	}
+
+	return v;
 }
 	
 
@@ -418,10 +433,20 @@ std::vector<Endpoint*> Network::endPoints()
 */
 std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 {
-	std::vector<Endpoint*> tmp;
-	for (size_t i = 0 ; i < endpointV.size() ; i++)
-		tmp.push_back( &endpointV[i] );
-	return tmp;
+    unsigned int            ix;
+	std::vector<Endpoint*>  v;
+
+	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+		if (endpoint[ix]->type != Endpoint::Worker)
+			continue;
+		
+		v.push_back(endpoint[ix]);
+	}
+
+	return v;
 }
 	
 
@@ -453,97 +478,13 @@ bool Network::ready()
 
 /* ****************************************************************************
 *
-* endpointLookupByFd - 
-*/
-Endpoint* Network::endpointLookupByFd(int fd)
-{
-	unsigned int ix = 0;
-
-	if (fd < 0)
-		return NULL;
-
-	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
-	{
-		if (endpoint[ix] == NULL)
-			continue;
-
-		if (endpoint[ix]->fd == fd)
-			return endpoint[ix];
-	}
-
-	LM_E(("endpoint (fd:%d) not found", fd));
-	return NULL;
-}
-
-
-
-/* ****************************************************************************
-*
-* endpointLookupByIpAndPort - 
-*/
-Endpoint* Network::endpointLookupByIpAndPort(const char* ip, unsigned short port)
-{
-	unsigned int ix = 0;
-
-	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
-	{
-		if (endpoint[ix] == NULL)
-			continue;
-
-		if ((endpoint[ix]->port == port) && (strcmp(endpoint[ix]->ip.c_str(), ip) == 0))
-			return endpoint[ix];
-	}
-
-	LM_E(("endpoint %s:%d not found", ip, port));
-	return NULL;
-}
-
-
-
-/* ****************************************************************************
-*
-* endpointRemove - 
-*/
-void Network::endpointRemove(Endpoint* ep)
-{
-	unsigned int ix;
-
-	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
-	{
-		if (endpoint[ix] == NULL)
-			continue;
-
-		if (endpoint[ix] == ep)
-		{
-			LM_M(("Not closing fd %d", ep->fd));
-			// close(ep->fd);
-
-			if (ep->type == Endpoint::Worker)
-			{
-				ep->fd    = -1;
-				ep->state = Endpoint::Taken;
-                ep->name  = std::string("To be a worker");
-			}
-			else
-			{	
-				delete ep;
-				endpoint[ix] = NULL;
-			}
-		}
-	}
-}
-
-
-
-/* ****************************************************************************
-*
 * endpointAdd - 
 */
 void Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port)
 {
 	unsigned int  ix    = 0;
 
-	LM_T(LMT_ENDPOINT, ("adding endpoint '%s' of type %d (%s) (fd %d)   (I have %d endpoints)", name, type, endpointType(type), fd, endpointV.size()));
+	LM_T(LMT_ENDPOINT, ("adding endpoint '%s' of type %d (%s) (fd %d)", name, type, endpointTypeName(type), fd));
 
 	if (type == Endpoint::Controller)
 	{
@@ -629,6 +570,41 @@ void Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, 
 
 /* ****************************************************************************
 *
+* endpointRemove - 
+*/
+void Network::endpointRemove(Endpoint* ep)
+{
+	unsigned int ix;
+
+	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if (endpoint[ix] == ep)
+		{
+			LM_M(("Not closing fd %d", ep->fd));
+			// close(ep->fd);
+
+			if (ep->type == Endpoint::Worker)
+			{
+				ep->fd    = -1;
+				ep->state = Endpoint::Taken;
+                ep->name  = std::string("To be a worker");
+			}
+			else
+			{	
+				delete ep;
+				endpoint[ix] = NULL;
+			}
+		}
+	}
+}
+
+
+
+/* ****************************************************************************
+*
 * endpointFreeGet - 
 */
 Endpoint* Network::endpointFreeGet(Endpoint::Type type)
@@ -651,6 +627,55 @@ Endpoint* Network::endpointFreeGet(Endpoint::Type type)
 
 	LM_X(1, ("out of endpoints in the endpoint vector ... fix it and recompile !"));
 
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* endpointLookupByFd - 
+*/
+Endpoint* Network::endpointLookupByFd(int fd)
+{
+	unsigned int ix = 0;
+
+	if (fd < 0)
+		return NULL;
+
+	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if (endpoint[ix]->fd == fd)
+			return endpoint[ix];
+	}
+
+	LM_E(("endpoint (fd:%d) not found", fd));
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* endpointLookupByIpAndPort - 
+*/
+Endpoint* Network::endpointLookupByIpAndPort(const char* ip, unsigned short port)
+{
+	unsigned int ix = 0;
+
+	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if ((endpoint[ix]->port == port) && (strcmp(endpoint[ix]->ip.c_str(), ip) == 0))
+			return endpoint[ix];
+	}
+
+	LM_E(("endpoint %s:%d not found", ip, port));
 	return NULL;
 }
 
@@ -722,7 +747,7 @@ void Network::msgTreat(int fd, char* name)
 
 		req.helloGet(&helloname, &workers, &epType, &ip, &port);
 		LM_T(LMT_HELLO, ("Got Hello %s from %s, type %s, %s:%d, workers: %d",
-						 msgInfoName(msgInfo), helloname, endpointType(epType), ip, port, workers));
+						 msgInfoName(msgInfo), helloname, endpointTypeName(epType), ip, port, workers));
 
 		endpointAdd(fd, helloname, workers, epType, ip, port);
 		if (ep && ep->type == Endpoint::Temporal)
@@ -758,7 +783,7 @@ void Network::msgTreat(int fd, char* name)
 		break;
 
 	case ss::network::Message_Type_WorkerVector:
-		LM_T(LMT_MSG, ("Got a WorkerVector message from '%s' (I have %d workers in my vector)", name, endpointV.size()));
+		LM_T(LMT_MSG, ("Got a WorkerVector message from '%s'", name));
 
 		if ((msgInfo == ss::network::Message_Info_Msg) && (me->type != Endpoint::Controller))
 			LM_X(1, ("Got a WorkerVector request from '%s' but I'm not the controller ...", name));
@@ -780,8 +805,6 @@ void Network::msgTreat(int fd, char* name)
 			for (ix = 0; ix < req.endpointVecSize(); ix++)
 			{
 				Endpoint  endpoint = Endpoint(req.endpointGet(ix));
-
-				endpointV.push_back(endpoint);
 
 				if (((strcmp(endpoint.ip.c_str(), me->ip.c_str()) == 0) || (strcmp(endpoint.ip.c_str(), me->hostname.c_str()) == 0)) && (endpoint.port == me->port))
 				{
@@ -811,7 +834,8 @@ void Network::msgTreat(int fd, char* name)
 					Endpoint* ep = endpointFreeGet(Endpoint::Temporal);
 
 					if (ep == NULL)
-						LM_X(1, ("cannot obtain a temporal endpoint - change definition and recompile !"));
+						LM_X(1, ("cannot obtain a temporal endpoint - please change definitions for vector size and recompile !"));
+
 					ep->state = Endpoint::Connected;
 					ep->fd    = workerFd;
 					ep->ip    = endpoint.ip;
@@ -839,8 +863,6 @@ void Network::run()
 	struct timeval  timeVal;
 	int             max;
 
-	LM_T(LMT_NWRUN, ("running"));
-
 	while (1)
 	{
 		unsigned int ix;
@@ -865,7 +887,7 @@ void Network::run()
 					
 					LM_T(LMT_SELECT, ("+ endpoint %02d %-15s %-20s %20s:%05d %20s (fd: %d)",
 									  ix,
-									  endpointType(endpoint[ix]->type),
+									  endpointTypeName(endpoint[ix]->type),
 									  endpoint[ix]->name.c_str(),
 									  endpoint[ix]->ip.c_str(),
 									  endpoint[ix]->port,
@@ -876,7 +898,7 @@ void Network::run()
 				{
 					LM_T(LMT_SELECT, ("- endpoint %02d %-15s %-20s %20s:%05d %20s (fd: %d)",
 									  ix,
-									  endpointType(endpoint[ix]->type),
+									  endpointTypeName(endpoint[ix]->type),
 									  endpoint[ix]->name.c_str(),
 									  endpoint[ix]->ip.c_str(),
 									  endpoint[ix]->port,
@@ -885,9 +907,7 @@ void Network::run()
 				}
 			}
 
-			LM_T(LMT_SELECT, ("------- calling select ----------------------------------------"));
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);
-			LM_T(LMT_SELECT, ("------- select returned %d ----------------------------------------", fds));
 		} while ((fds == -1) && (errno == EINTR));
 
 		if (fds == -1)
@@ -952,15 +972,16 @@ void Network::checkInitDone(void)
 {
 	unsigned int ix = 0;
 
-	while (ix < endpointV.size())
+	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)	
 	{
-		if (endpointV[ix].state <= Endpoint::Taken)
+		if (endpoint[ix]->type == Endpoint::Worker)
 		{
-			iAmReady = false;
-			return;
+			if (endpoint[ix]->state != Endpoint::Connected)
+			{
+				iAmReady = false;
+				return;
+			}
 		}
-
-		++ix;
 	}
 
 	iAmReady = true;

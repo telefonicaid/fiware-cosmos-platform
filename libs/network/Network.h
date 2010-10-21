@@ -80,9 +80,9 @@ public:
 	Endpoint* listenerGet();                        // Get listener endPoint
 	Endpoint* meGet();                              // Get my endPoint
 	Endpoint* controllerGet();                      // Get the endPoint of the controller
-	Endpoint* workerGet(int i);                     // Get the endPoint of the "i-th" worker
+	Endpoint* workerGet(int workerId);              // Get the endPoint of the worker with id 'workerId' as returned by 'workerIdGet'
 
-	int worker( Endpoint* endPoint );                // Identify the worker of this endPoint ( 0 if the controller )
+	int workerIdGet(Endpoint* ep);                  // Identify the worker of this endPoint ( 0 if the controller )
 
 	std::vector<Endpoint*> endPoints();              // Get a list of all endPoints
 	std::vector<Endpoint*> samsonWorkerEndpoints();  // Get a list of the samsonWorkers endpoints

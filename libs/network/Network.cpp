@@ -513,8 +513,11 @@ void Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, 
 				continue;
 			if (endpoint[ix]->type != Endpoint::Worker)
 				continue;
-			if ((endpoint[ix]->state != Endpoint::Reconnecting) && (endpoint[ix]->state != Endpoint::Disconnected))
+			if ((endpoint[ix]->state == Endpoint::Reconnecting) || ((endpoint[ix]->state == Endpoint::Disconnected) && (endpoint[ix]->fd == -1)))
+				;
+			else
 				continue;
+
 			if (strcmp(endpoint[ix]->ip.c_str(), ip.c_str()) != 0)
 				continue;
 			if (endpoint[ix]->port != port)
@@ -713,9 +716,16 @@ void Network::msgTreat(int fd, char* name)
 			else if (ep != NULL)
 			{
 				if (ep->type == Endpoint::Worker)
+				{
 					--me->workers;
-				close(ep->fd);
-				endpointRemove(ep);
+
+					close(ep->fd);
+					ep->state = ss::Endpoint::Disconnected;
+					ep->fd    = -1;
+					ep->name  = "-----";
+				}
+				else
+					endpointRemove(ep);
 			}
 		}
 

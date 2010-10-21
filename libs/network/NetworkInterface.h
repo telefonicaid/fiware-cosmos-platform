@@ -42,12 +42,6 @@ namespace ss {
 	{
 	public:
 		virtual ~NetworkInterface() {};
-
-		
-		
-		// New interface
-		// ------------------------------------------------------------------------------------------------
-		// Note: All of them will end up being pure virtual functions
 		
 		// Inform about everything ready to start
 		virtual bool ready()=0;                                   
@@ -66,6 +60,10 @@ namespace ss {
 		virtual int getMyidentifier()=0;				// Get my identifier
 		virtual int getNumWorkers()=0;					// Get the number of workers
 		
+		// Get the "worker cardinal" from the idenfitier
+		// This method should return a value between 0 and (num_wrokers-1) or -1 if the identifier provided is not related to any workers
+		virtual int getWorkerFromIdentifier( int identifier){return 0;};	// TODO: convert this to pure virtual when implemented
+		
 		// Send a packet (return a unique id to inform the notifier later)
 		virtual size_t send(Packet* packet, int toIdentifier, PacketSenderInterface* sender)=0;
 
@@ -74,28 +72,6 @@ namespace ss {
 		
 		// Syspend the network interface, close everything and return the "run" call
 		virtual void quit()=0;					
-		
-		
-		
-		// Old interface methods ( to be removed )
-		// ------------------------------------------------------------------------------------------------
-		/*
-		virtual void initAsSamsonController(Endpoint myEndpoint, std::vector<Endpoint> peers) = 0;
-		virtual void initAsSamsonWorker(Endpoint myEndpoint, Endpoint controllerEndpoint) = 0;
-		virtual void initAsDelilah(Endpoint controllerEndpoint) = 0;
-		
-		// Information about identifiers
-		virtual Endpoint* meGet()=0;                              // Get my endPoint
-		virtual Endpoint* controllerGet()=0;                      // Get the endPoint of the controller
-		virtual Endpoint* workerGet(int i)=0;                     // Get the endPoint of the "i-th" worker
-		virtual int worker( Endpoint* endPoint )=0;               // Identify the worker of this endPoint ( 0 if the controller )
-
-		virtual std::vector<Endpoint*> endPoints()=0;              // Get a list of all endPoints
-		virtual std::vector<Endpoint*> samsonWorkerEndpoints()=0;  // Get a list of the samsonWorkers endpoints
-		
-		// Send a packet (return a unique id to inform the notifier later)
-		virtual size_t send(Packet* packet, Endpoint* endpoint, PacketSenderInterface* sender)=0;
-		*/
 
 	};
 	

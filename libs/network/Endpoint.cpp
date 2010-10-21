@@ -124,6 +124,7 @@ char* Endpoint::stateName(void)
 	case Connected:       return (char*) "Connected";
 	case Listening:       return (char*) "Listening";
 	case Disconnected:    return (char*) "Disconnected";
+	case Reconnecting:    return (char*) "Reconnecting";
 	}
 
 	return (char*) "Unknown";

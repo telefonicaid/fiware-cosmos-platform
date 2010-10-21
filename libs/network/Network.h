@@ -63,28 +63,20 @@ public:
 	virtual void setPacketReceiverInterface( PacketReceiverInterface* receiver);
 	
 	
-	bool ready();                                   // Inform about everything ready
-                                                    // The controller expects all the workers to be connected
-                                                    // The worker expects to be connected with all the workers and the controller
-                                                    // Delilah expects to be connected with all the workers and the contorller
+	bool ready();                                    // Inform about everything ready
+                                                     // The controller expects all the workers to be connected
+                                                     // The worker expects to be connected with all the workers and the controller
+                                                     // Delilah expects to be connected with all the workers and the contorller
 
 	// Get identifiers of known elements
-	virtual int controllerGetIdentifier()  { return 0; };	// Get the identifier of the controller
-	virtual int workerGetIdentifier(int i) { return 0; };	// Get the identifier of the i-th worker
-	virtual int getMyidentifier()          { return 0; };	// Get my identifier
-	virtual int getNumWorkers()            { return 0; };	// Get the number of workers
+	virtual int controllerGetIdentifier();	         // Get the identifier of the controller
+	virtual int workerGetIdentifier(int nthWorker);  // Get the identifier of the i-th worker
+	virtual int getMyidentifier() { return 0; };     // Get my identifier
+	virtual int getNumWorkers();                     // Get the number of workers
 	
 	// Send a packet (return a unique id to inform the notifier later)
 	virtual size_t send(Packet* packet, int toIdentifier, PacketSenderInterface* sender){return 0;};
 	
-	Endpoint* listenerGet();                        // Get listener endPoint
-	Endpoint* meGet();                              // Get my endPoint
-	Endpoint* controllerGet();                      // Get the endPoint of the controller
-	Endpoint* workerGet(int workerId);              // Get the endPoint of the worker with id 'workerId' as returned by 'workerIdGet'
-
-	int workerIdGet(Endpoint* ep);                  // Identify the worker of this endPoint ( 0 if the controller )
-
-	std::vector<Endpoint*> endPoints();              // Get a list of all endPoints
 	std::vector<Endpoint*> samsonWorkerEndpoints();  // Get a list of the samsonWorkers endpoints
 
 	// Send a packet (return a unique id to inform the notifier later)
@@ -104,8 +96,6 @@ private:
 	Endpoint* me;
 	Endpoint* controller;
 
-	Endpoint*                delilah;
-	Endpoint*                temporal;
 	std::vector<Endpoint>    endpointV;
 
 	bool      iAmReady;

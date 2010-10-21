@@ -274,7 +274,7 @@ void Network::initAsSamsonController(int port, std::vector<std::string> peers)
 	init(Endpoint::Controller, port);
 	listener->name = "Listener";
 
-	LM_M(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
+	LM_F(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
 
 	ix = 0;
 	for (ix = 0; ix < endpointV.size(); ix++)
@@ -300,7 +300,8 @@ void Network::initAsSamsonController(int port, std::vector<std::string> peers)
 void Network::initAsSamsonWorker(int port, std::string controllerName)
 {
 	init(Endpoint::Worker, port);
-	LM_M(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
+
+	LM_F(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
 
 	endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
 	if (endpoint[2] == NULL)
@@ -323,7 +324,8 @@ void Network::initAsSamsonWorker(int port, std::string controllerName)
 void Network::initAsDelilah(std::string controllerName)
 {
 	init(Endpoint::Delilah);
-	LM_M(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
+
+	LM_F(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
 
 	endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
 	if (endpoint[2] == NULL)
@@ -341,63 +343,33 @@ void Network::initAsDelilah(std::string controllerName)
 
 /* ****************************************************************************
 *
-* listenerGet - 
+* controllerGetIdentifier - 
 */
-Endpoint* Network::listenerGet()
+int Network::controllerGetIdentifier(void)
 {
-	return listener;
-}
-	
-
-
-
-/* ****************************************************************************
-*
-* me - 
-*/
-Endpoint* Network::meGet()
-{
-	return me;
-}
-	
-
-
-
-/* ****************************************************************************
-*
-* controller - 
-*/
-Endpoint* Network::controllerGet()
-{
-	return controller;
+	return 2;
 }
 
 
 
 /* ****************************************************************************
 *
-* worker - 
+* workerGetIdentifier - 
 */
-Endpoint* Network::workerGet(int workerId)
+int Network::workerGetIdentifier(int nthWorker)
 {
-	return endpoint[workerId];
-}
-
-
-	
-
-/* ****************************************************************************
-*
-* workerIdGet - 
-*/
-int Network::workerIdGet(Endpoint* ep)
-{
-	unsigned int ix;
+	unsigned int  ix;
+	int           workerIx = 0;
 
 	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
 	{
-		if (endpoint[ix] == ep)
-			return ix;
+		if (endpoint[ix]->type == Endpoint::Worker)
+		{
+			if (workerIx == nthWorker)
+				return ix;
+
+			++workerIx;
+		}
 	}
 
 	return -1;
@@ -407,25 +379,23 @@ int Network::workerIdGet(Endpoint* ep)
 
 /* ****************************************************************************
 *
-* 
+* getNumWorkers - 
 */
-std::vector<Endpoint*> Network::endPoints()
+int Network::getNumWorkers(void)
 {
-    unsigned int            ix;
-	std::vector<Endpoint*>  v;
+	unsigned int  ix;
+	int           workerIx = 0;
 
 	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
 	{
-		if (endpoint[ix] == NULL)
-			continue;
-
-		v.push_back(endpoint[ix]);
+		if (endpoint[ix]->type == Endpoint::Worker)
+			++workerIx;
 	}
 
-	return v;
+	return workerIx;
 }
 	
-
+	
 
 /* ****************************************************************************
 *
@@ -511,13 +481,14 @@ void Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, 
 	if (type == Endpoint::Worker)
 	{
 		LM_T(LMT_ENDPOINT, ("looping over endpoint vector (%d slots) ... (the fd is %d)", sizeof(endpoint) / sizeof(endpoint[0]), fd));
+		// endpointList("might be reconnecting");
 		for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
 		{
 			if (endpoint[ix] == NULL)
 				continue;
 			if (endpoint[ix]->type != Endpoint::Worker)
 				continue;
-			if (endpoint[ix]->state != Endpoint::Taken)
+			if (endpoint[ix]->state != Endpoint::Reconnecting)
 				continue;
 			if (strcmp(endpoint[ix]->ip.c_str(), ip.c_str()) != 0)
 				continue;
@@ -583,17 +554,14 @@ void Network::endpointRemove(Endpoint* ep)
 
 		if (endpoint[ix] == ep)
 		{
-			LM_M(("Not closing fd %d", ep->fd));
-			// close(ep->fd);
-
 			if (ep->type == Endpoint::Worker)
 			{
 				ep->fd    = -1;
-				ep->state = Endpoint::Taken;
+				ep->state = Endpoint::Disconnected;
                 ep->name  = std::string("To be a worker");
 			}
 			else
-			{	
+			{
 				delete ep;
 				endpoint[ix] = NULL;
 			}
@@ -693,9 +661,7 @@ void Network::msgTreat(int fd, char* name)
 	Endpoint* ep = endpointLookupByFd(fd);
 
 	LM_T(LMT_SELECT, ("treating incoming message from '%s' (ep at %p)", name, ep));
-	LM_T(LMT_SELECT, ("calling iomMsgRead"));
 	s = iomMsgRead(fd, name, &req);
-	LM_T(LMT_SELECT, ("iomMsgRead returned %d", s));
 	if (s != 0)
 	{
 		LM_T(LMT_SELECT, ("iomMsgRead returned %d", s));
@@ -799,7 +765,7 @@ void Network::msgTreat(int fd, char* name)
 		}
 		else if (msgInfo == ss::network::Message_Info_Ack)
 		{
-			LM_M(("Got the worker vector from the Controller - now connect to them all ..."));
+			LM_F(("Got the worker vector from the Controller - now connect to them all ..."));
 
 			int ix;
 			for (ix = 0; ix < req.endpointVecSize(); ix++)
@@ -869,12 +835,47 @@ void Network::run()
 
 		do
 		{
-			timeVal.tv_sec  = 5;
+			timeVal.tv_sec  = 2;
 			timeVal.tv_usec = 0;
 
 			FD_ZERO(&rFds);
 			max = 0;
 
+			if (listener == NULL)  /* I am a delilah - reconnect to dead workers */
+			{
+				for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+				{
+					int workerFd;
+
+					if (endpoint[ix] == NULL)
+						continue;
+						
+					if (endpoint[ix]->type != Endpoint::Worker)
+						continue;
+
+					if (endpoint[ix]->state != Endpoint::Disconnected)
+						continue;
+
+					LM_T(LMT_RECONNECT, ("delilah reconnecting to %s:%d", endpoint[ix]->ip.c_str(), endpoint[ix]->port));
+					workerFd = iomConnect(endpoint[ix]->ip.c_str(), endpoint[ix]->port);
+					if (workerFd != -1)
+					{
+						Endpoint* ep = endpointFreeGet(Endpoint::Temporal);
+
+						if (ep == NULL)
+							LM_X(1, ("cannot obtain a temporal endpoint - please change definitions for vector size and recompile !"));
+
+						ep->state = Endpoint::Connected;
+						ep->fd    = workerFd;
+						ep->ip    = endpoint[ix]->ip;
+						ep->port  = endpoint[ix]->port;
+
+						endpoint[ix]->state = Endpoint::Reconnecting;
+					}
+				}
+			}
+
+			LM_T(LMT_SELECT, ("------------------------------------------------------------------------"));
 			for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
 			{
 				if (endpoint[ix] == NULL)

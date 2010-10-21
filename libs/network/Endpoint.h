@@ -24,7 +24,8 @@ public:
 		Taken,
 		Connected,
 		Listening,
-		Disconnected
+		Disconnected,
+		Reconnecting
 	} State;
 
 	typedef enum Type

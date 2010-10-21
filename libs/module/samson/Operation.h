@@ -129,8 +129,6 @@ namespace ss {
 			_name             = name;
 			_helpLine         = "";
 			_helpMessage      = "Help coming soon\n";
-
-			LM_M(("name: %s", _name.c_str()));
 		}
 
 		Operation( std::string name , Type type )
@@ -142,13 +140,10 @@ namespace ss {
 			_name = name;
 			_helpLine = "";
 			_helpMessage = "Help coming soon\n";
-
-			LM_M(("name: %s", _name.c_str()));
 		}
 		
 		virtual ~Operation()
 		{
-			LM_M(("name: %s", _name.c_str()));
 		}
 
 		void setHelpLine( std::string line )
@@ -173,7 +168,6 @@ namespace ss {
 		
 		std::string getName()
 		{
-			LM_M(("IN"));
 			return _name;
 		}
 		

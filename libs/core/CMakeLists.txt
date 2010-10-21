@@ -4,9 +4,11 @@ SET (HEADERS
     DelilahConsole.h
     SamsonWorker.h
     WorkerDataManager.h
+    WorkerQueue.h
     WorkerTaskManager.h
     SamsonController.h
     ControllerDataManager.h
+    ControllerQueue.h
     ControllerTaskManager.h
     ControllerTask.h
     DataManager.h
@@ -19,9 +21,11 @@ SET (SOURCES
     DelilahConsole.cpp
     SamsonWorker.cpp
     WorkerDataManager.cpp
+    WorkerQueue.cpp
     WorkerTaskManager.cpp
     SamsonController.cpp
     ControllerDataManager.cpp
+    ControllerQueue.cpp
     ControllerTaskManager.cpp
     ControllerTask.cpp
     DataManager.cpp

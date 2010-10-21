@@ -10,6 +10,7 @@ SET (HEADERS
 	SamsonSetup.h
 	traces.h
 	KVInfo.h
+	au_map.h
 )
 
 SET (SOURCES

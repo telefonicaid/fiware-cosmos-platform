@@ -2,7 +2,7 @@
 #include "DiskOperation.h"				// DiskOperation
 #include "DeviceDiskAccessManager.h"	// DeviceDiskAccessManager
 #include "DiskManager.h"				// Own interface
-
+#include "au_map.h"						// findInMap(.)
 
 
 namespace ss {
@@ -84,14 +84,14 @@ namespace ss {
 	DeviceDiskAccessManager *DiskManager::getDeviceDiskAccessManagerForDev( dev_t st_dev )
 	{
 		std::map <dev_t , DeviceDiskAccessManager*>::iterator i;
-		i =  item.find( st_dev );
-		if( i != item.end() )
-			return i->second;
+		DeviceDiskAccessManager *device = au::findInMap( item , st_dev);
+		if( device )
+			return device;
 		else
 		{
 			// Create a new one, add the the map and return
 			DeviceDiskAccessManager *tmp = new DeviceDiskAccessManager();
-			item.insert( std::pair<dev_t , DeviceDiskAccessManager*>( st_dev , tmp ) );
+			au::insertInMap( item , st_dev, tmp );
 			return tmp;
 		}
 	}

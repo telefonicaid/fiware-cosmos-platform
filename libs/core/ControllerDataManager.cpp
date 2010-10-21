@@ -4,6 +4,8 @@
 #include "ControllerTask.h"					// ControllerTask
 #include "CommandLine.h"					// au::CommandLine
 #include "samson/KVFormat.h"				// ss::KVFormat
+#include "ControllerQueue.h"				// ss::ControllerQueue
+#include "au_map.h"							// au::insertInMap
 
 namespace ss {
 
@@ -33,7 +35,7 @@ namespace ss {
 			KVFormat format = KVFormat::format( commandLine.get_argument(2) , commandLine.get_argument(3) );
 			
 			ControllerQueue *tmp = new ControllerQueue(name , format);
-			queue.insert( std::pair< std::string , ControllerQueue*>( name , tmp ) );
+			au::insertInMap( queues , name , tmp );
 		}
 		
 		return true;
@@ -47,6 +49,20 @@ namespace ss {
 		fileName << "/var/samson/log/log_controller";
 		return fileName.str();
 	}
+	
+	std::string ControllerDataManager::status()
+	{
+		std::ostringstream o;
+		o << "Data Manager:" << std::endl;
+		lock.lock();
+		for ( std::map< std::string , ControllerQueue*>::iterator q = queues.begin() ; q != queues.end() ; q++)
+			o << q->first << " " << q->second->str() << std::endl;
+		lock.unlock();
+		
+		return o.str();
+		
+	}		
+	
 	
 
 }

@@ -2,6 +2,8 @@
 #include "WorkerDataManager.h"		// Own interface
 #include "CommandLine.h"			// au::CommandLine
 #include "SamsonWorker.h"			// ss::SamsonWorker
+#include "au_map.h"					// findInMap
+#include "WorkerQueue.h"				// ss::ControllerQueue
 
 namespace ss {
 
@@ -24,12 +26,12 @@ namespace ss {
 		{
 			std::string name = commandLine.get_argument(1);
 			
-			if( findQueue(name)!= NULL)
+			if( au::findInMap( queues, name)!= NULL)
 				return false;
 			
 			KVFormat format = KVFormat::format( commandLine.get_argument(2) , commandLine.get_argument(3) );
 			WorkerQueue *tmp = new WorkerQueue(name , format);
-			queue.insert( std::pair<std::string,WorkerQueue*>( name, tmp ) );
+			au::insertInMap( queues, name , tmp);
 			
 			return true;
 		}
@@ -38,13 +40,14 @@ namespace ss {
 		{
 			std::string name = commandLine.get_argument(1);
 			
-			std::map< std::string , WorkerQueue*>::iterator q = queue.find( name );
-			if( q == queue.end() )
-				return false;	// Not found queue
-
-			delete q->second;	// Remove que queue object from memory
-			queue.erase( q );
-			return true;
+			WorkerQueue *queue = au::extractFromMap( queues, name );
+			if( queue )
+			{
+				delete queue;
+				return true;
+			}
+			else
+				return false;
 		}
 
 		if( mainCommand == "move_queue" )
@@ -52,16 +55,10 @@ namespace ss {
 			std::string name = commandLine.get_argument(1);
 			std::string name2 = commandLine.get_argument(2);
 			
-			std::map< std::string , WorkerQueue*>::iterator q = queue.find( name );
-			if( q == queue.end() )
-				return false;	// Not found queue
 			
-			WorkerQueue *_queue = q->second;
-			
-			queue.erase( q );
-			
-			_queue->rename( name2 );
-			queue.insert( std::pair<std::string,WorkerQueue*>( name2 , _queue ) );
+			WorkerQueue * queue = au::extractFromMap( queues, name );
+			queue->rename( name2 );
+			au::insertInMap(queues, name2, queue);
 			
 			return true;
 		}
@@ -70,18 +67,19 @@ namespace ss {
 		{
 			std::string name = commandLine.get_argument(1);
 			
-			std::map< std::string , WorkerQueue*>::iterator q = queue.find( name );
-			if( q == queue.end() )
+			WorkerQueue *queue = au::findInMap( queues, name );
+
+			if( !queue )
 				return false;	// Not found queue
 			
-			q->second->clear();	// Remove all data
+			queue->clear();	// Remove all data
 		}
 		
 		
 		if( mainCommand == "add_file" )
 		{
 			std::string name = commandLine.get_argument(1);
-			WorkerQueue *queue = findQueue(name);
+			WorkerQueue *queue = au::findInMap( queues, name );
 			
 			if( !queue )
 				return false;
@@ -101,7 +99,7 @@ namespace ss {
 		lock.lock();
 		
 		
-		for( std::map< std::string , WorkerQueue*>::iterator q = queue.begin() ; q != queue.end() ; q++)
+		for( std::map< std::string , WorkerQueue*>::iterator q = queues.begin() ; q != queues.end() ; q++)
 		{
 			
 			WorkerQueue * _q = q->second;

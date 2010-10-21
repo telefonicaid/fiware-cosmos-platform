@@ -61,8 +61,8 @@ namespace ss {
 		virtual int getNumWorkers()=0;					// Get the number of workers
 		
 		// Get the "worker cardinal" from the idenfitier
-		// This method should return a value between 0 and (num_wrokers-1) or -1 if the identifier provided is not related to any workers
-		virtual int getWorkerFromIdentifier( int identifier){return 0;};	// TODO: convert this to pure virtual when implemented
+		// This method should return a value between 0 and (num_workers-1) or -1 if the identifier provided is not related to any workers
+		virtual int getWorkerFromIdentifier( int identifier) = 0;
 		
 		// Send a packet (return a unique id to inform the notifier later)
 		virtual size_t send(Packet* packet, int toIdentifier, PacketSenderInterface* sender)=0;

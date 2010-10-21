@@ -60,6 +60,12 @@ namespace ss {
 		return center->num_workers;
 	}
 	
+	int NetworkFake::getWorkerFromIdentifier(int identifier)
+	{
+		LM_X(1, ("method not implemented"));
+		return -1;
+	}
+
 	// Send a packet (return a unique id to inform the notifier later)
 	size_t NetworkFake::send(Packet* packet, int toIdentifier, PacketSenderInterface* sender)
 	{

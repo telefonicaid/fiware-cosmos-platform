@@ -379,6 +379,31 @@ int Network::workerGetIdentifier(int nthWorker)
 
 /* ****************************************************************************
 *
+* getWorkerFromIdentifier - 
+*/
+int Network::getWorkerFromIdentifier(int identifier)
+{
+    unsigned int  ix;
+    int           workers = 0;
+
+    for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+    {
+        if (endpoint[ix]->type == Endpoint::Worker)
+        {
+            if (workers == identifier)
+                return ix;
+
+            ++workers;
+        }
+    }
+
+    return -1;
+}
+
+
+
+/* ****************************************************************************
+*
 * getNumWorkers - 
 */
 int Network::getNumWorkers(void)

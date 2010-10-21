@@ -513,7 +513,7 @@ void Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, 
 				continue;
 			if (endpoint[ix]->type != Endpoint::Worker)
 				continue;
-			if (endpoint[ix]->state != Endpoint::Reconnecting)
+			if ((endpoint[ix]->state != Endpoint::Reconnecting) && (endpoint[ix]->state != Endpoint::Disconnected))
 				continue;
 			if (strcmp(endpoint[ix]->ip.c_str(), ip.c_str()) != 0)
 				continue;

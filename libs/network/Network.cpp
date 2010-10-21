@@ -54,6 +54,8 @@ static char* msgTypeName(ss::network::Message_Type type)
 	case ss::network::Message_Type_WorkerTaskConfirmation:		return (char*) "WorkerTaskConfirmation";
 	case ss::network::Message_Type_Command:				        return (char*) "Command";
 	case ss::network::Message_Type_CommandResponse:		        return (char*) "CommandResponse";
+	case ss::network::Message_Type_Data:						return (char*) "Data";
+	case ss::network::Message_Type_WorkerStatus:				return (char*) "WorkerStatus";
 	}
 
 	return (char*) "UnknownMsgType";

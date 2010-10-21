@@ -8,67 +8,111 @@
 namespace ss
 {
 
-	bool ControllerTaskManager::addTask( int fromIdentifier, std::string command , std::ostringstream& output )
+	ControllerTask* ControllerTaskManager::createTask(int fromIdentifier, std::string command , std::ostringstream& output )
 	{
-		ControllerTask *_task=NULL;
+		ControllerTask *_task = NULL;
 		
-		lock.lock();
-
 		au::CommandLine commandLine;
 		commandLine.parse(command);
 		
+		// Check everything is ok
 		
 		if( commandLine.get_num_arguments() > 0)
 		{
 			if( commandLine.get_argument(0) == "add_queue" )
 			{
-				if( checkAddQueueCommand( command , output ) ) 
+				
+				// Add queue command
+				if( commandLine.get_num_arguments() < 4 )
 				{
-					// Create the tast adding the necessary commands inside
-					_task = new ControllerTask( fromIdentifier,  current_task_id++ ,  command , controller->network->getNumWorkers() );
-					_task->addCommand( command );	
-
-					// Insert the task into the list
-					task.insert( std::pair< size_t , ControllerTask*>( _task->getId()  , _task) );
-					output << "Scheduled with global task id " << _task->getId();
+					output << "Usage: add_queue name <keyFormat> <valueFormat>";
+					return false;
 				}
+				
+				std::string name = commandLine.get_argument( 1 );
+				std::string keyFormat= commandLine.get_argument( 2 );
+				std::string	valueFormat = commandLine.get_argument( 3 );
+				
+				if( !controller->modulesManager.checkData( keyFormat ) )
+				{
+					output << "Unsupported data format " + keyFormat + "\n";
+					return false;
+				}
+				
+				if( !controller->modulesManager.checkData( valueFormat ) )
+				{
+					output << "Unsupported data format " + valueFormat + "\n";
+					return false;
+				}
+				
+				// Create a top level task
+				_task = new ControllerTask( fromIdentifier, 0, current_task_id++ ,  command , controller->network->getNumWorkers() );
+				
 			}
 		}
+
 		
-		lock.unlock();
+		return _task;
+	}
 	
+	bool ControllerTaskManager::addTask( int fromIdentifier, std::string command , std::ostringstream& output )
+	{
+		lock.lock();
+		bool answer = _addTask( fromIdentifier , command , output );
+		lock.unlock();
+		return answer;
+	}
+
+	
+	bool ControllerTaskManager::_addTask( int fromIdentifier, std::string command , std::ostringstream& output )
+	{
+		ControllerTask *_task = createTask( fromIdentifier, command , output );
+		
+		// Add the task to the list
+		task.insert( std::pair< size_t , ControllerTask*>( _task->getId() , _task) );
+		
 		if( _task )
-		{
-			// Run task
-			_task->run();
+		{			
+			output << "Scheduled with global task id " << _task->getId();
 			
-			if( _task->isReady() )
-			{
-				_task->processCommand();
-				controller->sendWorkerTasks( _task );	
-			}
+			// Put the task in running by sending to all workers
+			controller->sendWorkerTasks( _task );								// Sent the command to all the workers to perform this task
+			_task->setRunning();												// Put the task to running
+			controller->data.process( _task->getId(), _task->getCommand() );	// We process internally in the local "data manager"
 			
 			return true;
 		}
 		else
+		{
+			output << "Unknown operation " << command;
 			return false;
+		}
 	}
 	
-	void ControllerTaskManager::notifyWorkerConfirmation( size_t task_id , int worker_id )
+	void ControllerTaskManager::notifyWorkerConfirmation( int worker_id, network::WorkerTaskConfirmation confirmationMessage )
 	{
+		// get the task id that is confirmed
+		size_t task_id = confirmationMessage.task_id();
+		
 		lock.lock();
 		std::map< size_t , ControllerTask*>::iterator t =  task.find( task_id);
 		if( t!= task.end() )
 		{
-			t->second->notifyWorkerConfirmation( worker_id );
+			ControllerTask *_task = t->second;
 			
-			if (t->second->isFinished())
+			_task->notifyWorkerConfirmation( worker_id , confirmationMessage );
+			
+			
+			if ( _task->isFinished() )
 			{
-				// Send a message back to the dalilah that ordered this comman ( if still connected )
-				controller->sendDalilahAnswer( t->second->getId() , t->second->getFromIdentifier(), false, true,  "OK!");
+				if( _task->isTopLevelTask() )
+				{
+					// Send a message back to the dalilah that ordered this comman ( if still connected )
+					controller->sendDalilahAnswer( _task->getId() , _task->getFromIdentifier(), false, true,  "OK!");
+				}
 
 				// Update this in the data controller
-				controller->data.updateWithFinishedTask( t->second );
+				controller->data.commit( _task->getId() );
 				
 				// Delete the task from the task manager
 				delete t->second;
@@ -80,39 +124,6 @@ namespace ss
 		
 	}
 	
-	bool ControllerTaskManager::checkAddQueueCommand(std::string command ,  std::ostringstream& output )
-	{
-		
-		std::cout << "COMMAND :" << command;
-		
-		au::CommandLine cmdLine;
-		cmdLine.parse(command);
-		
-		 // Add queue command
-		 if( cmdLine.get_num_arguments() < 4 )
-		 {
-			 output << "Usage: add_queue name <keyFormat> <valueFormat>";
-			 return false;
-		 }
-		 
-		 std::string name = cmdLine.get_argument( 1 );
-		 std::string keyFormat= cmdLine.get_argument( 2 );
-		 std::string	valueFormat = cmdLine.get_argument( 3 );
-		 
-		 if( !controller->modulesManager.checkData( keyFormat ) )
-		 {
-			 output << "Unsupported data format " + keyFormat + "\n";
-			 return false;
-		 }
-		 
-		 if( !controller->modulesManager.checkData( valueFormat ) )
-		 {
-			 output << "Unsupported data format " + valueFormat + "\n";
-			 return false;
-		 }
-		 
-		return true;
-	}
 	
 	
 	std::string ControllerTaskManager::status()

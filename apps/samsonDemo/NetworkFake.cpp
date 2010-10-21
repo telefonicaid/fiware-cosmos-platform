@@ -55,15 +55,15 @@ namespace ss {
 		return worker_id;
 	}
 	
+	int NetworkFake::getWorkerFromIdentifier( int identifier )
+	{
+		return identifier;
+	}
+	
+	
 	int NetworkFake::getNumWorkers()
 	{
 		return center->num_workers;
-	}
-	
-	int NetworkFake::getWorkerFromIdentifier(int identifier)
-	{
-		LM_X(1, ("method not implemented"));
-		return -1;
 	}
 
 	// Send a packet (return a unique id to inform the notifier later)

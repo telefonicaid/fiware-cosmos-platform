@@ -6,43 +6,9 @@
 #include "samson/KVFormat.h"	// ss:: KVFormat
 #include "Format.h"				// au::Format
 #include <map>					// std::map
+#include "DataManager.h"		// ss::DataManager
 
 namespace ss {
-	
-	class KVInfo  
-	{
-	public:
-		size_t size;
-		size_t kvs;
-		
-		KVInfo()
-		{
-			size=0;
-			kvs=0;
-		}
-		
-		KVInfo( std::vector<KVInfo>& info)
-		{
-			size=0;
-			kvs=0;
-			for (size_t i = 0 ; i < info.size() ; i++)
-			{
-				size += info[i].size;
-				kvs += info[i].kvs;
-			}
-		}
-		
-		std::string str()
-		{
-			std::ostringstream o;
-			o <<au::Format::string( kvs ) << "kvs in " <<  au::Format::string( size ) << " bytes ";
-			return o.str();
-		}
-	
-		
-		
-	};
-	
 	
 	/**
 	 Information contained in the controller about a queue
@@ -51,9 +17,7 @@ namespace ss {
 	class ControllerQueue
 	{
 		std::string _name;				// Name of this queue
-		KVFormat _format;
-
-		std::vector<KVInfo> info;		// Information about this queue per server ( should be updated frequently )
+		KVFormat _format;				// Format of the queue
 		
 	public:
 		ControllerQueue( std::string name , KVFormat format )
@@ -61,16 +25,11 @@ namespace ss {
 			_name = name;
 			_format = format;
 		}
-							
 		
 		std::string str()
 		{
-			KVInfo total( info );
-
-			
 			std::ostringstream o;
 			o << "(" << _format.str() << ") ";
-			o << total.str();
 			return o.str();		
 		}
 		
@@ -81,7 +40,7 @@ namespace ss {
 	 */
 	class ControllerTask;
 	
-	class ControllerDataManager
+	class ControllerDataManager : public DataManager
 	{
 		au::Lock lock;
 		std::map< std::string , ControllerQueue*> queue;	// Queues in the system
@@ -112,6 +71,12 @@ namespace ss {
 			return o.str();
 			
 		}		
+		
+	private:
+		
+		bool _run( size_t task_id , std::string command );
+		std::string getLogFileName( );
+		
 		
 		
 	};

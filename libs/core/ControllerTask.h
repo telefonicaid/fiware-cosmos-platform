@@ -7,6 +7,7 @@
 #include "Endpoint.h"						// ss::Endpoint
 #include <sstream>							// std::ostringstream
 #include <iostream>							// std::cout
+#include "samson.pb.h"						// network::...
 
 namespace ss {
 	
@@ -22,80 +23,53 @@ namespace ss {
 		friend class ControllerDataManager;
 		
 		enum ControllerTaskStatus {
-			definition,				// In definition ( we are still adding command lines to this task )
-			ready,					// Ready to send messages to workers
+			definition,				// We still have not considered what to do with this task
+//			queued,					// Waiting to something to happen ( previous task , bloques queue, etc... )
+//			ready,					// Ready to send messages to workers
 			running,				// Pending workers to send confirmation
-			finished				// The last line of this task is completed by all workers
+//			waiting,				// Waiting some "children" tasks to finish to commit as finised
+			finished				// Task is finished
 		};
 		
-		// Identifier of the controller-task
+		// Identifier of the controller-task ( this has to be aproved in block )
+		size_t parent_id;
 		size_t id;
 		
 		// Main command line
-		std::string main_command;
+		std::string command;
 		
 		// Status of this tasks
 		ControllerTaskStatus status;
 		
-		// Vector of command that need to be executed to finish this top level controller task
-		std::vector<std::string> command;
-		int command_pos;		// Position inside the vector
-		
 		int confirmed_workers;	// Number of workers that has confirmed current command
 		int total_workers;	
 		
-		
-		// Information about show ordered this command
+		// Information show sent this command ( to notify when finished )
 		int fromIdentifier;
 		
 	public:
 		
-		ControllerTask( int _fromIdentifier , size_t id , std::string _main_command , int _total_workers )
+		ControllerTask( int _fromIdentifier , size_t _parent_id ,  size_t _id , std::string _command , int _total_workers )
 		{
+			// Keep ids
+			id = _id;
+			parent_id = _parent_id;
+			
 			// Keep information about who ordered this
 			fromIdentifier = _fromIdentifier;
-			
-			main_command = _main_command;
+
+			// Keep the command to run
+			command = _command;
+
+			// total number of workers to wait for this number of confirmation ( in case we sent to workers )
 			total_workers = _total_workers;
 			
+			// Default status
 			status = definition;
-			command_pos = 0;
-		}
-		
-		/** 
-		 Add individual commands in definition phase
-		 */
-		
-		void addCommand( std::string _command )
-		{
-			assert( status == definition );
-			command.push_back( _command );
-		}
-		
-		/** 
-		 Add individual commands in definition phase
-		 */
-		
-		void run()
-		{
-			assert( status == definition );
-			status = ready;
-			command_pos = 0;			// Start at the begining of the list of commands
-			confirmed_workers = 0;		// Put to zero the counters of workers that has confirmed the tasks
-		}
-		
-		
-		void processCommand()
-		{
-			assert( status == ready );
 			
-			if( command_pos == (int)command.size() )
-			{
-				status = finished;
-				return;
-			}
+			// Put to zero the counters of workers that has confirmed the tasks
+			confirmed_workers = 0;		
 			
-			status = running;
 		}
 		
 		size_t getId()
@@ -103,46 +77,38 @@ namespace ss {
 			return id;
 		}
 		
-		void notifyWorkerConfirmation( int worker_id )
+		void notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation confirmationMessage )
 		{
 			confirmed_workers++;
 			
+			// If we have received all the notifications from the workers, let's finish
 			if( confirmed_workers == total_workers )
-			{
-				confirmed_workers = 0;
-				command_pos++;
-				
-				if( command_pos == (int)command.size() )
-					status = finished;
-				else
-					status = ready;
-			}
+				status = finished;
 		}
 		
-		bool isFinished()
+		ControllerTaskStatus getStatus()
 		{
-			return (status == finished);
+			return status;
 		}
 		
-		bool isReady()
+		void setRunning()
 		{
-			return (status == ready);
+			assert( status == definition );
+			status = running;
 		}
 		
-		std::string getCurrentCommand()
+		std::string getCommand()
 		{
-			return command[command_pos];
+			return command;
 		}
 		
 		std::string str()
 		{
 			std::ostringstream o;
-			o << "Task " << id << " : " << main_command;
-			o << "(" <<	command_pos <<  "/" << command.size() << ")";
+			o << "Task " << id << " : " << command;
 			
 			switch (status) {
 				case definition: o << "[definition]"; break;
-				case ready: o << "[ready]"; break;
 				case running: o << "[runnnig]"; break;
 				case finished: o << "[finished]"; break;
 			}
@@ -155,6 +121,17 @@ namespace ss {
 		{
 			return fromIdentifier;
 		}
+		
+		bool isFinished()
+		{
+			return ( status == finished);
+		}
+		
+		bool isTopLevelTask()
+		{
+			return (parent_id == 0);
+		}
+		
 		
 		
 	};

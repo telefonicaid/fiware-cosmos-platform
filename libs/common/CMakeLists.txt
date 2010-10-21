@@ -9,6 +9,7 @@ SET (HEADERS
 	StopLock.h
 	SamsonSetup.h
 	traces.h
+	KVInfo.h
 )
 
 SET (SOURCES

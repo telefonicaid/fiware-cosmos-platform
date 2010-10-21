@@ -6,6 +6,7 @@
 #include <vector>							// std::vector
 #include "Endpoint.h"						// ss::Endpoint
 #include <sstream>							// ss::ostringstream
+#include "samson.pb.h"						// network::Messages...
 
 namespace ss {
 
@@ -43,8 +44,7 @@ namespace ss {
 		 Noitify a confirmation from workers
 		 */
 		
-		void notifyWorkerConfirmation( size_t task_id , int worker_id );
-
+		void notifyWorkerConfirmation(int from, network::WorkerTaskConfirmation confirmationMessage );
 		
 		/**
 		 Get status information about tasks
@@ -55,7 +55,27 @@ namespace ss {
 		
 	private:
 		
-		bool checkAddQueueCommand(std::string command ,  std::ostringstream& output );
+		/**
+		 Create the task form the command string
+		 */
+		
+		ControllerTask* createTask(int fromIdentifier, std::string command , std::ostringstream& output );
+
+		/**
+		 Real implemetation of addTask
+		 */
+		
+		bool _addTask( int fromIdentifier, std::string command , std::ostringstream& output );
+
+		
+		ControllerTask * findTask(size_t task_id)
+		{
+			std::map< size_t , ControllerTask*>::iterator t =  task.find( task_id );
+			if( t!= task.end() )
+				return NULL;
+			else
+				return t->second;
+		}
 		
 		
 	};

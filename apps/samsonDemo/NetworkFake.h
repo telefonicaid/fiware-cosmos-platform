@@ -47,7 +47,8 @@ namespace ss {
 		virtual int workerGetIdentifier(int i);		// Get the identifier of the i-th worker
 		virtual int getMyidentifier();				// Get my identifier
 		virtual int getNumWorkers();					// Get the number of workers
-		virtual int getWorkerFromIdentifier(int identifier);
+		virtual int getWorkerFromIdentifier( int identifier);	// TODO: convert this to pure virtual when implemented
+		
 		
 		// Send a packet (return a unique id to inform the notifier later)
 		virtual size_t send(Packet* packet, int toIdentifier, PacketSenderInterface* sender);

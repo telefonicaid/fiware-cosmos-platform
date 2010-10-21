@@ -18,13 +18,32 @@ message EndPoint
 	optional string  name = 4;   // Name for debugging
 }
 
-
-
 message EndPointVector
 {
 	repeated EndPoint item = 1;
 }
 
+// Information about queu status
+
+message Queue
+{
+	required string name = 1;	// Name of the queue
+	required uint64 size = 2;	// Total size in bytes
+	required uint64 kvs = 3;	// total number of kvs
+	required uint32 files = 4;	// Number of files of this queue
+}
+
+message WorkerSystem
+{
+	required uint32 cores_running=1;		// Number of running cores
+	required uint32 cores_total=2;		// Total number of cores in the system		
+}
+
+message WorkerStatus
+{
+	required WorkerSystem system=1;		// Information about the system
+	repeated Queue queue=2;			// Information about queue status in this server
+}
 
 // Message from the controller workers
 
@@ -36,12 +55,12 @@ message WorkerTask
 
 // Confirmation from workers to the controller
 
+
 message WorkerTaskConfirmation
 {
 	required int64 task_id = 1;	// Id of the opt level (controller ) task
 	required bool error    = 2;	// Error in the operation
 
-	// Additional information ( like queue size changes, etc... )
 }
 
 // Command from dalilah to controller
@@ -64,18 +83,28 @@ message CommandResponse
 	optional int32  sender_id         = 4;          // Id of the packet sender ( delilah )
 }
 
+// Message to exchange information between workers
+
+message Data
+{
+	required int64 task_id		= 1;		// Identifier of the controller task
+	required string queue		= 2;		// Name of the queue where we store information
+}
+
 // General message
 
 message Message
 {
 	enum Type
 	{
-		Hello			        = 1;
+		Hello			= 1;
 		WorkerVector            = 2;
-		Command 		        = 3;
+		Command 		= 3;
 		CommandResponse         = 4;
-		WorkerTask 		        = 5;
+		WorkerTask 		= 5;
 		WorkerTaskConfirmation 	= 6;
+		Data			= 7;		// Data packet exchanged between workers during an operation
+		WorkerStatus		= 8;		// Status sent from workers to controller to report status
 	};
 
 	enum Info
@@ -111,8 +140,10 @@ message Message
 	optional EndPointVector         endPoints                 = 102;  // Vector of endPoints
 	optional Command                command	              	  = 103;  // Command message
 	optional CommandResponse        command_response 		  = 104;  // Command response message
-	optional WorkerTask	            worker_task	          	  = 105;  // Work task message
+	optional WorkerTask	        worker_task	          	  = 105;  // Work task message
 	optional WorkerTaskConfirmation worker_task_confirmation  = 106;  // Work task confirmation message
+	optional Data 			data = 107;		    	  // Exchange of data packets between nodes     
+	optional WorkerStatus		worker_status=108;		  // Status of a worker ( sent to controller )
 }
 
 

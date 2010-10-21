@@ -1,0 +1,8 @@
+package ss.data;
+
+message Command
+{
+	required uint64 task_id=1;	// Controller  top-level task id
+	required string command=2;	// Command itself
+}
+

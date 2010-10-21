@@ -12,7 +12,8 @@
 #include <QFont>
 
 #include "QueueItem.h"
-
+#include "globals.h"
+#include "ProcessScene.h"
 
 QueueItem::QueueItem()
 {
@@ -75,4 +76,49 @@ void QueueItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	QMenu* menu = new QMenu();
 	menu->addAction("Show Queue Info");
 	menu->exec(event->screenPos());
+}
+
+void QueueItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
+{
+	ProcessScene* s = (ProcessScene*)scene();
+	switch(s->getTool())
+	{
+		case TOOL_SELECT:
+			//TODO:
+			QGraphicsSvgItem::mousePressEvent(event);
+			putOnTop();
+			break;
+		default:
+			break;
+	}
+}
+
+void QueueItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
+{
+	ProcessScene* s = (ProcessScene*)scene();
+	switch(s->getTool())
+	{
+		case TOOL_SELECT:
+			//TODO:
+			QGraphicsSvgItem::mouseMoveEvent(event);
+			break;
+		default:
+			break;
+	}
+}
+
+void QueueItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
+{
+	ProcessScene* s = (ProcessScene*)scene();
+	switch(s->getTool())
+	{
+		case TOOL_SELECT:
+			//TODO:
+			QGraphicsSvgItem::mouseReleaseEvent(event);
+			restoreOrder();
+			break;
+		default:
+			break;
+	}
+
 }

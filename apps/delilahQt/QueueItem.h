@@ -24,6 +24,12 @@ public:
 
 protected:
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+
+    virtual void putOnTop() { setZValue(qreal(0.1)); };
+    virtual void restoreOrder() { setZValue(qreal(0)); };
 
 private:
     QSize default_size;

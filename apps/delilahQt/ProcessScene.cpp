@@ -33,6 +33,11 @@ void ProcessScene::setTool(int tool)
 	current_tool = tool;
 }
 
+int ProcessScene::getTool()
+{
+	return current_tool;
+}
+
 void ProcessScene::contextMenuEvent(QGraphicsSceneContextMenuEvent * event)
 {
 	//TODO: get possible actions (always for global scene, additional for item)
@@ -69,10 +74,20 @@ void ProcessScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
 	QGraphicsScene::mouseReleaseEvent(event);
 	if (!event->isAccepted())
-	{
-		if (current_tool==TOOL_NEWQUEUE)
-			addQueue(event->scenePos());
-	}
+		switch(current_tool)
+		{
+			case TOOL_NEWQUEUE:
+				addQueue(event->scenePos());
+				break;
+			case TOOL_NEWOPERATION:
+				//TODO:
+				break;
+			case TOOL_SELECT:
+				//TODO:
+				break;
+			default:
+				break;
+		}
 }
 
 void ProcessScene::addQueue(QPointF position)

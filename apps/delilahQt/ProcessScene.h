@@ -24,6 +24,8 @@ public:
 	ProcessScene(QObject* parent = 0);
 	~ProcessScene();
 
+	int getTool();
+
 public slots:
 	void setTool(int tool);
 	void addQueue(QPointF position);
@@ -36,8 +38,6 @@ protected:
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
 signals:
-	void NewQueueRequested(QPointF position);
-	void ActionRequested(QPointF position);
 
 protected:
 	static QSvgRenderer* queue_renderer;

@@ -176,26 +176,5 @@ std::string Packet::str()
 	o << "Packet buffer with " << au::Format::string( buffer.getLength() ) << " bytes"; 
 	return o.str();
 }
-	
-	
-
-/* ****************************************************************************
-*
-* msgTypeName - 
-*/
-char* Packet::msgTypeName(ss::network::Message_Type type)
-{
-	switch (type)
-	{
-	case ss::network::Message_Type_Hello:                       return (char*) "Hello";
-	case ss::network::Message_Type_WorkerVector:                return (char*) "WorkerVector";
-	case ss::network::Message_Type_WorkerTask:		            return (char*) "WorkerTask";
-	case ss::network::Message_Type_WorkerTaskConfirmation:		return (char*) "WorkerTaskConfirmation";
-	case ss::network::Message_Type_Command:				        return (char*) "Command";
-	case ss::network::Message_Type_CommandResponse:		        return (char*) "CommandResponse";
-	}
-
-	return (char*) "UnknownMsgType";
-}
 
 }

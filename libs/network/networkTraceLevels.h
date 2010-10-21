@@ -25,5 +25,7 @@
 #define LMT_MSG        60
 #define LMT_INIT_EP    61
 #define LMT_CONFIG     62
+#define LMT_HELLO      63
+#define LMT_TREAT      64
 
 #endif

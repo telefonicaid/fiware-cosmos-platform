@@ -111,6 +111,7 @@ private:
 	bool      iAmReady;
 
 	void       endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port);
+	void       endpointRemove(Endpoint* ep);
 	Endpoint*  endpointLookupByFd(int fd);
 	Endpoint*  endpointLookupByIpAndPort(const char* ip, unsigned short port);
 	Endpoint*  endpointFreeGet(Endpoint::Type type);

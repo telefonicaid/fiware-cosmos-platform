@@ -139,8 +139,11 @@ void Endpoint::reset(void)
 {
 	close(fd);
 
-	fd     = -1;
-	state  = Taken;
+	fd       = -1;
+	state    = Free;
+	type     = Unknown;
+	name     = "no name";
+	workers  = 0;
 }
 
 }

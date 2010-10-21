@@ -73,8 +73,6 @@ namespace ss {
 	class Packet
 	{
 	public:
-		char* msgTypeName(ss::network::Message_Type type);
-
 		network::Message message;		// Message with necessary fields ( codified with Google Protocol Buffers )
 		PacketBuffer buffer;
 	

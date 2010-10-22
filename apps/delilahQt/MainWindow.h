@@ -28,7 +28,7 @@ signals:
 
 private:
     Ui::MainWindowClass ui;
-    QActionGroup* scene_actions_group;
+    QActionGroup* tool_group;
 };
 
 #endif // MAINWINDOW_H

@@ -11,13 +11,13 @@ MainWindow::MainWindow(QWidget *parent)
 {
 
 	ui.setupUi(this);
-	scene_actions_group = new QActionGroup(this);
-	scene_actions_group->addAction(ui.actionSelect);
-	scene_actions_group->addAction(ui.actionNewQueue);
-	scene_actions_group->addAction(ui.actionNewOperation);
+	tool_group = new QActionGroup(this);
+	tool_group->addAction(ui.actionSelect);
+	tool_group->addAction(ui.actionNewQueue);
+	tool_group->addAction(ui.actionNewOperation);
 	ui.actionSelect->setChecked(true);
 
-	connect(scene_actions_group, SIGNAL(triggered(QAction*)), this, SLOT(setToolForAction(QAction*)));
+	connect(tool_group, SIGNAL(triggered(QAction*)), this, SLOT(setToolForAction(QAction*)));
 
 	createTab("New Process");
 }
@@ -41,6 +41,9 @@ void MainWindow::createTab(QString name)
 	view->show();
 
 	ui.tabWidget->addTab(view, name);
+
+	// initiate tool
+	setToolForAction(tool_group->checkedAction());
 }
 
 

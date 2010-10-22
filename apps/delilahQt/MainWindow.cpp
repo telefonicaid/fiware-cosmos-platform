@@ -18,11 +18,8 @@ MainWindow::MainWindow(QWidget *parent)
 	ui.actionSelect->setChecked(true);
 
 	connect(scene_actions_group, SIGNAL(triggered(QAction*)), this, SLOT(setToolForAction(QAction*)));
-//	connect(scene_actions_group, SIGNAL(triggered(QAction*)), this, SIGNAL(workingActionChanged(QAction*)));
 
 	createTab("New Process");
-
-//	queue_renderer = new QSvgRenderer(QLatin1String(":/svg/objects/queue.svg"));
 }
 
 MainWindow::~MainWindow()
@@ -38,14 +35,10 @@ void MainWindow::createTab(QString name)
 
 	ProcessScene* scene = new ProcessScene(this);
 	connect(this, SIGNAL(toolChanged(int)), scene, SLOT(setTool(int)));
-	//connect(scene_actions_group, SIGNAL(triggered(QAction*)), scene, SLOT(setTool(QAction*)));
 
 	ProcessView* view = new ProcessView(scene);
-	view->setWorkingAction(scene_actions_group->checkedAction());
 	view->setRenderHints(QPainter::Antialiasing);
 	view->show();
-
-//	connect(this, SIGNAL(workingActionChanged(QAction*)), view, SLOT(setWorkingAction(QAction*)));
 
 	ui.tabWidget->addTab(view, name);
 }
@@ -80,16 +73,3 @@ void MainWindow::setToolForAction(QAction* action)
 
 	emit(toolChanged(current_tool));
 }
-
-//void MainWindow::addQueue(QPointF position)
-//{
-//	ProcessScene* scene = (ProcessScene*)sender();
-//
-//	QueueItem* queue = new QueueItem();
-//	queue->setSharedRenderer(queue_renderer);
-//	queue->initText(QString("Test Queue"));
-//	queue->scaleToDefaultSize();
-//	queue->setPos(position);
-//
-//	scene->addItem(queue);
-//}

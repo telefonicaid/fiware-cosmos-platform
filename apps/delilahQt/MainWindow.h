@@ -22,20 +22,13 @@ public slots:
 	void createTab(QString name="");
 	void removeTab(int);
 	void setToolForAction(QAction* action);
-	//void addQueue(QPointF position);
-
-public:
-//	QSvgRenderer* queue_renderer;
 
 signals:
-	//void workingActionChanged(QAction* action);
 	void toolChanged(int);
 
 private:
     Ui::MainWindowClass ui;
     QActionGroup* scene_actions_group;
-
-
 };
 
 #endif // MAINWINDOW_H

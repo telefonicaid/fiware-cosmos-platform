@@ -12,6 +12,9 @@
 #include "Endpoint.h"			// Endpoint
 #include "NetworkInterface.h"	// ss:NetworkInterface 
 
+#define WORKERS       5
+#define DELILAHS     20
+#define TEMPORALS    20
 
 namespace ss {
 
@@ -19,22 +22,6 @@ namespace ss {
 class Endpoint;
 class Packet;
 	
-
-
-/* ****************************************************************************
-*
-* Number of instances of each endpoint type
-*/
-typedef enum EndpointTypeInstances
-{
-	Mes           =  1,
-	Listeners     =  1,
-	Workers       = 20,
-	Controllers   =  1,
-	Delilahs      = 20,
-	Temporals     = 20
-} EndpointTypeInstances;
-
 
 
 /* ****************************************************************************
@@ -92,16 +79,18 @@ public:
 	void quit();
 
 private:
-	Endpoint* endpoint[Mes + Listeners + Workers + Controllers + Delilahs + Temporals];
-	Endpoint* listener;
-	Endpoint* me;
-	Endpoint* controller;
+	int        Workers;
+
+	Endpoint*  endpoint[3 + WORKERS + DELILAHS + TEMPORALS];
+	Endpoint*  listener;
+	Endpoint*  me;
+	Endpoint*  controller;
 
 	std::vector<Endpoint>    endpointV;
 
-	bool      iAmReady;
+	bool       iAmReady;
 
-	void       endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port);
+	Endpoint*  endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port);
 	void       endpointRemove(Endpoint* ep);
 	Endpoint*  endpointLookupByFd(int fd);
 	Endpoint*  endpointLookupByIpAndPort(const char* ip, unsigned short port);

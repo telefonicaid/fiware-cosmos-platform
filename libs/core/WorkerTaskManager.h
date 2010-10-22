@@ -1,8 +1,7 @@
-
 #ifndef _H_WORKER_TASK_MANAGER
 #define _H_WORKER_TASK_MANAGER
 
-#import "samson.pb.h"
+#include "samson.pb.h"
 
 
 namespace ss {

@@ -21,9 +21,11 @@ public:
 	typedef enum State
 	{
 		Free,
-		Taken,
-		Connected,
+		Me,
+		FutureWorker,
 		Listening,
+		Connected,
+		Closed,
 		Disconnected,
 		Reconnecting
 	} State;

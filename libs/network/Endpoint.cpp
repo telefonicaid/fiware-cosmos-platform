@@ -50,7 +50,7 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 	this->ip       = ip;
 	this->port     = port;
 	this->fd       = fd;
-	this->state    = (fd == -1)? Taken : Connected;
+	this->state    = (fd == -1)? Disconnected : Connected;
 	this->workers  = 0;
 
 	hostnameGet();
@@ -83,7 +83,7 @@ Endpoint::Endpoint(Type type, std::string ipAndPort)
 	}
 
 	this->fd       = -1;
-	this->state    = Taken;
+	this->state    = Disconnected;
 	this->workers  = 0;
 	this->type     = type;
 
@@ -102,7 +102,7 @@ Endpoint::Endpoint(Type type, unsigned short port)
 	this->ip       = "localhost";
 	this->port     = port;
 	this->fd       = -1;
-	this->state    = Taken;
+	this->state    = Disconnected;
 	this->workers  = 0;
 	this->type     = type;
 
@@ -120,9 +120,11 @@ char* Endpoint::stateName(void)
 	switch (state)
 	{
 	case Free:            return (char*) "Free";
-	case Taken:           return (char*) "Taken";
-	case Connected:       return (char*) "Connected";
+	case Me:              return (char*) "ME";
+	case FutureWorker:    return (char*) "FutureWorker";
 	case Listening:       return (char*) "Listening";
+	case Connected:       return (char*) "Connected";
+	case Closed:          return (char*) "Closed";
 	case Disconnected:    return (char*) "Disconnected";
 	case Reconnecting:    return (char*) "Reconnecting";
 	}

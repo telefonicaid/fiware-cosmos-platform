@@ -63,12 +63,9 @@ public:
 	virtual int getWorkerFromIdentifier(int identifier);
 
 	// Send a packet (return a unique id to inform the notifier later)
-	virtual size_t send(Packet* packet, int toIdentifier, PacketSenderInterface* sender){return 0;};
+	virtual size_t send(Packet* packet, int endpointId, PacketSenderInterface* sender);
 	
 	std::vector<Endpoint*> samsonWorkerEndpoints();  // Get a list of the samsonWorkers endpoints
-
-	// Send a packet (return a unique id to inform the notifier later)
-	size_t send(Packet* packet, Endpoint* endpoint, PacketSenderInterface* sender);
 
 	/**
 	   This function is expected to return only if quit() function is called
@@ -92,8 +89,7 @@ private:
 
 	Endpoint*  endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port);
 	void       endpointRemove(Endpoint* ep);
-	Endpoint*  endpointLookupByFd(int fd);
-	Endpoint*  endpointLookupByIpAndPort(const char* ip, unsigned short port);
+	Endpoint*  endpointLookup(int fd);
 	Endpoint*  endpointFreeGet(Endpoint::Type type);
 
 	void msgTreat(int fd, char* name);

@@ -129,6 +129,7 @@ Network::Network()
 */
 void Network::setPacketReceiver(PacketReceiverInterface* _receiver)
 {
+	LM_X(1, ("IN"));
 	receiver = _receiver;
 }
 
@@ -140,6 +141,7 @@ void Network::setPacketReceiver(PacketReceiverInterface* _receiver)
 */
 void Network::setPacketReceiverInterface(PacketReceiverInterface* _receiver)
 {
+	LM_T(LMT_DELILAH, ("Setting receiver to %p", _receiver));
 	receiver = _receiver;
 }
 	
@@ -355,6 +357,7 @@ void Network::initAsDelilah(std::string controllerName)
 */
 int Network::controllerGetIdentifier(void)
 {
+	LM_T(LMT_DELILAH, ("Asking for controller id"));
 	return 2;
 }
 
@@ -363,24 +366,14 @@ int Network::controllerGetIdentifier(void)
 /* ****************************************************************************
 *
 * workerGetIdentifier - 
+*
+* worker 0 is at index 3 in the local endpoint vector
 */
 int Network::workerGetIdentifier(int nthWorker)
 {
-	unsigned int  ix;
-	int           workerIx = 0;
+	LM_X(1, ("IN"));
 
-	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
-	{
-		if (endpoint[ix]->type == Endpoint::Worker)
-		{
-			if (workerIx == nthWorker)
-				return ix;
-
-			++workerIx;
-		}
-	}
-
-	return -1;
+	return nthWorker + 3;
 }
 	
 	
@@ -388,24 +381,14 @@ int Network::workerGetIdentifier(int nthWorker)
 /* ****************************************************************************
 *
 * getWorkerFromIdentifier - 
+*
+* worker 0 is at index 3 in the local endpoint vector
 */
 int Network::getWorkerFromIdentifier(int identifier)
 {
-    unsigned int  ix;
-    int           workers = 0;
+	LM_X(1, ("IN"));
 
-    for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
-    {
-        if (endpoint[ix]->type == Endpoint::Worker)
-        {
-            if (workers == identifier)
-                return ix;
-
-            ++workers;
-        }
-    }
-
-    return -1;
+    return identifier - 3;
 }
 
 
@@ -413,19 +396,26 @@ int Network::getWorkerFromIdentifier(int identifier)
 /* ****************************************************************************
 *
 * getNumWorkers - 
+*
+* Return number of connected workers
 */
 int Network::getNumWorkers(void)
 {
-	unsigned int  ix;
-	int           workerIx = 0;
+	int  ix;
+	int  workers = 0;
 
-	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+	LM_X(1, ("IN"));
+
+	for (ix = 3; ix < 3 + Workers; ix++)
 	{
-		if (endpoint[ix]->type == Endpoint::Worker)
-			++workerIx;
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if (endpoint[ix]->state == Endpoint::Connected)
+			++workers;
 	}
 
-	return workerIx;
+	return workers;
 }
 	
 	
@@ -433,20 +423,23 @@ int Network::getNumWorkers(void)
 /* ****************************************************************************
 *
 * samsonWorkerEndpoints - 
+*
+* Return list of connected workers ?
 */
 std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 {
-    unsigned int            ix;
+	int                     ix;
 	std::vector<Endpoint*>  v;
 
-	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+	LM_X(1, ("IN"));
+
+	for (ix = 3; ix <  3 + Workers; ix++)
 	{
 		if (endpoint[ix] == NULL)
 			continue;
-		if (endpoint[ix]->type != Endpoint::Worker)
-			continue;
-		
-		v.push_back(endpoint[ix]);
+
+		if (endpoint[ix]->state == Endpoint::Connected)
+			v.push_back(endpoint[ix]);
 	}
 
 	return v;
@@ -458,12 +451,24 @@ std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 *
 * send - 
 */
-size_t Network::send(Packet* p, Endpoint* endpoint, PacketSenderInterface* sender)
+size_t Network::send(Packet* packetP, int endpointId, PacketSenderInterface* sender)
 {
+	Endpoint*                  ep        = endpoint[endpointId];
+	ss::network::Message_Type  type      = packetP->message.type();
+
+	if (ep == NULL)
+		LM_RE(-1, ("No endpoint at index %d", endpointId));
+	if (ep->state != Endpoint::Connected)
+		LM_RE(-1, ("Endpoint %d in state '%s'", endpointId, ep->stateName()));
+
+	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", msgTypeName(type), endpointId));
+
+	int nb = iomMsgSend(ep->fd, (char*) ep->name.c_str(), packetP, (char*) me->name.c_str(), packetP->buffer.getDataPointer(), packetP->buffer.getLength());
+
 	if (sender)
 		sender->notificationSent(0, true);
 
-	return 0;
+	return nb;
 }
 	
 
@@ -627,9 +632,9 @@ void Network::endpointRemove(Endpoint* ep)
 
 /* ****************************************************************************
 *
-* endpointLookupByFd - 
+* endpointLookup - 
 */
-Endpoint* Network::endpointLookupByFd(int fd)
+Endpoint* Network::endpointLookup(int fd)
 {
 	unsigned int ix = 0;
 
@@ -653,29 +658,6 @@ Endpoint* Network::endpointLookupByFd(int fd)
 
 /* ****************************************************************************
 *
-* endpointLookupByIpAndPort - 
-*/
-Endpoint* Network::endpointLookupByIpAndPort(const char* ip, unsigned short port)
-{
-	unsigned int ix = 0;
-
-	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
-	{
-		if (endpoint[ix] == NULL)
-			continue;
-
-		if ((endpoint[ix]->port == port) && (strcmp(endpoint[ix]->ip.c_str(), ip) == 0))
-			return endpoint[ix];
-	}
-
-	LM_E(("endpoint %s:%d not found", ip, port));
-	return NULL;
-}
-
-
-
-/* ****************************************************************************
-*
 * msgTreat - 
 */
 void Network::msgTreat(int fd, char* name)
@@ -683,7 +665,7 @@ void Network::msgTreat(int fd, char* name)
 	Packet    req;
 	Packet    ack;
 	int       s;
-	Endpoint* ep = endpointLookupByFd(fd);
+	Endpoint* ep = endpointLookup(fd);
 
 	LM_T(LMT_SELECT, ("treating incoming message from '%s' (ep at %p)", name, ep));
 	s = iomMsgRead(fd, name, &req);
@@ -797,7 +779,7 @@ void Network::msgTreat(int fd, char* name)
 		}
 		else if (msgInfo == ss::network::Message_Info_Ack)
 		{
-			LM_F(("Got the worker vector from the Controller - now connect to them all ..."));
+			LM_T(LMT_ENDPOINT, ("Got the worker vector from the Controller - now connect to them all ..."));
 
 			if (req.endpointVecSize() != Workers)
 				LM_X(1, ("bad size of worker vector (%d). Should be %d!", req.endpointVecSize(), Workers));
@@ -842,7 +824,7 @@ void Network::msgTreat(int fd, char* name)
 
 						ep = endpointAdd(workerFd, (char*) "to be worker", 0, Endpoint::Temporal, epP->ip, epP->port);
 						if (ep != NULL)
-							LM_M(("Added ep with state '%s'", ep->stateName()));
+							LM_T(LMT_ENDPOINT, ("Added ep with state '%s'", ep->stateName()));
 						else
 							LM_X(1, ("endpointAdd failed"));
 					}
@@ -915,7 +897,7 @@ void Network::run()
 
 							ep = endpointAdd(workerFd, (char*) "New Worker", 0, Endpoint::Temporal, endpoint[ix]->ip.c_str(), endpoint[ix]->port);
 							if (ep != NULL)
-								LM_M(("Added ep with state '%s'", ep->stateName()));
+								LM_T(LMT_ENDPOINT, ("Added ep with state '%s'", ep->stateName()));
 							else
 								LM_X(1, ("endpointAdd failed"));
 
@@ -1020,17 +1002,20 @@ void Network::run()
 */
 void Network::checkInitDone(void)
 {
-	unsigned int ix = 0;
+	int ix;
 
-	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)	
+	for (ix = 3; ix < 3 + Workers; ix++)
 	{
-		if (endpoint[ix]->type == Endpoint::Worker)
+		if (endpoint[ix] == NULL)
 		{
-			if (endpoint[ix]->state != Endpoint::Connected)
-			{
-				iAmReady = false;
-				return;
-			}
+			iAmReady = false;
+			return;
+		}
+
+		if (endpoint[ix]->state != Endpoint::Connected)
+		{
+			iAmReady = false;
+			return;
 		}
 	}
 

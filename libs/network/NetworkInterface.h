@@ -65,7 +65,7 @@ namespace ss {
 		virtual int getWorkerFromIdentifier( int identifier) = 0;
 		
 		// Send a packet (return a unique id to inform the notifier later)
-		virtual size_t send(Packet* packet, int toIdentifier, PacketSenderInterface* sender)=0;
+		virtual size_t send(Packet* packet, int endpointId, PacketSenderInterface* sender)=0;
 
 		// Main run loop control to the network interface
 		virtual void run()=0;           

@@ -21,7 +21,7 @@ namespace ss {
 	
 	class PacketBuffer
 	{
-		char *data;
+		char*  data;
 		size_t length;
 
 	public:
@@ -54,7 +54,7 @@ namespace ss {
 			}
 		}		
 		
-		char *getDataPointer()
+		char* getDataPointer()
 		{
 			return data;
 		}

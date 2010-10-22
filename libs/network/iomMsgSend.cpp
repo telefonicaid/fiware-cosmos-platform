@@ -85,12 +85,18 @@ int iomMsgSend(int fd, char* name, ss::Packet* packetP, char* sender, void* data
 		return -1;
 	}
 
+	if (s != (ssize_t) (ioVec[0].iov_len + ioVec[1].iov_len + ioVec[2].iov_len))
+	   LM_X(1, ("written only %d bytes, wanted to write %d (%d + %d + %d)",
+				s, 
+				ioVec[0].iov_len + ioVec[1].iov_len + ioVec[2].iov_len,
+				ioVec[0].iov_len, ioVec[1].iov_len, ioVec[2].iov_len));
+
 	LM_T(LMT_WRITE, ("written %d bytes to '%s' (fd %d)", s, name, fd));
 	LM_WRITES(name, "message header",  ioVec[0].iov_base, ioVec[0].iov_len, LmfByte);
 	LM_WRITES(name, "protocol buffer", ioVec[1].iov_base, ioVec[1].iov_len, LmfByte);
 
 	if ((vecs == 3) && (ioVec[2].iov_len != 0))
-		LM_WRITES(name, "KV data",         ioVec[2].iov_base, ioVec[2].iov_len, LmfByte);
+		LM_WRITES(name, "KV data", ioVec[2].iov_base, ioVec[2].iov_len, LmfByte);
 
-	return 0;
+	return s;
 }	

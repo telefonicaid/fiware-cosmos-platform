@@ -404,7 +404,7 @@ int Network::getNumWorkers(void)
 	int  ix;
 	int  workers = 0;
 
-	LM_X(1, ("IN"));
+	LM_T(LMT_DELILAH, ("IN"));
 
 	for (ix = 3; ix < 3 + Workers; ix++)
 	{
@@ -463,6 +463,7 @@ size_t Network::send(Packet* packetP, int endpointId, PacketSenderInterface* sen
 
 	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", msgTypeName(type), endpointId));
 
+	packetP->message.set_info(ss::network::Message_Info_Msg);
 	int nb = iomMsgSend(ep->fd, (char*) ep->name.c_str(), packetP, (char*) me->name.c_str(), packetP->buffer.getDataPointer(), packetP->buffer.getLength());
 
 	if (sender)
@@ -634,7 +635,7 @@ void Network::endpointRemove(Endpoint* ep)
 *
 * endpointLookup - 
 */
-Endpoint* Network::endpointLookup(int fd)
+Endpoint* Network::endpointLookup(int fd, int* idP)
 {
 	unsigned int ix = 0;
 
@@ -647,7 +648,11 @@ Endpoint* Network::endpointLookup(int fd)
 			continue;
 
 		if (endpoint[ix]->fd == fd)
+		{
+			if (idP)
+				*idP = ix;
 			return endpoint[ix];
+		}
 	}
 
 	LM_E(("endpoint (fd:%d) not found", fd));
@@ -665,7 +670,8 @@ void Network::msgTreat(int fd, char* name)
 	Packet    req;
 	Packet    ack;
 	int       s;
-	Endpoint* ep = endpointLookup(fd);
+	int       endpointId;
+	Endpoint* ep = endpointLookup(fd, &endpointId);
 
 	LM_T(LMT_SELECT, ("treating incoming message from '%s' (ep at %p)", name, ep));
 	s = iomMsgRead(fd, name, &req);
@@ -834,7 +840,10 @@ void Network::msgTreat(int fd, char* name)
 		break;
 
 	default:
-		LM_X(1, ("unknown message type: %d", msgType));
+		if (receiver == NULL)
+			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
+		receiver->receive(&req, endpointId);
+		break;
 	}
 }
 

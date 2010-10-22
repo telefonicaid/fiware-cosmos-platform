@@ -14,7 +14,7 @@ namespace ss {
 	public:
 		
 		// Notify that a nessage has been received
-		virtual void receive(Packet* packet, int from)=0;
+		virtual void receive(Packet* packet, int from) = 0;
 		
 		virtual ~PacketReceiverInterface() {};
 	};

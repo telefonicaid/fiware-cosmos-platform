@@ -89,7 +89,7 @@ private:
 
 	Endpoint*  endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port);
 	void       endpointRemove(Endpoint* ep);
-	Endpoint*  endpointLookup(int fd);
+	Endpoint*  endpointLookup(int fd, int* idP);
 	Endpoint*  endpointFreeGet(Endpoint::Type type);
 
 	void msgTreat(int fd, char* name);

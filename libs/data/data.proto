@@ -1,0 +1,16 @@
+package ss.data;
+
+message Command
+{
+        enum Status
+        {
+		Begin               = 1;	// Activity of this task id is iniciated
+		Operation	    = 2;	// Process an operation related with this task id
+                Finish              = 3;	// The task has been finally validated
+        };
+
+	required uint64 task_id=1;	// Controller  top-level task id
+	required string command=2;	// Command itself
+	required Status status=3;	// Flag to indicate the status of this task
+}
+

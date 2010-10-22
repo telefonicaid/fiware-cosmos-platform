@@ -7,6 +7,7 @@
 #include "Format.h"				// au::Format
 #include <map>					// std::map
 #include "DataManager.h"		// ss::DataManager
+#include "au_map.h"				// au::map
 
 namespace ss {
 	
@@ -20,7 +21,7 @@ namespace ss {
 	class ControllerDataManager : public DataManager
 	{
 		au::Lock lock;
-		std::map< std::string , ControllerQueue*> queues;
+		au::map< std::string , ControllerQueue> queues;
 		
 	public:
 
@@ -36,11 +37,16 @@ namespace ss {
 		 */
 		
 		std::string status();
+
+
+		/**
+		 Get the fileName of the log file
+		 */
+		std::string getLogFileName( );
 		
 	private:
 		
 		bool _run( size_t task_id , std::string command );
-		std::string getLogFileName( );
 		
 		
 		

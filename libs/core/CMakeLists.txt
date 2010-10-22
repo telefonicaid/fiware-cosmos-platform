@@ -11,8 +11,6 @@ SET (HEADERS
     ControllerQueue.h
     ControllerTaskManager.h
     ControllerTask.h
-    DataManager.h
-    data.pb.h
 )
 
 SET (SOURCES
@@ -28,8 +26,6 @@ SET (SOURCES
     ControllerQueue.cpp
     ControllerTaskManager.cpp
     ControllerTask.cpp
-    DataManager.cpp
-    data.pb.cc
 )
 
 SET (STATIC_LIBS
@@ -40,6 +36,7 @@ SET (STATIC_LIBS
     samsonMemoryStatic
     samsonNetworkStatic 
     samsonDiskStatic
+    samsonDataStatic
     protobuf 
     dl 
     pthread
@@ -68,15 +65,9 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
+include_directories("${PROJECT_SOURCE_DIR}/libs/data")
 
 
-# Generate 'data.pb.h' and 'data.pb.cc' from ''data.proto''
-add_custom_command (
-  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/data.pb.cc
-  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/data.pb.h
-  COMMAND /usr/local/bin/protoc ${CMAKE_CURRENT_SOURCE_DIR}/data.proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
-  MAIN_DEPENDENCY data.proto
-)
 
 ADD_LIBRARY(samsonCoreStatic STATIC ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES( samsonCoreStatic ${STATIC_LIBS} )

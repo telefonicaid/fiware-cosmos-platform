@@ -65,7 +65,7 @@ namespace ss {
 		void sendWorkerStatus();
 		
 		// send the confirmation of a particular task to the controller
-		//void sentConfirmationToController(size_t task_id , std::vector<std::string> queues);
+		void sentConfirmationToController(size_t task_id );
 		
 	};
 }

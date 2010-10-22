@@ -20,7 +20,8 @@ namespace ss {
 		}
 
 		// Add a task from network interface
-		void addTask( const network::WorkerTask &task );
+		// Return true if the task is already finished within this call ( not schedulled in taskManager )
+		bool addTask( const network::WorkerTask &task );
 	
 		// Fill information about status of this worker
 		void fillWorkerStatus( network::WorkerStatus* status );

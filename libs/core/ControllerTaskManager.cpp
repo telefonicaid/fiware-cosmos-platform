@@ -68,17 +68,19 @@ namespace ss
 	{
 		ControllerTask *_task = createTask( fromIdentifier, command , output );
 		
-		// Add the task to the list
-		task.insert( std::pair< size_t , ControllerTask*>( _task->getId() , _task) );
 		
 		if( _task )
 		{			
+			// Add the task to the list
+			task.insert( std::pair< size_t , ControllerTask*>( _task->getId() , _task) );
+			
+			
 			output << "Scheduled with global task id " << _task->getId();
 			
 			// Put the task in running by sending to all workers
 			controller->sendWorkerTasks( _task );								// Sent the command to all the workers to perform this task
 			_task->setRunning();												// Put the task to running
-			controller->data.process( _task->getId(), _task->getCommand() );	// We process internally in the local "data manager"
+			controller->data.runOperationOfTask( _task->getId(), _task->getCommand() );	// We process internally in the local "data manager"
 			
 			return true;
 		}

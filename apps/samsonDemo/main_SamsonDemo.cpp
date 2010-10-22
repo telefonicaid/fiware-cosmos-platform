@@ -17,6 +17,7 @@
 
 const char* dalilah_argv_console[] = { "-controller" , "what_ever" ,"-console"};
 const char* dalilah_argv[] = { "-controller" , "what_ever" };
+
 const char* worker_argv[] = { "-controller" , "what_ever"};
 
 
@@ -30,7 +31,7 @@ int main(int argc, const char *argv[])
 	
 	au::CommandLine commandLine;
 	commandLine.set_flag_int("workers", 2);			// Number of workers by command line ( default 2 )
-	commandLine.set_flag_boolean("ncurses");
+	commandLine.set_flag_boolean("console");
 
 	// Command line to extract the number of workers from command line arguments
 	commandLine.parse(argc , argv);
@@ -45,15 +46,15 @@ int main(int argc, const char *argv[])
 	const char **_dalilah_argv;
 	int _dalilah_argc;
 	
-	if( commandLine.get_flag_bool("ncurses") )
-	{
-		_dalilah_argv= dalilah_argv;
-		_dalilah_argc = VECTOR_LENGTH(dalilah_argv);
-	}
-	else
+	if( commandLine.get_flag_bool("console") )
 	{
 		_dalilah_argv= dalilah_argv_console;
 		_dalilah_argc = VECTOR_LENGTH(dalilah_argv_console);
+	}
+	else
+	{
+		_dalilah_argv= dalilah_argv;
+		_dalilah_argc = VECTOR_LENGTH(dalilah_argv);
 	}
 	
 	ss::Delilah dalilah( _dalilah_argc, _dalilah_argv , center.getNetwork( -2 )  );

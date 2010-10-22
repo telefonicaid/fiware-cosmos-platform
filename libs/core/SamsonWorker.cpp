@@ -1,7 +1,6 @@
 #include <iostream>				// std::cout ...
 
 #include "logMsg.h"             // lmInit, LM_*
-
 #include "Macros.h"             // EXIT, ...
 #include "Packet.h"				// ss::Packet
 #include "Network.h"			// NetworkInterface
@@ -9,6 +8,7 @@
 #include "CommandLine.h"		// CommandLine
 #include "SamsonWorker.h"		// Own interfce
 #include "traces.h"				// Trace definition
+#include "WorkerDataManager.h"
 
 namespace ss {
 
@@ -53,7 +53,7 @@ namespace ss {
 	void SamsonWorker::run()
 	{
 		// Init the data manager
-		data.initDataManager();
+		data.initDataManager( data.getLogFileName() );
 		
 		assert( network );
 		network->run();
@@ -72,27 +72,42 @@ namespace ss {
 		
 		network->send(&p, network->controllerGetIdentifier(), this);
 		
+	}
 		
+	void SamsonWorker::sentConfirmationToController(size_t task_id )
+	{
+		Packet p( network::Message_Type_WorkerTaskConfirmation );
+		network::WorkerTaskConfirmation * confirmation = p.message.mutable_worker_task_confirmation();
+		confirmation->set_task_id( task_id );
+		confirmation->set_error( false );
+		network->send(&p, network->controllerGetIdentifier(), this);
 	}
 	
 	
-		
 	void SamsonWorker::receive(Packet* p, int from)
 	{
 		
 		if( p->message.type() == network::Message_Type_WorkerTask )
 		{
-			// Sent a confirmation just to test everything is ok
-			Packet p2( network::Message_Type_WorkerTaskConfirmation );
+			// A packet with a particular command is received ( controller expect to send a confirmation message )
 			
-			network::WorkerTaskConfirmation * confirmation = p2.message.mutable_worker_task_confirmation();
-			confirmation->set_task_id( p->message.worker_task().task_id() );
-			confirmation->set_error( false );
+			// Process the command in the data manager ( rigth now this is just to test )
+			data.beginTask( p->message.worker_task().task_id() );
 			
-			network->send(&p2, network->controllerGetIdentifier(), this);
+			data.runOperationOfTask(p->message.worker_task().task_id() , p->message.worker_task().command() );
+
+			if( taskManager.addTask( p->message.worker_task() ) )
+			{
+				data.finishTask( p->message.worker_task().task_id() );
 			
-			// Send a update
-			sendWorkerStatus();
+				// Sent a confirmation just to test everything is ok
+				sentConfirmationToController( p->message.worker_task().task_id() );
+				
+				// Send a update
+				sendWorkerStatus();
+				
+			}
+				
 		}
 		
 	}

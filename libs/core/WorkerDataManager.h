@@ -2,12 +2,13 @@
 #define _H_WORKER_DATA_MANAGER
 
 #include <map>					// std::map
-#include "Lock.h"				// au::Lock
-#include "samson/KVFormat.h"	// ss::KVFormat
-#include "KVInfo.h"				// ss:KVInfo
 #include <sstream>				// std::ostringstream
-#include "samson.pb.h"			// network::Update
 #include <vector>				// std::vector
+#include "Lock.h"				// au::Lock
+#include "KVInfo.h"				// ss:KVInfo
+#include "samson/KVFormat.h"	// ss::KVFormat
+#include "au_map.h"				// au::map
+#include "samson.pb.h"			// network::Update
 #include "DataManager.h"		// ss::DataManager
 
 namespace ss {
@@ -24,7 +25,7 @@ namespace ss {
 	class WorkerDataManager : public DataManager
 	{
 		// Lis of queues managed by this worker
-		std::map< std::string , WorkerQueue*> queues;
+		au::map< std::string , WorkerQueue> queues;
 		
 		// Pointer to the worker to use other components
 		SamsonWorker *worker;
@@ -36,8 +37,6 @@ namespace ss {
 			// Keep a pointer to the worker
 			worker = _worker;
 		}
-
-		
 		
 		std::string getLogFileName( );
 		

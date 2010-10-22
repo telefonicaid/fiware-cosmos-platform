@@ -26,12 +26,12 @@ namespace ss {
 		{
 			std::string name = commandLine.get_argument(1);
 			
-			if( au::findInMap( queues, name)!= NULL)
+			if( queues.findInMap(name)!= NULL)
 				return false;
 			
 			KVFormat format = KVFormat::format( commandLine.get_argument(2) , commandLine.get_argument(3) );
 			WorkerQueue *tmp = new WorkerQueue(name , format);
-			au::insertInMap( queues, name , tmp);
+			queues.insertInMap( name , tmp);
 			
 			return true;
 		}
@@ -40,7 +40,8 @@ namespace ss {
 		{
 			std::string name = commandLine.get_argument(1);
 			
-			WorkerQueue *queue = au::extractFromMap( queues, name );
+			WorkerQueue *queue = queues.extractFromMap( name );
+			
 			if( queue )
 			{
 				delete queue;
@@ -56,9 +57,9 @@ namespace ss {
 			std::string name2 = commandLine.get_argument(2);
 			
 			
-			WorkerQueue * queue = au::extractFromMap( queues, name );
+			WorkerQueue * queue = queues.extractFromMap( name );
 			queue->rename( name2 );
-			au::insertInMap(queues, name2, queue);
+			queues.insertInMap(name2, queue);
 			
 			return true;
 		}
@@ -67,7 +68,7 @@ namespace ss {
 		{
 			std::string name = commandLine.get_argument(1);
 			
-			WorkerQueue *queue = au::findInMap( queues, name );
+			WorkerQueue *queue = queues.findInMap( name );
 
 			if( !queue )
 				return false;	// Not found queue
@@ -79,7 +80,7 @@ namespace ss {
 		if( mainCommand == "add_file" )
 		{
 			std::string name = commandLine.get_argument(1);
-			WorkerQueue *queue = au::findInMap( queues, name );
+			WorkerQueue *queue = queues.findInMap( name );
 			
 			if( !queue )
 				return false;
@@ -98,10 +99,8 @@ namespace ss {
 	{
 		lock.lock();
 		
-		
-		for( std::map< std::string , WorkerQueue*>::iterator q = queues.begin() ; q != queues.end() ; q++)
+		for( au::map< std::string , WorkerQueue>::iterator q = queues.begin() ; q != queues.end() ; q++)
 		{
-			
 			WorkerQueue * _q = q->second;
 			network::Queue* report_queue = status->add_queue();
 			
@@ -110,7 +109,6 @@ namespace ss {
 			report_queue->set_size(info.size);
 			report_queue->set_kvs(info.kvs);
 		}
-		
 		
 		lock.unlock();
 	}

@@ -35,7 +35,7 @@ namespace ss {
 			KVFormat format = KVFormat::format( commandLine.get_argument(2) , commandLine.get_argument(3) );
 			
 			ControllerQueue *tmp = new ControllerQueue(name , format);
-			au::insertInMap( queues , name , tmp );
+			queues.insertInMap( name , tmp );
 		}
 		
 		return true;
@@ -55,7 +55,7 @@ namespace ss {
 		std::ostringstream o;
 		o << "Data Manager:" << std::endl;
 		lock.lock();
-		for ( std::map< std::string , ControllerQueue*>::iterator q = queues.begin() ; q != queues.end() ; q++)
+		for ( au::map< std::string , ControllerQueue>::iterator q = queues.begin() ; q != queues.end() ; q++)
 			o << q->first << " " << q->second->str() << std::endl;
 		lock.unlock();
 		

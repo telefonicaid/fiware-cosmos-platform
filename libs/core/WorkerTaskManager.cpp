@@ -4,7 +4,11 @@
 
 namespace ss {
 
-	void WorkerTaskManager::addTask(const network::WorkerTask &task )
+	/**
+	 Return true if it is already finished
+	 */
+	
+	bool WorkerTaskManager::addTask(const network::WorkerTask &task )
 	{
 		
 		std::string command = task.command();
@@ -14,7 +18,7 @@ namespace ss {
 		
 		// Nothing if no main command
 		if ( commandLine.get_num_arguments() == 0)
-			return;
+			return true;
 		
 		std::string mainCommand = commandLine.get_argument(0);
 		
@@ -26,10 +30,12 @@ namespace ss {
 			queues.push_back( commandLine.get_argument(1) );		// updated queues in the process
 			
 			// Direct confirmation of the process
-			worker->data.process( task.task_id() , task.command() );
-			//worker->sentConfirmationToController( task.task_id() , queues );
-			return;
+			worker->data.runOperationOfTask( task.task_id() , task.command() );
+			return true;
 		}
+		
+		// Unknown operation ( finished anyway )
+		return true;
 	}
 	
 	// Fill information about status of this worker

@@ -60,8 +60,8 @@ namespace ss {
 	
 	void SamsonController::run()
 	{
-		data.initDataManager();		// Init data manager
-		network->run();				// Run the network interface (blocked)
+		data.initDataManager( data.getLogFileName() );			// Init the data manager
+		network->run();											// Run the network interface (blocked)
 	}
 	
 	void SamsonController::receive( Packet *p , int fromIdentifier )

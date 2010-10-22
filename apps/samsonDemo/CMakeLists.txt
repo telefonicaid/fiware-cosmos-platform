@@ -17,6 +17,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_BINARY_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/core")
+include_directories("${PROJECT_SOURCE_DIR}/libs/data")
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
 # SAMSON Executable

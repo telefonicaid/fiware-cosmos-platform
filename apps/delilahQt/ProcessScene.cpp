@@ -38,15 +38,22 @@ int ProcessScene::getTool()
 	return current_tool;
 }
 
-void ProcessScene::contextMenuEvent(QGraphicsSceneContextMenuEvent * event)
+void ProcessScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 {
+	//TODO:
 	//TODO: get possible actions (always for global scene, additional for item)
-	//TODO: add real actions;
 	QGraphicsScene::contextMenuEvent(event);
+
 	if (!event->isAccepted())
 	{
 		QMenu* menu = new QMenu();
-		menu->addAction("Add Queue", this, SIGNAL(NewQueueRequested(event->scenePos())));
+
+//		menu->addAction("Add Queue", this, SLOT(addQueue()));
+		NewQueueAction* act = new NewQueueAction("Add Queue", this);
+		act->setPosition(event->scenePos());
+		connect(act, SIGNAL(triggered(QPointF)), this, SLOT(addQueue(QPointF)));
+		menu->addAction(act);
+
 		menu->addAction("Zoom In", this, SLOT(zoomIn()));
 		menu->addAction("Zoom Out", this, SLOT(zoomOut()));
 		menu->addAction("Zoom 1:1", this, SLOT(zoomReset()));
@@ -100,3 +107,5 @@ void ProcessScene::addQueue(QPointF position)
 
 	addItem(queue);
 }
+
+

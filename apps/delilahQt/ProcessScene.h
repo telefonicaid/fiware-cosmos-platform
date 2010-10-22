@@ -10,7 +10,8 @@
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneContextMenuEvent>
-
+#include <QPointF>
+#include <QAction>
 
 #include "globals.h"
 
@@ -28,7 +29,7 @@ public:
 
 public slots:
 	void setTool(int tool);
-	void addQueue(QPointF position);
+	void addQueue(QPointF position = QPoint(0.0, 0.0) );
 	void zoomOut();
 	void zoomReset();
 	void zoomIn();
@@ -37,12 +38,33 @@ protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
-signals:
-
 protected:
 	static QSvgRenderer* queue_renderer;
     int current_tool;
+};
 
+class NewQueueAction : public QAction
+{
+	Q_OBJECT
+
+public:
+	NewQueueAction(QObject* parent) : QAction(parent)
+		{ connect(this, SIGNAL(triggered()), this, SLOT(triggerAtPos()));};
+	NewQueueAction(const QString & text, QObject* parent) : QAction(text, parent)
+		{ connect(this, SIGNAL(triggered()), this, SLOT(triggerAtPos())); };
+	~NewQueueAction() {};
+
+	void setPosition(QPointF p) { pos=p; };
+	QPointF position() { return pos; };
+
+protected slots:
+	void triggerAtPos() { emit(triggered(pos)); };
+
+signals:
+	void triggered(QPointF);
+
+private:
+	QPointF pos;
 };
 
 

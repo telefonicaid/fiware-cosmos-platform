@@ -24,6 +24,7 @@
 #include "iomMsgSend.h"         // iomMsgSend
 #include "iomMsgRead.h"         // iomMsgRead
 #include "iomMsgAwait.h"        // iomMsgAwait
+#include "workerStatus.h"       // workerStatus, WorkerStatus
 #include "Network.h"			// Own interface
 
 
@@ -388,7 +389,7 @@ int Network::getWorkerFromIdentifier(int identifier)
 {
 	LM_X(1, ("IN"));
 
-    return identifier - 3;
+	return identifier - 3;
 }
 
 
@@ -858,6 +859,8 @@ void Network::run()
 	int             fds;
 	fd_set          rFds;
 	struct timeval  timeVal;
+	time_t          then = 0;
+	time_t          now  = 0;
 	int             max;
 
 	while (1)
@@ -866,6 +869,63 @@ void Network::run()
 
 		do
 		{
+			if (me->type == Endpoint::Worker)
+			{
+				now = time(NULL);
+				if (now - then > 1)
+				{
+					then = now;
+#if 0
+					packetP->message.set_info(ss::network::Message_Info_Msg);
+					packetP->message.set_type(ss::network::Message_Type_WorkerStatus);
+					
+					ss::network::WorkerStatus* sP = message.mutable_workerstatus();
+					sP->cores = 8;
+#else
+					WorkerStatus ws;
+					int          ix;
+
+					workerStatus(&ws);
+
+					LM_T(LMT_STAT, ("CPU Load: %d%%  (%d cores)", ws.cpuInfo.load, ws.cpuInfo.cores));
+					for (ix = 0; ix < ws.cpuInfo.cores; ix++)
+						LM_T(LMT_STAT, ("Core %02d load: %d%%  (MHz: %d, bogomips: %d, cache size: %d)",
+							  ix,
+							  ws.cpuInfo.coreInfo[ix].load,
+							  ws.cpuInfo.coreInfo[ix].mhz,
+							  ws.cpuInfo.coreInfo[ix].bogomips,
+							  ws.cpuInfo.coreInfo[ix].cacheSize));
+
+					for (ix = 0; ix < ws.netInfo.ifaces; ix++)
+						LM_T(LMT_STAT, ("Net I/F %02d: %-10s Received: %12u / %8u,  Sent: %12u / %8u)",
+							  ix,
+							  ws.netInfo.iface[ix].name,
+							  ws.netInfo.iface[ix].rcvBytes,
+							  ws.netInfo.iface[ix].rcvPackets,
+							  ws.netInfo.iface[ix].sndBytes,
+							  ws.netInfo.iface[ix].sndPackets));
+					
+					for (ix = 0; ix < ws.netInfo.ifaces; ix++)
+					{
+						if (ws.netInfo.iface[ix].sndSpeed > 1024 * 1024)
+							LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f Mbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].sndSpeed / 1024.0 / 1024.0));
+						else if (ws.netInfo.iface[ix].sndSpeed > 1024)
+							LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f kbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].sndSpeed / 1024.0));
+						else
+							LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f bytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].sndSpeed));
+
+						if (ws.netInfo.iface[ix].rcvSpeed > 1024 * 1024)
+							LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f Mbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed / 1024.0 / 1024.0));
+						else if (ws.netInfo.iface[ix].rcvSpeed > 1024)
+							LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f kbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed / 1024.0));
+						else
+							LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f bytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed));
+					}
+#endif
+				}
+			}
+
+
 			timeVal.tv_sec  = 2;
 			timeVal.tv_usec = 0;
 

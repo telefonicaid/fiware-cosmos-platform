@@ -29,5 +29,6 @@
 #define LMT_TREAT      64
 #define LMT_RECONNECT  65
 #define LMT_DELILAH    66
+#define LMT_STAT       67
 
 #endif

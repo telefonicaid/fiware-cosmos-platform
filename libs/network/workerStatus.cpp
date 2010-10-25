@@ -93,7 +93,10 @@ static int cLoad(int coreNo)
 		
 		/* Do I have an old measurement?  - if not, I cannot measure the CPU load ... */
 		if (oldticks[coreNo].user == -1)
+		{
+			fclose(fP);
 			return 0;
+		}
 
 		CpuTimes* oldP = &oldticks[coreNo];
 
@@ -114,10 +117,12 @@ static int cLoad(int coreNo)
 		// Remember what was just measured for the next time
 		oldticks[coreNo] = ticks;
 
+		fclose(fP);
 		return load;
 	}
 
 	LM_W(("core %d not found ...", coreNo));
+	fclose(fP);
 	return 0;
 }
 
@@ -186,7 +191,10 @@ static void coreInfo(int coreNo, CoreInfo* ciP)
 			cNo = atoi(colon);
 
 			if (cNo > coreNo)
+			{
+				fclose(fP);
 				return;
+			}
 		}
 		else if (cNo == coreNo)
 		{
@@ -333,6 +341,8 @@ static void netifInfo(int ifIndex, NetIf* nifP, time_t now, time_t lastTime)
 
 		return;
 	}
+
+	fclose(fP);
 }
 
 

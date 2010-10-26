@@ -1,6 +1,8 @@
 #ifndef _H_AU_MAP
 #define _H_AU_MAP
 
+#include <map>		// std::map
+
 namespace au {
 
 	/**
@@ -40,6 +42,26 @@ namespace au {
 			return iter->second;
 		}
 		
+		
+		/**
+		 Function to easily get value for a key creating if necessary
+		 */
+
+		V* findOrCreate( K& key )
+		{
+			typename std::map<K, V* >::iterator iter = find(key);
+			
+			if( iter == std::map<K,V*>::end() )
+			{
+				// Create and insert for this key
+				V* value = new V();
+				insert( std::pair<K,V*>( key, value) );
+				return value;
+			}
+			return iter->second;
+			
+		}
+
 		/** 
 		 Function to remove a particular entry if exist
 		 Return if it really existed

@@ -28,6 +28,8 @@ namespace ss {
 			_sharedMemoryId = sharedMemoryId;
 			_size = size;
 			_data = data;
+
+			offset = 0;
 		}
 		
 		~Buffer()
@@ -42,9 +44,9 @@ namespace ss {
 		}
 		
 	public:
-		
-		int server;		// Server information ( if it make sense )
-		
+
+		size_t offset;
+			
 	public:
 		
 		

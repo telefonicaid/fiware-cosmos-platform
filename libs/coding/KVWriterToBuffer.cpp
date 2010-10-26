@@ -4,7 +4,7 @@
 #include "KVWriterToBuffer.h"			// Own interface
 #include "MemoryManager.h"				// ss::MemoryManager
 
-
+/*
 
 namespace ss {
 
@@ -61,3 +61,4 @@ namespace ss {
 		_num_kvs =0 ;
 	}
 }
+ */

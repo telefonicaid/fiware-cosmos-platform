@@ -7,7 +7,7 @@
 #include "coding.h"					// 
 #include "BufferSinkInterface.h"	// ss::BufferSinkInterface
 
-
+/*
 namespace ss {
 
 	class KVFileSaver : public BufferSinkInterface
@@ -82,4 +82,5 @@ namespace ss {
 		}
 	};
 }
+ */
 #endif

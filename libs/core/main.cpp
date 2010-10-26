@@ -17,11 +17,10 @@
 
 namespace ss {
 
-
 	/**
 	 Vector of sizes in each Hasg Group
 	 */
-	
+/*	
 	class HGVector
 	{
 	public:
@@ -81,11 +80,12 @@ namespace ss {
 		}
 		
 	};
+	*/
 	
 	/**
 	 Information about a file and its hash-group sizes distribution
 	 */
-	
+/*	
 	class KVFile
 	{
 
@@ -109,11 +109,11 @@ namespace ss {
 		}
 		
 	};
-	
+*/	
 	/**
 	 Information about all the files that form a queue
 	 */
-	
+/*	
 	class KVQueue
 	{
 		std::vector<KVFile*> files;
@@ -130,11 +130,11 @@ namespace ss {
 		}
 		
 	};
-	
+	*/
 	/**
 	 Segment inside th hash-group range
 	 */
-	
+/*	
 	class Segment
 	{
 	public:
@@ -155,11 +155,11 @@ namespace ss {
 
 		
 	};
-	
+*/	
 	/**
 	 Global manager of data in a SAMSON WORKER
 	 */
-	
+/*	
 	class KVDataManager
 	{
 		// Vector of queues
@@ -176,10 +176,6 @@ namespace ss {
 		
 	public:
 		
-		/**
-		 Get a lit of segments about how to dividie this queue to process data contained in them
-		 The number of segments, the number of sub-operations to process them
-		 */
 		
 		std::vector<Segment> getSegmentsForQueues( std::vector<std::string> queues , size_t max_memory_per_segment )
 		{
@@ -217,28 +213,15 @@ namespace ss {
 		}
 		
 		
-		/**
-		 Get data for a particular queue & segment
-		 */
-		/*
-		std::vector<KVFileSegment> getData( std::string queue_name , Segment segment )
-		{
-			KVQueue *queue = findKVQueue( queue_name );
 
-			
-			KVFileSegment fileSegment;
-			fileSegment.
-		}
-		*/
-		
 	};
-
+*/
 	
 	/** 
 	 Extract information
 	 */
 	
-	
+/*	
 	class KVFileSegment
 	{
 	public:
@@ -308,13 +291,14 @@ namespace ss {
 		
 	};
 
+ */
 
 }
 
 
-
 int main( int argc , char *argv[] )
 {
+	/*
 	std::cout << "Test\n";
 	
 	ss::ModulesManager mm;
@@ -346,7 +330,7 @@ int main( int argc , char *argv[] )
 	
 
 	fileSaver.save("/Users/andreu/test_data.bin");
-	
+*/	
 /*	
 	std::cout << "Preparing file to read\n";
 	ss::KVFile file("/Users/andreu/test_data.bin");

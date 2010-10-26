@@ -6,6 +6,7 @@ SET (HEADERS
     WorkerDataManager.h
     WorkerQueue.h
     WorkerTaskManager.h
+    DataBuffer.h
     SamsonController.h
     ControllerDataManager.h
     ControllerQueue.h
@@ -21,6 +22,7 @@ SET (SOURCES
     WorkerDataManager.cpp
     WorkerQueue.cpp
     WorkerTaskManager.cpp
+    DataBuffer.cpp
     SamsonController.cpp
     ControllerDataManager.cpp
     ControllerQueue.cpp

@@ -88,7 +88,7 @@ namespace ss {
 				// Information about each server
 				for (int i = 0 ; i < network->getNumWorkers() ; i++)
 				{
-					output << "Worker "  << i << std::endl;
+					output << "Worker " << i << std::endl;
 					output << "\tCores " << status[i].cpuinfo().cores() << std::endl;
 				}
 				

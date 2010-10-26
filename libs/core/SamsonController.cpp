@@ -88,8 +88,8 @@ namespace ss {
 				// Information about each server
 				for (int i = 0 ; i < network->getNumWorkers() ; i++)
 				{
-					output << "Worker " << i << std::endl;
-					output << "\tCores " << status[i].system().cores_running() << "/" << status[i].system().cores_total() << std::endl;
+					output << "Worker "  << i << std::endl;
+					output << "\tCores " << status[i].cpuinfo().cores() << std::endl;
 				}
 				
 				// Get status of controller

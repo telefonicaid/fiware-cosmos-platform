@@ -12,7 +12,7 @@
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_*
 
-#include "samson.pb.h"          // WorkerStatus
+// #include "samson.pb.h"          // WorkerStatus
 #include "workerStatus.h"       // Own interface
 
 namespace ss {
@@ -166,9 +166,9 @@ static int cores(void)
 *
 * coreInfo - 
 */
-static void coreInfo(int coreNo, CoreInfo* ciP)
+static void coreInfo(int coreNo, ss::network::CoreInfo* ciP)
 {
-	ciP->load = cLoad(coreNo);
+   ciP->set_load(cLoad(coreNo));
 
 	FILE* fP;
 	char  line[160];
@@ -204,7 +204,7 @@ static void coreInfo(int coreNo, CoreInfo* ciP)
 				if (colon == NULL)
 					continue;
 				++colon;
-				ciP->mhz = atoi(colon);
+				ciP->set_mhz(atoi(colon));
 			}
 			else if (strncmp(line, "bogomips", 8) == 0)
 			{
@@ -212,7 +212,7 @@ static void coreInfo(int coreNo, CoreInfo* ciP)
 				if (colon == NULL)
 					continue;
 				++colon;
-				ciP->bogomips = atoi(colon);
+				ciP->set_bogomips(atoi(colon));
 			}
 			else if (strncmp(line, "cache size", 10) == 0)
 			{
@@ -220,7 +220,7 @@ static void coreInfo(int coreNo, CoreInfo* ciP)
 				if (colon == NULL)
 					continue;
 				++colon;
-				ciP->cacheSize = atoi(colon);
+				ciP->set_cachesize(atoi(colon));
 			}
 		}
 	}
@@ -264,19 +264,49 @@ static int netifs(void)
 *
 * cpuInfo - 
 */
-static void cpuInfo(CpuInfo* ciP)
+static void cpuInfo(ss::network::CpuInfo* ciP)
 {
-	int cIx;
+	int                    cIx;
+	ss::network::CoreInfo  info;
 
-	ciP->cores = cores();
-	ciP->load  = cLoad(MAX_CORES);
+	ciP->set_cores(cores());
+	ciP->set_load(cLoad(MAX_CORES));
 
-	for (cIx = 0; cIx < ciP->cores; cIx++)
+	for (cIx = 0; cIx < (int) ciP->cores(); cIx++)
 	{
-		memset(&ciP->coreInfo[cIx], 0, sizeof(ciP->coreInfo[cIx]));
-		coreInfo(cIx, &ciP->coreInfo[cIx]);
+		info = ciP->coreinfo(cIx);
+		info.set_mhz(0);
+		info.set_bogomips(0);
+		info.set_cachesize(0);
+		info.set_load(0);
+
+
+		coreInfo(cIx, &info);
 	}
 }
+
+
+
+typedef struct NetInterface
+{
+	long rcvBytes;
+	long rcvPackets;
+	long rcvErrors;
+	long rcvDrop;
+	long rcvFifo;
+	long rcvFrame;
+	long rcvCompressed;
+	long rcvMulticast;
+
+	long sndBytes;
+	long sndPackets;
+	long sndErrs;
+	long sndDrop;
+	long sndFifo;
+	long sndColls;
+	long sndCarrier;
+	long sndCompressed;
+} NetInterface;
 
 
 
@@ -284,13 +314,13 @@ static void cpuInfo(CpuInfo* ciP)
 *
 * netifInfo - 
 */
-static void netifInfo(int ifIndex, NetIf* nifP, time_t now, time_t lastTime)
+static void netifInfo(int ifIndex, ss::network::NetIf* nifP, time_t now, time_t lastTime)
 {
-	FILE*          fP;
-	char           line[160];
-	int            lineNo            = 0;
-	static NetIf   netif[MAX_NETIFS] = { { { 0 }, 0 } };
-	unsigned long  intervalInSecs    = now - lastTime;
+	FILE*                 fP;
+	char                  line[160];
+	static NetInterface   netif[MAX_NETIFS] = { { 0 } };
+	int                   lineNo            = 0;
+	unsigned long         intervalInSecs    = now - lastTime;
 
 	fP = fopen(NETDEV_PATH, "r");
 	if (fP == NULL)
@@ -316,27 +346,75 @@ static void netifInfo(int ifIndex, NetIf* nifP, time_t now, time_t lastTime)
 		*colon = 0;
 		++colon;
 
-		strcpy(nifP->name, line);
+		nifP->set_name(line);
+		long i[16];
+
 		sscanf(colon, "%ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld",
-			   &nifP->rcvBytes, &nifP->rcvPackets, &nifP->rcvErrors,     &nifP->rcvDrop,
-			   &nifP->rcvFifo,  &nifP->rcvFrame,   &nifP->rcvCompressed, &nifP->rcvMulticast,
-			   &nifP->sndBytes, &nifP->sndPackets, &nifP->sndErrs,       &nifP->sndDrop,
-			   &nifP->sndFifo,  &nifP->sndColls,   &nifP->sndCarrier,    &nifP->sndCompressed);
+			   &i[0],
+			   &i[1],
+			   &i[2],
+			   &i[3],
+			   &i[4],
+			   &i[5],
+			   &i[6],
+			   &i[7],
+			   &i[8],
+			   &i[9],
+			   &i[10],
+			   &i[11],
+			   &i[12],
+			   &i[13],
+			   &i[14],
+			   &i[15]
+			);
+
+		nifP->set_rcvbytes(i[0]);
+		nifP->set_rcvpackets(i[1]);
+		nifP->set_rcverrors(i[2]);
+		nifP->set_rcvdrop(i[3]);
+		nifP->set_rcvfifo(i[4]);
+		nifP->set_rcvframe(i[5]);
+		nifP->set_rcvcompressed(i[6]);
+		nifP->set_rcvmulticast(i[7]);
+		nifP->set_sndbytes(i[8]);
+		nifP->set_sndpackets(i[9]);
+		nifP->set_snderrs(i[10]);
+		nifP->set_snddrop(i[11]);
+		nifP->set_sndfifo(i[12]);
+		nifP->set_sndcolls(i[13]);
+		nifP->set_sndcarrier(i[14]);
+		nifP->set_sndcompressed(i[15]);
 
 		if (lastTime == 0)
 		{
-			nifP->rcvSpeed  = 0;
-			nifP->sndSpeed  = 0;
+			nifP->set_rcvspeed(0);
+			nifP->set_sndspeed(0);
 		}
 		else
 		{
 			if (netif[ifIndex].rcvBytes != 0)
-				nifP->rcvSpeed = (nifP->rcvBytes - netif[ifIndex].rcvBytes) / intervalInSecs;
+				nifP->set_rcvspeed((nifP->rcvbytes() - netif[ifIndex].rcvBytes) / intervalInSecs);
 			if (netif[ifIndex].sndBytes != 0)
-				nifP->sndSpeed = (nifP->sndBytes - netif[ifIndex].sndBytes) / intervalInSecs;
+				nifP->set_sndspeed((nifP->sndbytes() - netif[ifIndex].sndBytes) / intervalInSecs);
 		}
 
-		netif[ifIndex] = *nifP;
+		netif[ifIndex].rcvBytes       = nifP->rcvbytes();
+		netif[ifIndex].rcvPackets     = nifP->rcvpackets();
+		netif[ifIndex].rcvErrors      = nifP->rcverrors();
+		netif[ifIndex].rcvDrop        = nifP->rcvdrop();
+		netif[ifIndex].rcvFifo        = nifP->rcvfifo();
+		netif[ifIndex].rcvFrame       = nifP->rcvframe();
+		netif[ifIndex].rcvCompressed  = nifP->rcvcompressed();
+		netif[ifIndex].rcvMulticast   = nifP->rcvmulticast();
+		netif[ifIndex].sndBytes       = nifP->sndbytes();
+		netif[ifIndex].sndPackets     = nifP->sndpackets();
+		netif[ifIndex].sndErrs        = nifP->snderrs();
+		netif[ifIndex].sndDrop        = nifP->snddrop();
+		netif[ifIndex].sndFifo        = nifP->sndfifo();
+		netif[ifIndex].sndColls       = nifP->sndcolls();
+		netif[ifIndex].sndCarrier     = nifP->sndcarrier();
+		netif[ifIndex].sndCompressed  = nifP->sndcompressed();
+
 		fclose(fP);
 
 		return;
@@ -351,19 +429,22 @@ static void netifInfo(int ifIndex, NetIf* nifP, time_t now, time_t lastTime)
 *
 * netInfo - 
 */
-static void netInfo(NetIfInfo* niP)
+static void netInfo(ss::network::NetIfInfo* niP)
 {
-	int            nIx;
-	time_t         now  = time(NULL);
-	static time_t  then = 0;
+	int                 nIx;
+	time_t              now  = time(NULL);
+	static time_t       then = 0;
+	ss::network::NetIf  netif;
 
-	niP->ifaces = netifs();
+	niP->set_ifaces(netifs());
 
-	for (nIx = 0; nIx < niP->ifaces; nIx++)
+	for (nIx = 0; nIx < (int) niP->ifaces(); nIx++)
 	{
-		memset(&niP->iface[nIx], 0, sizeof(niP->iface[nIx]));
-		strcpy(niP->iface[nIx].name, "nada");
-		netifInfo(nIx, &niP->iface[nIx], now, then);
+		netif = niP->iface(nIx);
+		netif.Clear();
+		// memset(&niP->iface[nIx], 0, sizeof(niP->iface[nIx]));
+		netif.set_name("nada");
+		netifInfo(nIx, &netif, now, then);
 	}
 
 	then = now;
@@ -375,10 +456,10 @@ static void netInfo(NetIfInfo* niP)
 *
 * workerStatus - 
 */
-void workerStatus(WorkerStatus* wsP)
+void workerStatus(ss::network::WorkerStatus* wsP)
 {
-	cpuInfo(&wsP->cpuInfo);
-	netInfo(&wsP->netInfo);
+	cpuInfo((ss::network::CpuInfo*) &wsP->cpuinfo());
+	netInfo((ss::network::NetIfInfo*) &wsP->netinfo());
 }
 
 }

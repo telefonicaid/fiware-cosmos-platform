@@ -39,6 +39,53 @@ message EndPointVector
 //
 // WorkerStatus - information about machine state
 //
+message CoreInfo
+{
+	required uint32 mhz        = 1;    // CPU/Core Frequency
+	required uint32 bogomips   = 2;    // bogomips for core
+	required uint32 cacheSize  = 3;    // cache size
+	required uint32 load       = 4;    // core load percentage (0-100)
+}
+
+message CpuInfo
+{
+	required uint32    load      = 1;   // total load percentage (0-100)
+	required uint32    cores     = 2;   // number of cores
+  	repeated CoreInfo  coreInfo  = 3;   // info for each core
+}
+
+message NetIf
+{
+	required string  name           =  1;    // name of the interface (lo, eth0, ...)
+
+	required uint64  rcvSpeed       =  2;    // received speed in bytes per second
+    required uint64  rcvBytes       =  3;    // number of bytes received in total
+    required uint64  rcvPackets     =  4;    // number of packets received in total
+    required uint64  rcvErrors      =  5;    // number of receive errors
+    required uint64  rcvDrop        =  6;    // 
+    required uint64  rcvFifo        =  7;    // 
+    required uint64  rcvFrame       =  8;    // 
+    required uint64  rcvCompressed  =  9;    // 
+    required uint64  rcvMulticast   = 10;    // 
+
+    required uint64  sndSpeed       = 11;    // send speed in bytes per second
+    required uint64  sndBytes       = 12;    // number of bytes sent in total
+    required uint64  sndPackets     = 13;    // number of packets sent in total
+    required uint64  sndErrs        = 14;    // number of send errors
+    required uint64  sndDrop        = 15;    // 
+    required uint64  sndFifo        = 16;    // 
+    required uint64  sndColls       = 17;    // 
+    required uint64  sndCarrier     = 18;    // 
+    required uint64  sndCompressed  = 19;    // 
+}
+
+message NetIfInfo
+{
+	required uint32    ifaces      = 1;   // number of interfaces
+  	repeated NetIf     iface       = 2;   // statistics for each interface
+}
+
+
 message Queue
 {
 	required string name   = 1;  // Name of the queue
@@ -47,18 +94,12 @@ message Queue
 	required uint32 files  = 4;  // Number of files of this queue
 }
 
-message WorkerSystem
-{
-	required uint32 cores_running = 1;  // Number of running cores
-	required uint32 cores_total   = 2;  // Total number of cores in the system		
-}
-
 message WorkerStatus
 {
-	required WorkerSystem system = 1;   // Information about the system
-	repeated Queue queue         = 2;   // Information about queue status in this server
+	required CpuInfo   cpuInfo = 1;    // info and stats on CPU/Cores
+	required NetIfInfo netInfo = 2;    // stats on network interfaces
+	repeated Queue     queue   = 3;    // queue status in this server
 }
-
 
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -79,8 +120,8 @@ message WorkerTask
 //
 message WorkerTaskConfirmation
 {
-	required int64 task_id = 1;	// Id of the opt level (controller ) task
-	required bool error    = 2;	// Error in the operation
+	required int64 task_id  = 1;  // Id of the opt level (controller ) task
+	required bool  error    = 2;  // Error in the operation
 
 }
 
@@ -88,24 +129,28 @@ message WorkerTaskConfirmation
 
 // ////////////////////////////////////////////////////////////////////////////
 //
-// Command from dalilah to controller
+// Command from Delilah to controller
 //
 message Command
 {
-	optional string command           = 1;          // optimal string to send a txt command
-	optional bool   error             = 2;          // Flag to indicat if there was an error
-	optional int32  sender_id         = 3;          // Id of the packet sender ( delilah )
+	optional string  command   = 1;          // optimal string to send a txt command
+	optional bool    error     = 2;          // Flag to indicat if there was an error
+	optional int32   sender_id = 3;          // Id of the packet sender ( delilah )
 }
 
-// response from controller to dalilah
 
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Response message from Controller to Delilah
+//
 message CommandResponse
 {
-	required string response          = 1;          // Answer for the command
-	required bool  error              = 2;          // Flag to indicat if there was an error
-	required bool  finish		  = 3;		// Flag to indicate if the command is finished ( with or without error)	
+	required string  response    = 1;   // Answer for the command
+	required bool    error       = 2;   // Flag to indicat if there was an error
+	required bool    finish      = 3;   // Flag to indicate if the command is finished ( with or without error)
 
-	optional int32  sender_id         = 4;          // Id of the packet sender ( delilah )
+	optional int32   sender_id   = 4;   // Id of the packet sender ( delilah )
 }
 
 
@@ -116,8 +161,8 @@ message CommandResponse
 //
 message Data
 {
-	required int64 task_id		= 1;		// Identifier of the controller task
-	required string queue		= 2;		// Name of the queue where we store information
+	required int64   task_id   = 1;  // Identifier of the controller task
+	required string  queue     = 2;  // Name of the queue where we store information
 }
 
 
@@ -181,5 +226,3 @@ message Message
 	optional Data 			        data                      = 107;  // Exchange of data packets between nodes     
 	optional WorkerStatus		    worker_status             = 108;  // Status of a worker ( sent to controller )
 }
-
-

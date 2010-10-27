@@ -15,7 +15,7 @@
 #include "networkTraceLevels.h" // LMT_*
 
 #include "Endpoint.h"			// Endpoint
-#include "MsgHeader.h"          // MsgHeader
+#include "Message.h"            // ss::Message::MessageCode
 #include "Packet.h"				// Packet
 #include "iomInit.h"            // iomInit
 #include "iomServerOpen.h"      // iomServerOpen
@@ -38,48 +38,6 @@ namespace ss
 *
 * global vars ...
 */
-
-
-
-/* ****************************************************************************
-*
-* msgTypeName - 
-*/
-static char* msgTypeName(ss::network::Message_Type type)
-{
-	switch (type)
-	{
-	case ss::network::Message_Type_Hello:                       return (char*) "Hello";
-	case ss::network::Message_Type_WorkerVector:                return (char*) "WorkerVector";
-	case ss::network::Message_Type_WorkerTask:		            return (char*) "WorkerTask";
-	case ss::network::Message_Type_WorkerTaskConfirmation:		return (char*) "WorkerTaskConfirmation";
-	case ss::network::Message_Type_Command:				        return (char*) "Command";
-	case ss::network::Message_Type_CommandResponse:		        return (char*) "CommandResponse";
-	case ss::network::Message_Type_Data:						return (char*) "Data";
-	case ss::network::Message_Type_WorkerStatus:				return (char*) "WorkerStatus";
-	}
-
-	return (char*) "UnknownMsgType";
-}
-
-
-
-/* ****************************************************************************
-*
-* msgInfoName - 
-*/
-static char* msgInfoName(ss::network::Message_Info info)
-{
-	switch (info)
-	{
-	case ss::network::Message_Info_Msg:     return (char*) "Msg";
-	case ss::network::Message_Info_Evt:     return (char*) "Evt";
-	case ss::network::Message_Info_Ack:     return (char*) "Ack";
-	case ss::network::Message_Info_Nak:     return (char*) "Nak";
-	}
-
-	return (char*) "UnknownMsgInfo";
-}
 
 
 
@@ -247,18 +205,20 @@ void Network::ipSet(char* ip)
 *
 * helloSend - 
 */
-int Network::helloSend(int fd, char* name)
+int Network::helloSend(Endpoint* ep, Message::MessageType type)
 {
-	Packet req;
+	ss::Message::HelloData hello;
 
-	LM_T(LMT_WRITE, ("sending hello req (name: '%s', type: %s (%d))", me->name.c_str(), endpointTypeName(me->type), me->type));
+	strncpy(hello.name, me->name.c_str(), sizeof(hello.name));
+	strncpy(hello.ip,   me->ip.c_str(),   sizeof(hello.ip));
 
-	req.messageTypeSet(ss::network::Message_Type_Hello);
-	req.messageInfoSet(ss::network::Message_Info_Msg);
+	hello.type    = me->type;
+	hello.workers = me->workers;
+	hello.port    = me->port;
 
-	req.helloAdd((char*) me->name.c_str(), me->workers, me->type, (char*) me->ip.c_str(), me->port);
+	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s', type: %s (%d))", messageType(type), ep->name.c_str(), hello.name, endpointTypeName(hello.type), hello.type));
 
-	return iomMsgSend(fd, name, &req, progName, NULL, 0);
+	return iomMsgSend(ep->fd, ep->name.c_str(), me->name.c_str(), Message::Hello, type, &hello, sizeof(hello));
 }
 
 
@@ -452,20 +412,18 @@ std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 *
 * send - 
 */
-size_t Network::send(Packet* packetP, int endpointId, PacketSenderInterface* sender)
+size_t Network::send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, void* data, int dataLen, Packet* packetP)
 {
-	Endpoint*                  ep        = endpoint[endpointId];
-	ss::network::Message_Type  type      = packetP->message.type();
+	Endpoint* ep        = endpoint[endpointId];
 
 	if (ep == NULL)
 		LM_RE(-1, ("No endpoint at index %d", endpointId));
 	if (ep->state != Endpoint::Connected)
 		LM_RE(-1, ("Endpoint %d in state '%s'", endpointId, ep->stateName()));
 
-	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", msgTypeName(type), endpointId));
+	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", messageCode(code), endpointId));
 
-	packetP->message.set_info(ss::network::Message_Info_Msg);
-	int nb = iomMsgSend(ep->fd, (char*) ep->name.c_str(), packetP, (char*) me->name.c_str(), packetP->buffer.getDataPointer(), packetP->buffer.getLength());
+	int nb = iomMsgSend(ep->fd, ep->name.c_str(), me->name.c_str(), code, Message::Msg, data, dataLen, packetP, NULL, 0);
 
 	if (sender)
 		sender->notificationSent(0, true);
@@ -668,14 +626,18 @@ Endpoint* Network::endpointLookup(int fd, int* idP)
 */
 void Network::msgTreat(int fd, char* name)
 {
-	Packet    req;
-	Packet    ack;
-	int       s;
-	int       endpointId;
-	Endpoint* ep = endpointLookup(fd, &endpointId);
+	Packet                packet;
+	Packet                ack;
+	Message::MessageCode  msgCode;
+	Message::MessageType  msgType;
+	int                   s;
+	int                   endpointId;
+	Endpoint*             ep = endpointLookup(fd, &endpointId);
+	void*                 dataP;
+	int                   dataLen;
 
 	LM_T(LMT_SELECT, ("treating incoming message from '%s' (ep at %p)", name, ep));
-	s = iomMsgRead(fd, name, &req);
+	s = iomMsgRead(fd, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
 	if (s != 0)
 	{
 		LM_T(LMT_SELECT, ("iomMsgRead returned %d", s));
@@ -719,82 +681,58 @@ void Network::msgTreat(int fd, char* name)
 	}
 
 
-	ss::network::Message_Type  msgType = req.message.type();
-	ss::network::Message_Info  msgInfo = req.message.info();
-
-	LM_T(LMT_TREAT, ("Treating %s %s from %s", msgTypeName(msgType), msgInfoName(msgInfo), name));
-	switch (msgType)
+	LM_T(LMT_TREAT, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
+	switch (msgCode)
 	{
-	case ss::network::Message_Type_Hello:
-		char*                helloname;
-		int                  workers;
-		unsigned short       port;
-		char*                ip;
-		Endpoint::Type       epType;
+	case Message::Hello:
+		Endpoint*            helloEp;
+		Message::HelloData*  hello;
 
-		req.helloGet(&helloname, &workers, &epType, &ip, &port);
+		hello = (Message::HelloData*) dataP;
+
 		LM_T(LMT_HELLO, ("Got Hello %s from %s, type %s, %s:%d, workers: %d",
-						 msgInfoName(msgInfo), helloname, endpointTypeName(epType), ip, port, workers));
+						 messageType(msgType), hello->name, endpointTypeName(hello->type), hello->ip, hello->port, hello->workers));
 
-		endpointAdd(fd, helloname, workers, epType, ip, port);
+		helloEp = endpointAdd(fd, hello->name, hello->workers, hello->type, hello->ip, hello->port);
 		if (ep && ep->type == Endpoint::Temporal)
 			endpointRemove(ep);
 
-		if (msgInfo == ss::network::Message_Info_Msg)
-		{
-			LM_T(LMT_HELLO, ("sending Hello ack (name: '%s') - msg type: 0x%x, msg type: 0x%x",  me->name.c_str(),
-							 ss::network::Message_Type_Hello, ss::network::Message_Info_Ack));
-
-			ack.message.set_type(ss::network::Message_Type_Hello);
-			ack.message.set_info(ss::network::Message_Info_Ack);
-			ack.helloAdd((char*) me->name.c_str(), me->workers, me->type, (char*) me->ip.c_str(), me->port);
-
-			iomMsgSend(fd, helloname, &ack, progName, NULL, 0);
-		}
-
-		if (helloname) 
-			free(helloname);
-		if (ip)
-			free(ip);
+		if (msgType == Message::Msg)
+			helloSend(helloEp, Message::Ack);
 
 		if ((ep != NULL) && (ep == controller))
 		{
 			Packet packet;
 
 			// Ask controller for list of workers
-			packet.message.set_type(ss::network::Message_Type_WorkerVector);
-			packet.message.set_info(ss::network::Message_Info_Msg);
-
-			iomMsgSend(controller->fd, (char*) controller->name.c_str(), &packet, progName, NULL, 0);
+			iomMsgSend(controller->fd, (char*) controller->name.c_str(), (char*) me->name.c_str(), Message::WorkerVector, Message::Msg, NULL, 0, NULL, NULL, 0);
 		}
 		break;
 
-	case ss::network::Message_Type_WorkerVector:
+	case Message::WorkerVector:
 		LM_T(LMT_MSG, ("Got a WorkerVector message from '%s'", name));
 
-		if ((msgInfo == ss::network::Message_Info_Msg) && (me->type != Endpoint::Controller))
+		if ((msgType == Message::Msg) && (me->type != Endpoint::Controller))
 			LM_X(1, ("Got a WorkerVector request from '%s' but I'm not the controller ...", name));
 
-		if ((me->type == Endpoint::Controller) && (msgInfo == ss::network::Message_Info_Msg))
+		if ((me->type == Endpoint::Controller) && (msgType == Message::Msg))
 		{
-			ack.message.set_type(ss::network::Message_Type_WorkerVector);
-			ack.message.set_info(ss::network::Message_Info_Ack);
 			ack.endpointVectorAdd(endpointV);
 
 			LM_T(LMT_WRITE, ("sending ack with entire worker vector"));
-			iomMsgSend(fd, name, &ack, progName, NULL, 0);
+			iomMsgSend(fd, name, (char*) me->name.c_str(), Message::WorkerVector, Message::Ack, NULL, 0, &ack, NULL, 0);
 		}
-		else if (msgInfo == ss::network::Message_Info_Ack)
+		else if (msgType == Message::Ack)
 		{
 			LM_T(LMT_ENDPOINT, ("Got the worker vector from the Controller - now connect to them all ..."));
 
-			if (req.endpointVecSize() != Workers)
-				LM_X(1, ("bad size of worker vector (%d). Should be %d!", req.endpointVecSize(), Workers));
+			if (packet.endpointVecSize() != Workers)
+				LM_X(1, ("bad size of worker vector (%d). Should be %d!", packet.endpointVecSize(), Workers));
 
 			int ix;
-			for (ix = 0; ix < req.endpointVecSize(); ix++)
+			for (ix = 0; ix < packet.endpointVecSize(); ix++)
 			{
-				Endpoint  ep = Endpoint(req.endpointGet(ix));
+				Endpoint  ep = Endpoint(packet.endpointGet(ix));
 				Endpoint* epP;
 
 				if (endpoint[3 + ix] == NULL)
@@ -843,7 +781,8 @@ void Network::msgTreat(int fd, char* name)
 	default:
 		if (receiver == NULL)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
-		receiver->receive(&req, endpointId);
+
+		receiver->receive(msgCode, &packet, endpointId);
 		break;
 	}
 }
@@ -1034,10 +973,10 @@ void Network::run()
 					LM_P(("iomAccept(%d)", listener->fd));
 				else
 				{
-					std::string s = std::string("tmp:") + std::string(hostName);
+					std::string  s   = std::string("tmp:") + std::string(hostName);
+					Endpoint*    ep  = endpointAdd(fd, (char*) s.c_str(), 0, Endpoint::Temporal, (char*) "ip", 0);
 
-					endpointAdd(fd, (char*) s.c_str(), 0, Endpoint::Temporal, (char*) "ip", 0);
-					helloSend(fd, hostName);
+					helloSend(ep, Message::Msg);
 				}
 			}
 			else

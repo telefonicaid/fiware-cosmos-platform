@@ -5,6 +5,7 @@
 #include <vector>				// std::vector
 #include <sstream>				// std::ostringstream
 
+#include "Message.h"            // ss::Message::MessageCode
 #include "Delilah.h"			// ss:Delilah
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "SamsonController.h"	// ss:: SasonController
@@ -51,7 +52,7 @@ namespace ss {
 		
 		
 		// Send a packet (return a unique id to inform the notifier later)
-		virtual size_t send(Packet* packet, int toIdentifier, PacketSenderInterface* sender);
+		virtual size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
 		
 		// Main run loop control to the network interface
 		virtual void run();           

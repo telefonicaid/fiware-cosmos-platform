@@ -1,14 +1,18 @@
-#include <iostream>				// std::cout ...
+#include <iostream>                     // std::cout ...
 
-#include "logMsg.h"             // lmInit, LM_*
-#include "Macros.h"             // EXIT, ...
-#include "Packet.h"				// ss::Packet
-#include "Network.h"			// NetworkInterface
-#include "Endpoint.h"			// Endpoint
-#include "CommandLine.h"		// CommandLine
-#include "SamsonWorker.h"		// Own interfce
-#include "traces.h"				// Trace definition
+#include "logMsg.h"                     // lmInit, LM_*
+#include "traces.h"                     // Trace definition
+
+#include "Message.h"                    // Message
+#include "Macros.h"                     // EXIT, ...
+#include "Packet.h"                     // ss::Packet
+#include "Network.h"                    // NetworkInterface
+#include "Endpoint.h"                   // Endpoint
+#include "CommandLine.h"                // CommandLine
 #include "WorkerDataManager.h"
+#include "SamsonWorker.h"               // Own interfce
+
+
 
 namespace ss {
 
@@ -61,33 +65,33 @@ namespace ss {
 
 	void SamsonWorker::sendWorkerStatus()
 	{
-		Packet p( network::Message_Type_WorkerStatus );
-		network::WorkerStatus * w =p.message.mutable_worker_status();
-		
+		Packet                  p;
+		network::WorkerStatus*  w = p.message.mutable_worker_status();
+
 		// Fill with all data related to data
-		data.fillWorkerStatus( w );
+		data.fillWorkerStatus(w);
 		
 		// Fill to all data related with task manager
 		taskManager.fillWorkerStatus( w );
 		
-		network->send(&p, network->controllerGetIdentifier(), this);
-		
+		network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, NULL, 0, &p);
 	}
 		
 	void SamsonWorker::sentConfirmationToController(size_t task_id )
 	{
-		Packet p( network::Message_Type_WorkerTaskConfirmation );
-		network::WorkerTaskConfirmation * confirmation = p.message.mutable_worker_task_confirmation();
-		confirmation->set_task_id( task_id );
-		confirmation->set_error( false );
-		network->send(&p, network->controllerGetIdentifier(), this);
+		Packet                            p;
+		network::WorkerTaskConfirmation*  confirmation = p.message.mutable_worker_task_confirmation();
+
+		confirmation->set_task_id(task_id);
+		confirmation->set_error(false);
+
+		network->send(this, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, NULL, 0, &p);
 	}
 	
 	
-	void SamsonWorker::receive(Packet* p, int from)
+	void SamsonWorker::receive(Message::MessageCode msgCode, Packet* p, int from)
 	{
-		
-		if( p->message.type() == network::Message_Type_WorkerTask )
+		if (msgCode == Message::WorkerTask)
 		{
 			// A packet with a particular command is received ( controller expect to send a confirmation message )
 			

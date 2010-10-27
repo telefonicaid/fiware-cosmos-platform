@@ -13,10 +13,8 @@
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_NWRUN, ...
 
-#include "Endpoint.h"           // Endpoint
+#include "Message.h"            // MessageType, Code, etc.
 #include "Packet.h"             // Packet
-#include "MsgHeader.h"          // MsgHeader
-#include "iomConnect.h"         // iomConnect
 #include "iomMsgRead.h"         // Own interface
 
 
@@ -25,57 +23,73 @@
 *
 * iomMsgRead - read a message from an endpoint
 */
-int iomMsgRead(int fd, char* name, ss::Packet* packetP, void* data, int dataLen)
+int iomMsgRead
+(
+	int                        fd,
+	char*                      from,
+	ss::Message::MessageCode*  msgCodeP,
+	ss::Message::MessageType*  msgTypeP,
+	void**                     dataPP,
+	int*                       dataLenP,
+	ss::Packet*                packetP,
+	void*                      kvData,
+	int*                       kvDataLenP
+)
 {
-	int        nb;
-	MsgHeader  header;
-
+	int                  nb;
+	ss::Message::Header  header;
+	
     nb = read(fd, &header, sizeof(header));
 	
 	if (nb == -1)
-		LM_RE(1, ("reading header from '%s'", name));
+		LM_RE(1, ("reading header from '%s'", from));
 
 	if (nb == 0)
 	{
-		LM_T(LMT_READ, ("read 0 bytes from '%s' - connection closed", name));
+		LM_T(LMT_READ, ("read 0 bytes from '%s' - connection closed", from));
 		return -2;
 	}
 
-	LM_T(LMT_READ, ("read %d bytes from '%s' (fd %d)", nb, name, fd));
-	LM_READS(name, "message header", &header, sizeof(header), LmfByte);
+	LM_T(LMT_READ, ("read %d bytes from '%s' (fd %d)", nb, from, fd));
+	LM_READS(from, "message header", &header, sizeof(header), LmfByte);
 
-	if (header.headerLen == 0)
-		LM_W(("Got a message from '%s' with ZERO header len ...", name));
-	else
+	if (header.dataLen != 0)
 	{
 		int   nb;
-		char* buffer;
 
-		buffer = (char*) malloc(header.headerLen);
-		if (buffer == NULL)
-			LM_X(1, ("malloc(%d)", header.headerLen));
+		*dataPP = (char*) malloc(header.dataLen);
+		if (*dataPP == NULL)
+			LM_X(1, ("malloc(%d)", header.dataLen));
 
-		LM_T(LMT_READ, ("reading %d bytes Google Protocol Buffer", header.headerLen));
-		nb = read(fd, buffer, header.headerLen);
+		LM_T(LMT_READ, ("reading %d bytes of primary message data", header.dataLen));
+		nb = read(fd, *dataPP, header.dataLen);
 		if (nb == -1)
-			LM_RP(1, ("read(%d bytes from '%s'", header.headerLen,  name));
+			LM_RP(1, ("read(%d bytes from '%s'", header.dataLen,  from));
 
-		LM_T(LMT_READ, ("read %d bytes from '%s'", nb, name));
-		LM_READS(name, "protocol buffer", buffer, nb, LmfByte);
-
-		if (packetP->message.ParseFromArray(buffer, nb) == false)
-			LM_X(1, ("ParseFromString failed!"));
+		LM_T(LMT_READ, ("read %d bytes from '%s'", nb, from));
+		LM_READS(from, "primary data", *dataPP, nb, LmfByte);
 	}
 
-	if (header.dataLen == 0)
-		return 0;
+	if (header.gbufLen != 0)
+	{
+		void* dataP = (void*)  malloc(header.gbufLen);
 
-#if 0
-	LM_T(LMT_READ, ("reading %d bytes data", header.dataLen));
+		if (dataP == NULL)
+			LM_X(1, ("malloc(%d)", header.gbufLen));
 
-	LM_T(LMT_READ, ("read %d bytes from '%s'", nb, name));
-	LM_READS(name, "KV data", buffer, nb, LmfByte);
-#endif
-	
+        LM_T(LMT_READ, ("reading %d bytes of google protocol buffer data", header.gbufLen));
+        nb = read(fd, dataP, header.gbufLen);
+        if (nb == -1)
+			LM_RP(1, ("read(%d bytes from '%s')", header.gbufLen, from));
+
+		if (packetP->message.ParseFromArray(dataP, nb) == false)
+			LM_X(1, ("ParseFromString failed!"));
+
+		LM_READS(from, "google protocol buffer", dataP, nb, LmfByte);
+	}
+
+	if (header.kvDataLen != 0)
+		LM_X(1, ("Sorry, will not read KV data form '%s' - not implemented", from));
+
 	return 0;
 }	

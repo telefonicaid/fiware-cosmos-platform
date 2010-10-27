@@ -13,14 +13,5 @@
 
 
 
-/* ****************************************************************************
-*
-* MsgHeader - 
-*/
-typedef struct MsgHeader
-{
-	unsigned int headerLen;
-	unsigned int dataLen;
-} MsgHeader;
 
 #endif

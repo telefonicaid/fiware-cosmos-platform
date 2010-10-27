@@ -122,7 +122,7 @@ namespace ss {
 		{
 			// We look the endpoint worker id and use that to send the packet
 			NetworkFake* network = getNetwork( p->to  );
-			network->receiver->receive(&p->packet, p->from );
+			network->receiver->receive(Message::Hello, &p->packet, p->from);
 		}
 		
 		

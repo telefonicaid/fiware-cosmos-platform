@@ -2,6 +2,7 @@
 
 #include "logMsg.h"                     // lmInit, LM_*
 
+#include "Message.h"                    // Message
 #include "Macros.h"                     // EXIT, ...
 #include "Packet.h"				        // ss::Packet
 #include "Network.h"			        // NetworkInterface
@@ -63,13 +64,11 @@ namespace ss {
 		data.initDataManager( data.getLogFileName() );			// Init the data manager
 		network->run();											// Run the network interface (blocked)
 	}
-	
-	void SamsonController::receive( Packet *p , int fromIdentifier )
+
+	void SamsonController::receive(Message::MessageCode msgCode, Packet* p, int fromIdentifier)
 	{
-		
-		if( p->message.type() == network::Message_Type_Command )
+		if (msgCode == Message::Command)
 		{
-			
 			au::CommandLine cmdLine;
 			cmdLine.parse( p->message.command().command() );
 			std::ostringstream output;					// General output string buffer
@@ -108,7 +107,7 @@ namespace ss {
 		
 		// A confirmation from a worker is received
 		
-		if( p->message.type() == network::Message_Type_WorkerTaskConfirmation )
+		if (msgCode == Message::WorkerTaskConfirmation)
 		{
 			taskManager.notifyWorkerConfirmation( fromIdentifier , p->message.worker_task_confirmation() );			
 			return;
@@ -116,13 +115,12 @@ namespace ss {
 		
 		
 		// Status update from a worker
-		if( p->message.type() == network::Message_Type_WorkerStatus )
+		if (msgCode == Message::WorkerStatus)
 		{
 			int worker = network->getWorkerFromIdentifier( fromIdentifier );
 			
-			if( worker != -1 )	// Valid worker
+			if (worker != -1)	// Valid worker
 				status[worker] = p->message.worker_status();
-			
 		}
 		
 	}
@@ -179,7 +177,7 @@ namespace ss {
 	void SamsonController::sendDalilahAnswer( size_t sender_id , int dalilahIdentifier , bool error , bool finished, std::string answer_message )
 	{
 		// Get status of controller
-		Packet p2( network::Message_Type_CommandResponse );
+		Packet p2;
 		
 		network::CommandResponse *response = p2.message.mutable_command_response();
 		response->set_response( answer_message );
@@ -187,7 +185,7 @@ namespace ss {
 		response->set_finish( finished );
 		response->set_sender_id( sender_id );
 		
-		network->send(&p2, dalilahIdentifier , this);
+		network->send(this, dalilahIdentifier, Message::CommandResponse, NULL, 0, &p2);
 	}
 	
 	void SamsonController::sendWorkerTasks( ControllerTask *task )
@@ -201,13 +199,13 @@ namespace ss {
 	{
 		
 		// Get status of controller
-		Packet p2( network::Message_Type_WorkerTask );
+		Packet p2;
 		
 		network::WorkerTask *t = p2.message.mutable_worker_task();
 		t->set_command( command );
 		t->set_task_id( task_id );
 		
-		network->send(&p2, workerIdentifier, this);
+		network->send(this, workerIdentifier, Message::WorkerTask, NULL, 0, &p2);
 	}
 	
 	

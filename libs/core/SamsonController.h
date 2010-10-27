@@ -52,7 +52,7 @@ namespace ss {
 		void run();
 		
 		// PacketReceiverInterface
-		void receive( Packet *p , int fromIdentifier );
+		void receive(Message::MessageCode msgCode, Packet* p, int fromIdentifier);
 		
 		// PacketSenderInterface
 		virtual void notificationSent( size_t id , bool success );

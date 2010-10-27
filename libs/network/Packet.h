@@ -78,25 +78,10 @@ namespace ss {
 	
 		Packet() {};
 
-		Packet(ss::network::Message_Type type)
-		{
-			message.set_type(type);
-		}
-		
-		
-		void      messageTypeSet(ss::network::Message_Type type);
-		int       messageTypeGet();
-
-		void      messageInfoSet(ss::network::Message_Info info);
-		int       messageInfoGet();
-		
 		void      endpointAdd(Endpoint* e);
 		Endpoint  endpointGet(int i);
 		void      endpointVectorAdd(std::vector<Endpoint>& es);
 		int       endpointVecSize(void);
-
-		void      helloAdd(char*  name, int  connectedWorkers, Endpoint::Type  type, char*   ip = NULL, unsigned short  port = 0);
-		void      helloGet(char** name, int* connectedWorkers, Endpoint::Type* typeP, char** ip,        unsigned short* port);
 
 		/**
 		 Debug string with information about the packet

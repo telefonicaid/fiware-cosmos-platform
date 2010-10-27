@@ -22,50 +22,6 @@ namespace ss
 
 /* ****************************************************************************
 *
-* messageTypeSet - 
-*/
-void Packet::messageTypeSet(ss::network::Message_Type type)
-{
-	message.set_type(type);
-}
-	
-
-
-/* ****************************************************************************
-*
-* messageTypeGet - 
-*/
-int Packet::messageTypeGet()
-{
-	return message.type();
-}
-
-	
-
-/* ****************************************************************************
-*
-* messageInfoSet - 
-*/
-void Packet::messageInfoSet(ss::network::Message_Info info)
-{
-	message.set_info(info);
-}
-	
-
-
-/* ****************************************************************************
-*
-* messageInfoGet - 
-*/
-int Packet::messageInfoGet()
-{
-	return message.info();
-}
-
-	
-
-/* ****************************************************************************
-*
 * endpointAdd - 
 */
 void Packet::endpointAdd(Endpoint* ep)
@@ -124,44 +80,6 @@ Endpoint Packet::endpointGet(int i)
 	Endpoint ep((ss::Endpoint::Type) e.type(), std::string("noname"), e.ip(), e.port(), -1);
 
 	return ep;
-}
-
-
-
-/* ****************************************************************************
-*
-* helloAdd - 
-*/
-void Packet::helloAdd(char* name, int connectedWorkers, Endpoint::Type type, char* ip, unsigned short port)
-{
-	ss::network::Hello* hP = message.mutable_hello();
-
-	hP->set_name(name);
-	hP->set_workers(connectedWorkers);
-	hP->set_type(type);
-
-	if (port != 0)
-		hP->set_port(port);
-
-	if (ip != NULL)
-		hP->set_ip(ip);
-}
-
-
-
-/* ****************************************************************************
-*
-* helloGet - 
-*/
-void Packet::helloGet(char** nameP, int* connectedWorkersP, Endpoint::Type* typeP, char** ipP, unsigned short* portP)
-{
-	ss::network::Hello hello = message.hello();
-
-	*nameP             = strdup(hello.name().c_str());
-	*connectedWorkersP = hello.workers();
-	*typeP             = (Endpoint::Type) hello.type();
-	*ipP               = strdup(hello.ip().c_str());
-	*portP             = hello.port();
 }
 
 

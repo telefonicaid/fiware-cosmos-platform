@@ -1,4 +1,5 @@
 SET (HEADERS
+	Message.h
 	samson.pb.h
 	Network.h
 	NetworkInterface.h
@@ -15,6 +16,7 @@ SET (HEADERS
 )
 
 SET (SOURCES
+	Message.cpp
 	samson.pb.cc
 	Network.cpp
 	Packet.cpp

@@ -3,6 +3,7 @@
 #include "logMsg.h"             // lmInit, LM_*
 
 #include "Macros.h"             // EXIT, ...
+#include "Message.h"            // Message::MessageCode, ...
 #include "Packet.h"				// ss::Packet
 #include "Network.h"			// NetworkInterface
 #include "Endpoint.h"			// Endpoint
@@ -57,15 +58,15 @@ namespace ss {
 	
 	size_t Delilah::sendMessageToController( std::string message )
 	{
-		Packet p( network::Message_Type_Command );
-		
+		Packet p;
+
 		network::Command * command = p.message.mutable_command();
 		command->set_sender_id( local_id++ );
 		command->set_command( message );
 		
-		network->send(&p, network->controllerGetIdentifier(), this);
+		network->send(this, network->controllerGetIdentifier(), Message::Command, NULL, 0, &p);
 		
-		return (local_id-1);
+		return (local_id - 1);
 	}
 	
 	void Delilah::receivedMessage( size_t id , bool error , bool finished , std::string message )
@@ -89,17 +90,16 @@ namespace ss {
 	}
 	
 
-	void Delilah::receive(Packet* p, int from)
+	void Delilah::receive(Message::MessageCode msgCode, Packet* p, int from)
 	{
-		
-		if( p->message.type() == network::Message_Type_CommandResponse )
+		if (msgCode == Message::CommandResponse)
 		{
 			std::string message = p->message.command_response().response();
 			bool error = p->message.command_response().error();
 			bool finish = p->message.command_response().finish();
 			size_t id = p->message.command_response().sender_id();
 			
-			receivedMessage( id , error,finish, message );
+			receivedMessage(id, error, finish, message);
 		}
 	}
 	

@@ -1,7 +1,18 @@
 #ifndef _H_NETWORK_INTERFACE
 #define _H_NETWORK_INTERFACE
 
+/* ****************************************************************************
+*
+* FILE                     NetworkInterface.h - network interface
+*
+*/
+#include "Message.h"            // ss::Message::MessageCode
+
+
+
 namespace ss {
+
+
 
 	class Packet;
 	
@@ -14,7 +25,7 @@ namespace ss {
 	public:
 		
 		// Notify that a nessage has been received
-		virtual void receive(Packet* packet, int from) = 0;
+		virtual void receive(Message::MessageCode msgCode, Packet* packet, int from) = 0;
 		
 		virtual ~PacketReceiverInterface() {};
 	};
@@ -65,7 +76,7 @@ namespace ss {
 		virtual int getWorkerFromIdentifier( int identifier) = 0;
 		
 		// Send a packet (return a unique id to inform the notifier later)
-		virtual size_t send(Packet* packet, int endpointId, PacketSenderInterface* sender)=0;
+		virtual size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, void* data, int dataLen, Packet* packetP) = 0;
 
 		// Main run loop control to the network interface
 		virtual void run()=0;           

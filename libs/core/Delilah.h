@@ -9,15 +9,17 @@
 *
 */
 #include <iostream>				// std::cout
+
 #include "logMsg.h"             // lmInit, LM_*
+
 #include "Macros.h"             // EXIT, ...
 #include "Network.h"			// NetworkInterface
+#include "Message.h"            // Message::MessageCode
 #include "Endpoint.h"			// Endpoint
 #include "CommandLine.h"		// au::CommandLine
 #include "CommandLine.h"		// au::CommandLine
 #include "DelilahConsole.h"		// ss::DelilahConsole
 #include "traces.h"				// TRACE_DALILAH
-
 
 
 
@@ -108,7 +110,7 @@ namespace ss {
 		
 		
 		// PacketReceiverInterface
-		virtual void receive(Packet* packet, int from);
+		virtual void receive(Message::MessageCode msgCode, Packet* packet, int from);
 
 		// PacketSenderInterface
 		virtual void notificationSent(size_t id, bool success);

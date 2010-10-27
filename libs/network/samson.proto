@@ -2,21 +2,6 @@ package ss.network;
 
 // ////////////////////////////////////////////////////////////////////////////
 //
-// Hello data
-//
-message Hello
-{
-	required sint32  type    = 1;    // enum Endpoint::Type
-	optional sint32  port    = 2;    // Listen port
-	required sint32  workers = 3;    // Number of workers connected to endpoint
-	required string  name    = 4;    // The name of the endpoint
-	required string  ip      = 5;    // IP address
-}
-
-
-
-// ////////////////////////////////////////////////////////////////////////////
-//
 // EndPoint data
 //
 message EndPoint
@@ -173,27 +158,6 @@ message Data
 //
 message Message
 {
-	enum Type
-	{
-		Hello			        = 1;
-		WorkerVector            = 2;
-		Command 		        = 3;
-		CommandResponse         = 4;
-		WorkerTask 		        = 5;
-		WorkerTaskConfirmation 	= 6;
-		Data			        = 7;		// Data packet exchanged between workers during an operation
-		WorkerStatus		    = 8;		// Status sent from workers to controller to report status
-	};
-
-	enum Info
-	{
-		Msg	   = 0x4d;
-		Evt    = 0x45;
-		Ack    = 0x41;
-		Nak    = 0x4e;
-	};
-
-
 	enum Sender
 	{
 		Worker     = 0x57;
@@ -204,20 +168,8 @@ message Message
 
 	// ////////////////////////////////////////////////////////////////////////////
 	//
-	// Message Header
-	//
-	required Type    type       = 1;
-	required Info    info       = 2;
-	optional Sender  sender     = 3;
-	required string  sendername = 4;
-
-
-
-	// ////////////////////////////////////////////////////////////////////////////
-	//
 	// Message Data (only one of these structures per message
 	//
-	optional Hello                  hello     	              = 101;  // Hello message
 	optional EndPointVector         endPoints                 = 102;  // Vector of endPoints
 	optional Command                command	              	  = 103;  // Command message
 	optional CommandResponse        command_response 		  = 104;  // Command response message

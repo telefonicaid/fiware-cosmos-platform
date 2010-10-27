@@ -50,7 +50,7 @@ namespace ss {
 		void test();
 		
 		// PacketReceiverInterface
-		virtual void receive(Packet* packet, int from);
+		virtual void receive(Message::MessageCode msgCode, Packet* packet, int from);
 
 		// PacketSenderInterface
 		virtual void notificationSent(size_t id, bool success);

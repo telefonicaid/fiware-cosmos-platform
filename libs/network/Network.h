@@ -1,20 +1,25 @@
+#ifndef _H_NETWORK
+#define _H_NETWORK
+
 /* ****************************************************************************
 *
 * FILE                     Network.h - Definition for the network interface
 *
 */
-
-#pragma once
-
 #include <cstring>				// size_t
 #include <vector>				// vector
 
 #include "Endpoint.h"			// Endpoint
+#include "Message.h"            // ss::Message::MessageCode
 #include "NetworkInterface.h"	// ss:NetworkInterface 
+
+
 
 #define WORKERS       5
 #define DELILAHS     20
 #define TEMPORALS    20
+
+
 
 namespace ss {
 
@@ -63,7 +68,7 @@ public:
 	virtual int getWorkerFromIdentifier(int identifier);
 
 	// Send a packet (return a unique id to inform the notifier later)
-	virtual size_t send(Packet* packet, int endpointId, PacketSenderInterface* sender);
+	virtual size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
 	
 	std::vector<Endpoint*> samsonWorkerEndpoints();  // Get a list of the samsonWorkers endpoints
 
@@ -94,8 +99,10 @@ private:
 
 	void msgTreat(int fd, char* name);
 	void checkInitDone(void);
-	int  helloSend(int fd, char* name);
+	int  helloSend(Endpoint* ep, Message::MessageType type);
 };
 
 	
 }
+
+#endif

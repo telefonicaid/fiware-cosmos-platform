@@ -17,7 +17,7 @@
 namespace ss {
 
 
-	SamsonWorker::SamsonWorker(int argc, const char* argv[] , NetworkInterface *_network) : data( this ) , taskManager( this )
+	SamsonWorker::SamsonWorker(int argc, const char* argv[], NetworkInterface *_network) : data(this), taskManager(this)
 	{
 		network = _network;
 		network->setPacketReceiverInterface(this);
@@ -31,7 +31,7 @@ namespace ss {
 		commandLine.parse(argc, argv);
 		
 		commandLine.set_flag_int("port",           SAMSON_WORKER_DEFAULT_PORT);
-		commandLine.set_flag_string("controller" , "no_controller");
+		commandLine.set_flag_string("controller", "no_controller");
 		commandLine.set_flag_string("t",           "255");
 		commandLine.set_flag_boolean("r");
 		commandLine.set_flag_boolean("w");
@@ -49,17 +49,17 @@ namespace ss {
 			exit(0);
 		}
 		
-		LM_T( TRACE_SAMSON_WORKER , ("Samson worker running at port %d controller: %s", port , controller.c_str() ));
+		LM_T(TRACE_SAMSON_WORKER, ("Samson worker running at port %d controller: %s", port, controller.c_str()));
 		
-		network->initAsSamsonWorker( port , controller );
+		network->initAsSamsonWorker(port, controller);
 	}	
 	
 	void SamsonWorker::run()
 	{
 		// Init the data manager
-		data.initDataManager( data.getLogFileName() );
+		data.initDataManager(data.getLogFileName());
 		
-		assert( network );
+		assert(network);
 		network->run();
 	}
 
@@ -72,12 +72,12 @@ namespace ss {
 		data.fillWorkerStatus(w);
 		
 		// Fill to all data related with task manager
-		taskManager.fillWorkerStatus( w );
+		taskManager.fillWorkerStatus(w);
 		
 		network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, NULL, 0, &p);
 	}
 		
-	void SamsonWorker::sentConfirmationToController(size_t task_id )
+	void SamsonWorker::sentConfirmationToController(size_t task_id)
 	{
 		Packet                            p;
 		network::WorkerTaskConfirmation*  confirmation = p.message.mutable_worker_task_confirmation();
@@ -89,34 +89,31 @@ namespace ss {
 	}
 	
 	
-	void SamsonWorker::receive(Message::MessageCode msgCode, Packet* p, int from)
+	void SamsonWorker::receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet)
 	{
 		if (msgCode == Message::WorkerTask)
 		{
-			// A packet with a particular command is received ( controller expect to send a confirmation message )
-			
-			// Process the command in the data manager ( rigth now this is just to test )
-			data.beginTask( p->message.worker_task().task_id() );
-			
-			data.runOperationOfTask(p->message.worker_task().task_id() , p->message.worker_task().command() );
+			// A packet with a particular command is received (controller expect to send a confirmation message)
 
-			if( taskManager.addTask( p->message.worker_task() ) )
+			// Process the command in the data manager (right now this is just to test)
+			data.beginTask(packet->message.worker_task().task_id());
+
+			data.runOperationOfTask(packet->message.worker_task().task_id(), packet->message.worker_task().command());
+
+			if(taskManager.addTask(packet->message.worker_task()))
 			{
-				data.finishTask( p->message.worker_task().task_id() );
+				data.finishTask(packet->message.worker_task().task_id());
 			
 				// Sent a confirmation just to test everything is ok
-				sentConfirmationToController( p->message.worker_task().task_id() );
+				sentConfirmationToController(packet->message.worker_task().task_id());
 				
 				// Send a update
 				sendWorkerStatus();
-				
 			}
-				
 		}
-		
 	}
 
-	void SamsonWorker::notificationSent( size_t id , bool success )
+	void SamsonWorker::notificationSent(size_t id, bool success)
 	{
 		// Do something
 	}

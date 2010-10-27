@@ -46,6 +46,8 @@ class Network : public NetworkInterface
 public:
 	Network();
 		
+	Endpoint* endpointLookup(int ix);
+
 	void setPacketReceiver(PacketReceiverInterface* receiver);
 
 	virtual void initAsSamsonController(int port, std::vector<std::string> peers);

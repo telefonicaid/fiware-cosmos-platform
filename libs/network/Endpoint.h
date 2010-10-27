@@ -10,7 +10,7 @@
 */
 #include <string>	        // std::string...
 
-
+#include "workerStatus.h"   // Message::WorkerStatusData
 
 namespace ss {
 
@@ -41,14 +41,15 @@ public:
 	} Type;
 
 public:
-	std::string     name;
-	std::string     hostname;
-	std::string     ip;
-	int             fd;
-	unsigned short  port;
-	State           state;
-	int             workers;
-	Type            type;
+	std::string                  name;
+	std::string                  hostname;
+	std::string                  ip;
+	int                          fd;
+	unsigned short               port;
+	State                        state;
+	int                          workers;
+	Type                         type;
+	Message::WorkerStatusData*   status;
 
 	char*           stateName(void);
 	void            reset();

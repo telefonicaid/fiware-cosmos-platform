@@ -25,7 +25,7 @@ namespace ss {
 	public:
 		
 		// Notify that a nessage has been received
-		virtual void receive(Message::MessageCode msgCode, Packet* packet, int from) = 0;
+		virtual void receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet) = 0;
 		
 		virtual ~PacketReceiverInterface() {};
 	};
@@ -70,7 +70,8 @@ namespace ss {
 		virtual int workerGetIdentifier(int i)=0;		// Get the identifier of the i-th worker
 		virtual int getMyidentifier()=0;				// Get my identifier
 		virtual int getNumWorkers()=0;					// Get the number of workers
-		
+		virtual Endpoint* endpointLookup(int ix) { return NULL; }  // Get an endpoint
+
 		// Get the "worker cardinal" from the idenfitier
 		// This method should return a value between 0 and (num_workers-1) or -1 if the identifier provided is not related to any workers
 		virtual int getWorkerFromIdentifier( int identifier) = 0;

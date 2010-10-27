@@ -61,6 +61,7 @@ int iomMsgSend
 		ioVec[vecs].iov_base  = data;
 		ioVec[vecs].iov_len   = dataLen;
 		
+		LM_WRITES(to, "data", ioVec[vecs].iov_base, ioVec[vecs].iov_len, LmfByte);
 		++vecs;
 	}
 
@@ -80,6 +81,7 @@ int iomMsgSend
 		ioVec[vecs].iov_base  = outputVec;
 		ioVec[vecs].iov_len   = packetP->message.ByteSize();
 
+		LM_WRITES(to, "google pbuffer", ioVec[vecs].iov_base, ioVec[vecs].iov_len, LmfByte);
 		++vecs;
 	}
 
@@ -92,8 +94,12 @@ int iomMsgSend
 		ioVec[vecs].iov_base  = kvData;
 		ioVec[vecs].iov_len   = kvDataLen;
 		
+		LM_WRITES(to, "KV data", ioVec[vecs].iov_base, ioVec[vecs].iov_len, LmfByte);
 		++vecs;
 	}
+
+	LM_T(LMT_MSG, ("Sending '%s' %s to '%s', data bytes: { data: %d, gbuf: %d, kv: %d }",
+				   messageCode(code), messageType(type), to, header.dataLen, header.gbufLen, header.kvDataLen));
 
 	s = writev(fd, ioVec, vecs);
 	if (s == -1)

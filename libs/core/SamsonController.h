@@ -20,8 +20,9 @@
 #include "ControllerTaskManager.h"		// ss::ControllerTaskManager
 #include "traces.h"						// LMT_CONFIG, ...
 #include "samson.pb.h"					// network::...
+#include "workerStatus.h"               // Message::WorkerStatusData
+#include "Message.h"                    // Message::WorkerStatus, ...
 
-//#define LMT_CONFIG    22
 
 
 namespace ss {
@@ -41,7 +42,7 @@ namespace ss {
 		ControllerTaskManager taskManager;				// Task manager of the controller
 		
 		// Status information of the workers
-		network::WorkerStatus status[ 100 ];			// Status update from all workers
+		Message::WorkerStatusData status[100];		    // Status update from all workers
 		
 		friend class ControllerTaskManager;
 		
@@ -52,7 +53,7 @@ namespace ss {
 		void run();
 		
 		// PacketReceiverInterface
-		void receive(Message::MessageCode msgCode, Packet* p, int fromIdentifier);
+		void receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet);
 		
 		// PacketSenderInterface
 		virtual void notificationSent( size_t id , bool success );

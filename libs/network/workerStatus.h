@@ -10,8 +10,11 @@
 */
 
 
-namespace ss {
+namespace ss
+{
 
+namespace Message
+{
 
 
 /* ****************************************************************************
@@ -95,13 +98,13 @@ typedef struct NetIfInfo
 
 /* ****************************************************************************
 *
-* WorkerStatus
+* WorkerStatusData
 */
-typedef struct WorkerStatus
+typedef struct WorkerStatusData
 {
 	CpuInfo    cpuInfo;
 	NetIfInfo  netInfo;
-} WorkerStatus;
+} WorkerStatusData;
 
 
 
@@ -109,8 +112,9 @@ typedef struct WorkerStatus
 *
 * workerStatus
 */
-extern void workerStatus(WorkerStatus* wsP);
+extern void workerStatus(WorkerStatusData* wsP);
 
+}
 }
 
 #endif

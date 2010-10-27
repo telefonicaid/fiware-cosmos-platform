@@ -121,8 +121,10 @@ namespace ss {
 		void processPendingPacket(NetworkFakeCenterPacket *p)
 		{
 			// We look the endpoint worker id and use that to send the packet
-			NetworkFake* network = getNetwork( p->to  );
-			network->receiver->receive(Message::Hello, &p->packet, p->from);
+			// NetworkFake* network = getNetwork(p->to);
+			// network->receiver->receive( ... );
+
+			LM_X(1, ("This call to receive must be reimplemented after last changes by KZ. Sorry ... !"));
 		}
 		
 		

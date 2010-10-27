@@ -24,7 +24,7 @@
 #include "iomMsgSend.h"         // iomMsgSend
 #include "iomMsgRead.h"         // iomMsgRead
 #include "iomMsgAwait.h"        // iomMsgAwait
-#include "workerStatus.h"       // workerStatus, WorkerStatus
+#include "workerStatus.h"       // workerStatus, WorkerStatusData
 #include "Network.h"			// Own interface
 
 
@@ -352,8 +352,6 @@ int Network::workerGetIdentifier(int nthWorker)
 */
 int Network::getWorkerFromIdentifier(int identifier)
 {
-	LM_X(1, ("IN"));
-
 	return identifier - 3;
 }
 
@@ -600,6 +598,17 @@ void Network::endpointRemove(Endpoint* ep)
 *
 * endpointLookup - 
 */
+Endpoint* Network::endpointLookup(int ix)
+{
+	return endpoint[ix];
+}
+
+
+
+/* ****************************************************************************
+*
+* endpointLookup - 
+*/
 Endpoint* Network::endpointLookup(int fd, int* idP)
 {
 	unsigned int ix = 0;
@@ -642,6 +651,9 @@ void Network::msgTreat(int fd, char* name)
 	void*                 dataP;
 	int                   dataLen;
 
+	if (ep == NULL)
+		LM_X(1, ("endpoint not found for fd %d", fd));
+
 	LM_T(LMT_SELECT, ("treating incoming message from '%s' (ep at %p)", name, ep));
 	s = iomMsgRead(fd, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
 	if (s != 0)
@@ -651,7 +663,7 @@ void Network::msgTreat(int fd, char* name)
 		if (s == -2) /* Connection closed */
 		{
 			LM_T(LMT_SELECT, ("Connection closed - ep at %p", ep));
-			if ((ep != NULL) && (ep == controller))
+			if (ep == controller)
 			{
 				LM_W(("controller died ... trying to reconnect !"));
 
@@ -720,8 +732,6 @@ void Network::msgTreat(int fd, char* name)
 		break;
 
 	case Message::WorkerVector:
-		LM_T(LMT_MSG, ("Got a WorkerVector message from '%s'", name));
-
 		if ((msgType == Message::Msg) && (me->type != Endpoint::Controller))
 			LM_X(1, ("Got a WorkerVector request from '%s' but I'm not the controller ...", name));
 
@@ -788,11 +798,26 @@ void Network::msgTreat(int fd, char* name)
 		}
 		break;
 
+	case Message::WorkerStatus:
+		if ((me->type != Endpoint::Controller) && (msgType == Message::Msg))
+			LM_X(1, ("Non-controller got a WorkerStatus message"));
+
+		if (ep->status == NULL)
+		{
+			ep->status = (Message::WorkerStatusData*) malloc(sizeof(Message::WorkerStatusData));
+			if (ep->status == NULL)
+				LM_XP(1, ("malloc(WorkerStatusData"));
+			memcpy(ep->status, dataP, sizeof(Message::WorkerStatusData));
+			LM_T(LMT_STAT, ("endpoint '%s' has %d cores", ep->name.c_str(), ep->status->cpuInfo.cores));
+		}
+		break;
+
 	default:
 		if (receiver == NULL)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
 
-		receiver->receive(msgCode, &packet, endpointId);
+		LM_T(LMT_MSG, ("forwarding '%s' %s to %s", messageCode(msgCode), messageType(msgType), ep->name.c_str()));
+		receiver->receive(endpointId, msgCode, dataP, dataLen, &packet);
 		break;
 	}
 }
@@ -823,17 +848,10 @@ void Network::run()
 				now = time(NULL);
 				if (now - then > 1)
 				{
-					then = now;
-#if 0
-					packetP->message.set_info(ss::network::Message_Info_Msg);
-					packetP->message.set_type(ss::network::Message_Type_WorkerStatus);
-					
-					ss::network::WorkerStatus* sP = message.mutable_workerstatus();
-					sP->cores = 8;
-#else
-					WorkerStatus ws;
-					int          ix;
+					Message::WorkerStatusData ws;
+					int                       ix;
 
+					then = now;
 					workerStatus(&ws);
 
 					LM_T(LMT_STAT, ("CPU Load: %d%%  (%d cores)", ws.cpuInfo.load, ws.cpuInfo.cores));
@@ -870,7 +888,9 @@ void Network::run()
 						else
 							LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f bytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed));
 					}
-#endif
+
+					LM_T(LMT_STAT, ("I have %d cores", ws.cpuInfo.cores));
+					iomMsgSend(controller->fd, controller->name.c_str(), me->name.c_str(), Message::WorkerStatus, Message::Msg, &ws, sizeof(ws));
 				}
 			}
 

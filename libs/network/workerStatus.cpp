@@ -8,14 +8,20 @@
 #include <stdio.h>              // FILE, fopen, ...
 #include <errno.h>              // errno
 #include <string.h>             // strerror
+#include <stdlib.h>             // atoi
+#include <time.h>               // time
 
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_*
 
-#include "samson.pb.h"          // WorkerStatus
 #include "workerStatus.h"       // Own interface
 
+
+
 namespace ss {
+namespace Message
+{
+
 
 
 /* ****************************************************************************
@@ -375,10 +381,11 @@ static void netInfo(NetIfInfo* niP)
 *
 * workerStatus - 
 */
-void workerStatus(WorkerStatus* wsP)
+void workerStatus(WorkerStatusData* wsP)
 {
 	cpuInfo(&wsP->cpuInfo);
 	netInfo(&wsP->netInfo);
 }
 
+}
 }

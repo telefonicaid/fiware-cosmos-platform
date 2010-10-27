@@ -90,20 +90,20 @@ namespace ss {
 	}
 	
 
-	void Delilah::receive(Message::MessageCode msgCode, Packet* p, int from)
+	void Delilah::receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet)
 	{
 		if (msgCode == Message::CommandResponse)
 		{
-			std::string message = p->message.command_response().response();
-			bool error = p->message.command_response().error();
-			bool finish = p->message.command_response().finish();
-			size_t id = p->message.command_response().sender_id();
+			std::string message  = packet->message.command_response().response();
+			bool        error    = packet->message.command_response().error();
+			bool        finish   = packet->message.command_response().finish();
+			size_t      id       = packet->message.command_response().sender_id();
 			
 			receivedMessage(id, error, finish, message);
 		}
 	}
 	
-	void Delilah::notificationSent( size_t id , bool success )
+	void Delilah::notificationSent(size_t id, bool success)
 	{
 		// Do something
 	}

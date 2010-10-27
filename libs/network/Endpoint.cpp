@@ -52,6 +52,7 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 	this->fd       = fd;
 	this->state    = (fd == -1)? Disconnected : Connected;
 	this->workers  = 0;
+	this->status   = NULL;
 
 	hostnameGet();
 }
@@ -86,6 +87,7 @@ Endpoint::Endpoint(Type type, std::string ipAndPort)
 	this->state    = Disconnected;
 	this->workers  = 0;
 	this->type     = type;
+	this->status   = NULL;
 
 	hostnameGet();
 }
@@ -105,6 +107,7 @@ Endpoint::Endpoint(Type type, unsigned short port)
 	this->state    = Disconnected;
 	this->workers  = 0;
 	this->type     = type;
+	this->status   = NULL;
 
 	hostnameGet();
 }

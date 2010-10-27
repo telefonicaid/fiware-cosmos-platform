@@ -26,10 +26,7 @@ namespace ss {
 			o << "(" << _format.str() << ") ";
 			return o.str();		
 		}
-		
 	};
-	
-	
 }
 
 #endif

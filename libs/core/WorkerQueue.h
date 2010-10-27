@@ -50,8 +50,6 @@ namespace ss {
 			return info;
 		}
 	};	
-	
-
 }
 
 #endif

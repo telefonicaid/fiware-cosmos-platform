@@ -105,13 +105,7 @@ namespace ss {
 		 */
 		
 		void closeTask( size_t task_id );
-		
-		
-		
-		
-		
 	};
-
 }
 
 #endif

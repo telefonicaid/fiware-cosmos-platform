@@ -120,7 +120,4 @@ namespace ss {
 		fileName << worker->network->getMyidentifier();
 		return fileName.str();
 	}
-	
-	
-	
 }

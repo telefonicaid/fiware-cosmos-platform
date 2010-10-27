@@ -11,6 +11,8 @@
 #include "samson.pb.h"			// network::Update
 #include "DataManager.h"		// ss::DataManager
 
+
+
 namespace ss {
 	
 
@@ -48,13 +50,7 @@ namespace ss {
 		 Real implementation of process protected by "lock"
 		 */
 		virtual bool _run( size_t task_id , std::string command );
-
-		
-		
-		
 	};
-
 }
-
 
 #endif

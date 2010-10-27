@@ -1,9 +1,12 @@
 #ifndef _H_KV_INFO
 #define _H_KV_INFO
 
-#include <cstring>	// size_t
-#include "Format.h"	// au::Format
-#include <sstream>	// std::ostringstream
+#include <cstring>	   // size_t
+#include <sstream>	   // std::ostringstream
+
+#include "Format.h"	   // au::Format
+
+
 
 namespace ss
 {
@@ -32,17 +35,11 @@ namespace ss
     
     std::string str()
       {
-	std::ostringstream o;
-	o <<au::Format::string( kvs ) << "kvs in " <<  au::Format::string( size ) << " bytes ";
-	return o.str();
+		 std::ostringstream o;
+		 o <<au::Format::string( kvs ) << "kvs in " <<  au::Format::string( size ) << " bytes ";
+		 return o.str();
       }
-    
-    
-    
   };
-  
-
 };
-
 
 #endif

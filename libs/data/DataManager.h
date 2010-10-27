@@ -137,6 +137,8 @@ namespace ss {
 		{
 		}
 
+		virtual ~DataManager() {}
+
 		/**
 		 Funciton to init the log system
 		 */

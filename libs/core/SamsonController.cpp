@@ -108,7 +108,12 @@ namespace ss {
 					if (ep == NULL)
 						continue;
 					output << "Worker " << ix << std::endl;
-					output << "\tCores " << ep->status->cpuInfo.cores << "\tCPU Load: " << ep->status->cpuInfo.load << "%" << std::endl;
+					output << "\t- Cores:\t" << ep->status->cpuInfo.cores << std::endl;
+					output << "\t- CPU Load:\t" << ep->status->cpuInfo.load << "%" << std::endl;
+					output << "\t- Net (dev 0) Rcv Speed:\t" << ep->status->netInfo.iface[0].rcvSpeed << " bps" << std::endl;
+					output << "\t- Net (dev 0) Snd Speed:\t" << ep->status->netInfo.iface[0].sndSpeed << " bps" << std::endl;
+					output << "\t- Net (dev 1) Rcv Speed:\t" << ep->status->netInfo.iface[1].rcvSpeed << " bps" << std::endl;
+					output << "\t- Net (dev 1) Snd Speed:\t" << ep->status->netInfo.iface[1].sndSpeed << " bps" << std::endl;
 					++workersFound;
 				} while (workersFound < workers);
 				

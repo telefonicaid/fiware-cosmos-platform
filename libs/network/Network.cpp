@@ -216,6 +216,11 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 	hello.workers = me->workers;
 	hello.port    = me->port;
 
+	LM_T(LMT_WRITE, ("sending hello"));
+	LM_T(LMT_WRITE, ("sending hello %s", messageType(type)));
+	LM_T(LMT_WRITE, ("sending hello %s to '%s'", messageType(type), ep->name.c_str()));
+	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s')",  messageType(type), ep->name.c_str(), hello.name));
+	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s', type: %s", messageType(type), ep->name.c_str(), hello.name, endpointTypeName(hello.type)));
 	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s', type: %s (%d))", messageType(type), ep->name.c_str(), hello.name, endpointTypeName(hello.type), hello.type));
 
 	return iomMsgSend(ep->fd, ep->name.c_str(), me->name.c_str(), Message::Hello, type, &hello, sizeof(hello));
@@ -483,8 +488,8 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 		return NULL;
 
 	case Endpoint::Controller:
-		return NULL;
-		break;
+		LM_M(("Not adding Controller ..."));
+		return controller;
 
 	case Endpoint::Temporal:
 		for (ix = sizeof(endpoint) / sizeof(endpoint[0]) - 1; ix >= 3 + Workers; ix--)
@@ -529,6 +534,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 
 		if (endpoint[ix] == NULL)
 			LM_X(1, ("No endpoint slots available for Delilah - redefine and recompile!"));
+		LM_X(1, ("ERROR ?"));
 		break;
 
 	case Endpoint::Worker:
@@ -694,6 +700,10 @@ void Network::msgTreat(int fd, char* name)
 						 messageType(msgType), hello->name, endpointTypeName(hello->type), hello->ip, hello->port, hello->workers));
 
 		helloEp = endpointAdd(fd, hello->name, hello->workers, hello->type, hello->ip, hello->port);
+
+		if (helloEp == NULL)
+			LM_X(1, ("helloEp == NULL"));
+
 		if (ep && ep->type == Endpoint::Temporal)
 			endpointRemove(ep);
 

@@ -50,7 +50,10 @@ int iomMsgRead
 		return -2;
 	}
 
-	LM_T(LMT_READ, ("read %d bytes from '%s' (fd %d)", nb, from, fd));
+	*msgCodeP = header.code;
+	*msgTypeP = header.type;
+
+	LM_T(LMT_READ, ("read %d bytes of '%s' header '%s' from '%s' (fd %d)", nb, messageCode(header.code), messageType(header.type), from, fd));
 	LM_READS(from, "message header", &header, sizeof(header), LmfByte);
 
 	if (header.dataLen != 0)

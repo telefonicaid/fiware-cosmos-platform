@@ -609,6 +609,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 				endpoint[ix]->fd    = fd;
 				endpoint[ix]->state = Endpoint::Connected;
 				endpoint[ix]->type  = Endpoint::Temporal;
+				endpoint[ix]->ip    = ip;
 
 				return endpoint[ix];
 			}
@@ -632,7 +633,9 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 				endpoint[ix]->name  = std::string(name);
 				endpoint[ix]->fd    = fd;
 				endpoint[ix]->state = Endpoint::Connected;
-				endpoint[ix]->type  = Endpoint::Delilah;
+				endpoint[ix]->type  = type;
+				endpoint[ix]->ip    = ip;
+				endpoint[ix]->port  = port;
 
                 return endpoint[ix];
 			}

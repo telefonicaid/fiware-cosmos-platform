@@ -15,8 +15,6 @@
 
 
 namespace ss {
-
-
 	SamsonWorker::SamsonWorker(int argc, const char* argv[], NetworkInterface *_network) : data(this), taskManager(this)
 	{
 		network = _network;

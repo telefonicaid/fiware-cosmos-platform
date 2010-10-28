@@ -61,6 +61,28 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 
 /* ****************************************************************************
 *
+* typeName - 
+*/
+static const char* typeName(Endpoint::Type type)
+{
+	switch (type)
+	{
+	case Endpoint::Unknown:      return "Unknown";
+	case Endpoint::Temporal:     return "Temporal";
+	case Endpoint::Listener:     return "Listener";
+	case Endpoint::Controller:   return "Controller";
+	case Endpoint::Worker:       return "Worker";
+	case Endpoint::CoreWorker:   return "CoreWorker";
+	case Endpoint::Delilah:      return "Delilah";
+	}
+
+	return "UnknownType";
+}
+
+
+
+/* ****************************************************************************
+*
 * Constructor
 */
 Endpoint::Endpoint(Type type, std::string ipAndPort)
@@ -69,7 +91,8 @@ Endpoint::Endpoint(Type type, std::string ipAndPort)
 
 	if (port == NULL)
 	{
-		this->name  = "local accepter";
+		LM_M(("type: '%s',  ipAndPort: '%s'", typeName(type), ipAndPort.c_str()));
+		this->name  = ipAndPort;
 		this->port  = atoi(ipAndPort.c_str());
 		this->ip    = "127.0.0.1";
 	}

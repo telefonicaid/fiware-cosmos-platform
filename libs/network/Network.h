@@ -17,6 +17,7 @@
 
 #define WORKERS       5
 #define DELILAHS     20
+#define CORE_WORKERS 32
 #define TEMPORALS    20
 
 
@@ -85,7 +86,7 @@ public:
 private:
 	int        Workers;
 
-	Endpoint*  endpoint[3 + WORKERS + DELILAHS + TEMPORALS];
+	Endpoint*  endpoint[3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS];
 	Endpoint*  listener;
 	Endpoint*  me;
 	Endpoint*  controller;

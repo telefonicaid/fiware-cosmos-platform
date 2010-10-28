@@ -1081,12 +1081,20 @@ extern LmStatus lmOk(char type, int tLev);
 */
 extern LmStatus lmFdRegister
 (
-   int          fd,
-   const char*  format,
-   const char*  timeFormat,
-   const char*  info,
-   int*         indexP
+	int          fd,
+	const char*  format,
+	const char*  timeFormat,
+	const char*  info,
+	int*         indexP
 );
+
+
+
+/* ****************************************************************************
+*
+* lmFdUnregister
+*/
+extern void lmFdUnregister(int fd);
 
 
 

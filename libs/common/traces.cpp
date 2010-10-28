@@ -1,16 +1,31 @@
-#include "CommandLine.h"	// au::CommandLine
 #include "logMsg.h"			// Log message
-#include "Macros.h"			// EXIT
 
+#include "CommandLine.h"	// au::CommandLine
+#include "Macros.h"			// EXIT
 #include "traces.h"			// Own interface
 
 
 
 namespace ss {
 	
+
+
+/* ****************************************************************************
+*
+* logFd - file descriptor of log file for later manipulation
+*/
+int logFd;
+
+
+
+/* ****************************************************************************
+*
+* samsonInitTrace - 
+*/
 void samsonInitTrace(int argc, const char *argv[], bool pidInName)
 {
 	LmStatus  s;
+	int       logFdIndex;
 
 	au::CommandLine commandLine;
 	commandLine.set_flag_string("t", "");
@@ -21,7 +36,7 @@ void samsonInitTrace(int argc, const char *argv[], bool pidInName)
 
 	progName = lmProgName((char*) argv[0], 1, pidInName);
 		
-	if ((s = lmPathRegister("/tmp/", "DEF", "DEF", NULL)) != LmsOk)
+	if ((s = lmPathRegister("/tmp/", "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT", "DEF", &logFdIndex)) != LmsOk)
 		EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
 	if ((s = lmFdRegister(1, "TYPE: TEXT", "DEF", "controller", NULL)) != LmsOk)
 		EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
@@ -30,5 +45,9 @@ void samsonInitTrace(int argc, const char *argv[], bool pidInName)
 		
 	if ((s = lmTraceSet((char*)trace.c_str())) != LmsOk)
 		EXIT(1, ("lmTraceSet: %s", lmStrerror(s)));
-	}
+
+	lmAux((char*) "father");
+
+	lmFdGet(logFdIndex, &logFd);
+}
 }

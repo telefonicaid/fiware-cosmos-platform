@@ -37,6 +37,7 @@ public:
 		Listener,
 		Controller,
 		Worker,
+		CoreWorker,
 		Delilah
 	} Type;
 
@@ -50,6 +51,7 @@ public:
 	int                          workers;
 	Type                         type;
 	Message::WorkerStatusData*   status;
+	int                          coreNo;
 
 	char*           stateName(void);
 	void            reset();

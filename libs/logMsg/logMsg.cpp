@@ -1370,6 +1370,25 @@ LmStatus lmFdRegister(int fd, const char* format, const char* timeFormat, const 
 }
 
 
+/* ****************************************************************************
+*
+* lmFdUnregister
+*/
+void lmFdUnregister(int fd)
+{
+	int index;
+
+	for (index = 0; index < FDS_MAX; index++)
+	{
+		if (fds[index].fd != fd)
+			continue;
+
+		fds[index].fd    = -1;
+		fds[index].state = Free;
+	}
+}
+
+
 
 /* ****************************************************************************
 *
@@ -1397,6 +1416,7 @@ LmStatus lmPathRegister(const char* path, const char* format, const char* timeFo
 	if (access(fileName, F_OK) == 0)
 	{
 		char newName[512];
+
 		snprintf(newName, sizeof(newName), "%s.old", fileName);
 		rename(fileName, newName);
 	}

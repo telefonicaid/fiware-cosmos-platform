@@ -10,6 +10,8 @@
 #include <sys/select.h>         // select
 #include <string>               // string
 #include <vector>				// ss::vector
+#include <sys/types.h>          // pid_t
+#include <unistd.h>             // fork, getpid
 
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_*
@@ -54,6 +56,7 @@ static const char* endpointTypeName(Endpoint::Type type)
 	case Endpoint::Listener:      return "Listener";
 	case Endpoint::Controller:    return "Controller";
 	case Endpoint::Worker:        return "Worker";
+	case Endpoint::CoreWorker:    return "CoreWorker";
 	case Endpoint::Delilah:       return "Delilah";
 	}
 
@@ -275,6 +278,8 @@ void Network::initAsSamsonController(int port, std::vector<std::string> peers)
 */
 void Network::initAsSamsonWorker(int port, std::string controllerName)
 {
+	Message::WorkerStatusData ws;
+
 	init(Endpoint::Worker, port);
 
 	LM_F(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
@@ -289,6 +294,108 @@ void Network::initAsSamsonWorker(int port, std::string controllerName)
 		LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
 
 	controller->state = ss::Endpoint::Connected;
+
+	workerStatus(&ws);
+
+	char traceLevelV[256];
+	lmTraceGet(traceLevelV);
+
+	int coreNo;
+	for (coreNo = 0; coreNo < ws.cpuInfo.cores; coreNo++)
+	{
+		LM_M(("*********** Starting Core Worker %d", coreNo));
+
+		if (fork() == 0)
+		{
+			char* fatherName = progName;
+
+
+			LM_M(("child %d running (pid: %d)", coreNo, (int) getpid()));
+			/* ************************************************************
+			 *
+			 * Stop logging to stdout
+			 */
+			lmFdUnregister(1);
+
+
+
+			/* ************************************************************
+			 *
+			 * Set progName
+			 */
+			progName = (char*) malloc(strlen("samsonCoreWorker_") + 10);
+			if (progName == NULL)
+				LM_X(1, ("samsonCoreWorker_%d died allocating: %s", getpid(), strerror(errno)));
+			sprintf(progName, (char*) "samsonCoreWorker_%d", (int) getpid());
+
+
+
+			/* ************************************************************
+			 *
+			 * Setting auxiliar string for logMsg
+			 */
+			char auxString[16];
+
+			sprintf(auxString, "core%02d", coreNo);
+			lmAux(auxString);
+
+
+
+			/* ************************************************************
+			 *
+			 * Clean out father processes endpoints
+			 */
+			me         = NULL;
+			listener   = NULL;
+			controller = NULL;
+
+			unsigned int epIx;
+			for (epIx = 0; epIx < sizeof(endpoint) / sizeof(endpoint[0]); epIx++)
+			{
+				if (endpoint[epIx] != NULL)
+					close(endpoint[epIx]->fd);
+				endpoint[epIx] = NULL;
+			}
+
+
+
+			/* ************************************************************
+			 *
+			 * Creating my 'me' endpoint
+			 */
+			endpoint[0] = new Endpoint(Endpoint::CoreWorker, -1);
+			if (endpoint[0] == NULL)
+				LM_XP(1, ("new Endpoint"));
+			me          = endpoint[0];
+			me->name    = progName;
+			me->state   = Endpoint::Me;
+			me->coreNo  = coreNo;
+
+
+
+			LM_M(("new me created"));
+			/* ************************************************************
+			 *
+			 * connect to samsonWorker (father process is like a controller, so I use index 2 ...)
+			 */
+			endpoint[2] = new Endpoint(Endpoint::Worker, fatherName);
+			if (endpoint[2] == NULL)
+				LM_XP(1, ("error allocating endpoint for father"));
+			controller = endpoint[2];
+
+			LM_M(("Connecting to father"));
+			controller->fd = iomConnect("localhost", port);
+			if (controller->fd == -1)
+				LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
+			LM_M(("Connected to father"));
+			controller->state = ss::Endpoint::Connected;
+
+			LM_M(("Calling RUN"));
+			run();
+			LM_M(("Back from run - should not ever get here (coreWorker %d, pid: %d)", coreNo, (int) getpid()));
+			exit(1);
+		}
+	}
 }
 
 
@@ -513,6 +620,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 
 
 	case Endpoint::Delilah:
+	case Endpoint::CoreWorker:
 		for (ix = 3 + Workers; ix < (int) (sizeof(endpoint) / sizeof(endpoint[0]) - 1); ix++)
 		{
 			if (endpoint[ix] == NULL)
@@ -536,6 +644,16 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 		break;
 
 	case Endpoint::Worker:
+		if (me->type == Endpoint::CoreWorker)
+		{
+			if (controller == NULL)
+				LM_X(1, ("controller == NULL"));
+
+			controller->fd = fd;
+			
+			return controller;
+		}
+
 		for (ix = 3; ix < 3 + Workers; ix++)
 		{
 			if (endpoint[ix] == NULL)
@@ -725,10 +843,13 @@ void Network::msgTreat(int fd, char* name)
 
 		if ((ep != NULL) && (ep == controller))
 		{
-			Packet packet;
+			if (me->type == Endpoint::Worker)
+			{
+				Packet packet;
 
-			// Ask controller for list of workers
-			iomMsgSend(controller->fd, (char*) controller->name.c_str(), (char*) me->name.c_str(), Message::WorkerVector, Message::Msg, NULL, 0, NULL, NULL, 0);
+				// Ask controller for list of workers
+				iomMsgSend(controller->fd, (char*) controller->name.c_str(), (char*) me->name.c_str(), Message::WorkerVector, Message::Msg, NULL, 0, NULL, NULL, 0);
+			}
 		}
 		break;
 
@@ -902,7 +1023,7 @@ void Network::run()
 			FD_ZERO(&rFds);
 			max = 0;
 
-			if (listener == NULL)  /* I am a delilah - reconnect to dead workers */
+			if (me->type == Endpoint::Delilah)  /* reconnect to dead workers */
 			{
 				for (ix = 3; ix < 3 + Workers; ix++)
 				{
@@ -946,6 +1067,10 @@ void Network::run()
 				}
 			}
 
+
+			//
+			// Adding fds to the read-set
+			//
 			LM_T(LMT_SELECT, ("------------------------------------------------------------------------"));
 			for (ix = 0; ix < (int) (sizeof(endpoint) / sizeof(endpoint[0])); ix++)
 			{

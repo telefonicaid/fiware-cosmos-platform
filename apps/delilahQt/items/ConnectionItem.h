@@ -20,6 +20,7 @@ public:
 	~ConnectionItem();
 
 	void drawLine(const QPointF &pos);
+	bool open(ObjectItem* start);
 	bool close(ObjectItem* end);
 
 	ObjectItem* startItem() { return start_item; };

@@ -31,7 +31,6 @@ public:
 
 private:
     QGraphicsTextItem* text_item;
-
 };
 
 #endif // QUEUEITEM_H

@@ -10,6 +10,7 @@
 
 #include <QGraphicsSvgItem>
 
+class ConnectionItem;
 
 class ObjectItem : public QGraphicsSvgItem
 {
@@ -43,6 +44,8 @@ protected:
 
 protected:
     QSize default_size;
+    QList<ConnectionItem*> connections;
+
 };
 
 #endif /* PROCESSITEM_H_ */

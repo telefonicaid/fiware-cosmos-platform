@@ -541,7 +541,8 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 			if (endpoint[ix] == NULL)
 				LM_X(1, ("NULL worker endpoint at slot %d", ix));
 
-			if ((strcmp(endpoint[ix]->ip.c_str(), ip.c_str()) == 0) && (endpoint[ix]->port == port))
+			if (((strcmp(endpoint[ix]->ip.c_str(), ip.c_str()) == 0) && (endpoint[ix]->port == port)) ||
+				((strcmp(endpoint[ix]->hostname.c_str(), ip.c_str()) == 0) && (endpoint[ix]->port == port)))
 			{
 				endpoint[ix]->fd    = fd;
 				endpoint[ix]->name  = std::string(name);
@@ -552,7 +553,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 			}
 		}
 
-		LM_X(1, ("No endpoint slots available for Worker - important internal bug!"));
+		LM_X(1, ("Worker '%s:%d' not found!", ip.c_str(), port));
 		break;
 	}
 

@@ -843,7 +843,7 @@ void Network::msgTreat(int fd, char* name)
 
 		if ((ep != NULL) && (ep == controller))
 		{
-			if (me->type == Endpoint::Worker)
+			if ((me->type != Endpoint::CoreWorker) && (me->type != Endpoint::Controller))
 			{
 				Packet packet;
 

@@ -1,0 +1,26 @@
+cd build/apps/samsonController
+xterm -geometry 240x20+10+0 -e ./samsonController -port 1234 -r -w -t 0-20,22-255 &
+
+#
+# Five workers
+#
+echo "worker torkel:1235"  > /opt/samson/setup.txt
+echo "worker torkel:1236" >> /opt/samson/setup.txt
+echo "worker torkel:1237" >> /opt/samson/setup.txt
+echo "worker torkel:1238" >> /opt/samson/setup.txt
+echo "worker torkel:1239" >> /opt/samson/setup.txt
+
+cd -
+cd build/apps/samsonWorker
+xterm -geometry 120x15+010+322 -e ./samsonWorker -controller localhost:1234 -port 1235 -r -w -t 0-20,22-255 &
+xterm -geometry 120x15+010+550 -e ./samsonWorker -controller localhost:1234 -port 1236 -r -w -t 0-20,22-255 &
+xterm -geometry 120x15+010+800 -e ./samsonWorker -controller localhost:1234 -port 1237 -r -w -t 0-20,22-255 &
+xterm -geometry 120x15+737+322 -e ./samsonWorker -controller localhost:1234 -port 1238 -r -w -t 0-20,22-255 &
+xterm -geometry 120x15+737+550 -e ./samsonWorker -controller localhost:1234 -port 1239 -r -w -t 0-20,22-255 &
+
+#
+# ONE delilah
+#
+cd -
+cd build/apps/delilah
+xterm -geometry 120x15+737+550 -e ./delilah -controller localhost:1234 -r -w -t 0-20,22-255 &

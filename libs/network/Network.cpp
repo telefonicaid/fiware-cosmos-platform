@@ -628,7 +628,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 			{
 				endpoint[ix] = new Endpoint();
 				if (endpoint[ix] == NULL)
-					LM_XP(1, ("allocating temporal Endpoint"));
+					LM_XP(1, ("allocating Endpoint"));
 
 				endpoint[ix]->name  = std::string(name);
 				endpoint[ix]->fd    = fd;
@@ -637,12 +637,12 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 				endpoint[ix]->ip    = ip;
 				endpoint[ix]->port  = port;
 
-                return endpoint[ix];
+				return endpoint[ix];
 			}
 		}
 
 		if (endpoint[ix] == NULL)
-			LM_X(1, ("No endpoint slots available for Delilah - redefine and recompile!"));
+			LM_X(1, ("No endpoint slots available - redefine and recompile!"));
 		LM_X(1, ("ERROR ?"));
 		break;
 
@@ -670,7 +670,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 				endpoint[ix]->state = Endpoint::Connected;
 				endpoint[ix]->type  = Endpoint::Worker;
 
-                return endpoint[ix];
+				return endpoint[ix];
 			}
 		}
 
@@ -703,7 +703,7 @@ void Network::endpointRemove(Endpoint* ep)
 			{
 				ep->fd    = -1;
 				ep->state = Endpoint::Disconnected;
-                ep->name  = std::string("To be a worker");
+				ep->name  = std::string("To be a worker");
 			}
 			else
 			{
@@ -1053,9 +1053,9 @@ void Network::run()
 					{
 						LM_T(LMT_ENDPOINT, ("Connect to %s:%d ?", endpoint[ix]->ip.c_str(), endpoint[ix]->port));
 
-                        workerFd = iomConnect(endpoint[ix]->ip.c_str(), endpoint[ix]->port);
-                        if (workerFd != -1)
-                        {
+						workerFd = iomConnect(endpoint[ix]->ip.c_str(), endpoint[ix]->port);
+						if (workerFd != -1)
+						{
 							Endpoint* ep;
 
 							ep = endpointAdd(workerFd, (char*) "New Worker", 0, Endpoint::Temporal, endpoint[ix]->ip.c_str(), endpoint[ix]->port);
@@ -1085,7 +1085,7 @@ void Network::run()
 					FD_SET(endpoint[ix]->fd, &rFds);
 					max = MAX(max, endpoint[ix]->fd);
 					
-					LM_T(LMT_SELECT, ("+ endpoint %02d %-15s %-20s %20s:%05d %20s (fd: %d)",
+					LM_T(LMT_SELECT, ("+ endpoint %02d %-15s %-24s %20s:%05d %20s (fd: %d)",
 									  ix,
 									  endpointTypeName(endpoint[ix]->type),
 									  endpoint[ix]->name.c_str(),
@@ -1096,7 +1096,7 @@ void Network::run()
 				}
 				else
 				{
-					LM_T(LMT_SELECT, ("- endpoint %02d %-15s %-20s %20s:%05d %20s (fd: %d)",
+					LM_T(LMT_SELECT, ("- endpoint %02d %-15s %-24s %20s:%05d %20s (fd: %d)",
 									  ix,
 									  endpointTypeName(endpoint[ix]->type),
 									  endpoint[ix]->name.c_str(),

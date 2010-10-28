@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
 	tool_group->addAction(ui.actionSelect);
 	tool_group->addAction(ui.actionNewQueue);
 	tool_group->addAction(ui.actionNewOperation);
+	tool_group->addAction(ui.actionConnect);
 	ui.actionSelect->setChecked(true);
 
 	connect(tool_group, SIGNAL(triggered(QAction*)), this, SLOT(setToolForAction(QAction*)));
@@ -71,6 +72,8 @@ void MainWindow::setToolForAction(QAction* action)
 		current_tool = TOOL_NEWQUEUE;
 	else if (action==ui.actionNewOperation)
 		current_tool = TOOL_NEWOPERATION;
+	else if (action==ui.actionConnect)
+		current_tool = TOOL_CONNECT;
 	//else
 	//	debug("Unknown action triggered");
 

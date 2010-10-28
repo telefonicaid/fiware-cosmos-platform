@@ -15,8 +15,6 @@
 
 class ProcessView : public QGraphicsView
 {
-	Q_OBJECT
-
 public:
 	ProcessView(QWidget* parent=0);
 	ProcessView(ProcessScene* scene);

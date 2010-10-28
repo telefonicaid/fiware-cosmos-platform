@@ -109,6 +109,7 @@
    <addaction name="actionSelect"/>
    <addaction name="actionNewQueue"/>
    <addaction name="actionNewOperation"/>
+   <addaction name="actionConnect"/>
   </widget>
   <action name="actionNewProcess">
    <property name="checkable">
@@ -118,7 +119,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/icons.qrc">
      <normaloff>:/icons/new_process.png</normaloff>:/icons/new_process.png</iconset>
    </property>
    <property name="text">
@@ -139,7 +140,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/icons.qrc">
      <normaloff>:/icons/new_queue.png</normaloff>:/icons/new_queue.png</iconset>
    </property>
    <property name="text">
@@ -159,7 +160,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/icons.qrc">
      <normaloff>:/icons/new_operation.png</normaloff>:/icons/new_operation.png</iconset>
    </property>
    <property name="text">
@@ -174,11 +175,26 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/icons.qrc">
      <normaloff>:/icons/move.png</normaloff>:/icons/move.png</iconset>
    </property>
    <property name="text">
     <string>select</string>
+   </property>
+  </action>
+  <action name="actionConnect">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/icons.qrc">
+     <normaloff>:/icons/connection.png</normaloff>:/icons/connection.png</iconset>
+   </property>
+   <property name="text">
+    <string>Connect</string>
+   </property>
+   <property name="toolTip">
+    <string>Connect Queue with Operation</string>
    </property>
   </action>
  </widget>

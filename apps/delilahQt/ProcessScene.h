@@ -16,6 +16,8 @@
 #include "globals.h"
 
 class QSvgRenderer;
+class ConnectionItem;
+class ObjectItem;
 
 class ProcessScene: public QGraphicsScene
 {
@@ -25,22 +27,34 @@ public:
 	ProcessScene(QObject* parent = 0);
 	~ProcessScene();
 
-	int getTool();
+	int getTool() {return current_tool; };
 
 public slots:
-	void setTool(int tool);
+	void setTool(int tool) { current_tool = tool; };
 	void addQueue(QPointF position = QPoint(0.0, 0.0) );
+	void addOperation(QPointF position = QPoint(0.0, 0.0));
 	void zoomOut();
 	void zoomReset();
 	void zoomIn();
 
+	void startConnection(ObjectItem* item);
+	void closeConnection(ObjectItem* item);
+	void cancelConnection();
+
 protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
+	virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
+	virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+
+	ObjectItem* findItem(const QPointF &pos);
+
 
 protected:
 	static QSvgRenderer* queue_renderer;
+	static QSvgRenderer* operation_renderer;
     int current_tool;
+    ConnectionItem* current_conn;
 };
 
 class NewQueueAction : public QAction

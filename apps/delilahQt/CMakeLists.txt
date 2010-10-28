@@ -7,16 +7,21 @@ SET (SOURCES
 	MainWindow.cpp
 	ProcessView.cpp
 	ProcessScene.cpp
-	QueueItem.cpp)
+	items/ObjectItem.cpp
+	items/QueueItem.cpp
+	items/OperationItem.cpp
+	items/ConnectionItem.cpp)
 
 SET (HEADERS
-	)
+	ProcessView.h
+	items/ObjectItem.h)
 
 SET (HEADERS_MOC
 	MainWindow.h
-	ProcessView.h
 	ProcessScene.h
-	QueueItem.h)
+	items/QueueItem.h
+	items/OperationItem.h
+	items/ConnectionItem.h)
 
 SET (FORMS
 	MainWindow.ui)
@@ -30,6 +35,8 @@ QT4_WRAP_UI(FORMS_HEADERS ${FORMS})
 QT4_ADD_RESOURCES(RESOURCES_QRC ${RESOURCES})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/items")
 
 # SAMSON Executable
 ADD_EXECUTABLE(delilah_qt ${SOURCES} ${HEADERS} ${MOC_SOURCES} ${FORMS_HEADERS} ${RESOURCES_QRC})

@@ -14,6 +14,8 @@ class ConnectionItem;
 
 class ObjectItem : public QGraphicsSvgItem
 {
+	Q_OBJECT
+
 public:
 	ObjectItem(QGraphicsItem* parent=0)
 		: QGraphicsSvgItem(parent) { init(); };
@@ -31,6 +33,8 @@ public:
 	virtual void setDefaultSize();
 	virtual void setSize(QSize size);
 
+//	virtual void addConnection(ConnectionItem* connection);
+
 protected:
 	virtual void init();
 	virtual void initializeDefaultSize() = 0;
@@ -41,6 +45,11 @@ protected:
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
     virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+
+    virtual QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+
+signals:
+	void posChanged();
 
 protected:
     QSize default_size;

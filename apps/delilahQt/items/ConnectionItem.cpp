@@ -18,51 +18,31 @@
 #define PI 3.14159265
 
 ConnectionItem::ConnectionItem(QGraphicsItem* parent)
-	: QGraphicsPathItem(parent)
+	: QObject(), QGraphicsPathItem(parent)
 {
-	line_color = QColor(0, 0, 255);
-	arrow_color = QColor(255, 0, 0);
-	setZValue(-0.1);
-
+	init();
 	start_item = 0;
 	end_item = 0;
 
-//	path = QPainterPath(QPointF(0.0, 0.0));
 	setPath(path);
-
-
-	finished = false;
 }
 
-ConnectionItem::ConnectionItem(ObjectItem* start, ObjectItem* end, QGraphicsItem* parent)
-	: QGraphicsPathItem(parent)
+ConnectionItem::ConnectionItem(ObjectItem* start_item, ObjectItem* end_item, QGraphicsItem* parent)
+	: QObject(), QGraphicsPathItem(parent)
+{
+	init();
+
+	open(start_item);
+	if (end_item)
+		close(end_item);
+}
+
+void ConnectionItem::init()
 {
 	line_color = QColor(0, 0, 255);
 	arrow_color = QColor(255, 0, 0);
 	setZValue(-0.1);
-
-//	start_item = start;
-	end_item = end;
-
-	open(start);
-	if (end)
-		close(end);
-
-//	if (end_item)
-//	{
-//		finished = true;
-//	}
-//	else
-//	{
-//		finished = false;
-//		start_scene_pos = start->mapToScene(start->boundingRect().center());
-//
-//		path = QPainterPath(QPointF(0.0, 0.0));
-//		setPath(path);
-//
-//		setPos(start_scene_pos);
-//	}
-
+	finished = false;
 }
 
 ConnectionItem::~ConnectionItem()
@@ -85,54 +65,103 @@ void ConnectionItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
 	painter->drawPath(path);
 }
 
-void ConnectionItem::drawLine(const QPointF &pos)
+void ConnectionItem::updateStartPos()
 {
-	QPainterPath line(QPointF(0.0, 0.0));
-	QPointF move = pos - start_scene_pos;
-	line.lineTo(move);
+	std::cout << "updating start position\n";
+	if (!start_item)
+	{
+		// TODO:
+		std::cout << "Error - start item is not defined\n";
+		return;
+	}
 
-	path = line;
+	scene_start_pos = start_item->mapToScene(start_item->boundingRect().center());
+	updateItem();
+}
+
+void ConnectionItem::updateEndPos()
+{
+	std::cout << "updating end position\n";
+	if (!end_item)
+	{
+		// TODO:
+		std::cout << "Error - end item is not defined\n";
+		return;
+	}
+
+	scene_end_pos = end_item->mapToScene(end_item->boundingRect().center());
+	updateItem();
+}
+
+void ConnectionItem::updateEndPos(const QPointF &pos)
+{
+	scene_end_pos = pos;
+	updateItem();
+}
+
+void ConnectionItem::updateItem()
+{
+	if (finished)
+		path = drawArrow(scene_start_pos, scene_end_pos);
+	else
+		path = drawLine(scene_start_pos, scene_end_pos);
+
 	setPath(path);
 }
 
-bool ConnectionItem::open(ObjectItem* start)
+QPainterPath ConnectionItem::drawLine(const QPointF &start_pos, const QPointF &end_pos)
 {
-	start_item = start;
-	start_scene_pos = start->mapToScene(start->boundingRect().center());
+	setPos(start_pos);
 
-	path = QPainterPath(QPointF(0.0, 0.0));
-	setPos(start_scene_pos);
+	QPainterPath line(QPointF(0.0, 0.0));
+	QPointF move = end_pos - start_pos;
+	line.lineTo(move);
 
-	finished = false;
+	return line;
+}
+
+QPainterPath ConnectionItem::drawArrow(const QPointF &start_pos, const QPointF &end_pos, const QSizeF &head_size)
+{
+	setPos(start_pos);
+
+	//Helpers - we assume the arrow's starting point is in (0, 0);
+	QPointF start(0, 0);
+	QPointF end = mapFromScene(end_pos);
+	QPointF center = end/2;
+
+	QRectF arrow_rect(center-QPointF(head_size.width()/2, head_size.height()/2), head_size);
+	double angle = atan2(end.y(), end.x())*180/PI;
+
+	QPainterPath arrow(start);
+	arrow.lineTo(end);
+	arrow.moveTo(center);
+	arrow.arcTo(arrow_rect, 150-angle, 60);
+	arrow.closeSubpath();
+
+	return arrow;
+}
+
+bool ConnectionItem::open(ObjectItem* item)
+{
+	start_item = item;
+	scene_start_pos = start_item->mapToScene(start_item->boundingRect().center());
 
 	return true;
 }
 
-bool ConnectionItem::close(ObjectItem* end)
+bool ConnectionItem::close(ObjectItem* item)
 {
 	// TODO: validate that it can be closed
 	finished = true;
 
 	if(finished)
 	{
-		QPainterPath arrow(QPointF(0, 0));
+		end_item = item;
+		updateEndPos();
 
-		QPointF head_point = mapFromItem(end, end->boundingRect().center());
-		QPointF center = head_point/2;
-
-		QRectF arrow_rect(center-QPointF(15.0, 15.0), QSizeF(30, 30));
-		double angle = atan2(head_point.y(), head_point.x())*180/PI;
-
-		arrow.lineTo(head_point);
-		arrow.moveTo(center);
-		arrow.arcTo(arrow_rect, 150-angle, 60);
-		arrow.closeSubpath();
-
-		path = arrow;
+		connect(start_item, SIGNAL(posChanged()), this, SLOT(updateStartPos()));
+		connect(end_item, SIGNAL(posChanged()), this, SLOT(updateEndPos()));
 	}
-	else
-		path = QPainterPath();
-	setPath(path);
 
 	return finished;
 }

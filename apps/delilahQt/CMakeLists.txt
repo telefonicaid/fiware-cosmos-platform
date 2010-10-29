@@ -13,12 +13,12 @@ SET (SOURCES
 	items/ConnectionItem.cpp)
 
 SET (HEADERS
-	ProcessView.h
-	items/ObjectItem.h)
+	ProcessView.h)
 
 SET (HEADERS_MOC
 	MainWindow.h
 	ProcessScene.h
+	items/ObjectItem.h
 	items/QueueItem.h
 	items/OperationItem.h
 	items/ConnectionItem.h)

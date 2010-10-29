@@ -95,7 +95,7 @@ void ProcessScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
 	if (current_tool==TOOL_CONNECT && current_conn)
 	{
-		current_conn->drawLine(event->scenePos());
+		current_conn->updateEndPos(event->scenePos());
 	}
 	else
 	{

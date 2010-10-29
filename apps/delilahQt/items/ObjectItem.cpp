@@ -23,7 +23,7 @@ ObjectItem::~ObjectItem()
 
 void ObjectItem::init()
 {
-	setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+	setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsGeometryChanges);
 }
 
 void ObjectItem::setPos(const QPointF &pos)
@@ -100,4 +100,12 @@ void ObjectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 			break;
 	}
 
+}
+
+QVariant ObjectItem::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+	if (change == QGraphicsItem::ItemPositionChange)
+		emit posChanged();
+
+	return QGraphicsSvgItem::itemChange(change, value);
 }

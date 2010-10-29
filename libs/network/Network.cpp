@@ -289,7 +289,7 @@ void Network::coreWorkerStart(int coreNo, char* fatherName, int port)
 
 	ep->startTime        = time(NULL);
 	ep->coreNo           = coreNo;
-	ep->coreWorkerState  = Endpoint::NotBusy;
+	ep->coreWorkerState  = Message::NotBusy;
 
 	// Using these two fields to improve debugging ...
 	ep->ip              = "Core";
@@ -421,7 +421,7 @@ void Network::initAsSamsonWorker(int port, std::string controllerName)
 
 	controller->state = ss::Endpoint::Connected;
 
-	workerStatus(&ws);
+	workerStatus(&ws, this);
 
 	char traceLevelV[256];
 	lmTraceGet(traceLevelV);
@@ -677,13 +677,16 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 				if (endpoint[ix] == NULL)
 					LM_XP(1, ("allocating Endpoint"));
 
-				endpoint[ix]->name    = std::string(name);
-				endpoint[ix]->fd      = fd;
-				endpoint[ix]->state   = Endpoint::Connected;
-				endpoint[ix]->type    = type;
-				endpoint[ix]->ip      = ip;
-				endpoint[ix]->port    = port;
-				endpoint[ix]->coreNo  = coreNo;
+				endpoint[ix]->name       = std::string(name);
+				endpoint[ix]->fd         = fd;
+				endpoint[ix]->state      = Endpoint::Connected;
+				endpoint[ix]->type       = type;
+				endpoint[ix]->ip         = ip;
+				endpoint[ix]->port       = port;
+				endpoint[ix]->coreNo     = coreNo;
+				endpoint[ix]->restarts   = 0;
+				endpoint[ix]->jobsDone   = 0;
+				endpoint[ix]->startTime  = time(NULL);
 
 				return endpoint[ix];
 			}
@@ -1057,7 +1060,7 @@ void Network::msgTreat(int fd, char* name)
 
 				if (cwP == NULL)
 					ALARM(Alarm::Error, Alarm::CoreWorkerNotFound, ("cannot find core worker %d", jobP->coreNo));
-				else if (cwP->coreWorkerState != Endpoint::NotBusy)
+				else if (cwP->coreWorkerState != Message::NotBusy)
 					ALARM(Alarm::Warning, Alarm::CoreWorkerBusy, ("core worker %d busy - try again later ...", jobP->coreNo));
 				else
 					iomMsgSend(cwP->fd, cwP->name.c_str(), me->name.c_str(), Message::Job, Message::Evt);
@@ -1082,7 +1085,8 @@ void Network::msgTreat(int fd, char* name)
 		if (ep->type != Endpoint::CoreWorker)
 			LM_X(1, ("got a JobDone message from a '%s' endpoint!", endpointTypeName(ep->type)));
 
-		ep->coreWorkerState = Endpoint::NotBusy;
+		ep->coreWorkerState  = Message::NotBusy;
+		ep->jobsDone        += 1;
 		break;
 
 	default:
@@ -1109,7 +1113,7 @@ void Network::workerStatusToController(void)
 	Message::WorkerStatusData ws;
 	int                       ix;
 
-	workerStatus(&ws);
+	workerStatus(&ws, this);
 
 	LM_T(LMT_STAT, ("CPU Load: %d%%  (%d cores)", ws.cpuInfo.load, ws.cpuInfo.cores));
 	for (ix = 0; ix < ws.cpuInfo.cores; ix++)
@@ -1146,7 +1150,19 @@ void Network::workerStatusToController(void)
 			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f bytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed));
 	}
 
-	LM_T(LMT_STAT, ("I have %d cores", ws.cpuInfo.cores));
+	LM_T(LMT_STAT, ("I have %d core workers", ws.coreWorkerInfo.workers));
+	for (ix = 0; ix < ws.coreWorkerInfo.workers; ix++)
+	{
+		LM_T(LMT_STAT, ("Core %02d: %-20s %-20s  uptime:%-08d  jobsDone:%-05d  restarts:%-05d",
+						ws.coreWorkerInfo.worker[ix].coreNo,
+						ws.coreWorkerInfo.worker[ix].name,
+						coreWorkerState(ws.coreWorkerInfo.worker[ix].state),
+						ws.coreWorkerInfo.worker[ix].uptime,
+						ws.coreWorkerInfo.worker[ix].jobsDone,
+						ws.coreWorkerInfo.worker[ix].restarts));
+	}
+
+	LM_T(LMT_STAT, ("I have %d cores - sending %d bytes of workerStatus data to controller", ws.cpuInfo.cores, sizeof(ws)));
 	iomMsgSend(controller->fd, controller->name.c_str(), me->name.c_str(), Message::WorkerStatus, Message::Msg, &ws, sizeof(ws));
 }
 

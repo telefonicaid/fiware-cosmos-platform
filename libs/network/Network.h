@@ -81,10 +81,10 @@ public:
 	// Syspend the network interface, close everything and return the "run" call
 	void quit();
 
-private:
+public:
 	int        Workers;
-
 	Endpoint*  endpoint[3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS];
+private:
 	Endpoint*  listener;
 	Endpoint*  me;
 	Endpoint*  controller;

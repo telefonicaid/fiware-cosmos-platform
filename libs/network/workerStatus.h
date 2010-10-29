@@ -10,8 +10,11 @@
 */
 
 
+
 namespace ss
 {
+
+class Network;
 
 namespace Message
 {
@@ -98,12 +101,53 @@ typedef struct NetIfInfo
 
 /* ****************************************************************************
 *
+* CoreWorkerState - 
+*/
+typedef enum CoreWorkerState
+{
+	NotBusy,
+	Busy
+} CoreWorkerState;
+
+
+
+/* ****************************************************************************
+*
+* CoreWorker - 
+*/
+typedef struct CoreWorker
+{
+	int              coreNo;
+	CoreWorkerState  state;
+	int              uptime;
+	int              jobsDone;
+	int              restarts;
+	char             name[32];
+} CoreWorker;
+
+
+
+/* ****************************************************************************
+*
+* CoreWorkerInfo - 
+*/
+typedef struct CoreWorkerInfo
+{
+	int        workers;
+	CoreWorker worker[MAX_CORES];
+} CoreWorkerInfo;
+
+
+
+/* ****************************************************************************
+*
 * WorkerStatusData
 */
 typedef struct WorkerStatusData
 {
-	CpuInfo    cpuInfo;
-	NetIfInfo  netInfo;
+	CpuInfo        cpuInfo;
+	NetIfInfo      netInfo;
+	CoreWorkerInfo coreWorkerInfo;
 } WorkerStatusData;
 
 
@@ -112,7 +156,15 @@ typedef struct WorkerStatusData
 *
 * workerStatus
 */
-extern void workerStatus(WorkerStatusData* wsP);
+extern void workerStatus(WorkerStatusData* wsP, Network* networkP);
+
+
+
+/* ****************************************************************************
+*
+* coreWorkerState - 
+*/
+extern const char* coreWorkerState(CoreWorkerState state);
 
 }
 }

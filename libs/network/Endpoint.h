@@ -10,9 +10,12 @@
 */
 #include <string>	        // std::string...
 
-#include "workerStatus.h"   // Message::WorkerStatusData
+#include "workerStatus.h"	// CoreWorkerState, WorkerStatusData
+
+
 
 namespace ss {
+
 
 
 class Endpoint
@@ -30,12 +33,6 @@ public:
 		Reconnecting,
 		Dead
 	} State;
-
-	typedef enum CoreWorkerState
-	{
-		NotBusy,
-		Busy
-	} CoreWorkerState;
 
 	typedef enum Type
 	{
@@ -67,7 +64,8 @@ public:
 	int                          coreNo;           // CoreWorker
 	time_t                       startTime;        // CoreWorker
 	int                          restarts;         // CoreWorker
-	CoreWorkerState              coreWorkerState;  // CoreWorker
+	int                          jobsDone;         // CoreWorker
+	Message::CoreWorkerState     coreWorkerState;  // CoreWorker
 
 
 	char*           stateName(void);

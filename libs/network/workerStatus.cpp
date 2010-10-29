@@ -14,11 +14,16 @@
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_*
 
+#include "Endpoint.h"           // Endpoint
+#include "Network.h"            // Network
 #include "workerStatus.h"       // Own interface
 
 
 
 namespace ss {
+
+class Network;
+
 namespace Message
 {
 
@@ -382,12 +387,66 @@ static void netInfo(NetIfInfo* niP)
 
 /* ****************************************************************************
 *
+* coreWorkerInfo - 
+*/
+static void coreWorkerInfo(CoreWorkerInfo* cwiP, Network* networkP)
+{
+	int        coreWorkers = 0;
+	int        ix;
+	Endpoint*  ep;
+
+	for (ix = 3 + networkP->Workers; ix < (int) (sizeof(networkP->endpoint) / sizeof(networkP->endpoint[0])); ix++)
+	{
+		ep = networkP->endpoint[ix];
+
+		if (ep == NULL)
+			continue;
+
+		if (ep->type == Endpoint::CoreWorker)
+		{
+			cwiP->worker[coreWorkers].coreNo     = ep->coreNo;
+			cwiP->worker[coreWorkers].state      = ep->coreWorkerState;
+			cwiP->worker[coreWorkers].jobsDone   = ep->jobsDone;
+			cwiP->worker[coreWorkers].restarts   = ep->restarts;
+
+			strncpy(cwiP->worker[coreWorkers].name, ep->name.c_str(), sizeof(cwiP->worker[coreWorkers].name));
+
+			if (ep->coreWorkerState == Busy)
+				cwiP->worker[coreWorkers].uptime = time(NULL) - ep->startTime;
+			else
+				cwiP->worker[coreWorkers].uptime = 0;
+
+			++coreWorkers;
+		}
+	}
+
+	cwiP->workers = coreWorkers;
+}
+
+/* ****************************************************************************
+*
 * workerStatus - 
 */
-void workerStatus(WorkerStatusData* wsP)
+void workerStatus(WorkerStatusData* wsP, Network* networkP)
 {
 	cpuInfo(&wsP->cpuInfo);
 	netInfo(&wsP->netInfo);
+	coreWorkerInfo(&wsP->coreWorkerInfo, networkP);
+}
+
+/* ****************************************************************************
+*
+* coreWorkerState - 
+*/
+const char* coreWorkerState(CoreWorkerState state)
+{
+	switch (state)
+	{
+	case NotBusy:           return "Not Busy";
+	case Busy:              return "Busy";
+	}
+
+	return "Unknown";
 }
 
 }

@@ -49,6 +49,24 @@ typedef enum Type
 
 /* ****************************************************************************
 *
+* AlarmData - 
+*/
+typedef struct AlarmData
+{
+	Severity    severity;
+	Type        type;
+	int         pad1;
+	int         lineNo;	
+	char        from[32];
+	char        fileName[32];
+	char        funcName[32];
+	char        message[128];
+} AlarmData;
+
+
+
+/* ****************************************************************************
+*
 * ALARM - 
 */
 #define ALARM(severity, type, message)                                                              \
@@ -86,6 +104,18 @@ extern void alarmSend
 	int              lineNo,
 	const char*      funcName,
 	char*            message
+);
+
+
+
+/* ****************************************************************************
+*
+* alarmSave - 
+*/
+extern void alarmSave
+(
+	Endpoint*    from,
+	AlarmData*   alarmP
 );
 
 }

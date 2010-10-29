@@ -3,6 +3,9 @@
 #include <string.h>             // strdup
 
 #include "logMsg.h"             // LM_*
+
+#include "Message.h"            // Message
+#include "iomMsgSend.h"         // iomMsgSend
 #include "Alarm.h"              // Own interface
 
 
@@ -46,7 +49,7 @@ char* alarmTextGet(const char* format, ...)
 void alarmSend
 (
 	Endpoint*    controller,
-	Endpoint*    me,
+	Endpoint*    from,
 	Severity     severity,
 	Type         type,
 	const char*  fileName,
@@ -55,7 +58,35 @@ void alarmSend
 	char*        message
 )
 {
+	AlarmData alarm;
+
+	alarm.severity = severity;
+	alarm.type     = type;
+	alarm.pad1     = 0;
+	alarm.lineNo   = lineNo;
+
+	strncpy(alarm.from, from->name.c_str(), sizeof(alarm.from));
+	strncpy(alarm.fileName, fileName, sizeof(alarm.fileName));
+	strncpy(alarm.funcName, funcName, sizeof(alarm.funcName));
+	strncpy(alarm.message, message, sizeof(alarm.message));
+
+	iomMsgSend(controller->fd, controller->name.c_str(), from->name.c_str(), Message::Alarm, Message::Evt, &alarm, sizeof(alarm));
 	LM_F(("ALARM: '%s'", message));
+}
+
+
+
+/* ****************************************************************************
+*
+* alarmSave - 
+*/
+void alarmSave
+(
+	Endpoint*   from,
+	AlarmData*  alarmP
+)
+{
+	// Save alarm data to file
 }
 
 }

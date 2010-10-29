@@ -1089,6 +1089,28 @@ void Network::msgTreat(int fd, char* name)
 		ep->jobsDone        += 1;
 		break;
 
+	case Message::Alarm:
+		if (me->type == Endpoint::Worker)
+		{
+			if (ep->type != Endpoint::CoreWorker)
+				LM_E(("Got an alarm event from %s endpoint '%s' - not supposed to happen!", endpointTypeName(ep->type), ep->name.c_str()));
+			else
+			{
+				// Forward Alarm to controller
+				iomMsgSend(controller->fd, controller->name.c_str(), me->name.c_str(), Message::Alarm, Message::Evt, dataP, dataLen);
+			}
+		}
+		else if (me->type == Endpoint::Controller)
+		{
+			Alarm::AlarmData* alarmP = (Alarm::AlarmData*) dataP;
+
+			LM_F(("Alarm from '%s': '%s'", ep->name.c_str(), alarmP->message));
+			alarmSave(ep, alarmP);
+		}
+		else
+			LM_X(1, ("Got an alarm event from %s endpoint '%s' - not supposed to happen!", endpointTypeName(ep->type), ep->name.c_str()));
+		break;
+
 	default:
 		if (receiver == NULL)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));

@@ -6,7 +6,6 @@
 * FILE                     Message.h - message definitions for all Samson IPC
 *
 */
-#include "Alarm.h"              // 
 #include "Endpoint.h"			// Endpoint::Type
 
 

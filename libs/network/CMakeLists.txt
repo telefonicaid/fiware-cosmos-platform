@@ -13,6 +13,7 @@ SET (HEADERS
 	iomMsgRead.h
 	iomMsgAwait.h
 	workerStatus.h
+	Alarm.h
 )
 
 SET (SOURCES
@@ -29,6 +30,7 @@ SET (SOURCES
 	iomMsgRead.cpp
 	iomMsgAwait.cpp
 	workerStatus.cpp
+	Alarm.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''

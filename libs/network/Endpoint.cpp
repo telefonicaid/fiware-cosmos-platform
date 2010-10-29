@@ -58,7 +58,7 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 }
 
 
-
+#if 0
 /* ****************************************************************************
 *
 * typeName - 
@@ -78,7 +78,7 @@ static const char* typeName(Endpoint::Type type)
 
 	return "UnknownType";
 }
-
+#endif
 
 
 /* ****************************************************************************
@@ -91,7 +91,6 @@ Endpoint::Endpoint(Type type, std::string ipAndPort)
 
 	if (port == NULL)
 	{
-		LM_M(("type: '%s',  ipAndPort: '%s'", typeName(type), ipAndPort.c_str()));
 		this->name  = ipAndPort;
 		this->port  = atoi(ipAndPort.c_str());
 		this->ip    = "127.0.0.1";
@@ -153,6 +152,7 @@ char* Endpoint::stateName(void)
 	case Closed:          return (char*) "Closed";
 	case Disconnected:    return (char*) "Disconnected";
 	case Reconnecting:    return (char*) "Reconnecting";
+	case Dead:            return (char*) "Dead";
 	}
 
 	return (char*) "Unknown";

@@ -46,8 +46,6 @@ class Network : public NetworkInterface
 
 public:
 	Network();
-		
-	Endpoint* endpointLookup(int ix);
 
 	void setPacketReceiver(PacketReceiverInterface* receiver);
 
@@ -95,14 +93,19 @@ private:
 
 	bool       iAmReady;
 
-	Endpoint*  endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port);
+	Endpoint*  endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core);
 	void       endpointRemove(Endpoint* ep);
 	Endpoint*  endpointLookup(int fd, int* idP);
+	Endpoint*  endpointLookup(int ix);
+	Endpoint*  endpointCoreWorkerLookup(int coreNo);
 	Endpoint*  endpointFreeGet(Endpoint::Type type);
 
 	void msgTreat(int fd, char* name);
 	void checkInitDone(void);
 	int  helloSend(Endpoint* ep, Message::MessageType type);
+	void coreWorkerStart(int coreNo, char* fatherName, int port);
+	void workerStatusToController(void);
+	void coreWorkerRestart(void);
 };
 
 	

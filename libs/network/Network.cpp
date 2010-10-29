@@ -15,6 +15,7 @@
 
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_*
+#include "Alarm.h"              // ALARM
 
 #include "Endpoint.h"			// Endpoint
 #include "Message.h"            // ss::Message::MessageCode
@@ -218,12 +219,8 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 	hello.type    = me->type;
 	hello.workers = me->workers;
 	hello.port    = me->port;
+	hello.coreNo  = me->coreNo;
 
-	LM_T(LMT_WRITE, ("sending hello"));
-	LM_T(LMT_WRITE, ("sending hello %s", messageType(type)));
-	LM_T(LMT_WRITE, ("sending hello %s to '%s'", messageType(type), ep->name.c_str()));
-	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s')",  messageType(type), ep->name.c_str(), hello.name));
-	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s', type: %s", messageType(type), ep->name.c_str(), hello.name, endpointTypeName(hello.type)));
 	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s', type: %s (%d))", messageType(type), ep->name.c_str(), hello.name, endpointTypeName(hello.type), hello.type));
 
 	return iomMsgSend(ep->fd, ep->name.c_str(), me->name.c_str(), Message::Hello, type, &hello, sizeof(hello));
@@ -272,6 +269,121 @@ void Network::initAsSamsonController(int port, std::vector<std::string> peers)
 
 /* ****************************************************************************
 *
+* coreWorkerStart - 
+*/
+void Network::coreWorkerStart(int coreNo, char* fatherName, int port)
+{
+	Endpoint* ep;
+
+	ep = endpointCoreWorkerLookup(coreNo);
+	if (ep == NULL)
+	{
+		char cwName[16];
+
+		sprintf(cwName, "Core %02d", coreNo);
+		ep = endpointAdd(-1, cwName, 0, Endpoint::CoreWorker, "localhost", 0, coreNo);
+	}
+	if (ep == NULL)
+		LM_X(1, ("NULL endpoint ..."));
+	ep->startTime = time(NULL);
+	ep->coreNo = coreNo;
+
+
+	LM_T(LMT_COREWORKER, ("*********** Starting Core Worker %d", coreNo));
+	if (fork() == 0)
+	{
+		LM_T(LMT_COREWORKER, ("child %d running (pid: %d)", coreNo, (int) getpid()));
+		/* ************************************************************
+		 *
+		 * Stop logging to stdout
+		 */
+		lmFdUnregister(1);
+
+
+
+		/* ************************************************************
+		 *
+		 * Set progName
+		 */
+		progName = (char*) malloc(strlen("samsonCoreWorker_") + 10);
+		if (progName == NULL)
+			LM_X(1, ("samsonCoreWorker_%d died allocating: %s", getpid(), strerror(errno)));
+		sprintf(progName, (char*) "samsonCoreWorker_%d", (int) getpid());
+
+
+		
+		/* ************************************************************
+		 *
+		 * Setting auxiliar string for logMsg
+		 */
+		char auxString[16];
+
+		sprintf(auxString, "core%02d", coreNo);
+		lmAux(auxString);
+
+
+
+		/* ************************************************************
+		 *
+		 * Clean out father processes endpoints
+		 */
+		me         = NULL;
+		listener   = NULL;
+		controller = NULL;
+
+		unsigned int epIx;
+		for (epIx = 0; epIx < sizeof(endpoint) / sizeof(endpoint[0]); epIx++)
+		{
+			if (endpoint[epIx] != NULL)
+				close(endpoint[epIx]->fd);
+			endpoint[epIx] = NULL;
+		}
+
+
+
+		/* ************************************************************
+		 *
+		 * Creating my 'me' endpoint
+		 */
+		endpoint[0] = new Endpoint(Endpoint::CoreWorker, -1);
+		if (endpoint[0] == NULL)
+			LM_XP(1, ("new Endpoint"));
+
+		me          = endpoint[0];
+		me->name    = progName;
+		me->state   = Endpoint::Me;
+		me->coreNo  = coreNo;
+
+
+
+		LM_T(LMT_COREWORKER, ("new me created"));
+		/* ************************************************************
+		 *
+		 * connect to samsonWorker (father process is like a controller, so I use index 2 ...)
+		 */
+		endpoint[2] = new Endpoint(Endpoint::Worker, fatherName);
+		if (endpoint[2] == NULL)
+			LM_XP(1, ("error allocating endpoint for father"));
+		controller = endpoint[2];
+
+		LM_T(LMT_COREWORKER, ("Connecting to father"));
+		controller->fd = iomConnect("localhost", port);
+		if (controller->fd == -1)
+			LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
+		LM_T(LMT_COREWORKER, ("Connected to father"));
+		controller->state = ss::Endpoint::Connected;
+
+		LM_T(LMT_COREWORKER, ("Calling RUN"));
+		run();
+		LM_T(LMT_COREWORKER, ("Back from run - should not ever get here (coreWorker %d, pid: %d)", coreNo, (int) getpid()));
+		exit(1);
+	}
+}
+
+
+
+/* ****************************************************************************
+*
 * initAsSamsonWorker -
 *
 * NOTE
@@ -302,100 +414,7 @@ void Network::initAsSamsonWorker(int port, std::string controllerName)
 
 	int coreNo;
 	for (coreNo = 0; coreNo < ws.cpuInfo.cores; coreNo++)
-	{
-		LM_M(("*********** Starting Core Worker %d", coreNo));
-
-		if (fork() == 0)
-		{
-			char* fatherName = progName;
-
-
-			LM_M(("child %d running (pid: %d)", coreNo, (int) getpid()));
-			/* ************************************************************
-			 *
-			 * Stop logging to stdout
-			 */
-			lmFdUnregister(1);
-
-
-
-			/* ************************************************************
-			 *
-			 * Set progName
-			 */
-			progName = (char*) malloc(strlen("samsonCoreWorker_") + 10);
-			if (progName == NULL)
-				LM_X(1, ("samsonCoreWorker_%d died allocating: %s", getpid(), strerror(errno)));
-			sprintf(progName, (char*) "samsonCoreWorker_%d", (int) getpid());
-
-
-
-			/* ************************************************************
-			 *
-			 * Setting auxiliar string for logMsg
-			 */
-			char auxString[16];
-
-			sprintf(auxString, "core%02d", coreNo);
-			lmAux(auxString);
-
-
-
-			/* ************************************************************
-			 *
-			 * Clean out father processes endpoints
-			 */
-			me         = NULL;
-			listener   = NULL;
-			controller = NULL;
-
-			unsigned int epIx;
-			for (epIx = 0; epIx < sizeof(endpoint) / sizeof(endpoint[0]); epIx++)
-			{
-				if (endpoint[epIx] != NULL)
-					close(endpoint[epIx]->fd);
-				endpoint[epIx] = NULL;
-			}
-
-
-
-			/* ************************************************************
-			 *
-			 * Creating my 'me' endpoint
-			 */
-			endpoint[0] = new Endpoint(Endpoint::CoreWorker, -1);
-			if (endpoint[0] == NULL)
-				LM_XP(1, ("new Endpoint"));
-			me          = endpoint[0];
-			me->name    = progName;
-			me->state   = Endpoint::Me;
-			me->coreNo  = coreNo;
-
-
-
-			LM_M(("new me created"));
-			/* ************************************************************
-			 *
-			 * connect to samsonWorker (father process is like a controller, so I use index 2 ...)
-			 */
-			endpoint[2] = new Endpoint(Endpoint::Worker, fatherName);
-			if (endpoint[2] == NULL)
-				LM_XP(1, ("error allocating endpoint for father"));
-			controller = endpoint[2];
-
-			LM_M(("Connecting to father"));
-			controller->fd = iomConnect("localhost", port);
-			if (controller->fd == -1)
-				LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
-			LM_M(("Connected to father"));
-			controller->state = ss::Endpoint::Connected;
-
-			LM_M(("Calling RUN"));
-			run();
-			LM_M(("Back from run - should not ever get here (coreWorker %d, pid: %d)", coreNo, (int) getpid()));
-			exit(1);
-		}
-	}
+		coreWorkerStart(coreNo, progName, port);
 }
 
 
@@ -579,7 +598,7 @@ bool Network::ready()
 * the vector.
 *
 */
-Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port)
+Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo = -1)
 {
 	int ix;
 
@@ -593,7 +612,6 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 		return NULL;
 
 	case Endpoint::Controller:
-		LM_M(("Not adding Controller ..."));
 		return controller;
 
 	case Endpoint::Temporal:
@@ -620,8 +638,32 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 		break;
 
 
-	case Endpoint::Delilah:
 	case Endpoint::CoreWorker:
+		Endpoint* ep;
+
+		ep = endpointCoreWorkerLookup(coreNo);
+		if (ep != NULL)
+		{
+			LM_T(LMT_EP, ("Found CoreWorker (core %d)", coreNo));
+			ep->fd    = fd;
+			ep->state = Endpoint::Connected;
+			ep->name  = name;
+			ep->ip    = ip;
+
+#if 0
+			// Remove the temporal endpoint that the connection of this CoreWorker has left
+			int       tmpIx;
+			Endpoint* tmp = endpointLookup(fd, &tmpIx);
+			
+			if (tmp)
+				LM_W(("Should remove this TEMPORAL endpoint here ... (fd %d)", fd));
+#endif
+
+			return ep;
+		}
+		/* no break here ! */
+
+	case Endpoint::Delilah:
 		for (ix = 3 + Workers; ix < (int) (sizeof(endpoint) / sizeof(endpoint[0]) - 1); ix++)
 		{
 			if (endpoint[ix] == NULL)
@@ -630,12 +672,13 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 				if (endpoint[ix] == NULL)
 					LM_XP(1, ("allocating Endpoint"));
 
-				endpoint[ix]->name  = std::string(name);
-				endpoint[ix]->fd    = fd;
-				endpoint[ix]->state = Endpoint::Connected;
-				endpoint[ix]->type  = type;
-				endpoint[ix]->ip    = ip;
-				endpoint[ix]->port  = port;
+				endpoint[ix]->name    = std::string(name);
+				endpoint[ix]->fd      = fd;
+				endpoint[ix]->state   = Endpoint::Connected;
+				endpoint[ix]->type    = type;
+				endpoint[ix]->ip      = ip;
+				endpoint[ix]->port    = port;
+				endpoint[ix]->coreNo  = coreNo;
 
 				return endpoint[ix];
 			}
@@ -692,6 +735,8 @@ void Network::endpointRemove(Endpoint* ep)
 {
 	unsigned int ix;
 
+	LM_T(LMT_EP, ("Removing '%s' endpoint '%s'", endpointTypeName(ep->type), ep->name.c_str()));
+
 	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
 	{
 		if (endpoint[ix] == NULL)
@@ -723,6 +768,33 @@ void Network::endpointRemove(Endpoint* ep)
 Endpoint* Network::endpointLookup(int ix)
 {
 	return endpoint[ix];
+}
+
+
+
+/* ****************************************************************************
+*
+* endpointCoreWorkerLookup - 
+*/
+Endpoint* Network::endpointCoreWorkerLookup(int coreNo)
+{
+	unsigned int ix;
+
+	for (ix = 3 + Workers; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if (endpoint[ix]->type != Endpoint::CoreWorker)
+			continue;
+
+		if (endpoint[ix]->coreNo != coreNo)
+			continue;
+
+		return endpoint[ix];
+	}
+
+	return NULL;
 }
 
 
@@ -778,6 +850,7 @@ void Network::msgTreat(int fd, char* name)
 
 	LM_T(LMT_SELECT, ("treating incoming message from '%s' (ep at %p)", name, ep));
 	s = iomMsgRead(fd, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
+	LM_T(LMT_SELECT, ("iomMsgRead returned %d", s));
 	if (s != 0)
 	{
 		LM_T(LMT_SELECT, ("iomMsgRead returned %d", s));
@@ -787,6 +860,9 @@ void Network::msgTreat(int fd, char* name)
 			LM_T(LMT_SELECT, ("Connection closed - ep at %p", ep));
 			if (ep == controller)
 			{
+				if (me->type == Endpoint::CoreWorker)
+					LM_X(1, ("My Father (samsonWorker) died, I cannot exist without father process"));
+
 				LM_W(("controller died ... trying to reconnect !"));
 
 				controller->fd    = -1;
@@ -812,6 +888,27 @@ void Network::msgTreat(int fd, char* name)
 					ep->fd    = -1;
 					ep->name  = "-----";
 				}
+				else if (ep->type == Endpoint::CoreWorker)
+				{
+					time_t now = time(NULL);
+
+					if (me->type != Endpoint::Worker)
+						LM_X(1, ("BUG - only Worker should be connected to CoreWorker (I'm a '%s')", endpointTypeName(me->type)));
+
+					close(ep->fd);
+					ep->state = Endpoint::Dead;
+					ep->name  = std::string("dead: ") + ep->name;
+					ep->fd    = -1;
+
+					if (now - ep->startTime > 5)
+					{
+						ALARM(Alarm::Error, Alarm::CoreWorkerDied, ("Core worker %d died", ep->coreNo));
+						coreWorkerStart(ep->coreNo, progName, me->port);
+						ep->startTime = now;
+					}
+					else
+						ALARM(Alarm::Error, Alarm::CoreWorkerNotRestarted, ("Core worker %d died %d secs after restart", ep->coreNo, now - ep->startTime));
+				}
 				else
 					endpointRemove(ep);
 			}
@@ -833,7 +930,7 @@ void Network::msgTreat(int fd, char* name)
 		LM_T(LMT_HELLO, ("Got Hello %s from %s, type %s, %s:%d, workers: %d",
 						 messageType(msgType), hello->name, endpointTypeName(hello->type), hello->ip, hello->port, hello->workers));
 
-		helloEp = endpointAdd(fd, hello->name, hello->workers, hello->type, hello->ip, hello->port);
+		helloEp = endpointAdd(fd, hello->name, hello->workers, hello->type, hello->ip, hello->port, hello->coreNo);
 
 		if (helloEp == NULL)
 			LM_X(1, ("helloEp == NULL"));
@@ -951,6 +1048,85 @@ void Network::msgTreat(int fd, char* name)
 
 /* ****************************************************************************
 *
+* workerStatusToController - 
+*/
+void Network::workerStatusToController(void)
+{
+	Message::WorkerStatusData ws;
+	int                       ix;
+
+	workerStatus(&ws);
+
+	LM_T(LMT_STAT, ("CPU Load: %d%%  (%d cores)", ws.cpuInfo.load, ws.cpuInfo.cores));
+	for (ix = 0; ix < ws.cpuInfo.cores; ix++)
+		LM_T(LMT_STAT, ("Core %02d load: %d%%  (MHz: %d, bogomips: %d, cache size: %d)",
+						ix,
+						ws.cpuInfo.coreInfo[ix].load,
+						ws.cpuInfo.coreInfo[ix].mhz,
+						ws.cpuInfo.coreInfo[ix].bogomips,
+						ws.cpuInfo.coreInfo[ix].cacheSize));
+
+	for (ix = 0; ix < ws.netInfo.ifaces; ix++)
+		LM_T(LMT_STAT, ("Net I/F %02d: %-10s Received: %12u / %8u,  Sent: %12u / %8u)",
+						ix,
+						ws.netInfo.iface[ix].name,
+						ws.netInfo.iface[ix].rcvBytes,
+						ws.netInfo.iface[ix].rcvPackets,
+						ws.netInfo.iface[ix].sndBytes,
+						ws.netInfo.iface[ix].sndPackets));
+					
+	for (ix = 0; ix < ws.netInfo.ifaces; ix++)
+	{
+		if (ws.netInfo.iface[ix].sndSpeed > 1024 * 1024)
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f Mbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].sndSpeed / 1024.0 / 1024.0));
+		else if (ws.netInfo.iface[ix].sndSpeed > 1024)
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f kbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].sndSpeed / 1024.0));
+		else
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f bytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].sndSpeed));
+
+		if (ws.netInfo.iface[ix].rcvSpeed > 1024 * 1024)
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f Mbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed / 1024.0 / 1024.0));
+		else if (ws.netInfo.iface[ix].rcvSpeed > 1024)
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f kbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed / 1024.0));
+		else
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f bytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed));
+	}
+
+	LM_T(LMT_STAT, ("I have %d cores", ws.cpuInfo.cores));
+	iomMsgSend(controller->fd, controller->name.c_str(), me->name.c_str(), Message::WorkerStatus, Message::Msg, &ws, sizeof(ws));
+}
+
+
+
+/* ****************************************************************************
+*
+* coreWorkerRestart - 
+*/
+void Network::coreWorkerRestart(void)
+{
+	unsigned int epIx;
+
+	for (epIx = 3 + Workers; epIx < sizeof(endpoint) / sizeof(endpoint[0]); epIx++)
+	{
+		if (endpoint[epIx] == NULL)
+			continue;
+
+		if (endpoint[epIx]->type != Endpoint::CoreWorker)
+			continue;
+
+		LM_T(LMT_COREWORKER, ("CoreWorker '%s' in state '%s'", endpoint[epIx]->name.c_str(), endpoint[epIx]->stateName()));
+		if (endpoint[epIx]->state != Endpoint::Dead)
+			continue;
+
+		LM_T(LMT_RESTART, ("Trying to restart CoreWorker %d", endpoint[epIx]->coreNo));
+		coreWorkerStart(endpoint[epIx]->coreNo, progName, me->port);
+	}
+}
+
+
+
+/* ****************************************************************************
+*
 * run - 
 */
 void Network::run()
@@ -958,8 +1134,9 @@ void Network::run()
 	int             fds;
 	fd_set          rFds;
 	struct timeval  timeVal;
-	time_t          then = 0;
-	time_t          now  = 0;
+	time_t          now   = 0;
+	time_t          then  = time(NULL);
+	time_t          then2 = time(NULL);
 	int             max;
 
 	while (1)
@@ -973,50 +1150,18 @@ void Network::run()
 				now = time(NULL);
 				if (now - then > 1)
 				{
-					Message::WorkerStatusData ws;
-					int                       ix;
-
+					workerStatusToController();
 					then = now;
-					workerStatus(&ws);
-
-					LM_T(LMT_STAT, ("CPU Load: %d%%  (%d cores)", ws.cpuInfo.load, ws.cpuInfo.cores));
-					for (ix = 0; ix < ws.cpuInfo.cores; ix++)
-						LM_T(LMT_STAT, ("Core %02d load: %d%%  (MHz: %d, bogomips: %d, cache size: %d)",
-							  ix,
-							  ws.cpuInfo.coreInfo[ix].load,
-							  ws.cpuInfo.coreInfo[ix].mhz,
-							  ws.cpuInfo.coreInfo[ix].bogomips,
-							  ws.cpuInfo.coreInfo[ix].cacheSize));
-
-					for (ix = 0; ix < ws.netInfo.ifaces; ix++)
-						LM_T(LMT_STAT, ("Net I/F %02d: %-10s Received: %12u / %8u,  Sent: %12u / %8u)",
-							  ix,
-							  ws.netInfo.iface[ix].name,
-							  ws.netInfo.iface[ix].rcvBytes,
-							  ws.netInfo.iface[ix].rcvPackets,
-							  ws.netInfo.iface[ix].sndBytes,
-							  ws.netInfo.iface[ix].sndPackets));
-					
-					for (ix = 0; ix < ws.netInfo.ifaces; ix++)
-					{
-						if (ws.netInfo.iface[ix].sndSpeed > 1024 * 1024)
-							LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f Mbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].sndSpeed / 1024.0 / 1024.0));
-						else if (ws.netInfo.iface[ix].sndSpeed > 1024)
-							LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f kbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].sndSpeed / 1024.0));
-						else
-							LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f bytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].sndSpeed));
-
-						if (ws.netInfo.iface[ix].rcvSpeed > 1024 * 1024)
-							LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f Mbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed / 1024.0 / 1024.0));
-						else if (ws.netInfo.iface[ix].rcvSpeed > 1024)
-							LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f kbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed / 1024.0));
-						else
-							LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f bytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed));
-					}
-
-					LM_T(LMT_STAT, ("I have %d cores", ws.cpuInfo.cores));
-					iomMsgSend(controller->fd, controller->name.c_str(), me->name.c_str(), Message::WorkerStatus, Message::Msg, &ws, sizeof(ws));
 				}
+
+				if (now - then2 > 30)
+				{
+					LM_T(LMT_COREWORKER, ("calling coreWorkerRestart"));
+					coreWorkerRestart();
+					then2 = now;
+				}
+				else
+					LM_T(LMT_COREWORKER, ("Not calling coreWorkerRestart (%d < 30)", now - then2));
 			}
 
 
@@ -1085,7 +1230,7 @@ void Network::run()
 					FD_SET(endpoint[ix]->fd, &rFds);
 					max = MAX(max, endpoint[ix]->fd);
 					
-					LM_T(LMT_SELECT, ("+ endpoint %02d %-15s %-24s %20s:%05d %20s (fd: %d)",
+					LM_T(LMT_SELECT, ("+ endpoint %02d %-12s %-28s %20s:%05d %20s (fd: %d)",
 									  ix,
 									  endpointTypeName(endpoint[ix]->type),
 									  endpoint[ix]->name.c_str(),
@@ -1096,7 +1241,7 @@ void Network::run()
 				}
 				else
 				{
-					LM_T(LMT_SELECT, ("- endpoint %02d %-15s %-24s %20s:%05d %20s (fd: %d)",
+					LM_T(LMT_SELECT, ("- endpoint %02d %-12s %-28s %20s:%05d %20s (fd: %d)",
 									  ix,
 									  endpointTypeName(endpoint[ix]->type),
 									  endpoint[ix]->name.c_str(),
@@ -1151,7 +1296,7 @@ void Network::run()
 
 					if (FD_ISSET(endpoint[ix]->fd, &rFds))
 					{
-						LM_T(LMT_SELECT, ("incoming message from endpoint %s", endpoint[ix]->name.c_str()));
+						LM_T(LMT_SELECT, ("incoming message from '%s' endpoint %s", endpointTypeName(endpoint[ix]->type), endpoint[ix]->name.c_str()));
 						msgTreat(endpoint[ix]->fd, (char*) endpoint[ix]->name.c_str());
 						// FD_CLR(endpoint[ix]->fd, &rFds);  endpoint[ix] might have been set to NULL in msgTreat ...
 					}

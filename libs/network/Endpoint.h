@@ -27,7 +27,8 @@ public:
 		Connected,
 		Closed,
 		Disconnected,
-		Reconnecting
+		Reconnecting,
+		Dead
 	} State;
 
 	typedef enum Type
@@ -50,8 +51,18 @@ public:
 	State                        state;
 	int                          workers;
 	Type                         type;
-	Message::WorkerStatusData*   status;
-	int                          coreNo;
+
+
+	//
+	// The following fields will form a union (depending on Type) in the near future
+	//
+
+	Message::WorkerStatusData*   status;    	// Worker
+	int                          coreNo;        // CoreWorker
+	time_t                       startTime;     // CoreWorker
+	int                          restarts;      // CoreWorker
+
+
 
 	char*           stateName(void);
 	void            reset();

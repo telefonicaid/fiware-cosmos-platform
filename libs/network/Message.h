@@ -6,6 +6,7 @@
 * FILE                     Message.h - message definitions for all Samson IPC
 *
 */
+#include "Alarm.h"              // 
 #include "Endpoint.h"			// Endpoint::Type
 
 
@@ -73,6 +74,7 @@ typedef struct HelloData
 	ss::Endpoint::Type  type;
 	int                 workers;
 	int                 port;
+	int                 coreNo;
 } HelloData;
 
 

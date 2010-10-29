@@ -38,6 +38,7 @@ typedef enum Severity
 */
 typedef enum Type
 {
+	BadRequest,
 	CoreWorkerNotFound,
 	CoreWorkerBusy,
 	CoreWorkerDied,

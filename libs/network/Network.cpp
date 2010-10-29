@@ -1047,14 +1047,21 @@ void Network::msgTreat(int fd, char* name)
 
 		if (me->type == Endpoint::Worker)
 		{
-			Endpoint* cwP = endpointCoreWorkerLookup(jobP->coreNo);
-
-			if (cwP == NULL)
-				ALARM(Alarm::Error, Alarm::CoreWorkerNotFound, ("cannot find core worker %d", jobP->coreNo));
-			else if (cwP->coreWorkerState != Endpoint::NotBusy)
-				ALARM(Alarm::Warning, Alarm::CoreWorkerBusy, ("core worker %d busy - try again later ...", jobP->coreNo));
+			if ((ep->type != Endpoint::Delilah) && (ep->type != Endpoint::Controller))
+			{
+				ALARM(Alarm::Error, Alarm::BadRequest, ("got a Job request from a '%s' endpoint - ignoring it", endpointTypeName(ep->type)));
+			}
 			else
-				iomMsgSend(cwP->fd, cwP->name.c_str(), me->name.c_str(), Message::Job, Message::Evt);
+			{
+				Endpoint* cwP = endpointCoreWorkerLookup(jobP->coreNo);
+
+				if (cwP == NULL)
+					ALARM(Alarm::Error, Alarm::CoreWorkerNotFound, ("cannot find core worker %d", jobP->coreNo));
+				else if (cwP->coreWorkerState != Endpoint::NotBusy)
+					ALARM(Alarm::Warning, Alarm::CoreWorkerBusy, ("core worker %d busy - try again later ...", jobP->coreNo));
+				else
+					iomMsgSend(cwP->fd, cwP->name.c_str(), me->name.c_str(), Message::Job, Message::Evt);
+			}
 		}
 		else if (me->type == Endpoint::CoreWorker)
 		{

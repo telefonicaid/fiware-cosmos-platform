@@ -25,6 +25,7 @@ typedef enum Severity
 {
 	Debug,
 	Verbose,
+	Warning,
 	Error,
 	Severe
 } Severity;
@@ -37,6 +38,8 @@ typedef enum Severity
 */
 typedef enum Type
 {
+	CoreWorkerNotFound,
+	CoreWorkerBusy,
 	CoreWorkerDied,
 	CoreWorkerNotRestarted
 } Type;
@@ -48,6 +51,7 @@ typedef enum Type
 * ALARM - 
 */
 #define ALARM(severity, type, message)                                                              \
+do                                                                                                  \
 {                                                                                                   \
     char* text;                                                                                     \
                                                                                                     \
@@ -55,7 +59,7 @@ typedef enum Type
 	::ss::Alarm::alarmSend(controller, me, severity, type, __FILE__, __LINE__, __FUNCTION__, text); \
 	if (text)                                                                                       \
 		free(text);                                                                                 \
-}
+} while (0)
 
 
 

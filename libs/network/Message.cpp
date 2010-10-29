@@ -28,6 +28,8 @@ char* messageCode(MessageCode code)
 	case Command:                  return (char*) "Command";
 	case CommandResponse:          return (char*) "CommandResponse";
 	case WorkerTaskConfirmation:   return (char*) "WorkerTaskConfirmation";
+	case Job:                      return (char*) "Job";
+	case JobDone:                  return (char*) "JobDone";
 	}
 
 	return (char*) "Unknown";

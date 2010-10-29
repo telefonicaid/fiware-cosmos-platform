@@ -144,10 +144,7 @@ namespace ss {
 				status[workerId] = *((Message::WorkerStatusData*) dataP);
 			break;
 			
-		case Message::Hello:
-		case Message::WorkerVector:
-		case Message::WorkerTask:
-		case Message::CommandResponse:
+		default:
 			LM_X(1, ("msg code '%s' not treated ...", messageCode(msgCode)));
 			break;
 		}

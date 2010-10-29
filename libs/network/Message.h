@@ -23,13 +23,15 @@ namespace Message
 */
 typedef enum MessageCode
 {
-	Hello                  = 'H',
+	Hello                  = ('H' << 24) + ('E' << 16) + ('L' << 8) + 'O',
 	WorkerVector           = 'V',
 	WorkerStatus           = 'S',
 	WorkerTask             = 'T',
 	Command                = 'C',
 	CommandResponse        = 'R',
-	WorkerTaskConfirmation = 'c'
+	WorkerTaskConfirmation = 'c',
+	Job                    = 'J',
+	JobDone                = 'j'
 } MessageCode;
 
 
@@ -60,6 +62,18 @@ typedef struct Header
 	unsigned int   gbufLen;
 	unsigned int   kvDataLen;
 } Header;
+
+
+
+/* ****************************************************************************
+*
+* JobData - 
+*/
+typedef struct JobData
+{
+	int  coreNo;
+	char description[64];
+} JobData;
 
 
 

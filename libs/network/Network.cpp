@@ -12,6 +12,7 @@
 #include <vector>				// ss::vector
 #include <sys/types.h>          // pid_t
 #include <unistd.h>             // fork, getpid
+#include <sched.h>              // sched_setaffinity
 
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_*
@@ -285,17 +286,30 @@ void Network::coreWorkerStart(int coreNo, char* fatherName, int port)
 	}
 	if (ep == NULL)
 		LM_X(1, ("NULL endpoint ..."));
-	ep->startTime = time(NULL);
-	ep->coreNo = coreNo;
 
+	ep->startTime        = time(NULL);
+	ep->coreNo           = coreNo;
+	ep->coreWorkerState  = Endpoint::NotBusy;
+
+	// Using these two fields to improve debugging ...
+	ep->ip              = "Core";
+	ep->port            = coreNo;
 
 	LM_T(LMT_COREWORKER, ("*********** Starting Core Worker %d", coreNo));
 	if (fork() == 0)
 	{
-		LM_T(LMT_COREWORKER, ("child %d running (pid: %d)", coreNo, (int) getpid()));
+		cpu_set_t cpuSet;
+
+		CPU_ZERO(&cpuSet);
+		CPU_SET(coreNo, &cpuSet);
+		if (sched_setaffinity(0, sizeof(cpuSet), &cpuSet) == -1)
+			LM_XP(1, ("sched_setaffinity"));
+
+		LM_T(LMT_COREWORKER, ("child %d running (pid: %d) on core %d", coreNo, (int) getpid(), coreNo));
+
 		/* ************************************************************
 		 *
-		 * Stop logging to stdout
+		 * Core workers do not log to stdout
 		 */
 		lmFdUnregister(1);
 
@@ -648,20 +662,11 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 			ep->fd    = fd;
 			ep->state = Endpoint::Connected;
 			ep->name  = name;
-			ep->ip    = ip;
-
-#if 0
-			// Remove the temporal endpoint that the connection of this CoreWorker has left
-			int       tmpIx;
-			Endpoint* tmp = endpointLookup(fd, &tmpIx);
-			
-			if (tmp)
-				LM_W(("Should remove this TEMPORAL endpoint here ... (fd %d)", fd));
-#endif
 
 			return ep;
 		}
 		/* no break here ! */
+		/* The first time a CoreWorker Endpoint is created we pass thru */
 
 	case Endpoint::Delilah:
 		for (ix = 3 + Workers; ix < (int) (sizeof(endpoint) / sizeof(endpoint[0]) - 1); ix++)
@@ -842,8 +847,9 @@ void Network::msgTreat(int fd, char* name)
 	int                   s;
 	int                   endpointId;
 	Endpoint*             ep = endpointLookup(fd, &endpointId);
-	void*                 dataP;
-	int                   dataLen;
+	char                  data[1024];
+	void*                 dataP   = data;
+	int                   dataLen = sizeof(data);
 
 	if (ep == NULL)
 		LM_X(1, ("endpoint not found for fd %d", fd));
@@ -1034,6 +1040,44 @@ void Network::msgTreat(int fd, char* name)
 		}
 		break;
 
+	case Message::Job:
+		Message::JobData* jobP;
+
+		jobP = (Message::JobData*) dataP;
+
+		if (me->type == Endpoint::Worker)
+		{
+			Endpoint* cwP = endpointCoreWorkerLookup(jobP->coreNo);
+
+			if (cwP == NULL)
+				ALARM(Alarm::Error, Alarm::CoreWorkerNotFound, ("cannot find core worker %d", jobP->coreNo));
+			else if (cwP->coreWorkerState != Endpoint::NotBusy)
+				ALARM(Alarm::Warning, Alarm::CoreWorkerBusy, ("core worker %d busy - try again later ...", jobP->coreNo));
+			else
+				iomMsgSend(cwP->fd, cwP->name.c_str(), me->name.c_str(), Message::Job, Message::Evt);
+		}
+		else if (me->type == Endpoint::CoreWorker)
+		{
+			if (ep != controller)
+				LM_X(1, ("Got a job from != Controller"));
+
+			// Instead of executing a job I'll just sleep 3 secs
+			sleep(3);
+			iomMsgSend(controller->fd, "Father", me->name.c_str(), Message::JobDone, Message::Evt);
+		}
+		else
+			LM_X(1, ("got a Job message - I'm a '%s'", endpointTypeName(me->type)));
+		break;
+
+	case Message::JobDone:
+		if (me->type != Endpoint::Worker)
+			LM_X(1, ("got a JobDone message - I'm a '%s'", endpointTypeName(me->type)));
+		if (ep->type != Endpoint::CoreWorker)
+			LM_X(1, ("got a JobDone message from a '%s' endpoint!", endpointTypeName(ep->type)));
+
+		ep->coreWorkerState = Endpoint::NotBusy;
+		break;
+
 	default:
 		if (receiver == NULL)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
@@ -1042,6 +1086,9 @@ void Network::msgTreat(int fd, char* name)
 		receiver->receive(endpointId, msgCode, dataP, dataLen, &packet);
 		break;
 	}
+
+	if (dataP != data)
+		free(dataP);
 }
 
 

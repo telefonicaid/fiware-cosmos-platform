@@ -31,6 +31,12 @@ public:
 		Dead
 	} State;
 
+	typedef enum CoreWorkerState
+	{
+		NotBusy,
+		Busy
+	} CoreWorkerState;
+
 	typedef enum Type
 	{
 		Unknown,
@@ -57,11 +63,11 @@ public:
 	// The following fields will form a union (depending on Type) in the near future
 	//
 
-	Message::WorkerStatusData*   status;    	// Worker
-	int                          coreNo;        // CoreWorker
-	time_t                       startTime;     // CoreWorker
-	int                          restarts;      // CoreWorker
-
+	Message::WorkerStatusData*   status;           // Worker
+	int                          coreNo;           // CoreWorker
+	time_t                       startTime;        // CoreWorker
+	int                          restarts;         // CoreWorker
+	CoreWorkerState              coreWorkerState;  // CoreWorker
 
 
 	char*           stateName(void);

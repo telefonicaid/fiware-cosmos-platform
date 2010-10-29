@@ -62,9 +62,12 @@ int iomMsgRead
 	{
 		int   nb;
 
-		*dataPP = (char*) malloc(header.dataLen);
-		if (*dataPP == NULL)
-			LM_X(1, ("malloc(%d)", header.dataLen));
+		if (header.dataLen > (unsigned int) *dataLenP)
+		{
+			*dataPP = (char*) malloc(header.dataLen);
+			if (*dataPP == NULL)
+				LM_X(1, ("malloc(%d)", header.dataLen));
+		}
 
 		LM_T(LMT_READ, ("reading %d bytes of primary message data", header.dataLen));
 		nb = read(fd, *dataPP, header.dataLen);

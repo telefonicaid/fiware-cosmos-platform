@@ -10,6 +10,7 @@
 #include "ObjectItem.h"
 #include "ProcessScene.h"
 #include "globals.h"
+#include "ConnectionItem.h"
 
 ObjectItem::ObjectItem(QSvgRenderer* renderer, QGraphicsItem* parent)
 	: QGraphicsSvgItem(parent)
@@ -108,4 +109,16 @@ QVariant ObjectItem::itemChange(GraphicsItemChange change, const QVariant &value
 		emit posChanged();
 
 	return QGraphicsSvgItem::itemChange(change, value);
+}
+
+bool ObjectItem::isConnected(ObjectItem* item)
+{
+	ConnectionItem* conn;
+	foreach (conn, connections)
+	{
+		if ( item == conn->endItem())
+			return true;
+	}
+
+	return false;
 }

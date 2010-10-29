@@ -11,7 +11,6 @@
 #include <QGraphicsView>
 #include <QSvgRenderer>
 
-
 #include "ProcessScene.h"
 #include "ObjectItem.h"
 #include "QueueItem.h"

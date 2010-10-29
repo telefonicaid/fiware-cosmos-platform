@@ -33,7 +33,8 @@ public:
 	virtual void setDefaultSize();
 	virtual void setSize(QSize size);
 
-//	virtual void addConnection(ConnectionItem* connection);
+	virtual void addConnection(ConnectionItem* connection) { connections.append(connection); };
+	virtual bool isConnected(ObjectItem* item);
 
 protected:
 	virtual void init();

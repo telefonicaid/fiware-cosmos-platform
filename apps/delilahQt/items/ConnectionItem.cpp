@@ -11,9 +11,11 @@
 #include <QPainterPath>
 #include <QPointF>
 #include <QPainter>
+#include <QMessageBox>
 
 #include "ConnectionItem.h"
 #include "ObjectItem.h"
+#include "globals.h"
 
 #define PI 3.14159265
 
@@ -151,16 +153,41 @@ bool ConnectionItem::open(ObjectItem* item)
 
 bool ConnectionItem::close(ObjectItem* item)
 {
-	// TODO: validate that it can be closed
 	finished = true;
+	QString error_message;
+
+	// Validate the object types are different.
+	// Objects of the same type (e.g. Queue or operations) can not be connected ???
+	if( item->type() == start_item->type())
+	{
+		finished = false;
+		error_message = QString("Connection between items with the same type is not allowed.\n");
+	}
+
+	// Check if connection does not already exist
+	// TODO: Can items be connected in both directions?????
+	if (start_item->isConnected(item))
+	{
+		finished = false;
+		error_message.append("Such connection already exists.\n");
+	}
+
+	// TODO: Validate that both objects can be connected (input/output KV are correct)
 
 	if(finished)
 	{
 		end_item = item;
 		updateEndPos();
 
+		start_item->addConnection(this);
+		end_item->addConnection(this);
+
 		connect(start_item, SIGNAL(posChanged()), this, SLOT(updateStartPos()));
 		connect(end_item, SIGNAL(posChanged()), this, SLOT(updateEndPos()));
+	}
+	else
+	{
+		QMessageBox::information(0, QString("Connection Error"), error_message);
 	}
 
 	return finished;

@@ -21,6 +21,7 @@ char* messageCode(MessageCode code)
 {
 	switch (code)
 	{
+	case Alarm:                    return (char*) "Alarm";
 	case Hello:                    return (char*) "Hello";
 	case WorkerVector:             return (char*) "WorkerVector";
 	case WorkerStatus:             return (char*) "WorkerStatus";

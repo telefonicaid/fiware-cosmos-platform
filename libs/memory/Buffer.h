@@ -13,8 +13,6 @@ namespace ss {
 	
 	class Buffer
 	{
-		// Global parameters identifying this buffer
-		int _sharedMemoryId;		// SharedObject (-1 if not shared memory)
 
 		// Buffer itself
 		char * _data;
@@ -23,9 +21,8 @@ namespace ss {
 		// Private constructor/destructors since it can be only access by MemoryManager
 		friend class MemoryManager;
 		
-		Buffer( int sharedMemoryId , char *data ,  size_t size )
+		Buffer( char *data ,  size_t size )
 		{
-			_sharedMemoryId = sharedMemoryId;
 			_size = size;
 			_data = data;
 
@@ -45,11 +42,13 @@ namespace ss {
 		
 	public:
 
+		/** 
+		 Variables used by the owner of this buffer
+		 */
+		
 		size_t offset;
 			
 	public:
-		
-		
 		
 		char *getData()
 		{

@@ -89,11 +89,11 @@ namespace ss {
 		bool result;
 		if ( o->mode == "r" )
 		{
-			result = file->read(o->buffer, o->offset , o->size);
+			result = file->read(o->buffer->getData(), o->offset , o->size);
 		}
 		else
 		{
-			result = file->append(o->buffer, o->size);
+			result = file->append(o->buffer->getData(), o->size);
 		}
 		
 		time(&stop);

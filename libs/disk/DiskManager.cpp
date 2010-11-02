@@ -20,8 +20,8 @@ namespace ss {
 	{
 		counter_id = 0;
 	}
-		
-	size_t DiskManager::read( char *buffer , size_t size ,  std::string fileName , size_t offset , DiskManagerDelegate *delegate )
+
+	size_t DiskManager::read( Buffer* buffer , std::string fileName , size_t offset , size_t size , DiskManagerDelegate *delegate )
 	{
 		
 		lock.lock();
@@ -44,7 +44,7 @@ namespace ss {
 			return 0;
 	}
 	
-	size_t DiskManager::write( char *buffer , size_t size ,  std::string fileName , DiskManagerDelegate *delegate )
+	size_t DiskManager::write( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate )
 	{
 		lock.lock();
 		DiskOperation *o = new DiskOperation(counter_id++);
@@ -52,7 +52,7 @@ namespace ss {
 		o->fileName = fileName;
 		o->mode = "w";
 		o->buffer = buffer;
-		o->size = size;
+		o->size = buffer->getSize();
 		o->offset = 0;
 		o->delegate = delegate;
 		

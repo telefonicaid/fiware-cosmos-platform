@@ -298,6 +298,9 @@ void Network::coreWorkerStart(int coreNo, char* fatherName, int port)
 	LM_T(LMT_COREWORKER, ("*********** Starting Core Worker %d", coreNo));
 	if (fork() == 0)
 	{
+		
+#if !defined(__APPLE__)
+
 		cpu_set_t cpuSet;
 
 		CPU_ZERO(&cpuSet);
@@ -305,6 +308,8 @@ void Network::coreWorkerStart(int coreNo, char* fatherName, int port)
 		if (sched_setaffinity(0, sizeof(cpuSet), &cpuSet) == -1)
 			LM_XP(1, ("sched_setaffinity"));
 
+#endif
+		
 		LM_T(LMT_COREWORKER, ("child %d running (pid: %d) on core %d", coreNo, (int) getpid(), coreNo));
 
 		/* ************************************************************

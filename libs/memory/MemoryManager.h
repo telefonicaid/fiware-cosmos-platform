@@ -11,10 +11,9 @@
 #include "CommandLine.h"			// au::CommandLine
 
 
-#include "Buffer.h"            // ss::Buffer
-#include "Lock.h"              // au::Lock
-
-
+#include "Buffer.h"					// ss::Buffer
+#include "Lock.h"					// au::Lock
+#include "au_map.h"					// au::map
 
 #define SS_SHARED_MEMORY_KEY_ID					872934	// the first one
 
@@ -31,138 +30,76 @@ namespace ss {
 	public:
 		int shmid;					/* return value from shmget() */ 
 		char *data;					/* Shared memory data */
-		
+		size_t size;				/* Information about the size of this shared memory item */
 	};
 
-	
-	// Setup information
-	
-	class MemoryManagerSetup
-	{
 		
-	public:
-		
-		int num_cores;
-		size_t shared_memory_per_core;
-
-		MemoryManagerSetup()
-		{
-			// Load from file...
-			num_cores = 2;
-			shared_memory_per_core = 536870912;
-			
-			FILE *file = fopen( SAMSON_SETUP_FILE , "r" );
-			char line[2000];
-			if( file )
-			{
-				
-				while (fgets(line,2000,file)) 
-				{
-					au::CommandLine c;
-					c.parse(line);
-					
-					// Skip comments
-					if( c.get_num_arguments() == 0)
-						continue;
-					if( c.get_argument(0).c_str()[0] == '#' )
-						continue;
-
-					
-					if( c.get_num_arguments() < 2)
-						continue;
-					
-					if( c.get_argument(0) == "shm_size_per_core" )
-						shared_memory_per_core = atoll( c.get_argument(1).c_str() );
-				}
-				
-			}
-			
-		}
-	};
-	
 	class MemoryManager
 	{
 		
+		au::Lock lock;									// Lock to be thread-safe
+		au::StopLock stopLock;							// Stop lock for threads waiting for memory ( Process )
+
+		size_t used_memory;								// Monitor the used memory
+
+		au::map<int,SharedMemoryItem> items;			// Shared memory items
+		
+		// Setup parameters ( loaded at constructor )
+		
+		int num_cores;							// Number of cores to use in this server
+		size_t shared_memory_per_core;			// Shared memory used in per-core operation
+		size_t memory;							// Total memory used ( used to limit workers , and free buffered files )
+		
 		MemoryManager();
-		au::Lock lock;			// Lock to be thread-safe
-
-		size_t used_memory;		// Monitor the used memory
-
-		// Shared memory items
-		std::map<int,SharedMemoryItem*> items;
-		
-		// Setup parameters
-		MemoryManagerSetup setup;
-		
 		
 		// Function to create/load the shared memory items
-		void createSharedMemoryItems()
-		{
-			// Create shared memory
-			for (int i = 0 ; i < setup.num_cores ;i++)
-				createSharedMemory(i);
-		}
+		void createSharedMemoryItems();
 		
-		SharedMemoryItem* createSharedMemory( int i )
-		{
-			lock.lock();
-			
-			SharedMemoryItem* _info = new SharedMemoryItem();
-			
-			key_t key;		/* key to be passed to shmget() */ 
-			int shmflg;		/* shmflg to be passed to shmget() */ 
-			size_t size;	/* size to be passed to shmget() */ 
-			
-			
-			key = SS_SHARED_MEMORY_KEY_ID + i; 
-			size = setup.shared_memory_per_core;
-			shmflg = IPC_CREAT | 384;			// Permission to read / write ( only owner )
-			
-			if ((_info->shmid = shmget (key, size, shmflg)) == -1)
-			{
-				perror("shmget: shmget failed"); 
-				exit(1); 
-			}
-			
-			
-			// Attach to local-space memory
-			_info->data = (char *)shmat(_info->shmid, 0, 0);
-			if( _info->data == (char*)-1 )
-			{
-				perror("shmat: shmat failed"); 
-				exit(1);
-			}
-			
-			
-			items.insert( std::pair<int,SharedMemoryItem*>( i , _info) );
-		
-			lock.unlock();
-			
-			return _info;
-		}
-		
+		// Function used to create a particular shared memory region ( used inside a "Process" to work with its designated area )
+		SharedMemoryItem* createSharedMemory( int i );
 		
 	public:
+		
+		/**
+		 Singleton interface to the shared memory
+		 */
+		
 		static MemoryManager* shared();
-	
-		// Interface to get a buffer of memory
-		Buffer *newPrivateBuffer( size_t size );
+
+		/**
+		 Interface to get a buffer of memory
+		 Used by networkInterface , DataBuffer and FileManager
+		 */
 		
-		// Interface to desply a buffer of memory
-		void destroy( Buffer *b);
+		Buffer *newBuffer( size_t size );
+
+		/**
+		 Interface to desply a buffer of memory
+		 */
+		void destroyBuffer( Buffer *b);
 
 		
-		SharedMemoryItem* getSharedMemory( int i )
-		{
-			std::map<int,SharedMemoryItem*>::iterator s = items.find( i );	
-			if( s == items.end() )
-				return createSharedMemory(i);
-			else
-				return s->second;
-		}
+		/** 
+		 Interface to get a buffer only if used memory is bellow a particular percentadge.
+		 If that is not the case, this call is blocking until the memory is free enougth
+		 This is used when Process produce data. Only if enougth memory is available, data is send to the network interface
+		 */
+		 
+		 Buffer *newBufferIfMemoryBellow( size_t size , double max_usage_memory , bool blocking );
 
 		
-
+		/**
+		 Get the current usage of memory
+		 Used by DiskManager to controll the amount of memory that can use for keeping just writed files on memory
+		 */
+		
+		double getMemoryUsage();
+		
+		/**
+		 Interface to get a particular shared memory region
+		 */
+		
+		SharedMemoryItem* getSharedMemory( int i );
 		
 		
 	};

@@ -115,7 +115,7 @@ namespace ss
 				if( _task->isTopLevelTask() )
 				{
 					// Send a message back to the dalilah that ordered this comman ( if still connected )
-					controller->sendDalilahAnswer( _task->getId() , _task->getFromIdentifier(), false, true,  "OK!");
+					controller->sendDelilahAnswer( _task->getId() , _task->getFromIdentifier(), false, true,  "OK!");
 				}
 
 				// Update this in the data controller

@@ -1,7 +1,5 @@
 SET (HEADERS
     ModulesManager.h
-    Delilah.h
-    DelilahConsole.h
     SamsonWorker.h
     WorkerDataManager.h
     WorkerQueue.h
@@ -16,8 +14,6 @@ SET (HEADERS
 
 SET (SOURCES
     ModulesManager.cpp
-    Delilah.cpp
-    DelilahConsole.cpp
     SamsonWorker.cpp
     WorkerDataManager.cpp
     WorkerQueue.cpp
@@ -79,15 +75,3 @@ SET_TARGET_PROPERTIES(samsonCoreStatic PROPERTIES OUTPUT_NAME samsonCore)
 # TARGET_LINK_LIBRARIES(samsonCoreShared ${SHARED_LIBS} )
 # SET_TARGET_PROPERTIES(samsonCoreShared PROPERTIES OUTPUT_NAME samsonCore)
 
-ADD_EXECUTABLE(samsonTest main.cpp ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonTest ${STATIC_LIBS} )
-
-ADD_EXECUTABLE(samsonMemoryTest memoryTest.cpp ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonMemoryTest  ${STATIC_LIBS} )
-INSTALL(TARGETS               samsonMemoryTest
-        RUNTIME DESTINATION   bin)
-
-ADD_EXECUTABLE(samsonDiskTest samsonDiskTest.cpp ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonDiskTest  ${STATIC_LIBS} )
-INSTALL(TARGETS               samsonDiskTest
-        RUNTIME DESTINATION   bin)

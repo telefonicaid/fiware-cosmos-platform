@@ -119,7 +119,7 @@ namespace ss {
 				} while (workersFound < workers);
 				
 				// Respond with controller status
-				sendDalilahAnswer(packet->message.command().sender_id(), fromId, false, true, output.str());
+				sendDelilahAnswer(packet->message.command().sender_id(), fromId, false, true, output.str());
 				return 0;
 			}
 			
@@ -127,7 +127,7 @@ namespace ss {
 			success = taskManager.addTask(fromId, packet->message.command().command(), output);
 			
 			// Send something back to dalilah (if error -> it is also finished)
-			sendDalilahAnswer(packet->message.command().sender_id(), fromId, !success, !success,  output.str());
+			sendDelilahAnswer(packet->message.command().sender_id(), fromId, !success, !success,  output.str());
 			break;
 
 		case Message::WorkerTaskConfirmation:
@@ -200,7 +200,7 @@ namespace ss {
 #pragma mark Sent messages
 	
 	
-	void SamsonController::sendDalilahAnswer(size_t sender_id, int dalilahIdentifier, bool error, bool finished, std::string answer_message)
+	void SamsonController::sendDelilahAnswer(size_t sender_id, int dalilahIdentifier, bool error, bool finished, std::string answer_message)
 	{
 		// Get status of controller
 		Packet p2;

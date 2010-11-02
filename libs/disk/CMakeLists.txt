@@ -6,6 +6,7 @@ SET (HEADERS
 	DiskOperation.h
 	DiskOperationsManager.h
 	FileAccess.h
+	FileManager.h
 )
 
 SET (SOURCES
@@ -15,9 +16,11 @@ SET (SOURCES
 	DiskOperation.cpp
 	DiskOperationsManager.cpp
 	FileAccess.cpp
+	FileManager.cpp
 )
 
 SET( LIBS_STATIC
+     logMsgStatic
      samsonCommonStatic
      protobuf
      ncurses
@@ -31,6 +34,7 @@ SET( LIBS_SHARED
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
+include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 
 
 ADD_LIBRARY(samsonDiskStatic STATIC ${SOURCES} ${HEADERS} )
@@ -40,3 +44,9 @@ SET_TARGET_PROPERTIES(samsonDiskStatic PROPERTIES OUTPUT_NAME samsonDisk)
 # ADD_LIBRARY(samsonDiskShared SHARED ${SOURCES} ${HEADERS} )
 # TARGET_LINK_LIBRARIES(samsonDiskShared  ${LIBS_SHARED} )
 # SET_TARGET_PROPERTIES(samsonDiskShared PROPERTIES OUTPUT_NAME samsonDisk)
+
+
+ADD_EXECUTABLE(samsonFileManagerTest samsonFileManagerTest.cpp ${SOURCES} ${HEADERS} )
+TARGET_LINK_LIBRARIES(samsonFileManagerTest  ${LIBS_STATIC} )
+INSTALL(TARGETS               samsonFileManagerTest
+			      RUNTIME DESTINATION   bin)

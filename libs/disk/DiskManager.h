@@ -14,7 +14,7 @@
 #include <sstream>			// std::ostringstream
 #include <Format.h>			// au::Format
 #include <time.h>			// clock(.)
-
+#include "Buffer.h"			// ss::Buffer
 
 namespace ss {
 	
@@ -42,10 +42,10 @@ namespace ss {
 		
 		/**
 		 Schedule a read operation
-		 Return inmediatelly n
+		 Return inmediatelly
 		 Latter a notification is send to the delegate
 		 */
-		size_t read( char *buffer , size_t size ,  std::string fileName , size_t offset , DiskManagerDelegate *delegate );
+		size_t read( Buffer* buffer , std::string fileName , size_t offset , size_t size , DiskManagerDelegate *delegate );
 
 		/**
 		 Schedule a write operation
@@ -53,7 +53,7 @@ namespace ss {
 		 Latter a notification is send to the delegate
 		 */
 		
-		size_t write( char *buffer , size_t size ,  std::string fileName , DiskManagerDelegate *delegate );
+		size_t write( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate );
 		
 		/**
 		 Show status for debugging

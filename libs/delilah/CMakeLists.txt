@@ -1,0 +1,83 @@
+find_package(Qt4 COMPONENTS QtCore QtGui QtSvg REQUIRED )
+
+IF(QT4_FOUND)
+	INCLUDE( ${QT_USE_FILE} )
+	
+	SET (SOURCES
+		Delilah.cpp
+		DelilahConsole.cpp
+		DelilahQt.cpp
+		MainWindow.cpp
+		InfoBox.cpp
+		ProcessView.cpp
+		ProcessScene.cpp
+		items/ObjectItem.cpp
+		items/QueueItem.cpp
+		items/OperationItem.cpp
+		items/ConnectionItem.cpp)
+	
+	SET (HEADERS
+		Delilah.h
+		DelilahConsole.h
+		DelilahQt.h
+		ProcessView.h)
+	
+	SET (HEADERS_MOC
+		MainWindow.h
+		InfoBox.h
+		ProcessScene.h
+		items/ObjectItem.h
+		items/QueueItem.h
+		items/OperationItem.h
+		items/ConnectionItem.h)
+	
+	SET (FORMS
+		MainWindow.ui
+		InfoBox.ui)
+	
+	SET (RESOURCES
+		resources/objects.qrc
+		resources/icons.qrc)
+
+SET (STATIC_LIBS
+	samsonNetworkStatic
+	samsonModuleStatic
+	samsonCommonStatic
+	samsonCodingStatic
+	samsonMemoryStatic
+	samsonNetworkStatic
+	samsonDiskStatic
+	samsonDataStatic
+	protobuf
+	dl
+        pthread
+	ncurses
+    )	
+
+	QT4_WRAP_CPP(MOC_SOURCES ${HEADERS_MOC})
+	QT4_WRAP_UI(FORMS_HEADERS ${FORMS})
+	QT4_ADD_RESOURCES(RESOURCES_QRC ${RESOURCES})
+	
+	include_directories(${CMAKE_CURRENT_BINARY_DIR})
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+	include_directories("${CMAKE_CURRENT_SOURCE_DIR}/items")
+	include_directories("${PROJECT_SOURCE_DIR}/libs/core")
+	include_directories("${PROJECT_SOURCE_DIR}/libs/network")
+	include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
+	include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
+	include_directories("${PROJECT_BINARY_DIR}/libs/network")
+	include_directories("${PROJECT_SOURCE_DIR}/libs/common")
+	include_directories("${PROJECT_SOURCE_DIR}/libs/module")
+	include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
+	include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
+	include_directories("${PROJECT_SOURCE_DIR}/libs/data")
+
+	ADD_LIBRARY(delilahStatic ${SOURCES} ${HEADERS} ${MOC_SOURCES} ${FORMS_HEADERS} ${RESOURCES_QRC})
+	TARGET_LINK_LIBRARIES(delilahStatic ${QT_LIBRARIES} ${STATIC_LIBS})
+
+ELSE(QT4_FOUND)
+	MESSAGE( STATUS "Qt4 not found - skipping compilation of delilah_lib")
+ENDIF(QT4_FOUND)
+
+
+

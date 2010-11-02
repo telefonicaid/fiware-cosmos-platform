@@ -40,7 +40,7 @@ namespace ss {
 		
 		// Get a buffer to be able to put all data in memory
 		size_t file_size = KV_HASH_GROUP_VECTOR_SIZE + info.size;	
-		Buffer *buffer = MemoryManager::shared()->newPrivateBuffer( file_size );
+		Buffer *buffer = MemoryManager::shared()->newBuffer( file_size );
 		
 		// TODO: To be completed...		
 		hg_info *info_buffer = (hg_info*) buffer->getData();
@@ -60,7 +60,7 @@ namespace ss {
 		
 		// Flush to disk for this queue ( removing buffers used )
 		for (size_t i = 0 ; i < size() ; i++)
-			MemoryManager::shared()->destroy( (*this)[i] );
+			MemoryManager::shared()->destroyBuffer( (*this)[i] );
 		clear();
 	}
 	

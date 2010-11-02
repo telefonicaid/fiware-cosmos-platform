@@ -52,25 +52,24 @@ namespace ss {
 			dm->showStatus();
 		}
 		
-		void read( char *buffer , size_t size ,  std::string fileName , size_t offset )
+		void read( Buffer *buffer ,  std::string fileName  , size_t offset ,size_t size )
 		{
 			lock.lock();
 			
-			size_t id = dm->read( buffer , size , fileName , offset , this );
+			size_t id = dm->read( buffer , fileName , offset , size,  this );
 			if( id )
 				codes.insert( id );
 			
 			lock.unlock();
 		}
 		
-		void write( char *buffer , size_t size ,  std::string fileName  )
+		void write( Buffer *buffer ,  std::string fileName  )
 		{
 			lock.lock();
 			
-			size_t id = dm->write( buffer , size , fileName , this );
+			size_t id = dm->write( buffer , fileName , this );
 			if( id )
 				codes.insert( id );
-			
 			lock.unlock();
 			
 		}

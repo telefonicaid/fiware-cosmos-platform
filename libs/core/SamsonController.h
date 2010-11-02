@@ -61,7 +61,7 @@ namespace ss {
 	private:
 		
 		// Send a message back to dalilah
-		void sendDalilahAnswer( size_t sender_id , int dalilahIdentifier , bool error , bool finished, std::string answer_message );
+		void sendDelilahAnswer( size_t sender_id , int dalilahIdentifier , bool error , bool finished, std::string answer_message );
 		
 		// Send a message to a worker with a particular task
 		void sendWorkerTasks( ControllerTask *task );

@@ -14,7 +14,7 @@
 #include <sstream>			// std::ostringstream
 #include <Format.h>			// au::Format
 #include <time.h>			// clock(.)
-
+#include "Buffer.h"			// Buffer used to read or write
 
 namespace ss {
 	
@@ -28,7 +28,7 @@ namespace ss {
 		
 		std::string fileName;			// FileName to open
 		std::string mode;				// Mode to open
-		char *buffer;					// Buffer to store / read data
+		Buffer * buffer;				// Buffer used to read or write
 		size_t size;					// Size to read/write
 		size_t offset;					// Offset inside the file ( onlu for read operations )
 		dev_t st_dev;					// Device where this file is stored

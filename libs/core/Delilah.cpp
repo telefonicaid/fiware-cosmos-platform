@@ -69,7 +69,7 @@ namespace ss {
 		return (local_id - 1);
 	}
 	
-	void Delilah::receivedMessage( size_t id , bool error , bool finished , std::string message )
+	int Delilah::receivedMessage( size_t id , bool error , bool finished , std::string message )
 	{
 		// Todo with the received packet
 		std::ostringstream txt;
@@ -78,19 +78,24 @@ namespace ss {
 		
 		if( finished )
 			txt << "(FINISHED)";
+
 		txt << std::endl;
 		txt << "----------------------------------------------------------------" << std::endl;
 		txt << message << std::endl;
 		txt << "----------------------------------------------------------------" << std::endl;
 		
-		if( error )
-			console->writeErrorOnConsole( txt.str()  );
-		else
-			console->writeOnConsole( txt.str()  );
+		if (error)
+		{
+			console->writeErrorOnConsole(txt.str());
+			return 1;
+		}
+
+		console->writeOnConsole(txt.str());
+		return 0;
 	}
 	
 
-	void Delilah::receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet)
+	int Delilah::receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet)
 	{
 		if (msgCode == Message::CommandResponse)
 		{
@@ -99,8 +104,10 @@ namespace ss {
 			bool        finish   = packet->message.command_response().finish();
 			size_t      id       = packet->message.command_response().sender_id();
 			
-			receivedMessage(id, error, finish, message);
+			return receivedMessage(id, error, finish, message);
 		}
+
+		LM_RE(1, ("Unknown message code %d", msgCode));
 	}
 	
 	void Delilah::notificationSent(size_t id, bool success)

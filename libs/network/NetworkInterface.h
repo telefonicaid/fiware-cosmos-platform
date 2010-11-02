@@ -24,8 +24,10 @@ namespace ss {
 	{
 	public:
 		
-		// Notify that a nessage has been received
-		virtual void receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet) = 0;
+		// Notify that a nessage has been received.
+		// If 'receive' returns ZERO, a JobDone is sent as Ack.
+		// If non-zero is returned, a JobError is sent as Ack.
+		virtual int receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet) = 0;
 		
 		virtual ~PacketReceiverInterface() {};
 	};

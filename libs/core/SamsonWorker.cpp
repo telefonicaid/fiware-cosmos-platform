@@ -87,7 +87,7 @@ namespace ss {
 	}
 	
 	
-	void SamsonWorker::receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet)
+	int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet)
 	{
 		if (msgCode == Message::WorkerTask)
 		{
@@ -98,17 +98,19 @@ namespace ss {
 
 			data.runOperationOfTask(packet->message.worker_task().task_id(), packet->message.worker_task().command());
 
-			if(taskManager.addTask(packet->message.worker_task()))
+			if (taskManager.addTask(packet->message.worker_task()))
 			{
 				data.finishTask(packet->message.worker_task().task_id());
 			
-				// Sent a confirmation just to test everything is ok
+				// Send a confirmation just to test everything is ok
 				sentConfirmationToController(packet->message.worker_task().task_id());
 				
-				// Send a update
+				// Send update
 				sendWorkerStatus();
 			}
 		}
+
+		return 0;
 	}
 
 	void SamsonWorker::notificationSent(size_t id, bool success)

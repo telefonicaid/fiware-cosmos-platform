@@ -105,12 +105,12 @@ namespace ss {
 		 */
 		
 		size_t sendMessageToController(std::string message);
-		void receivedMessage( size_t id , bool error , bool finished , std::string message );
+		int receivedMessage( size_t id , bool error , bool finished , std::string message );
 		
 		
 		
 		// PacketReceiverInterface
-		virtual void receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet);
+		virtual int receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet);
 
 		// PacketSenderInterface
 		virtual void notificationSent(size_t id, bool success);

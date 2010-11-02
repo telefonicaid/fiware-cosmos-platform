@@ -70,7 +70,7 @@ namespace ss {
 
 
 
-	void SamsonController::receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet)
+	int SamsonController::receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet)
 	{
 		au::CommandLine     cmdLine;
 		bool                success;
@@ -82,7 +82,7 @@ namespace ss {
 			cmdLine.parse(packet->message.command().command());
 			
 			if (cmdLine.get_num_arguments() == 0)
-				return;
+				LM_RE(1, ("No args ..."));
 			
 			// General status command
 			if (cmdLine.get_argument(0) == "status")
@@ -119,35 +119,35 @@ namespace ss {
 				
 				// Respond with controller status
 				sendDalilahAnswer(packet->message.command().sender_id(), fromId, false, true, output.str());
-				return;
+				return 0;
 			}
 			
 			// Try to schedule the command
 			success = taskManager.addTask(fromId, packet->message.command().command(), output);
 			
-			// Send something back to dalilah (if error -> it is also finish)
+			// Send something back to dalilah (if error -> it is also finished)
 			sendDalilahAnswer(packet->message.command().sender_id(), fromId, !success, !success,  output.str());
-			
-			return;
 			break;
 
 		case Message::WorkerTaskConfirmation:
 			taskManager.notifyWorkerConfirmation(fromId, packet->message.worker_task_confirmation());
-			return;
 			break;
 
 		case Message::WorkerStatus:
 			int workerId;
 
 			workerId = network->getWorkerFromIdentifier(fromId);			
-			if (workerId != -1)
-				status[workerId] = *((Message::WorkerStatusData*) dataP);
+			if (workerId == -1)
+				LM_RE(2, ("getWorkerFromIdentifier(%d) failed", fromId));
+			status[workerId] = *((Message::WorkerStatusData*) dataP);
 			break;
 			
 		default:
 			LM_X(1, ("msg code '%s' not treated ...", messageCode(msgCode)));
 			break;
 		}
+
+		return 0;
 	}
 
 	void SamsonController::notificationSent(size_t id, bool success)

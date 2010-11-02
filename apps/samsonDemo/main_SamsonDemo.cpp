@@ -1,3 +1,4 @@
+
 #include <vector>				// std::vector
 #include <sstream>				// std::ostringstream
 
@@ -61,17 +62,17 @@ int main(int argc, const char *argv[])
 		_dalilah_argc = VECTOR_LENGTH(dalilah_argv);
 	}
 	
-	ss::Delilah dalilah( _dalilah_argc, _dalilah_argv , center.getNetwork( -2 )  );
+	ss::Delilah delilah( _dalilah_argc, _dalilah_argv , center.getNetwork( -2 )  );
 	
 	std::vector< ss::SamsonWorker* > workers;
 	for (int i = 0 ; i < num_workers ; i ++ )
 		workers.push_back( new ss::SamsonWorker( VECTOR_LENGTH(worker_argv) , worker_argv , center.getNetwork( i ) ) );
 	
 	controller.run();
-	dalilah.run();
+	delilah.run();
 	for (int i = 0 ; i < num_workers ; i ++ )
 		workers[i]->run();
 
 	// Keep alive while dalila is alive ( sending packets in the background )
-	center.run(&dalilah.finish);
+	center.run(&delilah.finish);
 }

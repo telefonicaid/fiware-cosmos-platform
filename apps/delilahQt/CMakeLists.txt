@@ -43,7 +43,7 @@ IF(QT4_FOUND)
 	include_directories("${CMAKE_CURRENT_SOURCE_DIR}/items")
 	
 	# SAMSON Executable
-	ADD_EXECUTABLE(delilah_qt ${SOURCES} ${HEADERS} ${MOC_SOURCES} ${FORMS_HEADERS} ${RESOURCES_QRC})
+	ADD_LIBRARY(delilah_qt ${SOURCES} ${HEADERS} ${MOC_SOURCES} ${FORMS_HEADERS} ${RESOURCES_QRC})
 	TARGET_LINK_LIBRARIES(delilah_qt ${QT_LIBRARIES})
 ELSE(QT4_FOUND)
 	MESSAGE( STATUS "Qt4 not found - skipping compilation of DelilahQt")

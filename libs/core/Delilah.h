@@ -11,6 +11,7 @@
 #include <iostream>				// std::cout
 
 #include "logMsg.h"             // lmInit, LM_*
+#include "coreTracelevels.h"    // LMT_*
 
 #include "Macros.h"             // EXIT, ...
 #include "Network.h"			// NetworkInterface
@@ -19,7 +20,7 @@
 #include "CommandLine.h"		// au::CommandLine
 #include "CommandLine.h"		// au::CommandLine
 #include "DelilahConsole.h"		// ss::DelilahConsole
-#include "traces.h"				// TRACE_DALILAH
+#include "traces.h"				// 
 
 
 
@@ -70,7 +71,7 @@ namespace ss {
 				exit(0);
 			}
 
-			LM_T( TRACE_DALILAH , ("Delilah running. Controller: %s",controller.c_str() ) );
+			LM_T(LMT_DELILAH, ("Delilah running. Controller: %s",controller.c_str() ) );
 			
 			//ss::Endpoint controllerEndpoint(Endpoint::Controller, controller);
 			//network->initAsDelilah(controllerEndpoint);

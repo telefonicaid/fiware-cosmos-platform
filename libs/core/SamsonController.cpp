@@ -1,6 +1,7 @@
 #include <iostream>				        // std::cout ...
 
 #include "logMsg.h"                     // lmInit, LM_*
+#include "coreTracelevels.h"            // LMT_*
 
 #include "Message.h"                    // Message::WorkerStatus, ...
 #include "workerStatus.h"               // Message::WorkerStatusData
@@ -221,7 +222,7 @@ namespace ss {
 		
 		for (int i = 3 ; i < 3 + network->getNumWorkers() ; i++)
 		{
-			LM_M(("Sending Message::WorkerTask to worker %d", i));
+			LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", i));
 			sendWorkerTask(i, task->getId(), task->getCommand());
 		}
 	}	
@@ -237,7 +238,7 @@ namespace ss {
 		t->set_command(command);
 		t->set_task_id(task_id);
 
-		LM_M(("Sending Message::WorkerTask to worker %d", workerIdentifier));
+		LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", workerIdentifier));
 		network->send(this, workerIdentifier, Message::WorkerTask, NULL, 0, &p2);
 	}
 }

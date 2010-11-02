@@ -626,6 +626,8 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 		return NULL;
 
 	case Endpoint::Controller:
+		endpoint[2]->name = std::string(name);
+		endpoint[2]->ip   = std::string(ip);
 		return controller;
 
 	case Endpoint::Temporal:
@@ -661,7 +663,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 			LM_T(LMT_EP, ("Found CoreWorker (core %d)", coreNo));
 			ep->fd    = fd;
 			ep->state = Endpoint::Connected;
-			ep->name  = name;
+			ep->name  = std::string(name);
 
 			return ep;
 		}
@@ -703,7 +705,8 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 			if (controller == NULL)
 				LM_X(1, ("controller == NULL"));
 
-			controller->fd = fd;
+			controller->fd   = fd;
+			controller->name = std::string(name);
 			
 			return controller;
 		}
@@ -1127,7 +1130,7 @@ void Network::msgTreat(int fd, char* name)
 		if (receiver == NULL)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
 
-		LM_T(LMT_MSG, ("forwarding '%s' %s to %s", messageCode(msgCode), messageType(msgType), ep->name.c_str()));
+		LM_T(LMT_MSG, ("forwarding '%s' %s from %s to CoreWorkers", messageCode(msgCode), messageType(msgType), ep->name.c_str()));
 		receiver->receive(endpointId, msgCode, dataP, dataLen, &packet);
 		break;
 	}

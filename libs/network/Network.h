@@ -66,6 +66,7 @@ public:
 	virtual int workerGetIdentifier(int nthWorker);  // Get the identifier of the i-th worker
 	virtual int getMyidentifier() { return 0; };     // Get my identifier
 	virtual int getNumWorkers();                     // Get the number of workers
+	virtual int getNumEndpoints(void)                { return sizeof(endpoint) / sizeof(endpoint[0]); }
 	virtual int getWorkerFromIdentifier(int identifier);
 
 	// Send a packet (return a unique id to inform the notifier later)

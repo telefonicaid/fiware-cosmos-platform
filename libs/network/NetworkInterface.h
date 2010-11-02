@@ -72,7 +72,8 @@ namespace ss {
 		virtual int workerGetIdentifier(int i)=0;		// Get the identifier of the i-th worker
 		virtual int getMyidentifier()=0;				// Get my identifier
 		virtual int getNumWorkers()=0;					// Get the number of workers
-		virtual Endpoint* endpointLookup(int ix) { return NULL; }  // Get an endpoint
+		virtual int getNumEndpoints() { return 0; }                // Get the number of endpoints
+		virtual Endpoint* endpointLookup(int ix) { return NULL; }  // Get the ixth endpoint
 
 		// Get the "worker cardinal" from the idenfitier
 		// This method should return a value between 0 and (num_workers-1) or -1 if the identifier provided is not related to any workers

@@ -1,6 +1,7 @@
 #include <iostream>                     // std::cout ...
 
 #include "logMsg.h"                     // lmInit, LM_*
+#include "coreTracelevels.h"            // LMT_*
 #include "traces.h"                     // Trace definition
 
 #include "Message.h"                    // Message
@@ -47,7 +48,7 @@ namespace ss {
 			exit(0);
 		}
 		
-		LM_T(TRACE_SAMSON_WORKER, ("Samson worker running at port %d controller: %s", port, controller.c_str()));
+		LM_T(LMT_SAMSON_WORKER, ("Samson worker running at port %d controller: %s", port, controller.c_str()));
 		
 		network->initAsSamsonWorker(port, controller);
 	}	
@@ -94,6 +95,7 @@ namespace ss {
 		if (msgCode == Message::WorkerTask)
 		{
 			// A packet with a particular command is received (controller expect to send a confirmation message)
+			LM_T(LMT_TASK, ("Got a WorkerTask message"));
 
 			// Process the command in the data manager (right now this is just to test)
 			data.beginTask(packet->message.worker_task().task_id());

@@ -2,13 +2,14 @@
 #define _H_DATA_MANAGER
 
 #include <iostream>
-#include <fstream>			// ifstream , ofstream
+#include <fstream>			  // ifstream , ofstream
 
-#include "logMsg.h"         // LM_*
+#include "logMsg.h"           // LM_*
+#include "dataTracelevels.h"  // LMT_*
 
 #include "data.pb.h"
 #include "traces.h"
-#include "Lock.h"			// au::Lock
+#include "Lock.h"			  // au::Lock
 
 
 
@@ -54,11 +55,11 @@ namespace ss
 		
 		bool openToRead( std::string fileName )
 		{
-            LM_M(("opening '%s'", fileName.c_str()));
+            LM_T(LMT_FILE, ("opening '%s'", fileName.c_str()));
 
 			input.open( fileName.c_str() );
 			if (output.is_open())
-				LM_M(("successfully opened '%s'", fileName.c_str()));
+				LM_T(LMT_FILE, ("successfully opened '%s'", fileName.c_str()));
 			else
 				LM_E(("error opening '%s'", fileName.c_str()));
 
@@ -67,11 +68,11 @@ namespace ss
 		
 		bool openToWrite( std::string fileName )
 		{
-			LM_M(("opening '%s'", fileName.c_str()));
+			LM_T(LMT_FILE, ("opening '%s'", fileName.c_str()));
 
 			output.open(fileName.c_str());
 			if (output.is_open())
-				LM_M(("successfully opened '%s'", fileName.c_str()));
+				LM_T(LMT_FILE, ("successfully opened '%s'", fileName.c_str()));
 			else
 				LM_E(("error opening '%s'", fileName.c_str()));
 

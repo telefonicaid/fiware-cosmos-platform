@@ -1,16 +1,20 @@
-
-#include "Delilah.h"			// ss:Delilah
-#include "SamsonWorker.h"		// ss::SamsonWorker
-#include "SamsonController.h"	// ss:: SasonController
 #include <vector>				// std::vector
 #include <sstream>				// std::ostringstream
-#include "traces.h"				// Traces stuff: samsonInitTrace(.) , ...
-#include "Endpoint.h"			// ss::EndPoint
 
+#include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // LMT_*
+#include "traces.h"				// Traces stuff: samsonInitTrace(.) , ...
+
+#include "Endpoint.h"			// ss::EndPoint
 #include "FakeEndpoint.h"
 #include "NetworkFake.h"
 #include "NetworkFakeCenter.h"
 #include "NetworkInterface.h"
+
+#include "Delilah.h"			// ss:Delilah
+#include "SamsonWorker.h"		// ss::SamsonWorker
+#include "SamsonController.h"	// ss:: SasonController
+
 
 
 #define VECTOR_LENGTH(v) sizeof(v)/sizeof(v[0])
@@ -27,7 +31,7 @@ int main(int argc, const char *argv[])
 	// Init the trace system
 	ss::samsonInitTrace( argc , argv );
 	
-	LM_T( TRACE_SAMSON_DEMO , ("Starting samsom demo") );
+	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo"));
 	
 	au::CommandLine commandLine;
 	commandLine.set_flag_int("workers", 2);			// Number of workers by command line ( default 2 )
@@ -69,7 +73,5 @@ int main(int argc, const char *argv[])
 		workers[i]->run();
 
 	// Keep alive while dalila is alive ( sending packets in the background )
-	center.run(  &dalilah.finish );
-	
-						  
+	center.run(&dalilah.finish);
 }

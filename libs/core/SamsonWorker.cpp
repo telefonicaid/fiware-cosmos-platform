@@ -61,6 +61,7 @@ namespace ss {
 		network->run();
 	}
 
+#if 0
 	void SamsonWorker::sendWorkerStatus()
 	{
 		Packet                  p;
@@ -74,6 +75,7 @@ namespace ss {
 		
 		network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, NULL, 0, &p);
 	}
+#endif
 		
 	void SamsonWorker::sentConfirmationToController(size_t task_id)
 	{
@@ -106,7 +108,7 @@ namespace ss {
 				sentConfirmationToController(packet->message.worker_task().task_id());
 				
 				// Send update
-				sendWorkerStatus();
+				// sendWorkerStatus();
 			}
 		}
 

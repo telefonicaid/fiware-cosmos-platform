@@ -24,7 +24,7 @@ namespace ss {
 		bool addTask( const network::WorkerTask &task );
 	
 		// Fill information about status of this worker
-		void fillWorkerStatus( network::WorkerStatus* status );
+		// void fillWorkerStatus( network::WorkerStatus* status );
 		
 	};
 

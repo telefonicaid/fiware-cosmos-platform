@@ -94,7 +94,7 @@ namespace ss {
 		// Unknwn command
 		return false;
 	}
-	
+#if 0
 	void WorkerDataManager::fillWorkerStatus( network::WorkerStatus* status )
 	{
 		lock.lock();
@@ -112,6 +112,7 @@ namespace ss {
 		
 		lock.unlock();
 	}
+#endif
 	
 	std::string WorkerDataManager::getLogFileName(   )
 	{

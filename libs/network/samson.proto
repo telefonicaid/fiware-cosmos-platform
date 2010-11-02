@@ -19,74 +19,6 @@ message EndPointVector
 
 
 
-
-// ////////////////////////////////////////////////////////////////////////////
-//
-// WorkerStatus - information about machine state
-//
-message CoreInfo
-{
-	required uint32 mhz        = 1;    // CPU/Core Frequency
-	required uint32 bogomips   = 2;    // bogomips for core
-	required uint32 cacheSize  = 3;    // cache size
-	required uint32 load       = 4;    // core load percentage (0-100)
-}
-
-message CpuInfo
-{
-	required uint32    load      = 1;   // total load percentage (0-100)
-	required uint32    cores     = 2;   // number of cores
-  	repeated CoreInfo  coreInfo  = 3;   // info for each core
-}
-
-message NetIf
-{
-	required string  name           =  1;    // name of the interface (lo, eth0, ...)
-
-	required uint64  rcvSpeed       =  2;    // received speed in bytes per second
-    required uint64  rcvBytes       =  3;    // number of bytes received in total
-    required uint64  rcvPackets     =  4;    // number of packets received in total
-    required uint64  rcvErrors      =  5;    // number of receive errors
-    required uint64  rcvDrop        =  6;    // 
-    required uint64  rcvFifo        =  7;    // 
-    required uint64  rcvFrame       =  8;    // 
-    required uint64  rcvCompressed  =  9;    // 
-    required uint64  rcvMulticast   = 10;    // 
-
-    required uint64  sndSpeed       = 11;    // send speed in bytes per second
-    required uint64  sndBytes       = 12;    // number of bytes sent in total
-    required uint64  sndPackets     = 13;    // number of packets sent in total
-    required uint64  sndErrs        = 14;    // number of send errors
-    required uint64  sndDrop        = 15;    // 
-    required uint64  sndFifo        = 16;    // 
-    required uint64  sndColls       = 17;    // 
-    required uint64  sndCarrier     = 18;    // 
-    required uint64  sndCompressed  = 19;    // 
-}
-
-message NetIfInfo
-{
-	required uint32    ifaces      = 1;   // number of interfaces
-  	repeated NetIf     iface       = 2;   // statistics for each interface
-}
-
-
-message Queue
-{
-	required string name   = 1;  // Name of the queue
-	required uint64 size   = 2;  // Total size in bytes
-	required uint64 kvs    = 3;  // total number of kvs
-	required uint32 files  = 4;  // Number of files of this queue
-}
-
-message WorkerStatus
-{
-	required CpuInfo   cpuInfo = 1;    // info and stats on CPU/Cores
-	required NetIfInfo netInfo = 2;    // stats on network interfaces
-	repeated Queue     queue   = 3;    // queue status in this server
-}
-
-
 // ////////////////////////////////////////////////////////////////////////////
 //
 // Message from the controller workers
@@ -176,5 +108,4 @@ message Message
 	optional WorkerTask	            worker_task	          	  = 105;  // Work task message
 	optional WorkerTaskConfirmation worker_task_confirmation  = 106;  // Work task confirmation message
 	optional Data 			        data                      = 107;  // Exchange of data packets between nodes     
-	optional WorkerStatus		    worker_status             = 108;  // Status of a worker ( sent to controller )
 }

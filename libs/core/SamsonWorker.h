@@ -58,11 +58,13 @@ namespace ss {
 		
 	private:
 		
+#if 0
 		/** 
-		 Sent a WorkerStatus message to controller
+		 Send a WorkerStatus message to controller
 		 */
 		
 		void sendWorkerStatus();
+#endif
 		
 		// send the confirmation of a particular task to the controller
 		void sentConfirmationToController(size_t task_id );

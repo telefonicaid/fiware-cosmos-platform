@@ -38,15 +38,13 @@ namespace ss {
 		return true;
 	}
 	
+#if 0
 	// Fill information about status of this worker
 	void WorkerTaskManager::fillWorkerStatus( network::WorkerStatus* status )
 	{
-#if 0
 		network::WorkerSystem *system =  status->mutable_system();
 		system->set_cores_total(10);
 		system->set_cores_running(1);
-#endif
 	}
-	
-
+#endif
 }

@@ -42,7 +42,7 @@ namespace ss {
 		
 		std::string getLogFileName( );
 		
-		void fillWorkerStatus( network::WorkerStatus* status );
+		// void fillWorkerStatus( network::WorkerStatus* status );
 		
 	private:
 		

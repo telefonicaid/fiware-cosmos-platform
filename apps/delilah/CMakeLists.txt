@@ -5,17 +5,37 @@ SET (SOURCES
 SET (HEADERS
 )
 
+SET( STATIC_LIBS
+     samsonNetworkStatic
+     samsonCoreStatic
+     samsonCommonStatic
+     delilahStatic
+     lm
+     protobuf
+     pthread
+     dl
+     curses
+)
+
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_BINARY_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/core")
+include_directories("${PROJECT_SOURCE_DIR}/libs/delilah")
+
+SET (RESOURCES
+    ${PROJECT_SOURCE_DIR}/libs/delilah/resources/objects.qrc
+    ${PROJECT_SOURCE_DIR}/libs/delilah/resources/icons.qrc)
+
+QT4_ADD_RESOURCES(RESOURCES_QRC ${RESOURCES})
+
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
 # SAMSON Executable
-ADD_EXECUTABLE(delilah ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(delilah samsonNetworkStatic samsonCoreStatic samsonCommonStatic lm protobuf pthread dl curses)
+ADD_EXECUTABLE(delilah ${SOURCES} ${HEADERS} ${RESOURCES_QRC} )
+TARGET_LINK_LIBRARIES(delilah ${STATIC_LIBS} )
 
 INSTALL(TARGETS               delilah
         RUNTIME DESTINATION   bin)

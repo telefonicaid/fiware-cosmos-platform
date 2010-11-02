@@ -6,6 +6,7 @@ IF(QT4_FOUND)
 	SET (SOURCES
 		DelilahQt.cpp
 		MainWindow.cpp
+		InfoBox.cpp
 		ProcessView.cpp
 		ProcessScene.cpp
 		items/ObjectItem.cpp
@@ -18,6 +19,7 @@ IF(QT4_FOUND)
 	
 	SET (HEADERS_MOC
 		MainWindow.h
+		InfoBox.h
 		ProcessScene.h
 		items/ObjectItem.h
 		items/QueueItem.h
@@ -25,7 +27,8 @@ IF(QT4_FOUND)
 		items/ConnectionItem.h)
 	
 	SET (FORMS
-		MainWindow.ui)
+		MainWindow.ui
+		InfoBox.ui)
 	
 	SET (RESOURCES
 		resources/objects.qrc

@@ -78,7 +78,7 @@ void ProcessScene::zoomReset()
 
 void ProcessScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
-	if (current_tool==TOOL_CONNECT)
+	if (current_tool==TOOL_CONNECT && event->button()==Qt::LeftButton)
 	{
 		std::cout << "Pressed\n";
 		ObjectItem* item = findItem(event->scenePos());

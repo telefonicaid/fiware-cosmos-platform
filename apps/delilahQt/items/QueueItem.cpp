@@ -50,7 +50,7 @@ void QueueItem::initText(QString text)
 	text_item->moveBy(p.x(), p.y());
 
 //	text_item->setEnabled(false);
-//	text_item->setAcceptedMouseButtons(0);
+	text_item->setAcceptedMouseButtons(0);
 //	text_item->setActive(false);
 //	text_item->setFlag(QGraphicsItem::ItemIsSelectable, false);
 }
@@ -59,7 +59,7 @@ void QueueItem::initText(QString text)
 void QueueItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
 	QMenu* menu = new QMenu();
-	menu->addAction("Show Queue Info");
+	menu->addAction("Show Queue Info", this, SLOT(showInfoBox()));
 	menu->exec(event->screenPos());
 }
 

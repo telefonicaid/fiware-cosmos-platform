@@ -36,6 +36,9 @@ public:
 	virtual void addConnection(ConnectionItem* connection) { connections.append(connection); };
 	virtual bool isConnected(ObjectItem* item);
 
+public slots:
+	void showInfoBox();
+
 protected:
 	virtual void init();
 	virtual void initializeDefaultSize() = 0;

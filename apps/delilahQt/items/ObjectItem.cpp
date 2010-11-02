@@ -11,6 +11,7 @@
 #include "ProcessScene.h"
 #include "globals.h"
 #include "ConnectionItem.h"
+#include "InfoBox.h"
 
 ObjectItem::ObjectItem(QSvgRenderer* renderer, QGraphicsItem* parent)
 	: QGraphicsSvgItem(parent)
@@ -121,4 +122,15 @@ bool ObjectItem::isConnected(ObjectItem* item)
 	}
 
 	return false;
+}
+
+void ObjectItem::showInfoBox()
+{
+//	ProcessScene* s = (ProcessScene*)scene();
+
+	InfoBox* info_box = new InfoBox();
+	// TODO: generate proper text
+	info_box->setText("test");
+
+	info_box->exec();
 }

@@ -49,6 +49,11 @@ namespace ss
 				_task = new ControllerTask( fromIdentifier, 0, current_task_id++ ,  command , controller->network->getNumWorkers() );
 				
 			}
+			else if (commandLine.get_argument(0) == "task_test")
+			{
+				// Create a top level task
+				_task = new ControllerTask( fromIdentifier, 0, current_task_id++ ,  command , controller->network->getNumWorkers() );
+			}
 		}
 
 		
@@ -78,7 +83,7 @@ namespace ss
 			output << "Scheduled with global task id " << _task->getId();
 			
 			// Put the task in running by sending to all workers
-			controller->sendWorkerTasks( _task );								// Sent the command to all the workers to perform this task
+			controller->sendWorkerTasks( _task );								// Send the command to all the workers to perform this task
 			_task->setRunning();												// Put the task to running
 			controller->data.runOperationOfTask( _task->getId(), _task->getCommand() );	// We process internally in the local "data manager"
 			

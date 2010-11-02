@@ -213,30 +213,31 @@ namespace ss {
 		network->send(this, dalilahIdentifier, Message::CommandResponse, NULL, 0, &p2);
 	}
 	
+
+
 	void SamsonController::sendWorkerTasks(ControllerTask *task)
 	{
 		// Send messages to the workers indicating the operation to do (waiting the confirmation from all of them)
-		for (int i = 0 ; i < network->getNumWorkers() ; i++)
+		
+		for (int i = 3 ; i < 3 + network->getNumWorkers() ; i++)
+		{
+			LM_M(("Sending Message::WorkerTask to worker %d", i));
 			sendWorkerTask(i, task->getId(), task->getCommand());
+		}
 	}	
 	
+
+
 	void SamsonController::sendWorkerTask(int workerIdentifier, size_t task_id, std::string command)
 	{
-		
 		// Get status of controller
 		Packet p2;
-		
+
 		network::WorkerTask *t = p2.message.mutable_worker_task();
 		t->set_command(command);
 		t->set_task_id(task_id);
-		
+
+		LM_M(("Sending Message::WorkerTask to worker %d", workerIdentifier));
 		network->send(this, workerIdentifier, Message::WorkerTask, NULL, 0, &p2);
 	}
-	
-	
-	
-	
-	
-	
-	
 }

@@ -860,6 +860,7 @@ void Network::msgTreat(int fd, char* name)
 	LM_T(LMT_SELECT, ("treating incoming message from '%s' (ep at %p)", name, ep));
 	s = iomMsgRead(fd, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
 	LM_T(LMT_SELECT, ("iomMsgRead returned %d", s));
+
 	if (s != 0)
 	{
 		LM_T(LMT_SELECT, ("iomMsgRead returned %d", s));
@@ -916,7 +917,8 @@ void Network::msgTreat(int fd, char* name)
 						ep->startTime = now;
 					}
 					else
-						ALARM(Alarm::Error, Alarm::CoreWorkerNotRestarted, ("Core worker %d died %d secs after restart", ep->coreNo, now - ep->startTime));
+						ALARM(Alarm::Error, Alarm::CoreWorkerNotRestarted, ("Core worker %d died %d secs after restart",
+																			ep->coreNo, now - ep->startTime));
 				}
 				else
 					endpointRemove(ep);
@@ -957,7 +959,8 @@ void Network::msgTreat(int fd, char* name)
 				Packet packet;
 
 				// Ask controller for list of workers
-				iomMsgSend(controller->fd, (char*) controller->name.c_str(), (char*) me->name.c_str(), Message::WorkerVector, Message::Msg, NULL, 0, NULL, NULL, 0);
+				iomMsgSend(controller->fd, (char*) controller->name.c_str(), (char*) me->name.c_str(),
+						   Message::WorkerVector, Message::Msg, NULL, 0, NULL, NULL, 0);
 			}
 		}
 		break;
@@ -993,7 +996,8 @@ void Network::msgTreat(int fd, char* name)
 
 				LM_TODO(("compare endpoint[3 + ix] and endpoint - should be equal in everything (name, ip, port ...)!"));
 
-				if (((strcmp(epP->ip.c_str(), me->ip.c_str()) == 0) || (strcmp(epP->ip.c_str(), me->hostname.c_str()) == 0)) && (epP->port == me->port))
+				if (((strcmp(epP->ip.c_str(), me->ip.c_str())       == 0)  ||
+					 (strcmp(epP->ip.c_str(), me->hostname.c_str()) == 0)) && (epP->port == me->port))
 				{
 					LM_T(LMT_WORKERS, ("NOT connecting to myself ..."));
 					epP->name = std::string("me: ") + epP->ip;
@@ -1063,7 +1067,15 @@ void Network::msgTreat(int fd, char* name)
 				else if (cwP->coreWorkerState != Message::NotBusy)
 					ALARM(Alarm::Warning, Alarm::CoreWorkerBusy, ("core worker %d busy - try again later ...", jobP->coreNo));
 				else
-					iomMsgSend(cwP->fd, cwP->name.c_str(), me->name.c_str(), Message::Job, Message::Evt);
+				{
+					int s;
+
+					s = iomMsgSend(cwP->fd, cwP->name.c_str(), me->name.c_str(), Message::Job, Message::Evt);
+					if (s != 0)
+						LM_E(("iomMsgSend error %d", s));
+					else
+						cwP->coreWorkerState = Message::Busy;
+				}
 			}
 		}
 		else if (me->type == Endpoint::CoreWorker)
@@ -1137,6 +1149,7 @@ void Network::workerStatusToController(void)
 
 	workerStatus(&ws, this);
 
+#ifdef DEBUG
 	LM_T(LMT_STAT, ("CPU Load: %d%%  (%d cores)", ws.cpuInfo.load, ws.cpuInfo.cores));
 	for (ix = 0; ix < ws.cpuInfo.cores; ix++)
 		LM_T(LMT_STAT, ("Core %02d load: %d%%  (MHz: %d, bogomips: %d, cache size: %d)",
@@ -1158,18 +1171,30 @@ void Network::workerStatusToController(void)
 	for (ix = 0; ix < ws.netInfo.ifaces; ix++)
 	{
 		if (ws.netInfo.iface[ix].sndSpeed > 1024 * 1024)
-			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f Mbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].sndSpeed / 1024.0 / 1024.0));
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f Mbytes/s", ix,
+							ws.netInfo.iface[ix].name,
+							ws.netInfo.iface[ix].sndSpeed / 1024.0 / 1024.0));
 		else if (ws.netInfo.iface[ix].sndSpeed > 1024)
-			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f kbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].sndSpeed / 1024.0));
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f kbytes/s", ix,
+							ws.netInfo.iface[ix].name,
+							ws.netInfo.iface[ix].sndSpeed / 1024.0));
 		else
-			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f bytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].sndSpeed));
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f bytes/s", ix,
+							ws.netInfo.iface[ix].name,
+							ws.netInfo.iface[ix].sndSpeed));
 
 		if (ws.netInfo.iface[ix].rcvSpeed > 1024 * 1024)
-			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f Mbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed / 1024.0 / 1024.0));
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f Mbytes/s", ix,
+							ws.netInfo.iface[ix].name,
+							ws.netInfo.iface[ix].rcvSpeed / 1024.0 / 1024.0));
 		else if (ws.netInfo.iface[ix].rcvSpeed > 1024)
-			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f kbytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed / 1024.0));
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f kbytes/s", ix,
+							ws.netInfo.iface[ix].name,
+							ws.netInfo.iface[ix].rcvSpeed / 1024.0));
 		else
-			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f bytes/s", ix, ws.netInfo.iface[ix].name, ws.netInfo.iface[ix].rcvSpeed));
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f bytes/s", ix,
+							ws.netInfo.iface[ix].name,
+							ws.netInfo.iface[ix].rcvSpeed));
 	}
 
 	LM_T(LMT_STAT, ("I have %d core workers", ws.coreWorkerInfo.workers));
@@ -1185,6 +1210,8 @@ void Network::workerStatusToController(void)
 	}
 
 	LM_T(LMT_STAT, ("I have %d cores - sending %d bytes of workerStatus data to controller", ws.cpuInfo.cores, sizeof(ws)));
+#endif
+
 	iomMsgSend(controller->fd, controller->name.c_str(), me->name.c_str(), Message::WorkerStatus, Message::Msg, &ws, sizeof(ws));
 }
 
@@ -1216,7 +1243,8 @@ void Network::coreWorkerRestart(void)
 }
 
 
-
+#define PeriodForSendingWorkerStatusToController  10
+#define PeriodForRestartingDeadCoreWorkers        60
 /* ****************************************************************************
 *
 * run - 
@@ -1240,13 +1268,13 @@ void Network::run()
 			if (me->type == Endpoint::Worker)
 			{
 				now = time(NULL);
-				if (now - then > 1)
+				if (now - then > PeriodForSendingWorkerStatusToController)
 				{
 					workerStatusToController();
 					then = now;
 				}
 
-				if (now - then2 > 30)
+				if (now - then2 > PeriodForRestartingDeadCoreWorkers)
 				{
 					LM_T(LMT_COREWORKER, ("calling coreWorkerRestart"));
 					coreWorkerRestart();

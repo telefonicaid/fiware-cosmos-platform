@@ -423,6 +423,8 @@ static void coreWorkerInfo(CoreWorkerInfo* cwiP, Network* networkP)
 	cwiP->workers = coreWorkers;
 }
 
+
+
 /* ****************************************************************************
 *
 * workerStatus - 

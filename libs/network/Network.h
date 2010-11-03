@@ -47,14 +47,11 @@ class Network : public NetworkInterface
 public:
 	Network();
 
-	void setPacketReceiver(PacketReceiverInterface* receiver);
+	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);
 
 	virtual void initAsSamsonController(int port, std::vector<std::string> peers);
 	virtual void initAsSamsonWorker(int localPort, std::string controllerEndpoint);
-	virtual void initAsDelilah(std::string controllerEndpoint);
-	
-	virtual void setPacketReceiverInterface( PacketReceiverInterface* receiver);
-	
+	virtual void initAsDelilah(std::string controllerEndpoint);	
 	
 	bool ready();                                    // Inform about everything ready
                                                      // The controller expects all the workers to be connected

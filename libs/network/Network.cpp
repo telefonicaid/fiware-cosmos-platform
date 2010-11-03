@@ -67,18 +67,6 @@ Network::Network()
 
 /* ****************************************************************************
 *
-* setPacketReceiver - 
-*/
-void Network::setPacketReceiver(PacketReceiverInterface* _receiver)
-{
-	LM_X(1, ("IN"));
-	receiver = _receiver;
-}
-
-	
-
-/* ****************************************************************************
-*
 * setPacketReceiverInterface - set the element to be notified when packages arrive
 */
 void Network::setPacketReceiverInterface(PacketReceiverInterface* _receiver)

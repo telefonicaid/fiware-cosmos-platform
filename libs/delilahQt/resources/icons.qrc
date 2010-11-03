@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>icons/move.png</file>
-        <file>icons/new_operation.png</file>
-        <file>icons/new_process.png</file>
-        <file>icons/new_queue.png</file>
-        <file>icons/connection.png</file>
-    </qresource>
-</RCC>

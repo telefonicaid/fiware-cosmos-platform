@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/svg">
-        <file>objects/queue.svg</file>
-        <file>objects/operation.svg</file>
-    </qresource>
-</RCC>

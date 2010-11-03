@@ -77,6 +77,9 @@ namespace ss {
 
 			// Create console or graphical interface
 			
+			console = 0;
+			interfaceQt = 0;
+
 			if ( commandLine.get_flag_bool("console") )
 				console = new DelilahConsole(this,true);		// Console with ncurses
 			else if ( commandLine.get_flag_bool("basic") )

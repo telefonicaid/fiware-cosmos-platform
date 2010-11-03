@@ -32,6 +32,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
 
 
+link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
+
 # Generate 'data.pb.h' and 'data.pb.cc' from ''data.proto''
 add_custom_command (
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/data.pb.cc

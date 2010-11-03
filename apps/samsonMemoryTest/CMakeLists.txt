@@ -32,6 +32,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
 
+link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
 ADD_EXECUTABLE(samsonMemoryTest main_samsonMemoryTest.cpp ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(samsonMemoryTest ${STATIC_LIBS} )

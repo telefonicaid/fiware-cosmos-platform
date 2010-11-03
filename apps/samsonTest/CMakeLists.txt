@@ -32,6 +32,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
 
+link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
 ADD_EXECUTABLE(samsonTest main_samsonTest.cpp ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(samsonTest ${STATIC_LIBS} )

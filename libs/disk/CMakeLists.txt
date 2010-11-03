@@ -38,6 +38,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 
+link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
 ADD_LIBRARY(samsonDiskStatic STATIC ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES( samsonDiskStatic  ${LIBS_STATIC} )

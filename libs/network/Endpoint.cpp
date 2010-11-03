@@ -149,6 +149,17 @@ Endpoint::Endpoint(Type type, unsigned short port)
 
 /* ****************************************************************************
 *
+* nam - 
+*/
+const char* Endpoint::nam(void)
+{
+	return name.c_str();
+}
+
+
+
+/* ****************************************************************************
+*
 * stateName - 
 */
 const char* Endpoint::stateName(void)

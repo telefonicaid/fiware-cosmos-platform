@@ -71,6 +71,7 @@ public:
 	const char*     stateName(void);
 	const char*     typeName(void);
 	const char*     typeName(Type type);
+	const char*     nam();
 	void            reset();
 	void            hostnameGet(void);
 

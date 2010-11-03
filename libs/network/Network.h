@@ -41,7 +41,7 @@ class Network : public NetworkInterface
 {
 	PacketReceiverInterface* receiver;
 
-	void init(Endpoint::Type, unsigned short port = 0);
+	void init(Endpoint::Type type, unsigned short port = 0, const char* controllerName = NULL);
 	void ipSet(char* ip);
 
 public:

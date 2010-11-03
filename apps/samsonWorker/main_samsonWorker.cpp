@@ -6,12 +6,13 @@
  Main routine for the samsonWorker
  */
 
-int main(int argc, const char *argv[])
+int main(int argC, const char *argV[])
 {
-	ss::samsonInitTrace(argc , argv, true);
-	
-	ss::Network      network;   // Real network element
-	ss::SamsonWorker worker(argc, argv, &network);
+	ss::SamsonWorker  worker(argC, argV);
+	ss::Network*      networkP;
 
+	networkP = new ss::Network( /* worker.endpoints */ );
+
+	worker.networkSet(networkP);
 	worker.run();
 }

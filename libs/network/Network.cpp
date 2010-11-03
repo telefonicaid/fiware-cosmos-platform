@@ -47,6 +47,53 @@ namespace ss
 
 /* ****************************************************************************
 *
+* wordClean - MOVE to Misc.cpp
+*/
+static char* wordClean(char* str)
+{
+	char* endP;
+
+	while ((*str == ' ') || (*str == '\t'))
+		++str;
+
+	endP = str;
+	while ((*endP != 0) && (*endP != ' ') && (*endP != '\t'))
+		++endP;
+	*endP = 0;
+
+	return str;
+}
+
+
+
+/* ****************************************************************************
+*
+* ipGet - MOVE to Misc.cpp
+*/
+static char* ipGet(void)
+{
+	char  line[80];
+	char* ipP = (char*) "I.I.P.P";
+	FILE* fP;
+	
+	fP = popen("ifconfig | grep \"inet addr:\" | awk -F: '{ print $2 }' | awk '{ print $1 }'", "r");
+	if (fgets(line, sizeof(line), fP) != NULL)
+	{
+		if (line[strlen(line) - 1] == '\n')
+			line[strlen(line) - 1] = 0;
+		ipP = wordClean(line);
+		LM_T(LMT_CONFIG, ("new IP: %s", ipP));
+	}
+
+	fclose(fP);
+
+	return strdup(ipP);
+}
+
+	
+
+/* ****************************************************************************
+*
 * Constructor 
 */
 Network::Network()
@@ -79,9 +126,9 @@ void Network::setPacketReceiverInterface(PacketReceiverInterface* _receiver)
 
 /* ****************************************************************************
 *
-* init - open listen socket on port specifid by 'me' endpoint
+* init - create endpoints 0 and 1 - MOVE to EndpointMgr
 */
-void Network::init(Endpoint::Type type, unsigned short port)
+void Network::init(Endpoint::Type type, unsigned short port, const char* controllerName)
 {
 	endpoint[0] = new Endpoint(type, port);
 	if (endpoint[0] == NULL)
@@ -93,6 +140,7 @@ void Network::init(Endpoint::Type type, unsigned short port)
 
 	me->name     = progName;
 	me->state    = Endpoint::Me;
+	me->ip       = ipGet();
 
 	if (port != 0)
 	{
@@ -104,6 +152,8 @@ void Network::init(Endpoint::Type type, unsigned short port)
 		listener->fd       = iomServerOpen(listener->port);
 		listener->state    = Endpoint::Listening;
 		listener->type     = Endpoint::Listener;
+		listener->ip       = me->ip;
+		listener->name     = "Listener";
 
 		if (listener->fd == -1)
 			LM_XP(1, ("unable to open port %d for listening", listener->port));
@@ -111,70 +161,33 @@ void Network::init(Endpoint::Type type, unsigned short port)
 		LM_T(LMT_FDS, ("opened fd %d to accept incoming connections", listener->fd));
 	}
 
-	ipSet(NULL);
-}
+	if ((type == Endpoint::Worker) || (type == Endpoint::Delilah))
+	{
+		endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
+		if (endpoint[2] == NULL)
+			LM_XP(1, ("new Endpoint"));
+		controller = endpoint[2];
 
+		controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
+		if (controller->fd == -1)
+			LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
 
-
-/* ****************************************************************************
-*
-* wordClean - 
-*/
-static char* wordClean(char* str)
-{
-	char* endP;
-
-	while ((*str == ' ') || (*str == '\t'))
-		++str;
-
-	endP = str;
-	while ((*endP != 0) && (*endP != ' ') && (*endP != '\t'))
-		++endP;
-	*endP = 0;
-
-	return str;
-}
-
-
-
-/* ****************************************************************************
-*
-* ipSet - 
-*/
-void Network::ipSet(char* ip)
-{
-	char line[80];
-
-	if (ip != NULL)
-		me->ip = ip;
+		controller->state = ss::Endpoint::Connected;
+	}
 	else
 	{
-		FILE* fP;
-
-		fP = popen("ifconfig | grep \"inet addr:\" | awk -F: '{ print $2 }' | awk '{ print $1 }'", "r");
-		if (fgets(line, sizeof(line), fP) != NULL)
-		{
-			if (line[strlen(line) - 1] == '\n')
-				line[strlen(line) - 1] = 0;
-			me->ip = std::string(wordClean(line));
-			LM_T(LMT_CONFIG, ("new IP: %s", me->ip.c_str()));
-		}
-
-		fclose(fP);
+		endpoint[2] = NULL;
+		controller  = NULL;
 	}
 
-	if (listener)
-		listener->ip = me->ip;
-
-	LM_T(LMT_CONFIG, ("me->ip:   '%s'", me->ip.c_str()));
-	LM_T(LMT_CONFIG, ("me->name: '%s'", me->name.c_str()));
+	LM_F(("I am a '%s', my name: '%s', ip: %s", me->typeName(), me->nam(), me->ip.c_str()));
 }
 
-	
+
 
 /* ****************************************************************************
 *
-* helloSend - 
+* helloSend - MOVE to EndpointMgr
 */
 int Network::helloSend(Endpoint* ep, Message::MessageType type)
 {
@@ -201,24 +214,18 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 */
 void Network::initAsSamsonController(int port, std::vector<std::string> peers)
 {
-	unsigned int ix;
-
-	controller  = NULL;
-	endpoint[2] = NULL;
-
-	for (ix = 0; ix < peers.size(); ix++)
-		endpointV.push_back(Endpoint(Endpoint::Worker, peers[ix])); 
+	int ix;
 
 	init(Endpoint::Controller, port);
-	listener->name = "Listener";
 
-	LM_F(("I am a '%s', my name: '%s', ip: %s", me->typeName(), me->name.c_str(), me->ip.c_str()));
+	/* MOVE to SamsonController */
+	if (peers.size() != (unsigned int) Workers)
+		LM_X(1, ("bad size of worker vector (%d). Should be %d!", peers.size(), Workers));
 
-	ix = 0;
-	if ((int) endpointV.size() != Workers)
-		LM_X(1, ("bad size of worker vector (%d). Should be %d!", endpointV.size(), Workers));
+	for (ix = 0; ix < Workers; ix++)
+		endpointV.push_back(Endpoint(Endpoint::Worker, peers[ix])); 
 
-	for (ix = 0; ix < endpointV.size(); ix++)
+	for (ix = 0; ix < Workers; ix++)
 	{
 		char name[32];
 
@@ -236,7 +243,43 @@ void Network::initAsSamsonController(int port, std::vector<std::string> peers)
 
 /* ****************************************************************************
 *
-* coreWorkerStart - 
+* initAsSamsonWorker -
+*
+* NOTE
+*/
+void Network::initAsSamsonWorker(int port, std::string controllerName)
+{
+	init(Endpoint::Worker, port, controllerName.c_str());
+
+	/* MOVE rest to SamsonWorker::init */
+	Message::WorkerStatusData ws;
+
+	workerStatus(&ws, this);
+
+	char traceLevelV[256];
+	lmTraceGet(traceLevelV);
+
+	int coreNo;
+	for (coreNo = 0; coreNo < ws.cpuInfo.cores; coreNo++)
+		coreWorkerStart(coreNo, progName, port);
+}
+
+
+
+/* ****************************************************************************
+*
+* initAsDelilah - 
+*/
+void Network::initAsDelilah(std::string controllerName)
+{
+	init(Endpoint::Delilah, -1, controllerName.c_str());
+}
+	
+	
+
+/* ****************************************************************************
+*
+* coreWorkerStart - MOVE to SamsonWorker
 */
 void Network::coreWorkerStart(int coreNo, char* fatherName, int port)
 {
@@ -357,73 +400,11 @@ void Network::coreWorkerStart(int coreNo, char* fatherName, int port)
 
 		LM_T(LMT_COREWORKER, ("Calling RUN"));
 		run();
-		LM_T(LMT_COREWORKER, ("Back from run - should not ever get here (coreWorker %d, pid: %d)", coreNo, (int) getpid()));
-		exit(1);
+		LM_X(1, ("Back from run - should not ever get here (coreWorker %d, pid: %d)", coreNo, (int) getpid()));
 	}
 }
 
 
-
-/* ****************************************************************************
-*
-* initAsSamsonWorker -
-*
-* NOTE
-*/
-void Network::initAsSamsonWorker(int port, std::string controllerName)
-{
-	Message::WorkerStatusData ws;
-
-	init(Endpoint::Worker, port);
-
-	LM_F(("I am a '%s', my name: '%s', ip: %s", me->typeName(), me->name.c_str(), me->ip.c_str()));
-
-	endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
-	if (endpoint[2] == NULL)
-		LM_XP(1, ("new Endpoint"));
-	controller = endpoint[2];
-
-	controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
-	if (controller->fd == -1)
-		LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
-
-	controller->state = ss::Endpoint::Connected;
-
-	workerStatus(&ws, this);
-
-	char traceLevelV[256];
-	lmTraceGet(traceLevelV);
-
-	int coreNo;
-	for (coreNo = 0; coreNo < ws.cpuInfo.cores; coreNo++)
-		coreWorkerStart(coreNo, progName, port);
-}
-
-
-
-/* ****************************************************************************
-*
-* initAsDelilah - 
-*/
-void Network::initAsDelilah(std::string controllerName)
-{
-	init(Endpoint::Delilah);
-
-	LM_F(("I am a '%s', my name: '%s', ip: %s", me->typeName(), me->name.c_str(), me->ip.c_str()));
-
-	endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
-	if (endpoint[2] == NULL)
-		LM_XP(1, ("new Endpoint"));
-	controller = endpoint[2];
-
-	controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
-	if (controller->fd == -1)
-		LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
-
-	controller->state = ss::Endpoint::Connected;
-}
-	
-	
 
 /* ****************************************************************************
 *
@@ -557,7 +538,7 @@ bool Network::ready()
 
 /* ****************************************************************************
 *
-* endpointAdd - add an endpoint to the vector
+* endpointAdd - add an endpoint to the vector - MOVE to EndpointMgr
 *
 * The first three slots in this vector are:
 *  - 0: me
@@ -708,7 +689,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 
 /* ****************************************************************************
 *
-* endpointRemove - 
+* endpointRemove - MOVE to EndpointMgr
 */
 void Network::endpointRemove(Endpoint* ep)
 {
@@ -742,7 +723,7 @@ void Network::endpointRemove(Endpoint* ep)
 
 /* ****************************************************************************
 *
-* endpointLookup - 
+* endpointLookup - MOVE to EndpointMgr
 */
 Endpoint* Network::endpointLookup(int ix)
 {
@@ -753,7 +734,7 @@ Endpoint* Network::endpointLookup(int ix)
 
 /* ****************************************************************************
 *
-* endpointCoreWorkerLookup - 
+* endpointCoreWorkerLookup - MOVE to EndpointMgr
 */
 Endpoint* Network::endpointCoreWorkerLookup(int coreNo)
 {
@@ -780,7 +761,7 @@ Endpoint* Network::endpointCoreWorkerLookup(int coreNo)
 
 /* ****************************************************************************
 *
-* endpointLookup - 
+* endpointLookup - MOVE to EndpointMgr
 */
 Endpoint* Network::endpointLookup(int fd, int* idP)
 {
@@ -810,7 +791,7 @@ Endpoint* Network::endpointLookup(int fd, int* idP)
 
 /* ****************************************************************************
 *
-* msgTreat - 
+* msgTreat - MOVE to EndpointMgr
 */
 void Network::msgTreat(int fd, char* name)
 {
@@ -1108,7 +1089,7 @@ void Network::msgTreat(int fd, char* name)
 
 /* ****************************************************************************
 *
-* workerStatusToController - 
+* workerStatusToController - MOVE to SamsonWorker
 */
 void Network::workerStatusToController(void)
 {
@@ -1187,7 +1168,7 @@ void Network::workerStatusToController(void)
 
 /* ****************************************************************************
 *
-* coreWorkerRestart - 
+* coreWorkerRestart - MOVE to SamsonWorker
 */
 void Network::coreWorkerRestart(void)
 {
@@ -1211,11 +1192,12 @@ void Network::coreWorkerRestart(void)
 }
 
 
+
 #define PeriodForSendingWorkerStatusToController  10
 #define PeriodForRestartingDeadCoreWorkers        60
 /* ****************************************************************************
 *
-* run - 
+* run - MOVE to EndpointMgr?
 */
 void Network::run()
 {
@@ -1398,7 +1380,7 @@ void Network::run()
 
 /* ****************************************************************************
 *
-* checkInitDone - 
+* checkInitDone - MOVE to EndpointMgr
 */
 void Network::checkInitDone(void)
 {

@@ -11,13 +11,14 @@
 
 #include <iostream>				// std::cout
 
+#include "logMsg.h"				// 
+#include "traces.h"				// Trace levels
+
+#include "Macros.h"				// EXIT
 #include "Network.h"			// NetworkInterface
 #include "samsonDirectories.h"  // SAMSON_WORKER_DEFAULT_PORT
 #include "Endpoint.h"			// Endpoint
 #include "CommandLine.h"		// au::CommandLine
-#include "logMsg.h"				// 
-#include "Macros.h"				// EXIT
-#include "traces.h"				// Trace levels
 #include "WorkerDataManager.h"	// ss::WorkerDataManager
 #include "ModulesManager.h"		// ss::ModulesManager
 #include "WorkerTaskManager.h"	// ss::WorkerTaskManager
@@ -28,21 +29,36 @@ namespace ss {
 	 Main class for the samson worker element
 	 */
 	
-	class SamsonWorker : public PacketReceiverInterface , public PacketSenderInterface
+	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
 	{
-		NetworkInterface* network;			// Network interface
-		WorkerDataManager data;				// Data manager
-		WorkerTaskManager taskManager;		// Task manager
-		ModulesManager modulesManager;		// Manager of the modules we have
+		NetworkInterface*  network;			// Network interface
+		WorkerDataManager  data;			// Data manager
+		WorkerTaskManager  taskManager;		// Task manager
+		ModulesManager     modulesManager;	// Manager of the modules we have
 		
 		friend class WorkerTaskManager;
 		friend class WorkerDataManager;
 		
+
+		// command line argument variables
 	public:
+        int          port;
+        int          endpoints;
+		std::string  controller;
+		std::string  traceV;
 		
-		SamsonWorker(int argc, const char* argv[] , NetworkInterface *_network);
-		
-		
+
+	public:
+		SamsonWorker(int argc, const char* argv[], NetworkInterface* _network);
+		SamsonWorker(int argc, const char* argv[]);
+
+	private:
+		void parseArgs(int argC, const char* argV[]);
+		void logInit(const char* pName);
+
+	public:
+		void networkSet(NetworkInterface* network);
+
 		// Main routine
 		void run();
 

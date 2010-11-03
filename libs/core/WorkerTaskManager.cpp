@@ -1,9 +1,10 @@
-#include "logMsg.h"                     // LM_*
-#include "coreTracelevels.h"            // LMT_*
+#include "logMsg.h"              // LM_*
+#include "coreTracelevels.h"     // LMT_*
 
-#include "iomMsgSend.h"                 // iomMsgSend
-#include "SamsonWorker.h"				// ss:SamsonWorker
-#include "WorkerTaskManager.h"			// Own interface
+#include "iomMsgSend.h"          // iomMsgSend
+#include "CommandLine.h"         // au::CommandLine
+#include "SamsonWorker.h"        // SamsonWorker
+#include "WorkerTaskManager.h"   // Own interface
 
 
 
@@ -27,14 +28,14 @@ namespace ss {
 		std::string mainCommand = commandLine.get_argument(0);
 		
 		// Different direct commands
-		
-		if( mainCommand == "add_queue" )
+
+		if (mainCommand == "add_queue")
 		{
 			std::vector<std::string> queues;						// List of queues altered during this task
 			queues.push_back( commandLine.get_argument(1) );		// updated queues in the process
 			
 			// Direct confirmation of the process
-			worker->data.runOperationOfTask( task.task_id() , task.command() );
+			worker->data.runOperationOfTask(task.task_id(), task.command());
 			return true;
 		}
 		else if (mainCommand == "task_test")

@@ -24,12 +24,14 @@ SET( LIBS_STATIC
      samsonCommonStatic
      protobuf
      ncurses
+     pthread
 )
 
 SET( LIBS_SHARED
      samsonCommonShared
      protobuf
      ncurses
+     pthread
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")

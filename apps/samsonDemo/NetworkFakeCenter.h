@@ -126,8 +126,6 @@ namespace ss {
 
 			LM_X(1, ("This call to receive must be reimplemented after last changes by KZ. Sorry ... !"));
 		}
-		
-		
 	};
 }
 

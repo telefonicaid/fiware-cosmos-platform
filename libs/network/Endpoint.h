@@ -68,7 +68,9 @@ public:
 	Message::CoreWorkerState     coreWorkerState;  // CoreWorker
 
 
-	char*           stateName(void);
+	const char*     stateName(void);
+	const char*     typeName(void);
+	const char*     typeName(Type type);
 	void            reset();
 	void            hostnameGet(void);
 

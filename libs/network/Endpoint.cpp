@@ -58,12 +58,12 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 }
 
 
-#if 0
+
 /* ****************************************************************************
 *
 * typeName - 
 */
-static const char* typeName(Endpoint::Type type)
+const char* Endpoint::typeName(Endpoint::Type type)
 {
 	switch (type)
 	{
@@ -78,7 +78,18 @@ static const char* typeName(Endpoint::Type type)
 
 	return "UnknownType";
 }
-#endif
+
+
+
+/* ****************************************************************************
+*
+* typeName - 
+*/
+const char* Endpoint::typeName(void)
+{
+   return typeName(this->type);
+}
+
 
 
 /* ****************************************************************************
@@ -140,7 +151,7 @@ Endpoint::Endpoint(Type type, unsigned short port)
 *
 * stateName - 
 */
-char* Endpoint::stateName(void)
+const char* Endpoint::stateName(void)
 {
 	switch (state)
 	{

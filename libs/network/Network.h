@@ -85,6 +85,7 @@ public:
 public:
 	int        Workers;
 	Endpoint*  endpoint[3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS];
+
 private:
 	Endpoint*  listener;
 	Endpoint*  me;

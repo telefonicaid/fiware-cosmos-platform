@@ -47,28 +47,6 @@ namespace ss
 
 /* ****************************************************************************
 *
-* endpointTypeName - 
-*/
-static const char* endpointTypeName(Endpoint::Type type)
-{
-	switch (type)
-	{
-	case Endpoint::Unknown:       return "Unknown";
-	case Endpoint::Temporal:      return "Temporal";
-	case Endpoint::Listener:      return "Listener";
-	case Endpoint::Controller:    return "Controller";
-	case Endpoint::Worker:        return "Worker";
-	case Endpoint::CoreWorker:    return "CoreWorker";
-	case Endpoint::Delilah:       return "Delilah";
-	}
-
-	return "UnknownEndpointType";
-}
-
-
-
-/* ****************************************************************************
-*
 * Constructor 
 */
 Network::Network()
@@ -222,7 +200,7 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 	hello.port    = me->port;
 	hello.coreNo  = me->coreNo;
 
-	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s', type: %s (%d))", messageType(type), ep->name.c_str(), hello.name, endpointTypeName(hello.type), hello.type));
+	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s', type: '%s')", messageType(type), ep->name.c_str(), hello.name, me->typeName()));
 
 	return iomMsgSend(ep->fd, ep->name.c_str(), me->name.c_str(), Message::Hello, type, &hello, sizeof(hello));
 }
@@ -246,7 +224,7 @@ void Network::initAsSamsonController(int port, std::vector<std::string> peers)
 	init(Endpoint::Controller, port);
 	listener->name = "Listener";
 
-	LM_F(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
+	LM_F(("I am a '%s', my name: '%s', ip: %s", me->typeName(), me->name.c_str(), me->ip.c_str()));
 
 	ix = 0;
 	if ((int) endpointV.size() != Workers)
@@ -298,16 +276,13 @@ void Network::coreWorkerStart(int coreNo, char* fatherName, int port)
 	LM_T(LMT_COREWORKER, ("*********** Starting Core Worker %d", coreNo));
 	if (fork() == 0)
 	{
-		
 #if !defined(__APPLE__)
-
 		cpu_set_t cpuSet;
 
 		CPU_ZERO(&cpuSet);
 		CPU_SET(coreNo, &cpuSet);
 		if (sched_setaffinity(0, sizeof(cpuSet), &cpuSet) == -1)
 			LM_XP(1, ("sched_setaffinity"));
-
 #endif
 		
 		LM_T(LMT_COREWORKER, ("child %d running (pid: %d) on core %d", coreNo, (int) getpid(), coreNo));
@@ -413,7 +388,7 @@ void Network::initAsSamsonWorker(int port, std::string controllerName)
 
 	init(Endpoint::Worker, port);
 
-	LM_F(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
+	LM_F(("I am a '%s', my name: '%s', ip: %s", me->typeName(), me->name.c_str(), me->ip.c_str()));
 
 	endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
 	if (endpoint[2] == NULL)
@@ -446,7 +421,7 @@ void Network::initAsDelilah(std::string controllerName)
 {
 	init(Endpoint::Delilah);
 
-	LM_F(("I am a '%s', my name: '%s', ip: %s", endpointTypeName(me->type), me->name.c_str(), me->ip.c_str()));
+	LM_F(("I am a '%s', my name: '%s', ip: %s", me->typeName(), me->name.c_str(), me->ip.c_str()));
 
 	endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
 	if (endpoint[2] == NULL)
@@ -621,7 +596,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 {
 	int ix;
 
-	LM_T(LMT_ENDPOINT, ("Adding endpoint '%s' of type '%s' for fd %d", name, endpointTypeName(type), fd));
+	LM_T(LMT_ENDPOINT, ("Adding endpoint '%s' of type '%s' for fd %d", name, me->typeName(type), fd));
 
 	switch (type)
 	{
@@ -751,7 +726,7 @@ void Network::endpointRemove(Endpoint* ep)
 {
 	unsigned int ix;
 
-	LM_T(LMT_EP, ("Removing '%s' endpoint '%s'", endpointTypeName(ep->type), ep->name.c_str()));
+	LM_T(LMT_EP, ("Removing '%s' endpoint '%s'", ep->typeName(), ep->name.c_str()));
 
 	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
 	{
@@ -911,7 +886,7 @@ void Network::msgTreat(int fd, char* name)
 					time_t now = time(NULL);
 
 					if (me->type != Endpoint::Worker)
-						LM_X(1, ("BUG - only Worker should be connected to CoreWorker (I'm a '%s')", endpointTypeName(me->type)));
+						LM_X(1, ("BUG - only Worker should be connected to CoreWorker (I'm a '%s')", me->typeName()));
 
 					close(ep->fd);
 					ep->state = Endpoint::Dead;
@@ -944,15 +919,14 @@ void Network::msgTreat(int fd, char* name)
 		Endpoint*            helloEp;
 		Message::HelloData*  hello;
 
-		hello = (Message::HelloData*) dataP;
-
-		LM_T(LMT_HELLO, ("Got Hello %s from %s, type %s, %s:%d, workers: %d",
-						 messageType(msgType), hello->name, endpointTypeName(hello->type), hello->ip, hello->port, hello->workers));
-
+		hello   = (Message::HelloData*) dataP;
 		helloEp = endpointAdd(fd, hello->name, hello->workers, hello->type, hello->ip, hello->port, hello->coreNo);
 
 		if (helloEp == NULL)
 			LM_X(1, ("helloEp == NULL"));
+
+		LM_T(LMT_HELLO, ("Got Hello %s from %s, type %s, %s:%d, workers: %d",
+						 messageType(msgType), helloEp->name.c_str(), helloEp->typeName(), helloEp->ip.c_str(), helloEp->port, helloEp->workers));
 
 		if (ep && ep->type == Endpoint::Temporal)
 			endpointRemove(ep);
@@ -1063,9 +1037,7 @@ void Network::msgTreat(int fd, char* name)
 		if (me->type == Endpoint::Worker)
 		{
 			if ((ep->type != Endpoint::Delilah) && (ep->type != Endpoint::Controller))
-			{
-				ALARM(Alarm::Error, Alarm::BadRequest, ("got a Job request from a '%s' endpoint - ignoring it", endpointTypeName(ep->type)));
-			}
+				ALARM(Alarm::Error, Alarm::BadRequest, ("got a Job request from a '%s' endpoint - ignoring it", ep->typeName()));
 			else
 			{
 				Endpoint* cwP = endpointCoreWorkerLookup(jobP->coreNo);
@@ -1096,14 +1068,14 @@ void Network::msgTreat(int fd, char* name)
 			iomMsgSend(controller->fd, "Father", me->name.c_str(), Message::JobDone, Message::Evt);
 		}
 		else
-			LM_X(1, ("got a Job message - I'm a '%s'", endpointTypeName(me->type)));
+			LM_X(1, ("got a Job message - I'm a '%s'", me->typeName()));
 		break;
 
 	case Message::JobDone:
 		if (me->type != Endpoint::Worker)
-			LM_X(1, ("got a JobDone message - I'm a '%s'", endpointTypeName(me->type)));
+			LM_X(1, ("got a JobDone message - I'm a '%s'", me->typeName()));
 		if (ep->type != Endpoint::CoreWorker)
-			LM_X(1, ("got a JobDone message from a '%s' endpoint!", endpointTypeName(ep->type)));
+			LM_X(1, ("got a JobDone message from a '%s' endpoint!", ep->typeName()));
 
 		ep->coreWorkerState  = Message::NotBusy;
 		ep->jobsDone        += 1;
@@ -1113,7 +1085,7 @@ void Network::msgTreat(int fd, char* name)
 		if (me->type == Endpoint::Worker)
 		{
 			if (ep->type != Endpoint::CoreWorker)
-				LM_E(("Got an alarm event from %s endpoint '%s' - not supposed to happen!", endpointTypeName(ep->type), ep->name.c_str()));
+				LM_E(("Got an alarm event from %s endpoint '%s' - not supposed to happen!", ep->typeName(), ep->name.c_str()));
 			else
 			{
 				// Forward Alarm to controller
@@ -1128,7 +1100,7 @@ void Network::msgTreat(int fd, char* name)
 			alarmSave(ep, alarmP);
 		}
 		else
-			LM_X(1, ("Got an alarm event from %s endpoint '%s' - not supposed to happen!", endpointTypeName(ep->type), ep->name.c_str()));
+			LM_X(1, ("Got an alarm event from %s endpoint '%s' - not supposed to happen!", ep->typeName(), ep->name.c_str()));
 		break;
 
 	default:
@@ -1314,7 +1286,7 @@ void Network::run()
 					if (endpoint[ix]->state == Endpoint::Closed)
 					{
 						LM_T(LMT_RECONNECT, ("delilah reconnecting to %s:%d (type: '%s', state: '%s')",
-											 endpoint[ix]->ip.c_str(), endpoint[ix]->port, endpointTypeName(endpoint[ix]->type), endpoint[ix]->stateName()));
+											 endpoint[ix]->ip.c_str(), endpoint[ix]->port, endpoint[ix]->typeName(), endpoint[ix]->stateName()));
 						workerFd = iomConnect(endpoint[ix]->ip.c_str(), endpoint[ix]->port);
 						if (workerFd != -1)
 						{
@@ -1360,7 +1332,7 @@ void Network::run()
 					
 					LM_T(LMT_SELECT, ("+ endpoint %02d %-12s %-28s %20s:%05d %20s (fd: %d)",
 									  ix,
-									  endpointTypeName(endpoint[ix]->type),
+									  endpoint[ix]->typeName(),
 									  endpoint[ix]->name.c_str(),
 									  endpoint[ix]->ip.c_str(),
 									  endpoint[ix]->port,
@@ -1371,7 +1343,7 @@ void Network::run()
 				{
 					LM_T(LMT_SELECT, ("- endpoint %02d %-12s %-28s %20s:%05d %20s (fd: %d)",
 									  ix,
-									  endpointTypeName(endpoint[ix]->type),
+									  endpoint[ix]->typeName(),
 									  endpoint[ix]->name.c_str(),
 									  endpoint[ix]->ip.c_str(),
 									  endpoint[ix]->port,
@@ -1424,7 +1396,7 @@ void Network::run()
 
 					if (FD_ISSET(endpoint[ix]->fd, &rFds))
 					{
-						LM_T(LMT_SELECT, ("incoming message from '%s' endpoint %s", endpointTypeName(endpoint[ix]->type), endpoint[ix]->name.c_str()));
+						LM_T(LMT_SELECT, ("incoming message from '%s' endpoint %s", endpoint[ix]->typeName(), endpoint[ix]->name.c_str()));
 						msgTreat(endpoint[ix]->fd, (char*) endpoint[ix]->name.c_str());
 						// FD_CLR(endpoint[ix]->fd, &rFds);  endpoint[ix] might have been set to NULL in msgTreat ...
 					}

@@ -38,7 +38,7 @@ link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 add_custom_command (
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/data.pb.cc
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/data.pb.h
-  COMMAND /usr/local/bin/protoc ${CMAKE_CURRENT_SOURCE_DIR}/data.proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
+  COMMAND protoc ${CMAKE_CURRENT_SOURCE_DIR}/data.proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
   MAIN_DEPENDENCY data.proto
 )
 

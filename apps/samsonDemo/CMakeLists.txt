@@ -38,6 +38,7 @@ include_directories("${PROJECT_BINARY_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
+include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/delilah")
 
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")

@@ -102,7 +102,6 @@ private:
 	Endpoint*  endpointFreeGet(Endpoint::Type type);
 
 	void msgTreat(int fd, char* name);
-	void checkInitDone(void);
 	int  helloSend(Endpoint* ep, Message::MessageType type);
 	void coreWorkerStart(int coreNo, char* fatherName, int port);
 	void workerStatusToController(void);

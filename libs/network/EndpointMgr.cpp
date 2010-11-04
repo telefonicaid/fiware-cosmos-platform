@@ -1,37 +1,23 @@
 /* ****************************************************************************
 *
-* FILE                     Network.cpp - Definition for the network interface
+* FILE                      EndpointMgr.cpp
 *
-* AUTHOR                   Ken Zangelin
-*
-* CREATION DATE            Oct 11 2010
+* DESCRIPTION               Class for endpoint manager
 *
 */
-#include <sys/select.h>         // select
-#include <string>               // string
-#include <vector>				// ss::vector
-#include <sys/types.h>          // pid_t
-#include <unistd.h>             // fork, getpid
-#include <sched.h>              // sched_setaffinity
-
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_*
 #include "Alarm.h"              // ALARM
 
-#include "Misc.h"               // ipGet 
-#include "Endpoint.h"			// Endpoint
-#include "Message.h"            // ss::Message::MessageCode
-#include "Packet.h"				// Packet
-#include "iomInit.h"            // iomInit
+#include "Misc.h"               // ipGet
+#include "Message.h"            // MessageType
 #include "iomServerOpen.h"      // iomServerOpen
 #include "iomConnect.h"         // iomConnect
 #include "iomAccept.h"          // iomAccept
-#include "iomMsgSend.h"         // iomMsgSend
 #include "iomMsgRead.h"         // iomMsgRead
-#include "iomMsgAwait.h"        // iomMsgAwait
-#include "workerStatus.h"       // workerStatus, WorkerStatusData
-#include "Network.h"			// Own interface
-
+#include "iomMsgSend.h"         // iomMsgSend
+#include "Endpoint.h"           // Endpoint
+#include "EndpointMgr.h"        // Own interface
 
 
 namespace ss
@@ -41,17 +27,18 @@ namespace ss
 
 /* ****************************************************************************
 *
-* Constructor 
+* Constructor
 */
-Network::Network()
+EndpointMgr::EndpointMgr(NetworkInterface* network, int endpoints, int workers)
 {
+	this->network = network;
+
 	iAmReady   = false;
-	receiver   = NULL;
 	me         = NULL;
 	listener   = NULL;
 	controller = NULL;
-	Workers    = WORKERS;
-	Endpoints  = 3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS;
+	Workers    = workers;
+	Endpoints  = endpoints;
 
 	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
 	if (endpoint == NULL)
@@ -62,42 +49,9 @@ Network::Network()
 
 /* ****************************************************************************
 *
-* Constructor
+* init - create endpoints 0-2
 */
-Network::Network(int endpoints, int workers)
-{
-	iAmReady   = false;
-	receiver   = NULL;
-	me         = NULL;
-	listener   = NULL;
-	controller = NULL;
-	Workers    = workers;
-	Endpoints  = endpoints;
-
-	endpoint = (Endpoint**) calloc(endpoints, sizeof(Endpoint*));
-	if (endpoint == NULL)
-		LM_XP(1, ("calloc(%d, %d)", endpoints, sizeof(Endpoint*)));
-}
-
-
-
-/* ****************************************************************************
-*
-* setPacketReceiverInterface - set the element to be notified when packages arrive
-*/
-void Network::setPacketReceiverInterface(PacketReceiverInterface* _receiver)
-{
-	LM_T(LMT_DELILAH, ("Setting receiver to %p", _receiver));
-	receiver = _receiver;
-}
-	
-
-
-/* ****************************************************************************
-*
-* init - create endpoints 0 and 1 - MOVE to EndpointMgr
-*/
-void Network::init(Endpoint::Type type, unsigned short port, const char* controllerName)
+void EndpointMgr::init(Endpoint::Type type, unsigned short port, const char* controllerName)
 {
 	endpoint[0] = new Endpoint(type, port);
 	if (endpoint[0] == NULL)
@@ -156,9 +110,9 @@ void Network::init(Endpoint::Type type, unsigned short port, const char* control
 
 /* ****************************************************************************
 *
-* helloSend - MOVE to EndpointMgr
+* helloSend - 
 */
-int Network::helloSend(Endpoint* ep, Message::MessageType type)
+int EndpointMgr::helloSend(Endpoint* ep, Message::MessageType type)
 {
 	ss::Message::HelloData hello;
 
@@ -173,334 +127,6 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s', type: '%s')", messageType(type), ep->name.c_str(), hello.name, me->typeName()));
 
 	return iomMsgSend(ep->fd, ep->name.c_str(), me->name.c_str(), Message::Hello, type, &hello, sizeof(hello));
-}
-
-
-
-/* ****************************************************************************
-*
-* initAsSamsonController - 
-*/
-void Network::initAsSamsonController(int port, std::vector<std::string> peers)
-{
-	int ix;
-
-	init(Endpoint::Controller, port);
-
-	/* MOVE to SamsonController */
-	if (peers.size() != (unsigned int) Workers)
-		LM_X(1, ("bad size of worker vector (%d). Should be %d!", peers.size(), Workers));
-
-	for (ix = 0; ix < Workers; ix++)
-		endpointV.push_back(Endpoint(Endpoint::Worker, peers[ix])); 
-
-	for (ix = 0; ix < Workers; ix++)
-	{
-		char name[32];
-
-		LM_T(LMT_ENDPOINTS, ("endpointV.ip: '%s'", endpointV[ix].ip.c_str()));
-		endpointV[ix].state = Endpoint::FutureWorker;
-
-		snprintf(name, sizeof(name), "Worker %02d", ix);
-		endpointV[ix].name = std::string(name);
-
-		endpoint[3 + ix] = new Endpoint(endpointV[ix]);
-	}
-}
-
-
-
-/* ****************************************************************************
-*
-* initAsSamsonWorker -
-*
-* NOTE
-*/
-void Network::initAsSamsonWorker(int port, std::string controllerName)
-{
-	init(Endpoint::Worker, port, controllerName.c_str());
-
-	/* MOVE rest to SamsonWorker::init */
-	Message::WorkerStatusData ws;
-
-	workerStatus(&ws, this);
-
-	char traceLevelV[256];
-	lmTraceGet(traceLevelV);
-
-	int coreNo;
-	for (coreNo = 0; coreNo < ws.cpuInfo.cores; coreNo++)
-		coreWorkerStart(coreNo, progName, port);
-}
-
-
-
-/* ****************************************************************************
-*
-* initAsDelilah - 
-*/
-void Network::initAsDelilah(std::string controllerName)
-{
-	init(Endpoint::Delilah, -1, controllerName.c_str());
-}
-	
-	
-
-/* ****************************************************************************
-*
-* coreWorkerStart - MOVE to SamsonWorker
-*/
-void Network::coreWorkerStart(int coreNo, char* fatherName, int port)
-{
-	Endpoint* ep;
-
-	ep = endpointCoreWorkerLookup(coreNo);
-	if (ep == NULL)
-	{
-		char cwName[16];
-
-		sprintf(cwName, "Core %02d", coreNo);
-		ep = endpointAdd(-1, cwName, 0, Endpoint::CoreWorker, "localhost", 0, coreNo);
-	}
-	if (ep == NULL)
-		LM_X(1, ("NULL endpoint ..."));
-
-	ep->startTime        = time(NULL);
-	ep->coreNo           = coreNo;
-	ep->coreWorkerState  = Message::NotBusy;
-
-	// Using these two fields to improve debugging ...
-	ep->ip              = "Core";
-	ep->port            = coreNo;
-
-	LM_T(LMT_COREWORKER, ("*********** Starting Core Worker %d", coreNo));
-	if (fork() == 0)
-	{
-#if !defined(__APPLE__)
-		cpu_set_t cpuSet;
-
-		CPU_ZERO(&cpuSet);
-		CPU_SET(coreNo, &cpuSet);
-		if (sched_setaffinity(0, sizeof(cpuSet), &cpuSet) == -1)
-			LM_XP(1, ("sched_setaffinity"));
-#endif
-		
-		LM_T(LMT_COREWORKER, ("child %d running (pid: %d) on core %d", coreNo, (int) getpid(), coreNo));
-
-		/* ************************************************************
-		 *
-		 * Core workers do not log to stdout
-		 */
-		lmFdUnregister(1);
-
-
-
-		/* ************************************************************
-		 *
-		 * Set progName
-		 */
-		progName = (char*) malloc(strlen("samsonCoreWorker_") + 10);
-		if (progName == NULL)
-			LM_X(1, ("samsonCoreWorker_%d died allocating: %s", getpid(), strerror(errno)));
-		sprintf(progName, (char*) "samsonCoreWorker_%d", (int) getpid());
-
-
-		
-		/* ************************************************************
-		 *
-		 * Setting auxiliar string for logMsg
-		 */
-		char auxString[16];
-
-		sprintf(auxString, "core%02d", coreNo);
-		lmAux(auxString);
-
-
-
-		/* ************************************************************
-		 *
-		 * Clean out father processes endpoints
-		 */
-		me         = NULL;
-		listener   = NULL;
-		controller = NULL;
-
-		int epIx;
-		for (epIx = 0; epIx < Endpoints; epIx++)
-		{
-			if (endpoint[epIx] != NULL)
-				close(endpoint[epIx]->fd);
-			endpoint[epIx] = NULL;
-		}
-
-
-
-		/* ************************************************************
-		 *
-		 * Creating my 'me' endpoint
-		 */
-		endpoint[0] = new Endpoint(Endpoint::CoreWorker, -1);
-		if (endpoint[0] == NULL)
-			LM_XP(1, ("new Endpoint"));
-
-		me          = endpoint[0];
-		me->name    = progName;
-		me->state   = Endpoint::Me;
-		me->coreNo  = coreNo;
-
-
-
-		LM_T(LMT_COREWORKER, ("new me created"));
-		/* ************************************************************
-		 *
-		 * connect to samsonWorker (father process is like a controller, so I use index 2 ...)
-		 */
-		endpoint[2] = new Endpoint(Endpoint::Worker, fatherName);
-		if (endpoint[2] == NULL)
-			LM_XP(1, ("error allocating endpoint for father"));
-		controller = endpoint[2];
-
-		LM_T(LMT_COREWORKER, ("Connecting to father"));
-		controller->fd = iomConnect("localhost", port);
-		if (controller->fd == -1)
-			LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
-		LM_T(LMT_COREWORKER, ("Connected to father"));
-		controller->state = ss::Endpoint::Connected;
-
-		LM_T(LMT_COREWORKER, ("Calling RUN"));
-		run();
-		LM_X(1, ("Back from run - should not ever get here (coreWorker %d, pid: %d)", coreNo, (int) getpid()));
-	}
-}
-
-
-
-/* ****************************************************************************
-*
-* controllerGetIdentifier - 
-*/
-int Network::controllerGetIdentifier(void)
-{
-	LM_T(LMT_DELILAH, ("Asking for controller id"));
-	return 2;
-}
-
-
-
-/* ****************************************************************************
-*
-* workerGetIdentifier - 
-*
-* worker 0 is at index 3 in the local endpoint vector
-*/
-int Network::workerGetIdentifier(int nthWorker)
-{
-	LM_X(1, ("IN"));
-
-	return nthWorker + 3;
-}
-	
-	
-
-/* ****************************************************************************
-*
-* getWorkerFromIdentifier - 
-*
-* worker 0 is at index 3 in the local endpoint vector
-*/
-int Network::getWorkerFromIdentifier(int identifier)
-{
-	return identifier - 3;
-}
-
-
-
-/* ****************************************************************************
-*
-* getNumWorkers - 
-*
-* Return number of connected workers
-*/
-int Network::getNumWorkers(void)
-{
-	int  ix;
-	int  workers = 0;
-
-	LM_T(LMT_DELILAH, ("IN"));
-
-	for (ix = 3; ix < 3 + Workers; ix++)
-	{
-		if (endpoint[ix] == NULL)
-			continue;
-
-		if (endpoint[ix]->state == Endpoint::Connected)
-			++workers;
-	}
-
-	return workers;
-}
-	
-	
-
-/* ****************************************************************************
-*
-* samsonWorkerEndpoints - 
-*
-* Return list of connected workers ?
-*/
-std::vector<Endpoint*> Network::samsonWorkerEndpoints()
-{
-	int                     ix;
-	std::vector<Endpoint*>  v;
-
-	LM_X(1, ("IN"));
-
-	for (ix = 3; ix <  3 + Workers; ix++)
-	{
-		if (endpoint[ix] == NULL)
-			continue;
-
-		if (endpoint[ix]->state == Endpoint::Connected)
-			v.push_back(endpoint[ix]);
-	}
-
-	return v;
-}
-	
-
-
-/* ****************************************************************************
-*
-* send - 
-*/
-size_t Network::send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, void* data, int dataLen, Packet* packetP)
-{
-	Endpoint* ep        = endpoint[endpointId];
-
-	if (ep == NULL)
-		LM_RE(-1, ("No endpoint at index %d", endpointId));
-	if (ep->state != Endpoint::Connected)
-		LM_RE(-1, ("Endpoint %d in state '%s'", endpointId, ep->stateName()));
-
-	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", messageCode(code), endpointId));
-
-	int nb = iomMsgSend(ep->fd, ep->name.c_str(), me->name.c_str(), code, Message::Msg, data, dataLen, packetP, NULL, 0);
-
-	if (sender)
-		sender->notificationSent(0, true);
-
-	return nb;
-}
-	
-
-
-/* ****************************************************************************
-*
-* ready - 
-*/
-bool Network::ready()
-{
-	return iAmReady;
 }
 
 
@@ -530,7 +156,7 @@ bool Network::ready()
 * the vector.
 *
 */
-Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo = -1)
+Endpoint* EndpointMgr::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo)
 {
 	int ix;
 
@@ -660,7 +286,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 *
 * endpointRemove - MOVE to EndpointMgr
 */
-void Network::endpointRemove(Endpoint* ep)
+void EndpointMgr::endpointRemove(Endpoint* ep)
 {
 	int ix;
 
@@ -694,7 +320,7 @@ void Network::endpointRemove(Endpoint* ep)
 *
 * endpointLookup - MOVE to EndpointMgr
 */
-Endpoint* Network::endpointLookup(int ix)
+Endpoint* EndpointMgr::endpointLookup(int ix)
 {
 	return endpoint[ix];
 }
@@ -705,7 +331,7 @@ Endpoint* Network::endpointLookup(int ix)
 *
 * endpointCoreWorkerLookup - MOVE to EndpointMgr
 */
-Endpoint* Network::endpointCoreWorkerLookup(int coreNo)
+Endpoint* EndpointMgr::endpointCoreWorkerLookup(int coreNo)
 {
 	int ix;
 
@@ -732,7 +358,7 @@ Endpoint* Network::endpointCoreWorkerLookup(int coreNo)
 *
 * endpointLookup - MOVE to EndpointMgr
 */
-Endpoint* Network::endpointLookup(int fd, int* idP)
+Endpoint* EndpointMgr::endpointLookup(int fd, int* idP)
 {
 	int ix = 0;
 
@@ -760,9 +386,112 @@ Endpoint* Network::endpointLookup(int fd, int* idP)
 
 /* ****************************************************************************
 *
+* workerStatusToController - MOVE to SamsonWorker
+*/
+void EndpointMgr::workerStatusToController(void)
+{
+	Message::WorkerStatusData ws;
+	int                       ix;
+
+	// workerStatus(&ws, network);    To fix when ALL change is done (cannot include EndpointMgr in workerStatus.[h|cpp] ...
+
+#ifdef DEBUG
+	LM_T(LMT_STAT, ("CPU Load: %d%%  (%d cores)", ws.cpuInfo.load, ws.cpuInfo.cores));
+	for (ix = 0; ix < ws.cpuInfo.cores; ix++)
+		LM_T(LMT_STAT, ("Core %02d load: %d%%  (MHz: %d, bogomips: %d, cache size: %d)",
+						ix,
+						ws.cpuInfo.coreInfo[ix].load,
+						ws.cpuInfo.coreInfo[ix].mhz,
+						ws.cpuInfo.coreInfo[ix].bogomips,
+						ws.cpuInfo.coreInfo[ix].cacheSize));
+
+	for (ix = 0; ix < ws.netInfo.ifaces; ix++)
+		LM_T(LMT_STAT, ("Net I/F %02d: %-10s Received: %12u / %8u,  Sent: %12u / %8u)",
+						ix,
+						ws.netInfo.iface[ix].name,
+						ws.netInfo.iface[ix].rcvBytes,
+						ws.netInfo.iface[ix].rcvPackets,
+						ws.netInfo.iface[ix].sndBytes,
+						ws.netInfo.iface[ix].sndPackets));
+					
+	for (ix = 0; ix < ws.netInfo.ifaces; ix++)
+	{
+		if (ws.netInfo.iface[ix].sndSpeed > 1024 * 1024)
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f Mbytes/s", ix,
+							ws.netInfo.iface[ix].name,
+							ws.netInfo.iface[ix].sndSpeed / 1024.0 / 1024.0));
+		else if (ws.netInfo.iface[ix].sndSpeed > 1024)
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f kbytes/s", ix,
+							ws.netInfo.iface[ix].name,
+							ws.netInfo.iface[ix].sndSpeed / 1024.0));
+		else
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f bytes/s", ix,
+							ws.netInfo.iface[ix].name,
+							ws.netInfo.iface[ix].sndSpeed));
+
+		if (ws.netInfo.iface[ix].rcvSpeed > 1024 * 1024)
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f Mbytes/s", ix,
+							ws.netInfo.iface[ix].name,
+							ws.netInfo.iface[ix].rcvSpeed / 1024.0 / 1024.0));
+		else if (ws.netInfo.iface[ix].rcvSpeed > 1024)
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f kbytes/s", ix,
+							ws.netInfo.iface[ix].name,
+							ws.netInfo.iface[ix].rcvSpeed / 1024.0));
+		else
+			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f bytes/s", ix,
+							ws.netInfo.iface[ix].name,
+							ws.netInfo.iface[ix].rcvSpeed));
+	}
+
+	LM_T(LMT_STAT, ("I have %d core workers", ws.coreWorkerInfo.workers));
+	for (ix = 0; ix < ws.coreWorkerInfo.workers; ix++)
+	{
+		LM_T(LMT_STAT, ("Core %02d: %-20s %-20s  uptime:%-08d  jobsDone:%-05d  restarts:%-05d",
+						ws.coreWorkerInfo.worker[ix].coreNo,
+						ws.coreWorkerInfo.worker[ix].name,
+						coreWorkerState(ws.coreWorkerInfo.worker[ix].state),
+						ws.coreWorkerInfo.worker[ix].uptime,
+						ws.coreWorkerInfo.worker[ix].jobsDone,
+						ws.coreWorkerInfo.worker[ix].restarts));
+	}
+
+	LM_T(LMT_STAT, ("I have %d cores - sending %d bytes of workerStatus data to controller", ws.cpuInfo.cores, sizeof(ws)));
+#endif
+
+	iomMsgSend(controller->fd, controller->name.c_str(), me->name.c_str(), Message::WorkerStatus, Message::Msg, &ws, sizeof(ws));
+}
+
+
+
+/* ****************************************************************************
+*
+* coreWorkerRestart - MOVE to SamsonWorker
+*/
+void EndpointMgr::coreWorkerRestart(void)
+{
+	int epIx;
+
+	for (epIx = 3 + Workers; epIx < Endpoints; epIx++)
+	{
+		if (endpoint[epIx] == NULL)
+			continue;
+
+		if (endpoint[epIx]->type != Endpoint::CoreWorker)
+			continue;
+
+		LM_T(LMT_COREWORKER, ("CoreWorker '%s' in state '%s'", endpoint[epIx]->name.c_str(), endpoint[epIx]->stateName()));
+		if (endpoint[epIx]->state != Endpoint::Dead)
+			continue;
+
+		LM_T(LMT_RESTART, ("Trying to restart CoreWorker %d", endpoint[epIx]->coreNo));
+		coreWorkerStart(endpoint[epIx]->coreNo, progName, me->port);
+	}
+}
+/* ****************************************************************************
+*
 * msgTreat - MOVE to EndpointMgr
 */
-void Network::msgTreat(int fd, char* name)
+void EndpointMgr::msgTreat(int fd, char* name)
 {
 	Packet                packet;
 	Packet                ack;
@@ -1056,119 +785,13 @@ void Network::msgTreat(int fd, char* name)
 
 
 
-/* ****************************************************************************
-*
-* workerStatusToController - MOVE to SamsonWorker
-*/
-void Network::workerStatusToController(void)
-{
-	Message::WorkerStatusData ws;
-	int                       ix;
-
-	workerStatus(&ws, this);
-
-#ifdef DEBUG
-	LM_T(LMT_STAT, ("CPU Load: %d%%  (%d cores)", ws.cpuInfo.load, ws.cpuInfo.cores));
-	for (ix = 0; ix < ws.cpuInfo.cores; ix++)
-		LM_T(LMT_STAT, ("Core %02d load: %d%%  (MHz: %d, bogomips: %d, cache size: %d)",
-						ix,
-						ws.cpuInfo.coreInfo[ix].load,
-						ws.cpuInfo.coreInfo[ix].mhz,
-						ws.cpuInfo.coreInfo[ix].bogomips,
-						ws.cpuInfo.coreInfo[ix].cacheSize));
-
-	for (ix = 0; ix < ws.netInfo.ifaces; ix++)
-		LM_T(LMT_STAT, ("Net I/F %02d: %-10s Received: %12u / %8u,  Sent: %12u / %8u)",
-						ix,
-						ws.netInfo.iface[ix].name,
-						ws.netInfo.iface[ix].rcvBytes,
-						ws.netInfo.iface[ix].rcvPackets,
-						ws.netInfo.iface[ix].sndBytes,
-						ws.netInfo.iface[ix].sndPackets));
-					
-	for (ix = 0; ix < ws.netInfo.ifaces; ix++)
-	{
-		if (ws.netInfo.iface[ix].sndSpeed > 1024 * 1024)
-			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f Mbytes/s", ix,
-							ws.netInfo.iface[ix].name,
-							ws.netInfo.iface[ix].sndSpeed / 1024.0 / 1024.0));
-		else if (ws.netInfo.iface[ix].sndSpeed > 1024)
-			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f kbytes/s", ix,
-							ws.netInfo.iface[ix].name,
-							ws.netInfo.iface[ix].sndSpeed / 1024.0));
-		else
-			LM_T(LMT_STAT, ("Net I/F %02d %-10s: sending at %.2f bytes/s", ix,
-							ws.netInfo.iface[ix].name,
-							ws.netInfo.iface[ix].sndSpeed));
-
-		if (ws.netInfo.iface[ix].rcvSpeed > 1024 * 1024)
-			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f Mbytes/s", ix,
-							ws.netInfo.iface[ix].name,
-							ws.netInfo.iface[ix].rcvSpeed / 1024.0 / 1024.0));
-		else if (ws.netInfo.iface[ix].rcvSpeed > 1024)
-			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f kbytes/s", ix,
-							ws.netInfo.iface[ix].name,
-							ws.netInfo.iface[ix].rcvSpeed / 1024.0));
-		else
-			LM_T(LMT_STAT, ("Net I/F %02d %-10s: receiving at %.2f bytes/s", ix,
-							ws.netInfo.iface[ix].name,
-							ws.netInfo.iface[ix].rcvSpeed));
-	}
-
-	LM_T(LMT_STAT, ("I have %d core workers", ws.coreWorkerInfo.workers));
-	for (ix = 0; ix < ws.coreWorkerInfo.workers; ix++)
-	{
-		LM_T(LMT_STAT, ("Core %02d: %-20s %-20s  uptime:%-08d  jobsDone:%-05d  restarts:%-05d",
-						ws.coreWorkerInfo.worker[ix].coreNo,
-						ws.coreWorkerInfo.worker[ix].name,
-						coreWorkerState(ws.coreWorkerInfo.worker[ix].state),
-						ws.coreWorkerInfo.worker[ix].uptime,
-						ws.coreWorkerInfo.worker[ix].jobsDone,
-						ws.coreWorkerInfo.worker[ix].restarts));
-	}
-
-	LM_T(LMT_STAT, ("I have %d cores - sending %d bytes of workerStatus data to controller", ws.cpuInfo.cores, sizeof(ws)));
-#endif
-
-	iomMsgSend(controller->fd, controller->name.c_str(), me->name.c_str(), Message::WorkerStatus, Message::Msg, &ws, sizeof(ws));
-}
-
-
-
-/* ****************************************************************************
-*
-* coreWorkerRestart - MOVE to SamsonWorker
-*/
-void Network::coreWorkerRestart(void)
-{
-	int epIx;
-
-	for (epIx = 3 + Workers; epIx < Endpoints; epIx++)
-	{
-		if (endpoint[epIx] == NULL)
-			continue;
-
-		if (endpoint[epIx]->type != Endpoint::CoreWorker)
-			continue;
-
-		LM_T(LMT_COREWORKER, ("CoreWorker '%s' in state '%s'", endpoint[epIx]->name.c_str(), endpoint[epIx]->stateName()));
-		if (endpoint[epIx]->state != Endpoint::Dead)
-			continue;
-
-		LM_T(LMT_RESTART, ("Trying to restart CoreWorker %d", endpoint[epIx]->coreNo));
-		coreWorkerStart(endpoint[epIx]->coreNo, progName, me->port);
-	}
-}
-
-
-
 #define PeriodForSendingWorkerStatusToController  10
 #define PeriodForRestartingDeadCoreWorkers        60
 /* ****************************************************************************
 *
 * run - MOVE to EndpointMgr?
 */
-void Network::run()
+void EndpointMgr::run()
 {
 	int             fds;
 	fd_set          rFds;
@@ -1355,10 +978,157 @@ void Network::run()
 
 /* ****************************************************************************
 *
-* quit - 
+* readyCheck - 
 */
-void Network::quit()
+void EndpointMgr::readyCheck(void)
 {
-}	
+	int ix;
+
+	for (ix = 3; ix < 3 + Workers; ix++)
+	{
+		if (endpoint[ix] == NULL)
+		{
+			iAmReady = false;
+			return;
+		}
+
+		if (endpoint[ix]->state != Endpoint::Connected)
+		{
+			iAmReady = false;
+			return;
+		}
+	}
+
+	iAmReady = true;
+}
+
+
+
+/* ****************************************************************************
+*
+* coreWorkerStart - MOVE to SamsonWorker
+*/
+void EndpointMgr::coreWorkerStart(int coreNo, char* fatherName, int port)
+{
+	Endpoint* ep;
+
+	ep = endpointCoreWorkerLookup(coreNo);
+	if (ep == NULL)
+	{
+		char cwName[16];
+
+		sprintf(cwName, "Core %02d", coreNo);
+		ep = endpointAdd(-1, cwName, 0, Endpoint::CoreWorker, "localhost", 0, coreNo);
+	}
+	if (ep == NULL)
+		LM_X(1, ("NULL endpoint ..."));
+
+	ep->startTime        = time(NULL);
+	ep->coreNo           = coreNo;
+	ep->coreWorkerState  = Message::NotBusy;
+
+	// Using these two fields to improve debugging ...
+	ep->ip              = "Core";
+	ep->port            = coreNo;
+
+	LM_T(LMT_COREWORKER, ("*********** Starting Core Worker %d", coreNo));
+	if (fork() == 0)
+	{
+#if !defined(__APPLE__)
+		cpu_set_t cpuSet;
+
+		CPU_ZERO(&cpuSet);
+		CPU_SET(coreNo, &cpuSet);
+		if (sched_setaffinity(0, sizeof(cpuSet), &cpuSet) == -1)
+			LM_XP(1, ("sched_setaffinity"));
+#endif
+		
+		LM_T(LMT_COREWORKER, ("child %d running (pid: %d) on core %d", coreNo, (int) getpid(), coreNo));
+
+		/* ************************************************************
+		 *
+		 * Core workers do not log to stdout
+		 */
+		lmFdUnregister(1);
+
+
+
+		/* ************************************************************
+		 *
+		 * Set progName
+		 */
+		progName = (char*) malloc(strlen("samsonCoreWorker_") + 10);
+		if (progName == NULL)
+			LM_X(1, ("samsonCoreWorker_%d died allocating: %s", getpid(), strerror(errno)));
+		sprintf(progName, (char*) "samsonCoreWorker_%d", (int) getpid());
+
+
+		
+		/* ************************************************************
+		 *
+		 * Setting auxiliar string for logMsg
+		 */
+		char auxString[16];
+
+		sprintf(auxString, "core%02d", coreNo);
+		lmAux(auxString);
+
+
+
+		/* ************************************************************
+		 *
+		 * Clean out father processes endpoints
+		 */
+		me         = NULL;
+		listener   = NULL;
+		controller = NULL;
+
+		int epIx;
+		for (epIx = 0; epIx < Endpoints; epIx++)
+		{
+			if (endpoint[epIx] != NULL)
+				close(endpoint[epIx]->fd);
+			endpoint[epIx] = NULL;
+		}
+
+
+
+		/* ************************************************************
+		 *
+		 * Creating my 'me' endpoint
+		 */
+		endpoint[0] = new Endpoint(Endpoint::CoreWorker, -1);
+		if (endpoint[0] == NULL)
+			LM_XP(1, ("new Endpoint"));
+
+		me          = endpoint[0];
+		me->name    = progName;
+		me->state   = Endpoint::Me;
+		me->coreNo  = coreNo;
+
+
+
+		LM_T(LMT_COREWORKER, ("new me created"));
+		/* ************************************************************
+		 *
+		 * connect to samsonWorker (father process is like a controller, so I use index 2 ...)
+		 */
+		endpoint[2] = new Endpoint(Endpoint::Worker, fatherName);
+		if (endpoint[2] == NULL)
+			LM_XP(1, ("error allocating endpoint for father"));
+		controller = endpoint[2];
+
+		LM_T(LMT_COREWORKER, ("Connecting to father"));
+		controller->fd = iomConnect("localhost", port);
+		if (controller->fd == -1)
+			LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
+		LM_T(LMT_COREWORKER, ("Connected to father"));
+		controller->state = ss::Endpoint::Connected;
+
+		LM_T(LMT_COREWORKER, ("Calling RUN"));
+		run();
+		LM_X(1, ("Back from run - should not ever get here (coreWorker %d, pid: %d)", coreNo, (int) getpid()));
+	}
+}
 
 }

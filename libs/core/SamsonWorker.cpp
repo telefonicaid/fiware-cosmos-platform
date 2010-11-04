@@ -101,6 +101,19 @@ void SamsonWorker::parseArgs(int argC, const char* argV[])
 
 /* ****************************************************************************
 *
+* endpointMgrSet - 
+*/
+void SamsonWorker::endpointMgrSet(ss::EndpointMgr*  epMgr)
+{
+   this->epMgr = epMgr;
+
+   this->epMgr->packetReceiverSet(this);
+}
+
+
+
+/* ****************************************************************************
+*
 * networkSet - 
 */
 void SamsonWorker::networkSet(NetworkInterface* network)

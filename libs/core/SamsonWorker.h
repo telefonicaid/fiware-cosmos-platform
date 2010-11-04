@@ -22,6 +22,7 @@
 #include "WorkerDataManager.h"	// ss::WorkerDataManager
 #include "ModulesManager.h"		// ss::ModulesManager
 #include "WorkerTaskManager.h"	// ss::WorkerTaskManager
+#include "EndpointMgr.h"        // ss::EndpointMgr
 
 
 
@@ -33,6 +34,7 @@ namespace ss {
 	
 	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
 	{
+		EndpointMgr*       epMgr;			// Endpoint Manager
 		NetworkInterface*  network;			// Network interface
 		WorkerDataManager  data;			// Data manager
 		WorkerTaskManager  taskManager;		// Task manager
@@ -61,6 +63,7 @@ namespace ss {
 
 	public:
 		void networkSet(NetworkInterface* network);
+		void endpointMgrSet(ss::EndpointMgr* epMgr);
 
 		// Main routine
 		void run();

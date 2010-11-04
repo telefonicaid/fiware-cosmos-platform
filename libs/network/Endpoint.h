@@ -27,6 +27,7 @@ public:
 		Me,
 		FutureWorker,
 		Listening,
+		Unconnected,
 		Connected,
 		Closed,
 		Disconnected,

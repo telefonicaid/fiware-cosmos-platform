@@ -23,6 +23,8 @@
 #include "ModulesManager.h"		// ss::ModulesManager
 #include "WorkerTaskManager.h"	// ss::WorkerTaskManager
 
+
+
 namespace ss {
 	
 	/**
@@ -44,6 +46,7 @@ namespace ss {
 	public:
         int          port;
         int          endpoints;
+        int          workers;
 		std::string  controller;
 		std::string  traceV;
 		

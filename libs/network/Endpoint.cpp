@@ -170,6 +170,7 @@ const char* Endpoint::stateName(void)
 	case Me:              return (char*) "ME";
 	case FutureWorker:    return (char*) "FutureWorker";
 	case Listening:       return (char*) "Listening";
+	case Unconnected:     return (char*) "Unconnected";
 	case Connected:       return (char*) "Connected";
 	case Closed:          return (char*) "Closed";
 	case Disconnected:    return (char*) "Disconnected";

@@ -46,6 +46,7 @@ class Network : public NetworkInterface
 
 public:
 	Network();
+	Network(int endpoints, int workers);
 
 	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);
 
@@ -81,7 +82,8 @@ public:
 
 public:
 	int        Workers;
-	Endpoint*  endpoint[3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS];
+	int        Endpoints;
+	Endpoint** endpoint;
 
 private:
 	Endpoint*  listener;

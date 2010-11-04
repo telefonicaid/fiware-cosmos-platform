@@ -69,6 +69,7 @@ void SamsonWorker::parseArgs(int argC, const char* argV[])
 
 	commandLine.set_flag_int("port",           SAMSON_WORKER_DEFAULT_PORT);
 	commandLine.set_flag_int("endpoints",      80);
+	commandLine.set_flag_int("workers",         5);
 	commandLine.set_flag_string("controller",  "no_controller");
 	commandLine.set_flag_string("t",           "255");
 	commandLine.set_flag_boolean("r");
@@ -82,6 +83,7 @@ void SamsonWorker::parseArgs(int argC, const char* argV[])
 	lmReads    = commandLine.get_flag_bool("r");
 	lmWrites   = commandLine.get_flag_bool("w");
 	endpoints  = commandLine.get_flag_int("endpoints");
+	workers    = commandLine.get_flag_int("workers");
 
 	if ((s = lmTraceSet((char*) traceV.c_str())) != LmsOk)
 		LM_X(1, ("lmTraceSet: %s", lmStrerror(s)));

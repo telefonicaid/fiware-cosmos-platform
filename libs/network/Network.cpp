@@ -98,16 +98,38 @@ static char* ipGet(void)
 */
 Network::Network()
 {
-	Workers    = WORKERS;
 	iAmReady   = false;
-
 	receiver   = NULL;
-
 	me         = NULL;
 	listener   = NULL;
 	controller = NULL;
+	Workers    = WORKERS;
+	Endpoints  = 3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS;
 
-	memset(endpoint, 0, sizeof(endpoint));
+	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
+	if (endpoint == NULL)
+		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
+}
+
+
+
+/* ****************************************************************************
+*
+* Constructor
+*/
+Network::Network(int endpoints, int workers)
+{
+	iAmReady   = false;
+	receiver   = NULL;
+	me         = NULL;
+	listener   = NULL;
+	controller = NULL;
+	Workers    = workers;
+	Endpoints  = endpoints;
+
+	endpoint = (Endpoint**) calloc(endpoints, sizeof(Endpoint*));
+	if (endpoint == NULL)
+		LM_XP(1, ("calloc(%d, %d)", endpoints, sizeof(Endpoint*)));
 }
 
 
@@ -356,8 +378,8 @@ void Network::coreWorkerStart(int coreNo, char* fatherName, int port)
 		listener   = NULL;
 		controller = NULL;
 
-		unsigned int epIx;
-		for (epIx = 0; epIx < sizeof(endpoint) / sizeof(endpoint[0]); epIx++)
+		int epIx;
+		for (epIx = 0; epIx < Endpoints; epIx++)
 		{
 			if (endpoint[epIx] != NULL)
 				close(endpoint[epIx]->fd);
@@ -580,7 +602,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 		return controller;
 
 	case Endpoint::Temporal:
-		for (ix = sizeof(endpoint) / sizeof(endpoint[0]) - 1; ix >= 3 + Workers; ix--)
+		for (ix = Endpoints - 1; ix >= 3 + Workers; ix--)
 		{
 			if (endpoint[ix] == NULL)
 			{
@@ -611,7 +633,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 		{
 			LM_T(LMT_EP, ("Found CoreWorker (core %d)", coreNo));
 			ep->fd    = fd;
-			ep->state = Endpoint::Connected;
+			ep->state = Endpoint::Unconnected;
 			ep->name  = std::string(name);
 
 			return ep;
@@ -620,7 +642,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 		/* The first time a CoreWorker Endpoint is created we pass thru */
 
 	case Endpoint::Delilah:
-		for (ix = 3 + Workers; ix < (int) (sizeof(endpoint) / sizeof(endpoint[0]) - 1); ix++)
+		for (ix = 3 + Workers; ix < (int) (Endpoints - 1); ix++)
 		{
 			if (endpoint[ix] == NULL)
 			{
@@ -693,11 +715,11 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 */
 void Network::endpointRemove(Endpoint* ep)
 {
-	unsigned int ix;
+	int ix;
 
 	LM_T(LMT_EP, ("Removing '%s' endpoint '%s'", ep->typeName(), ep->name.c_str()));
 
-	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+	for (ix = 0; ix < Endpoints; ix++)
 	{
 		if (endpoint[ix] == NULL)
 			continue;
@@ -738,9 +760,9 @@ Endpoint* Network::endpointLookup(int ix)
 */
 Endpoint* Network::endpointCoreWorkerLookup(int coreNo)
 {
-	unsigned int ix;
+	int ix;
 
-	for (ix = 3 + Workers; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+	for (ix = 3 + Workers; ix < Endpoints; ix++)
 	{
 		if (endpoint[ix] == NULL)
 			continue;
@@ -765,12 +787,12 @@ Endpoint* Network::endpointCoreWorkerLookup(int coreNo)
 */
 Endpoint* Network::endpointLookup(int fd, int* idP)
 {
-	unsigned int ix = 0;
+	int ix = 0;
 
 	if (fd < 0)
 		return NULL;
 
-	for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]); ix++)
+	for (ix = 0; ix < Endpoints; ix++)
 	{
 		if (endpoint[ix] == NULL)
 			continue;
@@ -809,9 +831,9 @@ void Network::msgTreat(int fd, char* name)
 	if (ep == NULL)
 		LM_X(1, ("endpoint not found for fd %d", fd));
 
-	LM_T(LMT_SELECT, ("treating incoming message from '%s' (ep at %p)", name, ep));
+	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p)", name, ep));
 	s = iomMsgRead(fd, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
-	LM_T(LMT_SELECT, ("iomMsgRead returned %d", s));
+	LM_T(LMT_READ, ("iomMsgRead returned %d", s));
 
 	if (s != 0)
 	{
@@ -1172,9 +1194,9 @@ void Network::workerStatusToController(void)
 */
 void Network::coreWorkerRestart(void)
 {
-	unsigned int epIx;
+	int epIx;
 
-	for (epIx = 3 + Workers; epIx < sizeof(endpoint) / sizeof(endpoint[0]); epIx++)
+	for (epIx = 3 + Workers; epIx < Endpoints; epIx++)
 	{
 		if (endpoint[epIx] == NULL)
 			continue;
@@ -1289,8 +1311,8 @@ void Network::run()
 			//
 			// Adding fds to the read-set
 			//
-			LM_T(LMT_SELECT, ("------------------------------------------------------------------------"));
-			for (ix = 0; ix < (int) (sizeof(endpoint) / sizeof(endpoint[0])); ix++)
+			LM_T(LMT_SELECT, ("------------ %d endpoints ------------------------------------------------------------", Endpoints));
+			for (ix = 0; ix < Endpoints; ix++)
 			{
 				if (endpoint[ix] == NULL)
 					continue;
@@ -1325,6 +1347,8 @@ void Network::run()
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);
 		} while ((fds == -1) && (errno == EINTR));
 
+		LM_T(LMT_SELECT, ("select returned %d", fds));
+		sleep(1);
 		if (fds == -1)
 		{
 			if (errno != EINTR)
@@ -1336,12 +1360,15 @@ void Network::run()
 		}
 		else
 		{
+			int ix;
+
 			if (listener && (listener->state == Endpoint::Listening) && FD_ISSET(listener->fd, &rFds))
 			{
 				int        fd;
 				char       hostName[128];
 
 				LM_T(LMT_SELECT, ("incoming message from my listener - I will accept ..."));
+				--fds;
 				fd = iomAccept(listener, hostName, sizeof(hostName));
 				if (fd == -1)
 					LM_P(("iomAccept(%d)", listener->fd));
@@ -1353,19 +1380,20 @@ void Network::run()
 					helloSend(ep, Message::Msg);
 				}
 			}
-			else
-			{
-				unsigned int ix;
 
-				// Treat endpoint for endpoint vector - skipping the first three ... (me, listener, and controller)
+			if (fds > 0)
+			{
+				// Treat endpoint for endpoint vector - skipping the first two ... (me & listener)
 				// For now, only temporal endpoints are in endpoint vector
-				for (ix = 0; ix < sizeof(endpoint) / sizeof(endpoint[0]) ; ix++)
+				LM_T(LMT_SELECT, ("looping from %d to %d", 3, Endpoints));
+				for (ix = 2; ix < Endpoints; ix++)
 				{
 					if ((endpoint[ix] == NULL) || (endpoint[ix]->fd < 0))
 						continue;
 
 					if (FD_ISSET(endpoint[ix]->fd, &rFds))
 					{
+						--fds;
 						LM_T(LMT_SELECT, ("incoming message from '%s' endpoint %s", endpoint[ix]->typeName(), endpoint[ix]->name.c_str()));
 						msgTreat(endpoint[ix]->fd, (char*) endpoint[ix]->name.c_str());
 						// FD_CLR(endpoint[ix]->fd, &rFds);  endpoint[ix] might have been set to NULL in msgTreat ...

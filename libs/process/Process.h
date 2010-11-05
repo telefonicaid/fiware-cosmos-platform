@@ -32,6 +32,11 @@ namespace ss {
 		
 		void run()
 		{
+		   // LOOP
+			// Select
+			// call runCommand(x)
+			// Send "finish"
+		   
 		}
 		
 		/**
@@ -40,10 +45,10 @@ namespace ss {
 		 During this method execution, passCommand method can be called multiple time to pass commands to the user
 		 Any of this commands can be neither finish nor error
 		 
-		 When runCommand finish, a message is passed to the ProcessAssitant ( finish or error )
+		 When runCommand finishes, a message is passed to the ProcessAssitant ( finish or error )
 		 */
 		
-		bool runCommand( std::string command )
+		void  runCommand( std::string command )
 		{
 		}
 		
@@ -52,8 +57,11 @@ namespace ss {
 		 Method used to pass command back to the ProcessAssitant
 		 */
 		
-		void passCommand(std::string command)
+		std::string passCommand(std::string command)
 		{
+		   // iomMsgSend();
+		   // iomMsgAwait();
+		   // iomMsgRead();
 		}
 		
 		

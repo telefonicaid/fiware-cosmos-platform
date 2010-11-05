@@ -40,6 +40,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/delilah")
+include_directories("${PROJECT_SOURCE_DIR}/libs/process")
 
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 

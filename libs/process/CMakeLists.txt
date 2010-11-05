@@ -1,10 +1,10 @@
 SET (HEADERS
-    ProcessAssitant.h
+    ProcessAssistant.h
     Process.h
 )
 
 SET (SOURCES
-    ProcessAssitant.cpp
+    ProcessAssistant.cpp
     Process.cpp
 )
 

@@ -384,18 +384,19 @@ static void netInfo(NetIfInfo* niP)
 }
 
 
-
+#if 0
 /* ****************************************************************************
 *
 * coreWorkerInfo - 
 */
-static void coreWorkerInfo(CoreWorkerInfo* cwiP, Network* networkP)
+static void coreWorkerInfo(CoreWorkerInfo* cwiP, NetworkInterface* networkP)
 {
 	int        coreWorkers = 0;
 	int        ix;
 	Endpoint*  ep;
+	int        Workers = networkP->getNumWorkers();
 
-	for (ix = 3 + networkP->Workers; ix < (int) (sizeof(networkP->endpoint) / sizeof(networkP->endpoint[0])); ix++)
+	for (ix = 3 + Workers; ix < (int) (sizeof(networkP->endpoint) / sizeof(networkP->endpoint[0])); ix++)
 	{
 		ep = networkP->endpoint[ix];
 
@@ -422,6 +423,7 @@ static void coreWorkerInfo(CoreWorkerInfo* cwiP, Network* networkP)
 
 	cwiP->workers = coreWorkers;
 }
+#endif
 
 
 
@@ -429,11 +431,11 @@ static void coreWorkerInfo(CoreWorkerInfo* cwiP, Network* networkP)
 *
 * workerStatus - 
 */
-void workerStatus(WorkerStatusData* wsP, Network* networkP)
+void workerStatus(WorkerStatusData* wsP)
 {
 	cpuInfo(&wsP->cpuInfo);
 	netInfo(&wsP->netInfo);
-	coreWorkerInfo(&wsP->coreWorkerInfo, networkP);
+	// coreWorkerInfo(&wsP->coreWorkerInfo, networkP);
 }
 
 /* ****************************************************************************

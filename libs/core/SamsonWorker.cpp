@@ -11,6 +11,7 @@
 #include "Endpoint.h"                   // Endpoint
 #include "CommandLine.h"                // CommandLine
 #include "WorkerDataManager.h"          // WorkerDataManager
+#include "ProcessAssistant.h"           // ProcessAssistant
 #include "SamsonWorker.h"               // Own interfce
 
 
@@ -173,10 +174,38 @@ SamsonWorker::SamsonWorker(int argc, const char* argv[], NetworkInterface *_netw
 */
 void SamsonWorker::run()
 {
-	// Init the data manager
+	LM_M(("IN"));
+	// Initialize the data manager
 	data.initDataManager(data.getLogFileName());
+	LM_M(("DataManager initialized"));
+
+	LM_M(("calling workerStatus"));
+	workerStatus(&status);
+	LM_M(("workerStatus done"));
+
+
+
+
+	// //////////////////////////////////////////////////////////////////////
+	//
+	// Create one ProcessAssistant per core
+	//
+	LM_M(("initializing %d process assistants", status.cpuInfo.cores));
+
+	processAssistant = (ProcessAssistant**) calloc(status.cpuInfo.cores, sizeof(ProcessAssistant*));
+	if (processAssistant == NULL)
+		LM_XP(1, ("calloc(%d, %d)", status.cpuInfo.cores, sizeof(ProcessAssistant*)));
+
+	int coreId;
+	for (coreId = 0; coreId < status.cpuInfo.cores; coreId++)
+		processAssistant[coreId] = new ProcessAssistant(coreId);
+
+	LM_M(("Got %d process assistants", coreId));
 
 	assert(network);
+
+	LM_M(("calling Network::run"));
+
 	network->run();
 }
 

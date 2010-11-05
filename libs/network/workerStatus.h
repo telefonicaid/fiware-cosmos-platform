@@ -14,7 +14,7 @@
 namespace ss
 {
 
-class Network;
+
 
 namespace Message
 {
@@ -156,7 +156,7 @@ typedef struct WorkerStatusData
 *
 * workerStatus
 */
-extern void workerStatus(WorkerStatusData* wsP, Network* networkP);
+extern void workerStatus(WorkerStatusData* wsP);
 
 
 

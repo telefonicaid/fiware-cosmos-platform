@@ -33,6 +33,7 @@ SET (STATIC_LIBS
     samsonNetworkStatic 
     samsonDiskStatic
     samsonDataStatic
+    samsonProcessStatic
     protobuf 
     dl 
     pthread
@@ -47,6 +48,7 @@ SET (SHARED_LIBS
     samsonMemoryShared
     samsonNetworkShared 
     samsonDiskShared
+    samsonProcessShared
     protobuf 
     dl 
     pthread
@@ -62,6 +64,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
+include_directories("${PROJECT_SOURCE_DIR}/libs/process")
 
 
 

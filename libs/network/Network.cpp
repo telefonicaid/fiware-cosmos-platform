@@ -219,18 +219,6 @@ void Network::initAsSamsonController(int port, std::vector<std::string> peers)
 void Network::initAsSamsonWorker(int port, std::string controllerName)
 {
 	init(Endpoint::Worker, port, controllerName.c_str());
-
-	/* MOVE rest to SamsonWorker::init */
-	Message::WorkerStatusData ws;
-
-	workerStatus(&ws, this);
-
-	char traceLevelV[256];
-	lmTraceGet(traceLevelV);
-
-	int coreNo;
-	for (coreNo = 0; coreNo < ws.cpuInfo.cores; coreNo++)
-		coreWorkerStart(coreNo, progName, port);
 }
 
 
@@ -1064,7 +1052,7 @@ void Network::workerStatusToController(void)
 	Message::WorkerStatusData ws;
 	int                       ix;
 
-	workerStatus(&ws, this);
+	workerStatus(&ws);
 
 #ifdef DEBUG
 	LM_T(LMT_STAT, ("CPU Load: %d%%  (%d cores)", ws.cpuInfo.load, ws.cpuInfo.cores));

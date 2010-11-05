@@ -15,6 +15,8 @@
 #include "Lock.h"					// au::Lock
 #include "au_map.h"					// au::map
 
+#include "Format.h"					// au::Format
+
 #define SS_SHARED_MEMORY_KEY_ID					872934	// the first one
 
 namespace ss {
@@ -49,6 +51,9 @@ namespace ss {
 		int num_cores;							// Number of cores to use in this server
 		size_t shared_memory_per_core;			// Shared memory used in per-core operation
 		size_t memory;							// Total memory used ( used to limit workers , and free buffered files )
+
+		// Some debug info
+		int num_buffers;
 		
 		MemoryManager();
 		
@@ -76,7 +81,7 @@ namespace ss {
 		/**
 		 Interface to desply a buffer of memory
 		 */
-		void destroyBuffer( Buffer *b);
+		void destroyBuffer( Buffer *b );
 
 		
 		/** 
@@ -100,6 +105,23 @@ namespace ss {
 		 */
 		
 		SharedMemoryItem* getSharedMemory( int i );
+		
+		/**
+		 Get a string describing status of memory manager
+		 */
+		
+		std::string str()
+		{
+			int per_memory = (int) getMemoryUsage()*100;
+			
+			std::ostringstream o;
+			o << "Memory Manager" << std::endl;
+			o << "=========================" << std::endl;
+			o << "Used memory: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)"<< std::endl;
+			o << "Number of buffers in action " << num_buffers << std::endl;
+			
+			return o.str();
+		}
 		
 		
 	};

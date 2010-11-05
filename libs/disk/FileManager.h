@@ -43,7 +43,7 @@ namespace ss {
 		Buffer *buffer;		// Buffer used to read ( created by MemoryManager ) 
 		bool ready;			// flag to indicate that the content is ready (content is there)
 		
-		friend class FileManagetReadItemVector;
+		friend class FileManagerReadItemVector;
 		
 		FileManagerReadItem( std::string _fileName , size_t _offset , size_t _size )
 		{
@@ -62,13 +62,13 @@ namespace ss {
 	 This is the structure submited by any process
 	 */
 	
-	class FileManagetReadItemVector : public std::vector<FileManagerReadItem>
+	class FileManagerReadItemVector : public std::vector<FileManagerReadItem>
 	{
 		bool lock;	// Flag to indicate that this content is being used outside MemoryManager so we cannot free from memory any buffer
 
 	public:
 		
-		FileManagetReadItemVector()
+		FileManagerReadItemVector()
 		{
 			lock = false;
 		}
@@ -97,18 +97,24 @@ namespace ss {
 	 Class used to store a file that has to be saved to disk
 	 */
 	
-	class FileManagerWriteItem
+	class FileManagerWriteItem 
 	{
-		std::string fileName;		// FileName of the file
-		Buffer *buffer;				// Buffer with onMemory information
-		bool ready;					// File has been saved so, it can be removed from memory if necessary
+		std::string fileName;			// FileName of the file
+		Buffer *buffer;					// Buffer with onMemory information
+		bool ready;						// File has been saved so, it can be removed from memory if necessary
 
+		DiskManagerDelegate *delegate;	// Delegate to notify that this file has been saved
+
+		friend class FileManager;
+		
 	public:
 		
-		FileManagerWriteItem( std::string _fileName , Buffer *_buffer)
+		FileManagerWriteItem( std::string _fileName , Buffer *_buffer , DiskManagerDelegate *_delegate )
 		{
 			fileName = _fileName;
 			buffer = _buffer;
+			delegate = _delegate;
+			
 			ready = false;
 		}
 	
@@ -125,7 +131,7 @@ namespace ss {
 	 It is used to send files to be saved on disk and to read part of files
 	 */
 	 
-	class FileManager : public DiskManagerDelegate	// Implements delegate of the DiskManager
+	class FileManager : public DiskManagerDelegate
 	{
 
 		au::Lock lock;		// thread safe lock
@@ -135,7 +141,7 @@ namespace ss {
 		au::map<std::string, FileManagerWriteItem> itemsToSave;
 		
 		// Elements to read ( in order of preference )
-		std::list< FileManagetReadItemVector* > itemsToRead;
+		std::list< FileManagerReadItemVector* > itemsToRead;
 		
 		
 		// Connections between DiskManager ids and fileNames of file saving
@@ -143,17 +149,23 @@ namespace ss {
 		
 	public:
 		
+		/** 
+		 Singleton implementation
+		 */
+		
+		static FileManager *shared();
+		
 		/**
 		 Send a file to be saved
 		 DataBuffer is notified when finished using XXX
 		 Buffer is automatically destroyed when finish or when memory is scarse
 		 */
 		
-		void saveFile(  std::string fileName , Buffer *buffer )
+		size_t write( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate )
 		{
 			lock.lock();
 		
-			FileManagerWriteItem *tmp = new FileManagerWriteItem( fileName , buffer );
+			FileManagerWriteItem *tmp = new FileManagerWriteItem( fileName , buffer, delegate );
 			
 			itemsToSave.insertInMap( fileName , tmp );
 
@@ -162,13 +174,15 @@ namespace ss {
 			savingFiles.insertInMap( id , tmp );
 			
 			lock.unlock();
+			
+			return id;
 		};
 		
 		/** 
 		 Request a set of files to be read for a particular operation
 		 */
 
-		void addItemsToRead( FileManagetReadItemVector* v )
+		void addItemsToRead( FileManagerReadItemVector* v )
 		{
 			lock.lock();
 			itemsToRead.push_back( v );
@@ -180,7 +194,7 @@ namespace ss {
 		 Function used to check if all the required files are on memory and lock them if possible
 		 */
 		 
-		bool checkAndLockItemsToRead( FileManagetReadItemVector* v)
+		bool checkAndLockItemsToRead( FileManagerReadItemVector* v)
 		{ 
 			bool answer;
 			lock.lock();
@@ -194,12 +208,12 @@ namespace ss {
 		 Function used to remove a list of files to read
 		 */
 		
-		void removeItemsToRead( FileManagetReadItemVector* v )
+		void removeItemsToRead( FileManagerReadItemVector* v )
 		{
 			// Destroy al buffers used here, and then remove the element from the list
 			lock.lock();
 			
-			std::list< FileManagetReadItemVector* >::iterator i;
+			std::list< FileManagerReadItemVector* >::iterator i;
 			for ( i = itemsToRead.begin(); i != itemsToRead.end() ; i++)
 			{
 				if( *i == v )
@@ -232,8 +246,15 @@ namespace ss {
 
 			// See if it is a save file
 			FileManagerWriteItem* item = savingFiles.extractFromMap( id );
+
 			if( item )
+			{
+				// Set ready flag so it can be removed from memory if necessarry
 				item->setReady();
+				
+				// Notify to my delegate
+				item->delegate->diskManagerNotifyFinish( id , success); 
+			}
 			
 			lock.unlock();
 		}

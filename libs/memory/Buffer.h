@@ -48,6 +48,13 @@ namespace ss {
 		
 		size_t offset;
 			
+		
+		char * getCurrentDataAndUpdateOffset( size_t size )
+		{
+			offset += size;
+			return _data + offset - size; 
+		}
+		
 	public:
 		
 		char *getData()

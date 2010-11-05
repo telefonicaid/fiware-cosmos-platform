@@ -10,8 +10,9 @@
 /*
 #define KV_BUFFER_SIZE			1024*1024*256									
 #define KV_BUFFER_MAX_NUM_KVS	 1024*1024*64									
- #define KV_MAX_SIZE				 	  64*1024									// Max size for an individual key-value
-*/
+ */
+
+#define KV_MAX_SIZE				 	  64*1024									// Max size for an individual key-value
  
 #define KV_MAX_FILE_SIZE				1024*1024*1024							// 1 GB max file size
 
@@ -29,8 +30,11 @@ namespace ss {
 	 */
 	
 	typedef unsigned short ss_hg;	// Hashgroup identifier			(16bits)
+	
 	typedef size_t hg_size;			// Size of a hashgroup			(64bits)
 	typedef size_t hg_kvs;			// Num KVs inside a hashgroup	(64bits)
+	
+	typedef unsigned short ss_kv_size;	// Size for a particular KV
 	
 	/**
 	 Structure used as header in all files / network data messages
@@ -41,8 +45,27 @@ namespace ss {
 	{
 		hg_size size;
 		hg_kvs kvs;
+		
+		std::string str()
+		{
+			std::ostringstream o;
+			o << "(" << kvs << " kvs in " << size << "bytes)";
+			return o.str();
+		}
+		
 	} hg_info;	
 
+	
+	/**
+	 Structure used to emit key-values to a buffer
+	 */
+	
+	typedef struct
+	{
+		ss_hg	hg;				// Hash group of the key-value
+		ss_kv_size size;		// Size of this key-value
+		unsigned int offset;	// Offset inside the buffer
+	} hg_size_offset;
 	
 	
 	

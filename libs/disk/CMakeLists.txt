@@ -1,4 +1,8 @@
 SET (HEADERS
+	DataBufferItem.h
+	DataBufferItemDelegate.h
+	BufferVector.h
+	DataBuffer.h
 	DeviceDiskAccessManager.h
 	DeviceDiskAccessStatistics.h
 	DiskManager.h
@@ -10,6 +14,10 @@ SET (HEADERS
 )
 
 SET (SOURCES
+	DataBufferItem.cpp
+	DataBufferItemDelegate.cpp
+	BufferVector.cpp
+	DataBuffer.cpp
 	DeviceDiskAccessManager.cpp
 	DeviceDiskAccessStatistics.cpp
 	DiskManager.cpp
@@ -19,29 +27,31 @@ SET (SOURCES
 	FileManager.cpp
 )
 
-SET( LIBS_STATIC
-     logMsgStatic
-     samsonCommonStatic
-     protobuf
-     ncurses
-     pthread
+SET (STATIC_LIBS
+    samsonNetworkStatic
+    samsonModuleStatic
+    samsonCommonStatic
+    samsonCodingStatic
+    samsonMemoryStatic
+    samsonNetworkStatic
+    samsonDiskStatic
+    samsonDataStatic
+    protobuf
+    dl
+    pthread
+    ncurses
 )
 
-SET( LIBS_SHARED
-     samsonCommonShared
-     protobuf
-     ncurses
-     pthread
-)
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
+include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
 ADD_LIBRARY(samsonDiskStatic STATIC ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES( samsonDiskStatic  ${LIBS_STATIC} )
+TARGET_LINK_LIBRARIES( samsonDiskStatic  ${STATIC_LIBS} )
 SET_TARGET_PROPERTIES(samsonDiskStatic PROPERTIES OUTPUT_NAME samsonDisk)
 
 # ADD_LIBRARY(samsonDiskShared SHARED ${SOURCES} ${HEADERS} )
@@ -50,6 +60,6 @@ SET_TARGET_PROPERTIES(samsonDiskStatic PROPERTIES OUTPUT_NAME samsonDisk)
 
 
 ADD_EXECUTABLE(samsonFileManagerTest samsonFileManagerTest.cpp ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonFileManagerTest  ${LIBS_STATIC} )
+TARGET_LINK_LIBRARIES(samsonFileManagerTest  ${STATIC_LIBS} )
 INSTALL(TARGETS               samsonFileManagerTest
 			      RUNTIME DESTINATION   bin)

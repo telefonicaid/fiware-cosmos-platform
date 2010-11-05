@@ -11,6 +11,8 @@ namespace ss
 	{
 		used_memory = 0;
 		
+		num_buffers = 0;
+		
 		// Load setup parameters
 		num_cores = SamsonSetup::shared()->getInt( SETUP_num_cores , 2);
 		shared_memory_per_core = SamsonSetup::shared()->getUInt64( SETUP_shm_size_per_core , 512*1024*1024 );
@@ -85,10 +87,16 @@ namespace ss
 		// Keep counter of the used memory
 		used_memory += size;
 		
-		Buffer *tmp = new Buffer( (char*) malloc(size) , size );
+		
+		// Increase the number of used memory buffers
+		num_buffers++;
+		
+		Buffer *b = new Buffer( (char*) malloc(size) , size );
+
+		std::cout << "create buffer " << b->getSize() << std::endl;
 		
 		lock.unlock();
-		return tmp;
+		return b;
 	}
 	
 	void MemoryManager::destroyBuffer( Buffer *b)
@@ -97,6 +105,11 @@ namespace ss
 		
 		// Keep counter of the used memory
 		used_memory -= b->getSize();
+		
+		std::cout << "destroy buffer " << b->getSize() << std::endl;
+		
+		// Decrease the number of used buffers
+		num_buffers--;
 		
 		b->free();
 		delete b;

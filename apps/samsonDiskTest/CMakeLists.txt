@@ -14,6 +14,7 @@ SET (STATIC_LIBS
     samsonNetworkStatic 
     samsonDiskStatic
     samsonDataStatic
+    samsonCodingStatic
     protobuf 
     dl 
     pthread
@@ -22,6 +23,7 @@ SET (STATIC_LIBS
 
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/core")
+include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")

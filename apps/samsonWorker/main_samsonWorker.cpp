@@ -8,7 +8,6 @@
 
 int main(int argC, const char *argV[])
 {
-#if 0
 	ss::SamsonWorker  worker(argC, argV);
 	ss::Network*      networkP;
 	ss::EndpointMgr*  epMgr;
@@ -20,5 +19,4 @@ int main(int argC, const char *argV[])
 	worker.networkSet(networkP);
 	
 	worker.run();
-#endif
 }

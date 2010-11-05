@@ -67,8 +67,6 @@ namespace ss {
 
 		// Main routine
 		void run();
-
-		// Test routine
 		void test();
 		
 		// PacketReceiverInterface

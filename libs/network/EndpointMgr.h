@@ -10,14 +10,14 @@
 */
 #include "Message.h"           // MessageType
 #include "Endpoint.h"          // Endpoint
-#include "NetworkInterface.h"  // NetworkInterface
+#include "NetworkInterface.h"  // PacketReceiverInterface
 
 
 namespace ss {
 
 
 
-class EndpointMgr : public NetworkInterface
+class EndpointMgr
 {
 private:
     PacketReceiverInterface* receiver;
@@ -26,7 +26,7 @@ private:
 public:
 	EndpointMgr(NetworkInterface* network, int endpoints, int workers);
 	void packetReceiverSet(PacketReceiverInterface* receiver) { this->receiver = receiver; }
-
+	
 	void        init(Endpoint::Type myType, unsigned short port = 0, const char* controllerName = NULL);
 
 	Endpoint*   endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo = -1);

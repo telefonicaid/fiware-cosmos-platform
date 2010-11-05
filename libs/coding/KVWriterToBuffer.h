@@ -9,6 +9,7 @@
 #include <iostream>					// std::cout
 #include <vector>					// std::vector
 #include <set>						// std::set
+#include <algorithm>                // std::sort
 
 #include "coding.h"					// ss_hg, ss_hg_size, etc..
 #include "samson/KVWriter.h"		// KVWriter

@@ -15,6 +15,7 @@ SET (HEADERS
 	workerStatus.h
 	Alarm.h
 	Misc.h
+	EndpointMgr.h
 )
 
 SET (SOURCES
@@ -33,6 +34,7 @@ SET (SOURCES
 	workerStatus.cpp
 	Alarm.cpp
 	Misc.cpp
+	EndpointMgr.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''

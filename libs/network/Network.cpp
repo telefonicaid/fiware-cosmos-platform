@@ -580,7 +580,6 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 		{
 			LM_T(LMT_EP, ("Found CoreWorker (core %d)", coreNo));
 			ep->fd    = fd;
-			ep->state = Endpoint::Unconnected;
 			ep->name  = std::string(name);
 
 			return ep;

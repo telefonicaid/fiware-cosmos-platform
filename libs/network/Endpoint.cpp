@@ -50,7 +50,7 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 	this->ip       = ip;
 	this->port     = port;
 	this->fd       = fd;
-	this->state    = (fd == -1)? Disconnected : Connected;
+	this->state    = (fd == -1)? Unconnected : Connected;
 	this->workers  = 0;
 	this->status   = NULL;
 
@@ -117,7 +117,7 @@ Endpoint::Endpoint(Type type, std::string ipAndPort)
 	}
 
 	this->fd       = -1;
-	this->state    = Disconnected;
+	this->state    = Unconnected;
 	this->workers  = 0;
 	this->type     = type;
 	this->status   = NULL;
@@ -137,7 +137,7 @@ Endpoint::Endpoint(Type type, unsigned short port)
 	this->ip       = "localhost";
 	this->port     = port;
 	this->fd       = -1;
-	this->state    = Disconnected;
+	this->state    = Unconnected;
 	this->workers  = 0;
 	this->type     = type;
 	this->status   = NULL;

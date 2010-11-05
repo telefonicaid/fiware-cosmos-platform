@@ -206,7 +206,6 @@ Endpoint* EndpointMgr::endpointAdd(int fd, char* name, int workers, Endpoint::Ty
 		{
 			LM_T(LMT_EP, ("Found CoreWorker (core %d)", coreNo));
 			ep->fd    = fd;
-			ep->state = Endpoint::Unconnected;
 			ep->name  = std::string(name);
 
 			return ep;
@@ -947,6 +946,7 @@ void EndpointMgr::run()
 					std::string  s   = std::string("tmp:") + std::string(hostName);
 					Endpoint*    ep  = endpointAdd(fd, (char*) s.c_str(), 0, Endpoint::Temporal, (char*) "ip", 0);
 
+					ep->state = Endpoint::Connected;
 					helloSend(ep, Message::Msg);
 				}
 			}

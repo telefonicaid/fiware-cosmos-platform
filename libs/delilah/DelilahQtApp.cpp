@@ -16,3 +16,12 @@ DelilahQtApp::DelilahQtApp(int &argc, char ** argv)
 	w->show();
 }
 
+QList<QString> DelilahQtApp::existingQueuesNames()
+{
+	// TODO: (it's for testing)
+	QList<QString> names;
+	names << "test.cdr" << "test.cdr.1" << "bla";
+
+	return names;
+}
+

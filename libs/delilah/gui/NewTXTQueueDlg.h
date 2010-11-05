@@ -9,18 +9,26 @@ class NewTXTQueueDlg : public QDialog
     Q_OBJECT
 
 public:
-    NewTXTQueueDlg(QWidget *parent = 0);
-    ~NewTXTQueueDlg();
+    NewTXTQueueDlg(QWidget* parent=0)
+		: QDialog(parent) { init(); };
+    NewTXTQueueDlg(QList<QString> names, QWidget* parent=0);
+    ~NewTXTQueueDlg() {};
 
-//public slots:
-//	virtual void accept();
+    QString getName() { return name;};
+public slots:
+	virtual void accept();
+    void setName(QString _name);
 
-signals:
-	void nameChanged(QString);
+protected:
+    void init();
+    bool nameValid(const QString &_name);
+
+protected:
+	QList<QString> existing_names;
+	QString name;
 
 private:
     Ui::NewTXTQueueDlgClass ui;
-    QString name;
 };
 
 #endif // NEWTXTQUEUEDLG_H

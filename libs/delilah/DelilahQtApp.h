@@ -19,8 +19,11 @@ public:
 	DelilahQtApp(int &argc, char ** argv);
 	~DelilahQtApp() {};
 
+	QList<QString> existingQueuesNames();
+
 public:
 	MainWindow* w;
+
 };
 
 

@@ -3,6 +3,7 @@
 
 #include <QMenu>
 
+#include "DelilahQtApp.h"
 #include "MainWindow.h"
 #include "ProcessView.h"
 #include "ProcessScene.h"
@@ -101,12 +102,23 @@ void MainWindow::showAvailableQueues()
 
 void MainWindow::createTXTQueue()
 {
-	NewTXTQueueDlg dlg(this);
-	dlg.exec();
+	DelilahQtApp* a = (DelilahQtApp*)qApp;
 
-//	QString name;
-//	int result = dlg->exec();
-//	std::cout << result << "\n";
+	QList<QString> names = a->existingQueuesNames();
+
+	NewTXTQueueDlg dlg(names, this);
+
+	if (dlg.exec() == QDialog::Rejected)
+		return;
+
+	if (!dlg.getName().isEmpty())
+	{
+		// TODOD: create queue
+		ProcessView* view = (ProcessView*)ui.tabWidget->currentWidget();
+		ProcessScene* scene = (ProcessScene*)view->scene();
+		// TODO: fix position
+		scene->addQueue(QPoint(0, 0));
+	}
 
 }
 

@@ -167,15 +167,13 @@ ObjectItem* ProcessScene::findItem(const QPointF &pos)
 
 void ProcessScene::addQueue(const QPoint &position)
 {
-//	QueueItem* queue = new QueueItem();
-//	queue->setSharedRenderer(queue_renderer);
-//	queue->initText(QString("Test Queue"));
-//	queue->setDefaultSize();
-//	queue->setPos(position);
-//
-//	addItem(queue);
+	QueueItem* queue = new QueueItem();
+	queue->setSharedRenderer(queue_renderer);
+	queue->initText(QString("Test Queue"));
+	queue->setDefaultSize();
+	queue->setPos(position);
 
-	emit(addQueueRequested(position));
+	addItem(queue);
 }
 
 void ProcessScene::addOperation(const QPointF &position)

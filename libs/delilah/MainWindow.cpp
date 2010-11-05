@@ -1,10 +1,14 @@
 #include <iostream>
 #include <string>
 
+#include <QMenu>
+
 #include "MainWindow.h"
 #include "ProcessView.h"
 #include "ProcessScene.h"
 #include "globals.h"
+
+#include "NewTXTQueueDlg.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -36,6 +40,7 @@ void MainWindow::createTab(QString name)
 
 	ProcessScene* scene = new ProcessScene(this);
 	connect(this, SIGNAL(toolChanged(int)), scene, SLOT(setTool(int)));
+	connect(scene, SIGNAL(addQueueRequested(const QPoint &)), this, SLOT(addQueue(const QPoint &)));
 
 	ProcessView* view = new ProcessView(scene);
 	view->setRenderHints(QPainter::Antialiasing);
@@ -79,3 +84,38 @@ void MainWindow::setToolForAction(QAction* action)
 
 	emit(toolChanged(current_tool));
 }
+
+void MainWindow::addQueue(const QPoint &pos)
+{
+	QMenu* menu = new QMenu(ui.tabWidget->currentWidget());
+	menu->addAction("Existing Queue", this, SLOT(showAvailableQueues()));
+	menu->addAction("New TXT Queue", this, SLOT(createTXTQueue()));
+	menu->addAction("New KV Queue", this, SLOT(createKVQueue()));
+	menu->exec(pos);
+}
+
+void MainWindow::showAvailableQueues()
+{
+	std::cout << "TODO!!!!!!!!!!!!!!!!!!\n";
+}
+
+void MainWindow::createTXTQueue()
+{
+	NewTXTQueueDlg dlg(this);
+	dlg.exec();
+
+//	QString name;
+//	int result = dlg->exec();
+//	std::cout << result << "\n";
+
+}
+
+void MainWindow::createKVQueue()
+{
+
+}
+
+//void MainWindow::setName(QString x, QString &name)
+//{
+//	std::cout << "test\n";
+//}

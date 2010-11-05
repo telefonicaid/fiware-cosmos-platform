@@ -7,10 +7,12 @@ IF(QT4_FOUND)
 		Delilah.cpp
 		DelilahConsole.cpp
 		DelilahQt.cpp
+		DelilahQtApp.cpp
 		MainWindow.cpp
-		InfoBox.cpp
 		ProcessView.cpp
 		ProcessScene.cpp
+		gui/InfoBox.cpp
+		gui/NewTXTQueueDlg.cpp
 		items/ObjectItem.cpp
 		items/QueueItem.cpp
 		items/OperationItem.cpp
@@ -24,8 +26,10 @@ IF(QT4_FOUND)
 	
 	SET (HEADERS_MOC
 		MainWindow.h
-		InfoBox.h
+		DelilahQtApp.h
 		ProcessScene.h
+		gui/InfoBox.h
+		gui/NewTXTQueueDlg.h
 		items/ObjectItem.h
 		items/QueueItem.h
 		items/OperationItem.h
@@ -33,26 +37,27 @@ IF(QT4_FOUND)
 	
 	SET (FORMS
 		MainWindow.ui
-		InfoBox.ui)
+		gui/forms/InfoBox.ui
+		gui/forms/NewTXTQueueDlg.ui)
 	
 	SET (RESOURCES
 		resources/objects.qrc
 		resources/icons.qrc)
 
-SET (STATIC_LIBS
-	samsonNetworkStatic
-	samsonModuleStatic
-	samsonCommonStatic
-	samsonCodingStatic
-	samsonMemoryStatic
-	samsonNetworkStatic
-	samsonDiskStatic
-	samsonDataStatic
-	protobuf
-	dl
-        pthread
-	ncurses
-    )	
+	SET (STATIC_LIBS
+		samsonNetworkStatic
+		samsonModuleStatic
+		samsonCommonStatic
+		samsonCodingStatic
+		samsonMemoryStatic
+		samsonNetworkStatic
+		samsonDiskStatic
+		samsonDataStatic
+		protobuf
+		dl
+	    pthread
+		ncurses
+	    )	
 
 	QT4_WRAP_CPP(MOC_SOURCES ${HEADERS_MOC})
 	QT4_WRAP_UI(FORMS_HEADERS ${FORMS})
@@ -61,6 +66,7 @@ SET (STATIC_LIBS
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 	include_directories("${CMAKE_CURRENT_SOURCE_DIR}/items")
+	include_directories("${CMAKE_CURRENT_SOURCE_DIR}/gui")
 	include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 	include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 	include_directories("${PROJECT_SOURCE_DIR}/libs/memory")

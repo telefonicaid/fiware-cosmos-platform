@@ -109,7 +109,8 @@ void ProcessScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 		switch(current_tool)
 		{
 			case TOOL_NEWQUEUE:
-				addQueue(event->scenePos());
+//				addQueue(event->scenePos());
+				emit(addQueueRequested(event->screenPos()));
 				break;
 			case TOOL_NEWOPERATION:
 				addOperation(event->scenePos());
@@ -164,18 +165,20 @@ ObjectItem* ProcessScene::findItem(const QPointF &pos)
 	return item;
 }
 
-void ProcessScene::addQueue(QPointF position)
+void ProcessScene::addQueue(const QPoint &position)
 {
-	QueueItem* queue = new QueueItem();
-	queue->setSharedRenderer(queue_renderer);
-	queue->initText(QString("Test Queue"));
-	queue->setDefaultSize();
-	queue->setPos(position);
+//	QueueItem* queue = new QueueItem();
+//	queue->setSharedRenderer(queue_renderer);
+//	queue->initText(QString("Test Queue"));
+//	queue->setDefaultSize();
+//	queue->setPos(position);
+//
+//	addItem(queue);
 
-	addItem(queue);
+	emit(addQueueRequested(position));
 }
 
-void ProcessScene::addOperation(QPointF position)
+void ProcessScene::addOperation(const QPointF &position)
 {
 	OperationItem* operation = new OperationItem();
 	operation->setSharedRenderer(operation_renderer);

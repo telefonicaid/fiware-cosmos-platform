@@ -8,22 +8,16 @@
 #ifndef DELILAHQT_H_
 #define DELILAHQT_H_
 
-class MainWindow;
+#include <iostream>
+
+//class MainWindow;
+class DelilahQtApp;
 namespace ss {
 	class Delilah;
 }
 
-class DelilahQt //: public QApplication
+class DelilahQt
 {
-public:
-	
-/*
-	DelilahQt(int& argc, char** argv) : QApplication(argc, argv) 
-	{
-		
-	};
- */
-	
 public:
 
 	DelilahQt(  ss::Delilah* _dalilah  )
@@ -32,10 +26,10 @@ public:
 		dalilah = _dalilah;
 		
 		// This is created at run command
-		w = NULL;
+		app = 0;
 	}
 	
-	MainWindow *w;			// My main window interface
+	DelilahQtApp* app;		// Delilah Qt application
 	ss::Delilah *dalilah;	// My dalilah interface to interact with SAMSON Platform
 
 	/**

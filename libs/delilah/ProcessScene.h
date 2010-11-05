@@ -31,8 +31,8 @@ public:
 
 public slots:
 	void setTool(int tool) { current_tool = tool; };
-	void addQueue(QPointF position = QPoint(0.0, 0.0) );
-	void addOperation(QPointF position = QPoint(0.0, 0.0));
+	void addQueue(const QPoint &position = QPoint(0.0, 0.0) );
+	void addOperation(const QPointF &position = QPoint(0.0, 0.0));
 	void zoomOut();
 	void zoomReset();
 	void zoomIn();
@@ -40,6 +40,9 @@ public slots:
 	void startConnection(ObjectItem* item);
 	void closeConnection(ObjectItem* item);
 	void cancelConnection();
+
+signals:
+	void addQueueRequested(const QPoint &);
 
 protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);

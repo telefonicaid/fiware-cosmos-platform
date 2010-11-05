@@ -5,15 +5,13 @@
  *      Author: ania
  */
 
-#include <QApplication>
 #include "DelilahQt.h"		// Own interface
-#include "MainWindow.h"		// MainWindow
 #include "Delilah.h"		// ss::Delilah
+#include "DelilahQtApp.h"
+
 
 int DelilahQt::run( int argc , const char * argv[] )
 {
-	QApplication a( argc ,(char **) argv);
-	w = new MainWindow();			// My main window interface
-	w->show();
-	return a.exec();
+	app = new DelilahQtApp(argc, (char**) argv);
+	return app->exec();
 }

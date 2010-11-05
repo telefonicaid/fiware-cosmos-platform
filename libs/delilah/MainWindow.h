@@ -23,6 +23,11 @@ public slots:
 	void removeTab(int);
 	void setToolForAction(QAction* action);
 
+	void addQueue(const QPoint &pos);
+	void showAvailableQueues();
+	void createTXTQueue();
+	void createKVQueue();
+
 signals:
 	void toolChanged(int);
 

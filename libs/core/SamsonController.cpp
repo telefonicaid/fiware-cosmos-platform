@@ -19,12 +19,10 @@
 
 namespace ss {
 
-	SamsonController::SamsonController(int arg, const char *argv[],  NetworkInterface *_network) : 	taskManager(this)
+	SamsonController::SamsonController(int arg, const char *argv[],  NetworkInterface *_network) : 	jobManager(this) , taskManager(this)
 	{
-		
 		std::string  setupFileName;						// Filename with setup information
 		int          port;								// Local port where this controller listen
-		
 		
 		network = _network;
 		network->setPacketReceiverInterface(this);
@@ -69,65 +67,35 @@ namespace ss {
 		network->run();											// Run the network interface (blocked)
 	}
 
-
-
 	int SamsonController::receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet)
 	{
 		au::CommandLine     cmdLine;
-		bool                success;
-		std::ostringstream  output;
 
 		switch (msgCode)
 		{
-		case Message::Command:
-			cmdLine.parse(packet->message.command().command());
-			
-			if (cmdLine.get_num_arguments() == 0)
-				LM_RE(1, ("No args ..."));
-			
-			// General status command
-			if (cmdLine.get_argument(0) == "status")
+			case Message::Command:
 			{
-				Endpoint* ep;
-				int       workers;
-				int       ix;
-				int       workersFound;
-
-				output << "Status of Controller" << std::endl;			
-				output << "== ************** ==" << std::endl;
-				output << data.status();
-				output << taskManager.status();
-
-				// Information about each server
-				workers      = network->getNumWorkers();
-				workersFound = 0;
-				ix           = 0;
-				do
-				{
-					ep = network->endpointLookup(3 + ix); /* 0,1 and 2 occupied by ME, LISTEN and CONTROLLER */
-					++ix;
-					if (ep == NULL)
-						continue;
-					output << "Worker " << ix << std::endl;
-					output << "\t- Cores:\t" << ep->status->cpuInfo.cores << std::endl;
-					output << "\t- CPU Load:\t" << ep->status->cpuInfo.load << "%" << std::endl;
-					output << "\t- Net (dev 0) Rcv Speed:\t" << ep->status->netInfo.iface[0].rcvSpeed << " bps" << std::endl;
-					output << "\t- Net (dev 0) Snd Speed:\t" << ep->status->netInfo.iface[0].sndSpeed << " bps" << std::endl;
-					output << "\t- Net (dev 1) Rcv Speed:\t" << ep->status->netInfo.iface[1].rcvSpeed << " bps" << std::endl;
-					output << "\t- Net (dev 1) Snd Speed:\t" << ep->status->netInfo.iface[1].sndSpeed << " bps" << std::endl;
-					++workersFound;
-				} while (workersFound < workers);
+				std::ostringstream output;
 				
-				// Respond with controller status
-				sendDelilahAnswer(packet->message.command().sender_id(), fromId, false, true, output.str());
+				std::string c = packet->message.command().command();	
+				cmdLine.parse(c);
+				
+				if (cmdLine.get_num_arguments() == 0)
+					LM_RE(1, ("No args ..."));
+				
+				if (cmdLine.get_argument(0) == "help")
+				{
+					getHelp( output , c );
+					sendDelilahAnswer(packet->message.command().sender_id(), fromId, false, true, output.str());
+					return 0;
+				}
+				
+				// Try to schedule a job
+				jobManager.addJob( fromId , packet->message.command().sender_id(), packet->message.command().command() );
+					
 				return 0;
 			}
-			
-			// Try to schedule the command
-			success = taskManager.addTask(fromId, packet->message.command().command(), output);
-			
-			// Send something back to dalilah (if error -> it is also finished)
-			sendDelilahAnswer(packet->message.command().sender_id(), fromId, !success, !success,  output.str());
+
 			break;
 
 		case Message::WorkerTaskConfirmation:
@@ -202,6 +170,7 @@ namespace ss {
 	
 	void SamsonController::sendDelilahAnswer(size_t sender_id, int dalilahIdentifier, bool error, bool finished, std::string answer_message)
 	{
+		
 		// Get status of controller
 		Packet p2;
 		
@@ -212,6 +181,7 @@ namespace ss {
 		response->set_sender_id(sender_id);
 		
 		network->send(this, dalilahIdentifier, Message::CommandResponse, NULL, 0, &p2);
+		
 	}
 	
 
@@ -220,7 +190,7 @@ namespace ss {
 	{
 		// Send messages to the workers indicating the operation to do (waiting the confirmation from all of them)
 		
-		for (int i = 3 ; i < 3 + network->getNumWorkers() ; i++)
+		for (int i = 0 ; i < network->getNumWorkers() ; i++)
 		{
 			LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", i));
 			sendWorkerTask(i, task->getId(), task->getCommand());
@@ -239,6 +209,65 @@ namespace ss {
 		t->set_task_id(task_id);
 
 		LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", workerIdentifier));
-		network->send(this, workerIdentifier, Message::WorkerTask, NULL, 0, &p2);
+		network->send(this,  network->getWorkerFromIdentifier(workerIdentifier) , Message::WorkerTask, NULL, 0, &p2);
 	}
+	
+	
+#pragma mark Help messages
+	
+
+	void SamsonController::getHelp( std::ostringstream &output , std::string &c)
+	{
+		au::CommandLine cmdLine;
+		cmdLine.set_flag_string("format" , "plain" );
+
+		cmdLine.parse(c);
+		std::string format = cmdLine.get_flag_string("format");
+		
+		if( cmdLine.get_argument(1) == "status" )
+			getStatus( output );					// General status command
+		else if ( cmdLine.get_argument(1) == "queues" )
+			output << data.getQueuesStr(format );
+		else
+			output << "No help for this";
+	}
+	
+	void SamsonController::getStatus(std::ostringstream &output)
+	{
+		
+		output << "Status of Controller" << std::endl;			
+		output << "== ************** ==" << std::endl;
+		output << data.status();
+		output << taskManager.status();
+		
+#if 0				
+		Endpoint* ep;
+		int       workers;
+		int       ix;
+		int       workersFound;
+		
+		// Information about each server
+		workers      = network->getNumWorkers();
+		workersFound = 0;
+		ix           = 0;
+		do
+		{
+			ep = network->endpointLookup(3 + ix); /* 0,1 and 2 occupied by ME, LISTEN and CONTROLLER */
+			++ix;
+			if (ep == NULL)
+				continue;
+			output << "Worker " << ix << std::endl;
+			output << "\t- Cores:\t" << ep->status->cpuInfo.cores << std::endl;
+			output << "\t- CPU Load:\t" << ep->status->cpuInfo.load << "%" << std::endl;
+			output << "\t- Net (dev 0) Rcv Speed:\t" << ep->status->netInfo.iface[0].rcvSpeed << " bps" << std::endl;
+			output << "\t- Net (dev 0) Snd Speed:\t" << ep->status->netInfo.iface[0].sndSpeed << " bps" << std::endl;
+			output << "\t- Net (dev 1) Rcv Speed:\t" << ep->status->netInfo.iface[1].rcvSpeed << " bps" << std::endl;
+			output << "\t- Net (dev 1) Snd Speed:\t" << ep->status->netInfo.iface[1].sndSpeed << " bps" << std::endl;
+			++workersFound;
+		} while (workersFound < workers);
+#endif				
+		
+	}
+
+	
 }

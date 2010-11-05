@@ -40,11 +40,13 @@ namespace ss {
 		}
 		else if (mainCommand == "task_test")
 		{
+#if 0			
 			int       ix;
 			Endpoint* cwP;
 			Endpoint* me;
 
 			LM_T(LMT_TASK, ("Sending task_test to all CoreWorkers"));
+
 
 			me = worker->network->endpointLookup(0);
 			if (me == NULL)
@@ -62,8 +64,9 @@ namespace ss {
 				LM_T(LMT_TASK, ("Sending task_test to Core Worker '%s'", cwP->name.c_str()));
 				iomMsgSend(cwP->fd, cwP->name.c_str(), me->name.c_str(), Message::WorkerTask, Message::Evt, (void*) mainCommand.c_str(), strlen(mainCommand.c_str()) + 1);
 			}
-
+#endif
 			return true;
+
 		}
 
 		// Unknown operation ( finished anyway )

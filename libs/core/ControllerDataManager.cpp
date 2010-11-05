@@ -63,6 +63,22 @@ namespace ss {
 		
 	}		
 	
+	std::string ControllerDataManager::getQueuesStr( std::string format )
+	{
+		std::ostringstream o;
+		lock.lock();
+		
+		o << "Queues:\n";
+		std::map< std::string , ControllerQueue*>::iterator i;
+		for (i = queues.begin() ; i!= queues.end() ;i++)
+			o << i->first << i->second->str() << "\n";
+		
+		
+		lock.unlock();
+		return o.str();
+	}
+	
+	
 	
 
 }

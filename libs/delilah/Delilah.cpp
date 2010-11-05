@@ -13,7 +13,6 @@
 
 namespace ss {
 
-
 	void* runNetworkThread(void *p)
 	{
 		Delilah *d = ((Delilah*)p);
@@ -26,7 +25,6 @@ namespace ss {
 		// Main run_loop to the network interface
 		network->run();	
 	}
-
 	
 	void Delilah::run()
 	{
@@ -37,7 +35,6 @@ namespace ss {
 		else if( interfaceQt )
 			interfaceQt->run(_argc ,_argv );
 	}
-	
 	
 	size_t Delilah::sendMessageToController( std::string message )
 	{
@@ -61,11 +58,8 @@ namespace ss {
 		else
 			interfaceQt->receivedMessage( id , error , finished , message );
 
-		
-		
 		return 0;
 	}
-	
 
 	int Delilah::receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet)
 	{

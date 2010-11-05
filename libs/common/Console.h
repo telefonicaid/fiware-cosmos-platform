@@ -310,7 +310,7 @@ public:
 		if( ncurses )
 			addLines( ConsoleLineError , getLines(message) );
 		else
-			std::cerr << "Error: " << message << std::endl;
+			std::cerr << ">>> Error:\n" << message << std::endl;
 
 	}
 

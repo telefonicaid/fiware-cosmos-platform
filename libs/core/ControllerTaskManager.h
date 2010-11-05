@@ -7,11 +7,16 @@
 #include "Endpoint.h"						// ss::Endpoint
 #include <sstream>							// ss::ostringstream
 #include "samson.pb.h"						// network::Messages...
+#include "au_map.h"							// au::map
 
 namespace ss {
 
 	class SamsonController;
 	class ControllerTask;
+	
+
+	
+
 	
 	
 	/**
@@ -21,10 +26,11 @@ namespace ss {
 	class ControllerTaskManager
 	{
 		au::Lock lock;								// Lock to protect the current list of tasks
-		std::map< size_t , ControllerTask*> task;	// Map of tasks currently running
-		size_t current_task_id;
+		au::map< size_t , ControllerTask > task;		// Map of tasks currently running
+
+		size_t current_task_id;						// Internal counter to give new task_ids
 		
-		SamsonController *controller;
+		SamsonController *controller;				// Pointer to the controller to interact with the resto of elements (network included)
 		
 	public:
 		
@@ -35,11 +41,11 @@ namespace ss {
 		}
 
 		/**
-		 Add a particular task into the controller scheduler
+		 Add a particular task into the controller scheduler from delailah command
 		 */
 		
-		bool addTask( int fromIdentifier, std::string command , std::ostringstream& output );
-		
+		size_t addTask( std::string command , size_t job_id );
+
 		/**
 		 Noitify a confirmation from workers
 		 */
@@ -54,28 +60,8 @@ namespace ss {
 		
 		
 	private:
-		
-		/**
-		 Create the task form the command string
-		 */
-		
-		ControllerTask* createTask(int fromIdentifier, std::string command , std::ostringstream& output );
-
-		/**
-		 Real implemetation of addTask
-		 */
-		
-		bool _addTask( int fromIdentifier, std::string command , std::ostringstream& output );
 
 		
-		ControllerTask * findTask(size_t task_id)
-		{
-			std::map< size_t , ControllerTask*>::iterator t =  task.find( task_id );
-			if( t!= task.end() )
-				return NULL;
-			else
-				return t->second;
-		}
 		
 		
 	};

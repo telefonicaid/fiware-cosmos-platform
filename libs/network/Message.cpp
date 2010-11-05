@@ -31,6 +31,7 @@ char* messageCode(MessageCode code)
 	case WorkerTaskConfirmation:   return (char*) "WorkerTaskConfirmation";
 	case Job:                      return (char*) "Job";
 	case JobDone:                  return (char*) "JobDone";
+	case Data:					   return (char*) "Data";
 	}
 
 	return (char*) "Unknown";

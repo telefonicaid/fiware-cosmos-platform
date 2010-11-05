@@ -1,6 +1,6 @@
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "traces.h"				// LMT_*
-
+#include "EndpointMgr.h"		// ss::EndpointMgr
 
 /**
  Main routine for the samsonWorker
@@ -18,5 +18,10 @@ int main(int argC, const char *argV[])
 	worker.endpointMgrSet(epMgr);
 	worker.networkSet(networkP);
 	
-	worker.run();
+/*
+	ss::Network      network;							// Real network element
+	ss::SamsonWorker worker(argc, argv, &network);		// SamsonWorker object
+*/
+
+	worker.run();										// Run the object
 }

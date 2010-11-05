@@ -7,6 +7,8 @@ SET (HEADERS
     SamsonController.h
     ControllerDataManager.h
     ControllerQueue.h
+    JobManager.h
+    Job.h
     ControllerTaskManager.h
     ControllerTask.h
 )
@@ -20,6 +22,8 @@ SET (SOURCES
     SamsonController.cpp
     ControllerDataManager.cpp
     ControllerQueue.cpp
+    Job.cpp
+    JobManager.cpp
     ControllerTaskManager.cpp
     ControllerTask.cpp
 )

@@ -48,9 +48,10 @@ add_custom_command (
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
+include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 
 ADD_LIBRARY(samsonNetworkStatic STATIC ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES( samsonNetworkStatic  protobuf logMsgStatic )
+TARGET_LINK_LIBRARIES( samsonNetworkStatic  protobuf logMsgStatic samsonMemoryStatic )
 SET_TARGET_PROPERTIES(samsonNetworkStatic PROPERTIES OUTPUT_NAME samsonNetwork)
 
 # ADD_LIBRARY(samsonNetworkShared SHARED ${SOURCES} ${HEADERS} )

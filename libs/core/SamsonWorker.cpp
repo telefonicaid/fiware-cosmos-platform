@@ -13,7 +13,7 @@
 #include "WorkerDataManager.h"          // WorkerDataManager
 #include "ProcessAssistant.h"           // ProcessAssistant
 #include "SamsonWorker.h"               // Own interfce
-
+#include "EndpointMgr.h"				// ss::EndpointMgr
 
 
 namespace ss {
@@ -185,7 +185,7 @@ void SamsonWorker::run()
 
 
 
-
+#if 0
 	// //////////////////////////////////////////////////////////////////////
 	//
 	// Create one ProcessAssistant per core
@@ -203,7 +203,9 @@ void SamsonWorker::run()
 	LM_M(("Got %d process assistants", coreId));
 
 	assert(network);
-
+	
+#endif
+	
 	LM_M(("calling Network::run"));
 
 	network->run();
@@ -228,7 +230,6 @@ void SamsonWorker::sendWorkerStatus()
 #endif
 		
 
-
 void SamsonWorker::sentConfirmationToController(size_t task_id)
 {
 	Packet                            p;
@@ -249,25 +250,51 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, void* dataP,
 		// A packet with a particular command is received (controller expect to send a confirmation message)
 		LM_T(LMT_TASK, ("Got a WorkerTask message"));
 
-		// Process the command in the data manager (right now this is just to test)
-		data.beginTask(packet->message.worker_task().task_id());
 
-		data.runOperationOfTask(packet->message.worker_task().task_id(), packet->message.worker_task().command());
+			// Extract information
+			size_t task_id = packet->message.worker_task().task_id();
+			std::string command = packet->message.worker_task().command();
+			
+			// Process the command in the data manager (right now this is just to test)
+			data.beginTask( task_id );
 
-		if (taskManager.addTask(packet->message.worker_task()))
-		{
-			data.finishTask(packet->message.worker_task().task_id());
+
+			data.runOperationOfTask( task_id , command );
+
+
+			if ( taskManager.addTask( packet->message.worker_task() ) )
+			{
+				data.finishTask(packet->message.worker_task().task_id());
+
 			
-			// Send a confirmation just to test everything is ok
-			sentConfirmationToController(packet->message.worker_task().task_id());
-			
-			// Send update
-			// sendWorkerStatus();
+				// Send a confirmation just to test everything is ok
+				sentConfirmationToController(packet->message.worker_task().task_id());
+				
+			}
+			return 0;
 		}
-	}
+		
+		/**
+		 Data packets go directly to the DataBuffer to be joined and flushed to disk
+		 DataManager is notifyed when created a new file or finish everything 
+		 */
+		
+		if( msgCode == Message::Data )
+		{
+			// New data packet for a particular queue inside a particular task environment
+		
+			size_t task_id = packet->message.data().task_id();
+			std::string queue = packet->message.data().queue();
+			
+			dataBuffer.addBuffer(task_id, queue, packet->buffer );
+			
+			return 0;
+		}
+		
+		
 
-	return 0;
-}
+		return 0;
+	}
 
 
 

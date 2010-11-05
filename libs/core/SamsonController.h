@@ -22,8 +22,7 @@
 #include "samson.pb.h"					// network::...
 #include "workerStatus.h"               // Message::WorkerStatusData
 #include "Message.h"                    // Message::WorkerStatus, ...
-
-
+#include "JobManager.h"					// ss::JobManager
 
 namespace ss {
 	
@@ -37,14 +36,19 @@ namespace ss {
 		// Elements inside the SamsonController
 		
 		NetworkInterface*     network;					// Network interface
-		ControllerDataManager data;						// Data manager for the controller
 		ModulesManager        modulesManager;			// Manager of the modules ( to check data types and map/reduce/scripts functions)
-		ControllerTaskManager taskManager;				// Task manager of the controller
+
+		ControllerDataManager data;						// Data manager for the controller
+		
+		JobManager jobManager;							// Top level job manager
+		ControllerTaskManager taskManager;				// Internal task manager to submit tasks ( simple string command to be executed also by workers )
 		
 		// Status information of the workers
 		Message::WorkerStatusData status[100];		    // Status update from all workers
 		
 		friend class ControllerTaskManager;
+		friend class Job;
+		friend class JobManager;
 		
 	public:
 		SamsonController( int arg , const char *argv[] ,  NetworkInterface *_network );
@@ -70,6 +74,12 @@ namespace ss {
 		
 		// Get the list of workers from the setup file
 		std::vector <std::string> getworkerPeers( std::string fileName );
+		
+		
+		//Internal functions to get help
+		
+		void getHelp( std::ostringstream &output , std::string &c);
+		void getStatus(std::ostringstream &output);
 		
 		
 	};

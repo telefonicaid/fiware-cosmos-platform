@@ -40,7 +40,8 @@ typedef enum MessageCode
 	CommandResponse        = CODE('C', 'R', 'e', ' '),
 	WorkerTaskConfirmation = CODE('W', 'T', 'C', ' '),
 	Job                    = CODE('J', 'o', 'b', ' '),
-	JobDone                = CODE('D', 'o', 'n', ' ')
+	JobDone                = CODE('D', 'o', 'n', ' '),
+	Data                   = CODE('D', 'a', 't', ' ')
 } MessageCode;
 
 

@@ -14,6 +14,7 @@
 #include "Endpoint.h"           // Endpoint
 #include "Packet.h"             // Own interface
 
+#include "Buffer.h"				// ss::Buffer
 
 namespace ss
 {
@@ -91,7 +92,7 @@ Endpoint Packet::endpointGet(int i)
 std::string Packet::str()
 {
 	std::ostringstream o;
-	o << "Packet buffer with " << au::Format::string( buffer.getLength() ) << " bytes"; 
+	o << "Packet buffer with " << au::Format::string( buffer->getSize() ) << " bytes"; 
 	return o.str();
 }
 

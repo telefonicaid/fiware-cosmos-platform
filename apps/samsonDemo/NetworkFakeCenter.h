@@ -20,14 +20,16 @@ namespace ss {
 	class NetworkFakeCenterPacket
 	{
 	public:
-		
+
+		Message::MessageCode msgCode;
 		Packet packet; 
 		int from;
 		int to;
 		PacketSenderInterface* sender;
 		
-		NetworkFakeCenterPacket( 	Packet _packet, int _from , int _to , PacketSenderInterface* _sender )
+		NetworkFakeCenterPacket(Message::MessageCode _msgCode, Packet _packet, int _from , int _to , PacketSenderInterface* _sender )
 		{
+			msgCode = _msgCode;
 			from = _from;
 			to = _to;
 			packet = _packet;
@@ -91,11 +93,16 @@ namespace ss {
 			{
 				// Send packets to the rigth directions
 		
+				
 				lock.lock();
+				
 				std::vector<NetworkFakeCenterPacket*> sendingPackets;
 				sendingPackets.insert( sendingPackets.end() , pendingPackets.begin() , pendingPackets.end() );
 				pendingPackets.clear();
+				
 				lock.unlock();
+				
+				if( sendingPackets.size() > 0)
 				
 				for (std::vector<NetworkFakeCenterPacket*>::iterator p = sendingPackets.begin() ; p < sendingPackets.end() ; p++)
 				{
@@ -104,10 +111,8 @@ namespace ss {
 					delete pp;
 				}
 				
-				
 				sleep(1);
 			}
-		
 		}
 		
 		void addPacket(NetworkFakeCenterPacket *p)
@@ -124,7 +129,11 @@ namespace ss {
 			// NetworkFake* network = getNetwork(p->to);
 			// network->receiver->receive( ... );
 
-			LM_X(1, ("This call to receive must be reimplemented after last changes by KZ. Sorry ... !"));
+			//LM_X(1, ("This call to receive must be reimplemented after last changes by KZ. Sorry ... !"));
+			
+			NetworkFake* network = getNetwork( p->to );
+			network->receiver->receive( p->from, p->msgCode, NULL , 0, &p->packet );			
+
 		}
 	};
 }

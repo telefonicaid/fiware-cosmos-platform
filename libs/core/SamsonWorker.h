@@ -22,14 +22,14 @@
 #include "WorkerDataManager.h"	// ss::WorkerDataManager
 #include "ModulesManager.h"		// ss::ModulesManager
 #include "WorkerTaskManager.h"	// ss::WorkerTaskManager
-#include "EndpointMgr.h"        // ss::EndpointMgr
-#include "ProcessAssistant.h"   // ProcessAssistant
+#include "DataBuffer.h"			// ss::DataBuffer
 
 
 
 namespace ss {
 	
-
+	class EndpointMgr;
+	class ProcessAssistant;
 
 class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
 {
@@ -55,6 +55,9 @@ private:
 	WorkerTaskManager   taskManager;       // Task manager
 	ModulesManager      modulesManager;    // Manager of the modules we have
 	ProcessAssistant**  processAssistant;
+	DataBuffer dataBuffer;				// Element used to buffer incomming data packets before they are joined and saved to disk
+		
+
 
 private:
 	void parseArgs(int argC, const char* argV[]);
@@ -67,10 +70,12 @@ public:
 	void networkSet(NetworkInterface* network);
 	void endpointMgrSet(ss::EndpointMgr* epMgr);
 	
+
 	// Main routine
 	void run();
 	void test();
-		
+
+
 	// PacketReceiverInterface
 	virtual int receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet);
 

@@ -35,7 +35,6 @@ namespace ss {
 		pthread_t t;									// Thread to read/write in this device
 		bool finished;									// Flag to finish the background thread
 		
-		
 		int max_open_files;
 		
 		// Statistical information

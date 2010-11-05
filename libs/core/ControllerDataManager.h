@@ -12,11 +12,11 @@
 namespace ss {
 	
 	class ControllerQueue;
+	class ControllerTask;
 	
 	/**
 	 Data manager at the controller
 	 */
-	class ControllerTask;
 	
 	class ControllerDataManager : public DataManager
 	{
@@ -38,11 +38,25 @@ namespace ss {
 		
 		std::string status();
 
-
 		/**
 		 Get the fileName of the log file
 		 */
 		std::string getLogFileName( );
+
+		
+		/**
+		 Check if a queue exist
+		 */
+		
+		bool existQueue( std::string queue)
+		{
+			lock.lock();
+			bool ans =  ( queues.findInMap( queue ) != NULL );
+			lock.unlock();
+			return ans;
+		}
+		
+		std::string getQueuesStr( std::string format );
 		
 	private:
 		

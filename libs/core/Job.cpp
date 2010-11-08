@@ -110,6 +110,13 @@ namespace ss {
 		return id;
 	}
 	
+	void Job::sentToDelilah( std::string txt)
+	{
+		if( !parentJob )	// Top level job
+			controller->sendDelilahAnswer( sender_id, fromIdentifier, false, false, txt);
+	}
+	
+	
 	
 }
 

@@ -14,7 +14,7 @@
 #include "ProcessAssistant.h"           // ProcessAssistant
 #include "SamsonWorker.h"               // Own interfce
 #include "EndpointMgr.h"				// ss::EndpointMgr
-
+#include "SamsonSetup.h"				// ss::SamsonSetup
 
 namespace ss {
 
@@ -178,23 +178,28 @@ void SamsonWorker::run()
 	workerStatus(&status);
 
 
-
 	// //////////////////////////////////////////////////////////////////////
 	//
 	// Create one ProcessAssistant per core
 	//
 	LM_T(LMT_WINIT, ("initializing %d process assistants", status.cpuInfo.cores));
 
-	processAssistant = (ProcessAssistant**) calloc(status.cpuInfo.cores, sizeof(ProcessAssistant*));
+	
+	int num_cores = SamsonSetup::shared()->getInt( SETUP_num_cores , -1);
+	if( num_cores == -1)
+		LM_X( 1 ,("Invalid number of cores. Please edit /opt/samson/setup.txt.")  );
+	
+	processAssistant = (ProcessAssistant**) calloc(num_cores, sizeof(ProcessAssistant*));
 	if (processAssistant == NULL)
-		LM_XP(1, ("calloc(%d, %d)", status.cpuInfo.cores, sizeof(ProcessAssistant*)));
+		LM_XP(1, ("calloc(%d, %d)", num_cores, sizeof(ProcessAssistant*)));
 
 	int coreId;
-	for (coreId = 0; coreId < status.cpuInfo.cores; coreId++)
+	for (coreId = 0; coreId < num_cores ; coreId++)
 		processAssistant[coreId] = new ProcessAssistant(coreId);
 
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
 
+	
 	assert(network);
 	network->run();
 }

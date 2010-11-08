@@ -10,30 +10,46 @@ namespace ss {
 		lock.lock();
 		
 		// At the moment only single-line commands are allowed
-		Job *j = new Job( controller, current_job_id++ , fromIdentifier , _sender_id, command );
+		Job *j = new Job( controller , fromIdentifier , _sender_id, command );
 		
-		// Insert in the list
-		//job.insertInMap( j->getId() , j ); // Why this is not working ??? second time today :(
-		job.insert( std::pair<size_t , Job*>( j->getId() , j ) );
-		
-		j->run();
 
-		// Send a confirmation message if it is not finished
-		if( !j->isFinish() )
-		{
-			std::ostringstream output;
-			output << "Job Scheduled with job id " << j->getId() << std::endl;
-			controller->sendDelilahAnswer(_sender_id, fromIdentifier, false, false, output.str());
-		}
-		
-		// Just in case there is an error at this level
-		purgeJob( j );
+		submitJob( j );
 		
 		lock.unlock();
 		
 	}
 
+	size_t JobManager::submitJob( Job *j )
+	{
+		// Get a new id for this job
+		size_t id = current_job_id++;
+		
+		// Set this new id
+		j->setId( id );
+		
+		// Insert in the list
+		job.insert( std::pair<size_t , Job*>( j->getId() , j ) );
+		
+
+		// Validate if the job can be executed ( if it is a top level job, it can run only if queues are not bloqued )
+
+		
+		// Run the job
+		j->run();
+		
+		// Send a confirmation message if it is not finished
+		if( !j->isFinish() )
+		{
+			std::ostringstream output;
+			output << "Job Scheduled with job id " << j->getId() << std::endl;
+			j->sentToDelilah( output.str() );
+		}
+		
+		// Just in case there is an error at this level
+		purgeJob( j );
 	
+		return id;
+	}
 
 	void JobManager::notifyFinishTask( size_t job_id , size_t task_id )
 	{

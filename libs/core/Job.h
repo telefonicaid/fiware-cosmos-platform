@@ -19,6 +19,16 @@ namespace ss {
 	
 	class Job
 	{
+		
+		enum JobStatus
+		{
+			definition,		// During definition ( it has not being submitted to the job manager )
+			waiting,		// A sub-job has being submitted, and we are waiting it to finish
+			running,		// A task is being running inside the TaskManager ( so we are waiting to finish )
+			finished		// All tasks / sub jobs have finished
+		};
+		
+		
 		size_t id;				// Identifier of the job ( this is the one reported to delialh to monitorize a job)
 		
 		int fromIdentifier;		// Identifier of the delailah that ordered this job
@@ -37,16 +47,23 @@ namespace ss {
 		
 		size_t task_id;		// Id of the task we are waiting ( to avoid confusions )
 		
+		JobStatus status;
+		
+		Job* parentJob;
+		
+		// List of queues that are used as input or as output
+		std::vector<std::string> input_queues;
+		std::vector<std::string> output_queues;
+		
 	public:
 		
 		// Constructor used for top-level jobs form delilah direct message
 		
-		Job( SamsonController *_controller , size_t _id , size_t _fromIdentifier , int _sender_id , std::string c  )
+		Job( SamsonController *_controller , size_t _fromIdentifier , int _sender_id , std::string c  )
 		{
 			//std::cout << "Job ID " << _id << "FROM " << _fromIdentifier << " SENDER: " << _sender_id;
 			
 			controller = _controller;
-			id = _id;
 			fromIdentifier = _fromIdentifier;
 			sender_id = _sender_id;
 			
@@ -55,6 +72,9 @@ namespace ss {
 			controller = _controller;	// Need the controller pointer for a lot of reasons
 			
 			command.push_back( c );
+			
+			// Top level, so there is no parent job	
+			parentJob = NULL;
 		}
 		
 		void run( );
@@ -65,7 +85,23 @@ namespace ss {
 		
 		bool isFinish();		
 		
-		size_t getId();	};
+		size_t getId();	
+
+	private:
+		
+		friend class JobManager;
+		void setId( size_t _id )
+		{
+			id = _id;
+		}
+	
+		void sentToDelilah( std::string txt);
+		
+		
+		
+	};
+	
+	
 	
 }
 

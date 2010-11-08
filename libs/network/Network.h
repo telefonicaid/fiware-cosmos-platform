@@ -50,7 +50,7 @@ public:
 
 	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);
 
-	virtual void initAsSamsonController(int port, std::vector<std::string> peers);
+	virtual void initAsSamsonController(int port, int num_workers);
 	virtual void initAsSamsonWorker(int localPort, std::string controllerEndpoint);
 	virtual void initAsDelilah(std::string controllerEndpoint);	
 	

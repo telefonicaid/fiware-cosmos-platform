@@ -58,6 +58,8 @@ namespace ss {
 		
 		// PacketReceiverInterface
 		int receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet);
+		void notifyWorkerDied( int worker );
+
 		
 		// PacketSenderInterface
 		virtual void notificationSent( size_t id , bool success );
@@ -73,7 +75,7 @@ namespace ss {
 		
 		
 		// Get the list of workers from the setup file
-		std::vector <std::string> getworkerPeers( std::string fileName );
+		//std::vector <std::string> getworkerPeers( std::string fileName );
 		
 		
 		//Internal functions to get help

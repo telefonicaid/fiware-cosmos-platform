@@ -8,6 +8,8 @@
 
 int main(int argC, const char *argV[])
 {
+	ss::samsonInitTrace(argC, argV);
+	
 	ss::SamsonWorker  worker(argC, argV);
 	ss::Network*      networkP;
 	ss::EndpointMgr*  epMgr;

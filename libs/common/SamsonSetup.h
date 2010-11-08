@@ -7,9 +7,12 @@
 #include <stdlib.h>         // atoll
 
 #define SETUP_max_open_files_per_device		"max_open_files_per_device"
-#define SETUP_shm_size_per_core				"shm_size_per_core"
+
+#define SETUP_num_workers					"num_workers"	
+
+#define SETUP_shm_size_per_process			"shm_size_per_core"
+#define SETUP_num_processes					"num_process"
 #define SETUP_memory						"memory"
-#define SETUP_num_cores						"cores"
 
 namespace ss {
 	
@@ -29,9 +32,9 @@ namespace ss {
 			// Hard coded default values
 			set( SETUP_max_open_files_per_device , "50" );
 
-			set( SETUP_num_cores , "2" );
+			set( SETUP_num_processes , "2" );
 			set( SETUP_memory , "2147483648" );
-			set( SETUP_shm_size_per_core , "536870912" );
+			set( SETUP_shm_size_per_process , "536870912" );
 		}
 		
 		void set(std::string name , std::string value)

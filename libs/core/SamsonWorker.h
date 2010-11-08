@@ -37,9 +37,9 @@ class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterfac
 	friend class WorkerDataManager;
 
 public:
-//	SamsonWorker(int argc, const char* argv[], NetworkInterface* _network);
-	SamsonWorker(int argc, const char* argv[]);
+	SamsonWorker(int argc, const char* argv[] );
 
+	
 	// command line argument variables
 	int          port;
 	int          endpoints;
@@ -61,7 +61,6 @@ private:
 
 private:
 	void parseArgs(int argC, const char* argV[]);
-	void logInit(const char* pName);
 
 private:
 	Message::WorkerStatusData status;

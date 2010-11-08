@@ -14,14 +14,13 @@
 #include "ControllerTaskManager.h"		// ss:ControllerTaskManager
 #include "ControllerTask.h"				// ss:ControllerTask
 #include "SamsonController.h"	        // Own interface ss::SamsonController
-
+#include "SamsonSetup.h"				// ss::SamsonSetup
 
 
 namespace ss {
 
 	SamsonController::SamsonController(int arg, const char *argv[],  NetworkInterface *_network) : 	jobManager(this) , taskManager(this)
 	{
-		std::string  setupFileName;						// Filename with setup information
 		int          port;								// Local port where this controller listen
 		
 		network = _network;
@@ -42,7 +41,6 @@ namespace ss {
 		commandLine.parse(arg, argv);
 		
 		port			= commandLine.get_flag_int("port");
-		setupFileName   = commandLine.get_flag_string("setup");
 		lmReads			= commandLine.get_flag_bool("r");
 		lmWrites		= commandLine.get_flag_bool("w");
 		
@@ -50,12 +48,14 @@ namespace ss {
 		// Load setup
 		LM_T(LMT_CONFIG, ("calling loadSetup"));			
 		//std::vector <Endpoint> workerEndPoints = loadSetup(setupFileName);
-		std::vector <std::string> workerPeers = getworkerPeers(setupFileName);
+		//std::vector <std::string> workerPeers = getworkerPeers(setupFileName);
 		
 		// Define the endpoints of the network interface
 		
-		LM_T(LMT_CONFIG, ("workerEndPoints.size: %d", workerPeers.size()));
-		network->initAsSamsonController(port, workerPeers);
+		int num_workers = SamsonSetup::shared()->getInt( SETUP_num_workers  , -1);
+		assert( num_workers != -1 );
+		LM_T(LMT_CONFIG, ("Num workers: %d", num_workers));
+		network->initAsSamsonController(port, num_workers);
 		//network->initAsSamsonController(myEndPoint, workerEndPoints);
 	}	
 
@@ -124,44 +124,9 @@ namespace ss {
 		// Do something
 	}
 	
-	std::vector <std::string> SamsonController::getworkerPeers(std::string fileName)
+	void SamsonController::notifyWorkerDied( int worker )
 	{
-		std::vector <std::string> workerPeers;
-		
-		FILE *file = fopen(fileName.c_str(),"r");
-		if (!file)
-		{
-			LM_E(("Config file '%s' not found", fileName.c_str()));
-			return workerPeers;
-		}
-		
-		workerPeers.clear();
-		char line[2000];
-		while (fgets(line, sizeof(line), file))
-		{
-			au::CommandLine c;
-			c.parse(line);
-			
-			if (c.get_num_arguments() == 0)
-				continue;
-			
-			std::string mainCommand = c.get_argument(0);
-			if (mainCommand[0] == '#')
-				continue;
-			
-			if (mainCommand == "worker")
-			{
-				if (c.get_num_arguments() >= 2)	
-				{
-					workerPeers.push_back(c.get_argument(1));
-					LM_T(LMT_CONFIG, ("added worker: '%s'", c.get_argument(1).c_str()));
-				}
-			}					
-		}
-		
-		fclose(file);
-		
-		return workerPeers;
+		// What to do when a worker died
 	}
 	
 	

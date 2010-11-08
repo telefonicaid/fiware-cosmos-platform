@@ -11,7 +11,7 @@ namespace ss {
 		center = _center;
 	}
 	
-	void NetworkFake::initAsSamsonController(int port, std::vector<std::string> peers)
+	void NetworkFake::initAsSamsonController(int port, int num_workers)
 	{
 		// Nothing to do
 	}

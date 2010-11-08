@@ -24,37 +24,10 @@ namespace ss {
 *
 * Constructor
 */
-SamsonWorker::SamsonWorker(int argC, const char* argV[]) : data(this), taskManager(this)
+SamsonWorker::SamsonWorker(int argC, const char* argV[] ) : data(this), taskManager(this)
 {
-	logInit(argV[0]);
 	parseArgs(argC, argV);
 }
-
-
-
-/* ****************************************************************************
-*
-* logInit - 
-*/
-void SamsonWorker::logInit(const char* pName)
-{
-	LmStatus  s;
-	int       logFdIndex;
-	
-	progName = lmProgName((char*) pName, 1, true);
-	
-	if ((s = lmPathRegister("/tmp/", "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT", "DEF", &logFdIndex)) != LmsOk)
-		EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
-	if ((s = lmFdRegister(1, "TYPE: TEXT", "DEF", "controller", NULL)) != LmsOk)
-		EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
-	if  ((s = lmInit()) != LmsOk)
-		EXIT(1, ("lmInit: %s", lmStrerror(s)));
-
-	lmAux((char*) "father");
-
-	// lmFdGet(logFdIndex, &logFd);
-}
-
 
 
 /* ****************************************************************************
@@ -125,51 +98,6 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 }
 
 
-#if 0
-/* ****************************************************************************
-*
-* Constructor
-*/
-SamsonWorker::SamsonWorker(int argc, const char* argv[], NetworkInterface *_network) : data(this), taskManager(this)
-{
-	network = _network;
-	network->setPacketReceiverInterface(this);
-		
-	int          port;
-	std::string  controller;
-	std::string  trace;
-		
-	// Parse input command lines
-	au::CommandLine commandLine;
-	commandLine.parse(argc, argv);
-		
-	commandLine.set_flag_int("port",           SAMSON_WORKER_DEFAULT_PORT);
-	commandLine.set_flag_string("controller", "no_controller");
-	commandLine.set_flag_string("t",           "255");
-	commandLine.set_flag_boolean("r");
-	commandLine.set_flag_boolean("w");
-		
-	commandLine.parse(argc, argv);
-		
-	port       = commandLine.get_flag_int("port");
-	controller = commandLine.get_flag_string("controller");
-	lmReads    = commandLine.get_flag_bool("r");
-	lmWrites   = commandLine.get_flag_bool("w");
-		
-	if (controller == "no_controller")
-	{
-		std::cerr  << "Please specify controller direction with -controller server:port" << std::endl;
-		exit(0);
-	}
-
-	LM_T(LMT_SAMSON_WORKER, ("Samson worker running at port %d controller: %s", port, controller.c_str()));
-
-	network->initAsSamsonWorker(port, controller);
-}	
-	
-#endif
-
-
 /* ****************************************************************************
 *
 * run - 
@@ -187,16 +115,16 @@ void SamsonWorker::run()
 	LM_T(LMT_WINIT, ("initializing %d process assistants", status.cpuInfo.cores));
 
 	
-	int num_cores = SamsonSetup::shared()->getInt( SETUP_num_cores , -1);
-	if( num_cores == -1)
+	int num_processes = SamsonSetup::shared()->getInt( SETUP_num_processes , -1);
+	if( num_processes == -1)
 		LM_X( 1 ,("Invalid number of cores. Please edit /opt/samson/setup.txt.")  );
 	
-	processAssistant = (ProcessAssistant**) calloc(num_cores, sizeof(ProcessAssistant*));
+	processAssistant = (ProcessAssistant**) calloc(num_processes, sizeof(ProcessAssistant*));
 	if (processAssistant == NULL)
-		LM_XP(1, ("calloc(%d, %d)", num_cores, sizeof(ProcessAssistant*)));
+		LM_XP(1, ("calloc(%d, %d)", num_processes, sizeof(ProcessAssistant*)));
 
 	int coreId;
-	for (coreId = 0; coreId < num_cores ; coreId++)
+	for (coreId = 0; coreId < num_processes ; coreId++)
 		processAssistant[coreId] = new ProcessAssistant(coreId);
 
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));

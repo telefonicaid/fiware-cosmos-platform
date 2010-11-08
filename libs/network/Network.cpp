@@ -181,8 +181,11 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 *
 * initAsSamsonController - 
 */
-void Network::initAsSamsonController(int port, std::vector<std::string> peers)
+void Network::initAsSamsonController(int port, int num_workers )
 {
+	// Old interface to be removed
+	std::vector<std::string> peers;	
+	
 	int ix;
 
 	init(Endpoint::Controller, port);

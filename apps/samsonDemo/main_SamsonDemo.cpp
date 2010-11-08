@@ -15,7 +15,7 @@
 #include "Delilah.h"			// ss:Delilah
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "SamsonController.h"	// ss:: SasonController
-
+#include "SamsonSetup.h"		// ss::SamsonSetup
 
 
 #define VECTOR_LENGTH(v) sizeof(v)/sizeof(v[0])
@@ -36,18 +36,19 @@ void *run_delilah(void* d)
 int main(int argc, const char *argv[])
 {
 	// Init the trace system
-	ss::samsonInitTrace( argc , argv );
+	//ss::samsonInitTrace( argc , argv );
 	
 	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo"));
 	
 	au::CommandLine commandLine;
-	commandLine.set_flag_int("workers", 2);			// Number of workers by command line ( default 2 )
 	commandLine.set_flag_boolean("console");
 	commandLine.set_flag_boolean("basic");
 
 	// Command line to extract the number of workers from command line arguments
 	commandLine.parse(argc , argv);
-	int num_workers = commandLine.get_flag_int("workers");
+	
+	int num_workers = ss::SamsonSetup::shared()->getInt( SETUP_num_workers , -1);
+	assert( num_workers != -1 );
 	
 	// Fake network element with N workers
 	ss::NetworkFakeCenter center(num_workers);		

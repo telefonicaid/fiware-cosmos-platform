@@ -14,9 +14,9 @@ namespace ss
 		num_buffers = 0;
 		
 		// Load setup parameters
-		num_cores = SamsonSetup::shared()->getInt( SETUP_num_cores , 2);
-		shared_memory_per_core = SamsonSetup::shared()->getUInt64( SETUP_shm_size_per_core , 512*1024*1024 );
-		memory = SamsonSetup::shared()->getUInt64( SETUP_shm_size_per_core , 0 );
+		num_processes = SamsonSetup::shared()->getInt( SETUP_num_processes , 2);
+		shared_memory_per_process = SamsonSetup::shared()->getUInt64( SETUP_shm_size_per_process , 512*1024*1024 );
+		memory = SamsonSetup::shared()->getUInt64( SETUP_memory , 0 );
 		
 	}
 	
@@ -31,7 +31,7 @@ namespace ss
 	void MemoryManager::createSharedMemoryItems()
 	{
 		// Create shared memory
-		for (int i = 0 ; i < num_cores ;i++)
+		for (int i = 0 ; i < num_processes ;i++)
 			createSharedMemory(i);
 	}
 	
@@ -56,7 +56,7 @@ namespace ss
 		
 		
 		key = SS_SHARED_MEMORY_KEY_ID + i; 
-		size = shared_memory_per_core;
+		size = shared_memory_per_process;
 		shmflg = IPC_CREAT | 384;			// Permission to read / write ( only owner )
 		
 		if ((_info->shmid = shmget (key, size, shmflg)) == -1)

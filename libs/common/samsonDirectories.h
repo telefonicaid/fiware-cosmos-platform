@@ -19,6 +19,6 @@
 #define SAMSON_LOG_DIRECTORY            "/var/samson/log"
 #define SAMSON_DATA_DIRECTORY           "/var/samson/data"
 #define SAMSON_MODULES_DIRECTORY        "/var/samson/modules"
-#define SAMSON_SETUP_FILE		"/opt/samson/setup.txt"
+#define SAMSON_SETUP_FILE				"/opt/samson/setup.txt"
 
 #endif

@@ -7,7 +7,7 @@
 *
 */
 #include "Message.h"            // ss::Message::MessageCode
-
+#include "assert.h"				// assert(.)
 
 
 namespace ss {
@@ -28,6 +28,12 @@ namespace ss {
 		// If 'receive' returns ZERO, a JobDone is sent as Ack.
 		// If non-zero is returned, a JobError is sent as Ack.
 		virtual int receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet) = 0;
+		
+		// Notify that a worker has died 
+		virtual void notifyWorkerDied( int worker )
+		{
+			// This call has to be overwritten by SamsonController
+		}
 		
 		virtual ~PacketReceiverInterface() {};
 	};
@@ -60,7 +66,7 @@ namespace ss {
 		virtual bool ready()=0;                                   
 		
 		// Init function ( one and only one of them should be called )
-		virtual void initAsSamsonController(int port, std::vector<std::string> peers)=0;
+		virtual void initAsSamsonController(int port, int num_workers)=0;
 		virtual void initAsSamsonWorker(int localPort, std::string controllerEndpoint)=0;
 		virtual void initAsDelilah(std::string controllerEndpoint)=0;
 

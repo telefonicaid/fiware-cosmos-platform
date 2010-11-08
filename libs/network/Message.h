@@ -39,8 +39,6 @@ typedef enum MessageCode
 	Command                = CODE('C', 'o', 'm', ' '),
 	CommandResponse        = CODE('C', 'R', 'e', ' '),
 	WorkerTaskConfirmation = CODE('W', 'T', 'C', ' '),
-	Job                    = CODE('J', 'o', 'b', ' '),
-	JobDone                = CODE('D', 'o', 'n', ' '),
 	Data                   = CODE('D', 'a', 't', ' ')
 } MessageCode;
 
@@ -72,18 +70,6 @@ typedef struct Header
 	unsigned int   gbufLen;
 	unsigned int   kvDataLen;
 } Header;
-
-
-
-/* ****************************************************************************
-*
-* JobData - 
-*/
-typedef struct JobData
-{
-	int  coreNo;
-	char description[64];
-} JobData;
 
 
 

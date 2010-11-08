@@ -174,23 +174,16 @@ SamsonWorker::SamsonWorker(int argc, const char* argv[], NetworkInterface *_netw
 */
 void SamsonWorker::run()
 {
-	LM_M(("IN"));
-	// Initialize the data manager
 	data.initDataManager(data.getLogFileName());
-	LM_M(("DataManager initialized"));
-
-	LM_M(("calling workerStatus"));
 	workerStatus(&status);
-	LM_M(("workerStatus done"));
 
 
 
-#if 0
 	// //////////////////////////////////////////////////////////////////////
 	//
 	// Create one ProcessAssistant per core
 	//
-	LM_M(("initializing %d process assistants", status.cpuInfo.cores));
+	LM_T(LMT_WINIT, ("initializing %d process assistants", status.cpuInfo.cores));
 
 	processAssistant = (ProcessAssistant**) calloc(status.cpuInfo.cores, sizeof(ProcessAssistant*));
 	if (processAssistant == NULL)
@@ -200,14 +193,9 @@ void SamsonWorker::run()
 	for (coreId = 0; coreId < status.cpuInfo.cores; coreId++)
 		processAssistant[coreId] = new ProcessAssistant(coreId);
 
-	LM_M(("Got %d process assistants", coreId));
+	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
 
 	assert(network);
-	
-#endif
-	
-	LM_M(("calling Network::run"));
-
 	network->run();
 }
 

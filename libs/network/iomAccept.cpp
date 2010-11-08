@@ -16,8 +16,6 @@
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_*
 
-#include "Endpoint.h"			// Endpoint
-#include "iomConnect.h"         // iomConnect
 #include "iomAccept.h"          // Own interface
 
 
@@ -26,7 +24,7 @@
 *
 * iomAccept -  worker accept
 */
-int iomAccept(ss::Endpoint* listener, char* hostName, int hostNameLen)
+int iomAccept(int lfd, char* hostName, int hostNameLen)
 {
 	struct sockaddr_in  peer;
 	unsigned int        len;
@@ -38,7 +36,7 @@ int iomAccept(ss::Endpoint* listener, char* hostName, int hostNameLen)
 	memset((char*) &peer, 0, sizeof(struct sockaddr_in));
 	len = sizeof(struct sockaddr_in);
 
-	if ((fd = accept(listener->fd, (struct sockaddr*) &peer, &len)) == -1)
+	if ((fd = accept(lfd, (struct sockaddr*) &peer, &len)) == -1)
 		LM_RP(-1, ("accept"));
 
 	hP = gethostbyaddr((char*) &peer.sin_addr, sizeof(int), AF_INET);

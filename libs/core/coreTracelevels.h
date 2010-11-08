@@ -17,5 +17,6 @@
 #define LMT_TASK                  82
 #define LMT_DELILAH               83
 #define LMT_SAMSON_WORKER         84
+#define LMT_WINIT                 85
 
 #endif

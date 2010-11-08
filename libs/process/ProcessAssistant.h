@@ -10,7 +10,8 @@
 * CREATION DATE            Sep 2010
 *
 */
-#include <string>          // std::string
+#include <string>                  // std::string
+#include <pthread.h>               // pthread_t
 
 
 
@@ -39,14 +40,17 @@ public:
 	ProcessAssistant(int coreNo);
 
 private:
-	int core;
+	int                            core;
+	pthread_t                      threadId;
+	time_t                         startTime;
+
+	void         coreWorkerStart(char* fatherName, unsigned short port);
 
 public:
 	void         run(void);
-	std::string  runCommand(std::string, int timeOut);
+	char*        runCommand(int fd, char* command, int timeOut);
 };
 
 }
-
 
 #endif

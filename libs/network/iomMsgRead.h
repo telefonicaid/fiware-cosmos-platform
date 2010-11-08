@@ -22,7 +22,7 @@
 extern int iomMsgRead
 (
 	int                        fd,
-	char*                      from,
+	const char*                from,
 	ss::Message::MessageCode*  msgCodeP,
 	ss::Message::MessageType*  msgTypeP,
 	void**                     dataPP,

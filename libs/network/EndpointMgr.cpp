@@ -464,30 +464,6 @@ void EndpointMgr::workerStatusToController(void)
 
 /* ****************************************************************************
 *
-* coreWorkerRestart - MOVE to SamsonWorker
-*/
-void EndpointMgr::coreWorkerRestart(void)
-{
-	int epIx;
-
-	for (epIx = 3 + Workers; epIx < Endpoints; epIx++)
-	{
-		if (endpoint[epIx] == NULL)
-			continue;
-
-		if (endpoint[epIx]->type != Endpoint::CoreWorker)
-			continue;
-
-		LM_T(LMT_COREWORKER, ("CoreWorker '%s' in state '%s'", endpoint[epIx]->name.c_str(), endpoint[epIx]->stateName()));
-		if (endpoint[epIx]->state != Endpoint::Dead)
-			continue;
-
-		LM_T(LMT_RESTART, ("Trying to restart CoreWorker %d", endpoint[epIx]->coreNo));
-		coreWorkerStart(endpoint[epIx]->coreNo, progName, me->port);
-	}
-}
-/* ****************************************************************************
-*
 * msgTreat - MOVE to EndpointMgr
 */
 void EndpointMgr::msgTreat(int fd, char* name)
@@ -548,27 +524,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 					ep->name  = "-----";
 				}
 				else if (ep->type == Endpoint::CoreWorker)
-				{
-					time_t now = time(NULL);
-
-					if (me->type != Endpoint::Worker)
-						LM_X(1, ("BUG - only Worker should be connected to CoreWorker (I'm a '%s')", me->typeName()));
-
-					close(ep->fd);
-					ep->state = Endpoint::Dead;
-					ep->name  = std::string("dead: ") + ep->name;
-					ep->fd    = -1;
-
-					if (now - ep->startTime > 5)
-					{
-						ALARM(Alarm::Error, Alarm::CoreWorkerDied, ("Core worker %d died", ep->coreNo));
-						coreWorkerStart(ep->coreNo, progName, me->port);
-						ep->startTime = now;
-					}
-					else
-						ALARM(Alarm::Error, Alarm::CoreWorkerNotRestarted, ("Core worker %d died %d secs after restart",
-																			ep->coreNo, now - ep->startTime));
-				}
+					LM_X(1, ("BUG - should NOT get any messages from CoreWorker (I'm a '%s')", me->typeName()));
 				else
 					endpointRemove(ep);
 			}
@@ -695,58 +651,6 @@ void EndpointMgr::msgTreat(int fd, char* name)
 		}
 		break;
 
-	case Message::Job:
-		Message::JobData* jobP;
-
-		jobP = (Message::JobData*) dataP;
-
-		if (me->type == Endpoint::Worker)
-		{
-			if ((ep->type != Endpoint::Delilah) && (ep->type != Endpoint::Controller))
-				ALARM(Alarm::Error, Alarm::BadRequest, ("got a Job request from a '%s' endpoint - ignoring it", ep->typeName()));
-			else
-			{
-				Endpoint* cwP = endpointCoreWorkerLookup(jobP->coreNo);
-
-				if (cwP == NULL)
-					ALARM(Alarm::Error, Alarm::CoreWorkerNotFound, ("cannot find core worker %d", jobP->coreNo));
-				else if (cwP->coreWorkerState != Message::NotBusy)
-					ALARM(Alarm::Warning, Alarm::CoreWorkerBusy, ("core worker %d busy - try again later ...", jobP->coreNo));
-				else
-				{
-					int s;
-
-					s = iomMsgSend(cwP->fd, cwP->name.c_str(), me->name.c_str(), Message::Job, Message::Evt);
-					if (s != 0)
-						LM_E(("iomMsgSend error %d", s));
-					else
-						cwP->coreWorkerState = Message::Busy;
-				}
-			}
-		}
-		else if (me->type == Endpoint::CoreWorker)
-		{
-			if (ep != controller)
-				LM_X(1, ("Got a job from != Controller"));
-
-			// Instead of executing a job I'll just sleep 3 secs
-			sleep(3);
-			iomMsgSend(controller->fd, "Father", me->name.c_str(), Message::JobDone, Message::Evt);
-		}
-		else
-			LM_X(1, ("got a Job message - I'm a '%s'", me->typeName()));
-		break;
-
-	case Message::JobDone:
-		if (me->type != Endpoint::Worker)
-			LM_X(1, ("got a JobDone message - I'm a '%s'", me->typeName()));
-		if (ep->type != Endpoint::CoreWorker)
-			LM_X(1, ("got a JobDone message from a '%s' endpoint!", ep->typeName()));
-
-		ep->coreWorkerState  = Message::NotBusy;
-		ep->jobsDone        += 1;
-		break;
-
 	case Message::Alarm:
 		if (me->type == Endpoint::Worker)
 		{
@@ -797,7 +701,6 @@ void EndpointMgr::run()
 	struct timeval  timeVal;
 	time_t          now   = 0;
 	time_t          then  = time(NULL);
-	time_t          then2 = time(NULL);
 	int             max;
 
 	while (1)
@@ -814,15 +717,6 @@ void EndpointMgr::run()
 					workerStatusToController();
 					then = now;
 				}
-
-				if (now - then2 > PeriodForRestartingDeadCoreWorkers)
-				{
-					LM_T(LMT_COREWORKER, ("calling coreWorkerRestart"));
-					coreWorkerRestart();
-					then2 = now;
-				}
-				else
-					LM_T(LMT_COREWORKER, ("Not calling coreWorkerRestart (%d < 30)", now - then2));
 			}
 
 
@@ -938,7 +832,7 @@ void EndpointMgr::run()
 
 				LM_T(LMT_SELECT, ("incoming message from my listener - I will accept ..."));
 				--fds;
-				fd = iomAccept(listener, hostName, sizeof(hostName));
+				fd = iomAccept(listener->fd, hostName, sizeof(hostName));
 				if (fd == -1)
 					LM_P(("iomAccept(%d)", listener->fd));
 				else
@@ -1004,131 +898,5 @@ void EndpointMgr::readyCheck(void)
 
 
 
-/* ****************************************************************************
-*
-* coreWorkerStart - MOVE to SamsonWorker
-*/
-void EndpointMgr::coreWorkerStart(int coreNo, char* fatherName, int port)
-{
-	Endpoint* ep;
-
-	ep = endpointCoreWorkerLookup(coreNo);
-	if (ep == NULL)
-	{
-		char cwName[16];
-
-		sprintf(cwName, "Core %02d", coreNo);
-		ep = endpointAdd(-1, cwName, 0, Endpoint::CoreWorker, "localhost", 0, coreNo);
-	}
-	if (ep == NULL)
-		LM_X(1, ("NULL endpoint ..."));
-
-	ep->startTime        = time(NULL);
-	ep->coreNo           = coreNo;
-	ep->coreWorkerState  = Message::NotBusy;
-
-	// Using these two fields to improve debugging ...
-	ep->ip              = "Core";
-	ep->port            = coreNo;
-
-	LM_T(LMT_COREWORKER, ("*********** Starting Core Worker %d", coreNo));
-	if (fork() == 0)
-	{
-#if !defined(__APPLE__)
-		cpu_set_t cpuSet;
-
-		CPU_ZERO(&cpuSet);
-		CPU_SET(coreNo, &cpuSet);
-		if (sched_setaffinity(0, sizeof(cpuSet), &cpuSet) == -1)
-			LM_XP(1, ("sched_setaffinity"));
-#endif
-		
-		LM_T(LMT_COREWORKER, ("child %d running (pid: %d) on core %d", coreNo, (int) getpid(), coreNo));
-
-		/* ************************************************************
-		 *
-		 * Core workers do not log to stdout
-		 */
-		lmFdUnregister(1);
-
-
-
-		/* ************************************************************
-		 *
-		 * Set progName
-		 */
-		progName = (char*) malloc(strlen("samsonCoreWorker_") + 10);
-		if (progName == NULL)
-			LM_X(1, ("samsonCoreWorker_%d died allocating: %s", getpid(), strerror(errno)));
-		sprintf(progName, (char*) "samsonCoreWorker_%d", (int) getpid());
-
-
-		
-		/* ************************************************************
-		 *
-		 * Setting auxiliar string for logMsg
-		 */
-		char auxString[16];
-
-		sprintf(auxString, "core%02d", coreNo);
-		lmAux(auxString);
-
-
-
-		/* ************************************************************
-		 *
-		 * Clean out father processes endpoints
-		 */
-		me         = NULL;
-		listener   = NULL;
-		controller = NULL;
-
-		int epIx;
-		for (epIx = 0; epIx < Endpoints; epIx++)
-		{
-			if (endpoint[epIx] != NULL)
-				close(endpoint[epIx]->fd);
-			endpoint[epIx] = NULL;
-		}
-
-
-
-		/* ************************************************************
-		 *
-		 * Creating my 'me' endpoint
-		 */
-		endpoint[0] = new Endpoint(Endpoint::CoreWorker, -1);
-		if (endpoint[0] == NULL)
-			LM_XP(1, ("new Endpoint"));
-
-		me          = endpoint[0];
-		me->name    = progName;
-		me->state   = Endpoint::Me;
-		me->coreNo  = coreNo;
-
-
-
-		LM_T(LMT_COREWORKER, ("new me created"));
-		/* ************************************************************
-		 *
-		 * connect to samsonWorker (father process is like a controller, so I use index 2 ...)
-		 */
-		endpoint[2] = new Endpoint(Endpoint::Worker, fatherName);
-		if (endpoint[2] == NULL)
-			LM_XP(1, ("error allocating endpoint for father"));
-		controller = endpoint[2];
-
-		LM_T(LMT_COREWORKER, ("Connecting to father"));
-		controller->fd = iomConnect("localhost", port);
-		if (controller->fd == -1)
-			LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
-		LM_T(LMT_COREWORKER, ("Connected to father"));
-		controller->state = ss::Endpoint::Connected;
-
-		LM_T(LMT_COREWORKER, ("Calling RUN"));
-		run();
-		LM_X(1, ("Back from run - should not ever get here (coreWorker %d, pid: %d)", coreNo, (int) getpid()));
-	}
-}
 
 }

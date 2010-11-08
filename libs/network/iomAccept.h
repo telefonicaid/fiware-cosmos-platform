@@ -12,14 +12,12 @@
 */
 #include <vector>               // vector
 
-#include "Endpoint.h"			// Endpoint
-
 
 
 /* ****************************************************************************
 *
 * iomAccept -  connect to the controller
 */
-extern int iomAccept(ss::Endpoint* listener, char* hostName, int hostNameLen);
+extern int iomAccept(int fd, char* hostName = NULL, int hostNameLen = 0);
 
 #endif

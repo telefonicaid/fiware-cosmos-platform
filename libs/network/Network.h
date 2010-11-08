@@ -98,14 +98,10 @@ private:
 	void       endpointRemove(Endpoint* ep);
 	Endpoint*  endpointLookup(int fd, int* idP);
 	Endpoint*  endpointLookup(int ix);
-	Endpoint*  endpointCoreWorkerLookup(int coreNo);
 	Endpoint*  endpointFreeGet(Endpoint::Type type);
 
 	void msgTreat(int fd, char* name);
 	int  helloSend(Endpoint* ep, Message::MessageType type);
-	void coreWorkerStart(int coreNo, char* fatherName, int port);
-	void workerStatusToController(void);
-	void coreWorkerRestart(void);
 };
 
 	

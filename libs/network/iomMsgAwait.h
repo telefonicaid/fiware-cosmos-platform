@@ -10,8 +10,6 @@
 * CREATION DATE            Oct 13 2010
 *
 */
-#include "Endpoint.h"           // Endpoint
-#include "Packet.h"             // Packet
 
 
 
@@ -19,6 +17,6 @@
 *
 * iomMsgAwait - await a message from a peer
 */
-extern int iomMsgAwait(ss::Endpoint* epP, int secs, int usecs);
+extern int iomMsgAwait(int fd, int secs, int usecs);
 
 #endif

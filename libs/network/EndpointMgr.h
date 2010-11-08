@@ -42,9 +42,7 @@ public:
 	void        readyCheck(void);
 
 	// To be moved to Main class  (Worker, Controller, CoreWorker, Delilah)
-	void coreWorkerStart(int coreNo, char* fatherName, int port);
 	void workerStatusToController(void);
-	void coreWorkerRestart(void);
 
 	// To be removed completely
 	std::vector<Endpoint> endpointV;

@@ -124,7 +124,7 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 }
 
 
-
+#if 0
 /* ****************************************************************************
 *
 * Constructor
@@ -166,6 +166,7 @@ SamsonWorker::SamsonWorker(int argc, const char* argv[], NetworkInterface *_netw
 	network->initAsSamsonWorker(port, controller);
 }	
 	
+#endif
 
 
 /* ****************************************************************************

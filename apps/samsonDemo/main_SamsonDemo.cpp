@@ -78,7 +78,12 @@ int main(int argc, const char *argv[])
 	
 	std::vector< ss::SamsonWorker* > workers;
 	for (int i = 0 ; i < num_workers ; i ++ )
-		workers.push_back( new ss::SamsonWorker( VECTOR_LENGTH(worker_argv) , worker_argv , center.getNetwork( i ) ) );
+	{
+		ss::SamsonWorker *w = new ss::SamsonWorker( VECTOR_LENGTH(worker_argv) , worker_argv );
+		w->networkSet( center.getNetwork( i ) );
+		workers.push_back( w );
+		
+	}
 	
 	controller.run();
 	for (int i = 0 ; i < num_workers ; i ++ )

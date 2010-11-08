@@ -37,7 +37,7 @@ class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterfac
 	friend class WorkerDataManager;
 
 public:
-	SamsonWorker(int argc, const char* argv[], NetworkInterface* _network);
+//	SamsonWorker(int argc, const char* argv[], NetworkInterface* _network);
 	SamsonWorker(int argc, const char* argv[]);
 
 	// command line argument variables

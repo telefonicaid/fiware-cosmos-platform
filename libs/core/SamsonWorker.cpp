@@ -120,6 +120,7 @@ void SamsonWorker::endpointMgrSet(ss::EndpointMgr*  epMgr)
 void SamsonWorker::networkSet(NetworkInterface* network)
 {
 	this->network = network;
+	network->setPacketReceiverInterface(this);
 	network->initAsSamsonWorker(port, controller);
 }
 

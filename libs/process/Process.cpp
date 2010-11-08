@@ -38,7 +38,7 @@ Process::Process(int _fd)
 *		 
 * run - 
 *
-* Block method until a command is received from the ProcessAssitant (via pipe)
+* Block method until a command is received from the ProcessAssistant (via pipe)
 * When a command is received, runCommand will be executed.
 * runCommand calls passCommand to send messages back to the parent
 */
@@ -63,6 +63,7 @@ void Process::run(void)
 
 		iomMsgRead(fd, (char*) "father", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
 
+		LM_M(("Read message '%s' - running it!", (char*) dataP));
 		runCommand(command);
 
 		if (dataP != command)
@@ -81,19 +82,21 @@ void Process::run(void)
 * During this method execution, passCommand method can be called multiple time to pass commands to the user
 * Any of this commands can be neither finish nor error
 * 
-* When runCommand finishes, a message is passed to the ProcessAssitant ( finish or error )
+* When runCommand finishes, a message is passed to the ProcessAssistant ( finish or error )
 */
 void Process::runCommand(const char* command)
 {
 	int x = 0;
+
+	LM_M(("running command '%s'", command));
 
 	while (1)
 	{
 		sleep(3);
 		++x;
 
-		if (x % 3 == 0)
-			passCommand("X is a multimple of three");
+		if ((x % 3) == 0)
+			passCommand("X is a multiple of three");
 
 		if (x >= 20)
 		{
@@ -101,6 +104,8 @@ void Process::runCommand(const char* command)
 			break;
 		}
 	}
+
+	LM_M(("command '%s' finished", command));
 }
 
 
@@ -117,6 +122,8 @@ char* Process::passCommand(const char* command)
 	int                   dataLen  = sizeof(out);
 	Message::MessageCode  msgCode;
 	Message::MessageType  msgType;
+
+	LM_M(("passing command '%s' to father", command));
 
 	iomMsgSend(fd, "father", progName, Message::Command, Message::Msg, (void*) command, strlen(command));
 	fds = iomMsgAwait(fd, 5, 0);

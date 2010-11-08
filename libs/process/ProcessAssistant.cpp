@@ -158,9 +158,19 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 */
 void ProcessAssistant::run(void)
 {
+	// TODO: Andreu		   
+	//   o Get a new task to do ( or block until ready )		   
+	//   o Pass command to Process with "runCommand"
+	//   o Loop receiving messages from Process until "finish" or "crash" received
+	//   o Send "continue"
+
+
+
 	int lFd;     // file descriptor for listen socket
 	int sFd;     // file descriptor for socket connection
-	int fds;
+	int fds;     // output from select (really: iomMsgSend)
+
+
 
 	/* ************************************************************
 	 *
@@ -193,12 +203,6 @@ void ProcessAssistant::run(void)
 
 
 	LM_M(("IN: pid: %d", getpid()));
-
-	// TODO: Andreu		   
-	//   o Get a new task to do ( or block until ready )		   
-	//   o Pass command to Process with "runCommand"
-	//   o Loop receiving messages from Process until "finish" or "crash" received
-	//   o Send "continue"
 
 
 	while (1)

@@ -209,7 +209,7 @@ namespace ss {
 		t->set_task_id(task_id);
 
 		LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", workerIdentifier));
-		network->send(this,  network->getWorkerFromIdentifier(workerIdentifier) , Message::WorkerTask, NULL, 0, &p2);
+		network->send(this,  network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask, NULL, 0, &p2);
 	}
 	
 	

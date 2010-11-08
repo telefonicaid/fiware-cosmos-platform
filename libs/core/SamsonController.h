@@ -71,12 +71,7 @@ namespace ss {
 		
 		// Send a message to a worker with a particular task
 		void sendWorkerTasks( ControllerTask *task );
-		void sendWorkerTask( int  workerIdentifier , size_t task_id , std::string command );
-		
-		
-		// Get the list of workers from the setup file
-		//std::vector <std::string> getworkerPeers( std::string fileName );
-		
+		void sendWorkerTask( int  workerIdentifier , size_t task_id , ControllerTask *task );
 		
 		//Internal functions to get help
 		

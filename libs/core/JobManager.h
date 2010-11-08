@@ -46,14 +46,11 @@ namespace ss {
 		void addJob(int fromId, int _sender_id  , std::string command );
 		
 		// Notification from the taskManager that a task has finished
-		void notifyFinishTask( size_t job_id , size_t task_id );		
+		void notifyFinishTask( size_t job_id , size_t task_id , std::vector<network::WorkerTaskConfirmation> &confirmationMessages );		
 		
 	private:
 		
-		// Function to submit a new job to the manager ( from a command line command / or as a sub-job)
-		size_t submitJob( Job * job);		
-		
-		void purgeJob( Job *j );
+		void removeJob( Job *j );
 
 	
 		

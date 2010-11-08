@@ -5,11 +5,46 @@
 #include <map>								// std::map
 #include <vector>							// std::vector
 #include <sstream>							// ss::ostringstream
+#include <stack>							// std::stack
+#include "samson.pb.h"						// ss::network::...
+#include <iostream>							// std::cout
 
 namespace ss {
 	
 	class SamsonController;
 	class ControllerTask;
+	
+	
+	
+	class JobItem
+	{
+		// List of commands
+		std::vector<std::string> command;
+		int command_pos;
+
+	public:
+		
+		// Single element command
+		JobItem( std::string c )	
+		{
+			command.push_back(c);
+			command_pos = 0;
+		}
+
+		bool isFinish()
+		{
+			return ( command_pos == (int) command.size() );
+		}
+		
+		std::string getNextCommand()
+		{
+			assert( command_pos < (int)command.size() );
+			return command[command_pos++];
+		}
+		
+	};
+	
+	
 	
 	class JobManager;
 	
@@ -19,84 +54,109 @@ namespace ss {
 	
 	class Job
 	{
+		size_t id;						// Identifier of the job ( this is the one reported to delialh to monitorize a job)
 		
-		enum JobStatus
-		{
-			definition,		// During definition ( it has not being submitted to the job manager )
-			waiting,		// A sub-job has being submitted, and we are waiting it to finish
-			running,		// A task is being running inside the TaskManager ( so we are waiting to finish )
-			finished		// All tasks / sub jobs have finished
-		};
-		
-		
-		size_t id;				// Identifier of the job ( this is the one reported to delialh to monitorize a job)
+		std::ostringstream output;		// Outputs of this job message
+		bool error;						// Error flag
+		bool finish;					// Flag to indicate that this job is finished
 		
 		int fromIdentifier;		// Identifier of the delailah that ordered this job
 		int sender_id;			// Identifier at the sender side
-				
-		// List of commands
-		std::vector<std::string> command;
-		int command_pos;
-		
-		bool finish;					// Finish flag to mark the end of the process
-		bool error;						// Error flag when something went wrong
 					
-		std::ostringstream output;		// Outputs of this job message
-		
 		SamsonController *controller;	// Pointer to the controller
 		
-		size_t task_id;		// Id of the task we are waiting ( to avoid confusions )
+		size_t task_id;					// Id of the task we are waiting ( to avoid confusions )
 		
-		JobStatus status;
-		
-		Job* parentJob;
-		
-		// List of queues that are used as input or as output
-		std::vector<std::string> input_queues;
-		std::vector<std::string> output_queues;
+		std::stack<JobItem> items;		// Stack of items that we are running
 		
 	public:
 		
 		// Constructor used for top-level jobs form delilah direct message
 		
-		Job( SamsonController *_controller , size_t _fromIdentifier , int _sender_id , std::string c  )
+		Job( SamsonController *_controller , size_t _id, size_t _fromIdentifier , int _sender_id , std::string c  )
 		{
-			//std::cout << "Job ID " << _id << "FROM " << _fromIdentifier << " SENDER: " << _sender_id;
-			
 			controller = _controller;
+			
+			id = _id;
+			
 			fromIdentifier = _fromIdentifier;
 			sender_id = _sender_id;
+
+			// Create the first item of this job
+			items.push( JobItem(c) );
+
+			// Need the controller pointer for a lot of reasons
+			controller = _controller;	
 			
-			command_pos = 0;			// Start by default with the first command
-			finish = false;				// Finish flag when all commands are completed
-			controller = _controller;	// Need the controller pointer for a lot of reasons
-			
-			command.push_back( c );
-			
-			// Top level, so there is no parent job	
-			parentJob = NULL;
+			// Default value for the internal flags
+			error = false;
+			finish = false;
 		}
-		
-		void run( );
-		
-		void notifyTaskFinish( size_t _task_id );		
+
+		/**
+		 Run a line of command for this job.
+		 It can be an inmediate command interacting with dataManager like add_queue / remove_queue / etc... ( return true)
+		 It can be a script, so a new JobItem is created and push ( return true )
+		 It can be a command that is send to the workers creating a task ( return false )
+		 */
 		
 		bool processCommand( std::string command );		
 		
-		bool isFinish();		
+	public:
+		
+		/**
+		 Main routine to run commands until waiting for task confirmation or another job finish
+		 */
+		
+		void run()
+		{
+			while( !finish && !error && items.size() > 0)	// While there si something to process
+			{
+				JobItem& item = items.top();
+				
+				if( item.isFinish() )
+					items.pop();
+				else
+				{
+					if( !processCommand( item.getNextCommand() ) )
+						return;	// No continue since a task has been scheduled ( or an error ocurred )
+				}
+			}
+
+			// Mark the end of the job if there are no more elements to process
+			if( items.size() == 0)
+			{
+				output << "Job finished correctly\n";
+				finish = true;
+			}
+			
+		}
+		
+
+		// Call back received when a task is finished
+		void notifyTaskFinish( size_t _task_id , std::vector<network::WorkerTaskConfirmation> &confirmationMessages )
+		{
+			assert( task_id == _task_id );
+			run();
+		}
+		
 		
 		size_t getId();	
 
+		bool isFinish();
+
+		bool isError();
+	
+		void sentConfirmationToDelilah( );
+		
 	private:
 		
-		friend class JobManager;
-		void setId( size_t _id )
+		void setError( std::string txt )
 		{
-			id = _id;
+			output << "Error: " << txt << std::endl;
+			error = true;
+			finish = true;	
 		}
-	
-		void sentToDelilah( std::string txt);
-		
 		
 		
 	};

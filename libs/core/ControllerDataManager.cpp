@@ -20,6 +20,7 @@ namespace ss {
 		
 		lock.unlock();
 	}
+
 	
 	bool ControllerDataManager::_run( size_t task_id , std::string command )
 	{
@@ -41,6 +42,10 @@ namespace ss {
 		return true;
 	}
 	
+	bool ControllerDataManager::_un_run( size_t task_id , std::string command )
+	{
+		return true;
+	}
 	
 	
 	std::string ControllerDataManager::getLogFileName(   )

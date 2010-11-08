@@ -9,72 +9,68 @@ namespace ss {
 	{
 		lock.lock();
 		
+		// New id
+		size_t job_id = current_job_id++;
+		
 		// At the moment only single-line commands are allowed
-		Job *j = new Job( controller , fromIdentifier , _sender_id, command );
+		Job *j = new Job( controller , job_id, fromIdentifier , _sender_id, command );
 		
-
-		submitJob( j );
-		
-		lock.unlock();
-		
-	}
-
-	size_t JobManager::submitJob( Job *j )
-	{
-		// Get a new id for this job
-		size_t id = current_job_id++;
-		
-		// Set this new id
-		j->setId( id );
+		// Notify to the task manager that this "job" is about to start
+		controller->data.beginTask( job_id );
 		
 		// Insert in the list
 		job.insert( std::pair<size_t , Job*>( j->getId() , j ) );
-		
-
-		// Validate if the job can be executed ( if it is a top level job, it can run only if queues are not bloqued )
 
 		
-		// Run the job
+		// Run the job until a task is scheduled
 		j->run();
 		
+		
 		// Send a confirmation message if it is not finished
-		if( !j->isFinish() )
+		if( j->isFinish() )
 		{
-			std::ostringstream output;
-			output << "Job Scheduled with job id " << j->getId() << std::endl;
-			j->sentToDelilah( output.str() );
+			if( j->isError() )
+				controller->data.cancelTask( job_id );
+			else
+				controller->data.finishTask( job_id );
+			
+			j->sentConfirmationToDelilah( );
+			removeJob(j);
 		}
 		
-		// Just in case there is an error at this level
-		purgeJob( j );
-	
-		return id;
+		lock.unlock();
 	}
-
-	void JobManager::notifyFinishTask( size_t job_id , size_t task_id )
+	
+	void JobManager::notifyFinishTask( size_t job_id , size_t task_id , std::vector<network::WorkerTaskConfirmation> &confirmationMessages )
 	{
 		lock.lock();
 		
 		Job *j =  job.findInMap( job_id );
 		if( j )
 		{
-			j->notifyTaskFinish( task_id );
-			purgeJob( j );
+			j->notifyTaskFinish( task_id , confirmationMessages );
+			
+			if( !j->isFinish() )
+			{
+				controller->data.finishTask( job_id );
+				j->sentConfirmationToDelilah( );
+				removeJob(j);
+			}
 		}
 		
 		lock.unlock();
 		
 	}
 	
-	void JobManager::purgeJob( Job *j)
+	void JobManager::removeJob( Job *j )
 	{
-		// TODO: Consider chained jobs
-		if( j->isFinish() )
-		{
-			// Remove from the map of jobs
-			j = job.extractFromMap( j->getId() );
-			delete j;
-		}
+		assert( j->isFinish() );
+
+		// Remove from the map of jobs
+		j = job.extractFromMap( j->getId() );
+		delete j;
+		
 	}
+	
 	
 }

@@ -6,50 +6,16 @@
 
 namespace ss {
 
-	void Job::run( )
-	{
-		
-		if ( command_pos == (int)command.size() )
-		{
-			// No more commands to run
-			finish = true;
-			
-			// Send the message back to delilah to confirm the end of this job
-			controller->sendDelilahAnswer(sender_id, fromIdentifier, false, true, "Finish correctly" );
-			return;
-		}
-		
-		if( !processCommand( command[command_pos] ) )
-		{
-			// There is an error in this line
-			error = true;
-			finish = true;
-			
-			// Send the message back to delilah
-			controller->sendDelilahAnswer(sender_id, fromIdentifier, true, true, output.str() );
-		}
-		else 
-		{
-			controller->sendDelilahAnswer(sender_id, fromIdentifier, false, false, "Processing..." );
-			command_pos++;
-		}
-	}
-	
-	void Job::notifyTaskFinish( size_t _task_id )
-	{
-		// We only use if it is the task we were waiting from ( avoid confusions in the future )
-		
-		if( task_id == _task_id )
-			run();
-	}
-	
+
 	
 	bool Job::processCommand( std::string command )
 	{
+		
 		au::CommandLine commandLine;
 		commandLine.parse(command);
 		
-		// Check everything is ok
+		// Direct controller commands
+		// ------------------------------------------
 		
 		if( commandLine.get_num_arguments() > 0)
 		{
@@ -58,8 +24,8 @@ namespace ss {
 				// Add queue command
 				if( commandLine.get_num_arguments() < 4 )
 				{
-					output << "Usage: add_queue name <keyFormat> <valueFormat>";
-					return false;
+					setError( "Usage: add_queue name <keyFormat> <valueFormat>" );
+					return true;
 				}
 				
 				std::string name = commandLine.get_argument( 1 );
@@ -68,36 +34,50 @@ namespace ss {
 				
 				if( !controller->modulesManager.checkData( keyFormat ) )
 				{
+					setError("Unsupported data type");
 					output << "Unsupported data format " + keyFormat + "\n";
-					return false;
+					return true;
 				}
 				
 				if( !controller->modulesManager.checkData( valueFormat ) )
 				{
-					output << "Unsupported data format " + valueFormat + "\n";
-					return false;
+					setError("Unsupported data type");
+					output << "Unsupported data format " + keyFormat + "\n";
+					return true;
 				}
 				
 				// Check if queue exist
 				if( controller->data.existQueue( name ) )
 				{
+					setError("Queue already exist");
 					output << "Queue " + name + " already exist\n";
-					return false;
+					return true;
 				}
 				
-				// Add the task ( make sure we keep the task id)
-				task_id = controller->taskManager.addTask( command , id );
+				// Add the queue
+				controller->data.runOperationOfTask( id , command );
 				return true;
 				
 			}
+
+			// Normal taks
+			// ------------------------------------------
+			// controller->taskManager.addTask(XXX)
+			// return false;
+
+			// Scripts : ( create a new JobItem and push)
+			// ------------------------------------------
+			// return
 			
-			// Rigth now we do not support more jobs ;)
+			
+			// Unknown command, so inmediate answer with error
+			setError( "Unknown command");
 			return false;
+			
 		}
 		
-		output << "Command without any command";
+		setError("Command without any command");
 		return false;
-		
 	}
 	
 	bool Job::isFinish()
@@ -105,15 +85,20 @@ namespace ss {
 		return finish;
 	}
 	
+	bool Job::isError()
+	{
+		return error;
+	}
+	
 	size_t Job::getId()
 	{
 		return id;
 	}
 	
-	void Job::sentToDelilah( std::string txt)
+	void Job::sentConfirmationToDelilah( )
 	{
-		if( !parentJob )	// Top level job
-			controller->sendDelilahAnswer( sender_id, fromIdentifier, false, false, txt);
+		assert( finish );
+		controller->sendDelilahAnswer( sender_id, fromIdentifier, error, true, output.str());
 	}
 	
 	

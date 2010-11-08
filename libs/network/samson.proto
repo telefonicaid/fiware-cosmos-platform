@@ -18,6 +18,25 @@ message EndPointVector
 }
 
 
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Message from the controller workers
+//
+
+
+message File
+{
+	required string name=1;		// Name of file
+	required uint64 size=2;		// Size of the file in bytes
+	required uint64 kvs=3;		// Number of kvs
+}
+
+message QueueFiles
+{
+	required string name =1;	// Name of the queue
+	repeated File file = 2;	// Name of the files for this queue
+}
+
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -25,11 +44,12 @@ message EndPointVector
 //
 message WorkerTask
 {
-	required int64 task_id 	= 1;	// Id of the top level ( controller ) task
-	required string command = 2;	// Command to perform by the worker
+	required int64 task_id		= 1;	// Id of the top level ( controller ) task	
+	required string operation 	= 2;	// Name of the operation to run
+
+	repeated QueueFiles input	= 3;    // Input files ( for each queue )
+	repeated string output		= 4;    // output queues
 }
-
-
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -37,12 +57,11 @@ message WorkerTask
 //
 message WorkerTaskConfirmation
 {
-	required int64 task_id  = 1;  // Id of the opt level (controller ) task
-	required bool  error    = 2;  // Error in the operation
-
+	required int64 task_id  = 1;	       // Id of the opt level (controller ) task
+	required bool  error    = 2;  	       // Error in the operation
+	optional string error_message = 3;     // Message to debug the error
+	required QueueFiles output = 4;	       // Files created as output for this operation ( to be stored at the controller for future operations )
 }
-
-
 
 // ////////////////////////////////////////////////////////////////////////////
 //

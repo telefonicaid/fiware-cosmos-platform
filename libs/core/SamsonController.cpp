@@ -151,28 +151,30 @@ namespace ss {
 	
 
 
-	void SamsonController::sendWorkerTasks(ControllerTask *task)
+	void SamsonController::sendWorkerTasks( ControllerTask *task )
 	{
 		// Send messages to the workers indicating the operation to do (waiting the confirmation from all of them)
 		
 		for (int i = 0 ; i < network->getNumWorkers() ; i++)
 		{
 			LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", i));
-			sendWorkerTask(i, task->getId(), task->getCommand());
+			sendWorkerTask(i, task->getId(), task);
 		}
 	}	
 	
 
 
-	void SamsonController::sendWorkerTask(int workerIdentifier, size_t task_id, std::string command)
+	void SamsonController::sendWorkerTask(int workerIdentifier, size_t task_id, ControllerTask *task  )
 	{
 		// Get status of controller
 		Packet p2;
 
 		network::WorkerTask *t = p2.message.mutable_worker_task();
-		t->set_command(command);
 		t->set_task_id(task_id);
+		t->set_operation(task->getCommand());
 
+		// TODO: Complete with the rest of input / output parameters
+		
 		LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", workerIdentifier));
 		network->send(this,  network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask, NULL, 0, &p2);
 	}
@@ -193,6 +195,8 @@ namespace ss {
 			getStatus( output );					// General status command
 		else if ( cmdLine.get_argument(1) == "queues" )
 			output << data.getQueuesStr(format );
+		else if ( cmdLine.get_argument(1) == "modules" )
+			output << modulesManager.showModules();
 		else
 			output << "No help for this";
 	}

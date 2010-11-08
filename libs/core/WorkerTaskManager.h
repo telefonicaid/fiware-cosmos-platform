@@ -26,6 +26,22 @@ namespace ss {
 
 		// Fill information about status of this worker
 		// void fillWorkerStatus( network::WorkerStatus* status );
+		
+		
+		/*
+		// Send a notification for a particular task to the controller
+		void sendConfirmation( size_t task_id )
+		{
+			// Send a confirmation just to test everything is ok
+			Packet                            p;
+			network::WorkerTaskConfirmation*  confirmation = p.message.mutable_worker_task_confirmation();
+			confirmation->set_task_id(task_id);
+			confirmation->set_error(false);
+			network->send(this, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, NULL, 0, &p);
+			
+		}
+		*/
+		
 	};
 }
 

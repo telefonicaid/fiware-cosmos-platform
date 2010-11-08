@@ -50,6 +50,9 @@ int main( int argc , char *argv[] )
 			case ss::data::Command_Status_Finish:
 				std::cout << " [F]: ";
 				break;
+			case ss::data::Command_Status_Cancel:
+				std::cout << " [C]: ";
+				break;
 		} 
 		
 		

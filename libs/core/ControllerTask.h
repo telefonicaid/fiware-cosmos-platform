@@ -8,6 +8,7 @@
 #include <sstream>							// std::ostringstream
 #include <iostream>							// std::cout
 #include "samson.pb.h"						// network::...
+#include <set>								// std::set
 
 namespace ss {
 	
@@ -28,10 +29,10 @@ namespace ss {
 		// Main command line
 		std::string command;
 		
-		int total_workers;			// Total workers that have to confirm the task
-		int confirmed_workers;		// Number of workers that have confirmed the task
+		int total_workers;	// Total workers that have to confirm the task
+		std::vector<network::WorkerTaskConfirmation> confirmationMessages;		// All confirmation messages received for this task
 		
-
+		friend class ControllerTaskManager;
 		
 	public:
 		
@@ -45,9 +46,6 @@ namespace ss {
 
 			// total number of workers to wait for this number of confirmation ( in case we sent to workers )
 			total_workers = _total_workers;
-			
-			// Put to zero the counters of workers that has confirmed the tasks
-			confirmed_workers = 0;		
 			
 		}
 		
@@ -78,7 +76,7 @@ namespace ss {
 		
 		bool isFinish()
 		{
-			return ( confirmed_workers == total_workers );
+			return ( (int)(confirmationMessages.size() )  == total_workers );
 		}
 		
 	};

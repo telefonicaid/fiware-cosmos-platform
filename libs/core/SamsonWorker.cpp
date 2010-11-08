@@ -10,7 +10,6 @@
 #include "Network.h"                    // NetworkInterface
 #include "Endpoint.h"                   // Endpoint
 #include "CommandLine.h"                // CommandLine
-#include "WorkerDataManager.h"          // WorkerDataManager
 #include "ProcessAssistant.h"           // ProcessAssistant
 #include "SamsonWorker.h"               // Own interfce
 #include "EndpointMgr.h"				// ss::EndpointMgr
@@ -24,7 +23,7 @@ namespace ss {
 *
 * Constructor
 */
-SamsonWorker::SamsonWorker(int argC, const char* argV[] ) : data(this), taskManager(this)
+SamsonWorker::SamsonWorker(int argC, const char* argV[] ) :  taskManager(this)
 {
 	parseArgs(argC, argV);
 }
@@ -104,7 +103,6 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 */
 void SamsonWorker::run()
 {
-	data.initDataManager(data.getLogFileName());
 	workerStatus(&status);
 
 
@@ -153,16 +151,6 @@ void SamsonWorker::sendWorkerStatus()
 #endif
 		
 
-void SamsonWorker::sentConfirmationToController(size_t task_id)
-{
-	Packet                            p;
-	network::WorkerTaskConfirmation*  confirmation = p.message.mutable_worker_task_confirmation();
-
-	confirmation->set_task_id(task_id);
-	confirmation->set_error(false);
-
-	network->send(this, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, NULL, 0, &p);
-}
 	
 	
 
@@ -173,27 +161,10 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, void* dataP,
 		// A packet with a particular command is received (controller expect to send a confirmation message)
 		LM_T(LMT_TASK, ("Got a WorkerTask message"));
 
-
-			// Extract information
-			size_t task_id = packet->message.worker_task().task_id();
-			std::string command = packet->message.worker_task().command();
-			
-			// Process the command in the data manager (right now this is just to test)
-			data.beginTask( task_id );
-
-
-			data.runOperationOfTask( task_id , command );
-
-
-			if ( taskManager.addTask( packet->message.worker_task() ) )
-			{
-				data.finishTask(packet->message.worker_task().task_id());
-
-			
-				// Send a confirmation just to test everything is ok
-				sentConfirmationToController(packet->message.worker_task().task_id());
-				
-			}
+		// add task to the task manager
+		taskManager.addTask( packet->message.worker_task() );
+		
+		
 			return 0;
 		}
 		

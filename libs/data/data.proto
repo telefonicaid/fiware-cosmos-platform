@@ -7,6 +7,7 @@ message Command
 		Begin               = 1;	// Activity of this task id is iniciated
 		Operation	    = 2;	// Process an operation related with this task id
                 Finish              = 3;	// The task has been finally validated
+		Cancel		    = 4;	// The task has been canceled, so everything is undone
         };
 
 	required uint64 task_id=1;	// Controller  top-level task id

@@ -40,23 +40,21 @@ namespace ss
 		
 		if( t )
 		{
+			// Get the job id
+			size_t job_id = t->getJobId();
+			
+			// Notify that this worker has answered
 			t->notifyWorkerConfirmation( worker_id , confirmationMessage );
 			
 			if( t->isFinish() )
 			{
-				size_t job_id = t->getJobId();
-				
-				// Update this in the data controller
-				controller->data.commit( task_id );
-				
+				// Notify the JobManager that this task is finish
+				controller->jobManager.notifyFinishTask( job_id ,task_id , t->confirmationMessages );
 				
 				// Delete this task from this manager
 				t = task.extractFromMap( task_id );
 				delete t;
 				
-				
-				// Notify the JobManager that this task is finish
-				controller->jobManager.notifyFinishTask( job_id ,task_id);
 				
 			}
 		}

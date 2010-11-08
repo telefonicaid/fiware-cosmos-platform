@@ -179,7 +179,7 @@ namespace ss
 			return answer;
 		}
 		
-		bool finishTask( size_t task_id)
+		bool finishTask( size_t task_id )
 		{
 			lock.lock();
 			bool answer =  file.write( task_id , "" ,data::Command_Status_Finish  );
@@ -187,7 +187,19 @@ namespace ss
 			return answer;
 			
 		}
-	
+		
+		bool cancelTask( size_t task_id )
+		{
+			// Undo all the buffered commands and submit a cancel to the log
+			lock.lock();
+			
+			// TODO: Undo all buffered actions
+			
+			bool answer =  file.write( task_id , "" ,data::Command_Status_Cancel  );
+			lock.unlock();
+			return answer;
+			
+		}
 		
 		bool runOperationOfTask( size_t task_id , std::string command   )
 		{
@@ -206,10 +218,7 @@ namespace ss
 			return answer;
 		}
 		
-		void commit( size_t task_id)
-		{
-			// log this action is finished
-		}
+
 		
 	private:
 
@@ -218,6 +227,9 @@ namespace ss
 		 */
 		
 		virtual bool _run( size_t task_id , std::string command )=0;
+		
+
+		virtual bool _un_run( size_t task_id , std::string command )=0;
 		
 		
 	};

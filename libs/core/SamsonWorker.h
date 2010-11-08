@@ -19,7 +19,6 @@
 #include "samsonDirectories.h"  // SAMSON_WORKER_DEFAULT_PORT
 #include "workerStatus.h"		// WorkerStatus
 #include "CommandLine.h"		// au::CommandLine
-#include "WorkerDataManager.h"	// ss::WorkerDataManager
 #include "ModulesManager.h"		// ss::ModulesManager
 #include "WorkerTaskManager.h"	// ss::WorkerTaskManager
 #include "DataBuffer.h"			// ss::DataBuffer
@@ -51,7 +50,6 @@ public:
 private:
 	EndpointMgr*        epMgr;             // Endpoint Manager
 	NetworkInterface*   network;           // Network interface
-	WorkerDataManager   data;              // Data manager
 	WorkerTaskManager   taskManager;       // Task manager
 	ModulesManager      modulesManager;    // Manager of the modules we have
 	ProcessAssistant**  processAssistant;
@@ -90,9 +88,6 @@ public:
 		
 	void sendWorkerStatus();
 #endif
-		
-	// send the confirmation of a particular task to the controller
-	void sentConfirmationToController(size_t task_id );
 		
 };
 

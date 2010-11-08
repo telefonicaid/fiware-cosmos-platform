@@ -47,7 +47,6 @@ namespace ss {
 
 		Module *getModule( std::string name );
 		
-		
 		std::string showModules();
 		std::string showModule(std::string module);
 		std::string showFind( std::string command);

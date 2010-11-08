@@ -7,8 +7,7 @@ namespace ss {
 
 	void ControllerTask::notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation confirmationMessage )
 	{
-		// Increment the number of workers that confirmed this task
-		confirmed_workers++;
+		confirmationMessages.push_back( confirmationMessage );
 	}
 	
 }

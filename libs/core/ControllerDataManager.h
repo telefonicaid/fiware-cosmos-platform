@@ -61,6 +61,7 @@ namespace ss {
 	private:
 		
 		bool _run( size_t task_id , std::string command );
+		bool _un_run( size_t task_id , std::string command );
 		
 		
 		

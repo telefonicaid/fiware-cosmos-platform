@@ -149,6 +149,27 @@ Endpoint::Endpoint(Type type, unsigned short port)
 
 /* ****************************************************************************
 *
+* Constructor
+*/
+Endpoint::Endpoint(Type type, char* alias)
+{
+	this->name     = "no name";
+	this->ip       = "localhost";
+	this->alias    = alias;
+	this->port     = port;
+	this->fd       = -1;
+	this->state    = Unconnected;
+	this->workers  = 0;
+	this->type     = type;
+	this->status   = NULL;
+
+	hostnameGet();
+}
+
+
+
+/* ****************************************************************************
+*
 * nam - 
 */
 const char* Endpoint::nam(void)

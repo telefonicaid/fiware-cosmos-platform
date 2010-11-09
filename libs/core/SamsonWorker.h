@@ -45,7 +45,7 @@ public:
 	int          workers;
 	std::string  controller;
 	std::string  traceV;
-
+	std::string  alias;
 
 private:
 	EndpointMgr*        epMgr;             // Endpoint Manager
@@ -54,11 +54,11 @@ private:
 	ModulesManager      modulesManager;    // Manager of the modules we have
 	ProcessAssistant**  processAssistant;
 	DataBuffer dataBuffer;				// Element used to buffer incomming data packets before they are joined and saved to disk
-		
 
 
 private:
 	void parseArgs(int argC, const char* argV[]);
+	void logInit(const char*);
 
 private:
 	Message::WorkerStatusData status;
@@ -66,7 +66,7 @@ private:
 public:
 	void networkSet(NetworkInterface* network);
 	void endpointMgrSet(ss::EndpointMgr* epMgr);
-	
+
 
 	// Main routine
 	void run();

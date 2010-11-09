@@ -16,7 +16,7 @@ namespace ss {
 		// Nothing to do
 	}
 	
-	void NetworkFake::initAsSamsonWorker(int localPort, std::string controllerEndpoint)
+	void NetworkFake::initAsSamsonWorker(int localPort, const char* alias, const char* controller)
 	{
 		// Nothing to do
 	}

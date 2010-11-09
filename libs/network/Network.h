@@ -41,7 +41,7 @@ class Network : public NetworkInterface
 {
 	PacketReceiverInterface* receiver;
 
-	void init(Endpoint::Type type, unsigned short port = 0, const char* controllerName = NULL);
+	void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL);
 	void ipSet(char* ip);
 
 public:
@@ -51,7 +51,7 @@ public:
 	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);
 
 	virtual void initAsSamsonController(int port, int num_workers);
-	virtual void initAsSamsonWorker(int localPort, std::string controllerEndpoint);
+	virtual void initAsSamsonWorker(int localPort, const char* alias, const char* controllerEndpoint);
 	virtual void initAsDelilah(std::string controllerEndpoint);	
 	
 	bool ready();                                    // Inform about everything ready
@@ -94,10 +94,11 @@ private:
 
 	bool       iAmReady;
 
-	Endpoint*  endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core);
+	Endpoint*  endpointAdd(int fd, char* name, char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core);
 	void       endpointRemove(Endpoint* ep);
 	Endpoint*  endpointLookup(int fd, int* idP);
 	Endpoint*  endpointLookup(int ix);
+	Endpoint*  endpointLookup(char* alias);
 	Endpoint*  endpointFreeGet(Endpoint::Type type);
 
 	void msgTreat(int fd, char* name);

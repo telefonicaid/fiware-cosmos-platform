@@ -39,7 +39,8 @@ typedef enum MessageCode
 	Command                = CODE('C', 'o', 'm', ' '),
 	CommandResponse        = CODE('C', 'R', 'e', ' '),
 	WorkerTaskConfirmation = CODE('W', 'T', 'C', ' '),
-	Data                   = CODE('D', 'a', 't', ' ')
+	Data                   = CODE('D', 'a', 't', ' '),
+	Die                    = CODE('D', 'i', 'e', ' ')
 } MessageCode;
 
 
@@ -81,6 +82,7 @@ typedef struct HelloData
 {
 	char                name[32];
 	char                ip[32];
+	char                alias[32];
 	ss::Endpoint::Type  type;
 	int                 workers;
 	int                 port;

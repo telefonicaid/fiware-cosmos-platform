@@ -29,7 +29,8 @@ char* messageCode(MessageCode code)
 	case Command:                  return (char*) "Command";
 	case CommandResponse:          return (char*) "CommandResponse";
 	case WorkerTaskConfirmation:   return (char*) "WorkerTaskConfirmation";
-	case Data:					   return (char*) "Data";
+	case Data:                     return (char*) "Data";
+	case Die:                      return (char*) "Die";
 	}
 
 	return (char*) "Unknown";

@@ -50,6 +50,7 @@ public:
 	std::string                  name;
 	std::string                  hostname;
 	std::string                  ip;
+	std::string                  alias;
 	int                          fd;
 	unsigned short               port;
 	State                        state;
@@ -79,6 +80,7 @@ public:
 public:
 	Endpoint(void) {};
 	Endpoint(Type type, unsigned short port);
+	Endpoint(Type type, char* alias);
 	Endpoint(Type type, std::string ipAndPort);
 	Endpoint(Type type, std::string name, std::string ip, unsigned short port, int fd);
 	std::string str() { return name; }

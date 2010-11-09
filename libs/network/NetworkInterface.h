@@ -67,7 +67,7 @@ namespace ss {
 		
 		// Init function ( one and only one of them should be called )
 		virtual void initAsSamsonController(int port, int num_workers)=0;
-		virtual void initAsSamsonWorker(int localPort, std::string controllerEndpoint)=0;
+		virtual void initAsSamsonWorker(int localPort, const char* alias, const char* controller) = 0;
 		virtual void initAsDelilah(std::string controllerEndpoint)=0;
 
 		// Set the receiver element ( this should be notified about the packaked )

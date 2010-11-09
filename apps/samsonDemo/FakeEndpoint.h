@@ -23,7 +23,7 @@ namespace ss {
 		std::string name;
 		int worker_id;
 		
-		FakeEndpoint( std::string _name , int _worker_id ) : Endpoint( Listener , "" )
+		FakeEndpoint( std::string _name , int _worker_id ) : Endpoint( Listener , 1234 )
 		{
 			worker_id = _worker_id;
 			name = _name;

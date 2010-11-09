@@ -72,6 +72,7 @@ void SamsonWorker::parseArgs(int argC, const char* argV[])
 	commandLine.set_flag_int("workers",         5);
 	commandLine.set_flag_string("controller",  "no_controller");
 	commandLine.set_flag_string("t",           "255");
+	commandLine.set_flag_string("alias",       "no_alias");
 	commandLine.set_flag_boolean("r");
 	commandLine.set_flag_boolean("w");
 
@@ -84,16 +85,17 @@ void SamsonWorker::parseArgs(int argC, const char* argV[])
 	lmWrites   = commandLine.get_flag_bool("w");
 	endpoints  = commandLine.get_flag_int("endpoints");
 	workers    = commandLine.get_flag_int("workers");
+	alias      = commandLine.get_flag_string("alias");
 
+	if (alias == "no_alias")
+		LM_X(1, ("Please specify alias with -alias <alias>"));
+
+	if (controller == "no_controller")
+		LM_X(1, ("Please specify controller direction with -controller server:port"));
+		
 	if ((s = lmTraceSet((char*) traceV.c_str())) != LmsOk)
 		LM_X(1, ("lmTraceSet: %s", lmStrerror(s)));
 
-	if (controller == "no_controller")
-	{
-		std::cerr  << "Please specify controller direction with -controller server:port" << std::endl;
-		exit(0);
-	}
-		
 	LM_T(LMT_SAMSON_WORKER, ("Samson worker running at port %d controller: %s", port, controller.c_str()));
 }
 
@@ -120,7 +122,7 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 {
 	this->network = network;
 	network->setPacketReceiverInterface(this);
-	network->initAsSamsonWorker(port, controller);
+	network->initAsSamsonWorker(port, alias.c_str(), controller.c_str());
 }
 
 
@@ -200,7 +202,7 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, void* dataP,
 		 DataManager is notifyed when created a new file or finish everything 
 		 */
 		
-		if( msgCode == Message::Data )
+		if (msgCode == Message::Data)
 		{
 			// New data packet for a particular queue inside a particular task environment
 		
@@ -211,8 +213,6 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, void* dataP,
 			
 			return 0;
 		}
-		
-		
 
 		return 0;
 	}

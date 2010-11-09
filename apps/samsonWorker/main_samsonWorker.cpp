@@ -8,7 +8,7 @@
 
 int main(int argC, const char *argV[])
 {
-	ss::samsonInitTrace(argC, argV);
+	ss::samsonInitTrace(argC, argV, true);
 	
 	ss::SamsonWorker  worker(argC, argV);
 	ss::Network*      networkP;
@@ -20,10 +20,5 @@ int main(int argC, const char *argV[])
 	worker.endpointMgrSet(epMgr);
 	worker.networkSet(networkP);
 	
-/*
-	ss::Network      network;							// Real network element
-	ss::SamsonWorker worker(argc, argv, &network);		// SamsonWorker object
-*/
-
 	worker.run();										// Run the object
 }

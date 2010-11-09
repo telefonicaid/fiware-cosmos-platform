@@ -97,7 +97,7 @@ void Network::setPacketReceiverInterface(PacketReceiverInterface* _receiver)
 *
 * init - create endpoints 0 and 1 - MOVE to EndpointMgr
 */
-void Network::init(Endpoint::Type type, unsigned short port, const char* controllerName)
+void Network::init(Endpoint::Type type, const char* alias, unsigned short port, const char* controllerName)
 {
 	endpoint[0] = new Endpoint(type, port);
 	if (endpoint[0] == NULL)
@@ -110,6 +110,7 @@ void Network::init(Endpoint::Type type, unsigned short port, const char* control
 	me->name     = progName;
 	me->state    = Endpoint::Me;
 	me->ip       = ipGet();
+	me->alias    = alias;
 
 	if (port != 0)
 	{
@@ -162,8 +163,9 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 {
 	ss::Message::HelloData hello;
 
-	strncpy(hello.name, me->name.c_str(), sizeof(hello.name));
-	strncpy(hello.ip,   me->ip.c_str(),   sizeof(hello.ip));
+	strncpy(hello.name,   me->name.c_str(),   sizeof(hello.name));
+	strncpy(hello.ip,     me->ip.c_str(),     sizeof(hello.ip));
+	strncpy(hello.alias,  me->alias.c_str(),  sizeof(hello.alias));
 
 	hello.type    = me->type;
 	hello.workers = me->workers;
@@ -181,21 +183,22 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 *
 * initAsSamsonController - 
 */
-void Network::initAsSamsonController(int port, int num_workers )
+void Network::initAsSamsonController(int port, int workers)
 {
-	// Old interface to be removed
-	std::vector<std::string> peers;	
-	
 	int ix;
 
-	init(Endpoint::Controller, port);
+	init(Endpoint::Controller, "Controller", port);
 
 	/* MOVE to SamsonController */
-	if (peers.size() != (unsigned int) Workers)
-		LM_X(1, ("bad size of worker vector (%d). Should be %d!", peers.size(), Workers));
+	Workers = workers;
 
 	for (ix = 0; ix < Workers; ix++)
-		endpointV.push_back(Endpoint(Endpoint::Worker, peers[ix])); 
+	{
+		char alias[16];
+
+		sprintf(alias, "Worker%02d", ix);
+		endpointV.push_back(Endpoint(Endpoint::Worker, alias));
+	}
 
 	for (ix = 0; ix < Workers; ix++)
 	{
@@ -219,9 +222,9 @@ void Network::initAsSamsonController(int port, int num_workers )
 *
 * NOTE
 */
-void Network::initAsSamsonWorker(int port, std::string controllerName)
+void Network::initAsSamsonWorker(int port, const char* alias, const char* controller)
 {
-	init(Endpoint::Worker, port, controllerName.c_str());
+	init(Endpoint::Worker, alias, port, controller);
 }
 
 
@@ -232,7 +235,7 @@ void Network::initAsSamsonWorker(int port, std::string controllerName)
 */
 void Network::initAsDelilah(std::string controllerName)
 {
-	init(Endpoint::Delilah, -1, controllerName.c_str());
+	init(Endpoint::Delilah, "delilah", -1, controllerName.c_str());
 }
 	
 	
@@ -390,7 +393,17 @@ bool Network::ready()
 * the vector.
 *
 */
-Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo = -1)
+Endpoint* Network::endpointAdd
+(
+	int              fd,
+	char*            name,
+	char*            alias,
+	int              workers,
+	Endpoint::Type   type,
+	std::string      ip,
+	unsigned short   port,
+	int              coreNo = -1
+)
 {
 	int ix;
 
@@ -405,8 +418,9 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 		return NULL;
 
 	case Endpoint::Controller:
-		endpoint[2]->name = std::string(name);
-		endpoint[2]->ip   = std::string(ip);
+		endpoint[2]->name  = std::string(name);
+		endpoint[2]->ip    = std::string(ip);
+		endpoint[2]->alias = (alias != NULL)? alias : "NO ALIAS" ;
 		return controller;
 
 	case Endpoint::Temporal:
@@ -423,6 +437,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 				endpoint[ix]->state = Endpoint::Connected;
 				endpoint[ix]->type  = Endpoint::Temporal;
 				endpoint[ix]->ip    = ip;
+				endpoint[ix]->alias = (alias != NULL)? alias : "NO ALIAS" ;
 
 				return endpoint[ix];
 			}
@@ -442,6 +457,7 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 					LM_XP(1, ("allocating Endpoint"));
 
 				endpoint[ix]->name       = std::string(name);
+				endpoint[ix]->alias      = (alias != NULL)? alias : "NO ALIAS" ;
 				endpoint[ix]->fd         = fd;
 				endpoint[ix]->state      = Endpoint::Connected;
 				endpoint[ix]->type       = type;
@@ -467,8 +483,9 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 			if (controller == NULL)
 				LM_X(1, ("controller == NULL"));
 
-			controller->fd   = fd;
-			controller->name = std::string(name);
+			controller->fd     = fd;
+			controller->name   = std::string(name);
+			controller->alias  = (alias != NULL)? alias : "NO ALIAS" ;
 			
 			return controller;
 		}
@@ -478,20 +495,34 @@ Endpoint* Network::endpointAdd(int fd, char* name, int workers, Endpoint::Type t
 			if (endpoint[ix] == NULL)
 				LM_X(1, ("NULL worker endpoint at slot %d", ix));
 
-			if (((strcmp(endpoint[ix]->ip.c_str(), ip.c_str()) == 0) && (endpoint[ix]->port == port)) ||
-				((strcmp(endpoint[ix]->hostname.c_str(), ip.c_str()) == 0) && (endpoint[ix]->port == port)))
+			if (endpointLookup(alias) != NULL)
 			{
-				endpoint[ix]->fd    = fd;
-				endpoint[ix]->name  = std::string(name);
-				endpoint[ix]->state = Endpoint::Connected;
-				endpoint[ix]->type  = Endpoint::Worker;
+				LM_E(("Intent to connect a second Worker with alias '%s' - rejecting connection", alias));
+				iomMsgSend(fd, name, progName, Message::Die, Message::Evt);
+				close(fd);
+				return NULL;
+			}
+
+			LM_M(("comparing '%s' to '%s'", endpoint[ix]->alias.c_str(), alias));
+			if (strcmp(endpoint[ix]->alias.c_str(), alias) == 0)
+			{
+				LM_M(("Got endpoint '%s'", alias));
+				endpoint[ix]->fd       = fd;
+				endpoint[ix]->name     = std::string(name);
+				endpoint[ix]->alias    = std::string(alias);
+				endpoint[ix]->workers  = workers;
+				endpoint[ix]->type     = Endpoint::Worker;
+				endpoint[ix]->ip       = ip;
+				endpoint[ix]->port     = port;
+				
+				endpoint[ix]->state    = Endpoint::Connected;
 
 				return endpoint[ix];
 			}
 		}
 
-		LM_X(1, ("Worker '%s:%d' not found!", ip.c_str(), port));
-		break;
+		LM_E(("Worker '%s:%d' not found!", ip.c_str(), port));
+		return NULL;
 	}
 
 	LM_X(1, ("BUG"));
@@ -577,6 +608,33 @@ Endpoint* Network::endpointLookup(int fd, int* idP)
 
 /* ****************************************************************************
 *
+* endpointLookup - MOVE to EndpointMgr
+*/
+Endpoint* Network::endpointLookup(char* alias)
+{
+	int ix = 0;
+
+	for (ix = 0; ix < Endpoints; ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		LM_M(("comparing '%s' to '%s' (state: '%s')", endpoint[ix]->alias.c_str(), alias, endpoint[ix]->stateName()));
+		if ((strcmp(endpoint[ix]->alias.c_str(), alias) == 0) && (endpoint[ix]->state != Endpoint::FutureWorker))
+		{
+			LM_M(("found occupied (state: '%s') endpoint with alias '%s'", endpoint[ix]->stateName(), alias));
+			return endpoint[ix];
+		}
+	}
+
+	LM_E(("endpoint (alias:%s) not found", alias));
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * msgTreat - MOVE to EndpointMgr
 */
 void Network::msgTreat(int fd, char* name)
@@ -650,15 +708,22 @@ void Network::msgTreat(int fd, char* name)
 	LM_T(LMT_TREAT, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
 	{
+	case Message::Die:
+		LM_X(1, ("Got a DIE message from '%s' - I die", name));
+		break;
+
 	case Message::Hello:
 		Endpoint*            helloEp;
 		Message::HelloData*  hello;
 
 		hello   = (Message::HelloData*) dataP;
-		helloEp = endpointAdd(fd, hello->name, hello->workers, hello->type, hello->ip, hello->port, hello->coreNo);
+		helloEp = endpointAdd(fd, hello->name, hello->alias, hello->workers, hello->type, hello->ip, hello->port, hello->coreNo);
 
 		if (helloEp == NULL)
-			LM_X(1, ("helloEp == NULL"));
+		{
+			endpointRemove(ep);
+			return;
+		}
 
 		LM_T(LMT_HELLO, ("Got Hello %s from %s, type %s, %s:%d, workers: %d",
 						 messageType(msgType), helloEp->name.c_str(), helloEp->typeName(), helloEp->ip.c_str(), helloEp->port, helloEp->workers));
@@ -739,7 +804,7 @@ void Network::msgTreat(int fd, char* name)
 
 						epP->state = Endpoint::Connected;
 
-						ep = endpointAdd(workerFd, (char*) "to be worker", 0, Endpoint::Temporal, epP->ip, epP->port);
+						ep = endpointAdd(workerFd, (char*) "to be worker", NULL, 0, Endpoint::Temporal, epP->ip, epP->port);
 						if (ep != NULL)
 							LM_T(LMT_ENDPOINT, ("Added ep with state '%s'", ep->stateName()));
 						else
@@ -857,7 +922,7 @@ void Network::run()
 						workerFd = iomConnect(endpoint[ix]->ip.c_str(), endpoint[ix]->port);
 						if (workerFd != -1)
 						{
-							endpointAdd(workerFd, (char*) "Reconnecting worker", 0, Endpoint::Temporal, endpoint[ix]->ip.c_str(), endpoint[ix]->port);
+							endpointAdd(workerFd, (char*) "Reconnecting worker", NULL, 0, Endpoint::Temporal, endpoint[ix]->ip.c_str(), endpoint[ix]->port);
 							endpoint[ix]->state = Endpoint::Reconnecting;
 						}
 					}
@@ -870,7 +935,7 @@ void Network::run()
 						{
 							Endpoint* ep;
 
-							ep = endpointAdd(workerFd, (char*) "New Worker", 0, Endpoint::Temporal, endpoint[ix]->ip.c_str(), endpoint[ix]->port);
+							ep = endpointAdd(workerFd, (char*) "New Worker", NULL, 0, Endpoint::Temporal, endpoint[ix]->ip.c_str(), endpoint[ix]->port);
 							if (ep != NULL)
 								LM_T(LMT_ENDPOINT, ("Added ep with state '%s'", ep->stateName()));
 							else
@@ -897,10 +962,11 @@ void Network::run()
 					FD_SET(endpoint[ix]->fd, &rFds);
 					max = MAX(max, endpoint[ix]->fd);
 					
-					LM_T(LMT_SELECT, ("+ endpoint %02d %-12s %-28s %20s:%05d %20s (fd: %d)",
+					LM_T(LMT_SELECT, ("+ %02d; %-12s %-22s %-15s %15s:%05d %18s fd:%d",
 									  ix,
 									  endpoint[ix]->typeName(),
 									  endpoint[ix]->name.c_str(),
+									  endpoint[ix]->alias.c_str(),
 									  endpoint[ix]->ip.c_str(),
 									  endpoint[ix]->port,
 									  endpoint[ix]->stateName(),
@@ -908,10 +974,11 @@ void Network::run()
 				}
 				else
 				{
-					LM_T(LMT_SELECT, ("- endpoint %02d %-12s %-28s %20s:%05d %20s (fd: %d)",
+					LM_T(LMT_SELECT, ("- %02d: %-12s %-22s %-15s %15s:%05d %18s fd:%d",
 									  ix,
 									  endpoint[ix]->typeName(),
 									  endpoint[ix]->name.c_str(),
+									  endpoint[ix]->alias.c_str(),
 									  endpoint[ix]->ip.c_str(),
 									  endpoint[ix]->port,
 									  endpoint[ix]->stateName(),
@@ -950,7 +1017,7 @@ void Network::run()
 				else
 				{
 					std::string  s   = std::string("tmp:") + std::string(hostName);
-					Endpoint*    ep  = endpointAdd(fd, (char*) s.c_str(), 0, Endpoint::Temporal, (char*) "ip", 0);
+					Endpoint*    ep  = endpointAdd(fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, (char*) "ip", 0);
 
 					helloSend(ep, Message::Msg);
 				}

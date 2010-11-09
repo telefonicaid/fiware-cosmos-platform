@@ -82,7 +82,10 @@ namespace ss {
 
 		Buffer* buffer;
 		
-		Packet() {};
+		Packet() 
+		{
+			buffer = NULL;
+		};
 
 		void      endpointAdd(Endpoint* e);
 		Endpoint  endpointGet(int i);

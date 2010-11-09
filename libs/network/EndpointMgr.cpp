@@ -564,7 +564,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 
 				// Ask controller for list of workers
 				iomMsgSend(controller->fd, (char*) controller->name.c_str(), (char*) me->name.c_str(),
-						   Message::WorkerVector, Message::Msg, NULL, 0, NULL, NULL, 0);
+						   Message::WorkerVector, Message::Msg, NULL, 0, NULL);
 			}
 		}
 		break;
@@ -578,7 +578,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 			ack.endpointVectorAdd(endpointV);
 
 			LM_T(LMT_WRITE, ("sending ack with entire worker vector"));
-			iomMsgSend(fd, name, (char*) me->name.c_str(), Message::WorkerVector, Message::Ack, NULL, 0, &ack, NULL, 0);
+			iomMsgSend(fd, name, (char*) me->name.c_str(), Message::WorkerVector, Message::Ack, NULL, 0, &ack);
 		}
 		else if (msgType == Message::Ack)
 		{
@@ -678,7 +678,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
 
 		LM_T(LMT_MSG, ("forwarding '%s' %s from %s to CoreWorkers", messageCode(msgCode), messageType(msgType), ep->name.c_str()));
-		receiver->receive(endpointId, msgCode, dataP, dataLen, &packet);
+		receiver->receive(endpointId, msgCode, &packet);
 		break;
 	}
 

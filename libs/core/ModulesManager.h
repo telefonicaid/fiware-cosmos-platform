@@ -4,6 +4,9 @@
 #include "Lock.h"                /* Lock                            */
 #include <map>					/* std::map */
 #include <string>				/* std::string */
+#include "samson.pb.h"			// ss::network::...
+#include "samson/KVFormat.h"	// ss::KVFormat
+#include "KVInfo.h"				// ss::KVInfo
 
 namespace ss {
 
@@ -51,7 +54,17 @@ namespace ss {
 		std::string showModule(std::string module);
 		std::string showFind( std::string command);
 		
+		void helpDatas( network::HelpResponse *response );
+		void helpOperations( network::HelpResponse *response );
+		
 	};
+	
+	// Utility functions
+	void fillKVFormat( network::KVFormat* format , KVFormat f );
+	void fillKVInfo( network::KVInfo* info , KVInfo i );
+	
+	
+	
 }
 
 #endif

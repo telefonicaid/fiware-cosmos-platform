@@ -58,8 +58,12 @@ namespace ss {
 		void run();
 		
 		// PacketReceiverInterface
-		int receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet);
+		int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 		void notifyWorkerDied( int worker );
+
+		
+		// Specialized receive functions
+		int receiveHelp(int fromId, Packet* packet);
 
 		
 		// PacketSenderInterface
@@ -75,8 +79,6 @@ namespace ss {
 		void sendWorkerTask( int  workerIdentifier , size_t task_id , ControllerTask *task );
 		
 		//Internal functions to get help
-		
-		void getHelp( std::ostringstream &output , std::string &c);
 		void getStatus(std::ostringstream &output);
 		
 		

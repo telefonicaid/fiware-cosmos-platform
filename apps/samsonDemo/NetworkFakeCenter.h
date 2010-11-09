@@ -132,7 +132,7 @@ namespace ss {
 			//LM_X(1, ("This call to receive must be reimplemented after last changes by KZ. Sorry ... !"));
 			
 			NetworkFake* network = getNetwork( p->to );
-			network->receiver->receive( p->from, p->msgCode, NULL , 0, &p->packet );			
+			network->receiver->receive( p->from, p->msgCode, &p->packet );			
 
 		}
 	};

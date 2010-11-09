@@ -43,10 +43,11 @@ namespace ss {
 		// Command line parameters ( necessary for QT run method )
 		int _argc;
 		const char **_argv;
-		
-		size_t	local_id;					// Internal counter to keep count of the commands sent to the controller
 
 		pthread_t t_network;
+
+		friend class DelilahConsole;
+		friend class DelilahQt;
 		
 	public:
 		bool finish;						// Global flag used by all threads to detect to stop
@@ -64,7 +65,6 @@ namespace ss {
 			network->setPacketReceiverInterface(this);
 			
 			finish = false;				// Global flag to finish threads
-			local_id = 0;				// Init the counter of messages sent to the controller
 			
 			// Parse input command lines
 			au::CommandLine commandLine;
@@ -103,24 +103,22 @@ namespace ss {
 		
 		void run();
 		
-		
 		void initController( std::string controller )
 		{
-		  //			LM_T( TRACE_DELILAH , ("Delilah running. Controller: %s",controller.c_str() ) );
-			network->initAsDelilah(controller);
+		  // LM_T( TRACE_DELILAH , ("Delilah running. Controller: %s",controller.c_str() ) );
+			network->initAsDelilah( controller );
 
 			// run network "run" in a separate thread
 			pthread_create(&t_network, NULL, runNetworkThread, this);
 		}
 		
-		
 		// Run the network run method
 		void runNetwork();
-
 		
 		void quit()
 		{
 			finish = true;
+			
 			if( console )
 				console->quit();
 			if( interfaceQt )
@@ -129,16 +127,8 @@ namespace ss {
 			network->quit();
 		}
 		
-		/**
-		 Basic interface to send and receive messages
-		 using Network interface
-		 */
-		
-		size_t sendMessageToController(std::string message);
-		int receivedMessage( size_t id , bool error , bool finished , std::string message );
-		
 		// PacketReceiverInterface
-		virtual int receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet);
+		virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 
 		// PacketSenderInterface
 		virtual void notificationSent(size_t id, bool success);

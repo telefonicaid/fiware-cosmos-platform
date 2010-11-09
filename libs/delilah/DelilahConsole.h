@@ -35,33 +35,11 @@ namespace ss {
 			return  "Delilah";
 		}
 		
+		// Eval a command from the command line
 		virtual void evalCommand( std::string command );
 
-		
-		// Method to process a message received from the controller
-		void receivedMessage( size_t id , bool error , bool finished , std::string message )
-		{
-			// Todo with the received packet
-			std::ostringstream txt;
-			txt << "----------------------------------------------------------------" << std::endl;
-			txt << "Answer for command " << id << ": ";
-			
-			if( finished )
-				txt << "(FINISHED)";
-			
-			txt << std::endl;
-			txt << "----------------------------------------------------------------" << std::endl;
-			txt << message << std::endl;
-			txt << "----------------------------------------------------------------" << std::endl;
-			
-			
-				if (error)
-					writeErrorOnConsole(txt.str());
-				else
-					writeOnConsole(txt.str());
-			
-		}
-		
+		// PacketReceiverInterface
+		int receive(int fromId, Message::MessageCode msgCode, Packet* packet);		
 		
 	};
 

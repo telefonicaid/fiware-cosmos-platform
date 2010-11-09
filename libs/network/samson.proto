@@ -23,7 +23,6 @@ message EndPointVector
 // Message from the controller workers
 //
 
-
 message File
 {
 	required string name=1;		// Name of file
@@ -33,15 +32,15 @@ message File
 
 message QueueFiles
 {
-	required string name =1;	// Name of the queue
-	repeated File file = 2;	// Name of the files for this queue
+	required string name = 1;	// Name of the queue
+	repeated File file = 2;		// Name of the files for this queue
 }
 
+message FileList
+{
+	repeated File file = 1;		// Name of the file
+}
 
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Message from the controller workers
-//
 message WorkerTask
 {
 	required int64 task_id		= 1;	// Id of the top level ( controller ) task	
@@ -55,6 +54,7 @@ message WorkerTask
 //
 // Confirmation from workers to the controller
 //
+
 message WorkerTaskConfirmation
 {
 	required int64 task_id  = 1;	       // Id of the opt level (controller ) task
@@ -67,13 +67,65 @@ message WorkerTaskConfirmation
 //
 // Command from Delilah to controller
 //
+
 message Command
 {
 	optional string  command   = 1;          // optimal string to send a txt command
 	optional bool    error     = 2;          // Flag to indicat if there was an error
-	optional int32   sender_id = 3;          // Id of the packet sender ( delilah )
+	optional uint64   sender_id = 3;          // Id of the packet sender ( delilah )
 }
 
+message Help
+{
+	required bool queues = 1;
+	required bool datas = 2;
+	required bool operations = 3;
+}
+
+message KVFormat
+{
+	required string keyFormat=1;
+	required string ValueFormat=2;		
+}
+
+message KVInfo
+{
+	required uint64 size=1;
+	required uint64 kvs=2;
+}
+
+message Queue
+{
+	required string name = 1;
+	required KVFormat format = 2;
+	required KVInfo info = 3;
+
+}
+
+message Operation
+{
+	required string name = 1;		// Name of the operation
+	required string help = 2;		// Some help for this opertion
+	repeated KVFormat input = 3;		// KV types for inputs
+	repeated KVFormat output = 4;		// KV types for output
+}
+
+message Data
+{
+	required string name = 1;	// Name of this data type
+	required string help = 2;	// Some string showing help for this data type
+}
+
+message HelpResponse
+{
+	required bool queues = 1;
+	required bool datas = 2;
+	required bool operations = 3;
+
+	repeated Queue queue = 5;
+	repeated Data data = 6;
+	repeated Operation operation = 7;
+}
 
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -95,13 +147,45 @@ message CommandResponse
 //
 // Message to exchange information between workers
 //
-message Data
+message WorkerDataExchange
 {
 	required int64   task_id   = 1;  // Identifier of the controller task
 	required string  queue     = 2;  // Name of the queue where we store information
 }
 
 
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Loading txt data from Delilah ( Controller & Workers )
+//
+
+message LoadTxtData
+{
+	required uint64 id=1;	// Id of the operation
+	
+}
+
+message LoadTxtDataResponse
+{
+	required uint64 id=1;			// Id of the operation ( specified in the LoadTxtData )
+	required bool error = 2;		// Flag to indicate if there was an error
+	required string fileName=3;		// File name of the uploaded file
+}
+
+message LoadTxtDataConfirmation
+{
+	required uint64 id=1;			// Id of the "load data" operation	
+	required string queue=2;		// Name of the queue to upload
+	repeated FileList worker=3;		// List of uploaded files per worker
+	
+}
+
+message LoadTxtDataConfirmationResponse
+{
+	required uint64 id=1;			// Id of the "load data" operation	
+	required bool error=2;			// Flag to indicarte if there was an error				   	
+	required string message=3;		// String message to show to the user
+}
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -122,9 +206,11 @@ message Message
 	// Message Data (only one of these structures per message
 	//
 	optional EndPointVector         endPoints                 = 102;  // Vector of endPoints
-	optional Command                command	              	  = 103;  // Command message
-	optional CommandResponse        command_response 		  = 104;  // Command response message
-	optional WorkerTask	            worker_task	          	  = 105;  // Work task message
+	optional Command command= 103;  			    	  // Command message
+	optional CommandResponse command_response = 104;  		  // Command response message
+	optional WorkerTask worker_task	= 105;  			  // Work task message
 	optional WorkerTaskConfirmation worker_task_confirmation  = 106;  // Work task confirmation message
-	optional Data 			        data                      = 107;  // Exchange of data packets between nodes     
+	optional WorkerDataExchange data = 107;  		    	  // Exchange of data packets between nodes     
+	optional Help help = 108; 					  // Ask for help ( queues / datas / operations )
+	optional HelpResponse help_response = 109;			  // Response for the ask help message   			     
 }

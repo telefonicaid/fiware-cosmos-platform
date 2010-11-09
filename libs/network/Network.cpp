@@ -336,7 +336,7 @@ std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 *
 * send - 
 */
-size_t Network::send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, void* data, int dataLen, Packet* packetP)
+size_t Network::send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP)
 {
 	Endpoint* ep        = endpoint[endpointId];
 
@@ -347,7 +347,7 @@ size_t Network::send(PacketSenderInterface* sender, int endpointId, ss::Message:
 
 	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", messageCode(code), endpointId));
 
-	int nb = iomMsgSend(ep->fd, ep->name.c_str(), me->name.c_str(), code, Message::Msg, data, dataLen, packetP, NULL, 0);
+	int nb = iomMsgSend(ep->fd, ep->name.c_str(), me->name.c_str(), code, Message::Msg, packetP, NULL, 0);
 
 	if (sender)
 		sender->notificationSent(0, true);
@@ -742,7 +742,7 @@ void Network::msgTreat(int fd, char* name)
 
 				// Ask controller for list of workers
 				iomMsgSend(controller->fd, (char*) controller->name.c_str(), (char*) me->name.c_str(),
-						   Message::WorkerVector, Message::Msg, NULL, 0, NULL, NULL, 0);
+						   Message::WorkerVector, Message::Msg, NULL, 0, NULL );
 			}
 		}
 		break;
@@ -756,7 +756,7 @@ void Network::msgTreat(int fd, char* name)
 			ack.endpointVectorAdd(endpointV);
 
 			LM_T(LMT_WRITE, ("sending ack with entire worker vector"));
-			iomMsgSend(fd, name, (char*) me->name.c_str(), Message::WorkerVector, Message::Ack, NULL, 0, &ack, NULL, 0);
+			iomMsgSend(fd, name, (char*) me->name.c_str(), Message::WorkerVector, Message::Ack, NULL, 0, &ack );
 		}
 		else if (msgType == Message::Ack)
 		{
@@ -856,7 +856,7 @@ void Network::msgTreat(int fd, char* name)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
 
 		LM_T(LMT_MSG, ("forwarding '%s' %s from %s to CoreWorkers", messageCode(msgCode), messageType(msgType), ep->name.c_str()));
-		receiver->receive(endpointId, msgCode, dataP, dataLen, &packet);
+		receiver->receive(endpointId, msgCode, &packet);
 		break;
 	}
 

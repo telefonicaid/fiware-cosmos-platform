@@ -256,6 +256,15 @@ namespace ss {
 		}
 		
 		
+		std::vector<KVFormat> getInputFormats()
+		{
+			return inputFormats;
+		}
+		
+		std::vector<KVFormat> getOutputFormats()
+		{
+			return outputFormats;
+		}
 		
 	};
 

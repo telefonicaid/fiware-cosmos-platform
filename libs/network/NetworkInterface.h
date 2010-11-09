@@ -27,7 +27,7 @@ namespace ss {
 		// Notify that a nessage has been received.
 		// If 'receive' returns ZERO, a JobDone is sent as Ack.
 		// If non-zero is returned, a JobError is sent as Ack.
-		virtual int receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet) = 0;
+		virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet) = 0;
 		
 		// Notify that a worker has died 
 		virtual void notifyWorkerDied( int worker )
@@ -88,7 +88,7 @@ namespace ss {
 		virtual int getWorkerFromIdentifier( int identifier) = 0;
 		
 		// Send a packet (return a unique id to inform the notifier later)
-		virtual size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, void* data, int dataLen, Packet* packetP) = 0;
+		virtual size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP ) = 0;
 
 		// Main run loop control to the network interface
 		virtual void run()=0;           

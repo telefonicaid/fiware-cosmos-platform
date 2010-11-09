@@ -9,11 +9,13 @@
 #define DELILAHQT_H_
 
 #include <iostream>
+#include "Message.h"			// ss::Message
 
 //class MainWindow;
 class DelilahQtApp;
 namespace ss {
 	class Delilah;
+	class Packet;
 }
 
 class DelilahQt
@@ -40,12 +42,10 @@ public:
 	int run( int argc , const char * argv[] );
 
 	/**
-	 Routine asynchronously executted whene a message from the controller is received
+	 Routine asynchronously executted whene a message is received
 	 */
-	void receivedMessage( size_t id , bool error , bool finished , std::string message )
-	{
-		// TODO: To be completed
-	}
+	
+	int receive(int fromId, ss::Message::MessageCode msgCode, ss::Packet* packet);
 
 	/**
 	 Asynch method to quit interface

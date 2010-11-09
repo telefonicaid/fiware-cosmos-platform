@@ -8,8 +8,12 @@
 #include "au_map.h"							// au::insertInMap
 #include "DataManager.h"					// ss::DataManagerCommandResponse
 #include "SamsonController.h"				// ss::SamsonController
+#include "KVInfo.h"							// ss::KVInfo
+#include "ModulesManager.h"					// Utility functions
 
 namespace ss {
+	
+	
 	
 	DataManagerCommandResponse ControllerDataManager::_run( std::string command )
 	{
@@ -133,21 +137,28 @@ namespace ss {
 		
 	}		
 	
-	std::string ControllerDataManager::getQueuesStr( std::string format )
+	void ControllerDataManager::helpQueues( network::HelpResponse *response )
 	{
-		std::ostringstream o;
 		lock.lock();
 		
-		o << "Queues:\n";
 		std::map< std::string , ControllerQueue*>::iterator i;
 		for (i = queues.begin() ; i!= queues.end() ;i++)
-			o << i->first << i->second->str() << "\n";
-		
+		{
+			//o << i->first << i->second->str() << "\n";
+			
+			ControllerQueue *queue = i->second;
+			network::Queue *q = response->add_queue();
+			q->set_name( i->first );
+			
+			// Format
+			fillKVFormat( q->mutable_format() , queue->format() );
+			
+			//Info
+			fillKVInfo( q->mutable_info(), queue->info() );
+		}
 		
 		lock.unlock();
-		return o.str();
 	}
-	
 	
 	
 

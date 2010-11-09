@@ -31,16 +31,22 @@ namespace Message
 */
 typedef enum MessageCode
 {
-	Alarm                  = CODE('A', 'l', 'm', ' '),
-	Hello                  = CODE('H', 'e', 'l', ' '),
-	WorkerVector           = CODE('W', 'V', 'c', ' '),
-	WorkerStatus           = CODE('W', 'S', 't', ' '),
-	WorkerTask             = CODE('W', 'T', 'a', ' '),
-	Command                = CODE('C', 'o', 'm', ' '),
-	CommandResponse        = CODE('C', 'R', 'e', ' '),
-	WorkerTaskConfirmation = CODE('W', 'T', 'C', ' '),
-	Data                   = CODE('D', 'a', 't', ' '),
-	Die                    = CODE('D', 'i', 'e', ' ')
+	Alarm							= CODE('A', 'l', 'm', ' '),
+	Hello							= CODE('H', 'e', 'l', ' '),
+	WorkerVector					= CODE('W', 'V', 'c', ' '),
+	WorkerStatus					= CODE('W', 'S', 't', ' '),
+	WorkerTask						= CODE('W', 'T', 'a', ' '),
+	Command							= CODE('C', 'o', 'm', ' '),
+	CommandResponse					= CODE('C', 'R', 'e', ' '),
+	Help							= CODE('H', 'e', 'p', ' '),
+	HelpResponse					= CODE('H', 'R', 'e', ' '),
+	LoadData						= CODE('L', 'D', 'a', ' '),
+	LoadDataResponse				= CODE('L', 'D', 'R', ' '),
+	LoadDataConfirmation			= CODE('L', 'C', 'o', ' '),
+	LoadDataConfirmationResponse	= CODE('L', 'C', 'R', ' '),
+	WorkerTaskConfirmation			= CODE('W', 'T', 'C', ' '),
+	WorkerDataExchange				= CODE('D', 'a', 't', ' '),
+	Die								= CODE('D', 'i', 'e', ' ')
 } MessageCode;
 
 

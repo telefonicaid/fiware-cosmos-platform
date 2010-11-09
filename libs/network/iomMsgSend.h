@@ -28,9 +28,7 @@ extern int iomMsgSend
 	ss::Message::MessageType  type       = ss::Message::Msg,
 	void*                     data       = NULL,
 	int                       dataLen    = 0,
-	ss::Packet*               packetP    = NULL,
-	void*                     kvData     = NULL,
-	int                       kvDataLen  = 0
+	ss::Packet*               packetP    = NULL
 );
 
 #endif

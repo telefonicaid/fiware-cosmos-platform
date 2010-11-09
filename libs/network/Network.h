@@ -68,7 +68,7 @@ public:
 	virtual int getWorkerFromIdentifier(int identifier);
 
 	// Send a packet (return a unique id to inform the notifier later)
-	virtual size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
+	virtual size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP = NULL);
 	
 	std::vector<Endpoint*> samsonWorkerEndpoints();  // Get a list of the samsonWorkers endpoints
 

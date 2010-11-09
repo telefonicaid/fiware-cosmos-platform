@@ -183,7 +183,7 @@ void SamsonWorker::sendWorkerStatus()
 	
 	
 
-int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet)
+int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 {
 	if (msgCode == Message::WorkerTask)
 	{
@@ -202,7 +202,8 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, void* dataP,
 		 DataManager is notifyed when created a new file or finish everything 
 		 */
 		
-		if (msgCode == Message::Data)
+
+		if( msgCode == Message::WorkerDataExchange )
 		{
 			// New data packet for a particular queue inside a particular task environment
 		

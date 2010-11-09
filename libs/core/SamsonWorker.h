@@ -74,7 +74,7 @@ public:
 
 
 	// PacketReceiverInterface
-	virtual int receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet);
+	virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 
 	// PacketSenderInterface
 	virtual void notificationSent(size_t id, bool success);

@@ -18,6 +18,7 @@
 #include "Packet.h"             // Packet
 #include "iomMsgSend.h"         // Own interface
 
+#include "Buffer.h"				// ss::Buffer
 
 
 /* ****************************************************************************
@@ -31,11 +32,9 @@ int iomMsgSend
 	const char*                 from,
 	ss::Message::MessageCode    code,
 	ss::Message::MessageType    type,
-	void*                       data,
-	int                         dataLen,
-	ss::Packet*                 packetP,
-	void*                       kvData,
-	int                         kvDataLen
+	void*                       data,       
+	int                         dataLen,    
+	ss::Packet*                 packetP
 )
 {
 	ss::Message::Header   header;
@@ -56,7 +55,7 @@ int iomMsgSend
 	{
 		if (data == NULL)
 			LM_X(1, ("dataLen %d, but data is a NULL pointer ...", dataLen));
-
+		
 		header.dataLen        = dataLen;
 		ioVec[vecs].iov_base  = data;
 		ioVec[vecs].iov_len   = dataLen;
@@ -85,14 +84,12 @@ int iomMsgSend
 		++vecs;
 	}
 
-	if (kvDataLen != 0)
+	if (packetP && packetP->buffer != 0)
 	{
-		if (kvData == NULL)
-			LM_X(1, ("kvDataLen %d, but data is a NULL pointer ...", kvDataLen));
 
-		header.kvDataLen      = kvDataLen;
-		ioVec[vecs].iov_base  = kvData;
-		ioVec[vecs].iov_len   = kvDataLen;
+		header.kvDataLen      = packetP->buffer->getSize();
+		ioVec[vecs].iov_base  = packetP->buffer->getData();
+		ioVec[vecs].iov_len   = packetP->buffer->getSize();
 		
 		LM_WRITES(to, "KV data", ioVec[vecs].iov_base, ioVec[vecs].iov_len, LmfByte);
 		++vecs;

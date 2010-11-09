@@ -15,7 +15,7 @@
 #include "ControllerTask.h"				// ss:ControllerTask
 #include "SamsonController.h"	        // Own interface ss::SamsonController
 #include "SamsonSetup.h"				// ss::SamsonSetup
-
+#include "Buffer.h"						// ss::Buffer
 
 namespace ss {
 
@@ -69,32 +69,63 @@ namespace ss {
 		network->run();											// Run the network interface (blocked)
 	}
 
-	int SamsonController::receive(int fromId, Message::MessageCode msgCode, void* dataP, int dataLen, Packet* packet)
+	int SamsonController::receiveHelp(int fromId, Packet* packet)
+	{
+		// Prepare the help message and sent back to Delilah
+		Packet p;
+		
+		network::HelpResponse *response = p.message.mutable_help_response();
+		
+		if( packet->message.help().queues() )
+		{
+			// Fill with queues information
+			data.helpQueues( response );
+			response->set_queues( true );
+		}
+		else
+			response->set_queues( false );
+		
+		
+		if( packet->message.help().datas() )
+		{
+			// Fill with datas information
+			modulesManager.helpDatas( response );
+			response->set_datas(true);
+		}
+		else
+			response->set_datas(false);
+			
+		if( packet->message.help().operations() )
+		{
+			// Fill with operations information
+			modulesManager.helpOperations( response );
+			response->set_operations(true);
+		}
+		response->set_operations(false);
+		
+		
+		
+		network->send(this, fromId, Message::HelpResponse, &p);
+		return 0;
+	}
+	
+	
+	int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
 		au::CommandLine     cmdLine;
 
 		switch (msgCode)
 		{
+			case Message::Help:
+			{
+				return receiveHelp( fromId , packet );
+				break;
+			}
+				
 			case Message::Command:
 			{
-				std::ostringstream output;
-				
-				std::string c = packet->message.command().command();	
-				cmdLine.parse(c);
-				
-				if (cmdLine.get_num_arguments() == 0)
-					LM_RE(1, ("No args ..."));
-				
-				if (cmdLine.get_argument(0) == "help")
-				{
-					getHelp( output , c );
-					sendDelilahAnswer(packet->message.command().sender_id(), fromId, false, true, output.str());
-					return 0;
-				}
-				
-				// Try to schedule a job
+				// Create a new job with this command
 				jobManager.addJob( fromId , packet->message.command().sender_id(), packet->message.command().command() );
-					
 				return 0;
 			}
 
@@ -110,7 +141,7 @@ namespace ss {
 			workerId = network->getWorkerFromIdentifier(fromId);			
 			if (workerId == -1)
 				LM_RE(2, ("getWorkerFromIdentifier(%d) failed", fromId));
-			status[workerId] = *((Message::WorkerStatusData*) dataP);
+			status[workerId] = *((Message::WorkerStatusData*) packet->buffer->getData());
 			break;
 			
 		default:
@@ -147,7 +178,7 @@ namespace ss {
 		response->set_finish(finished);
 		response->set_sender_id(sender_id);
 		
-		network->send(this, dalilahIdentifier, Message::CommandResponse, NULL, 0, &p2);
+		network->send(this, dalilahIdentifier, Message::CommandResponse, &p2);
 		
 	}
 	
@@ -178,30 +209,11 @@ namespace ss {
 		// TODO: Complete with the rest of input / output parameters
 		
 		LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", workerIdentifier));
-		network->send(this,  network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask, NULL, 0, &p2);
+		network->send(this,  network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask,  &p2);
 	}
 	
 	
 #pragma mark Help messages
-	
-
-	void SamsonController::getHelp( std::ostringstream &output , std::string &c)
-	{
-		au::CommandLine cmdLine;
-		cmdLine.set_flag_string("format" , "plain" );
-
-		cmdLine.parse(c);
-		std::string format = cmdLine.get_flag_string("format");
-		
-		if( cmdLine.get_argument(1) == "status" )
-			getStatus( output );					// General status command
-		else if ( cmdLine.get_argument(1) == "queues" )
-			output << data.getQueuesStr(format );
-		else if ( cmdLine.get_argument(1) == "modules" )
-			output << modulesManager.showModules();
-		else
-			output << "No help for this";
-	}
 	
 	void SamsonController::getStatus(std::ostringstream &output)
 	{

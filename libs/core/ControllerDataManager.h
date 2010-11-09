@@ -8,6 +8,7 @@
 #include <map>					// std::map
 #include "DataManager.h"		// ss::DataManager
 #include "au_map.h"				// au::map
+#include "samson.pb.h"			// ss::network::...
 
 namespace ss {
 	
@@ -33,12 +34,6 @@ namespace ss {
 		{
 			controller = _controller;
 		}
-
-		/**
-		 Update internal status with this finished task
-		 */
-		
-		void updateWithFinishedTask( ControllerTask *task );
 		
 		/**
 		 Get a string describing status
@@ -50,9 +45,9 @@ namespace ss {
 		/**
 		 Get the fileName of the log file
 		 */
+		
 		static std::string getLogFileName( );
 
-		
 		/**
 		 Check if a queue exist
 		 */
@@ -65,7 +60,9 @@ namespace ss {
 			return ans;
 		}
 		
-		std::string getQueuesStr( std::string format );
+		// Get help about data stuff
+		void helpQueues( network::HelpResponse *response );
+			
 		
 	private:
 		

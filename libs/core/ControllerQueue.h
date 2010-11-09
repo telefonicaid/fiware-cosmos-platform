@@ -1,6 +1,8 @@
 #ifndef _H_CONTROLLER_QUEUE
 #define _H_CONTROLLER_QUEUE
 
+#include "KVInfo.h"							// ss::KVInfo
+
 
 namespace ss {
 	
@@ -12,6 +14,7 @@ namespace ss {
 	{
 		std::string _name;				// Name of this queue
 		KVFormat _format;				// Format of the queue
+		KVInfo _info;					// Information about this queue
 		
 		bool ready;						// Read means that it has been created in all queues
 
@@ -28,6 +31,15 @@ namespace ss {
 		void setReady()
 		{
 			ready = true;
+		}
+		
+		KVFormat format()
+		{
+			return _format;
+		}
+		KVInfo info()
+		{
+			return _info;
 		}
 		
 		std::string str()

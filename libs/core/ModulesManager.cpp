@@ -22,6 +22,23 @@
 
 namespace ss
 {
+	
+	/**
+	 Utility function to fill data
+	 */
+	
+	
+	void fillKVFormat( network::KVFormat* format , KVFormat f )
+	{
+		format->set_keyformat( f.keyFormat );
+		format->set_valueformat( f.valueFormat );
+	}
+	
+	void fillKVInfo( network::KVInfo* info , KVInfo i )
+	{
+		info->set_size( i.size );
+		info->set_kvs( i.kvs );
+	}
 
 	ModulesManager::ModulesManager()
 	{
@@ -422,5 +439,66 @@ namespace ss
 		
 	}
 	
+	
+	// Fill help responses
+	void ModulesManager::helpDatas( network::HelpResponse *response )
+	{
+		lock.lock();
+		
+		for( std::map<std::string, Module*>::iterator i = modules.begin() ; i != modules.end() ; i++)
+		{
+			Module *module = i->second;
+			for (std::map<std::string , Operation*>::iterator j = module->operations.begin() ; j != module->operations.end() ; j++ )
+			{
+				Operation * op = j->second;
+				
+				network::Operation *o = response->add_operation();
+				
+				// Fill the information of this operation
+				std::string fullName =  module->name + "." + op->getName() ;
+				o->set_name( fullName );
+				
+				o->set_help( op->help() );
+				
+				// Format
+				std::vector<KVFormat> input_formats = op->getInputFormats();
+				std::vector<KVFormat> output_formats = op->getOutputFormats();
+				
+				for (size_t i = 0 ; i < input_formats.size() ; i++)
+					fillKVFormat( o->add_input() , input_formats[i] );
+				
+				for (size_t i = 0 ; i < output_formats.size() ; i++)
+					fillKVFormat( o->add_output() , output_formats[i] );
+				
+			}
+		}
+		
+		lock.unlock();
+	}
+	
+	void ModulesManager::helpOperations( network::HelpResponse *response )
+	{
+		lock.lock();
+		
+		for( std::map<std::string, Module*>::iterator i = modules.begin() ; i != modules.end() ; i++)
+		{
+			Module *module = i->second;
+			for (std::map<std::string , Data*>::iterator j = module->datas.begin() ; j != module->datas.end() ; j++ )
+			{
+				Data * data = j->second;
+				
+				network::Data *d = response->add_data();
+				
+				// Fill the information of this operation
+				std::string fullName =  module->name + "." + data->getName() ;
+				d->set_name( fullName );
+
+				d->set_help( data->help() );
+				
+			}
+		}
+				
+		lock.unlock();
+	}	
 	
 }

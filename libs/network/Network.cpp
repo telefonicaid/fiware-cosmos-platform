@@ -257,8 +257,6 @@ int Network::controllerGetIdentifier(void)
 */
 int Network::workerGetIdentifier(int nthWorker)
 {
-	LM_X(1, ("IN"));
-
 	return nthWorker + 3;
 }
 	

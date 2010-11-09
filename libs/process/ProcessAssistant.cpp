@@ -53,7 +53,7 @@ static unsigned short port = PA_PORT;
 static void* runThread(void* vP)
 {
 	ProcessAssistant* paP = (ProcessAssistant*) vP;
-
+	
 	paP->run();
 	return NULL;
 }
@@ -114,6 +114,21 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 	
 	/* ************************************************************
 	 *
+	 * Close fathers fds ...
+	 */
+	extern int logFd;
+	int fd;
+	
+	for (fd = 0; fd < 100; fd++)
+	{
+		if (fd != logFd)
+			close(fd);
+	}
+
+
+
+	/* ************************************************************
+	 *
 	 * Set progName
 	 */
 	progName = (char*) malloc(strlen("samsonCoreWorker_") + 10);
@@ -135,7 +150,6 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 
 
 	LM_T(LMT_COREWORKER, ("Connecting to father"));
-	int  fd;
 	fd = iomConnect("localhost", port);
 	if (fd == -1)
 		LM_X(1, ("error connecting to father at %s:%d", "localhost", port));
@@ -171,7 +185,7 @@ void ProcessAssistant::run(void)
 	int fds;     // output from select (really: iomMsgSend)
 
 
-
+	
 	/* ************************************************************
 	 *
 	 * Core workers do not log to stdout
@@ -180,6 +194,7 @@ void ProcessAssistant::run(void)
 
 
 	
+#if 0
 	/* ************************************************************
 	 *
 	 * Set progName
@@ -199,6 +214,7 @@ void ProcessAssistant::run(void)
 	
 	sprintf(auxString, "father-core%02d", core);
 	lmAux(auxString);
+#endif
 
 
 
@@ -207,16 +223,16 @@ void ProcessAssistant::run(void)
 
 	while (1)
 	{
+		LM_M(("Trying to open listen socket on port %d", port));
 		lFd = iomServerOpen(port);
 		if (lFd != -1)
 			break;
-		LM_W((""));
 		++port;
 	}
 
 	startTime = 0;
 	coreWorkerStart(progName, port);
-	LM_T(LMT_PA, ("Awaiting connection on port %d", port));
+	LM_T(LMT_PA, ("Awaiting connection on port %d (fd %d)", port, lFd));
 	fds = iomMsgAwait(lFd, 5, 0);
 	if (fds != 1)
 		LM_X(1, ("core worker did not connect in 5 secs ..."));
@@ -254,16 +270,16 @@ void ProcessAssistant::run(void)
 *
 * runCommand
 *
-* This method sends a command to the Process and waits for commands back.
-* This method will be called by TaskManager.
+* The method 'runCommand' sends a command to the Process and waits for commands back.
+* This method is called by TaskManager.
 * 
 * This is supposed to be a blocking method until one of two thing happens:
-* - The finish command is received from the Process
-* - An error: Proces crashes, report error or timeout is triggered.
+* - The 'finish' command is received from the Process
+* - An error occurs: process crashes, reports error or a timeout is triggered.
 * 
 * RETURN VALUE
-* true is returned upon success and 
-* false is returned on error (any error)
+*   true    is returned on success, while
+*   false   is returned on error (any error)
 */
 char* ProcessAssistant::runCommand(int fd, char* command, int timeOut)
 {
@@ -279,22 +295,52 @@ char* ProcessAssistant::runCommand(int fd, char* command, int timeOut)
 	if (s != 0)
 		return strdup("error");
 
-	s = iomMsgAwait(fd, 5, 0);
-	if (s == -2)
-		return strdup("timeout");
-	else if (s != 1)
-		return strdup("error");
+	while (1)
+	{
+		s = iomMsgAwait(fd, 5, 0);
+		if (s == -2)
+			return strdup("timeout");
+		else if (s != 1)
+			return strdup("error");
 
-	s = iomMsgRead(fd, "coreWorker", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
-	if (s == -2)
-		result = strdup("crash");
-	else if (s != 0)
-		result = strdup("error");
-	else 
-		result = strdup(out);
+		s = iomMsgRead(fd, "coreWorker", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
+		if (s == -2)
+		{
+			LM_E(("connection closed by core child process ..."));
+			coreWorkerStart(progName, port);
+		}
+		else if (s != 0)
+		{
+			LM_E(("iomMsgRead error"));
+			coreWorkerStart(progName, port);
+		}
 
-	if (dataP != out)
-		free(dataP);
+		if (msgCode == Message::Command)
+		{
+			if (s == -2)
+				result = strdup("crash");
+			else if (s != 0)
+				result = strdup("error");
+			else 
+				result = strdup(out);
+		}
+#if 0
+		else if (msgCode == Message::Alarm)
+		{
+			Message::AlarmData* alarmP = (Message::AlarmData*) dataP;
+
+			LM_M(("child sent an alarm - forwarding it to my father"));
+		}
+		else if (msgCode == Message::Hello)
+		{
+			Message::HelloData* helloP = (Message::HelloData*) dataP;
+
+			LM_M(("child sent a Hello - keeping info"));
+		}
+#endif
+		if (dataP != out)
+			free(dataP);
+	}
 
 	return result;
 }

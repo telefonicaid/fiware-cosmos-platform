@@ -29,6 +29,33 @@ SamsonWorker::SamsonWorker(int argC, const char* argV[] ) :  taskManager(this)
 }
 
 
+
+int logFd = -1;
+/* ****************************************************************************
+*
+* logInit - 
+*/
+void SamsonWorker::logInit(const char* pName)
+{
+	LmStatus  s;
+	int       logFdIndex;
+	
+	progName = lmProgName((char*) pName, 1, true);
+	
+	if ((s = lmPathRegister("/tmp/", "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT", "DEF", &logFdIndex)) != LmsOk)
+		EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
+	if ((s = lmFdRegister(1, "TYPE: TEXT", "DEF", "controller", NULL)) != LmsOk)
+		EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
+	if  ((s = lmInit()) != LmsOk)
+		EXIT(1, ("lmInit: %s", lmStrerror(s)));
+
+	lmAux((char*) "father");
+
+	lmFdGet(logFdIndex, &logFd);
+}
+
+
+
 /* ****************************************************************************
 *
 * parseArgs - 

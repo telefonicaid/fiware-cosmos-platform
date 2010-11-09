@@ -14,7 +14,7 @@ namespace ss {
 *
 * logFd - file descriptor of log file for later manipulation
 */
-int logFd;
+// int logFd;
 
 
 
@@ -48,6 +48,6 @@ void samsonInitTrace(int argc, const char *argv[], bool pidInName)
 
 	lmAux((char*) "father");
 
-	lmFdGet(logFdIndex, &logFd);
+	// lmFdGet(logFdIndex, &logFd);
 }
 }

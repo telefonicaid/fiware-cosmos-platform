@@ -1,5 +1,15 @@
+/* ****************************************************************************
+*
+* FILE                     DataManager.cpp - 
+*
+* AUTHOR                   Andreu Urruela
+*
+* CREATION DATE            Nov 8 2010
+*
+*/
+#include "DataManager.h"         // Own interface
 
-#import "DataManager.h"
+
 
 namespace ss {
 

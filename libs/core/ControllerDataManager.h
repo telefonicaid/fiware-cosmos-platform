@@ -13,6 +13,8 @@ namespace ss {
 	
 	class ControllerQueue;
 	class ControllerTask;
+	class DataManagerCommandResponse;
+	class SamsonController;
 	
 	/**
 	 Data manager at the controller
@@ -23,7 +25,14 @@ namespace ss {
 		au::Lock lock;
 		au::map< std::string , ControllerQueue> queues;
 		
+		SamsonController *controller;	// Pointer to controller for module access
+		
 	public:
+		
+		ControllerDataManager( SamsonController *_controller ) : DataManager( getLogFileName()  )
+		{
+			controller = _controller;
+		}
 
 		/**
 		 Update internal status with this finished task
@@ -41,7 +50,7 @@ namespace ss {
 		/**
 		 Get the fileName of the log file
 		 */
-		std::string getLogFileName( );
+		static std::string getLogFileName( );
 
 		
 		/**
@@ -60,8 +69,8 @@ namespace ss {
 		
 	private:
 		
-		bool _run( size_t task_id , std::string command );
-		bool _un_run( size_t task_id , std::string command );
+		virtual DataManagerCommandResponse _run( std::string command );
+		virtual void _un_run( std::string command );
 		
 		
 		

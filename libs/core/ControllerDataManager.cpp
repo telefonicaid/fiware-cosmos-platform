@@ -6,45 +6,110 @@
 #include "samson/KVFormat.h"				// ss::KVFormat
 #include "ControllerQueue.h"				// ss::ControllerQueue
 #include "au_map.h"							// au::insertInMap
+#include "DataManager.h"					// ss::DataManagerCommandResponse
+#include "SamsonController.h"				// ss::SamsonController
 
 namespace ss {
-
-	void ControllerDataManager::updateWithFinishedTask( ControllerTask *task )
-	{
-
-		lock.lock();
-		
-
-		// Confirm that task has finished
-		
-		
-		lock.unlock();
-	}
-
 	
-	bool ControllerDataManager::_run( size_t task_id , std::string command )
+	DataManagerCommandResponse ControllerDataManager::_run( std::string command )
 	{
+		DataManagerCommandResponse response;
+		
 		au::CommandLine  commandLine;
 		commandLine.parse( command );
 		
 		if( commandLine.get_num_arguments() == 0)
-			return true;
-		
+		{
+			response.output = "No command found";
+			response.error = true;
+			return response;
+		}
+
 		if( commandLine.get_argument(0) == "add_queue" )
 		{
-			std::string name = commandLine.get_argument(1);
-			KVFormat format = KVFormat::format( commandLine.get_argument(2) , commandLine.get_argument(3) );
+			// Add queue command
+			if( commandLine.get_num_arguments() < 4 )
+			{
+				response.output = "Usage: add_queue name <keyFormat> <valueFormat>";
+				response.error = true;
+				return response;
+			}
 			
+			std::string name = commandLine.get_argument( 1 );
+			std::string keyFormat= commandLine.get_argument( 2 );
+			std::string	valueFormat = commandLine.get_argument( 3 );
+			
+			if( !controller->modulesManager.checkData( keyFormat ) )
+			{
+				response.output = "Unsupported data format " + keyFormat + "\n";
+				response.error = true;
+				return response;
+			}
+			
+			if( !controller->modulesManager.checkData( valueFormat ) )
+			{
+				std::ostringstream output;
+				output << "Unsupported data format " + keyFormat + "\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			}
+			
+			// Check if queue exist
+			if( controller->data.existQueue( name ) )
+			{
+				std::ostringstream output;
+				output << "Queue " + name + " already exist\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			}			
+			
+			KVFormat format = KVFormat::format( keyFormat , valueFormat );
 			ControllerQueue *tmp = new ControllerQueue(name , format);
 			queues.insertInMap( name , tmp );
+			
+			response.output = "OK";
+			return response;
 		}
+
+		if( commandLine.get_argument(0) == "remove_queue" )
+		{
+			// Add queue command
+			if( commandLine.get_num_arguments() < 2 )
+			{
+				response.output = "Usage: remove_queue name";
+				response.error = true;
+				return response;
+			}
+			
+			std::string name = commandLine.get_argument( 1 );
+			
+			// Check if queue exist
+			if( !controller->data.existQueue( name ) )
+			{
+				std::ostringstream output;
+				output << "Queue " + name + " does not exist\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			}			
+			
+			ControllerQueue *tmp =  queues.extractFromMap(name);
+			delete tmp;
+			
+			response.output = "OK";
+			return response;
+		}		
 		
-		return true;
+		response.error = true;
+		response.output = "Unknown command";
+		return response;
 	}
 	
-	bool ControllerDataManager::_un_run( size_t task_id , std::string command )
+	void ControllerDataManager::_un_run( std::string command )
 	{
-		return true;
+		// Undo a particular action
 	}
 	
 	

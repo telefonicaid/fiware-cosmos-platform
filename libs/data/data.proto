@@ -2,16 +2,17 @@ package ss.data;
 
 message Command
 {
-        enum Status
+        enum Action
         {
 		Begin               = 1;	// Activity of this task id is iniciated
 		Operation	    = 2;	// Process an operation related with this task id
-                Finish              = 3;	// The task has been finally validated
-		Cancel		    = 4;	// The task has been canceled, so everything is undone
+		Comment		    = 3;	// A simple coment that is log but never acts on data
+                Finish              = 4;	// The task has been finally validated
+		Cancel		    = 5;	// The task has been canceled, so everything is undone
         };
 
 	required uint64 task_id=1;	// Controller  top-level task id
 	required string command=2;	// Command itself
-	required Status status=3;	// Flag to indicate the status of this task
+	required Action action=3;	// Flag to indicate the action of this log
 }
 

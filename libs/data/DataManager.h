@@ -9,17 +9,17 @@
 
 #include "data.pb.h"
 #include "traces.h"
-#include "Lock.h"			  // au::Lock
-
-
+#include "Lock.h"				// au::Lock
+#include "au_map.h"				// au::map
+#include <sstream>				// std::ostringstream
 
 namespace ss
 {
 
-
-
 	class LogFile
 	{
+		std::string fileName;
+		
 		std::ofstream output;
 		std::ifstream input;
 		
@@ -28,8 +28,9 @@ namespace ss
 		
 	public:
 		
-		LogFile()
+		LogFile( std::string _fileName )
 		{
+			fileName = _fileName;
 			buffer = NULL;
 			buffer_size = 0;
 		}
@@ -53,7 +54,7 @@ namespace ss
 		}
 		
 		
-		bool openToRead( std::string fileName )
+		void openToRead( )
 		{
             LM_T(LMT_FILE, ("opening '%s'", fileName.c_str()));
 
@@ -63,20 +64,28 @@ namespace ss
 			else
 				LM_E(("error opening '%s'", fileName.c_str()));
 
-			return (input.is_open());
+			if (!input.is_open())
+			{
+				std::cerr << "Error opening log-file of dataManager: " << fileName << std::endl;
+				exit(0);
+			}
 		}
 		
-		bool openToWrite( std::string fileName )
+		void openToAppend( )
 		{
 			LM_T(LMT_FILE, ("opening '%s'", fileName.c_str()));
 
-			output.open(fileName.c_str());
+			output.open( fileName.c_str() , std::ios::app );
 			if (output.is_open())
 				LM_T(LMT_FILE, ("successfully opened '%s'", fileName.c_str()));
 			else
 				LM_E(("error opening '%s'", fileName.c_str()));
 
-			return (output.is_open());
+			if (!output.is_open())
+			{
+				std::cerr << "Error opening log-file of dataManager: " << fileName << std::endl;
+				exit(0);
+			}
 		}
 
 
@@ -101,20 +110,19 @@ namespace ss
 			return true;
 		}
 		
-		bool write( size_t task_id , std::string command , data::Command::Status status )
+		void write( size_t task_id , std::string command , data::Command::Action action )
 		{
 			data::Command c;
 			
 			c.set_task_id( task_id );
 			c.set_command( command );
-			c.set_status( status );
+			c.set_action( action );
 			
-			return write( c );
+			write( c );
 		}
 		
-		bool write( data::Command &c )
+		void write( data::Command &c )
 		{
-			
 			assert( output.is_open() );
 			
 			size_t message_size = c.ByteSize();
@@ -133,22 +141,65 @@ namespace ss
 
 			// Write the buffer to disk
 			if( output.write(buffer, packet_size)  )
-			{
 				output.flush();
-				return true;
-			}
 			else
-				return false;
-			
+			{
+				std::cerr << "Error writing in log file of data manager: " << fileName << std::endl;
+				exit(0);
+			}
 		}
 		
+		void close()
+		{
+			if( input.is_open() )
+				input.close();
+			
+			if( output.is_open() )
+				output.close();
+		}
+	};
+
+	class DataManager;
+	
+	class DataManagerItem
+	{
+	public:
+		
+		size_t task_id;						// Id of the task
+		std::vector<std::string> command;	// List of commands for this task
+		
+		DataManagerItem( size_t id )
+		{
+			task_id = id;
+		}
+		
+		void addCommand( std::string c)
+		{
+			command.push_back(c);
+		}
+		
+		void un_run( DataManager *manager );
 		
 	};
 	
-
+	
+	class DataManagerCommandResponse
+	{
+	public:
+		
+		DataManagerCommandResponse()
+		{
+			error = false;
+		}
+		
+		bool error;
+		std::string output;
+	};
+	
 	class DataManager
 	{
 		LogFile file;
+		au::map<size_t,DataManagerItem> task;	// Map of current task with the list of previous commands
 
 	protected:
 		
@@ -156,8 +207,49 @@ namespace ss
 		
 	public:
 		
-		DataManager( )
+		DataManager( std::string  fileName  ) : file( fileName )
 		{
+			
+		}
+		
+		void init()
+		{
+			// Open in read mode to recover state
+			file.openToRead();
+			
+			data::Command c;
+			while( file.read( c ) )
+			{
+				switch (c.action()) {
+					case data::Command_Action_Begin:
+						_beginTask( c.task_id() , false );
+						break;
+					case data::Command_Action_Finish:
+						_finishTask( c.task_id() , false );
+						break;
+					case data::Command_Action_Cancel:
+						_cancelTask( c.task_id() , false );
+						break;
+					case data::Command_Action_Comment:
+						_addComment( c.task_id() , c.command() , false );
+						break;
+					case data::Command_Action_Operation:
+						_runOperation( c.task_id() , c.command() , false );
+						break;
+					default:
+						break;
+				}
+			}
+			
+			// Clear all non-ended tasks
+			_clear();
+			
+			// Close the log file as "read mode"
+			file.close();
+			
+			// Open in write mode
+			file.openToAppend( );
+			
 		}
 
 		virtual ~DataManager() {}
@@ -166,70 +258,144 @@ namespace ss
 		 Funciton to init the log system
 		 */
 		
-		void initDataManager( std::string  fileName  )
-		{
-			file.openToWrite( fileName );
-		}
-		
-		bool beginTask( size_t task_id )
+		void beginTask( size_t task_id  )
 		{
 			lock.lock();
-			bool answer = file.write( task_id , "" ,data::Command_Status_Begin  );
+			_beginTask( task_id , true );
 			lock.unlock();
-			return answer;
 		}
 		
-		bool finishTask( size_t task_id )
+		void finishTask( size_t task_id )
 		{
 			lock.lock();
-			bool answer =  file.write( task_id , "" ,data::Command_Status_Finish  );
+			_finishTask( task_id , true );
 			lock.unlock();
-			return answer;
-			
 		}
 		
-		bool cancelTask( size_t task_id )
+		void cancelTask( size_t task_id )
 		{
-			// Undo all the buffered commands and submit a cancel to the log
 			lock.lock();
-			
-			// TODO: Undo all buffered actions
-			
-			bool answer =  file.write( task_id , "" ,data::Command_Status_Cancel  );
+			_cancelTask( task_id ,true );
 			lock.unlock();
-			return answer;
 			
 		}
 		
-		bool runOperationOfTask( size_t task_id , std::string command   )
+		// Add comment to the log file ( for debugging )
+		void addComment( size_t task_id , std::string comment)
 		{
-			// Log and run operation
-			
 			lock.lock();
-			bool answer = false;	// By default if no log is possible
-			
-			if( file.write( task_id , command ,data::Command_Status_Operation  ) )
-				answer =  _run( task_id , command );
-			else
-				answer = false;
-			
+			_addComment( task_id , comment, true);
+			lock.unlock();
+		}
+		
+		
+		DataManagerCommandResponse runOperation( size_t task_id , std::string command )
+		{
+			lock.lock();
+			DataManagerCommandResponse ans =  _runOperation( task_id , command , true );
 			lock.unlock();
 			
-			return answer;
+			return ans;
 		}
+		
 		
 
+		
+
+	private:
+		
+		
+		DataManagerItem* _beginTask( size_t task_id , bool log )
+		{
+			// Finish a previous one if the same task id exist ( rare but tolerated )
+			_cancelTask( task_id , log );
+			
+			DataManagerItem *item = new DataManagerItem( task_id );
+			task.insertInMap( task_id , item );
+			
+			if ( log )
+				file.write( task_id , "" , data::Command_Action_Begin  );
+			
+			return item;
+		}
+		void _cancelTask( size_t task_id, bool log )
+		{
+			DataManagerItem *item = task.extractFromMap( task_id );
+			if ( item )
+			{
+				item->un_run(this);
+				delete item;
+				if( log )
+					file.write( task_id , "" ,data::Command_Action_Cancel  );
+			}
+		}		
+		
+		void _finishTask( size_t task_id, bool log )
+		{
+			if( log )
+				file.write( task_id , "" , data::Command_Action_Finish  );
+			
+			DataManagerItem *item = task.extractFromMap( task_id );
+			if( item )
+				delete item;
+		}
+		
+		void _addComment( size_t task_id , std::string comment, bool log)
+		{
+			if( log ) 
+				file.write( task_id , comment ,data::Command_Action_Comment  );
+		}
+		
+		DataManagerCommandResponse _runOperation( size_t task_id , std::string command , bool log)
+		{
+			
+			if( log )
+				file.write( task_id , command ,data::Command_Action_Operation );
+			
+			DataManagerItem *item = task.findInMap( task_id );
+			
+			if( item )
+				item->addCommand( command );	// Record to undo commands if necessary
+			else {
+				item = _beginTask(task_id , log );
+				item->addCommand(command);
+			}
+			
+			return _run( command );
+		}		
+		
+		// Remove all non-terminated actions 
+		void _clear()
+		{
+
+			std::map<size_t,DataManagerItem*>::iterator i;
+			for (i = task.begin() ; i != task.end() ; i++)
+			{
+				DataManagerItem *item = i->second;
+				item->un_run(this);
+				delete item;
+			}
+			task.clear();
+			
+		}
+		
 		
 	private:
 
+		friend class DataManagerItem;
+		
 		/**
 		 Unique interface to update the status of this DataManager
 		 */
 		
-		virtual bool _run( size_t task_id , std::string command )=0;
-		
+		virtual DataManagerCommandResponse _run( std::string command )=0;
 
-		virtual bool _un_run( size_t task_id , std::string command )=0;
+		/**
+		 Unique interface to undo a particular task
+		 No error is possible here since we are just unding previous commands
+		 */
+		
+		virtual void _un_run( std::string command )=0;
 		
 		
 	};

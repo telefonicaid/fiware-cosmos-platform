@@ -49,6 +49,7 @@ namespace ss {
 		friend class ControllerTaskManager;
 		friend class Job;
 		friend class JobManager;
+		friend class ControllerDataManager;
 		
 	public:
 		SamsonController( int arg , const char *argv[] ,  NetworkInterface *_network );

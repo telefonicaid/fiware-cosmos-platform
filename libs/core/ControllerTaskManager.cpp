@@ -19,8 +19,6 @@ namespace ss
 			
 		// Put the task in running by sending to all workers
 		controller->sendWorkerTasks( t );										// Send the command to all the workers to perform this task
-			
-		controller->data.runOperationOfTask( t->getId(), t->getCommand() );	// We process internally in the local "data manager"
 		
 		lock.unlock();
 

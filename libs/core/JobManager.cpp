@@ -30,7 +30,7 @@ namespace ss {
 		if( j->isFinish() )
 		{
 			if( j->isError() )
-				controller->data.cancelTask( job_id );
+				controller->data.cancelTask( job_id  );
 			else
 				controller->data.finishTask( job_id );
 			

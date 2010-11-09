@@ -19,46 +19,21 @@ namespace ss {
 		
 		if( commandLine.get_num_arguments() > 0)
 		{
-			if( commandLine.get_argument(0) == "add_queue" )
+			// Main command
+			std::string c = commandLine.get_argument(0);
+			
+			// Direct known commands
+			if( c == "add_queue" || c == "remove_queue" )
 			{
-				// Add queue command
-				if( commandLine.get_num_arguments() < 4 )
+				DataManagerCommandResponse response = controller->data.runOperation( id,  command  );
+				if( response.error )
 				{
-					setError( "Usage: add_queue name <keyFormat> <valueFormat>" );
-					return true;
+					setError( response.output );
+					return false;
 				}
-				
-				std::string name = commandLine.get_argument( 1 );
-				std::string keyFormat= commandLine.get_argument( 2 );
-				std::string	valueFormat = commandLine.get_argument( 3 );
-				
-				if( !controller->modulesManager.checkData( keyFormat ) )
-				{
-					setError("Unsupported data type");
-					output << "Unsupported data format " + keyFormat + "\n";
-					return true;
-				}
-				
-				if( !controller->modulesManager.checkData( valueFormat ) )
-				{
-					setError("Unsupported data type");
-					output << "Unsupported data format " + keyFormat + "\n";
-					return true;
-				}
-				
-				// Check if queue exist
-				if( controller->data.existQueue( name ) )
-				{
-					setError("Queue already exist");
-					output << "Queue " + name + " already exist\n";
-					return true;
-				}
-				
-				// Add the queue
-				controller->data.runOperationOfTask( id , command );
 				return true;
-				
 			}
+				
 
 			// Normal taks
 			// ------------------------------------------

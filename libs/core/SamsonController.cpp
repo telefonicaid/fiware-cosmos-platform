@@ -19,9 +19,12 @@
 
 namespace ss {
 
-	SamsonController::SamsonController(int arg, const char *argv[],  NetworkInterface *_network) : 	jobManager(this) , taskManager(this)
+	SamsonController::SamsonController(int arg, const char *argv[],  NetworkInterface *_network) : 	data(this) , jobManager(this) , taskManager(this)
 	{
 		int          port;								// Local port where this controller listen
+		
+		// Init data manager ( recovering from crash if necessary )
+		data.init();
 		
 		network = _network;
 		network->setPacketReceiverInterface(this);
@@ -63,7 +66,6 @@ namespace ss {
 
 	void SamsonController::run()
 	{
-		data.initDataManager(data.getLogFileName());			// Init the data manager
 		network->run();											// Run the network interface (blocked)
 	}
 

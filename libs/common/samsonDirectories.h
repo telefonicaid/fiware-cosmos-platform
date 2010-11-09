@@ -21,4 +21,5 @@
 #define SAMSON_MODULES_DIRECTORY        "/var/samson/modules"
 #define SAMSON_SETUP_FILE				"/opt/samson/setup.txt"
 
+
 #endif

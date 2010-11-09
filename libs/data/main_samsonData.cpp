@@ -31,8 +31,8 @@ int main( int argc , char *argv[] )
 	std::string fileName =  "/var/samson/log/log_worker_0";
 	
 	
-	ss::LogFile file;
-	file.openToRead( fileName );
+	ss::LogFile file(fileName);
+	file.openToRead( );
 	
 	ss::data::Command command;
 	
@@ -40,18 +40,21 @@ int main( int argc , char *argv[] )
 	{
 		
 		std::cout << "Task " << command.task_id();
-		switch (command.status()) {
-			case ss::data::Command_Status_Begin:
+		switch (command.action()) {
+			case ss::data::Command_Action_Begin:
 				std::cout << " [B]: ";
 				break;
-			case ss::data::Command_Status_Operation:
+			case ss::data::Command_Action_Operation:
 				std::cout << " [O]: ";
 				break;
-			case ss::data::Command_Status_Finish:
+			case ss::data::Command_Action_Finish:
 				std::cout << " [F]: ";
 				break;
-			case ss::data::Command_Status_Cancel:
+			case ss::data::Command_Action_Cancel:
 				std::cout << " [C]: ";
+				break;
+			case ss::data::Command_Action_Comment:
+				std::cout << " [Comment]: ";
 				break;
 		} 
 		

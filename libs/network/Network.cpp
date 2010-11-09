@@ -442,10 +442,10 @@ Endpoint* Network::endpointAdd
 
 				endpoint[ix]->name  = std::string(name);
 				endpoint[ix]->fd    = fd;
-				endpoint[ix]->state = Endpoint::Connected;
 				endpoint[ix]->type  = Endpoint::Temporal;
 				endpoint[ix]->ip    = ip;
 				endpoint[ix]->alias = (alias != NULL)? alias : "NO ALIAS" ;
+				endpoint[ix]->state = (fd > 0)? Endpoint::Connected : Endpoint::Unconnected;   /* XXX */
 
 				return endpoint[ix];
 			}
@@ -467,7 +467,7 @@ Endpoint* Network::endpointAdd
 				endpoint[ix]->name       = std::string(name);
 				endpoint[ix]->alias      = (alias != NULL)? alias : "NO ALIAS" ;
 				endpoint[ix]->fd         = fd;
-				endpoint[ix]->state      = Endpoint::Connected;
+				endpoint[ix]->state      = (fd > 0)? Endpoint::Connected : Endpoint::Unconnected;   /* XXX */
 				endpoint[ix]->type       = type;
 				endpoint[ix]->ip         = ip;
 				endpoint[ix]->port       = port;
@@ -522,8 +522,7 @@ Endpoint* Network::endpointAdd
 				endpoint[ix]->type     = Endpoint::Worker;
 				endpoint[ix]->ip       = ip;
 				endpoint[ix]->port     = port;
-				
-				endpoint[ix]->state    = Endpoint::Connected;
+				endpoint[ix]->state    = (fd > 0)? Endpoint::Connected : Endpoint::Unconnected;   /* XXX */
 
 				return endpoint[ix];
 			}
@@ -627,7 +626,7 @@ Endpoint* Network::endpointLookup(char* alias)
 		if (endpoint[ix] == NULL)
 			continue;
 
-		LM_M(("comparing '%s' to '%s' (state: '%s')", endpoint[ix]->alias.c_str(), alias, endpoint[ix]->stateName()));
+		LM_M(("comparing ep %02d '%s' to '%s' (state: '%s')", ix, endpoint[ix]->alias.c_str(), alias, endpoint[ix]->stateName()));
 		if ((strcmp(endpoint[ix]->alias.c_str(), alias) == 0) && (endpoint[ix]->state == Endpoint::Connected))
 		{
 			LM_M(("found occupied (state: '%s') endpoint with alias '%s'", endpoint[ix]->stateName(), alias));
@@ -816,6 +815,7 @@ void Network::msgTreat(int fd, char* name)
 					endpoint[3 + ix] = new Endpoint(Endpoint::Worker, workerV[ix].name, workerV[ix].ip, workerV[ix].port, -1);
 					LM_M(("endpoint[%d] at %p", 3 + ix, endpoint[3 + ix]));
 					endpoint[3 + ix]->state = Endpoint::Unconnected;
+					endpoint[3 + ix]->alias = workerV[ix].alias;
 				}
 
 				epP = endpoint[3 + ix];
@@ -831,8 +831,8 @@ void Network::msgTreat(int fd, char* name)
 				{
 					int workerFd;
 
-					LM_T(LMT_WORKERS, ("Connect to worker %d: %s (host %s, port %d)",
-									   ix, epP->name.c_str(), epP->ip.c_str(), epP->port));
+					LM_T(LMT_WORKERS, ("Connect to worker %d: %s (host %s, port %d, alias '%s')",
+									   ix, epP->name.c_str(), epP->ip.c_str(), epP->port, epP->alias.c_str()));
 
 					if ((workerFd = iomConnect(epP->ip.c_str(), epP->port)) == -1)
 					{
@@ -842,8 +842,6 @@ void Network::msgTreat(int fd, char* name)
 					else
 					{
 						Endpoint* ep;
-
-						// epP->state = Endpoint::Connected;
 
 						ep = endpointAdd(workerFd, (char*) "to be worker", NULL, 0, Endpoint::Temporal, epP->ip, epP->port);
 						if (ep != NULL)

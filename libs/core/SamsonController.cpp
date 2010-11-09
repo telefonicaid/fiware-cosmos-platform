@@ -59,7 +59,6 @@ namespace ss {
 		assert( num_workers != -1 );
 		LM_T(LMT_CONFIG, ("Num workers: %d", num_workers));
 		network->initAsSamsonController(port, num_workers);
-		//network->initAsSamsonController(myEndPoint, workerEndPoints);
 	}	
 
 

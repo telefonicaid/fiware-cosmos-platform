@@ -72,13 +72,18 @@ namespace ss {
 			
 			commandLine.set_flag_boolean("console");				
 			commandLine.set_flag_boolean("basic");				// Basic console without ncurses		
+			commandLine.set_flag_boolean("r");
+			commandLine.set_flag_boolean("w");
 			
 			commandLine.parse(arg, argv);
 
 			// Create console or graphical interface
 			
-			console = 0;
+			console     = 0;
 			interfaceQt = 0;
+
+			lmReads    = commandLine.get_flag_bool("r");
+			lmWrites   = commandLine.get_flag_bool("w");
 
 			if ( commandLine.get_flag_bool("console") )
 				console = new DelilahConsole(this,true);		// Console with ncurses

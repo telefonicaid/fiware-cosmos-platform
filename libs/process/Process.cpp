@@ -15,6 +15,7 @@
 #include "iomMsgAwait.h"           // iomMsgAwait
 #include "iomMsgRead.h"            // iomMsgRead
 #include "iomMsgSend.h"            // iomMsgSend
+#include "Message.h"               // Message::*
 #include "Process.h"               // Own interface
 
 
@@ -61,9 +62,17 @@ void Process::run(void)
 			continue;
 		}
 
-		iomMsgRead(fd, (char*) "father", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
+		int s;
+		s = iomMsgRead(fd, (char*) "father", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
+		if (s == -2)
+			LM_X(1, ("father died - I die as well"));
+		else if (s != 0)
+			LM_X(1, ("iomMsgRead returned error %d", s));
 
-		LM_M(("Read message '%s' - running it!", (char*) dataP));
+		if (msgCode != Message::Command)
+			LM_X(1, ("father sent me a '%s' message - I expect only 'Command' messages ...", messageCode(msgCode)));
+
+		LM_M(("Read command message '%s' - running it!", (char*) dataP));
 		runCommand(command);
 
 		if (dataP != command)

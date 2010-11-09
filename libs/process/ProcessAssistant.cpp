@@ -69,6 +69,7 @@ ProcessAssistant::ProcessAssistant(int coreNo)
 	core = coreNo;
 
 	pthread_create(&threadId, NULL, runThread, this);
+	sleep(1);
 }
 
 
@@ -91,6 +92,17 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 	LM_T(LMT_COREWORKER, ("*********** Starting Core Worker %d", core));
 	if (fork() != 0)
 		return;
+
+
+	/* ************************************************************
+	 *
+	 * Setting auxiliar string for logMsg
+	 */
+	char auxString[16];
+	
+	sprintf(auxString, "child-core%02d", core);
+	lmAux(auxString);
+
 
 
 #if !defined(__APPLE__)
@@ -119,11 +131,15 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 	extern int logFd;
 	int fd;
 	
+	LM_M(("Close fathers file descriptors ..."));
 	for (fd = 0; fd < 100; fd++)
 	{
 		if (fd != logFd)
 			close(fd);
+		else
+			LM_M(("Not closing fd %d, as is is the log file fd", fd));
 	}
+	LM_M(("All fathers file descriptors closed!"));
 
 
 
@@ -137,19 +153,8 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 	sprintf(progName, (char*) "samsonCoreWorker_%d", (int) getpid());
 
 
-		
-	/* ************************************************************
-	 *
-	 * Setting auxiliar string for logMsg
-	 */
-	char auxString[16];
-	
-	sprintf(auxString, "child-core%02d", core);
-	lmAux(auxString);
 
-
-
-	LM_T(LMT_COREWORKER, ("Connecting to father"));
+	LM_M(("Connecting to father, on port %d", port));
 	fd = iomConnect("localhost", port);
 	if (fd == -1)
 		LM_X(1, ("error connecting to father at %s:%d", "localhost", port));
@@ -226,13 +231,17 @@ void ProcessAssistant::run(void)
 		LM_M(("Trying to open listen socket on port %d", port));
 		lFd = iomServerOpen(port);
 		if (lFd != -1)
+		{
+			LM_M(("Opened listen socket on port %d (fd %d)", port, lFd));
 			break;
+		}
 		++port;
 	}
 
 	startTime = 0;
 	coreWorkerStart(progName, port);
-	LM_T(LMT_PA, ("Awaiting connection on port %d (fd %d)", port, lFd));
+	sleep(1);
+	LM_M(("Awaiting connection on port %d (fd %d)", port, lFd));
 	fds = iomMsgAwait(lFd, 5, 0);
 	if (fds != 1)
 		LM_X(1, ("core worker did not connect in 5 secs ..."));

@@ -99,6 +99,21 @@ typedef struct HelloData
 
 /* ****************************************************************************
 *
+* Worker
+*/
+typedef struct Worker
+{
+	char             name[32];
+	char             alias[32];
+	char             ip[32];
+	int              port;
+	Endpoint::State  state;
+} Worker;
+
+
+
+/* ****************************************************************************
+*
 * messageCode - 
 */
 extern char* messageCode(MessageCode code);

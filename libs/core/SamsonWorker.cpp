@@ -26,6 +26,7 @@ namespace ss {
 SamsonWorker::SamsonWorker(int argC, const char* argV[] ) :  taskManager(this)
 {
 	parseArgs(argC, argV);
+	logInit(argV[0]);
 }
 
 
@@ -37,8 +38,8 @@ int logFd = -1;
 */
 void SamsonWorker::logInit(const char* pName)
 {
-	LmStatus  s;
 	int       logFdIndex;
+	LmStatus  s;
 	
 	progName = lmProgName((char*) pName, 1, true);
 	
@@ -50,7 +51,6 @@ void SamsonWorker::logInit(const char* pName)
 		EXIT(1, ("lmInit: %s", lmStrerror(s)));
 
 	lmAux((char*) "father");
-
 	lmFdGet(logFdIndex, &logFd);
 }
 

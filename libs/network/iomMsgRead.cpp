@@ -60,7 +60,7 @@ int iomMsgRead
 
 	if (header.dataLen != 0)
 	{
-		int   nb;
+		int nb;
 
 		if (header.dataLen > (unsigned int) *dataLenP)
 		{
@@ -73,6 +73,11 @@ int iomMsgRead
 		nb = read(fd, *dataPP, header.dataLen);
 		if (nb == -1)
 			LM_RP(1, ("read(%d bytes from '%s'", header.dataLen,  from));
+
+		if (nb != (int) header.dataLen)
+			LM_E(("Read %d bytes, %d expected ...", nb, header.dataLen));
+
+		*dataLenP = nb;
 
 		LM_T(LMT_READ, ("read %d bytes from '%s'", nb, from));
 		LM_READS(from, "primary data", *dataPP, nb, LmfByte);

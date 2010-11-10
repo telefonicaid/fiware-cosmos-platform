@@ -23,37 +23,54 @@ MainWindow::MainWindow(QWidget *parent)
 
 	connect(tool_group, SIGNAL(triggered(QAction*)), this, SLOT(setToolForAction(QAction*)));
 
-	createTab(QString("Workspace %1").arg(ui.tabWidget->count() + 1));
+	createNewWorkspace(QString("Workspace %1").arg(ui.tabWidget->count() + 1));
 }
 
 MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::createTab(QString name)
+void MainWindow::createNewWorkspace(QString name)
 {
 	if (name.isEmpty())
 	{
 		name = QString("Workspace %1").arg(ui.tabWidget->count() + 1);
 	}
 
-	Workspace* workspace = new Workspace();
-
-	WorkspaceScene* scene = new WorkspaceScene(this);
-	WorkspaceView* view = new WorkspaceView(scene);
+	Workspace* workspace = new Workspace(name);
+	WorkspaceView* view = new WorkspaceView(workspace);
 	view->setRenderHints(QPainter::Antialiasing);
 	view->show();
 
-	connect(this, SIGNAL(toolChanged(int)), scene, SLOT(setTool(int)));
-	connect(scene, SIGNAL(addQueueRequested(const QPointF &)), view, SLOT(selectQueueType(const QPointF &)));
-	connect(view, SIGNAL(createQueueRequested(QueueType, const QPointF &, QString, QString, QString)),
-			workspace, SLOT(createQueue(QueueType, const QPointF &, QString, QString, QString)));
+	connect(this, SIGNAL(toolChanged(int)), workspace, SLOT(setTool(int)));
 
 	ui.tabWidget->addTab(view, name);
-
-	// initiate tool
-	setToolForAction(tool_group->checkedAction());
 }
+
+//void MainWindow::createTab(QString name)
+//{
+//	if (name.isEmpty())
+//	{
+//		name = QString("Workspace %1").arg(ui.tabWidget->count() + 1);
+//	}
+//
+//	Workspace* workspace = new Workspace();
+//
+//	WorkspaceScene* scene = new WorkspaceScene(this);
+//	WorkspaceView* view = new WorkspaceView(scene);
+//	view->setRenderHints(QPainter::Antialiasing);
+//	view->show();
+//
+//	connect(this, SIGNAL(toolChanged(int)), scene, SLOT(setTool(int)));
+//	connect(scene, SIGNAL(addQueueRequested(const QPointF &)), view, SLOT(selectQueueType(const QPointF &)));
+//	connect(view, SIGNAL(createQueueRequested(QueueType, const QPointF &, QString, QString, QString)),
+//			workspace, SLOT(createQueue(QueueType, const QPointF &, QString, QString, QString)));
+//
+//	ui.tabWidget->addTab(view, name);
+//
+//	// initiate tool
+//	setToolForAction(tool_group->checkedAction());
+//}
 
 
 void MainWindow::removeTab(int index)

@@ -1,5 +1,5 @@
 /*
- * FILE:		WorkspaceClient.h
+ * FILE:		Workspace.h
  *
  * AUTHOR:		Anna Wojdel
  *
@@ -14,6 +14,8 @@
 #include <QPointF>
 
 #include "globals.h"
+
+class WorkspaceScene;
 
 enum JobTypes { CANCELED, CREATE_TXT_QUEUE, CREATE_KV_QUEUE, LOAD_FILE, RUN_PROCESS };
 enum JobStatus { IN_PROCESSING, FINISHED, FAILED };
@@ -36,18 +38,25 @@ class Workspace: public QObject
 	Q_OBJECT
 
 public:
-	Workspace();
+	Workspace(QString _name="");
 	~Workspace() {};
 
+	WorkspaceScene* getScene() { return scene; };
+
 public slots:
+	void setTool(int tool);
 	void createQueue(QueueType type, const QPointF &scene_pos, QString name, QString key=QString(), QString value=QString());
 	void updateJob(size_t id, bool error, QString message);
 	void finishJob(size_t id, bool error, QString message);
 
-protected:
-	QList<job_info> jobs;
-};
+//signals:
+//	jobFailed(size_t id, QString message);
 
+protected:
+	QString name;
+	QList<job_info> jobs;
+	WorkspaceScene* scene;
+};
 
 
 #endif /* WORKSPACE_H_ */

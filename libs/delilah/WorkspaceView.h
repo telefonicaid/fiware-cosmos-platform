@@ -3,7 +3,7 @@
  *
  * AUTHOR:			Anna Wojdel
  *
- * DESCRIPTION:		Widget to display all GUI related to one workspace
+ * DESCRIPTION:
  *
  */
 
@@ -12,8 +12,9 @@
 
 #include <QGraphicsView>
 
-#include "WorkspaceScene.h"
 #include "globals.h"
+
+class Workspace;
 
 class WorkspaceView : public QGraphicsView
 {
@@ -21,8 +22,10 @@ class WorkspaceView : public QGraphicsView
 
 public:
 	WorkspaceView(QWidget* parent=0);
-	WorkspaceView(WorkspaceScene* scene, QWidget *parent=0);
+	WorkspaceView(Workspace* model, QWidget* parent=0);
 	~WorkspaceView();
+
+	void setWorkspace(Workspace* model);
 
 public slots:
 	// select the type of the queue to be (created and) inserted into workspace
@@ -30,14 +33,14 @@ public slots:
 	void createTXTQueueSelected(const QPointF &scene_pos);
 	void createKVQueueSelected(const QPointF &scene_pos);
 
-	// show info about status of the process
-	void showProcessInfo(size_t id, QString message);
-
 protected:
 //	void showAvailableQueues();
 
 signals:
 	void createQueueRequested(QueueType type, const QPointF scene_pos, QString name, QString key=QString(), QString value=QString());
+
+protected:
+	Workspace* workspace;
 };
 
 #endif /* WORKSPACEVIEW_H_ */

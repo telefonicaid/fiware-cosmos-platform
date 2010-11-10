@@ -1,5 +1,5 @@
 /*
- * FILE:		WorkspaceClient.cpp
+ * FILE:		Workspace.cpp
  *
  * AUTHOR:		Anna Wojdel
  *
@@ -11,16 +11,26 @@
 #include <iostream>
 
 #include "Workspace.h"
+#include "WorkspaceScene.h"
+#include "Queue.h"
 #include "globals.h"
 #include "DelilahQtApp.h"
 
-Workspace::Workspace()
+Workspace::Workspace(QString _name)
 {
-	DelilahQtApp* app = (DelilahQtApp*)qApp;
+	name = _name;
+	scene = new WorkspaceScene();
 
+	DelilahQtApp* app = (DelilahQtApp*)qApp;
 	connect(app, SIGNAL(jobUpdated(size_t, bool, QString)), this, SLOT(updateJob(size_t, bool, QString)));
 	connect(app, SIGNAL(jobFinished(size_t, bool, QString)), this, SLOT(finishJob(size_t, bool, QString)));
 }
+
+void Workspace::setTool(int tool)
+{
+	scene->setTool(tool);
+}
+
 
 /*
  * SLOT. Sends request to application to create new queue (TXT or KV) on Samson platform.
@@ -73,7 +83,8 @@ void Workspace::updateJob(size_t id, bool error, QString message)
 	// TODO:
 	// Update info in jobs list
 	// emit signal that job was updated.
-	// This signal should be received by WorkspaceView to update status visible for user
+	// This signal should be received by WorkspaceView to update job status
+	// to be shown to user
 
 	std::cout << message.toStdString() << "\n";
 }
@@ -84,19 +95,27 @@ void Workspace::updateJob(size_t id, bool error, QString message)
 void Workspace::finishJob(size_t id, bool error, QString message)
 {
 	// TODO:
-	// Close job in jobs list (remove it?)
+	// Find job in the list. If it doesn't belongs to this workspace, return.
+	// Otherwise close job in jobs list (remove it?) and proceed depending
+	// on the job status (failed or finished)
 
 	std::cout << message.toStdString() << "\n";
 	if(error)
 	{
-		// TODO: message box?????
+		// TODO:
+		// emit signal about failure. This should be received by WorkspaceView widget
+		// which shows failure info to user
 		std::cout << "job " << id << " finished with error: " << message.toStdString();
+//		emit(jobFailed(id, message));
 	}
 	else
 	{
 		// TODO:
-		// Find job in the list.
-		// depending on type of the request emit signal to WorkspaceScene to react appropriately.
+		// Depending on the type of the job call appropriate methods to create queues, operation, etc.
+		// Update scene appropriately.
 
+		// It's for testing - change it!!!!!!!!!
+		Queue* q = new Queue;
+		scene->showQueue(q);
 	}
 }

@@ -10,8 +10,8 @@ IF(QT4_FOUND)
 		DelilahQtApp.cpp
 		MainWindow.cpp
 		Workspace.cpp
-		WorkspaceView.cpp
 		WorkspaceScene.cpp
+		WorkspaceView.cpp
 		gui/InfoBox.cpp
 		gui/CreateTXTQueueDlg.cpp
 		items/ObjectItem.cpp
@@ -28,10 +28,11 @@ IF(QT4_FOUND)
 		DelilahQtApp.h
 		MainWindow.h
 		Workspace.h
-		WorkspaceView.h
 		WorkspaceScene.h
+		WorkspaceView.h
 		gui/InfoBox.h
 		gui/CreateTXTQueueDlg.h
+		Queue.h
 		items/ObjectItem.h
 		items/QueueItem.h
 		items/OperationItem.h

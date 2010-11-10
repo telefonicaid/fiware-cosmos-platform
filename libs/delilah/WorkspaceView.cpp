@@ -1,5 +1,5 @@
 /*
- * FILE:		ProcessView.cpp
+ * FILE:		WorkspaceView.cpp
  *
  * AUTHOR:		Anna Wojdel
  *
@@ -12,6 +12,7 @@
 #include <QMenu>
 
 #include "WorkspaceView.h"
+#include "Workspace.h"
 #include "WorkspaceScene.h"
 #include "DelilahQtApp.h"
 #include "CreateTXTQueueDlg.h"
@@ -20,22 +21,27 @@
 WorkspaceView::WorkspaceView(QWidget* parent)
 : QGraphicsView(parent)
 {
+	workspace = 0;
 }
 
-WorkspaceView::WorkspaceView(WorkspaceScene* scene, QWidget* parent)
-	: QGraphicsView(scene, parent)
+WorkspaceView::WorkspaceView(Workspace* model, QWidget* parent)
+	: QGraphicsView(parent)
 {
-
+	setWorkspace(model);
 }
 
 WorkspaceView::~WorkspaceView()
 {
 }
 
-void WorkspaceView::showProcessInfo(size_t id, QString message)
+void WorkspaceView::setWorkspace(Workspace* model)
 {
-	// TODO:
+	workspace = model;
+	setScene(workspace->getScene());
 
+	connect(scene(), SIGNAL(addQueueRequested(QPointF)), this, SLOT(selectQueueType(QPointF)));
+	connect(this, SIGNAL(createQueueRequested(QueueType, QPointF, QString, QString, QString)),
+			workspace, SLOT(createQueue(QueueType, QPointF, QString, QString, QString)));
 }
 
 /*
@@ -57,6 +63,7 @@ void WorkspaceView::selectQueueType(const QPointF &scene_pos)
 	menu->addAction(txt_act);
 	menu->addAction(kv_act);
 
+	// Set menu's left upper corner at clicked position
 	QPoint view_pos = mapFromScene(scene_pos);
 	menu->exec(mapToGlobal(view_pos));
 }

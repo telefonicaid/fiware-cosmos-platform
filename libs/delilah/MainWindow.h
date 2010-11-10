@@ -19,7 +19,8 @@ public:
     ~MainWindow();
 
 public slots:
-	void createTab(QString name="");
+//	void createTab(QString name="");
+	void createNewWorkspace(QString name="");
 	void removeTab(int);
 	void setToolForAction(QAction* action);
 

@@ -14,6 +14,7 @@
 #include "WorkspaceScene.h"
 #include "ObjectItem.h"
 #include "QueueItem.h"
+#include "Queue.h"
 #include "OperationItem.h"
 #include "ConnectionItem.h"
 #include "Misc.h"
@@ -166,15 +167,17 @@ ObjectItem* WorkspaceScene::findItem(const QPointF &pos)
 	return item;
 }
 
-void WorkspaceScene::addQueue(const QPointF &position)
+void WorkspaceScene::showQueue(Queue* queue)
 {
-	QueueItem* queue = new QueueItem();
-	queue->setSharedRenderer(queue_renderer);
-	queue->initText(QString("Test Queue"));
-	queue->setDefaultSize();
-	queue->setPos(position);
+	// TODO: correct implementation - currently Queue class is not implemented yet.
+	QueueItem* q = new QueueItem();
+	q->setSharedRenderer(queue_renderer);
+	q->initText(QString("Test Queue"));
+	q->setDefaultSize();
+	q->setPos(0.0, 0.0);
 
-	addItem(queue);
+	addItem(q);
+
 }
 
 void WorkspaceScene::addOperation(const QPointF &position)

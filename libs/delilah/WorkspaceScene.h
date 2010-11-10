@@ -18,6 +18,8 @@ class QSvgRenderer;
 class ConnectionItem;
 class ObjectItem;
 
+class Queue;
+
 class WorkspaceScene: public QGraphicsScene
 {
 	Q_OBJECT
@@ -28,10 +30,16 @@ public:
 
 	int getTool() {return current_tool; };
 
+	void showQueue(Queue* queue);
+
 public slots:
 	void setTool(int tool) { current_tool = tool; };
-	void addQueue(const QPointF &pos=QPoint(0.0, 0.0) );
+//	void addQueue(const QPointF &pos=QPoint(0.0, 0.0) );
 	void addOperation(const QPointF &pos=QPoint(0.0, 0.0));
+
+	/*
+	 * Move zooming to WorkspaceView class
+	 */
 	void zoomOut();
 	void zoomReset();
 	void zoomIn();

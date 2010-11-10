@@ -79,6 +79,9 @@ namespace ss
 			
 			if( type == "reduce")
 				return "ss::Reduce";
+
+			if( type == "script")
+				return "ss::Script";
 			
 			fprintf(stderr, "Error: Unknown type of operation in the operation section (%s)\n" , type.c_str());
 			_exit(0);
@@ -110,10 +113,6 @@ namespace ss
 		
 		void printClassDefinition(FILE *file )
 		{
-			// If script, not class
-			if( type == "script")
-				return;
-			
 			std::cout << "Creating class " << className().c_str() << std::endl;
 			
 			// Pragma label
@@ -124,16 +123,22 @@ namespace ss
 			
 			// Public tag
 			fprintf(file, "\n\tpublic:\n");
+
+			if( type != "script")
+			{
+				// Extern function definition
+				for (vector <std::string>::iterator function = functions.begin() ; function != functions.end() ; function++)
+					fprintf(file, "\t%s\n", (*function).c_str() );
+				fprintf(file, "\n");
 			
-			// Extern function definition
-			for (vector <std::string>::iterator function = functions.begin() ; function != functions.end() ; function++)
-				fprintf(file, "\t%s\n", (*function).c_str() );
-			fprintf(file, "\n");
-			
-			//Main run function
-			fprintf(file, "\n\t//Main function to implement\n");
-			fprintf(file, "\t%s;\n",mainFunctionToImplement( false ).c_str() );
-			
+				//Main run function
+				fprintf(file, "\n\t//Main function to implement\n");
+				fprintf(file, "\t%s;\n",mainFunctionToImplement( false ).c_str() );
+
+			}
+
+				
+				
 			// Help of this function
 			fprintf(file, "\n\tstd::string help(){\n");
 			fprintf(file, "\t\tstd::ostringstream o;\n");
@@ -145,16 +150,12 @@ namespace ss
 
 			printStaticOperationFunction(file);
 			
-			
-			
 			// Help to show what should be implemented
-			fprintf(file, "\n\n\t// Implement this functions:\n");
-			fprintf(file, "\t//%s{};\n",mainFunctionToImplement( true ).c_str() );
-			
-			
-			// Static function to return the object to add to the module
-			
-
+			if( type != "script")
+			{
+				fprintf(file, "\n\n\t// Implement this functions:\n");
+				fprintf(file, "\t//%s{};\n",mainFunctionToImplement( true ).c_str() );
+			}
 			
 			// End of the class
 			fprintf(file, "};\n");
@@ -190,7 +191,9 @@ namespace ss
 			// Code if any
 			if ( code.length() > 0)
 			{
+				output << std::endl;
 				output << "\t\t// Code of this operation (usually scripts)\n";
+				output << std::endl;
 				std::ostringstream command;
 				for (size_t i = 0 ; i < code.length() ;i++)
 				{
@@ -208,9 +211,11 @@ namespace ss
 				}
 				if( command.str().length()>0)
 					output << "\t\toperation.code.push_back(\"" << command.str() <<  "\");\n";
+				output << std::endl;
+
 			}
 			
-			output << "\treturn operation;"<<std::endl;
+			output << "\t\treturn operation;"<<std::endl;
 			
 			fprintf(file, "\tstatic ss::Operation* operation(){\n");
 			fprintf(file, "%s", output.str().c_str() );

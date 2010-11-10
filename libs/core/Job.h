@@ -5,7 +5,7 @@
 #include <map>								// std::map
 #include <vector>							// std::vector
 #include <sstream>							// ss::ostringstream
-#include <stack>							// std::stack
+#include <list>								// std::list
 #include "samson.pb.h"						// ss::network::...
 #include <iostream>							// std::cout
 
@@ -18,19 +18,31 @@ namespace ss {
 	
 	class JobItem
 	{
+		
+	public:
+		
+		// Main command that originated this job item
+		std::string parent_command;
+		
 		// List of commands
 		std::vector<std::string> command;
 		int command_pos;
 
-	public:
-		
+
 		// Single element command
-		JobItem( std::string c )	
+		JobItem( std::string _parent_command )	
 		{
-			command.push_back(c);
+			parent_command = _parent_command;
 			command_pos = 0;
 		}
-
+		
+		void addCommand( std::string c)
+		{
+			command.push_back(c);
+		}
+		
+		
+		
 		bool isFinish()
 		{
 			return ( command_pos == (int) command.size() );
@@ -67,7 +79,9 @@ namespace ss {
 		
 		size_t task_id;					// Id of the task we are waiting ( to avoid confusions )
 		
-		std::stack<JobItem> items;		// Stack of items that we are running
+		std::list<JobItem> items;		// Stack of items that we are running
+		
+		std::string mainCommand;
 		
 	public:
 		
@@ -75,6 +89,8 @@ namespace ss {
 		
 		Job( SamsonController *_controller , size_t _id, size_t _fromIdentifier , int _sender_id , std::string c  )
 		{
+			mainCommand = c;
+			
 			controller = _controller;
 			
 			id = _id;
@@ -83,7 +99,11 @@ namespace ss {
 			sender_id = _sender_id;
 
 			// Create the first item of this job
-			items.push( JobItem(c) );
+			
+			JobItem j("TOP");
+			j.addCommand(c);
+			
+			items.push_back( j );
 
 			// Need the controller pointer for a lot of reasons
 			controller = _controller;	
@@ -114,10 +134,12 @@ namespace ss {
 			while( !finish && !error && items.size() > 0)	// While there si something to process
 			{
 				
-				JobItem& item = items.top();
+				JobItem& item = items.back();
 				
 				if( item.isFinish() )
-					items.pop();
+				{
+					items.pop_back();
+				}
 				else
 				{
 					if( !processCommand( item.getNextCommand() ) )
@@ -167,12 +189,7 @@ namespace ss {
 		
 	private:
 		
-		void setError( std::string txt )
-		{
-			output << "Error: " << txt << std::endl;
-			error = true;
-			finish = true;	
-		}
+		void setError( std::string txt );
 		
 		
 	};

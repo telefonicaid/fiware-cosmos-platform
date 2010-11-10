@@ -316,6 +316,22 @@ namespace ss {
 		virtual void run(KVSetStruct* inputs, std::vector<KVWriter*>& outputs) = 0;
 		
 	};
+	
+	
+	/**
+	 
+	 \class Script
+	 
+	 A script is a program that combines multiple map / reduce / scripts to perform a task with multiple input / multiple output.
+	 
+	 This class should be subclassed to create custom "scripts".\n
+	 
+	 */
+	
+	class Script : public OperationInstance
+	{
+		// NO operation by itself ( only txt added in code field )
+	};	
 }
 
 #endif

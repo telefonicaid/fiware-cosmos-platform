@@ -15,30 +15,32 @@ data example
 
 generator generator
 {
-	out base.UInt base.UInt	
+	out system.UInt system.UInt	
 	file ModuleImpl.cpp
 }
 
-map map
-{
-	in base.UInt base.UInt
-	out base.UInt base.UInt
-
-	file ModuleImpl.cpp
-
-	help
-	{
-		"Simple map"
-	}
-}
-
-reduce r
+script script
 {
 	in base.UInt base.UInt2
 	out base.UInt system.Void
 
-	file ModuleImpl.cpp
+	help
+	{
+		"An example of a script that creates two queues. This will no be a valid strings...just debugging"
+	}
 
-	helpLine	"This is another example of what it is possible ;"
+	code
+	"
+		add_queue pepe system.UInt system.UInt
+		add_queue andreu system.UInt system.UInt
+	"
+}
 
+script s2
+{
+	code
+	"
+		_example.script A B
+
+	"
 }

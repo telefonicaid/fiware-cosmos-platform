@@ -133,6 +133,7 @@ namespace ss {
 					Packet p;
 					network::CommandResponse *response = p.message.mutable_command_response();
 					response->set_response( getStatus() );
+					response->set_command( packet->message.command().command() );
 					response->set_error( false );
 					response->set_finish( true );
 					response->set_sender_id( packet->message.command().sender_id() );
@@ -184,13 +185,14 @@ namespace ss {
 #pragma mark Sent messages
 	
 	
-	void SamsonController::sendDelilahAnswer(size_t sender_id, int dalilahIdentifier, bool error, bool finished, std::string answer_message)
+	void SamsonController::sendDelilahAnswer(size_t sender_id, int dalilahIdentifier, bool error, bool finished, std::string command,  std::string answer_message)
 	{
 		
 		// Get status of controller
 		Packet p2;
 		
 		network::CommandResponse *response = p2.message.mutable_command_response();
+		response->set_command(command);
 		response->set_response(answer_message);
 		response->set_error(error);
 		response->set_finish(finished);

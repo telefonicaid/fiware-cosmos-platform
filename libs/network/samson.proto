@@ -52,8 +52,8 @@ message WorkerTaskConfirmation
 
 message Command
 {
-	optional string  command   = 1;          // optimal string to send a txt command
-	optional uint64  sender_id = 2;          // Id of the packet sender ( delilah )
+	required string  command   = 1;          // optimal string to send a txt command
+	required uint64  sender_id = 2;          // Id of the packet sender ( delilah )
 }
 
 message Help
@@ -115,11 +115,14 @@ message HelpResponse
 //
 message CommandResponse
 {
-	required string  response    = 1;   // Answer for the command
-	required bool    error       = 2;   // Flag to indicat if there was an error
-	required bool    finish      = 3;   // Flag to indicate if the command is finished ( with or without error)
+	required string command	     = 1;   // Copy of the original command
+	required string  response    = 2;   // Answer for the command
+	required int32   sender_id   = 3;   // Id of the packet sender ( delilah )
 
-	optional int32   sender_id   = 4;   // Id of the packet sender ( delilah )
+	required bool error       = 4;   // Flag to indicat if there was an error
+	required bool finish      = 5;   // Flag to indicate if the command is finished ( with or without error)
+
+
 }
 
 

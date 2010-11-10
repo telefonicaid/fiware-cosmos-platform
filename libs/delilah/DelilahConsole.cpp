@@ -12,6 +12,13 @@
 
 namespace ss
 {
+	
+	void cancel_ncurses(void)	
+	{
+		au::Console::cancel_ncurses();
+	}
+	
+	
 	void DelilahConsole::evalCommand( std::string command )
 	{
 		au::CommandLine commandLine;
@@ -110,16 +117,22 @@ namespace ss
 			{
 				// Get some information form the packet
 				size_t id = packet->message.command_response().sender_id();
+				std::string command = packet->message.command_response().command();
 				std::string message = packet->message.command_response().response();
 				error = packet->message.command_response().error();
 				bool finished = packet->message.command_response().finish();
 				
 				// Prepare what to show on screen
 				txt << "----------------------------------------------------------------" << std::endl;
-				txt << "Answer for command " << id << ": ";
+				txt << "Answer for command " << id << ": " << command << std::endl;
 				
-				if( finished )
-					txt << "(FINISHED)";
+				if(finished)
+				{
+					if( error )
+						txt << "Command finish with error" << std::endl;
+					else
+						txt << "Command finish correclt" << std::endl;
+				}
 				
 				txt << std::endl;
 				txt << "----------------------------------------------------------------" << std::endl;

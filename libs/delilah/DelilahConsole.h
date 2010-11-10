@@ -10,11 +10,14 @@
  */
 
 #include "Console.h"			// au::Console
-
+#include <cstdlib>				// atexit(.)
 namespace ss {
 
 	class Delilah;
 
+	
+	void cancel_ncurses(void);
+	
 	class DelilahConsole : public au::Console
 	{
 		Delilah* dalilah;	// Pointer to the main class
@@ -25,6 +28,10 @@ namespace ss {
 		{
 			dalilah = _dalilah;
 			id = 0;
+			
+			
+			if( ncurses )
+				atexit ( cancel_ncurses );
 		}
 		
 		virtual std::string getPrompt()

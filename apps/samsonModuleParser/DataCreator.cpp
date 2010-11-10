@@ -183,8 +183,9 @@ namespace ss {
 		
 		fprintf(file, "\n// Operations defined in this module\n\n");
 		for ( vector <OperationContainer>::iterator iter = operations.begin() ; iter < operations.end() ; iter++)
-			iter->printClassDefinition( file   );
+			iter->printClassDefinition( file );
 		
+	#pragma mark MODULE
 		
 		fprintf(file, "\n// Module definition\n\n");	  
 		fprintf(file, "class %s : public ss::Module{\n\n", module->getClassName().c_str());

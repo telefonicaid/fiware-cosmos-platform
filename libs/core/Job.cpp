@@ -45,15 +45,21 @@ namespace ss {
 				return false;	// No continue until confirmation of this task is received
 			}
 			
-			// Normal taks
-			// ------------------------------------------
-			// controller->taskManager.addTask(XXX)
-			// return false;
-
-			// Scripts : ( create a new JobItem and push)
-			// ------------------------------------------
-			// return
-			
+			if(  operation && (operation->getType() == Operation::script ) ) 
+			{
+				// Create a JobItem for this script, push into the task and return true to continue
+				JobItem i( command );
+				
+				// Rigth now we do not "modify" internal script code
+				for (size_t c = 0 ; c < operation->code.size() ; c++)
+				{
+					std::string command = operation->code[c];
+					i.addCommand( command );
+				}
+				
+				items.push_back(i);
+				return true;
+			}
 			
 			// Unknown command, so inmediate answer with error
 			setError( "Unknown command");
@@ -61,7 +67,7 @@ namespace ss {
 			
 		}
 		
-		setError("Command without any command");
+		setError( std::string("Command without any command: ") + command);
 		return false;
 	}
 	
@@ -83,8 +89,22 @@ namespace ss {
 	void Job::sentConfirmationToDelilah( )
 	{
 		assert( finish );
-		controller->sendDelilahAnswer( sender_id, fromIdentifier, error, true, output.str());
+		controller->sendDelilahAnswer( sender_id, fromIdentifier, error, true, mainCommand, output.str());
 	}
+	
+	void Job::setError( std::string txt )
+	{
+		output << "Error at..." << std::endl;
+		std::list<JobItem>::iterator i;
+		for (i = items.begin() ; i != items.end() ; i++)
+			output << ">> " << i->parent_command << std::endl;
+		output << "\n>>>> Error: " << txt << std::endl;
+		
+		error = true;
+		finish = true;	
+	}
+	
+	
 	
 	
 	

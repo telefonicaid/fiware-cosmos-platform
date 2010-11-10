@@ -599,6 +599,10 @@ void EndpointMgr::msgTreat(int fd, char* name)
 	LM_T(LMT_TREAT, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
 	{
+	case Message::Die:
+		LM_X(1, ("Got a DIE message from '%s' - I die", name));
+		break;
+
 	case Message::Hello:
 		Endpoint*            helloEp;
 		Message::HelloData*  hello;

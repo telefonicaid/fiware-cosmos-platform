@@ -152,7 +152,7 @@ void SamsonWorker::run()
 
 	int coreId;
 	for (coreId = 0; coreId < num_processes ; coreId++)
-		processAssistant[coreId] = new ProcessAssistant(coreId);
+		processAssistant[coreId] = new ProcessAssistant(coreId, controller.c_str());
 
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
 

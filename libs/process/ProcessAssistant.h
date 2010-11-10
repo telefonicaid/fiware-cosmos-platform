@@ -37,12 +37,13 @@ namespace ss {
 class ProcessAssistant
 {
 public:
-	ProcessAssistant(int coreNo);
+	ProcessAssistant(int coreNo, const char* _controller);
 
 private:
 	int                            core;
 	pthread_t                      threadId;
 	time_t                         startTime;
+	char*                          controller;
 
 	void         coreWorkerStart(char* fatherName, unsigned short port);
 

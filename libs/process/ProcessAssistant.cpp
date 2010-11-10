@@ -21,6 +21,7 @@
 #include "iomMsgAwait.h"           // iomMsgAwait
 #include "iomMsgSend.h"            // iomMsgSend
 #include "iomMsgRead.h"            // iomMsgRead
+#include "Endpoint.h"              // Endpoint
 #include "Process.h"               // Process
 #include "ProcessAssistant.h"      // Own interface
 
@@ -64,12 +65,13 @@ static void* runThread(void* vP)
 *
 * Constructor
 */
-ProcessAssistant::ProcessAssistant(int coreNo)
+ProcessAssistant::ProcessAssistant(int coreNo, const char* _controller)
 {
-	core = coreNo;
+	core       = coreNo;
+	controller = strdup(_controller);
 
 	pthread_create(&threadId, NULL, runThread, this);
-	sleep(1);
+	// sleep(1);
 }
 
 
@@ -116,6 +118,8 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 		
 	LM_T(LMT_COREWORKER, ("child %d running (pid: %d) on core %d", core, (int) getpid(), core));
 
+
+
 	/* ************************************************************
 	 *
 	 * Core workers do not log to stdout
@@ -131,15 +135,15 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 	extern int logFd;
 	int fd;
 	
-	LM_M(("Close fathers file descriptors ..."));
+	LM_T(LMT_COREWORKER, ("Close fathers file descriptors ..."));
 	for (fd = 0; fd < 100; fd++)
 	{
 		if (fd != logFd)
 			close(fd);
 		else
-			LM_M(("Not closing fd %d, as is is the log file fd", fd));
+			LM_T(LMT_COREWORKER, ("Not closing fd %d, as is is the log file fd", fd));
 	}
-	LM_M(("All fathers file descriptors closed!"));
+	LM_T(LMT_COREWORKER, ("All fathers file descriptors closed!"));
 
 
 
@@ -154,7 +158,7 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 
 
 
-	LM_M(("Connecting to father, on port %d", port));
+	LM_T(LMT_COREWORKER, ("Connecting to father, on port %d", port));
 	fd = iomConnect("localhost", port);
 	if (fd == -1)
 		LM_X(1, ("error connecting to father at %s:%d", "localhost", port));
@@ -189,59 +193,42 @@ void ProcessAssistant::run(void)
 	int sFd;     // file descriptor for socket connection
 	int fds;     // output from select (really: iomMsgSend)
 
-
-	
-	/* ************************************************************
-	 *
-	 * Core workers do not log to stdout
-	 */
-	lmFdUnregister(1);
-
-
-	
+	LM_TODO(("Will connect to controller when ProcessAssistant uses EndpointMgr"));
 #if 0
-	/* ************************************************************
-	 *
-	 * Set progName
-	 */
-	progName = (char*) malloc(strlen("samsonCoreWorker_") + 10);
-	if (progName == NULL)
-		LM_X(1, ("samsonCoreWorker_%d died allocating: %s", getpid(), strerror(errno)));
-	sprintf(progName, (char*) "samsonCoreWorker_%d", (int) getpid());
+	Endpoint* controllerP = new Endpoint(Endpoint::Controller, controller);
 
-
-		
-	/* ************************************************************
-	 *
-	 * Setting auxiliar string for logMsg
-	 */
-	char auxString[16];
-	
-	sprintf(auxString, "father-core%02d", core);
-	lmAux(auxString);
+	if (controllerP == NULL)
+		LM_XP(1, ("error allocating Endpoint"));
 #endif
 
 
 
-	LM_M(("IN: pid: %d", getpid()));
-
-
+	/* **********************************************************************
+	 *
+	 * Opening my listen socket
+	 */
 	while (1)
 	{
-		LM_M(("Trying to open listen socket on port %d", port));
+		LM_T(LMT_COREWORKER, ("Trying to open listen socket on port %d", port));
 		lFd = iomServerOpen(port);
 		if (lFd != -1)
 		{
-			LM_M(("Opened listen socket on port %d (fd %d)", port, lFd));
+			LM_T(LMT_COREWORKER, ("Opened listen socket on port %d (fd %d)", port, lFd));
 			break;
 		}
 		++port;
 	}
 
+
+
+	/* **********************************************************************
+	 *
+	 * Starting Core Worker
+	 */
 	startTime = 0;
 	coreWorkerStart(progName, port);
-	sleep(1);
-	LM_M(("Awaiting connection on port %d (fd %d)", port, lFd));
+
+	LM_T(LMT_COREWORKER, ("Awaiting connection on port %d (fd %d)", port, lFd));
 	fds = iomMsgAwait(lFd, 5, 0);
 	if (fds != 1)
 		LM_X(1, ("core worker did not connect in 5 secs ..."));
@@ -254,18 +241,23 @@ void ProcessAssistant::run(void)
 	{
 		char* result;
 
-		LM_T(LMT_PA, ("Sleeping 10 secs"));
+		LM_T(LMT_COREWORKER, ("Sleeping 10 secs"));
+		// getNextItemToProcess();
 		sleep(10);
 
-		LM_T(LMT_PA, ("Running a command"));
+		LM_T(LMT_COREWORKER, ("Running a command"));
 		result = runCommand(sFd, (char*) "test", 5);
 
 		if (strcmp(result, "finish") == 0)
+		{
 			LM_W(("Got finish from runCommand"));
+			// finishItem();
+		}
 		else if (strcmp(result, "crash") == 0)
 		{
 			LM_W(("child process crashed - starting a new process"));
 			// ALARM(Alarm::Error, Alarm::CoreWorkerDied, ("Core worker %d died", core));
+			// finishItem();
 			coreWorkerStart(progName, port);
 		}
 
@@ -338,13 +330,13 @@ char* ProcessAssistant::runCommand(int fd, char* command, int timeOut)
 		{
 			Message::AlarmData* alarmP = (Message::AlarmData*) dataP;
 
-			LM_M(("child sent an alarm - forwarding it to my father"));
+			LM_T(LMT_COREWORKER, ("child sent an alarm - forwarding it to my father"));
 		}
 		else if (msgCode == Message::Hello)
 		{
 			Message::HelloData* helloP = (Message::HelloData*) dataP;
 
-			LM_M(("child sent a Hello - keeping info"));
+			LM_T(LMT_COREWORKER, ("child sent a Hello - keeping info"));
 		}
 #endif
 		if (dataP != out)

@@ -58,7 +58,7 @@ void Process::run(void)
 		if (fds != 1)
 		{
 			LM_W(("iomMsgAwait returned %d", fds));
-			sleep(1);
+			sleep(1);  // sleep a little before calling iomMsgAwait again
 			continue;
 		}
 
@@ -101,7 +101,7 @@ void Process::runCommand(const char* command)
 
 	while (1)
 	{
-		sleep(3);
+		sleep(3);  // sleep for a while in each loop
 		++x;
 
 		if ((x % 3) == 0)

@@ -243,7 +243,7 @@ void Network::initAsSamsonWorker(int port, const char* alias, const char* contro
 */
 void Network::initAsDelilah(std::string controllerName)
 {
-	init(Endpoint::Delilah, "delilah", -1, controllerName.c_str());
+	init(Endpoint::Delilah, "delilah", 0, controllerName.c_str());
 }
 	
 	
@@ -529,6 +529,10 @@ Endpoint* Network::endpointAdd
 		}
 
 		LM_E(("Worker '%s:%d' not found!", ip.c_str(), port));
+
+		LM_E(("alias '%s' - rejecting connection", alias));
+		iomMsgSend(fd, name, progName, Message::Die, Message::Evt);
+
 		return NULL;
 	}
 
@@ -684,7 +688,7 @@ void Network::msgTreat(int fd, char* name)
 				while (controller->fd == -1)
 				{
 					controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
-					sleep(1);
+					sleep(1); // sleep one second before reintenting connection to coltroller
 				}
 
 				controller->state = ss::Endpoint::Connected;
@@ -1032,7 +1036,6 @@ void Network::run()
 		} while ((fds == -1) && (errno == EINTR));
 
 		LM_T(LMT_SELECT, ("select returned %d", fds));
-		sleep(1);
 		if (fds == -1)
 		{
 			if (errno != EINTR)

@@ -52,8 +52,8 @@ private:
 	NetworkInterface*   network;           // Network interface
 	WorkerTaskManager   taskManager;       // Task manager
 	ModulesManager      modulesManager;    // Manager of the modules we have
-	ProcessAssistant**  processAssistant;
-	DataBuffer dataBuffer;				// Element used to buffer incomming data packets before they are joined and saved to disk
+	ProcessAssistant**  processAssistant;  // Vector of process assistants
+	DataBuffer          dataBuffer;        // Element used to buffer incomming data packets before they are joined and saved to disk
 
 
 private:

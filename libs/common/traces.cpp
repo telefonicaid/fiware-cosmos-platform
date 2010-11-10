@@ -22,7 +22,7 @@ namespace ss {
 *
 * samsonInitTrace - 
 */
-void samsonInitTrace(int argc, const char *argv[], bool pidInName)
+void samsonInitTrace(int argc, const char *argv[], bool tracesToStdout, bool pidInName)
 {
 	LmStatus  s;
 	int       logFdIndex;
@@ -38,8 +38,13 @@ void samsonInitTrace(int argc, const char *argv[], bool pidInName)
 		
 	if ((s = lmPathRegister("/tmp/", "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT", "DEF", &logFdIndex)) != LmsOk)
 		EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
-	if ((s = lmFdRegister(1, "TYPE: TEXT", "DEF", "controller", NULL)) != LmsOk)
-		EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
+
+	if (tracesToStdout)
+	{
+	   if ((s = lmFdRegister(1, "TYPE: TEXT", "DEF", "controller", NULL)) != LmsOk)
+		  EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
+	}
+
 	if  ((s = lmInit()) != LmsOk)
 		EXIT(1, ("lmInit: %s", lmStrerror(s)));
 		

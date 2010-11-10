@@ -506,7 +506,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 				while (controller->fd == -1)
 				{
 					controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
-					sleep(1);
+					sleep(1); // sleep one second before reintenting connection to coltroller
 				}
 
 				controller->state = ss::Endpoint::Connected;
@@ -575,6 +575,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 
 		if ((me->type == Endpoint::Controller) && (msgType == Message::Msg))
 		{
+			LM_X(1, ("using endpointV"));
 			ack.endpointVectorAdd(endpointV);
 
 			LM_T(LMT_WRITE, ("sending ack with entire worker vector"));
@@ -811,7 +812,6 @@ void EndpointMgr::run()
 		} while ((fds == -1) && (errno == EINTR));
 
 		LM_T(LMT_SELECT, ("select returned %d", fds));
-		sleep(1);
 		if (fds == -1)
 		{
 			if (errno != EINTR)

@@ -90,8 +90,6 @@ private:
 	Endpoint*  me;
 	Endpoint*  controller;
 
-	std::vector<Endpoint>    endpointV;
-
 	bool       iAmReady;
 
 	Endpoint*  endpointAdd(int fd, char* name, char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core);

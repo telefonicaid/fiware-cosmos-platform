@@ -693,7 +693,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 #define PeriodForRestartingDeadCoreWorkers        60
 /* ****************************************************************************
 *
-* run - MOVE to EndpointMgr?
+* run - 
 */
 void EndpointMgr::run()
 {
@@ -703,6 +703,8 @@ void EndpointMgr::run()
 	time_t          now   = 0;
 	time_t          then  = time(NULL);
 	int             max;
+
+	LM_X(1, ("HERE"));
 
 	while (1)
 	{
@@ -785,26 +787,28 @@ void EndpointMgr::run()
 				{
 					FD_SET(endpoint[ix]->fd, &rFds);
 					max = MAX(max, endpoint[ix]->fd);
-					
-					LM_T(LMT_SELECT, ("+ endpoint %02d %-12s %-28s %20s:%05d %20s (fd: %d)",
-									  ix,
-									  endpoint[ix]->typeName(),
-									  endpoint[ix]->name.c_str(),
-									  endpoint[ix]->ip.c_str(),
-									  endpoint[ix]->port,
-									  endpoint[ix]->stateName(),
-									  endpoint[ix]->fd));
+					LM_X(1, ("HERE"));
+					LM_M(("++ %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
+						  ix,
+						  endpoint[ix]->typeName(),
+						  endpoint[ix]->name.c_str(),
+						  endpoint[ix]->alias.c_str(),
+						  endpoint[ix]->ip.c_str(),
+						  endpoint[ix]->port,
+						  endpoint[ix]->stateName(),
+						  endpoint[ix]->fd));
 				}
 				else
 				{
-					LM_T(LMT_SELECT, ("- endpoint %02d %-12s %-28s %20s:%05d %20s (fd: %d)",
-									  ix,
-									  endpoint[ix]->typeName(),
-									  endpoint[ix]->name.c_str(),
-									  endpoint[ix]->ip.c_str(),
-									  endpoint[ix]->port,
-									  endpoint[ix]->stateName(),
-									  endpoint[ix]->fd));
+					LM_X(1, ("HERE"));
+					LM_M(("-- %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
+						  ix,
+						  endpoint[ix]->typeName(),
+						  endpoint[ix]->name.c_str(),
+						  endpoint[ix]->ip.c_str(),
+						  endpoint[ix]->port,
+						  endpoint[ix]->stateName(),
+						  endpoint[ix]->fd));
 				}
 			}
 

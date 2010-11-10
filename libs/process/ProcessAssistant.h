@@ -34,16 +34,18 @@ namespace ss {
 * If the "process" crashes, ProcessAssistant creates again the process and notify about the failure
 * If after some timeout, process has not returned finish, the process assistant kills the process and creates it again, notifying about failure
 */
+class SamsonWorker;
 class ProcessAssistant
 {
 public:
-	ProcessAssistant(int coreNo, const char* _controller);
+	ProcessAssistant(int coreNo, const char* _controller, SamsonWorker* worker);
 
 private:
 	int                            core;
 	pthread_t                      threadId;
 	time_t                         startTime;
 	char*                          controller;
+	SamsonWorker*                  worker;
 
 	void         coreWorkerStart(char* fatherName, unsigned short port);
 

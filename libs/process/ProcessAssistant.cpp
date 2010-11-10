@@ -22,6 +22,7 @@
 #include "iomMsgSend.h"            // iomMsgSend
 #include "iomMsgRead.h"            // iomMsgRead
 #include "Endpoint.h"              // Endpoint
+#include "SamsonWorker.h"          // SamsonWorker
 #include "Process.h"               // Process
 #include "ProcessAssistant.h"      // Own interface
 
@@ -65,13 +66,13 @@ static void* runThread(void* vP)
 *
 * Constructor
 */
-ProcessAssistant::ProcessAssistant(int coreNo, const char* _controller)
+ProcessAssistant::ProcessAssistant(int coreNo, const char* _controller, SamsonWorker* _worker)
 {
 	core       = coreNo;
 	controller = strdup(_controller);
+	worker     = _worker;
 
 	pthread_create(&threadId, NULL, runThread, this);
-	// sleep(1);
 }
 
 
@@ -187,19 +188,13 @@ void ProcessAssistant::run(void)
 	//   o Loop receiving messages from Process until "finish" or "crash" received
 	//   o Send "continue"
 
-
-
 	int lFd;     // file descriptor for listen socket
 	int sFd;     // file descriptor for socket connection
 	int fds;     // output from select (really: iomMsgSend)
 
 	LM_TODO(("Will connect to controller when ProcessAssistant uses EndpointMgr"));
-#if 0
-	Endpoint* controllerP = new Endpoint(Endpoint::Controller, controller);
 
-	if (controllerP == NULL)
-		LM_XP(1, ("error allocating Endpoint"));
-#endif
+	// Endpoint* controllerP = worker->controller;
 
 
 

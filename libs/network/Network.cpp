@@ -1008,7 +1008,7 @@ void Network::run()
 					FD_SET(endpoint[ix]->fd, &rFds);
 					max = MAX(max, endpoint[ix]->fd);
 					
-					LM_T(LMT_SELECT, ("+ %02d: %-12s %-22s %-15s %15s:%05d %18s fd:%d",
+					LM_T(LMT_SELECT, ("+ %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
 									  ix,
 									  endpoint[ix]->typeName(),
 									  endpoint[ix]->name.c_str(),
@@ -1020,7 +1020,7 @@ void Network::run()
 				}
 				else
 				{
-					LM_T(LMT_SELECT, ("- %02d: %-12s %-22s %-15s %15s:%05d %18s fd:%d",
+					LM_T(LMT_SELECT, ("- %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
 									  ix,
 									  endpoint[ix]->typeName(),
 									  endpoint[ix]->name.c_str(),

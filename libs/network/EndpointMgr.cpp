@@ -776,7 +776,17 @@ void EndpointMgr::msgTreat(int fd, char* name)
 			LM_X(1, ("Got an alarm event from %s endpoint '%s' - not supposed to happen!", ep->typeName(), ep->name.c_str()));
 		break;
 
-	default:
+	case Message::WorkerTask:
+	case Message::Command:
+	case Message::CommandResponse:
+	case Message::Help:
+	case Message::HelpResponse:
+	case Message::LoadData:
+	case Message::LoadDataResponse:
+	case Message::LoadDataConfirmation:
+	case Message::LoadDataConfirmationResponse:
+	case Message::WorkerTaskConfirmation:
+	case Message::WorkerDataExchange:
 		if (receiver == NULL)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
 

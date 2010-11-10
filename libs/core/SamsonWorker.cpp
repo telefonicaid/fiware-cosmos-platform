@@ -25,8 +25,8 @@ namespace ss {
 */
 SamsonWorker::SamsonWorker(int argC, const char* argV[] ) :  taskManager(this)
 {
-	parseArgs(argC, argV);
 	logInit(argV[0]);
+	parseArgs(argC, argV);
 }
 
 
@@ -93,6 +93,7 @@ void SamsonWorker::parseArgs(int argC, const char* argV[])
 	if (controller == "no_controller")
 		LM_X(1, ("Please specify controller direction with -controller server:port"));
 		
+	LM_M(("setting trace level '%s'", traceV.c_str()));
 	if ((s = lmTraceSet((char*) traceV.c_str())) != LmsOk)
 		LM_X(1, ("lmTraceSet: %s", lmStrerror(s)));
 

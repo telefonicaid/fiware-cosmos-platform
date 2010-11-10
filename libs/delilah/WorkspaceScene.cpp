@@ -1,5 +1,5 @@
 /*
- * ProcessScene.cpp
+ * WorkspaceScene.cpp
  *
  *  Created on: Oct 18, 2010
  *      Author: ania
@@ -11,16 +11,17 @@
 #include <QGraphicsView>
 #include <QSvgRenderer>
 
-#include "ProcessScene.h"
+#include "WorkspaceScene.h"
 #include "ObjectItem.h"
 #include "QueueItem.h"
 #include "OperationItem.h"
 #include "ConnectionItem.h"
+#include "Misc.h"
 
-QSvgRenderer* ProcessScene::queue_renderer = 0;
-QSvgRenderer* ProcessScene::operation_renderer = 0;
+QSvgRenderer* WorkspaceScene::queue_renderer = 0;
+QSvgRenderer* WorkspaceScene::operation_renderer = 0;
 
-ProcessScene::ProcessScene(QObject* parent)
+WorkspaceScene::WorkspaceScene(QObject* parent)
 	: QGraphicsScene(parent)
 {
 	if (queue_renderer == 0)
@@ -31,13 +32,13 @@ ProcessScene::ProcessScene(QObject* parent)
 	current_conn = 0;
 }
 
-ProcessScene::~ProcessScene()
+WorkspaceScene::~WorkspaceScene()
 {
 	if (current_conn)
 		delete current_conn;
 }
 
-void ProcessScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
+void WorkspaceScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 {
 	//TODO:
 	//TODO: get possible actions (always for global scene, additional for item)
@@ -48,9 +49,9 @@ void ProcessScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 		QMenu* menu = new QMenu();
 
 //		menu->addAction("Add Queue", this, SLOT(addQueue()));
-		NewQueueAction* act = new NewQueueAction("Add Queue", this);
+		ActionWithPos* act = new ActionWithPos("Add Queue", this);
 		act->setPosition(event->scenePos());
-		connect(act, SIGNAL(triggered(QPointF)), this, SLOT(addQueue(QPointF)));
+		connect(act, SIGNAL(triggered(QPointF)), this, SIGNAL(addQueueRequested(QPointF)));
 		menu->addAction(act);
 
 		menu->addAction("Zoom In", this, SLOT(zoomIn()));
@@ -60,23 +61,23 @@ void ProcessScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 	}
 }
 
-void ProcessScene::zoomIn()
+void WorkspaceScene::zoomIn()
 {
 
 	views()[0]->scale(1.5, 1.5);
 }
 
-void ProcessScene::zoomOut()
+void WorkspaceScene::zoomOut()
 {
 	views()[0]->scale(1/1.5, 1/1.5);
 }
 
-void ProcessScene::zoomReset()
+void WorkspaceScene::zoomReset()
 {
 	views()[0]->resetTransform();
 }
 
-void ProcessScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
+void WorkspaceScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
 	if (current_tool==TOOL_CONNECT && event->button()==Qt::LeftButton)
 	{
@@ -90,7 +91,7 @@ void ProcessScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
 
 }
 
-void ProcessScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
+void WorkspaceScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
 	if (current_tool==TOOL_CONNECT && current_conn)
 	{
@@ -102,7 +103,7 @@ void ProcessScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 	}
 }
 
-void ProcessScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
+void WorkspaceScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
 	QGraphicsScene::mouseReleaseEvent(event);
 	if (!event->isAccepted())
@@ -110,7 +111,7 @@ void ProcessScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 		{
 			case TOOL_NEWQUEUE:
 //				addQueue(event->scenePos());
-				emit(addQueueRequested(event->screenPos()));
+				emit(addQueueRequested(event->scenePos()));
 				break;
 			case TOOL_NEWOPERATION:
 				addOperation(event->scenePos());
@@ -138,7 +139,7 @@ void ProcessScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 		}
 }
 
-ObjectItem* ProcessScene::findItem(const QPointF &pos)
+ObjectItem* WorkspaceScene::findItem(const QPointF &pos)
 {
 	ObjectItem* item = 0;
 
@@ -165,7 +166,7 @@ ObjectItem* ProcessScene::findItem(const QPointF &pos)
 	return item;
 }
 
-void ProcessScene::addQueue(const QPoint &position)
+void WorkspaceScene::addQueue(const QPointF &position)
 {
 	QueueItem* queue = new QueueItem();
 	queue->setSharedRenderer(queue_renderer);
@@ -176,7 +177,7 @@ void ProcessScene::addQueue(const QPoint &position)
 	addItem(queue);
 }
 
-void ProcessScene::addOperation(const QPointF &position)
+void WorkspaceScene::addOperation(const QPointF &position)
 {
 	OperationItem* operation = new OperationItem();
 	operation->setSharedRenderer(operation_renderer);
@@ -187,7 +188,7 @@ void ProcessScene::addOperation(const QPointF &position)
 
 }
 
-void ProcessScene::startConnection(ObjectItem* item)
+void WorkspaceScene::startConnection(ObjectItem* item)
 {
 	if (current_conn)
 		delete current_conn;
@@ -196,13 +197,13 @@ void ProcessScene::startConnection(ObjectItem* item)
 	addItem(current_conn);
 }
 
-void ProcessScene::cancelConnection()
+void WorkspaceScene::cancelConnection()
 {
 	removeItem(current_conn);
 	current_conn = 0;
 }
 
-void ProcessScene::closeConnection(ObjectItem* item)
+void WorkspaceScene::closeConnection(ObjectItem* item)
 {
 	if (current_conn->close(item))
 	{

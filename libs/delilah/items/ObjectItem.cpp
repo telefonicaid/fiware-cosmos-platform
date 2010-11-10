@@ -8,7 +8,7 @@
 #include <QSize>
 
 #include "ObjectItem.h"
-#include "ProcessScene.h"
+#include "WorkspaceScene.h"
 #include "globals.h"
 #include "ConnectionItem.h"
 #include "InfoBox.h"
@@ -61,7 +61,7 @@ void ObjectItem::setSize(QSize size)
 
 void ObjectItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
-	ProcessScene* s = (ProcessScene*)scene();
+	WorkspaceScene* s = (WorkspaceScene*)scene();
 	switch(s->getTool())
 	{
 		case TOOL_SELECT:
@@ -76,7 +76,7 @@ void ObjectItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 
 void ObjectItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
-	ProcessScene* s = (ProcessScene*)scene();
+	WorkspaceScene* s = (WorkspaceScene*)scene();
 	switch(s->getTool())
 	{
 		case TOOL_SELECT:
@@ -90,7 +90,7 @@ void ObjectItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
 void ObjectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
-	ProcessScene* s = (ProcessScene*)scene();
+	WorkspaceScene* s = (WorkspaceScene*)scene();
 	switch(s->getTool())
 	{
 		case TOOL_SELECT:
@@ -126,7 +126,7 @@ bool ObjectItem::isConnected(ObjectItem* item)
 
 void ObjectItem::showInfoBox()
 {
-//	ProcessScene* s = (ProcessScene*)scene();
+//	WorkspaceScene* s = (WorkspaceScene*)scene();
 
 	InfoBox* info_box = new InfoBox();
 	// TODO: generate proper text

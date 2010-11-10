@@ -13,7 +13,7 @@
 
 #include "QueueItem.h"
 //#include "globals.h"
-//#include "ProcessScene.h"
+//#include "WorkspaceScene.h"
 
 QueueItem::~QueueItem()
 {

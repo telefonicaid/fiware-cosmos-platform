@@ -1,17 +1,16 @@
 /*
- * ProcessScene.h
+ * WorkspaceScene.h
  *
  *  Created on: Oct 18, 2010
  *      Author: ania
  */
 
-#ifndef PROCESSSCENE_H_
-#define PROCESSSCENE_H_
+#ifndef WORKSPACESCENE_H_
+#define WORKSPACESCENE_H_
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneContextMenuEvent>
 #include <QPointF>
-#include <QAction>
 
 #include "globals.h"
 
@@ -19,20 +18,20 @@ class QSvgRenderer;
 class ConnectionItem;
 class ObjectItem;
 
-class ProcessScene: public QGraphicsScene
+class WorkspaceScene: public QGraphicsScene
 {
 	Q_OBJECT
 
 public:
-	ProcessScene(QObject* parent = 0);
-	~ProcessScene();
+	WorkspaceScene(QObject* parent = 0);
+	~WorkspaceScene();
 
 	int getTool() {return current_tool; };
 
 public slots:
 	void setTool(int tool) { current_tool = tool; };
-	void addQueue(const QPoint &position = QPoint(0.0, 0.0) );
-	void addOperation(const QPointF &position = QPoint(0.0, 0.0));
+	void addQueue(const QPointF &pos=QPoint(0.0, 0.0) );
+	void addOperation(const QPointF &pos=QPoint(0.0, 0.0));
 	void zoomOut();
 	void zoomReset();
 	void zoomIn();
@@ -42,7 +41,7 @@ public slots:
 	void cancelConnection();
 
 signals:
-	void addQueueRequested(const QPoint &);
+	void addQueueRequested(const QPointF &);
 
 protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
@@ -60,29 +59,5 @@ protected:
     ConnectionItem* current_conn;
 };
 
-class NewQueueAction : public QAction
-{
-	Q_OBJECT
 
-public:
-	NewQueueAction(QObject* parent) : QAction(parent)
-		{ connect(this, SIGNAL(triggered()), this, SLOT(triggerAtPos()));};
-	NewQueueAction(const QString & text, QObject* parent) : QAction(text, parent)
-		{ connect(this, SIGNAL(triggered()), this, SLOT(triggerAtPos())); };
-	~NewQueueAction() {};
-
-	void setPosition(QPointF p) { pos=p; };
-	QPointF position() { return pos; };
-
-protected slots:
-	void triggerAtPos() { emit(triggered(pos)); };
-
-signals:
-	void triggered(QPointF);
-
-private:
-	QPointF pos;
-};
-
-
-#endif /* PROCESSSCENE_H_ */
+#endif /* WORKSPACESCENE_H_ */

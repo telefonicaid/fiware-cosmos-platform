@@ -12,7 +12,7 @@
 
 int DelilahQt::run( int argc , const char * argv[] )
 {
-	app = new DelilahQtApp(argc, (char**) argv);
+	app = new DelilahQtApp(argc, (char**) argv, dalilah);
 	return app->exec();
 }
 

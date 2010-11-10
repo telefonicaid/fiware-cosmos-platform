@@ -9,10 +9,11 @@ IF(QT4_FOUND)
 		DelilahQt.cpp
 		DelilahQtApp.cpp
 		MainWindow.cpp
-		ProcessView.cpp
-		ProcessScene.cpp
+		Workspace.cpp
+		WorkspaceView.cpp
+		WorkspaceScene.cpp
 		gui/InfoBox.cpp
-		gui/NewTXTQueueDlg.cpp
+		gui/CreateTXTQueueDlg.cpp
 		items/ObjectItem.cpp
 		items/QueueItem.cpp
 		items/OperationItem.cpp
@@ -21,24 +22,26 @@ IF(QT4_FOUND)
 	SET (HEADERS
 		Delilah.h
 		DelilahConsole.h
-		DelilahQt.h
-		ProcessView.h)
+		DelilahQt.h)
 	
 	SET (HEADERS_MOC
-		MainWindow.h
 		DelilahQtApp.h
-		ProcessScene.h
+		MainWindow.h
+		Workspace.h
+		WorkspaceView.h
+		WorkspaceScene.h
 		gui/InfoBox.h
-		gui/NewTXTQueueDlg.h
+		gui/CreateTXTQueueDlg.h
 		items/ObjectItem.h
 		items/QueueItem.h
 		items/OperationItem.h
-		items/ConnectionItem.h)
+		items/ConnectionItem.h
+		Misc.h)
 	
 	SET (FORMS
 		MainWindow.ui
 		gui/forms/InfoBox.ui
-		gui/forms/NewTXTQueueDlg.ui)
+		gui/forms/CreateTXTQueueDlg.ui)
 	
 	SET (RESOURCES
 		resources/objects.qrc

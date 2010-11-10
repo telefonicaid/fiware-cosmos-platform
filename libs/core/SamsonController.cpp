@@ -105,7 +105,7 @@ namespace ss {
 			response->set_operations(false);
 		
 		
-		
+		LM_M(("help response with %d bytes", p.message.ByteSize()));
 		network->send(this, fromId, Message::HelpResponse, &p);
 		return 0;
 	}
@@ -276,3 +276,4 @@ namespace ss {
 
 	
 }
+

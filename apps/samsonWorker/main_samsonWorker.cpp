@@ -8,10 +8,13 @@
 
 int main(int argC, const char *argV[])
 {
-	ss::SamsonWorker  worker(argC, argV);
+	ss::SamsonWorker  worker;
 	ss::Network*      networkP;
 	ss::EndpointMgr*  epMgr;
 
+	worker.logInit(argV[0]);
+	worker.parseArgs(argC, argV);
+	
 	networkP = new ss::Network();
 	epMgr    = new ss::EndpointMgr(networkP, worker.endpoints, worker.workers);
 

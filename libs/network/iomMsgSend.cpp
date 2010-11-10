@@ -83,6 +83,8 @@ int iomMsgSend
 		LM_WRITES(to, "google pbuffer", ioVec[vecs].iov_base, ioVec[vecs].iov_len, LmfByte);
 		++vecs;
 	}
+	else
+		LM_M(("NULL Google protocol buffer"));
 
 	if (packetP && packetP->buffer != 0)
 	{
@@ -112,10 +114,10 @@ int iomMsgSend
 	}
 
 	if (s != (ssize_t) (ioVec[0].iov_len + ioVec[1].iov_len + ioVec[2].iov_len + ioVec[3].iov_len))
-	   LM_X(1, ("written only %d bytes, wanted to write %d (%d + %d + %d + %d)",
-				s, 
-				ioVec[0].iov_len + ioVec[1].iov_len + ioVec[2].iov_len + ioVec[3].iov_len,
-				ioVec[0].iov_len, ioVec[1].iov_len, ioVec[2].iov_len, ioVec[3].iov_len));
+		LM_X(1, ("written only %d bytes, wanted to write %d (%d + %d + %d + %d)",
+				 s, 
+				 ioVec[0].iov_len + ioVec[1].iov_len + ioVec[2].iov_len + ioVec[3].iov_len,
+				 ioVec[0].iov_len, ioVec[1].iov_len, ioVec[2].iov_len, ioVec[3].iov_len));
 
 	LM_T(LMT_WRITE, ("written %d bytes to '%s' (fd %d)", s, to, fd));
 
@@ -123,5 +125,5 @@ int iomMsgSend
 	if (dataLen != 0)
 		LM_WRITES(to, "message data",  ioVec[1].iov_base, ioVec[1].iov_len, LmfByte);
 
-	return s;
+	return 0;
 }	

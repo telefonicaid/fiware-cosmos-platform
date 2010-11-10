@@ -355,7 +355,7 @@ size_t Network::send(PacketSenderInterface* sender, int endpointId, ss::Message:
 
 	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", messageCode(code), endpointId));
 
-	int nb = iomMsgSend(ep->fd, ep->name.c_str(), me->name.c_str(), code, Message::Msg, packetP, NULL, 0);
+	int nb = iomMsgSend(ep->fd, ep->name.c_str(), me->name.c_str(), code, Message::Msg, NULL, 0, packetP);
 
 	if (sender)
 		sender->notificationSent(0, true);

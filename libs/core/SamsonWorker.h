@@ -37,7 +37,7 @@ namespace ss {
 		friend class ProcessAssistant;
 
 	public:
-		SamsonWorker(int argc, const char* argv[] );
+		SamsonWorker(void);
 
 		
 		// command line argument variables
@@ -58,7 +58,7 @@ namespace ss {
 		LoadDataManager loadDataManager;	// Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
 
 
-	private:
+	public:
 		void parseArgs(int argC, const char* argV[]);
 		void logInit(const char*);
 

@@ -237,18 +237,11 @@ void ProcessAssistant::run(void)
 		char* result;
 
 		// Get the next item to process ( this call is blocked if no task is available )
-		std::cout << "Getting command\n";
 		WorkerTaskItem *item =  worker->taskManager.getNextItemToProcess();
-		std::cout << "Running command\n";
-		
-		//LM_T(LMT_COREWORKER, ("Sleeping 10 secs"));
-		//sleep(10);
 
-		LM_T(LMT_COREWORKER, ("Running a command"));
+		LM_T(LMT_COREWORKER, ("Running command '%s'", item->operation.c_str()));
 		result = runCommand(sFd, (char*) item->operation.c_str() , 5);
 
-		std::cout << "Receive: " << result << "\n";
-		
 		// Loop receiving command from the Process until "finish" or "crash" received
 		while( (strcmp(result, "finish") != 0 ) && (strcmp(result, "crash") != 0) && (strcmp(result, "error") != 0 ) )
 		{
@@ -267,7 +260,7 @@ void ProcessAssistant::run(void)
 		{
 			LM_W(("Got finish from runCommand"));
 			worker->taskManager.finishItem(item, false, "");
-			// finishItem();
+			result = runCommand(sFd, (char*) "ok" , 5);
 		}
 		else if (strcmp(result, "crash") == 0)
 		{
@@ -281,7 +274,6 @@ void ProcessAssistant::run(void)
 		  LM_W(("child process error - starting a new process"));
 		  // ALARM(Alarm::Error, Alarm::CoreWorkerDied, ("Core worker %d died", core));
 		  worker->taskManager.finishItem(item, true, "Process error");
-		  coreWorkerStart(progName, port);
 		}
 			  
 		free(result);
@@ -315,9 +307,9 @@ char* ProcessAssistant::runCommand(int fd, char* command, int timeOut)
 	Message::MessageType  msgType;
 	char*                 result;
 
-	s = iomMsgSend(fd, "coreWorker", progName, Message::Command, Message::Msg, command, strlen(command));
+	s = iomMsgSend(fd, "coreWorker", progName, Message::Command, Message::Msg, command, strlen(command) + 1);
 	if (s != 0)
-		return strdup("error");
+		LM_RP(strdup("error"), ("iomMsgSend error"));
 
 	while (1)
 	{
@@ -325,29 +317,18 @@ char* ProcessAssistant::runCommand(int fd, char* command, int timeOut)
 		if (s == -2)
 			return strdup("timeout");
 		else if (s != 1)
-			return strdup("error");
+			LM_RE(strdup("error"), ("iomMsgAwait returned -1"));
 
 		s = iomMsgRead(fd, "coreWorker", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
 		if (s == -2)
 		{
 			LM_E(("connection closed by core child process ..."));
-			coreWorkerStart(progName, port);
+			LM_RE(strdup("crash"), ("coreWorker died"));
 		}
 		else if (s != 0)
-		{
-			LM_E(("iomMsgRead error"));
-			coreWorkerStart(progName, port);
-		}
+			LM_RE(strdup("error"), ("iomMsgRead error"));
 
-		if (msgCode == Message::Command)
-		{
-			if (s == -2)
-				result = strdup("crash");
-			else if (s != 0)
-				result = strdup("error");
-			else 
-				result = strdup(out);
-		}
+		return strdup((char*) dataP);
 #if 0
 		else if (msgCode == Message::Alarm)
 		{

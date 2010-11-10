@@ -97,26 +97,10 @@ void Process::run(void)
 */
 void Process::runCommand(const char* command)
 {
-	std::cout << "Process running: " << command << std::endl;
-	
-	int x = 0;
-
 	LM_M(("running command '%s'", command));
 
-	while (1)
-	{
-		sleep(3);  // sleep for a while in each loop
-		++x;
-
-		if ((x % 3) == 0)
-			passCommand("X is a multiple of three");
-
-		if (x >= 20)
-		{
-			passCommand("finish");
-			break;
-		}
-	}
+	sleep(1);
+	passCommand("finish");
 
 	LM_M(("command '%s' finished", command));
 }
@@ -139,6 +123,7 @@ char* Process::passCommand(const char* command)
 	LM_M(("passing command '%s' to father", command));
 
 	iomMsgSend(fd, "father", progName, Message::Command, Message::Msg, (void*) command, strlen(command));
+
 	fds = iomMsgAwait(fd, 5, 0);
 	if (fds != 1)
 		LM_W(("iomMsgAwait returned %d", fds));

@@ -23,10 +23,8 @@ namespace ss {
 *
 * Constructor
 */
-SamsonWorker::SamsonWorker(int argC, const char* argV[] ) :  taskManager(this) , loadDataManager(this)
+SamsonWorker::SamsonWorker(void) :  taskManager(this) , loadDataManager(this)
 {
-	logInit(argV[0]);
-	parseArgs(argC, argV);
 }
 
 
@@ -88,10 +86,6 @@ void SamsonWorker::parseArgs(int argC, const char* argV[])
 	workers    = commandLine.get_flag_int("workers");
 	alias      = commandLine.get_flag_string("alias");
 
-	// Init log execpt of no_log flag is activated
-	if( !commandLine.get_flag_bool("no_log") )
-		logInit(argV[0]);
-	
 	if (alias == "no_alias")
 		LM_X(1, ("Please specify alias with -alias <alias>"));
 
@@ -103,9 +97,6 @@ void SamsonWorker::parseArgs(int argC, const char* argV[])
 		LM_X(1, ("lmTraceSet: %s", lmStrerror(s)));
 
 	LM_T(LMT_SAMSON_WORKER, ("Samson worker running at port %d controller: %s", port, controller.c_str()));
-
-	
-
 }
 
 
@@ -118,8 +109,8 @@ void SamsonWorker::endpointMgrSet(ss::EndpointMgr* _epMgr)
 {
 	epMgr = _epMgr;
 
-	epMgr->packetReceiverSet(this);
-	epMgr->init(Endpoint::Worker, alias.c_str(), port, controller.c_str());
+	// epMgr->packetReceiverSet(this);
+	// epMgr->init(Endpoint::Worker, alias.c_str(), port, controller.c_str());
 }
 
 
@@ -131,8 +122,8 @@ void SamsonWorker::endpointMgrSet(ss::EndpointMgr* _epMgr)
 void SamsonWorker::networkSet(NetworkInterface* network)
 {
 	this->network = network;
-	// network->setPacketReceiverInterface(this);
-	// network->initAsSamsonWorker(port, alias.c_str(), controller.c_str());
+	network->setPacketReceiverInterface(this);
+	network->initAsSamsonWorker(port, alias.c_str(), controller.c_str());
 }
 
 
@@ -167,8 +158,11 @@ void SamsonWorker::run()
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
 
 	
-	assert(epMgr);
-	epMgr->run();
+	// assert(epMgr);
+	// epMgr->run();
+
+	assert(network);
+	network->run();
 }
 
 

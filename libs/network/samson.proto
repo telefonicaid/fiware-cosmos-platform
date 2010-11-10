@@ -1,22 +1,5 @@
 package ss.network;
 
-// ////////////////////////////////////////////////////////////////////////////
-//
-// EndPoint data
-//
-message EndPoint
-{
-	required sint32  port = 1;   // Port
-	required sint32  type = 2;   // Endpoint::Type
-	required string  ip   = 3;   // Server
-	optional string  name = 4;   // Name for debugging
-}
-
-message EndPointVector
-{
-	repeated EndPoint item = 1;
-}
-
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -201,16 +184,16 @@ message Message
 	};
 
 
+
 	// ////////////////////////////////////////////////////////////////////////////
 	//
 	// Message Data (only one of these structures per message
 	//
-	optional EndPointVector         endPoints                 = 102;  // Vector of endPoints
-	optional Command command= 103;  			    	  // Command message
-	optional CommandResponse command_response = 104;  		  // Command response message
-	optional WorkerTask worker_task	= 105;  			  // Work task message
+	optional Command                command                   = 103;  // Command message
+	optional CommandResponse        command_response          = 104;  // Command response message
+	optional WorkerTask             worker_task	              = 105;  // Work task message
 	optional WorkerTaskConfirmation worker_task_confirmation  = 106;  // Work task confirmation message
-	optional WorkerDataExchange data = 107;  		    	  // Exchange of data packets between nodes     
-	optional Help help = 108; 					  // Ask for help ( queues / datas / operations )
-	optional HelpResponse help_response = 109;			  // Response for the ask help message   			     
+	optional WorkerDataExchange     data                      = 107;  // Exchange of data packets between nodes     
+	optional Help                   help                      = 108;  // Ask for help ( queues / datas / operations )
+	optional HelpResponse           help_response             = 109;  // Response for the ask help message   			     
 }

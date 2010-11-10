@@ -86,16 +86,6 @@ namespace ss {
 		{
 			buffer = NULL;
 		};
-
-		void      endpointAdd(Endpoint* e);
-		Endpoint  endpointGet(int i);
-		void      endpointVectorAdd(std::vector<Endpoint>& es);
-		int       endpointVecSize(void);
-
-		/**
-		 Debug string with information about the packet
-		 */
-		std::string str();
 	};
 }
 

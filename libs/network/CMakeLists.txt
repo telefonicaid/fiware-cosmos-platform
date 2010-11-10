@@ -22,7 +22,6 @@ SET (SOURCES
 	Message.cpp
 	samson.pb.cc
 	Network.cpp
-	Packet.cpp
 	Endpoint.cpp
 	iomInit.cpp
 	iomServerOpen.cpp

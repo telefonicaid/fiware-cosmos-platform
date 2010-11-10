@@ -23,7 +23,6 @@ namespace ss {
 	// Function used to get the size of data from the stream of bytes
 	typedef int(* DataSizeFunction)(char *data);
 	
-	
 	// Templatd function to create an instance of DataInstance
 	template <class T>
 	DataInstance* getDataIntace()
@@ -47,7 +46,6 @@ namespace ss {
 		DataCompareFunction _compareFunction;				// Function used to compare (when used as key )
 		DataSizeFunction _sizeFunction;						// Function used to get the size
 		
-		
 	public:
 		
 		/**
@@ -59,18 +57,13 @@ namespace ss {
 			_name = name;
 			_creationFunction = creationFunction;
 			
-			_helpMessage = "Help comming soon\n";
+			_helpMessage = "Help comming soon";
 		}
 		
 		std::string getName()
 		{
 			return _name;
 		}
-		
-		/**
-		 This functions inform about the fixed size of this Data
-		 Otherwise -1 is return
-		 */
 		
 		DataInstance * getInstance()
 		{

@@ -93,14 +93,16 @@ namespace ss {
 		}
 		else
 			response->set_datas(false);
-			
+
+		
 		if( packet->message.help().operations() )
 		{
 			// Fill with operations information
 			modulesManager.helpOperations( response );
 			response->set_operations(true);
 		}
-		response->set_operations(false);
+		else
+			response->set_operations(false);
 		
 		
 		
@@ -111,7 +113,6 @@ namespace ss {
 	
 	int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
-		au::CommandLine     cmdLine;
 
 		switch (msgCode)
 		{
@@ -123,6 +124,24 @@ namespace ss {
 				
 			case Message::Command:
 			{
+				// Temporal interruption for debugging
+				// **********************************************************************
+				au::CommandLine cmdLine;
+				cmdLine.parse(packet->message.command().command());
+				if(( cmdLine.get_num_arguments() > 0) && (cmdLine.get_argument(0)=="status"))
+				{
+					Packet p;
+					network::CommandResponse *response = p.message.mutable_command_response();
+					response->set_response( getStatus() );
+					response->set_error( false );
+					response->set_finish( true );
+					response->set_sender_id( packet->message.command().sender_id() );
+					network->send(this, fromId, Message::CommandResponse, &p);
+					return 0;
+				}
+				// **********************************************************************
+				
+				
 				// Create a new job with this command
 				jobManager.addJob( fromId , packet->message.command().sender_id(), packet->message.command().command() );
 				return 0;
@@ -131,7 +150,7 @@ namespace ss {
 			break;
 
 		case Message::WorkerTaskConfirmation:
-			taskManager.notifyWorkerConfirmation(fromId, packet->message.worker_task_confirmation());
+			taskManager.notifyWorkerConfirmation(fromId, packet->message.worker_task_confirmation() );
 			break;
 
 		case Message::WorkerStatus:
@@ -214,8 +233,10 @@ namespace ss {
 	
 #pragma mark Help messages
 	
-	void SamsonController::getStatus(std::ostringstream &output)
+	std::string SamsonController::getStatus()
 	{
+		
+		std::ostringstream output;
 		
 		output << "Status of Controller" << std::endl;			
 		output << "== ************** ==" << std::endl;
@@ -248,6 +269,8 @@ namespace ss {
 			++workersFound;
 		} while (workersFound < workers);
 #endif				
+	
+		return output.str();
 		
 	}
 

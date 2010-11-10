@@ -43,15 +43,18 @@ namespace ss {
 	
 	void JobManager::notifyFinishTask( size_t job_id , size_t task_id , std::vector<network::WorkerTaskConfirmation> &confirmationMessages )
 	{
+		
 		lock.lock();
 		
 		Job *j =  job.findInMap( job_id );
 		if( j )
 		{
+			
 			j->notifyTaskFinish( task_id , confirmationMessages );
 			
-			if( !j->isFinish() )
+			if( j->isFinish() )
 			{
+				
 				controller->data.finishTask( job_id );
 				j->sentConfirmationToDelilah( );
 				removeJob(j);

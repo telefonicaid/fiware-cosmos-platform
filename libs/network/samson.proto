@@ -43,7 +43,6 @@ message WorkerTaskConfirmation
 	required int64 task_id  = 1;	       // Id of the opt level (controller ) task
 	required bool  error    = 2;  	       // Error in the operation
 	optional string error_message = 3;     // Message to debug the error
-	required QueueFiles output = 4;	       // Files created as output for this operation ( to be stored at the controller for future operations )
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -54,8 +53,7 @@ message WorkerTaskConfirmation
 message Command
 {
 	optional string  command   = 1;          // optimal string to send a txt command
-	optional bool    error     = 2;          // Flag to indicat if there was an error
-	optional uint64   sender_id = 3;          // Id of the packet sender ( delilah )
+	optional uint64  sender_id = 2;          // Id of the packet sender ( delilah )
 }
 
 message Help

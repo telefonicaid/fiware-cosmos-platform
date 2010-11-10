@@ -23,7 +23,7 @@ namespace ss {
 *
 * Constructor
 */
-SamsonWorker::SamsonWorker(int argC, const char* argV[] ) :  taskManager(this)
+SamsonWorker::SamsonWorker(int argC, const char* argV[] ) :  taskManager(this) , loadDataManager(this)
 {
 	logInit(argV[0]);
 	parseArgs(argC, argV);
@@ -75,7 +75,8 @@ void SamsonWorker::parseArgs(int argC, const char* argV[])
 	commandLine.set_flag_string("alias",       "no_alias");
 	commandLine.set_flag_boolean("r");
 	commandLine.set_flag_boolean("w");
-
+	commandLine.set_flag_boolean("no_log");
+	
 	commandLine.parse(argC, argV);
 
 	port       = commandLine.get_flag_int("port");
@@ -87,6 +88,10 @@ void SamsonWorker::parseArgs(int argC, const char* argV[])
 	workers    = commandLine.get_flag_int("workers");
 	alias      = commandLine.get_flag_string("alias");
 
+	// Init log execpt of no_log flag is activated
+	if( !commandLine.get_flag_bool("no_log") )
+		logInit(argV[0]);
+	
 	if (alias == "no_alias")
 		LM_X(1, ("Please specify alias with -alias <alias>"));
 
@@ -98,6 +103,9 @@ void SamsonWorker::parseArgs(int argC, const char* argV[])
 		LM_X(1, ("lmTraceSet: %s", lmStrerror(s)));
 
 	LM_T(LMT_SAMSON_WORKER, ("Samson worker running at port %d controller: %s", port, controller.c_str()));
+
+	
+
 }
 
 
@@ -192,19 +200,33 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		// A packet with a particular command is received (controller expect to send a confirmation message)
 		LM_T(LMT_TASK, ("Got a WorkerTask message"));
 
+		
 		// add task to the task manager
 		taskManager.addTask( packet->message.worker_task() );
+	
+		return 0;
+	}
+
 		
-		
-			return 0;
-		}
-		
+		/**
+		 Load txt files to be latter confirmed to controller
+		 
+		 */
+	
+	if (msgCode == Message::LoadData)
+	{
+		std::ostringstream fileName;
+		fileName << "/tmp/file_" << rand() << rand();	// Just to test
+		loadDataManager.addFile( packet->buffer , fileName.str() , fromId );
+	}
+	
+	
+	
 		/**
 		 Data packets go directly to the DataBuffer to be joined and flushed to disk
 		 DataManager is notifyed when created a new file or finish everything 
 		 */
 		
-
 		if( msgCode == Message::WorkerDataExchange )
 		{
 			// New data packet for a particular queue inside a particular task environment
@@ -222,8 +244,4 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 
 
 
-void SamsonWorker::notificationSent(size_t id, bool success)
-{
-	// Do something
-}
 }

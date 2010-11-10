@@ -3,6 +3,7 @@
 #include "Job.h"				// Own interface
 #include "SamsonController.h"	// ss::SamsonController
 #include "CommandLine.h"		// au::CommandLine
+#include "samson/Operation.h"	// ss::Operation
 
 namespace ss {
 
@@ -35,6 +36,15 @@ namespace ss {
 			}
 				
 
+			Operation *operation = controller->modulesManager.getOperation( c );
+			
+			if(  operation && (operation->getType() == Operation::generator ) ) 
+			{
+				// No validation of the arguments rigth now... ( just for testing )
+				task_id = controller->taskManager.addTask( command , id );
+				return false;	// No continue until confirmation of this task is received
+			}
+			
 			// Normal taks
 			// ------------------------------------------
 			// controller->taskManager.addTask(XXX)

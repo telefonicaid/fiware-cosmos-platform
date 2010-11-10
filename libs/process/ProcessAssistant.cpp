@@ -236,26 +236,54 @@ void ProcessAssistant::run(void)
 	{
 		char* result;
 
-		LM_T(LMT_COREWORKER, ("Sleeping 10 secs"));
-		// getNextItemToProcess();
-		sleep(10);
+		// Get the next item to process ( this call is blocked if no task is available )
+		std::cout << "Getting command\n";
+		WorkerTaskItem *item =  worker->taskManager.getNextItemToProcess();
+		std::cout << "Running command\n";
+		
+		//LM_T(LMT_COREWORKER, ("Sleeping 10 secs"));
+		//sleep(10);
 
 		LM_T(LMT_COREWORKER, ("Running a command"));
-		result = runCommand(sFd, (char*) "test", 5);
+		result = runCommand(sFd, (char*) item->operation.c_str() , 5);
 
+		std::cout << "Receive: " << result << "\n";
+		
+		// Loop receiving command from the Process until "finish" or "crash" received
+		while( (strcmp(result, "finish") != 0 ) && (strcmp(result, "crash") != 0) && (strcmp(result, "error") != 0 ) )
+		{
+			std::cout << "Receive: " << result << "\n";
+			
+			// Do something with the received command ( create a buffer with output data )
+			// TODO: pending
+			free(result);
+			
+			result = runCommand(sFd, (char*) "continue" , 5);
+		}
+		
+		// Report finish of this task
+		
 		if (strcmp(result, "finish") == 0)
 		{
 			LM_W(("Got finish from runCommand"));
+			worker->taskManager.finishItem(item, false, "");
 			// finishItem();
 		}
 		else if (strcmp(result, "crash") == 0)
 		{
 			LM_W(("child process crashed - starting a new process"));
 			// ALARM(Alarm::Error, Alarm::CoreWorkerDied, ("Core worker %d died", core));
-			// finishItem();
+			worker->taskManager.finishItem(item, true, "Process crashed");
 			coreWorkerStart(progName, port);
 		}
-
+		else if (strcmp(result, "error") == 0)
+		{
+		  LM_W(("child process error - starting a new process"));
+		  // ALARM(Alarm::Error, Alarm::CoreWorkerDied, ("Core worker %d died", core));
+		  worker->taskManager.finishItem(item, true, "Process error");
+		  coreWorkerStart(progName, port);
+		}
+			  
 		free(result);
 	}
 }

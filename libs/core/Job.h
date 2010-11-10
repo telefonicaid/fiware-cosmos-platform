@@ -110,8 +110,10 @@ namespace ss {
 		
 		void run()
 		{
+			
 			while( !finish && !error && items.size() > 0)	// While there si something to process
 			{
+				
 				JobItem& item = items.top();
 				
 				if( item.isFinish() )
@@ -122,6 +124,9 @@ namespace ss {
 						return;	// No continue since a task has been scheduled ( or an error ocurred )
 				}
 			}
+			
+			if ( error )
+				finish = true;	// Just to make sure we cancel everything
 
 			// Mark the end of the job if there are no more elements to process
 			if( items.size() == 0)
@@ -136,6 +141,17 @@ namespace ss {
 		// Call back received when a task is finished
 		void notifyTaskFinish( size_t _task_id , std::vector<network::WorkerTaskConfirmation> &confirmationMessages )
 		{
+			// Lock confirmation messages to see if there are errors
+			for (size_t i = 0 ; i < confirmationMessages.size(); i++)
+			{
+				if( confirmationMessages[i].error() )
+				{
+					error = true;
+					output << "Error: " << confirmationMessages[i].error_message() << std::endl;
+				} 
+			}
+			
+			
 			assert( task_id == _task_id );
 			run();
 		}

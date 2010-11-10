@@ -102,16 +102,18 @@ namespace ss {
 				
 				lock.unlock();
 				
-				if( sendingPackets.size() > 0)
-				
-				for (std::vector<NetworkFakeCenterPacket*>::iterator p = sendingPackets.begin() ; p < sendingPackets.end() ; p++)
+				if( sendingPackets.size() > 0 )
 				{
-					NetworkFakeCenterPacket* pp = *p;
-					processPendingPacket(pp);
-					delete pp;
+					
+					for (std::vector<NetworkFakeCenterPacket*>::iterator p = sendingPackets.begin() ; p < sendingPackets.end() ; p++)
+					{
+						NetworkFakeCenterPacket* pp = *p;
+						processPendingPacket(pp);
+						delete pp;
+					}
 				}
-				
-				sleep(1);
+				else
+					sleep(1);
 			}
 		}
 		

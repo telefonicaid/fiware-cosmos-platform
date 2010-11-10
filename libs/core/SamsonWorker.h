@@ -22,75 +22,79 @@
 #include "ModulesManager.h"		// ss::ModulesManager
 #include "WorkerTaskManager.h"	// ss::WorkerTaskManager
 #include "DataBuffer.h"			// ss::DataBuffer
-
+#include "LoadDataManager.h"	// ss::LoadDataManager
 
 
 namespace ss {
 	
 	class EndpointMgr;
 	class ProcessAssistant;
-
-class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
-{
-	friend class WorkerTaskManager;
-	friend class WorkerDataManager;
-
-public:
-	SamsonWorker(int argc, const char* argv[] );
-
-	
-	// command line argument variables
-	int          port;
-	int          endpoints;
-	int          workers;
-	std::string  controller;
-	std::string  traceV;
-	std::string  alias;
-
-private:
-	EndpointMgr*        epMgr;             // Endpoint Manager
-	NetworkInterface*   network;           // Network interface
-	WorkerTaskManager   taskManager;       // Task manager
-	ModulesManager      modulesManager;    // Manager of the modules we have
-	ProcessAssistant**  processAssistant;  // Vector of process assistants
-	DataBuffer          dataBuffer;        // Element used to buffer incomming data packets before they are joined and saved to disk
-
-
-private:
-	void parseArgs(int argC, const char* argV[]);
-	void logInit(const char*);
-
-private:
-	Message::WorkerStatusData status;
-
-public:
-	void networkSet(NetworkInterface* network);
-	void endpointMgrSet(ss::EndpointMgr* epMgr);
-
-
-	// Main routine
-	void run();
-	void test();
-
-
-	// PacketReceiverInterface
-	virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
-
-	// PacketSenderInterface
-	virtual void notificationSent(size_t id, bool success);
 		
+	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
+	{
+		friend class WorkerTaskManager;
+		friend class LoadDataManager;
+		friend class ProcessAssistant;
+
+	public:
+		SamsonWorker(int argc, const char* argv[] );
+
+		
+		// command line argument variables
+		int          port;
+		int          endpoints;
+		int          workers;
+		std::string  controller;
+		std::string  traceV;
+		std::string  alias;
+
 	private:
-		
-#if 0
-	/** 
-		Send a WorkerStatus message to controller
-	*/
-		
-	void sendWorkerStatus();
-#endif
-		
-};
+		EndpointMgr*        epMgr;             // Endpoint Manager
+		NetworkInterface*   network;           // Network interface
+		WorkerTaskManager   taskManager;       // Task manager
+		ModulesManager      modulesManager;    // Manager of the modules we have
+		ProcessAssistant**  processAssistant;
+		DataBuffer dataBuffer;				// Element used to buffer incomming data packets before they are joined and saved to disk
+		LoadDataManager loadDataManager;	// Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
 
+
+	private:
+		void parseArgs(int argC, const char* argV[]);
+		void logInit(const char*);
+
+	private:
+		Message::WorkerStatusData status;
+
+	public:
+		void networkSet(NetworkInterface* network);
+		void endpointMgrSet(ss::EndpointMgr* epMgr);
+
+
+		// Main routine
+		void run();
+		void test();
+
+
+		// PacketReceiverInterface
+		virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
+			
+		private:
+			
+	#if 0
+		/** 
+			Send a WorkerStatus message to controller
+		*/
+			
+		void sendWorkerStatus();
+	#endif
+
+		
+		virtual void notificationSent(size_t id, bool success)
+		{
+		}
+		
+		
+	};
 }
 
 #endif

@@ -17,8 +17,8 @@ namespace ss
 		//task.insertInMap( t->getId() , t ); // No idea why this is not working :(
 		task.insert( std::pair<size_t , ControllerTask*>( t->getId() , t));
 			
-		// Put the task in running by sending to all workers
-		controller->sendWorkerTasks( t );										// Send the command to all the workers to perform this task
+		// Send this task to all the workers
+		controller->sendWorkerTasks( t );										
 		
 		lock.unlock();
 
@@ -28,16 +28,17 @@ namespace ss
 	
 	void ControllerTaskManager::notifyWorkerConfirmation( int worker_id, network::WorkerTaskConfirmation confirmationMessage )
 	{
-		
 		// get the task id that is confirmed
 		size_t task_id = confirmationMessage.task_id();
 
 		lock.lock();
 		
 		ControllerTask * t = task.findInMap( task_id );
-		
+
+	
 		if( t )
 		{
+			
 			// Get the job id
 			size_t job_id = t->getJobId();
 			
@@ -46,6 +47,7 @@ namespace ss
 			
 			if( t->isFinish() )
 			{
+				
 				// Notify the JobManager that this task is finish
 				controller->jobManager.notifyFinishTask( job_id ,task_id , t->confirmationMessages );
 				

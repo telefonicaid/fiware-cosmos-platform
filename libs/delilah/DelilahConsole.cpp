@@ -83,14 +83,17 @@ namespace ss
 				
 			}
 			
-			// Eval what to do with this command
+			// Normal command send to the controller
+			Packet p;
+			network::Command *c = p.message.mutable_command();
+			c->set_command( command );
+			c->set_sender_id( id++ );
+			dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Command, &p);
+
 			
-			/*
-			size_t code = dalilah->sendMessageToController( command );
 			std::ostringstream o;
-			o << "Sent command to controller (id="<<code<<") : " << command;
+			o << "Sent command to controller (id="<<id-1<<") : " << command;
 			writeWarningOnConsole(o.str());
-			*/
 			
 			
 		}
@@ -162,13 +165,10 @@ namespace ss
 					for (int i = 0 ; i < help_response.operation_size() ; i++)
 					{
 						network::Operation operation = help_response.operation(i);
-						txt << operation.name();
-						txt << operation.name() << "[ " << operation.input_size()  << " -> " << operation.output_size() << " ]" <<  " - " << operation.help() << std::endl;
+						txt << operation.name() << " [ " << operation.input_size()  << " -> " << operation.output_size() << " ]" <<  " - " << operation.help() << std::endl;
 					}
 					txt << "------------------------------------------------" << std::endl;
 				}
-				
-				
 				
 			}
 				break;

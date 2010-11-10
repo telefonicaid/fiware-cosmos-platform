@@ -18,7 +18,7 @@
 #include "Message.h"               // Message::*
 #include "Process.h"               // Own interface
 
-
+#include <iostream>					// std::cout
 
 namespace ss {
 
@@ -54,6 +54,8 @@ void Process::run(void)
 
 	while (1)
 	{
+		std::cout << "Process loop: " << std::endl;
+		
 		fds = iomMsgAwait(fd, -1, -1);
 		if (fds != 1)
 		{
@@ -95,6 +97,8 @@ void Process::run(void)
 */
 void Process::runCommand(const char* command)
 {
+	std::cout << "Process running: " << command << std::endl;
+	
 	int x = 0;
 
 	LM_M(("running command '%s'", command));

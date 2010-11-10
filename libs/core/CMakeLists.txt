@@ -1,6 +1,7 @@
 SET (HEADERS
     ModulesManager.h
     SamsonWorker.h
+    LoadDataManager.h
     WorkerQueue.h
     WorkerTaskManager.h
     SamsonController.h
@@ -15,6 +16,7 @@ SET (HEADERS
 SET (SOURCES
     ModulesManager.cpp
     SamsonWorker.cpp
+    LoadDataManager.cpp
     WorkerQueue.cpp
     WorkerTaskManager.cpp
     SamsonController.cpp

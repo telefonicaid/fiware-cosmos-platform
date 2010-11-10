@@ -24,7 +24,7 @@ const char* dalilah_argv_basic[] = { "-controller" , "what_ever" ,"-basic"};
 const char* dalilah_argv_console[] = { "-controller" , "what_ever" ,"-console"};
 const char* dalilah_argv[] = { "-controller" , "what_ever" };
 
-const char* worker_argv[] = { "-controller" , "what_ever"};
+const char* worker_argv[] = { "-controller" , "what_ever","-alias","what_ever_alias","-no_log"};	//Necessary arguments at worker to avoid errors
 
 void *run_delilah(void* d)
 {
@@ -36,7 +36,7 @@ void *run_delilah(void* d)
 int main(int argc, const char *argv[])
 {
 	// Init the trace system
-	//ss::samsonInitTrace( argc , argv );
+	ss::samsonInitTrace( argc , argv );
 	
 	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo"));
 	

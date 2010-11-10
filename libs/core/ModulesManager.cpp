@@ -20,6 +20,8 @@
 #include <samson/Data.h>			/* ss::system::UInt ... */
 #include "logMsg.h"
 
+
+
 namespace ss
 {
 	
@@ -49,9 +51,23 @@ namespace ss
 	{
 		// Create the system container
 		Module *tmp = new Module("system","","");
-		tmp->add( new Data("UInt" ,getDataIntace<ss::system::UInt>, ss::system::UInt::compare,ss::system::UInt::size ));
-		tmp->add( new Data("Int32" ,getDataIntace<ss::system::Int32>, ss::system::Int32::compare,ss::system::Int32::size ));
 		
+		tmp->add( new Data("UInt"  ,getDataIntace<ss::system::UInt> , ss::system::UInt::compare  ,ss::system::UInt::size  ));
+
+		tmp->add( new Data("Int32" ,getDataIntace<ss::system::Int32>	, ss::system::Int32::compare	,ss::system::Int32::size ));
+		tmp->add( new Data("Int16" ,getDataIntace<ss::system::Int16>	, ss::system::Int16::compare	,ss::system::Int16::size ));
+		tmp->add( new Data("Int8"  ,getDataIntace<ss::system::Int8>		, ss::system::Int8::compare		,ss::system::Int8::size ));
+
+		tmp->add( new Data("UInt64"  ,getDataIntace<ss::system::UInt64>	, ss::system::UInt64::compare	,ss::system::UInt64::size ));
+		tmp->add( new Data("UInt32"  ,getDataIntace<ss::system::UInt32>	, ss::system::UInt32::compare	,ss::system::UInt32::size ));
+		tmp->add( new Data("UInt16"  ,getDataIntace<ss::system::UInt16>	, ss::system::UInt16::compare	,ss::system::UInt16::size ));
+		tmp->add( new Data("UInt8"   ,getDataIntace<ss::system::UInt8>	, ss::system::UInt8::compare	,ss::system::UInt8::size ));
+
+		tmp->add( new Data("Double"  ,getDataIntace<ss::system::Double>	, ss::system::Double::compare	,ss::system::Double::size ));
+		tmp->add( new Data("Float"   ,getDataIntace<ss::system::Float>	, ss::system::Float::compare	,ss::system::Float::size ));
+
+		tmp->add( new Data("String"  ,getDataIntace<ss::system::String>	, ss::system::String::compare	,ss::system::String::size ));
+		tmp->add( new Data("Void"   ,getDataIntace<ss::system::Void>	, ss::system::Void::compare	,ss::system::Void::size ));
 		
 		addModule( tmp );
 		
@@ -441,7 +457,7 @@ namespace ss
 	
 	
 	// Fill help responses
-	void ModulesManager::helpDatas( network::HelpResponse *response )
+	void ModulesManager::helpOperations( network::HelpResponse *response )
 	{
 		lock.lock();
 		
@@ -476,7 +492,7 @@ namespace ss
 		lock.unlock();
 	}
 	
-	void ModulesManager::helpOperations( network::HelpResponse *response )
+	void ModulesManager::helpDatas( network::HelpResponse *response )
 	{
 		lock.lock();
 		

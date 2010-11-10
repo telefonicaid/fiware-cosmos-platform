@@ -27,12 +27,13 @@ public:
 	EndpointMgr(NetworkInterface* network, int endpoints, int workers);
 	void packetReceiverSet(PacketReceiverInterface* receiver) { this->receiver = receiver; }
 	
-	void        init(Endpoint::Type myType, unsigned short port = 0, const char* controllerName = NULL);
+	void        init(Endpoint::Type myType, const char* alias, unsigned short port = 0, const char* controllerName = NULL);
 
-	Endpoint*   endpointAdd(int fd, char* name, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo = -1);
+	Endpoint*   endpointAdd(int fd, char* name, char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo = -1);
 	void        endpointRemove(Endpoint* ep);
-	Endpoint*   endpointLookup(int ix);
 	Endpoint*   endpointCoreWorkerLookup(int coreNo);
+	Endpoint*   endpointLookup(int ix);
+	Endpoint*   endpointLookup(char* alias);
 	Endpoint*   endpointLookup(int fd, int* idP);
 
 	void        msgTreat(int fd, char* name);

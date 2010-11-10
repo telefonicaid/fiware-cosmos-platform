@@ -105,11 +105,12 @@ void SamsonWorker::parseArgs(int argC, const char* argV[])
 *
 * endpointMgrSet - 
 */
-void SamsonWorker::endpointMgrSet(ss::EndpointMgr*  epMgr)
+void SamsonWorker::endpointMgrSet(ss::EndpointMgr* _epMgr)
 {
-   this->epMgr = epMgr;
+	epMgr = _epMgr;
 
-   this->epMgr->packetReceiverSet(this);
+	epMgr->packetReceiverSet(this);
+	epMgr->init(Endpoint::Worker, alias.c_str(), port, controller.c_str());
 }
 
 
@@ -121,8 +122,8 @@ void SamsonWorker::endpointMgrSet(ss::EndpointMgr*  epMgr)
 void SamsonWorker::networkSet(NetworkInterface* network)
 {
 	this->network = network;
-	network->setPacketReceiverInterface(this);
-	network->initAsSamsonWorker(port, alias.c_str(), controller.c_str());
+	// network->setPacketReceiverInterface(this);
+	// network->initAsSamsonWorker(port, alias.c_str(), controller.c_str());
 }
 
 
@@ -157,8 +158,8 @@ void SamsonWorker::run()
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
 
 	
-	assert(network);
-	network->run();
+	assert(epMgr);
+	epMgr->run();
 }
 
 

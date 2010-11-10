@@ -445,7 +445,7 @@ Endpoint* Network::endpointAdd
 				endpoint[ix]->type  = Endpoint::Temporal;
 				endpoint[ix]->ip    = ip;
 				endpoint[ix]->alias = (alias != NULL)? alias : "NO ALIAS" ;
-				endpoint[ix]->state = (fd > 0)? Endpoint::Connected : Endpoint::Unconnected;   /* XXX */
+				endpoint[ix]->state = (fd > 0)? Endpoint::Connected : Endpoint::Unconnected;
 
 				return endpoint[ix];
 			}

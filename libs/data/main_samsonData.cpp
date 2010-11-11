@@ -6,61 +6,82 @@
 #include <cstring>			// size_t
 #include "DataManager.h"	// ss::LogFile
 
-int main( int argc , char *argv[] )
+
+std::string stringForAction( ss::data::Command_Action action )
 {
-	/*
-	std::string fileName;
-	
-	if( argc < 2)
-	{
-		std::cerr << "Usage: " << argv[0] << " path_to_log_file" << std::endl;
-		return 0;
+	switch (action) {
+		case ss::data::Command_Action_Begin:
+			return "[Begin     ]";
+			break;
+		case ss::data::Command_Action_Operation:
+			return "[Operation ]";
+			break;
+		case ss::data::Command_Action_Finish:
+			return "[Finish    ]";
+			break;
+		case ss::data::Command_Action_Cancel:
+			return "[Cancel    ]";
+			break;
+		case ss::data::Command_Action_Comment:
+			return "[Comment   ]";
+			break;	
+		case ss::data::Command_Action_Session:
+			return "[Session   ]";
+			break;	
 	}
 	
+	return "[Unknown   ]";
+}
 
-	if( !file.openToRead( argv[1] ) )
+
+bool processFile( std::string fileName )
+{
+	ss::LogFile file(fileName);
+	if( !file.openToRead( ) )
+		return false;
+	
+	ss::data::Command command;
+	while( file.read( command ) )
 	{
-		std::cerr << "Could not open file: " << argv[0] << std::endl;
+		size_t task_id = command.task_id();
+		ss::data::Command_Action action = command.action();
+		std::string txt = command.command();
+		
+		if( action == ss::data::Command_Action_Session)
+			std::cout << "*** " << stringForAction( action ) << " " << txt << std::endl;
+		else
+			std::cout << "[" << task_id  << "] " << stringForAction( action ) << " " << txt << std::endl;
+	}
+	
+	return true;
+}
+
+int main( int argc , char *argv[] )
+{
+	std::string fileName;
+	
+	if( argc < 2 )
+	{
+		if( processFile("/var/samson/log/log_controller") )
+			return 0;	// Return without error
+		
+		std::cerr << "Usage: " << argv[0] << " path_to_log_file" << std::endl;
 		return 0;
 	}
 	
 	fileName = argv[1];
 
-	*/
-	
-	std::string fileName =  "/var/samson/log/log_worker_0";
-	
-	
-	ss::LogFile file(fileName);
-	file.openToRead( );
-	
-	ss::data::Command command;
-	
-	while( file.read( command ) )
+	if( !processFile( fileName ) )
 	{
-		
-		std::cout << "Task " << command.task_id();
-		switch (command.action()) {
-			case ss::data::Command_Action_Begin:
-				std::cout << " [B]: ";
-				break;
-			case ss::data::Command_Action_Operation:
-				std::cout << " [O]: ";
-				break;
-			case ss::data::Command_Action_Finish:
-				std::cout << " [F]: ";
-				break;
-			case ss::data::Command_Action_Cancel:
-				std::cout << " [C]: ";
-				break;
-			case ss::data::Command_Action_Comment:
-				std::cout << " [Comment]: ";
-				break;
-		} 
-		
-		
-		std::cout << command.command() << std::endl;
+		std::cerr << "Error opening " << fileName << std::endl; 
+		exit(1);
 	}
+
 	
+	// Just for debuggin
+	//std::string fileName =  "/var/samson/log/log_worker_0";
+	
+	
+
 	
 }

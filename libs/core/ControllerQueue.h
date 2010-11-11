@@ -16,21 +16,12 @@ namespace ss {
 		KVFormat _format;				// Format of the queue
 		KVInfo _info;					// Information about this queue
 		
-		bool ready;						// Read means that it has been created in all queues
-
-		// Information about "block"...
 		
 	public:
 		ControllerQueue( std::string name , KVFormat format )
 		{
 			_name = name;
 			_format = format;
-			ready = false;
-		}
-		
-		void setReady()
-		{
-			ready = true;
 		}
 		
 		KVFormat format()
@@ -46,8 +37,6 @@ namespace ss {
 		{
 			std::ostringstream o;
 			o << "(" << _format.str() << ") ";
-			if( !ready )
-				o << "Not ready";
 			return o.str();		
 		}
 	};

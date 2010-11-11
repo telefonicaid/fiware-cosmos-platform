@@ -135,7 +135,8 @@ void SamsonWorker::run()
 {
 	workerStatus(&status);
 
-
+#if 0	// Deactivated to avoid continuous error in samsonDemo
+	
 	// //////////////////////////////////////////////////////////////////////
 	//
 	// Create one ProcessAssistant per core
@@ -157,6 +158,7 @@ void SamsonWorker::run()
 
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
 
+#endif
 	
 	// assert(epMgr);
 	// epMgr->run();

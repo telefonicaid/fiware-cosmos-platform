@@ -16,7 +16,7 @@ namespace ss {
 		Job *j = new Job( controller , job_id, fromIdentifier , _sender_id, command );
 		
 		// Notify to the task manager that this "job" is about to start
-		controller->data.beginTask( job_id );
+		controller->data.beginTask( job_id , command );
 		
 		// Insert in the list
 		job.insert( std::pair<size_t , Job*>( j->getId() , j ) );
@@ -30,7 +30,7 @@ namespace ss {
 		if( j->isFinish() )
 		{
 			if( j->isError() )
-				controller->data.cancelTask( job_id  );
+				controller->data.cancelTask( job_id , j->getErrorLine() );
 			else
 				controller->data.finishTask( job_id );
 			

@@ -17,6 +17,31 @@ namespace ss {
 	class DataManagerCommandResponse;
 	class SamsonController;
 	
+	class DataQueue
+	{
+		std::string name;	// Name of the queue
+		size_t size;		// Size of this queue
+		
+	public:
+		DataQueue( std::string _name)
+		{
+			name = _name;
+			size = 0 ;
+		}
+		
+		size_t getSize()
+		{
+			return size;
+		}
+		
+		std::string getName()
+		{
+			return name;
+		}
+							
+		
+	};
+	
 	/**
 	 Data manager at the controller
 	 */
@@ -24,7 +49,10 @@ namespace ss {
 	class ControllerDataManager : public DataManager
 	{
 		au::Lock lock;
-		au::map< std::string , ControllerQueue> queues;
+		
+		au::map< std::string , ControllerQueue> queues;		// List of KeyValue queues
+		au::map< std::string , DataQueue> data_queues;		// List of data values ( upload normal files )
+		
 		
 		SamsonController *controller;	// Pointer to controller for module access
 		
@@ -48,17 +76,6 @@ namespace ss {
 		
 		static std::string getLogFileName( );
 
-		/**
-		 Check if a queue exist
-		 */
-		
-		bool existQueue( std::string queue)
-		{
-			lock.lock();
-			bool ans =  ( queues.findInMap( queue ) != NULL );
-			lock.unlock();
-			return ans;
-		}
 		
 		// Get help about data stuff
 		void helpQueues( network::HelpResponse *response );

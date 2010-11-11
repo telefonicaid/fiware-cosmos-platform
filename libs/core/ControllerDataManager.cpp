@@ -60,7 +60,7 @@ namespace ss {
 			}
 			
 			// Check if queue exist
-			if( controller->data.existQueue( name ) )
+			if( queues.findInMap( name ) != NULL )
 			{
 				std::ostringstream output;
 				output << "Queue " + name + " already exist\n";
@@ -90,24 +90,86 @@ namespace ss {
 			std::string name = commandLine.get_argument( 1 );
 			
 			// Check if queue exist
-			if( !controller->data.existQueue( name ) )
+			ControllerQueue *tmp =  queues.extractFromMap(name);
+			if( !tmp )
 			{
 				std::ostringstream output;
 				output << "Queue " + name + " does not exist\n";
 				response.output = output.str();
 				response.error = true;
 				return response;
+			}
+			else
+				delete tmp;
+			
+			response.output = "OK";
+			return response;
+		}
+		
+// DATA QUEUES
+		
+		if( commandLine.get_argument(0) == "add_data_queue" )
+		{
+			// Add queue command
+			if( commandLine.get_num_arguments() < 2 )
+			{
+				response.output = "Usage: add_data_queue name";
+				response.error = true;
+				return response;
+			}
+			
+			std::string name = commandLine.get_argument( 1 );
+
+			
+			// Check if queue exist
+			if( data_queues.findInMap( name ) != NULL )
+			{
+				std::ostringstream output;
+				output << "Queue " + name + " already exist\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
 			}			
 			
-			ControllerQueue *tmp =  queues.extractFromMap(name);
-			delete tmp;
+			DataQueue *tmp = new DataQueue(name );
+			data_queues.insertInMap( name , tmp );
+			
+			response.output = "OK";
+			return response;
+		}
+		
+		if( commandLine.get_argument(0) == "remove_data_queue" )
+		{
+			// Add queue command
+			if( commandLine.get_num_arguments() < 2 )
+			{
+				response.output = "Usage: remove_data_queue name";
+				response.error = true;
+				return response;
+			}
+			
+			std::string name = commandLine.get_argument( 1 );
+			
+			// Check if queue exist
+			DataQueue *tmp =  data_queues.extractFromMap(name);
+			if( !tmp )
+			{
+				std::ostringstream output;
+				output << "Queue " + name + " does not exist\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			}
+			else
+				delete tmp;
 			
 			response.output = "OK";
 			return response;
 		}		
 		
+		
 		response.error = true;
-		response.output = "Unknown command";
+		response.output = std::string("Unknown command: ") +  command;
 		return response;
 	}
 	
@@ -156,6 +218,16 @@ namespace ss {
 			//Info
 			fillKVInfo( q->mutable_info(), queue->info() );
 		}
+	
+		std::map< std::string , DataQueue*>::iterator ii;
+		for (ii = data_queues.begin() ; ii!= data_queues.end() ;ii++)
+		{
+			
+			DataQueue *queue = ii->second;
+			network::DataQueue *q = response->add_data_queue();
+			q->set_name( queue->getName() );
+			q->set_size( queue->getSize() );	
+		}		
 		
 		lock.unlock();
 	}

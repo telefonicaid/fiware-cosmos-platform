@@ -1,10 +1,16 @@
 SET (HEADERS
     DataManager.h
+    DataManagerItem.h
+    DataManagerCommandResponse.h
+    LogFile.h
     data.pb.h
 )
 
 SET (SOURCES
     DataManager.cpp
+    DataManagerItem.cpp
+    DataManagerCommandResponse.cpp
+    LogFile.cpp
     data.pb.cc
 )
 

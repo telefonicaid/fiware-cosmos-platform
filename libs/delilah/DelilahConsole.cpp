@@ -157,6 +157,20 @@ namespace ss
 						txt << " " << au::Format::string( queue.info().kvs() ) << " kvs in " << au::Format::string( queue.info().size() ) << " bytes" << std::endl;
 					}
 					txt << "------------------------------------------------" << std::endl;
+					
+					txt << std::endl;
+					
+					txt << "Data Queues" << std::endl;
+					txt << "------------------------------------------------" << std::endl;
+					for (int i = 0 ; i < help_response.data_queue_size() ; i++)
+					{
+						network::DataQueue queue = help_response.data_queue(i);
+						txt << queue.name();
+						txt << " " << au::Format::string( queue.size() ) << " bytes " << std::endl;
+					}
+					txt << "------------------------------------------------" << std::endl;
+					
+					
 				}
 				
 				if( help_response.datas() )

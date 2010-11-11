@@ -52,6 +52,7 @@ namespace ss {
 		friend class ControllerDataManager;
 		
 	public:
+		
 		SamsonController( int arg , const char *argv[] ,  NetworkInterface *_network );
 		
 		// Main run loop
@@ -60,19 +61,14 @@ namespace ss {
 		// PacketReceiverInterface
 		int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 		void notifyWorkerDied( int worker );
-
 		
 		// Specialized receive functions
 		int receiveHelp(int fromId, Packet* packet);
-
 		
 		// PacketSenderInterface
 		virtual void notificationSent( size_t id , bool success );
 
 	private:
-		
-		// Send a message back to dalilah
-		void sendDelilahAnswer( size_t sender_id , int dalilahIdentifier , bool error , bool finished,std::string command, std::string answer_message );
 		
 		// Send a message to a worker with a particular task
 		void sendWorkerTasks( ControllerTask *task );

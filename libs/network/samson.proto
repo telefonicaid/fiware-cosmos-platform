@@ -80,7 +80,12 @@ message Queue
 	required string name = 1;
 	required KVFormat format = 2;
 	required KVInfo info = 3;
+}
 
+message DataQueue
+{
+	required string name = 1;
+	required uint64 size =2;
 }
 
 message Operation
@@ -104,8 +109,9 @@ message HelpResponse
 	required bool operations = 3;
 
 	repeated Queue queue = 5;
-	repeated Data data = 6;
-	repeated Operation operation = 7;
+	repeated DataQueue data_queue = 6;
+	repeated Data data = 7;
+	repeated Operation operation = 8;
 }
 
 

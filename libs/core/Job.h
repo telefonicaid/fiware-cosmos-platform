@@ -54,6 +54,21 @@ namespace ss {
 			return command[command_pos++];
 		}
 		
+		std::string getLastCommand()
+		{
+			if ( command_pos == 0)
+				return "begining";
+			if ( command_pos > (int)command.size() )
+				return "error: Too far in the JobItem list of commands";
+			
+			return command[command_pos-1];
+		}
+	
+		std::string getMainCommand()
+		{
+			return parent_command;
+		}
+		
 	};
 	
 	
@@ -69,6 +84,7 @@ namespace ss {
 		size_t id;						// Identifier of the job ( this is the one reported to delialh to monitorize a job)
 		
 		std::ostringstream output;		// Outputs of this job message
+		std::string error_line;			// One line message for the error ( used in the cancel message of the data log)
 		bool error;						// Error flag
 		bool finish;					// Flag to indicate that this job is finished
 		
@@ -128,36 +144,7 @@ namespace ss {
 		 Main routine to run commands until waiting for task confirmation or another job finish
 		 */
 		
-		void run()
-		{
-			
-			while( !finish && !error && items.size() > 0)	// While there si something to process
-			{
-				
-				JobItem& item = items.back();
-				
-				if( item.isFinish() )
-				{
-					items.pop_back();
-				}
-				else
-				{
-					if( !processCommand( item.getNextCommand() ) )
-						return;	// No continue since a task has been scheduled ( or an error ocurred )
-				}
-			}
-			
-			if ( error )
-				finish = true;	// Just to make sure we cancel everything
-
-			// Mark the end of the job if there are no more elements to process
-			if( items.size() == 0)
-			{
-				output << "Job finished correctly\n";
-				finish = true;
-			}
-			
-		}
+		void run();
 		
 
 		// Call back received when a task is finished
@@ -186,6 +173,11 @@ namespace ss {
 		bool isError();
 	
 		void sentConfirmationToDelilah( );
+		
+		std::string getErrorLine()
+		{
+			return error_line;
+		}
 		
 	private:
 		

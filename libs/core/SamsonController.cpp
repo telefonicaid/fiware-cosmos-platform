@@ -184,24 +184,6 @@ namespace ss {
 	
 #pragma mark Sent messages
 	
-	
-	void SamsonController::sendDelilahAnswer(size_t sender_id, int dalilahIdentifier, bool error, bool finished, std::string command,  std::string answer_message)
-	{
-		
-		// Get status of controller
-		Packet p2;
-		
-		network::CommandResponse *response = p2.message.mutable_command_response();
-		response->set_command(command);
-		response->set_response(answer_message);
-		response->set_error(error);
-		response->set_finish(finished);
-		response->set_sender_id(sender_id);
-		
-		network->send(this, dalilahIdentifier, Message::CommandResponse, &p2);
-		
-	}
-	
 
 
 	void SamsonController::sendWorkerTasks( ControllerTask *task )

@@ -26,6 +26,10 @@ Workspace::Workspace(QString _name)
 	connect(app, SIGNAL(jobFinished(size_t, bool, QString)), this, SLOT(finishJob(size_t, bool, QString)));
 }
 
+
+/*
+ * SLOT. Set selected tool.
+ */
 void Workspace::setTool(int tool)
 {
 	scene->setTool(tool);
@@ -67,12 +71,13 @@ void Workspace::createQueue(QueueType type, const QPointF &scene_pos, QString na
 	}
 
 	if (job.type!=CANCELED)
+	{
 		jobs.append(job);
+		emit(jobCreated(job));
+	}
 
-	sleep(5);
+	sleep(2);
 	app->receivedMessage(1, false, false, "PROCESSING");
-	sleep(5);
-	app->receivedMessage(1, false, true, "FINISHED");
 }
 
 /*
@@ -80,13 +85,26 @@ void Workspace::createQueue(QueueType type, const QPointF &scene_pos, QString na
  */
 void Workspace::updateJob(size_t id, bool error, QString message)
 {
+	int index = findJobIndex(id);
+	if( index < 0 )
+		return;
+
 	// TODO:
 	// Update info in jobs list
+	job_info job = jobs[index];
+	job.message = message;
+	if(error)
+		job.status = FAILED;
+
+	std::cout << message.toStdString() << "\n";
 	// emit signal that job was updated.
 	// This signal should be received by WorkspaceView to update job status
 	// to be shown to user
+	emit(jobUpdated(job));
 
-	std::cout << message.toStdString() << "\n";
+	sleep(2);
+	DelilahQtApp* app = (DelilahQtApp*)qApp;
+	app->receivedMessage(1, true, true, "FINISHED");
 }
 
 /*
@@ -95,27 +113,44 @@ void Workspace::updateJob(size_t id, bool error, QString message)
 void Workspace::finishJob(size_t id, bool error, QString message)
 {
 	// TODO:
-	// Find job in the list. If it doesn't belongs to this workspace, return.
-	// Otherwise close job in jobs list (remove it?) and proceed depending
-	// on the job status (failed or finished)
 
-	std::cout << message.toStdString() << "\n";
-	if(error)
-	{
-		// TODO:
-		// emit signal about failure. This should be received by WorkspaceView widget
-		// which shows failure info to user
-		std::cout << "job " << id << " finished with error: " << message.toStdString();
-//		emit(jobFailed(id, message));
-	}
+	int index = findJobIndex(id);
+	if( index < 0 )
+		return;
+
+	job_info job = jobs[index];
+	if (error)
+		job.status = FAILED;
 	else
+		job.status = FINISHED;
+	job.message = message;
+	emit(jobFinished(job));
+
+	// Proceed depending on the job status (failed or finished).
+	if(job.status==FINISHED)
 	{
 		// TODO:
 		// Depending on the type of the job call appropriate methods to create queues, operation, etc.
 		// Update scene appropriately.
+		// Update job status in WorkspaceView - remove if finished
 
 		// It's for testing - change it!!!!!!!!!
 		Queue* q = new Queue;
 		scene->showQueue(q);
 	}
+
+	// TODO:
+	//delete job from the list
+	jobs.removeAt(index);
+}
+
+
+int Workspace::findJobIndex(size_t id)
+{
+	for(int i=0; i<jobs.size(); i++)
+	{
+		if (jobs[i].id==id)
+			return i;
+	}
+	return -1;
 }

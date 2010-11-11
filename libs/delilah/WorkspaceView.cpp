@@ -10,9 +10,10 @@
 #include <iostream>
 
 #include <QMenu>
+#include <QMessageBox>
 
 #include "WorkspaceView.h"
-#include "Workspace.h"
+//#include "Workspace.h"
 #include "WorkspaceScene.h"
 #include "DelilahQtApp.h"
 #include "CreateTXTQueueDlg.h"
@@ -22,11 +23,13 @@ WorkspaceView::WorkspaceView(QWidget* parent)
 : QGraphicsView(parent)
 {
 	workspace = 0;
+	status_view = 0;
 }
 
 WorkspaceView::WorkspaceView(Workspace* model, QWidget* parent)
 	: QGraphicsView(parent)
 {
+	status_view = 0;
 	setWorkspace(model);
 }
 
@@ -42,6 +45,71 @@ void WorkspaceView::setWorkspace(Workspace* model)
 	connect(scene(), SIGNAL(addQueueRequested(QPointF)), this, SLOT(selectQueueType(QPointF)));
 	connect(this, SIGNAL(createQueueRequested(QueueType, QPointF, QString, QString, QString)),
 			workspace, SLOT(createQueue(QueueType, QPointF, QString, QString, QString)));
+	connect(workspace, SIGNAL(jobCreated(job_info)), this, SLOT(updateJobInfoView(job_info)));
+	connect(workspace, SIGNAL(jobUpdated(job_info)), this, SLOT(updateJobInfoView(job_info)));
+	connect(workspace, SIGNAL(jobFinished(job_info)), this, SLOT(updateJobInfoView(job_info)));
+}
+
+void WorkspaceView::updateJobInfoView(job_info job)
+{
+	if(status_view==0)
+	{
+		status_view = new QPlainTextEdit(this);
+		status_view->setReadOnly(true);
+		status_view->show();
+	}
+
+	// Create description of the updated job
+	QString new_info;
+	if(job.status==IN_PROCESSING)
+		 new_info = QString("job %1: %2").arg(job.id).arg(job.message);
+
+	// Find if job is new or not
+	int found = -1;
+	int i;
+	for (i=0; i<status.size(); i++)
+	{
+		if(status[i].contains( QString("job %1").arg(job.id)) )
+		{
+			found = i;
+			break;
+		}
+	}
+
+	// Update status list. If it's a new job, add it at the end.
+	// If the job has 'FINISHED' status remove it from the list.
+	// Otherwise update status info.
+	if ( found==-1 )
+		status.append(new_info);
+	else
+	{
+		if (job.status!=IN_PROCESSING)
+			status.removeAt(found);
+		else
+			status.replace(found, new_info);
+	}
+
+	// Set test to be displayed
+	QString info;
+	if (status.size()>0)
+	{
+		info.append("RUNNING JOBS\n");
+		for(i=0; i<status.size(); i++)
+			info.append(status[i] + "\n");
+	}
+
+	// Display updated jobs or if there are now jobs running remove status widget
+	if (!info.isEmpty())
+		status_view->setPlainText(info);
+	else
+	{
+		delete status_view;
+		status_view = 0;
+	}
+
+	// If updated job failed, show info to the user, and later remove from the list
+	if (job.status==FAILED)
+		QMessageBox::critical(this, QString("Job Failure"), job.message);
 }
 
 /*

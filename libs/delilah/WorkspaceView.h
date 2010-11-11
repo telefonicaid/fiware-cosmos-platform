@@ -11,10 +11,13 @@
 #define WORKSPACEVIEW_H_
 
 #include <QGraphicsView>
+#include <QPlainTextEdit>
 
 #include "globals.h"
 
-class Workspace;
+#include "Workspace.h"
+//class Workspace;
+//struct job_info;
 
 class WorkspaceView : public QGraphicsView
 {
@@ -33,6 +36,11 @@ public slots:
 	void createTXTQueueSelected(const QPointF &scene_pos);
 	void createKVQueueSelected(const QPointF &scene_pos);
 
+	/*
+	 * Slots responsible for displaying information about running jobs.
+	 */
+	void updateJobInfoView(job_info job);
+
 protected:
 //	void showAvailableQueues();
 
@@ -41,6 +49,9 @@ signals:
 
 protected:
 	Workspace* workspace;
+
+	QList<QString> status;
+	QPlainTextEdit* status_view;
 };
 
 #endif /* WORKSPACEVIEW_H_ */

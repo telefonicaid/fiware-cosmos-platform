@@ -49,8 +49,14 @@ public slots:
 	void updateJob(size_t id, bool error, QString message);
 	void finishJob(size_t id, bool error, QString message);
 
-//signals:
-//	jobFailed(size_t id, QString message);
+protected:
+	int findJobIndex(size_t id);
+
+signals:
+	void jobCreated(job_info job);
+	void jobUpdated(job_info job);
+	void jobFinished(job_info job);
+//	void jobFailed(size_t id, QString message);
 
 protected:
 	QString name;

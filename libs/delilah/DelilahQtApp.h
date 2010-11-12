@@ -10,13 +10,16 @@
 
 #include <QApplication>
 
+#include "Message.h"
+
 class MainWindow;
 class DataQueue;
 class KVQueue;
 class Operation;
 class DataType;
-namespace ss{
+namespace ss {
 	class Delilah;
+	class Packet;
 }
 
 class DelilahQtApp : public QApplication
@@ -28,17 +31,30 @@ public:
 	~DelilahQtApp() {};
 
 	QString validateNewQueueName(QString name);
-	size_t sendCreateQueue(const QString &name);
-	size_t sendCreateQueue(const QString &name, const QString &key_type, const QString &value_type);
+	void sendCreateQueue(const QString &name, const QString &key_type, const QString &value_type);
 
 	DataQueue* getDataQueue(const QString &name);
 
 	void receivedMessage(size_t id, bool error, bool finished, std::string message);
 
+	/*
+	 * Methods to send requests to the network
+	 */
+	void uploadData(bool queues=true, bool operations=false, bool data_types=false);
+	void sendCreateQueue(const QString &name);
+
+	/*
+	 * Methods to receive packets from network
+	 */
+	int receiveData(ss::Packet* packet);
+	int receiveCommandResponse(size_t id, ss::Packet* packet);
+	int receiveUknownPacket(size_t id, ss::Message::MessageCode msgCode, ss::Packet* packet);
+
 public slots:
 	void quitDelilah();
 
 protected:
+
 	size_t sendMessage(QString _command);
 
 signals:
@@ -46,14 +62,27 @@ signals:
 	void jobFinished(size_t id, bool error, QString message);
 
 public:
-	MainWindow* w;
+	MainWindow* w;							// Main Window of application
 
 private:
-	ss::Delilah* delilah;
-	size_t id;
+	ss::Delilah* delilah;					// Pointer to the most upper class of SAMSON client application
+	size_t id;								// Counter of requests sent to the network
+											// (initialized with value set to 0).
 
+	// Lists of (data) queues, operations and data types currently available in the system.
+	// They are automatically uploaded (TODO) on application startup.
+	// Currently, the operations and data types can not be dynamically changed. The SAMSON platform
+	// has to be restarted to upload new operations/data types, and so the DelilahQt application.
+	// Queues can be dynamically created by user.
+	// The problem of updating data_queues and kv_queues is not solved (TODO)!!!!!!!!!!!
+	// The best solution would be to get some signal from SAMSON platform when new queue is added
+	// and update the list. However this mechanism does not exist.
+	// Current solution:
+	// 1. When user creates/deletes a queue, the queue is also added/removed to/from the list (TODO).
+	// 2. Application contains button/menu where user can click to manually upload queues from
+	// the platform (TODO).
 	QList<DataQueue*> data_queues;
-	QList<KVQueue*> kv_queue;
+	QList<KVQueue*> kv_queues;
 	QList<Operation*> operations;
 	QList<DataType*> data_types;
 };

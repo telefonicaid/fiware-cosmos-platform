@@ -16,6 +16,9 @@ class DelilahQtApp;
 namespace ss {
 	class Delilah;
 	class Packet;
+	namespace Message {
+		enum MessageCode;
+	}
 }
 
 class DelilahQt

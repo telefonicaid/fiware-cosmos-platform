@@ -35,7 +35,7 @@ namespace ss {
 
 	class Delilah : public PacketReceiverInterface, public PacketSenderInterface
 	{
-		NetworkInterface* network;			// Network interface
+//		NetworkInterface* network;			// Network interface
 
 		DelilahConsole* console;			// Console to work with delilah in command-line mode
 		DelilahQt *interfaceQt;				// Graphical interface
@@ -50,6 +50,7 @@ namespace ss {
 		friend class DelilahQt;
 		
 	public:
+		NetworkInterface* network;			// Network interface
 		bool finish;						// Global flag used by all threads to detect to stop
 		
 	public:

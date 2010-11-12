@@ -149,7 +149,7 @@ void WorkspaceView::createTXTQueueSelected(const QPointF &scene_pos)
 	if (dlg->exec() == QDialog::Accepted)
 	{
 		name = dlg->name();
-		emit(createQueueRequested(TXT_QUEUE, scene_pos, name));
+		emit(createQueueRequested(DATA_QUEUE, scene_pos, name));
 	}
 
 	delete dlg;

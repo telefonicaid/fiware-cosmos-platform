@@ -19,7 +19,7 @@ class Queue;
 class Process;
 class WorkspaceScene;
 
-enum JobTypes { CANCELED, CREATE_TXT_QUEUE, CREATE_KV_QUEUE, LOAD_FILE, RUN_PROCESS };
+enum JobTypes { CANCELED, CREATE_DATA_QUEUE, CREATE_KV_QUEUE, LOAD_FILE, RUN_PROCESS };
 enum JobStatus { IN_PROCESSING, FINISHED, FAILED };
 
 /*

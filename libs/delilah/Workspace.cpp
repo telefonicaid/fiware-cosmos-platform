@@ -57,14 +57,16 @@ void Workspace::createQueue(QueueType type, const QPointF &scene_pos, QString na
 	switch(type)
 	{
 		case DATA_QUEUE:
-			job.type = CREATE_TXT_QUEUE;
+			job.type = CREATE_DATA_QUEUE;
 			job.args << name;
-			job.id = app->sendCreateQueue(name);
+			//job.id = ;
+			app->sendCreateQueue(name);
 			break;
 		case KV_QUEUE:
 			job.type = CREATE_KV_QUEUE;
 			job.args << name << key << value;
-			job.id = app->sendCreateQueue(name, key, value);
+			//job.id =
+			app->sendCreateQueue(name, key, value);
 			break;
 		default:
 			std::cout << "This situation should never happen!!!!!!!!!\n";

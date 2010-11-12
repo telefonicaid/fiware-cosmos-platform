@@ -56,12 +56,14 @@ void Workspace::createQueue(QueueType type, const QPointF &scene_pos, QString na
 
 	switch(type)
 	{
-		case TXT_QUEUE:
+		case DATA_QUEUE:
 			job.type = CREATE_TXT_QUEUE;
+			job.args << name;
 			job.id = app->sendCreateQueue(name);
 			break;
 		case KV_QUEUE:
 			job.type = CREATE_KV_QUEUE;
+			job.args << name << key << value;
 			job.id = app->sendCreateQueue(name, key, value);
 			break;
 		default:
@@ -135,9 +137,23 @@ void Workspace::finishJob(size_t id, bool error, QString message)
 		// Update job status in WorkspaceView - remove if finished
 
 		// It's for testing - change it!!!!!!!!!
-		Queue* q = new Queue;
-		scene->showQueue(q);
+		DelilahQtApp* app = (DelilahQtApp*)qApp;
+		DataQueue* q = app->getDataQueue(name);
+		scene->showDataQueue(q);
 	}
+//		switch(job.type)
+//		{
+//			case CREATE_TXT_QUEUE:
+//				Queue* q = new Queue();//TXT_QUEUE, QString("new"), job.pos);
+//				scene->showQueue(q);
+//				break;
+//			default:
+//				break;
+//		}
+
+//		updateScene(job);
+
+//	}
 
 	// TODO:
 	//delete job from the list

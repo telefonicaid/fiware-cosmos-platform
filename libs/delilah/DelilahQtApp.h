@@ -11,6 +11,10 @@
 #include <QApplication>
 
 class MainWindow;
+class DataQueue;
+class KVQueue;
+class Operation;
+class DataType;
 namespace ss{
 	class Delilah;
 }
@@ -20,12 +24,14 @@ class DelilahQtApp : public QApplication
 	Q_OBJECT
 
 public:
-	DelilahQtApp(int &argc, char ** argv, ss::Delilah* delilah);
+	DelilahQtApp(int &argc, char ** argv, ss::Delilah* _delilah);
 	~DelilahQtApp() {};
 
 	QString validateNewQueueName(QString name);
 	size_t sendCreateQueue(const QString &name);
 	size_t sendCreateQueue(const QString &name, const QString &key_type, const QString &value_type);
+
+	DataQueue* getDataQueue(const QString &name);
 
 	void receivedMessage(size_t id, bool error, bool finished, std::string message);
 
@@ -43,7 +49,13 @@ public:
 	MainWindow* w;
 
 private:
-	ss::Delilah* client;
+	ss::Delilah* delilah;
+	size_t id;
+
+	QList<DataQueue*> data_queues;
+	QList<KVQueue*> kv_queue;
+	QList<Operation*> operations;
+	QList<DataType*> data_types;
 };
 
 

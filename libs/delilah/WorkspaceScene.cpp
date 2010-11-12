@@ -167,7 +167,7 @@ ObjectItem* WorkspaceScene::findItem(const QPointF &pos)
 	return item;
 }
 
-void WorkspaceScene::showQueue(Queue* queue)
+void WorkspaceScene::showDataQueue(DataQueue* queue)
 {
 	// TODO: correct implementation - currently Queue class is not implemented yet.
 	QueueItem* q = new QueueItem();

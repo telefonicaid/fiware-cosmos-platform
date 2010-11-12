@@ -18,7 +18,7 @@
 #define QUEUE_ITEM			QGraphicsItem::UserType+1
 #define OPERATION_ITEM		QGraphicsItem::UserType+2
 
-enum QueueType { TXT_QUEUE, KV_QUEUE };
+enum QueueType { DATA_QUEUE, KV_QUEUE };
 
 
 #endif /* GLOBALS_H_ */

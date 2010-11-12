@@ -15,6 +15,8 @@
 
 #include "globals.h"
 
+class Queue;
+class Process;
 class WorkspaceScene;
 
 enum JobTypes { CANCELED, CREATE_TXT_QUEUE, CREATE_KV_QUEUE, LOAD_FILE, RUN_PROCESS };
@@ -27,7 +29,8 @@ typedef struct
 {
 	JobTypes type;
 	QPointF pos;			// Scene position where user evoke request (optional)
-	size_t id;				// Job id (as returned by delilah)
+	size_t id;				// Job id
+	QList<QString> args;	// Command line arguments
 	JobStatus status;		// Current status of the job
 	QString message;		// Extra info about the job
 } job_info;
@@ -61,6 +64,8 @@ signals:
 protected:
 	QString name;
 	QList<job_info> jobs;
+	QList<Queue*> queues;
+	QList<Process*> processes;
 	WorkspaceScene* scene;
 };
 

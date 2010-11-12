@@ -14,6 +14,7 @@ IF(QT4_FOUND)
 		WorkspaceView.cpp
 		gui/InfoBox.cpp
 		gui/CreateTXTQueueDlg.cpp
+		Process.cpp
 		items/ObjectItem.cpp
 		items/QueueItem.cpp
 		items/OperationItem.cpp
@@ -33,6 +34,9 @@ IF(QT4_FOUND)
 		gui/InfoBox.h
 		gui/CreateTXTQueueDlg.h
 		Queue.h
+		Operation.h
+		DataType.h
+		Process.h
 		items/ObjectItem.h
 		items/QueueItem.h
 		items/OperationItem.h

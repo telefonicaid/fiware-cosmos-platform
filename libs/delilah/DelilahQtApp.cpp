@@ -9,10 +9,12 @@
 #include "MainWindow.h"
 #include "Delilah.h"
 
-DelilahQtApp::DelilahQtApp(int &argc, char ** argv, ss::Delilah* delilah)
+#include "Queue.h"
+
+DelilahQtApp::DelilahQtApp(int &argc, char ** argv, ss::Delilah* _delilah)
 	: QApplication(argc, argv)
 {
-	client = delilah;
+	delilah = _delilah;
 	w = new MainWindow();			// My main window interface
 	w->show();
 
@@ -21,7 +23,7 @@ DelilahQtApp::DelilahQtApp(int &argc, char ** argv, ss::Delilah* delilah)
 
 void DelilahQtApp::quitDelilah()
 {
-	client->quit();
+	delilah->quit();
 }
 
 void DelilahQtApp::receivedMessage(size_t id, bool error, bool finished, std::string message)
@@ -67,6 +69,13 @@ size_t DelilahQtApp::sendCreateQueue(const QString &name, const QString &key_typ
 {
 	QString command = QString("add_queue %1 %2 %3").arg(name).arg(key_type).arg(value_type);
 	return sendMessage(command);
+}
+
+DataQueue* DelilahQtApp::getDataQueue(const QString &name)
+{
+	// TODO:
+	DataQueue* q = new DataQueue(name);
+	return q;
 }
 
 /******************************************************************************

@@ -28,9 +28,10 @@ namespace ss {
 *
 * Constructor - 
 */
-Process::Process(int _fd)
+   Process::Process(int _rFd, int _wFd)
 {
-	fd = _fd;
+	rFd = _rFd;
+	wFd = _wFd;
 }
 
 
@@ -56,7 +57,7 @@ void Process::run(void)
 	{
 		std::cout << "Process loop: " << std::endl;
 		
-		fds = iomMsgAwait(fd, -1, -1);
+		fds = iomMsgAwait(rFd, -1, -1);
 		if (fds != 1)
 		{
 			LM_W(("iomMsgAwait returned %d", fds));
@@ -65,7 +66,7 @@ void Process::run(void)
 		}
 
 		int s;
-		s = iomMsgRead(fd, (char*) "father", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
+		s = iomMsgRead(rFd, (char*) "father", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
 		if (s == -2)
 			LM_X(1, ("father died - I die as well"));
 		else if (s != 0)
@@ -126,13 +127,13 @@ char* Process::passCommand(const char* command)
 
 	LM_M(("passing command '%s' to father", command));
 
-	iomMsgSend(fd, "father", progName, Message::Command, Message::Msg, (void*) command, strlen(command));
+	iomMsgSend(wFd, "father", progName, Message::Command, Message::Msg, (void*) command, strlen(command));
 
-	fds = iomMsgAwait(fd, 5, 0);
+	fds = iomMsgAwait(rFd, 5, 0);
 	if (fds != 1)
 		LM_W(("iomMsgAwait returned %d", fds));
 	else
-		iomMsgRead(fd, "father", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
+		iomMsgRead(rFd, "father", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
 
 	if (dataP != out)
 		free(dataP);

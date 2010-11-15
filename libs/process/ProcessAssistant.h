@@ -46,12 +46,12 @@ private:
 	time_t                         startTime;
 	char*                          controller;
 	SamsonWorker*                  worker;
-
-	void         coreWorkerStart(char* fatherName, unsigned short port);
+	
+	void         coreWorkerStart(char* fatherName, int* rFdP, int* wFdP);
 
 public:
 	void         run(void);
-	char*        runCommand(int fd, char* command, int timeOut);
+	char*        runCommand(int rFd, int wFd, char* command, int timeOut);
 };
 
 }

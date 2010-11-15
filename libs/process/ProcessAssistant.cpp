@@ -34,22 +34,6 @@ namespace ss {
 
 /* ****************************************************************************
 *
-* definitions
-*/
-#define PA_PORT 1300
-
-
-
-/* ****************************************************************************
-*
-* global variables
-*/
-static unsigned short port = PA_PORT;
-
-
-
-/* ****************************************************************************
-*
 * runThread - 
 */
 static void* runThread(void* vP)
@@ -82,22 +66,29 @@ extern int logFd;
 *
 * coreWorkerStart - 
 */
-void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
+void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 {
-	LM_M(("Starting Core Worker %d (logFd == %d)", core, logFd));
 	time_t now = time(NULL);
+	int    pipeFd[2];
 
 	if (now - startTime <= 5)
 	{
 		// ALARM(Alarm::Error, Alarm::CoreWorkerNotRestarted, ("Core worker %d died %d secs after restart", core, now - startTime));
-		LM_E(("Core worker %d died %d secs after restart", core, now - startTime));
-		return;
+		LM_RVE(("Core worker %d died %d secs after restart", core, now - startTime));
 	}
+
+	if (pipe(pipeFd) != 0)  // pipe[0] for reading
+		LM_RVE(("pipe: %s", strerror(errno)));
+
+	*rFdP = pipeFd[0];
+	*wFdP = pipeFd[1];
 
 	LM_T(LMT_COREWORKER, ("*********** Starting Core Worker %d", core));
 	if (fork() != 0)
 		return;
 
+	int rFd = pipeFd[1];
+	int wFd = pipeFd[0];
 
 	LM_M(("CHILD RUNNING"));
 	/* ************************************************************
@@ -139,10 +130,10 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 	 */
 	int fd;
 	
-	LM_M(("Close fathers file descriptors ... (logFd == %d)", logFd));
+	LM_M(("Close fathers file descriptors ... (logFd == %d, pipes: %d, %d)", logFd, rFd, wFd));
 	for (fd = 0; fd < 100; fd++)
 	{
-		if (fd != logFd)
+		if ((fd != logFd) && (fd != rFd) && (fd != wFd))
 			close(fd);
 		else
 			LM_M(("Not closing fd %d, as is is the log file fd", fd));
@@ -162,14 +153,8 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 
 
 
-	LM_T(LMT_COREWORKER, ("Connecting to father, on port %d", port));
-	fd = iomConnect("localhost", port);
-	if (fd == -1)
-		LM_X(1, ("error connecting to father at %s:%d", "localhost", port));
-	LM_T(LMT_COREWORKER, ("Connected to father"));
-
 	LM_T(LMT_COREWORKER, ("Calling RUN"));
-	Process* processP = new Process(fd);
+	Process* processP = new Process(rFd, wFd);
 	if (processP == NULL)
 		LM_X(1, ("error allocating a Process"));
 			
@@ -191,9 +176,8 @@ void ProcessAssistant::run(void)
 	//   o Loop receiving messages from Process until "finish" or "crash" received
 	//   o Send "continue"
 
-	int lFd;     // file descriptor for listen socket
-	int sFd;     // file descriptor for socket connection
-	int fds;     // output from select (really: iomMsgSend)
+	int rFd;     // file descriptor for reading
+	int wFd;     // file descriptor for writing
 
 	LM_TODO(("Will connect to controller when ProcessAssistant uses EndpointMgr"));
 
@@ -203,37 +187,10 @@ void ProcessAssistant::run(void)
 
 	/* **********************************************************************
 	 *
-	 * Opening my listen socket
-	 */
-	while (1)
-	{
-		LM_T(LMT_COREWORKER, ("Trying to open listen socket on port %d", port));
-		lFd = iomServerOpen(port);
-		if (lFd != -1)
-		{
-			LM_T(LMT_COREWORKER, ("Opened listen socket on port %d (fd %d)", port, lFd));
-			break;
-		}
-		++port;
-	}
-
-
-
-	/* **********************************************************************
-	 *
 	 * Starting Core Worker
 	 */
 	startTime = 0;
-	coreWorkerStart(progName, port);
-
-	LM_T(LMT_COREWORKER, ("Awaiting connection on port %d (fd %d)", port, lFd));
-	fds = iomMsgAwait(lFd, 5, 0);
-	if (fds != 1)
-		LM_X(1, ("core worker did not connect in 5 secs ..."));
-
-	sFd = iomAccept(lFd);
-	if (sFd == -1)
-		LM_X(1, ("error accepting core worker"));
+	coreWorkerStart(progName, &rFd, &wFd);
 
 	while (true)
 	{
@@ -243,18 +200,16 @@ void ProcessAssistant::run(void)
 		WorkerTaskItem *item =  worker->taskManager.getNextItemToProcess();
 
 		LM_T(LMT_COREWORKER, ("Running command '%s'", item->operation.c_str()));
-		result = runCommand(sFd, (char*) item->operation.c_str() , 5);
+		result = runCommand(rFd, wFd, (char*) item->operation.c_str() , 5);
 
 		// Loop receiving command from the Process until "finish" or "crash" received
 		while( (strcmp(result, "finish") != 0 ) && (strcmp(result, "crash") != 0) && (strcmp(result, "error") != 0 ) )
 		{
-			std::cout << "Receive: " << result << "\n";
-			
 			// Do something with the received command ( create a buffer with output data )
 			// TODO: pending
 			free(result);
 			
-			result = runCommand(sFd, (char*) "continue" , 5);
+			result = runCommand(rFd, wFd, (char*) "continue" , 5);
 		}
 		
 		// Report finish of this task
@@ -263,14 +218,17 @@ void ProcessAssistant::run(void)
 		{
 			LM_W(("Got finish from runCommand"));
 			worker->taskManager.finishItem(item, false, "");
-			result = runCommand(sFd, (char*) "ok" , 5);
+			result = runCommand(rFd, wFd, (char*) "ok" , 5);
 		}
 		else if (strcmp(result, "crash") == 0)
 		{
 			LM_W(("child process crashed - starting a new process"));
+			close(rFd);
+			close(wFd);
+
 			// ALARM(Alarm::Error, Alarm::CoreWorkerDied, ("Core worker %d died", core));
 			worker->taskManager.finishItem(item, true, "Process crashed");
-			coreWorkerStart(progName, port);
+			coreWorkerStart(progName, &rFd, &wFd);
 		}
 		else if (strcmp(result, "error") == 0)
 		{
@@ -300,7 +258,7 @@ void ProcessAssistant::run(void)
 *   true    is returned on success, while
 *   false   is returned on error (any error)
 */
-char* ProcessAssistant::runCommand(int fd, char* command, int timeOut)
+char* ProcessAssistant::runCommand(int rFd, int wFd, char* command, int timeOut)
 {
 	int                   s;
 	char                  out[128];
@@ -310,21 +268,21 @@ char* ProcessAssistant::runCommand(int fd, char* command, int timeOut)
 	Message::MessageType  msgType;
 	char*                 result;
 
-	s = iomMsgSend(fd, "coreWorker", progName, Message::Command, Message::Msg, command, strlen(command) + 1);
+	s = iomMsgSend(wFd, "coreWorker", progName, Message::Command, Message::Msg, command, strlen(command) + 1);
 	if (s != 0)
 		LM_RP(strdup("error"), ("iomMsgSend error"));
 
 	while (1)
 	{
-		s = iomMsgAwait(fd, 5, 0);
+		s = iomMsgAwait(rFd, 5, 0);
 		if (s == -2)
 			return strdup("timeout");
 		else if (s != 1)
 			LM_RE(strdup("error"), ("iomMsgAwait returned -1"));
 
-		s = iomMsgRead(fd, "coreWorker", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
+		s = iomMsgRead(rFd, "coreWorker", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
 		if (s == -2)
-			LM_RE(strdup("crash"), ("connection closed by core child process 'fd:%d', running the command '%s' ...", fd, command));
+			LM_RE(strdup("crash"), ("connection closed by core child process 'fd:%d', running the command '%s' ...", rFd, command));
 		else if (s != 0)
 			LM_RE(strdup("error"), ("iomMsgRead error"));
 

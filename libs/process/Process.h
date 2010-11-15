@@ -25,14 +25,15 @@ namespace ss {
 class Process
 {
 public:
-	Process(int fd);
+	Process(int rFd, int wFd);
 	void     run(void);
 
 private:
 	void     runCommand(const char* command);
 	char*    passCommand(const char* command);
 
-	int fd;
+	int rFd;
+	int wFd;
 };
 
 }

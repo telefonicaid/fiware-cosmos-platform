@@ -104,7 +104,7 @@ int main(int argc, const char *argv[])
 		workers.push_back(w);
 	}
 
-	lmTraceSet((char*) "0-255");
+	lmTraceSet((char*) "60");
 
 	controller.run();
 	for (int i = 0 ; i < num_workers ; i ++ )

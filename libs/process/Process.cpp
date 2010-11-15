@@ -55,8 +55,7 @@ void Process::run(void)
 
 	while (1)
 	{
-		std::cout << "Process loop: " << std::endl;
-		
+		LM_T(60, ("Awaiting message on fd %d", rFd));
 		fds = iomMsgAwait(rFd, -1, -1);
 		if (fds != 1)
 		{
@@ -67,6 +66,7 @@ void Process::run(void)
 
 		int s;
 		s = iomMsgRead(rFd, (char*) "father", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
+		LM_T(60, ("reading on fd %d got s=%d", rFd, s));
 		if (s == -2)
 			LM_X(1, ("father died - I die as well"));
 		else if (s != 0)
@@ -75,13 +75,13 @@ void Process::run(void)
 		if (msgCode != Message::Command)
 			LM_X(1, ("father sent me a '%s' message - I expect only 'Command' messages ...", messageCode(msgCode)));
 
-		LM_M(("Read command message '%s' - running it!", (char*) dataP));
+		LM_T(60, ("Read command message '%s' - running it!", (char*) dataP));
 		runCommand((char*) dataP);
-		LM_M(("after running command '%s'", dataP));
+		LM_T(60, ("after running command '%s'", dataP));
 
 		if (dataP != command)
 		{
-			LM_M(("freeing data pointer for command"));
+			LM_T(60, ("freeing data pointer for command"));
 			free(dataP);
 		}
 	}
@@ -102,12 +102,12 @@ void Process::run(void)
 */
 void Process::runCommand(const char* com)
 {
-	LM_M(("running command '%s'", com));
+	LM_T(60, ("running command '%s'", com));
 
 	sleep(1);
 	passCommand("finish");
 
-	LM_M(("command '%s' finished", com));
+	LM_T(60, ("command '%s' finished", com));
 }
 
 
@@ -125,7 +125,7 @@ char* Process::passCommand(const char* command)
 	Message::MessageCode  msgCode;
 	Message::MessageType  msgType;
 
-	LM_M(("passing command '%s' to father", command));
+	LM_T(60, ("passing command '%s' to father", command));
 
 	iomMsgSend(wFd, "father", progName, Message::Command, Message::Msg, (void*) command, strlen(command));
 

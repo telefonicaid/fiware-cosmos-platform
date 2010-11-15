@@ -80,17 +80,18 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 	if (pipe(pipeFd) != 0)  // pipe[0] for reading
 		LM_RVE(("pipe: %s", strerror(errno)));
 
+	LM_M(("pipe fds: %d %d", pipeFd[0], pipeFd[1]));
 	*rFdP = pipeFd[0];
 	*wFdP = pipeFd[1];
 
-	LM_T(LMT_COREWORKER, ("*********** Starting Core Worker %d", core));
+	LM_T(LMT_COREWORKER, ("*********** Starting Core Worker %d (father reading on fd %d and writing on fd %d", core, *rFdP, *wFdP));
 	if (fork() != 0)
 		return;
 
-	int rFd = pipeFd[1];
-	int wFd = pipeFd[0];
+	int rFd = pipeFd[0];
+	int wFd = pipeFd[1];
 
-	LM_M(("CHILD RUNNING"));
+	LM_T(60, ("CHILD RUNNING (rFd: %d, wFd: %d", rFd, wFd));
 	/* ************************************************************
 	 *
 	 * Setting auxiliar string for logMsg
@@ -100,7 +101,7 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 	sprintf(auxString, "core%02d", core);
 	lmAux(auxString);
 
-	LM_M(("CHILD RUNNING (logFd == %d)", logFd));
+	LM_T(60, ("CHILD RUNNING (logFd == %d)", logFd));
 
 
 #if !defined(__APPLE__)
@@ -130,13 +131,13 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 	 */
 	int fd;
 	
-	LM_M(("Close fathers file descriptors ... (logFd == %d, pipes: %d, %d)", logFd, rFd, wFd));
+	LM_T(60, ("Close fathers file descriptors (but not mine: logFd == %d, rFd: %d, wFd: %d)", logFd, rFd, wFd));
 	for (fd = 0; fd < 100; fd++)
 	{
 		if ((fd != logFd) && (fd != rFd) && (fd != wFd))
 			close(fd);
 		else
-			LM_M(("Not closing fd %d, as is is the log file fd", fd));
+			LM_T(60, ("Not closing fd %d", fd));
 	}
 	LM_M(("All fathers file descriptors closed!"));
 
@@ -153,7 +154,7 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 
 
 
-	LM_T(LMT_COREWORKER, ("Calling RUN"));
+	LM_T(LMT_COREWORKER, ("Creating Process(rFd:%d, wFd:%d)", rFd, wFd));
 	Process* processP = new Process(rFd, wFd);
 	if (processP == NULL)
 		LM_X(1, ("error allocating a Process"));
@@ -199,7 +200,7 @@ void ProcessAssistant::run(void)
 		// Get the next item to process ( this call is blocked if no task is available )
 		WorkerTaskItem *item =  worker->taskManager.getNextItemToProcess();
 
-		LM_T(LMT_COREWORKER, ("Running command '%s'", item->operation.c_str()));
+		LM_T(LMT_COREWORKER, ("Running command '%s' (rFd: %d, wFd: %d)", item->operation.c_str(), rFd, wFd));
 		result = runCommand(rFd, wFd, (char*) item->operation.c_str() , 5);
 
 		// Loop receiving command from the Process until "finish" or "crash" received
@@ -268,6 +269,7 @@ char* ProcessAssistant::runCommand(int rFd, int wFd, char* command, int timeOut)
 	Message::MessageType  msgType;
 	char*                 result;
 
+	LM_T(60, ("sending command '%s' on fd %d", command, wFd));
 	s = iomMsgSend(wFd, "coreWorker", progName, Message::Command, Message::Msg, command, strlen(command) + 1);
 	if (s != 0)
 		LM_RP(strdup("error"), ("iomMsgSend error"));

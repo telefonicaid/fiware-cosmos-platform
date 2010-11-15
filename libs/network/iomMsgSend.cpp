@@ -120,7 +120,7 @@ int iomMsgSend
 				 ioVec[0].iov_len + ioVec[1].iov_len + ioVec[2].iov_len + ioVec[3].iov_len,
 				 ioVec[0].iov_len, ioVec[1].iov_len, ioVec[2].iov_len, ioVec[3].iov_len));
 
-	LM_T(LMT_WRITE, ("written %d bytes to '%s' (fd %d)", s, to, fd));
+	LM_T(LMT_MSG, ("written %d bytes to '%s' (fd %d)", s, to, fd));
 
 	LM_WRITES(to, "message header",  ioVec[0].iov_base, ioVec[0].iov_len, LmfByte);
 	if (dataLen != 0)

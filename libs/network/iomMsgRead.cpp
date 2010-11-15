@@ -15,6 +15,7 @@
 
 #include "Message.h"            // MessageType, Code, etc.
 #include "Packet.h"             // Packet
+#include "Buffer.h"             // Buffer
 #include "iomMsgRead.h"         // Own interface
 
 
@@ -46,7 +47,7 @@ int iomMsgRead
 
 	if (nb == 0)
 	{
-		LM_T(LMT_READ, ("read 0 bytes from '%s' - connection closed", from));
+		LM_T(LMT_MSG, ("read 0 bytes from '%s' - connection closed", from));
 		return -2;
 	}
 
@@ -69,18 +70,18 @@ int iomMsgRead
 				LM_X(1, ("malloc(%d)", header.dataLen));
 		}
 
-		LM_T(LMT_READ, ("reading %d bytes of primary message data", header.dataLen));
+		LM_T(LMT_MSG, ("reading %d bytes of primary message data", header.dataLen));
 		nb = read(fd, *dataPP, header.dataLen);
 		if (nb == -1)
 			LM_RP(1, ("read %d bytes from '%s'", header.dataLen, from));
-		LM_T(LMT_READ, ("read %d bytes of primary message data", nb));
+		LM_T(LMT_MSG, ("read %d bytes of primary message data", nb));
 
 		if (nb != (int) header.dataLen)
 			LM_E(("Read %d bytes, %d expected ...", nb, header.dataLen));
 
 		*dataLenP = nb;
 
-		LM_T(LMT_READ, ("read %d bytes from '%s'", nb, from));
+		LM_T(LMT_MSG, ("read %d bytes from '%s'", nb, from));
 		LM_READS(from, "primary data", *dataPP, nb, LmfByte);
 	}
 
@@ -91,7 +92,7 @@ int iomMsgRead
 		if (dataP == NULL)
 			LM_X(1, ("malloc(%d)", header.gbufLen));
 
-        LM_T(LMT_READ, ("reading %d bytes of google protocol buffer data", header.gbufLen));
+        LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", header.gbufLen));
         nb = read(fd, dataP, header.gbufLen);
         if (nb == -1)
 			LM_RP(1, ("read(%d bytes from '%s')", header.gbufLen, from));
@@ -101,6 +102,9 @@ int iomMsgRead
 
 		LM_READS(from, "google protocol buffer", dataP, nb, LmfByte);
 	}
+
+	if ((header.gbufLen != 0) && (packetP->buffer->getSize() != 0))
+		LM_W(("NOT reading %d bytes of KV data", packetP->buffer->getSize()));
 
 #if 0
 	if ((header.gbufLen != 0) && (packetP->buffer->getSize() != 0))

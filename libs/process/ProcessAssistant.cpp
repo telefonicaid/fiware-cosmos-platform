@@ -69,7 +69,8 @@ extern int logFd;
 void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 {
 	time_t now = time(NULL);
-	int    pipeFd[2];
+	int    pipeFdPair1[2];
+	int    pipeFdPair2[2];
 
 	if (now - startTime <= 5)
 	{
@@ -77,19 +78,27 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 		LM_RVE(("Core worker %d died %d secs after restart", core, now - startTime));
 	}
 
-	if (pipe(pipeFd) != 0)  // pipe[0] for reading
+	if (pipe(pipeFdPair1) != 0)  // pipeFdPair1[0] for reading for father
+		LM_RVE(("pipe: %s", strerror(errno)));
+	if (pipe(pipeFdPair2) != 0)  // pipeFdPair2[1] for writing for father
 		LM_RVE(("pipe: %s", strerror(errno)));
 
-	LM_M(("pipe fds: %d %d", pipeFd[0], pipeFd[1]));
-	*rFdP = pipeFd[0];
-	*wFdP = pipeFd[1];
+	LM_M(("pipeFdPair1 fds: %d %d", pipeFdPair1[0], pipeFdPair1[1]));
+	LM_M(("pipeFdPair2 fds: %d %d", pipeFdPair2[0], pipeFdPair2[1]));
+
+	*rFdP = pipeFdPair1[0];
+	*wFdP = pipeFdPair2[1];
 
 	LM_T(LMT_COREWORKER, ("*********** Starting Core Worker %d (father reading on fd %d and writing on fd %d", core, *rFdP, *wFdP));
 	if (fork() != 0)
-		return;
+	{
+		close(pipeFdPair1[1]);
+		close(pipeFdPair2[0]);
 
-	int rFd = pipeFd[0];
-	int wFd = pipeFd[1];
+		return;
+	}
+	int rFd = pipeFdPair2[0];
+	int wFd = pipeFdPair1[1];
 
 	LM_T(60, ("CHILD RUNNING (rFd: %d, wFd: %d", rFd, wFd));
 	/* ************************************************************

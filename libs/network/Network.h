@@ -92,7 +92,7 @@ private:
 
 	bool       iAmReady;
 
-	Endpoint*  endpointAdd(int fd, char* name, char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core);
+	Endpoint*  endpointAdd(int rFd, int wFd, char* name, char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core);
 	void       endpointRemove(Endpoint* ep);
 	Endpoint*  endpointLookup(int fd, int* idP);
 	Endpoint*  endpointLookup(int ix);

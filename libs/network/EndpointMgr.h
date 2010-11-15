@@ -29,7 +29,7 @@ public:
 	
 	void        init(Endpoint::Type myType, const char* alias, unsigned short port = 0, const char* controllerName = NULL);
 
-	Endpoint*   endpointAdd(int fd, char* name, char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo = -1);
+	Endpoint*   endpointAdd(int rFd, int wFd, char* name, char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo = -1);
 	void        endpointRemove(Endpoint* ep);
 	Endpoint*   endpointCoreWorkerLookup(int coreNo);
 	Endpoint*   endpointLookup(int ix);

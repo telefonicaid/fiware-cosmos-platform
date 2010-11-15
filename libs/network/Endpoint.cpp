@@ -43,14 +43,15 @@ void Endpoint::hostnameGet(void)
 *
 * Constructor
 */
-Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short port, int fd)
+Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short port, int rFd, int wFd)
 {
 	this->name     = name;
 	this->type     = type;
 	this->ip       = ip;
 	this->port     = port;
-	this->fd       = fd;
-	this->state    = (fd == -1)? Unconnected : Connected;
+	this->rFd      = rFd;
+	this->wFd      = wFd;
+	this->state    = (rFd == -1)? Unconnected : Connected;
 	this->workers  = 0;
 	this->status   = NULL;
 
@@ -116,7 +117,8 @@ Endpoint::Endpoint(Type type, std::string ipAndPort)
 		this->port  = atoi(port);
 	}
 
-	this->fd       = -1;
+	this->rFd      = -1;
+	this->wFd      = -1;
 	this->state    = Unconnected;
 	this->workers  = 0;
 	this->type     = type;
@@ -136,7 +138,8 @@ Endpoint::Endpoint(Type type, unsigned short port)
 	this->name     = "no name";
 	this->ip       = "localhost";
 	this->port     = port;
-	this->fd       = -1;
+	this->rFd      = -1;
+	this->wFd      = -1;
 	this->state    = Unconnected;
 	this->workers  = 0;
 	this->type     = type;
@@ -157,7 +160,8 @@ Endpoint::Endpoint(Type type, char* alias)
 	this->ip       = "localhost";
 	this->alias    = alias;
 	this->port     = port;
-	this->fd       = -1;
+	this->rFd      = -1;
+	this->wFd      = -1;
 	this->state    = Unconnected;
 	this->workers  = 0;
 	this->type     = type;
@@ -210,9 +214,13 @@ const char* Endpoint::stateName(void)
 */
 void Endpoint::reset(void)
 {
-	close(fd);
+	close(rFd);
+	if (wFd != rFd)
+		close(wFd);
 
-	fd       = -1;
+	rFd      = -1;
+	wFd      = -1;
+
 	state    = Free;
 	type     = Unknown;
 	name     = "no name";

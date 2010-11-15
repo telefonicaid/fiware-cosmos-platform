@@ -70,7 +70,7 @@ void alarmSend
 	strncpy(alarm.funcName, funcName, sizeof(alarm.funcName));
 	strncpy(alarm.message, message, sizeof(alarm.message));
 
-	iomMsgSend(controller->fd, controller->name.c_str(), from->name.c_str(), Message::Alarm, Message::Evt, &alarm, sizeof(alarm));
+	iomMsgSend(controller->wFd, controller->name.c_str(), from->name.c_str(), Message::Alarm, Message::Evt, &alarm, sizeof(alarm));
 	LM_F(("ALARM: '%s'", message));
 }
 

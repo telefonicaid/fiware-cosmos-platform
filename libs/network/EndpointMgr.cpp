@@ -73,16 +73,17 @@ void EndpointMgr::init(Endpoint::Type type, const char* alias, unsigned short po
 			LM_XP(1, ("new Endpoint"));
 		listener = endpoint[1];
 
-		listener->fd       = iomServerOpen(listener->port);
+		listener->rFd      = iomServerOpen(listener->port);
 		listener->state    = Endpoint::Listening;
 		listener->type     = Endpoint::Listener;
 		listener->ip       = me->ip;
 		listener->name     = "Listener";
+		listener->wFd      = listener->rFd;
 
-		if (listener->fd == -1)
+		if (listener->rFd == -1)
 			LM_XP(1, ("unable to open port %d for listening", listener->port));
 
-		LM_T(LMT_FDS, ("opened fd %d to accept incoming connections", listener->fd));
+		LM_T(LMT_FDS, ("opened fd %d to accept incoming connections", listener->rFd));
 	}
 
 	if ((type == Endpoint::Worker) || (type == Endpoint::Delilah))
@@ -92,8 +93,8 @@ void EndpointMgr::init(Endpoint::Type type, const char* alias, unsigned short po
 			LM_XP(1, ("new Endpoint"));
 		controller = endpoint[2];
 
-		controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
-		if (controller->fd == -1)
+		controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
+		if (controller->rFd == -1)
 			LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
 
 		controller->state = ss::Endpoint::Connected;
@@ -128,7 +129,7 @@ int EndpointMgr::helloSend(Endpoint* ep, Message::MessageType type)
 
 	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s', type: '%s')", messageType(type), ep->name.c_str(), hello.name, me->typeName()));
 
-	return iomMsgSend(ep->fd, ep->name.c_str(), me->name.c_str(), Message::Hello, type, &hello, sizeof(hello));
+	return iomMsgSend(ep->wFd, ep->name.c_str(), me->name.c_str(), Message::Hello, type, &hello, sizeof(hello));
 }
 
 
@@ -160,7 +161,8 @@ int EndpointMgr::helloSend(Endpoint* ep, Message::MessageType type)
 */
 Endpoint* EndpointMgr::endpointAdd
 (
-	int             fd,
+	int             rFd,
+	int             wFd,
 	char*           name,
 	char*           alias,
 	int             workers,
@@ -172,7 +174,7 @@ Endpoint* EndpointMgr::endpointAdd
 {
 	int ix;
 
-	LM_T(LMT_ENDPOINT, ("Adding endpoint '%s' of type '%s' for fd %d", name, me->typeName(type), fd));
+	LM_T(LMT_ENDPOINT, ("Adding endpoint '%s' of type '%s' for fd %d", name, me->typeName(type), rFd));
 
 	switch (type)
 	{
@@ -197,11 +199,12 @@ Endpoint* EndpointMgr::endpointAdd
 					LM_XP(1, ("allocating temporal Endpoint"));
 
 				endpoint[ix]->name  = std::string(name);
-				endpoint[ix]->fd    = fd;
+				endpoint[ix]->rFd   = rFd;
+				endpoint[ix]->wFd   = wFd;
 				endpoint[ix]->type  = Endpoint::Temporal;
 				endpoint[ix]->ip    = ip;
                 endpoint[ix]->alias = (alias != NULL)? alias : "NO ALIAS" ;
-                endpoint[ix]->state = (fd > 0)? Endpoint::Connected : Endpoint::Unconnected;
+                endpoint[ix]->state = (rFd > 0)? Endpoint::Connected : Endpoint::Unconnected;
 
 				return endpoint[ix];
 			}
@@ -219,7 +222,8 @@ Endpoint* EndpointMgr::endpointAdd
 		if (ep != NULL)
 		{
 			LM_T(LMT_EP, ("Found CoreWorker (core %d)", coreNo));
-			ep->fd    = fd;
+			ep->rFd   = rFd;
+			ep->wFd   = wFd;
 			ep->name  = std::string(name);
 
 			return ep;
@@ -238,8 +242,9 @@ Endpoint* EndpointMgr::endpointAdd
 
 				endpoint[ix]->name       = std::string(name);
 				endpoint[ix]->alias      = (alias != NULL)? alias : "NO ALIAS" ;
-				endpoint[ix]->fd         = fd;
-				endpoint[ix]->state      = (fd > 0)? Endpoint::Connected : Endpoint::Unconnected;
+				endpoint[ix]->rFd        = rFd;
+				endpoint[ix]->wFd        = wFd;
+				endpoint[ix]->state      = (wFd > 0)? Endpoint::Connected : Endpoint::Unconnected;
 				endpoint[ix]->type       = type;
 				endpoint[ix]->ip         = ip;
 				endpoint[ix]->port       = port;
@@ -263,8 +268,9 @@ Endpoint* EndpointMgr::endpointAdd
 			if (controller == NULL)
 				LM_X(1, ("controller == NULL"));
 
-			controller->fd   = fd;
-			controller->name = std::string(name);
+			controller->rFd    = rFd;
+			controller->wFd    = wFd;
+			controller->name   = std::string(name);
 			controller->alias  = (alias != NULL)? alias : "NO ALIAS" ;
 			
 			return controller;
@@ -278,8 +284,8 @@ Endpoint* EndpointMgr::endpointAdd
 			if (endpointLookup(alias) != NULL)
 			{
 				LM_E(("Intent to connect a second Worker with alias '%s' - rejecting connection", alias));
-				iomMsgSend(fd, name, progName, Message::Die, Message::Evt);
-				close(fd);
+				iomMsgSend(wFd, name, progName, Message::Die, Message::Evt);
+				close(wFd);
 				return NULL;
 			}
 
@@ -288,14 +294,15 @@ Endpoint* EndpointMgr::endpointAdd
 			{
 				LM_M(("Got endpoint '%s'", alias));
 
-				endpoint[ix]->fd       = fd;
+				endpoint[ix]->rFd      = rFd;
+				endpoint[ix]->wFd      = wFd;
 				endpoint[ix]->name     = std::string(name);
 				endpoint[ix]->alias    = std::string(alias);
 				endpoint[ix]->workers  = workers;
 				endpoint[ix]->type     = Endpoint::Worker;
 				endpoint[ix]->ip       = ip;
 				endpoint[ix]->port     = port;
-				endpoint[ix]->state    = (fd > 0)? Endpoint::Connected : Endpoint::Unconnected;   /* XXX */
+				endpoint[ix]->state    = (rFd > 0)? Endpoint::Connected : Endpoint::Unconnected;   /* XXX */
 
 				return endpoint[ix];
 			}
@@ -304,7 +311,7 @@ Endpoint* EndpointMgr::endpointAdd
         LM_E(("Worker '%s:%d' not found!", ip.c_str(), port));
 
         LM_E(("alias '%s' - rejecting connection", alias));
-        iomMsgSend(fd, name, progName, Message::Die, Message::Evt);
+        iomMsgSend(wFd, name, progName, Message::Die, Message::Evt);
 
 		return NULL;
 	}
@@ -334,9 +341,10 @@ void EndpointMgr::endpointRemove(Endpoint* ep)
 		{
 			if (ep->type == Endpoint::Worker)
 			{
-				ep->fd    = -1;
-				ep->state = Endpoint::Disconnected;
-				ep->name  = std::string("To be a worker");
+				ep->rFd    = -1;
+				ep->wFd    = -1;
+				ep->state  = Endpoint::Disconnected;
+				ep->name   = std::string("To be a worker");
 			}
 			else
 			{
@@ -418,11 +426,11 @@ Endpoint* EndpointMgr::endpointLookup(char* alias)
 *
 * endpointLookup - MOVE to EndpointMgr
 */
-Endpoint* EndpointMgr::endpointLookup(int fd, int* idP)
+Endpoint* EndpointMgr::endpointLookup(int rFd, int* idP)
 {
 	int ix = 0;
 
-	if (fd < 0)
+	if (rFd < 0)
 		return NULL;
 
 	for (ix = 0; ix < Endpoints; ix++)
@@ -430,7 +438,7 @@ Endpoint* EndpointMgr::endpointLookup(int fd, int* idP)
 		if (endpoint[ix] == NULL)
 			continue;
 
-		if (endpoint[ix]->fd == fd)
+		if (endpoint[ix]->rFd == rFd)
 		{
 			if (idP)
 				*idP = ix;
@@ -438,7 +446,7 @@ Endpoint* EndpointMgr::endpointLookup(int fd, int* idP)
 		}
 	}
 
-	LM_E(("endpoint (fd:%d) not found", fd));
+	LM_E(("endpoint (rFd:%d) not found", rFd));
 	return NULL;
 }
 
@@ -519,7 +527,7 @@ void EndpointMgr::workerStatusToController(void)
 	LM_T(LMT_STAT, ("I have %d cores - sending %d bytes of workerStatus data to controller", ws.cpuInfo.cores, sizeof(ws)));
 #endif
 
-	iomMsgSend(controller->fd, controller->name.c_str(), me->name.c_str(), Message::WorkerStatus, Message::Msg, &ws, sizeof(ws));
+	iomMsgSend(controller->wFd, controller->name.c_str(), me->name.c_str(), Message::WorkerStatus, Message::Msg, &ws, sizeof(ws));
 }
 
 
@@ -528,7 +536,7 @@ void EndpointMgr::workerStatusToController(void)
 *
 * msgTreat - MOVE to EndpointMgr
 */
-void EndpointMgr::msgTreat(int fd, char* name)
+void EndpointMgr::msgTreat(int rFd, char* name)
 {
 	Packet                packet;
 	Packet                ack;
@@ -536,16 +544,17 @@ void EndpointMgr::msgTreat(int fd, char* name)
 	Message::MessageType  msgType;
 	int                   s;
 	int                   endpointId;
-	Endpoint*             ep = endpointLookup(fd, &endpointId);
+	Endpoint*             ep = endpointLookup(rFd, &endpointId);
 	char                  data[1024];
 	void*                 dataP   = data;
 	int                   dataLen = sizeof(data);
+	int                   wFd     = rFd;   // if pipe pair, this function will nmot work ...
 
 	if (ep == NULL)
-		LM_X(1, ("endpoint not found for fd %d", fd));
+		LM_X(1, ("endpoint not found for rFd %d", rFd));
 
 	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p)", name, ep));
-	s = iomMsgRead(fd, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
+	s = iomMsgRead(rFd, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
 	LM_T(LMT_READ, ("iomMsgRead returned %d", s));
 
 	if (s != 0)
@@ -562,15 +571,17 @@ void EndpointMgr::msgTreat(int fd, char* name)
 
 				LM_W(("controller died ... trying to reconnect !"));
 
-				controller->fd    = -1;
-				controller->state = ss::Endpoint::Disconnected;
+				controller->rFd    = -1;
+				controller->wFd    = -1;
+				controller->state  = ss::Endpoint::Disconnected;
 
-				while (controller->fd == -1)
+				while (controller->rFd == -1)
 				{
-					controller->fd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
+					controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
 					sleep(1); // sleep one second before reintenting connection to coltroller
 				}
 
+				controller->wFd   = controller->rFd;
 				controller->state = ss::Endpoint::Connected;
 				return;
 			}
@@ -580,9 +591,13 @@ void EndpointMgr::msgTreat(int fd, char* name)
 				{
 					--me->workers;
 
-					close(ep->fd);
+					close(ep->rFd);
+					if (ep->wFd != ep->rFd)
+						close(ep->wFd);
+
 					ep->state = ss::Endpoint::Closed;
-					ep->fd    = -1;
+					ep->rFd    = -1;
+					ep->wFd    = -1;
 					ep->name  = "-----";
 				}
 				else if (ep->type == Endpoint::CoreWorker)
@@ -608,7 +623,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 		Message::HelloData*  hello;
 
 		hello   = (Message::HelloData*) dataP;
-		helloEp = endpointAdd(fd, hello->name, hello->alias, hello->workers, hello->type, hello->ip, hello->port, hello->coreNo);
+		helloEp = endpointAdd(rFd, rFd, hello->name, hello->alias, hello->workers, hello->type, hello->ip, hello->port, hello->coreNo);
 
 		if (helloEp == NULL)
 			LM_X(1, ("helloEp == NULL"));
@@ -629,7 +644,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 				Packet packet;
 
 				// Ask controller for list of workers
-				iomMsgSend(controller->fd, (char*) controller->name.c_str(), (char*) me->name.c_str(),
+				iomMsgSend(controller->wFd, (char*) controller->name.c_str(), (char*) me->name.c_str(),
 						   Message::WorkerVector, Message::Msg, NULL, 0, NULL);
 			}
 		}
@@ -672,7 +687,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 			}
 
 			LM_T(LMT_WRITE, ("sending ack with entire worker vector to '%s'", name));
-			iomMsgSend(fd, name, (char*) me->name.c_str(), Message::WorkerVector, Message::Ack, workerV, Workers * sizeof(Message::Worker));
+			iomMsgSend(wFd, name, (char*) me->name.c_str(), Message::WorkerVector, Message::Ack, workerV, Workers * sizeof(Message::Worker));
 			free(workerV);
 		}
 		else if (msgType == Message::Ack)
@@ -692,11 +707,8 @@ void EndpointMgr::msgTreat(int fd, char* name)
 
 				if (endpoint[3 + ix] == NULL)
 				{
-					LM_M(("allocating room for worker %d", ix));
-					LM_M(("endpoint at %p", endpoint));
-					LM_M(("worker %d alias: '%s'", ix, workerV[ix].alias));
-					endpoint[3 + ix] = new Endpoint(Endpoint::Worker, workerV[ix].name, workerV[ix].ip, workerV[ix].port, -1);
-					LM_M(("endpoint[%d] at %p", 3 + ix, endpoint[3 + ix]));
+					endpoint[3 + ix] = new Endpoint(Endpoint::Worker, workerV[ix].name, workerV[ix].ip, workerV[ix].port, -1, -1);
+
 					endpoint[3 + ix]->state = Endpoint::Unconnected;
 					endpoint[3 + ix]->alias = workerV[ix].alias;
 				}
@@ -710,7 +722,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 					continue;
 				}
 
-				if (epP->fd == -1)
+				if (epP->rFd == -1)
 				{
 					int workerFd;
 
@@ -726,7 +738,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 					{
 						Endpoint* ep;
 
-						ep = endpointAdd(workerFd, (char*) "to be worker", NULL, 0, Endpoint::Temporal, epP->ip, epP->port);
+						ep = endpointAdd(workerFd, workerFd, (char*) "to be worker", NULL, 0, Endpoint::Temporal, epP->ip, epP->port);
 						if (ep != NULL)
 						{
 							ep->state = Endpoint::Connected;
@@ -762,7 +774,7 @@ void EndpointMgr::msgTreat(int fd, char* name)
 			else
 			{
 				// Forward Alarm to controller
-				iomMsgSend(controller->fd, controller->name.c_str(), me->name.c_str(), Message::Alarm, Message::Evt, dataP, dataLen);
+				iomMsgSend(controller->wFd, controller->name.c_str(), me->name.c_str(), Message::Alarm, Message::Evt, dataP, dataLen);
 			}
 		}
 		else if (me->type == Endpoint::Controller)
@@ -858,7 +870,7 @@ void EndpointMgr::run()
 						workerFd = iomConnect(endpoint[ix]->ip.c_str(), endpoint[ix]->port);
 						if (workerFd != -1)
 						{
-							endpointAdd(workerFd, (char*) "Reconnecting worker", NULL, 0, Endpoint::Temporal, endpoint[ix]->ip.c_str(), endpoint[ix]->port);
+							endpointAdd(workerFd, workerFd, (char*) "Reconnecting worker", NULL, 0, Endpoint::Temporal, endpoint[ix]->ip.c_str(), endpoint[ix]->port);
 							endpoint[ix]->state = Endpoint::Reconnecting;
 						}
 					}
@@ -871,7 +883,7 @@ void EndpointMgr::run()
 						{
 							Endpoint* ep;
 
-							ep = endpointAdd(workerFd, (char*) "New Worker", NULL, 0, Endpoint::Temporal, endpoint[ix]->ip.c_str(), endpoint[ix]->port);
+							ep = endpointAdd(workerFd, workerFd, (char*) "New Worker", NULL, 0, Endpoint::Temporal, endpoint[ix]->ip.c_str(), endpoint[ix]->port);
 							if (ep != NULL)
 								LM_T(LMT_ENDPOINT, ("Added ep with state '%s'", ep->stateName()));
 							else
@@ -893,10 +905,10 @@ void EndpointMgr::run()
 				if (endpoint[ix] == NULL)
 					continue;
 
-				if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) && (endpoint[ix]->fd >= 0))
+				if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) && (endpoint[ix]->rFd >= 0))
 				{
-					FD_SET(endpoint[ix]->fd, &rFds);
-					max = MAX(max, endpoint[ix]->fd);
+					FD_SET(endpoint[ix]->rFd, &rFds);
+					max = MAX(max, endpoint[ix]->rFd);
 					LM_M(("++ %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
 						  ix,
 						  endpoint[ix]->typeName(),
@@ -905,7 +917,7 @@ void EndpointMgr::run()
 						  endpoint[ix]->ip.c_str(),
 						  endpoint[ix]->port,
 						  endpoint[ix]->stateName(),
-						  endpoint[ix]->fd));
+						  endpoint[ix]->rFd));
 				}
 				else
 				{
@@ -917,7 +929,7 @@ void EndpointMgr::run()
 						  endpoint[ix]->ip.c_str(),
 						  endpoint[ix]->port,
 						  endpoint[ix]->stateName(),
-						  endpoint[ix]->fd));
+						  endpoint[ix]->rFd));
 				}
 			}
 
@@ -938,20 +950,20 @@ void EndpointMgr::run()
 		{
 			int ix;
 
-			if (listener && (listener->state == Endpoint::Listening) && FD_ISSET(listener->fd, &rFds))
+			if (listener && (listener->state == Endpoint::Listening) && FD_ISSET(listener->rFd, &rFds))
 			{
 				int        fd;
 				char       hostName[128];
 
 				LM_T(LMT_SELECT, ("incoming message from my listener - I will accept ..."));
 				--fds;
-				fd = iomAccept(listener->fd, hostName, sizeof(hostName));
+				fd = iomAccept(listener->rFd, hostName, sizeof(hostName));
 				if (fd == -1)
-					LM_P(("iomAccept(%d)", listener->fd));
+					LM_P(("iomAccept(%d)", listener->rFd));
 				else
 				{
 					std::string  s   = std::string("tmp:") + std::string(hostName);
-					Endpoint*    ep  = endpointAdd(fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, (char*) "ip", 0);
+					Endpoint*    ep  = endpointAdd(fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, (char*) "ip", 0);
 
 					ep->state = Endpoint::Connected;
 					helloSend(ep, Message::Msg);
@@ -965,15 +977,14 @@ void EndpointMgr::run()
 				LM_T(LMT_SELECT, ("looping from %d to %d", 3, Endpoints));
 				for (ix = 2; ix < Endpoints; ix++)
 				{
-					if ((endpoint[ix] == NULL) || (endpoint[ix]->fd < 0))
+					if ((endpoint[ix] == NULL) || (endpoint[ix]->rFd < 0))
 						continue;
 
-					if (FD_ISSET(endpoint[ix]->fd, &rFds))
+					if (FD_ISSET(endpoint[ix]->rFd, &rFds))
 					{
 						--fds;
 						LM_T(LMT_SELECT, ("incoming message from '%s' endpoint %s", endpoint[ix]->typeName(), endpoint[ix]->name.c_str()));
-						msgTreat(endpoint[ix]->fd, (char*) endpoint[ix]->name.c_str());
-						// FD_CLR(endpoint[ix]->fd, &rFds);  endpoint[ix] might have been set to NULL in msgTreat ...
+						msgTreat(endpoint[ix]->rFd, (char*) endpoint[ix]->name.c_str());
 					}
 				}
 			}

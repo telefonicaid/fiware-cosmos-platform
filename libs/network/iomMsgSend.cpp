@@ -86,7 +86,7 @@ int iomMsgSend
 	else
 		LM_M(("NULL Google protocol buffer"));
 
-	if (packetP && packetP->buffer != 0)
+	if (packetP && (packetP->buffer != 0) )
 	{
 
 		header.kvDataLen      = packetP->buffer->getSize();

@@ -10,18 +10,25 @@
 
 #include <iostream>
 #include "Message.h"			// ss::Message
+#include "DelilahClient.h"		// ss::DelilahClient
 
 //class MainWindow;
 class DelilahQtApp;
+
 namespace ss {
 	class Delilah;
 	class Packet;
+
+	class DelilahLoadDataProcess;
+
+
 	namespace Message {
 		enum MessageCode;
 	}
+
 }
 
-class DelilahQt
+class DelilahQt : public ss::DelilahClient
 {
 public:
 
@@ -50,6 +57,13 @@ public:
 	
 	int receive(int fromId, ss::Message::MessageCode msgCode, ss::Packet* packet);
 
+	
+	/** 
+	 Routine to confirm a load dat aprocess
+	 */
+	virtual void loadDataConfirmation( ss::DelilahLoadDataProcess *process){};
+
+	
 	/**
 	 Asynch method to quit interface
 	 */
@@ -58,6 +72,7 @@ public:
 	{
 		// TODO: To be completed
 	}
+	
 	
 	
 };

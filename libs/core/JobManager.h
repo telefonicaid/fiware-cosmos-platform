@@ -32,13 +32,10 @@ namespace ss {
 		
 		SamsonController * controller;		
 		
-		size_t current_job_id;
-		
 	public:
 		
 		JobManager(SamsonController * _controller) 
 		{
-			current_job_id = 0;
 			controller = _controller;
 		}
 		

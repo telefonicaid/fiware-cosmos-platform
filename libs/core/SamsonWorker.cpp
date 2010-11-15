@@ -14,7 +14,8 @@
 #include "SamsonWorker.h"               // Own interfce
 #include "EndpointMgr.h"				// ss::EndpointMgr
 #include "SamsonSetup.h"				// ss::SamsonSetup
-
+#include "Format.h"						// au::Format
+		
 namespace ss {
 
 
@@ -124,6 +125,10 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 	this->network = network;
 	network->setPacketReceiverInterface(this);
 	network->initAsSamsonWorker(port, alias.c_str(), controller.c_str());
+	
+	// Get my id as worker
+	myWorkerId = network->getWorkerFromIdentifier( network->getMyidentifier() );
+	
 }
 
 
@@ -195,25 +200,21 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	{
 		// A packet with a particular command is received (controller expect to send a confirmation message)
 		LM_T(LMT_TASK, ("Got a WorkerTask message"));
-
 		
 		// add task to the task manager
 		taskManager.addTask( packet->message.worker_task() );
-	
 		return 0;
 	}
 
-		
-		/**
-		 Load txt files to be latter confirmed to controller
-		 
-		 */
-	
+	// Load data files to be latter confirmed to controller
 	if (msgCode == Message::LoadData)
 	{
+		
 		std::ostringstream fileName;
 		fileName << "/tmp/file_" << rand() << rand();	// Just to test
-		loadDataManager.addFile( packet->buffer , fileName.str() , fromId );
+		
+		loadDataManager.addFile( packet->buffer , fileName.str() , fromId , packet->message.load_data().process_id() , packet->message.load_data().file_id() );
+		
 	}
 	
 	

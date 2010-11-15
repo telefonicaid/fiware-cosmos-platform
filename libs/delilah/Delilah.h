@@ -18,16 +18,18 @@
 #include "Endpoint.h"			// Endpoint
 #include "CommandLine.h"		// au::CommandLine
 #include "CommandLine.h"		// au::CommandLine
-#include "DelilahConsole.h"		// ss::DelilahConsole
 #include "traces.h"				// TRACE_DALILAH
-#include "DelilahQt.h"			// DelilahQt
-
+#include <set>					// std::set
+#include "Lock.h"				// au::Lock
+#include "au_map.h"				// au::map
 
 namespace ss {
 	
 
 	// Thread method
 	void* runNetworkThread(void *p);
+	class DelilahClient;
+	class DelilahLoadDataProcess;
 	
 	/**
 	   Main class for the samson client element
@@ -35,10 +37,11 @@ namespace ss {
 
 	class Delilah : public PacketReceiverInterface, public PacketSenderInterface
 	{
-//		NetworkInterface* network;			// Network interface
 
-		DelilahConsole* console;			// Console to work with delilah in command-line mode
-		DelilahQt *interfaceQt;				// Graphical interface
+		
+		friend class DelilahLoadDataProcess;
+		DelilahClient* client;			// Console or GUI to work with delilah
+
 
 		// Command line parameters ( necessary for QT run method )
 		int _argc;
@@ -46,98 +49,40 @@ namespace ss {
 
 		pthread_t t_network;
 
-		friend class DelilahConsole;
-		friend class DelilahQt;
+		
+		// Internal counter for load data operations
+		au::Lock loadDataLock;
+		size_t loadDataCounter;
+		au::map<size_t,DelilahLoadDataProcess> loadProcess; 
 		
 	public:
-		NetworkInterface* network;			// Network interface
-		bool finish;						// Global flag used by all threads to detect to stop
+
+		NetworkInterface* network;		// Network interface
+		bool finish;					// Global flag used by all threads to detect to stop
 		
 	public:
 		
-		Delilah( int arg, const char *argv[] , NetworkInterface *_network )
-		{
-			
-			//  Keep command line parameters for QT initizalization
-			_argc =  arg;
-			_argv = argv;
-		
-			network = _network;		// Keep a pointer to our network interface element
-			network->setPacketReceiverInterface(this);
-			
-			finish = false;				// Global flag to finish threads
-			
-			// Parse input command lines
-			au::CommandLine commandLine;
-			commandLine.set_flag_string("controller", "no_controller");
-			
-			commandLine.set_flag_boolean("console");				
-			commandLine.set_flag_boolean("basic");				// Basic console without ncurses		
-			commandLine.set_flag_boolean("r");
-			commandLine.set_flag_boolean("w");
-			
-			commandLine.parse(arg, argv);
-
-			// Create console or graphical interface
-			
-			console     = 0;
-			interfaceQt = 0;
-
-			lmReads    = commandLine.get_flag_bool("r");
-			lmWrites   = commandLine.get_flag_bool("w");
-
-			if ( commandLine.get_flag_bool("console") )
-				console = new DelilahConsole(this,true);		// Console with ncurses
-			else if ( commandLine.get_flag_bool("basic") )
-				console = new DelilahConsole(this,false);		// Console without ncurses
-			else
-				interfaceQt = new DelilahQt( this );
-				
-			
-			// Get the controller
-			std::string controller = commandLine.get_flag_string("controller");
-			
-			if (controller == "no_controller")
-			{
-				std::cerr  << "Controller has not been specified with command line parameets" << std::endl;
-				//exit(0);
-			}
-			else
-				initController( controller );
-
-		}
+		Delilah( int arg, const char *argv[] , NetworkInterface *_network );
 		
 		void run();
 		
-		void initController( std::string controller )
-		{
-		  // LM_T( TRACE_DELILAH , ("Delilah running. Controller: %s",controller.c_str() ) );
-			network->initAsDelilah( controller );
-
-			// run network "run" in a separate thread
-			pthread_create(&t_network, NULL, runNetworkThread, this);
-		}
+		void initController( std::string controller );
 		
 		// Run the network run method
 		void runNetwork();
 		
-		void quit()
-		{
-			finish = true;
-			
-			if( console )
-				console->quit();
-			if( interfaceQt )
-				interfaceQt->quit();
-			
-			network->quit();
-		}
-		
+		void quit();		
 		// PacketReceiverInterface
 		virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 
 		// PacketSenderInterface
 		virtual void notificationSent(size_t id, bool success);
+		
+		// Load a list of files to a particular queue
+		// This created a thread to load this process
+		// The id returned is used to compare the callbacks "loadDataConfirmation"
+		size_t loadData( std::vector<std::string> fileNames , std::string queue);
+		
 	};
 }
 

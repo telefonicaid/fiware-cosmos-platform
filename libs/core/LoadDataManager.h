@@ -19,11 +19,17 @@ namespace ss {
 		
 		std::string fileName;
 		int fromIdentifier;
+		size_t process_id;
+		size_t file_id;
+		size_t size;
 		
-		LoadDataManagerItem( std::string _fileName , int _fromIdentifier )
+		LoadDataManagerItem( std::string _fileName , int _fromIdentifier , size_t _process_id , size_t _file_id , size_t _size )
 		{
 			fileName = _fileName;
 			fromIdentifier = _fromIdentifier;
+			process_id = _process_id;
+			file_id = _file_id;
+			size = _size;
 		}
 	};	
 	
@@ -42,7 +48,7 @@ namespace ss {
 			worker = _worker;
 		}
 		
-		void addFile( Buffer * buffer , std::string fileName, int fromIdentifier );
+		void addFile( Buffer * buffer , std::string fileName, int fromIdentifier , size_t process_id , size_t file_id );
 		
 		
 		// FileManagerDelegate

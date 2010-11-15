@@ -5,10 +5,11 @@
 * DESCRIPTION			   Console terminal for delilah
 *
 */
-#include "Delilah.h"			// ss::Delailh
-#include "DelilahConsole.h"		// Own interface
-#include "Packet.h"				// ss:Packet
-#include "Format.h"				// au::Format
+#include "Delilah.h"					// ss::Delailh
+#include "DelilahConsole.h"				// Own interface
+#include "Packet.h"						// ss:Packet
+#include "Format.h"						// au::Format
+#include "DelilahLoadDataProcess.h"		// ss::DelilahLoadDataProcess
 
 namespace ss
 {
@@ -88,6 +89,31 @@ namespace ss
 				return;
 				
 				
+			}
+			
+			
+			
+			
+			if( mainCommand == "load" )
+			{
+				if( commandLine.get_num_arguments() < 3)
+				{
+					writeErrorOnConsole("Usage: load file <file2> .... <fileN> queue");
+					return;
+				}
+				
+				std::vector<std::string> fileNames;
+				for (int i = 1 ; i < (commandLine.get_num_arguments()-1) ; i++)
+					fileNames.push_back( commandLine.get_argument(i) );
+				
+				std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
+				
+				size_t id = dalilah->loadData(fileNames, queue);
+				
+				std::ostringstream o;
+				o << "Load data process (id="<<id<<") started with " << fileNames.size() << " files\n";
+				writeWarningOnConsole(o.str());
+				return;
 			}
 			
 			// Normal command send to the controller
@@ -214,4 +240,37 @@ namespace ss
 		
 		return 0;
 	}	
+	
+	void DelilahConsole::loadDataConfirmation( DelilahLoadDataProcess *process)
+	{
+		std::ostringstream o;
+		o << "Alert: Load data process (id=" << process->getId() << ") finished\n";
+		o << "Total uploaded: " << au::Format::string( process->getUploadedSize() ) << "bytes\n";
+		
+		std::vector<std::string> failedFiles = process->getFailedFiles();
+		if( failedFiles.size() == 0 )
+			o << "No failed files\n";
+		else
+		{
+			o << failedFiles.size() << " Failed files\n";
+			for (size_t i = 0 ; i < failedFiles.size() ; i++)
+				o << "\tFile: " << failedFiles[i] << std::endl;
+		}
+		
+		
+		std::vector<network::File> created_file  = process->getCreatedFile();
+		o<< created_file.size() << " created files:\n";
+		for (size_t i = 0 ; i < created_file.size() ; i++)
+		{
+			o << "\tFile " << created_file[i].name();
+			o << " W:" << created_file[i].worker();
+			o << " Size: " << au::Format::string( created_file[i].info().size() );
+			//o << " KVS: " << au::Format::string( created_file[i].info().kvs() );
+			o << std::endl;
+		}
+			
+		writeWarningOnConsole(o.str());
+	};
+	
+	
 }

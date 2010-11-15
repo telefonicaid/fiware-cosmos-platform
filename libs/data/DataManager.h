@@ -26,13 +26,18 @@ namespace ss
 		LogFile file;							// File to write / read log data
 		au::map<size_t,DataManagerItem> task;	// Map of current task with the list of previous commands
 
+		size_t task_counter;					// Internal counter to give new task ids
+		
 	protected:
 		
 		au::Lock lock;	// Lock to protect multi-thread
 		
 	public:
 		
-		DataManager( std::string  fileName  ) : file( fileName ) {}
+		DataManager( std::string  fileName  ) : file( fileName ) 
+		{
+			task_counter = 0;
+		}
 		
 		virtual ~DataManager() {}
 
@@ -46,6 +51,15 @@ namespace ss
 
 		// Static function to get "today" string
 		static std::string today();
+		
+		size_t getNewTaskId()
+		{
+			lock.lock();
+			size_t id = task_counter++;
+			lock.unlock();
+			return id;
+		}
+		
 		
 		/**
 		 Function to interact with "data"

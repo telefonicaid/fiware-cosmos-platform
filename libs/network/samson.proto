@@ -1,16 +1,20 @@
 package ss.network;
 
-
 // ////////////////////////////////////////////////////////////////////////////
 //
-// Message from the controller workers
+// Common 
 //
+message KVInfo
+{
+	required uint64 size=1;		// Size in bytes
+	required uint64 kvs=2;		// Number of kvs
+}
 
 message File
 {
 	required string name=1;		// Name of file
-	required uint64 size=2;		// Size of the file in bytes
-	required uint64 kvs=3;		// Number of kvs
+	required int32 worker=2;	// Worker where this file has been created
+	required KVInfo info=3;		// Information about this file
 }
 
 message QueueFiles
@@ -23,6 +27,44 @@ message FileList
 {
 	repeated File file = 1;		// Name of the file
 }
+
+message KVFormat
+{
+	required string keyFormat=1;	// Format for the key
+	required string ValueFormat=2;	// Format for the value
+}
+
+message Queue
+{
+	required string name = 1;
+	required KVFormat format = 2;
+	required KVInfo info = 3;
+}
+
+message DataQueue
+{
+	required string name = 1;
+	required uint64 size = 2;
+}
+
+message Operation
+{
+	required string name = 1;		// Name of the operation
+	required string help = 2;		// Some help for this opertion
+	repeated KVFormat input = 3;		// KV types for inputs
+	repeated KVFormat output = 4;		// KV types for output
+}
+
+message Data
+{
+	required string name = 1;	// Name of this data type
+	required string help = 2;	// Some string showing help for this data type
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Message with a task from the controller workers
+//
 
 message WorkerTask
 {
@@ -56,6 +98,27 @@ message Command
 	required uint64  sender_id = 2;          // Id of the packet sender ( delilah )
 }
 
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Response message from Controller to Delilah
+//
+message CommandResponse
+{
+	required string command	     = 1;   // Copy of the original command
+	required string  response    = 2;   // Answer for the command
+	required int32   sender_id   = 3;   // Id of the packet sender ( delilah )
+
+
+	required bool error       = 4;   // Flag to indicat if there was an error
+	required bool finish      = 5;   // Flag to indicate if the command is finished ( with or without error)
+
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Help from Delilah to controller
+//
+
 message Help
 {
 	required bool queues = 1;
@@ -63,44 +126,10 @@ message Help
 	required bool operations = 3;
 }
 
-message KVFormat
-{
-	required string keyFormat=1;
-	required string ValueFormat=2;		
-}
-
-message KVInfo
-{
-	required uint64 size=1;
-	required uint64 kvs=2;
-}
-
-message Queue
-{
-	required string name = 1;
-	required KVFormat format = 2;
-	required KVInfo info = 3;
-}
-
-message DataQueue
-{
-	required string name = 1;
-	required uint64 size =2;
-}
-
-message Operation
-{
-	required string name = 1;		// Name of the operation
-	required string help = 2;		// Some help for this opertion
-	repeated KVFormat input = 3;		// KV types for inputs
-	repeated KVFormat output = 4;		// KV types for output
-}
-
-message Data
-{
-	required string name = 1;	// Name of this data type
-	required string help = 2;	// Some string showing help for this data type
-}
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Help response from Controller to Delilah
+//
 
 message HelpResponse
 {
@@ -115,23 +144,6 @@ message HelpResponse
 }
 
 
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Response message from Controller to Delilah
-//
-message CommandResponse
-{
-	required string command	     = 1;   // Copy of the original command
-	required string  response    = 2;   // Answer for the command
-	required int32   sender_id   = 3;   // Id of the packet sender ( delilah )
-
-	required bool error       = 4;   // Flag to indicat if there was an error
-	required bool finish      = 5;   // Flag to indicate if the command is finished ( with or without error)
-
-
-}
-
-
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -143,38 +155,38 @@ message WorkerDataExchange
 	required string  queue     = 2;  // Name of the queue where we store information
 }
 
-
 // ////////////////////////////////////////////////////////////////////////////
 //
-// Loading txt data from Delilah ( Controller & Workers )
+// Message to Load data from Delilah to a Worker and response
 //
 
-message LoadTxtData
+message LoadData
 {
-	required uint64 id=1;	// Id of the operation
-	
+	required uint64 process_id=1;	// Id of the load process
+	required uint64 file_id=2;	// Id of the file ( multiple files for the same process)		
 }
 
-message LoadTxtDataResponse
+message LoadDataResponse
 {
-	required uint64 id=1;			// Id of the operation ( specified in the LoadTxtData )
-	required bool error = 2;		// Flag to indicate if there was an error
-	required string fileName=3;		// File name of the uploaded file
+	required uint64 process_id=1;		// Id of the operation ( specified in the LoadData )
+	required uint64 file_id=2;		// Id of the file we are confirming   
+	required bool error = 3;		// Flag to indicate if there was an error
+	optional string error_message = 4;	// Possible error message ( if error )
+	required File file = 5;			// Created file
 }
 
-message LoadTxtDataConfirmation
+message LoadDataConfirmation
 {
-	required uint64 id=1;			// Id of the "load data" operation	
+	required uint64 process_id=1;		// Id of the "load data" operation	
 	required string queue=2;		// Name of the queue to upload
-	repeated FileList worker=3;		// List of uploaded files per worker
-	
+	repeated File   file=3;			// List of uploaded files
 }
 
-message LoadTxtDataConfirmationResponse
+message LoadDataConfirmationResponse
 {
-	required uint64 id=1;			// Id of the "load data" operation	
-	required bool error=2;			// Flag to indicarte if there was an error				   	
-	required string message=3;		// String message to show to the user
+	required uint64 process_id=1;			// Id of the "load data" operation	
+	required bool error=2;				// Flag to indicarte if there was an error				   	
+	required string error_message=3;		// String message to show to the user
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -203,4 +215,11 @@ message Message
 	optional WorkerDataExchange     data                      = 107;  // Exchange of data packets between nodes     
 	optional Help                   help                      = 108;  // Ask for help ( queues / datas / operations )
 	optional HelpResponse           help_response             = 109;  // Response for the ask help message   			     
+
+	optional LoadData		load_data		  = 110;  // Load data ( Delilah to Worker )
+	optional LoadDataResponse	load_data_response	  = 111;  // Load data ( Worker to Delilah )
+
+	optional LoadDataConfirmation   load_data_confirmation	  = 112;  // Confirmation of a load data process ( Delilah to Controller)
+	optional LoadDataConfirmationResponse load_data_confirmation_response = 113; 	  // Reponse of the previous message
+
 }

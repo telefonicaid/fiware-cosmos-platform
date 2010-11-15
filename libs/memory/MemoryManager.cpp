@@ -62,6 +62,7 @@ namespace ss
 		if ((_info->shmid = shmget (key, size, shmflg)) == -1)
 		{
 			perror("shmget: shmget failed"); 
+			std::cerr << "Error with shared memory\n";
 			exit(1); 
 		}
 		
@@ -70,6 +71,7 @@ namespace ss
 		if( _info->data == (char*)-1 )
 		{
 			perror("shmat: shmat failed"); 
+			std::cerr << "Error with shared memory\n";
 			exit(1);
 		}
 		
@@ -93,8 +95,6 @@ namespace ss
 		
 		Buffer *b = new Buffer( (char*) malloc(size) , size );
 
-		std::cout << "create buffer " << b->getSize() << std::endl;
-		
 		lock.unlock();
 		return b;
 	}
@@ -104,9 +104,9 @@ namespace ss
 		lock.lock();
 		
 		// Keep counter of the used memory
-		used_memory -= b->getSize();
+		used_memory -= b->getMaxSize();
 		
-		std::cout << "destroy buffer " << b->getSize() << std::endl;
+		//LM_T( 0 , ("destroy buffer with max size %sbytes", au::Format::string( b->getMaxSize() ).c_str() ) );
 		
 		// Decrease the number of used buffers
 		num_buffers--;

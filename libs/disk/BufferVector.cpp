@@ -32,7 +32,11 @@ namespace ss {
 	
 	Buffer* BufferVector::getJoinedBuffer( )
 	{
+		assert( false );
+		// TODO: To be reviews with the Buffer updated
 		
+		/*
+		 
 		// Get a buffer to be able to put all data in memory
 		size_t file_size = KV_HASH_GROUP_VECTOR_SIZE + info.size;	
 		Buffer *b = MemoryManager::shared()->newBuffer( file_size );
@@ -46,7 +50,7 @@ namespace ss {
 		
 		// Init the offset in each file
 		for (size_t i = 0 ; i < buffer.size() ; i++)
-			buffer[i]->offset = KV_HASH_GROUP_VECTOR_SIZE;
+			buffer[i]->size = KV_HASH_GROUP_VECTOR_SIZE;
 		
 		info_buffer[0] = info;
 		for (size_t i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
@@ -60,6 +64,7 @@ namespace ss {
 				
 				hg_info sub_info = BufferGetInfo( buffer[j] , i );
 				
+				buffer[j]->write( data + offset , sub_info.size );
 				memcpy(data + offset, buffer[j]->getCurrentDataAndUpdateOffset( sub_info.size ) , sub_info.size);
 				offset += sub_info.size;
 				
@@ -81,6 +86,9 @@ namespace ss {
 		
 		// Return the new buffer with the content reordered
 		return b;
+		 */
+		
+		return NULL;
 	}
 	
 	

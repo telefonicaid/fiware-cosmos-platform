@@ -28,6 +28,12 @@ namespace ss {
 			name = _name;
 			size = 0 ;
 		}
+
+		
+		void addFile( int worker, std::string _fileName , size_t _size )
+		{
+			size += _size;
+		}
 		
 		size_t getSize()
 		{

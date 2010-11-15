@@ -163,6 +163,53 @@ namespace ss {
 			status[workerId] = *((Message::WorkerStatusData*) packet->buffer->getData());
 			break;
 			
+		case Message::LoadDataConfirmation:
+		{
+			// Uptade data and sent a LoadDataConfirmationResponde message
+
+			bool error = false;	// By default, no error
+			std::string error_message = "No error message";
+			
+			size_t job_id = data.getNewTaskId();
+			data.beginTask(job_id, "Load process from Delilah");
+			
+			data.addComment( job_id , "Comments for load process...");
+			
+			const network::LoadDataConfirmation& loadDataConfirmation = packet->message.load_data_confirmation();
+			
+			for (int i = 0 ; i < loadDataConfirmation.file_size() ; i++)
+			{
+				const network::File& file = loadDataConfirmation.file(i);
+				
+				std::stringstream command;	
+				command << "add_data_file " << file.worker() << " " << file.name() << " " << file.info().size() << " " << loadDataConfirmation.queue();
+				DataManagerCommandResponse response =  data.runOperation( job_id , command.str() );
+				
+				if( response.error )
+				{
+					error = true;
+					error_message = response.output;
+					break;
+				}
+			}
+			
+			if( error )
+				data.cancelTask(job_id, error_message);
+			else
+				data.finishTask(job_id);
+			
+			// A message is always sent back to delilah to confirm changes
+			Packet p;
+			network::LoadDataConfirmationResponse * confirmationResponse = p.message.mutable_load_data_confirmation_response();
+			confirmationResponse->set_process_id( packet->message.load_data_confirmation().process_id() );
+			confirmationResponse->set_error( error );
+			confirmationResponse->set_error_message( error_message );
+			network->send(this, fromId, Message::LoadDataConfirmationResponse, &p);
+		}
+		
+			break;
+				
+				
 		default:
 			LM_X(1, ("msg code '%s' not treated ...", messageCode(msgCode)));
 			break;

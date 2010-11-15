@@ -14,7 +14,6 @@
 namespace ss {
 	
 	
-	
 	DataManagerCommandResponse ControllerDataManager::_run( std::string command )
 	{
 		DataManagerCommandResponse response;
@@ -166,6 +165,43 @@ namespace ss {
 			response.output = "OK";
 			return response;
 		}		
+		
+#pragma mark Add data		
+		
+		if( commandLine.get_argument(0) == "add_data_file" )
+		{
+			// Add queue command
+			if( commandLine.get_num_arguments() < 5 )
+			{
+				response.output = "Usage: add_data_file worker fileName size queue";
+				response.error = true;
+				return response;
+			}
+			
+			int worker = (int)strtol(commandLine.get_argument( 1 ).c_str(), (char **)NULL, 10);
+			
+			std::string fileName	= commandLine.get_argument( 2 );
+			size_t size = strtoll(commandLine.get_argument( 3 ).c_str(), (char **)NULL, 10);
+			
+			std::string queue		= commandLine.get_argument( 4 );
+			
+			// Check valid queue
+			DataQueue *q =  data_queues.findInMap(queue);
+			if( !q )
+			{
+				std::ostringstream output;
+				output << "Data Queue " << queue << " does not exist\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			}
+
+			q->addFile( worker , fileName , size );
+			response.output = "OK";
+			return response;
+		}			
+		
+		
 		
 		
 		response.error = true;

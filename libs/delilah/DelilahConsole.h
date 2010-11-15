@@ -11,6 +11,8 @@
 
 #include "Console.h"			// au::Console
 #include <cstdlib>				// atexit(.)
+#include "DelilahClient.h"      // ss:DelilahClient
+
 namespace ss {
 
 	class Delilah;
@@ -18,7 +20,7 @@ namespace ss {
 	
 	void cancel_ncurses(void);
 	
-	class DelilahConsole : public au::Console
+	class DelilahConsole : public au::Console, public DelilahClient
 	{
 		Delilah* dalilah;	// Pointer to the main class
 		size_t id;			// Id counter of the command - messages sent to controller
@@ -32,6 +34,12 @@ namespace ss {
 			
 			if( ncurses )
 				atexit ( cancel_ncurses );
+		}
+		
+		int run(int argc , const char * argv[] )
+		{
+			au::Console::run();	// au::Console
+			return 0;
 		}
 		
 		virtual std::string getPrompt()
@@ -49,6 +57,14 @@ namespace ss {
 
 		// PacketReceiverInterface
 		int receive(int fromId, Message::MessageCode msgCode, Packet* packet);		
+
+		virtual void quit()
+		{
+			au::Console::quit();
+		}
+	
+		virtual void loadDataConfirmation( DelilahLoadDataProcess *process);		
+		
 		
 	};
 

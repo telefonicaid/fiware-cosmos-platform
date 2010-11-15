@@ -5,6 +5,7 @@ IF(QT4_FOUND)
 	
 	SET (SOURCES
 		Delilah.cpp
+		DelilahLoadDataProcess.cpp
 		DelilahConsole.cpp
 		DelilahQt.cpp
 		DelilahQtApp.cpp
@@ -22,8 +23,11 @@ IF(QT4_FOUND)
 	
 	SET (HEADERS
 		Delilah.h
+		DelilahLoadDataProcess.h
+		DelilahClient.h
 		DelilahConsole.h
-		DelilahQt.h)
+		DelilahQt.h
+		)
 	
 	SET (HEADERS_MOC
 		DelilahQtApp.h

@@ -10,7 +10,7 @@ namespace ss {
 		lock.lock();
 		
 		// New id
-		size_t job_id = current_job_id++;
+		size_t job_id = controller->data.getNewTaskId();
 		
 		// At the moment only single-line commands are allowed
 		Job *j = new Job( controller , job_id, fromIdentifier , _sender_id, command );

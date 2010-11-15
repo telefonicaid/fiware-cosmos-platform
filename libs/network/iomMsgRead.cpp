@@ -72,7 +72,8 @@ int iomMsgRead
 		LM_T(LMT_READ, ("reading %d bytes of primary message data", header.dataLen));
 		nb = read(fd, *dataPP, header.dataLen);
 		if (nb == -1)
-			LM_RP(1, ("read(%d bytes from '%s'", header.dataLen,  from));
+			LM_RP(1, ("read %d bytes from '%s'", header.dataLen, from));
+		LM_T(LMT_READ, ("read %d bytes of primary message data", nb));
 
 		if (nb != (int) header.dataLen)
 			LM_E(("Read %d bytes, %d expected ...", nb, header.dataLen));
@@ -101,8 +102,24 @@ int iomMsgRead
 		LM_READS(from, "google protocol buffer", dataP, nb, LmfByte);
 	}
 
-	if (header.kvDataLen != 0)
-		LM_X(1, ("Sorry, will not read KV data form '%s' - not implemented", from));
+#if 0
+	if ((header.gbufLen != 0) && (packetP->buffer->getSize() != 0))
+	{
+		int    size  = packetP->buffer->getSize();
+		char*  kvBuf = dataMgr->bufferGet(size);
+		int    nb;
+		int    tot   = 0;
+
+		while (tot < size)
+		{
+			nb = read(fd, &kvBuf[tot], size - tot);
+			if (nb == -1)
+				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, from, strerror(errno)));
+			tot += nb;
+			packetP->buffer->setSize(tot);
+		}
+	}
+#endif
 
 	return 0;
 }	

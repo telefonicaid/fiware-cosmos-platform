@@ -30,7 +30,7 @@ SamsonWorker::SamsonWorker(void) :  taskManager(this) , loadDataManager(this)
 
 
 
-int logFd = -1;
+extern int logFd; // defined in the main program
 /* ****************************************************************************
 *
 * logInit - 
@@ -132,6 +132,7 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 }
 
 
+
 /* ****************************************************************************
 *
 * run - 
@@ -140,19 +141,18 @@ void SamsonWorker::run()
 {
 	workerStatus(&status);
 
-#if 0	// Deactivated to avoid continuous error in samsonDemo
+#if 1	// Deactivated to avoid continuous error in samsonDemo
 	
 	// //////////////////////////////////////////////////////////////////////
 	//
 	// Create one ProcessAssistant per core
 	//
-	LM_T(LMT_WINIT, ("initializing %d process assistants", status.cpuInfo.cores));
-
-	
 	int num_processes = SamsonSetup::shared()->getInt( SETUP_num_processes , -1);
 	if( num_processes == -1)
 		LM_X( 1 ,("Invalid number of cores. Please edit /opt/samson/setup.txt.")  );
 	
+	LM_T(LMT_WINIT, ("initializing %d process assistants", num_processes));
+
 	processAssistant = (ProcessAssistant**) calloc(num_processes, sizeof(ProcessAssistant*));
 	if (processAssistant == NULL)
 		LM_XP(1, ("calloc(%d, %d)", num_processes, sizeof(ProcessAssistant*)));

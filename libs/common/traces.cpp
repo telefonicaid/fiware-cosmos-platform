@@ -22,7 +22,14 @@ namespace ss {
 *
 * samsonInitTrace - 
 */
-void samsonInitTrace(int argc, const char *argv[], bool tracesToStdout, bool pidInName)
+void samsonInitTrace
+(
+	int          argc,
+	const char*  argv[],
+	int*         logFdP,
+	bool         tracesToStdout,
+	bool         pidInName
+)
 {
 	LmStatus  s;
 	int       logFdIndex;
@@ -53,6 +60,10 @@ void samsonInitTrace(int argc, const char *argv[], bool tracesToStdout, bool pid
 
 	lmAux((char*) "father");
 
-	// lmFdGet(logFdIndex, &logFd);
+	if (logFdP != NULL)
+	{
+		lmFdGet(logFdIndex, logFdP);
+		printf("logFd: %d", *logFdP);
+	}
 }
 }

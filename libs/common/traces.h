@@ -19,7 +19,14 @@ extern int logFd;
 *
 * samsonInitTrace - initialize logging
 */
-void samsonInitTrace( int argc, const char *argv[], bool tracesToStdout = false, bool pidInName = false);
+void samsonInitTrace
+(
+	int          argc,
+	const char*  argv[],
+	int*         logFdP,
+	bool         tracesToStdout = false,
+	bool         pidInName      = false
+);
 
 }
 

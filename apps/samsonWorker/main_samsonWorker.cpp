@@ -2,6 +2,18 @@
 #include "traces.h"				// LMT_*
 #include "EndpointMgr.h"		// ss::EndpointMgr
 
+
+
+/* ****************************************************************************
+*
+* logFd - file descriptor for log file used in all libraries
+*/
+namespace ss
+{
+int logFd = -1;
+}
+
+
 /**
  Main routine for the samsonWorker
  */

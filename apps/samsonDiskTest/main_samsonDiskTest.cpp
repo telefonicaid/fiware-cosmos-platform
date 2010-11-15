@@ -186,6 +186,14 @@ public:
 };
 
 
+/* ****************************************************************************
+*
+* logFd - file descriptor for log file used in all libraries
+*/
+int logFd = -1;
+
+
+
 int main( int arg , const char *argv[] )
 {
 	DiskTest test;

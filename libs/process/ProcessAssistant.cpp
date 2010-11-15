@@ -76,6 +76,7 @@ ProcessAssistant::ProcessAssistant(int coreNo, const char* _controller, SamsonWo
 }
 
 
+extern int logFd;
 
 /* ****************************************************************************
 *
@@ -83,6 +84,7 @@ ProcessAssistant::ProcessAssistant(int coreNo, const char* _controller, SamsonWo
 */
 void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 {
+	LM_M(("Starting Core Worker %d (logFd == %d)", core, logFd));
 	time_t now = time(NULL);
 
 	if (now - startTime <= 5)
@@ -97,15 +99,17 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 		return;
 
 
+	LM_M(("CHILD RUNNING"));
 	/* ************************************************************
 	 *
 	 * Setting auxiliar string for logMsg
 	 */
 	char auxString[16];
 	
-	sprintf(auxString, "child-core%02d", core);
+	sprintf(auxString, "core%02d", core);
 	lmAux(auxString);
 
+	LM_M(("CHILD RUNNING (logFd == %d)", logFd));
 
 
 #if !defined(__APPLE__)
@@ -133,18 +137,17 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, unsigned short port)
 	 *
 	 * Close fathers fds ...
 	 */
-	extern int logFd;
 	int fd;
 	
-	LM_T(LMT_COREWORKER, ("Close fathers file descriptors ..."));
+	LM_M(("Close fathers file descriptors ... (logFd == %d)", logFd));
 	for (fd = 0; fd < 100; fd++)
 	{
 		if (fd != logFd)
 			close(fd);
 		else
-			LM_T(LMT_COREWORKER, ("Not closing fd %d, as is is the log file fd", fd));
+			LM_M(("Not closing fd %d, as is is the log file fd", fd));
 	}
-	LM_T(LMT_COREWORKER, ("All fathers file descriptors closed!"));
+	LM_M(("All fathers file descriptors closed!"));
 
 
 
@@ -321,10 +324,7 @@ char* ProcessAssistant::runCommand(int fd, char* command, int timeOut)
 
 		s = iomMsgRead(fd, "coreWorker", &msgCode, &msgType, &dataP, &dataLen, NULL, NULL, 0);
 		if (s == -2)
-		{
-			LM_E(("connection closed by core child process ..."));
-			LM_RE(strdup("crash"), ("coreWorker died"));
-		}
+			LM_RE(strdup("crash"), ("connection closed by core child process 'fd:%d', running the command '%s' ...", fd, command));
 		else if (s != 0)
 			LM_RE(strdup("error"), ("iomMsgRead error"));
 

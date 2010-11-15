@@ -1535,6 +1535,8 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 			{
 				if ((nb == -1) && (errno != EINTR))
 					lmReopen(i);
+				printf("written only %d bytes instead of %d", nb, sz);
+				exit(191);
 				return LmsWrite;
 			}
 		}

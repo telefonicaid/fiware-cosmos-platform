@@ -75,10 +75,14 @@ void Process::run(void)
 			LM_X(1, ("father sent me a '%s' message - I expect only 'Command' messages ...", messageCode(msgCode)));
 
 		LM_M(("Read command message '%s' - running it!", (char*) dataP));
-		runCommand(command);
+		runCommand((char*) dataP);
+		LM_M(("after running command '%s'", dataP));
 
 		if (dataP != command)
+		{
+			LM_M(("freeing data pointer for command"));
 			free(dataP);
+		}
 	}
 }
 
@@ -95,14 +99,14 @@ void Process::run(void)
 * 
 * When runCommand finishes, a message is passed to the ProcessAssistant ( finish or error )
 */
-void Process::runCommand(const char* command)
+void Process::runCommand(const char* com)
 {
-	LM_M(("running command '%s'", command));
+	LM_M(("running command '%s'", com));
 
 	sleep(1);
 	passCommand("finish");
 
-	LM_M(("command '%s' finished", command));
+	LM_M(("command '%s' finished", com));
 }
 
 

@@ -93,6 +93,7 @@ int iomMsgSend
 		ioVec[vecs].iov_base  = packetP->buffer->getData();
 		ioVec[vecs].iov_len   = packetP->buffer->getSize();
 		
+		LM_M(("sending %d bytes of KV data", header.kvDataLen));
 		LM_WRITES(to, "KV data", ioVec[vecs].iov_base, ioVec[vecs].iov_len, LmfByte);
 		++vecs;
 	}
@@ -124,6 +125,12 @@ int iomMsgSend
 	LM_WRITES(to, "message header",  ioVec[0].iov_base, ioVec[0].iov_len, LmfByte);
 	if (dataLen != 0)
 		LM_WRITES(to, "message data",  ioVec[1].iov_base, ioVec[1].iov_len, LmfByte);
+
+	if ((packetP != NULL) && (packetP->buffer != NULL))
+	{
+		delete(packetP->buffer->getData());
+		packetP->buffer->setSize(0);
+	}
 
 	return 0;
 }	

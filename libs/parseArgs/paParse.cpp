@@ -18,7 +18,9 @@
 #include <string.h>             /* strdup, strncmp                           */
 #include <memory.h>             /* memset                                    */
 #include <unistd.h>             /* getpid                                    */
-extern void exit(int);
+#include <stdlib.h>             /* exit                                      */
+
+// extern void exit(int);
 
 #include "baStd.h"              /* BA standard header file                   */
 #include "logMsg.h"             /* lmVerbose, lmDebug, ...                   */

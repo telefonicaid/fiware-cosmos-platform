@@ -24,80 +24,13 @@ namespace ss {
 *
 * Constructor
 */
-SamsonWorker::SamsonWorker(void) :  taskManager(this) , loadDataManager(this)
+SamsonWorker::SamsonWorker(char* controller, char* alias, unsigned short port, int workers, int endpoints) :  taskManager(this) , loadDataManager(this)
 {
-}
-
-
-
-extern int logFd; // defined in the main program
-/* ****************************************************************************
-*
-* logInit - 
-*/
-void SamsonWorker::logInit(const char* pName)
-{
-	int       logFdIndex;
-	LmStatus  s;
-	
-	progName = lmProgName((char*) pName, 1, true);
-	
-	if ((s = lmPathRegister("/tmp/", "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT", "DEF", &logFdIndex)) != LmsOk)
-		EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
-	if ((s = lmFdRegister(1, "TYPE: TEXT", "DEF", "controller", NULL)) != LmsOk)
-		EXIT(1, ("lmPathRegister: %s", lmStrerror(s)));
-	if  ((s = lmInit()) != LmsOk)
-		EXIT(1, ("lmInit: %s", lmStrerror(s)));
-
-	lmAux((char*) "father");
-	lmFdGet(logFdIndex, &logFd);
-}
-
-
-
-/* ****************************************************************************
-*
-* parseArgs - 
-*/
-void SamsonWorker::parseArgs(int argC, const char* argV[])
-{
-	au::CommandLine commandLine;
-	LmStatus        s;
-
-	commandLine.parse(argC, argV);
-
-	commandLine.set_flag_int("port",           SAMSON_WORKER_DEFAULT_PORT);
-	commandLine.set_flag_int("endpoints",      80);
-	commandLine.set_flag_int("workers",         5);
-	commandLine.set_flag_string("controller",  "no_controller");
-	commandLine.set_flag_string("t",           "255");
-	commandLine.set_flag_string("alias",       "no_alias");
-	commandLine.set_flag_boolean("r");
-	commandLine.set_flag_boolean("w");
-	commandLine.set_flag_boolean("no_log");
-	
-	commandLine.parse(argC, argV);
-
-	port       = commandLine.get_flag_int("port");
-	controller = commandLine.get_flag_string("controller");
-	traceV     = commandLine.get_flag_string("t");
-	lmReads    = commandLine.get_flag_bool("r");
-	lmWrites   = commandLine.get_flag_bool("w");
-	endpoints  = commandLine.get_flag_int("endpoints");
-	workers    = commandLine.get_flag_int("workers");
-	alias      = commandLine.get_flag_string("alias");
-
-	if (alias == "no_alias")
-		LM_X(1, ("Please specify alias with -alias <alias>"));
-
-	if (controller == "no_controller")
-		LM_X(1, ("Please specify controller direction with -controller server:port"));
-		
-	LM_M(("setting trace level '%s'", traceV.c_str()));
-	if ((s = lmTraceSet((char*) traceV.c_str())) != LmsOk)
-		LM_X(1, ("lmTraceSet: %s", lmStrerror(s)));
-
-	LM_T(LMT_SAMSON_WORKER, ("Samson worker running at port %d controller: %s", port, controller.c_str()));
+	this->controller  = controller;
+	this->alias       = alias;
+	this->port        = port;
+	this->workers     = workers;
+	this->endpoints   = endpoints;
 }
 
 

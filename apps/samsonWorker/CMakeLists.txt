@@ -14,16 +14,18 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
+include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/process")
 
 
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
+link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
 
 # SAMSON Executable
 ADD_EXECUTABLE(samsonWorker ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(samsonWorker samsonProcessStatic samsonNetworkStatic samsonCoreStatic samsonCommonStatic lm protobuf pthread dl curses)
+TARGET_LINK_LIBRARIES(samsonWorker samsonProcessStatic samsonNetworkStatic samsonCoreStatic samsonCommonStatic pa lm protobuf pthread dl curses)
 
 INSTALL(TARGETS               samsonWorker
         RUNTIME DESTINATION   bin)

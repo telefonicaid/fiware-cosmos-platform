@@ -16,6 +16,12 @@
 #include "DataBuffer.h"
 #include "DataBufferItemDelegate.h"	// ss::DataBufferItemDelegate
 
+
+
+char* progName = (char*) "samsonDiskTest";
+
+
+
 class DiskTest : public au::Console , public ss::DataBufferItemDelegate
 {
 public:

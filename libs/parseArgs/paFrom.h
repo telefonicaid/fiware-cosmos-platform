@@ -18,7 +18,7 @@
 *
 * paFromName - 
 */
-extern char* paFromName(PaArgument* aP, const char* out);
+extern char* paFromName(PaArgument* aP, char* out);
 
 
 
@@ -26,6 +26,6 @@ extern char* paFromName(PaArgument* aP, const char* out);
 *
 * paFrom - from where did the value come?
 */
-extern char* paFrom(PaArgument* paList, char* option);
+extern char* paFrom(PaArgument* paList, const char* option);
 
 #endif

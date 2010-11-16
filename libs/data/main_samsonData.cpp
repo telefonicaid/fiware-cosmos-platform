@@ -1,10 +1,15 @@
-
 #include <stdio.h>
 #include <iostream>			// std::cerr
-#include "data.pb.h"		// data::Command
 #include <fstream>			// std::ifstream
 #include <cstring>			// size_t
+
+#include "data.pb.h"		// data::Command
 #include "DataManager.h"	// ss::LogFile
+
+
+
+char* progName = (char*) "samsonData";
+
 
 
 std::string stringForAction( ss::data::Command_Action action )

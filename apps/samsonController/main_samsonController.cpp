@@ -12,6 +12,8 @@ namespace ss
 int logFd = -1;
 }
 
+char* progName = (char*) "samsonController";
+
 
 
 /* ****************************************************************************

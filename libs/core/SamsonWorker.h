@@ -37,32 +37,26 @@ namespace ss {
 		friend class ProcessAssistant;
 
 	public:
-		SamsonWorker(void);
+		SamsonWorker(char* controller, char* alias, unsigned short port, int workers, int endpoints);
 
 		
 		// command line argument variables
-		int          port;
-		int          endpoints;
-		int          workers;
-		std::string  controller;
-		std::string  traceV;
-		std::string  alias;
+		std::string     controller;
+		std::string     alias;
+		unsigned short  port;
+		int             endpoints;
+		int             workers;
 
 	private:
-		EndpointMgr*        epMgr;             // Endpoint Manager
-		NetworkInterface*   network;           // Network interface
-		WorkerTaskManager   taskManager;       // Task manager
-		ModulesManager      modulesManager;    // Manager of the modules we have
-		ProcessAssistant**  processAssistant;
-		DataBuffer dataBuffer;				// Element used to buffer incomming data packets before they are joined and saved to disk
-		LoadDataManager loadDataManager;	// Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
-
-		int myWorkerId;		// My id as worker : 0 , 1 ,2 ,3
+		EndpointMgr*         epMgr;             // Endpoint Manager
+		NetworkInterface*    network;           // Network interface
+		WorkerTaskManager    taskManager;       // Task manager
+		ModulesManager       modulesManager;    // Manager of the modules we have
+		ProcessAssistant**   processAssistant;  // vector of core worker processes
+		DataBuffer           dataBuffer;        // Element used to buffer incomming data packets before they are joined and saved to disk
+		LoadDataManager      loadDataManager;   // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
+		int                  myWorkerId;        // My id as worker : 0 , 1 ,2 ,3
 		
-
-	public:
-		void parseArgs(int argC, const char* argV[]);
-		void logInit(const char*);
 
 	private:
 		Message::WorkerStatusData status;
@@ -72,7 +66,7 @@ namespace ss {
 		void endpointMgrSet(ss::EndpointMgr* epMgr);
 
 
-		// Main routine
+		// Main routines
 		void run();
 		void test();
 
@@ -81,19 +75,7 @@ namespace ss {
 		virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 			
 		private:
-			
-	#if 0
-		/** 
-			Send a WorkerStatus message to controller
-		*/
-			
-		void sendWorkerStatus();
-	#endif
-
-		
-		virtual void notificationSent(size_t id, bool success)
-		{
-		}
+		virtual void notificationSent(size_t id, bool success) {}
 		
 		
 	};

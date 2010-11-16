@@ -37,6 +37,9 @@ namespace ss
 int logFd = -1;
 }
 
+char* progName = (char*) "samsonDemo";
+
+
 
 void *run_delilah(void* d)
 {
@@ -96,9 +99,10 @@ int main(int argc, const char *argv[])
 	std::vector< ss::SamsonWorker* > workers;
 	for (int i = 0 ; i < num_workers ; i ++ )
 	{
-		ss::SamsonWorker *w = new ss::SamsonWorker();
+		char alias[16];
 
-		w->parseArgs(VECTOR_LENGTH(worker_argv), worker_argv);
+		snprintf(alias, sizeof(alias), "worker%02d", i);
+		ss::SamsonWorker *w = new ss::SamsonWorker((char*) "localhost:1234", alias, 1235 + i, 5, 80);
 
 		w->networkSet( center.getNetwork(i));
 		workers.push_back(w);

@@ -12,6 +12,7 @@
 * logFd - file descriptor for log file used in all libraries
 */
 int logFd = -1;
+char* progName = (char*) "samsonMemoryTest";
 
 
 

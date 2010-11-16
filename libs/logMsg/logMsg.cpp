@@ -185,7 +185,7 @@ typedef struct Line
 *
 * Global variables
 */
-char* progName = (char*) "PROGNAME";
+extern char* progName;
 
 
 

@@ -10,6 +10,8 @@ namespace ss
 int logFd = -1;
 }
 
+char* progName = (char*) "delilah";
+
 
 
 int main(int argc, const char *argv[])

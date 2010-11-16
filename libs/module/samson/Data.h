@@ -57,7 +57,7 @@ namespace ss {
 			_name = name;
 			_creationFunction = creationFunction;
 			
-			_helpMessage = "Help comming soon";
+			_helpMessage = "Help coming soon";
 		}
 		
 		std::string getName()

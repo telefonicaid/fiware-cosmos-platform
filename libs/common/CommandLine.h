@@ -28,7 +28,7 @@
 *
 * The basic usage has three steps:
 *   * Use command set_flag_X( ) methods to define flags and types
-*   * Use one of the parse(.) methods to parse the incomming command line
+*   * Use one of the parse(.) methods to parse the incoming command line
 *   * Use get_flag_X methods to access content
 */
 #include <stdio.h>             // fprintf, stderr, ...

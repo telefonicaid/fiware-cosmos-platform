@@ -40,7 +40,7 @@ int main( int args , const char *argv[])
 		fprintf(stderr, "This tool is used to generate/update a .h & .cpp files with the definition of a new module for the samson platform.\n");
 		fprintf(stderr, "A samson-module can contain new data types for your keys and values, maps, reducers and generators.");
 		fprintf(stderr, "Sintax of this txt-file is really simple.\n");
-		fprintf(stderr, "\n\nMore help comming soon (andreu@tid.es)\n");
+		fprintf(stderr, "\n\nMore help coming soon (andreu@tid.es)\n");
 		return 0;
 	}
 	

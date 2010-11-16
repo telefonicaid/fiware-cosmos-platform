@@ -24,7 +24,7 @@ namespace ss {
 	class DataBufferItemDelegate;
 	
 	/**
-	 This class acumulate data buffers comming from network interface
+	 This class acumulate data buffers coming from network interface
 	 When enougth data is accumulated it is frozen to a file and DataManager if notified
 	 */
 	

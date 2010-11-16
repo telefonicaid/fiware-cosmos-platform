@@ -53,7 +53,7 @@ namespace ss {
 		WorkerTaskManager    taskManager;       // Task manager
 		ModulesManager       modulesManager;    // Manager of the modules we have
 		ProcessAssistant**   processAssistant;  // vector of core worker processes
-		DataBuffer           dataBuffer;        // Element used to buffer incomming data packets before they are joined and saved to disk
+		DataBuffer           dataBuffer;        // Element used to buffer incoming data packets before they are joined and saved to disk
 		LoadDataManager      loadDataManager;   // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
 		int                  myWorkerId;        // My id as worker : 0 , 1 ,2 ,3
 		

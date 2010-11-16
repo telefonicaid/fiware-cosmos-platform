@@ -1,7 +1,7 @@
 /*
  * FILE:		Process.cpp
  *
- * AUTHOR:		ania
+ * AUTHOR:		Anna Wojdel
  *
  * DESCRIPTION:
  *

@@ -30,7 +30,7 @@ public:
 
 	int getTool() {return current_tool; };
 
-	void showDataQueue(DataQueue* queue);
+	void showDataQueue(DataQueue* queue, const QPointF &pos);
 
 public slots:
 	void setTool(int tool) { current_tool = tool; };

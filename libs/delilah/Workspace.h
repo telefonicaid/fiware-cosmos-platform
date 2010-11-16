@@ -19,7 +19,7 @@ class Queue;
 class Process;
 class WorkspaceScene;
 
-enum JobTypes { CANCELED, CREATE_DATA_QUEUE, CREATE_KV_QUEUE, LOAD_FILE, RUN_PROCESS };
+enum JobTypes { CANCELED, CREATE_DATA_QUEUE, CREATE_KV_QUEUE, REMOVE_QUEUE, LOAD_FILE, RUN_PROCESS };
 enum JobStatus { IN_PROCESSING, FINISHED, FAILED };
 
 /*
@@ -29,7 +29,7 @@ typedef struct
 {
 	JobTypes type;
 	QPointF pos;			// Scene position where user evoke request (optional)
-	size_t id;				// Job id
+	unsigned int id;		// Job id
 	QList<QString> args;	// Command line arguments
 	JobStatus status;		// Current status of the job
 	QString message;		// Extra info about the job
@@ -49,11 +49,11 @@ public:
 public slots:
 	void setTool(int tool);
 	void createQueue(QueueType type, const QPointF &scene_pos, QString name, QString key=QString(), QString value=QString());
-	void updateJob(size_t id, bool error, QString message);
-	void finishJob(size_t id, bool error, QString message);
+	void updateJob(unsigned int id, bool finished, bool error, QString message);
+	void finishJob(unsigned int id, bool error, QString message);
 
 protected:
-	int findJobIndex(size_t id);
+	int findJobIndex(unsigned int id);
 
 signals:
 	void jobCreated(job_info job);

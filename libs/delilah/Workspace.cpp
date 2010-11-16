@@ -22,8 +22,7 @@ Workspace::Workspace(QString _name)
 	scene = new WorkspaceScene();
 
 	DelilahQtApp* app = (DelilahQtApp*)qApp;
-	connect(app, SIGNAL(jobUpdated(size_t, bool, QString)), this, SLOT(updateJob(size_t, bool, QString)));
-	connect(app, SIGNAL(jobFinished(size_t, bool, QString)), this, SLOT(finishJob(size_t, bool, QString)));
+	connect(app, SIGNAL(gotCommandResponse(unsigned int, bool, bool, QString)), this, SLOT(updateJob(unsigned int, bool, bool, QString)));
 }
 
 
@@ -59,16 +58,15 @@ void Workspace::createQueue(QueueType type, const QPointF &scene_pos, QString na
 		case DATA_QUEUE:
 			job.type = CREATE_DATA_QUEUE;
 			job.args << name;
-			//job.id = ;
-			app->sendCreateQueue(name);
+			job.id = app->sendCreateDataQueue(name);
 			break;
 		case KV_QUEUE:
 			job.type = CREATE_KV_QUEUE;
 			job.args << name << key << value;
-			//job.id =
-			app->sendCreateQueue(name, key, value);
+			job.id = app->sendCreateKVQueue(name, key, value);
 			break;
 		default:
+			// TODO:
 			std::cout << "This situation should never happen!!!!!!!!!\n";
 			job.type = CANCELED;
 			break;
@@ -80,35 +78,29 @@ void Workspace::createQueue(QueueType type, const QPointF &scene_pos, QString na
 		emit(jobCreated(job));
 	}
 
-	sleep(2);
-	app->receivedMessage(1, false, false, "PROCESSING");
 }
 
 /*
  * SLOT. Updates job info and emits signal with updated job
  */
-void Workspace::updateJob(size_t id, bool error, QString message)
+void Workspace::updateJob(unsigned int id, bool finished, bool error, QString message)
 {
+	// check if the job was called from this workspace
 	int index = findJobIndex(id);
 	if( index < 0 )
 		return;
 
-	// TODO:
-	// Update info in jobs list
-	job_info job = jobs[index];
-	job.message = message;
-	if(error)
-		job.status = FAILED;
-
-	std::cout << message.toStdString() << "\n";
-	// emit signal that job was updated.
-	// This signal should be received by WorkspaceView to update job status
-	// to be shown to user
-	emit(jobUpdated(job));
-
-	sleep(2);
-	DelilahQtApp* app = (DelilahQtApp*)qApp;
-	app->receivedMessage(1, true, true, "FINISHED");
+	if(finished)
+	{
+		finishJob(id, error, message);
+	}
+	else
+	{
+		// Update info in jobs list
+		job_info job = jobs[index];
+		job.message = message;
+		emit(jobUpdated(job));
+	}
 }
 
 /*
@@ -117,7 +109,6 @@ void Workspace::updateJob(size_t id, bool error, QString message)
 void Workspace::finishJob(size_t id, bool error, QString message)
 {
 	// TODO:
-
 	int index = findJobIndex(id);
 	if( index < 0 )
 		return;
@@ -128,7 +119,6 @@ void Workspace::finishJob(size_t id, bool error, QString message)
 	else
 		job.status = FINISHED;
 	job.message = message;
-	emit(jobFinished(job));
 
 	// Proceed depending on the job status (failed or finished).
 	if(job.status==FINISHED)
@@ -136,12 +126,20 @@ void Workspace::finishJob(size_t id, bool error, QString message)
 		// TODO:
 		// Depending on the type of the job call appropriate methods to create queues, operation, etc.
 		// Update scene appropriately.
-		// Update job status in WorkspaceView - remove if finished
-
-		// It's for testing - change it!!!!!!!!!
 		DelilahQtApp* app = (DelilahQtApp*)qApp;
-		DataQueue* q = app->getDataQueue(name);
-		scene->showDataQueue(q);
+		switch(job.type)
+		{
+			case CREATE_DATA_QUEUE:
+				scene->showDataQueue(app->getDataQueue(job.args[0]), job.pos);
+				break;
+			case CREATE_KV_QUEUE:
+			case REMOVE_QUEUE:
+			case LOAD_FILE:
+			case RUN_PROCESS:
+			default:
+				break;
+		}
+
 	}
 //		switch(job.type)
 //		{
@@ -159,6 +157,7 @@ void Workspace::finishJob(size_t id, bool error, QString message)
 
 	// TODO:
 	//delete job from the list
+	emit(jobUpdated(job));
 	jobs.removeAt(index);
 }
 

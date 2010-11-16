@@ -11,7 +11,7 @@
 #define QUEUE_H_
 
 #include <QObject>
-
+#include <QMetaType>
 //#include "globals.h"
 
 
@@ -22,7 +22,16 @@ class DataQueue : public QObject
 	Q_PROPERTY(unsigned long size READ size WRITE setSize)
 
 public:
+	DataQueue() {};
 	DataQueue(const QString &name) { setName(name); };
+	// copy constructor - needed to declare DataQueue as new metatype
+	// Not sure if it's needed. Probably will be removed.
+	DataQueue(const DataQueue &q)
+		: QObject()
+	{
+		_name = q.name();
+		_size = q.size();
+	};
 	~DataQueue() {};
 
 	/*
@@ -30,26 +39,23 @@ public:
 	 */
 	QString name() const { return _name; };
 	void setName(const QString &name) { _name = name; };
-
 	unsigned long size() const { return _size; };
 	void setSize(const unsigned long &size) { _size = size; };
+
+	// Operator to compare two queues - they are the same if they have the same name.
+	virtual bool operator==(const DataQueue& q) const
+	{
+		QString name = q.name();
+		if ( name.compare(_name) == 0 )
+			return true;
+		else
+			return false;
+	};
 
 private:
 	QString _name;
 	unsigned long _size;
 };
-
-/*
- * DataQueue class
- * Represents Data (TXT) Queue in SAMSON
- */
-//class DataQueue : public Queue
-//{
-//public:
-//	DataQueue(const QString &name)
-//		: Queue(name) {};
-//	~DataQueue() {};
-//};
 
 /*
  * KVQueue class
@@ -80,5 +86,7 @@ private:
 	QString _value;
 	unsigned long kv_number;
 };
+
+Q_DECLARE_METATYPE(DataQueue)
 
 #endif /* QUEUE_H_ */

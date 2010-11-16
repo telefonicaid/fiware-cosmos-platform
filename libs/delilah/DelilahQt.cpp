@@ -23,7 +23,7 @@ int DelilahQt::receive(int fromId, ss::Message::MessageCode msgCode, ss::Packet*
 	switch (msgCode)
 	{
 		case ss::Message::CommandResponse:
-			app->receiveCommandResponse(fromId, packet);
+			app->receiveCommandResponse(packet);
 			break;
 		case ss::Message::HelpResponse:
 			app->receiveData(packet);

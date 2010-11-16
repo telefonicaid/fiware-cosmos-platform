@@ -167,14 +167,14 @@ ObjectItem* WorkspaceScene::findItem(const QPointF &pos)
 	return item;
 }
 
-void WorkspaceScene::showDataQueue(DataQueue* queue)
+void WorkspaceScene::showDataQueue(DataQueue* queue, const QPointF &pos)
 {
 	// TODO: correct implementation - currently Queue class is not implemented yet.
-	QueueItem* q = new QueueItem();
+	DataQueueItem* q = new DataQueueItem(queue);
 	q->setSharedRenderer(queue_renderer);
-	q->initText(QString("Test Queue"));
+	q->initText(queue->name());
 	q->setDefaultSize();
-	q->setPos(0.0, 0.0);
+	q->setPos(pos);
 
 	addItem(q);
 

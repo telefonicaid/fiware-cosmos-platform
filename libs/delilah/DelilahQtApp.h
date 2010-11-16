@@ -12,14 +12,19 @@
 
 #include "Message.h"
 
+#include "Queue.h"
 class MainWindow;
-class DataQueue;
+//class DataQueue;
 class KVQueue;
 class Operation;
 class DataType;
 namespace ss {
 	class Delilah;
 	class Packet;
+	namespace network {
+		class Queue;
+		class DataQueue;
+	}
 }
 
 class DelilahQtApp : public QApplication
@@ -31,42 +36,41 @@ public:
 	~DelilahQtApp() {};
 
 	QString validateNewQueueName(QString name);
-	void sendCreateQueue(const QString &name, const QString &key_type, const QString &value_type);
 
 	DataQueue* getDataQueue(const QString &name);
-
-	void receivedMessage(size_t id, bool error, bool finished, std::string message);
 
 	/*
 	 * Methods to send requests to the network
 	 */
-	void uploadData(bool queues=true, bool operations=false, bool data_types=false);
-	void sendCreateQueue(const QString &name);
+	void uploadData(bool queues=true, bool operations=false, bool data_types=false, const QString &name="");
+	int sendCreateDataQueue(const QString &name);
+	int sendCreateKVQueue(const QString &name, const QString &key_type, const QString &value_type);
 
 	/*
 	 * Methods to receive packets from network
 	 */
 	int receiveData(ss::Packet* packet);
-	int receiveCommandResponse(size_t id, ss::Packet* packet);
+	int receiveCommandResponse(ss::Packet* packet);
 	int receiveUknownPacket(size_t id, ss::Message::MessageCode msgCode, ss::Packet* packet);
 
 public slots:
 	void quitDelilah();
 
-protected:
-
-	size_t sendMessage(QString _command);
-
 signals:
-	void jobUpdated(size_t id, bool error, QString message);
-	void jobFinished(size_t id, bool error, QString message);
+	void gotCommandResponse(unsigned int id, bool finished, bool error, QString message);
+
+protected:
+	int loadData(ss::Packet* packet);
+	int updateData(ss::Packet* packet);
+	void addKVQueue(ss::network::Queue q);
+	void addDataQueue(ss::network::DataQueue q);
 
 public:
 	MainWindow* w;							// Main Window of application
 
 private:
 	ss::Delilah* delilah;					// Pointer to the most upper class of SAMSON client application
-	size_t id;								// Counter of requests sent to the network
+	unsigned int id;						// Counter of requests sent to the network
 											// (initialized with value set to 0).
 
 	// Lists of (data) queues, operations and data types currently available in the system.

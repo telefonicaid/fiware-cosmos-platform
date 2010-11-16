@@ -11,6 +11,7 @@
 #include "DelilahQtApp.h"
 #include "MainWindow.h"
 #include "Delilah.h"
+#include "globals.h"
 
 #include "Queue.h"
 
@@ -29,7 +30,7 @@ DelilahQtApp::DelilahQtApp(int &argc, char ** argv, ss::Delilah* _delilah)
 	uploadData(true, true, true);
 }
 
-void DelilahQtApp::uploadData(bool queues, bool operations, bool data_types)
+void DelilahQtApp::uploadData(bool queues, bool operations, bool data_types, const QString &name)
 {
 	// Ask for all help
 	ss::Packet p;
@@ -37,27 +38,30 @@ void DelilahQtApp::uploadData(bool queues, bool operations, bool data_types)
 	help->set_queues(queues);
 	help->set_datas(data_types);
 	help->set_operations(operations);
+	// TODO: add set name
 	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Help, &p);
 }
 
-void DelilahQtApp::sendCreateQueue(const QString &name)
+int DelilahQtApp::sendCreateDataQueue(const QString &name)
 {
-	// TODO:
 	std::string command = "add_data_queue ";
 	command.append(name.toStdString());
 
 	ss::Packet p;
 	ss::network::Command *c = p.message.mutable_command();
 	c->set_command( command );
-	c->set_sender_id( id++ );
+	c->set_sender_id( ++id );
 	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Command, &p);
 
-	std::cout << "SENDING request\n";
+	return id;
 }
 
-void DelilahQtApp::sendCreateQueue(const QString &name, const QString &key_type, const QString &value_type)
+int DelilahQtApp::sendCreateKVQueue(const QString &name, const QString &key_type, const QString &value_type)
 {
 	// TODO:
+	++id;
+
+	return id;
 }
 
 /*
@@ -70,29 +74,35 @@ int DelilahQtApp::receiveData(ss::Packet* packet)
 {
 	ss::network::HelpResponse resp = packet->message.help_response();
 
+//	if (resp.name().empty())
+//		// if the help command was send to get info about all objects, load new data
+//		return loadData(packet);
+//	else
+//		// otherwise update one item
+//		return updateData(packet);
+	return loadData(packet);
+}
+
+int DelilahQtApp::loadData(ss::Packet* packet)
+{
+	ss::network::HelpResponse resp = packet->message.help_response();
+
 	if( resp.queues() )
 	{
+		// TODO:
+		kv_queues.clear();
+		data_queues.clear();
+
 		for (int i=0 ; i<resp.queue_size(); i++)
 		{
 			ss::network::Queue q = resp.queue(i);
-
-			KVQueue* queue = new KVQueue(QString::fromStdString(q.name()));
-			queue->setSize( q.info().size() );
-			queue->setKey( QString::fromStdString(q.format().keyformat()) );
-			queue->setValue( QString::fromStdString(q.format().valueformat()) );
-			queue->setKVNumber(q.info().kvs());
-			kv_queues.append(queue);
+			addKVQueue(q);
 		}
-
 		for (int i=0 ; i<resp.data_queue_size(); i++)
 		{
 			ss::network::DataQueue q = resp.data_queue(i);
-
-			DataQueue* queue = new DataQueue(QString::fromStdString(q.name()));
-			queue->setSize(q.size());
-			data_queues.append(queue);
+			addDataQueue(q);
 		}
-
 	}
 
 	// TODO:
@@ -101,8 +111,59 @@ int DelilahQtApp::receiveData(ss::Packet* packet)
 	return 0;
 }
 
-int DelilahQtApp::receiveCommandResponse(size_t id, ss::Packet* packet)
+int DelilahQtApp::updateData(ss::Packet* packet)
 {
+	ss::network::HelpResponse resp = packet->message.help_response();
+
+	return 0;
+}
+
+void DelilahQtApp::addKVQueue(ss::network::Queue q)
+{
+	KVQueue* queue = new KVQueue(QString::fromStdString(q.name()));
+	queue->setSize( q.info().size() );
+	queue->setKey( QString::fromStdString(q.format().keyformat()) );
+	queue->setValue( QString::fromStdString(q.format().valueformat()) );
+	queue->setKVNumber(q.info().kvs());
+	kv_queues.append(queue);
+}
+
+void DelilahQtApp::addDataQueue(ss::network::DataQueue q)
+{
+	DataQueue* queue = new DataQueue(QString::fromStdString(q.name()));
+	queue->setSize(q.size());
+	data_queues.append(queue);
+}
+
+int DelilahQtApp::receiveCommandResponse(ss::Packet* packet)
+{
+	unsigned int id = packet->message.command_response().sender_id();
+	QString command = QString::fromStdString(packet->message.command_response().command());
+	QString message = QString::fromStdString(packet->message.command_response().response());
+	bool error = packet->message.command_response().error();
+	bool finished = packet->message.command_response().finish();
+
+	if(finished && !error)
+	{
+		// Depending on the finished command update information about queues/operations/data type
+		// available on the system
+		QStringList args = command.split(" ");
+
+
+		if (args[0]==CREATE_DATA_QUEUE_COMMAND)
+		{
+			// TODO:
+			// Create DataQueue with default values and add it to data_queues list
+			DataQueue* q = new DataQueue(args[1]);
+			data_queues.append(q);
+
+			// Update newly created DataQueue with real data got from SMAMSON platform
+			uploadData(true, false, false, args[1]);
+		}
+	}
+
+	emit(gotCommandResponse(id, finished, error, message));
+
 	return 0;
 }
 
@@ -114,18 +175,6 @@ int DelilahQtApp::receiveUknownPacket(size_t id, ss::Message::MessageCode msgCod
 void DelilahQtApp::quitDelilah()
 {
 	delilah->quit();
-}
-
-void DelilahQtApp::receivedMessage(size_t id, bool error, bool finished, std::string message)
-{
-	QString m;
-	m = m.fromStdString(message);
-	if (finished)
-	{
-		emit(jobFinished(id, error, m));
-	}
-	else
-		emit(jobUpdated(id, error, m));
 }
 
 /*
@@ -150,17 +199,5 @@ DataQueue* DelilahQtApp::getDataQueue(const QString &name)
 	// TODO:
 	DataQueue* q = new DataQueue(name);
 	return q;
-}
-
-/******************************************************************************
- *
- * Private Methods
- *
- *****************************************************************************/
-
-size_t DelilahQtApp::sendMessage(QString command)
-{
-//	return client->sendMessageToController( command.toStdString() );
-	return 1;
 }
 

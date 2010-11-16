@@ -47,7 +47,6 @@ void WorkspaceView::setWorkspace(Workspace* model)
 			workspace, SLOT(createQueue(QueueType, QPointF, QString, QString, QString)));
 	connect(workspace, SIGNAL(jobCreated(job_info)), this, SLOT(updateJobInfoView(job_info)));
 	connect(workspace, SIGNAL(jobUpdated(job_info)), this, SLOT(updateJobInfoView(job_info)));
-	connect(workspace, SIGNAL(jobFinished(job_info)), this, SLOT(updateJobInfoView(job_info)));
 }
 
 void WorkspaceView::updateJobInfoView(job_info job)
@@ -83,13 +82,13 @@ void WorkspaceView::updateJobInfoView(job_info job)
 		status.append(new_info);
 	else
 	{
-		if (job.status!=IN_PROCESSING)
+		if (job.status==FINISHED || job.status==FAILED)
 			status.removeAt(found);
 		else
 			status.replace(found, new_info);
 	}
 
-	// Set test to be displayed
+	// Set text to be displayed
 	QString info;
 	if (status.size()>0)
 	{
@@ -107,7 +106,7 @@ void WorkspaceView::updateJobInfoView(job_info job)
 		status_view = 0;
 	}
 
-	// If updated job failed, show info to the user, and later remove from the list
+	// If updated job failed, show info to the user
 	if (job.status==FAILED)
 		QMessageBox::critical(this, QString("Job Failure"), job.message);
 }

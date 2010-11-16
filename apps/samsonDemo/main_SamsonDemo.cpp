@@ -32,10 +32,7 @@ const char* worker_argv[] = { "-controller" , "what_ever","-alias","what_ever_al
 *
 * logFd - file descriptor for log file used in all libraries
 */
-namespace ss
-{
 int logFd = -1;
-}
 
 char* progName = (char*) "samsonDemo";
 
@@ -53,9 +50,9 @@ void *run_delilah(void* d)
 int main(int argc, const char *argv[])
 {
 	// Init the trace system
-	ss::samsonInitTrace( argc , argv, &ss::logFd);
+	ss::samsonInitTrace( argc , argv, &::logFd);
 	
-	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ss::logFd));
+	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 	
 	au::CommandLine commandLine;
 	commandLine.set_flag_boolean("console");
@@ -94,7 +91,7 @@ int main(int argc, const char *argv[])
 	
 	ss::Delilah delilah( _dalilah_argc, _dalilah_argv , center.getNetwork( -2 )  );
 	
-	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ss::logFd));
+	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 
 	std::vector< ss::SamsonWorker* > workers;
 	for (int i = 0 ; i < num_workers ; i ++ )
@@ -114,13 +111,13 @@ int main(int argc, const char *argv[])
 	for (int i = 0 ; i < num_workers ; i ++ )
 		workers[i]->run();
 
-	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ss::logFd));
+	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 
 	// Run client in another thread
 	pthread_t t_delilah;
 	pthread_create(&t_delilah, NULL, run_delilah, &delilah);
 	
-	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ss::logFd));
+	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 	// Keep alive while dalila is alive ( sending packets in the background )
 	center.run(&delilah.finish);
 }

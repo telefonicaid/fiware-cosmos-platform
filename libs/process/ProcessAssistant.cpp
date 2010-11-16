@@ -27,6 +27,7 @@
 #include "ProcessAssistant.h"      // Own interface
 
 
+extern int logFd;
 
 namespace ss {
 
@@ -60,7 +61,6 @@ ProcessAssistant::ProcessAssistant(int coreNo, const char* _controller, SamsonWo
 }
 
 
-extern int logFd;
 
 /* ****************************************************************************
 *
@@ -100,7 +100,7 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 	int rFd = pipeFdPair2[0];
 	int wFd = pipeFdPair1[1];
 
-	LM_T(60, ("CHILD RUNNING (rFd: %d, wFd: %d", rFd, wFd));
+	LM_T(60, ("CHILD RUNNING (rFd: %d, wFd: %d)", rFd, wFd));
 	/* ************************************************************
 	 *
 	 * Setting auxiliar string for logMsg
@@ -110,7 +110,7 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 	sprintf(auxString, "core%02d", core);
 	lmAux(auxString);
 
-	LM_T(60, ("CHILD RUNNING (logFd == %d)", logFd));
+	LM_T(60, ("CHILD RUNNING (logFd == %d)", ::logFd));
 
 
 #if !defined(__APPLE__)
@@ -140,10 +140,10 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 	 */
 	int fd;
 	
-	LM_T(60, ("Close fathers file descriptors (but not mine: logFd == %d, rFd: %d, wFd: %d)", logFd, rFd, wFd));
+	LM_T(60, ("Close fathers file descriptors (but not mine: logFd == %d, rFd: %d, wFd: %d)", ::logFd, rFd, wFd));
 	for (fd = 0; fd < 100; fd++)
 	{
-		if ((fd != logFd) && (fd != rFd) && (fd != wFd))
+		if ((fd != ::logFd) && (fd != rFd) && (fd != wFd))
 			close(fd);
 		else
 			LM_T(60, ("Not closing fd %d", fd));

@@ -39,10 +39,7 @@ PaArgument paArgs[] =
 *
 * logFd - file descriptor for log file used in all libraries
 */
-namespace ss
-{
-	int logFd = -1;
-}
+int logFd = -1;
 
 
 
@@ -53,15 +50,22 @@ namespace ss
 int main(int argC, const char *argV[])
 {
 	paConfig("prefix",                        (void*) "SSW_");
-	paConfig("log to file",                   (void*) "/tmp/");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE: TEXT");
+	paConfig("log to file",                   (void*) true);
 
 	paParse(paArgs, argC, (char**) argV, 1, true);
 	lmAux((char*) "father");
+	logFd = lmFirstDiskFileDescriptor();
 
+	LM_M(("reads:   '%s'", BA_FT(lmReads)));
+	LM_M(("writes:  '%s'", BA_FT(lmWrites)));
+	LM_M(("verbose: '%s'", BA_FT(lmVerbose)));
+	LM_M(("debug:   '%s'", BA_FT(lmDebug)));
+
+	LM_M(("logFd: %d", logFd));
 
 	ss::SamsonWorker  worker(controller, alias, port, workers, endpoints);
 	ss::Network*      networkP;

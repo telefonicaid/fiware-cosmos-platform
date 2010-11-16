@@ -1370,6 +1370,7 @@ LmStatus lmFdRegister(int fd, const char* format, const char* timeFormat, const 
 }
 
 
+
 /* ****************************************************************************
 *
 * lmFdUnregister
@@ -1534,9 +1535,11 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 			if ((nb = write(fds[i].fd, line, sz)) != sz)
 			{
 				if ((nb == -1) && (errno != EINTR))
-					lmReopen(i);
-				printf("written only %d bytes instead of %d", nb, sz);
-				exit(191);
+				{
+					LM_E(("written only %d bytes instead of %d", nb, sz));
+					exit(191);
+				}
+
 				return LmsWrite;
 			}
 		}
@@ -2283,4 +2286,23 @@ void lmPrintMsgBuf()
 		logMsgs = logP->next;
 		free(logP);
 	}
+}
+
+
+
+/* ****************************************************************************
+*
+* lmFirstDiskFileDescriptor - 
+*/
+int lmFirstDiskFileDescriptor(void)
+{
+	int ix = 0;
+
+	for (ix = 0; ix < FDS_MAX; ix++)
+	{
+		if (fds[ix].type == Fichero)
+			return fds[ix].fd;
+	}
+
+	return -1;
 }

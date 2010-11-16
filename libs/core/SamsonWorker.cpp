@@ -2,7 +2,6 @@
 
 #include "logMsg.h"                     // lmInit, LM_*
 #include "coreTracelevels.h"            // LMT_*
-#include "traces.h"                     // Trace definition
 
 #include "Message.h"                    // Message
 #include "Macros.h"                     // EXIT, ...

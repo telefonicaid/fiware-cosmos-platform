@@ -1313,4 +1313,12 @@ void lmPrintMsgBuf();
 extern void lmWarningFunctionDebug(char* info, char* file, int line);
 #define LMWARNINGFUNCTIONDEBUG(info) lmWarningFunctionDebug(info, __FILE__, __LINE__)
 
+
+
+/* ****************************************************************************
+*
+* lmFirstDiskFileDescriptor - 
+*/
+extern int lmFirstDiskFileDescriptor(void);
+
 #endif

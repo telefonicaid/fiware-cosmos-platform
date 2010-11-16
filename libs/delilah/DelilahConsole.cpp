@@ -155,9 +155,9 @@ namespace ss
 				if(finished)
 				{
 					if( error )
-						txt << "Command finish with error" << std::endl;
+						txt << "Command finished with error" << std::endl;
 					else
-						txt << "Command finish correclt" << std::endl;
+						txt << "Command finished correctly" << std::endl;
 				}
 				
 				txt << std::endl;

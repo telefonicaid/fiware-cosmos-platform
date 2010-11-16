@@ -1,0 +1,73 @@
+#ifndef PA_CONFIG_H
+#define PA_CONFIG_H
+
+/* ****************************************************************************
+*
+* FILE                  paConfig.h
+*
+* AUTHOR                Ken Zangelin
+*
+*/
+#include "baStd.h"              /* bool, ...                            */
+
+#include "parseArgs.h"          /* Where we have the ext decl of paConfig    */
+
+
+
+/* ****************************************************************************
+*
+* Configurable variables
+*/
+extern bool      paUseBuiltins;
+extern bool      paExitOnError;
+extern bool      paExitOnUsage;
+extern bool      paPrintErrorsOnStderr;
+extern char*     paPrefix;
+extern char*     paRcFileName;
+extern char*     paRcFileDir;
+extern char*     paGenericRcDir;
+extern char*     paProgName;
+extern char      paTraceV[1024];
+
+extern char*      paHelpFile;
+extern char*      paHelpText;
+
+extern bool       paUsageOnAnyWarning;
+
+extern bool       paLogToFile;
+extern bool       paLogToScreen;
+extern bool       paLogScreenToStderr;
+extern bool       paLogScreenOnlyErrors;
+
+extern char*      paLogFilePath;
+extern char*      paLogFileLineFormat;
+extern char*      paLogFileTimeFormat;
+extern char*      paLogScreenLineFormat;
+extern char*      paLogScreenTimeFormat;
+
+extern char*      paTracelevels;
+
+extern bool       paVerbose;
+extern bool       paDebug;
+extern bool       paReads;
+extern bool       paWrites;
+extern bool       paFix;
+extern bool       paBug;
+extern bool       paBuf;
+extern bool       paDoubt;
+
+extern bool       paMsgsToStdout;
+extern bool       paMsgsToStderr;
+
+extern char       paPid[16];
+
+
+
+
+/* ****************************************************************************
+*
+* paConfigActions - 
+*/
+extern int paConfigActions(bool preTreat);
+
+#endif

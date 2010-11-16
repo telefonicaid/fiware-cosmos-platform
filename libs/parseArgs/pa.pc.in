@@ -1,0 +1,10 @@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: pa
+Description: TID Basic Archive
+Version: 1.0
+Libs: -L${libdir} -lba -llm -lpa
+Cflags: -I${includedir}
+

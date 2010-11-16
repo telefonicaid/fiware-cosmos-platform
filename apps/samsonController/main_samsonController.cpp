@@ -1,5 +1,33 @@
+#include "parseArgs.h"          // parseArgs
+#include "samsonDirectories.h"  // SAMSON_SETUP_FILE
 #include "SamsonController.h"	// ss::SamsonController
-#include "traces.h"				// LMT_*
+
+
+
+/* ****************************************************************************
+*
+* Option variables
+*/
+unsigned short   port;
+int              endpoints;
+int              workers;
+char             setupFile[160];
+
+
+
+/* ****************************************************************************
+*
+* parse arguments
+*/
+PaArgument paArgs[] =
+{
+	{ "-setup",       setupFile,   "SDETUP",      PaString,  PaOpt,  _i SAMSON_SETUP_FILE,   PaNL,   PaNL,  "setup file path"     },
+	{ "-port",       &port,        "PORT",        PaShortU,  PaOpt,                  1234,   1025,  65000,  "listen port"         },
+	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,                    80,      3,    100,  "number of endpoints" },
+	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,                     5,      1,    100,  "number of workers"   },
+
+	PA_END_OF_ARGS
+};
 
 
 
@@ -7,12 +35,7 @@
 *
 * logFd - file descriptor for log file used in all libraries
 */
-namespace ss
-{
 int logFd = -1;
-}
-
-char* progName = (char*) "samsonController";
 
 
 
@@ -20,12 +43,22 @@ char* progName = (char*) "samsonController";
 *
 * main - main routine for the samsonController
 */
-int main(int argc, const char* argv[])
+int main(int argC, const char* argV[])
 {
-	ss::samsonInitTrace(argc, argv, &ss::logFd, true);
+	paConfig("prefix",                        (void*) "SSC_");
+	paConfig("usage and exit on any warning", (void*) true);
+	paConfig("log to screen",                 (void*) "only errors");
+	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC/FILE[LINE] FUNC: TEXT");
+	paConfig("screen line format",            (void*) "TYPE: TEXT");
+	paConfig("log to file",                   (void*) true);
 
-	ss::Network network;		// Real network element
-	ss::SamsonController controller(argc, argv, &network);
+	paParse(paArgs, argC, (char**) argV, 1, false);
+
+	LM_M(("endpoints: %d", endpoints));
+	LM_M(("workers:   %d", workers));
+
+	ss::Network*          networkP = new ss::Network(endpoints, workers);
+	ss::SamsonController  controller(networkP, port, setupFile, workers, endpoints);
 
 	controller.run();
 }

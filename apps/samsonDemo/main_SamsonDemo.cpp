@@ -68,7 +68,7 @@ int main(int argc, const char *argv[])
 	ss::NetworkFakeCenter center(num_workers);		
 	
 	// Create one controller, one dalilah and N workers
-	ss::SamsonController controller ( argc, argv ,center.getNetwork( -1 )  );
+	ss::SamsonController controller(center.getNetwork(-1), 1234, (char*) "/opt/samson/setup.txt", 5, 80);
 	
 	const char **_dalilah_argv;
 	int _dalilah_argc;

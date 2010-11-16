@@ -336,9 +336,6 @@ static void netifInfo(int ifIndex, NetIf* nifP, time_t now, time_t lastTime)
 
 		if ((lastTime == 0) || (intervalInSecs == 0))
 		{
-			if (intervalInSecs == 0)
-				LM_W(("Zero interval is not very interesting ..."));
-
 			nifP->rcvSpeed  = 0;
 			nifP->sndSpeed  = 0;
 		}

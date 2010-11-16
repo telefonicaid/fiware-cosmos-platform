@@ -78,9 +78,11 @@ Network::Network(int endpoints, int workers)
 
 	LM_M(("Allocating room for %d endpoint pointers", Endpoints));
 
-	endpoint = (Endpoint**) calloc(endpoints, sizeof(Endpoint*));
+	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
 	if (endpoint == NULL)
-		LM_XP(1, ("calloc(%d, %d)", endpoints, sizeof(Endpoint*)));
+		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
+
+	LM_M(("Endpoints: %d", Endpoints));
 }
 
 
@@ -436,6 +438,8 @@ Endpoint* Network::endpointAdd
 		return controller;
 
 	case Endpoint::Temporal:
+		LM_M(("Endpoints: %d", Endpoints));
+		LM_M(("Workers:   %d", Workers));
 		for (ix = Endpoints - 1; ix >= 3 + Workers; ix--)
 		{
 			if (endpoint[ix] == NULL)
@@ -938,6 +942,8 @@ void Network::run()
 	time_t          now   = 0;
 	time_t          then  = time(NULL);
 	int             max;
+
+	LM_M(("endpoints: %d", Endpoints));
 
 	while (1)
 	{

@@ -51,9 +51,14 @@ namespace ss {
 		friend class JobManager;
 		friend class ControllerDataManager;
 		
+		unsigned short port;
+		std::string    setup;
+		int            workers;
+		int            endpoints;
+
 	public:
 		
-		SamsonController( int arg , const char *argv[] ,  NetworkInterface *_network );
+		SamsonController(NetworkInterface* network, unsigned short port, char* setup, int workers, int endpoints);
 		
 		// Main run loop
 		void run();

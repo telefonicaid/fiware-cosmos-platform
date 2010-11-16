@@ -40,6 +40,8 @@ EndpointMgr::EndpointMgr(NetworkInterface* network, int endpoints, int workers)
 	Workers    = workers;
 	Endpoints  = endpoints;
 
+	LM_M(("endpoints: %d", Endpoints));
+
 	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
 	if (endpoint == NULL)
 		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
@@ -190,6 +192,7 @@ Endpoint* EndpointMgr::endpointAdd
 		return controller;
 
 	case Endpoint::Temporal:
+		LM_M(("endpoints: %d", Endpoints));
 		for (ix = Endpoints - 1; ix >= 3 + Workers; ix--)
 		{
 			if (endpoint[ix] == NULL)

@@ -19,292 +19,309 @@
 
 namespace ss {
 
-	SamsonController::SamsonController(int arg, const char *argv[],  NetworkInterface *_network) : 	data(this) , jobManager(this) , taskManager(this)
+/* ****************************************************************************
+*
+* SamsonController::SamsonController
+*/
+SamsonController::SamsonController(NetworkInterface* network, unsigned short port, char* setup, int workers, int endpoints) : 	data(this) , jobManager(this) , taskManager(this)
+{
+	this->network    = network;
+	this->port       = port;
+	this->setup      = setup;
+	this->workers    = workers;
+	this->endpoints  = endpoints;
+
+	LM_M(("endpoints: %d", endpoints));
+
+	// Init data manager ( recovering from crash if necessary )
+	data.init();
+		
+	network->setPacketReceiverInterface(this);
+		
+	LM_T(LMT_CONFIG, ("calling loadSetup"));			
+		
+	int num_workers = SamsonSetup::shared()->getInt(SETUP_num_workers, -1);
+	assert(num_workers != -1);
+	LM_T(LMT_CONFIG, ("Num workers: %d", num_workers));
+	network->initAsSamsonController(port, num_workers);
+
+
+	LM_M(("endpoints: %d", endpoints));
+}	
+
+
+
+/* ****************************************************************************
+*
+* run - 
+*/
+void SamsonController::run()
+{
+	network->run();											// Run the network interface (blocked)
+}
+
+
+
+/* ****************************************************************************
+*
+* receiveHelp - 
+*/
+int SamsonController::receiveHelp(int fromId, Packet* packet)
+{
+	// Prepare the help message and sent back to Delilah
+	Packet p;
+		
+	network::HelpResponse *response = p.message.mutable_help_response();
+		
+	if (packet->message.help().queues())
 	{
-		int          port;								// Local port where this controller listen
-		
-		// Init data manager ( recovering from crash if necessary )
-		data.init();
-		
-		network = _network;
-		network->setPacketReceiverInterface(this);
-		
-		std::string  trace;
-		
-		// Parse input command lines
-		au::CommandLine commandLine;
-		commandLine.parse(arg, argv);
-		
-		commandLine.set_flag_int("port",      SAMSON_CONTROLLER_DEFAULT_PORT);
-		commandLine.set_flag_string("setup",  SAMSON_SETUP_FILE);
-		commandLine.set_flag_string("t",      "255");
-		commandLine.set_flag_boolean("r");
-		commandLine.set_flag_boolean("w");
-		
-		commandLine.parse(arg, argv);
-		
-		port			= commandLine.get_flag_int("port");
-		lmReads			= commandLine.get_flag_bool("r");
-		lmWrites		= commandLine.get_flag_bool("w");
-		
-		
-		// Load setup
-		LM_T(LMT_CONFIG, ("calling loadSetup"));			
-		//std::vector <Endpoint> workerEndPoints = loadSetup(setupFileName);
-		//std::vector <std::string> workerPeers = getworkerPeers(setupFileName);
-		
-		// Define the endpoints of the network interface
-		
-		int num_workers = SamsonSetup::shared()->getInt( SETUP_num_workers  , -1);
-		assert( num_workers != -1 );
-		LM_T(LMT_CONFIG, ("Num workers: %d", num_workers));
-		network->initAsSamsonController(port, num_workers);
-	}	
-
-
-
-	void SamsonController::run()
-	{
-		network->run();											// Run the network interface (blocked)
+		// Fill with queues information
+		data.helpQueues( response );
+		response->set_queues( true );
 	}
-
-	int SamsonController::receiveHelp(int fromId, Packet* packet)
+	else
+		response->set_queues( false );
+		
+	if (packet->message.help().datas())
 	{
-		// Prepare the help message and sent back to Delilah
-		Packet p;
-		
-		network::HelpResponse *response = p.message.mutable_help_response();
-		
-		if( packet->message.help().queues() )
-		{
-			// Fill with queues information
-			data.helpQueues( response );
-			response->set_queues( true );
-		}
-		else
-			response->set_queues( false );
-		
-		
-		if( packet->message.help().datas() )
-		{
-			// Fill with datas information
-			modulesManager.helpDatas( response );
-			response->set_datas(true);
-		}
-		else
-			response->set_datas(false);
+		// Fill with datas information
+		modulesManager.helpDatas( response );
+		response->set_datas(true);
+	}
+	else
+		response->set_datas(false);
 
+	if( packet->message.help().operations() )
+	{
+		// Fill with operations information
+		modulesManager.helpOperations( response );
+		response->set_operations(true);
+	}
+	else
+		response->set_operations(false);
 		
-		if( packet->message.help().operations() )
+	LM_M(("help response with %d bytes", p.message.ByteSize()));
+	network->send(this, fromId, Message::HelpResponse, &p);
+	return 0;
+}
+	
+	
+/* ****************************************************************************
+*
+* receive - 
+*/
+int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+{
+	switch (msgCode)
+	{
+	case Message::Help:
+	{
+		return receiveHelp( fromId , packet );
+		break;
+	}
+	
+	case Message::Command:
+	{
+		// Temporal interruption for debugging
+		// **********************************************************************
+		au::CommandLine cmdLine;
+		cmdLine.parse(packet->message.command().command());
+		if(( cmdLine.get_num_arguments() > 0) && (cmdLine.get_argument(0)=="status"))
 		{
-			// Fill with operations information
-			modulesManager.helpOperations( response );
-			response->set_operations(true);
+			Packet p;
+			network::CommandResponse *response = p.message.mutable_command_response();
+			response->set_response( getStatus() );
+			response->set_command( packet->message.command().command() );
+			response->set_error( false );
+			response->set_finish( true );
+			response->set_sender_id( packet->message.command().sender_id() );
+			network->send(this, fromId, Message::CommandResponse, &p);
+			return 0;
 		}
-		else
-			response->set_operations(false);
+		// **********************************************************************
+				
 		
-		
-		LM_M(("help response with %d bytes", p.message.ByteSize()));
-		network->send(this, fromId, Message::HelpResponse, &p);
+		// Create a new job with this command
+		jobManager.addJob( fromId , packet->message.command().sender_id(), packet->message.command().command() );
 		return 0;
 	}
 	
-	
-	int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
-	{
+	break;
 
-		switch (msgCode)
+	case Message::WorkerTaskConfirmation:
+		taskManager.notifyWorkerConfirmation(fromId, packet->message.worker_task_confirmation() );
+		break;
+		
+	case Message::WorkerStatus:
+		int workerId;
+		
+		workerId = network->getWorkerFromIdentifier(fromId);			
+		if (workerId == -1)
+			LM_RE(2, ("getWorkerFromIdentifier(%d) failed", fromId));
+		status[workerId] = *((Message::WorkerStatusData*) packet->buffer->getData());
+		break;
+			
+	case Message::LoadDataConfirmation:
+	{
+		// Uptade data and sent a LoadDataConfirmationResponde message
+		
+		bool error = false;	// By default, no error
+		std::string error_message = "No error message";
+		
+		size_t job_id = data.getNewTaskId();
+		data.beginTask(job_id, "Load process from Delilah");
+		
+		data.addComment( job_id , "Comments for load process...");
+		
+		const network::LoadDataConfirmation& loadDataConfirmation = packet->message.load_data_confirmation();
+			
+		for (int i = 0 ; i < loadDataConfirmation.file_size() ; i++)
 		{
-			case Message::Help:
+			const network::File& file = loadDataConfirmation.file(i);
+			
+			std::stringstream command;	
+			command << "add_data_file " << file.worker() << " " << file.name() << " " << file.info().size() << " " << loadDataConfirmation.queue();
+			DataManagerCommandResponse response =  data.runOperation( job_id , command.str() );
+				
+			if( response.error )
 			{
-				return receiveHelp( fromId , packet );
+				error = true;
+				error_message = response.output;
 				break;
 			}
-				
-			case Message::Command:
-			{
-				// Temporal interruption for debugging
-				// **********************************************************************
-				au::CommandLine cmdLine;
-				cmdLine.parse(packet->message.command().command());
-				if(( cmdLine.get_num_arguments() > 0) && (cmdLine.get_argument(0)=="status"))
-				{
-					Packet p;
-					network::CommandResponse *response = p.message.mutable_command_response();
-					response->set_response( getStatus() );
-					response->set_command( packet->message.command().command() );
-					response->set_error( false );
-					response->set_finish( true );
-					response->set_sender_id( packet->message.command().sender_id() );
-					network->send(this, fromId, Message::CommandResponse, &p);
-					return 0;
-				}
-				// **********************************************************************
-				
-				
-				// Create a new job with this command
-				jobManager.addJob( fromId , packet->message.command().sender_id(), packet->message.command().command() );
-				return 0;
-			}
-
-			break;
-
-		case Message::WorkerTaskConfirmation:
-			taskManager.notifyWorkerConfirmation(fromId, packet->message.worker_task_confirmation() );
-			break;
-
-		case Message::WorkerStatus:
-			int workerId;
-
-			workerId = network->getWorkerFromIdentifier(fromId);			
-			if (workerId == -1)
-				LM_RE(2, ("getWorkerFromIdentifier(%d) failed", fromId));
-			status[workerId] = *((Message::WorkerStatusData*) packet->buffer->getData());
-			break;
-			
-		case Message::LoadDataConfirmation:
-		{
-			// Uptade data and sent a LoadDataConfirmationResponde message
-
-			bool error = false;	// By default, no error
-			std::string error_message = "No error message";
-			
-			size_t job_id = data.getNewTaskId();
-			data.beginTask(job_id, "Load process from Delilah");
-			
-			data.addComment( job_id , "Comments for load process...");
-			
-			const network::LoadDataConfirmation& loadDataConfirmation = packet->message.load_data_confirmation();
-			
-			for (int i = 0 ; i < loadDataConfirmation.file_size() ; i++)
-			{
-				const network::File& file = loadDataConfirmation.file(i);
-				
-				std::stringstream command;	
-				command << "add_data_file " << file.worker() << " " << file.name() << " " << file.info().size() << " " << loadDataConfirmation.queue();
-				DataManagerCommandResponse response =  data.runOperation( job_id , command.str() );
-				
-				if( response.error )
-				{
-					error = true;
-					error_message = response.output;
-					break;
-				}
-			}
-			
-			if( error )
-				data.cancelTask(job_id, error_message);
-			else
-				data.finishTask(job_id);
-			
-			// A message is always sent back to delilah to confirm changes
-			Packet p;
-			network::LoadDataConfirmationResponse * confirmationResponse = p.message.mutable_load_data_confirmation_response();
-			confirmationResponse->set_process_id( packet->message.load_data_confirmation().process_id() );
-			confirmationResponse->set_error( error );
-			confirmationResponse->set_error_message( error_message );
-			network->send(this, fromId, Message::LoadDataConfirmationResponse, &p);
 		}
-		
-			break;
+			
+		if( error )
+			data.cancelTask(job_id, error_message);
+		else
+			data.finishTask(job_id);
+			
+		// A message is always sent back to delilah to confirm changes
+		Packet p;
+		network::LoadDataConfirmationResponse * confirmationResponse = p.message.mutable_load_data_confirmation_response();
+		confirmationResponse->set_process_id( packet->message.load_data_confirmation().process_id() );
+		confirmationResponse->set_error( error );
+		confirmationResponse->set_error_message( error_message );
+		network->send(this, fromId, Message::LoadDataConfirmationResponse, &p);
+	}
+	break;
 				
-				
-		default:
-			LM_X(1, ("msg code '%s' not treated ...", messageCode(msgCode)));
-			break;
-		}
-
-		return 0;
+	default:
+		LM_X(1, ("msg code '%s' not treated ...", messageCode(msgCode)));
+		break;
 	}
 
-	void SamsonController::notificationSent(size_t id, bool success)
-	{
-		// Do something
-	}
+	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* notificationSent - 
+*/
+void SamsonController::notificationSent(size_t id, bool success)
+{
+	// Do something
+}
 	
-	void SamsonController::notifyWorkerDied( int worker )
-	{
-		// What to do when a worker died
-	}
+
+
+/* ****************************************************************************
+*
+* notifyWorkerDied - 
+*/
+void SamsonController::notifyWorkerDied( int worker )
+{
+	// What to do when a worker died
+}
 	
 	
 #pragma mark Sent messages
 	
 
 
-	void SamsonController::sendWorkerTasks( ControllerTask *task )
-	{
-		// Send messages to the workers indicating the operation to do (waiting the confirmation from all of them)
+/* ****************************************************************************
+*
+* sendWorkerTasks - 
+*/
+void SamsonController::sendWorkerTasks( ControllerTask *task )
+{
+	// Send messages to the workers indicating the operation to do (waiting the confirmation from all of them)
 		
-		for (int i = 0 ; i < network->getNumWorkers() ; i++)
-		{
-			LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", i));
-			sendWorkerTask(i, task->getId(), task);
-		}
-	}	
+	for (int i = 0 ; i < network->getNumWorkers() ; i++)
+	{
+		LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", i));
+		sendWorkerTask(i, task->getId(), task);
+	}
+}	
 	
 
 
-	void SamsonController::sendWorkerTask(int workerIdentifier, size_t task_id, ControllerTask *task  )
-	{
-		// Get status of controller
-		Packet p2;
+/* ****************************************************************************
+*
+* sendWorkerTask - 
+*/
+void SamsonController::sendWorkerTask(int workerIdentifier, size_t task_id, ControllerTask *task  )
+{
+	// Get status of controller
+	Packet p2;
 
-		network::WorkerTask *t = p2.message.mutable_worker_task();
-		t->set_task_id(task_id);
-		t->set_operation(task->getCommand());
-
-		// TODO: Complete with the rest of input / output parameters
+	network::WorkerTask *t = p2.message.mutable_worker_task();
+	t->set_task_id(task_id);
+	t->set_operation(task->getCommand());
+	
+	// TODO: Complete with the rest of input / output parameters
 		
-		LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", workerIdentifier));
-		network->send(this,  network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask,  &p2);
-	}
+	LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", workerIdentifier));
+	network->send(this,  network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask,  &p2);
+}
 	
 	
 #pragma mark Help messages
 	
-	std::string SamsonController::getStatus()
-	{
+
+
+/* ****************************************************************************
+*
+* getStatus - 
+*/
+std::string SamsonController::getStatus()
+{
+	std::ostringstream output;
 		
-		std::ostringstream output;
-		
-		output << "Status of Controller" << std::endl;			
-		output << "== ************** ==" << std::endl;
-		output << data.status();
-		output << taskManager.status();
+	output << "Status of Controller" << std::endl;			
+	output << "== ************** ==" << std::endl;
+	output << data.status();
+	output << taskManager.status();
 		
 #if 0				
-		Endpoint* ep;
-		int       workers;
-		int       ix;
-		int       workersFound;
+	Endpoint* ep;
+	int       workers;
+	int       ix;
+	int       workersFound;
 		
-		// Information about each server
-		workers      = network->getNumWorkers();
-		workersFound = 0;
-		ix           = 0;
-		do
-		{
-			ep = network->endpointLookup(3 + ix); /* 0,1 and 2 occupied by ME, LISTEN and CONTROLLER */
-			++ix;
-			if (ep == NULL)
-				continue;
-			output << "Worker " << ix << std::endl;
-			output << "\t- Cores:\t" << ep->status->cpuInfo.cores << std::endl;
-			output << "\t- CPU Load:\t" << ep->status->cpuInfo.load << "%" << std::endl;
-			output << "\t- Net (dev 0) Rcv Speed:\t" << ep->status->netInfo.iface[0].rcvSpeed << " bps" << std::endl;
-			output << "\t- Net (dev 0) Snd Speed:\t" << ep->status->netInfo.iface[0].sndSpeed << " bps" << std::endl;
-			output << "\t- Net (dev 1) Rcv Speed:\t" << ep->status->netInfo.iface[1].rcvSpeed << " bps" << std::endl;
-			output << "\t- Net (dev 1) Snd Speed:\t" << ep->status->netInfo.iface[1].sndSpeed << " bps" << std::endl;
-			++workersFound;
-		} while (workersFound < workers);
+	// Information about each server
+	workers      = network->getNumWorkers();
+	workersFound = 0;
+	ix           = 0;
+	do
+	{
+		ep = network->endpointLookup(3 + ix); /* 0,1 and 2 occupied by ME, LISTEN and CONTROLLER */
+		++ix;
+		if (ep == NULL)
+			continue;
+		output << "Worker " << ix << std::endl;
+		output << "\t- Cores:\t" << ep->status->cpuInfo.cores << std::endl;
+		output << "\t- CPU Load:\t" << ep->status->cpuInfo.load << "%" << std::endl;
+		output << "\t- Net (dev 0) Rcv Speed:\t" << ep->status->netInfo.iface[0].rcvSpeed << " bps" << std::endl;
+		output << "\t- Net (dev 0) Snd Speed:\t" << ep->status->netInfo.iface[0].sndSpeed << " bps" << std::endl;
+		output << "\t- Net (dev 1) Rcv Speed:\t" << ep->status->netInfo.iface[1].rcvSpeed << " bps" << std::endl;
+		output << "\t- Net (dev 1) Snd Speed:\t" << ep->status->netInfo.iface[1].sndSpeed << " bps" << std::endl;
+		++workersFound;
+	} while (workersFound < workers);
 #endif				
 	
-		return output.str();
-		
-	}
-
-	
+	return output.str();
 }
-
+}

@@ -134,27 +134,27 @@ namespace ss
 	
 	int DelilahConsole::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
-		std::ostringstream txt;
-		bool error = false;
+		std::ostringstream  txt;
+		bool                error = false;
 		
-		switch (msgCode) {
-				
+		switch (msgCode)
+		{
 			case Message::CommandResponse:
 			{
-				// Get some information form the packet
-				size_t id = packet->message.command_response().sender_id();
-				std::string command = packet->message.command_response().command();
-				std::string message = packet->message.command_response().response();
-				error = packet->message.command_response().error();
-				bool finished = packet->message.command_response().finish();
+				// Get some information from the packet
+				size_t      id        = packet->message.command_response().sender_id();
+				std::string command   = packet->message.command_response().command();
+				std::string message   = packet->message.command_response().response();
+				error                 = packet->message.command_response().error();
+				bool        finished  = packet->message.command_response().finish();
 				
 				// Prepare what to show on screen
 				txt << "----------------------------------------------------------------" << std::endl;
 				txt << "Answer for command " << id << ": " << command << std::endl;
 				
-				if(finished)
+				if (finished)
 				{
-					if( error )
+					if (error)
 						txt << "Command finished with error" << std::endl;
 					else
 						txt << "Command finished correctly" << std::endl;

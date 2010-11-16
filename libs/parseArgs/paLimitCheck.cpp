@@ -162,8 +162,8 @@ static int limits(PaArgument* paList, PaArgument* aP, char* input)
 	case PaShortU:
 		LM_T(LmtPaLimits, ("checking '%s' (value %d): limits '%d' - '%d'",
 						   aP->name, usVal, aP->min, aP->max));
-		if ((lower && (usVal < (short) aP->min))
-		||  (upper && (usVal > (short) aP->max)))
+		if ((lower && (usVal < (unsigned short) aP->min))
+		||  (upper && (usVal > (unsigned short) aP->max)))
 		{
 			sprintf(valS, "%u", usVal);
 			sprintf(w, "%lu <= %u <= %lu (%s)",
@@ -192,8 +192,8 @@ static int limits(PaArgument* paList, PaArgument* aP, char* input)
 	case PaCharU:
 		LM_T(LmtPaLimits, ("checking '%s' (value %d): limits '%d' - '%d'",
 						   aP->name, ucVal, aP->min, aP->max));
-		if ((lower && (ucVal < (char) aP->min))
-		||  (upper && (ucVal > (char) aP->max)))
+		if ((lower && (ucVal < (unsigned char) aP->min))
+		||  (upper && (ucVal > (unsigned char) aP->max)))
 		{
 			sprintf(valS, "%u", ucVal);
 			sprintf(w, "%lu <= %u <= %lu (%s)",

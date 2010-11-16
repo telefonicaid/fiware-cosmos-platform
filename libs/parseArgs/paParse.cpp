@@ -20,8 +20,6 @@
 #include <unistd.h>             /* getpid                                    */
 #include <stdlib.h>             /* exit                                      */
 
-// extern void exit(int);
-
 #include "baStd.h"              /* BA standard header file                   */
 #include "logMsg.h"             /* lmVerbose, lmDebug, ...                   */
 

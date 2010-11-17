@@ -18,8 +18,6 @@ public:
 		: ObjectItem() {};
 	OperationItem(QSvgRenderer* renderer)
 		: ObjectItem(renderer) {};
-	OperationItem(const QString &fileName, QGraphicsItem *parent=0)
-		: ObjectItem(fileName, parent) {};
 	~OperationItem() {};
 
 	virtual int type() const { return Type; };

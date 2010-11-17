@@ -5,6 +5,9 @@
  *      Author: ania
  */
 
+#include <cassert>
+
+
 #include "Packet.h"
 #include "Message.h"
 
@@ -85,24 +88,81 @@ int DelilahQtApp::receiveData(ss::Packet* packet)
 
 int DelilahQtApp::loadData(ss::Packet* packet)
 {
+	// TODO: remove!!!!!!!
+	std::cout << "Sleeping in receiveData" << std::endl;
+	sleep(5);
+
 	ss::network::HelpResponse resp = packet->message.help_response();
 
 	if( resp.queues() )
 	{
 		// TODO:
-		kv_queues.clear();
-		data_queues.clear();
 
-		for (int i=0 ; i<resp.queue_size(); i++)
-		{
-			ss::network::Queue q = resp.queue(i);
-			addKVQueue(q);
-		}
+		// Set all queues status to LOADING
+		for(int i=0; i< data_queues.size(); i++)
+			data_queues.at(i)->setStatus(Queue::LOADING);
+
+		for(int i=0; i< kv_queues.size(); i++)
+			kv_queues.at(i)->setStatus(Queue::LOADING);
+
+		// TODO: remove!!!!!!!
+		std::cout << "Sleeping after setting to LOADING" << std::endl;
+		sleep(5);
+
+
+		/*
+		 * Update all data queues
+		 */
 		for (int i=0 ; i<resp.data_queue_size(); i++)
 		{
 			ss::network::DataQueue q = resp.data_queue(i);
-			addDataQueue(q);
+			QString name = QString::fromStdString(q.name());
+
+			bool new_queue = false;
+			DataQueue *queue = getDataQueue(name);
+			if (queue==0)
+			{
+				queue = new DataQueue(name);
+				new_queue = true;
+			}
+			queue->upload(&q);
+			if (new_queue)
+				data_queues.append(queue);
 		}
+		// Set status of data queues that were not reloaded to DELETED
+		for (int i=0; i<data_queues.size(); i++)
+		{
+			if ( data_queues.at(i)->getStatus() == Queue::LOADING )
+				data_queues.at(i)->setStatus(Queue::DELETED);
+		}
+
+		/*
+		 * Update all KV queues
+		 */
+		for (int i=0 ; i<resp.queue_size(); i++)
+		{
+			ss::network::Queue q = resp.queue(i);
+			QString name = QString::fromStdString(q.name());
+
+			bool new_queue = false;
+
+			KVQueue * queue = getKVQueue(name);
+			if (queue==0)
+			{
+				queue = new KVQueue(name);
+				new_queue = true;
+			}
+			queue->upload(&q);
+			if (new_queue)
+				kv_queues.append(queue);
+		}
+		// Set status of kv queues that were not reloaded to DELETED
+		for (int i=0; i<kv_queues.size(); i++)
+		{
+			if ( kv_queues.at(i)->getStatus() == DataQueue::LOADING )
+				kv_queues.at(i)->setStatus(DataQueue::DELETED);
+		}
+
 	}
 
 	// TODO:
@@ -118,25 +178,12 @@ int DelilahQtApp::updateData(ss::Packet* packet)
 	return 0;
 }
 
-void DelilahQtApp::addKVQueue(ss::network::Queue q)
-{
-	KVQueue* queue = new KVQueue(QString::fromStdString(q.name()));
-	queue->setSize( q.info().size() );
-	queue->setKey( QString::fromStdString(q.format().keyformat()) );
-	queue->setValue( QString::fromStdString(q.format().valueformat()) );
-	queue->setKVNumber(q.info().kvs());
-	kv_queues.append(queue);
-}
-
-void DelilahQtApp::addDataQueue(ss::network::DataQueue q)
-{
-	DataQueue* queue = new DataQueue(QString::fromStdString(q.name()));
-	queue->setSize(q.size());
-	data_queues.append(queue);
-}
-
 int DelilahQtApp::receiveCommandResponse(ss::Packet* packet)
 {
+	// TODO: remove!!!!!!!
+	sleep(5);
+	std::cout << "Sleeping in receiveCommandResponse" << std::endl;
+
 	unsigned int id = packet->message.command_response().sender_id();
 	QString command = QString::fromStdString(packet->message.command_response().command());
 	QString message = QString::fromStdString(packet->message.command_response().response());
@@ -197,7 +244,25 @@ QString DelilahQtApp::validateNewQueueName(QString name)
 DataQueue* DelilahQtApp::getDataQueue(const QString &name)
 {
 	// TODO:
-	DataQueue* q = new DataQueue(name);
-	return q;
+	for(int i=0; i<data_queues.size(); i++)
+	{
+		DataQueue* queue = data_queues.at(i);
+		if (queue->getName().compare(name) == 0)
+			return queue;
+	}
+
+	return 0;
 }
 
+KVQueue* DelilahQtApp::getKVQueue(const QString &name)
+{
+	// TODO:
+	for(int i=0; i<kv_queues.size(); i++)
+	{
+		KVQueue* queue = kv_queues.at(i);
+		if (queue->getName().compare(name) == 0)
+			return queue;
+	}
+
+	return 0;
+}

@@ -19,8 +19,6 @@ class ObjectItem : public QGraphicsSvgItem
 public:
 	ObjectItem(QGraphicsItem* parent=0)
 		: QGraphicsSvgItem(parent) { init(); };
-	ObjectItem(const QString &fileName, QGraphicsItem* parent=0)
-		: QGraphicsSvgItem(fileName, parent) { init(); };
 	ObjectItem(QSvgRenderer* renderer, QGraphicsItem* parent=0);
 
 	virtual ~ObjectItem();

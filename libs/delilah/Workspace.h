@@ -58,8 +58,6 @@ protected:
 signals:
 	void jobCreated(job_info job);
 	void jobUpdated(job_info job);
-	void jobFinished(job_info job);
-//	void jobFailed(size_t id, QString message);
 
 protected:
 	QString name;

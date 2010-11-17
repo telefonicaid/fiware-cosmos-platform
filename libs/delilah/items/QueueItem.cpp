@@ -12,18 +12,21 @@
 #include <QFont>
 
 #include "QueueItem.h"
-//#include "globals.h"
-//#include "WorkspaceScene.h"
+#include "Queue.h"
 
-QueueItem::~QueueItem()
+
+QueueItem::QueueItem(Queue* _queue)
+	: ObjectItem(), queue(_queue)
 {
+	init();
+
+	connect(queue, SIGNAL(statusChanged()), this, SLOT(updateItem()));
 }
 
 void QueueItem::init()
 {
-	ObjectItem::init();
 	initializeDefaultSize();
-	text_item = NULL;
+	text_item = 0;
 }
 
 void QueueItem::initializeDefaultSize()
@@ -32,8 +35,25 @@ void QueueItem::initializeDefaultSize()
 	default_size = QSize(100, 100);
 }
 
+void QueueItem::initText()
+{
+	if(queue==0)
+		return;
+
+	QString text;
+	if (queue->getStatus()==Queue::LOADING)
+		text = QString("Loading...");
+	if(queue->getStatus()==Queue::READY)
+		text = queue->getName();
+
+	initText(text);
+}
+
 void QueueItem::initText(QString text)
 {
+	if (text_item!=0)
+		delete text_item;
+
 	text_item = new QGraphicsTextItem(text, this);
 	QFont serifFont("Times", 12, QFont::Bold);
 	text_item->setFont(serifFont);
@@ -55,6 +75,10 @@ void QueueItem::initText(QString text)
 //	text_item->setFlag(QGraphicsItem::ItemIsSelectable, false);
 }
 
+void QueueItem::updateItem()
+{
+	initText();
+}
 
 void QueueItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {

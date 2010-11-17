@@ -38,6 +38,7 @@ public:
 	QString validateNewQueueName(QString name);
 
 	DataQueue* getDataQueue(const QString &name);
+	KVQueue* getKVQueue(const QString &name);
 
 	/*
 	 * Methods to send requests to the network
@@ -62,8 +63,6 @@ signals:
 protected:
 	int loadData(ss::Packet* packet);
 	int updateData(ss::Packet* packet);
-	void addKVQueue(ss::network::Queue q);
-	void addDataQueue(ss::network::DataQueue q);
 
 public:
 	MainWindow* w;							// Main Window of application

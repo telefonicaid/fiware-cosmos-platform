@@ -22,7 +22,8 @@ Workspace::Workspace(QString _name)
 	scene = new WorkspaceScene();
 
 	DelilahQtApp* app = (DelilahQtApp*)qApp;
-	connect(app, SIGNAL(gotCommandResponse(unsigned int, bool, bool, QString)), this, SLOT(updateJob(unsigned int, bool, bool, QString)));
+	connect(app, SIGNAL(gotCommandResponse(unsigned int, bool, bool, QString)),
+			this, SLOT(updateJob(unsigned int, bool, bool, QString)));
 }
 
 
@@ -141,20 +142,6 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 		}
 
 	}
-//		switch(job.type)
-//		{
-//			case CREATE_TXT_QUEUE:
-//				Queue* q = new Queue();//TXT_QUEUE, QString("new"), job.pos);
-//				scene->showQueue(q);
-//				break;
-//			default:
-//				break;
-//		}
-
-//		updateScene(job);
-
-//	}
-
 	// TODO:
 	//delete job from the list
 	emit(jobUpdated(job));

@@ -34,7 +34,6 @@ public:
 
 public slots:
 	void setTool(int tool) { current_tool = tool; };
-//	void addQueue(const QPointF &pos=QPoint(0.0, 0.0) );
 	void addOperation(const QPointF &pos=QPoint(0.0, 0.0));
 
 	/*

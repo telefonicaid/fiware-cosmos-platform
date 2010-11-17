@@ -4,6 +4,7 @@
 #include "ObjectItem.h"
 #include "globals.h"
 
+class Queue;
 class DataQueue;
 
 class QueueItem : public ObjectItem
@@ -12,13 +13,18 @@ class QueueItem : public ObjectItem
 
 public:
 	QueueItem()
-		: ObjectItem() {};
+		: ObjectItem() { init(); };
 	QueueItem(QSvgRenderer* renderer)
-		: ObjectItem(renderer) {};
-	~QueueItem();
+		: ObjectItem(renderer) { init(); };
+	QueueItem(Queue* _queue);
+	~QueueItem() {};
 
 	virtual int type() const { return Type; };
+	virtual void initText();
 	virtual void initText(QString text);
+
+public slots:
+	void updateItem();
 
 protected:
 	virtual void init();
@@ -31,24 +37,25 @@ public:
 
 private:
     QGraphicsTextItem* text_item;
+    Queue* queue;
 };
 
 
-class DataQueueItem : public QueueItem
-{
-public:
-	DataQueueItem()
-		: QueueItem() { queue=0; };
-	DataQueueItem(DataQueue* _queue)
-		: QueueItem()
-	{
-		queue=_queue;
-//		connect(queue, SIGNAL(changed()), this, SLOT(updateItem()))
-	};
-	~DataQueueItem() {};
-
-private:
-	DataQueue* queue;
-};
+//class DataQueueItem : public QueueItem
+//{
+//public:
+//	DataQueueItem()
+//		: QueueItem() { queue=0; };
+//	DataQueueItem(DataQueue* _queue)
+//		: QueueItem(), queue(queue)
+//	{
+////		queue=_queue;
+////		connect(queue, SIGNAL(changed()), this, SLOT(updateItem()))
+//	};
+//	~DataQueueItem() {};
+//
+//private:
+//	DataQueue* queue;
+//};
 
 #endif // QUEUEITEM_H

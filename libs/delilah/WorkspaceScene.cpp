@@ -49,7 +49,6 @@ void WorkspaceScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 	{
 		QMenu* menu = new QMenu();
 
-//		menu->addAction("Add Queue", this, SLOT(addQueue()));
 		ActionWithPos* act = new ActionWithPos("Add Queue", this);
 		act->setPosition(event->scenePos());
 		connect(act, SIGNAL(triggered(QPointF)), this, SIGNAL(addQueueRequested(QPointF)));
@@ -111,7 +110,6 @@ void WorkspaceScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 		switch(current_tool)
 		{
 			case TOOL_NEWQUEUE:
-//				addQueue(event->scenePos());
 				emit(addQueueRequested(event->scenePos()));
 				break;
 			case TOOL_NEWOPERATION:
@@ -170,9 +168,11 @@ ObjectItem* WorkspaceScene::findItem(const QPointF &pos)
 void WorkspaceScene::showDataQueue(DataQueue* queue, const QPointF &pos)
 {
 	// TODO: correct implementation - currently Queue class is not implemented yet.
-	DataQueueItem* q = new DataQueueItem(queue);
+	QueueItem* q = new QueueItem(queue);
+//	connect(queue, SIGNAL(statusChanged()), q, SLOT(updateItem()));
+
 	q->setSharedRenderer(queue_renderer);
-	q->initText(queue->name());
+	q->initText();
 	q->setDefaultSize();
 	q->setPos(pos);
 

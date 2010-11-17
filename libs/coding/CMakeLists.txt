@@ -1,13 +1,9 @@
 SET (HEADERS
-    KVFileSaver.h
-    KVWriterToBuffer.h
     coding.h
-    BufferSinkInterface.h
+
 )
 
 SET (SOURCES
-    KVFileSaver.cpp
-    KVWriterToBuffer.cpp
     coding.cpp
 )
 

@@ -93,7 +93,7 @@ namespace ss
 		// Increase the number of used memory buffers
 		num_buffers++;
 		
-		Buffer *b = new Buffer( (char*) malloc(size) , size );
+		Buffer *b = new Buffer( size );
 
 		lock.unlock();
 		return b;
@@ -130,7 +130,7 @@ namespace ss
 			if( getMemoryUsage() < max_usage_memory )
 			{
 				used_memory += size;				// Keep counter of the used memory
-				tmp = new Buffer( (char*) malloc(size) , size );
+				tmp = new Buffer( size );
 				lock.unlock();
 				return tmp;
 			}

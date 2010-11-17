@@ -8,7 +8,7 @@
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paEnvVals.h"          /* paEnvName                                 */
 #include "paBuiltin.h"          /* Own interface                             */
-
+#include <cstdlib>				/* C++ free(.)								 */
 
 
 /* ****************************************************************************

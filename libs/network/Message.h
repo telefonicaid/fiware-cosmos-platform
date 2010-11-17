@@ -36,16 +36,19 @@ typedef enum MessageCode
 	WorkerVector					= CODE('W', 'V', 'c', ' '),
 	WorkerStatus					= CODE('W', 'S', 't', ' '),
 	WorkerTask						= CODE('W', 'T', 'a', ' '),
+	WorkerDataExchange				= CODE('D', 'a', 't', ' '),
+	WorkerTaskFinish				= CODE('D', 'T', 'f', ' '),
+	WorkerTaskConfirmation			= CODE('W', 'T', 'C', ' '),
 	Command							= CODE('C', 'o', 'm', ' '),
 	CommandResponse					= CODE('C', 'R', 'e', ' '),
 	Help							= CODE('H', 'e', 'p', ' '),
 	HelpResponse					= CODE('H', 'R', 'e', ' '),
+	StatusRequest					= CODE('S', 'r', 'q', ' '),
+	StatusResponse					= CODE('S', 'r', 's', ' '),
 	LoadData						= CODE('L', 'D', 'a', ' '),
 	LoadDataResponse				= CODE('L', 'D', 'R', ' '),
 	LoadDataConfirmation			= CODE('L', 'C', 'o', ' '),
 	LoadDataConfirmationResponse	= CODE('L', 'C', 'R', ' '),
-	WorkerTaskConfirmation			= CODE('W', 'T', 'C', ' '),
-	WorkerDataExchange				= CODE('D', 'a', 't', ' '),
 	Die								= CODE('D', 'i', 'e', ' ')
 } MessageCode;
 

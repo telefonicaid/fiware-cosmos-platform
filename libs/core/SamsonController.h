@@ -80,7 +80,7 @@ namespace ss {
 		void sendWorkerTask( int  workerIdentifier , size_t task_id , ControllerTask *task );
 		
 		//Internal functions to get help
-		std::string getStatus();
+		std::string getStatus(std::string command);
 		
 		
 	};

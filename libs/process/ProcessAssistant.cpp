@@ -25,9 +25,12 @@
 #include "SamsonWorker.h"          // SamsonWorker
 #include "Process.h"               // Process
 #include "ProcessAssistant.h"      // Own interface
+#include "SamsonWorker.h"			// ss::SamsonWorker
+
 
 
 extern int logFd;
+
 
 namespace ss {
 

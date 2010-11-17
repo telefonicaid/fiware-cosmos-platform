@@ -179,6 +179,12 @@ namespace ss {
 			return error_line;
 		}
 		
+		
+		std::string getStatus()
+		{
+			return "No status at the moment";
+		}
+		
 	private:
 		
 		void setError( std::string txt );

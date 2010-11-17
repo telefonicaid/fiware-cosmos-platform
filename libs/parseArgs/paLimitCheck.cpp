@@ -16,6 +16,7 @@
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paFrom.h"             /* paFrom                                    */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
+#include <cstdlib>				/* C++ free(.)								 */
 
 
 

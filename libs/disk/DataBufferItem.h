@@ -11,6 +11,7 @@
 #include "MemoryManager.h"	// ss::MemoryManager
 #include "DiskManagerDelegate.h"	// ss::DiskManagerDelegate
 #include <set>						// std::set
+#include "samson.pb.h"				// ss::network::...
 
 namespace ss {
 	
@@ -23,16 +24,17 @@ namespace ss {
 	
 	class DataBufferItem : public au::map<std::string , BufferVector > , public DiskManagerDelegate
 	{
-		DataBufferItemDelegate *delegate;	// Delegate to sent notifications
 		size_t task_id;						// Identifier of the task
 		bool finished;						// Flag to indicate that eerything has finished ( necessary to sent the finisghDataBufferTask to delegate )
 		
 		std::set<size_t> ids_files;			// Collection of ids of "save file" operations pendigng to be confirmed
 		au::Lock lock;						// Lock to protect ids_files
 		
+		std::vector<network::File> files;	// Created files to be notified to the controller
+		
 	public:
 		
-		DataBufferItem( size_t _task_id , DataBufferItemDelegate * _delegate , std::vector<std::string> queues );
+		DataBufferItem( size_t _task_id );
 		
 		void addBuffer( std::string queue , Buffer *buffer );
 		void finish();

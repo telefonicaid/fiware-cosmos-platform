@@ -35,7 +35,8 @@ namespace ss {
 		friend class WorkerTaskManager;
 		friend class LoadDataManager;
 		friend class ProcessAssistant;
-
+		friend class ProcessWriter;
+		
 	public:
 		SamsonWorker(char* controller, char* alias, unsigned short port, int workers, int endpoints);
 
@@ -77,6 +78,9 @@ namespace ss {
 		private:
 		virtual void notificationSent(size_t id, bool success) {}
 		
+		
+		//Internal functions to get help
+		std::string getStatus(std::string command);
 		
 	};
 }

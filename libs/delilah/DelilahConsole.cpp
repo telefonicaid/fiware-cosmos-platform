@@ -23,7 +23,9 @@ namespace ss
 	void DelilahConsole::evalCommand( std::string command )
 	{
 		au::CommandLine commandLine;
+		commandLine.set_flag_string("name", "no_name");
 		commandLine.parse( command );
+
 		
 		if( commandLine.get_num_arguments() == 0)
 			return;	// no command
@@ -32,104 +34,120 @@ namespace ss
 		std::string mainCommand = commandLine.get_argument(0);
 		
 		if( mainCommand == "quit" )
-			dalilah->quit();
-		else
 		{
-			if ( mainCommand == "help" )
-			{
-				if( commandLine.get_num_arguments() < 2)
-				{
-					// Ask for all help
-					Packet p;
-					network::Help *help = p.message.mutable_help();
-					help->set_queues(true);
-					help->set_datas(true);
-					help->set_operations(true);
-					dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
-					return;	
-				}
-				
-				std::string secondCommand = commandLine.get_argument(1);
-				
-				if( secondCommand == "queues" )
-				{
-					// Ask for queues
-					Packet p;
-					network::Help *help = p.message.mutable_help();
-					help->set_queues(true);
-					help->set_datas(false);
-					help->set_operations(false);
-					dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
-					return;
-				}
-				else if( secondCommand == "datas" )
-				{
-					// Ask for datas
-					Packet p;
-					network::Help *help = p.message.mutable_help();
-					help->set_queues(false);
-					help->set_datas(true);
-					help->set_operations(false);
-					dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
-					return;
-				}
-				else if( secondCommand == "operations" )
-				{
-					// Ask for operations
-					Packet p;
-					network::Help *help = p.message.mutable_help();
-					help->set_queues(false);
-					help->set_datas(false);
-					help->set_operations(true);
-					dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
-					return;
-				}
-				
-				writeErrorOnConsole("Please, help [queues] [datas] [operations]");
-				return;
-				
-				
-			}
-			
-			
-			
-			
-			if( mainCommand == "load" )
-			{
-				if( commandLine.get_num_arguments() < 3)
-				{
-					writeErrorOnConsole("Usage: load file <file2> .... <fileN> queue");
-					return;
-				}
-				
-				std::vector<std::string> fileNames;
-				for (int i = 1 ; i < (commandLine.get_num_arguments()-1) ; i++)
-					fileNames.push_back( commandLine.get_argument(i) );
-				
-				std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
-				
-				size_t id = dalilah->loadData(fileNames, queue);
-				
-				std::ostringstream o;
-				o << "Load data process (id="<<id<<") started with " << fileNames.size() << " files\n";
-				writeWarningOnConsole(o.str());
-				return;
-			}
-			
-			// Normal command send to the controller
-			Packet p;
-			network::Command *c = p.message.mutable_command();
-			c->set_command( command );
-			c->set_sender_id( id++ );
-			dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Command, &p);
+			dalilah->quit();
+			return;
+		}
 
+		if( mainCommand == "status" )
+		{
+			// Sent a status request to all the elements
+			Packet p;
+			p.message.mutable_status_request()->set_command( command );
+			dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::StatusRequest, &p);
+
+			for (int i = 0 ; i < dalilah->network->getNumWorkers() ; i++)
+				dalilah->network->send(dalilah, dalilah->network->workerGetIdentifier(i), Message::StatusRequest, &p);
+				
 			
-			std::ostringstream o;
-			o << "Sent command to controller (id="<<id-1<<") : " << command;
-			writeWarningOnConsole(o.str());
+			return;
+		}
+		
+		if ( mainCommand == "help" )
+		{
+			
+			// Ask for all help
+			Packet p;
+			network::Help *help = p.message.mutable_help();
+
+			if( commandLine.get_flag_string("name") != "no_name")
+				help->set_name( commandLine.get_flag_string("name") );
+			
+			
+			if( commandLine.get_num_arguments() < 2)
+			{
+				help->set_queues(true);
+				help->set_datas(true);
+				help->set_operations(true);
+				
+				
+				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
+				return;	
+			}
+			
+			std::string secondCommand = commandLine.get_argument(1);
+			
+			if( secondCommand == "queues" )
+			{
+				// Ask for queues
+				help->set_queues(true);
+				help->set_datas(false);
+				help->set_operations(false);
+				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
+				return;
+			}
+			else if( secondCommand == "datas" )
+			{
+				// Ask for datas
+				help->set_queues(false);
+				help->set_datas(true);
+				help->set_operations(false);
+				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
+				return;
+			}
+			else if( secondCommand == "operations" )
+			{
+				// Ask for operations
+				help->set_queues(false);
+				help->set_datas(false);
+				help->set_operations(true);
+				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
+				return;
+			}
+			
+			writeErrorOnConsole("Please, help [queues] [datas] [operations]");
+			return;
 			
 			
 		}
+		
+		
+		
+		
+		if( mainCommand == "load" )
+		{
+			if( commandLine.get_num_arguments() < 3)
+			{
+				writeErrorOnConsole("Usage: load file <file2> .... <fileN> queue");
+				return;
+			}
+			
+			std::vector<std::string> fileNames;
+			for (int i = 1 ; i < (commandLine.get_num_arguments()-1) ; i++)
+				fileNames.push_back( commandLine.get_argument(i) );
+			
+			std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
+			
+			size_t id = dalilah->loadData(fileNames, queue);
+			
+			std::ostringstream o;
+			o << "Load data process (id="<<id<<") started with " << fileNames.size() << " files\n";
+			writeWarningOnConsole(o.str());
+			return;
+		}
+		
+		// Normal command send to the controller
+		Packet p;
+		network::Command *c = p.message.mutable_command();
+		c->set_command( command );
+		c->set_sender_id( id++ );
+		dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Command, &p);
+
+		
+		std::ostringstream o;
+		o << "Sent command to controller (id="<<id-1<<") : " << command;
+		writeWarningOnConsole(o.str());
+		
 	}
 	
 	int DelilahConsole::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
@@ -137,8 +155,23 @@ namespace ss
 		std::ostringstream  txt;
 		bool                error = false;
 		
-		switch (msgCode)
-		{
+
+		switch (msgCode) {
+
+			case Message::StatusResponse:
+			{
+				// Get some information form the packet
+				std::string message = packet->message.status_response().response();
+
+				// Prepare what to show on screen
+				txt << "----------------------------------------------------------------" << std::endl;
+				txt << "STATUS " << std::endl;
+				txt << "----------------------------------------------------------------" << std::endl;
+				txt << message << std::endl;
+				txt << "----------------------------------------------------------------" << std::endl;
+			}
+				break;				
+				
 			case Message::CommandResponse:
 			{
 				// Get some information from the packet

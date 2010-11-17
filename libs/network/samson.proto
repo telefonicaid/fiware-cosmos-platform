@@ -63,6 +63,22 @@ message Data
 
 // ////////////////////////////////////////////////////////////////////////////
 //
+// Status message request ans answer to interact between delilah and controller/workers
+//
+
+message StatusRequest
+{
+	required string command = 1;	// Some string to clarify the status request
+}
+
+message StatusResponse
+{
+	required string title = 1;	// Title of the status ( Controller / Wroker X / Delailah )
+	required string response = 2;	// content of the status to visualize on screen
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
 // Message with a task from the controller workers
 //
 
@@ -124,6 +140,9 @@ message Help
 	required bool queues = 1;
 	required bool datas = 2;
 	required bool operations = 3;
+
+	// Filters for the operations
+	optional string name = 4;	// Optinal parameter to specify the name of the queue/data/operation I would like to be informed
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -221,5 +240,9 @@ message Message
 
 	optional LoadDataConfirmation   load_data_confirmation	  = 112;  // Confirmation of a load data process ( Delilah to Controller)
 	optional LoadDataConfirmationResponse load_data_confirmation_response = 113; 	  // Reponse of the previous message
+
+	optional StatusRequest status_request = 114; 				      // request for status ( debuggin )
+	optional StatusResponse status_response = 115;				      // response of a status request
+	
 
 }

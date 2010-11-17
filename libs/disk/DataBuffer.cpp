@@ -12,21 +12,21 @@ namespace ss {
 #pragma mark Use Buffer to get information
 	
 	
-	hg_info BufferGetTotalInfo( Buffer *b )
+	FileKVInfo BufferGetTotalInfo( Buffer *b )
 	{
-		return *((hg_info*)b->getData());
+		return *((FileKVInfo*)b->getData());
 	}
 
-	hg_info BufferGetInfo( Buffer *b , ss_hg hg )
+	NetworkKVInfo BufferGetInfo( Buffer *b , ss_hg hg )
 	{
-		hg_info *tmp = (hg_info*) b->getData();
+		NetworkKVInfo *tmp = (NetworkKVInfo*) b->getData();
 		return tmp[hg+1];
 	}
 	
 	std::string BufferToString( Buffer *b )
 	{
 		std::ostringstream info;
-		ss::hg_info * _info = (ss::hg_info*) b->getData(); 
+		NetworkKVInfo * _info = (ss::NetworkKVInfo*) b->getData(); 
 		info << "Buffer with " << au::Format::string(_info[0].kvs) << " kvs in " << au::Format::string(_info[0].size) << "bytes (";
 		/*
 		for (int i = 0 ; i < 20 ; i++ )
@@ -35,41 +35,17 @@ namespace ss {
 		return info.str();
 	}
 	
-	
-	
-	
-	void DataBuffer::newTask( size_t task_id , DataBufferItemDelegate* delegate , std::vector<std::string> queues )
-	{
-		
-		lock.lock();
-		
-		DataBufferItem *tdb = extractFromMap( task_id );
-		
-		if ( tdb )
-		{
-			// No idea what to do if the same task existed before
-			assert( false );
-		}
-		
-		tdb =  new DataBufferItem( task_id , delegate, queues );
-		insertInMap( task_id , tdb );
-
-		lock.unlock();
-		
-	}
-	
 	void DataBuffer::addBuffer( size_t task_id , std::string queue , Buffer* buffer )
 	{
 		lock.lock();
-		
 		
 		DataBufferItem *tdb = findInMap( task_id );
 		
 		if (!tdb )
 		{
-			// Task not notified with newTask... remove the buffer
-			MemoryManager::shared()->destroyBuffer( buffer );
-			return ;
+			// Create a new item
+			tdb =  new DataBufferItem( task_id );
+			insertInMap( task_id , tdb );
 		}
 		
 		tdb->addBuffer( queue , buffer );

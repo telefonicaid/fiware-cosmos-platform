@@ -457,7 +457,7 @@ namespace ss
 	
 	
 	// Fill help responses
-	void ModulesManager::helpOperations( network::HelpResponse *response )
+	void ModulesManager::helpOperations( network::HelpResponse *response, network::Help help  )
 	{
 		lock.lock();
 		
@@ -468,23 +468,27 @@ namespace ss
 			{
 				Operation * op = j->second;
 				
-				network::Operation *o = response->add_operation();
 				
 				// Fill the information of this operation
 				std::string fullName =  module->name + "." + op->getName() ;
-				o->set_name( fullName );
+
+				if( !help.has_name() || fullName == help.name() )
+				{
 				
-				o->set_help( op->help() );
-				
-				// Format
-				std::vector<KVFormat> input_formats = op->getInputFormats();
-				std::vector<KVFormat> output_formats = op->getOutputFormats();
-				
-				for (size_t i = 0 ; i < input_formats.size() ; i++)
-					fillKVFormat( o->add_input() , input_formats[i] );
-				
-				for (size_t i = 0 ; i < output_formats.size() ; i++)
-					fillKVFormat( o->add_output() , output_formats[i] );
+					network::Operation *o = response->add_operation();
+					o->set_name( fullName );
+					o->set_help( op->help() );
+					
+					// Format
+					std::vector<KVFormat> input_formats = op->getInputFormats();
+					std::vector<KVFormat> output_formats = op->getOutputFormats();
+					
+					for (size_t i = 0 ; i < input_formats.size() ; i++)
+						fillKVFormat( o->add_input() , input_formats[i] );
+					
+					for (size_t i = 0 ; i < output_formats.size() ; i++)
+						fillKVFormat( o->add_output() , output_formats[i] );
+				}
 				
 			}
 		}
@@ -492,7 +496,7 @@ namespace ss
 		lock.unlock();
 	}
 	
-	void ModulesManager::helpDatas( network::HelpResponse *response )
+	void ModulesManager::helpDatas( network::HelpResponse *response , network::Help help  )
 	{
 		lock.lock();
 		
@@ -501,15 +505,15 @@ namespace ss
 			Module *module = i->second;
 			for (std::map<std::string , Data*>::iterator j = module->datas.begin() ; j != module->datas.end() ; j++ )
 			{
-				Data * data = j->second;
 				
-				network::Data *d = response->add_data();
-				
-				// Fill the information of this operation
-				std::string fullName =  module->name + "." + data->getName() ;
-				d->set_name( fullName );
-
-				d->set_help( data->help() );
+				if( !help.has_name() || i->first == help.name() )
+				{
+					Data * data = j->second;
+					network::Data *d = response->add_data();
+					std::string fullName =  module->name + "." + data->getName() ;
+					d->set_name( fullName );
+					d->set_help( data->help() );
+				}
 				
 			}
 		}

@@ -79,7 +79,7 @@ namespace ss {
 		Buffer *newBuffer( size_t size );
 
 		/**
-		 Interface to desply a buffer of memory
+		 Interface to destroy a buffer of memory
 		 */
 		void destroyBuffer( Buffer *b );
 
@@ -120,6 +120,16 @@ namespace ss {
 			o << "Used memory: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)"<< std::endl;
 			o << "Number of buffers in action " << num_buffers << std::endl;
 			
+			return o.str();
+		}
+		
+		std::string getStatus()
+		{
+			int per_memory = (int) getMemoryUsage()*100;
+			
+			std::ostringstream o;
+			o << "Used: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)";
+			o << " #Buffers " << num_buffers;
 			return o.str();
 		}
 		

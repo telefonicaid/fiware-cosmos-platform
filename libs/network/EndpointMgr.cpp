@@ -792,10 +792,13 @@ void EndpointMgr::msgTreat(int rFd, char* name)
 		break;
 
 	case Message::WorkerTask:
+	case Message::WorkerTaskFinish:
 	case Message::Command:
 	case Message::CommandResponse:
 	case Message::Help:
 	case Message::HelpResponse:
+	case Message::StatusRequest:
+	case Message::StatusResponse:
 	case Message::LoadData:
 	case Message::LoadDataResponse:
 	case Message::LoadDataConfirmation:

@@ -1,16 +1,16 @@
 SET (SOURCES
 AUTockenizer.cpp
-DataContainer.cpp
 DataCreator.cpp
 DataType.cpp
+DataContainer.cpp
 ModuleContainer.cpp
 OperationContainer.cpp
 samson_module.cpp
 )
 
 SET (HEADERS
-AUTockenizer.h
 DataContainer.h
+AUTockenizer.h
 DataCreator.h
 DataType.h
 ModuleContainer.h

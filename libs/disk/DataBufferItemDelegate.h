@@ -15,9 +15,14 @@ namespace ss {
 	
 	class DataBufferItemDelegate
 	{
+		/*
 	public:
-		virtual void addFile( size_t task_id , std::string fileName , std::string queue , hg_info info)=0;	// callback to notify that a new file is created for a queue for this process
-		virtual void finishDataBufferTask( size_t task_id )=0;								// callback to notify that all the files are on disk now
+		virtual void addFile( size_t task_id , std::string fileName , std::string queue , FileKVInfo info)=0;	
+		// callback to notify that a new file is created for a queue for this process
+		
+		virtual void finishDataBufferTask( size_t task_id )=0;								
+		// callback to notify that all the files are on disk now
+		 */
 	};		
 	
 }

@@ -222,47 +222,58 @@ namespace ss {
 		return fileName.str();
 	}
 	
-	std::string ControllerDataManager::status()
+	std::string ControllerDataManager::getStatus()
 	{
 		std::ostringstream o;
-		o << "Data Manager:" << std::endl;
 		lock.lock();
+		
 		for ( au::map< std::string , ControllerQueue>::iterator q = queues.begin() ; q != queues.end() ; q++)
 			o << q->first << " " << q->second->str() << std::endl;
+		
 		lock.unlock();
 		
 		return o.str();
 		
 	}		
 	
-	void ControllerDataManager::helpQueues( network::HelpResponse *response )
+	void ControllerDataManager::helpQueues( network::HelpResponse *response , network::Help help )
 	{
 		lock.lock();
-		
 		std::map< std::string , ControllerQueue*>::iterator i;
 		for (i = queues.begin() ; i!= queues.end() ;i++)
 		{
 			//o << i->first << i->second->str() << "\n";
+
 			
-			ControllerQueue *queue = i->second;
-			network::Queue *q = response->add_queue();
-			q->set_name( i->first );
+			if( !help.has_name() || i->first == help.name() )
+			{
+				
+				ControllerQueue *queue = i->second;
+				network::Queue *q = response->add_queue();
+				q->set_name( i->first );
+				
+				// Format
+				fillKVFormat( q->mutable_format() , queue->format() );
+				
+				//Info
+				fillKVInfo( q->mutable_info(), queue->info() );
+				
+			}
 			
-			// Format
-			fillKVFormat( q->mutable_format() , queue->format() );
 			
-			//Info
-			fillKVInfo( q->mutable_info(), queue->info() );
 		}
 	
 		std::map< std::string , DataQueue*>::iterator ii;
 		for (ii = data_queues.begin() ; ii!= data_queues.end() ;ii++)
 		{
-			
 			DataQueue *queue = ii->second;
-			network::DataQueue *q = response->add_data_queue();
-			q->set_name( queue->getName() );
-			q->set_size( queue->getSize() );	
+			
+			if( !help.has_name() || queue->getName() == help.name() )
+			{
+				network::DataQueue *q = response->add_data_queue();
+				q->set_name( queue->getName() );
+				q->set_size( queue->getSize() );	
+			}
 		}		
 		
 		lock.unlock();

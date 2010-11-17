@@ -18,7 +18,7 @@ namespace ss {
 	void BufferVector::addBuffer( Buffer *b )
 	{
 		// Update the total ( size and number of kvs )
-		hg_info * _info = (( hg_info *) b->getData());
+		NetworkKVInfo * _info = (( NetworkKVInfo *) b->getData());
 		
 		// Increase total information for this file
 		info.kvs += _info->kvs;

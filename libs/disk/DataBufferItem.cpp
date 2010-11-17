@@ -10,16 +10,12 @@
 
 namespace ss {
 	
-	DataBufferItem::DataBufferItem( size_t _task_id , DataBufferItemDelegate * _delegate , std::vector<std::string> queues )
+	DataBufferItem::DataBufferItem( size_t _task_id )
 	{
 		task_id = _task_id;
-		delegate = _delegate;
 		
 		finished = false;	// Flag
 		
-		// Create a vector of Buffers for each queue
-		for ( size_t i = 0 ; i < queues.size() ;i++)
-			insertInMap( queues[i] , new BufferVector() );
 		
 	}	
 	
@@ -29,9 +25,8 @@ namespace ss {
 		
 		if( !bv )
 		{
-			// Some error
-			MemoryManager::shared()->destroyBuffer( buffer );
-			return ;
+			bv = new BufferVector();
+			insertInMap( queue , bv  );
 		}
 		
 		if( buffer->getSize() + bv->getSize() > KV_MAX_FILE_SIZE )
@@ -67,8 +62,8 @@ namespace ss {
 		
 		if( ids_files.size() == 0)
 		{
-			// Notify the delegate it's over
-			delegate->finishDataBufferTask(task_id);
+			// Notify controller that all files are saved to disk
+			// TODO: Pending stuff
 			
 		}
 		
@@ -76,8 +71,10 @@ namespace ss {
 	
 	void DataBufferItem::saveBufferToDisk( Buffer* b , std::string fileName , std::string queue )
 	{
-		// Notify the delegate about this new file
-		delegate->addFile( task_id, fileName , queue , BufferGetTotalInfo(b) );
+		// Store this file to be notified latter to the controller
+		network::File f;
+		f.set_name( fileName );
+		files.push_back( f );
 		
 		size_t id = FileManager::shared()->write( b , fileName, this );
 		
@@ -95,7 +92,7 @@ namespace ss {
 		
 		if( ids_files.size() == 0 && finished )
 		{
-			delegate->finishDataBufferTask(task_id);
+			// TODO: Do something with this
 		}
 		lock.unlock();
 		

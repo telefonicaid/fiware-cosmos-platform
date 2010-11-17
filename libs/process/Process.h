@@ -1,7 +1,7 @@
 #ifndef _H_PROCESS
 #define _H_PROCESS
 
-
+#import "ModulesManager.h"		//ss::ModuleManager
 
 namespace ss {
 
@@ -28,6 +28,9 @@ public:
 	Process(int rFd, int wFd);
 	void     run(void);
 
+	
+	ModulesManager modulesManager;
+	
 private:
 	void     runCommand(const char* command);
 	char*    passCommand(const char* command);

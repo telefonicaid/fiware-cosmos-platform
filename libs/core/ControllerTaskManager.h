@@ -56,7 +56,7 @@ namespace ss {
 		 Get status information about tasks
 		 */
 		
-		std::string status();
+		std::string getStatus();
 		
 		
 	private:

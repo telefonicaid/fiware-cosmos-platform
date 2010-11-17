@@ -20,8 +20,8 @@ namespace ss {
 	
 	class BufferVector
 	{
-		// Total info about the number of kvs and size
-		hg_info info;	
+		// Total info about the number of kvs and size to write in a file
+		FileKVInfo info;	
 		
 		//Vector of buffers
 		std::vector<Buffer*> buffer;

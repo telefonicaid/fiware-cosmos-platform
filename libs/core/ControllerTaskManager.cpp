@@ -55,7 +55,6 @@ namespace ss
 				t = task.extractFromMap( task_id );
 				delete t;
 				
-				
 			}
 		}
 		lock.unlock();
@@ -63,10 +62,9 @@ namespace ss
 	
 	
 	
-	std::string ControllerTaskManager::status()
+	std::string ControllerTaskManager::getStatus()
 	{
 		std::stringstream o;
-		o << "Task Manager:" << std::endl;
 		std::map< size_t , ControllerTask*>::iterator t;
 		for (t = task.begin() ; t != task.end() ; t++)
 			o << t->second->str() << std::endl;

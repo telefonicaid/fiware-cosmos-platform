@@ -8,6 +8,8 @@ Module example
 
 data example
 {
+	file Datas.h	
+
 	system.UInt a;
 	vector system.UInt b;
 	system.Int32 c;

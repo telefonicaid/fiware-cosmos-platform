@@ -49,6 +49,9 @@ private:
 	
 	void         coreWorkerStart(char* fatherName, int* rFdP, int* wFdP);
 
+	
+	friend class ProcessWriter;
+	
 public:
 	void         run(void);
 	char*        runCommand(int rFd, int wFd, char* command, int timeOut);

@@ -8,6 +8,7 @@
 #include "paBuiltin.h"          /* paBuiltin, paBuiltinNoOf                  */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paIsOption.h"         /* Own interface                             */
+#include <cstdlib>				/* C++ free(.)								 */
 
 
 

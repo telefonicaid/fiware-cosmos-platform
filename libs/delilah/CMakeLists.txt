@@ -39,7 +39,7 @@ IF(QT4_FOUND)
 		gui/CreateTXTQueueDlg.h
 		Queue.h
 		Operation.h
-		DataType.h
+//		DataType.h
 		Process.h
 		items/ObjectItem.h
 		items/QueueItem.h

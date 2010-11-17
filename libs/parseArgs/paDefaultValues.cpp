@@ -20,6 +20,7 @@
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paDefaultValues.h"    /* Own interface                             */
+#include <cstdlib>				/* C++ free(.)								 */
 
 
 

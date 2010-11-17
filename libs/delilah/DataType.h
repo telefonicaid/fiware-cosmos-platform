@@ -13,8 +13,8 @@
 class DataType
 {
 public:
-	DataType();
-	~DataType();
+  DataType(){}
+  ~DataType(){};
 };
 
 #endif /* DATATYPE_H_ */

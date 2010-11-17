@@ -1,11 +1,13 @@
 SET (HEADERS
     ProcessAssistant.h
     Process.h
+    ProcessWriter.h
 )
 
 SET (SOURCES
     ProcessAssistant.cpp
     Process.cpp
+    ProcessWriter.cpp
 )
 
 SET (STATIC_LIBS

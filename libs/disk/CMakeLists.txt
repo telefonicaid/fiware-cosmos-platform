@@ -48,6 +48,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
+include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 

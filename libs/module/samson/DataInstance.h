@@ -321,6 +321,11 @@ namespace system {
 			return abs(value)%max_num_partitions;
 		}
 		
+		void operator= (int _value) {
+			value = _value;
+		}			
+		
+		
 	};
 
 	class Int16 : public FixedLengthDataInstance<short>

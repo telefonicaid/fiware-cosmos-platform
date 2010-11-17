@@ -129,6 +129,19 @@ void SamsonWorker::sendWorkerStatus()
 
 int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 {
+	
+	if (msgCode == Message::StatusRequest)
+	{
+		Packet p;
+		network::StatusResponse *response = p.message.mutable_status_response();
+		response->set_title( "Worker " + network->getWorkerFromIdentifier( network->getMyidentifier() ) );
+		response->set_response( getStatus( packet->message.status_request().command() ) );
+		network->send(this, fromId, Message::StatusResponse, &p);
+		return 0;
+		
+	}
+
+	
 	if (msgCode == Message::WorkerTask)
 	{
 		// A packet with a particular command is received (controller expect to send a confirmation message)
@@ -147,7 +160,7 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		fileName << "/tmp/file_" << rand() << rand();	// Just to test
 		
 		loadDataManager.addFile( packet->buffer , fileName.str() , fromId , packet->message.load_data().process_id() , packet->message.load_data().file_id() );
-		
+		return 0;
 	}
 	
 	
@@ -172,6 +185,14 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		return 0;
 	}
 
+	std::string SamsonWorker::getStatus(std::string command)
+	{
+		std::ostringstream output;
+		output << "Status of a worker\n";
+		output << "Memory: " << MemoryManager::shared()->getStatus() << std::endl;
+		return output.str();
+		
+	}
 
 
 }

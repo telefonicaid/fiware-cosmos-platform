@@ -38,13 +38,17 @@ namespace ss {
 		// Private constructor/destructors since it can be only access by MemoryManager
 		friend class MemoryManager;
 		
-		Buffer( char *data ,  size_t max_size )
+		Buffer( size_t max_size )
 		{
-			_data = data;
 			_max_size = max_size;
-
-			_size = 0;
 			_offset = 0;
+
+			if( max_size > 0)
+				_data = (char *) malloc(max_size);
+			else
+				_data = NULL;
+			
+			_size = 0;
 		}
 		
 		~Buffer()
@@ -55,7 +59,10 @@ namespace ss {
 		void free()
 		{
 			if( _data )
+			{
 				::free( _data );
+				_data = NULL;
+			}
 			_max_size = 0;
 			_size = 0;
 			_offset = 0;
@@ -79,6 +86,19 @@ namespace ss {
 			
 			return true;
 		}
+		
+		
+		bool skip( size_t size )
+		{
+			if( _size + size <= _max_size)
+			{
+				_size += size;
+				return true;
+			}
+			else
+				return false;
+		}
+							   
 		
 		/**
 		 Write on the buffer the maximum possible ammount of data
@@ -152,12 +172,15 @@ namespace ss {
 			return _size;
 		}
 		
-		void setSize( size_t size)
+		void setSize( size_t size )
 		{
-			if( size < _max_size )	// Check it is a valid size
+			if (( size >= 0) && (size <= _max_size))
 				_size = size;
 		}
 		
+		
+		
+
 	};
 
 }

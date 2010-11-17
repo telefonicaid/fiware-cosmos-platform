@@ -44,6 +44,8 @@ namespace ss {
 		
 		// Notification from the taskManager that a task has finished
 		void notifyFinishTask( size_t job_id , size_t task_id , std::vector<network::WorkerTaskConfirmation> &confirmationMessages );		
+	
+		std::string getStatus();
 		
 	private:
 		

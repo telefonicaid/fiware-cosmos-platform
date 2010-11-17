@@ -15,9 +15,10 @@
 namespace ss {
 
 	// Static function to work with Buffers
+	
 	std::string BufferToString( Buffer *b );
-	hg_info BufferGetTotalInfo( Buffer *b );
-	hg_info BufferGetInfo( Buffer *b , ss_hg hg );
+	FileKVInfo BufferGetTotalInfo( Buffer *b );
+	NetworkKVInfo BufferGetInfo( Buffer *b , ss_hg hg );
 	
 	class Buffer;
 	class DataBufferItem;
@@ -34,12 +35,6 @@ namespace ss {
 		au::Lock lock;	// mutex to protect multiple thread access
 
 	public:
-		
-		/**
-		 Inform that a partiruclar task ( id ) will send key-values to a particular queue
-		 */
-				
-		void newTask( size_t task_id , DataBufferItemDelegate* delegate , std::vector<std::string> queues );
 		
 		/**
 		 New packet from the network interface

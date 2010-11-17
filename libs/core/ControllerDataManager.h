@@ -74,7 +74,7 @@ namespace ss {
 		 Usefull for debuggin
 		 */
 		
-		std::string status();
+		std::string getStatus();
 
 		/**
 		 Get the fileName of the log file
@@ -84,7 +84,7 @@ namespace ss {
 
 		
 		// Get help about data stuff
-		void helpQueues( network::HelpResponse *response );
+		void helpQueues( network::HelpResponse *response , network::Help help );
 			
 		
 	private:

@@ -4,23 +4,29 @@
 
 #include "ModulesManager.h"
 #include "samson/Data.h"
-#include "KVWriterToBuffer.h"
-#include "KVFileSaver.h"
 #include "coding.h"
 #include <vector>
 #include <map>
 #include <stdio.h>
 #include <sstream>
+#include "Process.h"				// ss::Process
+#include "ProcessWriter.h"			// ss::ProcessWriter
+#include "samson/DataInstance.h"	// ss::system::UInt
+#include "SamsonWorker.h"			// ss::SamsonWorker
+#include "ProcessAssistant.h"
 
-
-
+#include <samson/modules/example/Datas.h>
+#include <samson/modules/example/Module.h>
 
 /* ****************************************************************************
 *
 * logFd - file descriptor for log file used in all libraries
 */
-int logFd = -1;
 
+namespace ss
+{
+  int logFd = -1;
+}
 
 
 namespace ss {
@@ -303,10 +309,49 @@ namespace ss {
 
 }
 
+#define VECTOR_LENGTH(v) sizeof(v)/sizeof(v[0])
+
 
 int main( int argc , char *argv[] )
 {
 	/*
+	size_t size = 1024*1024*1024;
+	char *buffer = (char*) malloc( size );
+	
+	int num_outputs = 2;
+	int num_servers = 5;
+
+	const char* worker_argv[] = { "-controller" , "what_ever","-alias","what_ever_alias","-no_log"};	//Necessary arguments at worker to avoid errors
+	ss::SamsonWorker *w = new ss::SamsonWorker();
+	w->parseArgs(VECTOR_LENGTH(worker_argv), worker_argv);
+	
+	
+	ss::ProcessWriter *writer = new ss::ProcessWriter( buffer , size , num_outputs , num_servers);
+	
+	ss::system::UInt a;
+	ss::system::UInt b;
+
+	ss::example::example example;
+	
+	for (int i = 0 ; i < 10000000 ; i++)
+	{
+		a = rand()%100;
+
+		example.a = 5;
+		example.c = 23;
+		
+		example.bSetLength(0);
+		
+		(*example.bAdd())=4; 
+		(*example.bAdd())=4; 
+		
+		writer->emit( 0 , &a , &example );
+	}
+	
+	
+	
+	writer->FlushBuffer();
+	
 	std::cout << "Test\n";
 	
 	ss::ModulesManager mm;

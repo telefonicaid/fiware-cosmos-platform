@@ -79,8 +79,7 @@ namespace ss {
 	{
 	public:
 		network::Message message;		// Message with necessary fields ( codified with Google Protocol Buffers )
-
-		Buffer* buffer;
+		Buffer* buffer;					// Data for key-values
 		
 		Packet() 
 		{

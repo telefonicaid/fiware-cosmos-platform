@@ -8,6 +8,7 @@
 #include "paConfig.h"           /* paConfigActions                           */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paLogSetup.h"         /* Own interface                             */
+#include <cstdlib>				/* C++ free(.)								 */
 
 
 

@@ -12,6 +12,7 @@ SET (STATIC_LIBS
     samsonCodingStatic
     samsonMemoryStatic
     samsonNetworkStatic 
+    samsonProcessStatic
     samsonDiskStatic
     samsonDataStatic
     protobuf 
@@ -31,6 +32,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
+include_directories("${PROJECT_SOURCE_DIR}/libs/process")
 
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 

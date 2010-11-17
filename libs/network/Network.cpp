@@ -300,7 +300,7 @@ int Network::getWorkerFromIdentifier(int identifier)
 			continue;
 		if (endpoint[ix]->type != Endpoint::Worker)
 			continue;
-		if (strncmp(endpoint[ix]->name, "me:", 3) == 0)
+		if (strncmp(endpoint[ix]->name.c_str(), "me:", 3) == 0)
 			return ix - 3;
 	}
 

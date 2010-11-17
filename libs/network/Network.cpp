@@ -286,7 +286,25 @@ int Network::workerGetIdentifier(int nthWorker)
 */
 int Network::getWorkerFromIdentifier(int identifier)
 {
-	return identifier - 3;
+	int ix;
+
+	if (identifier >= Workers)
+		LM_RE(-1, ("invalid worker identifier '%d'  (only have %d workers)", identifier, Workers));
+
+	if (identifier != 0)
+		return identifier - 3;
+
+	for (ix = 3; ix < 3 + Workers; ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+		if (endpoint[ix]->type != Endpoint::Worker)
+			continue;
+		if (strncmp(endpoint[ix]->name, "me:", 3) == 0)
+			return ix - 3;
+	}
+
+	LM_RE(-1, ("worker with identifier %d not found", identifier));
 }
 
 

@@ -12,7 +12,6 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-
 	ui.setupUi(this);
 	tool_group = new QActionGroup(this);
 	tool_group->addAction(ui.actionSelect);
@@ -23,7 +22,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 	connect(tool_group, SIGNAL(triggered(QAction*)), this, SLOT(setToolForAction(QAction*)));
 
-	createNewWorkspace(QString("Workspace %1").arg(ui.tabWidget->count() + 1));
+	tab_id = 0;
+	createNewWorkspace();
 }
 
 MainWindow::~MainWindow()
@@ -32,9 +32,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::createNewWorkspace(QString name)
 {
+	// increase tab counter
+	tab_id++;
+
 	if (name.isEmpty())
 	{
-		name = QString("Workspace %1").arg(ui.tabWidget->count() + 1);
+		name = QString("Workspace %1").arg(tab_id);
 	}
 
 	Workspace* workspace = new Workspace(name);
@@ -47,41 +50,9 @@ void MainWindow::createNewWorkspace(QString name)
 	ui.tabWidget->addTab(view, name);
 }
 
-//void MainWindow::createTab(QString name)
-//{
-//	if (name.isEmpty())
-//	{
-//		name = QString("Workspace %1").arg(ui.tabWidget->count() + 1);
-//	}
-//
-//	Workspace* workspace = new Workspace();
-//
-//	WorkspaceScene* scene = new WorkspaceScene(this);
-//	WorkspaceView* view = new WorkspaceView(scene);
-//	view->setRenderHints(QPainter::Antialiasing);
-//	view->show();
-//
-//	connect(this, SIGNAL(toolChanged(int)), scene, SLOT(setTool(int)));
-//	connect(scene, SIGNAL(addQueueRequested(const QPointF &)), view, SLOT(selectQueueType(const QPointF &)));
-//	connect(view, SIGNAL(createQueueRequested(QueueType, const QPointF &, QString, QString, QString)),
-//			workspace, SLOT(createQueue(QueueType, const QPointF &, QString, QString, QString)));
-//
-//	ui.tabWidget->addTab(view, name);
-//
-//	// initiate tool
-//	setToolForAction(tool_group->checkedAction());
-//}
-
-
 void MainWindow::removeTab(int index)
 {
 	//TODO: check if process is running or scheduled. If yes, ask if cancel or stop before closing the tab.
-
-//	QWidget* tab = ui.tabWidget->widget(index);
-//	if (tab!=0)
-//	{
-//		delete tab;
-//	}
 
 	ui.tabWidget->removeTab(index);
 
@@ -105,9 +76,3 @@ void MainWindow::setToolForAction(QAction* action)
 	emit(toolChanged(current_tool));
 }
 
-
-
-//void MainWindow::setName(QString x, QString &name)
-//{
-//	std::cout << "test\n";
-//}

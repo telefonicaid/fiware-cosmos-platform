@@ -30,6 +30,7 @@ signals:
 private:
     Ui::MainWindowClass ui;
     QActionGroup* tool_group;
+    unsigned int tab_id;		// Counter of the tabs (used for creating tab's default name)
 };
 
 #endif // MAINWINDOW_H

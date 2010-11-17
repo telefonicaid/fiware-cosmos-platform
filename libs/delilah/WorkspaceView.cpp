@@ -13,7 +13,6 @@
 #include <QMessageBox>
 
 #include "WorkspaceView.h"
-//#include "Workspace.h"
 #include "WorkspaceScene.h"
 #include "DelilahQtApp.h"
 #include "CreateTXTQueueDlg.h"

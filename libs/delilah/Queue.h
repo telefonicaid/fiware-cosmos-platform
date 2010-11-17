@@ -41,8 +41,11 @@ public:
 	Status getStatus() const { return status; };
 	void setStatus(Status new_status)
 	{
-		status=new_status;
-		emit(statusChanged());
+		if (status!=new_status)
+		{
+			status=new_status;
+			emit(statusChanged());
+		}
 	};
 
 	QString getName() const { return name; };

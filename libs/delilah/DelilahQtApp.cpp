@@ -33,9 +33,35 @@ DelilahQtApp::DelilahQtApp(int &argc, char ** argv, ss::Delilah* _delilah)
 	uploadData(true, true, true);
 }
 
+/*
+ * Sends request to the network to get information about all objects (queues, operations, and data types)
+ * available on the server.
+ */
 void DelilahQtApp::uploadData(bool queues, bool operations, bool data_types, const QString &name)
 {
-	// Ask for all help
+	// set status of the objects (currently only queues) that are going to be uploaded
+	// to LOADING.
+	if (queues)
+	{
+		if (name.isEmpty())
+		{
+			for(int i=0; i< data_queues.size(); i++)
+				data_queues.at(i)->setStatus(Queue::LOADING);
+			for(int i=0; i< kv_queues.size(); i++)
+				kv_queues.at(i)->setStatus(Queue::LOADING);
+		}
+		else
+		{
+			DataQueue *data_queue = getDataQueue(name);
+			if (data_queue)
+				data_queue->setStatus(Queue::LOADING);
+			KVQueue *kv_queue = getKVQueue(name);
+			if (kv_queue)
+				kv_queue->setStatus(Queue::LOADING);
+		}
+	}
+
+	// Prepare packet to get information from network about requested type of objects
 	ss::Packet p;
 	ss::network::Help *help = p.message.mutable_help();
 	help->set_queues(queues);
@@ -69,24 +95,14 @@ int DelilahQtApp::sendCreateKVQueue(const QString &name, const QString &key_type
 
 /*
  * Called when packet with help response was received.
- * Packet can contains information about all (or only some of) objects: queues, data queues,
- * operations, and data types currently available in the system.
- * This information is extracted and appropriate lists are updated.
+ * Packet can contains information about KV queues, data queues, operations, and data types
+ * currently available in the system.
+ * This information is extracted from the packet and appropriate lists are updated.
+ *
+ * Example:
+ * help queue
  */
 int DelilahQtApp::receiveData(ss::Packet* packet)
-{
-	ss::network::HelpResponse resp = packet->message.help_response();
-
-//	if (resp.name().empty())
-//		// if the help command was send to get info about all objects, load new data
-//		return loadData(packet);
-//	else
-//		// otherwise update one item
-//		return updateData(packet);
-	return loadData(packet);
-}
-
-int DelilahQtApp::loadData(ss::Packet* packet)
 {
 	// TODO: remove!!!!!!!
 	std::cout << "Sleeping in receiveData" << std::endl;
@@ -96,22 +112,8 @@ int DelilahQtApp::loadData(ss::Packet* packet)
 
 	if( resp.queues() )
 	{
-		// TODO:
-
-		// Set all queues status to LOADING
-		for(int i=0; i< data_queues.size(); i++)
-			data_queues.at(i)->setStatus(Queue::LOADING);
-
-		for(int i=0; i< kv_queues.size(); i++)
-			kv_queues.at(i)->setStatus(Queue::LOADING);
-
-		// TODO: remove!!!!!!!
-		std::cout << "Sleeping after setting to LOADING" << std::endl;
-		sleep(5);
-
-
 		/*
-		 * Update all data queues
+		 * Update data queues
 		 */
 		for (int i=0 ; i<resp.data_queue_size(); i++)
 		{
@@ -128,12 +130,6 @@ int DelilahQtApp::loadData(ss::Packet* packet)
 			queue->upload(&q);
 			if (new_queue)
 				data_queues.append(queue);
-		}
-		// Set status of data queues that were not reloaded to DELETED
-		for (int i=0; i<data_queues.size(); i++)
-		{
-			if ( data_queues.at(i)->getStatus() == Queue::LOADING )
-				data_queues.at(i)->setStatus(Queue::DELETED);
 		}
 
 		/*
@@ -156,6 +152,16 @@ int DelilahQtApp::loadData(ss::Packet* packet)
 			if (new_queue)
 				kv_queues.append(queue);
 		}
+
+		// TODO: setting status to DELETED makes only sense if we know that
+		// the original request was for all queues - not only for queue with a given name.
+
+		// Set status of data queues that were not reloaded to DELETED
+		for (int i=0; i<data_queues.size(); i++)
+		{
+			if ( data_queues.at(i)->getStatus() == Queue::LOADING )
+				data_queues.at(i)->setStatus(Queue::DELETED);
+		}
 		// Set status of kv queues that were not reloaded to DELETED
 		for (int i=0; i<kv_queues.size(); i++)
 		{
@@ -171,12 +177,6 @@ int DelilahQtApp::loadData(ss::Packet* packet)
 	return 0;
 }
 
-int DelilahQtApp::updateData(ss::Packet* packet)
-{
-	ss::network::HelpResponse resp = packet->message.help_response();
-
-	return 0;
-}
 
 int DelilahQtApp::receiveCommandResponse(ss::Packet* packet)
 {

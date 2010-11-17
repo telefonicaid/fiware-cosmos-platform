@@ -41,14 +41,14 @@ public:
 	KVQueue* getKVQueue(const QString &name);
 
 	/*
-	 * Methods to send requests to the network
+	 * Methods sending requests to network
 	 */
-	void uploadData(bool queues=true, bool operations=false, bool data_types=false, const QString &name="");
+	void uploadData(bool queues=true, bool operations=true, bool data_types=true, const QString &name="");
 	int sendCreateDataQueue(const QString &name);
 	int sendCreateKVQueue(const QString &name, const QString &key_type, const QString &value_type);
 
 	/*
-	 * Methods to receive packets from network
+	 * Methods receiving packets from network
 	 */
 	int receiveData(ss::Packet* packet);
 	int receiveCommandResponse(ss::Packet* packet);
@@ -60,14 +60,10 @@ public slots:
 signals:
 	void gotCommandResponse(unsigned int id, bool finished, bool error, QString message);
 
-protected:
-	int loadData(ss::Packet* packet);
-	int updateData(ss::Packet* packet);
-
 public:
 	MainWindow* w;							// Main Window of application
 
-private:
+protected:
 	ss::Delilah* delilah;					// Pointer to the most upper class of SAMSON client application
 	unsigned int id;						// Counter of requests sent to the network
 											// (initialized with value set to 0).

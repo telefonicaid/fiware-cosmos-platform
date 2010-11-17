@@ -40,7 +40,8 @@ char* progName = (char*) "samsonDemo";
 
 void *run_delilah(void* d)
 {
-	ss::Delilah* delilah = (ss::Delilah*)d;
+	ss::Delilah* delilah = (ss::Delilah*) d;
+
 	delilah->run();
 	return NULL;
 }
@@ -68,28 +69,32 @@ int main(int argc, const char *argv[])
 	ss::NetworkFakeCenter center(num_workers);		
 	
 	// Create one controller, one dalilah and N workers
-	ss::SamsonController controller(center.getNetwork(-1), 1234, (char*) "/opt/samson/setup.txt", 5, 80);
+	ss::SamsonController controller(center.getNetwork(-1), 1234, (char*) "/opt/samson/setup.txt", num_workers, 80);
 	
-	const char **_dalilah_argv;
-	int _dalilah_argc;
+	const char**  _dalilah_argv;
+	int           _dalilah_argc;
+	bool          console;
+	bool          basic;
 	
-	if( commandLine.get_flag_bool("console") )
+	if (commandLine.get_flag_bool("console"))
 	{
-		_dalilah_argv= dalilah_argv_console;
+		_dalilah_argv = dalilah_argv_console;
 		_dalilah_argc = VECTOR_LENGTH(dalilah_argv_console);
+		console = true;
 	}
-	else if( commandLine.get_flag_bool("basic") )
+	else if (commandLine.get_flag_bool("basic"))
 	{
-		_dalilah_argv= dalilah_argv_basic;
+		_dalilah_argv = dalilah_argv_basic;
 		_dalilah_argc = VECTOR_LENGTH(dalilah_argv_basic);
+		basic = true;
 	}
 	else
 	{
-		_dalilah_argv= dalilah_argv;
+		_dalilah_argv = dalilah_argv;
 		_dalilah_argc = VECTOR_LENGTH(dalilah_argv);
 	}
 	
-	ss::Delilah delilah( _dalilah_argc, _dalilah_argv , center.getNetwork( -2 )  );
+	ss::Delilah delilah(center.getNetwork(-2), _dalilah_argc, _dalilah_argv, "localhost:1234", num_workers, 80, console, basic);
 	
 	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 

@@ -5,11 +5,12 @@ SET (SOURCES
 SET (HEADERS
 )
 
-SET( STATIC_LIBS
+SET (STATIC_LIBS
      samsonNetworkStatic
      samsonCoreStatic
      samsonCommonStatic
      delilahStatic
+     pa
      lm
      protobuf
      pthread
@@ -20,6 +21,7 @@ SET( STATIC_LIBS
 
 include_directories("/usr/include/qt4")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
+include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_BINARY_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
@@ -32,6 +34,7 @@ SET (RESOURCES
 
 QT4_ADD_RESOURCES(RESOURCES_QRC ${RESOURCES})
 
+link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
 # SAMSON Executable

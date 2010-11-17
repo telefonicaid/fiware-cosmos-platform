@@ -37,41 +37,34 @@ namespace ss {
 
 	class Delilah : public PacketReceiverInterface, public PacketSenderInterface
 	{
-
-		
 		friend class DelilahLoadDataProcess;
 		DelilahClient* client;			// Console or GUI to work with delilah
 
-
 		// Command line parameters ( necessary for QT run method )
-		int _argc;
-		const char **_argv;
+		int           _argc;
+		const char**  _argv;
 
-		pthread_t t_network;
+		pthread_t     t_network;
 
 		
 		// Internal counter for load data operations
-		au::Lock loadDataLock;
-		size_t loadDataCounter;
+		au::Lock   loadDataLock;
+		size_t     loadDataCounter;
 		au::map<size_t,DelilahLoadDataProcess> loadProcess; 
 		
 	public:
 
-		NetworkInterface* network;		// Network interface
-		bool finish;					// Global flag used by all threads to detect to stop
+		NetworkInterface* network;	// Network interface
+		bool              finish;	// Global flag used by all threads to detect to stop
 		
 	public:
-		
-		Delilah( int arg, const char *argv[] , NetworkInterface *_network );
+		Delilah(NetworkInterface *_network, int argC, const char* argV[], const char* controller, int workers, int endpoints, bool console, bool basic);
 		
 		void run();
-		
-		void initController( std::string controller );
-		
-		// Run the network run method
+		void initController(std::string controller);
 		void runNetwork();
-		
-		void quit();		
+		void quit();
+
 		// PacketReceiverInterface
 		virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 

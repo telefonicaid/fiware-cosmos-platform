@@ -77,6 +77,6 @@ int main(int argC, const char *argV[])
 
 	worker.endpointMgrSet(epMgr);
 	worker.networkSet(networkP);
-	
+
 	worker.run();										// Run the object
 }

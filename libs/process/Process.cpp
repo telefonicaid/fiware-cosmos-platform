@@ -81,8 +81,8 @@ void Process::run(void)
 
 		if (dataP != command)
 		{
-			LM_T(60, ("freeing data pointer for command"));
-			free(dataP);
+			LM_T(60, ("NOT freeing data pointer for command - talk to Andreu about this - may fail whenever dataP was big enough ..."));
+			// free(dataP);
 		}
 	}
 }

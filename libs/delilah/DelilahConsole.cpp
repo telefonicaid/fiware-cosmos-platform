@@ -26,12 +26,16 @@ namespace ss
 		commandLine.set_flag_string("name", "no_name");
 		commandLine.parse( command );
 
-		
+		std::string mainCommand;
+
 		if( commandLine.get_num_arguments() == 0)
-			return;	// no command
+		{
+			writeWarningOnConsole("Status by default");
+			mainCommand = "status";	// Default command
+		}
+		else
+			mainCommand = commandLine.get_argument(0);
 		
-		
-		std::string mainCommand = commandLine.get_argument(0);
 		
 		if( mainCommand == "quit" )
 		{
@@ -44,11 +48,13 @@ namespace ss
 			// Sent a status request to all the elements
 			Packet p;
 			p.message.mutable_status_request()->set_command( command );
+			
 			dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::StatusRequest, &p);
 
 			for (int i = 0 ; i < dalilah->network->getNumWorkers() ; i++)
 				dalilah->network->send(dalilah, dalilah->network->workerGetIdentifier(i), Message::StatusRequest, &p);
-				
+
+			writeWarningOnConsole("Status messages sent to all elements\n");
 			
 			return;
 		}
@@ -161,6 +167,7 @@ namespace ss
 			case Message::StatusResponse:
 			{
 				// Get some information form the packet
+				std::string title = packet->message.status_response().title();
 				std::string message = packet->message.status_response().response();
 
 				// Prepare what to show on screen

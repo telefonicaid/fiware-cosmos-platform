@@ -126,7 +126,6 @@ namespace ss {
 		std::string getStatus()
 		{
 			int per_memory = (int) getMemoryUsage()*100;
-			
 			std::ostringstream o;
 			o << "Used: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)";
 			o << " #Buffers " << num_buffers;

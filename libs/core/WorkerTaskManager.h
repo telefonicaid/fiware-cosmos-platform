@@ -5,6 +5,7 @@
 #include "samson.pb.h"				// WorkerTask
 #include <list>						// std::list
 #include "au_map.h"					// au::map
+#include "ObjectWithStatus.h"
 
 namespace ss {
 
@@ -24,14 +25,14 @@ namespace ss {
 			
 		std::string operation;
 		
-		enum Status
+		enum State
 		{
 			definition,
 			ready,
 			running
 		};
 		
-		Status status;
+		State state;
 		
 		
 		WorkerTaskItem( size_t _task_id , size_t _item_id ,  std::string _operation  )
@@ -41,25 +42,32 @@ namespace ss {
 			task_id = _task_id;
 			item_id = _item_id;
 			
-			status = definition;
-			status = ready;	// To be automatically accepted now
+			state = definition;
+			state = ready;	// To be automatically accepted now
 			
 		}
 		
-		Status getStatus()
+		State getState()
 		{
-			return status;
+			return state;
 		}
 		
 		void startProcess()
 		{
-			assert( status == ready );
-			status = running;
+			assert( state == ready );
+			state = running;
 		}
 		
 		bool isReady()
 		{
-			return (status == ready);
+			return (state == ready);
+		}
+		
+		std::string getStatus()
+		{
+			std::ostringstream output;
+			output << "\t\tTask Item (Task: " << task_id << ") Item: " << item_id;
+			return output.str();
 		}
 		
 	};
@@ -114,6 +122,15 @@ namespace ss {
 			return ( item.size() == 0);	// No more items to process
 		}
 		
+		std::string getStatus()
+		{
+			std::ostringstream output;
+			output << "\tTask " << task_id << " Operation: " << operation << std::endl;
+			output << getStatusFromArray( item );
+			return output.str();
+		}
+		
+		
 		
 	};
 	
@@ -143,10 +160,20 @@ namespace ss {
 		
 		void finishItem( WorkerTaskItem *item , bool error, std::string error_message );
 
+		
+		std::string getStatus()
+		{
+			std::ostringstream output;
+			output << getStatusFromArray( task );
+			return output.str();
+		}
+		
 	private:
 		
 		// Function used to send the confirmation of a task to the controller
 		void sendWorkTaskConfirmation( WorkerTask *t );
+		
+		
 		
 	};
 }

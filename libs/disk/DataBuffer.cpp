@@ -77,6 +77,15 @@ namespace ss {
 		
 		lock.unlock();
 	}
+
+	std::string DataBuffer::getStatus()
+	{
+		lock.lock();
+		std::string txt =  getStatusFromArray( *this );
+		lock.unlock();
+		
+		return txt;
+	}
 	
 	
 }

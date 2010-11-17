@@ -78,8 +78,11 @@ namespace ss {
 	std::string JobManager::getStatus()
 	{
 		std::ostringstream output;
+
 		lock.lock();
-		output << ObjectWithStatus::getStatusFromArray( job );
+		output << getStatusFromArray( job );
+		lock.unlock();
+		
 		return output.str();
 	}
 

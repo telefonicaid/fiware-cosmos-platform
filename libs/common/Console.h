@@ -257,11 +257,14 @@ namespace au {
 			CommandLine cmdLine;
 			cmdLine.parse(command);
 
+			/*
+			 // No clear command by default
 			if( cmdLine.get_num_arguments() == 0)
 			{
 				clearConsole();
 				return;
 			}
+			 */
 			
 			if( cmdLine.get_num_arguments() == 1)
 			{

@@ -30,6 +30,10 @@ SamsonWorker::SamsonWorker(char* controller, char* alias, unsigned short port, i
 	this->port        = port;
 	this->workers     = workers;
 	this->endpoints   = endpoints;
+
+	// Define the number of process
+	num_processes = SamsonSetup::shared()->getInt( SETUP_num_processes , -1);
+	
 }
 
 
@@ -80,7 +84,6 @@ void SamsonWorker::run()
 	//
 	// Create one ProcessAssistant per core
 	//
-	int num_processes = SamsonSetup::shared()->getInt( SETUP_num_processes , -1);
 	if( num_processes == -1)
 		LM_X( 1 ,("Invalid number of cores. Please edit /opt/samson/setup.txt.")  );
 	
@@ -138,7 +141,6 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		response->set_response( getStatus( packet->message.status_request().command() ) );
 		network->send(this, fromId, Message::StatusResponse, &p);
 		return 0;
-		
 	}
 
 	
@@ -188,8 +190,22 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	std::string SamsonWorker::getStatus(std::string command)
 	{
 		std::ostringstream output;
-		output << "Status of a worker\n";
-		output << "Memory: " << MemoryManager::shared()->getStatus() << std::endl;
+		output << "** Memory: " << MemoryManager::shared()->getStatus() << std::endl;
+
+		output << "** TaskManager:\n";
+		output << taskManager.getStatus();
+
+		output << "** ProcessAssistants: (" << num_processes << " process):\n";
+		for (int i = 0 ; i < num_processes ; i++)
+			output << "\t" << processAssistant[i]->getStatus() << std::endl; 
+
+		output << "** DataBuffer:\n";
+		output << dataBuffer.getStatus();
+
+		output << "** LoadManager:\n";
+		output << loadDataManager.getStatus();
+		
+		
 		return output.str();
 		
 	}

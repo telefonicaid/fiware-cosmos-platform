@@ -19,7 +19,6 @@ SET (SOURCES
 	Lock.cpp
 	SamsonSetup.cpp
 	traces.cpp
-	ObjectWithStatus.cpp
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")

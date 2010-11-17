@@ -33,10 +33,10 @@ namespace ss {
 			return _info;
 		}
 		
-		std::string str()
+		std::string getStatus()
 		{
 			std::ostringstream o;
-			o << "(" << _format.str() << ") ";
+			o << _name << "(" << _format.str() << ") " << _info.str();
 			return o.str();		
 		}
 	};

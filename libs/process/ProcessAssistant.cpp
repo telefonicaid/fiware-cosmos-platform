@@ -61,6 +61,8 @@ ProcessAssistant::ProcessAssistant(int coreNo, const char* _controller, SamsonWo
 	worker     = _worker;
 
 	pthread_create(&threadId, NULL, runThread, this);
+
+	setStatus( "Init" );
 }
 
 
@@ -210,7 +212,9 @@ void ProcessAssistant::run(void)
 		char* result;
 
 		// Get the next item to process ( this call is blocked if no task is available )
+		setStatus( "Asking for the next task" );
 		WorkerTaskItem *item =  worker->taskManager.getNextItemToProcess();
+		setStatus( "Running..." + item->getStatus() );
 
 		LM_T(LMT_COREWORKER, ("Running command '%s' (rFd: %d, wFd: %d)", item->operation.c_str(), rFd, wFd));
 		result = runCommand(rFd, wFd, (char*) item->operation.c_str() , 5);
@@ -322,4 +326,15 @@ char* ProcessAssistant::runCommand(int rFd, int wFd, char* command, int timeOut)
 	return result;
 }
 
+	
+	/**
+		Just get the string for debugging
+	 */
+	
+	std::string ProcessAssistant::getStatus()
+	{
+		return status;
+	}
+
+	
 }

@@ -11,6 +11,7 @@
 #include "MemoryManager.h"	// ss::MemoryManager
 #include "DiskManagerDelegate.h"	// ss::DiskManagerDelegate
 #include <set>						// std::set
+#include "ObjectWithStatus.h"		// getStatusFromArray(.)
 
 namespace ss {
 
@@ -75,6 +76,8 @@ namespace ss {
 			
 			return o.str();
 		}
+		
+		std::string getStatus();
 		
 	};
 }

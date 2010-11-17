@@ -117,12 +117,14 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 	{
 		case Message::Help:
 		{
-			return receiveHelp( fromId , packet );
+			receiveHelp( fromId , packet );
+			return 0;
 			break;
 		}
 	
 		case Message::WorkerTaskConfirmation:
 			taskManager.notifyWorkerConfirmation(fromId, packet->message.worker_task_confirmation() );
+			return 0;
 			break;
 		
 		case Message::WorkerStatus:
@@ -132,6 +134,7 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 			if (workerId == -1)
 				LM_RE(2, ("getWorkerFromIdentifier(%d) failed", fromId));
 			status[workerId] = *((Message::WorkerStatusData*) packet->buffer->getData());
+			return 0;
 			break;
 			
 		case Message::LoadDataConfirmation:
@@ -281,11 +284,9 @@ void SamsonController::sendWorkerTask(int workerIdentifier, size_t task_id, Cont
 */
 std::string SamsonController::getStatus(std::string command)
 {
+	
 	std::ostringstream output;
 		
-	output << "Status of Controller" << std::endl;			
-	output << "== ************** ==" << std::endl;
-
 	output << "** Memory: " << MemoryManager::shared()->getStatus() << std::endl;
 	
 	output << "** Data Manager:\n" << data.getStatus();

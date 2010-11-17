@@ -4,7 +4,7 @@
 #include "CommandLine.h"				// au::CommandLine
 #include "Endpoint.h"					// ss::Endpoint
 #include "Packet.h"						// ss::Packet
-
+#include "ObjectWithStatus.h"			// ss::getStatusFromArray(.)
 namespace ss
 {
 
@@ -65,9 +65,7 @@ namespace ss
 	std::string ControllerTaskManager::getStatus()
 	{
 		std::stringstream o;
-		std::map< size_t , ControllerTask*>::iterator t;
-		for (t = task.begin() ; t != task.end() ; t++)
-			o << t->second->str() << std::endl;
+		o << getStatusFromArray( task );
 		return o.str();
 		
 	}

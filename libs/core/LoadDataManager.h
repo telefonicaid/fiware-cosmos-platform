@@ -5,6 +5,7 @@
 #include "au_map.h"						// au::map
 #include "Lock.h"						// au::Lock
 #include "DiskManagerDelegate.h"		// ss::DiskManagerDelegate
+#include "ObjectWithStatus.h"			// ss::getStatusFromArray(.)
 
 namespace ss {
 
@@ -31,6 +32,14 @@ namespace ss {
 			file_id = _file_id;
 			size = _size;
 		}
+		
+		std::string getStatus()
+		{
+			std::ostringstream output;
+			output << "\tLoadDataManagerItem " << fileName << "[size: " << au::Format::string(size) << "] ( Process " << process_id << ") (File id: " << file_id << " )";
+			return output.str();
+		}
+		
 	};	
 	
 	class LoadDataManager : public DiskManagerDelegate
@@ -53,6 +62,15 @@ namespace ss {
 		
 		// FileManagerDelegate
 		virtual void diskManagerNotifyFinish(size_t id, bool success);
+
+		
+		std::string getStatus()
+		{
+			lock.lock();
+			std::string txt = getStatusFromArray( item );
+			lock.unlock();
+			return txt;
+		}
 
 		
 	};

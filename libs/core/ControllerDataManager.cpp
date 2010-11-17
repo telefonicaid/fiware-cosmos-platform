@@ -10,6 +10,7 @@
 #include "SamsonController.h"				// ss::SamsonController
 #include "KVInfo.h"							// ss::KVInfo
 #include "ModulesManager.h"					// Utility functions
+#include "ObjectWithStatus.h"				// getStatusFromArray(.)
 
 namespace ss {
 	
@@ -225,11 +226,9 @@ namespace ss {
 	std::string ControllerDataManager::getStatus()
 	{
 		std::ostringstream o;
+		
 		lock.lock();
-		
-		for ( au::map< std::string , ControllerQueue>::iterator q = queues.begin() ; q != queues.end() ; q++)
-			o << q->first << " " << q->second->str() << std::endl;
-		
+		o << getStatusFromArray( queues );
 		lock.unlock();
 		
 		return o.str();

@@ -8,30 +8,10 @@
 #include <list>								// std::list
 #include "samson.pb.h"						// ss::network::...
 #include <iostream>							// std::cout
+#include "ObjectWithStatus.h"				// ss::ObjectWithStatus
 
 namespace ss {
 	
-	
-	class ObjectWithStatus
-	{
-		
-	public:
-		
-		virtual std::string getStatus()=0;
-		
-		
-		// Plot the status string from a map of elements
-		template< typename K, typename V>
-		static std::string getStatusFromArray( std::map<K,V*> m)
-		{
-			std::ostringstream output;
-			typename std::map<K, V* >::iterator iter;
-			for ( iter = m.begin() ; iter != m.end() ; iter++ )
-				output << "\t" << iter->first << " " << iter->second->getStatus();
-			return output.str();
-		}
-	};
-
 	
 	
 	class SamsonController;
@@ -100,7 +80,7 @@ namespace ss {
 	 A job ( ordered from delilah or from another job)
 	 */
 	
-	class Job : public ObjectWithStatus
+	class Job
 	{
 		size_t id;						// Identifier of the job ( this is the one reported to delialh to monitorize a job)
 		

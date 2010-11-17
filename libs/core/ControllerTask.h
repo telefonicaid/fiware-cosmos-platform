@@ -66,7 +66,7 @@ namespace ss {
 			return command;
 		}
 		
-		std::string str()
+		std::string getStatus()
 		{
 			std::ostringstream o;
 			o << "Task " << id << " : " << command;

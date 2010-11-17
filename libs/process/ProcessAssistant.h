@@ -52,9 +52,23 @@ private:
 	
 	friend class ProcessWriter;
 	
+	std::string status;	// Internal state to be acess with getStatus
+
+	void setStatus( std::string txt )	// Internal function to set the status
+	{
+		std::ostringstream s;
+		s << "Core " << core << " " << txt;
+		status = s.str();
+	}
+	
+	
 public:
 	void         run(void);
 	char*        runCommand(int rFd, int wFd, char* command, int timeOut);
+	
+	std::string getStatus();
+
+	
 };
 
 }

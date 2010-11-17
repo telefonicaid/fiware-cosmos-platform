@@ -14,10 +14,6 @@ namespace ss {
 	class SamsonController;
 	class ControllerTask;
 	
-
-	
-
-	
 	
 	/**
 	 Manager of running tasks at controller

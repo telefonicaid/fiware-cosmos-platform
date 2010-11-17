@@ -1,12 +1,13 @@
 
 #include "ProcessWriter.h"			// Own interface
 #include <assert.h>					// assert(.)
-#import "Buffer.h"					// ss::Buffer
-#import "MemoryManager.h"			// ss::MemoryManager
-#import "Packet.h"					// ss::Packet
-#import "NetworkInterface.h"		// ss::NetworkInterface
-#import "ProcessAssistant.h"		// ss::ProcessAssistant
-#import "SamsonWorker.h"			// ss::SamsonWorker
+
+#include "Buffer.h"					// ss::Buffer
+#include "MemoryManager.h"			// ss::MemoryManager
+#include "Packet.h"					// ss::Packet
+#include "NetworkInterface.h"		// ss::NetworkInterface
+#include "ProcessAssistant.h"		// ss::ProcessAssistant
+#include "SamsonWorker.h"			// ss::SamsonWorker
 
 
 namespace ss {

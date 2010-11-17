@@ -1,7 +1,7 @@
 #ifndef _H_PROCESS
 #define _H_PROCESS
 
-#import "ModulesManager.h"		//ss::ModuleManager
+#include "ModulesManager.h"		//ss::ModuleManager
 
 namespace ss {
 

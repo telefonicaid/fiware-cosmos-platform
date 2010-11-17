@@ -10,7 +10,7 @@
 #include "MemoryManager.h"
 
 #define KV_NODE_SIZE	255
-#define KV_NODE_UNASIGNED 4294967295	// 2^32-1
+#define KV_NODE_UNASIGNED 4294967295u	// 2^32-1
 
 namespace ss {
 

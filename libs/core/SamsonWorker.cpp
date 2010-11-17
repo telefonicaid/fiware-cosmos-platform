@@ -59,8 +59,8 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 	network->initAsSamsonWorker(port, alias.c_str(), controller.c_str());
 	
 	// Get my id as worker
-	myWorkerId = network->getWorkerFromIdentifier( network->getMyidentifier() );
-	
+	myWorkerId = network->getWorkerFromIdentifier(network->getMyidentifier());
+	LM_M(("My worker id: %d", myWorkerId));
 }
 
 

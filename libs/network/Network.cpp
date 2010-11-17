@@ -118,6 +118,11 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 	me->ip       = ipGet();
 	me->alias    = alias;
 
+	if (strncmp(&alias[1], "orker", 5) == 0)
+		me->workerId = atoi(&alias[6]);
+	else
+		me->workerId = -2;
+
 	if (port != 0)
 	{
 		endpoint[1] = new Endpoint(*me);
@@ -286,25 +291,13 @@ int Network::workerGetIdentifier(int nthWorker)
 */
 int Network::getWorkerFromIdentifier(int identifier)
 {
-	int ix;
-
 	if (identifier >= Workers)
 		LM_RE(-1, ("invalid worker identifier '%d'  (only have %d workers)", identifier, Workers));
 
-	if (identifier != 0)
-		return identifier - 3;
+	if (identifier == 0)
+		return me->workerId;
 
-	for (ix = 3; ix < 3 + Workers; ix++)
-	{
-		if (endpoint[ix] == NULL)
-			continue;
-		if (endpoint[ix]->type != Endpoint::Worker)
-			continue;
-		if (strncmp(endpoint[ix]->name.c_str(), "me:", 3) == 0)
-			return ix - 3;
-	}
-
-	LM_RE(-1, ("worker with identifier %d not found", identifier));
+	return identifier - 3;
 }
 
 

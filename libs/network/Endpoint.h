@@ -56,6 +56,7 @@ public:
 	unsigned short               port;
 	State                        state;
 	int                          workers;
+	int                          workerId;
 	Type                         type;
 
 

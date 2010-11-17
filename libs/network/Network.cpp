@@ -236,19 +236,6 @@ void Network::initAsSamsonController(int port, int workers)
 
 /* ****************************************************************************
 *
-* initAsSamsonWorker -
-*
-* NOTE
-*/
-void Network::initAsSamsonWorker(int port, const char* alias, const char* controller)
-{
-	init(Endpoint::Worker, alias, port, controller);
-}
-
-
-
-/* ****************************************************************************
-*
 * initAsDelilah - 
 */
 void Network::initAsDelilah(std::string controllerName)

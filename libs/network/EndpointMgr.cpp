@@ -1024,6 +1024,10 @@ void EndpointMgr::readyCheck(void)
 }
 
 
-
+// Network methods using the variable 'me'
+//   o getWorkerFromIdentifier
+//   o send
+//   o run
 
 }
+

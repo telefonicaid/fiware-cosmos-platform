@@ -42,8 +42,8 @@ void SamsonWorker::endpointMgrSet(ss::EndpointMgr* _epMgr)
 {
 	epMgr = _epMgr;
 
-	// epMgr->packetReceiverSet(this);
 	// epMgr->init(Endpoint::Worker, alias.c_str(), port, controller.c_str());
+	// epMgr->packetReceiverSet(this);
 }
 
 
@@ -56,7 +56,8 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 {
 	this->network = network;
 	network->setPacketReceiverInterface(this);
-	network->initAsSamsonWorker(port, alias.c_str(), controller.c_str());
+
+	network->init(Endpoint::Worker, alias.c_str(), port, controller.c_str());
 	
 	// Get my id as worker
 	myWorkerId = network->getWorkerFromIdentifier(network->getMyidentifier());
@@ -73,8 +74,8 @@ void SamsonWorker::run()
 {
 	workerStatus(&status);
 
-#if 1	// Deactivated to avoid continuous error in samsonDemo
 	
+
 	// //////////////////////////////////////////////////////////////////////
 	//
 	// Create one ProcessAssistant per core
@@ -95,7 +96,7 @@ void SamsonWorker::run()
 
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
 
-#endif
+
 	
 	// assert(epMgr);
 	// epMgr->run();

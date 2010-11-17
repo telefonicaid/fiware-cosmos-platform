@@ -7,6 +7,7 @@
 *
 */
 #include "Message.h"            // ss::Message::MessageCode
+#include "Endpoint.h"           // ss::Endpoint::Type
 #include "assert.h"				// assert(.)
 
 
@@ -65,9 +66,9 @@ namespace ss {
 		// Inform about everything ready to start
 		virtual bool ready()=0;                                   
 		
+		virtual void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL) {};
 		// Init function ( one and only one of them should be called )
 		virtual void initAsSamsonController(int port, int num_workers)=0;
-		virtual void initAsSamsonWorker(int localPort, const char* alias, const char* controller) = 0;
 		virtual void initAsDelilah(std::string controllerEndpoint)=0;
 
 		// Set the receiver element ( this should be notified about the packaked )

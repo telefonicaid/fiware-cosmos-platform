@@ -15,8 +15,8 @@
 #include "SamsonWorker.h"			// ss::SamsonWorker
 #include "ProcessAssistant.h"
 
-#include <samson/modules/example/Datas.h>
-#include <samson/modules/example/Module.h>
+#include <modules/example/Datas.h>
+#include <modules/example/Module.h>
 
 /* ****************************************************************************
 *

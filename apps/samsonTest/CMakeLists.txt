@@ -21,7 +21,7 @@ SET (STATIC_LIBS
     ncurses
 )
 
-
+include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")

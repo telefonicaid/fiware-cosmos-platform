@@ -106,7 +106,7 @@ void Workspace::updateJob(unsigned int id, bool finished, bool error, QString me
 /*
  * SLOT.
  */
-void Workspace::finishJob(size_t id, bool error, QString message)
+void Workspace::finishJob(unsigned int id, bool error, QString message)
 {
 	// TODO:
 	int index = findJobIndex(id);
@@ -162,7 +162,7 @@ void Workspace::finishJob(size_t id, bool error, QString message)
 }
 
 
-int Workspace::findJobIndex(size_t id)
+int Workspace::findJobIndex(unsigned int id)
 {
 	for(int i=0; i<jobs.size(); i++)
 	{

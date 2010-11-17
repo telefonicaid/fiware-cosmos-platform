@@ -263,7 +263,7 @@ void paExtendedUsage(PaArgument* paList)
 	}
 	
 	sprintf(format, "%%-%ds %%-%ds %%-%ds %%-%ds %%s\n",
-			strlen(progName) + 1,
+			(int) strlen(progName) + 1,
 			optNameMaxLen + 2,
 			varNameMaxLen + 2,
 			valsMaxLen + 2);

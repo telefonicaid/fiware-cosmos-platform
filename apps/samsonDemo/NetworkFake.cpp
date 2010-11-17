@@ -16,18 +16,6 @@ namespace ss {
 		// Nothing to do
 	}
 	
-	void NetworkFake::initAsSamsonWorker(int localPort, const char* alias, const char* controller)
-	{
-		// Nothing to do
-	}
-	
-	void NetworkFake::initAsDelilah(std::string controllerEndpoint)
-	{
-		// Nothing to do
-	}
-	
-	
-	
 	// Set the receiver element
 	 void NetworkFake::setPacketReceiverInterface( PacketReceiverInterface* _receiver)
 	{

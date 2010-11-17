@@ -77,11 +77,10 @@ Delilah::Delilah
 *
 * initController -  
 */
-void Delilah::initController( std::string controller )
+void Delilah::initController(std::string controller)
 {
-	// LM_T( TRACE_DELILAH , ("Delilah running. Controller: %s",controller.c_str() ) );
-	network->initAsDelilah( controller );
-		
+	network->init(Endpoint::Delilah, "delilah", 0, controller.c_str());
+
 	// run network "run" in a separate thread
 	pthread_create(&t_network, NULL, runNetworkThread, this);
 }	

@@ -16,6 +16,7 @@
 #include "Message.h"            // MessageType, Code, etc.
 #include "Packet.h"             // Packet
 #include "Buffer.h"             // Buffer
+#include "MemoryManager.h"      // MemoryManager
 #include "iomMsgRead.h"         // Own interface
 
 
@@ -92,7 +93,7 @@ int iomMsgRead
 		if (dataP == NULL)
 			LM_X(1, ("malloc(%d)", header.gbufLen));
 
-        LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", header.gbufLen));
+		LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", header.gbufLen));
         nb = read(fd, dataP, header.gbufLen);
         if (nb == -1)
 			LM_RP(1, ("read(%d bytes from '%s')", header.gbufLen, from));
@@ -103,27 +104,27 @@ int iomMsgRead
 		LM_READS(from, "google protocol buffer", dataP, nb, LmfByte);
 	}
 
-	if ((header.gbufLen != 0) && (packetP->buffer->getSize() != 0))
-		LM_W(("NOT reading %d bytes of KV data", packetP->buffer->getSize()));
-
-#if 0
-	if ((header.gbufLen != 0) && (packetP->buffer->getSize() != 0))
+	if (header.kvDataLen != 0)
 	{
-		int    size  = packetP->buffer->getSize();
-		char*  kvBuf = dataMgr->bufferGet(size);
-		int    nb;
+		LM_M((""));
+		packetP->buffer = ss::MemoryManager::shared()->newBuffer(header.gbufLen);
+
+		int    size  = header.kvDataLen;
+		char*  kvBuf = packetP->buffer->getData();
 		int    tot   = 0;
+		int    nb;
 
 		while (tot < size)
 		{
+			// msgAwait()
 			nb = read(fd, &kvBuf[tot], size - tot);
 			if (nb == -1)
 				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, from, strerror(errno)));
 			tot += nb;
-			packetP->buffer->setSize(tot);
 		}
+
+		packetP->buffer->setSize(tot);
 	}
-#endif
 
 	return 0;
 }	

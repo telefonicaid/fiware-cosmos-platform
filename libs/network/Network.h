@@ -51,7 +51,6 @@ public:
 	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);
 
 	virtual void initAsSamsonController(int port, int num_workers);
-	virtual void initAsDelilah(std::string controllerEndpoint);	
 	
 	bool ready();                                    // Inform about everything ready
                                                      // The controller expects all the workers to be connected

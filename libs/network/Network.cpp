@@ -236,17 +236,6 @@ void Network::initAsSamsonController(int port, int workers)
 
 /* ****************************************************************************
 *
-* initAsDelilah - 
-*/
-void Network::initAsDelilah(std::string controllerName)
-{
-	init(Endpoint::Delilah, "delilah", 0, controllerName.c_str());
-}
-	
-	
-
-/* ****************************************************************************
-*
 * controllerGetIdentifier - 
 */
 int Network::controllerGetIdentifier(void)
@@ -913,10 +902,11 @@ void Network::msgTreat(int rFd, char* name)
 		break;
 
 	default:
+		LM_M(("DEFAULT"));
 		if (receiver == NULL)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
 
-		LM_T(LMT_MSG, ("forwarding '%s' %s from %s to CoreWorkers", messageCode(msgCode), messageType(msgType), ep->name.c_str()));
+		LM_M(("forwarding '%s' %s from %s to Endpoint %d", messageCode(msgCode), messageType(msgType), ep->name.c_str(), endpointId));
 		receiver->receive(endpointId, msgCode, &packet);
 		break;
 	}

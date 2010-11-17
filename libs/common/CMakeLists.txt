@@ -11,6 +11,7 @@ SET (HEADERS
 	traces.h
 	KVInfo.h
 	au_map.h
+	ObjectWithStatus.h
 )
 
 SET (SOURCES
@@ -18,6 +19,7 @@ SET (SOURCES
 	Lock.cpp
 	SamsonSetup.cpp
 	traces.cpp
+	ObjectWithStatus.cpp
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")

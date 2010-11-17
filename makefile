@@ -25,12 +25,12 @@ xcode:
 	./scripts/prepareXcode
 
 reset:
-	sudo rm -Rf build/*
-	sudo rm -Rf xcode_proj
+#	sudo rm -Rf build/*
+#	sudo rm -Rf xcode_proj
 	sudo rm -f modules/example/Module.*
 	sudo rm -f libs/network/samson.pb.*
 	sudo rm -f libs/data/data.pb.*
-
+	sudo rm -Rf /usr/local/include/samson
 
 module:
 	make -C build/apps/samsonModuleParser

@@ -58,8 +58,9 @@ set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SO
 if (error EQUAL 0)
   MESSAGE("cmake: OK")
   ADD_SUBDIRECTORY(libs)
-  ADD_SUBDIRECTORY(apps)
   ADD_SUBDIRECTORY(modules)
+  ADD_SUBDIRECTORY(apps)
+
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)

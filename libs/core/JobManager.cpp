@@ -79,11 +79,7 @@ namespace ss {
 	{
 		std::ostringstream output;
 		lock.lock();
-		
-		std::map<size_t ,Job*>::iterator j;	
-		for (j = job.begin() ; j != job.end() ; j++)
-			output << "\tJob " << j->first << " " << j->second->getStatus();
-		lock.unlock();
+		output << ObjectWithStatus::getStatusFromArray( job );
 		return output.str();
 	}
 

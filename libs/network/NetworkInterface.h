@@ -38,8 +38,9 @@ namespace ss {
 
 		// Method to recover the status of this element in JSON format
 		// In the controllor case, this is expossed to a simple port like a telnet service
-		virtual std::string getJSONStatus()
+		virtual std::string getJSONStatus(std::string in)
 		{
+			LM_M(("JSON request: '%s'", in.c_str()));
 			return "Not implemented";
 		}
 

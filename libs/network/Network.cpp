@@ -701,13 +701,25 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	//
 	if (ep->type == Endpoint::WebWorker)
 	{
+		char buf[1024];
+		int  nb;
+
 		if (me->type != Endpoint::Controller)
 			LM_X(1, ("Got a request from a WebWorker and I'm not a controller !"));
 
-		std::string buf    = receiver->getJSONStatus();
-		int         bufLen = buf.size();
+		nb = read(ep->rFd, buf, sizeof(buf));
+		if (nb == -1)
+			LM_E(("error reading web service request: %s", strerror(errno)));
+		else if (nb == 0)
+			LM_E(("read ZERO bytes of web service request"));
+		else
+		{
+			std::string command     = receiver->getJSONStatus(std::string(buf));
+			int         commandLen  = command.size();
 
-		write(ep->wFd, buf.c_str(), bufLen);
+			write(ep->wFd, command.c_str(), commandLen);
+		}
+
 		close(ep->wFd);
 		endpointRemove(ep);
 		return;

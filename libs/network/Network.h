@@ -100,11 +100,6 @@ private:
 	void msgTreat(int fd, char* name);
 	int  helloSend(Endpoint* ep, Message::MessageType type);
 
-	// Internal function to give the JSON state
-	std::string getJSONStatus()
-	{
-	   return "To be implemented\n";
-	}
 };
 
 	

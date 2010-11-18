@@ -35,6 +35,15 @@ namespace ss {
 		{
 			// This call has to be overwritten by SamsonController
 		}
+
+		// Method to recover the status of this element in JSON format
+		// In the controllor case, this is expossed to a simple port like a telnet service
+		virtual std::string getJSONStatus()
+		{
+			return "Not implemented";
+		}
+
+		
 		
 		virtual ~PacketReceiverInterface() {};
 	};

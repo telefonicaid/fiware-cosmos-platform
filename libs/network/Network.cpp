@@ -701,7 +701,7 @@ void Network::msgTreat(int rFd, char* name)
 		if (me->type != Endpoint::Controller)
 			LM_X(1, ("Got a request from a WebWorker and I'm not a controller !"));
 
-		std::string buf    = getJSONStatus();
+		std::string buf    = receiver->getJSONStatus();
 		int         bufLen = buf.size();
 
 		write(ep->wFd, buf.c_str(), bufLen);

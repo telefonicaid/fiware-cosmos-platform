@@ -82,11 +82,8 @@ int SamsonController::receiveHelp(int fromId, Packet* packet)
 	network::HelpResponse *response = p.message.mutable_help_response();
 	response->mutable_help()->CopyFrom( packet->message.help() );
 	
-	if( packet->message.help().queues() )
-	{
-		// Fill with queues information
-		data.helpQueues( response , packet->message.help() );
-	}
+	// We check if queues or data_queues is selected inside
+	data.helpQueues( response , packet->message.help() );
 		
 	if (packet->message.help().datas())
 	{

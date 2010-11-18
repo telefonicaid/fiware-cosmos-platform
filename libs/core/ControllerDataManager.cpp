@@ -275,42 +275,50 @@ namespace ss {
 	void ControllerDataManager::helpQueues( network::HelpResponse *response , network::Help help )
 	{
 		lock.lock();
-		std::map< std::string , ControllerQueue*>::iterator i;
-		for (i = queues.begin() ; i!= queues.end() ;i++)
+		
+		if( help.queues() )
 		{
-			//o << i->first << i->second->str() << "\n";
-
 			
-			if( !help.has_name() || i->first == help.name() )
+			std::map< std::string , ControllerQueue*>::iterator i;
+			for (i = queues.begin() ; i!= queues.end() ;i++)
 			{
+				if( !help.has_name() || i->first == help.name() )
+				{
+					
+					ControllerQueue *queue = i->second;
+					network::Queue *q = response->add_queue();
+					q->set_name( i->first );
+					
+					// Format
+					fillKVFormat( q->mutable_format() , queue->format() );
+					
+					//Info
+					fillKVInfo( q->mutable_info(), queue->info() );
+					
+				}
 				
-				ControllerQueue *queue = i->second;
-				network::Queue *q = response->add_queue();
-				q->set_name( i->first );
-				
-				// Format
-				fillKVFormat( q->mutable_format() , queue->format() );
-				
-				//Info
-				fillKVInfo( q->mutable_info(), queue->info() );
 				
 			}
-			
-			
 		}
 	
-		std::map< std::string , DataQueue*>::iterator ii;
-		for (ii = data_queues.begin() ; ii!= data_queues.end() ;ii++)
+		
+		if( help.data_queues() )
 		{
-			DataQueue *queue = ii->second;
 			
-			if( !help.has_name() || queue->getName() == help.name() )
+			std::map< std::string , DataQueue*>::iterator ii;
+			for (ii = data_queues.begin() ; ii!= data_queues.end() ;ii++)
 			{
-				network::DataQueue *q = response->add_data_queue();
-				q->set_name( queue->getName() );
-				q->set_size( queue->getSize() );	
-			}
-		}		
+				DataQueue *queue = ii->second;
+				
+				if( !help.has_name() || queue->getName() == help.name() )
+				{
+					network::DataQueue *q = response->add_data_queue();
+					q->set_name( queue->getName() );
+					q->set_size( queue->getSize() );	
+				}
+			}		
+			
+		}
 		
 		lock.unlock();
 	}

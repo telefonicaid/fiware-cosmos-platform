@@ -145,11 +145,12 @@ message CommandResponse
 message Help
 {
 	required bool queues = 1;
-	required bool datas = 2;
-	required bool operations = 3;
+	required bool data_queues = 2;
+	required bool datas = 3;
+	required bool operations = 4;
 
 	// Filters for the operations
-	optional string name = 4;	// Optinal parameter to specify the name of the queue/data/operation I would like to be informed
+	optional string name = 5;	// Optinal parameter to specify the name of the queue/data/operation I would like to be informed
 }
 
 // ////////////////////////////////////////////////////////////////////////////

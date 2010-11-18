@@ -14,7 +14,6 @@
 
 #include "Queue.h"
 class MainWindow;
-//class DataQueue;
 class KVQueue;
 class Operation;
 class DataType;
@@ -24,6 +23,7 @@ namespace ss {
 	namespace network {
 		class Queue;
 		class DataQueue;
+		class HelpResponse;
 	}
 }
 
@@ -56,6 +56,14 @@ public:
 
 public slots:
 	void quitDelilah();
+
+protected:
+	/*
+	 * Methods loading information received from network.
+	 */
+	void loadQueues(const ss::network::HelpResponse &resp);
+	void loadOperations(const ss::network::HelpResponse &resp);
+	void loadDataTypes(const ss::network::HelpResponse &resp);
 
 signals:
 	void gotCommandResponse(unsigned int id, bool finished, bool error, QString message);

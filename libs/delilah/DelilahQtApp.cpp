@@ -98,85 +98,41 @@ int DelilahQtApp::sendCreateKVQueue(const QString &name, const QString &key_type
  * Packet can contains information about KV queues, data queues, operations, and data types
  * currently available in the system.
  * This information is extracted from the packet and appropriate lists are updated.
- *
- * Example:
- * help queue
  */
 int DelilahQtApp::receiveData(ss::Packet* packet)
 {
-	// TODO: remove!!!!!!!
-	std::cout << "Sleeping in receiveData" << std::endl;
-	sleep(5);
-
 	ss::network::HelpResponse resp = packet->message.help_response();
 
-	if( resp.help().queues() )
+	ss::network::Help command = resp.help();
+	if (command.queues())
 	{
-		/*
-		 * Update data queues
-		 */
-		for (int i=0 ; i<resp.data_queue_size(); i++)
-		{
-			ss::network::DataQueue q = resp.data_queue(i);
-			QString name = QString::fromStdString(q.name());
+		// TODO remove!!!!!!!!!!
+		std::cout << "Seeping before receiving data" << std::endl;
+		sleep(5);
 
-			bool new_queue = false;
-			DataQueue *queue = getDataQueue(name);
-			if (queue==0)
+		loadQueues(resp);
+		if (!command.name().empty())
+		{
+			// Set status of data queues that were not reloaded to DELETED
+			for (int i=0; i<data_queues.size(); i++)
 			{
-				queue = new DataQueue(name);
-				new_queue = true;
+				if ( data_queues.at(i)->getStatus() == Queue::LOADING )
+					data_queues.at(i)->setStatus(Queue::DELETED);
 			}
-			queue->upload(&q);
-			if (new_queue)
-				data_queues.append(queue);
-		}
-
-		/*
-		 * Update all KV queues
-		 */
-		for (int i=0 ; i<resp.queue_size(); i++)
-		{
-			ss::network::Queue q = resp.queue(i);
-			QString name = QString::fromStdString(q.name());
-
-			bool new_queue = false;
-
-			KVQueue * queue = getKVQueue(name);
-			if (queue==0)
+			// Set status of kv queues that were not reloaded to DELETED
+			for (int i=0; i<kv_queues.size(); i++)
 			{
-				queue = new KVQueue(name);
-				new_queue = true;
+				if ( kv_queues.at(i)->getStatus() == DataQueue::LOADING )
+					kv_queues.at(i)->setStatus(DataQueue::DELETED);
 			}
-			queue->upload(&q);
-			if (new_queue)
-				kv_queues.append(queue);
 		}
-
-		// TODO: setting status to DELETED makes only sense if we know that
-		// the original request was for all queues - not only for queue with a given name.
-
-		// Set status of data queues that were not reloaded to DELETED
-		for (int i=0; i<data_queues.size(); i++)
-		{
-			if ( data_queues.at(i)->getStatus() == Queue::LOADING )
-				data_queues.at(i)->setStatus(Queue::DELETED);
-		}
-		// Set status of kv queues that were not reloaded to DELETED
-		for (int i=0; i<kv_queues.size(); i++)
-		{
-			if ( kv_queues.at(i)->getStatus() == DataQueue::LOADING )
-				kv_queues.at(i)->setStatus(DataQueue::DELETED);
-		}
-
 	}
-
-	// TODO:
-	// Load operations
-	// Load data types
+	if (command.operations())
+		loadOperations(resp);
+	if (command.datas())
+		loadDataTypes(resp);
 	return 0;
 }
-
 
 int DelilahQtApp::receiveCommandResponse(ss::Packet* packet)
 {
@@ -265,4 +221,64 @@ KVQueue* DelilahQtApp::getKVQueue(const QString &name)
 	}
 
 	return 0;
+}
+
+/******************************************************************************
+ *
+ * Private methods
+ *
+ *****************************************************************************/
+void DelilahQtApp::loadQueues(const ss::network::HelpResponse &resp)
+{
+	/*
+	 * Update data queues
+	 */
+	for (int i=0 ; i<resp.data_queue_size(); i++)
+	{
+		ss::network::DataQueue q = resp.data_queue(i);
+		QString name = QString::fromStdString(q.name());
+
+		bool new_queue = false;
+		DataQueue *queue = getDataQueue(name);
+		if (queue==0)
+		{
+			queue = new DataQueue(name);
+			new_queue = true;
+		}
+		queue->upload(&q);
+		if (new_queue)
+			data_queues.append(queue);
+	}
+
+	/*
+	 * Update KV queues
+	 */
+	for (int i=0 ; i<resp.queue_size(); i++)
+	{
+		ss::network::Queue q = resp.queue(i);
+		QString name = QString::fromStdString(q.name());
+
+		bool new_queue = false;
+
+		KVQueue * queue = getKVQueue(name);
+		if (queue==0)
+		{
+			queue = new KVQueue(name);
+			new_queue = true;
+		}
+		queue->upload(&q);
+		if (new_queue)
+			kv_queues.append(queue);
+	}
+
+}
+
+void DelilahQtApp::loadOperations(const ss::network::HelpResponse &resp)
+{
+	// TODO:
+}
+
+void DelilahQtApp::loadDataTypes(const ss::network::HelpResponse &resp)
+{
+	// TODO:
 }

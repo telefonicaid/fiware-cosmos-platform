@@ -14,13 +14,15 @@ bool             console;
 bool             basic;
 
 
+
+#define NO "no_controller"
 /* ****************************************************************************
 *
 * parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaReq,  PaND,   PaNL,   PaNL,  "controller IP:port"  },
+	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt, _i NO,   PaNL,   PaNL,  "controller IP:port"  },
 	{ "-console",    &console,     "CONSOLE",     PaBool,    PaOpt, false,  false,   true,  "console mode"        },
 	{ "-basic",      &basic,       "BASIC",       PaBool,    PaOpt, false,  false,   true,  "basic mode"          },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    80,      3,    100,  "number of endpoints" },

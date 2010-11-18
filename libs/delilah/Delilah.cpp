@@ -68,7 +68,10 @@ Delilah::Delilah
 	else
 		client = new DelilahQt(this);
 		
-	initController(controller);
+	if (strcmp(controller, "no_controller") == 0)
+		LM_W(("controller not specified as command line parameter"));
+	else
+		initController(controller);
 }
 	
 

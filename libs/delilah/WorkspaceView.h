@@ -36,8 +36,9 @@ public slots:
 	void createTXTQueueSelected(const QPointF &scene_pos);
 	void createKVQueueSelected(const QPointF &scene_pos);
 
+	void showError(QString error);
 	/*
-	 * Slots responsible for displaying information about running jobs.
+	 * Slot responsible for displaying information about running jobs.
 	 */
 	void updateJobInfoView(job_info job);
 

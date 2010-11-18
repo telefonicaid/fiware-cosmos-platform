@@ -18,6 +18,7 @@ class QSvgRenderer;
 class ConnectionItem;
 class ObjectItem;
 
+class Queue;
 class DataQueue;
 
 class WorkspaceScene: public QGraphicsScene
@@ -31,6 +32,7 @@ public:
 	int getTool() {return current_tool; };
 
 	void showDataQueue(DataQueue* queue, const QPointF &pos);
+	void removeQueue(Queue* queue);
 
 public slots:
 	void setTool(int tool) { current_tool = tool; };
@@ -49,6 +51,7 @@ public slots:
 
 signals:
 	void addQueueRequested(const QPointF &);
+	void removeQueueFromWorkspaceRequested(Queue*);
 
 protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);

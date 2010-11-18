@@ -34,8 +34,8 @@ public:
 	virtual void addConnection(ConnectionItem* connection) { connections.append(connection); };
 	virtual bool isConnected(ObjectItem* item);
 
-public slots:
-	void showInfoBox();
+//public slots:
+//	void showInfoBox();
 
 protected:
 	virtual void init();

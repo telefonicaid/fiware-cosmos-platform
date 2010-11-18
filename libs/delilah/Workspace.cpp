@@ -20,6 +20,7 @@ Workspace::Workspace(QString _name)
 {
 	name = _name;
 	scene = new WorkspaceScene();
+	connect(scene, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)), this, SLOT(removeQueueFromWorkspace(Queue*)));
 
 	DelilahQtApp* app = (DelilahQtApp*)qApp;
 	connect(app, SIGNAL(gotCommandResponse(unsigned int, bool, bool, QString)),
@@ -81,6 +82,23 @@ void Workspace::createQueue(QueueType type, const QPointF &scene_pos, QString na
 
 }
 
+void Workspace::removeQueueFromWorkspace(Queue* queue)
+{
+	int index = queues.indexOf(queue);
+	std::cout << "found at index: " << index << std::endl;
+	if (index > -1)
+	{
+		queues.removeAt(index);
+		scene->removeQueue(queue);
+	}
+	else
+	{
+		// TODO
+		QString error = QString("Could not remove queue %a: \nQueue not found").arg(queue->getName());
+		emit(unitFailed(error));
+	}
+}
+
 /*
  * SLOT. Updates job info and emits signal with updated job
  */
@@ -131,7 +149,11 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 		switch(job.type)
 		{
 			case CREATE_DATA_QUEUE:
-				scene->showDataQueue(app->getDataQueue(job.args[0]), job.pos);
+				{
+					DataQueue* queue = app->getDataQueue(job.args[0]);
+					queues.append(queue);
+					scene->showDataQueue(queue, job.pos);
+				}
 				break;
 			case CREATE_KV_QUEUE:
 			case REMOVE_QUEUE:

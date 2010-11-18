@@ -124,13 +124,13 @@ bool ObjectItem::isConnected(ObjectItem* item)
 	return false;
 }
 
-void ObjectItem::showInfoBox()
-{
-//	WorkspaceScene* s = (WorkspaceScene*)scene();
-
-	InfoBox* info_box = new InfoBox();
-	// TODO: generate proper text
-	info_box->setText("test");
-
-	info_box->exec();
-}
+//void ObjectItem::showInfoBox()
+//{
+////	WorkspaceScene* s = (WorkspaceScene*)scene();
+//
+//	InfoBox* info_box = new InfoBox();
+//	// TODO: generate proper text
+//	info_box->setText("test");
+//
+//	info_box->exec();
+//}

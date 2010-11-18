@@ -83,7 +83,33 @@ void QueueItem::updateItem()
 void QueueItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
 	QMenu* menu = new QMenu();
-	menu->addAction("Show Queue Info", this, SLOT(showInfoBox()));
+	menu->addAction("Show Queue Info", this, SLOT(showQueueInfoSelected()));
+	menu->addAction("Remove Queue (from workspace)", this, SLOT(removeQueueSelected()));
+	menu->addAction("Delete Queue", this, SLOT(deleteQueueSelected()));
+
+	if(queue->type()==DATA_QUEUE)
+		menu->addAction("Load Data", this, SLOT(loadDataSelected()));
 	menu->exec(event->screenPos());
+}
+
+void QueueItem::showQueueInfoSelected()
+{
+	// TODO:
+}
+
+void QueueItem::removeQueueSelected()
+{
+	// TODO:
+	emit(removeQueueFromWorkspaceRequested(this->queue));
+}
+
+void QueueItem::deleteQueueSelected()
+{
+	// TODO:
+}
+
+void QueueItem::loadDataSelected()
+{
+	// TODO:
 }
 

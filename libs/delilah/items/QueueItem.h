@@ -26,18 +26,26 @@ public:
 public slots:
 	void updateItem();
 
+	void showQueueInfoSelected();
+	void removeQueueSelected();
+	void deleteQueueSelected();
+	void loadDataSelected();
+
 protected:
 	virtual void init();
 	virtual void initializeDefaultSize();
 
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
 
+signals:
+	void removeQueueFromWorkspaceRequested(Queue* queue);
+
 public:
     enum { Type=QUEUE_ITEM };
+    Queue* queue;
 
 private:
     QGraphicsTextItem* text_item;
-    Queue* queue;
 };
 
 

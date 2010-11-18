@@ -48,7 +48,10 @@ public:
 
 public slots:
 	void setTool(int tool);
+
 	void createQueue(QueueType type, const QPointF &scene_pos, QString name, QString key=QString(), QString value=QString());
+	void removeQueueFromWorkspace(Queue* queue);
+
 	void updateJob(unsigned int id, bool finished, bool error, QString message);
 	void finishJob(unsigned int id, bool error, QString message);
 
@@ -58,6 +61,7 @@ protected:
 signals:
 	void jobCreated(job_info job);
 	void jobUpdated(job_info job);
+	void unitFailed(QString error);
 
 protected:
 	QString name;

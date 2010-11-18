@@ -41,6 +41,12 @@ public:
 		}
 	};
 
+	/*
+	 *
+	 */
+	virtual QueueType type() = 0;
+
+
 	QString getName() const { return name; };
 	unsigned long getSize() const { return size; };
 
@@ -64,6 +70,8 @@ public:
 	DataQueue(const QString &name)
 		: Queue(name) {};
 	~DataQueue() {};
+
+	virtual QueueType type() { return DATA_QUEUE; };
 
 	/*
 	 * Sets queue variables to the ones got from the SAMSON platform. At the end,
@@ -92,6 +100,8 @@ public:
 	KVQueue(const QString &name, const QString &_key, const QString &_value)
 		: DataQueue(name), key(_key), value(_value) {};
 	~KVQueue(){};
+
+	virtual QueueType type() { return KV_QUEUE; };
 
 //	QString getKey() const { return key; };
 //	void setKey(const QString &_key) { key = _key; };

@@ -168,16 +168,33 @@ ObjectItem* WorkspaceScene::findItem(const QPointF &pos)
 void WorkspaceScene::showDataQueue(DataQueue* queue, const QPointF &pos)
 {
 	// TODO: correct implementation - currently Queue class is not implemented yet.
-	QueueItem* q = new QueueItem(queue);
-//	connect(queue, SIGNAL(statusChanged()), q, SLOT(updateItem()));
+	QueueItem* queue_item = new QueueItem(queue);
+	connect(queue_item, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)), this, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)));
 
-	q->setSharedRenderer(queue_renderer);
-	q->initText();
-	q->setDefaultSize();
-	q->setPos(pos);
+	queue_item->setSharedRenderer(queue_renderer);
+	queue_item->initText();
+	queue_item->setDefaultSize();
+	queue_item->setPos(pos);
 
-	addItem(q);
+	addItem(queue_item);
+}
 
+void WorkspaceScene::removeQueue(Queue* queue)
+{
+	QList<QGraphicsItem*> scene_items = items();
+
+	for(int i=0; i<scene_items.size(); i++)
+	{
+		if (scene_items[i]->type()==QUEUE_ITEM)
+		{
+			QueueItem* item = qgraphicsitem_cast<QueueItem*>(scene_items[i]);
+			if (item->queue == queue)
+			{
+				removeItem(item);
+				break;
+			}
+		}
+	}
 }
 
 void WorkspaceScene::addOperation(const QPointF &position)

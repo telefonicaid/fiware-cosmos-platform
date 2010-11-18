@@ -36,7 +36,10 @@ namespace ss
 
 			// Flush output
 			framework->flushOutput();
-			
+
+			// Send the end messages
+			sendCloseMessages( getTaskId() , worker->network->getNumWorkers() );
+
 			delete framework;
 			delete framework2;
 			

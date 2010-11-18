@@ -46,6 +46,9 @@ namespace ss {
 			return 0;
 		}
 		
+		void sendCloseMessages( size_t task_id, int workers );
+		
+		
 		
 		
 	};	

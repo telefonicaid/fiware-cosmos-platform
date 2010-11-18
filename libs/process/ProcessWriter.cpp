@@ -87,7 +87,7 @@ namespace ss {
 
 
 
-	void ProcessWriter::FlushBuffer()
+	void ProcessWriter::FlushBuffer( )
 	{
 		
 		size_t task_id = processAssistant->getTaskId();
@@ -111,7 +111,7 @@ namespace ss {
 					NetworkKVInfo *info = (NetworkKVInfo*) buffer->getData();
 					
 					// Initial offset for the buffer
-					buffer->skip(KV_HASH_GROUP_VECTOR_SIZE_NETWORK);
+					buffer->skipWrite(KV_HASH_GROUP_VECTOR_SIZE_NETWORK);
 					
 					info[0] = _channel->info;	// Global info
 					
@@ -164,6 +164,9 @@ namespace ss {
 			}
 			
 		}
+		
 	}
 
+	
+	
 }

@@ -27,7 +27,7 @@ public:
 	
 	ss::DataBuffer dataBuffer;
 	
-	DiskTest() : au::Console(false)
+	DiskTest() : au::Console(false) , dataBuffer( NULL )
 	{
 	}
 
@@ -73,7 +73,7 @@ public:
 			
 			size_t task_id = atoll( commandLine.get_argument(1).c_str() );
 
-			dataBuffer.finishTask( task_id );
+			dataBuffer.finishWorker( task_id );
 			
 			writeOnConsole("OK");
 			return;

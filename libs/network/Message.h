@@ -37,6 +37,7 @@ typedef enum MessageCode
 	WorkerStatus					= CODE('W', 'S', 't', ' '),
 	WorkerTask						= CODE('W', 'T', 'a', ' '),
 	WorkerDataExchange				= CODE('D', 'a', 't', ' '),
+	WorkerDataExchangeClose			= CODE('D', 'e', 'c', ' '),
 	WorkerTaskFinish				= CODE('D', 'T', 'f', ' '),
 	WorkerTaskConfirmation			= CODE('W', 'T', 'C', ' '),
 	Command							= CODE('C', 'o', 'm', ' '),

@@ -6,7 +6,7 @@
 #include "SamsonWorker.h"        // SamsonWorker
 #include "WorkerTaskManager.h"   // Own interface
 #include "Packet.h"				 // ss::Packet
-
+#include "DataBufferItem.h"		 // ss::DataBufferItem
 
 namespace ss {
 
@@ -80,34 +80,38 @@ namespace ss {
 		assert( t );
 		t->finishItem( item->item_id , error, error_message );
 		
-		if( t->isFinish() )
+		lock.unlock();
+	}	
+	
+	void WorkerTaskManager::completeItem( size_t task_id , DataBufferItem * item )
+	{
+		lock.lock();
+
+		WorkerTask *t = task.extractFromMap( task_id  );
+
+		if( t )
 		{
+			Packet p;
+			network::WorkerTaskConfirmation *confirmation = p.message.mutable_worker_task_confirmation();
+			confirmation->set_task_id(  t->task_id );
+			confirmation->set_error( t->error );
+			confirmation->set_error_message( t->error_message );
 			
-			// Notify controller that this task is finish ( with or without error ) 
-			// This confirmation has to be send when all data is received from all workers
-			sendWorkTaskConfirmation( t );
+			// add files added with the Data Buffer
+			for (int i = 0 ; i < (int)item->qfiles.size() ; i++)
+			{
+				network::QueueFile *qfile = confirmation->add_file( );
+				qfile->CopyFrom( item->qfiles[i] );
+			}
+				
+			worker->network->send(worker, worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, &p);
 			
-			// Remove the task from the task manager
-			WorkerTask *t = task.extractFromMap( item->task_id  );
 			delete t;
 		}
 		
 		lock.unlock();
-	}	
-	
-	
-	void WorkerTaskManager::sendWorkTaskConfirmation( WorkerTask *t )
-	{
-		Packet p;
-		network::WorkerTaskConfirmation *confirmation = p.message.mutable_worker_task_confirmation();
-		confirmation->set_task_id(  t->task_id );
-		confirmation->set_error( t->error );
-		confirmation->set_error_message( t->error_message );
-		worker->network->send(worker, worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, &p);
 		
 	}
-	
-	
 	
 #if 0
 	// Fill information about status of this worker

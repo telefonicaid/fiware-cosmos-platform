@@ -39,6 +39,7 @@ char* messageCode(MessageCode code)
 	case LoadDataConfirmationResponse:          return (char*) "LoadDataConfirmationResponse";
 	case WorkerTaskConfirmation:   return (char*) "WorkerTaskConfirmation";
 	case WorkerDataExchange:	   return (char*) "WorkerDataExchange";
+	case WorkerDataExchangeClose:	   return (char*) "WorkerDataExchangeClose";
 	case Die:                      return (char*) "Die";
 
 	}

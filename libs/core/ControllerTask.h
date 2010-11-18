@@ -11,10 +11,11 @@
 #include <set>								// std::set
 #include "ControllerTaskInfo.h"				// ss::ControllerTaskInfo
 #include "samson.pb.h"						// ss::network::...
-
+#
 namespace ss {
 	
 	class SamsonController;
+	class ControllerDataManager;
 
 	/**
 	 Task at the controller
@@ -79,6 +80,8 @@ namespace ss {
 				t->add_output( info->outputs[i] );
 		}
 		
+		// Update with the added files
+		void updateData( ControllerDataManager * data );
 
 		
 		std::string getStatus()

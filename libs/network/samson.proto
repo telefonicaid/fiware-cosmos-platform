@@ -17,6 +17,12 @@ message File
 	required KVInfo info=3;		// Information about this file
 }
 
+message QueueFile
+{
+	required string queue=1;	// Name of the queue
+	required File file=2;		// File with all the info
+}
+
 message QueueFiles
 {
 	required string name = 1;	// Name of the queue
@@ -101,6 +107,7 @@ message WorkerTaskConfirmation
 	required int64 task_id  = 1;	       // Id of the opt level (controller ) task
 	required bool  error    = 2;  	       // Error in the operation
 	optional string error_message = 3;     // Message to debug the error
+	repeated QueueFile file = 4;   // Files created with this operation
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -175,6 +182,16 @@ message WorkerDataExchange
 
 // ////////////////////////////////////////////////////////////////////////////
 //
+// Message to notify that no more data will be generated for this task
+//
+
+message WorkerDataExchangeClose
+{
+	required int64   task_id   = 1;  // Identifier of the controller task
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
 // Message to Load data from Delilah to a Worker and response
 //
 
@@ -230,18 +247,21 @@ message Message
 	optional CommandResponse        command_response          = 104;  // Command response message
 	optional WorkerTask             worker_task	              = 105;  // Work task message
 	optional WorkerTaskConfirmation worker_task_confirmation  = 106;  // Work task confirmation message
-	optional WorkerDataExchange     data                      = 107;  // Exchange of data packets between nodes     
-	optional Help                   help                      = 108;  // Ask for help ( queues / datas / operations )
-	optional HelpResponse           help_response             = 109;  // Response for the ask help message   			     
 
-	optional LoadData		load_data		  = 110;  // Load data ( Delilah to Worker )
-	optional LoadDataResponse	load_data_response	  = 111;  // Load data ( Worker to Delilah )
+	optional WorkerDataExchange  	data                      = 107;  // Exchange of data packets between nodes     
+	optional WorkerDataExchangeClose data_close		  = 108;  // Message to finish data transmission between workers
 
-	optional LoadDataConfirmation   load_data_confirmation	  = 112;  // Confirmation of a load data process ( Delilah to Controller)
-	optional LoadDataConfirmationResponse load_data_confirmation_response = 113; 	  // Reponse of the previous message
+	optional Help                   help                      = 109;  // Ask for help ( queues / datas / operations )
+	optional HelpResponse           help_response             = 110;  // Response for the ask help message   			     
 
-	optional StatusRequest status_request = 114; 				      // request for status ( debuggin )
-	optional StatusResponse status_response = 115;				      // response of a status request
+	optional LoadData		load_data		  = 111;  // Load data ( Delilah to Worker )
+	optional LoadDataResponse	load_data_response	  = 112;  // Load data ( Worker to Delilah )
+
+	optional LoadDataConfirmation   load_data_confirmation	  = 113;  // Confirmation of a load data process ( Delilah to Controller)
+	optional LoadDataConfirmationResponse load_data_confirmation_response = 114; 	  // Reponse of the previous message
+
+	optional StatusRequest status_request = 115; 				      // request for status ( debuggin )
+	optional StatusResponse status_response = 116;				      // response of a status request
 	
 
 }

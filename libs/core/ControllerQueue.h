@@ -32,6 +32,13 @@ namespace ss {
 		{
 			return _info;
 		}
+
+		void addFile( int worker, std::string _fileName , size_t _size , size_t _kvs )
+		{
+			_info.size += _size;
+			_info.kvs += _kvs;
+		}
+		
 		
 		std::string getStatus()
 		{

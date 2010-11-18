@@ -24,7 +24,7 @@ namespace ss {
 *
 * Constructor
 */
-SamsonWorker::SamsonWorker(char* controller, char* alias, unsigned short port, int workers, int endpoints) :  taskManager(this) , loadDataManager(this)
+SamsonWorker::SamsonWorker(char* controller, char* alias, unsigned short port, int workers, int endpoints) :  taskManager(this) , dataBuffer(this), loadDataManager(this)
 {
 	this->controller  = controller;
 	this->alias       = alias;
@@ -97,8 +97,8 @@ void SamsonWorker::run()
 	int coreId;
 	for (coreId = 0; coreId < num_processes ; coreId++)
 	{
-		processAssistant[coreId] = new ProcessAssistant(coreId, this);
-		// processAssistant[coreId] = new ProcessAssistantFake(coreId, this);
+		//processAssistant[coreId] = new ProcessAssistant(coreId, this);
+		 processAssistant[coreId] = new ProcessAssistantFake(coreId, this);
 	}
 
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
@@ -188,6 +188,19 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 			
 			return 0;
 		}
+
+		/** 
+		 Data Close message is sent to notify that no more data will be generated
+		 We have to wait for "N" messages ( one per worker )
+		 */
+	
+		if( msgCode == Message::WorkerDataExchangeClose )
+		{
+			size_t task_id = packet->message.data_close().task_id();
+			dataBuffer.finishWorker( task_id );
+			return 0;
+		}
+	
 
 		return 0;
 	}

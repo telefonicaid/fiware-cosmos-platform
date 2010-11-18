@@ -1,4 +1,7 @@
 SET (HEADERS
+        DataBufferItem.h
+        DataBufferItemDelegate.h
+        DataBuffer.h
     ModulesManager.h
     SamsonWorker.h
     LoadDataManager.h
@@ -14,6 +17,9 @@ SET (HEADERS
 )
 
 SET (SOURCES
+        DataBufferItem.cpp
+        DataBufferItemDelegate.cpp
+        DataBuffer.cpp
     ModulesManager.cpp
     SamsonWorker.cpp
     LoadDataManager.cpp

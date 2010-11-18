@@ -807,6 +807,7 @@ void EndpointMgr::msgTreat(int rFd, char* name)
 	case Message::LoadDataConfirmationResponse:
 	case Message::WorkerTaskConfirmation:
 	case Message::WorkerDataExchange:
+	case Message::WorkerDataExchangeClose:
 		if (receiver == NULL)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
 

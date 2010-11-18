@@ -11,7 +11,8 @@
 namespace ss {
 
 	class SamsonWorker;
-
+	class DataBufferItem;
+	
 	/**
 	 Class describing a part of a task.
 	 This item can be executed by a particular Process
@@ -179,6 +180,9 @@ namespace ss {
 		// Method called by ProcessAssitant when a particula process is finished
 		
 		void finishItem( WorkerTaskItem *item , bool error, std::string error_message );
+
+		// Noitification received from the DataBuffer when everything is saved to disk
+		void completeItem( size_t task_id , DataBufferItem * item );
 
 		
 		std::string getStatus()

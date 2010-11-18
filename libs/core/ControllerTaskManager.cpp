@@ -36,7 +36,6 @@ namespace ss
 		
 		ControllerTask * t = task.findInMap( task_id );
 
-	
 		if( t )
 		{
 			
@@ -48,6 +47,10 @@ namespace ss
 			
 			if( t->isFinish() )
 			{
+				
+				// Update with the added files
+				t->updateData( &controller->data );
+				
 				
 				// Notify the JobManager that this task is finish
 				controller->jobManager.notifyFinishTask( job_id ,task_id , t->confirmationMessages );

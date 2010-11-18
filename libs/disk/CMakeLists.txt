@@ -1,8 +1,5 @@
 SET (HEADERS
-	DataBufferItem.h
-	DataBufferItemDelegate.h
 	BufferVector.h
-	DataBuffer.h
 	DeviceDiskAccessManager.h
 	DeviceDiskAccessStatistics.h
 	DiskManager.h
@@ -14,10 +11,7 @@ SET (HEADERS
 )
 
 SET (SOURCES
-	DataBufferItem.cpp
-	DataBufferItemDelegate.cpp
 	BufferVector.cpp
-	DataBuffer.cpp
 	DeviceDiskAccessManager.cpp
 	DeviceDiskAccessStatistics.cpp
 	DiskManager.cpp
@@ -49,6 +43,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
+
 
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 

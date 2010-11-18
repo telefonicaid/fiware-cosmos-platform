@@ -211,9 +211,8 @@ namespace ss {
 		 Function called form the ProcessAssitant side to create and emit the necessary Buffer to the rigth servers
 		 */
 		
-		void FlushBuffer();;
+		void FlushBuffer( );
 
-		
 	};
 
 	

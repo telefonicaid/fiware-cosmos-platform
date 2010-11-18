@@ -88,7 +88,7 @@ namespace ss {
 		}
 		
 		
-		bool skip( size_t size )
+		bool skipWrite( size_t size )
 		{
 			if( _size + size <= _max_size)
 			{
@@ -98,7 +98,17 @@ namespace ss {
 			else
 				return false;
 		}
-							   
+			
+		
+		size_t skipRead( size_t size)
+		{
+			if( _offset + size > _max_size)
+				size = (_max_size - _offset);	// Max offset
+				
+			_offset += size;
+			return size;
+						
+		}
 		
 		/**
 		 Write on the buffer the maximum possible ammount of data

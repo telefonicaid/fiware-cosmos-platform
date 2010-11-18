@@ -202,7 +202,43 @@ namespace ss {
 			response.output = "OK";
 			return response;
 		}			
+
+#pragma mark add files to queues
 		
+		if( commandLine.get_argument(0) == "add_file" )
+		{
+			// Add queue command
+			if( commandLine.get_num_arguments() < 6 )
+			{
+				response.output = "Usage: add_file worker fileName size kvs queue";
+				response.error = true;
+				return response;
+			}
+			
+			int worker = (int)strtol(commandLine.get_argument( 1 ).c_str(), (char **)NULL, 10);
+			
+			std::string fileName	= commandLine.get_argument( 2 );
+
+			size_t size = strtoll(commandLine.get_argument( 3 ).c_str(), (char **)NULL, 10);
+			size_t kvs = strtoll(commandLine.get_argument( 4 ).c_str(), (char **)NULL, 10);
+			
+			std::string queue		= commandLine.get_argument( 5 );
+			
+			// Check valid queue
+			ControllerQueue *q =  queues.findInMap(queue);
+			if( !q )
+			{
+				std::ostringstream output;
+				output << "Queue " << queue << " does not exist\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			}
+			
+			q->addFile( worker , fileName , size , kvs );
+			response.output = "OK";
+			return response;
+		}				
 		
 		
 		

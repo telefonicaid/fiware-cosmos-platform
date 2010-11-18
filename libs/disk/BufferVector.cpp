@@ -1,5 +1,4 @@
 
-#include "DataBuffer.h"				// Own interface
 #include "Buffer.h"					// ss::Buffer
 #include "MemoryManager.h"			// ss::MemoryManager
 #include "DiskManager.h"			// ss::DiskManager
@@ -8,6 +7,18 @@
 
 namespace ss {
 
+	
+	FileKVInfo BufferGetTotalInfo( Buffer *b )
+	{
+		return *((FileKVInfo*)b->getData());
+	}
+	
+	NetworkKVInfo BufferGetInfo( Buffer *b , ss_hg hg )
+	{
+		NetworkKVInfo *tmp = (NetworkKVInfo*) b->getData();
+		return tmp[hg+1];
+	}
+	
 	
 	BufferVector::BufferVector( )
 	{
@@ -27,53 +38,49 @@ namespace ss {
 		// Add the buffer to the vector
 		buffer.push_back(b);
 		
-		
 	}
 	
 	Buffer* BufferVector::getJoinedBuffer( )
 	{
-		assert( false );
-		// TODO: To be reviews with the Buffer updated
-		
-		/*
 		 
 		// Get a buffer to be able to put all data in memory
-		size_t file_size = KV_HASH_GROUP_VECTOR_SIZE + info.size;	
+		size_t file_size = KV_HASH_GROUP_VECTOR_SIZE_FILE + info.size;	
 		Buffer *b = MemoryManager::shared()->newBuffer( file_size );
 		
-		
-		hg_info *info_buffer = (hg_info*) b->getData();
+		FileKVInfo *file_info = (FileKVInfo*) b->getData();
 		
 		// Global data and offset in the resulting buffer
 		char *data = b->getData();
-		size_t offset = KV_HASH_GROUP_VECTOR_SIZE;
+		size_t offset = KV_HASH_GROUP_VECTOR_SIZE_FILE;	// Initial offset
 		
 		// Init the offset in each file
 		for (size_t i = 0 ; i < buffer.size() ; i++)
-			buffer[i]->size = KV_HASH_GROUP_VECTOR_SIZE;
+			buffer[i]->skipRead( KV_HASH_GROUP_VECTOR_SIZE_NETWORK );
 		
-		info_buffer[0] = info;
+		// Global info
+		file_info->size	= info.size;
+		file_info->kvs	= info.kvs;
+		
 		for (size_t i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
 		{
-			info_buffer[i+1].kvs = 0;
-			info_buffer[i+1].size = 0;
+			file_info[i+1].kvs = 0;
+			file_info[i+1].size = 0;
 			
 			// Fill data and sizes from all buffers
 			for (size_t j = 0 ; j <  buffer.size() ; j++)
 			{
+				NetworkKVInfo sub_info = BufferGetInfo( buffer[j] , i );
 				
-				hg_info sub_info = BufferGetInfo( buffer[j] , i );
-				
-				buffer[j]->write( data + offset , sub_info.size );
-				memcpy(data + offset, buffer[j]->getCurrentDataAndUpdateOffset( sub_info.size ) , sub_info.size);
+				buffer[j]->read( data + offset , sub_info.size );
 				offset += sub_info.size;
 				
-				info_buffer[i+1].kvs ++;
-				info_buffer[i+1].size += sub_info.size;
-				
+				file_info[i+1].kvs += sub_info.kvs;
+				file_info[i+1].size += sub_info.size;
 			}
-			
 		}
+		
+		// Set the global size
+		b->setSize(offset);
 		
 		// Remove all buffers
 		for (size_t i = 0 ; i < buffer.size() ; i++)
@@ -86,9 +93,7 @@ namespace ss {
 		
 		// Return the new buffer with the content reordered
 		return b;
-		 */
 		
-		return NULL;
 	}
 	
 	

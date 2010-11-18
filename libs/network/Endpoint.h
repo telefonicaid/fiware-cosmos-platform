@@ -43,7 +43,9 @@ public:
 		Controller,
 		Worker,
 		CoreWorker,
-		Delilah
+		Delilah,
+		WebListener,
+		WebWorker
 	} Type;
 
 public:

@@ -81,14 +81,6 @@ namespace ss {
 		
 		//Internal functions to get help
 		std::string getStatus(std::string command);
-		
-	
-		// Internal function to give the JSON state
-		std::string getJSONStatus()
-		{
-			return "To be implemented\n";
-		}
-		
 	};
 	
 }

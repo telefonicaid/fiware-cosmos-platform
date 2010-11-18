@@ -18,13 +18,24 @@
 #include "Buffer.h"						// ss::Buffer
 #include "MemoryManager.h"				// ss::MemoryManager
 
+
+
 namespace ss {
+
+
 
 /* ****************************************************************************
 *
 * SamsonController::SamsonController
 */
-SamsonController::SamsonController(NetworkInterface* network, unsigned short port, char* setup, int workers, int endpoints) : 	data(this) , jobManager(this) , taskManager(this)
+SamsonController::SamsonController
+(
+	NetworkInterface*  network,
+	unsigned short     port,
+	char*              setup,
+	int                workers,
+	int                endpoints
+) : data(this), jobManager(this), taskManager(this)
 {
 	this->network    = network;
 	this->port       = port;
@@ -39,15 +50,11 @@ SamsonController::SamsonController(NetworkInterface* network, unsigned short por
 		
 	network->setPacketReceiverInterface(this);
 		
-	LM_T(LMT_CONFIG, ("calling loadSetup"));			
-		
 	int num_workers = SamsonSetup::shared()->getInt(SETUP_num_workers, -1);
 	assert(num_workers != -1);
 	LM_T(LMT_CONFIG, ("Num workers: %d", num_workers));
+
 	network->initAsSamsonController(port, num_workers);
-
-
-	LM_M(("endpoints: %d", endpoints));
 }	
 
 

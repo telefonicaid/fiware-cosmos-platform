@@ -235,6 +235,8 @@ Endpoint* EndpointMgr::endpointAdd
 		/* The first time a CoreWorker Endpoint is created we pass thru */
 
 	case Endpoint::Delilah:
+	case Endpoint::WebListener:
+	case Endpoint::WebWorker:
 		for (ix = 3 + Workers; ix < (int) (Endpoints - 1); ix++)
 		{
 			if (endpoint[ix] == NULL)

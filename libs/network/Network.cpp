@@ -192,6 +192,7 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 
 
 
+#define WEB_SERVICE_PORT (unsigned short) 9898
 /* ****************************************************************************
 *
 * initAsSamsonController - 
@@ -230,6 +231,13 @@ void Network::initAsSamsonController(int port, int workers)
 
 		LM_M(("Created endpoint %d, worker %d (%s)", 3 + ix, ix, endpoint[3 + ix]->alias.c_str()));
 	}
+
+
+	int fd = iomServerOpen(WEB_SERVICE_PORT);
+	if (fd == -1)
+		LM_XP(1, ("error opening web service listen socket"));
+
+	endpointAdd(fd, fd, "Web Listener", "Weblistener", 0, Endpoint::WebListener, "localhost", WEB_SERVICE_PORT, 0);
 }
 
 
@@ -397,8 +405,8 @@ Endpoint* Network::endpointAdd
 (
 	int              rFd,
 	int              wFd,
-	char*            name,
-	char*            alias,
+	const char*      name,
+	const char*      alias,
 	int              workers,
 	Endpoint::Type   type,
 	std::string      ip,
@@ -452,6 +460,8 @@ Endpoint* Network::endpointAdd
 		break;
 
 	case Endpoint::Delilah:
+	case Endpoint::WebListener:
+	case Endpoint::WebWorker:
 		for (ix = 3 + Workers; ix < (int) (Endpoints - 1); ix++)
 		{
 			if (endpoint[ix] == NULL)
@@ -501,7 +511,7 @@ Endpoint* Network::endpointAdd
 			if (endpoint[ix] == NULL)
 				LM_X(1, ("NULL worker endpoint at slot %d", ix));
 
-			if (endpointLookup(alias) != NULL)
+			if (endpointLookup((char*) alias) != NULL)
 			{
 				LM_E(("Intent to connect a second Worker with alias '%s' - rejecting connection", alias));
 				iomMsgSend(wFd, name, progName, Message::Die, Message::Evt);
@@ -666,6 +676,39 @@ void Network::msgTreat(int rFd, char* name)
 
 	if (ep == NULL)
 		LM_X(1, ("endpoint not found for rFd %d", rFd));
+
+	if (ep->type == Endpoint::WebListener)
+	{
+		int   fd;
+		char  hostName[128];
+
+		fd = iomAccept(ep->rFd, hostName, sizeof(hostName));
+		if (fd == -1)
+			LM_P(("iomAccept(%d)", listener->rFd));
+		else
+			endpointAdd(fd, fd, "Web Worker", "Webworker", 0, Endpoint::WebWorker, hostName, 0);
+
+		return;
+	}
+
+
+
+	//
+	// Special case - controller reads from Web Service connection
+	//
+	if (ep->type == Endpoint::WebWorker)
+	{
+		if (me->type != Endpoint::Controller)
+			LM_X(1, ("Got a request from a WebWorker and I'm not a controller !"));
+
+		std::string buf    = getJSONStatus();
+		int         bufLen = buf.size();
+
+		write(ep->wFd, buf.c_str(), bufLen);
+		close(ep->wFd);
+		endpointRemove(ep);
+		return;
+	}
 
 	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p)", name, ep));
 	s = iomMsgRead(rFd, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
@@ -1058,8 +1101,8 @@ void Network::run()
 
 			if (listener && (listener->state == Endpoint::Listening) && FD_ISSET(listener->rFd, &rFds))
 			{
-				int        fd;
-				char       hostName[128];
+				int  fd;
+				char hostName[128];
 
 				LM_T(LMT_SELECT, ("incoming message from my listener - I will accept ..."));
 				--fds;

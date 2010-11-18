@@ -14,6 +14,7 @@
 #include <QMetaType>
 
 #include "samson.pb.h"		//ss::network::Queue, ss::network::DataQueue
+#include "globals.h"
 
 class Queue : public QObject
 {
@@ -24,14 +25,6 @@ public:
 		: status(Queue::LOADING) {};
 	Queue(const QString &name)
 		: status(Queue::LOADING), name(name) {};
-	// copy constructor - needed to declare DataQueue as new metatype
-	// Not sure if it's needed. Probably will be removed.
-	Queue(const Queue &q)
-		: QObject()
-	{
-		name = q.getName();
-		size = q.getSize();
-	};
 	~Queue() {};
 
 	/*
@@ -49,19 +42,7 @@ public:
 	};
 
 	QString getName() const { return name; };
-//	void setName(const QString &_name) { name =_name; };
 	unsigned long getSize() const { return size; };
-//	void setSize(const unsigned long &_size) { size = _size; };
-
-	// Operator to compare two queues - they are the same if they have the same name.
-	virtual bool operator==(const Queue& q) const
-	{
-		QString q_name = q.getName();
-		if ( q_name.compare(name) == 0 )
-			return true;
-		else
-			return false;
-	};
 
 signals:
 	void statusChanged();
@@ -140,7 +121,5 @@ protected:
 	QString value;
 	unsigned long kv_number;
 };
-
-Q_DECLARE_METATYPE(Queue)
 
 #endif /* QUEUE_H_ */

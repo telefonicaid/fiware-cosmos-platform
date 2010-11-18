@@ -57,6 +57,7 @@ static void* runThread(void* vP)
 ProcessAssistant::ProcessAssistant(int coreNo, const char* _controller, SamsonWorker* _worker)
 {
 	core       = coreNo;
+	workers    = _worker->workersGet();
 	controller = strdup(_controller);
 	worker     = _worker;
 
@@ -169,7 +170,7 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 
 
 	LM_T(LMT_COREWORKER, ("Creating Process(rFd:%d, wFd:%d)", rFd, wFd));
-	Process* processP = new Process(rFd, wFd);
+	Process* processP = new Process(rFd, wFd, core, workers);
 	if (processP == NULL)
 		LM_X(1, ("error allocating a Process"));
 			

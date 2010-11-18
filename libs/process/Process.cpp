@@ -28,10 +28,14 @@ namespace ss {
 *
 * Constructor - 
 */
-   Process::Process(int _rFd, int _wFd)
+Process::Process(int _rFd, int _wFd, int _core, int _workers)
 {
-	rFd = _rFd;
-	wFd = _wFd;
+	rFd      = _rFd;
+	wFd      = _wFd;
+	core     = _core;
+	workers  = _workers;
+
+	LM_M(("Started process on core %d in set of %d workers"));
 }
 
 

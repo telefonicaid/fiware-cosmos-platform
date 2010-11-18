@@ -25,7 +25,7 @@ namespace ss {
 class Process
 {
 public:
-	Process(int rFd, int wFd);
+   Process(int rFd, int wFd, int core, int workers);
 	void     run(void);
 
 	
@@ -33,9 +33,10 @@ public:
 	
 private:
 
-	int rFd;
-	int wFd;
-	
+	int   rFd;
+	int   wFd;
+	int   core;
+	int   workers;
 	
 public:
 	void     runCommand(const char* command);

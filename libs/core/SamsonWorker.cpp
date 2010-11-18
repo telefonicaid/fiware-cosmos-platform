@@ -99,7 +99,6 @@ void SamsonWorker::run()
 
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
 
-
 	
 	// assert(epMgr);
 	// epMgr->run();

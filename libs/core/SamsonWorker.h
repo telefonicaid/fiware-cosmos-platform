@@ -48,6 +48,9 @@ namespace ss {
 		int             endpoints;
 		int             workers;
 
+		int             workersGet(void)        { return workers; }
+
+
 	private:
 		EndpointMgr*         epMgr;             // Endpoint Manager
 		NetworkInterface*    network;           // Network interface

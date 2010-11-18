@@ -42,6 +42,7 @@ public:
 
 private:
 	int                            core;
+	int                            workers;
 	pthread_t                      threadId;
 	time_t                         startTime;
 	char*                          controller;

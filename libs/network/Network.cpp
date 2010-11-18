@@ -922,6 +922,9 @@ void Network::msgTreat(void* vP)
 
 			LM_M(("Got %d bytes of WorkerVector msg data (%d workers)", dataLen, dataLen / sizeof(Message::Worker)));
 
+			if ((unsigned int) Workers != dataLen / sizeof(Message::Worker))
+				LM_X(1, ("Got %d workers from Controller - I thought there were %d workers", dataLen / sizeof(Message::Worker), Workers));
+
 			for (ix = 0; ix < dataLen / sizeof(Message::Worker); ix++)
 			{
 				Endpoint* epP;

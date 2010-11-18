@@ -211,7 +211,7 @@ namespace ss
 			{
 				network::HelpResponse help_response = packet->message.help_response();
 
-				if( help_response.queues() )
+				if( help_response.help().queues() )
 				{
 					txt << "Queues" << std::endl;
 					txt << "------------------------------------------------" << std::endl;
@@ -239,7 +239,7 @@ namespace ss
 					
 				}
 				
-				if( help_response.datas() )
+				if( help_response.help().datas() )
 				{
 					txt << "Datas" << std::endl;
 					txt << "------------------------------------------------" << std::endl;
@@ -251,7 +251,7 @@ namespace ss
 					txt << "------------------------------------------------" << std::endl;
 				}
 
-				if( help_response.operations() )
+				if( help_response.help().operations() )
 				{
 					txt << "Operations" << std::endl;
 					txt << "------------------------------------------------" << std::endl;

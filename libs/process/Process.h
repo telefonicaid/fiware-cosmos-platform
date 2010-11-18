@@ -32,11 +32,15 @@ public:
 	ModulesManager modulesManager;
 	
 private:
-	void     runCommand(const char* command);
-	char*    passCommand(const char* command);
 
 	int rFd;
 	int wFd;
+	
+	
+public:
+	void     runCommand(const char* command);
+	char*    passCommand(const char* command);
+
 };
 
 }

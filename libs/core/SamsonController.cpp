@@ -80,33 +80,25 @@ int SamsonController::receiveHelp(int fromId, Packet* packet)
 	Packet p;
 		
 	network::HelpResponse *response = p.message.mutable_help_response();
-
+	response->mutable_help()->CopyFrom( packet->message.help() );
+	
 	if( packet->message.help().queues() )
 	{
 		// Fill with queues information
 		data.helpQueues( response , packet->message.help() );
-		response->set_queues( true );
 	}
-	else
-		response->set_queues( false );
 		
 	if (packet->message.help().datas())
 	{
 		// Fill with datas information
 		modulesManager.helpDatas( response , packet->message.help() );
-		response->set_datas(true);
 	}
-	else
-		response->set_datas(false);
 
 	if( packet->message.help().operations() )
 	{
 		// Fill with operations information
 		modulesManager.helpOperations( response , packet->message.help() );
-		response->set_operations(true);
 	}
-	else
-		response->set_operations(false);
 		
 	LM_M(("help response with %d bytes", p.message.ByteSize()));
 	network->send(this, fromId, Message::HelpResponse, &p);

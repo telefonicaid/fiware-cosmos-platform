@@ -110,7 +110,7 @@ int DelilahQtApp::receiveData(ss::Packet* packet)
 
 	ss::network::HelpResponse resp = packet->message.help_response();
 
-	if( resp.queues() )
+	if( resp.help().queues() )
 	{
 		/*
 		 * Update data queues

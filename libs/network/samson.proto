@@ -152,14 +152,13 @@ message Help
 
 message HelpResponse
 {
-	required bool queues = 1;
-	required bool datas = 2;
-	required bool operations = 3;
+	required Help help=1;	// Original message to know what request is refering to
 
-	repeated Queue queue = 5;
-	repeated DataQueue data_queue = 6;
-	repeated Data data = 7;
-	repeated Operation operation = 8;
+	// Information
+	repeated Queue queue = 2;
+	repeated DataQueue data_queue = 3;
+	repeated Data data = 4;
+	repeated Operation operation = 5;
 }
 
 

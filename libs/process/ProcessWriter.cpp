@@ -37,9 +37,14 @@ namespace ss {
 		// Check if it will fit
 		if( miniBufferSize >= availableSpace )
 		{
-			assert( process );	// This is called from the Process side
-			// Free buffer
-			//process->XXX
+			/*
+			 Emit function can be called only from the process side.
+			 If the output buffer is full, a message is sent to the Process Assistant to flush the buffer to the "Network"
+			 After that, "process" can continue reseting the output buffer to fill it again
+			 */
+
+			assert( process );	
+			process->passCommand("process_output");
 			init();
 		}
 		

@@ -51,6 +51,11 @@ namespace ss {
 		}
 	};
 	
+	/* 
+	 Basic unit of storage for output key-values
+	 It is used by a particular output channel in a linked-chain way
+	 */
+	
 	struct NodeBuffer {
 		uint8 size;					// Size used inside this minibuffer
 		char data[KV_NODE_SIZE];	// Real buffer with data
@@ -111,8 +116,7 @@ namespace ss {
 
 		Operation *operation;
 		
-		SharedMemoryItem* sm;
-
+		SharedMemoryItem* sm;	// Shared memory used
 		
 		ProcessOperation( ProcessAssistant *_processAssitant , int processId )
 		{

@@ -10,8 +10,12 @@ namespace ss {
 	class KVWriter
 	{
 	public:
-		virtual void emit(DataInstance* key, DataInstance* value) = 0;
-		virtual void close()=0;
+
+		// Emit key values to a particular output
+		virtual void emit( int output , DataInstance *key , DataInstance *value )=0;
+		
+		//virtual void emit(DataInstance* key, DataInstance* value) = 0;
+		//virtual void close()=0;
 		virtual ~KVWriter(){}
 	};
 }

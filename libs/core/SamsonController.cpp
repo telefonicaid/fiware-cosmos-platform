@@ -264,7 +264,9 @@ void SamsonController::sendWorkerTask(int workerIdentifier, size_t task_id, Cont
 
 	network::WorkerTask *t = p2.message.mutable_worker_task();
 	t->set_task_id(task_id);
-	t->set_operation(task->getCommand());
+
+	// Fill information for this packet
+	task->fillInfo( t );
 	
 	// TODO: Complete with the rest of input / output parameters
 		

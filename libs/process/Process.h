@@ -2,9 +2,11 @@
 #define _H_PROCESS
 
 #include "ModulesManager.h"		//ss::ModuleManager
+#include "ProcessInterface.h"	//ss::ProcessInterface
 
 namespace ss {
 
+class ProcessOperationFramework;	
 
 
 /* ****************************************************************************
@@ -22,27 +24,31 @@ namespace ss {
 * and run methods blocks again waiting for the next command
 */
 	
-class Process
-{
-public:
-   Process(int rFd, int wFd, int core, int workers);
-	void     run(void);
 
+	class Process : public ProcessInterface
+	{
+		public:
+			 Process(int rFd, int wFd, int core, int workers);
+			 void     run(void);
 	
-	ModulesManager modulesManager;
-	
-private:
+
+		
+		ModulesManager modulesManager;
+		ProcessOperationFramework * framework;
+	private:
+
 
 	int   rFd;
 	int   wFd;
 	int   core;
 	int   workers;
 	
-public:
-	void     runCommand(const char* command);
-	char*    passCommand(const char* command);
+		
+	public:
+		void     runCommand(const char* command);
+		char*    passCommand(const char* command);
 
-};
+	};
 
 }
 

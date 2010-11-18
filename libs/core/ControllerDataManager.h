@@ -16,6 +16,7 @@ namespace ss {
 	class ControllerTask;
 	class DataManagerCommandResponse;
 	class SamsonController;
+	class ControllerTaskInfo;
 	
 	class DataQueue
 	{
@@ -87,7 +88,12 @@ namespace ss {
 		void helpQueues( network::HelpResponse *response , network::Help help );
 			
 		
+		void retreveInfoForTask( ControllerTaskInfo *info );		
+		
 	private:
+
+		
+		void _retreveInfoForTask( ControllerTaskInfo *info );		
 		
 		virtual DataManagerCommandResponse _run( std::string command );
 		virtual void _un_run( std::string command );

@@ -357,7 +357,7 @@ namespace ss {
 						outputStream << std::endl;
 						outputStream << "*/" << std::endl;
 						
-						outputStream << "\n\n" << mainFunction << "\n{\n\t//Write here yout code\n}\n\n";
+						outputStream << "\n\n" << mainFunction << "\n{\n\t//Write here your code\n}\n\n";
 					}
 					
 				}

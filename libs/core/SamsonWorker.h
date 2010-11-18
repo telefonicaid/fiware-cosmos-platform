@@ -24,18 +24,14 @@
 #include "DataBuffer.h"			// ss::DataBuffer
 #include "LoadDataManager.h"	// ss::LoadDataManager
 
-
 namespace ss {
 	
 	class EndpointMgr;
 	class ProcessAssistant;
+	class ProcessAssistantInterface;
 		
 	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
 	{
-		friend class WorkerTaskManager;
-		friend class LoadDataManager;
-		friend class ProcessAssistant;
-		friend class ProcessWriter;
 		
 	public:
 		SamsonWorker(char* controller, char* alias, unsigned short port, int workers, int endpoints);
@@ -48,15 +44,16 @@ namespace ss {
 		int             endpoints;
 		int             workers;
 
+
 		int             workersGet(void)        { return workers; }
 
+	public:
 
-	private:
 		EndpointMgr*         epMgr;             // Endpoint Manager
 		NetworkInterface*    network;           // Network interface
 		ModulesManager       modulesManager;    // Manager of the modules we have
 		WorkerTaskManager    taskManager;       // Task manager
-		ProcessAssistant**   processAssistant;  // vector of core worker processes
+		ProcessAssistantInterface**   processAssistant;  // vector of core worker processes
 		DataBuffer           dataBuffer;        // Element used to buffer incoming data packets before they are joined and saved to disk
 		LoadDataManager      loadDataManager;   // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
 		int                  myWorkerId;        // My id as worker : 0 , 1 ,2 ,3

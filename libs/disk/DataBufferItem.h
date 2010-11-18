@@ -45,15 +45,7 @@ namespace ss {
 		void diskManagerNotifyFinish(size_t id, bool success);
 
 		// Get some string with debug info
-		std::string getStatus()
-		{
-			std::ostringstream output;
-			if( finished )
-				output << "[FINISHED] ";
-			output << "[Pending to be confirmed " << ids_files.size() << "files ] ";
-			output << "[Created " << files.size() << " files ] ";
-			return output.str();
-		}
+		std::string getStatus();
 			
 		
 		

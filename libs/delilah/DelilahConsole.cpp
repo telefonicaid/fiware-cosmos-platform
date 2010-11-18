@@ -172,7 +172,7 @@ namespace ss
 
 				// Prepare what to show on screen
 				txt << "----------------------------------------------------------------" << std::endl;
-				txt << "STATUS " << std::endl;
+				txt << "STATUS " << title << std::endl;
 				txt << "----------------------------------------------------------------" << std::endl;
 				txt << message << std::endl;
 				txt << "----------------------------------------------------------------" << std::endl;

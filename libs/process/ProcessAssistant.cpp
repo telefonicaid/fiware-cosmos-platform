@@ -26,8 +26,8 @@
 #include "Process.h"               // Process
 #include "ProcessAssistant.h"      // Own interface
 #include "SamsonWorker.h"			// ss::SamsonWorker
-
-
+#include "ProcessWriter.h"			// ss::ProcessAssistantOperationFramework
+#include "ProcessAssistantOperationFramework.h"	// ss::ProcessAssistantOperationFramework
 
 extern int logFd;
 
@@ -54,15 +54,18 @@ static void* runThread(void* vP)
 *
 * Constructor
 */
-ProcessAssistant::ProcessAssistant(int coreNo, const char* _controller, SamsonWorker* _worker)
+ProcessAssistant::ProcessAssistant(int coreNo, SamsonWorker* _worker) : ProcessAssistantInterface( coreNo , _worker )
 {
+
 	core       = coreNo;
 	workers    = _worker->workersGet();
-	controller = strdup(_controller);
 	worker     = _worker;
+
 
 	pthread_create(&threadId, NULL, runThread, this);
 
+	framework = NULL;	// Framework is created for each operation
+	
 	setStatus( "Init" );
 }
 
@@ -217,42 +220,65 @@ void ProcessAssistant::run(void)
 		WorkerTaskItem *item =  worker->taskManager.getNextItemToProcess();
 		setStatus( "Running..." + item->getStatus() );
 
+		// Create the Framework to run the operation from the ProcessAssitant side
+		Operation * op = worker->modulesManager.getOperation( item->operation );
+		assert( op );
+		framework = new ProcessAssistantOperationFramework(this ,op, core , worker->network->getNumWorkers() );
+
+		// Add input files...
+		
+		// Setup everything
+		framework->setup();
+		
 		LM_T(LMT_COREWORKER, ("Running command '%s' (rFd: %d, wFd: %d)", item->operation.c_str(), rFd, wFd));
 		result = runCommand(rFd, wFd, (char*) item->operation.c_str() , 5);
 
-		// Loop receiving command from the Process until "finish" or "crash" received
-		while( (strcmp(result, "finish") != 0 ) && (strcmp(result, "crash") != 0) && (strcmp(result, "error") != 0 ) )
+		// Loop receiving "process_output" message to flush output to the network
+		while( (strcmp(result, "process_output") == 0 ) )
 		{
-			// Do something with the received command ( create a buffer with output data )
-			// TODO: pending
-			free(result);
+			// Flush the output of the buffer
+			framework->flushOutput();
 			
+			free(result);
 			result = runCommand(rFd, wFd, (char*) "continue" , 5);
 		}
 		
-		// Report finish of this task
+		// If finish correctly, flush output and notify end 
 		
 		if (strcmp(result, "finish") == 0)
 		{
+			// Flush the output of the buffer
+			framework->flushOutput();
+			delete framework;
+			framework = NULL;
+			
 			LM_W(("Got finish from runCommand"));
 			worker->taskManager.finishItem(item, false, "");
 			result = runCommand(rFd, wFd, (char*) "ok" , 5);
 		}
-		else if (strcmp(result, "crash") == 0)
+		else
 		{
-			LM_W(("child process crashed - starting a new process"));
-			close(rFd);
-			close(wFd);
+			// Some kind of error happend here, so the framework is destroyed
+			delete framework;
+			framework = NULL;
+			
+			if (strcmp(result, "crash") == 0)
+			{
+				LM_W(("child process crashed - starting a new process"));
+				close(rFd);
+				close(wFd);
 
-			// ALARM(Alarm::Error, Alarm::CoreWorkerDied, ("Core worker %d died", core));
-			worker->taskManager.finishItem(item, true, "Process crashed");
-			coreWorkerStart(progName, &rFd, &wFd);
-		}
-		else if (strcmp(result, "error") == 0)
-		{
-		  LM_W(("child process error - starting a new process"));
-		  // ALARM(Alarm::Error, Alarm::CoreWorkerDied, ("Core worker %d died", core));
-		  worker->taskManager.finishItem(item, true, "Process error");
+				// ALARM(Alarm::Error, Alarm::CoreWorkerDied, ("Core worker %d died", core));
+				worker->taskManager.finishItem(item, true, "Process crashed");
+				coreWorkerStart(progName, &rFd, &wFd);
+			}
+			else if (strcmp(result, "error") == 0)
+			{
+			  LM_W(("child process error - starting a new process"));
+			  // ALARM(Alarm::Error, Alarm::CoreWorkerDied, ("Core worker %d died", core));
+			  worker->taskManager.finishItem(item, true, "Process error");
+			}
+			
 		}
 			  
 		free(result);

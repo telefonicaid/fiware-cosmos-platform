@@ -8,6 +8,7 @@
 #include "samson/Operation.h"		// ss::Operation
 #include "Process.h"				// ss::Process
 #include "MemoryManager.h"
+#include "samson/KVWriter.h"				// ss::KVWriter
 
 #define KV_NODE_SIZE	255
 #define KV_NODE_UNASIGNED 4294967295u	// 2^32-1
@@ -15,8 +16,8 @@
 namespace ss {
 
 	
-	class Process;
-	class ProcessAssistant;
+	class ProcessInterface;
+	class ProcessAssistantInterface;
 	
 
 	struct HashGroupOutput {
@@ -103,69 +104,16 @@ namespace ss {
 	};
 	
 
-	/**
-	 Full class for a particualr operation process
-	 */
-	
-	class ProcessOperation
-	{
-		
-		// Pointer to the parent ( one of them )
-		Process *process;
-		ProcessAssistant *processAssitant;
 
-		Operation *operation;
-		
-		SharedMemoryItem* sm;	// Shared memory used
-		
-		ProcessOperation( ProcessAssistant *_processAssitant , int processId )
-		{
-			processAssitant = _processAssitant;
-			sm = MemoryManager::shared()->getSharedMemory( processId );
-		}
-		
-		ProcessOperation( Process *_process	, int processId )
-		{
-			process = _process;
-			sm = MemoryManager::shared()->getSharedMemory( processId );
-		}
-		
-
-		void setOpertion( Operation *_operation )
-		{
-			operation = _operation;
-		}
-		
-		
-
-		void addInputFiles()
-		{
-		}
-		
-		
-		bool run()
-		{
-			if( operation->getType() == Operation::generator )
-			{
-				
-				// Run as generator
-				return true;
-			}
-			
-			return false;
-		}
-		
-	};
-	
 	
 	/**
 	 Class to emit key-values ( for maps , reducers, etc )
 	 */
 	
-	class ProcessWriter
+	class ProcessWriter : public KVWriter
 	{
-		Process* process;			
-		ProcessAssistant *processAssistant;
+		ProcessInterface* process;			
+		ProcessAssistantInterface *processAssistant;
 		
 		char * buffer;		// General output buffer
 		size_t size;		// General output buffer size
@@ -216,8 +164,8 @@ namespace ss {
 			node = (NodeBuffer*) ( buffer + sizeof(OutputChannel) * num_outputs * num_servers );
 			num_nodes = ( size - (sizeof(OutputChannel)* num_outputs* num_servers )) / sizeof( NodeBuffer );
 
-			std::cout << "Size of header: " << au::Format::string( sizeof(OutputChannel) * num_outputs * num_servers ) << std::endl;
-			std::cout << "Number of nodes: " << num_nodes  << "\n";
+			//std::cout << "Size of header: " << au::Format::string( sizeof(OutputChannel) * num_outputs * num_servers ) << std::endl;
+			//std::cout << "Number of nodes: " << num_nodes  << "\n";
 
 			// Init the entire output structure
 			init();
@@ -232,12 +180,12 @@ namespace ss {
 		
 		// This class is used both in the Process and ProcessAssistant
 		
-		void setProcess( Process *_process)
+		void setProcess( ProcessInterface *_process)
 		{
 			process = _process;
 		}
 		
-		void setProcessAssistant( ProcessAssistant *_processAssistant)
+		void setProcessAssistant( ProcessAssistantInterface *_processAssistant)
 		{
 			processAssistant = _processAssistant;
 		}
@@ -268,6 +216,13 @@ namespace ss {
 		
 	};
 
+	
+
+	
+
+
+	
+	
 }
 
 #endif

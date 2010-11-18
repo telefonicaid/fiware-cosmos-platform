@@ -12,7 +12,7 @@
 */
 #include <string>                  // std::string
 #include <pthread.h>               // pthread_t
-
+#include "ProcessAssistantInterface.h"		// ss::ProcessAssistantInterface
 
 
 namespace ss {
@@ -34,43 +34,42 @@ namespace ss {
 * If the "process" crashes, ProcessAssistant creates again the process and notify about the failure
 * If after some timeout, process has not returned finish, the process assistant kills the process and creates it again, notifying about failure
 */
-class SamsonWorker;
-class ProcessAssistant
-{
-public:
-	ProcessAssistant(int coreNo, const char* _controller, SamsonWorker* worker);
-
-private:
-	int                            core;
-	int                            workers;
-	pthread_t                      threadId;
-	time_t                         startTime;
-	char*                          controller;
-	SamsonWorker*                  worker;
-	
-	void         coreWorkerStart(char* fatherName, int* rFdP, int* wFdP);
 
 	
-	friend class ProcessWriter;
-	
-	std::string status;	// Internal state to be acess with getStatus
+	class SamsonWorker;
+	class ProcessAssistantOperationFramework;
 
-	void setStatus( std::string txt )	// Internal function to set the status
+		
+	class ProcessAssistant  : public ProcessAssistantInterface
 	{
-		std::ostringstream s;
-		s << "Core " << core << " " << txt;
-		status = s.str();
-	}
-	
-	
-public:
-	void         run(void);
-	char*        runCommand(int rFd, int wFd, char* command, int timeOut);
-	
-	std::string getStatus();
+	public:
+		ProcessAssistant(int coreNo, SamsonWorker* worker);
 
-	
-};
+	private:
+
+		int                            core;
+		int                            workers;
+		pthread_t                      threadId;
+		time_t                         startTime;
+		SamsonWorker*                  worker;
+		
+		void         coreWorkerStart(char* fatherName, int* rFdP, int* wFdP);
+
+		ProcessAssistantOperationFramework * framework;
+		
+		friend class ProcessWriter;
+		
+
+		
+		
+	public:
+		void         run(void);
+		char*        runCommand(int rFd, int wFd, char* command, int timeOut);
+		
+		std::string getStatus();
+
+		
+	};
 
 }
 

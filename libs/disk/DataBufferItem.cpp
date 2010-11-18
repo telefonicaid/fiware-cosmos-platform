@@ -105,6 +105,20 @@ namespace ss {
 		return fileName.str();
 	}
 	
+	std::string DataBufferItem::getStatus()
+	{
+		std::ostringstream output;
+		if( finished )
+			output << "[FINISHED] ";
+		output << "[Pending to be confirmed " << ids_files.size() << " files ] ";
+		output << "[Created " << files.size() << " files ] ";
+		
+		std::map<std::string , BufferVector* >::iterator i;
+		for (i = begin() ; i != end() ; i++)
+			output << "[ Queue: " << i->first << " " << i->second->getInfo().str() << " ]";
+		
+		return output.str();
+	}	
 	
 	
 }

@@ -5,14 +5,15 @@
 #include "Endpoint.h"					// ss::Endpoint
 #include "Packet.h"						// ss::Packet
 #include "ObjectWithStatus.h"			// ss::getStatusFromArray(.)
+
 namespace ss
 {
 
-	size_t ControllerTaskManager::addTask( std::string command , size_t job_id  )
+	size_t ControllerTaskManager::addTask( ControllerTaskInfo *info , size_t job_id  )
 	{
 		lock.lock();
 		
-		ControllerTask * t = new ControllerTask( current_task_id++ , job_id,  command , controller->network->getNumWorkers() );
+		ControllerTask * t = new ControllerTask( current_task_id++ , job_id,  info , controller->network->getNumWorkers() );
 		
 		//task.insertInMap( t->getId() , t ); // No idea why this is not working :(
 		task.insert( std::pair<size_t , ControllerTask*>( t->getId() , t));

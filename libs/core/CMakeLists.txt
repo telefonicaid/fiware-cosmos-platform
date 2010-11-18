@@ -10,6 +10,7 @@ SET (HEADERS
     Job.h
     ControllerTaskManager.h
     ControllerTask.h
+    ControllerTaskInfo.h
 )
 
 SET (SOURCES
@@ -24,6 +25,7 @@ SET (SOURCES
     JobManager.cpp
     ControllerTaskManager.cpp
     ControllerTask.cpp
+    ControllerTaskInfo.cpp
 )
 
 SET (STATIC_LIBS

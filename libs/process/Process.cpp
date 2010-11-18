@@ -17,8 +17,9 @@
 #include "iomMsgSend.h"            // iomMsgSend
 #include "Message.h"               // Message::*
 #include "Process.h"               // Own interface
-
 #include <iostream>					// std::cout
+#include "ProcessWriter.h"			// ss::ProcessOperationFramework
+#include "ProcessOperationFramework.h"	// ss::ProcessOperationFramework
 
 namespace ss {
 
@@ -36,9 +37,8 @@ Process::Process(int _rFd, int _wFd, int _core, int _workers)
 	workers  = _workers;
 
 	LM_M(("Started process on core %d in set of %d workers"));
+	
 }
-
-
 
 /* **********************************************************************
 *		 
@@ -106,9 +106,28 @@ void Process::run(void)
 */
 void Process::runCommand(const char* com)
 {
+	
 	LM_T(60, ("running command '%s'", com));
 
-	sleep(1);
+	Operation * operation = modulesManager.getOperation( com );
+	
+	if( !operation)
+		LM_T(60, ("Operation not defined when running command '%s'", com));
+
+	assert( operation );
+	
+	framework = new ProcessOperationFramework( this, operation, core , workers  );
+
+	LM_T(60, ("Setup for command '%s'", com));
+	framework->setup();
+
+	
+	LM_T(60, ("Calling run for command '%s'", com));
+	framework->run();
+	LM_T(60, ("Finished run for command '%s'", com));
+
+	//sleep(1);
+	
 	passCommand("finish");
 
 	LM_T(60, ("command '%s' finished", com));

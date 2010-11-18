@@ -5,6 +5,8 @@
 #include "CommandLine.h"		// au::CommandLine
 #include "samson/Operation.h"	// ss::Operation
 #include "Packet.h"				// ss::Packet
+#include "ControllerTask.h"		// ss::ControllerTaskInfo
+
 namespace ss {
 
 
@@ -63,10 +65,29 @@ namespace ss {
 			
 			if( operation )
 			{
+				
+				if( commandLine.get_num_arguments() < (int)(1 + operation->getNumInputs() + operation->getNumOutputs() ) )
+				{
+					setError("Not enougth parameters");
+					return false;
+				}
+				
+				ControllerTaskInfo *task_info = new ControllerTaskInfo( operation , &commandLine );
+
+				
+				controller->data.retreveInfoForTask( task_info );
+
+				if( task_info->error )
+				{
+					setError(task_info->error_message);	// There was an error with input/output parameters
+					delete task_info;
+					return false;
+				}
+				
 				if( operation->getType() == Operation::generator ) 
 				{
 					// No validation of the arguments rigth now... ( just for testing )
-					task_id = controller->taskManager.addTask( command , id );
+					task_id = controller->taskManager.addTask( task_info , id );
 					return false;	// No continue until confirmation of this task is received
 				}
 				
@@ -113,6 +134,7 @@ namespace ss {
 		setError( std::string("Command without any command: ") + command);
 		return false;
 	}
+	
 	
 	bool Job::isFinish()
 	{

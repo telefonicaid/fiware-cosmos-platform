@@ -11,6 +11,7 @@
 #include "KVInfo.h"							// ss::KVInfo
 #include "ModulesManager.h"					// Utility functions
 #include "ObjectWithStatus.h"				// getStatusFromArray(.)
+#include "samson/Operation.h"				// ss::Operation
 
 namespace ss {
 	
@@ -278,6 +279,73 @@ namespace ss {
 		lock.unlock();
 	}
 	
+	void ControllerDataManager::retreveInfoForTask( ControllerTaskInfo *info )		
+	{
+		lock.lock();
+		_retreveInfoForTask( info );
+		lock.unlock();
+		
+	}
 	
-
+	void ControllerDataManager::_retreveInfoForTask( ControllerTaskInfo *info )		
+	{
+		
+		std::ostringstream error_message;
+		
+		// Check inputs	
+		for (int i = 0 ; i < (int)info->inputs.size() ; i++)
+		{
+			std::string queue_name =  info->inputs[i] ;
+			
+			ControllerQueue *q = queues.findInMap( queue_name );
+			if( q )
+			{
+				KVFormat queue_format = q->format();
+				KVFormat parameter_format = info->operation->getInputFormat(i);
+				
+				if( !queue_format.isEqual( parameter_format ) )
+				{
+					error_message << "Wrong format for queue " << queue_name << " (" << queue_format.str() << " vs " << parameter_format.str() << ")";
+					info->setError( error_message.str() );
+					return; 
+				}
+			}
+			else
+			{
+				error_message << "Unknown queue " << info->inputs[i];
+				info->setError( error_message.str() );
+				return; 
+			}
+		}
+		
+		// Check output	
+		for (int i = 0 ; i < (int)info->outputs.size() ; i++)
+		{
+			std::string queue_name = info->outputs[i];
+			
+			ControllerQueue *q = queues.findInMap( queue_name );
+			if( q )
+			{
+				KVFormat queue_format = q->format();
+				KVFormat parameter_format = info->operation->getOutputFormat(i);
+				
+				if( !queue_format.isEqual( parameter_format ) )
+				{
+					error_message << "Wrong format for queue " << queue_name << " (" << queue_format.str() << " vs " << parameter_format.str() << ")";
+					info->setError( error_message.str() );
+					return; 
+				}
+			}
+			else
+			{
+				error_message << "Unknown queue " << info->outputs[i];
+				info->setError( error_message.str() );
+				return; 
+			}
+		}
+		
+		
+	}
+	
+	
 }

@@ -1,13 +1,25 @@
 SET (HEADERS
+    ProcessAssistantInterface.h
+    ProcessInterface.h
     ProcessAssistant.h
     Process.h
     ProcessWriter.h
+    ProcessAssistantFake.h
+    OperationFramework.h
+    ProcessOperationFramework.h
+    ProcessAssistantOperationFramework.h
 )
 
 SET (SOURCES
+    ProcessAssistantInterface.cpp
+    ProcessInterface.cpp
     ProcessAssistant.cpp
     Process.cpp
     ProcessWriter.cpp
+    ProcessAssistantFake.cpp
+    OperationFramework.cpp
+    ProcessOperationFramework.cpp
+    ProcessAssistantOperationFramework.cpp
 )
 
 SET (STATIC_LIBS

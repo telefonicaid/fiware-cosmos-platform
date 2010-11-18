@@ -24,6 +24,10 @@ clean:
 xcode:	
 	./scripts/prepareXcode
 
+reset_svn:
+	sudo rm -Rf build/*
+	sudo rm -Rf xcode_proj
+
 reset:
 #	sudo rm -Rf build/*
 #	sudo rm -Rf xcode_proj
@@ -44,6 +48,7 @@ core:
 example:
 	touch modules/example/Module
 	make -C build/modules/example
+	sudo make install -C build/modules/example
 
 qt:
 	make -C build/apps/delilahQt

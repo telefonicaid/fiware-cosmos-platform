@@ -17,6 +17,9 @@
 #include "SamsonController.h"	// ss:: SasonController
 #include "SamsonSetup.h"		// ss::SamsonSetup
 
+#include "ModulesManager.h"		// ss::ModulesManager
+#include "samson/Operation.h"	// ss::Operation
+
 
 #define VECTOR_LENGTH(v) sizeof(v)/sizeof(v[0])
 
@@ -36,8 +39,6 @@ int logFd = -1;
 
 char* progName = (char*) "samsonDemo";
 
-
-
 void *run_delilah(void* d)
 {
 	ss::Delilah* delilah = (ss::Delilah*) d;
@@ -50,6 +51,7 @@ void *run_delilah(void* d)
 
 int main(int argc, const char *argv[])
 {
+	
 	// Init the trace system
 	ss::samsonInitTrace( argc , argv, &::logFd);
 	

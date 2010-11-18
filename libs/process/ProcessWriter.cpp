@@ -89,10 +89,14 @@ namespace ss {
 
 	void ProcessWriter::FlushBuffer()
 	{
-		std::cout << "Debuggin ProcessWriter \n";
+		
+		size_t task_id = processAssistant->getTaskId();
 		
 		for (int o = 0 ; o < num_outputs ; o++)
 		{
+			// Name of the queue to sent this packet ( if any )
+			std::string queue_name = processAssistant->getOutputQueue( o );
+			
 			for (int s = 0 ; s < num_servers ; s++)
 			{				
 				OutputChannel * _channel		= &channel[ o * num_servers + s ];	
@@ -138,9 +142,12 @@ namespace ss {
 					if( processAssistant )
 					{
 						Packet p;
-						// TODO: Prepare the messsage
 						p.buffer = buffer;
+						network::WorkerDataExchange *dataMessage =  p.message.mutable_data();
 						
+						dataMessage->set_task_id(task_id);
+						dataMessage->set_queue( queue_name );
+												
 						NetworkInterface *network = processAssistant->worker->network;
 						network->send(processAssistant->worker, network->workerGetIdentifier(s) , Message::WorkerDataExchange, &p);
 					}

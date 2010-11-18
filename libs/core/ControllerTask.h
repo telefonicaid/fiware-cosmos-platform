@@ -9,11 +9,13 @@
 #include <iostream>							// std::cout
 #include "samson.pb.h"						// network::...
 #include <set>								// std::set
+#include "ControllerTaskInfo.h"				// ss::ControllerTaskInfo
+#include "samson.pb.h"						// ss::network::...
 
 namespace ss {
 	
 	class SamsonController;
-	
+
 	/**
 	 Task at the controller
 	 Managed by ControllerTaskManager
@@ -25,9 +27,8 @@ namespace ss {
 		
 		size_t id;			// Id of the task ( shared by all the workers )
 		size_t job_id;		// Id of the job it belongs
-		
-		// Main command line
-		std::string command;
+				
+		ControllerTaskInfo *info;
 		
 		int total_workers;	// Total workers that have to confirm the task
 		std::vector<network::WorkerTaskConfirmation> confirmationMessages;		// All confirmation messages received for this task
@@ -37,16 +38,23 @@ namespace ss {
 	public:
 		
 		// Children controller tasks
-		ControllerTask( size_t _id , size_t _job_id,  std::string _command , int _total_workers )
+		ControllerTask( size_t _id , size_t _job_id, ControllerTaskInfo *_info , int _total_workers )
 		{
 			// Keep the command and the id
 			id = _id;
 			job_id =_job_id;
-			command = _command;
 
+			// Elements
+			info = _info;
+			
 			// total number of workers to wait for this number of confirmation ( in case we sent to workers )
 			total_workers = _total_workers;
 			
+		}
+		
+		~ControllerTask()
+		{
+			delete info;
 		}
 		
 		size_t getId()
@@ -61,15 +69,22 @@ namespace ss {
 		
 		void notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation confirmationMessage );
 		
-		std::string getCommand()
+		
+		void fillInfo( network::WorkerTask *t )
 		{
-			return command;
+			t->set_operation( info->operation_name );
+			
+			// Set the output names
+			for (int i = 0 ; i < (int)info->outputs.size() ; i++)
+				t->add_output( info->outputs[i] );
 		}
+		
+
 		
 		std::string getStatus()
 		{
 			std::ostringstream o;
-			o << "Task " << id << " : " << command;
+			o << "Task " << id << " : " << info->command;
 			return o.str();
 		}
 		

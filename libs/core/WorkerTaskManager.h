@@ -1,11 +1,11 @@
 #ifndef _H_WORKER_TASK_MANAGER
 #define _H_WORKER_TASK_MANAGER
 
-#include "SamsonWorker.h"			// SamsonWorker
 #include "samson.pb.h"				// WorkerTask
 #include <list>						// std::list
 #include "au_map.h"					// au::map
 #include "ObjectWithStatus.h"
+#include "lock.h"					// au::Lock
 
 namespace ss {
 
@@ -23,7 +23,8 @@ namespace ss {
 		size_t task_id;	// Global task id
 		int item_id;	// Item id in this worker
 			
-		std::string operation;
+		std::string operation;				// Name of the operation
+		std::vector<std::string> outputs;	// Name of the output queues ( to send data )
 		
 		enum State
 		{
@@ -35,9 +36,12 @@ namespace ss {
 		State state;
 		
 		
-		WorkerTaskItem( size_t _task_id , size_t _item_id ,  std::string _operation  )
+		WorkerTaskItem( size_t _task_id , size_t _item_id ,  const network::WorkerTask &task )
 		{
-			operation = _operation;
+			operation = task.operation();
+			
+			for (int i = 0 ; i < task.output_size() ; i++)
+				outputs.push_back( task.output(i) );
 			
 			task_id = _task_id;
 			item_id = _item_id;
@@ -66,7 +70,22 @@ namespace ss {
 		std::string getStatus()
 		{
 			std::ostringstream output;
-			output << "\t\tTask Item (Task: " << task_id << ") Item: " << item_id;
+			output << "\t\tTask Item (Task: " << task_id << ") Item: " << item_id << " ";
+			
+			switch (state) {
+				case definition:
+					output << " in definition ";
+					break;
+				case ready:
+					output << " ready ";
+					break;
+				case running:
+					output << " running ";
+					break;
+				default:
+					break;
+			}
+			
 			return output.str();
 		}
 		
@@ -96,8 +115,8 @@ namespace ss {
 			error = false;
 			
 			// rigth not for demo, we create 10 items to be executed
-			for (size_t i = 0 ; i < 10 ; i++)
-				item.insertInMap( i , new WorkerTaskItem( task_id , i ,  operation ) );
+			for (size_t i = 0 ; i < 1 ; i++)
+				item.insertInMap( i , new WorkerTaskItem( task_id , i ,  task ) );
 		}
 
 		// Get the next item ( if any )

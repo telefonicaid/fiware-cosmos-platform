@@ -36,6 +36,12 @@ namespace ss {
 		{
 			return info.size;
 		}
+
+		FileKVInfo getInfo()
+		{
+			return info;
+		}
+
 		
 		Buffer* getJoinedBuffer( );
 		

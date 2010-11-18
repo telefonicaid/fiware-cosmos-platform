@@ -14,7 +14,8 @@
 #include "EndpointMgr.h"				// ss::EndpointMgr
 #include "SamsonSetup.h"				// ss::SamsonSetup
 #include "Format.h"						// au::Format
-		
+#include "ProcessAssistantFake.h"		// ss::ProcessAssistantFake
+
 namespace ss {
 
 
@@ -89,13 +90,17 @@ void SamsonWorker::run()
 	
 	LM_T(LMT_WINIT, ("initializing %d process assistants", num_processes));
 
-	processAssistant = (ProcessAssistant**) calloc(num_processes, sizeof(ProcessAssistant*));
+	processAssistant = (ProcessAssistantInterface**) calloc(num_processes, sizeof(ProcessAssistantInterface*));
 	if (processAssistant == NULL)
-		LM_XP(1, ("calloc(%d, %d)", num_processes, sizeof(ProcessAssistant*)));
+		LM_XP(1, ("calloc(%d, %d)", num_processes, sizeof(ProcessAssistantInterface*)));
 
 	int coreId;
 	for (coreId = 0; coreId < num_processes ; coreId++)
-		processAssistant[coreId] = new ProcessAssistant(coreId, controller.c_str(), this);
+	{
+		//processAssistant[coreId] = new ProcessAssistant(coreId, this);
+		processAssistant[coreId] = new ProcessAssistantFake(coreId, this);
+		
+	}
 
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
 
@@ -136,7 +141,9 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	{
 		Packet p;
 		network::StatusResponse *response = p.message.mutable_status_response();
-		response->set_title( "Worker " + network->getWorkerFromIdentifier( network->getMyidentifier() ) );
+		
+		response->set_title( "Worker " + au::Format::string( network->getWorkerFromIdentifier( network->getMyidentifier() ) ) );
+		
 		response->set_response( getStatus( packet->message.status_request().command() ) );
 		network->send(this, fromId, Message::StatusResponse, &p);
 		return 0;

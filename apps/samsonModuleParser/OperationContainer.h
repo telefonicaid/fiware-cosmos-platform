@@ -104,9 +104,11 @@ namespace ss
 			if( (type == "map") || (type == "reduce") )
 				o << "void " << nameSpaceLocal <<    "run(  ss::KVSetStruct* inputs , std::vector<ss::KVWriter*>& outputs )";
 			if( type == "generator" )
-				o << "void "<< nameSpaceLocal << "run( std::vector<ss::KVWriter *>& writers )";
+				o << "void "<< nameSpaceLocal << "run( ss::KVWriter *writer )";
 			
 			return o.str();
+		
+
 			
 		}
 		

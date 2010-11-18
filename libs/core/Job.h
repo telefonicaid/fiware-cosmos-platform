@@ -9,13 +9,18 @@
 #include "samson.pb.h"						// ss::network::...
 #include <iostream>							// std::cout
 #include "ObjectWithStatus.h"				// ss::ObjectWithStatus
+#include "CommandLine.h"					// au::CommandLine
 
 namespace ss {
 	
 	
 	
+	
+	
 	class SamsonController;
 	class ControllerTask;
+	class Operation;
+	class ControllerTaskInfo;
 	
 	class JobItem
 	{

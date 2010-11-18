@@ -265,8 +265,21 @@ namespace ss {
 		{
 			return outputFormats;
 		}
+	
+		
+		KVFormat getInputFormat( int i )
+		{
+			return inputFormats[i];
+		}
+
+		KVFormat getOutputFormat( int i )
+		{
+			return outputFormats[i];
+		}
+		
 		
 	};
+	
 
 
 
@@ -290,7 +303,7 @@ namespace ss {
 		 \param writer element to deliver output value pairs \n
 		 */
 		
-		virtual void run( std::vector<KVWriter *>& writers )=0;
+		virtual void run( KVWriter *writer )=0;
 		
 	};
 	

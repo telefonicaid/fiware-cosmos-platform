@@ -13,7 +13,7 @@ namespace ss {
 
 	class SamsonController;
 	class ControllerTask;
-	
+	class ControllerTaskInfo;
 	
 	/**
 	 Manager of running tasks at controller
@@ -40,7 +40,7 @@ namespace ss {
 		 Add a particular task into the controller scheduler from delailah command
 		 */
 		
-		size_t addTask( std::string command , size_t job_id );
+		size_t addTask( ControllerTaskInfo *info , size_t job_id );
 
 		/**
 		 Noitify a confirmation from workers

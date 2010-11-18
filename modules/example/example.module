@@ -15,6 +15,14 @@ data example
 	system.Int32 c;
 }
 
+
+map map
+{
+	in system.UInt system.UInt
+	out system.UInt system.UInt
+	file ModuleImpl.cpp
+}
+
 generator generator
 {
 	out system.UInt system.UInt	

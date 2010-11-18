@@ -82,8 +82,9 @@ namespace ss {
 		
 		if( t->isFinish() )
 		{
+			
 			// Notify controller that this task is finish ( with or without error ) 
-
+			// This confirmation has to be send when all data is received from all workers
 			sendWorkTaskConfirmation( t );
 			
 			// Remove the task from the task manager

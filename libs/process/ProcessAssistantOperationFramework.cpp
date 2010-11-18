@@ -1,8 +1,10 @@
+#include <assert.h>									// assert(.)
 
-#import "ProcessAssistantOperationFramework.h"		// Own interface
-#import "assert.h"									// assert(.)
-#import "MemoryManager.h"							// ss::SharedMemoryItem
-#import "ProcessWriter.h"							// ss::ProcessWriter
+#include "MemoryManager.h"							// ss::SharedMemoryItem
+#include "ProcessWriter.h"							// ss::ProcessWriter
+#include "ProcessAssistantOperationFramework.h"		// Own interface
+
+
 
 namespace ss {
 

@@ -203,6 +203,7 @@ const char* Endpoint::stateName(void)
 	case Disconnected:    return (char*) "Disconnected";
 	case Reconnecting:    return (char*) "Reconnecting";
 	case Dead:            return (char*) "Dead";
+	case Threaded:        return (char*) "Threaded";
 	}
 
 	return (char*) "Unknown";

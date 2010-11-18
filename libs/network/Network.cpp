@@ -13,6 +13,7 @@
 #include <sys/types.h>          // pid_t
 #include <unistd.h>             // fork, getpid
 #include <sched.h>              // sched_setaffinity
+#include <pthread.h>            // pthread_t
 
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_*
@@ -576,6 +577,10 @@ void Network::endpointRemove(Endpoint* ep)
 				ep->state = Endpoint::Disconnected;
 				ep->name  = std::string("To be a worker");
 			}
+			else if (ep->type == Endpoint::Controller)
+			{
+				LM_W(("NOT removing Controller"));
+			}
 			else
 			{
 				delete ep;
@@ -661,10 +666,36 @@ Endpoint* Network::endpointLookup(char* alias)
 */
 typedef struct MsgTreatParams
 {
+	Network*          diss;
 	Endpoint*         ep;
 	int               endpointId;
-	Message::Header*  headerP;
+	Message::Header   header;
+	Endpoint::State   state;
 } MsgTreatParams;
+
+
+
+/* ****************************************************************************
+*
+* msgTreatThreadFunction - 
+*/
+static void* msgTreatThreadFunction(void* vP)
+{
+	LM_M(("IN: vP at %p", vP));
+
+	MsgTreatParams*  paramP = (MsgTreatParams*) vP;
+	Endpoint*        ep     = paramP->ep;
+
+	LM_M(("calling msgTreat function in thread (ep at %p, vP at %p)", paramP->ep, paramP));
+	paramP->diss->msgTreat(paramP);
+
+	ep->state = paramP->state;
+
+	LM_E(("back after msgTreat set state for '%s' to %d", ep->name.c_str(), ep->state));
+
+	free(vP);
+	return NULL;
+}
 
 
 
@@ -731,26 +762,89 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	// Reading header of the message
 	//
 	nb = read(ep->rFd, &header, sizeof(header));
-	if (nb != sizeof(header))
+
+	if (nb == 0) /* Connection closed */
 	{
-		LM_E(("error reading header from '%s': %s", ep->name.c_str(), strerror(errno)));
-		endpointRemove(ep);
-		return;
+		LM_T(LMT_SELECT, ("Connection closed - ep at %p", ep));
+		if (ep == controller)
+		{
+			if (me->type == Endpoint::CoreWorker)
+				LM_X(1, ("My Father (samsonWorker) died, I cannot exist without father process"));
+
+			LM_W(("controller died ... trying to reconnect !"));
+
+			controller->rFd    = -1;
+			controller->state = ss::Endpoint::Disconnected;
+
+			while (controller->rFd == -1)
+			{
+				controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
+				sleep(1); // sleep one second before reintenting connection to coltroller
+			}
+
+			controller->state = ss::Endpoint::Connected;
+			controller->wFd   = controller->rFd;
+			return;
+		}
+		else if (ep != NULL)
+		{
+			if (ep->type == Endpoint::Worker)
+			{
+				--me->workers;
+
+				close(ep->rFd);
+				if (ep->wFd == ep->rFd)
+					close(ep->wFd);
+
+				ep->state = ss::Endpoint::Closed;
+				ep->rFd   = -1;
+				ep->wFd   = -1;
+				ep->name  = "-----";
+			}
+			else if (ep->type == Endpoint::CoreWorker)
+				LM_X(1, ("should get no messages from core worker ..."));
+			else
+				endpointRemove(ep);
+		}
 	}
+	else if (nb == -1)
+		LM_RVE(("iomMsgRead: error reading message from '%s'", ep->name.c_str()));
 
-	MsgTreatParams params;
-	params.ep          = ep;
-	params.endpointId  = endpointId;
-	params.headerP     = &header;
 
+	LM_M(("Read header of '%s' message with dataLens %d, %d, %d", messageCode(header.code), header.dataLen, header.gbufLen, header.kvDataLen));
+
+	//
+	// calling msgTreat ...
+	//
 	if (header.dataLen + header.gbufLen + header.kvDataLen > 250)
 	{
-		LM_E(("BIG message - create a thread here ..."));
-		msgTreat(&params);
-		// 
-	}
+		pthread_t        tid;
+		MsgTreatParams*  paramsP = (MsgTreatParams*) malloc(sizeof(MsgTreatParams));
 
-	msgTreat(&params);
+		paramsP->diss        = this;
+		paramsP->ep          = ep;
+		paramsP->endpointId  = endpointId;
+		paramsP->header      = header;
+		paramsP->state       = ep->state;
+
+		ep->state = Endpoint::Threaded;
+		LM_M(("setting state of '%s' to Threaded (%d)  old state: %d", ep->name.c_str(), ep->state, paramsP->state));
+
+		LM_M(("calling msgTreatThreadFunction via pthread_create (params at %p) (dataLens: %d, %d, %d)", paramsP, header.dataLen, header.gbufLen, header.kvDataLen));
+		pthread_create(&tid, NULL, msgTreatThreadFunction, (void*) paramsP);
+		LM_M(("after pthread_create of msgTreatThreadFunction"));
+	}
+	else
+	{
+		MsgTreatParams  params;
+
+		params.diss        = this;
+		params.ep          = ep;
+		params.endpointId  = endpointId;
+		params.header      = header;
+
+		msgTreat(&params);
+	}
 }
 
 
@@ -764,21 +858,21 @@ void Network::msgTreat(void* vP)
 	MsgTreatParams*       paramsP      = (MsgTreatParams*) vP;
 	Endpoint*             ep           = paramsP->ep;
 	int                   endpointId   = paramsP->endpointId;
-	Message::Header*      headerP      = paramsP->headerP;
+	Message::Header*      headerP      = &paramsP->header;
 	Packet                packet;
 	Packet                ack;
 	Message::MessageCode  msgCode;
 	Message::MessageType  msgType;
 	int                   s;
 	char                  data[1024];
-	void*                 dataP   = data;
-	int                   dataLen = sizeof(data);
-	int                   wFd     = ep->rFd;     // This function will not work for pipe pairs ...
-	char*                 name    = (char*) ep->name.c_str();
+	void*                 dataP      = data;
+	int                   dataLen    = sizeof(data);
+	int                   wFd        = ep->rFd;     // This function will not work for pipe pairs ...
+	char*                 name       = (char*) ep->name.c_str();
 
-	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p)", name, ep));
+	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 	s = iomMsgRead2(ep->rFd, headerP, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
-	LM_T(LMT_READ, ("iomMsgRead returned %d", s));
+	LM_T(LMT_READ, ("iomMsgRead returned %d (dataLens: %d, %d, %d)", s, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 
 	if (s != 0)
 	{
@@ -1061,7 +1155,6 @@ void Network::run()
 				}
 			}
 
-
 			timeVal.tv_sec  = 2;
 			timeVal.tv_usec = 0;
 
@@ -1200,8 +1293,10 @@ void Network::run()
 					if (FD_ISSET(endpoint[ix]->rFd, &rFds))
 					{
 						--fds;
-						LM_T(LMT_SELECT, ("incoming message from '%s' endpoint %s", endpoint[ix]->typeName(), endpoint[ix]->name.c_str()));
+						LM_T(LMT_SELECT, ("incoming message from '%s' endpoint %s (fd %d)", endpoint[ix]->typeName(), endpoint[ix]->name.c_str(), endpoint[ix]->rFd));
 						msgPreTreat(endpoint[ix], ix);
+						if (endpoint[ix])
+							FD_CLR(endpoint[ix]->rFd, &rFds);
 					}
 				}
 			}

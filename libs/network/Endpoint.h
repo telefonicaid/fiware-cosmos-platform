@@ -32,7 +32,8 @@ public:
 		Closed,
 		Disconnected,
 		Reconnecting,
-		Dead
+		Dead,
+		Threaded
 	} State;
 
 	typedef enum Type

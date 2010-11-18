@@ -1,11 +1,12 @@
 #ifndef _H_WORKER_TASK_MANAGER
 #define _H_WORKER_TASK_MANAGER
 
-#include "samson.pb.h"				// WorkerTask
 #include <list>						// std::list
+
 #include "au_map.h"					// au::map
+#include "samson.pb.h"				// WorkerTask
 #include "ObjectWithStatus.h"
-#include "lock.h"					// au::Lock
+#include "Lock.h"					// au::Lock
 
 namespace ss {
 

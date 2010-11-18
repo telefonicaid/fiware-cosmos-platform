@@ -83,6 +83,9 @@ public:
 	int        Endpoints;
 	Endpoint** endpoint;
 
+	void msgTreat(void* vP);
+
+
 private:
 	Endpoint*  listener;
 	Endpoint*  me;
@@ -98,7 +101,6 @@ private:
 	Endpoint*  endpointFreeGet(Endpoint::Type type);
 
 	void msgPreTreat(Endpoint* ep, int endpointId);
-	void msgTreat(void* vP);
 	int  helloSend(Endpoint* ep, Message::MessageType type);
 
 };

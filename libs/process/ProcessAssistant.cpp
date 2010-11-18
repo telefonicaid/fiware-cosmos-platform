@@ -56,17 +56,17 @@ static void* runThread(void* vP)
 */
 ProcessAssistant::ProcessAssistant(int coreNo, SamsonWorker* _worker) : ProcessAssistantInterface( coreNo , _worker )
 {
-
 	core       = coreNo;
 	workers    = _worker->workersGet();
 	worker     = _worker;
 
+	LM_M(("XXCORE: %d, workers: %d", core, workers));
 
 	pthread_create(&threadId, NULL, runThread, this);
 
 	framework = NULL;	// Framework is created for each operation
 	
-	setStatus( "Init" );
+	setStatus("Init");
 }
 
 
@@ -177,6 +177,8 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 	if (processP == NULL)
 		LM_X(1, ("error allocating a Process"));
 			
+	LM_M(("XXCORE: Created new Process with coreNo %d and %d workers", core, workers));
+
 	processP->run();
 	LM_X(1, ("Back from run - should not ever get here (coreWorker %d, pid: %d)", core, (int) getpid()));
 }
@@ -199,8 +201,6 @@ void ProcessAssistant::run(void)
 	int wFd;     // file descriptor for writing
 
 	LM_TODO(("Will connect to controller when ProcessAssistant uses EndpointMgr"));
-
-	// Endpoint* controllerP = worker->controller;
 
 
 

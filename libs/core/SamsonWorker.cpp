@@ -85,8 +85,8 @@ void SamsonWorker::run()
 	//
 	// Create one ProcessAssistant per core
 	//
-	if( num_processes == -1)
-		LM_X( 1 ,("Invalid number of cores. Please edit /opt/samson/setup.txt.")  );
+	if (num_processes == -1)
+		LM_X(1, ("Invalid number of cores. Please edit /opt/samson/setup.txt"));
 	
 	LM_T(LMT_WINIT, ("initializing %d process assistants", num_processes));
 
@@ -97,9 +97,8 @@ void SamsonWorker::run()
 	int coreId;
 	for (coreId = 0; coreId < num_processes ; coreId++)
 	{
-		//processAssistant[coreId] = new ProcessAssistant(coreId, this);
-		processAssistant[coreId] = new ProcessAssistantFake(coreId, this);
-		
+		processAssistant[coreId] = new ProcessAssistant(coreId, this);
+		// processAssistant[coreId] = new ProcessAssistantFake(coreId, this);
 	}
 
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));

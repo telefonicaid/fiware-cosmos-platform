@@ -7,19 +7,22 @@
 * CREATION DATE            Nov 8 2010
 *
 */
-#include "logMsg.h"                // LM_*
-#include "Alarm.h"                 // ALARM
-#include "processTraceLevels.h"    // LMT_*
+#include <iostream>                     // std::cout
 
-#include "iomConnect.h"            // iomConnect
-#include "iomMsgAwait.h"           // iomMsgAwait
-#include "iomMsgRead.h"            // iomMsgRead
-#include "iomMsgSend.h"            // iomMsgSend
-#include "Message.h"               // Message::*
-#include "Process.h"               // Own interface
-#include <iostream>					// std::cout
-#include "ProcessWriter.h"			// ss::ProcessOperationFramework
-#include "ProcessOperationFramework.h"	// ss::ProcessOperationFramework
+#include "logMsg.h"                     // LM_*
+#include "Alarm.h"                      // ALARM
+#include "processTraceLevels.h"         // LMT_*
+
+#include "iomConnect.h"                 // iomConnect
+#include "iomMsgAwait.h"                // iomMsgAwait
+#include "iomMsgRead.h"                 // iomMsgRead
+#include "iomMsgSend.h"                 // iomMsgSend
+#include "Message.h"                    // Message::*
+#include "Process.h"                    // Own interface
+#include "ProcessWriter.h"              // ss::ProcessOperationFramework
+#include "ProcessOperationFramework.h"  // ss::ProcessOperationFramework
+
+
 
 namespace ss {
 
@@ -36,9 +39,10 @@ Process::Process(int _rFd, int _wFd, int _core, int _workers)
 	core     = _core;
 	workers  = _workers;
 
-	LM_M(("Started process on core %d in set of %d workers"));
-	
+	LM_M(("XXCORE: Started process on core %d in set of %d workers", core, workers));
 }
+
+
 
 /* **********************************************************************
 *		 

@@ -34,7 +34,7 @@
 #include "Network.h"			// Own interface
 
 
-
+#define THREAD_BUF_SIZE_THRESHOLD (20 * 1024)
 namespace ss
 {
 
@@ -762,7 +762,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	// Reading header of the message
 	//
 	nb = read(ep->rFd, &header, sizeof(header));
-
+	LM_M(("nb == %d", nb));
 	if (nb == 0) /* Connection closed */
 	{
 		LM_T(LMT_SELECT, ("Connection closed - ep at %p", ep));
@@ -784,7 +784,6 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 			controller->state = ss::Endpoint::Connected;
 			controller->wFd   = controller->rFd;
-			return;
 		}
 		else if (ep != NULL)
 		{
@@ -806,17 +805,20 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 			else
 				endpointRemove(ep);
 		}
+
+		return;
 	}
 	else if (nb == -1)
-		LM_RVE(("iomMsgRead: error reading message from '%s'", ep->name.c_str()));
-
+		LM_RVE(("iomMsgRead: error reading message from '%s': %s", ep->name.c_str(), strerror(errno)));
+	else if (nb != sizeof(header))
+		LM_RVE(("iomMsgRead: error reading header from '%s' (read %d, wanted %d bytes", ep->name.c_str(), nb, sizeof(header)));
 
 	LM_M(("Read header of '%s' message with dataLens %d, %d, %d", messageCode(header.code), header.dataLen, header.gbufLen, header.kvDataLen));
 
 	//
 	// calling msgTreat ...
 	//
-	if (header.dataLen + header.gbufLen + header.kvDataLen > 250)
+	if (header.dataLen + header.gbufLen + header.kvDataLen > THREAD_BUF_SIZE_THRESHOLD)
 	{
 		pthread_t        tid;
 		MsgTreatParams*  paramsP = (MsgTreatParams*) malloc(sizeof(MsgTreatParams));

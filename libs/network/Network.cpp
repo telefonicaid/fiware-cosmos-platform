@@ -101,7 +101,7 @@ void Network::setPacketReceiverInterface(PacketReceiverInterface* _receiver)
 
 /* ****************************************************************************
 *
-* init - create endpoints 0 and 1 - MOVE to EndpointMgr
+* init - create endpoints 0 and 1
 */
 void Network::init(Endpoint::Type type, const char* alias, unsigned short port, const char* controllerName)
 {
@@ -170,7 +170,7 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 
 /* ****************************************************************************
 *
-* helloSend - MOVE to EndpointMgr
+* helloSend
 */
 int Network::helloSend(Endpoint* ep, Message::MessageType type)
 {
@@ -202,7 +202,6 @@ void Network::initAsSamsonController(int port, int workers)
 	init(Endpoint::Controller, "Controller", port);
 
 
-	/* MOVE to SamsonController/EndpointMgr */
 	int   ix;
 	char  alias[16];
 	char  name[32];
@@ -378,7 +377,7 @@ bool Network::ready()
 
 /* ****************************************************************************
 *
-* endpointAdd - add an endpoint to the vector - MOVE to EndpointMgr
+* endpointAdd - add an endpoint to the vector
 *
 * The first three slots in this vector are:
 *  - 0: me
@@ -555,7 +554,7 @@ Endpoint* Network::endpointAdd
 
 /* ****************************************************************************
 *
-* endpointRemove - MOVE to EndpointMgr
+* endpointRemove
 */
 void Network::endpointRemove(Endpoint* ep)
 {
@@ -590,7 +589,7 @@ void Network::endpointRemove(Endpoint* ep)
 
 /* ****************************************************************************
 *
-* endpointLookup - MOVE to EndpointMgr
+* endpointLookup
 */
 Endpoint* Network::endpointLookup(int ix)
 {
@@ -601,7 +600,7 @@ Endpoint* Network::endpointLookup(int ix)
 
 /* ****************************************************************************
 *
-* endpointLookup - MOVE to EndpointMgr
+* endpointLookup
 */
 Endpoint* Network::endpointLookup(int rFd, int* idP)
 {
@@ -631,7 +630,7 @@ Endpoint* Network::endpointLookup(int rFd, int* idP)
 
 /* ****************************************************************************
 *
-* endpointLookup - MOVE to EndpointMgr
+* endpointLookup
 */
 Endpoint* Network::endpointLookup(char* alias)
 {
@@ -658,25 +657,29 @@ Endpoint* Network::endpointLookup(char* alias)
 
 /* ****************************************************************************
 *
-* msgTreat - MOVE to EndpointMgr
+* MsgTreatParams - 
 */
-void Network::msgTreat(int rFd, char* name)
+typedef struct MsgTreatParams
 {
-	Packet                packet;
-	Packet                ack;
-	Message::MessageCode  msgCode;
-	Message::MessageType  msgType;
-	int                   s;
-	int                   endpointId;
-	Endpoint*             ep = endpointLookup(rFd, &endpointId);
-	char                  data[1024];
-	void*                 dataP   = data;
-	int                   dataLen = sizeof(data);
-	int                   wFd     = rFd;     // This function will not work for pipe pairs ...
+	Endpoint*         ep;
+	int               endpointId;
+	Message::Header*  headerP;
+} MsgTreatParams;
 
-	if (ep == NULL)
-		LM_X(1, ("endpoint not found for rFd %d", rFd));
 
+
+/* ****************************************************************************
+*
+* msgPreTreat - 
+*/
+void Network::msgPreTreat(Endpoint* ep, int endpointId)
+{
+	Message::Header header;
+	int             nb;
+
+	//
+	// Special case - incoming connection on WebListener interface
+	//
 	if (ep->type == Endpoint::WebListener)
 	{
 		int   fd;
@@ -684,7 +687,7 @@ void Network::msgTreat(int rFd, char* name)
 
 		fd = iomAccept(ep->rFd, hostName, sizeof(hostName));
 		if (fd == -1)
-			LM_P(("iomAccept(%d)", listener->rFd));
+			LM_P(("iomAccept(%d)", ep->rFd));
 		else
 			endpointAdd(fd, fd, "Web Worker", "Webworker", 0, Endpoint::WebWorker, hostName, 0);
 
@@ -710,8 +713,59 @@ void Network::msgTreat(int rFd, char* name)
 		return;
 	}
 
+
+
+	//
+	// Reading header of the message
+	//
+	nb = read(ep->rFd, &header, sizeof(header));
+	if (nb != sizeof(header))
+	{
+		LM_E(("error reading header from '%s': %s", ep->name.c_str(), strerror(errno)));
+		endpointRemove(ep);
+		return;
+	}
+
+	MsgTreatParams params;
+	params.ep          = ep;
+	params.endpointId  = endpointId;
+	params.headerP     = &header;
+
+	if (header.dataLen + header.gbufLen + header.kvDataLen > 250)
+	{
+		LM_E(("BIG message - create a thread here ..."));
+		msgTreat(&params);
+		// 
+	}
+
+	msgTreat(&params);
+}
+
+
+
+/* ****************************************************************************
+*
+* msgTreat - 
+*/
+void Network::msgTreat(void* vP)
+{
+	MsgTreatParams*       paramsP      = (MsgTreatParams*) vP;
+	Endpoint*             ep           = paramsP->ep;
+	int                   endpointId   = paramsP->endpointId;
+	Message::Header*      headerP      = paramsP->headerP;
+	Packet                packet;
+	Packet                ack;
+	Message::MessageCode  msgCode;
+	Message::MessageType  msgType;
+	int                   s;
+	char                  data[1024];
+	void*                 dataP   = data;
+	int                   dataLen = sizeof(data);
+	int                   wFd     = ep->rFd;     // This function will not work for pipe pairs ...
+	char*                 name    = (char*) ep->name.c_str();
+
 	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p)", name, ep));
-	s = iomMsgRead(rFd, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
+	s = iomMsgRead2(ep->rFd, headerP, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
 	LM_T(LMT_READ, ("iomMsgRead returned %d", s));
 
 	if (s != 0)
@@ -779,7 +833,7 @@ void Network::msgTreat(int rFd, char* name)
 		Message::HelloData*  hello;
 
 		hello   = (Message::HelloData*) dataP;
-		helloEp = endpointAdd(rFd, wFd, hello->name, hello->alias, hello->workers, hello->type, hello->ip, hello->port, hello->coreNo);
+		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, hello->type, hello->ip, hello->port, hello->coreNo);
 
 		if (helloEp == NULL)
 		{
@@ -963,7 +1017,7 @@ void Network::msgTreat(int rFd, char* name)
 #define PeriodForSendingWorkerStatusToController  10
 /* ****************************************************************************
 *
-* run - MOVE to EndpointMgr?
+* run
 */
 void Network::run()
 {
@@ -1132,7 +1186,7 @@ void Network::run()
 					{
 						--fds;
 						LM_T(LMT_SELECT, ("incoming message from '%s' endpoint %s", endpoint[ix]->typeName(), endpoint[ix]->name.c_str()));
-						msgTreat(endpoint[ix]->rFd, (char*) endpoint[ix]->name.c_str());
+						msgPreTreat(endpoint[ix], ix);
 					}
 				}
 			}

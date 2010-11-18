@@ -106,10 +106,100 @@ int iomMsgRead
 
 	if (header.kvDataLen != 0)
 	{
-		LM_M((""));
 		packetP->buffer = ss::MemoryManager::shared()->newBuffer(header.gbufLen);
 
 		int    size  = header.kvDataLen;
+		char*  kvBuf = packetP->buffer->getData();
+		int    tot   = 0;
+		int    nb;
+
+		while (tot < size)
+		{
+			// msgAwait()
+			nb = read(fd, &kvBuf[tot], size - tot);
+			if (nb == -1)
+				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, from, strerror(errno)));
+			tot += nb;
+		}
+
+		packetP->buffer->setSize(tot);
+	}
+
+	return 0;
+}	
+
+
+
+/* ****************************************************************************
+*
+* iomMsgRead2 - read a message from an endpoint
+*/
+int iomMsgRead2
+(
+	int                        fd,
+	ss::Message::Header*       headerP,
+	const char*                from,
+	ss::Message::MessageCode*  msgCodeP,
+	ss::Message::MessageType*  msgTypeP,
+	void**                     dataPP,
+	int*                       dataLenP,
+	ss::Packet*                packetP,
+	void*                      kvData,
+	int*                       kvDataLenP
+)
+{
+	int nb;
+
+	*msgCodeP = headerP->code;
+	*msgTypeP = headerP->type;
+
+	if (headerP->dataLen != 0)
+	{
+		if (headerP->dataLen > (unsigned int) *dataLenP)
+		{
+			*dataPP = (char*) malloc(headerP->dataLen);
+			if (*dataPP == NULL)
+				LM_X(1, ("malloc(%d)", headerP->dataLen));
+		}
+
+		LM_T(LMT_MSG, ("reading %d bytes of primary message data", headerP->dataLen));
+		nb = read(fd, *dataPP, headerP->dataLen);
+		if (nb == -1)
+			LM_RP(1, ("read %d bytes from '%s'", headerP->dataLen, from));
+		LM_T(LMT_MSG, ("read %d bytes of primary message data", nb));
+
+		if (nb != (int) headerP->dataLen)
+			LM_E(("Read %d bytes, %d expected ...", nb, headerP->dataLen));
+
+		*dataLenP = nb;
+
+		LM_T(LMT_MSG, ("read %d bytes from '%s'", nb, from));
+		LM_READS(from, "primary data", *dataPP, nb, LmfByte);
+	}
+
+	if (headerP->gbufLen != 0)
+	{
+		void* dataP = (void*)  malloc(headerP->gbufLen);
+
+		if (dataP == NULL)
+			LM_X(1, ("malloc(%d)", headerP->gbufLen));
+
+		LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
+        nb = read(fd, dataP, headerP->gbufLen);
+        if (nb == -1)
+			LM_RP(1, ("read(%d bytes from '%s')", headerP->gbufLen, from));
+
+		if (packetP->message.ParseFromArray(dataP, nb) == false)
+			LM_X(1, ("ParseFromString failed!"));
+
+		LM_READS(from, "google protocol buffer", dataP, nb, LmfByte);
+	}
+
+	if (headerP->kvDataLen != 0)
+	{
+		packetP->buffer = ss::MemoryManager::shared()->newBuffer(headerP->gbufLen);
+
+		int    size  = headerP->kvDataLen;
 		char*  kvBuf = packetP->buffer->getData();
 		int    tot   = 0;
 		int    nb;

@@ -32,4 +32,24 @@ extern int iomMsgRead
 	int*                       kvDataLenP
 );
 
+
+
+/* ****************************************************************************
+*
+* iomMsgRead2 - read a message from an endpoint
+*/
+extern int iomMsgRead2
+(
+	int                        fd,
+	ss::Message::Header*       headerP,
+	const char*                from,
+	ss::Message::MessageCode*  msgCodeP,
+	ss::Message::MessageType*  msgTypeP,
+	void**                     dataPP,
+	int*                       dataLenP,
+	ss::Packet*                packetP,
+	void*                      kvData,
+	int*                       kvDataLenP
+);
+
 #endif

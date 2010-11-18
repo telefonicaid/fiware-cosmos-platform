@@ -97,7 +97,8 @@ private:
 	Endpoint*  endpointLookup(char* alias);
 	Endpoint*  endpointFreeGet(Endpoint::Type type);
 
-	void msgTreat(int fd, char* name);
+	void msgPreTreat(Endpoint* ep, int endpointId);
+	void msgTreat(void* vP);
 	int  helloSend(Endpoint* ep, Message::MessageType type);
 
 };

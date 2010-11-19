@@ -235,7 +235,7 @@ void DelilahQtApp::loadQueues(const ss::network::HelpResponse &resp)
 	 */
 	for (int i=0 ; i<resp.data_queue_size(); i++)
 	{
-		ss::network::DataQueue q = resp.data_queue(i);
+		ss::network::Queue q = resp.data_queue(i);
 		QString name = QString::fromStdString(q.name());
 
 		bool new_queue = false;

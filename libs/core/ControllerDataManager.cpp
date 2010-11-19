@@ -309,7 +309,7 @@ namespace ss {
 				{
 					
 					Queue *queue = i->second;
-					network::Queue *q = response->add_queue();
+					network::Queue *q = response->add_data_queue();
 					q->set_name( i->first );
 					
 					// Format

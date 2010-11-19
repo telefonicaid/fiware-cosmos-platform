@@ -248,9 +248,9 @@ namespace ss
 					txt << "------------------------------------------------" << std::endl;
 					for (int i = 0 ; i < help_response.data_queue_size() ; i++)
 					{
-						network::DataQueue queue = help_response.data_queue(i);
+						network::Queue queue = help_response.data_queue(i);
 						txt << queue.name();
-						txt << " " << au::Format::string( queue.size() ) << " bytes " << std::endl;
+						txt << " " << au::Format::string( queue.info().size() ) << " bytes " << std::endl;
 					}
 					txt << "------------------------------------------------" << std::endl;
 					

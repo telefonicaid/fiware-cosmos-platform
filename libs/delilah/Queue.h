@@ -78,9 +78,9 @@ public:
 	 * set status to READY.
 	 * Returns current status of the queue.
 	 */
-	int upload(ss::network::DataQueue* q)
+	int upload(ss::network::Queue* q)
 	{
-		size = q->size();
+		size = q->info().size();
 
 		setStatus(DataQueue::READY);
 		return status;

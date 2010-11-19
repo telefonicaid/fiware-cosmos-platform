@@ -36,12 +36,6 @@ message Queue
 	required KVInfo info = 3;
 }
 
-message DataQueue
-{
-	required string name = 1;
-	required uint64 size = 2;
-}
-
 message Operation
 {
 	required string name = 1;		// Name of the operation
@@ -153,7 +147,7 @@ message HelpResponse
 
 	// Information
 	repeated Queue queue = 2;
-	repeated DataQueue data_queue = 3;
+	repeated Queue data_queue = 3;
 	repeated Data data = 4;
 	repeated Operation operation = 5;
 }

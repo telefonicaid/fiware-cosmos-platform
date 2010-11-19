@@ -14,7 +14,7 @@ IF(QT4_FOUND)
 		WorkspaceScene.cpp
 		WorkspaceView.cpp
 		gui/InfoBox.cpp
-		gui/CreateTXTQueueDlg.cpp
+		gui/CreateDataQueueDlg.cpp
 		Process.cpp
 		items/ObjectItem.cpp
 		items/QueueItem.cpp
@@ -36,7 +36,7 @@ IF(QT4_FOUND)
 		WorkspaceScene.h
 		WorkspaceView.h
 		gui/InfoBox.h
-		gui/CreateTXTQueueDlg.h
+		gui/CreateDataQueueDlg.h
 		Queue.h
 		Operation.h
 //		DataType.h
@@ -50,7 +50,7 @@ IF(QT4_FOUND)
 	SET (FORMS
 		MainWindow.ui
 		gui/forms/InfoBox.ui
-		gui/forms/CreateTXTQueueDlg.ui)
+		gui/forms/CreateDataQueueDlg.ui)
 	
 	SET (RESOURCES
 		resources/objects.qrc

@@ -33,10 +33,12 @@ public:
 public slots:
 	// select the type of the queue to be (created and) inserted into workspace
 	void selectQueueType(const QPointF &scene_pos);
-	void createTXTQueueSelected(const QPointF &scene_pos);
+	void createDataQueueSelected(const QPointF &scene_pos);
 	void createKVQueueSelected(const QPointF &scene_pos);
+	void loadExistingQueueSelected(const QPointF &scene_pos);
 
 	void showError(QString error);
+
 	/*
 	 * Slot responsible for displaying information about running jobs.
 	 */

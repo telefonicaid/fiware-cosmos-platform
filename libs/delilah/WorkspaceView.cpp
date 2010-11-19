@@ -15,7 +15,7 @@
 #include "WorkspaceView.h"
 #include "WorkspaceScene.h"
 #include "DelilahQtApp.h"
-#include "CreateTXTQueueDlg.h"
+#include "CreateDataQueueDlg.h"
 #include "Misc.h"
 
 WorkspaceView::WorkspaceView(QWidget* parent)
@@ -123,31 +123,36 @@ void WorkspaceView::selectQueueType(const QPointF &scene_pos)
 {
 	QMenu* menu = new QMenu(this);
 
-	ActionWithPos* txt_act = new ActionWithPos("New TXT Queue", this);
-	txt_act->setPosition(scene_pos);
-	connect(txt_act, SIGNAL(triggered(QPointF)), this, SLOT(createTXTQueueSelected(QPointF)));
+	ActionWithPos* load_existing_act = new ActionWithPos("Load Existing Queue", this);
+	load_existing_act->setPosition(scene_pos);
+	connect(load_existing_act, SIGNAL(triggered(QPointF)), this, SLOT(loadExistingQueueSelected(QPointF)));
 
-	ActionWithPos* kv_act = new ActionWithPos("New KV Queue", this);
-	kv_act->setPosition(scene_pos);
-	connect(kv_act, SIGNAL(triggered(QPointF)), this, SLOT(createKVQueueSelected(QPointF)));
+	ActionWithPos* create_data_act = new ActionWithPos("Create Data Queue", this);
+	create_data_act->setPosition(scene_pos);
+	connect(create_data_act, SIGNAL(triggered(QPointF)), this, SLOT(createDataQueueSelected(QPointF)));
 
-	menu->addAction("Existing Queue");//, this, SLOT(showAvailableQueues()));
-	menu->addAction(txt_act);
-	menu->addAction(kv_act);
+	ActionWithPos* create_kv_act = new ActionWithPos("Create KV Queue", this);
+	create_kv_act->setPosition(scene_pos);
+	connect(create_kv_act, SIGNAL(triggered(QPointF)), this, SLOT(createKVQueueSelected(QPointF)));
+
+	menu->addAction(load_existing_act);
+	menu->addAction(create_data_act);
+	menu->addAction(create_kv_act);
 
 	// Set menu's left upper corner at clicked position
 	QPoint view_pos = mapFromScene(scene_pos);
 	menu->exec(mapToGlobal(view_pos));
 }
 
-//void WorkspaceView::showAvailableQueues()
-//{
-//	std::cout << "TODO!!!!!!!!!!!!!!!!!!\n";
-//}
-
-void WorkspaceView::createTXTQueueSelected(const QPointF &scene_pos)
+void WorkspaceView::loadExistingQueueSelected(const QPointF &scene_pos)
 {
-	CreateTXTQueueDlg* dlg = new CreateTXTQueueDlg(this);
+	// TODO:
+
+}
+
+void WorkspaceView::createDataQueueSelected(const QPointF &scene_pos)
+{
+	CreateDataQueueDlg* dlg = new CreateDataQueueDlg(this);
 
 	QString name;
 	if (dlg->exec() == QDialog::Accepted)
@@ -161,5 +166,5 @@ void WorkspaceView::createTXTQueueSelected(const QPointF &scene_pos)
 
 void WorkspaceView::createKVQueueSelected(const QPointF &scene_pos)
 {
-	std::cout << "TODO!!!!!!!!!!!!!!!!!!\n";
+	// TODO:
 }

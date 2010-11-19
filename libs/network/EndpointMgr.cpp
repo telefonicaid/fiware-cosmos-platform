@@ -180,6 +180,7 @@ Endpoint* EndpointMgr::endpointAdd
 
 	switch (type)
 	{
+	case Endpoint::Sender:
 	case Endpoint::Unknown:
 	case Endpoint::Listener:
 		LM_X(1, ("bad type: %d", type));

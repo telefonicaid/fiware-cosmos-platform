@@ -68,15 +68,16 @@ const char* Endpoint::typeName(Endpoint::Type type)
 {
 	switch (type)
 	{
-	case Endpoint::Unknown:              return "Unknown";
-	case Endpoint::Temporal:             return "Temporal";
-	case Endpoint::Listener:             return "Listener";
-	case Endpoint::Controller:           return "Controller";
-	case Endpoint::Worker:               return "Worker";
-	case Endpoint::CoreWorker:           return "CoreWorker";
-	case Endpoint::Delilah:              return "Delilah";
-	case Endpoint::WebListener:          return "WebListener";
-	case Endpoint::WebWorker:            return "WebWorker";
+	case Endpoint::Unknown:         return "Unknown";
+	case Endpoint::Temporal:        return "Temporal";
+	case Endpoint::Listener:        return "Listener";
+	case Endpoint::Controller:      return "Controller";
+	case Endpoint::Worker:          return "Worker";
+	case Endpoint::CoreWorker:      return "CoreWorker";
+	case Endpoint::Delilah:         return "Delilah";
+	case Endpoint::WebListener:     return "WebListener";
+	case Endpoint::WebWorker:       return "WebWorker";
+	case Endpoint::Sender:          return "Sender";
 	}
 
 	return "UnknownType";

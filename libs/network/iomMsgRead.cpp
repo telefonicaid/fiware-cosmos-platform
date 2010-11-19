@@ -202,18 +202,20 @@ int iomMsgRead2
 
 	if (headerP->kvDataLen != 0)
 	{
-		packetP->buffer = ss::MemoryManager::shared()->newBuffer(headerP->gbufLen);
+		packetP->buffer = ss::MemoryManager::shared()->newBuffer(headerP->kvDataLen);
 
-		int    size  = headerP->kvDataLen;
-		char*  kvBuf = packetP->buffer->getData();
-		int    tot   = 0;
+		int    size   = headerP->kvDataLen;
+		char*  kvBuf  = packetP->buffer->getData();
+		int    size2  = packetP->buffer->getMaxSize();
+		int    tot    = 0;
 		int    nb;
 
+		LM_M(("reading a KV buffer of %d bytes", size2));
 		while (tot < size)
 		{
 			// msgAwait()
 			nb = read(fd, &kvBuf[tot], size - tot);
-			LM_M(("read %d bytes KVDATA from '%s'", tot, from));
+
 			if (nb == -1)
 				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, from, strerror(errno)));
 			tot += nb;

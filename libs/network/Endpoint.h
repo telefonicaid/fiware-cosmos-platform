@@ -5,18 +5,20 @@
 *
 * FILE                      Endpoint.h
 *
-* DESCRIPTION				Class for endpoints
+* DESCRIPTION               Class for endpoints
 *
 */
-#include <string>	        // std::string...
+#include <string>            // std::string ...
+#include <pthread.h>         // pthread_t
 
-#include "workerStatus.h"	// CoreWorkerState, WorkerStatusData
+#include "workerStatus.h"    // CoreWorkerState, WorkerStatusData
 
 
 
 namespace ss {
 
 
+class PacketSenderInterface;
 
 class Endpoint
 {
@@ -46,7 +48,8 @@ public:
 		CoreWorker,
 		Delilah,
 		WebListener,
-		WebWorker
+		WebWorker,
+		Sender
 	} Type;
 
 public:
@@ -61,19 +64,19 @@ public:
 	int                          workers;
 	int                          workerId;
 	Type                         type;
-
-
-	//
-	// The following fields will form a union (depending on Type) in the near future
-	//
+	pthread_t                    tid;
+	
 
 	Message::WorkerStatusData*   status;           // Worker
+	struct Endpoint*             sender;           // Worker
+	struct Endpoint*             senderFather;     // Worker
+	PacketSenderInterface*       packetSender;     // Worker
+
 	int                          coreNo;           // CoreWorker
 	time_t                       startTime;        // CoreWorker
 	int                          restarts;         // CoreWorker
 	int                          jobsDone;         // CoreWorker
 	Message::CoreWorkerState     coreWorkerState;  // CoreWorker
-
 
 	const char*     stateName(void);
 	const char*     typeName(void);

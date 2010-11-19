@@ -17,6 +17,6 @@
 *
 * iomMsgAwait - await a message from a peer
 */
-extern int iomMsgAwait(int fd, int secs, int usecs);
+extern int iomMsgAwait(int fd, int secs, int usecs = 0);
 
 #endif

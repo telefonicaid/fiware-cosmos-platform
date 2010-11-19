@@ -34,7 +34,27 @@
 #include "Network.h"			// Own interface
 
 
-#define THREAD_BUF_SIZE_THRESHOLD (20 * 1024)
+
+/* ****************************************************************************
+*
+* KILO - 
+* MEGA - 
+*/
+#define KILO(x)                      (x * 1024)
+#define MEGA(x)                      (KILO(x) * 1024)
+
+
+
+/* ****************************************************************************
+*
+* THREAD_BUF_SIZE_THRESHOLD
+* SEND_SIZE_TO_USE_THREAD
+*/
+#define THREAD_BUF_SIZE_THRESHOLD    (MEGA(10))
+#define SEND_SIZE_TO_USE_THREAD      (MEGA(10))
+
+
+
 namespace ss
 {
 
@@ -202,7 +222,6 @@ void Network::initAsSamsonController(int port, int workers)
 {
 	init(Endpoint::Controller, "Controller", port);
 
-
 	int   ix;
 	char  alias[16];
 	char  name[32];
@@ -342,11 +361,72 @@ std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 
 /* ****************************************************************************
 *
+* SendJob - 
+*/
+typedef struct SendJob
+{
+	Endpoint*             ep;
+	Endpoint*             me;
+	Message::MessageCode  msgCode;
+	Message::MessageType  msgType;
+	Packet*               packetP;
+} SendJob;
+
+
+
+/* ****************************************************************************
+*
+* senderThread - 
+*/
+static void* senderThread(void* vP)
+{
+	Endpoint*  ep     = (Endpoint*) vP;
+	Endpoint*  father = ep->senderFather;
+	
+	while (1)
+	{
+		SendJob job;
+		int     s;
+
+		s = iomMsgAwait(father->rFd, -1);
+		
+		s = read(father->rFd, &job, sizeof(job));
+		if (s != 0)
+		{
+			LM_E(("iomMsgRead error"));
+			continue;
+		}
+
+		s = iomMsgSend(ep->wFd, ep->name.c_str(), ep->sender->name.c_str(), job.msgCode, job.msgType, NULL, 0, job.packetP);
+		if (ep->packetSender)
+			ep->packetSender->notificationSent(0, true);
+	}
+
+
+	// Cannot really get here, but ...
+
+	close(ep->sender->rFd);
+	close(ep->sender->wFd);
+	close(ep->senderFather->rFd);
+	close(ep->senderFather->wFd);
+
+	free(ep->sender);
+	free(ep->senderFather);
+	ep->sender = NULL;
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * send - 
 */
 size_t Network::send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP)
 {
 	Endpoint* ep        = endpoint[endpointId];
+	int       nb;
 
 	if (ep == NULL)
 		LM_RE(-1, ("No endpoint at index %d", endpointId));
@@ -355,14 +435,41 @@ size_t Network::send(PacketSenderInterface* sender, int endpointId, ss::Message:
 
 	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", messageCode(code), endpointId));
 
-	int nb = iomMsgSend(ep->wFd, ep->name.c_str(), me->name.c_str(), code, Message::Msg, NULL, 0, packetP);
 
-	if (sender)
-		sender->notificationSent(0, true);
+	if (packetP->message.ByteSize() >= SEND_SIZE_TO_USE_THREAD)
+	{
+		if (ep->sender == NULL)
+		{
+			int        fatherReads[2];
+			int        fatherWrites[2];
+
+			if (pipe(fatherReads)  == -1) LM_X(1, ("pipe: %s", strerror(errno)));
+			if (pipe(fatherWrites) == -1) LM_X(1, ("pipe: %s", strerror(errno)));
+
+			ep->sender       = new Endpoint(Endpoint::Sender, ep->name + "Sender", "localhost", 0xFFFF, fatherWrites[1], fatherReads[0]);
+			ep->senderFather = new Endpoint(Endpoint::Worker, ep->name, "localhost", 0xFFFF, fatherWrites[0], fatherReads[1]);
+
+			ep->packetSender = sender;
+
+			pthread_create(&ep->sender->tid, NULL, senderThread, ep);
+		}
+
+		SendJob job;
+
+		job.ep      = ep;
+		job.me      = me;
+		job.msgCode = code;
+		job.msgType = Message::Msg;
+		job.packetP = packetP;
+
+		nb = write(ep->sender->wFd, &job, sizeof(job));
+	}
+	else
+		nb = iomMsgSend(ep->wFd, ep->name.c_str(), me->name.c_str(), code, Message::Msg, NULL, 0, packetP);
 
 	return nb;
 }
-	
+
 
 
 /* ****************************************************************************
@@ -420,6 +527,7 @@ Endpoint* Network::endpointAdd
 
 	switch (type)
 	{
+	case Endpoint::Sender:
 	case Endpoint::CoreWorker:
 	case Endpoint::Unknown:
 	case Endpoint::Listener:
@@ -482,6 +590,9 @@ Endpoint* Network::endpointAdd
 				endpoint[ix]->restarts   = 0;
 				endpoint[ix]->jobsDone   = 0;
 				endpoint[ix]->startTime  = time(NULL);
+
+				if (endpoint[ix]->type == Endpoint::WebListener)
+					endpoint[ix]->state = Endpoint::Listening;
 
 				return endpoint[ix];
 			}
@@ -1110,11 +1221,12 @@ void Network::msgTreat(void* vP)
 		break;
 
 	default:
-		LM_M(("DEFAULT"));
+	    LM_M(("DEFAULT: ep at %p", ep));
 		if (receiver == NULL)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
 
 		LM_M(("forwarding '%s' %s from %s to Endpoint %d", messageCode(msgCode), messageType(msgType), ep->name.c_str(), endpointId));
+		LM_M(("calling receiver->receive"));
 		receiver->receive(endpointId, msgCode, &packet);
 		break;
 	}

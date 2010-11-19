@@ -97,8 +97,8 @@ void SamsonWorker::run()
 	int coreId;
 	for (coreId = 0; coreId < num_processes ; coreId++)
 	{
-		//processAssistant[coreId] = new ProcessAssistant(coreId, this);
-		 processAssistant[coreId] = new ProcessAssistantFake(coreId, this);
+		// processAssistant[coreId] = new ProcessAssistant(coreId, this);
+		processAssistant[coreId] = new ProcessAssistantFake(coreId, this);
 	}
 
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));

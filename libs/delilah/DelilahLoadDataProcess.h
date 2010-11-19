@@ -133,7 +133,7 @@ namespace ss {
 			uploadedSize = 0;
 			
 			num_workers = _num_workers;
-			worker = rand()%num_workers;		// Random worker to start
+			worker = 0; // rand()%num_workers;		// Random worker to start
 			
 			id_counter = 0;	// Init counter for loading files to the workers
 			

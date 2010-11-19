@@ -52,9 +52,3 @@ ADD_LIBRARY(samsonDataStatic STATIC ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES( samsonDataStatic ${STATIC_LIBS} )
 SET_TARGET_PROPERTIES(samsonDataStatic PROPERTIES OUTPUT_NAME samsonData)
 
-
-ADD_EXECUTABLE(samsonData main_samsonData.cpp ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonData ${STATIC_LIBS} )
-
-INSTALL(TARGETS               samsonData
-        RUNTIME DESTINATION   bin)

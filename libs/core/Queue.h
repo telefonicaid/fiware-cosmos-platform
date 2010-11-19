@@ -4,8 +4,12 @@
 
 #include "KVInfo.h"						// ss::KVInfo
 #include "MonitorParameter.h"			// ss::MonitorBlock
+#include <list>							// std::list
+#include "samson/KVFormat.h"			// KVFormat
 
 namespace ss {
+	
+	class QueueFile;
 	
 	/**
 	 Information contained in the controller about a queue
@@ -16,38 +20,36 @@ namespace ss {
 		std::string _name;				// Name of this queue
 		KVFormat _format;				// Format of the queue
 		KVInfo _info;					// Information about this queue
+
+		/**
+		 Monitoring system
+		 */
 		
+		friend class Monitor;
 		MonitorBlock monitor;			// Set of parameters to monitor for this queue
 
-		friend class Monitor;
+		std::list< QueueFile* > files;	// List of files
 		
 	public:
+		
 		Queue( std::string name , KVFormat format )
 		{
 			_name = name;
 			_format = format;
 		}
 		
-		KVFormat format()
-		{
-			return _format;
-		}
-		KVInfo info()
-		{
-			return _info;
-		}
-		
-		void addFile( int worker, std::string _fileName , size_t _size , size_t _kvs )
-		{
-			_info.size += _size;
-			_info.kvs += _kvs;
-		}
-		
+		KVFormat format() { return _format; }
+		KVInfo info() { return _info; }
+
+		/**
+		 Main functions to add files to this queue
+		 */
+		void addFile( int worker, std::string _fileName , KVInfo info );
 		
 		std::string getStatus()
 		{
 			std::ostringstream o;
-			o << _name << "(" << _format.str() << ") " << _info.str();
+			o << _name << "(" << _format.str() << ") [ " << files.size() << " files ] " << _info.str();
 			return o.str();		
 		}
 	};

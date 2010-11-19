@@ -16,15 +16,13 @@ namespace ss {
 
 	class SamsonController;
 	class Queue;
-	class DataQueue;
 	
 	class Monitor
 	{
 		au::Lock lock;
 		
 		MonitorBlock system;						// Parameter for the system
-		std::set<Queue*> queues;			// Queues we are monitoring		
-		std::set<DataQueue*> data_queues;			// Queues we are monitoring	( data queues )	
+		std::set<Queue*> queues;					// Queues we are monitoring		
 		pthread_t t;								// Thread to perform the snapshots
 		
 	public:
@@ -36,9 +34,7 @@ namespace ss {
 		void run();			// Function called by thread ( not call directly )
 		
 		void addQueueToMonitor( Queue *queue );
-		void addDataQueueToMonitor( DataQueue *queue );
 		void removeQueueToMonitor( Queue *queue );
-		void removeDataQueueToMonitor( DataQueue *queue );
 		
 	};
 }

@@ -18,7 +18,6 @@ namespace ss {
 	class DataManagerCommandResponse;
 	class SamsonController;
 	class ControllerTaskInfo;
-	class DataQueue;
 
 	/**
 	 Data manager at the controller
@@ -28,8 +27,8 @@ namespace ss {
 	{
 		au::Lock lock;
 		
-		au::map< std::string , Queue> queues;		// List of KeyValue queues
-		au::map< std::string , DataQueue> data_queues;		// List of data values ( upload normal files )
+		au::map< std::string , Queue> queues;			// List of KeyValue queues
+		au::map< std::string , Queue> data_queues;		// List of data values ( upload normal files )
 		
 		
 		SamsonController *controller;	// Pointer to controller for module access

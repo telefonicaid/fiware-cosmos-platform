@@ -25,6 +25,18 @@ namespace ss {
 		std::string keyFormat;
 		std::string valueFormat;
 
+		
+		KVFormat()
+		{
+		}
+
+		KVFormat( std::string _keyFormat, std::string _valueFormat )
+		{
+			keyFormat = _keyFormat;
+			valueFormat = _valueFormat;
+		}
+		
+		
 		void init( 	std::string _keyFormat, std::string _valueFormat )
 		{
 			keyFormat = _keyFormat;

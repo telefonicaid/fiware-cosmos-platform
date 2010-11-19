@@ -10,14 +10,13 @@ SET (HEADERS
     WorkerTaskManager.h
     SamsonController.h
     ControllerDataManager.h
-    Queue.h
     JobManager.h
     Job.h
     ControllerTaskManager.h
     ControllerTask.h
     ControllerTaskInfo.h
-    DataQueue.h
-    DataQueue.cpp
+    Queue.h
+    QueueFile.h
 )
 
 SET (SOURCES
@@ -32,12 +31,13 @@ SET (SOURCES
     WorkerTaskManager.cpp
     SamsonController.cpp
     ControllerDataManager.cpp
-    Queue.cpp
-    Job.cpp
     JobManager.cpp
     ControllerTaskManager.cpp
     ControllerTask.cpp
     ControllerTaskInfo.cpp
+    Job.cpp 
+    Queue.cpp
+    QueueFile.cpp
 )
 
 SET (STATIC_LIBS

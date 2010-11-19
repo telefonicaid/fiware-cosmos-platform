@@ -12,7 +12,6 @@
 #include "ModulesManager.h"					// Utility functions
 #include "ObjectWithStatus.h"				// getStatusFromArray(.)
 #include "samson/Operation.h"				// ss::Operation
-#include "DataQueue.h"						// ss::DataQueue
 
 namespace ss {
 	
@@ -132,7 +131,7 @@ namespace ss {
 				return response;
 			}			
 			
-			DataQueue *tmp = new DataQueue(name );
+			Queue *tmp = new Queue( name , KVFormat("txt","txt") );
 			data_queues.insertInMap( name , tmp );
 			
 			response.output = "OK";
@@ -152,7 +151,7 @@ namespace ss {
 			std::string name = commandLine.get_argument( 1 );
 			
 			// Check if queue exist
-			DataQueue *tmp =  data_queues.extractFromMap(name);
+			Queue *tmp =  data_queues.extractFromMap(name);
 			if( !tmp )
 			{
 				std::ostringstream output;
@@ -188,7 +187,7 @@ namespace ss {
 			std::string queue		= commandLine.get_argument( 4 );
 			
 			// Check valid queue
-			DataQueue *q =  data_queues.findInMap(queue);
+			Queue *q =  data_queues.findInMap(queue);
 			if( !q )
 			{
 				std::ostringstream output;
@@ -198,7 +197,7 @@ namespace ss {
 				return response;
 			}
 
-			q->addFile( worker , fileName , size );
+			q->addFile( worker , fileName , KVInfo(size,1) );
 			response.output = "OK";
 			return response;
 		}			
@@ -235,7 +234,7 @@ namespace ss {
 				return response;
 			}
 			
-			q->addFile( worker , fileName , size , kvs );
+			q->addFile( worker , fileName , KVInfo( size , kvs)  );
 			response.output = "OK";
 			return response;
 		}				
@@ -278,7 +277,6 @@ namespace ss {
 		
 		if( help.queues() )
 		{
-			
 			std::map< std::string , Queue*>::iterator i;
 			for (i = queues.begin() ; i!= queues.end() ;i++)
 			{
@@ -304,20 +302,26 @@ namespace ss {
 		
 		if( help.data_queues() )
 		{
-			
-			std::map< std::string , DataQueue*>::iterator ii;
-			for (ii = data_queues.begin() ; ii!= data_queues.end() ;ii++)
+			std::map< std::string , Queue*>::iterator i;
+			for (i = data_queues.begin() ; i!= data_queues.end() ;i++)
 			{
-				DataQueue *queue = ii->second;
-				
-				if( !help.has_name() || queue->getName() == help.name() )
+				if( !help.has_name() || i->first == help.name() )
 				{
-					network::DataQueue *q = response->add_data_queue();
-					q->set_name( queue->getName() );
-					q->set_size( queue->getSize() );	
+					
+					Queue *queue = i->second;
+					network::Queue *q = response->add_queue();
+					q->set_name( i->first );
+					
+					// Format
+					fillKVFormat( q->mutable_format() , queue->format() );
+					
+					//Info
+					fillKVInfo( q->mutable_info(), queue->info() );
+					
 				}
-			}		
-			
+				
+				
+			}
 		}
 		
 		lock.unlock();

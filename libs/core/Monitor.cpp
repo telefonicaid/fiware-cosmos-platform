@@ -3,7 +3,6 @@
 #include "Monitor.h"			// Own interface
 #include "SamsonController.h"	// ss::SamsonController
 #include "Queue.h"				// ss::Queue
-#include "DataQueue.h"			// ss::DataQueue
 
 namespace ss {
 	
@@ -57,15 +56,9 @@ namespace ss {
 		o << "[";
 
 		std::set<Queue*>::iterator queues_iterator;				
-		std::set<DataQueue*>::iterator data_queues_iterator;			
 		for ( queues_iterator = queues.begin() ; queues_iterator != queues.end() ; queues_iterator++)
 		{
 			Queue *q = *queues_iterator;
-			o << q->monitor.getJSONString();
-		}
-		for ( data_queues_iterator = data_queues.begin() ; data_queues_iterator != data_queues.end() ; data_queues_iterator++)
-		{
-			DataQueue *q = *data_queues_iterator;
 			o << q->monitor.getJSONString();
 		}
 		
@@ -88,14 +81,7 @@ namespace ss {
 		lock.lock();
 		queues.insert( queue );
 		lock.unlock();
-	}
-	
-	void Monitor::addDataQueueToMonitor( DataQueue *data_queue )
-	{
-		lock.lock();
-		data_queues.insert( data_queue );
-		lock.unlock();
-	}
+	}	
 	
 	void Monitor::removeQueueToMonitor( Queue *queue )
 	{
@@ -104,12 +90,6 @@ namespace ss {
 		lock.unlock();
 	}
 	
-	void Monitor::removeDataQueueToMonitor( DataQueue *data_queue )
-	{
-		lock.lock();
-		data_queues.erase( data_queue );
-		lock.unlock();
-	}
 	
 	
 }

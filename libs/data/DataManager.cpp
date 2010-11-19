@@ -115,6 +115,11 @@ namespace ss {
 	
 	DataManagerItem* DataManager::_beginTask( size_t task_id , std::string command,  bool log )
 	{
+		
+		// Update the counter so no new task can be given
+		if ( task_counter <= task_id )
+			task_counter = task_id+1;
+		
 		// Finish a previous one if the same task id exist ( rare but tolerated )
 		_cancelTask( task_id , "Error: New task with the same id", log );
 		

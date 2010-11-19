@@ -40,18 +40,30 @@ namespace ss {
 		
 	}
 	
-	Buffer* BufferVector::getJoinedBuffer( )
+	/**
+	 Build a file in the SAMSON format with the incomming network buffers
+	 */
+	
+	Buffer* BufferVector::getFileBufferFromNetworkBuffers( KVFormat queue_format )
 	{
-		 
+		
 		// Get a buffer to be able to put all data in memory
-		size_t file_size = KV_HASH_GROUP_VECTOR_SIZE_FILE + info.size;	
+		size_t file_size = sizeof(FileHeader) + KV_HASH_GROUP_VECTOR_SIZE_FILE + info.size;	
+
+		// Crearte the buffer
 		Buffer *b = MemoryManager::shared()->newBuffer( file_size );
 		
-		FileKVInfo *file_info = (FileKVInfo*) b->getData();
+		// Global header of the file with magic number and format
+		FileHeader fileHeader;
+		fileHeader.init( queue_format );
+		memcpy(b->getData(), &fileHeader, sizeof(FileHeader) );	
+
+		// Vector with per-hash info
+		FileKVInfo *file_info = (FileKVInfo*) (b->getData() + sizeof(fileHeader));
 		
 		// Global data and offset in the resulting buffer
 		char *data = b->getData();
-		size_t offset = KV_HASH_GROUP_VECTOR_SIZE_FILE;	// Initial offset
+		size_t offset = sizeof(fileHeader) + KV_HASH_GROUP_VECTOR_SIZE_FILE;	// Initial offset
 		
 		// Init the offset in each file
 		for (size_t i = 0 ; i < buffer.size() ; i++)

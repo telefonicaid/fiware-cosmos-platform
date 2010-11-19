@@ -66,7 +66,6 @@ namespace ss {
 		void         run(void);
 		char*        runCommand(int rFd, int wFd, char* command, int timeOut);
 		
-		std::string getStatus();
 
 		
 	};

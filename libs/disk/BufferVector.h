@@ -43,7 +43,7 @@ namespace ss {
 		}
 
 		
-		Buffer* getJoinedBuffer( );
+		Buffer* getFileBufferFromNetworkBuffers( KVFormat queue_format );
 		
 	};
 	

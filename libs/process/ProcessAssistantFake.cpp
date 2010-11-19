@@ -55,7 +55,7 @@ namespace ss
 		return NULL;
 	}
 	
-	std::string ProcessAssistantFake::getOutputQueue( int i )
+	network::Queue ProcessAssistantFake::getOutputQueue( int i )
 	{
 		return item->outputs[i];
 	}

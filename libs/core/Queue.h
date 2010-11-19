@@ -38,6 +38,7 @@ namespace ss {
 			_format = format;
 		}
 		
+		std::string getName(){ return _name; }
 		KVFormat format() { return _format; }
 		KVInfo info() { return _info; }
 

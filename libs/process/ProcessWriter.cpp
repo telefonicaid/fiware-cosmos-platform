@@ -95,7 +95,7 @@ namespace ss {
 		for (int o = 0 ; o < num_outputs ; o++)
 		{
 			// Name of the queue to sent this packet ( if any )
-			std::string queue_name = processAssistant->getOutputQueue( o );
+			network::Queue output_queue = processAssistant->getOutputQueue( o );
 			
 			for (int s = 0 ; s < num_servers ; s++)
 			{				
@@ -146,7 +146,7 @@ namespace ss {
 						network::WorkerDataExchange *dataMessage =  p.message.mutable_data();
 						
 						dataMessage->set_task_id(task_id);
-						dataMessage->set_queue( queue_name );
+						dataMessage->mutable_queue( )->CopyFrom( output_queue );
 												
 						NetworkInterface *network = processAssistant->worker->network;
 						network->send(processAssistant->worker, network->workerGetIdentifier(s) , Message::WorkerDataExchange, &p);

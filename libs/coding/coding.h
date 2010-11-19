@@ -7,7 +7,8 @@
 *
 */
 #include <samson/Data.h>
-#include "Format.h"			// au::Format
+#include "Format.h"				// au::Format
+#include "samson/KVFormat.h"	// ss::KVFormat
 
 /*
 #define KV_BUFFER_SIZE			1024*1024*256									
@@ -104,6 +105,34 @@ namespace ss {
 		
 	};	
 
+	/****************************************************************
+	 File interface
+	 ****************************************************************/
+	
+	struct FileHeader
+	{
+		int magic_number;
+		char keyFormat[100];
+		char valueFormat[100];
+		
+		void init( KVFormat format)
+		{
+			magic_number =  4652783;
+			snprintf(keyFormat, 100, "%s", format.keyFormat.c_str());
+			snprintf(valueFormat, 100, "%s", format.valueFormat.c_str());
+		}
+		
+		KVFormat getFormat()
+		{
+			return KVFormat( keyFormat , valueFormat );
+		}
+		
+		bool check()
+		{
+			return ( magic_number == 4652783);
+		}
+		
+	};
 	
 	
 }

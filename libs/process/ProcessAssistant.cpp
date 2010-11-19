@@ -353,15 +353,6 @@ char* ProcessAssistant::runCommand(int rFd, int wFd, char* command, int timeOut)
 	return result;
 }
 
-	
-	/**
-		Just get the string for debugging
-	 */
-	
-	std::string ProcessAssistant::getStatus()
-	{
-		return status;
-	}
 
 	
 }

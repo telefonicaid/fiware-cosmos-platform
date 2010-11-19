@@ -383,6 +383,15 @@ namespace ss {
 					info->setError( error_message.str() );
 					return; 
 				}
+
+				// add queu to be emitted in the WorkerTask packet
+				network::Queue qq;
+				qq.set_name( q->getName() );
+				network::KVFormat *f = qq.mutable_format();
+				f->set_keyformat( q->format().keyFormat );
+				f->set_valueformat( q->format().valueFormat );
+				info->output_queues.push_back( qq ); 
+				
 			}
 			else
 			{

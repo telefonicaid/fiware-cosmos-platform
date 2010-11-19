@@ -7,6 +7,7 @@
 #include "samson.pb.h"				// WorkerTask
 #include "ObjectWithStatus.h"
 #include "Lock.h"					// au::Lock
+#include "samson.pb.h"				// ss::network::...
 
 namespace ss {
 
@@ -25,8 +26,10 @@ namespace ss {
 		size_t task_id;	// Global task id
 		int item_id;	// Item id in this worker
 			
-		std::string operation;				// Name of the operation
-		std::vector<std::string> outputs;	// Name of the output queues ( to send data )
+		std::string operation;					// Name of the operation
+
+		std::vector<std::string> outputs_names;	// Queues to emit key-values ( names from command line )
+		std::vector<network::Queue> outputs;	// Queues to emit key-values ( inserted at data manager )
 		
 		enum State
 		{

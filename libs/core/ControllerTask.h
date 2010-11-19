@@ -75,9 +75,13 @@ namespace ss {
 		{
 			t->set_operation( info->operation_name );
 			
-			// Set the output names
+			// Set the output queues
 			for (int i = 0 ; i < (int)info->outputs.size() ; i++)
-				t->add_output( info->outputs[i] );
+			{
+				network::Queue *q = t->add_output();
+				network::Queue qq = info->output_queues[i]; 
+				q->CopyFrom( qq );
+			}
 		}
 		
 		// Update with the added files

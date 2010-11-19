@@ -16,12 +16,14 @@ void ss::example::generator::run( ss::KVWriter *writer )
 	ss::system::UInt a;
 	ss::system::UInt b;
 	
-	std::cout << "Running example\n";
+	size_t num_kvs = 1000000;
 	
-	for (int i = 0 ; i < 10 ; i++)
+	std::cout << "Running example with "<< num_kvs << std::endl ;
+	
+	for (size_t i = 0 ; i < num_kvs ; i++)
 	{
-		a = i;
-		b = i*i;
+		a = (i%10);
+		b = 2*(i%10);
 		writer->emit( 0 , &a , &b );
 	}
 	

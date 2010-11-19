@@ -3,6 +3,7 @@
 
 #include "ProcessAssistantInterface.h"		// ss::ProcessAssistantInterface
 #include "ProcessInterface.h"				// ss::ProcessInterface
+#include "samson.pb.h"						// ss::network::..
 
 namespace ss {
 
@@ -39,15 +40,7 @@ namespace ss {
 		// Pass command of the process
 		virtual char* passCommand(const char* command);
 		
-		
-		// get the status of this element
-		virtual std::string getStatus()
-		{
-			return "Fake ProcessAssistant";
-		}
-		
-		
-		std::string getOutputQueue( int i );
+		network::Queue getOutputQueue( int i );
 		
 		virtual size_t getTaskId();
 

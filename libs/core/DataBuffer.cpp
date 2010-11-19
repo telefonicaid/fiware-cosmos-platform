@@ -33,7 +33,7 @@ namespace ss {
 	}
 	
 	
-	void DataBuffer::addBuffer( size_t task_id , std::string queue , Buffer* buffer )
+	void DataBuffer::addBuffer( size_t task_id , network::Queue queue , Buffer* buffer )
 	{
 		lock.lock();
 		

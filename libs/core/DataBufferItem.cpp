@@ -26,21 +26,22 @@ namespace ss {
 		
 	}	
 	
-	void DataBufferItem::addBuffer( std::string queue , Buffer *buffer )
+	void DataBufferItem::addBuffer( network::Queue queue , Buffer *buffer )
 	{
-		BufferVector* bv = findInMap( queue );
+		std::string name = queue.name();
+		QueueuBufferVector* bv = findInMap( name );
 		
 		if( !bv )
 		{
-			bv = new BufferVector();
-			insertInMap( queue , bv  );
+			bv = new QueueuBufferVector( queue );
+			insertInMap( name , bv  );
 		}
 		
 		if( buffer->getSize() + bv->getSize() > KV_MAX_FILE_SIZE )
 		{
-			Buffer *b = bv->getJoinedBuffer( );
-			std::string fileName = newFileName( queue );
-			saveBufferToDisk( b , fileName , queue );
+			Buffer *b = bv->getFileBufferFromNetworkBuffers( KVFormat( queue.format().keyformat() , queue.format().valueformat() ) );
+			std::string fileName = newFileName( name );
+			saveBufferToDisk( b , fileName , bv->queue );
 		}
 		
 		bv->addBuffer( buffer );
@@ -57,16 +58,15 @@ namespace ss {
 			finished = true;
 		
 			// Flush to disk the rest of the buffer
-			for ( std::map<std::string , BufferVector* >::iterator i = begin() ; i != end() ; i++)
+			for ( std::map<std::string , QueueuBufferVector* >::iterator i = begin() ; i != end() ; i++)
 			{
 				if( i->second->getSize() > 0)
 				{
-					BufferVector *bv = i->second;
-					
-					Buffer *b = bv->getJoinedBuffer( );
+					QueueuBufferVector *bv = i->second;
+					network::Queue queue = bv->queue;
+					Buffer *b = bv->getFileBufferFromNetworkBuffers( KVFormat( queue.format().keyformat() , queue.format().valueformat() ) );
 					std::string fileName = newFileName( i->first );
-					
-					saveBufferToDisk( b , fileName , i->first );
+					saveBufferToDisk( b , fileName , bv->queue );
 				}
 			}
 			
@@ -79,11 +79,11 @@ namespace ss {
 		}		
 	}	
 	
-	void DataBufferItem::saveBufferToDisk( Buffer* b , std::string fileName , std::string queue )
+	void DataBufferItem::saveBufferToDisk( Buffer* b , std::string fileName , network::Queue queue )
 	{
 		// Store this file to be notified latter to the controller
 		network::QueueFile qf;
-		qf.set_queue( queue );
+		qf.set_queue( queue.name() );
 		
 		network::File *file = qf.mutable_file();
 		file->set_name( fileName );
@@ -155,7 +155,7 @@ namespace ss {
 		output << "[Files ids " << ids_files_saved.size() << " / " << ids_files.size() << " files ] ";
 		output << "[Created " << qfiles.size() << " files ] ";
 		
-		std::map<std::string , BufferVector* >::iterator i;
+		std::map<std::string , QueueuBufferVector* >::iterator i;
 		for (i = begin() ; i != end() ; i++)
 			output << "[ Queue: " << i->first << " " << i->second->getInfo().str() << " ]";
 		

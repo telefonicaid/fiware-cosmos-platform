@@ -3,7 +3,7 @@
 
 #include <sstream>
 #include <string>
-
+#include "samson.pb.h"			// network::...
 
 namespace ss {
 
@@ -32,13 +32,19 @@ namespace ss {
 		virtual void run(void)=0;
 		
 		// get the status of this element
-		virtual std::string getStatus()=0;
-
+		std::string getStatus()
+		{
+			return status;
+		}
+		
 		
 		// Get the i-th output queue name
-		virtual std::string getOutputQueue( int i )
+		virtual network::Queue getOutputQueue( int i )
 		{
-			return "unasigned_queue_name";
+			assert( false );	
+			// To avoid watining while this is not declared pure virtual
+			network::Queue q;
+			return q;
 		};
 
 		virtual size_t getTaskId()

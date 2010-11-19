@@ -12,18 +12,37 @@
 #include "DiskManagerDelegate.h"	// ss::DiskManagerDelegate
 #include <set>						// std::set
 #include "samson.pb.h"				// ss::network::...
+#include "BufferVector.h"			// ss::BufferVector
 
 namespace ss {
 	
-	class BufferVector;
 	class DataBufferItemDelegate;
 	class DatBuffer;
+	
+	
+	/**
+	 Each buffer vector for a particular queue
+	 */
+	
+	class QueueuBufferVector : public BufferVector
+	{
+		
+	public:
+		network::Queue queue;
+		
+		QueueuBufferVector( network::Queue _queue )
+		{
+			queue = _queue;
+		}
+		
+		
+	};
 	
 	/**
 	 Class to group all the vector of buffers for each output queue
 	 */
 	
-	class DataBufferItem : public au::map<std::string , BufferVector > , public DiskManagerDelegate
+	class DataBufferItem : public au::map<std::string , QueueuBufferVector  > , public DiskManagerDelegate
 	{
 		DataBuffer *dataBuffer;					// Pointer to the buffer
 		
@@ -42,15 +61,14 @@ namespace ss {
 	public:
 		
 		std::vector<network::QueueFile> qfiles;	// Created files to be notified to the controller
-
 		
 		DataBufferItem( DataBuffer *buffer, size_t _task_id , int num_workers );
 		
-		void addBuffer( std::string queue , Buffer *buffer );
+		void addBuffer( network::Queue queue , Buffer *buffer );
 
 		void finishWorker();
 		
-		void saveBufferToDisk( Buffer* b , std::string filename , std::string queue);
+		void saveBufferToDisk( Buffer* b , std::string filename ,network::Queue );
 		
 		// DiskManagerDelegate
 		void diskManagerNotifyFinish(size_t id, bool success);

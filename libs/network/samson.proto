@@ -33,7 +33,7 @@ message Queue
 {
 	required string name = 1;
 	required KVFormat format = 2;
-	required KVInfo info = 3;
+	optional KVInfo info = 3;
 }
 
 message Operation
@@ -76,8 +76,8 @@ message WorkerTask
 	required int64 task_id		= 1;	// Id of the top level ( controller ) task	
 	required string operation 	= 2;	// Name of the operation to run
 
-	repeated QueueFile input	= 3;    // Input files ( for each queue )
-	repeated string output		= 4;    // output queues
+	repeated QueueFile input	= 3;    // Input files ( all inputs for each queue )
+	repeated Queue output		= 4;    // output queues
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -87,10 +87,10 @@ message WorkerTask
 
 message WorkerTaskConfirmation
 {
-	required int64 task_id  = 1;	       // Id of the opt level (controller ) task
-	required bool  error    = 2;  	       // Error in the operation
-	optional string error_message = 3;     // Message to debug the error
-	repeated QueueFile file = 4;   // Files created with this operation
+	required int64 task_id	      = 1;	// Id of the opt level (controller ) task
+	required bool  error          = 2;      // Error in the operation
+	optional string error_message = 3;      // Message to debug the error
+	repeated QueueFile file       = 4;      // Files created with this operation
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -160,8 +160,8 @@ message HelpResponse
 //
 message WorkerDataExchange
 {
-	required int64   task_id   = 1;  // Identifier of the controller task
-	required string  queue     = 2;  // Name of the queue where we store information
+	required int64 task_id  = 1;  // Identifier of the controller task
+	required Queue queue     = 2;  // Name of the queue where we store information
 }
 
 // ////////////////////////////////////////////////////////////////////////////

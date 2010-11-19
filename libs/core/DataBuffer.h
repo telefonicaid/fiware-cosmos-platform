@@ -12,6 +12,7 @@
 #include "DiskManagerDelegate.h"	// ss::DiskManagerDelegate
 #include <set>						// std::set
 #include "ObjectWithStatus.h"		// getStatusFromArray(.)
+#include "samson.pb.h"				// network::...
 
 namespace ss {
 
@@ -45,7 +46,7 @@ namespace ss {
 		 New packet from the network interface
 		 */
 		
-		void addBuffer( size_t task_id , std::string queue , Buffer* buffer );
+		void addBuffer( size_t task_id , network::Queue , Buffer* buffer );
 		
 		/**
 		 Inform that a particular task has receive a close message form a worker finished.

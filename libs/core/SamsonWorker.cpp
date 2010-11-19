@@ -182,7 +182,7 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 			// New data packet for a particular queue inside a particular task environment
 		
 			size_t task_id = packet->message.data().task_id();
-			std::string queue = packet->message.data().queue();
+			network::Queue queue = packet->message.data().queue();
 			
 			dataBuffer.addBuffer(task_id, queue, packet->buffer );
 			

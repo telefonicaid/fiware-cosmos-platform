@@ -23,17 +23,6 @@ message QueueFile
 	required File file=2;		// File with all the info
 }
 
-message QueueFiles
-{
-	required string name = 1;	// Name of the queue
-	repeated File file = 2;		// Name of the files for this queue
-}
-
-message FileList
-{
-	repeated File file = 1;		// Name of the file
-}
-
 message KVFormat
 {
 	required string keyFormat=1;	// Format for the key
@@ -93,7 +82,7 @@ message WorkerTask
 	required int64 task_id		= 1;	// Id of the top level ( controller ) task	
 	required string operation 	= 2;	// Name of the operation to run
 
-	repeated QueueFiles input	= 3;    // Input files ( for each queue )
+	repeated QueueFile input	= 3;    // Input files ( for each queue )
 	repeated string output		= 4;    // output queues
 }
 
@@ -246,7 +235,8 @@ message Message
 	//
 	optional Command                command                   = 103;  // Command message
 	optional CommandResponse        command_response          = 104;  // Command response message
-	optional WorkerTask             worker_task	              = 105;  // Work task message
+
+	optional WorkerTask             worker_task	          = 105;  // Work task message
 	optional WorkerTaskConfirmation worker_task_confirmation  = 106;  // Work task confirmation message
 
 	optional WorkerDataExchange  	data                      = 107;  // Exchange of data packets between nodes     
@@ -264,5 +254,4 @@ message Message
 	optional StatusRequest status_request = 115; 				      // request for status ( debuggin )
 	optional StatusResponse status_response = 116;				      // response of a status request
 	
-
 }

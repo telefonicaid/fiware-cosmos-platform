@@ -1,8 +1,9 @@
-#ifndef _H_CONTROLLER_QUEUE
-#define _H_CONTROLLER_QUEUE
 
-#include "KVInfo.h"							// ss::KVInfo
+#ifndef _H_QUEUE
+#define _H_QUEUE
 
+#include "KVInfo.h"						// ss::KVInfo
+#include "MonitorParameter.h"			// ss::MonitorBlock
 
 namespace ss {
 	
@@ -10,15 +11,18 @@ namespace ss {
 	 Information contained in the controller about a queue
 	 */
 	
-	class ControllerQueue
+	class Queue
 	{
 		std::string _name;				// Name of this queue
 		KVFormat _format;				// Format of the queue
 		KVInfo _info;					// Information about this queue
 		
+		MonitorBlock monitor;			// Set of parameters to monitor for this queue
+
+		friend class Monitor;
 		
 	public:
-		ControllerQueue( std::string name , KVFormat format )
+		Queue( std::string name , KVFormat format )
 		{
 			_name = name;
 			_format = format;
@@ -32,7 +36,7 @@ namespace ss {
 		{
 			return _info;
 		}
-
+		
 		void addFile( int worker, std::string _fileName , size_t _size , size_t _kvs )
 		{
 			_info.size += _size;

@@ -125,7 +125,7 @@ namespace ss
 				return;
 			}
 			
-			writeErrorOnConsole("Please, help [queues] [datas] [operations]");
+			writeErrorOnConsole("Please, help [queues] [data_queues] [datas] [operations]");
 			return;
 			
 			

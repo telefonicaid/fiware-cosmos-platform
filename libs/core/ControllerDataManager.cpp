@@ -4,7 +4,7 @@
 #include "ControllerTask.h"					// ControllerTask
 #include "CommandLine.h"					// au::CommandLine
 #include "samson/KVFormat.h"				// ss::KVFormat
-#include "ControllerQueue.h"				// ss::ControllerQueue
+#include "Queue.h"				// ss::Queue
 #include "au_map.h"							// au::insertInMap
 #include "DataManager.h"					// ss::DataManagerCommandResponse
 #include "SamsonController.h"				// ss::SamsonController
@@ -12,9 +12,9 @@
 #include "ModulesManager.h"					// Utility functions
 #include "ObjectWithStatus.h"				// getStatusFromArray(.)
 #include "samson/Operation.h"				// ss::Operation
+#include "DataQueue.h"						// ss::DataQueue
 
 namespace ss {
-	
 	
 	DataManagerCommandResponse ControllerDataManager::_run( std::string command )
 	{
@@ -71,7 +71,7 @@ namespace ss {
 			}			
 			
 			KVFormat format = KVFormat::format( keyFormat , valueFormat );
-			ControllerQueue *tmp = new ControllerQueue(name , format);
+			Queue *tmp = new Queue(name , format);
 			queues.insertInMap( name , tmp );
 			
 			response.output = "OK";
@@ -91,7 +91,7 @@ namespace ss {
 			std::string name = commandLine.get_argument( 1 );
 			
 			// Check if queue exist
-			ControllerQueue *tmp =  queues.extractFromMap(name);
+			Queue *tmp =  queues.extractFromMap(name);
 			if( !tmp )
 			{
 				std::ostringstream output;
@@ -225,7 +225,7 @@ namespace ss {
 			std::string queue		= commandLine.get_argument( 5 );
 			
 			// Check valid queue
-			ControllerQueue *q =  queues.findInMap(queue);
+			Queue *q =  queues.findInMap(queue);
 			if( !q )
 			{
 				std::ostringstream output;
@@ -279,13 +279,13 @@ namespace ss {
 		if( help.queues() )
 		{
 			
-			std::map< std::string , ControllerQueue*>::iterator i;
+			std::map< std::string , Queue*>::iterator i;
 			for (i = queues.begin() ; i!= queues.end() ;i++)
 			{
 				if( !help.has_name() || i->first == help.name() )
 				{
 					
-					ControllerQueue *queue = i->second;
+					Queue *queue = i->second;
 					network::Queue *q = response->add_queue();
 					q->set_name( i->first );
 					
@@ -341,7 +341,7 @@ namespace ss {
 		{
 			std::string queue_name =  info->inputs[i] ;
 			
-			ControllerQueue *q = queues.findInMap( queue_name );
+			Queue *q = queues.findInMap( queue_name );
 			if( q )
 			{
 				KVFormat queue_format = q->format();
@@ -367,7 +367,7 @@ namespace ss {
 		{
 			std::string queue_name = info->outputs[i];
 			
-			ControllerQueue *q = queues.findInMap( queue_name );
+			Queue *q = queues.findInMap( queue_name );
 			if( q )
 			{
 				KVFormat queue_format = q->format();

@@ -9,46 +9,17 @@
 #include "DataManager.h"		// ss::DataManager
 #include "au_map.h"				// au::map
 #include "samson.pb.h"			// ss::network::...
+#include "MonitorParameter.h"	// ss::MonitorBlock
 
 namespace ss {
 	
-	class ControllerQueue;
+	class Queue;
 	class ControllerTask;
 	class DataManagerCommandResponse;
 	class SamsonController;
 	class ControllerTaskInfo;
-	
-	class DataQueue
-	{
-		std::string name;	// Name of the queue
-		size_t size;		// Size of this queue
-		
-	public:
-		DataQueue( std::string _name)
-		{
-			name = _name;
-			size = 0 ;
-		}
+	class DataQueue;
 
-		
-		void addFile( int worker, std::string _fileName , size_t _size )
-		{
-			size += _size;
-		}
-		
-		size_t getSize()
-		{
-			return size;
-		}
-		
-		std::string getName()
-		{
-			return name;
-		}
-							
-		
-	};
-	
 	/**
 	 Data manager at the controller
 	 */
@@ -57,7 +28,7 @@ namespace ss {
 	{
 		au::Lock lock;
 		
-		au::map< std::string , ControllerQueue> queues;		// List of KeyValue queues
+		au::map< std::string , Queue> queues;		// List of KeyValue queues
 		au::map< std::string , DataQueue> data_queues;		// List of data values ( upload normal files )
 		
 		

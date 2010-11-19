@@ -19,7 +19,6 @@
 #include "MemoryManager.h"				// ss::MemoryManager
 
 
-
 namespace ss {
 
 
@@ -35,7 +34,7 @@ SamsonController::SamsonController
 	char*              setup,
 	int                workers,
 	int                endpoints
-) : data(this), jobManager(this), taskManager(this)
+) : data(this), jobManager(this), taskManager(this) , monitor(this)
 {
 	this->network    = network;
 	this->port       = port;

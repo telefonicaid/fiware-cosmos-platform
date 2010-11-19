@@ -1,32 +1,38 @@
 SET (HEADERS
-        DataBufferItem.h
-        DataBufferItemDelegate.h
-        DataBuffer.h
+    Monitor.h
+    MonitorParameter.h
+    DataBufferItem.h
+    DataBufferItemDelegate.h
+    DataBuffer.h
     ModulesManager.h
     SamsonWorker.h
     LoadDataManager.h
     WorkerTaskManager.h
     SamsonController.h
     ControllerDataManager.h
-    ControllerQueue.h
+    Queue.h
     JobManager.h
     Job.h
     ControllerTaskManager.h
     ControllerTask.h
     ControllerTaskInfo.h
+    DataQueue.h
+    DataQueue.cpp
 )
 
 SET (SOURCES
-        DataBufferItem.cpp
-        DataBufferItemDelegate.cpp
-        DataBuffer.cpp
+    Monitor.cpp
+    MonitorParameter.cpp
+    DataBufferItem.cpp
+    DataBufferItemDelegate.cpp
+    DataBuffer.cpp
     ModulesManager.cpp
     SamsonWorker.cpp
     LoadDataManager.cpp
     WorkerTaskManager.cpp
     SamsonController.cpp
     ControllerDataManager.cpp
-    ControllerQueue.cpp
+    Queue.cpp
     Job.cpp
     JobManager.cpp
     ControllerTaskManager.cpp

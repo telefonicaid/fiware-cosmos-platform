@@ -23,6 +23,7 @@
 #include "workerStatus.h"               // Message::WorkerStatusData
 #include "Message.h"                    // Message::WorkerStatus, ...
 #include "JobManager.h"					// ss::JobManager
+#include "Monitor.h"					// ss::Monitor
 
 namespace ss {
 	
@@ -42,6 +43,8 @@ namespace ss {
 		
 		JobManager jobManager;							// Top level job manager
 		ControllerTaskManager taskManager;				// Internal task manager to submit tasks ( simple string command to be executed also by workers )
+		
+		Monitor monitor;								// Monitorization control for web-based moitoring tool
 		
 		// Status information of the workers
 		Message::WorkerStatusData status[100];		    // Status update from all workers
@@ -73,6 +76,13 @@ namespace ss {
 		// PacketSenderInterface
 		virtual void notificationSent( size_t id , bool success );
 
+		virtual std::string getJSONStatus(std::string in)
+		{
+			return monitor.getJSONString( in );
+		}
+		
+		
+		
 	private:
 		
 		// Send a message to a worker with a particular task

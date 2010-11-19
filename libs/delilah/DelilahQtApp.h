@@ -37,15 +37,17 @@ public:
 
 	QString validateNewQueueName(QString name);
 
-	DataQueue* getDataQueue(const QString &name);
-	KVQueue* getKVQueue(const QString &name);
+	DataQueue* getDataQueue(const QString &name, bool deleted=false);
+	KVQueue* getKVQueue(const QString &name, bool deleted=false);
 
 	/*
 	 * Methods sending requests to network
 	 */
-	void uploadData(bool queues=true, bool operations=true, bool data_types=true, const QString &name="");
+	void uploadData(bool data_queue=true, bool kv_queue=true, bool operation=true, bool data_type=true, const QString &name="");
 	int sendCreateDataQueue(const QString &name);
 	int sendCreateKVQueue(const QString &name, const QString &key_type, const QString &value_type);
+	int sendDeleteDataQueue(const QString &name);
+	int sendDeleteKVQueue(const QString &name);
 
 	/*
 	 * Methods receiving packets from network
@@ -59,11 +61,12 @@ public slots:
 
 protected:
 	/*
-	 * Methods loading information received from network.
+	 * Methods synchronizing application's lists with information received from network.
 	 */
-	void loadQueues(const ss::network::HelpResponse &resp);
-	void loadOperations(const ss::network::HelpResponse &resp);
-	void loadDataTypes(const ss::network::HelpResponse &resp);
+	void synchronizeDataQueues(const ss::network::HelpResponse &resp, bool synchronize_all=true);
+	void synchronizeKVQueues(const ss::network::HelpResponse &resp, bool synchronize_all=true);
+	void synchronizeOperations(const ss::network::HelpResponse &resp, bool synchronize_all=true);
+	void synchronizeDataTypes(const ss::network::HelpResponse &resp, bool synchronize_all=true);
 
 signals:
 	void gotCommandResponse(unsigned int id, bool finished, bool error, QString message);

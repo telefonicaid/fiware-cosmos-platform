@@ -38,7 +38,8 @@ protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
 
 signals:
-	void removeQueueFromWorkspaceRequested(Queue* queue);
+	void removeQueueFromWorkspaceRequested(Queue*);			// emitted when user chooses to remove queue from workspace
+	void deleteQueueRequested(Queue*);						// emitted when user chooses to delete queue from system
 
 public:
     enum { Type=QUEUE_ITEM };

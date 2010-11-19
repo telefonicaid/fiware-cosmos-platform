@@ -19,10 +19,12 @@
 Workspace::Workspace(QString _name)
 {
 	name = _name;
+	app = (DelilahQtApp*)qApp;
 	scene = new WorkspaceScene();
-	connect(scene, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)), this, SLOT(removeQueueFromWorkspace(Queue*)));
 
-	DelilahQtApp* app = (DelilahQtApp*)qApp;
+	connect(scene, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)), this, SLOT(removeQueueFromWorkspace(Queue*)));
+	connect(scene, SIGNAL(deleteQueueRequested(Queue*)), this, SLOT(deleteQueue(Queue*)));
+
 	connect(app, SIGNAL(gotCommandResponse(unsigned int, bool, bool, QString)),
 			this, SLOT(updateJob(unsigned int, bool, bool, QString)));
 }
@@ -48,12 +50,10 @@ void Workspace::createQueue(QueueType type, const QPointF &scene_pos, QString na
 		assert(!key.isEmpty() && !value.isEmpty());
 	}
 
-	DelilahQtApp* app = (DelilahQtApp*)qApp;
-
 	job_info job;
 	job.pos = scene_pos;
 	job.status = IN_PROCESSING;
-	job.message = "Sending request";
+	job.message = "Sending request: create queue ";
 
 	switch(type)
 	{
@@ -68,9 +68,10 @@ void Workspace::createQueue(QueueType type, const QPointF &scene_pos, QString na
 			job.id = app->sendCreateKVQueue(name, key, value);
 			break;
 		default:
-			// TODO:
-			std::cout << "This situation should never happen!!!!!!!!!\n";
 			job.type = CANCELED;
+			QString error = QString("Could not create %1 queue:\n"
+					"No information how to handle this type of queue").arg(name);
+			emit(unhandledFailure(error));
 			break;
 	}
 
@@ -84,18 +85,42 @@ void Workspace::createQueue(QueueType type, const QPointF &scene_pos, QString na
 
 void Workspace::removeQueueFromWorkspace(Queue* queue)
 {
-	int index = queues.indexOf(queue);
-	std::cout << "found at index: " << index << std::endl;
-	if (index > -1)
+	// TODO: remove queue from all processes it is involved in
+
+	scene->removeQueue(queue);
+}
+
+void Workspace::deleteQueue(Queue* queue)
+{
+	job_info job;
+//	job.pos = scene_pos;
+	job.status = IN_PROCESSING;
+	job.message = "Sending request: delete queue";
+
+	switch(queue->type())
 	{
-		queues.removeAt(index);
-		scene->removeQueue(queue);
+		case DATA_QUEUE:
+			job.type = DELETE_DATA_QUEUE;
+			job.args << queue->getName();
+			job.id = app->sendDeleteDataQueue(queue->getName());
+			break;
+		case KV_QUEUE:
+			job.type = DELETE_KV_QUEUE;
+			job.args << queue->getName();
+			job.id = app->sendDeleteKVQueue(queue->getName());
+			break;
+		default:
+			job.type = CANCELED;
+			QString error = QString(
+					"Could not delete %1 queue:\nNo information how to handle this type of queue.").arg(queue->getName());
+			emit(unhandledFailure(error));
+			break;
 	}
-	else
+
+	if (job.type!=CANCELED)
 	{
-		// TODO
-		QString error = QString("Could not remove queue %a: \nQueue not found").arg(queue->getName());
-		emit(unitFailed(error));
+		jobs.append(job);
+		emit(jobCreated(job));
 	}
 }
 
@@ -151,12 +176,31 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 			case CREATE_DATA_QUEUE:
 				{
 					DataQueue* queue = app->getDataQueue(job.args[0]);
-					queues.append(queue);
-					scene->showDataQueue(queue, job.pos);
+					if (queue)
+						scene->showDataQueue(queue, job.pos);
+					else
+					{
+						QString error = QString(
+								"Creation of %1 queue failed:\n Created queue is not available").arg(job.args[0]);
+						emit(unhandledFailure(error));
+					}
 				}
 				break;
 			case CREATE_KV_QUEUE:
-			case REMOVE_QUEUE:
+				break;
+			case DELETE_DATA_QUEUE:
+				{
+					DataQueue* queue = app->getDataQueue(job.args[0], true);
+					if (queue)
+						scene->removeQueue(queue);
+					else
+					{
+						QString error = QString("Deleting of %1 queue failed:\nQueue is not deleted").arg(job.args[0]);
+						emit(unhandledFailure(error));
+					}
+				}
+				break;
+			case DELETE_KV_QUEUE:
 			case LOAD_FILE:
 			case RUN_PROCESS:
 			default:
@@ -164,8 +208,7 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 		}
 
 	}
-	// TODO:
-	//delete job from the list
+
 	emit(jobUpdated(job));
 	jobs.removeAt(index);
 }

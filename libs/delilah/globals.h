@@ -22,6 +22,7 @@ enum QueueType { DATA_QUEUE, KV_QUEUE };
 
 #define CREATE_DATA_QUEUE_COMMAND		"add_data_queue"
 #define CREATE_KV_QUEUE_COMMAND			"add_queue"
-#define REMOVE_QUEUE_COMMAND			"remove_queue"
+#define REMOVE_DATA_QUEUE_COMMAND		"remove_data_queue"
+#define REMOVE_KV_QUEUE_COMMAND			"remove_queue"
 
 #endif /* GLOBALS_H_ */

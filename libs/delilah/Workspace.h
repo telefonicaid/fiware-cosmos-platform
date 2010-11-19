@@ -18,8 +18,10 @@
 class Queue;
 class Process;
 class WorkspaceScene;
+class DelilahQtApp;
 
-enum JobTypes { CANCELED, CREATE_DATA_QUEUE, CREATE_KV_QUEUE, REMOVE_QUEUE, LOAD_FILE, RUN_PROCESS };
+enum JobTypes { CANCELED, CREATE_DATA_QUEUE, CREATE_KV_QUEUE, DELETE_DATA_QUEUE, DELETE_KV_QUEUE,
+				LOAD_FILE, RUN_PROCESS };
 enum JobStatus { IN_PROCESSING, FINISHED, FAILED };
 
 /*
@@ -51,6 +53,7 @@ public slots:
 
 	void createQueue(QueueType type, const QPointF &scene_pos, QString name, QString key=QString(), QString value=QString());
 	void removeQueueFromWorkspace(Queue* queue);
+	void deleteQueue(Queue* queue);
 
 	void updateJob(unsigned int id, bool finished, bool error, QString message);
 	void finishJob(unsigned int id, bool error, QString message);
@@ -61,14 +64,18 @@ protected:
 signals:
 	void jobCreated(job_info job);
 	void jobUpdated(job_info job);
-	void unitFailed(QString error);
+
+	void unhandledFailure(QString error);
 
 protected:
 	QString name;
-	QList<job_info> jobs;
-	QList<Queue*> queues;
-	QList<Process*> processes;
 	WorkspaceScene* scene;
+	DelilahQtApp* app;
+
+	QList<job_info> jobs;
+
+//	QList<Queue*> queues;
+	QList<Process*> processes;
 };
 
 

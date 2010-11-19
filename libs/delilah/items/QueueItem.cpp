@@ -41,10 +41,12 @@ void QueueItem::initText()
 		return;
 
 	QString text;
-	if (queue->getStatus()==Queue::LOADING)
+	if (queue->getStatus()==Queue::SYNCHRONIZING)
 		text = QString("Loading...");
 	if(queue->getStatus()==Queue::READY)
 		text = queue->getName();
+	if(queue->getStatus()==Queue::DELETED)
+		text = QString("Deleted!!!");
 
 	initText(text);
 }
@@ -106,6 +108,9 @@ void QueueItem::removeQueueSelected()
 void QueueItem::deleteQueueSelected()
 {
 	// TODO:
+	// Show dlg box asking if user is sure....
+
+	emit(deleteQueueRequested(this->queue));
 }
 
 void QueueItem::loadDataSelected()

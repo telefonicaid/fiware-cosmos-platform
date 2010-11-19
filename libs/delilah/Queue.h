@@ -22,15 +22,18 @@ class Queue : public QObject
 
 public:
 	Queue()
-		: status(Queue::LOADING) {};
+		: status(Queue::SYNCHRONIZING) {};
 	Queue(const QString &name)
-		: status(Queue::LOADING), name(name) {};
+		: status(Queue::SYNCHRONIZING), name(name) {};
 	~Queue() {};
+
+	QString getName() const { return name; };
+	unsigned long getSize() const { return size; };
 
 	/*
 	 * Status property
 	 */
-	enum Status {LOADING, READY, DELETED};
+	enum Status {SYNCHRONIZING, READY, DELETED};
 	Status getStatus() const { return status; };
 	void setStatus(Status new_status)
 	{
@@ -42,13 +45,11 @@ public:
 	};
 
 	/*
-	 *
+	 * Abstract methods
 	 */
 	virtual QueueType type() = 0;
+	virtual int upload(ss::network::Queue* q) = 0;
 
-
-	QString getName() const { return name; };
-	unsigned long getSize() const { return size; };
 
 signals:
 	void statusChanged();

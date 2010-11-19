@@ -46,7 +46,7 @@ void WorkspaceView::setWorkspace(Workspace* model)
 			workspace, SLOT(createQueue(QueueType, QPointF, QString, QString, QString)));
 	connect(workspace, SIGNAL(jobCreated(job_info)), this, SLOT(updateJobInfoView(job_info)));
 	connect(workspace, SIGNAL(jobUpdated(job_info)), this, SLOT(updateJobInfoView(job_info)));
-	connect(workspace, SIGNAL(unitFailed(QString)), this, SLOT(showError(QString)));
+	connect(workspace, SIGNAL(unhandledFailure(QString)), this, SLOT(showError(QString)));
 }
 
 void WorkspaceView::showError(QString error)

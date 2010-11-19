@@ -50,8 +50,10 @@ public slots:
 	void cancelConnection();
 
 signals:
-	void addQueueRequested(const QPointF &);
-	void removeQueueFromWorkspaceRequested(Queue*);
+	void addQueueRequested(const QPointF &);				// emitted when user chooses to add queue. Argument is the position
+															// of mouse click
+	void removeQueueFromWorkspaceRequested(Queue*);			// emitted when user chooses to remove queue from workspace
+	void deleteQueueRequested(Queue*);								// emitted when user chooses to delete queue from system
 
 protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);

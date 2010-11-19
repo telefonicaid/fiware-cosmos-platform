@@ -26,7 +26,7 @@ WorkspaceScene::WorkspaceScene(QObject* parent)
 	: QGraphicsScene(parent)
 {
 	if (queue_renderer == 0)
-		queue_renderer = new QSvgRenderer(QLatin1String(":/svg/objects/queue.svg"));
+		queue_renderer = new QSvgRenderer(QLatin1String(":/svg/objects/queue_box.svg"));
 	if (operation_renderer == 0)
 		operation_renderer = new QSvgRenderer(QLatin1String(":/svg/objects/operation.svg"));
 
@@ -169,7 +169,12 @@ void WorkspaceScene::showDataQueue(DataQueue* queue, const QPointF &pos)
 {
 	// TODO: correct implementation - currently Queue class is not implemented yet.
 	QueueItem* queue_item = new QueueItem(queue);
-	connect(queue_item, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)), this, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)));
+
+	// Connect appropriate signals to propagate user's requests
+	connect(queue_item, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)),
+			this, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)));
+	connect(queue_item, SIGNAL(deleteQueueRequested(Queue*)),
+			this, SIGNAL(deleteQueueRequested(Queue*)));
 
 	queue_item->setSharedRenderer(queue_renderer);
 	queue_item->initText();

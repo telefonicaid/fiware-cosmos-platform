@@ -201,10 +201,11 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 	strncpy(hello.ip,     me->ip.c_str(),     sizeof(hello.ip));
 	strncpy(hello.alias,  me->alias.c_str(),  sizeof(hello.alias));
 
-	hello.type    = me->type;
-	hello.workers = me->workers;
-	hello.port    = me->port;
-	hello.coreNo  = me->coreNo;
+	hello.type     = me->type;
+	hello.workers  = me->workers;
+	hello.port     = me->port;
+	hello.coreNo   = me->coreNo;
+	hello.workerId = me->workerId;
 
 	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s', type: '%s')", messageType(type), ep->name.c_str(), hello.name, me->typeName()));
 
@@ -877,6 +878,13 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	if (nb == 0) /* Connection closed */
 	{
 		LM_T(LMT_SELECT, ("Connection closed - ep at %p", ep));
+
+		if (ep->type == Endpoint::Worker)
+		{
+			LM_M(("calling receiver->notifyWorkerDied(%d)", ep->workerId));
+			receiver->notifyWorkerDied(ep->workerId);
+		}
+
 		if (ep == controller)
 		{
 			if (me->type == Endpoint::CoreWorker)
@@ -993,6 +1001,12 @@ void Network::msgTreat(void* vP)
 
 		if (s == -2) /* Connection closed */
 		{
+			if (ep->type == Endpoint::Worker)
+			{
+				LM_M(("calling receiver->notifyWorkerDied(%d)", ep->workerId));
+				receiver->notifyWorkerDied(ep->workerId);
+			}
+
 			LM_T(LMT_SELECT, ("Connection closed - ep at %p", ep));
 			if (ep == controller)
 			{
@@ -1053,12 +1067,13 @@ void Network::msgTreat(void* vP)
 
 		hello   = (Message::HelloData*) dataP;
 		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, hello->type, hello->ip, hello->port, hello->coreNo);
-
+		
 		if (helloEp == NULL)
 		{
 			endpointRemove(ep);
 			return;
 		}
+		helloEp->workerId = hello->workerId;
 
 		LM_T(LMT_HELLO, ("Got Hello %s from %s, type %s, %s:%d, workers: %d",
 						 messageType(msgType), helloEp->name.c_str(), helloEp->typeName(), helloEp->ip.c_str(), helloEp->port, helloEp->workers));

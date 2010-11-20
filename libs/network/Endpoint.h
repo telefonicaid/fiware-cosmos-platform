@@ -62,11 +62,11 @@ public:
 	unsigned short               port;
 	State                        state;
 	int                          workers;
-	int                          workerId;
 	Type                         type;
-	pthread_t                    tid;
 	
 
+	int                          workerId;         // Worker
+	pthread_t                    tid;              // Worker
 	Message::WorkerStatusData*   status;           // Worker
 	struct Endpoint*             sender;           // Worker
 	struct Endpoint*             senderFather;     // Worker

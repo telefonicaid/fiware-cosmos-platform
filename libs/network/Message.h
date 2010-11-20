@@ -97,6 +97,7 @@ typedef struct HelloData
 	int                 workers;
 	int                 port;
 	int                 coreNo;
+	int                 workerId;
 } HelloData;
 
 

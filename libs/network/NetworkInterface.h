@@ -6,9 +6,11 @@
 * FILE                     NetworkInterface.h - network interface
 *
 */
+#include <assert.h>				// assert
+
 #include "Message.h"            // ss::Message::MessageCode
 #include "Endpoint.h"           // ss::Endpoint::Type
-#include "assert.h"				// assert(.)
+
 
 
 namespace ss {
@@ -31,21 +33,19 @@ namespace ss {
 		virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet) = 0;
 		
 		// Notify that a worker has died 
-		virtual void notifyWorkerDied( int worker )
+		virtual void notifyWorkerDied(int worker)
 		{
 			// This call has to be overwritten by SamsonController
 		}
 
 		// Method to recover the status of this element in JSON format
-		// In the controllor case, this is expossed to a simple port like a telnet service
+		// In the controllor case, this is exposed to a simple port similar to a telnet service
 		virtual std::string getJSONStatus(std::string in)
 		{
 			LM_M(("JSON request: '%s'", in.c_str()));
-			return "Not implemented";
+			return "Not implemented\n";
 		}
 
-		
-		
 		virtual ~PacketReceiverInterface() {};
 	};
 	

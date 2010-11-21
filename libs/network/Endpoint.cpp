@@ -54,6 +54,7 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 	this->state    = (rFd == -1)? Unconnected : Connected;
 	this->workers  = 0;
 	this->status   = NULL;
+	this->sender   = NULL;
 
 	hostnameGet();
 }
@@ -126,6 +127,7 @@ Endpoint::Endpoint(Type type, std::string ipAndPort)
 	this->workers  = 0;
 	this->type     = type;
 	this->status   = NULL;
+	this->sender   = NULL;
 
 	hostnameGet();
 }
@@ -147,6 +149,7 @@ Endpoint::Endpoint(Type type, unsigned short port)
 	this->workers  = 0;
 	this->type     = type;
 	this->status   = NULL;
+	this->sender   = NULL;
 
 	hostnameGet();
 }
@@ -169,6 +172,7 @@ Endpoint::Endpoint(Type type, char* alias)
 	this->workers  = 0;
 	this->type     = type;
 	this->status   = NULL;
+	this->sender   = NULL;
 
 	hostnameGet();
 }

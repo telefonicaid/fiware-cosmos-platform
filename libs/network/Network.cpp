@@ -416,7 +416,8 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 	int       nb;
 
 	if (ep == NULL)
-		LM_RE(-1, ("No endpoint at index %d", endpointId));
+		LM_X(1, ("No endpoint at index %d", endpointId));
+
 	if (ep->state != Endpoint::Connected)
 	{
 		SendJob job;
@@ -428,63 +429,63 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
         job.packetP = packetP;
 
 		jobPush(&job);
+		return 0;
 	}
 
 	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", messageCode(code), endpointId));
-
-
-	if (packetP->message.ByteSize() >= SEND_SIZE_TO_USE_THREAD)
+	if (ep->sender == NULL)
 	{
-		if (ep->sender == NULL)
+		int        fatherReads[2];
+		int        fatherWrites[2];
+
+		if (pipe(fatherReads)  == -1) LM_X(1, ("pipe: %s", strerror(errno)));
+		if (pipe(fatherWrites) == -1) LM_X(1, ("pipe: %s", strerror(errno)));
+
+		ep->sender       = new Endpoint(Endpoint::Sender, ep->name + "Sender", "localhost", 0xFFFF, fatherWrites[1], fatherReads[0]);
+		LM_M(("sender at %p", ep->sender));
+		LM_M(("sender at %p, wFd is %d", ep->sender->wFd));
+		ep->senderFather = new Endpoint(Endpoint::Worker, ep->name, "localhost", 0xFFFF, fatherWrites[0], fatherReads[1]);
+
+		ep->packetSender = packetSender;
+
+
+		//
+		// Create sender thread
+		//
+		pthread_create(&ep->sender->tid, NULL, senderThread, ep);
+		usleep(1000);
+
+
+		//
+		// Flush job queue on sender pipe
+		//
+		SendJob* jobP;
+
+		while ((jobP = jobPop()) != NULL)
 		{
-			int        fatherReads[2];
-			int        fatherWrites[2];
+			LM_M(("sending a queued job to job-sender"));
+			nb = write(ep->sender->wFd, jobP, sizeof(SendJob));
+			if (nb == -1)
+				LM_P(("write(SendJob)"));
+			else if (nb != sizeof(SendJob))
+				LM_E(("error writing SendJob. Written %d bytes and not %d", nb, sizeof(SendJob)));
 
-			if (pipe(fatherReads)  == -1) LM_X(1, ("pipe: %s", strerror(errno)));
-			if (pipe(fatherWrites) == -1) LM_X(1, ("pipe: %s", strerror(errno)));
-
-			ep->sender       = new Endpoint(Endpoint::Sender, ep->name + "Sender", "localhost", 0xFFFF, fatherWrites[1], fatherReads[0]);
-			ep->senderFather = new Endpoint(Endpoint::Worker, ep->name, "localhost", 0xFFFF, fatherWrites[0], fatherReads[1]);
-
-			ep->packetSender = packetSender;
-
-
-			//
-			// Create sender thread
-			//
-			pthread_create(&ep->sender->tid, NULL, senderThread, ep);
-
-
-
-			//
-			// Flush job queue on sender pipe
-			//
-			SendJob* jobP;
-
-			while ((jobP = jobPop()) != NULL)
-			{
-				nb = write(ep->sender->wFd, jobP, sizeof(SendJob));
-				if (nb == -1)
-					LM_P(("write(SendJob)"));
-				else if (nb != sizeof(SendJob))
-					LM_E(("error writing SendJob. Written %d bytes and not %d", nb, sizeof(SendJob)));
-
-				free(jobP);
-			}
+			free(jobP);
 		}
-
-		SendJob job;
-
-		job.ep      = ep;
-		job.me      = me;
-		job.msgCode = code;
-		job.msgType = Message::Msg;
-		job.packetP = packetP;
-
-		nb = write(ep->sender->wFd, &job, sizeof(job));
 	}
-	else
-		nb = iomMsgSend(ep->wFd, ep->name.c_str(), me->name.c_str(), code, Message::Msg, NULL, 0, packetP);
+
+	SendJob job;
+
+	job.ep      = ep;
+	job.me      = me;
+	job.msgCode = code;
+	job.msgType = Message::Msg;
+	job.packetP = packetP;
+
+	LM_M(("ep: %p",    ep));
+	LM_M(("sender: %p", ep->sender));
+	LM_M(("wFd: %d",    ep->sender->wFd));
+	nb = write(ep->sender->wFd, &job, sizeof(job));
 
 	return nb;
 }

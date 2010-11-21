@@ -66,13 +66,14 @@ namespace ss
 */
 Network::Network()
 {
-	iAmReady   = false;
-	receiver   = NULL;
-	me         = NULL;
-	listener   = NULL;
-	controller = NULL;
-	Workers    = WORKERS;
-	Endpoints  = 3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS;
+	jobQueueHead = NULL;
+	iAmReady     = false;
+	receiver     = NULL;
+	me           = NULL;
+	listener     = NULL;
+	controller   = NULL;
+	Workers      = WORKERS;
+	Endpoints    = 3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS;
 
 	LM_M(("Allocating room for %d endpoint pointers", Endpoints));
 
@@ -362,21 +363,6 @@ std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 
 /* ****************************************************************************
 *
-* SendJob - 
-*/
-typedef struct SendJob
-{
-	Endpoint*             ep;
-	Endpoint*             me;
-	Message::MessageCode  msgCode;
-	Message::MessageType  msgType;
-	Packet*               packetP;
-} SendJob;
-
-
-
-/* ****************************************************************************
-*
 * senderThread - 
 */
 static void* senderThread(void* vP)
@@ -390,7 +376,7 @@ static void* senderThread(void* vP)
 		int     s;
 
 		s = iomMsgAwait(father->rFd, -1);
-		
+
 		s = read(father->rFd, &job, sizeof(job));
 		if (s != 0)
 		{
@@ -424,7 +410,7 @@ static void* senderThread(void* vP)
 *
 * send - 
 */
-size_t Network::send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP)
+size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Message::MessageCode code, Packet* packetP)
 {
 	Endpoint* ep        = endpoint[endpointId];
 	int       nb;
@@ -432,7 +418,17 @@ size_t Network::send(PacketSenderInterface* sender, int endpointId, ss::Message:
 	if (ep == NULL)
 		LM_RE(-1, ("No endpoint at index %d", endpointId));
 	if (ep->state != Endpoint::Connected)
-		LM_RE(-1, ("Endpoint %d in state '%s'", endpointId, ep->stateName()));
+	{
+		SendJob job;
+
+        job.ep      = ep;
+        job.me      = me;
+        job.msgCode = code;
+        job.msgType = Message::Msg;
+        job.packetP = packetP;
+
+		jobPush(&job);
+	}
 
 	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", messageCode(code), endpointId));
 
@@ -450,9 +446,31 @@ size_t Network::send(PacketSenderInterface* sender, int endpointId, ss::Message:
 			ep->sender       = new Endpoint(Endpoint::Sender, ep->name + "Sender", "localhost", 0xFFFF, fatherWrites[1], fatherReads[0]);
 			ep->senderFather = new Endpoint(Endpoint::Worker, ep->name, "localhost", 0xFFFF, fatherWrites[0], fatherReads[1]);
 
-			ep->packetSender = sender;
+			ep->packetSender = packetSender;
 
+
+			//
+			// Create sender thread
+			//
 			pthread_create(&ep->sender->tid, NULL, senderThread, ep);
+
+
+
+			//
+			// Flush job queue on sender pipe
+			//
+			SendJob* jobP;
+
+			while ((jobP = jobPop()) != NULL)
+			{
+				nb = write(ep->sender->wFd, jobP, sizeof(SendJob));
+				if (nb == -1)
+					LM_P(("write(SendJob)"));
+				else if (nb != sizeof(SendJob))
+					LM_E(("error writing SendJob. Written %d bytes and not %d", nb, sizeof(SendJob)));
+
+				free(jobP);
+			}
 		}
 
 		SendJob job;
@@ -1067,7 +1085,7 @@ void Network::msgTreat(void* vP)
 
 		hello   = (Message::HelloData*) dataP;
 		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, hello->type, hello->ip, hello->port, hello->coreNo);
-		
+	
 		if (helloEp == NULL)
 		{
 			endpointRemove(ep);
@@ -1239,7 +1257,7 @@ void Network::msgTreat(void* vP)
 	    LM_M(("DEFAULT: ep at %p", ep));
 		if (receiver == NULL)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
-
+		
 		LM_M(("forwarding '%s' %s from %s to Endpoint %d", messageCode(msgCode), messageType(msgType), ep->name.c_str(), endpointId));
 		LM_M(("calling receiver->receive"));
 		receiver->receive(endpointId, msgCode, &packet);
@@ -1431,6 +1449,63 @@ void Network::run()
 			}
 		}
 	}
+}
+
+
+
+/* ****************************************************************************
+*
+* jobPush - 
+*/
+void Network::jobPush(SendJob* jobP)
+{
+	SendJobQueue* qP   = jobQueueHead;
+
+	if (jobQueueHead == NULL)
+	{
+		jobQueueHead = new SendJobQueue;
+		jobQueueHead->job   = jobP;
+		jobQueueHead->next  = NULL;
+	}
+
+	while (qP->next != NULL)
+		qP = qP->next;
+
+	qP->next = new SendJobQueue;
+	qP->next->job   = jobP;
+	qP->next->next  = NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* jobPop - return last job in queue
+*/
+SendJob* Network::jobPop(void)
+{
+	SendJobQueue*  prev = NULL;
+	SendJobQueue*  qP   = jobQueueHead;
+	SendJob*       jobP;
+
+	if (qP == NULL)
+		return NULL;
+
+	while (qP->next != NULL)
+	{
+		prev = qP;
+		qP   = qP->next;
+	}
+
+	jobP = qP->job;
+
+	if (prev == NULL)  // Only one job in queue
+		jobQueueHead = NULL;
+	else
+		prev->next = NULL;
+
+	free(qP);
+	return jobP;
 }
 
 

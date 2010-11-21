@@ -32,6 +32,33 @@ class Packet;
 
 /* ****************************************************************************
 *
+* SendJob - 
+*/
+typedef struct SendJob
+{
+	Endpoint*             ep;
+	Endpoint*             me;
+	Message::MessageCode  msgCode;
+	Message::MessageType  msgType;
+	Packet*               packetP;
+} SendJob;
+
+
+
+/* ****************************************************************************
+*
+* SendJobQueue
+*/
+typedef struct SendJobQueue
+{
+	SendJob*             job;
+	struct SendJobQueue* next;
+} SendJobQueue;
+
+
+
+/* ****************************************************************************
+*
 * Network - main element that interconnects
 *                      o samsonController
 *                      o samsonWorker
@@ -44,9 +71,14 @@ class Network : public NetworkInterface
 	void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL);
 	void ipSet(char* ip);
 
+	SendJobQueue* jobQueueHead;
+
 public:
 	Network();
 	Network(int endpoints, int workers);
+
+	SendJob* jobPop(void);
+	void     jobPush(SendJob*);
 
 	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);
 

@@ -477,8 +477,6 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", messageCode(code), endpointId));
 	if (ep->useSenderThread == true)
 	{
-		LM_X(1, ("Not supposed to use SenderThread for this particular test"));
-
 		if (ep->sender == false)
 		{
 			LM_T(LMT_FORWARD, ("Creating a new sender thread for endpoint '%s'", ep->name.c_str()));

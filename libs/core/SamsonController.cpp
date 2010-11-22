@@ -42,8 +42,6 @@ SamsonController::SamsonController
 	this->workers    = workers;
 	this->endpoints  = endpoints;
 
-	LM_M(("endpoints: %d", endpoints));
-
 	// Init data manager ( recovering from crash if necessary )
 	data.init();
 		
@@ -96,7 +94,6 @@ int SamsonController::receiveHelp(int fromId, Packet* packet)
 		modulesManager.helpOperations( response , packet->message.help() );
 	}
 		
-	LM_M(("help response with %d bytes", p.message.ByteSize()));
 	network->send(this, fromId, Message::HelpResponse, &p);
 	return 0;
 }

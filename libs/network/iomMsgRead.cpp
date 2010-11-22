@@ -73,7 +73,7 @@ int iomMsgRead
 
 		LM_T(LMT_MSG, ("reading %d bytes of primary message data", header.dataLen));
 		nb = read(fd, *dataPP, header.dataLen);
-		LM_M(("read %d bytes DATA from '%s'", nb, from));
+		LM_T(LMT_MSG, ("read %d bytes DATA from '%s'", nb, from));
 		if (nb == -1)
 			LM_RP(1, ("read %d bytes from '%s'", header.dataLen, from));
 		LM_T(LMT_MSG, ("read %d bytes of primary message data", nb));
@@ -96,7 +96,6 @@ int iomMsgRead
 
 		LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", header.gbufLen));
         nb = read(fd, dataP, header.gbufLen);
-		LM_M(("read %d bytes GPROTBUF from '%s'", nb, from));
         if (nb == -1)
 			LM_RP(1, ("read(%d bytes from '%s')", header.gbufLen, from));
 
@@ -119,7 +118,7 @@ int iomMsgRead
 		{
 			// msgAwait()
 			nb = read(fd, &kvBuf[tot], size - tot);
-			LM_M(("read %d bytes KVDATA from '%s'", tot, from));
+			LM_T(LMT_MSG, ("read %d bytes KVDATA from '%s'", tot, from));
 			if (nb == -1)
 				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, from, strerror(errno)));
 			tot += nb;
@@ -167,7 +166,7 @@ int iomMsgRead2
 
 		LM_T(LMT_MSG, ("reading %d bytes of primary message data", headerP->dataLen));
 		nb = read(fd, *dataPP, headerP->dataLen);
-		LM_M(("read %d bytes DATA from '%s'", nb, from));
+		LM_T(LMT_MSG, ("read %d bytes DATA from '%s'", nb, from));
 		if (nb == -1)
 			LM_RP(1, ("read %d bytes from '%s'", headerP->dataLen, from));
 		LM_T(LMT_MSG, ("read %d bytes of primary message data", nb));
@@ -190,7 +189,7 @@ int iomMsgRead2
 
 		LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
         nb = read(fd, dataP, headerP->gbufLen);
-		LM_M(("read %d bytes GPROTBUF from '%s'", nb, from));
+		LM_T(LMT_MSG, ("read %d bytes GPROTBUF from '%s'", nb, from));
         if (nb == -1)
 			LM_RP(1, ("read(%d bytes from '%s')", headerP->gbufLen, from));
 
@@ -210,7 +209,7 @@ int iomMsgRead2
 		int    tot    = 0;
 		int    nb;
 
-		LM_M(("reading a KV buffer of %d bytes", size2));
+		LM_T(LMT_MSG, ("reading a KV buffer of %d bytes", size2));
 		while (tot < size)
 		{
 			// msgAwait()

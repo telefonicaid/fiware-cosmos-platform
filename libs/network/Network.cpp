@@ -75,8 +75,6 @@ Network::Network()
 	Workers      = WORKERS;
 	Endpoints    = 3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS;
 
-	LM_M(("Allocating room for %d endpoint pointers", Endpoints));
-
 	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
 	if (endpoint == NULL)
 		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
@@ -90,21 +88,18 @@ Network::Network()
 */
 Network::Network(int endpoints, int workers)
 {
-	iAmReady   = false;
-	receiver   = NULL;
-	me         = NULL;
-	listener   = NULL;
-	controller = NULL;
-	Workers    = workers;
-	Endpoints  = endpoints;
-
-	LM_M(("Allocating room for %d endpoint pointers", Endpoints));
+	jobQueueHead = NULL;
+	iAmReady     = false;
+	receiver     = NULL;
+	me           = NULL;
+	listener     = NULL;
+	controller   = NULL;
+	Workers      = workers;
+	Endpoints    = endpoints;
 
 	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
 	if (endpoint == NULL)
 		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
-
-	LM_M(("Endpoints: %d", Endpoints));
 }
 
 
@@ -229,7 +224,7 @@ void Network::initAsSamsonController(int port, int workers)
 	char  name[32];
 
 	Workers = workers;
-	LM_M(("%d workers", Workers));
+
 	for (ix = 0; ix < Workers; ix++)
 	{
 		snprintf(alias, sizeof(alias), "Worker%02d",  ix);
@@ -250,7 +245,7 @@ void Network::initAsSamsonController(int port, int workers)
 		endpoint[3 + ix]->port    = 0;
 		endpoint[3 + ix]->coreNo  = -1;
 
-		LM_M(("Created endpoint %d, worker %d (%s)", 3 + ix, ix, endpoint[3 + ix]->alias.c_str()));
+		LM_T(LMT_ENDPOINT, ("Created endpoint %d, worker %d (%s)", 3 + ix, ix, endpoint[3 + ix]->alias.c_str()));
 	}
 
 
@@ -368,38 +363,67 @@ std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 static void* senderThread(void* vP)
 {
 	Endpoint*  ep     = (Endpoint*) vP;
-	Endpoint*  father = ep->senderFather;
 	
+	LM_T(LMT_FORWARD, ("Sender Thread for '%s' running - wFd: %d (reading from fd %d)", ep->name.c_str(), ep->wFd, ep->senderReadFd));
+
 	while (1)
 	{
 		SendJob job;
 		int     s;
 
-		s = iomMsgAwait(father->rFd, -1);
-
-		s = read(father->rFd, &job, sizeof(job));
-		if (s != 0)
+		s = iomMsgAwait(ep->senderReadFd, -1);
+		LM_T(LMT_FORWARD, ("Got something to read on fd %d", ep->senderReadFd));
+		s = read(ep->senderReadFd, &job, sizeof(job));
+		LM_T(LMT_FORWARD, ("read %d bytes from fd %d", s, ep->senderReadFd));
+		if (s != sizeof(job))
 		{
-			LM_E(("iomMsgRead error"));
+			LM_E(("bad size read (%d - expected %d)", s, sizeof(job)));
+			if (s == -1)
+				LM_P(("read"));
+			else
+				LM_E(("read error (%d returned)", s));
 			continue;
 		}
 
-		s = iomMsgSend(ep->wFd, ep->name.c_str(), ep->sender->name.c_str(), job.msgCode, job.msgType, NULL, 0, job.packetP);
-		if (ep->packetSender)
-			ep->packetSender->notificationSent(0, true);
+		LM_T(LMT_FORWARD, ("Received and read '%s' job from '%s' father (fd %d) - the job is forwarded to fd %d (packetP at %p)",
+				   messageCode(job.msgCode),
+				   ep->name.c_str(),
+				   ep->senderReadFd,
+				   ep->wFd,
+				   job.packetP));
+
+		LM_T(LMT_FORWARD, ("calling iomMsgSend, dataP at %p, packetP at %p (google protocol buffer data len: %d)", job.dataP, job.packetP, job.packetP->message.ByteSize()));
+		s = iomMsgSend(ep->wFd, ep->name.c_str(), job.me->name.c_str(), job.msgCode, job.msgType, job.dataP, job.dataLen, job.packetP);
+		LM_T(LMT_FORWARD, ("iomMsgSend returned %d", s));
+		if (s != 0)
+		{
+			LM_E(("iomMsgSend error"));
+			if (ep->packetSender)
+				ep->packetSender->notificationSent(-1, false);
+		}
+		else
+		{
+			LM_T(LMT_FORWARD, ("iomMsgSend OK"));
+			if (ep->packetSender)
+				ep->packetSender->notificationSent(0, true);
+		}
+
+		LM_T(LMT_FORWARD, ("iomMsgSend ok"));
+		if (job.dataP)
+		{
+			LM_T(LMT_FORWARD, ("before freeing job data pointer"));
+			free(job.dataP);
+			LM_T(LMT_FORWARD, ("after freeing job data pointer"));
+		}
 	}
 
+	// Cannot really get here ... !!!
 
-	// Cannot really get here, but ...
+	LM_E(("******************* after while TRUE ..."));
 
-	close(ep->sender->rFd);
-	close(ep->sender->wFd);
-	close(ep->senderFather->rFd);
-	close(ep->senderFather->wFd);
-
-	free(ep->sender);
-	free(ep->senderFather);
-	ep->sender = NULL;
+	close(ep->senderReadFd);
+	close(ep->senderWriteFd);
+	ep->sender = false;
 
 	return NULL;
 }
@@ -415,77 +439,110 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 	Endpoint* ep        = endpoint[endpointId];
 	int       nb;
 
+	if (packetP != NULL)
+		LM_T(LMT_FORWARD, ("Request to send '%s' package with %d packet size", messageCode(code), packetP->message.ByteSize()));
+	else
+		LM_T(LMT_FORWARD, ("Request to send '%s' package without data", messageCode(code)));
+
 	if (ep == NULL)
 		LM_X(1, ("No endpoint at index %d", endpointId));
+
+	if (packetP != NULL)
+	{
+		if (packetP->message.ByteSize() == 0)
+			LM_W(("packet not NULL but its data len is 0 ..."));
+	}
 
 	if (ep->state != Endpoint::Connected)
 	{
 		SendJob job;
 
+		if (ep->useSenderThread == false)
+			LM_X(1, ("cannot send to an unconnected peer if not usiong sender threads, sorry ..."));
+
         job.ep      = ep;
         job.me      = me;
         job.msgCode = code;
         job.msgType = Message::Msg;
+		job.dataP   = NULL;
+		job.dataLen = 0;
         job.packetP = packetP;
 
 		jobPush(&job);
 		return 0;
 	}
 
+	ep->packetSender  = packetSender;
+
 	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", messageCode(code), endpointId));
-	if (ep->sender == NULL)
+	if (ep->useSenderThread == true)
 	{
-		int        fatherReads[2];
-		int        fatherWrites[2];
+		LM_X(1, ("Not supposed to use SenderThread for this particular test"));
 
-		if (pipe(fatherReads)  == -1) LM_X(1, ("pipe: %s", strerror(errno)));
-		if (pipe(fatherWrites) == -1) LM_X(1, ("pipe: %s", strerror(errno)));
-
-		ep->sender       = new Endpoint(Endpoint::Sender, ep->name + "Sender", "localhost", 0xFFFF, fatherWrites[1], fatherReads[0]);
-		LM_M(("sender at %p", ep->sender));
-		LM_M(("sender at %p, wFd is %d", ep->sender->wFd));
-		ep->senderFather = new Endpoint(Endpoint::Worker, ep->name, "localhost", 0xFFFF, fatherWrites[0], fatherReads[1]);
-
-		ep->packetSender = packetSender;
-
-
-		//
-		// Create sender thread
-		//
-		pthread_create(&ep->sender->tid, NULL, senderThread, ep);
-		usleep(1000);
-
-
-		//
-		// Flush job queue on sender pipe
-		//
-		SendJob* jobP;
-
-		while ((jobP = jobPop()) != NULL)
+		if (ep->sender == false)
 		{
-			LM_M(("sending a queued job to job-sender"));
-			nb = write(ep->sender->wFd, jobP, sizeof(SendJob));
-			if (nb == -1)
-				LM_P(("write(SendJob)"));
-			else if (nb != sizeof(SendJob))
-				LM_E(("error writing SendJob. Written %d bytes and not %d", nb, sizeof(SendJob)));
+			LM_T(LMT_FORWARD, ("Creating a new sender thread for endpoint '%s'", ep->name.c_str()));
 
-			free(jobP);
+			int tunnelPipe[2];
+
+			if (pipe(tunnelPipe) == -1)
+				LM_X(1, ("pipe: %s", strerror(errno)));
+
+			ep->senderWriteFd = tunnelPipe[1];  // father writes to this fd
+			ep->senderReadFd  = tunnelPipe[0];  // child reads from this fd
+			ep->sender        = true;
+
+
+			//
+			// Create sender thread
+			//
+			pthread_create(&ep->senderTid, NULL, senderThread, ep);
+			usleep(1000);
+
+
+			//
+			// Flush job queue on sender pipe
+			//
+			SendJob* jobP;
+
+			while ((jobP = jobPop()) != NULL)
+			{
+				LM_T(LMT_FORWARD, ("sending a queued job to job-sender"));
+				nb = write(ep->senderWriteFd, jobP, sizeof(SendJob));
+				if (nb == -1)
+					LM_P(("write(SendJob)"));
+				else if (nb != sizeof(SendJob))
+					LM_E(("error writing SendJob. Written %d bytes and not %d", nb, sizeof(SendJob)));
+				
+				free(jobP);
+			}
 		}
+
+		SendJob job;
+
+		job.ep      = ep;
+		job.me      = me;
+		job.msgCode = code;
+		job.msgType = Message::Msg;
+		job.dataP   = NULL;
+		job.dataLen = 0;
+		job.packetP = packetP;
+
+		LM_T(LMT_FORWARD, ("Sending '%s' job to '%s' sender (real destiny fd: %d) with %d packet size - the job is tunneled over fd %d",
+				   messageCode(job.msgCode), ep->name.c_str(), ep->wFd, job.packetP->message.ByteSize(), ep->senderWriteFd));
+		
+		nb = write(ep->senderWriteFd, &job, sizeof(job));
+		if (nb != (sizeof(job)))
+		{
+			LM_E(("write(written only %d bytes (of %d) to sender thread)", nb, sizeof(job)));
+			return -1;
+		}
+
+		return 0;
 	}
 
-	SendJob job;
-
-	job.ep      = ep;
-	job.me      = me;
-	job.msgCode = code;
-	job.msgType = Message::Msg;
-	job.packetP = packetP;
-
-	LM_M(("ep: %p",    ep));
-	LM_M(("sender: %p", ep->sender));
-	LM_M(("wFd: %d",    ep->sender->wFd));
-	nb = write(ep->sender->wFd, &job, sizeof(job));
+	LM_T(LMT_FORWARD, ("Sending message directly (%d bytes)", packetP->message.ByteSize()));
+	nb = iomMsgSend(ep->wFd, ep->name.c_str(), me->name.c_str(), code, Message::Msg, NULL, 0, packetP);
 
 	return nb;
 }
@@ -561,8 +618,6 @@ Endpoint* Network::endpointAdd
 		return controller;
 
 	case Endpoint::Temporal:
-		LM_M(("Endpoints: %d", Endpoints));
-		LM_M(("Workers:   %d", Workers));
 		for (ix = Endpoints - 1; ix >= 3 + Workers; ix--)
 		{
 			if (endpoint[ix] == NULL)
@@ -652,10 +707,8 @@ Endpoint* Network::endpointAdd
 				return NULL;
 			}
 
-			LM_M(("comparing '%s' to '%s'", endpoint[ix]->alias.c_str(), alias));
 			if (strcmp(endpoint[ix]->alias.c_str(), alias) == 0)
 			{
-				LM_M(("Got endpoint '%s'", alias));
 				endpoint[ix]->rFd      = rFd;
 				endpoint[ix]->wFd      = wFd;
 				endpoint[ix]->name     = std::string(name);
@@ -777,10 +830,8 @@ Endpoint* Network::endpointLookup(char* alias)
 		if (endpoint[ix] == NULL)
 			continue;
 
-		LM_M(("comparing ep %02d '%s' to '%s' (state: '%s')", ix, endpoint[ix]->alias.c_str(), alias, endpoint[ix]->stateName()));
 		if ((strcmp(endpoint[ix]->alias.c_str(), alias) == 0) && (endpoint[ix]->state == Endpoint::Connected))
 		{
-			LM_M(("found occupied (state: '%s') endpoint with alias '%s'", endpoint[ix]->stateName(), alias));
 			return endpoint[ix];
 		}
 	}
@@ -812,12 +863,9 @@ typedef struct MsgTreatParams
 */
 static void* msgTreatThreadFunction(void* vP)
 {
-	LM_M(("IN: vP at %p", vP));
-
 	MsgTreatParams*  paramP = (MsgTreatParams*) vP;
 	Endpoint*        ep     = paramP->ep;
 
-	LM_M(("calling msgTreat function in thread (ep at %p, vP at %p)", paramP->ep, paramP));
 	paramP->diss->msgTreat(paramP);
 
 	ep->state = paramP->state;
@@ -893,14 +941,12 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	// Reading header of the message
 	//
 	nb = read(ep->rFd, &header, sizeof(header));
-	LM_M(("nb == %d", nb));
 	if (nb == 0) /* Connection closed */
 	{
 		LM_T(LMT_SELECT, ("Connection closed - ep at %p", ep));
 
 		if (ep->type == Endpoint::Worker)
 		{
-			LM_M(("calling receiver->notifyWorkerDied(%d)", ep->workerId));
 			receiver->notifyWorkerDied(ep->workerId);
 		}
 
@@ -951,7 +997,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	else if (nb != sizeof(header))
 		LM_RVE(("iomMsgRead: error reading header from '%s' (read %d, wanted %d bytes", ep->name.c_str(), nb, sizeof(header)));
 
-	LM_M(("Read header of '%s' message with dataLens %d, %d, %d", messageCode(header.code), header.dataLen, header.gbufLen, header.kvDataLen));
+	LM_T(LMT_MSGTREAT, ("Read header of '%s' message with dataLens %d, %d, %d", messageCode(header.code), header.dataLen, header.gbufLen, header.kvDataLen));
 
 	//
 	// calling msgTreat ...
@@ -968,11 +1014,11 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		paramsP->state       = ep->state;
 
 		ep->state = Endpoint::Threaded;
-		LM_M(("setting state of '%s' to Threaded (%d)  old state: %d", ep->name.c_str(), ep->state, paramsP->state));
+		LM_T(LMT_MSGTREAT, ("setting state of '%s' to Threaded (%d)  old state: %d", ep->name.c_str(), ep->state, paramsP->state));
 
-		LM_M(("calling msgTreatThreadFunction via pthread_create (params at %p) (dataLens: %d, %d, %d)", paramsP, header.dataLen, header.gbufLen, header.kvDataLen));
+		LM_T(LMT_MSGTREAT, ("calling msgTreatThreadFunction via pthread_create (params at %p) (dataLens: %d, %d, %d)", paramsP, header.dataLen, header.gbufLen, header.kvDataLen));
 		pthread_create(&tid, NULL, msgTreatThreadFunction, (void*) paramsP);
-		LM_M(("after pthread_create of msgTreatThreadFunction"));
+		LM_T(LMT_MSGTREAT, ("after pthread_create of msgTreatThreadFunction"));
 	}
 	else
 	{
@@ -1022,7 +1068,6 @@ void Network::msgTreat(void* vP)
 		{
 			if (ep->type == Endpoint::Worker)
 			{
-				LM_M(("calling receiver->notifyWorkerDied(%d)", ep->workerId));
 				receiver->notifyWorkerDied(ep->workerId);
 			}
 
@@ -1107,7 +1152,6 @@ void Network::msgTreat(void* vP)
 		{
 			if ((me->type != Endpoint::CoreWorker) && (me->type != Endpoint::Controller))
 			{
-				LM_M(("Asking controller for list of workers"));
 				iomMsgSend(controller->wFd, (char*) controller->name.c_str(), (char*) me->name.c_str(),
 						   Message::WorkerVector, Message::Msg, NULL, 0, NULL );
 			}
@@ -1123,22 +1167,14 @@ void Network::msgTreat(void* vP)
 			Message::Worker* workerV;
 			int       ix;
 
-			LM_M(("allocating room for a worker vector of %d workers", Workers));
 			workerV = (Message::Worker*) calloc(Workers, sizeof(Message::Worker));
 			if (workerV == NULL)
 				LM_XP(1, ("calloc(%d, %d)", Workers, sizeof(Endpoint)));
 
-			LM_M(("filling worker vector of %d workers", Workers));
 			for (ix = 3; ix < 3 + Workers; ix++)
 			{
 				if (endpoint[ix] != NULL)
 				{
-					LM_M(("Adding worker %d to ep-vector (alias: '%s', ip: '%s', port: %d)",
-						  ix - 3,
-						  endpoint[ix]->alias.c_str(),
-						  endpoint[ix]->ip.c_str(),
-						  endpoint[ix]->port));
-
 					strncpy(workerV[ix - 3].name,  endpoint[ix]->name.c_str(),  sizeof(workerV[ix - 3].name));
 					strncpy(workerV[ix - 3].alias, endpoint[ix]->alias.c_str(), sizeof(workerV[ix - 3].alias));
 					strncpy(workerV[ix - 3].ip,    endpoint[ix]->ip.c_str(),    sizeof(workerV[ix - 3].ip));
@@ -1146,8 +1182,6 @@ void Network::msgTreat(void* vP)
 					workerV[ix - 3].port   = endpoint[ix]->port;
 					workerV[ix - 3].state  = endpoint[ix]->state;
 				}
-				else
-					LM_M(("worker %d empty", ix - 3));
 			}
 
 			LM_T(LMT_WRITE, ("sending ack with entire worker vector to '%s'", name));
@@ -1161,16 +1195,12 @@ void Network::msgTreat(void* vP)
 			unsigned int        ix;
 			Message::Worker*    workerV = (Message::Worker*) dataP;
 
-			LM_M(("Got %d bytes of WorkerVector msg data (%d workers)", dataLen, dataLen / sizeof(Message::Worker)));
-
 			if ((unsigned int) Workers != dataLen / sizeof(Message::Worker))
 				LM_X(1, ("Got %d workers from Controller - I thought there were %d workers", dataLen / sizeof(Message::Worker), Workers));
 
 			for (ix = 0; ix < dataLen / sizeof(Message::Worker); ix++)
 			{
 				Endpoint* epP;
-
-				LM_M(("Filling worker %d", ix));
 
 				if (endpoint[3 + ix] == NULL)
 				{
@@ -1255,12 +1285,11 @@ void Network::msgTreat(void* vP)
 		break;
 
 	default:
-	    LM_M(("DEFAULT: ep at %p", ep));
 		if (receiver == NULL)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
 		
-		LM_M(("forwarding '%s' %s from %s to Endpoint %d", messageCode(msgCode), messageType(msgType), ep->name.c_str(), endpointId));
-		LM_M(("calling receiver->receive"));
+		LM_T(LMT_FORWARD, ("forwarding '%s' %s from %s to Endpoint %d", messageCode(msgCode), messageType(msgType), ep->name.c_str(), endpointId));
+		LM_T(LMT_FORWARD, ("calling receiver->receive"));
 		receiver->receive(endpointId, msgCode, &packet);
 		break;
 	}
@@ -1285,8 +1314,6 @@ void Network::run()
 	time_t          then  = time(NULL);
 	int             max;
 
-	LM_M(("endpoints: %d", Endpoints));
-
 	while (1)
 	{
 		int ix;
@@ -1303,8 +1330,8 @@ void Network::run()
 				}
 			}
 
-			timeVal.tv_sec  = 2;
-			timeVal.tv_usec = 0;
+			timeVal.tv_sec  = 10;
+			timeVal.tv_usec =  0;
 
 			FD_ZERO(&rFds);
 			max = 0;
@@ -1368,27 +1395,27 @@ void Network::run()
 					FD_SET(endpoint[ix]->rFd, &rFds);
 					max = MAX(max, endpoint[ix]->rFd);
 					
-					LM_T(LMT_SELECT, ("+ %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
-									  ix,
-									  endpoint[ix]->typeName(),
-									  endpoint[ix]->name.c_str(),
-									  endpoint[ix]->alias.c_str(),
-									  endpoint[ix]->ip.c_str(),
-									  endpoint[ix]->port,
-									  endpoint[ix]->stateName(),
-									  endpoint[ix]->rFd));
+					LM_F(("+ %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
+						  ix,
+						  endpoint[ix]->typeName(),
+						  endpoint[ix]->name.c_str(),
+						  endpoint[ix]->alias.c_str(),
+						  endpoint[ix]->ip.c_str(),
+						  endpoint[ix]->port,
+						  endpoint[ix]->stateName(),
+						  endpoint[ix]->rFd));
 				}
 				else
 				{
-					LM_T(LMT_SELECT, ("- %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
-									  ix,
-									  endpoint[ix]->typeName(),
-									  endpoint[ix]->name.c_str(),
-									  endpoint[ix]->alias.c_str(),
-									  endpoint[ix]->ip.c_str(),
-									  endpoint[ix]->port,
-									  endpoint[ix]->stateName(),
-									  endpoint[ix]->rFd));
+					LM_F(("- %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
+						  ix,
+						  endpoint[ix]->typeName(),
+						  endpoint[ix]->name.c_str(),
+						  endpoint[ix]->alias.c_str(),
+						  endpoint[ix]->ip.c_str(),
+						  endpoint[ix]->port,
+						  endpoint[ix]->stateName(),
+						  endpoint[ix]->rFd));
 				}
 			}
 
@@ -1462,8 +1489,11 @@ void Network::jobPush(SendJob* jobP)
 {
 	SendJobQueue* qP   = jobQueueHead;
 
+	LM_T(LMT_JOB, ("Pushing a job"));
+
 	if (jobQueueHead == NULL)
 	{
+		LM_T(LMT_JOB, ("Pushing first job"));
 		jobQueueHead = new SendJobQueue;
 		jobQueueHead->job   = jobP;
 		jobQueueHead->next  = NULL;
@@ -1489,9 +1519,12 @@ SendJob* Network::jobPop(void)
 	SendJobQueue*  qP   = jobQueueHead;
 	SendJob*       jobP;
 
+	LM_T(LMT_JOB, ("Popping a job?"));
+
 	if (qP == NULL)
 		return NULL;
 
+	LM_T(LMT_JOB, ("Popping a job (qP == %p)", qP));
 	while (qP->next != NULL)
 	{
 		prev = qP;

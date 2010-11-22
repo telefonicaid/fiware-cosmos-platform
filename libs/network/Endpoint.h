@@ -66,12 +66,14 @@ public:
 	
 
 	int                          workerId;         // Worker
-	pthread_t                    tid;              // Worker
 	Message::WorkerStatusData*   status;           // Worker
-	struct Endpoint*             sender;           // Worker
-	struct Endpoint*             senderFather;     // Worker
 	PacketSenderInterface*       packetSender;     // Worker
-
+	bool                         useSenderThread;  // Worker
+	bool                         sender;           // Worker
+	pthread_t                    senderTid;        // Worker
+	int                          senderWriteFd;    // Worker
+	int                          senderReadFd;     // Worker
+	
 	int                          coreNo;           // CoreWorker
 	time_t                       startTime;        // CoreWorker
 	int                          restarts;         // CoreWorker
@@ -83,14 +85,16 @@ public:
 	const char*     typeName(Type type);
 	const char*     nam();
 	void            reset();
+	void            init();
 	void            hostnameGet(void);
 
 public:
-	Endpoint(void) {};
+	Endpoint(void);
 	Endpoint(Type type, unsigned short port);
 	Endpoint(Type type, char* alias);
 	Endpoint(Type type, std::string ipAndPort);
 	Endpoint(Type type, std::string name, std::string ip, unsigned short port, int rFd, int wFd);
+
 	std::string str() { return name; }
 };
 

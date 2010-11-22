@@ -37,9 +37,11 @@
 #include <string.h>             /* strncat, strdup, memset                   */
 #include <stdarg.h>             /* va_start, va_arg, va_end                  */
 #include <stdlib.h>             /* atoi                                      */
+
 #if !defined(__APPLE__)
 #include <malloc.h>             /* free                                      */
 #endif
+
 #include <fcntl.h>              /* O_RDWR, O_TRUNC, O_CREAT                  */
 #include <ctype.h>              /* isprint                                   */
 #include <sys/stat.h>           /* fstat, S_IFDIR                            */
@@ -47,6 +49,10 @@
 #include <time.h>               /* time, localtime_r, .                      */
 
 #include "logMsg.h"             /* Own interface                             */
+
+
+
+extern "C" pid_t gettid(void);
 
 
 
@@ -107,7 +113,7 @@ int inSigHandler = 0;
 #define LINE_MAX         4096
 #define TEXT_MAX         512
 #define FORMAT_LEN       512
-#define FORMAT_DEF       "TYPE:DATE:EXEC/FILE[LINE] FUNC: TEXT"
+#define FORMAT_DEF       "TYPE:DATE:TID:EXEC/FILE[LINE] FUNC: TEXT"
 #define DEF1             "TYPE:EXEC/FUNC: TEXT"
 #define TIME_FORMAT_DEF  "%A %d %h %H:%M:%S %Y"
 #define F_LEN            128
@@ -566,26 +572,26 @@ static char* timeStampGet(char *line)
 }
 
 
-#define CHAR_ADD(c, l)                   \
-do                                       \
-{                                        \
-	char xin[2];                         \
-	xin[0] = c;                          \
-	xin[1] = 0;                          \
-	strncat(line, xin, sizeof(xin));     \
-	fi += l;                             \
+#define CHAR_ADD(c, l)                     \
+do                                         \
+{                                          \
+	char xin[2];                           \
+	xin[0] = c;                            \
+	xin[1] = 0;                            \
+	strncat(line, xin, sizeof(xin));       \
+	fi += l;                               \
 } while (0)
 
-#define STRING_ADD(s, l)                 \
-do                                       \
-{                                        \
-	strncat(line, s, lineLen);       \
-	fi += l;                         \
+#define STRING_ADD(s, l)                   \
+do                                         \
+{                                          \
+	strncat(line, s, lineLen);             \
+	fi += l;                               \
 } while (0)
 
-#define INT_ADD(i, l)                          \
-do                                             \
-{                                              \
+#define INT_ADD(i, l)                      \
+do                                         \
+{                                          \
 	char xin[20];                          \
 	snprintf(xin, sizeof(xin), "%d", i);   \
 	strncat(line, xin, lineLen);           \
@@ -640,6 +646,8 @@ static char* lmLineFix
 			INT_ADD((int) getpid(), 3);
 		else if (strncmp(&format[fi], "DATE", 4) == 0)
 			STRING_ADD(dateGet(index, xin, sizeof(xin)), 4);
+//		else if (strncmp(&format[fi], "TID", 3) == 0)
+//			INT_ADD((int) gettid(), 3);
 		else if (strncmp(&format[fi], "EXEC", 4) == 0)
 			STRING_ADD(progName, 4);
 		else if (strncmp(&format[fi], "AUX", 3) == 0)

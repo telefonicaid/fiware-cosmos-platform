@@ -33,5 +33,8 @@
 #define LMT_EP          68
 #define LMT_RESTART     69
 #define LMT_COREWORKER  70
+#define LMT_MSGTREAT    71
+#define LMT_JOB         72
+#define LMT_FORWARD    199
 
 #endif

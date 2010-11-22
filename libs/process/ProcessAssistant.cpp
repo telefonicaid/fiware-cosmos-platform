@@ -60,7 +60,7 @@ ProcessAssistant::ProcessAssistant(int coreNo, SamsonWorker* _worker) : ProcessA
 	workers    = _worker->workersGet();
 	worker     = _worker;
 
-	LM_M(("XXCORE: %d, workers: %d", core, workers));
+	LM_T(LMT_COREWORKER, ("XXCORE: %d, workers: %d", core, workers));
 
 	pthread_create(&threadId, NULL, runThread, this);
 
@@ -91,9 +91,6 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 		LM_RVE(("pipe: %s", strerror(errno)));
 	if (pipe(pipeFdPair2) != 0)  // pipeFdPair2[1] for writing for father
 		LM_RVE(("pipe: %s", strerror(errno)));
-
-	LM_M(("pipeFdPair1 fds: %d %d", pipeFdPair1[0], pipeFdPair1[1]));
-	LM_M(("pipeFdPair2 fds: %d %d", pipeFdPair2[0], pipeFdPair2[1]));
 
 	*rFdP = pipeFdPair1[0];
 	*wFdP = pipeFdPair2[1];
@@ -157,7 +154,6 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 		else
 			LM_T(60, ("Not closing fd %d", fd));
 	}
-	LM_M(("All fathers file descriptors closed!"));
 
 
 
@@ -177,7 +173,7 @@ void ProcessAssistant::coreWorkerStart(char* fatherName, int* rFdP, int* wFdP)
 	if (processP == NULL)
 		LM_X(1, ("error allocating a Process"));
 			
-	LM_M(("XXCORE: Created new Process with coreNo %d and %d workers", core, workers));
+	LM_T(LMT_COREWORKER, ("XXCORE: Created new Process with coreNo %d and %d workers", core, workers));
 
 	processP->run();
 	LM_X(1, ("Back from run - should not ever get here (coreWorker %d, pid: %d)", core, (int) getpid()));

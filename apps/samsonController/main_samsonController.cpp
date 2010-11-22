@@ -54,9 +54,6 @@ int main(int argC, const char* argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	LM_M(("endpoints: %d", endpoints));
-	LM_M(("workers:   %d", workers));
-
 	ss::Network*          networkP = new ss::Network(endpoints, workers);
 	ss::SamsonController  controller(networkP, port, setupFile, workers, endpoints);
 

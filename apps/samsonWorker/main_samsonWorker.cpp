@@ -60,13 +60,6 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 
-	LM_M(("reads:   '%s'", BA_FT(lmReads)));
-	LM_M(("writes:  '%s'", BA_FT(lmWrites)));
-	LM_M(("verbose: '%s'", BA_FT(lmVerbose)));
-	LM_M(("debug:   '%s'", BA_FT(lmDebug)));
-
-	LM_M(("logFd: %d", logFd));
-
 	ss::SamsonWorker  worker(controller, alias, port, workers, endpoints);
 	ss::Network*      networkP;
 	ss::EndpointMgr*  epMgr;

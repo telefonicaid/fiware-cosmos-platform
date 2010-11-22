@@ -22,18 +22,18 @@ SET (SOURCES
 )
 
 SET (STATIC_LIBS
-    samsonNetworkStatic
-    samsonModuleStatic
-    samsonCommonStatic
-    samsonCodingStatic
-    samsonMemoryStatic
-    samsonNetworkStatic
-    samsonDiskStatic
-    samsonDataStatic
-    protobuf
-    dl
-    pthread
-    ncurses
+	samsonNetworkStatic
+	samsonModuleStatic
+	samsonCommonStatic
+	samsonCodingStatic
+	samsonMemoryStatic
+	samsonNetworkStatic
+	samsonDiskStatic
+	samsonDataStatic
+	protobuf
+	dl
+	pthread
+	ncurses
 )
 
 
@@ -43,7 +43,6 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
-
 
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
@@ -57,6 +56,5 @@ SET_TARGET_PROPERTIES(samsonDiskStatic PROPERTIES OUTPUT_NAME samsonDisk)
 
 
 ADD_EXECUTABLE(samsonFileManagerTest samsonFileManagerTest.cpp ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonFileManagerTest  ${STATIC_LIBS} )
-INSTALL(TARGETS               samsonFileManagerTest
-			      RUNTIME DESTINATION   bin)
+TARGET_LINK_LIBRARIES(samsonFileManagerTest ${STATIC_LIBS})
+INSTALL(TARGETS samsonFileManagerTest RUNTIME DESTINATION bin)

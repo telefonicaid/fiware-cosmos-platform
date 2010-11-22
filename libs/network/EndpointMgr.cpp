@@ -40,8 +40,6 @@ EndpointMgr::EndpointMgr(NetworkInterface* network, int endpoints, int workers)
 	Workers    = workers;
 	Endpoints  = endpoints;
 
-	LM_M(("endpoints: %d", Endpoints));
-
 	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
 	if (endpoint == NULL)
 		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
@@ -193,7 +191,6 @@ Endpoint* EndpointMgr::endpointAdd
 		return controller;
 
 	case Endpoint::Temporal:
-		LM_M(("endpoints: %d", Endpoints));
 		for (ix = Endpoints - 1; ix >= 3 + Workers; ix--)
 		{
 			if (endpoint[ix] == NULL)
@@ -295,11 +292,8 @@ Endpoint* EndpointMgr::endpointAdd
 				return NULL;
 			}
 
-			LM_M(("comparing '%s' to '%s'", endpoint[ix]->alias.c_str(), alias));
 			if (strcmp(endpoint[ix]->alias.c_str(), alias) == 0)
 			{
-				LM_M(("Got endpoint '%s'", alias));
-
 				endpoint[ix]->rFd      = rFd;
 				endpoint[ix]->wFd      = wFd;
 				endpoint[ix]->name     = std::string(name);
@@ -414,10 +408,8 @@ Endpoint* EndpointMgr::endpointLookup(char* alias)
 		if (endpoint[ix] == NULL)
 			continue;
 
-		LM_M(("comparing ep %02d '%s' to '%s' (state: '%s')", ix, endpoint[ix]->alias.c_str(), alias, endpoint[ix]->stateName()));
 		if ((strcmp(endpoint[ix]->alias.c_str(), alias) == 0) && (endpoint[ix]->state == Endpoint::Connected))
 		{
-			LM_M(("found occupied (state: '%s') endpoint with alias '%s'", endpoint[ix]->stateName(), alias));
 			return endpoint[ix];
 		}
 	}
@@ -488,7 +480,6 @@ void EndpointMgr::workerStatusToController(void)
 						ws.netInfo.iface[ix].sndBytes,
 						ws.netInfo.iface[ix].sndPackets));
 					
-	LM_M(("Interfaces: %d", ws.netInfo.ifaces));
 	for (ix = 0; ix < ws.netInfo.ifaces; ix++)
 	{
 		if (ws.netInfo.iface[ix].sndSpeed > 1024 * 1024)
@@ -665,22 +656,14 @@ void EndpointMgr::msgTreat(int rFd, char* name)
 			Message::Worker* workerV;
 			int       ix;
 
-			LM_M(("allocating room for a worker vector of %d workers", Workers));
 			workerV = (Message::Worker*) calloc(Workers, sizeof(Message::Worker));
 			if (workerV == NULL)
 				LM_XP(1, ("calloc(%d, %d)", Workers, sizeof(Endpoint)));
 
-			LM_M(("filling worker vector of %d workers", Workers));
 			for (ix = 3; ix < 3 + Workers; ix++)
 			{
 				if (endpoint[ix] != NULL)
 				{
-					LM_M(("Adding worker %d to ep-vector (alias: '%s', ip: '%s', port: %d)",
-						  ix - 3,
-						  endpoint[ix]->alias.c_str(),
-						  endpoint[ix]->ip.c_str(),
-						  endpoint[ix]->port));
-
 					strncpy(workerV[ix - 3].name,  endpoint[ix]->name.c_str(),  sizeof(workerV[ix - 3].name));
 					strncpy(workerV[ix - 3].alias, endpoint[ix]->alias.c_str(), sizeof(workerV[ix - 3].alias));
 					strncpy(workerV[ix - 3].ip,    endpoint[ix]->ip.c_str(),    sizeof(workerV[ix - 3].ip));
@@ -688,8 +671,6 @@ void EndpointMgr::msgTreat(int rFd, char* name)
 					workerV[ix - 3].port   = endpoint[ix]->port;
 					workerV[ix - 3].state  = endpoint[ix]->state;
 				}
-				else
-					LM_M(("worker %d empty", ix - 3));
 			}
 
 			LM_T(LMT_WRITE, ("sending ack with entire worker vector to '%s'", name));
@@ -703,13 +684,9 @@ void EndpointMgr::msgTreat(int rFd, char* name)
 			unsigned int        ix;
 			Message::Worker*    workerV = (Message::Worker*) dataP;
 
-			LM_M(("Got %d bytes of WorkerVector msg data (%d workers)", dataLen, dataLen / sizeof(Message::Worker)));
-
 			for (ix = 0; ix < dataLen / sizeof(Message::Worker); ix++)
 			{
 				Endpoint* epP;
-
-				LM_M(("Filling worker %d", ix));
 
 				if (endpoint[3 + ix] == NULL)
 				{
@@ -909,7 +886,6 @@ void EndpointMgr::run()
 			//
 			// Adding fds to the read-set
 			//
-			LM_M(("------------ %d endpoints ------------------------------------------------------------", Endpoints));
 			for (ix = 0; ix < Endpoints; ix++)
 			{
 				if (endpoint[ix] == NULL)
@@ -919,7 +895,7 @@ void EndpointMgr::run()
 				{
 					FD_SET(endpoint[ix]->rFd, &rFds);
 					max = MAX(max, endpoint[ix]->rFd);
-					LM_M(("++ %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
+					LM_F(("++ %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
 						  ix,
 						  endpoint[ix]->typeName(),
 						  endpoint[ix]->name.c_str(),
@@ -931,7 +907,7 @@ void EndpointMgr::run()
 				}
 				else
 				{
-					LM_M(("-- %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
+					LM_F(("-- %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
 						  ix,
 						  endpoint[ix]->typeName(),
 						  endpoint[ix]->name.c_str(),

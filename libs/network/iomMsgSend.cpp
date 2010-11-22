@@ -51,7 +51,7 @@ int iomMsgSend
 	ioVec[0].iov_base  = &header;
 	ioVec[0].iov_len   = sizeof(header);
 	
-	if (dataLen != 0)
+	if ((dataLen != 0) && (data != NULL))
 	{
 		if (data == NULL)
 			LM_X(1, ("dataLen %d, but data is a NULL pointer ...", dataLen));
@@ -64,13 +64,13 @@ int iomMsgSend
 		++vecs;
 	}
 
-	if (packetP != NULL)
+	if ((packetP != NULL) && (packetP->message.ByteSize() != 0))
 	{
 		char* outputVec;
 
 		header.gbufLen = packetP->message.ByteSize();
 
-		outputVec = (char*) malloc(header.gbufLen);
+		outputVec = (char*) malloc(header.gbufLen + 2);
 		if (outputVec == NULL)
 			LM_XP(1, ("malloc(%d)", header.gbufLen));
 
@@ -83,8 +83,6 @@ int iomMsgSend
 		LM_WRITES(to, "google pbuffer", ioVec[vecs].iov_base, ioVec[vecs].iov_len, LmfByte);
 		++vecs;
 	}
-	else
-		LM_M(("NULL Google protocol buffer"));
 
 	if (packetP && (packetP->buffer != 0) )
 	{
@@ -93,7 +91,6 @@ int iomMsgSend
 		ioVec[vecs].iov_base  = packetP->buffer->getData();
 		ioVec[vecs].iov_len   = packetP->buffer->getSize();
 		
-		LM_M(("sending %d bytes of KV data", header.kvDataLen));
 		LM_WRITES(to, "KV data", ioVec[vecs].iov_base, ioVec[vecs].iov_len, LmfByte);
 		++vecs;
 	}

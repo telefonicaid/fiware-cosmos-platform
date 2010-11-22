@@ -39,7 +39,7 @@ Process::Process(int _rFd, int _wFd, int _core, int _workers)
 	core     = _core;
 	workers  = _workers;
 
-	LM_M(("XXCORE: Started process on core %d in set of %d workers", core, workers));
+	LM_T(LMT_COREWORKER, ("XXCORE: Started process on core %d in set of %d workers", core, workers));
 }
 
 

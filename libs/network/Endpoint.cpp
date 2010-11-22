@@ -22,6 +22,116 @@ namespace ss {
 
 /* ****************************************************************************
 *
+* init - 
+*/
+void Endpoint::init(void)
+{
+	this->name             = "no name";
+	this->ip               = "localhost";
+	this->port             = 0xFFFF;
+	this->rFd              = -1;
+	this->wFd              = -1;
+	this->state            = Unconnected;
+	this->workers          = 0;
+	this->type             = Unknown;
+	this->status           = NULL;
+	this->sender           = false;
+	this->useSenderThread  = false;
+
+	hostnameGet();
+}
+
+
+
+/* ****************************************************************************
+*
+* Constructor
+*/
+Endpoint::Endpoint(void)
+{
+	init();
+}
+
+
+
+/* ****************************************************************************
+*
+* Constructor
+*/
+Endpoint::Endpoint(Type type, unsigned short port)
+{
+	init();
+
+	this->type             = type;
+	this->port             = port;
+}
+
+
+
+/* ****************************************************************************
+*
+* Constructor
+*/
+Endpoint::Endpoint(Type type, char* alias)
+{
+	init();
+
+	this->type             = type;
+	this->alias            = alias;
+}
+
+
+
+/* ****************************************************************************
+*
+* Constructor
+*/
+Endpoint::Endpoint(Type type, std::string ipAndPort)
+{
+	char* port = strchr((char*) ipAndPort.c_str(), ':');
+
+	init();
+
+	if (port == NULL)
+	{
+		this->name  = ipAndPort;
+		this->port  = atoi(ipAndPort.c_str());
+		this->ip    = "127.0.0.1";
+	}
+	else
+	{
+		this->name  = ipAndPort;
+
+		*port = 0;
+		++port;
+		this->ip    = ipAndPort;
+		this->port  = atoi(port);
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* Constructor
+*/
+Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short port, int rFd, int wFd)
+{
+	init();
+
+	this->type             = type;
+	this->name             = name;
+	this->ip               = ip;
+	this->port             = port;
+	this->rFd              = rFd;
+	this->wFd              = wFd;
+	this->state            = (rFd == -1)? Unconnected : Connected;
+}
+
+
+
+/* ****************************************************************************
+*
 * hostnameGet - 
 */
 void Endpoint::hostnameGet(void)
@@ -35,28 +145,6 @@ void Endpoint::hostnameGet(void)
 	}
 	else
 		LM_P(("gethostname"));
-}
-
-
-
-/* ****************************************************************************
-*
-* Constructor
-*/
-Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short port, int rFd, int wFd)
-{
-	this->name     = name;
-	this->type     = type;
-	this->ip       = ip;
-	this->port     = port;
-	this->rFd      = rFd;
-	this->wFd      = wFd;
-	this->state    = (rFd == -1)? Unconnected : Connected;
-	this->workers  = 0;
-	this->status   = NULL;
-	this->sender   = NULL;
-
-	hostnameGet();
 }
 
 
@@ -93,88 +181,6 @@ const char* Endpoint::typeName(Endpoint::Type type)
 const char* Endpoint::typeName(void)
 {
    return typeName(this->type);
-}
-
-
-
-/* ****************************************************************************
-*
-* Constructor
-*/
-Endpoint::Endpoint(Type type, std::string ipAndPort)
-{
-	char* port = strchr((char*) ipAndPort.c_str(), ':');
-
-	if (port == NULL)
-	{
-		this->name  = ipAndPort;
-		this->port  = atoi(ipAndPort.c_str());
-		this->ip    = "127.0.0.1";
-	}
-	else
-	{
-		this->name  = ipAndPort;
-
-		*port = 0;
-		++port;
-		this->ip    = ipAndPort;
-		this->port  = atoi(port);
-	}
-
-	this->rFd      = -1;
-	this->wFd      = -1;
-	this->state    = Unconnected;
-	this->workers  = 0;
-	this->type     = type;
-	this->status   = NULL;
-	this->sender   = NULL;
-
-	hostnameGet();
-}
-
-
-
-/* ****************************************************************************
-*
-* Constructor
-*/
-Endpoint::Endpoint(Type type, unsigned short port)
-{
-	this->name     = "no name";
-	this->ip       = "localhost";
-	this->port     = port;
-	this->rFd      = -1;
-	this->wFd      = -1;
-	this->state    = Unconnected;
-	this->workers  = 0;
-	this->type     = type;
-	this->status   = NULL;
-	this->sender   = NULL;
-
-	hostnameGet();
-}
-
-
-
-/* ****************************************************************************
-*
-* Constructor
-*/
-Endpoint::Endpoint(Type type, char* alias)
-{
-	this->name     = "no name";
-	this->ip       = "localhost";
-	this->alias    = alias;
-	this->port     = port;
-	this->rFd      = -1;
-	this->wFd      = -1;
-	this->state    = Unconnected;
-	this->workers  = 0;
-	this->type     = type;
-	this->status   = NULL;
-	this->sender   = NULL;
-
-	hostnameGet();
 }
 
 
@@ -222,17 +228,13 @@ const char* Endpoint::stateName(void)
 */
 void Endpoint::reset(void)
 {
-	close(rFd);
-	if (wFd != rFd)
+	if (rFd != -1)
+		close(rFd);
+
+	if ((wFd != rFd) && (wFd != -1))
 		close(wFd);
 
-	rFd      = -1;
-	wFd      = -1;
-
-	state    = Free;
-	type     = Unknown;
-	name     = "no name";
-	workers  = 0;
+	init();
 }
 
 }

@@ -40,6 +40,8 @@ typedef struct SendJob
 	Endpoint*             me;
 	Message::MessageCode  msgCode;
 	Message::MessageType  msgType;
+	void*                 dataP;
+	int                   dataLen;
 	Packet*               packetP;
 } SendJob;
 

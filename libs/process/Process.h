@@ -23,32 +23,24 @@ class ProcessOperationFramework;
 * Finally, when runCommand has finished a notification message is sent back to the ProcessAssistant to notify that everything has finished
 * and run methods blocks again waiting for the next command
 */
-	
+class Process : public ProcessInterface
+{
+public:
+	Process(int rFd, int wFd, int core, int workers);
 
-	class Process : public ProcessInterface
-	{
-		public:
-			 Process(int rFd, int wFd, int core, int workers);
-			 void     run(void);
-	
+	void    run(void);
+	void    runCommand(const char* command);
+	char*   passCommand(const char* command);
 
-		
-		ModulesManager modulesManager;
-		ProcessOperationFramework * framework;
-	private:
+	ModulesManager              modulesManager;
+	ProcessOperationFramework*  framework;
 
-
+private:
 	int   rFd;
 	int   wFd;
 	int   core;
 	int   workers;
-	
-		
-	public:
-		void     runCommand(const char* command);
-		char*    passCommand(const char* command);
-
-	};
+};
 
 }
 

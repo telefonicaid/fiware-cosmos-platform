@@ -391,8 +391,9 @@ static void* senderThread(void* vP)
 				   ep->senderReadFd,
 				   ep->wFd,
 				   job.packetP));
+		LM_T(LMT_FORWARD, ("google protocol 'message': %p", &job.packetP->message));
+		LM_T(LMT_FORWARD, ("google protocol buffer data len: %d", job.packetP->message.ByteSize()));
 
-		LM_T(LMT_FORWARD, ("calling iomMsgSend, dataP at %p, packetP at %p (google protocol buffer data len: %d)", job.dataP, job.packetP, job.packetP->message.ByteSize()));
 		s = iomMsgSend(ep->wFd, ep->name.c_str(), job.me->name.c_str(), job.msgCode, job.msgType, job.dataP, job.dataLen, job.packetP);
 		LM_T(LMT_FORWARD, ("iomMsgSend returned %d", s));
 		if (s != 0)
@@ -469,6 +470,7 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
         job.packetP = packetP;
 
 		jobPush(&job);
+
 		return 0;
 	}
 
@@ -490,7 +492,8 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 			ep->senderReadFd  = tunnelPipe[0];  // child reads from this fd
 			ep->sender        = true;
 
-
+			LM_T(LMT_FORWARD, ("msgs for endpoint '%s' to fd %d instead of fd %d", ep->name.c_str(), ep->senderWriteFd, ep->wFd));
+			LM_T(LMT_FORWARD, ("'%s' sender thread to read from fd %d and send to fd %d", ep->name.c_str(), ep->senderReadFd, ep->wFd));
 			//
 			// Create sender thread
 			//
@@ -613,6 +616,14 @@ Endpoint* Network::endpointAdd
 		endpoint[2]->name  = std::string(name);
 		endpoint[2]->ip    = std::string(ip);
 		endpoint[2]->alias = (alias != NULL)? alias : "NO ALIAS" ;
+
+#if 0
+		if (me->type == Endpoint::Delilah)
+		{
+			endpoint[2]->useSenderThread = true;
+			LM_M(("Delilah controller endpoint use SenderThread"));
+		}
+#endif
 		return controller;
 
 	case Endpoint::Temporal:
@@ -692,18 +703,32 @@ Endpoint* Network::endpointAdd
 
 		for (ix = 3; ix < 3 + Workers; ix++)
 		{
+			Endpoint* ep;
+
 			if (endpoint[ix] == NULL)
 				LM_X(1, ("NULL worker endpoint at slot %d", ix));
 
-			if (endpointLookup((char*) alias) != NULL)
+			if ((ep = endpointLookup((char*) alias)) != NULL)
 			{
+				if (ep->wFd != wFd)
+					LM_E(("write file descriptors don't coincide for endpoint '%s' (%d vs %d)", alias, wFd, ep->wFd));
+
 				LM_E(("Intent to connect a second Worker with alias '%s' - rejecting connection", alias));
 				iomMsgSend(wFd, name, progName, Message::Die, Message::Evt);
+
 				close(rFd);
 				if (wFd != rFd)
 					close(wFd);
 				return NULL;
 			}
+
+#if 0
+			if (me->type == Endpoint::Delilah)
+			{
+				endpoint[ix]->useSenderThread = true;
+				LM_M(("Delilah worker endpoint use SenderThread"));
+			}
+#endif
 
 			if (strcmp(endpoint[ix]->alias.c_str(), alias) == 0)
 			{
@@ -1039,20 +1064,23 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 */
 void Network::msgTreat(void* vP)
 {
+	char                  data[1024];
+	void*                 dataP        = data;
+	int                   dataLen      = sizeof(data);
+
 	MsgTreatParams*       paramsP      = (MsgTreatParams*) vP;
 	Endpoint*             ep           = paramsP->ep;
 	int                   endpointId   = paramsP->endpointId;
 	Message::Header*      headerP      = &paramsP->header;
+	int                   wFd          = ep->rFd;     // This function will not work for pipe pairs ...
+	char*                 name         = (char*) ep->name.c_str();
+
 	Packet                packet;
 	Packet                ack;
 	Message::MessageCode  msgCode;
 	Message::MessageType  msgType;
 	int                   s;
-	char                  data[1024];
-	void*                 dataP      = data;
-	int                   dataLen    = sizeof(data);
-	int                   wFd        = ep->rFd;     // This function will not work for pipe pairs ...
-	char*                 name       = (char*) ep->name.c_str();
+
 
 	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 	s = iomMsgRead2(ep->rFd, headerP, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
@@ -1382,7 +1410,8 @@ void Network::run()
 			//
 			// Adding fds to the read-set
 			//
-			LM_T(LMT_SELECT, ("------------ %d endpoints ------------------------------------------------------------", Endpoints));
+			LM_F((""));
+			LM_F(("------------ %d endpoints ------------------------------------------------------------", Endpoints));
 			for (ix = 0; ix < Endpoints; ix++)
 			{
 				if (endpoint[ix] == NULL)

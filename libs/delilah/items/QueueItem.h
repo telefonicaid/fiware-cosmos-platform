@@ -49,22 +49,4 @@ private:
     QGraphicsTextItem* text_item;
 };
 
-
-//class DataQueueItem : public QueueItem
-//{
-//public:
-//	DataQueueItem()
-//		: QueueItem() { queue=0; };
-//	DataQueueItem(DataQueue* _queue)
-//		: QueueItem(), queue(queue)
-//	{
-////		queue=_queue;
-////		connect(queue, SIGNAL(changed()), this, SLOT(updateItem()))
-//	};
-//	~DataQueueItem() {};
-//
-//private:
-//	DataQueue* queue;
-//};
-
 #endif // QUEUEITEM_H

@@ -247,6 +247,21 @@ QString DelilahQtApp::validateNewQueueName(QString name)
 	return QString();
 }
 
+
+QList<Queue*> DelilahQtApp::getQueues()
+{
+	QList<Queue*> list;
+
+	// TODO: clarify with Andreu
+//	for(int i=0; i<data_queues.size(); i++)
+//		list.append((Queue*)data_queues[i]);
+
+	for(int i=0; i<kv_queues.size(); i++)
+		list.append((Queue*)kv_queues[i]);
+
+	return list;
+}
+
 /*
  * Search for data queue with a given name.
  * Parameter 'deleted' indicates whether search will be done for existing

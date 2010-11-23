@@ -49,6 +49,7 @@ protected:
 
 signals:
 	void createQueueRequested(QueueType type, const QPointF scene_pos, QString name, QString key=QString(), QString value=QString());
+	void loadQueueRequested(const QString &name, const QPointF scene_pos);
 
 protected:
 	Workspace* workspace;

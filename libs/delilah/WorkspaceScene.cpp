@@ -49,15 +49,17 @@ void WorkspaceScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 	{
 		QMenu* menu = new QMenu();
 
-		ActionWithPos* act = new ActionWithPos("Add Queue", this);
-		act->setPosition(event->scenePos());
-		connect(act, SIGNAL(triggered(QPointF)), this, SIGNAL(addQueueRequested(QPointF)));
-		menu->addAction(act);
+		ActionWithPos* add_act = new ActionWithPos("Add Queue", this);
+		add_act->setPosition(event->scenePos());
+		connect(add_act, SIGNAL(triggered(QPointF)), this, SIGNAL(addQueueRequested(QPointF)));
+		menu->addAction(add_act);
 
 		menu->addAction("Zoom In", this, SLOT(zoomIn()));
 		menu->addAction("Zoom Out", this, SLOT(zoomOut()));
 		menu->addAction("Zoom 1:1", this, SLOT(zoomReset()));
 		menu->exec(event->screenPos());
+
+		delete add_act;
 	}
 }
 
@@ -147,6 +149,7 @@ ObjectItem* WorkspaceScene::findItem(const QPointF &pos)
 	int i = 0;
 	while (i<selected.size() && !item)
 	{
+		// TODO: remove
 		std::cout << "Analizing type = " << selected[i]->type() << "\n";
 		switch(selected[i]->type())
 		{
@@ -165,9 +168,8 @@ ObjectItem* WorkspaceScene::findItem(const QPointF &pos)
 	return item;
 }
 
-void WorkspaceScene::showDataQueue(DataQueue* queue, const QPointF &pos)
+void WorkspaceScene::showQueue(Queue* queue, const QPointF &pos)
 {
-	// TODO: correct implementation - currently Queue class is not implemented yet.
 	QueueItem* queue_item = new QueueItem(queue);
 
 	// Connect appropriate signals to propagate user's requests

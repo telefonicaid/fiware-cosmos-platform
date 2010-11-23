@@ -37,6 +37,7 @@ public:
 
 	QString validateNewQueueName(QString name);
 
+	QList<Queue*> getQueues();
 	DataQueue* getDataQueue(const QString &name, bool deleted=false);
 	KVQueue* getKVQueue(const QString &name, bool deleted=false);
 

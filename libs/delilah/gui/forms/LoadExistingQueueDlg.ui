@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CreateDataQueueDlgClass</class>
- <widget class="QDialog" name="CreateDataQueueDlgClass">
+ <class>LoadExistingQueueDlgClass</class>
+ <widget class="QDialog" name="LoadExistingQueueDlgClass">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>350</width>
-    <height>136</height>
+    <height>336</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Create Data Queue</string>
+   <string>Load Queue</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,0">
+  <layout class="QVBoxLayout" name="mainLayout" stretch="0,0,1,0">
    <item>
-    <layout class="QHBoxLayout" name="nameLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="nameLabel">
        <property name="text">
@@ -24,14 +24,45 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="nameLineEdit"/>
+      <widget class="QLineEdit" name="nameLineEdit">
+       <property name="inputMask">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string notr="true"/>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QTreeWidget" name="nameTreeWidget">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <attribute name="headerVisible">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="headerVisible">
+      <bool>false</bool>
+     </attribute>
+     <column>
+      <property name="text">
+       <string notr="true">1</string>
+      </property>
+     </column>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="errorLayout" stretch="0,1">
      <item>
       <widget class="QLabel" name="errorPixmapLabel">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="text">
         <string/>
        </property>
@@ -39,14 +70,8 @@
      </item>
      <item>
       <widget class="QLabel" name="errorLabel">
-       <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
-       </property>
        <property name="text">
         <string/>
-       </property>
-       <property name="textFormat">
-        <enum>Qt::RichText</enum>
        </property>
       </widget>
      </item>
@@ -62,39 +87,37 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="../../resources/icons.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>CreateDataQueueDlgClass</receiver>
+   <receiver>LoadExistingQueueDlgClass</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>164</x>
-     <y>81</y>
+     <x>174</x>
+     <y>313</y>
     </hint>
     <hint type="destinationlabel">
-     <x>164</x>
-     <y>51</y>
+     <x>174</x>
+     <y>167</y>
     </hint>
    </hints>
   </connection>
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>CreateDataQueueDlgClass</receiver>
+   <receiver>LoadExistingQueueDlgClass</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>164</x>
-     <y>81</y>
+     <x>174</x>
+     <y>313</y>
     </hint>
     <hint type="destinationlabel">
-     <x>164</x>
-     <y>51</y>
+     <x>174</x>
+     <y>167</y>
     </hint>
    </hints>
   </connection>

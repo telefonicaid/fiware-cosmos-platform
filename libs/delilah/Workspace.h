@@ -51,6 +51,7 @@ public:
 public slots:
 	void setTool(int tool);
 
+	void loadQueue(const QString &name, const QPointF &scene_pos);
 	void createQueue(QueueType type, const QPointF &scene_pos, QString name, QString key=QString(), QString value=QString());
 	void removeQueueFromWorkspace(Queue* queue);
 	void deleteQueue(Queue* queue);

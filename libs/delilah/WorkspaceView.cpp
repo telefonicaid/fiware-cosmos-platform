@@ -16,6 +16,7 @@
 #include "WorkspaceScene.h"
 #include "DelilahQtApp.h"
 #include "CreateDataQueueDlg.h"
+#include "LoadExistingQueueDlg.h"
 #include "Misc.h"
 
 WorkspaceView::WorkspaceView(QWidget* parent)
@@ -42,8 +43,12 @@ void WorkspaceView::setWorkspace(Workspace* model)
 	setScene(workspace->getScene());
 
 	connect(scene(), SIGNAL(addQueueRequested(QPointF)), this, SLOT(selectQueueType(QPointF)));
+
 	connect(this, SIGNAL(createQueueRequested(QueueType, QPointF, QString, QString, QString)),
 			workspace, SLOT(createQueue(QueueType, QPointF, QString, QString, QString)));
+	connect(this, SIGNAL(loadQueueRequested(QString, QPointF)),
+			workspace, SLOT(loadQueue(QString, QPointF)));
+
 	connect(workspace, SIGNAL(jobCreated(job_info)), this, SLOT(updateJobInfoView(job_info)));
 	connect(workspace, SIGNAL(jobUpdated(job_info)), this, SLOT(updateJobInfoView(job_info)));
 	connect(workspace, SIGNAL(unhandledFailure(QString)), this, SLOT(showError(QString)));
@@ -142,12 +147,26 @@ void WorkspaceView::selectQueueType(const QPointF &scene_pos)
 	// Set menu's left upper corner at clicked position
 	QPoint view_pos = mapFromScene(scene_pos);
 	menu->exec(mapToGlobal(view_pos));
+
+	delete load_existing_act;
+	delete create_data_act;
+	delete create_kv_act;
 }
 
 void WorkspaceView::loadExistingQueueSelected(const QPointF &scene_pos)
 {
 	// TODO:
+	LoadExistingQueueDlg* dlg = new LoadExistingQueueDlg(this);
 
+	if(dlg->exec() == QDialog::Accepted)
+	{
+		// TODO
+		// Get name from the dialog
+		// Emit appropriate signal (received by Workspace)
+		emit(loadQueueRequested(dlg->queueName(), scene_pos));
+	}
+
+	delete dlg;
 }
 
 void WorkspaceView::createDataQueueSelected(const QPointF &scene_pos)
@@ -157,7 +176,7 @@ void WorkspaceView::createDataQueueSelected(const QPointF &scene_pos)
 	QString name;
 	if (dlg->exec() == QDialog::Accepted)
 	{
-		name = dlg->name();
+		name = dlg->queueName();
 		emit(createQueueRequested(DATA_QUEUE, scene_pos, name));
 	}
 

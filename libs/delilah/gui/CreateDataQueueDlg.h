@@ -12,7 +12,7 @@ public:
     CreateDataQueueDlg(QWidget* parent=0);
     ~CreateDataQueueDlg() {};
 
-    QString name() { return ui.nameLineEdit->text(); };
+    QString queueName() { return ui.nameLineEdit->text(); };
 
 public slots:
 	void cancelError();

@@ -39,6 +39,18 @@ void Workspace::setTool(int tool)
 }
 
 
+void Workspace::loadQueue(const QString &name, const QPointF &scene_pos)
+{
+	// TODO:
+	// Current implemenation of inserting existing queue is based on assumption, that
+	// only KV queues can be inserted. This must by clarified with Andreu and fixed.
+	std::cout << "Added queue" << std::endl;
+
+	Queue* queue = app->getKVQueue(name);
+	if (queue)
+		scene->showQueue(queue, scene_pos);
+}
+
 /*
  * SLOT. Sends request to application to create new queue (TXT or KV) on Samson platform.
  */
@@ -175,9 +187,9 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 		{
 			case CREATE_DATA_QUEUE:
 				{
-					DataQueue* queue = app->getDataQueue(job.args[0]);
+					Queue* queue = app->getDataQueue(job.args[0]);
 					if (queue)
-						scene->showDataQueue(queue, job.pos);
+						scene->showQueue(queue, job.pos);
 					else
 					{
 						QString error = QString(

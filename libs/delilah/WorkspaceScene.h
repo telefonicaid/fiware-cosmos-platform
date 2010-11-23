@@ -31,7 +31,7 @@ public:
 
 	int getTool() {return current_tool; };
 
-	void showDataQueue(DataQueue* queue, const QPointF &pos);
+	void showQueue(Queue* queue, const QPointF &pos);
 	void removeQueue(Queue* queue);
 
 public slots:

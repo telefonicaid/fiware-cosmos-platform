@@ -60,14 +60,14 @@ void DelilahQtApp::uploadData(bool queue, bool operation, bool data_type, const 
 
 
 	// Prepare packet to get information from network about requested type of objects
-	ss::Packet p;
-	ss::network::Help *help = p.message.mutable_help();
+	ss::Packet *p = new ss::Packet();
+	ss::network::Help *help = p->message.mutable_help();
 	help->set_queues(queue);
 	help->set_datas(data_type);
 	help->set_operations(operation);
 	if ( !name.isEmpty() )
 		help->set_name(name.toStdString());
-	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Help, &p);
+	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Help, p);
 }
 
 int DelilahQtApp::sendCreateQueue(const QString &name)
@@ -97,11 +97,11 @@ int DelilahQtApp::sendDeleteQueue(const QString &name)
 	std::string command = REMOVE_QUEUE_COMMAND;
 	command.append((" " + name).toStdString());
 
-	ss::Packet p;
-	ss::network::Command *c = p.message.mutable_command();
+	ss::Packet *p = new ss::Packet();
+	ss::network::Command *c = p->message.mutable_command();
 	c->set_command( command );
 	c->set_sender_id( ++id );
-	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Command, &p);
+	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Command, p);
 
 	return id;
 }

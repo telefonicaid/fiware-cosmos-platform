@@ -107,8 +107,8 @@ namespace ss {
 
 		if( t )
 		{
-			Packet p;
-			network::WorkerTaskConfirmation *confirmation = p.message.mutable_worker_task_confirmation();
+			Packet *p = new Packet();
+			network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
 			confirmation->set_task_id(  t->task_id );
 			confirmation->set_error( t->error );
 			confirmation->set_error_message( t->error_message );
@@ -118,13 +118,9 @@ namespace ss {
 			{
 				network::QueueFile *qfile = confirmation->add_file( );
 				qfile->CopyFrom( item->qfiles[i] );
-				
-				std::cout << "Size of file: " << item->qfiles[i].file().info().size() << "\n";
-				std::cout << "#KVS of file: " << item->qfiles[i].file().info().kvs() << "\n";
-				
 			}
 				
-			worker->network->send(worker, worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, &p);
+			worker->network->send(worker, worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
 			
 			delete t;
 		}
@@ -149,11 +145,11 @@ namespace ss {
 		
 		for (int s = 0 ; s < workers ; s++)
 		{				
-			Packet p;
-			network::WorkerDataExchangeClose *dataMessage =  p.message.mutable_data_close();
+			Packet *p = new Packet();
+			network::WorkerDataExchangeClose *dataMessage =  p->message.mutable_data_close();
 			dataMessage->set_task_id(t->getId());
 			NetworkInterface *network = worker->network;
-			network->send(worker, network->workerGetIdentifier(s) , Message::WorkerDataExchangeClose, &p);
+			network->send(worker, network->workerGetIdentifier(s) , Message::WorkerDataExchangeClose, p);
 		}
 	}	
 	

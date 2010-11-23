@@ -123,8 +123,8 @@ void SamsonWorker::run()
 #if 0
 void SamsonWorker::sendWorkerStatus()
 {
-	Packet                  p;
-	network::WorkerStatus*  w = p.message.mutable_worker_status();
+	Packet *p = new Packet();
+	network::WorkerStatus*  w = p->message.mutable_worker_status();
 	
 	// Fill with all data related to data
 	data.fillWorkerStatus(w);
@@ -132,7 +132,7 @@ void SamsonWorker::sendWorkerStatus()
 	// Fill to all data related with task manager
 	taskManager.fillWorkerStatus(w);
 	
-	network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, NULL, 0, &p);
+	network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, NULL, 0, p);
 }
 #endif
 		

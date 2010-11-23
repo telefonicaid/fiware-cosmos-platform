@@ -74,9 +74,9 @@ void SamsonController::run()
 int SamsonController::receiveHelp(int fromId, Packet* packet)
 {
 	// Prepare the help message and sent back to Delilah
-	Packet p;
+	Packet *p = new Packet();
 		
-	network::HelpResponse *response = p.message.mutable_help_response();
+	network::HelpResponse *response = p->message.mutable_help_response();
 	response->mutable_help()->CopyFrom( packet->message.help() );
 	
 	// We check if queues or data_queues is selected inside
@@ -94,7 +94,7 @@ int SamsonController::receiveHelp(int fromId, Packet* packet)
 		modulesManager.helpOperations( response , packet->message.help() );
 	}
 		
-	network->send(this, fromId, Message::HelpResponse, &p);
+	network->send(this, fromId, Message::HelpResponse, p);
 	return 0;
 }
 	
@@ -165,22 +165,22 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 				data.finishTask(job_id);
 				
 			// A message is always sent back to delilah to confirm changes
-			Packet p;
-			network::LoadDataConfirmationResponse * confirmationResponse = p.message.mutable_load_data_confirmation_response();
+			Packet *p = new Packet();
+			network::LoadDataConfirmationResponse * confirmationResponse = p->message.mutable_load_data_confirmation_response();
 			confirmationResponse->set_process_id( packet->message.load_data_confirmation().process_id() );
 			confirmationResponse->set_error( error );
 			confirmationResponse->set_error_message( error_message );
-			network->send(this, fromId, Message::LoadDataConfirmationResponse, &p);
+			network->send(this, fromId, Message::LoadDataConfirmationResponse, p);
 		}
 		break;
 
 		case Message::StatusRequest:
 		{
-			Packet p;
-			network::StatusResponse *response = p.message.mutable_status_response();
+			Packet *p = new Packet();
+			network::StatusResponse *response = p->message.mutable_status_response();
 			response->set_title( "Controller" );
 			response->set_response( getStatus(packet->message.status_request().command()) );
-			network->send(this, fromId, Message::StatusResponse, &p);
+			network->send(this, fromId, Message::StatusResponse, p);
 			return 0;
 			
 		}
@@ -253,9 +253,9 @@ void SamsonController::sendWorkerTasks( ControllerTask *task )
 void SamsonController::sendWorkerTask(int workerIdentifier, size_t task_id, ControllerTask *task  )
 {
 	// Get status of controller
-	Packet p2;
+	Packet *p2 = new Packet();
 
-	network::WorkerTask *t = p2.message.mutable_worker_task();
+	network::WorkerTask *t = p2->message.mutable_worker_task();
 	t->set_task_id(task_id);
 
 	// Fill information for this packet
@@ -264,7 +264,7 @@ void SamsonController::sendWorkerTask(int workerIdentifier, size_t task_id, Cont
 	// TODO: Complete with the rest of input / output parameters
 		
 	LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", workerIdentifier));
-	network->send(this,  network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask,  &p2);
+	network->send(this,  network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask,  p2);
 }
 	
 	

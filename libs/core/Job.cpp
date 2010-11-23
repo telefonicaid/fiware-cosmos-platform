@@ -155,16 +155,16 @@ namespace ss {
 	{
 		assert( finish );
 		
-		Packet p2;
+		Packet *p2 = new Packet();
 		
-		network::CommandResponse *response = p2.message.mutable_command_response();
+		network::CommandResponse *response = p2->message.mutable_command_response();
 		response->set_command(mainCommand);
 		response->set_response(output.str());
 		response->set_error(error);
 		response->set_finish(true);
 		response->set_sender_id(sender_id);
 		
-		controller->network->send(controller, fromIdentifier, Message::CommandResponse, &p2);
+		controller->network->send(controller, fromIdentifier, Message::CommandResponse, p2);
 	}
 	
 	void Job::setError( std::string txt )

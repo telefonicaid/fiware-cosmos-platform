@@ -29,8 +29,8 @@ namespace ss
 		if( i )
 		{
 			// Sen a packet bak to delilah to confirm this update
-			Packet p;
-			network::LoadDataResponse *response = p.message.mutable_load_data_response();
+			Packet *p = new Packet();
+			network::LoadDataResponse *response = p->message.mutable_load_data_response();
 			response->set_process_id( i->process_id );
 			response->set_file_id( i->file_id );
 			response->set_error( !success );
@@ -43,7 +43,7 @@ namespace ss
 			info->set_kvs(1);
 			info->set_size(i->size);
 			
-			worker->network->send( worker , i->fromIdentifier , Message::LoadDataResponse , &p);
+			worker->network->send( worker , i->fromIdentifier , Message::LoadDataResponse , p);
 		}
 	}
 	

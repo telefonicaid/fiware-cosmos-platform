@@ -72,8 +72,8 @@ namespace ss
 			uploadedSize += b->getSize();
 			
 			// Send to the rigth worker
-			Packet p;
-			p.buffer = b;	// Add the buffer to the packet
+			Packet *p = new Packet();
+			p->buffer = b;	// Add the buffer to the packet
 
 			// Get a new id for this packet
 			size_t file_id = id_counter++;
@@ -82,12 +82,12 @@ namespace ss
 			lock.unlock();
 
 			// Set message fields
-			network::LoadData *loadData = p.message.mutable_load_data();	
+			network::LoadData *loadData = p->message.mutable_load_data();	
 			loadData->set_file_id( file_id );
 			loadData->set_process_id( id );
 			
 			// Send the packet
-			delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), Message::LoadData, &p);
+			delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), Message::LoadData, p);
 			
 			// Next worker
 			if( ++worker == num_workers )

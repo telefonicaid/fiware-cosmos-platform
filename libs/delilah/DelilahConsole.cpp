@@ -46,14 +46,18 @@ namespace ss
 		if( mainCommand == "status" )
 		{
 			// Sent a status request to all the elements
-			Packet* p = new Packet();
-
-			p->message.mutable_status_request()->set_command( command );
-			
-			dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::StatusRequest, p);
+			{
+				Packet* p = new Packet();
+				p->message.mutable_status_request()->set_command( command );
+				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::StatusRequest, p);
+			}
 
 			for (int i = 0 ; i < dalilah->network->getNumWorkers() ; i++)
+			{
+				Packet* p = new Packet();
+				p->message.mutable_status_request()->set_command( command );
 				dalilah->network->send(dalilah, dalilah->network->workerGetIdentifier(i), Message::StatusRequest, p);
+			}
 
 			writeWarningOnConsole("Status messages sent to all elements\n");
 			

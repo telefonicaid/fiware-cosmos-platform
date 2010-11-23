@@ -156,10 +156,10 @@ int Delilah::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 		{
 			// Send the final packet to the controller notifying about the loading process
 				
-			Packet p;
-			network::LoadDataConfirmation *confirmation	= p.message.mutable_load_data_confirmation();
+			Packet *p = new Packet();
+			network::LoadDataConfirmation *confirmation	= p->message.mutable_load_data_confirmation();
 			process->fillLoadDataConfirmationMessage( confirmation );
-			network->send(this, network->controllerGetIdentifier(), Message::LoadDataConfirmation, &p);
+			network->send(this, network->controllerGetIdentifier(), Message::LoadDataConfirmation, p);
 				
 			// Confirm to the client that everything is ok
 			//client->loadDataConfirmation( process );

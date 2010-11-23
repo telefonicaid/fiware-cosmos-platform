@@ -141,15 +141,15 @@ namespace ss {
 
 					if( processAssistant )
 					{
-						Packet p;
-						p.buffer = buffer;
-						network::WorkerDataExchange *dataMessage =  p.message.mutable_data();
+						Packet *p = new Packet();
+						p->buffer = buffer;
+						network::WorkerDataExchange *dataMessage =  p->message.mutable_data();
 						
 						dataMessage->set_task_id(task_id);
 						dataMessage->mutable_queue( )->CopyFrom( output_queue );
 												
 						NetworkInterface *network = processAssistant->worker->network;
-						network->send(processAssistant->worker, network->workerGetIdentifier(s) , Message::WorkerDataExchange, &p);
+						network->send(processAssistant->worker, network->workerGetIdentifier(s) , Message::WorkerDataExchange, p);
 					}
 					else
 					{

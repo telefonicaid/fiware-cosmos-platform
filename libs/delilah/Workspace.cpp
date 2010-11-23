@@ -41,12 +41,7 @@ void Workspace::setTool(int tool)
 
 void Workspace::loadQueue(const QString &name, const QPointF &scene_pos)
 {
-	// TODO:
-	// Current implemenation of inserting existing queue is based on assumption, that
-	// only KV queues can be inserted. This must by clarified with Andreu and fixed.
-	std::cout << "Added queue" << std::endl;
-
-	Queue* queue = app->getKVQueue(name);
+	Queue* queue = app->getQueue(name);
 	if (queue)
 		scene->showQueue(queue, scene_pos);
 }
@@ -72,12 +67,12 @@ void Workspace::createQueue(QueueType type, const QPointF &scene_pos, QString na
 		case DATA_QUEUE:
 			job.type = CREATE_DATA_QUEUE;
 			job.args << name;
-			job.id = app->sendCreateDataQueue(name);
+			job.id = app->sendCreateQueue(name);
 			break;
 		case KV_QUEUE:
 			job.type = CREATE_KV_QUEUE;
 			job.args << name << key << value;
-			job.id = app->sendCreateKVQueue(name, key, value);
+			job.id = app->sendCreateQueue(name, key, value);
 			break;
 		default:
 			job.type = CANCELED;
@@ -108,32 +103,11 @@ void Workspace::deleteQueue(Queue* queue)
 //	job.pos = scene_pos;
 	job.status = IN_PROCESSING;
 	job.message = "Sending request: delete queue";
-
-	switch(queue->type())
-	{
-		case DATA_QUEUE:
-			job.type = DELETE_DATA_QUEUE;
-			job.args << queue->getName();
-			job.id = app->sendDeleteDataQueue(queue->getName());
-			break;
-		case KV_QUEUE:
-			job.type = DELETE_KV_QUEUE;
-			job.args << queue->getName();
-			job.id = app->sendDeleteKVQueue(queue->getName());
-			break;
-		default:
-			job.type = CANCELED;
-			QString error = QString(
-					"Could not delete %1 queue:\nNo information how to handle this type of queue.").arg(queue->getName());
-			emit(unhandledFailure(error));
-			break;
-	}
-
-	if (job.type!=CANCELED)
-	{
-		jobs.append(job);
-		emit(jobCreated(job));
-	}
+	job.type = DELETE_QUEUE;
+	job.args << queue->getName();
+	job.id = app->sendDeleteQueue(queue->getName());
+	jobs.append(job);
+	emit(jobCreated(job));
 }
 
 /*
@@ -187,7 +161,7 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 		{
 			case CREATE_DATA_QUEUE:
 				{
-					Queue* queue = app->getDataQueue(job.args[0]);
+					Queue* queue = app->getQueue(job.args[0]);
 					if (queue)
 						scene->showQueue(queue, job.pos);
 					else
@@ -200,9 +174,9 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 				break;
 			case CREATE_KV_QUEUE:
 				break;
-			case DELETE_DATA_QUEUE:
+			case DELETE_QUEUE:
 				{
-					DataQueue* queue = app->getDataQueue(job.args[0], true);
+					Queue* queue = app->getQueue(job.args[0], true);
 					if (queue)
 						scene->removeQueue(queue);
 					else
@@ -212,7 +186,6 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 					}
 				}
 				break;
-			case DELETE_KV_QUEUE:
 			case LOAD_FILE:
 			case RUN_PROCESS:
 			default:

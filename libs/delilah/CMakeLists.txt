@@ -16,6 +16,7 @@ IF(QT4_FOUND)
 		gui/InfoBox.cpp
 		gui/CreateDataQueueDlg.cpp
 		gui/LoadExistingQueueDlg.cpp
+		Queue.cpp
 		Process.cpp
 		items/ObjectItem.cpp
 		items/QueueItem.cpp

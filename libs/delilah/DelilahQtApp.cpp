@@ -30,40 +30,31 @@ DelilahQtApp::DelilahQtApp(int &argc, char ** argv, ss::Delilah* _delilah)
 	connect(this, SIGNAL(lastWindowClosed()), this, SLOT(quitDelilah()));
 
 	// TODO: This should be called after connection is established
-	uploadData(true, true, true, true);
+	uploadData(true, true, true);
 }
 
 /*
  * Sends request to the network to get information about all objects (queues, operations, and data types)
  * available on the server.
  */
-void DelilahQtApp::uploadData(bool data_queue, bool kv_queue, bool operation, bool data_type, const QString &name)
+void DelilahQtApp::uploadData(bool queue, bool operation, bool data_type, const QString &name)
 {
 	// set status of the objects (currently only queues) that are going to be uploaded
 	// to SYNCHRONIZING.
 	if (name.isEmpty())
 	{
-		// set status of all items to SYNCHRONIZING
-		if (data_queue)
-			for(int i=0; i< data_queues.size(); i++)
-				data_queues.at(i)->setStatus(Queue::SYNCHRONIZING);
-		if (kv_queue)
-			for(int i=0; i< kv_queues.size(); i++)
-				kv_queues.at(i)->setStatus(Queue::SYNCHRONIZING);
+		// set status of all queues to SYNCHRONIZING
+		if (queue)
+			for(int i=0; i<queues.size(); i++)
+				queues.at(i)->setStatus(Queue::SYNCHRONIZING);
 	}
 	else
 	{
-		if (data_queue)
+		if (queue)
 		{
-			DataQueue *data_q = getDataQueue(name);
-			if (data_q)
-				data_q->setStatus(Queue::SYNCHRONIZING);
-		}
-		if (kv_queue)
-		{
-			KVQueue *kv_q = getKVQueue(name);
-			if (kv_q)
-				kv_q->setStatus(Queue::SYNCHRONIZING);
+			Queue *q = getQueue(name);
+			if (q)
+				q->setStatus(Queue::SYNCHRONIZING);
 		}
 	}
 
@@ -71,17 +62,15 @@ void DelilahQtApp::uploadData(bool data_queue, bool kv_queue, bool operation, bo
 	// Prepare packet to get information from network about requested type of objects
 	ss::Packet p;
 	ss::network::Help *help = p.message.mutable_help();
-	//help->set_data_queues(data_queue);
-	help->set_queues(kv_queue);
+	help->set_queues(queue);
 	help->set_datas(data_type);
 	help->set_operations(operation);
 	if ( !name.isEmpty() )
 		help->set_name(name.toStdString());
-	// TODO: add set name
 	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Help, &p);
 }
 
-int DelilahQtApp::sendCreateDataQueue(const QString &name)
+int DelilahQtApp::sendCreateQueue(const QString &name)
 {
 	std::string command = CREATE_DATA_QUEUE_COMMAND;
 	command.append((" " + name).toStdString());
@@ -95,7 +84,7 @@ int DelilahQtApp::sendCreateDataQueue(const QString &name)
 	return id;
 }
 
-int DelilahQtApp::sendCreateKVQueue(const QString &name, const QString &key_type, const QString &value_type)
+int DelilahQtApp::sendCreateQueue(const QString &name, const QString &key_type, const QString &value_type)
 {
 	// TODO:
 	++id;
@@ -103,23 +92,9 @@ int DelilahQtApp::sendCreateKVQueue(const QString &name, const QString &key_type
 	return id;
 }
 
-int DelilahQtApp::sendDeleteDataQueue(const QString &name)
+int DelilahQtApp::sendDeleteQueue(const QString &name)
 {
-	std::string command = REMOVE_DATA_QUEUE_COMMAND;
-	command.append((" " + name).toStdString());
-
-	ss::Packet p;
-	ss::network::Command *c = p.message.mutable_command();
-	c->set_command( command );
-	c->set_sender_id( ++id );
-	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Command, &p);
-
-	return id;
-}
-
-int DelilahQtApp::sendDeleteKVQueue(const QString &name)
-{
-	std::string command = REMOVE_KV_QUEUE_COMMAND;
+	std::string command = REMOVE_QUEUE_COMMAND;
 	command.append((" " + name).toStdString());
 
 	ss::Packet p;
@@ -152,10 +127,8 @@ int DelilahQtApp::receiveData(ss::Packet* packet)
 	if (command.name().empty())
 		synchronize_all = true;
 
-//	if (command.data_queues())
-//		synchronizeDataQueues(resp, synchronize_all);
 	if (command.queues())
-		synchronizeKVQueues(resp, synchronize_all);
+		synchronizeQueues(resp, synchronize_all);
 	if (command.operations())
 		synchronizeOperations(resp, synchronize_all);
 	if (command.datas())
@@ -186,11 +159,11 @@ int DelilahQtApp::receiveCommandResponse(ss::Packet* packet)
 			assert(args.size()>1);
 
 			// Create DataQueue with default values and add it to data_queues list
-			DataQueue* q = new DataQueue(args[1]);
-			data_queues.append(q);
+			Queue* q = new Queue(args[1], DATA_QUEUE);
+			queues.append(q);
 
 			// Update newly created DataQueue with real data got from SMAMSON platform
-			uploadData(true, false, false, false, args[1]);
+			uploadData(true, false, false, args[1]);
 		}
 
 		if (args[0]==CREATE_KV_QUEUE_COMMAND)
@@ -198,20 +171,16 @@ int DelilahQtApp::receiveCommandResponse(ss::Packet* packet)
 			// TODO:
 		}
 
-		if (args[0]==REMOVE_DATA_QUEUE_COMMAND)
+		if (args[0]==REMOVE_QUEUE_COMMAND)
 		{
 			assert(args.size()>1);
 
 			// Mark queue as deleted
-			DataQueue* q = getDataQueue(args[1]);
+			Queue* q = getQueue(args[1]);
 			if (q)
 				q->setStatus(Queue::DELETED);
 		}
 
-		if (args[0]==REMOVE_KV_QUEUE_COMMAND)
-		{
-			// TODO:
-		}
 	}
 
 	emit(gotCommandResponse(id, finished, error, message));
@@ -247,32 +216,39 @@ QString DelilahQtApp::validateNewQueueName(QString name)
 	return QString();
 }
 
-
-QList<Queue*> DelilahQtApp::getQueues()
+/*
+ * Return list of all queues available in the system.
+ * Argument 'deleted' indicates if returned list will contain queues
+ * currently available in the system or queues deleted from the system
+ * after the last startup of the application.
+ * Argument 'deleted' has deafult value set to false.
+ */
+QList<Queue*> DelilahQtApp::getQueues(bool deleted)
 {
-	QList<Queue*> list;
+	QList<Queue*> selected;
+	for(int i=0; i<queues.size(); i++)
+	{
+		Queue* queue = queues.at(i);
+		if ( (deleted && queue->getStatus()==Queue::DELETED) ||
+				!(deleted || queue->getStatus()==Queue::DELETED) )
+			selected.append(queue);
+	}
 
-	// TODO: clarify with Andreu
-//	for(int i=0; i<data_queues.size(); i++)
-//		list.append((Queue*)data_queues[i]);
-
-	for(int i=0; i<kv_queues.size(); i++)
-		list.append((Queue*)kv_queues[i]);
-
-	return list;
+	return selected;
 }
 
+
 /*
- * Search for data queue with a given name.
+ * Search for a queue with a given name.
  * Parameter 'deleted' indicates whether search will be done for existing
- * or deleted queues. By default 'deleted' is set to false, and search goes only
- * through existing queues.
+ * or deleted (during the time application was running) queues.
+ * By default 'deleted' is set to false, and search goes only through existing queues.
  */
-DataQueue* DelilahQtApp::getDataQueue(const QString &name, bool deleted)
+Queue* DelilahQtApp::getQueue(const QString &name, bool deleted)
 {
-	for(int i=0; i<data_queues.size(); i++)
+	for(int i=0; i<queues.size(); i++)
 	{
-		DataQueue* queue = data_queues.at(i);
+		Queue* queue = queues.at(i);
 		if (queue->getName().compare(name) == 0)
 		{
 			if ( (deleted && queue->getStatus()==Queue::DELETED) ||
@@ -284,28 +260,6 @@ DataQueue* DelilahQtApp::getDataQueue(const QString &name, bool deleted)
 	return 0;
 }
 
-/*
- * Search for data queue with a given name.
- * Parameter 'deleted' indicates whether search will be done for existing
- * or deleted queues. By default 'deleted' is set to false, and search goes only
- * through existing queues.
- */
-KVQueue* DelilahQtApp::getKVQueue(const QString &name, bool deleted)
-{
-	// TODO:
-	for(int i=0; i<kv_queues.size(); i++)
-	{
-		KVQueue* queue = kv_queues.at(i);
-		if (queue->getName().compare(name) == 0)
-		{
-			if ( (deleted && queue->getStatus()==Queue::DELETED) ||
-					!(deleted || queue->getStatus()==Queue::DELETED) )
-				return queue;
-		}
-	}
-
-	return 0;
-}
 
 /******************************************************************************
  *
@@ -314,57 +268,11 @@ KVQueue* DelilahQtApp::getKVQueue(const QString &name, bool deleted)
  *****************************************************************************/
 
 /*
- * Synchronizes data_queues list with the queues returned in HelpResponse.
- * If synchronize_all is true, all queues that were not updated (have status SYNCHRONIZING)
- * are marked as deleted.
- */
-void DelilahQtApp::synchronizeDataQueues(const ss::network::HelpResponse &resp, bool synchronize_all)
-{
-	/*
-	Andreu: Data queues are not processed separatelly anymore
-	for (int i=0 ; i<resp.data_queue_size(); i++)
-	{
-		// TODO: remove!!!!!!!!
-		std::cout << "number of data_queues: " << resp.data_queue_size() << std::endl;
-
-
-		ss::network::Queue q = resp.data_queue(i);
-		QString name = QString::fromStdString(q.name());
-
-		// find if queue with such name already exists. If not, create
-		// the new one and add it to the global list.
-		DataQueue *queue = getDataQueue(name);
-		if (queue==0)
-		{
-			queue = new DataQueue(name);
-			data_queues.append(queue);
-		}
-
-		// Upload queue's new values
-		queue->upload(&q);
-	}
-	 */
-
-	// If synchronization applies to the whole list, queues that where not uploaded
-	// have status set to DELETED
-	// We do not remove this queues from the list, in case they are currently used
-	// in some workspace.
-	if (synchronize_all)
-	{
-		for (int i=0; i<data_queues.size(); i++)
-		{
-			if ( data_queues.at(i)->getStatus() == Queue::SYNCHRONIZING )
-				data_queues.at(i)->setStatus(Queue::DELETED);
-		}
-	}
-}
-
-/*
  * Synchronizes key-value queues list with the queues returned in HelpResponse.
  * If synchronize_all is true, all queues that were not updated (have status SYNCHRONIZING)
  * are marked as deleted.
  */
-void DelilahQtApp::synchronizeKVQueues(const ss::network::HelpResponse &resp, bool synchronize_all)
+void DelilahQtApp::synchronizeQueues(const ss::network::HelpResponse &resp, bool synchronize_all)
 {
 	for (int i=0 ; i<resp.queue_size(); i++)
 	{
@@ -373,11 +281,11 @@ void DelilahQtApp::synchronizeKVQueues(const ss::network::HelpResponse &resp, bo
 
 		// find if queue with such name already exists. If not, create
 		// the new one and add it to the global list.
-		KVQueue *queue = getKVQueue(name);
+		Queue *queue = getQueue(name);
 		if (queue==0)
 		{
-			queue = new KVQueue(name);
-			kv_queues.append(queue);
+			queue = new Queue(name);
+			queues.append(queue);
 		}
 
 		// Upload queue's new values
@@ -390,10 +298,10 @@ void DelilahQtApp::synchronizeKVQueues(const ss::network::HelpResponse &resp, bo
 	// in some workspace.
 	if (synchronize_all)
 	{
-		for (int i=0; i<kv_queues.size(); i++)
+		for (int i=0; i<queues.size(); i++)
 		{
-			if ( kv_queues.at(i)->getStatus() == Queue::SYNCHRONIZING )
-				kv_queues.at(i)->setStatus(Queue::DELETED);
+			if ( queues.at(i)->getStatus() == Queue::SYNCHRONIZING )
+				queues.at(i)->setStatus(Queue::DELETED);
 		}
 	}
 }

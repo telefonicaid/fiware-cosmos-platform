@@ -85,7 +85,7 @@ void QueueItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	menu->addAction("Remove Queue (from workspace)", this, SLOT(removeQueueSelected()));
 	menu->addAction("Delete Queue", this, SLOT(deleteQueueSelected()));
 
-	if(queue->type()==DATA_QUEUE)
+	if(queue->getType()==DATA_QUEUE)
 		menu->addAction("Load Data", this, SLOT(loadDataSelected()));
 	menu->exec(event->screenPos());
 }

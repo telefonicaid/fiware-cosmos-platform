@@ -16,17 +16,21 @@
 #include "samson.pb.h"		//ss::network::Queue, ss::network::DataQueue
 #include "globals.h"
 
+
+#define DATA_QUEUE_KV_FORMAT		"txt"
+
 class Queue : public QObject
 {
 	Q_OBJECT
 
 public:
-	Queue()
-		: status(Queue::SYNCHRONIZING) {};
-	Queue(const QString &name)
-		: status(Queue::SYNCHRONIZING), name(name) {};
+//	Queue()
+//		: type(Queue::KV_QUEUE), status(Queue::SYNCHRONIZING) { };
+	Queue(const QString &_name, const QueueType _type=KV_QUEUE)
+		: status(Queue::SYNCHRONIZING), type(_type), name(_name) {};
 	~Queue() {};
 
+	QueueType getType() { return type; };
 	QString getName() const { return name; };
 	unsigned long getSize() const { return size; };
 
@@ -44,93 +48,22 @@ public:
 		}
 	};
 
-	/*
-	 * Abstract methods
-	 */
-	virtual QueueType type() = 0;
-	virtual int upload(ss::network::Queue* q) = 0;
-
+	virtual int upload(ss::network::Queue* q);
 
 signals:
 	void statusChanged();
 
 protected:
 	Status status;
+	QueueType type;
 	QString name;
 	unsigned long size;
-};
 
-
-/*
- * DataQueue class
- * Represents Data Queue in SMASON
- */
-class DataQueue : public Queue
-{
-public:
-	DataQueue(const QString &name)
-		: Queue(name) {};
-	~DataQueue() {};
-
-	virtual QueueType type() { return DATA_QUEUE; };
-
-	/*
-	 * Sets queue variables to the ones got from the SAMSON platform. At the end,
-	 * set status to READY.
-	 * Returns current status of the queue.
-	 */
-	int upload(ss::network::Queue* q)
-	{
-		size = q->info().size();
-
-		setStatus(DataQueue::READY);
-		return status;
-	}
-};
-
-
-/*
- * KVQueue class
- * Represents Key-Value Queue in SAMSON
- */
-class KVQueue : public DataQueue
-{
-public:
-	KVQueue(const QString &name)
-		: DataQueue(name) {};
-	KVQueue(const QString &name, const QString &_key, const QString &_value)
-		: DataQueue(name), key(_key), value(_value) {};
-	~KVQueue(){};
-
-	virtual QueueType type() { return KV_QUEUE; };
-
-//	QString getKey() const { return key; };
-//	void setKey(const QString &_key) { key = _key; };
-//	QString getValue() const { return value; };
-//	void setValue(const QString &_value) { value = _value; };
-//	unsigned long getKVNumber() { return kv_number; };
-//	void setKVNumber(unsigned long num) { kv_number = num; };
-
-	/*
-	 * Sets queue variables to the ones got from the SAMSON platform. At the end,
-	 * set status to READY.
-	 * Returns current status of the queue.
-	 */
-	int upload(ss::network::Queue* q)
-	{
-		size = q->info().size();
-		key = QString::fromStdString(q->format().keyformat());
-		value = QString::fromStdString(q->format().valueformat());
-		kv_number = q->info().kvs();
-
-		setStatus(Queue::READY);
-		return status;
-	}
-
-protected:
+	// Values used only for Key-Value Queue
 	QString key;
 	QString value;
 	unsigned long kv_number;
 };
+
 
 #endif /* QUEUE_H_ */

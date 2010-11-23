@@ -14,7 +14,6 @@
 
 #include "Queue.h"
 class MainWindow;
-class KVQueue;
 class Operation;
 class DataType;
 namespace ss {
@@ -22,7 +21,6 @@ namespace ss {
 	class Packet;
 	namespace network {
 		class Queue;
-		class DataQueue;
 		class HelpResponse;
 	}
 }
@@ -37,18 +35,16 @@ public:
 
 	QString validateNewQueueName(QString name);
 
-	QList<Queue*> getQueues();
-	DataQueue* getDataQueue(const QString &name, bool deleted=false);
-	KVQueue* getKVQueue(const QString &name, bool deleted=false);
+	QList<Queue*> getQueues(bool deleted=false);
+	Queue* getQueue(const QString &name, bool deleted=false);
 
 	/*
 	 * Methods sending requests to network
 	 */
-	void uploadData(bool data_queue=true, bool kv_queue=true, bool operation=true, bool data_type=true, const QString &name="");
-	int sendCreateDataQueue(const QString &name);
-	int sendCreateKVQueue(const QString &name, const QString &key_type, const QString &value_type);
-	int sendDeleteDataQueue(const QString &name);
-	int sendDeleteKVQueue(const QString &name);
+	void uploadData(bool queue=true, bool operation=true, bool data_type=true, const QString &name="");
+	int sendCreateQueue(const QString &name);
+	int sendCreateQueue(const QString &name, const QString &key_type, const QString &value_type);
+	int sendDeleteQueue(const QString &name);
 
 	/*
 	 * Methods receiving packets from network
@@ -64,8 +60,7 @@ protected:
 	/*
 	 * Methods synchronizing application's lists with information received from network.
 	 */
-	void synchronizeDataQueues(const ss::network::HelpResponse &resp, bool synchronize_all=true);
-	void synchronizeKVQueues(const ss::network::HelpResponse &resp, bool synchronize_all=true);
+	void synchronizeQueues(const ss::network::HelpResponse &resp, bool synchronize_all=true);
 	void synchronizeOperations(const ss::network::HelpResponse &resp, bool synchronize_all=true);
 	void synchronizeDataTypes(const ss::network::HelpResponse &resp, bool synchronize_all=true);
 
@@ -80,20 +75,19 @@ protected:
 	unsigned int id;						// Counter of requests sent to the network
 											// (initialized with value set to 0).
 
-	// Lists of (data) queues, operations and data types currently available in the system.
-	// They are automatically uploaded (TODO) on application startup.
-	// Currently, the operations and data types can not be dynamically changed. The SAMSON platform
+	// Lists of queues, operations and data types currently available in the system.
+	// They are automatically uploaded on application startup.
+	// The operations and data types can not be changed runtime. The SAMSON platform
 	// has to be restarted to upload new operations/data types, and so the DelilahQt application.
 	// Queues can be dynamically created by user.
 	// The problem of updating data_queues and kv_queues is not solved (TODO)!!!!!!!!!!!
 	// The best solution would be to get some signal from SAMSON platform when new queue is added
 	// and update the list. However this mechanism does not exist.
 	// Current solution:
-	// 1. When user creates/deletes a queue, the queue is also added/removed to/from the list (TODO).
+	// 1. When user creates/deletes a queue, the queue is also added/removed to/from the list.
 	// 2. Application contains button/menu where user can click to manually upload queues from
 	// the platform (TODO).
-	QList<DataQueue*> data_queues;
-	QList<KVQueue*> kv_queues;
+	QList<Queue*> queues;
 	QList<Operation*> operations;
 	QList<DataType*> data_types;
 };

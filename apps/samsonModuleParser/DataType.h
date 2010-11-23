@@ -13,45 +13,48 @@
 #include <string>
 #include <sstream>
 #include <assert.h>
+#include <vector>
+#include <iostream>
 
 using namespace std;
 
 namespace ss {
 
+	// Basic operations with "." separated names
+	std::vector<std::string> tockenizeWithDots( std::string myString );
+	std::string getModuleFromFullName( std::string fullName );
+	std::string getNameFromFullName( std::string fullName );
+	
 	class DataType
 	{
 	public:
 		
-		string name;
+		string fullType;
+		string module;
 		string type;
+		string name;
 		bool vector;
 		
-		DataType()
+		DataType( std::string _full_type , std::string _name , bool _vector  )
 		{
-		}
-		
-		bool isBasicTypeConstantLength( )
-		{
-			if( type == "uint64" || type == "uint32" || type == "uint8" 
-			||  type == "int32"  || type == "int8"   || type == "double" 
-			||  type == "float"  )    
-				return true;
-			else
-				return false;
+			vector = _vector;
+			fullType = _full_type;
+			module = getModuleFromFullName( _full_type );
+			type = getNameFromFullName( _full_type );
 			
+			name = _name;
 		}
 		
 		
-		bool isBasicType( )
+		/**
+		 Get the inlude file that is necessary to use this data type
+		 */
+		
+		std::string getInclude()
 		{
-			if(	type == "uint" 
-			   ||  type == "uint64" || type == "uint32" || type == "uint8" 
-			   ||  type == "int32" || type == "int8" || type == "double" 
-			   ||  type == "float" )    
-				return true;
-			else
-				return false;
-			
+			std::ostringstream output;
+			output << "<samson/modules/" << module << "/" << type << ".h>";
+			return output.str();
 		}
 		
 		
@@ -59,29 +62,17 @@ namespace ss {
 		 Function to give us the name of a particular class
 		 */
 		
-		static string classNameForType( string type )
+		string classNameForType(  )
 		{
 			ostringstream o;
 
-			size_t pos = type.find(".",0);
-			size_t last_pos = 0;
-			if( pos != std::string::npos )
-			{
-				ostringstream o;
-				o << "::ss::";
-				while (pos != std::string::npos)
-				{
-					o << type.substr(last_pos, pos-last_pos) << "::";
-					last_pos = pos+1;
-					pos = type.find(".",last_pos);
-				}
-				o << type.substr(last_pos, type.length()-last_pos );
-				return o.str();
-			}
-			else
-				return type;	// Inside this namespace
-				
+			std::vector<std::string> tockens = tockenizeWithDots( fullType );
+			o << "::ss::";
+			for (size_t i = 0 ; i <= tockens.size()-2 ; i++)
+				o << tockens[i] << "::";
+			o << tockens[tockens.size()-1];	// Last element
 			
+			return o.str();
 		}
 		
 		/* Function to show the declaration of the field */
@@ -93,10 +84,7 @@ namespace ss {
 			if( vector )
 			{	
 				// Basically a pointer to hold the elements
-				if( isBasicType() )    
-					o << pre_line << "ss_" << type << " *" << name << ";\n";
-				else
-					o << pre_line << classNameForType( type ) << " *" << name << ";\n";
+				o << pre_line << classNameForType(  ) << " *" << name << ";\n";
 				
 				o << pre_line << "int " << name << "_length;\n";			//Current lenght of the element
 				o << pre_line << "int " << name << "_max_length;\n";		//Max lengh of this vector
@@ -105,10 +93,7 @@ namespace ss {
 			}
 			
 			//Simple types;
-			if( isBasicType() )    
-				o << pre_line << "ss_" << type << " " << name << ";\n";
-			else
-				o << pre_line << classNameForType( type ) << " " << name << ";\n";
+			o << pre_line << classNameForType(  ) << " " << name << ";\n";
 			
 			return o.str();
 		}
@@ -123,29 +108,13 @@ namespace ss {
 			o << pre_line << "void " << name <<"SetLength(int _length){\n";
 			o << pre_line << "\tif( _length > " << name << "_max_length){ \n";
 			
-			if( isBasicType() )
 			{
-				o << pre_line << "\t\tss_" << type << " *_previous = " << name << ";\n";
+				o << pre_line << "\t\t" << classNameForType() << " *_previous = " << name << ";\n";
 				o << pre_line << "\t\tint previous_length = " << name << "_length;\n";
 				
 				o << pre_line << "\t\tif(" << name << "_max_length == 0) " << name << "_max_length = _length;\n";
 				o << pre_line << "\t\twhile(" << name << "_max_length < _length) "<< name << "_max_length *= 2;\n";
-				o << pre_line << "\t\t" << name << " = (ss_" << type << "*) malloc( sizeof(ss_" << type << ") * " << name << "_max_length );\n";
-				
-				o << pre_line << "\t\tif( _previous ){\n";
-				o << pre_line << "\t\t\tmemcpy("<<name<<", _previous, previous_length*sizeof(ss_"<<type<<"));\n";
-				o << pre_line << "\t\t\tfree( _previous );\n";
-				o << pre_line << "\t\t}\n";
-				
-			}
-			else
-			{
-				o << pre_line << "\t\t" << classNameForType(type) << " *_previous = " << name << ";\n";
-				o << pre_line << "\t\tint previous_length = " << name << "_length;\n";
-				
-				o << pre_line << "\t\tif(" << name << "_max_length == 0) " << name << "_max_length = _length;\n";
-				o << pre_line << "\t\twhile(" << name << "_max_length < _length) "<< name << "_max_length *= 2;\n";
-				o << pre_line << "\t\t" << name << " = new " << classNameForType( type ) << "[" << name << "_max_length ];\n";
+				o << pre_line << "\t\t" << name << " = new " << classNameForType(  ) << "[" << name << "_max_length ];\n";
 				
 				
 				o << pre_line << "\t\tif( _previous ){\n";
@@ -174,17 +143,11 @@ namespace ss {
 			assert(vector);
 			ostringstream o;
 			
-			if( isBasicType() )
-				o << pre_line << "void " << name <<"Add(ss_" << type << " _value){\n";
-			else
-				o << pre_line <<  classNameForType(type) << "* " << name <<"Add(){\n";
+			o << pre_line <<  classNameForType() << "* " << name <<"Add(){\n";
 			
 			o << pre_line << "\t" << name << "SetLength( " << name << "_length + 1 );\n";
 			
-			if( isBasicType() )
-				o << pre_line << "\t" << name << "["<<name<<"_length-1] = _value;\n";
-			else
-				o << pre_line << "\t" << "return &" << name << "["<<name << "_length-1];\n";
+			o << pre_line << "\t" << "return &" << name << "["<<name << "_length-1];\n";
 			
 			o << pre_line << "}\n\n";
 			
@@ -219,17 +182,9 @@ namespace ss {
 			//Only requited in vectors
 			if( vector )
 			{	
-				if( isBasicType() )
-				{
-					o << pre_line << "if( " << name << " )\n";
-					o << pre_line << "\tfree( " << name << " );\n";
-				}
-				else
-				{
-					//The same with a vector of classes
-					o << pre_line << "if( " << name << " )\n";
-					o << pre_line << "\tdelete[] " << name << " ;\n";
-				}
+				//The same with a vector of classes
+				o << pre_line << "if( " << name << " )\n";
+				o << pre_line << "\tdelete[] " << name << " ;\n";
 			}
 			
 			return o.str();
@@ -238,21 +193,7 @@ namespace ss {
 		string getParseCommandIndividual( string _name )
 		{
 			ostringstream o;
-			
-			if( isBasicType() )    
-			{
-				//Special case
-				if( type == "uint" )
-				{
-					o << "offset += ss::staticVarIntParse( data+offset , &"<<_name<<");";
-					return o.str();
-				}
-				
-				o << _name << "=  *( (ss_"<< type <<"*) (data+offset) ); offset +=  sizeof(ss_" << type <<");";
-			}
-			else
-				o << "offset += " << _name << ".parse(data+offset);";
-			
+			o << "offset += " << _name << ".parse(data+offset);";
 			return o.str();	
 		}
 		
@@ -288,21 +229,7 @@ namespace ss {
 		string getSerializationCommandIndividual( string _name)
 		{
 			ostringstream o;
-			
-			if( isBasicType() )    
-			{
-				if( type == "uint" )
-				{
-					o << "offset += ss::staticVarIntSerialize( data+offset , "<<_name<<");";
-					return o.str();
-				}
-				
-				o << "*( (ss_"<< type <<"*) (data+offset) )=" << _name << "; offset +=  sizeof(ss_" << type <<");";
-			}
-			else
-				o << "offset += " << _name << ".serialize(data+offset);";
-			
-			
+			o << "offset += " << _name << ".serialize(data+offset);";
 			return o.str();
 		}
 		
@@ -330,22 +257,7 @@ namespace ss {
 		string getSizeCommandIndividual( string _name)
 		{
 			ostringstream o;
-			
-			//Simple types;
-			if( isBasicType() )    
-			{
-				//Special case
-				if( type == "uint" )
-				{
-					o << "offset += ss::staticVarIntParse( data+offset , &"<<_name<<");";
-					return o.str();
-				}
-				
-				o << "offset += sizeof(ss_" << type <<");";
-			}
-			else
-				o << "offset += " << classNameForType(type) << "::size(data+offset);";
-			
+			o << "offset += " << classNameForType() << "::size(data+offset);";
 			return o.str();
 		}
 		
@@ -360,27 +272,10 @@ namespace ss {
 				o << pre_line << "\tsize_t _length;\n";
 				o << pre_line << "\toffset += ss::staticVarIntParse( data+offset , &_length );\n";
 				
-				if( isBasicType() )
-				{
-					if( isBasicTypeConstantLength() )
-					{
-						o << pre_line << "\toffset += _length*sizeof(ss_"<<type<<");\n";
-					}
-					else
-					{
-						o << pre_line << "\tss_" << type << " _tmp;\n";
-						o << pre_line << "\tfor (int i = 0 ; i < (int)_length ; i++){\n";
-						o << pre_line << "\t\t" << getSizeCommandIndividual( "_tmp" ) << "\n";
-						o << pre_line << "\t}\n";
-					}
-				}
-				else
-				{
-					o << pre_line << "\t" << classNameForType(type) << " _tmp;\n";
-					o << pre_line << "\tfor (int i = 0 ; i < (int)_length ; i++){\n";
-					o << pre_line << "\t\t" << getSizeCommandIndividual( "_tmp" ) << "\n";
-					o << pre_line << "\t}\n";
-				}
+				o << pre_line << "\t" << classNameForType() << " _tmp;\n";
+				o << pre_line << "\tfor (int i = 0 ; i < (int)_length ; i++){\n";
+				o << pre_line << "\t\t" << getSizeCommandIndividual( "_tmp" ) << "\n";
+				o << pre_line << "\t}\n";
 				
 				o << pre_line << "}\n";
 				
@@ -399,32 +294,7 @@ namespace ss {
 		string getPartitionCommandIndividual(string _name)
 		{
 			ostringstream o;
-			
-			if( !isBasicType() )
-			{
-				o << "return " << _name <<".hash(max_num_partitions);";
-				return o.str();
-			}
-			
-			
-			if(	type == "uint64" || type == "uint32" || type == "uint8" || type =="uint"  )
-			{
-				o << "return " <<_name<<"%max_num_partitions;";
-				return o.str();
-			}
-			
-			if(	 type == "int32" || type == "int8" )
-			{
-				o << "return " << _name << "<0? (-" << _name << ")%max_num_partitions : "<<_name<<"%max_num_partitions;";
-				return o.str();
-			}
-			
-			if( type == "double" || type == "float" )    
-			{
-				o << "return abs( (int) ("<<_name<<"*100))%max_num_partitions;";
-				return o.str();
-			}
-			
+			o << "return " << _name <<".hash(max_num_partitions);";
 			return o.str();
 		}
 		
@@ -459,34 +329,8 @@ namespace ss {
 			
 			//Simple types;
 			o << pre_line << "{ // comparing " << _name << "\n";
-			if( isBasicType() )    
-			{
-				
-				if( type == "uint")
-				{
-					//Spetial case
-					o << pre_line << "\tss_uint _value1;\n";
-					o << pre_line << "\tss_uint _value2;\n";
-					o << pre_line << "\t*offset1 += ss::staticVarIntParse(data1 + (*offset1), &_value1);\n";
-					o << pre_line << "\t*offset2 += ss::staticVarIntParse(data2 + (*offset2), &_value2);\n";
-					o << pre_line << "\tif( _value1 < _value2 ) return -1;\n";
-					o << pre_line << "\tif( _value1 > _value2 ) return  1;\n";
-					
-				}
-				else
-				{
-					o << pre_line << "\tif  ( *((ss_"<< type <<"*)(data1 + (*offset1))) < *((ss_"<< type <<"*)(data2 + (*offset2))) ) return -1;\n";
-					o << pre_line << "\tif  ( *((ss_"<< type <<"*)(data1 + (*offset1))) > *((ss_"<< type <<"*)(data2 + (*offset2))) ) return 1;\n";
-					o << pre_line << "\t*offset1 +=sizeof(ss_" << type <<");\n";
-					o << pre_line << "\t*offset2 +=sizeof(ss_" << type <<");\n";
-				}
-				
-			}
-			else
-			{
-				o << pre_line << "\tint tmp = "<<classNameForType(type)<<"::compare(data1,data2,offset1 , offset2);\n";
-				o << pre_line << "\tif( tmp != 0) return tmp;\n";
-			}
+			o << pre_line << "\tint tmp = "<<classNameForType()<<"::compare(data1,data2,offset1 , offset2);\n";
+			o << pre_line << "\tif( tmp != 0) return tmp;\n";
 			o << pre_line << "}\n";	
 			
 			return o.str();
@@ -525,17 +369,7 @@ namespace ss {
 		string getToStringCommandIndividual(string _name)
 		{
 			ostringstream o;
-			
-			if( isBasicType() )    
-			{
-				if (( type == "uint8") ||( type == "int8")) 	//Spcieal case
-					o << "o << (int)" << _name << ";\n";
-				else
-					o << "o << " << _name << ";\n";
-			}
-			else
-				o << "o << " << _name << ".str();\n";
-			
+			o << "o << " << _name << ".str();\n";
 			return o.str();
 		}
 		
@@ -568,12 +402,7 @@ namespace ss {
 		string getCopyFromCommandIndividual(string _name)
 		{
 			ostringstream o;
-			
-			if( isBasicType() )    
-				o <<  _name << "=other->" << _name << ";\n";
-			else
-				o << _name << ".copyFrom(&other->"<<_name<<");\n";
-			
+			o << _name << ".copyFrom(&other->"<<_name<<");\n";
 			return o.str();
 		}
 		

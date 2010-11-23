@@ -16,6 +16,8 @@
 
 namespace ss {
 
+	
+	
 	bool DataContainer::parse( AUTockenizer *module_creator ,  int begin , int end )
 	{
 
@@ -26,44 +28,41 @@ namespace ss {
 			assert( !module_creator->isSpecial( pos ) );
 			std::string mainCommand = module_creator->itemAtPos( pos++ );
 		
-			if( mainCommand == "file" )
-				file = module_creator->getLiteral(&pos);
-			else if( mainCommand == "vector" )
+			if( mainCommand == "vector" )
 			{
 				//Vector fiels
 				
-				DataType data_type;
-				data_type.vector = true;
 				
 				assert( !module_creator->isSpecial( pos ) );
-				data_type.type = module_creator->itemAtPos( pos++ );
+				std::string _full_type = module_creator->itemAtPos( pos++ );
 				
 				assert( !module_creator->isSpecial( pos ) );
-				data_type.name = module_creator->itemAtPos( pos++ );
+				std::string _name = module_creator->itemAtPos( pos++ );
 				
 				assert( module_creator->isSemiColom( pos ) );
 				pos++;
 				
+				
+				DataType data_type( _full_type , _name , true);
 				addItem( data_type );
 				
 			}
 			else
 			{
 				//Normal fiels
-				DataType data_type;
-				data_type.vector = false;
-				data_type.type = mainCommand;
+				std::string  _full_type = mainCommand;
 
 				assert( !module_creator->isSpecial( pos ) );
-				data_type.name = module_creator->itemAtPos( pos++ );
+				std::string _name = module_creator->itemAtPos( pos++ );
 
 				if( !module_creator->isSemiColom( pos ) )
 				{
-					fprintf(stderr, "Error parsing document at Data %s (%s %s) \n", name.c_str() ,  data_type.type.c_str() , data_type.name.c_str());
+					fprintf(stderr, "Error parsing document at Data %s (%s %s) \n", name.c_str() ,  _full_type.c_str() , _name.c_str());
 					exit(0);
 				}
 				pos++;
 				
+				DataType data_type( _full_type , _name , false);
 				addItem( data_type );
 				
 			}

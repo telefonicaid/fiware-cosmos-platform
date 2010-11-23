@@ -33,7 +33,7 @@ namespace ss
 	public:
 		
 		std::string title;
-		std::string nickname;
+		std::string name;
 		std::string author;
 		std::string version;
 		
@@ -42,10 +42,10 @@ namespace ss
 		
 		std::map<std::string,std::string> sets;
 		
-		ModuleContainer( std::string _nickName )
+		ModuleContainer( std::string _name )
 		{
 			// Nick name could be sna or sna.cdrs or sna.cdrs.spain.... reverse domain
-			nickname = _nickName;
+			name = _name;
 		}
 		
 #pragma mark DEFINE NAME
@@ -55,7 +55,7 @@ namespace ss
 			std::ostringstream o;
 			o << "_H_SS_";
 			
-			std::vector<std::string> tockens = tockenizeWithDots( nickname.c_str() );	
+			std::vector<std::string> tockens = tockenizeWithDots( name.c_str() );	
 			for (size_t i = 0 ; i < tockens.size() ; i++)
 				o << tockens[i] << "_";
 			
@@ -79,7 +79,7 @@ namespace ss
 			std::ostringstream o;
 			o << "ss::";
 			
-			std::vector<std::string> tockens = tockenizeWithDots( nickname.c_str() );	
+			std::vector<std::string> tockens = tockenizeWithDots( name.c_str() );	
 			for (size_t i = 0 ; i < tockens.size() ; i++)
 				o << tockens[i] << "::";
 			
@@ -103,24 +103,6 @@ namespace ss
 				p = strtok(NULL, " ");
 			}			
 			return tockens;
-		}
-		
-		std::string getBeginNameSpace()
-		{
-			std::vector<std::string> tockens = tockenizeWithDots( nickname.c_str() );	
-			std::ostringstream o;
-			for (size_t i = 0 ; i < tockens.size() ; i++)
-				o << "namespace " << tockens[i] << "{\n";
-			return o.str();
-		}
-		
-		std::string getEndNameSpace()
-		{
-			std::vector<std::string> tockens = tockenizeWithDots( nickname.c_str() );	
-			std::ostringstream o;
-			for (size_t i = 0 ; i < tockens.size() ; i++)
-				o << "}\n";
-			return o.str();
 		}
 		
 		void parse( AUTockenizer *module_creator ,int begin ,int end );

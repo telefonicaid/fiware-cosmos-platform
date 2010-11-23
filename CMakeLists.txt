@@ -59,8 +59,6 @@ if (error EQUAL 0)
   MESSAGE("cmake: OK")
   ADD_SUBDIRECTORY(libs)
   ADD_SUBDIRECTORY(apps)
-  ADD_SUBDIRECTORY(modules)
-
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)

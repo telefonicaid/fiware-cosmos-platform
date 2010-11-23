@@ -53,7 +53,7 @@ namespace ss {
 			if( !controller->modulesManager.checkData( valueFormat ) )
 			{
 				std::ostringstream output;
-				output << "Unsupported data format " + keyFormat + "\n";
+				output << "Unsupported data format " + valueFormat + "\n";
 				response.output = output.str();
 				response.error = true;
 				return response;

@@ -55,3 +55,7 @@ qt:
 
 clean_qt:
 	make -C build/apps/delilahQt clean
+
+
+m:
+	mkdir modulesBuild;cd modulesBuild;cmake ../modules;make;cd ..

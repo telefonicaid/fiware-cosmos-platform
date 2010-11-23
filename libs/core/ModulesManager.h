@@ -7,19 +7,19 @@
 #include "samson.pb.h"			// ss::network::...
 #include "samson/KVFormat.h"	// ss::KVFormat
 #include "KVInfo.h"				// ss::KVInfo
+#include "samson/Module.h"		// ss::Module
 
 namespace ss {
 
-	class Module;
 	class Data;
 	class DataInstance;
 	class Operation;
 	
-	class ModulesManager
+	class ModulesManager : public Module
 	{
 		
-		au::Lock lock;							//!< General lock for modules access
-		std::map<std::string, Module*> modules;	//!< Modules managed by the platform
+		au::Lock lock;								//!< General lock for modules access
+		std::map<std::string, Module*> modules;		//!< Modules managed by the platform
 		
 	public:
 
@@ -34,20 +34,13 @@ namespace ss {
 		
 		Module *_getModule( std::string name );
 		std::string getObjectName( std::string name );
-		
-		
+				
 		void addModules();
 		
 	public:
 		
 		void reloadModules();
 		
-		Data *getData( std::string name );
-		bool checkData( std::string name );
-		
-		DataInstance *newDataInstance( std::string name );
-		Operation *getOperation( std::string name);
-
 		Module *getModule( std::string name );
 		
 		std::string showModules();

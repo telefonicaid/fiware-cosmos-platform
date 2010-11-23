@@ -28,11 +28,10 @@ int main( int args , const char *argv[])
 
 	fprintf(stderr,"SAMSON Module tool  (v %s)\n", SAMSON_MODULE_PARSER_VERSION);
 	fprintf(stderr, "========================================================\n");
-		
+
 	//Help parameter in the comman line
 	au::CommandLine cmdLine;
 	cmdLine.set_flag_boolean("help");		// Get this help
-	cmdLine.set_flag_string("output", "no_output");
 	cmdLine.parse(args , argv);
 	
 	if ( cmdLine.get_flag_bool("help") )
@@ -47,19 +46,17 @@ int main( int args , const char *argv[])
 	
 	if( cmdLine.get_num_arguments() < 2 )
 	{
-		fprintf(stderr, "Usage: %s module_file -output fileName .\n" , argv[0]);
+		fprintf(stderr, "Usage: %s module_file \n" , argv[0]);
 		fprintf(stderr, "Type -help for more help\n\n");
 		exit(0);
 	}
 	
 	std::string moduleFileName = cmdLine.get_argument(1);
-	std::string outputFileName = cmdLine.get_flag_string( "output" );
-	if( outputFileName == "no_output" )
-		outputFileName = moduleFileName;
-	
-	ss::DataCreator module_creator( moduleFileName , outputFileName );		// A data creator object to generate the code
+
+	 
+	ss::DataCreator module_creator( moduleFileName  );		// A data creator object to generate the code
 	module_creator.print();
-		
+	
 	return 0;
 }
 

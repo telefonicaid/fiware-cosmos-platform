@@ -25,6 +25,11 @@ namespace ss
 		friend class ModulesManager;
 			
 		void *hndl;	// Pointer for the dlOpen
+
+		Module()
+		{
+			hndl    = NULL;
+		}
 		
 		Module(std::string _name, std::string _version, std::string _author)
 		{
@@ -67,15 +72,6 @@ namespace ss
 				return i->second;
 		}		
 		
-		DataInstance * newDataInstance( std::string name )
-		{
-			Data *data = getData( name );
-			if( data )
-				return data->getInstance();
-			else
-				return NULL;
-		}
-		
 		bool checkData( std::string name )
 		{
 			if( name == "txt" )
@@ -104,6 +100,14 @@ namespace ss
 			datas.insert( std::pair<std::string , Data*> ( data->getName() , data ) );
 		}
 
+		void copyFrom( Module *m)
+		{
+			datas.insert( m->datas.begin() ,  m->datas.end() );
+			operations.insert( m->operations.begin() , m->operations.end());
+			
+		}
+		
+		
 	};
 }
 

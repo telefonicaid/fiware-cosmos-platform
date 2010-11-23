@@ -28,11 +28,7 @@ ADD_LIBRARY(samsonModuleStatic STATIC ${SOURCES} ${HEADERS} )
 #ADD_LIBRARY(samsonModuleShared SHARED ${SOURCES} ${HEADERS} )
 
 TARGET_LINK_LIBRARIES( samsonModuleStatic protobuf )
-#TARGET_LINK_LIBRARIES( samsonModuleShared protobuf )
 
-SET_TARGET_PROPERTIES(samsonModuleStatic PROPERTIES OUTPUT_NAME samsonModule)
-#SET_TARGET_PROPERTIES(samsonModuleShared PROPERTIES OUTPUT_NAME samsonModule)
-
-
+SET_TARGET_PROPERTIES( samsonModuleStatic PROPERTIES OUTPUT_NAME samsonModule)
 
 INSTALL(FILES ${HEADERS} DESTINATION include/samson)

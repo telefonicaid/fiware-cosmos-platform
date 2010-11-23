@@ -49,34 +49,12 @@ namespace ss
 	
 	void ModulesManager::addModules()
 	{
-		// Create the system container
-		Module *tmp = new Module("system","","");
-		
-		tmp->add( new Data("UInt"  ,getDataIntace<ss::system::UInt> , ss::system::UInt::compare  ,ss::system::UInt::size  ));
-
-		tmp->add( new Data("Int32" ,getDataIntace<ss::system::Int32>	, ss::system::Int32::compare	,ss::system::Int32::size ));
-		tmp->add( new Data("Int16" ,getDataIntace<ss::system::Int16>	, ss::system::Int16::compare	,ss::system::Int16::size ));
-		tmp->add( new Data("Int8"  ,getDataIntace<ss::system::Int8>		, ss::system::Int8::compare		,ss::system::Int8::size ));
-
-		tmp->add( new Data("UInt64"  ,getDataIntace<ss::system::UInt64>	, ss::system::UInt64::compare	,ss::system::UInt64::size ));
-		tmp->add( new Data("UInt32"  ,getDataIntace<ss::system::UInt32>	, ss::system::UInt32::compare	,ss::system::UInt32::size ));
-		tmp->add( new Data("UInt16"  ,getDataIntace<ss::system::UInt16>	, ss::system::UInt16::compare	,ss::system::UInt16::size ));
-		tmp->add( new Data("UInt8"   ,getDataIntace<ss::system::UInt8>	, ss::system::UInt8::compare	,ss::system::UInt8::size ));
-
-		tmp->add( new Data("Double"  ,getDataIntace<ss::system::Double>	, ss::system::Double::compare	,ss::system::Double::size ));
-		tmp->add( new Data("Float"   ,getDataIntace<ss::system::Float>	, ss::system::Float::compare	,ss::system::Float::size ));
-
-		tmp->add( new Data("String"  ,getDataIntace<ss::system::String>	, ss::system::String::compare	,ss::system::String::size ));
-		tmp->add( new Data("Void"   ,getDataIntace<ss::system::Void>	, ss::system::Void::compare	,ss::system::Void::size ));
-		
-		addModule( tmp );
-		
 		// Load modules from "~/.samson/modules" && "/etc/samson/modules"
 		std::string modules_dir = SAMSON_MODULES_DIRECTORY;
 		addModulesFromDirectory( modules_dir );
 		//addModulesFromDirectory( "/etc/samson/modules" );
+		 
 	}
-
 
 	void ModulesManager::addModulesFromDirectory( std::string dir_name )
 	{	
@@ -179,7 +157,9 @@ namespace ss
 
 	void ModulesManager::addModule(  Module *container )
 	{
+		// Copy all the opertion to this top-level module
 		modules.insert( std::pair<std::string , Module*>( container->name , container) );
+		copyFrom( container	);
 	}
 
 	
@@ -189,7 +169,6 @@ namespace ss
 		lock.lock();
 		Module * module = _getModule( name ) ;
 		lock.unlock();
-		
 		
 		return module;
 	}
@@ -223,72 +202,6 @@ namespace ss
 		
 		return tmp;
 		
-	}
-
-	bool ModulesManager::checkData( std::string name)
-	{
-		bool ans;
-		
-		lock.lock();
-		
-		Module * module = _getModule( name );
-		
-		if( module )
-			ans = module->checkData( getObjectName( name ) );
-		else
-			ans = false;
-		
-		lock.unlock();
-		
-		return ans;
-	}
-	
-	
-	Data *ModulesManager::getData( std::string name )
-	{
-		Data *data;
-		
-		lock.lock();
-		
-		Module * module = _getModule( name );
-		
-		if( module )
-		   data = module->getData( getObjectName( name ) );
-		else
-			data = NULL;
-		
-		lock.unlock();
-		
-		return data;
-	}
-	
-	DataInstance *ModulesManager::newDataInstance( std::string name )
-	{
-		DataInstance* tmp = NULL;
-
-		lock.lock();
-
-		Module* module = _getModule( name );
-		
-		if ( module ) 
-			tmp = module->newDataInstance( getObjectName( name ) );
-		
-		lock.unlock();
-		
-		return tmp;
-	}
-	
-	Operation *ModulesManager::getOperation( std::string name)
-	{
-		lock.lock();
-		Operation *tmp = NULL;
-		
-		Module * module = _getModule( name );
-		if( module ) 
-			tmp = module->getOperation( getObjectName( name ) );
-		lock.unlock();
-		
-		return tmp;
 	}
 	
 	
@@ -461,22 +374,16 @@ namespace ss
 	{
 		lock.lock();
 		
-		for( std::map<std::string, Module*>::iterator i = modules.begin() ; i != modules.end() ; i++)
 		{
-			Module *module = i->second;
-			for (std::map<std::string , Operation*>::iterator j = module->operations.begin() ; j != module->operations.end() ; j++ )
+			for (std::map<std::string , Operation*>::iterator j = operations.begin() ; j != operations.end() ; j++ )
 			{
 				Operation * op = j->second;
-				
-				
-				// Fill the information of this operation
-				std::string fullName =  module->name + "." + op->getName() ;
 
-				if( !help.has_name() || fullName == help.name() )
+				if( !help.has_name() || j->first == help.name() )
 				{
 				
 					network::Operation *o = response->add_operation();
-					o->set_name( fullName );
+					o->set_name( j->first );
 					o->set_help( op->help() );
 					
 					// Format
@@ -500,18 +407,15 @@ namespace ss
 	{
 		lock.lock();
 		
-		for( std::map<std::string, Module*>::iterator i = modules.begin() ; i != modules.end() ; i++)
 		{
-			Module *module = i->second;
-			for (std::map<std::string , Data*>::iterator j = module->datas.begin() ; j != module->datas.end() ; j++ )
+			for (std::map<std::string , Data*>::iterator j = datas.begin() ; j != datas.end() ; j++ )
 			{
 				
-				if( !help.has_name() || i->first == help.name() )
+				if( !help.has_name() || j->first == help.name() )
 				{
 					Data * data = j->second;
 					network::Data *d = response->add_data();
-					std::string fullName =  module->name + "." + data->getName() ;
-					d->set_name( fullName );
+					d->set_name( j->first );
 					d->set_help( data->help() );
 				}
 				

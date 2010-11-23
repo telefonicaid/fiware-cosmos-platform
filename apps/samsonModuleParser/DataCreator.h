@@ -29,10 +29,13 @@ namespace ss {
 	{
 	 public:
 
+		// Directory of the moduleFile to create the rest of elements
+		std::string directory;	
+		
 		// Name of the module
 		std::string moduleFileName;
 
-		// Output of the module
+		// Name of the output (.h / .cpp)
 		std::string outputFileName;
 		
 		// Read the content of the file into a string
@@ -49,7 +52,7 @@ namespace ss {
 		 Constructor: name of the file to parse
 		 */
 		
-		DataCreator( std::string moduleFileName , std::string outputFileName );
+		DataCreator( std::string moduleFileName );
 		
 		/**
 		 Read the content of the file into a string
@@ -69,6 +72,11 @@ namespace ss {
 		 */
 	  
 		void print();
+		
+		// Print the header file
+		void printMainHeaderFile();
+		void printMainFile();
+		
 	};
 }
 

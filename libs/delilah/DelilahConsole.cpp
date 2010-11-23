@@ -46,13 +46,14 @@ namespace ss
 		if( mainCommand == "status" )
 		{
 			// Sent a status request to all the elements
-			Packet p;
-			p.message.mutable_status_request()->set_command( command );
+			Packet* p = new Packet();
+
+			p->message.mutable_status_request()->set_command( command );
 			
-			dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::StatusRequest, &p);
+			dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::StatusRequest, p);
 
 			for (int i = 0 ; i < dalilah->network->getNumWorkers() ; i++)
-				dalilah->network->send(dalilah, dalilah->network->workerGetIdentifier(i), Message::StatusRequest, &p);
+				dalilah->network->send(dalilah, dalilah->network->workerGetIdentifier(i), Message::StatusRequest, p);
 
 			writeWarningOnConsole("Status messages sent to all elements\n");
 			
@@ -63,8 +64,8 @@ namespace ss
 		{
 			
 			// Ask for all help
-			Packet p;
-			network::Help *help = p.message.mutable_help();
+			Packet*         p    = new Packet();
+			network::Help*  help = p->message.mutable_help();
 
 			if( commandLine.get_flag_string("name") != "no_name")
 				help->set_name( commandLine.get_flag_string("name") );
@@ -77,8 +78,8 @@ namespace ss
 				help->set_operations(true);
 				
 				
-				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
-				return;	
+				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, p);
+				return;
 			}
 			
 			std::string secondCommand = commandLine.get_argument(1);
@@ -89,7 +90,7 @@ namespace ss
 				help->set_queues(true);
 				help->set_datas(false);
 				help->set_operations(false);
-				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
+				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, p);
 				return;
 			}
 			else if( secondCommand == "datas" )
@@ -98,7 +99,9 @@ namespace ss
 				help->set_queues(false);
 				help->set_datas(true);
 				help->set_operations(false);
-				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
+
+				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, p);
+
 				return;
 			}
 			else if( secondCommand == "operations" )
@@ -107,7 +110,9 @@ namespace ss
 				help->set_queues(false);
 				help->set_datas(false);
 				help->set_operations(true);
-				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
+
+				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, p);
+
 				return;
 			}
 			
@@ -143,11 +148,12 @@ namespace ss
 		}
 		
 		// Normal command send to the controller
-		Packet p;
-		network::Command *c = p.message.mutable_command();
+		Packet*           p = new Packet();
+		network::Command* c = p->message.mutable_command();
+
 		c->set_command( command );
 		c->set_sender_id( id++ );
-		dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Command, &p);
+		dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Command, p);
 
 		
 		std::ostringstream o;

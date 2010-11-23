@@ -391,7 +391,7 @@ static void* senderThread(void* vP)
 				   ep->senderReadFd,
 				   ep->wFd,
 				   job.packetP));
-		LM_T(LMT_FORWARD, ("google protocol 'message': %p", &job.packetP->message));
+		LM_T(LMT_FORWARD, ("google protocol 'message': %p (packet at %p)", &job.packetP->message, job.packetP));
 		LM_T(LMT_FORWARD, ("google protocol buffer data len: %d", job.packetP->message.ByteSize()));
 
 		s = iomMsgSend(ep->wFd, ep->name.c_str(), job.me->name.c_str(), job.msgCode, job.msgType, job.dataP, job.dataLen, job.packetP);
@@ -529,8 +529,8 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 		job.dataLen = 0;
 		job.packetP = packetP;
 
-		LM_T(LMT_FORWARD, ("Sending '%s' job to '%s' sender (real destiny fd: %d) with %d packet size - the job is tunneled over fd %d",
-				   messageCode(job.msgCode), ep->name.c_str(), ep->wFd, job.packetP->message.ByteSize(), ep->senderWriteFd));
+		LM_T(LMT_FORWARD, ("Sending '%s' job to '%s' sender (real destiny fd: %d) with %d packet size - the job is tunneled over fd %d (packet pointer: %p)",
+						   messageCode(job.msgCode), ep->name.c_str(), ep->wFd, job.packetP->message.ByteSize(), ep->senderWriteFd, job.packetP));
 		
 		nb = write(ep->senderWriteFd, &job, sizeof(job));
 		if (nb != (sizeof(job)))
@@ -617,7 +617,7 @@ Endpoint* Network::endpointAdd
 		endpoint[2]->ip    = std::string(ip);
 		endpoint[2]->alias = (alias != NULL)? alias : "NO ALIAS" ;
 
-#if 0
+#if 1
 		if (me->type == Endpoint::Delilah)
 		{
 			endpoint[2]->useSenderThread = true;
@@ -722,7 +722,7 @@ Endpoint* Network::endpointAdd
 				return NULL;
 			}
 
-#if 0
+#if 1
 			if (me->type == Endpoint::Delilah)
 			{
 				endpoint[ix]->useSenderThread = true;
@@ -986,7 +986,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 			while (controller->rFd == -1)
 			{
 				controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
-				sleep(1); // sleep one second before reintenting connection to coltroller
+				sleep(1); // sleep one second before reintenting connection to controller
 			}
 
 			controller->state = ss::Endpoint::Connected;
@@ -1228,6 +1228,11 @@ void Network::msgTreat(void* vP)
 			{
 				Endpoint* epP;
 
+				if (me->type == Endpoint::Delilah)
+				{
+					LM_M(("Worker %d in state %d", ix, workerV[ix].state));
+				}
+
 				if (endpoint[3 + ix] == NULL)
 				{
 					endpoint[3 + ix] = new Endpoint(Endpoint::Worker, workerV[ix].name, workerV[ix].ip, workerV[ix].port, -1, -1);
@@ -1244,7 +1249,7 @@ void Network::msgTreat(void* vP)
 					continue;
 				}
 
-				if (epP->rFd == -1)
+				if ((epP->rFd == -1) && (epP->port != 0))
 				{
 					int workerFd;
 
@@ -1253,6 +1258,11 @@ void Network::msgTreat(void* vP)
 
 					if ((workerFd = iomConnect(epP->ip.c_str(), epP->port)) == -1)
 					{
+						if (me->type == Endpoint::Delilah)
+						{
+							LM_X(1, ("Unable to connect to worker %d (%s) - delilah must connect to all workers", ix, workerV[ix].name));
+						}
+
 						LM_T(LMT_WORKERS, ("worker %d: %s (host %s, port %d) not there - no problem, he'll connect to me",
 									   ix, epP->name.c_str(), epP->ip.c_str(), epP->port));
 					}
@@ -1269,6 +1279,10 @@ void Network::msgTreat(void* vP)
 						else
 							LM_X(1, ("endpointAdd failed"));
 					}
+				}
+				else if (me->type == Endpoint::Delilah)
+				{
+					LM_X(1, ("Unable to connect to worker %d (%s) - delilah must connect to all workers", ix, workerV[ix].name));
 				}
 			}
 		}
@@ -1314,8 +1328,8 @@ void Network::msgTreat(void* vP)
 		if (receiver == NULL)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
 		
-		LM_T(LMT_FORWARD, ("forwarding '%s' %s from %s to Endpoint %d", messageCode(msgCode), messageType(msgType), ep->name.c_str(), endpointId));
-		LM_T(LMT_FORWARD, ("calling receiver->receive"));
+		// LM_T(LMT_FORWARD, ("forwarding '%s' %s from %s to Endpoint %d", messageCode(msgCode), messageType(msgType), ep->name.c_str(), endpointId));
+		LM_T(LMT_FORWARD, ("calling receiver->receive for message code '%s'", messageCode(msgCode)));
 		receiver->receive(endpointId, msgCode, &packet);
 		break;
 	}
@@ -1524,6 +1538,7 @@ void Network::jobPush(SendJob* jobP)
 		jobQueueHead = new SendJobQueue;
 		jobQueueHead->job   = jobP;
 		jobQueueHead->next  = NULL;
+		return;
 	}
 
 	while (qP->next != NULL)

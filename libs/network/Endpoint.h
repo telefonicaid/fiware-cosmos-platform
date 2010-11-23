@@ -63,7 +63,8 @@ public:
 	State                        state;
 	int                          workers;
 	Type                         type;
-	
+	int                          msgsIn;
+	int                          msgsOut;
 
 	int                          workerId;         // Worker
 	Message::WorkerStatusData*   status;           // Worker

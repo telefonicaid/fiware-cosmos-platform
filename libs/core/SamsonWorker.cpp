@@ -145,13 +145,13 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	
 	if (msgCode == Message::StatusRequest)
 	{
-		Packet p;
-		network::StatusResponse *response = p.message.mutable_status_response();
+		Packet* p = new Packet();
+		network::StatusResponse *response = p->message.mutable_status_response();
 		
 		response->set_title( "Worker " + au::Format::string( network->getWorkerFromIdentifier( network->getMyidentifier() ) ) );
 		
 		response->set_response( getStatus( packet->message.status_request().command() ) );
-		network->send(this, fromId, Message::StatusResponse, &p);
+		network->send(this, fromId, Message::StatusResponse, p);
 		return 0;
 	}
 

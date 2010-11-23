@@ -159,6 +159,7 @@ int iomMsgRead2
 	{
 		if (headerP->dataLen > (unsigned int) *dataLenP)
 		{
+			LM_W(("Allocating extra space for message"));
 			*dataPP = (char*) malloc(headerP->dataLen);
 			if (*dataPP == NULL)
 				LM_X(1, ("malloc(%d)", headerP->dataLen));

@@ -53,7 +53,7 @@ int main(int argC, const char *argV[])
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
 	paConfig("log to file",                   (void*) true);
 
-	paParse(paArgs, argC, (char**) argV, 1, true);
+	paParse(paArgs, argC, (char**) argV, 1, false);
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 

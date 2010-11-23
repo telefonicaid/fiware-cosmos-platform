@@ -14,7 +14,6 @@
 #include "QueueItem.h"
 #include "Queue.h"
 
-
 QueueItem::QueueItem(Queue* _queue)
 	: ObjectItem(), queue(_queue)
 {
@@ -56,7 +55,9 @@ void QueueItem::initText(QString text)
 	if (text_item!=0)
 		delete text_item;
 
-	text_item = new QGraphicsTextItem(text, this);
+	text_item = new QueueTextItem(text, this);
+	// Don't know why this dosn't work...
+//	text_item->setAcceptedMouseButtons(0);
 	QFont serifFont("Times", 12, QFont::Bold);
 	text_item->setFont(serifFont);
 
@@ -70,11 +71,6 @@ void QueueItem::initText(QString text)
 	// move to center
 	QPointF p = item_rect.center() - text_item->mapToParent(text_rect.center());
 	text_item->moveBy(p.x(), p.y());
-
-//	text_item->setEnabled(false);
-	text_item->setAcceptedMouseButtons(0);
-//	text_item->setActive(false);
-//	text_item->setFlag(QGraphicsItem::ItemIsSelectable, false);
 }
 
 void QueueItem::updateItem()

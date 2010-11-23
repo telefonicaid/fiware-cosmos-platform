@@ -71,7 +71,7 @@ void DelilahQtApp::uploadData(bool data_queue, bool kv_queue, bool operation, bo
 	// Prepare packet to get information from network about requested type of objects
 	ss::Packet p;
 	ss::network::Help *help = p.message.mutable_help();
-	help->set_data_queues(data_queue);
+	//help->set_data_queues(data_queue);
 	help->set_queues(kv_queue);
 	help->set_datas(data_type);
 	help->set_operations(operation);
@@ -152,8 +152,8 @@ int DelilahQtApp::receiveData(ss::Packet* packet)
 	if (command.name().empty())
 		synchronize_all = true;
 
-	if (command.data_queues())
-		synchronizeDataQueues(resp, synchronize_all);
+//	if (command.data_queues())
+//		synchronizeDataQueues(resp, synchronize_all);
 	if (command.queues())
 		synchronizeKVQueues(resp, synchronize_all);
 	if (command.operations())
@@ -320,6 +320,8 @@ KVQueue* DelilahQtApp::getKVQueue(const QString &name, bool deleted)
  */
 void DelilahQtApp::synchronizeDataQueues(const ss::network::HelpResponse &resp, bool synchronize_all)
 {
+	/*
+	Andreu: Data queues are not processed separatelly anymore
 	for (int i=0 ; i<resp.data_queue_size(); i++)
 	{
 		// TODO: remove!!!!!!!!
@@ -341,6 +343,7 @@ void DelilahQtApp::synchronizeDataQueues(const ss::network::HelpResponse &resp, 
 		// Upload queue's new values
 		queue->upload(&q);
 	}
+	 */
 
 	// If synchronization applies to the whole list, queues that where not uploaded
 	// have status set to DELETED

@@ -46,6 +46,11 @@ namespace ss {
 	
 	Buffer* BufferVector::getFileBufferFromNetworkBuffers( KVFormat queue_format )
 	{
+/*		
+		std::cout << "Creating a file from " << buffer.size() << " buffers\n";
+		for (size_t i = 0 ; i < buffer.size() ; i++)
+			std::cout << "B" << i << ": "<< buffer[i]->str() << std::endl;
+*/
 		
 		// Get a buffer to be able to put all data in memory
 		size_t file_size = sizeof(FileHeader) + KV_HASH_GROUP_VECTOR_SIZE_FILE + info.size;	
@@ -72,6 +77,7 @@ namespace ss {
 		// Global info
 		file_info->size	= info.size;
 		file_info->kvs	= info.kvs;
+		
 		
 		for (size_t i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
 		{

@@ -78,6 +78,9 @@ namespace ss
 		
 		bool checkData( std::string name )
 		{
+			if( name == "txt" )
+				return true;	// Spetial case
+			
 			std::map<std::string , Data*>::iterator i = datas.find( name );
 			if ( i == datas.end() )
 				return false;

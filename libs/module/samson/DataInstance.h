@@ -96,8 +96,12 @@ namespace system {
 				value = _value;
 			}			
 			
+			void operator++ () {
+				value++;
+			}			
+			
+			
 		}; 	
-	
 	
 	
 	/**

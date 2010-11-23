@@ -51,6 +51,7 @@ namespace ss
 		std::string code;		// More extended help
 		std::string file;		// File where this operation is defined
 		std::vector <std::string> functions; 
+		
 		bool top;
 		bool dynamic_input_formats;
 		bool destructor;
@@ -82,6 +83,9 @@ namespace ss
 
 			if( type == "script")
 				return "ss::Script";
+
+			if( type == "parser")
+				return "ss::Parser";
 			
 			fprintf(stderr, "Error: Unknown type of operation in the operation section (%s)\n" , type.c_str());
 			_exit(0);
@@ -105,6 +109,8 @@ namespace ss
 				o << "void " << nameSpaceLocal <<    "run(  ss::KVSetStruct* inputs , std::vector<ss::KVWriter*>& outputs )";
 			if( type == "generator" )
 				o << "void "<< nameSpaceLocal << "run( ss::KVWriter *writer )";
+			if( type == "parser" )
+				o << "void "<< nameSpaceLocal << "run( char *data , size_t length , ss::KVWriter *writer )";
 			
 			return o.str();
 		
@@ -139,8 +145,6 @@ namespace ss
 
 			}
 
-				
-				
 			// Help of this function
 			fprintf(file, "\n\tstd::string help(){\n");
 			fprintf(file, "\t\tstd::ostringstream o;\n");
@@ -173,6 +177,11 @@ namespace ss
 				output << "\t\tss::Operation * operation = new ss::Operation( \"" << name << "\" , ss::Operation::"<< type <<");"<<std::endl;
 			else
 				output << "\t\tss::Operation * operation = new ss::Operation( \"" << name << "\" , ss::Operation::"<< type <<" , au::factory<"<< className() <<"> );"<<std::endl;
+		
+			
+			if( type == "parser")
+				output << "\t\toperation->inputFormats.push_back( ss::KVFormat::format(\"txt\" ,\"txt\") );"<<std::endl;
+			
 			
 			for (size_t i = 0 ; i < inputs.size() ; i++)
 				output << "\t\toperation->inputFormats.push_back( ss::KVFormat::format(\""<< inputs[i].keyFormat <<"\" ,\"" << inputs[i].valueFormat << "\") );"<<std::endl;

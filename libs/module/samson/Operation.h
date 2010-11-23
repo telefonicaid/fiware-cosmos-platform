@@ -7,7 +7,6 @@
 #include "samson/KVSetStruct.h"    // KVSetStruct
 #include "samson/KVWriter.h"       // KVWriter
 #include "samson/KVFormat.h"       // KVFormat
-#include "logMsg.h"                // LM_*
 
 
 namespace ss {
@@ -87,6 +86,7 @@ namespace ss {
 	public:
 		typedef enum  
 		{ 
+			parser,
 			map,
 			reduce,
 			generator,
@@ -195,6 +195,7 @@ namespace ss {
 		std::string getTypeName()
 		{
 			switch (getType()) {
+				case parser:		return "parser"; break;
 				case map:			return "map"; break;
 				case reduce:		return "reduce"; break;
 				case generator:		return "generator"; break;
@@ -345,6 +346,21 @@ namespace ss {
 	{
 		// NO operation by itself ( only txt added in code field )
 	};	
+	
+	
+	/**
+	 
+	 \class Parser
+	 
+	 A parser is a generic operation that tranform input files (usualy txt files) into key-values
+	 */
+	
+	class Parser : public OperationInstance
+	{
+	public:
+		virtual void run( char *data , size_t length , ss::KVWriter *writer )=0;
+	};
+	
 }
 
 #endif

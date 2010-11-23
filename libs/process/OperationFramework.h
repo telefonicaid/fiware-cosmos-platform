@@ -26,7 +26,7 @@ namespace ss {
 	{
 		char num_inputs;
 		OperationFrameworkHeaderItem inputs[255];	// Part of the shared memory vector for the input
-		OperationFrameworkHeaderItem output;			// Part of the shared memory vector for the output ( unique for all servers and 
+		OperationFrameworkHeaderItem output;		// Part of the shared memory vector for the output ( unique for all servers and 
 	};
 	
 	

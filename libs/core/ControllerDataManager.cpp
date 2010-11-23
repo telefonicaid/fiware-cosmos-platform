@@ -106,6 +106,187 @@ namespace ss {
 			return response;
 		}
 		
+		if( commandLine.get_argument(0) == "clear_queue" )
+		{
+			// Add queue command
+			if( commandLine.get_num_arguments() < 2 )
+			{
+				response.output = "Usage: clear_queue name";
+				response.error = true;
+				return response;
+			}
+			
+			std::string name = commandLine.get_argument( 1 );
+			
+			// Check if queue exist
+			Queue *tmp =  queues.findInMap(name);
+			if( !tmp )
+			{
+				std::ostringstream output;
+				output << "Queue " + name + " does not exist\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			}
+			else
+				tmp->clear();
+			
+			response.output = "OK";
+			return response;
+		}
+
+#pragma mark Change the name of a queue
+		
+		if( commandLine.get_argument(0) == "mv_queue" )
+		{
+			// Add queue command
+			if( commandLine.get_num_arguments() < 3 )
+			{
+				response.output = "Usage: mv_queue name name2";
+				response.error = true;
+				return response;
+			}
+			
+			std::string name = commandLine.get_argument( 1 );
+			std::string name2 = commandLine.get_argument( 2 );
+			
+			// Check if queue exist
+			Queue *tmp =  queues.findInMap(name);
+			Queue *tmp2 =  queues.findInMap(name2);
+
+			if( !tmp )
+			{
+				std::ostringstream output;
+				output << "Queue " + name + " does not exist\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			} else if( tmp2 )
+			{
+				std::ostringstream output;
+				output << "Queue " + name + " exist. Please, remove it first with remove_queue command\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			}
+			else
+			{
+				Queue *original_queue =  queues.extractFromMap(name);
+				original_queue->rename( name2 );
+				queues.insertInMap( name2 , original_queue );
+			}
+			
+			response.output = "OK";
+			return response;
+		}		
+
+#pragma mark Duplicate a queue
+		
+		if( commandLine.get_argument(0) == "duplicate_queue" )
+		{
+			// Add queue command
+			if( commandLine.get_num_arguments() < 3 )
+			{
+				response.output = "Usage: duplicate_queue name name2";
+				response.error = true;
+				return response;
+			}
+			
+			std::string name = commandLine.get_argument( 1 );
+			std::string name2 = commandLine.get_argument( 2 );
+			
+			// Check if queue exist
+			Queue *tmp =  queues.findInMap(name);
+			Queue *tmp2 =  queues.findInMap(name2);
+			
+			if( !tmp )
+			{
+				std::ostringstream output;
+				output << "Queue " + name + " does not exist\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			}
+			else if( tmp2 )
+			{
+				std::ostringstream output;
+				output << "Queue " + name + " exist. Please, remove it first with remove_queue command\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			}
+			else
+			{
+				KVFormat format = tmp->format();
+				tmp2 = new Queue(name2 , format);
+				tmp2->copyFileFrom(tmp);
+				queues.insertInMap( name2 , tmp2 );
+				
+			}
+			
+			response.output = "OK";
+			return response;
+		}	
+		
+#pragma mark Copy content from one queue to another
+		
+		if( commandLine.get_argument(0) == "cp_queue" )
+		{
+			// Add queue command
+			if( commandLine.get_num_arguments() < 3 )
+			{
+				response.output = "Usage: cp_queue queue_from name_to";
+				response.error = true;
+				return response;
+			}
+			
+			std::string name = commandLine.get_argument( 1 );
+			std::string name2 = commandLine.get_argument( 2 );
+			
+			// Check if queue exist
+			Queue *tmp =  queues.findInMap(name);
+			Queue *tmp2 =  queues.findInMap(name2);
+			
+			if( !tmp )
+			{
+				std::ostringstream output;
+				output << "Queue " << name << " does not exist\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			} 
+
+			if( !tmp2 )
+			{
+				std::ostringstream output;
+				output << "Queue " << name << " does not exist\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			} 
+			
+
+			// check formats
+			KVFormat f1 = tmp->format();
+			KVFormat f2 = tmp->format();
+			
+			if( ! f1.isEqual( f2 ) )
+			{
+				std::ostringstream output;
+				output << "Queues " << name << " and " << name2 << " does not have the same format (key-values).\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			}
+			
+			
+			// copy content
+			tmp2->copyFileFrom( tmp );
+			
+			response.output = "OK";
+			return response;
+		}				
+		
 // DATA QUEUES
 		
 		if( commandLine.get_argument(0) == "add_data_queue" )
@@ -122,7 +303,7 @@ namespace ss {
 
 			
 			// Check if queue exist
-			if( data_queues.findInMap( name ) != NULL )
+			if( queues.findInMap( name ) != NULL )
 			{
 				std::ostringstream output;
 				output << "Queue " + name + " already exist\n";
@@ -132,40 +313,11 @@ namespace ss {
 			}			
 			
 			Queue *tmp = new Queue( name , KVFormat("txt","txt") );
-			data_queues.insertInMap( name , tmp );
+			queues.insertInMap( name , tmp );
 			
 			response.output = "OK";
 			return response;
 		}
-		
-		if( commandLine.get_argument(0) == "remove_data_queue" )
-		{
-			// Add queue command
-			if( commandLine.get_num_arguments() < 2 )
-			{
-				response.output = "Usage: remove_data_queue name";
-				response.error = true;
-				return response;
-			}
-			
-			std::string name = commandLine.get_argument( 1 );
-			
-			// Check if queue exist
-			Queue *tmp =  data_queues.extractFromMap(name);
-			if( !tmp )
-			{
-				std::ostringstream output;
-				output << "Queue " + name + " does not exist\n";
-				response.output = output.str();
-				response.error = true;
-				return response;
-			}
-			else
-				delete tmp;
-			
-			response.output = "OK";
-			return response;
-		}		
 		
 #pragma mark Add data		
 		
@@ -187,7 +339,7 @@ namespace ss {
 			std::string queue		= commandLine.get_argument( 4 );
 			
 			// Check valid queue
-			Queue *q =  data_queues.findInMap(queue);
+			Queue *q =  queues.findInMap(queue);
 			if( !q )
 			{
 				std::ostringstream output;
@@ -300,30 +452,6 @@ namespace ss {
 		}
 	
 		
-		if( help.data_queues() )
-		{
-			std::map< std::string , Queue*>::iterator i;
-			for (i = data_queues.begin() ; i!= data_queues.end() ;i++)
-			{
-				if( !help.has_name() || i->first == help.name() )
-				{
-					
-					Queue *queue = i->second;
-					network::Queue *q = response->add_data_queue();
-					q->set_name( i->first );
-					
-					// Format
-					fillKVFormat( q->mutable_format() , queue->format() );
-					
-					//Info
-					fillKVInfo( q->mutable_info(), queue->info() );
-					
-				}
-				
-				
-			}
-		}
-		
 		lock.unlock();
 	}
 	
@@ -357,6 +485,14 @@ namespace ss {
 					info->setError( error_message.str() );
 					return; 
 				}
+				
+				// Add the input files for this input
+				
+				network::FileList fileList;
+				q->insertFilesIn( fileList );
+				info->input_files.push_back( fileList ); 
+
+				
 			}
 			else
 			{
@@ -385,6 +521,7 @@ namespace ss {
 				}
 
 				// add queu to be emitted in the WorkerTask packet
+				
 				network::Queue qq;
 				qq.set_name( q->getName() );
 				network::KVFormat *f = qq.mutable_format();

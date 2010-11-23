@@ -51,7 +51,8 @@ namespace ss {
 		int num_processes;							// Number of cores to use in this server
 		size_t shared_memory_per_process;			// Shared memory used in per-core operation
 		size_t memory;								// Total memory used ( used to limit workers , and free buffered files )
-
+		int num_shared_memory_buffers;				// Number of shared memory buffers to create ( debugging )
+		
 		// Some debug info
 		int num_buffers;
 		

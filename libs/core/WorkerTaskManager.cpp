@@ -16,6 +16,7 @@ namespace ss {
 	
 	void WorkerTask::finishItem( size_t id , bool _error , std::string _error_message )
 	{
+		
 		WorkerTaskItem *i = item.extractFromMap( id );
 		delete i;
 		
@@ -24,6 +25,7 @@ namespace ss {
 			error = true;
 			error_message = _error_message;
 		}
+		
 	}	
 	
 #pragma mark WORKER TASK MANAGER
@@ -34,10 +36,7 @@ namespace ss {
 
 		WorkerTask *t = new WorkerTask( worker_task );
 		
-		// Debuggin: Instead of adding the task, just answer back to the controller
-		//sendWorkTaskConfirmation(t);
-		//delete t;
-		
+
 		task.insertInMap( t->task_id , t );
 		
 		lock.unlock();
@@ -72,6 +71,10 @@ namespace ss {
 		
 	}	
 	
+	/*
+	 Notify that a particular item has finished producing data
+	 */
+	
 	void WorkerTaskManager::finishItem( WorkerTaskItem *item , bool error, std::string error_message)
 	{
 		lock.lock();
@@ -80,8 +83,21 @@ namespace ss {
 		assert( t );
 		t->finishItem( item->item_id , error, error_message );
 		
+		
+		// If all have finished, send the close message
+		if( t->isFinish() )
+		{
+			sendCloseMessages( t , worker->network->getNumWorkers() );
+		}
+		
+		
+		
 		lock.unlock();
 	}	
+
+	/**
+	 Nofity that a particular task has finished ( everything has been saved to disk )
+	 */
 	
 	void WorkerTaskManager::completeItem( size_t task_id , DataBufferItem * item )
 	{
@@ -102,6 +118,10 @@ namespace ss {
 			{
 				network::QueueFile *qfile = confirmation->add_file( );
 				qfile->CopyFrom( item->qfiles[i] );
+				
+				std::cout << "Size of file: " << item->qfiles[i].file().info().size() << "\n";
+				std::cout << "#KVS of file: " << item->qfiles[i].file().info().kvs() << "\n";
+				
 			}
 				
 			worker->network->send(worker, worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, &p);
@@ -122,6 +142,20 @@ namespace ss {
 		system->set_cores_running(1);
 	}
 #endif
+	
+	
+	void WorkerTaskManager::sendCloseMessages( WorkerTask *t , int workers )
+	{
+		
+		for (int s = 0 ; s < workers ; s++)
+		{				
+			Packet p;
+			network::WorkerDataExchangeClose *dataMessage =  p.message.mutable_data_close();
+			dataMessage->set_task_id(t->getId());
+			NetworkInterface *network = worker->network;
+			network->send(worker, network->workerGetIdentifier(s) , Message::WorkerDataExchangeClose, &p);
+		}
+	}	
 	
 	
 	

@@ -10,8 +10,8 @@
 
 #define SETUP_num_workers					"num_workers"	
 
-#define SETUP_shm_size_per_process			"shm_size_per_core"
-#define SETUP_num_processes					"num_process"
+#define SETUP_shm_size_per_process			"shm_size_per_process"
+#define SETUP_num_processes					"num_processes"
 #define SETUP_memory						"memory"
 
 namespace ss {

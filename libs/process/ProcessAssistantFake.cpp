@@ -24,7 +24,6 @@ namespace ss
 			
 			// Create the Framework to run the operation from the ProcessAssitant side
 			Operation * op = worker->modulesManager.getOperation( item->operation );
-
 			assert( op );
 			
 			framework = new ProcessAssistantOperationFramework(this ,op, core , worker->network->getNumWorkers() );
@@ -37,8 +36,6 @@ namespace ss
 			// Flush output
 			framework->flushOutput();
 
-			// Send the end messages
-			sendCloseMessages( getTaskId() , worker->network->getNumWorkers() );
 
 			delete framework;
 			delete framework2;

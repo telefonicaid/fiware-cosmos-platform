@@ -17,6 +17,11 @@ message File
 	required KVInfo info=3;		// Information about this file
 }
 
+message FileList
+{
+	repeated File file=1;		// List of files
+}
+
 message QueueFile
 {
 	required string queue=1;	// Name of the queue
@@ -76,7 +81,7 @@ message WorkerTask
 	required int64 task_id		= 1;	// Id of the top level ( controller ) task	
 	required string operation 	= 2;	// Name of the operation to run
 
-	repeated QueueFile input	= 3;    // Input files ( all inputs for each queue )
+	repeated FileList input		= 3;    // Input files ( all inputs for each queue )
 	repeated Queue output		= 4;    // output queues
 }
 
@@ -128,7 +133,6 @@ message CommandResponse
 message Help
 {
 	required bool queues = 1;
-	required bool data_queues = 2;
 	required bool datas = 3;
 	required bool operations = 4;
 
@@ -147,7 +151,6 @@ message HelpResponse
 
 	// Information
 	repeated Queue queue = 2;
-	repeated Queue data_queue = 3;
 	repeated Data data = 4;
 	repeated Operation operation = 5;
 }

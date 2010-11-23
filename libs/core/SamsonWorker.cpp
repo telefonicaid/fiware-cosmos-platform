@@ -66,6 +66,10 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 	
 	// Get my id as worker
 	myWorkerId = network->getWorkerFromIdentifier(network->getMyidentifier());
+
+	this->workers     = network->getNumWorkers();
+	LM_M(("My worker id: %d", myWorkerId));
+
 }
 
 
@@ -97,7 +101,11 @@ void SamsonWorker::run()
 	for (coreId = 0; coreId < num_processes ; coreId++)
 	{
 		// processAssistant[coreId] = new ProcessAssistant(coreId, this);
-		processAssistant[coreId] = new ProcessAssistantFake(coreId, this);
+		
+		// Fake id to debig locally multiple workers
+		int fake_core_id = myWorkerId * workers + coreId;
+		
+		processAssistant[coreId] = new ProcessAssistantFake(fake_core_id, this);
 	}
 
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));

@@ -6,6 +6,7 @@
 #include "MonitorParameter.h"			// ss::MonitorBlock
 #include <list>							// std::list
 #include "samson/KVFormat.h"			// KVFormat
+#include "samson.pb.h"					// ss::network::...
 
 namespace ss {
 	
@@ -30,6 +31,7 @@ namespace ss {
 
 		std::list< QueueFile* > files;	// List of files
 		
+
 	public:
 		
 		Queue( std::string name , KVFormat format )
@@ -47,12 +49,41 @@ namespace ss {
 		 */
 		void addFile( int worker, std::string _fileName , KVInfo info );
 		
+		
+		/**
+		 Remove all files
+		 */
+		
+		void clear();
+		
+		
+		/**
+		 Copy files from another queu
+		 */
+		
+		void copyFileFrom( Queue *q);
+		
+		/**
+		 Change the name ( it is managed by ControllerDataManager to be coherent
+		 */
+		
+		void rename( std::string name );
+		
+		
+		/**
+		 Insert files in another place
+		 */
+		 
+		void insertFilesIn( network::FileList &fileList);
+		
 		std::string getStatus()
 		{
 			std::ostringstream o;
 			o << _name << "(" << _format.str() << ") [ " << files.size() << " files ] " << _info.str();
 			return o.str();		
 		}
+		
+		
 	};
 }
 

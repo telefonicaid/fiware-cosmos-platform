@@ -120,7 +120,7 @@ namespace ss {
 			error = false;
 			
 			// rigth not for demo, we create 10 items to be executed
-			for (size_t i = 0 ; i < 1 ; i++)
+			for (size_t i = 0 ; i < 10 ; i++)
 				item.insertInMap( i , new WorkerTaskItem( task_id , i ,  task ) );
 		}
 
@@ -152,6 +152,11 @@ namespace ss {
 			output << "\tTask " << task_id << " Operation: " << operation << std::endl;
 			output << getStatusFromArray( item );
 			return output.str();
+		}
+		
+		size_t getId()
+		{
+			return task_id;
 		}
 		
 		
@@ -186,7 +191,6 @@ namespace ss {
 
 		// Noitification received from the DataBuffer when everything is saved to disk
 		void completeItem( size_t task_id , DataBufferItem * item );
-
 		
 		std::string getStatus()
 		{
@@ -200,6 +204,8 @@ namespace ss {
 		// Function used to send the confirmation of a task to the controller
 		void sendWorkTaskConfirmation( WorkerTask *t );
 		
+		// Function used to send the "close" message to other workers
+		void sendCloseMessages( WorkerTask *t , int workers );
 		
 		
 	};

@@ -102,6 +102,7 @@ namespace ss {
 					( command == "script" ) ||
 					( command == "generator" )	|| 
 					( command == "map" )		|| 
+					( command == "parser" )		|| 
 					( command == "reduce" )
 					)
 			{

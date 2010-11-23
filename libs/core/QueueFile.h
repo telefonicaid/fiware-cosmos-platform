@@ -6,11 +6,13 @@ namespace ss {
 
 	class QueueFile
 	{
+		
+	public:
+		
 		std::string fileName;
 		int worker;
 		KVInfo info;
 		
-	public:
 		
 		QueueFile( std::string& _fileName , int _worker , KVInfo _info )
 		{

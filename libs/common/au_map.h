@@ -2,6 +2,7 @@
 #define _H_AU_MAP
 
 #include <map>		// std::map
+#include <vector>	// std::vector
 
 namespace au {
 
@@ -235,7 +236,8 @@ namespace au {
 		}
 		
 	}
-	
+
+		
   
 }
 

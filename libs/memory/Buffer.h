@@ -188,7 +188,7 @@ namespace ss {
 				_size = size;
 		}
 		
-		
+		std::string str();
 		
 
 	};

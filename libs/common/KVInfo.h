@@ -20,6 +20,12 @@ namespace ss
 			size=0;
 			kvs=0;
 		}
+		
+		void init()
+		{
+			size=0;
+			kvs=0;
+		}
 
 		KVInfo( size_t _size , size_t _kvs )
 		{

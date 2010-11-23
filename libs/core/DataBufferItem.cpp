@@ -69,13 +69,6 @@ namespace ss {
 					saveBufferToDisk( b , fileName , bv->queue );
 				}
 			}
-			
-			if( ids_files.size() == 0)
-			{
-				// Notify controller that all files are saved to disk
-				// TODO: Pending stuff
-				
-			}
 		}		
 	}	
 	
@@ -91,7 +84,7 @@ namespace ss {
 		network::KVInfo *info = file->mutable_info();
 		
 		// this is suppoused to be a file
-		FileKVInfo * _info = (FileKVInfo*) b->getData();
+		FileKVInfo * _info = (FileKVInfo*) ( b->getData() + sizeof(FileHeader) );
 		info->set_size(_info->size);
 		info->set_kvs(_info->kvs);
 		

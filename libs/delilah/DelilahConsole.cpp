@@ -73,7 +73,6 @@ namespace ss
 			if( commandLine.get_num_arguments() < 2)
 			{
 				help->set_queues(true);
-				help->set_data_queues(true);
 				help->set_datas(true);
 				help->set_operations(true);
 				
@@ -88,17 +87,6 @@ namespace ss
 			{
 				// Ask for queues
 				help->set_queues(true);
-				help->set_data_queues(false);
-				help->set_datas(false);
-				help->set_operations(false);
-				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
-				return;
-			}
-			else if( secondCommand == "data_queues" )
-			{
-				// Ask for queues
-				help->set_queues(false);
-				help->set_data_queues(true);
 				help->set_datas(false);
 				help->set_operations(false);
 				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
@@ -108,7 +96,6 @@ namespace ss
 			{
 				// Ask for datas
 				help->set_queues(false);
-				help->set_data_queues(false);
 				help->set_datas(true);
 				help->set_operations(false);
 				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
@@ -118,7 +105,6 @@ namespace ss
 			{
 				// Ask for operations
 				help->set_queues(false);
-				help->set_data_queues(false);
 				help->set_datas(false);
 				help->set_operations(true);
 				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, &p);
@@ -239,21 +225,6 @@ namespace ss
 					txt << "------------------------------------------------" << std::endl;
 					
 					txt << std::endl;
-				}
-				
-				if( help_response.help().data_queues() )
-				{
-
-					txt << "Data Queues" << std::endl;
-					txt << "------------------------------------------------" << std::endl;
-					for (int i = 0 ; i < help_response.data_queue_size() ; i++)
-					{
-						network::Queue queue = help_response.data_queue(i);
-						txt << queue.name();
-						txt << " " << au::Format::string( queue.info().size() ) << " bytes " << std::endl;
-					}
-					txt << "------------------------------------------------" << std::endl;
-					
 				}
 				
 				if( help_response.help().datas() )

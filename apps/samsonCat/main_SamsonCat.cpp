@@ -17,12 +17,13 @@ int main(int argc, const char *argv[])
 	std::cout << "Cat program (experimental)\n";
 	
 	au::CommandLine cmdLine;
+	cmdLine.set_flag_boolean("header");
 	cmdLine.parse(argc , argv);
 	
 	
 	if( cmdLine.get_num_arguments() < 2 ) 
 	{
-		std::cerr << "Ussage: samsonCat file\n";
+		std::cerr << "Ussage: samsonCat file [-header]\n";
 		exit(0);
 	}
 
@@ -44,7 +45,8 @@ int main(int argc, const char *argv[])
 	}
 	
 	ss::KVFormat format = header.getFormat(); 
-	std::cout << "Format: " << format.str() << "\n";
+	if( cmdLine.get_flag_bool("header") )
+		std::cout << "Format: " << format.str() << "\n";
 
 	ss::ModulesManager modulesManager;
 
@@ -66,8 +68,9 @@ int main(int argc, const char *argv[])
 	ss::FileKVInfo *info = (ss::FileKVInfo*) malloc(  sizeof(ss::FileKVInfo)*(KV_NUM_HASHGROUPS+1)  );
 	fread(info, 1, sizeof(ss::FileKVInfo)*(KV_NUM_HASHGROUPS+1) , file);
 
-	
-	std::cout << "Total: " << info->str() << std::endl;
+
+	if( cmdLine.get_flag_bool("header") )
+		std::cout << "Total: " << info->str() << std::endl;
 	
 	char *data = (char*)malloc( info->size );
 
@@ -77,6 +80,10 @@ int main(int argc, const char *argv[])
 		std::cerr << "Not possible to read file\n";
 		exit(0);
 	}
+	
+	if( cmdLine.get_flag_bool("header") )
+		exit(0);
+
 	
 	ss::DataInstance *key = keyData->getInstance();
 	ss::DataInstance *value = valueData->getInstance();

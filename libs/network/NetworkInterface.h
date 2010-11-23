@@ -10,7 +10,7 @@
 
 #include "Message.h"            // ss::Message::MessageCode
 #include "Endpoint.h"           // ss::Endpoint::Type
-
+#include "logMsg.h"
 
 
 namespace ss {

@@ -32,7 +32,7 @@ namespace ss {
 			msgCode = _msgCode;
 			from = _from;
 			to = _to;
-			packet = _packet;
+			packet = _packet;	// Copy the packet
 			sender = _sender;
 		}
 								 
@@ -135,7 +135,7 @@ namespace ss {
 			
 			NetworkFake* network = getNetwork( p->to );
 			network->receiver->receive( p->from, p->msgCode, &p->packet );			
-
+			
 		}
 	};
 }

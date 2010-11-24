@@ -15,9 +15,12 @@
 #include "WorkspaceView.h"
 #include "WorkspaceScene.h"
 #include "DelilahQtApp.h"
+#include "Misc.h"
+
 #include "CreateDataQueueDlg.h"
 #include "LoadExistingQueueDlg.h"
-#include "Misc.h"
+#include "ConfirmationDlg.h"
+
 
 WorkspaceView::WorkspaceView(QWidget* parent)
 : QGraphicsView(parent)
@@ -43,11 +46,13 @@ void WorkspaceView::setWorkspace(Workspace* model)
 	setScene(workspace->getScene());
 
 	connect(scene(), SIGNAL(addQueueRequested(QPointF)), this, SLOT(selectQueueType(QPointF)));
+	connect(scene(), SIGNAL(deleteQueueRequested(Queue*)), this, SLOT(confirmDeletingQueue(Queue*)));
 
-	connect(this, SIGNAL(createQueueRequested(QueueType, QPointF, QString, QString, QString)),
-			workspace, SLOT(createQueue(QueueType, QPointF, QString, QString, QString)));
 	connect(this, SIGNAL(loadQueueRequested(QString, QPointF)),
 			workspace, SLOT(loadQueue(QString, QPointF)));
+	connect(this, SIGNAL(createQueueRequested(QueueType, QPointF, QString, QString, QString)),
+			workspace, SLOT(createQueue(QueueType, QPointF, QString, QString, QString)));
+	connect(this, SIGNAL(deleteQueueRequested(Queue*)), workspace, SLOT(deleteQueue(Queue*)));
 
 	connect(workspace, SIGNAL(jobCreated(job_info)), this, SLOT(updateJobInfoView(job_info)));
 	connect(workspace, SIGNAL(jobUpdated(job_info)), this, SLOT(updateJobInfoView(job_info)));
@@ -155,14 +160,10 @@ void WorkspaceView::selectQueueType(const QPointF &scene_pos)
 
 void WorkspaceView::loadExistingQueueSelected(const QPointF &scene_pos)
 {
-	// TODO:
 	LoadExistingQueueDlg* dlg = new LoadExistingQueueDlg(this);
 
 	if(dlg->exec() == QDialog::Accepted)
 	{
-		// TODO
-		// Get name from the dialog
-		// Emit appropriate signal (received by Workspace)
 		emit(loadQueueRequested(dlg->queueName(), scene_pos));
 	}
 
@@ -186,4 +187,14 @@ void WorkspaceView::createDataQueueSelected(const QPointF &scene_pos)
 void WorkspaceView::createKVQueueSelected(const QPointF &scene_pos)
 {
 	// TODO:
+}
+
+void WorkspaceView::confirmDeletingQueue(Queue* queue)
+{
+	ConfirmationDlg* dlg = new ConfirmationDlg(this);
+	dlg->setText(QString("Are you sure you want to delete queue '%1' from the SAMSON platform?").arg(queue->getName()));
+	if (dlg->exec() == QDialog::Accepted)
+		emit(deleteQueueRequested(queue));
+
+	delete dlg;
 }

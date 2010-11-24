@@ -37,6 +37,8 @@ public slots:
 	void createKVQueueSelected(const QPointF &scene_pos);
 	void loadExistingQueueSelected(const QPointF &scene_pos);
 
+	void confirmDeletingQueue(Queue* queue);
+
 	void showError(QString error);
 
 	/*
@@ -48,8 +50,9 @@ protected:
 //	void showAvailableQueues();
 
 signals:
-	void createQueueRequested(QueueType type, const QPointF scene_pos, QString name, QString key=QString(), QString value=QString());
 	void loadQueueRequested(const QString &name, const QPointF scene_pos);
+	void createQueueRequested(QueueType type, const QPointF scene_pos, QString name, QString key=QString(), QString value=QString());
+	void deleteQueueRequested(Queue* queue);
 
 protected:
 	Workspace* workspace;

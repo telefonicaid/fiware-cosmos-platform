@@ -23,8 +23,6 @@ Workspace::Workspace(QString _name)
 	scene = new WorkspaceScene();
 
 	connect(scene, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)), this, SLOT(removeQueueFromWorkspace(Queue*)));
-	connect(scene, SIGNAL(deleteQueueRequested(Queue*)), this, SLOT(deleteQueue(Queue*)));
-
 	connect(app, SIGNAL(gotCommandResponse(unsigned int, bool, bool, QString)),
 			this, SLOT(updateJob(unsigned int, bool, bool, QString)));
 }
@@ -100,7 +98,6 @@ void Workspace::removeQueueFromWorkspace(Queue* queue)
 void Workspace::deleteQueue(Queue* queue)
 {
 	job_info job;
-//	job.pos = scene_pos;
 	job.status = IN_PROCESSING;
 	job.message = "Sending request: delete queue";
 	job.type = DELETE_QUEUE;

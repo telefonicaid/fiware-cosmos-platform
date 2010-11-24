@@ -16,12 +16,14 @@ IF(QT4_FOUND)
 		gui/InfoBox.cpp
 		gui/CreateDataQueueDlg.cpp
 		gui/LoadExistingQueueDlg.cpp
+		gui/ConfirmationDlg.cpp
 		Queue.cpp
 		Process.cpp
 		items/ObjectItem.cpp
 		items/QueueItem.cpp
 		items/OperationItem.cpp
-		items/ConnectionItem.cpp)
+		items/ConnectionItem.cpp
+		)
 	
 	SET (HEADERS
 		Delilah.h
@@ -40,6 +42,7 @@ IF(QT4_FOUND)
 		gui/InfoBox.h
 		gui/CreateDataQueueDlg.h
 		gui/LoadExistingQueueDlg.h
+		gui/ConfirmationDlg.h
 		Queue.h
 		Operation.h
 //		DataType.h
@@ -48,17 +51,21 @@ IF(QT4_FOUND)
 		items/QueueItem.h
 		items/OperationItem.h
 		items/ConnectionItem.h
-		Misc.h)
+		Misc.h
+		)
 	
 	SET (FORMS
 		MainWindow.ui
 		gui/forms/InfoBox.ui
 		gui/forms/CreateDataQueueDlg.ui
-		gui/forms/LoadExistingQueueDlg.ui)
+		gui/forms/LoadExistingQueueDlg.ui
+		gui/forms/ConfirmationDlg.ui
+		)
 	
 	SET (RESOURCES
 		resources/objects.qrc
-		resources/icons.qrc)
+		resources/icons.qrc
+		)
 
 	SET (STATIC_LIBS
 		samsonNetworkStatic

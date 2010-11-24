@@ -97,15 +97,11 @@ void QueueItem::showQueueInfoSelected()
 
 void QueueItem::removeQueueSelected()
 {
-	// TODO:
 	emit(removeQueueFromWorkspaceRequested(this->queue));
 }
 
 void QueueItem::deleteQueueSelected()
 {
-	// TODO:
-	// Show dlg box asking if user is sure....
-
 	emit(deleteQueueRequested(this->queue));
 }
 

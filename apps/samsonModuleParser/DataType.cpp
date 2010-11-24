@@ -1,31 +1,33 @@
-
-
 /* ****************************************************************************
- *
- * FILE                     DataType.cpp
- *
- * DESCRIPTION				Definition of a basic data-type
- *
- * ***************************************************************************/
-
-
+*
+* FILE                     DataType.cpp
+*
+* DESCRIPTION				Definition of a basic data-type
+*
+*/
+#include <string.h>         // strcpy, strtok
 #include "DataType.h"		// Own interface
 
 
-namespace ss {
 
-	std::vector<std::string> tockenizeWithDots( std::string myString )
+namespace ss
+{
+	std::vector<std::string> tockenizeWithDots(std::string myString)
 	{
-		assert( myString.length() < 1000 );
+		assert(myString.length() < 1000);
 		char tmp[1000];
-		strcpy(tmp, myString.c_str() );
-		std::vector<std::string> tockens;
+
+		strcpy(tmp, myString.c_str());
+		std::vector<std::string> tokens;
+
 		char *p = strtok(tmp, ".");
-		while (p) {
-			tockens.push_back( std::string(p) ); 
+		while (p)
+		{
+			tokens.push_back(std::string(p));
 			p = strtok(NULL, " ");
 		}			
-		return tockens;
+
+		return tokens;
 	}
 
 

@@ -7,7 +7,6 @@
 
 #include <cassert>
 
-
 #include "Packet.h"
 #include "Message.h"
 
@@ -75,11 +74,11 @@ int DelilahQtApp::sendCreateQueue(const QString &name)
 	std::string command = CREATE_DATA_QUEUE_COMMAND;
 	command.append((" " + name).toStdString());
 
-	ss::Packet p;
-	ss::network::Command *c = p.message.mutable_command();
+	ss::Packet *p = new ss::Packet();
+	ss::network::Command *c = p->message.mutable_command();
 	c->set_command( command );
 	c->set_sender_id( ++id );
-	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Command, &p);
+	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Command, p);
 
 	return id;
 }
@@ -206,12 +205,49 @@ void DelilahQtApp::quitDelilah()
  */
 QString DelilahQtApp::validateNewQueueName(QString name)
 {
-	// TODO: implement me!!!!!!!!!!!!!
-	// Just for testing
-	if (name=="queue")
-		return QString("Queue can not have such name.");
-	if (name=="test")
-		return QString("Such name already exists.");
+	// First validate if queue doesn't start or end with '.'
+	if(name.startsWith(".") || name.endsWith(".") )
+		return QString("Queue name can not start nor end with '.'");
+
+
+	// Let's assume we have to validate name: 'system.cdr.queue'.
+	// We will validate its correctness in two steps:
+
+	// Step 1.
+	// Check if there is already queue which name is exactly the same
+	// as part (starting always from the beginning) of the given name.
+	// In our example, we should forbid the name if there already exist queue:
+	// 'system' or 'system.cdr' or 'system.cdr.queue'.
+	QStringList name_parts = name.split(".");
+	for(int i=0; i<name_parts.size(); i++)
+	{
+		QString test_name = name_parts[0];
+		for (int j=1; j<=i; j++)
+			test_name.append("." + name_parts[j]);
+
+		for (int j=0; j<queues.size(); j++)
+		{
+			if(queues[j]->getName().compare(test_name)==0)
+				return QString("Entered name is in conflict with queue: %1").arg(queues[j]->getName());
+		}
+	}
+
+	// Step 2.
+	// Check if the given name is the part of already existing queue.
+	// In our case we should forbid the name if there already exists queue
+	// with name e.g. 'system.cdr.queue.no1', but allow for 'system.cdr.queues.no1'
+	for(int i=0; i<queues.size(); i++)
+	{
+		QString queue_name = queues.at(i)->getName();
+		if(queue_name.startsWith(name))
+		{
+			// the case, when queue with exactly the same name already exist
+			// is already cover in step 1, so here we can assume that queue_name is longer than name
+			int index = name.size();
+			if(queue_name.at(index) == '.')
+				return QString("Entered name is in conflict with queue: %1").arg(queue_name);
+		}
+	}
 
 	return QString();
 }

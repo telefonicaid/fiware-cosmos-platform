@@ -25,38 +25,8 @@
 namespace ss {
 
 	
-class Endpoint;
 class Packet;
 	
-
-
-/* ****************************************************************************
-*
-* SendJob - 
-*/
-typedef struct SendJob
-{
-	Endpoint*             ep;
-	Endpoint*             me;
-	Message::MessageCode  msgCode;
-	Message::MessageType  msgType;
-	void*                 dataP;
-	int                   dataLen;
-	Packet*               packetP;
-} SendJob;
-
-
-
-/* ****************************************************************************
-*
-* SendJobQueue
-*/
-typedef struct SendJobQueue
-{
-	SendJob*             job;
-	struct SendJobQueue* next;
-} SendJobQueue;
-
 
 
 /* ****************************************************************************
@@ -73,17 +43,11 @@ class Network : public NetworkInterface
 	void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL);
 	void ipSet(char* ip);
 
-	SendJobQueue* jobQueueHead;
-
 public:
 	Network();
 	Network(int endpoints, int workers);
 
-	SendJob* jobPop(void);
-	void     jobPush(SendJob*);
-
 	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);
-
 	virtual void initAsSamsonController(int port, int num_workers);
 	
 	bool ready();                                    // Inform about everything ready
@@ -113,6 +77,8 @@ public:
 	void quit();
 
 public:
+	int        tmoSecs;
+	int        tmoUsecs;
 	int        Workers;
 	int        Endpoints;
 	Endpoint** endpoint;
@@ -133,6 +99,7 @@ private:
 	Endpoint*  endpointLookup(int ix);
 	Endpoint*  endpointLookup(char* alias);
 	Endpoint*  endpointFreeGet(Endpoint::Type type);
+	void       checkAllWorkersConnected(void);
 
 	void msgPreTreat(Endpoint* ep, int endpointId);
 	int  helloSend(Endpoint* ep, Message::MessageType type);

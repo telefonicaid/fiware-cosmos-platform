@@ -41,6 +41,7 @@ void Endpoint::init(void)
 	this->msgsOut          = 0;
 	this->msgsInErrors     = 0;
 	this->msgsOutErrors    = 0;
+	this->jobQueueHead     = NULL;
 
 	hostnameGet();
 }
@@ -241,4 +242,67 @@ void Endpoint::reset(void)
 	init();
 }
 
+
+
+/* ****************************************************************************
+*
+* jobPush - 
+*/
+void Endpoint::jobPush(SendJob* jobP)
+{
+	SendJobQueue* qP   = jobQueueHead;
+
+	LM_T(LMT_JOB, ("Pushing a job"));
+
+	if (jobQueueHead == NULL)
+	{
+		LM_T(LMT_JOB, ("Pushing first job"));
+		jobQueueHead = new SendJobQueue;
+		jobQueueHead->job   = jobP;
+		jobQueueHead->next  = NULL;
+		return;
+	}
+
+	while (qP->next != NULL)
+		qP = qP->next;
+
+	qP->next = new SendJobQueue;
+	qP->next->job   = jobP;
+	qP->next->next  = NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* jobPop - return last job in queue
+*/
+SendJob* Endpoint::jobPop(void)
+{
+	SendJobQueue*  prev = NULL;
+	SendJobQueue*  qP   = jobQueueHead;
+	SendJob*       jobP;
+
+	LM_T(LMT_JOB, ("Popping a job?"));
+
+	if (qP == NULL)
+		return NULL;
+
+	LM_T(LMT_JOB, ("Popping a job (qP == %p)", qP));
+	while (qP->next != NULL)
+	{
+		prev = qP;
+		qP   = qP->next;
+	}
+
+	jobP = qP->job;
+
+	if (prev == NULL)  // Only one job in queue
+		jobQueueHead = NULL;
+	else
+		prev->next = NULL;
+
+	free(qP);
+	return jobP;
+}
 }

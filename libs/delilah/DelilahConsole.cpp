@@ -52,11 +52,17 @@ namespace ss
 				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::StatusRequest, p);
 			}
 
-			for (int i = 0 ; i < dalilah->network->getNumWorkers() ; i++)
+			for (int i = 0; i < dalilah->network->getNumWorkers(); i++)
 			{
-				Packet* p = new Packet();
-				p->message.mutable_status_request()->set_command( command );
-				dalilah->network->send(dalilah, dalilah->network->workerGetIdentifier(i), Message::StatusRequest, p);
+				Packet* p;
+				int     workerId;
+
+				p = new Packet();
+				p->message.mutable_status_request()->set_command(command);
+
+				workerId = dalilah->network->workerGetIdentifier(i);
+				LM_M(("Sending Status to worker %d (endpoint id: %d)", i, workerId));
+				dalilah->network->send(dalilah, workerId, Message::StatusRequest, p);
 			}
 
 			writeWarningOnConsole("Status messages sent to all elements\n");

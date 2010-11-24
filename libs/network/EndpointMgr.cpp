@@ -620,7 +620,7 @@ void EndpointMgr::msgTreat(int rFd, char* name)
 		Message::HelloData*  hello;
 
 		hello   = (Message::HelloData*) dataP;
-		helloEp = endpointAdd(rFd, rFd, hello->name, hello->alias, hello->workers, hello->type, hello->ip, hello->port, hello->coreNo);
+		helloEp = endpointAdd(rFd, rFd, hello->name, hello->alias, hello->workers, (ss::Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo);
 
 		if (helloEp == NULL)
 			LM_X(1, ("helloEp == NULL"));

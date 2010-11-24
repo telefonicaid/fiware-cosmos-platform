@@ -34,7 +34,9 @@
 #define LMT_RESTART     69
 #define LMT_COREWORKER  70
 #define LMT_MSGTREAT    71
+
 #define LMT_JOB         72
-#define LMT_FORWARD    199
+#define LMT_TIMEOUT     73
+#define LMT_FORWARD     74
 
 #endif

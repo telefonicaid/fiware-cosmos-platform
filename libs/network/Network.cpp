@@ -66,7 +66,6 @@ namespace ss
 */
 Network::Network()
 {
-	jobQueueHead = NULL;
 	iAmReady     = false;
 	receiver     = NULL;
 	me           = NULL;
@@ -88,7 +87,6 @@ Network::Network()
 */
 Network::Network(int endpoints, int workers)
 {
-	jobQueueHead = NULL;
 	iAmReady     = false;
 	receiver     = NULL;
 	me           = NULL;
@@ -306,10 +304,13 @@ int Network::getWorkerFromIdentifier(int identifier)
 *
 * getNumWorkers - 
 *
-* Return number of connected workers
+* Return number of workers in the system
 */
 int Network::getNumWorkers(void)
 {
+	return Workers;
+
+#if 0
 	int  ix;
 	int  workers = 0;
 
@@ -325,6 +326,7 @@ int Network::getNumWorkers(void)
 	}
 
 	return workers;
+#endif
 }
 	
 	
@@ -440,10 +442,11 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 	Endpoint* ep        = endpoint[endpointId];
 	int       nb;
 
+	
 	if (packetP != NULL)
-		LM_T(LMT_FORWARD, ("Request to send '%s' package with %d packet size", messageCode(code), packetP->message.ByteSize()));
+		LM_M(("Request to send '%s' package with %d packet size (to endpoint '%s')", messageCode(code), packetP->message.ByteSize(), ep->name.c_str()));
 	else
-		LM_T(LMT_FORWARD, ("Request to send '%s' package without data", messageCode(code)));
+		LM_M(("Request to send '%s' package without data (to endpoint '%s')", messageCode(code), ep->name.c_str()));
 
 	if (ep == NULL)
 		LM_X(1, ("No endpoint at index %d", endpointId));
@@ -456,20 +459,21 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 
 	if (ep->state != Endpoint::Connected)
 	{
-		SendJob job;
+		SendJob* jobP = new SendJob();
 
 		if (ep->useSenderThread == false)
-			LM_X(1, ("cannot send to an unconnected peer if not usiong sender threads, sorry ..."));
+			LM_X(1, ("cannot send to an unconnected peer if not using sender threads, sorry ..."));
 
-        job.ep      = ep;
-        job.me      = me;
-        job.msgCode = code;
-        job.msgType = Message::Msg;
-		job.dataP   = NULL;
-		job.dataLen = 0;
-        job.packetP = packetP;
+		jobP->ep      = ep;
+		jobP->me      = me;
+		jobP->msgCode = code;
+		jobP->msgType = Message::Msg;
+		jobP->dataP   = NULL;
+		jobP->dataLen = 0;
+		jobP->packetP = packetP;
 
-		jobPush(&job);
+		LM_T(LMT_JOB, ("pushing a job for endpoint '%s'", ep->name.c_str()));
+		ep->jobPush(jobP);
 
 		return 0;
 	}
@@ -506,9 +510,10 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 			//
 			SendJob* jobP;
 
-			while ((jobP = jobPop()) != NULL)
+			LM_T(LMT_JOB, ("sender thread created - flushing job queue"));
+			while ((jobP = ep->jobPop()) != NULL)
 			{
-				LM_T(LMT_FORWARD, ("sending a queued job to job-sender"));
+				LM_T(LMT_JOB, ("sending a queued job to job-sender"));
 				nb = write(ep->senderWriteFd, jobP, sizeof(SendJob));
 				if (nb == -1)
 					LM_P(("write(SendJob)"));
@@ -517,6 +522,8 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 				
 				free(jobP);
 			}
+
+			LM_T(LMT_JOB, ("sender thread created - job queue flushed"));
 		}
 
 		SendJob job;
@@ -617,13 +624,12 @@ Endpoint* Network::endpointAdd
 		endpoint[2]->ip    = std::string(ip);
 		endpoint[2]->alias = (alias != NULL)? alias : "NO ALIAS" ;
 
-#if 1
 		if (me->type == Endpoint::Delilah)
 		{
 			endpoint[2]->useSenderThread = true;
-			LM_M(("Delilah controller endpoint use SenderThread"));
+			LM_T(LMT_FORWARD, ("Delilah controller endpoint uses SenderThread"));
 		}
-#endif
+
 		return controller;
 
 	case Endpoint::Temporal:
@@ -722,13 +728,11 @@ Endpoint* Network::endpointAdd
 				return NULL;
 			}
 
-#if 1
 			if (me->type == Endpoint::Delilah)
 			{
 				endpoint[ix]->useSenderThread = true;
-				LM_M(("Delilah worker endpoint use SenderThread"));
+				LM_T(LMT_FORWARD, ("Delilah worker endpoint uses SenderThread"));
 			}
-#endif
 
 			if (strcmp(endpoint[ix]->alias.c_str(), alias) == 0)
 			{
@@ -742,6 +746,8 @@ Endpoint* Network::endpointAdd
 				endpoint[ix]->port     = port;
 				endpoint[ix]->state    = (rFd > 0)? Endpoint::Connected : Endpoint::Unconnected;   /* XXX */
 
+				LM_T(LMT_JOB, ("worker '%s' connected - any pending messages for him? (jobQueueHead at %p)", endpoint[ix]->alias.c_str(),  endpoint[ix]->jobQueueHead));
+				
 				return endpoint[ix];
 			}
 		}
@@ -919,10 +925,24 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		char  hostName[128];
 
 		fd = iomAccept(ep->rFd, hostName, sizeof(hostName));
+		if (me->type != Endpoint::Controller)
+		{
+			LM_E(("got incoming WebListener connection but I'm not the controller ..."));
+			if (fd != -1)
+				close(fd);
+			return;
+		}
+
 		if (fd == -1)
+		{
 			LM_P(("iomAccept(%d)", ep->rFd));
+			ep->msgsInErrors += 1;
+		}
 		else
+		{
 			endpointAdd(fd, fd, "Web Worker", "Webworker", 0, Endpoint::WebWorker, hostName, 0);
+			ep->msgsIn += 1;
+		}
 
 		return;
 	}
@@ -942,14 +962,22 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 		nb = read(ep->rFd, buf, sizeof(buf));
 		if (nb == -1)
+		{
+			ep->msgsInErrors += 1;
 			LM_E(("error reading web service request: %s", strerror(errno)));
+		}
 		else if (nb == 0)
+		{
+			ep->msgsInErrors += 1;
 			LM_E(("read ZERO bytes of web service request"));
+		}
 		else
 		{
 			std::string command     = receiver->getJSONStatus(std::string(buf));
 			int         commandLen  = command.size();
 
+			ep->msgsIn  += 1;
+			ep->msgsOut += 1;
 			write(ep->wFd, command.c_str(), commandLen);
 		}
 
@@ -967,11 +995,18 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	if (nb == 0) /* Connection closed */
 	{
 		LM_T(LMT_SELECT, ("Connection closed - ep at %p", ep));
+		ep->msgsInErrors += 1;
 
 		if (ep->type == Endpoint::Worker)
 		{
 			LM_W(("Worker %d just died !", ep->workerId));
 			receiver->notifyWorkerDied(ep->workerId);
+
+			if (me->type == Endpoint::Delilah)
+			{
+				LM_T(LMT_TIMEOUT, ("Lower select timeout to ONE second to poll restarting worker"));
+				tmoSecs = 1;
+			}
 		}
 
 		if (ep == controller)
@@ -1061,6 +1096,35 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 /* ****************************************************************************
 *
+* checkAllWorkersConnected - 
+*/
+void Network::checkAllWorkersConnected(void)
+{
+	int ix;
+
+	for (ix = 0; ix < Workers; ix++)
+	{
+		if (endpoint[3 + ix] == NULL)
+			return;
+		if (endpoint[3 + ix]->state != Endpoint::Connected)
+			return;
+	}	
+
+	//
+	// All workers are connected!
+	//
+
+	LM_F(("All workers are connected!"));
+	if (me->type == Endpoint::Delilah)
+	{
+		LM_T(LMT_TIMEOUT, ("All workers are connected! - select timeout set to 60 secs"));
+		tmoSecs = 60;
+	}
+}
+
+
+/* ****************************************************************************
+*
 * msgTreat - 
 */
 void Network::msgTreat(void* vP)
@@ -1096,6 +1160,12 @@ void Network::msgTreat(void* vP)
 			{
 				LM_W(("Worker %d just died !", ep->workerId));
 				receiver->notifyWorkerDied(ep->workerId);
+
+				if (me->type == Endpoint::Delilah)
+				{
+					LM_T(LMT_TIMEOUT, ("Lower select timeout to ONE second to poll restarting worker"));
+					tmoSecs = 1;
+				}
 			}
 
 			LM_T(LMT_SELECT, ("Connection closed - ep at %p", ep));
@@ -1112,7 +1182,7 @@ void Network::msgTreat(void* vP)
 				while (controller->rFd == -1)
 				{
 					controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
-					sleep(1); // sleep one second before reintenting connection to coltroller
+					sleep(1); // sleep one second before reintenting connection to controller
 				}
 
 				controller->state = ss::Endpoint::Connected;
@@ -1157,7 +1227,7 @@ void Network::msgTreat(void* vP)
 		Message::HelloData*  hello;
 
 		hello   = (Message::HelloData*) dataP;
-		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, hello->type, hello->ip, hello->port, hello->coreNo);
+		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, (ss::Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo);
 	
 		if (helloEp == NULL)
 		{
@@ -1173,13 +1243,43 @@ void Network::msgTreat(void* vP)
 			endpointRemove(ep);
 
 		if (msgType == Message::Msg)
+		{
+			LM_T(LMT_JOB, ("Acking HELLO"));
 			helloSend(helloEp, Message::Ack);
+		}
+		else
+			LM_T(LMT_JOB, ("HELLO was an ACK"));
+
+		if (helloEp->jobQueueHead != NULL)
+		{
+			SendJob*  jobP;
+			int       ix  = 1;
+
+			LM_T(LMT_JOB, ("Sending pending JOBs to '%s' (job queue head at %p)", helloEp->name.c_str(), helloEp->jobQueueHead));
+			while ((jobP = helloEp->jobPop()) != NULL)
+			{
+				int nb;
+
+				LM_T(LMT_JOB, ("Sending pending JOB %d (job at %p)", ix, jobP));
+				nb = write(helloEp->senderWriteFd, jobP, sizeof(SendJob));
+				if (nb != sizeof(SendJob))
+				{
+					if (nb == -1)
+						LM_P(("write"));
+					else
+						LM_E(("written only %d bytes, instead of %d", nb, sizeof(SendJob)));
+				}
+				++ix;
+			}
+		}
 
 		if (ep == controller)
 		{
 			if ((me->type != Endpoint::CoreWorker) && (me->type != Endpoint::Controller))
 				iomMsgSend(controller, me, Message::WorkerVector, Message::Msg, NULL, 0, NULL);
 		}
+
+		checkAllWorkersConnected();
 		break;
 
 	case Message::WorkerVector:
@@ -1278,7 +1378,7 @@ void Network::msgTreat(void* vP)
 							LM_X(1, ("endpointAdd failed"));
 					}
 				}
-				else if (me->type == Endpoint::Delilah)
+				else if ((me->type == Endpoint::Delilah) && (epP->port == 0))
 				{
 					LM_X(1, ("Unable to connect to worker %d (%s) - delilah must connect to all workers", ix, workerV[ix].name));
 				}
@@ -1368,8 +1468,9 @@ void Network::run()
 				}
 			}
 
-			timeVal.tv_sec  = 10;
-			timeVal.tv_usec =  0;
+			LM_T(LMT_TIMEOUT, ("using a timeout of %d seconds", this->tmoSecs));
+			timeVal.tv_sec  =  this->tmoSecs;
+			timeVal.tv_usec =  this->tmoUsecs;
 
 			FD_ZERO(&rFds);
 			max = 0;
@@ -1433,8 +1534,8 @@ void Network::run()
 				{
 					FD_SET(endpoint[ix]->rFd, &rFds);
 					max = MAX(max, endpoint[ix]->rFd);
-					
-					LM_F(("+ %02d: %-15s %-20s %-12s %15s:%05d %20s  fd: %02d  (in: %03d, out: %03d)",
+
+					LM_F(("+ %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d, out: %03d)",
 						  ix,
 						  endpoint[ix]->typeName(),
 						  endpoint[ix]->name.c_str(),
@@ -1448,7 +1549,7 @@ void Network::run()
 				}
 				else
 				{
-					LM_F(("- %02d: %-15s %-20s %-12s %15s:%05d %20s  fd: %02d  (in: %03d, out: %03d)",
+					LM_F(("- %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d, out: %03d)",
 						  ix,
 						  endpoint[ix]->typeName(),
 						  endpoint[ix]->name.c_str(),
@@ -1489,12 +1590,16 @@ void Network::run()
 				--fds;
 				fd = iomAccept(listener->rFd, hostName, sizeof(hostName));
 				if (fd == -1)
+				{
 					LM_P(("iomAccept(%d)", listener->rFd));
+					listener->msgsInErrors += 1;
+				}
 				else
 				{
 					std::string  s   = std::string("tmp:") + std::string(hostName);
 					Endpoint*    ep  = endpointAdd(fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, (char*) "ip", 0);
 
+					listener->msgsIn += 1;
 					helloSend(ep, Message::Msg);
 				}
 			}
@@ -1521,70 +1626,6 @@ void Network::run()
 			}
 		}
 	}
-}
-
-
-
-/* ****************************************************************************
-*
-* jobPush - 
-*/
-void Network::jobPush(SendJob* jobP)
-{
-	SendJobQueue* qP   = jobQueueHead;
-
-	LM_T(LMT_JOB, ("Pushing a job"));
-
-	if (jobQueueHead == NULL)
-	{
-		LM_T(LMT_JOB, ("Pushing first job"));
-		jobQueueHead = new SendJobQueue;
-		jobQueueHead->job   = jobP;
-		jobQueueHead->next  = NULL;
-		return;
-	}
-
-	while (qP->next != NULL)
-		qP = qP->next;
-
-	qP->next = new SendJobQueue;
-	qP->next->job   = jobP;
-	qP->next->next  = NULL;
-}
-
-
-
-/* ****************************************************************************
-*
-* jobPop - return last job in queue
-*/
-SendJob* Network::jobPop(void)
-{
-	SendJobQueue*  prev = NULL;
-	SendJobQueue*  qP   = jobQueueHead;
-	SendJob*       jobP;
-
-	LM_T(LMT_JOB, ("Popping a job?"));
-
-	if (qP == NULL)
-		return NULL;
-
-	LM_T(LMT_JOB, ("Popping a job (qP == %p)", qP));
-	while (qP->next != NULL)
-	{
-		prev = qP;
-		qP   = qP->next;
-	}
-
-	jobP = qP->job;
-
-	if (prev == NULL)  // Only one job in queue
-		jobQueueHead = NULL;
-	else
-		prev->next = NULL;
-
-	free(qP);
-	return jobP;
 }
 
 

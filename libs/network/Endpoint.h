@@ -11,6 +11,7 @@
 #include <string>            // std::string ...
 #include <pthread.h>         // pthread_t
 
+#include "Message.h"         // MessageCode, MessageType
 #include "workerStatus.h"    // CoreWorkerState, WorkerStatusData
 
 
@@ -19,6 +20,37 @@ namespace ss {
 
 
 class PacketSenderInterface;
+class Endpoint;
+class Packet;
+
+/* ****************************************************************************
+*
+* SendJob - 
+*/
+typedef struct SendJob
+{
+	Endpoint*             ep;
+	Endpoint*             me;
+	Message::MessageCode  msgCode;
+	Message::MessageType  msgType;
+	void*                 dataP;
+	int                   dataLen;
+	Packet*               packetP;
+} SendJob;
+
+
+
+/* ****************************************************************************
+*
+* SendJobQueue
+*/
+typedef struct SendJobQueue
+{
+	SendJob*             job;
+	struct SendJobQueue* next;
+} SendJobQueue;
+
+
 
 class Endpoint
 {
@@ -91,12 +123,17 @@ public:
 	void            init();
 	void            hostnameGet(void);
 
+	SendJobQueue*   jobQueueHead;
+
 public:
 	Endpoint(void);
 	Endpoint(Type type, unsigned short port);
 	Endpoint(Type type, char* alias);
 	Endpoint(Type type, std::string ipAndPort);
 	Endpoint(Type type, std::string name, std::string ip, unsigned short port, int rFd, int wFd);
+
+	SendJob* jobPop(void);
+	void     jobPush(SendJob*);
 
 	std::string str() { return name; }
 };

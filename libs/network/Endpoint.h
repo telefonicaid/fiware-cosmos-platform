@@ -65,6 +65,8 @@ public:
 	Type                         type;
 	int                          msgsIn;
 	int                          msgsOut;
+	int                          msgsInErrors;
+	int                          msgsOutErrors;
 
 	int                          workerId;         // Worker
 	Message::WorkerStatusData*   status;           // Worker

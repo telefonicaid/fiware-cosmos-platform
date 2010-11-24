@@ -13,9 +13,6 @@
 
 namespace ss
 {
-
-
-
 namespace Message
 {
 

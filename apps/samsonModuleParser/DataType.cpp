@@ -31,24 +31,25 @@ namespace ss
 	}
 
 
-	std::string getModuleFromFullName( std::string fullName )
+	std::string getModuleFromFullName(std::string fullName)
 	{
-		std::vector<std::string> tockens = tockenizeWithDots( fullName );
-		ostringstream output;
+		std::vector<std::string>  tokens = tockenizeWithDots(fullName);
+		ostringstream             output;
 		
-		for (size_t i = 0 ; i < ( tockens.size()-1) ; i++)
+		for (size_t i = 0; i < (tokens.size() - 1); i++)
 		{
-			output << tockens[i];
-			if ( i < ( tockens.size()-2) )
+			output << tokens[i];
+			if (i < (tokens.size() - 2))
 				output << ".";
 		}
+
 		return output.str();
 	}
 
 	std::string getNameFromFullName( std::string fullName )
 	{
-		std::vector<std::string> tockens = tockenizeWithDots( fullName );
-		return tockens[ tockens.size()-1 ];
+		std::vector<std::string> tokens = tockenizeWithDots(fullName);
+		return tokens[tokens.size() - 1];
 	}
 
 }

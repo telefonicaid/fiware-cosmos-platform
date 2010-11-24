@@ -37,6 +37,10 @@ void Endpoint::init(void)
 	this->status           = NULL;
 	this->sender           = false;
 	this->useSenderThread  = false;
+	this->msgsIn           = 0;
+	this->msgsOut          = 0;
+	this->msgsInErrors     = 0;
+	this->msgsOutErrors    = 0;
 
 	hostnameGet();
 }

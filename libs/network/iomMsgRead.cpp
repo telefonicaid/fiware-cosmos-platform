@@ -134,13 +134,12 @@ int iomMsgRead
 
 /* ****************************************************************************
 *
-* iomMsgRead2 - read a message from an endpoint
+* iomMsgRead - read a message from an endpoint
 */
-int iomMsgRead2
+int iomMsgRead
 (
-	int                        fd,
+	ss::Endpoint*              ep,
 	ss::Message::Header*       headerP,
-	const char*                from,
 	ss::Message::MessageCode*  msgCodeP,
 	ss::Message::MessageType*  msgTypeP,
 	void**                     dataPP,
@@ -155,6 +154,8 @@ int iomMsgRead2
 	*msgCodeP = headerP->code;
 	*msgTypeP = headerP->type;
 
+	ep->msgsIn += 1;
+
 	if (headerP->dataLen != 0)
 	{
 		if (headerP->dataLen > (unsigned int) *dataLenP)
@@ -166,10 +167,10 @@ int iomMsgRead2
 		}
 
 		LM_T(LMT_MSG, ("reading %d bytes of primary message data", headerP->dataLen));
-		nb = read(fd, *dataPP, headerP->dataLen);
-		LM_T(LMT_MSG, ("read %d bytes DATA from '%s'", nb, from));
+		nb = read(ep->rFd, *dataPP, headerP->dataLen);
+		LM_T(LMT_MSG, ("read %d bytes DATA from '%s'", nb, ep->name.c_str()));
 		if (nb == -1)
-			LM_RP(1, ("read %d bytes from '%s'", headerP->dataLen, from));
+			LM_RP(1, ("read %d bytes from '%s'", headerP->dataLen, ep->name.c_str()));
 		LM_T(LMT_MSG, ("read %d bytes of primary message data", nb));
 
 		if (nb != (int) headerP->dataLen)
@@ -177,8 +178,8 @@ int iomMsgRead2
 
 		*dataLenP = nb;
 
-		LM_T(LMT_MSG, ("read %d bytes from '%s'", nb, from));
-		LM_READS(from, "primary data", *dataPP, nb, LmfByte);
+		LM_T(LMT_MSG, ("read %d bytes from '%s'", nb, ep->name.c_str()));
+		LM_READS(ep->name.c_str(), "primary data", *dataPP, nb, LmfByte);
 	}
 
 	if (headerP->gbufLen != 0)
@@ -189,15 +190,15 @@ int iomMsgRead2
 			LM_X(1, ("malloc(%d)", headerP->gbufLen));
 
 		LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
-        nb = read(fd, dataP, headerP->gbufLen);
-		LM_T(LMT_MSG, ("read %d bytes GPROTBUF from '%s'", nb, from));
+        nb = read(ep->rFd, dataP, headerP->gbufLen);
+		LM_T(LMT_MSG, ("read %d bytes GPROTBUF from '%s'", nb, ep->name.c_str()));
         if (nb == -1)
-			LM_RP(1, ("read(%d bytes from '%s')", headerP->gbufLen, from));
+			LM_RP(1, ("read(%d bytes from '%s')", headerP->gbufLen, ep->name.c_str()));
 
 		if (packetP->message.ParseFromArray(dataP, nb) == false)
 			LM_X(1, ("ParseFromString failed!"));
 
-		LM_READS(from, "google protocol buffer", dataP, nb, LmfByte);
+		LM_READS(ep->name.c_str(), "google protocol buffer", dataP, nb, LmfByte);
 	}
 
 	if (headerP->kvDataLen != 0)
@@ -214,10 +215,10 @@ int iomMsgRead2
 		while (tot < size)
 		{
 			// msgAwait()
-			nb = read(fd, &kvBuf[tot], size - tot);
+			nb = read(ep->rFd, &kvBuf[tot], size - tot);
 
 			if (nb == -1)
-				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, from, strerror(errno)));
+				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, ep->name.c_str(), strerror(errno)));
 			tot += nb;
 		}
 

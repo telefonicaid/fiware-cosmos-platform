@@ -205,7 +205,7 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 
 	LM_T(LMT_WRITE, ("sending hello %s to '%s' (name: '%s', type: '%s')", messageType(type), ep->name.c_str(), hello.name, me->typeName()));
 
-	return iomMsgSend(ep->rFd, ep->name.c_str(), me->name.c_str(), Message::Hello, type, &hello, sizeof(hello));
+	return iomMsgSend(ep, me, Message::Hello, type, &hello, sizeof(hello));
 }
 
 
@@ -394,7 +394,7 @@ static void* senderThread(void* vP)
 		LM_T(LMT_FORWARD, ("google protocol 'message': %p (packet at %p)", &job.packetP->message, job.packetP));
 		LM_T(LMT_FORWARD, ("google protocol buffer data len: %d", job.packetP->message.ByteSize()));
 
-		s = iomMsgSend(ep->wFd, ep->name.c_str(), job.me->name.c_str(), job.msgCode, job.msgType, job.dataP, job.dataLen, job.packetP);
+		s = iomMsgSend(ep, NULL, job.msgCode, job.msgType, job.dataP, job.dataLen, job.packetP);
 		LM_T(LMT_FORWARD, ("iomMsgSend returned %d", s));
 		if (s != 0)
 		{
@@ -543,7 +543,7 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 	}
 
 	LM_T(LMT_FORWARD, ("Sending message directly (%d bytes)", packetP->message.ByteSize()));
-	nb = iomMsgSend(ep->wFd, ep->name.c_str(), me->name.c_str(), code, Message::Msg, NULL, 0, packetP);
+	nb = iomMsgSend(ep, me, code, Message::Msg, NULL, 0, packetP);
 
 	return nb;
 }
@@ -970,6 +970,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 		if (ep->type == Endpoint::Worker)
 		{
+			LM_W(("Worker %d just died !", ep->workerId));
 			receiver->notifyWorkerDied(ep->workerId);
 		}
 
@@ -1072,7 +1073,6 @@ void Network::msgTreat(void* vP)
 	Endpoint*             ep           = paramsP->ep;
 	int                   endpointId   = paramsP->endpointId;
 	Message::Header*      headerP      = &paramsP->header;
-	int                   wFd          = ep->rFd;     // This function will not work for pipe pairs ...
 	char*                 name         = (char*) ep->name.c_str();
 
 	Packet                packet;
@@ -1083,7 +1083,7 @@ void Network::msgTreat(void* vP)
 
 
 	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
-	s = iomMsgRead2(ep->rFd, headerP, name, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
+	s = iomMsgRead(ep, headerP, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
 	LM_T(LMT_READ, ("iomMsgRead returned %d (dataLens: %d, %d, %d)", s, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 
 	if (s != 0)
@@ -1094,6 +1094,7 @@ void Network::msgTreat(void* vP)
 		{
 			if (ep->type == Endpoint::Worker)
 			{
+				LM_W(("Worker %d just died !", ep->workerId));
 				receiver->notifyWorkerDied(ep->workerId);
 			}
 
@@ -1174,13 +1175,10 @@ void Network::msgTreat(void* vP)
 		if (msgType == Message::Msg)
 			helloSend(helloEp, Message::Ack);
 
-		if ((ep != NULL) && (ep == controller))
+		if (ep == controller)
 		{
 			if ((me->type != Endpoint::CoreWorker) && (me->type != Endpoint::Controller))
-			{
-				iomMsgSend(controller->wFd, (char*) controller->name.c_str(), (char*) me->name.c_str(),
-						   Message::WorkerVector, Message::Msg, NULL, 0, NULL );
-			}
+				iomMsgSend(controller, me, Message::WorkerVector, Message::Msg, NULL, 0, NULL);
 		}
 		break;
 
@@ -1211,7 +1209,7 @@ void Network::msgTreat(void* vP)
 			}
 
 			LM_T(LMT_WRITE, ("sending ack with entire worker vector to '%s'", name));
-			iomMsgSend(wFd, name, (char*) me->name.c_str(), Message::WorkerVector, Message::Ack, workerV, Workers * sizeof(Message::Worker));
+			iomMsgSend(ep, me, Message::WorkerVector, Message::Ack, workerV, Workers * sizeof(Message::Worker));
 			free(workerV);
 		}
 		else if (msgType == Message::Ack)
@@ -1310,7 +1308,7 @@ void Network::msgTreat(void* vP)
 			else
 			{
 				// Forward Alarm to controller
-				iomMsgSend(controller->wFd, controller->name.c_str(), me->name.c_str(), Message::Alarm, Message::Evt, dataP, dataLen);
+				iomMsgSend(controller, me, Message::Alarm, Message::Evt, dataP, dataLen);
 			}
 		}
 		else if (me->type == Endpoint::Controller)
@@ -1436,7 +1434,7 @@ void Network::run()
 					FD_SET(endpoint[ix]->rFd, &rFds);
 					max = MAX(max, endpoint[ix]->rFd);
 					
-					LM_F(("+ %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
+					LM_F(("+ %02d: %-15s %-20s %-12s %15s:%05d %20s  fd: %02d  (in: %03d, out: %03d)",
 						  ix,
 						  endpoint[ix]->typeName(),
 						  endpoint[ix]->name.c_str(),
@@ -1444,11 +1442,13 @@ void Network::run()
 						  endpoint[ix]->ip.c_str(),
 						  endpoint[ix]->port,
 						  endpoint[ix]->stateName(),
-						  endpoint[ix]->rFd));
+						  endpoint[ix]->rFd,
+						  endpoint[ix]->msgsIn,
+						  endpoint[ix]->msgsOut));
 				}
 				else
 				{
-					LM_F(("- %02d: %-12s %-22s %-15s %15s:%05d %18s  fd: %d",
+					LM_F(("- %02d: %-15s %-20s %-12s %15s:%05d %20s  fd: %02d  (in: %03d, out: %03d)",
 						  ix,
 						  endpoint[ix]->typeName(),
 						  endpoint[ix]->name.c_str(),
@@ -1456,7 +1456,10 @@ void Network::run()
 						  endpoint[ix]->ip.c_str(),
 						  endpoint[ix]->port,
 						  endpoint[ix]->stateName(),
-						  endpoint[ix]->rFd));
+						  endpoint[ix]->rFd,
+						  endpoint[ix]->msgsIn,
+						  endpoint[ix]->msgsOut));
+						  
 				}
 			}
 

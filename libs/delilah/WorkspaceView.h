@@ -38,6 +38,7 @@ public slots:
 	void loadExistingQueueSelected(const QPointF &scene_pos);
 
 	void confirmDeletingQueue(Queue* queue);
+	void showQueueInfo(Queue* queue);
 
 	void showError(QString error);
 
@@ -45,9 +46,6 @@ public slots:
 	 * Slot responsible for displaying information about running jobs.
 	 */
 	void updateJobInfoView(job_info job);
-
-protected:
-//	void showAvailableQueues();
 
 signals:
 	void loadQueueRequested(const QString &name, const QPointF scene_pos);

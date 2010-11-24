@@ -20,6 +20,7 @@
 #include "CreateDataQueueDlg.h"
 #include "LoadExistingQueueDlg.h"
 #include "ConfirmationDlg.h"
+#include "InfoBox.h"
 
 
 WorkspaceView::WorkspaceView(QWidget* parent)
@@ -47,6 +48,7 @@ void WorkspaceView::setWorkspace(Workspace* model)
 
 	connect(scene(), SIGNAL(addQueueRequested(QPointF)), this, SLOT(selectQueueType(QPointF)));
 	connect(scene(), SIGNAL(deleteQueueRequested(Queue*)), this, SLOT(confirmDeletingQueue(Queue*)));
+	connect(scene(), SIGNAL(queueInfoRequested(Queue*)), this, SLOT(showQueueInfo(Queue*)));
 
 	connect(this, SIGNAL(loadQueueRequested(QString, QPointF)),
 			workspace, SLOT(loadQueue(QString, QPointF)));
@@ -197,4 +199,12 @@ void WorkspaceView::confirmDeletingQueue(Queue* queue)
 		emit(deleteQueueRequested(queue));
 
 	delete dlg;
+}
+
+void WorkspaceView::showQueueInfo(Queue* queue)
+{
+	QueueInfoBox* box = new QueueInfoBox(this);
+	box->setInfo(queue);
+	box->exec();
+	delete box;
 }

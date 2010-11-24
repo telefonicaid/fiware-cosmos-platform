@@ -1,3 +1,12 @@
+/*
+ * FILE:		InfoBox.cpp
+ *
+ * AUTHOR:		Anna Wojdel
+ *
+ * DESCRIPTION:
+ *
+ */
+
 #include "InfoBox.h"
 
 InfoBox::InfoBox(QWidget *parent)
@@ -7,12 +16,22 @@ InfoBox::InfoBox(QWidget *parent)
 
 }
 
-InfoBox::~InfoBox()
+void QueueInfoBox::setInfo()
 {
+	QString text;
+	if(queue==0)
+		text = "<FONT color=red><b>Error</b>: No queue selected.</FONT>";
+	else
+	{
+		// TODO:
+		text = "Here will be queue info";
+	}
 
+	setHtml(text);
 }
 
-void InfoBox::setText(const QString &text)
+void QueueInfoBox::setInfo(Queue* _queue)
 {
-	ui.textEdit->insertPlainText(text);
+	queue = _queue;
+	setInfo();
 }

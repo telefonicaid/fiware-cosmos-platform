@@ -92,7 +92,7 @@ void QueueItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
 void QueueItem::showQueueInfoSelected()
 {
-	// TODO:
+	emit(queueInfoRequested(this->queue));
 }
 
 void QueueItem::removeQueueSelected()

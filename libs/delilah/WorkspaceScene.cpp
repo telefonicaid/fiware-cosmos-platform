@@ -172,6 +172,8 @@ void WorkspaceScene::showQueue(Queue* queue, const QPointF &pos)
 	QueueItem* queue_item = new QueueItem(queue);
 
 	// Connect appropriate signals to propagate user's requests
+	connect(queue_item, SIGNAL(queueInfoRequested(Queue*)),
+			this, SIGNAL(queueInfoRequested(Queue*)));
 	connect(queue_item, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)),
 			this, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)));
 	connect(queue_item, SIGNAL(deleteQueueRequested(Queue*)),

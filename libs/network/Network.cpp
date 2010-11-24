@@ -73,6 +73,8 @@ Network::Network()
 	controller   = NULL;
 	Workers      = WORKERS;
 	Endpoints    = 3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS;
+	tmoSecs      = 10;
+	tmoUsecs     = 0;
 
 	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
 	if (endpoint == NULL)
@@ -94,6 +96,8 @@ Network::Network(int endpoints, int workers)
 	controller   = NULL;
 	Workers      = workers;
 	Endpoints    = endpoints;
+	tmoSecs      = 10;
+	tmoUsecs     = 0;
 
 	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
 	if (endpoint == NULL)
@@ -1524,7 +1528,7 @@ void Network::run()
 			// Adding fds to the read-set
 			//
 			LM_F((""));
-			LM_F(("------------ %d endpoints ------------------------------------------------------------", Endpoints));
+			LM_F(("------------ %d secs timeout, %d endpoints -------------------------------------", tmoSecs, Endpoints));
 			for (ix = 0; ix < Endpoints; ix++)
 			{
 				if (endpoint[ix] == NULL)

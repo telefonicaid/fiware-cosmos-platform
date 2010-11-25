@@ -33,6 +33,9 @@ public:
 	QueueType getType() { return type; };
 	QString getName() const { return name; };
 	unsigned long getSize() const { return size; };
+	QString getKeyType() const { return key; }
+	QString getValueType() const { return value; }
+	unsigned long getKVNumber() const { return kv_number; }
 
 	/*
 	 * Status property

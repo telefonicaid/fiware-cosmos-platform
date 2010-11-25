@@ -448,9 +448,9 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 
 	
 	if (packetP != NULL)
-		LM_M(("Request to send '%s' package with %d packet size (to endpoint '%s')", messageCode(code), packetP->message.ByteSize(), ep->name.c_str()));
+		LM_T(LMT_SEND, ("Request to send '%s' package with %d packet size (to endpoint '%s')", messageCode(code), packetP->message.ByteSize(), ep->name.c_str()));
 	else
-		LM_M(("Request to send '%s' package without data (to endpoint '%s')", messageCode(code), ep->name.c_str()));
+		LM_T(LMT_SEND, ("Request to send '%s' package without data (to endpoint '%s')", messageCode(code), ep->name.c_str()));
 
 	if (ep == NULL)
 		LM_X(1, ("No endpoint at index %d", endpointId));
@@ -624,9 +624,15 @@ Endpoint* Network::endpointAdd
 		return NULL;
 
 	case Endpoint::Controller:
-		endpoint[2]->name  = std::string(name);
-		endpoint[2]->ip    = std::string(ip);
-		endpoint[2]->alias = (alias != NULL)? alias : "NO ALIAS" ;
+		endpoint[2]->rFd      = rFd;
+		endpoint[2]->wFd      = wFd;
+		endpoint[2]->name     = std::string(name);
+		endpoint[2]->alias    = (alias != NULL)? alias : "NO ALIAS" ;
+		endpoint[2]->workers  = workers;
+		endpoint[2]->type     = type;
+		endpoint[2]->ip       = std::string(ip);
+		endpoint[2]->port     = port;
+		endpoint[2]->coreNo   = coreNo;
 
 		if (me->type == Endpoint::Delilah)
 		{
@@ -899,6 +905,7 @@ static void* msgTreatThreadFunction(void* vP)
 	MsgTreatParams*  paramP = (MsgTreatParams*) vP;
 	Endpoint*        ep     = paramP->ep;
 
+	LM_M(("Calling threaded msgTreat"));
 	paramP->diss->msgTreat(paramP);
 
 	ep->state = paramP->state;
@@ -919,6 +926,8 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 {
 	Message::Header header;
 	int             nb;
+
+	LM_M(("ep->type: %d", ep->type));
 
 	//
 	// Special case - incoming connection on WebListener interface
@@ -1092,6 +1101,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		params.endpointId  = endpointId;
 		params.header      = header;
 
+		LM_M(("calling msgTreat (endpointId: %d, type: %d", endpointId, ep->type));
 		msgTreat(&params);
 	}
 }
@@ -1125,6 +1135,62 @@ void Network::checkAllWorkersConnected(void)
 		tmoSecs = 60;
 	}
 }
+
+
+
+/* ****************************************************************************
+*
+* controllerMsgTreat - 
+*/
+void Network::controllerMsgTreat
+(
+	Endpoint*             ep,
+	Message::MessageCode  msgCode,
+	Message::MessageType  msgType,
+	void*                 dataP,
+	int                   dataLen,
+	Packet*               packetP
+)
+{
+	const char* name = ep->name.c_str();
+
+	LM_T(LMT_TREAT, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
+	switch (msgCode)
+	{
+	case Message::WorkerVector:
+		if (msgType != Message::Msg)
+			LM_X(1, ("Controller got an ACK for WorkerVector message"));
+
+		Message::Worker*  workerV;
+		int               ix;
+
+		workerV = (Message::Worker*) calloc(Workers, sizeof(Message::Worker));
+		if (workerV == NULL)
+			LM_XP(1, ("calloc(%d, %d)", Workers, sizeof(Endpoint)));
+
+		for (ix = 3; ix < 3 + Workers; ix++)
+		{
+			if (endpoint[ix] != NULL)
+			{
+				strncpy(workerV[ix - 3].name,  endpoint[ix]->name.c_str(),  sizeof(workerV[ix - 3].name));
+				strncpy(workerV[ix - 3].alias, endpoint[ix]->alias.c_str(), sizeof(workerV[ix - 3].alias));
+				strncpy(workerV[ix - 3].ip,    endpoint[ix]->ip.c_str(),    sizeof(workerV[ix - 3].ip));
+
+				workerV[ix - 3].port   = endpoint[ix]->port;
+				workerV[ix - 3].state  = endpoint[ix]->state;
+			}
+		}
+
+		LM_T(LMT_WRITE, ("sending ack with entire worker vector to '%s'", name));
+		iomMsgSend(ep, me, Message::WorkerVector, Message::Ack, workerV, Workers * sizeof(Message::Worker));
+		free(workerV);
+		break;
+
+	default:
+		LM_X(1, ("message code '%s' not treated in this method", messageCode(msgCode)));
+	}
+}
+
 
 
 /* ****************************************************************************
@@ -1231,6 +1297,7 @@ void Network::msgTreat(void* vP)
 		Message::HelloData*  hello;
 
 		hello   = (Message::HelloData*) dataP;
+		LM_M(("Got a Hello from a type %d endpoint", hello->type));
 		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, (ss::Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo);
 	
 		if (helloEp == NULL)
@@ -1290,34 +1357,16 @@ void Network::msgTreat(void* vP)
 		if ((msgType == Message::Msg) && (me->type != Endpoint::Controller))
 			LM_X(1, ("Got a WorkerVector request from '%s' but I'm not the controller ...", name));
 
-		if ((me->type == Endpoint::Controller) && (msgType == Message::Msg))
+		if (me->type == Endpoint::Controller)
+			controllerMsgTreat(ep, msgCode, msgType, dataP, dataLen, &packet);
+		else
 		{
-			Message::Worker* workerV;
-			int       ix;
+			if (msgType != Message::Ack)
+				LM_X(1, ("Got a WorkerVector request, not being controller ..."));
 
-			workerV = (Message::Worker*) calloc(Workers, sizeof(Message::Worker));
-			if (workerV == NULL)
-				LM_XP(1, ("calloc(%d, %d)", Workers, sizeof(Endpoint)));
+			if (ep->type != Endpoint::Controller)
+				LM_X(1, ("Got a WorkerVector ack NOT from Controller ... (endpoint type: %d)", ep->type));
 
-			for (ix = 3; ix < 3 + Workers; ix++)
-			{
-				if (endpoint[ix] != NULL)
-				{
-					strncpy(workerV[ix - 3].name,  endpoint[ix]->name.c_str(),  sizeof(workerV[ix - 3].name));
-					strncpy(workerV[ix - 3].alias, endpoint[ix]->alias.c_str(), sizeof(workerV[ix - 3].alias));
-					strncpy(workerV[ix - 3].ip,    endpoint[ix]->ip.c_str(),    sizeof(workerV[ix - 3].ip));
-
-					workerV[ix - 3].port   = endpoint[ix]->port;
-					workerV[ix - 3].state  = endpoint[ix]->state;
-				}
-			}
-
-			LM_T(LMT_WRITE, ("sending ack with entire worker vector to '%s'", name));
-			iomMsgSend(ep, me, Message::WorkerVector, Message::Ack, workerV, Workers * sizeof(Message::Worker));
-			free(workerV);
-		}
-		else if (msgType == Message::Ack)
-		{
 			LM_T(LMT_ENDPOINT, ("Got the worker vector from the Controller - now connect to them all ..."));
 
 			unsigned int        ix;
@@ -1329,11 +1378,6 @@ void Network::msgTreat(void* vP)
 			for (ix = 0; ix < dataLen / sizeof(Message::Worker); ix++)
 			{
 				Endpoint* epP;
-
-				if (me->type == Endpoint::Delilah)
-				{
-					LM_M(("Worker %d in state %d", ix, workerV[ix].state));
-				}
 
 				if (endpoint[3 + ix] == NULL)
 				{

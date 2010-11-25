@@ -206,13 +206,13 @@ int iomMsgSend
 
 	s = partWrite(to, &header, sizeof(header), "header");
 	if (s != sizeof(header))
-		return -1;
-	
+		LM_RE(-1, ("partWrite returned %d and not the expected %d", s, sizeof(header)));
+
 	if ((dataLen != 0) && (data != NULL))
 	{
 		s = partWrite(to, data, dataLen, "msg data");
 		if (s != dataLen)
-			return -1;
+			LM_RE(-1, ("partWrite returned %d and not the expected %d", s, dataLen));
 	}
 
 	if ((packetP != NULL) && (packetP->message.ByteSize() != 0))
@@ -229,15 +229,14 @@ int iomMsgSend
 		s = partWrite(to, outputVec, packetP->message.ByteSize(), "Google Protocol Buffer");
 		free(outputVec);
 		if (s != packetP->message.ByteSize())
-			return -1;
+			LM_RE(-1, ("partWrite returned %d and not the expected %d", s, packetP->message.ByteSize()));
 	}
 
 	if (packetP && (packetP->buffer != 0))
 	{
 		s = partWrite(to, packetP->buffer->getData(), packetP->buffer->getSize(), "KV data");
-
 		if (s != (int) packetP->buffer->getSize())
-			return -1;
+			LM_RE(-1, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
 	}
 
 	if ((packetP != NULL) && (packetP->buffer != NULL))
@@ -246,6 +245,7 @@ int iomMsgSend
 		packetP->buffer->setSize(0);
 	}
 
+	LM_M(("Increasing msgsOut"));
 	to->msgsOut += 1;
 
 	return 0;

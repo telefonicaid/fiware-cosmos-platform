@@ -38,5 +38,6 @@
 #define LMT_JOB         72
 #define LMT_TIMEOUT     73
 #define LMT_FORWARD     74
+#define LMT_SEND        75
 
 #endif

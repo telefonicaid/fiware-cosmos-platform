@@ -83,8 +83,9 @@ public:
 	int        Endpoints;
 	Endpoint** endpoint;
 
+	void msgPreTreat(Endpoint* ep, int endpointId);
 	void msgTreat(void* vP);
-
+	void controllerMsgTreat(Endpoint* ep, Message::MessageCode msgCode, Message::MessageType msgType, void* dataP, int dataLen, Packet* packetP);
 
 private:
 	Endpoint*  listener;
@@ -101,7 +102,6 @@ private:
 	Endpoint*  endpointFreeGet(Endpoint::Type type);
 	void       checkAllWorkersConnected(void);
 
-	void msgPreTreat(Endpoint* ep, int endpointId);
 	int  helloSend(Endpoint* ep, Message::MessageType type);
 
 };

@@ -200,7 +200,7 @@ int _main( int arg , const char *argv[] )
 			std::ostringstream fileName;
 			fileName << directories[f] << "file_" << i;
 			
-			operationsManager.read( buffer2, fileName.str() , 0 ,  size );
+			operationsManager.read( buffer2->getData(), fileName.str() , 0 ,  size );
 		}
 	}
 	operationsManager.waitUntilComplete();

@@ -21,7 +21,7 @@ namespace ss {
 		counter_id = 0;
 	}
 
-	size_t DiskManager::read( Buffer* buffer , std::string fileName , size_t offset , size_t size , DiskManagerDelegate *delegate )
+	size_t DiskManager::read( char *data , std::string fileName , size_t offset , size_t size , DiskManagerDelegate *delegate )
 	{
 		
 		lock.lock();
@@ -29,7 +29,7 @@ namespace ss {
 		
 		o->fileName = fileName;
 		o->mode = "r";
-		o->buffer = buffer;
+		o->read_buffer = data;
 		o->size = size;
 		o->offset = offset;
 		o->delegate = delegate;

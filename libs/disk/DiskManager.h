@@ -45,7 +45,7 @@ namespace ss {
 		 Return inmediatelly
 		 Latter a notification is send to the delegate
 		 */
-		size_t read( Buffer* buffer , std::string fileName , size_t offset , size_t size , DiskManagerDelegate *delegate );
+		size_t read( char *data , std::string fileName , size_t offset , size_t size , DiskManagerDelegate *delegate );
 
 		/**
 		 Schedule a write operation

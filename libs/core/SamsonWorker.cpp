@@ -14,7 +14,7 @@
 #include "EndpointMgr.h"				// ss::EndpointMgr
 #include "SamsonSetup.h"				// ss::SamsonSetup
 #include "Format.h"						// au::Format
-#include "ProcessAssistantFake.h"		// ss::ProcessAssistantFake
+
 
 namespace ss {
 
@@ -93,19 +93,18 @@ void SamsonWorker::run()
 	
 	LM_T(LMT_WINIT, ("initializing %d process assistants", num_processes));
 
-	processAssistant = (ProcessAssistantInterface**) calloc(num_processes, sizeof(ProcessAssistantInterface*));
+	processAssistant = (ProcessAssistant**) calloc(num_processes, sizeof(ProcessAssistant*));
 	if (processAssistant == NULL)
-		LM_XP(1, ("calloc(%d, %d)", num_processes, sizeof(ProcessAssistantInterface*)));
+		LM_XP(1, ("calloc(%d, %d)", num_processes, sizeof(ProcessAssistant*)));
 
 	int coreId;
 	for (coreId = 0; coreId < num_processes ; coreId++)
 	{
-		// processAssistant[coreId] = new ProcessAssistant(coreId, this);
 		
 		// Fake id to debig locally multiple workers
 		int fake_core_id = myWorkerId * workers + coreId;
 		
-		processAssistant[coreId] = new ProcessAssistantFake(fake_core_id, this);
+		processAssistant[coreId] = new ProcessAssistant(fake_core_id, this);
 	}
 
 	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));

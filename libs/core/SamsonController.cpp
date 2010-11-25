@@ -225,49 +225,6 @@ void SamsonController::notifyWorkerDied( int worker )
 }
 	
 	
-#pragma mark Sent messages
-	
-
-
-/* ****************************************************************************
-*
-* sendWorkerTasks - 
-*/
-void SamsonController::sendWorkerTasks( ControllerTask *task )
-{
-	// Send messages to the workers indicating the operation to do (waiting the confirmation from all of them)
-		
-	for (int i = 0 ; i < network->getNumWorkers() ; i++)
-	{
-		LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", i));
-		sendWorkerTask(i, task->getId(), task);
-	}
-}	
-	
-
-
-/* ****************************************************************************
-*
-* sendWorkerTask - 
-*/
-void SamsonController::sendWorkerTask(int workerIdentifier, size_t task_id, ControllerTask *task  )
-{
-	// Get status of controller
-	Packet *p2 = new Packet();
-
-	network::WorkerTask *t = p2->message.mutable_worker_task();
-	t->set_task_id(task_id);
-
-	// Fill information for this packet
-	task->fillInfo( t );
-	
-	// TODO: Complete with the rest of input / output parameters
-		
-	LM_T(LMT_TASK, ("Sending Message::WorkerTask to worker %d", workerIdentifier));
-	network->send(this,  network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask,  p2);
-}
-	
-	
 #pragma mark Help messages
 	
 

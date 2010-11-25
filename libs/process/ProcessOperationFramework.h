@@ -3,43 +3,43 @@
 
 #include "OperationFramework.h"				// Own interface
 #include "ProcessWriter.h"					// ss::ProcessWriter
+#include "samson.pb.h"						// ss::network::,,,
 
 namespace ss {
 
-	class ProcessInterface;
+	class Process;
+	class WorkerTaskItemWithOutput;
 	
 	class ProcessOperationFramework : public OperationFramework
 	{
+		
+		Process *process;
+		Operation *operation;
+		
 	public:
 		
-		ProcessOperationFramework( ProcessInterface *_process, Operation *_operation, int processId , int _num_servers  ) : OperationFramework( processId , _num_servers )
+		ProcessOperationFramework( Process *_process , network::ProcessMessage m  ) : OperationFramework( m )
 		{
+			
 			process = _process;
-			operation = _operation;
-			
 			assert( process );
-			assert( operation );
-		}
-		
-		void setup()
-		{
+			
+			// We still have no idea about the operation to run
+			operation = process->modulesManager.getOperation( m.operation() );
 			assert( operation );
 			
-			createProcessWriter();		// Create the Process writter with the information in the header
-			pw->setProcess( process );	// Set the process to report "full buffer messages"
+			// Set the process to report "full buffer messages"
+			pw->setProcess( process );	
+
 		}
 		
-		void flushOutput()
-		{
-			pw->FlushBuffer();
-		}
+		void flushOutput( WorkerTaskItemWithOutput *taskItem);
 		
 		
 		void run()
 		{
 			// Run the operation
 			assert( operation );
-			assert( operation->getNumInputs()==0);
 			
 			switch (operation->getType()) {
 				case Operation::generator:
@@ -49,7 +49,19 @@ namespace ss {
 					generator->run( pw );
 					break;
 				}
+				case Operation::parser:
+				{
+					// Run the generator over the ProcessWriter to emit all key-values
+					Parser *parser = (Parser*) operation->getInstance();
+					
+					SharedMemoryItem*item =  MemoryManager::shared()->getSharedMemory( m.input_shm() );
+					
+					parser->run( item->data , m.input_size() ,  pw );
+					break;
+				}
+					
 				default:
+					assert( false );
 					break;
 			}
 			

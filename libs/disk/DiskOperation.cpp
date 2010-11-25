@@ -8,6 +8,10 @@ namespace ss {
 	DiskOperation::DiskOperation( size_t id )
 	{
 		_id = id;
+		
+		// By default
+		buffer = NULL;
+		read_buffer = NULL;
 	}
 	
 	size_t DiskOperation::idGet()

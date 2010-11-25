@@ -12,13 +12,15 @@
 
 namespace ss {
 	
-	DataBufferItem::DataBufferItem( DataBuffer *_dataBuffer , size_t _task_id , int _num_workers )
+	DataBufferItem::DataBufferItem( DataBuffer *_dataBuffer , size_t _task_id , int _myWorkerId, int _num_workers )
 	{
 		dataBuffer = _dataBuffer;
 		task_id = _task_id;
 
 		num_finished_workers = 0;
+		
 		num_workers = _num_workers;
+		myWorkerId = _myWorkerId;
 		
 		finished = false;	// Flag
 		completed = false;
@@ -69,6 +71,21 @@ namespace ss {
 					saveBufferToDisk( b , fileName , bv->queue );
 				}
 			}
+
+			// Just in case, there is nothing else to save
+			if( ids_files.size() == 0 )
+			{
+				completed = true;
+				
+				// Notify to the task manager that this is completed
+				dataBuffer->worker->taskManager.completeTask( task_id ,  this );
+				
+				DataBufferItem *tdb = dataBuffer->extractFromMap( task_id );
+				if( tdb )
+					delete tdb;
+				
+				return;	// No necessary unlock since we do not exist any more ;)
+			}
 		}		
 	}	
 	
@@ -80,6 +97,7 @@ namespace ss {
 		
 		network::File *file = qf.mutable_file();
 		file->set_name( fileName );
+		file->set_worker( myWorkerId );
 
 		network::KVInfo *info = file->mutable_info();
 		
@@ -114,7 +132,7 @@ namespace ss {
 			completed = true;
 
 			// Notify to the task manager that this is completed
-			dataBuffer->worker->taskManager.completeItem( task_id ,  this );
+			dataBuffer->worker->taskManager.completeTask( task_id ,  this );
 
 			DataBufferItem *tdb = dataBuffer->extractFromMap( task_id );
 			if( tdb )

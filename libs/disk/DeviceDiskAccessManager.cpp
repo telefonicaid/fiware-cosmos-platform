@@ -71,7 +71,7 @@ namespace ss {
 	{
 		std::ostringstream o;
 		o << "Disk";
-		o << " Files: " << files.size();
+//		o << " Files: " << files.size();
 		o << " Ops: " << operation.size();
 		o << " Read: " << readStatistics.str();
 		o << " Write: " << writeStatistics.str();
@@ -89,7 +89,7 @@ namespace ss {
 		bool result;
 		if ( o->mode == "r" )
 		{
-			result = file->read(o->buffer->getData(), o->offset , o->size);
+			result = file->read(o->read_buffer, o->offset , o->size);
 		}
 		else
 		{
@@ -109,36 +109,30 @@ namespace ss {
 		// Nofity end of a task
 		o->delegate->diskManagerNotifyFinish(o->idGet(), result);
 		
-		
+		// This should be removed when reusing files
+		delete file;
 	}
 	
 	FileAccess* DeviceDiskAccessManager::getFile( std::string fileName , std::string mode )
 	{
+		// TODO: Pending to reuse files for continuous reads over same files
 		
-		for ( std::list<FileAccess*>::iterator i = files.begin() ;  i != files.end() ; i++)
-			if( (*i)->isFileName( fileName ) )
-			{
-				FileAccess *tmp = *i;
-				
-				// Put this file on top
-				files.erase( i );
-				files.push_front( tmp );
-				
-				return tmp;
-			}
-		
-		// Remove if too much elements
-		if( files.size() >= (size_t)max_open_files )	
+		if( mode == "w" )
 		{
-			FileAccess *tmp = files.back();
-			files.pop_back();
-			delete tmp;
+			// Create a new one
+			FileAccess *f = new FileAccess( fileName , mode );
+			return f;
+		}
+
+		if( mode == "r")
+		{
+			// Create a new one
+			FileAccess *f = new FileAccess( fileName , mode );
+			return f;
 		}
 		
-		// Create a new one
-		FileAccess *f = new FileAccess( fileName , mode );
-		files.push_front( f );
-		return f;
+		assert( false );
+		return NULL;		
 	}
 	
 }

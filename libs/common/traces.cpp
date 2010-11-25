@@ -63,7 +63,7 @@ void samsonInitTrace
 	if (logFdP != NULL)
 	{
 		lmFdGet(logFdIndex, logFdP);
-		printf("logFd: %d", *logFdP);
+		//printf("logFd: %d", *logFdP);
 	}
 }
 }

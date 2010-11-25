@@ -52,7 +52,7 @@ namespace ss {
 			dm->showStatus();
 		}
 		
-		void read( Buffer *buffer ,  std::string fileName  , size_t offset ,size_t size )
+		void read( char *buffer ,  std::string fileName  , size_t offset ,size_t size )
 		{
 			lock.lock();
 			

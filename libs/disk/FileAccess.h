@@ -57,6 +57,8 @@ namespace ss {
 			close();
 		}
 		
+		
+		
 		void setMode( std::string mode )
 		{
 			_mode = mode;
@@ -74,12 +76,10 @@ namespace ss {
 			
 			if( fread(buffer, size, 1, _file) == 1 )
 			{
-				std::cout << "Read ok\n";
 				return true;
 			}
 			else
 			{
-				std::cout << "Read falied\n";
 				return false;
 			}
 		}

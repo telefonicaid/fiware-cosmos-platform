@@ -6,21 +6,23 @@
 
 namespace ss {
 	
+	class WorkerTaskItemWithOutput;
+	
 	class ProcessAssistantOperationFramework : public OperationFramework
 	{
+		ProcessAssistant *processAssistant;
 		
 	public:
 		
-		ProcessAssistantOperationFramework(ProcessAssistantInterface *_processAssistant ,Operation *_operation, int processId , int _num_servers  );
+		ProcessAssistantOperationFramework(ProcessAssistant *_processAssistant , network::ProcessMessage m  );
 		
 		/**
 		 Function used to add input files for each one of the inputs ( prior to setup call)
 		 */
 		void addInputFiles();
 
-		void setup();
-
-		void flushOutput();
+		
+		void flushOutput(WorkerTaskItemWithOutput *item);
 		
 	};
 	

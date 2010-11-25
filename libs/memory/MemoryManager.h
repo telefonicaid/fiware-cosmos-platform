@@ -49,9 +49,12 @@ namespace ss {
 		// Setup parameters ( loaded at constructor )
 		
 		int num_processes;							// Number of cores to use in this server
-		size_t shared_memory_per_process;			// Shared memory used in per-core operation
 		size_t memory;								// Total memory used ( used to limit workers , and free buffered files )
-		int num_shared_memory_buffers;				// Number of shared memory buffers to create ( debugging )
+
+		size_t shared_memory_size_per_buffer;		// Shared memory used in eery buffer
+		int shared_memory_num_buffers;				// Number of shared memory buffers to create
+		
+		bool* shared_memory_used_buffers;			// Bool vector showing if a particular shared memory buffer is used
 		
 		// Some debug info
 		int num_buffers;
@@ -100,6 +103,44 @@ namespace ss {
 		 */
 		
 		double getMemoryUsage();
+
+		
+		/**
+		 Function to request a free shared memory.
+		 This is used as output by a ProcessAssistant or as input to prepare a WorkerTaskItem
+		 */
+
+		int getFreeSharedMemory()
+		{
+			lock.lock();
+			
+			for (int i = 0  ; i < shared_memory_num_buffers ; i++)
+				if ( !shared_memory_used_buffers[i] )
+				{
+					shared_memory_used_buffers[i] = true;
+					lock.unlock();
+					return i;
+				}
+			
+			lock.unlock();
+			return -1;	// There are no available memory buffers
+		}
+		
+		
+		/**
+		 Function used to free a shared memory used before
+		 */
+
+		void freeSharedMemory( int id )
+		{
+			assert( id >= 0);
+			assert( id < shared_memory_num_buffers);
+			
+			lock.lock();
+			shared_memory_used_buffers[id] = false;
+			lock.unlock();
+			
+		}
 		
 		/**
 		 Interface to get a particular shared memory region
@@ -126,10 +167,16 @@ namespace ss {
 		
 		std::string getStatus()
 		{
+			int num_shm_buffers = 0;
+			for (int i = 0 ; i < shared_memory_num_buffers ; i++)
+				if( shared_memory_used_buffers[i] )
+					num_shm_buffers++;
+			
 			int per_memory = (int) getMemoryUsage()*100;
 			std::ostringstream o;
 			o << "Used: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)";
 			o << " #Buffers " << num_buffers;
+			o << " #Shared memory Buffers " << num_shm_buffers << " / " << shared_memory_num_buffers;
 			return o.str();
 		}
 		

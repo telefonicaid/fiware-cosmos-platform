@@ -15,11 +15,12 @@ namespace ss
 		
 		ControllerTask * t = new ControllerTask( current_task_id++ , job_id,  info , controller->network->getNumWorkers() );
 		
-		//task.insertInMap( t->getId() , t ); // No idea why this is not working :(
-		task.insert( std::pair<size_t , ControllerTask*>( t->getId() , t));
-			
+		size_t id = t->getId();
+		
+		task.insertInMap( id , t ); 
+		
 		// Send this task to all the workers
-		controller->sendWorkerTasks( t );										
+		sendWorkerTasks( t );										
 		
 		lock.unlock();
 
@@ -73,6 +74,42 @@ namespace ss
 		return o.str();
 		
 	}
+	
+	
+	/* ****************************************************************************
+	 *
+	 * sendWorkerTasks - 
+	 */
+	void ControllerTaskManager::sendWorkerTasks( ControllerTask *task )
+	{
+		// Send messages to the workers indicating the operation to do (waiting the confirmation from all of them)
+		
+		for (int i = 0 ; i < controller->network->getNumWorkers() ; i++)
+			sendWorkerTask(i, task->getId(), task);
+	}	
+	
+	
+	
+	/* ****************************************************************************
+	 *
+	 * sendWorkerTask - 
+	 */
+	void ControllerTaskManager::sendWorkerTask(int workerIdentifier, size_t task_id, ControllerTask *task  )
+	{
+		// Get status of controller
+		Packet *p2 = new Packet();
+		
+		network::WorkerTask *t = p2->message.mutable_worker_task();
+		t->set_task_id(task_id);
+		
+		// Fill information for this packet ( input / outputs )
+		task->fillInfo( t , workerIdentifier );
+		
+		// TODO: Complete with the rest of input / output parameters
+		
+		controller->network->send(controller,  controller->network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask,  p2);
+	}
+	
 	
 	
 }

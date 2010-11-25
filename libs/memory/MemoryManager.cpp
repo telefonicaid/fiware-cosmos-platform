@@ -15,8 +15,19 @@ namespace ss
 		
 		// Load setup parameters
 		num_processes = SamsonSetup::shared()->getInt( SETUP_num_processes , 2);
-		shared_memory_per_process = SamsonSetup::shared()->getUInt64( SETUP_shm_size_per_process , 512*1024*1024 );
+
 		memory = SamsonSetup::shared()->getUInt64( SETUP_memory , 0 );
+		
+		shared_memory_size_per_buffer = SamsonSetup::shared()->getUInt64( SETUP_shm_size_per_buffer , 64*1024*1024 );
+		shared_memory_num_buffers = SamsonSetup::shared()->getInt( SETUP_shm_num_buffers , 12 );
+		
+
+		assert( shared_memory_size_per_buffer > 0);
+		
+		// Boolean vector showing if a buffer is used
+		shared_memory_used_buffers = (bool*) malloc( shared_memory_num_buffers * sizeof(bool ) );
+		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
+			shared_memory_used_buffers[i] = false;
 		
 	}
 	
@@ -37,6 +48,8 @@ namespace ss
 	
 	SharedMemoryItem* MemoryManager::getSharedMemory( int i )
 	{
+		assert( i >= 0);
+		
 		std::map<int,SharedMemoryItem*>::iterator s = items.find( i );	
 		if( s == items.end() )
 			return createSharedMemory(i);
@@ -46,6 +59,7 @@ namespace ss
 	
 	SharedMemoryItem* MemoryManager::createSharedMemory( int i )
 	{
+		
 		lock.lock();
 		
 		SharedMemoryItem* _info = new SharedMemoryItem();
@@ -56,13 +70,13 @@ namespace ss
 		
 		
 		key = SS_SHARED_MEMORY_KEY_ID + i; 
-		size = shared_memory_per_process;
+		size = shared_memory_size_per_buffer;
 		shmflg = IPC_CREAT | 384;			// Permission to read / write ( only owner )
 		
 		if ((_info->shmid = shmget (key, size, shmflg)) == -1)
 		{
 			perror("shmget: shmget failed"); 
-			std::cerr << "Error with shared memory\n";
+			std::cerr << "Error with shared memory when creating shared memory\n";
 			exit(1); 
 		}
 		
@@ -71,9 +85,10 @@ namespace ss
 		if( _info->data == (char*)-1 )
 		{
 			perror("shmat: shmat failed"); 
-			std::cerr << "Error with shared memory\n";
+			std::cerr << "Error with shared memory while attaching to local memory\n";
 			exit(1);
 		}
+		_info->size = size;
 		
 		items.insert( std::pair<int,SharedMemoryItem*>( i , _info) );
 		

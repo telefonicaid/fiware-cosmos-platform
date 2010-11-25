@@ -9,10 +9,12 @@
 #define SETUP_max_open_files_per_device		"max_open_files_per_device"
 
 #define SETUP_num_workers					"num_workers"	
-
-#define SETUP_shm_size_per_process			"shm_size_per_process"
 #define SETUP_num_processes					"num_processes"
+
 #define SETUP_memory						"memory"
+
+#define SETUP_shm_size_per_buffer			"shm_size_per_buffer"
+#define SETUP_shm_num_buffers				"shm_num_buffers"
 
 namespace ss {
 	
@@ -34,7 +36,8 @@ namespace ss {
 
 			set( SETUP_num_processes , "2" );
 			set( SETUP_memory , "2147483648" );
-			set( SETUP_shm_size_per_process , "536870912" );
+			set( SETUP_shm_size_per_buffer , "67108864" );
+			set( SETUP_shm_num_buffers , "12" );
 		}
 		
 		void set(std::string name , std::string value)

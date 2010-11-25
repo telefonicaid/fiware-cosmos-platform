@@ -49,7 +49,6 @@ namespace ss {
 		
 		// Log into data a comment to show this
 		controller->data.addComment(id, std::string("PROCESS: ") + command );
-
 		
 		au::CommandLine commandLine;
 		commandLine.parse(command);
@@ -61,6 +60,8 @@ namespace ss {
 		{
 			// Main command
 			std::string c = commandLine.get_argument(0);
+			
+			// Get the operation to run
 			Operation *operation = controller->modulesManager.getOperation( c );
 			
 			if( operation )
@@ -86,7 +87,12 @@ namespace ss {
 				
 				if( operation->getType() == Operation::generator ) 
 				{
-					// No validation of the arguments rigth now... ( just for testing )
+					task_id = controller->taskManager.addTask( task_info , id );
+					return false;	// No continue until confirmation of this task is received
+				}
+
+				if( operation->getType() == Operation::parser ) 
+				{
 					task_id = controller->taskManager.addTask( task_info , id );
 					return false;	// No continue until confirmation of this task is received
 				}

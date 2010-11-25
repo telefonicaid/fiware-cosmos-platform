@@ -3,19 +3,20 @@
 #include "MemoryManager.h"							// ss::SharedMemoryItem
 #include "ProcessWriter.h"							// ss::ProcessWriter
 #include "ProcessAssistantOperationFramework.h"		// Own interface
-
+#include "WorkerTaskManager.h"						// ss::WorkerTaskItemWithOutput
 
 
 namespace ss {
 
 
-	ProcessAssistantOperationFramework::ProcessAssistantOperationFramework(ProcessAssistantInterface *_processAssistant ,Operation *_operation, int processId , int _num_servers  ) : OperationFramework( processId , _num_servers )
+	ProcessAssistantOperationFramework::ProcessAssistantOperationFramework(ProcessAssistant *_processAssistant , network::ProcessMessage m  ) : OperationFramework( m )
 	{
 		processAssistant = _processAssistant;
-		operation = _operation;
-		
-		assert( operation );
 		assert( processAssistant );
+
+		// Setup correclt the process writer
+		pw->setProcessAssistant( processAssistant );
+		
 	}
 
 	/**
@@ -25,29 +26,11 @@ namespace ss {
 	{
 	}
 
-	void ProcessAssistantOperationFramework::setup()
-	{
-		assert( operation );
-		
-		size_t offset = sizeof( OperationFrameworkHeader );	// Skip the header
-		
-		// Now we only consider generator elements ( so no inputs at all)
-		header->num_inputs = 0;		
-		assert( operation->getNumInputs() == 0);
-		
-		// The output takes the rest of the space
-		header->output.offset	= offset;
-		header->output.size		= sm->size -  offset;
-		
-		// Writer from header
-		createProcessWriter();	// Create the Process writter with the information in the header
-		pw->setProcessAssistant( processAssistant );
-	}
 
-	void ProcessAssistantOperationFramework::flushOutput()
+	void ProcessAssistantOperationFramework::flushOutput( WorkerTaskItemWithOutput *item )
 	{
 		// Flush the pw buffer to emit the key-values in the output buffer
-		pw->FlushBuffer();
+		pw->FlushBuffer(item);
 	}
 }
 

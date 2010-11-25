@@ -10,10 +10,12 @@
 * CREATION DATE            Sep 2010
 *
 */
-#include <string>                  // std::string
-#include <pthread.h>               // pthread_t
-#include "ProcessAssistantInterface.h"		// ss::ProcessAssistantInterface
-
+#include <string>					// std::string
+#include <pthread.h>				// pthread_t
+#include "ProcessAssistant.h"		// ss::ProcessAssistant
+#include <sstream>					// std::stringstream
+#include <iostream>					// std::cout
+#include "ProcessAssistantBase.h"	// ss::ProcessAssistantBase
 
 namespace ss {
 	
@@ -37,39 +39,27 @@ namespace ss {
 
 	
 	class SamsonWorker;
-	class ProcessAssistantOperationFramework;
-
-		
-	class ProcessAssistant  : public ProcessAssistantInterface
+	class WorkerTaskItem;
+	
+	/**
+	 Top class of the Process Assitant
+	 */
+	
+	class ProcessAssistant : public ProcessAssistantBase
 	{
+		pthread_t threadId;
+
 	public:
-		ProcessAssistant(int coreNo, SamsonWorker* worker);
 
-	private:
+		WorkerTaskItem *item;		// Item that is currently processing ( to notify commands )
+		
+		ProcessAssistant( int coreNo, SamsonWorker* worker) ;
+		
+		virtual void receiveCommand( network::ProcessMessage p );
 
-		int                            core;
-		int                            workers;
-		pthread_t                      threadId;
-		time_t                         startTime;
-		SamsonWorker*                  worker;
-		
-		void         coreWorkerStart(char* fatherName, int* rFdP, int* wFdP);
-
-		ProcessAssistantOperationFramework * framework;
-		
-		friend class ProcessWriter;
-		
-
-		
-		
-	public:
-		void         run(void);
-		char*        runCommand(int rFd, int wFd, char* command, int timeOut);
-		
-
-		
+		void run();
+	
 	};
-
 }
 
 #endif

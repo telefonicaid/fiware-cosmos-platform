@@ -14,9 +14,6 @@
 namespace ss {
 	
 	
-	
-	
-	
 	class SamsonController;
 	class ControllerTask;
 	class Operation;
@@ -46,8 +43,6 @@ namespace ss {
 		{
 			command.push_back(c);
 		}
-		
-		
 		
 		bool isFinish()
 		{

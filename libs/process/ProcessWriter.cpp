@@ -8,7 +8,8 @@
 #include "NetworkInterface.h"		// ss::NetworkInterface
 #include "ProcessAssistant.h"		// ss::ProcessAssistant
 #include "SamsonWorker.h"			// ss::SamsonWorker
-
+#include "WorkerTaskManager.h"		// ss::WorkerTaskItemWithOutput
+#include "WorkerTaskItemWithOutput.h"	// ss:WorkerTaskItemWithOutput
 
 namespace ss {
 
@@ -44,7 +45,7 @@ namespace ss {
 			 */
 
 			assert( process );	
-			process->passCommand("process_output");
+			process->processOutput( );
 			init();
 		}
 		
@@ -87,15 +88,15 @@ namespace ss {
 
 
 
-	void ProcessWriter::FlushBuffer( )
+	void ProcessWriter::FlushBuffer( WorkerTaskItemWithOutput *taskItem )
 	{
 		
-		size_t task_id = processAssistant->getTaskId();
+		size_t task_id = taskItem->task_id;
 		
 		for (int o = 0 ; o < num_outputs ; o++)
 		{
 			// Name of the queue to sent this packet ( if any )
-			network::Queue output_queue = processAssistant->getOutputQueue( o );
+			network::Queue output_queue = taskItem->getOutputQueue( o );
 			
 			for (int s = 0 ; s < num_servers ; s++)
 			{				
@@ -127,7 +128,7 @@ namespace ss {
 
 						while( node_id != KV_NODE_UNASIGNED )
 						{
-							bool ans = buffer->write( (char*)&node[node_id].data, node[node_id].size );
+							bool ans = buffer->write( (char*) node[node_id].data, node[node_id].size );
 							assert( ans );
 							
 							// Go to the next node

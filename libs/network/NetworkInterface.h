@@ -106,6 +106,12 @@ namespace ss {
 		// Syspend the network interface, close everything and return the "run" call
 		virtual void quit()=0;					
 
+		// Handy function to get my workerID
+		int getWorkerId()
+		{
+			return getWorkerFromIdentifier(getMyidentifier());
+		}
+		
 	};
 	
 	

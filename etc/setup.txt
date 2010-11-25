@@ -1,0 +1,15 @@
+# Number of workers
+num_workers	2
+
+# Number of paralel cores in this worker
+num_processes 	2		# Number of parallel processes working on this maxine	
+
+# Main  memory
+memory 2147483648		# 2Gb of RAM memory  
+
+# Shared memory setup
+shm_size_per_buffer 67108864	# Buffer of 64 Mbytes
+shm_num_buffers	    12		# Number of buffers ( Minimum 2 * num_cores )
+
+# Disk Management
+max_open_files_per_device	20

@@ -57,6 +57,9 @@ namespace ss {
 		
 	private:
 
+		// Send a message to a worker with a particular task
+		void sendWorkerTasks( ControllerTask *task );
+		void sendWorkerTask( int  workerIdentifier , size_t task_id , ControllerTask *task );
 		
 		
 		

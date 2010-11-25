@@ -8,30 +8,17 @@
 namespace ss {
 
 	
-	OperationFramework::OperationFramework( int processId , int _num_servers )
+	OperationFramework::OperationFramework( network::ProcessMessage _m )
 	{
-		process = NULL;
-		processAssistant = NULL;
+		// save the message
+		m = _m;
 		
-		sm = MemoryManager::shared()->getSharedMemory( processId );
-		num_servers = _num_servers;
-		
-		// Header pointing to the beginging of the shared memory area
-		header = (OperationFrameworkHeader*)sm->data;
-		
-	}
-	
-	
-	void OperationFramework::createProcessWriter()
-	{
-		// Writer from header
-		pw = new ProcessWriter(sm->data + header->output.offset , header->output.size , operation->getNumOutputs() , num_servers );
-	}
+		// Create the ProcessWriter
+		pw = new ProcessWriter( m.output_shm() , m.num_outputs() , m.num_servers() );
 
-	void OperationFramework::setOperation( Operation *_operation )
-	{
-		operation = _operation;
 	}
+	
+
 	
 	
 }

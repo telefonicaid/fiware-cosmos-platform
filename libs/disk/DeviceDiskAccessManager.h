@@ -15,6 +15,7 @@
 #include <Format.h>			// au::Format
 #include <time.h>			// clock(.)
 #include "DeviceDiskAccessStatistics.h"	//DeviceDiskAccessStatistics
+#include "au_map.h"			// au::map
 
 namespace ss {
 	
@@ -30,7 +31,7 @@ namespace ss {
 		au::StopLock stopLock;
 		std::list<DiskOperation*> operation;			// List of pending operations
 		
-		std::list<FileAccess*> files;					// Information about open files
+		au::map<std::string , FileAccess> files_read;	// List of open files to read
 		
 		pthread_t t;									// Thread to read/write in this device
 		bool finished;									// Flag to finish the background thread

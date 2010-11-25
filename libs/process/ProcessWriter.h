@@ -15,11 +15,6 @@
 
 namespace ss {
 
-	
-	class ProcessInterface;
-	class ProcessAssistantInterface;
-	
-
 	struct HashGroupOutput {
 
 		NetworkKVInfo info;		// Basic info of this hg
@@ -103,17 +98,18 @@ namespace ss {
 		
 	};
 	
-
-
 	
 	/**
 	 Class to emit key-values ( for maps , reducers, etc )
 	 */
 	
+	class ProcessAssistant;
+	class WorkerTaskItemWithOutput;
+	
 	class ProcessWriter : public KVWriter
 	{
-		ProcessInterface* process;			
-		ProcessAssistantInterface *processAssistant;
+		Process* process;			
+		ProcessAssistant *processAssistant;
 		
 		char * buffer;		// General output buffer
 		size_t size;		// General output buffer size
@@ -137,15 +133,20 @@ namespace ss {
 		
 	public:
 		
-		ProcessWriter( char *_buffer , size_t _size , int _num_outputs , int _num_servers )
+		ProcessWriter( int shm_id , int _num_outputs , int _num_servers )
 		{
+			SharedMemoryItem *item = MemoryManager::shared()->getSharedMemory( shm_id );
+			
 			// Pointer to the process to flush output when full
 			process = NULL;
 			processAssistant = NULL;
 			
 			// General output buffer
-			buffer = _buffer;
-			size = _size;
+			buffer = item->data;
+			size = item->size;
+			
+			assert( buffer );
+			assert( size > 0);
 			
 			// Number of outputs
 			num_outputs = _num_outputs;
@@ -180,12 +181,12 @@ namespace ss {
 		
 		// This class is used both in the Process and ProcessAssistant
 		
-		void setProcess( ProcessInterface *_process)
+		void setProcess( Process *_process)
 		{
 			process = _process;
 		}
 		
-		void setProcessAssistant( ProcessAssistantInterface *_processAssistant)
+		void setProcessAssistant( ProcessAssistant *_processAssistant)
 		{
 			processAssistant = _processAssistant;
 		}
@@ -211,16 +212,9 @@ namespace ss {
 		 Function called form the ProcessAssitant side to create and emit the necessary Buffer to the rigth servers
 		 */
 		
-		void FlushBuffer( );
+		void FlushBuffer(  WorkerTaskItemWithOutput *taskItem );
 
 	};
-
-	
-
-	
-
-
-	
 	
 }
 

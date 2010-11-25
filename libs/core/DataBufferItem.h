@@ -56,13 +56,15 @@ namespace ss {
 		au::Lock lock;						// Lock to protect ids_files
 		
 		int num_finished_workers;			// Number of workers that have notified they are finished
+
+		int myWorkerId;						// My worker id to notify controller about this
 		int num_workers;					// Total number of workers
 		
 	public:
 		
 		std::vector<network::QueueFile> qfiles;	// Created files to be notified to the controller
 		
-		DataBufferItem( DataBuffer *buffer, size_t _task_id , int num_workers );
+		DataBufferItem( DataBuffer *buffer, size_t _task_id , int myWorkerId ,  int num_workers );
 		
 		void addBuffer( network::Queue queue , Buffer *buffer );
 

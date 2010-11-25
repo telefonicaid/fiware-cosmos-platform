@@ -8,36 +8,28 @@
 #include "Packet.h"				 // ss::Packet
 #include "DataBufferItem.h"		 // ss::DataBufferItem
 
-namespace ss {
+#include "WorkerTask.h"			// ss::WorkerTask
+#include "WorkerTaskItem.h"		// ss::WorkerTaskItem
 
+namespace ss {
 	
-	
-#pragma mark WORKER TASK
-	
-	void WorkerTask::finishItem( size_t id , bool _error , std::string _error_message )
-	{
-		
-		WorkerTaskItem *i = item.extractFromMap( id );
-		delete i;
-		
-		if( _error )
-		{
-			error = true;
-			error_message = _error_message;
-		}
-		
-	}	
-	
-#pragma mark WORKER TASK MANAGER
 	
 	void WorkerTaskManager::addTask(const network::WorkerTask &worker_task )
 	{
 		lock.lock();
 
-		WorkerTask *t = new WorkerTask( worker_task );
+		// Look at the operation to 
+		Operation *op = worker->modulesManager.getOperation( worker_task.operation() );
+		assert( op );		// TODO: Better handling of no operation error
 		
+		WorkerTask *t = new WorkerTask( op->getType() , worker_task );
 
 		task.insertInMap( t->task_id , t );
+		
+		// If it is already finished (this happens where there are no input files )
+		if( t->isFinish() )
+			sendCloseMessages( t , worker->network->getNumWorkers() );
+		
 		
 		lock.unlock();
 		
@@ -60,13 +52,12 @@ namespace ss {
 				
 				if( item )
 				{
-					item->startProcess();
 					lock.unlock();
 					return item;
 				}
 			}
 			
-			lock.unlock_waiting_in_stopLock( &stopLock );
+			lock.unlock_waiting_in_stopLock( &stopLock ,1 );
 		}
 		
 	}	
@@ -81,16 +72,16 @@ namespace ss {
 		
 		WorkerTask *t = task.findInMap( item->task_id );
 		assert( t );
+
+		// Notify about this finish
 		t->finishItem( item->item_id , error, error_message );
-		
 		
 		// If all have finished, send the close message
 		if( t->isFinish() )
-		{
 			sendCloseMessages( t , worker->network->getNumWorkers() );
-		}
-		
-		
+
+		// The task is not defined complete until a close is received from all workers.
+		// It is responsability of DataBuffer to notify WorkerTaskManager about this to finally remove the task
 		
 		lock.unlock();
 	}	
@@ -99,7 +90,7 @@ namespace ss {
 	 Nofity that a particular task has finished ( everything has been saved to disk )
 	 */
 	
-	void WorkerTaskManager::completeItem( size_t task_id , DataBufferItem * item )
+	void WorkerTaskManager::completeTask( size_t task_id , DataBufferItem * item )
 	{
 		lock.lock();
 
@@ -107,6 +98,8 @@ namespace ss {
 
 		if( t )
 		{
+			assert( t->isFinish() );	// Otherwise it is not possible to be here
+			
 			Packet *p = new Packet();
 			network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
 			confirmation->set_task_id(  t->task_id );
@@ -153,6 +146,12 @@ namespace ss {
 		}
 	}	
 	
+	std::string WorkerTaskManager::getStatus()
+	{
+		std::ostringstream output;
+		output << getStatusFromArray( task );
+		return output.str();
+	}
 	
 	
 	

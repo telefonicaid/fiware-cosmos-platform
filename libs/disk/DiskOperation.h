@@ -28,7 +28,10 @@ namespace ss {
 		
 		std::string fileName;			// FileName to open
 		std::string mode;				// Mode to open
-		Buffer * buffer;				// Buffer used to read or write
+		
+		Buffer * buffer;				// Buffer used when writing
+		char *read_buffer;				// Buffer used when reading from disk	
+		
 		size_t size;					// Size to read/write
 		size_t offset;					// Offset inside the file ( onlu for read operations )
 		dev_t st_dev;					// Device where this file is stored

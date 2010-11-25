@@ -42,7 +42,7 @@ namespace ss {
 		if (!tdb )
 		{
 			// Create a new item
-			tdb =  new DataBufferItem( this, task_id , worker->network->getNumWorkers() );
+			tdb =  new DataBufferItem( this, task_id , worker->network->getWorkerId(), worker->network->getNumWorkers() );
 			insertInMap( task_id , tdb );
 		}
 		
@@ -56,10 +56,16 @@ namespace ss {
 	{
 		lock.lock();
 		
-		DataBufferItem *item = findInMap( task_id );
+		DataBufferItem *tdb = findInMap( task_id );
 		
-		if( item )
-			item->finishWorker();			// Notify to the item that it is finish to flush last file to disk
+		if (!tdb )
+		{
+			// Create a new item
+			tdb =  new DataBufferItem( this, task_id , worker->network->getWorkerId(), worker->network->getNumWorkers() );
+			insertInMap( task_id , tdb );
+		}
+		
+		tdb->finishWorker();			// Notify to the item that it is finish to flush last file to disk
 		
 		lock.unlock();
 		

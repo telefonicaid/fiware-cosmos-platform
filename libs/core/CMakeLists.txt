@@ -1,3 +1,4 @@
+
 SET (HEADERS
     Monitor.h
     MonitorParameter.h
@@ -17,6 +18,11 @@ SET (HEADERS
     ControllerTaskInfo.h
     Queue.h
     QueueFile.h
+    WorkerTask.h
+    WorkerTaskItem.h
+    WorkerTaskItemWithOutput.h
+    WorkerTaskItemGenerator.h
+    WorkerTaskItemParser.h
 )
 
 SET (SOURCES
@@ -38,6 +44,11 @@ SET (SOURCES
     Job.cpp 
     Queue.cpp
     QueueFile.cpp
+    WorkerTask.cpp
+    WorkerTaskItem.cpp
+    WorkerTaskItemWithOutput.cpp
+    WorkerTaskItemGenerator.cpp
+    WorkerTaskItemParser.cpp
 )
 
 SET (STATIC_LIBS
@@ -91,4 +102,8 @@ SET_TARGET_PROPERTIES(samsonCoreStatic PROPERTIES OUTPUT_NAME samsonCore)
 # ADD_LIBRARY(samsonCoreShared SHARED ${SOURCES} ${HEADERS} )
 # TARGET_LINK_LIBRARIES(samsonCoreShared ${SHARED_LIBS} )
 # SET_TARGET_PROPERTIES(samsonCoreShared PROPERTIES OUTPUT_NAME samsonCore)
+
+
+
+
 

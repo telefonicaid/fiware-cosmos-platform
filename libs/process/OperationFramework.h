@@ -2,11 +2,13 @@
 #define _H_OPERATION_FRAMEWORK
 
 #include <cstring>
+#include <string>
+#include "samson.pb.h"
 
 namespace ss {
 
-	class ProcessInterface;
-	class ProcessAssistantInterface;
+	class Process;
+	class ProcessAssistant;
 	class ProcessWriter;
 	class Operation;
 	class SharedMemoryItem;
@@ -16,41 +18,17 @@ namespace ss {
 	 Full class for a particualr operation process
 	 */
 	
-	struct OperationFrameworkHeaderItem
-	{
-		size_t offset;
-		size_t size;
-	};
-	
-	struct OperationFrameworkHeader
-	{
-		char num_inputs;
-		OperationFrameworkHeaderItem inputs[255];	// Part of the shared memory vector for the input
-		OperationFrameworkHeaderItem output;		// Part of the shared memory vector for the output ( unique for all servers and 
-	};
-	
 	
 	class OperationFramework
 	{
 		
 	protected:
 		
-		// Pointer to the parent ( one of them )
-		ProcessInterface *process;
-		ProcessAssistantInterface *processAssistant;
+		network::ProcessMessage m;	// Message that originated this operation
 		
-		Operation *operation;
-		int num_servers;
+		ProcessWriter *pw;			// Process writer to emit key-values
 		
-		SharedMemoryItem* sm;	// Shared memory used
-		ProcessWriter *pw;		// Process writer to emit key-values
-		
-		OperationFrameworkHeader *header;
-		
-		OperationFramework( int processId , int _num_servers );		
-		void setOperation( Operation *_operation );
-		
-		void createProcessWriter();
+		OperationFramework( network::ProcessMessage m );		
 		
 	};
 	

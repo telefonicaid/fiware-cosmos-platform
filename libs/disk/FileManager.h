@@ -7,6 +7,7 @@
 #include "Buffer.h"		// ss::Buffer
 #include "au_map.h"		// au::map
 #include <list>			// std::list
+#include <set>			// std::set
 #include <vector>		// std::vector
 #include "MemoryManager.h"			// ss::MemoryManager
 #include "DiskManager.h"			// ss::DiskManager
@@ -36,23 +37,37 @@ namespace ss {
 	
 	class FileManagerReadItem
 	{
+		
+	public:
+		
 		std::string fileName;		// Name of the file
 		size_t offset;		// Offset inside file ( only used when reading )
 		size_t size;		// Size to read
+
+		FileManagerReadItem( std::string _fileName )
+		{
+			fileName = _fileName;
+
+			offset = 0;
+			// get the size of this file
+			struct ::stat info;
+			if( stat(fileName.c_str(), &info) == 0)
+			{
+				size = info.st_size;
+			}
+			else
+			{
+				assert( false );
+				size = 0;
+			}
+		}
 		
-		Buffer *buffer;		// Buffer used to read ( created by MemoryManager ) 
-		bool ready;			// flag to indicate that the content is ready (content is there)
-		
-		friend class FileManagerReadItemVector;
 		
 		FileManagerReadItem( std::string _fileName , size_t _offset , size_t _size )
 		{
 			fileName = _fileName;
 			offset = _offset;
 			size = _size;
-			
-			buffer = NULL;
-			ready = false;
 		}
 	};
 
@@ -60,35 +75,71 @@ namespace ss {
 	/**
 	 Vector of items to be read from disk
 	 This is the structure submited by any process
+	 This should never be deleted outsite FileManager (only report that finish to be used )
 	 */
 	
-	class FileManagerReadItemVector : public std::vector<FileManagerReadItem>
+	class FileManagerReadItemVector
 	{
-		bool lock;	// Flag to indicate that this content is being used outside MemoryManager so we cannot free from memory any buffer
-
 	public:
 		
-		FileManagerReadItemVector()
+		char *data;
+		size_t max_size;
+
+		size_t size;	// acumulated size to read
+		
+		std::vector<FileManagerReadItem> items;
+
+		int read_items;
+		
+		FileManagerReadItemVector(  )
 		{
-			lock = false;
+			size = 0;
+			read_items = 0;
+		}
+		
+		void setBuffer( char *_data , size_t _max_size )
+		{
+			assert( _max_size >= size );
+			data = _data;
+			max_size = _max_size;
+		}
+		
+		void addItem( FileManagerReadItem item )
+		{
+			items.push_back( item );
+
+			// Keep the total size for debuggin
+			size+= item.size;
+
 		}
 		
 		
-		bool checkAndLock()
+		void notifyReadFile()
 		{
-			assert( false ); // TODO: complete operation
-			return false;
+			read_items++;
+		}
+		
+		bool isReady()
+		{
+			return (read_items == (int)items.size());
 		}
 		
 		/** 
 		 Remove all the buffers inside
 		 */
 		
-		void destroy()
+		std::string getStatus()
 		{
-			for (size_t i = 0 ; i < size() ; i++)
-				MemoryManager::shared()->destroyBuffer( (*this)[i].buffer );
+			std::ostringstream output;
+			output << "Vector with " << items.size() << " files";
+			if( isReady() )
+				output << " READY ";
+			else 				
+				output << " NOT READY ";
+
+			return output.str();
 		}
+			
 		
 	};
 	
@@ -133,19 +184,19 @@ namespace ss {
 	 
 	class FileManager : public DiskManagerDelegate
 	{
-
 		au::Lock lock;		// thread safe lock
-
 		
 		// Elements to save to disk
 		au::map<std::string, FileManagerWriteItem> itemsToSave;
 		
 		// Elements to read ( in order of preference )
-		std::list< FileManagerReadItemVector* > itemsToRead;
-		
+		std::set< FileManagerReadItemVector* > itemsToRead;
 		
 		// Connections between DiskManager ids and fileNames of file saving
 		au::map<size_t , FileManagerWriteItem> savingFiles;
+		
+		// Connections between DiskManager ids and itemsToRead
+		au::map<size_t , FileManagerReadItemVector> readingFiles;
 		
 	public:
 		
@@ -185,54 +236,27 @@ namespace ss {
 		void addItemsToRead( FileManagerReadItemVector* v )
 		{
 			lock.lock();
-			itemsToRead.push_back( v );
+			itemsToRead.insert( v );
+
+			
+			// Set all read from disk ( in the future, we will use cached elements from memory )
+
+			size_t offset = 0 ;
+
+			for (size_t i = 0 ; i < v->items.size() ; i++)
+			{
+				size_t id = DiskManager::shared()->read( v->data + offset , v->items[i].fileName , v->items[i].offset , v->items[i].size,  this );
+				offset += v->items[i].size;
+				
+				readingFiles.insertInMap( id , v );
+			}
+			
+			
+			
 			lock.unlock();
 			
 		};
-
-		/**
-		 Function used to check if all the required files are on memory and lock them if possible
-		 */
-		 
-		bool checkAndLockItemsToRead( FileManagerReadItemVector* v)
-		{ 
-			bool answer;
-			lock.lock();
-			answer = v->checkAndLock();
-			lock.unlock();
-			
-			return answer;
-		}
 		
-		/**
-		 Function used to remove a list of files to read
-		 */
-		
-		void removeItemsToRead( FileManagerReadItemVector* v )
-		{
-			// Destroy al buffers used here, and then remove the element from the list
-			lock.lock();
-			
-			std::list< FileManagerReadItemVector* >::iterator i;
-			for ( i = itemsToRead.begin(); i != itemsToRead.end() ; i++)
-			{
-				if( *i == v )
-				{
-					// Remove from the list
-					itemsToRead.erase( i );
-					
-					// Delete buffers and the element itself
-					v->destroy();
-					delete v;
-					
-					lock.unlock();
-					return ;
-				}
-			}
-			
-			assert( false );	// Something wrong happen
-			
-		}
 		
 		
 		/**
@@ -254,6 +278,23 @@ namespace ss {
 				
 				// Notify to my delegate
 				item->delegate->diskManagerNotifyFinish( id , success); 
+			}
+		
+			// See if it is a read file
+			FileManagerReadItemVector* v = readingFiles.extractFromMap( id );
+
+			if( v )
+			{
+				v->notifyReadFile( );
+				if( v->isReady() )
+				{
+					// Notify someone...
+					
+					// Remove from this list
+					itemsToRead.erase( v );
+					
+					
+				}
 			}
 			
 			lock.unlock();

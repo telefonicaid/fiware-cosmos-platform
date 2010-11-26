@@ -17,7 +17,9 @@ namespace ss {
 
 		char * _data;			// Buffer of data
 		size_t _max_size;		// Maximum size of this buffer
-
+		
+		std::string _name;		// Internal name for debugging
+		
 		
 		/**
 		 Current size used in this buffer 
@@ -38,11 +40,13 @@ namespace ss {
 		// Private constructor/destructors since it can be only access by MemoryManager
 		friend class MemoryManager;
 		
-		Buffer( size_t max_size )
+		Buffer( std::string name ,   size_t max_size )
 		{
 			_max_size = max_size;
 			_offset = 0;
-
+			
+			_name = name;
+			
 			if( max_size > 0)
 				_data = (char *) malloc(max_size);
 			else

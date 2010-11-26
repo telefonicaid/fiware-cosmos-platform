@@ -56,7 +56,7 @@ namespace ss {
 		size_t file_size = sizeof(FileHeader) + KV_HASH_GROUP_VECTOR_SIZE_FILE + info.size;	
 
 		// Crearte the buffer
-		Buffer *b = MemoryManager::shared()->newBuffer( file_size );
+		Buffer *b = MemoryManager::shared()->newBuffer( "Creating file from network buffers" , file_size );
 		
 		// Global header of the file with magic number and format
 		FileHeader fileHeader;
@@ -103,6 +103,7 @@ namespace ss {
 		// Remove all buffers
 		for (size_t i = 0 ; i < buffer.size() ; i++)
 			MemoryManager::shared()->destroyBuffer( buffer[i] );
+		
 		buffer.clear();
 		
 		// Reset accumulated size in this vector of buffers

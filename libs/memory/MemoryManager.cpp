@@ -100,7 +100,7 @@ namespace ss
 		return _info;
 	}		
 	
-	Buffer *MemoryManager::newBuffer( size_t size )
+	Buffer *MemoryManager::newBuffer( std::string name , size_t size )
 	{
 		lock.lock();
 		
@@ -111,7 +111,7 @@ namespace ss
 		// Increase the number of used memory buffers
 		num_buffers++;
 		
-		Buffer *b = new Buffer( size );
+		Buffer *b = new Buffer( name, size );
 
 		lock.unlock();
 		LM_M(("address: %p", b));
@@ -145,31 +145,7 @@ namespace ss
 
 	}
 	
-	Buffer *MemoryManager::newBufferIfMemoryBellow( size_t size , double max_usage_memory , bool blocking )
-	{
-		while( true )
-		{
-			Buffer *tmp = NULL;
-			lock.lock();
-			if( getMemoryUsage() < max_usage_memory )
-			{
-				used_memory += size;				// Keep counter of the used memory
-				tmp = new Buffer( size );
-				lock.unlock();
-				return tmp;
-			}
-			else
-			{
-				if( blocking )
-					lock.unlock_waiting_in_stopLock( &stopLock );
-				else
-				{
-					lock.unlock();
-					return NULL;
-				}
-			}
-		}
-	}
+
 	
 	double MemoryManager::getMemoryUsage()
 	{

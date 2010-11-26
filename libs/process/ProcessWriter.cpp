@@ -105,7 +105,7 @@ namespace ss {
 				if( _channel->info.size > 0)
 				{
 				
-					Buffer *buffer = MemoryManager::shared()->newBuffer( KV_HASH_GROUP_VECTOR_SIZE_NETWORK + _channel->info.size );
+					Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessWriter", KV_HASH_GROUP_VECTOR_SIZE_NETWORK + _channel->info.size );
 					assert( buffer );
 					
 					// Pointer to the begining for info vector

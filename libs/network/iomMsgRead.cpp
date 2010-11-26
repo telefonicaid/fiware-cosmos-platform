@@ -107,7 +107,7 @@ int iomMsgRead
 
 	if (header.kvDataLen != 0)
 	{
-		packetP->buffer = ss::MemoryManager::shared()->newBuffer(header.kvDataLen);
+		packetP->buffer = ss::MemoryManager::shared()->newBuffer( "iomMsgRead function",  header.kvDataLen );
 
 		int    size  = header.kvDataLen;
 		char*  kvBuf = packetP->buffer->getData();
@@ -205,7 +205,7 @@ int iomMsgRead
 
 	if (headerP->kvDataLen != 0)
 	{
-		packetP->buffer = ss::MemoryManager::shared()->newBuffer(headerP->kvDataLen);
+		packetP->buffer = ss::MemoryManager::shared()->newBuffer( "iomMsgRead function" , headerP->kvDataLen);
 
 		int    size   = headerP->kvDataLen;
 		char*  kvBuf  = packetP->buffer->getData();

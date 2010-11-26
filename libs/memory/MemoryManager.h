@@ -6,6 +6,7 @@
 #include <sys/ipc.h> 
 #include <sys/shm.h> 
 #include <map>						// std::map
+#include <set>						// std::set
 #include <iostream>					// std::cout
 #include "samsonDirectories.h"		// SAMSON_SETUP_FILE
 #include "CommandLine.h"			// au::CommandLine
@@ -45,7 +46,7 @@ namespace ss {
 		size_t used_memory;								// Monitor the used memory
 
 		au::map<int,SharedMemoryItem> items;			// Shared memory items
-		
+
 		// Setup parameters ( loaded at constructor )
 		
 		int num_processes;							// Number of cores to use in this server
@@ -67,6 +68,8 @@ namespace ss {
 		// Function used to create a particular shared memory region ( used inside a "Process" to work with its designated area )
 		SharedMemoryItem* createSharedMemory( int i );
 		
+		std::set< Buffer* > buffers;
+		
 	public:
 		
 		/**
@@ -80,21 +83,12 @@ namespace ss {
 		 Used by networkInterface , DataBuffer and FileManager
 		 */
 		
-		Buffer *newBuffer( size_t size );
+		Buffer *newBuffer( std::string name ,  size_t size );
 
 		/**
 		 Interface to destroy a buffer of memory
 		 */
 		void destroyBuffer( Buffer *b );
-		
-		/** 
-		 Interface to get a buffer only if used memory is bellow a particular percentadge.
-		 If that is not the case, this call is blocking until the memory is free enougth
-		 This is used when Process produce data. Only if enougth memory is available, data is send to the network interface
-		 */
-		 
-		 Buffer *newBufferIfMemoryBellow( size_t size , double max_usage_memory , bool blocking );
-
 		
 		/**
 		 Get the current usage of memory
@@ -176,6 +170,15 @@ namespace ss {
 			o << "Used: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)";
 			o << " #Buffers " << num_buffers;
 			o << " #Shared memory Buffers " << num_shm_buffers << " / " << shared_memory_num_buffers;
+			
+		
+			o << "Buffers: ";
+			
+			std::set<Buffer*>::iterator iter;
+			for (iter = buffers.begin() ; iter != buffers.end() ; iter++ )
+				o << (*iter)->_name << " ";
+			
+			
 			return o.str();
 		}
 		

@@ -65,7 +65,7 @@ namespace ss
 		{
 			// Create a buffer
 			delilah->client->showMessage("Creating buffer to load data");
-			Buffer *b = MemoryManager::shared()->newBuffer( 64*1024*1024 );
+			Buffer *b = MemoryManager::shared()->newBuffer( "Loading buffer" , 64*1024*1024 );
 			
 			// Fill the buffer
 			fileSet.fill( b );

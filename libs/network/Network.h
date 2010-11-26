@@ -88,9 +88,10 @@ public:
 	void controllerMsgTreat(Endpoint* ep, Message::MessageCode msgCode, Message::MessageType msgType, void* dataP, int dataLen, Packet* packetP);
 
 private:
-	Endpoint*  listener;
 	Endpoint*  me;
+	Endpoint*  listener;
 	Endpoint*  controller;
+	Endpoint*  ME;
 
 	bool       iAmReady;
 

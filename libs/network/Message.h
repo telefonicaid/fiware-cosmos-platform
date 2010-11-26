@@ -79,6 +79,7 @@ typedef struct Header
 	unsigned int   dataLen;
 	unsigned int   gbufLen;
 	unsigned int   kvDataLen;
+	unsigned int   magic;
 } Header;
 
 

@@ -52,6 +52,12 @@ int iomMsgRead
 		return -2;
 	}
 
+	if (nb != sizeof(header))
+		LM_RE(1, ("reading header from '%s' - read only %d bytes (need %d)", from, nb, sizeof(header)));
+
+	if (header.magic != 0xFEEDC0DE)
+		LM_X(1, ("Badmagic number in header"));
+
 	*msgCodeP = header.code;
 	*msgTypeP = header.type;
 

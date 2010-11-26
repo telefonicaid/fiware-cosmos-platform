@@ -1,4 +1,3 @@
-
 /* ****************************************************************************
 *
 * FILE                     Network.cpp - Definition for the network interface
@@ -966,7 +965,7 @@ static void* msgTreatThreadFunction(void* vP)
 
 	ep->state = paramP->state;
 
-	LM_E(("back after msgTreat - set state for '%s' to %d", ep->name.c_str(), ep->state));
+	LM_F(("back after msgTreat - set state for '%s' to %d", ep->name.c_str(), ep->state));
 
 	free(vP);
 	return NULL;
@@ -1059,7 +1058,9 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	// Reading header of the message
 	//
 	nb = read(ep->rFd, &header, sizeof(header));
-	if (nb == 0) /* Connection closed */
+	if (nb == -1)
+		LM_RVE(("iomMsgRead: error reading message from '%s': %s", ep->name.c_str(), strerror(errno)));
+	else if (nb == 0) /* Connection closed */
 	{
 		LM_T(LMT_SELECT, ("Connection closed - ep at %p", ep));
 		ep->msgsInErrors += 1;
@@ -1118,10 +1119,11 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 		return;
 	}
-	else if (nb == -1)
-		LM_RVE(("iomMsgRead: error reading message from '%s': %s", ep->name.c_str(), strerror(errno)));
 	else if (nb != sizeof(header))
 		LM_RVE(("iomMsgRead: error reading header from '%s' (read %d, wanted %d bytes", ep->name.c_str(), nb, sizeof(header)));
+
+	if (header.magic != 0xFEEDC0DE)
+		LM_X(1, ("Badmagic number in header"));
 
 	LM_T(LMT_MSGTREAT, ("Read header of '%s' message with dataLens %d, %d, %d", messageCode(header.code), header.dataLen, header.gbufLen, header.kvDataLen));
 
@@ -1444,6 +1446,7 @@ void Network::msgTreat(void* vP)
 				{
 					LM_T(LMT_WORKERS, ("NOT connecting to myself ..."));
 					epP->name = std::string("me: ") + epP->ip;
+					ME = epP;
 					continue;
 				}
 

@@ -35,6 +35,8 @@ SamsonWorker::SamsonWorker(char* controller, char* alias, unsigned short port, i
 	// Define the number of process
 	num_processes = SamsonSetup::shared()->num_processes;
 	
+	srand( (unsigned int) time(NULL) );
+	
 }
 
 
@@ -170,7 +172,7 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	{
 		
 		std::ostringstream fileName;
-		fileName << "/tmp/file_"<< getpid() << rand() << rand();	// Just to test
+		fileName << "/tmp/file_"<< getpid() << "_" << rand() << rand();	// Just to test
 		
 		loadDataManager.addFile( packet->buffer , fileName.str() , fromId , packet->message.load_data().process_id() , packet->message.load_data().file_id() );
 		return 0;

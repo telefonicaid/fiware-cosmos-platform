@@ -1,3 +1,12 @@
+/*
+ * FILE:		CreateDataQueueDlg.h
+ *
+ * AUTHOR:		Anna Wojdel
+ *
+ * DESCRIPTION:
+ *
+ */
+
 #ifndef CREATEDATAQUEUEDLG_H
 #define CREATEDATAQUEUEDLG_H
 

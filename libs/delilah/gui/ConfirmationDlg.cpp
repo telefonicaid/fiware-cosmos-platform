@@ -1,3 +1,12 @@
+/*
+ * FILE:		ConfirmationDlg.cpp
+ *
+ * AUTHOR:		Anna Wojdel
+ *
+ * DESCRIPTION:
+ *
+ */
+
 #include "ConfirmationDlg.h"
 
 ConfirmationDlg::ConfirmationDlg(QWidget* parent)

@@ -16,6 +16,7 @@
 #include "globals.h"
 
 #include "Queue.h"
+#include "DataType.h"
 
 DelilahQtApp::DelilahQtApp(int &argc, char ** argv, ss::Delilah* _delilah)
 	: QApplication(argc, argv)
@@ -51,7 +52,7 @@ void DelilahQtApp::uploadData(bool queue, bool operation, bool data_type, const 
 	{
 		if (queue)
 		{
-			Queue *q = getQueue(name);
+			Queue* q = getQueue(name);
 			if (q)
 				q->setStatus(Queue::SYNCHRONIZING);
 		}
@@ -296,6 +297,23 @@ Queue* DelilahQtApp::getQueue(const QString &name, bool deleted)
 	return 0;
 }
 
+QList<DataType*> DelilahQtApp::getDataTypes()
+{
+	return data_types;
+}
+
+DataType* DelilahQtApp::getDataType(const QString &name)
+{
+	for(int i=0; i<data_types.size(); i++)
+	{
+		DataType* data = data_types.at(i);
+		if (data->getName().compare(name)==0)
+			return data;
+	}
+
+	return 0;
+}
+
 
 /******************************************************************************
  *
@@ -304,7 +322,7 @@ Queue* DelilahQtApp::getQueue(const QString &name, bool deleted)
  *****************************************************************************/
 
 /*
- * Synchronizes key-value queues list with the queues returned in HelpResponse.
+ * Synchronizes queues list with the queues returned in HelpResponse.
  * If synchronize_all is true, all queues that were not updated (have status SYNCHRONIZING)
  * are marked as deleted.
  */
@@ -347,7 +365,38 @@ void DelilahQtApp::synchronizeOperations(const ss::network::HelpResponse &resp, 
 	// TODO:
 }
 
+/*
+ * Synchronize list of data_types in application to be the same as the one
+ * received from the SAMSON platform.
+ * If synchronize_all is true (default), local list of data types will be cleared and new
+ * types will be uploded. Otherwise the appropriate data type will be find and uploaded.
+ * TODO: Currently we do not allow for DataTypes to be added, modified or deleted in runtime.
+ * If we allow for this we should introduce the same status mechanism as for queues.
+ * Also variables in Queue and Operation objects that represent data type,
+ * should not be QStrings but pointers to appropriate DataType (with appropriate reaction
+ * in case DataType will be modified or deleted)
+ */
 void DelilahQtApp::synchronizeDataTypes(const ss::network::HelpResponse &resp, bool synchronize_all)
 {
-	// TODO:
+	if(synchronize_all)
+		data_types.clear();
+
+	for (int i=0 ; i<resp.data_size(); i++)
+	{
+		ss::network::Data d = resp.data(i);
+		QString name = QString::fromStdString(d.name());
+
+		DataType* data = 0;
+		if (!synchronize_all)
+			data = getDataType(name);
+
+		if (data==0)
+		{
+			data = new DataType(name);
+			data_types.append(data);
+		}
+
+		// Upload data_type values
+		data->upload(&d);
+	}
 }

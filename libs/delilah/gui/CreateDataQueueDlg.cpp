@@ -1,3 +1,12 @@
+/*
+ * FILE:		CreateDataQueueDlg.cpp
+ *
+ * AUTHOR:		Anna Wojdel
+ *
+ * DESCRIPTION:
+ *
+ */
+
 #include <iostream>
 
 #include "CreateDataQueueDlg.h"
@@ -16,7 +25,11 @@ void CreateDataQueueDlg::accept()
 {
 	DelilahQtApp* app = (DelilahQtApp*)qApp;
 
-	QString validation = app->validateNewQueueName(ui.nameLineEdit->text());
+	QString validation;
+	if(ui.nameLineEdit->text().isEmpty())
+		validation = "Queue name is empty.";
+	else
+		validation = app->validateNewQueueName(ui.nameLineEdit->text());
 
 	if ( validation.isNull() )
 		QDialog::accept();

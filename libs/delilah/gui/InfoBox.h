@@ -50,9 +50,16 @@ class QueueInfoBox : public InfoBox
 {
 public:
 	QueueInfoBox(QWidget* parent=0)
-		: InfoBox(parent), queue(0) {};
+		: InfoBox(parent), queue(0)
+	{
+		setWindowTitle("Queue Info");
+	};
 	QueueInfoBox(Queue* _queue, QWidget* parent=0)
-		: InfoBox(parent) { queue=_queue;};
+		: InfoBox(parent)
+	{
+		queue=_queue;
+		setWindowTitle("Queue Info");
+	};
 	~QueueInfoBox() {};
 
 	virtual void setInfo();

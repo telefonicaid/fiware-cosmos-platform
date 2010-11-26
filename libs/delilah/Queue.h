@@ -13,7 +13,7 @@
 #include <QObject>
 #include <QMetaType>
 
-#include "samson.pb.h"		//ss::network::Queue, ss::network::DataQueue
+#include "samson.pb.h"		//ss::network::Queue
 #include "globals.h"
 
 
@@ -24,8 +24,6 @@ class Queue : public QObject
 	Q_OBJECT
 
 public:
-//	Queue()
-//		: type(Queue::KV_QUEUE), status(Queue::SYNCHRONIZING) { };
 	Queue(const QString &_name, const QueueType _type=KV_QUEUE)
 		: status(Queue::SYNCHRONIZING), type(_type), name(_name) {};
 	~Queue() {};

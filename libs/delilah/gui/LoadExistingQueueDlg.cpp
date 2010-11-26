@@ -11,6 +11,7 @@
 
 #include "LoadExistingQueueDlg.h"
 #include "DelilahQtApp.h"
+#include "Misc.h"
 
 LoadExistingQueueDlg::LoadExistingQueueDlg(QWidget* parent)
     : QDialog(parent), name_column_number(0)
@@ -21,10 +22,8 @@ LoadExistingQueueDlg::LoadExistingQueueDlg(QWidget* parent)
 	show_error = false;
 	connect(ui.nameLineEdit, SIGNAL(textChanged(QString)), this, SLOT(cancelError()));
 
-	// initialize queues tree list
-	listQueues();
-	if(ui.nameTreeWidget->topLevelItemCount()>0)
-		ui.nameTreeWidget->setCurrentItem(ui.nameTreeWidget->topLevelItem(0));
+	// initialize queues in tree widget
+	initializeQueueTree();
 
 }
 
@@ -33,61 +32,19 @@ LoadExistingQueueDlg::~LoadExistingQueueDlg()
 
 }
 
-void LoadExistingQueueDlg::listQueues()
+void LoadExistingQueueDlg::initializeQueueTree()
 {
 	DelilahQtApp* app = (DelilahQtApp*)qApp;
 	QList<Queue*> queues = app->getQueues();
 
+	QStringList names;
 	for(int i=0; i<queues.size(); i++ )
-	{
-		Queue* queue = queues[i];
+		names << queues.at(i)->getName();
 
-		QStringList name_parts = queue->getName().split(".");
-		QTreeWidgetItem* parent_item = 0;
-		for(int j=0; j<name_parts.size(); j++)
-		{
-			QString current_part_name = name_parts[j];
-			QTreeWidgetItem* found = 0;
+	arrangeNamesInTreeWidget(ui.nameTreeWidget, name_column_number, names);
 
-			// Special case for top level
-			if(j==0)
-			{
-				for(int k=0; k<ui.nameTreeWidget->topLevelItemCount(); k++)
-				{
-					if(ui.nameTreeWidget->topLevelItem(k)->text(name_column_number)==current_part_name)
-					{
-						found = ui.nameTreeWidget->topLevelItem(k);
-						break;
-					}
-				}
-				if(found==0)
-				{
-					found = new QTreeWidgetItem(ui.nameTreeWidget);
-					found->setText(name_column_number, current_part_name);
-				}
-
-			}
-			else
-			{
-				assert(parent_item!=0);
-				for(int k=0; k<parent_item->childCount(); k++)
-				{
-					if(parent_item->child(k)->text(name_column_number)==current_part_name)
-					{
-						found = parent_item->child(k);
-						break;
-					}
-				}
-				if (found==0)
-				{
-					found = new QTreeWidgetItem(parent_item);
-					found->setText(name_column_number, current_part_name);
-				}
-			}
-
-			parent_item = found;
-		}
-	}
+	if(ui.nameTreeWidget->topLevelItemCount()>0)
+		ui.nameTreeWidget->setCurrentItem(ui.nameTreeWidget->topLevelItem(0));
 }
 
 

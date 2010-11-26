@@ -11,7 +11,7 @@
 #include "Queue.h"
 
 InfoBox::InfoBox(QWidget *parent)
-    : QDialog(parent, Qt::CustomizeWindowHint)
+    : QDialog(parent)//, Qt::CustomizeWindowHint)
 {
 	ui.setupUi(this);
 
@@ -28,8 +28,8 @@ void QueueInfoBox::setInfo()
 
 		QList< QStringList > info;
 		QStringList name = (QStringList() << "Name: " << queue->getName());
-//		// TODO: formating
-		QStringList size = (QStringList() << "Size: " << number.setNum(queue->getSize()) + " kb");
+		// TODO: formating
+		QStringList size = (QStringList() << "Size: " << number.setNum(queue->getSize()/1024) + " kb");
 		info << name << size;
 		if (queue->getType()==KV_QUEUE)
 		{

@@ -10,7 +10,10 @@
 #ifndef MISC_H_
 #define MISC_H_
 
+#include <cassert>
+
 #include <QAction>
+#include <QTreeWidget>
 
 class ActionWithPos : public QAction
 {
@@ -35,6 +38,8 @@ signals:
 private:
 	QPointF pos;
 };
+
+void arrangeNamesInTreeWidget(QTreeWidget* widget, unsigned int column, QStringList names);
 
 
 #endif /* MISC_H_ */

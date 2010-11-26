@@ -1,3 +1,12 @@
+/*
+ * FILE:		ConfirmationDlg.h
+ *
+ * AUTHOR:		Anna Wojdel
+ *
+ * DESCRIPTION:
+ *
+ */
+
 #ifndef CONFIRMATIONDLG_H
 #define CONFIRMATIONDLG_H
 

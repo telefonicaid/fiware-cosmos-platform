@@ -29,7 +29,7 @@ public slots:
 	void setQueueName(QTreeWidgetItem* item);
 
 protected:
-    void listQueues();
+    void initializeQueueTree();
 
 private:
     Ui::LoadExistingQueueDlgClass ui;

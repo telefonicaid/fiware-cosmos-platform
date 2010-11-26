@@ -15,9 +15,6 @@ int Queue::upload(ss::network::Queue* q)
 {
 	size = q->info().size();
 
-	//TODO remove:
-	std::cout << "Loading queue: " << getName().toStdString() << std::endl;
-
 	QString key_format = QString::fromStdString(q->format().keyformat());
 	QString value_format = QString::fromStdString(q->format().valueformat());
 	if (key_format.compare(DATA_QUEUE_KV_FORMAT, Qt::CaseInsensitive) != 0 ||

@@ -18,6 +18,7 @@
 #include "Misc.h"
 
 #include "CreateDataQueueDlg.h"
+#include "CreateKVQueueDlg.h"
 #include "LoadExistingQueueDlg.h"
 #include "ConfirmationDlg.h"
 #include "InfoBox.h"
@@ -188,7 +189,12 @@ void WorkspaceView::createDataQueueSelected(const QPointF &scene_pos)
 
 void WorkspaceView::createKVQueueSelected(const QPointF &scene_pos)
 {
+	CreateKVQueueDlg* dlg = new CreateKVQueueDlg(this);
+
 	// TODO:
+	dlg->exec();
+
+	delete dlg;
 }
 
 void WorkspaceView::confirmDeletingQueue(Queue* queue)

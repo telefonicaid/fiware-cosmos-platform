@@ -15,6 +15,7 @@ IF(QT4_FOUND)
 		WorkspaceView.cpp
 		gui/InfoBox.cpp
 		gui/CreateDataQueueDlg.cpp
+		gui/CreateKVQueueDlg.cpp
 		gui/LoadExistingQueueDlg.cpp
 		gui/ConfirmationDlg.cpp
 		Queue.cpp
@@ -23,6 +24,7 @@ IF(QT4_FOUND)
 		items/QueueItem.cpp
 		items/OperationItem.cpp
 		items/ConnectionItem.cpp
+		Misc.cpp
 		)
 	
 	SET (HEADERS
@@ -41,11 +43,12 @@ IF(QT4_FOUND)
 		WorkspaceView.h
 		gui/InfoBox.h
 		gui/CreateDataQueueDlg.h
+		gui/CreateKVQueueDlg.h
 		gui/LoadExistingQueueDlg.h
 		gui/ConfirmationDlg.h
 		Queue.h
 		Operation.h
-//		DataType.h
+		DataType.h
 		Process.h
 		items/ObjectItem.h
 		items/QueueItem.h
@@ -58,6 +61,7 @@ IF(QT4_FOUND)
 		MainWindow.ui
 		gui/forms/InfoBox.ui
 		gui/forms/CreateDataQueueDlg.ui
+		gui/forms/CreateKVQueueDlg.ui
 		gui/forms/LoadExistingQueueDlg.ui
 		gui/forms/ConfirmationDlg.ui
 		)

@@ -10,6 +10,7 @@
 */
 #include <assert.h>	         // assert
 
+#include "MemoryManager.h"   // MemoryManager
 #include "samson.pb.h"       // google protocol buffers
 #include "Endpoint.h"        // Endpoint
 
@@ -85,6 +86,11 @@ namespace ss {
 		{
 			buffer = NULL;
 		};
+
+		~Packet()
+		{
+			MemoryManager::shared()->destroyBuffer(buffer);
+		}
 	};
 }
 

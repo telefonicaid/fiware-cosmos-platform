@@ -403,12 +403,6 @@ static void* senderThread(void* vP)
 
 		s = iomMsgSend(ep, NULL, job.msgCode, job.msgType, job.dataP, job.dataLen, job.packetP);
 
-		//
-		// Free packetP->buffer
-		//
-		LM_M(("calling destroyBuffer(%p)", job.packetP->buffer));
-		MemoryManager::shared()->destroyBuffer(job.packetP->buffer);
-		
 		LM_T(LMT_FORWARD, ("iomMsgSend returned %d", s));
 		if (s != 0)
 		{
@@ -428,10 +422,11 @@ static void* senderThread(void* vP)
 		{
 			LM_T(LMT_FORWARD, ("before freeing job data pointer (%p - %p)", job.dataP, job.packetP));
 			free(job.dataP);
-			if (job.packetP)
-				delete job.packetP;
 			LM_T(LMT_FORWARD, ("after freeing job data pointer"));
 		}
+
+		if (job.packetP)
+			delete job.packetP;
 	}
 
 	// Cannot really get here ... !!!

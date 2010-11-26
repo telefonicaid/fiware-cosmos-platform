@@ -1,4 +1,3 @@
-
 #include "DataBuffer.h"				// Own interface
 #include "Buffer.h"					// ss::Buffer
 #include "MemoryManager.h"			// ss::MemoryManager

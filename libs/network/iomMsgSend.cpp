@@ -15,6 +15,7 @@
 #include "networkTraceLevels.h" // LMT_NWRUN, ...
 
 #include "Buffer.h"				// ss::Buffer
+#include "MemoryManager.h"      // MemoryManager
 #include "Endpoint.h"           // Endpoint
 #include "Message.h"            // Message::Header, MessageCode, MessageType, ...
 #include "Packet.h"             // Packet
@@ -123,11 +124,12 @@ int iomMsgSend
 	LM_WRITES(to, "message header",  ioVec[0].iov_base, ioVec[0].iov_len, LmfByte);
 	if (dataLen != 0)
 		LM_WRITES(to, "message data",  ioVec[1].iov_base, ioVec[1].iov_len, LmfByte);
-
-	
 	
 	if (packetP != NULL)
+	{
+		ss::MemoryManager::shared()->destroyBuffer(packetP->buffer);
 		delete packetP;
+	}
 
 	return 0;
 }	
@@ -238,9 +240,11 @@ int iomMsgSend
 			LM_RE(-1, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
 	}
 
-	
 	if (packetP != NULL)
+	{
+		ss::MemoryManager::shared()->destroyBuffer(packetP->buffer);
 		delete packetP;
+	}
 
 	LM_M(("Increasing msgsOut"));
 	to->msgsOut += 1;

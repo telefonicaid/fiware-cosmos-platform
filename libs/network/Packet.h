@@ -89,8 +89,6 @@ namespace ss {
 
 		~Packet()
 		{
-			
-			MemoryManager::shared()->destroyBuffer(buffer);
 		}
 	};
 }

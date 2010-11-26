@@ -1,3 +1,4 @@
+
 /* ****************************************************************************
 *
 * FILE                     Network.cpp - Definition for the network interface
@@ -777,6 +778,7 @@ Endpoint* Network::endpointAdd
 				close(rFd);
 				if (wFd != rFd)
 					close(wFd);
+
 				return NULL;
 			}
 
@@ -1698,7 +1700,7 @@ void Network::run()
 				else
 				{
 					std::string  s   = std::string("tmp:") + std::string(hostName);
-					Endpoint*    ep  = endpointAdd(fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, (char*) "ip", 0);
+					Endpoint*    ep  = endpointAdd(fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, (char*) "II.PP", 0);
 
 					listener->msgsIn += 1;
 					helloSend(ep, Message::Msg);

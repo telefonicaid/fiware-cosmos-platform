@@ -91,7 +91,7 @@ namespace ss {
 	
 	void DataBufferItem::saveBufferToDisk( Buffer* b , std::string fileName , network::Queue queue )
 	{
-		// Store this file to be notified latter to the controller
+		// Store this file to be notified later to the controller
 		network::QueueFile qf;
 		qf.set_queue( queue.name() );
 		

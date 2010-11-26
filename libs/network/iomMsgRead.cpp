@@ -107,7 +107,13 @@ int iomMsgRead
 
 	if (header.kvDataLen != 0)
 	{
-		packetP->buffer = ss::MemoryManager::shared()->newBuffer( "iomMsgRead function",  header.kvDataLen );
+		char         name[128];
+		static int   bIx = 0;
+
+		sprintf(name, "Buffer%d", bIx);
+		++bIx;
+
+		packetP->buffer = ss::MemoryManager::shared()->newBuffer(name, header.kvDataLen);
 
 		int    size  = header.kvDataLen;
 		char*  kvBuf = packetP->buffer->getData();
@@ -158,7 +164,12 @@ int iomMsgRead
 
 	if (headerP->dataLen != 0)
 	{
-		LM_M(("Reading %d bytes of data", headerP->dataLen));
+		if (headerP->dataLen > 1000)
+			LM_X(1, ("Reading a '%s' %s from '%s' (dataLens: %d, %d, %d)",
+					 ss::Message::messageCode(headerP->code), ss::Message::messageType(headerP->type), ep->name.c_str(),
+					 headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
+
+		LM_T(LMT_MSG, ("Reading %d bytes of data", headerP->dataLen));
 		if (headerP->dataLen > (unsigned int) *dataLenP)
 		{
 			LM_W(("Allocating extra space for message"));
@@ -175,7 +186,7 @@ int iomMsgRead
 		LM_T(LMT_MSG, ("read %d bytes of primary message data", nb));
 
 		if (nb != (int) headerP->dataLen)
-			LM_E(("Read %d bytes, %d expected ...", nb, headerP->dataLen));
+			LM_E(("Read %d bytes from '%s', %d expected ...", nb, ep->name.c_str(), headerP->dataLen));
 
 		*dataLenP = nb;
 
@@ -190,8 +201,7 @@ int iomMsgRead
 		if (dataP == NULL)
 			LM_X(1, ("malloc(%d)", headerP->gbufLen));
 
-		//LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
-		LM_M(("reading %d bytes of google protocol buffer data", headerP->gbufLen));
+		LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
         nb = read(ep->rFd, dataP, headerP->gbufLen);
 		LM_T(LMT_MSG, ("read %d bytes GPROTBUF from '%s'", nb, ep->name.c_str()));
         if (nb == -1)
@@ -205,7 +215,13 @@ int iomMsgRead
 
 	if (headerP->kvDataLen != 0)
 	{
-		packetP->buffer = ss::MemoryManager::shared()->newBuffer( "iomMsgRead function" , headerP->kvDataLen);
+		char         name[128];
+		static int   bIx = 0;
+
+		sprintf(name, "%s:%d", ep->name.c_str(), bIx);
+		++bIx;
+
+		packetP->buffer = ss::MemoryManager::shared()->newBuffer(name, headerP->kvDataLen);
 
 		int    size   = headerP->kvDataLen;
 		char*  kvBuf  = packetP->buffer->getData();
@@ -213,14 +229,13 @@ int iomMsgRead
 		int    tot    = 0;
 		int    nb;
 
-		// LM_T(LMT_MSG, ("reading a KV buffer of %d bytes", size2));
-		LM_M(("reading a KV buffer of %d bytes", size2));
+		LM_T(LMT_MSG, ("reading a KV buffer of %d bytes", size2));
 		while (tot < size)
 		{
-			// msgAwait()
-			LM_M(("trying to read %d bytes of KV buffer", size - tot));
+			// msgAwait() ... ?
+			LM_T(LMT_MSG, ("trying to read %d bytes of KV buffer", size - tot));
 			nb = read(ep->rFd, &kvBuf[tot], size - tot);
-			LM_M(("read %d bytes of KV buffer", nb));
+			LM_T(LMT_MSG, ("read %d bytes of KV buffer", nb));
 
 			if (nb == -1)
 				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, ep->name.c_str(), strerror(errno)));
@@ -232,6 +247,5 @@ int iomMsgRead
 		packetP->buffer->setSize(tot);
 	}
 
-	LM_M(("FROM"));
 	return 0;
 }	

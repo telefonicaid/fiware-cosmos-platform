@@ -454,12 +454,6 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 	Endpoint* ep        = endpoint[endpointId];
 	int       nb;
 
-	if ((packetP != NULL) && ((long) packetP->buffer != 0) && ((long) packetP->buffer < 50))
-	{
-	   breikpojnt();
-	   LM_X(1, ("Bad packetP->buffer pointer"));
-	}
-
 	if (packetP != NULL)
 		LM_T(LMT_SEND, ("Request to send '%s' package with %d packet size (to endpoint '%s')", messageCode(code), packetP->message.ByteSize(), ep->name.c_str()));
 	else
@@ -472,6 +466,14 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 	{
 		if (packetP->message.ByteSize() == 0)
 			LM_W(("packet not NULL but its data len is 0 ..."));
+	}
+
+	// To be improved ...
+	if (ep->alias == me->alias)
+	{
+		receiver->receive(endpointId, code, packetP);
+		delete packetP;
+		return 0;
 	}
 
 	if (ep->state != Endpoint::Connected)
@@ -960,7 +962,6 @@ static void* msgTreatThreadFunction(void* vP)
 	MsgTreatParams*  paramP = (MsgTreatParams*) vP;
 	Endpoint*        ep     = paramP->ep;
 
-	LM_M(("Calling threaded msgTreat"));
 	paramP->diss->msgTreat(paramP);
 
 	ep->state = paramP->state;
@@ -981,8 +982,6 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 {
 	Message::Header header;
 	int             nb;
-
-	LM_M(("ep->type: %d", ep->type));
 
 	//
 	// Special case - incoming connection on WebListener interface
@@ -1156,7 +1155,6 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		params.endpointId  = endpointId;
 		params.header      = header;
 
-		LM_M(("calling msgTreat (endpointId: %d, type: %d", endpointId, ep->type));
 		msgTreat(&params);
 	}
 }
@@ -1271,7 +1269,7 @@ void Network::msgTreat(void* vP)
 	int                   s;
 
 
-	LM_M(("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
+	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 	s = iomMsgRead(ep, headerP, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
 	LM_T(LMT_READ, ("iomMsgRead returned %d (dataLens: %d, %d, %d)", s, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 
@@ -1352,7 +1350,6 @@ void Network::msgTreat(void* vP)
 		Message::HelloData*  hello;
 
 		hello   = (Message::HelloData*) dataP;
-		LM_M(("Got a Hello from a type %d endpoint", hello->type));
 		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, (ss::Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo, ep);
 	
 		if (helloEp == NULL)
@@ -1700,7 +1697,7 @@ void Network::run()
 				else
 				{
 					std::string  s   = std::string("tmp:") + std::string(hostName);
-					Endpoint*    ep  = endpointAdd(fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, (char*) "II.PP", 0);
+					Endpoint*    ep  = endpointAdd(fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
 
 					listener->msgsIn += 1;
 					helloSend(ep, Message::Msg);

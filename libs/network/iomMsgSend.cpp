@@ -246,7 +246,6 @@ int iomMsgSend
 		delete packetP;
 	}
 
-	LM_M(("Increasing msgsOut"));
 	to->msgsOut += 1;
 
 	return 0;

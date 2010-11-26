@@ -1,5 +1,5 @@
 SET (SOURCES
-    main_SamsonCat.cpp
+    main_samsonData.cpp
 )
 
 SET (HEADERS

@@ -114,16 +114,13 @@ namespace ss
 		Buffer *b = new Buffer( name, size );
 
 		lock.unlock();
-		LM_M(("address: %p", b));
 		return b;
 	}
 	
-	void MemoryManager::destroyBuffer( Buffer *b)
+	void MemoryManager::destroyBuffer(Buffer* b)
 	{
 		if (b == NULL)
 			return;
-
-		LM_M(("address: %p", b));
 
 		lock.lock();
 		

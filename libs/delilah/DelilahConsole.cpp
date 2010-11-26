@@ -71,16 +71,18 @@ namespace ss
 			// Sent a status request to all the elements
 			{
 				Packet* p = new Packet();
+				std::cout << "Creating packet " << p << std::endl;
 				p->message.mutable_status_request()->set_command( command );
 				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::StatusRequest, p);
 			}
 
+
 			for (int i = 0; i < dalilah->network->getNumWorkers(); i++)
 			{
-				Packet* p;
+				Packet* p = new Packet();
 				int     workerId;
 
-				p = new Packet();
+				std::cout << "Creating packet " << p << std::endl;
 				p->message.mutable_status_request()->set_command(command);
 
 				workerId = dalilah->network->workerGetIdentifier(i);

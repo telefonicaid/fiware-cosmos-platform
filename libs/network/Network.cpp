@@ -425,8 +425,6 @@ static void* senderThread(void* vP)
 			LM_T(LMT_FORWARD, ("after freeing job data pointer"));
 		}
 
-		if (job.packetP)
-			delete job.packetP;
 	}
 
 	// Cannot really get here ... !!!
@@ -443,6 +441,7 @@ static void* senderThread(void* vP)
 
 void breikpojnt()
 {
+	assert( false );
 }
 
 /* ****************************************************************************
@@ -568,8 +567,6 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 
 	LM_T(LMT_FORWARD, ("Sending message directly (%d bytes)", packetP->message.ByteSize()));
 	nb = iomMsgSend(ep, me, code, Message::Msg, NULL, 0, packetP);
-	if (packetP != NULL)
-		delete packetP;
 
 	return nb;
 }

@@ -124,6 +124,8 @@ int iomMsgSend
 	if (dataLen != 0)
 		LM_WRITES(to, "message data",  ioVec[1].iov_base, ioVec[1].iov_len, LmfByte);
 
+	
+	
 	if (packetP != NULL)
 		delete packetP;
 
@@ -236,6 +238,7 @@ int iomMsgSend
 			LM_RE(-1, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
 	}
 
+	
 	if (packetP != NULL)
 		delete packetP;
 

@@ -47,7 +47,7 @@ SamsonController::SamsonController
 		
 	network->setPacketReceiverInterface(this);
 		
-	int num_workers = SamsonSetup::shared()->getInt(SETUP_num_workers, -1);
+	int num_workers = SamsonSetup::shared()->num_workers;
 	assert(num_workers != -1);
 	LM_T(LMT_CONFIG, ("Num workers: %d", num_workers));
 

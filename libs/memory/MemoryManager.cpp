@@ -14,12 +14,12 @@ namespace ss
 		num_buffers = 0;
 		
 		// Load setup parameters
-		num_processes = SamsonSetup::shared()->getInt( SETUP_num_processes , 2);
-
-		memory = SamsonSetup::shared()->getUInt64( SETUP_memory , 0 );
+		num_processes = SamsonSetup::shared()->num_processes;
 		
-		shared_memory_size_per_buffer = SamsonSetup::shared()->getUInt64( SETUP_shm_size_per_buffer , 64*1024*1024 );
-		shared_memory_num_buffers = SamsonSetup::shared()->getInt( SETUP_shm_num_buffers , 12 );
+		memory = SamsonSetup::shared()->memory;
+		
+		shared_memory_size_per_buffer = SamsonSetup::shared()->shared_memory_size_per_buffer;
+		shared_memory_num_buffers = SamsonSetup::shared()->shared_memory_num_buffers;
 		
 
 		assert( shared_memory_size_per_buffer > 0);

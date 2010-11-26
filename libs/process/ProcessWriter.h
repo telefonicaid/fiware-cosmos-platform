@@ -115,7 +115,6 @@ namespace ss {
 		size_t size;		// General output buffer size
 		
 		int num_outputs;	// Number of global outputs ( channels of output )
-
 		int num_servers;	// Number of servers where information is divided
 		
 		// Minibuffer to serialize
@@ -135,6 +134,7 @@ namespace ss {
 		
 		ProcessWriter( int shm_id , int _num_outputs , int _num_servers )
 		{
+			// Get the assignated shared memory region
 			SharedMemoryItem *item = MemoryManager::shared()->getSharedMemory( shm_id );
 			
 			// Pointer to the process to flush output when full

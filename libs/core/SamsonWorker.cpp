@@ -33,7 +33,7 @@ SamsonWorker::SamsonWorker(char* controller, char* alias, unsigned short port, i
 	this->endpoints   = endpoints;
 
 	// Define the number of process
-	num_processes = SamsonSetup::shared()->getInt( SETUP_num_processes , -1);
+	num_processes = SamsonSetup::shared()->num_processes;
 	
 }
 

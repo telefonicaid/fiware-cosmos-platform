@@ -14,7 +14,6 @@ char* progName = (char*) "samsonCat";
 int main(int argc, const char *argv[])
 {
 
-	std::cout << "Cat program (experimental)\n";
 	
 	au::CommandLine cmdLine;
 	cmdLine.set_flag_boolean("header");
@@ -23,7 +22,7 @@ int main(int argc, const char *argv[])
 	
 	if( cmdLine.get_num_arguments() < 2 ) 
 	{
-		std::cerr << "Ussage: samsonCat file [-header]\n";
+		std::cerr << "Usage: samsonCat file [-header]\n";
 		exit(0);
 	}
 
@@ -40,7 +39,7 @@ int main(int argc, const char *argv[])
 
 	if( !header.check() )
 	{
-		std::cout << "Wrong magic number\n";
+		std::cout << "Error: Wrong magic number\n";
 		exit(0);
 	}
 	

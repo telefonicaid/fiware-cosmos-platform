@@ -20,7 +20,7 @@ namespace ss {
 		finished = false;	
 
 		// Get the max number of open files per devide from setup
-		max_open_files = SamsonSetup::shared()->getInt( SETUP_max_open_files_per_device , 50 );
+		max_open_files = SamsonSetup::shared()->max_open_files_per_device;
 		
 		// Create the thread for this disk operations
 		pthread_create(&t, NULL, runDeviceDiskAccessManagerThread, this);
@@ -110,7 +110,7 @@ namespace ss {
 		o->delegate->diskManagerNotifyFinish(o->idGet(), result);
 		
 		// This should be removed when reusing files
-		delete file;
+		//delete file;
 	}
 	
 	FileAccess* DeviceDiskAccessManager::getFile( std::string fileName , std::string mode )

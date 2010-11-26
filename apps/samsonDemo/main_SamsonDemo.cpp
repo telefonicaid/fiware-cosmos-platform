@@ -64,7 +64,7 @@ int main(int argc, const char *argv[])
 	// Command line to extract the number of workers from command line arguments
 	commandLine.parse(argc , argv);
 	
-	int num_workers = ss::SamsonSetup::shared()->getInt( SETUP_num_workers , -1);
+	int num_workers = ss::SamsonSetup::shared()->num_workers;
 	assert( num_workers != -1 );
 	
 	// Fake network element with N workers

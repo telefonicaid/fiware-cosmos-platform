@@ -23,6 +23,7 @@
 #include "Endpoint.h"			// Endpoint
 #include "Message.h"            // ss::Message::MessageCode
 #include "Packet.h"				// Packet
+#include "MemoryManager.h"      // MemoryManager
 #include "iomInit.h"            // iomInit
 #include "iomServerOpen.h"      // iomServerOpen
 #include "iomConnect.h"         // iomConnect
@@ -401,6 +402,12 @@ static void* senderThread(void* vP)
 		LM_T(LMT_FORWARD, ("google protocol buffer data len: %d", job.packetP->message.ByteSize()));
 
 		s = iomMsgSend(ep, NULL, job.msgCode, job.msgType, job.dataP, job.dataLen, job.packetP);
+
+		//
+		// Free packetP->buffer
+		//
+		MemoryManager::shared()->destroyBuffer(job.packetP->buffer);
+		
 		LM_T(LMT_FORWARD, ("iomMsgSend returned %d", s));
 		if (s != 0)
 		{
@@ -420,6 +427,7 @@ static void* senderThread(void* vP)
 		{
 			LM_T(LMT_FORWARD, ("before freeing job data pointer"));
 			free(job.dataP);
+			delete job.packetP;
 			LM_T(LMT_FORWARD, ("after freeing job data pointer"));
 		}
 	}
@@ -555,6 +563,7 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 
 	LM_T(LMT_FORWARD, ("Sending message directly (%d bytes)", packetP->message.ByteSize()));
 	nb = iomMsgSend(ep, me, code, Message::Msg, NULL, 0, packetP);
+	LM_W(("FREE packetP"));
 
 	return nb;
 }
@@ -639,9 +648,11 @@ Endpoint* Network::endpointAdd
 		endpoint[2]->alias    = (alias != NULL)? alias : "NO ALIAS" ;
 		endpoint[2]->workers  = workers;
 		endpoint[2]->type     = type;
-		endpoint[2]->ip       = std::string(ip);
 		endpoint[2]->port     = port;
 		endpoint[2]->coreNo   = coreNo;
+
+		if (strcmp(ip.c_str(), "II.PP") != 0)
+			endpoint[2]->ip       = ip;
 
 		if (me->type == Endpoint::Delilah)
 		{
@@ -701,6 +712,7 @@ Endpoint* Network::endpointAdd
 					endpoint[ix]->msgsOut        = inheritedFrom->msgsOut;
 					endpoint[ix]->msgsInErrors   = inheritedFrom->msgsInErrors;
 					endpoint[ix]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
+					endpoint[ix]->ip             = inheritedFrom->ip;
 				}
 
 				endpoint[ix]->name       = std::string(name);
@@ -709,7 +721,6 @@ Endpoint* Network::endpointAdd
 				endpoint[ix]->wFd        = wFd;
 				endpoint[ix]->state      = (rFd > 0)? Endpoint::Connected : Endpoint::Unconnected;   /* XXX */
 				endpoint[ix]->type       = type;
-				endpoint[ix]->ip         = ip;
 				endpoint[ix]->port       = port;
 				endpoint[ix]->coreNo     = coreNo;
 				endpoint[ix]->restarts   = 0;
@@ -718,6 +729,9 @@ Endpoint* Network::endpointAdd
 
 				if (endpoint[ix]->type == Endpoint::WebListener)
 					endpoint[ix]->state = Endpoint::Listening;
+
+				if (strcmp(ip.c_str(), "II.PP") != 0)
+					endpoint[ix]->ip       = ip;
 
 				return endpoint[ix];
 			}
@@ -777,6 +791,7 @@ Endpoint* Network::endpointAdd
 					endpoint[ix]->msgsOut        = inheritedFrom->msgsOut;
 					endpoint[ix]->msgsInErrors   = inheritedFrom->msgsInErrors;
 					endpoint[ix]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
+					endpoint[ix]->ip             = inheritedFrom->ip;
 				}
 
 				endpoint[ix]->rFd      = rFd;
@@ -785,9 +800,11 @@ Endpoint* Network::endpointAdd
 				endpoint[ix]->alias    = std::string(alias);
 				endpoint[ix]->workers  = workers;
 				endpoint[ix]->type     = Endpoint::Worker;
-				endpoint[ix]->ip       = ip;
 				endpoint[ix]->port     = port;
 				endpoint[ix]->state    = (rFd > 0)? Endpoint::Connected : Endpoint::Unconnected;   /* XXX */
+
+				if (strcmp(ip.c_str(), "II.PP") != 0)
+					endpoint[ix]->ip       = ip;
 
 				LM_T(LMT_JOB, ("worker '%s' connected - any pending messages for him? (jobQueueHead at %p)", endpoint[ix]->alias.c_str(),  endpoint[ix]->jobQueueHead));
 				

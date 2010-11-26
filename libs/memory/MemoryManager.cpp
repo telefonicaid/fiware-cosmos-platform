@@ -116,6 +116,9 @@ namespace ss
 	
 	void MemoryManager::destroyBuffer( Buffer *b)
 	{
+		if (b == NULL)
+			return;
+
 		lock.lock();
 		
 		// Keep counter of the used memory

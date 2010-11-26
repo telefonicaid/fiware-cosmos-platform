@@ -46,7 +46,7 @@ char* wordClean(char* str)
 char* ipGet(void)
 {
 	char  line[80];
-	char* ipP = (char*) "I.I.P.P";
+	char* ipP = (char*) "II.PP";
 	FILE* fP;
 	
 	fP = popen("ifconfig | grep \"inet addr:\" | awk -F: '{ print $2 }' | awk '{ print $1 }'", "r");

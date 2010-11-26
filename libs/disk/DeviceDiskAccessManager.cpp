@@ -46,7 +46,7 @@ namespace ss {
 		{
 			DiskOperation *o = getNextOperation();
 			
-			if( o)
+			if( o )
 				run (o);
 			else
 			{

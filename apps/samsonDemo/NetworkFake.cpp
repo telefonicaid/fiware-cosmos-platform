@@ -60,8 +60,6 @@ namespace ss {
 		// Add packet in the list of the center
 	   center->addPacket(new NetworkFakeCenterPacket(code,*packetP, getMyidentifier(), endpointId, sender));
 
-		delete packetP;	// Now is responsability of NetworkInterface to remove this
-		
 		return 0;
 	}
 	

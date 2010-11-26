@@ -560,7 +560,8 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 
 	LM_T(LMT_FORWARD, ("Sending message directly (%d bytes)", packetP->message.ByteSize()));
 	nb = iomMsgSend(ep, me, code, Message::Msg, NULL, 0, packetP);
-	LM_W(("FREE packetP"));
+	if (packetP != NULL)
+		delete packetP;
 
 	return nb;
 }

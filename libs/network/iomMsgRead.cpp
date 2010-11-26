@@ -107,7 +107,7 @@ int iomMsgRead
 
 	if (header.kvDataLen != 0)
 	{
-		packetP->buffer = ss::MemoryManager::shared()->newBuffer(header.gbufLen);
+		packetP->buffer = ss::MemoryManager::shared()->newBuffer(header.kvDataLen);
 
 		int    size  = header.kvDataLen;
 		char*  kvBuf = packetP->buffer->getData();

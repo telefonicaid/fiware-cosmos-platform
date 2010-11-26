@@ -15,6 +15,7 @@
 #include "SamsonSetup.h"				// ss::SamsonSetup
 #include "Format.h"						// au::Format
 
+#include "MemoryManager.h"				// ss::SharedMemory
 
 namespace ss {
 
@@ -70,6 +71,9 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 	myWorkerId = network->getWorkerFromIdentifier(network->getMyidentifier());
 
 	this->workers     = network->getNumWorkers();
+	
+	
+	MemoryManager::shared()->setOtherSharedMemoryAsMarked( myWorkerId , workers );
 }
 
 

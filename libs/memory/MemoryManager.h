@@ -118,6 +118,20 @@ namespace ss {
 			lock.unlock();
 			return -1;	// There are no available memory buffers
 		}
+
+		
+		/**
+		 Debug function to mark as used shared memory areas used by other process
+		 */
+		void setOtherSharedMemoryAsMarked( int workerId , int num_workers )
+		{
+			for (int i = 0 ; i < shared_memory_num_buffers ; i++)
+			{
+				if( (i%num_workers )!= num_workers)
+					shared_memory_used_buffers[i] = true;
+			}
+			
+		}
 		
 		
 		/**

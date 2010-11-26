@@ -1123,7 +1123,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		LM_RVE(("iomMsgRead: error reading header from '%s' (read %d, wanted %d bytes", ep->name.c_str(), nb, sizeof(header)));
 
 	if (header.magic != 0xFEEDC0DE)
-		LM_X(1, ("Badmagic number in header"));
+		LM_X(1, ("Bad magic number in header (0x%x)", header.magic));
 
 	LM_T(LMT_MSGTREAT, ("Read header of '%s' message with dataLens %d, %d, %d", messageCode(header.code), header.dataLen, header.gbufLen, header.kvDataLen));
 

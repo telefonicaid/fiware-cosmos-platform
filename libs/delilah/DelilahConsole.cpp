@@ -45,7 +45,6 @@ namespace ss
 			
 			output << "Memory status: " << MemoryManager::shared()->getStatus();
 			
-			writeBlockOnConsole(output.str());
 			
 			output << "Load processes....\n";
 
@@ -53,6 +52,7 @@ namespace ss
 			for (iter = dalilah->loadProcess.begin() ; iter != dalilah->loadProcess.end() ; iter++)
 				output << iter->second->getStatus();
 			
+			writeBlockOnConsole(output.str());
 			
 			
 			return ;

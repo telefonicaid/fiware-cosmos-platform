@@ -441,6 +441,9 @@ static void* senderThread(void* vP)
 }
 
 
+void breikpojnt()
+{
+}
 
 /* ****************************************************************************
 *
@@ -451,7 +454,12 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 	Endpoint* ep        = endpoint[endpointId];
 	int       nb;
 
-	
+	if ((packetP != NULL) && ((long) packetP->buffer != 0) && ((long) packetP->buffer < 50))
+	{
+	   breikpojnt();
+	   LM_X(1, ("Bad packetP->buffer pointer"));
+	}
+
 	if (packetP != NULL)
 		LM_T(LMT_SEND, ("Request to send '%s' package with %d packet size (to endpoint '%s')", messageCode(code), packetP->message.ByteSize(), ep->name.c_str()));
 	else

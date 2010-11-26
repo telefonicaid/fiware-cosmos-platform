@@ -426,9 +426,10 @@ static void* senderThread(void* vP)
 		LM_T(LMT_FORWARD, ("iomMsgSend ok"));
 		if (job.dataP)
 		{
-			LM_T(LMT_FORWARD, ("before freeing job data pointer"));
+			LM_T(LMT_FORWARD, ("before freeing job data pointer (%p - %p)", job.dataP, job.packetP));
 			free(job.dataP);
-			delete job.packetP;
+			if (job.packetP)
+				delete job.packetP;
 			LM_T(LMT_FORWARD, ("after freeing job data pointer"));
 		}
 	}

@@ -144,5 +144,42 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>selectKeyButton</sender>
+   <signal>clicked()</signal>
+   <receiver>CreateKVQueueDlgClass</receiver>
+   <slot>selectKeyButtonClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>289</x>
+     <y>125</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>174</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>selectValueButton</sender>
+   <signal>clicked()</signal>
+   <receiver>CreateKVQueueDlgClass</receiver>
+   <slot>selectValueButtonClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>289</x>
+     <y>158</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>174</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>selectKeyButtonClicked()</slot>
+  <slot>selectValueButtonClicked()</slot>
+ </slots>
 </ui>

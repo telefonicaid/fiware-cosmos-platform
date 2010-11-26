@@ -21,12 +21,21 @@ public:
     CreateKVQueueDlg(QWidget *parent = 0);
     ~CreateKVQueueDlg();
 
+public slots:
+	void selectKeyButtonClicked();
+	void selectValueButtonClicked();
+
+	void cancelError();
+
 protected:
     void initializeDataTypeTree();
+    void showError(QString error);
+    QString getSelectedDataTypeName();
 
 private:
     Ui::CreateKVQueueDlgClass ui;
 
+    bool show_error;
     int name_column_number;
 };
 

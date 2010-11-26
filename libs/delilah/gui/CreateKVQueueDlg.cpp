@@ -6,6 +6,7 @@
  * DESCRIPTION:
  *
  */
+#include <iostream>
 
 #include "CreateKVQueueDlg.h"
 #include "DelilahQtApp.h"
@@ -19,6 +20,11 @@ CreateKVQueueDlg::CreateKVQueueDlg(QWidget *parent)
 
 	// initialize data types tree list
 	initializeDataTypeTree();
+
+	show_error = false;
+	connect(ui.nameLineEdit, SIGNAL(textChanged(QString)), this, SLOT(cancelError()));
+	connect(ui.keyLineEdit, SIGNAL(textChanged(QString)), this, SLOT(cancelError()));
+	connect(ui.valueLineEdit, SIGNAL(textChanged(QString)), this, SLOT(cancelError()));
 
 }
 
@@ -37,5 +43,74 @@ void CreateKVQueueDlg::initializeDataTypeTree()
 		names << data_types.at(i)->getName();
 
 	arrangeNamesInTreeWidget(ui.dataTypeTreeWidget, name_column_number, names);
+	if(ui.dataTypeTreeWidget->topLevelItemCount()>0)
+		ui.dataTypeTreeWidget->setCurrentItem(ui.dataTypeTreeWidget->topLevelItem(0));
 }
 
+/*
+ * Sets the name of the selected data type in key line edit
+ */
+void CreateKVQueueDlg::selectKeyButtonClicked()
+{
+	QString key = getSelectedDataTypeName();
+
+	ui.keyLineEdit->clear();
+	if(key.isEmpty())
+		showError("No data type selected.");
+	else
+		ui.keyLineEdit->setText(key);
+}
+
+/*
+ * Sets the name of the selected data type in value line edit
+ */
+void CreateKVQueueDlg::selectValueButtonClicked()
+{
+	QString value = getSelectedDataTypeName();
+
+	ui.valueLineEdit->clear();
+	if(value.isEmpty())
+		showError("No data type selected.");
+	else
+		ui.valueLineEdit->setText(value);
+}
+
+
+/*
+ * Return name of the selected data type or null QString if no data type is selected
+ * (there is no item selected or selected item is not "final" for any data type)
+ */
+QString CreateKVQueueDlg::getSelectedDataTypeName()
+{
+	QString name;
+
+	QTreeWidgetItem* item = ui.dataTypeTreeWidget->currentItem();
+	if(item && item->childCount()==0)
+	{
+		name = item->text(name_column_number);
+		QTreeWidgetItem* parent = item->parent();
+		while(parent)
+		{
+			name.prepend(parent->text(name_column_number) + ".");
+			parent = parent->parent();
+		}
+	}
+	return name;
+}
+
+void CreateKVQueueDlg::showError(QString error)
+{
+	ui.errorPixmapLabel->setPixmap(QPixmap(QString::fromUtf8(":/icons/error.png")));
+	ui.errorLabel->setText(error);
+	show_error = true;
+}
+
+void CreateKVQueueDlg::cancelError()
+{
+	if (show_error)
+	{
+		ui.errorPixmapLabel->setPixmap(QPixmap());
+		ui.errorLabel->setText("");
+		show_error = false;
+	}
+}

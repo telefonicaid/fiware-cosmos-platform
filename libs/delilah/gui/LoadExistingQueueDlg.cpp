@@ -24,7 +24,6 @@ LoadExistingQueueDlg::LoadExistingQueueDlg(QWidget* parent)
 
 	// initialize queues in tree widget
 	initializeQueueTree();
-
 }
 
 LoadExistingQueueDlg::~LoadExistingQueueDlg()
@@ -42,7 +41,6 @@ void LoadExistingQueueDlg::initializeQueueTree()
 		names << queues.at(i)->getName();
 
 	arrangeNamesInTreeWidget(ui.nameTreeWidget, name_column_number, names);
-
 	if(ui.nameTreeWidget->topLevelItemCount()>0)
 		ui.nameTreeWidget->setCurrentItem(ui.nameTreeWidget->topLevelItem(0));
 }

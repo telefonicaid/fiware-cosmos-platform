@@ -406,6 +406,7 @@ static void* senderThread(void* vP)
 		//
 		// Free packetP->buffer
 		//
+		LM_M(("calling destroyBuffer(%p)", job.packetP->buffer));
 		MemoryManager::shared()->destroyBuffer(job.packetP->buffer);
 		
 		LM_T(LMT_FORWARD, ("iomMsgSend returned %d", s));
@@ -960,7 +961,7 @@ static void* msgTreatThreadFunction(void* vP)
 
 	ep->state = paramP->state;
 
-	LM_E(("back after msgTreat set state for '%s' to %d", ep->name.c_str(), ep->state));
+	LM_E(("back after msgTreat - set state for '%s' to %d", ep->name.c_str(), ep->state));
 
 	free(vP);
 	return NULL;
@@ -1266,7 +1267,7 @@ void Network::msgTreat(void* vP)
 	int                   s;
 
 
-	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
+	LM_M(("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 	s = iomMsgRead(ep, headerP, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
 	LM_T(LMT_READ, ("iomMsgRead returned %d (dataLens: %d, %d, %d)", s, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 

@@ -1,7 +1,10 @@
+#include "logMsg.h"             // LM_*
 
 #include "MemoryManager.h"		// Own interface
 #include "Buffer.h"				// ss::Buffer
 #include "SamsonSetup.h"		// ss:SamsonSetup
+
+
 
 namespace ss
 {
@@ -111,6 +114,7 @@ namespace ss
 		Buffer *b = new Buffer( size );
 
 		lock.unlock();
+		LM_M(("address: %p", b));
 		return b;
 	}
 	
@@ -118,6 +122,8 @@ namespace ss
 	{
 		if (b == NULL)
 			return;
+
+		LM_M(("address: %p", b));
 
 		lock.lock();
 		

@@ -158,6 +158,7 @@ int iomMsgRead
 
 	if (headerP->dataLen != 0)
 	{
+		LM_M(("Reading %d bytes of data", headerP->dataLen));
 		if (headerP->dataLen > (unsigned int) *dataLenP)
 		{
 			LM_W(("Allocating extra space for message"));
@@ -189,7 +190,8 @@ int iomMsgRead
 		if (dataP == NULL)
 			LM_X(1, ("malloc(%d)", headerP->gbufLen));
 
-		LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
+		//LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
+		LM_M(("reading %d bytes of google protocol buffer data", headerP->gbufLen));
         nb = read(ep->rFd, dataP, headerP->gbufLen);
 		LM_T(LMT_MSG, ("read %d bytes GPROTBUF from '%s'", nb, ep->name.c_str()));
         if (nb == -1)
@@ -211,19 +213,25 @@ int iomMsgRead
 		int    tot    = 0;
 		int    nb;
 
-		LM_T(LMT_MSG, ("reading a KV buffer of %d bytes", size2));
+		// LM_T(LMT_MSG, ("reading a KV buffer of %d bytes", size2));
+		LM_M(("reading a KV buffer of %d bytes", size2));
 		while (tot < size)
 		{
 			// msgAwait()
+			LM_M(("trying to read %d bytes of KV buffer", size - tot));
 			nb = read(ep->rFd, &kvBuf[tot], size - tot);
+			LM_M(("read %d bytes of KV buffer", nb));
 
 			if (nb == -1)
 				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, ep->name.c_str(), strerror(errno)));
+			else if (nb == 0)
+				LM_RE(-2, ("endpoint '%s' seems to have closed the connection", ep->name.c_str()));
 			tot += nb;
 		}
 
 		packetP->buffer->setSize(tot);
 	}
 
+	LM_M(("FROM"));
 	return 0;
 }	

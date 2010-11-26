@@ -255,7 +255,7 @@ void Network::initAsSamsonController(int port, int workers)
 	if (fd == -1)
 		LM_XP(1, ("error opening web service listen socket"));
 
-	endpointAdd(fd, fd, "Web Listener", "Weblistener", 0, Endpoint::WebListener, "localhost", WEB_SERVICE_PORT, 0);
+	endpointAdd(fd, fd, "Web Listener", "Weblistener", 0, Endpoint::WebListener, "localhost", WEB_SERVICE_PORT);
 }
 
 
@@ -466,7 +466,7 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 		SendJob* jobP = new SendJob();
 
 		if (ep->useSenderThread == false)
-			LM_X(1, ("cannot send to an unconnected peer if not using sender threads, sorry ..."));
+			LM_X(1, ("cannot send to an unconnected peer '%s' if not using sender threads, sorry ...", ep->name.c_str()));
 
 		jobP->ep      = ep;
 		jobP->me      = me;
@@ -607,7 +607,8 @@ Endpoint* Network::endpointAdd
 	Endpoint::Type   type,
 	std::string      ip,
 	unsigned short   port,
-	int              coreNo = -1
+	int              coreNo,
+	Endpoint*        inheritedFrom
 )
 {
 	int ix;
@@ -624,6 +625,14 @@ Endpoint* Network::endpointAdd
 		return NULL;
 
 	case Endpoint::Controller:
+		if (inheritedFrom != NULL)
+		{
+			endpoint[2]->msgsIn         = inheritedFrom->msgsIn;
+			endpoint[2]->msgsOut        = inheritedFrom->msgsOut;
+			endpoint[2]->msgsInErrors   = inheritedFrom->msgsInErrors;
+			endpoint[2]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
+		}
+
 		endpoint[2]->rFd      = rFd;
 		endpoint[2]->wFd      = wFd;
 		endpoint[2]->name     = std::string(name);
@@ -651,6 +660,14 @@ Endpoint* Network::endpointAdd
 				if (endpoint[ix] == NULL)
 					LM_XP(1, ("allocating temporal Endpoint"));
 
+				if (inheritedFrom != NULL)
+				{
+					endpoint[ix]->msgsIn         = inheritedFrom->msgsIn;
+					endpoint[ix]->msgsOut        = inheritedFrom->msgsOut;
+					endpoint[ix]->msgsInErrors   = inheritedFrom->msgsInErrors;
+					endpoint[ix]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
+				}
+
 				endpoint[ix]->name   = std::string(name);
 				endpoint[ix]->rFd    = rFd;
 				endpoint[ix]->wFd    = wFd;
@@ -677,6 +694,14 @@ Endpoint* Network::endpointAdd
 				endpoint[ix] = new Endpoint();
 				if (endpoint[ix] == NULL)
 					LM_XP(1, ("allocating Endpoint"));
+
+				if (inheritedFrom != NULL)
+				{
+					endpoint[ix]->msgsIn         = inheritedFrom->msgsIn;
+					endpoint[ix]->msgsOut        = inheritedFrom->msgsOut;
+					endpoint[ix]->msgsInErrors   = inheritedFrom->msgsInErrors;
+					endpoint[ix]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
+				}
 
 				endpoint[ix]->name       = std::string(name);
 				endpoint[ix]->alias      = (alias != NULL)? alias : "NO ALIAS" ;
@@ -746,6 +771,14 @@ Endpoint* Network::endpointAdd
 
 			if (strcmp(endpoint[ix]->alias.c_str(), alias) == 0)
 			{
+				if (inheritedFrom != NULL)
+				{
+					endpoint[ix]->msgsIn         = inheritedFrom->msgsIn;
+					endpoint[ix]->msgsOut        = inheritedFrom->msgsOut;
+					endpoint[ix]->msgsInErrors   = inheritedFrom->msgsInErrors;
+					endpoint[ix]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
+				}
+
 				endpoint[ix]->rFd      = rFd;
 				endpoint[ix]->wFd      = wFd;
 				endpoint[ix]->name     = std::string(name);
@@ -1298,7 +1331,7 @@ void Network::msgTreat(void* vP)
 
 		hello   = (Message::HelloData*) dataP;
 		LM_M(("Got a Hello from a type %d endpoint", hello->type));
-		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, (ss::Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo);
+		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, (ss::Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo, ep);
 	
 		if (helloEp == NULL)
 		{

@@ -10,6 +10,7 @@
 #include "Packet.h"						// ss:Packet
 #include "Format.h"						// au::Format
 #include "DelilahLoadDataProcess.h"		// ss::DelilahLoadDataProcess
+#include "MemoryManager.h"				// ss::MemoryManager
 
 namespace ss
 {
@@ -35,6 +36,28 @@ namespace ss
 		}
 		else
 			mainCommand = commandLine.get_argument(0);
+		
+		
+		if ( mainCommand == "internal_status" )
+		{
+			
+			std::ostringstream output;
+			
+			output << "Memory status: " << MemoryManager::shared()->getStatus();
+			
+			writeBlockOnConsole(output.str());
+			
+			output << "Load processes....\n";
+
+			std::map<size_t,DelilahLoadDataProcess*>::iterator iter;
+			for (iter = dalilah->loadProcess.begin() ; iter != dalilah->loadProcess.end() ; iter++)
+				output << iter->second->getStatus();
+			
+			
+			
+			return ;
+			
+		}
 		
 		
 		if( mainCommand == "quit" )

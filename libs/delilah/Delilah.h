@@ -50,9 +50,11 @@ namespace ss {
 		// Internal counter for load data operations
 		au::Lock   loadDataLock;
 		size_t     loadDataCounter;
-		au::map<size_t,DelilahLoadDataProcess> loadProcess; 
 		
 	public:
+		
+		au::map<size_t,DelilahLoadDataProcess> loadProcess; 
+		
 
 		NetworkInterface* network;	// Network interface
 		bool              finish;	// Global flag used by all threads to detect to stop

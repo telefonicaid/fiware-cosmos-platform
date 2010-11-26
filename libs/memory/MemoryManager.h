@@ -86,7 +86,6 @@ namespace ss {
 		 Interface to destroy a buffer of memory
 		 */
 		void destroyBuffer( Buffer *b );
-
 		
 		/** 
 		 Interface to get a buffer only if used memory is bellow a particular percentadge.

@@ -8,6 +8,8 @@
 #include <iostream>			// std::cout
 #include "samson.pb.h"		// ss::network
 
+#include <sstream>			// std::ostringstream
+
 namespace ss {
 
 	void* runThreadDelilahLoadDataProcess(void *p);
@@ -187,6 +189,18 @@ namespace ss {
 			error_message = confirmation.error_message();
 		}
 		
+	
+		
+		std::string getStatus()
+		{
+			std::ostringstream output;
+			
+			output << "Status of load process:\n";
+			output << "Pending files: " << pending_ids.size() << std::endl;
+			output << "Created files: " << created_files.size() << std::endl;
+			
+			return output.str();
+		}
 		
 	};	
 	

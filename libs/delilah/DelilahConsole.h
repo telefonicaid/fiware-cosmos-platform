@@ -64,7 +64,13 @@ namespace ss {
 		}
 	
 		virtual void loadDataConfirmation( DelilahLoadDataProcess *process);		
+	
 		
+		virtual void showMessage( std::string message)
+		{
+			writeWarningOnConsole( message );
+		}
+
 		
 	};
 

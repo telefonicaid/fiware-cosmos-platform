@@ -26,6 +26,11 @@ namespace ss
 		virtual void loadDataConfirmation( DelilahLoadDataProcess *process)=0;
 		
 		
+		// Write something on screen
+		virtual void showMessage(std::string message)
+		{
+		}
+		
 	};
 }
 

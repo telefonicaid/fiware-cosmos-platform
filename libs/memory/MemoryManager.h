@@ -127,7 +127,7 @@ namespace ss {
 		{
 			for (int i = 0 ; i < shared_memory_num_buffers ; i++)
 			{
-				if( (i%num_workers )!= num_workers)
+				if( (i%num_workers )!= workerId)
 					shared_memory_used_buffers[i] = true;
 			}
 			

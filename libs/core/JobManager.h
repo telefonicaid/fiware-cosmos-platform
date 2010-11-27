@@ -43,7 +43,7 @@ namespace ss {
 		void addJob(int fromId, int _sender_id  , std::string command );
 		
 		// Notification from the taskManager that a task has finished
-		void notifyFinishTask( size_t job_id , size_t task_id , std::vector<network::WorkerTaskConfirmation> &confirmationMessages );		
+		void notifyFinishTask( size_t job_id , size_t task_id , bool error, std::string error_message );		
 	
 		std::string getStatus();
 		

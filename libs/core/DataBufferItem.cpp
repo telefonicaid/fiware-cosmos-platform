@@ -9,6 +9,7 @@
 #include "DataBufferItemDelegate.h"	// ss::DataBufferItemDelegate
 #include "DataBuffer.h"				// ss::DataBuffer
 #include "SamsonWorker.h"			// ss::SamsonWorker
+#include "Packet.h"					// ss::Packet
 
 namespace ss {
 	
@@ -71,34 +72,48 @@ namespace ss {
 					saveBufferToDisk( b , fileName , bv->queue );
 				}
 			}
-
+			
+			
+			
+			// Send a message to the controller to notify that task is "finish" but not "complete"
+			Packet *p = new Packet();
+			network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
+			confirmation->set_task_id( task_id );
+			confirmation->set_finish( true );
+			confirmation->set_completed( false );
+			confirmation->set_error( false );
+			dataBuffer->worker->network->send(dataBuffer->worker, dataBuffer->worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
+			
 			// Just in case, there is nothing else to save
 			if( ids_files.size() == 0 )
 			{
 				completed = true;
+				dataBuffer->worker->taskManager.completeTask( task_id );	// Notify to the task manager that this is completed
 				
-				// Notify to the task manager that this is completed
-				dataBuffer->worker->taskManager.completeTask( task_id ,  this );
-				
-				DataBufferItem *tdb = dataBuffer->extractFromMap( task_id );
-				if( tdb )
-					delete tdb;
-				
-				return;	// No necessary unlock since we do not exist any more ;)
 			}
 		}		
 	}	
 	
+	
+	
 	void DataBufferItem::saveBufferToDisk( Buffer* b , std::string fileName , network::Queue queue )
 	{
-		// Store this file to be notified later to the controller
-		network::QueueFile qf;
-		qf.set_queue( queue.name() );
 		
-		network::File *file = qf.mutable_file();
+		// Notify the controller that a file has been created ( update )
+
+		Packet *p = new Packet();
+		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
+
+		confirmation->set_task_id( task_id );
+		confirmation->set_finish( false );
+		confirmation->set_completed( false );
+		confirmation->set_error( false );
+		
+		network::QueueFile *qf = confirmation->add_file();
+		qf->set_queue( queue.name() );
+		network::File *file = qf->mutable_file();
 		file->set_name( fileName );
 		file->set_worker( myWorkerId );
-
 		network::KVInfo *info = file->mutable_info();
 		
 		// this is suppoused to be a file
@@ -106,19 +121,23 @@ namespace ss {
 		info->set_size(_info->size);
 		info->set_kvs(_info->kvs);
 		
-		qfiles.push_back( qf );
+
+		// Send the message
+		NetworkInterface *network = dataBuffer->worker->network;
+		network->send(dataBuffer->worker, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation , p);
 		
-		size_t id = FileManager::shared()->write( b , fileName, this );
+		// Schedule at the File Manager
+		size_t id = FileManager::shared()->write( b , fileName, dataBuffer );
+		
+		dataBuffer->id_relation.insert( std::pair<size_t,size_t>( id, task_id) );
 		
 		// Keep ids to control if files are saved on disk
-		lock.lock();
 		ids_files.insert( id );
-		lock.unlock();
+		
 	}
 	
 	void DataBufferItem::diskManagerNotifyFinish(size_t id, bool success)
 	{
-		lock.lock();
 		
 		if( success )
 			ids_files_saved.insert( id );
@@ -132,18 +151,9 @@ namespace ss {
 			completed = true;
 
 			// Notify to the task manager that this is completed
-			dataBuffer->worker->taskManager.completeTask( task_id ,  this );
-
-			DataBufferItem *tdb = dataBuffer->extractFromMap( task_id );
-			if( tdb )
-				delete tdb;
-
-			return;	// No necessary unlock since we do not exist any more ;)
-			
-			
+			dataBuffer->worker->taskManager.completeTask( task_id );
 		}
 		
-		lock.unlock();
 		
 	}	
 	
@@ -164,7 +174,7 @@ namespace ss {
 		
 		output << "[Closed " << num_finished_workers << " of " << num_workers << " workers ] ";
 		output << "[Files ids " << ids_files_saved.size() << " / " << ids_files.size() << " files ] ";
-		output << "[Created " << qfiles.size() << " files ] ";
+		output << "[Created " << ids_files.size() << " files ] ";
 		
 		std::map<std::string , QueueuBufferVector* >::iterator i;
 		for (i = begin() ; i != end() ; i++)

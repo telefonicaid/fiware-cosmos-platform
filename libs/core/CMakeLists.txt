@@ -3,7 +3,6 @@ SET (HEADERS
     Monitor.h
     MonitorParameter.h
     DataBufferItem.h
-    DataBufferItemDelegate.h
     DataBuffer.h
     ModulesManager.h
     SamsonWorker.h
@@ -29,7 +28,6 @@ SET (SOURCES
     Monitor.cpp
     MonitorParameter.cpp
     DataBufferItem.cpp
-    DataBufferItemDelegate.cpp
     DataBuffer.cpp
     ModulesManager.cpp
     SamsonWorker.cpp

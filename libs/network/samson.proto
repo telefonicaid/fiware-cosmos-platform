@@ -83,19 +83,25 @@ message WorkerTask
 
 	repeated FileList input		= 3;    // Input files ( all inputs for each queue )
 	repeated Queue output		= 4;    // output queues
+
+	optional bool generator		= 5;	// Optional flag only used in the generator operations
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 //
-// Confirmation from workers to the controller
+// Update of a task from a worker to the controller
 //
 
 message WorkerTaskConfirmation
 {
 	required int64 task_id	      = 1;	// Id of the opt level (controller ) task
-	required bool  error          = 2;      // Error in the operation
-	optional string error_message = 3;      // Message to debug the error
-	repeated QueueFile file       = 4;      // Files created with this operation
+	repeated QueueFile file       = 2;      // Files created with this operation
+	required bool finish	      = 3;	// Flag to indicate that the task have finished	
+	required bool completed	      = 4;	// Flat to indicate that the task can be considered completed ( everything saved to disk )
+
+	required bool  error          = 5;      // Error in the operation
+	optional string error_message = 6;      // Message to debug the error
+
 }
 
 // ////////////////////////////////////////////////////////////////////////////

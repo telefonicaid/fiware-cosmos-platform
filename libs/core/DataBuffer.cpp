@@ -65,21 +65,22 @@ namespace ss {
 		}
 		
 		tdb->finishWorker();			// Notify to the item that it is finish to flush last file to disk
+	
+		// If there is nothing to write, right now is completed
+		
+		if ( tdb->isCompleted() )
+		{
+			
+			DataBufferItem *tdb = extractFromMap( task_id );
+			delete tdb;
+		}
+		
 		
 		lock.unlock();
+
 		
 	}
 	
-	void DataBuffer::removeTask( size_t task_id )
-	{
-		lock.lock();
-
-		DataBufferItem *tdb = extractFromMap( task_id );
-		if( tdb )
-			delete tdb;
-		
-		lock.unlock();
-	}
 
 	std::string DataBuffer::getStatus()
 	{
@@ -89,6 +90,40 @@ namespace ss {
 		
 		return txt;
 	}
+	
+	void DataBuffer::diskManagerNotifyFinish(size_t id, bool success)
+	{
+		lock.lock();
+		
+		// Discover the DataBufferItem with id_relation
+		std::map<size_t,size_t>::iterator iter = id_relation.find( id );
+		if( iter != id_relation.end() )
+		{
+			
+			size_t task_id = iter->second;
+			
+			
+			DataBufferItem *tdb = findInMap( task_id );
+			tdb->diskManagerNotifyFinish(id, success);
+			
+			if ( tdb->isCompleted() )
+			{
+				DataBufferItem *tdb = extractFromMap( task_id );
+				delete tdb;
+			}
+			
+			
+		}
+		else {
+			assert(false);
+		}
+
+		
+		lock.unlock();
+		
+	}
+	
+	
 	
 	
 }

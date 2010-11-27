@@ -115,8 +115,11 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 		}
 	
 		case Message::WorkerTaskConfirmation:
-			taskManager.notifyWorkerConfirmation(fromId, packet->message.worker_task_confirmation() );
+		{
+			network::WorkerTaskConfirmation c = packet->message.worker_task_confirmation();
+			taskManager.notifyWorkerConfirmation(fromId, &c );
 			return 0;
+		}
 			break;
 		
 		case Message::WorkerStatus:

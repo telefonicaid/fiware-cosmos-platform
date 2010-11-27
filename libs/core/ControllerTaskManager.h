@@ -46,7 +46,7 @@ namespace ss {
 		 Noitify a confirmation from workers
 		 */
 		
-		void notifyWorkerConfirmation(int from, network::WorkerTaskConfirmation confirmationMessage );
+		void notifyWorkerConfirmation(int from, network::WorkerTaskConfirmation* confirmationMessage );
 		
 		/**
 		 Get status information about tasks

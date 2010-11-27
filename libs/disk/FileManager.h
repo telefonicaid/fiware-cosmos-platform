@@ -257,8 +257,6 @@ namespace ss {
 			
 		};
 		
-		
-		
 		/**
 		 Delegate interface of DiskManager
 		 It is notified when a write / read is finished
@@ -266,6 +264,8 @@ namespace ss {
 		
 		void diskManagerNotifyFinish(size_t id, bool success)
 		{
+			DiskManagerDelegate *delegate = NULL;
+			
 			lock.lock();
 
 			// See if it is a save file
@@ -277,7 +277,8 @@ namespace ss {
 				item->setReady();
 				
 				// Notify to my delegate
-				item->delegate->diskManagerNotifyFinish( id , success); 
+				delegate = item->delegate;
+
 			}
 		
 			// See if it is a read file
@@ -298,6 +299,9 @@ namespace ss {
 			}
 			
 			lock.unlock();
+			
+			// Call the delegate outside the lock to avoid dead-lock
+			delegate->diskManagerNotifyFinish( id , success); 
 		}
 
 		

@@ -6,34 +6,38 @@
 
 namespace ss {
 
-	void ControllerTask::notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation confirmationMessage )
+	void ControllerTask::notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage ,  ControllerDataManager * data )
 	{
-		confirmationMessages.push_back( confirmationMessage );
-	}
-
-	void ControllerTask::updateData( ControllerDataManager * data )
-	{
-		for (int i = 0 ; i < (int) confirmationMessages.size() ; i++)
+		
+		if( confirmationMessage->error() )
 		{
-			for (int f = 0 ; f < confirmationMessages[i].file_size() ; f++)
-			{
-				network::QueueFile qfile = confirmationMessages[i].file(f);
-				network::File file = qfile.file();
-				network::KVInfo info = file.info();
-				
-				std::ostringstream command;
-				// add_file worker fileName size kvs queue
-				command << "add_file " << file.worker() << " " << file.name() << " " << info.size() << " " << info.kvs() << " " << qfile.queue() << " ";
-				
-				DataManagerCommandResponse response = data->runOperation( job_id , command.str() );
+			error = true;
+			error_message = confirmationMessage->error_message();
+		}
+		
+
+		if ( confirmationMessage->completed() )
+		{
+			num_completed_workers++;
+		}
+		
+		
+		for (int f = 0 ; f < confirmationMessage->file_size() ; f++)
+		{
+			network::QueueFile qfile = confirmationMessage->file(f);
+			network::File file = qfile.file();
+			network::KVInfo info = file.info();
 			
-				assert( !response.error );
-				// Add this file to this queue
-				// XXXX
-			}
+			std::ostringstream command;
+			// add_file worker fileName size kvs queue
+			command << "add_file " << file.worker() << " " << file.name() << " " << info.size() << " " << info.kvs() << " " << qfile.queue() << " ";
+			
+			DataManagerCommandResponse response = data->runOperation( job_id , command.str() );
+			
+			// Since this is a internally generated command, it can not have any error of format
+			assert( !response.error );
 		}
 	}
-	
 	
 }
 

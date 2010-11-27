@@ -30,11 +30,16 @@ namespace ss {
 		size_t job_id;		// Id of the job it belongs
 				
 		ControllerTaskInfo *info;
+
+		int num_completed_workers;		// Total workers that are "completed"
+		int num_workers;			// Total workers that have to confirm the task
 		
-		int total_workers;	// Total workers that have to confirm the task
-		std::vector<network::WorkerTaskConfirmation> confirmationMessages;		// All confirmation messages received for this task
+		int generator;
 		
 		friend class ControllerTaskManager;
+		
+		bool error;
+		std::string error_message;
 		
 	public:
 		
@@ -48,9 +53,14 @@ namespace ss {
 			// Elements
 			info = _info;
 			
-			// total number of workers to wait for this number of confirmation ( in case we sent to workers )
-			total_workers = _total_workers;
+			error = false;
 			
+			// total number of workers to wait for this number of confirmation ( in case we sent to workers )
+			num_workers = _total_workers;
+			num_completed_workers = 0;
+
+			// In generators, this is used to determine how is the active user
+			generator = rand()%num_workers;
 		}
 		
 		~ControllerTask()
@@ -68,7 +78,7 @@ namespace ss {
 			return job_id;
 		}
 		
-		void notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation confirmationMessage );
+		void notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage , ControllerDataManager * data );
 		
 		
 		void fillInfo( network::WorkerTask *t , int workerIdentifier )
@@ -113,7 +123,7 @@ namespace ss {
 		
 		bool isFinish()
 		{
-			return ( (int)(confirmationMessages.size() )  == total_workers );
+			return ( num_completed_workers ==  num_workers );
 		}
 		
 	};

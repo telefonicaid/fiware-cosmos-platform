@@ -28,10 +28,10 @@ namespace ss
 		
 	}
 	
-	void ControllerTaskManager::notifyWorkerConfirmation( int worker_id, network::WorkerTaskConfirmation confirmationMessage )
+	void ControllerTaskManager::notifyWorkerConfirmation( int worker_id, network::WorkerTaskConfirmation* confirmationMessage )
 	{
 		// get the task id that is confirmed
-		size_t task_id = confirmationMessage.task_id();
+		size_t task_id = confirmationMessage->task_id();
 
 		lock.lock();
 		
@@ -39,22 +39,17 @@ namespace ss
 
 		if( t )
 		{
-			
 			// Get the job id
 			size_t job_id = t->getJobId();
 			
 			// Notify that this worker has answered
-			t->notifyWorkerConfirmation( worker_id , confirmationMessage );
+			t->notifyWorkerConfirmation( worker_id , confirmationMessage , &controller->data );
 			
 			if( t->isFinish() )
 			{
 				
-				// Update with the added files
-				t->updateData( &controller->data );
-				
-				
 				// Notify the JobManager that this task is finish
-				controller->jobManager.notifyFinishTask( job_id ,task_id , t->confirmationMessages );
+				controller->jobManager.notifyFinishTask( job_id ,task_id , t->error , t->error_message );
 				
 				// Delete this task from this manager
 				t = task.extractFromMap( task_id );
@@ -105,7 +100,8 @@ namespace ss
 		// Fill information for this packet ( input / outputs )
 		task->fillInfo( t , workerIdentifier );
 		
-		// TODO: Complete with the rest of input / output parameters
+		// special flag used in generators
+		t->set_generator( task->generator == workerIdentifier );	
 		
 		controller->network->send(controller,  controller->network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask,  p2);
 	}

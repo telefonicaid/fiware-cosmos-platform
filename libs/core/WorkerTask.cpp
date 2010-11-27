@@ -19,9 +19,13 @@ namespace ss
 		
 		if( type == Operation::generator )
 		{
-			// rigth not for demo, we create 10 items to be executed
-			for (size_t i = 0 ; i < 2 ; i++)
-				item.insertInMap( i , new WorkerTaskItemGenerator( task_id , i ,  task ) );
+			// In generators only one of the workers is active to create key-values
+			if( task.generator() )
+			{
+				size_t id = 0;
+				item.insertInMap( id , new WorkerTaskItemGenerator( task_id , id ,  task ) );
+			}
+			
 			return;
 		}
 		

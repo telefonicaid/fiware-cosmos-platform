@@ -42,7 +42,7 @@ namespace ss {
 		void finishItem( WorkerTaskItem *item , bool error, std::string error_message );
 
 		// Noitification received from the DataBuffer when everything is saved to disk
-		void completeTask( size_t task_id , DataBufferItem * item );
+		void completeTask( size_t task_id );
 		
 		std::string getStatus();
 		

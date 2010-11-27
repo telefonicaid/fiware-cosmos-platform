@@ -149,18 +149,13 @@ namespace ss {
 		
 
 		// Call back received when a task is finished
-		void notifyTaskFinish( size_t _task_id , std::vector<network::WorkerTaskConfirmation> &confirmationMessages )
+		void notifyTaskFinish( size_t _task_id , bool _error, std::string _error_message )
 		{
-			// Lock confirmation messages to see if there are errors
-			for (size_t i = 0 ; i < confirmationMessages.size(); i++)
+			if( _error)
 			{
-				if( confirmationMessages[i].error() )
-				{
-					error = true;
-					output << "Error: " << confirmationMessages[i].error_message() << std::endl;
-				} 
+				error = true;
+				output << "Error from task: " << _error_message << std::endl;
 			}
-			
 			
 			assert( task_id == _task_id );
 			run();

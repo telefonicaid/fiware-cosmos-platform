@@ -30,7 +30,6 @@ namespace ss {
 		if( t->isFinish() )
 			sendCloseMessages( t , worker->network->getNumWorkers() );
 		
-		
 		lock.unlock();
 		
 		// Wake up ProcessAssitant to process items
@@ -90,7 +89,7 @@ namespace ss {
 	 Nofity that a particular task has finished ( everything has been saved to disk )
 	 */
 	
-	void WorkerTaskManager::completeTask( size_t task_id , DataBufferItem * item )
+	void WorkerTaskManager::completeTask( size_t task_id )
 	{
 		lock.lock();
 
@@ -98,23 +97,19 @@ namespace ss {
 
 		if( t )
 		{
-			assert( t->isFinish() );	// Otherwise it is not possible to be here
-			
 			Packet *p = new Packet();
 			network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-			confirmation->set_task_id(  t->task_id );
+			confirmation->set_task_id( task_id );
+			
+			confirmation->set_finish( true );
+			confirmation->set_completed( true );
+			
 			confirmation->set_error( t->error );
 			confirmation->set_error_message( t->error_message );
 			
-			// add files added with the Data Buffer
-			for (int i = 0 ; i < (int)item->qfiles.size() ; i++)
-			{
-				network::QueueFile *qfile = confirmation->add_file( );
-				qfile->CopyFrom( item->qfiles[i] );
-			}
-				
 			worker->network->send(worker, worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
 			
+			assert( t->isFinish() );	// Otherwise it is not possible to be here
 			delete t;
 		}
 		

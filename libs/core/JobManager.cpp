@@ -41,7 +41,7 @@ namespace ss {
 		lock.unlock();
 	}
 	
-	void JobManager::notifyFinishTask( size_t job_id , size_t task_id , std::vector<network::WorkerTaskConfirmation> &confirmationMessages )
+	void JobManager::notifyFinishTask( size_t job_id , size_t task_id , bool error, std::string error_message )
 	{
 		
 		lock.lock();
@@ -50,7 +50,7 @@ namespace ss {
 		if( j )
 		{
 			
-			j->notifyTaskFinish( task_id , confirmationMessages );
+			j->notifyTaskFinish( task_id , error, error_message );
 			
 			if( j->isFinish() )
 			{

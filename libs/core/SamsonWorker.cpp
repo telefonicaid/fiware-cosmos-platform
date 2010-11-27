@@ -72,8 +72,8 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 
 	this->workers     = network->getNumWorkers();
 	
-	
-	MemoryManager::shared()->setOtherSharedMemoryAsMarked( myWorkerId , workers );
+	// This is only necessary when running multiple samsonworkers as separated process in the same machine
+	// MemoryManager::shared()->setOtherSharedMemoryAsMarked( myWorkerId , workers );
 }
 
 

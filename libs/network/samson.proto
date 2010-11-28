@@ -43,10 +43,11 @@ message Queue
 
 message Operation
 {
-	required string name = 1;		// Name of the operation
-	required string help = 2;		// Some help for this opertion
-	repeated KVFormat input = 3;		// KV types for inputs
-	repeated KVFormat output = 4;		// KV types for output
+	required string name		= 1;		// Name of the operation
+	required string help   		= 2;		// Some help for this opertion
+	required string help_line 	= 3;		// Some help for this opertion ( just one line )
+	repeated KVFormat input   	= 4;		// KV types for inputs
+	repeated KVFormat output  	= 5;		// KV types for output
 }
 
 message Data
@@ -144,6 +145,7 @@ message Help
 
 	// Filters for the operations
 	optional string name = 5;	// Optinal parameter to specify the name of the queue/data/operation I would like to be informed
+	optional string begin = 6;	// Optional parameter to specify the begining of the name
 }
 
 // ////////////////////////////////////////////////////////////////////////////

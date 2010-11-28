@@ -15,16 +15,19 @@
 #include "DataCreator.h"
 
 
-
-
-
-
 /** 
  Main function to parse everything 
  */
 
 int main( int args , const char *argv[])
 {
+	
+	// debug
+	//ss::DataCreator _module_creator( "/Users/andreu/devel/samson_modules/cdr/module"  );		// A data creator object to generate the code
+	//_module_creator.print();
+	//return 0;
+	
+	
 
 	fprintf(stderr,"SAMSON Module tool  (v %s)\n", SAMSON_MODULE_PARSER_VERSION);
 	fprintf(stderr, "========================================================\n");

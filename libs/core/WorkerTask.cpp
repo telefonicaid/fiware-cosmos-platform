@@ -36,9 +36,21 @@ namespace ss
 			network::FileList fl = task.input(0);
 			
 			for (size_t i = 0 ; i < (size_t) fl.file_size() ; i++)
-				item.insertInMap( i , new WorkerTaskItemParser( task_id , i , fl.file(i).name() , task ) );
+				item.insertInMap( i , new WorkerTaskItemOperation( task_id , i , fl.file(i).name() , task ) );
 			return;
 		}
+
+		if( type == Operation::map )
+		{
+			// An item per file
+			assert( task.input_size() == 1);	// Only one input
+			network::FileList fl = task.input(0);
+			
+			for (size_t i = 0 ; i < (size_t) fl.file_size() ; i++)
+				item.insertInMap( i , new WorkerTaskItemOperation( task_id , i , fl.file(i).name() , task ) );
+			return;
+		}
+		
 		
 	}
 	

@@ -16,20 +16,20 @@ namespace ss {
 
 	class ProcessAssistant;
 	
-	class WorkerTaskItemParser : public WorkerTaskItemWithOutput
+	class WorkerTaskItemOperation : public WorkerTaskItemWithOutput
 	{
 		
 	public:
 		
-		std::string parser;		// Parse operation
-		std::string fileName;	// Input file to parse
+		std::string operation;		// operation name
+		std::string fileName;			// Input file to parse
 		ProcessAssistantOperationFramework * framework;
 		
 		
-		WorkerTaskItemParser( size_t _task_id , size_t _item_id , std::string _fileName, const network::WorkerTask &task ) 
+		WorkerTaskItemOperation( size_t _task_id , size_t _item_id , std::string _fileName, const network::WorkerTask &task ) 
 		: WorkerTaskItemWithOutput( _task_id ,_item_id , WorkerTaskItem::generator, task)
 		{
-			parser = task.operation();
+			operation = task.operation();
 			fileName = _fileName;
 			
 			// Request this file to be loaded by FileManager
@@ -39,7 +39,7 @@ namespace ss {
 			setup();
 		}
 		
-		~WorkerTaskItemParser()
+		~WorkerTaskItemOperation()
 		{
 			delete readItemVector;
 		}
@@ -48,21 +48,21 @@ namespace ss {
 		{
 			
 			// Create the Framework to run the operation from the ProcessAssitant side
-			Operation * op = pa->worker->modulesManager.getOperation( parser );
+			Operation * op = pa->worker->modulesManager.getOperation( operation );
 			assert( op );
 			
 			network::ProcessMessage p;
 			p.set_code( network::ProcessMessage::run );
-			p.set_operation( parser );
+			p.set_operation( operation );
 			p.set_num_servers( pa->worker->workers );
 			p.set_num_inputs( op->getNumInputs() );
 			p.set_num_outputs( op->getNumOutputs() );
 
-			p.set_input_size( readItemVector->size );	// Total size for input
+			p.set_input_size( readItemVector->size );			// For Parse operation
 			
-			p.set_output_shm( pa->output_shm );
+			p.set_output_shm( pa->output_shm );					// Set the output shared memory buffer
 
-			p.set_input_shm( shm_input );	// Set the input shared memory 
+			p.set_input_shm( shm_input );						// Set the input shared memory buffer
 							
 			// Create the framework here at the process assistant side
 			framework = new ProcessAssistantOperationFramework(pa , p );

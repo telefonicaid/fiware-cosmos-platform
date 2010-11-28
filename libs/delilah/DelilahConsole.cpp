@@ -11,6 +11,8 @@
 #include "Format.h"						// au::Format
 #include "DelilahLoadDataProcess.h"		// ss::DelilahLoadDataProcess
 #include "MemoryManager.h"				// ss::MemoryManager
+#include <iostream>
+#include <iomanip>
 
 namespace ss
 {
@@ -24,7 +26,8 @@ namespace ss
 	void DelilahConsole::evalCommand( std::string command )
 	{
 		au::CommandLine commandLine;
-		commandLine.set_flag_string("name", "no_name");
+		commandLine.set_flag_string("name", "null");
+		commandLine.set_flag_string("begin", "null");
 		commandLine.parse( command );
 
 		std::string mainCommand;
@@ -100,8 +103,11 @@ namespace ss
 			Packet*         p    = new Packet();
 			network::Help*  help = p->message.mutable_help();
 
-			if( commandLine.get_flag_string("name") != "no_name")
+			if( commandLine.get_flag_string("name") != "null")
 				help->set_name( commandLine.get_flag_string("name") );
+			
+			if( commandLine.get_flag_string("begin") != "null")
+				help->set_begin( commandLine.get_flag_string("begin") );
 			
 			
 			if( commandLine.get_num_arguments() < 2)
@@ -285,7 +291,16 @@ namespace ss
 					for (int i = 0 ; i < help_response.operation_size() ; i++)
 					{
 						network::Operation operation = help_response.operation(i);
-						txt << operation.name() << " [ " << operation.input_size()  << " -> " << operation.output_size() << " ]" <<  " - " << operation.help() << std::endl;
+						txt << "** " << operation.name();
+						txt << "\n\t\tInputs: ";
+						for (int i = 0 ; i < operation.input_size() ; i++)
+							txt << "[" << operation.input(i).keyformat() << "-" << operation.input(i).valueformat() << "] ";
+						txt << "\n\t\tOutputs: ";
+						for (int i = 0 ; i < operation.output_size() ; i++)
+							txt << "[" << operation.output(i).keyformat() << "-" << operation.output(i).valueformat() << "] ";
+
+						txt << "\n\t\tHelp: " << operation.help_line() << std::endl;
+						txt << "\n";
 					}
 					txt << "------------------------------------------------" << std::endl;
 				}

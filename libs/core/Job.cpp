@@ -96,6 +96,12 @@ namespace ss {
 					task_id = controller->taskManager.addTask( task_info , id );
 					return false;	// No continue until confirmation of this task is received
 				}
+
+				if( operation->getType() == Operation::map ) 
+				{
+					task_id = controller->taskManager.addTask( task_info , id );
+					return false;	// No continue until confirmation of this task is received
+				}
 				
 				if( operation->getType() == Operation::script ) 
 				{

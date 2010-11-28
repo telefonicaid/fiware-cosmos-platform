@@ -233,7 +233,7 @@ namespace ss
 		std::string getIncludeFile()
 		{
 			std::ostringstream output;
-			output << "<samson/modules/" << module << "/" << name << ".h>\n";
+			output << "<samson/modules/" << module << "/" << name << ".h>";
 			return output.str();
 		}
 		

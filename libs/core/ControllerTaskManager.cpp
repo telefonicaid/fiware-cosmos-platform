@@ -14,9 +14,9 @@ namespace ss
 		lock.lock();
 		
 		ControllerTask * t = new ControllerTask( current_task_id++ , job_id,  info , controller->network->getNumWorkers() );
-		
+
+		// Stak into internal map
 		size_t id = t->getId();
-		
 		task.insertInMap( id , t ); 
 		
 		// Send this task to all the workers

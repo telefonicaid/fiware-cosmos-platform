@@ -26,12 +26,10 @@ namespace ss {
 	
 namespace system {
 	
-	
 	template <typename T>
 	class FixedLengthDataInstance : public ss::DataInstance
 	{
-		
-	protected:
+	public:
 		T value;
 		
 	public:
@@ -87,14 +85,7 @@ namespace system {
 			return o.str();
 		}
 		
-		void operator= (T _value) {
-			value = _value;
-		}			
-		
 	}; 	
-	
-		
-	
 	
 	
 	}		// system namespace

@@ -151,7 +151,7 @@ namespace ss
 			{
 				
 				if( (type == "map") || (type == "reduce") )
-					file << "\t\tvoid run(  ss::KVSetStruct* inputs , std::vector<ss::KVWriter*>& outputs )\n\t\t{\n\t\t}\n";
+					file << "\t\tvoid run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )\n\t\t{\n\t\t}\n";
 				if( type == "generator" )
 					file << "\t\tvoid run( ss::KVWriter *writer )\n\t\t{\n\t\t}\n";
 				if( type == "parser" )

@@ -290,6 +290,7 @@ namespace ss {
 				if( v->isReady() )
 				{
 					// Notify someone...
+					// delegate = ?
 					
 					// Remove from this list
 					itemsToRead.erase( v );
@@ -301,7 +302,8 @@ namespace ss {
 			lock.unlock();
 			
 			// Call the delegate outside the lock to avoid dead-lock
-			delegate->diskManagerNotifyFinish( id , success); 
+			if( delegate )
+				delegate->diskManagerNotifyFinish( id , success); 
 		}
 
 		

@@ -182,7 +182,7 @@ namespace ss {
 		
 		// Include all data files	
 		for (size_t i = 0 ; i < datas.size() ; i++)
-			output << "\n#include " << datas[i].getIncludeFile() << "\n";
+			output << "#include " << datas[i].getIncludeFile() << "\n";
 
 		// Include all operation files	
 		for (size_t i = 0 ; i < operations.size() ; i++)
@@ -195,13 +195,6 @@ namespace ss {
 		output << "namespace ss{\n";
 		output << "namespace " << module->name << "{\n";
 
-		/*
-		#pragma mark OPERATION
-		fprintf(file, "\n// Operations defined in this module\n\n");
-		for ( vector <OperationContainer>::iterator iter = operations.begin() ; iter < operations.end() ; iter++)
-			iter->printClassDefinition( file );
-		*/
-		
 #pragma mark MODULE
 		
 		output << "\n// Module definition\n\n";	  
@@ -333,7 +326,7 @@ namespace ss {
 			// Full help
 			output << "\t\t\tstd::ostringstream o;\n";
 			for (size_t i = 0 ; i < op.help.size() ; i++)
-				output << "\t\to << \"" << op.help[i] << "\\n\";\n";
+				output << "\t\t\to << \"" << op.help[i] << "\\n\";\n";
 			output << "\t\t\toperation->setHelp( o.str() );\n";
 			
 			// Code if any

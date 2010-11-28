@@ -58,28 +58,6 @@ namespace ss {
 	typedef void* (*CreationFunction)();
 	
 
-	/**
-	 
-	 \class Map
-	 
-	 A Map consist in creating one or more KVStorages from another one.
-	 The map operation takes one KVSet at the input and process each key-value individually using the map functions
-	 This class should be subclasses to create custom "mapper".\n
-	 
-	 */	
-
-	class Map : public OperationInstance
-	{
-	public:
-		/**
-		 Main function to overload by the map
-		 */
-		virtual void run(KVSetStruct* inputs , std::vector<KVWriter*>& outputs )=0;
-
-	};
-
-
-
 	class Operation
 	{
 		
@@ -308,7 +286,26 @@ namespace ss {
 		
 	};
 	
-
+	/**
+	 
+	 \class Map
+	 
+	 A Map consist in creating one or more KVStorages from another one.
+	 The map operation takes one KVSet at the input and process each key-value individually using the map functions
+	 This class should be subclasses to create custom "mapper".\n
+	 
+	 */	
+	
+	class Map : public OperationInstance
+	{
+	public:
+		/**
+		 Main function to overload by the map
+		 */
+		virtual void run(KVSetStruct* inputs , KVWriter *writer )=0;
+		
+	};
+	
 
 	/**
 	 
@@ -327,7 +324,7 @@ namespace ss {
 		/**
 		 Main function to overload by the map
 		 */
-		virtual void run(KVSetStruct* inputs, std::vector<KVWriter*>& outputs) = 0;
+		virtual void run(KVSetStruct* inputs, ss::KVWriter *writer) = 0;
 		
 	};
 	

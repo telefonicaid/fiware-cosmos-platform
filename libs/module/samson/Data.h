@@ -56,6 +56,8 @@ namespace ss {
 		{
 			_name = name;
 			_creationFunction = creationFunction;
+			_compareFunction = compareFunction;
+			_sizeFunction = sizeFunction;
 			
 			_helpMessage = "Help coming soon";
 		}
@@ -74,6 +76,11 @@ namespace ss {
 		{
 			return _helpMessage;
 		};									
+	
+		DataSizeFunction getSizeFunction()
+		{
+			 return _sizeFunction;
+		}
 		
 	};
 		

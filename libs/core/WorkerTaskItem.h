@@ -72,7 +72,6 @@ namespace ss {
 						SharedMemoryItem *item = MemoryManager::shared()->getSharedMemory( shm_input ); 
 						readItemVector->setBuffer( item->data , item->size );
 						
-						
 						state = loading;
 						FileManager::shared()->addItemsToRead( readItemVector );	
 						return;

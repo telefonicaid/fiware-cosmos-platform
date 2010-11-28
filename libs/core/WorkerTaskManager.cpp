@@ -21,9 +21,11 @@ namespace ss {
 		// Look at the operation to 
 		Operation *op = worker->modulesManager.getOperation( worker_task.operation() );
 		assert( op );		// TODO: Better handling of no operation error
-		
+
+		// Create the task
 		WorkerTask *t = new WorkerTask( op->getType() , worker_task );
 
+		// Insert into internal map
 		task.insertInMap( t->task_id , t );
 		
 		// If it is already finished (this happens where there are no input files )
@@ -32,8 +34,8 @@ namespace ss {
 		
 		lock.unlock();
 		
-		// Wake up ProcessAssitant to process items
-		lock.wakeUpAllStopLock( &stopLock );	
+		// Wake up ProcessAssitant to process items ( really not necesssary since there is a 1 second timeout )
+		lock.wakeUpAllStopLock( &stopLock );
 		
 	}
 

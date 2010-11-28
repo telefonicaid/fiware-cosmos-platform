@@ -369,6 +369,33 @@ namespace ss
 	}
 	
 	
+	bool evalOperation( network::Help *help , Operation *op)
+	{
+		if( help->has_name() )
+		{
+			if( op->getName() == help->name() )
+				return true;
+			else
+				return false;
+		}
+		
+		if( help->has_begin() )
+		{
+			std::string name = op->getName();
+			std::string begin = help->begin();
+			
+			if( name.length() < begin.length() )
+				return false;
+			
+			return (name.substr(0, begin.length()) == begin);
+			
+		}
+		
+			
+		return true;
+	}
+	
+	
 	// Fill help responses
 	void ModulesManager::helpOperations( network::HelpResponse *response, network::Help help  )
 	{
@@ -379,12 +406,13 @@ namespace ss
 			{
 				Operation * op = j->second;
 
-				if( !help.has_name() || j->first == help.name() )
+				if( evalOperation( &help , op ) )
 				{
 				
 					network::Operation *o = response->add_operation();
 					o->set_name( j->first );
 					o->set_help( op->help() );
+					o->set_help_line( op->helpLine() );
 					
 					// Format
 					std::vector<KVFormat> input_formats = op->getInputFormats();

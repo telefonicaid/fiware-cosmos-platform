@@ -19,9 +19,13 @@ namespace ss
 {	
 	typedef struct KVSetStruct
 	{
-		KV**    kvs;       // Vector containing Key-values (pointers to row data and hash code)
-		size_t  num_kvs;
+		KV**    kvs;			// Vector containing Key-values (pointers to row data and hash code)
+		size_t  num_kvs;		// Number of key-values	
 	} KVSetStruct;
+	
+	
+	
+	
 }
 
 #endif

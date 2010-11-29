@@ -7,6 +7,8 @@
 
 #include <cassert>
 
+#include <QStringBuilder>
+
 #include "Packet.h"
 #include "Message.h"
 
@@ -75,21 +77,17 @@ int DelilahQtApp::sendCreateQueue(const QString &name)
 	std::string command = CREATE_DATA_QUEUE_COMMAND;
 	command.append((" " + name).toStdString());
 
-	ss::Packet *p = new ss::Packet();
-	ss::network::Command *c = p->message.mutable_command();
-	c->set_command( command );
-	c->set_sender_id( ++id );
-	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Command, p);
-
-	return id;
+	return sendCommand(command);
 }
 
 int DelilahQtApp::sendCreateQueue(const QString &name, const QString &key_type, const QString &value_type)
 {
-	// TODO:
-	++id;
+	std::string command = CREATE_KV_QUEUE_COMMAND;
 
-	return id;
+	QString parameters = " " % name % " " % key_type % " " % value_type;
+	command.append(parameters.toStdString());
+
+	return sendCommand(command);
 }
 
 int DelilahQtApp::sendDeleteQueue(const QString &name)
@@ -97,6 +95,11 @@ int DelilahQtApp::sendDeleteQueue(const QString &name)
 	std::string command = REMOVE_QUEUE_COMMAND;
 	command.append((" " + name).toStdString());
 
+	return sendCommand(command);
+}
+
+int DelilahQtApp::sendCommand(std::string command)
+{
 	ss::Packet *p = new ss::Packet();
 	ss::network::Command *c = p->message.mutable_command();
 	c->set_command( command );
@@ -154,23 +157,21 @@ int DelilahQtApp::receiveCommandResponse(ss::Packet* packet)
 		// available on the system
 		QStringList args = command.split(" ");
 
-		if (args[0]==CREATE_DATA_QUEUE_COMMAND)
+		if (args[0]==CREATE_DATA_QUEUE_COMMAND || args[0]==CREATE_KV_QUEUE_COMMAND)
 		{
 			assert(args.size()>1);
 
-			// Create DataQueue with default values and add it to data_queues list
-			Queue* q = new Queue(args[1], DATA_QUEUE);
+			// Create Queue with default values and add it to queues list
+			Queue* q;
+			if (args[0]==CREATE_DATA_QUEUE_COMMAND)
+				q = new Queue(args[1], DATA_QUEUE);
+			else
+				q = new Queue(args[1]);
 			queues.append(q);
 
-			// Update newly created DataQueue with real data got from SMAMSON platform
+			// Update newly created Queue with real data got from SMAMSON platform
 			uploadData(true, false, false, args[1]);
 		}
-
-		if (args[0]==CREATE_KV_QUEUE_COMMAND)
-		{
-			// TODO:
-		}
-
 		if (args[0]==REMOVE_QUEUE_COMMAND)
 		{
 			assert(args.size()>1);

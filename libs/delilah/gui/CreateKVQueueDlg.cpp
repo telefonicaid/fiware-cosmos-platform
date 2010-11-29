@@ -21,7 +21,7 @@ CreateKVQueueDlg::CreateKVQueueDlg(QWidget *parent)
 	// initialize data types tree list
 	initializeDataTypeTree();
 
-	show_error = false;
+	error_visible = false;
 	connect(ui.nameLineEdit, SIGNAL(textChanged(QString)), this, SLOT(cancelError()));
 	connect(ui.keyLineEdit, SIGNAL(textChanged(QString)), this, SLOT(cancelError()));
 	connect(ui.valueLineEdit, SIGNAL(textChanged(QString)), this, SLOT(cancelError()));
@@ -102,15 +102,35 @@ void CreateKVQueueDlg::showError(QString error)
 {
 	ui.errorPixmapLabel->setPixmap(QPixmap(QString::fromUtf8(":/icons/error.png")));
 	ui.errorLabel->setText(error);
-	show_error = true;
+	error_visible = true;
 }
 
 void CreateKVQueueDlg::cancelError()
 {
-	if (show_error)
+	if (error_visible)
 	{
 		ui.errorPixmapLabel->setPixmap(QPixmap());
 		ui.errorLabel->setText("");
-		show_error = false;
+		error_visible = false;
 	}
+}
+
+void CreateKVQueueDlg::accept()
+{
+	DelilahQtApp* app = (DelilahQtApp*)qApp;
+
+	QString validation;
+	if(ui.nameLineEdit->text().isEmpty())
+		validation = "Queue name is empty.";
+	else if (ui.keyLineEdit->text().isEmpty())
+		validation = "Key type is not selected.";
+	else if (ui.valueLineEdit->text().isEmpty())
+		validation = "Value type is not selected.";
+	else
+		validation = app->validateNewQueueName(ui.nameLineEdit->text());
+
+	if ( validation.isNull() )
+		QDialog::accept();
+	else
+		showError(validation);
 }

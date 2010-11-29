@@ -21,6 +21,10 @@ public:
     CreateKVQueueDlg(QWidget *parent = 0);
     ~CreateKVQueueDlg();
 
+    QString queueName() { return ui.nameLineEdit->text(); };
+    QString keyType() { return ui.keyLineEdit->text(); };
+    QString valueType() { return ui.valueLineEdit->text(); };
+
 public slots:
 	void selectKeyButtonClicked();
 	void selectValueButtonClicked();
@@ -32,10 +36,12 @@ protected:
     void showError(QString error);
     QString getSelectedDataTypeName();
 
+    virtual void accept();
+
 private:
     Ui::CreateKVQueueDlgClass ui;
 
-    bool show_error;
+    bool error_visible;
     int name_column_number;
 };
 

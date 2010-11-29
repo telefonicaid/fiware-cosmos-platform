@@ -30,11 +30,12 @@ public slots:
 
 protected:
     void initializeQueueTree();
+    void showError(QString error);
 
 private:
     Ui::LoadExistingQueueDlgClass ui;
     int name_column_number;
-    bool show_error;
+    bool error_visible;
 };
 
 #endif // LOADEXISTINGQUEUEDLG_H

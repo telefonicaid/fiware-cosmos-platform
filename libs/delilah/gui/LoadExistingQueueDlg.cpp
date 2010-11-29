@@ -19,7 +19,7 @@ LoadExistingQueueDlg::LoadExistingQueueDlg(QWidget* parent)
 	ui.setupUi(this);
 	connect(ui.nameTreeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(setQueueName(QTreeWidgetItem*)));
 
-	show_error = false;
+	error_visible = false;
 	connect(ui.nameLineEdit, SIGNAL(textChanged(QString)), this, SLOT(cancelError()));
 
 	// initialize queues in tree widget
@@ -69,23 +69,24 @@ void LoadExistingQueueDlg::setQueueName(QTreeWidgetItem* item)
 void LoadExistingQueueDlg::accept()
 {
 	if ( ui.nameLineEdit->text().isEmpty() )
-	{
-		// TODO: Replace with correct message and icon
-		std::cout << "Name is not set correctly\n";
-		ui.errorPixmapLabel->setPixmap(QPixmap(QString::fromUtf8(":/icons/new_process.png")));
-		ui.errorLabel->setText("Queue is not selected");
-		show_error = true;
-	}
+		showError("Queue is not selected");
 	else
 		QDialog::accept();
 }
 
+void LoadExistingQueueDlg::showError(QString error)
+{
+	ui.errorPixmapLabel->setPixmap(QPixmap(QString::fromUtf8(":/icons/error.png")));
+	ui.errorLabel->setText(error);
+	error_visible = true;
+}
+
 void LoadExistingQueueDlg::cancelError()
 {
-	if (show_error)
+	if (error_visible)
 	{
 		ui.errorPixmapLabel->setPixmap(QPixmap());
 		ui.errorLabel->setText("");
-		show_error = false;
+		error_visible = false;
 	}
 }

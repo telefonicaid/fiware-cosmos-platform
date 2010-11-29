@@ -27,9 +27,12 @@ public slots:
 	void cancelError();
 	virtual void accept();
 
+protected:
+	void showError(QString error);
+
 private:
     Ui::CreateDataQueueDlgClass ui;
-    bool show_error;
+    bool error_visible;
 };
 
 #endif // CREATEDATAQUEUEDLG_H

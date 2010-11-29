@@ -177,11 +177,9 @@ void WorkspaceView::createDataQueueSelected(const QPointF &scene_pos)
 {
 	CreateDataQueueDlg* dlg = new CreateDataQueueDlg(this);
 
-	QString name;
 	if (dlg->exec() == QDialog::Accepted)
 	{
-		name = dlg->queueName();
-		emit(createQueueRequested(DATA_QUEUE, scene_pos, name));
+		emit(createQueueRequested(DATA_QUEUE, scene_pos, dlg->queueName()));
 	}
 
 	delete dlg;
@@ -191,8 +189,10 @@ void WorkspaceView::createKVQueueSelected(const QPointF &scene_pos)
 {
 	CreateKVQueueDlg* dlg = new CreateKVQueueDlg(this);
 
-	// TODO:
-	dlg->exec();
+	if (dlg->exec() == QDialog::Accepted)
+	{
+		emit(createQueueRequested(KV_QUEUE, scene_pos, dlg->queueName(), dlg->keyType(), dlg->valueType()));
+	}
 
 	delete dlg;
 }

@@ -129,6 +129,9 @@
        <property name="text">
         <string/>
        </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
     </layout>
@@ -170,6 +173,38 @@
     <hint type="sourcelabel">
      <x>289</x>
      <y>158</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>174</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>CreateKVQueueDlgClass</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>174</x>
+     <y>377</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>174</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>CreateKVQueueDlgClass</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>174</x>
+     <y>377</y>
     </hint>
     <hint type="destinationlabel">
      <x>174</x>

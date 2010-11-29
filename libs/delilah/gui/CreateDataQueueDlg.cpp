@@ -17,7 +17,7 @@ CreateDataQueueDlg::CreateDataQueueDlg(QWidget* parent)
 {
 	ui.setupUi(this);
 
-	show_error = false;
+	error_visible = false;
 	connect(ui.nameLineEdit, SIGNAL(textChanged(QString)), this, SLOT(cancelError()));
 }
 
@@ -34,21 +34,22 @@ void CreateDataQueueDlg::accept()
 	if ( validation.isNull() )
 		QDialog::accept();
 	else
-	{
-		// TODO: Replace with correct message and icon
-		std::cout << "Name is not set correctly\n";
-		ui.errorPixmapLabel->setPixmap(QPixmap(QString::fromUtf8(":/icons/new_process.png")));
-		ui.errorLabel->setText(validation);
-		show_error = true;
-	}
+		showError(validation);
+}
+
+void CreateDataQueueDlg::showError(QString error)
+{
+	ui.errorPixmapLabel->setPixmap(QPixmap(QString::fromUtf8(":/icons/error.png")));
+	ui.errorLabel->setText(error);
+	error_visible = true;
 }
 
 void CreateDataQueueDlg::cancelError()
 {
-	if (show_error)
+	if (error_visible)
 	{
 		ui.errorPixmapLabel->setPixmap(QPixmap());
 		ui.errorLabel->setText("");
-		show_error = false;
+		error_visible = false;
 	}
 }

@@ -66,6 +66,8 @@ protected:
 	void synchronizeOperations(const ss::network::HelpResponse &resp, bool synchronize_all=true);
 	void synchronizeDataTypes(const ss::network::HelpResponse &resp, bool synchronize_all=true);
 
+	int sendCommand(std::string);		// Sends command to the network
+
 signals:
 	void gotCommandResponse(unsigned int id, bool finished, bool error, QString message);
 

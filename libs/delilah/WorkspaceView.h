@@ -16,8 +16,6 @@
 #include "globals.h"
 
 #include "Workspace.h"
-//class Workspace;
-//struct job_info;
 
 class WorkspaceView : public QGraphicsView
 {

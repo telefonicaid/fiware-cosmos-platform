@@ -157,6 +157,7 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 		switch(job.type)
 		{
 			case CREATE_DATA_QUEUE:
+			case CREATE_KV_QUEUE:
 				{
 					Queue* queue = app->getQueue(job.args[0]);
 					if (queue)
@@ -168,8 +169,6 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 						emit(unhandledFailure(error));
 					}
 				}
-				break;
-			case CREATE_KV_QUEUE:
 				break;
 			case DELETE_QUEUE:
 				{

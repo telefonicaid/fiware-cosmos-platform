@@ -69,6 +69,16 @@ namespace ss
 			return;
 		}
 
+		if (mainCommand == "netstate")
+		{
+			std::string s;
+
+			s = dalilah->network->getState(command);
+			writeBlockOnConsole(s);
+
+			return;
+		}
+
 		if( mainCommand == "status" )
 		{
 			// Sent a status request to all the elements

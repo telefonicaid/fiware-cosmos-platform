@@ -76,35 +76,36 @@ public:
 	// Syspend the network interface, close everything and return the "run" call
 	void quit();
 
-public:
-	int        tmoSecs;
-	int        tmoUsecs;
-	int        Workers;
-	int        Endpoints;
-	Endpoint** endpoint;
 
-	void msgPreTreat(Endpoint* ep, int endpointId);
-	void msgTreat(void* vP);
-	void controllerMsgTreat(Endpoint* ep, Message::MessageCode msgCode, Message::MessageType msgType, void* dataP, int dataLen, Packet* packetP);
+public:
+	int          tmoSecs;
+	int          tmoUsecs;
+	int          Workers;
+	int          Endpoints;
+	Endpoint**   endpoint;
+
+	void         msgPreTreat(Endpoint* ep, int endpointId);
+	void         msgTreat(void* vP);
+	void         controllerMsgTreat(Endpoint* ep, Message::MessageCode msgCode, Message::MessageType msgType, void* dataP, int dataLen, Packet* packetP);
+	std::string  getState(std::string selector);
 
 private:
-	Endpoint*  me;
-	Endpoint*  listener;
-	Endpoint*  controller;
-	Endpoint*  ME;
+	Endpoint*    me;
+	Endpoint*    listener;
+	Endpoint*    controller;
+	Endpoint*    ME;
 
-	bool       iAmReady;
+	bool         iAmReady;
 
-	Endpoint*  endpointAdd(int rFd, int wFd, const char* name, const char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core = -1, Endpoint* inheritFrom = NULL);
-	void       endpointRemove(Endpoint* ep);
-	Endpoint*  endpointLookup(int fd, int* idP);
-	Endpoint*  endpointLookup(int ix);
-	Endpoint*  endpointLookup(char* alias);
-	Endpoint*  endpointFreeGet(Endpoint::Type type);
-	void       checkAllWorkersConnected(void);
+	Endpoint*    endpointAdd(int rFd, int wFd, const char* name, const char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core = -1, Endpoint* inheritFrom = NULL);
+	void         endpointRemove(Endpoint* ep);
+	Endpoint*    endpointLookup(int fd, int* idP);
+	Endpoint*    endpointLookup(int ix);
+	Endpoint*    endpointLookup(char* alias);
+	Endpoint*    endpointFreeGet(Endpoint::Type type);
+	void         checkAllWorkersConnected(void);
 
-	int  helloSend(Endpoint* ep, Message::MessageType type);
-
+	int          helloSend(Endpoint* ep, Message::MessageType type);
 };
 
 	

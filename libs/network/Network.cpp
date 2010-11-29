@@ -1735,6 +1735,63 @@ void Network::run()
 
 /* ****************************************************************************
 *
+* getState - 
+*/
+std::string Network::getState(std::string selector)
+{
+	int          ix;
+	int          eps = 0;
+	std::string  output;
+	char         partString[256];
+
+	output = "";
+
+	for (ix = 2; ix < Endpoints; ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) && (endpoint[ix]->rFd >= 0))
+		{
+			++eps;
+			snprintf(partString, sizeof(partString), "+ %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d, out: %03d)\n",
+					 ix,
+					 endpoint[ix]->typeName(),
+					 endpoint[ix]->name.c_str(),
+					 endpoint[ix]->alias.c_str(),
+					 endpoint[ix]->ip.c_str(),
+					 endpoint[ix]->port,
+					 endpoint[ix]->stateName(),
+					 endpoint[ix]->rFd,
+					 endpoint[ix]->msgsIn,
+					 endpoint[ix]->msgsOut);
+		}
+		else
+		{
+			snprintf(partString, sizeof(partString), "- %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d, out: %03d)\n",
+					 ix,
+					 endpoint[ix]->typeName(),
+					 endpoint[ix]->name.c_str(),
+					 endpoint[ix]->alias.c_str(),
+					 endpoint[ix]->ip.c_str(),
+					 endpoint[ix]->port,
+					 endpoint[ix]->stateName(),
+					 endpoint[ix]->rFd,
+					 endpoint[ix]->msgsIn,
+					 endpoint[ix]->msgsOut);
+		}
+
+		output += partString;
+	}
+
+	snprintf(partString, sizeof(partString), "Connected to %d endpoints:\n", eps);
+	return std::string(partString) + output;
+}
+
+
+
+/* ****************************************************************************
+*
 * quit - 
 */
 void Network::quit()

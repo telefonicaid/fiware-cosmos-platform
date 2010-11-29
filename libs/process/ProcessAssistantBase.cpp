@@ -58,15 +58,10 @@ namespace ss {
 		core       = _core;
 		worker     = _worker;
 
-		
 		// Get an output shared memory
-		output_shm =  MemoryManager::shared()->getFreeSharedMemory();
-		if( output_shm == -1)
-		{
-			std::cerr << "Not enougth shared memory elements for the output of Process Assitance. Review setup or shared memory parameters on this server\n";
-			exit(1);
-		}
-		
+		output_shm = MemoryManager::shared()->getFreeSharedMemory();
+		if (output_shm == -1)
+			LM_X(121, ("Not enough shared memory elements for the output of Process Assitance. Review setup or shared memory parameters on this server"));
 		
 		LM_T(LMT_COREWORKER, ("XXCORE: %d", core));
 		

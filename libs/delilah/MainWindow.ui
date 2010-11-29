@@ -66,11 +66,23 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="cursor">
     <cursorShape>PointingHandCursor</cursorShape>
    </property>
    <property name="windowTitle">
     <string>toolBar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>24</width>
+     <height>24</height>
+    </size>
    </property>
    <property name="floatable">
     <bool>false</bool>
@@ -131,7 +143,7 @@
    </property>
    <property name="icon">
     <iconset resource="resources/icons.qrc">
-     <normaloff>:/icons/new_process.png</normaloff>:/icons/new_process.png</iconset>
+     <normaloff>:/icons/new_workspace.png</normaloff>:/icons/new_workspace.png</iconset>
    </property>
    <property name="text">
     <string>Process</string>
@@ -152,7 +164,7 @@
    </property>
    <property name="icon">
     <iconset resource="resources/icons.qrc">
-     <normaloff>:/icons/new_queue.png</normaloff>:/icons/new_queue.png</iconset>
+     <normaloff>:/icons/add_queue_tool.png</normaloff>:/icons/add_queue_tool.png</iconset>
    </property>
    <property name="text">
     <string>Queue</string>
@@ -172,7 +184,7 @@
    </property>
    <property name="icon">
     <iconset resource="resources/icons.qrc">
-     <normaloff>:/icons/new_operation.png</normaloff>:/icons/new_operation.png</iconset>
+     <normaloff>:/icons/add_operation_tool.png</normaloff>:/icons/add_operation_tool.png</iconset>
    </property>
    <property name="text">
     <string>Operation</string>
@@ -187,7 +199,7 @@
    </property>
    <property name="icon">
     <iconset resource="resources/icons.qrc">
-     <normaloff>:/icons/move.png</normaloff>:/icons/move.png</iconset>
+     <normaloff>:/icons/selection_tool.png</normaloff>:/icons/selection_tool.png</iconset>
    </property>
    <property name="text">
     <string>select</string>
@@ -199,7 +211,7 @@
    </property>
    <property name="icon">
     <iconset resource="resources/icons.qrc">
-     <normaloff>:/icons/connection.png</normaloff>:/icons/connection.png</iconset>
+     <normaloff>:/icons/connect_tool.png</normaloff>:/icons/connect_tool.png</iconset>
    </property>
    <property name="text">
     <string>Connect</string>

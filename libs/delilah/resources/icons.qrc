@@ -1,10 +1,11 @@
 <RCC>
     <qresource prefix="/">
-        <file>icons/move.png</file>
-        <file>icons/new_operation.png</file>
-        <file>icons/new_process.png</file>
-        <file>icons/new_queue.png</file>
-        <file>icons/connection.png</file>
         <file>icons/error.png</file>
+        <file>icons/add_operation_tool.png</file>
+        <file>icons/add_queue_tool.png</file>
+        <file>icons/connect_tool.png</file>
+        <file>icons/new_workspace.png</file>
+        <file>icons/remove.png</file>
+        <file>icons/selection_tool.png</file>
     </qresource>
 </RCC>

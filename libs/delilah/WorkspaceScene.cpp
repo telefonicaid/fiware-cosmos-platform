@@ -119,8 +119,6 @@ void WorkspaceScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 			case TOOL_CONNECT:
 				if (current_conn)
 				{
-					std::cout << "Released\n";
-
 					ObjectItem* item = findItem(event->scenePos());
 					if (item && item!=current_conn->startItem())
 					{
@@ -148,8 +146,6 @@ ObjectItem* WorkspaceScene::findItem(const QPointF &pos)
 	int i = 0;
 	while (i<selected.size() && !item)
 	{
-		// TODO: remove
-		std::cout << "Analizing type = " << selected[i]->type() << "\n";
 		switch(selected[i]->type())
 		{
 			case QUEUE_ITEM:

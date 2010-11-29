@@ -10,9 +10,25 @@
 #include <iostream>							// std::cout
 #include "ObjectWithStatus.h"				// ss::ObjectWithStatus
 #include "CommandLine.h"					// au::CommandLine
+#include "samson/Environment.h"				// ss::Environment
 
 namespace ss {
 	
+	
+	/** 
+	 Functions to interact between Environment variables
+	 */
+	
+	void copyEnviroment( Environment* from , network::Environment * to );
+	
+	void copyEnviroment( const network::Environment & from , Environment* to  );
+	
+	
+	/**
+	 
+	 Class Job
+	 
+	 */
 	
 	class SamsonController;
 	class ControllerTask;
@@ -89,8 +105,8 @@ namespace ss {
 		bool error;						// Error flag
 		bool finish;					// Flag to indicate that this job is finished
 		
-		int fromIdentifier;		// Identifier of the delailah that ordered this job
-		int sender_id;			// Identifier at the sender side
+		int fromIdentifier;				// Identifier of the delailah that ordered this job
+		int sender_id;					// Identifier at the sender side (the same delilah could send multiple jobs)
 					
 		SamsonController *controller;	// Pointer to the controller
 		
@@ -98,27 +114,38 @@ namespace ss {
 		
 		std::list<JobItem> items;		// Stack of items that we are running
 		
-		std::string mainCommand;
+		std::string mainCommand;		// Main command that originated this job
+		
+		friend class ControllerTaskManager;
+		friend class ControllerTask;
+		
+		Environment environment;		// Environment properties for this job ( can be updated in runtime )
 		
 	public:
 		
 		// Constructor used for top-level jobs form delilah direct message
 		
-		Job( SamsonController *_controller , size_t _id, size_t _fromIdentifier , int _sender_id , std::string c  )
+		Job( SamsonController *_controller , size_t _id, int fromId, const network::Command &command  )
 		{
-			mainCommand = c;
-			
+			// Keep a pointer to the controller
 			controller = _controller;
 			
+			// Get the main command
+			mainCommand = command.command();
+			
+			// Keep the id of the job
 			id = _id;
 			
-			fromIdentifier = _fromIdentifier;
-			sender_id = _sender_id;
+			fromIdentifier = fromId;
+			sender_id = command.sender_id();
 
-			// Create the first item of this job
+			// Get the environment variables
+			copyEnviroment( command.environment() , &environment );
 			
+			
+			// Create the first item of this job
 			JobItem j("TOP");
-			j.addCommand(c);
+			j.addCommand(command.command());
 			
 			items.push_back( j );
 

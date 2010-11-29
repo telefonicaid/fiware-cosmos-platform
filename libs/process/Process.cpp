@@ -2,12 +2,14 @@
 #include "Process.h"						// Own interface
 #include <iostream>							// std::cout
 #include "ProcessOperationFramework.h"		// ss::ProcessOperationFramework
+#include "Job.h"							// copyEnviroment(.)
 
 namespace ss {
 
 	network::ProcessMessage Process::runCommand( network::ProcessMessage m)
 	{
-		
+		// Copy enviroment received from the "Process message"
+		copyEnviroment( m.environment() , &environment ); 
 		
 		ProcessOperationFramework * framework2;
 		

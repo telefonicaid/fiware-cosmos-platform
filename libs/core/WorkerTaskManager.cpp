@@ -71,7 +71,7 @@ namespace ss {
 	{
 		lock.lock();
 		
-		WorkerTask *t = task.findInMap( item->task_id );
+		WorkerTask *t = task.findInMap( item->task->task_id );
 		assert( t );
 
 		// Notify about this finish

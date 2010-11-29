@@ -13,6 +13,7 @@
 #include "MemoryManager.h"				// ss::MemoryManager
 #include <iostream>
 #include <iomanip>
+#include "Job.h"						// Environment operations (CopyFrom)
 
 namespace ss
 {
@@ -39,6 +40,36 @@ namespace ss
 		}
 		else
 			mainCommand = commandLine.get_argument(0);
+		
+		
+		if ( mainCommand == "set")
+		{
+			if ( commandLine.get_num_arguments() == 1)
+			{
+				// Only set, we show all the defined parameters
+				std::ostringstream output;
+				output << "Environent variables:\n";
+				output << "------------------------------------\n";
+				output << dalilah->environment.toString();
+				
+				writeBlockOnConsole( output.str() );
+				return;
+			}
+			
+			if ( commandLine.get_num_arguments() < 3 )
+			{
+				writeErrorOnConsole("Usage: set name value.");
+				return;
+			}
+			
+			// Set a particular value
+			std::string name = commandLine.get_argument(1);
+			std::string value = commandLine.get_argument(2);
+			
+			dalilah->environment.set( name , value );
+			
+			return ;
+		}
 		
 		
 		if ( mainCommand == "internal_status" )
@@ -172,8 +203,6 @@ namespace ss
 		}
 		
 		
-		
-		
 		if( mainCommand == "load" )
 		{
 			if( commandLine.get_num_arguments() < 3)
@@ -202,6 +231,8 @@ namespace ss
 
 		c->set_command( command );
 		c->set_sender_id( id++ );
+		copyEnviroment( &dalilah->environment , c->mutable_environment() );
+		
 		dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Command, p);
 
 		

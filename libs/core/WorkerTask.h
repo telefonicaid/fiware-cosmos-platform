@@ -7,9 +7,12 @@
 #include <string>				// std::string
 #include "samson/Operation.h"	// ss::Operation
 #include "samson.pb.h"			// ss::network::...
+#include "samson/Environment.h"	// ss::Environment
+
 
 namespace ss {
 
+	
 	class WorkerTaskItem;
 	
 	class WorkerTask
@@ -17,13 +20,20 @@ namespace ss {
 		
 	public:
 		
+		// identifier of the task
 		size_t task_id;
 		
+		// Number of items ( used as a counter to add new items )
+		int num_items;	
+		
+		// Error management
 		bool error;
 		std::string error_message;
 		
 		std::string operation;					// Operation to be executed
-		au::map<size_t,WorkerTaskItem> item;	// List of items to be executed by processes
+		au::map<int,WorkerTaskItem> item;		// List of items to be executed by processes
+		
+		network::Environment environment;		// Environment for this task ( transmitted to all process )
 		
 		WorkerTask( Operation::Type type , const network::WorkerTask &task );
 		
@@ -37,6 +47,11 @@ namespace ss {
 		std::string getStatus();
 		bool isFinish();
 		size_t getId();
+		
+	private:
+		void addItem( WorkerTaskItem *item );
+
+		
 	};
 }
 #endif

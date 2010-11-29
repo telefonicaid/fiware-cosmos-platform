@@ -17,6 +17,8 @@ namespace ss {
 		Process *process;
 		Operation *operation;
 		
+		Environment * environment;
+		
 	public:
 		
 		ProcessOperationFramework( Process *_process , network::ProcessMessage m  ) : OperationFramework( m )
@@ -24,6 +26,10 @@ namespace ss {
 			
 			process = _process;
 			assert( process );
+			
+			// Create the environment for any possible operation
+			environment = new Environment();
+			environment->copyFrom(&process->environment);
 			
 			// We still have no idea about the operation to run
 			operation = process->modulesManager.getOperation( m.operation() );
@@ -34,7 +40,12 @@ namespace ss {
 
 		}
 		
-		void flushOutput( WorkerTaskItemWithOutput *taskItem);
+		~ProcessOperationFramework()
+		{
+			delete environment;
+		}
+		
+		void flushOutput( WorkerTaskItemWithOutput *taskItem );
 		
 		
 		void run()
@@ -47,13 +58,16 @@ namespace ss {
 				{
 					// Run the generator over the ProcessWriter to emit all key-values
 					Generator *generator = (Generator*) operation->getInstance();
+					generator->environment = environment;
 					generator->run( pw );
+					delete generator->environment;
 					break;
 				}
 				case Operation::parser:
 				{
 					// Run the generator over the ProcessWriter to emit all key-values
 					Parser *parser = (Parser*) operation->getInstance();
+					parser->environment = environment;
 					
 					SharedMemoryItem*item =  MemoryManager::shared()->getSharedMemory( m.input_shm() );
 
@@ -67,7 +81,7 @@ namespace ss {
 				{
 					// Run the generator over the ProcessWriter to emit all key-values
 					Map *map = (Map*) operation->getInstance();
-					
+					map->environment = environment;
 					
 					std::vector<KVFormat> inputFormats =  operation->getInputFormats();
 					assert( inputFormats.size() == 1);	// In map operations we only have one input

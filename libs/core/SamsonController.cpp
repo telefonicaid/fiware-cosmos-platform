@@ -192,7 +192,7 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 		case Message::Command:
 		{
 			// Create a new job with this command
-			jobManager.addJob( fromId , packet->message.command().sender_id(), packet->message.command().command() );
+			jobManager.addJob( fromId ,  packet->message.command() );
 			return 0;
 		}
 

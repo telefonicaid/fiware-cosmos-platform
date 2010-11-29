@@ -1,17 +1,14 @@
 
 
 #include "WorkerTaskItem.h"		// Own interface
-#include "ProcessAssistant.h"		// ss::ProcessAssistant
+#include "ProcessAssistant.h"	// ss::ProcessAssistant
+#include "WorkerTask.h"			// ss::WorkerTask
 
 namespace ss {
 
 
-	WorkerTaskItem::WorkerTaskItem( size_t _task_id , size_t _item_id  , Type _type )
+	WorkerTaskItem::WorkerTaskItem(  )
 	{
-		task_id = _task_id;
-		item_id = _item_id;
-		
-		type = _type;
 		
 		state = definition;
 		
@@ -19,6 +16,13 @@ namespace ss {
 		
 		shm_input = -1;
 	}
+	
+	void WorkerTaskItem::setTaskAndItemId( WorkerTask *_task , int _itemId )
+	{
+		task = _task;
+		item_id = _itemId;
+	}
+
 
 	WorkerTaskItem::State WorkerTaskItem::getState()
 	{
@@ -28,7 +32,7 @@ namespace ss {
 	std::string WorkerTaskItem::getStatus()
 	{
 		std::ostringstream output;
-		output << "\t\tTask Item (Task: " << task_id << ") Item: " << item_id << " ";
+		output << "\t\tTask Item (Task: " << task->task_id << ") Item: " << item_id << " ";
 		
 		switch (state) {
 			case definition:

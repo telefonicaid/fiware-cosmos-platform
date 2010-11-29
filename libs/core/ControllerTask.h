@@ -11,7 +11,9 @@
 #include <set>								// std::set
 #include "ControllerTaskInfo.h"				// ss::ControllerTaskInfo
 #include "samson.pb.h"						// ss::network::...
-#
+#include "samson/Environment.h"				// ss::Environment
+#include "job.h"							// ss::Job
+
 namespace ss {
 	
 	class SamsonController;
@@ -80,7 +82,6 @@ namespace ss {
 		
 		void notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage , ControllerDataManager * data );
 		
-		
 		void fillInfo( network::WorkerTask *t , int workerIdentifier )
 		{
 			t->set_operation( info->operation_name );
@@ -107,6 +108,21 @@ namespace ss {
 				network::Queue qq = info->output_queues[i]; 
 				q->CopyFrom( qq );
 			}
+			
+			
+			// Set environment variables
+			Environment *env = &info->job->environment;
+
+			network::Environment *e = t->mutable_environment();	
+			std::map<std::string,std::string>::iterator iter;
+			for ( iter = env->environment.begin() ; iter != env->environment.end() ; iter++)
+			{
+				network::EnvironmentVariable *ev = e->add_variable();			
+				
+				ev->set_name( iter->first );
+				ev->set_value( iter->second );
+			}
+			
 		}
 		
 		// Update with the added files

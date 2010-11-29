@@ -9,6 +9,34 @@
 
 namespace ss {
 
+#pragma mark Function to work with environment
+	
+	
+	void copyEnviroment( Environment* from , network::Environment * to )
+	{
+		std::map<std::string,std::string>::iterator iter;
+		for ( iter = from->environment.begin() ; iter != from->environment.end() ; iter++)
+		{
+			network::EnvironmentVariable *ev = to->add_variable();			
+			
+			ev->set_name( iter->first );
+			ev->set_value( iter->second );
+		}
+		
+	}
+	
+	void copyEnviroment( const network::Environment & from , Environment* to  )
+	{
+		for( int i = 0 ; i < from.variable_size() ; i++ )
+		{
+			std::string name = from.variable(i).name();
+			std::string value = from.variable(i).value();
+			to->set( name , value );
+		}
+	}
+	
+	
+#pragma mark Job
 
 	void Job::run()
 	{
@@ -61,6 +89,21 @@ namespace ss {
 			// Main command
 			std::string c = commandLine.get_argument(0);
 			
+			// set command
+			if( c == "set" )
+			{
+				if ( commandLine.get_num_arguments() < 3 )
+				{
+					setError("Not enougth parameters for set command. Usaeg set variable value");
+					return false;
+				}
+				
+				// Set the environment variable
+				environment.set( commandLine.get_argument(1) , commandLine.get_argument(2) );
+				return true;
+				
+			}
+			
 			// Get the operation to run
 			Operation *operation = controller->modulesManager.getOperation( c );
 			
@@ -73,7 +116,7 @@ namespace ss {
 					return false;
 				}
 				
-				ControllerTaskInfo *task_info = new ControllerTaskInfo( operation , &commandLine );
+				ControllerTaskInfo *task_info = new ControllerTaskInfo( this, operation , &commandLine );
 
 				
 				controller->data.retreveInfoForTask( task_info );
@@ -130,7 +173,6 @@ namespace ss {
 			else
 			{
 				// It not any operation, run directly to the data manager to process
-				
 				DataManagerCommandResponse response = controller->data.runOperation( id,  command  );
 				if( response.error )
 				{

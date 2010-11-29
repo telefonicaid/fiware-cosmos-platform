@@ -4,6 +4,19 @@ package ss.network;
 //
 // Common 
 //
+
+message EnvironmentVariable
+{
+	required string name	=1;	// Name of the property
+	required string value	=2;	// Value
+}
+
+message Environment
+{
+	repeated EnvironmentVariable variable=1;	// List of enrivonment variables
+}
+
+
 message KVInfo
 {
 	required uint64 size=1;		// Size in bytes
@@ -86,6 +99,8 @@ message WorkerTask
 	repeated Queue output		= 4;    // output queues
 
 	optional bool generator		= 5;	// Optional flag only used in the generator operations
+
+	required Environment environment = 6;	// Environment operations for this task
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -112,8 +127,11 @@ message WorkerTaskConfirmation
 
 message Command
 {
-	required string  command   = 1;          // optimal string to send a txt command
+	required string  command   = 1;          // String to send a txt command
 	required uint64  sender_id = 2;          // Id of the packet sender ( delilah )
+
+	optional Environment environment    = 3;		 // Initial environment variables for the new job
+
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -289,4 +307,7 @@ message ProcessMessage
 	optional int32 num_outputs=6;		// Number of outputs (only un run messages)
 
 	optional string operation =7;		// Name of the operation to run ( only in run messages for all operations)
+
+	optional Environment environment=9;	// Environment for this operation
+
 }

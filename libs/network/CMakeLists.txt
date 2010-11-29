@@ -1,6 +1,5 @@
 SET (HEADERS
 	Message.h
-	samson.pb.h
 	Network.h
 	NetworkInterface.h
 	Packet.h
@@ -20,7 +19,6 @@ SET (HEADERS
 
 SET (SOURCES
 	Message.cpp
-	samson.pb.cc
 	Network.cpp
 	Endpoint.cpp
 	iomInit.cpp
@@ -34,14 +32,6 @@ SET (SOURCES
 	Alarm.cpp
 	Misc.cpp
 	EndpointMgr.cpp
-)
-
-# Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''
-add_custom_command (
-  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/samson.pb.cc
-  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/samson.pb.h
-  COMMAND protoc ${CMAKE_CURRENT_SOURCE_DIR}/samson.proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
-  MAIN_DEPENDENCY samson.proto
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")

@@ -19,8 +19,7 @@ namespace ss {
 	public:
 		std::vector<network::Queue> outputs;			// Queues to emit key-values ( inserted at data manager )
 		
-		WorkerTaskItemWithOutput( size_t _task_id , size_t _item_id , WorkerTaskItem::Type _type,  const network::WorkerTask &task ) 
-		: WorkerTaskItem( _task_id , _item_id , _type )
+		WorkerTaskItemWithOutput( const network::WorkerTask &task ) 
 		{
 			// Save the outputs queues
 			for (int i = 0 ; i < task.output_size() ; i++)

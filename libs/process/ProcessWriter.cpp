@@ -10,6 +10,7 @@
 #include "SamsonWorker.h"			// ss::SamsonWorker
 #include "WorkerTaskManager.h"		// ss::WorkerTaskItemWithOutput
 #include "WorkerTaskItemWithOutput.h"	// ss:WorkerTaskItemWithOutput
+#include "WorkerTask.h"					// ss::WorkerTask
 
 namespace ss {
 
@@ -91,7 +92,7 @@ namespace ss {
 	void ProcessWriter::FlushBuffer( WorkerTaskItemWithOutput *taskItem )
 	{
 		
-		size_t task_id = taskItem->task_id;
+		size_t task_id = taskItem->task->task_id;
 		
 		for (int o = 0 ; o < num_outputs ; o++)
 		{

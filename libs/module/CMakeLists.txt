@@ -9,6 +9,7 @@ SET (HEADERS
 	samson/KVWriter.h
 	samson/Module.h
 	samson/Operation.h
+	samson/Environment.h
 	samson/samsonModuleHeader.h
 	samson/samsonTypes.h
 	samson/var_int.h

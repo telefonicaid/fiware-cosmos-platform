@@ -1,4 +1,5 @@
 SET (HEADERS
+	samson.pb.h
 	samsonDirectories.h
 	samsonLogMsg.h
 	CommandLine.h
@@ -15,11 +16,21 @@ SET (HEADERS
 )
 
 SET (SOURCES
+	samson.pb.cc
 	LockDebugger.cpp
 	Lock.cpp
 	SamsonSetup.cpp
 	traces.cpp
 )
+
+# Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''
+add_custom_command (
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/samson.pb.cc
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/samson.pb.h
+  COMMAND protoc ${CMAKE_CURRENT_SOURCE_DIR}/samson.proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
+  MAIN_DEPENDENCY samson.proto
+)
+
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")

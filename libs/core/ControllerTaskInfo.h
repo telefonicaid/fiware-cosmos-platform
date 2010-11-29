@@ -10,21 +10,20 @@
 namespace ss {
 
 	class Operation;
+	class Job;
 
 	class ControllerTaskInfo
 	{
 		
 	public:
 		
-		ControllerTaskInfo( Operation *operation  , au::CommandLine *cmdLine );
+		ControllerTaskInfo( Job *job , Operation *operation  , au::CommandLine *cmdLine );
 
-		/**
-		 Function to set an error while retriving information at ControllerDataManager
-		 */
+		Job *job;	// Pointer to a job ( used to retrieve environment variables )
 		
 		void setError( std::string _error_message);
 		
-		std::string command;
+		std::string command;					// Command with parameter
 		
 		std::string operation_name;				// Name of the operation
 		Operation * operation;					// Pointer to the operation

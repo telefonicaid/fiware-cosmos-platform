@@ -5,7 +5,7 @@
 
 namespace ss {
 
-	void JobManager::addJob(int fromIdentifier, int _sender_id  , std::string command )
+	void JobManager::addJob(int fromId, const network::Command &command )
 	{
 		lock.lock();
 		
@@ -13,10 +13,10 @@ namespace ss {
 		size_t job_id = controller->data.getNewTaskId();
 		
 		// At the moment only single-line commands are allowed
-		Job *j = new Job( controller , job_id, fromIdentifier , _sender_id, command );
+		Job *j = new Job( controller , job_id, fromId , command );
 		
 		// Notify to the task manager that this "job" is about to start
-		controller->data.beginTask( job_id , command );
+		controller->data.beginTask( job_id , command.command() );
 		
 		// Insert in the list
 		job.insert( std::pair<size_t , Job*>( j->getId() , j ) );

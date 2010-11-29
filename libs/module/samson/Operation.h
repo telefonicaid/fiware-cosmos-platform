@@ -8,9 +8,12 @@
 #include "samson/KVWriter.h"       // KVWriter
 #include "samson/KVFormat.h"       // KVFormat
 
+#include <map>						// std::map
+#include "samson/Environment.h"		// ss::Environment
 
 namespace ss {
 
+	
 	/**
 	 
 	 \class ss::Operation
@@ -24,6 +27,9 @@ namespace ss {
 	{
 		
 	public:
+		
+		Environment	*environment;	// Environment variables
+		
 		OperationInstance()
 		{
 		}

@@ -1,13 +1,15 @@
 
 #include "ControllerTaskInfo.h"			// Own interface
 #include "samson/Operation.h"			// ss::Operation
+#include "Job.h"						// ss::Job
 #include <iostream>
 
 namespace ss {
 
 	
-	ControllerTaskInfo::ControllerTaskInfo( Operation *_operation  , au::CommandLine *cmdLine )
+	ControllerTaskInfo::ControllerTaskInfo( Job *_job , Operation *_operation  , au::CommandLine *cmdLine )
 	{
+		job = _job;
 		operation = _operation;
 		error = false;
 		

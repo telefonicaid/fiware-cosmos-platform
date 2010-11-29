@@ -13,10 +13,13 @@
 namespace ss {
 
 	class ProcessAssistant;
+	class WorkerTask;
 	
 	class WorkerTaskItem
 	{
 	public:
+		
+		WorkerTask *task;		// Pointer to the parent task
 		
 		enum State
 		{
@@ -27,26 +30,18 @@ namespace ss {
 			running				// It has beent taken by a ProcessAssistant (should report finish)
 		};
 		
-		enum Type
-		{
-			generator,			// Simple generator task		
-			parser,				// Simple parser task
-			map,				// Map operation
-			organize_reduce,	// Organize a reduce operation
-			reduce				// Reduce operation
-		};
-		
-		size_t task_id;		// Global task id
 		int item_id;		// Item id ( from 0 to ...)
 		
 		State state;
-		Type type;
 
 		int shm_input;	// Shared memory identifier for input ( if necessary ) -1 --> no assigned
 		
-		WorkerTaskItem( size_t _task_id , size_t _item_id  , Type _type);
+		WorkerTaskItem();
 		virtual ~WorkerTaskItem(){}
 
+		// Set the parent task
+		void setTaskAndItemId( WorkerTask *task , int itemId);
+		
 		FileManagerReadItemVector *readItemVector;	// elements that need to be read to run this item
 		
 		void setup()

@@ -22,6 +22,7 @@
 #include <set>					// std::set
 #include "Lock.h"				// au::Lock
 #include "au_map.h"				// au::map
+#include "samson/Environment.h"	// ss::Environment
 
 namespace ss {
 	
@@ -52,6 +53,9 @@ namespace ss {
 		size_t     loadDataCounter;
 		
 	public:
+		
+		// Environment properties to be sent in the next job
+		Environment environment;	
 		
 		au::map<size_t,DelilahLoadDataProcess> loadProcess; 
 		

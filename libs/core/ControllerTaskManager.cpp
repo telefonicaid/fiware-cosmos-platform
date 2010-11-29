@@ -5,6 +5,8 @@
 #include "Endpoint.h"					// ss::Endpoint
 #include "Packet.h"						// ss::Packet
 #include "ObjectWithStatus.h"			// ss::getStatusFromArray(.)
+#include "samson/Environment.h"			// ss::Environment
+#include "Job.h"						// ss::Job
 
 namespace ss
 {
@@ -102,6 +104,8 @@ namespace ss
 		
 		// special flag used in generators
 		t->set_generator( task->generator == workerIdentifier );	
+		
+		
 		
 		controller->network->send(controller,  controller->network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask,  p2);
 	}

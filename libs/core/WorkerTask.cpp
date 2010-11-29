@@ -13,6 +13,11 @@ namespace ss
 	{
 		operation = task.operation();	// Save the operation to perform		
 		task_id = task.task_id();		// Save the task id
+
+		num_items = 0;
+		
+		// copy all the environment variables
+		environment = task.environment();
 		
 		// By default no error
 		error = false;
@@ -22,8 +27,7 @@ namespace ss
 			// In generators only one of the workers is active to create key-values
 			if( task.generator() )
 			{
-				size_t id = 0;
-				item.insertInMap( id , new WorkerTaskItemGenerator( task_id , id ,  task ) );
+				addItem( new WorkerTaskItemGenerator( task ) );
 			}
 			
 			return;
@@ -36,7 +40,8 @@ namespace ss
 			network::FileList fl = task.input(0);
 			
 			for (size_t i = 0 ; i < (size_t) fl.file_size() ; i++)
-				item.insertInMap( i , new WorkerTaskItemOperation( task_id , i , fl.file(i).name() , task ) );
+				addItem( new WorkerTaskItemOperation( fl.file(i).name() , task ) );
+			
 			return;
 		}
 
@@ -47,16 +52,26 @@ namespace ss
 			network::FileList fl = task.input(0);
 			
 			for (size_t i = 0 ; i < (size_t) fl.file_size() ; i++)
-				item.insertInMap( i , new WorkerTaskItemOperation( task_id , i , fl.file(i).name() , task ) );
+				addItem( new WorkerTaskItemOperation( fl.file(i).name() , task ) );
+
 			return;
 		}
 		
 		
 	}
 	
+	void WorkerTask::addItem( WorkerTaskItem * i )
+	{
+		int itemId = num_items++;
+		
+		i->setTaskAndItemId(this , itemId);
+		item.insertInMap( itemId , i  );
+		
+	}
+	
 	WorkerTaskItem *WorkerTask::getNextItemToProcess()
 	{
-		std::map<size_t,WorkerTaskItem*>::iterator iterator;
+		std::map<int,WorkerTaskItem*>::iterator iterator;
 		for (iterator = item.begin() ; iterator != item.end() ; iterator++)
 		{
 			WorkerTaskItem *item = iterator->second;

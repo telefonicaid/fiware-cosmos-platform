@@ -119,7 +119,10 @@ namespace ss
 				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::StatusRequest, p);
 			}
 
+			/*
 
+			 // Status requests go thougth controller
+			 
 			for (int i = 0; i < dalilah->network->getNumWorkers(); i++)
 			{
 				Packet* p = new Packet();
@@ -131,6 +134,7 @@ namespace ss
 				LM_M(("Sending Status to worker %d (endpoint id: %d)", i, workerId));
 				dalilah->network->send(dalilah, workerId, Message::StatusRequest, p);
 			}
+			 */
 
 			writeWarningOnConsole("Status messages sent to all elements\n");
 			

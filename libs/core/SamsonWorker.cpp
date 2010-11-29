@@ -146,15 +146,21 @@ void SamsonWorker::sendWorkerStatus()
 int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 {
 	
+	// Filter to receive strange thigs from delilah
+	if ( ( fromId != network->controllerGetIdentifier() ) && ( msgCode != Message::LoadData ) )
+		return 0;
+	
+	
 	if (msgCode == Message::StatusRequest)
 	{
 		Packet* p = new Packet();
 		network::StatusResponse *response = p->message.mutable_status_response();
 		
 		response->set_title( "Worker " + au::Format::string( network->getWorkerFromIdentifier( network->getMyidentifier() ) ) );
-		
+		response->set_senderid( packet->message.status_request().senderid() ) ;
 		response->set_response( getStatus( packet->message.status_request().command() ) );
-		network->send(this, fromId, Message::StatusResponse, p);
+		
+		network->send(this, network->controllerGetIdentifier() , Message::StatusResponse, p);
 		return 0;
 	}
 

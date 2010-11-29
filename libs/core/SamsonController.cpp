@@ -179,15 +179,46 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 
 		case Message::StatusRequest:
 		{
+			// Direct packet response
 			Packet *p = new Packet();
 			network::StatusResponse *response = p->message.mutable_status_response();
 			response->set_title( "Controller" );
 			response->set_response( getStatus(packet->message.status_request().command()) );
 			network->send(this, fromId, Message::StatusResponse, p);
+			
+			
+			// Send a request to each worker
+			for (int i = 0 ; i < network->getNumWorkers() ; i++)
+			{
+				Packet *p = new Packet();
+				network::StatusRequest *request = p->message.mutable_status_request();
+				request->set_senderid( fromId );
+				network->send(this, network->workerGetIdentifier(i) , Message::StatusRequest, p);
+			}
+			
 			return 0;
 			
 		}
 		break;
+		
+		case Message::StatusResponse:
+		{
+			// Forward packet response to delilah
+			Packet *p = new Packet();
+			network::StatusResponse *response = p->message.mutable_status_response();
+			response->CopyFrom( packet->message.status_response() );					// Copy the entire response message
+
+			// Get the sender identifier
+			int senderId = packet->message.status_response().senderid();
+			
+			network->send(this, senderId , Message::StatusResponse, p);
+			
+			return 0;
+			
+		}
+			break;
+			
+			
 			
 		case Message::Command:
 		{

@@ -77,12 +77,14 @@ message Data
 message StatusRequest
 {
 	required string command = 1;	// Some string to clarify the status request
+	optional int32 senderId	= 2;	// Identifier of the sender ( when controller notify workers )
 }
 
 message StatusResponse
 {
 	required string title = 1;	// Title of the status ( Controller / Wroker X / Delailah )
 	required string response = 2;	// content of the status to visualize on screen
+	optional int32 senderId	= 3;	// Identifier of the sender ( when workers answers back to the controller )
 }
 
 // ////////////////////////////////////////////////////////////////////////////

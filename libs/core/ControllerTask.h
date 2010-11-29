@@ -12,7 +12,7 @@
 #include "ControllerTaskInfo.h"				// ss::ControllerTaskInfo
 #include "samson.pb.h"						// ss::network::...
 #include "samson/Environment.h"				// ss::Environment
-#include "job.h"							// ss::Job
+#include "Job.h"							// ss::Job
 
 namespace ss {
 	

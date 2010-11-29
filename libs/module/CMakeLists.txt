@@ -17,15 +17,22 @@ SET (HEADERS
 )
 
 
+SET( HEADERS_NO_INSTALL
+     EnvironmentOperations.h
+)
+
+
 SET (SOURCES
 	main.cpp
+     EnvironmentOperations.cpp
 )
 
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
+include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 
 
-ADD_LIBRARY(samsonModuleStatic STATIC ${SOURCES} ${HEADERS} )
+ADD_LIBRARY(samsonModuleStatic STATIC ${SOURCES} ${HEADERS} ${HEADERS_NO_INSTALL} )
 #ADD_LIBRARY(samsonModuleShared SHARED ${SOURCES} ${HEADERS} )
 
 TARGET_LINK_LIBRARIES( samsonModuleStatic protobuf )

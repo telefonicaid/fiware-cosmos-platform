@@ -11,18 +11,13 @@
 #include "ObjectWithStatus.h"				// ss::ObjectWithStatus
 #include "CommandLine.h"					// au::CommandLine
 #include "samson/Environment.h"				// ss::Environment
+#include "EnvironmentOperations.h"			// copyEnviroment(.)
+
 
 namespace ss {
 	
 	
-	/** 
-	 Functions to interact between Environment variables
-	 */
-	
-	void copyEnviroment( Environment* from , network::Environment * to );
-	
-	void copyEnviroment( const network::Environment & from , Environment* to  );
-	
+
 	
 	/**
 	 

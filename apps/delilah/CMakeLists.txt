@@ -27,6 +27,7 @@ include_directories("${PROJECT_BINARY_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 include_directories("${PROJECT_SOURCE_DIR}/libs/delilah")
+include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 
 SET (RESOURCES
     ${PROJECT_SOURCE_DIR}/libs/delilah/resources/objects.qrc

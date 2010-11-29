@@ -104,6 +104,7 @@ IF(QT4_FOUND)
 	include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 	include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
 	include_directories("${PROJECT_SOURCE_DIR}/libs/data")
+	include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 
 	ADD_LIBRARY(delilahStatic ${SOURCES} ${HEADERS} ${MOC_SOURCES} ${FORMS_HEADERS} ${RESOURCES_QRC})
 	TARGET_LINK_LIBRARIES(delilahStatic ${QT_LIBRARIES} ${STATIC_LIBS})

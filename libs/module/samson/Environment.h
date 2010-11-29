@@ -4,6 +4,7 @@
 #include <math.h>
 #include <sstream>                 // std::ostringstream
 #include <map>						// std::map
+#include <stdlib.h>
 
 namespace ss {
 	

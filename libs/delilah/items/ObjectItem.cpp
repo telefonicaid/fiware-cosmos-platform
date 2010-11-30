@@ -25,6 +25,7 @@ ObjectItem::~ObjectItem()
 void ObjectItem::init()
 {
 	setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsGeometryChanges);
+	text_item = 0;
 }
 
 void ObjectItem::setPos(const QPointF &pos)

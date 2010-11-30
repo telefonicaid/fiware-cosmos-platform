@@ -11,6 +11,8 @@
 #include "ObjectItem.h"
 #include "globals.h"
 
+class Operation;
+
 class OperationItem : public ObjectItem
 {
 public:
@@ -18,9 +20,12 @@ public:
 		: ObjectItem() {};
 	OperationItem(QSvgRenderer* renderer)
 		: ObjectItem(renderer) {};
+	OperationItem(Operation* _operation)
+		: ObjectItem(), operation(_operation) {};
 	~OperationItem() {};
 
 	virtual int type() const { return Type; };
+	virtual void initText();
 
 protected:
 	virtual void initializeDefaultSize();
@@ -29,6 +34,8 @@ protected:
 
 public:
     enum { Type=OPERATION_ITEM };
+    Operation* operation;
+
 };
 
 

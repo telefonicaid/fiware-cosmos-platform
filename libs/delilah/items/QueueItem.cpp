@@ -25,7 +25,6 @@ QueueItem::QueueItem(Queue* _queue)
 void QueueItem::init()
 {
 	initializeDefaultSize();
-	text_item = 0;
 }
 
 void QueueItem::initializeDefaultSize()
@@ -54,7 +53,7 @@ void QueueItem::initText(QString text)
 	if (text_item!=0)
 		delete text_item;
 
-	text_item = new QueueTextItem(text, this);
+	text_item = new ObjectTextItem(text, this);
 	// Don't know why this dosn't work...
 //	text_item->setAcceptedMouseButtons(0);
 	QFont serifFont("Times", 12, QFont::Bold);

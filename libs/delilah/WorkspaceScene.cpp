@@ -211,8 +211,9 @@ void WorkspaceScene::removeQueue(Queue* queue)
 
 void WorkspaceScene::showOperation(Operation* operation, const QPointF &position)
 {
-	OperationItem* operation_item = new OperationItem();
+	OperationItem* operation_item = new OperationItem(operation);
 	operation_item->setSharedRenderer(operation_renderer);
+	operation_item->initText();
 	operation_item->setDefaultSize();
 	operation_item->setPos(position);
 

@@ -30,8 +30,7 @@ void QueueItem::init()
 
 void QueueItem::initializeDefaultSize()
 {
-	// TODO:
-	default_size = QSize(100, 100);
+	default_size = QSize(142, 94);
 }
 
 void QueueItem::initText()

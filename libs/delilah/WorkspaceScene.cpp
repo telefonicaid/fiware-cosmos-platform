@@ -16,6 +16,7 @@
 #include "QueueItem.h"
 #include "Queue.h"
 #include "OperationItem.h"
+#include "Operation.h"
 #include "ConnectionItem.h"
 #include "Misc.h"
 
@@ -28,7 +29,7 @@ WorkspaceScene::WorkspaceScene(QObject* parent)
 	if (queue_renderer == 0)
 		queue_renderer = new QSvgRenderer(QLatin1String(":/svg/objects/queue_box.svg"));
 	if (operation_renderer == 0)
-		operation_renderer = new QSvgRenderer(QLatin1String(":/svg/objects/operation.svg"));
+		operation_renderer = new QSvgRenderer(QLatin1String(":/svg/objects/operation_box.svg"));
 
 	current_conn = 0;
 }
@@ -49,17 +50,24 @@ void WorkspaceScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 	{
 		QMenu* menu = new QMenu();
 
-		ActionWithPos* add_act = new ActionWithPos("Add Queue", this);
-		add_act->setPosition(event->scenePos());
-		connect(add_act, SIGNAL(triggered(QPointF)), this, SIGNAL(addQueueRequested(QPointF)));
-		menu->addAction(add_act);
+		ActionWithPos* add_queue_act = new ActionWithPos("Add Queue", this);
+		add_queue_act->setPosition(event->scenePos());
+		connect(add_queue_act, SIGNAL(triggered(QPointF)), this, SIGNAL(addQueueRequested(QPointF)));
+
+		ActionWithPos* add_operation_act = new ActionWithPos("Add Queue", this);
+		add_operation_act->setPosition(event->scenePos());
+		connect(add_operation_act, SIGNAL(triggered(QPointF)), this, SIGNAL(addOperationRequested(QPointF)));
+
+		menu->addAction(add_queue_act);
+		menu->addAction(add_operation_act);
 
 		menu->addAction("Zoom In", this, SLOT(zoomIn()));
 		menu->addAction("Zoom Out", this, SLOT(zoomOut()));
 		menu->addAction("Zoom 1:1", this, SLOT(zoomReset()));
 		menu->exec(event->screenPos());
 
-		delete add_act;
+		delete add_queue_act;
+		delete add_operation_act;
 	}
 }
 
@@ -114,7 +122,7 @@ void WorkspaceScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 				emit(addQueueRequested(event->scenePos()));
 				break;
 			case TOOL_NEWOPERATION:
-				addOperation(event->scenePos());
+				emit(addOperationRequested(event->scenePos()));
 				break;
 			case TOOL_CONNECT:
 				if (current_conn)
@@ -201,15 +209,14 @@ void WorkspaceScene::removeQueue(Queue* queue)
 	}
 }
 
-void WorkspaceScene::addOperation(const QPointF &position)
+void WorkspaceScene::showOperation(Operation* operation, const QPointF &position)
 {
-	OperationItem* operation = new OperationItem();
-	operation->setSharedRenderer(operation_renderer);
-	operation->setDefaultSize();
-	operation->setPos(position);
+	OperationItem* operation_item = new OperationItem();
+	operation_item->setSharedRenderer(operation_renderer);
+	operation_item->setDefaultSize();
+	operation_item->setPos(position);
 
-	addItem(operation);
-
+	addItem(operation_item);
 }
 
 void WorkspaceScene::startConnection(ObjectItem* item)

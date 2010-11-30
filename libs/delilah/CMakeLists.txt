@@ -13,12 +13,15 @@ IF(QT4_FOUND)
 		Workspace.cpp
 		WorkspaceScene.cpp
 		WorkspaceView.cpp
-		gui/InfoBox.cpp
 		gui/CreateDataQueueDlg.cpp
 		gui/CreateKVQueueDlg.cpp
+		gui/LoadExistingBaseDlg.cpp
 		gui/LoadExistingQueueDlg.cpp
+		gui/LoadExistingOperationDlg.cpp
+		gui/InfoBox.cpp
 		gui/ConfirmationDlg.cpp
 		Queue.cpp
+		Operation.cpp
 		Process.cpp
 		items/ObjectItem.cpp
 		items/QueueItem.cpp
@@ -41,10 +44,12 @@ IF(QT4_FOUND)
 		Workspace.h
 		WorkspaceScene.h
 		WorkspaceView.h
-		gui/InfoBox.h
 		gui/CreateDataQueueDlg.h
 		gui/CreateKVQueueDlg.h
+		gui/LoadExistingBaseDlg.h
 		gui/LoadExistingQueueDlg.h
+		gui/LoadExistingOperationDlg.h
+		gui/InfoBox.h
 		gui/ConfirmationDlg.h
 		Queue.h
 		Operation.h
@@ -59,10 +64,10 @@ IF(QT4_FOUND)
 	
 	SET (FORMS
 		MainWindow.ui
-		gui/forms/InfoBox.ui
 		gui/forms/CreateDataQueueDlg.ui
 		gui/forms/CreateKVQueueDlg.ui
-		gui/forms/LoadExistingQueueDlg.ui
+		gui/forms/LoadExistingBaseDlg.ui
+		gui/forms/InfoBox.ui
 		gui/forms/ConfirmationDlg.ui
 		)
 	

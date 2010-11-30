@@ -13,7 +13,7 @@
 void OperationItem::initializeDefaultSize()
 {
 	// TODO:
-	default_size = QSize(80, 40);
+	default_size = QSize(112, 121);
 }
 
 void OperationItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)

@@ -2,56 +2,55 @@
 <!-- Generator: Adobe Illustrator 14.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 43363)  -->
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="182.609px" height="170.048px" viewBox="0 0 182.609 170.048" enable-background="new 0 0 182.609 170.048"
-	 xml:space="preserve">
-<defs>
-	<filter id="Adobe_OpacityMaskFilter" filterUnits="userSpaceOnUse" x="12.515" y="61.606" width="153.197" height="90.521">
-		<feFlood  style="flood-color:white;flood-opacity:1" result="back"/>
-		<feBlend  in="SourceGraphic" in2="back" mode="normal"/>
-	</filter>
-</defs>
-<mask maskUnits="userSpaceOnUse" x="12.515" y="61.606" width="153.197" height="90.521" id="logo_1_">
-	<g filter="url(#Adobe_OpacityMaskFilter)">
-		<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="84.2173" y1="75.2588" x2="84.2173" y2="238.8831">
-			<stop  offset="0" style="stop-color:#F5F5F5"/>
-			<stop  offset="0.0389" style="stop-color:#C4C4C4"/>
-			<stop  offset="0.0808" style="stop-color:#969696"/>
-			<stop  offset="0.1256" style="stop-color:#6E6E6E"/>
-			<stop  offset="0.1727" style="stop-color:#4C4C4C"/>
-			<stop  offset="0.2225" style="stop-color:#303030"/>
-			<stop  offset="0.2762" style="stop-color:#1B1B1B"/>
-			<stop  offset="0.3355" style="stop-color:#0C0C0C"/>
-			<stop  offset="0.405" style="stop-color:#030303"/>
-			<stop  offset="0.5092" style="stop-color:#000000"/>
-		</linearGradient>
-		<path fill="url(#SVGID_1_)" d="M156.269,69.861H51.604c-4.102,0-7.899,1.477-10.763,3.9L0.633,112.574
-			c-3.011,2.885-4.881,6.883-4.881,11.289v29.188c0,8.745,7.355,15.839,16.405,15.839h104.63c4.252,0,8.117-1.58,11.033-4.146
-			l0.012,0.004l0.159-0.153c0.259-0.234,0.509-0.477,0.752-0.727l39.644-38.288c2.68-2.839,4.297-6.565,4.297-10.638V85.751
-			C172.683,77.007,165.328,69.861,156.269,69.861z"/>
-	</g>
-</mask>
-<linearGradient id="logo_2_" gradientUnits="userSpaceOnUse" x1="14.5151" y1="106.8667" x2="163.7124" y2="106.8667">
-	<stop  offset="0" style="stop-color:#275F8C"/>
-	<stop  offset="1" style="stop-color:#88CCFF"/>
-</linearGradient>
-<path id="logo_15_" opacity="0.35" mask="url(#logo_1_)" fill="url(#logo_2_)" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="
-	M18.577,100.979l33.96-33.965c2.416-2.117,5.618-3.408,9.075-3.408h88.258c7.64,0,13.842,6.244,13.842,13.883v25.503
-	c0,3.559-1.363,6.814-3.623,9.295l-34.198,34.221 M14.515,110.787c0-7.64,6.202-13.884,13.833-13.884h88.23
-	c7.63,0,13.833,6.244,13.833,13.884v25.501c0,7.641-6.203,13.839-13.833,13.839h-88.23c-7.631,0-13.833-6.198-13.833-13.839V110.787
-	z"/>
+	 width="142.18px" height="93.839px" viewBox="0 0 142.18 93.839" enable-background="new 0 0 142.18 93.839" xml:space="preserve">
 <g>
-	<linearGradient id="logo_3_" gradientUnits="userSpaceOnUse" x1="12.728" y1="52.3643" x2="161.9253" y2="52.3643">
-		<stop  offset="0" style="stop-color:#275F8C"/>
-		<stop  offset="0.162" style="stop-color:#3F7AA8"/>
-		<stop  offset="0.41" style="stop-color:#5F9DCE"/>
-		<stop  offset="0.6403" style="stop-color:#75B7E9"/>
-		<stop  offset="0.8441" style="stop-color:#83C7F9"/>
-		<stop  offset="1" style="stop-color:#88CCFF"/>
-	</linearGradient>
-	<path id="logo_14_" fill="url(#logo_3_)" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="
-		M16.79,46.476L50.75,12.512c2.415-2.118,5.617-3.408,9.075-3.408h88.259c7.64,0,13.841,6.244,13.841,13.883V48.49
-		c0,3.558-1.363,6.814-3.623,9.294l-34.197,34.221 M12.728,56.285c0-7.64,6.203-13.884,13.833-13.884h88.23
-		c7.63,0,13.833,6.244,13.833,13.884v25.501c0,7.64-6.203,13.839-13.833,13.839h-88.23c-7.63,0-13.833-6.199-13.833-13.839V56.285z"
-		/>
+	
+		<image overflow="visible" opacity="0.27" width="143" height="90" xlink:href="data:image/png;base64,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
+F2AAEmWy+xcYJzsAAAAASUVORK5CYII=" transform="matrix(1 0 0 1 2.1421 1.9951)">
+	</image>
+	<g>
+		<g>
+			<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="25.7261" y1="-2.2397" x2="119.9869" y2="95.7617">
+				<stop  offset="0" style="stop-color:#00706A"/>
+				<stop  offset="0.2452" style="stop-color:#128D87"/>
+				<stop  offset="0.5525" style="stop-color:#24AAA6"/>
+				<stop  offset="0.8149" style="stop-color:#2FBDB8"/>
+				<stop  offset="1" style="stop-color:#33C3BF"/>
+			</linearGradient>
+			<path fill="url(#SVGID_1_)" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9.656,39.039
+				L38.858,9.834c2.075-1.821,4.83-2.93,7.804-2.93h75.891c6.568,0,11.9,5.369,11.9,11.938V40.77c0,3.061-1.172,5.86-3.115,7.993
+				l-29.405,29.426 M6.164,47.473c0-6.569,5.334-11.938,11.896-11.938h75.865c6.562,0,11.894,5.369,11.894,11.938V69.4
+				c0,6.568-5.332,11.898-11.894,11.898H18.059c-6.562,0-11.896-5.33-11.896-11.898V47.473z"/>
+		</g>
+	</g>
 </g>
 </svg>

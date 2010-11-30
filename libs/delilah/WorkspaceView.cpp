@@ -20,6 +20,7 @@
 #include "CreateDataQueueDlg.h"
 #include "CreateKVQueueDlg.h"
 #include "LoadExistingQueueDlg.h"
+#include "LoadExistingOperationDlg.h"
 #include "ConfirmationDlg.h"
 #include "InfoBox.h"
 
@@ -47,18 +48,26 @@ void WorkspaceView::setWorkspace(Workspace* model)
 	workspace = model;
 	setScene(workspace->getScene());
 
+	// Signals/Slots related to queue creation/inserting/deleting
 	connect(scene(), SIGNAL(addQueueRequested(QPointF)), this, SLOT(selectQueueType(QPointF)));
 	connect(scene(), SIGNAL(deleteQueueRequested(Queue*)), this, SLOT(confirmDeletingQueue(Queue*)));
 	connect(scene(), SIGNAL(queueInfoRequested(Queue*)), this, SLOT(showQueueInfo(Queue*)));
-
 	connect(this, SIGNAL(loadQueueRequested(QString, QPointF)),
 			workspace, SLOT(loadQueue(QString, QPointF)));
 	connect(this, SIGNAL(createQueueRequested(QueueType, QPointF, QString, QString, QString)),
 			workspace, SLOT(createQueue(QueueType, QPointF, QString, QString, QString)));
 	connect(this, SIGNAL(deleteQueueRequested(Queue*)), workspace, SLOT(deleteQueue(Queue*)));
 
+	// Signals/Slots related to operation creation/inserting/deleting
+	connect(scene(), SIGNAL(addOperationRequested(QPointF)), this, SLOT(loadOperationSelected(QPointF)));
+	connect(this, SIGNAL(loadOperationRequested(QString, QPointF)),
+			workspace, SLOT(loadOperation(QString, QPointF)));
+
+	// Signals/Slots related to updating user about requests sent to the network
 	connect(workspace, SIGNAL(jobCreated(job_info)), this, SLOT(updateJobInfoView(job_info)));
 	connect(workspace, SIGNAL(jobUpdated(job_info)), this, SLOT(updateJobInfoView(job_info)));
+
+	// Unhandled error from workspace
 	connect(workspace, SIGNAL(unhandledFailure(QString)), this, SLOT(showError(QString)));
 }
 
@@ -164,10 +173,11 @@ void WorkspaceView::selectQueueType(const QPointF &scene_pos)
 void WorkspaceView::loadExistingQueueSelected(const QPointF &scene_pos)
 {
 	LoadExistingQueueDlg* dlg = new LoadExistingQueueDlg(this);
+	dlg->initNameSelectionWidget();
 
 	if(dlg->exec() == QDialog::Accepted)
 	{
-		emit(loadQueueRequested(dlg->queueName(), scene_pos));
+		emit(loadQueueRequested(dlg->getName(), scene_pos));
 	}
 
 	delete dlg;
@@ -196,6 +206,20 @@ void WorkspaceView::createKVQueueSelected(const QPointF &scene_pos)
 
 	delete dlg;
 }
+
+void WorkspaceView::loadOperationSelected(const QPointF &scene_pos)
+{
+	LoadExistingOperationDlg* dlg = new LoadExistingOperationDlg(this);
+	dlg->initNameSelectionWidget();
+
+	if (dlg->exec() == QDialog::Accepted)
+	{
+		emit(loadOperationRequested(dlg->getName(), scene_pos));
+	}
+
+	delete dlg;
+}
+
 
 void WorkspaceView::confirmDeletingQueue(Queue* queue)
 {

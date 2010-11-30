@@ -19,6 +19,7 @@
 
 #include "Queue.h"
 #include "DataType.h"
+#include "Operation.h"
 
 DelilahQtApp::DelilahQtApp(int &argc, char ** argv, ss::Delilah* _delilah)
 	: QApplication(argc, argv)
@@ -315,6 +316,22 @@ DataType* DelilahQtApp::getDataType(const QString &name)
 	return 0;
 }
 
+QList<Operation*> DelilahQtApp::getOperations()
+{
+	return operations;
+}
+
+Operation* DelilahQtApp::getOperation(const QString &name)
+{
+	for(int i=0; i<operations.size(); i++)
+	{
+		Operation* operation = operations.at(i);
+		if(operation->getName().compare(name)==0)
+			return operation;
+	}
+
+	return 0;
+}
 
 /******************************************************************************
  *
@@ -363,7 +380,26 @@ void DelilahQtApp::synchronizeQueues(const ss::network::HelpResponse &resp, bool
 
 void DelilahQtApp::synchronizeOperations(const ss::network::HelpResponse &resp, bool synchronize_all)
 {
-	// TODO:
+	if(synchronize_all)
+		operations.clear();
+
+	for (int i=0; i<resp.operation_size(); i++)
+	{
+		ss::network::Operation o = resp.operation(i);
+		QString name = QString::fromStdString(o.name());
+
+		Operation* operation = 0;
+		if (!synchronize_all)
+			operation = getOperation(name);
+
+		if (operation==0)
+		{
+			operation = new Operation(name);
+			operations.append(operation);
+		}
+
+		operation->upload(&o);
+	}
 }
 
 /*

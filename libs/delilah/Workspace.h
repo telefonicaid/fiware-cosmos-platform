@@ -56,6 +56,8 @@ public slots:
 	void removeQueueFromWorkspace(Queue* queue);
 	void deleteQueue(Queue* queue);
 
+	void loadOperation(const QString &name, const QPointF &scene_pos);
+
 	void updateJob(unsigned int id, bool finished, bool error, QString message);
 	void finishJob(unsigned int id, bool error, QString message);
 

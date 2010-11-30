@@ -19,7 +19,7 @@ class ConnectionItem;
 class ObjectItem;
 
 class Queue;
-class DataQueue;
+class Operation;
 
 class WorkspaceScene: public QGraphicsScene
 {
@@ -33,10 +33,10 @@ public:
 
 	void showQueue(Queue* queue, const QPointF &pos);
 	void removeQueue(Queue* queue);
+	void showOperation(Operation* operation, const QPointF &pos);
 
 public slots:
 	void setTool(int tool) { current_tool = tool; };
-	void addOperation(const QPointF &pos=QPoint(0.0, 0.0));
 
 	/*
 	 * Move zooming to WorkspaceView class
@@ -50,11 +50,14 @@ public slots:
 	void cancelConnection();
 
 signals:
-	void addQueueRequested(const QPointF &);				// emitted when user chooses to add queue. Argument is the position
-															// of mouse click
-	void removeQueueFromWorkspaceRequested(Queue*);			// emitted when user chooses to remove queue from workspace
-	void deleteQueueRequested(Queue*);						// emitted when user chooses to delete queue from system
-	void queueInfoRequested(Queue*);						// emitted when user wants to get information about queue
+	void addQueueRequested(const QPointF &);			// Emitted when user chooses to add queue.
+														// Argument is the position of mouse click.
+	void addOperationRequested(const QPointF &);		// Emitted when user chooses to add operation.
+														// Argument is the position of mouse click.
+
+	void removeQueueFromWorkspaceRequested(Queue*);		// Emitted when user chooses to remove queue from workspace
+	void deleteQueueRequested(Queue*);					// Emitted when user chooses to delete queue from system
+	void queueInfoRequested(Queue*);					// Emitted when user wants to get information about queue
 
 protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);

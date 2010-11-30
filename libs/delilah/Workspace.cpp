@@ -42,6 +42,12 @@ void Workspace::loadQueue(const QString &name, const QPointF &scene_pos)
 	Queue* queue = app->getQueue(name);
 	if (queue)
 		scene->showQueue(queue, scene_pos);
+	else
+	{
+		QString error = QString("Loading queue '%1' failed: Queue is not available").arg(name);
+		emit(unhandledFailure(error));
+	}
+
 }
 
 /*
@@ -105,6 +111,18 @@ void Workspace::deleteQueue(Queue* queue)
 	job.id = app->sendDeleteQueue(queue->getName());
 	jobs.append(job);
 	emit(jobCreated(job));
+}
+
+void Workspace::loadOperation(const QString &name, const QPointF &scene_pos)
+{
+	Operation* operation = app->getOperation(name);
+	if (operation)
+		scene->showOperation(operation, scene_pos);
+	else
+	{
+		QString error = QString("Loading operation '%1' failed: Operation is not available").arg(name);
+		emit(unhandledFailure(error));
+	}
 }
 
 /*

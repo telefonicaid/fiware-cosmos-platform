@@ -39,6 +39,8 @@ public:
 	Queue* getQueue(const QString &name, bool deleted=false);
 	QList<DataType*> getDataTypes();
 	DataType* getDataType(const QString &name);
+	QList<Operation*> getOperations();
+	Operation* getOperation(const QString &name);
 
 	/*
 	 * Methods sending requests to network

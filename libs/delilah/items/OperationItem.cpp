@@ -46,8 +46,24 @@ void OperationItem::initText()
 
 void OperationItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
-	// TODO:
 	QMenu* menu = new QMenu();
-	menu->addAction("There will be some options....");
+	menu->addAction("Show Operation Info", this, SLOT(showInfoSelected()));
+	menu->addAction("Remove Operation", this, SLOT(removeOperationSelected()));
+	menu->addAction("Run Operation", this, SLOT(runOperationSelected()));
 	menu->exec(event->screenPos());
+}
+
+void OperationItem::showInfoSelected()
+{
+	emit(infoRequested(operation));
+}
+
+void OperationItem::removeOperationSelected()
+{
+	// TODO:
+}
+
+void OperationItem::runOperationSelected()
+{
+	// TODO:
 }

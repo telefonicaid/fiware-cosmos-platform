@@ -17,6 +17,8 @@
 
 #include "Workspace.h"
 
+class BaseObject;
+
 class WorkspaceView : public QGraphicsView
 {
 	Q_OBJECT
@@ -34,10 +36,9 @@ public slots:
 	void createDataQueueSelected(const QPointF &scene_pos);
 	void createKVQueueSelected(const QPointF &scene_pos);
 	void loadExistingQueueSelected(const QPointF &scene_pos);
-	void loadOperationSelected(const QPointF &scene_pos);
-
 	void confirmDeletingQueue(Queue* queue);
-	void showQueueInfo(Queue* queue);
+	void loadOperationSelected(const QPointF &scene_pos);
+	void showInfo(BaseObject* object);
 
 	void showError(QString error);
 

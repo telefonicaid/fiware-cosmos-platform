@@ -11,10 +11,13 @@
 #include "ObjectItem.h"
 #include "globals.h"
 
+class BaseObject;
 class Operation;
 
 class OperationItem : public ObjectItem
 {
+	Q_OBJECT
+
 public:
 	OperationItem()
 		: ObjectItem() {};
@@ -27,14 +30,23 @@ public:
 	virtual int type() const { return Type; };
 	virtual void initText();
 
+public slots:
+	void showInfoSelected();
+	void removeOperationSelected();
+	void runOperationSelected();
+
 protected:
 	virtual void initializeDefaultSize();
 
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
 
+signals:
+//	void infoRequested(BaseObject*);
+
 public:
     enum { Type=OPERATION_ITEM };
     Operation* operation;
+
 
 };
 

@@ -36,4 +36,10 @@ void Operation::upload(ss::network::Operation* o)
 	}
 }
 
+QString Operation::getHTMLInfo()
+{
+	// TODO
+	return QString("Operation info - TODO");
+}
+
 #endif /* OPERATION_CPP_ */

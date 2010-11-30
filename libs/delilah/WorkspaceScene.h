@@ -18,6 +18,7 @@ class QSvgRenderer;
 class ConnectionItem;
 class ObjectItem;
 
+class BaseObject;
 class Queue;
 class Operation;
 
@@ -57,7 +58,7 @@ signals:
 
 	void removeQueueFromWorkspaceRequested(Queue*);		// Emitted when user chooses to remove queue from workspace
 	void deleteQueueRequested(Queue*);					// Emitted when user chooses to delete queue from system
-	void queueInfoRequested(Queue*);					// Emitted when user wants to get information about queue
+	void infoRequested(BaseObject*);					// Emitted when user wants to get information about queue or operation
 
 protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);

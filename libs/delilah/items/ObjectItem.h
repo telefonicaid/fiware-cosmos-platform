@@ -13,6 +13,7 @@
 
 class ConnectionItem;
 class ObjectTextItem;
+class BaseObject;
 
 class ObjectItem : public QGraphicsSvgItem
 {
@@ -52,6 +53,7 @@ protected:
 
 signals:
 	void posChanged();
+	void infoRequested(BaseObject*);
 
 protected:
     QSize default_size;

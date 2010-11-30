@@ -25,7 +25,7 @@ public:
 public slots:
 	void updateItem();
 
-	void showQueueInfoSelected();
+	void showInfoSelected();
 	void removeQueueSelected();
 	void deleteQueueSelected();
 	void loadDataSelected();
@@ -39,7 +39,6 @@ protected:
 signals:
 	void removeQueueFromWorkspaceRequested(Queue*);			// emitted when user chooses to remove queue from workspace
 	void deleteQueueRequested(Queue*);						// emitted when user chooses to delete queue from system
-	void queueInfoRequested(Queue*);
 
 public:
     enum { Type=QUEUE_ITEM };

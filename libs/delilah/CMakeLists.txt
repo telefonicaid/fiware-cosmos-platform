@@ -18,10 +18,9 @@ IF(QT4_FOUND)
 		gui/LoadExistingBaseDlg.cpp
 		gui/LoadExistingQueueDlg.cpp
 		gui/LoadExistingOperationDlg.cpp
-		gui/InfoBox.cpp
 		gui/ConfirmationDlg.cpp
-		Queue.cpp
-		Operation.cpp
+		objects/Operation.cpp
+		objects/Queue.cpp
 		Process.cpp
 		items/ObjectItem.cpp
 		items/QueueItem.cpp
@@ -51,8 +50,9 @@ IF(QT4_FOUND)
 		gui/LoadExistingOperationDlg.h
 		gui/InfoBox.h
 		gui/ConfirmationDlg.h
-		Queue.h
-		Operation.h
+		objects/BaseObject.h
+		objects/Operation.h
+		objects/Queue.h
 		DataType.h
 		Process.h
 		items/ObjectItem.h
@@ -97,6 +97,7 @@ IF(QT4_FOUND)
 	
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+	include_directories("${CMAKE_CURRENT_SOURCE_DIR}/objects")
 	include_directories("${CMAKE_CURRENT_SOURCE_DIR}/items")
 	include_directories("${CMAKE_CURRENT_SOURCE_DIR}/gui")
 	include_directories("${PROJECT_SOURCE_DIR}/libs/core")

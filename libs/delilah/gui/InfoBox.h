@@ -3,7 +3,7 @@
  *
  * AUTHOR:		Anna Wojdel
  *
- * DESCRIPTION:
+ * DESCRIPTION: Shows information about object (queue or operation)
  *
  */
 
@@ -13,59 +13,26 @@
 #include <QtGui/QDialog>
 #include "ui_InfoBox.h"
 
-class Queue;
-
-/*
- * Abstract class for showing some information.
- */
 class InfoBox : public QDialog
 {
     Q_OBJECT
 
 public:
-    InfoBox(QWidget* parent=0);
+    InfoBox(QWidget* parent=0) : QDialog(parent)//, Qt::CustomizeWindowHint)
+	{
+		ui.setupUi(this);
+	};
     ~InfoBox() {};
 
-    // Methods to generate text with information and to display it.
-    // The text format to display information is HTML.
-    // setInfo() method should create appropriate QString with text in HTML
-    // and later call setHtml() to display this text.
-    // setHtml() method is a simple rapper that allows child classes to
-    // set the text.
-    virtual void setInfo() = 0;
-    void setHtml(const QString text)
+    void setHtml(QString text="")
 	{
+    	if (text.isEmpty())
+    		text = "<FONT color=red><b>Error</b>: No info available.</FONT>";
     	ui.textEdit->setHtml(text);
 	};
 
 private:
     Ui::InfoBoxClass ui;
-};
-
-
-/*
- *
- */
-class QueueInfoBox : public InfoBox
-{
-public:
-	QueueInfoBox(QWidget* parent=0)
-		: InfoBox(parent), queue(0)
-	{
-		setWindowTitle("Queue Info");
-	};
-	QueueInfoBox(Queue* _queue, QWidget* parent=0)
-		: InfoBox(parent)
-	{
-		queue=_queue;
-		setWindowTitle("Queue Info");
-	};
-	~QueueInfoBox() {};
-
-	virtual void setInfo();
-	virtual void setInfo(Queue* _queue);
-private:
-	Queue* queue;
 };
 
 #endif // INFOBOX_H

@@ -42,8 +42,6 @@ WorkspaceScene::~WorkspaceScene()
 
 void WorkspaceScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 {
-	//TODO:
-	//TODO: get possible actions (always for global scene, additional for item)
 	QGraphicsScene::contextMenuEvent(event);
 
 	if (!event->isAccepted())
@@ -54,7 +52,7 @@ void WorkspaceScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 		add_queue_act->setPosition(event->scenePos());
 		connect(add_queue_act, SIGNAL(triggered(QPointF)), this, SIGNAL(addQueueRequested(QPointF)));
 
-		ActionWithPos* add_operation_act = new ActionWithPos("Add Queue", this);
+		ActionWithPos* add_operation_act = new ActionWithPos("Add Operation", this);
 		add_operation_act->setPosition(event->scenePos());
 		connect(add_operation_act, SIGNAL(triggered(QPointF)), this, SIGNAL(addOperationRequested(QPointF)));
 
@@ -176,8 +174,7 @@ void WorkspaceScene::showQueue(Queue* queue, const QPointF &pos)
 	QueueItem* queue_item = new QueueItem(queue);
 
 	// Connect appropriate signals to propagate user's requests
-	connect(queue_item, SIGNAL(queueInfoRequested(Queue*)),
-			this, SIGNAL(queueInfoRequested(Queue*)));
+	connect(queue_item, SIGNAL(infoRequested(BaseObject*)), this, SIGNAL(infoRequested(BaseObject*)));
 	connect(queue_item, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)),
 			this, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)));
 	connect(queue_item, SIGNAL(deleteQueueRequested(Queue*)),
@@ -212,6 +209,10 @@ void WorkspaceScene::removeQueue(Queue* queue)
 void WorkspaceScene::showOperation(Operation* operation, const QPointF &position)
 {
 	OperationItem* operation_item = new OperationItem(operation);
+
+	// Connect appropriate signals to propagate user's requests
+	connect(operation_item, SIGNAL(infoRequested(BaseObject*)), this, SIGNAL(infoRequested(BaseObject*)));
+
 	operation_item->setSharedRenderer(operation_renderer);
 	operation_item->initText();
 	operation_item->setDefaultSize();

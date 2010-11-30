@@ -24,6 +24,7 @@
 #include "ConfirmationDlg.h"
 #include "InfoBox.h"
 
+#include "BaseObject.h"
 
 WorkspaceView::WorkspaceView(QWidget* parent)
 : QGraphicsView(parent)
@@ -51,7 +52,6 @@ void WorkspaceView::setWorkspace(Workspace* model)
 	// Signals/Slots related to queue creation/inserting/deleting
 	connect(scene(), SIGNAL(addQueueRequested(QPointF)), this, SLOT(selectQueueType(QPointF)));
 	connect(scene(), SIGNAL(deleteQueueRequested(Queue*)), this, SLOT(confirmDeletingQueue(Queue*)));
-	connect(scene(), SIGNAL(queueInfoRequested(Queue*)), this, SLOT(showQueueInfo(Queue*)));
 	connect(this, SIGNAL(loadQueueRequested(QString, QPointF)),
 			workspace, SLOT(loadQueue(QString, QPointF)));
 	connect(this, SIGNAL(createQueueRequested(QueueType, QPointF, QString, QString, QString)),
@@ -62,6 +62,9 @@ void WorkspaceView::setWorkspace(Workspace* model)
 	connect(scene(), SIGNAL(addOperationRequested(QPointF)), this, SLOT(loadOperationSelected(QPointF)));
 	connect(this, SIGNAL(loadOperationRequested(QString, QPointF)),
 			workspace, SLOT(loadOperation(QString, QPointF)));
+
+	// Signals/Slots related to both queues and operations
+	connect(scene(), SIGNAL(infoRequested(BaseObject*)), this, SLOT(showInfo(BaseObject*)));
 
 	// Signals/Slots related to updating user about requests sent to the network
 	connect(workspace, SIGNAL(jobCreated(job_info)), this, SLOT(updateJobInfoView(job_info)));
@@ -231,10 +234,10 @@ void WorkspaceView::confirmDeletingQueue(Queue* queue)
 	delete dlg;
 }
 
-void WorkspaceView::showQueueInfo(Queue* queue)
+void WorkspaceView::showInfo(BaseObject* object)
 {
-	QueueInfoBox* box = new QueueInfoBox(this);
-	box->setInfo(queue);
+	InfoBox* box = new InfoBox(this);
+	box->setHtml(object->getHTMLInfo());
 	box->exec();
 	delete box;
 }

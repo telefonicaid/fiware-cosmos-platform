@@ -65,7 +65,6 @@ void ObjectItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 	switch(s->getTool())
 	{
 		case TOOL_SELECT:
-			//TODO:
 			QGraphicsSvgItem::mousePressEvent(event);
 			putOnTop();
 			break;
@@ -80,7 +79,6 @@ void ObjectItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 	switch(s->getTool())
 	{
 		case TOOL_SELECT:
-			//TODO:
 			QGraphicsSvgItem::mouseMoveEvent(event);
 			break;
 		default:
@@ -94,7 +92,6 @@ void ObjectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 	switch(s->getTool())
 	{
 		case TOOL_SELECT:
-			//TODO:
 			QGraphicsSvgItem::mouseReleaseEvent(event);
 			restoreOrder();
 			break;

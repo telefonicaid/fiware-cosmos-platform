@@ -23,7 +23,7 @@ namespace ss {
 		assert( op );		// TODO: Better handling of no operation error
 
 		// Create the task
-		WorkerTask *t = new WorkerTask( op->getType() , worker_task );
+		WorkerTask *t = new WorkerTask( this, op->getType() , worker_task );
 
 		// Insert into internal map
 		task.insertInMap( t->task_id , t );
@@ -31,6 +31,7 @@ namespace ss {
 		// If it is already finished (this happens where there are no input files )
 		if( t->isFinish() )
 			sendCloseMessages( t , worker->network->getNumWorkers() );
+		
 		
 		lock.unlock();
 		
@@ -149,7 +150,30 @@ namespace ss {
 		output << getStatusFromArray( task );
 		return output.str();
 	}
+
 	
+	void WorkerTaskManager::fileManagerNotifyFinish(size_t id, bool success)
+	{
+		lock.lock();
+		
+		WorkerTaskItem *item = pendingInputFiles.extractFromMap( id );
+		item->notifyFinishLoadInputFile();
+		assert( item );
+		
+		bool wakeUpProcess = item->areInputFilesReady();
+		
+		lock.unlock();
+		
+		
+		if( wakeUpProcess )
+		{
+			// TODO: Wake up process
+		}
+		
+	}
+	
+	
+
 	
 	
 }

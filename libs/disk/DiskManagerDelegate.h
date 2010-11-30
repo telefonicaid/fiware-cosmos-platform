@@ -27,8 +27,18 @@ namespace ss {
 	public:
 		// Notify that this operation has finished
 		virtual void diskManagerNotifyFinish(size_t id, bool success) = 0;	
-		virtual ~DiskManagerDelegate() {};
 	};
+	
+	/**
+	 General item of the file manager
+	 */
+	
+	class FileManagerDelegate
+	{
+	public:
+		virtual void fileManagerNotifyFinish(size_t id, bool success) = 0;	
+	};
+	
 	
 }
 

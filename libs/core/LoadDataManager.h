@@ -6,49 +6,93 @@
 #include "Lock.h"						// au::Lock
 #include "DiskManagerDelegate.h"		// ss::DiskManagerDelegate
 #include "ObjectWithStatus.h"			// ss::getStatusFromArray(.)
+#include "samson.pb.h"					// ss::network:...
 
 namespace ss {
 
 	class Buffer;
 	class SamsonWorker;
+	class LoadDataManager;
+
+	
+	class DataManagerItem
+	{
+		
+	public:
+
+		int fromIdentifier;						// Dalilah identifier to send responses
+		
+		Buffer *buffer;							// Buffer allocated for this task
+		
+		LoadDataManager *dataManager;			// Pointer to the data manager
+		
+		DataManagerItem( int _fromIdentifier , LoadDataManager *dataManager );
+		
+		virtual ~DataManagerItem(){}
+		
+	};
 	
 	
-	class LoadDataManagerItem
+	class UploadItem : public DataManagerItem
 	{
 
 	public:
 		
-		std::string fileName;
-		int fromIdentifier;
-		size_t process_id;
-		size_t file_id;
-		size_t size;
+		network::UploadData uploadData;		// Information about the request
 		
-		LoadDataManagerItem( std::string _fileName , int _fromIdentifier , size_t _process_id , size_t _file_id , size_t _size )
+		std::string fileName;				// Filename fo the new upload
+		size_t size;						// Size of the uploaded file
+		
+		UploadItem( int _fromIdentifier , LoadDataManager *dataManager, const network::UploadData &_uploadData ,  Buffer * buffer );
+	
+		size_t submitToFileManager();
+		void sendResponse( bool error , std::string error_message );
+		
+		static std::string newFileName()
 		{
-			fileName = _fileName;
-			fromIdentifier = _fromIdentifier;
-			process_id = _process_id;
-			file_id = _file_id;
-			size = _size;
+			std::ostringstream fileName;
+			fileName << "/tmp/file_" << rand()%1000 << rand()%1000;
+			return fileName.str();
 		}
 		
-		std::string getStatus()
-		{
-			std::ostringstream output;
-			output << "\tLoadDataManagerItem " << fileName << "[size: " << au::Format::string(size) << "] ( Process " << process_id << ") (File id: " << file_id << " )";
-			return output.str();
-		}
 		
 	};	
 	
-	class LoadDataManager : public DiskManagerDelegate
+	
+	/**
+	 Item requested to be downloaded
+	 */
+	
+	class DownloadItem : public DataManagerItem
 	{
+		
+	public:
+		
+		network::DownloadData downloadData;		// Information about the request
+		
+		
+		DownloadItem( int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadData &_downloadData);		
+		~DownloadItem();
+
+		size_t submitToFileManager();
+		void sendResponse( bool error , std::string error_message );
+		
+	};
+	
+	
+	class LoadDataManager : public FileManagerDelegate
+	{
+		friend class UploadItem;
+		friend class DownloadItem;
+		
+		
 		SamsonWorker *worker;
 
 		au::Lock lock;
 		
-		au::map<size_t,LoadDataManagerItem> item;
+		au::map<size_t,UploadItem> uploadItem;		// Items to be uploded from dalilahs
+		
+		au::map<size_t,DownloadItem> downloadItem;	// Items to be downloaded to dalilahs
 		
 	public:
 		
@@ -57,19 +101,18 @@ namespace ss {
 			worker = _worker;
 		}
 		
-		void addFile( Buffer * buffer , std::string fileName, int fromIdentifier , size_t process_id , size_t file_id );
+		// Add item to upload data
+		void addUploadItem( int fromIdentifier, const network::UploadData &uploadData , Buffer * buffer  );
 		
+		// add item to download data
+		void addDownloadItem( int fromIdentifier, const network::DownloadData &downloadData );
 		
-		// FileManagerDelegate
-		virtual void diskManagerNotifyFinish(size_t id, bool success);
+		// Disk Manager notifications
+		virtual void fileManagerNotifyFinish(size_t id, bool success);
 
-		
 		std::string getStatus()
 		{
-			lock.lock();
-			std::string txt = getStatusFromArray( item );
-			lock.unlock();
-			return txt;
+			return "No status for Load Data Manager...";
 		}
 
 		

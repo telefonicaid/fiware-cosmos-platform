@@ -23,81 +23,70 @@ namespace ss {
 		
 		enum State
 		{
-			definition,			// Defining the task
-			no_memory,			// Waiting for a shared memory item to be assigned
-			loading,			// Loading data from disk
-			ready,				// Ready to be process by any ProcessAssistant
-			running				// It has beent taken by a ProcessAssistant (should report finish)
+			definition,				// Defining the task
+			no_memory,				// Waiting for a shared memory item to be assigned
+			ready_to_load_inputs,	// Ready to load data from inputs
+			loading_inputs,			// Loading data from disk
+			ready_to_run,			// Ready to be process by any ProcessAssistant
+			running					// It has beent taken by a ProcessAssistant (should report finish)
 		};
 		
-		int item_id;		// Item id ( from 0 to ...)
+		int item_id;			// Item id ( from 0 to ...)
 		
 		State state;
 
-		int shm_input;	// Shared memory identifier for input ( if necessary ) -1 --> no assigned
+		int shm_input;			// Shared memory identifier for input ( if necessary ) -1 --> no assigned
 		
 		WorkerTaskItem();
 		virtual ~WorkerTaskItem(){}
 
 		// Set the parent task
 		void setTaskAndItemId( WorkerTask *task , int itemId);
+
+		int num_input_files;
+		int confirmed_input_files;
 		
-		FileManagerReadItemVector *readItemVector;	// elements that need to be read to run this item
+		virtual void setupInputs(){}	// Prepare files needed to be read when shared memory is ready
+		void addInputFiles( FileManagerReadItem *item );
+		void notifyFinishLoadInputFile();
+		bool areInputFilesReady();
 		
-		void setup()
+		// General setup while asking if it is ready
+		
+		bool isReadyToRun()
 		{
 			if ( state == running )
-				return;
-			
-			if ( state == definition )
-			{
-				if( readItemVector == NULL)
-					state = ready;				// No input
-				else
-				{
-					// ask for memory
-					shm_input = MemoryManager::shared()->getFreeSharedMemory();
-					if( shm_input == -1)
-					{
-						state = no_memory;
-						return;
-					}
-					else
-					{
-						SharedMemoryItem *item = MemoryManager::shared()->getSharedMemory( shm_input ); 
-						readItemVector->setBuffer( item->data , item->size );
-						
-						state = loading;
-						FileManager::shared()->addItemsToRead( readItemVector );	
-						return;
-					}
-				}
-			}
+				return false;				// Already running by other PA
 			
 			if( state == no_memory )
 			{
-				// ask for memory
 				shm_input = MemoryManager::shared()->getFreeSharedMemory();
-				if( shm_input == -1)
-				{
-					state = no_memory;
-					return ;
-				}
-				else
-				{
-					state = loading;
-					FileManager::shared()->addItemsToRead( readItemVector );	
-					return;
-				}
-				
+				if( shm_input != -1)
+					state = ready_to_load_inputs;
+			}
+
+			if( state == ready_to_load_inputs)
+			{
+				setupInputs();	// Prepare all the inputs to be read
+				state = loading_inputs;
+			}	
+			
+			if ( state == loading_inputs )
+			{
+				if( areInputFilesReady() )
+					state = ready_to_run;
+			}
+
+			if( state == ready_to_run )
+			{
+				state = running;
+				return true;
 			}
 			
-			if( state == loading)
-			{
-				if( readItemVector->isReady() )
-					state = ready;
-			}
+			return false;
+
 		}
+		
 		
 		void freeResources()
 		{
@@ -108,17 +97,6 @@ namespace ss {
 		
 		State getState();
 		
-		bool isReadyToRun()
-		{
-			if( state == ready )
-			{
-				state = running;
-				return true;
-			}
-			
-			return false;
-			
-		}
 		
 		// Get status for debuggin
 		std::string getStatus();

@@ -132,7 +132,7 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 			return 0;
 			break;
 			
-		case Message::LoadDataConfirmation:
+		case Message::UploadDataConfirmation:
 		{
 			// Uptade data and sent a LoadDataConfirmationResponde message
 			
@@ -144,7 +144,7 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 			
 			data.addComment( job_id , "Comments for load process...");
 			
-			const network::LoadDataConfirmation& loadDataConfirmation = packet->message.load_data_confirmation();
+			const network::UploadDataConfirmation& loadDataConfirmation = packet->message.upload_data_confirmation();
 				
 			for (int i = 0 ; i < loadDataConfirmation.file_size() ; i++)
 			{
@@ -169,11 +169,11 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 				
 			// A message is always sent back to delilah to confirm changes
 			Packet *p = new Packet();
-			network::LoadDataConfirmationResponse * confirmationResponse = p->message.mutable_load_data_confirmation_response();
-			confirmationResponse->set_process_id( packet->message.load_data_confirmation().process_id() );
+			network::UploadDataConfirmationResponse * confirmationResponse = p->message.mutable_upload_data_confirmation_response();
+			confirmationResponse->set_process_id( packet->message.upload_data_confirmation().process_id() );
 			confirmationResponse->set_error( error );
 			confirmationResponse->set_error_message( error_message );
-			network->send(this, fromId, Message::LoadDataConfirmationResponse, p);
+			network->send(this, fromId, Message::UploadDataConfirmationResponse, p);
 		}
 		break;
 

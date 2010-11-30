@@ -19,7 +19,7 @@ namespace ss {
 		p.set_num_inputs( op->getNumInputs() );
 		p.set_num_outputs( op->getNumOutputs() );
 		
-		p.set_input_size( readItemVector->size );			// For Parse operation
+		//p.set_input_size( XXX );			// For Parse operation
 		
 		p.set_output_shm( pa->output_shm );					// Set the output shared memory buffer
 		
@@ -37,6 +37,19 @@ namespace ss {
 		framework->flushOutput(this);
 		
 		delete framework;
+	}
+	
+	
+	void WorkerTaskItemOperation::setupInputs()
+	{
+		SharedMemoryItem * smi = MemoryManager::shared()->getSharedMemory( shm_input );
+		size_t size = FileManagerReadItem::sizeOfFile( fileName );
+		
+		FileManagerReadItem *item = new FileManagerReadItem( fileName , 0 , size , smi->data , task->taskManager );
+		addInputFiles( item );
+		
+		// The delegate is TaskManager: it received notifications form the FileManager and unblock items
+		
 	}
 	
 

@@ -9,7 +9,7 @@
 #include "coding.h"			// ss::hg_info , ss::hg_size 
 #include "Buffer.h"			// ss::Buffer
 #include "MemoryManager.h"	// ss::MemoryManager
-#include "DiskManagerDelegate.h"	// ss::DiskManagerDelegate
+#include "DiskManagerDelegate.h"	// ss::DiskManagerDelegate && ss::FileManagerDelegate
 #include <set>						// std::set
 #include "ObjectWithStatus.h"		// getStatusFromArray(.)
 #include "samson.pb.h"				// network::...
@@ -29,7 +29,7 @@ namespace ss {
 	 When enougth data is accumulated it is frozen to a file and DataManager if notified
 	 */
 	
-	class DataBuffer : public au::map<size_t , DataBufferItem> , public DiskManagerDelegate
+	class DataBuffer : public au::map<size_t , DataBufferItem> , public FileManagerDelegate
 	{
 		
 		au::Lock lock;	// mutex to protect multiple thread access
@@ -78,8 +78,8 @@ namespace ss {
 		std::string getStatus();
 		
 		
-		// DiskManagerDelegate
-		void diskManagerNotifyFinish(size_t id, bool success);
+		// FileManagerDelegate
+		void fileManagerNotifyFinish(size_t id, bool success);
 
 		
 	};

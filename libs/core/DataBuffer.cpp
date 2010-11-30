@@ -53,6 +53,7 @@ namespace ss {
 	
 	void DataBuffer::finishWorker( size_t task_id )
 	{
+		
 		lock.lock();
 		
 		DataBufferItem *tdb = findInMap( task_id );
@@ -80,7 +81,6 @@ namespace ss {
 
 		
 	}
-	
 
 	std::string DataBuffer::getStatus()
 	{
@@ -90,8 +90,9 @@ namespace ss {
 		
 		return txt;
 	}
+
 	
-	void DataBuffer::diskManagerNotifyFinish(size_t id, bool success)
+	void DataBuffer::fileManagerNotifyFinish(size_t id, bool success)
 	{
 		lock.lock();
 		

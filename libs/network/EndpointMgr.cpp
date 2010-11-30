@@ -779,10 +779,12 @@ void EndpointMgr::msgTreat(int rFd, char* name)
 	case Message::HelpResponse:
 	case Message::StatusRequest:
 	case Message::StatusResponse:
-	case Message::LoadData:
-	case Message::LoadDataResponse:
-	case Message::LoadDataConfirmation:
-	case Message::LoadDataConfirmationResponse:
+	case Message::DownloadData:
+	case Message::DownloadDataResponse:
+	case Message::UploadData:
+	case Message::UploadDataResponse:
+	case Message::UploadDataConfirmation:
+	case Message::UploadDataConfirmationResponse:
 	case Message::WorkerTaskConfirmation:
 	case Message::WorkerDataExchange:
 	case Message::WorkerDataExchangeClose:

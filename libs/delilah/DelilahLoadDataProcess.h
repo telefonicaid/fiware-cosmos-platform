@@ -180,10 +180,10 @@ namespace ss {
 			return created_files;
 		}
 		
-		void fillLoadDataConfirmationMessage( network::LoadDataConfirmation *confirmation );		
+		void fillLoadDataConfirmationMessage( network::UploadDataConfirmation *confirmation );		
 		
 		
-		void notifyLoadDataConfirmationResponse( const ::ss::network::LoadDataConfirmationResponse& confirmation )
+		void notifyLoadDataConfirmationResponse( const ::ss::network::UploadDataConfirmationResponse& confirmation )
 		{
 			error = confirmation.error();
 			error_message = confirmation.error_message();

@@ -8,6 +8,7 @@
 #include "ObjectWithStatus.h"
 #include "Lock.h"					// au::Lock
 #include "samson.pb.h"				// ss::network::...
+#include "DiskManagerDelegate.h"	// ss::FileManagerDelegate
 
 namespace ss {
 
@@ -16,7 +17,7 @@ namespace ss {
 	class WorkerTask;
 	class WorkerTaskItem;
 	
-	class WorkerTaskManager
+	class WorkerTaskManager : public FileManagerDelegate
 	{
 		SamsonWorker *worker;
 
@@ -24,6 +25,12 @@ namespace ss {
 		
 		au::Lock lock;			// General lock to protect multiple access ( network thread & Process threads )
 		au::StopLock stopLock;	// Stop lock to block the Process when there is no process to run
+		
+		
+		// Relation between file_ids and Items ( when receiving notifications form File Manager )
+		au::map<size_t, WorkerTaskItem > pendingInputFiles;
+			
+		friend class WorkerTaskItem;
 		
 	public:
 		
@@ -46,6 +53,9 @@ namespace ss {
 		
 		std::string getStatus();
 		
+		// Notification from the FileManager that a particular file is finished 
+		void fileManagerNotifyFinish(size_t id, bool success);	
+		
 	private:
 		
 		// Function used to send the confirmation of a task to the controller
@@ -54,6 +64,9 @@ namespace ss {
 		// Function used to send the "close" message to other workers
 		void sendCloseMessages( WorkerTask *t , int workers );
 		
+		
+		// Function calles by items when adding files to be read
+		void addInputFile( size_t fm_id , WorkerTaskItem* );
 		
 	};
 }

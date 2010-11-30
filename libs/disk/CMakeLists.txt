@@ -55,6 +55,3 @@ SET_TARGET_PROPERTIES(samsonDiskStatic PROPERTIES OUTPUT_NAME samsonDisk)
 # SET_TARGET_PROPERTIES(samsonDiskShared PROPERTIES OUTPUT_NAME samsonDisk)
 
 
-ADD_EXECUTABLE(samsonFileManagerTest samsonFileManagerTest.cpp ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonFileManagerTest ${STATIC_LIBS})
-INSTALL(TARGETS samsonFileManagerTest RUNTIME DESTINATION bin)

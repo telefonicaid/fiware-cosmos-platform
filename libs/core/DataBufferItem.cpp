@@ -127,7 +127,7 @@ namespace ss {
 		network->send(dataBuffer->worker, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation , p);
 		
 		// Schedule at the File Manager
-		size_t id = FileManager::shared()->write( b , fileName, dataBuffer );
+		size_t id = FileManager::shared()->addItemToWrite( new FileManagerWriteItem( fileName,b , dataBuffer ) ) ;
 		
 		dataBuffer->id_relation.insert( std::pair<size_t,size_t>( id, task_id) );
 		

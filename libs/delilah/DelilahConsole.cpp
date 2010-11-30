@@ -14,6 +14,7 @@
 #include <iostream>
 #include <iomanip>
 #include "Job.h"						// Environment operations (CopyFrom)
+#include <iomanip>
 
 namespace ss
 {
@@ -304,15 +305,19 @@ namespace ss
 				if( help_response.help().queues() )
 				{
 					txt << "Queues" << std::endl;
-					txt << "------------------------------------------------" << std::endl;
+					txt << "------------------------------------------------------------------------------------------------" << std::endl;
 					for (int i = 0 ; i < help_response.queue_size() ; i++)
 					{
 						network::Queue queue = help_response.queue(i);
-						txt << queue.name();
-						txt << " (" << queue.format().keyformat() << "-" << queue.format().valueformat() << ") ";
-						txt << " " << au::Format::string( queue.info().kvs() ) << " kvs in " << au::Format::string( queue.info().size() ) << " bytes" << std::endl;
+						txt << std::setw(30) << queue.name();
+						txt << " ";
+						txt << au::Format::string( queue.info().kvs() );
+						txt << " kvs in ";
+						txt << au::Format::string( queue.info().size() ) << " bytes";
+						txt << " (" << queue.format().keyformat() << " " << queue.format().valueformat() << ") ";
+						txt << std::endl;
 					}
-					txt << "------------------------------------------------" << std::endl;
+					txt << "------------------------------------------------------------------------------------------------" << std::endl;
 					
 					txt << std::endl;
 				}
@@ -320,19 +325,19 @@ namespace ss
 				if( help_response.help().datas() )
 				{
 					txt << "Datas" << std::endl;
-					txt << "------------------------------------------------" << std::endl;
+					txt << "------------------------------------------------------------------------------------------------" << std::endl;
 					for (int i = 0 ; i < help_response.data_size() ; i++)
 					{
 						network::Data data = help_response.data(i);
-						txt << data.name() << " - " << data.help() << std::endl;
+						txt << std::setw(20) << data.name() << " - " << data.help() << std::endl;
 					}
-					txt << "------------------------------------------------" << std::endl;
+					txt << "------------------------------------------------------------------------------------------------" << std::endl;
 				}
 
 				if( help_response.help().operations() )
 				{
 					txt << "Operations" << std::endl;
-					txt << "------------------------------------------------" << std::endl;
+					txt << "------------------------------------------------------------------------------------------------" << std::endl;
 					for (int i = 0 ; i < help_response.operation_size() ; i++)
 					{
 						network::Operation operation = help_response.operation(i);
@@ -347,7 +352,7 @@ namespace ss
 						txt << "\n\t\tHelp: " << operation.help_line() << std::endl;
 						txt << "\n";
 					}
-					txt << "------------------------------------------------" << std::endl;
+					txt << "------------------------------------------------------------------------------------------------" << std::endl;
 				}
 				
 			}

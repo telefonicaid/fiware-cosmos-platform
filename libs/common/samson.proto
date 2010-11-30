@@ -94,15 +94,15 @@ message StatusResponse
 
 message WorkerTask
 {
-	required int64 task_id		= 1;	// Id of the top level ( controller ) task	
-	required string operation 	= 2;	// Name of the operation to run
+	required int64 task_id		  = 1;	// Id of the top level ( controller ) task	
+	required string operation 	  = 2;	// Name of the operation to run
 
-	repeated FileList input		= 3;    // Input files ( all inputs for each queue )
-	repeated Queue output		= 4;    // output queues
+	repeated FileList input		  = 3;  // Input files ( all inputs for each queue )
+	repeated Queue output		  = 4;  // output queues
 
-	optional bool generator		= 5;	// Optional flag only used in the generator operations
+	optional bool generator		  = 5;	// Optional flag only used in the generator operations
 
-	required Environment environment = 6;	// Environment operations for this task
+	required Environment environment  = 6;	// Environment operations for this task
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -210,34 +210,71 @@ message WorkerDataExchangeClose
 // Message to Load data from Delilah to a Worker and response
 //
 
-message LoadData
+message UploadData
 {
 	required uint64 process_id=1;	// Id of the load process
 	required uint64 file_id=2;	// Id of the file ( multiple files for the same process)		
 }
 
-message LoadDataResponse
+message UploadDataResponse
 {
-	required uint64 process_id=1;		// Id of the operation ( specified in the LoadData )
-	required uint64 file_id=2;		// Id of the file we are confirming   
-	required bool error = 3;		// Flag to indicate if there was an error
-	optional string error_message = 4;	// Possible error message ( if error )
-	required File file = 5;			// Created file
+	required UploadData	upload_data	=1;	// Copy of the upload_data message
+
+	required bool error = 3;			// Flag to indicate if there was an error
+	optional string error_message = 4;		// Possible error message ( if error )
+
+	required File file = 5;				// Created file
 }
 
-message LoadDataConfirmation
+message UploadDataConfirmation
 {
 	required uint64 process_id=1;		// Id of the "load data" operation	
 	required string queue=2;		// Name of the queue to upload
 	repeated File   file=3;			// List of uploaded files
 }
 
-message LoadDataConfirmationResponse
+message UploadDataConfirmationResponse
 {
 	required uint64 process_id=1;			// Id of the "load data" operation	
 	required bool error=2;				// Flag to indicarte if there was an error				   	
 	required string error_message=3;		// String message to show to the user
 }
+
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Messages for unload data
+//
+
+
+message DownloadData
+{
+	required uint64 process_id	=1;	// Id of the operation 
+	required int32 file_id		=2;	// File id we are requesting
+	required File file 		=3;	// Files that we would like to download
+}
+
+message DownloadDataResponse
+{
+	required DownloadData download_data	=1;	// copy of the request message
+
+	required bool error = 3;			// Flag to indicate if there was an error
+	optional string error_message = 4;		// Possible error message ( if error )
+}
+
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Messages for select
+//
+
+message SelectRequest
+{
+	// Packet send from delilah to controller and from controller to workers
+	required int32 sender_id	=1;		// Sender id
+	required string queue		=2;		// Selected queue
+}
+
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -270,11 +307,14 @@ message Message
 	optional Help                   help                      = 109;  // Ask for help ( queues / datas / operations )
 	optional HelpResponse           help_response             = 110;  // Response for the ask help message   			     
 
-	optional LoadData		load_data		  = 111;  // Load data ( Delilah to Worker )
-	optional LoadDataResponse	load_data_response	  = 112;  // Load data ( Worker to Delilah )
+	optional UploadData		upload_data		  = 111;  // Load data ( Delilah to Worker )
+	optional UploadDataResponse	upload_data_response	  = 112;  // Load data ( Worker to Delilah )
 
-	optional LoadDataConfirmation   load_data_confirmation	  = 113;  // Confirmation of a load data process ( Delilah to Controller)
-	optional LoadDataConfirmationResponse load_data_confirmation_response = 114; 	  // Reponse of the previous message
+	optional UploadDataConfirmation   upload_data_confirmation	  = 113;  // Confirmation of a load data process ( Delilah to Controller)
+	optional UploadDataConfirmationResponse upload_data_confirmation_response = 114; 	  // Reponse of the previous message
+
+	optional DownloadData		download_data		= 200;		//
+	optional DownloadDataResponse	download_data_response	= 201;		//
 
 	optional StatusRequest status_request = 115; 				      // request for status ( debuggin )
 	optional StatusResponse status_response = 116;				      // response of a status request

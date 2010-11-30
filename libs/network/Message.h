@@ -45,10 +45,12 @@ typedef enum MessageCode
 	HelpResponse					= CODE('H', 'R', 'e', ' '),
 	StatusRequest					= CODE('S', 'r', 'q', ' '),
 	StatusResponse					= CODE('S', 'r', 's', ' '),
-	LoadData						= CODE('L', 'D', 'a', ' '),
-	LoadDataResponse				= CODE('L', 'D', 'R', ' '),
-	LoadDataConfirmation			= CODE('L', 'C', 'o', ' '),
-	LoadDataConfirmationResponse	= CODE('L', 'C', 'R', ' '),
+	DownloadData					= CODE('D', 'L', 'a', ' '),
+	DownloadDataResponse			= CODE('D', 'L', 'R', ' '),
+	UploadData						= CODE('L', 'D', 'a', ' '),
+	UploadDataResponse				= CODE('L', 'D', 'R', ' '),
+	UploadDataConfirmation			= CODE('L', 'C', 'o', ' '),
+	UploadDataConfirmationResponse	= CODE('L', 'C', 'R', ' '),
 	Die								= CODE('D', 'i', 'e', ' ')
 } MessageCode;
 

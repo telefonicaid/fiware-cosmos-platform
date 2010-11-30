@@ -60,7 +60,6 @@ namespace ss {
 					Generator *generator = (Generator*) operation->getInstance();
 					generator->environment = environment;
 					generator->run( pw );
-					delete generator->environment;
 					break;
 				}
 				case Operation::parser:

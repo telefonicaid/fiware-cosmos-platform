@@ -29,18 +29,13 @@ namespace ss {
 		{
 			operation = task.operation();
 			fileName = _fileName;
-			
-			// Request this file to be loaded by FileManager
-			readItemVector = new FileManagerReadItemVector();
-			readItemVector->addItem( FileManagerReadItem( fileName ) );
-			
-			setup();
+
+			// This state indicate that we need a shared memory region to run this item
+			state = no_memory;
+
 		}
-		
-		~WorkerTaskItemOperation()
-		{
-			delete readItemVector;
-		}
+	
+		void setupInputs();
 		
 		void run( ProcessAssistant *pa );
 

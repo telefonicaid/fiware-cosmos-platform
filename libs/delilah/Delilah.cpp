@@ -136,13 +136,13 @@ int Delilah::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 {
 	// LoadDataConfirmation message are intercepted here	
 		
-	if (msgCode == Message::LoadDataResponse )
+	if (msgCode == Message::UploadDataResponse )
 	{
-		size_t		process_id		= packet->message.load_data_response().process_id();
-		size_t		file_id			= packet->message.load_data_response().file_id();
-		bool		error		= packet->message.load_data_response().error();
+		size_t		process_id		= packet->message.upload_data_response().upload_data().process_id();
+		size_t		file_id			= packet->message.upload_data_response().upload_data().file_id();
+		bool		error		= packet->message.upload_data_response().error();
 
-		network::File file = packet->message.load_data_response().file();
+		network::File file = packet->message.upload_data_response().file();
 			
 		loadDataLock.lock();
 			
@@ -157,9 +157,9 @@ int Delilah::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 			// Send the final packet to the controller notifying about the loading process
 				
 			Packet *p = new Packet();
-			network::LoadDataConfirmation *confirmation	= p->message.mutable_load_data_confirmation();
+			network::UploadDataConfirmation *confirmation	= p->message.mutable_upload_data_confirmation();
 			process->fillLoadDataConfirmationMessage( confirmation );
-			network->send(this, network->controllerGetIdentifier(), Message::LoadDataConfirmation, p);
+			network->send(this, network->controllerGetIdentifier(), Message::UploadDataConfirmation, p);
 				
 			// Confirm to the client that everything is ok
 			//client->loadDataConfirmation( process );
@@ -170,15 +170,15 @@ int Delilah::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 		return 0;
 	}
 		
-	if (msgCode == Message::LoadDataConfirmationResponse )
+	if (msgCode == Message::UploadDataConfirmationResponse )
 	{
-		size_t process_id			= packet->message.load_data_confirmation_response().process_id();
+		size_t process_id			= packet->message.upload_data_confirmation_response().process_id();
 
 		DelilahLoadDataProcess *process = loadProcess.extractFromMap( process_id );
 		assert( process );
 
 		// Notify the information contained in the confirmation response message
-		process->notifyLoadDataConfirmationResponse( packet->message.load_data_confirmation_response() );
+		process->notifyLoadDataConfirmationResponse( packet->message.upload_data_confirmation_response() );
 			
 		// Notify to the client to show on scren the result of this load process
 		client->loadDataConfirmation( process );

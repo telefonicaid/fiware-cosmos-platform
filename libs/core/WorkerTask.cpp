@@ -5,12 +5,15 @@
 
 #include "WorkerTaskItemParser.h"		// ss::WorkerTaskItemParser
 #include "WorkerTaskItemGenerator.h"	// ss::WorkerTaskItemGenerator
+#include "WorkerTaskManager.h"			// ss::WorkerTaskManager
 
 namespace ss
 {
 	
-	WorkerTask::WorkerTask( Operation::Type type , const network::WorkerTask &task )
+	WorkerTask::WorkerTask(WorkerTaskManager *_taskManager , Operation::Type type , const network::WorkerTask &task )
 	{
+		taskManager = _taskManager;		// Pointer to the task manager
+		
 		operation = task.operation();	// Save the operation to perform		
 		task_id = task.task_id();		// Save the task id
 
@@ -75,7 +78,6 @@ namespace ss
 		for (iterator = item.begin() ; iterator != item.end() ; iterator++)
 		{
 			WorkerTaskItem *item = iterator->second;
-			item->setup();
 			if( item->isReadyToRun() )
 				return item;
 		}

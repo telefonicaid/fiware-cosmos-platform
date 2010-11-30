@@ -83,12 +83,12 @@ namespace ss
 			lock.unlock();
 
 			// Set message fields
-			network::LoadData *loadData = p->message.mutable_load_data();	
+			network::UploadData *loadData = p->message.mutable_upload_data();	
 			loadData->set_file_id( file_id );
 			loadData->set_process_id( id );
 			
 			// Send the packet
-			delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), Message::LoadData, p);
+			delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), Message::UploadData, p);
 			
 			// Next worker
 			if( ++worker == num_workers )
@@ -127,7 +127,7 @@ namespace ss
 		return completed;
 	}
 	
-	void DelilahLoadDataProcess::fillLoadDataConfirmationMessage( network::LoadDataConfirmation *confirmation )
+	void DelilahLoadDataProcess::fillLoadDataConfirmationMessage( network::UploadDataConfirmation *confirmation )
 	{
 		lock.lock();
 		

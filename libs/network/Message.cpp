@@ -33,10 +33,12 @@ char* messageCode(MessageCode code)
 	case HelpResponse:		       return (char*) "HelpResponse";
 	case StatusRequest:            return (char*) "StatusRequest";
 	case StatusResponse:		   return (char*) "StatusResponse";
-	case LoadData:								return (char*) "LoadData";
-	case LoadDataResponse:						return (char*) "LoadDataResponse";
-	case LoadDataConfirmation:                  return (char*) "LoadDataConfirmation";
-	case LoadDataConfirmationResponse:          return (char*) "LoadDataConfirmationResponse";
+	case DownloadData:								return (char*) "DownloadData";
+	case DownloadDataResponse:						return (char*) "DownloadDataResponse";
+	case UploadData:								return (char*) "LoadData";
+	case UploadDataResponse:						return (char*) "LoadDataResponse";
+	case UploadDataConfirmation:                  return (char*) "LoadDataConfirmation";
+	case UploadDataConfirmationResponse:          return (char*) "LoadDataConfirmationResponse";
 	case WorkerTaskConfirmation:   return (char*) "WorkerTaskConfirmation";
 	case WorkerDataExchange:	   return (char*) "WorkerDataExchange";
 	case WorkerDataExchangeClose:	   return (char*) "WorkerDataExchangeClose";

@@ -43,8 +43,7 @@ namespace ss {
 		unsigned short  port;
 		int             endpoints;
 		int             workers;
-
-
+		
 		int             workersGet(void)        { return workers; }
 
 	public:

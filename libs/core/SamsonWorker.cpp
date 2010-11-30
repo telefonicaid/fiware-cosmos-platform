@@ -146,11 +146,6 @@ void SamsonWorker::sendWorkerStatus()
 int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 {
 	
-	// Filter to receive strange thigs from delilah
-	if ( ( fromId != network->controllerGetIdentifier() ) && ( msgCode != Message::LoadData ) )
-		return 0;
-	
-	
 	if (msgCode == Message::StatusRequest)
 	{
 		Packet* p = new Packet();
@@ -176,13 +171,12 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	}
 
 	// Load data files to be latter confirmed to controller
-	if (msgCode == Message::LoadData)
+	if (msgCode == Message::UploadData)
 	{
-		
 		std::ostringstream fileName;
 		fileName << "/tmp/file_"<< getpid() << "_" << rand() << rand();	// Just to test
 		
-		loadDataManager.addFile( packet->buffer , fileName.str() , fromId , packet->message.load_data().process_id() , packet->message.load_data().file_id() );
+		loadDataManager.addUploadItem(fromId, packet->message.upload_data(), packet->buffer );
 		return 0;
 	}
 	
@@ -212,6 +206,7 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	
 		if( msgCode == Message::WorkerDataExchangeClose )
 		{
+			
 			size_t task_id = packet->message.data_close().task_id();
 			dataBuffer.finishWorker( task_id );
 			return 0;

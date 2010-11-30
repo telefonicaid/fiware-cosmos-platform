@@ -14,11 +14,15 @@ namespace ss {
 
 	
 	class WorkerTaskItem;
+	class WorkerTaskManager;
 	
 	class WorkerTask
 	{
 		
 	public:
+
+		// Pointer to the task manager
+		WorkerTaskManager *taskManager;
 		
 		// identifier of the task
 		size_t task_id;
@@ -35,12 +39,11 @@ namespace ss {
 		
 		network::Environment environment;		// Environment for this task ( transmitted to all process )
 		
-		WorkerTask( Operation::Type type , const network::WorkerTask &task );
+		WorkerTask(WorkerTaskManager *taskManager, Operation::Type type , const network::WorkerTask &task );
 		
-		// Get the next item ( if any )
-		WorkerTaskItem *getNextItemToProcess();
+		WorkerTaskItem *getNextItemToProcess();			// Get the next item ( if any )
 
-		// Notify that an item is done
+		// Notify that an item is done ( by ProcessAssistant )
 		void finishItem( size_t id , bool _error , std::string _error_message );
 		
 		// Getting info
@@ -49,6 +52,7 @@ namespace ss {
 		size_t getId();
 		
 	private:
+		
 		void addItem( WorkerTaskItem *item );
 
 		

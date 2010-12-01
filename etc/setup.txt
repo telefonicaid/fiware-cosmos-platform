@@ -1,5 +1,5 @@
 # Number of workers
-num_workers	2
+num_workers	5
 
 # Number of paralel cores in this worker
 num_processes 	2		# Number of parallel processes working on this maxine	

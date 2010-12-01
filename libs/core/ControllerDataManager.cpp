@@ -492,12 +492,12 @@ namespace ss {
 		for (int i = 0 ; i < (int)info->inputs.size() ; i++)
 		{
 			std::string queue_name =  info->inputs[i] ;
-			
 			Queue *q = queues.findInMap( queue_name );
+			
 			if( q )
 			{
-				KVFormat queue_format = q->format();
-				KVFormat parameter_format = info->operation->getInputFormat(i);
+				KVFormat queue_format		= q->format();
+				KVFormat parameter_format	= info->operation->getInputFormat(i);
 				
 				if( !queue_format.isEqual( parameter_format ) )
 				{

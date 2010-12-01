@@ -68,6 +68,14 @@ namespace ss {
 		{
 			writeWarningOnConsole( message );
 		}
+		
+		virtual void notifyFinishOperation( size_t id )
+		{
+			std::ostringstream output;
+			output << "Finished: " << id ;
+			writeWarningOnConsole( output.str() );
+		}
+
 
 		
 	};

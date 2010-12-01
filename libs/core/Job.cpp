@@ -120,6 +120,12 @@ namespace ss {
 					return false;	// No continue until confirmation of this task is received
 				}
 				
+				if( operation->getType() == Operation::reduce ) 
+				{
+					task_id = controller->taskManager.addTask( task_info , id );
+					return false;	// No continue until confirmation of this task is received
+				}
+				
 				if( operation->getType() == Operation::script ) 
 				{
 					

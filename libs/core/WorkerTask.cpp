@@ -59,6 +59,14 @@ namespace ss
 
 			return;
 		}
+
+		if( type == Operation::reduce )
+		{
+			// Just one item to organize all the reduce "sub operations"
+			addItem( new WorkerTaskItemReduceOrganizer( this, task ) );
+			return;
+		}
+		
 		
 		
 	}

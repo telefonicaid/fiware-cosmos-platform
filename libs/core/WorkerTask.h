@@ -52,6 +52,7 @@ namespace ss {
 		size_t getId();
 		
 	private:
+		friend class WorkerTaskItemReduceOrganizer;	// to be able to add individual reduce items
 		
 		void addItem( WorkerTaskItem *item );
 

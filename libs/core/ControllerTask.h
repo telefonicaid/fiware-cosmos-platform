@@ -94,8 +94,10 @@ namespace ss {
 
 				// Add only files that are placed at that worker
 				for (int i = 0 ; i < all_fl.file_size() ; i++)
-					if( all_fl.file(f).worker() == workerIdentifier)
+				{
+					if( all_fl.file(i).worker() == workerIdentifier)
 						fl->add_file()->CopyFrom( all_fl.file(i) );
+				}
 				
 				//fl->CopyFrom();
 			}

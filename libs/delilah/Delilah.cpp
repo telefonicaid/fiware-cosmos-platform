@@ -150,6 +150,7 @@ int Delilah::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 		if ( component->component_finished )
 		{
 			component = components.extractFromMap(sender_id);
+			client->notifyFinishOperation( sender_id );
 			delete component;
 		}
 		
@@ -239,8 +240,7 @@ void Delilah::notificationSent(size_t id, bool success)
 		
 		return tmp_id;
 	}	
-	
-	
+		
 	
 }
 

@@ -30,6 +30,13 @@ namespace ss
 		{
 		}
 		
+		// Callback to notify that a particular operation has finished
+		virtual void notifyFinishOperation( size_t ){
+		}
+		
+		
+		
+		
 	};
 }
 

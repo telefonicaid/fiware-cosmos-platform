@@ -145,6 +145,7 @@ namespace ss {
 					
 					// Delete the component from delilah
 					DelilahComponent *component = delilah->components.extractFromMap( id );
+					delilah->client->notifyFinishOperation(id);
 					delete component;
 					
 					return;

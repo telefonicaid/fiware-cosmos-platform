@@ -1,7 +1,7 @@
 
 #ifndef _H_QUEUE_FILE
 #define _H_QUEUE_FILE
-#import "samson.pb.h"
+#include "samson.pb.h"
 
 namespace ss {
 

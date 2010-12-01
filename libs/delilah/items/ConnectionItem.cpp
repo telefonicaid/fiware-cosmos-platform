@@ -14,7 +14,7 @@
 #include <QMessageBox>
 
 #include "ConnectionItem.h"
-#include "ObjectItem.h"
+#include "BaseItem.h"
 #include "globals.h"
 
 #define PI 3.14159265
@@ -29,7 +29,7 @@ ConnectionItem::ConnectionItem(QGraphicsItem* parent)
 	setPath(path);
 }
 
-ConnectionItem::ConnectionItem(ObjectItem* start_item, ObjectItem* end_item, QGraphicsItem* parent)
+ConnectionItem::ConnectionItem(BaseItem* start_item, BaseItem* end_item, QGraphicsItem* parent)
 	: QObject(), QGraphicsPathItem(parent)
 {
 	init();
@@ -143,7 +143,7 @@ QPainterPath ConnectionItem::drawArrow(const QPointF &start_pos, const QPointF &
 	return arrow;
 }
 
-bool ConnectionItem::open(ObjectItem* item)
+bool ConnectionItem::open(BaseItem* item)
 {
 	start_item = item;
 	scene_start_pos = start_item->mapToScene(start_item->boundingRect().center());
@@ -151,7 +151,7 @@ bool ConnectionItem::open(ObjectItem* item)
 	return true;
 }
 
-bool ConnectionItem::close(ObjectItem* item)
+bool ConnectionItem::close(BaseItem* item)
 {
 	finished = true;
 	QString error_message;

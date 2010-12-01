@@ -15,7 +15,7 @@
 #include "Queue.h"
 
 QueueItem::QueueItem(Queue* _queue)
-	: ObjectItem(), queue(_queue)
+	: BaseItem(), queue(_queue)
 {
 	init();
 
@@ -95,7 +95,7 @@ void QueueItem::showInfoSelected()
 
 void QueueItem::removeQueueSelected()
 {
-	emit(removeQueueFromWorkspaceRequested(this->queue));
+	emit(removeItemRequested(this));
 }
 
 void QueueItem::deleteQueueSelected()

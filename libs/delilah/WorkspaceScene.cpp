@@ -12,7 +12,7 @@
 #include <QSvgRenderer>
 
 #include "WorkspaceScene.h"
-#include "ObjectItem.h"
+#include "BaseItem.h"
 #include "QueueItem.h"
 #include "Queue.h"
 #include "OperationItem.h"
@@ -89,7 +89,7 @@ void WorkspaceScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
 	if (current_tool==TOOL_CONNECT && event->button()==Qt::LeftButton)
 	{
-		ObjectItem* item = findItem(event->scenePos());
+		BaseItem* item = findItem(event->scenePos());
 		if (item)
 			startConnection(item);
 	}
@@ -125,7 +125,7 @@ void WorkspaceScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 			case TOOL_CONNECT:
 				if (current_conn)
 				{
-					ObjectItem* item = findItem(event->scenePos());
+					BaseItem* item = findItem(event->scenePos());
 					if (item && item!=current_conn->startItem())
 					{
 						closeConnection(item);
@@ -143,9 +143,9 @@ void WorkspaceScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 		}
 }
 
-ObjectItem* WorkspaceScene::findItem(const QPointF &pos)
+BaseItem* WorkspaceScene::findItem(const QPointF &pos)
 {
-	ObjectItem* item = 0;
+	BaseItem* item = 0;
 
 	QList<QGraphicsItem*> selected = items(pos, Qt::IntersectsItemShape, Qt::DescendingOrder);
 
@@ -175,10 +175,8 @@ void WorkspaceScene::showQueue(Queue* queue, const QPointF &pos)
 
 	// Connect appropriate signals to propagate user's requests
 	connect(queue_item, SIGNAL(infoRequested(BaseObject*)), this, SIGNAL(infoRequested(BaseObject*)));
-	connect(queue_item, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)),
-			this, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)));
-	connect(queue_item, SIGNAL(deleteQueueRequested(Queue*)),
-			this, SIGNAL(deleteQueueRequested(Queue*)));
+	connect(queue_item, SIGNAL(removeItemRequested(BaseItem*)), this, SIGNAL(removeItemRequested(BaseItem*)));
+	connect(queue_item, SIGNAL(deleteQueueRequested(Queue*)), this, SIGNAL(deleteQueueRequested(Queue*)));
 
 	queue_item->setSharedRenderer(queue_renderer);
 	queue_item->initText();
@@ -188,7 +186,7 @@ void WorkspaceScene::showQueue(Queue* queue, const QPointF &pos)
 	addItem(queue_item);
 }
 
-void WorkspaceScene::removeQueue(Queue* queue)
+void WorkspaceScene::removeQueueItem(Queue* queue)
 {
 	QList<QGraphicsItem*> scene_items = items();
 
@@ -212,6 +210,7 @@ void WorkspaceScene::showOperation(Operation* operation, const QPointF &position
 
 	// Connect appropriate signals to propagate user's requests
 	connect(operation_item, SIGNAL(infoRequested(BaseObject*)), this, SIGNAL(infoRequested(BaseObject*)));
+	connect(operation_item, SIGNAL(removeItemRequested(BaseItem*)), this, SIGNAL(removeItemRequested(BaseItem*)));
 
 	operation_item->setSharedRenderer(operation_renderer);
 	operation_item->initText();
@@ -221,7 +220,7 @@ void WorkspaceScene::showOperation(Operation* operation, const QPointF &position
 	addItem(operation_item);
 }
 
-void WorkspaceScene::startConnection(ObjectItem* item)
+void WorkspaceScene::startConnection(BaseItem* item)
 {
 	if (current_conn)
 		delete current_conn;
@@ -236,7 +235,7 @@ void WorkspaceScene::cancelConnection()
 	current_conn = 0;
 }
 
-void WorkspaceScene::closeConnection(ObjectItem* item)
+void WorkspaceScene::closeConnection(BaseItem* item)
 {
 	if (current_conn->close(item))
 	{

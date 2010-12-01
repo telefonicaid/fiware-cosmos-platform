@@ -12,6 +12,7 @@
 
 #include "Workspace.h"
 #include "WorkspaceScene.h"
+#include "BaseItem.h"
 #include "Queue.h"
 #include "globals.h"
 #include "DelilahQtApp.h"
@@ -22,7 +23,7 @@ Workspace::Workspace(QString _name)
 	app = (DelilahQtApp*)qApp;
 	scene = new WorkspaceScene();
 
-	connect(scene, SIGNAL(removeQueueFromWorkspaceRequested(Queue*)), this, SLOT(removeQueueFromWorkspace(Queue*)));
+	connect(scene, SIGNAL(removeItemRequested(BaseItem*)), this, SLOT(removeItem(BaseItem*)));
 	connect(app, SIGNAL(gotCommandResponse(unsigned int, bool, bool, QString)),
 			this, SLOT(updateJob(unsigned int, bool, bool, QString)));
 }
@@ -94,13 +95,6 @@ void Workspace::createQueue(QueueType type, const QPointF &scene_pos, QString na
 
 }
 
-void Workspace::removeQueueFromWorkspace(Queue* queue)
-{
-	// TODO: remove queue from all processes it is involved in
-
-	scene->removeQueue(queue);
-}
-
 void Workspace::deleteQueue(Queue* queue)
 {
 	job_info job;
@@ -123,6 +117,12 @@ void Workspace::loadOperation(const QString &name, const QPointF &scene_pos)
 		QString error = QString("Loading operation '%1' failed: Operation is not available").arg(name);
 		emit(unhandledFailure(error));
 	}
+}
+
+void Workspace::removeItem(BaseItem* item)
+{
+	// TODO: remove other items/processes connected to this item
+	scene->removeItem((QGraphicsItem*)item);
 }
 
 /*
@@ -192,7 +192,7 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 				{
 					Queue* queue = app->getQueue(job.args[0], true);
 					if (queue)
-						scene->removeQueue(queue);
+						scene->removeQueueItem(queue);
 					else
 					{
 						QString error = QString("Deleting of %1 queue failed:\nQueue is not deleted").arg(job.args[0]);

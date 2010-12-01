@@ -1,20 +1,20 @@
 #ifndef QUEUEITEM_H
 #define QUEUEITEM_H
 
-#include "ObjectItem.h"
+#include "BaseItem.h"
 #include "globals.h"
 
 class Queue;
 
-class QueueItem : public ObjectItem
+class QueueItem : public BaseItem
 {
 	Q_OBJECT
 
 public:
 	QueueItem()
-		: ObjectItem() { init(); };
+		: BaseItem() { init(); };
 	QueueItem(QSvgRenderer* renderer)
-		: ObjectItem(renderer) { init(); };
+		: BaseItem(renderer) { init(); };
 	QueueItem(Queue* _queue);
 	~QueueItem() {};
 
@@ -37,7 +37,6 @@ protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
 
 signals:
-	void removeQueueFromWorkspaceRequested(Queue*);			// emitted when user chooses to remove queue from workspace
 	void deleteQueueRequested(Queue*);						// emitted when user chooses to delete queue from system
 
 public:

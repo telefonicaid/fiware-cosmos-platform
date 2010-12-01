@@ -24,7 +24,7 @@ IF(QT4_FOUND)
 		objects/Operation.cpp
 		objects/Queue.cpp
 		Process.cpp
-		items/ObjectItem.cpp
+		items/BaseItem.cpp
 		items/QueueItem.cpp
 		items/OperationItem.cpp
 		items/ConnectionItem.cpp
@@ -59,7 +59,7 @@ IF(QT4_FOUND)
 		objects/Queue.h
 		DataType.h
 		Process.h
-		items/ObjectItem.h
+		items/BaseItem.h
 		items/QueueItem.h
 		items/OperationItem.h
 		items/ConnectionItem.h

@@ -60,7 +60,7 @@ void OperationItem::showInfoSelected()
 
 void OperationItem::removeOperationSelected()
 {
-	// TODO:
+	emit(removeItemRequested(this));
 }
 
 void OperationItem::runOperationSelected()

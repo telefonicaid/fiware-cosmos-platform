@@ -1,12 +1,14 @@
 /*
- * ProcessItem.h
+ * FILE:		BaseItem.h
  *
- *  Created on: Oct 22, 2010
- *      Author: ania
+ * AUTHOR:		Anna Wojdel
+ *
+ * DESCRIPTION:
+ *
  */
 
-#ifndef PROCESSITEM_H_
-#define PROCESSITEM_H_
+#ifndef BASEITEM_H_
+#define BASEITEM_H_
 
 #include <QGraphicsSvgItem>
 #include <QGraphicsSceneContextMenuEvent>
@@ -15,15 +17,15 @@ class ConnectionItem;
 class ObjectTextItem;
 class BaseObject;
 
-class ObjectItem : public QGraphicsSvgItem
+class BaseItem : public QGraphicsSvgItem
 {
 	Q_OBJECT
 
 public:
-	ObjectItem(QGraphicsItem* parent=0)
+	BaseItem(QGraphicsItem* parent=0)
 		: QGraphicsSvgItem(parent) { init(); };
-	ObjectItem(QSvgRenderer* renderer, QGraphicsItem* parent=0);
-	virtual ~ObjectItem();
+	BaseItem(QSvgRenderer* renderer, QGraphicsItem* parent=0);
+	virtual ~BaseItem();
 
 	// Overloaded
 	void setPos(const QPointF &pos);
@@ -36,7 +38,7 @@ public:
 	virtual void initText() = 0;
 
 	virtual void addConnection(ConnectionItem* connection) { connections.append(connection); };
-	virtual bool isConnected(ObjectItem* item);
+	virtual bool isConnected(BaseItem* item);
 
 protected:
 	virtual void init();
@@ -54,6 +56,7 @@ protected:
 signals:
 	void posChanged();
 	void infoRequested(BaseObject*);
+	void removeItemRequested(BaseItem*);
 
 protected:
     QSize default_size;
@@ -86,4 +89,4 @@ protected:
 
 };
 
-#endif /* PROCESSITEM_H_ */
+#endif /* BASEITEM_H_ */

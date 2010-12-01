@@ -8,23 +8,23 @@
 #ifndef OPERATIONITEM_H_
 #define OPERATIONITEM_H_
 
-#include "ObjectItem.h"
+#include "BaseItem.h"
 #include "globals.h"
 
 class BaseObject;
 class Operation;
 
-class OperationItem : public ObjectItem
+class OperationItem : public BaseItem
 {
 	Q_OBJECT
 
 public:
 	OperationItem()
-		: ObjectItem() {};
+		: BaseItem() {};
 	OperationItem(QSvgRenderer* renderer)
-		: ObjectItem(renderer) {};
+		: BaseItem(renderer) {};
 	OperationItem(Operation* _operation)
-		: ObjectItem(), operation(_operation) {};
+		: BaseItem(), operation(_operation) {};
 	~OperationItem() {};
 
 	virtual int type() const { return Type; };

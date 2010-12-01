@@ -10,7 +10,7 @@
 
 #include <QGraphicsPathItem>
 
-class ObjectItem;
+class BaseItem;
 
 class ConnectionItem : public QObject, public QGraphicsPathItem
 {
@@ -18,15 +18,15 @@ class ConnectionItem : public QObject, public QGraphicsPathItem
 
 public:
 	ConnectionItem(QGraphicsItem* parent=0);
-	ConnectionItem(ObjectItem* start, ObjectItem* end=0, QGraphicsItem* parent=0);
+	ConnectionItem(BaseItem* start, BaseItem* end=0, QGraphicsItem* parent=0);
 	~ConnectionItem();
 
-	bool open(ObjectItem* item);
-	bool close(ObjectItem* item);
+	bool open(BaseItem* item);
+	bool close(BaseItem* item);
 	void updateItem();
 
-	ObjectItem* startItem() { return start_item; };
-	ObjectItem* endItem() { return end_item; };
+	BaseItem* startItem() { return start_item; };
+	BaseItem* endItem() { return end_item; };
 
 public slots:
 	void updateStartPos();
@@ -46,8 +46,8 @@ protected:
 	bool finished;
 	QPainterPath path;
 
-	ObjectItem* start_item;
-	ObjectItem* end_item;
+	BaseItem* start_item;
+	BaseItem* end_item;
 	QPointF scene_start_pos;
 	QPointF scene_end_pos;
 

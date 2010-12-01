@@ -1,34 +1,36 @@
 /*
- * ObjectItem.cpp
+ * FILE:		BaseItem.cpp
  *
- *  Created on: Oct 22, 2010
- *      Author: ania
+ * AUTHOR:		Anna Wojdel
+ *
+ * DESCRIPTION:
+ *
  */
 
 #include <QSize>
 
-#include "ObjectItem.h"
+#include "BaseItem.h"
 #include "WorkspaceScene.h"
 #include "globals.h"
 #include "ConnectionItem.h"
 
-ObjectItem::ObjectItem(QSvgRenderer* renderer, QGraphicsItem* parent)
+BaseItem::BaseItem(QSvgRenderer* renderer, QGraphicsItem* parent)
 	: QGraphicsSvgItem(parent)
 {
 	setSharedRenderer(renderer);
 	init();
 }
 
-ObjectItem::~ObjectItem()
+BaseItem::~BaseItem()
 {}
 
-void ObjectItem::init()
+void BaseItem::init()
 {
 	setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsGeometryChanges);
 	text_item = 0;
 }
 
-void ObjectItem::setPos(const QPointF &pos)
+void BaseItem::setPos(const QPointF &pos)
 {
 	QRectF bound_rect(QGraphicsSvgItem::boundingRect());
 	QPointF new_pos = pos - mapToScene(bound_rect.center());
@@ -36,12 +38,12 @@ void ObjectItem::setPos(const QPointF &pos)
 	QGraphicsSvgItem::setPos(new_pos);
 }
 
-void ObjectItem::setPos(qreal x,qreal y)
+void BaseItem::setPos(qreal x,qreal y)
 {
 	setPos(QPointF(x, y));
 }
 
-void ObjectItem::setDefaultSize()
+void BaseItem::setDefaultSize()
 {
 	if (!default_size.isValid())
 		initializeDefaultSize();
@@ -49,7 +51,7 @@ void ObjectItem::setDefaultSize()
 	setSize(default_size);
 }
 
-void ObjectItem::setSize(QSize size)
+void BaseItem::setSize(QSize size)
 {
 	QSizeF bound_size = QRectF(QGraphicsSvgItem::boundingRect()).size();
 	bound_size.scale(size.width(), size.height(), Qt::KeepAspectRatio);
@@ -59,7 +61,7 @@ void ObjectItem::setSize(QSize size)
 	setScale(scale_factor);
 }
 
-void ObjectItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
+void BaseItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
 	WorkspaceScene* s = (WorkspaceScene*)scene();
 	switch(s->getTool())
@@ -73,7 +75,7 @@ void ObjectItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 	}
 }
 
-void ObjectItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
+void BaseItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
 	WorkspaceScene* s = (WorkspaceScene*)scene();
 	switch(s->getTool())
@@ -86,7 +88,7 @@ void ObjectItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 	}
 }
 
-void ObjectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
+void BaseItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
 	WorkspaceScene* s = (WorkspaceScene*)scene();
 	switch(s->getTool())
@@ -101,7 +103,7 @@ void ObjectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 
 }
 
-QVariant ObjectItem::itemChange(GraphicsItemChange change, const QVariant &value)
+QVariant BaseItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
 	if (change == QGraphicsItem::ItemPositionChange)
 		emit posChanged();
@@ -109,7 +111,7 @@ QVariant ObjectItem::itemChange(GraphicsItemChange change, const QVariant &value
 	return QGraphicsSvgItem::itemChange(change, value);
 }
 
-bool ObjectItem::isConnected(ObjectItem* item)
+bool BaseItem::isConnected(BaseItem* item)
 {
 	ConnectionItem* conn;
 	foreach (conn, connections)

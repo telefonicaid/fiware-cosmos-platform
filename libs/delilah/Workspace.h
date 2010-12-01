@@ -15,6 +15,7 @@
 
 #include "globals.h"
 
+class BaseItem;
 class Queue;
 class Process;
 class WorkspaceScene;
@@ -53,10 +54,10 @@ public slots:
 
 	void loadQueue(const QString &name, const QPointF &scene_pos);
 	void createQueue(QueueType type, const QPointF &scene_pos, QString name, QString key=QString(), QString value=QString());
-	void removeQueueFromWorkspace(Queue* queue);
 	void deleteQueue(Queue* queue);
 
 	void loadOperation(const QString &name, const QPointF &scene_pos);
+	void removeItem(BaseItem* item);
 
 	void updateJob(unsigned int id, bool finished, bool error, QString message);
 	void finishJob(unsigned int id, bool error, QString message);

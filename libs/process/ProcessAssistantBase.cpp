@@ -215,7 +215,7 @@ namespace ss {
 		{
 			startTime = 0;
 			coreWorkerStart();	// Restart the process again
-			return processMessageWithCode( network::ProcessMessage::crash);		
+			return processMessageWithCode( network::ProcessMessage::crash );		
 		}
 		
 		while( true )
@@ -223,7 +223,7 @@ namespace ss {
 			
 			network::ProcessMessage received_packet;
 			
-			if( _read(received_packet) == -1)
+			if( _read(received_packet) == -1 )
 			{
 				coreWorkerStart();	// Restart the process again
 				return processMessageWithCode( network::ProcessMessage::crash);		
@@ -240,6 +240,10 @@ namespace ss {
 			
 			// Pass the command to the top class to see what to do with it ( probably process the output created by Process )
 			receiveCommand( received_packet );
+			
+			// Send the continue message
+			network::ProcessMessage p_continue = processMessageWithCode( network::ProcessMessage::continue_run );
+			_write( p_continue );
 			
 		}
 		

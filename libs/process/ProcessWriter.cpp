@@ -36,6 +36,8 @@ namespace ss {
 		if( _hgOutput->last_node != KV_NODE_UNASIGNED )
 			availableSpace += node[ _hgOutput->last_node ].availableSpace( );
 		
+		//std::cout << "Emiting " << miniBufferSize << " bytes. Available: " << availableSpace << "\n";
+		
 		// Check if it will fit
 		if( miniBufferSize >= availableSpace )
 		{

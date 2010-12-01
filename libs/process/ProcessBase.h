@@ -4,6 +4,7 @@
 #include "ProcessCommunication.h"		// ss::ProcessCommunication
 #include "samson.pb.h"					// ss::network:..
 #include "logMsg.h"						// Log
+#include <iostream>						// std::cout
 
 namespace ss {
 	

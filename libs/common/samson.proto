@@ -340,9 +340,10 @@ message ProcessMessage
         {
 		run = 1;
                 process_output = 2;
-                finished = 3;
-		error = 4;
-		crash = 4;
+		continue_run = 3;
+                finished = 4;
+		error = 5;
+		crash = 6;
  	};
 
 	required Code code=1;			// Main type of packet		

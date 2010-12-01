@@ -145,6 +145,8 @@ namespace ss {
 			buffer = item->data;
 			size = item->size;
 			
+			//std::cout << "Process Writer with " << size << " bytes\n";
+			
 			assert( buffer );
 			assert( size > 0);
 			
@@ -160,11 +162,14 @@ namespace ss {
 
 			// Outputs structures placed at the begining of the buffer
 			channel = (OutputChannel*) buffer;
+
+			assert( size > sizeof(OutputChannel)* num_outputs* num_servers );
 			
 			// Buffer starts next
 			node = (NodeBuffer*) ( buffer + sizeof(OutputChannel) * num_outputs * num_servers );
 			num_nodes = ( size - (sizeof(OutputChannel)* num_outputs* num_servers )) / sizeof( NodeBuffer );
 
+			
 			//std::cout << "Size of header: " << au::Format::string( sizeof(OutputChannel) * num_outputs * num_servers ) << std::endl;
 			//std::cout << "Number of nodes: " << num_nodes  << "\n";
 

@@ -247,7 +247,8 @@ int iomMsgSend
 		delete packetP;
 	}
 
-	to->msgsOut += 1;
+	to->msgsOut  += 1;
+	to->bytesOut += sizeof(header) + header.dataLen + header.gbufLen + header.kvDataLen;
 
 	return 0;
 }	

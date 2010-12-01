@@ -133,7 +133,7 @@ namespace ss
 
 		if( mainCommand == "status" )
 		{
-			// Sent a status request to all the elements
+			// Send a status request to all elements
 			{
 				Packet* p = new Packet();
 				p->message.mutable_status_request()->set_command( command );
@@ -142,14 +142,14 @@ namespace ss
 
 			/*
 
-			 // Status requests go thougth controller
+			 // Status requests go through controller
 			 
 			for (int i = 0; i < dalilah->network->getNumWorkers(); i++)
 			{
 				Packet* p = new Packet();
 				int     workerId;
 
-				p->message.mutable_status_request()->set_command(command);
+				p->message.mutable_status_request()->set_delilah_id(19);
 
 				workerId = dalilah->network->workerGetIdentifier(i);
 				LM_M(("Sending Status to worker %d (endpoint id: %d)", i, workerId));

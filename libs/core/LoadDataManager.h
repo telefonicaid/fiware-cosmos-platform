@@ -2,11 +2,14 @@
 #define _H_LOAD_DATA_MANAGER
 
 #include <string>
+
+#include "samson.pb.h"					// ss::network:...
 #include "au_map.h"						// au::map
 #include "Lock.h"						// au::Lock
 #include "DiskManagerDelegate.h"		// ss::DiskManagerDelegate
 #include "ObjectWithStatus.h"			// ss::getStatusFromArray(.)
-#include "samson.pb.h"					// ss::network:...
+
+
 
 namespace ss {
 

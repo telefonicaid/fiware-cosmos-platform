@@ -83,7 +83,7 @@ message Data
 
 message StatusRequest
 {
-	required string command = 1;	// Some string to clarify the status request
+	optional string command = 1;	// Some string to clarify the status request
 	optional int32 senderId	= 2;	// Identifier of the sender ( when controller notify workers )
 }
 
@@ -324,10 +324,7 @@ message Message
 	optional StatusResponse status_response = 116;				      // response of a status request
 
 	
-	required uint64  delilah_id = 300;				// Used in commands , upload and download process with delilah
-
-
-	
+	optional uint64  delilah_id = 300;				// Used in commands , upload and download process with delilah
 }
 
 

@@ -95,10 +95,14 @@ public:
 	State                        state;
 	int                          workers;
 	Type                         type;
+
+	// Statistics
 	int                          msgsIn;
 	int                          msgsOut;
 	int                          msgsInErrors;
 	int                          msgsOutErrors;
+	long long                    bytesIn;
+	long long                    bytesOut;
 
 	int                          workerId;         // Worker
 	Message::WorkerStatusData*   status;           // Worker

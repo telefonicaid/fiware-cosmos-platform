@@ -166,8 +166,6 @@ int iomMsgRead
 	*msgCodeP = headerP->code;
 	*msgTypeP = headerP->type;
 
-	ep->msgsIn += 1;
-
 	if (headerP->dataLen != 0)
 	{
 		if (headerP->dataLen > 1000)
@@ -252,6 +250,9 @@ int iomMsgRead
 
 		packetP->buffer->setSize(tot);
 	}
+
+	ep->msgsIn  += 1;
+	ep->bytesIn += sizeof(ss::Message::Header) + headerP->dataLen + headerP->gbufLen + headerP->kvDataLen;
 
 	return 0;
 }	

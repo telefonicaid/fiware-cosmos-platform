@@ -369,9 +369,9 @@ std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 */
 static void* senderThread(void* vP)
 {
-	Endpoint*  ep     = (Endpoint*) vP;
+	Endpoint* ep    = (Endpoint*) vP;
 	
-	LM_T(LMT_FORWARD, ("Sender Thread for '%s' running - wFd: %d (reading from fd %d)", ep->name.c_str(), ep->wFd, ep->senderReadFd));
+	LM_F(("Sender Thread for '%s' running - wFd: %d (reading from fd %d) (process id: %d)", ep->name.c_str(), ep->wFd, ep->senderReadFd, (int) getpid()));
 
 	while (1)
 	{
@@ -402,7 +402,7 @@ static void* senderThread(void* vP)
 		LM_T(LMT_FORWARD, ("google protocol buffer data len: %d", job.packetP->message.ByteSize()));
 
 		s = iomMsgSend(ep, NULL, job.msgCode, job.msgType, job.dataP, job.dataLen, job.packetP);
-
+		
 		LM_T(LMT_FORWARD, ("iomMsgSend returned %d", s));
 		if (s != 0)
 		{
@@ -412,6 +412,7 @@ static void* senderThread(void* vP)
 		}
 		else
 		{
+			ep->msgsOut += 1;
 			LM_T(LMT_FORWARD, ("iomMsgSend OK"));
 			if (ep->packetSender)
 				ep->packetSender->notificationSent(0, true);
@@ -419,12 +420,7 @@ static void* senderThread(void* vP)
 
 		LM_T(LMT_FORWARD, ("iomMsgSend ok"));
 		if (job.dataP)
-		{
-			LM_T(LMT_FORWARD, ("before freeing job data pointer (%p - %p)", job.dataP, job.packetP));
 			free(job.dataP);
-			LM_T(LMT_FORWARD, ("after freeing job data pointer"));
-		}
-
 	}
 
 	// Cannot really get here ... !!!
@@ -439,10 +435,6 @@ static void* senderThread(void* vP)
 }
 
 
-void breikpojnt()
-{
-	assert( false );
-}
 
 /* ****************************************************************************
 *
@@ -472,6 +464,7 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 	{
 		receiver->receive(endpointId, code, packetP);
 		delete packetP;
+		LM_M(("looping back the '%s' message to myself", messageCode(code)));
 		return 0;
 	}
 
@@ -498,13 +491,12 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 
 	ep->packetSender  = packetSender;
 
-	LM_T(LMT_DELILAH, ("sending a '%s' message to endpoint %d", messageCode(code), endpointId));
 	if (ep->useSenderThread == true)
 	{
+		LM_T(LMT_FORWARD, ("using sender thread to send the '%s' message", messageCode(code)));
 		if (ep->sender == false)
 		{
 			LM_T(LMT_FORWARD, ("Creating a new sender thread for endpoint '%s'", ep->name.c_str()));
-
 			int tunnelPipe[2];
 
 			if (pipe(tunnelPipe) == -1)
@@ -516,6 +508,7 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 
 			LM_T(LMT_FORWARD, ("msgs for endpoint '%s' to fd %d instead of fd %d", ep->name.c_str(), ep->senderWriteFd, ep->wFd));
 			LM_T(LMT_FORWARD, ("'%s' sender thread to read from fd %d and send to fd %d", ep->name.c_str(), ep->senderReadFd, ep->wFd));
+
 			//
 			// Create sender thread
 			//
@@ -537,7 +530,6 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 					LM_P(("write(SendJob)"));
 				else if (nb != sizeof(SendJob))
 					LM_E(("error writing SendJob. Written %d bytes and not %d", nb, sizeof(SendJob)));
-				
 				free(jobP);
 			}
 
@@ -645,6 +637,8 @@ Endpoint* Network::endpointAdd
 			endpoint[2]->msgsOut        = inheritedFrom->msgsOut;
 			endpoint[2]->msgsInErrors   = inheritedFrom->msgsInErrors;
 			endpoint[2]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
+			endpoint[2]->bytesIn        = inheritedFrom->bytesIn;
+			endpoint[2]->bytesOut       = inheritedFrom->bytesOut;
 		}
 
 		endpoint[2]->rFd      = rFd;
@@ -659,7 +653,7 @@ Endpoint* Network::endpointAdd
 		if (strcmp(ip.c_str(), "II.PP") != 0)
 			endpoint[2]->ip       = ip;
 
-		if (me->type == Endpoint::Delilah)
+		if ((me->type == Endpoint::Delilah) || (me->type == Endpoint::Worker))
 		{
 			endpoint[2]->useSenderThread = true;
 			LM_T(LMT_FORWARD, ("Delilah controller endpoint uses SenderThread"));
@@ -682,6 +676,8 @@ Endpoint* Network::endpointAdd
 					endpoint[ix]->msgsOut        = inheritedFrom->msgsOut;
 					endpoint[ix]->msgsInErrors   = inheritedFrom->msgsInErrors;
 					endpoint[ix]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
+					endpoint[ix]->bytesIn        = inheritedFrom->bytesIn;
+					endpoint[ix]->bytesOut       = inheritedFrom->bytesOut;
 				}
 
 				endpoint[ix]->name   = std::string(name);
@@ -717,6 +713,8 @@ Endpoint* Network::endpointAdd
 					endpoint[ix]->msgsOut        = inheritedFrom->msgsOut;
 					endpoint[ix]->msgsInErrors   = inheritedFrom->msgsInErrors;
 					endpoint[ix]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
+					endpoint[ix]->bytesIn        = inheritedFrom->bytesIn;
+					endpoint[ix]->bytesOut       = inheritedFrom->bytesOut;
 					endpoint[ix]->ip             = inheritedFrom->ip;
 				}
 
@@ -783,7 +781,7 @@ Endpoint* Network::endpointAdd
 				return NULL;
 			}
 
-			if (me->type == Endpoint::Delilah)
+			if ((me->type == Endpoint::Delilah) || (me->type == Endpoint::Worker))
 			{
 				endpoint[ix]->useSenderThread = true;
 				LM_T(LMT_FORWARD, ("Delilah worker endpoint uses SenderThread"));
@@ -797,6 +795,8 @@ Endpoint* Network::endpointAdd
 					endpoint[ix]->msgsOut        = inheritedFrom->msgsOut;
 					endpoint[ix]->msgsInErrors   = inheritedFrom->msgsInErrors;
 					endpoint[ix]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
+					endpoint[ix]->bytesIn        = inheritedFrom->bytesIn;
+					endpoint[ix]->bytesOut       = inheritedFrom->bytesOut;
 					endpoint[ix]->ip             = inheritedFrom->ip;
 				}
 
@@ -965,7 +965,7 @@ static void* msgTreatThreadFunction(void* vP)
 
 	ep->state = paramP->state;
 
-	LM_F(("back after msgTreat - set state for '%s' to %d", ep->name.c_str(), ep->state));
+	LM_F(("back after msgTreat - setting back state for '%s' to %d (was in 'Threaded' state while msgTreat ran)", ep->name.c_str(), ep->state));
 
 	free(vP);
 	return NULL;
@@ -1269,7 +1269,6 @@ void Network::msgTreat(void* vP)
 	Message::MessageCode  msgCode;
 	Message::MessageType  msgType;
 	int                   s;
-
 
 	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 	s = iomMsgRead(ep, headerP, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
@@ -1630,41 +1629,33 @@ void Network::run()
 			LM_F(("------------ %d secs timeout, %d endpoints -------------------------------------", tmoSecs, Endpoints));
 			for (ix = 0; ix < Endpoints; ix++)
 			{
+				char sign = '-';
+
 				if (endpoint[ix] == NULL)
 					continue;
 
 				if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) && (endpoint[ix]->rFd >= 0))
 				{
+
 					FD_SET(endpoint[ix]->rFd, &rFds);
 					max = MAX(max, endpoint[ix]->rFd);
-
-					LM_F(("+ %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d, out: %03d)",
-						  ix,
-						  endpoint[ix]->typeName(),
-						  endpoint[ix]->name.c_str(),
-						  endpoint[ix]->alias.c_str(),
-						  endpoint[ix]->ip.c_str(),
-						  endpoint[ix]->port,
-						  endpoint[ix]->stateName(),
-						  endpoint[ix]->rFd,
-						  endpoint[ix]->msgsIn,
-						  endpoint[ix]->msgsOut));
+					sign = '+';
 				}
-				else
-				{
-					LM_F(("- %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d, out: %03d)",
-						  ix,
-						  endpoint[ix]->typeName(),
-						  endpoint[ix]->name.c_str(),
-						  endpoint[ix]->alias.c_str(),
-						  endpoint[ix]->ip.c_str(),
-						  endpoint[ix]->port,
-						  endpoint[ix]->stateName(),
-						  endpoint[ix]->rFd,
-						  endpoint[ix]->msgsIn,
-						  endpoint[ix]->msgsOut));
-						  
-				}
+				
+				LM_F(("%c %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d)",
+					  sign,
+					  ix,
+					  endpoint[ix]->typeName(),
+					  endpoint[ix]->name.c_str(),
+					  endpoint[ix]->alias.c_str(),
+					  endpoint[ix]->ip.c_str(),
+					  endpoint[ix]->port,
+					  endpoint[ix]->stateName(),
+					  endpoint[ix]->rFd,
+					  endpoint[ix]->msgsIn,
+					  endpoint[ix]->bytesIn,
+					  endpoint[ix]->msgsOut,
+					  endpoint[ix]->bytesOut));
 			}
 
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);

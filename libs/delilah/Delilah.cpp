@@ -12,7 +12,10 @@
 #include "Packet.h"				// ss::Packet
 #include "DelilahConsole.h"		// ss::DelilahConsole
 #include "DelilahQt.h"			// DelilahQt
-#include "DelilahLoadDataProcess.h"	// ss::DelilahLoadDataProcess
+#include "DelilahUploadDataProcess.h"	// ss::DelilahLoadDataProcess
+#include "DelilahDownloadDataProcess.h"	// ss::DelilahLoadDataProcess
+#include "EnvironmentOperations.h"
+
 
 namespace ss {
 
@@ -54,7 +57,7 @@ Delilah::Delilah
 	network = _network;		// Keep a pointer to our network interface element
 	network->setPacketReceiverInterface(this);
 		
-	loadDataCounter = 0;
+	id = 1;	// we start with process 1 because 0 is no process
 		
 	finish = false;				// Global flag to finish threads
 		
@@ -134,63 +137,32 @@ void Delilah::quit()
 */
 int Delilah::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 {
-	// LoadDataConfirmation message are intercepted here	
-		
-	if (msgCode == Message::UploadDataResponse )
+	
+	lock.lock();
+	
+	size_t sender_id = packet->message.delilah_id();
+	DelilahComponent *component = components.findInMap( sender_id );
+	
+	if ( component )
 	{
-		size_t		process_id		= packet->message.upload_data_response().upload_data().process_id();
-		size_t		file_id			= packet->message.upload_data_response().upload_data().file_id();
-		bool		error		= packet->message.upload_data_response().error();
-
-		network::File file = packet->message.upload_data_response().file();
-			
-		loadDataLock.lock();
-			
-		DelilahLoadDataProcess *process = loadProcess.findInMap( process_id );
-		assert( process );
-
-		// Notify about this confirmation
-		process->notifyDataLoad( file_id , file , error );
-			
-		if ( process->isUploadFinish() )
+		component->receive( fromId, msgCode, packet );
+		
+		if ( component->component_finished )
 		{
-			// Send the final packet to the controller notifying about the loading process
-				
-			Packet *p = new Packet();
-			network::UploadDataConfirmation *confirmation	= p->message.mutable_upload_data_confirmation();
-			process->fillLoadDataConfirmationMessage( confirmation );
-			network->send(this, network->controllerGetIdentifier(), Message::UploadDataConfirmation, p);
-				
-			// Confirm to the client that everything is ok
-			//client->loadDataConfirmation( process );
+			component = components.extractFromMap(sender_id);
+			delete component;
 		}
-			
-		loadDataLock.unlock();
-			
-		return 0;
-	}
 		
-	if (msgCode == Message::UploadDataConfirmationResponse )
+	}
+	
+	lock.unlock();
+	
+	if( !component )
 	{
-		size_t process_id			= packet->message.upload_data_confirmation_response().process_id();
-
-		DelilahLoadDataProcess *process = loadProcess.extractFromMap( process_id );
-		assert( process );
-
-		// Notify the information contained in the confirmation response message
-		process->notifyLoadDataConfirmationResponse( packet->message.upload_data_confirmation_response() );
-			
-		// Notify to the client to show on scren the result of this load process
-		client->loadDataConfirmation( process );
-			
-		delete process;
-			
-		return 0;
+		// Forward the reception of this message to the client
+		assert( client );
+		client->receive( fromId , msgCode , packet );
 	}
-		
-	// Forward the reception of this message to the client
-	assert( client );
-	client->receive( fromId , msgCode , packet );
 
 	return 0;
 }
@@ -207,28 +179,68 @@ void Delilah::notificationSent(size_t id, bool success)
 }
 
 
-
 #pragma mark Load data process
+
+	/* ****************************************************************************
+	*
+	* loadData - 
+	*/
+	size_t Delilah::addUploadData( std::vector<std::string> fileNames , std::string queue)
+	{
+		DelilahUploadDataProcess * d = new DelilahUploadDataProcess( fileNames , queue );
+		size_t tmp_id = addComponent(d);	
+		d->run();
+			
+		return tmp_id;
+	}
 	
-
-
-/* ****************************************************************************
-*
-* loadData - 
-*/
-size_t Delilah::loadData( std::vector<std::string> fileNames , std::string queue)
-{
-	size_t id = loadDataCounter++;
+	/* ****************************************************************************
+	 *
+	 * download data - 
+	 */
+	
+	
+	size_t Delilah::addDownloadProcess( std::string queue , std::string fileName )
+	{
+		DelilahDownloadDataProcess *d = new DelilahDownloadDataProcess( queue , fileName );
+		size_t tmp_id = addComponent(d);	
+		d->run();
 		
-	DelilahLoadDataProcess * d = new DelilahLoadDataProcess(this, network->getNumWorkers() ,id,  fileNames , queue );
+		return tmp_id;
+	}
+	
+	
+	size_t Delilah::addComponent( DelilahComponent* component )
+	{
+		lock.lock();
+		size_t tmp_id = id++;
+		component->setId(this, tmp_id);
+		components.insertInMap( tmp_id , component );
+		lock.unlock();
+		
+		return tmp_id;
+	}
+	size_t Delilah::sendCommand(  std::string command )
+	{
+		// We do now create a component, but we will+
 
-	loadDataLock.lock();
-	loadProcess.insertInMap( id , d );
-	loadDataLock.unlock();
+		lock.lock();
 		
-	d->run();
+		size_t tmp_id = id++;
+
+		Packet*           p = new Packet();
+		network::Command* c = p->message.mutable_command();
+		c->set_command( command );
+		p->message.set_delilah_id( tmp_id );
+		copyEnviroment( &environment , c->mutable_environment() );
+		network->send(this, network->controllerGetIdentifier(), Message::Command, p);
 		
-	return id;
-}
+		lock.unlock();
+		
+		return tmp_id;
+	}	
+	
+	
+	
 }
 

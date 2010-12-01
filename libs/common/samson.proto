@@ -30,9 +30,22 @@ message File
 	required KVInfo info=3;		// Information about this file
 }
 
+message Queue
+{
+	required string name = 1;
+	required KVFormat format = 2;
+	optional KVInfo info = 3;
+}
+
 message FileList
 {
 	repeated File file=1;		// List of files
+}
+
+message FullQueue
+{
+	required Queue queue	=1;		// Queue basic info
+	repeated File file	=2;		// List of files	
 }
 
 message QueueFile
@@ -47,12 +60,6 @@ message KVFormat
 	required string ValueFormat=2;	// Format for the value
 }
 
-message Queue
-{
-	required string name = 1;
-	required KVFormat format = 2;
-	optional KVInfo info = 3;
-}
 
 message Operation
 {
@@ -130,8 +137,6 @@ message WorkerTaskConfirmation
 message Command
 {
 	required string  command   = 1;          // String to send a txt command
-	required uint64  sender_id = 2;          // Id of the packet sender ( delilah )
-
 	optional Environment environment    = 3;		 // Initial environment variables for the new job
 
 }
@@ -159,6 +164,8 @@ message CommandResponse
 
 message Help
 {
+	required uint64 sender_id = 8;	// Unique delilah id of any operation
+
 	required bool queues = 1;
 	required bool datas = 3;
 	required bool operations = 4;
@@ -175,10 +182,11 @@ message Help
 
 message HelpResponse
 {
-	required Help help=1;	// Original message to know what request is refering to
+	// Original message to know what request is refering to
+   	required Help help=1;	
 
 	// Information
-	repeated Queue queue = 2;
+	repeated FullQueue queue = 2;
 	repeated Data data = 4;
 	repeated Operation operation = 5;
 }
@@ -212,7 +220,6 @@ message WorkerDataExchangeClose
 
 message UploadData
 {
-	required uint64 process_id=1;	// Id of the load process
 	required uint64 file_id=2;	// Id of the file ( multiple files for the same process)		
 }
 
@@ -228,14 +235,12 @@ message UploadDataResponse
 
 message UploadDataConfirmation
 {
-	required uint64 process_id=1;		// Id of the "load data" operation	
 	required string queue=2;		// Name of the queue to upload
 	repeated File   file=3;			// List of uploaded files
 }
 
 message UploadDataConfirmationResponse
 {
-	required uint64 process_id=1;			// Id of the "load data" operation	
 	required bool error=2;				// Flag to indicarte if there was an error				   	
 	required string error_message=3;		// String message to show to the user
 }
@@ -249,7 +254,6 @@ message UploadDataConfirmationResponse
 
 message DownloadData
 {
-	required uint64 process_id	=1;	// Id of the operation 
 	required int32 file_id		=2;	// File id we are requesting
 	required File file 		=3;	// Files that we would like to download
 }
@@ -318,6 +322,11 @@ message Message
 
 	optional StatusRequest status_request = 115; 				      // request for status ( debuggin )
 	optional StatusResponse status_response = 116;				      // response of a status request
+
+	
+	required uint64  delilah_id = 300;				// Used in commands , upload and download process with delilah
+
+
 	
 }
 

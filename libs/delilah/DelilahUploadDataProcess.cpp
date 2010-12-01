@@ -1,6 +1,6 @@
 
 
-#include "DelilahLoadDataProcess.h"			// Own interface
+#include "DelilahUpLoadDataProcess.h"			// Own interface
 #include "MemoryManager.h"					// ss::MemoryManager
 #include "Buffer.h"							// ss::Buffer
 #include "Packet.h"							// ss::Packet
@@ -52,13 +52,13 @@ namespace ss
 	
 	void* runThreadDelilahLoadDataProcess(void *p)
 	{
-		DelilahLoadDataProcess *d = ((DelilahLoadDataProcess*)p);
+		DelilahUploadDataProcess *d = ((DelilahUploadDataProcess*)p);
 		d->_run();
 		return NULL;
 	}
 	
 	
-	void DelilahLoadDataProcess::_run()
+	void DelilahUploadDataProcess::_run()
 	{
 		
 		while( !fileSet.isFinish() )
@@ -85,7 +85,7 @@ namespace ss
 			// Set message fields
 			network::UploadData *loadData = p->message.mutable_upload_data();	
 			loadData->set_file_id( file_id );
-			loadData->set_process_id( id );
+			p->message.set_delilah_id( id );		// Global id of delilah jobs
 			
 			// Send the packet
 			delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), Message::UploadData, p);
@@ -109,41 +109,60 @@ namespace ss
 			
 	}
 	
-	bool DelilahLoadDataProcess::notifyDataLoad( size_t file_id , network::File file , bool error )
-	{
-		
-		lock.lock();
-		
-		created_files.push_back(file);
-		
-		pending_ids.erase( file_id );
-		
-		if( finish )
-			if ( pending_ids.size() == 0)
-				completed =true;
-		
-		lock.unlock();
-		
-		return completed;
-	}
 	
-	void DelilahLoadDataProcess::fillLoadDataConfirmationMessage( network::UploadDataConfirmation *confirmation )
+	
+	
+	void DelilahUploadDataProcess::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
-		lock.lock();
 		
-		confirmation->set_process_id( id );
-		confirmation->set_queue( queue );
-
-		for (size_t i = 0 ; i < created_files.size() ; i++)
+		if (msgCode == Message::UploadDataResponse )
 		{
-			network::File *file = confirmation->add_file();
-			file->CopyFrom(created_files[i]);
+			size_t		file_id			= packet->message.upload_data_response().upload_data().file_id();
+			
+			error			= packet->message.upload_data_response().error();
+			error_message	= packet->message.upload_data_response().error_message();
+			
+			network::File file = packet->message.upload_data_response().file();
+			
+			created_files.push_back(file);
+			pending_ids.erase( file_id );
+			if( finish )
+				if ( pending_ids.size() == 0)
+					completed =true;
+			
+			if ( isUploadFinish() )
+			{
+				// Send the final packet to the controller notifying about the loading process
+				Packet *p = new Packet();
+				network::UploadDataConfirmation *confirmation	= p->message.mutable_upload_data_confirmation();
+				confirmation->set_queue( queue );
+				p->message.set_delilah_id( id );
+				
+				for (size_t i = 0 ; i < created_files.size() ; i++)
+				{
+					network::File *file = confirmation->add_file();
+					file->CopyFrom(created_files[i]);
+				}
+				
+				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::UploadDataConfirmation, p);
+			}
 		}
 		
-		lock.unlock();
+		if (msgCode == Message::UploadDataConfirmationResponse )
+		{
+			network::UploadDataConfirmationResponse confirmation = packet->message.upload_data_confirmation_response();
+			error			= confirmation.error();
+			error_message	= confirmation.error_message();
+			
+			// Notify to the client to show on scren the result of this load process
+			delilah->client->loadDataConfirmation( this );
+			
+			// mark the component as finished to be removed
+			component_finished = true;
+			
+		}
+		
 	}
-	
-	
 
 	
 }

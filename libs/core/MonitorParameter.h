@@ -46,10 +46,12 @@ namespace ss {
 		{
 			std::stringstream o;
 			o << "[";
-			for (int i = 0 ; i < n ; i++)
+			for (int i = 0 ; i < n ; )
 			{
 				o << "[" << elements[(pos+i)%n]<<"]";
-				o << ",";
+				i++;
+				if( i != n)
+					o << ",";
 			}
 			o << "]";
 
@@ -61,15 +63,15 @@ namespace ss {
 
   class MonitorParameter 
   {
-		double currentValue;
+		size_t currentValue;
 
-		RRT<double,60> elements;	// A sample every second
-		RRT<double,60> elements2;	// A sample every minute
-		RRT<double,24> elements3;	// A sample every hour
+		RRT<size_t,60> elements;	// A sample every second
+		RRT<size_t,60> elements2;	// A sample every minute
+		RRT<size_t,24> elements3;	// A sample every hour
     
   public:
     
-    void push( double value )// Push a new sample
+    void push( size_t value )// Push a new sample
     {
 		currentValue = value;
 		
@@ -78,7 +80,7 @@ namespace ss {
 				elements3.push( elements2.average() ); 
     }
 
-	  double current()
+	  size_t current()
 	  {
 		  return currentValue;
 	  }
@@ -108,11 +110,19 @@ namespace ss {
 	
 	class MonitorBlock
 	{
+		
+		std::map<std::string , std::string> main_parameters;
+		
 		au::map< std::string , MonitorParameter> parameters;
 		
 	public:
 
-		void push( std::string key , double value )
+		void addMainParameter( std::string name , std::string value)
+		{
+			main_parameters.insert( std::pair<std::string , std::string>( name , value) );
+		}
+		
+		void push( std::string key , size_t value )
 		{
 			MonitorParameter *p = parameters.findInMap( key );
 			if( !p )
@@ -129,14 +139,30 @@ namespace ss {
 			std::ostringstream o;
 			
 			// ------------------------------------------------------------------------------------------------
-			o << "{";
 			{
+			o << "{";
+				
+				std::map< std::string , std::string>::iterator iter;
+				for ( iter = main_parameters.begin() ; iter != main_parameters.end() ;iter++ )
+				{
+					std::string name = iter->first;
+					std::string value = iter->second;
+					o << name<< ":\"" << value << "\"";
+					o << ",";
+				}
+				
 				o << "current:";
 				o << "{";
 				std::map< std::string , MonitorParameter*>::iterator iterator;
-				for (iterator = parameters.begin() ; iterator != parameters.end() ; iterator++)
-					o << iterator->first << ":" << iterator->second->current() << ",";
-				o << "}";
+				for (iterator = parameters.begin() ; iterator != parameters.end() ; )
+				{
+					o << iterator->first << ":" << iterator->second->current();
+					
+					iterator++;
+					if( iterator != parameters.end() )
+						o << ",";
+				}
+				o << "},";
 			}
 			{
 				o << "history:";
@@ -146,11 +172,18 @@ namespace ss {
 					
 					o << "{";
 					std::map< std::string , MonitorParameter*>::iterator iterator;
-					for (iterator = parameters.begin() ; iterator != parameters.end() ; iterator++)
-						o << iterator->first << ":" << iterator->second->historyString(i) << ",";
+					for (iterator = parameters.begin() ; iterator != parameters.end() ; )
+					{
+						o << iterator->first << ":" << iterator->second->historyString(i);
+						
+						iterator++;
+						if( iterator != parameters.end())
+							o << ",";
+					}
 					o << "}";
 					
-					o << ",";
+					if( i!= 2)
+						o << ",";
 				}
 				o << "]";
 			}

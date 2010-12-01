@@ -9,7 +9,7 @@
 #include "DelilahConsole.h"				// Own interface
 #include "Packet.h"						// ss:Packet
 #include "Format.h"						// au::Format
-#include "DelilahLoadDataProcess.h"		// ss::DelilahLoadDataProcess
+#include "DelilahUploadDataProcess.h"		// ss::DelilahLoadDataProcess
 #include "MemoryManager.h"				// ss::MemoryManager
 #include <iostream>
 #include <iomanip>
@@ -72,6 +72,26 @@ namespace ss
 			return ;
 		}
 		
+		if ( mainCommand == "download")
+		{
+			if ( commandLine.get_num_arguments() < 3)
+			{
+				writeErrorOnConsole( "Error: Usage: download queue local_file_name\n");
+				return;
+			}
+			
+			std::string queue_name = commandLine.get_argument(1);
+			std::string fileName = commandLine.get_argument(2);
+
+			size_t id = dalilah->addDownloadProcess(queue_name, fileName);
+
+			std::ostringstream o;
+			o << "Download data process (id="<<id<<") started.\n";
+			writeWarningOnConsole(o.str());
+			return;
+		}
+		
+		
 		
 		if ( mainCommand == "internal_status" )
 		{
@@ -83,8 +103,8 @@ namespace ss
 			
 			output << "Load processes....\n";
 
-			std::map<size_t,DelilahLoadDataProcess*>::iterator iter;
-			for (iter = dalilah->loadProcess.begin() ; iter != dalilah->loadProcess.end() ; iter++)
+			std::map<size_t,DelilahComponent*>::iterator iter;
+			for (iter = dalilah->components.begin() ; iter != dalilah->components.end() ; iter++)
 				output << iter->second->getStatus();
 			
 			writeBlockOnConsole(output.str());
@@ -207,7 +227,6 @@ namespace ss
 			
 		}
 		
-		
 		if( mainCommand == "load" )
 		{
 			if( commandLine.get_num_arguments() < 3)
@@ -222,7 +241,7 @@ namespace ss
 			
 			std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
 			
-			size_t id = dalilah->loadData(fileNames, queue);
+			size_t id = dalilah->addUploadData(fileNames, queue);
 			
 			std::ostringstream o;
 			o << "Load data process (id="<<id<<") started with " << fileNames.size() << " files\n";
@@ -231,18 +250,10 @@ namespace ss
 		}
 		
 		// Normal command send to the controller
-		Packet*           p = new Packet();
-		network::Command* c = p->message.mutable_command();
-
-		c->set_command( command );
-		c->set_sender_id( id++ );
-		copyEnviroment( &dalilah->environment , c->mutable_environment() );
-		
-		dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Command, p);
-
+		size_t id = dalilah->sendCommand(command);
 		
 		std::ostringstream o;
-		o << "Sent command to controller (id="<<id-1<<") : " << command;
+		o << "Sent command to controller (id="<<id<<") : " << command;
 		writeWarningOnConsole(o.str());
 		
 	}
@@ -308,12 +319,14 @@ namespace ss
 					txt << "------------------------------------------------------------------------------------------------" << std::endl;
 					for (int i = 0 ; i < help_response.queue_size() ; i++)
 					{
-						network::Queue queue = help_response.queue(i);
+						network::Queue queue = help_response.queue(i).queue();
+
 						txt << std::setw(30) << queue.name();
 						txt << " ";
 						txt << au::Format::string( queue.info().kvs() );
 						txt << " kvs in ";
 						txt << au::Format::string( queue.info().size() ) << " bytes";
+						txt << " #File: " << help_response.queue(i).file_size();
 						txt << " (" << queue.format().keyformat() << " " << queue.format().valueformat() << ") ";
 						txt << std::endl;
 					}
@@ -329,7 +342,7 @@ namespace ss
 					for (int i = 0 ; i < help_response.data_size() ; i++)
 					{
 						network::Data data = help_response.data(i);
-						txt << std::setw(20) << data.name() << " - " << data.help() << std::endl;
+						txt << std::setw(20) << data.name() << " " << data.help() << std::endl;
 					}
 					txt << "------------------------------------------------------------------------------------------------" << std::endl;
 				}
@@ -359,6 +372,7 @@ namespace ss
 				break;
 			default:
 				txt << "Unknwn packet received\n";
+				assert(false);
 				break;
 		}
 		
@@ -373,7 +387,7 @@ namespace ss
 		return 0;
 	}	
 	
-	void DelilahConsole::loadDataConfirmation( DelilahLoadDataProcess *process)
+	void DelilahConsole::loadDataConfirmation( DelilahUploadDataProcess *process)
 	{
 		std::ostringstream o;
 		o << "Alert: Load data process (id=" << process->getId() << ") finished\n";

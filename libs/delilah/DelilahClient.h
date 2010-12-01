@@ -7,7 +7,7 @@ namespace ss
 {
 	
 	class Packet;
-	class DelilahLoadDataProcess;
+	class DelilahUploadDataProcess;
 	
 	class DelilahClient
 	{
@@ -23,8 +23,7 @@ namespace ss
 		virtual void quit()=0;
 
 		// Notifications for a loadData process
-		virtual void loadDataConfirmation( DelilahLoadDataProcess *process)=0;
-		
+		virtual void loadDataConfirmation( DelilahUploadDataProcess *process )=0;
 		
 		// Write something on screen
 		virtual void showMessage(std::string message)

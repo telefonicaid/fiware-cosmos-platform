@@ -29,6 +29,7 @@ namespace ss {
 		friend class Monitor;
 		MonitorBlock monitor;			// Set of parameters to monitor for this queue
 
+		friend class ControllerDataManager;
 		std::list< QueueFile* > files;	// List of files
 		
 
@@ -38,6 +39,11 @@ namespace ss {
 		{
 			_name = name;
 			_format = format;
+			
+			monitor.addMainParameter( "name" , _name );
+			monitor.addMainParameter( "format" , _format.str() );
+			
+			
 		}
 		
 		std::string getName(){ return _name; }
@@ -83,6 +89,14 @@ namespace ss {
 			return o.str();		
 		}
 		
+		
+		void takeMonitorSamples()
+		{
+			monitor.push( "size" , _info.size );
+			monitor.push( "num_kvs" , _info.kvs );
+			monitor.push( "random" , random() );
+			monitor.push( "random2" , random() );
+		}
 		
 	};
 }

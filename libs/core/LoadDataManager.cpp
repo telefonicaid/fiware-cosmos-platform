@@ -21,10 +21,11 @@ namespace ss
 
 #pragma mark UploadItem
 	
-	UploadItem::UploadItem( int _fromIdentifier , LoadDataManager *dataManager, const network::UploadData &_uploadData , Buffer * _buffer ) 
+	UploadItem::UploadItem( int _fromIdentifier , LoadDataManager *dataManager, const network::UploadData &_uploadData ,size_t _sender_id, Buffer * _buffer ) 
 		: DataManagerItem( _fromIdentifier , dataManager)
 	{
 		uploadData = _uploadData;	// Copy the message
+		sender_id = _sender_id;
 
 		buffer = _buffer;			// Point to the buffer
 		
@@ -46,7 +47,8 @@ namespace ss
 		Packet *p = new Packet();
 		network::UploadDataResponse *response = p->message.mutable_upload_data_response();
 		response->mutable_upload_data()->CopyFrom( uploadData );
-
+		p->message.set_delilah_id( sender_id );
+		
 		response->set_error( error );
 		response->set_error_message( error_message );
 		
@@ -66,10 +68,11 @@ namespace ss
 	
 #pragma mark DownloadItem
 	
-	DownloadItem::DownloadItem( int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadData &_downloadData ) 
+	DownloadItem::DownloadItem( int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadData &_downloadData ,size_t _sender_id) 
 		: DataManagerItem( _fromIdentifier , dataManager )
 	{
 		downloadData = _downloadData;	// Copy the message
+		sender_id = _sender_id;
 		
 	}
 
@@ -77,7 +80,9 @@ namespace ss
 	{
 		std::string fileName = downloadData.file().name();
 		size_t size = FileManagerReadItem::sizeOfFile( fileName );
+
 		buffer = MemoryManager::shared()->newBuffer( "Buffer for downloading data" , size );
+		buffer->setSize( size );
 		
 		FileManagerReadItem *item = new FileManagerReadItem( fileName , 0 , size , buffer->getData(), dataManager );
 		return FileManager::shared()->addItemToRead( item );
@@ -85,7 +90,6 @@ namespace ss
 	
 	DownloadItem::~DownloadItem()
 	{
-		MemoryManager::shared()->destroyBuffer( buffer );
 	}
 	
 	void DownloadItem::sendResponse( bool error , std::string error_message )
@@ -94,6 +98,8 @@ namespace ss
 		Packet *p = new Packet();
 		network::DownloadDataResponse *response = p->message.mutable_download_data_response();
 		response->mutable_download_data()->CopyFrom( downloadData );
+		p->message.set_delilah_id( sender_id );
+		p->buffer = buffer;	// Put the buffer here
 		
 		response->set_error( error );
 		response->set_error_message( error_message );
@@ -105,11 +111,11 @@ namespace ss
 	
 #pragma mark LoadDataManager
 	
-	void LoadDataManager::addUploadItem( int fromIdentifier, const network::UploadData &uploadData , Buffer * buffer )
+	void LoadDataManager::addUploadItem( int fromIdentifier, const network::UploadData &uploadData ,size_t sender_id, Buffer * buffer )
 	{
 		lock.lock();
 		
-		UploadItem *item = new UploadItem( fromIdentifier , this , uploadData , buffer );
+		UploadItem *item = new UploadItem( fromIdentifier , this , uploadData , sender_id , buffer );
 		
 		size_t fm_id = item->submitToFileManager();
 		
@@ -118,11 +124,11 @@ namespace ss
 		lock.unlock();
 	}
 	
-	void LoadDataManager::addDownloadItem( int fromIdentifier, const network::DownloadData &downloadData )
+	void LoadDataManager::addDownloadItem( int fromIdentifier, const network::DownloadData &downloadData , size_t sender_id )
 	{
 		lock.lock();
 		
-		DownloadItem *item = new DownloadItem( fromIdentifier , this , downloadData );
+		DownloadItem *item = new DownloadItem( fromIdentifier , this , downloadData, sender_id );
 
 		size_t fm_id = item->submitToFileManager();
 		

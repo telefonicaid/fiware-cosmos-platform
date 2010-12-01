@@ -1,6 +1,7 @@
 
 #ifndef _H_QUEUE_FILE
 #define _H_QUEUE_FILE
+#import "samson.pb.h"
 
 namespace ss {
 
@@ -19,6 +20,16 @@ namespace ss {
 			fileName = _fileName;
 			worker = _worker;
 			info = _info;
+		}
+	
+		void fill( network::File *file )
+		{
+			file->set_name( fileName );
+			file->set_worker( worker );
+			
+			network::KVInfo *_info = file->mutable_info();
+			_info->set_kvs( info.kvs );
+			_info->set_size( info.size );
 		}
 		
 	};

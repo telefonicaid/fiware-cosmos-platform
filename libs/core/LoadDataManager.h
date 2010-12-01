@@ -39,11 +39,12 @@ namespace ss {
 	public:
 		
 		network::UploadData uploadData;		// Information about the request
+		size_t sender_id;					// id of the sender
 		
 		std::string fileName;				// Filename fo the new upload
 		size_t size;						// Size of the uploaded file
 		
-		UploadItem( int _fromIdentifier , LoadDataManager *dataManager, const network::UploadData &_uploadData ,  Buffer * buffer );
+		UploadItem( int _fromIdentifier , LoadDataManager *dataManager, const network::UploadData &_uploadData , size_t sender_id,  Buffer * buffer );
 	
 		size_t submitToFileManager();
 		void sendResponse( bool error , std::string error_message );
@@ -69,9 +70,10 @@ namespace ss {
 	public:
 		
 		network::DownloadData downloadData;		// Information about the request
+		size_t sender_id;					// id of the sender
 		
 		
-		DownloadItem( int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadData &_downloadData);		
+		DownloadItem( int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadData &_downloadData, size_t sender_id);		
 		~DownloadItem();
 
 		size_t submitToFileManager();
@@ -102,10 +104,10 @@ namespace ss {
 		}
 		
 		// Add item to upload data
-		void addUploadItem( int fromIdentifier, const network::UploadData &uploadData , Buffer * buffer  );
+		void addUploadItem( int fromIdentifier, const network::UploadData &uploadData ,size_t sender_id, Buffer * buffer  );
 		
 		// add item to download data
-		void addDownloadItem( int fromIdentifier, const network::DownloadData &downloadData );
+		void addDownloadItem( int fromIdentifier, const network::DownloadData &downloadData, size_t sender_id );
 		
 		// Disk Manager notifications
 		virtual void fileManagerNotifyFinish(size_t id, bool success);

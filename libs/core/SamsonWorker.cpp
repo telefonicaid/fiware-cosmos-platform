@@ -176,9 +176,18 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		std::ostringstream fileName;
 		fileName << "/tmp/file_"<< getpid() << "_" << rand() << rand();	// Just to test
 		
-		loadDataManager.addUploadItem(fromId, packet->message.upload_data(), packet->buffer );
+		loadDataManager.addUploadItem(fromId, packet->message.upload_data(), packet->message.delilah_id() , packet->buffer );
 		return 0;
 	}
+
+	// Download data files
+	if (msgCode == Message::DownloadData)
+	{
+		loadDataManager.addDownloadItem(fromId, packet->message.download_data() , packet->message.delilah_id() );
+		return 0;
+	}
+	
+	
 	
 	
 	

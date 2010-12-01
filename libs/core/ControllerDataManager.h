@@ -51,11 +51,9 @@ namespace ss {
 		
 		static std::string getLogFileName( );
 
-		
 		// Get help about data stuff
 		void helpQueues( network::HelpResponse *response , network::Help help );
-			
-		
+
 		void retreveInfoForTask( ControllerTaskInfo *info );		
 		
 	private:

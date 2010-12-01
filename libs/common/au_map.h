@@ -3,6 +3,7 @@
 
 #include <map>		// std::map
 #include <vector>	// std::vector
+#include <assert.h>	// assert(.)
 
 namespace au {
 
@@ -123,6 +124,13 @@ namespace au {
 			insert( std::pair<K,V>( key, value) );
 		}
 		
+
+		bool isInMap( K& key ) 
+		{
+			typename std::map<K, V >::iterator iter = find(key);
+			return( iter != std::map<K,V>::end() );
+		}
+		
 		/*
 		 Function to easyly get pointers in a std::map < value , Pointer* >
 		 NULL if not found
@@ -131,9 +139,9 @@ namespace au {
 		V findInMap( K& key ) 
 		{
 			typename std::map<K, V >::iterator iter = find(key);
+			typename std::map<K, V >::iterator iter_end = std::map<K, V >::end();
 			
-			if( iter == std::map<K,V>::end() )
-				return NULL;
+			assert( iter != iter_end );
 			return iter->second;
 		}
 		
@@ -156,18 +164,16 @@ namespace au {
 			}
 		}
 		
-		V extractFromMap(  K& key , V& defaultValue )
+		V extractFromMap(  K& key )
 		{
 			typename std::map<K, V >::iterator iter = std::map<K,V>::find(key);
+			typename std::map<K, V >::iterator iter_end = std::map<K,V>::end();
 			
-			if( iter == std::map<K,V>::end() )
-				return defaultValue;
-			else
-			{
-				V v = iter->second;
-				std::map<K,V>::erase(iter);
-				return v;
-			}
+			assert( iter != iter_end );	// Make sure to call isInMap before
+			
+			V v = iter->second;
+			std::map<K,V>::erase(iter);
+			return v;
 			
 		}		
 		

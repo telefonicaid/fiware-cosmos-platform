@@ -7,6 +7,8 @@
 #include <set>				// std::vector
 #include <iostream>			// std::cout
 #include "samson.pb.h"		// ss::network
+#include "DelilahComponent.h"			// ss::DelilahComponent
+#include "Delilah.h"			// ss::Delilah
 
 #include <sstream>			// std::ostringstream
 
@@ -85,18 +87,16 @@ namespace ss {
 	
 	
 	// All the information related with a load process
-	class DelilahLoadDataProcess
+	class DelilahUploadDataProcess : public DelilahComponent
 	{
-		au::Lock lock;	// Lock mechanish to protext ( async confirmation of the workers )
+		au::Lock lock;			// Lock mechanish to protext ( async confirmation of the workers )
 		
-		int num_workers;	// Total number of workers
-		int worker;			// Current worker
+		int num_workers;		// Total number of workers
+		int worker;				// Current worker
 		
-		pthread_t t;		// Thread of this process
+		pthread_t t;			// Thread of this process
 		
-		TXTFileSet fileSet;	
-		
-		Delilah* delilah;		// Pointer to delilah to send messages
+		TXTFileSet fileSet;		// Input txt files
 		
 		// Set of ids pending to be confirmed
 		std::set<size_t> pending_ids;
@@ -105,12 +105,11 @@ namespace ss {
 		bool finish;			// Flag to notify that all data has been sent to workers
 		bool completed;			// Flag to notify that the process is complete ( everything is confirmed )
 		
-		size_t id;
 
 		std::string queue;
 		
 		// Sumary information
-		size_t uploadedSize;						// Total size of uploaded files
+		size_t uploadedSize;	// Total size of uploaded files
 		
 		bool error;
 		std::string error_message;
@@ -121,20 +120,14 @@ namespace ss {
 		
 	public:
 
-
-		DelilahLoadDataProcess( Delilah* _delilah , int _num_workers , size_t _id ,  std::vector<std::string> &fileNames , std::string _queue ) : fileSet( fileNames )
+		DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue ) : fileSet( fileNames )
 		{
-			delilah = _delilah;
-			
-			// My id as load operation
-			id = _id;
 			
 			// Queue name 
 			queue = _queue;
 			
 			uploadedSize = 0;
 			
-			num_workers = _num_workers;
 			worker = 0; // rand()%num_workers;		// Random worker to start
 			
 			id_counter = 0;	// Init counter for loading files to the workers
@@ -151,14 +144,15 @@ namespace ss {
 		
 		void run()
 		{
+			// Set the number of workers
+			num_workers = delilah->network->getNumWorkers();
+
+			
 			// Create the thread for this load process
 			pthread_create(&t, NULL, runThreadDelilahLoadDataProcess, this);
 		}
 		
 		void _run();		
-		
-
-		bool notifyDataLoad( size_t file_id ,  network::File file , bool error );
 		
 		size_t getId()
 		{
@@ -183,26 +177,22 @@ namespace ss {
 		void fillLoadDataConfirmationMessage( network::UploadDataConfirmation *confirmation );		
 		
 		
-		void notifyLoadDataConfirmationResponse( const ::ss::network::UploadDataConfirmationResponse& confirmation )
-		{
-			error = confirmation.error();
-			error_message = confirmation.error_message();
-		}
-		
+		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 	
 		
 		std::string getStatus()
 		{
 			std::ostringstream output;
 			
-			output << "Status of load process:\n";
-			output << "Pending files: " << pending_ids.size() << std::endl;
+			output << "["<< id << "]Uploading to queue " << queue << " :";
+			output << "Pending files: " << pending_ids.size();
 			output << "Created files: " << created_files.size() << std::endl;
 			
 			return output.str();
 		}
 		
 	};	
+	
 	
 }
 

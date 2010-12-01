@@ -31,6 +31,12 @@ namespace ss {
 			delegate = _delegate;
 		}
 		
+		
+		virtual void destroy()
+		{
+		}
+		
+		
 	};
 	
 	
@@ -86,6 +92,14 @@ namespace ss {
 			fileName = _fileName;
 			buffer = _buffer;
 		}
+		
+		
+		void destroy()
+		{
+			if( buffer )
+				MemoryManager::shared()->destroyBuffer( buffer );
+		}
+		
 		
 	};
 	
@@ -174,15 +188,26 @@ namespace ss {
 			lock.lock();
 			
 			size_t dm_id = id;
-			size_t default_id = 0;
-			size_t fm_id = ids.extractFromMap( dm_id , default_id);
 			
-			FileManagerItem *item = items.extractFromMap( fm_id );
-			
-			if( item )
+			if( ids.isInMap( dm_id ) )
 			{
-				delegate = item->delegate;
-				delete item;					// we are responsible for deleting this 
+			   
+				size_t fm_id = ids.extractFromMap( dm_id );
+				
+				FileManagerItem *item = items.extractFromMap( fm_id );
+				
+				if( item )
+				{
+					item->destroy();	// What ever you want to do with it
+					
+					delegate = item->delegate;
+					delete item;					// we are responsible for deleting this 
+				}
+				
+			}
+			else
+			{
+				assert(false);// No idea what to do...
 			}
 			
 			lock.unlock();

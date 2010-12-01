@@ -23,13 +23,11 @@ namespace ss {
 	class DelilahConsole : public au::Console, public DelilahClient
 	{
 		Delilah* dalilah;	// Pointer to the main class
-		size_t id;			// Id counter of the command - messages sent to controller
 		
 	public:
 		DelilahConsole(  Delilah* _dalilah , bool ncurses) : au::Console( ncurses )
 		{
 			dalilah = _dalilah;
-			id = 0;
 			
 			
 			if( ncurses )
@@ -63,7 +61,7 @@ namespace ss {
 			au::Console::quit();
 		}
 	
-		virtual void loadDataConfirmation( DelilahLoadDataProcess *process);		
+		virtual void loadDataConfirmation( DelilahUploadDataProcess *process);		
 	
 		
 		virtual void showMessage( std::string message)

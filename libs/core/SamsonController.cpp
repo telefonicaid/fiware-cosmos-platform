@@ -94,6 +94,8 @@ int SamsonController::receiveHelp(int fromId, Packet* packet)
 		modulesManager.helpOperations( response , packet->message.help() );
 	}
 		
+	p->message.set_delilah_id( packet->message.delilah_id() );
+	
 	network->send(this, fromId, Message::HelpResponse, p);
 	return 0;
 }
@@ -170,9 +172,11 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 			// A message is always sent back to delilah to confirm changes
 			Packet *p = new Packet();
 			network::UploadDataConfirmationResponse * confirmationResponse = p->message.mutable_upload_data_confirmation_response();
-			confirmationResponse->set_process_id( packet->message.upload_data_confirmation().process_id() );
 			confirmationResponse->set_error( error );
 			confirmationResponse->set_error_message( error_message );
+			
+			p->message.set_delilah_id( packet->message.delilah_id() );	// Get the same id
+			
 			network->send(this, fromId, Message::UploadDataConfirmationResponse, p);
 		}
 		break;
@@ -223,7 +227,7 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 		case Message::Command:
 		{
 			// Create a new job with this command
-			jobManager.addJob( fromId ,  packet->message.command() );
+			jobManager.addJob( fromId ,  packet->message.command() , packet->message.delilah_id() );
 			return 0;
 		}
 

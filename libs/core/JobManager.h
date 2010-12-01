@@ -40,7 +40,7 @@ namespace ss {
 		}
 		
 		// Add a job from delilah
-		void addJob(int fromId , const network::Command &command );
+		void addJob(int fromId , const network::Command &command , size_t sender_id  );
 		
 		// Notification from the taskManager that a task has finished
 		void notifyFinishTask( size_t job_id , size_t task_id , bool error, std::string error_message );		

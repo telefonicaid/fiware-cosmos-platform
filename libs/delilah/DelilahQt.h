@@ -19,7 +19,7 @@ namespace ss {
 	class Delilah;
 	class Packet;
 
-	class DelilahLoadDataProcess;
+	class DelilahUploadDataProcess;
 
 
 	namespace Message {
@@ -61,7 +61,7 @@ public:
 	/** 
 	 Routine to confirm a load dat aprocess
 	 */
-	virtual void loadDataConfirmation( ss::DelilahLoadDataProcess *process){};
+	virtual void loadDataConfirmation( ss::DelilahUploadDataProcess *process){};
 
 	
 	/**

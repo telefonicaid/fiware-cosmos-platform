@@ -120,7 +120,7 @@ namespace ss {
 		
 		// Constructor used for top-level jobs form delilah direct message
 		
-		Job( SamsonController *_controller , size_t _id, int fromId, const network::Command &command  )
+		Job( SamsonController *_controller , size_t _id, int fromId, const network::Command &command , size_t _sender_id  )
 		{
 			// Keep a pointer to the controller
 			controller = _controller;
@@ -132,7 +132,7 @@ namespace ss {
 			id = _id;
 			
 			fromIdentifier = fromId;
-			sender_id = command.sender_id();
+			sender_id = _sender_id;
 
 			// Get the environment variables
 			copyEnviroment( command.environment() , &environment );

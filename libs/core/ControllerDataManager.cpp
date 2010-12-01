@@ -12,6 +12,7 @@
 #include "ModulesManager.h"					// Utility functions
 #include "ObjectWithStatus.h"				// getStatusFromArray(.)
 #include "samson/Operation.h"				// ss::Operation
+#include "QueueFile.h"						// ss::QueueFile
 
 namespace ss {
 	
@@ -72,6 +73,10 @@ namespace ss {
 			KVFormat format = KVFormat::format( keyFormat , valueFormat );
 			Queue *tmp = new Queue(name , format);
 			queues.insertInMap( name , tmp );
+
+			
+			// Notify the monitor
+			controller->monitor.addQueueToMonitor(tmp);
 			
 			response.output = "OK";
 			return response;
@@ -100,7 +105,11 @@ namespace ss {
 				return response;
 			}
 			else
+			{
+				controller->monitor.removeQueueToMonitor(tmp);
+				
 				delete tmp;
+			}
 			
 			response.output = "OK";
 			return response;
@@ -436,7 +445,9 @@ namespace ss {
 				{
 					
 					Queue *queue = i->second;
-					network::Queue *q = response->add_queue();
+					network::FullQueue *fq = response->add_queue();
+					
+					network::Queue *q = fq->mutable_queue();
 					q->set_name( i->first );
 					
 					// Format
@@ -444,7 +455,16 @@ namespace ss {
 					
 					//Info
 					fillKVInfo( q->mutable_info(), queue->info() );
+
 					
+					// Add file information
+					std::list< QueueFile* >::iterator iter;
+
+					for ( iter = queue->files.begin() ; iter != queue->files.end() ; iter++)
+					{
+						network::File *file = fq->add_file();
+						(*iter)->fill( file );
+					}
 				}
 				
 				

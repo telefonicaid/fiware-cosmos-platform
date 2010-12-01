@@ -21,6 +21,8 @@ namespace ss {
 	{
 		au::Lock lock;
 		
+		SamsonController *controller;
+		
 		MonitorBlock system;						// Parameter for the system
 		std::set<Queue*> queues;					// Queues we are monitoring		
 		pthread_t t;								// Thread to perform the snapshots

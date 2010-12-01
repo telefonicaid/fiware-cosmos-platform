@@ -104,7 +104,7 @@ int DelilahQtApp::sendCommand(std::string command)
 	ss::Packet *p = new ss::Packet();
 	ss::network::Command *c = p->message.mutable_command();
 	c->set_command( command );
-	c->set_sender_id( ++id );
+	p->message.set_delilah_id( ++id );
 	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Command, p);
 
 	return id;
@@ -348,7 +348,7 @@ void DelilahQtApp::synchronizeQueues(const ss::network::HelpResponse &resp, bool
 {
 	for (int i=0 ; i<resp.queue_size(); i++)
 	{
-		ss::network::Queue q = resp.queue(i);
+		ss::network::Queue q = resp.queue(i).queue();
 		QString name = QString::fromStdString(q.name());
 
 		// find if queue with such name already exists. If not, create

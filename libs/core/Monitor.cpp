@@ -17,8 +17,11 @@ namespace ss {
 	}
 	
 	
-	Monitor::	Monitor( SamsonController *controller)
+	Monitor::Monitor( SamsonController * _controller)
 	{
+		// Keep a pointer to the controller
+		controller = _controller;
+		
 		// Create the monitoring thread
 		pthread_create(&t, NULL, runMonitoring, this);
 	}
@@ -29,14 +32,16 @@ namespace ss {
 		{			
 			// Full all fields
 			system.push( "random" , random()%10 );
-			
-			// Step monitoring queues
-			/*
+			system.push( "random2" , random()%10 );
+
 			lock.lock();
-			for (std::map<std::string,KVQueue*>::iterator i = queues.begin() ; i!= queues.end() ; i++)
-				i->second->sample();
+			
+			// Take a sample for all the queues
+			for (std::set<Queue*>::iterator iter = queues.begin() ; iter != queues.end() ; iter++)
+				(*iter)->takeMonitorSamples();
+
 			lock.unlock();
-			 */
+			
 			
 			sleep(1);				// Sleep for the next snapshot
 		}
@@ -56,10 +61,15 @@ namespace ss {
 		o << "[";
 
 		std::set<Queue*>::iterator queues_iterator;				
-		for ( queues_iterator = queues.begin() ; queues_iterator != queues.end() ; queues_iterator++)
+		for ( queues_iterator = queues.begin() ; queues_iterator != queues.end() ; )
 		{
 			Queue *q = *queues_iterator;
 			o << q->monitor.getJSONString();
+			
+			queues_iterator++;
+			if( queues_iterator != queues.end() )
+				o << ",";
+			
 		}
 		
 		o << "]";
@@ -89,6 +99,8 @@ namespace ss {
 		queues.erase( queue );
 		lock.unlock();
 	}
+	
+	
 	
 	
 	

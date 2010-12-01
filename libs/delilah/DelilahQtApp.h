@@ -49,6 +49,7 @@ public:
 	int sendCreateQueue(const QString &name);
 	int sendCreateQueue(const QString &name, const QString &key_type, const QString &value_type);
 	int sendDeleteQueue(const QString &name);
+	int sendUploadToQueue(const QString &name, QStringList files);
 
 	/*
 	 * Methods receiving packets from network
@@ -56,6 +57,7 @@ public:
 	int receiveData(ss::Packet* packet);
 	int receiveCommandResponse(ss::Packet* packet);
 	int receiveUknownPacket(size_t id, ss::Message::MessageCode msgCode, ss::Packet* packet);
+	void receiveUploadFinished(size_t id);
 
 public slots:
 	void quitDelilah();
@@ -68,8 +70,6 @@ protected:
 	void synchronizeOperations(const ss::network::HelpResponse &resp, bool synchronize_all=true);
 	void synchronizeDataTypes(const ss::network::HelpResponse &resp, bool synchronize_all=true);
 
-	int sendCommand(std::string);		// Sends command to the network
-
 signals:
 	void gotCommandResponse(unsigned int id, bool finished, bool error, QString message);
 
@@ -78,8 +78,6 @@ public:
 
 protected:
 	ss::Delilah* delilah;					// Pointer to the most upper class of SAMSON client application
-	unsigned int id;						// Counter of requests sent to the network
-											// (initialized with value set to 0).
 
 	// Lists of queues, operations and data types currently available in the system.
 	// They are automatically uploaded on application startup.

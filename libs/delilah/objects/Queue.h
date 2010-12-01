@@ -37,7 +37,7 @@ public:
 	/*
 	 * Status property
 	 */
-	enum Status {SYNCHRONIZING, READY, DELETED};
+	enum Status {SYNCHRONIZING, UPLOADING, READY, DELETED};
 	Status getStatus() const { return status; };
 	void setStatus(Status new_status)
 	{

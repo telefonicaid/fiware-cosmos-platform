@@ -107,6 +107,23 @@ void Workspace::deleteQueue(Queue* queue)
 	emit(jobCreated(job));
 }
 
+void Workspace::uploadToQueue(Queue* queue, QStringList files)
+{
+	assert(queue->getType()==DATA_QUEUE);
+	assert(files.isEmpty()==false);
+
+	job_info job;
+	job.status = IN_PROCESSING;
+	job.message = "Sending request: upload queue";
+	job.type = UPLOAD_FILE;
+	job.args << queue->getName() << files;
+	// TODO:
+	job.id = app->sendUploadToQueue(queue->getName(), files);
+	jobs.append(job);
+	emit(jobCreated(job));
+
+}
+
 void Workspace::loadOperation(const QString &name, const QPointF &scene_pos)
 {
 	Operation* operation = app->getOperation(name);
@@ -200,7 +217,19 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 					}
 				}
 				break;
-			case LOAD_FILE:
+			case UPLOAD_FILE:
+				{
+					Queue* queue = app->getQueue(job.args[0]);
+					if (queue)
+						queue->setStatus(Queue::READY);
+					else
+					{
+						QString error = QString("Uploading of %1 queue failed:\nQueue is not available").arg(job.args[0]);
+						emit(unhandledFailure(error));
+					}
+				}
+				break;
+			case DOWNLOAD_FILE:
 			case RUN_PROCESS:
 			default:
 				break;

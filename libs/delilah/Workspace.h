@@ -22,7 +22,7 @@ class WorkspaceScene;
 class DelilahQtApp;
 
 enum JobTypes { CANCELED, CREATE_DATA_QUEUE, CREATE_KV_QUEUE, DELETE_QUEUE,
-				LOAD_FILE, RUN_PROCESS };
+				UPLOAD_FILE, DOWNLOAD_FILE, RUN_PROCESS };
 enum JobStatus { IN_PROCESSING, FINISHED, FAILED };
 
 /*
@@ -55,6 +55,7 @@ public slots:
 	void loadQueue(const QString &name, const QPointF &scene_pos);
 	void createQueue(QueueType type, const QPointF &scene_pos, QString name, QString key=QString(), QString value=QString());
 	void deleteQueue(Queue* queue);
+	void uploadToQueue(Queue* queue, QStringList files);
 
 	void loadOperation(const QString &name, const QPointF &scene_pos);
 	void removeItem(BaseItem* item);

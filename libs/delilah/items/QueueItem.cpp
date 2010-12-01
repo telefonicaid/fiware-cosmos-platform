@@ -40,6 +40,8 @@ void QueueItem::initText()
 	QString text;
 	if (queue->getStatus()==Queue::SYNCHRONIZING)
 		text = QString("Loading...");
+	if (queue->getStatus()==Queue::UPLOADING)
+		text = QString("Uploading...");
 	if(queue->getStatus()==Queue::READY)
 		text = queue->getName();
 	if(queue->getStatus()==Queue::DELETED)
@@ -84,7 +86,10 @@ void QueueItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	menu->addAction("Delete Queue", this, SLOT(deleteQueueSelected()));
 
 	if(queue->getType()==DATA_QUEUE)
-		menu->addAction("Load Data", this, SLOT(loadDataSelected()));
+	{
+		menu->addAction("Upload Data", this, SLOT(uploadDataSelected()));
+		menu->addAction("Download Data", this, SLOT(downloadDataSelected()));
+	}
 	menu->exec(event->screenPos());
 }
 
@@ -103,8 +108,12 @@ void QueueItem::deleteQueueSelected()
 	emit(deleteQueueRequested(this->queue));
 }
 
-void QueueItem::loadDataSelected()
+void QueueItem::uploadDataSelected()
+{
+	emit(uploadDataRequested(this->queue));
+}
+
+void QueueItem::downloadDataSelected()
 {
 	// TODO:
 }
-

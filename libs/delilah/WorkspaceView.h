@@ -37,6 +37,7 @@ public slots:
 	void createKVQueueSelected(const QPointF &scene_pos);
 	void loadExistingQueueSelected(const QPointF &scene_pos);
 	void confirmDeletingQueue(Queue* queue);
+	void selectFileToUpload(Queue* queue);
 	void loadOperationSelected(const QPointF &scene_pos);
 	void showInfo(BaseObject* object);
 
@@ -53,6 +54,8 @@ signals:
 	void deleteQueueRequested(Queue* queue);
 
 	void loadOperationRequested(const QString &name, const QPointF scene_pos);
+
+	void uploadDataRequested(Queue* queue, QStringList files);
 
 protected:
 	Workspace* workspace;

@@ -34,3 +34,8 @@ int DelilahQt::receive(int fromId, ss::Message::MessageCode msgCode, ss::Packet*
 	}
 	return 0;	
 }
+
+void DelilahQt::notifyFinishOperation(size_t id)
+{
+	app->receiveUploadFinished(id);
+}

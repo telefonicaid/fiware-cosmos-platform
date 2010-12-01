@@ -24,8 +24,6 @@
 DelilahQtApp::DelilahQtApp(int &argc, char ** argv, ss::Delilah* _delilah)
 	: QApplication(argc, argv)
 {
-	id = 0;
-
 	delilah = _delilah;
 	w = new MainWindow();			// My main window interface
 	w->show();
@@ -61,7 +59,6 @@ void DelilahQtApp::uploadData(bool queue, bool operation, bool data_type, const 
 		}
 	}
 
-
 	// Prepare packet to get information from network about requested type of objects
 	ss::Packet *p = new ss::Packet();
 	ss::network::Help *help = p->message.mutable_help();
@@ -78,7 +75,7 @@ int DelilahQtApp::sendCreateQueue(const QString &name)
 	std::string command = CREATE_DATA_QUEUE_COMMAND;
 	command.append((" " + name).toStdString());
 
-	return sendCommand(command);
+	return delilah->sendCommand(command);
 }
 
 int DelilahQtApp::sendCreateQueue(const QString &name, const QString &key_type, const QString &value_type)
@@ -88,7 +85,7 @@ int DelilahQtApp::sendCreateQueue(const QString &name, const QString &key_type, 
 	QString parameters = " " % name % " " % key_type % " " % value_type;
 	command.append(parameters.toStdString());
 
-	return sendCommand(command);
+	return delilah->sendCommand(command);
 }
 
 int DelilahQtApp::sendDeleteQueue(const QString &name)
@@ -96,18 +93,26 @@ int DelilahQtApp::sendDeleteQueue(const QString &name)
 	std::string command = REMOVE_QUEUE_COMMAND;
 	command.append((" " + name).toStdString());
 
-	return sendCommand(command);
+	return delilah->sendCommand(command);
 }
 
-int DelilahQtApp::sendCommand(std::string command)
+int DelilahQtApp::sendUploadToQueue(const QString &name, QStringList files)
 {
-	ss::Packet *p = new ss::Packet();
-	ss::network::Command *c = p->message.mutable_command();
-	c->set_command( command );
-	p->message.set_delilah_id( ++id );
-	delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), ss::Message::Command, p);
+	// Set status of the queue to UPLOADING
+	Queue* queue = getQueue(name);
+	if(queue)
+		queue->setStatus(Queue::UPLOADING);
 
-	return id;
+	std::string queue_name = name.toStdString();
+
+	// Change QStringList to std::vector<std::string>
+	QList<std::string> std_list;
+	for(int i=0; i<files.size(); i++)
+		std_list << files[i].toStdString();
+	QVector<std::string> vect = QVector<std::string>::fromList(std_list);
+	std::vector<std::string> std_files = vect.toStdVector();
+
+	return delilah->addUploadData(std_files, queue_name);
 }
 
 /*
@@ -194,6 +199,11 @@ int DelilahQtApp::receiveUknownPacket(size_t id, ss::Message::MessageCode msgCod
 {
 	// TODO:
 	return 0;
+}
+
+void DelilahQtApp::receiveUploadFinished(size_t id)
+{
+	emit(gotCommandResponse(id, true, false, ""));
 }
 
 void DelilahQtApp::quitDelilah()

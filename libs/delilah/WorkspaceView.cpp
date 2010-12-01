@@ -11,6 +11,7 @@
 
 #include <QMenu>
 #include <QMessageBox>
+#include <QFileDialog>
 
 #include "WorkspaceView.h"
 #include "WorkspaceScene.h"
@@ -52,11 +53,13 @@ void WorkspaceView::setWorkspace(Workspace* model)
 	// Signals/Slots related to queue creation/inserting/deleting
 	connect(scene(), SIGNAL(addQueueRequested(QPointF)), this, SLOT(selectQueueType(QPointF)));
 	connect(scene(), SIGNAL(deleteQueueRequested(Queue*)), this, SLOT(confirmDeletingQueue(Queue*)));
+	connect(scene(), SIGNAL(uploadDataRequested(Queue*)), this, SLOT(selectFileToUpload(Queue*)));
 	connect(this, SIGNAL(loadQueueRequested(QString, QPointF)),
 			workspace, SLOT(loadQueue(QString, QPointF)));
 	connect(this, SIGNAL(createQueueRequested(QueueType, QPointF, QString, QString, QString)),
 			workspace, SLOT(createQueue(QueueType, QPointF, QString, QString, QString)));
 	connect(this, SIGNAL(deleteQueueRequested(Queue*)), workspace, SLOT(deleteQueue(Queue*)));
+	connect(this, SIGNAL(uploadDataRequested(Queue*, QStringList)), workspace, SLOT(uploadToQueue(Queue*, QStringList)));
 
 	// Signals/Slots related to operation creation/inserting/deleting
 	connect(scene(), SIGNAL(addOperationRequested(QPointF)), this, SLOT(loadOperationSelected(QPointF)));
@@ -208,6 +211,17 @@ void WorkspaceView::createKVQueueSelected(const QPointF &scene_pos)
 	}
 
 	delete dlg;
+}
+
+void WorkspaceView::selectFileToUpload(Queue* queue)
+{
+	QStringList files = QFileDialog::getOpenFileNames(this,
+							"Select files to upload",
+	                        QString(),
+	                        "Text files (*.txt);; All files (*.*)");
+
+	if(!files.isEmpty())
+		emit(uploadDataRequested(queue, files));
 }
 
 void WorkspaceView::loadOperationSelected(const QPointF &scene_pos)

@@ -28,7 +28,8 @@ public slots:
 	void showInfoSelected();
 	void removeQueueSelected();
 	void deleteQueueSelected();
-	void loadDataSelected();
+	void uploadDataSelected();
+	void downloadDataSelected();
 
 protected:
 	virtual void init();
@@ -38,6 +39,7 @@ protected:
 
 signals:
 	void deleteQueueRequested(Queue*);						// emitted when user chooses to delete queue from system
+	void uploadDataRequested(Queue*);
 
 public:
     enum { Type=QUEUE_ITEM };

@@ -52,18 +52,21 @@ public:
 	int run( int argc , const char * argv[] );
 
 	/**
-	 Routine asynchronously executted whene a message is received
+	 Routine asynchronously executed when a message is received
 	 */
 	
 	int receive(int fromId, ss::Message::MessageCode msgCode, ss::Packet* packet);
 
+	/**
+	 Routine to get notification when uploading has finished
+	 */
+	virtual void notifyFinishOperation( size_t );
 	
 	/** 
-	 Routine to confirm a load dat aprocess
+	 Routine to confirm a load data process
 	 */
 	virtual void loadDataConfirmation( ss::DelilahUploadDataProcess *process){};
 
-	
 	/**
 	 Asynch method to quit interface
 	 */

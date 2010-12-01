@@ -39,32 +39,34 @@ int Queue::upload(ss::network::Queue* q)
 
 QString Queue::getHTMLInfo()
 {
-	// TODO
-	return QString("Here will be queue info");
+	QList< QStringList > info;
+	QStringList name_info = (QStringList() << "Name: " << name);
+	info << name_info;
+	if (type==KV_QUEUE)
+	{
+		QStringList key_info = (QStringList() << "Key type: " << key);
+		QStringList value_info = (QStringList() << "Value type: " << value);
+		info << key_info << value_info;
+	}
 
-//	QString number;		//helper
-//
-//	QList< QStringList > info;
-//	QStringList name = (QStringList() << "Name: " << queue->getName());
-//	// TODO: formating
-//	QStringList size = (QStringList() << "Size: " << number.setNum(queue->getSize()/1024) + " kb");
-//	info << name << size;
-//	if (queue->getType()==KV_QUEUE)
-//	{
-//		QStringList key = (QStringList() << "Key type: " << queue->getKeyType());
-//		QStringList value = (QStringList() << "Value type: " << queue->getValueType());
-//		QStringList kv_number = (QStringList() << "Number of KV pairs:" << number.setNum(queue->getKVNumber()));
-//		info << key << value << kv_number;
-//	}
-//
-//	text += "<table>";
-//	for(int i=0; i<info.size(); i++)
-//	{
-//		text += "<tr>";
-//		text += "<td><b>" + info[i][0] + "</b></td>";
-//		text += "<td>" + info[i][1] + "</td>";
-//		text += "</tr>";
-//	}
-//	text += "</table>";
+	// TODO: check formating
+	QString queue_size = QString::number(size/1024, 'f', 2) + " kb";
+	if (type==KV_QUEUE)
+		queue_size.append(QString(" in %1 KV pairs").arg(kv_number));
+	QStringList size_info = (QStringList() << "Size: " << queue_size);
+	info << size_info;
+
+	QString text;
+	text += "<table>";
+	for(int i=0; i<info.size(); i++)
+	{
+		text += "<tr>";
+		text += "<td><b>" + info[i][0] + "</b></td>";
+		text += "<td>" + info[i][1] + "</td>";
+		text += "</tr>";
+	}
+	text += "</table>";
+
+	return text;
 }
 

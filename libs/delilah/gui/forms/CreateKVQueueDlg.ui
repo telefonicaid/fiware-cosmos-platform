@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>CreateKVQueueDlgClass</class>
  <widget class="QDialog" name="CreateKVQueueDlgClass">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -15,7 +18,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0,0">
    <item>
-    <layout class="QGridLayout" name="settingsGridLayout" rowstretch="0,0,0" columnstretch="0,0,0">
+    <layout class="QGridLayout" name="settingsGridLayout" rowstretch="0,0,0" columnstretch="0,0">
      <item row="2" column="0">
       <widget class="QTreeWidget" name="dataTypeTreeWidget">
        <attribute name="headerVisible">
@@ -78,7 +81,11 @@
      <item row="0" column="0">
       <layout class="QGridLayout" name="lineEditsGridLayout">
        <item row="0" column="1">
-        <widget class="QLineEdit" name="nameLineEdit"/>
+        <widget class="QLineEdit" name="nameLineEdit">
+         <property name="cursorPosition">
+          <number>0</number>
+         </property>
+        </widget>
        </item>
        <item row="0" column="0">
         <widget class="QLabel" name="nameLabel">
@@ -97,7 +104,7 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="keyLineEdit">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="cursor">
           <cursorShape>ArrowCursor</cursorShape>
@@ -119,7 +126,7 @@
        <item row="2" column="1">
         <widget class="QLineEdit" name="valueLineEdit">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="cursor">
           <cursorShape>ArrowCursor</cursorShape>

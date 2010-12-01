@@ -164,8 +164,6 @@ message CommandResponse
 
 message Help
 {
-	required uint64 sender_id = 8;	// Unique delilah id of any operation
-
 	required bool queues = 1;
 	required bool datas = 3;
 	required bool operations = 4;

@@ -8,6 +8,9 @@ prepare:
 install:
 	sudo make -C build install
 
+distribute: install
+	./scripts/samsonDistribute
+
 mi:
 	make
 	make install

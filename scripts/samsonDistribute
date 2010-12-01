@@ -1,0 +1,17 @@
+localMachine=$(uname -n)
+if [ "$localMachine" != "samson01" ]
+then
+	echo "Will only distribute from 'samson01'" 
+	exit 1
+fi
+
+for mach in samson02 samson03 samson04 samson05 samson06 samson08
+do
+	echo Installing samson in $mach
+	scp -r /opt/samson          samson@$mach:/opt/
+	scp -r /var/samson          samson@$mach:/var/
+	scp /usr/local/bin/samson*  samson@$mach:/usr/local/bin/
+	scp /usr/local/bin/delilah* samson@$mach:/usr/local/bin/
+    echo '============================================='
+	echo
+done

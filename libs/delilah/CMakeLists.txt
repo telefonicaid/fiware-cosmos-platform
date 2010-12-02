@@ -11,10 +11,10 @@ IF(QT4_FOUND)
 		DelilahConsole.cpp
 		DelilahQt.cpp
 		DelilahQtApp.cpp
-		MainWindow.cpp
 		Workspace.cpp
 		WorkspaceScene.cpp
 		WorkspaceView.cpp
+		gui/MainWindow.cpp
 		gui/CreateDataQueueDlg.cpp
 		gui/CreateKVQueueDlg.cpp
 		gui/LoadExistingBaseDlg.cpp
@@ -43,10 +43,10 @@ IF(QT4_FOUND)
 	
 	SET (HEADERS_MOC
 		DelilahQtApp.h
-		MainWindow.h
 		Workspace.h
 		WorkspaceScene.h
 		WorkspaceView.h
+		gui/MainWindow.h
 		gui/CreateDataQueueDlg.h
 		gui/CreateKVQueueDlg.h
 		gui/LoadExistingBaseDlg.h
@@ -67,7 +67,7 @@ IF(QT4_FOUND)
 		)
 	
 	SET (FORMS
-		MainWindow.ui
+		gui/forms/MainWindow.ui
 		gui/forms/CreateDataQueueDlg.ui
 		gui/forms/CreateKVQueueDlg.ui
 		gui/forms/LoadExistingBaseDlg.ui

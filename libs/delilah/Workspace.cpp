@@ -117,11 +117,24 @@ void Workspace::uploadToQueue(Queue* queue, QStringList files)
 	job.message = "Sending request: upload queue";
 	job.type = UPLOAD_FILE;
 	job.args << queue->getName() << files;
-	// TODO:
-	job.id = app->sendUploadToQueue(queue->getName(), files);
+	job.id = app->sendUploadToQueue(queue, files);
 	jobs.append(job);
 	emit(jobCreated(job));
+}
 
+void Workspace::downloadFromQueue(Queue* queue, QString file)
+{
+	assert(queue->getType()==DATA_QUEUE);
+	assert(file.isEmpty()==false);
+
+	job_info job;
+	job.status = IN_PROCESSING;
+	job.message = "Sending request: download from queue";
+	job.type = DOWNLOAD_FILE;
+	job.args << queue->getName() << file;
+	job.id = app->sendDownloadFromQueue(queue, file);
+	jobs.append(job);
+	emit(jobCreated(job));
 }
 
 void Workspace::loadOperation(const QString &name, const QPointF &scene_pos)

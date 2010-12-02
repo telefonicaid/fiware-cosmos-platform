@@ -96,14 +96,13 @@ int DelilahQtApp::sendDeleteQueue(const QString &name)
 	return delilah->sendCommand(command);
 }
 
-int DelilahQtApp::sendUploadToQueue(const QString &name, QStringList files)
+int DelilahQtApp::sendUploadToQueue(Queue* queue, QStringList files)
 {
 	// Set status of the queue to UPLOADING
-	Queue* queue = getQueue(name);
-	if(queue)
-		queue->setStatus(Queue::UPLOADING);
+	assert(queue!=0);
+	queue->setStatus(Queue::UPLOADING);
 
-	std::string queue_name = name.toStdString();
+	std::string queue_name = queue->getName().toStdString();
 
 	// Change QStringList to std::vector<std::string>
 	QList<std::string> std_list;
@@ -115,6 +114,14 @@ int DelilahQtApp::sendUploadToQueue(const QString &name, QStringList files)
 	return delilah->addUploadData(std_files, queue_name);
 }
 
+int DelilahQtApp::sendDownloadFromQueue(Queue* queue, QString file)
+{
+	std::string queue_name = queue->getName().toStdString();
+	std::string file_name = file.toStdString();
+
+	return delilah->addDownloadProcess(queue_name, file_name);
+}
+
 /*
  * Called when packet with help response was received.
  * Packet can contains information about KV queues, data queues, operations, and data types
@@ -123,10 +130,6 @@ int DelilahQtApp::sendUploadToQueue(const QString &name, QStringList files)
  */
 int DelilahQtApp::receiveData(ss::Packet* packet)
 {
-	// TODO: remove!!!!!1 It's for debugging and testing
-	sleep(2);
-	std::cout << "Sleeping 2 sec. in receiveData" << std::endl;
-
 	ss::network::HelpResponse resp = packet->message.help_response();
 	ss::network::Help command = resp.help();
 
@@ -147,10 +150,6 @@ int DelilahQtApp::receiveData(ss::Packet* packet)
 
 int DelilahQtApp::receiveCommandResponse(ss::Packet* packet)
 {
-	// TODO: remove!!!!!1 It's for debugging and testing
-	sleep(2);
-	std::cout << "Sleeping 2 sec. in receiveCommandResponse" << std::endl;
-
 	unsigned int id = packet->message.command_response().sender_id();
 	QString command = QString::fromStdString(packet->message.command_response().command());
 	QString message = QString::fromStdString(packet->message.command_response().response());

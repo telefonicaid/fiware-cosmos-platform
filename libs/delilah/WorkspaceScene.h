@@ -61,6 +61,7 @@ signals:
 	void removeItemRequested(BaseItem*);				// Emitted when user wants to remove item from workspace
 	void deleteQueueRequested(Queue*);					// Emitted when user chooses to delete queue from system
 	void uploadDataRequested(Queue*);
+	void downloadDataRequested(Queue*);
 
 protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);

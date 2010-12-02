@@ -40,6 +40,7 @@ protected:
 signals:
 	void deleteQueueRequested(Queue*);						// emitted when user chooses to delete queue from system
 	void uploadDataRequested(Queue*);
+	void downloadDataRequested(Queue*);
 
 public:
     enum { Type=QUEUE_ITEM };

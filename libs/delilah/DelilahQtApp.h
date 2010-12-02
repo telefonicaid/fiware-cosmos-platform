@@ -49,7 +49,8 @@ public:
 	int sendCreateQueue(const QString &name);
 	int sendCreateQueue(const QString &name, const QString &key_type, const QString &value_type);
 	int sendDeleteQueue(const QString &name);
-	int sendUploadToQueue(const QString &name, QStringList files);
+	int sendUploadToQueue(Queue* queue, QStringList files);
+	int sendDownloadFromQueue(Queue* queue, QString file);
 
 	/*
 	 * Methods receiving packets from network

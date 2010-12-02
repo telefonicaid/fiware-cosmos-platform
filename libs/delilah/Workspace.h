@@ -56,6 +56,7 @@ public slots:
 	void createQueue(QueueType type, const QPointF &scene_pos, QString name, QString key=QString(), QString value=QString());
 	void deleteQueue(Queue* queue);
 	void uploadToQueue(Queue* queue, QStringList files);
+	void downloadFromQueue(Queue* queue, QString file);
 
 	void loadOperation(const QString &name, const QPointF &scene_pos);
 	void removeItem(BaseItem* item);

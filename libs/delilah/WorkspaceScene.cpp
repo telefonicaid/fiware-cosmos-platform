@@ -178,6 +178,7 @@ void WorkspaceScene::showQueue(Queue* queue, const QPointF &pos)
 	connect(queue_item, SIGNAL(removeItemRequested(BaseItem*)), this, SIGNAL(removeItemRequested(BaseItem*)));
 	connect(queue_item, SIGNAL(deleteQueueRequested(Queue*)), this, SIGNAL(deleteQueueRequested(Queue*)));
 	connect(queue_item, SIGNAL(uploadDataRequested(Queue*)), this, SIGNAL(uploadDataRequested(Queue*)));
+	connect(queue_item, SIGNAL(downloadDataRequested(Queue*)), this, SIGNAL(downloadDataRequested(Queue*)));
 
 	queue_item->setSharedRenderer(queue_renderer);
 	queue_item->initText();

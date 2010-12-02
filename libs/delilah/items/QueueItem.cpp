@@ -115,5 +115,5 @@ void QueueItem::uploadDataSelected()
 
 void QueueItem::downloadDataSelected()
 {
-	// TODO:
+	emit(downloadDataRequested(this->queue));
 }

@@ -54,12 +54,14 @@ void WorkspaceView::setWorkspace(Workspace* model)
 	connect(scene(), SIGNAL(addQueueRequested(QPointF)), this, SLOT(selectQueueType(QPointF)));
 	connect(scene(), SIGNAL(deleteQueueRequested(Queue*)), this, SLOT(confirmDeletingQueue(Queue*)));
 	connect(scene(), SIGNAL(uploadDataRequested(Queue*)), this, SLOT(selectFileToUpload(Queue*)));
+	connect(scene(), SIGNAL(downloadDataRequested(Queue*)), this, SLOT(selectFileToDownload(Queue*)));
 	connect(this, SIGNAL(loadQueueRequested(QString, QPointF)),
 			workspace, SLOT(loadQueue(QString, QPointF)));
 	connect(this, SIGNAL(createQueueRequested(QueueType, QPointF, QString, QString, QString)),
 			workspace, SLOT(createQueue(QueueType, QPointF, QString, QString, QString)));
 	connect(this, SIGNAL(deleteQueueRequested(Queue*)), workspace, SLOT(deleteQueue(Queue*)));
 	connect(this, SIGNAL(uploadDataRequested(Queue*, QStringList)), workspace, SLOT(uploadToQueue(Queue*, QStringList)));
+	connect(this, SIGNAL(downloadDataRequested(Queue*, QString)), workspace, SLOT(downloadFromQueue(Queue*, QString)));
 
 	// Signals/Slots related to operation creation/inserting/deleting
 	connect(scene(), SIGNAL(addOperationRequested(QPointF)), this, SLOT(loadOperationSelected(QPointF)));
@@ -216,12 +218,23 @@ void WorkspaceView::createKVQueueSelected(const QPointF &scene_pos)
 void WorkspaceView::selectFileToUpload(Queue* queue)
 {
 	QStringList files = QFileDialog::getOpenFileNames(this,
-							"Select files to upload",
+							"Select file to upload",
 	                        QString(),
 	                        "Text files (*.txt);; All files (*.*)");
 
 	if(!files.isEmpty())
 		emit(uploadDataRequested(queue, files));
+}
+
+void WorkspaceView::selectFileToDownload(Queue* queue)
+{
+	QString file = QFileDialog::getSaveFileName(this,
+							"Save file",
+	                        QString(),
+	                        "Text files (*.txt);; All files (*.*)");
+
+	if(!file.isEmpty())
+		emit(downloadDataRequested(queue, file));
 }
 
 void WorkspaceView::loadOperationSelected(const QPointF &scene_pos)

@@ -30,8 +30,8 @@ public:
 
 	QueueType getType() { return type; };
 	unsigned long getSize() const { return size; };
-	QString getKeyType() const { return key; }
-	QString getValueType() const { return value; }
+	QString getKey() const { return key; }
+	QString getValue() const { return value; }
 	unsigned long getKVNumber() const { return kv_number; }
 
 	/*

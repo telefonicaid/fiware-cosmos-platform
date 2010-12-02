@@ -12,27 +12,28 @@
 
 #include <QObject>
 
-class Operation;
-class Queue;
+class OperationItem;
+class QueueItem;
 
 class Process : public QObject
 {
 	Q_OBJECT
 
 public:
-	Process(Operation* _operation);
+	Process(OperationItem* operation)
+		: operation_item(operation) {};
 	~Process() {};
 
 public slots:
-	QString addInput(Queue* queue);
-	QString addOutput(Queue* queue);
+	QString addInput(QueueItem* queue_item);
+	QString addOutput(QueueItem* queue_item);
 
 	void run() {};
 
 public:
-	Operation* operation;
-	QVector<Queue*>* input;
-	QVector<Queue*>* output;
+	OperationItem* operation_item;
+	QList<QueueItem*> input;
+	QList<QueueItem*> output;
 };
 
 

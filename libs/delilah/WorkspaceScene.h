@@ -17,10 +17,12 @@
 class QSvgRenderer;
 class ConnectionItem;
 class BaseItem;
+class OperationItem;
 
 class BaseObject;
 class Queue;
 class Operation;
+class Process;
 
 class WorkspaceScene: public QGraphicsScene
 {
@@ -63,6 +65,8 @@ signals:
 	void uploadDataRequested(Queue*);
 	void downloadDataRequested(Queue*);
 
+	void unhandledFailure(QString);
+
 protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
 	virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
@@ -70,12 +74,15 @@ protected:
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
 	BaseItem* findItem(const QPointF &pos);
+	Process* findProcess(OperationItem* item);
 
 protected:
 	static QSvgRenderer* queue_renderer;
 	static QSvgRenderer* operation_renderer;
     int current_tool;
     ConnectionItem* current_conn;
+
+    QList<Process*> processes;
 };
 
 

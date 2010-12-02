@@ -75,8 +75,9 @@ void WorkspaceView::setWorkspace(Workspace* model)
 	connect(workspace, SIGNAL(jobCreated(job_info)), this, SLOT(updateJobInfoView(job_info)));
 	connect(workspace, SIGNAL(jobUpdated(job_info)), this, SLOT(updateJobInfoView(job_info)));
 
-	// Unhandled error from workspace
+	// Unhandled errors
 	connect(workspace, SIGNAL(unhandledFailure(QString)), this, SLOT(showError(QString)));
+	connect(scene(), SIGNAL(unhandledFailure(QString)), this, SLOT(showError(QString)));
 }
 
 void WorkspaceView::showError(QString error)

@@ -17,7 +17,6 @@
 
 class BaseItem;
 class Queue;
-class Process;
 class WorkspaceScene;
 class DelilahQtApp;
 
@@ -79,9 +78,6 @@ protected:
 	DelilahQtApp* app;
 
 	QList<job_info> jobs;
-
-//	QList<Queue*> queues;
-	QList<Process*> processes;
 };
 
 

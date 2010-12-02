@@ -143,52 +143,22 @@ QPainterPath ConnectionItem::drawArrow(const QPointF &start_pos, const QPointF &
 	return arrow;
 }
 
-bool ConnectionItem::open(BaseItem* item)
+void ConnectionItem::open(BaseItem* item)
 {
 	start_item = item;
 	scene_start_pos = start_item->mapToScene(start_item->boundingRect().center());
-
-	return true;
 }
 
-bool ConnectionItem::close(BaseItem* item)
+void ConnectionItem::close(BaseItem* item)
 {
 	finished = true;
-	QString error_message;
 
-	// Validate the object types are different.
-	// Objects of the same type (e.g. Queue or operations) can not be connected ???
-	if( item->type() == start_item->type())
-	{
-		finished = false;
-		error_message = QString("Connection between items with the same type is not allowed.\n");
-	}
+	end_item = item;
+	updateEndPos();
 
-	// Check if connection does not already exist
-	// TODO: Can items be connected in both directions?????
-	if (start_item->isConnected(item))
-	{
-		finished = false;
-		error_message.append("Such connection already exists.\n");
-	}
+	start_item->addConnection(this);
+	end_item->addConnection(this);
 
-	// TODO: Validate that both objects can be connected (input/output KV are correct)
-
-	if(finished)
-	{
-		end_item = item;
-		updateEndPos();
-
-		start_item->addConnection(this);
-		end_item->addConnection(this);
-
-		connect(start_item, SIGNAL(posChanged()), this, SLOT(updateStartPos()));
-		connect(end_item, SIGNAL(posChanged()), this, SLOT(updateEndPos()));
-	}
-	else
-	{
-		QMessageBox::information(0, QString("Connection Error"), error_message);
-	}
-
-	return finished;
+	connect(start_item, SIGNAL(posChanged()), this, SLOT(updateStartPos()));
+	connect(end_item, SIGNAL(posChanged()), this, SLOT(updateEndPos()));
 }

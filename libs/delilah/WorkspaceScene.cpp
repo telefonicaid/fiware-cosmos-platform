@@ -18,6 +18,7 @@
 #include "OperationItem.h"
 #include "Operation.h"
 #include "ConnectionItem.h"
+#include "Process.h"
 #include "Misc.h"
 
 QSvgRenderer* WorkspaceScene::queue_renderer = 0;
@@ -220,6 +221,9 @@ void WorkspaceScene::showOperation(Operation* operation, const QPointF &position
 	operation_item->setPos(position);
 
 	addItem(operation_item);
+
+	Process* process = new Process(operation_item);
+	processes.append(process);
 }
 
 void WorkspaceScene::startConnection(BaseItem* item)
@@ -239,12 +243,93 @@ void WorkspaceScene::cancelConnection()
 
 void WorkspaceScene::closeConnection(BaseItem* item)
 {
-	if (current_conn->close(item))
+	// Cancel connections that are between two queues or two operations
+	if(current_conn->startItem()->type()==item->type())
 	{
-		current_conn = 0;
+		QString error = QString("Items of the same type can not be connected.");
+		emit(unhandledFailure(error));
+		cancelConnection();
 	}
 	else
 	{
-		cancelConnection();
+		OperationItem* operation_item = 0;
+		QueueItem* queue_item = 0;
+		if(current_conn->startItem()->type()==OPERATION_ITEM && item->type()==QUEUE_ITEM)
+		{
+			operation_item = qgraphicsitem_cast<OperationItem*>(current_conn->startItem());
+			queue_item = qgraphicsitem_cast<QueueItem*>(item);
+			Process* process = findProcess(operation_item);
+			if (process==0)
+			{
+				QString error = QString("Process with operation %1 is not available").arg(operation_item->operation->getName());
+				emit(unhandledFailure(error));
+				cancelConnection();
+			}
+			else
+			{
+				QString error = process->addOutput(queue_item);
+				if(error.isNull())
+				{
+					current_conn->close(item);
+					current_conn = 0;
+				}
+				else
+				{
+					emit(unhandledFailure(error));
+					cancelConnection();
+				}
+			}
+		}
+		else
+		{
+			if (item->type()==OPERATION_ITEM && current_conn->startItem()->type()==QUEUE_ITEM)
+			{
+				operation_item = qgraphicsitem_cast<OperationItem*>(item);
+				queue_item = qgraphicsitem_cast<QueueItem*>(current_conn->startItem());
+
+				Process* process = findProcess(operation_item);
+				if (process==0)
+				{
+					QString error = QString("Process with operation %1 is not available").arg(operation_item->operation->getName());
+					emit(unhandledFailure(error));
+					cancelConnection();
+				}
+				else
+				{
+					QString error = process->addInput(queue_item);
+					if(error.isNull())
+					{
+						current_conn->close(item);
+						current_conn = 0;
+					}
+					else
+					{
+						emit(unhandledFailure(error));
+						cancelConnection();
+					}
+				}
+			}
+			else
+			{
+				QString error = QString("Connection is possible only between queue and operation.");
+				emit(unhandledFailure(error));
+				cancelConnection();
+			}
+		}
 	}
+}
+
+Process* WorkspaceScene::findProcess(OperationItem* item)
+{
+	Process* process = 0;
+	for(int i=0; i<processes.size(); i++)
+	{
+		if (processes[i]->operation_item==item)
+		{
+			process = processes[i];
+			break;
+		}
+	}
+
+	return process;
 }

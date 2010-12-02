@@ -27,6 +27,9 @@ public:
 	void upload(ss::network::Operation* o);
 	virtual QString getHTMLInfo();
 
+	QList<KVPair*> getInput() { return input; };
+	QList<KVPair*> getOutput() { return output; };
+
 protected:
 	QList<KVPair*> input;
 	QList<KVPair*> output;

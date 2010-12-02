@@ -141,7 +141,9 @@ void Workspace::loadOperation(const QString &name, const QPointF &scene_pos)
 {
 	Operation* operation = app->getOperation(name);
 	if (operation)
+	{
 		scene->showOperation(operation, scene_pos);
+	}
 	else
 	{
 		QString error = QString("Loading operation '%1' failed: Operation is not available").arg(name);

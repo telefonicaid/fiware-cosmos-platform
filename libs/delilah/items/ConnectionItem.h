@@ -21,8 +21,8 @@ public:
 	ConnectionItem(BaseItem* start, BaseItem* end=0, QGraphicsItem* parent=0);
 	~ConnectionItem();
 
-	bool open(BaseItem* item);
-	bool close(BaseItem* item);
+	void open(BaseItem* item);
+	void close(BaseItem* item);
 	void updateItem();
 
 	BaseItem* startItem() { return start_item; };

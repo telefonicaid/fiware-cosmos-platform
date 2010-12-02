@@ -41,6 +41,7 @@ public:
 
 public slots:
 	void setTool(int tool) { current_tool = tool; };
+	void removeItemFromWorkspace(BaseItem* item);
 
 	/*
 	 * Move zooming to WorkspaceView class
@@ -60,7 +61,6 @@ signals:
 														// Argument is the position of mouse click.
 
 	void infoRequested(BaseObject*);					// Emitted when user wants to get information about queue or operation
-	void removeItemRequested(BaseItem*);				// Emitted when user wants to remove item from workspace
 	void deleteQueueRequested(Queue*);					// Emitted when user chooses to delete queue from system
 	void uploadDataRequested(Queue*);
 	void downloadDataRequested(Queue*);

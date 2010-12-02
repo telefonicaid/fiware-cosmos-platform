@@ -23,7 +23,6 @@ Workspace::Workspace(QString _name)
 	app = (DelilahQtApp*)qApp;
 	scene = new WorkspaceScene();
 
-	connect(scene, SIGNAL(removeItemRequested(BaseItem*)), this, SLOT(removeItem(BaseItem*)));
 	connect(app, SIGNAL(gotCommandResponse(unsigned int, bool, bool, QString)),
 			this, SLOT(updateJob(unsigned int, bool, bool, QString)));
 }
@@ -149,12 +148,6 @@ void Workspace::loadOperation(const QString &name, const QPointF &scene_pos)
 		QString error = QString("Loading operation '%1' failed: Operation is not available").arg(name);
 		emit(unhandledFailure(error));
 	}
-}
-
-void Workspace::removeItem(BaseItem* item)
-{
-	// TODO: remove other items/processes connected to this item
-	scene->removeItem((QGraphicsItem*)item);
 }
 
 /*

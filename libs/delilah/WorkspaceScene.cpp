@@ -176,7 +176,7 @@ void WorkspaceScene::showQueue(Queue* queue, const QPointF &pos)
 
 	// Connect appropriate signals to propagate user's requests
 	connect(queue_item, SIGNAL(infoRequested(BaseObject*)), this, SIGNAL(infoRequested(BaseObject*)));
-	connect(queue_item, SIGNAL(removeItemRequested(BaseItem*)), this, SIGNAL(removeItemRequested(BaseItem*)));
+	connect(queue_item, SIGNAL(removeItemRequested(BaseItem*)), this, SLOT(removeItemFromWorkspace(BaseItem*)));
 	connect(queue_item, SIGNAL(deleteQueueRequested(Queue*)), this, SIGNAL(deleteQueueRequested(Queue*)));
 	connect(queue_item, SIGNAL(uploadDataRequested(Queue*)), this, SIGNAL(uploadDataRequested(Queue*)));
 	connect(queue_item, SIGNAL(downloadDataRequested(Queue*)), this, SIGNAL(downloadDataRequested(Queue*)));
@@ -187,6 +187,13 @@ void WorkspaceScene::showQueue(Queue* queue, const QPointF &pos)
 	queue_item->setPos(pos);
 
 	addItem(queue_item);
+}
+
+void WorkspaceScene::removeItemFromWorkspace(BaseItem* item)
+{
+	//TODO: remove connections and remove from process
+
+	removeItem(item);
 }
 
 void WorkspaceScene::removeQueueItem(Queue* queue)
@@ -200,7 +207,7 @@ void WorkspaceScene::removeQueueItem(Queue* queue)
 			QueueItem* item = qgraphicsitem_cast<QueueItem*>(scene_items[i]);
 			if (item->queue == queue)
 			{
-				removeItem(item);
+				removeItemFromWorkspace(item);
 				break;
 			}
 		}
@@ -213,7 +220,7 @@ void WorkspaceScene::showOperation(Operation* operation, const QPointF &position
 
 	// Connect appropriate signals to propagate user's requests
 	connect(operation_item, SIGNAL(infoRequested(BaseObject*)), this, SIGNAL(infoRequested(BaseObject*)));
-	connect(operation_item, SIGNAL(removeItemRequested(BaseItem*)), this, SIGNAL(removeItemRequested(BaseItem*)));
+	connect(operation_item, SIGNAL(removeItemRequested(BaseItem*)), this, SLOT(removeItemFromWorkspace(BaseItem*)));
 
 	operation_item->setSharedRenderer(operation_renderer);
 	operation_item->initText();

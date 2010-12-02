@@ -58,7 +58,6 @@ public slots:
 	void downloadFromQueue(Queue* queue, QString file);
 
 	void loadOperation(const QString &name, const QPointF &scene_pos);
-	void removeItem(BaseItem* item);
 
 	void updateJob(unsigned int id, bool finished, bool error, QString message);
 	void finishJob(unsigned int id, bool error, QString message);

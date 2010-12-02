@@ -39,7 +39,7 @@ void QueueItem::initText()
 
 	QString text;
 	if (queue->getStatus()==Queue::SYNCHRONIZING)
-		text = QString("Loading...");
+		text = QString("Synchronizing...");
 	if (queue->getStatus()==Queue::UPLOADING)
 		text = QString("Uploading...");
 	if(queue->getStatus()==Queue::READY)

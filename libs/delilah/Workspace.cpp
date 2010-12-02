@@ -221,7 +221,9 @@ void Workspace::finishJob(unsigned int id, bool error, QString message)
 				{
 					Queue* queue = app->getQueue(job.args[0]);
 					if (queue)
-						queue->setStatus(Queue::READY);
+					{
+						app->uploadData(true, false, false, queue->getName());
+					}
 					else
 					{
 						QString error = QString("Uploading of %1 queue failed:\nQueue is not available").arg(job.args[0]);

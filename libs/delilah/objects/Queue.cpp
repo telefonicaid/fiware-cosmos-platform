@@ -50,7 +50,7 @@ QString Queue::getHTMLInfo()
 	}
 
 	// TODO: check formating
-	QString queue_size = QString::number(size/1024, 'f', 2) + " kb";
+	QString queue_size = QString::number(size/1024.0, 'f', 2) + " kb";
 	if (type==KV_QUEUE)
 		queue_size.append(QString(" in %1 KV pairs").arg(kv_number));
 	QStringList size_info = (QStringList() << "Size: " << queue_size);

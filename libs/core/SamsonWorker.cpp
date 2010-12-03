@@ -248,6 +248,9 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		output << FileManager::shared()->getStatus();
 		
 		
+		output << "** Network status:\n";
+		output << network->getState("");
+		
 		return output.str();
 		
 	}

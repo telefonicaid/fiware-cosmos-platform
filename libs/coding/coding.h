@@ -137,6 +137,15 @@ namespace ss {
 		
 	};
 	
+	/****************************************************************
+	 Reduce operation file header ( shared with shared memory )
+	 ****************************************************************/
+
+	struct ReduceFileHeader
+	{
+		int input;				// Input channel
+		size_t size;			// Size of the data buffer		
+	};
 	
 }
 

@@ -94,6 +94,7 @@ int SamsonController::receiveHelp(int fromId, Packet* packet)
 		modulesManager.helpOperations( response , packet->message.help() );
 	}
 		
+	// copy the id when returning
 	p->message.set_delilah_id( packet->message.delilah_id() );
 	
 	network->send(this, fromId, Message::HelpResponse, p);
@@ -282,7 +283,8 @@ std::string SamsonController::getStatus(std::string command)
 	output << "** Job Manager:\n" << jobManager.getStatus();
 	output << "** Task Manager:\n" << taskManager.getStatus();
 	output << "** File Manager:\n" << FileManager::shared()->getStatus();
-		
+	output << "** Network status:\n" << network->getState("");
+	
 #if 0				
 	Endpoint* ep;
 	int       workers;

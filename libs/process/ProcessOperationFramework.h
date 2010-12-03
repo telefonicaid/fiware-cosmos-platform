@@ -7,41 +7,45 @@
 #include "coding.h"							// FileHeader, 
 
 namespace ss {
-
 	
+	/* Vector key-values to sort and process all input channels */
 	
-	/* Function to work with KVStruct */
-	
-	class KVInput
+	class KVInputVector
 	{
 		
 	public:
 		
-		KV ** _kv;						// Vector with pointers to kv
-		KV *kv;							// Vector of KV elements
+		KV *kv;							// Dynamic Vector of KV elements
+		KV ** _kv;						// Dynamic Vector with pointers to kv
 		
 		size_t max_num_kvs;				// Allocation size
 		size_t num_kvs;					// Real number of kvs in the vectors
 		
-		size_t pos;						// Position where this input is processing
-		size_t num_kvs_with_same_key;	// Number of kvs with the same key
-		bool participating;				// Flag to indicate if this imput participate in this round
-		bool finished;					// Flag to indicate that this input is finised ( no more key-values)
+		DataSizeFunction *keySize;
+		DataSizeFunction *valueSize;
 		
-		// This functions are set manually
-		DataSizeFunction keySize;
-		DataSizeFunction valueSize;
+		int num_inputs;
 		
-		// Compare functions
-		DataCompareFunction compareFunction;
-		
-		
-		KVInput( )
+		KVInputVector( int _num_inputs )
 		{
+			num_inputs = _num_inputs;
+			
 			_kv = NULL;
 			kv  = NULL;
 			max_num_kvs = 0;
 			num_kvs = 0;
+			
+			
+			keySize = (DataSizeFunction *) malloc( sizeof( DataSizeFunction) * num_inputs );
+			valueSize = (DataSizeFunction *) malloc( sizeof( DataSizeFunction) * num_inputs );
+		}
+		
+		~KVInputVector()
+		{
+			if( _kv )
+				free( _kv );
+			if( kv ) 
+				free ( kv );
 		}
 		
 		void prepareInput( size_t _max_num_kvs )
@@ -66,11 +70,13 @@ namespace ss {
 				_kv[i] = &kv[i];
 			
 			num_kvs = 0;
-			pos = 0;
 		}
 		
-		void addKVs( char * data , FileKVInfo info)
+		void addKVs( int input , char * data , FileKVInfo info)
 		{
+			DataSizeFunction _keySize	= keySize[input];
+			DataSizeFunction _valueSize = valueSize[input];
+
 			size_t offset = 0;
 			
 			// Process a set of key values
@@ -78,11 +84,13 @@ namespace ss {
 			{
 				kv[ num_kvs ].key = data + offset;
 				
-				offset += keySize( data + offset );
+				offset += _keySize( data + offset );
 				
 				kv[ num_kvs ].value = data + offset;
 				
-				offset += valueSize( data + offset );
+				offset += _valueSize( data + offset );
+
+				kv[num_kvs].input = input;
 				
 				num_kvs++;
 			}
@@ -91,99 +99,53 @@ namespace ss {
 			assert( offset == info.size );
 		}
 		
-		void sort()
+	};
+
+	
+	class ReduceFile
+	{
+	public:
+		
+		// Pointer to the header
+		ReduceFileHeader *header;
+
+		// Pointer to the info for each hash-group
+		FileKVInfo *info;
+
+		// Data pointer to data
+		char *data;
+		size_t offset;
+
+		
+		// Set the real pointer to the current data and returns the toal size of this file in the shared memory area
+		size_t set( char *_data , int num_hash_groups )
 		{
-			std::sort( _kv , _kv + num_kvs  , compareFunction );
+			header = (ReduceFileHeader*) _data;
+			
+			offset = 0;
+			
+			info = (FileKVInfo*) _data + sizeof(ReduceFileHeader);
+			
+			data = _data + sizeof(ReduceFileHeader) + sizeof(FileKVInfo)*num_hash_groups;
+			
+			return sizeof(ReduceFile) + sizeof(FileKVInfo)*num_hash_groups + header->size;
+			
 		}
 		
-		
-		void compute_num_kvs_with_same_key()
+		char* currentData()
 		{
-			num_kvs_with_same_key = 1;
+			return data + offset;
 		}
 		
+		void increaseOffset( size_t _offset )
+		{
+			offset += _offset;
+		}
 		
 		
 		
 	};
-
-	class KVInputs
-	{
-		
-	public:
-		
-		int num_inputs;			
-		KVInput *_input;
-		//KVSetStruct *input;
-
-		// Global key compare function
-		DataCompareFunction keyCompareFunction;
-		
-		
-		KVInputs( int _num_inputs )
-		{
-			num_inputs= _num_inputs;
-			_input = new KVInput[ num_inputs ];
-		}
-
-		~KVInputs()
-		{
-			delete[] _input;
-		}
-		
-		void sort()
-		{
-			for (int i = 0 ; i < num_inputs ; i++)
-				_input[i].sort();
-		}
-		
-		void processBegin()
-		{
-			for (int i = 0 ; i < num_inputs ; i++)
-				_input[i].compute_num_kvs_with_same_key();
-		}
-		
-		bool processNextIteration()
-		{
-			/*
-			int min_key_input = -1;
-			
-			for (int i = 1 ; i < num_inputs ; i++)
-			{
-				if( ! _input[i].finished )
-				{
-					if ( min_key_input == -1)
-					{
-						_input[i].participating = true;
-						min_key_input = i;
-					}
-					else
-					{
-						int res = keyCompareFunction( _input[i]._kvs[ _input[i].pos ] , _input[min_key_input]._kvs[ _input[min_key_input].pos ] );
-						if( res == 0)
-							_input[i].participating = true;
-						else if( res < 0)
-						{
-							
-							for (int j = 0 ; j < i ; j++)
-								_input[j].participating = false;	// Deactivate participation of the rest of elements
-							
-						}
-							
-					}
-					
-				}
-				
-				
-				
-			}
-			*/
-			
-			return true;
-		}
-		
-		
-	};		
+	
 	
 	class Process;
 	class WorkerTaskItemWithOutput;
@@ -373,113 +335,67 @@ namespace ss {
 			reduce->environment = environment;
 			
 			std::vector<KVFormat> inputFormats =  operation->getInputFormats();
-			int num_inputs = m.worker_task().input_size();
+
+			int num_inputs		= m.worker_task().input_size();
+			int num_hash_groups = m.num_hash_groups();
+			int num_input_files = m.num_input_files();
 
 			assert( num_inputs == (int) inputFormats.size() );
 			
 			// Complete structure to prepare inputs
-			KVInputs inputs( num_inputs );
-			
-			for (int i = 0 ; i < (int)inputFormats.size() ;i++)
-			{
-				Data *keyData = process->modulesManager.getData( inputFormats[i].keyFormat );
-				Data *valueData = process->modulesManager.getData( inputFormats[i].valueFormat );
-				
-				assert( keyData );
-				assert( valueData );
-					
-				inputs._input[i].keySize = keyData->getSizeFunction();
-				inputs._input[i].valueSize = valueData->getSizeFunction();
-				inputs._input[i].compareFunction = keyData->getCompareFunction();	// to be changed by a combination of both functions
-			}			
-						
+			KVInputVector inputs(num_inputs);
 			
 			// Shared memory area used as input for this operation
 			SharedMemoryItem* item =  MemoryManager::shared()->getSharedMemory( m.input_shm() );
 			char *data = item->data;
 			
 			
-			int num_hash_groups = m.num_hash_groups();
-			int *num_input_files = (int*) malloc( sizeof(int) * num_inputs );
-			int total_num_files = 0;
-			assert( num_inputs == (int)inputFormats.size() );
+			// Process all input files [ Header ] [ Info ] [ Data ]
+			ReduceFile *file = new ReduceFile[ num_input_files ];
+			size_t offset = 0;
+			for (int i = 0 ; i < num_input_files ; i++ )
+				offset += file[i].set( data + offset , num_hash_groups );
 			
-			for(int i = 0 ; i < num_inputs ; i++)
+			
+			for (int i = 0 ; i < (int)inputFormats.size() ;i++)
 			{
-				num_input_files[i] = m.worker_task().input(i).file_size();
-				total_num_files += num_input_files[i];
-			}
-			
-			FileKVInfo **info = (FileKVInfo **) malloc( sizeof(FileKVInfo *) * total_num_files );
-			for (int i = 0 ; i < total_num_files ; i++)
-				info[i] = (FileKVInfo*) data + i*( sizeof(FileKVInfo)*num_hash_groups);
-
-			// Pointer to current data
-			char **file_data = (char**) malloc( sizeof(char*) * total_num_files );
-
-			// get the rigth pointer to where files begins
-			char* tmp_file_data = data + ( total_num_files * num_hash_groups * sizeof( FileKVInfo ) );
-			for (int i = 0 ; i < total_num_files ; i++)
-			{
-				size_t _size = *((size_t*)tmp_file_data);
-				tmp_file_data += sizeof( size_t);
+				Data *keyData	= process->modulesManager.getData( inputFormats[i].keyFormat );
+				Data *valueData	= process->modulesManager.getData( inputFormats[i].valueFormat );
 				
-				file_data[i] = tmp_file_data;
-				
-				tmp_file_data += _size;
-			}
-			
-			
-
+				assert( keyData );
+				assert( valueData );
+					
+				inputs.keySize[i] = keyData->getSizeFunction();
+				inputs.valueSize[i] = valueData->getSizeFunction();
+			}			
 
 			reduce->init();
-
+			
+			
 			for (int hg = 0 ; hg < num_hash_groups ; hg++)
 			{
-				// Get the total number of kvs for each input to prepare everything				
-				// ---------------------------------------------------------------------
-				int file_counter = 0;
-				for (int i = 0 ; i < num_inputs ; i++)
+				
+				// Counte the number of key-values I will have in this round
+				size_t num_kvs = 0;
+				for (int f = 0 ; f < num_input_files ; f++)
+					num_kvs += file[f].info[hg].kvs;
+				inputs.prepareInput(num_kvs);
+				
+				// Add the key-values from all the inputs
+				for (int f = 0 ; f < num_input_files ; f++)
 				{
-					
-					size_t total_kvs = 0;
-					for (int f = 0 ; f < num_input_files[i] ; f++)
-					{
-						total_kvs += info[file_counter][hg].kvs;
-						file_counter++;
-					}
-					inputs._input[i].prepareInput( total_kvs );
+					inputs.addKVs(file[f].header->input , file[f].currentData() , file[f].info[hg]);
+					file[f].increaseOffset( file[f].info[hg].size );
 				}
 				
-				// Getting real key-values
-				// ---------------------------------------------------------------------
-				file_counter=0;
-				for (int i = 0 ; i < num_inputs ; i++)
-					for (int f = 0 ; f < num_input_files[i] ; f++)
-					{
-						inputs._input[i].addKVs( file_data[file_counter] , info[file_counter][hg] );
-						
-						file_data[file_counter] += info[file_counter][hg].size;	// Move the pointer for the next hash-group process
-						file_counter++;
-					}
-						
-				// Sorting data
-				inputs.sort();
+				// Make sure we have read all the key-values
+				assert( inputs.num_kvs == num_kvs );
 				
-				
-				// Fill poiting to real data
-				if( inputs._input[0].num_kvs > 0)
-				{
-					std::ostringstream o;
-					o << "Reduce HG with " << inputs._input[0].num_kvs << "kvs\n";
-					std::cout << o.str();
-				}
 			}
 			
+
 			reduce->finish();
 			
-			free( info );
-			free( num_input_files);
 			
 		}
 	};	

@@ -117,7 +117,7 @@ namespace ss {
 
 		std::string getStatus()
 		{
-			return "No status for Load Data Manager...";
+			return "No status for Load Data Manager...\n";
 		}
 
 		

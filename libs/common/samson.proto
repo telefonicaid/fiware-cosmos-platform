@@ -359,5 +359,6 @@ message ProcessMessage
 	optional WorkerTask worker_task=10;	// Entire copy of the worker task
 
 	optional uint32 num_hash_groups=11;	// Number of hash groups ( only in reduce operations )
+	optional uint32 num_input_files=12;	// total number of files included at the input ( only in reduce operations )
 
 }

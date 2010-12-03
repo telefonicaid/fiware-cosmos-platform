@@ -19,10 +19,9 @@ namespace ss
 {	
 	typedef struct KV
 	{
-		char*   key;
-		size_t  key_size;
-		char*   value;
-		size_t  value_size;
+		char*   key;		// Pointer to key data
+		char*   value;		// Pointer to value data
+		int input;			// Index of the input ( Used internally in the platform for reduce operations )
 	} KV;
 }
 

@@ -95,7 +95,7 @@ int iomMsgRead
 
 	if (header.gbufLen != 0)
 	{
-		void* dataP = (void*)  malloc(header.gbufLen);
+		void* dataP = (void*)  malloc(header.gbufLen + 1);
 
 		if (dataP == NULL)
 			LM_X(1, ("malloc(%d)", header.gbufLen));
@@ -108,8 +108,10 @@ int iomMsgRead
 		if (nb != (int) header.gbufLen)
 			LM_X(1, ("read %d bytes instead of %d", nb, header.gbufLen));
 
+		((char*) dataP)[nb] = 0;
+
 		if (packetP->message.ParseFromArray(dataP, nb) == false)
-			LM_X(1, ("ParseFromString failed!"));
+			LM_X(1, ("Error parsing Google Protocol Buffer!"));
 
 		LM_READS(from, "google protocol buffer", dataP, nb, LmfByte);
 	}
@@ -203,7 +205,7 @@ int iomMsgRead
 
 	if (headerP->gbufLen != 0)
 	{
-		void* dataP = (void*)  malloc(headerP->gbufLen);
+		void* dataP = (void*)  malloc(headerP->gbufLen + 1);
 
 		if (dataP == NULL)
 			LM_X(1, ("malloc(%d)", headerP->gbufLen));
@@ -214,8 +216,9 @@ int iomMsgRead
         if (nb == -1)
 			LM_RP(1, ("read(%d bytes from '%s')", headerP->gbufLen, ep->name.c_str()));
 
+		((char*) dataP)[nb] = 0;
 		if (packetP->message.ParseFromArray(dataP, nb) == false)
-			LM_X(1, ("ParseFromString failed!"));
+			LM_X(1, ("Error parsing Google Protocol Buffer!"));
 
 		LM_READS(ep->name.c_str(), "google protocol buffer", dataP, nb, LmfByte);
 	}

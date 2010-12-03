@@ -1531,6 +1531,7 @@ void Network::msgTreat(void* vP)
 		// LM_T(LMT_FORWARD, ("forwarding '%s' %s from %s to Endpoint %d", messageCode(msgCode), messageType(msgType), ep->name.c_str(), endpointId));
 		LM_T(LMT_FORWARD, ("calling receiver->receive for message code '%s'", messageCode(msgCode)));
 		receiver->receive(endpointId, msgCode, &packet);
+		LM_T(LMT_FORWARD, ("back from receiver->receive for message code '%s'", messageCode(msgCode)));
 		break;
 	}
 

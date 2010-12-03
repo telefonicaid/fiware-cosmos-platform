@@ -235,28 +235,47 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 
 	std::string SamsonWorker::getStatus(std::string command)
 	{
+		LM_M(("Here"));
 		std::ostringstream output;
+		LM_M(("Here"));
 		output << "** Memory: " << MemoryManager::shared()->getStatus() << std::endl;
+		LM_M(("Here"));
 
 		output << "** TaskManager:\n";
+		LM_M(("Here"));
 		output << taskManager.getStatus();
+		LM_M(("Here"));
 
 		output << "** ProcessAssistants: (" << num_processes << " process):\n";
+		LM_M(("Here"));
 		for (int i = 0 ; i < num_processes ; i++)
+		{
+		LM_M(("Here"));
 			output << "\t" << processAssistant[i]->getStatus() << std::endl; 
+		LM_M(("Here"));
+		}
 
+		LM_M(("Here"));
 		output << "** DataBuffer:\n";
+		LM_M(("Here"));
 		output << dataBuffer.getStatus();
+		LM_M(("Here"));
 
 		output << "** LoadManager:\n";
+		LM_M(("Here"));
 		output << loadDataManager.getStatus();
+		LM_M(("Here"));
 
 		output << "** File Manager:\n";
+		LM_M(("Here"));
 		output << FileManager::shared()->getStatus();
+		LM_M(("Here"));
 		
 		
 		output << "** Network status:\n";
+		LM_M(("Here"));
 		output << network->getState("");
+		LM_M(("Here"));
 		
 		return output.str();
 		

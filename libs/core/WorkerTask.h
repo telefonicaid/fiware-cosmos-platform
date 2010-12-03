@@ -8,13 +8,14 @@
 #include "samson/Operation.h"	// ss::Operation
 #include "samson.pb.h"			// ss::network::...
 #include "samson/Environment.h"	// ss::Environment
-
+#include "ReduceInformation.h"			// ss::ReduceInformation
 
 namespace ss {
 
 	
 	class WorkerTaskItem;
 	class WorkerTaskManager;
+	class ReduceInformation;
 	
 	class WorkerTask
 	{
@@ -50,6 +51,11 @@ namespace ss {
 		std::string getStatus();
 		bool isFinish();
 		size_t getId();
+		
+		
+		ReduceInformation *reduceInformation;		// Structure used only by reduce operations ( created with the orgnizer and used by all process assistants )
+		
+		~WorkerTask();
 		
 	private:
 		friend class WorkerTaskItemReduceOrganizer;	// to be able to add individual reduce items

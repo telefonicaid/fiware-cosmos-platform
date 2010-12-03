@@ -21,6 +21,7 @@ namespace ss
 	{
 		KV**    kvs;			// Vector containing Key-values (pointers to row data and hash code)
 		size_t  num_kvs;		// Number of key-values	
+		
 	} KVSetStruct;
 	
 	

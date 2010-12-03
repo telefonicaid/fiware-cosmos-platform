@@ -22,6 +22,7 @@ SET (HEADERS
     WorkerTaskItemWithOutput.h
     WorkerTaskItemGenerator.h
     WorkerTaskItemParser.h
+    ReduceInformation.h
 )
 
 SET (SOURCES
@@ -47,6 +48,7 @@ SET (SOURCES
     WorkerTaskItemWithOutput.cpp
     WorkerTaskItemGenerator.cpp
     WorkerTaskItemParser.cpp
+    ReduceInformation.cpp
 )
 
 SET (STATIC_LIBS

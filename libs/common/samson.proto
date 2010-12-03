@@ -356,5 +356,8 @@ message ProcessMessage
 	optional string operation =7;		// Name of the operation to run ( only in run messages for all operations)
 
 	optional Environment environment=9;	// Environment for this operation
+	optional WorkerTask worker_task=10;	// Entire copy of the worker task
+
+	optional uint32 num_hash_groups=11;	// Number of hash groups ( only in reduce operations )
 
 }

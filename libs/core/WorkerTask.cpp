@@ -7,6 +7,7 @@
 #include "WorkerTaskItemGenerator.h"	// ss::WorkerTaskItemGenerator
 #include "WorkerTaskManager.h"			// ss::WorkerTaskManager
 
+
 namespace ss
 {
 	
@@ -17,6 +18,8 @@ namespace ss
 		operation = task.operation();	// Save the operation to perform		
 		task_id = task.task_id();		// Save the task id
 
+		reduceInformation = NULL;	// By default this is not used
+		
 		num_items = 0;
 		
 		// copy all the environment variables
@@ -70,6 +73,13 @@ namespace ss
 		
 		
 	}
+	
+	WorkerTask::~WorkerTask()
+	{
+		if( reduceInformation )
+			delete reduceInformation;
+	}
+	
 	
 	void WorkerTask::addItem( WorkerTaskItem * i )
 	{

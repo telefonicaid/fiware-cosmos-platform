@@ -82,6 +82,11 @@ namespace ss {
 			 return _sizeFunction;
 		}
 		
+		DataCompareFunction getCompareFunction()
+		{
+			return _compareFunction;
+		}
+		
 	};
 		
 	

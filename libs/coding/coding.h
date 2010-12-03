@@ -21,6 +21,9 @@
 #define KV_HASH_GROUP_VECTOR_SIZE_NETWORK	(sizeof(NetworkKVInfo)*(KV_NUM_HASHGROUPS+1))		// Size of the structure of every network message ) 
 #define KV_HASH_GROUP_VECTOR_SIZE_FILE		(sizeof(FileKVInfo)*(KV_NUM_HASHGROUPS+1))			// Size of the structure of every file
 
+
+#define KV_TOTAL_FILE_HEADER_SIZE sizeof( FileHeader ) + KV_HASH_GROUP_VECTOR_SIZE_FILE	// Size of the structure of every file
+
 namespace ss {
 
 	/**
@@ -76,12 +79,12 @@ namespace ss {
 	 File interface
 	 ****************************************************************/
 	
-	typedef uint32 hg_file_size;			// Size of a hashgroup			(32bits)
+	typedef uint32 hg_file_size;		// Size of a hashgroup			(32bits)
 	typedef uint32 hg_file_kvs;			// Num KVs inside a hashgroup	(32bits)
 	
 	struct FileKVInfo
 	{
-		hg_file_kvs kvs;		// Total number of kvs
+		hg_file_kvs kvs;	// Total number of kvs
 		hg_file_size size;	// Total size
 		
 		void init()

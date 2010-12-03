@@ -205,16 +205,24 @@ int iomMsgRead
 
 	if (headerP->gbufLen != 0)
 	{
-		void* dataP = (void*)  malloc(headerP->gbufLen + 1);
+		char* dataP = (char*) malloc(headerP->gbufLen + 1);
+		int   tot   = 0;
 
 		if (dataP == NULL)
 			LM_X(1, ("malloc(%d)", headerP->gbufLen));
 
 		LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
-        nb = read(ep->rFd, dataP, headerP->gbufLen);
-		LM_T(LMT_MSG, ("read %d bytes GPROTBUF from '%s'", nb, ep->name.c_str()));
-        if (nb == -1)
-			LM_RP(1, ("read(%d bytes from '%s')", headerP->gbufLen, ep->name.c_str()));
+		while (tot < (int) headerP->gbufLen)
+		{
+			nb = read(ep->rFd, &dataP[tot], headerP->gbufLen - tot);
+			LM_T(LMT_MSG, ("read %d bytes GPROTBUF from '%s'", nb, ep->name.c_str()));
+			if (nb == -1)
+				LM_RP(1, ("read(%d bytes from '%s')", headerP->gbufLen, ep->name.c_str()));
+			tot += nb;
+		}
+
+		if (nb != (int) headerP->gbufLen)
+			LM_X(1, ("read %d bytes instead of %d", nb, headerP->gbufLen));
 
 		((char*) dataP)[nb] = 0;
 		if (packetP->message.ParseFromArray(dataP, nb) == false)

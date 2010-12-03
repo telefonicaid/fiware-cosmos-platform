@@ -221,9 +221,6 @@ int iomMsgRead
 			tot += nb;
 		}
 
-		if (nb != (int) headerP->gbufLen)
-			LM_X(1, ("read %d bytes instead of %d", nb, headerP->gbufLen));
-
 		((char*) dataP)[nb] = 0;
 		if (packetP->message.ParseFromArray(dataP, nb) == false)
 			LM_X(1, ("Error parsing Google Protocol Buffer!"));

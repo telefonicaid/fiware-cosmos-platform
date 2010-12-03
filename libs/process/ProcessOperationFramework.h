@@ -17,14 +17,16 @@ namespace ss {
 		
 	public:
 		
-		KV ** _kv;				// Vector with pointers to kv
-		KV *kv;					// Vector of KV elements
+		KV ** _kv;						// Vector with pointers to kv
+		KV *kv;							// Vector of KV elements
 		
-		size_t max_num_kvs;		// Allocation size
-		size_t num_kvs;			// Real number of kvs in the vectors
+		size_t max_num_kvs;				// Allocation size
+		size_t num_kvs;					// Real number of kvs in the vectors
 		
 		size_t pos;						// Position where this input is processing
 		size_t num_kvs_with_same_key;	// Number of kvs with the same key
+		bool participating;				// Flag to indicate if this imput participate in this round
+		bool finished;					// Flag to indicate that this input is finised ( no more key-values)
 		
 		// This functions are set manually
 		DataSizeFunction keySize;
@@ -143,11 +145,39 @@ namespace ss {
 		
 		bool processNextIteration()
 		{
-			for (int i = 0 ; i < num_inputs ; i++)
+			/*
+			int min_key_input = -1;
+			
+			for (int i = 1 ; i < num_inputs ; i++)
 			{
+				if( ! _input[i].finished )
+				{
+					if ( min_key_input == -1)
+					{
+						_input[i].participating = true;
+						min_key_input = i;
+					}
+					else
+					{
+						int res = keyCompareFunction( _input[i]._kvs[ _input[i].pos ] , _input[min_key_input]._kvs[ _input[min_key_input].pos ] );
+						if( res == 0)
+							_input[i].participating = true;
+						else if( res < 0)
+						{
+							
+							for (int j = 0 ; j < i ; j++)
+								_input[j].participating = false;	// Deactivate participation of the rest of elements
+							
+						}
+							
+					}
+					
+				}
+				
+				
 				
 			}
-			
+			*/
 			
 			return true;
 		}

@@ -43,6 +43,8 @@ namespace ss {
 		Packet *p = new Packet();
 		network::Help *help = p->message.mutable_help();
 		help->set_queues(true);
+		help->set_datas(false);
+		help->set_operations( false );
 		help->set_name( queue ); 
 		p->message.set_delilah_id( id );
 		

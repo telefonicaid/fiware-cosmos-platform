@@ -221,11 +221,11 @@ int iomMsgRead
 			tot += nb;
 		}
 
-		((char*) dataP)[nb] = 0;
-		if (packetP->message.ParseFromArray(dataP, nb) == false)
+		((char*) dataP)[tot] = 0;
+		if (packetP->message.ParseFromArray(dataP, tot) == false)
 			LM_X(1, ("Error parsing Google Protocol Buffer!"));
 
-		LM_READS(ep->name.c_str(), "google protocol buffer", dataP, nb, LmfByte);
+		LM_READS(ep->name.c_str(), "google protocol buffer", dataP, tot, LmfByte);
 	}
 
 	if (headerP->kvDataLen != 0)

@@ -37,6 +37,12 @@ namespace ss {
 		}
 		
 		
+		virtual std::string getStatus()
+		{
+			return "";
+		}
+
+		
 	};
 	
 	
@@ -73,6 +79,15 @@ namespace ss {
 			offset = _offset;
 			size = _size;
 		}
+		
+		std::string getStatus()
+		{
+			std::ostringstream output;
+			output << "Read Item from file " << fileName << " Offset: " << offset << " Size: " << size;
+			return output.str();
+		}
+		
+		
 	};
 	
 	
@@ -98,6 +113,14 @@ namespace ss {
 		{
 			if( buffer )
 				MemoryManager::shared()->destroyBuffer( buffer );
+		}
+		
+		
+		std::string getStatus()
+		{
+			std::ostringstream output;
+			output << "Write Item to file " << fileName << " Size: " << buffer->getSize();
+			return output.str();
 		}
 		
 		
@@ -215,6 +238,22 @@ namespace ss {
 			// Call the delegate outside the lock to avoid dead-lock
 			if( delegate )
 				delegate->fileManagerNotifyFinish( id , success); 
+		}
+
+
+		
+		/**
+		 File manager status string
+		 */
+		
+		std::string getStatus()
+		{
+			std::ostringstream output;
+
+			std::map<size_t, FileManagerItem*>::iterator iter;
+			for (iter = items.begin() ; iter!= items.end() ;iter++)
+				output << iter->second->getStatus() << std::endl;
+			return output.str();
 		}
 
 		

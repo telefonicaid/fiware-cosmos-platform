@@ -17,7 +17,7 @@
 #include "SamsonSetup.h"				// ss::SamsonSetup
 #include "Buffer.h"						// ss::Buffer
 #include "MemoryManager.h"				// ss::MemoryManager
-
+#include "FileManager.h"				// ss::FileManager
 
 namespace ss {
 
@@ -281,6 +281,7 @@ std::string SamsonController::getStatus(std::string command)
 	output << "** Data Manager:\n" << data.getStatus();
 	output << "** Job Manager:\n" << jobManager.getStatus();
 	output << "** Task Manager:\n" << taskManager.getStatus();
+	output << "** File Manager:\n" << FileManager::shared()->getStatus();
 		
 #if 0				
 	Endpoint* ep;

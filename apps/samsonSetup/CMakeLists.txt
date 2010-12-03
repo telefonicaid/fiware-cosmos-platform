@@ -9,7 +9,6 @@ SET( STATIC_LIBS
      samsonNetworkStatic
      samsonCoreStatic
      samsonCommonStatic
-     delilahStatic
      protobuf
      pthread
      dl

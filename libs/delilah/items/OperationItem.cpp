@@ -1,3 +1,4 @@
+
 /*
  * OperationItem.cpp
  *
@@ -65,5 +66,6 @@ void OperationItem::removeOperationSelected()
 
 void OperationItem::runOperationSelected()
 {
-	// TODO:
+	// emit(runOperationRequested(this);
 }
+

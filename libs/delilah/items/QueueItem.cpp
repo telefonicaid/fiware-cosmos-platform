@@ -55,9 +55,12 @@ void QueueItem::initText(QString text)
 	if (text_item!=0)
 		delete text_item;
 
-	text_item = new ObjectTextItem(text, this);
-	// Don't know why this dosn't work...
-//	text_item->setAcceptedMouseButtons(0);
+	text_item = new ObjectTextItem(text, this);  // to refuse to accept event "press/release-mouse-button" ...
+	                                             // To always let queue-image handle the event
+
+	// Don't know why this doesn't work ...
+	//	  text_item->setAcceptedMouseButtons(0);
+
 	QFont serifFont("Times", 12, QFont::Bold);
 	text_item->setFont(serifFont);
 

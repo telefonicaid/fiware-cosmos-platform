@@ -1,19 +1,19 @@
-/*
- * FILE:		Queue.h
- *
- * AUTHOR:		Anna Wojdel
- *
- * DESCRIPTION:	Reprezentation of Samson Queue
- *
- */
-
 #ifndef QUEUE_H_
 #define QUEUE_H_
 
+/*
+*
+* FILE:		Queue.h
+*
+* AUTHOR:		Anna Wojdel
+*
+* DESCRIPTION:	Reprezentation of Samson Queue
+*
+*/
 #include <QObject>
 #include <QMetaType>
 
-#include "samson.pb.h"		//ss::network::Queue
+#include "samson.pb.h"		   // ss::network::Queue
 #include "globals.h"
 #include "BaseObject.h"
 
@@ -37,7 +37,14 @@ public:
 	/*
 	 * Status property
 	 */
-	enum Status {SYNCHRONIZING, UPLOADING, READY, DELETED};
+	enum Status 
+	{
+	   SYNCHRONIZING,
+	   UPLOADING,
+	   READY,
+	   DELETED
+	};
+
 	Status getStatus() const { return status; };
 	void setStatus(Status new_status)
 	{

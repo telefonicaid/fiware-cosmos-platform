@@ -41,13 +41,11 @@ protected:
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
 
 signals:
-//	void infoRequested(BaseObject*);
+	void runOperationRequested(OperationItem* opItemP);
 
 public:
-    enum { Type=OPERATION_ITEM };
-    Operation* operation;
-
-
+	enum { Type=OPERATION_ITEM };
+	Operation* operation;
 };
 
 

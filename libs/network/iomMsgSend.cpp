@@ -22,6 +22,17 @@
 #include "iomMsgSend.h"         // Own interface
 
 
+#if 0
+/* ****************************************************************************
+*
+* global variables
+*/
+static struct timeval startTime;
+static struct timeval endTime;
+static long           bytesSent;
+#endif
+
+
 
 /* ****************************************************************************
 *

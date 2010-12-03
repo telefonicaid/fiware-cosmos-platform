@@ -46,13 +46,14 @@ public slots:
 	/*
 	 * Move zooming to WorkspaceView class
 	 */
-	void zoomOut();
-	void zoomReset();
-	void zoomIn();
+	void zoomOut(void);
+	void zoomReset(void);
+	void zoomIn(void);
 
 	void startConnection(BaseItem* item);
 	void closeConnection(BaseItem* item);
-	void cancelConnection();
+	void cancelConnection(void);
+	void preRunOperation(OperationItem*);
 
 signals:
 	void addQueueRequested(const QPointF &);			// Emitted when user chooses to add queue.
@@ -74,7 +75,7 @@ protected:
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
 	BaseItem* findItem(const QPointF &pos);
-	Process* findProcess(OperationItem* item);
+	Process*  findProcess(OperationItem* item);
 
 protected:
 	static QSvgRenderer* queue_renderer;

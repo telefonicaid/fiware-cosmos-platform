@@ -221,6 +221,7 @@ void WorkspaceScene::showOperation(Operation* operation, const QPointF &position
 	// Connect appropriate signals to propagate user's requests
 	connect(operation_item, SIGNAL(infoRequested(BaseObject*)), this, SIGNAL(infoRequested(BaseObject*)));
 	connect(operation_item, SIGNAL(removeItemRequested(BaseItem*)), this, SLOT(removeItemFromWorkspace(BaseItem*)));
+	connect(operation_item, SIGNAL(runOperationRequested(OperationItem*)), this, SLOT(preRunOperation(OperationItem*)));
 
 	operation_item->setSharedRenderer(operation_renderer);
 	operation_item->initText();
@@ -326,9 +327,12 @@ void WorkspaceScene::closeConnection(BaseItem* item)
 	}
 }
 
+
+
 Process* WorkspaceScene::findProcess(OperationItem* item)
 {
 	Process* process = 0;
+
 	for(int i=0; i<processes.size(); i++)
 	{
 		if (processes[i]->operation_item==item)
@@ -339,4 +343,24 @@ Process* WorkspaceScene::findProcess(OperationItem* item)
 	}
 
 	return process;
+}
+
+
+
+void WorkspaceScene::preRunOperation(OperationItem* opItemP)
+{
+	// ToDo:
+	//   1. To which process is this item connected (findProcess ...) 
+	//   2. Generate list of I/O queues 
+	//   3. emit signal "runOpRequested" opName + I/O:s
+	//   4. Received by Workspace
+	//      Which does:
+	//        Create job (InfoJob)
+	//        Info to be sent over network
+	//        Call Application method "runOperation"
+	//        Send the job "sendCommand"
+
+	//   Will need a new Status value ... (Queue.h)
+	//   QueueItem receives the signal emitted upon state change
+	//        - setText called
 }

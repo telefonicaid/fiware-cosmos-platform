@@ -105,6 +105,9 @@ int iomMsgRead
         if (nb == -1)
 			LM_RP(1, ("read(%d bytes from '%s')", header.gbufLen, from));
 
+		if (nb != (int) header.gbufLen)
+			LM_X(1, ("read %d bytes instead of %d", nb, header.gbufLen));
+
 		if (packetP->message.ParseFromArray(dataP, nb) == false)
 			LM_X(1, ("ParseFromString failed!"));
 

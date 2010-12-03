@@ -16,6 +16,7 @@
 #include "Format.h"						// au::Format
 
 #include "MemoryManager.h"				// ss::SharedMemory
+#include "FileManager.h"				// ss::FileManager
 
 namespace ss {
 
@@ -242,6 +243,9 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 
 		output << "** LoadManager:\n";
 		output << loadDataManager.getStatus();
+
+		output << "** File Manager:\n";
+		output << FileManager::shared()->getStatus();
 		
 		
 		return output.str();

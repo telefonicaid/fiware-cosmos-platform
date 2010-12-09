@@ -6,7 +6,7 @@
 #include "samson.pb.h"						// ss::network::,,,
 #include "coding.h"							// FileHeader, 
 
-
+#include <algorithm>
 #include <cstdlib>
 
 namespace ss {

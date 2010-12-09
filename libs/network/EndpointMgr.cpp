@@ -178,6 +178,8 @@ Endpoint* EndpointMgr::endpointAdd
 
 	switch (type)
 	{
+	case Endpoint::Spawner:
+	case Endpoint::Supervisor:
 	case Endpoint::Sender:
 	case Endpoint::Unknown:
 	case Endpoint::Listener:
@@ -611,6 +613,8 @@ void EndpointMgr::msgTreat(int rFd, char* name)
 	LM_T(LMT_TREAT, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
 	{
+	case Message::WorkerSpawn:
+	case Message::ControllerSpawn:	   
 	case Message::Die:
 		LM_X(1, ("Got a DIE message from '%s' - I die", name));
 		break;

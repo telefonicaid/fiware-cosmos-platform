@@ -39,15 +39,19 @@ class Packet;
 class Network : public NetworkInterface
 {
 	PacketReceiverInterface* receiver;
-
-	void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL);
+	DataReceiverInterface*   dataReceiver;
+	
 	void ipSet(char* ip);
 
 public:
 	Network();
 	Network(int endpoints, int workers);
 
+	void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL);
+
 	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);
+	virtual void setDataReceiver(DataReceiverInterface* receiver);
+
 	virtual void initAsSamsonController(int port, int num_workers);
 	
 	bool ready();                                    // Inform about everything ready

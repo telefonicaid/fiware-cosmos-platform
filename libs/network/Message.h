@@ -51,7 +51,9 @@ typedef enum MessageCode
 	UploadDataResponse				= CODE('L', 'D', 'R', ' '),
 	UploadDataConfirmation			= CODE('L', 'C', 'o', ' '),
 	UploadDataConfirmationResponse	= CODE('L', 'C', 'R', ' '),
-	Die								= CODE('D', 'i', 'e', ' ')
+	Die								= CODE('D', 'i', 'e', ' '),
+	WorkerSpawn                     = CODE('W', 'S', 'p', ' '),
+	ControllerSpawn                 = CODE('C', 'S', 'p', ' ')
 } MessageCode;
 
 
@@ -95,7 +97,6 @@ typedef struct HelloData
 	char                name[32];
 	char                ip[32];
 	char                alias[32];
-//	ss::Endpoint::Type  type;
 	int                 type;
 	int                 workers;
 	int                 port;
@@ -115,7 +116,6 @@ typedef struct Worker
 	char             alias[32];
 	char             ip[32];
 	int              port;
-//	Endpoint::State  state;
 	int              state;
 } Worker;
 

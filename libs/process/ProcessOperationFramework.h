@@ -1,13 +1,15 @@
 #ifndef _H_PROCESS_OPERATION_FRAMEWORK
 #define _H_PROCESS_OPERATION_FRAMEWORK
 
-#include "OperationFramework.h"				// Own interface
+#include <algorithm>                        // sort
+#include <cstdlib>                          // ...
+
 #include "ProcessWriter.h"					// ss::ProcessWriter
 #include "samson.pb.h"						// ss::network::,,,
 #include "coding.h"							// FileHeader, 
+#include "OperationFramework.h"				// Own interface
 
 #include <algorithm>
-#include <cstdlib>
 
 namespace ss {
 	

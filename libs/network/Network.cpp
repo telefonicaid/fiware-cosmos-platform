@@ -113,10 +113,22 @@ Network::Network(int endpoints, int workers)
 */
 void Network::setPacketReceiverInterface(PacketReceiverInterface* _receiver)
 {
-	LM_T(LMT_DELILAH, ("Setting receiver to %p", _receiver));
+	LM_T(LMT_DELILAH, ("Setting packet receiver to %p", _receiver));
 	receiver = _receiver;
 }
 	
+
+
+/* ****************************************************************************
+*
+* setDataReceiver - set the element to be notified when packages arrive
+*/
+void Network::setDataReceiver(DataReceiverInterface* _receiver)
+{
+	LM_T(LMT_DELILAH, ("Setting data receiver to %p", _receiver));
+	dataReceiver = _receiver;
+}
+
 
 
 /* ****************************************************************************
@@ -136,9 +148,13 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 	me->name     = progName;
 	me->state    = Endpoint::Me;
 	me->ip       = ipGet();
-	me->alias    = alias;
 
-	if (strncmp(&alias[1], "orker", 5) == 0)
+	if (alias != NULL)
+		me->alias = alias;
+	else
+		me->alias = "NO ALIAS";
+
+	if ((alias != NULL) && (strncmp(&alias[1], "orker", 5) == 0))
 		me->workerId = atoi(&alias[6]);
 	else
 		me->workerId = -2;
@@ -696,6 +712,8 @@ Endpoint* Network::endpointAdd
 			LM_X(1, ("No temporal endpoint slots available - redefine and recompile!"));
 		break;
 
+	case Endpoint::Supervisor:
+	case Endpoint::Spawner:
 	case Endpoint::Delilah:
 	case Endpoint::WebListener:
 	case Endpoint::WebWorker:
@@ -1342,6 +1360,13 @@ void Network::msgTreat(void* vP)
 	LM_T(LMT_TREAT, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
 	{
+	case Message::WorkerSpawn:
+	case Message::ControllerSpawn:
+		if (dataReceiver == NULL)
+			LM_X(1, ("no data receiver ... Please implement !"));
+		dataReceiver->receive(endpointId, headerP, dataP);
+		break;
+
 	case Message::Die:
 		LM_X(1, ("Got a DIE message from '%s' - I die", name));
 		break;

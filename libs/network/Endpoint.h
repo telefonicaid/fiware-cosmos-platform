@@ -81,7 +81,9 @@ public:
 		Delilah,
 		WebListener,
 		WebWorker,
-		Sender
+		Sender,
+		Spawner,
+		Supervisor
 	} Type;
 
 public:

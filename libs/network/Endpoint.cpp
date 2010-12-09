@@ -174,6 +174,8 @@ const char* Endpoint::typeName(Endpoint::Type type)
 	case Endpoint::WebListener:     return "WebListener";
 	case Endpoint::WebWorker:       return "WebWorker";
 	case Endpoint::Sender:          return "Sender";
+	case Endpoint::Spawner:         return "Spawner";
+	case Endpoint::Supervisor:      return "Supervisor";
 	}
 
 	return "UnknownType";

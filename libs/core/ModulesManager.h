@@ -6,8 +6,8 @@
 #include <string>				/* std::string */
 #include "samson.pb.h"			// ss::network::...
 #include "samson/KVFormat.h"	// ss::KVFormat
-#include "KVInfo.h"				// ss::KVInfo
 #include "samson/Module.h"		// ss::Module
+#include "coding.h"				// ss:KVInfo
 
 namespace ss {
 

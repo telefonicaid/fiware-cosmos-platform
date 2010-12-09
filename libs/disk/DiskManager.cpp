@@ -74,14 +74,14 @@ namespace ss {
 	DeviceDiskAccessManager *DiskManager::getDeviceDiskAccessManagerForDev( dev_t st_dev )
 	{
 		std::map <dev_t , DeviceDiskAccessManager*>::iterator i;
-		DeviceDiskAccessManager *device = au::findInMap( item , st_dev);
+		DeviceDiskAccessManager *device = item.findInMap( st_dev);
 		if( device )
 			return device;
 		else
 		{
 			// Create a new one, add the the map and return
 			DeviceDiskAccessManager *tmp = new DeviceDiskAccessManager();
-			au::insertInMap( item , st_dev, tmp );
+			item.insertInMap( st_dev, tmp );
 			return tmp;
 		}
 	}

@@ -15,8 +15,8 @@
 #include <Format.h>			// au::Format
 #include <time.h>			// clock(.)
 #include "Buffer.h"			// ss::Buffer
-#include "Status.h"				// au::Status
-
+#include "Status.h"			// au::Status
+#include "au_map.h"			// au::map
 namespace ss {
 	
 	class DeviceDiskAccessManager;
@@ -29,7 +29,7 @@ namespace ss {
 		au::Lock lock;
 		
 		// All the files that are open
-		std::map <dev_t , DeviceDiskAccessManager*> item;		// All partitions we can access
+		au::map <dev_t , DeviceDiskAccessManager> item;		// All partitions we can access
 		size_t counter_id;
 		
 		

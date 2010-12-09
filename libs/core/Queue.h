@@ -2,7 +2,7 @@
 #ifndef _H_QUEUE
 #define _H_QUEUE
 
-#include "KVInfo.h"						// ss::KVInfo
+#include "coding.h"						// ss::KVInfo
 #include "MonitorParameter.h"			// ss::MonitorBlock
 #include <list>							// std::list
 #include "samson/KVFormat.h"			// KVFormat

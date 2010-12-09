@@ -11,6 +11,7 @@
 #include "samson/KVFormat.h"	// ss::KVFormat
 #include <assert.h>				// assert(.)
 #include "samson.pb.h"			// network:...
+#include <string.h>				// std::string
 
 /*
 #define KV_BUFFER_SIZE			1024*1024*256									
@@ -111,6 +112,18 @@ namespace ss {
 		T_kvs kvs;		// Total number of kvs
 		T_size size;	// Total size
 		
+		BaseKVInfo(T_kvs _kvs , T_size _size)
+		{
+			kvs = _kvs;
+			size = _size;
+		}
+		
+		BaseKVInfo()
+		{
+			kvs = 0;
+			size = 0;
+		}
+		
 		void init()
 		{
 			kvs = 0;
@@ -173,6 +186,9 @@ namespace ss {
 		}
 		
 	};
+	
+	typedef BaseKVInfo<size_t,size_t> KVInfo;	// Old common definition ( to be substituted by File or Network )
+	
 	
 	/****************************************************************
 	 Network interface

@@ -8,7 +8,7 @@
 #include "au_map.h"							// au::insertInMap
 #include "DataManager.h"					// ss::DataManagerCommandResponse
 #include "SamsonController.h"				// ss::SamsonController
-#include "KVInfo.h"							// ss::KVInfo
+#include "coding.h"						// ss::KVInfo
 #include "ModulesManager.h"					// Utility functions
 #include "Status.h"				// getStatusFromArray(.)
 #include "samson/Operation.h"				// ss::Operation

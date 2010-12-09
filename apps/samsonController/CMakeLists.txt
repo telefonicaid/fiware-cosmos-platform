@@ -16,6 +16,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
+include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 
 link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")

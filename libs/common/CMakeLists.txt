@@ -3,17 +3,18 @@ SET (HEADERS
 	samsonDirectories.h
 	samsonLogMsg.h
 	CommandLine.h
-	Console.h
 	Format.h
 	LockDebugger.h
 	Lock.h
 	StopLock.h
 	SamsonSetup.h
 	traces.h
-	KVInfo.h
 	au_map.h
 	Status.h
 	MessagesOperations.h
+	CommandLineTest.h
+	Console.h
+	ConsoleCommand.h
 )
 
 SET (SOURCES
@@ -24,6 +25,11 @@ SET (SOURCES
 	traces.cpp
 	Status.cpp
 	MessagesOperations.cpp
+	CommandLine.cpp
+	CommandLineTest.cpp
+	Console.cpp
+	ConsoleCommand.cpp
+	Format.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''

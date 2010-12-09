@@ -33,26 +33,8 @@ namespace ss {
 		
 	private:
 		
-		
-		static size_t getUInt64(std::map<std::string,std::string> &items, std::string name , size_t defaultValue )
-		{
-			std::map<std::string,std::string>::iterator i =  items.find( name );
-			if( i == items.end() )
-				return defaultValue;
-			else
-				return atoll(i->second.c_str());
-			
-		}
-
-		static int getInt(std::map<std::string,std::string> &items, std::string name , int defaultValue )
-		{
-			std::map<std::string,std::string>::iterator i =  items.find( name );
-			if( i == items.end() )
-				return defaultValue;
-			else
-				return atoi(i->second.c_str());
-		}
-		
+		static size_t getUInt64(std::map<std::string,std::string> &items, std::string name , size_t defaultValue );
+		static int getInt(std::map<std::string,std::string> &items, std::string name , int defaultValue );
 		
 		// Check if everything is ok. Exit if not
 		bool check();

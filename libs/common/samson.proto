@@ -197,8 +197,9 @@ message HelpResponse
 //
 message WorkerDataExchange
 {
-	required int64 task_id  = 1;  // Identifier of the controller task
-	required Queue queue     = 2;  // Name of the queue where we store information
+	required int64 task_id  = 1;	// Identifier of the controller task
+	required Queue queue     = 2;  	// Name of the queue where we store information
+	optional bool txt = 3;	       	// Flag to indicate that this is a txt buffer, so go to disk directly whiout buffering or merging
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -355,10 +356,15 @@ message ProcessMessage
 
 	optional string operation =7;		// Name of the operation to run ( only in run messages for all operations)
 
-	optional Environment environment=9;	// Environment for this operation
+	optional bool output_kvs=13;		// Indicate that key-values are necessary at the output (map,reduce,generator)
+	optional bool output_txt=14;		// Indicate that txt files are necessary at the output (parseOut)
+
 	optional WorkerTask worker_task=10;	// Entire copy of the worker task
 
 	optional uint32 num_hash_groups=11;	// Number of hash groups ( only in reduce operations )
 	optional uint32 num_input_files=12;	// total number of files included at the input ( only in reduce operations )
+	optional uint32 hg_begin=15;		// Hash group begin we are processing
+	optional uint32 hg_end=16;		// Hash group end we are processing
+
 
 }

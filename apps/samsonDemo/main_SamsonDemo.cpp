@@ -19,7 +19,7 @@
 
 #include "ModulesManager.h"		// ss::ModulesManager
 #include "samson/Operation.h"	// ss::Operation
-
+#include "SamsonSetup.h"		// ss::SamsonSetup
 
 #define VECTOR_LENGTH(v) sizeof(v)/sizeof(v[0])
 
@@ -61,6 +61,8 @@ int main(int argc, const char *argv[])
 	commandLine.set_flag_boolean("console");
 	commandLine.set_flag_boolean("basic");
 
+	ss::SamsonSetup::shared();	// Load setup and create default directories
+	
 	// Command line to extract the number of workers from command line arguments
 	commandLine.parse(argc , argv);
 	

@@ -76,7 +76,7 @@ namespace ss {
 
 		// Add particular process that will take input parameters
 		size_t addUploadData( std::vector<std::string> fileNames , std::string queue);
-		size_t addDownloadProcess( std::string queue , std::string fileName );
+		size_t addDownloadProcess( std::string queue , std::string fileName , bool show_on_screen );
 		size_t sendCommand( std::string command );
 		
 	private:		

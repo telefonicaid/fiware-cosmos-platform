@@ -143,6 +143,7 @@ namespace ss {
 		{
 			return ( num_completed_workers ==  num_workers );
 		}
+	
 		
 	};
 	

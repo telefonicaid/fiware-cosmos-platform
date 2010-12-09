@@ -19,10 +19,8 @@ SET (HEADERS
     QueueFile.h
     WorkerTask.h
     WorkerTaskItem.h
-    WorkerTaskItemWithOutput.h
     WorkerTaskItemGenerator.h
     WorkerTaskItemParser.h
-    ReduceInformation.h
 )
 
 SET (SOURCES
@@ -45,10 +43,8 @@ SET (SOURCES
     QueueFile.cpp
     WorkerTask.cpp
     WorkerTaskItem.cpp
-    WorkerTaskItemWithOutput.cpp
     WorkerTaskItemGenerator.cpp
     WorkerTaskItemParser.cpp
-    ReduceInformation.cpp
 )
 
 SET (STATIC_LIBS

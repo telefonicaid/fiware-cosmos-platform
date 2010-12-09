@@ -174,11 +174,11 @@ namespace ss
 			file << "\t}\n\n";
 			
 			// Global compare function
-			file <<"\tinline static int compare( KV* kv1 , KV*kv2 )\n";
+			file <<"\tinline static int compare( char* data1 , char* data2 )\n";
 			file <<"\t{\n";
 			file <<"\t\tsize_t offset_1=0;\n";
 			file <<"\t\tsize_t offset_2=0;\n";
-			file <<"\t\treturn compare( kv1->key , kv2->key , &offset_1 , &offset_2 );\n";
+			file <<"\t\treturn compare( data1 , data2 , &offset_1 , &offset_2 );\n";
 			file <<"\t}\n\n";
 			
 			

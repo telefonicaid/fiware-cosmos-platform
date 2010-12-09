@@ -10,9 +10,47 @@
 
 #include "WorkerTask.h"			// ss::WorkerTask
 #include "WorkerTaskItem.h"		// ss::WorkerTaskItem
+#include "ProcessAssistant.h"	// ss::ProcessAssistant
+
+#include "SamsonSetup.h"		// ss::SamsonSetup
 
 namespace ss {
 	
+	WorkerTaskManager::WorkerTaskManager(SamsonWorker *_worker) : stopLock( &lock )
+	{
+		worker = _worker;
+		num_processes = SamsonSetup::shared()->num_processes;			// Define the number of process
+
+		
+		// //////////////////////////////////////////////////////////////////////
+		//
+		// Create one ProcessAssistant per core
+		//
+		if (num_processes == -1)
+			LM_X(1, ("Invalid number of cores. Please edit /opt/samson/setup.txt"));
+		
+		LM_T(LMT_WINIT, ("initializing %d process assistants", num_processes));
+		processAssistant = (ProcessAssistant**) calloc(num_processes, sizeof(ProcessAssistant*));
+		if (processAssistant == NULL)
+			LM_XP(1, ("calloc(%d, %d)", num_processes, sizeof(ProcessAssistant*)));
+		
+		int coreId;
+		for (coreId = 0; coreId < num_processes ; coreId++)
+		{
+			
+			// Fake id to debig locally multiple workers
+			int fake_core_id = worker->myWorkerId * worker->workers + coreId;
+			
+			processAssistant[coreId] = new ProcessAssistant(fake_core_id, this);
+		}
+		
+		LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
+		
+		// Setup run-time status 
+		setStatusTile( "Task Manager" , "tm" );
+
+		
+	}
 	
 	void WorkerTaskManager::addTask(const network::WorkerTask &worker_task )
 	{
@@ -59,7 +97,7 @@ namespace ss {
 				}
 			}
 			
-			lock.unlock_waiting_in_stopLock( &stopLock ,1 );
+			lock.unlock_waiting_in_stopLock( &stopLock );
 		}
 		
 	}	
@@ -68,7 +106,7 @@ namespace ss {
 	 Notify that a particular item has finished producing data
 	 */
 	
-	void WorkerTaskManager::finishItem( WorkerTaskItem *item , bool error, std::string error_message)
+	void WorkerTaskManager::finishItem( WorkerTaskItem *item )
 	{
 		lock.lock();
 		
@@ -76,7 +114,7 @@ namespace ss {
 		assert( t );
 
 		// Notify about this finish
-		t->finishItem( item->item_id , error, error_message );
+		t->finishItem( item->item_id );
 		
 		// If all have finished, send the close message
 		if( t->isFinish() )
@@ -85,15 +123,35 @@ namespace ss {
 		// The task is not defined complete until a close is received from all workers.
 		// It is responsability of DataBuffer to notify WorkerTaskManager about this to finally remove the task
 		
+		// setup all tasks to see if resources can be re-used
+		_setupAllTasks();
+		
 		lock.unlock();
+		
+		lock.wakeUpStopLock( &stopLock );
+		
+		
 	}	
+	
+	/**
+	 Setup all tasks to see if any of them needs a shared memory area used by the item that has just finished
+	 */
+	
+	void WorkerTaskManager::_setupAllTasks()
+	{
+		std::map<size_t,WorkerTask*>::iterator t;
+		for (t = task.begin() ; t!= task.end() ; t++)
+			t->second->setup();
+	}
+	
+	
 
 	/**
 	 Nofity that a particular task has finished ( everything has been saved to disk )
 	 */
 	
 	void WorkerTaskManager::completeTask( size_t task_id )
-	{
+	{		
 		lock.lock();
 
 		WorkerTask *t = task.extractFromMap( task_id  );
@@ -144,11 +202,17 @@ namespace ss {
 		}
 	}	
 	
-	std::string WorkerTaskManager::getStatus()
+	// Funciton to get the run-time status of this object
+	void WorkerTaskManager::getStatus( std::ostream &output , std::string prefix_per_line )
 	{
-		std::ostringstream output;
-		output << getStatusFromArray( task );
-		return output.str();
+		output << "\n";
+
+		getStatusFromMap( output, task , prefix_per_line );
+
+		output << prefix_per_line << "ProcessAssistants: (" << num_processes << " process):\n";
+		for (int i = 0 ; i < num_processes ; i++)
+			output << prefix_per_line << "\t" << processAssistant[i]->getStatus() << std::endl; 
+		
 	}
 
 	
@@ -157,22 +221,28 @@ namespace ss {
 		lock.lock();
 		
 		WorkerTaskItem *item = pendingInputFiles.extractFromMap( id );
+		assert(item);
 		item->notifyFinishLoadInputFile();
-		assert( item );
 		
-		bool wakeUpProcess = item->areInputFilesReady();
+		// If this element is finally ready to run, then let's wake up some process
+		bool wakeUpProcess = item->isReadyToRun();
 		
 		lock.unlock();
 		
-		
+		// Wake up process
 		if( wakeUpProcess )
 		{
-			// TODO: Wake up process
+			lock.wakeUpStopLock( &stopLock );
 		}
 		
 	}
 	
 	
+	void WorkerTaskManager::addInputFile( size_t fm_id , WorkerTaskItem* item )
+	{
+		pendingInputFiles.insertInMap( fm_id , item );
+	}
+
 
 	
 	

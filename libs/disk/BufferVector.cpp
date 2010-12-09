@@ -8,18 +8,6 @@
 namespace ss {
 
 	
-	FileKVInfo BufferGetTotalInfo( Buffer *b )
-	{
-		return *((FileKVInfo*)b->getData());
-	}
-	
-	NetworkKVInfo BufferGetInfo( Buffer *b , ss_hg hg )
-	{
-		NetworkKVInfo *tmp = (NetworkKVInfo*) b->getData();
-		return tmp[hg+1];
-	}
-	
-	
 	BufferVector::BufferVector( )
 	{
 		info.kvs = 0;
@@ -29,11 +17,11 @@ namespace ss {
 	void BufferVector::addBuffer( Buffer *b )
 	{
 		// Update the total ( size and number of kvs )
-		NetworkKVInfo * _info = (( NetworkKVInfo *) b->getData());
+		NetworkHeader * header = (( NetworkHeader *) b->getData());
 		
 		// Increase total information for this file
-		info.kvs += _info->kvs;
-		info.size += _info->size;
+		info.kvs += header->info.kvs;
+		info.size += header->info.size;
 		
 		// Add the buffer to the vector
 		buffer.push_back(b);
@@ -46,21 +34,34 @@ namespace ss {
 	
 	Buffer* BufferVector::getFileBufferFromNetworkBuffers( KVFormat queue_format )
 	{
-/*		
-		std::cout << "Creating a file from " << buffer.size() << " buffers\n";
-		for (size_t i = 0 ; i < buffer.size() ; i++)
-			std::cout << "B" << i << ": "<< buffer[i]->str() << std::endl;
-*/
+		
+		// Check all network buffers to be correct
+		size_t global_size=0;
+		for (size_t i=0;i < buffer.size() ;i++)
+		{
+			NetworkHeader *header = (NetworkHeader*)buffer[i]->getData(); 
+			NetworkKVInfo *info	  = (NetworkKVInfo*)( buffer[i]->getData() + sizeof( NetworkHeader ) );
+			
+			size_t total_size=0;
+			for (int hg = 0 ; hg < KV_NUM_HASHGROUPS ; hg++)
+				total_size += info[hg].size;
+			assert( total_size == header->info.size );
+			global_size += total_size;
+		}
+		assert( global_size == info.size );
+		
 		
 		// Get a buffer to be able to put all data in memory
-		size_t file_size = sizeof(FileHeader) + KV_HASH_GROUP_VECTOR_SIZE_FILE + info.size;	
+		size_t file_size = FILE_TOTAL_HEADER_SIZE + info.size;	
 
 		// Crearte the buffer
 		Buffer *b = MemoryManager::shared()->newBuffer( "Creating file from network buffers" , file_size );
 		
 		// Global header of the file with magic number and format
 		FileHeader fileHeader;
-		fileHeader.init( queue_format );
+		fileHeader.init( );
+		fileHeader.setInfo( info );	
+		fileHeader.setFormat( queue_format );
 		memcpy(b->getData(), &fileHeader, sizeof(FileHeader) );	
 
 		// Vector with per-hash info
@@ -68,34 +69,35 @@ namespace ss {
 		
 		// Global data and offset in the resulting buffer
 		char *data = b->getData();
-		size_t offset = sizeof(fileHeader) + KV_HASH_GROUP_VECTOR_SIZE_FILE;	// Initial offset
+		size_t offset = FILE_TOTAL_HEADER_SIZE;	// Initial offset at the file outptu
 		
 		// Init the offset in each file
 		for (size_t i = 0 ; i < buffer.size() ; i++)
-			buffer[i]->skipRead( KV_HASH_GROUP_VECTOR_SIZE_NETWORK );
-		
-		// Global info
-		file_info->size	= info.size;
-		file_info->kvs	= info.kvs;
-		
-		
-		for (size_t i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
+			buffer[i]->skipRead( NETWORK_TOTAL_HEADER_SIZE );
+				
+		for (int i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
 		{
-			file_info[i+1].kvs = 0;
-			file_info[i+1].size = 0;
+			file_info[i].kvs = 0;
+			file_info[i].size = 0;
 			
 			// Fill data and sizes from all buffers
 			for (size_t j = 0 ; j <  buffer.size() ; j++)
 			{
-				NetworkKVInfo sub_info = BufferGetInfo( buffer[j] , i );
+				NetworkKVInfo *_sub_info = (NetworkKVInfo*) ( buffer[j]->getData() + sizeof( NetworkHeader ) );
+				NetworkKVInfo sub_info = _sub_info[i];
+
+				size_t read_size = buffer[j]->read( data + offset , sub_info.size );
+				assert( read_size == sub_info.size);
 				
-				buffer[j]->read( data + offset , sub_info.size );
 				offset += sub_info.size;
 				
-				file_info[i+1].kvs += sub_info.kvs;
-				file_info[i+1].size += sub_info.size;
+				// Update information about this hash-group in the file buffer
+				file_info[i].kvs += sub_info.kvs;
+				file_info[i].size += sub_info.size;
 			}
 		}
+		
+		assert( file_size == offset );
 		
 		// Set the global size
 		b->setSize(offset);
@@ -104,6 +106,7 @@ namespace ss {
 		for (size_t i = 0 ; i < buffer.size() ; i++)
 			MemoryManager::shared()->destroyBuffer( buffer[i] );
 		
+		// Empty the vector of buffers
 		buffer.clear();
 		
 		// Reset accumulated size in this vector of buffers

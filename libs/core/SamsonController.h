@@ -24,6 +24,7 @@
 #include "Message.h"                    // Message::WorkerStatus, ...
 #include "JobManager.h"					// ss::JobManager
 #include "Monitor.h"					// ss::Monitor
+#include "Status.h"				// au::Status
 
 namespace ss {
 	
@@ -31,7 +32,7 @@ namespace ss {
 	 Main class for the samson worker element
 	 */
 	
-	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface
+	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface , public au::Status
 	{
 
 		// Elements inside the SamsonController
@@ -80,14 +81,8 @@ namespace ss {
 		{
 			return monitor.getJSONString( in );
 		}
+	
 		
-		
-		
-	private:
-		
-		
-		//Internal functions to get help
-		std::string getStatus(std::string command);
 	};
 	
 }

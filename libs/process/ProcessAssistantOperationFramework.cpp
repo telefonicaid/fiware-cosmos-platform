@@ -15,8 +15,10 @@ namespace ss {
 		assert( processAssistant );
 
 		// Setup correclt the process writer
-		pw->setProcessAssistant( processAssistant );
-		
+		if( pw )
+			pw->setProcessAssistant( processAssistant );
+		if( ptw )
+			ptw->setProcessAssistant( processAssistant );
 	}
 
 	/**
@@ -27,10 +29,13 @@ namespace ss {
 	}
 
 
-	void ProcessAssistantOperationFramework::flushOutput( WorkerTaskItemWithOutput *item )
+	void ProcessAssistantOperationFramework::flushOutput( WorkerTaskItem *item )
 	{
 		// Flush the pw buffer to emit the key-values in the output buffer
-		pw->FlushBuffer(item);
+		if( pw )
+			pw->FlushBuffer(item);
+		if( ptw )
+			ptw->FlushBuffer(item);
 	}
 }
 

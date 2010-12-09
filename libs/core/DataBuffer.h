@@ -11,8 +11,10 @@
 #include "MemoryManager.h"	// ss::MemoryManager
 #include "DiskManagerDelegate.h"	// ss::DiskManagerDelegate && ss::FileManagerDelegate
 #include <set>						// std::set
-#include "ObjectWithStatus.h"		// getStatusFromArray(.)
+#include "Status.h"		// getStatusFromArray(.)
 #include "samson.pb.h"				// network::...
+#include "au_map.h"					// au::simple_map
+#include "Status.h"				// au::Status
 
 namespace ss {
 
@@ -29,18 +31,19 @@ namespace ss {
 	 When enougth data is accumulated it is frozen to a file and DataManager if notified
 	 */
 	
-	class DataBuffer : public au::map<size_t , DataBufferItem> , public FileManagerDelegate
+	class DataBuffer : public au::map<size_t , DataBufferItem> , public FileManagerDelegate , public au::Status
 	{
 		
 		au::Lock lock;	// mutex to protect multiple thread access
 
-		SamsonWorker *worker;
-
-		friend class DataBufferItem;
 		
-		std::map<size_t,size_t> id_relation;	// Relation between diskManager ids and task ids
+		friend class DataBufferItem;
+		au::simple_map<size_t,size_t> id_relation;	// Relation between diskManager ids and task ids
 		
 	public:
+
+		SamsonWorker *worker;
+		
 		
 		DataBuffer( SamsonWorker *_worker );
 		
@@ -48,7 +51,7 @@ namespace ss {
 		 New packet from the network interface
 		 */
 		
-		void addBuffer( size_t task_id , network::Queue , Buffer* buffer );
+		void addBuffer( size_t task_id , network::Queue , Buffer* buffer , bool txt  );
 		
 		/**
 		 Inform that a particular task has receive a close message form a worker finished.
@@ -56,26 +59,9 @@ namespace ss {
 		
 		void finishWorker( size_t task_id );
 		
-		/**
-		 Debug information
-		 */
 		
-		std::string str()
-		{
-			std::ostringstream o;
-			
-			o << "DataBuffer" << std::endl;
-			o << "============================" << std::endl;
-
-			std::map<size_t , DataBufferItem*>::iterator i;
-			for (i = begin() ; i != end() ;i++)
-				o << "Task " << i->first << std::endl;
-
-			
-			return o.str();
-		}
-		
-		std::string getStatus();
+		// Function to get the run-time status of this object
+		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
 		
 		// FileManagerDelegate

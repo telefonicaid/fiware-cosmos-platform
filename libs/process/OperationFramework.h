@@ -12,7 +12,7 @@ namespace ss {
 	class ProcessWriter;
 	class Operation;
 	class SharedMemoryItem;
-	
+	class ProcessTXTWriter;
 	
 	/**
 	 Full class for a particualr operation process
@@ -27,6 +27,7 @@ namespace ss {
 		network::ProcessMessage m;	// Message that originated this operation
 		
 		ProcessWriter *pw;			// Process writer to emit key-values
+		ProcessTXTWriter *ptw;		// Process writer to emit txt
 		
 		OperationFramework( network::ProcessMessage m );		
 		

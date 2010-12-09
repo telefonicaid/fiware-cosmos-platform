@@ -8,7 +8,7 @@
 #include <list>								// std::list
 #include "samson.pb.h"						// ss::network::...
 #include <iostream>							// std::cout
-#include "ObjectWithStatus.h"				// ss::ObjectWithStatus
+#include "Status.h"				// ss::ObjectWithStatus
 #include "CommandLine.h"					// au::CommandLine
 #include "samson/Environment.h"				// ss::Environment
 #include "EnvironmentOperations.h"			// copyEnviroment(.)
@@ -174,12 +174,9 @@ namespace ss {
 		void notifyTaskFinish( size_t _task_id , bool _error, std::string _error_message )
 		{
 			if( _error)
-			{
-				error = true;
-				output << "Error from task: " << _error_message << std::endl;
-			}
+				setError( "task at workers" ,  _error_message );
 			
-			assert( task_id == _task_id );
+			assert( task_id == _task_id );	//Make sure it is the task we were running
 			run();
 		}
 		
@@ -197,15 +194,29 @@ namespace ss {
 			return error_line;
 		}
 		
-		
 		std::string getStatus()
 		{
-			return "No status at the moment";
+			std::ostringstream output;
+			output << "Job: " << mainCommand << " ";
+			if( error )
+				output << "[Error]";
+			output << std::endl;
+			
+			return output.str();
 		}
 		
 	private:
 		
-		void setError( std::string txt );
+		void setError( std::string agent , std::string txt );
+		
+
+		// Axiliar function to replace text in strings
+		static void find_and_replace( std::string &source, const std::string find, std::string replace ) {
+			size_t j;
+			for ( ; (j = source.find( find )) != std::string::npos ; ) {
+				source.replace( j, find.length(), replace );
+			}
+		}	
 		
 		
 	};

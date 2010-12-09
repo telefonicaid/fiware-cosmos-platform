@@ -49,7 +49,7 @@ namespace ss {
 		
 	private:
 		
-		void removeJob( Job *j );
+		void _removeJob( Job *j );
 
 	
 		

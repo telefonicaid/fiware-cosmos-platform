@@ -23,14 +23,13 @@
 #include "WorkerTaskManager.h"	// ss::WorkerTaskManager
 #include "DataBuffer.h"			// ss::DataBuffer
 #include "LoadDataManager.h"	// ss::LoadDataManager
+#include "Status.h"				// au::Status
 
 namespace ss {
 	
 	class EndpointMgr;
-	class ProcessAssistant;
-	class ProcessAssistant;
 		
-	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
+	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface , public au::Status
 	{
 		
 	public:
@@ -52,12 +51,9 @@ namespace ss {
 		NetworkInterface*    network;           // Network interface
 		ModulesManager       modulesManager;    // Manager of the modules we have
 		WorkerTaskManager    taskManager;       // Task manager
-		ProcessAssistant**   processAssistant;  // vector of core worker processes
 		DataBuffer           dataBuffer;        // Element used to buffer incoming data packets before they are joined and saved to disk
 		LoadDataManager      loadDataManager;   // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
 		int                  myWorkerId;        // My id as worker : 0 , 1 ,2 ,3
-		
-		int					 num_processes;		// Number of process assitants we will have
 
 	private:
 		Message::WorkerStatusData status;
@@ -77,10 +73,6 @@ namespace ss {
 			
 		private:
 		virtual void notificationSent(size_t id, bool success) {}
-		
-		
-		//Internal functions to get help
-		std::string getStatus(std::string command);
 		
 	};
 }

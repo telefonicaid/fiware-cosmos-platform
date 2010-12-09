@@ -15,10 +15,12 @@ namespace ss {
 	void Job::run()
 	{
 		
-		while( !finish && !error && items.size() > 0)	// While there si something to process
+		while( !finish && !error && items.size() > 0)	// While there is something to process
 		{
 			
 			JobItem& item = items.back();
+
+			
 			
 			if( item.isFinish() )
 			{
@@ -30,8 +32,11 @@ namespace ss {
 			}
 			else
 			{
+				
 				if( !processCommand( item.getNextCommand() ) )
+				{
 					return;	// No continue since a task has been scheduled ( or an error ocurred )
+				}
 			}
 		}
 		
@@ -41,9 +46,9 @@ namespace ss {
 		// Mark the end of the job if there are no more elements to process
 		if( items.size() == 0)
 		{
-			output << "Job finished correctly\n";
 			finish = true;
 		}
+		
 		
 	}	
 	bool Job::processCommand( std::string command )
@@ -53,6 +58,8 @@ namespace ss {
 		controller->data.addComment(id, std::string("PROCESS: ") + command );
 		
 		au::CommandLine commandLine;
+		commandLine.set_flag_boolean("c");	/// Flag to create outputs as needed
+		commandLine.set_flag_boolean("nc");	/// Flag to anulate the effect of -c
 		commandLine.parse(command);
 		
 		// Direct controller commands
@@ -68,7 +75,7 @@ namespace ss {
 			{
 				if ( commandLine.get_num_arguments() < 3 )
 				{
-					setError("Not enougth parameters for set command. Usaeg set variable value");
+					setError("JobManager","Not enougth parameters for set command. Usaeg set variable value");
 					return false;
 				}
 				
@@ -86,18 +93,45 @@ namespace ss {
 				
 				if( commandLine.get_num_arguments() < (int)(1 + operation->getNumInputs() + operation->getNumOutputs() ) )
 				{
-					setError("Not enougth parameters");
+					setError("JobManager","Not enougth parameters");
 					return false;
 				}
+
+				
+				// Spetial case if -c flag is activated and -nc is not pressent (it is like an script)
+				if( commandLine.get_flag_bool("c") && (!commandLine.get_flag_bool("nc")) )
+				{
+					// Add comment to data manager to log that a script is initiated
+					controller->data.addComment(id, std::string("Expanding -c optiona of: ") + command );
+					
+					// Create a JobItem for this script, push into the task and return true to continue
+					JobItem jobItem( command );
+					
+					// Create all the output queues if necessary ( -f flag used to avoid errors )
+
+					for (int i = 0 ; i < operation->getNumOutputs() ; i++)
+					{
+						KVFormat format = operation->getOutputFormat(i);
+						std::ostringstream local_command;
+						local_command << "add_queue " << commandLine.get_argument(1 + operation->getNumInputs() + i);
+						local_command << " " << format.keyFormat << " " << format.valueFormat << " -f";
+						jobItem.addCommand( local_command.str() );
+					}
+					
+					jobItem.addCommand( command + " -nc" );
+					items.push_back(jobItem);
+					
+					return true;
+				}
+				
 				
 				ControllerTaskInfo *task_info = new ControllerTaskInfo( this, operation , &commandLine );
 
-				
 				controller->data.retreveInfoForTask( task_info );
 
 				if( task_info->error )
 				{
-					setError(task_info->error_message);	// There was an error with input/output parameters
+					setError("Data Manager",task_info->error_message);	// There was an error with input/output parameters
 					delete task_info;
 					return false;
 				}
@@ -117,8 +151,17 @@ namespace ss {
 				if( operation->getType() == Operation::map ) 
 				{
 					task_id = controller->taskManager.addTask( task_info , id );
+					
 					return false;	// No continue until confirmation of this task is received
 				}
+
+				if( operation->getType() == Operation::parserOut ) 
+				{
+					task_id = controller->taskManager.addTask( task_info , id );
+					
+					return false;	// No continue until confirmation of this task is received
+				}
+				
 				
 				if( operation->getType() == Operation::reduce ) 
 				{
@@ -133,21 +176,30 @@ namespace ss {
 					controller->data.addComment(id, std::string("SCRIPT IN:") + command );
 					
 					// Create a JobItem for this script, push into the task and return true to continue
-					JobItem i( command );
+					JobItem jobItem( command );
 					
 					// Rigth now we do not "modify" internal script code
 					for (size_t c = 0 ; c < operation->code.size() ; c++)
 					{
 						std::string command = operation->code[c];
-						i.addCommand( command );
+						
+						// Replace $1-$N for real names
+						for (int i = 0  ; i < commandLine.get_num_arguments() - 1 ; i++)
+						{
+							std::ostringstream param;
+							param << "$" << (i+1);
+							find_and_replace( command , param.str() , commandLine.get_argument(i+1) );
+						}
+						
+						jobItem.addCommand( command );
 					}
 					
-					items.push_back(i);
+					items.push_back(jobItem);
 					return true;
 				}
 			
 				// Unknown command, so inmediate answer with error
-				setError( command + " : Operation currently not supported... come back soon!");
+				setError( "JobManager",  command + " : Operation currently not supported... come back soon!");
 				return false;
 			}
 			else
@@ -156,7 +208,7 @@ namespace ss {
 				DataManagerCommandResponse response = controller->data.runOperation( id,  command  );
 				if( response.error )
 				{
-					setError( response.output );
+					setError( "DataManager", response.output );
 					return false;
 				}
 				return true;
@@ -165,7 +217,7 @@ namespace ss {
 			
 		}
 		
-		setError( std::string("Command without any command: ") + command);
+		setError( "JobManager", std::string("Command without any command: ") + command);
 		return false;
 	}
 	
@@ -201,12 +253,12 @@ namespace ss {
 		controller->network->send(controller, fromIdentifier, Message::CommandResponse, p2);
 	}
 	
-	void Job::setError( std::string txt )
+	void Job::setError( std::string agent ,  std::string txt )
 	{
 		// error line
 		error_line = txt;
 		
-		output << "Error at..." << std::endl;
+		output << "Error detected by "<<agent<<" at..." << std::endl;
 		std::list<JobItem>::iterator i;
 		for (i = items.begin() ; i != items.end() ; i++)
 			output << ">> " << i->parent_command << std::endl;
@@ -221,10 +273,6 @@ namespace ss {
 		error = true;
 		finish = true;	
 	}
-	
-	
-	
-	
 	
 }
 

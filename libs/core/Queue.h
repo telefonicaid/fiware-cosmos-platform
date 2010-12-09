@@ -92,12 +92,10 @@ namespace ss {
 		
 		void takeMonitorSamples()
 		{
-/*			
 			monitor.push( "size" , _info.size );
 			monitor.push( "num_kvs" , _info.kvs );
 			monitor.push( "random" , random() );
 			monitor.push( "random2" , random() );
-	*/		 
 		}
 		
 	};

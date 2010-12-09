@@ -4,7 +4,7 @@
 #ifndef _H_WORKER_TASK_ITEM_GENERATOR
 #define _H_WORKER_TASK_ITEM_GENERATOR
 
-#include "WorkerTaskItemWithOutput.h"	// ss::WorkerTaskItemWithOutput
+#include "WorkerTaskItem.h"	// ss::WorkerTaskItemWithOutput
 #include "ProcessAssistant.h"			// ss::ProcessAssistant
 #include "SamsonWorker.h"				// ss::SamsonWorker
 #include "ProcessAssistantOperationFramework.h"	// ss::ProcessAssistantOperationFramework
@@ -15,14 +15,14 @@ namespace ss {
 
 	// Individual item of a generator
 	
-	class WorkerTaskItemGenerator : public WorkerTaskItemWithOutput
+	class WorkerTaskItemGenerator : public WorkerTaskItem
 	{
 	public:
 		
 		std::string generator;
 		ProcessAssistantOperationFramework * framework;
 		
-		WorkerTaskItemGenerator( const network::WorkerTask &task ) : WorkerTaskItemWithOutput( task )
+		WorkerTaskItemGenerator( const network::WorkerTask &task ) : WorkerTaskItem( task )
 		{
 			generator = task.operation();
 			framework = NULL;

@@ -5,10 +5,12 @@
 
 #include "au_map.h"					// au::map
 #include "samson.pb.h"				// WorkerTask
-#include "ObjectWithStatus.h"
+#include "Status.h"
 #include "Lock.h"					// au::Lock
 #include "samson.pb.h"				// ss::network::...
 #include "DiskManagerDelegate.h"	// ss::FileManagerDelegate
+#include "Status.h"				// au::Status
+
 
 namespace ss {
 
@@ -16,11 +18,16 @@ namespace ss {
 	class DataBufferItem;
 	class WorkerTask;
 	class WorkerTaskItem;
+	class ProcessAssistant;
 	
-	class WorkerTaskManager : public FileManagerDelegate
+	class WorkerTaskManager : public FileManagerDelegate , public au::Status
 	{
+		
+	public:
+		
 		SamsonWorker *worker;
 
+	private:
 		au::map<size_t,WorkerTask> task;	// List of tasks
 		
 		au::Lock lock;			// General lock to protect multiple access ( network thread & Process threads )
@@ -29,15 +36,15 @@ namespace ss {
 		
 		// Relation between file_ids and Items ( when receiving notifications form File Manager )
 		au::map<size_t, WorkerTaskItem > pendingInputFiles;
-			
+
+		int num_processes;
+		ProcessAssistant**   processAssistant;  // vector of core worker processes
+		
 		friend class WorkerTaskItem;
 		
 	public:
 		
-		WorkerTaskManager(SamsonWorker *_worker) : stopLock( &lock )
-		{
-			worker = _worker;
-		}
+		WorkerTaskManager(SamsonWorker *_worker);
 
 		// Add a task to the local task manager ( map / reduce / generator )
 		void addTask( const network::WorkerTask &task );
@@ -46,12 +53,12 @@ namespace ss {
 		WorkerTaskItem *getNextItemToProcess();
 		
 		// Method called by ProcessAssitant when a particula process is finished
-		void finishItem( WorkerTaskItem *item , bool error, std::string error_message );
+		void finishItem( WorkerTaskItem *item );
 
 		// Noitification received from the DataBuffer when everything is saved to disk
 		void completeTask( size_t task_id );
 		
-		std::string getStatus();
+		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
 		// Notification from the FileManager that a particular file is finished 
 		void fileManagerNotifyFinish(size_t id, bool success);	
@@ -64,9 +71,12 @@ namespace ss {
 		// Function used to send the "close" message to other workers
 		void sendCloseMessages( WorkerTask *t , int workers );
 		
-		
 		// Function calles by items when adding files to be read
 		void addInputFile( size_t fm_id , WorkerTaskItem* );
+
+		// Setup all tasks ( when a shared memory area is free )
+		void _setupAllTasks();
+		
 		
 	};
 }

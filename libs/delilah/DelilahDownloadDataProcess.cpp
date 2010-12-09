@@ -14,15 +14,18 @@ namespace ss {
 	
 	
 	
-	DelilahDownloadDataProcess::DelilahDownloadDataProcess( std::string _queue , std::string _fileName ) : stopLock(&lock)
+	DelilahDownloadDataProcess::DelilahDownloadDataProcess( std::string _queue , std::string _fileName , bool _show_on_screen ) : stopLock(&lock)
 	{
 		queue = _queue;
 		fileName = _fileName;
-	
+
+		show_on_screen = _show_on_screen;
+		
 		// Initial state until we receive information about queue
 		num_files_to_download = -1;
 		num_files_downloaded = -1;;
 		
+		total_size = 0;
 		
 		file = fopen( fileName.c_str() , "w" );
 		
@@ -138,12 +141,33 @@ namespace ss {
 				std::ostringstream out;
 				
 				fwrite( buffer->getData(), buffer->getSize() , 1 , file );
+				total_size += buffer->getSize();
 				MemoryManager::shared()->destroyBuffer( buffer );
 				
 				if( component_finished )
 				{
 					fclose( file );
 					delilah->client->showMessage("Download completed");
+					
+					if( show_on_screen )
+					{
+						if( total_size > 10000)
+						{
+							delilah->client->showMessage("It is not allowed to show files with more than 10Kbyes");
+						}
+						else
+						{
+							char *fileBuffer = (char*)malloc( total_size+1);
+							fileBuffer[total_size] = '\0';
+							FILE *file = fopen(fileName.c_str(), "r");
+							fread(fileBuffer, 1, total_size, file);
+							
+							delilah->client->showMessage(fileBuffer);
+							
+							fclose( file );
+							free( fileBuffer );
+						}
+					}
 					
 					// Delete the component from delilah
 					DelilahComponent *component = delilah->components.extractFromMap( id );

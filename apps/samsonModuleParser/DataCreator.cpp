@@ -123,6 +123,7 @@ namespace ss {
 					( command == "generator" )	|| 
 					( command == "map" )		|| 
 					( command == "parser" )		|| 
+					( command == "parserOut" )	|| 
 					( command == "reduce" )
 					)
 			{
@@ -255,6 +256,19 @@ namespace ss {
 
 		output << "#include \"" << outputFileName << ".h\"" << std::endl;
 		
+		
+		std::set<std::string> includes ;
+		for ( vector <OperationContainer>::iterator iter = operations.begin() ; iter < operations.end() ; iter++)
+		{
+			OperationContainer op = *iter;
+			if( op.type == "reduce")
+				op.getIncludes( includes );
+		}
+		for( std::set<std::string>::iterator iter = includes.begin() ; iter != includes.end() ; iter++)
+			output << *iter;
+		
+		
+		
 		output << "\n\n";
 		
 		output << "extern \"C\" {" << std::endl;
@@ -272,6 +286,20 @@ namespace ss {
 		output << "namespace ss{\n";
 		output << "namespace "<< module->name <<"{\n";
 
+		
+		output << "\n\n";
+		output << "// Comparisson function for reduce operations\n";
+		
+		for ( vector <OperationContainer>::iterator iter = operations.begin() ; iter < operations.end() ; iter++)
+		{
+			OperationContainer op = *iter;
+			if( op.type == "reduce")
+			{
+				output << op.getCompareFunction();
+				output << op.getCompareByKeyFunction();
+			}
+		}
+			
 		output << "\n\n";
 		
 		output << "\t" << module->getClassName() << "::" << module->getClassName() << "()";
@@ -284,7 +312,6 @@ namespace ss {
 		{
 			output << "\t\tadd( new Data(\""<< iter->module << "." << iter->name <<"\" ,";
 			output << "getDataIntace<"<< iter->mainClassName()<<">, ";
-			output << iter->mainClassName() << "::compare," ;
 			output << iter->mainClassName() << "::size )";
 			output << ");\n";
 		}
@@ -305,6 +332,8 @@ namespace ss {
 			
 			if( op.type == "script")
 				output << "\t\t\tss::Operation * operation = new ss::Operation( \"" << op.module << "." << op.name << "\" , ss::Operation::"<< op.type <<");"<<std::endl;
+			else if( op.type == "reduce")
+				output << "\t\t\tss::Operation * operation = new ss::Operation( \"" << op.module << "." << op.name << "\" , ss::Operation::"<< op.type <<" , au::factory<"<< op.name <<">, " << op.getCompareFunctionName() <<  ", " << op.getCompareByKeyFunctionName() <<  " );"<<std::endl;
 			else
 				output << "\t\t\tss::Operation * operation = new ss::Operation( \"" << op.module << "." << op.name << "\" , ss::Operation::"<< op.type <<" , au::factory<"<< op.name <<"> );"<<std::endl;
 			

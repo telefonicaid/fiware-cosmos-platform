@@ -201,9 +201,9 @@ void Delilah::notificationSent(size_t id, bool success)
 	 */
 	
 	
-	size_t Delilah::addDownloadProcess( std::string queue , std::string fileName )
+	size_t Delilah::addDownloadProcess( std::string queue , std::string fileName , bool show_on_screen )
 	{
-		DelilahDownloadDataProcess *d = new DelilahDownloadDataProcess( queue , fileName );
+		DelilahDownloadDataProcess *d = new DelilahDownloadDataProcess( queue , fileName , show_on_screen );
 		size_t tmp_id = addComponent(d);	
 		d->run();
 		

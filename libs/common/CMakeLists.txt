@@ -12,7 +12,8 @@ SET (HEADERS
 	traces.h
 	KVInfo.h
 	au_map.h
-	ObjectWithStatus.h
+	Status.h
+	MessagesOperations.h
 )
 
 SET (SOURCES
@@ -21,6 +22,8 @@ SET (SOURCES
 	Lock.cpp
 	SamsonSetup.cpp
 	traces.cpp
+	Status.cpp
+	MessagesOperations.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''

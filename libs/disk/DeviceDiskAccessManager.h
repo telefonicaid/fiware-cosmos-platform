@@ -16,6 +16,9 @@
 #include <time.h>			// clock(.)
 #include "DeviceDiskAccessStatistics.h"	//DeviceDiskAccessStatistics
 #include "au_map.h"			// au::map
+#include "Status.h"				// au::Status
+#include "DiskStatistics.h"		// ss::DiskStatistics
+#include "Status.h"				// au::Status
 
 namespace ss {
 	
@@ -25,7 +28,7 @@ namespace ss {
 	
 	void* runDeviceDiskAccessManagerThread(void * p);
 	
-	class DeviceDiskAccessManager
+	class DeviceDiskAccessManager : public au::Status
 	{
 		au::Lock lock;
 		au::StopLock stopLock;
@@ -39,9 +42,9 @@ namespace ss {
 		int max_open_files;
 		
 		// Statistical information
-		DeviceDiskAccessStatistics writeStatistics;
-		DeviceDiskAccessStatistics readStatistics;
+		DiskStatistics statistics;
 		
+
 	public:
 		
 		DeviceDiskAccessManager();
@@ -52,7 +55,8 @@ namespace ss {
 		
 		void addOperation(DiskOperation* o);
 		
-		std::string str();
+		// Function to get the run-time status of this object
+		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
 	private:
 		
@@ -60,7 +64,7 @@ namespace ss {
 		
 		FileAccess* getFile( std::string fileName , std::string mode );
 
-		
+
 		
 	};
 }

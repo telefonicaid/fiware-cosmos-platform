@@ -9,7 +9,7 @@ namespace ss {
 	network::ProcessMessage Process::runCommand( network::ProcessMessage m)
 	{
 		// Copy enviroment received from the "Process message"
-		copyEnviroment( m.environment() , &environment ); 
+		copyEnviroment( m.worker_task().environment() , &environment ); 
 		
 		ProcessOperationFramework * framework2;
 		

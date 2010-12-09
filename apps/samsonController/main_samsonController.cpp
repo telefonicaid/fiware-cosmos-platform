@@ -1,7 +1,7 @@
 #include "parseArgs.h"          // parseArgs
 #include "samsonDirectories.h"  // SAMSON_SETUP_FILE
 #include "SamsonController.h"	// ss::SamsonController
-
+#include "SamsonSetup.h"		// ss::SamsonSetup
 
 
 /* ****************************************************************************
@@ -54,6 +54,8 @@ int main(int argC, const char* argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
+	ss::SamsonSetup::shared();	// Load setup and create default directories
+	
 	ss::Network*          networkP = new ss::Network(endpoints, workers);
 	ss::SamsonController  controller(networkP, port, setupFile, workers, endpoints);
 

@@ -45,12 +45,14 @@ namespace ss {
 		std::map<int,NetworkFake*> network; 
 		std::map<int,FakeEndpoint*> endpoint; 
 
-		au::Lock lock; // Lock to protect the pending packet list
+		au::Lock lock;			// Lock to protect the pending packet list
+		au::StopLock stopLock;	// Main stoplock to wait main thread
+		
 		std::vector<NetworkFakeCenterPacket*> pendingPackets;
 		
 		int num_workers;
 		
-		NetworkFakeCenter( int _num_workers )
+		NetworkFakeCenter( int _num_workers ) : stopLock(&lock)
 		{
 			num_workers = _num_workers;
 			
@@ -113,7 +115,10 @@ namespace ss {
 					}
 				}
 				else
-					sleep(1);
+				{
+					lock.lock();
+					lock.unlock_waiting_in_stopLock( &stopLock );
+				}
 			}
 		}
 		
@@ -122,6 +127,10 @@ namespace ss {
 			lock.lock();
 			pendingPackets.push_back(p);
 			lock.unlock();
+			
+			// Wake up the background thread to process this packages
+			lock.wakeUpStopLock(&stopLock);
+			
 		}
 		
 		

@@ -15,9 +15,10 @@ char* progName = (char*) "samsonSetup";
 
 int main(int argc, const char *argv[])
 {
-
-	ss::SamsonSetup *s = ss::SamsonSetup::shared();
-		
+	ss::SamsonSetup *s = ss::SamsonSetup::shared();	// Load setup file and create main directories
+	
+	std::cout << "\n";
+	std::cout << "--------------------------------\n";
 	std::cout << "Current setup analysis\n";
 	std::cout << "--------------------------------\n";
 	std::cout << "\n";

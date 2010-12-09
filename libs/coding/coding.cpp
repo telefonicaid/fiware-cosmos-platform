@@ -11,3 +11,10 @@
 #include <samson/samsonModuleHeader.h>
 #include <samson/samsonTypes.h>
 #include <samson/samsonVersion.h>
+
+#include "FileManager.h"
+
+namespace ss
+{
+	
+}

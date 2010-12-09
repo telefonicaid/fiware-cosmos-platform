@@ -119,7 +119,7 @@ int DelilahQtApp::sendDownloadFromQueue(Queue* queue, QString file)
 	std::string queue_name = queue->getName().toStdString();
 	std::string file_name = file.toStdString();
 
-	return delilah->addDownloadProcess(queue_name, file_name);
+	return delilah->addDownloadProcess(queue_name, file_name , false);
 }
 
 /*

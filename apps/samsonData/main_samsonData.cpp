@@ -67,7 +67,7 @@ int main( int argc , char *argv[] )
 	
 	if( argc < 2 )
 	{
-		if( processFile("/var/samson/log/log_controller") )
+		if( processFile("/opt/samson/controller/log_controller") )
 			return 0;	// Return without error
 		
 		std::cerr << "Usage: " << argv[0] << " path_to_log_file" << std::endl;
@@ -81,12 +81,6 @@ int main( int argc , char *argv[] )
 		std::cerr << "Error opening " << fileName << std::endl; 
 		exit(1);
 	}
-
-	
-	// Just for debuggin
-	//std::string fileName =  "/var/samson/log/log_worker_0";
-	
-	
 
 	
 }

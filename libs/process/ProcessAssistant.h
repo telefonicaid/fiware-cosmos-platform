@@ -53,7 +53,7 @@ namespace ss {
 
 		WorkerTaskItem *item;		// Item that is currently processing ( to notify commands )
 		
-		ProcessAssistant( int coreNo, SamsonWorker* worker) ;
+		ProcessAssistant( int coreNo, WorkerTaskManager* _taskManager) ;
 		
 		virtual void receiveCommand( network::ProcessMessage p );
 

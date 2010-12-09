@@ -8,6 +8,7 @@ SET (HEADERS
 	DiskOperationsManager.h
 	FileAccess.h
 	FileManager.h
+	DiskStatistics.h
 )
 
 SET (SOURCES
@@ -19,6 +20,7 @@ SET (SOURCES
 	DiskOperationsManager.cpp
 	FileAccess.cpp
 	FileManager.cpp
+	DiskStatistics.cpp
 )
 
 SET (STATIC_LIBS
@@ -28,7 +30,6 @@ SET (STATIC_LIBS
 	samsonCodingStatic
 	samsonMemoryStatic
 	samsonNetworkStatic
-	samsonDiskStatic
 	samsonDataStatic
 	protobuf
 	dl

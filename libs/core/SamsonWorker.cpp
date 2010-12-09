@@ -33,11 +33,18 @@ SamsonWorker::SamsonWorker(char* controller, char* alias, unsigned short port, i
 	this->port        = port;
 	this->workers     = workers;
 	this->endpoints   = endpoints;
-
-	// Define the number of process
-	num_processes = SamsonSetup::shared()->num_processes;
 	
 	srand( (unsigned int) time(NULL) );
+
+	// Setup of the run-time status
+	setStatusTile( "Samson Worker" , "worker" );
+	addChildrenStatus( MemoryManager::shared() );
+	addChildrenStatus( &taskManager );
+	addChildrenStatus( &dataBuffer );
+	addChildrenStatus( FileManager::shared() );
+	addChildrenStatus( DiskManager::shared() );
+	addChildrenStatus( &loadDataManager );
+	//addChildrenStatus( network );
 	
 }
 
@@ -87,34 +94,6 @@ void SamsonWorker::run()
 {
 	workerStatus(&status);
 
-	
-
-	// //////////////////////////////////////////////////////////////////////
-	//
-	// Create one ProcessAssistant per core
-	//
-	if (num_processes == -1)
-		LM_X(1, ("Invalid number of cores. Please edit /opt/samson/setup.txt"));
-	
-	LM_T(LMT_WINIT, ("initializing %d process assistants", num_processes));
-
-	processAssistant = (ProcessAssistant**) calloc(num_processes, sizeof(ProcessAssistant*));
-	if (processAssistant == NULL)
-		LM_XP(1, ("calloc(%d, %d)", num_processes, sizeof(ProcessAssistant*)));
-
-	int coreId;
-	for (coreId = 0; coreId < num_processes ; coreId++)
-	{
-		
-		// Fake id to debig locally multiple workers
-		int fake_core_id = myWorkerId * workers + coreId;
-		
-		processAssistant[coreId] = new ProcessAssistant(fake_core_id, this);
-	}
-
-	LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
-
-	
 	// assert(epMgr);
 	// epMgr->run();
 
@@ -195,10 +174,6 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		return 0;
 	}
 	
-	
-	
-	
-	
 		/**
 		 Data packets go directly to the DataBuffer to be joined and flushed to disk
 		 DataManager is notifyed when created a new file or finish everything 
@@ -211,7 +186,11 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 			size_t task_id = packet->message.data().task_id();
 			network::Queue queue = packet->message.data().queue();
 			
-			dataBuffer.addBuffer(task_id, queue, packet->buffer );
+			bool txt = false;
+			if( packet->message.data().has_txt() && packet->message.data().txt() )
+				txt = true;
+			
+			dataBuffer.addBuffer(task_id, queue, packet->buffer , txt );
 			
 			return 0;
 		}
@@ -232,54 +211,5 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 
 		return 0;
 	}
-
-	std::string SamsonWorker::getStatus(std::string command)
-	{
-		LM_M(("Here"));
-		std::ostringstream output;
-		LM_M(("Here"));
-		output << "** Memory: " << MemoryManager::shared()->getStatus() << std::endl;
-		LM_M(("Here"));
-
-		output << "** TaskManager:\n";
-		LM_M(("Here"));
-		output << taskManager.getStatus();
-		LM_M(("Here"));
-
-		output << "** ProcessAssistants: (" << num_processes << " process):\n";
-		LM_M(("Here"));
-		for (int i = 0 ; i < num_processes ; i++)
-		{
-		LM_M(("Here"));
-			output << "\t" << processAssistant[i]->getStatus() << std::endl; 
-		LM_M(("Here"));
-		}
-
-		LM_M(("Here"));
-		output << "** DataBuffer:\n";
-		LM_M(("Here"));
-		output << dataBuffer.getStatus();
-		LM_M(("Here"));
-
-		output << "** LoadManager:\n";
-		LM_M(("Here"));
-		output << loadDataManager.getStatus();
-		LM_M(("Here"));
-
-		output << "** File Manager:\n";
-		LM_M(("Here"));
-		output << FileManager::shared()->getStatus();
-		LM_M(("Here"));
-		
-		
-		output << "** Network status:\n";
-		LM_M(("Here"));
-		output << network->getState("");
-		LM_M(("Here"));
-		
-		return output.str();
-		
-	}
-
 
 }

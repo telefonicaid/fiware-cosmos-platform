@@ -13,6 +13,8 @@
 
 namespace ss {
 
+	// Function used to "sort" when data type is used as key ( only in reduce operations )
+	typedef int(* OperationInputCompareFunction)(KV *kv1 , KV*kv2);		
 	
 	/**
 	 
@@ -74,6 +76,7 @@ namespace ss {
 			map,
 			reduce,
 			generator,
+			parserOut,
 			script,
 			unknown
 		} Type;
@@ -85,6 +88,9 @@ namespace ss {
 
 		CreationFunction _creationFunction;		//!< Function to create new instances
 
+		OperationInputCompareFunction _inputCompareFunction;			//!< Function used to sort inputs ( only reduce )
+		OperationInputCompareFunction _inputCompareByKeyFunction;		//!< Function used to sort only by key ( to identify groups of key-values with the same key)
+		
 		std::vector<KVFormat> inputFormats;		//!< Formats of the key-value at the inputs
 		std::vector<KVFormat> outputFormats;	//!< Format of the key-value at the outputs
 		
@@ -104,10 +110,12 @@ namespace ss {
 		 Inform about the type of operation it is
 		 */
 		
-		Operation(std::string name, Type type, CreationFunction creationFunction)
+		Operation(std::string name, Type type, CreationFunction creationFunction, OperationInputCompareFunction inputCompareFunction , OperationInputCompareFunction inputCompareByKeyFunction)
 		{
 			_type             = type;
 			_creationFunction = creationFunction;
+			_inputCompareFunction = inputCompareFunction;
+			_inputCompareByKeyFunction = inputCompareByKeyFunction;
 
 			top               = false;
 			_name             = name;
@@ -115,6 +123,20 @@ namespace ss {
 			_helpMessage      = "Help coming soon\n";
 		}
 
+		Operation(std::string name, Type type, CreationFunction creationFunction )
+		{
+			_type             = type;
+			_creationFunction = creationFunction;
+			_inputCompareFunction = NULL;
+			_inputCompareByKeyFunction = NULL;
+			
+			top               = false;
+			_name             = name;
+			_helpLine         = "";
+			_helpMessage      = "Help coming soon\n";
+		}
+		
+		
 		Operation( std::string name , Type type )
 		{
 			_type = type;
@@ -180,6 +202,7 @@ namespace ss {
 		{
 			switch (getType()) {
 				case parser:		return "parser"; break;
+				case parserOut:		return "parserOut"; break;
 				case map:			return "map"; break;
 				case reduce:		return "reduce"; break;
 				case generator:		return "generator"; break;
@@ -262,6 +285,19 @@ namespace ss {
 			return outputFormats[i];
 		}
 		
+		OperationInputCompareFunction getInputCompareFunction()
+		{
+			return _inputCompareFunction;
+		}
+
+		OperationInputCompareFunction getInputCompareByKeyFunction()
+		{
+			return _inputCompareByKeyFunction;
+		}
+		
+		
+		
+		
 		
 	};
 	
@@ -313,6 +349,27 @@ namespace ss {
 	};
 	
 
+	/**
+	 
+	 \class ParserOut
+	 
+	 A ParserOut consist in generating line-based txt files from KVs
+	 This class should be subclasses to create custom "parserOut".
+	 Operation is like a map but emitting txt instead of key-values
+	 
+	 */	
+	
+	class ParserOut : public OperationInstance
+	{
+	public:
+		/**
+		 Main function to overload by the map
+		 */
+		virtual void run(KVSetStruct* inputs , TXTWriter *writer )=0;
+		
+	};
+	
+	
 	/**
 	 
 	 \class Reduce

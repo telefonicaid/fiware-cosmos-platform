@@ -38,7 +38,7 @@ namespace ss {
 	 */
 	
 	
-	class SamsonWorker;
+	class WorkerTaskManager;
 	class ProcessAssistantOperationFramework;
 	
 	/**
@@ -51,15 +51,10 @@ namespace ss {
 		
 	public:
 		
-		
-	public:
-		
 		int core;			// Core for debugging
 		int output_shm;		// Identifier for the output shared memory
 
-		time_t startTime;
-		
-		SamsonWorker*                  worker;
+		WorkerTaskManager* taskManager;	// Pointer to task manager to get new tasks
 		
 		// functions to start a differnt process / thread to do the job
 		void coreWorkerStart();
@@ -79,7 +74,7 @@ namespace ss {
 	public:
 		
 		// Constructor
-		ProcessAssistantBase( int _core, SamsonWorker* _worker );
+		ProcessAssistantBase( int _core, WorkerTaskManager* _taskManager );
 		
 		// Send a command to the Process
 		network::ProcessMessage runCommand( network::ProcessMessage p );

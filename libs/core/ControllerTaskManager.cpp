@@ -4,7 +4,7 @@
 #include "CommandLine.h"				// au::CommandLine
 #include "Endpoint.h"					// ss::Endpoint
 #include "Packet.h"						// ss::Packet
-#include "ObjectWithStatus.h"			// ss::getStatusFromArray(.)
+#include "Status.h"			// ss::getStatusFromArray(.)
 #include "samson/Environment.h"			// ss::Environment
 #include "Job.h"						// ss::Job
 
@@ -35,41 +35,64 @@ namespace ss
 		// get the task id that is confirmed
 		size_t task_id = confirmationMessage->task_id();
 
+		bool task_finished =  false;
+		bool error;
+		std::string error_message;
+		
+		
 		lock.lock();
 		
 		ControllerTask * t = task.findInMap( task_id );
 
+		size_t job_id;
+		
 		if( t )
 		{
 			// Get the job id
-			size_t job_id = t->getJobId();
+			job_id = t->getJobId();
 			
 			// Notify that this worker has answered
 			t->notifyWorkerConfirmation( worker_id , confirmationMessage , &controller->data );
 			
 			if( t->isFinish() )
 			{
+				task_finished =  true;
 				
-				// Notify the JobManager that this task is finish
-				controller->jobManager.notifyFinishTask( job_id ,task_id , t->error , t->error_message );
+				error = t->error;
+				error_message= t->error_message;
 				
 				// Delete this task from this manager
 				t = task.extractFromMap( task_id );
-				delete t;
 				
 			}
 		}
 		lock.unlock();
+
+		
+		// This has to be outputside the lock to avoid dead-lock
+		if( task_finished )
+		{
+			// Notify the JobManager that this task is finish
+			controller->jobManager.notifyFinishTask( job_id ,task_id , error , error_message );
+			delete t;
+
+		}
+		
+		
+
+		
 	}
 	
 	
 	
 	std::string ControllerTaskManager::getStatus()
 	{
+		/*
 		std::stringstream o;
 		o << getStatusFromArray( task );
 		return o.str();
-		
+		*/
+		return "Error";
 	}
 	
 	

@@ -52,6 +52,17 @@ SamsonController::SamsonController
 	LM_T(LMT_CONFIG, ("Num workers: %d", num_workers));
 
 	network->initAsSamsonController(port, num_workers);
+	
+	
+	// setup run-time status
+	setStatusTile( "Samson Controller" , "controller" );
+	//addChildrenStatus( MemoryManager::shared()->getStatus() );
+	//addChildrenStatus( &data.getStatus() );
+	//addChildrenStatus( &jobManager.getStatus() );
+	//addChildrenStatus( &taskManager.getStatus() );
+	//addChildrenStatus( FileManager::shared() );
+	//addChildrenStatus( network );
+	
 }	
 
 
@@ -262,56 +273,6 @@ void SamsonController::notifyWorkerDied( int worker )
 {
 	// What to do when a worker died
 }
-	
-	
-#pragma mark Help messages
-	
 
-
-/* ****************************************************************************
-*
-* getStatus - 
-*/
-std::string SamsonController::getStatus(std::string command)
-{
 	
-	std::ostringstream output;
-		
-	output << "** Memory: " << MemoryManager::shared()->getStatus() << std::endl;
-	
-	output << "** Data Manager:\n" << data.getStatus();
-	output << "** Job Manager:\n" << jobManager.getStatus();
-	output << "** Task Manager:\n" << taskManager.getStatus();
-	output << "** File Manager:\n" << FileManager::shared()->getStatus();
-	output << "** Network status:\n" << network->getState("");
-	
-#if 0				
-	Endpoint* ep;
-	int       workers;
-	int       ix;
-	int       workersFound;
-		
-	// Information about each server
-	workers      = network->getNumWorkers();
-	workersFound = 0;
-	ix           = 0;
-	do
-	{
-		ep = network->endpointLookup(3 + ix); /* 0,1 and 2 occupied by ME, LISTEN and CONTROLLER */
-		++ix;
-		if (ep == NULL)
-			continue;
-		output << "Worker " << ix << std::endl;
-		output << "\t- Cores:\t" << ep->status->cpuInfo.cores << std::endl;
-		output << "\t- CPU Load:\t" << ep->status->cpuInfo.load << "%" << std::endl;
-		output << "\t- Net (dev 0) Rcv Speed:\t" << ep->status->netInfo.iface[0].rcvSpeed << " bps" << std::endl;
-		output << "\t- Net (dev 0) Snd Speed:\t" << ep->status->netInfo.iface[0].sndSpeed << " bps" << std::endl;
-		output << "\t- Net (dev 1) Rcv Speed:\t" << ep->status->netInfo.iface[1].rcvSpeed << " bps" << std::endl;
-		output << "\t- Net (dev 1) Snd Speed:\t" << ep->status->netInfo.iface[1].sndSpeed << " bps" << std::endl;
-		++workersFound;
-	} while (workersFound < workers);
-#endif				
-	
-	return output.str();
-}
 }

@@ -13,6 +13,7 @@
 #include <set>						// std::set
 #include "samson.pb.h"				// ss::network::...
 #include "BufferVector.h"			// ss::BufferVector
+#include "Status.h"				// au::Status
 
 namespace ss {
 	
@@ -29,12 +30,13 @@ namespace ss {
 		
 	public:
 		network::Queue queue;
+		bool txt;
 		
-		QueueuBufferVector( network::Queue _queue )
+		QueueuBufferVector( network::Queue _queue , bool _txt )
 		{
 			queue = _queue;
+			txt = _txt;
 		}
-		
 		
 	};
 	
@@ -42,7 +44,7 @@ namespace ss {
 	 Class to group all the vector of buffers for each output queue
 	 */
 	
-	class DataBufferItem : public au::map<std::string , QueueuBufferVector  >
+	class DataBufferItem : public au::map<std::string , QueueuBufferVector> , public au::Status
 	{
 		DataBuffer *dataBuffer;					// Pointer to the buffer
 		
@@ -58,20 +60,21 @@ namespace ss {
 
 		int myWorkerId;						// My worker id to notify controller about this
 		int num_workers;					// Total number of workers
+
 		
 	public:
 		
-		DataBufferItem( DataBuffer *buffer, size_t _task_id , int myWorkerId ,  int num_workers );
+		DataBufferItem( DataBuffer *buffer, size_t _task_id , int myWorkerId ,  int num_workers  );
 		
-		void addBuffer( network::Queue queue , Buffer *buffer );
+		void addBuffer( network::Queue queue , Buffer *buffer , bool txt );
 
 		void finishWorker();
 		
-		void saveBufferToDisk( Buffer* b , std::string filename ,network::Queue );
+		void saveBufferToDisk( Buffer* b , std::string filename ,network::Queue ,  bool txt );
 		
 
-		// Get some string with debug info
-		std::string getStatus();
+		// Function to get the run-time status of this object
+		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
 		bool isCompleted()
 		{
@@ -88,7 +91,7 @@ namespace ss {
 		
 		
 		friend class DataBuffer;
-		void diskManagerNotifyFinish(size_t id, bool success);
+		void fileManagerNotifyFinish(size_t id, bool success);
 		
 	};
 	

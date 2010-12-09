@@ -29,7 +29,8 @@
 #include "ProcessWriter.h"			// ss::ProcessAssistantOperationFramework
 #include "ProcessAssistantOperationFramework.h"	// ss::ProcessAssistantOperationFramework
 #include "WorkerTaskItem.h"			// ss::WorkerTaskItem
-	
+#include "WorkerTask.h"				// ss::WorkerTask
+
 namespace ss {
 	
 		/* ****************************************************************************
@@ -44,7 +45,7 @@ namespace ss {
 			return NULL;
 		}	
 		
-		ProcessAssistant::ProcessAssistant( int coreNo, SamsonWorker* worker ) :  ProcessAssistantBase( coreNo, worker )
+		ProcessAssistant::ProcessAssistant( int coreNo, WorkerTaskManager* _taskManager ) :  ProcessAssistantBase( coreNo, _taskManager )
 		{
 			
 			// Create the main thread for the process assistant
@@ -58,18 +59,18 @@ namespace ss {
 			// Main thread to get items and perform actions
 			while( true )
 			{
-				setStatus( "Asking for the next task..." );
+				setStatus( "Waiting for the next task" );
 				
 				// Get the next item to process ( this call is blocked if no task is available )
-				item =  worker->taskManager.getNextItemToProcess();
+				item =  taskManager->getNextItemToProcess();
 
-				setStatus( "Running..." + item->getStatus() );
+				setStatus( "Running " + item->task->operation );
 				
 				// Run whatever is required in this item offering ProcessAssistant to use Process
 				item->run( this );
 				
 				// Notify that this item is done
-				worker->taskManager.finishItem( item , false , "");
+				taskManager->finishItem( item );
 				
 				// Put item to null to avoid old notifications from worker
 				item = NULL;

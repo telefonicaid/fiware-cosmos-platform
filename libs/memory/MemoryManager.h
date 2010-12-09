@@ -17,6 +17,9 @@
 #include "au_map.h"					// au::map
 
 #include "Format.h"					// au::Format
+#include "Status.h"				// au::Status
+
+
 
 #define SS_SHARED_MEMORY_KEY_ID					872934	// the first one
 
@@ -37,11 +40,10 @@ namespace ss {
 	};
 
 		
-	class MemoryManager
+	class MemoryManager : public au::Status
 	{
 		
 		au::Lock lock;									// Lock to be thread-safe
-		au::StopLock stopLock;							// Stop lock for threads waiting for memory ( Process )
 
 		size_t used_memory;								// Monitor the used memory
 
@@ -96,7 +98,6 @@ namespace ss {
 		 */
 		
 		double getMemoryUsage();
-
 		
 		/**
 		 Function to request a free shared memory.
@@ -112,6 +113,9 @@ namespace ss {
 				{
 					shared_memory_used_buffers[i] = true;
 					lock.unlock();
+					
+					used_memory += shared_memory_size_per_buffer;
+					
 					return i;
 				}
 			
@@ -145,6 +149,7 @@ namespace ss {
 			
 			lock.lock();
 			shared_memory_used_buffers[id] = false;
+			used_memory -= shared_memory_size_per_buffer;
 			lock.unlock();
 			
 		}
@@ -159,42 +164,7 @@ namespace ss {
 		 Get a string describing status of memory manager
 		 */
 		
-		std::string str()
-		{
-			int per_memory = (int) getMemoryUsage()*100;
-			
-			std::ostringstream o;
-			o << "Memory Manager" << std::endl;
-			o << "=========================" << std::endl;
-			o << "Used memory: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)"<< std::endl;
-			o << "Number of buffers in action " << num_buffers << std::endl;
-			
-			return o.str();
-		}
-		
-		std::string getStatus()
-		{
-			int num_shm_buffers = 0;
-			for (int i = 0 ; i < shared_memory_num_buffers ; i++)
-				if( shared_memory_used_buffers[i] )
-					num_shm_buffers++;
-			
-			int per_memory = (int) getMemoryUsage()*100;
-			std::ostringstream o;
-			o << "Used: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)";
-			o << " #Buffers " << num_buffers;
-			o << " #Shared memory Buffers " << num_shm_buffers << " / " << shared_memory_num_buffers;
-			
-		
-			o << "Buffers: ";
-			
-			std::set<Buffer*>::iterator iter;
-			for (iter = buffers.begin() ; iter != buffers.end() ; iter++ )
-				o << (*iter)->_name << " ";
-			
-			
-			return o.str();
-		}
+		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
 		
 	};

@@ -104,7 +104,7 @@ namespace ss {
 	 */
 	
 	class ProcessAssistant;
-	class WorkerTaskItemWithOutput;
+	class WorkerTaskItem;
 	
 	class ProcessWriter : public KVWriter
 	{
@@ -203,7 +203,6 @@ namespace ss {
 				channel[c].init();
 			
 			new_node = 0;
-
 		}
 
 		/**
@@ -217,8 +216,72 @@ namespace ss {
 		 Function called form the ProcessAssitant side to create and emit the necessary Buffer to the rigth servers
 		 */
 		
-		void FlushBuffer(  WorkerTaskItemWithOutput *taskItem );
+		void FlushBuffer(  WorkerTaskItem *taskItem );
 
+	};
+	
+	class ProcessTXTWriter : public TXTWriter
+	{
+		
+	public:
+		
+		char *data;
+		size_t *size;
+		size_t max_size;
+
+		// Pointers to be used in both sides
+		Process* process;			
+		ProcessAssistant *processAssistant;
+		
+		SharedMemoryItem *item;
+		
+		ProcessTXTWriter( int shm_id , int _num_outputs , int _num_servers )
+		{
+			// Get the assignated shared memory region
+			 item = MemoryManager::shared()->getSharedMemory( shm_id );
+
+			// Size if the firt thing in the buffer
+			size = (size_t*) item->data;
+			
+			// Init the data buffer used here	
+			data = item->data + sizeof(size_t);
+			max_size = item->size;
+
+			init();
+		}
+		
+		void init()
+		{
+			*size = 0;
+		}
+		
+		void setProcess( Process *_process)
+		{
+			process = _process;
+		}
+		
+		void setProcessAssistant( ProcessAssistant *_processAssistant)
+		{
+			processAssistant = _processAssistant;
+		}
+		
+		void emit( const char * _data , size_t _size)
+		{
+			
+			if( *size + _size  > max_size )
+			{
+				assert( process );	
+				process->processOutput( );
+				init();
+			}
+			
+			memcpy(data+ (*size), _data, _size);
+			*size += _size;
+		}
+		
+
+		void FlushBuffer(  WorkerTaskItem *taskItem );
+		
 	};
 	
 }

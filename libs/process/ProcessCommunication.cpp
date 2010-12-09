@@ -16,12 +16,12 @@ namespace ss {
 		
 		// Read the length
 		int ans = ::read( rFd , &length , sizeof(int) );
-		if ( ans == -1)
+		if ( ans != sizeof(int) )
 			return -1;
 		
 		// Read the content of the buffer
 		ans = ::read( rFd , buffer , length );
-		if ( ans == -1)
+		if ( ans != length)
 			return -1;
 		
 		// Parse the buffer
@@ -37,6 +37,7 @@ namespace ss {
 	{
 		int length = p.ByteSize();
 		char buffer[1000];
+		assert( length <= 1000);
 		
 		p.SerializeToArray( buffer , length );
 		

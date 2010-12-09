@@ -28,6 +28,12 @@ namespace ss {
 			return p;
 		}
 		
+		void closeFds()
+		{
+			close( rFd );
+			close( wFd );
+		}
+		
 	};
 
 }

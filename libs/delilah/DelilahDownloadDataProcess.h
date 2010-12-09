@@ -32,9 +32,13 @@ namespace ss {
 		
 		pthread_t t;				// Secondary thread to write stuff to disk
 		
+		bool show_on_screen;		// Flag to indicate if we should show this at the end on screen
+		
+		size_t total_size;			// total accumulated size
+		
 	public:
 		
-		DelilahDownloadDataProcess( std::string _queue , std::string _fileName );
+		DelilahDownloadDataProcess( std::string _queue , std::string _fileName , bool show_on_screen );
 
 		
 		void run();

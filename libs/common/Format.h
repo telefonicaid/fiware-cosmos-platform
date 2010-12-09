@@ -59,6 +59,21 @@ public:
 		
 	}
 
+	static std::string string( size_t memory , std::string postfix )
+	{
+		
+		if (memory < 1000)
+			return string( (double)memory , ' ' ) + postfix;
+		else if( memory < 10000000)
+			return string( (double)memory/ 1000.0 , 'K')+ postfix;
+		else if( memory < 1000000000)
+			return string( (double)memory/ 1000000.0 , 'M')+ postfix;
+		else 
+			return string( (double)memory/ 1000000000.0 , 'G')+ postfix;
+		
+	}
+	
+	
 	static std::string int_string(int value, int digits)
 	{
 		

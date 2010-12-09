@@ -5,10 +5,16 @@
 
 namespace ss {
 
-	void ProcessOperationFramework::flushOutput( WorkerTaskItemWithOutput *taskItem)
+	void ProcessOperationFramework::flushOutput( WorkerTaskItem *taskItem)
 	{
-		pw->FlushBuffer(taskItem);
+		if( pw )
+			pw->FlushBuffer(taskItem);
+		if( ptw )
+			ptw->FlushBuffer(taskItem);
 	}
+
+	
+	
 	
 }
 

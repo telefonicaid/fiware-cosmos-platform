@@ -72,7 +72,7 @@ namespace ss {
 		virtual void notifyFinishOperation( size_t id )
 		{
 			std::ostringstream output;
-			output << "Finished: " << id ;
+			output << "Finished local delilah process with : " << id ;
 			writeWarningOnConsole( output.str() );
 		}
 

@@ -68,11 +68,11 @@ namespace system {
 			return 0;
 		}
 		
-		inline static int compare( KV* kv1 , KV*kv2 )
+		inline static int compare( char* data1 , char* data2 )
 		{
 			size_t offset_1=0;
 			size_t offset_2=0;
-			return compare( kv1->key , kv2->key , &offset_1 , &offset_2 );
+			return compare( data1 , data2 , &offset_1 , &offset_2 );
 		}
 		
 		void copyFrom( FixedLengthDataInstance<T> *other ){

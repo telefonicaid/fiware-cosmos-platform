@@ -8,16 +8,16 @@
 #include "samson/Operation.h"	// ss::Operation
 #include "samson.pb.h"			// ss::network::...
 #include "samson/Environment.h"	// ss::Environment
-#include "ReduceInformation.h"			// ss::ReduceInformation
+#include "Status.h"				// au::Status
 
 namespace ss {
 
 	
 	class WorkerTaskItem;
 	class WorkerTaskManager;
-	class ReduceInformation;
+	class ProcessAssistantSharedFileCollection;
 	
-	class WorkerTask
+	class WorkerTask : public au::Status
 	{
 		
 	public:
@@ -38,30 +38,37 @@ namespace ss {
 		std::string operation;					// Operation to be executed
 		au::map<int,WorkerTaskItem> item;		// List of items to be executed by processes
 		
-		network::Environment environment;		// Environment for this task ( transmitted to all process )
 		
 		WorkerTask(WorkerTaskManager *taskManager, Operation::Type type , const network::WorkerTask &task );
+		~WorkerTask();
 		
 		WorkerTaskItem *getNextItemToProcess();			// Get the next item ( if any )
 
+		void setup();	// Setup all internal tasks
+		
 		// Notify that an item is done ( by ProcessAssistant )
-		void finishItem( size_t id , bool _error , std::string _error_message );
+		void finishItem( size_t id );
 		
 		// Getting info
-		std::string getStatus();
 		bool isFinish();
 		size_t getId();
+
+		// Funciton to get the run-time status of this object
+		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
-		
-		ReduceInformation *reduceInformation;		// Structure used only by reduce operations ( created with the orgnizer and used by all process assistants )
-		
-		~WorkerTask();
+		ProcessAssistantSharedFileCollection *reduceInformation;		// Structure used only by reduce operations ( created with the orgnizer and used by all process assistants )
 		
 	private:
-		friend class WorkerTaskItemReduceOrganizer;	// to be able to add individual reduce items
+		friend class WorkerTaskItemOrganizer;	// to be able to add individual reduce items
 		
 		void addItem( WorkerTaskItem *item );
 
+		void setError(std::string _error_message)
+		{
+			error = true;
+			error_message = _error_message;
+		}
+		
 		
 	};
 }

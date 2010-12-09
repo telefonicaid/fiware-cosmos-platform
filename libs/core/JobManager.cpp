@@ -26,7 +26,7 @@ namespace ss {
 		j->run();
 		
 		
-		// Send a confirmation message if it is not finished
+		// Send a confirmation message if it is finished
 		if( j->isFinish() )
 		{
 			if( j->isError() )
@@ -35,7 +35,7 @@ namespace ss {
 				controller->data.finishTask( job_id );
 			
 			j->sentConfirmationToDelilah( );
-			removeJob(j);
+			_removeJob(j);
 		}
 		
 		lock.unlock();
@@ -43,13 +43,11 @@ namespace ss {
 	
 	void JobManager::notifyFinishTask( size_t job_id , size_t task_id , bool error, std::string error_message )
 	{
-		
 		lock.lock();
 		
 		Job *j =  job.findInMap( job_id );
 		if( j )
 		{
-			
 			j->notifyTaskFinish( task_id , error, error_message );
 			
 			if( j->isFinish() )
@@ -57,15 +55,16 @@ namespace ss {
 				
 				controller->data.finishTask( job_id );
 				j->sentConfirmationToDelilah( );
-				removeJob(j);
+				_removeJob(j);
 			}
 		}
 		
 		lock.unlock();
+		//std::cout << "End of notify finish task: J:" << job_id << " T: " << task_id << std::endl;
 		
 	}
 	
-	void JobManager::removeJob( Job *j )
+	void JobManager::_removeJob( Job *j )
 	{
 		assert( j->isFinish() );
 
@@ -77,13 +76,16 @@ namespace ss {
 	
 	std::string JobManager::getStatus()
 	{
+		/*
 		std::ostringstream output;
 
 		lock.lock();
 		output << getStatusFromArray( job );
 		lock.unlock();
-		
+		 
 		return output.str();
+		 */
+		return "Error";
 	}
 
 	

@@ -18,6 +18,18 @@ namespace ss {
 		//virtual void close()=0;
 		virtual ~KVWriter(){}
 	};
+	
+	
+	class TXTWriter
+	{
+	public:
+		virtual void emit( const char * data , size_t length)=0;
+		void emit( std::string data )
+		{
+			emit(data.c_str(), data.length());
+		}
+	};
+	
 }
 
 #endif

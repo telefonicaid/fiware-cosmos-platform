@@ -88,6 +88,9 @@ namespace ss
 			if( type == "parser")
 				return "ss::Parser";
 			
+			if( type == "parserOut")
+				return "ss::ParserOut";
+			
 			fprintf(stderr, "Error: Unknown type of operation in the operation section (%s)\n" , type.c_str());
 			_exit(0);
 			
@@ -156,6 +159,9 @@ namespace ss
 					file << "\t\tvoid run( ss::KVWriter *writer )\n\t\t{\n\t\t}\n";
 				if( type == "parser" )
 					file << "\t\tvoid run( char *data , size_t length , ss::KVWriter *writer )\n\t\t{\n\t\t}\n";
+				if( type == "parserOut" )
+					file << "\t\tvoid run(KVSetStruct* inputs , TXTWriter *writer )\n\t\t{\n\t\t}\n";
+
 			}
 			
 			file << "\n\n";
@@ -179,6 +185,76 @@ namespace ss
 			file.close();			
 			
 		}
+		
+		std::string getCompareFunctionForData( std::string data );
+		std::string getIncludeForData( std::string data );
+
+		void getIncludes( std::set<std::string>& includes )
+		{
+			for (size_t i = 0 ; i < inputs.size() ; i++)
+			{
+				includes.insert( getIncludeForData( inputs[i].keyFormat ) );
+				includes.insert( getIncludeForData( inputs[i].valueFormat ) );
+			}
+		}
+		
+		
+		std::string getCompareFunction()
+		{
+			std::ostringstream output;
+			
+			output << "\tint " << getCompareFunctionName() << "(KV* kv1 , KV* kv2)" << std::endl;
+			output << "\t{" << std::endl;
+
+			output << "\t\tint res_key = " << getCompareFunctionForData( inputs[0].keyFormat ) << "(kv1->key , kv2->key);\n";
+			
+			output << "\t\tif(res_key!=0)\n";
+			output << "\t\t\treturn (res_key<0);\n";
+
+			output << "\t\tif( kv1->input != kv2->input )\n";
+			output << "\t\t\treturn (kv1->input < kv2->input);\n";
+			
+			output << "\t\tswitch (kv1->input) {\n";
+			
+			for (size_t i = 0 ; i < inputs.size() ; i++)
+				output << "\t\tcase "<<i<<": return ("<< getCompareFunctionForData( inputs[i].valueFormat ) <<"(kv1->value , kv2->value)<0); break;\n";
+			
+			output << "\t\tdefault: assert(false); break;\n";
+			output << "\t\t}\n";
+			
+			output << "\t\treturn 0;\n";
+			
+			output << "\t}" << std::endl;
+			
+			return output.str();
+		}
+		
+		std::string getCompareFunctionName()
+		{
+			std::ostringstream output;
+			output << "compare_" << module << "_" << name;
+			return output.str();
+		}
+
+		std::string getCompareByKeyFunction()
+		{
+			std::ostringstream output;
+			
+			output << "\tint " << getCompareByKeyFunctionName() << "(KV* kv1 , KV* kv2)" << std::endl;
+			output << "\t{" << std::endl;
+			output << "\t\treturn " << getCompareFunctionForData( inputs[0].keyFormat ) << "(kv1->key , kv2->key);\n";
+			output << "\t}" << std::endl;
+			
+			return output.str();
+		}
+		
+		std::string getCompareByKeyFunctionName()
+		{
+			std::ostringstream output;
+			output << "compare_" << module << "_" << name << "_by_key";
+			return output.str();
+		}		
+		
 		
 		
 	};

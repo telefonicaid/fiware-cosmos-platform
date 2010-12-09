@@ -5,6 +5,7 @@
 #include <string>			// std::string
 #include <iostream>			// std::cout
 #include <stdlib.h>         // atoll
+#include <sys/stat.h>		// mkdir
 
 namespace ss {
 	
@@ -51,6 +52,10 @@ namespace ss {
 			else
 				return atoi(i->second.c_str());
 		}
+		
+		
+		// Check if everything is ok. Exit if not
+		bool check();
 		
 	};
 

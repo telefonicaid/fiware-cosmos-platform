@@ -47,7 +47,10 @@ namespace ss {
 			DiskOperation *o = getNextOperation();
 			
 			if( o )
+			{
 				run (o);
+				delete o;
+			}
 			else
 			{
 				lock.lock();
@@ -67,24 +70,14 @@ namespace ss {
 		lock.wakeUpStopLock( &stopLock );	
 	}
 	
-	std::string DeviceDiskAccessManager::str()
-	{
-		std::ostringstream o;
-		o << "Disk";
-//		o << " Files: " << files.size();
-		o << " Ops: " << operation.size();
-		o << " Read: " << readStatistics.str();
-		o << " Write: " << writeStatistics.str();
-		return o.str();
-	}
 		
 	void DeviceDiskAccessManager::run( DiskOperation *o )
 	{
 		// Get the file information
 		FileAccess *file = getFile( o->fileName  , o->mode );
 		
-		time_t start, stop;
-		time(&start);
+		struct timeval start,stop;
+		gettimeofday(&start, NULL);
 		
 		bool result;
 		if ( o->mode == "r" )
@@ -96,14 +89,14 @@ namespace ss {
 			result = file->append(o->buffer->getData(), o->size);
 		}
 		
-		time(&stop);
+		gettimeofday(&stop, NULL);
 		
 		if( result )
 		{
 			if ( o->mode == "r" )
-				readStatistics.addSample( o->size , difftime(stop, start) );
+				statistics.add(DiskStatistics::read, o->size, DiskStatistics::timevaldiff( &start , &stop) );
 			else
-				writeStatistics.addSample( o->size , difftime(stop, start) );
+				statistics.add(DiskStatistics::write, o->size, DiskStatistics::timevaldiff( &start , &stop) );
 		}
 		
 		// Nofity end of a task
@@ -115,7 +108,6 @@ namespace ss {
 	
 	FileAccess* DeviceDiskAccessManager::getFile( std::string fileName , std::string mode )
 	{
-		// TODO: Pending to reuse files for continuous reads over same files
 		
 		if( mode == "w" )
 		{
@@ -134,5 +126,13 @@ namespace ss {
 		assert( false );
 		return NULL;		
 	}
+	
+	void DeviceDiskAccessManager::getStatus( std::ostream &output , std::string prefix_per_line )
+	{
+		output << statistics.getStatus() << "\n";
+	}
+
+	
+		
 	
 }

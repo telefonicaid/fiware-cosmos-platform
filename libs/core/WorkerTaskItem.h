@@ -3,19 +3,20 @@
 #ifndef _H_WORKER_TASK_ITEM
 #define _H_WORKER_TASK_ITEM
 
-#include <cstring>		// size_t		
-#include <assert.h>		// assert(.)
-#include <string>		// std::string
-#include <sstream>		// std::ostringstream
+#include <cstring>				// size_t		
+#include <assert.h>				// assert(.)
+#include <string>				// std::string
+#include <sstream>				// std::ostringstream
 #include "FileManager.h"		// ss::FileManager ( and derivates )
-#include "samson.pb.h"	// ss::network::...
-
+#include "samson.pb.h"			// ss::network::...
+#include "Status.h"				// au::Status
+#include "coding.h"				// ss::ProcessAssistantSharedFile
 namespace ss {
 
 	class ProcessAssistant;
 	class WorkerTask;
 	
-	class WorkerTaskItem
+	class WorkerTaskItem : public au::Status
 	{
 	public:
 		
@@ -31,79 +32,62 @@ namespace ss {
 			running					// It has beent taken by a ProcessAssistant (should report finish)
 		};
 		
-		int item_id;			// Item id ( from 0 to ...)
-		
-		State state;
+		State state;				// Main state of this item
+		int item_id;				// Item id ( from 0 to ...)
+		int shm_input;				// Shared memory identifier for input ( if necessary ) -1 --> no assigned
 
-		int shm_input;			// Shared memory identifier for input ( if necessary ) -1 --> no assigned
+		int num_input_files;		// Number of input files requested for this item during loading phase	
+		int confirmed_input_files;	// Number of files confirmed by FileManager
 		
-		WorkerTaskItem();
+		network::WorkerTask workerTask;	// copy of the message sent by controller ( environment inside )
+
+		// Error management
+		bool error;
+		std::string error_message;
+		
+		WorkerTaskItem( const network::WorkerTask &_workerTask );
 		virtual ~WorkerTaskItem(){}
 
 		// Set the parent task
 		void setTaskAndItemId( WorkerTask *task , int itemId);
-
-		int num_input_files;
-		int confirmed_input_files;
 		
-		virtual void setupInputs(){}	// Prepare files needed to be read when shared memory is ready
-		void addInputFiles( FileManagerReadItem *item );
-		void notifyFinishLoadInputFile();
-		bool areInputFilesReady();
+		
+		// Function to define the required input files for this item ( this depends on the concrete type of item)
+		virtual void setupInputs(){}	
+		void addInputFiles( FileManagerReadItem *item );	// Function used inside setupInputs in subclasses
+		
+		void notifyFinishLoadInputFile();					// Function called when an input file is ready
+		bool areInputFilesReady();							// Are all input files loaded?
 		
 		// General setup while asking if it is ready
 		
-		bool isReadyToRun()
-		{
-			if ( state == running )
-				return false;				// Already running by other PA
-			
-			if( state == no_memory )
-			{
-				shm_input = MemoryManager::shared()->getFreeSharedMemory();
-				if( shm_input != -1)
-					state = ready_to_load_inputs;
-			}
+		bool isReadyToRun();
 
-			if( state == ready_to_load_inputs)
-			{
-				setupInputs();	// Prepare all the inputs to be read
-				state = loading_inputs;
-			}	
-			
-			if ( state == loading_inputs )
-			{
-				if( areInputFilesReady() )
-					state = ready_to_run;
-			}
+		void setError( std::string _error_message );
 
-			if( state == ready_to_run )
-			{
-				state = running;
-				return true;
-			}
-			
-			return false;
-
-		}
+		void start();
 		
+		void setup();
 		
-		void freeResources()
-		{
-			if( shm_input != -1)
-				MemoryManager::shared()->freeSharedMemory( shm_input );
-		}
-		
+		void freeResources();
 		
 		State getState();
 		
-		
-		// Get status for debuggin
-		std::string getStatus();
+		// Funciton to get the run-time status of this object
+		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
 		// Particular operations to run
 		virtual void run(ProcessAssistant *pa)=0;
 		virtual void receiveCommand( ProcessAssistant *pa , network::ProcessMessage p )=0;
+		
+		
+		// Utility function to get the o-th output queue
+		network::Queue getOutputQueue(int o);
+
+	protected:
+		
+		FileManagerReadItem * getFileMangerReadItem( ProcessAssistantSharedFile* file  );
+		
 		
 	};
 }

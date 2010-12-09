@@ -19,7 +19,7 @@
 #include "ModulesManager.h"			/* Own interface                            */
 #include <samson/Data.h>			/* ss::system::UInt ... */
 #include "logMsg.h"
-
+#include "MessagesOperations.h"		// evalHelpFilter(.)
 
 
 namespace ss
@@ -52,7 +52,6 @@ namespace ss
 		// Load modules from "~/.samson/modules" && "/etc/samson/modules"
 		std::string modules_dir = SAMSON_MODULES_DIRECTORY;
 		addModulesFromDirectory( modules_dir );
-		//addModulesFromDirectory( "/etc/samson/modules" );
 		 
 	}
 
@@ -369,31 +368,7 @@ namespace ss
 	}
 	
 	
-	bool evalOperation( network::Help *help , Operation *op)
-	{
-		if( help->has_name() )
-		{
-			if( op->getName() == help->name() )
-				return true;
-			else
-				return false;
-		}
-		
-		if( help->has_begin() )
-		{
-			std::string name = op->getName();
-			std::string begin = help->begin();
-			
-			if( name.length() < begin.length() )
-				return false;
-			
-			return (name.substr(0, begin.length()) == begin);
-			
-		}
-		
-			
-		return true;
-	}
+
 	
 	
 	// Fill help responses
@@ -406,7 +381,7 @@ namespace ss
 			{
 				Operation * op = j->second;
 
-				if( evalOperation( &help , op ) )
+				if( evalHelpFilter( &help , op->getName() ) )
 				{
 				
 					network::Operation *o = response->add_operation();

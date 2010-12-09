@@ -11,28 +11,13 @@ namespace ss {
 	
 #pragma mark Use Buffer to get information
 
-	
-	
-	
-	std::string BufferToString( Buffer *b )
-	{
-		std::ostringstream info;
-		NetworkKVInfo * _info = (ss::NetworkKVInfo*) b->getData(); 
-		info << "Buffer with " << au::Format::string(_info[0].kvs) << " kvs in " << au::Format::string(_info[0].size) << "bytes (";
-		/*
-		for (int i = 0 ; i < 20 ; i++ )
-			info << _info[i+1].kvs << "/" << _info[i+1].size << " ";
-		*/
-		return info.str();
-	}
-
 	DataBuffer::DataBuffer( SamsonWorker *_worker )
 	{
 		worker = _worker;
+		setStatusTile( "Data Buffer" , "db" );
 	}
-	
-	
-	void DataBuffer::addBuffer( size_t task_id , network::Queue queue , Buffer* buffer )
+		
+	void DataBuffer::addBuffer( size_t task_id , network::Queue queue , Buffer* buffer, bool txt )
 	{
 		lock.lock();
 		
@@ -41,11 +26,11 @@ namespace ss {
 		if (!tdb )
 		{
 			// Create a new item
-			tdb =  new DataBufferItem( this, task_id , worker->network->getWorkerId(), worker->network->getNumWorkers() );
+			tdb =  new DataBufferItem( this, task_id , worker->network->getWorkerId(), worker->network->getNumWorkers()  );
 			insertInMap( task_id , tdb );
 		}
 		
-		tdb->addBuffer( queue , buffer );
+		tdb->addBuffer( queue , buffer , txt );
 		
 		lock.unlock();
 	}
@@ -61,7 +46,7 @@ namespace ss {
 		if (!tdb )
 		{
 			// Create a new item
-			tdb =  new DataBufferItem( this, task_id , worker->network->getWorkerId(), worker->network->getNumWorkers() );
+			tdb =  new DataBufferItem( this, task_id , worker->network->getWorkerId(), worker->network->getNumWorkers()  );
 			insertInMap( task_id , tdb );
 		}
 		
@@ -82,30 +67,28 @@ namespace ss {
 		
 	}
 
-	std::string DataBuffer::getStatus()
+	void DataBuffer::getStatus( std::ostream &output , std::string prefix_per_line )
 	{
-		lock.lock();
-		std::string txt =  getStatusFromArray( *this );
-		lock.unlock();
-		
-		return txt;
+		output << "\n";
+		getStatusFromMap( output , *this , prefix_per_line );
 	}
+
 
 	
 	void DataBuffer::fileManagerNotifyFinish(size_t id, bool success)
 	{
+		
 		lock.lock();
 		
-		// Discover the DataBufferItem with id_relation
-		std::map<size_t,size_t>::iterator iter = id_relation.find( id );
-		if( iter != id_relation.end() )
+		if( id_relation.isInMap( id ) )
 		{
-			
-			size_t task_id = iter->second;
-			
+			size_t task_id = id_relation.extractFromMap( id );
 			
 			DataBufferItem *tdb = findInMap( task_id );
-			tdb->diskManagerNotifyFinish(id, success);
+
+			assert( tdb );
+			
+			tdb->fileManagerNotifyFinish(id, success);
 			
 			if ( tdb->isCompleted() )
 			{
@@ -113,12 +96,12 @@ namespace ss {
 				delete tdb;
 			}
 			
-			
 		}
 		else {
 			assert(false);
+			// There is something wrong.
+			// There is no relation between this FileManager id and any task
 		}
-
 		
 		lock.unlock();
 		

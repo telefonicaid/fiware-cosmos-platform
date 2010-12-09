@@ -30,6 +30,7 @@ namespace ss
 		au::CommandLine commandLine;
 		commandLine.set_flag_string("name", "null");
 		commandLine.set_flag_string("begin", "null");
+		commandLine.set_flag_boolean("show");
 		commandLine.parse( command );
 
 		std::string mainCommand;
@@ -83,7 +84,7 @@ namespace ss
 			std::string queue_name = commandLine.get_argument(1);
 			std::string fileName = commandLine.get_argument(2);
 
-			size_t id = dalilah->addDownloadProcess(queue_name, fileName);
+			size_t id = dalilah->addDownloadProcess(queue_name, fileName , commandLine.get_flag_bool("show"));
 
 			std::ostringstream o;
 			o << "Download data process (id="<<id<<") started.\n";
@@ -98,7 +99,7 @@ namespace ss
 			
 			std::ostringstream output;
 			
-			output << "Memory status: " << MemoryManager::shared()->getStatus();
+			MemoryManager::shared()->getStatus( output , "");
 			
 			
 			output << "Load processes....\n";
@@ -292,7 +293,8 @@ namespace ss
 				
 				// Prepare what to show on screen
 				txt << "----------------------------------------------------------------" << std::endl;
-				txt << "Answer for command " << id << ": " << command << std::endl;
+				txt << "COMMAND: " << id << ": " << command << std::endl;
+				txt << "----------------------------------------------------------------" << std::endl;
 				
 				if (finished)
 				{
@@ -301,10 +303,10 @@ namespace ss
 					else
 						txt << "Command finished correctly" << std::endl;
 				}
-				
-				txt << std::endl;
 				txt << "----------------------------------------------------------------" << std::endl;
+				txt << std::endl;
 				txt << message << std::endl;
+				txt << std::endl;
 				txt << "----------------------------------------------------------------" << std::endl;
 			}
 				break;

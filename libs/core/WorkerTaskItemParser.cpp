@@ -6,27 +6,47 @@
 
 namespace ss {
 
-	void WorkerTaskItemOperation::run( ProcessAssistant *pa )
+#pragma mark WorkerTaskItemParser
+	
+	void WorkerTaskItemParser::setupInputs()
+	{
+		SharedMemoryItem * smi = MemoryManager::shared()->getSharedMemory( shm_input );
+		size_t size = FileManagerReadItem::sizeOfFile( fileName );
+		
+		FileManagerReadItem *item = new FileManagerReadItem( fileName , 0 , size , smi->data , task->taskManager );
+		addInputFiles( item );
+		
+		// The delegate is TaskManager: it received notifications form the FileManager and unblock items
+	}
+	
+	void WorkerTaskItemParser::run( ProcessAssistant *pa )
 	{
 		
 		// Create the Framework to run the operation from the ProcessAssitant side
-		Operation * op = pa->worker->modulesManager.getOperation( operation );
+		Operation * op = pa->taskManager->worker->modulesManager.getOperation( operation );
 		assert( op );
 		
 		network::ProcessMessage p;
 		p.set_code( network::ProcessMessage::run );
 		p.set_operation( operation );
-		p.set_num_servers( pa->worker->workers );
+		p.set_num_servers( pa->taskManager->worker->workers );
 		p.set_num_inputs( op->getNumInputs() );
 		p.set_num_outputs( op->getNumOutputs() );
-		
-		//p.set_input_size( XXX );			// For Parse operation
-		
 		p.set_output_shm( pa->output_shm );					// Set the output shared memory buffer
-		
+		p.mutable_worker_task()->CopyFrom( workerTask );
 		p.set_input_shm( shm_input );						// Set the input shared memory buffer
 		
-		p.mutable_environment()->CopyFrom( task->environment );
+		if( op->getType() == Operation::parserOut)
+		{
+			p.set_output_txt(true);
+			p.set_output_kvs(false);
+		}
+		else
+		{
+			p.set_output_txt(false);
+			p.set_output_kvs(true);
+		}
+		
 		
 		// Create the framework here at the process assistant side
 		framework = new ProcessAssistantOperationFramework(pa , p );
@@ -38,192 +58,148 @@ namespace ss {
 		framework->flushOutput(this);
 		
 		delete framework;
+	}	
+	
+#pragma mark WorkerTaskItemOrganizer
+	
+	
+	WorkerTaskItemOrganizer::WorkerTaskItemOrganizer( const network::WorkerTask & _workerTask ) : WorkerTaskItem( _workerTask )
+	{
+		// It is no necessary to have a shared memory area
+		state = ready_to_load_inputs;
 	}
 	
+	
+	void WorkerTaskItemOrganizer::setupInputs()
+	{
+		// Create the reduce information ( stored at the worker task to share with the rest of reduce items )
+		task->reduceInformation = new ProcessAssistantSharedFileCollection( workerTask );
+		
+		for (int f = 0 ; f < task->reduceInformation->total_num_input_files ; f++)
+			addInputFiles( getFileMangerReadItem( task->reduceInformation->file[f] ) );
+	}
+	
+	void WorkerTaskItemOrganizer::run( ProcessAssistant *pa )
+	{
+		
+		// Organize the reduce in multiple WorkerTaskItems to process each set of hash-groups
+				
+		int max_num_hgs = KV_NUM_HASHGROUPS / 10;	// Minimum 10 divisions for force multicore approach
+		size_t max_item_size = SamsonSetup::shared()->shared_memory_size_per_buffer - max_num_hgs*sizeof(FileKVInfo) - sizeof(SharedHeader);
+		
+		
+		ProcessAssistantSharedFileCollection *reduceInformation = task->reduceInformation;
+		
+		reduceInformation->setup();
+		
+		
+		// Create necessary reduce operations
+		
+		int hg = 1;												// Evaluating current hash group	
+		int	item_hg_begin = 0;									// Starting at hash-group
+		size_t total_size = reduceInformation->size_of_hg[0];	// Total size for this operation
+		
+		while( hg < KV_NUM_HASHGROUPS )
+		{
+			size_t current_hg_size = reduceInformation->size_of_hg[hg];
+			
+			if( ( ( total_size + current_hg_size  ) > max_item_size ) || (hg - item_hg_begin ) > max_num_hgs )
+			{
+				
+				if( total_size > 0 )
+				   task->addItem( new WorkerTaskItemOperation( item_hg_begin , hg , this,  workerTask ) );
+
+				// Ready for the next item
+				item_hg_begin = hg;
+				total_size = current_hg_size;
+			}
+			else
+				total_size+=current_hg_size;
+			
+			hg++;
+		}
+		
+		// Create the last item
+		task->addItem( new WorkerTaskItemOperation( item_hg_begin , KV_NUM_HASHGROUPS ,this,  workerTask ) );
+		
+	}
+	
+	
+#pragma mark WorkerTaskItemOperation
 	
 	void WorkerTaskItemOperation::setupInputs()
 	{
-		SharedMemoryItem * smi = MemoryManager::shared()->getSharedMemory( shm_input );
-		size_t size = FileManagerReadItem::sizeOfFile( fileName );
-		
-		FileManagerReadItem *item = new FileManagerReadItem( fileName , 0 , size , smi->data , task->taskManager );
-		addInputFiles( item );
-		
-		// The delegate is TaskManager: it received notifications form the FileManager and unblock items
-		
-	}
-	
-
-#pragma mark WorkerTaskItemReduceOrganizer
-	
-	
-	WorkerTaskItemReduceOrganizer::WorkerTaskItemReduceOrganizer( WorkerTask * _parentTask, const network::WorkerTask & _workerTask )
-	{
-		parentTask = _parentTask;	// Keep a pointer to the parent task to add new items
-		workerTask = _workerTask;	// Copy all the information contained in the message
-		
-		int num_inputs = workerTask.input_size();
-		int *num_input_files = (int*) malloc( sizeof(int) * num_inputs );
-		for( int i = 0 ; i < num_inputs ; i++)
-			num_input_files[i] = workerTask.input(i).file_size();
-		
-		// Prepare the structure to store information
-		parentTask->reduceInformation = new ReduceInformation( NULL,  num_inputs , num_input_files , KV_NUM_HASHGROUPS + 1 );
-		
-		free( num_input_files );
-		
-		
-		// It is no necessary to have a shared memory area
-		state = ready_to_load_inputs;
-		
-	}
-	
-	
-	void WorkerTaskItemReduceOrganizer::setupInputs()
-	{
-		// Order all the reads for all the input files
-		
-		for (int i = 0 ; i < parentTask->reduceInformation->num_inputs ; i++)
-		{
-			for (int f = 0 ; f < parentTask->reduceInformation->num_input_files[i] ; f++)
-			{
-				std::string fileName = workerTask.input(i).file(f).name();
-				size_t offset = sizeof( FileHeader );
-				size_t size = KV_HASH_GROUP_VECTOR_SIZE_FILE;
-			
-				FileManagerReadItem *item = new FileManagerReadItem( fileName , offset , size , (char *) parentTask->reduceInformation->info[i][f] , task->taskManager );
-				addInputFiles( item );
-			}
-			
-		}
-
-		
-	}
-	
-	void WorkerTaskItemReduceOrganizer::run( ProcessAssistant *pa )
-	{
-		// Organize the reduce in multiple WorkerTaskItems to process each set of hash-groups
-		
-		int	item_hg_begin = 0;	// Starting at hash-group
-		int item_hg_end	 = 0;	// End hashgroup
-
-		size_t item_size = 0;	// Total size in bytes to read
-		
-		size_t max_item_size = SamsonSetup::shared()->shared_memory_size_per_buffer * 0.7;
-		int max_num_hgs = KV_NUM_HASHGROUPS / 10;	// Minimum 10 divisions for force multicore approach
-		
-		//std::cout << "Reduce organization: max_size=" << au::Format::string(max_item_size) << " max_num_hgs=" << max_num_hgs << std::endl;
-		
-		for (int hg = 0 ; hg < KV_NUM_HASHGROUPS ; hg++)
-		{
-			
-			size_t size_of_this_hg = 0;
-			for (int i = 0 ; i < parentTask->reduceInformation->num_inputs ; i++)
-				for (int f = 0 ; f < parentTask->reduceInformation->num_input_files[i] ; f++)
-					size_of_this_hg += parentTask->reduceInformation->info[i][f][hg+1].size;
-
-			if( ( size_of_this_hg + item_size > max_item_size ) || ( (hg - item_hg_begin ) > max_num_hgs ) )
-			{
-				item_hg_end = hg;
-				
-				// Create a new item
-				//std::cout << "New item " << item_hg_begin << " -> " << item_hg_end << " Size: " << au::Format::string( item_size ) << std::endl;
-				
-				parentTask->addItem( new WorkerTaskItemReduce( item_hg_begin , item_hg_end ,this,  workerTask ) );
-				
-				// Prepare for the next one
-				item_hg_begin = hg;
-				item_size = size_of_this_hg;
-			}
-			else
-			{
-				item_size += size_of_this_hg;
-			}
-			
-		}
-		
-		// Create one with the last group
-		item_hg_end = KV_NUM_HASHGROUPS;
-		parentTask->addItem( new WorkerTaskItemReduce( item_hg_begin , item_hg_end ,this,  workerTask ) );
-		
-		
-	}
-	
-	
-#pragma mark WorkerTaskItemReduce
-	
-	void WorkerTaskItemReduce::setupInputs()
-	{
-		
+		// Access the shared memory area
 		SharedMemoryItem * smi = MemoryManager::shared()->getSharedMemory( shm_input );
 		char* data = smi->data;
 
+		// Reduce information is stored in the parent task ( common to all reduce task-items )
+		ProcessAssistantSharedFileCollection *reduceInformation = task->reduceInformation;
 		
-		// Copy KVInfo to the shard memory area
-		int file_counter=0;
-		size_t size_info = sizeof(FileKVInfo) * num_hash_groups;
-		for (int i = 0 ; i < parentTask->reduceInformation->num_inputs ; i++)
-			for (int f = 0 ; f < parentTask->reduceInformation->num_input_files[i] ; f++)
-			{
-				memcpy(data + file_counter * size_info , &parentTask->reduceInformation->info[i][f][hg_begin+1], size_info);
-				file_counter++;
-			}
-
-		char *file_data = data + file_counter* size_info;
+		// Offset while writing into the shared memory area
+		size_t offset = 0;		
 		
-		for (int i = 0 ; i < parentTask->reduceInformation->num_inputs ; i++)
-			for (int f = 0 ; f < parentTask->reduceInformation->num_input_files[i] ; f++)
-			{
-				std::string fileName = workerTask.input(i).file(f).name();
-				
-				// Compute the offset and size for this file and offset
-				size_t offset = KV_TOTAL_FILE_HEADER_SIZE;
-				
-				for (int hg = 0 ; hg < hg_begin ; hg++)
-					offset+= parentTask->reduceInformation->info[i][f][hg+1].size;
-				
-				size_t size = 0;
-
-				for (int hg = hg_begin ; hg < hg_end ; hg++)
-					size+= parentTask->reduceInformation->info[i][f][hg+1].size;
-				
-				// Write first size
-				*((size_t*)file_data) = size;
-				file_data += sizeof( size_t );
-				
-				FileManagerReadItem *item = new FileManagerReadItem( fileName , offset , size , file_data , task->taskManager );
-				addInputFiles( item );
-
-				file_data += size;
-			}
+		// Write all files at the shared memory
+		for (int f = 0 ;  f < reduceInformation->total_num_input_files ; f++)
+		{
+			// Header
+			SharedHeader header = reduceInformation->file[f]->getSharedHeader( hg_begin , hg_end);
+			memcpy(data+offset, &header, sizeof(SharedHeader));
+			offset+= sizeof(SharedHeader);
+			
+			// Copy the info vector
+			size_t size_info = ( hg_end - hg_begin ) * sizeof( FileKVInfo );
+			memcpy(data + offset , &task->reduceInformation->file[f]->info[hg_begin],  size_info  );
+			offset += size_info;
+			
+			// Schedule the read operation into the FileManager to read data content
+			FileManagerReadItem *item 
+					= new FileManagerReadItem( \
+							reduceInformation->file[f]->fileName , \
+							reduceInformation->file[f]->getFileOffset( hg_begin ), \
+							header.info.size, \
+							data + offset \
+							, NULL );
+			addInputFiles( item );
+			offset += header.info.size;
+		}
 		
 	}
 	
-	void WorkerTaskItemReduce::run( ProcessAssistant *pa )
+	void WorkerTaskItemOperation::run( ProcessAssistant *pa )
 	{
 		
 		// Create the Framework to run the operation from the ProcessAssitant side
 		std::string operation = workerTask.operation();
 		
-		Operation * op = pa->worker->modulesManager.getOperation( operation );
+		Operation * op = pa->taskManager->worker->modulesManager.getOperation( operation );
 		assert( op );
 		
 		network::ProcessMessage p;
 		p.set_code( network::ProcessMessage::run );
 		p.set_operation( operation );
-		p.set_num_servers( pa->worker->workers );
+		p.set_num_servers( pa->taskManager->worker->workers );
 		p.set_num_inputs( op->getNumInputs() );
 		p.set_num_outputs( op->getNumOutputs() );
-				
 		p.set_output_shm( pa->output_shm );					// Set the output shared memory buffer
-		
 		p.set_input_shm( shm_input );						// Set the input shared memory buffer
-
+		p.set_num_input_files( task->reduceInformation->total_num_input_files );
 		p.mutable_worker_task()->CopyFrom( workerTask );
-		
-		p.mutable_environment()->CopyFrom( task->environment );
-		
 		p.set_num_hash_groups( num_hash_groups );
+		p.set_hg_begin( hg_begin );
+		p.set_hg_end( hg_end );
+
+		
+		if( op->getType() == Operation::parserOut)
+		{
+			p.set_output_txt(true);
+			p.set_output_kvs(false);
+		}
+		else
+		{
+			p.set_output_txt(false);
+			p.set_output_kvs(true);
+		}
 		
 		// Create the framework here at the process assistant side
 		framework = new ProcessAssistantOperationFramework(pa , p );
@@ -234,7 +210,8 @@ namespace ss {
 		// Flush output
 		framework->flushOutput(this);
 		
-		delete framework;	}
+		delete framework;	
+	}
 	
 	
 	

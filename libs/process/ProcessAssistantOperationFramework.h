@@ -22,7 +22,7 @@ namespace ss {
 		void addInputFiles();
 
 		
-		void flushOutput(WorkerTaskItemWithOutput *item);
+		void flushOutput(WorkerTaskItem *item);
 		
 	};
 	

@@ -9,9 +9,8 @@
 #include "ProcessAssistant.h"		// ss::ProcessAssistant
 #include "SamsonWorker.h"			// ss::SamsonWorker
 #include "WorkerTaskManager.h"		// ss::WorkerTaskItemWithOutput
-#include "WorkerTaskItemWithOutput.h"	// ss:WorkerTaskItemWithOutput
-#include "WorkerTask.h"					// ss::WorkerTask
-
+#include "WorkerTask.h"				// ss::WorkerTask
+#include "WorkerTaskItem.h"			// ss::WorkerTaskItem
 namespace ss {
 
 	void ProcessWriter::emit( int output , DataInstance *key , DataInstance *value )
@@ -53,8 +52,8 @@ namespace ss {
 		}
 		
 		// Update the info in the particular output and the concrete hash-group 
-		_channel->info.update(	1, miniBufferSize );
-		_hgOutput->info.update( 1, miniBufferSize ); 
+		_channel->info.append(	1, miniBufferSize );
+		_hgOutput->info.append( 1, miniBufferSize ); 
 		
 		uint32 miniBufferPos = 0;
 		
@@ -89,11 +88,11 @@ namespace ss {
 		}
 	}
 
+	
+	// Create as many network messages to send all this key-values to all the workers
 
-
-	void ProcessWriter::FlushBuffer( WorkerTaskItemWithOutput *taskItem )
+	void ProcessWriter::FlushBuffer( WorkerTaskItem *taskItem )
 	{
-		
 		size_t task_id = taskItem->task->task_id;
 		
 		for (int o = 0 ; o < num_outputs ; o++)
@@ -103,28 +102,32 @@ namespace ss {
 			
 			for (int s = 0 ; s < num_servers ; s++)
 			{				
-				OutputChannel * _channel		= &channel[ o * num_servers + s ];	
+				OutputChannel * _channel = &channel[ o * num_servers + s ];	
 
 				if( _channel->info.size > 0)
 				{
-				
-					Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessWriter", KV_HASH_GROUP_VECTOR_SIZE_NETWORK + _channel->info.size );
+					Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessWriter", NETWORK_TOTAL_HEADER_SIZE + _channel->info.size );
 					assert( buffer );
+
+					// Pointer to the header
+					NetworkHeader *header = (NetworkHeader*) buffer->getData();
 					
-					// Pointer to the begining for info vector
-					NetworkKVInfo *info = (NetworkKVInfo*) buffer->getData();
+					// Pointer to the info vector
+					NetworkKVInfo *info = (NetworkKVInfo*) (buffer->getData() + sizeof( NetworkHeader ));
 					
-					// Initial offset for the buffer
-					buffer->skipWrite(KV_HASH_GROUP_VECTOR_SIZE_NETWORK);
+					// Initial offset for the buffer to write data
+					buffer->skipWrite(NETWORK_TOTAL_HEADER_SIZE);
 					
-					info[0] = _channel->info;	// Global info
+					header->init();
+					header->setInfo(  _channel->info );	// Global information of this buffer
+					header->setFormat( KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() ) );
 					
 					for (int i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
 					{
 						HashGroupOutput * _hgOutput	= &_channel->hg[i];							// Current hash-group output
 
 						// Set gloal info
-						info[i+1] = _hgOutput->info;
+						info[i] = _hgOutput->info;
 						
 						// Write data followign nodes
 						uint32 node_id = _hgOutput->first_node;
@@ -142,27 +145,17 @@ namespace ss {
 					assert( buffer->getSize() == buffer->getMaxSize() );
 
 					// Sent this buffer to somewhere
+					assert( processAssistant );
 
-					if( processAssistant )
-					{
-						Packet *p = new Packet();
-						p->buffer = buffer;
-						network::WorkerDataExchange *dataMessage =  p->message.mutable_data();
-						
-						dataMessage->set_task_id(task_id);
-						dataMessage->mutable_queue( )->CopyFrom( output_queue );
-												
-						NetworkInterface *network = processAssistant->worker->network;
-						network->send(processAssistant->worker, network->workerGetIdentifier(s) , Message::WorkerDataExchange, p);
-					}
-					else
-					{
-						//std::cout << "Output " << o << " Server " << s << " : "<< au::Format::string( buffer->getSize() ) << " bytes\n";
-						std::cout << "Output " << o << " Server " << s << " : " << au::Format::string( _channel->info.kvs ) << " kvs in " << au::Format::string( buffer->getSize() - KV_HASH_GROUP_VECTOR_SIZE_NETWORK ) << " real bytes\n";
-						MemoryManager::shared()->destroyBuffer( buffer );
-					}
-
+					Packet *p = new Packet();
+					p->buffer = buffer;
+					network::WorkerDataExchange *dataMessage =  p->message.mutable_data();
 					
+					dataMessage->set_task_id(task_id);
+					dataMessage->mutable_queue( )->CopyFrom( output_queue );
+											
+					NetworkInterface *network = processAssistant->taskManager->worker->network;
+					network->send(processAssistant->taskManager->worker, network->workerGetIdentifier(s) , Message::WorkerDataExchange, p);
 					
 				}
 			}
@@ -171,6 +164,41 @@ namespace ss {
 		
 	}
 
+
+	
+	
+	void ProcessTXTWriter::FlushBuffer( WorkerTaskItem *taskItem )
+	{
+		
+		if( *size > 0)
+		{
+			
+			size_t task_id = taskItem->task->task_id;
+			
+			assert( processAssistant );
+			
+			Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessTXTWriter", *size );
+			assert( buffer );
+
+			// There is only one output queue
+			network::Queue output_queue = taskItem->getOutputQueue( 0 );
+
+			
+			// copy the entire buffer to here
+			memcpy(buffer->getData(), data, *size);
+			buffer->setSize(*size);
+			
+			Packet *p = new Packet();
+			p->buffer = buffer;
+			network::WorkerDataExchange *dataMessage =  p->message.mutable_data();
+			
+			dataMessage->set_task_id(task_id);
+			dataMessage->mutable_queue( )->CopyFrom( output_queue );
+			dataMessage->set_txt(true);
+			NetworkInterface *network = processAssistant->taskManager->worker->network;
+			network->send(processAssistant->taskManager->worker, network->getMyidentifier() , Message::WorkerDataExchange, p);
+		}
+	}	
 	
 	
 }

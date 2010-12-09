@@ -1,7 +1,7 @@
 #include "parseArgs.h"          // parseArgs
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "EndpointMgr.h"		// ss::EndpointMgr
-
+#include "SamsonSetup.h"		// ss::SamsonSetup
 
 
 /* ****************************************************************************
@@ -60,6 +60,8 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 
+	ss::SamsonSetup::shared();	// Load setup and create default directories
+	
 	ss::SamsonWorker  worker(controller, alias, port, workers, endpoints);
 	ss::Network*      networkP;
 	ss::EndpointMgr*  epMgr;

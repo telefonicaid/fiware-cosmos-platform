@@ -15,6 +15,7 @@
 #include <Format.h>			// au::Format
 #include <time.h>			// clock(.)
 #include "Buffer.h"			// ss::Buffer
+#include "Status.h"				// au::Status
 
 namespace ss {
 	
@@ -22,7 +23,7 @@ namespace ss {
 	class DiskOperation;
 	class DiskManagerDelegate;
 	
-	class DiskManager
+	class DiskManager : public au::Status
 	{
 		// Global lock for thread safe implementation
 		au::Lock lock;
@@ -30,6 +31,7 @@ namespace ss {
 		// All the files that are open
 		std::map <dev_t , DeviceDiskAccessManager*> item;		// All partitions we can access
 		size_t counter_id;
+		
 		
 		DiskManager();
 		
@@ -55,11 +57,8 @@ namespace ss {
 		
 		size_t write( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate );
 		
-		/**
-		 Show status for debugging
-		 */
-		
-		void showStatus();
+		// Function to get the run-time status of this object
+		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
 	private:
 		

@@ -10,7 +10,7 @@ namespace ss
 {
 	static MemoryManager *_memoryManager = NULL;
 
-	MemoryManager::MemoryManager() : stopLock(&lock )
+	MemoryManager::MemoryManager()
 	{
 		used_memory = 0;
 		
@@ -32,6 +32,9 @@ namespace ss
 		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
 			shared_memory_used_buffers[i] = false;
 		
+		
+		//Setup run-time status
+		setStatusTile( "Memory manager" , "mm" );
 	}
 	
 	MemoryManager* MemoryManager::shared()
@@ -137,8 +140,6 @@ namespace ss
 		
 		lock.unlock();
 		
-		// Wake up any thread bloqued for memory usage
-		lock.wakeUpStopLock( &stopLock );
 
 	}
 	
@@ -146,11 +147,33 @@ namespace ss
 	
 	double MemoryManager::getMemoryUsage()
 	{
-		if( memory==0 )
-			return 0;
-		return (double) used_memory / (double)memory;
+		double per;
+		if( memory == 0 )
+			per = 0;
+		else
+			per =  ( (double) used_memory / (double)memory );
+
+		return per;
 	}
 
-	
+	void MemoryManager::getStatus( std::ostream &output , std::string prefix_per_line )
+	{
+		int num_shm_buffers = 0;
+		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
+			if( shared_memory_used_buffers[i] )
+				num_shm_buffers++;
+		
+		int per_memory = (int) ( getMemoryUsage()*100.0 );
+		output <<"\n";	// All in new lines
+		output << prefix_per_line << "Used memory: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)"<< std::endl;
+		output << prefix_per_line << "Buffers in action " << num_buffers << std::endl;
+		output <<  prefix_per_line << "Shared memory Buffers " << num_shm_buffers << " / " << shared_memory_num_buffers << std::endl;
+		output <<  prefix_per_line << "Buffers: ";
+		std::set<Buffer*>::iterator iter;
+		for (iter = buffers.begin() ; iter != buffers.end() ; iter++ )
+			output << (*iter)->_name << " ";
+		output << std::endl;
+		
+	}	
 
 }

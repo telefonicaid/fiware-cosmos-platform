@@ -19,6 +19,9 @@ namespace ss {
 	DiskManager::DiskManager()
 	{
 		counter_id = 0;
+
+		// Setup run-time status report
+		setStatusTile( "Disk Manager" , "dm" );
 	}
 
 	size_t DiskManager::read( char *data , std::string fileName , size_t offset , size_t size , DiskManagerDelegate *delegate )
@@ -47,6 +50,7 @@ namespace ss {
 	size_t DiskManager::write( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate )
 	{
 		lock.lock();
+		
 		DiskOperation *o = new DiskOperation(counter_id++);
 		
 		o->fileName = fileName;
@@ -67,20 +71,6 @@ namespace ss {
 		
 	}
 		
-		
-	void DiskManager::showStatus()
-	{
-		lock.lock();
-		std::cout << "--------------------------------------------------------------------------------" << std::endl;
-		std::cout << "DiskManager" << std::endl;
-		for ( std::map <dev_t , DeviceDiskAccessManager*>::iterator i =  item.begin() ; i != item.end() ; i++ )
-			std::cout << i->second->str() << std::endl;
-		std::cout << "--------------------------------------------------------------------------------" << std::endl;
-		
-		
-		lock.unlock();
-	}
-	
 	DeviceDiskAccessManager *DiskManager::getDeviceDiskAccessManagerForDev( dev_t st_dev )
 	{
 		std::map <dev_t , DeviceDiskAccessManager*>::iterator i;
@@ -112,4 +102,13 @@ namespace ss {
 		return true;
 		
 	}
+
+	
+	void DiskManager::getStatus( std::ostream &output , std::string prefix_per_line )
+	{
+		output << "\n";
+		getStatusFromMap(output, item, prefix_per_line);
+	}
+	
+	
 }

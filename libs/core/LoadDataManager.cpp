@@ -12,7 +12,7 @@ namespace ss
 	
 #pragma mark DataManagerItem
 	
-	DataManagerItem::DataManagerItem( int _fromIdentifier , LoadDataManager *_dataManager )
+	LoadDataManagerItem::LoadDataManagerItem( int _fromIdentifier , LoadDataManager *_dataManager )
 	{
 		fromIdentifier = _fromIdentifier;
 		dataManager = _dataManager;
@@ -22,7 +22,7 @@ namespace ss
 #pragma mark UploadItem
 	
 	UploadItem::UploadItem( int _fromIdentifier , LoadDataManager *dataManager, const network::UploadData &_uploadData ,size_t _sender_id, Buffer * _buffer ) 
-		: DataManagerItem( _fromIdentifier , dataManager)
+		: LoadDataManagerItem( _fromIdentifier , dataManager)
 	{
 		uploadData = _uploadData;	// Copy the message
 		sender_id = _sender_id;
@@ -69,7 +69,7 @@ namespace ss
 #pragma mark DownloadItem
 	
 	DownloadItem::DownloadItem( int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadData &_downloadData ,size_t _sender_id) 
-		: DataManagerItem( _fromIdentifier , dataManager )
+		: LoadDataManagerItem( _fromIdentifier , dataManager )
 	{
 		downloadData = _downloadData;	// Copy the message
 		sender_id = _sender_id;
@@ -163,5 +163,20 @@ namespace ss
 		
 		lock.unlock();
 	}
+	
+	void LoadDataManager::getStatus( std::ostream &output , std::string prefix_per_line )
+	{
+		output << "\n";
+		
+		output << prefix_per_line << "Downloads:\n";
+		getStatusFromMap( output , downloadItem , prefix_per_line );
+		
+		output << prefix_per_line << "Uploads:\n";
+		getStatusFromMap( output , uploadItem , prefix_per_line );
+		
+		
+	}
+	
+	
 	
 }

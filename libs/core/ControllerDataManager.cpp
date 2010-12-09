@@ -10,9 +10,11 @@
 #include "SamsonController.h"				// ss::SamsonController
 #include "KVInfo.h"							// ss::KVInfo
 #include "ModulesManager.h"					// Utility functions
-#include "ObjectWithStatus.h"				// getStatusFromArray(.)
+#include "Status.h"				// getStatusFromArray(.)
 #include "samson/Operation.h"				// ss::Operation
 #include "QueueFile.h"						// ss::QueueFile
+#include "samsonDirectories.h"				// SAMSON_CONTROLLER_DIRECTORY
+#include "MessagesOperations.h"				// evalHelpFilter(.)
 
 namespace ss {
 	
@@ -21,6 +23,8 @@ namespace ss {
 		DataManagerCommandResponse response;
 		
 		au::CommandLine  commandLine;
+		commandLine.set_flag_boolean("f");	// Force boolean flag
+		
 		commandLine.parse( command );
 		
 		if( commandLine.get_num_arguments() == 0)
@@ -44,6 +48,8 @@ namespace ss {
 			std::string keyFormat= commandLine.get_argument( 2 );
 			std::string	valueFormat = commandLine.get_argument( 3 );
 			
+			bool forceFlag = commandLine.get_flag_bool("f");
+			
 			if( !controller->modulesManager.checkData( keyFormat ) )
 			{
 				response.output = "Unsupported data format " + keyFormat + "\n";
@@ -59,15 +65,38 @@ namespace ss {
 				response.error = true;
 				return response;
 			}
+
+			Queue *_queue = queues.findInMap( name );
 			
 			// Check if queue exist
-			if( queues.findInMap( name ) != NULL )
+			if( _queue != NULL )
 			{
-				std::ostringstream output;
-				output << "Queue " + name + " already exist\n";
-				response.output = output.str();
-				response.error = true;
-				return response;
+				if( forceFlag )
+				{
+					// Check the same format
+					if( ( _queue->_format.keyFormat == keyFormat ) && ( _queue->_format.valueFormat == valueFormat ) )
+					{
+						response.output = "OK";
+						return response;
+					}
+					else
+					{
+						std::ostringstream output;
+						output << "Queue " + name + " already exist with another formats: (" << _queue->_format.str() << "). Option -f is not enougth.\n";
+						response.output = output.str();
+						response.error = true;
+						return response;
+						
+					}
+				}
+				else
+				{
+					std::ostringstream output;
+					output << "Queue " + name + " already exist\n";
+					response.output = output.str();
+					response.error = true;
+					return response;
+				}
 			}			
 			
 			KVFormat format = KVFormat::format( keyFormat , valueFormat );
@@ -120,25 +149,28 @@ namespace ss {
 			// Add queue command
 			if( commandLine.get_num_arguments() < 2 )
 			{
-				response.output = "Usage: clear_queue name";
+				response.output = "Usage: clear_queue name1 name2 ...";
 				response.error = true;
 				return response;
 			}
-			
-			std::string name = commandLine.get_argument( 1 );
-			
-			// Check if queue exist
-			Queue *tmp =  queues.findInMap(name);
-			if( !tmp )
+
+			for (int i  = 1 ; i < commandLine.get_num_arguments() ; i++)
 			{
-				std::ostringstream output;
-				output << "Queue " + name + " does not exist\n";
-				response.output = output.str();
-				response.error = true;
-				return response;
+				std::string name = commandLine.get_argument( i );
+				
+				// Check if queue exist
+				Queue *tmp =  queues.findInMap(name);
+				if( !tmp )
+				{
+					std::ostringstream output;
+					output << "Queue " + name + " does not exist\n";
+					response.output = output.str();
+					response.error = true;
+					return response;
+				}
+				else
+					tmp->clear();
 			}
-			else
-				tmp->clear();
 			
 			response.output = "OK";
 			return response;
@@ -416,19 +448,21 @@ namespace ss {
 	std::string ControllerDataManager::getLogFileName(   )
 	{
 		std::ostringstream fileName;
-		fileName << "/var/samson/log/log_controller";
+		fileName << SAMSON_CONTROLLER_DIRECTORY << "log_controller";
 		return fileName.str();
 	}
 	
 	std::string ControllerDataManager::getStatus()
 	{
+		/*
 		std::ostringstream o;
-		
 		lock.lock();
 		o << getStatusFromArray( queues );
 		lock.unlock();
-		
 		return o.str();
+		 */
+		
+		return "";
 		
 	}		
 	
@@ -441,7 +475,7 @@ namespace ss {
 			std::map< std::string , Queue*>::iterator i;
 			for (i = queues.begin() ; i!= queues.end() ;i++)
 			{
-				if( !help.has_name() || i->first == help.name() )
+				if(  evalHelpFilter( &help , i->first ) )
 				{
 					
 					Queue *queue = i->second;

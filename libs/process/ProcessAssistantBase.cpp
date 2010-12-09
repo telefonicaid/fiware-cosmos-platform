@@ -29,6 +29,7 @@
 #include "SamsonWorker.h"			// ss::SamsonWorker
 #include "ProcessWriter.h"			// ss::ProcessAssistantOperationFramework
 #include "ProcessAssistantOperationFramework.h"	// ss::ProcessAssistantOperationFramework
+#include "WorkerTaskManager.h"		// ss::WorkerTaskManager
 
 extern int logFd;
 
@@ -53,10 +54,10 @@ namespace ss {
 	 * Constructor
 	 */
 	
-	ProcessAssistantBase::ProcessAssistantBase( int _core, SamsonWorker* _worker )
+	ProcessAssistantBase::ProcessAssistantBase( int _core, WorkerTaskManager* _taskManager )
 	{
-		core       = _core;
-		worker     = _worker;
+		core		= _core;
+		taskManager = _taskManager;
 
 		// Get an output shared memory
 		output_shm = MemoryManager::shared()->getFreeSharedMemory();
@@ -68,7 +69,6 @@ namespace ss {
 		setStatus("Init");
 		
 		// Start a core worker
-		startTime = 0;
 		coreWorkerStart();
 		
 		setStatus("Children created");	
@@ -167,16 +167,6 @@ namespace ss {
 	 */
 	void ProcessAssistantBase::coreWorkerStart()
 	{
-		//int* rFdP = &rFd;
-		//int* wFdP = &wFd;
-		
-		time_t now = time(NULL);
-		
-		if (now - startTime <= 5)
-		{
-			// ALARM(Alarm::Error, Alarm::CoreWorkerNotRestarted, ("Core worker %d died %d secs after restart", core, now - startTime));
-			LM_RVE(("Core worker %d died %d secs after restart", core, now - startTime));
-		}
 		
 		if (pipe(pipeFdPair1) != 0)  // pipeFdPair1[0] for reading for father
 			LM_RVE(("pipe: %s", strerror(errno)));
@@ -213,18 +203,20 @@ namespace ss {
 		// send the commnd to the Process
 		if( _write(p) == -1)
 		{
-			startTime = 0;
+			closeFds();
 			coreWorkerStart();	// Restart the process again
-			return processMessageWithCode( network::ProcessMessage::crash );		
+
+			return processMessageWithCode( network::ProcessMessage::error );		// This is unfair since it seems that the process had an error and it is samson stuff
+			
 		}
 		
 		while( true )
 		{
-			
 			network::ProcessMessage received_packet;
 			
 			if( _read(received_packet) == -1 )
 			{
+				closeFds();
 				coreWorkerStart();	// Restart the process again
 				return processMessageWithCode( network::ProcessMessage::crash);		
 			}

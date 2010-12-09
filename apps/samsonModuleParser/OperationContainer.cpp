@@ -14,6 +14,34 @@
 #include "AUTockenizer.h"					// AUTockenizer
 
 namespace ss {
+
+	std::string OperationContainer::getCompareFunctionForData( std::string data )
+	{
+		std::vector<std::string> data_names = tockenizeWithDots( data );
+		
+		std::ostringstream output;
+		output << "::ss::";
+		for (size_t i = 0 ; i < data_names.size() ;i++)
+			output << data_names[i] << "::";
+		output << "compare";
+		return output.str();
+		
+	}
+
+	std::string OperationContainer::getIncludeForData( std::string data )
+	{
+		std::vector<std::string> data_names = tockenizeWithDots( data );
+		
+		std::ostringstream output;
+		output << "#include <samson/modules/";
+		for (size_t i = 0 ; i < ( data_names.size()-1) ;i++)
+			output << data_names[i] << "/";
+		output << data_names[data_names.size()-1] << ".h>\n";
+		return output.str();
+		
+	}
+	
+	
 	
 	void OperationContainer::parse( AUTockenizer *module_creator ,  int begin ,int end )
 	{

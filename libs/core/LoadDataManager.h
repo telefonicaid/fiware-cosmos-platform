@@ -7,8 +7,9 @@
 #include "au_map.h"						// au::map
 #include "Lock.h"						// au::Lock
 #include "DiskManagerDelegate.h"		// ss::DiskManagerDelegate
-#include "ObjectWithStatus.h"			// ss::getStatusFromArray(.)
-
+#include "Status.h"			// ss::getStatusFromArray(.)
+#include "samsonDirectories.h"			// SAMSON_DATA_DIRECTORY
+#include "Status.h"				// au::Status
 
 
 namespace ss {
@@ -18,7 +19,7 @@ namespace ss {
 	class LoadDataManager;
 
 	
-	class DataManagerItem
+	class LoadDataManagerItem : public au::Status
 	{
 		
 	public:
@@ -29,14 +30,15 @@ namespace ss {
 		
 		LoadDataManager *dataManager;			// Pointer to the data manager
 		
-		DataManagerItem( int _fromIdentifier , LoadDataManager *dataManager );
+		LoadDataManagerItem( int _fromIdentifier , LoadDataManager *dataManager );
 		
-		virtual ~DataManagerItem(){}
+		virtual ~LoadDataManagerItem(){}
+		
 		
 	};
 	
 	
-	class UploadItem : public DataManagerItem
+	class UploadItem : public LoadDataManagerItem 
 	{
 
 	public:
@@ -55,9 +57,16 @@ namespace ss {
 		static std::string newFileName()
 		{
 			std::ostringstream fileName;
-			fileName << "/tmp/file_" << rand()%1000 << rand()%1000;
+			fileName << SAMSON_DATA_DIRECTORY << "file_updaload_" << rand()%10000 << rand()%10000 << rand()%10000;
 			return fileName.str();
 		}
+		
+		// Function to get the run-time status of this object
+		void getStatus( std::ostream &output , std::string prefix_per_line )
+		{
+			output << "Item File:" << fileName << " Size: " << size << "\n";
+		}
+		
 		
 		
 	};	
@@ -67,7 +76,7 @@ namespace ss {
 	 Item requested to be downloaded
 	 */
 	
-	class DownloadItem : public DataManagerItem
+	class DownloadItem : public LoadDataManagerItem 
 	{
 		
 	public:
@@ -81,11 +90,18 @@ namespace ss {
 
 		size_t submitToFileManager();
 		void sendResponse( bool error , std::string error_message );
+
+		// Function to get the run-time status of this object
+		void getStatus( std::ostream &output , std::string prefix_per_line )
+		{
+			output << "Item \n";
+		}
+		
 		
 	};
 	
 	
-	class LoadDataManager : public FileManagerDelegate
+	class LoadDataManager : public FileManagerDelegate , public au::Status
 	{
 		friend class UploadItem;
 		friend class DownloadItem;
@@ -104,6 +120,7 @@ namespace ss {
 		LoadDataManager( SamsonWorker *_worker )
 		{
 			worker = _worker;
+			setStatusTile( "Upload Download Data Manager" , "uddm" );
 		}
 		
 		// Add item to upload data
@@ -115,10 +132,8 @@ namespace ss {
 		// Disk Manager notifications
 		virtual void fileManagerNotifyFinish(size_t id, bool success);
 
-		std::string getStatus()
-		{
-			return "No status for Load Data Manager...\n";
-		}
+		// Function to get the run-time status of this object
+		void getStatus( std::ostream &output , std::string prefix_per_line );
 
 		
 	};

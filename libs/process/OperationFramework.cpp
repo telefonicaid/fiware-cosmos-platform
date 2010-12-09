@@ -13,9 +13,25 @@ namespace ss {
 		// save the message
 		m = _m;
 		
-		// Create the ProcessWriter
-		pw = new ProcessWriter( m.output_shm() , m.num_outputs() , m.num_servers() );
+		// Create the ProcessWriter or ProcessTxtWriter
+		
+		if( m.output_kvs() )
+		{
+			pw = new ProcessWriter( m.output_shm() , m.num_outputs() , m.num_servers() );
+			assert( !m.output_txt() );
+		}
+		else
+			pw = NULL;
 
+		
+		if( m.output_txt() )
+		{
+			ptw = new ProcessTXTWriter( m.output_shm() , m.num_outputs() , m.num_servers() );
+			assert( !m.output_kvs() );
+		}
+		else
+			ptw = NULL;
+		
 	}
 	
 

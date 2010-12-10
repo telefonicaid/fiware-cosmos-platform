@@ -93,7 +93,7 @@ int SamsonController::receiveHelp(int fromId, Packet* packet)
 	// We check if queues or data_queues is selected inside
 	data.helpQueues( response , packet->message.help() );
 		
-	if (packet->message.help().datas())
+	if ( packet->message.help().datas() )
 	{
 		// Fill with datas information
 		modulesManager.helpDatas( response , packet->message.help() );
@@ -238,6 +238,50 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 			
 		case Message::Command:
 		{
+			
+			// Spetial commands to get information
+			std::string command = packet->message.command().command();
+
+			au::CommandLine cmdLine;
+			cmdLine.parse( command );
+			
+			if( cmdLine.get_num_arguments() == 0)
+				return 0;
+
+			if( cmdLine.isArgumentValue( 0 , "q" , "queues" ) )
+			{
+				// Prepare the help message and sent back to Delilah
+
+				Packet *p = new Packet();
+				network::HelpResponse *response = p->message.mutable_help_response();
+				response->mutable_help()->CopyFrom( packet->message.help() );
+				
+				// We check if queues or data_queues is selected inside
+				data.helpQueues( response , packet->message.help() );
+				
+				if ( packet->message.help().datas() )
+				{
+					// Fill with datas information
+					modulesManager.helpDatas( response , packet->message.help() );
+				}
+				
+				if( packet->message.help().operations() )
+				{
+					// Fill with operations information
+					modulesManager.helpOperations( response , packet->message.help() );
+				}
+				
+				// copy the id when returning
+				p->message.set_delilah_id( packet->message.delilah_id() );
+				
+				network->send(this, fromId, Message::HelpResponse, p);
+				
+				
+				return 0;
+			}
+				
+				
+				
 			// Create a new job with this command
 			jobManager.addJob( fromId ,  packet->message.command() , packet->message.delilah_id() );
 			return 0;

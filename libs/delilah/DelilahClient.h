@@ -13,9 +13,6 @@ namespace ss
 	{
 	public:
 		
-		// Main run method to start
-		virtual int run(int argc , const char * argv[])=0;
-		
 		// PacketReceiverInterface
 		virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet)=0;
 

@@ -12,31 +12,40 @@
 #include "Console.h"			// au::Console
 #include <cstdlib>				// atexit(.)
 #include "DelilahClient.h"      // ss:DelilahClient
+#include "logMsg.h"				
+#include "Delilah.h"			// ss::Delilah
 
 namespace ss {
-
-	class Delilah;
-
 	
 	void cancel_ncurses(void);
 	
 	class DelilahConsole : public au::Console, public DelilahClient
 	{
-		Delilah* dalilah;	// Pointer to the main class
+		Delilah* delilah;	// Internal delilah object to interact with SAMSON
 		
 	public:
-		DelilahConsole(  Delilah* _dalilah , bool ncurses) : au::Console( ncurses )
+		
+		DelilahConsole( NetworkInterface *_network, const char* controller, int workers, int endpoints , bool ncurses) : au::Console( ncurses )
 		{
-			dalilah = _dalilah;
+			// Create an internal delilah object to interact with SAMSON
+			// and set myself as a client for this delilah object
 			
-			
+			delilah = new Delilah( _network , controller , workers , endpoints);
+			delilah->client =  this;	
+
+			// Prepare the atexit command to cancel ncurses effect over the console
 			if( ncurses )
 				atexit ( cancel_ncurses );
 		}
 		
-		int run(int argc , const char * argv[] )
+		~DelilahConsole()
 		{
-			au::Console::run();	// au::Console
+			delete delilah;
+		}
+		
+		int run( )
+		{
+			au::Console::run();	// au::Console run
 			return 0;
 		}
 		

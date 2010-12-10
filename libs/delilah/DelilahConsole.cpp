@@ -52,7 +52,7 @@ namespace ss
 				std::ostringstream output;
 				output << "Environent variables:\n";
 				output << "------------------------------------\n";
-				output << dalilah->environment.toString();
+				output << delilah->environment.toString();
 				
 				writeBlockOnConsole( output.str() );
 				return;
@@ -68,7 +68,7 @@ namespace ss
 			std::string name = commandLine.get_argument(1);
 			std::string value = commandLine.get_argument(2);
 			
-			dalilah->environment.set( name , value );
+			delilah->environment.set( name , value );
 			
 			return ;
 		}
@@ -84,7 +84,7 @@ namespace ss
 			std::string queue_name = commandLine.get_argument(1);
 			std::string fileName = commandLine.get_argument(2);
 
-			size_t id = dalilah->addDownloadProcess(queue_name, fileName , commandLine.get_flag_bool("show"));
+			size_t id = delilah->addDownloadProcess(queue_name, fileName , commandLine.get_flag_bool("show"));
 
 			std::ostringstream o;
 			o << "Download data process (id="<<id<<") started.\n";
@@ -105,7 +105,7 @@ namespace ss
 			output << "Load processes....\n";
 
 			std::map<size_t,DelilahComponent*>::iterator iter;
-			for (iter = dalilah->components.begin() ; iter != dalilah->components.end() ; iter++)
+			for (iter = delilah->components.begin() ; iter != delilah->components.end() ; iter++)
 				output << iter->second->getStatus();
 			
 			writeBlockOnConsole(output.str());
@@ -118,7 +118,7 @@ namespace ss
 		
 		if( mainCommand == "quit" )
 		{
-			dalilah->quit();
+			delilah->quit();
 			return;
 		}
 
@@ -126,7 +126,7 @@ namespace ss
 		{
 			std::string s;
 
-			s = dalilah->network->getState(command);
+			s = delilah->network->getState(command);
 			writeBlockOnConsole(s);
 
 			return;
@@ -138,23 +138,23 @@ namespace ss
 			{
 				Packet* p = new Packet();
 				p->message.mutable_status_request()->set_command( command );
-				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::StatusRequest, p);
+				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::StatusRequest, p);
 			}
 
 			/*
 
 			 // Status requests go through controller
 			 
-			for (int i = 0; i < dalilah->network->getNumWorkers(); i++)
+			for (int i = 0; i < delilah->network->getNumWorkers(); i++)
 			{
 				Packet* p = new Packet();
 				int     workerId;
 
 				p->message.mutable_status_request()->set_delilah_id(19);
 
-				workerId = dalilah->network->workerGetIdentifier(i);
+				workerId = delilah->network->workerGetIdentifier(i);
 				LM_M(("Sending Status to worker %d (endpoint id: %d)", i, workerId));
-				dalilah->network->send(dalilah, workerId, Message::StatusRequest, p);
+				delilah->network->send(delilah, workerId, Message::StatusRequest, p);
 			}
 			 */
 
@@ -184,7 +184,7 @@ namespace ss
 				help->set_operations(true);
 				
 				
-				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, p);
+				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Help, p);
 				return;
 			}
 			
@@ -196,7 +196,7 @@ namespace ss
 				help->set_queues(true);
 				help->set_datas(false);
 				help->set_operations(false);
-				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, p);
+				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Help, p);
 				return;
 			}
 			else if( secondCommand == "datas" )
@@ -206,7 +206,7 @@ namespace ss
 				help->set_datas(true);
 				help->set_operations(false);
 
-				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, p);
+				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Help, p);
 
 				return;
 			}
@@ -217,7 +217,7 @@ namespace ss
 				help->set_datas(false);
 				help->set_operations(true);
 
-				dalilah->network->send(dalilah, dalilah->network->controllerGetIdentifier(), Message::Help, p);
+				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Help, p);
 
 				return;
 			}
@@ -242,7 +242,7 @@ namespace ss
 			
 			std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
 			
-			size_t id = dalilah->addUploadData(fileNames, queue);
+			size_t id = delilah->addUploadData(fileNames, queue);
 			
 			std::ostringstream o;
 			o << "Load data process (id="<<id<<") started with " << fileNames.size() << " files\n";
@@ -251,7 +251,7 @@ namespace ss
 		}
 		
 		// Normal command send to the controller
-		size_t id = dalilah->sendCommand(command);
+		size_t id = delilah->sendCommand(command);
 		
 		std::ostringstream o;
 		o << "Sent command to controller (id="<<id<<") : " << command;

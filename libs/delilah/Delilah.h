@@ -45,10 +45,6 @@ namespace ss {
 		
 		DelilahClient* client;			// Console or GUI to work with delilah
 
-		// Command line parameters ( necessary for QT run method )
-		int           _argc;
-		const char**  _argv;
-
 		pthread_t     t_network;
 		
 		au::Lock   lock;										// Internal counter for processing packets
@@ -61,9 +57,8 @@ namespace ss {
 		
 	public:
 		
-		Delilah(NetworkInterface *_network, int argC, const char* argV[], const char* controller, int workers, int endpoints, bool console, bool basic);
+		Delilah(NetworkInterface *_network, const char* controller, int workers, int endpoints);
 		
-		void run();
 		void initController(std::string controller);
 		void runNetwork();
 		void quit();
@@ -78,6 +73,7 @@ namespace ss {
 		size_t addUploadData( std::vector<std::string> fileNames , std::string queue);
 		size_t addDownloadProcess( std::string queue , std::string fileName , bool show_on_screen );
 		size_t sendCommand( std::string command );
+		
 		
 	private:		
 		

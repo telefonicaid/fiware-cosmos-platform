@@ -21,12 +21,11 @@ namespace ss {
 	
 	class ControllerTaskManager
 	{
-		au::Lock lock;								// Lock to protect the current list of tasks
+		au::Lock lock;									// Lock to protect the current list of tasks
 		au::map< size_t , ControllerTask > task;		// Map of tasks currently running
 
-		size_t current_task_id;						// Internal counter to give new task_ids
-		
-		SamsonController *controller;				// Pointer to the controller to interact with the resto of elements (network included)
+		size_t current_task_id;							// Internal counter to give new task_ids
+		SamsonController *controller;					// Pointer to the controller to interact with the resto of elements (network included)
 		
 	public:
 		

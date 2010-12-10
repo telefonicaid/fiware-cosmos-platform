@@ -10,8 +10,6 @@
 #include "CommandLine.h"		// CommandLine
 #include "Delilah.h"			// Own interfce
 #include "Packet.h"				// ss::Packet
-#include "DelilahConsole.h"		// ss::DelilahConsole
-#include "DelilahQt.h"			// DelilahQt
 #include "DelilahUploadDataProcess.h"	// ss::DelilahLoadDataProcess
 #include "DelilahDownloadDataProcess.h"	// ss::DelilahLoadDataProcess
 #include "EnvironmentOperations.h"
@@ -41,18 +39,11 @@ void* runNetworkThread(void *p)
 Delilah::Delilah
 (
 	NetworkInterface* _network,
-	int               argC,
-	const char*       argV[],
 	const char*       controller,
 	int               workers,
-	int               endpoints,
-	bool              console,
-	bool              basic
+	int               endpoints
 )
 {
-	//  Keep command line parameters for QT initizalization
-	_argc = argC;
-	_argv = argV;
 		
 	network = _network;		// Keep a pointer to our network interface element
 	network->setPacketReceiverInterface(this);
@@ -61,15 +52,7 @@ Delilah::Delilah
 		
 	finish = false;				// Global flag to finish threads
 		
-	if (basic && console)
-		LM_X(1, ("cannot run in basic mode and console mode at a time ..."));
 
-	if (console)
-		client = new DelilahConsole(this, true);   // Console with ncurses
-	else if (basic)
-		client = new DelilahConsole(this, false);  // Console without ncurses
-	else
-		client = new DelilahQt(this);
 		
 	if (strcmp(controller, "no_controller") == 0)
 		LM_W(("controller not specified as command line parameter"));
@@ -102,20 +85,6 @@ void Delilah::runNetwork()
 	// Main run_loop to the network interface
 	network->run();	
 }
-	
-
-
-/* ****************************************************************************
-*
-* run - 
-*/
-void Delilah::run()
-{
-	// Run a console or a graphical interface ( independently if network interface is created or not )
-	assert( client );
-	client->run(_argc ,_argv );
-}
-	
 
 
 /* ****************************************************************************
@@ -125,7 +94,6 @@ void Delilah::run()
 void Delilah::quit()
 {
 	finish = true;
-	client->quit();
 	network->quit();
 }
 	
@@ -221,22 +189,22 @@ void Delilah::notificationSent(size_t id, bool success)
 		
 		return tmp_id;
 	}
+	
 	size_t Delilah::sendCommand(  std::string command )
 	{
-		// We do now create a component, but we will+
-
-		lock.lock();
+		size_t tmp_id;
 		
-		size_t tmp_id = id++;
-
+		lock.lock();
+		tmp_id = id++;
+		lock.unlock();
+		
+		// Send the packet to create a job
 		Packet*           p = new Packet();
 		network::Command* c = p->message.mutable_command();
 		c->set_command( command );
 		p->message.set_delilah_id( tmp_id );
 		copyEnviroment( &environment , c->mutable_environment() );
 		network->send(this, network->controllerGetIdentifier(), Message::Command, p);
-		
-		lock.unlock();
 		
 		return tmp_id;
 	}	

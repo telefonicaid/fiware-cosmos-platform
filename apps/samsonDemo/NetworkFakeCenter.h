@@ -89,9 +89,9 @@ namespace ss {
 		}
 		
 		
-		void run(bool *finish)
+		void run()
 		{
-			while( !(*finish) )
+			while( true )
 			{
 				// Send packets to the rigth directions
 		

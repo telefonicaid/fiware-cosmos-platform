@@ -27,10 +27,6 @@ SET (RESOURCES
     ${PROJECT_SOURCE_DIR}/libs/delilah/resources/objects.qrc
     ${PROJECT_SOURCE_DIR}/libs/delilah/resources/icons.qrc)
 
-QT4_ADD_RESOURCES(RESOURCES_QRC ${RESOURCES})
-
-
-include_directories("/usr/include/qt4")
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
@@ -50,7 +46,7 @@ link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
 
 # SAMSON Executable
-ADD_EXECUTABLE(samsonDemo ${SOURCES} ${HEADERS} ${RESOURCES_QRC})
+ADD_EXECUTABLE(samsonDemo ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(samsonDemo ${STATIC_LIBS})
 
 INSTALL(TARGETS               samsonDemo

@@ -27,21 +27,22 @@ namespace ss {
 	class ControllerTask
 	{
 		friend class ControllerDataManager;
+
+		ControllerTaskInfo *info;		// Information for this task ( extracted from DataManager )
 		
-		size_t id;			// Id of the task ( shared by all the workers )
-		size_t job_id;		// Id of the job it belongs
-				
-		ControllerTaskInfo *info;
+		size_t job_id;					// Id of the job it belongs
+		size_t id;						// Id of the task ( shared by all the workers )
 
 		int num_completed_workers;		// Total workers that are "completed"
-		int num_workers;			// Total workers that have to confirm the task
+		int num_workers;				// Total workers that have to confirm the task
 		
-		int generator;
+		int generator;					// Spetial flag to be removed from here ;)
 		
-		friend class ControllerTaskManager;
-		
+		// Error management
 		bool error;
 		std::string error_message;
+
+		friend class ControllerTaskManager;
 		
 	public:
 		

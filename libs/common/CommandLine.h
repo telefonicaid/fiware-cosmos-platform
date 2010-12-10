@@ -108,6 +108,7 @@ namespace au {
 
 		int get_num_arguments();
 		std::string get_argument( int index );
+		bool isArgumentValue( int index , std::string value , std::string value2);
 		
 		/** 
 		 Access to flags

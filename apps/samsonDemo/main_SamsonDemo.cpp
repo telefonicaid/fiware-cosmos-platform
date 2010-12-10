@@ -12,7 +12,7 @@
 #include "NetworkFakeCenter.h"
 #include "NetworkInterface.h"
 
-#include "Delilah.h"			// ss:Delilah
+#include "DelilahConsole.h"		// ss:DelilahConsole
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "SamsonController.h"	// ss:: SasonController
 #include "SamsonSetup.h"		// ss::SamsonSetup
@@ -26,7 +26,6 @@
 const char* dalilah_argv_basic[] = { "-controller" , "what_ever" ,"-basic"};
 const char* dalilah_argv_console[] = { "-controller" , "what_ever" ,"-console"};
 const char* dalilah_argv[] = { "-controller" , "what_ever" };
-
 const char* worker_argv[] = { "-controller" , "what_ever","-alias","what_ever_alias","-no_log"};	//Necessary arguments at worker to avoid errors
 
 
@@ -39,11 +38,11 @@ int logFd = -1;
 
 char* progName = (char*) "samsonDemo";
 
-void *run_delilah(void* d)
+void *run_DelilahConsole(void* d)
 {
-	ss::Delilah* delilah = (ss::Delilah*) d;
+	ss::DelilahConsole* delilahConsole = (ss::DelilahConsole*) d;
 
-	delilah->run();
+	delilahConsole->run();
 	return NULL;
 }
 
@@ -98,7 +97,7 @@ int main(int argc, const char *argv[])
 		_dalilah_argc = VECTOR_LENGTH(dalilah_argv);
 	}
 	
-	ss::Delilah delilah(center.getNetwork(-2), _dalilah_argc, _dalilah_argv, "localhost:1234", num_workers, 80, console, basic);
+	ss::DelilahConsole delilahConsole(center.getNetwork(-2),  "localhost:1234", num_workers, 80, !basic);
 	
 	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 
@@ -124,9 +123,9 @@ int main(int argc, const char *argv[])
 
 	// Run client in another thread
 	pthread_t t_delilah;
-	pthread_create(&t_delilah, NULL, run_delilah, &delilah);
+	pthread_create(&t_delilah, NULL, run_DelilahConsole, &delilahConsole);
 	
 	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 	// Keep alive while dalila is alive ( sending packets in the background )
-	center.run(&delilah.finish);
+	center.run();
 }

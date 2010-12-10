@@ -203,6 +203,22 @@ namespace au
 		return arguments[index];
 	}
 	
+	bool CommandLine::isArgumentValue( int index , std::string value , std::string value2)
+	{
+		if( (index<0) || ( index >= (int)arguments.size() ) )
+			return false;
+		
+		if( arguments[index] == value )
+			return true;
+		
+		if( arguments[index] == value2 )
+			return true;
+
+		return false;
+		
+	}
+	
+	
 	/** 
 	 Access to flags
 	 */

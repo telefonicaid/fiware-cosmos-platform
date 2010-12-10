@@ -1,5 +1,5 @@
 #include "parseArgs.h"          // parseArgs
-#include "DelilahConsole.h"		// ss::DelilahConsole
+#include "Delilah.h"		    // ss::Delilah
 
 
 
@@ -10,7 +10,6 @@
 int              endpoints;
 int              workers;
 char             controller[80];
-bool             basic;
 
 
 
@@ -22,7 +21,6 @@ bool             basic;
 PaArgument paArgs[] =
 {
 	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt, _i NO,   PaNL,   PaNL,  "controller IP:port"  },
-	{ "-basic",      &basic,       "BASIC",       PaBool,    PaOpt, false,  false,   true,  "basic mode"          },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    80,      3,    100,  "number of endpoints" },
 	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,     5,      1,    100,  "number of workers"   },
 
@@ -55,8 +53,10 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 
-	
 	ss::Network  network;
-	ss::DelilahConsole console( &network , controller , endpoints , workers , !basic);
-	console.run();
+	ss::Delilah delilah(&network, argC, argV, controller, endpoints, workers);
+	DelilahClient *client = new DelilahQt(delilah);
+	delilah->setClient( client );
+
+	delilah.run();
 }

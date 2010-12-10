@@ -23,7 +23,7 @@ int main( int args , const char *argv[])
 {
 	
 	// debug
-	//ss::DataCreator _module_creator( "/Users/andreu/devel/samson_modules/cdr/module"  );		// A data creator object to generate the code
+	//ss::DataCreator _module_creator( "/Users/andreu/devel/samson_modules/sna/module"  );		// A data creator object to generate the code
 	//_module_creator.print();
 	//return 0;
 	

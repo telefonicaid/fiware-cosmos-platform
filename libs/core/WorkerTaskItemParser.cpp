@@ -84,7 +84,9 @@ namespace ss {
 		
 		// Organize the reduce in multiple WorkerTaskItems to process each set of hash-groups
 				
-		int max_num_hgs = KV_NUM_HASHGROUPS / 10;	// Minimum 10 divisions for force multicore approach
+		int num_process = SamsonSetup::shared()->num_processes;
+		
+		int max_num_hgs = KV_NUM_HASHGROUPS / num_process;	// Minimum num_process divisions for force multicore approach
 		size_t max_item_size = SamsonSetup::shared()->shared_memory_size_per_buffer - max_num_hgs*sizeof(FileKVInfo) - sizeof(SharedHeader);
 		
 		

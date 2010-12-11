@@ -13,11 +13,7 @@
 #include "samson/Environment.h"				// ss::Environment
 #include "EnvironmentOperations.h"			// copyEnviroment(.)
 
-
 namespace ss {
-	
-	
-
 	
 	/**
 	 
@@ -113,6 +109,7 @@ namespace ss {
 		
 		friend class ControllerTaskManager;
 		friend class ControllerTask;
+		friend class JobManager;
 		
 		Environment environment;		// Environment properties for this job ( can be updated in runtime )
 		

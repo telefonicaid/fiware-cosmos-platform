@@ -2,6 +2,7 @@
 #include "JobManager.h"			// Own interface
 #include "Job.h"				// ss::Job
 #include "SamsonController.h"
+#include "Packet.h"				// ss::Packet
 
 namespace ss {
 
@@ -11,20 +12,27 @@ namespace ss {
 		
 		// New id
 		size_t job_id = controller->data.getNewTaskId();
+
 		
-		// At the moment only single-line commands are allowed
+		// Send a message to delilah to confirm this new job
+		Packet *p2 = new Packet();
+		network::CommandResponse *response = p2->message.mutable_command_response();
+		response->set_command(command.command());
+		response->set_new_job_id( job_id );
+		p2->message.set_delilah_id( sender_id );
+		controller->network->send(controller, fromId, Message::CommandResponse, p2);
+		
+		// Create the job itself
 		Job *j = new Job( controller , job_id, fromId , command, sender_id );
 		
 		// Notify to the task manager that this "job" is about to start
 		controller->data.beginTask( job_id , command.command() );
 		
-		// Insert in the list
-		job.insert( std::pair<size_t , Job*>( j->getId() , j ) );
+		// Insert in the map of jobs
+		job.insertInMap( job_id , j );
 
-		
-		// Run the job until a task is scheduled
+		// Run the job until a task is scheduled or error/finish
 		j->run();
-		
 		
 		// Send a confirmation message if it is finished
 		if( j->isFinish() )
@@ -39,6 +47,7 @@ namespace ss {
 		}
 		
 		lock.unlock();
+		
 	}
 	
 	void JobManager::notifyFinishTask( size_t job_id , size_t task_id , bool error, std::string error_message )
@@ -87,6 +96,24 @@ namespace ss {
 		 */
 		return "Error";
 	}
+	
+	void JobManager::fill(network::JobList *jl , std::string command)
+	{
+		lock.lock();
+		
+		std::map<size_t,Job*>::iterator iter;
+		for( iter = job.begin() ; iter != job.end() ; iter++)
+		{
+			Job *job = iter->second;
+			
+			network::Job *j = jl->add_job();
+			j->set_id( job->id );
+			j->set_main_command( job->mainCommand );
+		}
+		
+		lock.unlock();
+	}
+
 
 	
 	

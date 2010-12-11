@@ -42,6 +42,12 @@ namespace ss
 		}
 		else
 			mainCommand = commandLine.get_argument(0);
+
+		if ( commandLine.isArgumentValue(0,"quit","") )
+		{
+			exit(0);
+			return;
+		}
 		
 		
 		if ( mainCommand == "set")
@@ -141,23 +147,6 @@ namespace ss
 				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::StatusRequest, p);
 			}
 
-			/*
-
-			 // Status requests go through controller
-			 
-			for (int i = 0; i < delilah->network->getNumWorkers(); i++)
-			{
-				Packet* p = new Packet();
-				int     workerId;
-
-				p->message.mutable_status_request()->set_delilah_id(19);
-
-				workerId = delilah->network->workerGetIdentifier(i);
-				LM_M(("Sending Status to worker %d (endpoint id: %d)", i, workerId));
-				delilah->network->send(delilah, workerId, Message::StatusRequest, p);
-			}
-			 */
-
 			writeWarningOnConsole("Status messages sent to all elements\n");
 			
 			return;
@@ -253,9 +242,10 @@ namespace ss
 		// Normal command send to the controller
 		size_t id = delilah->sendCommand(command);
 		
-		std::ostringstream o;
-		o << "Sent command to controller (id="<<id<<") : " << command;
-		writeWarningOnConsole(o.str());
+		id = 0;	// To avoid warning
+		//std::ostringstream o;
+		//o << "Sent command to controller (id="<<id<<") : " << command;
+		//writeWarningOnConsole(o.str());
 		
 	}
 	
@@ -284,30 +274,45 @@ namespace ss
 				
 			case Message::CommandResponse:
 			{
-				// Get some information from the packet
-				size_t      id        = packet->message.command_response().sender_id();
-				std::string command   = packet->message.command_response().command();
-				std::string message   = packet->message.command_response().response();
-				error                 = packet->message.command_response().error();
-				bool        finished  = packet->message.command_response().finish();
 				
-				// Prepare what to show on screen
-				txt << "----------------------------------------------------------------" << std::endl;
-				txt << "COMMAND: " << id << ": " << command << std::endl;
-				txt << "----------------------------------------------------------------" << std::endl;
-				
-				if (finished)
+				if( packet->message.command_response().has_new_job_id() )
 				{
-					if (error)
-						txt << "Command finished with error" << std::endl;
-					else
-						txt << "Command finished correctly" << std::endl;
+					std::ostringstream message;
+					message << "Job scheduled [" << packet->message.command_response().new_job_id() << "] ";
+					message << " (" << packet->message.command_response().command() << " )";
+					writeWarningOnConsole( message.str() );
 				}
-				txt << "----------------------------------------------------------------" << std::endl;
-				txt << std::endl;
-				txt << message << std::endl;
-				txt << std::endl;
-				txt << "----------------------------------------------------------------" << std::endl;
+				
+				if( packet->message.command_response().has_finish_job_id() )
+				{
+					std::ostringstream message;
+					message << "Job finished [" << packet->message.command_response().finish_job_id() << "] ";
+					message << " (" << packet->message.command_response().command() << " )";
+					writeWarningOnConsole( message.str() );
+				}
+	
+				if( packet->message.command_response().has_error_job_id() )
+				{
+					std::ostringstream message;
+					message << "Job finished with error [" << packet->message.command_response().error_job_id() << "] ";
+					message << " (" << packet->message.command_response().command() << ")\n\n";
+					writeErrorOnConsole( message.str() );
+				}
+				
+				if( packet->message.command_response().has_error_message() )
+					writeErrorOnConsole( packet->message.command_response().error_message()  );
+
+				if( packet->message.command_response().has_queue_list() )
+					showQueues( packet->message.command_response().queue_list() );
+				
+				if( packet->message.command_response().has_data_list() )
+					showDatas( packet->message.command_response().data_list() );
+				
+				if( packet->message.command_response().has_operation_list() )
+					showOperations( packet->message.command_response().operation_list() );
+				
+				if( packet->message.command_response().has_job_list() )
+					showJobs( packet->message.command_response().job_list() );
 			}
 				break;
 				
@@ -419,6 +424,101 @@ namespace ss
 			
 		writeWarningOnConsole(o.str());
 	};
+	
+	
+	void DelilahConsole::showQueues( const network::QueueList ql)
+	{
+		std::ostringstream txt;
+		
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << "Queues" << std::endl;
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		for (int i = 0 ; i < ql.queue_size() ; i++)
+		{
+			network::Queue queue = ql.queue(i).queue();
+			
+			txt << std::setw(30) << queue.name();
+			txt << " ";
+			txt << au::Format::string( queue.info().kvs() );
+			txt << " kvs in ";
+			txt << au::Format::string( queue.info().size() ) << " bytes";
+			txt << " #File: " << ql.queue(i).file_size();
+			txt << " (" << queue.format().keyformat() << " " << queue.format().valueformat() << ") ";
+			txt << std::endl;
+		}
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		
+		txt << std::endl;
+		
+		writeBlockOnConsole( txt.str() );
+		
+	}
+	
+	void DelilahConsole::showDatas( const network::DataList dl)
+	{
+		std::ostringstream txt;
+		
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << "Datas" << std::endl;
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		for (int i = 0 ; i < dl.data_size() ; i++)
+		{
+			network::Data data = dl.data(i);
+			txt << std::setw(20) << data.name() << " " << data.help() << std::endl;
+		}
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << std::endl;
+		
+		writeBlockOnConsole( txt.str() );
+		
+	}
+	void DelilahConsole::showOperations( const network::OperationList ol)
+	{
+		std::ostringstream txt;
+		
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << "Operations" << std::endl;
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		for (int i = 0 ; i < ol.operation_size() ; i++)
+		{
+			network::Operation operation = ol.operation(i);
+			txt << "** " << operation.name();
+			txt << "\n\t\tInputs: ";
+			for (int i = 0 ; i < operation.input_size() ; i++)
+				txt << "[" << operation.input(i).keyformat() << "-" << operation.input(i).valueformat() << "] ";
+			txt << "\n\t\tOutputs: ";
+			for (int i = 0 ; i < operation.output_size() ; i++)
+				txt << "[" << operation.output(i).keyformat() << "-" << operation.output(i).valueformat() << "] ";
+			
+			txt << "\n\t\tHelp: " << operation.help_line() << std::endl;
+			txt << "\n";
+		}
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << std::endl;
+		
+		writeBlockOnConsole( txt.str() );
+		
+	}
+	void DelilahConsole::showJobs( const network::JobList jl)
+	{
+		std::ostringstream txt;
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << "Jobs" << std::endl;
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		for (int i = 0 ; i < jl.job_size() ; i++)
+		{
+			
+			txt << std::setw(30) << jl.job(i).id();
+			txt << " ";
+			txt << jl.job(i).main_command();
+			txt << std::endl;
+		}
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << std::endl;
+		
+		writeBlockOnConsole( txt.str() );
+		
+	}
 	
 	
 }

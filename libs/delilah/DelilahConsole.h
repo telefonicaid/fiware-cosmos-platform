@@ -84,6 +84,12 @@ namespace ss {
 			output << "Finished local delilah process with : " << id ;
 			writeWarningOnConsole( output.str() );
 		}
+		
+		
+		void showQueues( const network::QueueList ql);
+		void showDatas( const network::DataList ql);
+		void showOperations( const network::OperationList ql);
+		void showJobs( const network::JobList ql);
 
 
 		

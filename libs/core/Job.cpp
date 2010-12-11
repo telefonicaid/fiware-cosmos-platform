@@ -245,10 +245,17 @@ namespace ss {
 		
 		network::CommandResponse *response = p2->message.mutable_command_response();
 		response->set_command(mainCommand);
-		response->set_response(output.str());
-		response->set_error(error);
-		response->set_finish(true);
-		response->set_sender_id(sender_id);
+
+		if( error )
+		{
+			response->set_error_message( output.str() );
+			response->set_error_job_id( id );
+		}
+		else 
+			response->set_finish_job_id( id );
+
+		// global sender id of delilah
+		p2->message.set_delilah_id( sender_id );
 		
 		controller->network->send(controller, fromIdentifier, Message::CommandResponse, p2);
 	}
@@ -258,9 +265,9 @@ namespace ss {
 		// error line
 		error_line = txt;
 		
-		output << "Error detected by "<<agent<<" at..." << std::endl;
+		output << "Error detected by " << agent << " at..." << std::endl;
 		std::list<JobItem>::iterator i;
-		for (i = items.begin() ; i != items.end() ; i++)
+		for (i = (++items.begin()) ; i != items.end() ; i++)
 			output << ">> " << i->parent_command << std::endl;
 		
 		// Current line in the current item

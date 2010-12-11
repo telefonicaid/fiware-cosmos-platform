@@ -248,45 +248,71 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 			if( cmdLine.get_num_arguments() == 0)
 				return 0;
 
+			// Spetial commands
 			if( cmdLine.isArgumentValue( 0 , "q" , "queues" ) )
 			{
-				// Prepare the help message and sent back to Delilah
-
-				Packet *p = new Packet();
-				network::HelpResponse *response = p->message.mutable_help_response();
-				response->mutable_help()->CopyFrom( packet->message.help() );
+				// Send a message with the list of queues
 				
-				// We check if queues or data_queues is selected inside
-				data.helpQueues( response , packet->message.help() );
+				Packet *p2 = new Packet();
+				network::CommandResponse *response = p2->message.mutable_command_response();
+				response->set_command( command );
+				p2->message.set_delilah_id( packet->message.delilah_id() );
+				data.fill( response->mutable_queue_list() , command );
+				network->send(this, fromId, Message::CommandResponse, p2);
 				
-				if ( packet->message.help().datas() )
-				{
-					// Fill with datas information
-					modulesManager.helpDatas( response , packet->message.help() );
-				}
-				
-				if( packet->message.help().operations() )
-				{
-					// Fill with operations information
-					modulesManager.helpOperations( response , packet->message.help() );
-				}
-				
-				// copy the id when returning
-				p->message.set_delilah_id( packet->message.delilah_id() );
-				
-				network->send(this, fromId, Message::HelpResponse, p);
-				
-				
-				return 0;
+				return	 0;
 			}
+
+			if( cmdLine.isArgumentValue( 0 , "d" , "datas" ) )
+			{
+				// Send a message with the list of datas
 				
+				Packet *p2 = new Packet();
+				network::CommandResponse *response = p2->message.mutable_command_response();
+				response->set_command( command );
+				p2->message.set_delilah_id( packet->message.delilah_id() );
+				modulesManager.fill( response->mutable_data_list() , command );
+				network->send(this, fromId, Message::CommandResponse, p2);
 				
+				return	 0;
+			}
+
+			if( cmdLine.isArgumentValue( 0 , "o" , "operations" ) )
+			{
+				// Send a message with the list of operations
 				
-			// Create a new job with this command
+				Packet *p2 = new Packet();
+				network::CommandResponse *response = p2->message.mutable_command_response();
+				response->set_command( command );
+				p2->message.set_delilah_id( packet->message.delilah_id() );
+				modulesManager.fill( response->mutable_operation_list() , command );
+				network->send(this, fromId, Message::CommandResponse, p2);
+				
+				return	 0;
+			}
+
+			if( cmdLine.isArgumentValue( 0 , "j" , "jobs" ) )
+			{
+				// Send a message with the list of jobs
+				
+				Packet *p2 = new Packet();
+				network::CommandResponse *response = p2->message.mutable_command_response();
+				response->set_command( command );
+				p2->message.set_delilah_id( packet->message.delilah_id() );
+				jobManager.fill( response->mutable_job_list() , command );
+				network->send(this, fromId, Message::CommandResponse, p2);
+				
+				return	 0;
+			}
+			
+			
+
 			jobManager.addJob( fromId ,  packet->message.command() , packet->message.delilah_id() );
 			return 0;
+			
+			
 		}
-
+		break;
 	default:
 		LM_X(1, ("msg code '%s' not treated ...", messageCode(msgCode)));
 		break;

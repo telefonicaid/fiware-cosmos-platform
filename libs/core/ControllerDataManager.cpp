@@ -465,6 +465,56 @@ namespace ss {
 		return "";
 		
 	}		
+
+	void ControllerDataManager::fill( network::QueueList *ql , std::string command)
+	{
+		au::CommandLine cmdLine;
+		cmdLine.set_flag_string("begin" , "");
+		cmdLine.set_flag_string("end" , "");
+		cmdLine.parse(command);
+		
+		std::string begin = cmdLine.get_flag_string("begin");
+		std::string end = cmdLine.get_flag_string("end");
+		
+		lock.lock();
+		
+		std::map< std::string , Queue*>::iterator i;
+		for (i = queues.begin() ; i!= queues.end() ;i++)
+		{
+			Queue *queue = i->second;
+			
+			if( filterName( i->first , begin, end) )
+			{
+				network::FullQueue *fq = ql->add_queue();
+
+				
+				network::Queue *q = fq->mutable_queue();
+				q->set_name( i->first );
+				
+				// Format
+				fillKVFormat( q->mutable_format() , queue->format() );
+				
+				//Info
+				fillKVInfo( q->mutable_info(), queue->info() );
+				
+				
+				// Add file information
+				std::list< QueueFile* >::iterator iter;
+				
+				for ( iter = queue->files.begin() ; iter != queue->files.end() ; iter++)
+				{
+					network::File *file = fq->add_file();
+					(*iter)->fill( file );
+				}
+			}
+			
+			
+		}
+		
+		
+		lock.unlock();		
+	}
+	
 	
 	void ControllerDataManager::helpQueues( network::HelpResponse *response , network::Help help )
 	{

@@ -109,10 +109,11 @@ namespace ss {
 	template <typename T_kvs,typename T_size >
 	struct BaseKVInfo
 	{
-		T_kvs kvs;		// Total number of kvs
 		T_size size;	// Total size
+		T_kvs kvs;		// Total number of kvs
+
 		
-		BaseKVInfo(T_kvs _kvs , T_size _size)
+		BaseKVInfo(T_size _size ,T_kvs _kvs )
 		{
 			kvs = _kvs;
 			size = _size;

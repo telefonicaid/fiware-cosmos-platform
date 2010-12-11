@@ -76,6 +76,34 @@ message Data
 	required string help = 2;	// Some string showing help for this data type
 }
 
+message Job
+{
+	required uint64 id = 1;		// Id of the job
+	required string main_command=2;	// Command that originated the job
+	// Additional information
+}
+
+message QueueList
+{
+	repeated FullQueue queue = 1;
+}
+
+message DataList
+{
+	repeated Data data	= 1;
+}
+
+message OperationList
+{
+	repeated Operation operation = 1;
+}
+
+message JobList
+{
+	repeated Job job = 1;
+}
+
+
 // ////////////////////////////////////////////////////////////////////////////
 //
 // Status message request ans answer to interact between delilah and controller/workers
@@ -136,8 +164,8 @@ message WorkerTaskConfirmation
 
 message Command
 {
-	required string  command   = 1;          // String to send a txt command
-	optional Environment environment    = 3;		 // Initial environment variables for the new job
+	required string  command		= 1;    // String to send a txt command
+	optional Environment environment    	= 3;	// Initial environment variables for the new job
 
 }
 
@@ -147,14 +175,19 @@ message Command
 //
 message CommandResponse
 {
-	required string command	     = 1;   // Copy of the original command
-	required string  response    = 2;   // Answer for the command
-	required int32   sender_id   = 3;   // Id of the packet sender ( delilah )
+	required string command	     = 1;	    // Copy of the original command
 
+	optional uint64 new_job_id   =2;       	    // Id of the new job ( if a new job is created )
+	optional uint64 finish_job_id	= 11;       // Id of the job that has finished 
+	optional uint64 error_job_id = 12;    	    // If of the job that finished with an error
 
-	required bool error       = 4;   // Flag to indicat if there was an error
-	required bool finish      = 5;   // Flag to indicate if the command is finished ( with or without error)
+	optional  string error_message = 10;   	    // An error message to show on screen
 
+	// Information to the user
+	optional JobList       job_list		= 100;
+	optional OperationList operation_list	= 101;
+	optional DataList      data_list	= 102;
+	optional QueueList     queue_list	= 103;
 }
 
 // ////////////////////////////////////////////////////////////////////////////

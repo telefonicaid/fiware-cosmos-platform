@@ -54,7 +54,18 @@ namespace ss {
 		// Get help about data stuff
 		void helpQueues( network::HelpResponse *response , network::Help help );
 
+		void fill( network::QueueList *ql , std::string command);
+		
+		
 		void retreveInfoForTask( ControllerTaskInfo *info );		
+		
+		
+		static std::string getAddFileCommand(int worker , std::string fileName , size_t size , size_t kvs , std::string queue )
+		{
+			std::ostringstream command;
+			command << "add_file " <<  worker << " " << fileName << " " << size << " " << kvs << " " << queue;
+			return command.str();
+		}
 		
 	private:
 

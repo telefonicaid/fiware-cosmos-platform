@@ -47,6 +47,9 @@ namespace ss {
 	
 		std::string getStatus();
 		
+		
+		void fill(network::JobList *jl , std::string command);
+		
 	private:
 		
 		void _removeJob( Job *j );

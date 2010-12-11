@@ -428,4 +428,79 @@ namespace ss
 		lock.unlock();
 	}	
 	
+	void ModulesManager::fill( network::OperationList *ol , std::string command  )
+	{
+		au::CommandLine cmdLine;
+		cmdLine.set_flag_string("begin" , "");
+		cmdLine.set_flag_string("end" , "");
+		cmdLine.parse(command);
+		
+		std::string begin = cmdLine.get_flag_string("begin");
+		std::string end = cmdLine.get_flag_string("end");
+		
+		
+		lock.lock();
+		
+		{
+			for (std::map<std::string , Operation*>::iterator j = operations.begin() ; j != operations.end() ; j++ )
+			{
+				Operation * op = j->second;
+				
+				if( filterName( op->getName() , begin , end ) )
+				{
+					
+					network::Operation *o = ol->add_operation();
+					o->set_name( j->first );
+					o->set_help( op->help() );
+					o->set_help_line( op->helpLine() );
+					
+					// Format
+					std::vector<KVFormat> input_formats = op->getInputFormats();
+					std::vector<KVFormat> output_formats = op->getOutputFormats();
+					
+					for (size_t i = 0 ; i < input_formats.size() ; i++)
+						fillKVFormat( o->add_input() , input_formats[i] );
+					
+					for (size_t i = 0 ; i < output_formats.size() ; i++)
+						fillKVFormat( o->add_output() , output_formats[i] );
+				}
+				
+			}
+		}
+		
+		lock.unlock();		
+	}
+	
+	void ModulesManager::fill( network::DataList *dl, std::string command  )
+	{
+		au::CommandLine cmdLine;
+		cmdLine.set_flag_string("begin" , "");
+		cmdLine.set_flag_string("end" , "");
+		cmdLine.parse(command);
+		
+		std::string begin = cmdLine.get_flag_string("begin");
+		std::string end = cmdLine.get_flag_string("end");
+		
+		
+		lock.lock();
+		
+		{
+			for (std::map<std::string , Data*>::iterator j = datas.begin() ; j != datas.end() ; j++ )
+			{
+				
+				if( filterName( j->first , begin ,end ) )
+				{
+					Data * data = j->second;
+					network::Data *d = dl->add_data();
+					d->set_name( j->first );
+					d->set_help( data->help() );
+				}
+				
+			}
+		}
+		
+		lock.unlock();		
+	}
+	
+	
 }

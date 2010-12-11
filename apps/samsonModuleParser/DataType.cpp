@@ -8,7 +8,7 @@
 #include <string.h>         // strcpy, strtok
 #include "DataType.h"		// Own interface
 
-
+#include <unistd.h>         // exit(.)
 
 namespace ss
 {

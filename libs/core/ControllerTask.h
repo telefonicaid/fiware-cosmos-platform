@@ -27,16 +27,26 @@ namespace ss {
 	class ControllerTask
 	{
 		friend class ControllerDataManager;
+		friend class JobManager;
 
 		ControllerTaskInfo *info;		// Information for this task ( extracted from DataManager )
 		
-		size_t job_id;					// Id of the job it belongs
+		Job *job;						// Pointer to the job we belong
 		size_t id;						// Id of the task ( shared by all the workers )
 
-		int num_completed_workers;		// Total workers that are "completed"
 		int num_workers;				// Total workers that have to confirm the task
+
+		std::set<int> finish_workers;	// List of worker ids that have reported finish
+		std::set<int> complete_workers;	// List of worker ids that have reported complete	
+
 		
 		int generator;					// Spetial flag to be removed from here ;)
+		
+		int *num_items;					// Total items in this woker
+		int *num_finish_items;			// Total items finished in this worker
+		int total_num_finish_items;
+		int total_num_items;
+		
 		
 		// Error management
 		bool error;
@@ -46,91 +56,23 @@ namespace ss {
 		
 	public:
 		
-		// Children controller tasks
-		ControllerTask( size_t _id , size_t _job_id, ControllerTaskInfo *_info , int _total_workers )
-		{
-			// Keep the command and the id
-			id = _id;
-			job_id =_job_id;
-
-			// Elements
-			info = _info;
-			
-			error = false;
-			
-			// total number of workers to wait for this number of confirmation ( in case we sent to workers )
-			num_workers = _total_workers;
-			num_completed_workers = 0;
-
-			// In generators, this is used to determine how is the active user
-			generator = rand()%num_workers;
-		}
+		bool finish;					// Flag to indicate that the task is finished ( by all workers )
+		bool complete;					// Flag to indicate that the task is completed ( by all workers )
 		
-		~ControllerTask()
-		{
-			delete info;
-		}
+		ControllerTask( size_t _id , Job *_job, ControllerTaskInfo *_info , int _total_workers );
 		
-		size_t getId()
-		{
-			return id;
-		}
+		~ControllerTask();
 		
-		size_t getJobId()
-		{
-			return job_id;
-		}
+		size_t getId();
+		
+		size_t getJobId();
 		
 		void notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage , ControllerDataManager * data );
 		
-		void fillInfo( network::WorkerTask *t , int workerIdentifier )
-		{
-			t->set_operation( info->operation_name );
-			
-			// Set input files
-			for (size_t f = 0 ; f < info->input_files.size() ; f++)
-			{
-				network::FileList all_fl = info->input_files[f];
-				network::FileList *fl = t->add_input();
-
-				// Add only files that are placed at that worker
-				for (int i = 0 ; i < all_fl.file_size() ; i++)
-				{
-					if( all_fl.file(i).worker() == workerIdentifier)
-						fl->add_file()->CopyFrom( all_fl.file(i) );
-				}
-				
-				//fl->CopyFrom();
-			}
-			
-			
-			// Set the output queues
-			for (int i = 0 ; i < (int)info->outputs.size() ; i++)
-			{
-				network::Queue *q = t->add_output();
-				network::Queue qq = info->output_queues[i]; 
-				q->CopyFrom( qq );
-			}
-			
-			
-			// Set environment variables
-			Environment *env = &info->job->environment;
-
-			network::Environment *e = t->mutable_environment();	
-			std::map<std::string,std::string>::iterator iter;
-			for ( iter = env->environment.begin() ; iter != env->environment.end() ; iter++)
-			{
-				network::EnvironmentVariable *ev = e->add_variable();			
-				
-				ev->set_name( iter->first );
-				ev->set_value( iter->second );
-			}
-			
-		}
+		void fillInfo( network::WorkerTask *t , int workerIdentifier );
 		
 		// Update with the added files
 		void updateData( ControllerDataManager * data );
-
 		
 		std::string getStatus()
 		{
@@ -138,13 +80,6 @@ namespace ss {
 			o << "Task " << id << " : " << info->command;
 			return o.str();
 		}
-		
-		
-		bool isFinish()
-		{
-			return ( num_completed_workers ==  num_workers );
-		}
-	
 		
 	};
 	

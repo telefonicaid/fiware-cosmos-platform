@@ -10,6 +10,8 @@
 #include "DataBuffer.h"				// ss::DataBuffer
 #include "SamsonWorker.h"			// ss::SamsonWorker
 #include "Packet.h"					// ss::Packet
+#include "FileManagerReadItem.h"
+#include "FileManagerWriteItem.h"
 
 namespace ss {
 	
@@ -37,27 +39,25 @@ namespace ss {
 			bv = new QueueuBufferVector( queue , txt );
 			insertInMap( name , bv  );
 		}
-
-		
-		if( !bv->txt )
+			
+		if( buffer->getSize() + bv->getSize() > KV_MAX_FILE_SIZE )
 		{
+			std::string fileName = newFileName( name );
+
+			Buffer *b = NULL;
 			
-			if( buffer->getSize() + bv->getSize() > KV_MAX_FILE_SIZE )
-			{
-				Buffer *b = bv->getFileBufferFromNetworkBuffers( KVFormat( queue.format().keyformat() , queue.format().valueformat() ) );
-				std::string fileName = newFileName( name );
-				saveBufferToDisk( b , fileName , bv->queue , bv->txt );
-			}
-			
-			bv->addBuffer( buffer );
+			if( !bv->txt )
+				b = bv->getFileBufferFromNetworkBuffers( KVFormat( queue.format().keyformat() , queue.format().valueformat() ) );
+			else
+				b = bv->getTXTBufferFromBuffers( );
+
+			// Save the buffer to disk
+			assert(b);
+			saveBufferToDisk( b , fileName , bv->queue , bv->txt );
 			
 		}
 		else
-		{
-			// txt files are saved directly yo disk
-			std::string fileName = newFileName( name );
-			saveBufferToDisk( buffer , fileName , bv->queue , bv->txt );
-		}
+			bv->addBuffer( buffer );
 		
 	}
 	
@@ -67,6 +67,7 @@ namespace ss {
 		
 		if( num_finished_workers == num_workers )
 		{
+			
 			// Set the finish flag to indicate that this task operation is finished
 			finished = true;
 		
@@ -77,28 +78,33 @@ namespace ss {
 				{
 					QueueuBufferVector *bv = i->second;
 					network::Queue queue = bv->queue;
-					Buffer *b = bv->getFileBufferFromNetworkBuffers( KVFormat( queue.format().keyformat() , queue.format().valueformat() ) );
+					Buffer *b;
+					
+					if( !bv->txt )
+						b = bv->getFileBufferFromNetworkBuffers( KVFormat( queue.format().keyformat() , queue.format().valueformat() ) );
+					else
+						b = bv->getTXTBufferFromBuffers( );
+					
 					std::string fileName = newFileName( i->first );
 					saveBufferToDisk( b , fileName , bv->queue, bv->txt );
 				}
 			}
 			
 			// Send a message to the controller to notify that task is "finish" but not "complete"
+			
 			Packet *p = new Packet();
 			network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
 			confirmation->set_task_id( task_id );
 			confirmation->set_finish( true );
 			confirmation->set_completed( false );
 			confirmation->set_error( false );
+			dataBuffer->worker->taskManager.fill( task_id , confirmation );	// Fill information about task progress
+			
 			dataBuffer->worker->network->send(dataBuffer->worker, dataBuffer->worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
 			
 			// Just in case, there is nothing else to save
-			if( ids_files.size() == 0 )
-			{
+			if( ids_files.size() == ids_files_saved.size() )
 				completed = true;
-				dataBuffer->worker->taskManager.completeTask( task_id );	// Notify to the task manager that this is completed
-				
-			}
 		}		
 	}	
 	
@@ -106,7 +112,6 @@ namespace ss {
 	
 	void DataBufferItem::saveBufferToDisk( Buffer* b , std::string fileName , network::Queue queue , bool txt )
 	{
-		
 		// Notify the controller that a file has been created ( update )
 
 		Packet *p = new Packet();
@@ -137,13 +142,18 @@ namespace ss {
 			info->set_kvs(header->info.kvs);
 		}
 
+		// Fill information about the progress
+		dataBuffer->worker->taskManager.fill( task_id , confirmation );	// Fill information about task progress
+		
 		// Send the message
 		NetworkInterface *network = dataBuffer->worker->network;
 		network->send(dataBuffer->worker, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation , p);
 		
-		// Schedule at the File Manager
-		size_t id = FileManager::shared()->addItemToWrite( new FileManagerWriteItem( fileName,b , dataBuffer ) ) ;
 		
+		// Schedule at the File Manager ( Note that delegate id DataBuffer )
+		// ----------------------------------------------------
+		
+		size_t id = FileManager::shared()->addItemToWrite( new FileManagerWriteItem( fileName,b , dataBuffer ) ) ;
 		dataBuffer->id_relation.insert( std::pair<size_t,size_t>( id, task_id) );
 		
 		// Keep ids to control if files are saved on disk
@@ -162,12 +172,7 @@ namespace ss {
 		}
 		
 		if( !completed && ( ids_files.size() == ids_files_saved.size() ) && finished )
-		{
 			completed = true;
-
-			// Notify to the task manager that this is completed
-			dataBuffer->worker->taskManager.completeTask( task_id );
-		}
 		
 		
 	}	

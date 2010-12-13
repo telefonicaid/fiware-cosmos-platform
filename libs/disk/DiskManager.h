@@ -17,6 +17,8 @@
 #include "Buffer.h"			// ss::Buffer
 #include "Status.h"			// au::Status
 #include "au_map.h"			// au::map
+#include "samson.pb.h"				// ss::network...
+
 namespace ss {
 	
 	class DeviceDiskAccessManager;
@@ -59,6 +61,8 @@ namespace ss {
 		
 		// Function to get the run-time status of this object
 		void getStatus( std::ostream &output , std::string prefix_per_line );
+		
+		void fill(network::WorkerStatus*  ws);
 		
 	private:
 		

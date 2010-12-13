@@ -72,14 +72,25 @@ namespace ss {
 			return command[command_pos-1];
 		}
 	
+		void fill( network::JobItem *item)
+		{
+			item->set_command( parent_command );
+			item->set_num_lines( command.size() );
+			item->set_line( command_pos - 1);
+		}
+		
 		std::string getMainCommand()
 		{
 			return parent_command;
 		}
 		
+		
+		double getProgress()
+		{
+			return (double) (command_pos-1) / (double) command.size();
+		}
+		
 	};
-	
-	
 	
 	class JobManager;
 	
@@ -91,19 +102,26 @@ namespace ss {
 	{
 		size_t id;						// Identifier of the job ( this is the one reported to delialh to monitorize a job)
 		
-		std::ostringstream output;		// Outputs of this job message
 		std::string error_line;			// One line message for the error ( used in the cancel message of the data log)
+		std::string error_message;		// Complete erro description
 		bool error;						// Error flag
 		bool finish;					// Flag to indicate that this job is finished
 		
 		int fromIdentifier;				// Identifier of the delailah that ordered this job
 		int sender_id;					// Identifier at the sender side (the same delilah could send multiple jobs)
 					
-		SamsonController *controller;	// Pointer to the controller
+		JobManager *jobManager;			// Pointer to the job manager
 		
+		// Information about current running task
 		size_t task_id;					// Id of the task we are waiting ( to avoid confusions )
+		std::string task_command;		// Command we are currently running
+		int task_num_items;				// Number of items for this task
+		int task_num_finish_items;		// Finish number of items for this task
 		
 		std::list<JobItem> items;		// Stack of items that we are running
+		
+		// List of all tasks ( all of them have to be completed before considering the job completed)
+		std::set<size_t> all_tasks;
 		
 		std::string mainCommand;		// Main command that originated this job
 		
@@ -113,41 +131,13 @@ namespace ss {
 		
 		Environment environment;		// Environment properties for this job ( can be updated in runtime )
 		
+		
+		
 	public:
 		
 		// Constructor used for top-level jobs form delilah direct message
 		
-		Job( SamsonController *_controller , size_t _id, int fromId, const network::Command &command , size_t _sender_id  )
-		{
-			// Keep a pointer to the controller
-			controller = _controller;
-			
-			// Get the main command
-			mainCommand = command.command();
-			
-			// Keep the id of the job
-			id = _id;
-			
-			fromIdentifier = fromId;
-			sender_id = _sender_id;
-
-			// Get the environment variables
-			copyEnviroment( command.environment() , &environment );
-			
-			
-			// Create the first item of this job
-			JobItem j("TOP");
-			j.addCommand(command.command());
-			
-			items.push_back( j );
-
-			// Need the controller pointer for a lot of reasons
-			controller = _controller;	
-			
-			// Default value for the internal flags
-			error = false;
-			finish = false;
-		}
+		Job( JobManager * _jobManager , size_t _id, int fromId, const network::Command &command , size_t _sender_id  );
 
 		/**
 		 Run a line of command for this job.
@@ -158,56 +148,44 @@ namespace ss {
 		
 		bool processCommand( std::string command );		
 		
-	public:
-		
 		/**
-		 Main routine to run commands until waiting for task confirmation or another job finish
+		 Main routine to run commands until waiting for task confirmation or the job finishs
 		 */
 		
 		void run();
-		
 
-		// Call back received when a task is finished
-		void notifyTaskFinish( size_t _task_id , bool _error, std::string _error_message )
-		{
-			if( _error)
-				setError( "task at workers" ,  _error_message );
-			
-			assert( task_id == _task_id );	//Make sure it is the task we were running
-			run();
-		}
+		// Call back received when a task is finished and completed
+		void notifyCurrentTaskFinish( bool _error, std::string _error_message );		
 		
 		
 		size_t getId();	
 
 		bool isFinish();
-
 		bool isError();
 	
 		void sentConfirmationToDelilah( );
+		
+		
+		bool allTasksFinished();
+		void removeTasks();
+
 		
 		std::string getErrorLine()
 		{
 			return error_line;
 		}
 		
-		std::string getStatus()
-		{
-			std::ostringstream output;
-			output << "Job: " << mainCommand << " ";
-			if( error )
-				output << "[Error]";
-			output << std::endl;
-			
-			return output.str();
-		}
+		void fill( network::Job *job);
+		
+		
+		
 		
 	private:
 		
 		void setError( std::string agent , std::string txt );
 		
-
 		// Axiliar function to replace text in strings
+		
 		static void find_and_replace( std::string &source, const std::string find, std::string replace ) {
 			size_t j;
 			for ( ; (j = source.find( find )) != std::string::npos ; ) {

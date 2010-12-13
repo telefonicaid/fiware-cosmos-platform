@@ -244,6 +244,11 @@ namespace ss {
 			
 			return true;
 		}
+		
+		int num_hash_groups()
+		{
+			return hg_end - hg_begin;
+		}
 	};
 
 	
@@ -274,13 +279,15 @@ namespace ss {
 		}
 		
 		// Set the real pointer to the current data and returns the toal size of this file in the shared memory area
-		size_t set( char *_data , int num_hash_groups )
+		size_t set( char *_data )
 		{
 			offset = 0;	// Init the offset of this file
-			
-			
+						
 			header = (SharedHeader*) _data;
 			assert( header->check() );	// Check magic number
+
+			// Get the number of hash group from header
+			int num_hash_groups = header->num_hash_groups();
 			
 			info = (FileKVInfo*) ( _data + sizeof(SharedHeader) );
 			data = (_data + sizeof(SharedHeader) + sizeof(FileKVInfo)*num_hash_groups);
@@ -363,7 +370,7 @@ namespace ss {
 			
 			// Hash group range we are processing
 			header.hg_begin = hg_begin;			
-			header.hg_begin = hg_begin;			
+			header.hg_end = hg_end;			
 			
 			// total size of this file including this header , info vector (FileKVInfo) and data
 			header.total_size =  sizeof(SharedHeader) + sizeof(FileKVInfo)*(hg_end-hg_begin) + header.info.size ;	

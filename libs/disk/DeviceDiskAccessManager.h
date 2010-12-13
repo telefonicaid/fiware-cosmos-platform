@@ -40,12 +40,11 @@ namespace ss {
 		bool finished;									// Flag to finish the background thread
 		
 		int max_open_files;
-		
-		// Statistical information
-		DiskStatistics statistics;
-		
 
 	public:
+
+		// Statistical information
+		DiskStatistics statistics;
 		
 		DeviceDiskAccessManager();
 		

@@ -1,58 +1,14 @@
 
 
-#include "FileManager.h" // Own interface
+#include "FileManager.h"			// Own interface
+#include "FileManagerItem.h"
+#include "FileManagerReadItem.h"
+#include "FileManagerWriteItem.h"
 
 
 namespace ss
 {
 
-	void* runFileManagerCacheSystemThread(void*p)
-	{
-		FileManagerCacheSystem *cacheSystem = (FileManagerCacheSystem*)p;
-		cacheSystem->run();
-		return NULL;
-	}
-	
-	
-	void FileManagerCacheSystem::run()
-	{
-		// Thread main run
-		while( true )
-		{
-						
-			// Free memory is necessary and possible
-			while( (MemoryManager::shared()->getMemoryUsage() > 0.7) && freeMemoryIfPossible() );
-
-			lock.lock();
-			FileManagerCacheTask *task = NULL;
-			
-			if( tasks.size() > 0 )
-			{
-				task = tasks.front();
-				tasks.pop_front();
-				lock.unlock();
-				
-				// Perform task
-				if( task )
-				{
-					memcpy(task->readItem->buffer, task->cacheItem->buffer->getData() + task->readItem->offset , task->readItem->size);
-				
-					lock.lock();
-					task->cacheItem->release();
-					lock.unlock();
-				
-					// Nofity this is ready
-					FileManager::shared()->finishItem( task->readItem->getId() , true );
-					
-					delete task;
-				}
-				
-			}
-			else
-				lock.unlock_waiting_in_stopLock( &stopLock , 5 );	// Timeout to free memory if necessary every 5 seconds
-		}
-	}
-	
 	
 	static FileManager* sharedFileManager=NULL;
 	
@@ -62,16 +18,145 @@ namespace ss
 			sharedFileManager = new FileManager();
 		return sharedFileManager;
 	}
+
+	
+	
+	size_t FileManager::addItemToRead( FileManagerReadItem* v )
+	{
+		lock.lock();
+		
+		// Set and id to the new element
+		size_t fm_id = current_fm_id++;
+		v->setId(fm_id);
+		
+		// add the the internal map
+		items.insertInMap( fm_id , v);
+		
+		if( !cacheSystem.addReadItem( v ) )	// If not possible to read from cache
+		{
+			
+			// Add to the disk manager
+			size_t dm_id = DiskManager::shared()->read( v->buffer , v->fileName , v->offset , v->size,  this );
+			
+			// add the relation between both ids
+			ids.insertInMap( dm_id , fm_id );
+		}
+		
+		lock.unlock();
+		
+		return fm_id;
+		
+	};
+	
+	size_t FileManager::addItemToWrite( FileManagerWriteItem* v )
+	{
+		lock.lock();
+		
+		size_t fm_id = current_fm_id++;
+		v->setId(fm_id);
+		
+		items.insertInMap( fm_id , v );
+		
+		size_t dm_id = DiskManager::shared()->write( v->buffer , v->fileName , this );
+		
+		// add the relation between both ids
+		ids.insertInMap( dm_id , fm_id );
+		
+		// Add into the cache system
+		cacheSystem.addWriteItem(  v );
+		
+		lock.unlock();
+		
+		return fm_id;
+	};
+	
+	
+	
+	/**
+	 Delegate interface of DiskManager
+	 It is notified when a write / read is finished
+	 */
+	
+	void FileManager::diskManagerNotifyFinish( size_t id, bool success)
+	{
+		
+		lock.lock();
+		
+		size_t dm_id = id;
+		
+		if( ids.isInMap( dm_id ) )
+		{
+			size_t fm_id = ids.extractFromMap( dm_id );
+			lock.unlock();
+			
+			finishItem( fm_id , success );
+			return;
+			
+		}
+		else
+		{
+			lock.unlock();
+			assert(false);// No idea what to do...
+		}
+		
+		
+	}
+	
+	
+	void FileManager::finishItem( size_t fm_id , bool success )
+	{
+		FileManagerDelegate *delegate = NULL;
+		
+		lock.lock();
+		
+		FileManagerItem *item = items.extractFromMap( fm_id );
+		
+		if( item )
+		{
+			
+			item->addStatistics( &statistics );
+			
+			if( item->type == FileManagerItem::write )
+			{
+				// Add into the cache system
+				cacheSystem.notifyWriteItemFinished( (FileManagerWriteItem*) item );
+			}
+			
+			delegate = item->delegate;
+			delete item;							// we are responsible for deleting this 
+		}
+		
+		lock.unlock();
+		
+		// Call the delegate outside the lock to avoid dead-lock
+		assert(delegate);	// It is not allowed non-delegate calls
+		
+		if( delegate )
+			delegate->fileManagerNotifyFinish( fm_id , success); 
+		
+	}	
 	
 	// Function to get the run-time status of this object
 	void FileManager::getStatus( std::ostream &output , std::string prefix_per_line )
 	{
 		output << "\n";
 		getStatusFromMap( output , items, prefix_per_line );
-		output << prefix_per_line << "Cache: " << cacheSystem.getStatus() << std::endl;
 		output << prefix_per_line << "Statics: " << statistics.getStatus() << std::endl;
 		
 	}
+	
+	void FileManager::fill(network::WorkerStatus*  ws)
+	{
+		std::ostringstream output;
+		output << "Statistics: " << statistics.getStatus();
+		ws->set_file_manager_status( output.str() );
+		
+		
+		ws->set_file_manager_cache_status( cacheSystem.getStatus() );
+		
+	}
+	
+	
 	
 	
 	

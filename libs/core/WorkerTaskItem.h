@@ -11,12 +11,14 @@
 #include "samson.pb.h"			// ss::network::...
 #include "Status.h"				// au::Status
 #include "coding.h"				// ss::ProcessAssistantSharedFile
+#include "Lock.h"				// au::Lock
+
 namespace ss {
 
 	class ProcessAssistant;
 	class WorkerTask;
 	
-	class WorkerTaskItem : public au::Status
+	class WorkerTaskItem : public au::Status , public FileManagerDelegate
 	{
 	public:
 		
@@ -36,6 +38,7 @@ namespace ss {
 		int item_id;				// Item id ( from 0 to ...)
 		int shm_input;				// Shared memory identifier for input ( if necessary ) -1 --> no assigned
 
+		au::Lock lock;					// Lock to protect num_input_files and confirmed_input_files
 		int num_input_files;		// Number of input files requested for this item during loading phase	
 		int confirmed_input_files;	// Number of files confirmed by FileManager
 		
@@ -53,11 +56,11 @@ namespace ss {
 		
 		
 		// Function to define the required input files for this item ( this depends on the concrete type of item)
-		virtual void setupInputs(){}	
 		void addInputFiles( FileManagerReadItem *item );	// Function used inside setupInputs in subclasses
 		
-		void notifyFinishLoadInputFile();					// Function called when an input file is ready
-		bool areInputFilesReady();							// Are all input files loaded?
+		// Call back from the File Manager to confirm that an input file is ready
+		void fileManagerNotifyFinish(size_t id, bool success);
+		
 		
 		// General setup while asking if it is ready
 		
@@ -88,6 +91,7 @@ namespace ss {
 		
 		FileManagerReadItem * getFileMangerReadItem( ProcessAssistantSharedFile* file  );
 		
+		virtual void setupInputs(){}	
 		
 	};
 }

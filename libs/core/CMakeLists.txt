@@ -7,7 +7,6 @@ SET (HEADERS
     ModulesManager.h
     SamsonWorker.h
     LoadDataManager.h
-    WorkerTaskManager.h
     SamsonController.h
     ControllerDataManager.h
     JobManager.h
@@ -17,10 +16,13 @@ SET (HEADERS
     ControllerTaskInfo.h
     Queue.h
     QueueFile.h
+    WorkerTaskManager.h
     WorkerTask.h
     WorkerTaskItem.h
     WorkerTaskItemGenerator.h
     WorkerTaskItemParser.h
+    WorkerTaskItemOrganizer.h
+    WorkerTaskItemOperation.h
 )
 
 SET (SOURCES
@@ -31,7 +33,6 @@ SET (SOURCES
     ModulesManager.cpp
     SamsonWorker.cpp
     LoadDataManager.cpp
-    WorkerTaskManager.cpp
     SamsonController.cpp
     ControllerDataManager.cpp
     JobManager.cpp
@@ -41,10 +42,13 @@ SET (SOURCES
     Job.cpp 
     Queue.cpp
     QueueFile.cpp
+    WorkerTaskManager.cpp
     WorkerTask.cpp
     WorkerTaskItem.cpp
     WorkerTaskItemGenerator.cpp
     WorkerTaskItemParser.cpp
+    WorkerTaskItemOrganizer.cpp
+    WorkerTaskItemOperation.cpp
 )
 
 SET (STATIC_LIBS

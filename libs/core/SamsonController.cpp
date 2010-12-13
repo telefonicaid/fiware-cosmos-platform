@@ -34,7 +34,7 @@ SamsonController::SamsonController
 	char*              setup,
 	int                workers,
 	int                endpoints
-) : data(this), jobManager(this), taskManager(this) , monitor(this)
+) : data(this), jobManager(this) , monitor(this)
 {
 	this->network    = network;
 	this->port       = port;
@@ -62,6 +62,9 @@ SamsonController::SamsonController
 	//addChildrenStatus( &taskManager.getStatus() );
 	//addChildrenStatus( FileManager::shared() );
 	//addChildrenStatus( network );
+	
+	// Create space for the worker updates
+	worker_status = new network::WorkerStatus[workers];
 	
 }	
 
@@ -131,18 +134,25 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 		case Message::WorkerTaskConfirmation:
 		{
 			network::WorkerTaskConfirmation c = packet->message.worker_task_confirmation();
-			taskManager.notifyWorkerConfirmation(fromId, &c );
+			jobManager.notifyWorkerConfirmation(fromId, &c );
 			return 0;
 		}
 			break;
 		
 		case Message::WorkerStatus:
-			int workerId;
-			
-			workerId = network->getWorkerFromIdentifier(fromId);			
+		{
+			int workerId = network->getWorkerFromIdentifier(fromId);			
+
+			/*
 			if (workerId == -1)
 				LM_RE(2, ("getWorkerFromIdentifier(%d) failed", fromId));
 			status[workerId] = *((Message::WorkerStatusData*) packet->buffer->getData());
+			*/
+			
+			// Copy all the information here to be access when requesting that info
+			worker_status[workerId] = packet->message.worker_status();
+		}
+			
 			return 0;
 			break;
 			
@@ -304,8 +314,23 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 				
 				return	 0;
 			}
-			
-			
+			if( cmdLine.isArgumentValue( 0 , "w" , "workers" ) )
+			{
+				// Send a message with the list of jobs
+				
+				Packet *p2 = new Packet();
+				network::CommandResponse *response = p2->message.mutable_command_response();
+				response->set_command( command );
+				p2->message.set_delilah_id( packet->message.delilah_id() );
+				
+				network::WorkerStatusList *wl = response->mutable_worker_status_list();
+				for (int i = 0 ; i < workers ; i++)
+					wl->add_worker_status()->CopyFrom( worker_status[i] );
+				
+				network->send(this, fromId, Message::CommandResponse, p2);
+				
+				return	 0;
+			}
 
 			jobManager.addJob( fromId ,  packet->message.command() , packet->message.delilah_id() );
 			return 0;

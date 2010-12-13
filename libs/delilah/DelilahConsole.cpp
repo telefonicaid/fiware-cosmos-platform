@@ -49,7 +49,6 @@ namespace ss
 			return;
 		}
 		
-		
 		if ( mainCommand == "set")
 		{
 			if ( commandLine.get_num_arguments() == 1)
@@ -78,6 +77,22 @@ namespace ss
 			
 			return ;
 		}
+
+		if ( mainCommand == "unset")
+		{
+			if ( commandLine.get_num_arguments() < 2 )
+			{
+				writeErrorOnConsole("Usage: unset name.");
+				return;
+			}
+			
+			// Set a particular value
+			std::string name = commandLine.get_argument(1);
+			
+			delilah->environment.unset( name );
+			
+			return ;
+		}		
 		
 		if ( mainCommand == "download")
 		{
@@ -313,6 +328,9 @@ namespace ss
 				
 				if( packet->message.command_response().has_job_list() )
 					showJobs( packet->message.command_response().job_list() );
+				
+				if( packet->message.command_response().has_worker_status_list() )
+					showWorkers( packet->message.command_response().worker_status_list() );
 			}
 				break;
 				
@@ -508,9 +526,29 @@ namespace ss
 		for (int i = 0 ; i < jl.job_size() ; i++)
 		{
 			
-			txt << std::setw(30) << jl.job(i).id();
+			const network::Job job = jl.job(i);
+			
+			txt << setiosflags(std::ios::right);
+			txt << std::setw(10) << jl.job(i).id();
 			txt << " ";
 			txt << jl.job(i).main_command();
+			txt << "\n";
+
+			for (int item = 0 ; item < job.item_size() ; item++)
+			{
+				txt << std::setw(10 + item*2) << " ";
+				
+				txt << "[";
+				txt << au::Format::int_string( job.item(item).line() , 4);
+				txt << "/";
+				txt << au::Format::int_string( job.item(item).num_lines() , 4) ;
+				txt << "] ";
+				txt << job.item(item).command();
+				
+				txt << "\n";
+				//txt << au::Format::int_string( jl.job(i).progress()*100 , 2) << "%";
+			}
+			
 			txt << std::endl;
 		}
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
@@ -520,5 +558,32 @@ namespace ss
 		
 	}
 	
+	void DelilahConsole::showWorkers( const network::WorkerStatusList l)
+	{
+		std::ostringstream txt;
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << "Workers" << std::endl;
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		for (int i = 0 ; i < l.worker_status_size() ; i++)
+		{
+			
+			const network::WorkerStatus worker_status = l.worker_status(i);
+			
+			txt << "Worker " << i << std::endl;
+			txt << "\tMemory Manager: " << worker_status.memory_status() << "\n";
+			txt << "\tFile Manager: " << worker_status.file_manager_status() << "\n";
+			txt << "\tFile Manager Cache: " << worker_status.file_manager_cache_status() << "\n";
+			txt << "\tData Buffer: " << worker_status.data_buffer_status() << "\n";
+			txt << "\tDisk Manager: " << worker_status.disk_manager_status() << "\n";
+			for (int p = 0 ; p < worker_status.process_size() ; p++)
+				txt << "\t" << "Core: " << worker_status.process(p).status() << "\n";
+			
+		}
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << std::endl;
+
+		writeBlockOnConsole( txt.str() );
+		
+	}
 	
 }

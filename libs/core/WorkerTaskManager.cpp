@@ -125,11 +125,23 @@ namespace ss {
 		
 		// setup all tasks to see if resources can be re-used
 		_setupAllTasks();
+
+		
+		// Send a confirmation message to the controller to keep the track of items
+		Packet *p = new Packet();
+		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
+		confirmation->set_task_id( t->task_id );			
+		confirmation->set_finish( false );
+		confirmation->set_completed( false );			
+		confirmation->set_num_items( t->num_items );
+		confirmation->set_num_finish_items( t->num_finish_items );
+		confirmation->set_error( t->error );
+		confirmation->set_error_message( t->error_message );			
+		worker->network->send(worker, worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
 		
 		lock.unlock();
 		
 		lock.wakeUpStopLock( &stopLock );
-		
 		
 	}	
 	
@@ -151,23 +163,25 @@ namespace ss {
 	 */
 	
 	void WorkerTaskManager::completeTask( size_t task_id )
-	{		
+	{	
+		
 		lock.lock();
+		
 
 		WorkerTask *t = task.extractFromMap( task_id  );
 
 		if( t )
 		{
+			 
 			Packet *p = new Packet();
 			network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-			confirmation->set_task_id( task_id );
-			
+			confirmation->set_task_id( task_id );			
 			confirmation->set_finish( true );
-			confirmation->set_completed( true );
-			
+			confirmation->set_completed( true );			
 			confirmation->set_error( t->error );
-			confirmation->set_error_message( t->error_message );
-			
+			confirmation->set_num_items( t->num_items );
+			confirmation->set_num_finish_items( t->num_finish_items );
+			confirmation->set_error_message( t->error_message );			
 			worker->network->send(worker, worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
 			
 			assert( t->isFinish() );	// Otherwise it is not possible to be here
@@ -178,16 +192,15 @@ namespace ss {
 		
 	}
 	
-#if 0
-	// Fill information about status of this worker
-	void WorkerTaskManager::fillWorkerStatus( network::WorkerStatus* status )
+
+	void WorkerTaskManager::fill(network::WorkerStatus*  ws)
 	{
-		network::WorkerSystem *system =  status->mutable_system();
-		system->set_cores_total(10);
-		system->set_cores_running(1);
+		for (int i = 0 ; i < num_processes ; i++)
+		{
+			network::WorkerProcess *p = ws->add_process();
+			p->set_status( processAssistant[i]->getStatus() );
+		}
 	}
-#endif
-	
 	
 	void WorkerTaskManager::sendCloseMessages( WorkerTask *t , int workers )
 	{
@@ -214,28 +227,6 @@ namespace ss {
 			output << prefix_per_line << "\t" << processAssistant[i]->getStatus() << std::endl; 
 		
 	}
-
-	
-	void WorkerTaskManager::fileManagerNotifyFinish(size_t id, bool success)
-	{
-		lock.lock();
-		
-		WorkerTaskItem *item = pendingInputFiles.extractFromMap( id );
-		assert(item);
-		item->notifyFinishLoadInputFile();
-		
-		// If this element is finally ready to run, then let's wake up some process
-		bool wakeUpProcess = item->isReadyToRun();
-		
-		lock.unlock();
-		
-		// Wake up process
-		if( wakeUpProcess )
-		{
-			lock.wakeUpStopLock( &stopLock );
-		}
-		
-	}
 	
 	
 	void WorkerTaskManager::addInputFile( size_t fm_id , WorkerTaskItem* item )
@@ -243,7 +234,21 @@ namespace ss {
 		pendingInputFiles.insertInMap( fm_id , item );
 	}
 
-
+	void WorkerTaskManager::fill( size_t task_id , network::WorkerTaskConfirmation *confirmation )
+	{
+		lock.lock();
+		
+		WorkerTask *t = task.findInMap( task_id );
+		
+		if( t )
+		{
+			confirmation->set_num_items( t->num_items );
+			confirmation->set_num_finish_items( t->num_finish_items );
+		}
+		
+		lock.unlock();
+	}
+	
 	
 	
 }

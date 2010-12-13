@@ -21,13 +21,13 @@ namespace ss {
 	{
 		lock.lock();
 		
-		DataBufferItem *tdb = findInMap( task_id );
+		DataBufferItem *tdb = item.findInMap( task_id );
 		
 		if (!tdb )
 		{
 			// Create a new item
 			tdb =  new DataBufferItem( this, task_id , worker->network->getWorkerId(), worker->network->getNumWorkers()  );
-			insertInMap( task_id , tdb );
+			item.insertInMap( task_id , tdb );
 		}
 		
 		tdb->addBuffer( queue , buffer , txt );
@@ -38,42 +38,33 @@ namespace ss {
 	
 	void DataBuffer::finishWorker( size_t task_id )
 	{
-		
 		lock.lock();
 		
-		DataBufferItem *tdb = findInMap( task_id );
+		DataBufferItem *tdb = item.findInMap( task_id );
 		
 		if (!tdb )
 		{
 			// Create a new item
 			tdb =  new DataBufferItem( this, task_id , worker->network->getWorkerId(), worker->network->getNumWorkers()  );
-			insertInMap( task_id , tdb );
+			item.insertInMap( task_id , tdb );
 		}
 		
-		tdb->finishWorker();			// Notify to the item that it is finish to flush last file to disk
+		tdb->finishWorker();
 	
-		// If there is nothing to write, right now is completed
-		
 		if ( tdb->isCompleted() )
 		{
 			
-			DataBufferItem *tdb = extractFromMap( task_id );
+			// Notify to the task manager that this is completed
+			worker->taskManager.completeTask( task_id );	
+
+			// Extract and remove task
+			DataBufferItem *tdb = item.extractFromMap( task_id );
 			delete tdb;
 		}
 		
-		
 		lock.unlock();
-
 		
 	}
-
-	void DataBuffer::getStatus( std::ostream &output , std::string prefix_per_line )
-	{
-		output << "\n";
-		getStatusFromMap( output , *this , prefix_per_line );
-	}
-
-
 	
 	void DataBuffer::fileManagerNotifyFinish(size_t id, bool success)
 	{
@@ -84,7 +75,7 @@ namespace ss {
 		{
 			size_t task_id = id_relation.extractFromMap( id );
 			
-			DataBufferItem *tdb = findInMap( task_id );
+			DataBufferItem *tdb = item.findInMap( task_id );
 
 			assert( tdb );
 			
@@ -92,7 +83,10 @@ namespace ss {
 			
 			if ( tdb->isCompleted() )
 			{
-				DataBufferItem *tdb = extractFromMap( task_id );
+				// Notify to the task manager that this is completed
+				worker->taskManager.completeTask( task_id );	
+				
+				DataBufferItem *tdb = item.extractFromMap( task_id );
 				delete tdb;
 			}
 			
@@ -108,6 +102,20 @@ namespace ss {
 	}
 	
 	
+	
+	
+	void DataBuffer::getStatus( std::ostream &output , std::string prefix_per_line )
+	{
+		output << "\n";
+		getStatusFromMap( output , item , prefix_per_line );
+	}
+	
+	void DataBuffer::fill(network::WorkerStatus*  ws)
+	{
+		std::ostringstream output;
+		output << item.size() << " active elements";
+		ws->set_data_buffer_status( output.str() );
+	}
 	
 	
 }

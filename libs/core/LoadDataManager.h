@@ -24,17 +24,11 @@ namespace ss {
 		
 	public:
 
-		int fromIdentifier;						// Dalilah identifier to send responses
-		
-		Buffer *buffer;							// Buffer allocated for this task
-		
-		LoadDataManager *dataManager;			// Pointer to the data manager
-		
-		LoadDataManagerItem( int _fromIdentifier , LoadDataManager *dataManager );
-		
+		int fromIdentifier;						// Dalilah identifier to send responses		
+		Buffer *buffer;							// Buffer allocated for this task		
+		LoadDataManager *dataManager;			// Pointer to the data manager		
+		LoadDataManagerItem( int _fromIdentifier , LoadDataManager *dataManager );		
 		virtual ~LoadDataManagerItem(){}
-		
-		
 	};
 	
 	

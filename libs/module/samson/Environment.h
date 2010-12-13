@@ -39,6 +39,16 @@ namespace ss {
 				iter->second = value;
 			
 		}
+
+		void unset( std::string name )
+		{
+			std::map<std::string, std::string>::iterator iter = environment.find(name);
+			
+			if( iter != environment.end() )
+				environment.erase(iter );
+			
+		}
+		
 		
 		bool isSet( std::string name )
 		{

@@ -8,6 +8,12 @@ SET (HEADERS
 	DiskOperationsManager.h
 	FileAccess.h
 	FileManager.h
+	FileManagerItem.h
+	FileManagerReadItem.h
+	FileManagerWriteItem.h
+	FileManagerCacheItem.h
+	FileManagerCacheTask.h
+	FileManagerCacheSystem.h
 	DiskStatistics.h
 )
 
@@ -20,6 +26,12 @@ SET (SOURCES
 	DiskOperationsManager.cpp
 	FileAccess.cpp
 	FileManager.cpp
+	FileManagerItem.cpp
+	FileManagerReadItem.cpp
+	FileManagerWriteItem.cpp
+        FileManagerCacheItem.cpp
+        FileManagerCacheTask.cpp
+        FileManagerCacheSystem.cpp
 	DiskStatistics.cpp
 )
 

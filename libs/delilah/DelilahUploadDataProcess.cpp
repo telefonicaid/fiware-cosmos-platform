@@ -109,9 +109,6 @@ namespace ss
 			
 	}
 	
-	
-	
-	
 	void DelilahUploadDataProcess::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
 		
@@ -164,5 +161,70 @@ namespace ss
 		
 	}
 
+	DelilahUploadDataProcess::DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue ) : fileSet( fileNames )
+	{
+		
+		// Queue name 
+		queue = _queue;
+		
+		uploadedSize = 0;
+		
+		worker = 0; // rand()%num_workers;		// Random worker to start
+		
+		id_counter = 0;	// Init counter for loading files to the workers
+		
+		finish = false;
+		completed = false;
+	}
+	
+	
+	bool DelilahUploadDataProcess::isUploadFinish()
+	{
+		return completed;
+	}
+	
+	void DelilahUploadDataProcess::run()
+	{
+		// Set the number of workers
+		num_workers = delilah->network->getNumWorkers();
+		
+		
+		// Create the thread for this load process
+		pthread_create(&t, NULL, runThreadDelilahLoadDataProcess, this);
+	}
+	
+	void DelilahUploadDataProcess::_run();		
+	
+	size_t DelilahUploadDataProcess::getId()
+	{
+		return id;
+	}
+	
+	size_t DelilahUploadDataProcess::getUploadedSize()
+	{
+		return uploadedSize;
+	}
+	
+	std::vector<std::string> DelilahUploadDataProcess::getFailedFiles()
+	{
+		return fileSet.getFailedFiles();
+	}
+	
+	std::vector<network::File> DelilahUploadDataProcess::getCreatedFile()
+	{
+		return created_files;
+	}
+	
+	
+	std::string DelilahUploadDataProcess::getStatus()
+	{
+		std::ostringstream output;
+		
+		output << "["<< id << "]Uploading to queue " << queue << " : ";
+		output << "Pending files: " << pending_ids.size();
+		output << " Created files: " << created_files.size() << std::endl;
+		
+		return output.str();
+	}
 	
 }

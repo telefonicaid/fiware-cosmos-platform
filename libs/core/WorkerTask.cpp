@@ -6,7 +6,7 @@
 #include "WorkerTaskItemParser.h"		// ss::WorkerTaskItemParser
 #include "WorkerTaskItemGenerator.h"	// ss::WorkerTaskItemGenerator
 #include "WorkerTaskManager.h"			// ss::WorkerTaskManager
-
+#include "WorkerTaskItemOrganizer.h"	// ss::WorkerTaskItemOrganizer
 
 namespace ss
 {
@@ -21,7 +21,7 @@ namespace ss
 		reduceInformation = NULL;	// By default this is not used
 		
 		num_items = 0;
-		
+		num_finish_items = 0;
 		
 		// By default no error
 		error = false;
@@ -50,19 +50,6 @@ namespace ss
 			default:
 				break;
 		}
-		
-		
-		/**
-		 Old code for indivual files ( to be removed )
-		 
-		 // An item per file
-		 assert( task.input_size() == 1);	// Only one input
-		 network::FileList fl = task.input(0);
-		 
-		 for (size_t i = 0 ; i < (size_t) fl.file_size() ; i++)
-		 addItem( new WorkerTaskItemOperation( fl.file(i).name() , task ) );
-*/		 
-		
 		
 	}
 	
@@ -134,12 +121,11 @@ namespace ss
 		WorkerTaskItem *i = item.extractFromMap( id );
 		
 		if( i->error )
-		{
 			setError( i->error_message );
-		}
-		
 		i->freeResources();
 		delete i;
+
+		num_finish_items++;
 		
 			
 	}	

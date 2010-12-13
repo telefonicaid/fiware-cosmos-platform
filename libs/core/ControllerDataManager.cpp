@@ -111,7 +111,23 @@ namespace ss {
 			return response;
 		}
 
-		if( commandLine.get_argument(0) == "remove_queue" )
+		if( commandLine.isArgumentValue(0, "remove_all_queue" , "raq" ) )
+		{
+			std::map< std::string , Queue*>::iterator iter;
+			for (iter = queues.begin() ; iter != queues.end() ;iter++)
+			{
+				Queue *tmp =  iter->second;
+				controller->monitor.removeQueueToMonitor(tmp);
+				delete tmp;
+			}
+			
+			queues.clear();
+			response.output = "OK";
+			return response;
+			
+		}
+		
+		if( commandLine.isArgumentValue(0, "remove_queue" , "rq" ) )
 		{
 			// Add queue command
 			if( commandLine.get_num_arguments() < 2 )
@@ -121,30 +137,33 @@ namespace ss {
 				return response;
 			}
 			
-			std::string name = commandLine.get_argument( 1 );
-			
-			// Check if queue exist
-			Queue *tmp =  queues.extractFromMap(name);
-			if( !tmp )
+			for (int i = 1 ; i < commandLine.get_num_arguments() ; i++)
 			{
-				std::ostringstream output;
-				output << "Queue " + name + " does not exist\n";
-				response.output = output.str();
-				response.error = true;
-				return response;
-			}
-			else
-			{
-				controller->monitor.removeQueueToMonitor(tmp);
 				
-				delete tmp;
+				std::string name = commandLine.get_argument( i );
+				
+				// Check if queue exist
+				Queue *tmp =  queues.extractFromMap(name);
+				if( !tmp )
+				{
+					std::ostringstream output;
+					output << "Queue " + name + " does not exist\n";
+					response.output = output.str();
+					response.error = true;
+					return response;
+				}
+				else
+				{
+					controller->monitor.removeQueueToMonitor(tmp);
+					delete tmp;
+				}
 			}
 			
 			response.output = "OK";
 			return response;
 		}
 		
-		if( commandLine.get_argument(0) == "clear_queue" )
+		if( commandLine.isArgumentValue(0, "clear_queue" , "cq" ) )
 		{
 			// Add queue command
 			if( commandLine.get_num_arguments() < 2 )
@@ -402,6 +421,7 @@ namespace ss {
 			// Add queue command
 			if( commandLine.get_num_arguments() < 6 )
 			{
+				assert( false );
 				response.output = "Usage: add_file worker fileName size kvs queue";
 				response.error = true;
 				return response;

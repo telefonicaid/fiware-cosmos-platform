@@ -3,6 +3,7 @@
 #include "Job.h"				// ss::Job
 #include "SamsonController.h"
 #include "Packet.h"				// ss::Packet
+#include "ControllerTask.h"		// ss::ControllerTask
 
 namespace ss {
 
@@ -23,7 +24,7 @@ namespace ss {
 		controller->network->send(controller, fromId, Message::CommandResponse, p2);
 		
 		// Create the job itself
-		Job *j = new Job( controller , job_id, fromId , command, sender_id );
+		Job *j = new Job( this , job_id, fromId , command, sender_id );
 		
 		// Notify to the task manager that this "job" is about to start
 		controller->data.beginTask( job_id , command.command() );
@@ -50,51 +51,19 @@ namespace ss {
 		
 	}
 	
-	void JobManager::notifyFinishTask( size_t job_id , size_t task_id , bool error, std::string error_message )
-	{
-		lock.lock();
-		
-		Job *j =  job.findInMap( job_id );
-		if( j )
-		{
-			j->notifyTaskFinish( task_id , error, error_message );
-			
-			if( j->isFinish() )
-			{
-				
-				controller->data.finishTask( job_id );
-				j->sentConfirmationToDelilah( );
-				_removeJob(j);
-			}
-		}
-		
-		lock.unlock();
-		//std::cout << "End of notify finish task: J:" << job_id << " T: " << task_id << std::endl;
-		
-	}
-	
 	void JobManager::_removeJob( Job *j )
 	{
 		assert( j->isFinish() );
 
+		// Remove all tasks associated to this job ( all of them are suppoused to be completed)
+		j->removeTasks();
+		
 		// Remove from the map of jobs
 		j = job.extractFromMap( j->getId() );
+		
+		// Delete the job object itself
 		delete j;
 		
-	}
-	
-	std::string JobManager::getStatus()
-	{
-		/*
-		std::ostringstream output;
-
-		lock.lock();
-		output << getStatusFromArray( job );
-		lock.unlock();
-		 
-		return output.str();
-		 */
-		return "Error";
 	}
 	
 	void JobManager::fill(network::JobList *jl , std::string command)
@@ -107,13 +76,75 @@ namespace ss {
 			Job *job = iter->second;
 			
 			network::Job *j = jl->add_job();
-			j->set_id( job->id );
-			j->set_main_command( job->mainCommand );
+			
+			job->fill( j );
 		}
 		
 		lock.unlock();
 	}
 
+	void JobManager::notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage  )
+	{
+		lock.lock();
+
+		// Get the task
+		size_t task_id = confirmationMessage->task_id();
+		ControllerTask *task = taskManager.getTask( task_id );
+		
+		assert(task);
+		
+		Job* job = task->job;
+		assert( job );
+
+
+		// Update whatever is needed in the task
+		task->notifyWorkerConfirmation( worker_id , confirmationMessage , &controller->data );
+
+		// If this is the task the job is waiting, let's continue the job
+		if( job->task_id == task->id )
+		{
+			if ( task->finish )
+			{
+				job->notifyCurrentTaskFinish(task->error, task->error_message);
+			}
+			else
+			{
+				// Update progress of this task
+				job->task_num_items = task->total_num_items;
+				job->task_num_finish_items = task->total_num_finish_items;
+			}
+		}
+		else
+		{
+			// make sure we do not report files if we are not the current task of this job
+			assert( confirmationMessage->file_size() == 0);
+		}
+		
+		
+		if( job->isFinish() )
+		{
+			
+			if(job->isError() )
+			{
+				controller->data.finishTask( job->id );
+				job->sentConfirmationToDelilah( );
+				_removeJob(job);	// Remove job and associated tasks
+			}
+			else if( job->allTasksFinished() )
+			{
+				controller->data.finishTask( job->id );
+				job->sentConfirmationToDelilah( );
+				_removeJob(job);	// Remove job and associated tasks
+			}
+			
+		}
+		
+		
+			
+		
+		
+		lock.unlock();
+	}
 
 	
 	

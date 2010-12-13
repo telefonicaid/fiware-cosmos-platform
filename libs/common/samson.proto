@@ -76,12 +76,40 @@ message Data
 	required string help = 2;	// Some string showing help for this data type
 }
 
+message JobItem
+{
+	required string command=1;	// Command of this item
+	required int32 line=2;		// Current line inside the script
+	required int32 num_lines=3; 	// Total lines in the script
+}
+
 message Job
 {
 	required uint64 id = 1;		// Id of the job
+
 	required string main_command=2;	// Command that originated the job
-	// Additional information
+	repeated JobItem item = 10;	// Stack of Items in this job
 }
+
+// Information about a worker ( diskManager / fileManager / Process runing / etc..)
+
+message WorkerProcess
+{
+	required string status=1;	// String describing the status
+}
+
+message WorkerStatus
+{
+	repeated WorkerProcess	process=1;				// Information about process running on this worker		
+
+	required string file_manager_status=2;				// Information about the file manager
+	required string disk_manager_status=3;				// Information about the disk manager
+	required string file_manager_cache_status=4;			// Information about the status of cache inside the file manager
+	required string data_buffer_status=5;				// Information about data_buffer status
+	required string memory_status=6;				// Information about memory status
+}
+
+// Lists of elements
 
 message QueueList
 {
@@ -103,6 +131,10 @@ message JobList
 	repeated Job job = 1;
 }
 
+message WorkerStatusList
+{
+      repeated WorkerStatus worker_status = 1;	
+}
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -129,7 +161,8 @@ message StatusResponse
 
 message WorkerTask
 {
-	required int64 task_id		  = 1;	// Id of the top level ( controller ) task	
+	required uint64 task_id		  = 1;	// Id of the top level ( controller ) task
+	
 	required string operation 	  = 2;	// Name of the operation to run
 
 	repeated FileList input		  = 3;  // Input files ( all inputs for each queue )
@@ -147,13 +180,18 @@ message WorkerTask
 
 message WorkerTaskConfirmation
 {
-	required int64 task_id	      = 1;	// Id of the opt level (controller ) task
-	repeated QueueFile file       = 2;      // Files created with this operation
-	required bool finish	      = 3;	// Flag to indicate that the task have finished	
-	required bool completed	      = 4;	// Flat to indicate that the task can be considered completed ( everything saved to disk )
 
-	required bool  error          = 5;      // Error in the operation
-	optional string error_message = 6;      // Message to debug the error
+	required int64 task_id		= 1;	// Id of the controller task 
+
+	repeated QueueFile file       	= 2;    // Files created with this operation
+
+	required int32 num_items      	= 10;	// Number of items for this task in this worker
+	required int32 num_finish_items = 11;   // Number of finish items for this task in this worker
+
+	required bool   finish	      	= 3;	// Flag to indicate that the task is finished ( all file have been generated )
+	required bool   completed	= 4;	// Flag to indicate that the task can be considered completed ( everything saved to disk )
+	required bool   error          	= 5;    // Error in the operation
+	optional string error_message 	= 6;    // Message to debug the error
 
 }
 
@@ -184,10 +222,11 @@ message CommandResponse
 	optional  string error_message = 10;   	    // An error message to show on screen
 
 	// Information to the user
-	optional JobList       job_list		= 100;
-	optional OperationList operation_list	= 101;
-	optional DataList      data_list	= 102;
-	optional QueueList     queue_list	= 103;
+	optional JobList       job_list			= 100;
+	optional OperationList operation_list		= 101;
+	optional DataList      data_list	  	= 102;
+	optional QueueList     queue_list		= 103;
+	optional WorkerStatusList worker_status_list 	= 104;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -301,19 +340,6 @@ message DownloadDataResponse
 
 // ////////////////////////////////////////////////////////////////////////////
 //
-// Messages for select
-//
-
-message SelectRequest
-{
-	// Packet send from delilah to controller and from controller to workers
-	required int32 sender_id	=1;		// Sender id
-	required string queue		=2;		// Selected queue
-}
-
-
-// ////////////////////////////////////////////////////////////////////////////
-//
 // General message
 //
 message Message
@@ -355,6 +381,7 @@ message Message
 	optional StatusRequest status_request = 115; 				      // request for status ( debuggin )
 	optional StatusResponse status_response = 116;				      // response of a status request
 
+	optional WorkerStatus worker_status = 170;			// Worker status update
 	
 	optional uint64  delilah_id = 300;				// Used in commands , upload and download process with delilah
 }
@@ -389,15 +416,11 @@ message ProcessMessage
 
 	optional string operation =7;		// Name of the operation to run ( only in run messages for all operations)
 
-	optional bool output_kvs=13;		// Indicate that key-values are necessary at the output (map,reduce,generator)
-	optional bool output_txt=14;		// Indicate that txt files are necessary at the output (parseOut)
+	optional bool output_kvs=13;		// Indicate that key-values are necessary at the output ( map,reduce,generator )
+	optional bool output_txt=14;		// Indicate that txt files are necessary at the output ( parseOut )
 
 	optional WorkerTask worker_task=10;	// Entire copy of the worker task
 
-	optional uint32 num_hash_groups=11;	// Number of hash groups ( only in reduce operations )
-	optional uint32 num_input_files=12;	// total number of files included at the input ( only in reduce operations )
-	optional uint32 hg_begin=15;		// Hash group begin we are processing
-	optional uint32 hg_end=16;		// Hash group end we are processing
-
+	optional uint32 num_input_files=12;	// total number of files included at the input ( map,reduce,parseOut operations )
 
 }

@@ -11,7 +11,8 @@
 
 namespace ss {
 
-	class SamsonController;
+	class Job;
+	class JobManager;
 	class ControllerTask;
 	class ControllerTaskInfo;
 	
@@ -21,17 +22,17 @@ namespace ss {
 	
 	class ControllerTaskManager
 	{
-		au::Lock lock;									// Lock to protect the current list of tasks
-		au::map< size_t , ControllerTask > task;		// Map of tasks currently running
 
 		size_t current_task_id;							// Internal counter to give new task_ids
-		SamsonController *controller;					// Pointer to the controller to interact with the resto of elements (network included)
+		au::map< size_t , ControllerTask > task;		// Map of tasks currently running
+
+		JobManager *jobManager;
 		
 	public:
 		
-		ControllerTaskManager( SamsonController * _controller)
+		ControllerTaskManager( JobManager * _jobManager)
 		{
-			controller = _controller;
+			jobManager = _jobManager;
 			current_task_id = 1;		// First task is "1" since "0" means error running task
 		}
 
@@ -39,26 +40,25 @@ namespace ss {
 		 Add a particular task into the controller scheduler from delailah command
 		 */
 		
-		size_t addTask( ControllerTaskInfo *info , size_t job_id );
+		size_t addTask( ControllerTaskInfo *info , Job *job );
 
 		/**
-		 Noitify a confirmation from workers
+		 Get a particular task
 		 */
 		
-		void notifyWorkerConfirmation(int from, network::WorkerTaskConfirmation* confirmationMessage );
-		
+		ControllerTask* getTask( size_t task_id );
+	
 		/**
-		 Get status information about tasks
+		 Remove a task ( because the job it belongs finished )
 		 */
 		
-		std::string getStatus();
-		
+		void removeTask( size_t task_id );
 		
 	private:
 
 		// Send a message to a worker with a particular task
 		void sendWorkerTasks( ControllerTask *task );
-		void sendWorkerTask( int  workerIdentifier , size_t task_id , ControllerTask *task );
+		void sendWorkerTask( int  workerIdentifier , ControllerTask *task );
 		
 		
 		

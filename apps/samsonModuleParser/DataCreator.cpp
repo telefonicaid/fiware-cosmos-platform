@@ -380,7 +380,7 @@ namespace ss {
 					}
 				}
 				if( command.str().length()>0)
-					output << "\t\t\toperation.code.push_back(\"" << command.str() <<  "\");\n";
+					output << "\t\t\toperation->code.push_back(\"" << command.str() <<  "\");\n";
 				output << std::endl;
 				
 			}

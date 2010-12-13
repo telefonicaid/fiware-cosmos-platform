@@ -120,76 +120,20 @@ namespace ss {
 		
 	public:
 
-		DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue ) : fileSet( fileNames )
-		{
-			
-			// Queue name 
-			queue = _queue;
-			
-			uploadedSize = 0;
-			
-			worker = 0; // rand()%num_workers;		// Random worker to start
-			
-			id_counter = 0;	// Init counter for loading files to the workers
-			
-			finish = false;
-			completed = false;
-		}
+		DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue );		
 		
-		
-		bool isUploadFinish()
-		{
-			return completed;
-		}
-		
-		void run()
-		{
-			// Set the number of workers
-			num_workers = delilah->network->getNumWorkers();
-
-			
-			// Create the thread for this load process
-			pthread_create(&t, NULL, runThreadDelilahLoadDataProcess, this);
-		}
-		
+		bool isUploadFinish();		
+		void run();		
 		void _run();		
 		
-		size_t getId()
-		{
-			return id;
-		}
-		
-		size_t getUploadedSize()
-		{
-			return uploadedSize;
-		}
-		
-		std::vector<std::string> getFailedFiles()
-		{
-			return fileSet.getFailedFiles();
-		}
-		
-		std::vector<network::File> getCreatedFile()
-		{
-			return created_files;
-		}
-		
-		void fillLoadDataConfirmationMessage( network::UploadDataConfirmation *confirmation );		
-		
-		
+		size_t getId();		
+		size_t getUploadedSize();		
+		std::vector<std::string> getFailedFiles();		
+		std::vector<network::File> getCreatedFile();	void fillLoadDataConfirmationMessage( network::UploadDataConfirmation *confirmation );		
+
 		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
-	
 		
-		std::string getStatus()
-		{
-			std::ostringstream output;
-			
-			output << "["<< id << "]Uploading to queue " << queue << " :";
-			output << "Pending files: " << pending_ids.size();
-			output << "Created files: " << created_files.size() << std::endl;
-			
-			return output.str();
-		}
+		std::string getStatus();
 		
 	};	
 	

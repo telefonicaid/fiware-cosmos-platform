@@ -110,5 +110,16 @@ namespace ss {
 		getStatusFromMap(output, item, prefix_per_line);
 	}
 	
+	void DiskManager::fill(network::WorkerStatus*  ws)
+	{
+		std::ostringstream output;
+		
+		if( item.size() > 0)
+		output << "Statistics: " << item.begin()->second->statistics.getStatus();
+		
+		ws->set_disk_manager_status( output.str() );
+	}
+	
+	
 	
 }

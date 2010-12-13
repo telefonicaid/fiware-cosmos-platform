@@ -5,6 +5,8 @@
 #include "Packet.h"					// ss::Packet
 #include "Buffer.h"					// ss::Buffer
 #include "FileManager.h"			// ss::FileManager
+#include "FileManagerReadItem.h"
+#include "FileManagerWriteItem.h"
 
 namespace ss
 {

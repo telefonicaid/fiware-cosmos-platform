@@ -175,5 +175,25 @@ namespace ss
 		output << std::endl;
 		
 	}	
+	
+	// Fill information
+	void MemoryManager::fill(network::WorkerStatus*  ws)
+	{
+		
+		int num_shm_buffers = 0;
+		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
+			if( shared_memory_used_buffers[i] )
+				num_shm_buffers++;
+		
+		std::ostringstream output;
+
+		int per_memory = (int) ( getMemoryUsage()*100.0 );
+		output <<"\n";	// All in new lines
+		output << "Used: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)";
+		output << " Buffers in action: " << num_buffers;
+		output << " Shared memory Buffers: " << num_shm_buffers << " / " << shared_memory_num_buffers;
+		ws->set_memory_status( output.str() );
+	}
+	
 
 }

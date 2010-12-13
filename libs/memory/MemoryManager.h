@@ -19,6 +19,7 @@
 #include "Format.h"					// au::Format
 #include "Status.h"				// au::Status
 
+#include "samson.pb.h"			// network::..
 
 
 #define SS_SHARED_MEMORY_KEY_ID					872934	// the first one
@@ -165,6 +166,9 @@ namespace ss {
 		 */
 		
 		void getStatus( std::ostream &output , std::string prefix_per_line );
+		
+		// Fill information
+		void fill(network::WorkerStatus*  ws);
 		
 		
 	};

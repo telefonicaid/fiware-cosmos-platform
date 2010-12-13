@@ -31,20 +31,20 @@ namespace ss {
 	 When enougth data is accumulated it is frozen to a file and DataManager if notified
 	 */
 	
-	class DataBuffer : public au::map<size_t , DataBufferItem> , public FileManagerDelegate , public au::Status
+	class DataBuffer : public FileManagerDelegate , public au::Status
 	{
+		
+		au::map<size_t , DataBufferItem> item;
 		
 		au::Lock lock;	// mutex to protect multiple thread access
 
-		
 		friend class DataBufferItem;
 		au::simple_map<size_t,size_t> id_relation;	// Relation between diskManager ids and task ids
 		
 	public:
 
 		SamsonWorker *worker;
-		
-		
+				
 		DataBuffer( SamsonWorker *_worker );
 		
 		/**
@@ -59,14 +59,15 @@ namespace ss {
 		
 		void finishWorker( size_t task_id );
 		
-		
 		// Function to get the run-time status of this object
 		void getStatus( std::ostream &output , std::string prefix_per_line );
-		
-		
+				
 		// FileManagerDelegate
 		void fileManagerNotifyFinish(size_t id, bool success);
 
+		// Fill information in the message
+		void fill(network::WorkerStatus*  ws);
+		
 		
 	};
 }

@@ -20,7 +20,7 @@ namespace ss {
 	class WorkerTaskItem;
 	class ProcessAssistant;
 	
-	class WorkerTaskManager : public FileManagerDelegate , public au::Status
+	class WorkerTaskManager :  public au::Status
 	{
 		
 	public:
@@ -55,13 +55,22 @@ namespace ss {
 		// Method called by ProcessAssitant when a particula process is finished
 		void finishItem( WorkerTaskItem *item );
 
-		// Noitification received from the DataBuffer when everything is saved to disk
+		// Notification received from the DataBuffer when everything is saved to disk
 		void completeTask( size_t task_id );
 		
+		// Get information about internal status
 		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
-		// Notification from the FileManager that a particular file is finished 
-		void fileManagerNotifyFinish(size_t id, bool success);	
+		// Fill a confirmation message
+		void fill( size_t task_id , network::WorkerTaskConfirmation *confirmation );
+		
+		// Full with information about status
+		void fill(network::WorkerStatus*  ws);
+		
+		void wakeUp()
+		{
+			lock.wakeUpStopLock( &stopLock );
+		}
 		
 	private:
 		

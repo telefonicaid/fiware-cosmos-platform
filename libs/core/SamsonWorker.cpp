@@ -20,6 +20,19 @@
 
 namespace ss {
 
+	
+	void *run_thread_sending_worker_status	( void *p )
+	{
+		SamsonWorker *worker = (SamsonWorker*)p;
+		while( true )
+		{
+			worker->sendWorkerStatus();
+			sleep(3);
+		}
+		
+		return NULL;
+	}
+	
 
 
 /* ****************************************************************************
@@ -92,32 +105,36 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 */
 void SamsonWorker::run()
 {
-	workerStatus(&status);
-
-	// assert(epMgr);
-	// epMgr->run();
-
+	// Start a thread to report status to the controller in a regular basis
+	pthread_t t;
+	pthread_create(&t, 0, run_thread_sending_worker_status, this);
+	
 	assert(network);
 	network->run();
 }
 
 
 
-#if 0
+
 void SamsonWorker::sendWorkerStatus()
 {
 	Packet *p = new Packet();
-	network::WorkerStatus*  w = p->message.mutable_worker_status();
-	
-	// Fill with all data related to data
-	data.fillWorkerStatus(w);
+	network::WorkerStatus*  ws = p->message.mutable_worker_status();
 	
 	// Fill to all data related with task manager
-	taskManager.fillWorkerStatus(w);
+	taskManager.fill(ws);
 	
-	network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, NULL, 0, p);
+	// Fil information related with file manager and disk manager
+	DiskManager::shared()->fill( ws );
+	FileManager::shared()->fill( ws );
+
+	MemoryManager::shared()->fill( ws );
+	
+	dataBuffer.fill( ws );
+	
+	network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);
 }
-#endif
+
 		
 
 	

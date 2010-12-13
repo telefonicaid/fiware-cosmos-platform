@@ -29,7 +29,8 @@ namespace ss {
 		size_t task_id;
 		
 		// Number of items ( used as a counter to add new items )
-		int num_items;	
+		int num_items;
+		int num_finish_items;
 		
 		// Error management
 		bool error;
@@ -37,7 +38,6 @@ namespace ss {
 		
 		std::string operation;					// Operation to be executed
 		au::map<int,WorkerTaskItem> item;		// List of items to be executed by processes
-		
 		
 		WorkerTask(WorkerTaskManager *taskManager, Operation::Type type , const network::WorkerTask &task );
 		~WorkerTask();
@@ -59,6 +59,7 @@ namespace ss {
 		ProcessAssistantSharedFileCollection *reduceInformation;		// Structure used only by reduce operations ( created with the orgnizer and used by all process assistants )
 		
 	private:
+		
 		friend class WorkerTaskItemOrganizer;	// to be able to add individual reduce items
 		
 		void addItem( WorkerTaskItem *item );

@@ -4,6 +4,8 @@
 #include "ProcessAssistant.h"	// ss::ProcessAssistant
 #include "WorkerTask.h"			// ss::WorkerTask
 #include "WorkerTaskManager.h"	// ss::WorkerTaskManager
+#include "FileManagerReadItem.h"
+#include "FileManagerWriteItem.h"
 
 namespace ss {
 	
@@ -67,25 +69,33 @@ namespace ss {
 	
 	void WorkerTaskItem::addInputFiles( FileManagerReadItem *item )
 	{
-		item->setDelegate( task->taskManager );	// Make sure task manager is the delegate for all inputs 
-		size_t fm_id = FileManager::shared()->addItemToRead( item );
-		task->taskManager->addInputFile( fm_id , this );
+		lock.lock();
+
+		item->setDelegate( this );	// Make sure task manager is the delegate for all inputs 
+		FileManager::shared()->addItemToRead( item );
 		num_input_files++;
+		
+		lock.unlock();
 	}
 
-	void WorkerTaskItem::notifyFinishLoadInputFile()
+	void WorkerTaskItem::fileManagerNotifyFinish(size_t id, bool success)
 	{
+		lock.lock();
+		
 		confirmed_input_files++;
 		
-		if( areInputFilesReady() )
+		lock.unlock();
+		
+		if( confirmed_input_files == num_input_files)
+		{
 			state = ready_to_run;
+			
+			// Wake up task manager process
+			task->taskManager->wakeUp();
+		}
 		
 	}
 	
-	bool WorkerTaskItem::areInputFilesReady()
-	{
-		return ( confirmed_input_files == num_input_files);
-	}
 	
 
 	bool WorkerTaskItem::isReadyToRun()
@@ -118,7 +128,7 @@ namespace ss {
 		{
 			setupInputs();					// Prepare all the inputs to be read
 			
-			if( areInputFilesReady() )		// Theoretically, if no input is finally scheduled
+			if(  confirmed_input_files == num_input_files )		// Theoretically, if no input is finally scheduled
 				state = ready_to_run;
 			else
 				state = loading_inputs;

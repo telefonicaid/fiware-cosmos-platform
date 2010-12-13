@@ -21,24 +21,6 @@ namespace ss {
 	class DatBuffer;
 	
 	
-	/**
-	 Each buffer vector for a particular queue
-	 */
-	
-	class QueueuBufferVector : public BufferVector
-	{
-		
-	public:
-		network::Queue queue;
-		bool txt;
-		
-		QueueuBufferVector( network::Queue _queue , bool _txt )
-		{
-			queue = _queue;
-			txt = _txt;
-		}
-		
-	};
 	
 	/**
 	 Class to group all the vector of buffers for each output queue
@@ -71,7 +53,6 @@ namespace ss {
 		void finishWorker();
 		
 		void saveBufferToDisk( Buffer* b , std::string filename ,network::Queue ,  bool txt );
-		
 
 		// Function to get the run-time status of this object
 		void getStatus( std::ostream &output , std::string prefix_per_line );

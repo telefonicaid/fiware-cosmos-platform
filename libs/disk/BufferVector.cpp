@@ -7,32 +7,75 @@
 
 namespace ss {
 
-	
-	BufferVector::BufferVector( )
+	QueueuBufferVector::QueueuBufferVector( network::Queue _queue , bool _txt )
 	{
+		queue = _queue;
+		txt = _txt;
+
 		info.kvs = 0;
 		info.size = 0;
+		
+		size = 0;
+
 	}
 	
-	void BufferVector::addBuffer( Buffer *b )
+	void QueueuBufferVector::addBuffer( Buffer *b )
 	{
-		// Update the total ( size and number of kvs )
-		NetworkHeader * header = (( NetworkHeader *) b->getData());
-		
-		// Increase total information for this file
-		info.kvs += header->info.kvs;
-		info.size += header->info.size;
-		
 		// Add the buffer to the vector
 		buffer.push_back(b);
 		
+		if( txt )
+			size += b->getSize(); 
+		else
+		{
+			// Update the total ( size and number of kvs )
+			NetworkHeader * header = (( NetworkHeader *) b->getData());
+			
+			// Increase total information for this file
+			info.kvs += header->info.kvs;
+			info.size += header->info.size;
+			
+			size += info.size;
+		}
 	}
+	
+	
+	/**
+	 Buidl a TXT buffer with just the accumulation of the component buffers
+	 */
+	
+	Buffer *QueueuBufferVector::getTXTBufferFromBuffers()
+	{
+		size_t file_size = 0;
+		for (size_t i=0;i < buffer.size() ;i++)
+			file_size += buffer[i]->getSize();
+		
+		// Crearte the buffer
+		Buffer *b = MemoryManager::shared()->newBuffer( "Creating txt file from buffers" , file_size );
+		
+		for (size_t i=0;i < buffer.size() ;i++)
+			b->write( buffer[i]->getData(), buffer[i]->getSize() );
+
+		// Make sure buffer is correct
+		assert( b->getSize() == b->getMaxSize() );
+	
+		
+		// Remove all buffers
+		for (size_t i = 0 ; i < buffer.size() ; i++)
+			MemoryManager::shared()->destroyBuffer( buffer[i] );
+		
+		// Empty the vector of buffers
+		buffer.clear();
+		
+		return b;
+	}
+	
 	
 	/**
 	 Build a file in the SAMSON format with the incomming network buffers
 	 */
 	
-	Buffer* BufferVector::getFileBufferFromNetworkBuffers( KVFormat queue_format )
+	Buffer* QueueuBufferVector::getFileBufferFromNetworkBuffers( KVFormat queue_format )
 	{
 		
 		// Check all network buffers to be correct

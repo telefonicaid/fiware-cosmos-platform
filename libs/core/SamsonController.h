@@ -43,12 +43,12 @@ namespace ss {
 		ControllerDataManager data;						// Data manager for the controller
 		
 		JobManager jobManager;							// Top level job manager
-		ControllerTaskManager taskManager;				// Internal task manager to submit tasks ( simple string command to be executed also by workers )
 		
 		Monitor monitor;								// Monitorization control for web-based moitoring tool
 		
 		// Status information of the workers
-		Message::WorkerStatusData status[100];		    // Status update from all workers
+		network::WorkerStatus* worker_status;			// Status of the workers reported periodically
+		//Message::WorkerStatusData status[100];		    // Status update from all workers
 		
 		friend class ControllerTaskManager;
 		friend class Job;

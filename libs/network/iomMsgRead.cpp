@@ -9,6 +9,7 @@
 */
 #include <unistd.h>             // write
 #include <memory.h>             // memset
+#include <sys/time.h>           // gettimeofday
 
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_NWRUN, ...
@@ -167,6 +168,10 @@ int iomMsgRead
 )
 {
 	int nb;
+	struct timeval start;
+	struct timeval end;
+
+	gettimeofday(&start, NULL);
 
 	*msgCodeP = headerP->code;
 	*msgTypeP = headerP->type;
@@ -262,8 +267,39 @@ int iomMsgRead
 		packetP->buffer->setSize(tot);
 	}
 
-	ep->msgsIn  += 1;
-	ep->bytesIn += sizeof(ss::Message::Header) + headerP->dataLen + headerP->gbufLen + headerP->kvDataLen;
+	int bytesRead = sizeof(ss::Message::Header) + headerP->dataLen + headerP->gbufLen + headerP->kvDataLen;
 
+	ep->msgsIn  += 1;
+	ep->bytesIn += bytesRead;
+
+	if (bytesRead > 100)
+	{
+		struct timeval diff;
+		int            usecs;
+
+		gettimeofday(&end, NULL);
+		diff.tv_sec  = end.tv_sec  - start.tv_sec;
+		diff.tv_usec = end.tv_usec - start.tv_usec;
+
+		if (diff.tv_usec < 0)
+		{
+			diff.tv_sec  -= 1;
+			diff.tv_usec += 1000000;
+		}
+
+		usecs = diff.tv_sec * 1000000 + diff.tv_usec;
+
+		if (usecs < 0)
+			LM_X(1, ("usecs cannot be < 0 ..."));
+
+		if (usecs == 0)
+			return 0;
+
+		ep->rMbps = bytesRead / usecs;
+
+		ep->rAccMbps = (ep->rAccMbps * ep->reads + ep->rMbps) / (ep->reads + 1);
+		ep->reads += 1;
+	}
+	
 	return 0;
 }	

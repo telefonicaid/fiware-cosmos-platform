@@ -1681,7 +1681,7 @@ void Network::run()
 					sign = '+';
 				}
 				
-				LM_F(("%c %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d)",
+				LM_F(("%c %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
 					  sign,
 					  ix,
 					  endpoint[ix]->typeName(),
@@ -1694,7 +1694,11 @@ void Network::run()
 					  endpoint[ix]->msgsIn,
 					  endpoint[ix]->bytesIn,
 					  endpoint[ix]->msgsOut,
-					  endpoint[ix]->bytesOut));
+					  endpoint[ix]->bytesOut,
+					  endpoint[ix]->rMbps,
+					  endpoint[ix]->rAccMbps,
+					  endpoint[ix]->wMbps,
+					  endpoint[ix]->wAccMbps));
 			}
 
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);

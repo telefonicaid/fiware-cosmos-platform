@@ -99,13 +99,22 @@ public:
 	int                          workers;
 	Type                         type;
 
-	// Statistics
+	// Message Statistics
 	int                          msgsIn;
 	int                          msgsOut;
 	int                          msgsInErrors;
 	int                          msgsOutErrors;
 	long long                    bytesIn;
 	long long                    bytesOut;
+	int                          lastBps;
+
+	// BPS Statistics
+	int                          rMbps;
+	int                          rAccMbps;
+	int                          reads;
+	int                          wMbps;
+	int                          wAccMbps;
+	int                          writes;
 
 	int                          workerId;         // Worker
 	Message::WorkerStatusData*   status;           // Worker

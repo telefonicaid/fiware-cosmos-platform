@@ -64,6 +64,8 @@ int SamsonSpawner::receive(int fromId, ss::Message::Header* headerP, void* dataP
 	{
 	case ss::Message::WorkerSpawn:
 	case ss::Message::ControllerSpawn:
+		LM_M(("Got a '%s' message - please implement!", ss::Message::messageCode(headerP->code)));
+		break;
 
 	default:
 		LM_X(1, ("Don't know how to treat '%s' message", ss::Message::messageCode(headerP->code)));

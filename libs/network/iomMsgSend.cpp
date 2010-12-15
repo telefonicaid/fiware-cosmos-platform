@@ -10,6 +10,7 @@
 #include <unistd.h>             // write
 #include <memory.h>             // memset
 #include <sys/uio.h>            // writev, struct iovec, ...
+#include <sys/time.h>           // gettimeofday
 
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_NWRUN, ...
@@ -198,6 +199,10 @@ int iomMsgSend
 {
 	ss::Message::Header  header;
 	int                  s;
+	struct timeval       start;
+	struct timeval       end;
+
+	gettimeofday(&start, NULL);
 
 	memset(&header, 0, sizeof(header));
 
@@ -258,8 +263,38 @@ int iomMsgSend
 		delete packetP;
 	}
 
+	int bytesSent = sizeof(header) + header.dataLen + header.gbufLen + header.kvDataLen;
 	to->msgsOut  += 1;
-	to->bytesOut += sizeof(header) + header.dataLen + header.gbufLen + header.kvDataLen;
+	to->bytesOut += bytesSent;
+
+	if (bytesSent > 100)
+	{
+		struct timeval diff;
+		int            usecs;
+
+		gettimeofday(&end, NULL);
+		diff.tv_sec  = end.tv_sec  - start.tv_sec;
+		diff.tv_usec = end.tv_usec - start.tv_usec;
+
+		if (diff.tv_usec < 0)
+		{
+			diff.tv_sec  -= 1;
+			diff.tv_usec += 1000000;
+		}
+
+		usecs = diff.tv_sec * 1000000 + diff.tv_usec;
+
+		if (usecs < 0)
+			LM_X(1, ("usecs cannot be < 0 ..."));
+
+		if (usecs == 0)
+			return 0;
+
+		to->wMbps = bytesSent / usecs;
+
+		to->wAccMbps = (to->wAccMbps * to->writes + to->wMbps) / (to->writes + 1);
+		to->writes += 1;
+	}
 
 	return 0;
 }	

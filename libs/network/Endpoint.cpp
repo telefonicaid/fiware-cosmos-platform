@@ -38,12 +38,20 @@ void Endpoint::init(void)
 	this->sender           = false;
 	this->useSenderThread  = false;
 	this->jobQueueHead     = NULL;
+
+	// Statistics
 	this->msgsIn           = 0;
 	this->msgsOut          = 0;
 	this->msgsInErrors     = 0;
 	this->msgsOutErrors    = 0;
 	this->bytesIn          = 0;
 	this->bytesOut         = 0;
+	this->rMbps             = 0;   // Bytes per second in last read transfer
+	this->rAccMbps          = 0;   // Bytes per second in all read transfers
+	this->reads            = 0;   // Number of reads accounted for in 'accMbps'
+	this->wMbps             = 0;   // Bytes per second in last write transfer
+	this->wAccMbps          = 0;   // Bytes per second in all write transfers
+	this->writes           = 0;   // Number of writes accounted for in 'wAccMbps'
 
 	hostnameGet();
 }

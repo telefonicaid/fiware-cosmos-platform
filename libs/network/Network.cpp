@@ -310,11 +310,11 @@ int Network::workerGetIdentifier(int nthWorker)
 */
 int Network::getWorkerFromIdentifier(int identifier)
 {
-	if (identifier >= Workers)
-		LM_RE(-1, ("invalid worker identifier '%d'  (only have %d workers)", identifier, Workers));
-
 	if (identifier == 0)
 		return me->workerId;
+
+	if ((identifier <= 2) || (identifier >= 3 + Workers))
+		LM_RE(-1, ("invalid worker identifier '%d'  (only have %d workers)", identifier, Workers));
 
 	return identifier - 3;
 }
@@ -1525,7 +1525,7 @@ void Network::msgTreat(void* vP)
 			}
 		}
 		break;
-
+#if 0
 	case Message::WorkerStatus:
 		if ((me->type != Endpoint::Controller) && (msgType == Message::Msg))
 			LM_X(1, ("Non-controller got a WorkerStatus message"));
@@ -1539,6 +1539,7 @@ void Network::msgTreat(void* vP)
 			LM_T(LMT_STAT, ("endpoint '%s' has %d cores", ep->name.c_str(), ep->status->cpuInfo.cores));
 		}
 		break;
+#endif
 
 	case Message::Alarm:
 		if (me->type == Endpoint::Worker)

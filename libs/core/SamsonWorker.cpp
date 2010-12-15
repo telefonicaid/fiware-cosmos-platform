@@ -91,6 +91,9 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 	// Get my id as worker ( could be -1 )
 	_myWorkerId = network->getWorkerFromIdentifier(network->getMyidentifier());
 
+	if (_myWorkerId == -1)
+	   LM_X(1, ("alias: '%s' (network->getMyidentifier returns %d)", alias.c_str(), network->getMyidentifier()));
+
 	this->workers     = network->getNumWorkers();
 	
 	// This is only necessary when running multiple samsonworkers as separated process in the same machine

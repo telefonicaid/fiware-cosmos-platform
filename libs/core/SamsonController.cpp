@@ -116,6 +116,7 @@ int SamsonController::receiveHelp(int fromId, Packet* packet)
 }
 	
 	
+
 /* ****************************************************************************
 *
 * receive - 
@@ -150,11 +151,12 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 			*/
 			
 			// Copy all the information here to be access when requesting that info
-			worker_status[workerId] = packet->message.worker_status();
+			if (workerId != -1)
+				worker_status[workerId] = packet->message.worker_status();
 		}
-			
-			return 0;
-			break;
+
+		return 0;
+		break;
 			
 		case Message::UploadDataConfirmation:
 		{
@@ -314,6 +316,7 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 				
 				return	 0;
 			}
+
 			if( cmdLine.isArgumentValue( 0 , "w" , "workers" ) )
 			{
 				// Send a message with the list of jobs
@@ -324,9 +327,12 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 				p2->message.set_delilah_id( packet->message.delilah_id() );
 				
 				network::WorkerStatusList *wl = response->mutable_worker_status_list();
-				for (int i = 0 ; i < workers ; i++)
-					wl->add_worker_status()->CopyFrom( worker_status[i] );
-				
+				int i;
+				for (i = 0 ; i < workers ; i++)
+				{
+				   wl->add_worker_status()->CopyFrom( worker_status[i] );
+				}
+
 				network->send(this, fromId, Message::CommandResponse, p2);
 				
 				return	 0;

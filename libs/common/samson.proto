@@ -102,11 +102,11 @@ message WorkerStatus
 {
 	repeated WorkerProcess	process=1;				// Information about process running on this worker		
 
-	required string file_manager_status=2;				// Information about the file manager
-	required string disk_manager_status=3;				// Information about the disk manager
-	required string file_manager_cache_status=4;			// Information about the status of cache inside the file manager
-	required string data_buffer_status=5;				// Information about data_buffer status
-	required string memory_status=6;				// Information about memory status
+	optional string file_manager_status=2;				// Information about the file manager
+	optional string disk_manager_status=3;				// Information about the disk manager
+	optional string file_manager_cache_status=4;			// Information about the status of cache inside the file manager
+	optional string data_buffer_status=5;				// Information about data_buffer status
+	optional string memory_status=6;				// Information about memory status
 }
 
 // Lists of elements

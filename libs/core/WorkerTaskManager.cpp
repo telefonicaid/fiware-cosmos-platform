@@ -37,11 +37,7 @@ namespace ss {
 		int coreId;
 		for (coreId = 0; coreId < num_processes ; coreId++)
 		{
-			
-			// Fake id to debig locally multiple workers
-			int fake_core_id = worker->myWorkerId * worker->workers + coreId;
-			
-			processAssistant[coreId] = new ProcessAssistant(fake_core_id, this);
+			processAssistant[coreId] = new ProcessAssistant(coreId, this);
 		}
 		
 		LM_T(LMT_WINIT, ("Got %d process assistants", coreId));

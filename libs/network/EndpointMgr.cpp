@@ -178,6 +178,7 @@ Endpoint* EndpointMgr::endpointAdd
 
 	switch (type)
 	{
+    case Endpoint::Stdin:
 	case Endpoint::Spawner:
 	case Endpoint::Supervisor:
 	case Endpoint::Sender:

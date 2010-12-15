@@ -712,6 +712,7 @@ Endpoint* Network::endpointAdd
 			LM_X(1, ("No temporal endpoint slots available - redefine and recompile!"));
 		break;
 
+	case Endpoint::Stdin:
 	case Endpoint::Supervisor:
 	case Endpoint::Spawner:
 	case Endpoint::Delilah:
@@ -1287,6 +1288,18 @@ void Network::msgTreat(void* vP)
 	Message::MessageCode  msgCode;
 	Message::MessageType  msgType;
 	int                   s;
+
+#if 0
+	if (ep->type == Endpoint::Stdin)
+	{
+		char buffer[1024];
+		int  nb;
+
+		nb = read(ep->rFd, buffer, sizeof(buffer));
+		stdinReceiver->receive(endpointId, nb, dataP);
+		return;
+	}
+#endif
 
 	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 	s = iomMsgRead(ep, headerP, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);

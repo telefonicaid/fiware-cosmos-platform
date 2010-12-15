@@ -73,6 +73,7 @@ public:
 	typedef enum Type
 	{
 		Unknown,
+		Stdin,
 		Temporal,
 		Listener,
 		Controller,

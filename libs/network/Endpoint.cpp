@@ -176,6 +176,7 @@ const char* Endpoint::typeName(Endpoint::Type type)
 	case Endpoint::Sender:          return "Sender";
 	case Endpoint::Spawner:         return "Spawner";
 	case Endpoint::Supervisor:      return "Supervisor";
+	case Endpoint::Stdin:           return "Stdin";
 	}
 
 	return "UnknownType";

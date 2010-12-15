@@ -52,7 +52,7 @@ namespace ss {
 		WorkerTaskManager    taskManager;       // Task manager
 		DataBuffer           dataBuffer;        // Element used to buffer incoming data packets before they are joined and saved to disk
 		LoadDataManager      loadDataManager;   // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
-		int                  myWorkerId;        // My id as worker : 0 , 1 ,2 ,3
+		int                  _myWorkerId;        // My id as worker : 0 , 1 ,2 ,3
 
 	public:
 		void networkSet(NetworkInterface* network);
@@ -69,6 +69,14 @@ namespace ss {
 		// Send information about the state of this worker to the controller
 		void sendWorkerStatus();
 		
+
+		int getWorkerId()
+		{
+			if( _myWorkerId == -1)
+				_myWorkerId = network->getWorkerFromIdentifier(network->getMyidentifier());
+			
+			return _myWorkerId;
+		}
 		
 		private:
 		virtual void notificationSent(size_t id, bool success) {}

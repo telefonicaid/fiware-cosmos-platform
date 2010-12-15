@@ -88,8 +88,8 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 
 	network->init(Endpoint::Worker, alias.c_str(), port, controller.c_str());
 	
-	// Get my id as worker
-	myWorkerId = network->getWorkerFromIdentifier(network->getMyidentifier());
+	// Get my id as worker ( could be -1 )
+	_myWorkerId = network->getWorkerFromIdentifier(network->getMyidentifier());
 
 	this->workers     = network->getNumWorkers();
 	
@@ -127,7 +127,6 @@ void SamsonWorker::sendWorkerStatus()
 	// Fil information related with file manager and disk manager
 	DiskManager::shared()->fill( ws );
 	FileManager::shared()->fill( ws );
-
 	MemoryManager::shared()->fill( ws );
 	
 	dataBuffer.fill( ws );

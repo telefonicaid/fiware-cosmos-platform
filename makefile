@@ -6,6 +6,7 @@ prepare:
 	./scripts/prepareBuild
 
 install:
+	make
 	sudo make -C build install
 
 distribute: install

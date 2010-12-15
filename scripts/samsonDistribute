@@ -9,6 +9,5 @@ for mach in samson02 samson03 samson04 samson05 samson06 samson08
 do
 	echo Installing samson in $mach
 	rsync -r /opt/samson          samson@$mach:/opt/
-	rsync -r /var/samson          samson@$mach:/var/
 	rsync -r /usr/local/bin       samson@$mach:/usr/local/
 done

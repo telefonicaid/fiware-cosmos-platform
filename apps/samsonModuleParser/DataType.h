@@ -1,22 +1,21 @@
+#ifndef DATATYPE_H
+#define DATATYPE_H
+
 /* ****************************************************************************
- *
- * FILE                     DataType.h
- *
- * DESCRIPTION				Definition of a basic data-type
- *
- * ***************************************************************************/
-
-#pragma once
-
-
-
+*
+* FILE                     DataType.h
+*
+* DESCRIPTION				Definition of a basic data-type
+*/
 #include <string>
 #include <sstream>
 #include <assert.h>
 #include <vector>
 #include <iostream>
 #include <unistd.h>
-#include <stdlib.h>
+#include <stdlib.h>                   // exit
+
+
 
 using namespace std;
 
@@ -44,10 +43,10 @@ namespace ss {
 			module = getModuleFromFullName( _full_type );
 			type = getNameFromFullName( _full_type );
 			
-			if( tockenizeWithDots(fullType).size() <= 1)
+			if (tockenizeWithDots(fullType).size() <= 1)
 			{
 				std::cerr << "Error: Please specify a full data-type name (ex sna.Link). Input: " << fullType << "\n";
-				exit(1);
+				::exit(1);
 			}
 			
 			name = _name;
@@ -437,4 +436,4 @@ namespace ss {
 	};
 }
 
-
+#endif

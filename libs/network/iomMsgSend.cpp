@@ -219,13 +219,13 @@ int iomMsgSend
 
 	s = partWrite(to, &header, sizeof(header), "header");
 	if (s != sizeof(header))
-		LM_X(1, ("partWrite returned %d and not the expected %d", s, sizeof(header)));
+		LM_RE(-1, ("partWrite returned %d and not the expected %d", s, sizeof(header)));
 
 	if ((dataLen != 0) && (data != NULL))
 	{
 		s = partWrite(to, data, dataLen, "msg data");
 		if (s != dataLen)
-			LM_X(1, ("partWrite returned %d and not the expected %d", s, dataLen));
+			LM_RE(-1, ("partWrite returned %d and not the expected %d", s, dataLen));
 	}
 
 	if ((packetP != NULL) && (packetP->message.ByteSize() != 0))
@@ -242,14 +242,14 @@ int iomMsgSend
 		s = partWrite(to, outputVec, packetP->message.ByteSize(), "Google Protocol Buffer");
 		free(outputVec);
 		if (s != packetP->message.ByteSize())
-			LM_X(1, ("partWrite returned %d and not the expected %d", s, packetP->message.ByteSize()));
+			LM_RE(-1, ("partWrite returned %d and not the expected %d", s, packetP->message.ByteSize()));
 	}
 
 	if (packetP && (packetP->buffer != 0))
 	{
 		s = partWrite(to, packetP->buffer->getData(), packetP->buffer->getSize(), "KV data");
 		if (s != (int) packetP->buffer->getSize())
-			LM_X(1, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
+			LM_RE(-1, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
 	}
 
 	if (packetP != NULL)

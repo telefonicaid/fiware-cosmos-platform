@@ -1463,7 +1463,7 @@ void Network::msgTreat(void* vP)
 			unsigned int        ix;
 			Message::Worker*    workerV = (Message::Worker*) dataP;
 
-			if ((unsigned int) Workers != dataLen / sizeof(Message::Worker))
+			if ((unsigned int) Workers < dataLen / sizeof(Message::Worker))
 				LM_X(1, ("Got %d workers from Controller - I thought there were %d workers", dataLen / sizeof(Message::Worker), Workers));
 
 			for (ix = 0; ix < dataLen / sizeof(Message::Worker); ix++)

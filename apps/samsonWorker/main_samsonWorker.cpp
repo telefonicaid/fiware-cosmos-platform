@@ -16,6 +16,7 @@ int              workers;
 char             controller[80];
 char             alias[36];
 bool             noLog;
+bool             local;
 
 
 #define S01 (long int) "samson01:1234"
@@ -31,6 +32,7 @@ PaArgument paArgs[] =
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    80,      3,    100,  "number of endpoints" },
 	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,     5,      1,    100,  "number of workers"   },
 	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt, false,  false,   true,  "no logging"          },
+	{ "-local",      &local,       "LOCAL",       PaBool,    PaOpt, false,  false,   true,  "local execution"     },
 
 	PA_END_OF_ARGS
 };
@@ -71,10 +73,13 @@ int main(int argC, const char *argV[])
 	epMgr    = new ss::EndpointMgr(networkP, endpoints, workers);
 
 
-	// This is only necessary when running multiple samsonworkers as separated process in the same machine
-	int worker_id = atoi(&alias[6]);
-	ss::MemoryManager::shared()->setOtherSharedMemoryAsMarked( worker_id , workers );
+	if (local)
+	{
+		// This is only necessary when running multiple samsonworkers as separated process in the same machine
 	
+		int worker_id = atoi(&alias[6]);
+		ss::MemoryManager::shared()->setOtherSharedMemoryAsMarked(worker_id, workers);
+	}
 	
 	ss::SamsonWorker  worker(controller, alias, port, workers, endpoints);
 	

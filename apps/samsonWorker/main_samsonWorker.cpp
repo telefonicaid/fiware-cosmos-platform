@@ -4,6 +4,8 @@
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "MemoryManager.h"		// ss::MemoryManager
 
+
+
 /* ****************************************************************************
 *
 * Option variables
@@ -16,14 +18,14 @@ char             alias[36];
 bool             noLog;
 
 
-
+#define S01 (long int) "samson01:1234"
 /* ****************************************************************************
 *
 * parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaReq,  PaND,   PaNL,   PaNL,  "controller IP:port"  },
+	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt,   S01,   PaNL,   PaNL,  "controller IP:port"  },
 	{ "-alias",       alias,       "ALIAS",       PaString,  PaReq,  PaND,   PaNL,   PaNL,  "alias"               },
 	{ "-port",       &port,        "PORT",        PaShortU,  PaReq,  PaND,   1025,  65000,  "listen port"         },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    80,      3,    100,  "number of endpoints" },

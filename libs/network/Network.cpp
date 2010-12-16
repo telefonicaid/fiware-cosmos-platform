@@ -690,7 +690,7 @@ Endpoint* Network::endpointAdd
 
 		if ((me->type == Endpoint::Delilah) || (me->type == Endpoint::Worker))
 		{
-			endpoint[2]->useSenderThread = true;
+			// endpoint[2]->useSenderThread = true;
 			LM_T(LMT_FORWARD, ("Delilah controller endpoint uses SenderThread"));
 		}
 

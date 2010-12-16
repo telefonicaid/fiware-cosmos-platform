@@ -11,7 +11,7 @@ namespace ss {
 	WorkerTaskItemOrganizer::WorkerTaskItemOrganizer( const network::WorkerTask & _workerTask ) : WorkerTaskItem( _workerTask )
 	{
 		// It is no necessary to have a shared memory area
-		state = ready_to_load_inputs;
+		//state = ready_to_load_inputs;
 	}
 
 

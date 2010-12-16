@@ -30,7 +30,7 @@ namespace ss {
 			fileName = _fileName;
 			
 			// This state indicate that we need a shared memory region to run this item
-			state = no_memory;
+			//state = no_memory;
 			
 		}
 		

@@ -68,6 +68,8 @@ namespace ss {
 				
 				// Run whatever is required in this item offering ProcessAssistant to use Process
 				item->run( this );
+
+				setStatus( "Finishing " + item->task->operation );
 				
 				// Notify that this item is done
 				taskManager->finishItem( item );

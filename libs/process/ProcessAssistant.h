@@ -51,7 +51,7 @@ namespace ss {
 
 	public:
 
-		WorkerTaskItem *item;		// Item that is currently processing ( to notify commands )
+		WorkerTaskItem *item;	// Item that is currently processing ( to notify commands )
 		
 		ProcessAssistant( int coreNo, WorkerTaskManager* _taskManager) ;
 		

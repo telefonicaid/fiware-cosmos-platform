@@ -149,7 +149,11 @@ namespace ss {
 	
 	void WorkerTaskItem::setup()
 	{
+		LM_M(("Setup item %d %d", item_id));
 		
+		if (state == definition)
+			state = no_memory;		// allways go the next level
+			
 		if( state == no_memory )
 		{
 			shm_input = MemoryManager::shared()->getFreeSharedMemory();

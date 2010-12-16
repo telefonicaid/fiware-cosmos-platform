@@ -37,9 +37,9 @@ namespace ss {
 	private:
 		
 		int shm_input;				// Shared memory identifier for input ( if necessary ) -1 --> no assigned
-
-	public:
 		State state;				// Main state of this item
+		
+	public:
 
 		WorkerTask *task;			// Pointer to the parent task
 						

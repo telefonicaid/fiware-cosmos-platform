@@ -27,7 +27,7 @@ namespace ss {
 			generator = task.operation();
 			framework = NULL;
 
-			state = ready_to_run;	// No input is never necessary for this operation
+			//state = ready_to_run;	// No input is never necessary for this operation
 		}
 		
 		virtual void run( ProcessAssistant *pa );

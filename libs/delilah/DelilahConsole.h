@@ -2,23 +2,31 @@
 #define _H_DelilahConsole
 
 /* ****************************************************************************
- *
- * FILE                     DelilahConsole.h
- *
- * DESCRIPTION			   Console terminal for delilah
- *
- */
+*
+* FILE                     DelilahConsole.h
+*
+* DESCRIPTION			   Console terminal for delilah
+*
+*/
+#include <cstdlib>				// atexit
+
+#include "logMsg.h"				
 
 #include "Console.h"			// au::Console
-#include <cstdlib>				// atexit(.)
 #include "DelilahClient.h"      // ss:DelilahClient
-#include "logMsg.h"				
 #include "Delilah.h"			// ss::Delilah
+
+
 
 namespace ss {
 	
 	void cancel_ncurses(void);
 	
+	static void lmCursesCancel(int code, void* input, char* logLine, char* stre)
+	{
+	   cancel_ncurses();
+	}
+
 	class DelilahConsole : public au::Console, public DelilahClient
 	{
 		Delilah* delilah;	// Internal delilah object to interact with SAMSON
@@ -35,7 +43,10 @@ namespace ss {
 
 			// Prepare the atexit command to cancel ncurses effect over the console
 			if( ncurses )
-				atexit ( cancel_ncurses );
+			{
+				atexit (cancel_ncurses);
+				lmExitFunction(lmCursesCancel, NULL);
+			}
 		}
 		
 		~DelilahConsole()

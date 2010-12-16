@@ -42,11 +42,10 @@ namespace ss {
 		State state;				// Main state of this item
 
 		WorkerTask *task;			// Pointer to the parent task
-		
-				
+						
 		int item_id;				// Item id ( from 0 to ...)
 
-		au::Lock lock;					// Lock to protect num_input_files and confirmed_input_files
+		au::Lock lock;				// Lock to protect num_input_files and confirmed_input_files
 		int num_input_files;		// Number of input files requested for this item during loading phase	
 		int confirmed_input_files;	// Number of files confirmed by FileManager
 		

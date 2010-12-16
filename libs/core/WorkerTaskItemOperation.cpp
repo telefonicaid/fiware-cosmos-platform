@@ -99,12 +99,19 @@ namespace ss
 		framework = new ProcessAssistantOperationFramework(pa , p );
 		
 		// Blocking command until the Process has complete the job
-		pa->runCommand( p );	
+		network::ProcessMessage answer = pa->runCommand( p );
+		
+		if ( answer.code() == network::ProcessMessage::crash )
+			setError("Operation crashed");
+		
+		if ( answer.code() == network::ProcessMessage::error )
+			setError("Internal error in the operation");
 		
 		// Flush output
-		framework->flushOutput(this);
-		
-		delete framework;	
+		if( !error )
+			framework->flushOutput(this);
+
+		delete framework;
 	}
 	
 	

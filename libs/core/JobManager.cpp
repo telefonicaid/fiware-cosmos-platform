@@ -66,31 +66,51 @@ namespace ss {
 				
 			case network::WorkerTaskConfirmation::finish:
 			{
-				assert(task);
-				assert(job);
-				assert(job->isCurrentTask(task));	// we can only receive finish reports from the current task
-				
-				task->notifyWorkerFinished( );		
-				if ( task->finish )
-					job->notifyCurrentTaskFinish(task->error, task->error_message);
+				//assert(task);
+				//assert(job);
+				if( task && job )
+				{
+					assert(job->isCurrentTask(task));	// we can only receive finish reports from the current task
+					
+					task->notifyWorkerFinished( );		
+					if ( task->finish )
+						job->notifyCurrentTaskFinish(task->error, task->error_message);
+				}
 
+			}
+				break;
+			case network::WorkerTaskConfirmation::error:
+			{
+				//assert(task);
+				//assert(job);
+				if( task && job)
+				{
+					assert(job->isCurrentTask(task));	// we can only receive finish reports from the current task
+					
+					task->notifyWorkerFinished( );		
+					if ( task->finish )
+						job->notifyCurrentTaskFinish(task->error, task->error_message);
+					
+					job->setError("Worker", confirmationMessage->error_message());
+				}
+				
 			}
 				break;
 			case network::WorkerTaskConfirmation::complete:
 			{
-				assert(task);
-				assert(job);
-
-				task->notifyWorkerComplete( );		
+				//assert(task);
+				//assert(job);
+				if( task )	
+					task->notifyWorkerComplete( );		
 				
 				
 			}
 				break;
 			case network::WorkerTaskConfirmation::new_file:
 			{
-				assert(task);
-				assert(job);
-				
+				//assert(task);
+				//assert(job);
+				if( task && job)
 				for (int f = 0 ; f < confirmationMessage->file_size() ; f++)
 				{
 					network::QueueFile qfile = confirmationMessage->file(f);
@@ -114,12 +134,10 @@ namespace ss {
 			}
 				break;
 				
-			default:
-				break;
 		}
 		
 		
-		if( job->isFinish() )
+		if( job && job->isFinish() )
 		{
 			if(job->isError() )
 			{

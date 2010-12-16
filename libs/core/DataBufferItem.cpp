@@ -90,8 +90,7 @@ namespace ss {
 				}
 			}
 			
-
-			WorkerTaskManager::send_finish_task_message_to_controller(dataBuffer->worker->network , task_id );
+			dataBuffer->worker->taskManager.send_finish_task_message_to_controller(dataBuffer->worker->network , task_id );
 			
 			
 			// Just in case, there is nothing else to save

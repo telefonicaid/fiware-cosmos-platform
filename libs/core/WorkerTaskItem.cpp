@@ -149,6 +149,7 @@ namespace ss {
 	
 	void WorkerTaskItem::setup()
 	{
+		
 		if( state == no_memory )
 		{
 			shm_input = MemoryManager::shared()->getFreeSharedMemory();

@@ -80,8 +80,7 @@ namespace ss {
 		network::ProcessMessage runCommand( network::ProcessMessage p );
 		
 		// Function that should be implemented in top classes to receive asyn notifications from the Process
-		virtual void receiveCommand( network::ProcessMessage p )=0;
-		 
+		virtual void receiveCommand( network::ProcessMessage p )=0;		 
 		
 	public:
 		

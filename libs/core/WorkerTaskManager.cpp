@@ -252,12 +252,30 @@ namespace ss {
 
 	void WorkerTaskManager::send_finish_task_message_to_controller(NetworkInterface *network , size_t task_id )
 	{		
-		Packet *p = new Packet();
-		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-		confirmation->set_task_id( task_id );
-		confirmation->set_type( network::WorkerTaskConfirmation::finish );
 		
-		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
+		lock.lock();
+		
+		WorkerTask *t = task.findInMap( task_id );
+		
+		if( !t || !t->error )
+		{
+			Packet *p = new Packet();
+			network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
+			confirmation->set_task_id( task_id );
+			confirmation->set_type( network::WorkerTaskConfirmation::finish );		
+			network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
+		}
+		else
+		{
+			Packet *p = new Packet();
+			network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
+			confirmation->set_task_id( task_id );
+			confirmation->set_type( network::WorkerTaskConfirmation::error );
+			confirmation->set_error_message( t->error_message );
+			network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
+		}
+		
+		lock.unlock();
 	}
 
 	void WorkerTaskManager::send_complete_task_message_to_controller(NetworkInterface *network , size_t task_id )

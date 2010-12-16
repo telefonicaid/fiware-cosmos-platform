@@ -172,6 +172,8 @@ namespace ss {
 		
 		
 		
+		void setError( std::string agent , std::string txt );
+
 		
 	private:
 		/**
@@ -183,7 +185,6 @@ namespace ss {
 		
 		bool _processCommand( std::string command );		
 		
-		void setError( std::string agent , std::string txt );
 		
 		// Axiliar function to replace text in strings
 		

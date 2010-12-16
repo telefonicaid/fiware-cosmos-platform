@@ -21,17 +21,23 @@
 namespace ss {
 
 	
-	void *run_thread_sending_worker_status	( void *p )
+
+/* ****************************************************************************
+*
+* run_thread_sending_worker_status - 
+*/
+void* run_thread_sending_worker_status(void* p)
+{
+	SamsonWorker* worker = (SamsonWorker*) p;
+
+	while (true)
 	{
-		SamsonWorker *worker = (SamsonWorker*)p;
-		while( true )
-		{
-			worker->sendWorkerStatus();
-			sleep(3);
-		}
-		
-		return NULL;
+		worker->sendWorkerStatus();
+		sleep(3);
 	}
+
+	return NULL;
+}
 	
 
 
@@ -125,7 +131,7 @@ void SamsonWorker::sendWorkerStatus()
 	// Fill to all data related with task manager
 	taskManager.fill(ws);
 	
-	// Fil information related with file manager and disk manager
+	// Fill information related with file manager and disk manager
 	DiskManager::shared()->fill( ws );
 	FileManager::shared()->fill( ws );
 	MemoryManager::shared()->fill( ws );
@@ -145,21 +151,16 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	
 	if (msgCode == Message::StatusRequest)
 	{
-		LM_M(("Here"));
 		Packet* p = new Packet();
-		LM_M(("Here"));
+
 		network::StatusResponse *response = p->message.mutable_status_response();
-		LM_M(("Here"));
 		
 		response->set_title( "Worker " + au::Format::string( network->getWorkerFromIdentifier( network->getMyidentifier() ) ) );
-		LM_M(("Here"));
 		response->set_senderid( packet->message.status_request().senderid() ) ;
-		LM_M(("Here"));
 		response->set_response( getStatus( packet->message.status_request().command() ) );
-		LM_M(("Here"));
 		
 		network->send(this, network->controllerGetIdentifier() , Message::StatusResponse, p);
-		LM_M(("Here"));
+
 		return 0;
 	}
 

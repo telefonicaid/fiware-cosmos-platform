@@ -90,17 +90,9 @@ namespace ss {
 				}
 			}
 			
-			// Send a message to the controller to notify that task is "finish" but not "complete"
+
+			WorkerTaskManager::send_finish_task_message_to_controller(dataBuffer->worker->network , task_id );
 			
-			Packet *p = new Packet();
-			network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-			confirmation->set_task_id( task_id );
-			confirmation->set_finish( true );
-			confirmation->set_completed( false );
-			confirmation->set_error( false );
-			dataBuffer->worker->taskManager.fill( task_id , confirmation );	// Fill information about task progress
-			
-			dataBuffer->worker->network->send(dataBuffer->worker, dataBuffer->worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
 			
 			// Just in case, there is nothing else to save
 			if( ids_files.size() == ids_files_saved.size() )
@@ -114,17 +106,9 @@ namespace ss {
 	{
 		// Notify the controller that a file has been created ( update )
 
-		Packet *p = new Packet();
-		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-
-		confirmation->set_task_id( task_id );
-		confirmation->set_finish( false );
-		confirmation->set_completed( false );
-		confirmation->set_error( false );
-		
-		network::QueueFile *qf = confirmation->add_file();
-		qf->set_queue( queue.name() );
-		network::File *file = qf->mutable_file();
+		network::QueueFile qf;
+		qf.set_queue( queue.name() );
+		network::File *file = qf.mutable_file();
 		file->set_name( fileName );
 		file->set_worker( myWorkerId );
 		network::KVInfo *info = file->mutable_info();
@@ -141,13 +125,9 @@ namespace ss {
 			info->set_size( header->info.size);
 			info->set_kvs(header->info.kvs);
 		}
-
-		// Fill information about the progress
-		dataBuffer->worker->taskManager.fill( task_id , confirmation );	// Fill information about task progress
 		
-		// Send the message
-		NetworkInterface *network = dataBuffer->worker->network;
-		network->send(dataBuffer->worker, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation , p);
+		// Send a packet to the controller informing about this new file
+		WorkerTaskManager::send_add_file_message_to_controller( dataBuffer->worker->network , task_id , qf);
 		
 		
 		// Schedule at the File Manager ( Note that delegate id DataBuffer )

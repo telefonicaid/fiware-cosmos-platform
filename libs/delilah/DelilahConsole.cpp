@@ -330,7 +330,7 @@ namespace ss
 					showJobs( packet->message.command_response().job_list() );
 				
 				if( packet->message.command_response().has_worker_status_list() )
-					showWorkers( packet->message.command_response().worker_status_list() );
+					showWorkers( packet->message.command_response().controller_status(), packet->message.command_response().worker_status_list() );
 			}
 				break;
 				
@@ -558,9 +558,14 @@ namespace ss
 		
 	}
 	
-	void DelilahConsole::showWorkers( const network::WorkerStatusList l)
+	void DelilahConsole::showWorkers( const network::ControllerStatus &cs , const network::WorkerStatusList l)
 	{
 		std::ostringstream txt;
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << "Controller" << std::endl;
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << "\tJobManager: " << cs.job_manager_status() << std::endl;
+		txt << "\tTaskManager: " << cs.task_manager_status() << std::endl;
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
 		txt << "Workers" << std::endl;
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
@@ -569,7 +574,7 @@ namespace ss
 			
 			const network::WorkerStatus worker_status = l.worker_status(i);
 			
-			txt << "Worker " << i << std::endl;
+			txt << "Worker " << i << "     " << "( Time of update: " << worker_status.time() << " )" << std::endl;
 			txt << "\tMemory Manager: " << worker_status.memory_status() << "\n";
 			txt << "\tFile Manager: " << worker_status.file_manager_status() << "\n";
 			txt << "\tFile Manager Cache: " << worker_status.file_manager_cache_status() << "\n";

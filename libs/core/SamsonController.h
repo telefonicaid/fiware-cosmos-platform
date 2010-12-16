@@ -47,7 +47,10 @@ namespace ss {
 		Monitor monitor;								// Monitorization control for web-based moitoring tool
 		
 		// Status information of the workers
-		network::WorkerStatus* worker_status;			// Status of the workers reported periodically
+		network::WorkerStatus** worker_status;			// Status of the workers reported periodically
+		struct timeval *worker_status_time;				// Last time status was reported
+		au::Lock worker_status_lock;					// Lock to protect this
+		
 		//Message::WorkerStatusData status[100];		    // Status update from all workers
 		
 		friend class ControllerTaskManager;
@@ -82,6 +85,8 @@ namespace ss {
 			return monitor.getJSONString( in );
 		}
 	
+		
+		void fill( network::ControllerStatus *status );
 		
 	};
 	

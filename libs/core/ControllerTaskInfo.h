@@ -22,9 +22,7 @@ namespace ss {
 		Job *job;	// Pointer to a job ( used to retrieve environment variables )
 		
 		void setError( std::string _error_message);
-		
-		std::string command;					// Command with parameter
-		
+				
 		std::string operation_name;				// Name of the operation
 		Operation * operation;					// Pointer to the operation
 		

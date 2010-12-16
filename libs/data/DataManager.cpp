@@ -109,6 +109,16 @@ namespace ss {
 	{
 		lock.lock();
 		DataManagerCommandResponse ans =  _runOperation( task_id , command , true );
+
+		std::ostringstream output;
+		output << "operation " << command << ": ";
+		if( ans.error )
+			output << "RESPONSE ERROR: " << ans.output;
+		else
+			output << "RESPONSE: " << ans.output;
+
+		_addComment(task_id, output.str(), true);
+		
 		lock.unlock();
 		return ans;
 	}

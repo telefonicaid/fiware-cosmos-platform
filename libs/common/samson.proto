@@ -95,11 +95,19 @@ message Job
 
 message WorkerProcess
 {
-	required string status=1;	// String describing the status
+	optional string status=1;	// String describing the status
+}
+
+message ControllerStatus
+{
+	optional string job_manager_status=1;				// Status of the job manager
+	optional string task_manager_status=2;				// Status of the task manager ( more in contact with workers )
 }
 
 message WorkerStatus
 {
+	optional uint64 time=8;						// Time since the last update from the worker
+
 	optional string task_manager_status=7;				// Status of the task manager
 	repeated WorkerProcess	process=1;				// Information about process running on this worker		
 
@@ -181,18 +189,23 @@ message WorkerTask
 
 message WorkerTaskConfirmation
 {
+	enum WorkerTaskConfirmationType
+	{
+		new_file=1;
+		finish=2;
+		complete=3;
+		error=4;
+		update=5;
+	}
 
-	required int64 task_id		= 1;	// Id of the controller task 
-
-	repeated QueueFile file       	= 2;    // Files created with this operation
-
-	required int32 num_items      	= 10;	// Number of items for this task in this worker
-	required int32 num_finish_items = 11;   // Number of finish items for this task in this worker
-
-	required bool   finish	      	= 3;	// Flag to indicate that the task is finished ( all file have been generated )
-	required bool   completed	= 4;	// Flag to indicate that the task can be considered completed ( everything saved to disk )
-	required bool   error          	= 5;    // Error in the operation
-	optional string error_message 	= 6;    // Message to debug the error
+	
+	required int64 task_id				= 1;	// Id of the controller task 
+	required WorkerTaskConfirmationType type 	= 2;	// Type of message
+	
+	repeated QueueFile file			= 3;    // File created with this operation that should be added to the queue
+	optional int32 num_items      	  	= 4;	// Number of items for this task in this worker
+	optional int32 num_finished_items 	= 5;   // Number of finish items for this task in this worker
+	optional string error_message 		= 6;    // Message to debug the error
 
 }
 
@@ -228,6 +241,7 @@ message CommandResponse
 	optional DataList      data_list	  	= 102;
 	optional QueueList     queue_list		= 103;
 	optional WorkerStatusList worker_status_list 	= 104;
+	optional ControllerStatus controller_status	= 105;
 }
 
 // ////////////////////////////////////////////////////////////////////////////

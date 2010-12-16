@@ -19,6 +19,7 @@ namespace ss {
 	class WorkerTask;
 	class WorkerTaskItem;
 	class ProcessAssistant;
+	class NetworkInterface;
 	
 	class WorkerTaskManager :  public au::Status
 	{
@@ -63,9 +64,6 @@ namespace ss {
 		
 		std::string getStatus();
 		
-		// Fill a confirmation message
-		void fill( size_t task_id , network::WorkerTaskConfirmation *confirmation );
-		
 		// Full with information about status
 		void fill(network::WorkerStatus*  ws);
 		
@@ -73,6 +71,15 @@ namespace ss {
 		{
 			lock.wakeUpStopLock( &stopLock );
 		}
+		
+		
+		// Send messages functions 
+		static void send_add_file_message_to_controller(NetworkInterface *network , size_t task_id , const network::QueueFile &qf );
+		static void send_update_message_to_controller(NetworkInterface *network , size_t task_id ,int num_finished_items, int num_items );
+		static void send_finish_task_message_to_controller(NetworkInterface *network , size_t task_id );
+		static void send_complete_task_message_to_controller(NetworkInterface *network , size_t task_id );
+		
+		
 		
 	private:
 		

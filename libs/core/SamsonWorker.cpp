@@ -154,9 +154,12 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		Packet* p = new Packet();
 
 		network::StatusResponse *response = p->message.mutable_status_response();
+
 		
 		response->set_title( "Worker " + au::Format::string( network->getWorkerFromIdentifier( network->getMyidentifier() ) ) );
+
 		response->set_senderid( packet->message.status_request().senderid() ) ;
+
 		response->set_response( getStatus( packet->message.status_request().command() ) );
 		
 		network->send(this, network->controllerGetIdentifier() , Message::StatusResponse, p);

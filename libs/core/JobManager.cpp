@@ -50,20 +50,94 @@ namespace ss {
 		lock.unlock();
 		
 	}
-	
-	void JobManager::_removeJob( Job *j )
-	{
-		assert( j->isFinish() );
 
-		// Remove all tasks associated to this job ( all of them are suppoused to be completed)
-		j->removeTasks();
+	void JobManager::notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage  )
+	{
+		lock.lock();
+
+		// Get the task
+		size_t task_id = confirmationMessage->task_id();
+		ControllerTask *task = taskManager.getTask( task_id );
+		Job* job = NULL;
+		if( task )
+			job = task->job;
 		
-		// Remove from the map of jobs
-		j = job.extractFromMap( j->getId() );
+		switch (confirmationMessage->type()) {
+				
+			case network::WorkerTaskConfirmation::finish:
+			{
+				assert(task);
+				assert(job);
+				assert(job->isCurrentTask(task));	// we can only receive finish reports from the current task
+				
+				task->notifyWorkerFinished( );		
+				if ( task->finish )
+					job->notifyCurrentTaskFinish(task->error, task->error_message);
+
+			}
+				break;
+			case network::WorkerTaskConfirmation::complete:
+			{
+				assert(task);
+				assert(job);
+
+				task->notifyWorkerComplete( );		
+				
+				
+			}
+				break;
+			case network::WorkerTaskConfirmation::new_file:
+			{
+				assert(task);
+				assert(job);
+				
+				for (int f = 0 ; f < confirmationMessage->file_size() ; f++)
+				{
+					network::QueueFile qfile = confirmationMessage->file(f);
+					network::File file = qfile.file();
+					network::KVInfo info = file.info();
+					
+					std::string command = ControllerDataManager::getAddFileCommand(file.worker() , file.name(),  info.size() , info.kvs() , qfile.queue() );
+					DataManagerCommandResponse response = controller->data.runOperation( job->getId() , command );
+					
+					// Since this is an internally generated command, it can not have any error of format
+					assert( !response.error );
+				}
+				
+				
+			}
+				break;
+			case network::WorkerTaskConfirmation::update:
+			{
+				if( task )
+					task->updateItemInformation( worker_id , confirmationMessage->num_finished_items() , confirmationMessage->num_items() );
+			}
+				break;
+				
+			default:
+				break;
+		}
 		
-		// Delete the job object itself
-		delete j;
 		
+		if( job->isFinish() )
+		{
+			if(job->isError() )
+			{
+				controller->data.finishTask( job->getId() );
+				job->sentConfirmationToDelilah( );
+				_removeJob(job);	// Remove job and associated tasks
+			}
+			else if( job->allTasksCompleted() )
+			{
+				controller->data.finishTask( job->getId() );
+				job->sentConfirmationToDelilah( );
+				_removeJob(job);	// Remove job and associated tasks
+			}
+			
+			
+		}
+		
+		lock.unlock();
 	}
 	
 	void JobManager::fill(network::JobList *jl , std::string command)
@@ -82,70 +156,44 @@ namespace ss {
 		
 		lock.unlock();
 	}
-
-	void JobManager::notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage  )
+	
+	
+	void JobManager::fill( network::ControllerStatus * status )
 	{
 		lock.lock();
-
-		// Get the task
-		size_t task_id = confirmationMessage->task_id();
-		ControllerTask *task = taskManager.getTask( task_id );
 		
-		assert(task);
-		
-		Job* job = task->job;
-		assert( job );
-
-
-		// Update whatever is needed in the task
-		task->notifyWorkerConfirmation( worker_id , confirmationMessage , &controller->data );
-
-		// If this is the task the job is waiting, let's continue the job
-		if( job->task_id == task->id )
-		{
-			if ( task->finish )
-			{
-				job->notifyCurrentTaskFinish(task->error, task->error_message);
-			}
-			else
-			{
-				// Update progress of this task
-				job->task_num_items = task->total_num_items;
-				job->task_num_finish_items = task->total_num_finish_items;
-			}
-		}
-		else
-		{
-			// make sure we do not report files if we are not the current task of this job
-			assert( confirmationMessage->file_size() == 0);
-		}
-		
-		
-		if( job->isFinish() )
-		{
-			
-			if(job->isError() )
-			{
-				controller->data.finishTask( job->id );
-				job->sentConfirmationToDelilah( );
-				_removeJob(job);	// Remove job and associated tasks
-			}
-			else if( job->allTasksFinished() )
-			{
-				controller->data.finishTask( job->id );
-				job->sentConfirmationToDelilah( );
-				_removeJob(job);	// Remove job and associated tasks
-			}
-			
-		}
-		
-		
-			
-		
+		status->set_job_manager_status( _getStatus() );
+		status->set_task_manager_status( taskManager.getStatus() );
 		
 		lock.unlock();
 	}
-
+	
+	std::string JobManager::_getStatus()
+	{
+		std::ostringstream output;	
+		std::map<size_t ,Job*>::iterator iter;
+		
+		for (iter = job.begin() ; iter !=job.end() ; iter++)
+			output << "[" << iter->second->getStatus() << "]";
+		return output.str();
+		
+	}
+	
+	void JobManager::_removeJob( Job *j )
+	{		
+		assert( j->isFinish() );
+		
+		// Remove all tasks associated to this job ( all of them are suppoused to be completed)
+		j->removeTasks();
+		
+		// Remove from the map of jobs
+		j = job.extractFromMap( j->getId() );
+		
+		// Delete the job object itself
+		delete j;
+		
+	}
+	
 	
 	
 }

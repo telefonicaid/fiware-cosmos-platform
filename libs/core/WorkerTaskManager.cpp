@@ -14,6 +14,7 @@
 
 #include "SamsonSetup.h"		// ss::SamsonSetup
 
+
 namespace ss {
 	
 	WorkerTaskManager::WorkerTaskManager(SamsonWorker *_worker) : stopLock( &lock )
@@ -114,14 +115,21 @@ namespace ss {
 	{
 		
 		bool send_close_messages = false;
+		int num_finished_items = 0;
+		int num_items = 0;
 
+		size_t task_id = item->task->task_id ;
+		
 		lock.lock();
 		
-		WorkerTask *t = task.findInMap( item->task->task_id );
+		WorkerTask *t = task.findInMap( task_id );
 		assert( t );
 
 		// Notify about this finish
 		t->finishItem( item->item_id );
+
+		num_items = t->num_items;
+		num_finished_items = t->num_finish_items;
 		
 		// If all have finished, send the close message
 		if( t->isFinish() )
@@ -132,23 +140,11 @@ namespace ss {
 		
 		// setup all tasks to see if resources can be re-used
 		_setupAllTasks();
-
-		
-		// Send a confirmation message to the controller to keep the track of items
-		Packet *p = new Packet();
-		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-		confirmation->set_task_id( t->task_id );			
-		confirmation->set_finish( false );
-		confirmation->set_completed( false );			
-		confirmation->set_num_items( t->num_items );
-		confirmation->set_num_finish_items( t->num_finish_items );
-		confirmation->set_error( t->error );
-		confirmation->set_error_message( t->error_message );			
 		
 		lock.unlock();
 
-		// Send confirmation message
-		worker->network->send(worker, worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
+		// Send a message to controller to update status of this task
+		send_update_message_to_controller(worker->network, task_id, num_finished_items, num_items );
 		
 		if( send_close_messages )
 			sendCloseMessages( t->getId() , worker->network->getNumWorkers() );
@@ -180,28 +176,17 @@ namespace ss {
 		
 		lock.lock();
 		
-
-		WorkerTask *t = task.extractFromMap( task_id  );
+		WorkerTask *t = task.extractFromMap( task_id );
 
 		if( t )
 		{
-			 
-			Packet *p = new Packet();
-			network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-			confirmation->set_task_id( task_id );			
-			confirmation->set_finish( true );
-			confirmation->set_completed( true );			
-			confirmation->set_error( t->error );
-			confirmation->set_num_items( t->num_items );
-			confirmation->set_num_finish_items( t->num_finish_items );
-			confirmation->set_error_message( t->error_message );			
-			worker->network->send(worker, worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
-			
 			assert( t->isFinish() );	// Otherwise it is not possible to be here
 			delete t;
 		}
 		
 		lock.unlock();
+		
+		send_complete_task_message_to_controller(worker->network, task_id);
 		
 	}
 	
@@ -265,21 +250,46 @@ namespace ss {
 		pendingInputFiles.insertInMap( fm_id , item );
 	}
 
-	void WorkerTaskManager::fill( size_t task_id , network::WorkerTaskConfirmation *confirmation )
-	{
-		lock.lock();
+	void WorkerTaskManager::send_finish_task_message_to_controller(NetworkInterface *network , size_t task_id )
+	{		
+		Packet *p = new Packet();
+		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
+		confirmation->set_task_id( task_id );
+		confirmation->set_type( network::WorkerTaskConfirmation::finish );
 		
-		WorkerTask *t = task.findInMap( task_id );
+		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
+	}
+
+	void WorkerTaskManager::send_complete_task_message_to_controller(NetworkInterface *network , size_t task_id )
+	{		
+		Packet *p = new Packet();
+		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
+		confirmation->set_task_id( task_id );
+		confirmation->set_type( network::WorkerTaskConfirmation::complete );
 		
-		if( t )
-		{
-			confirmation->set_num_items( t->num_items );
-			confirmation->set_num_finish_items( t->num_finish_items );
-		}
-		
-		lock.unlock();
+		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
 	}
 	
+	void WorkerTaskManager::send_add_file_message_to_controller(NetworkInterface *network , size_t task_id , const network::QueueFile &qf )
+	{		
+		Packet *p = new Packet();
+		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
+		confirmation->set_task_id( task_id );
+		confirmation->set_type( network::WorkerTaskConfirmation::new_file );
+		confirmation->add_file()->CopyFrom( qf );
+		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
+	}
 	
+	void WorkerTaskManager::send_update_message_to_controller(NetworkInterface *network , size_t task_id ,int num_finished_items, int num_items )
+	{		
+		Packet *p = new Packet();
+		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
+		confirmation->set_task_id( task_id );
+		confirmation->set_type( network::WorkerTaskConfirmation::update );
+		confirmation->set_num_items(num_items );
+		confirmation->set_num_finished_items( num_finished_items );
+
+		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
+	}
 	
 }

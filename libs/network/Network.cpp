@@ -1785,7 +1785,7 @@ void Network::run()
 						LM_T(LMT_SELECT, ("incoming message from '%s' endpoint %s (fd %d)", endpoint[ix]->typeName(), endpoint[ix]->name.c_str(), endpoint[ix]->rFd));
 						msgPreTreat(endpoint[ix], ix);
 						if (endpoint[ix])
-							FD_CLR(endpoint[ix]->rFd, &rFds);
+						FD_CLR(endpoint[ix]->rFd, &rFds);
 					}
 				}
 			}

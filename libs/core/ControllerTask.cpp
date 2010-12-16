@@ -20,6 +20,8 @@ namespace ss {
 		error = false;
 		
 		// total number of workers to wait for this number of confirmation ( in case we sent to workers )
+		finished_workers = 0;
+		complete_workers = 0;
 		num_workers = _total_workers;
 		
 		finish = false;
@@ -50,6 +52,23 @@ namespace ss {
 		free( num_finish_items );
 	}
 	
+	void ControllerTask::updateItemInformation( int workerId , int _num_finished_items, int _num_items )
+	{
+		num_items[workerId] = _num_items;
+		num_finish_items[workerId] = _num_finished_items;
+
+		total_num_finish_items = 0;
+		total_num_items = 0 ;
+		
+		for (int i = 0 ; i < num_workers ; i++)
+		{
+			total_num_items += num_items[i];
+			total_num_finish_items += num_finish_items[i];
+		}
+		
+	}
+	
+	
 	size_t ControllerTask::getId()
 	{
 		return id;
@@ -57,64 +76,24 @@ namespace ss {
 	
 	size_t ControllerTask::getJobId()
 	{
-		return job->id;
+		return job->getId();
 	}	
 	
-	void ControllerTask::notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage ,  ControllerDataManager * data )
+	void ControllerTask::notifyWorkerFinished()
 	{
-		if( confirmationMessage->error() )
-		{
-			error = true;
-			error_message = confirmationMessage->error_message();
-		}
+		finished_workers++;
 
-		for (int f = 0 ; f < confirmationMessage->file_size() ; f++)
-		{
-			network::QueueFile qfile = confirmationMessage->file(f);
-			network::File file = qfile.file();
-			network::KVInfo info = file.info();
-			
-			std::ostringstream command;
-			// add_file worker fileName size kvs queue
-			command << "add_file " << file.worker() << " " << file.name() << " " << info.size() << " " << info.kvs() << " " << qfile.queue() << " ";
-			
-			DataManagerCommandResponse response = data->runOperation( job->id , command.str() );
-			
-			// Since this is a internally generated command, it can not have any error of format
-			assert( !response.error );
-		}
-		
-		// Update the status of this task in terms of worker items
-		num_items[worker_id]		= confirmationMessage->num_items();
-		num_finish_items[worker_id] = confirmationMessage->num_finish_items();
-
-		// Update information in the job
-		int total = 0 ;
-		int num = 0 ;
-		for (int i = 0 ; i < num_workers ; i++)
-		{
-			total += num_items[i];
-			num += num_finish_items[i];
-		}
-		total_num_finish_items = num;
-		total_num_items = total;
-		
-		
-		
-		if ( confirmationMessage->finish() )
-			finish_workers.insert( worker_id );
-
-		if ( confirmationMessage->completed() )
-			complete_workers.insert( worker_id );
-		
-		
-		if( (int)finish_workers.size() == num_workers )
+		if( finished_workers == num_workers )
 			finish = true;
 
-		if( (int)complete_workers.size() == num_workers )
+	}
+	
+	void ControllerTask::notifyWorkerComplete()
+	{
+		complete_workers++;
+		if( complete_workers == num_workers )
 			complete = true;
 	}
-
 	
 	void ControllerTask::fillInfo( network::WorkerTask *t , int workerIdentifier )
 	{

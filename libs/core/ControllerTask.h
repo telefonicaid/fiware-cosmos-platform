@@ -35,13 +35,12 @@ namespace ss {
 		size_t id;						// Id of the task ( shared by all the workers )
 
 		int num_workers;				// Total workers that have to confirm the task
-
-		std::set<int> finish_workers;	// List of worker ids that have reported finish
-		std::set<int> complete_workers;	// List of worker ids that have reported complete	
-
+		int finished_workers;				// List of worker ids that have reported finish
+		int complete_workers;			// List of worker ids that have reported complete	
 		
 		int generator;					// Spetial flag to be removed from here ;)
-		
+
+		// Information about progress
 		int *num_items;					// Total items in this woker
 		int *num_finish_items;			// Total items finished in this worker
 		int total_num_finish_items;
@@ -53,6 +52,7 @@ namespace ss {
 		std::string error_message;
 
 		friend class ControllerTaskManager;
+		friend class Job;
 		
 	public:
 		
@@ -60,24 +60,22 @@ namespace ss {
 		bool complete;					// Flag to indicate that the task is completed ( by all workers )
 		
 		ControllerTask( size_t _id , Job *_job, ControllerTaskInfo *_info , int _total_workers );
-		
 		~ControllerTask();
 		
 		size_t getId();
-		
 		size_t getJobId();
 		
-		void notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage , ControllerDataManager * data );
+		void notifyWorkerFinished();
+		void notifyWorkerComplete();
 		
-		void fillInfo( network::WorkerTask *t , int workerIdentifier );
+		void fillInfo( network::WorkerTask *t , int workerIdentifier );		
 		
-		// Update with the added files
-		void updateData( ControllerDataManager * data );
+		void updateItemInformation( int workerId , int num_finished_items, int num_items );
 		
 		std::string getStatus()
 		{
 			std::ostringstream o;
-			o << "Task " << id << " : " << info->command;
+			o << "Id " << id << " F:" << finished_workers << " C:" << complete_workers << " T:" << num_workers;
 			return o.str();
 		}
 		

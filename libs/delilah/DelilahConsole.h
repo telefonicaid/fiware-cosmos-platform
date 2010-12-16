@@ -101,7 +101,7 @@ namespace ss {
 		void showDatas( const network::DataList ql);
 		void showOperations( const network::OperationList ql);
 		void showJobs( const network::JobList ql);
-		void showWorkers( const network::WorkerStatusList ql);
+		void showWorkers( const network::ControllerStatus &cs, const network::WorkerStatusList ql);
 
 
 		

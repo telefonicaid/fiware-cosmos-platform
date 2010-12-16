@@ -32,6 +32,10 @@ reset_svn:
 	sudo rm -Rf build/*
 	sudo rm -Rf xcode_proj
 
+uninstall:
+	sudo rm -f /usr/local/bin/samson* 
+	sudo rm -Rf /usr/local/include/samson	
+
 reset:
 #	sudo rm -Rf build/*
 #	sudo rm -Rf xcode_proj

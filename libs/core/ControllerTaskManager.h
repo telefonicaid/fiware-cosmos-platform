@@ -40,7 +40,7 @@ namespace ss {
 		 Add a particular task into the controller scheduler from delailah command
 		 */
 		
-		size_t addTask( ControllerTaskInfo *info , Job *job );
+		ControllerTask* addTask( ControllerTaskInfo *info , Job *job );
 
 		/**
 		 Get a particular task
@@ -53,6 +53,10 @@ namespace ss {
 		 */
 		
 		void removeTask( size_t task_id );
+		
+		std::string getStatus();
+		
+		
 		
 	private:
 

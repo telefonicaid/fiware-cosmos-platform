@@ -32,7 +32,7 @@ namespace ss {
 		au::map<size_t ,Job> job;				// List of jobs pending to be executed
 		au::Lock lock;							// Mutex to protect "job"
 		
-		SamsonController * controller;		
+		SamsonController * controller;			// Pointer to the controller
 		ControllerTaskManager taskManager;		// Internal task manager to submit tasks ( a task is a distributd command)
 		
 		friend class Job;						// To access controller
@@ -54,7 +54,12 @@ namespace ss {
 		// Fill information of this packet
 		void fill(network::JobList *jl , std::string command);
 		
+		void fill( network::ControllerStatus * status );
+		
 	private:
+
+		// Get an string about the internal status
+		std::string _getStatus();
 
 		// Remove a job
 		void _removeJob( Job *j );

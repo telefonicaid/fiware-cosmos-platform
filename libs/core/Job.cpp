@@ -53,13 +53,15 @@ namespace ss {
 				// Log into data to notify that we are out of a SCRIPT
 				if( items.size() > 1)	// Not report if we are leaving the main JobItem
 					jobManager->controller->data.addComment(id, std::string("SCRIPT OUT:") + item.getMainCommand() );
+
+				item.clear();
 				
 				items.pop_back();
 			}
 			else
 			{
 				
-				if( !processCommand( item.getNextCommand() ) )
+				if( !_processCommand( item.getNextCommand() ) )
 					return;	// No continue since a task has been scheduled ( or an error ocurred )
 			}
 		}
@@ -72,7 +74,7 @@ namespace ss {
 			finish = true;
 		
 	}	
-	bool Job::processCommand( std::string command )
+	bool Job::_processCommand( std::string command )
 	{
 		
 		// Log into data a comment to show this
@@ -212,14 +214,11 @@ namespace ss {
 				if( operation->getType() != Operation::script ) 
 				{
 					// Reset task information
-					task_command = command;
-					task_num_items = -1;
-					task_num_finish_items = -1;
 					
-					task_id = jobManager->taskManager.addTask( task_info , this );
+					currenTask = jobManager->taskManager.addTask( task_info , this );
 					
 					// Insert this task in the list of pending to be confirmed list of task id
-					all_tasks.insert( task_id );
+					all_tasks.insert( currenTask->getId() );
 					
 					return false;	// No continue until confirmation of this task is received
 				}
@@ -276,6 +275,11 @@ namespace ss {
 		return false;
 	}
 	
+	bool Job::isCurrentTask( ControllerTask *task)
+	{
+		return (currenTask == task);
+	}
+	
 	bool Job::isFinish()
 	{
 		return finish;
@@ -286,19 +290,16 @@ namespace ss {
 		return error;
 	}
 	
-	bool Job::allTasksFinished()
+	bool Job::allTasksCompleted()
 	{
 		std::set<size_t>::iterator iter;
-		
 		for(iter = all_tasks.begin() ; iter != all_tasks.end() ; iter++)
 		{
 			ControllerTask *task = jobManager->taskManager.getTask( *iter );
+
 			if( !task->complete )
-			{
 				return false;
-			}
 		}
-		
 		return true;
 	}
 
@@ -390,17 +391,27 @@ namespace ss {
 			j->set_line( 0 );
 			j->set_num_lines( 0 );
 		}
-		else
+		else if (currenTask)
 		{
 			// Artifitial jobitem to show current task
 			network::JobItem *j = job->add_item();
-			j->set_command( task_command );
-			j->set_line( task_num_finish_items );
-			j->set_num_lines( task_num_items );
+			j->set_command( currenTask->info->operation_name );
+			j->set_line( currenTask->total_num_finish_items );
+			j->set_num_lines( currenTask->total_num_items );
 		}
 
 		
 	}
+
+	std::string Job::getStatus()
+	{
+		std::ostringstream output;
+		output << "ID: " << id << " Task: " << currenTask->getId();
+		return output.str();
+	}
+	
+	
+	
 	
 }
 

@@ -76,7 +76,7 @@ namespace ss {
 					// Check the same format
 					if( ( _queue->_format.keyFormat == keyFormat ) && ( _queue->_format.valueFormat == valueFormat ) )
 					{
-						response.output = "OK";
+						response.output = "OK, queue already existed, but ok";
 						return response;
 					}
 					else
@@ -570,11 +570,8 @@ namespace ss {
 						(*iter)->fill( file );
 					}
 				}
-				
-				
 			}
 		}
-	
 		
 		lock.unlock();
 	}

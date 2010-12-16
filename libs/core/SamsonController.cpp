@@ -65,7 +65,14 @@ SamsonController::SamsonController
 	//addChildrenStatus( network );
 	
 	// Create space for the worker updates
-	worker_status = new network::WorkerStatus[workers];
+	worker_status		= (network::WorkerStatus**) malloc( sizeof(network::WorkerStatus*) * workers );
+	worker_status_time	= (struct timeval *) malloc( sizeof( struct timeval ) * workers ); 
+	
+	for (int i = 0 ; i < workers ; i++ )
+	{
+		worker_status[i] = new network::WorkerStatus();
+		gettimeofday(&worker_status_time[i], NULL);
+	}
 	
 }	
 
@@ -153,7 +160,13 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 			
 			// Copy all the information here to be access when requesting that info
 			if (workerId != -1)
-				worker_status[workerId] = packet->message.worker_status();
+			{
+				worker_status_lock.lock();
+				worker_status[workerId]->CopyFrom( packet->message.worker_status() );
+				gettimeofday(&worker_status_time[workerId], NULL);
+				worker_status_lock.unlock();
+
+			}
 		}
 
 		return 0;
@@ -329,11 +342,18 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 				
 				network::WorkerStatusList *wl = response->mutable_worker_status_list();
 				int i;
+				
+				worker_status_lock.lock();
 				for (i = 0 ; i < workers ; i++)
 				{
-				   wl->add_worker_status()->CopyFrom( worker_status[i] );
+					network::WorkerStatus *ws =wl->add_worker_status();
+					ws->CopyFrom( *worker_status[i] );
+					ws->set_time(  DiskStatistics::timeSince( &worker_status_time[i] ) );
 				}
-
+				worker_status_lock.unlock();
+				
+				fill( response->mutable_controller_status() );
+				
 				network->send(this, fromId, Message::CommandResponse, p2);
 				
 				return	 0;
@@ -353,6 +373,12 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 
 	return 0;
 }
+
+	
+	void SamsonController::fill( network::ControllerStatus *status )
+	{
+		jobManager.fill( status );
+	}
 
 
 

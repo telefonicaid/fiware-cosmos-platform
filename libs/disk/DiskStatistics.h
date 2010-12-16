@@ -52,6 +52,15 @@ namespace ss {
 		
 		static size_t timevaldiff(struct timeval *starttime, struct timeval *finishtime);
 
+		static size_t timeSince(struct timeval *starttime)
+		{
+			struct timeval now;
+			gettimeofday(&now, NULL);
+			return timevaldiff(starttime, &now);
+		}
+		
+		
+		
 	};
 }
 

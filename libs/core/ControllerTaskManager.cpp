@@ -12,7 +12,7 @@
 namespace ss
 {
 
-	size_t ControllerTaskManager::addTask( ControllerTaskInfo *info ,Job *job )
+	ControllerTask* ControllerTaskManager::addTask( ControllerTaskInfo *info ,Job *job )
 	{
 		int num_workers = jobManager->controller->network->getNumWorkers();
 		
@@ -25,7 +25,7 @@ namespace ss
 		// Send this task to all the workers
 		sendWorkerTasks( t );										
 
-		return t->getId();
+		return t;
 		
 	}
 	
@@ -76,6 +76,16 @@ namespace ss
 		
 		NetworkInterface *network = jobManager->controller->network;
 		network->send(jobManager->controller,  network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask,  p2);
+	}
+	
+	
+	std::string ControllerTaskManager::getStatus()
+	{
+		std::ostringstream output;
+		std::map< size_t , ControllerTask* >::iterator iter;
+		for( iter = task.begin() ; iter != task.end() ; iter++)
+			output << "[" << iter->second->getStatus() << "]";
+		return output.str();
 	}
 	
 	

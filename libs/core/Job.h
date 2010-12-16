@@ -36,6 +36,7 @@ namespace ss {
 		
 		// List of commands
 		std::vector<std::string> command;
+		int num_lines;
 		int command_pos;
 
 
@@ -44,21 +45,23 @@ namespace ss {
 		{
 			parent_command = _parent_command;
 			command_pos = 0;
+			num_lines = 0;
 		}
 		
 		void addCommand( std::string c)
 		{
 			command.push_back(c);
+			num_lines++;
 		}
 		
 		bool isFinish()
 		{
-			return ( command_pos == (int) command.size() );
+			return ( command_pos == (int) num_lines );
 		}
 		
 		std::string getNextCommand()
 		{
-			assert( command_pos < (int)command.size() );
+			assert( command_pos < (int) num_lines );
 			return command[command_pos++];
 		}
 		
@@ -66,7 +69,7 @@ namespace ss {
 		{
 			if ( command_pos == 0)
 				return "begining";
-			if ( command_pos > (int)command.size() )
+			if ( command_pos > (int) num_lines )
 				return "error: Too far in the JobItem list of commands";
 			
 			return command[command_pos-1];
@@ -75,7 +78,7 @@ namespace ss {
 		void fill( network::JobItem *item)
 		{
 			item->set_command( parent_command );
-			item->set_num_lines( command.size() );
+			item->set_num_lines( num_lines );
 			item->set_line( command_pos - 1);
 		}
 		
@@ -87,8 +90,15 @@ namespace ss {
 		
 		double getProgress()
 		{
-			return (double) (command_pos-1) / (double) command.size();
+			return (double) (command_pos-1) / (double) num_lines;
 		}
+		
+		void clear()
+		{
+			command.clear();
+		}
+		
+		
 		
 	};
 	
@@ -113,10 +123,7 @@ namespace ss {
 		JobManager *jobManager;			// Pointer to the job manager
 		
 		// Information about current running task
-		size_t task_id;					// Id of the task we are waiting ( to avoid confusions )
-		std::string task_command;		// Command we are currently running
-		int task_num_items;				// Number of items for this task
-		int task_num_finish_items;		// Finish number of items for this task
+		ControllerTask *currenTask;
 		
 		std::list<JobItem> items;		// Stack of items that we are running
 		
@@ -125,28 +132,13 @@ namespace ss {
 		
 		std::string mainCommand;		// Main command that originated this job
 		
-		friend class ControllerTaskManager;
-		friend class ControllerTask;
-		friend class JobManager;
+	public:
 		
 		Environment environment;		// Environment properties for this job ( can be updated in runtime )
-		
-		
-		
-	public:
 		
 		// Constructor used for top-level jobs form delilah direct message
 		
 		Job( JobManager * _jobManager , size_t _id, int fromId, const network::Command &command , size_t _sender_id  );
-
-		/**
-		 Run a line of command for this job.
-		 It can be an inmediate command interacting with dataManager like add_queue / remove_queue / etc... ( return true)
-		 It can be a script, so a new JobItem is created and push ( return true )
-		 It can be a command that is send to the workers creating a task ( return false )
-		 */
-		
-		bool processCommand( std::string command );		
 		
 		/**
 		 Main routine to run commands until waiting for task confirmation or the job finishs
@@ -159,16 +151,15 @@ namespace ss {
 		
 		
 		size_t getId();	
-
 		bool isFinish();
 		bool isError();
 	
 		void sentConfirmationToDelilah( );
-		
-		
-		bool allTasksFinished();
+				
+		bool allTasksCompleted();
 		void removeTasks();
-
+		
+		bool isCurrentTask( ControllerTask *task );
 		
 		std::string getErrorLine()
 		{
@@ -177,10 +168,20 @@ namespace ss {
 		
 		void fill( network::Job *job);
 		
+		std::string getStatus();
+		
 		
 		
 		
 	private:
+		/**
+		 Run a line of command for this job.
+		 It can be an inmediate command interacting with dataManager like add_queue / remove_queue / etc... ( return true)
+		 It can be a script, so a new JobItem is created and push ( return true )
+		 It can be a command that is send to the workers creating a task ( return false )
+		 */
+		
+		bool _processCommand( std::string command );		
 		
 		void setError( std::string agent , std::string txt );
 		

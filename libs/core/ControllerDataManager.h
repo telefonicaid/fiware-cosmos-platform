@@ -25,7 +25,7 @@ namespace ss {
 	
 	class ControllerDataManager : public DataManager
 	{
-		au::Lock lock;
+		//au::Lock lock;
 		
 		au::map< std::string , Queue> queues;			// List of KeyValue queues
 		
@@ -55,10 +55,8 @@ namespace ss {
 		void helpQueues( network::HelpResponse *response , network::Help help );
 
 		void fill( network::QueueList *ql , std::string command);
-		
-		
+
 		void retreveInfoForTask( ControllerTaskInfo *info );		
-		
 		
 		static std::string getAddFileCommand(int worker , std::string fileName , size_t size , size_t kvs , std::string queue )
 		{

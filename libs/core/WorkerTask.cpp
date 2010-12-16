@@ -67,7 +67,7 @@ namespace ss
 		i->setTaskAndItemId(this , itemId);
 		item.insertInMap( itemId , i  );
 		
-		i->setup();			// First setup ( usualy to get a slot of free memory and schedule load of inpute )
+		//i->setup();			// First setup ( usualy to get a slot of free memory and schedule load of inpute )
 	}
 	
 	WorkerTaskItem *WorkerTask::getNextItemToProcess()

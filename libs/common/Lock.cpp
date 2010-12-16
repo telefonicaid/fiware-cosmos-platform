@@ -13,7 +13,7 @@
 #include "logMsg.h"              // LM_*
 #include "StopLock.h"            // StopLock
 #include "Lock.h"                // Own interface
-
+#include "LockDebugger.h"		// au:;:LockDebugger
 
 
 namespace au

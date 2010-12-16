@@ -78,7 +78,7 @@ namespace ss {
 		void sendWorkTaskConfirmation( WorkerTask *t );
 		
 		// Function used to send the "close" message to other workers
-		void sendCloseMessages( WorkerTask *t , int workers );
+		void sendCloseMessages( size_t task_id , int workers );
 		
 		// Function calles by items when adding files to be read
 		void addInputFile( size_t fm_id , WorkerTaskItem* );

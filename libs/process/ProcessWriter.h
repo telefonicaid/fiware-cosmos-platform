@@ -134,6 +134,7 @@ namespace ss {
 		
 		ProcessWriter( int shm_id , int _num_outputs , int _num_servers )
 		{
+			
 			// Get the assignated shared memory region
 			SharedMemoryItem *item = MemoryManager::shared()->getSharedMemory( shm_id );
 			

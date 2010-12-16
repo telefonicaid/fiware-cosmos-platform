@@ -19,8 +19,7 @@ namespace ss {
 	WorkerTaskManager::WorkerTaskManager(SamsonWorker *_worker) : stopLock( &lock )
 	{
 		worker = _worker;
-		num_processes = SamsonSetup::shared()->num_processes;			// Define the number of process
-
+		num_processes	= SamsonSetup::shared()->num_processes;			// Define the number of process
 		
 		// //////////////////////////////////////////////////////////////////////
 		//
@@ -50,6 +49,8 @@ namespace ss {
 	
 	void WorkerTaskManager::addTask(const network::WorkerTask &worker_task )
 	{
+		
+		bool send_close_messages = false;
 		lock.lock();
 
 		// Look at the operation to 
@@ -64,13 +65,18 @@ namespace ss {
 		
 		// If it is already finished (this happens where there are no input files )
 		if( t->isFinish() )
-			sendCloseMessages( t , worker->network->getNumWorkers() );
+			send_close_messages = true;
 		
 		
 		lock.unlock();
 		
 		// Wake up ProcessAssitant to process items ( really not necesssary since there is a 1 second timeout )
 		lock.wakeUpAllStopLock( &stopLock );
+
+		if( send_close_messages )
+			sendCloseMessages( t->getId() , worker->network->getNumWorkers() );
+
+		
 		
 	}
 
@@ -104,6 +110,9 @@ namespace ss {
 	
 	void WorkerTaskManager::finishItem( WorkerTaskItem *item )
 	{
+		
+		bool send_close_messages = false;
+
 		lock.lock();
 		
 		WorkerTask *t = task.findInMap( item->task->task_id );
@@ -114,7 +123,7 @@ namespace ss {
 		
 		// If all have finished, send the close message
 		if( t->isFinish() )
-			sendCloseMessages( t , worker->network->getNumWorkers() );
+			send_close_messages = true;
 
 		// The task is not defined complete until a close is received from all workers.
 		// It is responsability of DataBuffer to notify WorkerTaskManager about this to finally remove the task
@@ -133,9 +142,15 @@ namespace ss {
 		confirmation->set_num_finish_items( t->num_finish_items );
 		confirmation->set_error( t->error );
 		confirmation->set_error_message( t->error_message );			
-		worker->network->send(worker, worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
 		
 		lock.unlock();
+
+		// Send confirmation message
+		worker->network->send(worker, worker->network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
+		
+		if( send_close_messages )
+			sendCloseMessages( t->getId() , worker->network->getNumWorkers() );
+		
 		
 		lock.wakeUpStopLock( &stopLock );
 		
@@ -198,14 +213,14 @@ namespace ss {
 		}
 	}
 	
-	void WorkerTaskManager::sendCloseMessages( WorkerTask *t , int workers )
+	void WorkerTaskManager::sendCloseMessages( size_t task_id , int workers )
 	{
 		
 		for (int s = 0 ; s < workers ; s++)
 		{				
 			Packet *p = new Packet();
 			network::WorkerDataExchangeClose *dataMessage =  p->message.mutable_data_close();
-			dataMessage->set_task_id(t->getId());
+			dataMessage->set_task_id(task_id);
 			NetworkInterface *network = worker->network;
 			network->send(worker, network->workerGetIdentifier(s) , Message::WorkerDataExchangeClose, p);
 		}

@@ -188,7 +188,6 @@ namespace ss
 		// Set the number of workers
 		num_workers = delilah->network->getNumWorkers();
 		
-		
 		// Create the thread for this load process
 		pthread_create(&t, NULL, runThreadDelilahLoadDataProcess, this);
 	}

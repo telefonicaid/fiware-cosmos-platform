@@ -56,7 +56,7 @@ int main(int argC, const char *argV[])
 	logFd = lmFirstDiskFileDescriptor();
 
 	
-	ss::Network  network;
+	ss::Network  network(endpoints,workers);
 	ss::DelilahConsole console( &network , controller , endpoints , workers , !basic);
 	console.run();
 }

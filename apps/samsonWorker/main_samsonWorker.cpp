@@ -2,7 +2,7 @@
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "EndpointMgr.h"		// ss::EndpointMgr
 #include "SamsonSetup.h"		// ss::SamsonSetup
-
+#include "MemoryManager.h"		// ss::MemoryManager
 
 /* ****************************************************************************
 *
@@ -62,14 +62,20 @@ int main(int argC, const char *argV[])
 
 	ss::SamsonSetup::shared();	// Load setup and create default directories
 	
-	ss::SamsonWorker  worker(controller, alias, port, workers, endpoints);
 	ss::Network*      networkP;
 	ss::EndpointMgr*  epMgr;
 
-	
-	networkP = new ss::Network();
+	networkP = new ss::Network(endpoints,workers);
 	epMgr    = new ss::EndpointMgr(networkP, endpoints, workers);
 
+
+	// This is only necessary when running multiple samsonworkers as separated process in the same machine
+	int worker_id = atoi(&alias[6]);
+	ss::MemoryManager::shared()->setOtherSharedMemoryAsMarked( worker_id , workers );
+	
+	
+	ss::SamsonWorker  worker(controller, alias, port, workers, endpoints);
+	
 	worker.endpointMgrSet(epMgr);
 	worker.networkSet(networkP);
 

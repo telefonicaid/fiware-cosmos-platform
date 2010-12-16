@@ -14,6 +14,8 @@ namespace ss {
 	{
 		SharedMemoryItem * smi = MemoryManager::shared()->getSharedMemory( shm_input );
 		size = FileManagerReadItem::sizeOfFile( fileName );
+
+		assert( size <= smi->size );
 		
 		FileManagerReadItem *item = new FileManagerReadItem( fileName , 0 , size , smi->data , NULL );
 		addInputFiles( item );

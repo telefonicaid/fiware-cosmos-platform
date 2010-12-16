@@ -44,9 +44,9 @@ SamsonWorker::SamsonWorker(char* controller, char* alias, unsigned short port, i
 	this->controller  = controller;
 	this->alias       = alias;
 	this->port        = port;
-	this->workers     = workers;
+	this->workers     = SamsonSetup::shared()->num_workers;
 	this->endpoints   = endpoints;
-	
+
 	srand( (unsigned int) time(NULL) );
 
 	// Setup of the run-time status
@@ -96,8 +96,6 @@ void SamsonWorker::networkSet(NetworkInterface* network)
 
 	this->workers     = network->getNumWorkers();
 	
-	// This is only necessary when running multiple samsonworkers as separated process in the same machine
-	// MemoryManager::shared()->setOtherSharedMemoryAsMarked( myWorkerId , workers );
 }
 
 

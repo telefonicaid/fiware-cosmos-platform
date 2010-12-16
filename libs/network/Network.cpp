@@ -77,6 +77,8 @@ Network::Network()
 	tmoSecs      = 10;
 	tmoUsecs     = 0;
 
+	LM_M(("Workers: %d", Workers));
+
 	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
 	if (endpoint == NULL)
 		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
@@ -99,6 +101,8 @@ Network::Network(int endpoints, int workers)
 	Endpoints    = endpoints;
 	tmoSecs      = 10;
 	tmoUsecs     = 0;
+
+	LM_M(("Workers: %d", Workers));
 
 	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
 	if (endpoint == NULL)

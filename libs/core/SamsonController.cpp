@@ -49,6 +49,7 @@ SamsonController::SamsonController
 		
 	int num_workers = SamsonSetup::shared()->num_workers;
 	assert(num_workers != -1);
+	assert(num_workers == workers);
 	LM_T(LMT_CONFIG, ("Num workers: %d", num_workers));
 
 	network->initAsSamsonController(port, num_workers);

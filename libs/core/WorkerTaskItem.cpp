@@ -11,6 +11,7 @@ namespace ss {
 	
 	WorkerTaskItem::WorkerTaskItem( const network::WorkerTask &_workerTask )
 	{
+		task = NULL;
 		workerTask = _workerTask;
 
 		state = definition;			// Initial state of every task item
@@ -149,7 +150,8 @@ namespace ss {
 	
 	void WorkerTaskItem::setup()
 	{
-		LM_M(("Setup item %d %d", item_id));
+		assert( task );
+		LM_M(("Setup item %d %d State: %d", item_id , task->getId() , getStateDescription(state)));
 		
 		if (state == definition)
 			state = no_memory;		// allways go the next level

@@ -101,6 +101,20 @@ namespace ss {
 			return shm_input;
 		}
 		
+		static const char * getStateDescription( State s )
+		{
+			switch (s) {
+				case definition:	return "Definition";
+				case no_memory:		return "Memory";
+				case ready_to_load_inputs: return "Ready to load";
+				case loading_inputs: return "Loading";
+				case ready_to_run:	return "ready_to_run";
+				case running:		return "running";
+			}
+			return "unknown";
+			
+		}
+		
 	protected:
 		
 		FileManagerReadItem * getFileMangerReadItem( ProcessAssistantSharedFile* file  );

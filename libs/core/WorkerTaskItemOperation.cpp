@@ -27,7 +27,7 @@ namespace ss
 	void WorkerTaskItemOperation::setupInputs()
 	{
 		// Access the shared memory area
-		SharedMemoryItem * smi = MemoryManager::shared()->getSharedMemory( shm_input );
+		SharedMemoryItem * smi = MemoryManager::shared()->getSharedMemory( get_shm_input() );
 		char* data = smi->data;
 		
 		// Reduce information is stored in the parent task ( common to all reduce task-items )
@@ -79,7 +79,7 @@ namespace ss
 		p.set_num_inputs( op->getNumInputs() );
 		p.set_num_outputs( op->getNumOutputs() );
 		p.set_output_shm( pa->output_shm );					// Set the output shared memory buffer
-		p.set_input_shm( shm_input );						// Set the input shared memory buffer
+		p.set_input_shm( get_shm_input() );						// Set the input shared memory buffer
 		p.set_num_input_files( task->reduceInformation->total_num_input_files );
 		p.mutable_worker_task()->CopyFrom( workerTask );
 		

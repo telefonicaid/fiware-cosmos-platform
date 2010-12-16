@@ -12,7 +12,7 @@ namespace ss {
 	
 	void WorkerTaskItemParser::setupInputs()
 	{
-		SharedMemoryItem * smi = MemoryManager::shared()->getSharedMemory( shm_input );
+		SharedMemoryItem * smi = MemoryManager::shared()->getSharedMemory( get_shm_input() );
 		size = FileManagerReadItem::sizeOfFile( fileName );
 
 		assert( size <= smi->size );
@@ -39,7 +39,7 @@ namespace ss {
 		p.set_output_shm( pa->output_shm );					// Set the output shared memory buffer
 		p.set_input_size( size );								// Set the size of input for parsing
 		p.mutable_worker_task()->CopyFrom( workerTask );
-		p.set_input_shm( shm_input );						// Set the input shared memory buffer
+		p.set_input_shm( get_shm_input() );						// Set the input shared memory buffer
 		
 		if( op->getType() == Operation::parserOut)
 		{

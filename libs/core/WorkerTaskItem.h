@@ -20,9 +20,8 @@ namespace ss {
 	
 	class WorkerTaskItem : public au::Status , public FileManagerDelegate
 	{
-	public:
 		
-		WorkerTask *task;		// Pointer to the parent task
+	public:
 		
 		enum State
 		{
@@ -34,9 +33,18 @@ namespace ss {
 			running					// It has beent taken by a ProcessAssistant (should report finish)
 		};
 		
-		State state;				// Main state of this item
-		int item_id;				// Item id ( from 0 to ...)
+		
+	private:
+		
 		int shm_input;				// Shared memory identifier for input ( if necessary ) -1 --> no assigned
+
+	public:
+		State state;				// Main state of this item
+
+		WorkerTask *task;			// Pointer to the parent task
+		
+				
+		int item_id;				// Item id ( from 0 to ...)
 
 		au::Lock lock;					// Lock to protect num_input_files and confirmed_input_files
 		int num_input_files;		// Number of input files requested for this item during loading phase	
@@ -89,6 +97,11 @@ namespace ss {
 		// Utility function to get the o-th output queue
 		network::Queue getOutputQueue(int o);
 
+		int get_shm_input()
+		{
+			return shm_input;
+		}
+		
 	protected:
 		
 		FileManagerReadItem * getFileMangerReadItem( ProcessAssistantSharedFile* file  );

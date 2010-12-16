@@ -25,7 +25,7 @@ namespace ss {
 			return -1;
 		
 		// Parse the buffer
-		p.ParseFromArray( buffer , length );
+		p.ParsePartialFromArray( buffer , length );
 		
 		return 0;
 	}

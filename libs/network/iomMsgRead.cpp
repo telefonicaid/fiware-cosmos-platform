@@ -112,7 +112,7 @@ int iomMsgRead
 		((char*) dataP)[nb] = 0;
 
 		if (packetP->message.ParsePartialFromArray(dataP, nb) == false)
-			LM_X(1, ("Error parsing Google Protocol Buffer!"));
+			LM_X(1, ("Error parsing Google Protocol Buffer when reading a message %s ! (even partial)  ",ss::Message::messageCode(header.code)));
 
 		LM_READS(from, "google protocol buffer", dataP, nb, LmfByte);
 	}
@@ -228,7 +228,7 @@ int iomMsgRead
 
 		((char*) dataP)[tot] = 0;
 		if (packetP->message.ParsePartialFromArray(dataP, tot) == false)
-			LM_X(1, ("Error parsing Google Protocol Buffer!"));
+			LM_X(1, ("Error parsing Google Protocol Buffer when reading a message %s ! (even partial)  ",ss::Message::messageCode(headerP->code)));
 
 		LM_READS(ep->name.c_str(), "google protocol buffer", dataP, tot, LmfByte);
 	}

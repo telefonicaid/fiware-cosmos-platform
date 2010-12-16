@@ -111,7 +111,7 @@ int iomMsgRead
 
 		((char*) dataP)[nb] = 0;
 
-		if (packetP->message.ParseFromArray(dataP, nb) == false)
+		if (packetP->message.ParsePartialFromArray(dataP, nb) == false)
 			LM_X(1, ("Error parsing Google Protocol Buffer!"));
 
 		LM_READS(from, "google protocol buffer", dataP, nb, LmfByte);

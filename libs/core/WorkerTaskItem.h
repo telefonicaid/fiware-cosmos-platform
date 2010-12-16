@@ -79,6 +79,8 @@ namespace ss {
 		// Funciton to get the run-time status of this object
 		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
+		std::string getStatus();
+		
 		// Particular operations to run
 		virtual void run(ProcessAssistant *pa)=0;
 		virtual void receiveCommand( ProcessAssistant *pa , network::ProcessMessage p )=0;

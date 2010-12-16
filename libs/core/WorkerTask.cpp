@@ -100,11 +100,29 @@ namespace ss
 		return ( item.size() == 0);	// No more items to process
 	}
 	
+	
+	std::string WorkerTask::getStatus()
+	{
+		std::ostringstream output;
+		output << "ID:" << task_id << " " << operation << " " << num_finish_items << " / " << num_items << " ";
+		
+		if( isFinish() )
+			output << "(F) ";
+
+		
+		std::map<int,WorkerTaskItem*>::iterator iter;
+		for (iter = item.begin() ; iter!=item.end() ; iter++)
+			output << iter->second->getStatus() << " ";
+		
+		
+		return output.str();
+	}
+	
 	void WorkerTask::getStatus( std::ostream &output , std::string prefix_per_line )
 	{
-		output << "ID:" << task_id << " Operation: " << operation;
+		output << "ID:" << task_id << " " << operation;
 		if( isFinish() )
-			output << " [FINISH] ";
+			output << " (F) ";
 		output << std::endl;
 		
 		getStatusFromMap( output, item , prefix_per_line );

@@ -575,6 +575,8 @@ namespace ss
 			txt << "\tFile Manager Cache: " << worker_status.file_manager_cache_status() << "\n";
 			txt << "\tData Buffer: " << worker_status.data_buffer_status() << "\n";
 			txt << "\tDisk Manager: " << worker_status.disk_manager_status() << "\n";
+			txt << "\tTask Manager: " << worker_status.task_manager_status() << "\n";
+
 			for (int p = 0 ; p < worker_status.process_size() ; p++)
 				txt << "\t" << "Core: " << worker_status.process(p).status() << "\n";
 			

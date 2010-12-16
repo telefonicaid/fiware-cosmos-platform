@@ -66,6 +66,38 @@ namespace ss {
 		output << "\n";
 	}
 	
+	std::string WorkerTaskItem::getStatus()
+	{
+		
+		std::ostringstream output;
+		output << "(";
+		switch (state) {
+			case definition:
+				output << "D";
+				break;
+			case ready_to_run:
+				output << "R";
+				break;
+			case no_memory:
+				output << "M";
+				break;
+			case loading_inputs:
+				output << "L [" << confirmed_input_files << "/" << num_input_files << "]";
+				break;
+			case ready_to_load_inputs:
+				output << "RL";
+				break;
+			case running:
+				output << "Run";
+				break;
+		}
+
+		output << ":" << shm_input << ")";
+		return output.str();
+		
+	}
+	
+	
 	
 	void WorkerTaskItem::addInputFiles( FileManagerReadItem *item )
 	{

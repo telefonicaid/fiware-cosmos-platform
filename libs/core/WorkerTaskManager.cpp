@@ -86,6 +86,8 @@ namespace ss {
 		{
 			lock.lock();
 			
+			_setupAllTasks();
+			
 			// Iterate the task list
 			std::map<size_t,WorkerTask*>::iterator t;
 			for (t = task.begin() ; t!= task.end() ; t++)
@@ -99,7 +101,7 @@ namespace ss {
 				}
 			}
 			
-			lock.unlock_waiting_in_stopLock( &stopLock );
+			lock.unlock_waiting_in_stopLock( &stopLock , 2 );
 		}
 		
 	}	
@@ -206,6 +208,8 @@ namespace ss {
 
 	void WorkerTaskManager::fill(network::WorkerStatus*  ws)
 	{
+		ws->set_task_manager_status( getStatus() );
+		
 		for (int i = 0 ; i < num_processes ; i++)
 		{
 			network::WorkerProcess *p = ws->add_process();
@@ -238,6 +242,22 @@ namespace ss {
 			output << prefix_per_line << "\t" << processAssistant[i]->getStatus() << std::endl; 
 		
 	}
+	
+	std::string WorkerTaskManager::getStatus()
+	{
+		std::ostringstream output;
+		
+		lock.lock();
+		
+		std::map<size_t,WorkerTask*>::iterator iter;
+		
+		for ( iter = task.begin() ; iter != task.end() ; iter++)
+			output << "[" << iter->second->getStatus() << "]";
+		lock.unlock();
+		
+		return output.str();
+	}
+
 	
 	
 	void WorkerTaskManager::addInputFile( size_t fm_id , WorkerTaskItem* item )

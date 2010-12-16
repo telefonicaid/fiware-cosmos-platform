@@ -113,7 +113,12 @@ namespace ss {
 	void DataBuffer::fill(network::WorkerStatus*  ws)
 	{
 		std::ostringstream output;
-		output << item.size() << " active elements";
+		lock.lock();
+		std::map<size_t , DataBufferItem*>::iterator iter;
+		for (iter = item.begin(); iter != item.end() ; iter++)
+			output << "[" << iter->second->getStatus() << "]";
+		lock.unlock();
+		
 		ws->set_data_buffer_status( output.str() );
 	}
 	

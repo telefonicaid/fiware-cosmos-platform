@@ -100,6 +100,7 @@ message WorkerProcess
 
 message WorkerStatus
 {
+	optional string task_manager_status=7;				// Status of the task manager
 	repeated WorkerProcess	process=1;				// Information about process running on this worker		
 
 	optional string file_manager_status=2;				// Information about the file manager

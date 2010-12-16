@@ -204,5 +204,22 @@ namespace ss {
 		output << "\n";
 	}	
 	
+	std::string DataBufferItem::getStatus()
+	{
+		std::ostringstream output;
+		
+		output << "Task: " << task_id << " " << num_finished_workers << "/" << num_workers;
+		
+		if( completed )
+			output << " (C) ";
+		else if( finished )
+			output << " (F) ";
+
+		return output.str();
+		
+	}
+
+
+	
 	
 }

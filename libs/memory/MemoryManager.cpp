@@ -188,7 +188,6 @@ namespace ss
 		std::ostringstream output;
 
 		int per_memory = (int) ( getMemoryUsage()*100.0 );
-		output <<"\n";	// All in new lines
 		output << "Used: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)";
 		output << " Buffers in action: " << num_buffers;
 		output << " Shared memory Buffers: " << num_shm_buffers << " / " << shared_memory_num_buffers;

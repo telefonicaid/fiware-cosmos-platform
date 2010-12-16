@@ -57,6 +57,9 @@ namespace ss {
 		// Function to get the run-time status of this object
 		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
+		std::string getStatus();
+		
+		
 		bool isCompleted()
 		{
 			return completed;

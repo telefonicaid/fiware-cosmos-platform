@@ -61,6 +61,8 @@ namespace ss {
 		// Get information about internal status
 		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
+		std::string getStatus();
+		
 		// Fill a confirmation message
 		void fill( size_t task_id , network::WorkerTaskConfirmation *confirmation );
 		

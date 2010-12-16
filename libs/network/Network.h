@@ -38,10 +38,7 @@ class Packet;
 */
 class Network : public NetworkInterface
 {
-	PacketReceiverInterface* receiver;
-	DataReceiverInterface*   dataReceiver;
-	
-	void ipSet(char* ip);
+   void ipSet(char* ip);
 
 public:
 	Network();
@@ -51,6 +48,9 @@ public:
 
 	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);
 	virtual void setDataReceiver(DataReceiverInterface* receiver);
+
+	PacketReceiverInterface*   receiver;
+	DataReceiverInterface*     dataReceiver;
 
 	virtual void initAsSamsonController(int port, int num_workers);
 	

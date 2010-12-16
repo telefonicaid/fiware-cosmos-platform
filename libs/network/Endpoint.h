@@ -22,6 +22,7 @@ namespace ss {
 class PacketSenderInterface;
 class Endpoint;
 class Packet;
+class Network;
 
 /* ****************************************************************************
 *
@@ -36,6 +37,7 @@ typedef struct SendJob
 	void*                 dataP;
 	int                   dataLen;
 	Packet*               packetP;
+	Network*              network;
 } SendJob;
 
 

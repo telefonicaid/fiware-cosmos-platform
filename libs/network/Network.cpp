@@ -417,24 +417,35 @@ static void* senderThread(void* vP)
 		LM_T(LMT_FORWARD, ("google protocol 'message': %p (packet at %p)", &job.packetP->message, job.packetP));
 		LM_T(LMT_FORWARD, ("google protocol buffer data len: %d", job.packetP->message.ByteSize()));
 
-		s = iomMsgSend(ep, NULL, job.msgCode, job.msgType, job.dataP, job.dataLen, job.packetP);
-		
-		LM_T(LMT_FORWARD, ("iomMsgSend returned %d", s));
-		if (s != 0)
+		// To be improved ...
+		if (ep->alias == job.me->alias)
 		{
-			LM_E(("iomMsgSend error"));
-			if (ep->packetSender)
-				ep->packetSender->notificationSent(-1, false);
+			LM_M(("ANDREU: Calling 'loop-back' receive from within sender thread"));
+			job.network->receiver->receive(0, job.msgCode, job.packetP);
+			LM_M(("ANDREU: After calling 'loop-back' receive from within sender thread"));
 		}
 		else
 		{
-			ep->msgsOut += 1;
-			LM_T(LMT_FORWARD, ("iomMsgSend OK"));
-			if (ep->packetSender)
-				ep->packetSender->notificationSent(0, true);
+			s = iomMsgSend(ep, NULL, job.msgCode, job.msgType, job.dataP, job.dataLen, job.packetP);
+		
+			LM_T(LMT_FORWARD, ("iomMsgSend returned %d", s));
+			if (s != 0)
+			{
+				LM_E(("iomMsgSend error"));
+				if (ep->packetSender)
+					ep->packetSender->notificationSent(-1, false);
+			}
+			else
+			{
+				ep->msgsOut += 1;
+				LM_T(LMT_FORWARD, ("iomMsgSend OK"));
+				if (ep->packetSender)
+					ep->packetSender->notificationSent(0, true);
+			}
+
+			LM_T(LMT_FORWARD, ("iomMsgSend ok"));
 		}
 
-		LM_T(LMT_FORWARD, ("iomMsgSend ok"));
 		if (job.dataP)
 			free(job.dataP);
 	}
@@ -475,16 +486,22 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 			LM_W(("packet not NULL but its data len is 0 ..."));
 	}
 
+
 	// To be improved ...
 	if (ep->alias == me->alias)
 	{
+#if 0
 		receiver->receive(endpointId, code, packetP);
 		delete packetP;
 		LM_M(("looping back the '%s' message to myself", messageCode(code)));
 		return 0;
+#else
+		ep->state           = Endpoint::Connected;
+		ep->useSenderThread = true;
+		LM_M(("ANDREU: looping back the '%s' message to myself via sender thread", messageCode(code)));
+#endif
 	}
-
-	if (ep->state != Endpoint::Connected)
+	else if (ep->state != Endpoint::Connected)
 	{
 		SendJob* jobP = new SendJob();
 
@@ -498,6 +515,7 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 		jobP->dataP   = NULL;
 		jobP->dataLen = 0;
 		jobP->packetP = packetP;
+		jobP->network = this;
 
 		LM_T(LMT_JOB, ("pushing a job for endpoint '%s'", ep->name.c_str()));
 		ep->jobPush(jobP);
@@ -561,6 +579,7 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 		job.dataP   = NULL;
 		job.dataLen = 0;
 		job.packetP = packetP;
+		job.network = this;
 
 		LM_T(LMT_FORWARD, ("Sending '%s' job to '%s' sender (real destiny fd: %d) with %d packet size - the job is tunneled over fd %d (packet pointer: %p)",
 						   messageCode(job.msgCode), ep->name.c_str(), ep->wFd, job.packetP->message.ByteSize(), ep->senderWriteFd, job.packetP));

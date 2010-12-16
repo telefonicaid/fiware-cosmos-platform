@@ -510,7 +510,10 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Me
 		SendJob* jobP = new SendJob();
 
 		if (ep->useSenderThread == false)
-			LM_X(1, ("cannot send to an unconnected peer '%s' if not using sender threads, sorry ...", ep->name.c_str()));
+		{
+			// LM_X(1, ("cannot send to an unconnected peer '%s' if not using sender threads, sorry ...", ep->name.c_str()));
+			LM_RE(0, ("cannot send to an unconnected peer '%s' if not using sender threads, sorry ...", ep->name.c_str()));
+		}
 
 		jobP->ep      = ep;
 		jobP->me      = me;
@@ -1547,6 +1550,7 @@ void Network::msgTreat(void* vP)
 				}
 			}
 		}
+		iAmReady = true;
 		break;
 #if 0
 	case Message::WorkerStatus:

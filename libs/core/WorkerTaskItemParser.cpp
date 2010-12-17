@@ -33,7 +33,7 @@ namespace ss {
 		network::ProcessMessage p;
 		p.set_code( network::ProcessMessage::run );
 		p.set_operation( operation );
-		p.set_num_servers( pa->taskManager->worker->workers );
+		p.set_num_servers( pa->taskManager->worker->network->getNumWorkers() );
 		p.set_num_inputs( op->getNumInputs() );
 		p.set_num_outputs( op->getNumOutputs() );
 		p.set_output_shm( pa->output_shm );					// Set the output shared memory buffer

@@ -54,9 +54,22 @@ int main(int argC, const char *argV[])
 	paParse(paArgs, argC, (char**) argV, 1, false);
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
-
 	
 	ss::Network  network(endpoints,workers);
-	ss::DelilahConsole console( &network , controller , endpoints , workers , !basic);
+	std::cout << "Waiting for network connection ...";
+	
+	network.init(ss::Endpoint::Delilah, "delilah", 0, controller);
+	network.runInBackground();
+	
+	while ( !network.ready() )
+		sleep(1);
+	std::cout << "OK\n";
+	
+	
+	// Create a Delilah object one network is ready for the first time
+	ss::Delilah delilah( &network );
+
+	// Create a DelilahControler once Delilah is ready
+	ss::DelilahConsole console( &delilah , !basic);
 	console.run();
 }

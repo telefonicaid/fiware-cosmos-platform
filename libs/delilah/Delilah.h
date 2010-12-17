@@ -57,10 +57,9 @@ namespace ss {
 		
 	public:
 		
-		Delilah(NetworkInterface *_network, const char* controller, int workers, int endpoints);
+		Delilah( NetworkInterface *_network );
 		
 		void initController(std::string controller);
-		void runNetwork();
 		void quit();
 
 		// PacketReceiverInterface

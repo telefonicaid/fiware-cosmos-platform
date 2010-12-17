@@ -131,7 +131,7 @@ namespace ss {
 			size = 0;
 		}
 		
-		void append( T_kvs _kvs , T_size _size)
+		void append( T_size _size , T_kvs _kvs )
 		{
 			kvs += _kvs;
 			size += _size;

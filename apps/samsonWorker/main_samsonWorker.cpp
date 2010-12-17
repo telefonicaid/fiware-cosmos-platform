@@ -3,7 +3,7 @@
 #include "EndpointMgr.h"		// ss::EndpointMgr
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "MemoryManager.h"		// ss::MemoryManager
-
+#include "Endpoint.h"			// ss::Endpoint
 
 
 /* ****************************************************************************
@@ -65,26 +65,34 @@ int main(int argC, const char *argV[])
 	logFd = lmFirstDiskFileDescriptor();
 
 	ss::SamsonSetup::shared();	// Load setup and create default directories
+
+	// Instance of network object and initialization
+	// --------------------------------------------------------------------
 	
-	ss::Network*      networkP;
-	ss::EndpointMgr*  epMgr;
-
-	networkP = new ss::Network(endpoints,workers);
-	epMgr    = new ss::EndpointMgr(networkP, endpoints, workers);
-
-
+	ss::Network networkP(endpoints,workers);
+	networkP.init(ss::Endpoint::Worker, alias, port, controller);
+	
+	std::cout << "Waiting for network connection ...";
+	networkP.runInBackground();
+	while ( !networkP.ready() )
+		sleep(1);
+	std::cout << "OK\n";
+	
+	// This is only necessary when running multiple samsonworkers as separated process in the same machine
 	if (local)
 	{
-		// This is only necessary when running multiple samsonworkers as separated process in the same machine
-	
 		int worker_id = atoi(&alias[6]);
 		ss::MemoryManager::shared()->setOtherSharedMemoryAsMarked(worker_id, workers);
 	}
 	
-	ss::SamsonWorker  worker(controller, alias, port, workers, endpoints);
+	// Instance of SamsonWormer object ( network contains at least the number of wokers )
+	// -----------------------------------------------------------------------------------
 	
-	worker.endpointMgrSet(epMgr);
-	worker.networkSet(networkP);
+	ss::SamsonWorker  *worker = new ss::SamsonWorker(&networkP);
 
-	worker.run();										// Run the object
+	worker->touch();
+	
+	while (true)
+		sleep(10000);
+
 }

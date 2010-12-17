@@ -19,7 +19,6 @@ namespace ss {
 		static SamsonSetup *shared();
 
 		// General setup
-		int num_workers;
 		int num_processes;
 		
 		// Disk management

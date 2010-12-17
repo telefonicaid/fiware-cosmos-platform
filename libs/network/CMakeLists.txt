@@ -20,6 +20,7 @@ SET (HEADERS
 SET (SOURCES
 	Message.cpp
 	Network.cpp
+	NetworkInterface.cpp
 	Endpoint.cpp
 	iomInit.cpp
 	iomServerOpen.cpp

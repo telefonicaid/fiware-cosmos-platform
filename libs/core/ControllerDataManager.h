@@ -10,6 +10,7 @@
 #include "au_map.h"				// au::map
 #include "samson.pb.h"			// ss::network::...
 #include "MonitorParameter.h"	// ss::MonitorBlock
+#include "coding.h"				// FileKVInfo
 
 namespace ss {
 	
@@ -29,13 +30,18 @@ namespace ss {
 		
 		au::map< std::string , Queue> queues;			// List of KeyValue queues
 		
-		SamsonController *controller;	// Pointer to controller for module access
+		SamsonController *controller;					// Pointer to controller for module access
+		
+		FileKVInfo info_kvs;								// Global info of the entire system ( all types of key-values )
+		FileKVInfo info_txt;								// Global info of the entire system ( txt files )
 		
 	public:
 		
 		ControllerDataManager( SamsonController *_controller ) : DataManager( getLogFileName()  )
 		{
 			controller = _controller;
+			info_kvs.init();
+			info_txt.init();
 		}
 		
 		/**
@@ -63,6 +69,17 @@ namespace ss {
 			std::ostringstream command;
 			command << "add_file " <<  worker << " " << fileName << " " << size << " " << kvs << " " << queue;
 			return command.str();
+		}
+		
+		
+		FileKVInfo get_info_kvs()
+		{
+			return info_kvs;
+		}
+		
+		FileKVInfo get_info_txt()
+		{
+			return info_txt;
 		}
 		
 	private:

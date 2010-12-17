@@ -18,31 +18,11 @@
 namespace ss {
 
 
-
-/* ****************************************************************************
-*
-* runNetworkThread - 
-*/
-void* runNetworkThread(void *p)
-{
-	Delilah *d = ((Delilah*)p);
-	d->runNetwork();
-	return NULL;
-}
-	
-
-
 /* ****************************************************************************
 *
 * Delilah::Delilah
 */
-Delilah::Delilah
-(
-	NetworkInterface* _network,
-	const char*       controller,
-	int               workers,
-	int               endpoints
-)
+Delilah::Delilah( NetworkInterface* _network )
 {
 		
 	network = _network;		// Keep a pointer to our network interface element
@@ -52,40 +32,8 @@ Delilah::Delilah
 		
 	finish = false;				// Global flag to finish threads
 		
-
+}
 		
-	if (strcmp(controller, "no_controller") == 0)
-		LM_W(("controller not specified as command line parameter"));
-	else
-		initController(controller);
-}
-	
-
-
-/* ****************************************************************************
-*
-* initController -  
-*/
-void Delilah::initController(std::string controller)
-{
-	network->init(Endpoint::Delilah, "delilah", 0, controller.c_str());
-
-	// run network "run" in a separate thread
-	pthread_create(&t_network, NULL, runNetworkThread, this);
-}	
-	
-
-
-/* ****************************************************************************
-*
-* runNetwork - 
-*/
-void Delilah::runNetwork()
-{
-	// Main run_loop to the network interface
-	network->run();	
-}
-
 
 /* ****************************************************************************
 *

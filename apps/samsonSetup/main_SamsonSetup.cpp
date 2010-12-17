@@ -24,7 +24,6 @@ int main(int argc, const char *argv[])
 	std::cout << "\n";
 	std::cout << "\n";
 	std::cout << "** General setup:\n";
-	std::cout << "Num workers: " << s->num_workers << "\n";
 	std::cout << "Num processes: " << s->num_processes << "\n";
 	std::cout << "\n";
 	std::cout << "** Memory-system setup:\n";

@@ -169,7 +169,12 @@ namespace ss {
 		
 		// Fill information
 		void fill(network::WorkerStatus*  ws);
+	
 		
+		size_t get_used_memory()
+		{
+			return used_memory;
+		}
 		
 	};
 	

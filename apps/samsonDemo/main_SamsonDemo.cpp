@@ -21,14 +21,6 @@
 #include "samson/Operation.h"	// ss::Operation
 #include "SamsonSetup.h"		// ss::SamsonSetup
 
-#define VECTOR_LENGTH(v) sizeof(v)/sizeof(v[0])
-
-const char* dalilah_argv_basic[] = { "-controller" , "what_ever" ,"-basic"};
-const char* dalilah_argv_console[] = { "-controller" , "what_ever" ,"-console"};
-const char* dalilah_argv[] = { "-controller" , "what_ever" };
-const char* worker_argv[] = { "-controller" , "what_ever","-alias","what_ever_alias","-no_log"};	//Necessary arguments at worker to avoid errors
-
-
 
 /* ****************************************************************************
 *
@@ -46,6 +38,13 @@ void *run_DelilahConsole(void* d)
 	return NULL;
 }
 
+template<class C>
+void *run_in_background(void* d)
+{
+	C* c = (C*) d;
+	c->run();
+	return NULL;
+}
 
 
 int main(int argc, const char *argv[])
@@ -57,7 +56,7 @@ int main(int argc, const char *argv[])
 	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 	
 	au::CommandLine commandLine;
-	commandLine.set_flag_boolean("console");
+	commandLine.set_flag_int("workers",2);
 	commandLine.set_flag_boolean("basic");
 
 	ss::SamsonSetup::shared();	// Load setup and create default directories
@@ -65,67 +64,40 @@ int main(int argc, const char *argv[])
 	// Command line to extract the number of workers from command line arguments
 	commandLine.parse(argc , argv);
 	
-	int num_workers = ss::SamsonSetup::shared()->num_workers;
+	int num_workers = commandLine.get_flag_int("workers");
 	assert( num_workers != -1 );
 	
 	// Fake network element with N workers
 	ss::NetworkFakeCenter center(num_workers);		
 	
 	// Create one controller, one dalilah and N workers
-	ss::SamsonController controller(center.getNetwork(-1), 1234, (char*) "/opt/samson/setup.txt", num_workers, 80);
+	ss::SamsonController controller( center.getNetwork(-1) );
 	
-	const char**  _dalilah_argv;
-	int           _dalilah_argc;
-	bool          console;
-	bool          basic;
-	
-	if (commandLine.get_flag_bool("console"))
-	{
-		_dalilah_argv = dalilah_argv_console;
-		_dalilah_argc = VECTOR_LENGTH(dalilah_argv_console);
-		console = true;
-	}
-	else if (commandLine.get_flag_bool("basic"))
-	{
-		_dalilah_argv = dalilah_argv_basic;
-		_dalilah_argc = VECTOR_LENGTH(dalilah_argv_basic);
-		basic = true;
-	}
-	else
-	{
-		_dalilah_argv = dalilah_argv;
-		_dalilah_argc = VECTOR_LENGTH(dalilah_argv);
-	}
-	
-	ss::DelilahConsole delilahConsole(center.getNetwork(-2),  "localhost:1234", num_workers, 80, !basic);
+	ss::Delilah delilah(center.getNetwork(-2));
+	ss::DelilahConsole delilahConsole( &delilah , !commandLine.get_flag_bool("basic") );
 	
 	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 
 	std::vector< ss::SamsonWorker* > workers;
 	for (int i = 0 ; i < num_workers ; i ++ )
 	{
-		char alias[16];
-
-		snprintf(alias, sizeof(alias), "worker%02d", i);
-		ss::SamsonWorker *w = new ss::SamsonWorker((char*) "localhost:1234", alias, 1235 + i, 5, 80);
-
-		w->networkSet( center.getNetwork(i));
+		ss::SamsonWorker *w = new ss::SamsonWorker( center.getNetwork(i) );
 		workers.push_back(w);
 	}
 
 	lmTraceSet((char*) "60");
 
-	controller.run();
-	for (int i = 0 ; i < num_workers ; i ++ )
-		workers[i]->run();
-
-	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
-
-	// Run client in another thread
-	pthread_t t_delilah;
-	pthread_create(&t_delilah, NULL, run_DelilahConsole, &delilahConsole);
 	
 	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
-	// Keep alive while dalila is alive ( sending packets in the background )
-	center.run();
+
+	// Run the network center in background
+	pthread_t t;
+	pthread_create(&t, NULL, run_in_background<ss::NetworkFakeCenter> , &center);
+	
+	// Run delilah client in foreground
+	delilahConsole.run();
+	
+	
+	assert( false );	// We never come back to here
+	
 }

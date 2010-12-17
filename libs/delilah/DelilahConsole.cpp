@@ -25,9 +25,10 @@ namespace ss
 		au::Console::cancel_ncurses();
 	}
 	
-	
 	void DelilahConsole::evalCommand( std::string command )
 	{
+		assert( delilah );
+		
 		au::CommandLine commandLine;
 		commandLine.set_flag_string("name", "null");
 		commandLine.set_flag_string("begin", "null");

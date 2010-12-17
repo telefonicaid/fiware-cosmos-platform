@@ -20,40 +20,23 @@
 
 namespace ss {
 
-	
 
-/* ****************************************************************************
-*
-* run_thread_sending_worker_status - 
-*/
-void* run_thread_sending_worker_status(void* p)
-{
-	SamsonWorker* worker = (SamsonWorker*) p;
-
-	
-	while (true)
+	void* run_runStatusUpdate(void *p)
 	{
-		if( worker->network->ready() )
-			worker->sendWorkerStatus();
-		sleep(3);
+		((SamsonWorker *)p)->runStatusUpdate();
+		return NULL;
 	}
-
-	return NULL;
-}
-	
 
 
 /* ****************************************************************************
 *
 * Constructor
 */
-SamsonWorker::SamsonWorker(char* controller, char* alias, unsigned short port, int workers, int endpoints) :  taskManager(this) , dataBuffer(this), loadDataManager(this)
+SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , dataBuffer(this), loadDataManager(this)
 {
-	this->controller  = controller;
-	this->alias       = alias;
-	this->port        = port;
-	this->workers     = SamsonSetup::shared()->num_workers;
-	this->endpoints   = endpoints;
+
+	this->network = network;
+	network->setPacketReceiverInterface(this);
 
 	srand( (unsigned int) time(NULL) );
 
@@ -67,63 +50,29 @@ SamsonWorker::SamsonWorker(char* controller, char* alias, unsigned short port, i
 	addChildrenStatus( &loadDataManager );
 	//addChildrenStatus( network );
 	
-}
-
-
-
-/* ****************************************************************************
-*
-* endpointMgrSet - 
-*/
-void SamsonWorker::endpointMgrSet(ss::EndpointMgr* _epMgr)
-{
-	epMgr = _epMgr;
-
-	// epMgr->init(Endpoint::Worker, alias.c_str(), port, controller.c_str());
-	// epMgr->packetReceiverSet(this);
-}
-
-
-
-/* ****************************************************************************
-*
-* networkSet - 
-*/
-void SamsonWorker::networkSet(NetworkInterface* network)
-{
-	this->network = network;
-	network->setPacketReceiverInterface(this);
-
-	network->init(Endpoint::Worker, alias.c_str(), port, controller.c_str());
 	
-	// Get my id as worker ( could be -1 )
-	_myWorkerId = network->getWorkerFromIdentifier(network->getMyidentifier());
-
-	if (_myWorkerId == -1)
-	   LM_X(1, ("alias: '%s' (network->getMyidentifier returns %d)", alias.c_str(), network->getMyidentifier()));
-
-	this->workers     = network->getNumWorkers();
+	// Create a thread to run "runStatusUpdate"
+	pthread_t t;
+	pthread_create(&t, NULL, run_runStatusUpdate, this);
 	
 }
-
-
 
 /* ****************************************************************************
 *
 * run - 
 */
-void SamsonWorker::run()
+void SamsonWorker::runStatusUpdate()
 {
-	// Start a thread to report status to the controller in a regular basis
-	pthread_t t;
-	pthread_create(&t, 0, run_thread_sending_worker_status, this);
+	// Report periodically status to the controller
 	
-	assert(network);
-	network->run();
+	while (true)
+	{
+		if( network->ready() )
+			sendWorkerStatus();
+		sleep(3);
+	}
+	
 }
-
-
-
 
 void SamsonWorker::sendWorkerStatus()
 {
@@ -138,6 +87,8 @@ void SamsonWorker::sendWorkerStatus()
 	FileManager::shared()->fill( ws );
 	MemoryManager::shared()->fill( ws );
 	dataBuffer.fill( ws );
+	
+	ws->set_used_memory( MemoryManager::shared()->get_used_memory() );
 	
 	network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);
 }

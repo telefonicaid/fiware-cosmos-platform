@@ -57,7 +57,7 @@ namespace ss
 		// Information about the created file
 		network::File *file = response->mutable_file();
 		file->set_name( fileName );
-		file->set_worker( dataManager->worker->getWorkerId() );
+		file->set_worker( dataManager->worker->network->getWorkerId());
 		network::KVInfo *info = file->mutable_info();
 		info->set_kvs(1);
 		info->set_size(size);

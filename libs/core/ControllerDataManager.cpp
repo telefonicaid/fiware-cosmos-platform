@@ -378,7 +378,9 @@ namespace ss {
 			int worker = (int)strtol(commandLine.get_argument( 1 ).c_str(), (char **)NULL, 10);
 			
 			std::string fileName	= commandLine.get_argument( 2 );
-			size_t size = strtoll(commandLine.get_argument( 3 ).c_str(), (char **)NULL, 10);
+			size_t size				= strtoll(commandLine.get_argument( 3 ).c_str(), (char **)NULL, 10);
+				
+			info_txt.append( size , 1 );			
 			
 			std::string queue		= commandLine.get_argument( 4 );
 			
@@ -417,6 +419,9 @@ namespace ss {
 
 			size_t size = strtoll(commandLine.get_argument( 3 ).c_str(), (char **)NULL, 10);
 			size_t kvs = strtoll(commandLine.get_argument( 4 ).c_str(), (char **)NULL, 10);
+			
+			
+			info_kvs.append( size , kvs );			
 			
 			std::string queue		= commandLine.get_argument( 5 );
 			

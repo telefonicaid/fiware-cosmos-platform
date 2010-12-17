@@ -36,20 +36,18 @@ namespace ss {
 	{
 
 		// Elements inside the SamsonController
-		
-		NetworkInterface*     network;					// Network interface
-		ModulesManager        modulesManager;			// Manager of the modules ( to check data types and map/reduce/scripts functions)
+		NetworkInterface*     network;						// Network interface
+		ModulesManager        modulesManager;				// Manager of the modules ( to check data types and map/reduce/scripts functions)
 
-		ControllerDataManager data;						// Data manager for the controller
-		
-		JobManager jobManager;							// Top level job manager
-		
-		Monitor monitor;								// Monitorization control for web-based moitoring tool
+		ControllerDataManager data;							// Data manager for the controller
+		JobManager jobManager;								// Top level job manager
+		Monitor monitor;									// Monitorization control for web-based moitoring tool
 		
 		// Status information of the workers
-		network::WorkerStatus** worker_status;			// Status of the workers reported periodically
-		struct timeval *worker_status_time;				// Last time status was reported
-		au::Lock worker_status_lock;					// Lock to protect this
+		network::WorkerStatus** worker_status;				// Status of the workers reported periodically
+		struct timeval *worker_status_time;					// Last time status was reported
+		au::Lock worker_status_lock;						// Lock to protect this
+		int num_workers;
 		
 		//Message::WorkerStatusData status[100];		    // Status update from all workers
 		
@@ -57,18 +55,10 @@ namespace ss {
 		friend class Job;
 		friend class JobManager;
 		friend class ControllerDataManager;
-		
-		unsigned short port;
-		std::string    setup;
-		int            workers;
-		int            endpoints;
 
 	public:
 		
-		SamsonController(NetworkInterface* network, unsigned short port, char* setup, int workers, int endpoints);
-		
-		// Main run loop
-		void run();
+		SamsonController(NetworkInterface* network);
 		
 		// PacketReceiverInterface
 		int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
@@ -85,8 +75,12 @@ namespace ss {
 			return monitor.getJSONString( in );
 		}
 	
-		
+		// Nothing function to avoid warning
+		void touch(){};	
+
 		void fill( network::ControllerStatus *status );
+		
+		void pushSystemMonitor( MonitorBlock  *);
 		
 	};
 	

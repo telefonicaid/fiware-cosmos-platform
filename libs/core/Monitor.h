@@ -33,10 +33,13 @@ namespace ss {
 		std::string getJSONString( std::string command );
 
 	public:
-		void run();			// Function called by thread ( not call directly )
+		void runInBackground();	// Function to start the thread of monitoring
 		
 		void addQueueToMonitor( Queue *queue );
 		void removeQueueToMonitor( Queue *queue );
+
+		void run();				// Function called by thread ( not call directly )
+
 		
 	};
 }

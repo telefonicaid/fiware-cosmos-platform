@@ -9,9 +9,6 @@
 #define SETUP_max_open_files_per_device					"max_open_files_per_device"
 #define SETUP_DEFAULT_max_open_files_per_device			100
 
-#define SETUP_num_workers								"num_workers"	
-#define SETUP_DEFAULT_num_workers						2	
-
 #define SETUP_num_processes								"num_processes"
 #define SETUP_DEFAULT_num_processes						2
 
@@ -84,7 +81,6 @@ namespace ss
 
 		}
 		// General setup
-		num_workers		= getInt( items, SETUP_num_workers , SETUP_DEFAULT_num_workers );
 		num_processes	= getInt( items, SETUP_num_processes , SETUP_DEFAULT_num_processes );
 		
 		// Disk management

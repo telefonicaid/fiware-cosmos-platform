@@ -22,9 +22,14 @@ namespace ss {
 		// Keep a pointer to the controller
 		controller = _controller;
 		
+	}
+
+	void Monitor::runInBackground()
+	{
 		// Create the monitoring thread
 		pthread_create(&t, NULL, runMonitoring, this);
 	}
+	
 	
 	void Monitor::run()
 	{		
@@ -34,6 +39,8 @@ namespace ss {
 			system.push( "random" , random()%10 );
 			//system.push( "random2" , random()%10 );
 
+			controller->pushSystemMonitor( &system ); 
+			
 			lock.lock();
 			
 			// Take a sample for all the queues

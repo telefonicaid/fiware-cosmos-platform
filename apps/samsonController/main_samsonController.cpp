@@ -56,9 +56,21 @@ int main(int argC, const char* argV[])
 
 	ss::SamsonSetup::shared();	// Load setup and create default directories
 	
-	LM_M(("starting SamsonController with %d endpoints and %d workers", endpoints, workers));
-	ss::Network*          networkP = new ss::Network(endpoints, workers);
-	ss::SamsonController  controller(networkP, port, setupFile, workers, endpoints);
-
-	controller.run();
+	
+	// Instance of network object and initialization
+	// --------------------------------------------------------------------
+	
+	ss::Network networkP(endpoints,workers);
+	networkP.initAsSamsonController(port, workers);
+	networkP.runInBackground();
+	
+	
+	// Instance of the samson controller	
+	// --------------------------------------------------------------------
+	
+	ss::SamsonController  controller(&networkP);
+	controller.touch();
+	
+	while(true)
+		sleep(10000);
 }

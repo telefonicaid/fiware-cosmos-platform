@@ -52,8 +52,8 @@ namespace ss {
 		}
 		
 		// Update the info in the particular output and the concrete hash-group 
-		_channel->info.append(	1, miniBufferSize );
-		_hgOutput->info.append( 1, miniBufferSize ); 
+		_channel->info.append(	miniBufferSize , 1 );
+		_hgOutput->info.append( miniBufferSize , 1 ); 
 		
 		uint32 miniBufferPos = 0;
 		

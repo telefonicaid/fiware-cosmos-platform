@@ -27,28 +27,17 @@ namespace ss {
 *
 * SamsonController::SamsonController
 */
-SamsonController::SamsonController
-(
-	NetworkInterface*  network,
-	unsigned short     port,
-	char*              setup,
-	int                workers,
-	int                endpoints
-) : data(this), jobManager(this) , monitor(this)
+	
+SamsonController::SamsonController( NetworkInterface*  network ) : data(this), jobManager(this) , monitor(this)
 {
-	this->network    = network;
-	this->port       = port;
-	this->setup      = setup;
-	this->workers    = workers;
-	this->endpoints  = endpoints;
+	this->network = network;
+	network->setPacketReceiverInterface(this);
 
 	// Init data manager ( recovering from crash if necessary )
 	data.init();
-		
-	network->setPacketReceiverInterface(this);
-		
-	network->initAsSamsonController(port, workers);
 	
+	// run the monitor thread in background
+	monitor.runInBackground();
 	
 	// setup run-time status
 	setStatusTile( "Samson Controller" , "controller" );
@@ -60,29 +49,19 @@ SamsonController::SamsonController
 	//addChildrenStatus( network );
 	
 	// Create space for the worker updates
-	worker_status		= (network::WorkerStatus**) malloc( sizeof(network::WorkerStatus*) * workers );
-	worker_status_time	= (struct timeval *) malloc( sizeof( struct timeval ) * workers ); 
+	num_workers = network->getNumWorkers();
+	assert( num_workers > 0);
 	
-	for (int i = 0 ; i < workers ; i++ )
+	worker_status		= (network::WorkerStatus**) malloc( sizeof(network::WorkerStatus*) * num_workers);
+	worker_status_time	= (struct timeval *) malloc( sizeof( struct timeval ) * num_workers ); 
+	
+	for (int i = 0 ; i < num_workers ; i++ )
 	{
 		worker_status[i] = new network::WorkerStatus();
 		gettimeofday(&worker_status_time[i], NULL);
-	}
+	}	
 	
 }	
-
-
-
-/* ****************************************************************************
-*
-* run - 
-*/
-void SamsonController::run()
-{
-	network->run();											// Run the network interface (blocked)
-}
-
-
 
 /* ****************************************************************************
 *
@@ -339,7 +318,7 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 				int i;
 				
 				worker_status_lock.lock();
-				for (i = 0 ; i < workers ; i++)
+				for (i = 0 ; i < num_workers ; i++)
 				{
 					network::WorkerStatus *ws =wl->add_worker_status();
 					ws->CopyFrom( *worker_status[i] );
@@ -375,6 +354,32 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 		jobManager.fill( status );
 	}
 
+
+	void SamsonController::pushSystemMonitor( MonitorBlock  *system)
+	{
+		size_t total_memory = 0;
+		size_t total_cores = 0;
+		
+		worker_status_lock.lock();
+
+		for (int i = 0 ; i < num_workers ; i++)
+		{
+			if( worker_status[i] )
+			{
+				total_memory += worker_status[i]->used_memory();			
+				total_cores  += worker_status[i]->working_cores();			
+			}
+		}
+		
+		worker_status_lock.unlock();
+		
+		system->push( "memory" , total_memory );
+		system->push( "cores" , total_cores );
+		system->push( "TotalSize"		, data.get_info_kvs().size );
+		system->push( "TotalTxTSize"	, data.get_info_txt().size );
+		system->push( "TotalKvs"		, data.get_info_kvs().kvs );
+		
+	}
 
 
 /* ****************************************************************************

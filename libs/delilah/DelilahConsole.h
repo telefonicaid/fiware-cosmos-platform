@@ -33,12 +33,12 @@ namespace ss {
 		
 	public:
 		
-		DelilahConsole( NetworkInterface *_network, const char* controller, int workers, int endpoints , bool ncurses) : au::Console( ncurses )
+		DelilahConsole( Delilah *_delilah , bool ncurses) : au::Console( ncurses )
 		{
 			// Create an internal delilah object to interact with SAMSON
 			// and set myself as a client for this delilah object
 			
-			delilah = new Delilah( _network , controller , workers , endpoints);
+			delilah = _delilah;
 			delilah->client =  this;	
 
 			// Prepare the atexit command to cancel ncurses effect over the console
@@ -53,13 +53,7 @@ namespace ss {
 		{
 			delete delilah;
 		}
-		
-		int run( )
-		{
-			au::Console::run();	// au::Console run
-			return 0;
-		}
-		
+				
 		virtual std::string getPrompt()
 		{
 			return  "Delilah> ";

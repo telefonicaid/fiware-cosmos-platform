@@ -32,21 +32,11 @@ namespace ss {
 	{
 		
 	public:
-		SamsonWorker(char* controller, char* alias, unsigned short port, int workers, int endpoints);
-
 		
-		// command line argument variables
-		std::string     controller;
-		std::string     alias;
-		unsigned short  port;
-		int             endpoints;
-		int             workers;
-		
-		int             workersGet(void)        { return workers; }
+		SamsonWorker(NetworkInterface* network);
 
 	public:
 
-		EndpointMgr*         epMgr;             // Endpoint Manager
 		NetworkInterface*    network;           // Network interface
 		ModulesManager       modulesManager;    // Manager of the modules we have
 		WorkerTaskManager    taskManager;       // Task manager
@@ -55,13 +45,6 @@ namespace ss {
 		int                  _myWorkerId;       // My id as worker : 0 , 1 ,2 ,3
 
 	public:
-		void networkSet(NetworkInterface* network);
-		void endpointMgrSet(ss::EndpointMgr* epMgr);
-
-
-		// Main routines
-		void run();
-		void test();
 
 		// PacketReceiverInterface
 		virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
@@ -69,16 +52,14 @@ namespace ss {
 		// Send information about the state of this worker to the controller
 		void sendWorkerStatus();
 		
-
-		int getWorkerId()
-		{
-			if( _myWorkerId == -1)
-				_myWorkerId = network->getWorkerFromIdentifier(network->getMyidentifier());
-			
-			return _myWorkerId;
-		}
+		// Sent status messages to the controllor periodically
+		void runStatusUpdate();
 		
-		private:
+		// Nothing function to avoid warning
+		void touch(){};	
+		
+	private:
+		
 		virtual void notificationSent(size_t id, bool success) {}
 		
 	};

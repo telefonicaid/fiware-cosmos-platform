@@ -649,8 +649,17 @@ namespace ss
 			txt << "\tDisk Manager: " << worker_status.disk_manager_status() << "\n";
 			txt << "\tTask Manager: " << worker_status.task_manager_status() << "\n";
 
+			txt << "\tProcess: ";
 			for (int p = 0 ; p < worker_status.process_size() ; p++)
-				txt << "\t" << "Core: " << worker_status.process(p).status() << "\n";
+			{
+				txt << "[";
+				if( ! worker_status.process(p).working() )
+					txt << "W";
+				else
+					txt << "T:" << worker_status.process(p).task_id() << ":" <<  worker_status.process(p).operation();
+				txt <<  "]";
+			}
+			txt << "\n";
 			
 		}
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;

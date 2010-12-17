@@ -51,7 +51,10 @@ namespace ss {
 
 	public:
 		
-		bool working;
+		// Information about status
+		bool working;				// working or not
+		size_t task_id;				// Task id we are running
+		char operation_name[1024];
 
 		WorkerTaskItem *item;	// Item that is currently processing ( to notify commands )
 		

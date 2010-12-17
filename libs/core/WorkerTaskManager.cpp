@@ -199,7 +199,10 @@ namespace ss {
 		for (int i = 0 ; i < num_processes ; i++)
 		{
 			network::WorkerProcess *p = ws->add_process();
-			p->set_status( processAssistant[i]->getStatus() );
+			p->set_working( processAssistant[i]->working ); 
+			p->set_operation( processAssistant[i]->operation_name ); 
+			p->set_task_id( processAssistant[i]->task_id );
+			
 			if ( processAssistant[i]->working )
 				num_working_cores++;
 		}

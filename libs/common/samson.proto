@@ -95,7 +95,9 @@ message Job
 
 message WorkerProcess
 {
-	optional string status=1;	// String describing the status
+	optional bool working = 3;  	// Flag to indicate if we are working
+	optional string operation = 1;	// Operation that we are running
+	optional uint64 task_id = 2;	// Id of the task we are running
 }
 
 message ControllerStatus

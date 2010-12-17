@@ -53,6 +53,9 @@ namespace ss {
 			item = NULL;
 			
 			working = false;
+			task_id = 0;
+			sprintf(operation_name , "init");
+			
 		}
 		
 		void ProcessAssistant::run()
@@ -62,13 +65,18 @@ namespace ss {
 			while( true )
 			{
 				setStatus( "Waiting for the next task" );
+
 				working = false;
+				sprintf(operation_name , "waiting");
+				task_id = 0;
 
 				// Get the next item to process ( this call is blocked if no task is available )
 				item =  taskManager->getNextItemToProcess();
 
 				setStatus( "Running " + item->task->operation );
 				working = true;
+				snprintf(operation_name, 1024, "%s" , item->task->operation.c_str() );
+				task_id = item->task->getId();
 				
 				// Run whatever is required in this item offering ProcessAssistant to use Process
 				item->run( this );

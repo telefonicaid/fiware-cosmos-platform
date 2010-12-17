@@ -275,7 +275,7 @@ int SamsonController::receive(int fromId, Message::MessageCode msgCode, Packet* 
 				return 0;
 
 			// Spetial commands
-			if( cmdLine.isArgumentValue( 0 , "q" , "queues" ) )
+			if( cmdLine.isArgumentValue( 0 , "ls" , "ls" ) )
 			{
 				// Send a message with the list of queues
 				

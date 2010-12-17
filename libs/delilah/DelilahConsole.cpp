@@ -15,6 +15,7 @@
 #include <iomanip>
 #include "Job.h"						// Environment operations (CopyFrom)
 #include <iomanip>
+#include "samson/samsonVersion.h"		// SAMSON_VERSION
 
 namespace ss
 {
@@ -43,6 +44,71 @@ namespace ss
 		else
 			mainCommand = commandLine.get_argument(0);
 
+		if ( commandLine.isArgumentValue(0,"help","h") )
+		{
+			
+			std::ostringstream output;
+
+			output << "SAMSON v " << SAMSON_VERSION << "\n";
+			output << "==============================================================\n";
+			output << "\n";
+			output << " ls          Get a list of current data-sets\n";
+			output << "             Usage: ls [-begin name] [-end name]\n";
+			output << "\n";
+			output << " add         Add a data set with a particular format for the key and for the value\n";
+			output << "             Usage: add set_name key_type value_type (i.e add_queue pairs system.UInt system.UInt )\n";
+			output << "             Usage: add set_name -txt (i.e add_queue txt_cdrs )\n";
+			output << "             Option -f to avoid error if queue already exist\n";
+			output << "\n";
+			output << " rm          Remove a given data set\n";
+			output << "             Usage: rm set_name\n";
+			output << "\n";
+			output << " mv          Change the name of a particular set\n";
+			output << "             Usage: mr set_name set_name2\n";
+			output << "\n";
+			output << " clear       Clear the content of a particular data set\n";
+			output << "             Usage: clear set_name\n";
+			output << "\n";
+			output << "---------------------------------------------------------------------\n";
+			output << "\n";
+			output << " set/unset   Set and unset environment variables that go to all operations\n";
+			output << "             Usage: set var_name value or unser var_name\n";
+			output << "\n";
+			output << "---------------------------------------------------------------------\n";
+			output << "\n";
+			output << " operations  Get a list of the available operations ( parser, map, reduce, script, etc)\n";
+			output << "             Usage: operations/o [-begin X] [-end -X]\n";
+			output << "\n";
+			output << " datas       Get a list of avilable data types for keys and values\n";
+			output << "             Usage: datas/d [-begin X] [-end -X]\n";
+			output << "\n";
+			output << "---------------------------------------------------------------------\n";
+			output << "\n";
+			output << " jobs (j)    Get a list of running jobs\n";
+			output << "             Usage: jobs/j\n";
+			output << "\n";
+			output << " workers (w) Get information about what is running on workers and controller\n";
+			output << "             Usage: workers/w\n";
+			output << "\n";
+			output << "---------------------------------------------------------------------\n";
+			output << "\n";
+			output << " upload		Load txt files to the platform\n";
+			output << "             Usage: load local_file_name set_name (only txt txt at the moment)\n";
+			output << "\n";
+			output << " download    Download txt files from the platform\n";
+			output << "             Usage: download set_name local_file_name (only txt txt at the moment)/w\n";
+			output << "\n";
+			output << " load		Check status of upload and downloads \n";
+			output << "\n";
+			output << "---------------------------------------------------------------------\n";
+			
+			output << "\n";
+			
+			
+			writeBlockOnConsole( output.str() );
+			return;
+		}
+		
 		if ( commandLine.isArgumentValue(0,"quit","") )
 		{
 			exit(0);
@@ -115,7 +181,7 @@ namespace ss
 		
 		
 		
-		if ( mainCommand == "internal_status" )
+		if ( mainCommand == "load" )
 		{
 			
 			std::ostringstream output;
@@ -232,11 +298,11 @@ namespace ss
 			
 		}
 		
-		if( mainCommand == "load" )
+		if( mainCommand == "upload" )
 		{
 			if( commandLine.get_num_arguments() < 3)
 			{
-				writeErrorOnConsole("Usage: load file <file2> .... <fileN> queue");
+				writeErrorOnConsole("Usage: upload file <file2> .... <fileN> queue");
 				return;
 			}
 			

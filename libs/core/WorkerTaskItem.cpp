@@ -151,7 +151,6 @@ namespace ss {
 	void WorkerTaskItem::setup()
 	{
 		assert( task );
-		LM_M(("Setup item %d %d State: %d", item_id , task->getId() , getStateDescription(state)));
 		
 		if (state == definition)
 			state = no_memory;		// allways go the next level

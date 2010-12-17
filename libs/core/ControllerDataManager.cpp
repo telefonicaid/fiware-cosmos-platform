@@ -23,7 +23,8 @@ namespace ss {
 		DataManagerCommandResponse response;
 		
 		au::CommandLine  commandLine;
-		commandLine.set_flag_boolean("f");	// Force boolean flag
+		commandLine.set_flag_boolean("f");		// Force boolean flag to avoid error when creating queue
+		commandLine.set_flag_boolean("txt");	// when adding txt data sets
 		
 		commandLine.parse( command );
 		
@@ -34,38 +35,52 @@ namespace ss {
 			return response;
 		}
 
-		if( commandLine.get_argument(0) == "add_queue" )
+		if( commandLine.get_argument(0) == "add" )
 		{
-			// Add queue command
-			if( commandLine.get_num_arguments() < 4 )
-			{
-				response.output = "Usage: add_queue name <keyFormat> <valueFormat>";
-				response.error = true;
-				return response;
-			}
-			
-			std::string name = commandLine.get_argument( 1 );
-			std::string keyFormat= commandLine.get_argument( 2 );
-			std::string	valueFormat = commandLine.get_argument( 3 );
-			
+			bool txt_queue = commandLine.get_flag_bool("txt");
 			bool forceFlag = commandLine.get_flag_bool("f");
 			
-			if( !controller->modulesManager.checkData( keyFormat ) )
-			{
-				response.output = "Unsupported data format " + keyFormat + "\n";
-				response.error = true;
-				return response;
-			}
+			int num_min_parameters = txt_queue?2:4;
 			
-			if( !controller->modulesManager.checkData( valueFormat ) )
+			if( commandLine.get_num_arguments() < num_min_parameters )
 			{
-				std::ostringstream output;
-				output << "Unsupported data format " + valueFormat + "\n";
-				response.output = output.str();
+				response.output = "Usage: add name <keyFormat> <valueFormat> or add name -txt";
 				response.error = true;
 				return response;
 			}
 
+			std::string name		= commandLine.get_argument( 1 );
+			std::string keyFormat;
+			std::string	valueFormat;
+			
+			if( !txt_queue )
+			{
+				keyFormat	= commandLine.get_argument( 2 );
+				valueFormat = commandLine.get_argument( 3 );
+				
+				if( !controller->modulesManager.checkData( keyFormat ) )
+				{
+					response.output = "Unsupported data format " + keyFormat + "\n";
+					response.error = true;
+					return response;
+				}
+				
+				if( !controller->modulesManager.checkData( valueFormat ) )
+				{
+					std::ostringstream output;
+					output << "Unsupported data format " + valueFormat + "\n";
+					response.output = output.str();
+					response.error = true;
+					return response;
+				}
+				
+			}
+			else
+			{
+				keyFormat = "txt";
+				valueFormat = "txt";
+			}
+			
 			Queue *_queue = queues.findInMap( name );
 			
 			// Check if queue exist
@@ -111,7 +126,7 @@ namespace ss {
 			return response;
 		}
 
-		if( commandLine.isArgumentValue(0, "remove_all_queue" , "raq" ) )
+		if( commandLine.isArgumentValue(0, "remove_all" , "remove_all" ) )
 		{
 			std::map< std::string , Queue*>::iterator iter;
 			for (iter = queues.begin() ; iter != queues.end() ;iter++)
@@ -127,12 +142,12 @@ namespace ss {
 			
 		}
 		
-		if( commandLine.isArgumentValue(0, "remove_queue" , "rq" ) )
+		if( commandLine.isArgumentValue(0, "rm" , "rm" ) )
 		{
 			// Add queue command
 			if( commandLine.get_num_arguments() < 2 )
 			{
-				response.output = "Usage: remove_queue name";
+				response.output = "Usage: rm name";
 				response.error = true;
 				return response;
 			}
@@ -163,12 +178,12 @@ namespace ss {
 			return response;
 		}
 		
-		if( commandLine.isArgumentValue(0, "clear_queue" , "cq" ) )
+		if( commandLine.isArgumentValue(0, "clear" , "clear" ) )
 		{
 			// Add queue command
 			if( commandLine.get_num_arguments() < 2 )
 			{
-				response.output = "Usage: clear_queue name1 name2 ...";
+				response.output = "Usage: clear name1 name2 ...";
 				response.error = true;
 				return response;
 			}
@@ -197,12 +212,12 @@ namespace ss {
 
 #pragma mark Change the name of a queue
 		
-		if( commandLine.get_argument(0) == "mv_queue" )
+		if( commandLine.get_argument(0) == "mv" )
 		{
 			// Add queue command
 			if( commandLine.get_num_arguments() < 3 )
 			{
-				response.output = "Usage: mv_queue name name2";
+				response.output = "Usage: mv name name2";
 				response.error = true;
 				return response;
 			}
@@ -242,12 +257,12 @@ namespace ss {
 
 #pragma mark Duplicate a queue
 		
-		if( commandLine.get_argument(0) == "duplicate_queue" )
+		if( commandLine.get_argument(0) == "dup" )
 		{
 			// Add queue command
 			if( commandLine.get_num_arguments() < 3 )
 			{
-				response.output = "Usage: duplicate_queue name name2";
+				response.output = "Usage: dup name name2";
 				response.error = true;
 				return response;
 			}
@@ -290,12 +305,12 @@ namespace ss {
 		
 #pragma mark Copy content from one queue to another
 		
-		if( commandLine.get_argument(0) == "cp_queue" )
+		if( commandLine.get_argument(0) == "cp" )
 		{
 			// Add queue command
 			if( commandLine.get_num_arguments() < 3 )
 			{
-				response.output = "Usage: cp_queue queue_from name_to";
+				response.output = "Usage: cp queue_from name_to";
 				response.error = true;
 				return response;
 			}
@@ -347,37 +362,6 @@ namespace ss {
 			return response;
 		}				
 		
-// DATA QUEUES
-		
-		if( commandLine.get_argument(0) == "add_data_queue" )
-		{
-			// Add queue command
-			if( commandLine.get_num_arguments() < 2 )
-			{
-				response.output = "Usage: add_data_queue name";
-				response.error = true;
-				return response;
-			}
-			
-			std::string name = commandLine.get_argument( 1 );
-
-			
-			// Check if queue exist
-			if( queues.findInMap( name ) != NULL )
-			{
-				std::ostringstream output;
-				output << "Queue " + name + " already exist\n";
-				response.output = output.str();
-				response.error = true;
-				return response;
-			}			
-			
-			Queue *tmp = new Queue( name , KVFormat("txt","txt") );
-			queues.insertInMap( name , tmp );
-			
-			response.output = "OK";
-			return response;
-		}
 		
 #pragma mark Add data		
 		

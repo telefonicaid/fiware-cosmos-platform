@@ -10,7 +10,6 @@
 */
 
 
-
-#define SAMSON_VERSION				"0.1.2"
+#define SAMSON_VERSION				"0.1.3"
 
 #endif

@@ -81,8 +81,8 @@ namespace ss {
 		jobManager->controller->data.addComment(id, std::string("PROCESS: ") + command );
 		
 		au::CommandLine commandLine;
-		commandLine.set_flag_boolean("c");	/// Flag to create outputs as needed
-		commandLine.set_flag_boolean("nc");	/// Flag to anulate the effect of -c
+		commandLine.set_flag_boolean("create");	/// Flag to create outputs as needed
+		commandLine.set_flag_boolean("ncreate");	/// Flag to anulate the effect of -c
 		commandLine.set_flag_boolean("clear");	/// Flag to clear outputs before emiting key-values
 		commandLine.set_flag_boolean("nclear");	/// Flag to anulate the effect of -clear
 		commandLine.parse(command);
@@ -140,7 +140,7 @@ namespace ss {
 
 				
 				// Spetial case if -c flag is activated and -nc is not pressent (it is like a script)
-				if( commandLine.get_flag_bool("c") && (!commandLine.get_flag_bool("nc")) )
+				if( commandLine.get_flag_bool("create") && (!commandLine.get_flag_bool("ncreate")) )
 				{
 					// Add comment to data manager to log that a script is initiated
 					jobManager->controller->data.addComment(id, std::string("Expanding -c optiona of: ") + command );
@@ -154,12 +154,12 @@ namespace ss {
 					{
 						KVFormat format = operation->getOutputFormat(i);
 						std::ostringstream local_command;
-						local_command << "add_queue " << commandLine.get_argument(1 + operation->getNumInputs() + i);
+						local_command << "add " << commandLine.get_argument(1 + operation->getNumInputs() + i);
 						local_command << " " << format.keyFormat << " " << format.valueFormat << " -f";
 						jobItem.addCommand( local_command.str() );
 					}
 					
-					jobItem.addCommand( command + " -nc" );
+					jobItem.addCommand( command + " -ncreate" );
 					items.push_back(jobItem);
 					
 					return true;
@@ -180,14 +180,14 @@ namespace ss {
 					{
 						{
 							std::ostringstream local_command;
-							local_command << "add_queue " << commandLine.get_argument(1 + operation->getNumInputs() + i);
+							local_command << "add  " << commandLine.get_argument(1 + operation->getNumInputs() + i);
 							KVFormat format = operation->getOutputFormat(i);
 							local_command << " " << format.keyFormat << " " << format.valueFormat << " -f";
 							jobItem.addCommand( local_command.str() );
 						}
 						{
 							std::ostringstream local_command;
-							local_command << "clear_queue " << commandLine.get_argument(1 + operation->getNumInputs() + i);
+							local_command << "clear " << commandLine.get_argument(1 + operation->getNumInputs() + i);
 							jobItem.addCommand( local_command.str() );
 						}
 					}

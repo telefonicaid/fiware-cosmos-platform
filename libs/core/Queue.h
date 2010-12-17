@@ -95,7 +95,7 @@ namespace ss {
 		{
 			monitor.push( "size"	, _info.size );
 			monitor.push( "num_kvs" , _info.kvs );
-			monitor.push( "#files"	, _num_files );
+			monitor.push( "files"	, _num_files );
 		}
 		
 	};

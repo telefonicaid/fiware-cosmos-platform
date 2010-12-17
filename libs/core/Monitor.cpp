@@ -36,7 +36,7 @@ namespace ss {
 		while( true )
 		{			
 			// Full all fields
-			system.push( "random" , random()%10 );
+			//system.push( "random" , random()%10 );
 			//system.push( "random2" , random()%10 );
 
 			controller->pushSystemMonitor( &system ); 

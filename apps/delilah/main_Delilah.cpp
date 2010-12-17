@@ -14,17 +14,17 @@ bool             basic;
 
 
 
-#define NO "no_controller"
+#define LOC "localhost:1234"
 /* ****************************************************************************
 *
 * parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt, _i NO,   PaNL,   PaNL,  "controller IP:port"  },
-	{ "-basic",      &basic,       "BASIC",       PaBool,    PaOpt, false,  false,   true,  "basic mode"          },
-	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    80,      3,    100,  "number of endpoints" },
-	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,     5,      1,    100,  "number of workers"   },
+	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt, _i LOC,   PaNL,   PaNL,  "controller IP:port"  },
+	{ "-basic",      &basic,       "BASIC",       PaBool,    PaOpt,  false,  false,   true,  "basic mode"          },
+	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,     80,      3,    100,  "number of endpoints" },
+	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,      1,      1,    100,  "number of workers"   },
 
 	PA_END_OF_ARGS
 };

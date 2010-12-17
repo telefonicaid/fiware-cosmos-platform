@@ -28,9 +28,9 @@ PaArgument paArgs[] =
 {
 	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt,   S01,   PaNL,   PaNL,  "controller IP:port"  },
 	{ "-alias",       alias,       "ALIAS",       PaString,  PaReq,  PaND,   PaNL,   PaNL,  "alias"               },
-	{ "-port",       &port,        "PORT",        PaShortU,  PaReq,  PaND,   1025,  65000,  "listen port"         },
+	{ "-port",       &port,        "PORT",        PaShortU,  PaOpt,  1235,   1025,  65000,  "listen port"         },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    80,      3,    100,  "number of endpoints" },
-	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,     5,      1,    100,  "number of workers"   },
+	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
 	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt, false,  false,   true,  "no logging"          },
 	{ "-local",      &local,       "LOCAL",       PaBool,    PaOpt, false,  false,   true,  "local execution"     },
 

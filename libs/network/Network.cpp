@@ -233,6 +233,41 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 
 
 
+/* ****************************************************************************
+*
+* workerNew - 
+*/
+Endpoint* workerNew(int ix)
+{
+	char       alias[16];
+	char       name[32];
+	Endpoint*  ep;
+
+	snprintf(alias, sizeof(alias), "Worker%02d",  ix);
+	snprintf(name,  sizeof(name),  "Worker %02d", ix);
+
+	ep = new Endpoint();
+	if (ep == NULL)
+		LM_XP(1, ("new Endpoint"));
+
+	ep->rFd     = -1;
+	ep->wFd     = -1;
+	ep->name    = name;
+	ep->alias   = alias;
+	ep->workers = 0;
+	ep->state   = Endpoint::FutureWorker;
+	ep->type    = Endpoint::Worker;
+	ep->ip      = "II.PP";
+	ep->port    = 0;
+	ep->coreNo  = -1;
+	
+	LM_T(LMT_ENDPOINT, ("Created endpoint %d, worker %d (%s)", 3 + ix, ix, ep->alias.c_str()));
+
+	return ep;
+}
+
+
+
 #define WEB_SERVICE_PORT (unsigned short) 9898
 /* ****************************************************************************
 *
@@ -240,37 +275,14 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 */
 void Network::initAsSamsonController(int port, int workers)
 {
-	init(Endpoint::Controller, "Controller", port);
+	int ix;
 
-	int   ix;
-	char  alias[16];
-	char  name[32];
+	init(Endpoint::Controller, "Controller", port);
 
 	Workers = workers;
 
 	for (ix = 0; ix < Workers; ix++)
-	{
-		snprintf(alias, sizeof(alias), "Worker%02d",  ix);
-		snprintf(name,  sizeof(name),  "Worker %02d", ix);
-
-		endpoint[3 + ix] = new Endpoint();
-		if (endpoint[3 + ix] == NULL)
-			LM_XP(1, ("new Endpoint"));
-
-		endpoint[3 + ix]->rFd     = -1;
-		endpoint[3 + ix]->wFd     = -1;
-		endpoint[3 + ix]->name    = name;
-		endpoint[3 + ix]->alias   = alias;
-		endpoint[3 + ix]->workers = 0;
-		endpoint[3 + ix]->state   = Endpoint::FutureWorker;
-		endpoint[3 + ix]->type    = Endpoint::Worker;
-		endpoint[3 + ix]->ip      = "II.PP";
-		endpoint[3 + ix]->port    = 0;
-		endpoint[3 + ix]->coreNo  = -1;
-
-		LM_T(LMT_ENDPOINT, ("Created endpoint %d, worker %d (%s)", 3 + ix, ix, endpoint[3 + ix]->alias.c_str()));
-	}
-
+		endpoint[3 + ix] = workerNew(ix);
 
 	int fd = iomServerOpen(WEB_SERVICE_PORT);
 	if (fd == -1)
@@ -334,24 +346,6 @@ int Network::getWorkerFromIdentifier(int identifier)
 int Network::getNumWorkers(void)
 {
 	return Workers;
-
-#if 0
-	int  ix;
-	int  workers = 0;
-
-	LM_T(LMT_DELILAH, ("IN"));
-
-	for (ix = 3; ix < 3 + Workers; ix++)
-	{
-		if (endpoint[ix] == NULL)
-			continue;
-
-		if (endpoint[ix]->state == Endpoint::Connected)
-			++workers;
-	}
-
-	return workers;
-#endif
 }
 	
 	
@@ -425,7 +419,8 @@ static void* senderThread(void* vP)
 		if (ep->alias == job.me->alias)
 		{
 			LM_M(("ANDREU: Calling 'loop-back' receive from within sender thread"));
-			job.network->receiver->receive(0, job.msgCode, job.packetP);
+			if (job.network->receiver)
+				job.network->receiver->receive(0, job.msgCode, job.packetP);
 			LM_M(("ANDREU: After calling 'loop-back' receive from within sender thread"));
 		}
 		else
@@ -1403,7 +1398,8 @@ void Network::msgTreat(void* vP)
 	case Message::ControllerSpawn:
 		if (dataReceiver == NULL)
 			LM_X(1, ("no data receiver ... Please implement !"));
-		dataReceiver->receive(endpointId, headerP, dataP);
+		if (dataReceiver)
+			dataReceiver->receive(endpointId, headerP, dataP);
 		break;
 
 	case Message::Die:
@@ -1486,13 +1482,38 @@ void Network::msgTreat(void* vP)
 
 			LM_T(LMT_ENDPOINT, ("Got the worker vector from the Controller - now connect to them all ..."));
 
-			unsigned int        ix;
-			Message::Worker*    workerV = (Message::Worker*) dataP;
+			int               ix;
+			Message::Worker*  workerV = (Message::Worker*) dataP;
+
+			for (unsigned int ix = 0; ix < dataLen / sizeof(Message::Worker); ix++)
+				LM_M(("Controller gave me a worker in %s:%d", workerV[ix].ip, workerV[ix].port));
 
 			if ((unsigned int) Workers < dataLen / sizeof(Message::Worker))
-				LM_X(1, ("Got %d workers from Controller - I thought there were %d workers", dataLen / sizeof(Message::Worker), Workers));
+			{
+				LM_W(("Got %d workers from Controller - I thought there were %d workers - changing to %d workers",
+					  dataLen / sizeof(Message::Worker), Workers, dataLen / sizeof(Message::Worker)));
 
-			for (ix = 0; ix < dataLen / sizeof(Message::Worker); ix++)
+				// Adding workers in Endpoint vector
+				for (unsigned int ix = Workers; ix < dataLen / sizeof(Message::Worker); ix++)
+				{
+					endpoint[3 + ix] = workerNew(ix);
+					endpoint[3 + ix]->ip   = workerV[ix].ip;
+					endpoint[3 + ix]->port = workerV[ix].port;
+				}
+			}
+			else if ((unsigned int) Workers > dataLen / sizeof(Message::Worker))
+			{
+				// Removing workers from Endpoint vector
+				for (unsigned int ix = Workers - 1; ix >= dataLen / sizeof(Message::Worker); ix++)
+				{
+					delete endpoint[3 + ix];
+					endpoint[3 + ix] = NULL;
+				}
+			}
+
+			Workers =  dataLen / sizeof(Message::Worker);
+
+			for (ix = 0; ix < Workers; ix++)
 			{
 				Endpoint* epP;
 
@@ -1501,6 +1522,10 @@ void Network::msgTreat(void* vP)
 					endpoint[3 + ix] = new Endpoint(Endpoint::Worker, workerV[ix].name, workerV[ix].ip, workerV[ix].port, -1, -1);
 					endpoint[3 + ix]->state = Endpoint::Unconnected;
 					endpoint[3 + ix]->alias = workerV[ix].alias;
+				}
+				else
+				{
+				   LM_W(("Should I fill worker %02d with the info the controller gave me ?", ix));
 				}
 
 				epP = endpoint[3 + ix];
@@ -1513,7 +1538,7 @@ void Network::msgTreat(void* vP)
 					continue;
 				}
 
-				if ((epP->rFd == -1) && (epP->port != 0))
+				// if ((epP->rFd == -1) && (epP->port != 0))
 				{
 					int workerFd;
 
@@ -1544,10 +1569,12 @@ void Network::msgTreat(void* vP)
 							LM_X(1, ("endpointAdd failed"));
 					}
 				}
+#if 0
 				else if ((me->type == Endpoint::Delilah) && (epP->port == 0))
 				{
 					LM_X(1, ("Unable to connect to worker %d (%s) - delilah must connect to all workers", ix, workerV[ix].name));
 				}
+#endif
 			}
 		}
 		iAmReady = true;
@@ -1591,13 +1618,17 @@ void Network::msgTreat(void* vP)
 		break;
 
 	default:
-		if (receiver == NULL)
-			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
-		
-		// LM_T(LMT_FORWARD, ("forwarding '%s' %s from %s to Endpoint %d", messageCode(msgCode), messageType(msgType), ep->name.c_str(), endpointId));
 		LM_T(LMT_FORWARD, ("calling receiver->receive for message code '%s'", messageCode(msgCode)));
-		receiver->receive(endpointId, msgCode, &packet);
-		LM_T(LMT_FORWARD, ("back from receiver->receive for message code '%s'", messageCode(msgCode)));
+		if (receiver)
+		{
+			receiver->receive(endpointId, msgCode, &packet);
+			LM_T(LMT_FORWARD, ("back from receiver->receive for message code '%s'", messageCode(msgCode)));
+		}
+		else
+		{
+			if (packet.buffer)
+				MemoryManager::shared()->destroyBuffer(packet.buffer);
+		}
 		break;
 	}
 

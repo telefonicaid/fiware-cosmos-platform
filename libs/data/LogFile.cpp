@@ -47,7 +47,7 @@ namespace ss
 		checkBuffer(message_size);
 		
 		input.read( buffer , message_size );
-		c.ParsePartialFromArray(buffer,message_size);
+		c.ParseFromArray(buffer,message_size);
 		
 		return true;
 	}

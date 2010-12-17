@@ -50,6 +50,8 @@ namespace ss {
 		pthread_t threadId;
 
 	public:
+		
+		bool working;
 
 		WorkerTaskItem *item;	// Item that is currently processing ( to notify commands )
 		

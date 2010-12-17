@@ -51,6 +51,8 @@ namespace ss {
 			// Create the main thread for the process assistant
 			pthread_create(&threadId, NULL, runProcessAssistantThread, this);
 			item = NULL;
+			
+			working = false;
 		}
 		
 		void ProcessAssistant::run()
@@ -60,11 +62,13 @@ namespace ss {
 			while( true )
 			{
 				setStatus( "Waiting for the next task" );
-				
+				working = false;
+
 				// Get the next item to process ( this call is blocked if no task is available )
 				item =  taskManager->getNextItemToProcess();
 
 				setStatus( "Running " + item->task->operation );
+				working = true;
 				
 				// Run whatever is required in this item offering ProcessAssistant to use Process
 				item->run( this );

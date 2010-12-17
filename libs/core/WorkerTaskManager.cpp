@@ -195,11 +195,19 @@ namespace ss {
 	{
 		ws->set_task_manager_status( getStatus() );
 		
+		int num_working_cores = 0;
 		for (int i = 0 ; i < num_processes ; i++)
 		{
 			network::WorkerProcess *p = ws->add_process();
 			p->set_status( processAssistant[i]->getStatus() );
+			if ( processAssistant[i]->working )
+				num_working_cores++;
 		}
+		
+		ws->set_working_cores( num_working_cores );
+		
+		
+		
 	}
 	
 	void WorkerTaskManager::sendCloseMessages( size_t task_id , int workers )

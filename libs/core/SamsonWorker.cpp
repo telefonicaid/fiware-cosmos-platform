@@ -30,9 +30,11 @@ void* run_thread_sending_worker_status(void* p)
 {
 	SamsonWorker* worker = (SamsonWorker*) p;
 
+	
 	while (true)
 	{
-		worker->sendWorkerStatus();
+		if( worker->network->ready() )
+			worker->sendWorkerStatus();
 		sleep(3);
 	}
 
@@ -135,7 +137,6 @@ void SamsonWorker::sendWorkerStatus()
 	DiskManager::shared()->fill( ws );
 	FileManager::shared()->fill( ws );
 	MemoryManager::shared()->fill( ws );
-	
 	dataBuffer.fill( ws );
 	
 	network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);

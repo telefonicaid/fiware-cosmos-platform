@@ -31,7 +31,7 @@ namespace ss {
 
 		friend class ControllerDataManager;
 		std::list< QueueFile* > files;	// List of files
-		
+		int _num_files;					// Thread safe number of files ( only for monitoring )
 
 	public:
 		
@@ -42,7 +42,8 @@ namespace ss {
 			
 			monitor.addMainParameter( "name" , _name );
 			monitor.addMainParameter( "format" , _format.str() );
-			
+
+			_num_files =0 ;
 			
 		}
 		
@@ -92,10 +93,9 @@ namespace ss {
 		
 		void takeMonitorSamples()
 		{
-			monitor.push( "size" , _info.size );
+			monitor.push( "size"	, _info.size );
 			monitor.push( "num_kvs" , _info.kvs );
-			monitor.push( "random" , random() );
-			monitor.push( "random2" , random() );
+			monitor.push( "#files"	, _num_files );
 		}
 		
 	};

@@ -11,6 +11,9 @@ namespace ss
 		
 		// Insert file in the local list
 		files.push_back( new QueueFile( _fileName , worker , info) ); 	
+		
+		// Thread save version of the number of files
+		_num_files++;
 	}
 
 	void Queue::rename( std::string name )

@@ -35,6 +35,8 @@ namespace ss {
 		
 		void addBuffer( Buffer *b );
 		
+		void init();
+		
 		FileKVInfo getInfo()
 		{
 			return info;

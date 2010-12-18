@@ -2,7 +2,9 @@
 #include "samsonDirectories.h"  // SAMSON_SETUP_FILE
 #include "SamsonController.h"	// ss::SamsonController
 #include "SamsonSetup.h"		// ss::SamsonSetup
-
+#include "MemoryManager.h"		// ss::MemoryManager
+#include "DiskManager.h"		// ss::DiskManager
+#include "FileManager.h"		// ss::FileManager
 
 /* ****************************************************************************
 *
@@ -54,7 +56,10 @@ int main(int argC, const char* argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	ss::SamsonSetup::shared();	// Load setup and create default directories
+	ss::SamsonSetup::shared();		// Load setup and create default directories
+	ss::DiskManager::shared();		// Disk manager
+	ss::FileManager::shared();		// File manager
+	ss::MemoryManager::shared();	// Memory manager
 	
 	
 	// Instance of network object and initialization

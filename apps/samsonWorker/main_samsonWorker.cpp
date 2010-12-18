@@ -4,7 +4,8 @@
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "MemoryManager.h"		// ss::MemoryManager
 #include "Endpoint.h"			// ss::Endpoint
-
+#include "DiskManager.h"		// ss::DiskManager
+#include "FileManager.h"		// ss::FileManager
 
 /* ****************************************************************************
 *
@@ -64,8 +65,11 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 
-	ss::SamsonSetup::shared();	// Load setup and create default directories
-
+	ss::SamsonSetup::shared();		// Load setup and create default directories
+	ss::DiskManager::shared();		// Disk manager
+	ss::FileManager::shared();		// File manager
+	ss::MemoryManager::shared();	// Memory manager
+	
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
 	

@@ -11,12 +11,15 @@ namespace ss {
 	{
 		queue = _queue;
 		txt = _txt;
+	}
 
+	
+	void QueueuBufferVector::init()
+	{
 		info.kvs = 0;
 		info.size = 0;
 		
 		size = 0;
-
 	}
 	
 	void QueueuBufferVector::addBuffer( Buffer *b )
@@ -66,6 +69,9 @@ namespace ss {
 		
 		// Empty the vector of buffers
 		buffer.clear();
+		
+		// Init counters
+		init();
 		
 		return b;
 	}
@@ -152,9 +158,8 @@ namespace ss {
 		// Empty the vector of buffers
 		buffer.clear();
 		
-		// Reset accumulated size in this vector of buffers
-		info.kvs = 0;
-		info.size = 0;
+		// Init counters
+		init();
 		
 		// Return the new buffer with the content reordered
 		return b;

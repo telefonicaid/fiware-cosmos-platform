@@ -51,8 +51,6 @@ namespace ss {
 		void addBuffer( network::Queue queue , Buffer *buffer , bool txt );
 
 		void finishWorker();
-		
-		void saveBufferToDisk( Buffer* b , std::string filename ,network::Queue ,  bool txt );
 
 		// Function to get the run-time status of this object
 		void getStatus( std::ostream &output , std::string prefix_per_line );
@@ -66,6 +64,8 @@ namespace ss {
 		}
 		
 	private:
+
+		void saveBufferToDisk( Buffer* b , std::string filename ,network::Queue ,  bool txt );
 
 		/**
 		 Internal routine to get the name of a new file

@@ -48,7 +48,7 @@ namespace ss {
 
 			assert( process );	
 			process->processOutput( );
-			init();
+			clear();
 		}
 		
 		// Update the info in the particular output and the concrete hash-group 
@@ -61,6 +61,7 @@ namespace ss {
 		NodeBuffer *_node;
 		if(  _hgOutput->last_node == KV_NODE_UNASIGNED )
 		{
+			assert( new_node < num_nodes );
 			node[new_node].init();				// Init the new node
 			_hgOutput->first_node = new_node;	// Update the HasgGroup structure to point here
 			_hgOutput->last_node = new_node;	// Update the HasgGroup structure to point here
@@ -68,7 +69,10 @@ namespace ss {
 			new_node++;
 		}
 		else
+		{
+			assert( _hgOutput->last_node < num_nodes );
 			_node = &node[ _hgOutput->last_node ];				// Current write node
+		}
 		
 		// Fill following nodes...
 		while( miniBufferPos < miniBufferSize )
@@ -82,6 +86,7 @@ namespace ss {
 				_node->setNext( new_node );			// Set the next in my last node
 				node[new_node].init();				// Init the new node
 				_hgOutput->last_node = new_node;	// Update the HasgGroup structure to point here
+				assert( new_node < num_nodes );
 				_node = &node[new_node];			// Point to this one to write
 				new_node++;
 			}

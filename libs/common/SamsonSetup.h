@@ -30,6 +30,9 @@ namespace ss {
 		int shared_memory_num_buffers;
 		
 		
+		// Max size of kv files
+		size_t max_file_size;
+		
 	private:
 		
 		static size_t getUInt64(std::map<std::string,std::string> &items, std::string name , size_t defaultValue );

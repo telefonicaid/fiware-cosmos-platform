@@ -23,7 +23,7 @@ namespace ss {
 		
 		void init()
 		{
-			info.init();
+			info.clear();
 			first_node = KV_NODE_UNASIGNED;
 			last_node = KV_NODE_UNASIGNED;
 		}
@@ -41,7 +41,7 @@ namespace ss {
 		
 		void init()
 		{
-			info.init();
+			info.clear();
 			for (int i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
 				hg[i].init();
 		}
@@ -126,7 +126,7 @@ namespace ss {
 		
 		// Node buffers
 		NodeBuffer *node;	// Pointer to the entire node set
-		uint32 num_nodes;	// Total number of nodes
+		uint32 num_nodes;	// Total number of nodes ( to fit inside the shared memory block)
 		
 		uint32 new_node;	// Identifier of the next free block
 		
@@ -174,8 +174,6 @@ namespace ss {
 			//std::cout << "Size of header: " << au::Format::string( sizeof(OutputChannel) * num_outputs * num_servers ) << std::endl;
 			//std::cout << "Number of nodes: " << num_nodes  << "\n";
 
-			// Init the entire output structure
-			init();
 		}
 		
 		
@@ -197,7 +195,7 @@ namespace ss {
 			processAssistant = _processAssistant;
 		}
 		
-		void init()
+		void clear()
 		{
 			// Init all the outputs
 			for (int c = 0 ; c < (num_outputs*num_servers) ; c++)

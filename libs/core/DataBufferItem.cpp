@@ -10,190 +10,196 @@
 #include "DataBuffer.h"				// ss::DataBuffer
 #include "SamsonWorker.h"			// ss::SamsonWorker
 #include "Packet.h"					// ss::Packet
-#include "FileManagerReadItem.h"
-#include "FileManagerWriteItem.h"
-#include "coding.h"					// KV_MAX_FILE_SIZE
+#include "SamsonSetup.h"			// ss::SamsonSetup
 
 namespace ss {
 	
-	DataBufferItem::DataBufferItem( DataBuffer *_dataBuffer , size_t _task_id , int _myWorkerId, int _num_workers )
+	DataBufferItem::DataBufferItem( DataBuffer *_dataBuffer , size_t _task_id ,int _num_workers )
 	{
 		dataBuffer = _dataBuffer;
 		task_id = _task_id;
 
 		num_finished_workers = 0;
-		
 		num_workers = _num_workers;
-		myWorkerId = _myWorkerId;
 		
-		finished = false;	// Flag
-		completed = false;
+		pending_files_to_be_created=0;
+		pending_files_to_be_saved=0;
+
+		
+		finish_task_notified = false;
+		to_be_removed = false;
+		
 	}	
 	
-	void DataBufferItem::addBuffer( network::Queue queue , Buffer *buffer ,bool txt )
+	bool DataBufferItem::addBuffer( network::Queue queue , Buffer *buffer ,bool txt )
 	{
-		std::string name = queue.name();
-		QueueuBufferVector* bv = findInMap( name );
+		std::string queue_name = queue.name();
+		QueueuBufferVector* bv = findInMap( queue_name );
+		
+		bool added_new_buffer_vectors = false;
 		
 		if( !bv )
 		{
-			bv = new QueueuBufferVector( queue , txt );
-			insertInMap( name , bv  );
+			bv = new QueueuBufferVector(  task_id , queue , txt );
+			insertInMap( queue_name , bv  );
 		}
-			
-		if( buffer->getSize() + bv->getSize() > KV_MAX_FILE_SIZE )
-		{
-			std::string fileName = newFileName( name );
 
-			Buffer *b = NULL;
-			
-			if( !bv->txt )
-				b = bv->getFileBufferFromNetworkBuffers( KVFormat( queue.format().keyformat() , queue.format().valueformat() ) );
-			else
-				b = bv->getTXTBufferFromBuffers( );
-
-			// Save the buffer to disk
-			assert(b);
-			saveBufferToDisk( b , fileName , bv->queue , bv->txt );
-			
-		}
+		// Compute the size of the new buffer
+		size_t buffer_size;
+		if( txt )
+			buffer_size = buffer->getSize();
 		else
-			bv->addBuffer( buffer );
+		{
+			// It is suppoused to be a NetworkHeader
+			NetworkHeader * header = (( NetworkHeader *) buffer->getData());
+			assert( header->check() );					// Assert magic number of incoming data packets
+			buffer_size = header->info.size;
+		}
+
+		// If the new buffer will exceeed max file size, then create a new one
+		
+		if( buffer_size + bv->size > SamsonSetup::shared()->max_file_size )
+		{
+			QueueuBufferVector* bv = extractFromMap( queue_name );
+			assert( bv );
+			dataBuffer->pendingBufferVectors.push_back( bv );
+			pending_files_to_be_created++;	// Mark as pending to be created by background thread
+			pending_files_to_be_saved++;
+			
+			// To return "true" to DataBuffer
+			added_new_buffer_vectors = true;
+			
+			
+			// Create a new one to store the new one
+			bv = new QueueuBufferVector(  task_id , queue , txt );
+			insertInMap( queue_name , bv  );
+			
+		}
+
+		bv->addBuffer( buffer );
+		
+		
+		return added_new_buffer_vectors;
 		
 	}
 	
-	void DataBufferItem::finishWorker()
+	bool DataBufferItem::finishWorker()
 	{
+		
+		bool added_new_buffer_vectors = false;
+		
 		num_finished_workers++;
 		
 		if( num_finished_workers == num_workers )
 		{
 			
-			// Set the finish flag to indicate that this task operation is finished
-			finished = true;
-		
-			// Flush to disk the rest of the buffer
+			// Flush to disk the rest of the buffer vector to disk
 			for ( std::map<std::string , QueueuBufferVector* >::iterator i = begin() ; i != end() ; i++)
 			{
-				if( i->second->getSize() > 0)
+				if( i->second->size > 0)
 				{
-					QueueuBufferVector *bv = i->second;
-					network::Queue queue = bv->queue;
-					Buffer *b;
+					QueueuBufferVector* bv = i->second;
+					assert( bv );
+					dataBuffer->pendingBufferVectors.push_back( bv );
+					pending_files_to_be_created++;	// Mark as pending to be created by background thread
+					pending_files_to_be_saved++;
 					
-					if( !bv->txt )
-						b = bv->getFileBufferFromNetworkBuffers( KVFormat( queue.format().keyformat() , queue.format().valueformat() ) );
-					else
-						b = bv->getTXTBufferFromBuffers( );
-					
-					std::string fileName = newFileName( i->first );
-					saveBufferToDisk( b , fileName , bv->queue, bv->txt );
+					added_new_buffer_vectors = true;	// Return true to DataBuffer
 				}
 			}
 			
-			dataBuffer->worker->taskManager.send_finish_task_message_to_controller(dataBuffer->worker->network , task_id );
+			// Remove all the elements in the map
+			clear();
 			
-			
-			// Just in case, there is nothing else to save
-			if( ids_files.size() == ids_files_saved.size() )
-				completed = true;
 		}		
+		
+		// Check what to do
+		check();
+		
+		return added_new_buffer_vectors;
 	}	
 	
 	
-	
-	void DataBufferItem::saveBufferToDisk( Buffer* b , std::string fileName , network::Queue queue , bool txt )
+	void DataBufferItem::newFileCreated()
 	{
-		// Notify the controller that a file has been created ( update )
-
-		network::QueueFile qf;
-		qf.set_queue( queue.name() );
-		network::File *file = qf.mutable_file();
-		file->set_name( fileName );
-		file->set_worker( myWorkerId );
-		network::KVInfo *info = file->mutable_info();
+		pending_files_to_be_created--;
+		check();
+	}
+	
+	// common function to check everything in a single function
+	void DataBufferItem::check()
+	{
 		
-		// This is suppoused to be a file ( txt or kv )
-		if( txt )
+		if( (num_finished_workers == num_workers) && (pending_files_to_be_created==0) )
 		{
-			info->set_size( b->getSize() );
-			info->set_kvs( 1 );
+			// The task is finished and files are scheduled to be saved to disk
+			if( !finish_task_notified )
+			{
+				finish_task_notified = true;
+				// Notify the task manager about the "finish" fo this task ( only once )
+				dataBuffer->worker->taskManager.finishTask( task_id );
+			}
+			
+			
 		}
-		else
+		
+		if( (num_finished_workers == num_workers) && ( pending_files_to_be_saved == 0 ) && ( pending_files_to_be_created==0 ) )
 		{
-			FileHeader * header = (FileHeader*) ( b->getData() );
-			info->set_size( header->info.size);
-			info->set_kvs(header->info.kvs);
+			// Notify to the task manager that this is completed
+			dataBuffer->worker->taskManager.completeTask( task_id );	
+			to_be_removed =  true;	// Flag set  to be eliminated by DataBuffer
 		}
 		
-		// Send a packet to the controller informing about this new file
-		WorkerTaskManager::send_add_file_message_to_controller( dataBuffer->worker->network , task_id , qf);
-		
-		
-		// Schedule at the File Manager ( Note that delegate id DataBuffer )
-		// ----------------------------------------------------
-		
-		size_t id = FileManager::shared()->addItemToWrite( new FileManagerWriteItem( fileName,b , dataBuffer ) ) ;
-		dataBuffer->id_relation.insert( std::pair<size_t,size_t>( id, task_id) );
-		
-		// Keep ids to control if files are saved on disk
-		ids_files.insert( id );
 		
 	}
+	
+	
+
 	
 	void DataBufferItem::fileManagerNotifyFinish(size_t id, bool success)
 	{
 		
 		if( success )
-			ids_files_saved.insert( id );
+			pending_files_to_be_saved--;
 		else
-		{
 			assert( false );
-		}
-		
-		if( !completed && ( ids_files.size() == ids_files_saved.size() ) && finished )
-			completed = true;
-		
+
+		check();
 		
 	}	
 	
-	std::string DataBufferItem::newFileName( std::string queue)
-	{
-		std::ostringstream fileName;
-		fileName << SAMSON_DATA_DIRECTORY << "file_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000;
-		return fileName.str();
-	}
-	
 	void DataBufferItem::getStatus( std::ostream &output , std::string prefix_per_line )
 	{
-		output << "Item for task " << task_id << " ";
-		
-		if( completed )
-			output << "[COMPLETED]";
-		else if( finished )
-			output << "[FINISHED] ";
-		
-		output << "[Closed " << num_finished_workers << " of " << num_workers << " workers ] ";
-
-		output << "[Received ids " << ids_files_saved.size() << " / " << ids_files.size() << " files ] ";
-		
-		std::map<std::string , QueueuBufferVector* >::iterator i;
-		for (i = begin() ; i != end() ; i++)
-			output << "[ Queue: " << i->first << " " << i->second->getInfo().str() << " ]";
-
-		output << "\n";
+		// Nothing to do here... to be removed
 	}	
 	
 	std::string DataBufferItem::getStatus()
 	{
+		// Protected by lock of DataBuffer...
+		
 		std::ostringstream output;
 		
-		output << "Task: " << task_id << " " << num_finished_workers << "/" << num_workers;
+		output << "Task: " << task_id;
+		output	 << " ";
 		
-		if( completed )
-			output << " (C) ";
-		else if( finished )
-			output << " (F) ";
+		std::map<std::string , QueueuBufferVector*>::iterator iter;
+		for ( iter = this->begin() ; iter != this->end() ; iter++)
+			output << "<Q:" << iter->second->buffer.size() << ">";
+		output << " ";
+		if( num_workers == num_finished_workers )
+		{
+			if( pending_files_to_be_created == 0)
+			{
+				if( pending_files_to_be_saved == 0 )
+					output << " (C) ";
+				else
+					output << " (Sa:"<< pending_files_to_be_saved <<") ";
+			}
+			else
+				output << " (Cr:"<< pending_files_to_be_created <<") ";
+		}
+		else
+			output << " (W:"<< num_finished_workers	<< "/" << num_workers << ") ";
 
 		return output.str();
 		

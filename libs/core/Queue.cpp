@@ -23,7 +23,7 @@ namespace ss
 	
 	void Queue::clear()
 	{
-		_info.init();
+		_info.clear();
 		files.clear();
 	}
 	

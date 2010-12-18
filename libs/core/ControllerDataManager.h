@@ -40,8 +40,8 @@ namespace ss {
 		ControllerDataManager( SamsonController *_controller ) : DataManager( getLogFileName()  )
 		{
 			controller = _controller;
-			info_kvs.init();
-			info_txt.init();
+			info_kvs.clear();
+			info_txt.clear();
 		}
 		
 		/**

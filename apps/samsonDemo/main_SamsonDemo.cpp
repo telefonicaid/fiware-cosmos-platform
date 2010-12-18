@@ -20,7 +20,8 @@
 #include "ModulesManager.h"		// ss::ModulesManager
 #include "samson/Operation.h"	// ss::Operation
 #include "SamsonSetup.h"		// ss::SamsonSetup
-
+#include "DiskManager.h"		// ss::DiskManager
+#include "FileManager.h"		// ss::FileManager
 
 /* ****************************************************************************
 *
@@ -49,6 +50,13 @@ void *run_in_background(void* d)
 
 int main(int argc, const char *argv[])
 {
+	
+	// Init singlelton in single thread mode
+	ss::SamsonSetup::shared();		// Load setup and create default directories
+	ss::DiskManager::shared();		// Disk manager
+	ss::FileManager::shared();		// File manager
+	ss::MemoryManager::shared();	// Memory manager
+	
 	
 	// Init the trace system
 	ss::samsonInitTrace( argc , argv, &::logFd);

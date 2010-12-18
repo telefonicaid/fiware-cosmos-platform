@@ -52,6 +52,7 @@ namespace ss {
 				// Run the generator over the ProcessWriter to emit all key-values
 				Generator *generator = (Generator*) operation->getInstance();
 				generator->environment = environment;
+				pw->clear();
 				generator->run( pw );
 				break;
 			}
@@ -64,6 +65,7 @@ namespace ss {
 				SharedMemoryItem*item =  MemoryManager::shared()->getSharedMemory( m.input_shm() );
 				
 				parser->init();
+				pw->clear();
 				parser->run( item->data , m.input_size() ,  pw );
 				parser->finish();
 				break;
@@ -239,6 +241,8 @@ namespace ss {
 		
 		map->init();
 		
+		// Init the PW
+		pw->clear();
 		
 		for (int hg = 0 ; hg < num_hash_groups ; hg++)
 		{
@@ -343,8 +347,7 @@ namespace ss {
 		
 		reduce->init();
 		
-		
-		
+		pw->clear();
 		
 		for (int hg = 0 ; hg < num_hash_groups ; hg++)
 		{
@@ -382,6 +385,8 @@ namespace ss {
 			size_t pos_end	 = 1;	// Position where the next group of key-values finish
 			
 			//std::cout << "Hash group with " << num_kvs << " kvs processing\n";
+			
+			
 			
 			while( pos_begin < num_kvs )
 			{

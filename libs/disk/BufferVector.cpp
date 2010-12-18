@@ -7,25 +7,40 @@
 
 namespace ss {
 
-	QueueuBufferVector::QueueuBufferVector( network::Queue _queue , bool _txt )
+	QueueuBufferVector::QueueuBufferVector(size_t _task_id, const network::Queue &_queue , bool _txt )
 	{
-		queue = _queue;
-		txt = _txt;
+		// Init all the counter
+		txt		= _txt;
+		size	= 0;
+		info.clear();
 		
-		init();
+		task_id = _task_id;
+		
+		// Get a copy of the network information
+		queue = new network::Queue();
+		queue->CopyFrom( _queue );
+		
+		clear();
+		
 	}
 
-	
-	void QueueuBufferVector::init()
+	QueueuBufferVector::~QueueuBufferVector()
 	{
-		info.kvs = 0;
-		info.size = 0;
+		delete queue;
+	}
+	
+	void QueueuBufferVector:: clear()
+	{
 		
 		size = 0;
+		info.clear();
 		
 		// Remove all buffers
 		for (size_t i = 0 ; i < buffer.size() ; i++)
+		{
 			MemoryManager::shared()->destroyBuffer( buffer[i] );
+			buffer[i] = NULL;
+		}
 		
 		// Empty the vector of buffers
 		buffer.clear();
@@ -35,7 +50,7 @@ namespace ss {
 	void QueueuBufferVector::addBuffer( Buffer *b )
 	{
 		// Add the buffer to the vector
-		buffer.push_back(b);
+		buffer.push_back( b );
 		
 		if( txt )
 			size += b->getSize(); 
@@ -44,14 +59,31 @@ namespace ss {
 			// Update the total ( size and number of kvs )
 			NetworkHeader * header = (( NetworkHeader *) b->getData());
 			
-			// Increase total information for this file
-			info.kvs += header->info.kvs;
-			info.size += header->info.size;
+			// Assert magic number of incoming data packets
+			assert( header->check() );	
 			
-			size += info.size;
+			// Increase total information for this file
+			info.kvs	+= header->info.kvs;
+			info.size	+= header->info.size;
+
+			// Increase the total size to monitorize the global file size
+			size += header->info.size;
 		}
 	}
 	
+	Buffer* QueueuBufferVector::getJoinedBufferAndClear()
+	{
+		Buffer *outputBuffer;
+		
+		if( txt )
+			outputBuffer = getTXTBufferFromBuffers();
+		else
+			outputBuffer = getFileBufferFromNetworkBuffers();
+		
+		clear();
+		
+		return outputBuffer;
+	}
 	
 	/**
 	 Buidl a TXT buffer with just the accumulation of the component buffers
@@ -71,10 +103,6 @@ namespace ss {
 
 		// Make sure buffer is correct
 		assert( b->getSize() == b->getMaxSize() );
-	
-		// Init counters
-		init();
-		
 		return b;
 	}
 	
@@ -83,14 +111,17 @@ namespace ss {
 	 Build a file in the SAMSON format with the incomming network buffers
 	 */
 	
-	Buffer* QueueuBufferVector::getFileBufferFromNetworkBuffers( KVFormat queue_format )
+	Buffer* QueueuBufferVector::getFileBufferFromNetworkBuffers( )
 	{
+		KVFormat queue_format( queue->format().keyformat() , queue->format().valueformat() );
+		
 		
 		// Check all network buffers to be correct
-		size_t global_size=0;
-		for (size_t i=0;i < buffer.size() ;i++)
+		size_t global_size = 0;
+		
+		for (size_t i=0; i < buffer.size() ;i++)
 		{
-			NetworkHeader *header = (NetworkHeader*)buffer[i]->getData(); 
+			NetworkHeader *header = (NetworkHeader*) buffer[i]->getData(); 
 			NetworkKVInfo *info	  = (NetworkKVInfo*)( buffer[i]->getData() + sizeof( NetworkHeader ) );
 			
 			size_t total_size=0;
@@ -113,6 +144,7 @@ namespace ss {
 		fileHeader.init( );
 		fileHeader.setInfo( info );	
 		fileHeader.setFormat( queue_format );
+		
 		memcpy(b->getData(), &fileHeader, sizeof(FileHeader) );	
 
 		// Vector with per-hash info
@@ -152,9 +184,6 @@ namespace ss {
 		
 		// Set the global size
 		b->setSize(offset);
-		
-		// Init counters
-		init();
 		
 		// Return the new buffer with the content reordered
 		return b;

@@ -59,6 +59,9 @@ namespace ss {
 		// Notification received from the DataBuffer when everything is saved to disk
 		void completeTask( size_t task_id );
 		
+		// Notification receveid from DataBuffer when everything is generated
+		void finishTask( size_t task_id );
+		
 		// Get information about internal status
 		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
@@ -76,7 +79,7 @@ namespace ss {
 		// Send messages functions 
 		static void send_add_file_message_to_controller(NetworkInterface *network , size_t task_id , const network::QueueFile &qf );
 		static void send_update_message_to_controller(NetworkInterface *network , size_t task_id ,int num_finished_items, int num_items );
-			void send_finish_task_message_to_controller(NetworkInterface *network , size_t task_id );
+		void send_finish_task_message_to_controller(NetworkInterface *network , size_t task_id );
 		static void send_complete_task_message_to_controller(NetworkInterface *network , size_t task_id );
 		
 		

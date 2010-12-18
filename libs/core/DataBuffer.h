@@ -25,6 +25,7 @@ namespace ss {
 	class DataBufferItem;
 	class DataBufferItemDelegate;
 	class SamsonWorker;
+	class QueueuBufferVector;
 	
 	/**
 	 This class acumulate data buffers coming from network interface
@@ -36,38 +37,44 @@ namespace ss {
 		
 		au::map<size_t , DataBufferItem> item;
 		
-		au::Lock lock;	// mutex to protect multiple thread access
-
-		friend class DataBufferItem;
+		au::Lock lock;				// mutex to protect multiple thread access
+		au::StopLock stopLock;		// Stop lock for the background thread
+		
 		au::simple_map<size_t,size_t> id_relation;	// Relation between diskManager ids and task ids
+		
+		// List of Vector Buffers pending to be saved to disk ( they are processed by a parallel thread to create files )
+		std::list<QueueuBufferVector*> pendingBufferVectors;
+
+		friend class DataBufferItem; // to acces pendingBuffersVectors while protected with the local lock
 		
 	public:
 
 		SamsonWorker *worker;
 				
 		DataBuffer( SamsonWorker *_worker );
+
+		// Main routine to the background thread
+		void runBackgroundThreadToProcessBufferVectors();
 		
-		/**
-		 New packet from the network interface
-		 */
-		
+		// Add a buffer to the system ( it goes for a particular task_id and a queue )
 		void addBuffer( size_t task_id , network::Queue , Buffer* buffer , bool txt  );
 		
-		/**
-		 Inform that a particular task has receive a close message form a worker finished.
-		 */
-		
+		// Notification that a worker has send "close data exhcange" for this task
 		void finishWorker( size_t task_id );
-		
-		// Function to get the run-time status of this object
-		void getStatus( std::ostream &output , std::string prefix_per_line );
 				
 		// FileManagerDelegate
 		void fileManagerNotifyFinish(size_t id, bool success);
 
 		// Fill information in the message
 		void fill(network::WorkerStatus*  ws);
+
+		// To be removed
+		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
+	private:
+		
+		// Function to get new file names
+		static std::string _newFileName( std::string queue );
 		
 	};
 }

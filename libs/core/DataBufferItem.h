@@ -28,53 +28,59 @@ namespace ss {
 	
 	class DataBufferItem : public au::map<std::string , QueueuBufferVector> , public au::Status
 	{
-		DataBuffer *dataBuffer;					// Pointer to the buffer
+		DataBuffer *dataBuffer;				// Pointer to the buffer
 		
 		size_t task_id;						// Identifier of the task
+
+		int pending_files_to_be_created;	// Number of files that need to ne created( in a differente thread )
+		int pending_files_to_be_saved;		// Number of files pending to be confirmed by File Manager
 		
-		bool finished;						// Flag to indicate that eerything has finished
-		bool completed;						// Flag to indicate that the operation is completed ( finish and saved )
-		
-		std::set<size_t> ids_files;			// Collection of ids of "save file" operations pendigng to be confirmed
-		std::set<size_t> ids_files_saved;	// Collection of ids of "save file" operations pendigng to be confirmed
-		
+		// Information about workers
+		int num_workers;					// Total number of workers
 		int num_finished_workers;			// Number of workers that have notified they are finished
 
-		int myWorkerId;						// My worker id to notify controller about this
-		int num_workers;					// Total number of workers
-
+		bool finish_task_notified;			// Flat to indicate if we already notified about the finish of this task to the TaskController
+		
+		au::Lock lock;						// Lock to proytect 
 		
 	public:
 		
-		DataBufferItem( DataBuffer *buffer, size_t _task_id , int myWorkerId ,  int num_workers  );
+		bool to_be_removed;					// Flag used by Data Buffer to remove this item
+
 		
-		void addBuffer( network::Queue queue , Buffer *buffer , bool txt );
+		DataBufferItem( DataBuffer *buffer, size_t _task_id ,  int num_workers  );
+		
+		// Add a buffer to this item ( return if new Buffer vectors have been added)
+		bool addBuffer( network::Queue queue , Buffer *buffer , bool txt ); 
+		
+		// Notification that the background thread has created a new file
+		void newFileCreated();
+		
+		// Notification that a worker has finished sending us data ( return if new Buffer vectors have been added)
+		bool finishWorker();
 
-		void finishWorker();
-
+		// Unified function to check the finish, complete of the task
+		void check();
+		
 		// Function to get the run-time status of this object
 		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
+		// Get information about this item
 		std::string getStatus();
-		
-		
-		bool isCompleted()
-		{
-			return completed;
-		}
 		
 	private:
 
-		void saveBufferToDisk( Buffer* b , std::string filename ,network::Queue ,  bool txt );
+		void saveBufferToDisk( Buffer* b , std::string filename ,network::Queue *queue ,  bool txt );
 
+		
 		/**
 		 Internal routine to get the name of a new file
 		 */
 		
-		std::string newFileName( std::string queue);
-		
 		
 		friend class DataBuffer;
+		
+		// Notification (Trougth Data Buffer) that a file has been saved to disk
 		void fileManagerNotifyFinish(size_t id, bool success);
 		
 	};

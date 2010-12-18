@@ -190,6 +190,13 @@ namespace ss {
 		
 	}
 	
+	
+	void WorkerTaskManager::finishTask( size_t task_id )
+	{
+		// We only notify the controller about this to continue in the script ( if we are inside a script )
+		send_finish_task_message_to_controller( worker->network , task_id );
+	}
+	
 
 	void WorkerTaskManager::fill(network::WorkerStatus*  ws)
 	{

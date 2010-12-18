@@ -25,31 +25,32 @@ namespace ss {
 		
 		std::vector<Buffer*> buffer;	// Vector of buffers
 		FileKVInfo info;				// Total info about the number of kvs and size to write in a file 
+		size_t size;					// size of the file it will generate ( both txt and kvs )
+		
+		network::Queue* queue;			// Information about the queue we are buffering buffers to
+		bool txt;						// Flag to indicate if incomming buffers are txt buffers
+		
+		size_t task_id;					// Task id associated with this new file
 
-		size_t size;	// size of the file it will generate
+		// Constructor
+		QueueuBufferVector(size_t task_id , const network::Queue & _queue , bool _txt );
 		
-		network::Queue queue;
-		bool txt;
+		//Destructor
+		~QueueuBufferVector();
 		
-		QueueuBufferVector( network::Queue _queue , bool _txt );
-		
+		// Function to add a buffer to the vector
 		void addBuffer( Buffer *b );
 		
-		void init();
+		// Clear the buffer ( after producing a new joined file)
+		void clear();
+
+		// Get joined buffer from the accumulated buffers ( both txt and kvs )
+		Buffer* getJoinedBufferAndClear();
 		
-		FileKVInfo getInfo()
-		{
-			return info;
-		}
 		
-		size_t getSize()
-		{
-			return size;
-		}
+	private:
 		
-		// Get a global buffer from previous ones
-		
-		Buffer* getFileBufferFromNetworkBuffers( KVFormat queue_format );
+		Buffer* getFileBufferFromNetworkBuffers( );
 		Buffer* getTXTBufferFromBuffers();		
 		
 	};

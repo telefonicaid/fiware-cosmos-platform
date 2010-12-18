@@ -81,7 +81,7 @@ namespace ss {
 		 Insert files in another place
 		 */
 		 
-		void insertFilesIn( network::FileList &fileList);
+		void insertFilesIn( network::FileList *fileList);
 		
 		std::string getStatus()
 		{

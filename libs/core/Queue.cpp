@@ -39,12 +39,12 @@ namespace ss
 		
 	}
 
-	void Queue::insertFilesIn( network::FileList &fileList)
+	void Queue::insertFilesIn( network::FileList *fileList )
 	{
 		std::list< QueueFile* >::iterator f;
 		for (f = files.begin() ; f != files.end() ; f++)
 		{
-			network::File * file = fileList.add_file();
+			network::File * file = fileList->add_file();
 			file->set_name( (*f)->fileName );
 			file->set_worker( (*f)->worker );
 

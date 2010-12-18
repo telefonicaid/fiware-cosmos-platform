@@ -26,6 +26,14 @@ namespace ss {
 		
 	}
 	
+	ControllerTaskInfo::~ControllerTaskInfo()
+	{
+		for ( size_t i = 0 ; i < input_files.size() ; i++)
+			delete input_files[i];
+		
+		for ( size_t i = 0 ; i < output_queues.size() ; i++)
+			delete output_queues[i];		
+	}
 	
 	void ControllerTaskInfo::setError( std::string _error_message)
 	{

@@ -598,7 +598,7 @@ namespace ss {
 				
 				// Add the input files for this input
 				
-				network::FileList fileList;
+				network::FileList *fileList = new network::FileList();
 				q->insertFilesIn( fileList );
 				info->input_files.push_back( fileList ); 
 
@@ -632,9 +632,9 @@ namespace ss {
 
 				// add queu to be emitted in the WorkerTask packet
 				
-				network::Queue qq;
-				qq.set_name( q->getName() );
-				network::KVFormat *f = qq.mutable_format();
+				network::Queue *qq = new network::Queue();
+				qq->set_name( q->getName() );
+				network::KVFormat *f = qq->mutable_format();
 				f->set_keyformat( q->format().keyFormat );
 				f->set_valueformat( q->format().valueFormat );
 				info->output_queues.push_back( qq ); 

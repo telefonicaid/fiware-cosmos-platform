@@ -12,6 +12,7 @@
 #include "Packet.h"					// ss::Packet
 #include "FileManagerReadItem.h"
 #include "FileManagerWriteItem.h"
+#include "coding.h"					// KV_MAX_FILE_SIZE
 
 namespace ss {
 	

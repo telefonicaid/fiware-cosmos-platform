@@ -11,6 +11,8 @@ namespace ss {
 	{
 		queue = _queue;
 		txt = _txt;
+		
+		init();
 	}
 
 	
@@ -20,6 +22,14 @@ namespace ss {
 		info.size = 0;
 		
 		size = 0;
+		
+		// Remove all buffers
+		for (size_t i = 0 ; i < buffer.size() ; i++)
+			MemoryManager::shared()->destroyBuffer( buffer[i] );
+		
+		// Empty the vector of buffers
+		buffer.clear();
+		
 	}
 	
 	void QueueuBufferVector::addBuffer( Buffer *b )
@@ -62,14 +72,6 @@ namespace ss {
 		// Make sure buffer is correct
 		assert( b->getSize() == b->getMaxSize() );
 	
-		
-		// Remove all buffers
-		for (size_t i = 0 ; i < buffer.size() ; i++)
-			MemoryManager::shared()->destroyBuffer( buffer[i] );
-		
-		// Empty the vector of buffers
-		buffer.clear();
-		
 		// Init counters
 		init();
 		
@@ -150,13 +152,6 @@ namespace ss {
 		
 		// Set the global size
 		b->setSize(offset);
-		
-		// Remove all buffers
-		for (size_t i = 0 ; i < buffer.size() ; i++)
-			MemoryManager::shared()->destroyBuffer( buffer[i] );
-		
-		// Empty the vector of buffers
-		buffer.clear();
 		
 		// Init counters
 		init();

@@ -11,7 +11,7 @@
 #include "Message.h"            // ss::Message::MessageCode
 #include "Endpoint.h"           // ss::Endpoint::Type
 #include "logMsg.h"             // LM_*
-
+#include "Lock.h"				// au::Lock
 
 
 namespace ss {
@@ -91,6 +91,9 @@ public:
 	*/
 	class  NetworkInterface
 	{
+		
+		au::Lock lock_send;	// Lock to protect multi-thread access to lock
+		
 	public:
 		virtual ~NetworkInterface() {};
 			
@@ -115,10 +118,8 @@ public:
 		
 		// Get the "worker cardinal" from the idenfitier
 		// This method should return a value between 0 and (num_workers-1) or -1 if the identifier provided is not related to any workers
-		virtual int getWorkerFromIdentifier( int identifier) = 0;
+		virtual int getWorkerFromIdentifier( int identifier ) = 0;
 			
-		// Send a packet (return a unique id to inform the notifier later)
-		virtual size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP ) = 0;
 
 		// Main run loop control to the network interface
 		virtual void run()=0;           
@@ -134,6 +135,20 @@ public:
 		
 		// Run the "run" method in a background process
 		void runInBackground();
+		
+		// Send a packet (return a unique id to inform the notifier later)
+		size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP )
+		{
+			lock_send.lock();
+			size_t id = _send( sender , endpointId , code , packetP );
+			lock_send.unlock();
+			
+			return id;
+		}
+		
+	protected:
+		
+		virtual size_t _send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP ) = 0;
 		
 	};
 }

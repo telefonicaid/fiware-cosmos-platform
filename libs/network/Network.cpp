@@ -466,7 +466,7 @@ static void* senderThread(void* vP)
 *
 * send - 
 */
-size_t Network::send(PacketSenderInterface* packetSender, int endpointId, ss::Message::MessageCode code, Packet* packetP)
+size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, ss::Message::MessageCode code, Packet* packetP)
 {
 	Endpoint* ep        = endpoint[endpointId];
 	int       nb;

@@ -67,8 +67,6 @@ public:
 	virtual int getNumEndpoints(void)                { return sizeof(endpoint) / sizeof(endpoint[0]); }
 	virtual int getWorkerFromIdentifier(int identifier);
 
-	// Send a packet (return a unique id to inform the notifier later)
-	virtual size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP = NULL);
 	
 	std::vector<Endpoint*> samsonWorkerEndpoints();  // Get a list of the samsonWorkers endpoints
 
@@ -79,6 +77,10 @@ public:
 
 	// Syspend the network interface, close everything and return the "run" call
 	void quit();
+
+protected:
+	// Send a packet (return a unique id to inform the notifier later)
+	size_t _send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP = NULL);
 
 
 public:

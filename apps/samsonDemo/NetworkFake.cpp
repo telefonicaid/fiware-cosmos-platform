@@ -55,7 +55,7 @@ namespace ss {
 	}
 
 	// Send a packet (return a unique id to inform the notifier later)
-	size_t NetworkFake::send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP)
+	size_t NetworkFake::_send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP)
 	{
 		// Add packet in the list of the center
 	   center->addPacket(new NetworkFakeCenterPacket(code,*packetP, getMyidentifier(), endpointId, sender));

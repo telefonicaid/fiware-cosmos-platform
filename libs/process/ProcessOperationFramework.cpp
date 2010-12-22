@@ -286,7 +286,6 @@ namespace ss {
 	void ProcessOperationFramework::runReduce()
 	{
 		
-		//std::cout << "Reduce begin\n";
 		
 		// Run the generator over the ProcessWriter to emit all key-values
 		Reduce *reduce = (Reduce*) operation->getInstance();
@@ -357,9 +356,6 @@ namespace ss {
 			for (int f = 0 ; f < num_input_files ; f++)
 				num_kvs += reduce_file[f].getNumKVsInThisHashGroup();
 			
-			
-			//std::cout << "Hash group with " << num_kvs << " kvs\n";
-			
 			// Prepare the input with the rigth number of key-values
 			inputs.prepareInput(num_kvs);
 			
@@ -385,8 +381,11 @@ namespace ss {
 			size_t pos_end	 = 1;	// Position where the next group of key-values finish
 			
 			//std::cout << "Hash group with " << num_kvs << " kvs processing\n";
-			
-			
+
+			/*
+			 if( num_kvs > 0 )
+				 std::cout << "Reduce Hash group with " << num_kvs << " kvs\n";
+			*/
 			
 			while( pos_begin < num_kvs )
 			{
@@ -415,7 +414,7 @@ namespace ss {
 				reduce->run(inputStructs, pw);
 				
 				// Go to the next position
-				pos_begin = pos_end + 1;
+				pos_begin = pos_end;
 				pos_end = pos_begin + 1;
 				
 				

@@ -58,7 +58,7 @@ namespace ss {
 		
 		std::string getStatus();
 		
-		ProcessAssistantSharedFileCollection *reduceInformation;		// Structure used only by reduce operations ( created with the orgnizer and used by all process assistants )
+		ProcessAssistantSharedFileCollection *reduceInformation;
 		
 	private:
 		

@@ -36,12 +36,16 @@ namespace ss {
 		
 		
 		ProcessAssistantSharedFileCollection *reduceInformation = task->reduceInformation;
-		
 		reduceInformation->setup();
-		
+
+		/*
+		std::cout << "Running organizer:\n";
+		for ( int i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
+			if( reduceInformation->size_of_hg[i] > 0 )
+				std::cout << "HG " << i << " with size " << reduceInformation->size_of_hg[i] << "\n";
+		 */
 		
 		// Create necessary reduce operations
-		
 		int hg = 1;												// Evaluating current hash group	
 		int	item_hg_begin = 0;									// Starting at hash-group
 		size_t total_size = reduceInformation->size_of_hg[0];	// Total size for this operation

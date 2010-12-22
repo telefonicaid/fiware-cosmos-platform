@@ -13,3 +13,4 @@ shm_num_buffers	    12		# Number of buffers ( Minimum 2 * num_cores )
 
 # Disk Management
 max_open_files_per_device	20
+SETUP_max_file_size		1073741824  # 1Gb

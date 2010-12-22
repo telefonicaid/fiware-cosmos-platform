@@ -8,6 +8,7 @@ fi
 for mach in samson02 samson03 samson04 samson05 samson06 samson08
 do
 	echo Installing samson in $mach
-	rsync -r /opt/samson          samson@$mach:/opt/
-	rsync -r /usr/local/bin       samson@$mach:/usr/local/
+	rsync -r /opt/samson/etc              samson@$mach:/opt/samson
+	rsync -r /opt/samson/modules          samson@$mach:/opt/samson
+	rsync -r /usr/local/bin       		  samson@$mach:/usr/local/
 done

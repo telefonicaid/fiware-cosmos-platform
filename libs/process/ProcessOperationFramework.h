@@ -75,7 +75,7 @@ namespace ss {
 			}
 			
 			// Set the pointers to internal structure ( to sort again )
-			for (size_t i = 0 ; i < max_num_kvs ; i++)
+			for (size_t i = 0 ; i < _max_num_kvs ; i++)
 				_kv[i] = &kv[i];
 			
 			num_kvs = 0;
@@ -127,7 +127,8 @@ namespace ss {
 		// global sort function key - input - value
 		void sort()
 		{
-			std::sort( _kv , _kv + num_kvs , compare );
+			if( num_kvs > 0 )
+				std::sort( _kv , _kv + num_kvs , compare );
 		}
 		
 	};

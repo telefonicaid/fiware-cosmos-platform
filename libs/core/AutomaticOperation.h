@@ -149,7 +149,6 @@ namespace ss {
 			if( running ) 
 				t << "[R] ";
 			
-			
 			for ( size_t i  =0  ; i < tags.size() ; i++)
 				t << "<" << tags[i] << ">";
 			

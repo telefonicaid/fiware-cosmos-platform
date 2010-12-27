@@ -286,7 +286,6 @@ namespace ss {
 	void ProcessOperationFramework::runReduce()
 	{
 		
-		
 		// Run the generator over the ProcessWriter to emit all key-values
 		Reduce *reduce = (Reduce*) operation->getInstance();
 		reduce->environment = environment;
@@ -343,7 +342,7 @@ namespace ss {
 		
 		
 		//std::cout << "Reduce everything ready...\n";
-		
+				
 		reduce->init();
 		
 		pw->clear();
@@ -426,10 +425,6 @@ namespace ss {
 		free(inputStructs);
 		reduce->finish();
 		delete[] reduce_file;
-		
-		
-		//std::cout << "Reduce End\n";
-		
 		
 	}
 	

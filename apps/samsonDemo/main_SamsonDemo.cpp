@@ -64,7 +64,7 @@ int main(int argc, const char *argv[])
 	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 	
 	au::CommandLine commandLine;
-	commandLine.set_flag_int("workers",2);
+	commandLine.set_flag_int("workers",1);
 	commandLine.set_flag_boolean("basic");
 
 	ss::SamsonSetup::shared();	// Load setup and create default directories

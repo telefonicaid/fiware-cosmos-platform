@@ -387,6 +387,9 @@ namespace ss
 				if( packet->message.command_response().has_queue_list() )
 					showQueues( packet->message.command_response().queue_list() );
 				
+				if( packet->message.command_response().has_automatic_operation_list() )
+					showAutomaticOperations( packet->message.command_response().automatic_operation_list() );
+				
 				if( packet->message.command_response().has_data_list() )
 					showDatas( packet->message.command_response().data_list() );
 				
@@ -509,6 +512,32 @@ namespace ss
 			
 		writeWarningOnConsole(o.str());
 	};
+	
+	
+	void DelilahConsole::showAutomaticOperations( const network::AutomaticOperationList aol)
+	{
+		std::ostringstream txt;
+		
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << "Automatic Operations" << std::endl;
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		for (int i = 0 ; i < aol.automatic_operation_size() ; i++)
+		{
+			network::AutomaticOperation ao = aol.automatic_operation(i);
+
+			txt << std::setw(10) << ao.id();
+			txt << " ";
+			txt << std::setw(20) << ao.thrigger();
+			txt << " ";
+			txt << ao.command();
+			txt << std::endl;
+		}
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		
+		txt << std::endl;
+		
+		writeBlockOnConsole( txt.str() );		
+	}
 	
 	
 	void DelilahConsole::showQueues( const network::QueueList ql)

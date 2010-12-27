@@ -39,6 +39,7 @@ namespace ss {
 		
 		bool error;
 		std::string error_message;
+		
 	};
 	
 }

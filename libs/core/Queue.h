@@ -7,10 +7,16 @@
 #include <list>							// std::list
 #include "samson/KVFormat.h"			// KVFormat
 #include "samson.pb.h"					// ss::network::...
+#include <vector>						// std::vector
+#include <iostream>						// std::cout
+#include "Lock.h"						// au::Lock
 
 namespace ss {
 	
 	class QueueFile;
+	class Queue;
+	class AutomaticOperation;
+
 	
 	/**
 	 Information contained in the controller about a queue
@@ -27,25 +33,18 @@ namespace ss {
 		 */
 		
 		friend class Monitor;
-		MonitorBlock monitor;			// Set of parameters to monitor for this queue
+		MonitorBlock monitor;				// Set of parameters to monitor for this queue
 
 		friend class ControllerDataManager;
-		std::list< QueueFile* > files;	// List of files
-		int _num_files;					// Thread safe number of files ( only for monitoring )
+		std::list< QueueFile* > files;		// List of files included in this queue
+		int _num_files;						// Thread safe number of files ( only for monitoring )
 
+		
 	public:
 		
-		Queue( std::string name , KVFormat format )
-		{
-			_name = name;
-			_format = format;
-			
-			monitor.addMainParameter( "name" , _name );
-			monitor.addMainParameter( "format" , _format.str() );
-
-			_num_files =0 ;
-			
-		}
+		Queue( std::string name , KVFormat format );
+		
+		~Queue();
 		
 		std::string getName(){ return _name; }
 		KVFormat format() { return _format; }
@@ -75,8 +74,7 @@ namespace ss {
 		 */
 		
 		void rename( std::string name );
-		
-		
+				
 		/**
 		 Insert files in another place
 		 */
@@ -96,6 +94,11 @@ namespace ss {
 			monitor.push( "size"	, _info.size );
 			monitor.push( "num_kvs" , _info.kvs );
 			monitor.push( "files"	, _num_files );
+		}
+	
+		const std::string& name()
+		{
+			return _name;
 		}
 		
 	};

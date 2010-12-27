@@ -149,6 +149,11 @@ namespace ss {
 			return o.str();
 		}
 		
+		bool isEmpty()
+		{
+			return ((kvs==0)&&(size==0));
+		}
+		
 	};	
 	
 	template <typename Info> 

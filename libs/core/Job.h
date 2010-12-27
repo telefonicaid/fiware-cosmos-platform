@@ -111,14 +111,16 @@ namespace ss {
 	class Job
 	{
 		size_t id;						// Identifier of the job ( this is the one reported to delialh to monitorize a job)
+
+		int fromIdentifier;				// Identifier of the delailah that ordered this job ( -1 if automatic operation )
+		int sender_id;					// Identifier at the sender side (the same delilah could send multiple jobs)
+		
 		
 		std::string error_line;			// One line message for the error ( used in the cancel message of the data log)
 		std::string error_message;		// Complete erro description
 		bool error;						// Error flag
 		bool finish;					// Flag to indicate that this job is finished
 		
-		int fromIdentifier;				// Identifier of the delailah that ordered this job
-		int sender_id;					// Identifier at the sender side (the same delilah could send multiple jobs)
 					
 		JobManager *jobManager;			// Pointer to the job manager
 		

@@ -11,14 +11,14 @@
 * CommandLine
 * 
 * Class used to parse a string containing a command with multiple flags and arguments
-* The advantadge of this class is that is supports running-time definiton of possible falgs.
+* The advantadge of this class is that is supports running-time definiton of possible flags.
 *
 * 
 * Example: command arg1 -f input.ttx -g 2 arg2
 * 
 * Depending on how you define flags "f" and "g" this will behavie differently.
 *
-* You can define flags as "bool", "int" "string" "uint64".
+* You can define flags as "bool", "double", "int" "string" "uint64".
 * The properties of each element are:
 *   bool:       It is a true/false flag. It does not take any parameter
 *   int:        Takes an interguer parameter with it.   Example: -n 12

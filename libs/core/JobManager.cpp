@@ -13,15 +13,19 @@ namespace ss {
 		
 		// New id
 		size_t job_id = controller->data.getNewTaskId();
-
 		
-		// Send a message to delilah to confirm this new job
-		Packet *p2 = new Packet();
-		network::CommandResponse *response = p2->message.mutable_command_response();
-		response->set_command(command.command());
-		response->set_new_job_id( job_id );
-		p2->message.set_delilah_id( sender_id );
-		controller->network->send(controller, fromId, Message::CommandResponse, p2);
+		
+		if( fromId != -1 )
+		{
+			
+			// Send a message to delilah to confirm this new job
+			Packet *p2 = new Packet();
+			network::CommandResponse *response = p2->message.mutable_command_response();
+			response->set_command(command.command());
+			response->set_new_job_id( job_id );
+			p2->message.set_delilah_id( sender_id );
+			controller->network->send(controller, fromId, Message::CommandResponse, p2);
+		}
 		
 		// Create the job itself
 		Job *j = new Job( this , job_id, fromId , command, sender_id );

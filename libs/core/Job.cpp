@@ -85,6 +85,9 @@ namespace ss {
 		commandLine.set_flag_boolean("ncreate");	/// Flag to anulate the effect of -c
 		commandLine.set_flag_boolean("clear");	/// Flag to clear outputs before emiting key-values
 		commandLine.set_flag_boolean("nclear");	/// Flag to anulate the effect of -clear
+		
+		commandLine.set_flag_boolean("clear_inputs");	/// Flag to clear inputs after emiting key-values
+		
 		commandLine.parse(command);
 		
 		// Direct controller commands
@@ -198,11 +201,11 @@ namespace ss {
 					return true;
 				}
 				
-				
 				ControllerTaskInfo *task_info = new ControllerTaskInfo( this, operation , &commandLine );
-
-				jobManager->controller->data.retreveInfoForTask( task_info );
-
+				
+				jobManager->controller->data.retreveInfoForTask( id , task_info , commandLine.get_flag_bool("clear_inputs" ) );
+																
+																
 				if( task_info->error )
 				{
 					setError("Data Manager",task_info->error_message);	// There was an error with input/output parameters
@@ -330,23 +333,32 @@ namespace ss {
 	{
 		assert( finish );
 		
-		Packet *p2 = new Packet();
-		
-		network::CommandResponse *response = p2->message.mutable_command_response();
-		response->set_command(mainCommand);
-
-		if( error )
+		if( fromIdentifier == -1)
 		{
-			response->set_error_message( error_message );
-			response->set_error_job_id( id );
+			jobManager->controller->data.finishAutomaticOperation( sender_id , error , error_message );
+			//std::cout << "Finish internal job with id " << id << "\n";
 		}
-		else 
-			response->set_finish_job_id( id );
+		else
+		{
+			
+			Packet *p2 = new Packet();
+			
+			network::CommandResponse *response = p2->message.mutable_command_response();
+			response->set_command(mainCommand);
 
-		// global sender id of delilah
-		p2->message.set_delilah_id( sender_id );
-		
-		jobManager->controller->network->send(jobManager->controller, fromIdentifier, Message::CommandResponse, p2);
+			if( error )
+			{
+				response->set_error_message( error_message );
+				response->set_error_job_id( id );
+			}
+			else 
+				response->set_finish_job_id( id );
+
+			// global sender id of delilah
+			p2->message.set_delilah_id( sender_id );
+			
+			jobManager->controller->network->send(jobManager->controller, fromIdentifier, Message::CommandResponse, p2);
+		}
 	}
 	
 	void Job::setError( std::string agent ,  std::string txt )

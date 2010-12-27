@@ -1,5 +1,7 @@
 
 SET (HEADERS
+    AutomaticOperationManager.h
+    AutomaticOperation.h
     Monitor.h
     MonitorParameter.h
     DataBufferItem.h
@@ -26,6 +28,8 @@ SET (HEADERS
 )
 
 SET (SOURCES
+    AutomaticOperationManager.cpp
+    AutomaticOperation.cpp
     Monitor.cpp
     MonitorParameter.cpp
     DataBufferItem.cpp

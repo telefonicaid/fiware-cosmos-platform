@@ -11,32 +11,37 @@
 #include "samson.pb.h"			// ss::network::...
 #include "MonitorParameter.h"	// ss::MonitorBlock
 #include "coding.h"				// FileKVInfo
+#include "AutomaticOperationManager.h"	// ss::AutomaticOperationManager
 
 namespace ss {
+	
 	
 	class Queue;
 	class ControllerTask;
 	class DataManagerCommandResponse;
 	class SamsonController;
 	class ControllerTaskInfo;
-
+	class QueueAutomaticOperation;
+	
 	/**
 	 Data manager at the controller
 	 */
 	
 	class ControllerDataManager : public DataManager
 	{
-		//au::Lock lock;
-		
-		au::map< std::string , Queue> queues;			// List of KeyValue queues
-		
-		SamsonController *controller;					// Pointer to controller for module access
+		//au::Lock lock;	(lock is included in DataManager generic object )
 		
 		FileKVInfo info_kvs;								// Global info of the entire system ( all types of key-values )
 		FileKVInfo info_txt;								// Global info of the entire system ( txt files )
+		au::map< std::string , Queue> queues;				// List of KeyValue queues
+		
+		AutomaticOperationManager automatic_operations_manager;		// Manager of automatic operations
+		
+
+		SamsonController *controller;						// Pointer to controller for module access
 		
 	public:
-		
+
 		ControllerDataManager( SamsonController *_controller ) : DataManager( getLogFileName()  )
 		{
 			controller = _controller;
@@ -61,8 +66,10 @@ namespace ss {
 		void helpQueues( network::HelpResponse *response , network::Help help );
 
 		void fill( network::QueueList *ql , std::string command);
-
-		void retreveInfoForTask( ControllerTaskInfo *info );		
+		void fill( network::AutomaticOperationList *aol , std::string command);
+		
+		
+		void retreveInfoForTask( size_t job_id , ControllerTaskInfo *info , bool clear_inputs );		
 		
 		static std::string getAddFileCommand(int worker , std::string fileName , size_t size , size_t kvs , std::string queue )
 		{
@@ -81,6 +88,13 @@ namespace ss {
 		{
 			return info_txt;
 		}
+		
+		
+		
+		// Automatic operation API to get list of pending jobs and set as finished
+		
+		std::vector<AOInfo> getNextAutomaticOperations();
+		void finishAutomaticOperation( size_t id ,bool error , std::string error_message );
 		
 	private:
 

@@ -15,6 +15,7 @@
 #include "QueueFile.h"						// ss::QueueFile
 #include "samsonDirectories.h"				// SAMSON_CONTROLLER_DIRECTORY
 #include "MessagesOperations.h"				// evalHelpFilter(.)
+#include "AutomaticOperation.h"				// ss::AutomaticOperation
 
 namespace ss {
 	
@@ -25,8 +26,13 @@ namespace ss {
 		au::CommandLine  commandLine;
 		commandLine.set_flag_boolean("f");		// Force boolean flag to avoid error when creating queue
 		commandLine.set_flag_boolean("txt");	// when adding txt data sets
+		commandLine.set_flag_string("tag","");	// when removing automatic operation
 		
 		commandLine.parse( command );
+		
+		bool txt_queue = commandLine.get_flag_bool("txt");
+		bool forceFlag = commandLine.get_flag_bool("f");
+		
 		
 		if( commandLine.get_num_arguments() == 0)
 		{
@@ -37,8 +43,6 @@ namespace ss {
 
 		if( commandLine.get_argument(0) == "add" )
 		{
-			bool txt_queue = commandLine.get_flag_bool("txt");
-			bool forceFlag = commandLine.get_flag_bool("f");
 			
 			int num_min_parameters = txt_queue?2:4;
 			
@@ -126,6 +130,92 @@ namespace ss {
 			return response;
 		}
 
+		
+		if( commandLine.get_argument(0) == "remove_operation" )
+		{
+			if( commandLine.get_flag_string("tag") != "" )
+			{
+				automatic_operations_manager.removeAllWithTag( commandLine.get_flag_string("tag") );
+				
+				response.output = "OK";
+				return response;
+			}
+			
+			if( commandLine.get_num_arguments() < 2 )
+			{
+				response.output = "Usage: remove_operation id";
+				response.error = true;
+				return response;
+			}
+			
+			size_t id = strtoll( commandLine.get_argument(1).c_str()  , (char **)NULL, 10);
+			automatic_operations_manager.remove(id);
+			
+			response.output = "OK";
+			return response;
+			
+		}
+			
+		
+		if( commandLine.get_argument(0) == "set_operation" )
+		{
+			if( commandLine.get_num_arguments() < 2 )
+			{
+				response.output = "Usage: set_operation command [ \"queue queue_name [min_size] [min_kvs]\" ] ... [-timeout t]";
+				response.error = true;
+				return response;
+			}
+			
+			// Create the automatic operation with the command given at the command line
+			std::string command	= commandLine.get_argument(1);
+			AutomaticOperation *automatic_operation = new AutomaticOperation( command );
+			
+			for (int i = 2 ; i < commandLine.get_num_arguments() ; i++)
+			{
+				au::CommandLine _cmdLine;
+				_cmdLine.set_flag_uint64("size",0);
+				_cmdLine.set_flag_uint64("kvs",0);
+				_cmdLine.parse( commandLine.get_argument(i) ); 
+				
+				if( ( _cmdLine.get_num_arguments() < 2) || (_cmdLine.get_argument(0) != "queue" ) )
+				{
+					response.output = "Usage: set_operation command [ \"thrigger queue1 [min_size] [min_kvs]\" ] ... [-timeout t]";
+					response.error = true;
+					return response;
+				}
+				
+				std::string queue_name = _cmdLine.get_argument(1);
+				Queue *queue =  queues.findInMap( queue_name );
+				
+				if( !queue )
+				{
+					std::ostringstream output;
+					output << "Queue " + queue_name + " does not exist\n";
+					response.output = output.str();
+					response.error = true;
+					return response;				
+				}
+				
+				size_t min_size = _cmdLine.get_flag_uint64("size");
+				size_t min_kvs	= _cmdLine.get_flag_uint64("kvs");
+				
+				AOQueueThrigger *queue_thrigger = new AOQueueThrigger( queue , min_size , min_kvs );
+				automatic_operation->add( (AOThrigger*)queue_thrigger );
+			}
+
+			// Set tag
+			std::string tag =  commandLine.get_flag_string("tag");
+			if( tag != "")
+				automatic_operation->addTag( tag );
+			
+			// Add the automatic operation to the manager
+			automatic_operations_manager.add( automatic_operation );
+			
+			response.output = "OK";
+			return response;
+		}		
+		
+
 		if( commandLine.isArgumentValue(0, "remove_all" , "remove_all" ) )
 		{
 			std::map< std::string , Queue*>::iterator iter;
@@ -161,11 +251,14 @@ namespace ss {
 				Queue *tmp =  queues.extractFromMap(name);
 				if( !tmp )
 				{
-					std::ostringstream output;
-					output << "Queue " + name + " does not exist\n";
-					response.output = output.str();
-					response.error = true;
-					return response;
+					if( !forceFlag )
+					{
+						std::ostringstream output;
+						output << "Queue " + name + " does not exist\n";
+						response.output = output.str();
+						response.error = true;
+						return response;
+					}
 				}
 				else
 				{
@@ -475,6 +568,13 @@ namespace ss {
 		
 	}		
 
+	void ControllerDataManager::fill( network::AutomaticOperationList *aol , std::string command)
+	{
+		lock.lock();
+		automatic_operations_manager.fill( aol, command);
+		lock.unlock();
+	}
+	
 	void ControllerDataManager::fill( network::QueueList *ql , std::string command)
 	{
 		au::CommandLine cmdLine;
@@ -565,10 +665,22 @@ namespace ss {
 		lock.unlock();
 	}
 	
-	void ControllerDataManager::retreveInfoForTask( ControllerTaskInfo *info )		
+	void ControllerDataManager::retreveInfoForTask( size_t job_id , ControllerTaskInfo *info , bool clear_inputs )		
 	{
 		lock.lock();
 		_retreveInfoForTask( info );
+
+		if( clear_inputs )
+		{
+			std::ostringstream command;
+			command << "clear ";
+			for (size_t i = 0 ; i < info->inputs.size() ; i++ )
+				command << info->inputs[i] << " ";
+
+			DataManagerCommandResponse ans =  _runOperation( job_id , command.str() , true );
+			//assert( !ans.error );	// Internal command ( no error possible )
+		}
+		
 		lock.unlock();
 		
 	}
@@ -650,6 +762,25 @@ namespace ss {
 		
 		
 	}
+	
+	// Automatic operation API to get list of pending jobs and set as finished
+	
+	std::vector<AOInfo> ControllerDataManager::getNextAutomaticOperations()
+	{
+		lock.lock();
+		std::vector<AOInfo> tmp = automatic_operations_manager.getNextAutomaticOperations();
+		lock.unlock();
+		
+		return tmp;
+	}
+	
+	void ControllerDataManager::finishAutomaticOperation( size_t id ,bool error , std::string error_message )
+	{
+		lock.lock();
+		automatic_operations_manager.finishAutomaticOperation( id , error , error_message );
+		lock.unlock();
+	}
+	
 	
 	
 }

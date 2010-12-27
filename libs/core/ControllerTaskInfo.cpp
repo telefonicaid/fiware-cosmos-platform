@@ -24,6 +24,7 @@ namespace ss {
 		for (int i = 0 ; i < operation->getNumOutputs() ;i++)
 			outputs.push_back( cmdLine->get_argument( pos++) );
 		
+		
 	}
 	
 	ControllerTaskInfo::~ControllerTaskInfo()

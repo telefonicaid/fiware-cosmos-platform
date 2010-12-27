@@ -1,9 +1,32 @@
 
 #include "Queue.h"		// Own interface
 #include "QueueFile.h"	
+#include "AutomaticOperation.h"
 
 namespace ss
 {
+
+	
+#pragma mark Queue
+	
+	
+	Queue::Queue( std::string name , KVFormat format )
+	{
+		_name = name;
+		_format = format;
+		
+		monitor.addMainParameter( "name" , _name );
+		monitor.addMainParameter( "format" , _format.str() );
+		
+		_num_files =0 ;
+		
+		
+	}
+	
+	Queue::~Queue()
+	{
+	}
+	
 	void Queue::addFile( int worker, std::string _fileName , KVInfo info )
 	{
 		// Upodate global info
@@ -54,5 +77,6 @@ namespace ss
 			info->set_kvs( (*f)->info.kvs );
 		}
 	}
-
+	
+	
 }

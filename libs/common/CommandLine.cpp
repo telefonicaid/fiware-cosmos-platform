@@ -1,6 +1,7 @@
 
 #include "CommandLine.h"		// Own interface
-
+#include <iostream>				// std::cout
+#include <assert.h>				// assert(.)
 
 namespace au
 {
@@ -82,7 +83,7 @@ namespace au
 		flags.insert( std::pair<std::string , CommandLineFlag>( name , flag) );
 	}
 	
-	
+	/*
 	void CommandLine::parse( std::string _command )
 	{
 		
@@ -119,6 +120,82 @@ namespace au
 		fprintf(stderr, "List of %d tockens\n", tockens.size() );
 #endif
 		
+		
+		parse_tockens( tockens );
+		
+	}	
+	
+	*/
+	
+	void CommandLine::parse( std::string _command )
+	{
+		clear_values();
+		
+		std::vector<std::string> tockens;
+		
+		// Copy the original command
+		command = _command;
+		
+		std::string delimiters = " \t\n";					//All possible delimiters
+		std::string delimiters_and_literal = " \t\n\"'";		
+		
+		std::string::size_type pos = 0;
+		while( pos < command.length() )
+		{
+			// skip the delimeters
+			pos = command.find_first_not_of(delimiters, pos);
+			
+			if ( pos == std::string::npos )
+				break;	// No more tockens in this string
+			
+			if( ( command[pos] == '\"' ) || ( command[pos] == '\'' ) )
+			{
+				if( command.length() <= pos )
+					break;	// No more characters to finish the literal
+				
+				pos++;
+				size_t last = command.find_first_of("\"'", pos);
+				if( last == std::string::npos )
+				{
+					// Add the unfinished literal and finish
+					tockens.push_back(command.substr(pos, command.length() - pos));
+					break;
+				}
+				else
+				{
+					tockens.push_back(command.substr(pos, last - pos));
+					pos = last+1;
+				}
+				
+			}
+			else
+			{
+				
+				// find the next element to break the tocken ( it could be a literal begin )
+				size_t last = command.find_first_of(delimiters_and_literal, pos);
+				
+				if( last == std::string::npos )
+				{
+					// Create the last tocken
+					tockens.push_back(command.substr(pos, command.length() - pos));
+					break;
+				}
+				else
+				{
+					tockens.push_back(command.substr(pos, last - pos));
+					pos = last;
+				}
+			}
+			
+		}
+		
+
+		
+		// List of tockens
+		/*
+		for (size_t i = 0 ; i  < tockens.size() ; i++)
+			std::cout << "T: -" << tockens[i] << "-\n";
+		*/
 		
 		parse_tockens( tockens );
 		

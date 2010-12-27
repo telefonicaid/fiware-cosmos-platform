@@ -52,13 +52,21 @@ namespace ss
 		// Static function to get "today" string
 		static std::string today();
 		
+	protected:
+		size_t _getNewTaskId()
+		{
+			return task_counter++;
+		}
+
+	public:
 		size_t getNewTaskId()
 		{
 			lock.lock();
-			size_t id = task_counter++;
+			size_t id = _getNewTaskId();
 			lock.unlock();
 			return id;
 		}
+		
 		
 		/**
 		 Function to interact with "data"
@@ -70,7 +78,7 @@ namespace ss
 		void addComment( size_t task_id , std::string comment);
 		DataManagerCommandResponse runOperation( size_t task_id , std::string command );
 		
-	private:
+	protected:
 
 		DataManagerItem* _beginTask( size_t task_id ,  std::string command ,  bool log );
 		void _cancelTask( size_t task_id, std::string error , bool log );

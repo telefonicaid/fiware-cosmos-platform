@@ -82,6 +82,8 @@ namespace ss {
 		
 		void pushSystemMonitor( MonitorBlock  *);
 		
+		void runAutomaticOperationThread();
+		
 	};
 	
 }

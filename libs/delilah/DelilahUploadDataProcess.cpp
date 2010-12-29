@@ -63,9 +63,7 @@ namespace ss
 		totalSize = 0;	
 		
 		for ( size_t i =  0 ; i < fileNames.size() ; i++)
-		{
 			totalSize += au::Format::sizeOfFile( fileNames[i] );
-		}
 		
 		
 		worker = 0; // rand()%num_workers;		// Random worker to start
@@ -95,8 +93,6 @@ namespace ss
 			
 			// Fill the buffer
 			fileSet.fill( b );
-			
-			uploadedSize += b->getSize();
 			
 			// Send to the rigth worker
 			Packet *p = new Packet();
@@ -146,6 +142,12 @@ namespace ss
 			error_message	= packet->message.upload_data_response().error_message();
 			
 			network::File file = packet->message.upload_data_response().file();
+			
+
+			// update the uploaded data
+			uploadedSize += file.info().size();
+			
+			
 			
 			created_files.push_back(file);
 			pending_ids.erase( file_id );

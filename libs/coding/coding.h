@@ -18,7 +18,7 @@
 #define KV_BUFFER_MAX_NUM_KVS	 1024*1024*64									
  */
 
-#define KV_MAX_SIZE					64*1024				// Max size for an individual key-value
+#define KV_MAX_SIZE			   64*1024*1024				// Max size for an individual key-value
 #define KV_NUM_HASHGROUPS			64*1024				// Number of hash-groups
 
 #define NETWORK_KV_HASH_GROUP_VECTOR_SIZE	(sizeof(NetworkKVInfo)*KV_NUM_HASHGROUPS)	// Size of the structure of every network message ) 

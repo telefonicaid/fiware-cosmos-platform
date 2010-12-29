@@ -39,8 +39,8 @@ namespace ss
 
 		if( commandLine.get_num_arguments() == 0)
 		{
-			writeWarningOnConsole("Status by default");
-			mainCommand = "status";	// Default command
+			clear();
+			return;
 		}
 		else
 			mainCommand = commandLine.get_argument(0);
@@ -219,20 +219,6 @@ namespace ss
 
 			return;
 		}
-
-		if( mainCommand == "status" )
-		{
-			// Send a status request to all elements
-			{
-				Packet* p = new Packet();
-				p->message.mutable_status_request()->set_command( command );
-				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::StatusRequest, p);
-			}
-
-			writeWarningOnConsole("Status messages sent to all elements\n");
-			
-			return;
-		}
 		
 		if ( mainCommand == "help" )
 		{
@@ -339,20 +325,6 @@ namespace ss
 
 		switch (msgCode) {
 
-			case Message::StatusResponse:
-			{
-				// Get some information form the packet
-				std::string title = packet->message.status_response().title();
-				std::string message = packet->message.status_response().response();
-
-				// Prepare what to show on screen
-				txt << "----------------------------------------------------------------" << std::endl;
-				txt << "STATUS " << title << std::endl;
-				txt << "----------------------------------------------------------------" << std::endl;
-				txt << message << std::endl;
-				txt << "----------------------------------------------------------------" << std::endl;
-			}
-				break;				
 				
 			case Message::CommandResponse:
 			{

@@ -167,23 +167,6 @@ message WorkerStatusList
       repeated WorkerStatus worker_status = 1;	
 }
 
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Status message request ans answer to interact between delilah and controller/workers
-//
-
-message StatusRequest
-{
-	optional string command = 1;	// Some string to clarify the status request
-	optional int32 senderId	= 2;	// Identifier of the sender ( when controller notify workers )
-}
-
-message StatusResponse
-{
-	required string title = 1;	// Title of the status ( Controller / Wroker X / Delailah )
-	required string response = 2;	// content of the status to visualize on screen
-	optional int32 senderId	= 3;	// Identifier of the sender ( when workers answers back to the controller )
-}
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -258,6 +241,7 @@ message CommandResponse
 	optional  string error_message = 10;   	    // An error message to show on screen
 
 	// Information to the user
+
 	optional JobList       job_list			= 100;
 	optional OperationList operation_list		= 101;
 	optional DataList      data_list	  	= 102;
@@ -415,9 +399,6 @@ message Message
 
 	optional DownloadData		download_data		= 200;		//
 	optional DownloadDataResponse	download_data_response	= 201;		//
-
-	optional StatusRequest status_request = 115; 				      // request for status ( debuggin )
-	optional StatusResponse status_response = 116;				      // response of a status request
 
 	optional WorkerStatus worker_status = 170;			// Worker status update
 	

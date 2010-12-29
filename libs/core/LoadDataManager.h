@@ -61,7 +61,7 @@ namespace ss {
 		std::string getStatus( )
 		{
 			std::ostringstream output;
-			output << "<S:" << au::Format::string(size,"B") << ">";
+			output << "<Up:" << au::Format::string(size,"B") << ">";
 			return output.str();
 		}
 		
@@ -92,7 +92,7 @@ namespace ss {
 		std::string getStatus( )
 		{
 			std::ostringstream output;
-			output << "<TDB>";
+			output << "<Down:?>";
 			return output.str();
 		}
 		

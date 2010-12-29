@@ -213,7 +213,6 @@ namespace ss
 	
 	std::string DelilahUploadDataProcess::getStatus()
 	{
-		lock.lock();
 		
 		std::ostringstream output;
 		
@@ -235,8 +234,6 @@ namespace ss
 		size_t r2 = r / num_workers;
 		output << "[ " << au::Format::string( uploadedSize ) << " / " << au::Format::string( totalSize ) << " " << p << "%" << " ]";
 		output << "[ Average global upload rate " << au::Format::string( r , "bps" ) << " -- " << au::Format::string( r2 , "bps" ) << " per worker ]";
-		
-		lock.unlock();
 
 		return output.str();
 	}

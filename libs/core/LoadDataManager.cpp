@@ -170,20 +170,20 @@ namespace ss
 	void LoadDataManager::fill( network::WorkerStatus* ws)
 	{
 		lock.lock();
+		
 		std::ostringstream output; 
-		if( downloadItem.size() > 0 )
+
 		{
-			output << " Downloads: ";
-			for ( size_t i = 0 ; i < downloadItem.size() ; i++)
-				output << downloadItem[i]->getStatus();
+			au::map<size_t,DownloadItem>::iterator iter;
+			for ( iter = downloadItem.begin() ; iter != downloadItem.end() ; iter++)
+				output << iter->second->getStatus();
 		}
 
-		if( uploadItem.size() > 0)
 		{
-			output << " Uploads: ";
-			for ( size_t i = 0 ; i < uploadItem.size() ; i++)
-				output << uploadItem[i]->getStatus();
-		}	
+			au::map<size_t,UploadItem>::iterator iter;
+			for ( iter = uploadItem.begin() ; iter != uploadItem.end() ; iter++)
+				output << iter->second->getStatus();
+		}
 		
 		lock.unlock();
 		

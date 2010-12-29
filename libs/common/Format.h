@@ -24,6 +24,9 @@ namespace au {
 		static std::string int_string(int value, int digits);
 		static std::string time_string( int seconds );
 		
+		
+		static size_t sizeOfFile( std::string fileName );
+		
 	};
 }
 

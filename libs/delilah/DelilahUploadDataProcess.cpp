@@ -50,6 +50,32 @@ namespace ss
 	
 #pragma mark -
 	
+	
+	DelilahUploadDataProcess::DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue ) : fileSet( fileNames )
+	{
+		// Get initial time
+		gettimeofday(&init_time, NULL);
+		
+		// Queue name 
+		queue = _queue;
+		
+		uploadedSize = 0;
+		totalSize = 0;	
+		
+		for ( size_t i =  0 ; i < fileNames.size() ; i++)
+		{
+			totalSize += au::Format::sizeOfFile( fileNames[i] );
+		}
+		
+		
+		worker = 0; // rand()%num_workers;		// Random worker to start
+		
+		id_counter = 0;	// Init counter for loading files to the workers
+		
+		finish = false;
+		completed = false;
+	}	
+	
 	void* runThreadDelilahLoadDataProcess(void *p)
 	{
 		DelilahUploadDataProcess *d = ((DelilahUploadDataProcess*)p);
@@ -161,21 +187,6 @@ namespace ss
 		
 	}
 
-	DelilahUploadDataProcess::DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue ) : fileSet( fileNames )
-	{
-		
-		// Queue name 
-		queue = _queue;
-		
-		uploadedSize = 0;
-		
-		worker = 0; // rand()%num_workers;		// Random worker to start
-		
-		id_counter = 0;	// Init counter for loading files to the workers
-		
-		finish = false;
-		completed = false;
-	}
 	
 	
 	bool DelilahUploadDataProcess::isUploadFinish()
@@ -219,9 +230,24 @@ namespace ss
 	{
 		std::ostringstream output;
 		
-		output << "["<< id << "]Uploading to queue " << queue << " : ";
-		output << "Pending files: " << pending_ids.size();
-		output << " Created files: " << created_files.size() << std::endl;
+		int seconds = ellapsedSeconds();
+		
+		output << "["<< id << "] Upload to " << queue << ": ";
+		
+		output << "[" << au::Format::time_string(seconds) << "] ";
+		
+		if( uploadedSize > 0)
+		{
+			size_t pending_secs =  ( totalSize - uploadedSize ) * seconds / uploadedSize;
+			output << "[ETA " << au::Format::time_string( pending_secs ) << "] ";
+		}
+		
+
+		int p = ( (double) uploadedSize / (double) totalSize ) * 100;
+		size_t r = ((double) uploadedSize * 8.0 / (double) seconds);
+		size_t r2 = r / num_workers;
+		output << "[ " << au::Format::string( uploadedSize ) << " / " << au::Format::string( totalSize ) << " " << p << "%" << " ]";
+		output << "[ Average global upload rate " << au::Format::string( r , "bps" ) << " -- " << au::Format::string( r2 , "bps" ) << " per worker ]";
 		
 		return output.str();
 	}

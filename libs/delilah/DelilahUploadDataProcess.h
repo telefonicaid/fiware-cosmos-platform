@@ -11,6 +11,7 @@
 #include "Delilah.h"			// ss::Delilah
 
 #include <sstream>			// std::ostringstream
+#include <sys/time.h>		// struct timeval
 
 namespace ss {
 
@@ -110,6 +111,7 @@ namespace ss {
 		
 		// Sumary information
 		size_t uploadedSize;	// Total size of uploaded files
+		size_t totalSize;		// Total size to be uploaded ( all files )
 		
 		bool error;
 		std::string error_message;
@@ -117,6 +119,8 @@ namespace ss {
 		
 		// Created files
 		std::vector<network::File> created_files;
+		
+		struct timeval init_time;
 		
 	public:
 
@@ -134,6 +138,13 @@ namespace ss {
 		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 		
 		std::string getStatus();
+		
+		int ellapsedSeconds()
+		{
+			struct timeval finish_time;
+			gettimeofday(&finish_time, NULL);
+			return finish_time.tv_sec - init_time.tv_sec;
+		}
 		
 	};	
 	

@@ -1,6 +1,6 @@
 
 #include "Format.h"		// Own interface
-
+#include <sys/stat.h>	// stat(.)
 namespace au
 {
 	std::string Format::percentage_string( double value , double total )
@@ -89,5 +89,18 @@ namespace au
 		return std::string(line);
 		
 	}
+	
+	
+	size_t Format::sizeOfFile( std::string fileName )
+	{
+		struct ::stat info;
+		if( stat(fileName.c_str(), &info) == 0)
+			return info.st_size;
+		else
+		{
+			return 0;
+		}
+	}		
+	
 	
 }

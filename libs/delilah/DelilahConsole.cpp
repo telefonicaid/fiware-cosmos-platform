@@ -482,6 +482,8 @@ namespace ss
 			o << std::endl;
 		}
 			
+		o << process->getStatus();
+		
 		writeWarningOnConsole(o.str());
 	};
 	

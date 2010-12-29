@@ -191,5 +191,12 @@ namespace ss {
 	}
 	
 	
+	std::string QueueuBufferVector::getStatus()
+	{
+		std::ostringstream o;
+		o << "<" << buffer.size() << "/" << au::Format::string( size , "B" ) << ">";
+		return o.str();
+	}
+	
 	
 }

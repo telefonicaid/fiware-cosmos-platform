@@ -184,7 +184,7 @@ namespace ss {
 		
 		std::map<std::string , QueueuBufferVector*>::iterator iter;
 		for ( iter = this->begin() ; iter != this->end() ; iter++)
-			output << "<Q:" << iter->second->buffer.size() << ">";
+			output << "<Q:" << iter->second->getStatus() << ">";
 		output << " ";
 		if( num_workers == num_finished_workers )
 		{

@@ -47,6 +47,8 @@ namespace ss {
 		// Get joined buffer from the accumulated buffers ( both txt and kvs )
 		Buffer* getJoinedBufferAndClear();
 		
+		// Get information about status
+		std::string getStatus();
 		
 	private:
 		

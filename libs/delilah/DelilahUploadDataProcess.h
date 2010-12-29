@@ -11,7 +11,7 @@
 #include "Delilah.h"			// ss::Delilah
 
 #include <sstream>			// std::ostringstream
-#include <sys/time.h>		// struct timeval
+#include "Format.h"			// au::Format
 
 namespace ss {
 
@@ -126,25 +126,14 @@ namespace ss {
 
 		DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue );		
 		
-		bool isUploadFinish();		
 		void run();		
-		void _run();		
+		void _run();	// Method only called by a separeted thread		
 		
-		size_t getId();		
-		size_t getUploadedSize();		
-		std::vector<std::string> getFailedFiles();		
-		std::vector<network::File> getCreatedFile();	void fillLoadDataConfirmationMessage( network::UploadDataConfirmation *confirmation );		
-
+		void fillLoadDataConfirmationMessage( network::UploadDataConfirmation *confirmation );		
 		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 		
 		std::string getStatus();
 		
-		int ellapsedSeconds()
-		{
-			struct timeval finish_time;
-			gettimeofday(&finish_time, NULL);
-			return finish_time.tv_sec - init_time.tv_sec;
-		}
 		
 	};	
 	

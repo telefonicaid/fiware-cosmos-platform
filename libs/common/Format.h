@@ -3,6 +3,7 @@
 
 #include <stdio.h>             /* sprintf */
 #include <string>				// std::string
+#include <sys/time.h>		// struct timeval
 
 namespace au {
 
@@ -26,6 +27,9 @@ namespace au {
 		
 		
 		static size_t sizeOfFile( std::string fileName );
+	
+		
+		static int ellapsedSeconds(struct timeval *init_time);
 		
 	};
 }

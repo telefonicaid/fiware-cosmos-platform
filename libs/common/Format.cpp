@@ -102,5 +102,13 @@ namespace au
 		}
 	}		
 	
+	int Format::ellapsedSeconds(struct timeval* init_time)
+	{
+		struct timeval finish_time;
+		gettimeofday(&finish_time, NULL);
+		return finish_time.tv_sec - init_time->tv_sec;
+	}
+	
+	
 	
 }

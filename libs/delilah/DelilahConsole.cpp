@@ -457,33 +457,8 @@ namespace ss
 	void DelilahConsole::loadDataConfirmation( DelilahUploadDataProcess *process)
 	{
 		std::ostringstream o;
-		o << "Alert: Load data process (id=" << process->getId() << ") finished\n";
-		o << "Total uploaded: " << au::Format::string( process->getUploadedSize() ) << "bytes\n";
-		
-		std::vector<std::string> failedFiles = process->getFailedFiles();
-		if( failedFiles.size() == 0 )
-			o << "No failed files\n";
-		else
-		{
-			o << failedFiles.size() << " Failed files\n";
-			for (size_t i = 0 ; i < failedFiles.size() ; i++)
-				o << "\tFile: " << failedFiles[i] << std::endl;
-		}
-		
-		
-		std::vector<network::File> created_file  = process->getCreatedFile();
-		o<< created_file.size() << " created files:\n";
-		for (size_t i = 0 ; i < created_file.size() ; i++)
-		{
-			o << "\tFile " << created_file[i].name();
-			o << " W:" << created_file[i].worker();
-			o << " Size: " << au::Format::string( created_file[i].info().size() );
-			//o << " KVS: " << au::Format::string( created_file[i].info().kvs() );
-			o << std::endl;
-		}
-			
+		o << "Alert: Load data process finished\n";
 		o << process->getStatus();
-		
 		writeWarningOnConsole(o.str());
 	};
 	

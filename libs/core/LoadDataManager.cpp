@@ -171,9 +171,6 @@ namespace ss
 	{
 		lock.lock();
 		std::ostringstream output; 
-		
-		output << "\n";
-		
 		if( downloadItem.size() > 0 )
 		{
 			output << " Downloads: ";

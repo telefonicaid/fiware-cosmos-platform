@@ -91,15 +91,17 @@ namespace ss
 			delilah->client->showMessage("Creating buffer to load data");
 			Buffer *b = MemoryManager::shared()->newBuffer( "Loading buffer" , 64*1024*1024 );
 			
-			// Fill the buffer
+			// Fill the buffer with the contents from the file
 			fileSet.fill( b );
-			
+
 			// Send to the rigth worker
 			Packet *p = new Packet();
 			p->buffer = b;	// Add the buffer to the packet
 
 			// Get a new id for this packet
 			size_t file_id = id_counter++;
+
+			// Insert into the list of pending elements
 			lock.lock();
 			pending_ids.insert( file_id );
 			lock.unlock();
@@ -115,6 +117,11 @@ namespace ss
 			// Next worker
 			if( ++worker == num_workers )
 				worker = 0;
+			
+			// Wait if memory is not released
+			while( MemoryManager::shared()->getMemoryUsage() > 0.7 )
+				sleep(1);
+			
 		}
 		
 		lock.lock();
@@ -133,6 +140,7 @@ namespace ss
 	
 	void DelilahUploadDataProcess::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
+		lock.lock();
 		
 		if (msgCode == Message::UploadDataResponse )
 		{
@@ -147,15 +155,14 @@ namespace ss
 			// update the uploaded data
 			uploadedSize += file.info().size();
 			
-			
-			
 			created_files.push_back(file);
 			pending_ids.erase( file_id );
+			
 			if( finish )
 				if ( pending_ids.size() == 0)
 					completed =true;
 			
-			if ( isUploadFinish() )
+			if ( completed )
 			{
 				// Send the final packet to the controller notifying about the loading process
 				Packet *p = new Packet();
@@ -186,15 +193,12 @@ namespace ss
 			component_finished = true;
 			
 		}
+
+		lock.unlock();		
 		
 	}
 
 	
-	
-	bool DelilahUploadDataProcess::isUploadFinish()
-	{
-		return completed;
-	}
 	
 	void DelilahUploadDataProcess::run()
 	{
@@ -207,32 +211,13 @@ namespace ss
 	
 	void DelilahUploadDataProcess::_run();		
 	
-	size_t DelilahUploadDataProcess::getId()
-	{
-		return id;
-	}
-	
-	size_t DelilahUploadDataProcess::getUploadedSize()
-	{
-		return uploadedSize;
-	}
-	
-	std::vector<std::string> DelilahUploadDataProcess::getFailedFiles()
-	{
-		return fileSet.getFailedFiles();
-	}
-	
-	std::vector<network::File> DelilahUploadDataProcess::getCreatedFile()
-	{
-		return created_files;
-	}
-	
-	
 	std::string DelilahUploadDataProcess::getStatus()
 	{
+		lock.lock();
+		
 		std::ostringstream output;
 		
-		int seconds = ellapsedSeconds();
+		int seconds = au::Format::ellapsedSeconds(&init_time);
 		
 		output << "["<< id << "] Upload to " << queue << ": ";
 		
@@ -251,6 +236,8 @@ namespace ss
 		output << "[ " << au::Format::string( uploadedSize ) << " / " << au::Format::string( totalSize ) << " " << p << "%" << " ]";
 		output << "[ Average global upload rate " << au::Format::string( r , "bps" ) << " -- " << au::Format::string( r2 , "bps" ) << " per worker ]";
 		
+		lock.unlock();
+
 		return output.str();
 	}
 	

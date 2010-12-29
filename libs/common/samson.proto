@@ -125,6 +125,7 @@ message WorkerStatus
 	optional string disk_manager_status=3;				// Information about the disk manager
 	optional string file_manager_cache_status=4;			// Information about the status of cache inside the file manager
 	optional string data_buffer_status=5;				// Information about data_buffer status
+	optional string load_data_manager_status=14;			// Information about load ( upload / download ) data manager
 	optional string memory_status=6;				// Information about memory status
 
 	optional uint64 used_memory=10;

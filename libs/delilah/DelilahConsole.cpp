@@ -649,6 +649,7 @@ namespace ss
 			txt << "\tFile Manager: " << worker_status.file_manager_status() << "\n";
 			txt << "\tFile Manager Cache: " << worker_status.file_manager_cache_status() << "\n";
 			txt << "\tData Buffer: " << worker_status.data_buffer_status() << "\n";
+			txt << "\tLoad Data Manager: " << worker_status.load_data_manager_status() << "\n";
 			txt << "\tDisk Manager: " << worker_status.disk_manager_status() << "\n";
 			txt << "\tTask Manager: " << worker_status.task_manager_status() << "\n";
 

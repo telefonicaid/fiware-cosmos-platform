@@ -19,7 +19,7 @@ namespace ss {
 	class LoadDataManager;
 
 	
-	class LoadDataManagerItem : public au::Status
+	class LoadDataManagerItem
 	{
 		
 	public:
@@ -29,6 +29,8 @@ namespace ss {
 		LoadDataManager *dataManager;			// Pointer to the data manager		
 		LoadDataManagerItem( int _fromIdentifier , LoadDataManager *dataManager );		
 		virtual ~LoadDataManagerItem(){}
+		virtual std::string getStatus( )=0;
+
 	};
 	
 	
@@ -56,9 +58,11 @@ namespace ss {
 		}
 		
 		// Function to get the run-time status of this object
-		void getStatus( std::ostream &output , std::string prefix_per_line )
+		std::string getStatus( )
 		{
-			output << "Item File:" << fileName << " Size: " << size << "\n";
+			std::ostringstream output;
+			output << "<S:" << au::Format::string(size,"B") << ">";
+			return output.str();
 		}
 		
 		
@@ -85,17 +89,18 @@ namespace ss {
 		size_t submitToFileManager();
 		void sendResponse( bool error , std::string error_message );
 
-		// Function to get the run-time status of this object
-		void getStatus( std::ostream &output , std::string prefix_per_line )
+		std::string getStatus( )
 		{
-			output << "Item \n";
+			std::ostringstream output;
+			output << "<TDB>";
+			return output.str();
 		}
 		
 		
 	};
 	
 	
-	class LoadDataManager : public FileManagerDelegate , public au::Status
+	class LoadDataManager : public FileManagerDelegate
 	{
 		friend class UploadItem;
 		friend class DownloadItem;
@@ -114,7 +119,6 @@ namespace ss {
 		LoadDataManager( SamsonWorker *_worker )
 		{
 			worker = _worker;
-			setStatusTile( "Upload Download Data Manager" , "uddm" );
 		}
 		
 		// Add item to upload data
@@ -126,9 +130,9 @@ namespace ss {
 		// Disk Manager notifications
 		virtual void fileManagerNotifyFinish(size_t id, bool success);
 
-		// Function to get the run-time status of this object
-		void getStatus( std::ostream &output , std::string prefix_per_line );
 
+		// Fill status information	
+		void fill( network::WorkerStatus* ws);
 		
 	};
 

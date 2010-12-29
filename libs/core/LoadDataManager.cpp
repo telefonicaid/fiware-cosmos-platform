@@ -166,18 +166,35 @@ namespace ss
 		lock.unlock();
 	}
 	
-	void LoadDataManager::getStatus( std::ostream &output , std::string prefix_per_line )
+	
+	void LoadDataManager::fill( network::WorkerStatus* ws)
 	{
+		lock.lock();
+		std::ostringstream output; 
+		
 		output << "\n";
 		
-		output << prefix_per_line << "Downloads:\n";
-		getStatusFromMap( output , downloadItem , prefix_per_line );
+		if( downloadItem.size() > 0 )
+		{
+			output << " Downloads: ";
+			for ( size_t i = 0 ; i < downloadItem.size() ; i++)
+				output << downloadItem[i]->getStatus();
+		}
+
+		if( uploadItem.size() > 0)
+		{
+			output << " Uploads: ";
+			for ( size_t i = 0 ; i < uploadItem.size() ; i++)
+				output << uploadItem[i]->getStatus();
+		}	
 		
-		output << prefix_per_line << "Uploads:\n";
-		getStatusFromMap( output , uploadItem , prefix_per_line );
+		lock.unlock();
 		
+		ws->set_load_data_manager_status( output.str() );
 		
+
 	}
+
 	
 	
 	

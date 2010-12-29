@@ -39,17 +39,6 @@ SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , d
 	network->setPacketReceiverInterface(this);
 
 	srand( (unsigned int) time(NULL) );
-
-	// Setup of the run-time status
-	setStatusTile( "Samson Worker" , "worker" );
-	addChildrenStatus( MemoryManager::shared() );
-	addChildrenStatus( &taskManager );
-	addChildrenStatus( &dataBuffer );
-	addChildrenStatus( FileManager::shared() );
-	addChildrenStatus( DiskManager::shared() );
-	addChildrenStatus( &loadDataManager );
-	//addChildrenStatus( network );
-	
 	
 	// Create a thread to run "runStatusUpdate"
 	pthread_t t;
@@ -87,6 +76,7 @@ void SamsonWorker::sendWorkerStatus()
 	FileManager::shared()->fill( ws );
 	MemoryManager::shared()->fill( ws );
 	dataBuffer.fill( ws );
+	loadDataManager.fill( ws );
 	
 	ws->set_used_memory( MemoryManager::shared()->get_used_memory() );
 	

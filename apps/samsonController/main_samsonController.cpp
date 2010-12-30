@@ -58,7 +58,6 @@ int main(int argC, const char* argV[])
 
 	ss::SamsonSetup::shared();		// Load setup and create default directories
 	ss::DiskManager::shared();		// Disk manager
-	ss::FileManager::shared();		// File manager
 	ss::MemoryManager::shared();	// Memory manager
 	
 	

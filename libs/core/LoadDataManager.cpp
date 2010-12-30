@@ -187,8 +187,10 @@ namespace ss
 				output << iter->second->getStatus();
 		}
 		
-		ws->set_upload_size( upload_size );
+		average_upload_size = 0.2* upload_size + 0.8 * average_upload_size;
 		upload_size = 0;
+
+		ws->set_upload_size( average_upload_size );
 		
 		lock.unlock();
 		

@@ -104,9 +104,6 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	// Load data files to be latter confirmed to controller
 	if (msgCode == Message::UploadData)
 	{
-		std::ostringstream fileName;
-		fileName << "/tmp/file_"<< getpid() << "_" << rand() << rand();	// Just to test
-
 		
 		loadDataManager.addUploadItem(fromId, packet->message.upload_data(), packet->message.delilah_id() , packet->buffer );
 		return 0;

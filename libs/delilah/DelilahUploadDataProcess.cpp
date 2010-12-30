@@ -65,10 +65,10 @@ namespace ss
 		for ( size_t i =  0 ; i < fileNames.size() ; i++)
 			totalSize += au::Format::sizeOfFile( fileNames[i] );
 		
-		
 		worker = 0; // rand()%num_workers;		// Random worker to start
 		
-		id_counter = 0;	// Init counter for loading files to the workers
+		num_files = 0;
+		num_confirmed_files = 0;
 		
 		finish = false;
 		completed = false;
@@ -97,13 +97,8 @@ namespace ss
 			Packet *p = new Packet();
 			p->buffer = b;	// Add the buffer to the packet
 
-			// Get a new id for this packet
-			size_t file_id = id_counter++;
-
 			// Insert into the list of pending elements
-			lock.lock();
-			pending_ids.insert( file_id );
-			lock.unlock();
+			size_t file_id = num_files++;
 
 			// Set message fields
 			network::UploadData *loadData = p->message.mutable_upload_data();	
@@ -114,7 +109,7 @@ namespace ss
 			// Send the packet
 			
 			std::ostringstream message;
-			message << "Sending buffer of " << au::Format::string( b->getSize() , "B" ) << " with id " << file_id;
+			message << getStatus() << " Sending buffer of " << au::Format::string( b->getSize() , "B" ) << " with id " << file_id;
 			delilah->client->showMessage(message.str());
 			
 			delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), Message::UploadData, p);
@@ -133,7 +128,7 @@ namespace ss
 		
 		finish =  true;
 		
-		if( pending_ids.size() == 0)
+		if( num_files == num_confirmed_files )
 		{
 			completed = true;
 			delilah->client->loadDataConfirmation(this);
@@ -152,7 +147,7 @@ namespace ss
 			size_t file_id = packet->message.upload_data_response().upload_data().file_id();
 			
 			std::ostringstream message;
-			message << "Received confirmation with file_id " << file_id;
+			message << getStatus() << " Received confirmation with file_id " << file_id;
 			delilah->client->showMessage(message.str());
 			
 			error			= packet->message.upload_data_response().error();
@@ -164,10 +159,10 @@ namespace ss
 			uploadedSize += file.info().size();
 			
 			created_files.push_back(file);
-			pending_ids.erase( file_id );
+			num_confirmed_files++;
 			
 			if( finish )
-				if ( pending_ids.size() == 0)
+				if ( num_files == num_confirmed_files)
 					completed =true;
 			
 			if ( completed )
@@ -199,7 +194,7 @@ namespace ss
 			component_finished = true;
 			
 			std::ostringstream message;
-			message << "Received an upload confirmation message ";
+			message << getStatus() << " Received an upload confirmation message ";
 			delilah->client->showMessage(message.str());
 			
 			
@@ -207,7 +202,7 @@ namespace ss
 		else
 		{
 			std::ostringstream message;
-			message << "Received strange message with code " << msgCode;
+			message << getStatus() << " Received strange message with code " << msgCode;
 			delilah->client->showMessage(message.str());
 		}
 
@@ -250,7 +245,7 @@ namespace ss
 		size_t r = ((double) uploadedSize * 8.0 / (double) seconds);
 		size_t r2 = r / num_workers;
 		output << "[ " << au::Format::string( uploadedSize ) << " / " << au::Format::string( totalSize ) << " " << p << "%" << " ]";
-		output << "[ Average global upload rate " << au::Format::string( r , "bps" ) << " -- " << au::Format::string( r2 , "bps" ) << " per worker ]";
+		output << "[ Rate: " << au::Format::string( r , "bps" ) << " - " << au::Format::string( r2 , "bps" ) << " per worker ]";
 
 		return output.str();
 	}

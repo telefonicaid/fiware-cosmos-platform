@@ -99,13 +99,15 @@ namespace ss {
 		
 		TXTFileSet fileSet;		// Input txt files
 		
-		// Set of ids pending to be confirmed
-		std::set<size_t> pending_ids;
-		size_t id_counter;
-
+		size_t num_files;		
+		size_t num_confirmed_files;
+		
+		// Created files
+		std::vector<network::File> created_files;	// ( only used when debuggin )
+		
+		
 		bool finish;			// Flag to notify that all data has been sent to workers
 		bool completed;			// Flag to notify that the process is complete ( everything is confirmed )
-		
 
 		std::string queue;
 		
@@ -115,10 +117,6 @@ namespace ss {
 		
 		bool error;
 		std::string error_message;
-		
-		
-		// Created files
-		std::vector<network::File> created_files;
 		
 		struct timeval init_time;
 		

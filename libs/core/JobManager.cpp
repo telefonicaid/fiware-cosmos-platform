@@ -133,8 +133,7 @@ namespace ss {
 				break;
 			case network::WorkerTaskConfirmation::update:
 			{
-				if( task )
-					task->updateItemInformation( worker_id , confirmationMessage->num_finished_items() , confirmationMessage->num_items() );
+				// TODO: Process this to update status
 			}
 				break;
 				

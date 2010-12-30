@@ -31,41 +31,12 @@ namespace ss {
 		// In generators, this is used to determine how is the active user
 		generator = rand()%num_workers;
 		
-		num_items = (int *) malloc( sizeof(int) * num_workers );
-		num_finish_items = (int *) malloc( sizeof(int) * num_workers );
-		
-		for (int i = 0 ; i < num_workers ; i++)
-		{
-			num_items[i] = 0;
-			num_finish_items[i] = 0;
-		}
-		total_num_finish_items = 0;
-		total_num_items = 0 ;
 		
 	}
 	
 	ControllerTask::~ControllerTask()
 	{
 		delete info;
-		
-		free( num_items );
-		free( num_finish_items );
-	}
-	
-	void ControllerTask::updateItemInformation( int workerId , int _num_finished_items, int _num_items )
-	{
-		num_items[workerId] = _num_items;
-		num_finish_items[workerId] = _num_finished_items;
-
-		total_num_finish_items = 0;
-		total_num_items = 0 ;
-		
-		for (int i = 0 ; i < num_workers ; i++)
-		{
-			total_num_items += num_items[i];
-			total_num_finish_items += num_finish_items[i];
-		}
-		
 	}
 	
 	

@@ -408,8 +408,8 @@ namespace ss {
 			// Artifitial jobitem to show current task
 			network::JobItem *j = job->add_item();
 			j->set_command( currenTask->info->operation_name );
-			j->set_line( currenTask->total_num_finish_items );
-			j->set_num_lines( currenTask->total_num_items );
+			j->set_line( 0 );
+			j->set_num_lines( 0 );
 		}
 
 		

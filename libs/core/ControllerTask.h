@@ -39,13 +39,6 @@ namespace ss {
 		int complete_workers;			// List of worker ids that have reported complete	
 		
 		int generator;					// Spetial flag to be removed from here ;)
-
-		// Information about progress
-		int *num_items;					// Total items in this woker
-		int *num_finish_items;			// Total items finished in this worker
-		int total_num_finish_items;
-		int total_num_items;
-		
 		
 		// Error management
 		bool error;
@@ -69,8 +62,6 @@ namespace ss {
 		void notifyWorkerComplete();
 		
 		void fillInfo( network::WorkerTask *t , int workerIdentifier );		
-		
-		void updateItemInformation( int workerId , int num_finished_items, int num_items );
 		
 		std::string getStatus()
 		{

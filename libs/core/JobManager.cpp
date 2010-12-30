@@ -117,9 +117,9 @@ namespace ss {
 				if( task && job)
 				for (int f = 0 ; f < confirmationMessage->file_size() ; f++)
 				{
-					network::QueueFile qfile = confirmationMessage->file(f);
-					network::File file = qfile.file();
-					network::KVInfo info = file.info();
+					const network::QueueFile& qfile = confirmationMessage->file(f);
+					const network::File& file = qfile.file();
+					const network::KVInfo& info = file.info();
 					
 					std::string command = ControllerDataManager::getAddFileCommand(file.worker() , file.name(),  info.size() , info.kvs() , qfile.queue() );
 					DataManagerCommandResponse response = controller->data.runOperation( job->getId() , command );

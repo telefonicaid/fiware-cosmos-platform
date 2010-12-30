@@ -360,11 +360,12 @@ namespace ss {
 			
 			worker_status_lock.unlock();
 			
-			system->push( "memory" , total_memory );
-			system->push( "cores" , total_cores );
-			system->push( "TotalSize"		, data.get_info_kvs().size );
+			system->push( "memory"			, total_memory );
+			system->push( "cores"			, pow( 10 , total_cores ) );
 			system->push( "TotalTxTSize"	, data.get_info_txt().size );
 			system->push( "TotalKvs"		, data.get_info_kvs().kvs );
+			
+			system->push( "TotalSize"		, data.get_info_kvs().size + data.get_info_txt().size );
 			
 		}
 

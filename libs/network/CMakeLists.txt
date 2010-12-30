@@ -15,6 +15,7 @@ SET (HEADERS
 	Alarm.h
 	Misc.h
 	EndpointMgr.h
+	easyzlib.h
 )
 
 SET (SOURCES
@@ -33,6 +34,7 @@ SET (SOURCES
 	Alarm.cpp
 	Misc.cpp
 	EndpointMgr.cpp
+	easyzlib.c
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")

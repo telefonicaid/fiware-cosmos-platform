@@ -45,7 +45,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
 ADD_LIBRARY(samsonCommonStatic STATIC ${SOURCES} ${HEADERS} ${HEADERS_SAMSON})
-TARGET_LINK_LIBRARIES(samsonCommonStatic  protobuf lm)
+TARGET_LINK_LIBRARIES(samsonCommonStatic  protobuf lm z)
 
 SET_TARGET_PROPERTIES(samsonCommonStatic PROPERTIES OUTPUT_NAME samsonCommon)
 

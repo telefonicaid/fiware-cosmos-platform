@@ -110,6 +110,9 @@ namespace ss
 			network::UploadData *loadData = p->message.mutable_upload_data();	
 			loadData->set_file_id( file_id );
 			p->message.set_delilah_id( id );		// Global id of delilah jobs
+
+			// Compress the packet before sending
+			p->compress();
 			
 			// Send the packet
 			delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), Message::UploadData, p);

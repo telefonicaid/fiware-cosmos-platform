@@ -5,6 +5,12 @@ package ss.network;
 // Common 
 //
 
+message CompressInfo
+{
+	required uint64 original_size=1;	// Original size of the message
+	required uint64 compress_size=2;	// Compress size of the message
+}
+
 message EnvironmentVariable
 {
 	required string name	=1;	// Name of the property
@@ -374,12 +380,11 @@ message Message
 		Delilah    = 0x44;
 	};
 
-
-
 	// ////////////////////////////////////////////////////////////////////////////
 	//
-	// Message Data (only one of these structures per message
+	// Message Data ( only one of these structures per message )
 	//
+
 	optional Command                command                   = 103;  // Command message
 	optional CommandResponse        command_response          = 104;  // Command response message
 
@@ -402,8 +407,11 @@ message Message
 	optional DownloadDataResponse	download_data_response	= 201;		//
 
 	optional WorkerStatus worker_status = 170;			// Worker status update
+
+	// Common information
 	
 	optional uint64  delilah_id = 300;				// Used in commands , upload and download process with delilah
+	optional CompressInfo compress_info=301;			// Information about the compression of companion data
 }
 
 

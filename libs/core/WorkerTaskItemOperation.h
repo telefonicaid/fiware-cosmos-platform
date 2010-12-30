@@ -22,8 +22,8 @@ namespace ss {
 		int num_hash_groups;
 		
 		WorkerTaskItemOperation( int _hg_begin , int _hg_end , WorkerTaskItemOrganizer* reduceOrganizer, const network::WorkerTask &task );
-		
 		~WorkerTaskItemOperation();
+		
 		
 		void setupInputs();
 		void run( ProcessAssistant *pa );

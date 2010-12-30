@@ -22,7 +22,7 @@ namespace ss
 	WorkerTaskItemOperation::~WorkerTaskItemOperation()
 	{
 	}
-	
+
 	
 	void WorkerTaskItemOperation::setupInputs()
 	{

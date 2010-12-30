@@ -26,17 +26,14 @@ namespace ss {
 
 	void WorkerTaskItemOrganizer::run( ProcessAssistant *pa )
 	{
-		
-		// Organize the reduce in multiple WorkerTaskItems to process each set of hash-groups
-		
-		int num_process = SamsonSetup::shared()->num_processes;
-		
-		int max_num_hgs = KV_NUM_HASHGROUPS / num_process;	// Minimum num_process divisions for force multicore approach
-		size_t max_item_size = SamsonSetup::shared()->shared_memory_size_per_buffer - max_num_hgs*sizeof(FileKVInfo) - sizeof(SharedHeader);
-		
-		
 		ProcessAssistantSharedFileCollection *reduceInformation = task->reduceInformation;
 		reduceInformation->setup();
+		
+		// Organize the reduce in multiple WorkerTaskItems to process each set of hash-groups
+		int num_process = SamsonSetup::shared()->num_processes;
+		int max_num_hgs = KV_NUM_HASHGROUPS / num_process;	// Minimum num_process divisions for force multicore approach
+		size_t max_item_content_size = SamsonSetup::shared()->shared_memory_size_per_buffer - reduceInformation->total_num_input_files*max_num_hgs*sizeof(FileKVInfo) - sizeof(SharedHeader);
+		
 
 		/*
 		std::cout << "Running organizer:\n";
@@ -54,7 +51,7 @@ namespace ss {
 		{
 			size_t current_hg_size = reduceInformation->size_of_hg[hg];
 			
-			if( ( ( total_size + current_hg_size  ) > max_item_size ) || (hg - item_hg_begin ) > max_num_hgs )
+			if( ( ( total_size + current_hg_size  ) > max_item_content_size ) || (hg - item_hg_begin ) > max_num_hgs )
 			{
 				
 				if( total_size > 0 )

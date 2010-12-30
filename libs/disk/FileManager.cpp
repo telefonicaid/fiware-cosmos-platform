@@ -36,7 +36,7 @@ namespace ss
 		{
 			
 			// Add to the disk manager
-			size_t dm_id = DiskManager::shared()->read( v->buffer , v->fileName , v->offset , v->size,  this );
+			size_t dm_id = DiskManager::shared()->read( v->simpleBuffer.getData() , v->fileName , v->offset , v->size,  this );
 			
 			// add the relation between both ids
 			ids.insertInMap( dm_id , fm_id );

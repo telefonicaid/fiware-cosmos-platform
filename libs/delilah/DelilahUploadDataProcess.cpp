@@ -149,19 +149,17 @@ namespace ss
 		
 		if (msgCode == Message::UploadDataResponse )
 		{
-			size_t		file_id			= packet->message.upload_data_response().upload_data().file_id();
+			size_t file_id = packet->message.upload_data_response().upload_data().file_id();
 			
 			std::ostringstream message;
-			message << "Recevied confirmation with file_id " << file_id;
+			message << "Received confirmation with file_id " << file_id;
 			delilah->client->showMessage(message.str());
-			
 			
 			error			= packet->message.upload_data_response().error();
 			error_message	= packet->message.upload_data_response().error_message();
 			
 			network::File file = packet->message.upload_data_response().file();
 			
-
 			// update the uploaded data
 			uploadedSize += file.info().size();
 			
@@ -188,9 +186,7 @@ namespace ss
 				
 				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::UploadDataConfirmation, p);
 			}
-		}
-		
-		if (msgCode == Message::UploadDataConfirmationResponse )
+		} else if (msgCode == Message::UploadDataConfirmationResponse )
 		{
 			network::UploadDataConfirmationResponse confirmation = packet->message.upload_data_confirmation_response();
 			error			= confirmation.error();
@@ -202,6 +198,17 @@ namespace ss
 			// mark the component as finished to be removed
 			component_finished = true;
 			
+			std::ostringstream message;
+			message << "Received an upload confirmation message ";
+			delilah->client->showMessage(message.str());
+			
+			
+		}
+		else
+		{
+			std::ostringstream message;
+			message << "Received strange message with code " << msgCode;
+			delilah->client->showMessage(message.str());
 		}
 
 		lock.unlock();		

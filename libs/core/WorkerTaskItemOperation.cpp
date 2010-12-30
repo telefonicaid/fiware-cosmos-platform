@@ -55,7 +55,7 @@ namespace ss
 									  reduceInformation->file[f]->fileName , \
 									  reduceInformation->file[f]->getFileOffset( hg_begin ), \
 									  header.info.size, \
-									  data + offset \
+									  smi->getSimpleBufferAtOffset(offset) \
 									  , NULL );
 			addInputFiles( item );
 			offset += header.info.size;

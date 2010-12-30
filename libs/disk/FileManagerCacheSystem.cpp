@@ -39,7 +39,7 @@ namespace ss {
 				// Perform task
 				if( task )
 				{
-					memcpy(task->readItem->buffer, task->cacheItem->buffer->getData() + task->readItem->offset , task->readItem->size);
+					memcpy(task->readItem->simpleBuffer.getData(), task->cacheItem->buffer->getData() + task->readItem->offset , task->readItem->size);
 					
 					lock.lock();
 					task->cacheItem->release();

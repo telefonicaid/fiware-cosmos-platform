@@ -7,6 +7,49 @@
 
 namespace ss {
 
+	
+	/**
+	 Simple class to specify an allocated space in memory
+	 */
+	
+	class SimpleBuffer
+	{
+		
+		char *_data;
+		size_t _size;
+		
+	public:
+		
+		SimpleBuffer()
+		{
+			_data = NULL;
+			_size = 0;
+		}
+		
+		SimpleBuffer( char *data , size_t size )
+		{
+			_data = data;
+			_size = size;
+		}
+		
+		bool checkSize( size_t size )
+		{
+			return ( _size >= size );
+		}
+		
+		char* getData()
+		{
+			return _data;
+		}
+		
+		size_t getSize()
+		{
+			return _size;
+		}
+		
+	};
+	
+	
 	/**
 	 Buffer class to hold data manager by MemoryManager
 	 It has to be accessible by multiple process identified by offset and size
@@ -193,6 +236,13 @@ namespace ss {
 		}
 		
 		std::string str();
+		
+		
+		SimpleBuffer getSimpleBuffer()
+		{
+			return SimpleBuffer( _data , _max_size );
+		}
+		
 		
 
 	};

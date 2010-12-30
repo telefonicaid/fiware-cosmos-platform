@@ -192,8 +192,8 @@ namespace ss {
 		// Read the key-value information for each hash group for each input files
 		size_t offset			= sizeof( FileHeader );					// We skip the file header
 		size_t size				= sizeof(FileKVInfo) * KV_NUM_HASHGROUPS;
-		
-		FileManagerReadItem *item = new FileManagerReadItem( file->fileName , offset , size , (char *) file->info , NULL );
+
+		FileManagerReadItem *item = new FileManagerReadItem( file->fileName , offset , size , file->getSimpleBufferForInfo() , NULL );
 		return item;
 	}	
 	

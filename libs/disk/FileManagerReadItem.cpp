@@ -6,10 +6,13 @@
 namespace ss {
 
 
-	FileManagerReadItem::FileManagerReadItem( std::string _fileName , size_t _offset , size_t _size ,  char *_buffer , FileManagerDelegate *_delegate )
+	FileManagerReadItem::FileManagerReadItem( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer _simpleBuffer , FileManagerDelegate *_delegate )
 	: FileManagerItem( _delegate , FileManagerItem::read , _size )
 	{
-		buffer = _buffer;
+		simpleBuffer = _simpleBuffer;
+		
+		// Make sure we have space in the provided simple buffer to write all we have to read
+		assert( simpleBuffer.checkSize(_size) );
 		
 		fileName = _fileName;
 		offset = _offset;

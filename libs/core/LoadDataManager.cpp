@@ -86,7 +86,7 @@ namespace ss
 		buffer = MemoryManager::shared()->newBuffer( "Buffer for downloading data" , size );
 		buffer->setSize( size );
 
-		FileManagerReadItem *item = new FileManagerReadItem( fileName , 0 , size , buffer->getData(), dataManager );
+		FileManagerReadItem *item = new FileManagerReadItem( fileName , 0 , size , buffer->getSimpleBuffer(), dataManager );
 		return FileManager::shared()->addItemToRead( item );
 	}
 	

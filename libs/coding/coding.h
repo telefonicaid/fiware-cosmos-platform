@@ -12,6 +12,7 @@
 #include <assert.h>				// assert(.)
 #include "samson.pb.h"			// network:...
 #include <string.h>				// std::string
+#include "Buffer.h"				// ss::SimpleBuffer
 
 /*
 #define KV_BUFFER_SIZE			1024*1024*256									
@@ -344,6 +345,10 @@ namespace ss {
 			free( cumulative_info );
 		}
 		
+		SimpleBuffer getSimpleBufferForInfo()
+		{
+			return SimpleBuffer( (char*) info , sizeof( FileKVInfo) * KV_NUM_HASHGROUPS );
+		}
 		
 		void setup()
 		{

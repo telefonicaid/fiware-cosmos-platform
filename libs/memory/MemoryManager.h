@@ -38,6 +38,24 @@ namespace ss {
 		int shmid;					/* return value from shmget() */ 
 		char *data;					/* Shared memory data */
 		size_t size;				/* Information about the size of this shared memory item */
+		
+		
+		SimpleBuffer getSimpleBuffer()
+		{
+			return SimpleBuffer( data , size );
+		}
+		
+		SimpleBuffer getSimpleBufferAtOffset(size_t offset)
+		{
+			return SimpleBuffer( data + offset , size - offset );
+		}
+		
+		SimpleBuffer getSimpleBufferAtOffsetWithMaxSize(size_t offset , size_t _size)
+		{
+			assert( _size <= ( size - offset ) );
+			return SimpleBuffer( data + offset , _size );
+		}
+		
 	};
 
 		

@@ -28,9 +28,9 @@ namespace ss {
 		size_t offset;						// Offset inside file ( only used when reading )
 		size_t size;						// Size to read
 		
-		char *buffer;						// Pointer to where data should be written
-				
-		FileManagerReadItem( std::string _fileName , size_t _offset , size_t _size ,  char *_buffer , FileManagerDelegate *_delegate );
+		SimpleBuffer simpleBuffer;			// Simple buffer to write in...
+		
+		FileManagerReadItem( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer simpleBuffer , FileManagerDelegate *_delegate );
 		
 		// Replace the delegate ( before sending to File Manager )
 		void setDelegate( FileManagerDelegate *_delegate );

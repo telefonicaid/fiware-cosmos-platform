@@ -14,10 +14,8 @@ namespace ss {
 	{
 		SharedMemoryItem * smi = MemoryManager::shared()->getSharedMemory( get_shm_input() );
 		size = au::Format::sizeOfFile( fileName );
-
-		assert( size <= smi->size );
 		
-		FileManagerReadItem *item = new FileManagerReadItem( fileName , 0 , size , smi->data , NULL );
+		FileManagerReadItem *item = new FileManagerReadItem( fileName , 0 , size , smi->getSimpleBuffer() , NULL );
 		addInputFiles( item );
 		
 		// The delegate is TaskManager: it received notifications form the FileManager and unblock items

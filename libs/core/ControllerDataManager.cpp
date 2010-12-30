@@ -227,6 +227,10 @@ namespace ss {
 			}
 			
 			queues.clear();
+			
+			info_kvs.clear();
+			info_txt.clear();
+			
 			response.output = "OK";
 			return response;
 			

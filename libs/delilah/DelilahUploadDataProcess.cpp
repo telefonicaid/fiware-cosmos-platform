@@ -181,6 +181,7 @@ namespace ss
 				
 				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::UploadDataConfirmation, p);
 			}
+			
 		} else if (msgCode == Message::UploadDataConfirmationResponse )
 		{
 			network::UploadDataConfirmationResponse confirmation = packet->message.upload_data_confirmation_response();
@@ -244,7 +245,8 @@ namespace ss
 		int p = ( (double) uploadedSize / (double) totalSize ) * 100;
 		size_t r = ((double) uploadedSize * 8.0 / (double) seconds);
 		size_t r2 = r / num_workers;
-		output << "[ " << au::Format::string( uploadedSize ) << " / " << au::Format::string( totalSize ) << " " << p << "%" << " ]";
+		output << " [ Files " << num_confirmed_files << " / " << num_files << "]";
+		output << " [ Size " << au::Format::string( uploadedSize ) << " / " << au::Format::string( totalSize ) << " " << p << "%" << " ]";
 		output << "[ Rate: " << au::Format::string( r , "bps" ) << " - " << au::Format::string( r2 , "bps" ) << " per worker ]";
 
 		return output.str();

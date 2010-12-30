@@ -346,6 +346,7 @@ namespace ss {
 		{
 			size_t total_memory = 0;
 			size_t total_cores = 0;
+			size_t upload_size = 0;
 			
 			worker_status_lock.lock();
 
@@ -354,7 +355,9 @@ namespace ss {
 				if( worker_status[i] )
 				{
 					total_memory += worker_status[i]->used_memory();			
-					total_cores  += worker_status[i]->working_cores();			
+					total_cores  += worker_status[i]->working_cores();
+					
+					upload_size += worker_status[i]->upload_size();
 				}
 			}
 			
@@ -364,8 +367,9 @@ namespace ss {
 			system->push( "cores"			, pow( 10 , total_cores ) );
 			system->push( "TotalTxTSize"	, data.get_info_txt().size );
 			system->push( "TotalKvs"		, data.get_info_kvs().kvs );
-			
 			system->push( "TotalSize"		, data.get_info_kvs().size + data.get_info_txt().size );
+
+			system->push( "UploadSize"		, upload_size );
 			
 		}
 

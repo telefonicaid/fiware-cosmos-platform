@@ -77,6 +77,7 @@ void SamsonWorker::sendWorkerStatus()
 	MemoryManager::shared()->fill( ws );
 	dataBuffer.fill( ws );
 	loadDataManager.fill( ws );
+
 	
 	ws->set_used_memory( MemoryManager::shared()->get_used_memory() );
 	

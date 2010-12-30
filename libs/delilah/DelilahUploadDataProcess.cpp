@@ -146,9 +146,6 @@ namespace ss
 		{
 			size_t file_id = packet->message.upload_data_response().upload_data().file_id();
 			
-			std::ostringstream message;
-			message << getStatus() << " Received confirmation with file_id " << file_id;
-			delilah->client->showMessage(message.str());
 			
 			error			= packet->message.upload_data_response().error();
 			error_message	= packet->message.upload_data_response().error_message();
@@ -181,6 +178,11 @@ namespace ss
 				
 				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::UploadDataConfirmation, p);
 			}
+
+			std::ostringstream message;
+			message << getStatus() << " Received confirmation with file_id " << file_id;
+			delilah->client->showMessage(message.str());
+			
 			
 		} else if (msgCode == Message::UploadDataConfirmationResponse )
 		{

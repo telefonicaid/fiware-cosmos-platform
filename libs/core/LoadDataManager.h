@@ -111,14 +111,17 @@ namespace ss {
 		au::Lock lock;
 		
 		au::map<size_t,UploadItem> uploadItem;		// Items to be uploded from dalilahs
-		
 		au::map<size_t,DownloadItem> downloadItem;	// Items to be downloaded to dalilahs
 		
 	public:
+
+		size_t upload_size;	// Simple information about the size of upload
+		
 		
 		LoadDataManager( SamsonWorker *_worker )
 		{
 			worker = _worker;
+			upload_size = 0;
 		}
 		
 		// Add item to upload data

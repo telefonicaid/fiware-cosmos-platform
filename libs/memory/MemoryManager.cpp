@@ -192,6 +192,9 @@ namespace ss
 		output << " Buffers in action: " << num_buffers;
 		output << " Shared memory Buffers: " << num_shm_buffers << " / " << shared_memory_num_buffers;
 		ws->set_memory_status( output.str() );
+		
+		ws->set_used_memory( used_memory );
+		ws->set_total_memory( memory );
 	}
 	
 

@@ -115,6 +115,8 @@ namespace ss
 	
 	void LoadDataManager::addUploadItem( int fromIdentifier, const network::UploadData &uploadData ,size_t sender_id, Buffer * buffer )
 	{
+		upload_size+= buffer->getSize();
+		
 		lock.lock();
 		
 		UploadItem *item = new UploadItem( fromIdentifier , this , uploadData , sender_id , buffer );
@@ -184,6 +186,9 @@ namespace ss
 			for ( iter = uploadItem.begin() ; iter != uploadItem.end() ; iter++)
 				output << iter->second->getStatus();
 		}
+		
+		ws->set_upload_size( upload_size );
+		upload_size = 0;
 		
 		lock.unlock();
 		

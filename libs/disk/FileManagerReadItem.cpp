@@ -5,18 +5,6 @@
 
 namespace ss {
 
-	size_t FileManagerReadItem::sizeOfFile( std::string fileName )
-	{
-		struct ::stat info;
-		if( stat(fileName.c_str(), &info) == 0)
-			return info.st_size;
-		else
-		{
-			assert( false );
-			return 0;
-		}
-	}
-
 
 	FileManagerReadItem::FileManagerReadItem( std::string _fileName , size_t _offset , size_t _size ,  char *_buffer , FileManagerDelegate *_delegate )
 	: FileManagerItem( _delegate , FileManagerItem::read , _size )

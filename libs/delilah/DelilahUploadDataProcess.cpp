@@ -88,7 +88,6 @@ namespace ss
 		while( !fileSet.isFinish() )
 		{
 			// Create a buffer
-			delilah->client->showMessage("Creating buffer to load data");
 			Buffer *b = MemoryManager::shared()->newBuffer( "Loading buffer" , 64*1024*1024 );
 			
 			// Fill the buffer with the contents from the file
@@ -111,10 +110,13 @@ namespace ss
 			loadData->set_file_id( file_id );
 			p->message.set_delilah_id( id );		// Global id of delilah jobs
 
-			// Compress the packet before sending
-			p->compress();
 			
 			// Send the packet
+			
+			std::ostringstream message;
+			message << "Sending buffer of " << au::Format::string( b->getSize() , "B" ) << " with id " << file_id;
+			delilah->client->showMessage(message.str());
+			
 			delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), Message::UploadData, p);
 			
 			// Next worker
@@ -148,6 +150,11 @@ namespace ss
 		if (msgCode == Message::UploadDataResponse )
 		{
 			size_t		file_id			= packet->message.upload_data_response().upload_data().file_id();
+			
+			std::ostringstream message;
+			message << "Recevied confirmation with file_id " << file_id;
+			delilah->client->showMessage(message.str());
+			
 			
 			error			= packet->message.upload_data_response().error();
 			error_message	= packet->message.upload_data_response().error_message();

@@ -40,9 +40,9 @@ namespace ss {
 		};
 
 		
+		/*
 		void compress()
 		{
-		  /*
 			if( buffer )
 			{
 				network::CompressInfo *ci = message.mutable_compress_info();
@@ -69,13 +69,11 @@ namespace ss {
 				
 				//std::cout << "Compressing from " << ci->original_size() << " to " << ci->compress_size() << "\n";
 			}
-		  */
 			
 		}
 		
 		void decompress()
 		{
-		  /*
 			if( buffer && message.has_compress_info() )
 			{
 				// Decompress
@@ -94,8 +92,8 @@ namespace ss {
 				buffer = b;
 				
 			}
-		  */
 		}
+		 */
 		
 		
 		~Packet()

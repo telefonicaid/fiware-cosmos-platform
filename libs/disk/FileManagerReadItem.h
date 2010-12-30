@@ -29,10 +29,7 @@ namespace ss {
 		size_t size;						// Size to read
 		
 		char *buffer;						// Pointer to where data should be written
-		
-		
-		static size_t sizeOfFile( std::string fileName );
-		
+				
 		FileManagerReadItem( std::string _fileName , size_t _offset , size_t _size ,  char *_buffer , FileManagerDelegate *_delegate );
 		
 		// Replace the delegate ( before sending to File Manager )

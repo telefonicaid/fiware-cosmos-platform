@@ -13,7 +13,7 @@ namespace ss {
 	void WorkerTaskItemParser::setupInputs()
 	{
 		SharedMemoryItem * smi = MemoryManager::shared()->getSharedMemory( get_shm_input() );
-		size = FileManagerReadItem::sizeOfFile( fileName );
+		size = au::Format::sizeOfFile( fileName );
 
 		assert( size <= smi->size );
 		

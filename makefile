@@ -70,3 +70,4 @@ m:
 
 memory:
 	sudo sysctl -w kernel.shmmax=134217728
+

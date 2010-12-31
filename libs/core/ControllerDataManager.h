@@ -36,7 +36,6 @@ namespace ss {
 		au::map< std::string , Queue> queues;				// List of KeyValue queues
 		
 		AutomaticOperationManager automatic_operations_manager;		// Manager of automatic operations
-		
 
 		SamsonController *controller;						// Pointer to controller for module access
 		

@@ -51,11 +51,21 @@ bool processFile( std::string fileName )
 		size_t task_id = command.task_id();
 		ss::data::Command_Action action = command.action();
 		std::string txt = command.command();
+
+		// Time in a particular format
+		char buffer_time[100];
+		time_t t = (time_t) command.time();
+		struct tm timeinfo;
+
+		// Convert to local version
+		localtime_r ( &t , &timeinfo );
+		
+		strftime (buffer_time,100,"%d/%m/%Y (%X)",&timeinfo);
 		
 		if( action == ss::data::Command_Action_Session)
 			std::cout << "*** " << stringForAction( action ) << " " << txt << std::endl;
 		else
-			std::cout << "[" << task_id  << "] " << stringForAction( action ) << " " << txt << std::endl;
+			std::cout << "<" << buffer_time << ">" << " [" << task_id  << "] " << stringForAction( action ) << " " << txt << std::endl;
 	}
 	
 	return true;

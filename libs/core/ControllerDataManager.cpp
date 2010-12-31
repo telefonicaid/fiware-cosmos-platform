@@ -545,9 +545,13 @@ namespace ss {
 		return response;
 	}
 	
-	void ControllerDataManager::_un_run( std::string command )
+	void ControllerDataManager::_clear(  )
 	{
-		// Undo a particular action
+		info_kvs.clear();
+		info_txt.clear();
+
+		queues.clearMap();
+		automatic_operations_manager.clear();
 	}
 	
 	
@@ -681,7 +685,7 @@ namespace ss {
 			for (size_t i = 0 ; i < info->inputs.size() ; i++ )
 				command << info->inputs[i] << " ";
 
-			DataManagerCommandResponse ans =  _runOperation( job_id , command.str() , true );
+			DataManagerCommandResponse ans =  _runOperation( job_id , command.str() );
 			//assert( !ans.error );	// Internal command ( no error possible )
 		}
 		

@@ -112,6 +112,8 @@ namespace ss {
 	{
 		size_t id;						// Identifier of the job ( this is the one reported to delialh to monitorize a job)
 
+		// Basic information about this job
+		time_t time_init;					// Init time of this job ( to monitor the operation )
 		int fromIdentifier;				// Identifier of the delailah that ordered this job ( -1 if automatic operation )
 		int sender_id;					// Identifier at the sender side (the same delilah could send multiple jobs)
 		

@@ -14,6 +14,9 @@ namespace ss {
 
 	Job::Job( JobManager * _jobManager , size_t _id, int fromId, const network::Command &command , size_t _sender_id  )
 	{
+		// Init time for this job
+		time_init = time(NULL);
+		
 		// Keep a pointer to the controller
 		jobManager = _jobManager;
 		
@@ -32,7 +35,6 @@ namespace ss {
 		// Create the first item of this job
 		JobItem j("TOP");
 		j.addCommand(command.command());
-		
 		items.push_back( j );
 		
 		// Default value for the internal flags
@@ -146,7 +148,7 @@ namespace ss {
 				if( commandLine.get_flag_bool("create") && (!commandLine.get_flag_bool("ncreate")) )
 				{
 					// Add comment to data manager to log that a script is initiated
-					jobManager->controller->data.addComment(id, std::string("Expanding -c optiona of: ") + command );
+					jobManager->controller->data.addComment(id, std::string("Expanding -c option of: ") + command );
 					
 					// Create a JobItem for this script, push into the task and return true to continue
 					JobItem jobItem( command );
@@ -172,7 +174,7 @@ namespace ss {
 				if( commandLine.get_flag_bool("clear") && (!commandLine.get_flag_bool("nclear")) )
 				{
 					// Add comment to data manager to log that a script is initiated
-					jobManager->controller->data.addComment(id, std::string("Expanding -clear optiona of: ") + command );
+					jobManager->controller->data.addComment(id, std::string("Expanding -clear option of: ") + command );
 					
 					// Create a JobItem for this script, push into the task and return true to continue
 					JobItem jobItem( command );
@@ -354,6 +356,10 @@ namespace ss {
 			else 
 				response->set_finish_job_id( id );
 
+			// Inform about ellapsed time
+			time_t time_finish = time(NULL);
+			response->set_ellapsed_seconds( difftime( time_finish, time_init ) );
+										  
 			// global sender id of delilah
 			p2->message.set_delilah_id( sender_id );
 			
@@ -363,9 +369,11 @@ namespace ss {
 	
 	void Job::setError( std::string agent ,  std::string txt )
 	{
-		// error line
-		error_line = txt;
+		error_line = txt;			// error line
+		
+		// String with the error
 		std::ostringstream output;
+
 		output << "Error detected by " << agent << " at..." << std::endl;
 		std::list<JobItem>::iterator i;
 		for (i = items.begin() ; i != items.end() ; i++)
@@ -373,9 +381,7 @@ namespace ss {
 		
 		// Current line in the current item
 		JobItem& item = items.back();
-		output << ">> " << item.getLastCommand() << std::endl;
-
-		
+		output << ">> " << item.getLastCommand() << std::endl;		
 		output << "\n>>>> Error: " << txt << std::endl;
 		
 		error = true;
@@ -383,9 +389,10 @@ namespace ss {
 		finish = true;	
 	}
 	
-	void Job::fill( network::Job *job)
+	void Job::fill( network::Job *job )
 	{
 		job->set_id( id );
+		job->set_status( getStatus() );
 		job->set_main_command( mainCommand );
 		
 		std::list<JobItem>::iterator iter;
@@ -418,7 +425,12 @@ namespace ss {
 	std::string Job::getStatus()
 	{
 		std::ostringstream output;
-		output << "ID: " << id << " Task: " << currenTask->getId();
+		if( error )
+			output << "Error: " << error_message;
+		else if (finish )
+			output << "Finish ( Writing output files )";
+		else
+			output << "Runnig " << au::Format::time_string( difftime( time(NULL), time_init ) );
 		return output.str();
 	}
 	

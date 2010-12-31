@@ -19,17 +19,17 @@ namespace au {
 
 		static std::string percentage_string( double value , double total );
 		static std::string percentage_string( double p );
-		static  std::string string( double value, char  letter );
+		static std::string string( double value, char  letter );
 		static std::string string( size_t memory );
 		static std::string string( size_t memory , std::string postfix );
 		static std::string int_string(int value, int digits);
 		static std::string time_string( int seconds );
 		
-		
 		static size_t sizeOfFile( std::string fileName );
-	
-		
 		static int ellapsedSeconds(struct timeval *init_time);
+
+		static std::string time_string_ellapsed( struct timeval *init_time );	
+		
 		
 	};
 }

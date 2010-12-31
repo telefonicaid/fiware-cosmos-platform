@@ -14,7 +14,7 @@
 #include <sstream>							// std::ostringstream
 #include "LogFile.h"						// ss::LogFile
 #include "DataManagerCommandResponse.h"		// ss::DataManagerCommandResponse
-
+#include <set>								// std::set
 
 namespace ss
 {
@@ -23,50 +23,23 @@ namespace ss
 	
 	class DataManager
 	{
-		LogFile file;							// File to write / read log data
-		au::map<size_t,DataManagerItem> task;	// Map of current task with the list of previous commands
-
+		LogFile file;							// File to write
 		size_t task_counter;					// Internal counter to give new task ids
+		
+		std::set<size_t> active_tasks;			// Set of active tasks ( to ingnore non active tasks commands )
 		
 	protected:
 		
-		au::Lock lock;	// Lock to protect multi-thread
+		au::Lock lock;							// Lock to protect multi-thread
 		
 	public:
 		
-		DataManager( std::string  fileName  ) : file( fileName ) 
-		{
-			task_counter = 0;
-		}
+		DataManager( std::string  fileName );
 		
 		virtual ~DataManager() {}
 
-		/**
-		 Init function:
-			* Recover previous logs from file updating "data"
-			* Init a new session of the log ( clearign previous unfinished data )
-		 */
-		
-		void init();
-
-		// Static function to get "today" string
-		static std::string today();
-		
-	protected:
-		size_t _getNewTaskId()
-		{
-			return task_counter++;
-		}
-
-	public:
-		size_t getNewTaskId()
-		{
-			lock.lock();
-			size_t id = _getNewTaskId();
-			lock.unlock();
-			return id;
-		}
-		
+		// Init session
+		void initSession();
 		
 		/**
 		 Function to interact with "data"
@@ -76,18 +49,29 @@ namespace ss
 		void finishTask( size_t task_id );
 		void cancelTask( size_t task_id , std::string error );
 		void addComment( size_t task_id , std::string comment);
+		
 		DataManagerCommandResponse runOperation( size_t task_id , std::string command );
 		
 	protected:
+		DataManagerCommandResponse _runOperation( size_t task_id , std::string command );
 
-		DataManagerItem* _beginTask( size_t task_id ,  std::string command ,  bool log );
-		void _cancelTask( size_t task_id, std::string error , bool log );
-		void _finishTask( size_t task_id, bool log );
-		void _addComment( size_t task_id , std::string comment, bool log);
-		DataManagerCommandResponse _runOperation( size_t task_id , std::string command , bool log);
-		void _initSession( std::string command , bool log );
-		void _clear();
 		
+	protected:
+		
+		size_t _getNewTaskId()
+		{
+			return task_counter++;
+		}
+		
+	public:
+		
+		size_t getNewTaskId()
+		{
+			lock.lock();
+			size_t id = _getNewTaskId();
+			lock.unlock();
+			return id;
+		}
 		
 	private:
 
@@ -96,16 +80,16 @@ namespace ss
 		/**
 		 Unique interface to update the status of this DataManager
 		 */
-		
-		virtual DataManagerCommandResponse _run( std::string command )=0;
 
-		/**
-		 Unique interface to undo a particular task
-		 No error is possible here since we are just unding previous commands
-		 */
+		virtual void _clear()=0;
+		virtual DataManagerCommandResponse _run( std::string command )=0;
 		
-		virtual void _un_run( std::string command )=0;
+		// Static function to get "today" string
+		static std::string today();
 		
+
+		// Reload data form file
+		void _reloadData();
 		
 	};
 

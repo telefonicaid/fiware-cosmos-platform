@@ -321,10 +321,8 @@ namespace ss
 	{
 		std::ostringstream  txt;
 		bool                error = false;
-		
 
 		switch (msgCode) {
-
 				
 			case Message::CommandResponse:
 			{
@@ -341,6 +339,7 @@ namespace ss
 				{
 					std::ostringstream message;
 					message << "Job finished [" << packet->message.command_response().finish_job_id() << "] ";
+					message << " [ "<< au::Format::time_string( packet->message.command_response().ellapsed_seconds() ) << " ] ";
 					message << " (" << packet->message.command_response().command() << " )";
 					writeWarningOnConsole( message.str() );
 				}
@@ -575,6 +574,8 @@ namespace ss
 			
 			txt << setiosflags(std::ios::right);
 			txt << std::setw(10) << jl.job(i).id();
+			txt << " ";
+			txt << std::setw(10) << jl.job(i).status();
 			txt << " ";
 			txt << jl.job(i).main_command();
 			txt << "\n";

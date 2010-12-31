@@ -47,6 +47,8 @@ namespace ss {
 		// Fill information
 		void fill( network::AutomaticOperationList *aol , std::string command);
 
+		// Clear everything
+		void clear();
 		
 	};
 	

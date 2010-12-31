@@ -87,9 +87,13 @@ namespace ss
 			ao->set_id( iter->first );
 			iter->second->fill( ao );
 		}
-		
-		
 	}
+	
+	void AutomaticOperationManager::clear()
+	{
+		operations.clearMap();
+	}
+	
 	
 	
 }

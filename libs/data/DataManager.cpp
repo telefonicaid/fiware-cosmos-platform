@@ -15,43 +15,10 @@
 
 namespace ss {
 
-	void DataManager::init()
+
+	DataManager::DataManager( std::string  fileName  ) : file( fileName ) 
 	{
-		// Open in read mode to recover state ( if any previous file )
-		if( file.openToRead() )
-		{
-			
-			data::Command c;
-			while( file.read( c ) )
-			{
-				switch (c.action()) {
-					case data::Command_Action_Begin:
-						_beginTask( c.task_id() ,  c.command() , false );
-						break;
-					case data::Command_Action_Finish:
-						_finishTask( c.task_id() , false );
-						break;
-					case data::Command_Action_Cancel:
-						_cancelTask( c.task_id() , c.command() , false );
-						break;
-					case data::Command_Action_Comment:
-						_addComment( c.task_id() , c.command() , false );
-						break;
-					case data::Command_Action_Operation:
-						_runOperation( c.task_id() , c.command() , false );
-						break;
-					case data::Command_Action_Session:
-						_initSession( c.command() , false );
-						break;
-				}
-			}
-		}
-		
-		// Clear all non-ended tasks
-		_clear();
-		
-		// Close the log file as "read mode"
-		file.close();
+		task_counter = 0;
 		
 		// Open in write mode
 		if( !file.openToAppend( ) )
@@ -61,38 +28,156 @@ namespace ss {
 		}
 		
 		
-		_initSession( today() , true );	// Init a session logging data
+	}	
+
+	void DataManager::initSession()
+	{
+		// Reload data from the log file
+		_reloadData();
+		
+		// Lod init session
+		file.write( 0 , today() ,data::Command_Action_Session );
+	}
+	
+	
+	
+	void DataManager::_reloadData()
+	{
+		
+		// Clear state
+		_clear();
+		
+		// Open in read mode to recover state
+		LogFile read_file( file.getFileName() );	
+
+		// Map of current tasks with the list of previous commands to run
+		au::map<size_t,DataManagerItem> task;	
+		
+		if( read_file.openToRead() )
+		{
+			
+			data::Command c;
+			while( read_file.read( c ) )
+			{
+				size_t task_id = c.task_id();
+				
+				switch (c.action()) {
+					case data::Command_Action_Begin:
+					{
+						// Create the task item to run
+						DataManagerItem *item = task.findInMap( task_id );
+						if( !item )
+							task.insertInMap( task_id  , new DataManagerItem( task_id ) );
+					}
+						break;
+					case data::Command_Action_Finish:
+					{
+						// Extract the item with all the commands
+						DataManagerItem *item = task.extractFromMap( task_id );
+						item->run(this);
+						delete item;
+					}
+						break;
+					case data::Command_Action_Cancel:
+					{
+						// Extract the item but no run any of them
+						DataManagerItem *item = task.extractFromMap( task_id );
+						delete item;
+					}
+						break;
+						
+					case data::Command_Action_Comment:
+						// Nothing to do here
+						break;
+						
+					case data::Command_Action_Operation:
+					{
+						DataManagerItem *item = task.findInMap( task_id );
+						
+						if( item )
+						{
+							std::string command = c.command();
+							item->addCommand( command );	// Record to undo commands if necessary
+						}
+						else 
+						{
+							std::cout << "Warning: Ignored command since task is not iniciated " << c.command() << "\n";
+							// Ignore command since it has not been iniciated before...
+						}
+						
+					}
+						break;
+						
+					case data::Command_Action_Session:
+					{
+						task.clearMap();	// Remove all current tasks ( like if all of them were cancel )
+					}						
+						break;
+				}
+			}
+		}
+		
+		// Close the log file as "read mode"
+		read_file.close();
 		
 	}
 	
 	
 	std::string DataManager::today()
 	{
-		time_t t;
-		time( &t );
-		char *time = ctime ( &t );
-		time[24] = '\0';	// Remove tha additional "\n"
-		return std::string( time );
+		
+		time_t t = time(NULL);
+		struct tm timeinfo;
+		char buffer_time[100];
+		
+		localtime_r ( &t , &timeinfo );
+		strftime (buffer_time,100,"%d/%m/%Y (%X)",&timeinfo);
+		
+		return std::string( buffer_time );
 	}
 	
 	void DataManager::beginTask( size_t task_id  , std::string command )
 	{
 		lock.lock();
-		_beginTask( task_id , command,  true );
+		
+		// Update the counter so coherent task ids are given
+		if ( task_counter <= task_id )
+			task_counter = task_id+1;
+
+		if( active_tasks.find( task_id ) == active_tasks.end() )
+		{
+			active_tasks.insert( task_id );
+			file.write( task_id , command , data::Command_Action_Begin  );
+		}
+		
 		lock.unlock();
 	}
 	
 	void DataManager::finishTask( size_t task_id )
 	{
 		lock.lock();
-		_finishTask( task_id , true );
+		
+		if( active_tasks.find( task_id ) != active_tasks.end() )
+		{
+			active_tasks.erase( task_id );
+			file.write( task_id , "" , data::Command_Action_Finish  );
+		}
+		
 		lock.unlock();
 	}
 	
 	void DataManager::cancelTask( size_t task_id, std::string error )
 	{
 		lock.lock();
-		_cancelTask( task_id ,error, true );
+		
+		if( active_tasks.find( task_id ) != active_tasks.end() )
+		{
+			active_tasks.erase( task_id );
+			file.write( task_id , "" , data::Command_Action_Cancel  );
+		}
+		
+		_reloadData();	// Reload data to make the cancel effect
+		
 		lock.unlock();
 		
 	}
@@ -100,116 +185,55 @@ namespace ss {
 	void DataManager::addComment( size_t task_id , std::string comment)
 	{
 		lock.lock();
-		_addComment( task_id , comment, true);
+		
+		file.write( task_id , comment ,data::Command_Action_Comment  );
+		
 		lock.unlock();
 	}
 	
-	
+
 	DataManagerCommandResponse DataManager::runOperation( size_t task_id , std::string command )
 	{
 		lock.lock();
-		DataManagerCommandResponse ans =  _runOperation( task_id , command , true );
-
-		std::ostringstream output;
-		output << "operation " << command << ": ";
-		if( ans.error )
-			output << "RESPONSE ERROR: " << ans.output;
-		else
-			output << "RESPONSE: " << ans.output;
-
-		_addComment(task_id, output.str(), true);
-		
+		DataManagerCommandResponse ans = _runOperation( task_id , command );
 		lock.unlock();
+		return ans;
+
+	}
+	
+	
+	DataManagerCommandResponse DataManager::_runOperation( size_t task_id , std::string command )
+	{
+		DataManagerCommandResponse ans;
+		
+		if( active_tasks.find( task_id ) != active_tasks.end() )
+		{
+			ans = _run( command );
+			file.write( task_id , command ,data::Command_Action_Operation );
+			
+			// Log the answer for debugging
+			std::ostringstream output;
+			output << "operation " << command << ": ";
+			if( ans.error )
+				output << "RESPONSE ERROR: " << ans.output;
+			else
+				output << "RESPONSE: " << ans.output;
+		
+			file.write(task_id, output.str() , data::Command_Action_Comment );
+			
+		}
+		else
+		{
+			ans.error = true;
+			ans.output = "Task was not active in the data manager";
+		}
+		
 		return ans;
 	}
 	
-	DataManagerItem* DataManager::_beginTask( size_t task_id , std::string command,  bool log )
-	{
-		
-		// Update the counter so no new task can be given
-		if ( task_counter <= task_id )
-			task_counter = task_id+1;
-		
-		// Finish a previous one if the same task id exist ( rare but tolerated )
-		_cancelTask( task_id , "Error: New task with the same id", log );
-		
-		DataManagerItem *item = new DataManagerItem( task_id );
-		task.insertInMap( task_id , item );
-		
-		if ( log )
-			file.write( task_id , command , data::Command_Action_Begin  );
-		
-		return item;
-	}
 	
-	void DataManager::_cancelTask( size_t task_id, std::string error, bool log )
-	{
-		DataManagerItem *item = task.extractFromMap( task_id );
-		if ( item )
-		{
-			item->un_run(this);
-			delete item;
-			if( log )
-				file.write( task_id , error ,data::Command_Action_Cancel  );
-		}
-	}		
 	
-	void DataManager::_finishTask( size_t task_id, bool log )
-	{
-		if( log )
-			file.write( task_id , "" , data::Command_Action_Finish  );
-		
-		DataManagerItem *item = task.extractFromMap( task_id );
-		if( item )
-			delete item;
-	}
 	
-	void DataManager::_addComment( size_t task_id , std::string comment, bool log)
-	{
-		if( log ) 
-			file.write( task_id , comment ,data::Command_Action_Comment  );
-	}
 	
-	DataManagerCommandResponse DataManager::_runOperation( size_t task_id , std::string command , bool log)
-	{
-		if( log )
-			file.write( task_id , command ,data::Command_Action_Operation );
-		
-		DataManagerItem *item = task.findInMap( task_id );
-		
-		if( item )
-		{
-			item->addCommand( command );	// Record to undo commands if necessary
-		}
-		else 
-		{
-			item = _beginTask(task_id , "Automatically created task?" , log );
-			item->addCommand(command);
-		}
-		
-		return _run( command );
-	}		
-	
-	void DataManager::_initSession( std::string command , bool log )
-	{
-		if ( log )
-			file.write( 0 , command ,data::Command_Action_Session );
-
-		// Clear all previous actions
-		_clear();
-	}
-	
-	// Remove all non-terminated actions 
-	void DataManager::_clear()
-	{
-		std::map<size_t,DataManagerItem*>::iterator i;
-		for (i = task.begin() ; i != task.end() ; i++)
-		{
-			DataManagerItem *item = i->second;
-			item->un_run(this);
-			delete item;
-		}
-		task.clear();
-	}
 	
 }

@@ -41,8 +41,8 @@ namespace ss {
 		this->network = network;
 		network->setPacketReceiverInterface(this);
 
-		// Init data manager ( recovering from crash if necessary )
-		data.init();
+		// Init session of data
+		data.initSession();
 		
 		// run the monitor thread in background
 		monitor.runInBackground();

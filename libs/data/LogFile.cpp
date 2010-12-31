@@ -1,6 +1,6 @@
 
 #include "LogFile.h"			// Own interface
-
+#include <sys/time.h>			// gettimeofday
 
 namespace ss
 {
@@ -35,13 +35,13 @@ namespace ss
 	{
 		assert(input.is_open());
 		
-		if(  input.eof() )
+		if( input.eof() )
 			return false;
 		
 		size_t message_size;
 		input.read((char*)&message_size, sizeof(size_t));
 		
-		if(  input.eof() )
+		if( input.eof() )
 			return false;
 		
 		checkBuffer(message_size);
@@ -58,9 +58,7 @@ namespace ss
 		
 		size_t message_size = c.ByteSize();
 		size_t packet_size = c.ByteSize() + sizeof( size_t );
-		
-		//std::cout << "Packet " << message_size << std::endl;
-		
+				
 		// Make sure we have space int the buffer
 		checkBuffer( packet_size );
 		
@@ -78,8 +76,7 @@ namespace ss
 			std::cerr << "Error writing in log file of data manager: " << fileName << std::endl;
 			exit(0);
 		}
-	}
-	
+	}	
 	
 	void LogFile::checkBuffer( size_t size ) 
 	{
@@ -97,9 +94,12 @@ namespace ss
 	{
 		data::Command c;
 		
+		time_t _t =  time(NULL);
+		
 		c.set_task_id( task_id );
 		c.set_command( command );
 		c.set_action( action );
+		c.set_time( _t );
 		
 		write( c );
 	}	

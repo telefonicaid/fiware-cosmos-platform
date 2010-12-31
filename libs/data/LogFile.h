@@ -49,7 +49,6 @@ namespace ss {
 		bool read( data::Command &c );		
 		void write( data::Command &c );
 		void write( size_t task_id , std::string command , data::Command::Action action );
-
 		
 		std::string getFileName()
 		{

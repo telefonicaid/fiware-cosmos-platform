@@ -109,6 +109,10 @@ namespace au
 		return finish_time.tv_sec - init_time->tv_sec;
 	}
 	
+	std::string Format::time_string_ellapsed( struct timeval *init_time )
+	{
+		return time_string( ellapsedSeconds( init_time ) );
+	}
 	
 	
 }

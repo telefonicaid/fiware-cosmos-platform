@@ -34,7 +34,7 @@ namespace ss {
 			command.push_back(c);
 		}
 		
-		void un_run( DataManager *manager );
+		void run( DataManager *manager );
 		
 	};
 }

@@ -101,8 +101,8 @@ namespace ss {
 		
 		void _retreveInfoForTask( ControllerTaskInfo *info );		
 		
+		virtual void _clear();
 		virtual DataManagerCommandResponse _run( std::string command );
-		virtual void _un_run( std::string command );
 		
 		
 		

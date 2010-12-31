@@ -45,7 +45,10 @@ namespace ss {
 			
 			// Take a sample for all the queues
 			for (std::set<Queue*>::iterator iter = queues.begin() ; iter != queues.end() ; iter++)
-				(*iter)->takeMonitorSamples();
+			{
+				Queue *queue = *iter;
+				queue->takeMonitorSamples();
+			}
 
 			lock.unlock();
 			
@@ -95,13 +98,15 @@ namespace ss {
 		
 	void Monitor::addQueueToMonitor( Queue *queue )
 	{
+		
 		lock.lock();
-		queues.insert( queue );
+		//queues.insert( queue );
 		lock.unlock();
 	}	
 	
 	void Monitor::removeQueueToMonitor( Queue *queue )
 	{
+		
 		lock.lock();
 		queues.erase( queue );
 		lock.unlock();

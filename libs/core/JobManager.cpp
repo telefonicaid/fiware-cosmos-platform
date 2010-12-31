@@ -14,10 +14,8 @@ namespace ss {
 		// New id
 		size_t job_id = controller->data.getNewTaskId();
 		
-		
 		if( fromId != -1 )
-		{
-			
+		{			
 			// Send a message to delilah to confirm this new job
 			Packet *p2 = new Packet();
 			network::CommandResponse *response = p2->message.mutable_command_response();
@@ -48,6 +46,7 @@ namespace ss {
 				controller->data.finishTask( job_id );
 			
 			j->sentConfirmationToDelilah( );
+			
 			_removeJob(j);
 		}
 		
@@ -87,15 +86,16 @@ namespace ss {
 			{
 				//assert(task);
 				//assert(job);
-				if( task && job)
+				if( task && job )
 				{
 					assert(job->isCurrentTask(task));	// we can only receive finish reports from the current task
+					
+					job->setError("Worker", confirmationMessage->error_message());
 					
 					task->notifyWorkerFinished( );		
 					if ( task->finish )
 						job->notifyCurrentTaskFinish(task->error, task->error_message);
 					
-					job->setError("Worker", confirmationMessage->error_message());
 				}
 				
 			}
@@ -131,6 +131,7 @@ namespace ss {
 				
 			}
 				break;
+				
 			case network::WorkerTaskConfirmation::update:
 			{
 				// TODO: Process this to update status
@@ -144,7 +145,7 @@ namespace ss {
 		{
 			if(job->isError() )
 			{
-				controller->data.finishTask( job->getId() );
+				controller->data.cancelTask( job->getId() , "Job canceled" );
 				job->sentConfirmationToDelilah( );
 				_removeJob(job);	// Remove job and associated tasks
 			}

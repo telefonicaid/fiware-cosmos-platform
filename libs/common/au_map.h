@@ -78,6 +78,7 @@ namespace au {
 				return false;
 			else
 			{
+				delete iter->second;
 				std::map<K,V*>::erase( iter );
 				return true;
 			}
@@ -97,7 +98,17 @@ namespace au {
 			}
 			
 		}		
-		
+	
+		void clearMap()
+		{
+			typename std::map<K, V* >::iterator iter;
+
+			for (iter = std::map<K,V*>::begin() ; iter != std::map<K,V*>::end() ; iter++)
+			{
+				delete iter->second;
+			}
+			std::map<K, V* >::clear();
+		}
 		
 		
 	};

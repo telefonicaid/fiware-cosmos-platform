@@ -2,7 +2,7 @@
 #include "Process.h"						// Own interface
 #include <iostream>							// std::cout
 #include "ProcessOperationFramework.h"		// ss::ProcessOperationFramework
-#include "Job.h"							// copyEnviroment(.)
+#include "EnvironmentOperations.h"							// copyEnviroment(.)
 
 namespace ss {
 

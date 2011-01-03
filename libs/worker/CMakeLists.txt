@@ -1,11 +1,30 @@
 
 SET (HEADERS
-    ModulesManager.h
-    coreTracelevels.h
+    DataBuffer.h
+    DataBufferItem.h
+	LoadDataManager.h
+	SamsonWorker.h
+	WorkerTask.h
+	WorkerTaskItem.h
+	WorkerTaskItemGenerator.h
+	WorkerTaskItemOperation.h
+	WorkerTaskItemOrganizer.h
+	WorkerTaskItemParser.h
+	WorkerTaskManager.h
 )
 
 SET (SOURCES
-    ModulesManager.cpp
+    DataBuffer.cpp
+	DataBufferItem.cpp
+	LoadDataManager.cpp
+	SamsonWorker.cpp
+	WorkerTask.cpp
+	WorkerTaskItem.cpp
+	WorkerTaskItemGenerator.cpp
+	WorkerTaskItemOperation.cpp
+	WorkerTaskItemOrganizer.cpp
+	WorkerTaskItemParser.cpp
+	WorkerTaskManager.cpp
 )
 
 SET (STATIC_LIBS
@@ -18,6 +37,7 @@ SET (STATIC_LIBS
     samsonDiskStatic
     samsonDataStatic
     samsonProcessStatic
+    samsonCoreStatic
     protobuf 
     dl 
     pthread
@@ -34,12 +54,13 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
 include_directories("${PROJECT_SOURCE_DIR}/libs/process")
+include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 
 
 
-ADD_LIBRARY(samsonCoreStatic STATIC ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES( samsonCoreStatic ${STATIC_LIBS} )
-SET_TARGET_PROPERTIES(samsonCoreStatic PROPERTIES OUTPUT_NAME samsonCore)
+ADD_LIBRARY(samsonWorkerStatic STATIC ${SOURCES} ${HEADERS} )
+TARGET_LINK_LIBRARIES( samsonWorkerStatic ${STATIC_LIBS} )
+SET_TARGET_PROPERTIES(samsonWorkerStatic PROPERTIES OUTPUT_NAME samsonWorker)
 
 
 

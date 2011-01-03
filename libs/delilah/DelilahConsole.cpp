@@ -13,7 +13,7 @@
 #include "MemoryManager.h"				// ss::MemoryManager
 #include <iostream>
 #include <iomanip>
-#include "Job.h"						// Environment operations (CopyFrom)
+#include "EnvironmentOperations.h"						// Environment operations (CopyFrom)
 #include <iomanip>
 #include "samson/samsonVersion.h"		// SAMSON_VERSION
 

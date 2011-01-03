@@ -14,6 +14,8 @@ SET (HEADERS
 SET( STATIC_LIBS
      samsonNetworkStatic
      samsonCoreStatic
+     samsonControllerStatic
+     samsonWorkerStatic
      samsonCommonStatic
      delilahStatic
      lm
@@ -40,7 +42,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/coding
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")")
 include_directories("${PROJECT_SOURCE_DIR}/libs/process")
-
+include_directories("${PROJECT_SOURCE_DIR}/libs/controller")
+include_directories("${PROJECT_SOURCE_DIR}/libs/worker")
 
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 

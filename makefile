@@ -1,26 +1,20 @@
 all:
-	make prepare
+	./scripts/prepareBuild
 	make -C build
 
-prepare:	
-	./scripts/prepareBuild
+package: all
+	make -C build package 
 
-install:
-	make
+install: all
 	sudo make -C build install
 
 distribute: install
 	./scripts/samsonDistribute
 
-mi:
-	make
-	make install
-
-i:
-	make install
+i: install
 
 d:
-	samsonDemo -ncurses
+	samsonLocal
 
 clean:
 	make -C build clean

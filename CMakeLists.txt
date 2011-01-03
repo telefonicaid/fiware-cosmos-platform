@@ -38,6 +38,19 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 # set(CMAKE_C_FLAGS, "-fPIC")
 
 
+# Package
+# ----------------------------------------------------------------------
+
+if (APPLE)
+#   include(${PROJECT_SOURCE_DIR}/CPackConfigBUNDLE.cmake)
+   include(${PROJECT_SOURCE_DIR}/CPackConfigTGZ.cmake)
+else (APPLE)
+   include(${PROJECT_SOURCE_DIR}/CPackConfigRPM.cmake)
+endif (APPLE)
+
+include(CPack)
+
+
 #
 # Architecture 
 #

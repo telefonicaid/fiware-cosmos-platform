@@ -109,6 +109,14 @@ namespace au {
 			}
 			std::map<K, V* >::clear();
 		}
+
+		// This operation produce leaks if keys are already present in destination
+		
+		void clearAndCopyFromMap( std::map<K,V*>& _map )
+		{
+			std::map<K,V*>::clear();
+			insert( _map.begin() , _map.end() );
+		}
 		
 		
 	};

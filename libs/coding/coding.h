@@ -478,6 +478,17 @@ namespace ss {
 			
 		}
 	};
+
+
+#pragma mark Monitorization of queue information
+	
+	typedef struct
+	{
+		std::string queue;
+		KVInfo info;
+		int num_files;
+	} QueueMonitorInfo;
+	
 	
 	
 }

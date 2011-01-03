@@ -122,10 +122,6 @@ namespace ss {
 			Queue *tmp = new Queue(name , format);
 			queues.insertInMap( name , tmp );
 
-			
-			// Notify the monitor
-			controller->monitor.addQueueToMonitor(tmp);
-			
 			response.output = "OK";
 			return response;
 		}
@@ -218,13 +214,6 @@ namespace ss {
 
 		if( commandLine.isArgumentValue(0, "remove_all" , "remove_all" ) )
 		{
-			std::map< std::string , Queue*>::iterator iter;
-			for (iter = queues.begin() ; iter != queues.end() ;iter++)
-			{
-				Queue *tmp =  iter->second;
-				controller->monitor.removeQueueToMonitor(tmp);
-				delete tmp;
-			}
 			
 			queues.clear();
 			
@@ -266,7 +255,6 @@ namespace ss {
 				}
 				else
 				{
-					controller->monitor.removeQueueToMonitor(tmp);
 					delete tmp;
 				}
 			}
@@ -788,6 +776,20 @@ namespace ss {
 		automatic_operations_manager.finishAutomaticOperation( id , error , error_message );
 		lock.unlock();
 	}
+	
+#pragma mark Monitorization
+	
+	void ControllerDataManager::getQueuesMonitorInfo( std::vector<QueueMonitorInfo> &output_queues )
+	{
+		lock.lock();
+		
+		au::map< std::string , Queue>::iterator iter;
+		for ( iter = queues.begin() ; iter != queues.end() ; iter++)
+			output_queues.push_back( iter->second->getQueueMonitorInfo() );
+		
+		lock.unlock();
+		
+	}	
 	
 	
 	

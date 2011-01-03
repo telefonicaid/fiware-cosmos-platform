@@ -55,6 +55,7 @@ namespace ss {
 		friend class Job;
 		friend class JobManager;
 		friend class ControllerDataManager;
+		friend class Monitor;
 
 	public:
 		

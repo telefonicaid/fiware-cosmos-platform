@@ -89,11 +89,15 @@ namespace ss {
 		}
 		
 		
-		void takeMonitorSamples()
+		QueueMonitorInfo getQueueMonitorInfo()
 		{
-			monitor.push( "size"	, _info.size );
-			monitor.push( "num_kvs" , _info.kvs );
-			monitor.push( "files"	, _num_files );
+			QueueMonitorInfo tmp;
+			
+			tmp.queue = _name;
+			tmp.info = _info;
+			tmp.num_files = _num_files;
+			
+			return tmp;
 		}
 	
 		const std::string& name()

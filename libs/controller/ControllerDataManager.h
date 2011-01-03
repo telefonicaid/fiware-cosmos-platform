@@ -89,6 +89,9 @@ namespace ss {
 		}
 		
 		
+		void getQueuesMonitorInfo( std::vector<QueueMonitorInfo> &queues_names );
+
+		
 		
 		// Automatic operation API to get list of pending jobs and set as finished
 		

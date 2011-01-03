@@ -17,27 +17,27 @@ namespace ss {
 	class SamsonController;
 	class Queue;
 	
+	
+	
 	class Monitor
 	{
 		au::Lock lock;
 		
-		SamsonController *controller;
+		SamsonController *controller;				// Pointer to samsonController to access controller & data manager
 		
 		MonitorBlock system;						// Parameter for the system
-		std::set<Queue*> queues;					// Queues we are monitoring		
+		au::map<std::string,MonitorBlock> queues;			// Monotor parameter for each Queue
+		
 		pthread_t t;								// Thread to perform the snapshots
 		
 	public:
 		
-		Monitor( SamsonController *controller);
+		Monitor( SamsonController *controller );
 		std::string getJSONString( std::string command );
 
 	public:
-		void runInBackground();	// Function to start the thread of monitoring
 		
-		void addQueueToMonitor( Queue *queue );
-		void removeQueueToMonitor( Queue *queue );
-
+		void runInBackground();	// Function to start the thread of monitoring
 		void run();				// Function called by thread ( not call directly )
 
 		

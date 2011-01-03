@@ -35,10 +35,11 @@ namespace ss {
 	{		
 		while( true )
 		{			
-			
-			lock.lock();
-			
-			controller->pushSystemMonitor( &system ); 
+
+			lock.lock();						
+
+		   controller->pushSystemMonitor( &system ); 
+
 
 			// For each queue, take sample
 			std::vector<QueueMonitorInfo> queuesMonitorInfo;

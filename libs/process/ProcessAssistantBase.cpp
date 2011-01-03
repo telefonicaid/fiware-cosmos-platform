@@ -1,12 +1,12 @@
 /* ****************************************************************************
- *
- * FILE                     ProcessAssistant.cpp
- *
- * AUTHOR                   Ken Zangelin
- *
- * CREATION DATE            Nov 5 2010
- *
- */
+*
+* FILE                     ProcessAssistant.cpp
+*
+* AUTHOR                   Ken Zangelin
+*
+* CREATION DATE            Nov 5 2010
+*
+*/
 #include <time.h>                  // time
 #include <pthread.h>               // pthread_t
 
@@ -30,7 +30,10 @@
 #include "ProcessAssistantOperationFramework.h"	// ss::ProcessAssistantOperationFramework
 #include "WorkerTaskManager.h"		// ss::WorkerTaskManager
 
+
+
 extern int logFd;
+
 
 
 namespace ss {
@@ -111,7 +114,14 @@ namespace ss {
 		CPU_ZERO(&cpuSet);
 		CPU_SET(core, &cpuSet);
 		if (sched_setaffinity(0, sizeof(cpuSet), &cpuSet) == -1)
-			LM_XP(1, ("sched_setaffinity"));
+		{
+			LM_W(("sched_setaffinity(core %d): %s", core, strerror(errno)));
+#if 0
+			CPU_ZERO(&cpuSet);
+			CPU_SET(core % REAL_NUMBER_OF_CORES, &cpuSet);
+			sched_setaffinity(0, sizeof(cpuSet), &cpuSet)
+#endif
+		}
 #endif
 		
 		LM_T(LMT_COREWORKER, ("child %d running (pid: %d) on core %d", core, (int) getpid(), core));
@@ -212,17 +222,36 @@ namespace ss {
 			
 		}
 		
-		while( true )
+		while (true)
 		{
-			network::ProcessMessage received_packet;
+			int                      nb;
+			network::ProcessMessage  received_packet;
 			
-			if( _read(received_packet) == -1 )
+			nb = _read(received_packet);
+
+			if (nb == -2)
 			{
+				_wait();
+				LM_E(("Connection closed"));
 				closeFds();
-				coreWorkerStart();	// Restart the process again
-				return processMessageWithCode( network::ProcessMessage::crash);		
+				LM_F(("Restarting core worker"));
+				coreWorkerStart();  // Restart the process again
+				LM_F(("core worker restarted"));
+				return processMessageWithCode(network::ProcessMessage::crash);
 			}
+			else if (nb == -1)
+			{
+				LM_W(("_read error"));
+				closeFds();
 				
+				LM_F(("Restarting core worker"));
+				coreWorkerStart();	// Restart the process again
+				LM_F(("core worker restarted"));
+				return processMessageWithCode(network::ProcessMessage::crash);		
+			}
+			
+			LM_M(("read something from Process"));
+
 			if( received_packet.code() == network::ProcessMessage::finished )
 				return received_packet;
 			
@@ -238,8 +267,6 @@ namespace ss {
 			// Send the continue message
 			network::ProcessMessage p_continue = processMessageWithCode( network::ProcessMessage::continue_run );
 			_write( p_continue );
-			
 		}
-		
 	}
 }

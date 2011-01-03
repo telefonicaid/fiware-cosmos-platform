@@ -17,9 +17,10 @@ namespace ss {
 		
 		// Simple functions to read / write a code the the other side	
 		
-		int _read( network::ProcessMessage &p);
-		int _write( network::ProcessMessage &p);
-	
+		int  _read(network::ProcessMessage& p);
+		int  _write(network::ProcessMessage& p);
+		void _wait(void);
+
 		
 		network::ProcessMessage processMessageWithCode( network::ProcessMessage::Code code )
 		{

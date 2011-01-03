@@ -44,9 +44,6 @@ namespace ss {
 		// Init session of data
 		data.initSession();
 		
-		// run the monitor thread in background
-		monitor.runInBackground();
-		
 		// setup run-time status
 		setStatusTile( "Samson Controller" , "controller" );
 		//addChildrenStatus( MemoryManager::shared()->getStatus() );
@@ -68,6 +65,10 @@ namespace ss {
 			worker_status[i] = new network::WorkerStatus();
 			gettimeofday(&worker_status_time[i], NULL);
 		}	
+		
+		
+		// run the monitor thread in background
+		monitor.runInBackground();
 		
 		
 		// Init background thread

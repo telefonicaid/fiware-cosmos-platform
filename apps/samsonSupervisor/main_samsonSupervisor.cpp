@@ -1,8 +1,10 @@
+#include "baTerm.h"             // baTermSetup
 #include "logMsg.h"             // LM_*
 #include "parseArgs.h"          // parseArgs
-#include "NetworkInterface.h"   // DataReceiverInterface
-#include "Network.h"            // Network
 
+#include "NetworkInterface.h"   // DataReceiverInterface
+#include "Endpoint.h"           // Endpoint
+#include "Network.h"            // Network
 
 
 
@@ -10,7 +12,6 @@
 *
 * Option variables
 */
-unsigned short   port;
 int              endpoints;
 
 
@@ -21,7 +22,6 @@ int              endpoints;
 */
 PaArgument paArgs[] =
 {
-	{ "-port",       &port,        "PORT",        PaShortU,  PaReq,  PaND,   1025,  65000,  "listen port"         },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    20,      3,    100,  "number of endpoints" },
 
 	PA_END_OF_ARGS
@@ -46,7 +46,7 @@ class SamsonSupervisor : public ss::DataReceiverInterface
 public:
 	SamsonSupervisor(ss::Network* nwP) { networkP = nwP; }
 
-	virtual int receive(int fromId, ss::Message::Header* headerP, void* dataP);
+	virtual int receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
 
 private:
 	ss::Network*    networkP;
@@ -56,10 +56,66 @@ private:
 
 /* ****************************************************************************
 *
+* help - 
+*/
+static void help(void)
+{
+	printf("h - print this help message\n");
+	printf("q - quit\n");
+	printf("s - start samson\n");
+}
+
+
+
+/* ****************************************************************************
+*
+* start - 
+*/
+static void start(void)
+{
+	printf("start not implemented - sorry ...\n");
+}
+
+
+
+/* ****************************************************************************
+*
 * SamsonSupervisor::receive - 
 */
-int SamsonSupervisor::receive(int fromId, ss::Message::Header* headerP, void* dataP)
+int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP)
 {
+	ss::Endpoint* ep = networkP->endpointLookup(fromId);
+
+	if (ep == NULL)
+		LM_RE(0, ("Cannot find endpoint with id %d", fromId));
+
+	if (ep->type == ss::Endpoint::Fd)
+	{
+		char* msg = (char*) dataP;
+
+		printf("\n");
+		switch (*msg)
+		{
+		case 'h':
+			help();
+			break;
+
+		case 's':
+			start();
+			break;
+
+		case 'q':
+			LM_X(0, ("'q' pressed - I quit!"));
+
+		default:
+			LM_E(("Key '%c' has no function", *msg));
+			help();
+		}
+
+		printf("\n");
+		return 0;
+	}
+
 	switch (headerP->code)
 	{
 	case ss::Message::WorkerSpawn:
@@ -81,7 +137,7 @@ int SamsonSupervisor::receive(int fromId, ss::Message::Header* headerP, void* da
 int main(int argC, const char *argV[])
 {
 	ss::Network*           networkP;
-	SamsonSupervisor*         supervisorP;
+	SamsonSupervisor*      supervisorP;
 	ss::NetworkInterface*  niP;
 
 	paConfig("prefix",                        (void*) "SSS_");
@@ -91,16 +147,18 @@ int main(int argC, const char *argV[])
 	paConfig("screen line format",            (void*) "TYPE: TEXT");
 	paConfig("log to file",                   (void*) true);
 
-	paParse(paArgs, argC, (char**) argV, 1, true);
+	paParse(paArgs, argC, (char**) argV, 1, false);
 
 	networkP = new ss::Network(endpoints, 0);
 	niP = networkP;
 
-	networkP->init(ss::Endpoint::Supervisor, NULL, port, NULL);
+	networkP->init(ss::Endpoint::Supervisor, NULL, 0, NULL);
 	supervisorP = new SamsonSupervisor(networkP);
 
 	networkP->setDataReceiver(supervisorP);
-	networkP->fdSet(0);
+
+	baTermSetup();
+	networkP->fdSet(0, "stdin", "stdin");
 	networkP->run();
 
 	return 0;

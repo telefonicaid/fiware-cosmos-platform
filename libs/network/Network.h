@@ -52,12 +52,13 @@ public:
 	PacketReceiverInterface*   receiver;
 	DataReceiverInterface*     dataReceiver;
 
-	virtual void initAsSamsonController(int port, int num_workers);
-	
-	bool ready();                                    // Inform about everything ready
-                                                     // The controller expects all the workers to be connected
-                                                     // The worker expects to be connected with all the workers and the controller
-                                                     // Delilah expects to be connected with all the workers and the contorller
+	virtual void   initAsSamsonController(int port, int num_workers);
+	void           fdSet(int fd, const char* name, const char* alias);
+
+	bool           ready();                  // Inform about everything ready
+                                             // The controller expects all the workers to be connected
+                                             // The worker expects to be connected to all the workers and the controller
+                                             // Delilah expects to be connected to all the workers and the controller
 
 	// Get identifiers of known elements
 	virtual int controllerGetIdentifier();	         // Get the identifier of the controller
@@ -94,6 +95,9 @@ public:
 	void         msgTreat(void* vP);
 	void         controllerMsgTreat(Endpoint* ep, Message::MessageCode msgCode, Message::MessageType msgType, void* dataP, int dataLen, Packet* packetP);
 	std::string  getState(std::string selector);
+	Endpoint*    endpointLookup(int fd, int* idP);
+	Endpoint*    endpointLookup(int ix);
+	Endpoint*    endpointLookup(char* alias);
 
 private:
 	Endpoint*    me;
@@ -105,9 +109,6 @@ private:
 
 	Endpoint*    endpointAdd(int rFd, int wFd, const char* name, const char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core = -1, Endpoint* inheritFrom = NULL);
 	void         endpointRemove(Endpoint* ep);
-	Endpoint*    endpointLookup(int fd, int* idP);
-	Endpoint*    endpointLookup(int ix);
-	Endpoint*    endpointLookup(char* alias);
 	Endpoint*    endpointFreeGet(Endpoint::Type type);
 	void         checkAllWorkersConnected(void);
 

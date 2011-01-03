@@ -33,7 +33,7 @@ class Packet;
 class DataReceiverInterface
 {
 public:
-	virtual int   receive(int fromId, Message::Header* headderP, void* dataP) = 0;
+	virtual int   receive(int fromId, int nb, Message::Header* headerP, void* dataP) = 0;
 	virtual      ~DataReceiverInterface() {};
 };
 

@@ -46,7 +46,7 @@ class SamsonSpawner : public ss::DataReceiverInterface
 public:
 	SamsonSpawner(ss::Network* nwP) { networkP = nwP; }
 
-	virtual int receive(int fromId, ss::Message::Header* headerP, void* dataP);
+	virtual int receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
 
 private:
 	ss::Network*    networkP;
@@ -58,7 +58,7 @@ private:
 *
 * SamsonSpawner::receive - 
 */
-int SamsonSpawner::receive(int fromId, ss::Message::Header* headerP, void* dataP)
+int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP)
 {
 	switch (headerP->code)
 	{

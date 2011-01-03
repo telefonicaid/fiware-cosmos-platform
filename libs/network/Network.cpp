@@ -733,7 +733,7 @@ Endpoint* Network::endpointAdd
 			LM_X(1, ("No temporal endpoint slots available - redefine and recompile!"));
 		break;
 
-	case Endpoint::Stdin:
+	case Endpoint::Fd:
 	case Endpoint::Supervisor:
 	case Endpoint::Spawner:
 	case Endpoint::Delilah:
@@ -1095,6 +1095,29 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 
 	//
+	// Special case - FD endpoint type (stdin) which does not use Message
+	//
+	if (ep->type == Endpoint::Fd)
+	{
+		char buffer[1024];
+		int  nb;
+
+		LM_T(LMT_READ, ("reading data from fd %d", ep->rFd));
+
+		nb = read(ep->rFd, buffer, sizeof(buffer));
+		if (nb == -1)
+			LM_RVE(("iomMsgRead: error reading message from '%s': %s", ep->name.c_str(), strerror(errno)));
+		else if (nb == 0) /* Connection closed */
+			LM_RVE(("iomMsgRead: connection closed from fd %d of type Fd ... Error ?", ep->rFd));
+
+		LM_T(LMT_READ, ("read %d bytes of data from fd %d - calling fdReceiver->receive", nb, ep->rFd));
+		dataReceiver->receive(endpointId, nb, NULL, buffer);
+		return;
+	}
+
+
+
+	//
 	// Reading header of the message
 	//
 	nb = read(ep->rFd, &header, sizeof(header));
@@ -1310,18 +1333,6 @@ void Network::msgTreat(void* vP)
 	Message::MessageType  msgType;
 	int                   s;
 
-#if 0
-	if (ep->type == Endpoint::Stdin)
-	{
-		char buffer[1024];
-		int  nb;
-
-		nb = read(ep->rFd, buffer, sizeof(buffer));
-		stdinReceiver->receive(endpointId, nb, dataP);
-		return;
-	}
-#endif
-
 	LM_T(LMT_READ, ("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 	s = iomMsgRead(ep, headerP, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
 	LM_T(LMT_READ, ("iomMsgRead returned %d (dataLens: %d, %d, %d)", s, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
@@ -1399,7 +1410,7 @@ void Network::msgTreat(void* vP)
 		if (dataReceiver == NULL)
 			LM_X(1, ("no data receiver ... Please implement !"));
 		if (dataReceiver)
-			dataReceiver->receive(endpointId, headerP, dataP);
+			dataReceiver->receive(endpointId, 0, headerP, dataP);
 		break;
 
 	case Message::Die:
@@ -1690,11 +1701,14 @@ void Network::run()
 					if (endpoint[ix]->state == Endpoint::Closed)
 					{
 						LM_T(LMT_RECONNECT, ("delilah reconnecting to %s:%d (type: '%s', state: '%s')",
-											 endpoint[ix]->ip.c_str(), endpoint[ix]->port, endpoint[ix]->typeName(), endpoint[ix]->stateName()));
+											 endpoint[ix]->ip.c_str(), endpoint[ix]->port, endpoint[ix]->typeName(),
+											 endpoint[ix]->stateName()));
 						workerFd = iomConnect(endpoint[ix]->ip.c_str(), endpoint[ix]->port);
 						if (workerFd != -1)
 						{
-							endpointAdd(workerFd, workerFd, (char*) "Reconnecting worker", NULL, 0, Endpoint::Temporal, endpoint[ix]->ip.c_str(), endpoint[ix]->port);
+							endpointAdd(workerFd, workerFd, (char*) "Reconnecting worker", NULL, 0, Endpoint::Temporal,
+										endpoint[ix]->ip.c_str(),
+										endpoint[ix]->port);
 							endpoint[ix]->state = Endpoint::Reconnecting;
 						}
 					}
@@ -1707,7 +1721,9 @@ void Network::run()
 						{
 							Endpoint* ep;
 
-							ep = endpointAdd(workerFd, workerFd, (char*) "New Worker", NULL, 0, Endpoint::Temporal, endpoint[ix]->ip.c_str(), endpoint[ix]->port);
+							ep = endpointAdd(workerFd, workerFd, (char*) "New Worker", NULL, 0, Endpoint::Temporal,
+											 endpoint[ix]->ip.c_str(),
+											 endpoint[ix]->port);
 							if (ep != NULL)
 								LM_T(LMT_ENDPOINT, ("Added ep with state '%s'", ep->stateName()));
 							else
@@ -1732,7 +1748,8 @@ void Network::run()
 				if (endpoint[ix] == NULL)
 					continue;
 
-				if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) && (endpoint[ix]->rFd >= 0))
+				if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) 
+					&& (endpoint[ix]->rFd >= 0))
 				{
 
 					FD_SET(endpoint[ix]->rFd, &rFds);
@@ -1880,6 +1897,21 @@ std::string Network::getState(std::string selector)
 	snprintf(partString, sizeof(partString), "Connected to %d endpoints:\n", eps);
 	return std::string(partString) + output;
 }
+
+
+
+/* ****************************************************************************
+*
+* fdSet - 
+*/
+void Network::fdSet(int fd, const char* name, const char* alias)
+{
+	Endpoint* ep;
+
+	ep = endpointAdd(fd, -1, name, alias, 0, Endpoint::Fd, "FD", 0);
+	LM_M(("setting state to Endpoint::Connected for fd %d", fd));
+	ep->state = Endpoint::Connected;
+}	
 
 
 

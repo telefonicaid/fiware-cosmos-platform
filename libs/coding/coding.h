@@ -485,6 +485,7 @@ namespace ss {
 	typedef struct
 	{
 		std::string queue;
+		std::string format;
 		KVInfo info;
 		int num_files;
 	} QueueMonitorInfo;

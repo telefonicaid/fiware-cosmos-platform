@@ -50,7 +50,12 @@ namespace ss {
 			{
 				MonitorBlock* mb = queues.extractFromMap( queuesMonitorInfo[i].queue );
 				if( !mb )
+				{
 					mb = new MonitorBlock();
+					mb->addMainParameter( "name" , queuesMonitorInfo[i].queue );
+					mb->addMainParameter( "format" , queuesMonitorInfo[i].format );
+					
+				}
 				
 				mb->push("size", queuesMonitorInfo[i].info.size );
 				mb->push("kvs", queuesMonitorInfo[i].info.kvs );

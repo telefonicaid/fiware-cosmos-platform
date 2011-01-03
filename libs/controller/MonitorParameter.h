@@ -112,7 +112,6 @@ namespace ss {
 	{
 		
 		std::map<std::string , std::string> main_parameters;
-		
 		au::map< std::string , MonitorParameter> parameters;
 		
 	public:

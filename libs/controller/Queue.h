@@ -94,6 +94,7 @@ namespace ss {
 			QueueMonitorInfo tmp;
 			
 			tmp.queue = _name;
+			tmp.format = _format.str();
 			tmp.info = _info;
 			tmp.num_files = _num_files;
 			

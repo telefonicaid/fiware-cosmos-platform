@@ -1,5 +1,5 @@
 SET (SOURCES
-    main_SamsonDemo.cpp
+    main_samsonLocal.cpp
     FakeEndpoint.cpp
     NetworkFake.cpp
     NetworkFakeCenter.ccp
@@ -46,9 +46,9 @@ link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
 
 # SAMSON Executable
-ADD_EXECUTABLE(samsonDemo ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonDemo ${STATIC_LIBS})
+ADD_EXECUTABLE(samsonLocal ${SOURCES} ${HEADERS} )
+TARGET_LINK_LIBRARIES(samsonLocal ${STATIC_LIBS})
 
-INSTALL(TARGETS               samsonDemo
+INSTALL(TARGETS               samsonLocal
         RUNTIME DESTINATION   bin)
 

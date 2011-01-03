@@ -66,17 +66,19 @@ namespace ss {
 			gettimeofday(&worker_status_time[i], NULL);
 		}	
 		
-		
+	}	
+
+	void SamsonController::runBackgroundProcesses()
+	{
 		// run the monitor thread in background
 		monitor.runInBackground();
-		
 		
 		// Init background thread
 		pthread_t t;
 		pthread_create(&t, NULL, runBackgroundThreadAutomaticOperation, this);
-		
-	}	
-
+	}
+	
+	
 	/* ****************************************************************************
 	*
 	* receiveHelp - 

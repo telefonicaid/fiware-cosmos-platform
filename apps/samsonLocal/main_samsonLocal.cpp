@@ -80,6 +80,7 @@ int main(int argc, const char *argv[])
 	
 	// Create one controller, one dalilah and N workers
 	ss::SamsonController controller( center.getNetwork(-1) );
+	controller.runBackgroundProcesses();
 	
 	ss::Delilah delilah(center.getNetwork(-2));
 	ss::DelilahConsole delilahConsole( &delilah , !commandLine.get_flag_bool("basic") );

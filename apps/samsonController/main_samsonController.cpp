@@ -73,6 +73,7 @@ int main(int argC, const char* argV[])
 	// --------------------------------------------------------------------
 	
 	ss::SamsonController  controller(&networkP);
+	controller.runBackgroundProcesses();
 	controller.touch();
 	
 	while(true)

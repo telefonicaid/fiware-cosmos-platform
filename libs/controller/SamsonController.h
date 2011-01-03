@@ -61,6 +61,8 @@ namespace ss {
 		
 		SamsonController(NetworkInterface* network);
 		
+		void runBackgroundProcesses();
+		
 		// PacketReceiverInterface
 		int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 		void notifyWorkerDied( int worker );

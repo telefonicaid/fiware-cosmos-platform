@@ -244,8 +244,19 @@ namespace ss
 		}
 		
 
-		int p = ( (double) uploadedSize / (double) totalSize ) * 100;
-		size_t r = ((double) uploadedSize * 8.0 / (double) seconds);
+		int p;
+		if( totalSize > 0)
+			p = ( (double) uploadedSize / (double) totalSize ) * 100;
+		else
+			p = 0;
+		
+		size_t r;
+		
+		if ( seconds > 0 )
+			r = ((double) uploadedSize * 8.0 / (double) seconds);
+		else
+			r = 0;
+		
 		size_t r2 = r / num_workers;
 		output << " [ Files " << num_confirmed_files << " / " << num_files << "]";
 		output << " [ Size " << au::Format::string( uploadedSize ) << " / " << au::Format::string( totalSize ) << " " << p << "%" << " ]";

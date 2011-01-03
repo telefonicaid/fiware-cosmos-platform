@@ -16,7 +16,8 @@
 #include "EnvironmentOperations.h"						// Environment operations (CopyFrom)
 #include <iomanip>
 #include "samson/samsonVersion.h"		// SAMSON_VERSION
-
+#include <sys/stat.h>					// stat(.)
+#include <dirent.h>						// DIR directory header	
 namespace ss
 {
 	
@@ -295,7 +296,60 @@ namespace ss
 			
 			std::vector<std::string> fileNames;
 			for (int i = 1 ; i < (commandLine.get_num_arguments()-1) ; i++)
-				fileNames.push_back( commandLine.get_argument(i) );
+			{
+				std::string fileName = commandLine.get_argument(i);
+				
+				struct stat buf;
+				stat( fileName.c_str() , &buf );
+				
+				if( S_ISREG(buf.st_mode) )
+				{
+					std::ostringstream message;
+					message << "Including regular file " << fileName;
+					writeOnConsole( message.str() );
+					fileNames.push_back( fileName );
+				}
+				else if ( S_ISDIR(buf.st_mode) )
+				{
+					std::ostringstream message;
+					message << "Including directory " << fileName;
+					writeOnConsole( message.str() );
+					
+					{
+						// first off, we need to create a pointer to a directory
+						DIR *pdir = opendir (fileName.c_str()); // "." will refer to the current directory
+						struct dirent *pent = NULL;
+						if (pdir != NULL) // if pdir wasn't initialised correctly
+						{
+							while ((pent = readdir (pdir))) // while there is still something in the directory to list
+								if (pent != NULL)
+								{
+									std::ostringstream localFileName;
+									localFileName << fileName << "/" << pent->d_name;
+
+									struct stat buf2;
+									stat( localFileName.str().c_str() , &buf2 );
+									
+									if( S_ISREG(buf2.st_mode) )
+										fileNames.push_back( localFileName.str() );
+									
+									
+								}
+						
+							// finally, let's close the directory
+							closedir (pdir);						
+						}
+					}
+					
+					
+				} 
+				else
+				{
+					std::ostringstream message;
+					message << "Skipping " << fileName;
+					writeOnConsole( message.str() );
+				}
+			}
 			
 			std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
 			

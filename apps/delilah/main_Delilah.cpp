@@ -10,7 +10,6 @@
 int              endpoints;
 int              workers;
 char             controller[80];
-bool             basic;
 
 
 
@@ -22,7 +21,6 @@ bool             basic;
 PaArgument paArgs[] =
 {
 	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt, _i LOC,   PaNL,   PaNL,  "controller IP:port"  },
-	{ "-basic",      &basic,       "BASIC",       PaBool,    PaOpt,  false,  false,   true,  "basic mode"          },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,     80,      3,    100,  "number of endpoints" },
 	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,      1,      1,    100,  "number of workers"   },
 
@@ -70,6 +68,6 @@ int main(int argC, const char *argV[])
 	ss::Delilah delilah( &network );
 
 	// Create a DelilahControler once Delilah is ready
-	ss::DelilahConsole console( &delilah , !basic);
+	ss::DelilahConsole console( &delilah );
 	console.run();
 }

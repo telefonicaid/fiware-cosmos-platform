@@ -26,7 +26,7 @@ link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
 
 # SAMSON Executable
 ADD_EXECUTABLE(samsonWorker ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(samsonWorker samsonWorkerStatic samsonModuleStatic samsonProcessStatic samsonNetworkStatic samsonCoreStatic samsonCommonStatic pa lm protobuf pthread dl curses)
+TARGET_LINK_LIBRARIES(samsonWorker samsonWorkerStatic samsonModuleStatic samsonProcessStatic samsonNetworkStatic samsonCoreStatic samsonCommonStatic pa lm protobuf pthread dl curses readline)
 
 INSTALL(TARGETS               samsonWorker
         RUNTIME DESTINATION   bin)

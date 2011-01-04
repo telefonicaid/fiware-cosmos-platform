@@ -23,6 +23,7 @@ SET( STATIC_LIBS
      pthread
      dl
      curses
+     readline
 )
 
 SET (RESOURCES

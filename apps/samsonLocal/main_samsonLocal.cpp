@@ -65,7 +65,6 @@ int main(int argc, const char *argv[])
 	
 	au::CommandLine commandLine;
 	commandLine.set_flag_int("workers",1);
-	commandLine.set_flag_boolean("basic");
 
 	ss::SamsonSetup::shared();	// Load setup and create default directories
 	
@@ -83,7 +82,7 @@ int main(int argc, const char *argv[])
 	controller.runBackgroundProcesses();
 	
 	ss::Delilah delilah(center.getNetwork(-2));
-	ss::DelilahConsole delilahConsole( &delilah , !commandLine.get_flag_bool("basic") );
+	ss::DelilahConsole delilahConsole( &delilah );
 	
 	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 

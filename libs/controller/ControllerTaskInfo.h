@@ -4,9 +4,8 @@
 
 #include <string>
 #include <vector>
-#include "CommandLine.h"				// au::CommandLine
 #include "samson.pb.h"
-
+#include "CommandLine.h"			// au::CommandLine
 namespace ss {
 
 	class Operation;

@@ -48,7 +48,7 @@ namespace ss {
 			
 			if( commandLine.get_num_arguments() < num_min_parameters )
 			{
-				response.output = "Usage: add name <keyFormat> <valueFormat> or add name -txt";
+				response.output = "Usage: add name <keyFormat> <valueFormat> or add name -txt for txt sets";
 				response.error = true;
 				return response;
 			}

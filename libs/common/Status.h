@@ -2,6 +2,7 @@
 #define _H_AU_STATUS
 
 #include <set>
+#include <sstream>		// std::ostringstream
 
 namespace au {
 	

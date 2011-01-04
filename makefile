@@ -34,7 +34,7 @@ reset:
 #	sudo rm -Rf build/*
 #	sudo rm -Rf xcode_proj
 	sudo rm -f modules/example/Module.*
-	sudo rm -f libs/network/samson.pb.*
+	sudo rm -f libs/common/samson.pb.*
 	sudo rm -f libs/data/data.pb.*
 	sudo rm -Rf /usr/local/include/samson
 

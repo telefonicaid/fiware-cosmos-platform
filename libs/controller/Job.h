@@ -9,7 +9,6 @@
 #include "samson.pb.h"						// ss::network::...
 #include <iostream>							// std::cout
 #include "Status.h"				// ss::ObjectWithStatus
-#include "CommandLine.h"					// au::CommandLine
 #include "samson/Environment.h"				// ss::Environment
 #include "EnvironmentOperations.h"			// copyEnviroment(.)
 

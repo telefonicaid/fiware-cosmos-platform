@@ -17,7 +17,6 @@
 #include "Network.h"			// NetworkInterface
 #include "samsonDirectories.h"  // SAMSON_WORKER_DEFAULT_PORT
 #include "workerStatus.h"		// WorkerStatus
-#include "CommandLine.h"		// au::CommandLine
 #include "ModulesManager.h"		// ss::ModulesManager
 #include "WorkerTaskManager.h"	// ss::WorkerTaskManager
 #include "DataBuffer.h"			// ss::DataBuffer

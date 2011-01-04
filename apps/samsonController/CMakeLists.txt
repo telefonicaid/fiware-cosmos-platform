@@ -27,7 +27,7 @@ link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
 # SAMSON Executable
 ADD_EXECUTABLE(samsonController ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(samsonController samsonControllerStatic samsonNetworkStatic samsonCoreStatic samsonCommonStatic pa lm protobuf pthread dl curses)
+TARGET_LINK_LIBRARIES(samsonController samsonControllerStatic samsonNetworkStatic samsonCoreStatic samsonCommonStatic pa lm protobuf pthread dl curses readline)
 
 INSTALL(TARGETS               samsonController
         RUNTIME DESTINATION   bin)

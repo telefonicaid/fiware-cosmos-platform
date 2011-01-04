@@ -9,7 +9,6 @@
 #include <set>						// std::set
 #include <iostream>					// std::cout
 #include "samsonDirectories.h"		// SAMSON_SETUP_FILE
-#include "CommandLine.h"			// au::CommandLine
 
 
 #include "Buffer.h"					// ss::Buffer

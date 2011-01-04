@@ -18,13 +18,223 @@
 #include "samson/samsonVersion.h"		// SAMSON_VERSION
 #include <sys/stat.h>					// stat(.)
 #include <dirent.h>						// DIR directory header	
+#include "CommandLine.h"				// au::CommandLine
+
 namespace ss
 {
 	
-	void cancel_ncurses(void)	
+	// Information about all queues and operations	
+	au::Lock list_lock;						// Lock to protect the list of information
+	network::OperationList *ol = NULL;		// List of operations
+	network::QueueList *ql = NULL;			// List of queues
+	
+	AutoCompletionOptions completion_options;
+	
+	char * dupstr (const char *s)
 	{
-		au::Console::cancel_ncurses();
+		char *r;
+		
+		r = (char*)malloc (strlen (s) + 1);
+		strcpy (r, s);
+		return (r);
 	}
+	
+	
+	void addMainCommandOptions()
+	{
+		completion_options.clearOptions();
+		
+		completion_options.addOption("ls");
+		completion_options.addOption("mv");
+		completion_options.addOption("add");
+		completion_options.addOption("operations");
+		completion_options.addOption("datas");
+		completion_options.addOption("jobs");
+		completion_options.addOption("workers");
+		completion_options.addOption("upload");
+		completion_options.addOption("download");
+		completion_options.addOption("load");
+		completion_options.addOption("clear");
+		completion_options.addOption("help");
+		completion_options.addOption("set");
+		completion_options.addOption("unset");
+
+		// add available operations...
+		list_lock.lock();
+		
+		if( ol )
+			for (int i = 0 ; i < ol->operation_size()  ; i++)
+				completion_options.addOption( ol->operation(i).name() );
+		
+		list_lock.unlock();
+		
+	}
+	
+	
+	void addQueueOptions( network::KVFormat *format )
+	{
+		
+		completion_options.clearOptions();
+		
+		// add available queues...
+		list_lock.lock();
+				
+		if( ql )
+			for (int i = 0 ; i < ql->queue_size()  ; i++)
+			{
+				
+				const network::Queue &queue = ql->queue(i).queue();
+				
+				//std::cout << "Considering " << queue.name() << "\n";
+				
+				if( !format )
+					completion_options.addOption( queue.name() );
+				else
+				{
+					//std::cout << "Checkling formats "  << queue.format().keyformat() << " " << queue.format().valueformat()<<   "\n";
+					if( ( queue.format().keyformat() == format->keyformat() ) )
+						if ( queue.format().valueformat() == format->valueformat() )
+						{
+							completion_options.addOption( ql->queue(i).queue().name() );
+							//std::cout << "added\n";
+						}
+					
+				}
+			}
+		
+		list_lock.unlock();
+		
+	}
+	
+	
+	/* Generator function for command completion.  STATE lets us know whether
+	 to start from scratch; without any state (i.e. STATE == 0), then we
+	 start at the top of the list. */
+	
+	char * command_generator (const char * text, int state)
+	{
+		//std::cout << "Command generator with \"" << text << "\" and state=" << state << "\n";
+
+#if 0
+		static int list_index;
+		static int operation_index;
+		char *name;
+		
+		/* If this is a new word to complete, initialize now.  This includes
+		 saving the length of TEXT for efficiency, and initializing the index
+		 variable to 0. */
+		if (!state)
+		{
+			list_index = 0;
+			operation_index = 0;
+		}
+		
+		int len = strlen (text);
+
+		
+		/* Return the next name which partially matches from the command list. */
+		while ((name = (char*)commands[list_index]))
+		{
+			list_index++;
+			if (strncmp (name, text, len) == 0)
+				return (dupstr(name));
+		}
+		
+		/* If no names matched, then return NULL. */
+		return ((char *)NULL);
+#endif
+		
+		if( !state )
+			completion_options.clearSearch();
+		
+		return completion_options.next(text);
+		
+	}	
+	
+	char ** readline_completion ( const char* text, int start,int end )
+	{
+		//std::cout << "Readline completion with \"" << text << "\" S=" << start << " E=" << end <<" \n";
+		
+		char **matches;
+		
+		matches = (char **)NULL;
+		
+		
+		if (start == 0)
+		{
+			addMainCommandOptions();
+			//std::cout << "Completion for first command \n";
+		}
+		else
+		{
+			au::CommandLine cmdLine;
+			cmdLine.parse(rl_line_buffer);
+			std::string mainCommand = cmdLine.get_argument(0);
+
+			//std::cout << "Completion for " << mainCommand << " \n";
+			
+			if( ( mainCommand == "clear" ) || ( mainCommand == "rm" ) || ( mainCommand == "cp" ) || ( mainCommand == "mv" ) )
+				addQueueOptions( NULL );
+			else
+			{
+				
+				network::KVFormat *format = NULL;
+				int argument_pos = cmdLine.get_num_arguments() - 1;
+				if ( ( argument_pos > 0 )  && (rl_line_buffer[strlen(rl_line_buffer)-1]!=' '))
+					argument_pos--;	// Still in this parameter
+				
+				//std::cout << "Argument " << argument_pos << " \n";
+
+				
+				// If it is a particular operation... lock for the rigth queue
+				list_lock.lock();
+				
+				
+				if( ol )
+					for (int i = 0 ; i < ol->operation_size() ; i++)
+						if( ol->operation(i).name() == mainCommand )
+						{
+							//std::cout << "op found " << ol->operation(i).input_size() << "/" << ol->operation(i).output_size() <<  " ("<< argument_pos << ")\n";
+							
+							if( argument_pos < ol->operation(i).input_size() )
+							{
+								format = new network::KVFormat();
+								format->CopyFrom( ol->operation(i).input(argument_pos) );
+							}
+							else
+							{
+								argument_pos -= ol->operation(i).input_size();
+								if( argument_pos < ol->operation(i).output_size() )
+								{
+									format = new network::KVFormat();
+									format->CopyFrom( ol->operation(i).output(argument_pos) );
+								}
+							}
+							break; // No more for...
+						}
+				
+				list_lock.unlock();
+
+				
+				// Use format if any
+				if( format )
+				{
+					//std::cout << "Format found " << format->keyformat() << " " << format->valueformat() << "\n";
+					addQueueOptions(format);
+					delete format;
+				}
+				else
+					completion_options.clearOptions();
+
+				
+				
+			}
+		}
+		
+		matches = rl_completion_matches (text, command_generator);
+		return (matches);
+	}	
+	
 	
 	void DelilahConsole::evalCommand( std::string command )
 	{
@@ -107,12 +317,13 @@ namespace ss
 			output << "\n";
 			
 			
-			writeBlockOnConsole( output.str() );
+			writeOnConsole( output.str() );
 			return;
 		}
 		
 		if ( commandLine.isArgumentValue(0,"quit","") )
 		{
+			Console::quit();
 			exit(0);
 			return;
 		}
@@ -127,7 +338,7 @@ namespace ss
 				output << "------------------------------------\n";
 				output << delilah->environment.toString();
 				
-				writeBlockOnConsole( output.str() );
+				writeOnConsole( output.str() );
 				return;
 			}
 			
@@ -197,7 +408,7 @@ namespace ss
 			for (iter = delilah->components.begin() ; iter != delilah->components.end() ; iter++)
 				output << iter->second->getStatus();
 			
-			writeBlockOnConsole(output.str());
+			writeOnConsole(output.str());
 			
 			
 			return ;
@@ -216,7 +427,7 @@ namespace ss
 			std::string s;
 
 			s = delilah->network->getState(command);
-			writeBlockOnConsole(s);
+			writeOnConsole(s);
 
 			return;
 		}
@@ -333,15 +544,11 @@ namespace ss
 									if( S_ISREG(buf2.st_mode) )
 										fileNames.push_back( localFileName.str() );
 									
-									
 								}
-						
 							// finally, let's close the directory
 							closedir (pdir);						
 						}
 					}
-					
-					
 				} 
 				else
 				{
@@ -374,7 +581,6 @@ namespace ss
 	int DelilahConsole::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
 		std::ostringstream  txt;
-		bool                error = false;
 
 		switch (msgCode) {
 				
@@ -387,6 +593,7 @@ namespace ss
 					message << "Job scheduled [" << packet->message.command_response().new_job_id() << "] ";
 					message << " (" << packet->message.command_response().command() << " )";
 					writeWarningOnConsole( message.str() );
+					return 0;
 				}
 				
 				if( packet->message.command_response().has_finish_job_id() )
@@ -396,6 +603,7 @@ namespace ss
 					message << " [ "<< au::Format::time_string( packet->message.command_response().ellapsed_seconds() ) << " ] ";
 					message << " (" << packet->message.command_response().command() << " )";
 					writeWarningOnConsole( message.str() );
+					return 0;
 				}
 	
 				if( packet->message.command_response().has_error_job_id() )
@@ -403,14 +611,40 @@ namespace ss
 					std::ostringstream message;
 					message << "Job finished with error [" << packet->message.command_response().error_job_id() << "] ";
 					message << " (" << packet->message.command_response().command() << ")\n\n";
+					
+					if( packet->message.command_response().has_error_message() )
+						message <<  packet->message.command_response().error_message();
 					writeErrorOnConsole( message.str() );
+					return 0;
 				}
 				
 				if( packet->message.command_response().has_error_message() )
 					writeErrorOnConsole( packet->message.command_response().error_message()  );
 
 				if( packet->message.command_response().has_queue_list() )
-					showQueues( packet->message.command_response().queue_list() );
+				{
+					
+					// Check if it is a -all command
+					au::CommandLine cmdLine;
+					cmdLine.set_flag_boolean("all");
+					cmdLine.parse(packet->message.command_response().command() );
+					
+					if( cmdLine.get_flag_bool("all") )
+					{
+						list_lock.lock();
+						
+						if( ql )
+							delete ql;
+						ql = new network::QueueList();
+						ql->CopyFrom( packet->message.command_response().queue_list() );
+						list_lock.unlock();
+					}
+					else
+					{
+						showQueues( packet->message.command_response().queue_list() );
+					}
+					
+				}
 				
 				if( packet->message.command_response().has_automatic_operation_list() )
 					showAutomaticOperations( packet->message.command_response().automatic_operation_list() );
@@ -419,7 +653,27 @@ namespace ss
 					showDatas( packet->message.command_response().data_list() );
 				
 				if( packet->message.command_response().has_operation_list() )
-					showOperations( packet->message.command_response().operation_list() );
+				{
+					// Check if it is a -all command
+					au::CommandLine cmdLine;
+					cmdLine.set_flag_boolean("all");
+					cmdLine.parse(packet->message.command_response().command() );
+					
+					if( cmdLine.get_flag_bool("all") )
+					{
+						list_lock.lock();
+						
+						if( ol )
+							delete ol;
+						ol = new network::OperationList();
+						ol->CopyFrom( packet->message.command_response().operation_list() );
+						list_lock.unlock();
+					}
+					else
+					{
+						showOperations( packet->message.command_response().operation_list() );
+					}					
+				}
 				
 				if( packet->message.command_response().has_job_list() )
 					showJobs( packet->message.command_response().job_list() );
@@ -429,80 +683,12 @@ namespace ss
 			}
 				break;
 				
-			case Message::HelpResponse:
-			{
-				network::HelpResponse help_response = packet->message.help_response();
-
-				if( help_response.help().queues() )
-				{
-					txt << "Queues" << std::endl;
-					txt << "------------------------------------------------------------------------------------------------" << std::endl;
-					for (int i = 0 ; i < help_response.queue_size() ; i++)
-					{
-						network::Queue queue = help_response.queue(i).queue();
-
-						txt << std::setw(30) << queue.name();
-						txt << " ";
-						txt << au::Format::string( queue.info().kvs() );
-						txt << " kvs in ";
-						txt << au::Format::string( queue.info().size() ) << " bytes";
-						txt << " #File: " << help_response.queue(i).file_size();
-						txt << " (" << queue.format().keyformat() << " " << queue.format().valueformat() << ") ";
-						txt << std::endl;
-					}
-					txt << "------------------------------------------------------------------------------------------------" << std::endl;
-					
-					txt << std::endl;
-				}
-				
-				if( help_response.help().datas() )
-				{
-					txt << "Datas" << std::endl;
-					txt << "------------------------------------------------------------------------------------------------" << std::endl;
-					for (int i = 0 ; i < help_response.data_size() ; i++)
-					{
-						network::Data data = help_response.data(i);
-						txt << std::setw(20) << data.name() << " " << data.help() << std::endl;
-					}
-					txt << "------------------------------------------------------------------------------------------------" << std::endl;
-				}
-
-				if( help_response.help().operations() )
-				{
-					txt << "Operations" << std::endl;
-					txt << "------------------------------------------------------------------------------------------------" << std::endl;
-					for (int i = 0 ; i < help_response.operation_size() ; i++)
-					{
-						network::Operation operation = help_response.operation(i);
-						txt << "** " << operation.name();
-						txt << "\n\t\tInputs: ";
-						for (int i = 0 ; i < operation.input_size() ; i++)
-							txt << "[" << operation.input(i).keyformat() << "-" << operation.input(i).valueformat() << "] ";
-						txt << "\n\t\tOutputs: ";
-						for (int i = 0 ; i < operation.output_size() ; i++)
-							txt << "[" << operation.output(i).keyformat() << "-" << operation.output(i).valueformat() << "] ";
-
-						txt << "\n\t\tHelp: " << operation.help_line() << std::endl;
-						txt << "\n";
-					}
-					txt << "------------------------------------------------------------------------------------------------" << std::endl;
-				}
-				
-			}
-				break;
 			default:
 				txt << "Unknwn packet received\n";
 				assert(false);
 				break;
 		}
 		
-		
-		
-		if (error)
-			writeErrorOnConsole(txt.str());
-		else
-			writeOnConsole(txt.str());
-
 		
 		return 0;
 	}	
@@ -538,7 +724,7 @@ namespace ss
 		
 		txt << std::endl;
 		
-		writeBlockOnConsole( txt.str() );		
+		writeOnConsole( txt.str() );		
 	}
 	
 	
@@ -566,7 +752,7 @@ namespace ss
 		
 		txt << std::endl;
 		
-		writeBlockOnConsole( txt.str() );
+		writeOnConsole( txt.str() );
 		
 	}
 	
@@ -585,7 +771,7 @@ namespace ss
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
 		txt << std::endl;
 		
-		writeBlockOnConsole( txt.str() );
+		writeOnConsole( txt.str() );
 		
 	}
 	void DelilahConsole::showOperations( const network::OperationList ol)
@@ -612,7 +798,7 @@ namespace ss
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
 		txt << std::endl;
 		
-		writeBlockOnConsole( txt.str() );
+		writeOnConsole( txt.str() );
 		
 	}
 	void DelilahConsole::showJobs( const network::JobList jl)
@@ -654,7 +840,7 @@ namespace ss
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
 		txt << std::endl;
 		
-		writeBlockOnConsole( txt.str() );
+		writeOnConsole( txt.str() );
 		
 	}
 	
@@ -699,7 +885,7 @@ namespace ss
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
 		txt << std::endl;
 
-		writeBlockOnConsole( txt.str() );
+		writeOnConsole( txt.str() );
 		
 	}
 	

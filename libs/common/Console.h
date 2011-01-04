@@ -12,86 +12,44 @@
 * 
 * To run the console, you have the bloquink "run" method.
 */
-#include <string.h>           /* memcpy, ...                                 */
+#include <string.h>           /* memcpy, ... */
 #include <istream>
 #include <cstdlib>
 #include <iostream>
 #include <curses.h>
 #include <deque>
 
-#include "CommandLine.h"
-#include "ConsoleCommand.h"		// au::ConsoleLine
 #include "Lock.h"                /* Lock                            */
+
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+#include <stdlib.h>
+#include <string.h>
+#include <vector>
+
 
 namespace au {
 
-
-	#pragma mark CONSOLELINE
-	
-	#define ConsoleLineNormal	0
-	#define ConsoleLineWarning	1
-	#define ConsoleLineError	2
-		
-		
-	class ConsoleLine
-	{
-	public:
-		
-		int type;
-		std::string txt;
-	};
-		
-	#pragma mark CONSOLE
-		
 	class Console
 	{
-		
-		Lock lock;	// Lock as a control mechanism to log things into the console
-		
-		bool ncurses;		//!< Flag to indicate if we should use ncurses
-		WINDOW *win;
-		int nrows,ncols;
-		bool quit_console;
-
-		// Current and history command
-		ConsoleCommand command;
-		
-		// Set of lines to plot of screen
-		std::deque<ConsoleLine> lines;
-		
-		// Flag to indicate that some command is running
-		bool running;
-		std::string running_command;
+		Lock lock;										//!< Lock as a control mechanism to log things into the console
+		bool quit_console;								//!< Flag to indicate that we want the console to quit ( can be set from outside the class with quit )
 		
 	public:
 		
-		/**
-		 Create a new console
-		 if "ncurses" --> ncurses based interface
-		 else --> simple std::cerr interface
-		 */
-		
-		Console( bool _ncurses );
+		Console( );
 		virtual ~Console(){}
 
-		void clearConsole();
-		virtual std::string getPrompt();
-		virtual std::string getHeader();
-		void runCommand( std::string command );
-		virtual void evalCommand( std::string command );
+		virtual std::string getPrompt();				//!< Function to give the current prompt (can be overloaded in subclasses )
+		virtual void evalCommand( std::string command );//!< function to process a command instroduced by user	
 		
-		/* Methods to write things on screen */
-		
+		/* Methods to write things on screen	( now it is async ) */		
 		void writeWarningOnConsole( std::string message );
 		void writeErrorOnConsole( std::string message );
-
 		void writeOnConsole( std::string message );
 
-		void writeBlockOnConsole( std::string message );
-
-		static bool checkArgs( int arg , char *argv[]);
-		
-		void quit();
+		void quit(); // Set the console to quit
 		
 		/** Main function to run the console */
 		
@@ -102,18 +60,9 @@ namespace au {
 		void _print();
 		void print();
 		
-		static std::vector<std::string> getLines( std::string txt );
-		void addLines( int type , std::vector<std::string> txts );
-
-		
 	public:
 
 		void run();
-		void run_console();
-		void run_ncurses();
-
-	public:
-		static void cancel_ncurses(void);
 		
 	};
 	

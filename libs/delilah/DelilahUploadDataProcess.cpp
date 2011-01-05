@@ -62,11 +62,14 @@ namespace ss
 		uploadedSize = 0;
 		totalSize = 0;	
 		
+		// Compute the total size for all the files
 		for ( size_t i =  0 ; i < fileNames.size() ; i++)
 			totalSize += au::Format::sizeOfFile( fileNames[i] );
-		
+
+		// Initial worker to sent data
 		worker = 0; // rand()%num_workers;		// Random worker to start
-		
+
+		// Init counters of created and confirmed files
 		num_files = 0;
 		num_confirmed_files = 0;
 		
@@ -81,6 +84,15 @@ namespace ss
 		return NULL;
 	}
 	
+	void DelilahUploadDataProcess::run()
+	{
+		// Set the number of workers
+		num_workers = delilah->network->getNumWorkers();
+		
+		// Create the thread for this load process
+		pthread_create(&t, NULL, runThreadDelilahLoadDataProcess, this);
+	}
+	
 	
 	void DelilahUploadDataProcess::_run()
 	{
@@ -93,12 +105,21 @@ namespace ss
 			// Fill the buffer with the contents from the file
 			fileSet.fill( b );
 
+			// Insert into the list of pending elements
+			size_t file_id = num_files++;
+			
+			// Activate the finish flag if necessary before sending the packet ( so at the reception the flag is activated )
+			if( fileSet.isFinish() )
+			{
+				lock.lock();
+				finish =  true;
+				lock.unlock();
+			}
+			
 			// Send to the rigth worker
 			Packet *p = new Packet();
 			p->buffer = b;	// Add the buffer to the packet
 
-			// Insert into the list of pending elements
-			size_t file_id = num_files++;
 
 			// Set message fields
 			network::UploadData *loadData = p->message.mutable_upload_data();	
@@ -107,9 +128,8 @@ namespace ss
 
 			
 			// Send the packet
-			
 			std::ostringstream message;
-			message << getStatus() << " Sending buffer of " << au::Format::string( b->getSize() , "B" ) << " with id " << file_id;
+			message << getStatus() << " Sending buffer of " << au::Format::string( b->getSize() , "B" );
 			delilah->client->showMessage(message.str());
 			
 			delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), Message::UploadData, p);
@@ -124,17 +144,6 @@ namespace ss
 			
 		}
 		
-		lock.lock();
-		
-		finish =  true;
-		
-		if( num_files == num_confirmed_files )
-		{
-			completed = true;
-			delilah->client->loadDataConfirmation(this);
-		}
-		
-		lock.unlock();
 			
 	}
 	
@@ -144,13 +153,13 @@ namespace ss
 		
 		if (msgCode == Message::UploadDataResponse )
 		{
-			size_t file_id = packet->message.upload_data_response().upload_data().file_id();
+			//size_t file_id = packet->message.upload_data_response().upload_data().file_id();
 			
 			
-			error			= packet->message.upload_data_response().error();
-			error_message	= packet->message.upload_data_response().error_message();
+			error				= packet->message.upload_data_response().error();
+			error_message		= packet->message.upload_data_response().error_message();
 			
-			network::File file = packet->message.upload_data_response().file();
+			network::File file	= packet->message.upload_data_response().file();
 			
 			// update the uploaded data
 			uploadedSize += file.info().size();
@@ -160,7 +169,7 @@ namespace ss
 			
 			if( finish )
 				if ( num_files == num_confirmed_files)
-					completed =true;
+					completed = true;
 			
 			if ( completed )
 			{
@@ -179,13 +188,14 @@ namespace ss
 				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::UploadDataConfirmation, p);
 			}
 
-			std::ostringstream message;
-			message << getStatus() << " Received confirmation with file_id " << file_id;
-			delilah->client->showMessage(message.str());
+			delilah->client->showMessage(getStatus());
 			
 			
 		} else if (msgCode == Message::UploadDataConfirmationResponse )
 		{
+			assert( finish );
+			assert( completed );
+			
 			network::UploadDataConfirmationResponse confirmation = packet->message.upload_data_confirmation_response();
 			error			= confirmation.error();
 			error_message	= confirmation.error_message();
@@ -193,20 +203,16 @@ namespace ss
 			// Notify to the client to show on scren the result of this load process
 			delilah->client->loadDataConfirmation( this );
 			
-			// mark the component as finished to be removed
+			// mark the component as finished to be removed by Delilah component
 			component_finished = true;
 			
-			std::ostringstream message;
-			message << getStatus() << " Received an upload confirmation message ";
-			delilah->client->showMessage(message.str());
+			delilah->client->showMessage(getStatus());
 			
 			
 		}
 		else
 		{
-			std::ostringstream message;
-			message << getStatus() << " Received strange message with code " << msgCode;
-			delilah->client->showMessage(message.str());
+			//??
 		}
 
 		lock.unlock();		
@@ -215,14 +221,6 @@ namespace ss
 
 	
 	
-	void DelilahUploadDataProcess::run()
-	{
-		// Set the number of workers
-		num_workers = delilah->network->getNumWorkers();
-		
-		// Create the thread for this load process
-		pthread_create(&t, NULL, runThreadDelilahLoadDataProcess, this);
-	}
 	
 	void DelilahUploadDataProcess::_run();		
 	
@@ -233,14 +231,22 @@ namespace ss
 		
 		int seconds = au::Format::ellapsedSeconds(&init_time);
 		
-		output << "["<< id << "] Upload to " << queue << ": ";
+		output << "[ Upload "<< id << "] Queue: " << queue << ": ";
 		
 		output << "[" << au::Format::time_string(seconds) << "] ";
+
 		
-		if( uploadedSize > 0)
+		if( completed )
+			output << " FINISH AND CONFIRMATED ";
+		else if( finish )
+			output << " FINISH ";
+
 		{
-			size_t pending_secs =  ( totalSize - uploadedSize ) * seconds / uploadedSize;
-			output << "[ETA " << au::Format::time_string( pending_secs ) << "] ";
+			if( uploadedSize > 0)
+			{
+				size_t pending_secs =  ( totalSize - uploadedSize ) * seconds / uploadedSize;
+				output << "[ETA " << au::Format::time_string( pending_secs ) << "] ";
+			}
 		}
 		
 
@@ -258,7 +264,6 @@ namespace ss
 			r = 0;
 		
 		size_t r2 = r / num_workers;
-		output << " [ Files " << num_confirmed_files << " / " << num_files << "]";
 		output << " [ Size " << au::Format::string( uploadedSize ) << " / " << au::Format::string( totalSize ) << " " << p << "%" << " ]";
 		output << "[ Rate: " << au::Format::string( r , "bps" ) << " - " << au::Format::string( r2 , "bps" ) << " per worker ]";
 

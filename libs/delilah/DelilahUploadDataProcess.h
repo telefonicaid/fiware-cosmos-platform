@@ -99,25 +99,25 @@ namespace ss {
 		
 		TXTFileSet fileSet;		// Input txt files
 		
-		size_t num_files;		
+		size_t num_files;				// Num files generated
 		size_t num_confirmed_files;
 		
-		// Created files
-		std::vector<network::File> created_files;	// ( only used when debuggin )
-		
+		std::vector<network::File> created_files;			// Created files ( answers from workers )
 		
 		bool finish;			// Flag to notify that all data has been sent to workers
-		bool completed;			// Flag to notify that the process is complete ( everything is confirmed )
+		bool completed;			// Flag to notify that the process is complete ( everything is confirmed from the workers )
 
-		std::string queue;
+		std::string queue;		// Name of the queue we are uploading
 		
 		// Sumary information
 		size_t uploadedSize;	// Total size of uploaded files
 		size_t totalSize;		// Total size to be uploaded ( all files )
-		
+
+		// Error management
 		bool error;
 		std::string error_message;
-		
+
+		// Initial time stamp of the operation
 		struct timeval init_time;
 		
 	public:

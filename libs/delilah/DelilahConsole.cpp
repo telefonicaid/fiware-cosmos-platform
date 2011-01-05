@@ -398,18 +398,12 @@ namespace ss
 		{
 			
 			std::ostringstream output;
-			
-			MemoryManager::shared()->getStatus( output , "");
-			
-			
-			output << "Load processes....\n";
 
+			output << "Upload and download processes....\n";
 			std::map<size_t,DelilahComponent*>::iterator iter;
 			for (iter = delilah->components.begin() ; iter != delilah->components.end() ; iter++)
 				output << iter->second->getStatus();
-			
 			writeOnConsole(output.str());
-			
 			
 			return ;
 			

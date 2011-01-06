@@ -131,9 +131,18 @@ namespace ss
 		// Compress the buffer
 		if ( pd->uploadDataProcess->compression )
 		{
+			size_t original_size = pd->p->buffer->getSize();
+			
 			Buffer *buffer = Packet::compressBuffer( pd->p->buffer );
 			MemoryManager::shared()->destroyBuffer( pd->p->buffer );
 			pd->p->buffer = buffer;
+
+			size_t compress_size = pd->p->buffer->getSize();
+			
+			std::ostringstream message;
+			message << "Sending compressed buffer ( Size: " << au::Format::string( compress_size ) << " Original Size: " << au::Format::string(original_size) << "\n";
+			pd->delilah->client->showMessage( message.str() );
+			
 		}
 		
 		// Notify that the thread finished
@@ -192,6 +201,7 @@ namespace ss
 			// Create a thread to compress this message and send it
 			
 			UploadPacketData *data  = (UploadPacketData*)malloc( sizeof(UploadPacketData) );
+			
 			data->p = p;
 			data->delilah = delilah;
 			data->worker = worker++;

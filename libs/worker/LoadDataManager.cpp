@@ -178,12 +178,14 @@ namespace ss
 		
 		std::ostringstream output; 
 
+		output << "Download: ";
 		{
 			au::map<size_t,DownloadItem>::iterator iter;
 			for ( iter = downloadItem.begin() ; iter != downloadItem.end() ; iter++)
 				output << iter->second->getStatus();
 		}
 
+		output << "Upload: ";
 		{
 			au::map<size_t,UploadItem>::iterator iter;
 			for ( iter = uploadItem.begin() ; iter != uploadItem.end() ; iter++)

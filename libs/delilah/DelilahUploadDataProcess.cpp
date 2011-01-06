@@ -18,13 +18,17 @@ namespace ss
 	void TXTFileSet::fill( Buffer *b )
 	{
 		
+		// First the header
+		BufferHeader *header = (BufferHeader *)b->getData();
+		b->skipWrite(sizeof(BufferHeader) );
+		
 		if( finish )
 		{
 			return;	// Just in case
 		}
 		
 		// Write the previous characters here
-		bool ans = b->write(previousBuffer, previousBufferSize);
+		bool ans = b->write( previousBuffer, previousBufferSize );
 		assert( ans );	// There have to space for the previous buffer
 		
 		while( b->getAvailableWrite() > 0 )	// While there is space to fill
@@ -38,29 +42,48 @@ namespace ss
 				inputStream.close();
 				openNextFile();
 				if( finish )
+				{
+					// Information in the header
+					header->init( 0 );	// Non compressed header
+					header->original_size = b->getSize() - sizeof( BufferHeader );
+					header->compressed_size = b->getSize() - sizeof( BufferHeader );
 					return;
+				}
 			}
 		}
 		
 		// Full buffer
 		// Remove the last chars until a complete line and keep for the next read
 		previousBufferSize =  b->removeLastUnfinishedLine( previousBuffer );
+
+		// Information in the header
+		header->init( 0 );	// Non compressed header
+		header->original_size = b->getSize() - sizeof( BufferHeader );
+		header->compressed_size = b->getSize() - sizeof( BufferHeader );
+		
 		
 	}
 	
 #pragma mark -
 	
 	
-	DelilahUploadDataProcess::DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue ) : fileSet( fileNames )
+	DelilahUploadDataProcess::DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression ) : fileSet( fileNames )
 	{
+		
 		// Get initial time
 		gettimeofday(&init_time, NULL);
 		
 		// Queue name 
 		queue = _queue;
+
+		// Information about the compression	
+		compression = _compression;
 		
 		uploadedSize = 0;
 		totalSize = 0;	
+		
+		num_threads = 0;
+		max_num_threads = 5;
 		
 		// Compute the total size for all the files
 		for ( size_t i =  0 ; i < fileNames.size() ; i++)
@@ -83,6 +106,7 @@ namespace ss
 		d->_run();
 		return NULL;
 	}
+
 	
 	void DelilahUploadDataProcess::run()
 	{
@@ -93,6 +117,36 @@ namespace ss
 		pthread_create(&t, NULL, runThreadDelilahLoadDataProcess, this);
 	}
 	
+	struct UploadPacketData {
+		Packet *p;
+		int worker;
+		Delilah* delilah;
+		DelilahUploadDataProcess* uploadDataProcess;
+	};
+	
+	void* processUploadPacketData( void *p )
+	{
+		UploadPacketData * pd = (UploadPacketData*)p;
+		
+		// Compress the buffer
+		if ( pd->uploadDataProcess->compression )
+		{
+			Buffer *buffer = Packet::compressBuffer( pd->p->buffer );
+			MemoryManager::shared()->destroyBuffer( pd->p->buffer );
+			pd->p->buffer = buffer;
+		}
+		
+		// Notify that the thread finished
+		pd->uploadDataProcess->finishCompressionThread();
+		
+		// Send the packet
+		pd->delilah->network->send(pd->delilah, pd->delilah->network->workerGetIdentifier(pd->worker), Message::UploadData, pd->p);
+
+		// Free allocated input parameter
+		free( p );
+		
+		return NULL;
+	}
 	
 	void DelilahUploadDataProcess::_run()
 	{
@@ -120,32 +174,44 @@ namespace ss
 			Packet *p = new Packet();
 			p->buffer = b;	// Add the buffer to the packet
 
-
 			// Set message fields
 			network::UploadData *loadData = p->message.mutable_upload_data();	
-			loadData->set_file_id( file_id );
-			p->message.set_delilah_id( id );		// Global id of delilah jobs
+			loadData->set_file_id( file_id );				// File id
+			loadData->set_original_size( b->getSize() );	// Size of the file we are uploading
+			p->message.set_delilah_id( id );				// Global id of delilah jobs
 
 			
 			// Send the packet
 			std::ostringstream message;
-			message << getStatus() << " Sending buffer of " << au::Format::string( b->getSize() , "B" );
+			message << getStatus() << " Created buffer " << au::Format::string( b->getSize() , "B" );
 			delilah->client->showMessage(message.str());
+
+
+			lock.lock();
+
+			// Create a thread to compress this message and send it
 			
-			delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), Message::UploadData, p);
-			
-			// Next worker
-			if( ++worker == num_workers )
+			UploadPacketData *data  = (UploadPacketData*)malloc( sizeof(UploadPacketData) );
+			data->p = p;
+			data->delilah = delilah;
+			data->worker = worker++;
+			if ( worker >= num_workers )
 				worker = 0;
+			data->uploadDataProcess = this;
+			
+			pthread_t t;
+			pthread_create(&t, NULL, processUploadPacketData, (void*) data);
+			num_threads++;
+			
+			lock.unlock();
 			
 			// Wait if memory is not released
-			while( MemoryManager::shared()->getMemoryUsage() > 0.7 )
+			while( ( MemoryManager::shared()->getMemoryUsage() > 0.7 ) || ( num_threads >= max_num_threads ) )
 				sleep(1);
-			
 		}
-		
-			
 	}
+	
+
 	
 	void DelilahUploadDataProcess::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
@@ -162,7 +228,8 @@ namespace ss
 			network::File file	= packet->message.upload_data_response().file();
 			
 			// update the uploaded data
-			uploadedSize += file.info().size();
+			uploadedSize +=  packet->message.upload_data_response().upload_data().original_size();
+			//uploadedSize += file.info().size();
 			
 			created_files.push_back(file);
 			num_confirmed_files++;

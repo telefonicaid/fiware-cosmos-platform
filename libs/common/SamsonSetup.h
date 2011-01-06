@@ -22,13 +22,12 @@ namespace ss {
 		int num_processes;
 		
 		// Disk management
-		int max_open_files_per_device;
+		int num_io_threads_per_device;
 
 		//  Memory - System
 		size_t memory;
 		size_t shared_memory_size_per_buffer;
 		int shared_memory_num_buffers;
-		
 		
 		// Max size of kv files
 		size_t max_file_size;

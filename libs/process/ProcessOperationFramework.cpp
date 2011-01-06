@@ -2,6 +2,7 @@
 
 #include "ProcessOperationFramework.h"		// Own interface
 #include "WorkerTaskManager.h"				// ss::WorkerTaskItemWithOutput
+#include "Packet.h"							// ss::Packet
 
 namespace ss {
 
@@ -62,12 +63,35 @@ namespace ss {
 				Parser *parser = (Parser*) operation->getInstance();
 				parser->environment = environment;
 				
-				SharedMemoryItem*item =  MemoryManager::shared()->getSharedMemory( m.input_shm() );
+				SharedMemoryItem* item =  MemoryManager::shared()->getSharedMemory( m.input_shm() );
 				
-				parser->init();
-				pw->clear();
-				parser->run( item->data , m.input_size() ,  pw );
-				parser->finish();
+				BufferHeader *header = (BufferHeader*)item->data;
+				assert( header->check() );
+				
+				if( header->compressed == 0 )
+				{
+					// Non compressed fiels
+					parser->init();
+					pw->clear();
+					parser->run( item->data + sizeof(BufferHeader) , header->original_size ,  pw );
+					parser->finish();
+					
+				}
+				else 
+				{
+					assert ( header->compressed == 1);	// Only supported 1
+					
+					Buffer* b = Packet::decompressBuffer( item->data , m.input_size() );
+					
+					parser->init();
+					pw->clear();
+					parser->run( b->getData() , b->getSize() ,  pw );
+					parser->finish();
+					
+					MemoryManager::shared()->destroyBuffer(b);
+					
+				}
+				
 				break;
 			}
 			case Operation::parserOut:

@@ -12,6 +12,7 @@
 
 #include <sstream>			// std::ostringstream
 #include "Format.h"			// au::Format
+#include <list>				// std::list
 
 namespace ss {
 
@@ -35,6 +36,7 @@ namespace ss {
 		size_t previousBufferSize;
 
 		std::vector<std::string> failedFiles;		// List of files that could not be uploaded		
+		
 		
 	public:
 		
@@ -90,17 +92,20 @@ namespace ss {
 	// All the information related with a load process
 	class DelilahUploadDataProcess : public DelilahComponent
 	{
-		au::Lock lock;			// Lock mechanish to protext ( async confirmation of the workers )
+		au::Lock lock;					// Lock mechanish to protext ( async confirmation of the workers )
 		
-		int num_workers;		// Total number of workers
-		int worker;				// Current worker
+		int num_workers;				// Total number of workers
+		int worker;						// Current worker
 		
-		pthread_t t;			// Thread of this process
+		pthread_t t;					// Thread of this process
 		
-		TXTFileSet fileSet;		// Input txt files
+		TXTFileSet fileSet;				// Input txt files
 		
 		size_t num_files;				// Num files generated
 		size_t num_confirmed_files;
+		
+		int num_threads;				// Number of paralel threads to wait if necessary
+		int max_num_threads;			// Maximum number of paralell threads
 		
 		std::vector<network::File> created_files;			// Created files ( answers from workers )
 		
@@ -122,7 +127,10 @@ namespace ss {
 		
 	public:
 
-		DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue );		
+		bool compression;	// Public since it has to be accessible from the thread
+		
+		
+		DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression );		
 		
 		void run();		
 		void _run();	// Method only called by a separeted thread		
@@ -130,8 +138,17 @@ namespace ss {
 		void fillLoadDataConfirmationMessage( network::UploadDataConfirmation *confirmation );		
 		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 		
-		std::string getStatus();
+		std::string getStatus();		
 		
+		void _runCompressThread();	// Method executed by all the compression threads
+		
+		
+		void finishCompressionThread()
+		{
+			lock.lock();
+			num_threads--;
+			lock.unlock();
+		}
 		
 	};	
 	

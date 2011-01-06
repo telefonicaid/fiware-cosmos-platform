@@ -324,7 +324,8 @@ message WorkerDataExchangeClose
 
 message UploadData
 {
-	required uint64 file_id=2;	// Id of the file ( multiple files for the same process)		
+	required uint64 file_id=2;		// Id of the file ( multiple files for the same process)		
+	optional uint64 original_size=3;	// Original size of the file ( note that compression can be applyed )
 }
 
 message UploadDataResponse

@@ -1,5 +1,4 @@
 #include "DiskOperation.h"					// DiskOperation
-#include "FileAccess.h"						// FileAccess
 #include "DiskManagerDelegate.h"			// DiskManagerDelegate
 #include "SamsonSetup.h"					// SamsonSetup
 #include "DeviceDiskAccessManager.h"		// Own interface
@@ -15,15 +14,13 @@ namespace ss {
 	}
 
 	DeviceDiskAccessManager::DeviceDiskAccessManager() : stopLock( &lock )
-	{
-		// Finish variable to controll threads
-		finished = false;	
-
-		// Get the max number of open files per devide from setup
-		max_open_files = SamsonSetup::shared()->max_open_files_per_device;
+	{	
+		// By default just one
+		num_threads = SamsonSetup::shared()->num_io_threads_per_device;
 		
 		// Create the thread for this disk operations
-		pthread_create(&t, NULL, runDeviceDiskAccessManagerThread, this);
+		for (int i  =0 ; i < num_threads ; i++)
+			pthread_create(&t[i], NULL, runDeviceDiskAccessManagerThread, this);
 	}
 	
 	DiskOperation * DeviceDiskAccessManager::getNextOperation()
@@ -31,18 +28,20 @@ namespace ss {
 		DiskOperation *o = NULL;
 		
 		lock.lock();
+		
 		if( operation.size() > 0)
 		{
 			o = operation.front();
 			operation.pop_front();
 		}
+		
 		lock.unlock();
 		return o;
 	}
 	
 	void DeviceDiskAccessManager::runThread()
 	{
-		while( !finished )
+		while( true )
 		{
 			DiskOperation *o = getNextOperation();
 			
@@ -53,6 +52,7 @@ namespace ss {
 			}
 			else
 			{
+				// Block until someone wake up you
 				lock.lock();
 				lock.unlock_waiting_in_stopLock( &stopLock );
 			}
@@ -73,59 +73,60 @@ namespace ss {
 		
 	void DeviceDiskAccessManager::run( DiskOperation *o )
 	{
-		// Get the file information
-		FileAccess *file = getFile( o->fileName  , o->mode );
 		
+		bool result;
 		struct timeval start,stop;
 		gettimeofday(&start, NULL);
 		
-		bool result;
-		if ( o->mode == "r" )
+		if( o->mode == "w" )
 		{
-			result = file->read(o->read_buffer, o->offset , o->size);
-		}
-		else
-		{
-			result = file->append(o->buffer->getData(), o->size);
-		}
-		
-		gettimeofday(&stop, NULL);
-		
-		if( result )
-		{
-			if ( o->mode == "r" )
-				statistics.add(DiskStatistics::read, o->size, DiskStatistics::timevaldiff( &start , &stop) );
+			// Create a new file
+
+			FILE *file = fopen( o->fileName.c_str() , "w" );
+			assert( file );
+			
+			if( fwrite(o->buffer->getData(), o->size, 1 , file) == 1 )
+			{
+				fflush(file);
+				result = true;
+			}
 			else
+				result = false;
+			
+			fclose(file);
+			
+			gettimeofday(&stop, NULL);
+			if( result )
 				statistics.add(DiskStatistics::write, o->size, DiskStatistics::timevaldiff( &start , &stop) );
+
+			fclose(file);
+		}
+		
+		if( o->mode == "r")
+		{
+			// Create a new one
+			//FileAccess *file = new FileAccess( o->fileName , o->mode );
+			//result = file->read(o->read_buffer, o->offset , o->size);
+			
+			FILE *file = fopen( o->fileName.c_str() , "r" );
+			assert(file);
+
+			fseek(file, o->offset, SEEK_SET);				// Seek to the rigth offset
+			
+			result = ( fread(o->read_buffer, o->size, 1, file) == 1 );
+			
+			gettimeofday(&stop, NULL);
+			if( result )
+				statistics.add(DiskStatistics::read, o->size, DiskStatistics::timevaldiff( &start , &stop) );
+
+			fclose(file);
 		}
 		
 		// Nofity end of a task
 		o->delegate->diskManagerNotifyFinish(o->idGet(), result);
 		
-		// This should be removed when reusing files
-		//delete file;
 	}
 	
-	FileAccess* DeviceDiskAccessManager::getFile( std::string fileName , std::string mode )
-	{
-		
-		if( mode == "w" )
-		{
-			// Create a new one
-			FileAccess *f = new FileAccess( fileName , mode );
-			return f;
-		}
-
-		if( mode == "r")
-		{
-			// Create a new one
-			FileAccess *f = new FileAccess( fileName , mode );
-			return f;
-		}
-		
-		assert( false );
-		return NULL;		
-	}
 	
 	void DeviceDiskAccessManager::getStatus( std::ostream &output , std::string prefix_per_line )
 	{

@@ -20,6 +20,8 @@
 #include "DiskStatistics.h"		// ss::DiskStatistics
 #include "Status.h"				// au::Status
 
+#define MAX_NUM_THREADS_PER_DEVICE 10
+
 namespace ss {
 	
 
@@ -30,17 +32,14 @@ namespace ss {
 	
 	class DeviceDiskAccessManager : public au::Status
 	{
-		au::Lock lock;
+		au::Lock lock;		
 		au::StopLock stopLock;
+		
 		std::list<DiskOperation*> operation;			// List of pending operations
-		
-		au::map<std::string , FileAccess> files_read;	// List of open files to read
-		
-		pthread_t t;									// Thread to read/write in this device
-		bool finished;									// Flag to finish the background thread
-		
-		int max_open_files;
 
+		int num_threads;							// Number of threads working over this device		
+		pthread_t t[MAX_NUM_THREADS_PER_DEVICE];	// Thread to read/write in this device
+		
 	public:
 
 		// Statistical information
@@ -59,11 +58,7 @@ namespace ss {
 		
 	private:
 		
-		void run( DiskOperation *o);
-		
-		FileAccess* getFile( std::string fileName , std::string mode );
-
-
+		void run( DiskOperation *o );
 		
 	};
 }

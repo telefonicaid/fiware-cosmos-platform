@@ -244,6 +244,7 @@ namespace ss
 		commandLine.set_flag_string("name", "null");
 		commandLine.set_flag_string("begin", "null");
 		commandLine.set_flag_boolean("show");
+		commandLine.set_flag_boolean("plain");
 		commandLine.parse( command );
 
 		std::string mainCommand;
@@ -553,8 +554,9 @@ namespace ss
 			}
 			
 			std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
+			bool compresion =  !commandLine.get_flag_bool("plain");
 			
-			size_t id = delilah->addUploadData(fileNames, queue);
+			size_t id = delilah->addUploadData(fileNames, queue,compresion);
 			
 			std::ostringstream o;
 			o << "Load data process (id="<<id<<") started with " << fileNames.size() << " files\n";

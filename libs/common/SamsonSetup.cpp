@@ -6,8 +6,8 @@
 #include "SamsonSetup.h"		// Own interface
 
 
-#define SETUP_max_open_files_per_device					"max_open_files_per_device"
-#define SETUP_DEFAULT_max_open_files_per_device			100
+#define SETUP_num_io_threads_per_device					"num_io_threads_per_device"
+#define SETUP_DEFAULT_num_io_threads_per_device			1
 
 #define SETUP_max_file_size								"max_file_size"
 #define SETUP_DEFAULT_max_file_size						209715200	// 200Mb
@@ -87,11 +87,11 @@ namespace ss
 		num_processes	= getInt( items, SETUP_num_processes , SETUP_DEFAULT_num_processes );
 		
 		// Disk management
-		max_open_files_per_device = getInt( items, SETUP_max_open_files_per_device , SETUP_DEFAULT_max_open_files_per_device );
+		num_io_threads_per_device = getInt( items, SETUP_num_io_threads_per_device , SETUP_DEFAULT_num_io_threads_per_device );
 		max_file_size = getUInt64( items, SETUP_max_file_size, SETUP_DEFAULT_max_file_size);
 		
 		//  Memory - System
-		memory							= getUInt64( items, SETUP_memory , SETUP_DEFAULT_max_open_files_per_device );
+		memory							= getUInt64( items, SETUP_memory , SETUP_DEFAULT_memory );
 		shared_memory_size_per_buffer	= getUInt64( items, SETUP_shared_memory_size_per_buffer , SETUP_DEFAULT_shared_memory_size_per_buffer );
 		shared_memory_num_buffers		= getInt( items, SETUP_shared_memory_num_buffers , SETUP_DEFAULT_shared_memory_num_buffers );
 	
@@ -133,9 +133,14 @@ namespace ss
 			std::cerr << "Recomended value: num_buffers = 3 * num_process\n";
 			return false;
 		}
-		if ( max_open_files_per_device < 10)
+		if ( num_io_threads_per_device < 1)
 		{
-			std::cerr << "Number of simultaneous open files per devide too low. Minimum 10.\n";
+			std::cerr << "Minimum number of threads per device 1.\n";
+			return false;
+		}
+		if ( num_io_threads_per_device > 10)
+		{
+			std::cerr << "Maximum number of threads per device 10.\n";
 			return false;
 		}
 		

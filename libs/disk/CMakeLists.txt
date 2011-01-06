@@ -5,8 +5,6 @@ SET (HEADERS
 	DiskManager.h
 	DiskManagerDelegate.h
 	DiskOperation.h
-	DiskOperationsManager.h
-	FileAccess.h
 	FileManager.h
 	FileManagerItem.h
 	FileManagerReadItem.h
@@ -23,8 +21,6 @@ SET (SOURCES
 	DeviceDiskAccessStatistics.cpp
 	DiskManager.cpp
 	DiskOperation.cpp
-	DiskOperationsManager.cpp
-	FileAccess.cpp
 	FileManager.cpp
 	FileManagerItem.cpp
 	FileManagerReadItem.cpp

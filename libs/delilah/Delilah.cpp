@@ -102,9 +102,9 @@ void Delilah::notificationSent(size_t id, bool success)
 	*
 	* loadData - 
 	*/
-	size_t Delilah::addUploadData( std::vector<std::string> fileNames , std::string queue)
+	size_t Delilah::addUploadData( std::vector<std::string> fileNames , std::string queue , bool compresion)
 	{
-		DelilahUploadDataProcess * d = new DelilahUploadDataProcess( fileNames , queue );
+		DelilahUploadDataProcess * d = new DelilahUploadDataProcess( fileNames , queue , compresion );
 		
 		size_t tmp_id = addComponent(d);	
 		

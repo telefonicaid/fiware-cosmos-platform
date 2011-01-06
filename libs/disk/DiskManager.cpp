@@ -26,8 +26,10 @@ namespace ss {
 
 	size_t DiskManager::read( char *data , std::string fileName , size_t offset , size_t size , DiskManagerDelegate *delegate )
 	{
+		size_t id = 0;
 		
 		lock.lock();
+		
 		DiskOperation *o = new DiskOperation(counter_id++);
 		
 		o->fileName = fileName;
@@ -37,18 +39,27 @@ namespace ss {
 		o->offset = offset;
 		o->delegate = delegate;
 		
-		if( !addOperation( o ) )
-			o=NULL;
+		
+		if( o->setDevice() )
+		{
+			_addOperation( o );
+			id = o->idGet();
+		}
+		else
+		{
+			delete o;
+			id = 0;
+		}
+		
 		lock.unlock();
 		
-		if( o )
-			return o->idGet();
-		else
-			return 0;
+		return id;
 	}
 	
 	size_t DiskManager::write( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate )
 	{
+		size_t id;
+		
 		lock.lock();
 		
 		DiskOperation *o = new DiskOperation(counter_id++);
@@ -60,21 +71,26 @@ namespace ss {
 		o->offset = 0;
 		o->delegate = delegate;
 		
-		if( !addOperation( o ) )
-			o=NULL;
-		lock.unlock();
-		
-		if( o )
-			return o->idGet();
+
+		if( o->setDevice() )
+		{
+			_addOperation( o );
+			id = o->idGet();
+		}
 		else
-			return 0;
-		
+		{
+			delete o;
+			id = 0;
+		}
+
+		lock.unlock();
+
+		return id;
 	}
 		
-	DeviceDiskAccessManager *DiskManager::getDeviceDiskAccessManagerForDev( dev_t st_dev )
+	DeviceDiskAccessManager *DiskManager::_getDeviceDiskAccessManagerForDev( dev_t st_dev )
 	{
-		std::map <dev_t , DeviceDiskAccessManager*>::iterator i;
-		DeviceDiskAccessManager *device = item.findInMap( st_dev);
+		DeviceDiskAccessManager *device = item.findInMap( st_dev );
 		if( device )
 			return device;
 		else
@@ -86,23 +102,14 @@ namespace ss {
 		}
 	}
 		
-	bool DiskManager::addOperation( DiskOperation *o )
+	void DiskManager::_addOperation( DiskOperation *o )
 	{
 		
-		if( !o->setDevice() )
-		{
-			delete  o;
-			return false;
-		}
-		
-		DeviceDiskAccessManager *d = getDeviceDiskAccessManagerForDev( o->st_dev );
+		DeviceDiskAccessManager *d = _getDeviceDiskAccessManagerForDev( o->st_dev );
 		assert( d );
 		d->addOperation(o);
 		
-		return true;
-		
 	}
-
 	
 	void DiskManager::getStatus( std::ostream &output , std::string prefix_per_line )
 	{
@@ -112,12 +119,14 @@ namespace ss {
 	
 	void DiskManager::fill(network::WorkerStatus*  ws)
 	{
-		std::ostringstream output;
+		lock.lock();
 		
+		std::ostringstream output;
 		if( item.size() > 0)
 		output << "Statistics: " << item.begin()->second->statistics.getStatus();
-		
 		ws->set_disk_manager_status( output.str() );
+		
+		lock.unlock();
 	}
 	
 	

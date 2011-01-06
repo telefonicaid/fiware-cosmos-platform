@@ -31,8 +31,7 @@ int main(int argc, const char *argv[])
 	std::cout << "Shared memory: " << s->shared_memory_num_buffers << " x " << au::Format::string( s->shared_memory_size_per_buffer ) << std::endl;
 	std::cout << "\n";
 	std::cout << "** Disk setup:\n";
-	std::cout << "Max open files per devide:    " << s->max_open_files_per_device << "\n";
-	
+	std::cout << "Num threads per devide:    " << s->num_io_threads_per_device << "\n";
 	
 
 	std::cout << "\n\n\n";

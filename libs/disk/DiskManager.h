@@ -62,6 +62,7 @@ namespace ss {
 		// Function to get the run-time status of this object
 		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
+		// Fill the rigth information in this message
 		void fill(network::WorkerStatus*  ws);
 		
 	private:
@@ -71,13 +72,13 @@ namespace ss {
 		 Get the device manager for this device
 		 */
 		
-		DeviceDiskAccessManager *getDeviceDiskAccessManagerForDev( dev_t st_dev );
+		DeviceDiskAccessManager * _getDeviceDiskAccessManagerForDev( dev_t st_dev );
 
 		/** 
 		 Add operation to the rigth device manager
 		 */
 		
-		bool addOperation( DiskOperation *o );
+		void _addOperation( DiskOperation *o );
 		
 	};
 

@@ -418,10 +418,10 @@ static void* senderThread(void* vP)
 		// To be improved ...
 		if (ep->alias == job.me->alias)
 		{
-			LM_M(("ANDREU: Calling 'loop-back' receive from within sender thread"));
+			//LM_M(("ANDREU: Calling 'loop-back' receive from within sender thread"));
 			if (job.network->receiver)
 				job.network->receiver->receive(0, job.msgCode, job.packetP);
-			LM_M(("ANDREU: After calling 'loop-back' receive from within sender thread"));
+			//LM_M(("ANDREU: After calling 'loop-back' receive from within sender thread"));
 		}
 		else
 		{
@@ -497,7 +497,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, ss::M
 #else
 		ep->state           = Endpoint::Connected;
 		ep->useSenderThread = true;
-		LM_M(("ANDREU: looping back the '%s' message to myself via sender thread", messageCode(code)));
+		//LM_M(("ANDREU: looping back the '%s' message to myself via sender thread", messageCode(code)));
 #endif
 	}
 	else if (ep->state != Endpoint::Connected)

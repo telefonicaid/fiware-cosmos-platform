@@ -95,7 +95,16 @@ namespace ss {
 			
 			b->setSize(cm_len + sizeof( BufferHeader ) );			// Set the size of the compressed buffer
 
-			return b;
+			
+			//return b;
+			
+			// Create a new buffer with the rigth size
+			Buffer *b2 = MemoryManager::shared()->newBuffer( "Compressed buffer2", b->getSize()	);
+			memcpy(b2->getData(), b->getData(), b->getSize());
+			b2->setSize(b->getSize());
+			MemoryManager::shared()->destroyBuffer( b );
+			return b2;
+			
 		}
 		
 		static Buffer* decompressBuffer(Buffer *buffer)

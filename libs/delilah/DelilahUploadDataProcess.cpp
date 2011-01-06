@@ -297,10 +297,6 @@ namespace ss
 	}
 
 	
-	
-	
-	void DelilahUploadDataProcess::_run();		
-	
 	std::string DelilahUploadDataProcess::getStatus()
 	{
 		

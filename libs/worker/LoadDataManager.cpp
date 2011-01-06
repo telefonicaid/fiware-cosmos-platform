@@ -153,6 +153,8 @@ namespace ss
 		UploadItem* upload			= uploadItem.extractFromMap( fm_id );
 		DownloadItem* download		= downloadItem.extractFromMap( fm_id );
 		
+		assert( download || upload );
+		
 		if( download )
 		{
 			download->sendResponse(!success ,"");

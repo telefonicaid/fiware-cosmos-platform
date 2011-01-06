@@ -130,7 +130,7 @@ namespace ss {
 		bool compression;	// Public since it has to be accessible from the thread
 		
 		
-		DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression );		
+		DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression , int _max_num_threads );		
 		
 		void run();		
 		void _run();	// Method only called by a separeted thread		

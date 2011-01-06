@@ -245,6 +245,7 @@ namespace ss
 		commandLine.set_flag_string("begin", "null");
 		commandLine.set_flag_boolean("show");
 		commandLine.set_flag_boolean("plain");
+		commandLine.set_flag_int("threads",4);
 		commandLine.parse( command );
 
 		std::string mainCommand;
@@ -555,8 +556,9 @@ namespace ss
 			
 			std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
 			bool compresion =  !commandLine.get_flag_bool("plain");
+			int max_num_thread = commandLine.get_flag_int("threads"); 
 			
-			size_t id = delilah->addUploadData(fileNames, queue,compresion);
+			size_t id = delilah->addUploadData(fileNames, queue,compresion , max_num_thread);
 			
 			std::ostringstream o;
 			o << "Load data process (id="<<id<<") started with " << fileNames.size() << " files\n";

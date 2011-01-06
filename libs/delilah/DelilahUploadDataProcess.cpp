@@ -67,7 +67,7 @@ namespace ss
 #pragma mark -
 	
 	
-	DelilahUploadDataProcess::DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression ) : fileSet( fileNames )
+	DelilahUploadDataProcess::DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression, int _max_num_threads ) : fileSet( fileNames )
 	{
 		
 		// Get initial time
@@ -83,7 +83,7 @@ namespace ss
 		totalSize = 0;	
 		
 		num_threads = 0;
-		max_num_threads = 5;
+		max_num_threads = _max_num_threads;
 		
 		// Compute the total size for all the files
 		for ( size_t i =  0 ; i < fileNames.size() ; i++)

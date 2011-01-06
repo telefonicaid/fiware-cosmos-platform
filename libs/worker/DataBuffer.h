@@ -32,7 +32,7 @@ namespace ss {
 	 When enougth data is accumulated it is frozen to a file and DataManager if notified
 	 */
 	
-	class DataBuffer : public FileManagerDelegate , public au::Status
+	class DataBuffer : public FileManagerDelegate 
 	{
 		
 		au::map<size_t , DataBufferItem> item;
@@ -67,9 +67,6 @@ namespace ss {
 
 		// Fill information in the message
 		void fill(network::WorkerStatus*  ws);
-
-		// To be removed
-		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
 	private:
 		

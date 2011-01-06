@@ -58,7 +58,7 @@ namespace ss {
 	};
 
 		
-	class MemoryManager : public au::Status
+	class MemoryManager 
 	{
 		
 		au::Lock lock;									// Lock to be thread-safe

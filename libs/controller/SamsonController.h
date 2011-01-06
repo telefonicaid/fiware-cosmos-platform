@@ -32,7 +32,7 @@ namespace ss {
 	 Main class for the samson worker element
 	 */
 	
-	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface , public au::Status
+	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface 
 	{
 
 		// Elements inside the SamsonController

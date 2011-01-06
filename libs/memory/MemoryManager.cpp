@@ -32,9 +32,6 @@ namespace ss
 		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
 			shared_memory_used_buffers[i] = false;
 		
-		
-		//Setup run-time status
-		setStatusTile( "Memory manager" , "mm" );
 	}
 	
 	MemoryManager* MemoryManager::shared()

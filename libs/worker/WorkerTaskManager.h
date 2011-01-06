@@ -21,7 +21,7 @@ namespace ss {
 	class ProcessAssistant;
 	class NetworkInterface;
 	
-	class WorkerTaskManager :  public au::Status
+	class WorkerTaskManager 
 	{
 		
 	public:
@@ -61,9 +61,6 @@ namespace ss {
 		
 		// Notification receveid from DataBuffer when everything is generated
 		void finishTask( size_t task_id );
-		
-		// Get information about internal status
-		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
 		std::string getStatus();
 		

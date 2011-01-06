@@ -27,7 +27,7 @@ namespace ss {
 	
 	class EndpointMgr;
 		
-	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface , public au::Status
+	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
 	{
 		
 	public:

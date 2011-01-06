@@ -26,7 +26,7 @@ namespace ss {
 	 Class to group all the vector of buffers for each output queue
 	 */
 	
-	class DataBufferItem : public au::map<std::string , QueueuBufferVector> , public au::Status
+	class DataBufferItem : public au::map<std::string , QueueuBufferVector> 
 	{
 		DataBuffer *dataBuffer;				// Pointer to the buffer
 		

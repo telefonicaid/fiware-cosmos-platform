@@ -21,7 +21,7 @@ namespace ss {
 	 Generic read/write item that contains a pointer to the delegate
 	 */
 	
-	class FileManagerItem : public au::Status
+	class FileManagerItem 
 	{
 	protected:
 		

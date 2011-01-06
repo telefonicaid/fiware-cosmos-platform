@@ -126,9 +126,13 @@ namespace ss {
 	}
 	
 	
-	void DeviceDiskAccessManager::getStatus( std::ostream &output , std::string prefix_per_line )
+	std::string DeviceDiskAccessManager::getStatus(  )
 	{
-		output << statistics.getStatus() << "\n";
+		std::ostringstream output;
+		lock.lock();
+		output << operation.size() << " operations " << statistics.getStatus() << "\n";
+		lock.unlock();
+		return output.str();
 	}
 
 	

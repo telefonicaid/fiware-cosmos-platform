@@ -20,8 +20,6 @@ namespace ss {
 	{
 		counter_id = 0;
 
-		// Setup run-time status report
-		setStatusTile( "Disk Manager" , "dm" );
 	}
 
 	size_t DiskManager::read( char *data , std::string fileName , size_t offset , size_t size , DiskManagerDelegate *delegate )
@@ -111,19 +109,15 @@ namespace ss {
 		
 	}
 	
-	void DiskManager::getStatus( std::ostream &output , std::string prefix_per_line )
-	{
-		output << "\n";
-		getStatusFromMap(output, item, prefix_per_line);
-	}
 	
 	void DiskManager::fill(network::WorkerStatus*  ws)
 	{
 		lock.lock();
 		
 		std::ostringstream output;
-		if( item.size() > 0)
-		output << "Statistics: " << item.begin()->second->statistics.getStatus();
+		au::map <dev_t , DeviceDiskAccessManager>::iterator iter;
+		for ( iter = item.begin() ; iter != item.end() ; iter++)
+		output << "<<" << iter->second->statistics.getStatus() << ">>";
 		ws->set_disk_manager_status( output.str() );
 		
 		lock.unlock();

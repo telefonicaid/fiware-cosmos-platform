@@ -25,7 +25,7 @@ namespace ss {
 	class DiskOperation;
 	class DiskManagerDelegate;
 	
-	class DiskManager : public au::Status
+	class DiskManager 
 	{
 		// Global lock for thread safe implementation
 		au::Lock lock;
@@ -59,8 +59,6 @@ namespace ss {
 		
 		size_t write( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate );
 		
-		// Function to get the run-time status of this object
-		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
 		// Fill the rigth information in this message
 		void fill(network::WorkerStatus*  ws);

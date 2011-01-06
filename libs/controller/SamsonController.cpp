@@ -44,15 +44,6 @@ namespace ss {
 		// Init session of data
 		data.initSession();
 		
-		// setup run-time status
-		setStatusTile( "Samson Controller" , "controller" );
-		//addChildrenStatus( MemoryManager::shared()->getStatus() );
-		//addChildrenStatus( &data.getStatus() );
-		//addChildrenStatus( &jobManager.getStatus() );
-		//addChildrenStatus( &taskManager.getStatus() );
-		//addChildrenStatus( FileManager::shared() );
-		//addChildrenStatus( network );
-		
 		// Create space for the worker updates
 		num_workers = network->getNumWorkers();
 		assert( num_workers > 0);

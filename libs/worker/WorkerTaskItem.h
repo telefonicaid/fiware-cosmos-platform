@@ -18,7 +18,7 @@ namespace ss {
 	class ProcessAssistant;
 	class WorkerTask;
 	
-	class WorkerTaskItem : public au::Status , public FileManagerDelegate
+	class WorkerTaskItem : public FileManagerDelegate
 	{
 		
 	public:

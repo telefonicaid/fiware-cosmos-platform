@@ -29,7 +29,7 @@ namespace ss {
 	 It is used to send files to be saved on disk and to read part of files
 	 */
 	 
-	class FileManager : public DiskManagerDelegate , public au::Status
+	class FileManager : public DiskManagerDelegate 
 	{
 		// thread safe lock
 		au::Lock lock;			
@@ -53,7 +53,6 @@ namespace ss {
 		{
 			// Init the counter to give new ids
 			current_fm_id = 0;
-			setStatusTile( "File Manager" , "fm" );
 		}
 		
 		
@@ -86,11 +85,6 @@ namespace ss {
 		
 		void fill(network::WorkerStatus*  ws);
 		
-	public:
-		
-		// Function to get the run-time status of this object
-		void getStatus( std::ostream &output , std::string prefix_per_line );
-
 		
 		
 	};

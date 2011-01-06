@@ -30,7 +30,7 @@ namespace ss {
 	
 	void* runDeviceDiskAccessManagerThread(void * p);
 	
-	class DeviceDiskAccessManager : public au::Status
+	class DeviceDiskAccessManager 
 	{
 		au::Lock lock;		
 		au::StopLock stopLock;
@@ -54,7 +54,7 @@ namespace ss {
 		void addOperation(DiskOperation* o);
 		
 		// Function to get the run-time status of this object
-		void getStatus( std::ostream &output , std::string prefix_per_line );
+		std::string getStatus( );
 		
 	private:
 		

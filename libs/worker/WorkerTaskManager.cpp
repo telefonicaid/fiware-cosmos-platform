@@ -42,9 +42,6 @@ namespace ss {
 		
 		LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
 		
-		// Setup run-time status 
-		setStatusTile( "Task Manager" , "tm" );
-
 		
 	}
 	
@@ -232,20 +229,7 @@ namespace ss {
 			network->send(worker, network->workerGetIdentifier(s) , Message::WorkerDataExchangeClose, p);
 		}
 	}	
-	
-	// Funciton to get the run-time status of this object
-	void WorkerTaskManager::getStatus( std::ostream &output , std::string prefix_per_line )
-	{
-		output << "\n";
-
-		getStatusFromMap( output, task , prefix_per_line );
-
-		output << prefix_per_line << "ProcessAssistants: (" << num_processes << " process):\n";
-		for (int i = 0 ; i < num_processes ; i++)
-			output << prefix_per_line << "\t" << processAssistant[i]->getStatus() << std::endl; 
 		
-	}
-	
 	std::string WorkerTaskManager::getStatus()
 	{
 		std::ostringstream output;

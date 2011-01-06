@@ -117,17 +117,7 @@ namespace ss
 		
 		return output.str();
 	}
-	
-	void WorkerTask::getStatus( std::ostream &output , std::string prefix_per_line )
-	{
-		output << "ID:" << task_id << " " << operation;
-		if( isFinish() )
-			output << " (F) ";
-		output << std::endl;
 		
-		getStatusFromMap( output, item , prefix_per_line );
-	}
-	
 	size_t WorkerTask::getId()
 	{
 		return task_id;

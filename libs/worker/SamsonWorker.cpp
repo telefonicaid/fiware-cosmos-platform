@@ -105,7 +105,6 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	// Load data files to be latter confirmed to controller
 	if (msgCode == Message::UploadData)
 	{
-		
 		loadDataManager.addUploadItem(fromId, packet->message.upload_data(), packet->message.delilah_id() , packet->buffer );
 		return 0;
 	}

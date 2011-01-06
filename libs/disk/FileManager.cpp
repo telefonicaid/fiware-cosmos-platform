@@ -136,22 +136,16 @@ namespace ss
 		
 	}	
 	
-	// Function to get the run-time status of this object
-	void FileManager::getStatus( std::ostream &output , std::string prefix_per_line )
-	{
-		output << "\n";
-		getStatusFromMap( output , items, prefix_per_line );
-		output << prefix_per_line << "Statics: " << statistics.getStatus() << std::endl;
-		
-	}
 	
 	void FileManager::fill(network::WorkerStatus*  ws)
 	{
 		std::ostringstream output;
+		lock.lock();
+		output << items.size() << " items : ";
 		output << "Statistics: " << statistics.getStatus();
+		lock.unlock();
+		
 		ws->set_file_manager_status( output.str() );
-		
-		
 		ws->set_file_manager_cache_status( cacheSystem.getStatus() );
 		
 	}

@@ -115,9 +115,10 @@ namespace ss
 	
 	void LoadDataManager::addUploadItem( int fromIdentifier, const network::UploadData &uploadData ,size_t sender_id, Buffer * buffer )
 	{
-		upload_size+= buffer->getSize();
 		
 		lock.lock();
+		
+		upload_size+= buffer->getSize();
 		
 		UploadItem *item = new UploadItem( fromIdentifier , this , uploadData , sender_id , buffer );
 		

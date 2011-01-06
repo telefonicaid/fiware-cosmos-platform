@@ -26,7 +26,6 @@ namespace ss {
 	DataBuffer::DataBuffer( SamsonWorker *_worker ) : stopLock( &lock )
 	{
 		worker = _worker;
-		setStatusTile( "Data Buffer" , "db" );
 		
 		// Create the thread to process buffer vectors in backgroudn
 		pthread_t t;
@@ -192,13 +191,7 @@ namespace ss {
 				lock.unlock_waiting_in_stopLock( &stopLock );
 		}
 	}
-	
-	void DataBuffer::getStatus( std::ostream &output , std::string prefix_per_line )
-	{
-		output << "\n";
-		getStatusFromMap( output , item , prefix_per_line );
-	}
-	
+		
 	void DataBuffer::fill(network::WorkerStatus*  ws)
 	{
 		std::ostringstream output;

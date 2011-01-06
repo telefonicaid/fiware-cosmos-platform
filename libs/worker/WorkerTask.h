@@ -17,7 +17,7 @@ namespace ss {
 	class WorkerTaskManager;
 	class ProcessAssistantSharedFileCollection;
 	
-	class WorkerTask : public au::Status
+	class WorkerTask 
 	{
 		
 	public:
@@ -52,9 +52,6 @@ namespace ss {
 		// Getting info
 		bool isFinish();
 		size_t getId();
-
-		// Funciton to get the run-time status of this object
-		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
 		std::string getStatus();
 		

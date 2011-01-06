@@ -92,9 +92,7 @@ namespace ss {
 			}
 			else
 				result = false;
-			
-			fclose(file);
-			
+						
 			gettimeofday(&stop, NULL);
 			if( result )
 				statistics.add(DiskStatistics::write, o->size, DiskStatistics::timevaldiff( &start , &stop) );

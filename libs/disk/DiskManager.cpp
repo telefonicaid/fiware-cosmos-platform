@@ -117,7 +117,7 @@ namespace ss {
 		std::ostringstream output;
 		au::map <dev_t , DeviceDiskAccessManager>::iterator iter;
 		for ( iter = item.begin() ; iter != item.end() ; iter++)
-		output << "<<" << iter->second->statistics.getStatus() << ">>";
+		output << "<<" << iter->second->getStatus() << ">>";
 		ws->set_disk_manager_status( output.str() );
 		
 		lock.unlock();

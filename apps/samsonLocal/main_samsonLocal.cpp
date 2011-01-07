@@ -23,6 +23,7 @@
 #include "DiskManager.h"		// ss::DiskManager
 #include "FileManager.h"		// ss::FileManager
 
+
 /* ****************************************************************************
 *
 * logFd - file descriptor for log file used in all libraries
@@ -47,6 +48,7 @@ void *run_in_background(void* d)
 	return NULL;
 }
 
+void test();
 
 int main(int argc, const char *argv[])
 {
@@ -110,3 +112,9 @@ int main(int argc, const char *argv[])
 	assert( false );	// We never come back to here
 	
 }
+
+
+
+
+
+

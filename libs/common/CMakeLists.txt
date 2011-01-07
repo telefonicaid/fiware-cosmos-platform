@@ -4,6 +4,8 @@ SET (HEADERS
 	samsonLogMsg.h
 	Format.h
 	LockDebugger.h
+	Token.h
+	Stopper.h
 	Lock.h
 	StopLock.h
 	SamsonSetup.h
@@ -19,6 +21,8 @@ SET (SOURCES
 	samson.pb.cc
 	LockDebugger.cpp
 	Lock.cpp
+	Token.cpp
+	Stopper.cpp
 	SamsonSetup.cpp
 	traces.cpp
 	Status.cpp

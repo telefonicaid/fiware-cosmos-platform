@@ -115,43 +115,43 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		loadDataManager.addDownloadItem(fromId, packet->message.download_data() , packet->message.delilah_id() );
 		return 0;
 	}
-	
-		/**
-		 Data packets go directly to the DataBuffer to be joined and flushed to disk
-		 DataManager is notifyed when created a new file or finish everything 
-		 */
-		
-		if( msgCode == Message::WorkerDataExchange )
-		{
-			// New data packet for a particular queue inside a particular task environment
-		
-			size_t task_id = packet->message.data().task_id();
-			network::Queue queue = packet->message.data().queue();
-			
-			bool txt = false;
-			if( packet->message.data().has_txt() && packet->message.data().txt() )
-				txt = true;
-			
-			dataBuffer.addBuffer(task_id, queue, packet->buffer , txt );
-			
-			return 0;
-		}
 
-		/** 
-		 Data Close message is sent to notify that no more data will be generated
-		 We have to wait for "N" messages ( one per worker )
-		 */
+	/**
+	 Data packets go directly to the DataBuffer to be joined and flushed to disk
+	 DataManager is notifyed when created a new file or finish everything 
+	 */
 	
-		if( msgCode == Message::WorkerDataExchangeClose )
-		{
-			
-			size_t task_id = packet->message.data_close().task_id();
-			dataBuffer.finishWorker( task_id );
-			return 0;
-		}
+	if( msgCode == Message::WorkerDataExchange )
+	{
+		// New data packet for a particular queue inside a particular task environment
 	
-
+		size_t task_id = packet->message.data().task_id();
+		network::Queue queue = packet->message.data().queue();
+		
+		bool txt = false;
+		if( packet->message.data().has_txt() && packet->message.data().txt() )
+			txt = true;
+		
+		dataBuffer.addBuffer(task_id, queue, packet->buffer , txt );
+		
 		return 0;
+	}
+
+	/** 
+	 Data Close message is sent to notify that no more data will be generated
+	 We have to wait for "N" messages ( one per worker )
+	 */
+
+	if( msgCode == Message::WorkerDataExchangeClose )
+	{
+		
+		size_t task_id = packet->message.data_close().task_id();
+		dataBuffer.finishWorker( task_id );
+		return 0;
+	}
+
+
+	return 0;
 	}
 
 }

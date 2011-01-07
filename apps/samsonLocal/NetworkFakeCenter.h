@@ -13,6 +13,8 @@
 #include <list>					// std::list
 #include "traces.h"				// LMT_FAKE_NETWORK
 #include <iostream>				// std::cout
+#include "Token.h"				// au::Token
+#include "Stopper.h"			// au::Stopper
 
 namespace ss {
 	
@@ -45,14 +47,14 @@ namespace ss {
 		std::map<int,NetworkFake*> network; 
 		std::map<int,FakeEndpoint*> endpoint; 
 
-		au::Lock lock;			// Lock to protect the pending packet list
-		au::StopLock stopLock;	// Main stoplock to wait main thread
+		au::Token token;			// Lock to protect the pending packet list
+		au::Stopper stopper;	// Main stoplock to wait main thread
 		
 		std::vector<NetworkFakeCenterPacket*> pendingPackets;
 		
 		int num_workers;
 		
-		NetworkFakeCenter( int _num_workers ) : stopLock(&lock)
+		NetworkFakeCenter( int _num_workers )
 		{
 			num_workers = _num_workers;
 			
@@ -96,13 +98,13 @@ namespace ss {
 				// Send packets to the rigth directions
 		
 				
-				lock.lock();
+				token.retain();
 				
 				std::vector<NetworkFakeCenterPacket*> sendingPackets;
 				sendingPackets.insert( sendingPackets.end() , pendingPackets.begin() , pendingPackets.end() );
 				pendingPackets.clear();
 				
-				lock.unlock();
+				token.release();
 				
 				if( sendingPackets.size() > 0 )
 				{
@@ -115,21 +117,18 @@ namespace ss {
 					}
 				}
 				else
-				{
-					lock.lock();
-					lock.unlock_waiting_in_stopLock( &stopLock );
-				}
+					stopper.stop();
 			}
 		}
 		
 		void addPacket(NetworkFakeCenterPacket *p)
 		{
-			lock.lock();
+			token.retain();
 			pendingPackets.push_back(p);
-			lock.unlock();
-			
+			token.release();
+
 			// Wake up the background thread to process this packages
-			lock.wakeUpStopLock(&stopLock);
+			stopper.wakeUpAll();
 			
 		}
 		

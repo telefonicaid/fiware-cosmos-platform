@@ -14,10 +14,9 @@
 #include <sstream>               /* std::ostringstream                       */
 #include <iostream>              /* std::cout                                */
 
-#include "Lock.h"                /* Lock                                     */
 #include "LockDebugger.h"        /* Own interface                            */
 #include "samsonLogMsg.h"		 /* LOG_ERROR								 */
-
+#include <assert.h>				// assert(.)
 
 /* ****************************************************************************
 *
@@ -49,18 +48,93 @@ namespace au {
 	LockDebugger::~LockDebugger()
 	{
 		pthread_mutex_destroy(&_lock);
+		pthread_key_delete(key_title);
 	}
 	
-	std::set<Lock*> * LockDebugger::getLocksVector()
+	
+	void LockDebugger::add_lock( void* new_lock )
+	{
+		// Lock private data
+
+		// Block until the mutex is free
+		int ans = pthread_mutex_lock(&_lock);
+
+		// Make sure there are no errors with lock
+		if (ans != 0)
+		{
+			LOG_ERROR(("pthread_mutex_lock error"));
+			assert(ans == 0);
+		}
+		
+		std::set<void*> *locksVector = _getLocksVector();
+
+		
+		// Make some checks here...
+		
+		// We do not autoblock
+		if (locksVector->find( new_lock ) !=  locksVector->end() )
+		{
+			std::cerr << "Autolock detected\n";
+			assert( false );
+		}
+
+		// We are not blocked
+		if ( _cross_blocking(new_lock) )
+		{
+			std::cerr << "Cross lock detected \n";
+			assert( false );
+		}
+		
+		// Add the new lock
+		locksVector->insert( new_lock );
+				
+		// Unlock
+		pthread_mutex_unlock(&_lock);
+		
+	}
+	
+	void LockDebugger::remove_lock(  void* new_lock )
+	{
+		
+		
+		// Lock private data
+		int ans = pthread_mutex_lock(&_lock);	// Block until the mutex is free
+
+		if (ans != 0)
+		{
+			LOG_ERROR(("pthread_mutex_lock error"));
+			assert(ans == 0);
+		}
+		
+		std::set<void*> *locksVector = _getLocksVector();
+
+#ifdef FULL_DEBUG_AU_THREADS
+		std::ostringstream o;
+		o << "Removing thread \"" << getTitle() << "\" [LOCKS: " << locksVector->size() << "] to lock \"" << new_lock->description << "\"" <<std::endl;
+		std::cout << o.str();
+#endif		
+		// Make sure it was there
+		assert( locksVector->find( new_lock ) != locksVector->end() );
+		
+		locksVector->erase( new_lock );
+		
+		
+		// Unlock
+		pthread_mutex_unlock(&_lock);
+		
+		
+	}
+	
+	std::set<void*> * LockDebugger::_getLocksVector()
 	{
 		pthread_t p  = pthread_self();
 		
-		std::set<Lock*> *locksVector;		
-		std::map< pthread_t , std::set<Lock*>* >::iterator i = locks.find(p);
+		std::set<void*> *locksVector;		
+		std::map< pthread_t , std::set<void*>* >::iterator i = locks.find(p);
 		if( i == locks.end() )
 		{
-			locksVector =  new std::set<Lock*>();
-			locks.insert( std::pair< pthread_t , std::set<Lock*>* >( p , locksVector) );
+			locksVector =  new std::set<void*>();
+			locks.insert( std::pair< pthread_t , std::set<void*>* >( p , locksVector) );
 		}
 		else
 			locksVector= i->second;
@@ -69,11 +143,11 @@ namespace au {
 		return locksVector;
 	}
 	
-	bool LockDebugger::cross_blocking( Lock* new_lock )
+	bool LockDebugger::_cross_blocking( void* new_lock )
 	{
-		std::set<Lock*> *myLocks = getLocksVector();
+		std::set<void*> *myLocks = _getLocksVector();
 		
-		std::map< pthread_t , std::set<Lock*>* >::iterator i;
+		std::map< pthread_t , std::set<void*>* >::iterator i;
 		for (i = locks.begin() ; i != locks.end() ; i++)
 		{
 			if( i->first != pthread_self() )
@@ -83,7 +157,7 @@ namespace au {
 				{
 					// It contains the lock I am traying to get
 					// Let see if they have any of my previous locks
-					std::set<Lock*>::iterator j;
+					std::set<void*>::iterator j;
 					for (j = myLocks->begin() ;  j != myLocks->end() ; j++)
 						if( i->second->find( *j ) != i->second->end() )
 						{
@@ -103,83 +177,7 @@ namespace au {
 		
 	}
 	
-	void LockDebugger::add_lock( Lock* new_lock )
-	{
-		// Lock private data
-
-		// Block until the mutex is free
-		int ans = pthread_mutex_lock(&_lock);
-
-		// Make sure there are no errors with lock
-		if (ans != 0)
-		{
-			LOG_ERROR(("pthread_mutex_lock error"));
-			assert(ans == 0);
-		}
-		
-		std::set<Lock*> *locksVector = getLocksVector();
-
-		
-#ifdef FULL_DEBUG_AU_THREADS
-		std::ostringstream o;
-		o << "Add thread \"" << getTitle() << "\" [LOCKS: " << locksVector->size() << "] to lock \"" << new_lock->description << "\"" <<std::endl;
-		std::cout << o.str();
-#endif
-		
-		
-		// Make some checks here...
-		
-		// We do not autoblock
-		if (locksVector->find( new_lock ) !=  locksVector->end() )
-			std::cout << "Autolock detected " << locksVector->size() << std::endl;
-
-		assert( locksVector->find( new_lock ) ==  locksVector->end() );
-		
-		// We are not blocked
-		assert( !cross_blocking(new_lock) );
-		
-		// Add the new lock
-		locksVector->insert( new_lock );
-		
-		
-		// Unlock
-		pthread_mutex_unlock(&_lock);
-		
-	}
-	
-	void LockDebugger::remove_lock(  Lock* new_lock )
-	{
-		
-		
-		// Lock private data
-		int ans = pthread_mutex_lock(&_lock);	// Block until the mutex is free
-
-		if (ans != 0)
-		{
-			LOG_ERROR(("pthread_mutex_lock error"));
-			assert(ans == 0);
-		}
-		
-		std::set<Lock*> *locksVector = getLocksVector();
-
-#ifdef FULL_DEBUG_AU_THREADS
-		std::ostringstream o;
-		o << "Removing thread \"" << getTitle() << "\" [LOCKS: " << locksVector->size() << "] to lock \"" << new_lock->description << "\"" <<std::endl;
-		std::cout << o.str();
-#endif		
-		// Make sure it was there
-		assert( locksVector->find( new_lock ) != locksVector->end() );
-		
-		locksVector->erase( new_lock );
-		
-		
-		// Unlock
-		pthread_mutex_unlock(&_lock);
-		
-		
-	}
-	
-	std::string LockDebugger::getTitle()
+	std::string LockDebugger::_getTitle()
 	{
 		void *data = pthread_getspecific( lockDebugger->key_title );
 		if( data )
@@ -201,4 +199,6 @@ namespace au {
 		pthread_setspecific( lockDebugger->key_title  , new std::string( title ) );
 	}
 
+
 }
+

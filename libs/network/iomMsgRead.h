@@ -27,9 +27,9 @@ extern int iomMsgRead
 	ss::Message::MessageType*  msgTypeP,
 	void**                     dataPP,
 	int*                       dataLenP,
-	ss::Packet*                packetP,
-	void*                      kvData,
-	int*                       kvDataLenP
+	ss::Packet*                packetP     = NULL,
+	void*                      kvData      = NULL,
+	int*                       kvDataLenP  = NULL
 );
 
 

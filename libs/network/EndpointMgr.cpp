@@ -614,6 +614,7 @@ void EndpointMgr::msgTreat(int rFd, char* name)
 	LM_T(LMT_TREAT, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
 	{
+	case Message::ThroughPutTest:
 	case Message::WorkerSpawn:
 	case Message::ControllerSpawn:	   
 	case Message::Die:

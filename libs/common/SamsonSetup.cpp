@@ -17,7 +17,7 @@
 #define SETUP_DEFAULT_num_processes						2
 
 #define SETUP_memory									"memory"
-#define SETUP_DEFAULT_memory							2147483648	// 2Gb
+#define SETUP_DEFAULT_memory							1073741824
 
 #define SETUP_shared_memory_size_per_buffer						"shm_size_per_buffer"
 #define SETUP_DEFAULT_shared_memory_size_per_buffer				67108864	// 64 Mb
@@ -155,7 +155,12 @@ namespace ss
 		max_file_size = getUInt64( items, SETUP_max_file_size, SETUP_DEFAULT_max_file_size);
 		
 		//  Memory - System
-		memory							= getUInt64( items, SETUP_memory , SETUP_DEFAULT_memory );
+		memory
+		   = getUInt64(
+		   items, 
+		   SETUP_memory ,
+		   SETUP_DEFAULT_memory);
+
 		shared_memory_size_per_buffer	= getUInt64( items, SETUP_shared_memory_size_per_buffer , SETUP_DEFAULT_shared_memory_size_per_buffer );
 		shared_memory_num_buffers		= getInt( items, SETUP_shared_memory_num_buffers , SETUP_DEFAULT_shared_memory_num_buffers );
 		

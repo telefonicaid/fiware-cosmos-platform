@@ -28,6 +28,7 @@ char             host[80];
 
 
 
+#define LOCL (int) "localhost"
 /* ****************************************************************************
 *
 * parse arguments
@@ -38,7 +39,7 @@ PaArgument paArgs[] =
 	{ "-iom",     &iom,    "IOM",     PaBool,       PaOpt,    false,    false,     true,  "use basic IOM functions only" },
 	{ "-gpb",     &gpb,    "GPB",     PaBool,       PaOpt,    false,    false,     true,  "use Google Protocol Buffers"  },
 	{ "-server",  &server, "SERVER",  PaBool,       PaOpt,    false,    false,     true,  "act as server"                },
-	{ "-host",    host,    "HOST",    PaStr,        PaOpt,    PaND,     PaNL,      PaNL,  "host where server runs"       },
+	{ "-host",    host,    "HOST",    PaStr,        PaOpt,    LOCL,     PaNL,      PaNL,  "host where server runs"       },
 
 	PA_END_OF_ARGS
 };
@@ -106,7 +107,7 @@ static void serverIomRun(int listenFd)
 			tv.tv_usec = 0;
 
 			LM_M(("calling select"));
-			fds = select(max, &rFds, NULL, NULL, &tv);
+			fds = select(max + 1, &rFds, NULL, NULL, &tv);
 			LM_M(("select returned %d", fds));
 		} while ((fds == -1) && (errno == EINTR));
 	
@@ -167,7 +168,7 @@ static void serverIomRun(int listenFd)
 			if (microsecs == 0)
 				printf("Too small a packet (%d bytes) to measure throughpout\n", bytes);
 
-			printf("read %d bytes in %d.%06d seconds - %.3f bytes per second\n",
+			printf("read %d bytes in %d.%06d seconds - %.3f Megabytes per second\n",
 				   bytes,
 				   (int) diff.tv_sec,
 				   (int) diff.tv_usec, 
@@ -186,7 +187,7 @@ static void serverIomRun(int listenFd)
 */
 static void clientIomRun(int fd)
 {
-	int    bufLen = 60 * 1024 * 1024;
+	int    bufLen = 600 * 1024 * 1024;
 	char*  buffer = (char*) malloc(bufLen);
 	int    ix;
 	int    s;

@@ -53,7 +53,8 @@ typedef enum MessageCode
 	UploadDataConfirmationResponse	= CODE('L', 'C', 'R', ' '),
 	Die								= CODE('D', 'i', 'e', ' '),
 	WorkerSpawn                     = CODE('W', 'S', 'p', ' '),
-	ControllerSpawn                 = CODE('C', 'S', 'p', ' ')
+	ControllerSpawn                 = CODE('C', 'S', 'p', ' '),
+	ThroughPutTest                  = CODE('T', 'p', 't', ' '),
 } MessageCode;
 
 

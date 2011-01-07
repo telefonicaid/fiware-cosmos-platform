@@ -10,8 +10,8 @@
 */
 #include <assert.h>	         // assert
 
-#include "MemoryManager.h"   // MemoryManager
 #include "samson.pb.h"       // google protocol buffers
+#include "MemoryManager.h"   // MemoryManager
 #include "Endpoint.h"        // Endpoint
 #include "easyzlib.h"	     // zlib utility library
 

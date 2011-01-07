@@ -41,11 +41,15 @@ int iomConnect(const char* ip, unsigned short port)
 	peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
 	peer.sin_port        = htons(port);
 
+	LM_M(("calling connect"));
 	if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 	{
+		LM_M(("connect: %s", strerror(errno)));
 		close(fd);
 		return -1;
 	}
+
+	LM_M(("connect OK, returning fd %d", fd));
 
 	return fd;
 }

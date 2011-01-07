@@ -61,6 +61,7 @@ int iomMsgSend
 
 	header.code        = code;
 	header.type        = type;
+	header.magic       = 0xFEEDC0DE;
 
 	ioVec[0].iov_base  = &header;
 	ioVec[0].iov_len   = sizeof(header);

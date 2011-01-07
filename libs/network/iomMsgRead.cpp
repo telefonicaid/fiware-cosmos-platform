@@ -41,7 +41,8 @@ int iomMsgRead
 {
 	int                  nb;
 	ss::Message::Header  header;
-	
+	char*                inBuffer = (char*) *dataPP;
+
     nb = read(fd, &header, sizeof(header));
 	
 	if (nb == -1)
@@ -69,29 +70,35 @@ int iomMsgRead
 
 	if (header.dataLen != 0)
 	{
-		int nb;
+		int           nb;
+		unsigned int  tot;
 
 		if (header.dataLen > (unsigned int) *dataLenP)
 		{
 			*dataPP = (char*) malloc(header.dataLen);
 			if (*dataPP == NULL)
 				LM_X(1, ("malloc(%d)", header.dataLen));
+
+			inBuffer = (char*) *dataPP;
 		}
 
 		LM_T(LMT_MSG, ("reading %d bytes of primary message data", header.dataLen));
-		nb = read(fd, *dataPP, header.dataLen);
-		LM_T(LMT_MSG, ("read %d bytes DATA from '%s'", nb, from));
-		if (nb == -1)
-			LM_RP(1, ("read %d bytes from '%s'", header.dataLen, from));
-		LM_T(LMT_MSG, ("read %d bytes of primary message data", nb));
 
-		if (nb != (int) header.dataLen)
-			LM_E(("Read %d bytes, %d expected ...", nb, header.dataLen));
+		tot = 0;
+		while (tot < header.dataLen)
+		{
+			nb = read(fd, &inBuffer[tot], header.dataLen - tot);
+			LM_T(LMT_MSG, ("read %d bytes DATA from '%s'", nb, from));
+			if (nb == -1)
+				LM_RP(1, ("read %d bytes from '%s'", header.dataLen, from));
+			LM_T(LMT_MSG, ("read %d bytes of primary message data", nb));
 
-		*dataLenP = nb;
+		   tot += nb;
+		}
 
-		LM_T(LMT_MSG, ("read %d bytes from '%s'", nb, from));
-		LM_READS(from, "primary data", *dataPP, nb, LmfByte);
+		*dataLenP = tot;
+
+		LM_READS(from, "primary data", *dataPP, tot, LmfByte);
 	}
 
 	if (header.gbufLen != 0)

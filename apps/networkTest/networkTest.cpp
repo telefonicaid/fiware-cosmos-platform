@@ -28,7 +28,7 @@ char             host[80];
 
 
 
-#define LOCL (int) "localhost"
+#define LOCL (long) "localhost"
 /* ****************************************************************************
 *
 * parse arguments

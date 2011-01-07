@@ -58,10 +58,10 @@ int iomAccept(int lfd, char* hostName, int hostNameLen)
 	int s;
 	s = setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &bufSize, sizeof(bufSize));
 	if (s != 0)
-		LM_E(("setsockopt: %s", strerror(errno)));
+		LM_X(1, ("setsockopt: %s", strerror(errno)));
 	s = setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &bufSize, sizeof(bufSize));
 	if (s != 0)
-		LM_E(("setsockopt: %s", strerror(errno)));
+		LM_X(1, ("setsockopt: %s", strerror(errno)));
 
 	return fd;
 }

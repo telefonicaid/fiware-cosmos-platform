@@ -49,6 +49,15 @@ int iomConnect(const char* ip, unsigned short port)
 		return -1;
 	}
 
+	int bufSize = 64 * 1024 * 1024;
+	int s;
+	s = setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &bufSize, sizeof(bufSize));
+	if (s != 0)
+		LM_E(("setsockopt: %s", strerror(errno)));
+	s = setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &bufSize, sizeof(bufSize));
+	if (s != 0)
+		LM_E(("setsockopt: %s", strerror(errno)));
+
 	LM_M(("connect OK, returning fd %d", fd));
 
 	return fd;

@@ -1,6 +1,6 @@
 #include "parseArgs.h"          // parseArgs
 #include "DelilahConsole.h"		// ss::DelilahConsole
-
+#include "SamsonSetup.h"		// ss::SamsonSetup
 
 
 /* ****************************************************************************
@@ -52,6 +52,9 @@ int main(int argC, const char *argV[])
 	paParse(paArgs, argC, (char**) argV, 1, false);
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
+	
+	
+	ss::SamsonSetup::load();
 	
 	ss::Network  network(endpoints,workers);
 	std::cout << "Waiting for network connection ...";

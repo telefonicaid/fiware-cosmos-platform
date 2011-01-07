@@ -18,7 +18,7 @@ char             controller[80];
 char             alias[36];
 bool             noLog;
 bool             local;
-
+char			 workingDir[1024]; 	
 
 #define S01 (long int) "samson01:1234"
 /* ****************************************************************************
@@ -34,6 +34,7 @@ PaArgument paArgs[] =
 	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
 	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt, false,  false,   true,  "no logging"          },
 	{ "-local",      &local,       "LOCAL",       PaBool,    PaOpt, false,  false,   true,  "local execution"     },
+	{ "-working",     workingDir,  "WORKING",     PaString,  PaOpt,  _i SAMSON_DEFAULT_WORKING_DIRECTORY,   PaNL,   PaNL,  "Working directory"     },
 
 	PA_END_OF_ARGS
 };
@@ -65,7 +66,9 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 
-	ss::SamsonSetup::shared();		// Load setup and create default directories
+	ss::SamsonSetup::load( workingDir );		// Load setup and create all directories
+
+
 	ss::DiskManager::shared();		// Disk manager
 	ss::FileManager::shared();		// File manager
 	ss::MemoryManager::shared();	// Memory manager

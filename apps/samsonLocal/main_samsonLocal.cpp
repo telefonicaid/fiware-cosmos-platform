@@ -51,13 +51,6 @@ void *run_in_background(void* d)
 int main(int argc, const char *argv[])
 {
 	
-	// Init singlelton in single thread mode
-	ss::SamsonSetup::shared();		// Load setup and create default directories
-	ss::DiskManager::shared();		// Disk manager
-	ss::FileManager::shared();		// File manager
-	ss::MemoryManager::shared();	// Memory manager
-	
-	
 	// Init the trace system
 	ss::samsonInitTrace( argc , argv, &::logFd);
 	
@@ -65,11 +58,19 @@ int main(int argc, const char *argv[])
 	
 	au::CommandLine commandLine;
 	commandLine.set_flag_int("workers",1);
+	commandLine.set_flag_string("working", SAMSON_DEFAULT_WORKING_DIRECTORY);
 
-	ss::SamsonSetup::shared();	// Load setup and create default directories
 	
 	// Command line to extract the number of workers from command line arguments
 	commandLine.parse(argc , argv);
+	
+	
+	ss::SamsonSetup::load( commandLine.get_flag_string("working" ) );		// Load setup and create default directories
+	// Init singlelton in single thread mode
+	ss::DiskManager::shared();		// Disk manager
+	ss::FileManager::shared();		// File manager
+	ss::MemoryManager::shared();	// Memory manager
+	
 	
 	int num_workers = commandLine.get_flag_int("workers");
 	assert( num_workers != -1 );

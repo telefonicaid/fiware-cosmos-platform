@@ -404,7 +404,7 @@ namespace ss
 			output << "Upload and download processes....\n";
 			std::map<size_t,DelilahComponent*>::iterator iter;
 			for (iter = delilah->components.begin() ; iter != delilah->components.end() ; iter++)
-				output << iter->second->getStatus();
+				output << iter->second->getStatus() << "\n";
 			writeOnConsole(output.str());
 			
 			return ;

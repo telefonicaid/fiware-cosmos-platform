@@ -4,7 +4,8 @@
 #include "samsonDirectories.h"	// SAMSON_SETUP_FILE
 #include "CommandLine.h"		// au::CommandLine
 #include "SamsonSetup.h"		// Own interface
-
+#include <assert.h>				// assert(.)
+#include <errno.h>
 
 #define SETUP_num_io_threads_per_device					"num_io_threads_per_device"
 #define SETUP_DEFAULT_num_io_threads_per_device			1
@@ -32,57 +33,120 @@ namespace ss
 	SamsonSetup *SamsonSetup::shared()
 	{
 		if( !samsonSetup)
-			samsonSetup = new SamsonSetup();
+		{
+			std::cerr << "Error: Setup not loaded\n";
+			assert(false);
+		}
+		
 		return samsonSetup;
 	}
 	
-	SamsonSetup::SamsonSetup()
+	void SamsonSetup::load()
+	{
+		samsonSetup = new SamsonSetup( );
+	}
+	
+	void SamsonSetup::load( std::string workingDirectory )
+	{
+		samsonSetup = new SamsonSetup( workingDirectory );
+	}
+
+	
+	void SamsonSetup::createDirectory( std::string path )
+	{
+		
+		if( mkdir(path.c_str()	, 0755) == -1 )
+		{
+			if( errno != EEXIST )
+			{
+				std::cout << "Error creating directory " << path << "\n";
+				assert(false);
+			}
+		}
+	}
+												   
+
+	SamsonSetup::SamsonSetup(  )
+	{
+		std::map<std::string,std::string> items;
+		init( items );
+		
+	}
+
+	
+	
+	SamsonSetup::SamsonSetup( std::string workingDirectory )
 	{
 
+		baseDirectory = workingDirectory;
+		// TODO: Remove the last / if necessary
+
+		controllerDirectory = workingDirectory + "/controller";
+		dataDirectory		= workingDirectory + "/data";
+		modulesDirectory	= workingDirectory + "/modules";
+		setupDirectory		= workingDirectory + "/etc";
+		setupFile			= setupDirectory + "/setup.txt";
+				
 		// Create directories if necessary
-		mkdir(SAMSON_BASE_DIRECTORY	, 0755);
-		mkdir(SAMSON_CONTROLLER_DIRECTORY, 0755);
-		mkdir(SAMSON_DATA_DIRECTORY	, 0755);
-        mkdir(SAMSON_MODULES_DIRECTORY, 0755);        
-		mkdir(SAMSON_SETUP_DIRECTORY,0755);			
 		
+		createDirectory( workingDirectory );
+		createDirectory(controllerDirectory);
+		createDirectory(dataDirectory);
+        createDirectory(modulesDirectory);        
+		createDirectory(setupDirectory);			
 		
-		FILE *file = fopen( SAMSON_SETUP_FILE  ,"r");
+
+		
+		// Load values from file ( if exist )
+		
+		std::map<std::string,std::string> items;
+		
+		FILE *file = fopen( setupFile.c_str()  ,"r");
 		if (!file)
 		{
-			std::cerr << "Error: Setup file "<< SAMSON_SETUP_FILE <<" not found\n";
-			exit(0);
+			std::cerr << "Warning: Setup file "<< setupFile <<" not found\n";
 		}
-
-		
-		char line[2000];
-		std::map<std::string,std::string> items;
-		while( fgets(line, sizeof(line), file))
+		else
 		{
-			au::CommandLine c;
-			c.parse(line);
 			
-			if( c.get_num_arguments() == 0 )
-				continue;
-			
-			// Skip comments
-			std::string mainCommand = c.get_argument(0);
-			if( mainCommand[0] == '#' )
-				continue;
-			
-			if (c.get_num_arguments() >= 2)	
+			char line[2000];
+			while( fgets(line, sizeof(line), file))
 			{
-				std::string name = c.get_argument(0);
-				std::string value =  c.get_argument(1);
+				au::CommandLine c;
+				c.parse(line);
 				
-				std::map<std::string,std::string>::iterator i = items.find( name );
-				if( i!= items.end() )
-					items.erase( i );
-				items.insert( std::pair<std::string , std::string>( name ,value ) );
+				if( c.get_num_arguments() == 0 )
+					continue;
 				
-			}
+				// Skip comments
+				std::string mainCommand = c.get_argument(0);
+				if( mainCommand[0] == '#' )
+					continue;
+				
+				if (c.get_num_arguments() >= 2)	
+				{
+					std::string name = c.get_argument(0);
+					std::string value =  c.get_argument(1);
+					
+					std::map<std::string,std::string>::iterator i = items.find( name );
+					if( i!= items.end() )
+						items.erase( i );
+					items.insert( std::pair<std::string , std::string>( name ,value ) );
+					
+				}
 
+			}
+		
+			fclose(file);
 		}
+		
+		init( items );
+		
+	}
+	
+	void SamsonSetup::init( std::map<std::string,std::string> &items )
+	{
+		
 		// General setup
 		num_processes	= getInt( items, SETUP_num_processes , SETUP_DEFAULT_num_processes );
 		
@@ -94,15 +158,15 @@ namespace ss
 		memory							= getUInt64( items, SETUP_memory , SETUP_DEFAULT_memory );
 		shared_memory_size_per_buffer	= getUInt64( items, SETUP_shared_memory_size_per_buffer , SETUP_DEFAULT_shared_memory_size_per_buffer );
 		shared_memory_num_buffers		= getInt( items, SETUP_shared_memory_num_buffers , SETUP_DEFAULT_shared_memory_num_buffers );
-	
 		
 		if( !check() )
 		{
-			std::cerr << "Error in setup file " << SAMSON_SETUP_FILE << "\n";
+			std::cerr << "Error in setup file " << setupFile << "\n";
 			exit(0);
 		}
 		
 	}
+
 	
 	bool SamsonSetup::check()
 	{

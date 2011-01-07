@@ -16,6 +16,7 @@
 #include "samsonDirectories.h"				// SAMSON_CONTROLLER_DIRECTORY
 #include "MessagesOperations.h"				// evalHelpFilter(.)
 #include "AutomaticOperation.h"				// ss::AutomaticOperation
+#include "SamsonSetup.h"					// ss::SamsonSetup
 
 namespace ss {
 	
@@ -545,9 +546,7 @@ namespace ss {
 	
 	std::string ControllerDataManager::getLogFileName(   )
 	{
-		std::ostringstream fileName;
-		fileName << SAMSON_CONTROLLER_DIRECTORY << "log_controller";
-		return fileName.str();
+		return SamsonSetup::shared()->controllerDirectory + "/log_controller";
 	}
 	
 	std::string ControllerDataManager::getStatus()

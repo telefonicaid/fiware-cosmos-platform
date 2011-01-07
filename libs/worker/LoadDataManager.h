@@ -7,10 +7,10 @@
 #include "au_map.h"						// au::map
 #include "Lock.h"						// au::Lock
 #include "DiskManagerDelegate.h"		// ss::DiskManagerDelegate
-#include "Status.h"			// ss::getStatusFromArray(.)
+#include "Status.h"						// ss::getStatusFromArray(.)
 #include "samsonDirectories.h"			// SAMSON_DATA_DIRECTORY
-#include "Status.h"				// au::Status
-
+#include "Status.h"						// au::Status
+#include "SamsonSetup.h"				// ss::SamsonSetup
 
 namespace ss {
 
@@ -53,7 +53,7 @@ namespace ss {
 		static std::string newFileName()
 		{
 			std::ostringstream fileName;
-			fileName << SAMSON_DATA_DIRECTORY << "file_updaload_" << rand()%10000 << rand()%10000 << rand()%10000;
+			fileName << SamsonSetup::shared()->dataDirectory << "file_updaload_" << rand()%10000 << rand()%10000 << rand()%10000;
 			return fileName.str();
 		}
 		

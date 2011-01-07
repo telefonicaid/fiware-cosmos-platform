@@ -210,7 +210,7 @@ namespace ss {
 	std::string DataBuffer::_newFileName( std::string queue )
 	{
 		std::ostringstream fileName;
-		fileName << SAMSON_DATA_DIRECTORY << "file_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000;
+		fileName << SamsonSetup::shared()->dataDirectory << "/" << "file_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000;
 		return fileName.str();
 	}
 	

@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "SamsonSetup.h"			// ss::SamsonSetup
 
 int logFd = -1;
 
@@ -19,7 +20,10 @@ int main(int argc, const char *argv[])
 	cmdLine.set_flag_boolean("header");
 	cmdLine.set_flag_boolean("debug");
 	cmdLine.set_flag_int("limit" , KV_NUM_HASHGROUPS);
+	cmdLine.set_flag_string("working",SAMSON_DEFAULT_WORKING_DIRECTORY);
 	cmdLine.parse(argc , argv);
+
+	ss::SamsonSetup::load( cmdLine.get_flag_string("working") );
 	
 	bool debug = cmdLine.get_flag_bool("debug");
 	int limit = cmdLine.get_flag_int("limit");

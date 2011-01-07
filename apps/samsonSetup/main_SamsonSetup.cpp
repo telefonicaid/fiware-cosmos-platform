@@ -15,12 +15,20 @@ char* progName = (char*) "samsonSetup";
 
 int main(int argc, const char *argv[])
 {
+	
+	au::CommandLine cmdLine;
+	cmdLine.set_flag_string("working", SAMSON_DEFAULT_WORKING_DIRECTORY);
+	cmdLine.parse(argc, argv);
+	
+	
+	ss::SamsonSetup::load( cmdLine.get_flag_string("working") );
 	ss::SamsonSetup *s = ss::SamsonSetup::shared();	// Load setup file and create main directories
 	
 	std::cout << "\n";
-	std::cout << "--------------------------------\n";
+	std::cout << "----------------------------------------------------\n";
 	std::cout << "Current setup analysis\n";
-	std::cout << "--------------------------------\n";
+	std::cout << "Working directory: " << cmdLine.get_flag_string("working") << "\n";
+	std::cout << "----------------------------------------------------\n";
 	std::cout << "\n";
 	std::cout << "\n";
 	std::cout << "** General setup:\n";

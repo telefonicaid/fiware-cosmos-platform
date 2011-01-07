@@ -13,8 +13,7 @@
 unsigned short   port;
 int              endpoints;
 int              workers;
-char             setupFile[160];
-
+char			 workingDir[1024]; 	
 
 
 /* ****************************************************************************
@@ -23,7 +22,7 @@ char             setupFile[160];
 */
 PaArgument paArgs[] =
 {
-	{ "-setup",       setupFile,   "SDETUP",      PaString,  PaOpt,  _i SAMSON_SETUP_FILE,   PaNL,   PaNL,  "setup file path"     },
+	{ "-working",     workingDir,  "WORKING",     PaString,  PaOpt,  _i SAMSON_DEFAULT_WORKING_DIRECTORY,   PaNL,   PaNL,  "Working directory" },
 	{ "-port",       &port,        "PORT",        PaShortU,  PaOpt,                  1234,   1025,  65000,  "listen port"         },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,                    80,      3,    100,  "number of endpoints" },
 	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,                     5,      1,    100,  "number of workers"   },
@@ -56,9 +55,12 @@ int main(int argC, const char* argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	ss::SamsonSetup::shared();		// Load setup and create default directories
+	ss::SamsonSetup::load( workingDir );		// Load setup and create all directories
+	
 	ss::DiskManager::shared();		// Disk manager
 	ss::MemoryManager::shared();	// Memory manager
+
+	
 	
 	
 	// Instance of network object and initialization

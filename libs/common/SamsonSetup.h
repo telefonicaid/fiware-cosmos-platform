@@ -7,17 +7,36 @@
 #include <stdlib.h>         // atoll
 #include <sys/stat.h>		// mkdir
 
+#define SAMSON_CONTROLLER_DEFAULT_PORT	1234
+#define SAMSON_WORKER_DEFAULT_PORT		1235
+
+
+#define SAMSON_DEFAULT_WORKING_DIRECTORY	"/opt/samson"
+
+
 namespace ss {
 	
 	class SamsonSetup
 	{
 		
-		SamsonSetup();
+		SamsonSetup( );
+		SamsonSetup( std::string workingDirectory );
 		
 	public:
 
 		static SamsonSetup *shared();
+		static void load(  );
+		static void load( std::string workingDirectory );
+		static void createDirectory( std::string path);
 
+		// Directories
+		std::string baseDirectory;
+		std::string controllerDirectory;
+		std::string dataDirectory;
+		std::string modulesDirectory;
+		std::string setupDirectory;
+		std::string setupFile;
+		
 		// General setup
 		int num_processes;
 		
@@ -39,6 +58,9 @@ namespace ss {
 		
 		// Check if everything is ok. Exit if not
 		bool check();
+
+		// Common function to init variables
+		void init( std::map<std::string,std::string> &items );
 		
 	};
 

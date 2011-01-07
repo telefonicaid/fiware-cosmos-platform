@@ -20,7 +20,7 @@
 #include <samson/Data.h>			/* ss::system::UInt ... */
 #include "logMsg.h"
 #include "MessagesOperations.h"		// evalHelpFilter(.)
-
+#include "SamsonSetup.h"			// ss::SamsonSetup
 
 namespace ss
 {
@@ -50,7 +50,7 @@ namespace ss
 	void ModulesManager::addModules()
 	{
 		// Load modules from "~/.samson/modules" && "/etc/samson/modules"
-		std::string modules_dir = SAMSON_MODULES_DIRECTORY;
+		std::string modules_dir = SamsonSetup::shared()->modulesDirectory;
 		addModulesFromDirectory( modules_dir );
 		 
 	}

@@ -43,6 +43,7 @@ int iomMsgRead
 	ss::Message::Header  header;
 	char*                inBuffer = (char*) *dataPP;
 
+	LM_M(("Reading incoming buffer"));
     nb = read(fd, &header, sizeof(header));
 	
 	if (nb == -1)
@@ -84,17 +85,21 @@ int iomMsgRead
 
 		LM_T(LMT_MSG, ("reading %d bytes of primary message data", header.dataLen));
 
+		int reads = 0;
+
 		tot = 0;
 		while (tot < header.dataLen)
 		{
 			nb = read(fd, &inBuffer[tot], header.dataLen - tot);
-			LM_T(LMT_MSG, ("read %d bytes DATA from '%s'", nb, from));
+			++reads;
 			if (nb == -1)
 				LM_RP(1, ("read %d bytes from '%s'", header.dataLen, from));
 			LM_T(LMT_MSG, ("read %d bytes of primary message data", nb));
 
-		   tot += nb;
+			tot += nb;
 		}
+
+		LM_M(("read %d bytes DATA from '%s' using %d system calls to 'read'", tot, from, reads));
 
 		*dataLenP = tot;
 

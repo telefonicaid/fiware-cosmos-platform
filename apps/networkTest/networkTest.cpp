@@ -19,7 +19,7 @@
 *
 * Option variables
 */
-int              endpoints;
+int              bufLen;
 unsigned short   port;
 bool             iom;
 bool             gpb;
@@ -40,6 +40,7 @@ PaArgument paArgs[] =
 	{ "-gpb",     &gpb,    "GPB",     PaBool,       PaOpt,    false,    false,     true,  "use Google Protocol Buffers"  },
 	{ "-server",  &server, "SERVER",  PaBool,       PaOpt,    false,    false,     true,  "act as server"                },
 	{ "-host",    host,    "HOST",    PaStr,        PaOpt,    LOCL,     PaNL,      PaNL,  "host where server runs"       },
+	{ "-bufLen",  &bufLen, "BUFLEN",  PaInt,        PaOpt,      60,        1,     10000,  "size of buffer in Megabytes"  },
 
 	PA_END_OF_ARGS
 };
@@ -185,9 +186,8 @@ static void serverIomRun(int listenFd)
 *
 * clientIomRun - 
 */
-static void clientIomRun(int fd)
+static void clientIomRun(int fd, int bufLen)
 {
-	int    bufLen = 600 * 1024 * 1024;
 	char*  buffer = (char*) malloc(bufLen);
 	int    ix;
 	int    s;
@@ -301,7 +301,7 @@ int main(int argC, const char *argV[])
 		if (server)
 			serverIomRun(fd);
 		else
-			clientIomRun(fd);
+			clientIomRun(fd, bufLen * 1024 * 1024);
 	}
 	else if (gpb)
 	{

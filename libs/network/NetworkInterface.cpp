@@ -18,4 +18,16 @@ namespace ss
 		
 	}
 	
+	// Send a packet (return a unique id to inform the notifier later)
+	size_t NetworkInterface::send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP )
+	{
+		lock_send.lock();
+		LM_T(LMT_SAMSON_NETWORK_INTERFACE,("NETWORK_INTERFACE Send packet type %s",messageCode(code)));
+		size_t id = _send( sender , endpointId , code , packetP );
+		lock_send.unlock();
+		
+		return id;
+	}
+	
+	
 }

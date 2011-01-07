@@ -561,7 +561,7 @@ namespace ss
 			size_t id = delilah->addUploadData(fileNames, queue,compresion , max_num_thread);
 			
 			std::ostringstream o;
-			o << "Load data process (id="<<id<<") started with " << fileNames.size() << " files\n";
+			o << "Load data process (id="<<id<<") started with " << fileNames.size() << " files";
 			writeWarningOnConsole(o.str());
 			return;
 		}

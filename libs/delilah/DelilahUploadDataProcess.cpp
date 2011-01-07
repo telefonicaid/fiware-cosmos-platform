@@ -80,7 +80,9 @@ namespace ss
 		compression = _compression;
 		
 		uploadedSize = 0;
+		processedSize = 0;
 		totalSize = 0;	
+		uploadedCompressedSize = 0;
 		
 		num_threads = 0;
 		max_num_threads = _max_num_threads;
@@ -127,30 +129,52 @@ namespace ss
 	void* processUploadPacketData( void *p )
 	{
 		UploadPacketData * pd = (UploadPacketData*)p;
+
+		size_t original_size = pd->p->buffer->getSize();
+		size_t compress_size = pd->p->buffer->getSize();
+
+		size_t file_id = pd->p->message.upload_data().file_id();
+		size_t id = pd->uploadDataProcess->id;
 		
 		// Compress the buffer
 		if ( pd->uploadDataProcess->compression )
 		{
-			size_t original_size = pd->p->buffer->getSize();
+			
+			{
+			std::ostringstream message;
+			message << "[ " << id << " ] < Buffer " << file_id << " > Compressing buffer ( Size: " <<  au::Format::string(original_size) << " )";
+			pd->delilah->client->showMessage( message.str() );
+			}
+			
 			
 			Buffer *buffer = Packet::compressBuffer( pd->p->buffer );
 			MemoryManager::shared()->destroyBuffer( pd->p->buffer );
 			pd->p->buffer = buffer;
 
-			size_t compress_size = pd->p->buffer->getSize();
-			
-			std::ostringstream message;
-			message << "Sending compressed buffer ( Size: " << au::Format::string( compress_size ) << " Original Size: " << au::Format::string(original_size) << "\n";
-			pd->delilah->client->showMessage( message.str() );
+			compress_size = pd->p->buffer->getSize();
 			
 		}
 		
 		// Notify that the thread finished
-		pd->uploadDataProcess->finishCompressionThread();
+		pd->uploadDataProcess->finishCompressionThread(original_size);
 		
 		// Send the packet
+		{
+			std::ostringstream message;
+			message << "[ " << id << " ] < Buffer " << file_id << " > Sending ( Compresed Size: " << au::Format::string(compress_size) << " Original Size: " << au::Format::string(original_size) << ")";
+			pd->delilah->client->showMessage( message.str() );
+		}
+		
 		pd->delilah->network->send(pd->delilah, pd->delilah->network->workerGetIdentifier(pd->worker), Message::UploadData, pd->p);
 
+		// Send the packet
+		{
+			std::ostringstream message;
+			message << "[ " << id << " ] < Buffer " << file_id << " > Sent ( Compresed Size: " << au::Format::string(compress_size) << " Original Size: " << au::Format::string(original_size) << ")";
+			pd->delilah->client->showMessage( message.str() );
+		}
+		
+		
 		// Free allocated input parameter
 		free( p );
 		
@@ -162,6 +186,11 @@ namespace ss
 		
 		while( !fileSet.isFinish() )
 		{
+			// Wait if memory is not released
+			while( ( MemoryManager::shared()->getMemoryUsage() > 0.7 ) || ( num_threads >= max_num_threads ) )
+				sleep(1);
+			
+			
 			// Create a buffer
 			Buffer *b = MemoryManager::shared()->newBuffer( "Loading buffer" , 64*1024*1024 );
 			
@@ -192,9 +221,8 @@ namespace ss
 			
 			// Send the packet
 			std::ostringstream message;
-			message << getStatus() << " Created buffer " << au::Format::string( b->getSize() , "B" );
+			message << "[ " << id << " ] < Buffer " << file_id << " > Created with size: " << au::Format::string( b->getSize() , "B" );
 			delilah->client->showMessage(message.str());
-
 
 			lock.lock();
 
@@ -215,16 +243,22 @@ namespace ss
 			
 			lock.unlock();
 			
-			// Wait if memory is not released
-			while( ( MemoryManager::shared()->getMemoryUsage() > 0.7 ) || ( num_threads >= max_num_threads ) )
-				sleep(1);
 		}
+		
+		{
+			std::ostringstream message;
+			message << "[ " << id << " ] All input data locally processed";
+			delilah->client->showMessage( message.str() );
+		}
+		
+		
 	}
 	
 
 	
 	void DelilahUploadDataProcess::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
+		
 		lock.lock();
 		
 		if (msgCode == Message::UploadDataResponse )
@@ -240,6 +274,12 @@ namespace ss
 			// update the uploaded data
 			uploadedSize +=  packet->message.upload_data_response().upload_data().original_size();
 			//uploadedSize += file.info().size();
+
+			size_t file_id = packet->message.upload_data_response().upload_data().file_id();
+			
+			std::ostringstream output;
+			output << "[ " << id << " ] < Buffer " << file_id << " > Received upload confirmation";
+			delilah->client->showMessage( output.str() );
 			
 			created_files.push_back(file);
 			num_confirmed_files++;
@@ -265,7 +305,6 @@ namespace ss
 				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::UploadDataConfirmation, p);
 			}
 
-			delilah->client->showMessage(getStatus());
 			
 			
 		} else if (msgCode == Message::UploadDataConfirmationResponse )
@@ -283,7 +322,10 @@ namespace ss
 			// mark the component as finished to be removed by Delilah component
 			component_finished = true;
 			
-			delilah->client->showMessage(getStatus());
+			std::ostringstream output;
+			output << "[ " << id << " ] Received upload data confirmation from controller\n";
+			output << getStatus();
+			delilah->client->showMessage( output.str() );
 			
 			
 		}
@@ -295,7 +337,42 @@ namespace ss
 		lock.unlock();		
 		
 	}
+	
+	
+	void DelilahUploadDataProcess::finishCompressionThread( size_t process_size )		
+	{
+		lock.lock();
+		processedSize += process_size;
+		num_threads--;
+		lock.unlock();
+	}
+	
 
+	
+	std::string DelilahUploadDataProcess::showProgress( std::string title,  size_t size )
+	{
+		std::ostringstream output;
+		int seconds = au::Format::ellapsedSeconds(&init_time);
+
+		int p;
+		if( size > 0)
+			p = ( (double) size / (double) totalSize ) * 100;
+		else
+			p = 0;
+		
+		size_t r;
+		
+		if ( seconds > 0 )
+			r = ((double) size * 8.0 / (double) seconds);
+		else
+			r = 0;
+		
+		size_t r2 = r / num_workers;
+		output << " [ "<< title << " " << au::Format::string( size , "B" ) << " " << p << "% "; 
+		output << au::Format::string( r , "bps" ) << "  " << au::Format::string( r2 , "bps/w" ) << "  ]";
+		
+		return output.str();
+	}
 	
 	std::string DelilahUploadDataProcess::getStatus()
 	{
@@ -304,17 +381,19 @@ namespace ss
 		
 		int seconds = au::Format::ellapsedSeconds(&init_time);
 		
-		output << "[ Upload "<< id << "] Queue: " << queue << ": ";
+		output << "[ "<< id << " ]\tUploading " << au::Format::string( totalSize ,"B" ) <<" to queue: " << queue;
 		
-		output << "[" << au::Format::time_string(seconds) << "] ";
+		output << " Running time: " << au::Format::time_string(seconds) ;
 
 		
 		if( completed )
-			output << " FINISH AND CONFIRMATED ";
+			output << "State: All data uploaded and confirmed.";
 		else if( finish )
-			output << " FINISH ";
-
+			output << " State: All data is in network queue.";
+		else
 		{
+			output << " State: " << num_threads << " threads compressing data.";
+
 			if( uploadedSize > 0)
 			{
 				size_t pending_secs =  ( totalSize - uploadedSize ) * seconds / uploadedSize;
@@ -322,23 +401,13 @@ namespace ss
 			}
 		}
 		
+		
+		output <<"\n\tProgress: ";
 
-		int p;
-		if( totalSize > 0)
-			p = ( (double) uploadedSize / (double) totalSize ) * 100;
-		else
-			p = 0;
+		output <<  showProgress( "Upload" , uploadedSize );
+		output << " ";
+		output <<  showProgress( "Processed" , processedSize );
 		
-		size_t r;
-		
-		if ( seconds > 0 )
-			r = ((double) uploadedSize * 8.0 / (double) seconds);
-		else
-			r = 0;
-		
-		size_t r2 = r / num_workers;
-		output << " [ Size " << au::Format::string( uploadedSize ) << " / " << au::Format::string( totalSize ) << " " << p << "%" << " ]";
-		output << "[ Rate: " << au::Format::string( r , "bps" ) << " - " << au::Format::string( r2 , "bps" ) << " per worker ]";
 
 		return output.str();
 	}

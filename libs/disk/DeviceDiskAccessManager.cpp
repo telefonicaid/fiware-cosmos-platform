@@ -130,7 +130,7 @@ namespace ss {
 	{
 		std::ostringstream output;
 		lock.lock();
-		output << operation.size() << " operations " << statistics.getStatus() << "\n";
+		output << operation.size() << " operations " << statistics.getStatus();
 		lock.unlock();
 		return output.str();
 	}

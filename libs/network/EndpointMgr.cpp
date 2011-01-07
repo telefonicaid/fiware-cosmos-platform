@@ -797,7 +797,7 @@ void EndpointMgr::msgTreat(int rFd, char* name)
 			LM_X(1, ("no packet receiver and unknown message type: %d", msgType));
 
 		LM_T(LMT_MSG, ("forwarding '%s' %s from %s to CoreWorkers", messageCode(msgCode), messageType(msgType), ep->name.c_str()));
-		receiver->receive(endpointId, msgCode, &packet);
+		receiver->_receive(endpointId, msgCode, &packet);
 		break;
 	}
 

@@ -102,7 +102,7 @@ namespace ss {
 		TXTFileSet fileSet;				// Input txt files
 		
 		size_t num_files;				// Num files generated
-		size_t num_confirmed_files;
+		size_t num_confirmed_files;		// Num files confirmed by workers ( uploaded )
 		
 		int num_threads;				// Number of paralel threads to wait if necessary
 		int max_num_threads;			// Maximum number of paralell threads
@@ -115,8 +115,11 @@ namespace ss {
 		std::string queue;		// Name of the queue we are uploading
 		
 		// Sumary information
-		size_t uploadedSize;	// Total size of uploaded files
-		size_t totalSize;		// Total size to be uploaded ( all files )
+		size_t totalSize;				// Total size to be uploaded ( all files )
+		size_t processedSize;			// total size processed locally ( compressed and squeduled to the network )
+		
+		size_t uploadedSize;			// Total size of uploaded files
+		size_t uploadedCompressedSize;	// Total size uploaded to workers ( compressed )
 
 		// Error management
 		bool error;
@@ -141,13 +144,10 @@ namespace ss {
 		
 		void _runCompressThread();	// Method executed by all the compression threads
 		
-		void finishCompressionThread()
-		{
-			lock.lock();
-			num_threads--;
-			lock.unlock();
-		}
+		void finishCompressionThread( size_t process_size );		
 		
+		std::string showProgress( std::string title,  size_t size );
+
 	};	
 	
 	

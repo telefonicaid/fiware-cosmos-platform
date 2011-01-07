@@ -420,7 +420,7 @@ static void* senderThread(void* vP)
 		{
 			//LM_M(("ANDREU: Calling 'loop-back' receive from within sender thread"));
 			if (job.network->receiver)
-				job.network->receiver->receive(0, job.msgCode, job.packetP);
+				job.network->receiver->_receive(0, job.msgCode, job.packetP);
 			//LM_M(("ANDREU: After calling 'loop-back' receive from within sender thread"));
 		}
 		else
@@ -1632,7 +1632,7 @@ void Network::msgTreat(void* vP)
 		LM_T(LMT_FORWARD, ("calling receiver->receive for message code '%s'", messageCode(msgCode)));
 		if (receiver)
 		{
-			receiver->receive(endpointId, msgCode, &packet);
+			receiver->_receive(endpointId, msgCode, &packet);
 			LM_T(LMT_FORWARD, ("back from receiver->receive for message code '%s'", messageCode(msgCode)));
 		}
 		else

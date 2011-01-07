@@ -118,11 +118,14 @@ namespace ss
 		
 		lock.lock();
 		
+		
 		upload_size+= buffer->getSize();
 		
 		UploadItem *item = new UploadItem( fromIdentifier , this , uploadData , sender_id , buffer );
 		
 		size_t fm_id = item->submitToFileManager();
+
+		LM_M(("LDM Item (sender_id %d) (file_id %d) and was schedulled to Disk manager with id %d",sender_id,uploadData.file_id() ,fm_id));
 		
 		uploadItem.insertInMap( fm_id , item );
 		
@@ -147,6 +150,7 @@ namespace ss
 
 	void LoadDataManager::fileManagerNotifyFinish(size_t fm_id, bool success)
 	{
+		LM_M(("LDM File Manager finish with file manager id %d ( success %d ) ",fm_id,success));
 		
 		lock.lock();
 		

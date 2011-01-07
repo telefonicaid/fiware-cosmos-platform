@@ -14,6 +14,8 @@
 #include "Lock.h"				// au::Lock
 
 
+#define LMT_SAMSON_NETWORK_INTERFACE	108
+
 namespace ss {
 
 
@@ -50,8 +52,16 @@ public:
 	// Notify that a nessage has been received.
 	// If 'receive' returns ZERO, a JobDone is sent as Ack.
 	// If non-zero is returned, a JobError is sent as Ack.
-	virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet) = 0;
-		
+	
+	int _receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+	{
+		LM_T(LMT_SAMSON_NETWORK_INTERFACE,("NETWORK_INTERFACE Received packet type %s",messageCode(msgCode)));
+		return receive(fromId, msgCode, packet);
+	}
+
+virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet) = 0;
+	
+	
 	// Notify that a worker has died 
 	virtual void notifyWorkerDied(int worker)
 	{
@@ -80,6 +90,7 @@ class PacketSenderInterface
 public:
 	// Notification that the packet has been sent
 	virtual void notificationSent(size_t id, bool success) = 0;
+	
 	virtual ~PacketSenderInterface() {};
 };
 	
@@ -137,14 +148,7 @@ public:
 		void runInBackground();
 		
 		// Send a packet (return a unique id to inform the notifier later)
-		size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP )
-		{
-			lock_send.lock();
-			size_t id = _send( sender , endpointId , code , packetP );
-			lock_send.unlock();
-			
-			return id;
-		}
+		size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP );
 		
 	protected:
 		

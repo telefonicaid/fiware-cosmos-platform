@@ -24,7 +24,6 @@ namespace ss {
 		void setId( Delilah * _delilah ,  size_t _id );
 		virtual void receive(int fromId, Message::MessageCode msgCode, Packet* packet)=0;
 		
-		
 		virtual std::string getStatus()=0;
 		
 	};

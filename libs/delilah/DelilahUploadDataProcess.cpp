@@ -388,8 +388,6 @@ namespace ss
 		
 		if( completed )
 			output << "State: All data uploaded and confirmed.";
-		else if( finish )
-			output << " State: All data is in network queue.";
 		else
 		{
 			output << " State: " << num_threads << " threads compressing data.";

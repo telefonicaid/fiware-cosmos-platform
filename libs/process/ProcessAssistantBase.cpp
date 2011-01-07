@@ -194,8 +194,8 @@ namespace ss {
 		_wFd = pipeFdPair1[1];
 		
 		
-		runAsIndependentProcess();
-		//runAsThread();
+		//runAsIndependentProcess();
+		runAsThread();
 		
 	}
 	

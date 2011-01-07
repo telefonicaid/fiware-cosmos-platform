@@ -5,7 +5,7 @@ then
 	exit 1
 fi
 
-for mach in samson02 samson03 samson04 samson05 samson06 samson07 samson08 samson09
+for mach in samson02 samson03 samson04 samson05 samson06 samson07  samson09
 do
 	echo Installing samson in $mach
 	rsync -r /opt/samson/etc              samson@$mach:/opt/samson

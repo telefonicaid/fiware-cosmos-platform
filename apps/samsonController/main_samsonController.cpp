@@ -5,6 +5,7 @@
 #include "MemoryManager.h"		// ss::MemoryManager
 #include "DiskManager.h"		// ss::DiskManager
 #include "FileManager.h"		// ss::FileManager
+#include "LockDebugger.h"       // au::LockDebugger
 
 /* ****************************************************************************
 *
@@ -54,6 +55,8 @@ int main(int argC, const char* argV[])
 	paConfig("log to file",                   (void*) true);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
+
+	au::LockDebugger::shared();    // Debuggin of Lock usage ( necessary here where it is only one thread )
 
 	ss::SamsonSetup::load( workingDir );		// Load setup and create all directories
 	

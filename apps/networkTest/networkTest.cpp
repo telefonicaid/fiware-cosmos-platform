@@ -203,7 +203,7 @@ static void clientIomRun(int fd, int bufLen)
 	while (1)
 	{
 		LM_M(("sending a message of %d bytes", bufLen));
-		s = iomMsgSend(fd, "server", "client", ss::Message::ThroughPutTest, ss::Message::Msg, buffer, bufLen);
+		s = iomMsgSend(fd, "server", "client", ss::Message::ThroughputTest, ss::Message::Msg, buffer, bufLen);
 		if (s != 0)
 			LM_X(1, ("iomMsgSend error %d", s));
 		sleep(4);

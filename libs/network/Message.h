@@ -54,7 +54,7 @@ typedef enum MessageCode
 	Die								= CODE('D', 'i', 'e', ' '),
 	WorkerSpawn                     = CODE('W', 'S', 'p', ' '),
 	ControllerSpawn                 = CODE('C', 'S', 'p', ' '),
-	ThroughPutTest                  = CODE('T', 'p', 't', ' '),
+	ThroughputTest                  = CODE('T', 'p', 'u', ' ')
 } MessageCode;
 
 
@@ -119,6 +119,23 @@ typedef struct Worker
 	int              port;
 	int              state;
 } Worker;
+
+
+
+/* ****************************************************************************
+*
+* SpawnData - 
+*/
+typedef struct SpawnData
+{
+	char            name[32];
+	unsigned short  port;
+	bool            verbose;
+	bool            reads;
+	bool            writes;
+	char            traceV[64];
+	char            args[256];
+} SpawnData;
 
 
 

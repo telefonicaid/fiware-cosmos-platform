@@ -45,7 +45,7 @@ char* messageCode(MessageCode code)
 	case Die:                              return (char*) "Die";
 	case WorkerSpawn:                      return (char*) "WorkerSpawn";
 	case ControllerSpawn:                  return (char*) "ControllerSpawn";
-	case ThroughPutTest:                   return (char*) "ThroughPutTest";
+	case ThroughputTest:                   return (char*) "ThroughputTest";
 	}
 
 	return (char*) "Unknown";

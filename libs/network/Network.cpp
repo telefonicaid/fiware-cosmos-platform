@@ -500,14 +500,14 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, ss::M
 		//LM_M(("ANDREU: looping back the '%s' message to myself via sender thread", messageCode(code)));
 #endif
 	}
-	else if (ep->state != Endpoint::Connected)
+	else if (( ep->state != Endpoint::Connected ) && (ep->state != Endpoint::Threaded))
 	{
 		SendJob* jobP = new SendJob();
 
 		if (ep->useSenderThread == false)
 		{
 			// LM_X(1, ("cannot send to an unconnected peer '%s' if not using sender threads, sorry ...", ep->name.c_str()));
-			LM_RE(0, ("cannot send to an unconnected peer '%s' if not using sender threads, sorry ...", ep->name.c_str()));
+		   LM_RE(0, ("cannot send to non connected (%s) peer '%s' if not using sender threads, sorry ...", ep->stateName(), ep->name.c_str()));
 		}
 
 		jobP->ep      = ep;

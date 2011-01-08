@@ -23,7 +23,7 @@
 #define SETUP_DEFAULT_shared_memory_size_per_buffer				67108864	// 64 Mb
 
 #define SETUP_shared_memory_num_buffers							"shm_num_buffers"
-#define SETUP_DEFAULT_shared_memory_num_buffers					12
+#define SETUP_DEFAULT_shared_memory_num_buffers					6
 
 
 namespace ss

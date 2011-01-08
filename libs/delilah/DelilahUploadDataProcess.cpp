@@ -8,6 +8,7 @@
 #include "Delilah.h"						// ss::Delilah
 #include "samson.pb.h"						// network::...
 #include "DelilahClient.h"					// ss::DelilahClient
+#include "SamsonSetup.h"					// ss::SamsonSetup
 
 namespace ss
 {
@@ -192,7 +193,7 @@ namespace ss
 			
 			
 			// Create a buffer
-			Buffer *b = MemoryManager::shared()->newBuffer( "Loading buffer" , 64*1024*1024 );
+			Buffer *b = MemoryManager::shared()->newBuffer( "Loading buffer" , ss::SamsonSetup::shared()->load_buffer_size );
 			
 			// Fill the buffer with the contents from the file
 			fileSet.fill( b );

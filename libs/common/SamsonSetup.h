@@ -51,6 +51,10 @@ namespace ss {
 		// Max size of kv files
 		size_t max_file_size;
 		
+		
+		// Load Data suze
+		size_t load_buffer_size;
+		
 	private:
 		
 		static size_t getUInt64(std::map<std::string,std::string> &items, std::string name , size_t defaultValue );

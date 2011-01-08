@@ -1,7 +1,7 @@
 #include "parseArgs.h"          // parseArgs
 #include "DelilahConsole.h"		// ss::DelilahConsole
 #include "SamsonSetup.h"		// ss::SamsonSetup
-
+#include "Format.h"				// au::Format
 
 /* ****************************************************************************
 *
@@ -10,7 +10,8 @@
 int              endpoints;
 int              workers;
 char             controller[80];
-
+int				 memory_gb;
+int				 load_buffer_size_mb;
 
 
 #define LOC "localhost:1234"
@@ -20,9 +21,11 @@ char             controller[80];
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt, _i LOC,   PaNL,   PaNL,  "controller IP:port"  },
-	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,     80,      3,    100,  "number of endpoints" },
-	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,      1,      1,    100,  "number of workers"   },
+	{ "-controller",		controller,				"CONTROLLER",  PaString,  PaOpt, _i LOC,   PaNL,   PaNL,  "controller IP:port"  },
+	{ "-endpoints",			&endpoints,				"ENDPOINTS",   PaInt,     PaOpt,     80,      3,    100,  "number of endpoints" },
+	{ "-workers",			&workers,				"WORKERS",     PaInt,     PaOpt,      1,      1,    100,  "number of workers"   },
+	{ "-memory",			&memory_gb,				"MEMORY",     PaInt,     PaOpt,      1,      1,    100,  "memory in GBytes"   },
+	{ "-load_buffer_size",  &load_buffer_size_mb,   "LOAD_BUFFER_SIZE",     PaInt,     PaOpt,      1,      64,    1024,  "load buffer size in Mbytes"   },
 
 	PA_END_OF_ARGS
 };
@@ -55,6 +58,10 @@ int main(int argC, const char *argV[])
 	
 	
 	ss::SamsonSetup::load();
+	
+	// Setup parameters from command line
+	ss::SamsonSetup::shared()->memory = (size_t) memory_gb * (size_t) (1024*1024*1024);
+	ss::SamsonSetup::shared()->load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
 	
 	ss::Network  network(endpoints,workers);
 	std::cout << "Waiting for network connection ...";

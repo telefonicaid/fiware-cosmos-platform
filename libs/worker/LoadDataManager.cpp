@@ -196,14 +196,9 @@ namespace ss
 				output << iter->second->getStatus();
 		}
 		
-		average_upload_size = 0.5* upload_size + 0.5 * average_upload_size;
-
-		if ( average_upload_size < 10000 )
-			average_upload_size = 0;
-		
 		upload_size = 0;	// Reset the counter of upload bytes
 
-		ws->set_upload_size( average_upload_size );
+		ws->set_upload_size( upload_size );
 		
 		lock.unlock();
 		

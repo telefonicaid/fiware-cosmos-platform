@@ -116,14 +116,12 @@ namespace ss {
 	public:
 
 		size_t upload_size;			// Simple information about the size of upload
-		size_t average_upload_size;	// Softer version of upload size
 		
 		
 		LoadDataManager( SamsonWorker *_worker )
 		{
 			worker = _worker;
 			upload_size = 0;
-			average_upload_size = 0;
 		}
 		
 		// Add item to upload data

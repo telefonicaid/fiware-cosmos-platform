@@ -196,8 +196,19 @@ namespace ss {
 	
 	std::string FileManagerCacheSystem::getStatus()
 	{
+		
+		
 		std::ostringstream output;
-		output << num_files_in_cache << " elements in " << au::Format::string( size_in_cache ,"B" );
+		
+		lock.lock();
+		output << num_files_in_cache << " elements in " << au::Format::string( size_in_cache ,"B" ) << " ";
+		
+		au::map <std::string , FileManagerCacheItem>::iterator c;
+		for ( c=cache.map.begin() ; c!= cache.map.end() ; c++ )
+			output << "[ " << c->second->getStatus() << " ]";
+		
+		lock.unlock();
+		
 		return output.str();
 	}
 

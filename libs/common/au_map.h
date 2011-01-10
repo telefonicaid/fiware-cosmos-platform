@@ -133,10 +133,12 @@ namespace au {
 	template <typename K,class V>
 	class ListMap
 	{
+		
+	public:
+		
 		std::map<K,V*> map;	// Real associate map of elements
 		std::list<K> keys;	// List of the keys to access front and back elements
 		
-	public:
 		
 		// Iterator definition
 		typename std::map<K, V* >::iterator iter;

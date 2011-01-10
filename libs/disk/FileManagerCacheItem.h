@@ -43,6 +43,13 @@ namespace ss {
 		
 		void release();
 		
+		std::string getStatus()
+		{
+			std::ostringstream output;
+			output << "UD:" << used_counter << " S:" << au::Format::string( buffer->getSize() );
+			return output.str();
+		}
+		
 	};
 	
 }

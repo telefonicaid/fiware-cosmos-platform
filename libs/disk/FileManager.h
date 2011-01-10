@@ -54,8 +54,7 @@ namespace ss {
 			// Init the counter to give new ids
 			current_fm_id = 0;
 		}
-		
-		
+				
 	public:
 		
 		/** 

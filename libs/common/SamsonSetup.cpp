@@ -26,6 +26,8 @@
 #define SETUP_DEFAULT_shared_memory_num_buffers					6
 
 
+#define SETUP_DEFAULT_load_buffer_size							67108864
+
 namespace ss
 {
 	static SamsonSetup *samsonSetup = NULL;
@@ -163,6 +165,12 @@ namespace ss
 
 		shared_memory_size_per_buffer	= getUInt64( items, SETUP_shared_memory_size_per_buffer , SETUP_DEFAULT_shared_memory_size_per_buffer );
 		shared_memory_num_buffers		= getInt( items, SETUP_shared_memory_num_buffers , SETUP_DEFAULT_shared_memory_num_buffers );
+		
+		
+		// Default value for other fields
+
+		load_buffer_size = SETUP_DEFAULT_load_buffer_size;
+		
 		
 		if( !check() )
 		{

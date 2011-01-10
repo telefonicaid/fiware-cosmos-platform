@@ -25,7 +25,7 @@ PaArgument paArgs[] =
 	{ "-endpoints",			&endpoints,				"ENDPOINTS",   PaInt,     PaOpt,     80,      3,    100,  "number of endpoints" },
 	{ "-workers",			&workers,				"WORKERS",     PaInt,     PaOpt,      1,      1,    100,  "number of workers"   },
 	{ "-memory",			&memory_gb,				"MEMORY",     PaInt,     PaOpt,      1,      1,    100,  "memory in GBytes"   },
-	{ "-load_buffer_size",  &load_buffer_size_mb,   "LOAD_BUFFER_SIZE",     PaInt,     PaOpt,      65,      64,    2048,  "load buffer size in Mbytes"   },
+	{ "-load_buffer_size",  &load_buffer_size_mb,   "LOAD_BUFFER_SIZE",     PaInt,     PaOpt,      64,      64,    2048,  "load buffer size in Mbytes"   },
 
 	PA_END_OF_ARGS
 };

@@ -62,6 +62,8 @@ clean_qt:
 m:
 	mkdir modulesBuild;cd modulesBuild;cmake ../modules;make;cd ..
 
-memory:
+memory_128:
 	sudo sysctl -w kernel.shmmax=134217728
 
+memory_256::
+	sudo sysctl -w kernel.shmmax=268435456

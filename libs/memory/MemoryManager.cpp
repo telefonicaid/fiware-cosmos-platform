@@ -57,6 +57,7 @@ namespace ss
 		
 		key = SS_SHARED_MEMORY_KEY_ID + i; 
 		shmflg = IPC_CREAT | 384;			// Permission to read / write ( only owner )
+		size = shared_memory_size_per_buffer;
 		
 		// Get the id
 		int id = shmget (key, size, shmflg);

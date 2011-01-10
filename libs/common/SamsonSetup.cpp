@@ -183,9 +183,9 @@ namespace ss
 		}
 		 */
 		
-		if( ( shared_memory_num_buffers * shared_memory_size_per_buffer ) > (0.5 *memory) )
+		if( memory < 1.2* ( shared_memory_num_buffers * shared_memory_size_per_buffer ) )
 		{
-			std::cerr << "Memory should be at least double of total shared Memory\n";
+			std::cerr << "Memory should be at least 1.2  total shared Memory\n";
 			return false;
 		}
 

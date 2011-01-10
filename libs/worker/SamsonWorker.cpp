@@ -91,6 +91,13 @@ void SamsonWorker::sendWorkerStatus()
 
 int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 {
+#if 0
+   if( (msgCode == Message::UploadData ) )
+	  {
+		 LM_M(("Received a packet with data"));
+	  }
+   return 0;
+#endif
 	
 	if (msgCode == Message::WorkerTask)
 	{

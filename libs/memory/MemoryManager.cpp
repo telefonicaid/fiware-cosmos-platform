@@ -49,6 +49,26 @@ namespace ss
 			createSharedMemory(i);
 	}
 	
+	void MemoryManager::removeSharedMemory( int i )
+	{
+		key_t key;		/* key to be passed to shmget() */ 
+		int shmflg;		/* shmflg to be passed to shmget() */ 
+		size_t size;	/* size to be passed to shmget() */ 
+		
+		key = SS_SHARED_MEMORY_KEY_ID + i; 
+		shmflg = IPC_CREAT | 384;			// Permission to read / write ( only owner )
+		
+		// Get the id
+		int id = shmget (key, size, shmflg);
+
+		if( id != -1)
+		{
+			// Remove
+			shmctl( id , IPC_RMID, NULL);
+		}
+			
+	}
+	
 	SharedMemoryItem* MemoryManager::getSharedMemory( int i )
 	{
 		assert( i >= 0);

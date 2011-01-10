@@ -18,11 +18,32 @@ int main(int argc, const char *argv[])
 	
 	au::CommandLine cmdLine;
 	cmdLine.set_flag_string("working", SAMSON_DEFAULT_WORKING_DIRECTORY);
+	cmdLine.set_flag_boolean("clean");		// Clean shared memory areas
 	cmdLine.parse(argc, argv);
-	
 	
 	ss::SamsonSetup::load( cmdLine.get_flag_string("working") );
 	ss::SamsonSetup *s = ss::SamsonSetup::shared();	// Load setup file and create main directories
+	
+	if ( cmdLine.get_flag_bool("clean" ) )
+	{
+		// Spetial command to clena shared memory areas
+		
+		std::cout << "Cleaning shared memory areas\n";
+		
+		ss::MemoryManager *mm = ss::MemoryManager::shared();
+		
+		for (int i = 0 ; i < s->shared_memory_num_buffers ; i++)
+		{
+			std::cout << "Removing shared memory " << i << " / " << s->shared_memory_num_buffers << std::endl;
+			mm->removeSharedMemory(i);
+		}
+		
+		std::cout << "Done!\n";
+		exit(0);
+		
+	}
+	
+	
 	
 	std::cout << "\n";
 	std::cout << "----------------------------------------------------\n";
@@ -41,7 +62,6 @@ int main(int argc, const char *argv[])
 	std::cout << "** Disk setup:\n";
 	std::cout << "Num threads per devide:    " << s->num_io_threads_per_device << "\n";
 	
-
 	std::cout << "\n\n\n";
 	std::cout << "Testing shared memory...\n";
 

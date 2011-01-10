@@ -117,6 +117,13 @@ namespace ss {
 		
 		double getMemoryUsage();
 		
+		
+		/**
+		 Remove this shared memory. Tipically because we want to change the size...
+		 */
+		
+		void removeSharedMemory( int i );
+		
 		/**
 		 Function to request a free shared memory.
 		 This is used as output by a ProcessAssistant or as input to prepare a WorkerTaskItem

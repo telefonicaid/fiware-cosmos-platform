@@ -44,6 +44,7 @@ public:
 	Network();
 	Network(int endpoints, int workers);
 
+	void reset(int endpoints, int workers);
 	void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL);
 
 	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);

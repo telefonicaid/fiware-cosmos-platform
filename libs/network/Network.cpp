@@ -61,27 +61,35 @@ namespace ss
 
 
 
-/* ****************************************************************************
-*
-* Constructor 
-*/
-Network::Network()
+void Network::reset(int endpoints, int workers)
 {
 	iAmReady     = false;
 	receiver     = NULL;
 	me           = NULL;
 	listener     = NULL;
 	controller   = NULL;
-	Workers      = WORKERS;
-	Endpoints    = 3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS;
-	tmoSecs      = 10;
-	tmoUsecs     = 0;
+	tmoSecs      = 0;
+	tmoUsecs     = 50000;
 
-	LM_M(("Workers: %d", Workers));
+	Endpoints    = endpoints;
+	Workers      = workers;
+	
+    endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
+    if (endpoint == NULL)
+        LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
 
-	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
-	if (endpoint == NULL)
-		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
+	LM_M(("%d workers, %d endpoints", workers, endpoints));
+}
+
+
+
+/* ****************************************************************************
+*
+* Constructor 
+*/
+Network::Network()
+{
+	reset(3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS, WORKERS);
 }
 
 
@@ -92,21 +100,7 @@ Network::Network()
 */
 Network::Network(int endpoints, int workers)
 {
-	iAmReady     = false;
-	receiver     = NULL;
-	me           = NULL;
-	listener     = NULL;
-	controller   = NULL;
-	Workers      = workers;
-	Endpoints    = endpoints;
-	tmoSecs      = 10;
-	tmoUsecs     = 0;
-
-	LM_M(("Workers: %d", Workers));
-
-	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
-	if (endpoint == NULL)
-		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
+	reset(endpoints, workers);
 }
 
 
@@ -947,7 +941,6 @@ Endpoint* Network::endpointLookup(int rFd, int* idP)
 		}
 	}
 
-	LM_E(("endpoint (rFd:%d) not found", rFd));
 	return NULL;
 }
 
@@ -972,7 +965,6 @@ Endpoint* Network::endpointLookup(char* alias)
 		}
 	}
 
-	LM_E(("endpoint (alias:%s) not found", alias));
 	return NULL;
 }
 
@@ -1740,11 +1732,29 @@ void Network::run()
 			//
 			// Adding fds to the read-set
 			//
-			LM_F((""));
-			LM_F(("------------ %d secs timeout, %d endpoints -------------------------------------", tmoSecs, Endpoints));
+
+			time_t         now;
+			static time_t  lastTime       = 0;
+			bool           showSelectList = false;
+
+			now = time(NULL);
+			if (now - lastTime > 3)  // Show list each three seconds ...
+			{
+				showSelectList = true;
+				lastTime       = now;
+			}
+			else
+				showSelectList = false;
+
+			if (showSelectList)
+			{
+				LM_F((""));
+				LM_F(("------------ %.5f secs timeout, %d endpoints -------------------------------------", ((double) tmoSecs + ((double) tmoUsecs) / 1000000), Endpoints));
+			}
+
 			for (ix = 0; ix < Endpoints; ix++)
 			{
-				char sign = '-';
+				char           sign = '-';
 
 				if (endpoint[ix] == NULL)
 					continue;
@@ -1758,24 +1768,29 @@ void Network::run()
 					sign = '+';
 				}
 				
-				LM_F(("%c %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
-					  sign,
-					  ix,
-					  endpoint[ix]->typeName(),
-					  endpoint[ix]->name.c_str(),
-					  endpoint[ix]->alias.c_str(),
-					  endpoint[ix]->ip.c_str(),
-					  endpoint[ix]->port,
-					  endpoint[ix]->stateName(),
-					  endpoint[ix]->rFd,
-					  endpoint[ix]->msgsIn,
-					  endpoint[ix]->bytesIn,
-					  endpoint[ix]->msgsOut,
-					  endpoint[ix]->bytesOut,
-					  endpoint[ix]->rMbps,
-					  endpoint[ix]->rAccMbps,
-					  endpoint[ix]->wMbps,
-					  endpoint[ix]->wAccMbps));
+				if (showSelectList)
+				{
+					LM_F(("%c %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
+						  sign,
+						  ix,
+						  endpoint[ix]->typeName(),
+						  endpoint[ix]->name.c_str(),
+						  endpoint[ix]->alias.c_str(),
+						  endpoint[ix]->ip.c_str(),
+						  endpoint[ix]->port,
+						  endpoint[ix]->stateName(),
+						  endpoint[ix]->rFd,
+						  endpoint[ix]->msgsIn,
+						  endpoint[ix]->bytesIn,
+						  endpoint[ix]->msgsOut,
+						  endpoint[ix]->bytesOut,
+						  endpoint[ix]->rMbps,
+						  endpoint[ix]->rAccMbps,
+						  endpoint[ix]->wMbps,
+						  endpoint[ix]->wAccMbps));
+
+					lastTime = now;
+				}
 			}
 
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);

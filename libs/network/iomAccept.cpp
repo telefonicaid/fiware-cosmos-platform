@@ -11,6 +11,7 @@
 #include <netinet/in.h>         // struct in_addr
 #include <netdb.h>              // gethostbyaddr
 #include <arpa/inet.h>          // inet_ntoa
+#include <netinet/tcp.h>        // TCP_NODELAY
 #include <vector>               // vector
 
 #include "logMsg.h"             // LM_*
@@ -54,14 +55,26 @@ int iomAccept(int lfd, char* hostName, int hostNameLen)
 	if (hostName)
 		strncpy(hostName, hName, hostNameLen);
 
+#if 1
 	int bufSize = 64 * 1024 * 1024;
+#else
+	int bufSize = 4 * 1024;
+#endif
 	int s;
 	s = setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &bufSize, sizeof(bufSize));
 	if (s != 0)
-		LM_X(1, ("setsockopt: %s", strerror(errno)));
+		LM_X(1, ("setsockopt(SO_RCVBUF): %s", strerror(errno)));
 	s = setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &bufSize, sizeof(bufSize));
 	if (s != 0)
-		LM_X(1, ("setsockopt: %s", strerror(errno)));
+		LM_X(1, ("setsockopt(SO_SNDBUF): %s", strerror(errno)));
+
+#if 0
+	// Disable the Nagle (TCP No Delay) algorithm
+	int flag = 1;
+	s = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (char*) &flag, sizeof(flag));
+	if (s != 0)
+		LM_X(1, ("setsockopt(TCP_NODELAY): %s", strerror(errno)));
+#endif
 
 	return fd;
 }

@@ -156,7 +156,11 @@ static void serverIomRun(int listenFd)
 
 			s = iomMsgRead(fd, (const char*) progName, &msgCode, &msgType, &dataP, &dataLen);
 			if (s != 0)
-				LM_X(1, ("iomMsgRead: error %d", s));
+			{
+			   LM_W(("iomMsgRead: error %d - closing connection", s));
+			   fd = -1;
+			   continue;
+			}
 
 			s = gettimeofday(&end, NULL);
 			if (s != 0)

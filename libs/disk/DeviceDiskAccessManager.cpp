@@ -63,7 +63,12 @@ namespace ss {
 	{
 		
 		lock.lock();
-		operation.push_back( o );	
+		
+		if( o->mode == "w" )
+			operation.push_front( o );	
+		else
+			operation.push_back( o );	
+		
 		lock.unlock();
 		
 		// Wake up the thread if necessary

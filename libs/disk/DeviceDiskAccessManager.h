@@ -36,7 +36,8 @@ namespace ss {
 		au::StopLock stopLock;
 		
 		std::list<DiskOperation*> operation;			// List of pending operations
-
+		
+		
 		int num_threads;							// Number of threads working over this device		
 		pthread_t t[MAX_NUM_THREADS_PER_DEVICE];	// Thread to read/write in this device
 		

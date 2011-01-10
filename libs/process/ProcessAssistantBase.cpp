@@ -250,7 +250,7 @@ namespace ss {
 				return processMessageWithCode(network::ProcessMessage::crash);		
 			}
 			
-			LM_M(("read something from Process"));
+			//LM_M(("read something from Process"));
 
 			if( received_packet.code() == network::ProcessMessage::finished )
 				return received_packet;

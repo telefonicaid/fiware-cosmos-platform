@@ -52,6 +52,7 @@ namespace ss {
 		if( S_ISDIR(info.st_mode) )
 		{
 			st_dev = info.st_dev;	// Get the devide of the inode 
+			st_dev = 0;// Force all files to be process as the same inode
 			return true;
 		}
 		

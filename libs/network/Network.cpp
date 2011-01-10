@@ -773,6 +773,7 @@ Endpoint* Network::endpointAdd
 				if (endpoint[ix]->type == Endpoint::WebListener)
 					endpoint[ix]->state = Endpoint::Listening;
 
+				
 				if (strcmp(ip.c_str(), "II.PP") != 0)
 					endpoint[ix]->ip       = ip;
 

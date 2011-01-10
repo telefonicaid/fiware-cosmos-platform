@@ -211,7 +211,8 @@ namespace ss {
 				num_working_cores++;
 		}
 		
-		ws->set_working_cores( num_working_cores );
+		ws->set_total_cores( num_processes );
+		ws->set_used_cores( num_working_cores );
 		
 		
 		

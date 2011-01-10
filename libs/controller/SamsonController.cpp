@@ -339,7 +339,11 @@ namespace ss {
 		void SamsonController::pushSystemMonitor( MonitorBlock  *system)
 		{
 			size_t total_memory = 0;
+			size_t used_memory = 0;
+			
 			size_t total_cores = 0;
+			size_t used_cores = 0;
+
 			size_t upload_size = 0;
 			
 			worker_status_lock.lock();
@@ -348,8 +352,12 @@ namespace ss {
 			{
 				if( worker_status[i] )
 				{
-					total_memory += worker_status[i]->used_memory();			
-					total_cores  += worker_status[i]->working_cores();
+					total_memory += worker_status[i]->total_memory();			
+					used_memory += worker_status[i]->used_memory();		
+					
+					used_cores  += worker_status[i]->used_cores();
+					total_cores += worker_status[i]->total_cores();
+					
 					
 					upload_size += worker_status[i]->upload_size();
 				}
@@ -357,10 +365,15 @@ namespace ss {
 			
 			worker_status_lock.unlock();
 			
-			system->push( "memory"			, total_memory );
-			system->push( "cores"			, pow( 10 , total_cores ) );
+			system->push( "memory"			, used_memory );
+			system->push( "total_memory"	, total_memory );
+			
+			system->push( "cores"			, pow( 10 , used_cores ) );
+			system->push( "total_cores"		, pow( 10 , total_cores ) );
+			
 			system->push( "TotalTxTSize"	, data.get_info_txt().size );
 			system->push( "TotalKvs"		, data.get_info_kvs().kvs );
+			
 			system->push( "TotalSize"		, data.get_info_kvs().size + data.get_info_txt().size );
 
 			system->push( "UploadSize"		, upload_size );

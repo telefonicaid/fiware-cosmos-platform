@@ -196,9 +196,10 @@ namespace ss
 				output << iter->second->getStatus();
 		}
 		
-		upload_size = 0;	// Reset the counter of upload bytes
 
 		ws->set_upload_size( upload_size );
+		
+		upload_size = 0;	// Reset the counter of upload bytes
 		
 		lock.unlock();
 		

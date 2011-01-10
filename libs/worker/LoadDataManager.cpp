@@ -118,8 +118,8 @@ namespace ss
 		
 		lock.lock();
 		
-		
-		upload_size+= buffer->getSize();
+		// Get the size of the upload buffer....
+		upload_size += buffer->getSize();
 		
 		UploadItem *item = new UploadItem( fromIdentifier , this , uploadData , sender_id , buffer );
 		
@@ -196,8 +196,12 @@ namespace ss
 				output << iter->second->getStatus();
 		}
 		
-		average_upload_size = 0.2* upload_size + 0.8 * average_upload_size;
-		upload_size = 0;
+		average_upload_size = 0.5* upload_size + 0.5 * average_upload_size;
+
+		if ( average_upload_size < 10000 )
+			average_upload_size = 0;
+		
+		upload_size = 0;	// Reset the counter of upload bytes
 
 		ws->set_upload_size( average_upload_size );
 		

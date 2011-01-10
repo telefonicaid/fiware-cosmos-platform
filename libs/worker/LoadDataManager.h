@@ -53,7 +53,7 @@ namespace ss {
 		static std::string newFileName()
 		{
 			std::ostringstream fileName;
-			fileName << SamsonSetup::shared()->dataDirectory << "file_updaload_" << rand()%10000 << rand()%10000 << rand()%10000;
+			fileName << SamsonSetup::shared()->dataDirectory << "/file_updaload_" << rand()%10000 << rand()%10000 << rand()%10000;
 			return fileName.str();
 		}
 		

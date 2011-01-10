@@ -368,8 +368,8 @@ namespace ss {
 			system->push( "memory"			, used_memory );
 			system->push( "total_memory"	, total_memory );
 			
-			system->push( "cores"			, pow( 10 , used_cores ) );
-			system->push( "total_cores"		, pow( 10 , total_cores ) );
+			system->push( "cores"			, used_cores );
+			system->push( "total_cores"		, total_cores );
 			
 			system->push( "TotalTxTSize"	, data.get_info_txt().size );
 			system->push( "TotalKvs"		, data.get_info_kvs().kvs );

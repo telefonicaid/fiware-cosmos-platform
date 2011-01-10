@@ -858,7 +858,13 @@ namespace ss
 			
 			const network::WorkerStatus worker_status = l.worker_status(i);
 			
-			txt << "Worker " << i << "     " << "( Time of update: " << worker_status.time() << " )" << std::endl;
+			txt << "Worker " << i << "     " << "( Time of update: " << worker_status.time() << " )";
+			
+			txt << " [Memory: " << worker_status.used_memory() << " / " << worker_status.total_memory() << " ]";
+			txt << " [Cores: " << worker_status.used_cores() << " / " << worker_status.total_cores() << " ]";
+			txt << "\n";
+			
+			
 			txt << "\tMemory Manager: " << worker_status.memory_status() << "\n";
 			txt << "\tFile Manager: " << worker_status.file_manager_status() << "\n";
 			txt << "\tFile Manager Cache: " << worker_status.file_manager_cache_status() << "\n";

@@ -23,6 +23,35 @@
 
 
 /* ****************************************************************************
+ *
+ * full_read - read from a socket until completed or error
+ */
+
+
+ssize_t full_read(int fildes, void *buf, size_t nbyte)
+{
+	
+	ssize_t total_read_bytes = 0;
+	int counter = 0;
+	
+	while( total_read_bytes < (ssize_t) nbyte )
+	{
+		ssize_t tmp_read_bytes = read(fildes,  (char*)buf + total_read_bytes , nbyte - total_read_bytes);
+		if ( tmp_read_bytes == -1)
+			return -1;
+		else
+			total_read_bytes += tmp_read_bytes;
+		
+		usleep(1);
+		if( counter++ > 1000000 )
+			assert(false);
+	}
+	
+	return total_read_bytes;
+	
+}
+
+/* ****************************************************************************
 *
 * iomMsgRead - read a message from an endpoint
 */

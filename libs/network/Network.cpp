@@ -496,7 +496,6 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, ss::M
 	}
 	else if (( ep->state != Endpoint::Connected ) && (ep->state != Endpoint::Threaded))
 	{
-		SendJob* jobP = new SendJob();
 
 		if (ep->useSenderThread == false)
 		{
@@ -504,6 +503,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, ss::M
 		   LM_RE(0, ("cannot send to non connected (%s) peer '%s' if not using sender threads, sorry ...", ep->stateName(), ep->name.c_str()));
 		}
 
+		SendJob* jobP = new SendJob();
 		jobP->ep      = ep;
 		jobP->me      = me;
 		jobP->msgCode = code;
@@ -1113,7 +1113,9 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	//
 	// Reading header of the message
 	//
-	nb = read(ep->rFd, &header, sizeof(header));
+	//nb = read(ep->rFd, &header, sizeof(header));
+	nb = full_read(ep->rFd, &header, sizeof(header));
+	
 	if (nb == -1)
 		LM_RVE(("iomMsgRead: error reading message from '%s': %s", ep->name.c_str(), strerror(errno)));
 	else if (nb == 0) /* Connection closed */
@@ -1176,7 +1178,10 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		return;
 	}
 	else if (nb != sizeof(header))
+	{
 		LM_RVE(("iomMsgRead: error reading header from '%s' (read %d, wanted %d bytes", ep->name.c_str(), nb, sizeof(header)));
+		assert(false);
+	}
 
 	if (header.magic != 0xFEEDC0DE)
 		LM_X(1, ("Bad magic number in header (0x%x)", header.magic));

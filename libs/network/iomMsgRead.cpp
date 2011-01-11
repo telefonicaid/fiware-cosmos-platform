@@ -19,7 +19,7 @@
 #include "Buffer.h"             // Buffer
 #include "MemoryManager.h"      // MemoryManager
 #include "iomMsgRead.h"         // Own interface
-
+#include "logMsg.h" // Logs
 
 
 /* ****************************************************************************
@@ -32,19 +32,22 @@ ssize_t full_read(int fildes, void *buf, size_t nbyte)
 {
 	
 	ssize_t total_read_bytes = 0;
-	int counter = 0;
 	
 	while( total_read_bytes < (ssize_t) nbyte )
 	{
 		ssize_t tmp_read_bytes = read(fildes,  (char*)buf + total_read_bytes , nbyte - total_read_bytes);
-		if ( tmp_read_bytes == -1)
-			return -1;
+
+		if ( tmp_read_bytes < 0)
+		   return tmp_read_bytes;   // Return the error
+		else if( tmp_read_bytes == 0)
+		   return total_read_bytes; // Return the readed bytes until now
 		else
+		{
+		   // Accumulate and continue reading until full
 			total_read_bytes += tmp_read_bytes;
+			//LM_M(("Full read %d --> %d of %d", tmp_read_bytes, total_read_bytes , nbyte));
+		}
 		
-		usleep(1);
-		if( counter++ > 1000000 )
-			assert(false);
 	}
 	
 	return total_read_bytes;

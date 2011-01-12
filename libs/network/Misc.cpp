@@ -49,7 +49,9 @@ char* ipGet(void)
 	char* ipP = (char*) "II.PP";
 	FILE* fP;
 	
+	LM_M(("Calling popen(ifconfig | grep \"inet addr:\" ...)"));
 	fP = popen("ifconfig | grep \"inet addr:\" | awk -F: '{ print $2 }' | awk '{ print $1 }'", "r");
+	LM_M(("popen returned %p", fP));
 	if (fgets(line, sizeof(line), fP) != NULL)
 	{
 		if (line[strlen(line) - 1] == '\n')

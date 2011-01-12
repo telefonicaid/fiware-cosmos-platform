@@ -22,6 +22,24 @@
 
 /* ****************************************************************************
 *
+* SPAWNER_PORT - 
+*/
+#define SPAWNER_PORT 1233
+
+
+
+class SamsonSupervisor;
+/* ****************************************************************************
+*
+* Global variables
+*/
+ss::Network*       networkP     = NULL;
+SamsonSupervisor*  supervisorP  = NULL;
+
+
+
+/* ****************************************************************************
+*
 * Option variables
 */
 int              endpoints;
@@ -29,7 +47,7 @@ char             cfPath[80];
 
 
 
-#define CFP (long int) "/opt/samson/config/platformProcesses"
+#define CFP (long int) "/opt/samson/etc/platformProcesses"
 /* ****************************************************************************
 *
 * Parse arguments
@@ -75,9 +93,25 @@ private:
 */
 static void help(void)
 {
+	printf("c - connect to samson spawners\n");
+	printf("s - start samson\n");
 	printf("h - print this help message\n");
 	printf("q - quit\n");
-	printf("s - start samson\n");
+}
+
+
+
+/* ****************************************************************************
+*
+* list - 
+*/
+static void list(void)
+{
+	LM_F(("----- Spawners: -----"));
+	spawnerList();
+
+	LM_F(("----- Processs: -----"));
+	processList();
 }
 
 
@@ -88,33 +122,45 @@ static void help(void)
 */
 static void start(void)
 {
-	int                     ix = 0;
 	int                     s;
 	Process*                p;
 	ss::Message::SpawnData  spawnData;
+	int                     pIx = 0;
 
+	LM_M(("Starting samson platform"));
 	while (1)
 	{
-		p = processGet(ix);
+		int   ix;
+		char* end;
+
+		p = processGet(pIx);
 
 		if (p == NULL)
+		{
+			LM_M(("All processes are started!"));
 			return;
+		}
 
 		strcpy(spawnData.name, p->name);
-		spawnData.port    = p->port;
-		spawnData.verbose = lmVerbose;
-		spawnData.reads   = lmReads;
-		spawnData.writes  = lmWrites;
-		lmTraceGet(spawnData.traceV);
-		/* args ... */
+		memset(spawnData.args, sizeof(spawnData.args), 0);
 
-		LM_D(("starting process %d (%s in %s with port %d)", ix, p->name, p->host, p->port));
-		if (strcmp(spawnData.name, "Controller"))
+		end = spawnData.args;
+		for (ix = 0; ix < p->argCount; ix++)
+		{
+			strcpy(end, p->arg[ix]);
+			end += strlen(p->arg[ix]) + 1; // leave one ZERO character
+		}
+
+		LM_M(("starting process %d (%s in %s)", pIx, p->name, p->host));
+		if (strcmp(spawnData.name, "Controller") == 0)
 			s = iomMsgSend(p->spawner->fd, p->spawner->host, "samsonSupervisor", ss::Message::ControllerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
-		else if (strcmp(spawnData.name, "Worker"))
+		else if (strcmp(spawnData.name, "Worker") == 0)
 			s = iomMsgSend(p->spawner->fd, p->spawner->host, "samsonSupervisor", ss::Message::WorkerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
 		if (s != 0)
 			LM_E(("iomMsgSend: error %d", s));
+		LM_M(("started process %d (%s in %s)", pIx, p->name, p->host));
+
+		++pIx;
 	}
 }
 
@@ -126,9 +172,9 @@ static void start(void)
 */
 static void connectToSpawners(void)
 {
-	int       ix = 0;
-	Process*  p;
-	Spawner*  s;
+	int            ix = 0;
+	Process*       p;
+	Spawner*       s;
 
 	while (1)
 	{
@@ -136,21 +182,40 @@ static void connectToSpawners(void)
 
 		p = processGet(ix++);
 		if (p == NULL)
+		{
+			LM_M(("Connected to all spawners"));
 			return;
+		}
 		
 		if ((s = spawnerGet(p->host)) != NULL)
 		{
 			p->spawner = s;
+			LM_M(("process %d - already connected to spawner in host '%s'", ix, p->host));
 			continue;
 		}
 
-		LM_D(("connecting to spawner in %s on port %d", p->host, 1233));
-		fd = iomConnect(p->host, 1233);
+		LM_M(("connecting to spawner %d in %s on port %d", ix, p->host, SPAWNER_PORT));
+		fd = iomConnect(p->host, SPAWNER_PORT);
 		if (fd == -1)
-			LM_X(1, ("error connecting to spawner in %d, port %d", p->host, 1233));
+			LM_X(1, ("error connecting to spawner in host '%s', port %d", p->host, SPAWNER_PORT));
 
-		s = spawnerAdd(p->host, 1233, fd);
-		p->spawner = s;
+		p->spawner = spawnerAdd(p->host, SPAWNER_PORT, fd);
+
+		ss::Endpoint*  ep;
+
+		LM_M(("Calling endpointAdd for spawner '%s'", p->host));
+		ep = networkP->endpointAdd(fd,
+								   fd,
+								   "Spawner",
+								   NULL,
+								   0,
+								   ss::Endpoint::Temporal,
+								   std::string(p->host),
+								   1233);
+
+#if 0
+		networkP->helloSend(ep, ss::Message::Msg);
+#endif
 	}
 }
 
@@ -186,8 +251,20 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 			start();
 			break;
 
+		case 'l':
+			list();
+			break;
+
+		case 3:
+			LM_X(0, ("'Ctrl-C' pressed - I quit!"));
+
 		case 'q':
 			LM_X(0, ("'q' pressed - I quit!"));
+
+		case ' ':
+		case '\n':
+			printf("\n");
+			break;
 
 		default:
 			LM_E(("Key '%c' has no function", *msg));
@@ -216,7 +293,7 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 *
 * argsParse - 
 */
-static void argsParse(char* line, char* host, char* process, char* port, char** args, int* argCount)
+static int argsParse(char* line, char* host, char* process, char** args, int* argCount)
 {
 	int  ix;
 	int  argIx = 0;
@@ -255,6 +332,8 @@ static void argsParse(char* line, char* host, char* process, char* port, char** 
 	}
 	LM_D(("w/o leading whitespace: '%s'", line));
 
+	if (line[0] == 0)
+		return -1;
 
 	/* 4. Get 'host' */
 	ix = 0;
@@ -272,7 +351,9 @@ static void argsParse(char* line, char* host, char* process, char* port, char** 
 	}
 
 
+
 	/* 5. Get 'process' */
+	LM_M(("Get process: '%s'", line));
 	while (*line != 0)
 	{
 		if ((*line == ' ') || (*line == '\t'))
@@ -295,31 +376,9 @@ static void argsParse(char* line, char* host, char* process, char* port, char** 
         ix += 1;
     }
 
-	/* 6. Get 'port' */
-	while (*line != 0)
-	{
-		if ((*line == ' ') || (*line == '\t'))
-			++line;
-		else
-			break;
-	}
-    ix = 0;
-    while (line[ix] != 0)
-    {
-        if (line[ix] == ' ')
-        {
-            line[ix] = 0;
-            strcpy(port, line);
-            line = &line[ix + 1];
-			LM_D(("Got port '%s'. line: '%s'", port, line));
-            break;
-        }
-        ix += 1;
-    }
 
 
-	LM_D(("Parsing args, line: '%s'", line));
-	/* 7. Get rest of args */
+	/* 6. Get rest of args */
 	argIx = 0;
 	while (*line != 0)
 	{
@@ -348,9 +407,14 @@ static void argsParse(char* line, char* host, char* process, char* port, char** 
 		LM_D(("Got arg %d: '%s'. line: '%s'", argIx, start, line));
 		args[argIx++] = strdup(start);
 		LM_D(("REST: '%s'", line));
+		LM_D(("host: '%s', host"));
 	}
 
 	*argCount = argIx;
+	LM_D(("host:    '%s'", host));
+	LM_D(("process: '%s'", process));
+
+	return 0;
 }
 
 
@@ -361,7 +425,7 @@ static void argsParse(char* line, char* host, char* process, char* port, char** 
 */
 static void cfParse(char* cfPath)
 {
-	char    line[80];
+	char    line[160];
 	int     lineNo = 0;
 	FILE*   fP;
 
@@ -373,12 +437,12 @@ static void cfParse(char* cfPath)
 	{
 		char  host[64];
 		char  process[64];
-		int   port;
 
+		LM_M(("line: '%s'", line));
 		++lineNo;
-		sscanf(line, "%s%s%d", host, process, &port);
+		sscanf(line, "%s%s", host, process);
 		if ((strcmp(process, "Controller") != 0) && (strcmp(process, "Worker") != 0))
-			LM_X(1, ("%s[%d]: parse error", cfPath, lineNo));
+			LM_X(1, ("%s[%d]: parse error - bad process ('%s') (line: '%s')", cfPath, lineNo, process, line));
 		LM_D(("read line: %s", line));
 	}
 
@@ -387,15 +451,16 @@ static void cfParse(char* cfPath)
 	{
 		char   host[32];
 		char   process[32];
-		char   port[32];
 		char*  args[100];
 		int    argCount;
 
 		memset(args, 0, sizeof(args));
 		LM_D(("parsing line: %s", line));
-		argsParse(line, host, process, port, args, &argCount);
-		LM_D(("Adding process '%s' in %s (port %s) with %d args", process, host, port, argCount));
-		processAdd(host, process, atoi(port), args, argCount);
+		if (argsParse(line, host, process, args, &argCount) == 0)
+		{
+			LM_M(("Adding process '%s' in %s with %d args", process, host, argCount));
+			processAdd(process, host, args, argCount);
+		}
 	}
 }
 
@@ -421,7 +486,6 @@ static void cfPresent(void)
 		printf("Process %d:\n", ix);
 		printf("  Name:     %s\n", p->name);
 		printf("  Host:     %s\n", p->host);
-		printf("  Port:     %d\n", p->port);
 		printf("  Args:     %d\n", p->argCount);
 
 		for (aIx = 0; aIx < p->argCount; aIx++)
@@ -439,9 +503,6 @@ static void cfPresent(void)
 */
 int main(int argC, const char *argV[])
 {
-	ss::Network*           networkP;
-	SamsonSupervisor*      supervisorP;
-
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
@@ -454,7 +515,6 @@ int main(int argC, const char *argV[])
 	LM_M(("parsing input file '%s'", cfPath));
 	cfParse(cfPath);
 	cfPresent();
-	LM_X(0, ("startup file parsing done"));
 
 	networkP = new ss::Network(endpoints, 0);
 

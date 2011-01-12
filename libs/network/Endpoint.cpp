@@ -108,20 +108,17 @@ Endpoint::Endpoint(Type type, std::string ipAndPort)
 	init();
 
 	if (port == NULL)
-	{
-		this->name  = ipAndPort;
-		this->port  = atoi(ipAndPort.c_str());
-		this->ip    = "127.0.0.1";
-	}
+		this->port  = 1234;
 	else
 	{
-		this->name  = ipAndPort;
-
 		*port = 0;
 		++port;
-		this->ip    = ipAndPort;
+
 		this->port  = atoi(port);
 	}
+
+	this->name  = ipAndPort;
+	this->ip    = ipAndPort;
 }
 
 
@@ -172,19 +169,21 @@ const char* Endpoint::typeName(Endpoint::Type type)
 {
 	switch (type)
 	{
-	case Endpoint::Unknown:         return "Unknown";
-	case Endpoint::Temporal:        return "Temporal";
-	case Endpoint::Listener:        return "Listener";
-	case Endpoint::Controller:      return "Controller";
-	case Endpoint::Worker:          return "Worker";
-	case Endpoint::CoreWorker:      return "CoreWorker";
-	case Endpoint::Delilah:         return "Delilah";
-	case Endpoint::WebListener:     return "WebListener";
-	case Endpoint::WebWorker:       return "WebWorker";
-	case Endpoint::Sender:          return "Sender";
-	case Endpoint::Spawner:         return "Spawner";
-	case Endpoint::Supervisor:      return "Supervisor";
-	case Endpoint::Fd:              return "Fd";
+	case Endpoint::Unknown:               return "Unknown";
+	case Endpoint::Temporal:              return "Temporal";
+	case Endpoint::Listener:              return "Listener";
+	case Endpoint::Controller:            return "Controller";
+	case Endpoint::Worker:                return "Worker";
+	case Endpoint::CoreWorker:            return "CoreWorker";
+	case Endpoint::ThreadedReader:        return "ThreadedReader";
+	case Endpoint::ThreadedSender:        return "ThreadedSender";
+	case Endpoint::Delilah:               return "Delilah";
+	case Endpoint::WebListener:           return "WebListener";
+	case Endpoint::WebWorker:             return "WebWorker";
+	case Endpoint::Sender:                return "Sender";
+	case Endpoint::Spawner:               return "Spawner";
+	case Endpoint::Supervisor:            return "Supervisor";
+	case Endpoint::Fd:                    return "Fd";
 	}
 
 	return "UnknownType";

@@ -129,11 +129,7 @@ typedef struct Worker
 typedef struct SpawnData
 {
 	char            name[32];
-	unsigned short  port;
-	bool            verbose;
-	bool            reads;
-	bool            writes;
-	char            traceV[64];
+	int             argCount;
 	char            args[256];
 } SpawnData;
 

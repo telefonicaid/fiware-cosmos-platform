@@ -81,6 +81,8 @@ public:
 		Controller,
 		Worker,
 		CoreWorker,
+		ThreadedReader,
+		ThreadedSender,
 		Delilah,
 		WebListener,
 		WebWorker,

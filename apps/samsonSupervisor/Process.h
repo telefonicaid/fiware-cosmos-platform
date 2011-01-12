@@ -34,7 +34,6 @@ typedef struct Process
 {
 	char*            name;
 	char*            host;      // hostname can also be obtained in spawner
-	unsigned short   port;
 	Spawner*         spawner;
 	int              argCount;
 	char*            arg[20];
@@ -54,7 +53,7 @@ extern Spawner* spawnerAdd(char* host, unsigned short port, int fd);
 *
 * processAdd - 
 */
-extern Process* processAdd(char* name, char* host, unsigned short port, char** args, int argCount);
+extern Process* processAdd(char* name, char* host, char** args, int argCount);
 
 
 
@@ -71,5 +70,21 @@ extern Process* processGet(unsigned int ix);
 * spawnerGet - 
 */
 extern Spawner* spawnerGet(char* host);
+
+
+
+/* ****************************************************************************
+*
+* processList - 
+*/
+extern void processList(void);
+
+
+
+/* ****************************************************************************
+*
+* spawnerList - 
+*/
+extern void spawnerList(void);
 
 #endif

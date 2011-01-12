@@ -178,6 +178,8 @@ Endpoint* EndpointMgr::endpointAdd
 
 	switch (type)
 	{
+	case Endpoint::ThreadedReader:
+	case Endpoint::ThreadedSender:
 	case Endpoint::Fd:
 	case Endpoint::Spawner:
 	case Endpoint::Supervisor:

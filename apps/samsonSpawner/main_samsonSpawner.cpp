@@ -1,3 +1,5 @@
+#include <unistd.h>             // fork & exec
+
 #include "logMsg.h"             // LM_*
 #include "parseArgs.h"          // parseArgs
 #include "NetworkInterface.h"   // DataReceiverInterface
@@ -56,15 +58,68 @@ private:
 
 /* ****************************************************************************
 *
+* spawnParse - 
+*/
+void spawnParse(ss::Message::SpawnData* spawnData, char** args, int* argCountP)
+{
+	int    arg = 0;
+	char*  end;
+
+	end = spawnData->args;
+	while (1)
+	{
+	   if ((end[0] == 0) && (end[1] == 0))
+			break;
+
+		args[arg] = end;
+		end = end + strlen(args[arg]) + 1;
+		++arg;
+	}
+
+	*argCountP = arg;
+}
+
+
+
+/* ****************************************************************************
+*
 * SamsonSpawner::receive - 
 */
 int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP)
 {
+	char*  args[20];
+	int    argCount;
+
 	switch (headerP->code)
 	{
 	case ss::Message::WorkerSpawn:
 	case ss::Message::ControllerSpawn:
-		LM_M(("Got a '%s' message - please implement!", ss::Message::messageCode(headerP->code)));
+		pid_t  pid;
+		char*  evec[21];
+
+
+		LM_M(("Got a '%s' message.", ss::Message::messageCode(headerP->code)));
+		spawnParse((ss::Message::SpawnData*) dataP, args, &argCount);
+
+		LM_M(("Spawning %s with %d parameters:", (headerP->code == ss::Message::WorkerSpawn)? "samsonWorker" : "samsonController", argCount));
+		for (int ix = 0; ix < argCount; ix++)
+			LM_M(("o '%s'", args[ix]));
+
+		pid = fork();
+		if (pid == 0)
+		{
+			int ix;
+
+			evec[0] = (headerP->code == ss::Message::WorkerSpawn)? (char*) "samsonWorker" : (char*) "samsonController";
+			
+			for (ix = 0; ix < argCount; ix++)
+				evec[ix + 1] = args[ix];
+			evec[ix + 1] = 0;
+
+			LM_M(("execvp(%s, %s, %s, %s, ...", evec[0], evec[0], evec[1], evec[2]));
+			execvp(evec[0], evec);
+			LM_X(1, ("Back from EXEC !!!"));
+		}
 		break;
 
 	default:
@@ -93,7 +148,7 @@ int main(int argC, const char *argV[])
 	paConfig("screen line format",            (void*) "TYPE: TEXT");
 	paConfig("log to file",                   (void*) true);
 
-	paParse(paArgs, argC, (char**) argV, 1, true);
+	paParse(paArgs, argC, (char**) argV, 1, false);
 
 	networkP = new ss::Network(endpoints, 0);
 	niP = networkP;

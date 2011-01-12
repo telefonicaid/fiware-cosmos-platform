@@ -63,6 +63,11 @@ namespace ss
 
 void Network::reset(int endpoints, int workers)
 {
+	if ((endpoints > 200) || (endpoints < 2))
+		LM_X(1, ("bad number of endpoints (%d)", endpoints));
+	if ((workers > 20) || (workers < 0))
+		LM_X(1, ("bad number of workers (%d)", workers));
+
 	iAmReady     = false;
 	receiver     = NULL;
 	me           = NULL;
@@ -76,7 +81,7 @@ void Network::reset(int endpoints, int workers)
 	
     endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
     if (endpoint == NULL)
-        LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
+		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
 
 	LM_M(("%d workers, %d endpoints", workers, endpoints));
 }
@@ -542,7 +547,13 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, ss::M
 			//
 			// Create sender thread
 			//
+			char alias[64];
+
+			snprintf(alias, sizeof(alias), "%sSender", ep->name.c_str());
+			LM_W(("Don't forget to remove this fictive endpoint when a real endpoint restarts ..."));
+			endpointAdd(-1, -1, "Sender", alias, 0, Endpoint::ThreadedSender, NULL, 0);
 			pthread_create(&ep->senderTid, NULL, senderThread, ep);
+			LM_W(("This usleep to be removed some day ..."));
 			usleep(1000);
 
 
@@ -727,6 +738,8 @@ Endpoint* Network::endpointAdd
 			LM_X(1, ("No temporal endpoint slots available - redefine and recompile!"));
 		break;
 
+	case Endpoint::ThreadedReader:
+	case Endpoint::ThreadedSender:
 	case Endpoint::Fd:
 	case Endpoint::Supervisor:
 	case Endpoint::Spawner:
@@ -756,7 +769,7 @@ Endpoint* Network::endpointAdd
 				endpoint[ix]->alias      = (alias != NULL)? alias : "NO ALIAS" ;
 				endpoint[ix]->rFd        = rFd;
 				endpoint[ix]->wFd        = wFd;
-				endpoint[ix]->state      = (rFd > 0)? Endpoint::Connected : Endpoint::Unconnected;   /* XXX */
+				endpoint[ix]->state      = (rFd > 0)? Endpoint::Connected : Endpoint::Unconnected;
 				endpoint[ix]->type       = type;
 				endpoint[ix]->port       = port;
 				endpoint[ix]->coreNo     = coreNo;
@@ -981,6 +994,7 @@ typedef struct MsgTreatParams
 	int               endpointId;
 	Message::Header   header;
 	Endpoint::State   state;
+	int               fd;
 } MsgTreatParams;
 
 
@@ -999,8 +1013,10 @@ static void* msgTreatThreadFunction(void* vP)
 	ep->state = paramP->state;
 
 	LM_F(("back after msgTreat - setting back state for '%s' to %d (was in 'Threaded' state while msgTreat ran)", ep->name.c_str(), ep->state));
-
+	
 	free(vP);
+	close(paramP->fd);
+
 	return NULL;
 }
 
@@ -1113,8 +1129,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	//
 	// Reading header of the message
 	//
-	//nb = read(ep->rFd, &header, sizeof(header));
-	nb = full_read(ep->rFd, &header, sizeof(header));
+	nb = full_read(ep->rFd, (char*) &header, sizeof(header));
 	
 	if (nb == -1)
 		LM_RVE(("iomMsgRead: error reading message from '%s': %s", ep->name.c_str(), strerror(errno)));
@@ -1195,12 +1210,23 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	{
 		pthread_t        tid;
 		MsgTreatParams*  paramsP = (MsgTreatParams*) malloc(sizeof(MsgTreatParams));
+		int              fdPair[2];
+		Endpoint*        newEpP;
+		char             alias[64];
+
+		if (pipe(fdPair) == -1)
+		   LM_X(1, ("pipe: %s", strerror(errno)));
+		
+		snprintf(alias, sizeof(alias), "%sTreater", ep->name.c_str());
+		newEpP = endpointAdd(fdPair[0], -1, "Reader/Treater", alias, 0, Endpoint::ThreadedReader, NULL, 0);
+		newEpP->state = Endpoint::Connected;
 
 		paramsP->diss        = this;
 		paramsP->ep          = ep;
 		paramsP->endpointId  = endpointId;
 		paramsP->header      = header;
 		paramsP->state       = ep->state;
+		paramsP->fd          = fdPair[1];   // This "write part" of the pipe is closed when the thread termnates.
 
 		ep->state = Endpoint::Threaded;
 		LM_T(LMT_MSGTREAT, ("setting state of '%s' to Threaded (%d)  old state: %d", ep->name.c_str(), ep->state, paramsP->state));
@@ -1420,8 +1446,9 @@ void Network::msgTreat(void* vP)
 		Message::HelloData*  hello;
 
 		hello   = (Message::HelloData*) dataP;
+
 		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, (ss::Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo, ep);
-	
+
 		if (helloEp == NULL)
 		{
 			endpointRemove(ep);
@@ -1854,7 +1881,7 @@ void Network::run()
 						LM_T(LMT_SELECT, ("incoming message from '%s' endpoint %s (fd %d)", endpoint[ix]->typeName(), endpoint[ix]->name.c_str(), endpoint[ix]->rFd));
 						msgPreTreat(endpoint[ix], ix);
 						if (endpoint[ix])
-						FD_CLR(endpoint[ix]->rFd, &rFds);
+							FD_CLR(endpoint[ix]->rFd, &rFds);
 					}
 				}
 			}

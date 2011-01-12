@@ -23,36 +23,39 @@
 
 
 /* ****************************************************************************
- *
- * full_read - read from a socket until completed or error
- */
-
-
-ssize_t full_read(int fildes, void *buf, size_t nbyte)
+*
+* full_read - read from a socket until completed or error
+*/
+ssize_t full_read(int fd, char* buf, ssize_t bufLen)
 {
-	
-	ssize_t total_read_bytes = 0;
-	
-	while( total_read_bytes < (ssize_t) nbyte )
-	{
-		ssize_t tmp_read_bytes = read(fildes,  (char*)buf + total_read_bytes , nbyte - total_read_bytes);
+	ssize_t  tot = 0;
 
-		if ( tmp_read_bytes < 0)
-		   return tmp_read_bytes;   // Return the error
-		else if( tmp_read_bytes == 0)
-		   return total_read_bytes; // Return the readed bytes until now
-		else
+	while (tot < bufLen)
+	{
+		ssize_t nb;
+
+		nb = read(fd, (char*) buf + tot , bufLen - tot);
+
+		if (nb == -1)
+			LM_RE(-1, ("read: %s", strerror(errno)));
+		else if (nb == 0)
 		{
-		   // Accumulate and continue reading until full
-			total_read_bytes += tmp_read_bytes;
-			//LM_M(("Full read %d --> %d of %d", tmp_read_bytes, total_read_bytes , nbyte));
+			if (tot == 0)
+			{
+				LM_T(LMT_MSG, ("read 0 bytes - connection closed"));
+				return 0;
+			}
+
+			LM_RE(0, ("last read gave 0 bytes (%d bytes read in total). Connection Closed ?", tot));
 		}
-		
+
+		tot += nb;
 	}
-	
-	return total_read_bytes;
-	
+
+	return tot;
 }
+
+
 
 /* ****************************************************************************
 *

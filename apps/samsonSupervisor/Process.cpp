@@ -52,9 +52,11 @@ Spawner* spawnerAdd(char* host, unsigned short port, int fd)
 	if (spawner[ix] == NULL)
 		LM_X(1, ("malloc: %s", strerror(errno)));
 
-	strcpy(spawner[ix]->host, host);
+	spawner[ix]->host = strdup(host);
 	spawner[ix]->port = port;
 	spawner[ix]->fd   = fd;
+
+	LM_M(("Added spawner %d@%s", spawner[ix]->port, spawner[ix]->host));
 
 	return spawner[ix];
 }
@@ -65,10 +67,12 @@ Spawner* spawnerAdd(char* host, unsigned short port, int fd)
 *
 * processAdd - 
 */
-Process* processAdd(char* name, char* host, unsigned short port, char** args, int argCount)
+Process* processAdd(char* name, char* host, char** args, int argCount)
 {
 	unsigned int  ix = 0;
 	int           argIx;
+
+	LM_M(("Adding process '%s' in host '%s' (and with %d args)", name, host, argCount));
 
 	while ((process[ix] != NULL) && (ix < sizeof(process) / sizeof(process[0])))
 		++ix;
@@ -79,16 +83,20 @@ Process* processAdd(char* name, char* host, unsigned short port, char** args, in
 	if (process[ix] == NULL)
 		LM_X(1, ("malloc: %s", strerror(errno)));
 
-	strcpy(process[ix]->name, name);
-	strcpy(process[ix]->host, host);
-	process[ix]->port = port;
+	process[ix]->name = strdup(name);
+	process[ix]->host = strdup(host);
 	
 	process[ix]->argCount = argCount;
+	argIx = 0;
 	while (argIx < argCount)
 	{
+		LM_M(("Copying arg %d", argIx));
 		process[ix]->arg[argIx] = strdup(args[argIx]);
+		LM_M(("arg[%d]: '%s'", argIx, process[ix]->arg[argIx]));
 		++argIx;
 	}
+
+	LM_M(("Added process %d ('%s') in host '%s'", ix, process[ix]->name, process[ix]->host));
 
 	return process[ix];
 }
@@ -119,9 +127,54 @@ Spawner* spawnerGet(char* host)
 
 	while (ix < sizeof(spawner) / sizeof(spawner[0]))
 	{
-		if (strcmp(spawner[ix]->host, host) == 0)
-			return spawner[ix];
+		if (spawner[ix] != NULL)
+		{
+			LM_M(("[%d] Comparing '%s' ...", ix, host));
+			LM_M(("... to '%s'", spawner[ix]->host));
+			if (strcmp(spawner[ix]->host, host) == 0)
+				return spawner[ix];
+		}
+
+		++ix;
 	}
 
 	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* processList - 
+*/
+void processList(void)
+{
+	unsigned int ix;
+
+	for (ix = 0; ix < sizeof(process) / sizeof(process[0]); ix++)
+	{
+		if (process[ix] == NULL)
+			continue;
+
+		LM_F(("process %02d: %-20s %-20s   %d args", ix, process[ix]->name, process[ix]->host, process[ix]->argCount));
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* spawnerList - 
+*/
+void spawnerList(void)
+{
+	unsigned int ix;
+
+	for (ix = 0; ix < sizeof(spawner) / sizeof(spawner[0]); ix++)
+	{
+		if (spawner[ix] == NULL)
+			continue;
+
+		LM_F(("spawner %02d: %-20s %05d", ix, spawner[ix]->host, spawner[ix]->port));
+	}
 }

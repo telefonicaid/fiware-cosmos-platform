@@ -10,7 +10,7 @@
 #include <string.h>             // memset, strcpy, ...
 
 #include "logMsg.h"             // LM_*
-#include "Process.h"            // Own interface
+#include "Spawner.h"            // Own interface
 
 
 
@@ -35,6 +35,34 @@ void spawnerInit(void)
 
 /* ****************************************************************************
 *
+* spawnerListGet - 
+*/
+Spawner** spawnerListGet(int* noOfP)
+{
+	unsigned int  ix;
+	int           count = 0;
+
+	LM_M(("getting spawners"));
+
+	for (ix = 0; ix < sizeof(spawner) / sizeof(spawner[0]); ix++)
+	{
+		if (spawner[ix] == NULL)
+			continue;
+
+		++count;
+		LM_M(("we have %d spawners ...", count));
+	}
+
+	*noOfP = count;
+	LM_M(("We have %d spawners ...", *noOfP));
+
+	return spawner;
+}
+
+
+
+/* ****************************************************************************
+*
 * spawnerAdd - 
 */
 Spawner* spawnerAdd(char* host, unsigned short port, int fd)
@@ -43,6 +71,7 @@ Spawner* spawnerAdd(char* host, unsigned short port, int fd)
 
 	while ((spawner[ix] != NULL) && (ix < sizeof(spawner) / sizeof(spawner[0])))
 		++ix;
+
 	if (ix >= sizeof(spawner) / sizeof(spawner[0]))
 		LM_X(1, ("No room for more Spawners - change and recompile!"));
 
@@ -102,4 +131,29 @@ void spawnerList(void)
 
 		LM_F(("spawner %02d: %-20s %05d", ix, spawner[ix]->host, spawner[ix]->port));
 	}
+}
+
+
+
+/* ****************************************************************************
+*
+* spawnerGet - 
+*/
+Spawner* spawnerGet(unsigned int ix)
+{
+	if (ix > sizeof(spawner) / sizeof(spawner[0]))
+		LM_X(1, ("petition for spawner %d (max spawner id is %d)", sizeof(spawner) / sizeof(spawner[0])));
+
+	return spawner[ix];
+}
+
+
+
+/* ****************************************************************************
+*
+* spawnersMax - 
+*/
+int spawnersMax(void)
+{
+	return sizeof(spawner) / sizeof(spawner[0]);
 }

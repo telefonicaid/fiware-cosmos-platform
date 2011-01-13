@@ -10,6 +10,7 @@
 #include <string.h>             // memset, strcpy, ...
 
 #include "logMsg.h"             // LM_*
+#include "ports.h"              // SPAWNER_PORT
 #include "Process.h"            // Own interface
 
 
@@ -41,6 +42,7 @@ Process* processAdd(char* name, char* host, char** args, int argCount)
 {
 	unsigned int  ix = 0;
 	int           argIx;
+	Spawner*      spawnerP;
 
 	LM_M(("Adding process '%s' in host '%s' (and with %d args)", name, host, argCount));
 
@@ -68,6 +70,16 @@ Process* processAdd(char* name, char* host, char** args, int argCount)
 
 	LM_M(("Added process %d ('%s') in host '%s'", ix, process[ix]->name, process[ix]->host));
 
+	spawnerP = spawnerGet(process[ix]->host);
+	if (spawnerP == NULL)
+	{
+		spawnerP = spawnerAdd(process[ix]->host, SPAWNER_PORT, -1);
+		if (spawnerP == NULL)
+			LM_X(1, ("Error creating spawner for host '%s'", process[ix]->host));
+	}
+
+	process[ix]->spawner = spawnerP;
+
 	return process[ix];
 }
 
@@ -89,6 +101,17 @@ Process* processGet(unsigned int ix)
 
 /* ****************************************************************************
 *
+* processesMax - 
+*/
+int processesMax(void)
+{
+	return sizeof(process) / sizeof(process[0]);
+}
+
+
+
+/* ****************************************************************************
+*
 * processList - 
 */
 void processList(void)
@@ -102,4 +125,31 @@ void processList(void)
 
 		LM_F(("process %02d: %-20s %-20s   %d args", ix, process[ix]->name, process[ix]->host, process[ix]->argCount));
 	}
+}
+
+
+/* ****************************************************************************
+*
+* processListGet - 
+*/
+Process** processListGet(int* noOfP)
+{
+	unsigned int  ix;
+	int           count = 0;
+
+	LM_M(("getting processes"));
+
+	for (ix = 0; ix < sizeof(process) / sizeof(process[0]); ix++)
+	{
+		if (process[ix] == NULL)
+			continue;
+
+		++count;
+		LM_M(("we have %d processes ...", count));
+	}
+
+	*noOfP = count;
+	LM_M(("We have %d processes ...", *noOfP));
+
+	return process;
 }

@@ -44,8 +44,32 @@ extern Spawner* spawnerGet(char* host);
 
 /* ****************************************************************************
 *
+* spawnerGet - 
+*/
+extern Spawner* spawnerGet(unsigned int ix);
+
+
+
+/* ****************************************************************************
+*
 * spawnerList - 
 */
 extern void spawnerList(void);
+
+
+
+/* ****************************************************************************
+*
+* spawnerListGet - 
+*/
+extern Spawner** spawnerListGet(int* noOfP);
+
+
+
+/* ****************************************************************************
+*
+* spawnersMax - 
+*/
+extern int spawnersMax(void);
 
 #endif

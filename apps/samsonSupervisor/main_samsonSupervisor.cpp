@@ -105,7 +105,11 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 			break;
 
 		case 'c':
-			connectToSpawners();
+			connectToAllSpawners();
+			break;
+
+		case 'p':
+			startAllProcesses();
 			break;
 
 		case 's':
@@ -407,7 +411,7 @@ int main(int argC, const char *argV[])
 		qtRun(argC, argV);
 	}
 	else
-	   networkP->run();
+		networkP->run();
 
 	return 0;
 }

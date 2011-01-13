@@ -56,6 +56,29 @@ void qtRun(int argC, const char* argV[])
 
 	ButtonActions ba(&window);
 
+
+	//
+	// Spawner List
+	//
+	int        noOfSpawners;
+	Spawner**  spawnerVec;
+
+	spawnerVec = spawnerListGet(&noOfSpawners);
+
+	ba.spawnerListCreate(spawnerVec, noOfSpawners);
+
+
+
+	//
+    // Process List
+    //
+	int        noOfProcesses;
+	Process**  processVec;
+
+	processVec = processListGet(&noOfProcesses);
+
+	ba.processListCreate(processVec, noOfProcesses);
+
 	window.show();
 
 	app.exec();

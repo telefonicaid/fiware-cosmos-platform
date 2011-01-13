@@ -102,56 +102,130 @@ void start(void)
 
 /* ****************************************************************************
 *
-* connectToSpawners - 
+* spawnerConnect - connect to spawner
 */
-void connectToSpawners()
+void spawnerConnect(Spawner* sP)
 {
-	int            ix = 0;
-	Process*       p;
-	Spawner*       s;
+	LM_M(("connecting to spawner in %s on port %d", sP->host, sP->port));
 
-	while (1)
+	sP->fd = iomConnect(sP->host, sP->port);
+	if (sP->fd == -1)
+		LM_X(1, ("error connecting to spawner in host '%s', port %d", sP->host, sP->port));
+
+	ss::Endpoint*  ep;
+
+	LM_M(("Calling endpointAdd for spawner '%s'", sP->host));
+	ep = networkP->endpointAdd(sP->fd,
+							   sP->fd,
+							   "Spawner",
+							   NULL,
+							   0,
+							   ss::Endpoint::Temporal,
+							   std::string(sP->host),
+							   sP->port);
+}
+
+
+
+/* ****************************************************************************
+*
+* connectToAllSpawners - 
+*/
+void connectToAllSpawners(void)
+{
+	int ix = 0;
+
+	for (ix = 0; ix < spawnersMax(); ix++)
 	{
-		int fd;
+		Spawner* sP;
 
-		p = processGet(ix++);
-		if (p == NULL)
-		{
-			LM_M(("Connected to all spawners"));
-			return;
-		}
-		
-		if ((s = spawnerGet(p->host)) != NULL)
-		{
-			p->spawner = s;
-			LM_M(("process %d - already connected to spawner in host '%s'", ix, p->host));
+		if ((sP = spawnerGet(ix)) == NULL)
 			continue;
-		}
 
-		LM_M(("connecting to spawner %d in %s on port %d", ix, p->host, SPAWNER_PORT));
-		fd = iomConnect(p->host, SPAWNER_PORT);
-		if (fd == -1)
-			LM_X(1, ("error connecting to spawner in host '%s', port %d", p->host, SPAWNER_PORT));
-
-		p->spawner = spawnerAdd(p->host, SPAWNER_PORT, fd);
-
-		ss::Endpoint*  ep;
-
-		LM_M(("Calling endpointAdd for spawner '%s'", p->host));
-		ep = networkP->endpointAdd(fd,
-								   fd,
-								   "Spawner",
-								   NULL,
-								   0,
-								   ss::Endpoint::Temporal,
-								   std::string(p->host),
-								   1233);
-
-#if 0
-		networkP->helloSend(ep, ss::Message::Msg);
-#endif
+		spawnerConnect(sP);
 	}
 }
 
 
 
+/* ****************************************************************************
+*
+* spawnerDisconnect - disconnect from spawner
+*/
+void spawnerDisconnect(Spawner* spawnerP)
+{
+	close(spawnerP->fd);
+	// select loop will do the rest ... ?
+}
+
+
+
+/* ****************************************************************************
+*
+* processStart - start to process
+*/
+void processStart(Process* processP)
+{
+	ss::Message::SpawnData  spawnData;
+	int                     ix;
+	char*                   end;
+	int                     s;
+
+	LM_M(("starting process '%s' in '%s' with %d parameters", processP->name, processP->host, processP->argCount));
+
+	spawnData.argCount = processP->argCount;
+	strcpy(spawnData.name, processP->name);
+	memset(spawnData.args, sizeof(spawnData.args), 0);
+
+	end = spawnData.args;
+	for (ix = 0; ix < processP->argCount; ix++)
+	{
+		strcpy(end, processP->arg[ix]);
+		LM_M(("parameter %d: '%s'", ix, end));
+		end += strlen(processP->arg[ix]) + 1; // leave one ZERO character
+	}
+	*end = 0;
+
+	if (strcmp(spawnData.name, "Controller") == 0)
+		s = iomMsgSend(processP->spawner->fd, processP->spawner->host, "samsonSupervisor", ss::Message::ControllerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
+	else if (strcmp(spawnData.name, "Worker") == 0)
+		s = iomMsgSend(processP->spawner->fd, processP->spawner->host, "samsonSupervisor", ss::Message::WorkerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
+	if (s != 0)
+		LM_E(("iomMsgSend: error %d", s));
+
+	LM_M(("started process '%s' in '%s')", processP->name, processP->host));
+}
+
+
+
+/* ****************************************************************************
+*
+* startAllProcesses - 
+*/
+void startAllProcesses(void)
+{
+	int ix = 0;
+
+	for (ix = 0; ix < processesMax(); ix++)
+	{
+		Process* sP;
+
+		if ((sP = processGet(ix)) == NULL)
+			continue;
+
+		processStart(sP);
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* processKill - kill a process
+*/
+void processKill(Process* processP)
+{
+	int s;
+
+	s = iomMsgSend(processP->spawner->fd, processP->spawner->host, "samsonSupervisor", ss::Message::Die, ss::Message::Msg);
+}

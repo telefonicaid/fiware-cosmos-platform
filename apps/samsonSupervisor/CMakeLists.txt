@@ -9,10 +9,12 @@ SET (SOURCES
 	qt.cpp
 	ButtonActions.cpp
 	actions.cpp
+	Starter.cpp
 )
 
 SET (HEADERS_MOC
 	ButtonActions.h
+	Starter.h
 )
 
 SET (HEADERS

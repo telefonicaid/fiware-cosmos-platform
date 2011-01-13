@@ -51,4 +51,20 @@ extern Process* processGet(unsigned int ix);
 */
 extern void processList(void);
 
+
+
+/* ****************************************************************************
+*
+* processListGet - 
+*/
+extern Process** processListGet(int* noOfP);
+
+
+
+/* ****************************************************************************
+*
+* processesMax -
+*/
+extern int processesMax(void);
+
 #endif

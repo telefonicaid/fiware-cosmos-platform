@@ -10,6 +10,8 @@
 * CREATION DATE            Jan 13 2011
 *
 */
+#include "Spawner.h"            // Spawner
+#include "Process.h"            // Process
 
 
 
@@ -31,16 +33,56 @@ extern void list(void);
 
 /* ****************************************************************************
 *
-* connectToSpawners - 
+* start - 
 */
-extern void connectToSpawners(void);
+extern void start(void);
 
 
 
 /* ****************************************************************************
 *
-* start - 
+* connectToAllSpawners - 
 */
-extern void start(void);
+extern void connectToAllSpawners(void);
+
+
+
+/* ****************************************************************************
+*
+* spawnerConnect - connect to spawner
+*/
+extern void spawnerConnect(Spawner* spawner);
+
+
+
+/* ****************************************************************************
+*
+* spawnerDisconnect - disconnect from spawner
+*/
+extern void spawnerDisconnect(Spawner* spawner);
+
+
+
+/* ****************************************************************************
+*
+* startAllProcesses - 
+*/
+extern void startAllProcesses(void);
+
+
+
+/* ****************************************************************************
+*
+* processStart - start to process
+*/
+extern void processStart(Process* process);
+
+
+
+/* ****************************************************************************
+*
+* processKill - kill a process
+*/
+extern void processKill(Process* process);
 
 #endif

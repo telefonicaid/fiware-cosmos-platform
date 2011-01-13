@@ -12,6 +12,11 @@
 */
 #include <QObject>
 #include <QPushButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+
+#include "Spawner.h"            // Spawner
+#include "Process.h"            // Process
 
 
 
@@ -25,6 +30,8 @@ class ButtonActions : public QWidget
 
 public:
 	ButtonActions(QWidget* parent = 0);
+	void spawnerListCreate(Spawner** spawnerV, int spawners);
+	void processListCreate(Process** processV, int processes);
 
 private slots:
     void connect();
@@ -32,9 +39,16 @@ private slots:
     void quit();
 
 private:
-	QPushButton* quitButton;
-	QPushButton* connectButton;
-	QPushButton* startButton;
+	QWidget*      win;
+	QHBoxLayout*  layout;
+
+	QVBoxLayout*  buttonLayout;
+	QVBoxLayout*  spawnerListLayout;
+	QVBoxLayout*  processListLayout;
+
+	QPushButton*  quitButton;
+	QPushButton*  connectButton;
+	QPushButton*  startButton;
 };
 
 #endif

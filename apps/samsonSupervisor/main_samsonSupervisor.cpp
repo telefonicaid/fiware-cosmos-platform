@@ -7,6 +7,8 @@
 * CREATION DATE            Dec 14 2010
 *
 */
+#include <stdlib.h>             // atoi
+
 #include "baTerm.h"             // baTermSetup
 #include "logMsg.h"             // LM_*
 #include "parseArgs.h"          // parseArgs
@@ -17,6 +19,7 @@
 #include "Process.h"            // Process, processAdd, ...
 #include "Spawner.h"            // Spawner, spawnerAdd, ...
 #include "qt.h"                 // qtRun, ...
+#include "iomConnect.h"         // iomConnect
 #include "actions.h"            // help, list, start, ...
 
 
@@ -28,6 +31,7 @@ class SamsonSupervisor;
 */
 ss::Network*       networkP     = NULL;
 SamsonSupervisor*  supervisorP  = NULL;
+ss::Endpoint*      controller   = NULL;
 
 
 
@@ -36,21 +40,24 @@ SamsonSupervisor*  supervisorP  = NULL;
 * Option variables
 */
 int     endpoints;
+char    controllerName[80];
 char    cfPath[80];
 bool    qt;
 
 
 
-#define CFP (long int) "/opt/samson/etc/platformProcesses"
+#define CFP (long int)  "/opt/samson/etc/platformProcesses"
+#define NOC  (long int) "no controller"
 /* ****************************************************************************
 *
 * Parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-endpoints", &endpoints, "ENDPOINTS", PaInt,  PaOpt,   20,     3,  100, "number of endpoints" },
-	{ "-config",    &cfPath,    "CF_FILE",   PaStr,  PaOpt,  CFP,  PaNL, PaNL, "path to config file" },
-	{ "-qt",        &qt,        "QT",        PaBool, PaOpt, true, false, true, "graphical"           },
+	{ "-controller",  controllerName,  "CONTROLLER",  PaString,  PaOpt,   NOC,  PaNL,   PaNL,  "controller IP:port"  },
+	{ "-endpoints",   &endpoints,      "ENDPOINTS",   PaInt,     PaOpt,    20,     3,    100,  "number of endpoints" },
+	{ "-config",      &cfPath,         "CF_FILE",     PaStr,     PaOpt,   CFP,  PaNL,   PaNL,  "path to config file" },
+	{ "-qt",          &qt,             "QT",          PaBool,    PaOpt,  true, false,   true,  "graphical"           },
 
 	PA_END_OF_ARGS
 };
@@ -395,13 +402,20 @@ int main(int argC, const char *argV[])
 
 	networkP = new ss::Network(endpoints, 0);
 
-	networkP->init(ss::Endpoint::Supervisor, NULL, 0, NULL);
+	networkP->init(ss::Endpoint::Supervisor, "supervisor", 0, controllerName);
 	supervisorP = new SamsonSupervisor(networkP);
 
 	networkP->setDataReceiver(supervisorP);
 
 	baTermSetup();
 	networkP->fdSet(0, "stdin", "stdin");
+
+	if (networkP->controller != NULL)
+	{
+		LM_M(("Connected to controller - Send workerVector message !"));
+		// Send workerVector message to controller and then
+		// connect to all Workers and update ProcessList
+	}
 
 	if (qt)
 	{

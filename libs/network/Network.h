@@ -104,10 +104,11 @@ public:
 
 	int          helloSend(Endpoint* ep, Message::MessageType type);
 
+	Endpoint*    controller;
+
 private:
 	Endpoint*    me;
 	Endpoint*    listener;
-	Endpoint*    controller;
 	Endpoint*    ME;
 
 	bool         iAmReady;

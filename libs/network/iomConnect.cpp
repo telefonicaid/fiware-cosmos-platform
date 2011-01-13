@@ -7,6 +7,7 @@
 * CREATION DATE            Oct 11 2010
 *
 */
+#include <unistd.h>             // close
 #include <sys/types.h>          // types needed by socket include files
 #include <sys/socket.h>         // socket, bind, listen
 #include <sys/un.h>             // sockaddr_un

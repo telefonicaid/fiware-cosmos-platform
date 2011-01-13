@@ -7,6 +7,8 @@
 #include "DiskManager.h"		// ss::DiskManager
 #include "FileManager.h"		// ss::FileManager
 
+
+
 /* ****************************************************************************
 *
 * Option variables
@@ -19,6 +21,8 @@ char             alias[36];
 bool             noLog;
 bool             local;
 char			 workingDir[1024]; 	
+
+
 
 #define S01 (long int) "samson01:1234"
 /* ****************************************************************************

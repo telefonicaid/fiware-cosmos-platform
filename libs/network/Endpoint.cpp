@@ -46,11 +46,11 @@ void Endpoint::init(void)
 	this->msgsOutErrors    = 0;
 	this->bytesIn          = 0;
 	this->bytesOut         = 0;
-	this->rMbps             = 0;   // Bytes per second in last read transfer
-	this->rAccMbps          = 0;   // Bytes per second in all read transfers
+	this->rMbps            = 0;   // Bytes per second in last read transfer
+	this->rAccMbps         = 0;   // Bytes per second in all read transfers
 	this->reads            = 0;   // Number of reads accounted for in 'accMbps'
-	this->wMbps             = 0;   // Bytes per second in last write transfer
-	this->wAccMbps          = 0;   // Bytes per second in all write transfers
+	this->wMbps            = 0;   // Bytes per second in last write transfer
+	this->wAccMbps         = 0;   // Bytes per second in all write transfers
 	this->writes           = 0;   // Number of writes accounted for in 'wAccMbps'
 
 	hostnameGet();

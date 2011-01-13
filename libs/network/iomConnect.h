@@ -10,8 +10,6 @@
 * CREATION DATE            Oct 11 2010
 *
 */
-#include <vector>               // vector
-#include "Endpoint.h"			// Endpoint
 
 
 

@@ -83,7 +83,7 @@ void Network::reset(int endpoints, int workers)
     if (endpoint == NULL)
 		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
 
-	LM_M(("%d workers, %d endpoints", workers, endpoints));
+	LM_M(("Allocated room for %d endpoints (%d workers)", endpoints, workers));
 }
 
 
@@ -182,7 +182,7 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 		LM_T(LMT_FDS, ("opened fd %d to accept incoming connections", listener->rFd));
 	}
 
-	if ((type == Endpoint::Worker) || (type == Endpoint::Delilah))
+	if ((type == Endpoint::Worker) || (type == Endpoint::Delilah) || (type == Endpoint::Supervisor))
 	{
 		endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
 		if (endpoint[2] == NULL)
@@ -673,6 +673,12 @@ Endpoint* Network::endpointAdd
 		return NULL;
 
 	case Endpoint::Controller:
+		if (endpoint[2] == NULL)
+		{
+			LM_M(("Allocating room for Controller endpoint"));
+			endpoint[2] = new Endpoint();
+		}
+
 		if (inheritedFrom != NULL)
 		{
 			endpoint[2]->msgsIn         = inheritedFrom->msgsIn;
@@ -1861,6 +1867,7 @@ void Network::run()
 					Endpoint*    ep  = endpointAdd(fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
 
 					listener->msgsIn += 1;
+					LM_M(("sending hello to newly accepted endpoint"));
 					helloSend(ep, Message::Msg);
 				}
 			}

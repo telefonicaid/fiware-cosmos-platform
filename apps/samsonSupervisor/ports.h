@@ -17,6 +17,8 @@
 *
 * SPAWNER_PORT - 
 */
-#define SPAWNER_PORT 1233
+#define SPAWNER_PORT      1233
+#define CONTROLLER_PORT   1234
+#define WORKER_PORT       1235
 
 #endif

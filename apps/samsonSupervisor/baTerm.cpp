@@ -8,7 +8,6 @@
 #include <termio.h>            /* termio ...                                 */
 #include <errno.h>             /* errno                                      */
 
-#include "baStd.h"             /* BA_USE_LIB_ID, ...                         */
 #include "baTerm.h"            /* Own interface                              */
 
 

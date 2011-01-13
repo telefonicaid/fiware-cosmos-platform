@@ -10,19 +10,7 @@
 * CREATION DATE            Jan 07 2011
 *
 */
-
-
-
-/* ****************************************************************************
-*
-* Host - 
-*/
-typedef struct Spawner
-{
-	char*            host;
-	unsigned short   port;
-	int              fd;
-} Spawner;
+#include "Spawner.h"            // Spawner
 
 
 
@@ -38,14 +26,6 @@ typedef struct Process
 	int              argCount;
 	char*            arg[20];
 } Process;
-
-
-
-/* ****************************************************************************
-*
-* spawnerAdd - 
-*/
-extern Spawner* spawnerAdd(char* host, unsigned short port, int fd);
 
 
 
@@ -67,24 +47,8 @@ extern Process* processGet(unsigned int ix);
 
 /* ****************************************************************************
 *
-* spawnerGet - 
-*/
-extern Spawner* spawnerGet(char* host);
-
-
-
-/* ****************************************************************************
-*
 * processList - 
 */
 extern void processList(void);
-
-
-
-/* ****************************************************************************
-*
-* spawnerList - 
-*/
-extern void spawnerList(void);
 
 #endif

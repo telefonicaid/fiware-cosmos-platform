@@ -23,7 +23,7 @@ int              endpoints;
 */
 PaArgument paArgs[] =
 {
-	{ "-port",       &port,        "PORT",        PaShortU,  PaReq,  PaND,   1025,  65000,  "listen port"         },
+	{ "-port",       &port,        "PORT",        PaShortU,  PaOpt,  1233,   1025,  65000,  "listen port"         },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    20,      3,    100,  "number of endpoints" },
 
 	PA_END_OF_ARGS

@@ -60,7 +60,7 @@ private:
 *
 * spawnParse - 
 */
-void spawnParse(ss::Message::SpawnData* spawnData, char** args, int* argCountP)
+void spawnParse(ss::Message::SpawnData* spawnData, char** args, int argCount)
 {
 	int    arg = 0;
 	char*  end;
@@ -72,11 +72,16 @@ void spawnParse(ss::Message::SpawnData* spawnData, char** args, int* argCountP)
 			break;
 
 		args[arg] = end;
+		LM_M(("arg %d: '%s'", arg, args[arg]));
 		end = end + strlen(args[arg]) + 1;
 		++arg;
-	}
 
-	*argCountP = arg;
+		if (arg == argCount)
+		{
+			args[arg] = NULL;
+			break;
+		}
+	}
 }
 
 
@@ -89,6 +94,7 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 {
 	char*  args[20];
 	int    argCount;
+	ss::Message::SpawnData* spawnData;
 
 	switch (headerP->code)
 	{
@@ -97,10 +103,11 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 		pid_t  pid;
 		char*  evec[21];
 
+		spawnData = (ss::Message::SpawnData*) dataP;
+		argCount = spawnData->argCount;
+		LM_M(("Got a '%s' spawn message (with %d parameters)", ss::Message::messageCode(headerP->code), argCount));
 
-		LM_M(("Got a '%s' message.", ss::Message::messageCode(headerP->code)));
-		spawnParse((ss::Message::SpawnData*) dataP, args, &argCount);
-
+		spawnParse(spawnData, args, argCount);
 		LM_M(("Spawning %s with %d parameters:", (headerP->code == ss::Message::WorkerSpawn)? "samsonWorker" : "samsonController", argCount));
 		for (int ix = 0; ix < argCount; ix++)
 			LM_M(("o '%s'", args[ix]));

@@ -43,6 +43,19 @@ public:
 
 /* ****************************************************************************
 *
+* EndpointUpdateInterface - 
+*/
+class EndpointUpdateInterface
+{
+public:
+	virtual int endpointUpdate(Endpoint* ep) = 0;
+	virtual     ~EndpointUpdateInterface() {};
+};
+
+
+
+/* ****************************************************************************
+*
 * PacketReceiverInterface - 
 */
 class PacketReceiverInterface
@@ -59,7 +72,7 @@ public:
 		return receive(fromId, msgCode, packet);
 	}
 
-virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet) = 0;
+	virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet) = 0;
 	
 	
 	// Notify that a worker has died 
@@ -114,9 +127,10 @@ public:
 		virtual void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL) {};
 		virtual void initAsSamsonController(int port, int num_workers)=0;
 
-		// Set the receiver element ( this should be notified about the packaked )
+		// Set the receiver element (this should be notified about the package)
 		virtual void setPacketReceiverInterface( PacketReceiverInterface* receiver) = 0;
-		virtual void setDataReceiverInterface(DataReceiverInterface* receiver)      { LM_X(1, ("Please implement setDataReceiverInterface")); };
+		virtual void setDataReceiverInterface(DataReceiverInterface* receiver)                { LM_X(1, ("Please implement setDataReceiverInterface")); };
+		virtual void setEndpointUpdateInterface(EndpointUpdateInterface* epReceiver)          { LM_X(1, ("Please implement setEndpointUpdateInterface")); };
 
 		// Get identifiers of known elements
 		virtual int controllerGetIdentifier()=0;		// Get the identifier of the controller

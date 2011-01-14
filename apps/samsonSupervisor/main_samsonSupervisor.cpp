@@ -76,12 +76,13 @@ int logFd = -1;
 *
 * SamsonSupervisor - 
 */
-class SamsonSupervisor : public ss::DataReceiverInterface
+class SamsonSupervisor : public ss::DataReceiverInterface, ss::EndpointUpdateInterface
 {
 public:
 	SamsonSupervisor(ss::Network* nwP) { networkP = nwP; }
 
 	virtual int receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
+	virtual int endpointUpdate(ss::Endpoint* ep);
 
 private:
 	ss::Network*    networkP;
@@ -155,6 +156,19 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 	default:
 		LM_X(1, ("Don't know how to treat '%s' message", ss::Message::messageCode(headerP->code)));
 	}
+
+	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* SamsonSupervisor::endpointUpdate - 
+*/
+int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep)
+{
+	LM_M(("Got an update notification for endpoint '%s' at '%s'", ep->name.c_str(), ep->ip.c_str()));
 
 	return 0;
 }
@@ -410,7 +424,7 @@ int main(int argC, const char *argV[])
 	baTermSetup();
 	networkP->fdSet(0, "stdin", "stdin");
 
-	if (networkP->controller != NULL)
+	if ((networkP->controller != NULL) && (networkP->controller->state == ss::Endpoint::Connected))
 	{
 		LM_M(("Connected to controller - Send workerVector message !"));
 		// Send workerVector message to controller and then

@@ -68,17 +68,20 @@ void Network::reset(int endpoints, int workers)
 	if ((workers > 20) || (workers < 0))
 		LM_X(1, ("bad number of workers (%d)", workers));
 
-	iAmReady     = false;
-	receiver     = NULL;
-	me           = NULL;
-	listener     = NULL;
-	controller   = NULL;
-	tmoSecs      = 0;
-	tmoUsecs     = 50000;
+	receiver               = NULL;
+	dataReceiver           = NULL;
+	endpointUpdateReceiver = NULL;
 
-	Endpoints    = endpoints;
-	Workers      = workers;
-	
+	iAmReady               = false;
+	me                     = NULL;
+	listener               = NULL;
+	controller             = NULL;
+	tmoSecs                = 0;
+	tmoUsecs               = 50000;
+
+	Endpoints              = endpoints;
+	Workers                = workers;
+
     endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
     if (endpoint == NULL)
 		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
@@ -132,6 +135,18 @@ void Network::setDataReceiver(DataReceiverInterface* _receiver)
 	dataReceiver = _receiver;
 }
 
+
+
+/* ****************************************************************************
+*
+* setEndpointUpdateInterface - 
+*/
+void Network::setEndpointUpdateInterface(EndpointUpdateInterface* epReceiver)
+{
+	LM_T(LMT_DELILAH, ("Setting endpoint update receiver to %p", epReceiver));
+	endpointUpdateReceiver = epReceiver;
+}
+	
 
 
 /* ****************************************************************************
@@ -191,10 +206,15 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 
 		controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
 		if (controller->rFd == -1)
-			LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
-
-		controller->wFd   = controller->rFd;
-		controller->state = ss::Endpoint::Connected;
+		{
+			if (me->type != Endpoint::Supervisor)
+				LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
+		}
+		else
+		{
+			controller->wFd   = controller->rFd;
+			controller->state = ss::Endpoint::Connected;
+		}
 	}
 	else
 	{
@@ -707,6 +727,9 @@ Endpoint* Network::endpointAdd
 			LM_T(LMT_FORWARD, ("Delilah controller endpoint uses SenderThread"));
 		}
 
+		if (endpointUpdateReceiver != NULL)
+			endpointUpdateReceiver->endpointUpdate(endpoint[2]);
+
 		return controller;
 
 	case Endpoint::Temporal:
@@ -868,6 +891,9 @@ Endpoint* Network::endpointAdd
 
 				LM_T(LMT_JOB, ("worker '%s' connected - any pending messages for him? (jobQueueHead at %p)", endpoint[ix]->alias.c_str(),  endpoint[ix]->jobQueueHead));
 				
+				if (endpointUpdateReceiver != NULL)
+					endpointUpdateReceiver->endpointUpdate(endpoint[ix]);
+
 				return endpoint[ix];
 			}
 		}
@@ -909,13 +935,21 @@ void Network::endpointRemove(Endpoint* ep)
 				ep->wFd   = -1;
 				ep->state = Endpoint::Disconnected;
 				ep->name  = std::string("To be a worker");
+
+				if (endpointUpdateReceiver != NULL)
+					endpointUpdateReceiver->endpointUpdate(ep);
 			}
 			else if (ep->type == Endpoint::Controller)
 			{
 				LM_W(("NOT removing Controller"));
+				if (endpointUpdateReceiver != NULL)
+					endpointUpdateReceiver->endpointUpdate(ep);
 			}
 			else
 			{
+				if (endpointUpdateReceiver != NULL)
+					endpointUpdateReceiver->endpointUpdate(ep);
+
 				delete ep;
 				endpoint[ix] = NULL;
 			}
@@ -1166,6 +1200,9 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 			controller->rFd    = -1;
 			controller->state = ss::Endpoint::Disconnected;
 
+			if (endpointUpdateReceiver != NULL)
+				endpointUpdateReceiver->endpointUpdate(controller);
+
 			while (controller->rFd == -1)
 			{
 				controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
@@ -1174,6 +1211,9 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 			controller->state = ss::Endpoint::Connected;
 			controller->wFd   = controller->rFd;
+
+			if (endpointUpdateReceiver != NULL)
+				endpointUpdateReceiver->endpointUpdate(controller);
 		}
 		else if (ep != NULL)
 		{
@@ -1189,6 +1229,9 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 				ep->rFd   = -1;
 				ep->wFd   = -1;
 				ep->name  = "-----";
+
+				if (endpointUpdateReceiver != NULL)
+					endpointUpdateReceiver->endpointUpdate(ep);
 			}
 			else if (ep->type == Endpoint::CoreWorker)
 				LM_X(1, ("should get no messages from core worker ..."));

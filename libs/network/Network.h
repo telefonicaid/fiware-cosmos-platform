@@ -49,9 +49,11 @@ public:
 
 	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);
 	virtual void setDataReceiver(DataReceiverInterface* receiver);
+	virtual void setEndpointUpdateInterface(EndpointUpdateInterface* epReceiver);
 
 	PacketReceiverInterface*   receiver;
 	DataReceiverInterface*     dataReceiver;
+	EndpointUpdateInterface*   endpointUpdateReceiver;
 
 	virtual void   initAsSamsonController(int port, int num_workers);
 	void           fdSet(int fd, const char* name, const char* alias);

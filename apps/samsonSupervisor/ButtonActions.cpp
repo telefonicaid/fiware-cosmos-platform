@@ -25,41 +25,16 @@
 *
 * ButtonActions::ButtonActions
 */
-ButtonActions::ButtonActions(QWidget* window) : QWidget(window)
+ButtonActions::ButtonActions(QVBoxLayout* mainLayout, QWidget* window) : QWidget(window)
 {
 	win                = window;
-	layout             = new QHBoxLayout(window);
 	spawnerListLayout  = new QVBoxLayout();
 	processListLayout  = new QVBoxLayout();
 	buttonLayout       = new QVBoxLayout();
 
-	layout->addLayout(spawnerListLayout);
-	layout->addLayout(processListLayout);
-	layout->addLayout(buttonLayout);
-
-	// Connect Button
-	connectButton = new QPushButton("Connect");
-	connectButton->connect(connectButton, SIGNAL(clicked()), this, SLOT(connect()));
-	buttonLayout->addWidget(connectButton);
-
-	// Start Button
-	startButton = new QPushButton("Start");
-	startButton->connect(startButton, SIGNAL(clicked()), this, SLOT(start()));
-	buttonLayout->addWidget(startButton);
-
-	// Quit Button
-	quitButton = new QPushButton("Quit");
-	quitButton->connect(quitButton, SIGNAL(clicked()), this, SLOT(quit()));
-	buttonLayout->addWidget(quitButton);
-
-	QLabel* spawnersLabel = new QLabel("Spawners");
-	spawnerListLayout->addWidget(spawnersLabel);
-
-	// spawnersLayout->setSpacing(10);
-	// setLayout(layout);
-
-	QLabel* processLabel = new QLabel("Processes");
-    processListLayout->addWidget(processLabel);
+	mainLayout->addLayout(spawnerListLayout);
+	mainLayout->addLayout(processListLayout);
+	mainLayout->addLayout(buttonLayout);
 }
 
 
@@ -74,6 +49,9 @@ void ButtonActions::spawnerListCreate(Spawner** spawnerV, int spawners)
 
 	LM_M(("Creating %d spawners", spawners));
 
+    QLabel* spawnersLabel = new QLabel("Spawners");
+    spawnerListLayout->addWidget(spawnersLabel);
+
 	for (ix = 0; ix < spawners; ix++)
 	{
 		Starter* starter;
@@ -84,11 +62,16 @@ void ButtonActions::spawnerListCreate(Spawner** spawnerV, int spawners)
 
 		spawnerP = spawnerV[ix];
 		starter  = new Starter("Spawner", spawnerP->host, false);
-		spawnerListLayout->addWidget(starter);
 
 		LM_M(("Creating spawner '%s'", spawnerP->host));
 		starter->spawnerSet(spawnerP);
+		spawnerListLayout->addWidget(starter->checkbox);
 	}
+
+	// Connect Button
+	connectButton = new QPushButton("Connect To All Spawners");
+	connectButton->connect(connectButton, SIGNAL(clicked()), this, SLOT(connect()));
+	spawnerListLayout->addWidget(connectButton);
 }
 
 
@@ -103,6 +86,9 @@ void ButtonActions::processListCreate(Process** processV, int process)
 
 	LM_M(("Creating %d process", process));
 
+    QLabel* processLabel = new QLabel("Processes");
+    processListLayout->addWidget(processLabel);
+	
 	for (ix = 0; ix < process; ix++)
 	{
 		Starter* starter;
@@ -115,11 +101,16 @@ void ButtonActions::processListCreate(Process** processV, int process)
 		processP = processV[ix];
 		snprintf(name, sizeof(name), "%s@%s", processP->name, processP->host);
 		starter  = new Starter("Process", name, false);
-		processListLayout->addWidget(starter);
 
 		LM_M(("Creating process '%s'", processP->name));
 		starter->processSet(processP);
+		processListLayout->addWidget(starter->checkbox);
 	}
+
+	// Start Button
+	startButton = new QPushButton("Start All Processes");
+	startButton->connect(startButton, SIGNAL(clicked()), this, SLOT(start()));
+	processListLayout->addWidget(startButton);
 }
 
 

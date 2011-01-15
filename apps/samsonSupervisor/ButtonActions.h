@@ -29,7 +29,8 @@ class ButtonActions : public QWidget
 	Q_OBJECT
 
 public:
-	ButtonActions(QWidget* parent = 0);
+	ButtonActions(QVBoxLayout* mainLayout, QWidget* parent = 0);
+
 	void spawnerListCreate(Spawner** spawnerV, int spawners);
 	void processListCreate(Process** processV, int processes);
 

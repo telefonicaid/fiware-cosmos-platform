@@ -10,11 +10,19 @@ SET (SOURCES
 	ButtonActions.cpp
 	actions.cpp
 	Starter.cpp
+	TabManager.cpp
+	DelilahTab.cpp
+	LogTab.cpp
+	ProcessListTab.cpp
 )
 
 SET (HEADERS_MOC
 	ButtonActions.h
 	Starter.h
+	TabManager.h
+	DelilahTab.h
+	LogTab.h
+	ProcessListTab.h
 )
 
 SET (HEADERS

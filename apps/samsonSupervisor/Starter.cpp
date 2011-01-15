@@ -8,7 +8,6 @@
 *
 */
 #include <QObject>
-#include <QBoxLayout>
 #include <QCheckBox>
 
 #include "logMsg.h"             // LM_*

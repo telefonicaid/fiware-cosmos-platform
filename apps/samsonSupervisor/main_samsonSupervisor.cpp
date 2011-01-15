@@ -436,6 +436,7 @@ int main(int argC, const char *argV[])
 		pthread_t t;
 
 		pthread_create(&t, NULL, runNetworkAsThread, networkP);
+		// Await ready ?
 		qtRun(argC, argV);
 	}
 	else

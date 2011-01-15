@@ -32,13 +32,13 @@ public:
 	void spawnerSet(Spawner* s);
 	void processSet(Process* s);
 
+	QCheckBox*      checkbox;
+
 private slots:
 	void spawnerClicked();
 	void processClicked();
 
 private:
-	QHBoxLayout*    layout;
-	QCheckBox*      checkbox;
 	Qt::CheckState  checkState;
 
 	Spawner*        spawner;

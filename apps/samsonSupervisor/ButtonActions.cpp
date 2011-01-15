@@ -25,9 +25,10 @@
 *
 * ButtonActions::ButtonActions
 */
-ButtonActions::ButtonActions(QVBoxLayout* mainLayout, QWidget* window) : QWidget(window)
+ButtonActions::ButtonActions(QHBoxLayout* mainLayout, QWidget* window) : QWidget(window)
 {
 	win                = window;
+
 	spawnerListLayout  = new QVBoxLayout();
 	processListLayout  = new QVBoxLayout();
 	buttonLayout       = new QVBoxLayout();
@@ -86,8 +87,8 @@ void ButtonActions::processListCreate(Process** processV, int process)
 
 	LM_M(("Creating %d process", process));
 
-    QLabel* processLabel = new QLabel("Processes");
-    processListLayout->addWidget(processLabel);
+	QLabel* processLabel = new QLabel("Processes");
+	processListLayout->addWidget(processLabel);
 	
 	for (ix = 0; ix < process; ix++)
 	{

@@ -1604,13 +1604,13 @@ void Network::msgTreat(void* vP)
 
 				if (endpoint[3 + ix] == NULL)
 				{
-					endpoint[3 + ix] = new Endpoint(Endpoint::Worker, workerV[ix].name, workerV[ix].ip, workerV[ix].port, -1, -1);
+					endpoint[3 + ix]        = new Endpoint(Endpoint::Worker, workerV[ix].name, workerV[ix].ip, workerV[ix].port, -1, -1);
 					endpoint[3 + ix]->state = Endpoint::Unconnected;
 					endpoint[3 + ix]->alias = workerV[ix].alias;
 				}
 				else
 				{
-				   LM_W(("Should I fill worker %02d with the info the controller gave me ?", ix));
+					LM_W(("Should I fill worker %02d with the info the controller gave me ?", ix));
 				}
 
 				epP = endpoint[3 + ix];
@@ -1654,31 +1654,10 @@ void Network::msgTreat(void* vP)
 							LM_X(1, ("endpointAdd failed"));
 					}
 				}
-#if 0
-				else if ((me->type == Endpoint::Delilah) && (epP->port == 0))
-				{
-					LM_X(1, ("Unable to connect to worker %d (%s) - delilah must connect to all workers", ix, workerV[ix].name));
-				}
-#endif
 			}
 		}
 		iAmReady = true;
 		break;
-#if 0
-	case Message::WorkerStatus:
-		if ((me->type != Endpoint::Controller) && (msgType == Message::Msg))
-			LM_X(1, ("Non-controller got a WorkerStatus message"));
-
-		if (ep->status == NULL)
-		{
-			ep->status = (Message::WorkerStatusData*) malloc(sizeof(Message::WorkerStatusData));
-			if (ep->status == NULL)
-				LM_XP(1, ("malloc(WorkerStatusData"));
-			memcpy(ep->status, dataP, sizeof(Message::WorkerStatusData));
-			LM_T(LMT_STAT, ("endpoint '%s' has %d cores", ep->name.c_str(), ep->status->cpuInfo.cores));
-		}
-		break;
-#endif
 
 	case Message::Alarm:
 		if (me->type == Endpoint::Worker)

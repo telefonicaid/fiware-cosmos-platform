@@ -15,7 +15,7 @@
 */
 ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(parent)
 {
-	QVBoxLayout* mainLayout  = new QVBoxLayout;
+	QHBoxLayout* mainLayout  = new QHBoxLayout;
 
 	setLayout(mainLayout);
 
@@ -35,10 +35,6 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 
 
 
-	mainLayout->addStretch(10);
-
-
-
 	//
     // Process List
     //
@@ -48,4 +44,6 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 	processVec = processListGet(&noOfProcesses);
 	LM_M(("Got %d Processes", noOfProcesses));
 	ba.processListCreate(processVec, noOfProcesses);
+
+	mainLayout->addStretch(400);
 }

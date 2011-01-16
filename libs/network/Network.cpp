@@ -139,9 +139,9 @@ void Network::setDataReceiver(DataReceiverInterface* _receiver)
 
 /* ****************************************************************************
 *
-* setEndpointUpdateInterface - 
+* setEndpointUpdateReceiver - 
 */
-void Network::setEndpointUpdateInterface(EndpointUpdateInterface* epReceiver)
+void Network::setEndpointUpdateReceiver(EndpointUpdateInterface* epReceiver)
 {
 	LM_T(LMT_DELILAH, ("Setting endpoint update receiver to %p", epReceiver));
 	endpointUpdateReceiver = epReceiver;
@@ -268,6 +268,8 @@ Endpoint* workerNew(int ix)
 	ep = new Endpoint();
 	if (ep == NULL)
 		LM_XP(1, ("new Endpoint"));
+
+	LM_M(("*** New worker endpoint at %p", ep));
 
 	ep->rFd     = -1;
 	ep->wFd     = -1;
@@ -697,6 +699,7 @@ Endpoint* Network::endpointAdd
 		{
 			LM_M(("Allocating room for Controller endpoint"));
 			endpoint[2] = new Endpoint();
+			LM_M(("*** Controller Endpoint at %p", endpoint[2]));
 		}
 
 		if (inheritedFrom != NULL)
@@ -718,6 +721,9 @@ Endpoint* Network::endpointAdd
 		endpoint[2]->port     = port;
 		endpoint[2]->coreNo   = coreNo;
 
+		if ((rFd != -1) || (wFd != -1))
+			endpoint[2]->state = Endpoint::Connected;
+
 		if (strcmp(ip.c_str(), "II.PP") != 0)
 			endpoint[2]->ip       = ip;
 
@@ -728,7 +734,7 @@ Endpoint* Network::endpointAdd
 		}
 
 		if (endpointUpdateReceiver != NULL)
-			endpointUpdateReceiver->endpointUpdate(endpoint[2]);
+			endpointUpdateReceiver->endpointUpdate(endpoint[2], "Controller Added");
 
 		return controller;
 
@@ -740,6 +746,8 @@ Endpoint* Network::endpointAdd
 				endpoint[ix] = new Endpoint();
 				if (endpoint[ix] == NULL)
 					LM_XP(1, ("allocating temporal Endpoint"));
+
+				LM_M(("*** Temporal Endpoint '%s' at %p", name, endpoint[ix]));
 
 				if (inheritedFrom != NULL)
 				{
@@ -782,6 +790,8 @@ Endpoint* Network::endpointAdd
 				endpoint[ix] = new Endpoint();
 				if (endpoint[ix] == NULL)
 					LM_XP(1, ("allocating Endpoint"));
+
+				LM_M(("*** New Endpoint '%s' at %p", name, endpoint[ix]));
 
 				if (inheritedFrom != NULL)
 				{
@@ -892,7 +902,7 @@ Endpoint* Network::endpointAdd
 				LM_T(LMT_JOB, ("worker '%s' connected - any pending messages for him? (jobQueueHead at %p)", endpoint[ix]->alias.c_str(),  endpoint[ix]->jobQueueHead));
 				
 				if (endpointUpdateReceiver != NULL)
-					endpointUpdateReceiver->endpointUpdate(endpoint[ix]);
+					endpointUpdateReceiver->endpointUpdate(endpoint[ix], "Worker Added");
 
 				return endpoint[ix];
 			}
@@ -920,7 +930,7 @@ void Network::endpointRemove(Endpoint* ep)
 {
 	int ix;
 
-	LM_T(LMT_EP, ("Removing '%s' endpoint '%s'", ep->typeName(), ep->name.c_str()));
+	LM_T(LMT_EP, ("Removing '%s' endpoint '%s' (at %p)", ep->typeName(), ep->name.c_str(), ep));
 
 	for (ix = 0; ix < Endpoints; ix++)
 	{
@@ -937,18 +947,18 @@ void Network::endpointRemove(Endpoint* ep)
 				ep->name  = std::string("To be a worker");
 
 				if (endpointUpdateReceiver != NULL)
-					endpointUpdateReceiver->endpointUpdate(ep);
+					endpointUpdateReceiver->endpointUpdate(ep, "Worker Removed");
 			}
 			else if (ep->type == Endpoint::Controller)
 			{
 				LM_W(("NOT removing Controller"));
 				if (endpointUpdateReceiver != NULL)
-					endpointUpdateReceiver->endpointUpdate(ep);
+					endpointUpdateReceiver->endpointUpdate(ep, "Controller Removed");
 			}
 			else
 			{
-				if (endpointUpdateReceiver != NULL)
-					endpointUpdateReceiver->endpointUpdate(ep);
+				if ((endpointUpdateReceiver != NULL) && (ep->type != Endpoint::Temporal))
+					endpointUpdateReceiver->endpointUpdate(ep, "Endpoint Removed");
 
 				delete ep;
 				endpoint[ix] = NULL;
@@ -1201,7 +1211,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 			controller->state = ss::Endpoint::Disconnected;
 
 			if (endpointUpdateReceiver != NULL)
-				endpointUpdateReceiver->endpointUpdate(controller);
+				endpointUpdateReceiver->endpointUpdate(controller, "Controller Disconnected");
 
 			while (controller->rFd == -1)
 			{
@@ -1213,7 +1223,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 			controller->wFd   = controller->rFd;
 
 			if (endpointUpdateReceiver != NULL)
-				endpointUpdateReceiver->endpointUpdate(controller);
+				endpointUpdateReceiver->endpointUpdate(controller, "Controller Connected");
 		}
 		else if (ep != NULL)
 		{
@@ -1231,7 +1241,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 				ep->name  = "-----";
 
 				if (endpointUpdateReceiver != NULL)
-					endpointUpdateReceiver->endpointUpdate(ep);
+					endpointUpdateReceiver->endpointUpdate(ep, "Worker Disconnected");
 			}
 			else if (ep->type == Endpoint::CoreWorker)
 				LM_X(1, ("should get no messages from core worker ..."));
@@ -1505,6 +1515,9 @@ void Network::msgTreat(void* vP)
 		}
 		helloEp->workerId = hello->workerId;
 
+		if (endpointUpdateReceiver != NULL)
+			endpointUpdateReceiver->endpointUpdate(helloEp, "Hello Received", ep);
+
 		LM_T(LMT_HELLO, ("Got Hello %s from %s, type %s, %s:%d, workers: %d",
 						 messageType(msgType), helloEp->name.c_str(), helloEp->typeName(), helloEp->ip.c_str(), helloEp->port, helloEp->workers));
 
@@ -1607,6 +1620,8 @@ void Network::msgTreat(void* vP)
 					endpoint[3 + ix]        = new Endpoint(Endpoint::Worker, workerV[ix].name, workerV[ix].ip, workerV[ix].port, -1, -1);
 					endpoint[3 + ix]->state = Endpoint::Unconnected;
 					endpoint[3 + ix]->alias = workerV[ix].alias;
+
+					LM_M(("*** New Worker Endpoint '%s' at %p", workerV[ix].alias, endpoint[ix]));
 				}
 				else
 				{

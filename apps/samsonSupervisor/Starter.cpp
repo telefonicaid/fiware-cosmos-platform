@@ -37,7 +37,11 @@ Starter::Starter(const char* type, char* name, bool initialState)
 
 	spawner    = NULL;
 	process    = NULL;
+	endpoint   = NULL;
 	connected  = false;
+
+	this->name = strdup(name);
+	this->type = strdup(type);
 
 	checkbox->show();
 }

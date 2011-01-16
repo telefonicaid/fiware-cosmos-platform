@@ -42,19 +42,16 @@ Spawner** spawnerListGet(int* noOfP)
 	unsigned int  ix;
 	int           count = 0;
 
-	LM_M(("getting spawners"));
-
 	for (ix = 0; ix < sizeof(spawner) / sizeof(spawner[0]); ix++)
 	{
 		if (spawner[ix] == NULL)
 			continue;
 
 		++count;
-		LM_M(("we have %d spawners ...", count));
 	}
 
 	*noOfP = count;
-	LM_M(("We have %d spawners ...", *noOfP));
+	LM_M(("Found %d spawners", *noOfP));
 
 	return spawner;
 }

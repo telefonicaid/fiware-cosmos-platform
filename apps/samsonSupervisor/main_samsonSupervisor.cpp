@@ -13,18 +13,15 @@
 #include "logMsg.h"             // LM_*
 #include "parseArgs.h"          // parseArgs
 
-#include "NetworkInterface.h"   // DataReceiverInterface
 #include "Endpoint.h"           // Endpoint
 #include "Network.h"            // Network
 #include "Process.h"            // Process, processAdd, ...
-#include "Spawner.h"            // Spawner, spawnerAdd, ...
 #include "qt.h"                 // qtRun, ...
-#include "iomConnect.h"         // iomConnect
-#include "actions.h"            // help, list, start, ...
+#include "TabManager.h"         // TabManager
+#include "SamsonSupervisor.h"   // SamsonSupervisor
 
 
 
-class SamsonSupervisor;
 /* ****************************************************************************
 *
 * Global variables
@@ -32,6 +29,7 @@ class SamsonSupervisor;
 ss::Network*       networkP     = NULL;
 SamsonSupervisor*  supervisorP  = NULL;
 ss::Endpoint*      controller   = NULL;
+TabManager*        tabManager   = NULL;
 
 
 
@@ -69,109 +67,6 @@ PaArgument paArgs[] =
 * logFd - file descriptor for log file used in all libraries
 */
 int logFd = -1;
-
-
-
-/* ****************************************************************************
-*
-* SamsonSupervisor - 
-*/
-class SamsonSupervisor : public ss::DataReceiverInterface, ss::EndpointUpdateInterface
-{
-public:
-	SamsonSupervisor(ss::Network* nwP) { networkP = nwP; }
-
-	virtual int receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
-	virtual int endpointUpdate(ss::Endpoint* ep);
-
-private:
-	ss::Network*    networkP;
-};
-
-
-
-/* ****************************************************************************
-*
-* SamsonSupervisor::receive - 
-*/
-int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP)
-{
-	ss::Endpoint* ep = networkP->endpointLookup(fromId);
-
-	if (ep == NULL)
-		LM_RE(0, ("Cannot find endpoint with id %d", fromId));
-
-	if (ep->type == ss::Endpoint::Fd)
-	{
-		char* msg = (char*) dataP;
-
-		printf("\n");
-		switch (*msg)
-		{
-		case 'h':
-			help();
-			break;
-
-		case 'c':
-			connectToAllSpawners();
-			break;
-
-		case 'p':
-			startAllProcesses();
-			break;
-
-		case 's':
-			start();
-			break;
-
-		case 'l':
-			list();
-			break;
-
-		case 3:
-			LM_X(0, ("'Ctrl-C' pressed - I quit!"));
-
-		case 'q':
-			LM_X(0, ("'q' pressed - I quit!"));
-
-		case ' ':
-		case '\n':
-			printf("\n");
-			break;
-
-		default:
-			LM_E(("Key '%c' has no function", *msg));
-			help();
-		}
-
-		printf("\n");
-		return 0;
-	}
-
-	switch (headerP->code)
-	{
-	case ss::Message::WorkerSpawn:
-	case ss::Message::ControllerSpawn:
-
-	default:
-		LM_X(1, ("Don't know how to treat '%s' message", ss::Message::messageCode(headerP->code)));
-	}
-
-	return 0;
-}
-
-
-
-/* ****************************************************************************
-*
-* SamsonSupervisor::endpointUpdate - 
-*/
-int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep)
-{
-	LM_M(("Got an update notification for endpoint '%s' at '%s'", ep->name.c_str(), ep->ip.c_str()));
-
-	return 0;
-}
 
 
 
@@ -312,27 +207,12 @@ static int argsParse(char* line, char* host, char* process, char** args, int* ar
 static void cfParse(char* cfPath)
 {
 	char    line[160];
-	int     lineNo = 0;
 	FILE*   fP;
 
 	fP = fopen(cfPath, "r");
 	if (fP == NULL)
 		LM_X(1, ("opening '%s': %s", cfPath, strerror(errno)));
 
-	while (fgets(line, sizeof(line), fP) != NULL)
-	{
-		char  host[64];
-		char  process[64];
-
-		LM_M(("line: '%s'", line));
-		++lineNo;
-		sscanf(line, "%s%s", host, process);
-		if ((strcmp(process, "Controller") != 0) && (strcmp(process, "Worker") != 0))
-			LM_X(1, ("%s[%d]: parse error - bad process ('%s') (line: '%s')", cfPath, lineNo, process, line));
-		LM_D(("read line: %s", line));
-	}
-
-	rewind(fP);	
 	while (fgets(line, sizeof(line), fP) != NULL)
 	{
 		char   host[32];
@@ -419,7 +299,9 @@ int main(int argC, const char *argV[])
 	networkP->init(ss::Endpoint::Supervisor, "supervisor", 0, controllerName);
 	supervisorP = new SamsonSupervisor(networkP);
 
+
 	networkP->setDataReceiver(supervisorP);
+	networkP->setEndpointUpdateReceiver(supervisorP);
 
 	baTermSetup();
 	networkP->fdSet(0, "stdin", "stdin");

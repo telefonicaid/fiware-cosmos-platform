@@ -94,6 +94,12 @@ void start(void)
 			LM_E(("iomMsgSend: error %d", s));
 		LM_M(("started process %d (%s in %s)", pIx, p->name, p->host));
 
+		LM_M(("Connecting to newly started process ..."));
+		if (strcmp(spawnData.name, "Controller") == 0)
+			iomConnect(p->spawner->host, CONTROLLER_PORT);
+		else if (strcmp(spawnData.name, "Worker") == 0)
+			iomConnect(p->spawner->host, WORKER_PORT);
+
 		++pIx;
 	}
 }
@@ -162,7 +168,7 @@ void spawnerDisconnect(Spawner* spawnerP)
 
 /* ****************************************************************************
 *
-* processStart - start to process
+* processStart - start a process
 */
 void processStart(Process* processP)
 {
@@ -194,6 +200,23 @@ void processStart(Process* processP)
 		LM_E(("iomMsgSend: error %d", s));
 
 	LM_M(("started process '%s' in '%s')", processP->name, processP->host));
+
+	LM_M(("Connecting to newly started process ..."));
+	if (strcmp(spawnData.name, "Controller") == 0)
+	{
+		int fd;
+		
+		fd = iomConnect(processP->spawner->host, CONTROLLER_PORT);
+		networkP->endpointAdd(fd, fd, "Controller", "Controller", 0, ss::Endpoint::Controller, processP->spawner->host, CONTROLLER_PORT);
+		// WorkerVector ...
+	}
+	else if (strcmp(spawnData.name, "Worker") == 0)
+	{
+		int fd;
+
+		fd = iomConnect(processP->spawner->host, WORKER_PORT);
+		networkP->endpointAdd(fd, fd, "Worker", "Worker", 0, ss::Endpoint::Worker, processP->spawner->host, WORKER_PORT);
+	}
 }
 
 

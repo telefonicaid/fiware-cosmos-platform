@@ -1,3 +1,12 @@
+/* ****************************************************************************
+*
+* FILE                     TabManager.cpp
+*
+* AUTHOR                   Ken Zangelin
+*
+* CREATION DATE            Dec 14 2010
+*
+*/
 #include <QtGui>
 #include <QPushButton>
 
@@ -18,9 +27,10 @@
 TabManager::TabManager(QWidget* window, QWidget* parent) : QWidget(parent)
 {
 	QPushButton*     quit            = new QPushButton("Quit");
-	ProcessListTab*  processListTab  = new ProcessListTab("Processes", window);
-	LogTab*          logTab          = new LogTab("Log");
-	DelilahTab*      delilahTab      = new DelilahTab("Delilah");
+
+	processListTab  = new ProcessListTab("Processes", window);
+	logTab          = new LogTab();
+	delilahTab      = new DelilahTab("Delilah");
 
 	tabWidget = new QTabWidget();
 

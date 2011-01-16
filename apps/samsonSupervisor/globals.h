@@ -11,6 +11,8 @@
 *
 */
 #include "Network.h"            // Network
+#include "SamsonSupervisor.h"   // SamsonSupervisor
+#include "TabManager.h"         // TabManager
 
 
 
@@ -21,5 +23,6 @@ class SamsonSupervisor;
 */
 extern ss::Network*       networkP;
 extern SamsonSupervisor*  supervisorP;
+extern TabManager*        tabManager;
 
 #endif

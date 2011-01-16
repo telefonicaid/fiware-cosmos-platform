@@ -15,7 +15,7 @@ class LogTab : public QWidget
 	Q_OBJECT
 
 public:
-	LogTab(const char* name, QWidget *parent = 0);
+	LogTab(QWidget *parent = 0);
 };
 
 #endif

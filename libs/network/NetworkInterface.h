@@ -48,7 +48,7 @@ public:
 class EndpointUpdateInterface
 {
 public:
-	virtual int endpointUpdate(Endpoint* ep) = 0;
+	virtual int endpointUpdate(Endpoint* ep, const char* reason, void* info = NULL) = 0;
 	virtual     ~EndpointUpdateInterface() {};
 };
 
@@ -130,7 +130,6 @@ public:
 		// Set the receiver element (this should be notified about the package)
 		virtual void setPacketReceiverInterface( PacketReceiverInterface* receiver) = 0;
 		virtual void setDataReceiverInterface(DataReceiverInterface* receiver)                { LM_X(1, ("Please implement setDataReceiverInterface")); };
-		virtual void setEndpointUpdateInterface(EndpointUpdateInterface* epReceiver)          { LM_X(1, ("Please implement setEndpointUpdateInterface")); };
 
 		// Get identifiers of known elements
 		virtual int controllerGetIdentifier()=0;		// Get the identifier of the controller

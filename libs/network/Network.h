@@ -49,7 +49,7 @@ public:
 
 	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);
 	virtual void setDataReceiver(DataReceiverInterface* receiver);
-	virtual void setEndpointUpdateInterface(EndpointUpdateInterface* epReceiver);
+	virtual void setEndpointUpdateReceiver(EndpointUpdateInterface* epReceiver);
 
 	PacketReceiverInterface*   receiver;
 	DataReceiverInterface*     dataReceiver;

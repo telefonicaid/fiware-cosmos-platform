@@ -12,12 +12,32 @@
 *
 * LogTab::LogTab - 
 */
-LogTab::LogTab(const char* name, QWidget *parent) : QWidget(parent)
+LogTab::LogTab(QWidget *parent) : QWidget(parent)
 {
-	QLabel*      nameLabel   = new QLabel(tr(name));
-	QVBoxLayout* mainLayout  = new QVBoxLayout;
+	QGridLayout*  mainLayout  = new QGridLayout(parent);
+	int           row;
+	int           column;
 
-	mainLayout->addWidget(nameLabel);
-	mainLayout->addStretch(1);
+	for (row = 0; row < 10; row++)
+	{
+		QLabel* label;
+
+		for (column = 0; column < 5; column++)
+		{
+			char name[64];
+
+			if (column == row)
+				continue;
+
+			sprintf(name, "row %d, col %d", row, column);
+			label = new QLabel(tr(name));
+			mainLayout->addWidget(label, row, column);
+		}
+	}
+	
+	mainLayout->setColumnStretch(column, 100);
+	mainLayout->setRowStretch(row, 100);
+	mainLayout->setColumnMinimumWidth(0, 300);
+	mainLayout->setRowMinimumHeight(0, 300);
 	setLayout(mainLayout);
 }

@@ -3,11 +3,11 @@ INCLUDE(${QT_USE_FILE})
 
 SET (SOURCES
     main_samsonSupervisor.cpp
+	SamsonSupervisor.cpp
 	baTerm.cpp
 	Process.cpp
 	Spawner.cpp
 	qt.cpp
-	ButtonActions.cpp
 	actions.cpp
 	Starter.cpp
 	TabManager.cpp
@@ -17,7 +17,6 @@ SET (SOURCES
 )
 
 SET (HEADERS_MOC
-	ButtonActions.h
 	Starter.h
 	TabManager.h
 	DelilahTab.h
@@ -26,6 +25,7 @@ SET (HEADERS_MOC
 )
 
 SET (HEADERS
+	SamsonSupervisor.h
 	baTerm.h
 	Process.h
 	Spawner.h

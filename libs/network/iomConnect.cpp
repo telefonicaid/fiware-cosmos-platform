@@ -46,16 +46,17 @@ int iomConnect(const char* ip, unsigned short port)
 	LM_M(("calling connect"));
 	if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 	{
-		LM_M(("connect: %s", strerror(errno)));
-		close(fd);
-		return -1;
+		usleep(50000);
+		if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
+		{
+			LM_M(("connect: %s", strerror(errno)));
+			close(fd);
+			return -1;
+		}
 	}
 
-#if 1
 	int bufSize = 64 * 1024 * 1024;
-#else
-	int bufSize = 4 * 1024;
-#endif
+
 	int s;
 	s = setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &bufSize, sizeof(bufSize));
 	if (s != 0)

@@ -137,19 +137,16 @@ Process** processListGet(int* noOfP)
 	unsigned int  ix;
 	int           count = 0;
 
-	LM_M(("getting processes"));
-
 	for (ix = 0; ix < sizeof(process) / sizeof(process[0]); ix++)
 	{
 		if (process[ix] == NULL)
 			continue;
 
 		++count;
-		LM_M(("we have %d processes ...", count));
 	}
 
 	*noOfP = count;
-	LM_M(("We have %d processes ...", *noOfP));
+	LM_M(("Found %d processes", *noOfP));
 
 	return process;
 }

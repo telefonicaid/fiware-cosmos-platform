@@ -14,6 +14,7 @@
 #include <QBoxLayout>
 #include <QCheckBox>
 
+#include "Endpoint.h"           // Endpoint
 #include "Spawner.h"            // Spawner
 #include "Process.h"            // Process
 
@@ -32,7 +33,14 @@ public:
 	void spawnerSet(Spawner* s);
 	void processSet(Process* s);
 
+	Spawner*        spawner;
+	Process*        process;
+
 	QCheckBox*      checkbox;
+	ss::Endpoint*   endpoint;
+
+	char*           type;
+	char*           name;
 
 private slots:
 	void spawnerClicked();
@@ -41,8 +49,6 @@ private slots:
 private:
 	Qt::CheckState  checkState;
 
-	Spawner*        spawner;
-	Process*        process;
 	bool            connected;
 };
 

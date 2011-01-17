@@ -132,10 +132,10 @@ void processList(void)
 *
 * processListGet - 
 */
-Process** processListGet(int* noOfP)
+Process** processListGet(unsigned int* noOfP)
 {
 	unsigned int  ix;
-	int           count = 0;
+	unsigned int  count = 0;
 
 	for (ix = 0; ix < sizeof(process) / sizeof(process[0]); ix++)
 	{

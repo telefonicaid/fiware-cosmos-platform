@@ -21,7 +21,7 @@
 *
 * Starter::Starter
 */
-Starter::Starter(const char* type, char* name, bool initialState)
+Starter::Starter(const char* type, char* name)
 {
 	checkbox = new QCheckBox(QString(name), this);
 
@@ -32,7 +32,7 @@ Starter::Starter(const char* type, char* name, bool initialState)
 	else
 		LM_X(1, ("bad type '%s' for Starter", type));
 
-	checkState = (initialState == true)? Qt::Checked : Qt::Unchecked;
+	checkState = Qt::Unchecked;
 	checkbox->setCheckState(checkState);
 
 	spawner    = NULL;

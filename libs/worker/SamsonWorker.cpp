@@ -34,17 +34,17 @@ namespace ss {
 */
 SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , dataBuffer(this), loadDataManager(this)
 {
-
 	this->network = network;
-	network->setPacketReceiverInterface(this);
+	network->setPacketReceiver(this);
 
 	srand( (unsigned int) time(NULL) );
 	
 	// Create a thread to run "runStatusUpdate"
 	pthread_t t;
 	pthread_create(&t, NULL, run_runStatusUpdate, this);
-	
 }
+
+
 
 /* ****************************************************************************
 *

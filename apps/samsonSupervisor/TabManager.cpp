@@ -26,23 +26,23 @@
 */
 TabManager::TabManager(QWidget* window, QWidget* parent) : QWidget(parent)
 {
-	QPushButton*     quit            = new QPushButton("Quit");
+	QVBoxLayout*     mainLayout = new QVBoxLayout;
+	QPushButton*     quit       = new QPushButton("Quit");
+
+	connect(quit, SIGNAL(clicked()), qApp, SLOT(quit()));
+
+	tabWidget       = new QTabWidget();
 
 	processListTab  = new ProcessListTab("Processes", window);
 	logTab          = new LogTab();
 	delilahTab      = new DelilahTab("Delilah");
 
-	tabWidget = new QTabWidget();
-
 	tabWidget->addTab(processListTab, tr("Processes"));
 	tabWidget->addTab(logTab,         tr("Log"));
 	tabWidget->addTab(delilahTab,     tr("Delilah"));
 
-	connect(quit, SIGNAL(clicked()), qApp, SLOT(quit()));
-
-	QVBoxLayout* mainLayout = new QVBoxLayout;
-
 	mainLayout->addWidget(tabWidget);
 	mainLayout->addWidget(quit);
+
 	window->setLayout(mainLayout);
 }

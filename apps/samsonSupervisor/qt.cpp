@@ -33,17 +33,26 @@
 
 /* ****************************************************************************
 *
-* qtRun - 
+* mainWindow - 
 */
-void qtRun(int argC, const char* argV[])
+QWidget*         mainWindow = NULL;
+QDesktopWidget*  desktop    = NULL;
+
+
+
+/* ****************************************************************************
+*
+* mainWinCreate - 
+*/
+static void mainWinCreate(QApplication* app)
 {
-	QApplication     app(argC, (char**) argV);
 	int              screenWidth;
 	int              screenHeight;
 	int              x;
 	int              y;
-	QWidget          window;
-	QDesktopWidget*  desktop = QApplication::desktop();
+
+	desktop    = QApplication::desktop();
+	mainWindow = new QWidget();
 
 	// Window Geometry
 	screenWidth  = desktop->width();
@@ -52,12 +61,45 @@ void qtRun(int argC, const char* argV[])
 	x = (screenWidth  - WIN_WIDTH)  / 2;
 	y = (screenHeight - WIN_HEIGHT) / 2;
 
-	window.resize(WIN_WIDTH, WIN_HEIGHT);
-	window.move(x, y);
-	window.setWindowTitle("Samson Supervisor");
+	mainWindow->resize(WIN_WIDTH, WIN_HEIGHT);
+	mainWindow->move(x, y);
+	mainWindow->setWindowTitle("Samson Supervisor");
+}
 
-	tabManager = new TabManager(&window);
 
-	window.show();
+
+void buttonTest(void)
+{
+	QVBoxLayout* mainLayout = new QVBoxLayout;
+	QPushButton* quit       = new QPushButton("Quit");
+
+	QObject::connect(quit, SIGNAL(clicked()), qApp, SLOT(quit()));
+
+	mainLayout->addWidget(quit);
+	mainWindow->setLayout(mainLayout);
+}
+
+
+
+/* ****************************************************************************
+*
+* qtRun - 
+*/
+void qtRun(int argC, const char* argV[])
+{
+	QApplication app(argC, (char**) argV);
+
+	LM_M(("I have %d workers", networkP->Workers));
+
+	mainWinCreate(&app);
+
+#if 0
+	buttonTest();
+#else
+	tabManager = new TabManager(mainWindow);
+#endif
+
+	mainWindow->show();
+
 	app.exec();
 }

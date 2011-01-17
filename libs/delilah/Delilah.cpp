@@ -26,7 +26,7 @@ Delilah::Delilah( NetworkInterface* _network )
 {
 		
 	network = _network;		// Keep a pointer to our network interface element
-	network->setPacketReceiverInterface(this);
+	network->setPacketReceiver(this);
 		
 	id = 1;	// we start with process 1 because 0 is no process
 		

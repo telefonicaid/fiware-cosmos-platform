@@ -29,7 +29,7 @@ class Starter : public QWidget
 	Q_OBJECT
 
 public:
-	Starter(const char* type, char* name, bool initialState = true);
+	Starter(const char* type, char* name);
 	void spawnerSet(Spawner* s);
 	void processSet(Process* s);
 
@@ -41,15 +41,12 @@ public:
 
 	char*           type;
 	char*           name;
+	Qt::CheckState  checkState;
+	bool            connected;
 
 private slots:
 	void spawnerClicked();
 	void processClicked();
-
-private:
-	Qt::CheckState  checkState;
-
-	bool            connected;
 };
 
 #endif

@@ -39,7 +39,7 @@ namespace ss {
 	SamsonController::SamsonController( NetworkInterface*  network ) : data(this), jobManager(this) , monitor(this)
 	{
 		this->network = network;
-		network->setPacketReceiverInterface(this);
+		network->setPacketReceiver(this);
 
 		// Init session of data
 		data.initSession();

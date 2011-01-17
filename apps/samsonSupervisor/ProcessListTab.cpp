@@ -13,6 +13,7 @@
 
 #include "logMsg.h"             // LM_*
 
+#include "globals.h"            // global vars
 #include "actions.h"            // help, list, start, ...
 #include "Starter.h"            // Starter
 #include "Spawner.h"            // Spawner
@@ -27,10 +28,10 @@
 */
 ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(parent)
 {
-	int        noOfSpawners;
-	Spawner**  spawnerVec;
-	int        noOfProcesses;
-	Process**  processVec;
+	unsigned int  noOfSpawners;
+	Spawner**     spawnerVec;
+	unsigned int  noOfProcesses;
+	Process**     processVec;
 
 	mainLayout = new QGridLayout(parent);
 
@@ -55,8 +56,11 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 */
 void ProcessListTab::spawnerListCreate(Spawner** spawnerV, int spawners)
 {
-	int ix;
-	int column = 0;
+	Starter*       starter;
+	Spawner*       spawnerP;
+	ss::Endpoint*  ep;
+	int            ix;
+	int            column = 0;
 
 	LM_M(("Creating %d spawners", spawners));
 
@@ -65,19 +69,30 @@ void ProcessListTab::spawnerListCreate(Spawner** spawnerV, int spawners)
 
 	for (ix = 0; ix < spawners; ix++)
 	{
-		Starter* starter;
-		Spawner* spawnerP;
-
 		if (spawnerV[ix] == NULL)
 			continue;
 
 		spawnerP = spawnerV[ix];
-		starter  = new Starter("Spawner", spawnerP->host, false);
+		starter  = new Starter("Spawner", spawnerP->host);
 
 		LM_M(("Creating spawner '%s'", spawnerP->host));
 		starter->spawnerSet(spawnerP);
 		mainLayout->addWidget(starter->checkbox, ix + 1, column);
 		starterAdd(starter);
+
+		ep = networkP->endpointLookup(ss::Endpoint::Spawner, spawnerP->host);
+		if (ep)
+		{
+			starter->connected  = true;
+			starter->checkState = Qt::Checked;
+		}
+		else
+		{
+			starter->connected  = false;
+			starter->checkState = Qt::Unchecked;
+		}
+
+		starter->checkbox->setCheckState(starter->checkState);
 	}
 
 	for (ix = 0; ix < 20; ix++)
@@ -97,8 +112,12 @@ void ProcessListTab::spawnerListCreate(Spawner** spawnerV, int spawners)
 */
 void ProcessListTab::processListCreate(Process** processV, int process)
 {
-	int ix;
-	int column = 1;
+	Starter*       starter;
+	Process*       processP;
+	ss::Endpoint*  ep;
+	char           name[128];
+	int            ix;
+	int            column = 1;
 
 	LM_M(("Creating %d process", process));
 
@@ -107,20 +126,34 @@ void ProcessListTab::processListCreate(Process** processV, int process)
 	
 	for (ix = 0; ix < process; ix++)
 	{
-		Starter* starter;
-		Process* processP;
-		char     name[128];
-
 		if (processV[ix] == NULL)
 			continue;
 
 		processP = processV[ix];
 		snprintf(name, sizeof(name), "%s@%s", processP->name, processP->host);
-		starter  = new Starter("Process", name, false);
+		starter  = new Starter("Process", name);
 
 		LM_M(("Creating process '%s'", processP->name));
 		starter->processSet(processP);
 		mainLayout->addWidget(starter->checkbox, ix + 1, column);
+
+		if (strcmp(processP->name, "Controller") == 0)
+			ep = networkP->endpointLookup(ss::Endpoint::Controller, processP->host);
+		else if (strcmp(processP->name, "Worker") == 0)
+			ep = networkP->endpointLookup(ss::Endpoint::Worker, processP->host);
+
+		if (ep)
+		{
+			starter->connected  = true;
+			starter->checkState = Qt::Checked;
+		}
+		else
+		{
+			starter->connected  = false;
+			starter->checkState = Qt::Unchecked;
+		}
+
+		starter->checkbox->setCheckState(starter->checkState);
 	}
 
 	// Start Button

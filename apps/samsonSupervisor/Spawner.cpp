@@ -37,10 +37,10 @@ void spawnerInit(void)
 *
 * spawnerListGet - 
 */
-Spawner** spawnerListGet(int* noOfP)
+Spawner** spawnerListGet(unsigned int* noOfP)
 {
 	unsigned int  ix;
-	int           count = 0;
+	unsigned int  count = 0;
 
 	for (ix = 0; ix < sizeof(spawner) / sizeof(spawner[0]); ix++)
 	{

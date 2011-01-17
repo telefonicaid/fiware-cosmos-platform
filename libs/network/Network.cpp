@@ -68,9 +68,10 @@ void Network::reset(int endpoints, int workers)
 	if ((workers > 20) || (workers < 0))
 		LM_X(1, ("bad number of workers (%d)", workers));
 
-	receiver               = NULL;
+	packetReceiver         = NULL;
 	dataReceiver           = NULL;
 	endpointUpdateReceiver = NULL;
+	readyReceiver          = NULL;
 
 	iAmReady               = false;
 	me                     = NULL;
@@ -115,12 +116,12 @@ Network::Network(int endpoints, int workers)
 
 /* ****************************************************************************
 *
-* setPacketReceiverInterface - set the element to be notified when packages arrive
+* setPacketReceiver - set the element to be notified when packages arrive
 */
-void Network::setPacketReceiverInterface(PacketReceiverInterface* _receiver)
+void Network::setPacketReceiver(PacketReceiverInterface* receiver)
 {
-	LM_T(LMT_DELILAH, ("Setting packet receiver to %p", _receiver));
-	receiver = _receiver;
+	LM_T(LMT_DELILAH, ("Setting packet receiver to %p", receiver));
+	packetReceiver = receiver;
 }
 	
 
@@ -129,10 +130,10 @@ void Network::setPacketReceiverInterface(PacketReceiverInterface* _receiver)
 *
 * setDataReceiver - set the element to be notified when packages arrive
 */
-void Network::setDataReceiver(DataReceiverInterface* _receiver)
+void Network::setDataReceiver(DataReceiverInterface* receiver)
 {
-	LM_T(LMT_DELILAH, ("Setting data receiver to %p", _receiver));
-	dataReceiver = _receiver;
+	LM_T(LMT_DELILAH, ("Setting data receiver to %p", receiver));
+	dataReceiver = receiver;
 }
 
 
@@ -141,12 +142,24 @@ void Network::setDataReceiver(DataReceiverInterface* _receiver)
 *
 * setEndpointUpdateReceiver - 
 */
-void Network::setEndpointUpdateReceiver(EndpointUpdateInterface* epReceiver)
+void Network::setEndpointUpdateReceiver(EndpointUpdateReceiverInterface* receiver)
 {
-	LM_T(LMT_DELILAH, ("Setting endpoint update receiver to %p", epReceiver));
-	endpointUpdateReceiver = epReceiver;
+	LM_T(LMT_DELILAH, ("Setting endpoint update receiver to %p", receiver));
+	endpointUpdateReceiver = receiver;
 }
 	
+
+
+/* ****************************************************************************
+*
+* setReadyReceiver - 
+*/
+void Network::setReadyReceiver(ReadyReceiverInterface* receiver)
+{
+	LM_T(LMT_DELILAH, ("Setting Ready receiver to %p", receiver));
+	readyReceiver = receiver;
+}
+
 
 
 /* ****************************************************************************
@@ -209,9 +222,15 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 		{
 			if (me->type != Endpoint::Supervisor)
 				LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
+			else
+			{
+				if (readyReceiver)
+					readyReceiver->ready("unable to connect to controller");
+			}
 		}
 		else
 		{
+			LM_M(("connected to controller - calling ready after trying to connect to all workers"));
 			controller->wFd   = controller->rFd;
 			controller->state = ss::Endpoint::Connected;
 		}
@@ -374,23 +393,20 @@ int Network::getNumWorkers(void)
 /* ****************************************************************************
 *
 * samsonWorkerEndpoints - 
-*
-* Return list of connected workers ?
 */
 std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 {
 	int                     ix;
 	std::vector<Endpoint*>  v;
 
-	LM_X(1, ("IN"));
+	LM_M(("%d workers", Workers));
 
-	for (ix = 3; ix <  3 + Workers; ix++)
+	for (ix = 2; ix <=  2 + Workers; ix++)
 	{
 		if (endpoint[ix] == NULL)
 			continue;
 
-		if (endpoint[ix]->state == Endpoint::Connected)
-			v.push_back(endpoint[ix]);
+		v.push_back(endpoint[ix]);
 	}
 
 	return v;
@@ -439,10 +455,8 @@ static void* senderThread(void* vP)
 		// To be improved ...
 		if (ep->alias == job.me->alias)
 		{
-			//LM_M(("ANDREU: Calling 'loop-back' receive from within sender thread"));
-			if (job.network->receiver)
-				job.network->receiver->_receive(0, job.msgCode, job.packetP);
-			//LM_M(("ANDREU: After calling 'loop-back' receive from within sender thread"));
+			if (job.network->packetReceiver)
+				job.network->packetReceiver->_receive(0, job.msgCode, job.packetP);
 		}
 		else
 		{
@@ -1035,6 +1049,36 @@ Endpoint* Network::endpointLookup(char* alias)
 
 /* ****************************************************************************
 *
+* endpointLookup
+*/
+Endpoint* Network::endpointLookup(Endpoint::Type type, char* ip)
+{
+	int ix = 0;
+
+	for (ix = 0; ix < Endpoints; ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if (endpoint[ix]->type != type)
+			continue;
+
+		LM_M(("Comparing '%s' to '%s'", endpoint[ix]->ip.c_str(), ip));
+		if (strcmp(endpoint[ix]->ip.c_str(), ip) == 0)
+		{
+			LM_W(("FOUND Endpoint at %s", ip));
+			return endpoint[ix];
+		}
+	}
+
+	LM_W(("Endpoint at %s not found", ip));
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * MsgTreatParams - 
 */
 typedef struct MsgTreatParams
@@ -1138,7 +1182,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		}
 		else
 		{
-			std::string command     = receiver->getJSONStatus(std::string(buf));
+			std::string command     = packetReceiver->getJSONStatus(std::string(buf));
 			int         commandLen  = command.size();
 
 			ep->msgsIn  += 1;
@@ -1191,7 +1235,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		if (ep->type == Endpoint::Worker)
 		{
 			LM_W(("Worker %d just died !", ep->workerId));
-			receiver->notifyWorkerDied(ep->workerId);
+			packetReceiver->notifyWorkerDied(ep->workerId);
 
 			if (me->type == Endpoint::Delilah)
 			{
@@ -1429,7 +1473,7 @@ void Network::msgTreat(void* vP)
 			if (ep->type == Endpoint::Worker)
 			{
 				LM_W(("Worker %d just died !", ep->workerId));
-				receiver->notifyWorkerDied(ep->workerId);
+				packetReceiver->notifyWorkerDied(ep->workerId);
 
 				if (me->type == Endpoint::Delilah)
 				{
@@ -1602,10 +1646,20 @@ void Network::msgTreat(void* vP)
 			else if ((unsigned int) Workers > dataLen / sizeof(Message::Worker))
 			{
 				// Removing workers from Endpoint vector
-				for (unsigned int ix = Workers - 1; ix >= dataLen / sizeof(Message::Worker); ix++)
+				LM_M(("I had %d workers - Controller tells me I should have %d - deleting the rest (%d - %d)",
+					  Workers,
+					  dataLen / sizeof(Message::Worker),
+					  dataLen / sizeof(Message::Worker),
+					  Workers));
+
+				for (unsigned int ix = dataLen / sizeof(Message::Worker); ix < (unsigned int) Workers; ix++)
 				{
-					delete endpoint[3 + ix];
-					endpoint[3 + ix] = NULL;
+					if (endpoint[3 + ix] != NULL)
+					{
+						LM_M(("deleting obsolete worker endpoint %d", 3 + ix));
+						delete endpoint[3 + ix];
+						endpoint[3 + ix] = NULL;
+					}
 				}
 			}
 
@@ -1671,7 +1725,11 @@ void Network::msgTreat(void* vP)
 				}
 			}
 		}
+
 		iAmReady = true;
+
+		if (readyReceiver != NULL)
+			readyReceiver->ready("All endpoints added to endpoint vector");
 		break;
 
 	case Message::Alarm:
@@ -1698,9 +1756,9 @@ void Network::msgTreat(void* vP)
 
 	default:
 		LM_T(LMT_FORWARD, ("calling receiver->receive for message code '%s'", messageCode(msgCode)));
-		if (receiver)
+		if (packetReceiver)
 		{
-			receiver->_receive(endpointId, msgCode, &packet);
+			packetReceiver->_receive(endpointId, msgCode, &packet);
 			LM_T(LMT_FORWARD, ("back from receiver->receive for message code '%s'", messageCode(msgCode)));
 		}
 		else

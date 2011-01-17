@@ -43,7 +43,7 @@ int iomConnect(const char* ip, unsigned short port)
 	peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
 	peer.sin_port        = htons(port);
 
-	LM_M(("calling connect"));
+	LM_M(("connecting to %s, port %d", ip, port));
 	if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 	{
 		usleep(50000);

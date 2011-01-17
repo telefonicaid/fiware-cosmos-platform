@@ -1,4 +1,3 @@
-
 #ifndef _H_NETWORK_FAKE
 #define _H_NETWORK_FAKE
 
@@ -38,8 +37,8 @@ namespace ss {
 		// Init function ( one and only one of them should be called )
 		virtual void initAsSamsonController(int port, int num_workers);
 		
-		// Set the receiver element ( this should be notified about the packaked )
-		virtual void setPacketReceiverInterface( PacketReceiverInterface* receiver);
+		// Set the receiver element (this should be notified about the package)
+		virtual void setPacketReceiver(PacketReceiverInterface* receiver);
 		
 		// Get identifiers of known elements
 		virtual int controllerGetIdentifier();		// Get the identifier of the controller

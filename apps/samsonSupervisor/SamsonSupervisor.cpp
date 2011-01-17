@@ -9,13 +9,20 @@
 */
 #include "logMsg.h"             // LM_*
 
+#include "baTerm.h"             // baTermSetup
 #include "globals.h"            // tabManager, ...
+#include "ports.h"              // WORKER_PORT, ...
 #include "NetworkInterface.h"   // DataReceiverInterface, EndpointUpdateInterface
 #include "Endpoint.h"           // Endpoint
 #include "Network.h"            // Network
+#include "iomConnect.h"         // iomConnect
 #include "Message.h"            // ss::Message::Header
+#include "qt.h"                 // qtRun, ...
 #include "actions.h"            // help, list, start, ...
 #include "Starter.h"            // Starter
+#include "Spawner.h"            // Spawner
+#include "Process.h"            // Process
+#include "configFile.h"         // cfParse, cfPresent
 #include "SamsonSupervisor.h"   // Own interface
 
 
@@ -98,9 +105,27 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 */
 int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, const char* reason, void* info)
 {
+	Starter* starter;
+
 	LM_M(("********************* Got an Update Notification ('%s') for endpoint '%s' at '%s'", reason, ep->name.c_str(), ep->ip.c_str()));
 
-	Starter* starter;
+	if (networkP->ready() == false)
+	{
+		LM_M(("Not treating Endpoint Update Notification as Network module isn't ready ..."));
+		return 0;
+	}
+
+	if (tabManager == NULL)
+	{
+		LM_M(("tabManager not created yet ..."));
+		return 0;
+	}
+
+	if (tabManager->processListTab == NULL)
+	{
+		LM_M(("processListTab not created yet ..."));
+		return 0;
+	}
 
 	starter = tabManager->processListTab->starterLookup(ep);
 	if ((starter == NULL) && (info != NULL))
@@ -117,16 +142,96 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, const char* reason, void*
 		return -1;
 	}
 
+	LM_M(("Found starter '%s'", starter->name));
+
 	if (ep->state == ss::Endpoint::Connected)
-	{
-		LM_M(("********************* Setting state to Connected for endpoint '%s' at '%s'", ep->name.c_str(), ep->ip.c_str()));
-		starter->checkbox->setCheckState(Qt::Checked);
-	}
+		starter->checkState = Qt::Checked;
 	else
+		starter->checkState = Qt::Unchecked;
+
+	LM_M(("********************* Setting state to '%s' for endpoint '%s' at '%s'",
+		  (starter->checkState == Qt::Checked)? "Checked" : "Unchecked",
+		  ep->name.c_str(),
+		  ep->ip.c_str()));
+
+	if (starter->checkbox)
+		starter->checkbox->setCheckState(starter->checkState);
+
+	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* runQtAsThread - 
+*/
+void* runQtAsThread(void* nP)
+{
+	int          argC    = 1;
+	const char*  argV[2] = { "samsonSupervisor", NULL };
+
+	qtRun(argC, argV);
+	LM_X(1, ("Back from qtRun !"));
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* SamsonSupervisor::ready - 
+*/
+int SamsonSupervisor::ready(const char* info)
+{
+	unsigned int                ix;
+	std::vector<ss::Endpoint*>  epV;
+
+	LM_M(("---- Network READY - %s --------------------------", info));
+
+	epV = networkP->samsonWorkerEndpoints();
+	LM_M(("Got %d endpoints", epV.size()));
+	for (ix = 0; ix < epV.size(); ix++)
 	{
-		LM_M(("********************* Setting state to Disconnected for endpoint '%s' at '%s'", ep->name.c_str(), ep->ip.c_str()));
-		starter->checkbox->setCheckState(Qt::Unchecked);
+		ss::Endpoint* ep;
+
+		ep = epV[ix];
+
+		LM_M(("%02d: %-20s %-20s   %s", ix, ep->name.c_str(), ep->ip.c_str(), ep->stateName()));
 	}
+
+
+	// Connecting to all spawners
+	Spawner**     spawnerV;
+	unsigned int  spawners;
+
+	spawnerInit();
+	processInit();
+
+	cfParse(cfPath);
+	cfPresent();
+
+	spawnerV = spawnerListGet(&spawners);
+	LM_M(("Connecting to all %d spawners", spawners));
+	for (ix = 0; ix < spawners; ix++)
+	{
+		int s;
+
+		LM_M(("Connecting to spawner in host '%s'", spawnerV[ix]->host));
+		s = iomConnect(spawnerV[ix]->host, SPAWNER_PORT);
+		if (s == -1)
+			LM_E(("Error connecting to spawner in %s (port %d)", spawnerV[ix]->host, SPAWNER_PORT));
+		else
+			networkP->endpointAdd(s, s, (char*) "Spawner", "Spawner", 0, ss::Endpoint::Temporal, spawnerV[ix]->host, SPAWNER_PORT);
+	}
+
+#if 1
+	pthread_t t;
+	pthread_create(&t, NULL, runQtAsThread, networkP);
+#else
+	runQtAsThread(networkP);
+#endif
 
 	return 0;
 }

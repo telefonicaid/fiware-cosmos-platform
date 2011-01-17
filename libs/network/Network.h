@@ -47,13 +47,15 @@ public:
 	void reset(int endpoints, int workers);
 	void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL);
 
-	virtual void setPacketReceiverInterface(PacketReceiverInterface* receiver);
+	virtual void setPacketReceiver(PacketReceiverInterface* receiver);
 	virtual void setDataReceiver(DataReceiverInterface* receiver);
-	virtual void setEndpointUpdateReceiver(EndpointUpdateInterface* epReceiver);
+	virtual void setEndpointUpdateReceiver(EndpointUpdateReceiverInterface* receiver);
+	virtual void setReadyReceiver(ReadyReceiverInterface* receiver);
 
-	PacketReceiverInterface*   receiver;
-	DataReceiverInterface*     dataReceiver;
-	EndpointUpdateInterface*   endpointUpdateReceiver;
+	PacketReceiverInterface*           packetReceiver;
+	DataReceiverInterface*             dataReceiver;
+	EndpointUpdateReceiverInterface*   endpointUpdateReceiver;
+	ReadyReceiverInterface*            readyReceiver;
 
 	virtual void   initAsSamsonController(int port, int num_workers);
 	void           fdSet(int fd, const char* name, const char* alias);
@@ -103,6 +105,7 @@ public:
 	Endpoint*    endpointLookup(int fd, int* idP);
 	Endpoint*    endpointLookup(int ix);
 	Endpoint*    endpointLookup(char* alias);
+	Endpoint*    endpointLookup(Endpoint::Type type, char* ip);
 
 	int          helloSend(Endpoint* ep, Message::MessageType type);
 

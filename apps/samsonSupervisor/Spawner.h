@@ -28,6 +28,14 @@ typedef struct Spawner
 
 /* ****************************************************************************
 *
+* spawnerInit - 
+*/
+extern void spawnerInit(void);
+
+
+
+/* ****************************************************************************
+*
 * spawnerAdd - 
 */
 extern Spawner* spawnerAdd(char* host, unsigned short port, int fd);
@@ -62,7 +70,7 @@ extern void spawnerList(void);
 *
 * spawnerListGet - 
 */
-extern Spawner** spawnerListGet(int* noOfP);
+extern Spawner** spawnerListGet(unsigned int* noOfP);
 
 
 

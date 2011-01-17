@@ -25,4 +25,15 @@ extern ss::Network*       networkP;
 extern SamsonSupervisor*  supervisorP;
 extern TabManager*        tabManager;
 
+
+
+/* ****************************************************************************
+*
+* Option variables
+*/
+extern int     endpoints;
+extern char    controllerName[80];
+extern char    cfPath[80];
+extern bool    qt;
+
 #endif

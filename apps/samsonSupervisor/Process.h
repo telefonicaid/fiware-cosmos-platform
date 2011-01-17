@@ -31,6 +31,14 @@ typedef struct Process
 
 /* ****************************************************************************
 *
+* processInit - 
+*/
+extern void processInit(void);
+
+
+
+/* ****************************************************************************
+*
 * processAdd - 
 */
 extern Process* processAdd(char* name, char* host, char** args, int argCount);
@@ -57,7 +65,7 @@ extern void processList(void);
 *
 * processListGet - 
 */
-extern Process** processListGet(int* noOfP);
+extern Process** processListGet(unsigned int* noOfP);
 
 
 

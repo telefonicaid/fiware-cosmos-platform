@@ -14,6 +14,7 @@ SET (SOURCES
 	DelilahTab.cpp
 	LogTab.cpp
 	ProcessListTab.cpp
+	configFile.cpp
 )
 
 SET (HEADERS_MOC
@@ -32,6 +33,7 @@ SET (HEADERS
 	qt.h
 	actions.h
 	globals.h
+	configFile.h
 )
 
 

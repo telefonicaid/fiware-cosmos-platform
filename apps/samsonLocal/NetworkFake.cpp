@@ -17,7 +17,7 @@ namespace ss {
 	}
 	
 	// Set the receiver element
-	 void NetworkFake::setPacketReceiverInterface( PacketReceiverInterface* _receiver)
+	void NetworkFake::setPacketReceiver(PacketReceiverInterface* _receiver)
 	{
 		receiver = _receiver;
 	}

@@ -1,0 +1,6 @@
+samson01  Controller  -r -w -workers 3
+samson01  Worker      -controller samson01:1234 -alias Worker00
+samson02  Worker      -controller samson01:1234 -alias Worker01
+samson03  Worker      -controller samson01:1234 -alias Worker02
+#samson04  Worker      -controller samson01:1234 -alias Worker03
+#samson05  Worker      -controller samson01:1234 -alias Worker04

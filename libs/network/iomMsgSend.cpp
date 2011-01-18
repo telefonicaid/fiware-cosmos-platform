@@ -56,6 +56,9 @@ int iomMsgSend
 	int                   vecs = 1;
 	ssize_t               s;
 
+	if (code == ss::Message::Die)
+		LM_W(("%s sending a Die to %s", from, to));
+
 	memset(&header, 0, sizeof(header));
 	memset(ioVec, 0, sizeof(ioVec));
 
@@ -110,8 +113,8 @@ int iomMsgSend
 		++vecs;
 	}
 
-	LM_T(LMT_MSG, ("Sending '%s' %s to '%s', data bytes: { data: %d, gbuf: %d, kv: %d }",
-				   messageCode(code), messageType(type), to, header.dataLen, header.gbufLen, header.kvDataLen));
+	LM_T(LMT_MSG, ("Sending '%s' %s to '%s', data bytes: { data: %d, gbuf: %d, kv: %d }  fd: %d",
+				   messageCode(code), messageType(type), to, header.dataLen, header.gbufLen, header.kvDataLen, fd));
 
 	s = writev(fd, ioVec, vecs);
 	if (s == -1)
@@ -202,6 +205,9 @@ int iomMsgSend
 	int                  s;
 	struct timeval       start;
 	struct timeval       end;
+
+	if (code == ss::Message::Die)
+		LM_W(("%s sending a Die to %s", from->name.c_str(), to->name.c_str()));
 
 	gettimeofday(&start, NULL);
 

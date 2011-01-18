@@ -15,6 +15,7 @@
 #include <QPushButton>
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // LMT_*
 #include "globals.h"            // tabManager, ...
 
 #include "TabManager.h"         // TabManager
@@ -26,8 +27,8 @@
 *
 * Window geometry
 */
-#define WIN_WIDTH   1000
-#define WIN_HEIGHT   700
+#define WIN_WIDTH    400
+#define WIN_HEIGHT   600
 
 
 
@@ -68,19 +69,6 @@ static void mainWinCreate(QApplication* app)
 
 
 
-void buttonTest(void)
-{
-	QVBoxLayout* mainLayout = new QVBoxLayout;
-	QPushButton* quit       = new QPushButton("Quit");
-
-	QObject::connect(quit, SIGNAL(clicked()), qApp, SLOT(quit()));
-
-	mainLayout->addWidget(quit);
-	mainWindow->setLayout(mainLayout);
-}
-
-
-
 /* ****************************************************************************
 *
 * qtRun - 
@@ -93,13 +81,14 @@ void qtRun(int argC, const char* argV[])
 
 	mainWinCreate(&app);
 
-#if 0
-	buttonTest();
-#else
+	
+	LM_T(LMT_QT, ("Creating TabManager"));
 	tabManager = new TabManager(mainWindow);
-#endif
+	LM_T(LMT_QT, ("tabManager at %p", tabManager));
 
+	LM_T(LMT_QT, ("Showing main window"));
 	mainWindow->show();
 
+	LM_T(LMT_QT, ("running"));
 	app.exec();
 }

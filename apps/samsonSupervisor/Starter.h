@@ -29,20 +29,34 @@ class Starter : public QWidget
 	Q_OBJECT
 
 public:
-	Starter(const char* type, char* name);
-	void spawnerSet(Spawner* s);
-	void processSet(Process* s);
+	enum Type
+	{
+		ProcessStarter,
+		SpawnerConnecter
+	};
+
+public:
+	Starter(Spawner* spawnerP);
+	Starter(Process* processP);
+	void init(const char* name, Type type);
+
+	const char*     typeName(void);
+	void            forceCheck(void);
+	void            forceUncheck(void);
+	void            check(void);
+	bool            checked(void);
 
 	Spawner*        spawner;
 	Process*        process;
 
-	QCheckBox*      checkbox;
 	ss::Endpoint*   endpoint;
 
-	char*           type;
+	Type            type;
 	char*           name;
 	Qt::CheckState  checkState;
 	bool            connected;
+
+	QCheckBox*      checkbox;
 
 private slots:
 	void spawnerClicked();

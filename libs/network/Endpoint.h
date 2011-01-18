@@ -57,6 +57,20 @@ typedef struct SendJobQueue
 class Endpoint
 {
 public:
+	typedef enum UpdateReason
+	{
+		ControllerAdded,
+		ControllerDisconnected,
+		ControllerReconnected,
+		ControllerRemoved,
+		EndpointRemoved,
+		HelloReceived,
+		NoLongerTemporal,
+		WorkerAdded,
+		WorkerDisconnected,
+		WorkerRemoved
+	} UpdateReason;
+
 	typedef enum State
 	{
 		Free,

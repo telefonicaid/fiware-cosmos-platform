@@ -48,7 +48,7 @@ public:
 class EndpointUpdateReceiverInterface
 {
 public:
-	virtual int endpointUpdate(Endpoint* ep, const char* reason, void* info = NULL) = 0;
+	virtual int endpointUpdate(Endpoint* ep, Endpoint::UpdateReason, const char* reason, void* info = NULL) = 0;
 	virtual     ~EndpointUpdateReceiverInterface() {};
 };
 

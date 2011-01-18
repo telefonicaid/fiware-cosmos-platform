@@ -11,7 +11,9 @@
 #include <QCheckBox>
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // LMT_*
 
+#include "globals.h"            // networkP
 #include "actions.h"            // spawnerConnect, spawnerDisconnect
 #include "Starter.h"            // Own interface
 
@@ -19,31 +21,63 @@
 
 /* ****************************************************************************
 *
+* Starter::init
+*/
+void Starter::init(const char* name, Type type)
+{
+	this->spawner    = NULL;
+	this->process    = NULL;
+	this->endpoint   = NULL;
+	this->checkbox   = NULL;
+	this->name       = strdup(name);
+	this->type       = type;
+}
+
+
+
+/* ****************************************************************************
+*
 * Starter::Starter
 */
-Starter::Starter(const char* type, char* name)
+Starter::Starter(Process* processP)
 {
-	checkbox = new QCheckBox(QString(name), this);
+	char name[128];
 
-	if (strcmp(type, "Spawner") == 0)
-		connect(checkbox, SIGNAL(clicked()), this, SLOT(spawnerClicked()));
-	else if (strcmp(type, "Process") == 0)
-		connect(checkbox, SIGNAL(clicked()), this, SLOT(processClicked()));
-	else
-		LM_X(1, ("bad type '%s' for Starter", type));
+	snprintf(name, sizeof(name), "%s@%s", processP->name, processP->host);
+	init(name, ProcessStarter);
+	process = processP;
+}
 
-	checkState = Qt::Unchecked;
-	checkbox->setCheckState(checkState);
 
-	spawner    = NULL;
-	process    = NULL;
-	endpoint   = NULL;
-	connected  = false;
 
-	this->name = strdup(name);
-	this->type = strdup(type);
+/* ****************************************************************************
+*
+* Starter::Starter
+*/
+Starter::Starter(Spawner* spawnerP)
+{
+	char name[128];
 
-	checkbox->show();
+	snprintf(name, sizeof(name), "%s", spawnerP->host);
+	init(name, SpawnerConnecter);
+	spawner = spawnerP;
+}
+
+
+
+/* ****************************************************************************
+*
+* Starter::typeName
+*/
+const char* Starter::typeName(void)
+{
+	switch (type)
+	{
+	case ProcessStarter:        return "ProcessStarter";
+	case SpawnerConnecter:      return "SpawnerConnecter";
+	}
+
+	return "UnknownStarterType";
 }
 
 
@@ -73,21 +107,16 @@ void Starter::spawnerClicked(void)
 			LM_W(("Not connected to spawner at '%s'", spawner->host));
 		else
 		{
-			spawnerDisconnect(spawner);
+			if (endpoint == NULL)
+				LM_W(("NULL endpoint"));
+			else if (endpoint->state != ss::Endpoint::Connected)
+				LM_W(("Not connected to endpoint"));
+			else
+				networkP->endpointRemove(endpoint, "GUI Click");
+
 			connected = false;
 		}
 	}
-}
-
-
-
-/* ****************************************************************************
-*
-* Starter::spawnerSet
-*/
-void Starter::spawnerSet(Spawner* s)
-{
-	spawner = s;
 }
 
 
@@ -107,7 +136,7 @@ void Starter::processClicked(void)
 			LM_W(("Already started process '%s' in '%s'", process->name, process->host));
 		else
 		{
-			processStart(process);
+			processStart(process, this);
 			connected = true;
 		}
 	}
@@ -117,7 +146,7 @@ void Starter::processClicked(void)
 			LM_W(("process '%s' in '%s' not running", process->name, process->host));
 		else
 		{
-			processKill(process);
+			processKill(process, this);
 			connected = false;
 		}
 	}
@@ -127,13 +156,63 @@ void Starter::processClicked(void)
 
 /* ****************************************************************************
 *
-* Starter::processSet
+* Starter::forceCheck
 */
-void Starter::processSet(Process* s)
+void Starter::forceCheck(void)
 {
-	process = s;
+	if (endpoint != NULL)
+		LM_T(LMT_CHECK, ("Checking %s-Starter '%s' (endpoint %p - '%s' at '%s')", typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
+	else
+		LM_T(LMT_CHECK, ("Checking %s-Starter '%s' (NULL endpoint)", typeName(), name));
+
+	checkState = Qt::Checked;
+	connected  = true;
+
+	if (checkbox)
+		checkbox->setCheckState(checkState);
 }
 
 
 
+/* ****************************************************************************
+*
+* Starter::forceUncheck
+*/
+void Starter::forceUncheck(void)
+{
+	if (endpoint != NULL)
+		LM_T(LMT_CHECK, ("Unchecking %s-Starter '%s' (endpoint %p - '%s' at '%s')", typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
+	else
+		LM_T(LMT_CHECK, ("Unchecking %s-Starter '%s' (NULL endpoint)", typeName(), name));
 
+	checkState = Qt::Unchecked;
+	connected  = false;
+
+	if (checkbox)
+		checkbox->setCheckState(checkState);
+}
+
+
+
+/* ****************************************************************************
+*
+* Starter::check
+*/
+void Starter::check(void)
+{
+	if ((endpoint != NULL) && (endpoint->state == ss::Endpoint::Connected))
+		forceCheck();
+	else
+		forceUncheck();
+}
+
+
+
+/* ****************************************************************************
+*
+* Starter::checked
+*/
+bool Starter::checked(void)
+{
+	return connected;
+}

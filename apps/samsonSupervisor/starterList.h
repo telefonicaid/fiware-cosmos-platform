@@ -1,13 +1,13 @@
-#ifndef ACTIONS_H
-#define ACTIONS_H
+#ifndef STARTER_LIST_H
+#define STARTER_LIST_H
 
 /* ****************************************************************************
 *
-* FILE                     actions.h
+* FILE                     starterList.h
 *
 * AUTHOR                   Ken Zangelin
 *
-* CREATION DATE            Jan 13 2011
+* CREATION DATE            Jan 18 2011
 *
 */
 #include "Starter.h"            // Starter
@@ -18,64 +18,66 @@
 
 /* ****************************************************************************
 *
-* help - 
+* starterListInit - 
 */
-extern void help(void);
+extern void starterListInit(unsigned int starters);
 
 
 
 /* ****************************************************************************
 *
-* list - 
+* starterMaxGet - 
 */
-extern void list(void);
+extern unsigned int starterMaxGet(void);
 
 
 
 /* ****************************************************************************
 *
-* start - 
+* starterListGet - 
 */
-extern void start(void);
+extern Starter** starterListGet(void);
 
 
 
 /* ****************************************************************************
 *
-* connectToAllSpawners - 
+* starterListShow - 
 */
-extern void connectToAllSpawners(void);
+extern void starterListShow(const char* what);
 
 
 
 /* ****************************************************************************
 *
-* spawnerConnect - connect to spawner
+* starterAdd - 
 */
-extern void spawnerConnect(Spawner* spawner);
+extern Starter* starterAdd(Starter* starter);
+extern Starter* starterAdd(Spawner* spawner);
+extern Starter* starterAdd(Process* process);
 
 
 
 /* ****************************************************************************
 *
-* startAllProcesses - 
+* starterLookup - 
 */
-extern void startAllProcesses(void);
+extern Starter* starterLookup(ss::Endpoint* ep);
 
 
 
 /* ****************************************************************************
 *
-* processStart - start to process
+* starterLookup - 
 */
-extern void processStart(Process* process, Starter* starter);
+extern Starter* starterLookup(Process* process);
 
 
 
 /* ****************************************************************************
 *
-* processKill - kill a process
+* starterLookup - 
 */
-extern void processKill(Process* process, Starter* starter);
+extern Starter* starterLookup(Spawner* spawner);
 
 #endif

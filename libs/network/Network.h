@@ -106,6 +106,7 @@ public:
 	Endpoint*    endpointLookup(int ix);
 	Endpoint*    endpointLookup(char* alias);
 	Endpoint*    endpointLookup(Endpoint::Type type, char* ip);
+	void         endpointRemove(Endpoint* ep, const char* why);
 
 	int          helloSend(Endpoint* ep, Message::MessageType type);
 
@@ -118,7 +119,6 @@ private:
 
 	bool         iAmReady;
 
-	void         endpointRemove(Endpoint* ep);
 	Endpoint*    endpointFreeGet(Endpoint::Type type);
 	void         checkAllWorkersConnected(void);
 };

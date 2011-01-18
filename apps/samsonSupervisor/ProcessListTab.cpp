@@ -12,15 +12,21 @@
 #include <QVBoxLayout>
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // LMT_*
 
 #include "globals.h"            // global vars
 #include "actions.h"            // help, list, start, ...
 #include "Starter.h"            // Starter
 #include "Spawner.h"            // Spawner
 #include "Process.h"            // Process
+#include "spawnerList.h"        // spawnerListGet, ...
+#include "processList.h"        // processListGet, ...
+#include "starterList.h"        // starterAdd, ...
 #include "ProcessListTab.h"     // Own interface
 
 
+
+#define ROWS 12
 
 /* ****************************************************************************
 *
@@ -28,162 +34,61 @@
 */
 ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(parent)
 {
-	unsigned int  noOfSpawners;
-	Spawner**     spawnerVec;
-	unsigned int  noOfProcesses;
-	Process**     processVec;
+	Starter**     starterV;
+	unsigned int  starters;
+	int           spawnerColumn = 0;
+	int           processColumn = 1;
 
 	mainLayout = new QGridLayout(parent);
-
 	setLayout(mainLayout);
 
-	spawnerVec = spawnerListGet(&noOfSpawners);
-	LM_M(("Got %d Spawners", noOfSpawners));
-	spawnerListCreate(spawnerVec, noOfSpawners);
-
-	processVec = processListGet(&noOfProcesses);
-	LM_M(("Got %d Processes", noOfProcesses));
-	processListCreate(processVec, noOfProcesses);
-
-	memset(starterV, 0, sizeof(starterV));
-}
-
-
-
-/* ****************************************************************************
-*
-* spawnerListCreate - 
-*/
-void ProcessListTab::spawnerListCreate(Spawner** spawnerV, int spawners)
-{
-	Starter*       starter;
-	Spawner*       spawnerP;
-	ss::Endpoint*  ep;
-	int            ix;
-	int            column = 0;
-
-	LM_M(("Creating %d spawners", spawners));
+	startersCreate();
 
 	QLabel* spawnersLabel = new QLabel("Spawners");
-	mainLayout->addWidget(spawnersLabel, 0, column);
+	mainLayout->addWidget(spawnersLabel, 0, spawnerColumn);
 
-	for (ix = 0; ix < spawners; ix++)
+	QLabel* processesLabel = new QLabel("Processes");
+	mainLayout->addWidget(processesLabel, 0, processColumn);
+
+	starters  = starterMaxGet();
+	starterV  = starterListGet();
+
+	LM_T(LMT_PROCESS_LIST_TAB, ("Creating QT part of %d starters", starters));
+	for (unsigned int ix = 0; ix < starters; ix++)
 	{
-		if (spawnerV[ix] == NULL)
+		if (starterV[ix] == NULL)
 			continue;
 
-		spawnerP = spawnerV[ix];
-		starter  = new Starter("Spawner", spawnerP->host);
+		LM_T(LMT_PROCESS_LIST_TAB, ("Creating checkbox for '%s'", starterV[ix]->name));
+		starterV[ix]->checkbox = new QCheckBox(QString(starterV[ix]->name), starterV[ix]);
 
-		LM_M(("Creating spawner '%s'", spawnerP->host));
-		starter->spawnerSet(spawnerP);
-		mainLayout->addWidget(starter->checkbox, ix + 1, column);
-		starterAdd(starter);
-
-		ep = networkP->endpointLookup(ss::Endpoint::Spawner, spawnerP->host);
-		if (ep)
+		if (starterV[ix]->type == Starter::SpawnerConnecter)
 		{
-			starter->connected  = true;
-			starter->checkState = Qt::Checked;
+			LM_T(LMT_PROCESS_LIST_TAB, ("Creating checkbox for spawner-starter '%s'", starterV[ix]->name));
+			starterV[ix]->checkbox->connect(starterV[ix]->checkbox, SIGNAL(clicked()), starterV[ix], SLOT(spawnerClicked()));
+			mainLayout->addWidget(starterV[ix]->checkbox, ix + 1, spawnerColumn);
+
+			starterV[ix]->endpoint = networkP->endpointLookup(ss::Endpoint::Spawner, starterV[ix]->spawner->host);
+		}
+		else if (starterV[ix]->type == Starter::ProcessStarter)
+		{
+			LM_T(LMT_PROCESS_LIST_TAB, ("Creating checkbox for process-starter '%s'", starterV[ix]->name));
+			starterV[ix]->checkbox->connect(starterV[ix]->checkbox, SIGNAL(clicked()), starterV[ix], SLOT(processClicked()));
+			mainLayout->addWidget(starterV[ix]->checkbox, ix + 1, processColumn);
+
+			if (strcmp(starterV[ix]->process->name, "Controller") == 0)
+				starterV[ix]->endpoint = networkP->endpointLookup(ss::Endpoint::Controller, starterV[ix]->process->host);
+			else if (strcmp(starterV[ix]->process->name, "Worker") == 0)
+				starterV[ix]->endpoint = networkP->endpointLookup(ss::Endpoint::Worker, starterV[ix]->process->host);
 		}
 		else
-		{
-			starter->connected  = false;
-			starter->checkState = Qt::Unchecked;
-		}
+			LM_X(1, ("bad type '%d' for Starter", starterV[ix]->type));
 
-		starter->checkbox->setCheckState(starter->checkState);
+		starterV[ix]->check();
 	}
 
-	for (ix = 0; ix < 20; ix++)
+	for (unsigned int ix = 0; ix < ROWS; ix++)
 		mainLayout->setRowMinimumHeight(ix, 40);
-
-	// Connect Button
-	connectButton = new QPushButton("Connect To All Spawners");
-	connectButton->connect(connectButton, SIGNAL(clicked()), this, SLOT(connect()));
-	mainLayout->addWidget(connectButton, 20, column);
-}
-
-
-
-/* ****************************************************************************
-*
-* processListCreate - 
-*/
-void ProcessListTab::processListCreate(Process** processV, int process)
-{
-	Starter*       starter;
-	Process*       processP;
-	ss::Endpoint*  ep;
-	char           name[128];
-	int            ix;
-	int            column = 1;
-
-	LM_M(("Creating %d process", process));
-
-	QLabel* processLabel = new QLabel("Processes");
-	mainLayout->addWidget(processLabel, 0, column);
-	
-	for (ix = 0; ix < process; ix++)
-	{
-		if (processV[ix] == NULL)
-			continue;
-
-		processP = processV[ix];
-		snprintf(name, sizeof(name), "%s@%s", processP->name, processP->host);
-		starter  = new Starter("Process", name);
-
-		LM_M(("Creating process '%s'", processP->name));
-		starter->processSet(processP);
-		mainLayout->addWidget(starter->checkbox, ix + 1, column);
-
-		if (strcmp(processP->name, "Controller") == 0)
-			ep = networkP->endpointLookup(ss::Endpoint::Controller, processP->host);
-		else if (strcmp(processP->name, "Worker") == 0)
-			ep = networkP->endpointLookup(ss::Endpoint::Worker, processP->host);
-
-		if (ep)
-		{
-			starter->connected  = true;
-			starter->checkState = Qt::Checked;
-		}
-		else
-		{
-			starter->connected  = false;
-			starter->checkState = Qt::Unchecked;
-		}
-
-		starter->checkbox->setCheckState(starter->checkState);
-	}
-
-	// Start Button
-	startButton = new QPushButton("Start All Processes");
-	startButton->connect(startButton, SIGNAL(clicked()), this, SLOT(start()));
-	mainLayout->addWidget(startButton, 20, column);
-
-	mainLayout->setColumnStretch(19, 500);
-}
-
-
-
-/* ****************************************************************************
-*
-* ProcessListTab::connect
-*/
-void ProcessListTab::connect(void)
-{
-	connectToAllSpawners();
-}
-
-
-
-/* ****************************************************************************
-*
-* ProcessListTab::start
-*/
-void ProcessListTab::start(void)
-{
-	startAllProcesses();
 }
 
 
@@ -201,67 +106,45 @@ void ProcessListTab::quit(void)
 
 /* ****************************************************************************
 *
-* ProcessListTab::starterAdd - 
+* startersCreate - 
 */
-void ProcessListTab::starterAdd(Starter* starter)
+void ProcessListTab::startersCreate(void)
 {
-	unsigned int ix;
+	//
+	// One Qt Starter for each Spawner
+	//
+	Spawner**     spawnerV;
+	unsigned int  spawnerMax;
 
-	for (ix = 0; ix < sizeof(starterV) / sizeof(starterV[0]); ix++)
+	spawnerV   = spawnerListGet();
+	spawnerMax = spawnerMaxGet();
+
+	for (unsigned int ix = 0; ix < spawnerMax; ix++)
 	{
-		if (starterV[ix] != NULL)
+		if (spawnerV[ix] == NULL)
 			continue;
 
-		LM_M(("*** Adding '%s' starter '%s'", starter->type, starter->name));
-		starterV[ix] = starter;
-		return;
+		LM_T(LMT_STARTER, ("Adding starter for spawner in '%s'", spawnerV[ix]->host));
+		starterAdd(spawnerV[ix]);
 	}
 
-	LM_X(1, ("No room for starters (vector size is %d)", sizeof(starterV) / sizeof(starterV[0])));
-}
 
 
+	//
+	// One Qt Starter for each Process
+	//
+	Process**     processV;
+	unsigned int  processMax;
 
-/* ****************************************************************************
-*
-* ProcessListTab::starterLookup - 
-*/
-Starter* ProcessListTab::starterLookup(ss::Endpoint* ep)
-{
-	unsigned int ix;
-	char*        host;
+	processV   = processListGet();
+	processMax = processMaxGet();
 
-	for (ix = 0; ix < sizeof(starterV) / sizeof(starterV[0]); ix++)
+	for (unsigned int ix = 0; ix < processMax; ix++)
 	{
-		if (starterV[ix] == NULL)
+		if (processV[ix] == NULL)
 			continue;
 
-		LM_M(("*** Comparing %p to %p (%s)", ep, starterV[ix]->endpoint, starterV[ix]->endpoint->name.c_str()));
-		if (starterV[ix]->endpoint == ep)
-			return starterV[ix];
+		LM_T(LMT_STARTER, ("Adding starter for process '%s' in '%s'", processV[ix]->name, processV[ix]->host));
+		starterAdd(processV[ix]);
 	}
-
-	for (ix = 0; ix < sizeof(starterV) / sizeof(starterV[0]); ix++)
-	{
-		if (starterV[ix] == NULL)
-			continue;
-
-		LM_M(("***  Testing '%s' starter '%s'", starterV[ix]->type, starterV[ix]->name));
-
-		if (starterV[ix]->spawner != NULL)
-			host = starterV[ix]->spawner->host;
-		else if (starterV[ix]->process != NULL)
-			host = starterV[ix]->process->host;
-		else
-			continue;
-
-		LM_M(("*** Comparing '%s' to '%s'", host, ep->ip.c_str()));
-		if (strcmp(host, ep->ip.c_str()) == 0)
-		{
-			starterV[ix]->endpoint = ep;
-			return starterV[ix];
-		}
-	}
-
-	return NULL;
 }

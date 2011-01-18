@@ -66,7 +66,7 @@ int main(int argC, const char *argV[])
 	paConfig("screen line format",            (void*) "TYPE: TEXT");
 	paConfig("log to file",                   (void*) true);
 
-	paParse(paArgs, argC, (char**) argV, 1, false);// No more pid in the log file name
+	paParse(paArgs, argC, (char**) argV, 1, false);
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 

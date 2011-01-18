@@ -11,7 +11,10 @@
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // LMT_*
-#include "Process.h"            // Process, processAdd, ...
+
+#include "Process.h"            // Process
+#include "processList.h"        // processAdd, ...
+#include "configFile.h"         // Own interface
 
 
 
@@ -24,7 +27,6 @@ static int argsParse(char* line, char* host, char* process, char** args, int* ar
 	int  ix;
 	int  argIx = 0;
 	
-
 	LM_T(LMT_CONFIG_FILE, ("=============================================================="));
 	LM_T(LMT_CONFIG_FILE, ("Parsing line: %s", line));
 
@@ -133,12 +135,9 @@ static int argsParse(char* line, char* host, char* process, char** args, int* ar
 		LM_T(LMT_CONFIG_FILE, ("Got arg %d: '%s'. line: '%s'", argIx, start, line));
 		args[argIx++] = strdup(start);
 		LM_T(LMT_CONFIG_FILE, ("REST: '%s'", line));
-		LM_T(LMT_CONFIG_FILE, ("host: '%s', host"));
 	}
 
 	*argCount = argIx;
-	LM_T(LMT_CONFIG_FILE, ("host:    '%s'", host));
-	LM_T(LMT_CONFIG_FILE, ("process: '%s'", process));
 
 	return 0;
 }
@@ -147,9 +146,9 @@ static int argsParse(char* line, char* host, char* process, char** args, int* ar
 
 /* ****************************************************************************
 *
-* cfParse - 
+* configFileParse - 
 */
-void cfParse(char* cfPath)
+void configFileParse(char* cfPath)
 {
 	char    line[160];
 	FILE*   fP;
@@ -172,37 +171,5 @@ void cfParse(char* cfPath)
 			LM_T(LMT_CONFIG_FILE, ("Adding process '%s' in %s with %d args", process, host, argCount));
 			processAdd(process, host, args, argCount);
 		}
-	}
-}
-
-
-
-/* ****************************************************************************
-*
-* cfPresent - 
-*/
-void cfPresent(void)
-{
-	Process* p;
-	int      ix = 0;
-
-	while (1)
-	{
-		int aIx;
-
-		p = processGet(ix);
-		if (p == NULL)
-			break;
-
-		printf("Process %d:\n", ix);
-		printf("  Name:     %s\n", p->name);
-		printf("  Host:     %s\n", p->host);
-		printf("  Args:     %d\n", p->argCount);
-
-		for (aIx = 0; aIx < p->argCount; aIx++)
-			printf("    Arg %02d:  %s\n", aIx, p->arg[aIx]);
-
-		printf("\n");
-		++ix;
 	}
 }

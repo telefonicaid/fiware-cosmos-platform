@@ -8,6 +8,7 @@
 *
 */
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // LMT_*
 
 #include "baTerm.h"             // baTermSetup
 #include "globals.h"            // tabManager, ...
@@ -22,7 +23,8 @@
 #include "Starter.h"            // Starter
 #include "Spawner.h"            // Spawner
 #include "Process.h"            // Process
-#include "configFile.h"         // cfParse, cfPresent
+#include "starterList.h"        // starterLookup
+#include "spawnerList.h"        // spawnerListGet, ...
 #include "SamsonSupervisor.h"   // Own interface
 
 
@@ -101,39 +103,130 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 
 /* ****************************************************************************
 *
+* disconnectAllWorkers - 
+*/
+void disconnectAllWorkers(void)
+{
+	unsigned int                ix;
+	std::vector<ss::Endpoint*>  epV;
+
+	epV = networkP->samsonWorkerEndpoints();
+	LM_M(("Got %d endpoints", epV.size()));
+	for (ix = 0; ix < epV.size(); ix++)
+	{
+		ss::Endpoint* ep;
+
+		ep = epV[ix];
+
+		if (ep->type == ss::Endpoint::Worker)
+		{
+			LM_W(("Closing connection to Worker %02d: %-20s %-20s   %s", ix, ep->name.c_str(), ep->ip.c_str(), ep->stateName()));
+			close(ep->wFd);
+			networkP->endpointRemove(ep, "Disconnecting all workers");
+		}
+	}
+}
+
+
+
+/* ****************************************************************************
+*
 * SamsonSupervisor::endpointUpdate - 
 */
-int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, const char* reason, void* info)
+int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info)
 {
-	Starter* starter;
+	Starter*       starter;
+	ss::Endpoint*  newEp = (ss::Endpoint*) info;
 
-	LM_M(("********************* Got an Update Notification ('%s') for endpoint '%s' at '%s'", reason, ep->name.c_str(), ep->ip.c_str()));
+	if (ep)
+		LM_M(("********************* Got an Update Notification ('%s') for endpoint %p '%s' at '%s'", reasonText, ep, ep->name.c_str(), ep->ip.c_str()));
+	else
+		LM_M(("********************* Got an Update Notification ('%s') for NULL endpoint", reason));
 
-	if (networkP->ready() == false)
+	LM_M(("looking for starter with endpoint %p", ep));
+	starter = starterLookup(ep);
+	LM_M(("starterLookup(%p) returned %p", ep, starter));
+
+	if (starter != NULL)
+		LM_M(("found %s-starter '%s'", starter->typeName(), starter->name));
+
+	switch (reason)
 	{
-		LM_M(("Not treating Endpoint Update Notification as Network module isn't ready ..."));
+	case ss::Endpoint::NoLongerTemporal:
+		if (ep->type != ss::Endpoint::Temporal)
+			LM_X(1, ("BUG - endpoint not temporal"));
+
+		if ((newEp->type != ss::Endpoint::Worker) && (newEp->type != ss::Endpoint::Spawner))
+			LM_X(1, ("BUG - new endpoint should be either Worker or Spawner - is '%s'", newEp->typeName()));
+
+		if (starter == NULL)
+			LM_RE(-1, ("NULL starter for '%s'", reasonText));
+
+		LM_M(("fds for temporal endpoint: r:%d w:%d", ep->rFd, ep->wFd));
+		LM_M(("fds for new endpoint:      r:%d w:%d", newEp->rFd, newEp->wFd));
+
+		starter->endpoint = newEp;
+		starter->check();
 		return 0;
+		break;
+
+	case ss::Endpoint::ControllerAdded:
+	case ss::Endpoint::ControllerDisconnected:
+	case ss::Endpoint::ControllerReconnected:
+	case ss::Endpoint::ControllerRemoved:
+	case ss::Endpoint::EndpointRemoved:
+	case ss::Endpoint::HelloReceived:
+	case ss::Endpoint::WorkerAdded:
+	case ss::Endpoint::WorkerDisconnected:
+	case ss::Endpoint::WorkerRemoved:
+		LM_W(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
+		break;
 	}
 
-	if (tabManager == NULL)
+#if 0
+	if ((networkP->controller != NULL) && (networkP->controller->state != ss::Endpoint::Connected))
 	{
-		LM_M(("tabManager not created yet ..."));
-		return 0;
+		if (networkP->controller->state != ss::Endpoint::Unconnected)
+		{
+			LM_W(("Seems like the controller died (controller in state '%s') - disconnecting all workers", networkP->controller->stateName()));
+			disconnectAllWorkers();
+			return 0;
+		}
+		else
+			LM_M(("controller is unconnected - no action"));
 	}
 
-	if (tabManager->processListTab == NULL)
+	if (strcmp(reason, "no longer temporal") == 0)
 	{
-		LM_M(("processListTab not created yet ..."));
-		return 0;
+		ss::Endpoint* newEp = (ss::Endpoint*) info;
+
+		if (ep->type != ss::Endpoint::Temporal)
+			LM_X(1, ("BUG - endpoint not temporal"));
+
+		if ((newEp->type != ss::Endpoint::Worker) && (newEp->type != ss::Endpoint::Spawner))
+			LM_X(1, ("BUG - new endpoint not ss::Endpoint::Worker nor ss::Endpoint::Spawner"));
+
 	}
 
-	starter = tabManager->processListTab->starterLookup(ep);
+	if ((starter != NULL) && (info != NULL))
+	{
+		ss::Endpoint* newEp = (ss::Endpoint*) info;
+
+		if ((newEp->type == ss::Endpoint::Worker) && (ep->type == ss::Endpoint::Temporal))
+		{
+			LM_M(("Probably a 'Worker No longer temporal' - changing endpoint pointer for starter '%s' type '%s'", starter->name, starter->type));
+			starter->endpoint = newEp;
+			starter->check();
+			return 0;
+		}
+
+		LM_RE(-1, ("Don't know how I got here ... (starter: %s, type: %s", starter->name, starter->type));
+	}
+
 	if ((starter == NULL) && (info != NULL))
 	{
-		starter = tabManager->processListTab->starterLookup((ss::Endpoint*) info);
-		if (starter)
-			starter->endpoint = (ss::Endpoint*) info;
-		ep = (ss::Endpoint*) info;
+		starter = starterLookup((ss::Endpoint*) info);
+		ep      = (ss::Endpoint*) info;
 	}
 
 	if (starter == NULL)
@@ -142,20 +235,11 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, const char* reason, void*
 		return -1;
 	}
 
-	LM_M(("Found starter '%s'", starter->name));
+	LM_T(LMT_STARTER, ("Found starter '%s'", starter->name));
 
-	if (ep->state == ss::Endpoint::Connected)
-		starter->checkState = Qt::Checked;
-	else
-		starter->checkState = Qt::Unchecked;
-
-	LM_M(("********************* Setting state to '%s' for endpoint '%s' at '%s'",
-		  (starter->checkState == Qt::Checked)? "Checked" : "Unchecked",
-		  ep->name.c_str(),
-		  ep->ip.c_str()));
-
-	if (starter->checkbox)
-		starter->checkbox->setCheckState(starter->checkState);
+	starter->endpoint = ep;
+	starter->check();
+#endif
 
 	return 0;
 }
@@ -187,6 +271,7 @@ int SamsonSupervisor::ready(const char* info)
 {
 	unsigned int                ix;
 	std::vector<ss::Endpoint*>  epV;
+	static bool                 firstTime = true;
 
 	LM_M(("---- Network READY - %s --------------------------", info));
 
@@ -201,37 +286,35 @@ int SamsonSupervisor::ready(const char* info)
 		LM_M(("%02d: %-20s %-20s   %s", ix, ep->name.c_str(), ep->ip.c_str(), ep->stateName()));
 	}
 
-
-	// Connecting to all spawners
-	Spawner**     spawnerV;
-	unsigned int  spawners;
-
-	spawnerInit();
-	processInit();
-
-	cfParse(cfPath);
-	cfPresent();
-
-	spawnerV = spawnerListGet(&spawners);
-	LM_M(("Connecting to all %d spawners", spawners));
-	for (ix = 0; ix < spawners; ix++)
+	if (firstTime == true)
 	{
-		int s;
+		// Connecting to all spawners
+		Spawner**     spawnerV;
+		unsigned int  spawners;
 
-		LM_M(("Connecting to spawner in host '%s'", spawnerV[ix]->host));
-		s = iomConnect(spawnerV[ix]->host, SPAWNER_PORT);
-		if (s == -1)
-			LM_E(("Error connecting to spawner in %s (port %d)", spawnerV[ix]->host, SPAWNER_PORT));
-		else
-			networkP->endpointAdd(s, s, (char*) "Spawner", "Spawner", 0, ss::Endpoint::Temporal, spawnerV[ix]->host, SPAWNER_PORT);
+		spawners = spawnerMaxGet();
+		spawnerV = spawnerListGet();
+
+		LM_M(("Connecting to all %d spawners", spawners));
+		for (ix = 0; ix < spawners; ix++)
+		{
+			int s;
+
+			if (spawnerV[ix] == NULL)
+				continue;
+
+			LM_M(("Connecting to spawner in host '%s'", spawnerV[ix]->host));
+			s = iomConnect(spawnerV[ix]->host, SPAWNER_PORT);
+			spawnerV[ix]->fd = s;
+			if (s == -1)
+				LM_E(("Error connecting to spawner in %s (port %d)", spawnerV[ix]->host, SPAWNER_PORT));
+			else
+				networkP->endpointAdd(s, s, (char*) "Spawner", "Spawner", 0, ss::Endpoint::Temporal, spawnerV[ix]->host, SPAWNER_PORT);
+		}
 	}
 
-#if 1
-	pthread_t t;
-	pthread_create(&t, NULL, runQtAsThread, networkP);
-#else
-	runQtAsThread(networkP);
-#endif
+	networkReady = true;    // Is this true if Controller not running ?
+	firstTime    = false;
 
 	return 0;
 }

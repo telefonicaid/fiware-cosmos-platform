@@ -22,16 +22,6 @@
 
 /* ****************************************************************************
 *
-* Class declarations
-*/
-class Spawner;
-class Process;
-class Starter;
-
-
-
-/* ****************************************************************************
-*
 * ProcessListTab - 
 */
 class ProcessListTab : public QWidget
@@ -41,22 +31,12 @@ class ProcessListTab : public QWidget
 public:
 	ProcessListTab(const char* name, QWidget *parent = 0);
 
-	void      spawnerListCreate(Spawner** spawnerV, int spawners);
-	void      processListCreate(Process** processV, int processes);
-	void      starterAdd(Starter* starter);
-	Starter*  starterLookup(ss::Endpoint* ep);
-
 private slots:
-	void connect();
-	void start();
 	void quit();
 
 private:
 	QGridLayout*  mainLayout;
-
-	QPushButton*  connectButton;
-	QPushButton*  startButton;
-	Starter*      starterV[80];
+	void          startersCreate(void);
 };
 
 #endif

@@ -1,81 +1,80 @@
-#ifndef ACTIONS_H
-#define ACTIONS_H
+#ifndef PROCESS_LIST_H
+#define PROCESS_LIST_H
 
 /* ****************************************************************************
 *
-* FILE                     actions.h
+* FILE                     processList.h
 *
 * AUTHOR                   Ken Zangelin
 *
-* CREATION DATE            Jan 13 2011
+* CREATION DATE            Jan 18 2011
 *
 */
-#include "Starter.h"            // Starter
-#include "Spawner.h"            // Spawner
 #include "Process.h"            // Process
+#include "Spawner.h"            // Spawner
 
 
 
 /* ****************************************************************************
 *
-* help - 
+* processListInit - 
 */
-extern void help(void);
+extern void processListInit(unsigned int pMax);
 
 
 
 /* ****************************************************************************
 *
-* list - 
+* processAdd - 
 */
-extern void list(void);
+extern Process* processAdd(Process* process);
 
 
 
 /* ****************************************************************************
 *
-* start - 
+* processAdd - 
 */
-extern void start(void);
+extern Process* processAdd(char* name, char* host, char** args, int argCount);
 
 
 
 /* ****************************************************************************
 *
-* connectToAllSpawners - 
+* processLookup - 
 */
-extern void connectToAllSpawners(void);
+extern Process* processLookup(unsigned int ix);
 
 
 
 /* ****************************************************************************
 *
-* spawnerConnect - connect to spawner
+* processLookup - 
 */
-extern void spawnerConnect(Spawner* spawner);
+extern Process* processLookup(char* name, char* host);
 
 
 
 /* ****************************************************************************
 *
-* startAllProcesses - 
+* processMaxGet - 
 */
-extern void startAllProcesses(void);
+extern unsigned int processMaxGet(void);
 
 
 
 /* ****************************************************************************
 *
-* processStart - start to process
+* processListGet - 
 */
-extern void processStart(Process* process, Starter* starter);
+extern Process** processListGet(void);
 
 
 
 /* ****************************************************************************
 *
-* processKill - kill a process
+* processListShow - 
 */
-extern void processKill(Process* process, Starter* starter);
+extern void processListShow(const char* why);
 
 #endif

@@ -15,17 +15,9 @@
 
 /* ****************************************************************************
 *
-* cfParse - 
+* configFileParse - 
 */
-extern void cfParse(char* cfPath);
-
-
-
-/* ****************************************************************************
-*
-* cfPresent - 
-*/
-extern void cfPresent(void);
+extern void configFileParse(char* cfPath);
 
 #endif
 

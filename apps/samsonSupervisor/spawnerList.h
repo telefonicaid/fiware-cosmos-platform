@@ -1,81 +1,79 @@
-#ifndef ACTIONS_H
-#define ACTIONS_H
+#ifndef SPAWNER_LIST_H
+#define SPAWNER_LIST_H
 
 /* ****************************************************************************
 *
-* FILE                     actions.h
+* FILE                     spawnerList.h
 *
 * AUTHOR                   Ken Zangelin
 *
-* CREATION DATE            Jan 13 2011
+* CREATION DATE            Jan 18 2011
 *
 */
-#include "Starter.h"            // Starter
 #include "Spawner.h"            // Spawner
-#include "Process.h"            // Process
 
 
 
 /* ****************************************************************************
 *
-* help - 
+* spawnerListInit - 
 */
-extern void help(void);
+extern void spawnerListInit(unsigned int sMax);
 
 
 
 /* ****************************************************************************
 *
-* list - 
+* spawnerAdd - 
 */
-extern void list(void);
+extern Spawner* spawnerAdd(Spawner* spawner);
 
 
 
 /* ****************************************************************************
 *
-* start - 
+* spawnerAdd - 
 */
-extern void start(void);
+extern Spawner* spawnerAdd(char* host, unsigned short port, int fd);
 
 
 
 /* ****************************************************************************
 *
-* connectToAllSpawners - 
+* spawnerLookup - 
 */
-extern void connectToAllSpawners(void);
+extern Spawner* spawnerLookup(unsigned int ix);
 
 
 
 /* ****************************************************************************
 *
-* spawnerConnect - connect to spawner
+* spawnerLookup - 
 */
-extern void spawnerConnect(Spawner* spawner);
+extern Spawner* spawnerLookup(char* host);
 
 
 
 /* ****************************************************************************
 *
-* startAllProcesses - 
+* spawnerMaxGet - 
 */
-extern void startAllProcesses(void);
+extern unsigned int spawnerMaxGet(void);
 
 
 
 /* ****************************************************************************
 *
-* processStart - start to process
+* spawnerListGet - 
 */
-extern void processStart(Process* process, Starter* starter);
+extern Spawner** spawnerListGet(void);
 
 
 
 /* ****************************************************************************
 *
-* processKill - kill a process
+* spawnerListShow - 
 */
-extern void processKill(Process* process, Starter* starter);
+extern void spawnerListShow(const char* why);
 
 #endif

@@ -5,11 +5,12 @@ SET (SOURCES
     main_samsonSupervisor.cpp
 	SamsonSupervisor.cpp
 	baTerm.cpp
-	Process.cpp
-	Spawner.cpp
+	processList.cpp
+	spawnerList.cpp
+	Starter.cpp
+	starterList.cpp
 	qt.cpp
 	actions.cpp
-	Starter.cpp
 	TabManager.cpp
 	DelilahTab.cpp
 	LogTab.cpp
@@ -29,7 +30,10 @@ SET (HEADERS
 	SamsonSupervisor.h
 	baTerm.h
 	Process.h
+	processList.cpp
 	Spawner.h
+	spawnerList.cpp
+	starterList.cpp
 	qt.h
 	actions.h
 	globals.h

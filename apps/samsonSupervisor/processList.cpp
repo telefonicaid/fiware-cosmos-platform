@@ -86,9 +86,9 @@ Process* processAdd(char* name, char* host, char** args, int argCount)
 	int           argIx;
 	Process*      processP;
 
-	processP = (Process*) malloc(sizeof(Process));
+	processP = (Process*) calloc(1, sizeof(Process));
 	if (processP == NULL)
-		LM_X(1, ("malloc: %s", strerror(errno)));
+		LM_X(1, ("calloc: %s", strerror(errno)));
 
 	processP->name = strdup(name);
 	processP->host = strdup(host);
@@ -177,6 +177,7 @@ void processListShow(const char* why)
 		if (processV[ix] == NULL)
 			continue;
 
-		LM_F(("process %02d: %-20s %-20s   %d args", ix, processV[ix]->name, processV[ix]->host, processV[ix]->argCount));
+		LM_F(("  %08p process %02d: %-20s %-20s   %d args (spawner at %p, starter at %p)", processV[ix], ix, processV[ix]->name, processV[ix]->host, processV[ix]->argCount, processV[ix]->spawnerP, processV[ix]->starterP));
 	}
+	LM_F(("------------------------------------"));
 }

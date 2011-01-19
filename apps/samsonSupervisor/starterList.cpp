@@ -13,6 +13,8 @@
 #include "Starter.h"            // Starter
 #include "Spawner.h"            // Spawner
 #include "Process.h"            // Process
+#include "spawnerList.h"        // spawnerListShow
+#include "processList.h"        // processListShow
 #include "starterList.h"        // Own interface
 
 
@@ -69,6 +71,8 @@ void starterListShow(const char* what)
 	unsigned int  ix;
 	Starter*      starter;
 
+	LM_F((""));
+
 	LM_F(("----------- Starter List (%s) -----------", what));
 	for (ix = 0; ix < starterMax; ix++)
 	{
@@ -78,11 +82,18 @@ void starterListShow(const char* what)
 		starter = starterV[ix];
 
 		if (starter->endpoint)
-			LM_F(("%02d  %30s-Starter %-30s %s Endpoint at %p", ix, starter->typeName(), starter->name, starter->endpoint->typeName(), starter->endpoint));
+			LM_F(("  %08p  Starter %02d  %30s-Starter %-30s %s Endpoint at %p", starter, ix, starter->typeName(), starter->name, starter->endpoint->typeName(), starter->endpoint));
 		else
-			LM_F(("%02d  %30s-Starter %-30s NULL Endpoint", ix, starter->typeName(), starter->name));
+			LM_F(("  %08p  Starter %02d  %30s-Starter %-30s NULL Endpoint",     starter, ix, starter->typeName(), starter->name));
 	}
 	LM_F(("--------------------------------"));
+
+	LM_F((""));
+	spawnerListShow(what);
+	LM_F((""));
+	processListShow(what);
+	LM_F((""));
+	LM_F(("==============================================================================="));
 }
 
 
@@ -146,7 +157,6 @@ Starter* starterAdd(Spawner* spawnerP)
 Starter* starterLookup(ss::Endpoint* ep)
 {
 	unsigned int  ix;
-	char*         host;
 
 	LM_M(("Looking for starter with endpoint %p", ep));
 	starterListShow("Looking for a starter");
@@ -161,6 +171,9 @@ Starter* starterLookup(ss::Endpoint* ep)
 		if (starterV[ix]->endpoint == ep)
 			return starterV[ix];
 	}
+
+#if 0
+	char*  host;
 
 	for (ix = 0; ix < starterMax; ix++)
 	{
@@ -179,11 +192,13 @@ Starter* starterLookup(ss::Endpoint* ep)
 		LM_M(("*** Comparing '%s' to '%s'", host, ep->ip.c_str()));
 		if (strcmp(host, ep->ip.c_str()) == 0)
 		{
+			LM_M(("Changing '%s' endpoint %p for '%s' endpoint %p", starterV[ix]->endpoint->typeName(), starterV[ix]->endpoint, ep->typeName(), ep));
 			starterV[ix]->endpoint = ep;
 			LM_M(("found starter at '%s'", host));
 			return starterV[ix];
 		}
 	}
+#endif
 
 	LM_M(("Did not find starter"));
 	return NULL;

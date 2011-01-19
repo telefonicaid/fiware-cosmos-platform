@@ -69,9 +69,9 @@ Spawner* spawnerAdd(char* host, unsigned short port, int fd)
 {
 	Spawner*      spawnerP;
 
-	spawnerP = (Spawner*) malloc(sizeof(Spawner));
+	spawnerP = (Spawner*) calloc(1, sizeof(Spawner));
 	if (spawnerP == NULL)
-		LM_X(1, ("malloc: %s", strerror(errno)));
+		LM_X(1, ("calloc: %s", strerror(errno)));
 
 	spawnerP->host  = strdup(host);
 	spawnerP->port  = port;
@@ -156,6 +156,7 @@ void spawnerListShow(const char* why)
 		if (spawnerV[ix] == NULL)
 			continue;
 
-		LM_F(("spawner %02d: %-30s %05d", ix, spawnerV[ix]->host, spawnerV[ix]->port));
+		LM_F(("  %08p  Spawner %02d: %-30s %05d  (fd: %d)", spawnerV[ix], ix, spawnerV[ix]->host, spawnerV[ix]->port, spawnerV[ix]->fd));
 	}
+	LM_F(("--------------------------------"));
 }

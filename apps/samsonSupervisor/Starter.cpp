@@ -161,15 +161,19 @@ void Starter::processClicked(void)
 void Starter::forceCheck(void)
 {
 	if (endpoint != NULL)
-		LM_T(LMT_CHECK, ("Checking %s-Starter '%s' (endpoint %p - '%s' at '%s')", typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
+		// LM_T(LMT_CHECK, ("Checking %s-Starter '%s' (endpoint %p - '%s' at '%s')", typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
+		LM_M(("Checking %s-Starter '%s' (endpoint %p - '%s' at '%s')", typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
 	else
-		LM_T(LMT_CHECK, ("Checking %s-Starter '%s' (NULL endpoint)", typeName(), name));
+		// LM_T(LMT_CHECK, ("Checking %s-Starter '%s' (NULL endpoint)", typeName(), name));
+		LM_M(("Checking %s-Starter '%s' (NULL endpoint)", typeName(), name));
 
 	checkState = Qt::Checked;
 	connected  = true;
 
-	if (checkbox)
+	if (checkbox != NULL)
 		checkbox->setCheckState(checkState);
+	else
+		LM_W(("NULL checkbox"));
 }
 
 
@@ -181,15 +185,19 @@ void Starter::forceCheck(void)
 void Starter::forceUncheck(void)
 {
 	if (endpoint != NULL)
-		LM_T(LMT_CHECK, ("Unchecking %s-Starter '%s' (endpoint %p - '%s' at '%s')", typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
+		// LM_T(LMT_CHECK, ("Unchecking %s-Starter '%s' (endpoint %p - '%s' at '%s')", typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
+		LM_M(("Unchecking %s-Starter '%s' (endpoint %p - '%s' at '%s')", typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
 	else
-		LM_T(LMT_CHECK, ("Unchecking %s-Starter '%s' (NULL endpoint)", typeName(), name));
+		// LM_T(LMT_CHECK, ("Unchecking %s-Starter '%s' (NULL endpoint)", typeName(), name));
+		LM_M(("Unchecking %s-Starter '%s' (NULL endpoint)", typeName(), name));
 
 	checkState = Qt::Unchecked;
 	connected  = false;
 
-	if (checkbox)
+	if (checkbox != NULL)
 		checkbox->setCheckState(checkState);
+	else
+		LM_W(("NULL checkbox"));
 }
 
 
@@ -200,6 +208,11 @@ void Starter::forceUncheck(void)
 */
 void Starter::check(void)
 {
+	if (endpoint == NULL)
+		LM_W(("NULL endpoint"));
+	else
+		LM_M(("endpoint state: '%s'", endpoint->stateName()));
+
 	if ((endpoint != NULL) && (endpoint->state == ss::Endpoint::Connected))
 		forceCheck();
 	else

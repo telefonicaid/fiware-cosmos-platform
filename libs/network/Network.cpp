@@ -982,12 +982,14 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 			}
 			else if (ep->type == Endpoint::Controller)
 			{
+                ep->state = Endpoint::Disconnected;
 				LM_W(("NOT removing Controller"));
 				if (endpointUpdateReceiver != NULL)
 					endpointUpdateReceiver->endpointUpdate(ep, Endpoint::ControllerRemoved, "Controller Removed");
 			}
 			else
 			{
+				ep->state = Endpoint::Closed;
 				if ((endpointUpdateReceiver != NULL) && (ep->type != Endpoint::Temporal))
 					endpointUpdateReceiver->endpointUpdate(ep, Endpoint::EndpointRemoved, "Endpoint Removed");
 
@@ -1960,8 +1962,9 @@ void Network::run()
 				
 				if (showSelectList)
 				{
-					LM_F(("%c %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
+					LM_F(("%c %08p  Endpoint %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
 						  sign,
+						  endpoint[ix],
 						  ix,
 						  endpoint[ix]->typeName(),
 						  endpoint[ix]->name.c_str(),
@@ -1981,6 +1984,13 @@ void Network::run()
 
 					lastTime = now;
 				}
+			}
+
+
+			if (showSelectList)
+			{
+				if (endpointUpdateReceiver != NULL)
+					endpointUpdateReceiver->endpointUpdate(NULL, Endpoint::SelectToBeCalled, "Select to be called");
 			}
 
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);

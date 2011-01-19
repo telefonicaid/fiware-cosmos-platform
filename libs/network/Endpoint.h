@@ -68,7 +68,8 @@ public:
 		NoLongerTemporal,
 		WorkerAdded,
 		WorkerDisconnected,
-		WorkerRemoved
+		WorkerRemoved,
+		SelectToBeCalled
 	} UpdateReason;
 
 	typedef enum State

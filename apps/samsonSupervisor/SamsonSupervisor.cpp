@@ -25,6 +25,7 @@
 #include "Process.h"            // Process
 #include "starterList.h"        // starterLookup
 #include "spawnerList.h"        // spawnerListGet, ...
+#include "processList.h"        // processListGet, ...
 #include "SamsonSupervisor.h"   // Own interface
 
 
@@ -138,13 +139,21 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	Starter*       starter;
 	ss::Endpoint*  newEp = (ss::Endpoint*) info;
 
-	if (ep)
+	if (reason == ss::Endpoint::SelectToBeCalled)
+	{
+		starterListShow("periodic");
+		return 0;
+	}
+
+	if (ep != NULL)
 		LM_M(("********************* Got an Update Notification ('%s') for endpoint %p '%s' at '%s'", reasonText, ep, ep->name.c_str(), ep->ip.c_str()));
 	else
-		LM_M(("********************* Got an Update Notification ('%s') for NULL endpoint", reason));
+		LM_M(("********************* Got an Update Notification ('%s') for NULL endpoint", reasonText));
 
 	LM_M(("looking for starter with endpoint %p", ep));
+	starterListShow("Before starterLookup");
 	starter = starterLookup(ep);
+	starterListShow("After starterLookup");
 	LM_M(("starterLookup(%p) returned %p", ep, starter));
 
 	if (starter != NULL)
@@ -159,27 +168,67 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		if ((newEp->type != ss::Endpoint::Worker) && (newEp->type != ss::Endpoint::Spawner))
 			LM_X(1, ("BUG - new endpoint should be either Worker or Spawner - is '%s'", newEp->typeName()));
 
+		if (starter != NULL)
+		{
+			LM_M(("fds for temporal endpoint: r:%d w:%d", ep->rFd, ep->wFd));
+			LM_M(("fds for new endpoint:      r:%d w:%d", newEp->rFd, newEp->wFd));
+
+			LM_M(("Changing temporal endpoint %p for '%s' endpoint %p", ep, newEp->typeName(), newEp));
+			starter->endpoint = newEp;
+			starter->check();
+			return 0;
+		}
+		else
+		{
+			Process* processP = NULL;
+			Spawner* spawnerP = NULL;
+
+			LM_W(("%s: starter not found for '%s' endpoint '%s' at '%s'", reasonText, ep->typeName(), ep->name.c_str(), ep->ip.c_str()));
+			LM_W(("Lookup spawner/process instead!"));
+			processP = processLookup((char*) ep->name.c_str(), (char*) ep->ip.c_str());
+			if (processP != NULL)
+				LM_M(("Found process!  Setting its endpoint to this one ..."));
+			else
+			{
+				LM_W(("Cannot find process '%s' at '%s' - trying spawner", ep->name.c_str(), ep->ip.c_str()));
+				spawnerP = spawnerLookup((char*) ep->ip.c_str());
+				if (spawnerP != NULL)
+					LM_M(("Found spawner! Setting its endpoint to this one ..."));
+				else
+					LM_W(("Nothing found ..."));
+			}
+		}
+		break;
+
+	case ss::Endpoint::WorkerDisconnected:
 		if (starter == NULL)
 			LM_RE(-1, ("NULL starter for '%s'", reasonText));
-
-		LM_M(("fds for temporal endpoint: r:%d w:%d", ep->rFd, ep->wFd));
-		LM_M(("fds for new endpoint:      r:%d w:%d", newEp->rFd, newEp->wFd));
-
-		starter->endpoint = newEp;
 		starter->check();
-		return 0;
+		break;
+
+	case ss::Endpoint::ControllerDisconnected:
+		LM_W(("Controller disconnected - I should now disconnect from all workers ..."));
+		LM_W(("... to reconnect to workers when controller is back"));
+		break;
+
+	case ss::Endpoint::ControllerRemoved:
+	case ss::Endpoint::WorkerRemoved:
+	case ss::Endpoint::EndpointRemoved:
+		LM_M(("Endpoint removed"));
+		if (starter == NULL)
+			LM_RE(-1, ("NULL starter for '%s'", reasonText));
+		starter->check();
 		break;
 
 	case ss::Endpoint::ControllerAdded:
-	case ss::Endpoint::ControllerDisconnected:
 	case ss::Endpoint::ControllerReconnected:
-	case ss::Endpoint::ControllerRemoved:
-	case ss::Endpoint::EndpointRemoved:
 	case ss::Endpoint::HelloReceived:
 	case ss::Endpoint::WorkerAdded:
-	case ss::Endpoint::WorkerDisconnected:
-	case ss::Endpoint::WorkerRemoved:
 		LM_W(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
+		break;
+
+	case ss::Endpoint::SelectToBeCalled:
+		starterListShow("periodic");
 		break;
 	}
 

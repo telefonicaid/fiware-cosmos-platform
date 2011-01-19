@@ -132,6 +132,81 @@ void disconnectAllWorkers(void)
 
 /* ****************************************************************************
 *
+* noLongerTemporal - 
+*/
+static void noLongerTemporal(ss::Endpoint* ep, ss::Endpoint* newEp, Starter* starter)
+{
+	Process* processP = NULL;
+	Spawner* spawnerP = NULL;
+
+	if (ep->type != ss::Endpoint::Temporal)
+		LM_X(1, ("BUG - endpoint not temporal"));
+
+	if ((newEp->type != ss::Endpoint::Worker) && (newEp->type != ss::Endpoint::Spawner))
+		LM_X(1, ("BUG - new endpoint should be either Worker or Spawner - is '%s'", newEp->typeName()));
+
+	if (starter != NULL)
+	{
+		LM_M(("Changing temporal endpoint %p for '%s' endpoint %p", ep, newEp->typeName(), newEp));
+		starter->endpoint = newEp;
+		starter->check();
+		return;
+	}
+
+	LM_W(("starter not found for '%s' endpoint '%s' at '%s'", ep->typeName(), ep->name.c_str(), ep->ip.c_str()));
+	LM_W(("Lookup spawner/process instead!"));
+	processP = processLookup((char*) ep->name.c_str(), (char*) ep->ip.c_str());
+	if (processP != NULL)
+		LM_M(("Found process!  Setting its endpoint to this one ..."));
+	else
+	{
+		LM_W(("Cannot find process '%s' at '%s' - trying spawner", ep->name.c_str(), ep->ip.c_str()));
+		spawnerP = spawnerLookup((char*) ep->ip.c_str());
+		if (spawnerP != NULL)
+			LM_M(("Found spawner! Setting its endpoint to this one ... ?"));
+		else
+			LM_W(("Nothing found ..."));
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* disconnectWorkers - 
+*/
+static void disconnectWorkers(void)
+{
+	Starter**     starterV;
+	unsigned int  starterMax;
+	unsigned int  ix;
+
+	LM_W(("Controller disconnected - I should now disconnect from all workers ..."));
+	LM_W(("... to reconnect to workers when controller is back"));
+
+	starterV   = starterListGet();
+	starterMax = starterMaxGet();
+
+	for (ix = 0; ix < starterMax; ix++)
+	{
+		if (starterV[ix] == NULL)
+			continue;
+
+		if (starterV[ix]->endpoint == NULL)
+			continue;
+
+		if (starterV[ix]->endpoint->type != ss::Endpoint::Worker)
+			continue;
+
+		LM_W(("Removing endpoint for worker in %s", starterV[ix]->endpoint->ip.c_str()));
+		networkP->endpointRemove(starterV[ix]->endpoint, "Controller disconnected");
+	}
+}
+
+
+
+/* ****************************************************************************
+*
 * SamsonSupervisor::endpointUpdate - 
 */
 int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info)
@@ -162,53 +237,18 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	switch (reason)
 	{
 	case ss::Endpoint::NoLongerTemporal:
-		if (ep->type != ss::Endpoint::Temporal)
-			LM_X(1, ("BUG - endpoint not temporal"));
-
-		if ((newEp->type != ss::Endpoint::Worker) && (newEp->type != ss::Endpoint::Spawner))
-			LM_X(1, ("BUG - new endpoint should be either Worker or Spawner - is '%s'", newEp->typeName()));
-
-		if (starter != NULL)
-		{
-			LM_M(("fds for temporal endpoint: r:%d w:%d", ep->rFd, ep->wFd));
-			LM_M(("fds for new endpoint:      r:%d w:%d", newEp->rFd, newEp->wFd));
-
-			LM_M(("Changing temporal endpoint %p for '%s' endpoint %p", ep, newEp->typeName(), newEp));
-			starter->endpoint = newEp;
-			starter->check();
-			return 0;
-		}
-		else
-		{
-			Process* processP = NULL;
-			Spawner* spawnerP = NULL;
-
-			LM_W(("%s: starter not found for '%s' endpoint '%s' at '%s'", reasonText, ep->typeName(), ep->name.c_str(), ep->ip.c_str()));
-			LM_W(("Lookup spawner/process instead!"));
-			processP = processLookup((char*) ep->name.c_str(), (char*) ep->ip.c_str());
-			if (processP != NULL)
-				LM_M(("Found process!  Setting its endpoint to this one ..."));
-			else
-			{
-				LM_W(("Cannot find process '%s' at '%s' - trying spawner", ep->name.c_str(), ep->ip.c_str()));
-				spawnerP = spawnerLookup((char*) ep->ip.c_str());
-				if (spawnerP != NULL)
-					LM_M(("Found spawner! Setting its endpoint to this one ..."));
-				else
-					LM_W(("Nothing found ..."));
-			}
-		}
+		noLongerTemporal(ep, newEp, starter);
 		break;
 
 	case ss::Endpoint::WorkerDisconnected:
+	case ss::Endpoint::WorkerAdded:
 		if (starter == NULL)
 			LM_RE(-1, ("NULL starter for '%s'", reasonText));
 		starter->check();
 		break;
 
 	case ss::Endpoint::ControllerDisconnected:
-		LM_W(("Controller disconnected - I should now disconnect from all workers ..."));
-		LM_W(("... to reconnect to workers when controller is back"));
+		disconnectWorkers();
 		break;
 
 	case ss::Endpoint::ControllerRemoved:
@@ -223,7 +263,6 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	case ss::Endpoint::ControllerAdded:
 	case ss::Endpoint::ControllerReconnected:
 	case ss::Endpoint::HelloReceived:
-	case ss::Endpoint::WorkerAdded:
 		LM_W(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
 		break;
 
@@ -231,64 +270,6 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		starterListShow("periodic");
 		break;
 	}
-
-#if 0
-	if ((networkP->controller != NULL) && (networkP->controller->state != ss::Endpoint::Connected))
-	{
-		if (networkP->controller->state != ss::Endpoint::Unconnected)
-		{
-			LM_W(("Seems like the controller died (controller in state '%s') - disconnecting all workers", networkP->controller->stateName()));
-			disconnectAllWorkers();
-			return 0;
-		}
-		else
-			LM_M(("controller is unconnected - no action"));
-	}
-
-	if (strcmp(reason, "no longer temporal") == 0)
-	{
-		ss::Endpoint* newEp = (ss::Endpoint*) info;
-
-		if (ep->type != ss::Endpoint::Temporal)
-			LM_X(1, ("BUG - endpoint not temporal"));
-
-		if ((newEp->type != ss::Endpoint::Worker) && (newEp->type != ss::Endpoint::Spawner))
-			LM_X(1, ("BUG - new endpoint not ss::Endpoint::Worker nor ss::Endpoint::Spawner"));
-
-	}
-
-	if ((starter != NULL) && (info != NULL))
-	{
-		ss::Endpoint* newEp = (ss::Endpoint*) info;
-
-		if ((newEp->type == ss::Endpoint::Worker) && (ep->type == ss::Endpoint::Temporal))
-		{
-			LM_M(("Probably a 'Worker No longer temporal' - changing endpoint pointer for starter '%s' type '%s'", starter->name, starter->type));
-			starter->endpoint = newEp;
-			starter->check();
-			return 0;
-		}
-
-		LM_RE(-1, ("Don't know how I got here ... (starter: %s, type: %s", starter->name, starter->type));
-	}
-
-	if ((starter == NULL) && (info != NULL))
-	{
-		starter = starterLookup((ss::Endpoint*) info);
-		ep      = (ss::Endpoint*) info;
-	}
-
-	if (starter == NULL)
-	{
-		LM_M(("********************* Cannot find starter for endpoint at %p (%p)", ep, info));
-		return -1;
-	}
-
-	LM_T(LMT_STARTER, ("Found starter '%s'", starter->name));
-
-	starter->endpoint = ep;
-	starter->check();
-#endif
 
 	return 0;
 }

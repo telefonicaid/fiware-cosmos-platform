@@ -5,6 +5,7 @@
 #include <assert.h>						// assert(.)
 #include "logMsg.h"           // LM_*
 #include <signal.h>				// kill(.)
+#include <stdlib.h>           // exit()
 
 
 #define LMT_ISOLATED               100

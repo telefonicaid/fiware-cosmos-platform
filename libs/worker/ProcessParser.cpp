@@ -1,6 +1,6 @@
 
 
-#include "processParser.h"			// Own Interface
+#include "ProcessParser.h"			// Own Interface
 #include "WorkerSubTask.h"			// ss::ParserSubTask
 #include "WorkerTask.h"				// ss::WorkerTask
 #include "ModulesManager.h"			// ss::ModulesManager

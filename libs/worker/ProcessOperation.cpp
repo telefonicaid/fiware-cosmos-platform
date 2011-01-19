@@ -4,6 +4,7 @@
 #include "WorkerTask.h"				// ss::WorkerTask
 #include "WorkerSubTask.h"		// ss::OrganizerSubTask
 #include "Packet.h"					
+#include <algorithm>    // std::sorr
 
 namespace ss {
 	

@@ -70,12 +70,14 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 
-	// Load setup and create all directories
-	ss::SamsonSetup::load( workingDir );		
-
+	ss::SamsonSetup::load( workingDir );		// Load setup and create default directories
+	
+	// Init singlelton in single thread mode
+	ss::MemoryManager::init();		// Memory manager
+	ss::ProcessManager::init();		// Init process manager
+	ss::ModulesManager::init();		// Init the modules manager
 	ss::DiskManager::shared();		// Disk manager
 	ss::FileManager::shared();		// File manager
-	ss::MemoryManager::shared();	// Memory manager
 	
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------

@@ -101,11 +101,9 @@ int main(int argC, const char *argV[])
 	ss::SamsonSetup::load( workingDir );		// Load setup and create default directories
 
 	// Init singlelton in single thread mode
-	ss::MemoryManager::init();	// Memory manager
-	
+	ss::MemoryManager::init();		// Memory manager
 	ss::ProcessManager::init();		// Init process manager
 	ss::ModulesManager::init();		// Init the modules manager
-
 	ss::DiskManager::shared();		// Disk manager
 	ss::FileManager::shared();		// File manager
 	

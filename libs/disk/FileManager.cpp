@@ -31,16 +31,12 @@ namespace ss
 		
 		// add the the internal map
 		items.insertInMap( fm_id , v);
+					
+		// Add to the disk manager
+		size_t dm_id = DiskManager::shared()->read( v->simpleBuffer.getData() , v->fileName , v->offset , v->size,  this );
 		
-		if( !cacheSystem.addReadItem( v ) )	// If not possible to read from cache
-		{
-			
-			// Add to the disk manager
-			size_t dm_id = DiskManager::shared()->read( v->simpleBuffer.getData() , v->fileName , v->offset , v->size,  this );
-			
-			// add the relation between both ids
-			ids.insertInMap( dm_id , fm_id );
-		}
+		// add the relation between both ids
+		ids.insertInMap( dm_id , fm_id );
 		
 		lock.unlock();
 		
@@ -61,10 +57,7 @@ namespace ss
 		
 		// add the relation between both ids
 		ids.insertInMap( dm_id , fm_id );
-		
-		// Add into the cache system
-		cacheSystem.addWriteItem(  v );
-		
+				
 		lock.unlock();
 		
 		return fm_id;
@@ -105,7 +98,6 @@ namespace ss
 	
 	void FileManager::finishItem( size_t fm_id , bool success )
 	{
-		FileManagerDelegate *delegate = NULL;
 		
 		lock.lock();
 		
@@ -113,27 +105,17 @@ namespace ss
 		
 		if( item )
 		{
-			
 			item->addStatistics( &statistics );
 			
-			if( item->type == FileManagerItem::write )
-			{
-				// Add into the cache system
-				cacheSystem.notifyWriteItemFinished( (FileManagerWriteItem*) item );
-			}
+			item->freeResources();
 			
-			delegate = item->delegate;
-			delete item;							// we are responsible for deleting this 
 		}
 		
 		lock.unlock();
 		
-		// Call the delegate outside the lock to avoid dead-lock
-		assert(delegate);	// It is not allowed non-delegate calls
-		
-		if( delegate )
-			delegate->fileManagerNotifyFinish( fm_id , success); 
-		
+
+		// Notify to delegate ( if any )
+		item->notifyToDelegate();
 	}	
 	
 	
@@ -146,7 +128,6 @@ namespace ss
 		lock.unlock();
 		
 		ws->set_file_manager_status( output.str() );
-		ws->set_file_manager_cache_status( cacheSystem.getStatus() );
 		
 	}
 	

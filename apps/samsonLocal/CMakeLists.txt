@@ -12,17 +12,19 @@ SET (HEADERS
 )
 
 SET( STATIC_LIBS
+     samsonWorkerStatic
+     samsonModuleStatic
+     samsonProcessStatic
      samsonNetworkStatic
+     samsonCommonStatic
      samsonCoreStatic
      samsonControllerStatic
-     samsonWorkerStatic
-     samsonCommonStatic
      delilahStatic
+     pa
      lm
      protobuf
      pthread
      dl
-     curses
      readline
 )
 
@@ -31,6 +33,7 @@ SET (RESOURCES
     ${PROJECT_SOURCE_DIR}/libs/delilah/resources/icons.qrc)
 
 
+include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_BINARY_DIR}/libs/network")
@@ -47,6 +50,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/controller")
 include_directories("${PROJECT_SOURCE_DIR}/libs/worker")
 
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
+link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
 
 
 # SAMSON Executable

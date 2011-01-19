@@ -9,105 +9,83 @@
 #include "DataBufferItem.h"		 // ss::DataBufferItem
 
 #include "WorkerTask.h"			// ss::WorkerTask
-#include "WorkerTaskItem.h"		// ss::WorkerTaskItem
-#include "ProcessAssistant.h"	// ss::ProcessAssistant
-
 #include "SamsonSetup.h"		// ss::SamsonSetup
-
+#include "FileManagerReadItem.h"		// ss::FileManagerReadItem
+#include "FileManagerWriteItem.h"		// ss::FileManagerWriteItem
 
 namespace ss {
 	
-	WorkerTaskManager::WorkerTaskManager(SamsonWorker *_worker) : stopLock( &lock )
+	WorkerTaskManager::WorkerTaskManager( SamsonWorker *_worker )
 	{
 		worker = _worker;
-		num_processes	= SamsonSetup::shared()->num_processes;			// Define the number of process
-		
-		// //////////////////////////////////////////////////////////////////////
-		//
-		// Create one ProcessAssistant per core
-		//
-		if (num_processes == -1)
-			LM_X(1, ("Invalid number of cores. Please edit /opt/samson/setup.txt"));
-		
-		LM_T(LMT_WINIT, ("initializing %d process assistants", num_processes));
-		processAssistant = (ProcessAssistant**) calloc(num_processes, sizeof(ProcessAssistant*));
-		if (processAssistant == NULL)
-			LM_XP(1, ("calloc(%d, %d)", num_processes, sizeof(ProcessAssistant*)));
-		
-		int coreId;
-		for (coreId = 0; coreId < num_processes ; coreId++)
-		{
-			processAssistant[coreId] = new ProcessAssistant(coreId, this);
-		}
-		
-		LM_T(LMT_WINIT, ("Got %d process assistants", coreId));
-		
-		
 	}
 	
 	void WorkerTaskManager::addTask(const network::WorkerTask &worker_task )
 	{
 		
-		bool send_close_messages = false;
-		lock.lock();
+		token.retain();
 
 		// Look at the operation to 
 		Operation *op = worker->modulesManager.getOperation( worker_task.operation() );
 		assert( op );		// TODO: Better handling of no operation error
 
+		// Id of this operations
+		size_t task_id = worker_task.task_id();
+		
 		// Create the task
-		WorkerTask *t = new WorkerTask( this, op->getType() , worker_task );
+		WorkerTask *t = task.findInMap( task_id );
+		if( !t )
+		{
+			t = new WorkerTask( this );
+			task.insertInMap( task_id , t );
+		}
 
-		// Insert into internal map
-		task.insertInMap( t->task_id , t );
+		// Setup the operation with all the information comming from controller
+		t->setup( op->getType() , worker_task );
 		
-		// If it is already finished (this happens where there are no input files )
-		if( t->isFinish() )
-			send_close_messages = true;
-		
-		
-		lock.unlock();
-		
-		// Wake up ProcessAssitant to process items ( really not necesssary since there is a 1 second timeout )
-		lock.wakeUpAllStopLock( &stopLock );
+		token.release();
 
-		if( send_close_messages )
-			sendCloseMessages( t->getId() , worker->network->getNumWorkers() );
-
+	}
+	
+	void WorkerTaskManager::addBuffer( size_t task_id , network::Queue queue , Buffer* buffer , bool txt  )
+	{
+		token.retain();
 		
+		// Create the task
+		WorkerTask *t = task.findInMap( task_id );
+		if( !t )
+			t = new WorkerTask( this );
+
+		// Add the buffer to the task item
+		t->addBuffer( queue , buffer , txt );
+		
+		token.release();
 		
 	}
-
-	WorkerTaskItem *WorkerTaskManager::getNextItemToProcess()
+	
+	void WorkerTaskManager::finishWorker( size_t task_id )
 	{
-		while( true )
+		token.retain();
+		
+		// Create the task
+		WorkerTask *t = task.findInMap( task_id );
+
+		if( t )
 		{
-			lock.lock();
-			
-			_setupAllTasks();
-			
-			// Iterate the task list
-			std::map<size_t,WorkerTask*>::iterator t;
-			for (t = task.begin() ; t!= task.end() ; t++)
+			t->finishWorker();
+			if( t->status == WorkerTask::completed )
 			{
-				WorkerTaskItem *item = t->second->getNextItemToProcess();
-				
-				if( item )
-				{
-					lock.unlock();
-					return item;
-				}
+				// Remove the tasks from the task manager
+				delete task.extractFromMap( task_id );
 			}
-			
-			lock.unlock_waiting_in_stopLock( &stopLock , 2 );
 		}
 		
-	}	
+		token.release();
+	}
+
 	
-	/*
-	 Notify that a particular item has finished producing data
-	 */
-	
+
+/*	
 	void WorkerTaskManager::finishItem( WorkerTaskItem *item )
 	{
 		
@@ -150,23 +128,7 @@ namespace ss {
 		lock.wakeUpStopLock( &stopLock );
 		
 	}	
-	
-	/**
-	 Setup all tasks to see if any of them needs a shared memory area used by the item that has just finished
-	 */
-	
-	void WorkerTaskManager::_setupAllTasks()
-	{
-		std::map<size_t,WorkerTask*>::iterator t;
-		for (t = task.begin() ; t!= task.end() ; t++)
-			t->second->setup();
-	}
-	
-	
 
-	/**
-	 Nofity that a particular task has finished ( everything has been saved to disk )
-	 */
 	
 	void WorkerTaskManager::completeTask( size_t task_id )
 	{	
@@ -193,113 +155,118 @@ namespace ss {
 		// We only notify the controller about this to continue in the script ( if we are inside a script )
 		send_finish_task_message_to_controller( worker->network , task_id );
 	}
+ */	
 	
 
 	void WorkerTaskManager::fill(network::WorkerStatus*  ws)
 	{
 		ws->set_task_manager_status( getStatus() );
+	}
+	
 		
-		int num_working_cores = 0;
-		for (int i = 0 ; i < num_processes ; i++)
+	void WorkerTaskManager::notifyFinishProcess( ProcessItem * item )
+	{
+		token.retain();
+		size_t task_id = item->tag;
+		WorkerTask *t = task.findInMap( task_id );
+		if( t )
 		{
-			network::WorkerProcess *p = ws->add_process();
-			p->set_working( processAssistant[i]->working ); 
-			p->set_operation( processAssistant[i]->operation_name ); 
-			p->set_task_id( processAssistant[i]->task_id );
-			
-			if ( processAssistant[i]->working )
-				num_working_cores++;
+			t->notifyFinishProcess( item );
+			if( t->status == WorkerTask::completed )
+			{
+				// Remove the tasks from the task manager
+				delete task.extractFromMap( task_id );
+			}
 		}
-		
-		ws->set_total_cores( num_processes );
-		ws->set_used_cores( num_working_cores );
-		
-		
+		delete item;
+		token.release();
+	}
+	
+	void WorkerTaskManager::notifyFinishReadItem( FileManagerReadItem *item  )
+	{
+		token.retain();
+		size_t task_id = item->tag;
+		WorkerTask *t = task.findInMap( task_id );
+		if( t )
+		{
+			t->notifyFinishReadItem( item );
+			if( t->status == WorkerTask::completed )
+			{
+				// Remove the tasks from the task manager
+				delete task.extractFromMap( task_id );
+			}
+		}
+		delete item;
+		token.release();
+	}
+	
+	void WorkerTaskManager::notifyFinishWriteItem( FileManagerWriteItem *item  )
+	{
+		token.retain();
+		size_t task_id = item->tag;
+		WorkerTask *t = task.findInMap( task_id );
+		if( t )
+		{
+			t->notifyFinishWriteItem( item );
+			if( t->status == WorkerTask::completed )
+			{
+				// Remove the tasks from the task manager
+				delete task.extractFromMap( task_id );
+			}
+		}
+		delete item;
+		token.release();
 		
 	}
 	
-	void WorkerTaskManager::sendCloseMessages( size_t task_id , int workers )
+	void WorkerTaskManager::notifyFinishMemoryRequest( MemoryRequest *request )
 	{
-		
-		for (int s = 0 ; s < workers ; s++)
-		{				
-			Packet *p = new Packet();
-			network::WorkerDataExchangeClose *dataMessage =  p->message.mutable_data_close();
-			dataMessage->set_task_id(task_id);
-			NetworkInterface *network = worker->network;
-			network->send(worker, network->workerGetIdentifier(s) , Message::WorkerDataExchangeClose, p);
+		token.retain();
+		size_t task_id = request->tag;
+		WorkerTask *t = task.findInMap( task_id );
+		if( t )
+		{
+			t->notifyFinishMemoryRequest( request );
+			if( t->status == WorkerTask::completed )
+			{
+				// Remove the tasks from the task manager
+				delete task.extractFromMap( task_id );
+			}
 		}
-	}	
+
+		delete request;
+		token.release();
 		
+	}
+
+	
+	
 	std::string WorkerTaskManager::getStatus()
 	{
+		
 		std::ostringstream output;
 		
-		lock.lock();
+		token.retain();
 		
 		std::map<size_t,WorkerTask*>::iterator iter;
 		
 		for ( iter = task.begin() ; iter != task.end() ; iter++)
 			output << "[" << iter->second->getStatus() << "]";
-		lock.unlock();
+		
+		token.release();
 		
 		return output.str();
 	}
 
 	
-	
+	/*
 	void WorkerTaskManager::addInputFile( size_t fm_id , WorkerTaskItem* item )
 	{
 		pendingInputFiles.insertInMap( fm_id , item );
 	}
-
-	void WorkerTaskManager::send_finish_task_message_to_controller(NetworkInterface *network , size_t task_id )
-	{		
-		
-		lock.lock();
-		
-		WorkerTask *t = task.findInMap( task_id );
-		
-		if( !t || !t->error )
-		{
-			Packet *p = new Packet();
-			network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-			confirmation->set_task_id( task_id );
-			confirmation->set_type( network::WorkerTaskConfirmation::finish );		
-			network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
-		}
-		else
-		{
-			Packet *p = new Packet();
-			network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-			confirmation->set_task_id( task_id );
-			confirmation->set_type( network::WorkerTaskConfirmation::error );
-			confirmation->set_error_message( t->error_message );
-			network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
-		}
-		
-		lock.unlock();
-	}
-
-	void WorkerTaskManager::send_complete_task_message_to_controller(NetworkInterface *network , size_t task_id )
-	{		
-		Packet *p = new Packet();
-		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-		confirmation->set_task_id( task_id );
-		confirmation->set_type( network::WorkerTaskConfirmation::complete );
-		
-		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
-	}
+*/
 	
-	void WorkerTaskManager::send_add_file_message_to_controller(NetworkInterface *network , size_t task_id , const network::QueueFile &qf )
-	{		
-		Packet *p = new Packet();
-		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-		confirmation->set_task_id( task_id );
-		confirmation->set_type( network::WorkerTaskConfirmation::new_file );
-		confirmation->add_file()->CopyFrom( qf );
-		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
-	}
+		
 	
 	void WorkerTaskManager::send_update_message_to_controller(NetworkInterface *network , size_t task_id ,int num_finished_items, int num_items )
 	{		
@@ -312,5 +279,7 @@ namespace ss {
 
 		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
 	}
+	
+
 	
 }

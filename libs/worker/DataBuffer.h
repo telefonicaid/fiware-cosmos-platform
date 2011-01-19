@@ -27,10 +27,8 @@ namespace ss {
 	class SamsonWorker;
 	class QueueuBufferVector;
 	
-	/**
-	 This class acumulate data buffers coming from network interface
-	 When enougth data is accumulated it is frozen to a file and DataManager if notified
-	 */
+
+	/*
 	
 	class DataBuffer : public FileManagerDelegate 
 	{
@@ -74,6 +72,9 @@ namespace ss {
 		static std::string _newFileName( std::string queue );
 		
 	};
+	 
+	 */
+	 
 }
 
 #endif

@@ -70,8 +70,8 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 
-	ss::SamsonSetup::load( workingDir );		// Load setup and create all directories
-
+	// Load setup and create all directories
+	ss::SamsonSetup::load( workingDir );		
 
 	ss::DiskManager::shared();		// Disk manager
 	ss::FileManager::shared();		// File manager

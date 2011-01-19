@@ -7,10 +7,13 @@ num_processes 	2		# Number of parallel processes working on this maxine
 # Main  memory
 memory 2147483648		# 2Gb of RAM memory  
 
-# Shared memory setup
-shm_size_per_buffer 67108864	# Buffer of 64 Mbytes
-shm_num_buffers	    12		# Number of buffers ( Minimum 2 * num_cores )
+# Generate internal files
+max_file_size 1000000000        # 1Gb
+max_input_buffer_size           1000000000      # 1Gb  ( maximum size of input buffer for map,reduce,parserOur,parser )
 
-# Disk Management
-max_open_files_per_device	20
-SETUP_max_file_size		1073741824  # 1Gb
+# Shared memory setup
+shm_size_per_buffer 67108864	# Buffer of 64 Mbytes ( now used only as output of operations )
+shm_num_buffers	    2		# Number of buffers ( num_cores )
+
+
+

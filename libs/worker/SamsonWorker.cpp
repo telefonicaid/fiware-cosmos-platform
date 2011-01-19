@@ -9,7 +9,6 @@
 #include "Network.h"                    // NetworkInterface
 #include "Endpoint.h"                   // Endpoint
 #include "CommandLine.h"                // CommandLine
-#include "ProcessAssistant.h"           // ProcessAssistant
 #include "SamsonWorker.h"               // Own interfce
 #include "EndpointMgr.h"				// ss::EndpointMgr
 #include "SamsonSetup.h"				// ss::SamsonSetup
@@ -17,6 +16,7 @@
 
 #include "MemoryManager.h"				// ss::SharedMemory
 #include "FileManager.h"				// ss::FileManager
+#include "ProcessManager.h"				// ss::ProcessManager
 
 namespace ss {
 
@@ -32,7 +32,7 @@ namespace ss {
 *
 * Constructor
 */
-SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , dataBuffer(this), loadDataManager(this)
+SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , loadDataManager(this)
 {
 	this->network = network;
 	network->setPacketReceiver(this);
@@ -75,7 +75,8 @@ void SamsonWorker::sendWorkerStatus()
 	DiskManager::shared()->fill( ws );
 	FileManager::shared()->fill( ws );
 	MemoryManager::shared()->fill( ws );
-	dataBuffer.fill( ws );
+	ProcessManager::shared()->fill( ws );
+	
 	loadDataManager.fill( ws );
 
 	
@@ -139,7 +140,7 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		if( packet->message.data().has_txt() && packet->message.data().txt() )
 			txt = true;
 		
-		dataBuffer.addBuffer(task_id, queue, packet->buffer , txt );
+		taskManager.addBuffer( task_id , queue, packet->buffer , txt );
 		
 		return 0;
 	}
@@ -153,7 +154,7 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	{
 		
 		size_t task_id = packet->message.data_close().task_id();
-		dataBuffer.finishWorker( task_id );
+		taskManager.finishWorker( task_id );
 		return 0;
 	}
 

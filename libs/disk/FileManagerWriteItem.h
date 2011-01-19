@@ -31,8 +31,26 @@ namespace ss {
 		FileManagerWriteItem( std::string _fileName , Buffer *_buffer , FileManagerDelegate *_delegate ) ;
 		
 		void getStatus( std::ostream &output , std::string prefix_per_line );
+
+		void notifyToDelegate()
+		{
+			if( delegate )
+				delegate->notifyFinishWriteItem(this);
+			else
+				delete this;	// Auto-remove to myself since no-one will handle me
+		}
+
+		void freeResources()
+		{
+			// Free the used buffer
+			MemoryManager::shared()->destroyBuffer( buffer );
+			buffer = NULL;
+		}
+		
 		
 	};
+
+	
 	
 }
 

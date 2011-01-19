@@ -68,6 +68,8 @@ namespace ss
 		network::WorkerTask *t = p2->message.mutable_worker_task();
 		t->set_task_id( task->id );
 		
+		t->set_servers( jobManager->controller->network->getNumWorkers() );
+		
 		// Fill information for this packet ( input / outputs )
 		task->fillInfo( t , workerIdentifier );
 		

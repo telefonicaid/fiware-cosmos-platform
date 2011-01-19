@@ -245,6 +245,7 @@ namespace ss
 		commandLine.set_flag_string("begin", "null");
 		commandLine.set_flag_boolean("show");
 		commandLine.set_flag_boolean("plain");
+		commandLine.set_flag_boolean("gz");			// Flag to indicate compression
 		commandLine.set_flag_int("threads",4);
 		commandLine.parse( command );
 
@@ -307,7 +308,7 @@ namespace ss
 			output << "---------------------------------------------------------------------\n";
 			output << "\n";
 			output << " upload		Load txt files to the platform\n";
-			output << "             Usage: load local_file_name set_name (only txt txt at the moment)\n";
+			output << "             Usage: load local_file_name set_name [-plain] [-gz] \n";
 			output << "\n";
 			output << " download    Download txt files from the platform\n";
 			output << "             Usage: download set_name local_file_name (only txt txt at the moment)/w\n";
@@ -555,7 +556,13 @@ namespace ss
 			}
 			
 			std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
-			bool compresion =  !commandLine.get_flag_bool("plain");
+
+			bool compresion = false;
+			if( commandLine.get_flag_bool("gz") )
+				compresion = true;
+			if( commandLine.get_flag_bool("plain") )
+				compresion = false;
+			
 			int max_num_thread = commandLine.get_flag_int("threads"); 
 			
 			size_t id = delilah->addUploadData(fileNames, queue,compresion , max_num_thread);
@@ -866,23 +873,16 @@ namespace ss
 			
 			
 			txt << "\tMemory Manager: " << worker_status.memory_status() << "\n";
-			txt << "\tFile Manager: " << worker_status.file_manager_status() << "\n";
-			txt << "\tFile Manager Cache: " << worker_status.file_manager_cache_status() << "\n";
-			txt << "\tData Buffer: " << worker_status.data_buffer_status() << "\n";
-			txt << "\tLoad Data Manager: " << worker_status.load_data_manager_status() << "\n";
 			txt << "\tDisk Manager: " << worker_status.disk_manager_status() << "\n";
+			txt << "\tFile Manager: " << worker_status.file_manager_status() << "\n";
+//			txt << "\tFile Manager Cache: " << worker_status.file_manager_cache_status() << "\n";
+			txt << "\tProcess Manager: " << worker_status.process_manager_status() << "\n";
+			txt << "\t----\n";
+			txt << "\tLoad Data Manager: " << worker_status.load_data_manager_status() << "\n";
+			txt << "\t----\n";
 			txt << "\tTask Manager: " << worker_status.task_manager_status() << "\n";
-
-			txt << "\tProcess: ";
-			for (int p = 0 ; p < worker_status.process_size() ; p++)
-			{
-				txt << "[";
-				if( ! worker_status.process(p).working() )
-					txt << "W";
-				else
-					txt << "T:" << worker_status.process(p).task_id() << ":" <<  worker_status.process(p).operation();
-				txt <<  "]";
-			}
+			txt << "\t----\n";
+			
 			txt << "\n";
 			
 		}

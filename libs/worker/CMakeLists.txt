@@ -1,30 +1,34 @@
 
 SET (HEADERS
-    DataBuffer.h
-    DataBufferItem.h
-	LoadDataManager.h
+	DataBufferProcessItem.h
 	SamsonWorker.h
-	WorkerTask.h
-	WorkerTaskItem.h
-	WorkerTaskItemGenerator.h
-	WorkerTaskItemOperation.h
-	WorkerTaskItemOrganizer.h
-	WorkerTaskItemParser.h
+	LoadDataManager.h
 	WorkerTaskManager.h
+	WorkerTask.h
+	WorkerSubTask.h
+	ProcessBase.h
+	ProcessGenerator.h
+	ProcessOrganizer.h
+	ProcessOperation.h
+	ProcessParser.h
+	ProcessParserOut.h
+	ProcessWriter.h
 )
 
 SET (SOURCES
-    DataBuffer.cpp
-	DataBufferItem.cpp
-	LoadDataManager.cpp
+	DataBufferProcessItem.cpp
 	SamsonWorker.cpp
-	WorkerTask.cpp
-	WorkerTaskItem.cpp
-	WorkerTaskItemGenerator.cpp
-	WorkerTaskItemOperation.cpp
-	WorkerTaskItemOrganizer.cpp
-	WorkerTaskItemParser.cpp
+	LoadDataManager.cpp
 	WorkerTaskManager.cpp
+	WorkerTask.cpp
+        WorkerSubTask.cpp
+        ProcessBase.cpp
+	ProcessGenerator.cpp
+	ProcessOrganizer.cpp
+	ProcessOperation.cpp
+	ProcessParser.cpp
+	ProcessParserOut.cpp
+	ProcessWriter.cpp
 )
 
 SET (STATIC_LIBS

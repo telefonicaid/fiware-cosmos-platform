@@ -31,6 +31,11 @@ namespace ss {
 	
 	bool DiskOperation::setDevice( )
 	{
+		// Make sure we only use one device
+		
+		st_dev = 0;
+		return true;
+		
 		
 		struct ::stat info;
 		stat(fileName.c_str(), &info);

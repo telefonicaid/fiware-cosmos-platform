@@ -54,6 +54,9 @@ namespace ss {
 		// Load Data suze
 		size_t load_buffer_size;
 		
+		// Maximum input buffer size
+		size_t max_input_buffer_size;
+		
 	private:
 		
 		static size_t getUInt64(std::map<std::string,std::string> &items, std::string name , size_t defaultValue );

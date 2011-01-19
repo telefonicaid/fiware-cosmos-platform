@@ -17,6 +17,14 @@ namespace ss {
 	{	
 		// By default just one
 		num_threads = SamsonSetup::shared()->num_io_threads_per_device;
+
+		// Multithread has been canceled
+		// We have removed the FileManager cache so read operations over save is assured sice read operations arrives latter that write operations
+		// If multithread is reactivated then, we have to make sure read operations wait until write has finished
+		num_threads = 1;	
+
+		// Set the number of running operations to 0
+		running_operations = 0;
 		
 		// Create the thread for this disk operations
 		for (int i  =0 ; i < num_threads ; i++)
@@ -47,8 +55,17 @@ namespace ss {
 			
 			if( o )
 			{
+				lock.lock();
+				running_operations++;
+				lock.unlock();
+				
+				
 				run (o);
 				delete o;
+				
+				lock.lock();
+				running_operations--;
+				lock.unlock();
 			}
 			else
 			{
@@ -135,7 +152,7 @@ namespace ss {
 	{
 		std::ostringstream output;
 		lock.lock();
-		output << operation.size() << " operations " << statistics.getStatus();
+		output << "Run:" << running_operations << " Wait:" << operation.size() << " Statis:" << statistics.getStatus();
 		lock.unlock();
 		return output.str();
 	}

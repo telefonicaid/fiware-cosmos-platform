@@ -18,7 +18,7 @@
 
 #include "logMsg.h"             // LM_*
 #include "iomConnect.h"         // Own interface
-
+#include <stdlib.h>             // free
 
 
 /* ***************************************************************************

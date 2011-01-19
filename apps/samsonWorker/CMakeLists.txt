@@ -6,6 +6,21 @@ SET (HEADERS
 )
 
 
+SET (LIBS
+samsonWorkerStatic 
+samsonModuleStatic
+samsonProcessStatic
+samsonNetworkStatic
+samsonCoreStatic
+samsonCommonStatic
+pa
+lm
+protobuf
+pthread
+dl
+readline
+)
+
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
@@ -26,7 +41,7 @@ link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
 
 # SAMSON Executable
 ADD_EXECUTABLE(samsonWorker ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(samsonWorker samsonWorkerStatic samsonModuleStatic samsonProcessStatic samsonNetworkStatic samsonCoreStatic samsonCommonStatic pa lm protobuf pthread dl curses readline)
+TARGET_LINK_LIBRARIES(samsonWorker ${LIBS})
 
 INSTALL(TARGETS               samsonWorker
         RUNTIME DESTINATION   bin)

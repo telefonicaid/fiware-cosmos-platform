@@ -1,4 +1,6 @@
 
+#include "parseArgs.h"          // parseArgs
+
 #include <vector>				// std::vector
 #include <sstream>				// std::ostringstream
 
@@ -22,15 +24,43 @@
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "DiskManager.h"		// ss::DiskManager
 #include "FileManager.h"		// ss::FileManager
+#include "ProcessManager.h"		// ss::ProcessManager
+
+
+#include <signal.h>				// signal(.)
 
 
 /* ****************************************************************************
-*
-* logFd - file descriptor for log file used in all libraries
-*/
+ *
+ * Option variables
+ */
+char             controller[80];
+int              workers;
+bool             noLog;
+char			 workingDir[1024]; 	
+
+
+
+#define S01 (long int) "samson01:1234"
+/* ****************************************************************************
+ *
+ * parse arguments
+ */
+PaArgument paArgs[] =
+{
+	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt,   S01,   PaNL,   PaNL,  "controller IP:port"  },
+	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
+	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt, false,  false,   true,  "no logging"          },
+	{ "-working",     workingDir,  "WORKING",     PaString,  PaOpt,  _i SAMSON_DEFAULT_WORKING_DIRECTORY,   PaNL,   PaNL,  "Working directory"     },
+	PA_END_OF_ARGS
+};
+
+/* ****************************************************************************
+ *
+ * logFd - file descriptor for log file used in all libraries
+ */
 int logFd = -1;
 
-char* progName = (char*) "samsonDemo";
 
 void *run_DelilahConsole(void* d)
 {
@@ -48,37 +78,41 @@ void *run_in_background(void* d)
 	return NULL;
 }
 
-void test();
-
-int main(int argc, const char *argv[])
+int main(int argC, const char *argV[])
 {
 	
-	// Init the trace system
-	ss::samsonInitTrace( argc , argv, &::logFd);
+	paConfig("prefix",                        (void*) "SSW_");
+	paConfig("usage and exit on any warning", (void*) true);
+	paConfig("log to screen",                 (void*) "only errors");
+	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
+	paConfig("screen line format",            (void*) "TYPE: TEXT");
+	paConfig("log to file",                   (void*) true);
 	
-	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
-	
-	au::CommandLine commandLine;
-	commandLine.set_flag_int("workers",1);
-	commandLine.set_flag_string("working", SAMSON_DEFAULT_WORKING_DIRECTORY);
+	paParse(paArgs, argC, (char**) argV, 1, false);// No more pid in the log file name
+	lmAux((char*) "father");
+	logFd = lmFirstDiskFileDescriptor();
 
+	/*
+	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
+	for (int i = 0 ; i < 256 ; i++)
+		LM_T(i,("Trace test %d",i));
+	 */
 	
-	// Command line to extract the number of workers from command line arguments
-	commandLine.parse(argc , argv);
-	
-	
-	ss::SamsonSetup::load( commandLine.get_flag_string("working" ) );		// Load setup and create default directories
+	ss::SamsonSetup::load( workingDir );		// Load setup and create default directories
+
 	// Init singlelton in single thread mode
+	ss::MemoryManager::init();	// Memory manager
+	
+	ss::ProcessManager::init();		// Init process manager
+	ss::ModulesManager::init();		// Init the modules manager
+
 	ss::DiskManager::shared();		// Disk manager
 	ss::FileManager::shared();		// File manager
-	ss::MemoryManager::shared();	// Memory manager
 	
-	
-	int num_workers = commandLine.get_flag_int("workers");
-	assert( num_workers != -1 );
+	assert( workers != -1 );
 	
 	// Fake network element with N workers
-	ss::NetworkFakeCenter center(num_workers);		
+	ss::NetworkFakeCenter center(workers);		
 	
 	// Create one controller, one dalilah and N workers
 	ss::SamsonController controller( center.getNetwork(-1) );
@@ -87,19 +121,15 @@ int main(int argc, const char *argv[])
 	ss::Delilah delilah(center.getNetwork(-2));
 	ss::DelilahConsole delilahConsole( &delilah );
 	
+	LM_M(("SamsonLocal start"));
 	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 
-	std::vector< ss::SamsonWorker* > workers;
-	for (int i = 0 ; i < num_workers ; i ++ )
+	std::vector< ss::SamsonWorker* > _workers;
+	for (int i = 0 ; i < workers ; i ++ )
 	{
 		ss::SamsonWorker *w = new ss::SamsonWorker( center.getNetwork(i) );
-		workers.push_back(w);
+		_workers.push_back(w);
 	}
-
-	lmTraceSet((char*) "60");
-
-	
-	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
 
 	// Run the network center in background
 	pthread_t t;
@@ -107,7 +137,6 @@ int main(int argc, const char *argv[])
 	
 	// Run delilah client in foreground
 	delilahConsole.run();
-	
 	
 	assert( false );	// We never come back to here
 	

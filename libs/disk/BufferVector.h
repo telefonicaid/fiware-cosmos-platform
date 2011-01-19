@@ -30,10 +30,9 @@ namespace ss {
 		network::Queue* queue;			// Information about the queue we are buffering buffers to
 		bool txt;						// Flag to indicate if incomming buffers are txt buffers
 		
-		size_t task_id;					// Task id associated with this new file
 
 		// Constructor
-		QueueuBufferVector(size_t task_id , const network::Queue & _queue , bool _txt );
+		QueueuBufferVector( const network::Queue & _queue , bool _txt );
 		
 		//Destructor
 		~QueueuBufferVector();

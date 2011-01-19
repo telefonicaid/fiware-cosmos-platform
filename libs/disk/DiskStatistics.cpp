@@ -44,9 +44,7 @@ namespace ss
 		
 		std::ostringstream output;
 		output << "[" << au::Format::string( total_size ,"B" );
-		output << " in ";
-		output << au::Format::string( total_time ,"ms" );
-		output << " = ";
+		output << " at ";
 		output << au::Format::string( rate ,"Bps" );;
 		output << "]";
 		

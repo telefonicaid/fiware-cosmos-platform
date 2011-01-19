@@ -24,7 +24,10 @@ namespace ss {
 	public:
 
 		ModulesManager();				//!< Private constructor to implement singleton
-				
+		
+		static void init();
+		static ModulesManager* shared();
+		
 	private:
 		
 		void addModulesFromDirectory( std::string dir_name );

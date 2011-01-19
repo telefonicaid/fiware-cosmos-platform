@@ -108,13 +108,6 @@ message Job
 
 // Information about a worker ( diskManager / fileManager / Process runing / etc..)
 
-message WorkerProcess
-{
-	optional bool working = 3;  	// Flag to indicate if we are working
-	optional string operation = 1;	// Operation that we are running
-	optional uint64 task_id = 2;	// Id of the task we are running
-}
-
 message ControllerStatus
 {
 	optional string job_manager_status=1;				// Status of the job manager
@@ -126,7 +119,6 @@ message WorkerStatus
 	optional uint64 time=8;						// Time since the last update from the worker
 
 	optional string task_manager_status=7;				// Status of the task manager
-	repeated WorkerProcess	process=1;				// Information about process running on this worker		
 
 	optional string file_manager_status=2;				// Information about the file manager
 	optional string disk_manager_status=3;				// Information about the disk manager
@@ -134,6 +126,7 @@ message WorkerStatus
 	optional string data_buffer_status=5;				// Information about data_buffer status
 	optional string load_data_manager_status=14;			// Information about load ( upload / download ) data manager
 	optional string memory_status=6;				// Information about memory status
+	optional string process_manager_status=1;			// Information about the process manager
 
 	optional uint64 used_memory=10;
 	optional uint64 total_memory=11;
@@ -193,6 +186,8 @@ message WorkerTask
 
 	repeated FileList input		  = 3;  // Input files ( all inputs for each queue )
 	repeated Queue output		  = 4;  // output queues
+
+	required int32 servers		  = 7;	// Number of servers ( all the workers )
 
 	optional bool generator		  = 5;	// Optional flag only used in the generator operations
 

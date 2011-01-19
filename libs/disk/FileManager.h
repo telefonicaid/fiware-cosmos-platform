@@ -44,7 +44,8 @@ namespace ss {
 		au::simple_map<size_t , size_t> ids;
 
 		// Cache system for file manager
-		FileManagerCacheSystem cacheSystem;
+		// Cache has been disable for low performance ( better implementation is required, multithread in Disk Manager has been removed to assure order in the write - read sequence )
+		// FileManagerCacheSystem cacheSystem;
 		
 		//Statistics
 		DiskStatistics statistics;
@@ -78,12 +79,10 @@ namespace ss {
 		 */
 		
 		void diskManagerNotifyFinish( size_t id, bool success);
-
 		
 		void finishItem( size_t fm_id , bool success );		
 		
 		void fill(network::WorkerStatus*  ws);
-		
 		
 		
 	};

@@ -7,14 +7,12 @@
 
 namespace ss {
 
-	QueueuBufferVector::QueueuBufferVector(size_t _task_id, const network::Queue &_queue , bool _txt )
+	QueueuBufferVector::QueueuBufferVector( const network::Queue &_queue , bool _txt )
 	{
 		// Init all the counter
 		txt		= _txt;
 		size	= 0;
 		info.clear();
-		
-		task_id = _task_id;
 		
 		// Get a copy of the network information
 		queue = new network::Queue();

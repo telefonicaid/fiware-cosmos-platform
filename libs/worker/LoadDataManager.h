@@ -24,10 +24,12 @@ namespace ss {
 		
 	public:
 
+		size_t id;								// Identifier inside LoadDataManager
+		
 		int fromIdentifier;						// Dalilah identifier to send responses		
 		Buffer *buffer;							// Buffer allocated for this task		
 		LoadDataManager *dataManager;			// Pointer to the data manager		
-		LoadDataManagerItem( int _fromIdentifier , LoadDataManager *dataManager );		
+		LoadDataManagerItem( size_t _id, int _fromIdentifier , LoadDataManager *dataManager );		
 		virtual ~LoadDataManagerItem(){}
 		virtual std::string getStatus( )=0;
 
@@ -45,7 +47,7 @@ namespace ss {
 		std::string fileName;				// Filename fo the new upload
 		size_t size;						// Size of the uploaded file
 		
-		UploadItem( int _fromIdentifier , LoadDataManager *dataManager, const network::UploadData &_uploadData , size_t sender_id,  Buffer * buffer );
+		UploadItem( size_t _id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadData &_uploadData , size_t sender_id,  Buffer * buffer );
 	
 		size_t submitToFileManager();
 		void sendResponse( bool error , std::string error_message );
@@ -79,11 +81,12 @@ namespace ss {
 		
 	public:
 		
+		
 		network::DownloadData downloadData;		// Information about the request
 		size_t sender_id;					// id of the sender
 		
 		
-		DownloadItem( int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadData &_downloadData, size_t sender_id);		
+		DownloadItem(size_t _id, int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadData &_downloadData, size_t sender_id);		
 		~DownloadItem();
 
 		size_t submitToFileManager();
@@ -112,6 +115,8 @@ namespace ss {
 		
 		au::map<size_t,UploadItem> uploadItem;		// Items to be uploded from dalilahs
 		au::map<size_t,DownloadItem> downloadItem;	// Items to be downloaded to dalilahs
+
+		size_t id;	// Auto-incrising counter to identify elements
 		
 	public:
 
@@ -131,7 +136,8 @@ namespace ss {
 		void addDownloadItem( int fromIdentifier, const network::DownloadData &downloadData, size_t sender_id );
 		
 		// Disk Manager notifications
-		virtual void fileManagerNotifyFinish(size_t id, bool success);
+		void notifyFinishReadItem( FileManagerReadItem *item  );	
+		void notifyFinishWriteItem( FileManagerWriteItem *item  );	
 
 
 		// Fill status information	

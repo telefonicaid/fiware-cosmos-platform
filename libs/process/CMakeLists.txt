@@ -1,25 +1,13 @@
 SET (HEADERS
-    ProcessCommunication.h
-    ProcessAssistantBase.h
-    ProcessBase.h
-    ProcessAssistant.h
-    Process.h
-    ProcessWriter.h
-    OperationFramework.h
-    ProcessOperationFramework.h
-    ProcessAssistantOperationFramework.h
+    ProcessManager.h
+    ProcessItem.h
+    ProcessItemIsolated.h
 )
 
 SET (SOURCES
-    ProcessCommunication.cpp
-    ProcessAssistantBase.cpp
-    ProcessBase.cpp
-    ProcessAssistant.cpp
-    Process.cpp
-    ProcessWriter.cpp
-    OperationFramework.cpp
-    ProcessOperationFramework.cpp
-    ProcessAssistantOperationFramework.cpp
+    ProcessManager.cpp
+    ProcessItem.cpp
+    ProcessItemIsolated.cpp
 )
 
 SET (STATIC_LIBS

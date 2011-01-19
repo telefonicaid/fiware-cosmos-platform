@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <signal.h>            /* kill(), SIGINT                             */
 #include <sys/termios.h>       /* struct termios                             */
-#include <termio.h>            /* termio ...                                 */
+#include <termios.h>            /* termio ...                                 */
 #include <errno.h>             /* errno                                      */
 
 #include "baTerm.h"            /* Own interface                              */

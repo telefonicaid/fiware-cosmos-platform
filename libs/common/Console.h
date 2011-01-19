@@ -19,7 +19,7 @@
 #include <curses.h>
 #include <deque>
 
-#include "Lock.h"                /* Lock                            */
+#include "Lock.h"             /* Lock                            */
 
 #include <stdio.h>
 #include <readline/readline.h>

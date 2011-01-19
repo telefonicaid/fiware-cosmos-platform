@@ -243,6 +243,11 @@ namespace ss {
 			return SimpleBuffer( _data , _max_size );
 		}
 		
+		SimpleBuffer getSimpleBufferAtOffset(size_t offset)
+		{
+			return SimpleBuffer( _data + offset , _max_size - offset );
+		}
+		
 		
 
 	};

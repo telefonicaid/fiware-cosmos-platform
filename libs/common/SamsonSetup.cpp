@@ -25,6 +25,8 @@
 #define SETUP_shared_memory_num_buffers							"shm_num_buffers"
 #define SETUP_DEFAULT_shared_memory_num_buffers					6
 
+#define SETUP_max_input_buffer_size								"max_input_buffer_size"
+#define SETUP_DEFAULT_max_input_buffer_size						1000000000
 
 #define SETUP_DEFAULT_load_buffer_size							67108864
 
@@ -165,6 +167,9 @@ namespace ss
 
 		shared_memory_size_per_buffer	= getUInt64( items, SETUP_shared_memory_size_per_buffer , SETUP_DEFAULT_shared_memory_size_per_buffer );
 		shared_memory_num_buffers		= getInt( items, SETUP_shared_memory_num_buffers , SETUP_DEFAULT_shared_memory_num_buffers );
+
+		
+		max_input_buffer_size			= getUInt64( items, SETUP_max_input_buffer_size , SETUP_DEFAULT_max_input_buffer_size );
 		
 		
 		// Default value for other fields
@@ -204,10 +209,9 @@ namespace ss
 			return false;
 		}
 #endif	
-		if( shared_memory_num_buffers < 2*num_processes )
+		if( shared_memory_num_buffers < num_processes )
 		{
-			std::cerr << "Number of shared memory buffers should be at least 2 times the number of process.\n";
-			std::cerr << "Recomended value: num_buffers = 3 * num_process\n";
+			std::cerr << "Number of shared memory buffers should be at least number of process.\n";
 			return false;
 		}
 		if ( num_io_threads_per_device < 1)

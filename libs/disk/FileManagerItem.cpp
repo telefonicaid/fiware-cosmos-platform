@@ -8,6 +8,9 @@ namespace ss {
 	{
 		delegate = _delegate;
 		type = _type;
+
+		
+		error = false;	// No error by default
 		
 		// Type of disk operation for statistics
 		switch (type) {

@@ -18,6 +18,9 @@
 
 namespace ss {
 	
+	class FileManagerReadItem;
+	class FileManagerWriteItem;
+	
 	/**
 	 Interface to receive notifictions from DiskManager
 	 */
@@ -36,7 +39,8 @@ namespace ss {
 	class FileManagerDelegate
 	{
 	public:
-		virtual void fileManagerNotifyFinish(size_t id, bool success) = 0;	
+		virtual void notifyFinishReadItem( FileManagerReadItem *item  ) = 0;	
+		virtual void notifyFinishWriteItem( FileManagerWriteItem *item  ) = 0;	
 	};
 	
 	

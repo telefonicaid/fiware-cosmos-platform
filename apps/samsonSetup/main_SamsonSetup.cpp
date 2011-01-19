@@ -73,11 +73,16 @@ int main(int argc, const char *argv[])
 		ss::SharedMemoryItem *item =  mm->getSharedMemory(i);
 		
 		if( item )
+		{
 			std::cout << "OK\n";
+			mm->freeSharedMemory( item );
+		}
 		else
 		{
 			std::cout << "ERROR\n";
 		}
+		
+		
 		
 	}
 	

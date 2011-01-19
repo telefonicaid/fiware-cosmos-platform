@@ -7,24 +7,68 @@
 #include <sys/shm.h> 
 #include <map>						// std::map
 #include <set>						// std::set
+#include <list>						// std::list
 #include <iostream>					// std::cout
 #include "samsonDirectories.h"		// SAMSON_SETUP_FILE
 
 
 #include "Buffer.h"					// ss::Buffer
-#include "Lock.h"					// au::Lock
+#include "Token.h"					// au::Token
+#include "Stopper.h"				// au::Stopper
 #include "au_map.h"					// au::map
-
 #include "Format.h"					// au::Format
-#include "Status.h"				// au::Status
+#include "Status.h"					// au::Status
 
-#include "samson.pb.h"			// network::..
+#include "samson.pb.h"				// network::..
 
 
 #define SS_SHARED_MEMORY_KEY_ID					872934	// the first one
 
 namespace ss {
 
+	class MemoryRequest;
+	
+	class MemoryRequestDelegate
+	{
+	public:
+		virtual void notifyFinishMemoryRequest( MemoryRequest *request )=0;
+	};
+	
+	/**
+	 Object used to request memory for a new operation
+	 */
+	
+	class MemoryRequest
+	{
+		
+	public:
+		
+		size_t size;						// Required size
+		Buffer **buffer;						// Provides buffer
+		MemoryRequestDelegate *delegate;	// Delegate to notify when ready
+		
+		// Reference elements
+		int component;
+		size_t tag;
+		size_t sub_tag;
+	
+		
+		MemoryRequest( size_t _size , Buffer **_buffer,  MemoryRequestDelegate *_delegate )
+		{
+			size = _size;
+			buffer = _buffer;
+			delegate = _delegate;	// There is no sence a request for memory with no delegate ;)
+		}
+
+		
+		void notifyDelegate()
+		{
+			assert( delegate );
+			delegate->notifyFinishMemoryRequest( this );
+		}
+		
+	};
+	
 	/**
 	 Memory manager is a singleton implementation of shared memory
 	 It should be able to provide buffers of memory to be used across multiple apps
@@ -34,10 +78,15 @@ namespace ss {
 	{
 		
 	public:
+		int id;						/* Identifier of the shared memory area */
 		int shmid;					/* return value from shmget() */ 
 		char *data;					/* Shared memory data */
 		size_t size;				/* Information about the size of this shared memory item */
 		
+		SharedMemoryItem( int _id)
+		{
+			id = _id;
+		}
 		
 		SimpleBuffer getSimpleBuffer()
 		{
@@ -61,11 +110,10 @@ namespace ss {
 	class MemoryManager 
 	{
 		
-		au::Lock lock;									// Lock to be thread-safe
+		au::Token token;							// Token to protect "used_memory"
+		au::Stopper stopper;						// Stopper for the main-thread to notify new buffers
 
-		size_t used_memory;								// Monitor the used memory
-
-		au::map<int,SharedMemoryItem> items;			// Shared memory items
+		size_t used_memory;							// Monitor the used memory
 
 		// Setup parameters ( loaded at constructor )
 		
@@ -80,17 +128,18 @@ namespace ss {
 		// Some debug info
 		int num_buffers;
 		
+		
+		// List of memory requests
+		au::list <MemoryRequest> memoryRequets;
+		
 		MemoryManager();
 		
-		// Function to create/load the shared memory items
-		void createSharedMemoryItems();
-		
-		// Function used to create a particular shared memory region ( used inside a "Process" to work with its designated area )
-		SharedMemoryItem* createSharedMemory( int i );
-		
+		// Buffers in action
 		std::set< Buffer* > buffers;
 		
 	public:
+
+		static void init();
 		
 		/**
 		 Singleton interface to the shared memory
@@ -110,6 +159,14 @@ namespace ss {
 		 */
 		void destroyBuffer( Buffer *b );
 		
+
+		
+		/**
+		 Add a delayed request ( only served when memory is bellow a threshold )
+		 */
+		
+		void addMemoryRequest( MemoryRequest *request);
+		
 		/**
 		 Get the current usage of memory
 		 Used by DiskManager to controll the amount of memory that can use for keeping just writed files on memory
@@ -125,29 +182,18 @@ namespace ss {
 		void removeSharedMemory( int i );
 		
 		/**
-		 Function to request a free shared memory.
-		 This is used as output by a ProcessAssistant or as input to prepare a WorkerTaskItem
+		 Function to retain and release a free shared-memory area
 		 */
 
-		int getFreeSharedMemory()
-		{
-			lock.lock();
-			
-			for (int i = 0  ; i < shared_memory_num_buffers ; i++)
-				if ( !shared_memory_used_buffers[i] )
-				{
-					shared_memory_used_buffers[i] = true;
-					lock.unlock();
-					
-					used_memory += shared_memory_size_per_buffer;
-					
-					return i;
-				}
-			
-			lock.unlock();
-			return -1;	// There are no available memory buffers
-		}
+		int retainSharedMemoryArea();
+		void releaseSharedMemoryArea( int id );
 
+		/**
+		 Functions to get and release a shared memory area
+		 */
+		
+		SharedMemoryItem* getSharedMemory( int i );
+		void freeSharedMemory(SharedMemoryItem* item);
 		
 		/**
 		 Debug function to mark as used shared memory areas used by other process
@@ -164,28 +210,6 @@ namespace ss {
 		
 		
 		/**
-		 Function used to free a shared memory used before
-		 */
-
-		void freeSharedMemory( int id )
-		{
-			assert( id >= 0);
-			assert( id < shared_memory_num_buffers);
-			
-			lock.lock();
-			shared_memory_used_buffers[id] = false;
-			used_memory -= shared_memory_size_per_buffer;
-			lock.unlock();
-			
-		}
-		
-		/**
-		 Interface to get a particular shared memory region
-		 */
-		
-		SharedMemoryItem* getSharedMemory( int i );
-		
-		/**
 		 Get a string describing status of memory manager
 		 */
 		
@@ -199,6 +223,17 @@ namespace ss {
 		{
 			return used_memory;
 		}
+		
+		double getUsedMemory()
+		{
+			return (double)used_memory / (double) memory;
+		}
+		
+		
+	public:
+		
+		// Function for the main thread of memory
+		void runThread();
 		
 	};
 	

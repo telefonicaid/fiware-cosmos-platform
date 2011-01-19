@@ -14,8 +14,9 @@ namespace ss
 	
 #pragma mark DataManagerItem
 	
-	LoadDataManagerItem::LoadDataManagerItem( int _fromIdentifier , LoadDataManager *_dataManager )
+	LoadDataManagerItem::LoadDataManagerItem( size_t _id , int _fromIdentifier , LoadDataManager *_dataManager )
 	{
+		id = _id;
 		fromIdentifier = _fromIdentifier;
 		dataManager = _dataManager;
 	}
@@ -23,8 +24,8 @@ namespace ss
 
 #pragma mark UploadItem
 	
-	UploadItem::UploadItem( int _fromIdentifier , LoadDataManager *dataManager, const network::UploadData &_uploadData ,size_t _sender_id, Buffer * _buffer ) 
-		: LoadDataManagerItem( _fromIdentifier , dataManager)
+	UploadItem::UploadItem(size_t id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadData &_uploadData ,size_t _sender_id, Buffer * _buffer ) 
+		: LoadDataManagerItem( id,  _fromIdentifier , dataManager)
 	{
 		uploadData = _uploadData;	// Copy the message
 		sender_id = _sender_id;
@@ -40,6 +41,7 @@ namespace ss
 	{
 		// Add to the file manager to be stored on disk
 		FileManagerWriteItem * item = new FileManagerWriteItem( fileName , buffer , dataManager );
+		item->tag = id;	// Use my id as tag
 		return FileManager::shared()->addItemToWrite( item );
 	}
 	
@@ -70,8 +72,8 @@ namespace ss
 	
 #pragma mark DownloadItem
 	
-	DownloadItem::DownloadItem( int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadData &_downloadData ,size_t _sender_id) 
-		: LoadDataManagerItem( _fromIdentifier , dataManager )
+	DownloadItem::DownloadItem(size_t id, int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadData &_downloadData ,size_t _sender_id) 
+		: LoadDataManagerItem( id, _fromIdentifier , dataManager )
 	{
 		downloadData = _downloadData;	// Copy the message
 		sender_id = _sender_id;
@@ -87,6 +89,7 @@ namespace ss
 		buffer->setSize( size );
 
 		FileManagerReadItem *item = new FileManagerReadItem( fileName , 0 , size , buffer->getSimpleBuffer(), dataManager );
+		item->tag = id;	// Use my id as tag
 		return FileManager::shared()->addItemToRead( item );
 	}
 	
@@ -121,13 +124,13 @@ namespace ss
 		// Get the size of the upload buffer....
 		upload_size += buffer->getSize();
 		
-		UploadItem *item = new UploadItem( fromIdentifier , this , uploadData , sender_id , buffer );
+		UploadItem *item = new UploadItem( id++, fromIdentifier , this , uploadData , sender_id , buffer );
+		uploadItem.insertInMap( item->id , item );
 		
-		size_t fm_id = item->submitToFileManager();
+		item->submitToFileManager();
 
 		//LM_M(("LDM Item (sender_id %d) (file_id %d) and was schedulled to Disk manager with id %d",sender_id,uploadData.file_id() ,fm_id));
 		
-		uploadItem.insertInMap( fm_id , item );
 		
 		lock.unlock();
 	}
@@ -136,45 +139,52 @@ namespace ss
 	{
 		lock.lock();
 		
-		DownloadItem *item = new DownloadItem( fromIdentifier , this , downloadData, sender_id );
+		DownloadItem *item = new DownloadItem(id++, fromIdentifier , this , downloadData, sender_id );
+		downloadItem.insertInMap( item->id , item );
 
-		size_t fm_id = item->submitToFileManager();
+		item->submitToFileManager();
 		
-		downloadItem.insertInMap( fm_id , item );
 		
 		lock.unlock();
 		
 	}
 	
-	
-
-	void LoadDataManager::fileManagerNotifyFinish(size_t fm_id, bool success)
+	void LoadDataManager::notifyFinishReadItem( FileManagerReadItem *item  )
 	{
-		//LM_M(("LDM File Manager finish with file manager id %d ( success %d ) ",fm_id,success));
-		
 		lock.lock();
 		
-		UploadItem* upload			= uploadItem.extractFromMap( fm_id );
-		DownloadItem* download		= downloadItem.extractFromMap( fm_id );
-		
-		assert( download || upload );
+		DownloadItem* download		= downloadItem.extractFromMap( item->tag );
 		
 		if( download )
 		{
-			download->sendResponse(!success ,"");
+			download->sendResponse( item->error , item->error_message);
 			delete download;
 		}
-
+		
+		lock.unlock();
+		
+		delete item;
+	}
+	
+	
+	void LoadDataManager::notifyFinishWriteItem( FileManagerWriteItem *item  )
+	{
+		lock.lock();
+		
+		UploadItem* upload	= uploadItem.extractFromMap(item->tag );
+		
 		if( upload )
 		{
-			upload->sendResponse(!success ,"");
+			upload->sendResponse(item->error , item->error_message);
 			delete upload;
 		}
 		
-		
 		lock.unlock();
+		
+		delete item;
+		
 	}
-	
+
 	
 	void LoadDataManager::fill( network::WorkerStatus* ws)
 	{

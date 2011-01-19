@@ -1,47 +1,196 @@
 
-
-#include "ProcessOperationFramework.h"		// Own interface
-#include "WorkerTaskManager.h"				// ss::WorkerTaskItemWithOutput
-#include "Packet.h"							// ss::Packet
+#include "ProcessOperation.h"		// Own interface
+#include "ModulesManager.h"			// ss::ModulesManager
+#include "WorkerTask.h"				// ss::WorkerTask
+#include "WorkerSubTask.h"		// ss::OrganizerSubTask
+#include "Packet.h"					
 
 namespace ss {
-
-	void ProcessOperationFramework::flushOutput( WorkerTaskItem *taskItem)
+	
+	
+	
+	/* Vector key-values to sort and process all input channels */
+	
+	class KVInputVector
 	{
-		if( pw )
-			pw->FlushBuffer(taskItem);
-		if( ptw )
-			ptw->FlushBuffer(taskItem);
+		
+	public:
+		
+		KV *kv;							// Dynamic Vector of KV elements
+		KV ** _kv;						// Dynamic Vector with pointers to kv
+		
+		size_t max_num_kvs;				// Allocation size
+		size_t num_kvs;					// Real number of kvs in the vectors
+		
+		DataSizeFunction keySize;		// Function to get the size of a particular value of the key ( common to all inputs )
+		DataSizeFunction *valueSize;	// Function to get the size of a partiuclar value of the value ( different for each input )
+		
+		OperationInputCompareFunction compare;
+		
+		int num_inputs;
+		
+		KVInputVector( int _num_inputs )
+		{
+			num_inputs = _num_inputs;
+			
+			_kv = NULL;
+			kv  = NULL;
+			max_num_kvs = 0;
+			num_kvs = 0;
+			
+			valueSize = (DataSizeFunction *) malloc( sizeof( DataSizeFunction) * num_inputs );
+		}
+		
+		~KVInputVector()
+		{
+			if( _kv )
+				free( _kv );
+			if( kv ) 
+				free ( kv );
+		}
+		
+		// For each hash group, prepare the vector
+		
+		void prepareInput( size_t _max_num_kvs )
+		{
+			if( _max_num_kvs > max_num_kvs )
+			{
+				if( _kv )
+					free( _kv );
+				if( kv ) 
+					free ( kv );
+				
+				// Set a new maximum number of kvs
+				max_num_kvs = _max_num_kvs;
+				
+				_kv = (KV**) malloc( sizeof(KV*) * _max_num_kvs );
+				kv  = (KV*) malloc( sizeof(KV) * max_num_kvs );
+				
+			}
+			
+			// Set the pointers to internal structure ( to sort again )
+			for (size_t i = 0 ; i < _max_num_kvs ; i++)
+				_kv[i] = &kv[i];
+			
+			num_kvs = 0;
+		}
+		
+		void addKVs( ProcessSharedFile& file )
+		{
+			int input = file.header->input;
+			
+			// Get the rigth size function
+			DataSizeFunction _valueSize = valueSize[input];
+			
+			// Get the pointer to data
+			char *data = file.data + file.offset;
+			
+			// Get the info we should read
+			FileKVInfo info = file.info[ file.hg ];
+			
+			
+			// Local offset
+			size_t offset = 0;
+			
+			// Process a set of key values
+			for (size_t i = 0 ; i < info.kvs ; i++)
+			{
+				kv[ num_kvs ].key = data + offset;
+				
+				offset += keySize( data + offset );
+				
+				kv[ num_kvs ].value = data + offset;
+				
+				offset += _valueSize( data + offset );
+				
+				kv[num_kvs].input = input;
+				
+				num_kvs++;
+			}
+			
+			// Make sure the parsing is OK!
+			assert( offset == info.size );
+			
+			// update the  file for the next round
+			file.hg++;
+			file.offset += info.size;
+			
+		}
+		
+		
+		// global sort function key - input - value
+		void sort()
+		{
+			if( num_kvs > 0 )
+				std::sort( _kv , _kv + num_kvs , compare );
+		}
+		
+	};
+	
+	
+#pragma mark ----
+	
+	ProcessOperation::ProcessOperation(OperationSubTask *_operationSubTask ) : ProcessBase( _operationSubTask->task , ProcessBase::key_value )
+	{
+		operationSubTask = _operationSubTask;
+		
+		// Name of the generator
+		operation_name = task->workerTask.operation();	
+		
+		// Description with the name of the generator
+		setStatus( operation_name );
+		
+		// Set the buffer size the max size
+		operationSubTask->buffer->setSize( operationSubTask->buffer->getMaxSize() );
+		
+		// Geting the operation and the data base address
+		ModulesManager *modulesManager = ModulesManager::shared();
+		operation = modulesManager->getOperation( operation_name );
+		data = operationSubTask->buffer->getData();
+		
+		
+		if ( operation->getType() == Operation::parserOut )
+			setProcessBaseMode( ProcessBase::txt );
+
+		
 	}
 	
-	ProcessOperationFramework::ProcessOperationFramework( Process *_process , network::ProcessMessage m  ) : OperationFramework( m )
+	void ProcessOperation::generateTXT( TXTWriter *writer )
 	{
-		
-		process = _process;
-		assert( process );
-		
-		// Create the environment for any possible operation
-		environment = new Environment();
-		environment->copyFrom(&process->environment);
-		
-		// We still have no idea about the operation to run
-		operation = process->modulesManager.getOperation( m.operation() );
+		// Run the operation
 		assert( operation );
 		
-		// Set the process to report "full buffer messages"
-		if( pw )
-			pw->setProcess( process );	
-		if( ptw )
-			ptw->setProcess( process );	
+		switch (operation->getType()) {
+			case Operation::generator:
+				assert( false );	// Not considered here any more
+				break;
+			case Operation::parser:
+				assert( false );	// Not considered here any more
+				break;
+			case Operation::parserOut:
+			{
+				runParserOut( writer );
+				break;
+			}
+			case Operation::reduce:
+				assert( false );	// Not considered here any more
+				break;
+				
+			case Operation::map:
+			{
+				assert( false );	// Not considered here any more
+				break;
+			}
+				
+			default:
+				assert( false );
+				break;
+		}		
 		
 	}
 	
-	ProcessOperationFramework::~ProcessOperationFramework()
-	{
-		delete environment;
-	}
 	
-	void ProcessOperationFramework::run()
+	void ProcessOperation::generateKeyValues( KVWriter *writer )
 	{
 		
 		// Run the operation
@@ -49,102 +198,58 @@ namespace ss {
 		
 		switch (operation->getType()) {
 			case Operation::generator:
-			{
-				// Run the generator over the ProcessWriter to emit all key-values
-				Generator *generator = (Generator*) operation->getInstance();
-				generator->environment = environment;
-				pw->clear();
-				generator->run( pw );
+				assert( false );	// Not considered here any more
 				break;
-			}
 			case Operation::parser:
-			{
-				// Run the generator over the ProcessWriter to emit all key-values
-				Parser *parser = (Parser*) operation->getInstance();
-				parser->environment = environment;
-				
-				SharedMemoryItem* item =  MemoryManager::shared()->getSharedMemory( m.input_shm() );
-				
-				BufferHeader *header = (BufferHeader*)item->data;
-				assert( header->check() );
-				
-				if( header->compressed == 0 )
-				{
-					// Non compressed fiels
-					parser->init();
-					pw->clear();
-					parser->run( item->data + sizeof(BufferHeader) , header->original_size ,  pw );
-					parser->finish();
-					
-				}
-				else 
-				{
-					assert ( header->compressed == 1);	// Only supported 1
-					
-					Buffer* b = Packet::decompressBuffer( item->data , m.input_size() );
-					
-					parser->init();
-					pw->clear();
-					parser->run( b->getData() , b->getSize() ,  pw );
-					parser->finish();
-					
-					MemoryManager::shared()->destroyBuffer(b);
-					
-				}
-				
+				assert( false );	// Not considered here any more
 				break;
-			}
 			case Operation::parserOut:
 			{
-				runParserOut();
+				assert(false);
 				break;
 			}
 			case Operation::reduce:
-				runReduce();
+				runReduce( writer );
 				break;
-				
 				
 			case Operation::map:
 			{
-				runMap();
+				runMap( writer );
 				break;
 			}
-				
 				
 			default:
 				assert( false );
 				break;
-		}
+		}		
 		
 	}
-	
-	void ProcessOperationFramework::runParserOut()
+
+	void ProcessOperation::runParserOut(TXTWriter *writer )
 	{
 		// Run the generator over the ProcessWriter to emit all key-values
 		ParserOut *parserOut = (ParserOut*) operation->getInstance();
-		parserOut->environment = environment;
+		parserOut->environment = &environment;
 		
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
 		
-		int num_inputs		= m.worker_task().input_size();
-		int num_input_files = m.num_input_files();
+		int num_inputs		= operationSubTask->task->workerTask.input_size();
+		int num_input_files = 0;
+		for (int i = 0 ; i < num_inputs ; i++)
+			num_input_files += operationSubTask->task->workerTask.input(i).file_size();
 		
 		assert( num_inputs == (int) inputFormats.size() );
 		
 		// Complete structure to prepare inputs
 		KVInputVector inputs(num_inputs);
-		
-		// Shared memory area used as input for this operation
-		SharedMemoryItem* item =  MemoryManager::shared()->getSharedMemory( m.input_shm() );
-		char *data = item->data;
-		
+				
 		// Process all input files [ Header ] [ Info ] [ Data ]
 		ProcessSharedFile *reduce_file = new ProcessSharedFile[ num_input_files ];
 		size_t offset = 0;
 		for (int i = 0 ; i < num_input_files ; i++ )
 			offset += reduce_file[i].set( data + offset );
 		
-
+		
 		// Get the number of hash groups and make sure all the files have the same number
 		int num_hash_groups = reduce_file[0].header->num_hash_groups();
 		for (int i = 0 ; i < num_input_files ; i++ )
@@ -156,8 +261,8 @@ namespace ss {
 		// Get the rigth functions to process input key-values
 		for (int i = 0 ; i < (int)inputFormats.size() ;i++)
 		{
-			Data *keyData	= process->modulesManager.getData( inputFormats[i].keyFormat );
-			Data *valueData	= process->modulesManager.getData( inputFormats[i].valueFormat );
+			Data *keyData	= ModulesManager::shared()->getData( inputFormats[i].keyFormat );
+			Data *valueData	= ModulesManager::shared()->getData( inputFormats[i].valueFormat );
 			
 			assert( keyData );
 			assert( valueData );
@@ -199,7 +304,7 @@ namespace ss {
 			inputStructs[0].kvs = &inputs._kv[0];
 			inputStructs[0].num_kvs = inputs.num_kvs;
 			
-			parserOut->run(inputStructs, ptw);
+			parserOut->run(inputStructs, writer);
 			
 			
 		}
@@ -209,17 +314,23 @@ namespace ss {
 		delete[] reduce_file;
 		
 	}		
+
 	
-	void ProcessOperationFramework::runMap()
+	void ProcessOperation::runMap( KVWriter *writer  )
 	{
+		
+		
 		// Run the generator over the ProcessWriter to emit all key-values
 		Map *map = (Map*) operation->getInstance();
-		map->environment = environment;
+		map->environment = &environment;
 		
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
 		
-		int num_inputs		= m.worker_task().input_size();
-		int num_input_files = m.num_input_files();
+		int num_inputs		= operationSubTask->task->workerTask.input_size();
+		int num_input_files = 0;
+		for (int i = 0 ; i < num_inputs ; i++)
+			num_input_files += operationSubTask->task->workerTask.input(i).file_size();
+		
 		
 		assert( num_inputs == (int) inputFormats.size() );
 		
@@ -230,9 +341,6 @@ namespace ss {
 		// Complete structure to prepare inputs
 		KVInputVector inputs(num_inputs);
 		
-		// Shared memory area used as input for this operation
-		SharedMemoryItem* item =  MemoryManager::shared()->getSharedMemory( m.input_shm() );
-		char *data = item->data;
 		
 		// Process all input files [ Header ] [ Info ] [ Data ]
 		ProcessSharedFile *reduce_file = new ProcessSharedFile[ num_input_files ];
@@ -251,8 +359,8 @@ namespace ss {
 		// Get the rigth functions to process input key-values
 		for (int i = 0 ; i < (int)inputFormats.size() ;i++)
 		{
-			Data *keyData	= process->modulesManager.getData( inputFormats[i].keyFormat );
-			Data *valueData	= process->modulesManager.getData( inputFormats[i].valueFormat );
+			Data *keyData	= ModulesManager::shared()->getData( inputFormats[i].keyFormat );
+			Data *valueData	= ModulesManager::shared()->getData( inputFormats[i].valueFormat );
 			
 			assert( keyData );
 			assert( valueData );
@@ -265,8 +373,6 @@ namespace ss {
 		
 		map->init();
 		
-		// Init the PW
-		pw->clear();
 		
 		for (int hg = 0 ; hg < num_hash_groups ; hg++)
 		{
@@ -296,7 +402,7 @@ namespace ss {
 			inputStructs[0].kvs = &inputs._kv[0];
 			inputStructs[0].num_kvs = inputs.num_kvs;
 			
-			map->run(inputStructs, pw);
+			map->run(inputStructs, writer);
 			
 			
 		}
@@ -306,18 +412,20 @@ namespace ss {
 		delete[] reduce_file;
 		
 	}
-	
-	void ProcessOperationFramework::runReduce()
+		
+	void ProcessOperation::runReduce( KVWriter *writer )
 	{
 		
 		// Run the generator over the ProcessWriter to emit all key-values
 		Reduce *reduce = (Reduce*) operation->getInstance();
-		reduce->environment = environment;
+		reduce->environment = &environment;
 		
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
 		
-		int num_inputs		= m.worker_task().input_size();
-		int num_input_files = m.num_input_files();
+		int num_inputs		= operationSubTask->task->workerTask.input_size();
+		int num_input_files = 0;
+		for (int i = 0 ; i < num_inputs ; i++)
+			num_input_files += operationSubTask->task->workerTask.input(i).file_size();
 		
 		if( num_input_files == 0)
 			return;	// If no input file, no process required
@@ -327,9 +435,6 @@ namespace ss {
 		// Complete structure to prepare inputs
 		KVInputVector inputs(num_inputs);
 		
-		// Shared memory area used as input for this operation
-		SharedMemoryItem* item =  MemoryManager::shared()->getSharedMemory( m.input_shm() );
-		char *data = item->data;
 		
 		// Process all input files [ Header ] [ Info ] [ Data ]
 		ProcessSharedFile *reduce_file = new ProcessSharedFile[ num_input_files ];
@@ -348,8 +453,8 @@ namespace ss {
 		// Get the rigth functions to process input key-values
 		for (int i = 0 ; i < (int)inputFormats.size() ;i++)
 		{
-			Data *keyData	= process->modulesManager.getData( inputFormats[i].keyFormat );
-			Data *valueData	= process->modulesManager.getData( inputFormats[i].valueFormat );
+			Data *keyData	= ModulesManager::shared()->getData( inputFormats[i].keyFormat );
+			Data *valueData	= ModulesManager::shared()->getData( inputFormats[i].valueFormat );
 			
 			assert( keyData );
 			assert( valueData );
@@ -366,10 +471,9 @@ namespace ss {
 		
 		
 		//std::cout << "Reduce everything ready...\n";
-				
+		
 		reduce->init();
 		
-		pw->clear();
 		
 		for (int hg = 0 ; hg < num_hash_groups ; hg++)
 		{
@@ -404,11 +508,11 @@ namespace ss {
 			size_t pos_end	 = 1;	// Position where the next group of key-values finish
 			
 			//std::cout << "Hash group with " << num_kvs << " kvs processing\n";
-
+			
 			/*
 			 if( num_kvs > 0 )
-				 std::cout << "Reduce Hash group with " << num_kvs << " kvs\n";
-			*/
+			 std::cout << "Reduce Hash group with " << num_kvs << " kvs\n";
+			 */
 			
 			while( pos_begin < num_kvs )
 			{
@@ -434,7 +538,7 @@ namespace ss {
 					}
 				}
 				
-				reduce->run(inputStructs, pw);
+				reduce->run(inputStructs, writer);
 				
 				// Go to the next position
 				pos_begin = pos_end;
@@ -450,8 +554,20 @@ namespace ss {
 		reduce->finish();
 		delete[] reduce_file;
 		
-	}
+	}		
+		
+		/*
+		 
+		
+		// Get a generator instance
+		
+		Generator * generator  = (Generator*) op->getInstance();
+		generator->environment = &environment;
+		
+		generator->run( writer );
+		
+		delete generator;
+		 */
+		
 	
 }
-
-

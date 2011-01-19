@@ -37,6 +37,20 @@ namespace ss {
 		
 		void getStatus( std::ostream &output , std::string prefix_per_line );
 		
+		void notifyToDelegate()
+		{
+			if( delegate )
+				delegate->notifyFinishReadItem(this);
+			else
+				delete this;	// Auto-remove to myself since no-one will handle me
+		}
+		
+		void freeResources()
+		{
+			// Nothing to do here
+		}
+		
+		
 	};	
 }
 

@@ -17,21 +17,7 @@
 
 namespace ss {
 	
-	class FileManagerCacheTask
-	{
-		
-	public:
-		
-		FileManagerReadItem *readItem;		// Item to be read
-		FileManagerCacheItem *cacheItem;	// Item to read from
-		
-		FileManagerCacheTask(FileManagerReadItem *_readItem , FileManagerCacheItem *_cacheItem)
-		{
-			readItem = _readItem;
-			cacheItem = _cacheItem;
-		}
-		
-	};	
+
 }
 
 

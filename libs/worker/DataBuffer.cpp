@@ -11,7 +11,7 @@
 #include "FileManagerWriteItem.h"
 
 namespace ss {
-	
+/*	
 	
 #pragma mark thread function
 	
@@ -214,11 +214,7 @@ namespace ss {
 		return fileName.str();
 	}
 	
-	
-	
-	
-	
-	
+*/	
 	
 }
 

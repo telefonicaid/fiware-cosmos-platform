@@ -25,6 +25,8 @@
 namespace ss
 {
 	
+	static ModulesManager *modulesManager=NULL;
+	
 	/**
 	 Utility function to fill data
 	 */
@@ -42,9 +44,22 @@ namespace ss
 		info->set_kvs( i.kvs );
 	}
 
+	
 	ModulesManager::ModulesManager()
 	{
 		addModules();
+	}
+	
+	void ModulesManager::init()
+	{
+		assert(!modulesManager);
+		modulesManager = new ModulesManager();
+	}
+	
+	ModulesManager* ModulesManager::shared()
+	{
+		assert( modulesManager );
+		return modulesManager;
 	}
 	
 	void ModulesManager::addModules()

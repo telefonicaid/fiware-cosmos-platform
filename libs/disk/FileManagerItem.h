@@ -39,9 +39,18 @@ namespace ss {
 		
 		timeval begin;
 		timeval end;
-		
+
 	public:
 		
+		int component;
+		size_t tag;
+		size_t sub_tag;
+		
+	public:
+		bool error;
+		std::string error_message;
+		
+	public:
 		
 		typedef enum
 		{
@@ -56,6 +65,12 @@ namespace ss {
 		size_t getId();
 		
 		void addStatistics(  DiskStatistics * statistics );
+		
+		
+		virtual void notifyToDelegate()=0;
+				
+		virtual void freeResources()=0;
+		
 		
 	private:
 		void setId(size_t _id);

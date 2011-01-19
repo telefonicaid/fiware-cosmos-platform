@@ -8,8 +8,34 @@
 
 namespace ss
 {
+	
+	void* runMemoryManagerThread(void*p)
+	{
+		((MemoryManager*)p)->runThread();
+		assert( false );
+		return NULL;
+	}
+	
 	static MemoryManager *_memoryManager = NULL;
 
+	void MemoryManager::init()
+	{
+		assert( !_memoryManager );
+		_memoryManager = new MemoryManager ();
+		
+		// Create the thread to serve memory requests.
+		pthread_t t;
+		pthread_create(&t, NULL, runMemoryManagerThread, _memoryManager);
+		
+	}
+	
+	MemoryManager* MemoryManager::shared()
+	{
+		assert( _memoryManager );
+		return _memoryManager;
+	}
+	
+	
 	MemoryManager::MemoryManager()
 	{
 		used_memory = 0;
@@ -31,23 +57,22 @@ namespace ss
 		shared_memory_used_buffers = (bool*) malloc( shared_memory_num_buffers * sizeof(bool ) );
 		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
 			shared_memory_used_buffers[i] = false;
+
+		
+		// Create the shared memory areas
+		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
+		{
+			
+//			LM_M(("Removing shared memory area %d",i));
+			removeSharedMemory(i);
+
+//			LM_M(("Creating shared memory area %d",i));			
+			SharedMemoryItem *tmp = getSharedMemory(i);
+			freeSharedMemory(tmp);
+		}
 		
 	}
 	
-	MemoryManager* MemoryManager::shared()
-	{
-		if( !_memoryManager )
-		   _memoryManager = new MemoryManager ();
-		return _memoryManager;
-	}
-
-	// Function to create/load the shared memory items
-	void MemoryManager::createSharedMemoryItems()
-	{
-		// Create shared memory
-		for (int i = 0 ; i < num_processes ;i++)
-			createSharedMemory(i);
-	}
 	
 	void MemoryManager::removeSharedMemory( int i )
 	{
@@ -72,21 +97,7 @@ namespace ss
 	
 	SharedMemoryItem* MemoryManager::getSharedMemory( int i )
 	{
-		assert( i >= 0);
-		
-		std::map<int,SharedMemoryItem*>::iterator s = items.find( i );	
-		if( s == items.end() )
-			return createSharedMemory(i);
-		else
-			return s->second;
-	}
-	
-	SharedMemoryItem* MemoryManager::createSharedMemory( int i )
-	{
-		
-		lock.lock();
-		
-		SharedMemoryItem* _info = new SharedMemoryItem();
+		SharedMemoryItem* _info = new SharedMemoryItem(i);
 		
 		key_t key;		/* key to be passed to shmget() */ 
 		int shmflg;		/* shmflg to be passed to shmget() */ 
@@ -110,20 +121,32 @@ namespace ss
 		{
 			perror("shmat: shmat failed"); 
 			std::cerr << "Error with shared memory while attaching to local memory\n";
+			assert( false );
 			exit(1);
 		}
 		_info->size = size;
 		
-		items.insert( std::pair<int,SharedMemoryItem*>( i , _info) );
+		return _info;		
+	}
+	
+	void MemoryManager::freeSharedMemory(SharedMemoryItem* item)
+	{
+		// Detach data
+		int ans = shmdt( item->data);
 		
-		lock.unlock();
+		// Make sure operation is correct
+		assert( ans != -1);
 		
-		return _info;
-	}		
+		// remove the item created with getSharedMemory
+		delete item;
+	}
+
+	
+	
 	
 	Buffer *MemoryManager::newBuffer( std::string name , size_t size )
 	{
-		lock.lock();
+		token.retain();
 		
 		// Keep counter of the used memory
 		used_memory += size;
@@ -134,7 +157,7 @@ namespace ss
 		
 		Buffer *b = new Buffer( name, size );
 
-		lock.unlock();
+		token.release();
 		return b;
 	}
 	
@@ -143,7 +166,7 @@ namespace ss
 		if (b == NULL)
 			return;
 
-		lock.lock();
+		token.retain();
 		
 		// Keep counter of the used memory
 		used_memory -= b->getMaxSize();
@@ -156,10 +179,47 @@ namespace ss
 		b->free();
 		delete b;
 		
-		lock.unlock();
-		
+		token.release();
+
+		// Wake up background thread
+		stopper.wakeUp();
 
 	}
+	
+	int MemoryManager::retainSharedMemoryArea()
+	{
+		token.retain();
+		
+		for (int i = 0  ; i < shared_memory_num_buffers ; i++)
+			if ( !shared_memory_used_buffers[i] )
+			{
+				shared_memory_used_buffers[i] = true;
+				token.release();
+				
+				used_memory += shared_memory_size_per_buffer;
+				
+				return i;
+			}
+		
+		token.release();
+		
+		assert(false);
+		return -1;	// There are no available memory buffers
+	}
+	
+	
+	
+	void MemoryManager::releaseSharedMemoryArea( int id )
+	{
+		assert( id >= 0);
+		assert( id < shared_memory_num_buffers);
+		
+		token.retain();
+		shared_memory_used_buffers[id] = false;
+		used_memory -= shared_memory_size_per_buffer;
+		token.release();
+		
+	}	
 	
 
 	
@@ -215,6 +275,51 @@ namespace ss
 		ws->set_total_memory( memory );
 		ws->set_used_memory( used_memory );
 	}
+	
+	
+	void MemoryManager::addMemoryRequest( MemoryRequest *request)
+	{
+		token.retain();
+		memoryRequets.push_back( request );
+		token.release();
+		
+		stopper.wakeUp();
+		
+	}
+	
+	
+	// Function for the main thread of memory
+	void MemoryManager::runThread()
+	{
+		
+		while( true )
+		{
+			double p = getUsedMemory();
+
+			MemoryRequest *r = NULL;
+				
+			if ( p < 0.5 );
+			{
+				token.retain();
+				r = memoryRequets.extractFront();
+				token.release();
+			}
+
+			if( !r )
+				stopper.stop();	// Stop for no more requets of no memory available
+			else
+			{
+				*(r->buffer) = newBuffer("", r->size);
+				r->notifyDelegate();
+			}
+
+
+			
+			
+		}
+		
+	}
+
 	
 
 }

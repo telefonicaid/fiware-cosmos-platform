@@ -41,6 +41,8 @@ namespace ss {
 		int num_threads;							// Number of threads working over this device		
 		pthread_t t[MAX_NUM_THREADS_PER_DEVICE];	// Thread to read/write in this device
 		
+		int running_operations;						// Number of operations running
+		
 	public:
 
 		// Statistical information

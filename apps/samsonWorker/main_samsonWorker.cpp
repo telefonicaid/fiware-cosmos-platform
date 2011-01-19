@@ -6,7 +6,7 @@
 #include "Endpoint.h"			// ss::Endpoint
 #include "DiskManager.h"		// ss::DiskManager
 #include "FileManager.h"		// ss::FileManager
-
+#include "ProcessManager.h"		// ss::ProcessManager
 
 
 /* ****************************************************************************

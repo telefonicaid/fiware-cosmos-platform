@@ -30,10 +30,10 @@ SET (HEADERS
 	SamsonSupervisor.h
 	baTerm.h
 	Process.h
-	processList.cpp
+	processList.h
 	Spawner.h
-	spawnerList.cpp
-	starterList.cpp
+	spawnerList.h
+	starterList.h
 	qt.h
 	actions.h
 	globals.h

@@ -298,7 +298,7 @@ namespace ss
 
 			MemoryRequest *r = NULL;
 				
-			if ( p < 0.5 );
+			if ( p < 0.5 )
 			{
 				token.retain();
 				r = memoryRequets.extractFront();

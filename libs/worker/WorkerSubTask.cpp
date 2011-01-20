@@ -200,7 +200,7 @@ namespace ss
 		buffer = NULL;
 		
 		// Compute the required size for this operation
-		memory_requested = task->reduceInformation->total_num_input_files*( num_hash_groups )*sizeof(FileKVInfo) + sizeof(SharedHeader);
+		memory_requested = task->reduceInformation->total_num_input_files*( ( num_hash_groups )*sizeof(FileKVInfo) + sizeof(SharedHeader) );
 		for (int hg = hg_begin ; hg < hg_end ; hg++)
 			memory_requested += task->reduceInformation->size_of_hg[hg];
 

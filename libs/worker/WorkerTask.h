@@ -33,11 +33,12 @@ namespace ss {
 		
 		typedef enum
 		{
-			pending_definition,		// Pending to receive message from the controller
-			running,				// Running operation
-			waiting,				// Output content is completed ( a message is send to the other workers ) waiting for the others to finish
-			finish,					// The content from all the workers is received ( saving to disk )
-			completed				// Output content is saved on disk ( task can be removed from task manager )
+			pending_definition,			// Pending to receive message from the controller
+			running,					// Running operation
+			local_content_finished,		// Output content is completed ( a message is send to the other workers to notify ) 
+			all_content_finish,			// The content from all the workers is received ( file are starting to be saved )
+			finish,						// All the output files are generated ( not saved ). Controller is notified about this to continue scripts
+			completed					// Output content is saved on disk ( task can be removed from task manager )
 		} WorkerTaskStatus;
 		
 		// Number of workers that confirmed the end of data

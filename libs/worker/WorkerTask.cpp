@@ -163,6 +163,17 @@ namespace ss
 	void WorkerTask::check()
 	{
 		
+/**
+ Evoluction of the status
+ 
+	pending_definition,			// Pending to receive message from the controller
+	running,					// Running operation
+	local_content_finished,		// Output content is completed ( a message is send to the other workers to notify ) 
+	all_content_finish,			// The content from all the workers is received ( file are starting to be saved )
+	finish,						// All the output files are generated ( not saved ). Controller is notified about this to continue scripts
+	completed					// Output content is saved on disk ( task can be removed from task manager )
+ */
+		
 		if ( status == running )
 		{
 			// If no more tasks, then set to finish and send a message to the rest of workers
@@ -173,11 +184,11 @@ namespace ss
 						// Send a close message to all the workers
 						sendCloseMessages();
 						
-						status = waiting;
+						status = local_content_finished;
 					}
 		}
 
-		if( status == waiting )
+		if( status == local_content_finished )
 		{
 			if( num_finished_workers == num_workers )
 			{
@@ -185,13 +196,22 @@ namespace ss
 				flush();
 				
 				// Now the status is waiting for the all the workers confirm ( me included ) finish generating data
-				status = finish;	
+				status = all_content_finish;	
+			}
+		}
+
+		
+		if (status == all_content_finish )
+		{
+			if( processWriteItems.size() == 0 )	 // No more files to be generated
+			{
+				status = finish;
 				
 				// Send a message indicating that operation finished
 				sendFinishTaskMessageToController();
-				
 			}
 		}
+		
 		
 		if ( status == finish)
 			if( ( writeItems.size() == 0 ) && ( processWriteItems.size() == 0 ) )

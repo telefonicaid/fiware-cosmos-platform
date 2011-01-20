@@ -55,6 +55,12 @@ int iomAccept(int lfd, char* hostName, int hostNameLen)
 	if (hostName)
 		strncpy(hostName, hName, hostNameLen);
 
+/*
+  Andreu: This crashes samsonWorker... deactivating temporary
+*/
+
+#if 0
+
 #if 1
 	int bufSize = 64 * 1024 * 1024;
 #else
@@ -74,6 +80,8 @@ int iomAccept(int lfd, char* hostName, int hostNameLen)
 	s = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (char*) &flag, sizeof(flag));
 	if (s != 0)
 		LM_X(1, ("setsockopt(TCP_NODELAY): %s", strerror(errno)));
+#endif
+
 #endif
 
 	return fd;

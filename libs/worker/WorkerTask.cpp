@@ -127,6 +127,8 @@ namespace ss
 		std::vector<FileManagerReadItem*>* items = subTask->getFileMangerReadItems();
 		if( items )
 		{
+		    assert( items->size() > 0);  // Otherwise return NULL
+
 			subTasksWaitingForReadItems.insertInMap( subTask->id , subTask );
 
 			for ( size_t i = 0 ; i < items->size() ; i++ )
@@ -152,10 +154,9 @@ namespace ss
 			return;
 		}
 		
-		// No-sense subTasks
-
-		assert( false );
-		
+		// Nothing to do
+		delete subTask;
+		check();
 	}
 	
 	
@@ -168,7 +169,7 @@ namespace ss
 			if( subTasksWaitingForMemory.size() == 0 )
 				if( subTasksWaitingForReadItems.size() == 0 )
 					if( subTasksWaitingForProcess.size() == 0 )
-					{				
+				    {				
 						// Send a close message to all the workers
 						sendCloseMessages();
 						
@@ -383,13 +384,29 @@ namespace ss
 		check();
 	}
 
+    void printSubTasks( std::ostringstream & output , au::map<size_t , WorkerSubTask> & subtasks)
+	{
+	   au::map<size_t , WorkerSubTask>::iterator i;
+	   for (i = subtasks.begin() ; i != subtasks.end() ; i++)
+		  output << "[" << i->second->description << "]";
+	}
 	
 	std::string WorkerTask::getStatus()
 	{
 		std::ostringstream output;
 		output << "ID:" << task_id << " OP:" << operation << ") ";
 
-		output << "Memory: " << subTasksWaitingForMemory.size() << " Read:" << subTasksWaitingForReadItems.size() << " Run:" << subTasksWaitingForProcess.size();
+		//output << "Memory: " << subTasksWaitingForMemory.size();
+		//output << " Read:" << subTasksWaitingForReadItems.size() 
+		//output << " Run:" << subTasksWaitingForProcess.size();
+
+		output << "Memory: ";
+		printSubTasks( output, subTasksWaitingForMemory );
+		output << " Read:";
+		printSubTasks( output, subTasksWaitingForReadItems ); 
+		output << " Run:";
+		printSubTasks( output, subTasksWaitingForProcess );
+
 		output << " Writing:" << processWriteItems.size() << "/" <<writeItems.size(); 
 		
 		if( queueBufferVectors.size() > 0)

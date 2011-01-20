@@ -2,6 +2,7 @@
 #include "DelilahConsole.h"		// ss::DelilahConsole
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "Format.h"				// au::Format
+#include "MemoryManager.h"      // ss::MemoryManager
 
 /* ****************************************************************************
 *
@@ -63,6 +64,8 @@ int main(int argC, const char *argV[])
 	ss::SamsonSetup::shared()->memory = (size_t) memory_gb * (size_t) (1024*1024*1024);
 	ss::SamsonSetup::shared()->load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
 	
+	ss::MemoryManager::init();
+
 	ss::Network  network(endpoints,workers);
 	std::cout << "Waiting for network connection ...";
 	

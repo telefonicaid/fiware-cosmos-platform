@@ -24,9 +24,11 @@ namespace ss
 	{
 		int num_read_operations;
 		int num_read_operations_confirmed;
-		
+
 	public:
-		
+
+		std::string description;// Short description for debuggin
+				
 		WorkerTask *task;
 		size_t id;
 		
@@ -79,6 +81,7 @@ namespace ss
 		
 		GeneratorSubTask( WorkerTask * task  ) : WorkerSubTask( task  )
 		{
+		   description = "G"; // Generator
 		}
 		
 		// Function to get the ProcessManagerItem to run

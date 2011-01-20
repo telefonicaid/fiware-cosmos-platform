@@ -82,7 +82,7 @@ namespace ss {
 		lock.lock();
 		
 		if( o->mode == "w" )
-			operation.push_front( o );	
+			operation.push_back( o );	
 		else
 			operation.push_back( o );	
 		

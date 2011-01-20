@@ -20,7 +20,10 @@ namespace ss
 		task = _task;
 		
 		num_read_operations_confirmed = 0;
+
+		description = "U"; // Unknown
 	}
+
 	
 	
 	ProcessItem *WorkerSubTask::getProcessItem()
@@ -75,6 +78,13 @@ namespace ss
 			num_read_operations = 0;
 	
 		num_read_operations_confirmed = 0;
+
+         // Avoid no-files requests
+		if( tmp && (tmp->size() == 0))
+		{
+		   delete tmp;
+		   return NULL;
+		}
 		
 		return tmp;
 	}
@@ -99,6 +109,8 @@ namespace ss
 		
 		// Create the reduce information ( stored at the worker task to share with the rest of reduce items )
 		task->reduceInformation = new ProcessAssistantSharedFileCollection( task->workerTask );
+
+		description = "Or"; // Organizer
 		
 	}
 	
@@ -191,7 +203,8 @@ namespace ss
 		memory_requested = task->reduceInformation->total_num_input_files*( num_hash_groups )*sizeof(FileKVInfo) + sizeof(SharedHeader);
 		for (int hg = hg_begin ; hg < hg_end ; hg++)
 			memory_requested += task->reduceInformation->size_of_hg[hg];
-		
+
+		description = "Op";// Operation
 	}
 	
 	OperationSubTask::~OperationSubTask()
@@ -273,6 +286,8 @@ namespace ss
 		
 		// Compute the required size for this operation
 		fileSize = au::Format::sizeOfFile( fileName );	
+
+		description = "P"; // Parser
 	}
 	
 	ParserSubTask::~ParserSubTask()

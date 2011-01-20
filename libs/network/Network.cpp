@@ -587,7 +587,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, ss::M
 
 			snprintf(alias, sizeof(alias), "%sSender", ep->name.c_str());
 			LM_W(("Don't forget to remove this fictive endpoint when a real endpoint restarts ..."));
-			endpointAdd(-1, -1, "Sender", alias, 0, Endpoint::ThreadedSender, NULL, 0);
+			endpointAdd(-1, -1, "Sender", alias, 0, Endpoint::ThreadedSender, "", 0);
 			pthread_create(&ep->senderTid, NULL, senderThread, ep);
 			LM_W(("This usleep to be removed some day ..."));
 			usleep(1000);
@@ -1366,7 +1366,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		   LM_X(1, ("pipe: %s", strerror(errno)));
 		
 		snprintf(alias, sizeof(alias), "%sTreater", ep->name.c_str());
-		newEpP = endpointAdd(fdPair[0], -1, "Reader/Treater", alias, 0, Endpoint::ThreadedReader, NULL, 0);
+		newEpP = endpointAdd(fdPair[0], -1, "Reader/Treater", alias, 0, Endpoint::ThreadedReader, "", 0);
 		newEpP->state = Endpoint::Connected;
 
 		paramsP->diss        = this;

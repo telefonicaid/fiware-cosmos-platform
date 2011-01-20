@@ -21,8 +21,9 @@ namespace au
 	
 	void Token::retain(  )
 	{
+#ifdef DEBUG_AU_TOKEN
 		LockDebugger::shared()->add_lock( this );
-		
+#endif		
 		// LOCK the mutex
 		int ans = pthread_mutex_lock(&_lock);
 		assert(!ans); // We do not accept falling simple mutex
@@ -51,8 +52,9 @@ namespace au
 	
 	void Token::release( )
 	{
+#ifdef DEBUG_AU_TOKEN
 		LockDebugger::shared()->remove_lock( this );
-		
+#endif		
 		// LOCK the mutex
 		int ans = pthread_mutex_lock(&_lock);
 		assert(!ans); // We do not accept falling simple mutex

@@ -178,6 +178,7 @@ Endpoint* EndpointMgr::endpointAdd
 
 	switch (type)
 	{
+	case Endpoint::LogServer:
 	case Endpoint::ThreadedReader:
 	case Endpoint::ThreadedSender:
 	case Endpoint::Fd:
@@ -616,6 +617,8 @@ void EndpointMgr::msgTreat(int rFd, char* name)
 	LM_T(LMT_TREAT, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
 	{
+	case Message::IDie:
+	case Message::LogLine:
 	case Message::ThroughputTest:
 	case Message::WorkerSpawn:
 	case Message::ControllerSpawn:	   

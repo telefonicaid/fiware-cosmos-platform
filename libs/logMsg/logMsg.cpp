@@ -60,7 +60,8 @@ extern "C" pid_t gettid(void);
 *
 * globals
 */
-int inSigHandler = 0;
+int         inSigHandler    = 0;
+static bool lmOutHookActive = false;
 
 
 
@@ -211,6 +212,7 @@ static LmWarningFp       warningFunction = NULL;
 static void*             warningInput    = NULL;
 static LmErrorFp         errorFunction   = NULL;
 static void*             errorInput      = NULL;
+static LmOutHook         lmOutHook       = NULL;
 
 static char              aux[AUX_LEN];
 static bool              auxOn = false;
@@ -1492,6 +1494,9 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 	memset(line,   0, sizeof(line));
 	memset(format, 0, sizeof(format));
 
+	if (lmOutHook && lmOutHookActive == true)
+		lmOutHook(text, type, file, lineNo, fName, tLev, stre);
+
 	for (i = 0; i < FDS_MAX; i++)
 	{
 		if (fds[i].state != Occupied)
@@ -1516,7 +1521,6 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 		{
 			char stampStr[LINE_MAX];
 			snprintf(line, sizeof(line), "%s:%s", text, timeStampGet(stampStr));
-
 		}
 		else
 		{
@@ -1537,7 +1541,7 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 		sz = strlen(line);
 		
 		if (fds[i].write != NULL)
-		   fds[i].write(line);
+			fds[i].write(line);
 		else
 		{
 			if ((nb = write(fds[i].fd, line, sz)) != sz)
@@ -1601,6 +1605,43 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 	}
 
 	return LmsOk;
+}
+
+
+
+/* ****************************************************************************
+*
+* lmOutHookSet -
+*/
+void lmOutHookSet(LmOutHook hook)
+{
+	lmOutHook       = hook;
+	lmOutHookActive = true;
+}
+
+
+
+/* ****************************************************************************
+*
+* lmOutHookInhibit - 
+*/
+bool lmOutHookInhibit(void)
+{
+	bool oldValue   = lmOutHookActive;
+	lmOutHookActive = false;
+
+	return oldValue;
+}
+
+
+
+/* ****************************************************************************
+*
+* lmOutHookRestore - 
+*/
+void lmOutHookRestore(bool onoff)
+{
+	lmOutHookActive = onoff;
 }
 
 

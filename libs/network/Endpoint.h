@@ -103,7 +103,8 @@ public:
 		WebWorker,
 		Sender,
 		Spawner,
-		Supervisor
+		Supervisor,
+		LogServer
 	} Type;
 
 public:

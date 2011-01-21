@@ -74,7 +74,10 @@ public:
 	virtual int getWorkerFromIdentifier(int identifier);
 
 	
-	std::vector<Endpoint*> samsonWorkerEndpoints();  // Get a list of the samsonWorkers endpoints
+	std::vector<Endpoint*> samsonWorkerEndpoints();               // Return the list of 'Worker' endpoints
+	std::vector<Endpoint*> samsonEndpoints();                     // Return the list of all endpoints
+	std::vector<Endpoint*> samsonEndpoints(Endpoint::Type type);  // Return the list of all 'type' endpoints
+	Endpoint*              logServerLookup(void);
 
 	/**
 	   This function is expected to return only if quit() function is called
@@ -107,13 +110,14 @@ public:
 	Endpoint*    endpointLookup(char* alias);
 	Endpoint*    endpointLookup(Endpoint::Type type, char* ip);
 	void         endpointRemove(Endpoint* ep, const char* why);
+	void         endpointListShow(void);
 
 	int          helloSend(Endpoint* ep, Message::MessageType type);
 
 	Endpoint*    controller;
+	Endpoint*    me;
 
 private:
-	Endpoint*    me;
 	Endpoint*    listener;
 	Endpoint*    ME;
 

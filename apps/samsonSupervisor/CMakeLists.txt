@@ -16,6 +16,7 @@ SET (SOURCES
 	LogTab.cpp
 	ProcessListTab.cpp
 	configFile.cpp
+	Popup.cpp
 )
 
 SET (HEADERS_MOC
@@ -38,6 +39,7 @@ SET (HEADERS
 	actions.h
 	globals.h
 	configFile.h
+	Popup.h
 )
 
 

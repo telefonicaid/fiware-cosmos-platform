@@ -99,6 +99,14 @@ typedef void (*LmWriteFp)(char*);
 
 /* ****************************************************************************
 *
+* LmOutHook - type for function pointer for lmOut hook
+*/
+typedef void (*LmOutHook)(char* text, char type, const char* file, int lineNo, const char* fName, int tLev, const char* stre);
+
+
+
+/* ****************************************************************************
+*
 * LmxFp - extra log function to call (for SGS use)
 */
 typedef int (*LmxFp)(int, char*);
@@ -1126,6 +1134,16 @@ extern LmStatus lmOut
    int          tLev,
    const char*  stre
 );
+
+
+
+/* ****************************************************************************
+*
+* lmOutHookSet - 
+*/
+extern void lmOutHookSet(LmOutHook hook);
+extern bool lmOutHookInhibit();
+extern void lmOutHookRestore(bool onoff);
 
 
 

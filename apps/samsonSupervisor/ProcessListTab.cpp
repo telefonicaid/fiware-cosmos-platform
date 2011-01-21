@@ -14,7 +14,11 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // LMT_*
 
+#include "Endpoint.h"           // ss::Endpoint
+#include "Network.h"            // samsonWorkerEndpoints
 #include "globals.h"            // global vars
+#include "ports.h"              // ports ...
+#include "iomConnect.h"         // iomConnect
 #include "actions.h"            // help, list, start, ...
 #include "Starter.h"            // Starter
 #include "Spawner.h"            // Spawner
@@ -22,6 +26,7 @@
 #include "spawnerList.h"        // spawnerListGet, ...
 #include "processList.h"        // processListGet, ...
 #include "starterList.h"        // starterAdd, ...
+#include "Popup.h"              // Popup
 #include "ProcessListTab.h"     // Own interface
 
 
@@ -87,6 +92,33 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 		starterV[ix]->check();
 	}
 
+
+
+	//
+	// Log Server start button
+	//
+	QLabel*      logServerRunningLabel;
+	QPushButton* logServerStartButton;
+
+	logServerRunningLabel = new QLabel("Log Server Running");
+	logServerStartButton  = new QPushButton("Start Log Server");
+	
+	mainLayout->addWidget(logServerStartButton,  ROWS, spawnerColumn);
+	mainLayout->addWidget(logServerRunningLabel, ROWS, spawnerColumn);
+
+	logServerStartButton->connect(logServerStartButton, SIGNAL(clicked()), this, SLOT(logServerStart()));
+
+	if (logServerFd != -1)
+	{
+		logServerRunningLabel->show();
+		logServerStartButton->hide();
+	}
+	else
+	{
+		logServerRunningLabel->hide();
+		logServerStartButton->show();
+	}
+
 	for (unsigned int ix = 0; ix < ROWS; ix++)
 		mainLayout->setRowMinimumHeight(ix, 40);
 }
@@ -95,11 +127,114 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 
 /* ****************************************************************************
 *
-* ProcessListTab::quit
+* ProcessListTab::quit - 
 */
 void ProcessListTab::quit(void)
 {
 	LM_X(0, ("Quit button pressed - I quit !"));
+}
+
+
+
+/* ****************************************************************************
+*
+* ProcessListTab::logServerStart - 
+*/
+void ProcessListTab::logServerStart(void)
+{
+	pid_t pid;
+	int   tries = 0;
+
+	if ((pid = fork()) == 0)
+	{
+		std::vector<ss::Endpoint*>  workerV;
+		std::vector<ss::Endpoint*>  spawnerV;
+		unsigned int                ix;
+		char*                       argV[100];
+		int                         argC = 0;
+		char                        controllerIp[128];
+		char                        workers[1024];
+		char                        spawners[1024];
+
+		argV[0] = (char*) "samsonLogServer";
+		argC    = 1;
+
+		if (networkP->controller != NULL)
+		{
+			snprintf(controllerIp, sizeof(controllerIp), "%s", networkP->controller->ip.c_str());
+			argV[argC++] = (char*) "-controller";
+			argV[argC++] = controllerIp;
+		}
+
+		workerV = networkP->samsonWorkerEndpoints();
+		LM_M(("samsonWorkerEndpoints returned a list of %d workers", workerV.size()));
+		memset(workers, 0, sizeof(workers));
+		if (workerV.size() > 0)
+		{
+			argV[argC++] = (char*) "-workerList";
+
+			for (ix = 0; ix < workerV.size(); ix++)
+			{
+				LM_M(("Adding worker '%s'", workerV[ix]->ip.c_str()));
+				strcat(workers, workerV[ix]->ip.c_str());
+				strcat(workers, " ");
+			}
+			argV[argC++] = workers;
+		}
+
+		spawnerV = networkP->samsonEndpoints(ss::Endpoint::Spawner);
+		LM_M(("samsonEndpoints(Spawner) returned a list of %d spawner endpoints", spawnerV.size()));
+		memset(spawners, 0, sizeof(spawners));
+		if (spawnerV.size() > 0)
+		{
+			argV[argC++] = (char*) "-spawnerList";
+
+			for (ix = 0; ix < spawnerV.size(); ix++)
+			{
+				LM_M(("Adding spawner '%s'", spawnerV[ix]->ip.c_str()));
+				strcat(spawners, spawnerV[ix]->ip.c_str());
+				strcat(spawners, " ");
+			}
+			argV[argC++] = spawners;
+		}
+
+		argV[argC] = NULL;
+
+		LM_M(("Execing logServer with controller: '%s', spawners '%s' and workers: '%s'", controllerIp, spawners, workers));
+		for (int ix = 0; ix < argC; ix++)
+			LM_M(("argV[%d]: '%s'", ix, argV[ix]));
+
+		execvp(argV[0], argV);
+		LM_X(1, ("Back from exec ..."));
+	}
+
+	LM_M(("connecting to log server"));
+	usleep(50000);
+
+	networkP->endpointListShow();
+	ss::Endpoint* ep = networkP->endpointLookup((char*) "logServer");
+	if (ep == NULL)
+		LM_X(1, ("I should have a log server endpoint !"));
+
+	while (1)
+	{
+		LM_M(("trying to connect to log server"));
+		logServerFd = iomConnect("localhost", LOG_SERVER_PORT);
+		if (logServerFd != -1)
+			break;
+		usleep(100000);
+		if (++tries > 20)
+			break;
+	}
+
+	if (logServerFd == -1)
+		new Popup("Error", "Error connecting to Samson Log Server");
+	else
+	{
+		ep->rFd   = logServerFd;
+		ep->wFd   = logServerFd;
+		ep->state = ss::Endpoint::Connected;
+	}
 }
 
 

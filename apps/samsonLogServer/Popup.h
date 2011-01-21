@@ -1,24 +1,27 @@
-#ifndef PORTS_H
-#define PORTS_H
+#ifndef POPUP_H
+#define POPUP_H
 
 /* ****************************************************************************
 *
-* FILE                     ports.h
+* FILE                     Popup.h
 *
 * AUTHOR                   Ken Zangelin
 *
-* CREATION DATE            Jan 13 2011
+* CREATION DATE            Jan 21 2011
 *
 */
+#include <QDialog>
 
 
 
 /* ****************************************************************************
 *
-* SPAWNER_PORT - 
+* Popup - 
 */
-#define SPAWNER_PORT      1233
-#define CONTROLLER_PORT   1234
-#define WORKER_PORT       1235
+class Popup : public QDialog
+{
+public:
+	Popup(char* title, char* text);
+};
 
 #endif

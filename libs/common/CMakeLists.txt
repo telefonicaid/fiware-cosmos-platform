@@ -1,5 +1,6 @@
 SET (HEADERS
 	samson.pb.h
+	ports.h
 	samsonDirectories.h
 	samsonLogMsg.h
 	Format.h

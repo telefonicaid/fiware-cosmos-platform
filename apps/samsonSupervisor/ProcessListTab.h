@@ -33,6 +33,7 @@ public:
 
 private slots:
 	void quit();
+	void logServerStart();
 
 private:
 	QGridLayout*  mainLayout;

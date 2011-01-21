@@ -254,6 +254,14 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	case ss::Endpoint::ControllerRemoved:
 	case ss::Endpoint::WorkerRemoved:
 	case ss::Endpoint::EndpointRemoved:
+		if (ep == logServerEndpoint)
+		{
+			logServerEndpoint = NULL;
+			logServerFd       = -1;
+			LM_W(("Log Server closed connection"));
+			return -1;
+		}
+
 		LM_M(("Endpoint removed"));
 		if (starter == NULL)
 			LM_RE(-1, ("NULL starter for '%s'", reasonText));
@@ -272,23 +280,6 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	}
 
 	return 0;
-}
-
-
-
-/* ****************************************************************************
-*
-* runQtAsThread - 
-*/
-void* runQtAsThread(void* nP)
-{
-	int          argC    = 1;
-	const char*  argV[2] = { "samsonSupervisor", NULL };
-
-	qtRun(argC, argV);
-	LM_X(1, ("Back from qtRun !"));
-
-	return NULL;
 }
 
 

@@ -13,11 +13,14 @@
 #include "Packet.h"             // Packet
 #include "Message.h"            // MessageType, Code, etc.
 
+
+
 /* ****************************************************************************
- *
- * full_read - read from a socket until completed or error
- */
+*
+* full_read - read from a socket until completed or error
+*/
 ssize_t full_read(int fd, char* buf, ssize_t nbyte);
+
 
 
 /* ****************************************************************************

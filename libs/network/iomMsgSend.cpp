@@ -38,6 +38,10 @@ static long           bytesSent;
 /* ****************************************************************************
 *
 * iomMsgSend - send a message to an endpoint
+*
+* WARNING
+* This function is used to send log lines between processes, thus it cannot use
+* log messages!
 */
 int iomMsgSend
 (
@@ -55,9 +59,12 @@ int iomMsgSend
 	struct iovec          ioVec[4];
 	int                   vecs = 1;
 	ssize_t               s;
+	bool                  outHook;
 
-	if (code == ss::Message::Die)
-		LM_W(("%s sending a Die to %s", from, to));
+	if (fd == -1)
+		LM_RE(-1, ("file descriptor for '%s' is -1 !!!", to));
+
+	outHook = lmOutHookInhibit();
 
 	memset(&header, 0, sizeof(header));
 	memset(ioVec, 0, sizeof(ioVec));
@@ -69,16 +76,18 @@ int iomMsgSend
 	ioVec[0].iov_base  = &header;
 	ioVec[0].iov_len   = sizeof(header);
 	
+	if ((dataLen != 0) && (data == NULL))
+		LM_X(1, ("dataLen: %d but dataP == NULL ...", dataLen));
+
+	if ((dataLen == 0) && (data != NULL))
+		LM_X(1, ("dataLen: 0 but dataP != NULL ..."));
+
 	if ((dataLen != 0) && (data != NULL))
 	{
-		if (data == NULL)
-			LM_X(1, ("dataLen %d, but data is a NULL pointer ...", dataLen));
-		
 		header.dataLen        = dataLen;
 		ioVec[vecs].iov_base  = data;
 		ioVec[vecs].iov_len   = dataLen;
 		
-		LM_WRITES(to, "data", ioVec[vecs].iov_base, ioVec[vecs].iov_len, LmfByte);
 		++vecs;
 	}
 
@@ -90,63 +99,49 @@ int iomMsgSend
 
 		outputVec = (char*) malloc(header.gbufLen + 2);
 		if (outputVec == NULL)
-			LM_XP(1, ("malloc(%d)", header.gbufLen));
+			LM_X(1, ("malloc error: %s", strerror(errno)));
 
 		if (packetP->message.SerializeToArray(outputVec, header.gbufLen) == false)
-			LM_RE(1, ("SerializeToArray failed"));
+			LM_X(1, ("SerializeToArray failure"));
 
 		ioVec[vecs].iov_base  = outputVec;
 		ioVec[vecs].iov_len   = packetP->message.ByteSize();
 
-		LM_WRITES(to, "google pbuffer", ioVec[vecs].iov_base, ioVec[vecs].iov_len, LmfByte);
 		++vecs;
 	}
 
-	if (packetP && (packetP->buffer != 0) )
+	if ((packetP != NULL) && (packetP->buffer != 0))
 	{
 
 		header.kvDataLen      = packetP->buffer->getSize();
 		ioVec[vecs].iov_base  = packetP->buffer->getData();
 		ioVec[vecs].iov_len   = packetP->buffer->getSize();
 		
-		LM_WRITES(to, "KV data", ioVec[vecs].iov_base, ioVec[vecs].iov_len, LmfByte);
 		++vecs;
 	}
 
-	LM_T(LMT_MSG, ("Sending '%s' %s to '%s', data bytes: { data: %d, gbuf: %d, kv: %d }  fd: %d",
-				   messageCode(code), messageType(type), to, header.dataLen, header.gbufLen, header.kvDataLen, fd));
-
 	s = writev(fd, ioVec, vecs);
-	if (s == -1)
+	if ((s == -1) || (s == 0))
 	{
-		LM_P(("writev(%s)", to));
-		return -1;
-	}
+		if (s == -1)
+			LM_E(("writev: %s", strerror(errno)));
+		else
+			LM_E(("writev returned 0"));
 
-	if (s == 0)
-	{
-		LM_E(("writev(%s) returned ZERO bytes written", to));
+		lmOutHookRestore(outHook);
 		return -1;
 	}
 
 	if (s != (ssize_t) (ioVec[0].iov_len + ioVec[1].iov_len + ioVec[2].iov_len + ioVec[3].iov_len))
-		LM_X(1, ("written only %d bytes, wanted to write %d (%d + %d + %d + %d)",
-				 s, 
-				 ioVec[0].iov_len + ioVec[1].iov_len + ioVec[2].iov_len + ioVec[3].iov_len,
-				 ioVec[0].iov_len, ioVec[1].iov_len, ioVec[2].iov_len, ioVec[3].iov_len));
+		LM_X(1, ("writev returned %d instead of %d", s, ioVec[0].iov_len + ioVec[1].iov_len + ioVec[2].iov_len + ioVec[3].iov_len));
 
-	LM_T(LMT_MSG, ("written %d bytes to '%s' (fd %d)", s, to, fd));
-
-	LM_WRITES(to, "message header",  ioVec[0].iov_base, ioVec[0].iov_len, LmfByte);
-	if (dataLen != 0)
-		LM_WRITES(to, "message data",  ioVec[1].iov_base, ioVec[1].iov_len, LmfByte);
-	
 	if (packetP != NULL)
 	{
 		ss::MemoryManager::shared()->destroyBuffer(packetP->buffer);
 		delete packetP;
 	}
 
+	lmOutHookRestore(outHook);
 	return 0;
 }	
 
@@ -205,6 +200,9 @@ int iomMsgSend
 	int                  s;
 	struct timeval       start;
 	struct timeval       end;
+	bool                  outHook;
+
+	outHook = lmOutHookInhibit();
 
 	if (code == ss::Message::Die)
 		LM_W(("%s sending a Die to %s", from->name.c_str(), to->name.c_str()));
@@ -231,13 +229,21 @@ int iomMsgSend
 
 	s = partWrite(to, &header, sizeof(header), "header");
 	if (s != sizeof(header))
-		LM_RE(-1, ("partWrite returned %d and not the expected %d", s, sizeof(header)));
+	{
+		LM_E(("partWrite returned %d and not the expected %d", s, sizeof(header)));
+		lmOutHookRestore(outHook);
+		return -1;
+	}
 
 	if ((dataLen != 0) && (data != NULL))
 	{
 		s = partWrite(to, data, dataLen, "msg data");
 		if (s != dataLen)
-			LM_RE(-1, ("partWrite returned %d and not the expected %d", s, dataLen));
+		{
+			LM_E(("partWrite returned %d and not the expected %d", s, dataLen));
+			lmOutHookRestore(outHook);
+			return -1;
+		}
 	}
 
 	if ((packetP != NULL) && (packetP->message.ByteSize() != 0))
@@ -254,14 +260,22 @@ int iomMsgSend
 		s = partWrite(to, outputVec, packetP->message.ByteSize(), "Google Protocol Buffer");
 		free(outputVec);
 		if (s != packetP->message.ByteSize())
-			LM_RE(-1, ("partWrite returned %d and not the expected %d", s, packetP->message.ByteSize()));
+		{
+			LM_E(("partWrite returned %d and not the expected %d", s, packetP->message.ByteSize()));
+			lmOutHookRestore(outHook);
+			return -1;
+		}
 	}
 
 	if (packetP && (packetP->buffer != 0))
 	{
 		s = partWrite(to, packetP->buffer->getData(), packetP->buffer->getSize(), "KV data");
 		if (s != (int) packetP->buffer->getSize())
-			LM_RE(-1, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
+		{
+			LM_E(("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
+			lmOutHookRestore(outHook);
+			return -1;
+		}
 	}
 
 	if (packetP != NULL)
@@ -295,7 +309,10 @@ int iomMsgSend
 			LM_X(1, ("usecs cannot be < 0 ..."));
 
 		if (usecs == 0)
+		{
+			lmOutHookRestore(outHook);
 			return 0;
+		}
 
 		to->wMbps = bytesSent / usecs;
 
@@ -303,5 +320,6 @@ int iomMsgSend
 		to->writes += 1;
 	}
 
+	lmOutHookRestore(outHook);
 	return 0;
 }	

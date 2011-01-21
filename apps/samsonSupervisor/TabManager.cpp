@@ -9,9 +9,9 @@
 */
 #include <QtGui>
 #include <QPushButton>
+#include <QVBoxLayout>
 
 #include "logMsg.h"             // LM_*
-
 
 #include "ProcessListTab.h"     // ProcessListTab
 #include "LogTab.h"             // LogTab

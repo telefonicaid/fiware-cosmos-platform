@@ -52,9 +52,11 @@ typedef enum MessageCode
 	UploadDataConfirmation			= CODE('L', 'C', 'o', ' '),
 	UploadDataConfirmationResponse	= CODE('L', 'C', 'R', ' '),
 	Die								= CODE('D', 'i', 'e', ' '),
+	IDie							= CODE('I', 'D', 'i', ' '),
 	WorkerSpawn                     = CODE('W', 'S', 'p', ' '),
 	ControllerSpawn                 = CODE('C', 'S', 'p', ' '),
-	ThroughputTest                  = CODE('T', 'p', 'u', ' ')
+	ThroughputTest                  = CODE('T', 'p', 'u', ' '),
+	LogLine                         = CODE('L', 'o', 'g', ' ')
 } MessageCode;
 
 
@@ -104,6 +106,23 @@ typedef struct HelloData
 	int                 coreNo;
 	int                 workerId;
 } HelloData;
+
+
+
+/* ****************************************************************************
+*
+* LogLineData
+*/
+typedef struct LogLineData
+{
+	char  text[256];
+	char  file[64];
+	char  fName[64];
+	char  stre[64];
+	char  type;
+	int   lineNo;
+	char  tLev;
+} LogLineData;
 
 
 

@@ -13,11 +13,17 @@
 #include <QDesktopWidget>
 #include <QIcon>
 #include <QPushButton>
+#include <QTextEdit>
+#include <QSize>
+#include <QVBoxLayout>
+#include <QListWidget>
+#include <QLabel>
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // LMT_*
 #include "globals.h"            // tabManager, ...
 
+#include "iomMsgRead.h"         // iomMsgRead
 #include "TabManager.h"         // TabManager
 #include "qt.h"                 // Own interface
 
@@ -27,8 +33,8 @@
 *
 * Window geometry
 */
-#define WIN_WIDTH    400
-#define WIN_HEIGHT   600
+#define MAIN_WIN_WIDTH     400
+#define MAIN_WIN_HEIGHT    600
 
 
 
@@ -59,10 +65,10 @@ static void mainWinCreate(QApplication* app)
 	screenWidth  = desktop->width();
 	screenHeight = desktop->height();
 
-	x = (screenWidth  - WIN_WIDTH)  / 2;
-	y = (screenHeight - WIN_HEIGHT) / 2;
+	x = (screenWidth  - MAIN_WIN_WIDTH)  / 2;
+	y = (screenHeight - MAIN_WIN_HEIGHT) / 2;
 
-	mainWindow->resize(WIN_WIDTH, WIN_HEIGHT);
+	mainWindow->resize(MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT);
 	mainWindow->move(x, y);
 	mainWindow->setWindowTitle("Samson Supervisor");
 }
@@ -77,18 +83,9 @@ void qtRun(int argC, const char* argV[])
 {
 	QApplication app(argC, (char**) argV);
 
-	LM_M(("I have %d workers", networkP->Workers));
-
 	mainWinCreate(&app);
-
-	
-	LM_T(LMT_QT, ("Creating TabManager"));
 	tabManager = new TabManager(mainWindow);
-	LM_T(LMT_QT, ("tabManager at %p", tabManager));
-
-	LM_T(LMT_QT, ("Showing main window"));
 	mainWindow->show();
 
-	LM_T(LMT_QT, ("running"));
 	app.exec();
 }

@@ -37,7 +37,12 @@ ssize_t full_read(int fd, char* buf, ssize_t bufLen)
 		nb = read(fd, (char*) buf + tot , bufLen - tot);
 
 		if (nb == -1)
+		{
+			if (errno == EBADF)
+				LM_RE(-2, ("read(connection closed?): %s", strerror(errno)));
+
 			LM_RE(-1, ("read: %s", strerror(errno)));
+		}
 		else if (nb == 0)
 		{
 			if (tot == 0)
@@ -78,8 +83,8 @@ int iomMsgRead
 	ss::Message::Header  header;
 	char*                inBuffer = (char*) *dataPP;
 
-	LM_M(("Reading incoming buffer"));
-    nb = read(fd, &header, sizeof(header));
+	*dataLenP = 0;
+	nb        = read(fd, &header, sizeof(header));
 	
 	if (nb == -1)
 		LM_RE(1, ("reading header from '%s'", from));
@@ -133,8 +138,6 @@ int iomMsgRead
 
 			tot += nb;
 		}
-
-		LM_M(("read %d bytes DATA from '%s' using %d system calls to 'read'", tot, from, reads));
 
 		*dataLenP = tot;
 

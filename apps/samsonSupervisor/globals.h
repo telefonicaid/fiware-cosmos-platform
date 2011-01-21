@@ -24,6 +24,10 @@ class SamsonSupervisor;
 extern ss::Network*       networkP;
 extern SamsonSupervisor*  supervisorP;
 extern TabManager*        tabManager;
+extern pthread_t          networkThread;
+extern pthread_t          qtThread;
+extern ss::Endpoint*      logServerEndpoint;
+extern int                logServerFd;
 
 
 

@@ -96,7 +96,7 @@ void Network::reset(int endpoints, int workers)
 *
 * Constructor 
 */
-Network::Network()
+Network::Network(void)
 {
 	reset(3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS, WORKERS);
 }
@@ -392,16 +392,16 @@ int Network::getNumWorkers(void)
 
 /* ****************************************************************************
 *
-* samsonWorkerEndpoints - 
+* samsonEndpoints - return list of ALL endpoints!
 */
-std::vector<Endpoint*> Network::samsonWorkerEndpoints()
+std::vector<Endpoint*> Network::samsonEndpoints(void)
 {
 	int                     ix;
 	std::vector<Endpoint*>  v;
 
 	LM_M(("%d workers", Workers));
 
-	for (ix = 2; ix <=  2 + Workers; ix++)
+	for (ix = 0; ix <=  Endpoints; ix++)
 	{
 		if (endpoint[ix] == NULL)
 			continue;
@@ -410,6 +410,79 @@ std::vector<Endpoint*> Network::samsonWorkerEndpoints()
 	}
 
 	return v;
+}
+	
+
+
+/* ****************************************************************************
+*
+* samsonWorkerEndpoints - return list of Worker endpoints
+*/
+std::vector<Endpoint*> Network::samsonWorkerEndpoints(void)
+{
+	int                     ix;
+	std::vector<Endpoint*>  v;
+
+	LM_M(("%d workers", Workers));
+
+	for (ix = 3; ix <=  3 + Workers; ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		v.push_back(endpoint[ix]);
+	}
+
+	return v;
+}
+	
+
+
+/* ****************************************************************************
+*
+* samsonEndpoints - return list of typed endpoints!
+*/
+std::vector<Endpoint*> Network::samsonEndpoints(Endpoint::Type type)
+{
+	int                     ix;
+	std::vector<Endpoint*>  v;
+
+	LM_M(("%d workers", Workers));
+
+	for (ix = 0; ix <=  Endpoints; ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if (endpoint[ix]->type != type)
+			continue;
+
+		v.push_back(endpoint[ix]);
+	}
+
+	return v;
+}
+	
+
+
+/* ****************************************************************************
+*
+* logServerLookup - return log server endpoint
+*/
+Endpoint* Network::logServerLookup(void)
+{
+	int ix;
+
+	for (ix = 0; ix <= Endpoints; ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if (endpoint[ix]->type == Endpoint::LogServer)
+			return endpoint[ix];
+	}
+
+	return NULL;
 }
 	
 
@@ -658,6 +731,48 @@ bool Network::ready()
 
 /* ****************************************************************************
 *
+* Network::endpointListShow - 
+*/
+void Network::endpointListShow(void)
+{
+	int ix;
+
+	for (ix = 0; ix < Endpoints; ix++)
+	{
+		char sign = '-';
+
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) && (endpoint[ix]->rFd >= 0))
+			sign = '+';
+
+		LM_F(("%c %08p  Endpoint %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
+			  sign,
+			  endpoint[ix],
+			  ix,
+			  endpoint[ix]->typeName(),
+			  endpoint[ix]->name.c_str(),
+			  endpoint[ix]->alias.c_str(),
+			  endpoint[ix]->ip.c_str(),
+			  endpoint[ix]->port,
+			  endpoint[ix]->stateName(),
+			  endpoint[ix]->rFd,
+			  endpoint[ix]->msgsIn,
+			  endpoint[ix]->bytesIn,
+			  endpoint[ix]->msgsOut,
+			  endpoint[ix]->bytesOut,
+			  endpoint[ix]->rMbps,
+			  endpoint[ix]->rAccMbps,
+			  endpoint[ix]->wMbps,
+			  endpoint[ix]->wAccMbps));
+	}
+}
+
+
+
+/* ****************************************************************************
+*
 * endpointAdd - add an endpoint to the vector
 *
 * The first three slots in this vector are:
@@ -789,6 +904,7 @@ Endpoint* Network::endpointAdd
 			LM_X(1, ("No temporal endpoint slots available - redefine and recompile!"));
 		break;
 
+	case Endpoint::LogServer:
 	case Endpoint::ThreadedReader:
 	case Endpoint::ThreadedSender:
 	case Endpoint::Fd:
@@ -868,7 +984,7 @@ Endpoint* Network::endpointAdd
 			if (endpoint[ix] == NULL)
 				LM_X(1, ("NULL worker endpoint at slot %d", ix));
 
-			if ((ep = endpointLookup((char*) alias)) != NULL)
+			if (((ep = endpointLookup((char*) alias)) != NULL) && (ep->state == Endpoint::Connected))
 			{
 				if (ep->wFd != wFd)
 					LM_E(("write file descriptors don't coincide for endpoint '%s' (%d vs %d)", alias, wFd, ep->wFd));
@@ -1063,10 +1179,8 @@ Endpoint* Network::endpointLookup(char* alias)
 		if (endpoint[ix] == NULL)
 			continue;
 
-		if ((strcmp(endpoint[ix]->alias.c_str(), alias) == 0) && (endpoint[ix]->state == Endpoint::Connected))
-		{
+		if (strcmp(endpoint[ix]->alias.c_str(), alias) == 0)
 			return endpoint[ix];
-		}
 	}
 
 	return NULL;
@@ -1263,7 +1377,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	
 	if (nb == -1)
 		LM_RVE(("iomMsgRead: error reading message from '%s': %s", ep->name.c_str(), strerror(errno)));
-	else if (nb == 0) /* Connection closed */
+	else if ((nb == 0) || (nb == -2)) /* Connection closed */
 	{
 		LM_T(LMT_SELECT, ("Connection closed - ep at %p", ep));
 		ep->msgsInErrors += 1;
@@ -1447,6 +1561,10 @@ void Network::controllerMsgTreat
 	LM_T(LMT_TREAT, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
 	{
+	case Message::LogLine:
+		LM_X(1, ("Got a LogLine from '%s' (%s) - I die", name, ep->typeName()));
+		break;
+
 	case Message::WorkerVector:
 		if (msgType != Message::Msg)
 			LM_X(1, ("Controller got an ACK for WorkerVector message"));
@@ -1596,8 +1714,17 @@ void Network::msgTreat(void* vP)
 			dataReceiver->receive(endpointId, 0, headerP, dataP);
 		break;
 
+	case Message::LogLine:
+		LM_X(1, ("Got a LogLine from '%s' (%s) - I die", name, ep->typeName()));
+		break;
+
 	case Message::Die:
 		LM_X(1, ("Got a Die message from '%s' (%s) - I die", name, ep->typeName()));
+		break;
+
+	case Message::IDie:
+		LM_W(("Got an IDie message from '%s' (%s) - that endpoint is about to die", name, ep->typeName()));
+		endpointRemove(ep, "Got an IDie message");
 		break;
 
 	case Message::Hello:
@@ -1946,49 +2073,21 @@ void Network::run()
 
 			for (ix = 0; ix < Endpoints; ix++)
 			{
-				char           sign = '-';
-
 				if (endpoint[ix] == NULL)
 					continue;
 
-				if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) 
-					&& (endpoint[ix]->rFd >= 0))
+				if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) && (endpoint[ix]->rFd >= 0))
 				{
-
 					FD_SET(endpoint[ix]->rFd, &rFds);
 					max = MAX(max, endpoint[ix]->rFd);
-					sign = '+';
-				}
-				
-				if (showSelectList)
-				{
-					LM_F(("%c %08p  Endpoint %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
-						  sign,
-						  endpoint[ix],
-						  ix,
-						  endpoint[ix]->typeName(),
-						  endpoint[ix]->name.c_str(),
-						  endpoint[ix]->alias.c_str(),
-						  endpoint[ix]->ip.c_str(),
-						  endpoint[ix]->port,
-						  endpoint[ix]->stateName(),
-						  endpoint[ix]->rFd,
-						  endpoint[ix]->msgsIn,
-						  endpoint[ix]->bytesIn,
-						  endpoint[ix]->msgsOut,
-						  endpoint[ix]->bytesOut,
-						  endpoint[ix]->rMbps,
-						  endpoint[ix]->rAccMbps,
-						  endpoint[ix]->wMbps,
-						  endpoint[ix]->wAccMbps));
-
-					lastTime = now;
 				}
 			}
 
 
 			if (showSelectList)
 			{
+				endpointListShow();
+
 				if (endpointUpdateReceiver != NULL)
 					endpointUpdateReceiver->endpointUpdate(NULL, Endpoint::SelectToBeCalled, "Select to be called");
 			}

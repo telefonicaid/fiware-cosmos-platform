@@ -383,7 +383,7 @@ void logProviderMsgTreat(LogProvider* lpP)
 			LM_X(1, ("bad type of message: 0x%x", type));
 
 		logLine = (ss::Message::LogLineData*) dataP;
-		lpP->list->addItem(QString(lpP->name) + QString("@") + QString(lpP->host) + QString(" - ") + QString(logLine->type) + QString(": ") + QString(logLine->text));
+		lpP->list->addItem(QString(logLine->type) + QString(": ") + QString(logLine->text));
 		lpP->list->scrollToBottom();
 
 		if ((logLine->type == 'W') || (logLine->type == 'E') || (logLine->type == 'X'))

@@ -469,9 +469,11 @@ std::vector<Endpoint*> Network::samsonWorkerEndpoints(void)
 
 	LM_M(("%d workers", Workers));
 
-	for (ix = 3; ix <=  3 + Workers; ix++)
+	for (ix = 3; ix <  3 + Workers; ix++)
 	{
 		if (endpoint[ix] == NULL)
+			continue;
+		if (endpoint[ix]->type != Endpoint::Worker)
 			continue;
 
 		v.push_back(endpoint[ix]);

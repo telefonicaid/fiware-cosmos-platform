@@ -61,10 +61,14 @@ int iomMsgSend
 	ssize_t               s;
 	bool                  outHook;
 
-	if (fd == -1)
-		LM_RE(-1, ("file descriptor for '%s' is -1 !!!", to));
-
 	outHook = lmOutHookInhibit();
+
+	if (fd == -1)
+	{
+		LM_E(("file descriptor for '%s' is -1 !!!", to));
+		lmOutHookRestore(outHook);
+		return -1;
+	}
 
 	memset(&header, 0, sizeof(header));
 	memset(ioVec, 0, sizeof(ioVec));

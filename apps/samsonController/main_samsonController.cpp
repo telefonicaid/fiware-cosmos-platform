@@ -15,18 +15,23 @@ unsigned short   port;
 int              endpoints;
 int              workers;
 char			 workingDir[1024]; 	
+char             logServer[80];
 
 
+
+#define NOLS     _i "no log server"
+#define DEF_WD   _i SAMSON_DEFAULT_WORKING_DIRECTORY
 /* ****************************************************************************
 *
 * parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-working",     workingDir,  "WORKING",     PaString,  PaOpt,  _i SAMSON_DEFAULT_WORKING_DIRECTORY,   PaNL,   PaNL,  "Working directory" },
-	{ "-port",       &port,        "PORT",        PaShortU,  PaOpt,                  1234,   1025,  65000,  "listen port"         },
-	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,                    80,      3,    100,  "number of endpoints" },
-	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,                     5,      1,    100,  "number of workers"   },
+	{ "-working",    workingDir, "WORKING",    PaString, PaOpt, DEF_WD,  PaNL,  PaNL, "Working directory"   },
+	{ "-port",      &port,       "PORT",       PaShortU, PaOpt,   1234,  1025, 65000, "listen port"         },
+	{ "-endpoints", &endpoints,  "ENDPOINTS",  PaInt,    PaOpt,     80,     3,   100, "number of endpoints" },
+	{ "-workers",   &workers,    "WORKERS",    PaInt,    PaOpt,      5,     1,   100, "number of workers"   },
+	{ "-logServer", logServer,   "LOG_SERVER", PaString, PaOpt,   NOLS,  PaNL,  PaNL, "host for log server" },
 
 	PA_END_OF_ARGS
 };
@@ -69,18 +74,21 @@ int main(int argC, const char* argV[])
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
 	
-	ss::Network networkP(endpoints,workers);
-	networkP.initAsSamsonController(port, workers);
-	networkP.runInBackground();
+	ss::Network network(endpoints, workers);
+
+	network.initAsSamsonController(port, workers);
+	network.logServerSet(logServer);
+	network.runInBackground();
 	
 	
 	// Instance of the samson controller	
 	// --------------------------------------------------------------------
 	
-	ss::SamsonController  controller(&networkP);
+	ss::SamsonController  controller(&network);
+
 	controller.runBackgroundProcesses();
 	controller.touch();
 	
-	while(true)
+	while (true)
 		sleep(10000);
 }

@@ -18,10 +18,11 @@
 #include "logMsg.h"             // LM_*
 #include "networkTraceLevels.h" // LMT_*
 #include "Alarm.h"              // ALARM
+#include "ports.h"              // Port numbers for samson processes
 
 #include "Misc.h"               // ipGet 
 #include "Endpoint.h"			// Endpoint
-#include "Message.h"            // ss::Message::MessageCode
+#include "Message.h"            // Message::MessageCode
 #include "Packet.h"				// Packet
 #include "MemoryManager.h"      // MemoryManager
 #include "iomInit.h"            // iomInit
@@ -61,6 +62,47 @@ namespace ss
 
 
 
+/* ****************************************************************************
+*
+* logServer
+*/
+Endpoint* logServer = NULL;
+Endpoint* meP       = NULL;
+
+
+
+/* ****************************************************************************
+*
+* logHookFunction - 
+*/
+static void logHookFunction(char* text, char type, const char* file, int lineNo, const char* fName, int tLev, const char* stre)
+{
+	int                   s;
+	Message::LogLineData  logLine;
+	
+	if ((logServer == NULL) || (logServer->wFd == -1))
+		return;
+
+	memset(&logLine, 0, sizeof(logLine));
+
+	logLine.type   = type;
+	logLine.lineNo = lineNo;
+	logLine.tLev   = tLev;
+
+	if (text  != NULL)  strncpy(logLine.text,  text,  sizeof(logLine.text)  - 1);
+	if (file  != NULL)  strncpy(logLine.file,  file,  sizeof(logLine.file)  - 1);
+	if (fName != NULL)  strncpy(logLine.fName, fName, sizeof(logLine.fName) - 1);
+	if (stre  != NULL)  strncpy(logLine.stre,  stre,  sizeof(logLine.stre));
+
+	s = iomMsgSend(logServer->wFd, logServer->name.c_str(), meP->name.c_str(), Message::LogLine, Message::Msg, &logLine, sizeof(logLine), NULL);
+}
+
+
+
+/* ****************************************************************************
+*
+* Network::reset - 
+*/
 void Network::reset(int endpoints, int workers)
 {
 	if ((endpoints > 200) || (endpoints < 2))
@@ -176,6 +218,8 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 	if (me == NULL)
 		LM_XP(1, ("unable to allocate room for Endpoint 'me'"));
 
+	meP          = me;
+
 	me->name     = progName;
 	me->state    = Endpoint::Me;
 	me->ip       = ipGet();
@@ -232,7 +276,7 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 		{
 			LM_M(("connected to controller - calling ready after trying to connect to all workers"));
 			controller->wFd   = controller->rFd;
-			controller->state = ss::Endpoint::Connected;
+			controller->state = Endpoint::Connected;
 		}
 	}
 	else
@@ -252,7 +296,7 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 */
 int Network::helloSend(Endpoint* ep, Message::MessageType type)
 {
-	ss::Message::HelloData hello;
+	Message::HelloData hello;
 
 	strncpy(hello.name,   me->name.c_str(),   sizeof(hello.name));
 	strncpy(hello.ip,     me->ip.c_str(),     sizeof(hello.ip));
@@ -574,7 +618,7 @@ static void* senderThread(void* vP)
 *
 * send - 
 */
-size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, ss::Message::MessageCode code, Packet* packetP)
+size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Message::MessageCode code, Packet* packetP)
 {
 	Endpoint* ep        = endpoint[endpointId];
 	int       nb;
@@ -949,9 +993,17 @@ Endpoint* Network::endpointAdd
 				if (endpoint[ix]->type == Endpoint::WebListener)
 					endpoint[ix]->state = Endpoint::Listening;
 
-				
 				if (strcmp(ip.c_str(), "II.PP") != 0)
 					endpoint[ix]->ip       = ip;
+
+				if (type == Endpoint::LogServer)
+				{
+					LM_M(("Endpoint::LogServer"));
+					logServer = endpoint[ix];
+					LM_M(("Endpoint::LogServer"));
+					lmOutHookSet(logHookFunction);
+					LM_M(("Endpoint::LogServer"));
+				}
 
 				return endpoint[ix];
 			}
@@ -1074,6 +1126,12 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 	int ix;
 
 	LM_T(LMT_EP, ("Removing '%s' endpoint '%s' (at %p) - %s", ep->typeName(), ep->name.c_str(), ep, why));
+
+	if (ep == logServer)
+	{
+		LM_W(("Disconnected from log server"));
+		logServer = NULL;
+	}
 
 	for (ix = 0; ix < Endpoints; ix++)
 	{
@@ -1267,6 +1325,78 @@ static void* msgTreatThreadFunction(void* vP)
 
 /* ****************************************************************************
 *
+* webServiceAccept - 
+*/
+void Network::webServiceAccept(Endpoint* ep)
+{
+	int   fd;
+	char  hostName[128];
+
+	fd = iomAccept(ep->rFd, hostName, sizeof(hostName));
+	if (me->type != Endpoint::Controller)
+	{
+		LM_E(("got incoming WebListener connection but I'm not the controller ..."));
+		if (fd != -1)
+			close(fd);
+
+		return;
+	}
+
+	if (fd == -1)
+	{
+		LM_P(("iomAccept(%d)", ep->rFd));
+		ep->msgsInErrors += 1;
+	}
+	else
+	{
+		endpointAdd(fd, fd, "Web Worker", "Webworker", 0, Endpoint::WebWorker, hostName, 0);
+		ep->msgsIn += 1;
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* webServiceTreat - 
+*/
+void Network::webServiceTreat(Endpoint* ep)
+{
+	char buf[1024];
+	int  nb;
+
+	if (me->type != Endpoint::Controller)
+		LM_X(1, ("Got a request from a WebWorker and I'm not a controller !"));
+
+	nb = read(ep->rFd, buf, sizeof(buf));
+	if (nb == -1)
+	{
+		ep->msgsInErrors += 1;
+		LM_E(("error reading web service request: %s", strerror(errno)));
+	}
+	else if (nb == 0)
+	{
+		ep->msgsInErrors += 1;
+		LM_E(("read ZERO bytes of web service request"));
+	}
+	else
+	{
+		std::string command     = packetReceiver->getJSONStatus(std::string(buf));
+		int         commandLen  = command.size();
+
+		ep->msgsIn  += 1;
+		ep->msgsOut += 1;
+		write(ep->wFd, command.c_str(), commandLen);
+	}
+
+	close(ep->wFd);
+	endpointRemove(ep, "Done servicing Web Service connection");
+}
+
+
+
+/* ****************************************************************************
+*
 * msgPreTreat - 
 */
 void Network::msgPreTreat(Endpoint* ep, int endpointId)
@@ -1274,74 +1404,16 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	Message::Header header;
 	int             nb;
 
-	//
-	// Special case - incoming connection on WebListener interface
-	//
 	if (ep->type == Endpoint::WebListener)
 	{
-		int   fd;
-		char  hostName[128];
-
-		fd = iomAccept(ep->rFd, hostName, sizeof(hostName));
-		if (me->type != Endpoint::Controller)
-		{
-			LM_E(("got incoming WebListener connection but I'm not the controller ..."));
-			if (fd != -1)
-				close(fd);
-			return;
-		}
-
-		if (fd == -1)
-		{
-			LM_P(("iomAccept(%d)", ep->rFd));
-			ep->msgsInErrors += 1;
-		}
-		else
-		{
-			endpointAdd(fd, fd, "Web Worker", "Webworker", 0, Endpoint::WebWorker, hostName, 0);
-			ep->msgsIn += 1;
-		}
-
+		webServiceAccept(ep);
 		return;
-	}
+	}		
 
-
-
-	//
-	// Special case - controller reads from Web Service connection
-	//
 	if (ep->type == Endpoint::WebWorker)
 	{
-		char buf[1024];
-		int  nb;
-
-		if (me->type != Endpoint::Controller)
-			LM_X(1, ("Got a request from a WebWorker and I'm not a controller !"));
-
-		nb = read(ep->rFd, buf, sizeof(buf));
-		if (nb == -1)
-		{
-			ep->msgsInErrors += 1;
-			LM_E(("error reading web service request: %s", strerror(errno)));
-		}
-		else if (nb == 0)
-		{
-			ep->msgsInErrors += 1;
-			LM_E(("read ZERO bytes of web service request"));
-		}
-		else
-		{
-			std::string command     = packetReceiver->getJSONStatus(std::string(buf));
-			int         commandLen  = command.size();
-
-			ep->msgsIn  += 1;
-			ep->msgsOut += 1;
-			write(ep->wFd, command.c_str(), commandLen);
-		}
-
-		close(ep->wFd);
-		endpointRemove(ep, "Done servicing Web Service connection");
-		return;
+		webServiceTreat(ep);
+        return;
 	}
 
 
@@ -1383,7 +1455,9 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		ep->msgsInErrors += 1;
 		ep->state = Endpoint::Disconnected;
 
-		if (ep->type == Endpoint::Worker)
+		if (ep->type == Endpoint::LogServer)
+			logServer = NULL;
+		else if (ep->type == Endpoint::Worker)
 		{
 			LM_W(("Worker %d just died !", ep->workerId));
 			if (packetReceiver)
@@ -1407,7 +1481,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 			LM_W(("controller died ... trying to reconnect !"));
 
 			controller->rFd    = -1;
-			controller->state = ss::Endpoint::Disconnected;
+			controller->state = Endpoint::Disconnected;
 
 			if (endpointUpdateReceiver != NULL)
 				endpointUpdateReceiver->endpointUpdate(controller, Endpoint::ControllerDisconnected, "Controller Disconnected");
@@ -1421,7 +1495,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 					sleep(1); // sleep one second before reintenting connection to controller
 				}
 
-				controller->state = ss::Endpoint::Connected;
+				controller->state = Endpoint::Connected;
 				controller->wFd   = controller->rFd;
 
 				if (endpointUpdateReceiver != NULL)
@@ -1438,7 +1512,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 				if (ep->wFd == ep->rFd)
 					close(ep->wFd);
 
-				ep->state = ss::Endpoint::Closed;
+				ep->state = Endpoint::Closed;
 				ep->rFd   = -1;
 				ep->wFd   = -1;
 				ep->name  = "-----";
@@ -1654,7 +1728,7 @@ void Network::msgTreat(void* vP)
 				LM_W(("controller died ... trying to reconnect !"));
 
 				controller->rFd    = -1;
-				controller->state = ss::Endpoint::Disconnected;
+				controller->state = Endpoint::Disconnected;
 
 				if (endpointUpdateReceiver != NULL)
 					endpointUpdateReceiver->endpointUpdate(controller, Endpoint::ControllerDisconnected, "Controller Disconnected");
@@ -1669,7 +1743,7 @@ void Network::msgTreat(void* vP)
 					sleep(1); // sleep one second before reintenting connection to controller
 				}
 
-				controller->state = ss::Endpoint::Connected;
+				controller->state = Endpoint::Connected;
 				controller->wFd   = controller->rFd;
 
 				if (endpointUpdateReceiver != NULL)
@@ -1687,7 +1761,7 @@ void Network::msgTreat(void* vP)
 					if (ep->wFd == ep->rFd)
 						close(ep->wFd);
 
-					ep->state = ss::Endpoint::Closed;
+					ep->state = Endpoint::Closed;
 					ep->rFd   = -1;
 					ep->wFd   = -1;
 					ep->name  = "-----";
@@ -1733,7 +1807,7 @@ void Network::msgTreat(void* vP)
 
 		hello   = (Message::HelloData*) dataP;
 
-		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, (ss::Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo, ep);
+		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, (Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo, ep);
 
 		if (helloEp == NULL)
 		{
@@ -2227,6 +2301,21 @@ void Network::fdSet(int fd, const char* name, const char* alias)
 	LM_M(("setting state to Endpoint::Connected for fd %d", fd));
 	ep->state = Endpoint::Connected;
 }	
+
+
+
+/* ****************************************************************************
+*
+* logServerSet - 
+*/
+void Network::logServerSet(char* logServerHost)
+{
+	int fd;
+
+	fd = iomConnect(logServerHost, LOG_SERVER_PORT);
+	if (fd != -1)
+		endpointAdd(fd, fd, "logServer", "logServer", 0, Endpoint::LogServer, logServerHost, LOG_SERVER_PORT);
+}
 
 
 

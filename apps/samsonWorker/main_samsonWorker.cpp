@@ -22,24 +22,28 @@ char             alias[36];
 bool             noLog;
 bool             local;
 char			 workingDir[1024]; 	
+char             logServer[80];
 
 
 
-#define S01 (long int) "samson01:1234"
+#define S01     _i "samson01:1234"
+#define NOLS    _i "no log server"
+#define DEF_WD  _i SAMSON_DEFAULT_WORKING_DIRECTORY
 /* ****************************************************************************
 *
 * parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt,   S01,   PaNL,   PaNL,  "controller IP:port"  },
-	{ "-alias",       alias,       "ALIAS",       PaString,  PaReq,  PaND,   PaNL,   PaNL,  "alias"               },
-	{ "-port",       &port,        "PORT",        PaShortU,  PaOpt,  1235,   1025,  65000,  "listen port"         },
-	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    80,      3,    100,  "number of endpoints" },
-	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
-	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt, false,  false,   true,  "no logging"          },
-	{ "-local",      &local,       "LOCAL",       PaBool,    PaOpt, false,  false,   true,  "local execution"     },
-	{ "-working",     workingDir,  "WORKING",     PaString,  PaOpt,  _i SAMSON_DEFAULT_WORKING_DIRECTORY,   PaNL,   PaNL,  "Working directory"     },
+	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt,    S01,   PaNL,   PaNL,  "controller IP:port"  },
+	{ "-alias",       alias,       "ALIAS",       PaString,  PaReq,   PaND,   PaNL,   PaNL,  "alias"               },
+	{ "-port",       &port,        "PORT",        PaShortU,  PaOpt,   1235,   1025,  65000,  "listen port"         },
+	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,     80,      3,    100,  "number of endpoints" },
+	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,      1,      1,    100,  "number of workers"   },
+	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt,  false,  false,   true,  "no logging"          },
+	{ "-local",      &local,       "LOCAL",       PaBool,    PaOpt,  false,  false,   true,  "local execution"     },
+	{ "-working",     workingDir,  "WORKING",     PaString,  PaOpt, DEF_WD,   PaNL,   PaNL,  "working directory"   },
+	{ "-logServer",   logServer,   "LOG_SERVER",  PaString,  PaOpt,   NOLS,   PaNL,   PaNL,  "log server host"     },
 
 	PA_END_OF_ARGS
 };
@@ -71,42 +75,46 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 
-	ss::SamsonSetup::load( workingDir );		// Load setup and create default directories
+	ss::SamsonSetup::load(workingDir);  // Load setup and create default directories
 	
-	// Init singlelton in single thread mode
-	ss::MemoryManager::init();		// Memory manager
-	ss::ProcessManager::init();		// Init process manager
-	ss::ModulesManager::init();		// Init the modules manager
-	ss::DiskManager::shared();		// Disk manager
-	ss::FileManager::shared();		// File manager
+	// Init singleton in single thread mode
+	// --------------------------------------------------------------------
+	ss::MemoryManager::init();
+	ss::ProcessManager::init();
+	ss::ModulesManager::init();
+	ss::DiskManager::shared();
+	ss::FileManager::shared();
 	
+
+
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
+	ss::Network network(endpoints,workers);
+	network.init(ss::Endpoint::Worker, alias, port, controller);
+	network.logServerSet(logServer);
 	
-	ss::Network networkP(endpoints,workers);
-	networkP.init(ss::Endpoint::Worker, alias, port, controller);
-	
-	std::cout << "Waiting for network connection ...";
-	networkP.runInBackground();
-	while ( !networkP.ready() )
+	LM_M(("Waiting for network connection ..."));
+	network.runInBackground();
+
+	while (!network.ready())
 		sleep(1);
-	std::cout << "OK\n";
+
+	LM_M(("Network OK"));
 	
-	// This is only necessary when running multiple samsonworkers as separated process in the same machine
+	// This is only necessary when running multiple samson workers as separate processes in the same machine
 	if (local)
 	{
 		int worker_id = atoi(&alias[6]);
 		ss::MemoryManager::shared()->setOtherSharedMemoryAsMarked(worker_id, workers);
 	}
 	
-	// Instance of SamsonWormer object ( network contains at least the number of wokers )
+	// Instance of SamsonWorker object (network contains at least the number of wokers)
 	// -----------------------------------------------------------------------------------
 	
-	ss::SamsonWorker  *worker = new ss::SamsonWorker(&networkP);
+	ss::SamsonWorker* worker = new ss::SamsonWorker(&network);
 
 	worker->touch();
 	
 	while (true)
 		sleep(10000);
-
 }

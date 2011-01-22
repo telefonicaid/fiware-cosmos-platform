@@ -32,6 +32,7 @@ PaArgument paArgs[] =
 	{ "-port",       &port,        "PORT",        PaShortU,  PaOpt,  1233,   1025,  65000,  "listen port"         },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    20,      3,    100,  "number of endpoints" },
 	{ "-logServer",  logServer,    "LOG_SERVER",  PaString,  PaOpt,  NOLS,   PaNL,   PaNL,  "log server host"     },
+
 	PA_END_OF_ARGS
 };
 
@@ -42,8 +43,6 @@ PaArgument paArgs[] =
 * Global variables
 */
 int                logFd             = -1;
-int                logServerFd       = -1;    // socket to send Log Lines to LogServer
-ss::Endpoint*      logServerEndpoint = NULL;
 ss::Network*       networkP          = NULL;
 
 
@@ -149,45 +148,11 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 
 /* ****************************************************************************
 *
-* logHookFunction - 
-*/
-void logHookFunction(char* text, char type, const char* file, int lineNo, const char* fName, int tLev, const char* stre)
-{
-	int                       s;
-	ss::Message::LogLineData  logLine;
-	ss::Endpoint*             ep;
-
-	if (networkP == NULL)
-		return;
-
-	if ((ep = networkP->logServerLookup()) == NULL)
-		return;
-
-	memset(&logLine, 0, sizeof(logLine));
-
-	logLine.type   = type;
-	logLine.lineNo = lineNo;
-	logLine.tLev   = tLev;
-
-	if (text  != NULL)  strncpy(logLine.text,  text,  sizeof(logLine.text)  - 1);
-	if (file  != NULL)  strncpy(logLine.file,  file,  sizeof(logLine.file)  - 1);
-	if (fName != NULL)  strncpy(logLine.fName, fName, sizeof(logLine.fName) - 1);
-	if (stre  != NULL)  strncpy(logLine.stre,  stre,  sizeof(logLine.stre));
-
-	if (ep)
-		s = iomMsgSend(ep->wFd, ep->name.c_str(), networkP->me->name.c_str(), ss::Message::LogLine, ss::Message::Msg, &logLine, sizeof(logLine), NULL);
-}
-
-
-
-/* ****************************************************************************
-*
 * main - 
 */
 int main(int argC, const char *argV[])
 {
 	SamsonSpawner*         spawnerP;
-	ss::NetworkInterface*  niP;
 
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);
@@ -198,35 +163,11 @@ int main(int argC, const char *argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	if (strcmp(logServer, (char*) NOLS) != 0)
-	{
-		LM_M(("Connecting to log server '%s' at port %d", logServer, LOG_SERVER_PORT));
-		logServerFd = iomConnect(logServer, LOG_SERVER_PORT);
-	}
-
 	networkP = new ss::Network(endpoints, 0);
-	niP = networkP;
-
 	networkP->init(ss::Endpoint::Spawner, NULL, port, NULL);
-
-	lmOutHookSet(logHookFunction);
-
+	networkP->logServerSet(logServer);
 	spawnerP = new SamsonSpawner(networkP);
-
 	networkP->setDataReceiver(spawnerP);
-
-	if (logServerFd != -1)
-	{
-		logServerEndpoint = networkP->endpointAdd(logServerFd, logServerFd, "Samson Log Server", "logServer", 0, ss::Endpoint::LogServer, "localhost", LOG_SERVER_PORT);
-		if (logServerEndpoint)
-		{
-			LM_M(("Sending Hello to Log Server"));
-			networkP->helloSend(logServerEndpoint, ss::Message::Msg);
-		}
-		else
-			LM_E(("Error adding endpoint"));
-	}
-
 	networkP->run();
 
 	return 0;

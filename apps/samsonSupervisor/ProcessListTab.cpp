@@ -212,9 +212,6 @@ void ProcessListTab::logServerStart(void)
 	usleep(50000);
 
 	networkP->endpointListShow();
-	ss::Endpoint* ep = networkP->endpointLookup((char*) "logServer");
-	if (ep == NULL)
-		LM_X(1, ("I should have a log server endpoint !"));
 
 	while (1)
 	{
@@ -231,9 +228,17 @@ void ProcessListTab::logServerStart(void)
 		new Popup("Error", "Error connecting to Samson Log Server");
 	else
 	{
-		ep->rFd   = logServerFd;
-		ep->wFd   = logServerFd;
-		ep->state = ss::Endpoint::Connected;
+		ss::Endpoint* ep;
+
+		ep = networkP->endpointLookup((char*) "logServer");
+		if (ep == NULL)
+			ep = networkP->endpointAdd(logServerFd, logServerFd, "Samson Log Server", "logServer", 0, ss::Endpoint::LogServer, "localhost", LOG_SERVER_PORT);
+		else
+		{
+			ep->rFd   = logServerFd;
+			ep->wFd   = logServerFd;
+			ep->state = ss::Endpoint::Connected;
+		}
 	}
 }
 

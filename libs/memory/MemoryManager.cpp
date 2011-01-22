@@ -108,12 +108,8 @@ namespace ss
 		size = shared_memory_size_per_buffer;
 		shmflg = IPC_CREAT | 384;			// Permission to read / write ( only owner )
 		
-		if ((_info->shmid = shmget (key, size, shmflg)) == -1)
-		{
-			perror("shmget: shmget failed"); 
-			std::cerr << "Error with shared memory when creating shared memory\n";
-			exit(1); 
-		}
+		if ((_info->shmid = shmget(key, size, shmflg)) == -1)
+			LM_RE(NULL, ("shmget: %s", strerror(errno)));
 		
 		// Attach to local-space memory
 		_info->data = (char *)shmat(_info->shmid, 0, 0);
@@ -131,6 +127,9 @@ namespace ss
 	
 	void MemoryManager::freeSharedMemory(SharedMemoryItem* item)
 	{
+		if (item == NULL)
+			LM_RVE(("NULL SharedMemoryItem as input ..."));
+
 		// Detach data
 		int ans = shmdt( item->data);
 		

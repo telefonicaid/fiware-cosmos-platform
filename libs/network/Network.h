@@ -78,6 +78,7 @@ public:
 	std::vector<Endpoint*> samsonEndpoints();                     // Return the list of all endpoints
 	std::vector<Endpoint*> samsonEndpoints(Endpoint::Type type);  // Return the list of all 'type' endpoints
 	Endpoint*              logServerLookup(void);
+	void                   logServerSet(char* logServerHost);
 
 	/**
 	   This function is expected to return only if quit() function is called
@@ -125,6 +126,9 @@ private:
 
 	Endpoint*    endpointFreeGet(Endpoint::Type type);
 	void         checkAllWorkersConnected(void);
+
+	void         webServiceAccept(Endpoint* ep);
+	void         webServiceTreat(Endpoint* ep);
 };
 
 	

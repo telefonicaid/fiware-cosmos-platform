@@ -181,6 +181,16 @@ void processStart(Process* processP, Starter* starter)
 	memset(spawnData.args, sizeof(spawnData.args), 0);
 
 	end = spawnData.args;
+
+	ss::Endpoint* logServer;
+	if ((logServer = networkP->logServerLookup()) != NULL)
+	{
+		strcpy(end, "-logServer");
+		end += strlen("-logServer") + 1;  // leave one ZERO character
+		strcpy(end, logServer->ip.c_str());
+		end += strlen(logServer->ip.c_str()) + 1; // leave one ZERO character
+	}
+
 	for (ix = 0; ix < processP->argCount; ix++)
 	{
 		strcpy(end, processP->arg[ix]);

@@ -97,9 +97,6 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 	//
 	// Log Server start button
 	//
-	QLabel*      logServerRunningLabel;
-	QPushButton* logServerStartButton;
-
 	logServerRunningLabel = new QLabel("Log Server Running");
 	logServerStartButton  = new QPushButton("Start Log Server");
 	
@@ -228,17 +225,18 @@ void ProcessListTab::logServerStart(void)
 		new Popup("Error", "Error connecting to Samson Log Server");
 	else
 	{
-		ss::Endpoint* ep;
-
-		ep = networkP->endpointLookup((char*) "logServer");
-		if (ep == NULL)
-			ep = networkP->endpointAdd(logServerFd, logServerFd, "Samson Log Server", "logServer", 0, ss::Endpoint::LogServer, "localhost", LOG_SERVER_PORT);
+		logServerEndpoint = networkP->endpointLookup((char*) "logServer");
+		if (logServerEndpoint == NULL)
+			logServerEndpoint = networkP->endpointAdd(logServerFd, logServerFd, "Samson Log Server", "logServer", 0, ss::Endpoint::LogServer, "localhost", LOG_SERVER_PORT);
 		else
 		{
-			ep->rFd   = logServerFd;
-			ep->wFd   = logServerFd;
-			ep->state = ss::Endpoint::Connected;
+			logServerEndpoint->rFd   = logServerFd;
+			logServerEndpoint->wFd   = logServerFd;
+			logServerEndpoint->state = ss::Endpoint::Connected;
 		}
+
+		LM_M(("Sending Hello to Log Server"));
+		networkP->helloSend(logServerEndpoint, ss::Message::Msg);
 	}
 }
 

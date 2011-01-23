@@ -330,7 +330,6 @@ void logProviderListShow(const char* why)
 		LM_F(("  %08p  LogProvider %02d: %-30s %-30s  (fd: %d)", logProviderV[ix], ix, logProviderV[ix]->name, logProviderV[ix]->host, logProviderV[ix]->fd));
 	}
 	LM_F(("--------------------------------"));
-
 }
 
 
@@ -376,17 +375,23 @@ void logProviderMsgTreat(LogProvider* lpP)
 	}
 	else if (code == ss::Message::LogLine)
 	{
+		char line[1024];
+
+		logLine = (ss::Message::LogLineData*) dataP;
+
 		if (dataLen != sizeof(ss::Message::LogLineData))
 			LM_X(1, ("bad dataLen: %d (expected %d)", dataLen, sizeof(ss::Message::LogLineData)));
 
 		if (type != ss::Message::Msg)
 			LM_X(1, ("bad type of message: 0x%x", type));
 
+		snprintf(line, sizeof(line), "%c: %s[%d]:%s: %s", logLine->type, logLine->file, logLine->lineNo, logLine->fName, logLine->text);
 		logLine = (ss::Message::LogLineData*) dataP;
-		lpP->list->addItem(QString(logLine->type) + QString(": ") + QString(logLine->text));
+
+		lpP->list->addItem(QString(line));
 		lpP->list->scrollToBottom();
 
-		if ((logLine->type == 'W') || (logLine->type == 'E') || (logLine->type == 'X'))
+		if ((logLine->type == 'E') || (logLine->type == 'X'))
 		{
 			char title[128];
 			char line[512];

@@ -251,26 +251,44 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		disconnectWorkers();
 		break;
 
-	case ss::Endpoint::ControllerRemoved:
-	case ss::Endpoint::WorkerRemoved:
 	case ss::Endpoint::EndpointRemoved:
 		if (ep == logServerEndpoint)
 		{
 			logServerEndpoint = NULL;
 			logServerFd       = -1;
 			LM_W(("Log Server closed connection"));
+
+			tabManager->processListTab->logServerRunningLabel->hide();
+			tabManager->processListTab->logServerStartButton->show();
+
 			return -1;
 		}
 
 		LM_M(("Endpoint removed"));
+
+	case ss::Endpoint::ControllerRemoved:
+	case ss::Endpoint::WorkerRemoved:
 		if (starter == NULL)
 			LM_RE(-1, ("NULL starter for '%s'", reasonText));
 		starter->check();
 		break;
 
+	case ss::Endpoint::HelloReceived:
+		if (ep == logServerEndpoint)
+		{
+			LM_W(("Got Hello from Log Server - here I should notify Qt thread to update logServer push-button"));
+			LM_TODO(("Add a QT timeout handler and connect a socket between threads to send a LogServer started message"));
+			LM_TODO(("Even better would be to create a Network::Poll function and have only one thread"));
+
+			// tabManager->processListTab->logServerRunningLabel->show();
+			// tabManager->processListTab->logServerStartButton->hide();
+		}
+		else
+			LM_W(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
+		break;
+
 	case ss::Endpoint::ControllerAdded:
 	case ss::Endpoint::ControllerReconnected:
-	case ss::Endpoint::HelloReceived:
 		LM_W(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
 		break;
 

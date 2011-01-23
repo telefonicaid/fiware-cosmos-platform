@@ -1541,6 +1541,8 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 	LM_T(LMT_MSGTREAT, ("Read header of '%s' message with dataLens %d, %d, %d", messageCode(header.code), header.dataLen, header.gbufLen, header.kvDataLen));
 
+
+
 	//
 	// calling msgTreat ...
 	//
@@ -2230,6 +2232,99 @@ void Network::run()
 			}
 		}
 	}
+}
+
+
+
+/* ****************************************************************************
+*
+* poll
+*/
+int Network::poll(void)
+{
+	int             fds;
+	fd_set          rFds;
+	struct timeval  timeVal;
+	int             max;
+	int             ix;
+
+	do
+	{
+		timeVal.tv_sec  =  0;
+		timeVal.tv_usec =  0;
+
+		//
+		// Adding fds to the read-set
+		//
+		FD_ZERO(&rFds);
+		max = 0;
+
+		for (ix = 0; ix < Endpoints; ix++)
+		{
+			if (endpoint[ix] == NULL)
+				continue;
+
+			if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) && (endpoint[ix]->rFd >= 0))
+			{
+				FD_SET(endpoint[ix]->rFd, &rFds);
+				max = MAX(max, endpoint[ix]->rFd);
+			}
+		}
+
+		fds = select(max + 1, &rFds, NULL, NULL, &timeVal);
+	} while ((fds == -1) && (errno == EINTR));
+
+	if (fds == -1)
+		LM_RE(-1, ("select: %s", strerror(errno)));
+	if (fds == 0)
+		return -2;
+
+	if (listener && (listener->state == Endpoint::Listening) && FD_ISSET(listener->rFd, &rFds))
+	{
+		int  fd;
+		char hostName[128];
+
+		LM_T(LMT_SELECT, ("incoming message from my listener - I will accept ..."));
+		--fds;
+		fd = iomAccept(listener->rFd, hostName, sizeof(hostName));
+		if (fd == -1)
+		{
+			LM_P(("iomAccept(%d)", listener->rFd));
+			listener->msgsInErrors += 1;
+		}
+		else
+		{
+			std::string  s   = std::string("tmp:") + std::string(hostName);
+			Endpoint*    ep  = endpointAdd(fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
+
+			listener->msgsIn += 1;
+			LM_M(("sending hello to newly accepted endpoint"));
+			helloSend(ep, Message::Msg);
+		}
+	}
+
+	if (fds > 0)
+	{
+		// Treat endpoint for endpoint vector - skipping the first two ... (me & listener)
+		// For now, only temporal endpoints are in endpoint vector
+		LM_T(LMT_SELECT, ("looping from %d to %d", 3, Endpoints));
+		for (ix = 2; ix < Endpoints; ix++)
+		{
+			if ((endpoint[ix] == NULL) || (endpoint[ix]->rFd < 0))
+				continue;
+
+			if (FD_ISSET(endpoint[ix]->rFd, &rFds))
+			{
+				--fds;
+				LM_T(LMT_SELECT, ("incoming message from '%s' endpoint %s (fd %d)", endpoint[ix]->typeName(), endpoint[ix]->name.c_str(), endpoint[ix]->rFd));
+				msgPreTreat(endpoint[ix], ix);
+				if (endpoint[ix])
+					FD_CLR(endpoint[ix]->rFd, &rFds);
+			}
+		}
+	}
+
+	return 0;
 }
 
 

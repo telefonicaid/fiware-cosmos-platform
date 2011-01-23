@@ -16,6 +16,7 @@
 #include "globals.h"            // global vars
 #include "ports.h"              // SPAWNER_PORT, ...
 
+#include "Popup.h"              // Popup
 #include "Starter.h"            // Starter
 #include "Spawner.h"            // Spawner, spawnerAdd, ...
 #include "Process.h"            // Process, processAdd, ...
@@ -211,20 +212,38 @@ void processStart(Process* processP, Starter* starter)
 
 	LM_M(("started process '%s' in '%s')", processP->name, processP->host));
 	usleep(50000);
-	LM_M(("Connecting to newly started process ..."));
+	LM_M(("Connecting to newly started process (%s) ...", spawnData.name));
 	if (strcmp(spawnData.name, "Controller") == 0)
 	{
-		int            fd;
+		int  fd;
 
-		fd                = iomConnect(processP->spawnerP->host, CONTROLLER_PORT);
-		starter->endpoint = networkP->endpointAdd(fd, fd, "Controller", "Controller", 0, ss::Endpoint::Controller, processP->spawnerP->host, CONTROLLER_PORT);
+		fd = iomConnect(processP->spawnerP->host, CONTROLLER_PORT);
+
+		if (fd == -1)
+		{
+			char errorText[256];
+
+			snprintf(errorText, sizeof(errorText), "Error connecting to Samson Controller in '%s', port %d", processP->spawnerP->host, CONTROLLER_PORT);
+			new Popup("Connect Error", errorText);
+		}
+		else
+			starter->endpoint = networkP->endpointAdd(fd, fd, "Controller", "Controller", 0, ss::Endpoint::Controller, processP->spawnerP->host, CONTROLLER_PORT);
 	}
 	else if (strcmp(spawnData.name, "Worker") == 0)
 	{
 		int fd;
 
-		fd                = iomConnect(processP->spawnerP->host, WORKER_PORT);
-		starter->endpoint = networkP->endpointAdd(fd, fd, spawnData.name, alias, 0, ss::Endpoint::Temporal, processP->spawnerP->host, WORKER_PORT);
+		fd = iomConnect(processP->spawnerP->host, WORKER_PORT);
+
+		if (fd == -1)
+		{
+			char errorText[256];
+
+			snprintf(errorText, sizeof(errorText), "Error connecting to Samson Worker in '%s', port %d", processP->spawnerP->host, WORKER_PORT);
+			new Popup("Connect Error", errorText);
+		}
+		else
+			starter->endpoint = networkP->endpointAdd(fd, fd, spawnData.name, alias, 0, ss::Endpoint::Temporal, processP->spawnerP->host, WORKER_PORT);
 
 		LM_TODO(("This endpoint is TEMPORAL and will be changed when the Hello is received - fix this problem!"));
 	}

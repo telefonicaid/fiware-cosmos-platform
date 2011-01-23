@@ -84,6 +84,7 @@ public:
 	   This function is expected to return only if quit() function is called
 	*/
 	void run();                                     // Main run loop control to the network interface
+	int  poll();                                    // Poll endpoint connections ant treat if necessary
 
 	// Syspend the network interface, close everything and return the "run" call
 	void quit();

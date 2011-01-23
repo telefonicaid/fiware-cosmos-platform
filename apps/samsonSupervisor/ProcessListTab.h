@@ -13,6 +13,7 @@
 #include <QObject>
 #include <QWidget>
 #include <QPushButton>
+#include <QLabel>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 
@@ -30,6 +31,9 @@ class ProcessListTab : public QWidget
 
 public:
 	ProcessListTab(const char* name, QWidget *parent = 0);
+
+	QLabel*      logServerRunningLabel;
+	QPushButton* logServerStartButton;
 
 private slots:
 	void quit();

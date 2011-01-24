@@ -15,6 +15,8 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 
+#include "Endpoint.h"           // ss::Endpoint
+
 
 
 /* ****************************************************************************
@@ -26,7 +28,7 @@ class LogProvider : public QObject
 	Q_OBJECT;
 
 public:
-	LogProvider(const char* name, const char* host, int fd);
+	LogProvider(ss::Endpoint* ep, const char* name, const char* host, int fd);
 	~LogProvider();
 	void connectionClosed(void);
 
@@ -35,6 +37,7 @@ public:
 	char*         host;
 	int           fd;
 	bool          folded;
+	ss::Endpoint* endpoint;
 
 	QHBoxLayout*  headerLayout;
 

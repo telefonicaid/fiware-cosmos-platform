@@ -118,6 +118,7 @@ public:
 	State                        state;
 	int                          workers;
 	Type                         type;
+	bool                         helloReceived;
 
 	// Message Statistics
 	int                          msgsIn;

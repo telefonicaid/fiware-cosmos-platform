@@ -37,6 +37,36 @@ static long           bytesSent;
 
 /* ****************************************************************************
 *
+* iomWriteOk - 
+*/
+bool iomWriteOk(int fd)
+{
+	int             fds;
+	fd_set          wFds;
+	struct timeval  timeVal;
+	
+	timeVal.tv_sec  = 0;
+	timeVal.tv_usec = 0;
+
+	FD_ZERO(&wFds);
+	FD_SET(fd, &wFds);
+	
+	do
+	{
+		fds = select(fd + 1, NULL, &wFds, NULL, &timeVal);
+	} while ((fds == -1) && (errno == EINTR));
+
+	if ((fds == 1) && (FD_ISSET(fd, &wFds)))
+		return true;
+
+	LM_W(("cannot write to fd %d", fd));
+	return false;
+}
+
+
+
+/* ****************************************************************************
+*
 * iomMsgSend - send a message to an endpoint
 *
 * WARNING
@@ -122,6 +152,13 @@ int iomMsgSend
 		ioVec[vecs].iov_len   = packetP->buffer->getSize();
 		
 		++vecs;
+	}
+
+	if (iomWriteOk(fd) == false)
+	{
+		LM_E(("Cannot write to fd %d (returning -2 as if it was a 'connection closed' ...)"));
+        lmOutHookRestore(outHook);
+		return -2;
 	}
 
 	s = writev(fd, ioVec, vecs);

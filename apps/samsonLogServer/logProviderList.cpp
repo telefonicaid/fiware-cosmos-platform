@@ -69,8 +69,10 @@ void logProviderListInit(unsigned int lpMax)
 *
 * logProviderNameSet - 
 */
-void logProviderNameSet(LogProvider* lpP, char* name, char* ip)
+void logProviderNameSet(LogProvider* lpP, const char* name, const char* ip)
 {
+	LM_M(("Setting name ..."));
+
 	if ((name != NULL) && (ip == NULL))
 		return;
 
@@ -88,6 +90,7 @@ void logProviderNameSet(LogProvider* lpP, char* name, char* ip)
 		lpP->host = strdup(ip);
 	}
 
+	LM_M(("Setting name to %s@%s", lpP->name, lpP->host));
 	lpP->nameLabel->setText(QString(lpP->name) + QString("@") + QString(lpP->host));
 }
 
@@ -215,13 +218,13 @@ static void logProviderAdd(LogProvider* lpP)
 *
 * logProviderAdd - 
 */
-void logProviderAdd(const char* name, const char* host, int fd)
+void logProviderAdd(ss::Endpoint* endpoint, const char* name, const char* host, int fd)
 {
 	LogProvider* lpP;
 
 	LM_M(("Adding provider '%s' at '%s'", name, host));
 
-	lpP = new LogProvider(name, host, fd);
+	lpP = new LogProvider(endpoint, name, host, fd);
 	if (lpP == NULL)
 		LM_X(1, ("calloc: %s", strerror(errno)));
 
@@ -310,8 +313,26 @@ LogProvider* logProviderLookup(char* name, char* host)
 
 		if ((strcmp(logProviderV[ix]->host, host) == 0) &&  (strcmp(logProviderV[ix]->name, name) == 0))
 			return logProviderV[ix];
+	}
 
-		++ix;
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* logProviderLookup - 
+*/
+LogProvider* logProviderLookup(ss::Endpoint* ep)
+{
+	for (unsigned int ix = 0; ix < logProviderMax; ix++)
+	{
+		if (logProviderV[ix] == NULL)
+			continue;
+
+		if (logProviderV[ix]->endpoint == ep)
+			return logProviderV[ix];
 	}
 
 	return NULL;

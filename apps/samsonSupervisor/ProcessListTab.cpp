@@ -206,7 +206,7 @@ void ProcessListTab::logServerStart(void)
 	}
 
 	LM_M(("connecting to log server"));
-	usleep(50000);
+	usleep(100000);
 
 	networkP->endpointListShow("connecting to log server");
 
@@ -217,7 +217,7 @@ void ProcessListTab::logServerStart(void)
 		if (logServerFd != -1)
 			break;
 		usleep(100000);
-		if (++tries > 20)
+		if (++tries > 10)
 			break;
 	}
 
@@ -233,7 +233,10 @@ void ProcessListTab::logServerStart(void)
 			logServerEndpoint->state = ss::Endpoint::Connected;
 		}
 		else
+		{
+			LM_M(("logServerEndpoint not found ..."));
 			logServerEndpoint = networkP->endpointAdd("logServerEndpoint not found", logServerFd, logServerFd, "Samson Log Server", "logServer", 0, ss::Endpoint::Temporal, "localhost", LOG_SERVER_PORT);
+		}
 	}
 }
 

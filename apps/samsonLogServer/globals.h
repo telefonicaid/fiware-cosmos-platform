@@ -13,13 +13,18 @@
 #include <QVBoxLayout>
 #include <QLabel>
 
+#include "Network.h"
+#include "SamsonLogServer.h"
+
 
 
 /* ****************************************************************************
 *
 * mainLayout - 
 */
-extern QVBoxLayout*     mainLayout;
-extern QLabel*          idleLabel;
+extern QVBoxLayout*      mainLayout;
+extern QLabel*           idleLabel;
+extern ss::Network*      networkP;
+extern SamsonLogServer*  samsonLogServer;
 
 #endif

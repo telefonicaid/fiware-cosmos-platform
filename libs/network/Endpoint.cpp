@@ -38,6 +38,7 @@ void Endpoint::init(void)
 	this->sender           = false;
 	this->useSenderThread  = false;
 	this->jobQueueHead     = NULL;
+	this->helloReceived    = false;
 
 	// Statistics
 	this->msgsIn           = 0;

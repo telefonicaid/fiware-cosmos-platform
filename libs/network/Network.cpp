@@ -80,8 +80,34 @@ static void logHookFunction(char* text, char type, const char* file, int lineNo,
 	int                   s;
 	Message::LogLineData  logLine;
 	
-	if ((logServer == NULL) || (logServer->wFd == -1))
+#if 0
+	if (logServer == NULL)
+	{
+		printf("%s - no log sent as logServer == NULL\n", progName);
 		return;
+	}
+
+	if (logServer->wFd == -1)
+	{
+		printf("%s - no log sent as logServer->wFd == -1\n", progName);
+		return;
+	}
+
+	if (logServer->state != Endpoint::Connected)
+	{
+		printf("%s - no log sent as logServer->state != Endpoint::Connected\n", progName);
+		return;
+	}
+
+	if (logServer->helloReceived != true)
+	{
+		printf("%s - no log sent as logServer->helloReceived != true\n", progName);
+		return;
+	}
+#else
+	if ((logServer == NULL) || (logServer->wFd == -1) || (logServer->state != Endpoint::Connected) || (logServer->helloReceived != true))
+		return;
+#endif
 
 	memset(&logLine, 0, sizeof(logLine));
 
@@ -254,6 +280,7 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 		LM_T(LMT_FDS, ("opened fd %d to accept incoming connections", listener->rFd));
 	}
 
+	LM_TODO(("Perhaps I should include LogServer in this if ..."));
 	if ((type == Endpoint::Worker) || (type == Endpoint::Delilah) || (type == Endpoint::Supervisor))
 	{
 		endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
@@ -795,7 +822,12 @@ void Network::endpointListShow(const char* why)
 			continue;
 
 		if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) && (endpoint[ix]->rFd >= 0))
-			sign = '+';
+		{
+			if (endpoint[ix]->helloReceived)
+				sign = '*';
+			else
+				sign = '+';
+		}
 
 		LM_F(("%c %08p  Endpoint %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
 			  sign,
@@ -918,6 +950,9 @@ Endpoint* Network::endpointAdd
 		if (endpointUpdateReceiver != NULL)
 			endpointUpdateReceiver->endpointUpdate(endpoint[2], Endpoint::ControllerAdded, "Controller Added");
 
+		LM_M(("Setting controller to point to endpoint[2]"));
+		this->controller = endpoint[2];
+
 		return controller;
 
 	case Endpoint::Temporal:
@@ -966,6 +1001,7 @@ Endpoint* Network::endpointAdd
 	case Endpoint::Delilah:
 	case Endpoint::WebListener:
 	case Endpoint::WebWorker:
+		LM_M(("Workers: %d", Workers));
 		for (ix = 3 + Workers; ix < (int) (Endpoints - 1); ix++)
 		{
 			if (endpoint[ix] == NULL)
@@ -1132,13 +1168,12 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 {
 	int ix;
 
-	LM_T(LMT_EP, ("Removing '%s' endpoint '%s' (at %p) - %s", ep->typeName(), ep->name.c_str(), ep, why));
-
 	if (ep == logServer)
 	{
-		LM_W(("Disconnected from log server"));
 		logServer = NULL;
 	}
+
+	LM_T(LMT_EP, ("Removing '%s' endpoint '%s' (at %p) - %s", ep->typeName(), ep->name.c_str(), ep, why));
 
 	for (ix = 0; ix < Endpoints; ix++)
 	{
@@ -1170,6 +1205,7 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 			}
 			else
 			{
+				LM_M(("Closing down endpoint '%s'", ep->name.c_str()));
 				ep->state = Endpoint::Closed;
 				if ((endpointUpdateReceiver != NULL) && (ep->type != Endpoint::Temporal))
 					endpointUpdateReceiver->endpointUpdate(ep, Endpoint::EndpointRemoved, "Endpoint Removed");
@@ -1798,7 +1834,15 @@ void Network::msgTreat(void* vP)
 		break;
 
 	case Message::LogLine:
-		LM_X(1, ("Got a LogLine from '%s' (%s) - I die", name, ep->typeName()));
+		if (me->type != ss::Endpoint::LogServer)
+			LM_X(1, ("Got a LogLine from '%s' (type %s) - I die", name, ep->typeName()));
+		else
+		{
+			if (dataReceiver)
+				dataReceiver->receive(endpointId, 0, headerP, dataP);
+			else
+				LM_X(1, ("LogServer without data receiver ..."));
+		}
 		break;
 
 	case Message::Die:
@@ -1814,7 +1858,7 @@ void Network::msgTreat(void* vP)
 		Endpoint*            helloEp;
 		Message::HelloData*  hello;
 
-		hello   = (Message::HelloData*) dataP;
+		hello = (Message::HelloData*) dataP;
 
 		LM_M(("Got 'Hello' from ep '%s', fd %d", ep->name.c_str(), ep->rFd));
 
@@ -1827,16 +1871,22 @@ void Network::msgTreat(void* vP)
 
 		if (helloEp == NULL)
 		{
+			LM_W(("Error adding endpoint '%s'", hello->name));
 			endpointRemove(ep, "endpointAdd failed");
 			return;
 		}
+
+		LM_M(("Set helloReceived to true for endpoint '%s', fd %d", helloEp->name.c_str(), helloEp->rFd));
+		helloEp->helloReceived = true;
+		endpointListShow("helloEp->helloReceived = true");
+
 		helloEp->workerId = hello->workerId;
 
 		if (endpointUpdateReceiver != NULL)
 			endpointUpdateReceiver->endpointUpdate(ep, Endpoint::HelloReceived, "Hello Received", helloEp);
 
-		LM_T(LMT_HELLO, ("Got Hello %s from %s, type %s, %s:%d, workers: %d",
-						 messageType(msgType), helloEp->name.c_str(), helloEp->typeName(), helloEp->ip.c_str(), helloEp->port, helloEp->workers));
+		LM_M(("Got Hello %s from %s, type %s, %s:%d, workers: %d",
+			  messageType(msgType), helloEp->name.c_str(), helloEp->typeName(), helloEp->ip.c_str(), helloEp->port, helloEp->workers));
 
 		if (ep && ep->type == Endpoint::Temporal)
 		{
@@ -1845,6 +1895,9 @@ void Network::msgTreat(void* vP)
 			endpointRemove(ep, "No longer temporal");
 		}
 
+		LM_M(("helloEp->helloReceived = true"));
+		helloEp->helloReceived = true;
+
 		if (msgType == Message::Msg)
 		{
 			LM_T(LMT_JOB, ("Acking HELLO"));
@@ -1852,6 +1905,8 @@ void Network::msgTreat(void* vP)
 		}
 		else
 			LM_T(LMT_JOB, ("HELLO was an ACK"));
+
+        LM_M(("HERE"));
 
 		if (helloEp->jobQueueHead != NULL)
 		{
@@ -1876,11 +1931,17 @@ void Network::msgTreat(void* vP)
 			}
 		}
 
-		if (ep == controller)
+        LM_M(("HERE"));
+		if (helloEp == controller)
 		{
+			LM_M(("Asking Controller for the WorkerVector"));
 			if ((me->type != Endpoint::CoreWorker) && (me->type != Endpoint::Controller))
 				iomMsgSend(controller, me, Message::WorkerVector, Message::Msg, NULL, 0, NULL);
 		}
+		else if ((helloEp->type == Endpoint::Controller) && (controller == NULL))
+			LM_M(("NOT Asking Controller for the WorkerVector - controller == NULL"));
+		else
+			LM_M(("NOT Asking Controller for the WorkerVector!"));
 
 		checkAllWorkersConnected();
 		break;
@@ -1893,6 +1954,8 @@ void Network::msgTreat(void* vP)
 			controllerMsgTreat(ep, msgCode, msgType, dataP, dataLen, &packet);
 		else
 		{
+			LM_M(("Got the worker vector"));
+
 			if (msgType != Message::Ack)
 				LM_X(1, ("Got a WorkerVector request, not being controller ..."));
 
@@ -2334,7 +2397,7 @@ int Network::poll(void)
 		}
 	}
 
-	if (fds > 0)
+	while (fds > 0)
 	{
 		// Treat endpoint for endpoint vector - skipping the first two ... (me & listener)
 		// For now, only temporal endpoints are in endpoint vector
@@ -2346,11 +2409,11 @@ int Network::poll(void)
 
 			if (FD_ISSET(endpoint[ix]->rFd, &rFds))
 			{
+				FD_CLR(endpoint[ix]->rFd, &rFds);
 				--fds;
+
 				LM_T(LMT_SELECT, ("incoming message from '%s' endpoint %s (fd %d)", endpoint[ix]->typeName(), endpoint[ix]->name.c_str(), endpoint[ix]->rFd));
 				msgPreTreat(endpoint[ix], ix);
-				if (endpoint[ix])
-					FD_CLR(endpoint[ix]->rFd, &rFds);
 			}
 		}
 	}
@@ -2436,14 +2499,14 @@ void Network::fdSet(int fd, const char* name, const char* alias)
 *
 * logServerSet - 
 */
-void Network::logServerSet(char* logServerHost)
+void Network::logServerSet(const char* logServerHost)
 {
 	int fd;
 
 	LM_M(("Connecting to Log Server at '%s', port %d", logServerHost, LOG_SERVER_PORT));
 	fd = iomConnect(logServerHost, LOG_SERVER_PORT);
 	if (fd != -1)
-		endpointAdd("just connected to logServer", fd, fd, "logServer", "logServer", 0, Endpoint::LogServer, logServerHost, LOG_SERVER_PORT);
+		endpointAdd("connected to logServer", fd, fd, "logServer", "logServer", 0, Endpoint::Temporal, logServerHost, LOG_SERVER_PORT);
 }
 
 

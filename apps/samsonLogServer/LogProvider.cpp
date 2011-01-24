@@ -10,6 +10,7 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // LMT_*
 
+#include "Endpoint.h"           // Endpoint
 #include "globals.h"            // mainLayout, idleLabel
 #include "logProviderList.h"    // logProviderRemove
 #include "LogProvider.h"        // Own interface
@@ -20,12 +21,13 @@
 *
 * LogProvider::LogProvider
 */
-LogProvider::LogProvider(const char* name, const char* host, int fd)
+LogProvider::LogProvider(ss::Endpoint* ep, const char* name, const char* host, int fd)
 {
-	this->name   = strdup(name);
-	this->host   = strdup(host);
-	this->fd     = fd;
-	this->folded = false;
+	this->name     = strdup(name);
+	this->host     = strdup(host);
+	this->fd       = fd;
+	this->folded   = false;
+	this->endpoint = ep;
 };
 
 
@@ -40,6 +42,9 @@ LogProvider::~LogProvider()
 	free(this->host);
 	
 	close(this->fd);
+	this->endpoint->state = ss::Endpoint::Disconnected;
+	this->endpoint->rFd   = -1;
+	this->endpoint->wFd   = -1;
 }
 
 

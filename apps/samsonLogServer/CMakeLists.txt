@@ -6,6 +6,7 @@ SET (SOURCES
 	logProviderList.cpp
 	LogProvider.cpp
 	Popup.cpp
+	SamsonLogServer.cpp
 )
 
 SET (HEADERS_MOC
@@ -16,6 +17,7 @@ SET (HEADERS
 	logProviderList.h
 	traceLevels.h
 	Popup.h
+	SamsonLogServer.h
 )
 
 QT4_WRAP_CPP(MOC_SOURCES ${HEADERS_MOC})

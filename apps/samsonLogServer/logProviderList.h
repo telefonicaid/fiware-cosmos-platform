@@ -10,6 +10,7 @@
 * CREATION DATE            Jan 20 2011
 *
 */
+#include "Endpoint.h"           // ss::Endpoint
 #include "LogProvider.h"        // LogProvider
 
 
@@ -24,9 +25,17 @@ extern void logProviderListInit(unsigned int lpMax);
 
 /* ****************************************************************************
 *
+* logProviderNameSet - 
+*/
+extern void logProviderNameSet(LogProvider* lpP, const char* name, const char* ip);
+
+
+
+/* ****************************************************************************
+*
 * logProviderAdd - 
 */
-extern void logProviderAdd(const char* name, const char* host, int fd);
+extern void logProviderAdd(ss::Endpoint* endpoint, const char* name, const char* host, int fd);
 
 
 
@@ -42,15 +51,9 @@ extern void logProviderRemove(LogProvider* lpP);
 *
 * logProviderLookup - 
 */
-extern LogProvider* logProviderLookup(char* name, char* host);
-
-
-
-/* ****************************************************************************
-*
-* logProviderLookup - 
-*/
 extern LogProvider* logProviderLookup(unsigned int ix);
+extern LogProvider* logProviderLookup(char* name, char* host);
+extern LogProvider* logProviderLookup(ss::Endpoint* ep);
 
 
 

@@ -51,7 +51,7 @@ TabManager::TabManager(QWidget* window, QWidget* parent) : QWidget(parent)
 	window->setLayout(mainLayout);
 
 	LM_M(("Starting timer for Network polling"));
-	startTimer(50);  // 50 millisecond timer	
+	startTimer(5);  // 5 millisecond timer	
 }
 
 

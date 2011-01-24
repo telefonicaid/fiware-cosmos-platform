@@ -77,42 +77,6 @@ PaArgument paArgs[] =
 };
 
 
-#if 0
-/* ****************************************************************************
-*
-* logHookFunction - 
-*/
-void logHookFunction(char* text, char type, const char* file, int lineNo, const char* fName, int tLev, const char* stre)
-{
-	int                       s;
-	ss::Message::LogLineData  logLine;
-	ss::Endpoint*             ep = logServerEndpoint;
-
-	if ((logServerFd == -1) || (ep == NULL))
-		return;
-
-	memset(&logLine, 0, sizeof(logLine));
-
-	logLine.type   = type;
-	logLine.lineNo = lineNo;
-	logLine.tLev   = tLev;
-
-	if (text  != NULL)  strncpy(logLine.text,  text,  sizeof(logLine.text)  - 1);
-	if (file  != NULL)  strncpy(logLine.file,  file,  sizeof(logLine.file)  - 1);
-	if (fName != NULL)  strncpy(logLine.fName, fName, sizeof(logLine.fName) - 1);
-	if (stre  != NULL)  strncpy(logLine.stre,  stre,  sizeof(logLine.stre));
-
-	if (ep)
-		s = iomMsgSend(ep->wFd, ep->name.c_str(), networkP->me->name.c_str(), ss::Message::LogLine, ss::Message::Msg, &logLine, sizeof(logLine), NULL);
-	else
-		s = iomMsgSend(logServerFd, "log provider", "logServer", ss::Message::LogLine, ss::Message::Msg, &logLine, sizeof(logLine), NULL);
-
-	if (s < 0)
-		logServerFd = -1;
-}
-#endif
-
-
 
 /* ****************************************************************************
 *
@@ -126,7 +90,7 @@ int main(int argC, const char *argV[])
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
-	paConfig("screen line format",            (void*) "TYPE: TEXT");
+	paConfig("screen line format",            (void*) "TYPE:EXEC: TEXT");
 	paConfig("log to file",                   (void*) true);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
@@ -147,6 +111,7 @@ int main(int argC, const char *argV[])
 	networkP->setReadyReceiver(supervisorP);
 
 	networkP->init(ss::Endpoint::Supervisor, "Supervisor", 0, controllerName);
+	networkP->logServerSet("localhost");  // log server will always run in 'localhost' for samsonSupervisor ...
 
 	logServerFd = iomConnect("localhost", LOG_SERVER_PORT);
 	if (logServerFd == -1)

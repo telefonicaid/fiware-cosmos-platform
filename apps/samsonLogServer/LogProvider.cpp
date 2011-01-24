@@ -25,6 +25,7 @@ LogProvider::LogProvider(ss::Endpoint* ep, const char* name, const char* host, i
 {
 	this->name     = strdup(name);
 	this->host     = strdup(host);
+	this->state    = strdup("connected");
 	this->fd       = fd;
 	this->folded   = false;
 	this->endpoint = ep;
@@ -118,7 +119,16 @@ void LogProvider::remove(void)
 */
 void LogProvider::pause(void)
 {
-   LM_X(1, ("Pausing Log Provider is not implemented"));
+	if (toBottom == true)
+	{
+		toBottom = false;
+		pauseButton->setText("unpause");
+	}
+	else
+	{
+		toBottom = true;
+		pauseButton->setText("pause");
+	}
 }
 
 
@@ -129,5 +139,15 @@ void LogProvider::pause(void)
 */
 void LogProvider::stop(void)
 {
-   LM_X(1, ("Stopping Log Provider is not implemented"));
+	if (endpoint != NULL)
+	{
+		networkP->endpointRemove(endpoint, "stop pressed");
+		endpoint = NULL;
+
+		delete stopButton;
+		delete pauseButton;
+
+		stopButton  = NULL;
+		pauseButton = NULL;
+	}
 }

@@ -81,9 +81,4 @@ static void mainWinCreate(QApplication* app)
 */
 void qtRun(void)
 {
-	mainWinCreate(qApp);
-	tabManager = new TabManager(mainWindow);
-	mainWindow->show();
-
-	qApp->exec();
 }

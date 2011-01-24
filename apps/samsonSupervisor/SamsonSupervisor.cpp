@@ -222,7 +222,6 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		if (ep->type == ss::Endpoint::LogServer)
 		{
 			logServerEndpoint = NULL;
-			logServerFd       = -1;
 			LM_W(("Log Server closed connection"));
 
 			tabManager->processListTab->logServerRunningLabel->hide();
@@ -278,12 +277,24 @@ int SamsonSupervisor::ready(const char* info)
 {
 	unsigned int                ix;
 	std::vector<ss::Endpoint*>  epV;
-	static bool                 firstTime = true;
 
 	LM_M(("---- Network READY - %s --------------------------", info));
+	networkP->endpointListShow("Network READY");
+	spawnerListShow("ready");
+	processListShow("ready");
+
+	if (networkP->controller == NULL)
+	{
+		LM_M(("Connecting to controller and I return - will come back to this function and then we'll connect to the workers"));
+		connectToController();
+		return 0;
+	}
+
+	LM_M(("Connecting to all Spawners"));
+	connectToAllSpawners();
 
 	epV = networkP->samsonWorkerEndpoints();
-	LM_M(("Got %d endpoints", epV.size()));
+	LM_M(("Got %d Worker endpoints", epV.size()));
 	for (ix = 0; ix < epV.size(); ix++)
 	{
 		ss::Endpoint* ep;
@@ -292,12 +303,6 @@ int SamsonSupervisor::ready(const char* info)
 
 		LM_M(("%02d: %-20s %-20s   %s", ix, ep->name.c_str(), ep->ip.c_str(), ep->stateName()));
 	}
-
-	if (firstTime == true)
-		connectToAllSpawners();
-
-	networkReady = true;    // Is this true if Controller not running ?
-	firstTime    = false;
 
 	return 0;
 }

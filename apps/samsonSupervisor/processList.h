@@ -35,7 +35,7 @@ extern Process* processAdd(Process* process);
 *
 * processAdd - 
 */
-extern Process* processAdd(char* name, char* host, char** args, int argCount);
+extern Process* processAdd(char* name, char* host, unsigned short port, char** args, int argCount);
 
 
 

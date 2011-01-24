@@ -81,7 +81,7 @@ Process* processAdd(Process* processP)
 *
 * processAdd - 
 */
-Process* processAdd(char* name, char* host, char** args, int argCount)
+Process* processAdd(char* name, char* host, unsigned short port, char** args, int argCount)
 {
 	int           argIx;
 	Process*      processP;
@@ -90,9 +90,10 @@ Process* processAdd(char* name, char* host, char** args, int argCount)
 	if (processP == NULL)
 		LM_X(1, ("calloc: %s", strerror(errno)));
 
-	processP->name = strdup(name);
-	processP->host = strdup(host);
-	
+	processP->name     = strdup(name);
+	processP->host     = strdup(host);
+	processP->port     = port;
+
 	processP->argCount = argCount;
 	argIx = 0;
 	while (argIx < argCount)

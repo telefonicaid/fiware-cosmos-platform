@@ -14,10 +14,23 @@
 #include <QLabel>
 #include <QDesktopWidget>
 #include <QListWidget>
+#include <QObject>
+#include <QApplication>
+#include <QWidget>
+#include <QDesktopWidget>
+#include <QIcon>
+#include <QPushButton>
+#include <QTextEdit>
+#include <QSize>
+#include <QVBoxLayout>
+#include <QListWidget>
+#include <QLabel>
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // LMT_*
 #include "parseArgs.h"          // parseArgs
 
+#include "globals.h"            // tabManager, ...
 #include "processList.h"        // processListInit
 #include "spawnerList.h"        // spawnerListInit
 #include "starterList.h"        // starterListInit
@@ -25,12 +38,18 @@
 
 #include "Endpoint.h"           // Endpoint
 #include "Network.h"            // Network
-#include "iomConnect.h"         // iomConnect
-#include "iomMsgSend.h"         // iomMsgSend
 #include "TabManager.h"         // TabManager
-#include "qt.h"                 // qtRun
 #include "SamsonSupervisor.h"   // SamsonSupervisor
 #include "ports.h"              // LOG_SERVER_PORT
+
+
+
+/* ****************************************************************************
+*
+* Window geometry
+*/
+#define MAIN_WIN_WIDTH     400
+#define MAIN_WIN_HEIGHT    600
 
 
 
@@ -39,13 +58,13 @@
 * Global variables
 */
 int                logFd             = -1;    // file descriptor for log file
-int                logServerFd       = -1;    // socket to send Log Lines to LogServer
-
 ss::Network*       networkP          = NULL;
 SamsonSupervisor*  supervisorP       = NULL;
 ss::Endpoint*      controller        = NULL;
 TabManager*        tabManager        = NULL;
 ss::Endpoint*      logServerEndpoint = NULL;
+QWidget*           mainWindow        = NULL;
+QDesktopWidget*    desktop           = NULL;
 
 
 
@@ -68,7 +87,7 @@ bool    qt;
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",  controllerName,  "CONTROLLER",  PaString,  PaOpt,   NOC,  PaNL,   PaNL,  "controller IP:port"  },
+	{ "-controller",  controllerName,  "CONTROLLER",  PaString,  PaReq,   NOC,  PaNL,   PaNL,  "controller IP:port"  },
 	{ "-endpoints",   &endpoints,      "ENDPOINTS",   PaInt,     PaOpt,    80,     3,    100,  "number of endpoints" },
 	{ "-config",      &cfPath,         "CF_FILE",     PaStr,     PaOpt,   CFP,  PaNL,   PaNL,  "path to config file" },
 	{ "-qt",          &qt,             "QT",          PaBool,    PaOpt,  true, false,   true,  "graphical"           },
@@ -80,11 +99,39 @@ PaArgument paArgs[] =
 
 /* ****************************************************************************
 *
+* mainWinCreate - 
+*/
+static void mainWinCreate(QApplication* app)
+{
+	int              screenWidth;
+	int              screenHeight;
+	int              x;
+	int              y;
+
+	desktop    = QApplication::desktop();
+	mainWindow = new QWidget();
+
+	// Window Geometry
+	screenWidth  = desktop->width();
+	screenHeight = desktop->height();
+
+	x = (screenWidth  - MAIN_WIN_WIDTH)  / 2;
+	y = (screenHeight - MAIN_WIN_HEIGHT) / 2;
+
+	mainWindow->resize(MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT);
+	mainWindow->move(x, y);
+	mainWindow->setWindowTitle("Samson Supervisor");
+}
+
+
+
+/* ****************************************************************************
+*
 * main - 
 */
 int main(int argC, const char *argV[])
 {
-    QApplication app(argC, (char**) argV);
+    QApplication  app(argC, (char**) argV);
 
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);
@@ -94,6 +141,10 @@ int main(int argC, const char *argV[])
 	paConfig("log to file",                   (void*) true);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
+
+	LM_F(("Started with arguments:"));
+	for (int ix = 0; ix < argC; ix++)
+		LM_F(("  %02d: '%s'", ix, argV[ix]));
 
 	LM_TODO(("Try to connect to logServer as early as possible"));
 
@@ -113,15 +164,15 @@ int main(int argC, const char *argV[])
 	networkP->init(ss::Endpoint::Supervisor, "Supervisor", 0, controllerName);
 	networkP->logServerSet("localhost");  // log server will always run in 'localhost' for samsonSupervisor ...
 
-	logServerFd = iomConnect("localhost", LOG_SERVER_PORT);
-	if (logServerFd == -1)
-		LM_W(("error connecting to log server"));
-
 	LM_M(("calling runUntilReady"));
 	networkP->runUntilReady();
 	LM_M(("runUntilReady done"));
 
-	qtRun();
+	mainWinCreate(qApp);
+	tabManager = new TabManager(mainWindow);
+	mainWindow->show();
 
+	LM_M(("letting control to QT main loop"));
+	qApp->exec();
 	return 0;
 }

@@ -35,6 +35,8 @@ typedef struct Process
 
 	struct Spawner*  spawnerP;
 	Starter*         starterP;
+	unsigned short   port;
+	int              fd;
 } Process;
 
 #endif

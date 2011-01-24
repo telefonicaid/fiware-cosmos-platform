@@ -35,8 +35,10 @@ public:
 public:
 	char*         name;
 	char*         host;
+	char*         state;
 	int           fd;
 	bool          folded;
+	bool          toBottom;
 	ss::Endpoint* endpoint;
 
 	QHBoxLayout*  headerLayout;

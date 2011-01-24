@@ -72,7 +72,13 @@ int main(int argC, const char *argV[])
 	paConfig("log to file",                   (void*) true);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
+
 	lmAux((char*) "father");
+
+	LM_F(("Started with arguments:"));
+	for (int ix = 0; ix < argC; ix++)
+		LM_F(("  %02d: '%s'", ix, argV[ix]));
+
 	logFd = lmFirstDiskFileDescriptor();
 
 	ss::SamsonSetup::load(workingDir);  // Load setup and create default directories

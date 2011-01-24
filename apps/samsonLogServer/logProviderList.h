@@ -33,6 +33,14 @@ extern void logProviderNameSet(LogProvider* lpP, const char* name, const char* i
 
 /* ****************************************************************************
 *
+* logProviderStateSet - 
+*/
+extern void logProviderStateSet(LogProvider* lpP, const char* state);
+
+
+
+/* ****************************************************************************
+*
 * logProviderAdd - 
 */
 extern void logProviderAdd(ss::Endpoint* endpoint, const char* name, const char* host, int fd);

@@ -93,6 +93,41 @@ void spawnerConnect(Spawner* sP)
 
 /* ****************************************************************************
 *
+* processConnect - connect to process
+*/
+void processConnect(Process* sP)
+{
+	LM_M(("connecting to process in %s on port %d", sP->host, sP->port));
+
+	sP->fd = iomConnect(sP->host, sP->port);
+	if (sP->fd == -1)
+	{
+		char errorText[256];
+
+		snprintf(errorText, sizeof(errorText), "error connecting to process in host '%s', port %d", sP->host, sP->port);
+		new Popup("Connect Error", errorText);
+		
+		return;
+	}
+
+	ss::Endpoint*  ep;
+
+	LM_M(("Calling endpointAdd for process '%s'", sP->host));
+	ep = networkP->endpointAdd("connected to process",
+							   sP->fd,
+							   sP->fd,
+							   "Process",
+							   NULL,
+							   0,
+							   ss::Endpoint::Temporal,
+							   std::string(sP->host),
+							   sP->port);
+}
+
+
+
+/* ****************************************************************************
+*
 * connectToAllSpawners - 
 */
 void connectToAllSpawners(void)
@@ -107,6 +142,49 @@ void connectToAllSpawners(void)
 			continue;
 
 		spawnerConnect(sP);
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* connectToController - 
+*/
+void connectToController(void)
+{
+	LM_M(("Connecting to controller"));
+
+	for (unsigned int ix = 0; ix < processMaxGet(); ix++)
+	{
+		Process* sP;
+
+		if ((sP = processLookup(ix)) == NULL)
+			continue;
+
+		if (strcmp(sP->name, "Controller") == 0)
+			processConnect(sP);
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* connectToAllProcesses - 
+*/
+void connectToAllProcesses(void)
+{
+	LM_M(("Connecting to all %d processes", processMaxGet()));
+
+	for (unsigned int ix = 0; ix < processMaxGet(); ix++)
+	{
+		Process* sP;
+
+		if ((sP = processLookup(ix)) == NULL)
+			continue;
+
+		processConnect(sP);
 	}
 }
 

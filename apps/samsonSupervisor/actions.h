@@ -58,6 +58,22 @@ extern void spawnerConnect(Spawner* spawner);
 
 /* ****************************************************************************
 *
+* connectToController - 
+*/
+extern void connectToController(void);
+
+
+
+/* ****************************************************************************
+*
+* connectToAllProcesses - 
+*/
+extern void connectToAllProcesses(void);
+
+
+
+/* ****************************************************************************
+*
 * startAllProcesses - 
 */
 extern void startAllProcesses(void);

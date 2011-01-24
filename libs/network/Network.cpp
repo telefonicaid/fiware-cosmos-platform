@@ -288,6 +288,7 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 			LM_XP(1, ("new Endpoint"));
 		controller = endpoint[2];
 
+		LM_M(("connecting to controller in %s, port %d", controller->ip.c_str(), controller->port));
 		controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
 		if (controller->rFd == -1)
 		{

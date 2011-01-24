@@ -105,7 +105,8 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 
 	logServerStartButton->connect(logServerStartButton, SIGNAL(clicked()), this, SLOT(logServerStart()));
 
-	if (logServerFd != -1)
+	ss::Endpoint* logServerEndpoint = networkP->endpointLookup((char*) "logServer");
+	if (logServerEndpoint)
 	{
 		logServerRunningLabel->show();
 		logServerStartButton->hide();
@@ -207,6 +208,7 @@ void ProcessListTab::logServerStart(void)
 
 	LM_M(("connecting to log server"));
 	usleep(100000);
+	int logServerFd = -1;
 
 	networkP->endpointListShow("connecting to log server");
 

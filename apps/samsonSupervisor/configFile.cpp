@@ -12,6 +12,7 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // LMT_*
 
+#include "ports.h"              // CONTROLLER_PORT, WORKER_PORT
 #include "Process.h"            // Process
 #include "processList.h"        // processAdd, ...
 #include "configFile.h"         // Own interface
@@ -169,7 +170,12 @@ void configFileParse(char* cfPath)
 		if (argsParse(line, host, process, args, &argCount) == 0)
 		{
 			LM_T(LMT_CONFIG_FILE, ("Adding process '%s' in %s with %d args", process, host, argCount));
-			processAdd(process, host, args, argCount);
+			if (strcmp(process, "Controller") == 0)
+				processAdd(process, host, CONTROLLER_PORT, args, argCount);
+			else if (strcmp(process, "Worker") == 0)
+				processAdd(process, host, WORKER_PORT, args, argCount);
+			else
+				LM_X(1, ("bad process name '%s'", process));
 		}
 	}
 }

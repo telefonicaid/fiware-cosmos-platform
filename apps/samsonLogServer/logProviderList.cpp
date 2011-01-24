@@ -67,13 +67,32 @@ void logProviderListInit(unsigned int lpMax)
 
 /* ****************************************************************************
 *
+* logProviderStateSet - 
+*/
+void logProviderStateSet(LogProvider* lpP, const char* state)
+{
+	if (state == NULL)
+		return;
+
+	if (lpP->state != NULL)
+		free(lpP->state);
+	lpP->state = strdup(state);
+
+	LM_M(("Setting state to %s", lpP->state));
+	lpP->stateLabel->setText(QString(lpP->state));
+}
+
+
+
+/* ****************************************************************************
+*
 * logProviderNameSet - 
 */
 void logProviderNameSet(LogProvider* lpP, const char* name, const char* ip)
 {
 	LM_M(("Setting name ..."));
 
-	if ((name != NULL) && (ip == NULL))
+	if ((name == NULL) && (ip == NULL))
 		return;
 
 	if (name != NULL)
@@ -142,7 +161,7 @@ static void logProviderAdd(LogProvider* lpP)
 	//
 	lpP->headerLayout = new QHBoxLayout();
 	lpP->nameLabel    = new QLabel(QString(lpP->name) + QString("@") + QString(lpP->host));
-	lpP->stateLabel   = new QLabel(QString("alive"));
+	lpP->stateLabel   = new QLabel(QString(lpP->state));
 	lpP->foldButton   = new QPushButton("hide");
 	lpP->clearButton  = new QPushButton("clear");
 	lpP->pauseButton  = new QPushButton("pause");
@@ -246,9 +265,12 @@ void logProviderRemove(LogProvider* lpP)
 	delete lpP->stateLabel;
 	delete lpP->nameLabel;
 	delete lpP->clearButton;
-	delete lpP->pauseButton;
-	delete lpP->stopButton;
 	delete lpP->removeButton;
+
+	if (lpP->stopButton != NULL)
+		delete lpP->stopButton;
+	if (lpP->pauseButton != NULL)
+		delete lpP->pauseButton;
 
 	delete lpP->list;
 
@@ -440,7 +462,9 @@ void logProviderMsgTreat(LogProvider* lpP)
 		logLine = (ss::Message::LogLineData*) dataP;
 
 		lpP->list->addItem(QString(line));
-		lpP->list->scrollToBottom();
+
+		if (lpP->toBottom == true)
+			lpP->list->scrollToBottom();
 
 		if ((logLine->type == 'E') || (logLine->type == 'X'))
 		{

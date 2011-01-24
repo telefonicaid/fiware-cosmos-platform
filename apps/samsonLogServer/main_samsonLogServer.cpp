@@ -351,8 +351,12 @@ int main(int argC, const char *argV[])
 	paConfig("log to file",                   (void*) true);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
-	LM_M(("Initializing log provider list"));
 
+	LM_F(("Started with arguments:"));
+	for (int ix = 0; ix < argC; ix++)
+		LM_F(("  %02d: '%s'", ix, argV[ix]));
+
+	LM_M(("Initializing log provider list"));
 	logProviderListInit(50);
 	logWinCreate(&app);
 
@@ -363,7 +367,7 @@ int main(int argC, const char *argV[])
     networkP->setReadyReceiver(samsonLogServer);
     networkP->setDataReceiver(samsonLogServer);
 
-    networkP->init(ss::Endpoint::LogServer, "LogServer", port, controller);
+	networkP->init(ss::Endpoint::LogServer, "LogServer", port, controller);
 
 	LM_M(("controller: '%s'", controller));
 	if (strcmp(controller, (char*) NOC) != 0)
@@ -372,8 +376,7 @@ int main(int argC, const char *argV[])
 
 		LM_M(("Connecting to controller at '%s'", controller));
 		fd = iomConnect(controller, CONTROLLER_PORT);
-		if (fd != -1)
-			logProviderAdd(NULL, "controller", controller, fd);
+		networkP->endpointAdd("Connecting to controller", fd, fd, "Controller", "controller", 0, ss::Endpoint::Controller, controller, CONTROLLER_PORT);
 	}
 
 	LM_M(("Number of spawners: %d", (int) spawnerList[0]));
@@ -395,6 +398,7 @@ int main(int argC, const char *argV[])
 		}
 	}
 
+#if 0
 	LM_M(("Number of workers: %d", (int) workerList[0]));
 	if ((int) workerList[0] != 0)
 	{
@@ -410,6 +414,7 @@ int main(int argC, const char *argV[])
 				logProviderAdd(NULL, "worker", workerList[ix], fd);
 		}
 	}
+#endif
 
 #if 0
 	LM_M(("calling networkP->runUntilReady"));

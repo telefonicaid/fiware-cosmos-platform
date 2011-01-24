@@ -9,7 +9,6 @@ SET (SOURCES
 	spawnerList.cpp
 	Starter.cpp
 	starterList.cpp
-	qt.cpp
 	actions.cpp
 	TabManager.cpp
 	DelilahTab.cpp
@@ -35,7 +34,6 @@ SET (HEADERS
 	Spawner.h
 	spawnerList.h
 	starterList.h
-	qt.h
 	actions.h
 	globals.h
 	configFile.h

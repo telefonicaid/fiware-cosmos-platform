@@ -39,7 +39,7 @@
 */
 SamsonLogServer::SamsonLogServer(void)
 {
-   startTimer(5);  // 5 millisecond timer
+	startTimer(10);  // 10 millisecond timer
 }
 
 
@@ -105,13 +105,21 @@ int SamsonLogServer::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason
 
 	networkP->endpointListShow("In endpointUpdate");
 
+	lpP = logProviderLookup(ep);
+	if (lpP == NULL)
+		LM_E(("Cannot find log provider for endpoint %p", ep));
+
 	switch (reason)
 	{
+	case ss::Endpoint::WorkerRemoved:
+	case ss::Endpoint::ControllerRemoved:
+	case ss::Endpoint::EndpointRemoved:
+		if (lpP)
+			logProviderStateSet(lpP, "disconnected");
+		break;
+
 	case ss::Endpoint::NoLongerTemporal:
-		lpP = logProviderLookup(ep);
-		if (lpP == NULL)
-			LM_E(("Cannot find log provider for endpoint %p", ep));
-		else
+		if (lpP)
 		{
 			LM_M(("Changing ep for '%s' from %p to %p", lpP->name, lpP->endpoint, newEp));
 			lpP->endpoint = newEp;
@@ -120,7 +128,6 @@ int SamsonLogServer::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason
 		break;
 
 	case ss::Endpoint::HelloReceived:
-		lpP = logProviderLookup(ep);
 		LM_M(("HelloReceived: lpP at %p for endpoint '%s' at '%s'", lpP, ep->name.c_str(), ep->ip.c_str()));
 		if (lpP == NULL)
 			logProviderAdd(ep, ep->name.c_str(), ep->ip.c_str(), ep->rFd);

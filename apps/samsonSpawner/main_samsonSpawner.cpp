@@ -153,7 +153,7 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 int main(int argC, const char *argV[])
 {
 	SamsonSpawner*         spawnerP;
-
+	
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
@@ -162,6 +162,10 @@ int main(int argC, const char *argV[])
 	paConfig("log to file",                   (void*) true);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
+
+	LM_F(("Started with arguments:"));
+	for (int ix = 0; ix < argC; ix++)
+		LM_F(("  %02d: '%s'", ix, argV[ix]));
 
 	networkP = new ss::Network(endpoints, 0);
 	networkP->init(ss::Endpoint::Spawner, NULL, port, NULL);

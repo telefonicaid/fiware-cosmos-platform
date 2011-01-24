@@ -17,7 +17,7 @@
 *
 * qtRun - 
 */
-extern void qtRun(int argC, const char* argV[]);
+extern void qtRun(void);
 
 #endif
 

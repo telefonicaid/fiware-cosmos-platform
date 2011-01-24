@@ -79,13 +79,11 @@ static void mainWinCreate(QApplication* app)
 *
 * qtRun - 
 */
-void qtRun(int argC, const char* argV[])
+void qtRun(void)
 {
-	QApplication app(argC, (char**) argV);
-
-	mainWinCreate(&app);
+	mainWinCreate(qApp);
 	tabManager = new TabManager(mainWindow);
 	mainWindow->show();
 
-	app.exec();
+	qApp->exec();
 }

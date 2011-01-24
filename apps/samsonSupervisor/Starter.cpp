@@ -136,6 +136,7 @@ void Starter::processClicked(void)
 			LM_W(("Already started process '%s' in '%s'", process->name, process->host));
 		else
 		{
+			LM_M(("calling processStart"));
 			processStart(process, this);
 			connected = true;
 		}
@@ -146,6 +147,7 @@ void Starter::processClicked(void)
 			LM_W(("process '%s' in '%s' not running", process->name, process->host));
 		else
 		{
+			LM_M(("calling processKill"));
 			processKill(process, this);
 			connected = false;
 		}

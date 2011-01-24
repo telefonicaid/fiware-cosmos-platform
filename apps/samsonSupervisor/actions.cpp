@@ -58,62 +58,6 @@ void list(void)
 
 /* ****************************************************************************
 *
-* start - 
-*/
-void start(void)
-{
-	int                     s;
-	Process*                p;
-	ss::Message::SpawnData  spawnData;
-	int                     pIx = 0;
-
-	LM_M(("Starting samson platform"));
-	while (1)
-	{
-		int   ix;
-		char* end;
-
-		p = processLookup(pIx);
-
-		if (p == NULL)
-		{
-			LM_M(("All processes are started!"));
-			return;
-		}
-
-		strcpy(spawnData.name, p->name);
-		memset(spawnData.args, sizeof(spawnData.args), 0);
-
-		end = spawnData.args;
-		for (ix = 0; ix < p->argCount; ix++)
-		{
-			strcpy(end, p->arg[ix]);
-			end += strlen(p->arg[ix]) + 1; // leave one ZERO character
-		}
-
-		LM_M(("starting process %d (%s in %s). Spawner at %p", pIx, p->name, p->host, p->spawnerP));
-		if (strcmp(spawnData.name, "Controller") == 0)
-			s = iomMsgSend(p->spawnerP->fd, p->spawnerP->host, "samsonSupervisor", ss::Message::ControllerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
-		else if (strcmp(spawnData.name, "Worker") == 0)
-			s = iomMsgSend(p->spawnerP->fd, p->spawnerP->host, "samsonSupervisor", ss::Message::WorkerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
-		if (s != 0)
-			LM_E(("iomMsgSend: error %d", s));
-		LM_M(("started process %d (%s in %s)", pIx, p->name, p->host));
-
-		LM_M(("Connecting to newly started process ..."));
-		if (strcmp(spawnData.name, "Controller") == 0)
-			iomConnect(p->spawnerP->host, CONTROLLER_PORT);
-		else if (strcmp(spawnData.name, "Worker") == 0)
-			iomConnect(p->spawnerP->host, WORKER_PORT);
-
-		++pIx;
-	}
-}
-
-
-
-/* ****************************************************************************
-*
 * spawnerConnect - connect to spawner
 */
 void spawnerConnect(Spawner* sP)
@@ -122,12 +66,20 @@ void spawnerConnect(Spawner* sP)
 
 	sP->fd = iomConnect(sP->host, sP->port);
 	if (sP->fd == -1)
-		LM_X(1, ("error connecting to spawner in host '%s', port %d", sP->host, sP->port));
+	{
+		char errorText[256];
+
+		snprintf(errorText, sizeof(errorText), "error connecting to spawner in host '%s', port %d", sP->host, sP->port);
+		new Popup("Connect Error", errorText);
+		
+		return;
+	}
 
 	ss::Endpoint*  ep;
 
 	LM_M(("Calling endpointAdd for spawner '%s'", sP->host));
-	ep = networkP->endpointAdd(sP->fd,
+	ep = networkP->endpointAdd("connected to spawner",
+							   sP->fd,
 							   sP->fd,
 							   "Spawner",
 							   NULL,
@@ -145,6 +97,8 @@ void spawnerConnect(Spawner* sP)
 */
 void connectToAllSpawners(void)
 {
+	LM_M(("Connecting to all %d spawners", spawnerMaxGet()));
+
 	for (unsigned int ix = 0; ix < spawnerMaxGet(); ix++)
 	{
 		Spawner* sP;
@@ -165,6 +119,7 @@ void connectToAllSpawners(void)
 void processStart(Process* processP, Starter* starter)
 {
 	ss::Message::SpawnData  spawnData;
+	ss::Endpoint*           logServer;
 	int                     ix;
 	char*                   end;
 	int                     s;
@@ -183,14 +138,18 @@ void processStart(Process* processP, Starter* starter)
 
 	end = spawnData.args;
 
-	ss::Endpoint* logServer;
+	networkP->endpointListShow("Looking up logServer");
 	if ((logServer = networkP->logServerLookup()) != NULL)
 	{
 		strcpy(end, "-logServer");
+		LM_M(("parameter: '%s'", end));
 		end += strlen("-logServer") + 1;  // leave one ZERO character
 		strcpy(end, logServer->ip.c_str());
+		LM_M(("parameter: '%s'", end));
 		end += strlen(logServer->ip.c_str()) + 1; // leave one ZERO character
 	}
+	else
+		LM_W(("no log server found!"));
 
 	for (ix = 0; ix < processP->argCount; ix++)
 	{
@@ -227,7 +186,7 @@ void processStart(Process* processP, Starter* starter)
 			new Popup("Connect Error", errorText);
 		}
 		else
-			starter->endpoint = networkP->endpointAdd(fd, fd, "Controller", "Controller", 0, ss::Endpoint::Controller, processP->spawnerP->host, CONTROLLER_PORT);
+			starter->endpoint = networkP->endpointAdd("connected to spawner", fd, fd, "Controller", "Controller", 0, ss::Endpoint::Controller, processP->spawnerP->host, CONTROLLER_PORT);
 	}
 	else if (strcmp(spawnData.name, "Worker") == 0)
 	{
@@ -243,7 +202,7 @@ void processStart(Process* processP, Starter* starter)
 			new Popup("Connect Error", errorText);
 		}
 		else
-			starter->endpoint = networkP->endpointAdd(fd, fd, spawnData.name, alias, 0, ss::Endpoint::Temporal, processP->spawnerP->host, WORKER_PORT);
+			starter->endpoint = networkP->endpointAdd("connected to worker", fd, fd, spawnData.name, alias, 0, ss::Endpoint::Temporal, processP->spawnerP->host, WORKER_PORT);
 
 		LM_TODO(("This endpoint is TEMPORAL and will be changed when the Hello is received - fix this problem!"));
 	}

@@ -11,6 +11,7 @@
 *
 */
 #include <QDialog>
+#include <QTimerEvent>
 
 #include "ProcessListTab.h"     // ProcessListTab
 #include "LogTab.h"             // LogTab
@@ -40,6 +41,9 @@ public:
 	ProcessListTab*  processListTab;
 	LogTab*          logTab;
 	DelilahTab*      delilahTab;
+
+protected:
+	void timerEvent(QTimerEvent* e);
 
 private:
 	QTabWidget*       tabWidget;

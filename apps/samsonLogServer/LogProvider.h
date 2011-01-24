@@ -42,6 +42,8 @@ public:
 	QLabel*       stateLabel;
 	QLabel*       nameLabel;
 	QPushButton*  clearButton;
+	QPushButton*  pauseButton;
+	QPushButton*  stopButton;
 	QPushButton*  removeButton;
 
 	QListWidget*  list;
@@ -51,6 +53,8 @@ public:
 public slots:
 	void fold();
 	void clear();
+	void pause();
+	void stop();
 	void remove();
 };
 

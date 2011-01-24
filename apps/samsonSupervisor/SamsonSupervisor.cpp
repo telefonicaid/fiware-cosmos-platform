@@ -42,51 +42,7 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 		LM_RE(0, ("Cannot find endpoint with id %d", fromId));
 
 	if (ep->type == ss::Endpoint::Fd)
-	{
-		char* msg = (char*) dataP;
-
-		printf("\n");
-		switch (*msg)
-		{
-		case 'h':
-			help();
-			break;
-
-		case 'c':
-			connectToAllSpawners();
-			break;
-
-		case 'p':
-			startAllProcesses();
-			break;
-
-		case 's':
-			start();
-			break;
-
-		case 'l':
-			list();
-			break;
-
-		case 3:
-			LM_X(0, ("'Ctrl-C' pressed - I quit!"));
-
-		case 'q':
-			LM_X(0, ("'q' pressed - I quit!"));
-
-		case ' ':
-		case '\n':
-			printf("\n");
-			break;
-
-		default:
-			LM_E(("Key '%c' has no function", *msg));
-			help();
-		}
-
-		printf("\n");
-		return 0;
-	}
+		LM_X(1, ("Don't want to accept commands from stdin - please remove this now!"));
 
 	switch (headerP->code)
 	{
@@ -141,6 +97,12 @@ static void noLongerTemporal(ss::Endpoint* ep, ss::Endpoint* newEp, Starter* sta
 
 	if (ep->type != ss::Endpoint::Temporal)
 		LM_X(1, ("BUG - endpoint not temporal"));
+
+	if (newEp->type == ss::Endpoint::LogServer)
+	{
+		LM_M(("endpoint is LogServer - nothing to be done ..."));
+		return;
+	}
 
 	if ((newEp->type != ss::Endpoint::Worker) && (newEp->type != ss::Endpoint::Spawner))
 		LM_X(1, ("BUG - new endpoint should be either Worker or Spawner - is '%s'", newEp->typeName()));
@@ -225,14 +187,17 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	else
 		LM_M(("********************* Got an Update Notification ('%s') for NULL endpoint", reasonText));
 
-	LM_M(("looking for starter with endpoint %p", ep));
-	starterListShow("Before starterLookup");
-	starter = starterLookup(ep);
-	starterListShow("After starterLookup");
-	LM_M(("starterLookup(%p) returned %p", ep, starter));
+	if (ep->type != ss::Endpoint::LogServer)
+	{
+		LM_M(("looking for starter with endpoint %p", ep));
+		starterListShow("Before starterLookup");
+		starter = starterLookup(ep);
+		starterListShow("After starterLookup");
+		LM_M(("starterLookup(%p) returned %p", ep, starter));
 
-	if (starter != NULL)
-		LM_M(("found %s-starter '%s'", starter->typeName(), starter->name));
+		if (starter != NULL)
+			LM_M(("found %s-starter '%s'", starter->typeName(), starter->name));
+	}
 
 	switch (reason)
 	{
@@ -243,8 +208,9 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	case ss::Endpoint::WorkerDisconnected:
 	case ss::Endpoint::WorkerAdded:
 		if (starter == NULL)
-			LM_RE(-1, ("NULL starter for '%s'", reasonText));
-		starter->check();
+			LM_W(("NULL starter for '%s'", reasonText));
+		else
+			starter->check();
 		break;
 
 	case ss::Endpoint::ControllerDisconnected:
@@ -252,7 +218,8 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		break;
 
 	case ss::Endpoint::EndpointRemoved:
-		if (ep == logServerEndpoint)
+		LM_W(("Some endpoint closed connection"));
+		if (ep->type == ss::Endpoint::LogServer)
 		{
 			logServerEndpoint = NULL;
 			logServerFd       = -1;
@@ -263,8 +230,8 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 
 			return -1;
 		}
-
-		LM_M(("Endpoint removed"));
+		else
+			LM_M(("Endpoint that is not Log Server was removed"));
 
 	case ss::Endpoint::ControllerRemoved:
 	case ss::Endpoint::WorkerRemoved:
@@ -276,12 +243,13 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	case ss::Endpoint::HelloReceived:
 		if (ep == logServerEndpoint)
 		{
-			LM_W(("Got Hello from Log Server - here I should notify Qt thread to update logServer push-button"));
+			LM_W(("Got Hello from Log Server (name: '%s'/'%s', ip: '%s'/'%s') - here I should notify Qt thread to update logServer push-button", ep->name.c_str(), newEp->name.c_str(), ep->ip.c_str(), newEp->ip.c_str()));
 			LM_TODO(("Add a QT timeout handler and connect a socket between threads to send a LogServer started message"));
 			LM_TODO(("Even better would be to create a Network::Poll function and have only one thread"));
 
-			// tabManager->processListTab->logServerRunningLabel->show();
-			// tabManager->processListTab->logServerStartButton->hide();
+			
+			tabManager->processListTab->logServerRunningLabel->show();
+			tabManager->processListTab->logServerStartButton->hide();
 		}
 		else
 			LM_W(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
@@ -326,31 +294,7 @@ int SamsonSupervisor::ready(const char* info)
 	}
 
 	if (firstTime == true)
-	{
-		// Connecting to all spawners
-		Spawner**     spawnerV;
-		unsigned int  spawners;
-
-		spawners = spawnerMaxGet();
-		spawnerV = spawnerListGet();
-
-		LM_M(("Connecting to all %d spawners", spawners));
-		for (ix = 0; ix < spawners; ix++)
-		{
-			int s;
-
-			if (spawnerV[ix] == NULL)
-				continue;
-
-			LM_M(("Connecting to spawner in host '%s'", spawnerV[ix]->host));
-			s = iomConnect(spawnerV[ix]->host, SPAWNER_PORT);
-			spawnerV[ix]->fd = s;
-			if (s == -1)
-				LM_E(("Error connecting to spawner in %s (port %d)", spawnerV[ix]->host, SPAWNER_PORT));
-			else
-				networkP->endpointAdd(s, s, (char*) "Spawner", "Spawner", 0, ss::Endpoint::Temporal, spawnerV[ix]->host, SPAWNER_PORT);
-		}
-	}
+		connectToAllSpawners();
 
 	networkReady = true;    // Is this true if Controller not running ?
 	firstTime    = false;

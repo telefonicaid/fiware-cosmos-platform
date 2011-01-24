@@ -84,6 +84,7 @@ public:
 	   This function is expected to return only if quit() function is called
 	*/
 	void run();                                     // Main run loop control to the network interface
+	void runUntilReady(void);                       // run the run loop until READY
 	int  poll();                                    // Poll endpoint connections ant treat if necessary
 
 	// Syspend the network interface, close everything and return the "run" call
@@ -106,13 +107,13 @@ public:
 	void         controllerMsgTreat(Endpoint* ep, Message::MessageCode msgCode, Message::MessageType msgType, void* dataP, int dataLen, Packet* packetP);
 	std::string  getState(std::string selector);
 
-	Endpoint*    endpointAdd(int rFd, int wFd, const char* name, const char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core = -1, Endpoint* inheritFrom = NULL);
+	Endpoint*    endpointAdd(const char* why, int rFd, int wFd, const char* name, const char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core = -1, Endpoint* inheritFrom = NULL);
 	Endpoint*    endpointLookup(int fd, int* idP);
 	Endpoint*    endpointLookup(int ix);
 	Endpoint*    endpointLookup(char* alias);
 	Endpoint*    endpointLookup(Endpoint::Type type, char* ip);
 	void         endpointRemove(Endpoint* ep, const char* why);
-	void         endpointListShow(void);
+	void         endpointListShow(const char* why);
 
 	int          helloSend(Endpoint* ep, Message::MessageType type);
 

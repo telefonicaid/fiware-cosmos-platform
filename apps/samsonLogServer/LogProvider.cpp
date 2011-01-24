@@ -36,12 +36,9 @@ LogProvider::LogProvider(const char* name, const char* host, int fd)
 */
 LogProvider::~LogProvider()
 {
-	LM_M(("Freeing this->name"));
 	free(this->name);
-	LM_M(("Freeing this->host"));
 	free(this->host);
 	
-	LM_M(("Closing this->fd"));
 	close(this->fd);
 }
 
@@ -53,10 +50,9 @@ LogProvider::~LogProvider()
 */
 void LogProvider::connectionClosed(void)
 {
-	LM_M(("setting state text to 'dead'"));
 	stateLabel->setText(QString("dead"));
 	stateLabel->show();
-	LM_M(("set state text to 'dead'"));
+
 	close(fd);
 	fd = -1;
 }
@@ -107,4 +103,26 @@ void LogProvider::remove(void)
 {
 	LM_M(("Removing Log Provider List"));
 	logProviderRemove(this);
+}
+
+
+
+/* ****************************************************************************
+*
+* LogProvider::pause
+*/
+void LogProvider::pause(void)
+{
+   LM_X(1, ("Pausing Log Provider is not implemented"));
+}
+
+
+
+/* ****************************************************************************
+*
+* LogProvider::stop
+*/
+void LogProvider::stop(void)
+{
+   LM_X(1, ("Stopping Log Provider is not implemented"));
 }

@@ -47,9 +47,6 @@ ss::Endpoint*      controller        = NULL;
 TabManager*        tabManager        = NULL;
 ss::Endpoint*      logServerEndpoint = NULL;
 
-pthread_t          networkThread     = 0;
-pthread_t          qtThread          = 0;
-
 
 
 /* ****************************************************************************
@@ -80,37 +77,7 @@ PaArgument paArgs[] =
 };
 
 
-
-/* ****************************************************************************
-*
-* networkStart - 
-*/
-void* networkStart(void* vP)
-{
-	SamsonSupervisor*  s  = (SamsonSupervisor*) vP;
-
-	networkP->setDataReceiver(s);
-	networkP->setEndpointUpdateReceiver(s);
-	networkP->setReadyReceiver(s);
-
-	networkP->init(ss::Endpoint::Supervisor, "Supervisor", 0, controllerName);
-
-	logServerEndpoint = networkP->endpointAdd(logServerFd, logServerFd, "Samson Log Server", "logServer", 0, ss::Endpoint::LogServer, "localhost", LOG_SERVER_PORT);
-	if (logServerEndpoint)
-	{
-		LM_M(("Sending Hello to Log Server"));
-		networkP->helloSend(logServerEndpoint, ss::Message::Msg);
-	}
-	else
-		LM_E(("Error adding endpoint"));
-
-	networkP->run();
-
-	return NULL;
-}
-
-
-
+#if 0
 /* ****************************************************************************
 *
 * logHookFunction - 
@@ -143,6 +110,7 @@ void logHookFunction(char* text, char type, const char* file, int lineNo, const 
 	if (s < 0)
 		logServerFd = -1;
 }
+#endif
 
 
 
@@ -152,6 +120,8 @@ void logHookFunction(char* text, char type, const char* file, int lineNo, const 
 */
 int main(int argC, const char *argV[])
 {
+    QApplication app(argC, (char**) argV);
+
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
@@ -161,8 +131,7 @@ int main(int argC, const char *argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	logServerFd = iomConnect("localhost", LOG_SERVER_PORT);
-	lmOutHookSet(logHookFunction);
+	LM_TODO(("Try to connect to logServer as early as possible"));
 
 	processListInit(20);
 	spawnerListInit(10);
@@ -172,14 +141,22 @@ int main(int argC, const char *argV[])
 
 	networkP    = new ss::Network(endpoints, 10);  // 10 workers by default
 	supervisorP = new SamsonSupervisor(networkP);
-	qtThread    = pthread_self();
 
-	pthread_create(&networkThread, NULL, networkStart, supervisorP);
+	networkP->setDataReceiver(supervisorP);
+	networkP->setEndpointUpdateReceiver(supervisorP);
+	networkP->setReadyReceiver(supervisorP);
 
-	while (supervisorP->networkReady == false)
-		usleep(10000);
+	networkP->init(ss::Endpoint::Supervisor, "Supervisor", 0, controllerName);
 
-	qtRun(argC, argV);
+	logServerFd = iomConnect("localhost", LOG_SERVER_PORT);
+	if (logServerFd == -1)
+		LM_W(("error connecting to log server"));
+
+	LM_M(("calling runUntilReady"));
+	networkP->runUntilReady();
+	LM_M(("runUntilReady done"));
+
+	qtRun();
 
 	return 0;
 }

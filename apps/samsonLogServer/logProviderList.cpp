@@ -30,6 +30,10 @@
 
 
 
+extern char* ipGet(void);
+
+
+
 /* ****************************************************************************
 *
 *
@@ -65,11 +69,24 @@ void logProviderListInit(unsigned int lpMax)
 *
 * logProviderNameSet - 
 */
-void logProviderNameSet(LogProvider* lpP, char* name)
+void logProviderNameSet(LogProvider* lpP, char* name, char* ip)
 {
-	if (lpP->name != NULL)
-		free(lpP->name);
-	lpP->name = strdup(name);
+	if ((name != NULL) && (ip == NULL))
+		return;
+
+	if (name != NULL)
+	{
+		if (lpP->name != NULL)
+			free(lpP->name);
+		lpP->name = strdup(name);
+	}
+
+	if (ip != NULL)
+	{
+		if (lpP->host != NULL)
+			free(lpP->host);
+		lpP->host = strdup(ip);
+	}
 
 	lpP->nameLabel->setText(QString(lpP->name) + QString("@") + QString(lpP->host));
 }
@@ -125,6 +142,8 @@ static void logProviderAdd(LogProvider* lpP)
 	lpP->stateLabel   = new QLabel(QString("alive"));
 	lpP->foldButton   = new QPushButton("hide");
 	lpP->clearButton  = new QPushButton("clear");
+	lpP->pauseButton  = new QPushButton("pause");
+	lpP->stopButton   = new QPushButton("stop");
 	lpP->removeButton = new QPushButton("remove");
 	lpP->list         = new QListWidget();
 	lpP->delimiter    = new QImage(DELIMITER_PATH);
@@ -151,6 +170,8 @@ static void logProviderAdd(LogProvider* lpP)
 
 	lpP->foldButton->setFont(buttonFont);
 	lpP->clearButton->setFont(buttonFont);
+	lpP->pauseButton->setFont(buttonFont);
+	lpP->stopButton->setFont(buttonFont);
 	lpP->removeButton->setFont(buttonFont);
 
 	lpP->list->setFont(listFont);
@@ -162,6 +183,8 @@ static void logProviderAdd(LogProvider* lpP)
 	//
 	lpP->connect(lpP->foldButton,   SIGNAL(clicked()), lpP, SLOT(fold()));
 	lpP->connect(lpP->clearButton,  SIGNAL(clicked()), lpP, SLOT(clear()));
+	lpP->connect(lpP->pauseButton,  SIGNAL(clicked()), lpP, SLOT(pause()));
+	lpP->connect(lpP->stopButton,   SIGNAL(clicked()), lpP, SLOT(stop()));
 	lpP->connect(lpP->removeButton, SIGNAL(clicked()), lpP, SLOT(remove()));
 
 
@@ -174,6 +197,8 @@ static void logProviderAdd(LogProvider* lpP)
 	lpP->headerLayout->addWidget(lpP->stateLabel);
 	lpP->headerLayout->addWidget(lpP->foldButton);
 	lpP->headerLayout->addWidget(lpP->clearButton);
+	lpP->headerLayout->addWidget(lpP->pauseButton);
+	lpP->headerLayout->addWidget(lpP->stopButton);
 	lpP->headerLayout->addWidget(lpP->removeButton);
 
 	lpP->headerLayout->addStretch(2);
@@ -218,6 +243,8 @@ void logProviderRemove(LogProvider* lpP)
 	delete lpP->stateLabel;
 	delete lpP->nameLabel;
 	delete lpP->clearButton;
+	delete lpP->pauseButton;
+	delete lpP->stopButton;
 	delete lpP->removeButton;
 
 	delete lpP->list;
@@ -352,26 +379,29 @@ void logProviderMsgTreat(LogProvider* lpP)
 		lpP->connectionClosed();
 	else if (code == ss::Message::Hello)
 	{
-		ss::Message::HelloData   hello;
 		ss::Message::HelloData*  helloP = (ss::Message::HelloData*) dataP;
-		int                      s;
 
-		if (type != ss::Message::Msg)
-			LM_X(1, ("Received a Hello ack ..."));			
+		logProviderNameSet(lpP, helloP->name, helloP->ip);
 
-		logProviderNameSet(lpP, helloP->name);
+		if (type == ss::Message::Msg)
+		{
+			ss::Message::HelloData   hello;
+			int                      s;
 
-		hello.type     = ss::Endpoint::LogServer;
-		hello.workers  = 0;
-		hello.port     = LOG_SERVER_PORT;
-		hello.coreNo   = -1;
-		hello.workerId = -1;
+			hello.type     = ss::Endpoint::LogServer;
+			hello.workers  = 0;
+			hello.port     = LOG_SERVER_PORT;
+			hello.coreNo   = -1;
+			hello.workerId = -1;
 
-		strncpy(hello.name,   progName,     sizeof(hello.name));
-		strncpy(hello.ip,     "IP",         sizeof(hello.ip));
-		strncpy(hello.alias,  "logServer",  sizeof(hello.alias));
-
-		s = iomMsgSend(lpP->fd, "connectingProcess", "logServer", ss::Message::Hello, ss::Message::Ack, &hello, sizeof(hello));
+			strncpy(hello.name,   progName,     sizeof(hello.name));
+			strncpy(hello.ip,     ipGet(),      sizeof(hello.ip));
+			strncpy(hello.alias,  "logServer",  sizeof(hello.alias));
+			
+			s = iomMsgSend(lpP->fd, "connectingProcess", "logServer", ss::Message::Hello, ss::Message::Ack, &hello, sizeof(hello));
+		}
+		else
+			LM_M(("Received a Hello Ack - logProvider updated"));
 	}
 	else if (code == ss::Message::LogLine)
 	{

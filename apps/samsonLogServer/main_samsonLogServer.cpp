@@ -101,6 +101,52 @@ QLabel*          idleLabel  = NULL;
 
 /* ****************************************************************************
 *
+* wordClean - to be removed when LogServer uses Network
+*/
+static char* wordClean(char* str)
+{
+	char* endP;
+
+	while ((*str == ' ') || (*str == '\t'))
+		++str;
+
+	endP = str;
+	while ((*endP != 0) && (*endP != ' ') && (*endP != '\t'))
+		++endP;
+	*endP = 0;
+
+	return str;
+}
+
+
+
+/* ****************************************************************************
+*
+* ipGet - to be removed when LogServer uses Network
+*/
+char* ipGet(void)
+{
+	char  line[80];
+	char* ipP = (char*) "II.PP";
+	FILE* fP;
+	
+	fP = popen("ifconfig | grep \"inet addr:\" | awk -F: '{ print $2 }' | awk '{ print $1 }'", "r");
+	if (fgets(line, sizeof(line), fP) != NULL)
+	{
+		if (line[strlen(line) - 1] == '\n')
+			line[strlen(line) - 1] = 0;
+		ipP = wordClean(line);
+	}
+
+	fclose(fP);
+
+	return strdup(ipP);
+}
+
+
+
+/* ****************************************************************************
+*
 * Accepter - 
 */
 class Accepter : public QObject
@@ -202,7 +248,23 @@ protected:
 				if (fd == -1)
 					LM_E(("iomAccept: %s", strerror(errno)));
 				else
+				{
+					ss::Message::HelloData   hello;
+
+					hello.type     = ss::Endpoint::LogServer;
+					hello.workers  = 0;
+					hello.port     = LOG_SERVER_PORT;
+					hello.coreNo   = -1;
+					hello.workerId = -1;
+
+					strncpy(hello.name,   progName,     sizeof(hello.name));
+					strncpy(hello.ip,     ipGet(),      sizeof(hello.ip));
+					strncpy(hello.alias,  "logServer",  sizeof(hello.alias));
+
+					iomMsgSend(fd, "connectingProcess", "logServer", ss::Message::Hello, ss::Message::Msg, &hello, sizeof(hello));
 					logProviderAdd("noname", ip, fd);
+					// Perhaps I should wait to add provider until Hello Ack is received ...
+				}
 			}
 			else
 			{

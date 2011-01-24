@@ -268,6 +268,7 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 				LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
 			else
 			{
+				iAmReady = true;
 				if (readyReceiver)
 					readyReceiver->ready("unable to connect to controller");
 			}
@@ -372,7 +373,7 @@ void Network::initAsSamsonController(int port, int workers)
 	if (fd == -1)
 		LM_XP(1, ("error opening web service listen socket"));
 
-	endpointAdd(fd, fd, "Web Listener", "Weblistener", 0, Endpoint::WebListener, "localhost", WEB_SERVICE_PORT);
+	endpointAdd("Controller adding web listener", fd, fd, "Web Listener", "Weblistener", 0, Endpoint::WebListener, "localhost", WEB_SERVICE_PORT);
 }
 
 
@@ -706,7 +707,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 
 			snprintf(alias, sizeof(alias), "%sSender", ep->name.c_str());
 			LM_W(("Don't forget to remove this fictive endpoint when a real endpoint restarts ..."));
-			endpointAdd(-1, -1, "Sender", alias, 0, Endpoint::ThreadedSender, "", 0);
+			endpointAdd("fictive Sender endpoint", -1, -1, "Sender", alias, 0, Endpoint::ThreadedSender, "", 0);
 			pthread_create(&ep->senderTid, NULL, senderThread, ep);
 			LM_W(("This usleep to be removed some day ..."));
 			usleep(1000);
@@ -779,9 +780,12 @@ bool Network::ready()
 *
 * Network::endpointListShow - 
 */
-void Network::endpointListShow(void)
+void Network::endpointListShow(const char* why)
 {
 	int ix;
+
+	LM_F((""));
+	LM_F(("----------- Endpoint List (%s) -----------", why));
 
 	for (ix = 0; ix < Endpoints; ix++)
 	{
@@ -813,6 +817,8 @@ void Network::endpointListShow(void)
 			  endpoint[ix]->wMbps,
 			  endpoint[ix]->wAccMbps));
 	}
+
+    LM_F(("--------------------------------"));
 }
 
 
@@ -844,6 +850,7 @@ void Network::endpointListShow(void)
 */
 Endpoint* Network::endpointAdd
 (
+	const char*      why,
 	int              rFd,
 	int              wFd,
 	const char*      name,
@@ -858,7 +865,7 @@ Endpoint* Network::endpointAdd
 {
 	int ix;
 
-	LM_T(LMT_ENDPOINT, ("Adding endpoint '%s' of type '%s' for fd %d (alias: '%s')", name, me->typeName(type), rFd, alias));
+	LM_M(("%s: adding endpoint '%s' of type '%s' for fd %d (alias: '%s')", why, name, me->typeName(type), rFd, alias));
 
 	switch (type)
 	{
@@ -866,7 +873,7 @@ Endpoint* Network::endpointAdd
 	case Endpoint::CoreWorker:
 	case Endpoint::Unknown:
 	case Endpoint::Listener:
-		LM_X(1, ("bad type: %d", type));
+		LM_X(1, ("bad type: %d (%s)", type, me->typeName(type)));
 		return NULL;
 
 	case Endpoint::Controller:
@@ -1000,13 +1007,11 @@ Endpoint* Network::endpointAdd
 
 				if (type == Endpoint::LogServer)
 				{
-					LM_M(("Endpoint::LogServer"));
 					logServer = endpoint[ix];
-					LM_M(("Endpoint::LogServer"));
 					lmOutHookSet(logHookFunction);
-					LM_M(("Endpoint::LogServer"));
 				}
 
+				endpointListShow("Added endpoint");
 				return endpoint[ix];
 			}
 		}
@@ -1351,7 +1356,7 @@ void Network::webServiceAccept(Endpoint* ep)
 	}
 	else
 	{
-		endpointAdd(fd, fd, "Web Worker", "Webworker", 0, Endpoint::WebWorker, hostName, 0);
+		endpointAdd("Accepted incoming web service request", fd, fd, "Web Worker", "Webworker", 0, Endpoint::WebWorker, hostName, 0);
 		ep->msgsIn += 1;
 	}
 }
@@ -1558,7 +1563,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		   LM_X(1, ("pipe: %s", strerror(errno)));
 		
 		snprintf(alias, sizeof(alias), "%sTreater", ep->name.c_str());
-		newEpP = endpointAdd(fdPair[0], -1, "Reader/Treater", alias, 0, Endpoint::ThreadedReader, "", 0);
+		newEpP = endpointAdd("starting treater thread", fdPair[0], -1, "Reader/Treater", alias, 0, Endpoint::ThreadedReader, "", 0);
 		newEpP->state = Endpoint::Connected;
 
 		paramsP->diss        = this;
@@ -1811,7 +1816,14 @@ void Network::msgTreat(void* vP)
 
 		hello   = (Message::HelloData*) dataP;
 
-		helloEp = endpointAdd(ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, (Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo, ep);
+		LM_M(("Got 'Hello' from ep '%s', fd %d", ep->name.c_str(), ep->rFd));
+
+		if (msgType == Message::Msg)
+			helloEp = endpointAdd("Got a Hello Message", ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, (Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo, ep);
+		else if (msgType == Message::Ack)
+			helloEp = endpointAdd("Got a Hello Ack", ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, (Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo, ep);
+		else
+			LM_X(1, ("message isn't a Msg nor an Ack ..."));
 
 		if (helloEp == NULL)
 		{
@@ -1978,7 +1990,7 @@ void Network::msgTreat(void* vP)
 					{
 						Endpoint* ep;
 
-						ep = endpointAdd(workerFd, workerFd, (char*) "to be worker", NULL, 0, Endpoint::Temporal, epP->ip, epP->port);
+						ep = endpointAdd("Just connected to a Worker", workerFd, workerFd, (char*) "to be worker", NULL, 0, Endpoint::Temporal, epP->ip, epP->port);
 						if (ep != NULL)
 						{
 							ep->state = Endpoint::Connected;
@@ -1992,9 +2004,9 @@ void Network::msgTreat(void* vP)
 		}
 
 		iAmReady = true;
-
 		if (readyReceiver != NULL)
 			readyReceiver->ready("All endpoints added to endpoint vector");
+
 		break;
 
 	case Message::Alarm:
@@ -2040,12 +2052,25 @@ void Network::msgTreat(void* vP)
 
 
 
+static bool stopWhenReady = false;
+/* ****************************************************************************
+*
+* Network::runUntilReady - 
+*/
+void Network::runUntilReady(void)
+{
+	stopWhenReady = true;
+	run();
+}
+
+
+
 #define PeriodForSendingWorkerStatusToController  10
 /* ****************************************************************************
 *
 * run
 */
-void Network::run()
+void Network::run(void)
 {
 	int             fds;
 	fd_set          rFds;
@@ -2053,6 +2078,9 @@ void Network::run()
 	time_t          now   = 0;
 	time_t          then  = time(NULL);
 	int             max;
+
+	if (iAmReady && stopWhenReady)
+		return;
 
 	while (1)
 	{
@@ -2096,7 +2124,7 @@ void Network::run()
 						workerFd = iomConnect(endpoint[ix]->ip.c_str(), endpoint[ix]->port);
 						if (workerFd != -1)
 						{
-							endpointAdd(workerFd, workerFd, (char*) "Reconnecting worker", NULL, 0, Endpoint::Temporal,
+							endpointAdd("reconnecting to dead worker", workerFd, workerFd, (char*) "Reconnecting worker", NULL, 0, Endpoint::Temporal,
 										endpoint[ix]->ip.c_str(),
 										endpoint[ix]->port);
 							endpoint[ix]->state = Endpoint::Reconnecting;
@@ -2111,7 +2139,7 @@ void Network::run()
 						{
 							Endpoint* ep;
 
-							ep = endpointAdd(workerFd, workerFd, (char*) "New Worker", NULL, 0, Endpoint::Temporal,
+							ep = endpointAdd("reconnecting to Disconnected worker", workerFd, workerFd, (char*) "New Worker", NULL, 0, Endpoint::Temporal,
 											 endpoint[ix]->ip.c_str(),
 											 endpoint[ix]->port);
 							if (ep != NULL)
@@ -2164,7 +2192,7 @@ void Network::run()
 
 			if (showSelectList)
 			{
-				endpointListShow();
+				endpointListShow("periodic");
 
 				if (endpointUpdateReceiver != NULL)
 					endpointUpdateReceiver->endpointUpdate(NULL, Endpoint::SelectToBeCalled, "Select to be called");
@@ -2202,7 +2230,7 @@ void Network::run()
 				else
 				{
 					std::string  s   = std::string("tmp:") + std::string(hostName);
-					Endpoint*    ep  = endpointAdd(fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
+					Endpoint*    ep  = endpointAdd("'run' just accepted an incoming connection", fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
 
 					listener->msgsIn += 1;
 					LM_M(("sending hello to newly accepted endpoint"));
@@ -2231,6 +2259,9 @@ void Network::run()
 				}
 			}
 		}
+
+		if (iAmReady && stopWhenReady)
+			return;
 	}
 }
 
@@ -2295,7 +2326,7 @@ int Network::poll(void)
 		else
 		{
 			std::string  s   = std::string("tmp:") + std::string(hostName);
-			Endpoint*    ep  = endpointAdd(fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
+			Endpoint*    ep  = endpointAdd("'poll' just accepted an incoming connection", fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
 
 			listener->msgsIn += 1;
 			LM_M(("sending hello to newly accepted endpoint"));
@@ -2394,7 +2425,7 @@ void Network::fdSet(int fd, const char* name, const char* alias)
 {
 	Endpoint* ep;
 
-	ep = endpointAdd(fd, -1, name, alias, 0, Endpoint::Fd, "FD", 0);
+	ep = endpointAdd("setting a file descriptor", fd, -1, name, alias, 0, Endpoint::Fd, "FD", 0);
 	LM_M(("setting state to Endpoint::Connected for fd %d", fd));
 	ep->state = Endpoint::Connected;
 }	
@@ -2409,9 +2440,10 @@ void Network::logServerSet(char* logServerHost)
 {
 	int fd;
 
+	LM_M(("Connecting to Log Server at '%s', port %d", logServerHost, LOG_SERVER_PORT));
 	fd = iomConnect(logServerHost, LOG_SERVER_PORT);
 	if (fd != -1)
-		endpointAdd(fd, fd, "logServer", "logServer", 0, Endpoint::LogServer, logServerHost, LOG_SERVER_PORT);
+		endpointAdd("just connected to logServer", fd, fd, "logServer", "logServer", 0, Endpoint::LogServer, logServerHost, LOG_SERVER_PORT);
 }
 
 

@@ -33,7 +33,6 @@ SET (SOURCES
 	workerStatus.cpp
 	Alarm.cpp
 	Misc.cpp
-	EndpointMgr.cpp
 	easyzlib.c
 )
 

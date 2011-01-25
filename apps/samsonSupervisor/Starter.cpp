@@ -15,6 +15,8 @@
 
 #include "globals.h"            // networkP
 #include "actions.h"            // spawnerConnect, spawnerDisconnect
+#include "ConfigWindow.h"       // ConfigWindow
+#include "Popup.h"              // Popup
 #include "Starter.h"            // Own interface
 
 
@@ -84,6 +86,44 @@ const char* Starter::typeName(void)
 
 /* ****************************************************************************
 *
+* Starter::check
+*/
+void Starter::check(void)
+{
+	if (endpoint == NULL)
+		LM_W(("NULL endpoint"));
+	else
+		LM_M(("endpoint state: '%s'", endpoint->stateName()));
+
+	if ((endpoint != NULL) && (endpoint->state == ss::Endpoint::Connected))
+		checkState = Qt::Checked;
+	else
+		checkState = Qt::Unchecked;
+
+
+	if (endpoint != NULL)
+	{
+		LM_T(LMT_CHECK, ("%s %s-Starter '%s' (endpoint %p - '%s' at '%s')",
+						 (checkState == Qt::Checked)? "Checking" : "Unchecking",
+						 typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
+	}
+	else
+	{
+		LM_T(LMT_CHECK, ("%s %s-Starter '%s' (NULL endpoint)",
+						 (checkState == Qt::Checked)? "Checking" : "Unchecking",
+						 typeName(), name));
+	}
+
+	if (checkbox != NULL)
+		checkbox->setCheckState(checkState);
+	else
+		LM_W(("NULL checkbox"));
+}
+
+
+
+/* ****************************************************************************
+*
 * Starter::spawnerClicked
 */
 void Starter::spawnerClicked(void)
@@ -133,25 +173,13 @@ void Starter::processClicked(void)
 
 	if (checkbox->checkState() == Qt::Checked)
 	{
-		if (connected == true)
-			LM_W(("Already started process '%s' in '%s'", process->name, process->host));
-		else
-		{
-			LM_M(("calling processStart"));
-			processStart(process, this);
-			connected = true;
-		}
+		LM_M(("calling processStart - what if process already running ... ?"));
+		processStart(process, this);
 	}
 	else if (checkbox->checkState() == Qt::Unchecked)
 	{
-		if (connected == false)
-			LM_W(("process '%s' in '%s' not running", process->name, process->host));
-		else
-		{
-			LM_M(("calling processKill"));
-			processKill(process, this);
-			connected = false;
-		}
+		LM_M(("calling processKill"));
+		processKill(process, this);
 	}
 }
 
@@ -159,76 +187,17 @@ void Starter::processClicked(void)
 
 /* ****************************************************************************
 *
-* Starter::forceCheck
+* Starter::configureClicked
 */
-void Starter::forceCheck(void)
-{
-	if (endpoint != NULL)
-		// LM_T(LMT_CHECK, ("Checking %s-Starter '%s' (endpoint %p - '%s' at '%s')", typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
-		LM_M(("Checking %s-Starter '%s' (endpoint %p - '%s' at '%s')", typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
-	else
-		// LM_T(LMT_CHECK, ("Checking %s-Starter '%s' (NULL endpoint)", typeName(), name));
-		LM_M(("Checking %s-Starter '%s' (NULL endpoint)", typeName(), name));
-
-	checkState = Qt::Checked;
-	connected  = true;
-
-	if (checkbox != NULL)
-		checkbox->setCheckState(checkState);
-	else
-		LM_W(("NULL checkbox"));
-}
-
-
-
-/* ****************************************************************************
-*
-* Starter::forceUncheck
-*/
-void Starter::forceUncheck(void)
-{
-	if (endpoint != NULL)
-		// LM_T(LMT_CHECK, ("Unchecking %s-Starter '%s' (endpoint %p - '%s' at '%s')", typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
-		LM_M(("Unchecking %s-Starter '%s' (endpoint %p - '%s' at '%s')", typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
-	else
-		// LM_T(LMT_CHECK, ("Unchecking %s-Starter '%s' (NULL endpoint)", typeName(), name));
-		LM_M(("Unchecking %s-Starter '%s' (NULL endpoint)", typeName(), name));
-
-	checkState = Qt::Unchecked;
-	connected  = false;
-
-	if (checkbox != NULL)
-		checkbox->setCheckState(checkState);
-	else
-		LM_W(("NULL checkbox"));
-}
-
-
-
-/* ****************************************************************************
-*
-* Starter::check
-*/
-void Starter::check(void)
+void Starter::configureClicked(void)
 {
 	if (endpoint == NULL)
-		LM_W(("NULL endpoint"));
+	{
+		char info[128];
+
+		snprintf(info, sizeof(info), "%s is not connected", name);
+		new Popup("Error", info);
+	}
 	else
-		LM_M(("endpoint state: '%s'", endpoint->stateName()));
-
-	if ((endpoint != NULL) && (endpoint->state == ss::Endpoint::Connected))
-		forceCheck();
-	else
-		forceUncheck();
-}
-
-
-
-/* ****************************************************************************
-*
-* Starter::checked
-*/
-bool Starter::checked(void)
-{
-	return connected;
+		new ConfigWindow(endpoint);
 }

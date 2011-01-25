@@ -353,14 +353,8 @@ int main(int argC, const char *argV[])
 	// this is simple enough ...
 
 	pid = fork();
-	printf("fork returned %d for process %d\n", pid, getpid());
 	if (pid != 0)
-	{
-		printf("process %d (father) dies\n", getpid());
 		exit(0);
-	}
-
-	printf("process %d (son) continues\n", getpid());
 
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);

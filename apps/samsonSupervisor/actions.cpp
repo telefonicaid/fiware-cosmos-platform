@@ -207,9 +207,6 @@ void processStart(Process* processP, Starter* starter)
 	int                     s;
 	char*                   alias = (char*) "no_alias";
 
-	if (starter->checked())
-		LM_RVE(("Not starting process '%s' in '%s' - already started", processP->name, processP->host));
-
 	LM_M(("starting process '%s' in '%s' with %d parameters", processP->name, processP->host, processP->argCount));
 
 	LM_TODO(("Lookup starter and don't start if already started!"));

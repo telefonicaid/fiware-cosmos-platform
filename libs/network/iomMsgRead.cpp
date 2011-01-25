@@ -15,6 +15,7 @@
 #include "networkTraceLevels.h" // LMT_NWRUN, ...
 
 #include "Message.h"            // MessageType, Code, etc.
+#include "Endpoint.h"           // Endpoint
 #include "Packet.h"             // Packet
 #include "Buffer.h"             // Buffer
 #include "MemoryManager.h"      // MemoryManager

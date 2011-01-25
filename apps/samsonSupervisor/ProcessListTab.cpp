@@ -42,10 +42,11 @@
 */
 ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(parent)
 {
-	Starter**     starterV;
-	unsigned int  starters;
-	int           spawnerColumn = 0;
-	int           processColumn = 1;
+	Starter**           starterV;
+	unsigned int        starters;
+	int                 spawnerColumn = 0;
+	int                 processColumn = 3;
+	const unsigned int  Columns       = 5;
 
 	mainLayout = new QGridLayout(parent);
 	setLayout(mainLayout);
@@ -68,13 +69,15 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 			continue;
 
 		LM_T(LMT_PROCESS_LIST_TAB, ("Creating checkbox for '%s'", starterV[ix]->name));
-		starterV[ix]->checkbox = new QCheckBox(QString(starterV[ix]->name), starterV[ix]);
+		starterV[ix]->checkbox     = new QCheckBox(QString(starterV[ix]->name), starterV[ix]);
+		starterV[ix]->configButton = new QPushButton("Configure");
 
 		if (starterV[ix]->type == Starter::SpawnerConnecter)
 		{
 			LM_T(LMT_PROCESS_LIST_TAB, ("Creating checkbox for spawner-starter '%s'", starterV[ix]->name));
 			starterV[ix]->checkbox->connect(starterV[ix]->checkbox, SIGNAL(clicked()), starterV[ix], SLOT(spawnerClicked()));
-			mainLayout->addWidget(starterV[ix]->checkbox, ix + 1, spawnerColumn);
+			mainLayout->addWidget(starterV[ix]->checkbox,     ix + 1, spawnerColumn);
+			mainLayout->addWidget(starterV[ix]->configButton, ix + 1, spawnerColumn + 1);
 
 			starterV[ix]->endpoint = networkP->endpointLookup(ss::Endpoint::Spawner, starterV[ix]->spawner->host);
 		}
@@ -82,7 +85,9 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 		{
 			LM_T(LMT_PROCESS_LIST_TAB, ("Creating checkbox for process-starter '%s'", starterV[ix]->name));
 			starterV[ix]->checkbox->connect(starterV[ix]->checkbox, SIGNAL(clicked()), starterV[ix], SLOT(processClicked()));
-			mainLayout->addWidget(starterV[ix]->checkbox, ix + 1, processColumn);
+
+			mainLayout->addWidget(starterV[ix]->checkbox,     ix + 1, processColumn);
+			mainLayout->addWidget(starterV[ix]->configButton, ix + 1, processColumn + 1);
 
 			if (strcmp(starterV[ix]->process->name, "Controller") == 0)
 				starterV[ix]->endpoint = networkP->endpointLookup(ss::Endpoint::Controller, starterV[ix]->process->host);
@@ -92,6 +97,7 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 		else
 			LM_X(1, ("bad type '%d' for Starter", starterV[ix]->type));
 
+		starterV[ix]->configButton->connect(starterV[ix]->configButton, SIGNAL(clicked()), starterV[ix], SLOT(configureClicked()));
 		starterV[ix]->check();
 	}
 
@@ -122,6 +128,9 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 
 	for (unsigned int ix = 0; ix < ROWS; ix++)
 		mainLayout->setRowMinimumHeight(ix, 40);
+
+	for (unsigned int ix = 0; ix < Columns; ix++)
+		mainLayout->setColumnMinimumWidth(ix, 100);
 }
 
 

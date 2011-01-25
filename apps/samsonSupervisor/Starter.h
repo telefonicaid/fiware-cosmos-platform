@@ -13,6 +13,7 @@
 #include <QObject>
 #include <QBoxLayout>
 #include <QCheckBox>
+#include <QPushButton>
 
 #include "Endpoint.h"           // Endpoint
 #include "Spawner.h"            // Spawner
@@ -38,13 +39,11 @@ public:
 public:
 	Starter(Spawner* spawnerP);
 	Starter(Process* processP);
+
 	void init(const char* name, Type type);
 
 	const char*     typeName(void);
-	void            forceCheck(void);
-	void            forceUncheck(void);
 	void            check(void);
-	bool            checked(void);
 
 	Spawner*        spawner;
 	Process*        process;
@@ -54,13 +53,14 @@ public:
 	Type            type;
 	char*           name;
 	Qt::CheckState  checkState;
-	bool            connected;
 
 	QCheckBox*      checkbox;
+	QPushButton*    configButton;
 
 private slots:
 	void spawnerClicked();
 	void processClicked();
+	void configureClicked();
 };
 
 #endif

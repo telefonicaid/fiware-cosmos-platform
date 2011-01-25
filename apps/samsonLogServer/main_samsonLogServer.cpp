@@ -21,6 +21,7 @@
 #include <QTimerEvent>
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // LMT_* 
 #include "parseArgs.h"          // parseArgs
 
 #include "ports.h"              // LOG_SERVER_PORT
@@ -151,151 +152,6 @@ char* ipGet(void)
 
 
 
-#if 0
-/* ****************************************************************************
-*
-* Accepter - 
-*/
-class Accepter : public QObject
-{
-public:
-	int             listenFd;
-	unsigned short  port;
-
-	Accepter(int fd, unsigned short port)
-	{
-		this->listenFd = fd;
-		this->port     = port;
-
-		LM_M(("Initialized Accepter for fd %d (port %d)", this->listenFd, this->port));
-		startTimer(50);  // 50 millisecond timer
-	};
-
-protected:
-	void timerEvent(QTimerEvent* e)
-	{
-		struct timeval          tv;
-		int                     fds;
-		fd_set                  rFds;
-		unsigned int            ix;
-		LogProvider**           lpV;
-		unsigned int            providers;
-		int                     max;
-		static struct timeval   lastTime = { 0, 0 };
-		struct timeval          now;
-		bool                    showList = false;
-
-		gettimeofday(&now, NULL);
-		if (now.tv_sec - lastTime.tv_sec >= 3)
-		{
-			lastTime = now;
-			showList = true;
-		}
-
-		while (1)
-		{
-
-			tv.tv_sec  = 0;
-			tv.tv_usec = 0;
-
-			if (showList)
-				LM_F((""));
-			max = 0;
-			do
-			{
-				lpV       = logProviderListGet();
-				providers = logProviderMaxGet();
-
-				if (lpV == NULL)
-					LM_RVE(("No providers found"));
-
-				FD_ZERO(&rFds);
-
-				FD_SET(listenFd, &rFds);
-				max = listenFd;
-
-				if (showList)
-					LM_F(("+ fd: %02d (listen socket)", listenFd));
-
-				for (ix = 0; ix < providers; ix++)
-				{
-					if (lpV[ix] == NULL)
-						continue;
-
-					if (lpV[ix]->fd == -1)
-						continue;
-
-					FD_SET(lpV[ix]->fd, &rFds);
-					max = MAX(max, lpV[ix]->fd);
-
-					if (showList)
-						LM_F(("+ %02d (%s@%s)", lpV[ix]->fd, lpV[ix]->name, lpV[ix]->host));
-				}
-
-				fds = select(max + 1, &rFds, NULL, NULL, &tv);
-			} while ((fds == -1) && (errno == EINTR));
-
-			if (showList)
-			{
-				LM_M(("---------------------- %d fds ready --------------------", fds));
-				LM_M((""));
-			}
-
-			if (fds == -1)
-				LM_E(("select: %s", strerror(errno)));
-			else if (fds == 0)
-				return;
-			else if (FD_ISSET(listenFd, &rFds))
-			{
-				char  ip[128];
-				int   fd;
-
-				LM_M(("calling iomAccept(listenFd == %d)", listenFd));
-				fd = iomAccept(listenFd, ip, sizeof(ip));
-				if (fd == -1)
-					LM_E(("iomAccept: %s", strerror(errno)));
-				else
-				{
-					ss::Message::HelloData   hello;
-
-					hello.type     = ss::Endpoint::LogServer;
-					hello.workers  = 0;
-					hello.port     = LOG_SERVER_PORT;
-					hello.coreNo   = -1;
-					hello.workerId = -1;
-
-					strncpy(hello.name,   progName,     sizeof(hello.name));
-					strncpy(hello.ip,     ipGet(),      sizeof(hello.ip));
-					strncpy(hello.alias,  "logServer",  sizeof(hello.alias));
-
-					iomMsgSend(fd, "connectingProcess", "logServer", ss::Message::Hello, ss::Message::Msg, &hello, sizeof(hello));
-					logProviderAdd(NULL, "noname", ip, fd);
-					// Perhaps I should wait to add provider until Hello Ack is received ...
-				}
-			}
-			else
-			{
-				for (ix = 0; ix < providers; ix++)
-				{
-					if (lpV[ix] == NULL)
-						continue;
-
-					if (FD_ISSET(lpV[ix]->fd, &rFds))
-					{
-						FD_CLR(lpV[ix]->fd, &rFds);
-						logProviderMsgTreat(lpV[ix]);
-					}
-				}
-			}
-
-			showList = false;
-		}
-	}
-};
-#endif
-
-
-
 /* ****************************************************************************
 *
 * logWinCreate - 
@@ -365,42 +221,42 @@ int main(int argC, const char *argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	LM_F(("=============== Command line arguments:"));
+	LM_T(LmtInit, ("Command line arguments:"));
 	for (int ix = 0; ix < argC; ix++)
-		LM_F(("===============   %02d: '%s'", ix, argV[ix]));
+		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
-	LM_M(("=============== Initializing log provider list"));
+	LM_T(LmtInit, ("Initializing log provider list"));
 	logProviderListInit(50);
 	logWinCreate(&app);
 
-	LM_M(("=============== creating Network"));
+	LM_T(LmtInit, ("creating Network"));
 	networkP        = new ss::Network(endpoints, 10); // 10 workers by default
 
-	LM_M(("=============== creating SamsonLogServer"));
+	LM_T(LmtInit, ("creating SamsonLogServer"));
 	samsonLogServer = new SamsonLogServer();
 
-	LM_M(("=============== setting up Network callbacks"));
+	LM_T(LmtInit, ("setting up Network callbacks"));
     networkP->setEndpointUpdateReceiver(samsonLogServer);
     networkP->setReadyReceiver(samsonLogServer);
     networkP->setDataReceiver(samsonLogServer);
 
-	LM_M(("=============== initializing Network"));
+	LM_T(LmtInit, ("initializing Network"));
 	networkP->init(ss::Endpoint::LogServer, "LogServer", port, controller);
 
 	if (strcmp(controller, (char*) NOC) != 0)
 	{
 		int fd;
 
-		LM_M(("=============== Connecting to controller at '%s'", controller));
+		LM_T(LmtInit, ("Connecting to controller at '%s'", controller));
 		fd = iomConnect(controller, CONTROLLER_PORT);
-		LM_M(("=============== Adding endpoint for controller"));
+		LM_T(LmtInit, ("Adding endpoint for controller"));
 		networkP->endpointAdd("Connecting to controller", fd, fd, "Controller", "controller", 0, ss::Endpoint::Controller, controller, CONTROLLER_PORT);
-		LM_M(("=============== Added endpoint for controller"));
+		LM_T(LmtInit, ("Added endpoint for controller"));
 	}
 	else
-		LM_M(("=============== Not connecting to Controller"));
+		LM_T(LmtInit, ("Not connecting to Controller"));
 
-	LM_M(("=============== Number of spawners: %d", (int) spawnerList[0]));
+	LM_T(LmtInit, ("Number of spawners: %d", (int) spawnerList[0]));
 	if ((int) spawnerList[0] != 0)
 	{
 		int ix;
@@ -409,29 +265,29 @@ int main(int argC, const char *argV[])
 		{
 			int fd;
 
-			LM_M(("=============== Connecting to spawner %d: '%s'", ix, spawnerList[ix]));
+			LM_T(LmtInit, ("Connecting to spawner %d: '%s'", ix, spawnerList[ix]));
 			fd = iomConnect(spawnerList[ix], SPAWNER_PORT);
 			if (fd != -1)
 			{
 				ss::Endpoint* ep;
 
-				LM_M(("=============== Adding endpoint for spawner '%s'", spawnerList[ix]));
+				LM_T(LmtInit, ("Adding endpoint for spawner '%s'", spawnerList[ix]));
 				ep = networkP->endpointAdd("Connecting to spawner", fd, fd, "Spawner", "spawner", 0, ss::Endpoint::Temporal, spawnerList[ix], SPAWNER_PORT);
-				LM_M(("=============== Adding logProvider for spawner '%s'", spawnerList[ix]));
+				LM_T(LmtInit, ("Adding logProvider for spawner '%s'", spawnerList[ix]));
 				logProviderAdd(ep, "spawner", spawnerList[ix], fd);
 			}
 			else
-				LM_M(("=============== Error connecting to spawner %d: '%s'", ix, spawnerList[ix]));
+				LM_T(LmtInit, ("Error connecting to spawner %d: '%s'", ix, spawnerList[ix]));
 		}
-		LM_M(("=============== Connected to all spawners"));
+		LM_T(LmtInit, ("Connected to all spawners"));
 	}
 	else
-		LM_M(("=============== Not connecting to Spawners"));
+		LM_T(LmtInit, ("Not connecting to Spawners"));
 
 
 
 #if 0
-	LM_M(("=============== Number of workers: %d", (int) workerList[0]));
+	LM_T(LmtInit, ("Number of workers: %d", (int) workerList[0]));
 	if ((int) workerList[0] != 0)
 	{
 		int ix;
@@ -440,7 +296,7 @@ int main(int argC, const char *argV[])
 		{
 			int fd;
 
-			LM_M(("=============== Connecting to worker %d: '%s'", ix, workerList[ix]));
+			LM_T(LmtInit, ("Connecting to worker %d: '%s'", ix, workerList[ix]));
 			fd = iomConnect(workerList[ix], WORKER_PORT);
 			if (fd != -1)
 				logProviderAdd(NULL, "worker", workerList[ix], fd);
@@ -449,12 +305,12 @@ int main(int argC, const char *argV[])
 #endif
 
 #if 0
-	LM_M(("=============== calling networkP->runUntilReady"));
+	LM_T(LmtInit, ("calling networkP->runUntilReady"));
 	networkP->runUntilReady();
-	LM_M(("=============== back from networkP->runUntilReady"));
+	LM_T(LmtInit, ("back from networkP->runUntilReady"));
 #endif
 
-	LM_M(("=============== Letting control to QT"));
+	LM_T(LmtInit, ("Letting control to QT"));
 	app.exec();
 
 	return 0;

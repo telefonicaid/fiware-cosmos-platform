@@ -15,10 +15,11 @@
 *
 * traceLevelName - 
 */
-char* traceLevelName(int level)
+char* traceLevelName(TraceLevels level)
 {
 	switch (level)
 	{
+	case LmtInit:                        return (char*) "Initialization, especially in main";
 	case LMT_NWRUN:                      return (char*) "Nwrun";
 	case LMT_SELECT:                     return (char*) "Select";
 	case LMT_FDS:                        return (char*) "Fds";
@@ -36,10 +37,10 @@ char* traceLevelName(int level)
 	case LMT_RECONNECT:                  return (char*) "Reconnect";
 	case LMT_DELILAH:                    return (char*) "Delilah";
 	case LMT_STAT:                       return (char*) "Stat";
-	case LMT_EP:                         return (char*) "Ep";
+	case LMT_EP:                         return (char*) "Endpoints";
 	case LMT_RESTART:                    return (char*) "Restart";
-	case LMT_COREWORKER:                 return (char*) "Coreworker";
-	case LMT_MSGTREAT:                   return (char*) "Msgtreat";
+	case LMT_COREWORKER:                 return (char*) "Core Worker";
+	case LMT_MSGTREAT:                   return (char*) "Msg Treat";
 	case LMT_JOB:                        return (char*) "Job";
 	case LMT_TIMEOUT:                    return (char*) "Timeout";
 	case LMT_FORWARD:                    return (char*) "Forward";
@@ -47,11 +48,12 @@ char* traceLevelName(int level)
 	case LMT_PA:                         return (char*) "Pa";
 	case LMT_FILE:                       return (char*) "File";
 	case LMT_TASK:                       return (char*) "Task";
-	case LMT_SAMSON_WORKER:              return (char*) "SamsonWorker";
+	case LMT_SAMSON_WORKER:              return (char*) "Samson Worker";
 	case LMT_WINIT:                      return (char*) "Winit";
-	case LMT_LOG_PROVIDER_LIST:          return (char*) "LogProviderList";
-	case LMT_SAMSON_DEMO:                return (char*) "SamsonDemo";
-	case LMT_CONFIG_FILE:                return (char*) "ConfigFile";
+	case LmtLogProvider:                 return (char*) "Log Provider";
+	case LmtLogProviderList:             return (char*) "Log Provider List";
+	case LMT_SAMSON_DEMO:                return (char*) "Samson Demo";
+	case LMT_CONFIG_FILE:                return (char*) "Config File";
 	case LMT_CHECK:                      return (char*) "Check";
 	case LMT_STARTER:                    return (char*) "Starter";
 	case LMT_PROCESS_LIST:               return (char*) "ProcessList";

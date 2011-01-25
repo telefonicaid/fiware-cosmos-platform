@@ -883,16 +883,15 @@ const char* lmStrerror(LmStatus s)
 */
 LmStatus lmTraceSet(char* levelFormat)
 {
+	INIT_CHECK();
 
-    INIT_CHECK();
+	if (levelFormat == NULL)
+		return LmsOk;
 
-    if (levelFormat == NULL)
-        return LmsOk;
+	subLevels(tLevel, 0, TRACE_LEVELS - 1);
+	traceFix(levelFormat, ADD);
 
-    subLevels(tLevel, 0, TRACE_LEVELS - 1);
-    traceFix(levelFormat, ADD);
-
-    return LmsOk;
+	return LmsOk;
 }
 
 
@@ -911,6 +910,20 @@ LmStatus lmTraceAdd(char* levelFormat)
 	traceFix(levelFormat, ADD);
 
 	return LmsOk;
+}
+
+
+
+/* ****************************************************************************
+*
+* lmTraceLevelSet - 
+*/
+void lmTraceLevelSet(unsigned int level, bool onOff)
+{
+	if (level >= TRACE_LEVELS)
+		return;
+
+	tLevel[level] = onOff;
 }
 
 

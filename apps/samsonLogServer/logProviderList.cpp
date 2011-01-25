@@ -123,7 +123,7 @@ static void logProviderAdd(LogProvider* lpP)
 {
 	unsigned int ix;
 
-	LM_T(LMT_LOG_PROVIDER_LIST, ("Adding logProvider for host '%s'", lpP->host));
+	LM_T(LmtLogProviderList, ("Adding logProvider for host '%s'", lpP->host));
 
 
 
@@ -152,7 +152,7 @@ static void logProviderAdd(LogProvider* lpP)
 
 	logProviderV[ix] = lpP;
 
-	LM_T(LMT_LOG_PROVIDER_LIST, ("LogProvider '%s' at '%s' added", lpP->name, lpP->host));
+	LM_T(LmtLogProviderList, ("LogProvider '%s' at '%s' added", lpP->name, lpP->host));
 
 
 
@@ -330,8 +330,8 @@ LogProvider* logProviderLookup(char* name, char* host)
 		if (logProviderV[ix] == NULL)
 			continue;
 
-		LM_T(LMT_LOG_PROVIDER_LIST, ("[%d] Comparing '%s' '%s' ...", ix, name, host));
-		LM_T(LMT_LOG_PROVIDER_LIST, ("... to '%s' '%s'", logProviderV[ix]->name, logProviderV[ix]->host));
+		LM_T(LmtLogProviderList, ("[%d] Comparing '%s' '%s' ...", ix, name, host));
+		LM_T(LmtLogProviderList, ("... to '%s' '%s'", logProviderV[ix]->name, logProviderV[ix]->host));
 
 		if ((strcmp(logProviderV[ix]->host, host) == 0) &&  (strcmp(logProviderV[ix]->name, name) == 0))
 			return logProviderV[ix];

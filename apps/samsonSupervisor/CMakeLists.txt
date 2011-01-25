@@ -25,6 +25,7 @@ SET (HEADERS_MOC
 	DelilahTab.h
 	LogTab.h
 	ProcessListTab.h
+	ConfigWindow.h
 )
 
 SET (HEADERS
@@ -39,7 +40,6 @@ SET (HEADERS
 	globals.h
 	configFile.h
 	Popup.h
-	ConfigWindow.h
 )
 
 

@@ -19,9 +19,10 @@
 typedef enum TraceLevels
 {
 //
-// Network Trace Levels 21-50
+// Network Trace Levels 20-50
 //
-	LMT_NWRUN       = 21,
+	LmtInit         = 20,
+	LMT_NWRUN,
 	LMT_SELECT,
 	LMT_FDS,
 	LMT_ENDPOINT,
@@ -77,8 +78,8 @@ typedef enum TraceLevels
 //
 // Samson Log Server Trace Levels:  81-90
 //
-	LMT_LOG_PROVIDER_LIST  = 81,
-
+	LmtLogProvider  = 81,
+	LmtLogProviderList,
 
 
 //
@@ -107,6 +108,6 @@ typedef enum TraceLevels
 *
 * traceLevelName - 
 */
-extern char* traceLevelName(int level);
+extern char* traceLevelName(TraceLevels level);
 
 #endif

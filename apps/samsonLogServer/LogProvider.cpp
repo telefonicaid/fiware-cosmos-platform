@@ -71,7 +71,7 @@ void LogProvider::connectionClosed(void)
 */
 void LogProvider::fold(void)
 {
-	LM_M(("Folding/Unfolding Log Provider List"));
+	LM_T(LmtLogProvider, ("Folding/Unfolding Log Provider List"));
 
 	if (folded == true)
 	{
@@ -95,7 +95,7 @@ void LogProvider::fold(void)
 */
 void LogProvider::clear(void)
 {
-	LM_M(("Clearing Log Provider List"));
+	LM_T(LmtLogProvider, ("Clearing Log Provider List"));
 	list->clear();
 }
 
@@ -107,7 +107,7 @@ void LogProvider::clear(void)
 */
 void LogProvider::remove(void)
 {
-	LM_M(("Removing Log Provider List"));
+	LM_T(LmtLogProvider, ("Removing Log Provider List"));
 	logProviderRemove(this);
 }
 

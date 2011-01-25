@@ -45,16 +45,11 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 	QDesktopWidget*           desktop = QApplication::desktop();
 	QDialogButtonBox*         buttonBox;
 	char                      processName[256];
-	QCheckBox*                readsBox;
-	QCheckBox*                writesBox;
-	QCheckBox*                debugBox;
-	QCheckBox*                verboseBox;
 	QPushButton*              sendButton;  // To be included in QDialogButtonBox
 	QLabel*                   traceLevelLabel;
 	QListWidget*              traceLevelList;
 	QFont                     labelFont("Times", 20, QFont::Normal);
 	QFont                     traceFont("Helvetica", 10, QFont::Normal);
-	QListWidgetItem*          traceLevelItem[256];
 	void*                     dataP = NULL;
 	int                       s;
 	ss::Message::Header       header;
@@ -87,7 +82,7 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 	traceLevelList->setFont(traceFont);
 
 	connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-
+	connect(sendButton, SIGNAL(clicked()), this, SLOT(send()));
 	setWindowTitle("Samson Process Configuration");
 
 	layout->addWidget(label,      0, 1, 1, -1);
@@ -106,10 +101,11 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 		char* name;
 		char  levelName[256];
 
-		name = traceLevelName(ix);
+		name = traceLevelName((TraceLevels) ix);
 		if (name == NULL)
 			continue;
 
+		LM_M(("Creating traceLevelItem[%d]", ix));
 		snprintf(levelName, sizeof(levelName), "%s (%d)", name, ix);
 		traceLevelItem[ix] = new QListWidgetItem(levelName);
 		traceLevelList->addItem(traceLevelItem[ix]);
@@ -189,4 +185,31 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 
 	this->show();
 	LM_M(("Leaving"));
+}
+
+
+
+/* ****************************************************************************
+*
+* send - 
+*/
+void ConfigWindow::send(void)
+{
+	ss::Message::ConfigData configData;
+
+	configData.verbose = (verboseBox->checkState() == Qt::Checked)? true : false;
+	configData.debug   = (debugBox->checkState()   == Qt::Checked)? true : false;
+	configData.reads   = (readsBox->checkState()   == Qt::Checked)? true : false;
+	configData.writes  = (writesBox->checkState()  == Qt::Checked)? true : false;
+
+	for (int ix = 0; ix < 256; ix++)
+	{
+		if (traceLevelItem[ix] != NULL)
+			configData.traceLevels[ix] = (traceLevelItem[ix]->checkState() == Qt::Checked)? true : false;
+		else
+			configData.traceLevels[ix] = false;
+	}
+
+	LM_M(("sending ss::Message::ConfigSet message to %s@%s", endpoint->name.c_str(), endpoint->ip.c_str()));
+	iomMsgSend(endpoint, networkP->me, ss::Message::ConfigSet, ss::Message::Ack, &configData, sizeof(configData));
 }

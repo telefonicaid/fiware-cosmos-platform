@@ -1303,6 +1303,14 @@ extern bool lmTraceIsSet(int level);
 
 /* ****************************************************************************
 *
+* lmTraceLevelSet - set a particular level to true/false
+*/
+extern void lmTraceLevelSet(unsigned int level, bool onOff);
+
+
+
+/* ****************************************************************************
+*
 * lmSdGet - 
 */
 int lmSdGet(void);

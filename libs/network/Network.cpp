@@ -314,7 +314,7 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 		controller  = NULL;
 	}
 
-	LM_F(("I am a '%s', my name: '%s', ip: %s", me->typeName(), me->nam(), me->ip.c_str()));
+	LM_T(LmtInit, ("I am a '%s', my name: '%s', ip: %s", me->typeName(), me->nam(), me->ip.c_str()));
 }
 
 
@@ -814,6 +814,13 @@ void Network::endpointListShow(const char* why)
 
 	LM_F((""));
 	LM_F(("----------- Endpoint List (%s) -----------", why));
+
+	LM_V(("Verbose mode is on"));
+	LM_D(("Debug mode is on"));
+	if (lmReads)
+		LM_F(("Reads mode is on"));
+	if (lmWrites)
+		LM_F(("Writes mode is on"));
 
 	for (ix = 0; ix < Endpoints; ix++)
 	{
@@ -1731,6 +1738,7 @@ void Network::msgTreat(void* vP)
 	void*                 dataP        = data;
 	int                   dataLen      = sizeof(data);
 	Message::ConfigData   configData;
+	Message::ConfigData*  configDataP;
 
 	MsgTreatParams*       paramsP      = (MsgTreatParams*) vP;
 	Endpoint*             ep           = paramsP->ep;
@@ -1865,6 +1873,23 @@ void Network::msgTreat(void* vP)
 			configData.traceLevels[ix] = lmTraceIsSet(ix);
 
 		iomMsgSend(ep, me, Message::ConfigGet, Message::Ack, &configData, sizeof(configData));
+		break;
+
+	case Message::ConfigSet:
+		LM_M(("Got a ConfigSet message"));
+
+		configDataP = (Message::ConfigData*) dataP;
+
+		lmVerbose = configDataP->verbose;
+		lmDebug   = configDataP->debug;
+		lmReads   = configDataP->reads;
+		lmWrites  = configDataP->writes;
+
+		for (int ix = 0; ix < 256; ix++)
+		{
+			lmTraceLevelSet(ix, configDataP->traceLevels[ix]);
+		}
+
 		break;
 
 	case Message::Hello:

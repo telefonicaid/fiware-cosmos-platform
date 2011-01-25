@@ -52,7 +52,7 @@ extern void connectToAllSpawners(void);
 *
 * spawnerConnect - connect to spawner
 */
-extern void spawnerConnect(Spawner* spawner);
+extern void spawnerConnect(Starter* starter, Spawner* spawner);
 
 
 

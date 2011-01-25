@@ -41,6 +41,7 @@
 #include "TabManager.h"         // TabManager
 #include "SamsonSupervisor.h"   // SamsonSupervisor
 #include "ports.h"              // LOG_SERVER_PORT
+#include "actions.h"            // connectToAllSpawners
 
 
 
@@ -170,6 +171,25 @@ int main(int argC, const char *argV[])
 
 	mainWinCreate(qApp);
 	tabManager = new TabManager(mainWindow);
+
+	LM_M(("Connecting to all Spawners"));
+	connectToAllSpawners();
+
+	LM_M(("Connecting to all Workers"));
+	unsigned int                ix;
+	std::vector<ss::Endpoint*>  epV;
+
+	epV = networkP->samsonWorkerEndpoints();
+	LM_M(("Got %d Worker endpoints", epV.size()));
+	for (ix = 0; ix < epV.size(); ix++)
+	{
+		ss::Endpoint* ep;
+
+		ep = epV[ix];
+
+		LM_M(("%02d: %-20s %-20s   %s", ix, ep->name.c_str(), ep->ip.c_str(), ep->stateName()));
+	}
+
 	mainWindow->show();
 
 	LM_M(("letting control to QT main loop"));

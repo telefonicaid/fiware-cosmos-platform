@@ -91,31 +91,32 @@ void Starter::spawnerClicked(void)
 	if (spawner == NULL)
 		LM_X(1, ("NULL spawner"));
 
+	LM_M(("IN, checkState: '%s'",  (checkbox->checkState() == Qt::Checked)? "Checked" : "Unchecked"));
+
 	if (checkbox->checkState() == Qt::Checked)
 	{
-		if (connected == true)
-			LM_W(("Already connected to spawner at '%s'", spawner->host));
-		else
-		{
-			spawnerConnect(spawner);
-			connected = true;
-		}
+		if (endpoint)
+			networkP->endpointRemove(endpoint, "GUI Click - endpoint already existed");
+
+		LM_M(("Connecting to spawner '%s'", spawner->host));
+		spawnerConnect(this, spawner);
 	}
 	else if (checkbox->checkState() == Qt::Unchecked)
 	{
-		if (connected == false)
-			LM_W(("Not connected to spawner at '%s'", spawner->host));
-		else
+		if (endpoint == NULL)
 		{
-			if (endpoint == NULL)
-				LM_W(("NULL endpoint"));
-			else if (endpoint->state != ss::Endpoint::Connected)
-				LM_W(("Not connected to endpoint"));
-			else
-				networkP->endpointRemove(endpoint, "GUI Click");
-
-			connected = false;
+			LM_W(("NULL endpoint - nothing to be done ..."));
+			spawner->fd = -1;
+			return;
 		}
+
+		if (endpoint->state != ss::Endpoint::Connected)
+			LM_W(("endpoint pointer ok (%p), but not connected", endpoint));
+
+		LM_M(("removing spawner endpoint"));
+		networkP->endpointRemove(endpoint, "GUI Click");
+		endpoint    = NULL;
+		spawner->fd = -1;
 	}
 }
 

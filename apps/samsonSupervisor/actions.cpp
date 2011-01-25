@@ -60,33 +60,31 @@ void list(void)
 *
 * spawnerConnect - connect to spawner
 */
-void spawnerConnect(Spawner* sP)
+void spawnerConnect(Starter* starterP, Spawner* spawnerP)
 {
-	LM_M(("connecting to spawner in %s on port %d", sP->host, sP->port));
+	LM_M(("connecting to spawner in %s on port %d", spawnerP->host, spawnerP->port));
 
-	sP->fd = iomConnect(sP->host, sP->port);
-	if (sP->fd == -1)
+	spawnerP->fd = iomConnect(spawnerP->host, spawnerP->port);
+	if (spawnerP->fd == -1)
 	{
 		char errorText[256];
 
-		snprintf(errorText, sizeof(errorText), "error connecting to spawner in host '%s', port %d", sP->host, sP->port);
+		snprintf(errorText, sizeof(errorText), "error connecting to spawner in host '%s', port %d", spawnerP->host, spawnerP->port);
 		new Popup("Connect Error", errorText);
 		
 		return;
 	}
 
-	ss::Endpoint*  ep;
-
-	LM_M(("Calling endpointAdd for spawner '%s'", sP->host));
-	ep = networkP->endpointAdd("connected to spawner",
-							   sP->fd,
-							   sP->fd,
-							   "Spawner",
-							   NULL,
-							   0,
-							   ss::Endpoint::Temporal,
-							   std::string(sP->host),
-							   sP->port);
+	LM_M(("Calling endpointAdd for spawner '%s'", spawnerP->host));
+	starterP->endpoint = networkP->endpointAdd("connected to spawner",
+											   spawnerP->fd,
+											   spawnerP->fd,
+											   "Spawner",
+											   NULL,
+											   0,
+											   ss::Endpoint::Temporal,
+											   std::string(spawnerP->host),
+											   spawnerP->port);
 }
 
 
@@ -136,12 +134,18 @@ void connectToAllSpawners(void)
 
 	for (unsigned int ix = 0; ix < spawnerMaxGet(); ix++)
 	{
-		Spawner* sP;
+		Spawner* spawnerP;
+		Starter* starterP;
 
-		if ((sP = spawnerLookup(ix)) == NULL)
+		if ((spawnerP = spawnerLookup(ix)) == NULL)
 			continue;
 
-		spawnerConnect(sP);
+		starterP = starterLookup(spawnerP);
+
+		if (starterP == NULL)
+			LM_W(("Cannot find starter for spawner '%s'", spawnerP->host));
+		else
+			spawnerConnect(starterP, spawnerP);
 	}
 }
 

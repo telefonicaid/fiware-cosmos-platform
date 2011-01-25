@@ -342,6 +342,25 @@ static void logWinCreate(QApplication* app)
 int main(int argC, const char *argV[])
 {
 	QApplication   app(argC, (char**) argV);
+	pid_t          pid;
+
+	// fork once and make father die - this way samsonLogServer will have
+	// process 1 (init) as father and samsonSupervisor wont receive SIGCHLD
+	// nor have to wait for it to avoid a Zombie.
+	// 
+	// What samsonSupervisor WILL have to do is to wait for the LogServer
+	// father process to die, but as this happens at startup of LogServer
+	// this is simple enough ...
+
+	pid = fork();
+	printf("fork returned %d for process %d\n", pid, getpid());
+	if (pid != 0)
+	{
+		printf("process %d (father) dies\n", getpid());
+		exit(0);
+	}
+
+	printf("process %d (son) continues\n", getpid());
 
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);
@@ -352,34 +371,42 @@ int main(int argC, const char *argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	LM_F(("Started with arguments:"));
+	LM_F(("=============== Command line arguments:"));
 	for (int ix = 0; ix < argC; ix++)
-		LM_F(("  %02d: '%s'", ix, argV[ix]));
+		LM_F(("===============   %02d: '%s'", ix, argV[ix]));
 
-	LM_M(("Initializing log provider list"));
+	LM_M(("=============== Initializing log provider list"));
 	logProviderListInit(50);
 	logWinCreate(&app);
 
+	LM_M(("=============== creating Network"));
 	networkP        = new ss::Network(endpoints, 10); // 10 workers by default
+
+	LM_M(("=============== creating SamsonLogServer"));
 	samsonLogServer = new SamsonLogServer();
 
+	LM_M(("=============== setting up Network callbacks"));
     networkP->setEndpointUpdateReceiver(samsonLogServer);
     networkP->setReadyReceiver(samsonLogServer);
     networkP->setDataReceiver(samsonLogServer);
 
+	LM_M(("=============== initializing Network"));
 	networkP->init(ss::Endpoint::LogServer, "LogServer", port, controller);
 
-	LM_M(("controller: '%s'", controller));
 	if (strcmp(controller, (char*) NOC) != 0)
 	{
 		int fd;
 
-		LM_M(("Connecting to controller at '%s'", controller));
+		LM_M(("=============== Connecting to controller at '%s'", controller));
 		fd = iomConnect(controller, CONTROLLER_PORT);
+		LM_M(("=============== Adding endpoint for controller"));
 		networkP->endpointAdd("Connecting to controller", fd, fd, "Controller", "controller", 0, ss::Endpoint::Controller, controller, CONTROLLER_PORT);
+		LM_M(("=============== Added endpoint for controller"));
 	}
+	else
+		LM_M(("=============== Not connecting to Controller"));
 
-	LM_M(("Number of spawners: %d", (int) spawnerList[0]));
+	LM_M(("=============== Number of spawners: %d", (int) spawnerList[0]));
 	if ((int) spawnerList[0] != 0)
 	{
 		int ix;
@@ -388,18 +415,29 @@ int main(int argC, const char *argV[])
 		{
 			int fd;
 
-			LM_M(("Connecting to spawner %d: '%s'", ix, spawnerList[ix]));
+			LM_M(("=============== Connecting to spawner %d: '%s'", ix, spawnerList[ix]));
 			fd = iomConnect(spawnerList[ix], SPAWNER_PORT);
 			if (fd != -1)
 			{
-				ss::Endpoint* ep = networkP->endpointAdd("Connecting to spawner", fd, fd, "Spawner", "spawner", 0, ss::Endpoint::Temporal, spawnerList[ix], SPAWNER_PORT);
+				ss::Endpoint* ep;
+
+				LM_M(("=============== Adding endpoint for spawner '%s'", spawnerList[ix]));
+				ep = networkP->endpointAdd("Connecting to spawner", fd, fd, "Spawner", "spawner", 0, ss::Endpoint::Temporal, spawnerList[ix], SPAWNER_PORT);
+				LM_M(("=============== Adding logProvider for spawner '%s'", spawnerList[ix]));
 				logProviderAdd(ep, "spawner", spawnerList[ix], fd);
 			}
+			else
+				LM_M(("=============== Error connecting to spawner %d: '%s'", ix, spawnerList[ix]));
 		}
+		LM_M(("=============== Connected to all spawners"));
 	}
+	else
+		LM_M(("=============== Not connecting to Spawners"));
+
+
 
 #if 0
-	LM_M(("Number of workers: %d", (int) workerList[0]));
+	LM_M(("=============== Number of workers: %d", (int) workerList[0]));
 	if ((int) workerList[0] != 0)
 	{
 		int ix;
@@ -408,7 +446,7 @@ int main(int argC, const char *argV[])
 		{
 			int fd;
 
-			LM_M(("Connecting to worker %d: '%s'", ix, workerList[ix]));
+			LM_M(("=============== Connecting to worker %d: '%s'", ix, workerList[ix]));
 			fd = iomConnect(workerList[ix], WORKER_PORT);
 			if (fd != -1)
 				logProviderAdd(NULL, "worker", workerList[ix], fd);
@@ -417,12 +455,12 @@ int main(int argC, const char *argV[])
 #endif
 
 #if 0
-	LM_M(("calling networkP->runUntilReady"));
+	LM_M(("=============== calling networkP->runUntilReady"));
 	networkP->runUntilReady();
-	LM_M(("back from networkP->runUntilReady"));
+	LM_M(("=============== back from networkP->runUntilReady"));
 #endif
 
-	LM_M(("Letting control to QT"));
+	LM_M(("=============== Letting control to QT"));
 	app.exec();
 
 	return 0;

@@ -7,6 +7,9 @@
 * CREATION DATE            Jan 14 2011
 *
 */
+#include <sys/types.h>          // pid_t
+#include <sys/wait.h>           // waitpid
+
 #include <QWidget>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -206,7 +209,12 @@ void ProcessListTab::logServerStart(void)
 		LM_X(1, ("Back from exec ..."));
 	}
 
-	LM_M(("connecting to log server"));
+	LM_M(("Awaiting dead father of log server (log server does fork and the father exits at startup"));
+	int status;
+	waitpid(pid, &status, 0);
+	LM_M(("Dead father of log server waited for"));
+
+	LM_M(("Connecting to log server"));
 	usleep(100000);
 	int logServerFd = -1;
 

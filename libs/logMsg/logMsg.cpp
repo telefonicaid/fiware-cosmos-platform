@@ -229,7 +229,6 @@ static LmTracelevelName  userTracelevelName     = NULL;
 static int               lmSd                   = -1;
 
 
-
 /* ****************************************************************************
 *
 * Global variables
@@ -287,6 +286,9 @@ char* lmProgName(char* pn, int levels, bool pid)
 
 	return pName;
 }
+
+
+
 /* ****************************************************************************
 *
 * lmTraceIsSet - 

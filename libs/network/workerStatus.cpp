@@ -12,7 +12,7 @@
 #include <time.h>               // time
 
 #include "logMsg.h"             // LM_*
-#include "networkTraceLevels.h" // LMT_*
+#include "traceLevels.h"        // LMT_*
 
 #include "Endpoint.h"           // Endpoint
 #include "Network.h"            // Network

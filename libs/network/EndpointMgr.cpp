@@ -6,7 +6,7 @@
 *
 */
 #include "logMsg.h"             // LM_*
-#include "networkTraceLevels.h" // LMT_*
+#include "traceLevels.h"        // LMT_*
 #include "Alarm.h"              // ALARM
 
 #include "Misc.h"               // ipGet

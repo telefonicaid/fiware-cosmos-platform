@@ -13,7 +13,7 @@
 #include <sys/time.h>           // gettimeofday
 
 #include "logMsg.h"             // LM_*
-#include "networkTraceLevels.h" // LMT_NWRUN, ...
+#include "traceLevels.h"        // LMT_NWRUN, ...
 
 #include "Buffer.h"				// ss::Buffer
 #include "MemoryManager.h"      // MemoryManager

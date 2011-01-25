@@ -7,112 +7,106 @@
 *
 * AUTHOR                   Ken Zangelin
 *
-* CREATION DATE            Oct 13 2010
+* CREATION DATE            Jan 25 2011
 *
 */
 
 
-
-enum PaTraceLevels
+/* ****************************************************************************
+*
+* TraceLevels - 
+*/
+typedef enum TraceLevels
 {
-   LmtPaSetup          = 0,
-   LmtPaConfigAction,
-   LmtPaDefVal,
-   LmtPaEnvVal,
-   LmtPaRcFileVal,
-   LmtPaComLineVal,
-   LmtPaApVals,
-   LmtPaLimits,
-   LmtPaUsage,
-   LmtPaRcFile,
-   LmtPaSList,
-   LmtPaIList,
-   LmtHelp
-};
+//
+// Network Trace Levels 21-50
+//
+	LMT_NWRUN       = 21,
+	LMT_SELECT,
+	LMT_FDS,
+	LMT_ENDPOINT,
+	LMT_ACCEPT,
+	LMT_ENDPOINTS,
+	LMT_READ,
+	LMT_WORKERS,
+	LMT_WRITE,
+	LMT_MSG,
+
+	LMT_INIT_EP,
+	LMT_CONFIG,
+	LMT_HELLO,
+	LMT_TREAT,
+	LMT_RECONNECT,
+	LMT_DELILAH,
+	LMT_STAT,
+	LMT_EP,
+	LMT_RESTART,
+	LMT_COREWORKER,
+
+	LMT_MSGTREAT,
+	LMT_JOB,
+	LMT_TIMEOUT,
+	LMT_FORWARD,
+	LMT_SEND,
 
 
 
 //
-// Network Trace Levels
+// Process Trace Levels  51-60
 //
-#define LMT_NWRUN       51
-#define LMT_SELECT      52
-#define LMT_FDS         53
-#define LMT_ENDPOINT    54
-#define LMT_ACCEPT      55
-#define LMT_ENDPOINTS   56
-#define LMT_READ        57
-#define LMT_WORKERS     58
-#define LMT_WRITE       59
-#define LMT_MSG         60
-#define LMT_INIT_EP     61
-#define LMT_CONFIG      62
-#define LMT_HELLO       63
-#define LMT_TREAT       64
-#define LMT_RECONNECT   65
-#define LMT_DELILAH     66
-#define LMT_STAT        67
-#define LMT_EP          68
-#define LMT_RESTART     69
-#define LMT_COREWORKER  70
-#define LMT_MSGTREAT    71
-#define LMT_JOB         72
-#define LMT_TIMEOUT     73
-#define LMT_FORWARD     74
-#define LMT_SEND        75
+	LMT_PA  = 51,
 
 
 
 //
-// Process Trace Levels
+// Data Trace Levels  61-70
 //
-#define LMT_COREWORKER       21
-#define LMT_PA               22
-
-
-
-//
-// Data Trace Levels
-//
-#define LMT_FILE       81
+	LMT_FILE    = 61,
 
 
 
 //
-// Core Trace Levels
+// Core Trace Levels  71-80
 //
-#define LMT_CONFIG                81
-#define LMT_TASK                  82
-#define LMT_DELILAH               83
-#define LMT_SAMSON_WORKER         84
-#define LMT_WINIT                 85
+	LMT_TASK             = 71,
+	LMT_SAMSON_WORKER,
+	LMT_WINIT,
 
 
 
 //
-// Samson Log Server Trace Levels
+// Samson Log Server Trace Levels:  81-90
 //
-#define LMT_LOG_PROVIDER_LIST 201
-
-
-
-//
-// Samson Demo? Trace Levels
-//
-#define LMT_SAMSON_DEMO       201
+	LMT_LOG_PROVIDER_LIST  = 81,
 
 
 
 //
-// Samson Supervisor Trace Levels
+// Samson Demo? Trace Levels:  91-100
 //
-#define LMT_CONFIG_FILE       201
-#define LMT_CHECK             202
-#define LMT_STARTER           203
-#define LMT_PROCESS_LIST      204
-#define LMT_SPAWNER_LIST      205
-#define LMT_STARTER_LIST      206
-#define LMT_PROCESS_LIST_TAB  207
-#define LMT_QT                208
+	LMT_SAMSON_DEMO         = 91,
+
+
+
+//
+// Samson Supervisor Trace Levels:  101-110
+//
+	LMT_CONFIG_FILE = 101,
+	LMT_CHECK,
+	LMT_STARTER,
+	LMT_PROCESS_LIST,
+	LMT_SPAWNER_LIST,
+	LMT_STARTER_LIST,
+	LMT_PROCESS_LIST_TAB,
+	LMT_QT
+} TraceLevels;
+
+
+
+/* ****************************************************************************
+*
+* traceLevelName - 
+*/
+extern char* traceLevelName(int level);
 
 #endif

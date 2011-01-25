@@ -8,11 +8,13 @@
 *
 */
 #include <stdio.h>              // FILE, popen, fgets, ...
+#include <cstdlib>				// free(.)
 
 #include "logMsg.h"             // LM_*
-#include "networkTraceLevels.h" // LMT_*
+#include "traceLevels.h"        // LMT_*
+
 #include "Misc.h"               // Own interface
-#include <cstdlib>				// free(.)
+
 
 
 namespace ss

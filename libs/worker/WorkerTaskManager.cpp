@@ -1,5 +1,5 @@
 #include "logMsg.h"              // LM_*
-#include "coreTracelevels.h"     // LMT_*
+#include "traceLevels.h"         // LMT_*
 
 #include "iomMsgSend.h"          // iomMsgSend
 #include "CommandLine.h"         // au::CommandLine

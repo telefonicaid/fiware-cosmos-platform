@@ -15,7 +15,7 @@
 #include <vector>               // vector
 
 #include "logMsg.h"             // LM_*
-#include "networkTraceLevels.h" // LMT_*
+#include "traceLevels.h"        // LMT_*
 
 #include "iomAccept.h"          // Own interface
 

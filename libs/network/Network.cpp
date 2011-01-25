@@ -16,7 +16,7 @@
 #include <pthread.h>            // pthread_t
 
 #include "logMsg.h"             // LM_*
-#include "networkTraceLevels.h" // LMT_*
+#include "traceLevels.h"        // LMT_*
 #include "Alarm.h"              // ALARM
 #include "ports.h"              // Port numbers for samson processes
 
@@ -1730,13 +1730,14 @@ void Network::msgTreat(void* vP)
 	char                  data[1024];
 	void*                 dataP        = data;
 	int                   dataLen      = sizeof(data);
+	Message::ConfigData   configData;
 
 	MsgTreatParams*       paramsP      = (MsgTreatParams*) vP;
 	Endpoint*             ep           = paramsP->ep;
 	int                   endpointId   = paramsP->endpointId;
 	Message::Header*      headerP      = &paramsP->header;
-	char*                 name         = (char*) ep->name.c_str();
 
+	char*                 name         = (char*) ep->name.c_str();
 	Packet                packet;
 	Packet                ack;
 	Message::MessageCode  msgCode;
@@ -1855,6 +1856,17 @@ void Network::msgTreat(void* vP)
 		endpointRemove(ep, "Got an IDie message");
 		break;
 
+	case Message::ConfigGet:
+		configData.verbose = lmVerbose;
+		configData.debug   = lmDebug;
+		configData.reads   = lmReads;
+		configData.writes  = lmWrites;
+		for (int ix = 0; ix < 256; ix++)
+			configData.traceLevels[ix] = lmTraceIsSet(ix);
+
+		iomMsgSend(ep, me, Message::ConfigGet, Message::Ack, &configData, sizeof(configData));
+		break;
+
 	case Message::Hello:
 		Endpoint*            helloEp;
 		Message::HelloData*  hello;
@@ -1907,8 +1919,6 @@ void Network::msgTreat(void* vP)
 		else
 			LM_T(LMT_JOB, ("HELLO was an ACK"));
 
-        LM_M(("HERE"));
-
 		if (helloEp->jobQueueHead != NULL)
 		{
 			SendJob*  jobP;
@@ -1932,7 +1942,6 @@ void Network::msgTreat(void* vP)
 			}
 		}
 
-        LM_M(("HERE"));
 		if (helloEp == controller)
 		{
 			LM_M(("Asking Controller for the WorkerVector"));

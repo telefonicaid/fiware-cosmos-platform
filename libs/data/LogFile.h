@@ -2,10 +2,10 @@
 #define _H_LOG_FILE
 
 #include <iostream>
-#include <fstream>			  // ifstream , ofstream
+#include <fstream>			    // ifstream , ofstream
 
-#include "logMsg.h"           // LM_*
-#include "dataTracelevels.h"  // LMT_*
+#include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // LMT_*
 
 #include "data.pb.h"
 #include "traces.h"
@@ -14,6 +14,7 @@
 #include <sstream>				// std::ostringstream
 
 namespace ss {
+
 
 	class LogFile
 	{

@@ -48,6 +48,8 @@ char* messageCode(MessageCode code)
 	case ControllerSpawn:                  return (char*) "ControllerSpawn";
 	case ThroughputTest:                   return (char*) "ThroughputTest";
 	case LogLine:                          return (char*) "LogLine";
+	case ConfigGet:                        return (char*) "ConfigGet";
+	case ConfigSet:                        return (char*) "ConfigSet";
 	}
 
 	return (char*) "Unknown";

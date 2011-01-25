@@ -1,9 +1,11 @@
 SET (HEADERS
 	logMsg.h
+	traceLevels.h
 )
 
 SET (SOURCES
     logMsg.cpp
+	traceLevels.cpp
 )
 
 ADD_LIBRARY(logMsgStatic STATIC ${SOURCES} ${HEADERS} )

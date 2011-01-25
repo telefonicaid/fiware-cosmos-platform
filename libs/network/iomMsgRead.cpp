@@ -12,7 +12,7 @@
 #include <sys/time.h>           // gettimeofday
 
 #include "logMsg.h"             // LM_*
-#include "networkTraceLevels.h" // LMT_NWRUN, ...
+#include "traceLevels.h"        // LMT_NWRUN, ...
 
 #include "Message.h"            // MessageType, Code, etc.
 #include "Endpoint.h"           // Endpoint
@@ -49,15 +49,19 @@ ssize_t full_read(int fd, char* buf, ssize_t bufLen)
 			if (tot == 0)
 			{
 				LM_T(LMT_MSG, ("read 0 bytes - connection closed"));
-				return 0;
+				return -2;
 			}
 
-			LM_RE(0, ("last read gave 0 bytes (%d bytes read in total). Connection Closed ?", tot));
+			LM_M(("read %d bytes from fd %d", tot, fd));
+			LM_READS("someone", "?header?", buf, tot, LmfByte);
+			LM_RE(tot, ("last read gave 0 bytes (%d bytes read in total). Connection Closed ?", tot));
 		}
 
 		tot += nb;
 	}
 
+	LM_M(("read %d bytes from fd %d", tot, fd));
+	LM_READS("someone", "?header?", buf, tot, LmfByte);
 	return tot;
 }
 
@@ -99,8 +103,15 @@ int iomMsgRead
 	if (nb != sizeof(header))
 		LM_RE(1, ("reading header from '%s' - read only %d bytes (need %d)", from, nb, sizeof(header)));
 
+	LM_READS(from, "header", &header, nb, LmfByte);
+
 	if (header.magic != 0xFEEDC0DE)	
-		LM_X(1, ("Bad magic number in header (0x%x)", header.magic));
+	{
+		int* iP = (int*) &header;
+
+		LM_W(("Bad header ...(0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x", iP[0], iP[1], iP[2], iP[3], iP[4], iP[5], iP[6], iP[7]));
+		LM_X(1, ("Bad magic number in header (0x%08x)", header.magic));
+	}
 
 	*msgCodeP = header.code;
 	*msgTypeP = header.type;
@@ -228,6 +239,15 @@ int iomMsgRead
 	*msgCodeP = headerP->code;
 	*msgTypeP = headerP->type;
 
+	if (dataPP == NULL)
+		LM_X(1, ("dataPP == NULL"));
+
+	if (headerP->magic != 0xFEEDC0DE)
+	{
+		LM_READS(ep->name.c_str(), "header", headerP, sizeof(ss::Message::Header), LmfByte);
+		LM_X(1, ("bad magic number in message from %s@%s (fd: %d) ", ep->name.c_str(), ep->ip.c_str(), ep->rFd));
+	}
+
 	if (headerP->dataLen != 0)
 	{
 		if (headerP->dataLen > 1000)
@@ -244,11 +264,11 @@ int iomMsgRead
 				LM_X(1, ("malloc(%d)", headerP->dataLen));
 		}
 
-		LM_T(LMT_MSG, ("reading %d bytes of primary message data", headerP->dataLen));
-		nb = read(ep->rFd, *dataPP, headerP->dataLen);
+		LM_M(("reading %d bytes of primary message data from '%s'", headerP->dataLen, ep->name.c_str()));
+		nb = full_read(ep->rFd, (char*) *dataPP, headerP->dataLen);
 		LM_T(LMT_MSG, ("read %d bytes DATA from '%s'", nb, ep->name.c_str()));
 		if (nb == -1)
-			LM_RP(1, ("read %d bytes from '%s'", headerP->dataLen, ep->name.c_str()));
+			LM_RP(1, ("read %d bytes from '%s' (wanted %d bytes)", nb, ep->name.c_str(), headerP->dataLen));
 		LM_T(LMT_MSG, ("read %d bytes of primary message data", nb));
 
 		if (nb != (int) headerP->dataLen)

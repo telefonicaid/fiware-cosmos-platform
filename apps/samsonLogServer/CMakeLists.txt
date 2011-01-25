@@ -15,7 +15,6 @@ SET (HEADERS_MOC
 
 SET (HEADERS
 	logProviderList.h
-	traceLevels.h
 	Popup.h
 	SamsonLogServer.h
 )

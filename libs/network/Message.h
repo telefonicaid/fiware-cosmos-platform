@@ -56,7 +56,9 @@ typedef enum MessageCode
 	WorkerSpawn                     = CODE('W', 'S', 'p', ' '),
 	ControllerSpawn                 = CODE('C', 'S', 'p', ' '),
 	ThroughputTest                  = CODE('T', 'p', 'u', ' '),
-	LogLine                         = CODE('L', 'o', 'g', ' ')
+	LogLine                         = CODE('L', 'o', 'g', ' '),
+	ConfigGet                       = CODE('C', 'f', 'G', ' '),
+	ConfigSet                       = CODE('C', 'f', 'S', ' ')
 } MessageCode;
 
 
@@ -106,6 +108,21 @@ typedef struct HelloData
 	int                 coreNo;
 	int                 workerId;
 } HelloData;
+
+
+
+/* ****************************************************************************
+*
+* ConfigData
+*/
+typedef struct ConfigData
+{
+	bool verbose;
+	bool debug;
+	bool reads;
+	bool writes;
+	bool traceLevels[256];
+} ConfigData;
 
 
 

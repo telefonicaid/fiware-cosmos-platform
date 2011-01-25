@@ -10,7 +10,7 @@
 #include <unistd.h>             // gethostname
 
 #include "logMsg.h"             // LM_*
-#include "networkTraceLevels.h" // LMT_*, ...
+#include "traceLevels.h"        // LMT_*, ...
 
 #include "Endpoint.h"           // Own interface
 

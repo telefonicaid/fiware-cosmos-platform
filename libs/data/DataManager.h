@@ -3,18 +3,18 @@
 
 #include <iostream>
 #include <fstream>							// ifstream , ofstream
+#include <sstream>							// std::ostringstream
+#include <set>								// std::set
 
 #include "logMsg.h"							// LM_*
-#include "dataTracelevels.h"				// LMT_*
+#include "traceLevels.h"				    // LMT_*
 
 #include "data.pb.h"
 #include "traces.h"
 #include "Lock.h"							// au::Lock
 #include "au_map.h"							// au::map
-#include <sstream>							// std::ostringstream
 #include "LogFile.h"						// ss::LogFile
 #include "DataManagerCommandResponse.h"		// ss::DataManagerCommandResponse
-#include <set>								// std::set
 
 namespace ss
 {

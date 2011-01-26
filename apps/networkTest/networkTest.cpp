@@ -1,6 +1,7 @@
 #include <sys/time.h>           // gettimeofday
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Trace Levels
 #include "parseArgs.h"          // parseArgs
 
 #include "iomServerOpen.h"      // iomServerOpen
@@ -85,7 +86,8 @@ static void serverIomRun(int listenFd)
 	int             max;
 	int             fd = -1;
 	
-	LM_M(("Running IOM test as server"));
+	LM_V(("Running IOM test as server"));
+
 	while (1)
 	{
 		do
@@ -93,13 +95,12 @@ static void serverIomRun(int listenFd)
 			FD_ZERO(&rFds);
 			
 			FD_SET(listenFd, &rFds);
-			LM_M(("select on listen fd %d", listenFd));
 			max = listenFd;
 
 			if (fd != -1)
 			{
 				FD_SET(fd, &rFds);
-				LM_M(("select on fd %d", fd));
+				LM_T(LmtSelect, ("select on fd %d", fd));
 				if (fd > listenFd)
 					max = fd;
 			}
@@ -107,32 +108,32 @@ static void serverIomRun(int listenFd)
 			tv.tv_sec  = 5;
 			tv.tv_usec = 0;
 
-			LM_M(("calling select"));
+			LM_D(("calling select"));
 			fds = select(max + 1, &rFds, NULL, NULL, &tv);
-			LM_M(("select returned %d", fds));
+			LM_D(("select returned %d", fds));
 		} while ((fds == -1) && (errno == EINTR));
 	
 		if (fds == -1)
 			LM_X(-1, ("select"));
 		else if (fds == 0)
-			LM_M(("timeout"));
+			LM_D(("timeout"));
 		else if ((fds > 0) && (FD_ISSET(listenFd, &rFds)))
 		{
-			LM_M(("incoming connection ..."));
+			LM_T(LmtSelect, ("incoming connection ..."));
 			if (fd != -1)
 			{
 				// fd already active - reject the connection
 				int fd2;
 
-				LM_M(("rejecting the connection"));
+				LM_V(("rejecting the connection"));
 				fd2 = iomAccept(listenFd);
 				if (fd2 != -1)
 					close(fd2);
-				LM_M(("... rejected it"));
+				LM_V(("... rejected it"));
 			}
 			else
 			{
-				LM_M(("... accepting it"));
+				LM_V(("... accepting it"));
 				fd = iomAccept(listenFd);
 			}
 		}
@@ -149,7 +150,7 @@ static void serverIomRun(int listenFd)
 			ss::Message::MessageCode  msgCode;
 			ss::Message::MessageType  msgType;
 
-			LM_M(("incoming message ..."));
+			LM_D(("incoming message ..."));
 			s = gettimeofday(&start, NULL);
 			if (s != 0)
 				LM_X(1, ("gettimeofday: %s", strerror(errno)));
@@ -196,7 +197,7 @@ static void clientIomRun(int fd, int bufLen)
 	int    ix;
 	int    s;
 
-	LM_M(("Running IOM test as client"));
+	LM_V(("Running IOM test as client"));
 
 	if (buffer == NULL)
 		LM_X(1, ("malloc(60M): %s", strerror(errno)));
@@ -206,7 +207,7 @@ static void clientIomRun(int fd, int bufLen)
 
 	while (1)
 	{
-		LM_M(("sending a message of %d bytes", bufLen));
+		LM_T(LmtWrite, ("sending a message of %d bytes", bufLen));
 		s = iomMsgSend(fd, "server", "client", ss::Message::ThroughputTest, ss::Message::Msg, buffer, bufLen);
 		if (s != 0)
 			LM_X(1, ("iomMsgSend error %d", s));
@@ -279,21 +280,21 @@ int main(int argC, const char *argV[])
 	// Open listen socket if server, connect to the port and host if client
 	if (server)
 	{
-		LM_M(("Opening port %d for incoming connections", port));
+		LM_T(LmtOpen, ("Opening port %d for incoming connections", port));
 		fd = iomServerOpen(port);
 		if (fd == -1)
 			LM_X(1, ("iomServerOpen(port %d): %s", port, strerror(errno)));
 	}
 	else
 	{
-		LM_M(("Connecting to %s, port %d", host, port));
+		LM_T(LmtConnect, ("Connecting to %s, port %d", host, port));
 		fd = iomConnect(host, port);
 		if (fd == -1)
 			LM_X(1, ("iomConnect(host '%s', port %d): %s", host, port, strerror(errno)));
-		LM_M(("Connected to host '%s', port %d", host, port));
+		LM_T(LmtConnect, ("Connected to host '%s', port %d", host, port));
 	}
 
-	LM_M(("Opened fd %d - now run!", fd));
+	LM_T(LmtOpen, ("Opened fd %d - now run!", fd));
 
 
 

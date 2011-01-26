@@ -7,9 +7,10 @@
 * CREATION DATE            Jan 18 2011
 *
 */
+#include <stdlib.h>             // free()
+
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // LMT_*
-#include <stdlib.h>             // free()
 
 #include "Spawner.h"            // Spawner
 #include "spawnerList.h"        // Own interface
@@ -44,7 +45,7 @@ void spawnerListInit(unsigned int sMax)
 */
 Spawner* spawnerAdd(Spawner* spawnerP)
 {
-	LM_T(LMT_SPAWNER_LIST, ("Adding spawner for host '%s'", spawnerP->host));
+	LM_T(LmtSpawnerList, ("Adding spawner for host '%s'", spawnerP->host));
 
 	if (spawnerIx >= spawnerMax)
 		LM_X(1, ("No room for more Spawneres (max index is %d) - change and recompile!", spawnerMax));
@@ -54,7 +55,7 @@ Spawner* spawnerAdd(Spawner* spawnerP)
 
 	spawnerV[spawnerIx] = spawnerP;
 
-	LM_T(LMT_SPAWNER_LIST, ("Spawner for '%s' added", spawnerP->host));
+	LM_T(LmtSpawnerList, ("Spawner for '%s' added", spawnerP->host));
 
 	++spawnerIx;
 	return spawnerP;
@@ -108,8 +109,8 @@ Spawner* spawnerLookup(char* host)
 		if (spawnerV[ix] == NULL)
 			continue;
 
-		LM_T(LMT_SPAWNER_LIST, ("[%d] Comparing '%s' ...", ix, host));
-		LM_T(LMT_SPAWNER_LIST, ("... to '%s'", spawnerV[ix]->host));
+		LM_T(LmtSpawnerList, ("[%d] Comparing '%s' ...", ix, host));
+		LM_T(LmtSpawnerList, ("... to '%s'", spawnerV[ix]->host));
 
 		if (strcmp(spawnerV[ix]->host, host) == 0)
 			return spawnerV[ix];
@@ -150,14 +151,14 @@ Spawner** spawnerListGet(void)
 */
 void spawnerListShow(const char* why)
 {
-	LM_F(("---------- Spawner List: %s ----------", why));
+	LM_T(LmtSpawnerListShow, ("---------- Spawner List: %s ----------", why));
  
 	for (unsigned int ix = 0; ix < spawnerMax; ix++)
 	{
 		if (spawnerV[ix] == NULL)
 			continue;
 
-		LM_F(("  %08p  Spawner %02d: %-30s %05d  (fd: %d)", spawnerV[ix], ix, spawnerV[ix]->host, spawnerV[ix]->port, spawnerV[ix]->fd));
+		LM_T(LmtSpawnerListShow, ("  %08p  Spawner %02d: %-30s %05d  (fd: %d)", spawnerV[ix], ix, spawnerV[ix]->host, spawnerV[ix]->port, spawnerV[ix]->fd));
 	}
-	LM_F(("--------------------------------"));
+	LM_T(LmtSpawnerListShow, ("--------------------------------"));
 }

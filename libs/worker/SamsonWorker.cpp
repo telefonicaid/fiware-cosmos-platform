@@ -62,10 +62,16 @@ void SamsonWorker::runStatusUpdate()
 	
 }
 
-void SamsonWorker::sendWorkerStatus()
+
+
+/* ****************************************************************************
+*
+* SamsonWorker::sendWorkerStatus - 
+*/
+void SamsonWorker::sendWorkerStatus(void)
 {
-	Packet *p = new Packet();
-	network::WorkerStatus*  ws = p->message.mutable_worker_status();
+	Packet*                  p  = new Packet();
+	network::WorkerStatus*   ws = p->message.mutable_worker_status();
 	
 	// Fill to all data related with task manager
 	taskManager.fill(ws);
@@ -84,25 +90,18 @@ void SamsonWorker::sendWorkerStatus()
 	network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);
 }
 
-		
 
-	
-	
 
+/* ****************************************************************************
+*
+* SamsonWorker::receive - 
+*/
 int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 {
-#if 0
-   if( (msgCode == Message::UploadData ) )
-	  {
-		 LM_M(("Received a packet with data"));
-	  }
-   return 0;
-#endif
-	
 	if (msgCode == Message::WorkerTask)
 	{
 		// A packet with a particular command is received (controller expect to send a confirmation message)
-		LM_T(LMT_TASK, ("Got a WorkerTask message"));
+		LM_T(LmtTask, ("Got a WorkerTask message"));
 		
 		// add task to the task manager
 		taskManager.addTask( packet->message.worker_task() );

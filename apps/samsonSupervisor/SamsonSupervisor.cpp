@@ -68,7 +68,7 @@ void disconnectAllWorkers(void)
 	std::vector<ss::Endpoint*>  epV;
 
 	epV = networkP->samsonWorkerEndpoints();
-	LM_M(("Got %d endpoints", epV.size()));
+	LM_T(LmtWorkers, ("Got %d endpoints", epV.size()));
 	for (ix = 0; ix < epV.size(); ix++)
 	{
 		ss::Endpoint* ep;
@@ -100,7 +100,7 @@ static void noLongerTemporal(ss::Endpoint* ep, ss::Endpoint* newEp, Starter* sta
 
 	if (newEp->type == ss::Endpoint::LogServer)
 	{
-		LM_M(("endpoint is LogServer - nothing to be done ..."));
+		LM_T(LmtLogServer, ("endpoint is LogServer - nothing to be done ..."));
 		return;
 	}
 
@@ -109,25 +109,26 @@ static void noLongerTemporal(ss::Endpoint* ep, ss::Endpoint* newEp, Starter* sta
 
 	if (starter != NULL)
 	{
-		LM_M(("Changing temporal endpoint %p for '%s' endpoint %p", ep, newEp->typeName(), newEp));
+		LM_T(LmtTemporalEndpoint, ("Changing temporal endpoint %p for '%s' endpoint %p", ep, newEp->typeName(), newEp));
 		starter->endpoint = newEp;
 		starter->check();
 		return;
 	}
 
-	LM_W(("starter not found for '%s' endpoint '%s' at '%s'", ep->typeName(), ep->name.c_str(), ep->ip.c_str()));
-	LM_W(("Lookup spawner/process instead!"));
+	LM_T(LmtStarterLookup, ("starter not found for '%s' endpoint '%s' at '%s'", ep->typeName(), ep->name.c_str(), ep->ip.c_str()));
+	LM_T(LmtProcessLookup, ("Lookup spawner/process instead!"));
 	processP = processLookup((char*) ep->name.c_str(), (char*) ep->ip.c_str());
 	if (processP != NULL)
-		LM_M(("Found process!  Setting its endpoint to this one ..."));
+		LM_T(LmtProcessLookup, ("Found process!  Setting its endpoint to this one ..."));
 	else
 	{
-		LM_W(("Cannot find process '%s' at '%s' - trying spawner", ep->name.c_str(), ep->ip.c_str()));
+		LM_T(LmtProcessLookup, ("Cannot find process '%s' at '%s' - trying spawner", ep->name.c_str(), ep->ip.c_str()));
+		LM_T(LmtSpawnerLookup, ("Cannot find process '%s' at '%s' - trying spawner", ep->name.c_str(), ep->ip.c_str()));
 		spawnerP = spawnerLookup((char*) ep->ip.c_str());
 		if (spawnerP != NULL)
-			LM_M(("Found spawner! Setting its endpoint to this one ... ?"));
+			LM_T(LmtSpawnerLookup, ("Found spawner! Setting its endpoint to this one ... ?"));
 		else
-			LM_W(("Nothing found ..."));
+			LM_T(LmtSpawnerLookup, ("Starter NULL, Process not found, Spawner not found ... for endpoint %s@%s", ep->name.c_str(), ep->ip.c_str()));
 	}
 }
 
@@ -143,8 +144,8 @@ static void disconnectWorkers(void)
 	unsigned int  starterMax;
 	unsigned int  ix;
 
-	LM_W(("Controller disconnected - I should now disconnect from all workers ..."));
-	LM_W(("... to reconnect to workers when controller is back"));
+	LM_T(LmtWorkers, ("Controller disconnected - I should now disconnect from all workers ..."));
+	LM_T(LmtWorkers, ("... to reconnect to workers when controller is back"));
 
 	starterV   = starterListGet();
 	starterMax = starterMaxGet();
@@ -183,20 +184,20 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	}
 
 	if (ep != NULL)
-		LM_M(("********************* Got an Update Notification ('%s') for endpoint %p '%s' at '%s'", reasonText, ep, ep->name.c_str(), ep->ip.c_str()));
+		LM_T(LmtEndpointUpdate, ("Got an Update Notification ('%s') for endpoint %p '%s' at '%s'", reasonText, ep, ep->name.c_str(), ep->ip.c_str()));
 	else
-		LM_M(("********************* Got an Update Notification ('%s') for NULL endpoint", reasonText));
+		LM_T(LmtEndpointUpdate, ("Got an Update Notification ('%s') for NULL endpoint", reasonText));
 
 	if (ep->type != ss::Endpoint::LogServer)
 	{
-		LM_M(("looking for starter with endpoint %p", ep));
+		LM_T(LmtEndpointUpdate, ("looking for starter with endpoint %p", ep));
 		starterListShow("Before starterLookup");
 		starter = starterLookup(ep);
 		starterListShow("After starterLookup");
-		LM_M(("starterLookup(%p) returned %p", ep, starter));
+		LM_T(LmtEndpointUpdate, ("starterLookup(%p) returned %p", ep, starter));
 
 		if (starter != NULL)
-			LM_M(("found %s-starter '%s'", starter->typeName(), starter->name));
+			LM_T(LmtEndpointUpdate, ("found %s-starter '%s'", starter->typeName(), starter->name));
 	}
 
 	switch (reason)
@@ -230,7 +231,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 			return -1;
 		}
 		else
-			LM_M(("Endpoint that is not Log Server was removed"));
+			LM_T(LmtEndpointUpdate, ("Endpoint that is not Log Server was removed"));
 
 	case ss::Endpoint::ControllerRemoved:
 	case ss::Endpoint::WorkerRemoved:
@@ -275,14 +276,14 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 */
 int SamsonSupervisor::ready(const char* info)
 {
-	LM_M(("---- Network READY - %s --------------------------", info));
+	LM_T(LmtNetworkReady, ("---- Network READY - %s --------------------------", info));
 	networkP->endpointListShow("Network READY");
 	spawnerListShow("ready");
 	processListShow("ready");
 
 	if (networkP->controller == NULL)
 	{
-		LM_M(("Connecting to controller and I return - will come back to this function and then we'll connect to the workers"));
+		LM_T(LmtNetworkReady, ("Connecting to controller and I return - will come back to this function and then we'll connect to the workers"));
 		connectToController();
 	}
 

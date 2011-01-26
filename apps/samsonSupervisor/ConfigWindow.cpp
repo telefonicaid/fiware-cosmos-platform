@@ -18,7 +18,7 @@
 #include <QListWidget>
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 
 #include "globals.h"            // networkP, ...
 #include "iomMsgSend.h"         // iomMsgSend
@@ -57,7 +57,6 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 	ss::Message::MessageType  type;
 	int                       dataLen;
 
-	LM_M(("Here"));
 	this->endpoint = endpoint;
 
 	setModal(true);
@@ -66,7 +65,6 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 
 	snprintf(processName, sizeof(processName), "%s@%s", endpoint->name.c_str(), endpoint->ip.c_str());
 	
-	LM_M(("Here"));
 	label            = new QLabel(processName);
 	buttonBox        = new QDialogButtonBox(QDialogButtonBox::Ok);
 	readsBox         = new QCheckBox("Reads");
@@ -105,7 +103,6 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 		if (name == NULL)
 			continue;
 
-		LM_M(("Creating traceLevelItem[%d]", ix));
 		snprintf(levelName, sizeof(levelName), "%s (%d)", name, ix);
 		traceLevelItem[ix] = new QListWidgetItem(levelName);
 		traceLevelList->addItem(traceLevelItem[ix]);
@@ -139,7 +136,6 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 			LM_E(("iomMsgAwait error: %d", s));
 		else
 		{
-			LM_M(("Reading header ..."));
 			s = full_read(endpoint->rFd, (char*) &header, sizeof(header));
 			if (s != sizeof(header))
 				LM_E(("Bad length of header read (read len: %d)", s));
@@ -162,20 +158,15 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 						LM_E(("iomMsgRead didn't fill the data pointer ..."));
 					else
 					{
-						LM_M(("Here"));
 						debugBox->setCheckState((configDataP->debug     == true)? Qt::Checked : Qt::Unchecked);
 						verboseBox->setCheckState((configDataP->verbose == true)? Qt::Checked : Qt::Unchecked);
 						readsBox->setCheckState((configDataP->reads     == true)? Qt::Checked : Qt::Unchecked);
 						writesBox->setCheckState((configDataP->writes   == true)? Qt::Checked : Qt::Unchecked);
 						
-						LM_M(("Here"));
 						for (int ix = 0; ix < 256; ix++)
 						{
 							if (traceLevelItem[ix])
-							{
-								LM_M(("ix == %d", ix));
 								traceLevelItem[ix]->setCheckState((configDataP->traceLevels[ix] == true)? Qt::Checked : Qt::Unchecked);
-							}
 						}
 					}
 				}
@@ -184,7 +175,6 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 	}
 
 	this->show();
-	LM_M(("Leaving"));
 }
 
 
@@ -210,6 +200,5 @@ void ConfigWindow::send(void)
 			configData.traceLevels[ix] = false;
 	}
 
-	LM_M(("sending ss::Message::ConfigSet message to %s@%s", endpoint->name.c_str(), endpoint->ip.c_str()));
 	iomMsgSend(endpoint, networkP->me, ss::Message::ConfigSet, ss::Message::Ack, &configData, sizeof(configData));
 }

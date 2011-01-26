@@ -51,15 +51,15 @@ char* ipGet(void)
 	char* ipP = (char*) "II.PP";
 	FILE* fP;
 	
-	LM_M(("Calling popen(ifconfig | grep \"inet addr:\" ...)"));
+	LM_T(LmtInit, ("Calling popen(ifconfig | grep \"inet addr:\" ...)"));
 	fP = popen("ifconfig | grep \"inet addr:\" | awk -F: '{ print $2 }' | awk '{ print $1 }'", "r");
-	LM_M(("popen returned %p", fP));
+	LM_T(LmtInit, ("popen returned %p", fP));
 	if (fgets(line, sizeof(line), fP) != NULL)
 	{
 		if (line[strlen(line) - 1] == '\n')
 			line[strlen(line) - 1] = 0;
 		ipP = wordClean(line);
-		LM_T(LMT_CONFIG, ("new IP: %s", ipP));
+		LM_T(LmtInit, ("new IP: %s", ipP));
 	}
 
 	fclose(fP);

@@ -267,7 +267,6 @@ void paExtendedUsage(PaArgument* paList)
 			optNameMaxLen + 2,
 			varNameMaxLen + 2,
 			valsMaxLen + 2);
-	LM_M(("format: '%s'", format));
 
 	paIterateInit();
 	while ((aP = paIterateNext(paList)) != NULL)

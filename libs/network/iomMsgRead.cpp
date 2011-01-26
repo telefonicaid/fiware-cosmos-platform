@@ -12,7 +12,7 @@
 #include <sys/time.h>           // gettimeofday
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_NWRUN, ...
+#include "traceLevels.h"        // LmtRead, ...
 
 #include "Message.h"            // MessageType, Code, etc.
 #include "Endpoint.h"           // Endpoint
@@ -48,11 +48,11 @@ ssize_t full_read(int fd, char* buf, ssize_t bufLen)
 		{
 			if (tot == 0)
 			{
-				LM_T(LMT_MSG, ("read 0 bytes - connection closed"));
+				LM_T(LmtRead, ("read 0 bytes - connection closed"));
 				return -2;
 			}
 
-			LM_M(("read %d bytes from fd %d", tot, fd));
+			LM_T(LmtRead, ("read %d bytes from fd %d", tot, fd));
 			LM_READS("someone", "?header?", buf, tot, LmfByte);
 			LM_RE(tot, ("last read gave 0 bytes (%d bytes read in total). Connection Closed ?", tot));
 		}
@@ -60,7 +60,7 @@ ssize_t full_read(int fd, char* buf, ssize_t bufLen)
 		tot += nb;
 	}
 
-	LM_M(("read %d bytes from fd %d", tot, fd));
+	LM_T(LmtRead, ("read %d bytes from fd %d", tot, fd));
 	LM_READS("someone", "?header?", buf, tot, LmfByte);
 	return tot;
 }
@@ -96,7 +96,7 @@ int iomMsgRead
 
 	if (nb == 0)
 	{
-		LM_T(LMT_MSG, ("read 0 bytes from '%s' - connection closed", from));
+		LM_T(LmtRead, ("read 0 bytes from '%s' - connection closed", from));
 		return -2;
 	}
 
@@ -116,7 +116,7 @@ int iomMsgRead
 	*msgCodeP = header.code;
 	*msgTypeP = header.type;
 
-	LM_T(LMT_MSG, ("read %d bytes of '%s' %s header from '%s' (fd %d)",
+	LM_T(LmtRead, ("read %d bytes of '%s' %s header from '%s' (fd %d)",
 				   nb, messageCode(header.code), messageType(header.type), from, fd));
 
 	LM_READS(from, "message header", &header, sizeof(header), LmfByte);
@@ -135,7 +135,7 @@ int iomMsgRead
 			inBuffer = (char*) *dataPP;
 		}
 
-		LM_T(LMT_MSG, ("reading %d bytes of primary message data", header.dataLen));
+		LM_T(LmtRead, ("reading %d bytes of primary message data", header.dataLen));
 
 		int reads = 0;
 
@@ -146,7 +146,7 @@ int iomMsgRead
 			++reads;
 			if (nb == -1)
 				LM_RP(1, ("read %d bytes from '%s'", header.dataLen, from));
-			LM_T(LMT_MSG, ("read %d bytes of primary message data", nb));
+			LM_T(LmtRead, ("read %d bytes of primary message data", nb));
 
 			tot += nb;
 		}
@@ -163,7 +163,7 @@ int iomMsgRead
 		if (dataP == NULL)
 			LM_X(1, ("malloc(%d)", header.gbufLen));
 
-		LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", header.gbufLen));
+		LM_T(LmtRead, ("reading %d bytes of google protocol buffer data", header.gbufLen));
         nb = read(fd, dataP, header.gbufLen);
         if (nb == -1)
 			LM_RP(1, ("read(%d bytes from '%s')", header.gbufLen, from));
@@ -199,7 +199,7 @@ int iomMsgRead
 		{
 			// msgAwait()
 			nb = read(fd, &kvBuf[tot], size - tot);
-			LM_T(LMT_MSG, ("read %d bytes KVDATA from '%s'", tot, from));
+			LM_T(LmtRead, ("read %d bytes KVDATA from '%s'", tot, from));
 			if (nb == -1)
 				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, from, strerror(errno)));
 			tot += nb;
@@ -255,7 +255,7 @@ int iomMsgRead
 					 ss::Message::messageCode(headerP->code), ss::Message::messageType(headerP->type), ep->name.c_str(),
 					 headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 
-		LM_T(LMT_MSG, ("Reading %d bytes of data", headerP->dataLen));
+		LM_T(LmtRead, ("Reading %d bytes of data", headerP->dataLen));
 		if (headerP->dataLen > (unsigned int) *dataLenP)
 		{
 			LM_W(("Allocating extra space for message"));
@@ -264,19 +264,19 @@ int iomMsgRead
 				LM_X(1, ("malloc(%d)", headerP->dataLen));
 		}
 
-		LM_M(("reading %d bytes of primary message data from '%s'", headerP->dataLen, ep->name.c_str()));
+		LM_T(LmtRead, ("reading %d bytes of primary message data from '%s'", headerP->dataLen, ep->name.c_str()));
 		nb = full_read(ep->rFd, (char*) *dataPP, headerP->dataLen);
-		LM_T(LMT_MSG, ("read %d bytes DATA from '%s'", nb, ep->name.c_str()));
+		LM_T(LmtRead, ("read %d bytes DATA from '%s'", nb, ep->name.c_str()));
 		if (nb == -1)
 			LM_RP(1, ("read %d bytes from '%s' (wanted %d bytes)", nb, ep->name.c_str(), headerP->dataLen));
-		LM_T(LMT_MSG, ("read %d bytes of primary message data", nb));
+		LM_T(LmtRead, ("read %d bytes of primary message data", nb));
 
 		if (nb != (int) headerP->dataLen)
 			LM_E(("Read %d bytes from '%s', %d expected ...", nb, ep->name.c_str(), headerP->dataLen));
 
 		*dataLenP = nb;
 
-		LM_T(LMT_MSG, ("read %d bytes from '%s'", nb, ep->name.c_str()));
+		LM_T(LmtRead, ("read %d bytes from '%s'", nb, ep->name.c_str()));
 		LM_READS(ep->name.c_str(), "primary data", *dataPP, nb, LmfByte);
 	}
 
@@ -288,11 +288,11 @@ int iomMsgRead
 		if (dataP == NULL)
 			LM_X(1, ("malloc(%d)", headerP->gbufLen));
 
-		LM_T(LMT_MSG, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
+		LM_T(LmtRead, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
 		while (tot < (int) headerP->gbufLen)
 		{
 			nb = read(ep->rFd, &dataP[tot], headerP->gbufLen - tot);
-			LM_T(LMT_MSG, ("read %d bytes GPROTBUF from '%s'", nb, ep->name.c_str()));
+			LM_T(LmtRead, ("read %d bytes GPROTBUF from '%s'", nb, ep->name.c_str()));
 			if (nb == -1)
 				LM_RP(1, ("read(%d bytes from '%s')", headerP->gbufLen, ep->name.c_str()));
 			tot += nb;
@@ -323,13 +323,13 @@ int iomMsgRead
 		int    tot    = 0;
 		int    nb;
 
-		LM_T(LMT_MSG, ("reading a KV buffer of %d bytes", size2));
+		LM_T(LmtRead, ("reading a KV buffer of %d bytes", size2));
 		while (tot < size)
 		{
 			// msgAwait() ... ?
-			LM_T(LMT_MSG, ("trying to read %d bytes of KV buffer", size - tot));
+			LM_T(LmtRead, ("trying to read %d bytes of KV buffer", size - tot));
 			nb = read(ep->rFd, &kvBuf[tot], size - tot);
-			LM_T(LMT_MSG, ("read %d bytes of KV buffer", nb));
+			LM_T(LmtRead, ("read %d bytes of KV buffer", nb));
 
 			if (nb == -1)
 				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, ep->name.c_str(), strerror(errno)));

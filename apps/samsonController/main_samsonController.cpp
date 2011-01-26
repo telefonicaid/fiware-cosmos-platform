@@ -61,9 +61,9 @@ int main(int argC, const char* argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	LM_F(("Started with arguments:"));
+	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
-		LM_F(("  %02d: '%s'", ix, argV[ix]));
+		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
 	au::LockDebugger::shared();    // Debuggin of Lock usage ( necessary here where it is only one thread )
 

@@ -48,7 +48,7 @@ void processListInit(unsigned int pMax)
 */
 Process* processAdd(Process* processP)
 {
-	LM_T(LMT_PROCESS_LIST, ("Adding process '%s' in host '%s' (and with %d args)", processP->name, processP->host, processP->argCount));
+	LM_T(LmtProcessList, ("Adding process '%s' in host '%s' (and with %d args)", processP->name, processP->host, processP->argCount));
 
 	if (processIx >= processMax)
 		LM_X(1, ("No room for more Processes (max index is %d) - change and recompile!", processMax));
@@ -58,7 +58,7 @@ Process* processAdd(Process* processP)
 
 	processV[processIx] = processP;
 
-	LM_T(LMT_PROCESS_LIST, ("Process '%s' in '%s' added - now adding its Spawner if necessary", processP->name, processP->host));
+	LM_T(LmtProcessList, ("Process '%s' in '%s' added - now adding its Spawner if necessary", processP->name, processP->host));
 	processV[processIx]->spawnerP = spawnerLookup(processV[processIx]->host);
 	if (processV[processIx]->spawnerP == NULL)
 	{
@@ -98,9 +98,9 @@ Process* processAdd(char* name, char* host, unsigned short port, char** args, in
 	argIx = 0;
 	while (argIx < argCount)
 	{
-		LM_T(LMT_PROCESS_LIST, ("Copying arg %d", argIx));
+		LM_T(LmtProcessList, ("Copying arg %d", argIx));
 		processP->arg[argIx] = strdup(args[argIx]);
-		LM_T(LMT_PROCESS_LIST, ("arg[%d]: '%s'", argIx, processP->arg[argIx]));
+		LM_T(LmtProcessList, ("arg[%d]: '%s'", argIx, processP->arg[argIx]));
 		++argIx;
 	}
 
@@ -171,14 +171,14 @@ Process** processListGet(void)
 */
 void processListShow(const char* why)
 {
-	LM_F(("---------- ProcessList: %s ----------", why));
+	LM_T(LmtProcessListShow, ("---------- ProcessList: %s ----------", why));
 
 	for (unsigned int ix = 0; ix < processMax; ix++)
 	{
 		if (processV[ix] == NULL)
 			continue;
 
-		LM_F(("  %08p process %02d: %-20s %-20s   %d args (spawner at %p, starter at %p)", processV[ix], ix, processV[ix]->name, processV[ix]->host, processV[ix]->argCount, processV[ix]->spawnerP, processV[ix]->starterP));
+		LM_T(LmtProcessListShow, ("  %08p process %02d: %-20s %-20s   %d args (spawner at %p, starter at %p)", processV[ix], ix, processV[ix]->name, processV[ix]->host, processV[ix]->argCount, processV[ix]->spawnerP, processV[ix]->starterP));
 	}
-	LM_F(("------------------------------------"));
+	LM_T(LmtProcessListShow, ("------------------------------------"));
 }

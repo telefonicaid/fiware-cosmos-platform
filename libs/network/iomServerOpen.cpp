@@ -60,7 +60,7 @@ int iomServerOpen(unsigned short port)
 		LM_RP(-1, ("listen to port %d", port));
 	}
 
-	LM_T(LMT_FDS, ("Opened listening socket on fd %d for port %d", sFd, port));
+	LM_T(LmtFds, ("Opened listening socket on fd %d for port %d", sFd, port));
 
 	return sFd;
 }

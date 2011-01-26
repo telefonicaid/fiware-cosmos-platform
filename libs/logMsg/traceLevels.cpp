@@ -20,21 +20,69 @@ char* traceLevelName(TraceLevels level)
 	switch (level)
 	{
 	case LmtInit:                        return (char*) "Initialization, especially in main";
+
+	case LmtOpen:                        return (char*) "open system calls";
+	case LmtConnect:                     return (char*) "socket connect system calls";
+	case LmtRead:                        return (char*) "socket/fd read system calls";
+	case LmtWrite:                       return (char*) "socket/fd write system calls";
+	case LmtSelect:                      return (char*) "select system calls";
+
+	case LmtFds:                         return (char*) "File descriptors";
+	case LmtNetworkReady:                return (char*) "Actions on Network module ready";
+	case LmtSharedMemory:                return (char*) "Shared Memory";
+	case LmtDie:                         return (char*) "Die message sent/received";
 	case LmtAlarm:                       return (char*) "At issuing an Alarm";
+	case LmtHello:                       return (char*) "Hello message interchange";
 	case LmtSenderThread:                return (char*) "Network Sender Thread";
+	case LmtThreadedMsgTreat:            return (char*) "Threaded Msg Treat function";
+	case LmtMsgLoopBack:                 return (char*) "Network loops back messages for same machine";
+	case LmtControllerConnect:           return (char*) "Connection to controller";
+
 	case LmtEndpointListShow:            return (char*) "Show Endpoint List";
 	case LmtStarterListShow:             return (char*) "Show Starter List (Supervisor only)";
 	case LmtSpawnerListShow:             return (char*) "Show Spawner List (Supervisor only)";
 	case LmtProcessListShow:             return (char*) "Show Process List (Supervisor only)";
-	case LmtThreadedMsgTreat:            return (char*) "Threaded Msg Treat function";
-	case LmtWorkers:                     return (char*) "Worker info";
-	case LmtControllerConnect:           return (char*) "Connection to controller";
-	case LmtMsgLoopBack:                 return (char*) "Network loops back messages for same machine";
+	case LmtLogProviderListShow:         return (char*) "Show Log Provider List (LogServer only)";
+
+	case LmtWorker:                      return (char*) "Worker";
+	case LmtWorkers:                     return (char*) "Worker List";
+	case LmtWorkerVector:                return (char*) "Worker Vector";
+
+	case LmtEndpoint:                    return (char*) "Endpoint";
+	case LmtEndpoints:                   return (char*) "Endpoints";
+	case LmtEndpointUpdate:              return (char*) "Updating an Endpoint";
+	case LmtTemporalEndpoint:            return (char*) "Temporal Endpoints";
+
+	case LmtLogServer:                   return (char*) "Log Server";
+	case LmtSpawn:                       return (char*) "Spawning processes (Spawner only)";
+
+	case LmtSpawnerList:                 return (char*) "Spawner List (Supervisor only)";
+	case LmtProcessList:                 return (char*) "Process List (Supervisor only)";
+	case LmtStarterList:                 return (char*) "Starter List (Supervisor only)";
+
+	case LmtStarter:                     return (char*) "Starters (Supervisor only)";
+	case LmtSpawner:                     return (char*) "Spawners (Supervisor only)";
+	case LmtProcess:                     return (char*) "Processes (Supervisor only)";
+
+	case LmtSpawnerConnect:              return (char*) "Connecting to Spawner";
+	case LmtProcessConnect:              return (char*) "Connecting to Process";
+	case LmtProcessStart:                return (char*) "Starting a Process";
+	case LmtProcessKill:                 return (char*) "Killing a Process";
+
+	case LmtEndpointLookup:              return (char*) "Endpoint Lookup";
+	case LmtStarterLookup:               return (char*) "Looking up Starters (Supervisor only)";
+	case LmtProcessLookup:               return (char*) "Lookuping up a Process";
+	case LmtSpawnerLookup:               return (char*) "Looking up a Spawner";
+
+	case LmtTask:                        return (char*) "Task";
+
+	case LmtProcessListTab:              return (char*) "Process List QT Tab";
+	case LmtQtTimer:                     return (char*) "QT timers";
+
+	case LmtCheck:                       return (char*) "Check checkbox state (Supervisor only)";
 
 	case LMT_NWRUN:                      return (char*) "Nwrun";
 	case LMT_SELECT:                     return (char*) "Select";
-	case LMT_FDS:                        return (char*) "Fds";
-	case LMT_ENDPOINT:                   return (char*) "Endpoint";
 	case LMT_ACCEPT:                     return (char*) "Accept";
 	case LMT_ENDPOINTS:                  return (char*) "Endpoints";
 	case LMT_READ:                       return (char*) "Read";
@@ -59,19 +107,12 @@ char* traceLevelName(TraceLevels level)
 
 	case LMT_PA:                         return (char*) "Pa";
 	case LMT_FILE:                       return (char*) "File";
-	case LMT_TASK:                       return (char*) "Task";
 	case LMT_SAMSON_WORKER:              return (char*) "Samson Worker";
 	case LMT_WINIT:                      return (char*) "Winit";
 	case LmtLogProvider:                 return (char*) "Log Provider";
 	case LmtLogProviderList:             return (char*) "Log Provider List";
 	case LMT_SAMSON_DEMO:                return (char*) "Samson Demo";
 	case LMT_CONFIG_FILE:                return (char*) "Config File";
-	case LMT_CHECK:                      return (char*) "Check";
-	case LMT_STARTER:                    return (char*) "Starter";
-	case LMT_PROCESS_LIST:               return (char*) "ProcessList";
-	case LMT_SPAWNER_LIST:               return (char*) "SpawnerList";
-	case LMT_STARTER_LIST:               return (char*) "StarterList";
-	case LMT_PROCESS_LIST_TAB:           return (char*) "ProcessListTab";
 	case LMT_QT:                         return (char*) "Qt";
 	}
 

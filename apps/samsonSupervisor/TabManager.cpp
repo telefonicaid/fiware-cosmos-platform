@@ -14,6 +14,7 @@
 #include <QVBoxLayout>
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Trace Levels
 
 #include "globals.h"            // networkP, ...
 #include "ProcessListTab.h"     // ProcessListTab
@@ -50,7 +51,7 @@ TabManager::TabManager(QWidget* window, QWidget* parent) : QWidget(parent)
 
 	window->setLayout(mainLayout);
 
-	LM_M(("Starting timer for Network polling"));
+	LM_T(LmtQtTimer, ("Starting timer for Network polling"));
 	startTimer(10);  // 10 millisecond timer	
 }
 

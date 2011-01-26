@@ -1,4 +1,3 @@
-
 #include "parseArgs.h"          // parseArgs
 
 #include <vector>				// std::vector
@@ -93,7 +92,7 @@ int main(int argC, const char *argV[])
 	logFd = lmFirstDiskFileDescriptor();
 
 	/*
-	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
+	LM_D(("Starting samson demo (logFd == %d)", ::logFd));
 	for (int i = 0 ; i < 256 ; i++)
 		LM_T(i,("Trace test %d",i));
 	 */
@@ -119,8 +118,8 @@ int main(int argC, const char *argV[])
 	ss::Delilah delilah(center.getNetwork(-2));
 	ss::DelilahConsole delilahConsole( &delilah );
 	
-	LM_M(("SamsonLocal start"));
-	LM_T(LMT_SAMSON_DEMO, ("Starting samson demo (logFd == %d)", ::logFd));
+	LM_T(LmtInit, ("SamsonLocal start"));
+	LM_D(("Starting samson demo (logFd == %d)", ::logFd));
 
 	std::vector< ss::SamsonWorker* > _workers;
 	for (int i = 0 ; i < workers ; i ++ )

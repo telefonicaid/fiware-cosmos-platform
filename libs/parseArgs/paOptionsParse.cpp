@@ -137,7 +137,7 @@ static PaArgument* argFind
 		else if ((aP->what & PawParameter) == PawParameter)
 		{
 			if (aP->aux != 0)
-				LM_M(("cant use this parameter"));
+				LM_W(("cant use this parameter"));
 			else
 			{
 				aP->aux = 1;

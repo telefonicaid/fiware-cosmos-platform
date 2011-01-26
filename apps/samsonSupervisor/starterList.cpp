@@ -8,7 +8,7 @@
 *
 */
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Lmt*
 
 #include "Starter.h"            // Starter
 #include "Spawner.h"            // Spawner
@@ -71,9 +71,9 @@ void starterListShow(const char* what)
 	unsigned int  ix;
 	Starter*      starter;
 
-	LM_F((""));
+	LM_T(LmtStarterListShow, (""));
 
-	LM_F(("----------- Starter List (%s) -----------", what));
+	LM_T(LmtStarterListShow, ("----------- Starter List (%s) -----------", what));
 	for (ix = 0; ix < starterMax; ix++)
 	{
 		if (starterV[ix] == NULL)
@@ -82,18 +82,18 @@ void starterListShow(const char* what)
 		starter = starterV[ix];
 
 		if (starter->endpoint)
-			LM_F(("  %08p  Starter %02d  %30s-Starter %-30s %s Endpoint at %p", starter, ix, starter->typeName(), starter->name, starter->endpoint->typeName(), starter->endpoint));
+			LM_T(LmtStarterListShow, ("  %08p  Starter %02d  %30s-Starter %-30s %s Endpoint at %p", starter, ix, starter->typeName(), starter->name, starter->endpoint->typeName(), starter->endpoint));
 		else
-			LM_F(("  %08p  Starter %02d  %30s-Starter %-30s NULL Endpoint",     starter, ix, starter->typeName(), starter->name));
+			LM_T(LmtStarterListShow, ("  %08p  Starter %02d  %30s-Starter %-30s NULL Endpoint",     starter, ix, starter->typeName(), starter->name));
 	}
-	LM_F(("--------------------------------"));
+	LM_T(LmtStarterListShow, ("--------------------------------"));
 
-	LM_F((""));
+	LM_T(LmtStarterListShow, (""));
 	spawnerListShow(what);
-	LM_F((""));
+	LM_T(LmtStarterListShow, (""));
 	processListShow(what);
-	LM_F((""));
-	LM_F(("==============================================================================="));
+	LM_T(LmtStarterListShow, (""));
+	LM_T(LmtStarterListShow, ("==============================================================================="));
 }
 
 
@@ -158,7 +158,7 @@ Starter* starterLookup(ss::Endpoint* ep)
 {
 	unsigned int  ix;
 
-	LM_M(("Looking for starter with endpoint %p", ep));
+	LM_T(LmtStarterLookup, ("Looking for starter with endpoint %p", ep));
 	starterListShow("Looking for a starter");
 
 	for (ix = 0; ix < starterMax; ix++)
@@ -166,41 +166,13 @@ Starter* starterLookup(ss::Endpoint* ep)
 		if (starterV[ix] == NULL)
 			continue;
 
-		LM_M(("*** Comparing endpoints %p and %p", ep, starterV[ix]->endpoint));
+		LM_T(LmtStarterLookup, ("*** Comparing endpoints %p and %p", ep, starterV[ix]->endpoint));
 
 		if (starterV[ix]->endpoint == ep)
 			return starterV[ix];
 	}
 
-#if 0
-	char*  host;
-
-	for (ix = 0; ix < starterMax; ix++)
-	{
-		if (starterV[ix] == NULL)
-			continue;
-
-		LM_M(("***  Testing '%s' starter '%s'", starterV[ix]->typeName(), starterV[ix]->name));
-
-		if (starterV[ix]->spawner != NULL)
-			host = starterV[ix]->spawner->host;
-		else if (starterV[ix]->process != NULL)
-			host = starterV[ix]->process->host;
-		else
-			continue;
-
-		LM_M(("*** Comparing '%s' to '%s'", host, ep->ip.c_str()));
-		if (strcmp(host, ep->ip.c_str()) == 0)
-		{
-			LM_M(("Changing '%s' endpoint %p for '%s' endpoint %p", starterV[ix]->endpoint->typeName(), starterV[ix]->endpoint, ep->typeName(), ep));
-			starterV[ix]->endpoint = ep;
-			LM_M(("found starter at '%s'", host));
-			return starterV[ix];
-		}
-	}
-#endif
-
-	LM_M(("Did not find starter"));
+	LM_T(LmtStarterLookup, ("Did not find starter with endpoint %p", ep));
 	return NULL;
 }
 
@@ -214,7 +186,7 @@ Starter* starterLookup(Process* process)
 {
 	unsigned int  ix;
 
-	LM_M(("Looking for starter with process %s at %s", process->name, process->host));
+	LM_T(LmtStarterLookup, ("Looking for starter with process %s at %s", process->name, process->host));
 	starterListShow("Looking for a starter with a specific process");
 
 	for (ix = 0; ix < starterMax; ix++)
@@ -240,7 +212,7 @@ Starter* starterLookup(Spawner* spawner)
 {
 	unsigned int  ix;
 
-	LM_M(("Looking for starter with spawner at %s", spawner->host));
+	LM_T(LmtStarterLookup, ("Looking for starter with spawner at %s", spawner->host));
 	starterListShow("Looking for a starter with a specific spawner");
 
 	for (ix = 0; ix < starterMax; ix++)

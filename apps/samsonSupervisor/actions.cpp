@@ -47,10 +47,10 @@ void help(void)
 */
 void list(void)
 {
-	LM_F(("----- Spawners: -----"));
+	LM_T(LmtSpawnerListShow, ("----- Spawners: -----"));
 	spawnerListShow("'l' pressed");
 
-	LM_F(("----- Processs: -----"));
+	LM_T(LmtProcessListShow, ("----- Processes: -----"));
 	processListShow("'l' pressed");
 }
 
@@ -62,7 +62,7 @@ void list(void)
 */
 void spawnerConnect(Starter* starterP, Spawner* spawnerP)
 {
-	LM_M(("connecting to spawner in %s on port %d", spawnerP->host, spawnerP->port));
+	LM_T(LmtSpawnerConnect, ("connecting to spawner in %s on port %d", spawnerP->host, spawnerP->port));
 
 	spawnerP->fd = iomConnect(spawnerP->host, spawnerP->port);
 	if (spawnerP->fd == -1)
@@ -75,7 +75,7 @@ void spawnerConnect(Starter* starterP, Spawner* spawnerP)
 		return;
 	}
 
-	LM_M(("Calling endpointAdd for spawner '%s'", spawnerP->host));
+	LM_T(LmtSpawnerConnect, ("Calling endpointAdd for spawner '%s'", spawnerP->host));
 	starterP->endpoint = networkP->endpointAdd("connected to spawner",
 											   spawnerP->fd,
 											   spawnerP->fd,
@@ -95,7 +95,7 @@ void spawnerConnect(Starter* starterP, Spawner* spawnerP)
 */
 void processConnect(Process* sP)
 {
-	LM_M(("connecting to process in %s on port %d", sP->host, sP->port));
+	LM_T(LmtProcessConnect, ("connecting to process in %s on port %d", sP->host, sP->port));
 
 	sP->fd = iomConnect(sP->host, sP->port);
 	if (sP->fd == -1)
@@ -110,7 +110,7 @@ void processConnect(Process* sP)
 
 	ss::Endpoint*  ep;
 
-	LM_M(("Calling endpointAdd for process '%s'", sP->host));
+	LM_T(LmtProcessConnect, ("Calling endpointAdd for process '%s'", sP->host));
 	ep = networkP->endpointAdd("connected to process",
 							   sP->fd,
 							   sP->fd,
@@ -130,7 +130,7 @@ void processConnect(Process* sP)
 */
 void connectToAllSpawners(void)
 {
-	LM_M(("Connecting to all %d spawners", spawnerMaxGet()));
+	LM_T(LmtSpawnerConnect, ("Connecting to all %d spawners", spawnerMaxGet()));
 
 	for (unsigned int ix = 0; ix < spawnerMaxGet(); ix++)
 	{
@@ -157,7 +157,7 @@ void connectToAllSpawners(void)
 */
 void connectToController(void)
 {
-	LM_M(("Connecting to controller"));
+	LM_T(LmtControllerConnect, ("Connecting to controller"));
 
 	for (unsigned int ix = 0; ix < processMaxGet(); ix++)
 	{
@@ -179,7 +179,7 @@ void connectToController(void)
 */
 void connectToAllProcesses(void)
 {
-	LM_M(("Connecting to all %d processes", processMaxGet()));
+	LM_T(LmtProcessConnect, ("Connecting to all (possibly %d) processes", processMaxGet()));
 
 	for (unsigned int ix = 0; ix < processMaxGet(); ix++)
 	{
@@ -207,7 +207,7 @@ void processStart(Process* processP, Starter* starter)
 	int                     s;
 	char*                   alias = (char*) "no_alias";
 
-	LM_M(("starting process '%s' in '%s' with %d parameters", processP->name, processP->host, processP->argCount));
+	LM_T(LmtProcessStart, ("starting process '%s' in '%s' with %d parameters", processP->name, processP->host, processP->argCount));
 
 	LM_TODO(("Lookup starter and don't start if already started!"));
 
@@ -221,26 +221,26 @@ void processStart(Process* processP, Starter* starter)
 	if ((logServer = networkP->logServerLookup()) != NULL)
 	{
 		strcpy(end, "-logServer");
-		LM_M(("parameter: '%s'", end));
+		LM_T(LmtProcessStart, ("parameter: '%s'", end));
 		end += strlen("-logServer") + 1;  // leave one ZERO character
 		strcpy(end, logServer->ip.c_str());
-		LM_M(("parameter: '%s'", end));
+		LM_T(LmtProcessStart, ("parameter: '%s'", end));
 		end += strlen(logServer->ip.c_str()) + 1; // leave one ZERO character
 	}
 	else
-		LM_W(("no log server found!"));
+		LM_T(LmtProcessStart, ("no log server found!"));
 
 	for (ix = 0; ix < processP->argCount; ix++)
 	{
 		strcpy(end, processP->arg[ix]);
-		LM_M(("parameter %d: '%s'", ix, end));
+		LM_T(LmtProcessStart, ("parameter %d: '%s'", ix, end));
 		end += strlen(processP->arg[ix]) + 1; // leave one ZERO character
 		if (strcmp(processP->arg[ix], "-alias") == 0)
 			alias = end;
 	}
 	*end = 0;
 
-	LM_M(("starting %s via spawner %p (host: '%s', fd: %d)", spawnData.name, processP->spawnerP, processP->spawnerP->host, processP->spawnerP->fd));
+	LM_T(LmtProcessStart, ("starting %s via spawner %p (host: '%s', fd: %d)", spawnData.name, processP->spawnerP, processP->spawnerP->host, processP->spawnerP->fd));
 	if (strcmp(spawnData.name, "Controller") == 0)
 		s = iomMsgSend(processP->spawnerP->fd, processP->spawnerP->host, "samsonSupervisor", ss::Message::ControllerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
 	else if (strcmp(spawnData.name, "Worker") == 0)
@@ -248,9 +248,9 @@ void processStart(Process* processP, Starter* starter)
 	if (s != 0)
 		LM_E(("iomMsgSend: error %d", s));
 
-	LM_M(("started process '%s' in '%s')", processP->name, processP->host));
+	LM_T(LmtProcessStart, ("started process '%s' in '%s')", processP->name, processP->host));
 	usleep(50000);
-	LM_M(("Connecting to newly started process (%s) ...", spawnData.name));
+	LM_T(LmtProcessStart, ("Connecting to newly started process (%s) ...", spawnData.name));
 	if (strcmp(spawnData.name, "Controller") == 0)
 	{
 		int  fd;
@@ -321,7 +321,7 @@ void processKill(Process* processP, Starter* starterP)
 	Starter*  starter;
 	int       s;
 	
-	LM_M(("killing process '%s' in host '%s'", processP->name, processP->host));
+	LM_T(LmtProcessKill, ("killing process '%s' in host '%s'", processP->name, processP->host));
 	starter = starterLookup(processP);
 	if (starter == NULL)
 		LM_E(("can't find starter for process '%s' at %s", processP->name, processP->host));
@@ -335,7 +335,7 @@ void processKill(Process* processP, Starter* starterP)
 			LM_E(("can't kill starter for process '%s' at %s as its endpoint is in state '%s'", processP->name, processP->host, starter->endpoint->stateName()));
 		else
 		{
-			LM_W(("Now really sending 'Die' to '%s' at '%s' (name: '%s')", starter->endpoint->typeName(), starter->endpoint->ip.c_str(), starter->endpoint->name.c_str()));
+			LM_T(LmtDie, ("Now really sending 'Die' to '%s' at '%s' (name: '%s')", starter->endpoint->typeName(), starter->endpoint->ip.c_str(), starter->endpoint->name.c_str()));
 			s = iomMsgSend(starter->endpoint->wFd, starter->endpoint->ip.c_str(), "samsonSupervisor", ss::Message::Die, ss::Message::Msg);
 		}
 	}

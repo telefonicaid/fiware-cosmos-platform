@@ -127,7 +127,8 @@ int main(int argC, char* argV[])
 
 	for (ix = 0; ix < 5000; ix++)
 	{
-	    LM_M(("MESSAGE  %d", ix));
+		LM_F(("FORCED   %d", ix));  // This LM_F use is only for a simple but necessary test program for the ParseArgs library
+		LM_M(("MESSAGE  %d", ix));  // This LM_M use is only for a simple but necessary test program for the ParseArgs library
 	    LM_W(("WARNING  %d", ix));
 	    LM_E(("ERROR    %d", ix));
 	    LM_V(("VERBOSE  %d", ix));

@@ -11,7 +11,8 @@ int main(int argC, char* argV[])
 
 	paParse(NULL, argC, argV, 1, FALSE);
 
-	LM_M(("line with newlines ...\n 1\n2\n3\n4\n"));
+	lmVerbose = true;
+	LM_V(("line with newlines ...\n 1\n2\n3\n4\n"));
 
 	return 0;
 }

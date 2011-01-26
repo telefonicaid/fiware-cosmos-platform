@@ -1,7 +1,17 @@
+/* ****************************************************************************
+*
+* FILE                     main_samsonSpawner.cpp
+*
+* AUTHOR                   Ken Zangelin
+*
+* CREATION DATE            Dec 14 2010
+*
+*/
 #include <unistd.h>             // fork & exec
 
-#include "logMsg.h"             // LM_*
 #include "parseArgs.h"          // parseArgs
+#include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Trace levels
 
 #include "NetworkInterface.h"   // DataReceiverInterface
 #include "Network.h"            // Network
@@ -80,7 +90,7 @@ void spawnParse(ss::Message::SpawnData* spawnData, char** args, int argCount)
 			break;
 
 		args[arg] = end;
-		LM_M(("arg %d: '%s'", arg, args[arg]));
+		LM_T(LmtInit, ("arg %d: '%s'", arg, args[arg]));
 		end = end + strlen(args[arg]) + 1;
 		++arg;
 
@@ -113,12 +123,12 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 
 		spawnData = (ss::Message::SpawnData*) dataP;
 		argCount = spawnData->argCount;
-		LM_M(("Got a '%s' spawn message (with %d parameters)", ss::Message::messageCode(headerP->code), argCount));
+		LM_T(LmtSpawn, ("Got a '%s' spawn message (with %d parameters)", ss::Message::messageCode(headerP->code), argCount));
 
 		spawnParse(spawnData, args, argCount);
-		LM_M(("Spawning %s with %d parameters:", (headerP->code == ss::Message::WorkerSpawn)? "samsonWorker" : "samsonController", argCount));
+		LM_T(LmtSpawn, ("Spawning %s with %d parameters:", (headerP->code == ss::Message::WorkerSpawn)? "samsonWorker" : "samsonController", argCount));
 		for (int ix = 0; ix < argCount; ix++)
-			LM_M(("o '%s'", args[ix]));
+			LM_T(LmtSpawn, ("o '%s'", args[ix]));
 
 		pid = fork();
 		if (pid == 0)
@@ -131,7 +141,7 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 				evec[ix + 1] = args[ix];
 			evec[ix + 1] = 0;
 
-			LM_M(("execvp(%s, %s, %s, %s, ...", evec[0], evec[0], evec[1], evec[2]));
+			LM_T(LmtSpawn, ("execvp(%s, %s, %s, %s, ...", evec[0], evec[0], evec[1], evec[2]));
 			execvp(evec[0], evec);
 			LM_X(1, ("Back from EXEC !!!"));
 		}
@@ -163,9 +173,9 @@ int main(int argC, const char *argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	LM_F(("Started with arguments:"));
+	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
-		LM_F(("  %02d: '%s'", ix, argV[ix]));
+		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
 	networkP = new ss::Network(endpoints, 0);
 	networkP->init(ss::Endpoint::Spawner, NULL, port, NULL);

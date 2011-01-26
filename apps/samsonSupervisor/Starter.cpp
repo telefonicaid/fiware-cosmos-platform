@@ -93,7 +93,7 @@ void Starter::check(void)
 	if (endpoint == NULL)
 		LM_W(("NULL endpoint"));
 	else
-		LM_M(("endpoint state: '%s'", endpoint->stateName()));
+	   LM_T(LmtCheck, ("endpoint state: '%s'", endpoint->stateName()));
 
 	if ((endpoint != NULL) && (endpoint->state == ss::Endpoint::Connected))
 		checkState = Qt::Checked;
@@ -103,13 +103,13 @@ void Starter::check(void)
 
 	if (endpoint != NULL)
 	{
-		LM_T(LMT_CHECK, ("%s %s-Starter '%s' (endpoint %p - '%s' at '%s')",
-						 (checkState == Qt::Checked)? "Checking" : "Unchecking",
-						 typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
+		LM_T(LmtCheck, ("%s %s-Starter '%s' (endpoint %p - '%s' at '%s')",
+						(checkState == Qt::Checked)? "Checking" : "Unchecking",
+						typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
 	}
 	else
 	{
-		LM_T(LMT_CHECK, ("%s %s-Starter '%s' (NULL endpoint)",
+		LM_T(LmtCheck, ("%s %s-Starter '%s' (NULL endpoint)",
 						 (checkState == Qt::Checked)? "Checking" : "Unchecking",
 						 typeName(), name));
 	}
@@ -131,14 +131,14 @@ void Starter::spawnerClicked(void)
 	if (spawner == NULL)
 		LM_X(1, ("NULL spawner"));
 
-	LM_M(("IN, checkState: '%s'",  (checkbox->checkState() == Qt::Checked)? "Checked" : "Unchecked"));
+	LM_T(LmtCheck, ("IN, checkState: '%s'",  (checkbox->checkState() == Qt::Checked)? "Checked" : "Unchecked"));
 
 	if (checkbox->checkState() == Qt::Checked)
 	{
 		if (endpoint)
 			networkP->endpointRemove(endpoint, "GUI Click - endpoint already existed");
 
-		LM_M(("Connecting to spawner '%s'", spawner->host));
+		LM_T(LmtSpawnerConnect, ("Connecting to spawner '%s'", spawner->host));
 		spawnerConnect(this, spawner);
 	}
 	else if (checkbox->checkState() == Qt::Unchecked)
@@ -153,7 +153,6 @@ void Starter::spawnerClicked(void)
 		if (endpoint->state != ss::Endpoint::Connected)
 			LM_W(("endpoint pointer ok (%p), but not connected", endpoint));
 
-		LM_M(("removing spawner endpoint"));
 		networkP->endpointRemove(endpoint, "GUI Click");
 		endpoint    = NULL;
 		spawner->fd = -1;
@@ -173,12 +172,12 @@ void Starter::processClicked(void)
 
 	if (checkbox->checkState() == Qt::Checked)
 	{
-		LM_M(("calling processStart - what if process already running ... ?"));
+		LM_T(LmtProcessStart, ("calling processStart - what if process already running ... ?"));
 		processStart(process, this);
 	}
 	else if (checkbox->checkState() == Qt::Unchecked)
 	{
-		LM_M(("calling processKill"));
+		LM_T(LmtProcessKill, ("calling processKill"));
 		processKill(process, this);
 	}
 }

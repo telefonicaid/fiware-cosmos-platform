@@ -17,7 +17,7 @@
 #include <QPushButton>
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Lmt*
 
 #include "globals.h"            // mainLayout, idleLabel
 #include "ports.h"              // LOG_SERVER_PORT
@@ -78,7 +78,7 @@ void logProviderStateSet(LogProvider* lpP, const char* state)
 		free(lpP->state);
 	lpP->state = strdup(state);
 
-	LM_M(("Setting state to %s", lpP->state));
+	LM_T(LmtLogProvider, ("Setting state to %s", lpP->state));
 	lpP->stateLabel->setText(QString(lpP->state));
 }
 
@@ -90,7 +90,7 @@ void logProviderStateSet(LogProvider* lpP, const char* state)
 */
 void logProviderNameSet(LogProvider* lpP, const char* name, const char* ip)
 {
-	LM_M(("Setting name ..."));
+	LM_T(LmtLogProvider, ("Setting name ..."));
 
 	if ((name == NULL) && (ip == NULL))
 		return;
@@ -109,7 +109,7 @@ void logProviderNameSet(LogProvider* lpP, const char* name, const char* ip)
 		lpP->host = strdup(ip);
 	}
 
-	LM_M(("Setting name to %s@%s", lpP->name, lpP->host));
+	LM_T(LmtLogProvider, ("Setting name to %s@%s", lpP->name, lpP->host));
 	lpP->nameLabel->setText(QString(lpP->name) + QString("@") + QString(lpP->host));
 }
 
@@ -241,7 +241,7 @@ void logProviderAdd(ss::Endpoint* endpoint, const char* name, const char* host, 
 {
 	LogProvider* lpP;
 
-	LM_M(("Adding provider '%s' at '%s'", name, host));
+	LM_T(LmtLogProvider, ("Adding provider '%s' at '%s'", name, host));
 
 	lpP = new LogProvider(endpoint, name, host, fd);
 	if (lpP == NULL)
@@ -258,7 +258,8 @@ void logProviderAdd(ss::Endpoint* endpoint, const char* name, const char* host, 
 */
 void logProviderRemove(LogProvider* lpP)
 {
-	LM_M(("deleting widgets"));
+	LM_T(LmtLogProvider, ("deleting widgets"));
+
 	delete lpP->headerLayout;
 
 	delete lpP->foldButton;
@@ -276,13 +277,11 @@ void logProviderRemove(LogProvider* lpP)
 
 	if (lpP->fd != -1)
 	{
-		LM_M(("Sending 'IDie' to endpoint that is to be removed"));
+		LM_T(LmtDie, ("Sending 'IDie' to endpoint that is to be removed"));
 		iomMsgSend(lpP->fd, lpP->name, "logServer", ss::Message::IDie, ss::Message::Msg);
 	}
 
-	LM_M(("deleting LogProvider"));
 	delete lpP;
-	LM_M(("LogProvider deleted"));
 
 	for (unsigned int ix = 0; ix < logProviderMax; ix++)
 	{
@@ -390,16 +389,16 @@ LogProvider** logProviderListGet(void)
 */
 void logProviderListShow(const char* why)
 {
-	LM_F(("---------- LogProvider List: %s ----------", why));
+	LM_T(LmtLogProviderListShow, ("---------- LogProvider List: %s ----------", why));
  
 	for (unsigned int ix = 0; ix < logProviderMax; ix++)
 	{
 		if (logProviderV[ix] == NULL)
 			continue;
 
-		LM_F(("  %08p  LogProvider %02d: %-30s %-30s  (fd: %d)", logProviderV[ix], ix, logProviderV[ix]->name, logProviderV[ix]->host, logProviderV[ix]->fd));
+		LM_T(LmtLogProviderListShow, ("  %08p  LogProvider %02d: %-30s %-30s  (fd: %d)", logProviderV[ix], ix, logProviderV[ix]->name, logProviderV[ix]->host, logProviderV[ix]->fd));
 	}
-	LM_F(("--------------------------------"));
+	LM_T(LmtLogProviderListShow, ("--------------------------------"));
 }
 
 
@@ -444,7 +443,7 @@ void logProviderMsgTreat(LogProvider* lpP)
 			s = iomMsgSend(lpP->fd, "connectingProcess", "logServer", ss::Message::Hello, ss::Message::Ack, &hello, sizeof(hello));
 		}
 		else
-			LM_M(("Received a Hello Ack - logProvider updated"));
+			LM_T(LmtHello, ("Received a Hello Ack - logProvider updated"));
 	}
 	else if (code == ss::Message::LogLine)
 	{

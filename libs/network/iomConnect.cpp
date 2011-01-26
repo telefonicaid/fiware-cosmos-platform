@@ -7,8 +7,9 @@
 * CREATION DATE            Oct 11 2010
 *
 */
-#include <unistd.h>             // close
 #include <sys/types.h>          // types needed by socket include files
+#include <unistd.h>             // close
+#include <stdlib.h>             // free
 #include <sys/socket.h>         // socket, bind, listen
 #include <sys/un.h>             // sockaddr_un
 #include <netinet/in.h>         // struct sockaddr_in
@@ -17,8 +18,9 @@
 #include <netinet/tcp.h>        // TCP_NODELAY
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Trace levels
 #include "iomConnect.h"         // Own interface
-#include <stdlib.h>             // free
+
 
 
 /* ***************************************************************************
@@ -43,13 +45,13 @@ int iomConnect(const char* ip, unsigned short port)
 	peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
 	peer.sin_port        = htons(port);
 
-	LM_M(("connecting to %s, port %d", ip, port));
+	LM_T(LmtConnect, ("connecting to %s, port %d", ip, port));
 	if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 	{
 		usleep(50000);
 		if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 		{
-			LM_M(("connect: %s", strerror(errno)));
+			LM_T(LmtConnect, ("connect: %s", strerror(errno)));
 			close(fd);
 			return -1;
 		}
@@ -73,7 +75,7 @@ int iomConnect(const char* ip, unsigned short port)
 		LM_X(1, ("setsockopt(TCP_NODELAY): %s", strerror(errno)));
 #endif
 
-	LM_M(("connect OK, returning fd %d", fd));
+	LM_T(LmtConnect, ("connected to '%s', port %d, returning fd %d", ip, port, fd));
 
 	return fd;
 }

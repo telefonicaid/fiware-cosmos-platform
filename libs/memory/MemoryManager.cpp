@@ -1,4 +1,14 @@
+/* ****************************************************************************
+*
+* FILE                     MemoryManager.cpp
+*
+* AUTHOR                   Andreu Urruela
+*
+* CREATION DATE            2010
+*
+*/
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Trace Levels
 
 #include "MemoryManager.h"		// Own interface
 #include "Buffer.h"				// ss::Buffer
@@ -62,11 +72,10 @@ namespace ss
 		// Create the shared memory areas
 		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
 		{
-			
-//			LM_M(("Removing shared memory area %d",i));
+			LM_T(LmtSharedMemory, ("Removing shared memory area %d",i));
 			removeSharedMemory(i);
 
-//			LM_M(("Creating shared memory area %d",i));			
+			LM_T(LmtSharedMemory, ("Creating shared memory area %d",i));			
 			SharedMemoryItem *tmp = getSharedMemory(i);
 			freeSharedMemory(tmp);
 		}
@@ -170,7 +179,7 @@ namespace ss
 		// Keep counter of the used memory
 		used_memory -= b->getMaxSize();
 		
-		//LM_T( 0 , ("destroy buffer with max size %sbytes", au::Format::string( b->getMaxSize() ).c_str() ) );
+		LM_T(LmtSharedMemory, ("destroying buffer with max size %sbytes", au::Format::string( b->getMaxSize() ).c_str() ) );
 		
 		// Decrease the number of used buffers
 		num_buffers--;
@@ -182,7 +191,6 @@ namespace ss
 
 		// Wake up background thread
 		stopper.wakeUp();
-
 	}
 	
 	int MemoryManager::retainSharedMemoryArea()

@@ -1,4 +1,16 @@
+/* ****************************************************************************
+*
+* FILE                     main_samsonWorker.cpp
+*
+* AUTHOR                   Ken Zangelin
+*
+* CREATION DATE            Dec 14 2010
+*
+*/
 #include "parseArgs.h"          // parseArgs
+#include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Trace levels
+
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "MemoryManager.h"		// ss::MemoryManager
@@ -74,9 +86,9 @@ int main(int argC, const char *argV[])
 
 	lmAux((char*) "father");
 
-	LM_F(("Started with arguments:"));
+	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
-		LM_F(("  %02d: '%s'", ix, argV[ix]));
+		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
 	logFd = lmFirstDiskFileDescriptor();
 
@@ -98,13 +110,13 @@ int main(int argC, const char *argV[])
 	network.init(ss::Endpoint::Worker, alias, port, controller);
 	network.logServerSet(logServer);
 	
-	LM_M(("Waiting for network connection ..."));
+	LM_T(LmtInit, ("Waiting for network connection ..."));
 	network.runInBackground();
 
 	while (!network.ready())
 		sleep(1);
 
-	LM_M(("Network OK"));
+	LM_T(LmtInit, ("Network OK"));
 	
 	// This is only necessary when running multiple samson workers as separate processes in the same machine
 	if (local)

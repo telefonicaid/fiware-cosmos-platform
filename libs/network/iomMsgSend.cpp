@@ -13,7 +13,7 @@
 #include <sys/time.h>           // gettimeofday
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_NWRUN, ...
+#include "traceLevels.h"        // LmtWrite, ...
 
 #include "Buffer.h"				// ss::Buffer
 #include "MemoryManager.h"      // MemoryManager
@@ -265,7 +265,7 @@ int iomMsgSend
 	if (packetP && (packetP->buffer != 0))
 		header.kvDataLen = packetP->buffer->getSize();
 
-	LM_T(LMT_MSG, ("Sending '%s' %s to '%s', data bytes: { data: %d, gbuf: %d, kv: %d }",
+	LM_T(LmtWrite, ("Sending '%s' %s to '%s', data bytes: { data: %d, gbuf: %d, kv: %d }",
 				   messageCode(code), messageType(type), to->name.c_str(), header.dataLen, header.gbufLen, header.kvDataLen));
 
 	s = partWrite(to, &header, sizeof(header), "header");

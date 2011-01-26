@@ -277,7 +277,7 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 		listener->name     = "Listener";
 		listener->wFd      = listener->rFd;
 
-		LM_T(LMT_FDS, ("opened fd %d to accept incoming connections", listener->rFd));
+		LM_T(LmtFds, ("opened fd %d to accept incoming connections", listener->rFd));
 	}
 
 	LM_TODO(("Perhaps I should include LogServer in this if ..."));
@@ -361,7 +361,7 @@ Endpoint* workerNew(int ix)
 	if (ep == NULL)
 		LM_XP(1, ("new Endpoint"));
 
-	LM_T(LmtWorkers, ("*** New worker endpoint at %p", ep));
+	LM_T(LmtWorker, ("*** New worker endpoint at %p", ep));
 
 	ep->rFd     = -1;
 	ep->wFd     = -1;
@@ -374,7 +374,7 @@ Endpoint* workerNew(int ix)
 	ep->port    = 0;
 	ep->coreNo  = -1;
 	
-	LM_T(LMT_ENDPOINT, ("Created endpoint %d, worker %d (%s)", 3 + ix, ix, ep->alias.c_str()));
+	LM_T(LmtEndpoint, ("Created endpoint %d, worker %d (%s)", 3 + ix, ix, ep->alias.c_str()));
 
 	return ep;
 }
@@ -903,7 +903,7 @@ Endpoint* Network::endpointAdd
 {
 	int ix;
 
-	LM_M(("%s: adding endpoint '%s' of type '%s' for fd %d (alias: '%s')", why, name, me->typeName(type), rFd, alias));
+	LM_T(LmtEndpoint, ("%s: adding endpoint '%s' of type '%s' for fd %d (alias: '%s')", why, name, me->typeName(type), rFd, alias));
 
 	switch (type)
 	{
@@ -917,9 +917,9 @@ Endpoint* Network::endpointAdd
 	case Endpoint::Controller:
 		if (endpoint[2] == NULL)
 		{
-			LM_M(("Allocating room for Controller endpoint"));
+			LM_T(LmtInit, ("Allocating room for Controller endpoint"));
 			endpoint[2] = new Endpoint();
-			LM_M(("*** Controller Endpoint at %p", endpoint[2]));
+			LM_T(LmtInit, ("*** Controller Endpoint at %p", endpoint[2]));
 		}
 
 		if (inheritedFrom != NULL)
@@ -956,7 +956,7 @@ Endpoint* Network::endpointAdd
 		if (endpointUpdateReceiver != NULL)
 			endpointUpdateReceiver->endpointUpdate(endpoint[2], Endpoint::ControllerAdded, "Controller Added");
 
-		LM_M(("Setting controller to point to endpoint[2]"));
+		LM_T(LmtInit, ("Setting controller to point to endpoint[2]"));
 		this->controller = endpoint[2];
 
 		return controller;
@@ -970,7 +970,7 @@ Endpoint* Network::endpointAdd
 				if (endpoint[ix] == NULL)
 					LM_XP(1, ("allocating temporal Endpoint"));
 
-				LM_M(("*** Temporal Endpoint '%s' at %p", name, endpoint[ix]));
+				LM_T(LmtTemporalEndpoint, ("*** Temporal Endpoint '%s' at %p", name, endpoint[ix]));
 
 				if (inheritedFrom != NULL)
 				{
@@ -1007,7 +1007,7 @@ Endpoint* Network::endpointAdd
 	case Endpoint::Delilah:
 	case Endpoint::WebListener:
 	case Endpoint::WebWorker:
-		LM_M(("Workers: %d", Workers));
+		LM_T(LmtWorkers, ("Workers: %d", Workers));
 		for (ix = 3 + Workers; ix < (int) (Endpoints - 1); ix++)
 		{
 			if (endpoint[ix] == NULL)
@@ -1016,7 +1016,7 @@ Endpoint* Network::endpointAdd
 				if (endpoint[ix] == NULL)
 					LM_XP(1, ("allocating Endpoint"));
 
-				LM_M(("*** New Endpoint '%s' at %p", name, endpoint[ix]));
+				LM_T(LmtEndpoint, ("*** New Endpoint '%s' at %p", name, endpoint[ix]));
 
 				if (inheritedFrom != NULL)
 				{
@@ -1077,7 +1077,7 @@ Endpoint* Network::endpointAdd
 			return controller;
 		}
 
-		LM_M(("%d workers", Workers));
+		LM_T(LmtWorkers, ("%d workers", Workers));
 		for (ix = 3; ix < 3 + Workers; ix++)
 		{
 			Endpoint* ep;
@@ -1090,9 +1090,9 @@ Endpoint* Network::endpointAdd
 				if (ep->wFd != wFd)
 					LM_E(("write file descriptors don't coincide for endpoint '%s' (%d vs %d)", alias, wFd, ep->wFd));
 
-				LM_M(("ep->type: '%s'", ep->typeName()));
-				LM_M(("ep->wFd: %d (wFd: %d)", ep->wFd, wFd));
-				LM_M(("ep->rFd: %d (rFd: %d)", ep->rFd, rFd));
+				LM_T(LmtTemporalEndpoint, ("ep->type: '%s'", ep->typeName()));
+				LM_T(LmtTemporalEndpoint, ("ep->wFd: %d (wFd: %d)", ep->wFd, wFd));
+				LM_T(LmtTemporalEndpoint, ("ep->rFd: %d (rFd: %d)", ep->rFd, rFd));
 
 				if ((ep->type == Endpoint::Temporal) && (ep->wFd == wFd) && (ep->rFd == rFd))
 					inheritedFrom = ep;
@@ -1115,7 +1115,6 @@ Endpoint* Network::endpointAdd
 				LM_T(LMT_FORWARD, ("Delilah worker endpoint uses SenderThread"));
 			}
 
-			LM_M(("Comparing aliases: '%s' with '%s'", endpoint[ix]->alias.c_str(), alias));
 			if (strcmp(endpoint[ix]->alias.c_str(), alias) == 0)
 			{
 				if (inheritedFrom != NULL)
@@ -1179,7 +1178,7 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 		logServer = NULL;
 	}
 
-	LM_T(LMT_EP, ("Removing '%s' endpoint '%s' (at %p) - %s", ep->typeName(), ep->name.c_str(), ep, why));
+	LM_T(LmtEndpoint, ("Removing '%s' endpoint '%s' (at %p) - %s", ep->typeName(), ep->name.c_str(), ep, why));
 
 	for (ix = 0; ix < Endpoints; ix++)
 	{
@@ -1211,7 +1210,7 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 			}
 			else
 			{
-				LM_M(("Closing down endpoint '%s'", ep->name.c_str()));
+				LM_T(LmtEndpoint, ("Closing down endpoint '%s'", ep->name.c_str()));
 				ep->state = Endpoint::Closed;
 				if ((endpointUpdateReceiver != NULL) && (ep->type != Endpoint::Temporal))
 					endpointUpdateReceiver->endpointUpdate(ep, Endpoint::EndpointRemoved, "Endpoint Removed");
@@ -1303,14 +1302,14 @@ Endpoint* Network::endpointLookup(Endpoint::Type type, char* ip)
 {
 	int ix = 0;
 
-	LM_M(("Looking for '%s' endpoint with IP '%s'", endpoint[0]->typeName(type), ip));
+	LM_T(LmtEndpointLookup, ("Looking for '%s' endpoint with IP '%s'", endpoint[0]->typeName(type), ip));
 	for (ix = 0; ix < Endpoints; ix++)
 	{
 		if (endpoint[ix] == NULL)
 			continue;
 
 		LM_TODO(("Remove Temporal from Endpoint::Type - make it a separate field in Endpoint"));
-		LM_M(("Comparing types: '%s' to '%s'", endpoint[0]->typeName(type), endpoint[ix]->typeName()));
+		LM_T(LmtEndpointLookup, ("Comparing types: '%s' to '%s'", endpoint[0]->typeName(type), endpoint[ix]->typeName()));
 		if (endpoint[ix]->type != type)
 		{
 			if ((endpoint[ix]->type == Endpoint::Temporal) && (type == Endpoint::Spawner) && (strcmp(endpoint[ix]->name.c_str(), "Spawner") == 0))
@@ -1319,15 +1318,15 @@ Endpoint* Network::endpointLookup(Endpoint::Type type, char* ip)
 				continue;
 		}
 
-		LM_M(("Comparing IPs: '%s' to '%s'", endpoint[ix]->ip.c_str(), ip));
+		LM_T(LmtEndpointLookup, ("Comparing IPs: '%s' to '%s'", endpoint[ix]->ip.c_str(), ip));
 		if (strcmp(endpoint[ix]->ip.c_str(), ip) == 0)
 		{
-			LM_W(("FOUND Endpoint at %s", ip));
+			LM_T(LmtEndpointLookup, ("FOUND Endpoint at %s", ip));
 			return endpoint[ix];
 		}
 	}
 
-	LM_W(("'%s' Endpoint at %s not found", endpoint[0]->typeName(type), ip));
+	LM_T(LmtEndpointLookup, ("'%s' Endpoint at %s not found", endpoint[0]->typeName(type), ip));
 	return NULL;
 }
 
@@ -1791,7 +1790,7 @@ void Network::msgTreat(void* vP)
 
 				while (controller->rFd == -1)
 				{
-					LM_M(("Reconnecting to Controller"));
+					LM_T(LmtControllerConnect, ("Reconnecting to Controller"));
 					controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
 					sleep(1); // sleep one second before reintenting connection to controller
 				}
@@ -1874,8 +1873,6 @@ void Network::msgTreat(void* vP)
 		break;
 
 	case Message::ConfigSet:
-		LM_M(("Got a ConfigSet message"));
-
 		configDataP = (Message::ConfigData*) dataP;
 
 		lmVerbose = configDataP->verbose;
@@ -1896,7 +1893,7 @@ void Network::msgTreat(void* vP)
 
 		hello = (Message::HelloData*) dataP;
 
-		LM_M(("Got 'Hello' from ep '%s', fd %d", ep->name.c_str(), ep->rFd));
+		LM_T(LmtHello, ("Got 'Hello' from ep '%s', fd %d", ep->name.c_str(), ep->rFd));
 
 		if (msgType == Message::Msg)
 			helloEp = endpointAdd("Got a Hello Message", ep->rFd, ep->wFd, hello->name, hello->alias, hello->workers, (Endpoint::Type) hello->type, hello->ip, hello->port, hello->coreNo, ep);
@@ -1912,7 +1909,7 @@ void Network::msgTreat(void* vP)
 			return;
 		}
 
-		LM_M(("Set helloReceived to true for endpoint '%s', fd %d", helloEp->name.c_str(), helloEp->rFd));
+		LM_T(LmtHello, ("Set helloReceived to true for endpoint '%s', fd %d", helloEp->name.c_str(), helloEp->rFd));
 		helloEp->helloReceived = true;
 		endpointListShow("helloEp->helloReceived = true");
 
@@ -1921,7 +1918,7 @@ void Network::msgTreat(void* vP)
 		if (endpointUpdateReceiver != NULL)
 			endpointUpdateReceiver->endpointUpdate(ep, Endpoint::HelloReceived, "Hello Received", helloEp);
 
-		LM_M(("Got Hello %s from %s, type %s, %s:%d, workers: %d",
+		LM_T(LmtHello, ("Got Hello %s from %s, type %s, %s:%d, workers: %d",
 			  messageType(msgType), helloEp->name.c_str(), helloEp->typeName(), helloEp->ip.c_str(), helloEp->port, helloEp->workers));
 
 		if (ep && ep->type == Endpoint::Temporal)
@@ -1931,16 +1928,16 @@ void Network::msgTreat(void* vP)
 			endpointRemove(ep, "No longer temporal");
 		}
 
-		LM_M(("helloEp->helloReceived = true"));
+		LM_T(LmtHello, ("helloEp->helloReceived = true"));
 		helloEp->helloReceived = true;
 
 		if (msgType == Message::Msg)
 		{
-			LM_T(LMT_JOB, ("Acking HELLO"));
+			LM_T(LmtHello, ("Acking HELLO"));
 			helloSend(helloEp, Message::Ack);
 		}
 		else
-			LM_T(LMT_JOB, ("HELLO was an ACK"));
+			LM_T(LmtHello, ("HELLO was an ACK"));
 
 		if (helloEp->jobQueueHead != NULL)
 		{
@@ -1967,14 +1964,14 @@ void Network::msgTreat(void* vP)
 
 		if (helloEp == controller)
 		{
-			LM_M(("Asking Controller for the WorkerVector"));
+			LM_T(LmtWorkerVector, ("Asking Controller for the WorkerVector"));
 			if ((me->type != Endpoint::CoreWorker) && (me->type != Endpoint::Controller))
 				iomMsgSend(controller, me, Message::WorkerVector, Message::Msg, NULL, 0, NULL);
 		}
 		else if ((helloEp->type == Endpoint::Controller) && (controller == NULL))
-			LM_M(("NOT Asking Controller for the WorkerVector - controller == NULL"));
+			LM_T(LmtWorkerVector, ("NOT Asking Controller for the WorkerVector - controller == NULL"));
 		else
-			LM_M(("NOT Asking Controller for the WorkerVector!"));
+			LM_T(LmtWorkerVector, ("NOT Asking Controller for the WorkerVector!"));
 
 		checkAllWorkersConnected();
 		break;
@@ -1987,7 +1984,7 @@ void Network::msgTreat(void* vP)
 			controllerMsgTreat(ep, msgCode, msgType, dataP, dataLen, &packet);
 		else
 		{
-			LM_M(("Got the worker vector"));
+			LM_T(LmtWorkerVector, ("Got the worker vector"));
 
 			if (msgType != Message::Ack)
 				LM_X(1, ("Got a WorkerVector request, not being controller ..."));
@@ -1995,18 +1992,18 @@ void Network::msgTreat(void* vP)
 			if (ep->type != Endpoint::Controller)
 				LM_X(1, ("Got a WorkerVector ack NOT from Controller ... (endpoint type: %d)", ep->type));
 
-			LM_M(("Got the worker vector from the Controller - now connect to them all ..."));
+			LM_T(LmtWorkerVector, ("Got the worker vector from the Controller - now connect to them all ..."));
 
 			int               ix;
 			Message::Worker*  workerV = (Message::Worker*) dataP;
 
 			for (unsigned int ix = 0; ix < dataLen / sizeof(Message::Worker); ix++)
-				LM_M(("Controller gave me a worker in %s:%d", workerV[ix].ip, workerV[ix].port));
+				LM_T(LmtWorkerVector, ("Controller gave me a worker in %s:%d", workerV[ix].ip, workerV[ix].port));
 
 			if ((unsigned int) Workers < dataLen / sizeof(Message::Worker))
 			{
-				LM_W(("Got %d workers from Controller - I thought there were %d workers - changing to %d workers",
-					  dataLen / sizeof(Message::Worker), Workers, dataLen / sizeof(Message::Worker)));
+				LM_T(LmtWorkerVector, ("Got %d workers from Controller - I thought there were %d workers - changing to %d workers",
+									   dataLen / sizeof(Message::Worker), Workers, dataLen / sizeof(Message::Worker)));
 
 				// Adding workers in Endpoint vector
 				for (unsigned int ix = Workers; ix < dataLen / sizeof(Message::Worker); ix++)
@@ -2019,17 +2016,17 @@ void Network::msgTreat(void* vP)
 			else if ((unsigned int) Workers > dataLen / sizeof(Message::Worker))
 			{
 				// Removing workers from Endpoint vector
-				LM_M(("I had %d workers - Controller tells me I should have %d - deleting the rest (%d - %d)",
-					  Workers,
-					  dataLen / sizeof(Message::Worker),
-					  dataLen / sizeof(Message::Worker),
-					  Workers));
+				LM_T(LmtWorkerVector, ("I had %d workers - Controller tells me I should have %d - deleting the rest (%d - %d)",
+									   Workers,
+									   dataLen / sizeof(Message::Worker),
+									   dataLen / sizeof(Message::Worker),
+									   Workers));
 
 				for (unsigned int ix = dataLen / sizeof(Message::Worker); ix < (unsigned int) Workers; ix++)
 				{
 					if (endpoint[3 + ix] != NULL)
 					{
-						LM_M(("deleting obsolete worker endpoint %d", 3 + ix));
+						LM_T(LmtWorkerVector, ("deleting obsolete worker endpoint %d", 3 + ix));
 						delete endpoint[3 + ix];
 						endpoint[3 + ix] = NULL;
 					}
@@ -2048,18 +2045,16 @@ void Network::msgTreat(void* vP)
 					endpoint[3 + ix]->state = Endpoint::Unconnected;
 					endpoint[3 + ix]->alias = workerV[ix].alias;
 
-					LM_M(("*** New Worker Endpoint '%s' at %p", workerV[ix].alias, endpoint[ix]));
+					LM_T(LmtWorker, ("*** New Worker Endpoint '%s' at %p", workerV[ix].alias, endpoint[ix]));
 				}
 				else
-				{
-					LM_W(("Should I fill worker %02d with the info the controller gave me ?", ix));
-				}
+					LM_T(LmtWorker, ("Should I fill worker %02d with the info the controller gave me ?", ix));
 
 				epP = endpoint[3 + ix];
 
 				if (strcmp(epP->alias.c_str(), me->alias.c_str()) == 0)
 				{
-					LM_T(LMT_WORKERS, ("NOT connecting to myself ..."));
+					LM_T(LmtWorker, ("NOT connecting to myself ..."));
 					epP->name = std::string("me: ") + epP->ip;
 					ME = epP;
 					continue;
@@ -2069,7 +2064,7 @@ void Network::msgTreat(void* vP)
 				{
 					int workerFd;
 
-					LM_T(LMT_WORKERS, ("Connect to worker %d: %s (host %s, port %d, alias '%s')",
+					LM_T(LmtWorker, ("Connect to worker %d: %s (host %s, port %d, alias '%s')",
 									   ix, epP->name.c_str(), epP->ip.c_str(), epP->port, epP->alias.c_str()));
 
 					if ((workerFd = iomConnect(epP->ip.c_str(), epP->port)) == -1)
@@ -2079,7 +2074,7 @@ void Network::msgTreat(void* vP)
 							LM_X(1, ("Unable to connect to worker %d (%s) - delilah must connect to all workers", ix, workerV[ix].name));
 						}
 
-						LM_T(LMT_WORKERS, ("worker %d: %s (host %s, port %d) not there - no problem, he'll connect to me",
+						LM_T(LmtWorker, ("worker %d: %s (host %s, port %d) not there - no problem, he'll connect to me",
 									   ix, epP->name.c_str(), epP->ip.c_str(), epP->port));
 					}
 					else
@@ -2090,7 +2085,7 @@ void Network::msgTreat(void* vP)
 						if (ep != NULL)
 						{
 							ep->state = Endpoint::Connected;
-							LM_T(LMT_ENDPOINT, ("Added ep with state '%s'", ep->stateName()));
+							LM_T(LmtEndpoint, ("Added ep with state '%s'", ep->stateName()));
 						}
 						else
 							LM_X(1, ("endpointAdd failed"));
@@ -2228,7 +2223,7 @@ void Network::run(void)
 					}
 					else if (endpoint[ix]->state == Endpoint::Disconnected)
 					{
-						LM_T(LMT_ENDPOINT, ("Connect to %s:%d ?", endpoint[ix]->ip.c_str(), endpoint[ix]->port));
+						LM_T(LmtEndpoint, ("Connect to %s:%d ?", endpoint[ix]->ip.c_str(), endpoint[ix]->port));
 
 						workerFd = iomConnect(endpoint[ix]->ip.c_str(), endpoint[ix]->port);
 						if (workerFd != -1)
@@ -2239,7 +2234,7 @@ void Network::run(void)
 											 endpoint[ix]->ip.c_str(),
 											 endpoint[ix]->port);
 							if (ep != NULL)
-								LM_T(LMT_ENDPOINT, ("Added ep with state '%s'", ep->stateName()));
+								LM_T(LmtEndpoint, ("Added ep with state '%s'", ep->stateName()));
 							else
 								LM_X(1, ("endpointAdd failed"));
 
@@ -2329,7 +2324,7 @@ void Network::run(void)
 					Endpoint*    ep  = endpointAdd("'run' just accepted an incoming connection", fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
 
 					listener->msgsIn += 1;
-					LM_M(("sending hello to newly accepted endpoint"));
+					LM_T(LmtHello, ("sending hello to newly accepted endpoint"));
 					helloSend(ep, Message::Msg);
 				}
 			}
@@ -2425,7 +2420,7 @@ int Network::poll(void)
 			Endpoint*    ep  = endpointAdd("'poll' just accepted an incoming connection", fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
 
 			listener->msgsIn += 1;
-			LM_M(("sending hello to newly accepted endpoint"));
+			LM_T(LmtHello, ("sending hello to newly accepted endpoint"));
 			helloSend(ep, Message::Msg);
 		}
 	}
@@ -2522,7 +2517,7 @@ void Network::fdSet(int fd, const char* name, const char* alias)
 	Endpoint* ep;
 
 	ep = endpointAdd("setting a file descriptor", fd, -1, name, alias, 0, Endpoint::Fd, "FD", 0);
-	LM_M(("setting state to Endpoint::Connected for fd %d", fd));
+	LM_T(LmtFds, ("setting state to Endpoint::Connected for fd %d", fd));
 	ep->state = Endpoint::Connected;
 }	
 
@@ -2536,7 +2531,7 @@ void Network::logServerSet(const char* logServerHost)
 {
 	int fd;
 
-	LM_M(("Connecting to Log Server at '%s', port %d", logServerHost, LOG_SERVER_PORT));
+	LM_T(LmtLogServer, ("Connecting to Log Server at '%s', port %d", logServerHost, LOG_SERVER_PORT));
 	fd = iomConnect(logServerHost, LOG_SERVER_PORT);
 	if (fd != -1)
 		endpointAdd("connected to logServer", fd, fd, "logServer", "logServer", 0, Endpoint::Temporal, logServerHost, LOG_SERVER_PORT);

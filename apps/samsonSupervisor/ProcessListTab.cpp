@@ -62,19 +62,19 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 	starters  = starterMaxGet();
 	starterV  = starterListGet();
 
-	LM_T(LMT_PROCESS_LIST_TAB, ("Creating QT part of %d starters", starters));
+	LM_T(LmtProcessListTab, ("Creating QT part of %d starters", starters));
 	for (unsigned int ix = 0; ix < starters; ix++)
 	{
 		if (starterV[ix] == NULL)
 			continue;
 
-		LM_T(LMT_PROCESS_LIST_TAB, ("Creating checkbox for '%s'", starterV[ix]->name));
+		LM_T(LmtProcessListTab, ("Creating checkbox for '%s'", starterV[ix]->name));
 		starterV[ix]->checkbox     = new QCheckBox(QString(starterV[ix]->name), starterV[ix]);
 		starterV[ix]->configButton = new QPushButton("Configure");
 
 		if (starterV[ix]->type == Starter::SpawnerConnecter)
 		{
-			LM_T(LMT_PROCESS_LIST_TAB, ("Creating checkbox for spawner-starter '%s'", starterV[ix]->name));
+			LM_T(LmtProcessListTab, ("Creating checkbox for spawner-starter '%s'", starterV[ix]->name));
 			starterV[ix]->checkbox->connect(starterV[ix]->checkbox, SIGNAL(clicked()), starterV[ix], SLOT(spawnerClicked()));
 			mainLayout->addWidget(starterV[ix]->checkbox,     ix + 1, spawnerColumn);
 			mainLayout->addWidget(starterV[ix]->configButton, ix + 1, spawnerColumn + 1);
@@ -83,7 +83,7 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 		}
 		else if (starterV[ix]->type == Starter::ProcessStarter)
 		{
-			LM_T(LMT_PROCESS_LIST_TAB, ("Creating checkbox for process-starter '%s'", starterV[ix]->name));
+			LM_T(LmtProcessListTab, ("Creating checkbox for process-starter '%s'", starterV[ix]->name));
 			starterV[ix]->checkbox->connect(starterV[ix]->checkbox, SIGNAL(clicked()), starterV[ix], SLOT(processClicked()));
 
 			mainLayout->addWidget(starterV[ix]->checkbox,     ix + 1, processColumn);
@@ -177,7 +177,8 @@ void ProcessListTab::logServerStart(void)
 		}
 
 		workerV = networkP->samsonWorkerEndpoints();
-		LM_M(("samsonWorkerEndpoints returned a list of %d workers", workerV.size()));
+		LM_T(LmtWorkers, ("samsonWorkerEndpoints returned a list of %d workers", workerV.size()));
+
 		memset(workers, 0, sizeof(workers));
 		if (workerV.size() > 0)
 		{
@@ -185,7 +186,7 @@ void ProcessListTab::logServerStart(void)
 
 			for (ix = 0; ix < workerV.size(); ix++)
 			{
-				LM_M(("Adding worker '%s'", workerV[ix]->ip.c_str()));
+				LM_T(LmtWorkers, ("Adding worker '%s'", workerV[ix]->ip.c_str()));
 				strcat(workers, workerV[ix]->ip.c_str());
 				strcat(workers, " ");
 			}
@@ -193,7 +194,7 @@ void ProcessListTab::logServerStart(void)
 		}
 
 		spawnerV = networkP->samsonEndpoints(ss::Endpoint::Spawner);
-		LM_M(("samsonEndpoints(Spawner) returned a list of %d spawner endpoints", spawnerV.size()));
+		LM_T(LmtEndpoints, ("samsonEndpoints(Spawner) returned a list of %d spawner endpoints", spawnerV.size()));
 		memset(spawners, 0, sizeof(spawners));
 		if (spawnerV.size() > 0)
 		{
@@ -201,7 +202,7 @@ void ProcessListTab::logServerStart(void)
 
 			for (ix = 0; ix < spawnerV.size(); ix++)
 			{
-				LM_M(("Adding spawner '%s'", spawnerV[ix]->ip.c_str()));
+				LM_T(LmtSpawner, ("Adding spawner '%s'", spawnerV[ix]->ip.c_str()));
 				strcat(spawners, spawnerV[ix]->ip.c_str());
 				strcat(spawners, " ");
 			}
@@ -210,20 +211,20 @@ void ProcessListTab::logServerStart(void)
 
 		argV[argC] = NULL;
 
-		LM_M(("Execing logServer with controller: '%s', spawners '%s' and workers: '%s'", controllerIp, spawners, workers));
+		LM_T(LmtLogServer, ("Execing logServer with controller: '%s', spawners '%s' and workers: '%s'", controllerIp, spawners, workers));
 		for (int ix = 0; ix < argC; ix++)
-			LM_M(("argV[%d]: '%s'", ix, argV[ix]));
+			LM_T(LmtInit, ("argV[%d]: '%s'", ix, argV[ix]));
 
 		execvp(argV[0], argV);
 		LM_X(1, ("Back from exec ..."));
 	}
 
-	LM_M(("Awaiting dead father of log server (log server does fork and the father exits at startup"));
+	LM_T(LmtLogServer, ("Awaiting dead father of log server (log server does fork and the father exits at startup"));
 	int status;
 	waitpid(pid, &status, 0);
-	LM_M(("Dead father of log server waited for"));
+	LM_T(LmtLogServer, ("Dead father of log server waited for"));
 
-	LM_M(("Connecting to log server"));
+	LM_T(LmtLogServer, ("Connecting to log server"));
 	usleep(100000);
 	int logServerFd = -1;
 
@@ -231,7 +232,7 @@ void ProcessListTab::logServerStart(void)
 
 	while (1)
 	{
-		LM_M(("trying to connect to log server"));
+		LM_T(LmtLogServer, ("trying to connect to log server"));
 		logServerFd = iomConnect("localhost", LOG_SERVER_PORT);
 		if (logServerFd != -1)
 			break;
@@ -253,7 +254,7 @@ void ProcessListTab::logServerStart(void)
 		}
 		else
 		{
-			LM_M(("logServerEndpoint not found ..."));
+			LM_T(LmtLogServer, ("logServerEndpoint not found ..."));
 			logServerEndpoint = networkP->endpointAdd("logServerEndpoint not found", logServerFd, logServerFd, "Samson Log Server", "logServer", 0, ss::Endpoint::Temporal, "localhost", LOG_SERVER_PORT);
 		}
 	}
@@ -281,7 +282,7 @@ void ProcessListTab::startersCreate(void)
 		if (spawnerV[ix] == NULL)
 			continue;
 
-		LM_T(LMT_STARTER, ("Adding starter for spawner in '%s'", spawnerV[ix]->host));
+		LM_T(LmtStarter, ("Adding starter for spawner in '%s'", spawnerV[ix]->host));
 		starterAdd(spawnerV[ix]);
 	}
 
@@ -301,7 +302,7 @@ void ProcessListTab::startersCreate(void)
 		if (processV[ix] == NULL)
 			continue;
 
-		LM_T(LMT_STARTER, ("Adding starter for process '%s' in '%s'", processV[ix]->name, processV[ix]->host));
+		LM_T(LmtStarter, ("Adding starter for process '%s' in '%s'", processV[ix]->name, processV[ix]->host));
 		starterAdd(processV[ix]);
 	}
 }

@@ -1,4 +1,3 @@
-#include "LoadDataManager.h"		// Own interface
 #include "Buffer.h"					// ss::Buffer
 #include "FileManager.h"			// ss::FileManager
 #include "SamsonWorker.h"			// ss::SamsonWorker
@@ -7,11 +6,12 @@
 #include "FileManager.h"			// ss::FileManager
 #include "FileManagerReadItem.h"
 #include "FileManagerWriteItem.h"
+#include "LoadDataManager.h"		// Own interface
+
+
 
 namespace ss
 {
-	
-	
 #pragma mark DataManagerItem
 	
 	LoadDataManagerItem::LoadDataManagerItem( size_t _id , int _fromIdentifier , LoadDataManager *_dataManager )
@@ -21,6 +21,7 @@ namespace ss
 		dataManager = _dataManager;
 	}
 	
+
 
 #pragma mark UploadItem
 	
@@ -37,6 +38,8 @@ namespace ss
 		
 	}
 
+
+
 	size_t UploadItem::submitToFileManager()
 	{
 		// Add to the file manager to be stored on disk
@@ -45,6 +48,8 @@ namespace ss
 		return FileManager::shared()->addItemToWrite( item );
 	}
 	
+
+
 	void UploadItem::sendResponse( bool error , std::string error_message )
 	{
 		// Sen a packet bak to delilah to confirm this update
@@ -93,10 +98,14 @@ namespace ss
 		return FileManager::shared()->addItemToRead( item );
 	}
 	
+
+
 	DownloadItem::~DownloadItem()
 	{
 	}
 	
+
+
 	void DownloadItem::sendResponse( bool error , std::string error_message )
 	{
 		// Sen a packet bak to delilah to confirm this update
@@ -116,9 +125,10 @@ namespace ss
 	
 #pragma mark LoadDataManager
 	
+
+
 	void LoadDataManager::addUploadItem( int fromIdentifier, const network::UploadData &uploadData ,size_t sender_id, Buffer * buffer )
 	{
-		
 		lock.lock();
 		
 		// Get the size of the upload buffer....
@@ -129,12 +139,11 @@ namespace ss
 		
 		item->submitToFileManager();
 
-		//LM_M(("LDM Item (sender_id %d) (file_id %d) and was schedulled to Disk manager with id %d",sender_id,uploadData.file_id() ,fm_id));
-		
-		
 		lock.unlock();
 	}
 	
+
+
 	void LoadDataManager::addDownloadItem( int fromIdentifier, const network::DownloadData &downloadData , size_t sender_id )
 	{
 		lock.lock();
@@ -149,6 +158,8 @@ namespace ss
 		
 	}
 	
+
+
 	void LoadDataManager::notifyFinishReadItem( FileManagerReadItem *item  )
 	{
 		lock.lock();
@@ -167,6 +178,7 @@ namespace ss
 	}
 	
 	
+
 	void LoadDataManager::notifyFinishWriteItem( FileManagerWriteItem *item  )
 	{
 		lock.lock();
@@ -186,6 +198,7 @@ namespace ss
 	}
 
 	
+
 	void LoadDataManager::fill( network::WorkerStatus* ws)
 	{
 		lock.lock();
@@ -214,11 +227,5 @@ namespace ss
 		lock.unlock();
 		
 		ws->set_load_data_manager_status( output.str() );
-		
-
 	}
-
-	
-	
-	
 }

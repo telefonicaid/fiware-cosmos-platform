@@ -13,6 +13,7 @@
 #include <QTimerEvent>
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Trasce Levels
 
 #include "globals.h"            // networkP
 #include "Network.h"            // Network
@@ -74,7 +75,7 @@ void SamsonLogServer::timerEvent(QTimerEvent* e)
 */
 int SamsonLogServer::ready(const char* info)
 {
-	LM_M(("Network ready - so what ?"));
+	LM_T(LmtInit, ("Network ready - so what ?"));
 
 	return 0;
 }
@@ -97,11 +98,11 @@ int SamsonLogServer::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason
 	}
 
 	if ((reason == ss::Endpoint::NoLongerTemporal) && (newEp != NULL))
-		LM_M(("********************* Got an Update Notification ('%s') for endpoint %p '%s' at '%s' (new ep: '%s' at '%s')", reasonText, ep, ep->name.c_str(), ep->ip.c_str(), newEp->name.c_str(), newEp->ip.c_str()));
+		LM_T(LmtEndpointUpdate, ("********************* Got an Update Notification ('%s') for endpoint %p '%s' at '%s' (new ep: '%s' at '%s')", reasonText, ep, ep->name.c_str(), ep->ip.c_str(), newEp->name.c_str(), newEp->ip.c_str()));
 	else if (ep != NULL)
-		LM_M(("********************* Got an Update Notification ('%s') for endpoint %p '%s' at '%s'", reasonText, ep, ep->name.c_str(), ep->ip.c_str()));
+		LM_T(LmtEndpointUpdate, ("********************* Got an Update Notification ('%s') for endpoint %p '%s' at '%s'", reasonText, ep, ep->name.c_str(), ep->ip.c_str()));
 	else
-		LM_M(("********************* Got an Update Notification ('%s') for NULL endpoint", reasonText));
+		LM_T(LmtEndpointUpdate, ("********************* Got an Update Notification ('%s') for NULL endpoint", reasonText));
 
 	networkP->endpointListShow("In endpointUpdate");
 
@@ -121,14 +122,14 @@ int SamsonLogServer::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason
 	case ss::Endpoint::NoLongerTemporal:
 		if (lpP)
 		{
-			LM_M(("Changing ep for '%s' from %p to %p", lpP->name, lpP->endpoint, newEp));
+			LM_T(LmtEndpointUpdate, ("Changing ep for '%s' from %p to %p", lpP->name, lpP->endpoint, newEp));
 			lpP->endpoint = newEp;
 			logProviderNameSet(lpP, newEp->name.c_str(), newEp->ip.c_str());
 		}
 		break;
 
 	case ss::Endpoint::HelloReceived:
-		LM_M(("HelloReceived: lpP at %p for endpoint '%s' at '%s'", lpP, ep->name.c_str(), ep->ip.c_str()));
+		LM_T(LmtEndpointUpdate, ("HelloReceived: lpP at %p for endpoint '%s' at '%s'", lpP, ep->name.c_str(), ep->ip.c_str()));
 		if (lpP == NULL)
 			logProviderAdd(ep, ep->name.c_str(), ep->ip.c_str(), ep->rFd);
 		else
@@ -175,7 +176,7 @@ int SamsonLogServer::receive(int fromId, int nb, ss::Message::Header* headerP, v
 			LM_W(("LOG LINE: %c: %s[%d]:%s: %s", logLine->type, logLine->file, logLine->lineNo, logLine->fName, logLine->text));
 			snprintf(why, sizeof(why), "Cannot find log provider for endpoint '%s' type '%s' %p", ep->name.c_str(), ep->typeName(), ep);
 			networkP->endpointListShow(why);
-			// LM_RE(0, ("Cannot find log provider for endpoint %p", ep));
+
 			LM_X(123, ("Cannot find log provider for endpoint %p", ep));
 		}
 

@@ -20,6 +20,7 @@ char* traceLevelName(TraceLevels level)
 	switch (level)
 	{
 	case LmtInit:                        return (char*) "Initialization, especially in main";
+	case LmtAlarm:                       return (char*) "At issuing an Alarm";
 	case LMT_NWRUN:                      return (char*) "Nwrun";
 	case LMT_SELECT:                     return (char*) "Select";
 	case LMT_FDS:                        return (char*) "Fds";

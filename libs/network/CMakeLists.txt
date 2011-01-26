@@ -14,7 +14,6 @@ SET (HEADERS
 	workerStatus.h
 	Alarm.h
 	Misc.h
-	EndpointMgr.h
 	easyzlib.h
 )
 

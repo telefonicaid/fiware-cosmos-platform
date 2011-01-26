@@ -25,8 +25,6 @@
 
 namespace ss {
 	
-	class EndpointMgr;
-		
 	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
 	{
 		

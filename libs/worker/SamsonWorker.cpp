@@ -10,7 +10,6 @@
 #include "Endpoint.h"                   // Endpoint
 #include "CommandLine.h"                // CommandLine
 #include "SamsonWorker.h"               // Own interfce
-#include "EndpointMgr.h"				// ss::EndpointMgr
 #include "SamsonSetup.h"				// ss::SamsonSetup
 #include "Format.h"						// au::Format
 

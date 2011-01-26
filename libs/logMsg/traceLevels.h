@@ -22,6 +22,7 @@ typedef enum TraceLevels
 // Network Trace Levels 20-50
 //
 	LmtInit         = 20,
+	LmtAlarm,
 	LMT_NWRUN,
 	LMT_SELECT,
 	LMT_FDS,

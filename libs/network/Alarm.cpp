@@ -3,6 +3,7 @@
 #include <string.h>             // strdup
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Trace levels
 
 #include "Message.h"            // Message
 #include "iomMsgSend.h"         // iomMsgSend
@@ -71,7 +72,7 @@ void alarmSend
 	strncpy(alarm.message, message, sizeof(alarm.message));
 
 	iomMsgSend(controller, from, Message::Alarm, Message::Evt, &alarm, sizeof(alarm));
-	LM_F(("ALARM: '%s'", message));
+	LM_T(LmtAlarm, ("ALARM: '%s'", message));
 }
 
 

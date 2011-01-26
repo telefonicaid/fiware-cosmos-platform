@@ -1,6 +1,5 @@
 #include "parseArgs.h"          // parseArgs
 #include "SamsonWorker.h"		// ss::SamsonWorker
-#include "EndpointMgr.h"		// ss::EndpointMgr
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "MemoryManager.h"		// ss::MemoryManager
 #include "Endpoint.h"			// ss::Endpoint

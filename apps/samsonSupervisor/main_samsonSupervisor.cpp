@@ -143,9 +143,9 @@ int main(int argC, const char *argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	LM_F(("Started with arguments:"));
+	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
-		LM_F(("  %02d: '%s'", ix, argV[ix]));
+		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
 	LM_TODO(("Try to connect to logServer as early as possible"));
 
@@ -165,34 +165,34 @@ int main(int argC, const char *argV[])
 	networkP->init(ss::Endpoint::Supervisor, "Supervisor", 0, controllerName);
 	networkP->logServerSet("localhost");  // log server will always run in 'localhost' for samsonSupervisor ...
 
-	LM_M(("calling runUntilReady"));
+	LM_T(LmtInit, ("calling runUntilReady"));
 	networkP->runUntilReady();
-	LM_M(("runUntilReady done"));
+	LM_T(LmtInit, ("runUntilReady done"));
 
 	mainWinCreate(qApp);
 	tabManager = new TabManager(mainWindow);
 
-	LM_M(("Connecting to all Spawners"));
+	LM_T(LmtInit, ("Connecting to all Spawners"));
 	connectToAllSpawners();
 
-	LM_M(("Connecting to all Workers"));
+	LM_T(LmtInit, ("Connecting to all Workers"));
 	unsigned int                ix;
 	std::vector<ss::Endpoint*>  epV;
 
 	epV = networkP->samsonWorkerEndpoints();
-	LM_M(("Got %d Worker endpoints", epV.size()));
+	LM_T(LmtInit, ("Got %d Worker endpoints", epV.size()));
 	for (ix = 0; ix < epV.size(); ix++)
 	{
 		ss::Endpoint* ep;
 
 		ep = epV[ix];
 
-		LM_M(("%02d: %-20s %-20s   %s", ix, ep->name.c_str(), ep->ip.c_str(), ep->stateName()));
+		LM_T(LmtInit, ("%02d: %-20s %-20s   %s", ix, ep->name.c_str(), ep->ip.c_str(), ep->stateName()));
 	}
 
 	mainWindow->show();
 
-	LM_M(("letting control to QT main loop"));
+	LM_T(LmtInit, ("letting control to QT main loop"));
 	qApp->exec();
 	return 0;
 }

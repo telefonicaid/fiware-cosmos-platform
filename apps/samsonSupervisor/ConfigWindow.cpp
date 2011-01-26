@@ -68,10 +68,13 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 	
 	label              = new QLabel(processName);
 	buttonBox          = new QDialogButtonBox(QDialogButtonBox::Ok);
+
+	verboseBox         = new QCheckBox("Verbose");
+	debugBox           = new QCheckBox("Debug");
 	readsBox           = new QCheckBox("Reads");
 	writesBox          = new QCheckBox("Writes");
-	debugBox           = new QCheckBox("Debug");
-	verboseBox         = new QCheckBox("Verbose");
+	toDoBox            = new QCheckBox("ToDo");
+
 	sendButton         = new QPushButton("Send");
 	traceLevelLabel    = new QLabel("Trace Levels");
 	traceLevelList     = new QListWidget();
@@ -86,12 +89,16 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 	setWindowTitle("Samson Process Configuration");
 
 	layout->addWidget(label,      0, 1, 1, -1);
-	layout->addWidget(readsBox,   1, 0);
-	layout->addWidget(writesBox,  2, 0);
-	layout->addWidget(debugBox,   3, 0);
-	layout->addWidget(verboseBox, 4, 0);
-	layout->addWidget(sendButton, 5, 0);
-	layout->addWidget(buttonBox,  6, 0);
+
+	layout->addWidget(verboseBox, 1, 0);
+	layout->addWidget(debugBox,   2, 0);
+	layout->addWidget(readsBox,   3, 0);
+	layout->addWidget(writesBox,  4, 0);
+	layout->addWidget(toDoBox,    5, 0);
+
+	layout->addWidget(sendButton, 7, 0);
+	layout->addWidget(buttonBox,  8, 0);
+
 	layout->addWidget(traceLevelLabel, 1, 1);
 	layout->addWidget(allTraceLevelsItem, 2, 1);
 	layout->addWidget(traceLevelList,  3, 1);
@@ -164,10 +171,11 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 						LM_E(("iomMsgRead didn't fill the data pointer ..."));
 					else
 					{
-						debugBox->setCheckState((configDataP->debug     == true)? Qt::Checked : Qt::Unchecked);
 						verboseBox->setCheckState((configDataP->verbose == true)? Qt::Checked : Qt::Unchecked);
+						debugBox->setCheckState((configDataP->debug     == true)? Qt::Checked : Qt::Unchecked);
 						readsBox->setCheckState((configDataP->reads     == true)? Qt::Checked : Qt::Unchecked);
 						writesBox->setCheckState((configDataP->writes   == true)? Qt::Checked : Qt::Unchecked);
+						toDoBox->setCheckState((configDataP->toDo       == true)? Qt::Checked : Qt::Unchecked);
 						
 						for (int ix = 0; ix < TRACE_LEVELS; ix++)
 						{
@@ -197,6 +205,7 @@ void ConfigWindow::send(void)
 	configData.debug   = (debugBox->checkState()   == Qt::Checked)? true : false;
 	configData.reads   = (readsBox->checkState()   == Qt::Checked)? true : false;
 	configData.writes  = (writesBox->checkState()  == Qt::Checked)? true : false;
+	configData.toDo    = (toDoBox->checkState()    == Qt::Checked)? true : false;
 
 	for (int ix = 0; ix < TRACE_LEVELS; ix++)
 	{

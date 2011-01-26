@@ -47,6 +47,7 @@ private:
 	QCheckBox*                debugBox;
 	QCheckBox*                readsBox;
 	QCheckBox*                writesBox;
+	QCheckBox*                toDoBox;
 	QPushButton*              allTraceLevelsItem;
 	QListWidgetItem*          traceLevelItem[TRACE_LEVELS];
 

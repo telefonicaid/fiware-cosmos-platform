@@ -256,12 +256,12 @@ int main(int argC, const char *argV[])
 	else
 		LM_T(LmtInit, ("Not connecting to Controller"));
 
-	LM_T(LmtInit, ("Number of spawners: %d", (int) spawnerList[0]));
-	if ((int) spawnerList[0] != 0)
+	LM_T(LmtInit, ("Number of spawners: %d", (long int) spawnerList[0]));
+	if ((long int) spawnerList[0] != 0)
 	{
 		int ix;
 
-		for (ix = 1; ix <= (int) spawnerList[0]; ix++)
+		for (ix = 1; ix <= (long int) spawnerList[0]; ix++)
 		{
 			int fd;
 

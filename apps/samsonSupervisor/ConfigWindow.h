@@ -13,9 +13,18 @@
 #include <QObject>
 #include <QDialog>
 #include <QCheckBox>
+#include <QPushButton>
 #include <QListWidgetItem>
 
 #include "Endpoint.h"           // Endpoint
+
+
+
+/* ****************************************************************************
+*
+* TRACE_LEVELS
+*/
+#define TRACE_LEVELS     256
 
 
 
@@ -31,16 +40,19 @@ public:
 	ConfigWindow(ss::Endpoint* endpoint);
 
 private:
+	bool                      allTraceLevelsState;
 	ss::Endpoint*             endpoint;
 
 	QCheckBox*                verboseBox;
 	QCheckBox*                debugBox;
 	QCheckBox*                readsBox;
 	QCheckBox*                writesBox;
-	QListWidgetItem*          traceLevelItem[256];
+	QPushButton*              allTraceLevelsItem;
+	QListWidgetItem*          traceLevelItem[TRACE_LEVELS];
 
 private slots:
 	void send(void);
+	void all();
 };
 
 #endif

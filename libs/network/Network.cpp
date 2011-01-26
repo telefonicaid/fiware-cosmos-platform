@@ -815,10 +815,11 @@ void Network::endpointListShow(const char* why)
 	LM_T(LmtEndpointListShow, (""));
 	LM_T(LmtEndpointListShow, ("----------- Endpoint List (%s) -----------", why));
 
-	if (lmVerbose)      LM_F(("Verbose mode is on"));
-	if (lmDebug)        LM_F(("Debug mode is on"));
-	if (lmReads)		LM_F(("Reads mode is on"));
-	if (lmWrites)		LM_F(("Writes mode is on"));
+    if (lmVerbose)      LM_F(("Verbose mode is on"));
+    if (lmDebug)        LM_F(("Debug mode is on"));
+    if (lmReads)        LM_F(("Reads mode is on"));
+    if (lmWrites)       LM_F(("Writes mode is on"));
+    if (lmToDo)         LM_F(("ToDo mode is on"));
 
 	for (ix = 0; ix < Endpoints; ix++)
 	{
@@ -1866,6 +1867,7 @@ void Network::msgTreat(void* vP)
 		configData.debug   = lmDebug;
 		configData.reads   = lmReads;
 		configData.writes  = lmWrites;
+		configData.toDo    = lmToDo;
 		for (int ix = 0; ix < 256; ix++)
 			configData.traceLevels[ix] = lmTraceIsSet(ix);
 
@@ -1879,11 +1881,10 @@ void Network::msgTreat(void* vP)
 		lmDebug   = configDataP->debug;
 		lmReads   = configDataP->reads;
 		lmWrites  = configDataP->writes;
+		lmToDo    = configDataP->toDo;
 
 		for (int ix = 0; ix < 256; ix++)
-		{
 			lmTraceLevelSet(ix, configDataP->traceLevels[ix]);
-		}
 
 		break;
 

@@ -121,6 +121,7 @@ typedef struct ConfigData
 	bool debug;
 	bool reads;
 	bool writes;
+	bool toDo;
 	bool traceLevels[256];
 } ConfigData;
 

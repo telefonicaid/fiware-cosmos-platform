@@ -57,7 +57,8 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 	ss::Message::MessageType  type;
 	int                       dataLen;
 
-	this->endpoint = endpoint;
+	this->endpoint      = endpoint;
+	allTraceLevelsState = false;
 
 	setModal(true);
 
@@ -65,15 +66,16 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 
 	snprintf(processName, sizeof(processName), "%s@%s", endpoint->name.c_str(), endpoint->ip.c_str());
 	
-	label            = new QLabel(processName);
-	buttonBox        = new QDialogButtonBox(QDialogButtonBox::Ok);
-	readsBox         = new QCheckBox("Reads");
-	writesBox        = new QCheckBox("Writes");
-	debugBox         = new QCheckBox("Debug");
-	verboseBox       = new QCheckBox("Verbose");
-	sendButton       = new QPushButton("Send");
-	traceLevelLabel  = new QLabel("Trace Levels");
-	traceLevelList   = new QListWidget();
+	label              = new QLabel(processName);
+	buttonBox          = new QDialogButtonBox(QDialogButtonBox::Ok);
+	readsBox           = new QCheckBox("Reads");
+	writesBox          = new QCheckBox("Writes");
+	debugBox           = new QCheckBox("Debug");
+	verboseBox         = new QCheckBox("Verbose");
+	sendButton         = new QPushButton("Send");
+	traceLevelLabel    = new QLabel("Trace Levels");
+	traceLevelList     = new QListWidget();
+	allTraceLevelsItem = new QPushButton("ALL/None");
 
 	label->setFont(labelFont);
 	traceLevelLabel->setFont(traceFont);
@@ -91,10 +93,14 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 	layout->addWidget(sendButton, 5, 0);
 	layout->addWidget(buttonBox,  6, 0);
 	layout->addWidget(traceLevelLabel, 1, 1);
-	layout->addWidget(traceLevelList,  2, 1);
+	layout->addWidget(allTraceLevelsItem, 2, 1);
+	layout->addWidget(traceLevelList,  3, 1);
 
 	memset(traceLevelItem, 0, sizeof(traceLevelItem));
-	for (int ix = 0; ix < 256; ix++)
+
+	connect(allTraceLevelsItem, SIGNAL(clicked()), this, SLOT(all()));
+
+	for (int ix = 0; ix < TRACE_LEVELS; ix++)
 	{
 		char* name;
 		char  levelName[256];
@@ -163,7 +169,7 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 						readsBox->setCheckState((configDataP->reads     == true)? Qt::Checked : Qt::Unchecked);
 						writesBox->setCheckState((configDataP->writes   == true)? Qt::Checked : Qt::Unchecked);
 						
-						for (int ix = 0; ix < 256; ix++)
+						for (int ix = 0; ix < TRACE_LEVELS; ix++)
 						{
 							if (traceLevelItem[ix])
 								traceLevelItem[ix]->setCheckState((configDataP->traceLevels[ix] == true)? Qt::Checked : Qt::Unchecked);
@@ -192,7 +198,7 @@ void ConfigWindow::send(void)
 	configData.reads   = (readsBox->checkState()   == Qt::Checked)? true : false;
 	configData.writes  = (writesBox->checkState()  == Qt::Checked)? true : false;
 
-	for (int ix = 0; ix < 256; ix++)
+	for (int ix = 0; ix < TRACE_LEVELS; ix++)
 	{
 		if (traceLevelItem[ix] != NULL)
 			configData.traceLevels[ix] = (traceLevelItem[ix]->checkState() == Qt::Checked)? true : false;
@@ -201,4 +207,21 @@ void ConfigWindow::send(void)
 	}
 
 	iomMsgSend(endpoint, networkP->me, ss::Message::ConfigSet, ss::Message::Ack, &configData, sizeof(configData));
+}
+
+
+
+/* ****************************************************************************
+*
+* all - 
+*/
+void ConfigWindow::all(void)
+{
+	allTraceLevelsState = (allTraceLevelsState == true)? false : true;
+
+	for (int ix = 0; ix < TRACE_LEVELS; ix++)
+	{
+		if (traceLevelItem[ix] != NULL)
+			traceLevelItem[ix]->setCheckState((allTraceLevelsState == true)? Qt::Checked : Qt::Unchecked);
+	}
 }

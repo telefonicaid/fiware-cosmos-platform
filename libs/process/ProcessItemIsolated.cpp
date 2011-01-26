@@ -1,19 +1,23 @@
+#include <pthread.h>
+#include <iostream>               // std::cerr
+#include <assert.h>               // assert(.)
+#include <signal.h>               // kill(.)
+#include <stdlib.h>               // exit()
 
-#include "ProcessItemIsolated.h"		// Own interface
-#include "pthread.h"
-#include <iostream>						// std::cerr
-#include <assert.h>						// assert(.)
-#include "logMsg.h"           // LM_*
-#include <signal.h>				// kill(.)
-#include <stdlib.h>           // exit()
+#include "logMsg.h"               // LM_*
+#include "traceLevels.h"          // LmtIsolated, etc. 
+#include "iomMsgAwait.h"          // iomMsgAwait
+#include "ProcessItemIsolated.h"  // Own interface
 
 
-#define LMT_ISOLATED               100
+
+#define LmtIsolated               100
 
 namespace ss
 {
-	
-	
+
+
+
 	void* run_ProcessItemIsolated( void* p )
 	{
 		ProcessItemIsolated* tmp = (ProcessItemIsolated*)p;
@@ -24,9 +28,9 @@ namespace ss
 	void ProcessItemIsolated::run()
 	{
 #ifdef ISOLATED_PROCESS_AS_THREAD
-		LM_T( LMT_ISOLATED , ("Isolated process %d start in thread mode",id_processItem));
+		LM_T( LmtIsolated , ("Isolated process %d start in thread mode",id_processItem));
 #else		
-		LM_T( LMT_ISOLATED , ("Isolated process %d start in fork mode",id_processItem));
+		LM_T( LmtIsolated , ("Isolated process %d start in fork mode",id_processItem));
 #endif
 	
 		init();
@@ -46,7 +50,7 @@ namespace ss
 			return;
 		}
 		
-		LM_T( LMT_ISOLATED , ("Isolated process %d: pipes created ",id_processItem));
+		LM_T( LmtIsolated , ("Isolated process %d: pipes created ",id_processItem));
 		
 		
 		// Create the other process to run the other side
@@ -67,74 +71,92 @@ namespace ss
 		
 		s = starting;
 		
-		// Readign from the parent
+		// Reading from parent
 		int code;
 		
 		while( true )
 		{
-			LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Reading from pipe ",id_processItem,stateName()));
-			int nb = read( pipeFdPair1[0] , &code , sizeof(int) );
-			LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Readed %d bytes (code %d) ",id_processItem,stateName(),nb,code));
-			
-			if( nb == sizeof(int) )
+			int iom;
+			int nb = -9;
+
+			LM_T(LmtIsolated, ("Isolated process %d(%s): Reading from pipe", id_processItem, stateName()));
+
+			iom = iomMsgAwait(pipeFdPair1[0], 0, 0);
+			if (iom != 1)
+				LM_E(("iomMsgAwait returned error %d", iom));
+			else
 			{
-				switch (s) {
+				nb = read( pipeFdPair1[0] , &code , sizeof(int) );
+				LM_T(LmtIsolated, ("Isolated process %d(%s): read %d bytes (code %d) ",id_processItem,stateName(),nb,code));
+			}
+
+			if (nb != sizeof(int))
+			{
+				char errorText[256];
+
+				LM_T(LmtIsolated, ("Isolated process %d(%s): Set error and break the loop", id_processItem,stateName()));
+				if (nb == -9)
+					snprintf(errorText, sizeof(errorText), "Father process seems to have crashed - iomMsgAwait returned %d", iom);
+				else if (nb == -1)
+					snprintf(errorText, sizeof(errorText), "Father process seems to have crashed - read(): %s", strerror(errno));
+				else
+					snprintf(errorText, sizeof(errorText), "Father process seems to have crashed - read returned %d instead of expected %d", nb, (int) sizeof(int));
+
+				setError(errorText);
+				s = broken;
+				break;	// Not loop any more
+			}
+			else
+			{
+				switch (s)
+				{
 					case starting:
 						assert( code == -5);
 						
 						// Close the unnecessary pipes
 #ifndef ISOLATED_PROCESS_AS_THREAD
-						LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Closing secondary fds of pipes ",id_processItem,stateName()));
+						LM_T( LmtIsolated , ("Isolated process %d(%s): Closing secondary fds of pipes ",id_processItem,stateName()));
 						close(pipeFdPair1[1]);
 						close(pipeFdPair2[0]);
 #endif
 						
 						s = running;
-						LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Go to running ",id_processItem,stateName()));
+						LM_T( LmtIsolated , ("Isolated process %d(%s): Go to running ",id_processItem,stateName()));
 						break;
 					case running:
 						
 						if( code == -5 )
 						{
 							s = finished;
-							LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Go to finish ",id_processItem,stateName()));
+							LM_T( LmtIsolated , ("Isolated process %d(%s): Go to finish ",id_processItem,stateName()));
 						}
 						else
 						{
-							LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Executing code ",id_processItem,stateName()));
+							LM_T( LmtIsolated , ("Isolated process %d(%s): Executing code ",id_processItem,stateName()));
 							runCode( code );
-							LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Executed code ",id_processItem,stateName()));
+							LM_T( LmtIsolated , ("Isolated process %d(%s): Executed code ",id_processItem,stateName()));
 						}
 					default:
 						break;
 				}
 
 				// Send something to the other side of the pipe to cotinue or finish
-				LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Sending something back to the pipe ",id_processItem,stateName()));
+				LM_T( LmtIsolated , ("Isolated process %d(%s): Sending something back to the pipe ",id_processItem,stateName()));
 				int c=1;
 				write( pipeFdPair2[1] , &c , sizeof(c) );
-				LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Sending something back to the pipe... OK! ",id_processItem,stateName()));
+				LM_T( LmtIsolated , ("Isolated process %d(%s): Sending something back to the pipe... OK! ",id_processItem,stateName()));
 
 				if( s == finished )
 				{
-					LM_T( LMT_ISOLATED , ("Isolated process %d(%s): End loop since we are finished ",id_processItem,stateName()));
+					LM_T( LmtIsolated , ("Isolated process %d(%s): End loop since we are finished ",id_processItem,stateName()));
 					break;	// Not loop any more
 				}
-				
-				
-			}
-			else
-			{
-				LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Set error and break the loop ",id_processItem,stateName()));
-				setError("Process crashed");
-				s = broken;
-				break;	// Not loop any more
 			}
 			
 			// Read again from the pipe to see what is going on
 			if( s != running )
 			{
-				LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Break the loop sice we are not running any more ",id_processItem,stateName()));
+				LM_T( LmtIsolated , ("Isolated process %d(%s): Break the loop sice we are not running any more ",id_processItem,stateName()));
 				break; // Not loop any more
 			}
 		}
@@ -142,16 +164,16 @@ namespace ss
 		// Close the rest of pipes all pipes
 		
 #ifdef ISOLATED_PROCESS_AS_THREAD	// These were not closed before
-		LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Closing unused side of the pipe (thread mode) ",id_processItem,stateName()));
+		LM_T( LmtIsolated , ("Isolated process %d(%s): Closing unused side of the pipe (thread mode) ",id_processItem,stateName()));
 		close(pipeFdPair1[1]);
 		close(pipeFdPair2[0]);
 #endif
 		
-		LM_T( LMT_ISOLATED , ("Isolated process %d(%s): Closing the rest of fds of the pipe ",id_processItem,stateName()));
+		LM_T( LmtIsolated , ("Isolated process %d(%s): Closing the rest of fds of the pipe ",id_processItem,stateName()));
 		close(pipeFdPair1[0]);
 		close(pipeFdPair2[1]);
 		
-		LM_T( LMT_ISOLATED , ("Isolated process %d(%s): finish ",id_processItem,stateName()));
+		LM_T( LmtIsolated , ("Isolated process %d(%s): finish ",id_processItem,stateName()));
 		finish();
 		
 

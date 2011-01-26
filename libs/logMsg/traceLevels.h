@@ -19,10 +19,20 @@
 typedef enum TraceLevels
 {
 //
-// Network Trace Levels 20-50
+// Network Trace Levels 20-80
 //
 	LmtInit         = 20,
 	LmtAlarm,
+	LmtSenderThread,
+	LmtEndpointListShow,
+	LmtStarterListShow,
+	LmtSpawnerListShow,
+	LmtProcessListShow,
+	LmtThreadedMsgTreat,
+	LmtWorkers,
+	LmtControllerConnect,
+	LmtMsgLoopBack,
+
 	LMT_NWRUN,
 	LMT_SELECT,
 	LMT_FDS,
@@ -54,46 +64,46 @@ typedef enum TraceLevels
 
 
 //
-// Process Trace Levels  51-60
+// Process Trace Levels  81-90
 //
-	LMT_PA  = 51,
-
-
-
-//
-// Data Trace Levels  61-70
-//
-	LMT_FILE    = 61,
+	LMT_PA  = 81,
 
 
 
 //
-// Core Trace Levels  71-80
+// Data Trace Levels  91-80
 //
-	LMT_TASK             = 71,
+	LMT_FILE    = 91,
+
+
+
+//
+// Core Trace Levels  101-110
+//
+	LMT_TASK             = 101,
 	LMT_SAMSON_WORKER,
 	LMT_WINIT,
 
 
 
 //
-// Samson Log Server Trace Levels:  81-90
+// Samson Log Server Trace Levels:  111-120
 //
-	LmtLogProvider  = 81,
+	LmtLogProvider  = 111,
 	LmtLogProviderList,
 
 
 //
-// Samson Demo? Trace Levels:  91-100
+// Samson Demo? Trace Levels:  121-130
 //
-	LMT_SAMSON_DEMO         = 91,
+	LMT_SAMSON_DEMO         = 121,
 
 
 
 //
-// Samson Supervisor Trace Levels:  101-110
+// Samson Supervisor Trace Levels:  131-140
 //
-	LMT_CONFIG_FILE = 101,
+	LMT_CONFIG_FILE = 131,
 	LMT_CHECK,
 	LMT_STARTER,
 	LMT_PROCESS_LIST,

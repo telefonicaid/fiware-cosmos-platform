@@ -21,6 +21,16 @@ char* traceLevelName(TraceLevels level)
 	{
 	case LmtInit:                        return (char*) "Initialization, especially in main";
 	case LmtAlarm:                       return (char*) "At issuing an Alarm";
+	case LmtSenderThread:                return (char*) "Network Sender Thread";
+	case LmtEndpointListShow:            return (char*) "Show Endpoint List";
+	case LmtStarterListShow:             return (char*) "Show Starter List (Supervisor only)";
+	case LmtSpawnerListShow:             return (char*) "Show Spawner List (Supervisor only)";
+	case LmtProcessListShow:             return (char*) "Show Process List (Supervisor only)";
+	case LmtThreadedMsgTreat:            return (char*) "Threaded Msg Treat function";
+	case LmtWorkers:                     return (char*) "Worker info";
+	case LmtControllerConnect:           return (char*) "Connection to controller";
+	case LmtMsgLoopBack:                 return (char*) "Network loops back messages for same machine";
+
 	case LMT_NWRUN:                      return (char*) "Nwrun";
 	case LMT_SELECT:                     return (char*) "Select";
 	case LMT_FDS:                        return (char*) "Fds";
@@ -46,6 +56,7 @@ char* traceLevelName(TraceLevels level)
 	case LMT_TIMEOUT:                    return (char*) "Timeout";
 	case LMT_FORWARD:                    return (char*) "Forward";
 	case LMT_SEND:                       return (char*) "Send";
+
 	case LMT_PA:                         return (char*) "Pa";
 	case LMT_FILE:                       return (char*) "File";
 	case LMT_TASK:                       return (char*) "Task";

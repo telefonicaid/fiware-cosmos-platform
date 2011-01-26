@@ -155,7 +155,7 @@ void Network::reset(int endpoints, int workers)
     if (endpoint == NULL)
 		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
 
-	LM_M(("Allocated room for %d endpoints (%d workers)", endpoints, workers));
+	LM_T(LmtInit, ("Allocated room for %d endpoints (%d workers)", endpoints, workers));
 }
 
 
@@ -288,7 +288,7 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 			LM_XP(1, ("new Endpoint"));
 		controller = endpoint[2];
 
-		LM_M(("connecting to controller in %s, port %d", controller->ip.c_str(), controller->port));
+		LM_T(LmtControllerConnect, ("connecting to controller in %s, port %d", controller->ip.c_str(), controller->port));
 		controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
 		if (controller->rFd == -1)
 		{
@@ -303,7 +303,7 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 		}
 		else
 		{
-			LM_M(("connected to controller - calling ready after trying to connect to all workers"));
+			LM_T(LmtControllerConnect, ("connected to controller - calling ready after trying to connect to all workers"));
 			controller->wFd   = controller->rFd;
 			controller->state = Endpoint::Connected;
 		}
@@ -361,7 +361,7 @@ Endpoint* workerNew(int ix)
 	if (ep == NULL)
 		LM_XP(1, ("new Endpoint"));
 
-	LM_M(("*** New worker endpoint at %p", ep));
+	LM_T(LmtWorkers, ("*** New worker endpoint at %p", ep));
 
 	ep->rFd     = -1;
 	ep->wFd     = -1;
@@ -472,7 +472,7 @@ std::vector<Endpoint*> Network::samsonEndpoints(void)
 	int                     ix;
 	std::vector<Endpoint*>  v;
 
-	LM_M(("%d workers", Workers));
+	LM_T(LmtWorkers, ("%d workers", Workers));
 
 	for (ix = 0; ix <=  Endpoints; ix++)
 	{
@@ -496,7 +496,7 @@ std::vector<Endpoint*> Network::samsonWorkerEndpoints(void)
 	int                     ix;
 	std::vector<Endpoint*>  v;
 
-	LM_M(("%d workers", Workers));
+	LM_T(LmtWorkers, ("%d workers", Workers));
 
 	for (ix = 3; ix <  3 + Workers; ix++)
 	{
@@ -522,7 +522,7 @@ std::vector<Endpoint*> Network::samsonEndpoints(Endpoint::Type type)
 	int                     ix;
 	std::vector<Endpoint*>  v;
 
-	LM_M(("%d workers", Workers));
+	LM_T(LmtWorkers, ("%d workers", Workers));
 
 	for (ix = 0; ix <=  Endpoints; ix++)
 	{
@@ -570,7 +570,7 @@ static void* senderThread(void* vP)
 {
 	Endpoint* ep    = (Endpoint*) vP;
 	
-	LM_F(("Sender Thread for '%s' running - wFd: %d (reading from fd %d) (process id: %d)", ep->name.c_str(), ep->wFd, ep->senderReadFd, (int) getpid()));
+	LM_T(LmtSenderThread, ("Sender Thread for '%s' running - wFd: %d (reading from fd %d) (process id: %d)", ep->name.c_str(), ep->wFd, ep->senderReadFd, (int) getpid()));
 
 	while (1)
 	{
@@ -675,12 +675,12 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 #if 0
 		receiver->receive(endpointId, code, packetP);
 		delete packetP;
-		LM_M(("looping back the '%s' message to myself", messageCode(code)));
+		LM_T(LmtMsgLoopBack, ("looping back the '%s' message to myself", messageCode(code)));
 		return 0;
 #else
+		LM_T(LmtMsgLoopBack, ("NOT looping back the '%s' message to myself", messageCode(code)));
 		ep->state           = Endpoint::Connected;
 		ep->useSenderThread = true;
-		//LM_M(("ANDREU: looping back the '%s' message to myself via sender thread", messageCode(code)));
 #endif
 	}
 	else if (( ep->state != Endpoint::Connected ) && (ep->state != Endpoint::Threaded))
@@ -812,15 +812,13 @@ void Network::endpointListShow(const char* why)
 {
 	int ix;
 
-	LM_F((""));
-	LM_F(("----------- Endpoint List (%s) -----------", why));
+	LM_T(LmtEndpointListShow, (""));
+	LM_T(LmtEndpointListShow, ("----------- Endpoint List (%s) -----------", why));
 
-	LM_V(("Verbose mode is on"));
-	LM_D(("Debug mode is on"));
-	if (lmReads)
-		LM_F(("Reads mode is on"));
-	if (lmWrites)
-		LM_F(("Writes mode is on"));
+	if (lmVerbose)      LM_F(("Verbose mode is on"));
+	if (lmDebug)        LM_F(("Debug mode is on"));
+	if (lmReads)		LM_F(("Reads mode is on"));
+	if (lmWrites)		LM_F(("Writes mode is on"));
 
 	for (ix = 0; ix < Endpoints; ix++)
 	{
@@ -837,7 +835,7 @@ void Network::endpointListShow(const char* why)
 				sign = '+';
 		}
 
-		LM_F(("%c %08p  Endpoint %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
+		LM_T(LmtEndpointListShow, ("%c %08p  Endpoint %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
 			  sign,
 			  endpoint[ix],
 			  ix,
@@ -858,7 +856,7 @@ void Network::endpointListShow(const char* why)
 			  endpoint[ix]->wAccMbps));
 	}
 
-    LM_F(("--------------------------------"));
+    LM_T(LmtEndpointListShow, ("--------------------------------"));
 }
 
 
@@ -1364,7 +1362,7 @@ static void* msgTreatThreadFunction(void* vP)
 
 	ep->state = paramP->state;
 
-	LM_F(("back after msgTreat - setting back state for '%s' to %d (was in 'Threaded' state while msgTreat ran)", ep->name.c_str(), ep->state));
+	LM_T(LmtThreadedMsgTreat, ("back after msgTreat - setting back state for '%s' to %d (was in 'Threaded' state while msgTreat ran)", ep->name.c_str(), ep->state));
 	
 	free(vP);
 	close(paramP->fd);
@@ -1541,7 +1539,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 			{
 				while (controller->rFd == -1)
 				{
-					LM_M(("Reconnecting to Controller"));
+					LM_T(LmtControllerConnect, ("Reconnecting to Controller"));
 					controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
 					sleep(1); // sleep one second before reintenting connection to controller
 				}
@@ -1659,7 +1657,7 @@ void Network::checkAllWorkersConnected(void)
 	// All workers are connected!
 	//
 
-	LM_F(("All workers are connected!"));
+	LM_T(LmtWorkers, ("All workers are connected!"));
 	if (me->type == Endpoint::Delilah)
 	{
 		LM_T(LMT_TIMEOUT, ("All workers are connected! - select timeout set to 60 secs"));
@@ -2122,7 +2120,7 @@ void Network::msgTreat(void* vP)
 		{
 			Alarm::AlarmData* alarmP = (Alarm::AlarmData*) dataP;
 
-			LM_F(("Alarm from '%s': '%s'", ep->name.c_str(), alarmP->message));
+			LM_T(LmtAlarm, ("Alarm from '%s': '%s'", ep->name.c_str(), alarmP->message));
 			alarmSave(ep, alarmP);
 		}
 		else
@@ -2271,8 +2269,8 @@ void Network::run(void)
 
 			if (showSelectList)
 			{
-				LM_F((""));
-				LM_F(("------------ %.5f secs timeout, %d endpoints -------------------------------------", ((double) tmoSecs + ((double) tmoUsecs) / 1000000), Endpoints));
+				LM_T(LmtEndpointListShow, (""));
+				LM_T(LmtEndpointListShow, ("------------ %.5f secs timeout, %d endpoints -------------------------------------", ((double) tmoSecs + ((double) tmoUsecs) / 1000000), Endpoints));
 			}
 
 			for (ix = 0; ix < Endpoints; ix++)

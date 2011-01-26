@@ -15,7 +15,7 @@
 #include <QVBoxLayout>
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 
 #include "Endpoint.h"           // ss::Endpoint
 #include "Network.h"            // samsonWorkerEndpoints

@@ -8,7 +8,7 @@
 *
 */
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 
 #include "Message.h"            // ss::Message
 #include "iomMsgSend.h"         // iomMsgSend

@@ -7,7 +7,7 @@ namespace ss
 
 	bool LogFile::openToRead( )
 	{
-		LM_T(LMT_FILE, ("opening '%s' to read", fileName.c_str()));
+		LM_T(LmtFile, ("opening '%s' to read", fileName.c_str()));
 		
 		input.open( fileName.c_str() );
 		return input.is_open();
@@ -15,7 +15,7 @@ namespace ss
 	
 	bool LogFile::openToAppend( )
 	{
-		LM_T(LMT_FILE, ("opening '%s' to append", fileName.c_str()));
+		LM_T(LmtFile, ("opening '%s' to append", fileName.c_str()));
 		
 		output.open( fileName.c_str() , std::ios::app );
 		return output.is_open();

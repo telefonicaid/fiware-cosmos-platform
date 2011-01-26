@@ -15,7 +15,7 @@
 #include <vector>               // vector
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 
 #include "iomAccept.h"          // Own interface
 
@@ -50,7 +50,7 @@ int iomAccept(int lfd, char* hostName, int hostNameLen)
 		hName = ip;
 	}
 
-	LM_T(LMT_ACCEPT, ("Accepted connection from host '%s'", hName));
+	LM_T(LmtAccept, ("Accepted connection from host '%s'", hName));
 
 	if (hostName)
 		strncpy(hostName, hName, hostNameLen);

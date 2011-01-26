@@ -10,7 +10,7 @@
 #include <stdlib.h>             // atoi
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 
 #include "ports.h"              // CONTROLLER_PORT, WORKER_PORT
 #include "Process.h"            // Process
@@ -28,8 +28,8 @@ static int argsParse(char* line, char* host, char* process, char** args, int* ar
 	int  ix;
 	int  argIx = 0;
 	
-	LM_T(LMT_CONFIG_FILE, ("=============================================================="));
-	LM_T(LMT_CONFIG_FILE, ("Parsing line: %s", line));
+	LM_T(LmtConfigFile, ("=============================================================="));
+	LM_T(LmtConfigFile, ("Parsing line: %s", line));
 
 	/* 1. Remove comment part of line */
 	ix = 0;
@@ -43,12 +43,12 @@ static int argsParse(char* line, char* host, char* process, char** args, int* ar
 
 		ix += 1;
 	}
-	LM_T(LMT_CONFIG_FILE, ("w/o comments: %s", line));
+	LM_T(LmtConfigFile, ("w/o comments: %s", line));
 
 	/* 2. Remove '\n' at end of line */
 	if (line[strlen(line) - 1] == '\n')
 		line[strlen(line) - 1] = 0;
-	LM_T(LMT_CONFIG_FILE, ("w/o trailing newline: '%s'", line));
+	LM_T(LmtConfigFile, ("w/o trailing newline: '%s'", line));
 
 
 	/* 3. Eat leading whitespace */
@@ -59,7 +59,7 @@ static int argsParse(char* line, char* host, char* process, char** args, int* ar
 		else
 			break;
 	}
-	LM_T(LMT_CONFIG_FILE, ("w/o leading whitespace: '%s'", line));
+	LM_T(LmtConfigFile, ("w/o leading whitespace: '%s'", line));
 
 	if (line[0] == 0)
 		return -1;
@@ -73,7 +73,7 @@ static int argsParse(char* line, char* host, char* process, char** args, int* ar
 			line[ix] = 0;
 			strcpy(host, line);
 			line = &line[ix + 1];
-			LM_T(LMT_CONFIG_FILE, ("Got host '%s'. line: '%s'", host, line));
+			LM_T(LmtConfigFile, ("Got host '%s'. line: '%s'", host, line));
 			break;
 		}
 		ix += 1;
@@ -82,7 +82,7 @@ static int argsParse(char* line, char* host, char* process, char** args, int* ar
 
 
 	/* 5. Get 'process' */
-	LM_T(LMT_CONFIG_FILE, ("Get process: '%s'", line));
+	LM_T(LmtConfigFile, ("Get process: '%s'", line));
 	while (*line != 0)
 	{
 		if ((*line == ' ') || (*line == '\t'))
@@ -99,7 +99,7 @@ static int argsParse(char* line, char* host, char* process, char** args, int* ar
             line[ix] = 0;
             strcpy(process, line);
             line = &line[ix + 1];
-			LM_T(LMT_CONFIG_FILE, ("Got process '%s'. line: '%s'", process, line));
+			LM_T(LmtConfigFile, ("Got process '%s'. line: '%s'", process, line));
             break;
         }
         ix += 1;
@@ -114,28 +114,28 @@ static int argsParse(char* line, char* host, char* process, char** args, int* ar
 		char* start;
 
 		/* 7.1. Eat leading whitespace */
-		LM_T(LMT_CONFIG_FILE, ("line: %s", line));
+		LM_T(LmtConfigFile, ("line: %s", line));
 		while ((*line == ' ') || (*line == '\t'))
 			++line;
-		LM_T(LMT_CONFIG_FILE, ("line: %s", line));
+		LM_T(LmtConfigFile, ("line: %s", line));
 
 		/* 7.2. Find next space (or newline) */
 		start = line;
-		LM_T(LMT_CONFIG_FILE, ("start: %s", start));
+		LM_T(LmtConfigFile, ("start: %s", start));
 		while ((*line != ' ') && (*line != '\t') && (*line != '\n') && (*line != 0))
 			++line;
 
-		LM_T(LMT_CONFIG_FILE, ("line: %s", line));
+		LM_T(LmtConfigFile, ("line: %s", line));
 		if (*line != 0)
 		{
 			*line = 0;
 			++line;
-			LM_T(LMT_CONFIG_FILE, ("line: %s", line));
+			LM_T(LmtConfigFile, ("line: %s", line));
 		}
 
-		LM_T(LMT_CONFIG_FILE, ("Got arg %d: '%s'. line: '%s'", argIx, start, line));
+		LM_T(LmtConfigFile, ("Got arg %d: '%s'. line: '%s'", argIx, start, line));
 		args[argIx++] = strdup(start);
-		LM_T(LMT_CONFIG_FILE, ("REST: '%s'", line));
+		LM_T(LmtConfigFile, ("REST: '%s'", line));
 	}
 
 	*argCount = argIx;
@@ -166,10 +166,10 @@ void configFileParse(char* cfPath)
 		int    argCount;
 
 		memset(args, 0, sizeof(args));
-		LM_T(LMT_CONFIG_FILE, ("parsing line: %s", line));
+		LM_T(LmtConfigFile, ("parsing line: %s", line));
 		if (argsParse(line, host, process, args, &argCount) == 0)
 		{
-			LM_T(LMT_CONFIG_FILE, ("Adding process '%s' in %s with %d args", process, host, argCount));
+			LM_T(LmtConfigFile, ("Adding process '%s' in %s with %d args", process, host, argCount));
 			if (strcmp(process, "Controller") == 0)
 				processAdd(process, host, CONTROLLER_PORT, args, argCount);
 			else if (strcmp(process, "Worker") == 0)

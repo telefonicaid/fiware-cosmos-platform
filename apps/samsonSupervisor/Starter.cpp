@@ -11,7 +11,7 @@
 #include <QCheckBox>
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 
 #include "globals.h"            // networkP
 #include "actions.h"            // spawnerConnect, spawnerDisconnect

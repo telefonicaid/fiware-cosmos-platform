@@ -10,7 +10,7 @@
 #include <string.h>             // memset, strcpy, ...
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 
 #include "ports.h"              // SPAWNER_PORT
 #include "spawnerList.h"        // spawnerAdd, spawnerListShow

@@ -4,7 +4,7 @@
 #include <sstream>				// std::ostringstream
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 #include "traces.h"				// Traces stuff: samsonInitTrace(.) , ...
 
 #include "Endpoint.h"			// ss::EndPoint

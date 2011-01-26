@@ -17,7 +17,7 @@
 #include <cstdlib>              // free
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_NWRUN, ...
+#include "traceLevels.h"        // Trace Levels
 
 #include "iomServerOpen.h"      // Own interface
 

@@ -10,7 +10,7 @@
 #include <unistd.h>             // gethostname
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*, ...
+#include "traceLevels.h"        // Trace Levels
 
 #include "Endpoint.h"           // Own interface
 
@@ -154,7 +154,7 @@ void Endpoint::hostnameGet(void)
 	if (gethostname(hn, sizeof(hn)) == 0)
 	{
 		hostname = std::string(hn);
-		LM_T(LMT_CONFIG, ("hostname: '%s'", hostname.c_str()));
+		LM_T(LmtInit, ("hostname: '%s'", hostname.c_str()));
 	}
 	else
 		LM_P(("gethostname"));
@@ -266,11 +266,11 @@ void Endpoint::jobPush(SendJob* jobP)
 {
 	SendJobQueue* qP   = jobQueueHead;
 
-	LM_T(LMT_JOB, ("Pushing a job"));
+	LM_T(LmtJob, ("Pushing a job"));
 
 	if (jobQueueHead == NULL)
 	{
-		LM_T(LMT_JOB, ("Pushing first job"));
+		LM_T(LmtJob, ("Pushing first job"));
 		jobQueueHead = new SendJobQueue;
 		jobQueueHead->job   = jobP;
 		jobQueueHead->next  = NULL;
@@ -297,12 +297,12 @@ SendJob* Endpoint::jobPop(void)
 	SendJobQueue*  qP   = jobQueueHead;
 	SendJob*       jobP;
 
-	LM_T(LMT_JOB, ("Popping a job?"));
+	LM_T(LmtJob, ("Popping a job?"));
 
 	if (qP == NULL)
 		return NULL;
 
-	LM_T(LMT_JOB, ("Popping a job (qP == %p)", qP));
+	LM_T(LmtJob, ("Popping a job (qP == %p)", qP));
 	while (qP->next != NULL)
 	{
 		prev = qP;

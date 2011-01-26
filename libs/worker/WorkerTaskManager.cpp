@@ -1,21 +1,23 @@
-#include "logMsg.h"              // LM_*
-#include "traceLevels.h"         // LMT_*
+#include "logMsg.h"               // LM_*
+#include "traceLevels.h"          // Trace Levels
 
-#include "iomMsgSend.h"          // iomMsgSend
-#include "CommandLine.h"         // au::CommandLine
-#include "SamsonWorker.h"        // SamsonWorker
-#include "WorkerTaskManager.h"   // Own interface
-#include "Packet.h"				 // ss::Packet
-#include "DataBufferItem.h"		 // ss::DataBufferItem
+#include "iomMsgSend.h"           // iomMsgSend
+#include "CommandLine.h"          // au::CommandLine
+#include "SamsonWorker.h"         // SamsonWorker
+#include "WorkerTaskManager.h"    // Own interface
+#include "Packet.h"               // ss::Packet
+#include "DataBufferItem.h"       // ss::DataBufferItem
 
-#include "WorkerTask.h"			// ss::WorkerTask
-#include "SamsonSetup.h"		// ss::SamsonSetup
-#include "FileManagerReadItem.h"		// ss::FileManagerReadItem
-#include "FileManagerWriteItem.h"		// ss::FileManagerWriteItem
+#include "WorkerTask.h"           // ss::WorkerTask
+#include "SamsonSetup.h"          // ss::SamsonSetup
+#include "FileManagerReadItem.h"  // ss::FileManagerReadItem
+#include "FileManagerWriteItem.h" // ss::FileManagerWriteItem
+
+
 
 namespace ss {
 	
-	WorkerTaskManager::WorkerTaskManager( SamsonWorker *_worker )
+	WorkerTaskManager::WorkerTaskManager(SamsonWorker* _worker)
 	{
 		worker = _worker;
 	}
@@ -85,7 +87,7 @@ namespace ss {
 
 	
 
-/*	
+#if 0	
 	void WorkerTaskManager::finishItem( WorkerTaskItem *item )
 	{
 		
@@ -155,7 +157,7 @@ namespace ss {
 		// We only notify the controller about this to continue in the script ( if we are inside a script )
 		send_finish_task_message_to_controller( worker->network , task_id );
 	}
- */	
+#endif
 	
 
 	void WorkerTaskManager::fill(network::WorkerStatus*  ws)
@@ -259,12 +261,12 @@ namespace ss {
 	}
 
 	
-	/*
+#if 0
 	void WorkerTaskManager::addInputFile( size_t fm_id , WorkerTaskItem* item )
 	{
 		pendingInputFiles.insertInMap( fm_id , item );
 	}
-*/
+#endif
 	
 		
 	

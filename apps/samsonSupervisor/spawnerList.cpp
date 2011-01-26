@@ -10,7 +10,7 @@
 #include <stdlib.h>             // free()
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 
 #include "Spawner.h"            // Spawner
 #include "spawnerList.h"        // Own interface

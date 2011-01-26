@@ -8,13 +8,14 @@
 */
 #include <assert.h>				// assert
 
+#include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // LmtNetworkInterface, ...
+
 #include "Message.h"            // ss::Message::MessageCode
 #include "Endpoint.h"           // ss::Endpoint::Type
-#include "logMsg.h"             // LM_*
 #include "Lock.h"				// au::Lock
 
 
-#define LMT_SAMSON_NETWORK_INTERFACE	108
 
 namespace ss {
 
@@ -81,7 +82,7 @@ public:
 	
 	int _receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
-		LM_T(LMT_SAMSON_NETWORK_INTERFACE,("NETWORK_INTERFACE Received packet type %s",messageCode(msgCode)));
+		LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet type %s",messageCode(msgCode)));
 		return receive(fromId, msgCode, packet);
 	}
 

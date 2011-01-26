@@ -1,23 +1,25 @@
-#include <iostream>				        // std::cout ...
+#include <iostream>                 // std::cout ...
 
-#include "logMsg.h"                     // lmInit, LM_*
-#include "traceLevels.h"                // LMT_*
+#include "logMsg.h"                 // lmInit, LM_*
+#include "traceLevels.h"            // Trace Levels
 
-#include "Message.h"                    // Message::WorkerStatus, ...
-#include "workerStatus.h"               // Message::WorkerStatusData
-#include "Macros.h"                     // EXIT, ...
-#include "Packet.h"				        // ss::Packet
-#include "Network.h"			        // NetworkInterface
-#include "Endpoint.h"			        // EndPoint
-#include "CommandLine.h"		        // CommandLine
-#include "ModulesManager.h"		        // ss:ModulesManager
-#include "ControllerTaskManager.h"		// ss:ControllerTaskManager
-#include "ControllerTask.h"				// ss:ControllerTask
-#include "SamsonController.h"	        // Own interface ss::SamsonController
-#include "SamsonSetup.h"				// ss::SamsonSetup
-#include "Buffer.h"						// ss::Buffer
-#include "MemoryManager.h"				// ss::MemoryManager
-#include "FileManager.h"				// ss::FileManager
+#include "Message.h"                // Message::WorkerStatus, ...
+#include "workerStatus.h"           // Message::WorkerStatusData
+#include "Macros.h"                 // EXIT, ...
+#include "Packet.h"                 // ss::Packet
+#include "Network.h"                // NetworkInterface
+#include "Endpoint.h"               // EndPoint
+#include "CommandLine.h"            // CommandLine
+#include "ModulesManager.h"         // ss:ModulesManager
+#include "ControllerTaskManager.h"  // ss:ControllerTaskManager
+#include "ControllerTask.h"         // ss:ControllerTask
+#include "SamsonController.h"       // Own interface ss::SamsonController
+#include "SamsonSetup.h"            // ss::SamsonSetup
+#include "Buffer.h"                 // ss::Buffer
+#include "MemoryManager.h"          // ss::MemoryManager
+#include "FileManager.h"            // ss::FileManager
+
+
 
 namespace ss {
 

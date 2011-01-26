@@ -21,7 +21,7 @@
 #include <QTimerEvent>
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_* 
+#include "traceLevels.h"        // Trace Levels 
 #include "parseArgs.h"          // parseArgs
 
 #include "ports.h"              // LOG_SERVER_PORT

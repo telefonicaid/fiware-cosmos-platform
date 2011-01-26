@@ -3,33 +3,36 @@
 
 /* ****************************************************************************
 *
-* FILE                     SamsonController.h
+* FILE                      SamsonController.h
 *
-* DESCRIPTION				Main class for the worker elemen
+* DESCRIPTION				Main class for the controller
 *
 */
-#include <iostream>						// std::cout
-#include "logMsg.h"						// lmInit, LM_*
-#include "Macros.h"						// EXIT, ...
-#include "Network.h"					// NetworkInterface
-#include "Endpoint.h"					// Endpoint
-#include "CommandLine.h"				// au::CommandLine
-#include "samsonDirectories.h"			// File to load setup
-#include "ControllerDataManager.h"		// ss::ControllerDataManager
-#include "ModulesManager.h"				// ss::ModulesManager
-#include "ControllerTaskManager.h"		// ss::ControllerTaskManager
-#include "traces.h"						// LMT_CONFIG, ...
-#include "samson.pb.h"					// network::...
+#include <iostream>                     // std::cout
+
+#include "logMsg.h"                     // lmInit, LM_*
+
+#include "Macros.h"                     // EXIT, ...
+#include "Network.h"                    // NetworkInterface
+#include "Endpoint.h"                   // Endpoint
+#include "CommandLine.h"                // au::CommandLine
+#include "samsonDirectories.h"          // File to load setup
+#include "ControllerDataManager.h"      // ss::ControllerDataManager
+#include "ModulesManager.h"             // ss::ModulesManager
+#include "ControllerTaskManager.h"      // ss::ControllerTaskManager
+#include "samson.pb.h"                  // network::...
 #include "workerStatus.h"               // Message::WorkerStatusData
 #include "Message.h"                    // Message::WorkerStatus, ...
-#include "JobManager.h"					// ss::JobManager
-#include "Monitor.h"					// ss::Monitor
-#include "Status.h"				// au::Status
+#include "JobManager.h"                 // ss::JobManager
+#include "Monitor.h"                    // ss::Monitor
+#include "Status.h"                     // au::Status
+
+
 
 namespace ss {
 	
 	/**
-	 Main class for the samson worker element
+	 Main class for Samson Controller
 	 */
 	
 	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface 

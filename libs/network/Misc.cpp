@@ -11,7 +11,7 @@
 #include <cstdlib>				// free(.)
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 
 #include "Misc.h"               // Own interface
 

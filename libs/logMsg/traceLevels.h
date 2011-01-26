@@ -18,109 +18,78 @@
 */
 typedef enum TraceLevels
 {
-//
-// Network Trace Levels 20-80
-//
-	LmtInit = 20,
+	LmtEndpointListShow = 20,
+	LmtStarterListShow,
+	LmtSpawnerListShow,
+	LmtProcessListShow,
+	LmtLogProviderListShow,
 
-	LmtOpen,
-	LmtConnect,
-	LmtRead,
-	LmtWrite,
-	LmtSelect,
-
-	LmtFds,
-	LmtNetworkReady,
-	LmtSharedMemory,
-	LmtHello,
+	LmtInit,
+	LmtConfigFile,
 	LmtDie,
-	LmtAlarm,
+	LmtHello,
+	LmtTimeout,
+	LmtMsgTreat,
 
-	LmtSenderThread,
-	LmtThreadedMsgTreat,
-	LmtMsgLoopBack,
-	LmtControllerConnect,
+	LmtWorker,
+	LmtWorkers,
+	LmtWorkerVector,
 
 	LmtEndpoint,
 	LmtEndpoints,
 	LmtEndpointUpdate,
 	LmtTemporalEndpoint,
 
-	LmtEndpointListShow,
-	LmtStarterListShow,
-	LmtSpawnerListShow,
-	LmtProcessListShow,
-	LmtLogProviderListShow,
+	LmtSpawnerList,
+	LmtProcessList,
+	LmtStarterList,
+	LmtLogProviderList,
+
+	LmtStarter,
+	LmtSpawner,
+	LmtProcess,
+	LmtLogProvider,
+
+	LmtSpawnerConnect,
+	LmtProcessConnect,
+	LmtProcessStart,
+	LmtProcessKill,
 
 	LmtEndpointLookup,
 	LmtStarterLookup,
 	LmtProcessLookup,
 	LmtSpawnerLookup,
 
-	LmtLogProviderList,
-	LmtSpawnerList,
-	LmtProcessList,
+	LmtOpen,
+	LmtConnect,
+	LmtAccept,
+	LmtRead,
+	LmtWrite,
+	LmtSelect,
+	LmtReconnect,
 
-	LmtWorker,
-	LmtWorkers,
-	LmtWorkerVector,
+	LmtFds,
+	LmtNetworkReady,
+	LmtSharedMemory,
+	LmtAlarm,
+	LmtSenderThread,
+	LmtThreadedMsgTreat,
+	LmtMsgLoopBack,
+	LmtControllerConnect,
 
+	LmtNetworkInterface,
+	LmtDelilah,
 	LmtLogServer,
 	LmtSpawn,
-	LmtLogProvider,
-	
-	LmtSpawnerConnect,
-	LmtProcessConnect,
-	LmtProcessStart,
-	LmtProcessKill,
-
-	LmtStarterList,
-	LmtStarter,
-	LmtSpawner,
-	LmtProcess,
-
-	LmtTask,
 
 	LmtProcessListTab,
 	LmtQtTimer,
 
 	LmtCheck,
-
-
-
-
-	LMT_NWRUN,
-	LMT_SELECT,
-	LMT_ACCEPT,
-	LMT_ENDPOINTS,
-	LMT_READ,
-	LMT_WORKERS,
-	LMT_WRITE,
-	LMT_MSG,
-
-	LMT_INIT_EP,
-	LMT_CONFIG,
-	LMT_HELLO,
-	LMT_TREAT,
-	LMT_RECONNECT,
-	LMT_DELILAH,
-	LMT_STAT,
-	LMT_EP,
-	LMT_RESTART,
-	LMT_COREWORKER,
-
-	LMT_MSGTREAT,
-	LMT_JOB,
-	LMT_TIMEOUT,
-	LMT_FORWARD,
-	LMT_SEND,
-	LMT_PA,
-	LMT_FILE,
-	LMT_SAMSON_WORKER,
-	LMT_WINIT,
-	LMT_SAMSON_DEMO,
-	LMT_CONFIG_FILE,
-	LMT_QT
+	LmtFile,
+	LmtTask,
+	LmtJob,
+	LmtSend,
 } TraceLevels;
 
 

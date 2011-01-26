@@ -20,7 +20,7 @@
 #include <QLabel>
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 #include "globals.h"            // tabManager, ...
 
 #include "iomMsgRead.h"         // iomMsgRead

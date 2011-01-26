@@ -27,7 +27,7 @@
 #include <QLabel>
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 #include "parseArgs.h"          // parseArgs
 
 #include "globals.h"            // tabManager, ...

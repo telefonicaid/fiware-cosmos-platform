@@ -1,7 +1,7 @@
 #include <iostream>                     // std::cout ...
 
 #include "logMsg.h"                     // lmInit, LM_*
-#include "traceLevels.h"                // LMT_*
+#include "traceLevels.h"                // Trace Levels
 
 #include "Message.h"                    // Message
 #include "Macros.h"                     // EXIT, ...

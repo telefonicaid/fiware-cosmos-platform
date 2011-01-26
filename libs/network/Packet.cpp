@@ -8,7 +8,7 @@
 #include <sstream>              // std::ostringstream
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_WRITE, ...
+#include "traceLevels.h"        // Trace Levels
 
 #include "Format.h"             // au::Format
 #include "Endpoint.h"           // Endpoint

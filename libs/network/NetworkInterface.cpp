@@ -1,3 +1,4 @@
+
 #include "NetworkInterface.h"	// Own interface
 
 namespace ss
@@ -38,7 +39,8 @@ size_t NetworkInterface::send(PacketSenderInterface* sender, int endpointId, ss:
 {
 	lock_send.lock();
 
-	LM_T(LMT_SAMSON_NETWORK_INTERFACE,("NETWORK_INTERFACE Send packet type %s",messageCode(code)));
+	LM_T(LmtNetworkInterface, ("NETWORK INTERFACE Send packet type %s",messageCode(code)));
+
 	size_t id = _send( sender , endpointId , code , packetP );
 	lock_send.unlock();
 	

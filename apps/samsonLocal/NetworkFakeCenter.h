@@ -3,6 +3,8 @@
 
 #include <vector>				// std::vector
 #include <sstream>				// std::ostringstream
+#include <list>					// std::list
+#include <iostream>				// std::cout
 
 #include "Delilah.h"			// ss:Delilah
 #include "SamsonWorker.h"		// ss::SamsonWorker
@@ -10,9 +12,6 @@
 #include "FakeEndpoint.h"		// ss::EndPoint
 #include "NetworkFake.h"        // NetworkFake
 #include "Packet.h"				// ss::Packet
-#include <list>					// std::list
-#include "traces.h"				// LMT_FAKE_NETWORK
-#include <iostream>				// std::cout
 #include "Token.h"				// au::Token
 #include "Stopper.h"			// au::Stopper
 
@@ -139,11 +138,8 @@ namespace ss {
 			// NetworkFake* network = getNetwork(p->to);
 			// network->receiver->receive( ... );
 
-			//LM_X(1, ("This call to receive must be reimplemented after last changes by KZ. Sorry ... !"));
-			
 			NetworkFake* network = getNetwork( p->to );
 			network->receiver->_receive( p->from, p->msgCode, &p->packet );			
-			
 		}
 	};
 }

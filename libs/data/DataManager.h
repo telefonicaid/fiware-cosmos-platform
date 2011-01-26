@@ -7,7 +7,7 @@
 #include <set>								// std::set
 
 #include "logMsg.h"							// LM_*
-#include "traceLevels.h"				    // LMT_*
+#include "traceLevels.h"				    // Trace Levels
 
 #include "data.pb.h"
 #include "traces.h"

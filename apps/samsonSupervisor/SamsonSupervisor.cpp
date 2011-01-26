@@ -8,7 +8,7 @@
 *
 */
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_*
+#include "traceLevels.h"        // Trace Levels
 
 #include "baTerm.h"             // baTermSetup
 #include "globals.h"            // tabManager, ...

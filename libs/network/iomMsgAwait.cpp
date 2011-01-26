@@ -12,7 +12,7 @@
 #include <sys/select.h>         // select, ...
 
 #include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // LMT_NWRUN, ...
+#include "traceLevels.h"        // Trace Levels
 
 #include "Endpoint.h"           // Endpoint
 #include "iomMsgAwait.h"        // Own interface

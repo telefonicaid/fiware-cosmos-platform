@@ -10,6 +10,7 @@
 * CREATION DATE            Jan 07 2011
 *
 */
+#include "Endpoint.h"           // Endpoint
 
 
 
@@ -18,7 +19,32 @@
 * Forward class declarations
 */
 class Starter;
-struct Spawner;
+
+
+
+/* ****************************************************************************
+*
+* SpawnInfo
+*/
+typedef struct SpawnInfo
+{
+	struct Process*  spawnerP;
+	int              argCount;
+	char*            arg[20];
+} SpawnInfo;
+
+
+
+/* ****************************************************************************
+*
+* ProcessType
+*/
+typedef enum ProcessType
+{
+	PtWorkerStarter,
+	PtControllerStarter,
+	PtSpawner
+} ProcessType;
 
 
 
@@ -30,13 +56,11 @@ typedef struct Process
 {
 	char*            name;
 	char*            host;      // hostname can also be obtained in spawner
-	int              argCount;
-	char*            arg[20];
-
-	struct Spawner*  spawnerP;
-	Starter*         starterP;
 	unsigned short   port;
-	int              fd;
+	ss::Endpoint*    endpoint;
+	ProcessType      type;
+	Starter*         starterP;
+	SpawnInfo*       spawnInfo;
 } Process;
 
 #endif

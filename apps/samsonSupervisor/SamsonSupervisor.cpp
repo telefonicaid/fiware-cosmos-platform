@@ -21,11 +21,12 @@
 #include "qt.h"                 // qtRun, ...
 #include "actions.h"            // help, list, start, ...
 #include "Starter.h"            // Starter
-#include "Spawner.h"            // Spawner
 #include "Process.h"            // Process
 #include "starterList.h"        // starterLookup
 #include "spawnerList.h"        // spawnerListGet, ...
 #include "processList.h"        // processListGet, ...
+#include "configFile.h"         // configFileParseByAlias
+#include "Popup.h"              // Popup
 #include "SamsonSupervisor.h"   // Own interface
 
 
@@ -93,7 +94,6 @@ void disconnectAllWorkers(void)
 static void noLongerTemporal(ss::Endpoint* ep, ss::Endpoint* newEp, Starter* starter)
 {
 	Process* processP = NULL;
-	Spawner* spawnerP = NULL;
 
 	if (ep->type != ss::Endpoint::Temporal)
 		LM_X(1, ("BUG - endpoint not temporal"));
@@ -110,26 +110,19 @@ static void noLongerTemporal(ss::Endpoint* ep, ss::Endpoint* newEp, Starter* sta
 	if (starter != NULL)
 	{
 		LM_T(LmtTemporalEndpoint, ("Changing temporal endpoint %p for '%s' endpoint %p", ep, newEp->typeName(), newEp));
-		starter->endpoint = newEp;
+		starter->process->endpoint = newEp;
 		starter->check();
 		return;
 	}
 
 	LM_T(LmtStarterLookup, ("starter not found for '%s' endpoint '%s' at '%s'", ep->typeName(), ep->name.c_str(), ep->ip.c_str()));
 	LM_T(LmtProcessLookup, ("Lookup spawner/process instead!"));
+
 	processP = processLookup((char*) ep->name.c_str(), (char*) ep->ip.c_str());
-	if (processP != NULL)
-		LM_T(LmtProcessLookup, ("Found process!  Setting its endpoint to this one ..."));
+	if (processP == NULL)
+		LM_T(LmtProcessLookup, ("Cannot find process %s@%s!", ep->name.c_str(), ep->ip.c_str()));
 	else
-	{
-		LM_T(LmtProcessLookup, ("Cannot find process '%s' at '%s' - trying spawner", ep->name.c_str(), ep->ip.c_str()));
-		LM_T(LmtSpawnerLookup, ("Cannot find process '%s' at '%s' - trying spawner", ep->name.c_str(), ep->ip.c_str()));
-		spawnerP = spawnerLookup((char*) ep->ip.c_str());
-		if (spawnerP != NULL)
-			LM_T(LmtSpawnerLookup, ("Found spawner! Setting its endpoint to this one ... ?"));
-		else
-			LM_T(LmtSpawnerLookup, ("Starter NULL, Process not found, Spawner not found ... for endpoint %s@%s", ep->name.c_str(), ep->ip.c_str()));
-	}
+		processP->endpoint = ep;
 }
 
 
@@ -155,15 +148,118 @@ static void disconnectWorkers(void)
 		if (starterV[ix] == NULL)
 			continue;
 
-		if (starterV[ix]->endpoint == NULL)
+		if (starterV[ix]->process == NULL)
 			continue;
 
-		if (starterV[ix]->endpoint->type != ss::Endpoint::Worker)
+		if (starterV[ix]->process->endpoint == NULL)
 			continue;
 
-		LM_W(("Removing endpoint for worker in %s", starterV[ix]->endpoint->ip.c_str()));
-		networkP->endpointRemove(starterV[ix]->endpoint, "Controller disconnected");
+		if (starterV[ix]->process->endpoint->type != ss::Endpoint::Worker)
+			continue;
+
+		LM_W(("Removing endpoint for worker in %s", starterV[ix]->process->endpoint->ip.c_str()));
+		networkP->endpointRemove(starterV[ix]->process->endpoint, "Controller disconnected");
 	}
+}
+
+
+
+/* ****************************************************************************
+*
+* workerVectorReceived - 
+*/
+static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
+{
+	Process* processP;
+	Starter* starterP;
+
+	for (int ix = 0; ix < wvDataP->workers; ix++)
+	{
+		LM_M(("Create a Starter for endpoint '%s@%s'", wvDataP->workerV[ix].alias, wvDataP->workerV[ix].ip));
+		if (strcmp(wvDataP->workerV[ix].ip, "II.PP") == 0)
+		{
+			LM_TODO(("Lookup command line options in 'platformProcesses'"));
+			LM_TODO(("OR: Ask Controller about the options"));
+			LM_TODO(("We could use the 'Config' window to input command line options"));
+			LM_TODO(("  and later send this info to controller - which should be the central information holder"));
+			LM_TODO(("For now, I'll just lookup host and command line options in 'platformProcesses'"));
+
+			char   host[64];
+			char   processName[64];
+			int    args  = 20;
+			char*  argV[20];
+
+			LM_M(("looking up worker with alias %s in config file 'platformProcesses'", wvDataP->workerV[ix].alias));
+
+			if (configFileParseByAlias(wvDataP->workerV[ix].alias, host, processName, &args, argV) != 0)
+				LM_E(("Cannot find process with alias '%s' in platformProcesses - skipping it", wvDataP->workerV[ix].alias));
+			else
+			{
+				processP = processAdd("Worker", host, 0, NULL, argV, args);
+				if (processP == NULL)
+					LM_X(1, ("NULL processP for Worker@%s", host));
+
+				if (processP->spawnInfo == NULL)
+					LM_X(1, ("How come spawn-info is NULL for Worker (alias: '%s') in host '%s'", wvDataP->workerV[ix].alias, host));
+
+				starterP = starterAdd(processP);
+				if (starterP == NULL)
+					LM_X(1, ("NULL starterP for Worker@%s", host));
+
+				LM_M(("Looking up spawner for host '%s'", host));
+				processP->spawnInfo->spawnerP = spawnerLookup(host);
+				LM_M(("spawner for host '%s' at %p", host, processP->spawnInfo->spawnerP));
+
+				if (processP->spawnInfo->spawnerP == NULL)
+				{
+					char info[256];
+
+					snprintf(info, sizeof(info),
+							 "In order to spawn worker (with alias '%s') in host '%s',\na samsonSpawner must be running in that host.\nPlease make sure that a samsonSpawner is running in '%s'",
+							 wvDataP->workerV[ix].alias, host, host);
+
+					new Popup("Spawner not running", info);
+					LM_X(1, ("Sorry, no spawner found in host '%s'", host));
+				}
+
+				if ((tabManager != NULL) && (tabManager->processListTab != NULL))
+					tabManager->processListTab->starterInclude(starterP);
+			}
+		}
+		else
+		{
+			int fd;
+
+			LM_M(("Connecting to worker in '%s'", wvDataP->workerV[ix].ip));
+			fd = iomConnect(wvDataP->workerV[ix].ip, wvDataP->workerV[ix].port);
+			if (fd == -1)
+				LM_E(("Error connecting to worker in '%s' (port %d)", wvDataP->workerV[ix].ip, wvDataP->workerV[ix].port));
+			else
+			{
+				LM_TODO(("Perhaps I should create the endpoint here - so I find this process later when Hello arrives"));
+				processP = processAdd("Worker", wvDataP->workerV[ix].ip, wvDataP->workerV[ix].port, NULL, NULL, 0);
+				LM_TODO(("When Hello arrives - lookup this process"));
+				if (processP == NULL)
+					LM_X(1, ("processAdd returned NULL for Worker at %s", wvDataP->workerV[ix].ip));
+
+				starterP = starterAdd(processP);
+
+				if (processP->spawnInfo != NULL)
+				{
+					processP->spawnInfo->spawnerP = spawnerLookup(wvDataP->workerV[ix].ip);
+					if (processP->spawnInfo->spawnerP == NULL)
+						LM_X(1, ("Sorry, no spawner found in host '%s'", wvDataP->workerV[ix].ip));
+				}
+				else
+					LM_W(("processAdd returned NULL for spawnInfo for Worker at %s", wvDataP->workerV[ix].ip));
+
+				if ((tabManager != NULL) && (tabManager->processListTab != NULL))
+					tabManager->processListTab->starterInclude(starterP);
+			}
+		}
+	}
+
+	LM_M(("Got worker vector with %d workers", wvDataP->workers));
 }
 
 
@@ -174,8 +270,9 @@ static void disconnectWorkers(void)
 */
 int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info)
 {
-	Starter*       starter;
-	ss::Endpoint*  newEp = (ss::Endpoint*) info;
+	ss::Endpoint*                   newEp     = (ss::Endpoint*) info;
+	ss::Message::WorkerVectorData*  wvDataP   = (ss::Message::WorkerVectorData*) info;
+	Starter*                        starter;
 
 	if (reason == ss::Endpoint::SelectToBeCalled)
 	{
@@ -188,7 +285,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	else
 		LM_T(LmtEndpointUpdate, ("Got an Update Notification ('%s') for NULL endpoint", reasonText));
 
-	if (ep->type != ss::Endpoint::LogServer)
+	if ((ep != NULL) && (ep->type != ss::Endpoint::LogServer))
 	{
 		LM_T(LmtEndpointUpdate, ("looking for starter with endpoint %p", ep));
 		starterListShow("Before starterLookup");
@@ -197,11 +294,15 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		LM_T(LmtEndpointUpdate, ("starterLookup(%p) returned %p", ep, starter));
 
 		if (starter != NULL)
-			LM_T(LmtEndpointUpdate, ("found %s-starter '%s'", starter->typeName(), starter->name));
+			LM_T(LmtEndpointUpdate, ("found %s-starter '%s'", processTypeName(starter->process), starter->process->name));
 	}
 
 	switch (reason)
 	{
+	case ss::Endpoint::WorkerVectorReceived:
+		workerVectorReceived(wvDataP);
+		break;
+
 	case ss::Endpoint::NoLongerTemporal:
 		noLongerTemporal(ep, newEp, starter);
 		break;
@@ -278,7 +379,6 @@ int SamsonSupervisor::ready(const char* info)
 {
 	LM_T(LmtNetworkReady, ("---- Network READY - %s --------------------------", info));
 	networkP->endpointListShow("Network READY");
-	spawnerListShow("ready");
 	processListShow("ready");
 
 	if (networkP->controller == NULL)

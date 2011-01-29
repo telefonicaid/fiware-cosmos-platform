@@ -15,12 +15,14 @@
 #include "traceLevels.h"        // LmtRead, ...
 
 #include "Message.h"            // MessageType, Code, etc.
+#include "iomMsgAwait.h"        // iomMsgAwait
 #include "Endpoint.h"           // Endpoint
 #include "Packet.h"             // Packet
 #include "Buffer.h"             // Buffer
 #include "MemoryManager.h"      // MemoryManager
 #include "iomMsgRead.h"         // Own interface
 #include "logMsg.h" // Logs
+
 
 
 /* ****************************************************************************
@@ -30,31 +32,36 @@
 ssize_t full_read(int fd, char* buf, ssize_t bufLen)
 {
 	ssize_t  tot = 0;
+	int      s;
 
 	while (tot < bufLen)
 	{
 		ssize_t nb;
+
+		s = iomMsgAwait(fd, 0, 50000);
+		if (s != 1)
+			LM_RE(-1, ("iomMsgAwait returned %d", s));
 
 		nb = read(fd, (char*) buf + tot , bufLen - tot);
 
 		if (nb == -1)
 		{
 			if (errno == EBADF)
-				LM_RE(-2, ("read(connection closed?): %s", strerror(errno)));
+				LM_RE(-2, ("read: %s (treating as Connection Closed)", strerror(errno)));
 
 			LM_RE(-1, ("read: %s", strerror(errno)));
 		}
 		else if (nb == 0)
 		{
-			if (tot == 0)
+			if (tot != 0)
 			{
-				LM_T(LmtRead, ("read 0 bytes - connection closed"));
-				return -2;
+				LM_T(LmtRead, ("read %d bytes from fd %d", tot, fd));
+				LM_READS("someone", "?header?", buf, tot, LmfByte);
 			}
+			else
+				LM_T(LmtRead, ("Connection Closed"));
 
-			LM_T(LmtRead, ("read %d bytes from fd %d", tot, fd));
-			LM_READS("someone", "?header?", buf, tot, LmfByte);
-			LM_RE(tot, ("last read gave 0 bytes (%d bytes read in total). Connection Closed ?", tot));
+			return -2;
 		}
 
 		tot += nb;
@@ -62,6 +69,7 @@ ssize_t full_read(int fd, char* buf, ssize_t bufLen)
 
 	LM_T(LmtRead, ("read %d bytes from fd %d", tot, fd));
 	LM_READS("someone", "?header?", buf, tot, LmfByte);
+
 	return tot;
 }
 
@@ -84,19 +92,21 @@ int iomMsgRead
 	int*                       kvDataLenP
 )
 {
-	int                  nb;
+	ssize_t              nb;
 	ss::Message::Header  header;
 	char*                inBuffer = (char*) *dataPP;
 
 	*dataLenP = 0;
-	nb        = read(fd, &header, sizeof(header));
-	
-	if (nb == -1)
-		LM_RE(1, ("reading header from '%s'", from));
 
-	if (nb == 0)
+	nb = full_read(fd, (char*) &header, sizeof(header));
+	
+	if (nb == -2)
+		LM_RE(1, ("connection closed on fd %d", fd));
+	else if (nb == -1)
+		LM_RE(1, ("reading header from '%s'", from));
+	else if (nb == 0) 
 	{
-		LM_T(LmtRead, ("read 0 bytes from '%s' - connection closed", from));
+		LM_T(LmtRead, ("read 0 bytes from '%s' - connection closed?", from));
 		return -2;
 	}
 
@@ -123,8 +133,7 @@ int iomMsgRead
 
 	if (header.dataLen != 0)
 	{
-		int           nb;
-		unsigned int  tot;
+		int  nb;
 
 		if (header.dataLen > (unsigned int) *dataLenP)
 		{
@@ -137,23 +146,18 @@ int iomMsgRead
 
 		LM_T(LmtRead, ("reading %d bytes of primary message data", header.dataLen));
 
-		int reads = 0;
+		nb = full_read(fd, inBuffer, header.dataLen);
 
-		tot = 0;
-		while (tot < header.dataLen)
-		{
-			nb = read(fd, &inBuffer[tot], header.dataLen - tot);
-			++reads;
-			if (nb == -1)
-				LM_RP(1, ("read %d bytes from '%s'", header.dataLen, from));
-			LM_T(LmtRead, ("read %d bytes of primary message data", nb));
+		if (nb == -2)
+			LM_RE(-2, ("Connection Closed by '%s'", from));
+		if (nb == -1)
+			LM_RP(-1, ("error reading from '%s'", from));
 
-			tot += nb;
-		}
+		LM_T(LmtRead, ("read %d bytes of primary message data", nb));
 
-		*dataLenP = tot;
+		*dataLenP = nb;
 
-		LM_READS(from, "primary data", *dataPP, tot, LmfByte);
+		LM_READS(from, "primary data", *dataPP, nb, LmfByte);
 	}
 
 	if (header.gbufLen != 0)
@@ -164,11 +168,13 @@ int iomMsgRead
 			LM_X(1, ("malloc(%d)", header.gbufLen));
 
 		LM_T(LmtRead, ("reading %d bytes of google protocol buffer data", header.gbufLen));
-        nb = read(fd, dataP, header.gbufLen);
-        if (nb == -1)
-			LM_RP(1, ("read(%d bytes from '%s')", header.gbufLen, from));
+		nb = full_read(fd, (char*) dataP, header.gbufLen);
 
-		if (nb != (int) header.gbufLen)
+		if (nb == -1)
+			LM_RE(-2, ("Connection closed by %s", from));
+		else if (nb == -1)
+			LM_RP(1, ("read(%d bytes from '%s')", header.gbufLen, from));
+		else if (nb != (int) header.gbufLen)
 			LM_X(1, ("read %d bytes instead of %d", nb, header.gbufLen));
 
 		((char*) dataP)[nb] = 0;
@@ -190,22 +196,19 @@ int iomMsgRead
 
 		packetP->buffer = ss::MemoryManager::shared()->newBuffer(name, header.kvDataLen);
 
-		int    size  = header.kvDataLen;
 		char*  kvBuf = packetP->buffer->getData();
-		int    tot   = 0;
 		int    nb;
 
-		while (tot < size)
-		{
-			// msgAwait()
-			nb = read(fd, &kvBuf[tot], size - tot);
-			LM_T(LmtRead, ("read %d bytes KVDATA from '%s'", tot, from));
-			if (nb == -1)
-				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, from, strerror(errno)));
-			tot += nb;
-		}
+		nb = full_read(fd, kvBuf, header.kvDataLen);
+		LM_T(LmtRead, ("read %d bytes KVDATA from '%s'", nb, from));
+		if (nb == -2)
+			LM_RE(-2, ("Connection closed by %s", from));
+		else if (nb == -1)
+			LM_RP(-1, ("error reading from '%s'", from));
+		else if (nb != (int) header.kvDataLen)
+			LM_X(1, ("Read %d bytes instead of %d", nb, header.kvDataLen));
 
-		packetP->buffer->setSize(tot);
+		packetP->buffer->setSize(nb);
 	}
 
 	return 0;
@@ -267,11 +270,11 @@ int iomMsgRead
 		LM_T(LmtRead, ("reading %d bytes of primary message data from '%s'", headerP->dataLen, ep->name.c_str()));
 		nb = full_read(ep->rFd, (char*) *dataPP, headerP->dataLen);
 		LM_T(LmtRead, ("read %d bytes DATA from '%s'", nb, ep->name.c_str()));
-		if (nb == -1)
+		if (nb == -2)
+			LM_RE(-2, ("Connection closed by %s", ep->name.c_str()));
+		else if (nb == -1)
 			LM_RP(1, ("read %d bytes from '%s' (wanted %d bytes)", nb, ep->name.c_str(), headerP->dataLen));
-		LM_T(LmtRead, ("read %d bytes of primary message data", nb));
-
-		if (nb != (int) headerP->dataLen)
+		else if (nb != (int) headerP->dataLen)
 			LM_E(("Read %d bytes from '%s', %d expected ...", nb, ep->name.c_str(), headerP->dataLen));
 
 		*dataLenP = nb;
@@ -283,28 +286,27 @@ int iomMsgRead
 	if (headerP->gbufLen != 0)
 	{
 		char* dataP = (char*) malloc(headerP->gbufLen + 1);
-		int   tot   = 0;
 
 		if (dataP == NULL)
 			LM_X(1, ("malloc(%d)", headerP->gbufLen));
 
 		LM_T(LmtRead, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
-		while (tot < (int) headerP->gbufLen)
-		{
-			nb = read(ep->rFd, &dataP[tot], headerP->gbufLen - tot);
-			LM_T(LmtRead, ("read %d bytes GPROTBUF from '%s'", nb, ep->name.c_str()));
-			if (nb == -1)
-				LM_RP(1, ("read(%d bytes from '%s')", headerP->gbufLen, ep->name.c_str()));
-			tot += nb;
-		}
+		nb = full_read(ep->rFd, dataP, headerP->gbufLen);
+		LM_T(LmtRead, ("read %d bytes GPROTBUF from '%s'", nb, ep->name.c_str()));
+		if (nb == -2)
+			LM_RE(-2, ("Connection closed by %s", ep->name.c_str()));
+		else if (nb == -1)
+			LM_RP(1, ("read(%d bytes from '%s')", headerP->gbufLen, ep->name.c_str()));
+		else if (nb != (int) headerP->gbufLen)
+			LM_E(("Read %d bytes from '%s', %d expected ...", nb, ep->name.c_str(), headerP->gbufLen));
 
-		((char*) dataP)[tot] = 0;
+		((char*) dataP)[nb] = 0;
 		
-		packetP->message.ParseFromArray(dataP, tot);
+		packetP->message.ParseFromArray(dataP, nb);
 		if( packetP->message.IsInitialized() == false)
-			LM_X(1, ("Error parsing Google Protocol Buffer of %d bytes because a message %s is not initialized!", tot , ss::Message::messageCode(headerP->code)));
+			LM_X(1, ("Error parsing Google Protocol Buffer of %d bytes because a message %s is not initialized!", nb, ss::Message::messageCode(headerP->code)));
 
-		LM_READS(ep->name.c_str(), "google protocol buffer", dataP, tot, LmfByte);
+		LM_READS(ep->name.c_str(), "google protocol buffer", dataP, nb, LmfByte);
 	}
 
 	if (headerP->kvDataLen != 0)
@@ -324,21 +326,15 @@ int iomMsgRead
 		int    nb;
 
 		LM_T(LmtRead, ("reading a KV buffer of %d bytes", size2));
-		while (tot < size)
-		{
-			// msgAwait() ... ?
-			LM_T(LmtRead, ("trying to read %d bytes of KV buffer", size - tot));
-			nb = read(ep->rFd, &kvBuf[tot], size - tot);
-			LM_T(LmtRead, ("read %d bytes of KV buffer", nb));
+		nb = full_read(ep->rFd, kvBuf, headerP->kvDataLen);
+		if (nb == -2)
+			LM_RE(-2, ("Connection closed by %s", ep->name.c_str()));
+		else if (nb == -1)
+			LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, ep->name.c_str(), strerror(errno)));
+		else if (nb != (int) headerP->kvDataLen)
+			LM_E(("Read %d bytes from '%s', %d expected ...", nb, ep->name.c_str(), headerP->kvDataLen));
 
-			if (nb == -1)
-				LM_RE(-1, ("read(%d bytes) from '%s': %s", size - tot, ep->name.c_str(), strerror(errno)));
-			else if (nb == 0)
-				LM_RE(-2, ("endpoint '%s' seems to have closed the connection", ep->name.c_str()));
-			tot += nb;
-		}
-
-		packetP->buffer->setSize(tot);
+		packetP->buffer->setSize(nb);
 	}
 
 	int bytesRead = sizeof(ss::Message::Header) + headerP->dataLen + headerP->gbufLen + headerP->kvDataLen;

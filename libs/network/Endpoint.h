@@ -69,7 +69,8 @@ public:
 		WorkerAdded,
 		WorkerDisconnected,
 		WorkerRemoved,
-		SelectToBeCalled
+		SelectToBeCalled,
+		WorkerVectorReceived
 	} UpdateReason;
 
 	typedef enum State

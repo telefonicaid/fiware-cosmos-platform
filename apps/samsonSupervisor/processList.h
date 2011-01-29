@@ -10,8 +10,8 @@
 * CREATION DATE            Jan 18 2011
 *
 */
+#include "Endpoint.h"           // Endpoint
 #include "Process.h"            // Process
-#include "Spawner.h"            // Spawner
 
 
 
@@ -20,6 +20,15 @@
 * processListInit - 
 */
 extern void processListInit(unsigned int pMax);
+
+
+
+/* ****************************************************************************
+*
+* processTypeName - 
+*/
+extern const char* processTypeName(Process* processP);
+extern const char* processTypeName(ProcessType type);
 
 
 
@@ -35,7 +44,15 @@ extern Process* processAdd(Process* process);
 *
 * processAdd - 
 */
-extern Process* processAdd(char* name, char* host, unsigned short port, char** args, int argCount);
+extern Process* processAdd(const char* name, const char* host, unsigned short port, ss::Endpoint* endpoint, char** args, int argCount);
+
+
+
+/* ****************************************************************************
+*
+* spawnerAdd - 
+*/
+extern Process* spawnerAdd(const char* nameP, const char* host, unsigned short port, ss::Endpoint* endpoint = NULL);
 
 
 
@@ -51,7 +68,15 @@ extern Process* processLookup(unsigned int ix);
 *
 * processLookup - 
 */
-extern Process* processLookup(char* name, char* host);
+extern Process* processLookup(const char* name, const char* host);
+
+
+
+/* ****************************************************************************
+*
+* spawnerLookup - 
+*/
+extern Process* spawnerLookup(char* host);
 
 
 

@@ -35,7 +35,7 @@ namespace ss {
 		virtual bool ready();                                   
 		
 		// Init function ( one and only one of them should be called )
-		virtual void initAsSamsonController(int port, int num_workers);
+		virtual void initAsSamsonController(void);
 		
 		// Set the receiver element (this should be notified about the package)
 		virtual void setPacketReceiver(PacketReceiverInterface* receiver);

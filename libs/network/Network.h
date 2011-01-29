@@ -15,13 +15,6 @@
 
 
 
-#define WORKERS       5
-#define DELILAHS     20
-#define CORE_WORKERS 32
-#define TEMPORALS    20
-
-
-
 namespace ss {
 
 	
@@ -41,11 +34,10 @@ class Network : public NetworkInterface
    void ipSet(char* ip);
 
 public:
-	Network();
-	Network(int endpoints, int workers);
+	Network(Endpoint::Type type, const char* alias, unsigned short port = 0, int endpoints = 80, int workers = 10);
 
-	void reset(int endpoints, int workers);
-	void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL);
+	void         init(const char* controllerName = NULL);
+	Endpoint*    controllerConnect(const char* controllerName);
 
 	virtual void setPacketReceiver(PacketReceiverInterface* receiver);
 	virtual void setDataReceiver(DataReceiverInterface* receiver);
@@ -57,7 +49,7 @@ public:
 	EndpointUpdateReceiverInterface*   endpointUpdateReceiver;
 	ReadyReceiverInterface*            readyReceiver;
 
-	virtual void   initAsSamsonController(int port, int num_workers);
+	virtual void   initAsSamsonController(void);
 	void           fdSet(int fd, const char* name, const char* alias);
 
 	bool           ready();                  // Inform about everything ready
@@ -121,16 +113,18 @@ public:
 	Endpoint*    me;
 
 private:
-	Endpoint*    listener;
-	Endpoint*    ME;
+	Endpoint*       listener;
+	Endpoint*       ME;
 
-	bool         iAmReady;
+	bool            iAmReady;
+	unsigned short  port;
 
-	Endpoint*    endpointFreeGet(Endpoint::Type type);
-	void         checkAllWorkersConnected(void);
+	void            reset(Endpoint::Type type, const char* alias, unsigned short port = 0, int endpoints = 80, int workers = 10);
+	Endpoint*       endpointFreeGet(Endpoint::Type type);
+	void            checkAllWorkersConnected(void);
 
-	void         webServiceAccept(Endpoint* ep);
-	void         webServiceTreat(Endpoint* ep);
+	void            webServiceAccept(Endpoint* ep);
+	void            webServiceTreat(Endpoint* ep);
 };
 
 	

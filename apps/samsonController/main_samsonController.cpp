@@ -77,10 +77,9 @@ int main(int argC, const char* argV[])
 	
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
-	
-	ss::Network network(endpoints, workers);
+	ss::Network network(ss::Endpoint::Controller, "controller", port, endpoints, workers);
 
-	network.initAsSamsonController(port, workers);
+	network.initAsSamsonController();
 	network.logServerSet(logServer);
 	network.runInBackground();
 	

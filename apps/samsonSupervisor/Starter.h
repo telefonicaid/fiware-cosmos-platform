@@ -14,9 +14,8 @@
 #include <QBoxLayout>
 #include <QCheckBox>
 #include <QPushButton>
+#include <QGridLayout>
 
-#include "Endpoint.h"           // Endpoint
-#include "Spawner.h"            // Spawner
 #include "Process.h"            // Process
 
 
@@ -30,30 +29,15 @@ class Starter : public QWidget
 	Q_OBJECT
 
 public:
-	enum Type
-	{
-		ProcessStarter,
-		SpawnerConnecter
-	};
-
-public:
-	Starter(Spawner* spawnerP);
 	Starter(Process* processP);
-
-	void init(const char* name, Type type);
-
-	const char*     typeName(void);
+	Starter(Process* processP, SpawnInfo* siP);
+	
 	void            check(void);
+	void            qtInit(QGridLayout* grid, int row, int column);
 
-	Spawner*        spawner;
 	Process*        process;
 
-	ss::Endpoint*   endpoint;
-
-	Type            type;
-	char*           name;
 	Qt::CheckState  checkState;
-
 	QCheckBox*      checkbox;
 	QPushButton*    configButton;
 

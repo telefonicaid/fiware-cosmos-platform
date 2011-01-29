@@ -33,7 +33,6 @@ SET (HEADERS
 	baTerm.h
 	Process.h
 	processList.h
-	Spawner.h
 	spawnerList.h
 	starterList.h
 	actions.h

@@ -177,9 +177,10 @@ int main(int argC, const char *argV[])
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
-	networkP = new ss::Network(endpoints, 0);
-	networkP->init(ss::Endpoint::Spawner, NULL, port, NULL);
+	networkP = new ss::Network(ss::Endpoint::Spawner, NULL, port, endpoints, 0);
+	networkP->init(NULL);
 	networkP->logServerSet(logServer);
+
 	spawnerP = new SamsonSpawner(networkP);
 	networkP->setDataReceiver(spawnerP);
 	networkP->run();

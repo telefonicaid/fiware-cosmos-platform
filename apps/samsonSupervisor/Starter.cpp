@@ -17,23 +17,8 @@
 #include "actions.h"            // spawnerConnect, spawnerDisconnect
 #include "ConfigWindow.h"       // ConfigWindow
 #include "Popup.h"              // Popup
+#include "processList.h"        // processTypeName, ...
 #include "Starter.h"            // Own interface
-
-
-
-/* ****************************************************************************
-*
-* Starter::init
-*/
-void Starter::init(const char* name, Type type)
-{
-	this->spawner    = NULL;
-	this->process    = NULL;
-	this->endpoint   = NULL;
-	this->checkbox   = NULL;
-	this->name       = strdup(name);
-	this->type       = type;
-}
 
 
 
@@ -43,43 +28,44 @@ void Starter::init(const char* name, Type type)
 */
 Starter::Starter(Process* processP)
 {
-	char name[128];
-
-	snprintf(name, sizeof(name), "%s@%s", processP->name, processP->host);
-	init(name, ProcessStarter);
-	process = processP;
+	process  = processP;
+	checkbox = NULL;
 }
-
 
 
 /* ****************************************************************************
 *
-* Starter::Starter
+* Starter::qtInit - 
 */
-Starter::Starter(Spawner* spawnerP)
+void Starter::qtInit(QGridLayout* grid, int row, int column)
 {
-	char name[128];
+	LM_T(LmtStarter, ("Creating checkbox for '%s'", process->name));
 
-	snprintf(name, sizeof(name), "%s", spawnerP->host);
-	init(name, SpawnerConnecter);
-	spawner = spawnerP;
-}
+	checkbox     = new QCheckBox(QString(process->name), this);
+	configButton = new QPushButton("Configure");
 
+	grid->addWidget(checkbox,     row + 1, column);
+	grid->addWidget(configButton, row + 1, column + 1);
 
+	if (process->type == PtSpawner)
+		checkbox->connect(checkbox, SIGNAL(clicked()), this, SLOT(spawnerClicked()));
+	else
+		checkbox->connect(checkbox, SIGNAL(clicked()), this, SLOT(processClicked()));
 
-/* ****************************************************************************
-*
-* Starter::typeName
-*/
-const char* Starter::typeName(void)
-{
-	switch (type)
+	configButton->connect(configButton, SIGNAL(clicked()), this, SLOT(configureClicked()));
+
+	LM_T(LmtStarter, ("looking up endpoint for a starter"));
+	if (process->endpoint == NULL)
 	{
-	case ProcessStarter:        return "ProcessStarter";
-	case SpawnerConnecter:      return "SpawnerConnecter";
+		if (process->type == PtSpawner)
+			process->endpoint = networkP->endpointLookup(ss::Endpoint::Spawner, process->host);
+		else if (strcmp(process->name, "Controller") == 0)
+			process->endpoint = networkP->endpointLookup(ss::Endpoint::Controller, process->host);
+		else if (strcmp(process->name, "Worker") == 0)
+			process->endpoint = networkP->endpointLookup(ss::Endpoint::Worker, process->host);
 	}
 
-	return "UnknownStarterType";
+	check();
 }
 
 
@@ -90,28 +76,28 @@ const char* Starter::typeName(void)
 */
 void Starter::check(void)
 {
-	if (endpoint == NULL)
+	if (process->endpoint == NULL)
 		LM_W(("NULL endpoint"));
 	else
-	   LM_T(LmtCheck, ("endpoint state: '%s'", endpoint->stateName()));
+	   LM_T(LmtCheck, ("endpoint state: '%s'", process->endpoint->stateName()));
 
-	if ((endpoint != NULL) && (endpoint->state == ss::Endpoint::Connected))
+	if ((process->endpoint != NULL) && (process->endpoint->state == ss::Endpoint::Connected))
 		checkState = Qt::Checked;
 	else
 		checkState = Qt::Unchecked;
 
 
-	if (endpoint != NULL)
+	if (process->endpoint != NULL)
 	{
 		LM_T(LmtCheck, ("%s %s-Starter '%s' (endpoint %p - '%s' at '%s')",
 						(checkState == Qt::Checked)? "Checking" : "Unchecking",
-						typeName(), name, endpoint, endpoint->name.c_str(), endpoint->ip.c_str()));
+						processTypeName(process), process->name, process->endpoint, process->endpoint->name.c_str(), process->endpoint->ip.c_str()));
 	}
 	else
 	{
 		LM_T(LmtCheck, ("%s %s-Starter '%s' (NULL endpoint)",
 						 (checkState == Qt::Checked)? "Checking" : "Unchecking",
-						 typeName(), name));
+						 processTypeName(process), process->name));
 	}
 
 	if (checkbox != NULL)
@@ -128,34 +114,29 @@ void Starter::check(void)
 */
 void Starter::spawnerClicked(void)
 {
-	if (spawner == NULL)
-		LM_X(1, ("NULL spawner"));
-
 	LM_T(LmtCheck, ("IN, checkState: '%s'",  (checkbox->checkState() == Qt::Checked)? "Checked" : "Unchecked"));
 
 	if (checkbox->checkState() == Qt::Checked)
 	{
-		if (endpoint)
-			networkP->endpointRemove(endpoint, "GUI Click - endpoint already existed");
+		if (process->endpoint)
+			networkP->endpointRemove(process->endpoint, "GUI Click - endpoint already existed");
 
-		LM_T(LmtSpawnerConnect, ("Connecting to spawner '%s'", spawner->host));
-		spawnerConnect(this, spawner);
+		LM_T(LmtSpawnerConnect, ("Connecting to spawner '%s'", process->host));
+		processConnect(process);
 	}
 	else if (checkbox->checkState() == Qt::Unchecked)
 	{
-		if (endpoint == NULL)
+		if (process->endpoint == NULL)
 		{
 			LM_W(("NULL endpoint - nothing to be done ..."));
-			spawner->fd = -1;
 			return;
 		}
 
-		if (endpoint->state != ss::Endpoint::Connected)
-			LM_W(("endpoint pointer ok (%p), but not connected", endpoint));
+		if (process->endpoint->state != ss::Endpoint::Connected)
+			LM_W(("endpoint pointer ok (%p), but not connected", process->endpoint));
 
-		networkP->endpointRemove(endpoint, "GUI Click");
-		endpoint    = NULL;
-		spawner->fd = -1;
+		networkP->endpointRemove(process->endpoint, "GUI Click");
+		process->endpoint    = NULL;
 	}
 }
 
@@ -190,13 +171,13 @@ void Starter::processClicked(void)
 */
 void Starter::configureClicked(void)
 {
-	if (endpoint == NULL)
+	if (process->endpoint == NULL)
 	{
 		char info[128];
 
-		snprintf(info, sizeof(info), "%s is not connected", name);
+		snprintf(info, sizeof(info), "%s is not connected", process->name);
 		new Popup("Error", info);
 	}
 	else
-		new ConfigWindow(endpoint);
+		new ConfigWindow(process->endpoint);
 }

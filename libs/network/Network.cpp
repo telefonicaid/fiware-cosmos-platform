@@ -129,12 +129,14 @@ static void logHookFunction(char* text, char type, const char* file, int lineNo,
 *
 * Network::reset - 
 */
-void Network::reset(int endpoints, int workers)
+void Network::reset(Endpoint::Type type, const char* alias, unsigned short port, int endpoints, int workers)
 {
 	if ((endpoints > 200) || (endpoints < 2))
 		LM_X(1, ("bad number of endpoints (%d)", endpoints));
 	if ((workers > 20) || (workers < 0))
 		LM_X(1, ("bad number of workers (%d)", workers));
+	if (2 * (workers + 3) >= endpoints)
+		LM_X(1, ("bad number of workers (%d) and endpoints", workers, endpoints));
 
 	packetReceiver         = NULL;
 	dataReceiver           = NULL;
@@ -145,9 +147,10 @@ void Network::reset(int endpoints, int workers)
 	me                     = NULL;
 	listener               = NULL;
 	controller             = NULL;
+
 	tmoSecs                = 0;
 	tmoUsecs               = 50000;
-
+	this->port             = port;
 	Endpoints              = endpoints;
 	Workers                = workers;
 
@@ -156,17 +159,31 @@ void Network::reset(int endpoints, int workers)
 		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
 
 	LM_T(LmtInit, ("Allocated room for %d endpoints (%d workers)", endpoints, workers));
-}
 
+	endpoint[0] = new Endpoint(type, port);
+	if (endpoint[0] == NULL)
+		LM_XP(1, ("new Endpoint"));
+	me = endpoint[0];
 
+	if (me == NULL)
+		LM_XP(1, ("unable to allocate room for Endpoint 'me'"));
 
-/* ****************************************************************************
-*
-* Constructor 
-*/
-Network::Network(void)
-{
-	reset(3 + WORKERS + DELILAHS + CORE_WORKERS + TEMPORALS, WORKERS);
+	meP          = me;
+
+	me->name     = progName;
+	me->state    = Endpoint::Me;
+	me->ip       = ipGet();
+
+	if (alias != NULL)
+		me->alias = alias;
+	else
+		me->alias = "NO ALIAS";
+
+	if ((alias != NULL) && (strncmp(&alias[1], "orker", 5) == 0))
+		me->workerId = atoi(&alias[6]);
+	else
+		me->workerId = -2;
+
 }
 
 
@@ -175,9 +192,9 @@ Network::Network(void)
 *
 * Constructor
 */
-Network::Network(int endpoints, int workers)
+Network::Network(Endpoint::Type type, const char* alias, unsigned short port, int endpoints, int workers)
 {
-	reset(endpoints, workers);
+	reset(type, alias, port, endpoints, workers);
 }
 
 
@@ -232,56 +249,12 @@ void Network::setReadyReceiver(ReadyReceiverInterface* receiver)
 
 /* ****************************************************************************
 *
-* init - create endpoints 0 and 1
+* controllerConnect - 
 */
-void Network::init(Endpoint::Type type, const char* alias, unsigned short port, const char* controllerName)
+Endpoint* Network::controllerConnect(const char* controllerName)
 {
-	endpoint[0] = new Endpoint(type, port);
-	if (endpoint[0] == NULL)
-		LM_XP(1, ("new Endpoint"));
-	me = endpoint[0];
-
-	if (me == NULL)
-		LM_XP(1, ("unable to allocate room for Endpoint 'me'"));
-
-	meP          = me;
-
-	me->name     = progName;
-	me->state    = Endpoint::Me;
-	me->ip       = ipGet();
-
-	if (alias != NULL)
-		me->alias = alias;
-	else
-		me->alias = "NO ALIAS";
-
-	if ((alias != NULL) && (strncmp(&alias[1], "orker", 5) == 0))
-		me->workerId = atoi(&alias[6]);
-	else
-		me->workerId = -2;
-
-	if (port != 0)
-	{
-		endpoint[1] = new Endpoint(*me);
-		if (endpoint[1] == NULL)
-			LM_XP(1, ("new Endpoint"));
-		listener = endpoint[1];
-
-		listener->rFd      = iomServerOpen(listener->port);
-		if (listener->rFd == -1)
-			LM_XP(1, ("unable to open port %d for listening", listener->port));
-
-		listener->state    = Endpoint::Listening;
-		listener->type     = Endpoint::Listener;
-		listener->ip       = me->ip;
-		listener->name     = "Listener";
-		listener->wFd      = listener->rFd;
-
-		LM_T(LmtFds, ("opened fd %d to accept incoming connections", listener->rFd));
-	}
-
 	LM_TODO(("Perhaps I should include LogServer in this if ..."));
-	if ((type == Endpoint::Worker) || (type == Endpoint::Delilah) || (type == Endpoint::Supervisor))
+	if ((me->type == Endpoint::Worker) || (me->type == Endpoint::Delilah) || (me->type == Endpoint::Supervisor))
 	{
 		endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
 		if (endpoint[2] == NULL)
@@ -313,6 +286,40 @@ void Network::init(Endpoint::Type type, const char* alias, unsigned short port, 
 		endpoint[2] = NULL;
 		controller  = NULL;
 	}
+
+	return controller;
+}
+
+
+
+/* ****************************************************************************
+*
+* init - create endpoints 0 and 1
+*/
+void Network::init(const char* controllerName)
+{
+	if (this->port != 0)
+	{
+		endpoint[1] = new Endpoint(*me);
+		if (endpoint[1] == NULL)
+			LM_XP(1, ("new Endpoint"));
+		listener = endpoint[1];
+
+		listener->rFd      = iomServerOpen(listener->port);
+		if (listener->rFd == -1)
+			LM_XP(1, ("unable to open port %d for listening", listener->port));
+
+		listener->state    = Endpoint::Listening;
+		listener->type     = Endpoint::Listener;
+		listener->ip       = me->ip;
+		listener->name     = "Listener";
+		listener->wFd      = listener->rFd;
+
+		LM_T(LmtFds, ("opened fd %d to accept incoming connections", listener->rFd));
+	}
+
+	if (controller == NULL)
+		controllerConnect(controllerName);
 
 	LM_T(LmtInit, ("I am a '%s', my name: '%s', ip: %s", me->typeName(), me->nam(), me->ip.c_str()));
 }
@@ -386,15 +393,11 @@ Endpoint* workerNew(int ix)
 *
 * initAsSamsonController - 
 */
-void Network::initAsSamsonController(int port, int workers)
+void Network::initAsSamsonController(void)
 {
-	int ix;
+	init();
 
-	init(Endpoint::Controller, "Controller", port);
-
-	Workers = workers;
-
-	for (ix = 0; ix < Workers; ix++)
+	for (int ix = 0; ix < Workers; ix++)
 		endpoint[3 + ix] = workerNew(ix);
 
 	int fd = iomServerOpen(WEB_SERVICE_PORT);
@@ -1008,7 +1011,9 @@ Endpoint* Network::endpointAdd
 	case Endpoint::Delilah:
 	case Endpoint::WebListener:
 	case Endpoint::WebWorker:
-		LM_T(LmtWorkers, ("Workers: %d", Workers));
+		LM_T(LmtEndpoint, ("%s - adding endpoint of type '%s'", why, me->typeName(type)));
+		LM_T(LmtWorkers,   ("Workers:   %d", Workers));
+		LM_T(LmtEndpoints, ("Endpoints: %d", Endpoints));
 		for (ix = 3 + Workers; ix < (int) (Endpoints - 1); ix++)
 		{
 			if (endpoint[ix] == NULL)
@@ -1972,7 +1977,7 @@ void Network::msgTreat(void* vP)
 		else if ((helloEp->type == Endpoint::Controller) && (controller == NULL))
 			LM_T(LmtWorkerVector, ("NOT Asking Controller for the WorkerVector - controller == NULL"));
 		else
-			LM_T(LmtWorkerVector, ("NOT Asking Controller for the WorkerVector!"));
+			LM_T(LmtWorkerVector, ("NOT Asking '%s/%s' for the WorkerVector!", ep->typeName(), helloEp->typeName()));
 
 		checkAllWorkersConnected();
 		break;
@@ -1985,8 +1990,6 @@ void Network::msgTreat(void* vP)
 			controllerMsgTreat(ep, msgCode, msgType, dataP, dataLen, &packet);
 		else
 		{
-			LM_T(LmtWorkerVector, ("Got the worker vector"));
-
 			if (msgType != Message::Ack)
 				LM_X(1, ("Got a WorkerVector request, not being controller ..."));
 
@@ -1995,8 +1998,19 @@ void Network::msgTreat(void* vP)
 
 			LM_T(LmtWorkerVector, ("Got the worker vector from the Controller - now connect to them all ..."));
 
-			int               ix;
-			Message::Worker*  workerV = (Message::Worker*) dataP;
+			int                   ix;
+			int                   workers = dataLen / sizeof(Message::Worker);
+			Message::Worker*      workerV = (Message::Worker*) dataP;
+
+			if (endpointUpdateReceiver != NULL)
+			{
+				Message::WorkerVectorData wvData;
+
+				wvData.workers = workers;
+				wvData.workerV = workerV;
+
+				endpointUpdateReceiver->endpointUpdate(NULL, Endpoint::WorkerVectorReceived, "Got Worker Vector", &wvData);
+			}
 
 			for (unsigned int ix = 0; ix < dataLen / sizeof(Message::Worker); ix++)
 				LM_T(LmtWorkerVector, ("Controller gave me a worker in %s:%d", workerV[ix].ip, workerV[ix].port));

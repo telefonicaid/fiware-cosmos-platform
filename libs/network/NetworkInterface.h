@@ -138,7 +138,7 @@ public:
 	virtual bool ready() = 0;
 			
 	virtual void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL) {};
-	virtual void initAsSamsonController(int port, int num_workers)=0;
+	virtual void initAsSamsonController(void) = 0;
 
 	// Set the receiver element (this should be notified about the package)
 	virtual void setPacketReceiver( PacketReceiverInterface* receiver) = 0;

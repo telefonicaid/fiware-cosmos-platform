@@ -11,7 +11,6 @@
 *
 */
 #include "Starter.h"            // Starter
-#include "Spawner.h"            // Spawner
 #include "Process.h"            // Process
 
 
@@ -50,17 +49,17 @@ extern void connectToAllSpawners(void);
 
 /* ****************************************************************************
 *
-* spawnerConnect - connect to spawner
+* connectToController - 
 */
-extern void spawnerConnect(Starter* starter, Spawner* spawner);
+extern void connectToController(void);
 
 
 
 /* ****************************************************************************
 *
-* connectToController - 
+* processConnect - connect to process
 */
-extern void connectToController(void);
+extern void processConnect(Process* processP);
 
 
 

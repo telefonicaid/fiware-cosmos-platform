@@ -23,18 +23,6 @@
 #include "iomMsgSend.h"         // Own interface
 
 
-#if 0
-/* ****************************************************************************
-*
-* global variables
-*/
-static struct timeval startTime;
-static struct timeval endTime;
-static long           bytesSent;
-#endif
-
-
-
 /* ****************************************************************************
 *
 * iomWriteOk - 
@@ -46,7 +34,7 @@ bool iomWriteOk(int fd)
 	struct timeval  timeVal;
 	
 	timeVal.tv_sec  = 0;
-	timeVal.tv_usec = 0;
+	timeVal.tv_usec = 50000;
 
 	FD_ZERO(&wFds);
 	FD_SET(fd, &wFds);
@@ -156,8 +144,8 @@ int iomMsgSend
 
 	if (iomWriteOk(fd) == false)
 	{
-		LM_E(("Cannot write to fd %d (returning -2 as if it was a 'connection closed' ...)"));
-        lmOutHookRestore(outHook);
+		LM_E(("Cannot write to fd %d (returning -2 as if it was a 'connection closed' ...)", fd));
+		lmOutHookRestore(outHook);
 		return -2;
 	}
 
@@ -200,6 +188,12 @@ static int partWrite(ss::Endpoint* to, void* dataP, int dataLen, const char* wha
 
 	while (tot < dataLen)
 	{
+		if (iomWriteOk(to->wFd) == false)
+		{
+			LM_E(("Cannot write to '%s' (fd %d) (returning -2 as if it was a 'connection closed' ...)", to->name.c_str(), to->wFd));
+			return -2;
+		}
+		
 		nb = write(to->wFd, &data[tot], dataLen - tot);
 		if (nb == -1)
 		{

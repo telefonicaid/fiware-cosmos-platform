@@ -11,9 +11,7 @@
 #include "traceLevels.h"        // Lmt*
 
 #include "Starter.h"            // Starter
-#include "Spawner.h"            // Spawner
 #include "Process.h"            // Process
-#include "spawnerList.h"        // spawnerListShow
 #include "processList.h"        // processListShow
 #include "starterList.h"        // Own interface
 
@@ -81,15 +79,13 @@ void starterListShow(const char* what)
 
 		starter = starterV[ix];
 
-		if (starter->endpoint)
-			LM_T(LmtStarterListShow, ("  %08p  Starter %02d  %30s-Starter %-30s %s Endpoint at %p", starter, ix, starter->typeName(), starter->name, starter->endpoint->typeName(), starter->endpoint));
+		if (starter->process->endpoint)
+		   LM_T(LmtStarterListShow, ("  %08p  Starter %02d  %30s-Starter %-30s (process at %p) %s Endpoint at %p", starter, ix, processTypeName(starter->process), starter->process->name, starter->process, starter->process->endpoint->typeName(), starter->process->endpoint));
 		else
-			LM_T(LmtStarterListShow, ("  %08p  Starter %02d  %30s-Starter %-30s NULL Endpoint",     starter, ix, starter->typeName(), starter->name));
+		   LM_T(LmtStarterListShow, ("  %08p  Starter %02d  %30s-Starter %-30s (process at %p) NULL Endpoint",     starter, ix, processTypeName(starter->process), starter->process->name, starter->process));
 	}
 	LM_T(LmtStarterListShow, ("--------------------------------"));
 
-	LM_T(LmtStarterListShow, (""));
-	spawnerListShow(what);
 	LM_T(LmtStarterListShow, (""));
 	processListShow(what);
 	LM_T(LmtStarterListShow, (""));
@@ -131,20 +127,7 @@ Starter* starterAdd(Process* processP)
 	Starter* starter;
 
 	starter = new Starter(processP);
-	return starterAdd(starter);
-}
-
-
-
-/* ****************************************************************************
-*
-* starterAdd - 
-*/
-Starter* starterAdd(Spawner* spawnerP)
-{
-	Starter* starter;
-
-	starter = new Starter(spawnerP);
+	processP->starterP = starter;
 	return starterAdd(starter);
 }
 
@@ -166,9 +149,9 @@ Starter* starterLookup(ss::Endpoint* ep)
 		if (starterV[ix] == NULL)
 			continue;
 
-		LM_T(LmtStarterLookup, ("*** Comparing endpoints %p and %p", ep, starterV[ix]->endpoint));
+		LM_T(LmtStarterLookup, ("*** Comparing endpoints %p and %p", ep, starterV[ix]->process->endpoint));
 
-		if (starterV[ix]->endpoint == ep)
+		if (starterV[ix]->process->endpoint == ep)
 			return starterV[ix];
 	}
 
@@ -199,31 +182,5 @@ Starter* starterLookup(Process* process)
 	}
 
 	LM_E(("Not found: starter with process %s at %s", process->name, process->host));
-	return NULL;
-}
-
-
-
-/* ****************************************************************************
-*
-* starterLookup - 
-*/
-Starter* starterLookup(Spawner* spawner)
-{
-	unsigned int  ix;
-
-	LM_T(LmtStarterLookup, ("Looking for starter with spawner at %s", spawner->host));
-	starterListShow("Looking for a starter with a specific spawner");
-
-	for (ix = 0; ix < starterMax; ix++)
-	{
-		if (starterV[ix] == NULL)
-			continue;
-
-		if (starterV[ix]->spawner == spawner)
-			return starterV[ix];
-	}
-
-	LM_E(("Not found: starter with spawner at %s", spawner->host));
 	return NULL;
 }

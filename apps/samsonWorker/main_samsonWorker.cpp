@@ -106,8 +106,8 @@ int main(int argC, const char *argV[])
 
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
-	ss::Network network(endpoints,workers);
-	network.init(ss::Endpoint::Worker, alias, port, controller);
+	ss::Network network(ss::Endpoint::Worker, alias, port, endpoints, workers);
+	network.init(controller);
 	network.logServerSet(logServer);
 	
 	LM_T(LmtInit, ("Waiting for network connection ..."));

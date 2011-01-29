@@ -230,7 +230,7 @@ int main(int argC, const char *argV[])
 	logWinCreate(&app);
 
 	LM_T(LmtInit, ("creating Network"));
-	networkP        = new ss::Network(endpoints, 10); // 10 workers by default
+	networkP        = new ss::Network(ss::Endpoint::LogServer, "LogServer", port, endpoints, 10); // 10 workers by default
 
 	LM_T(LmtInit, ("creating SamsonLogServer"));
 	samsonLogServer = new SamsonLogServer();
@@ -241,7 +241,7 @@ int main(int argC, const char *argV[])
     networkP->setDataReceiver(samsonLogServer);
 
 	LM_T(LmtInit, ("initializing Network"));
-	networkP->init(ss::Endpoint::LogServer, "LogServer", port, controller);
+	networkP->init(controller);
 
 	if (strcmp(controller, (char*) NOC) != 0)
 	{

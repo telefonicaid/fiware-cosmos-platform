@@ -57,4 +57,6 @@ Popup::Popup(const char* title, const char* text)
 	y = (screenHeight - size.height()) / 2;
 
 	this->move(x, y);
+
+	qApp->exec();
 }

@@ -4,6 +4,8 @@
 #include "Format.h"				// au::Format
 #include "MemoryManager.h"      // ss::MemoryManager
 
+
+
 /* ****************************************************************************
 *
 * Option variables
@@ -13,6 +15,7 @@ int              workers;
 char             controller[80];
 int				 memory_gb;
 int				 load_buffer_size_mb;
+
 
 
 #define LOC "localhost:1234"
@@ -66,10 +69,10 @@ int main(int argC, const char *argV[])
 	
 	ss::MemoryManager::init();
 
-	ss::Network  network(endpoints,workers);
+	ss::Network  network(ss::Endpoint::Delilah, "delilah", 0, endpoints, workers);
 	std::cout << "Waiting for network connection ...";
 	
-	network.init(ss::Endpoint::Delilah, "delilah", 0, controller);
+	network.init(controller);
 	network.runInBackground();
 	
 	while ( !network.ready() )

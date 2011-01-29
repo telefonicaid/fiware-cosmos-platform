@@ -11,7 +11,6 @@
 *
 */
 #include "Starter.h"            // Starter
-#include "Spawner.h"            // Spawner
 #include "Process.h"            // Process
 
 
@@ -53,7 +52,6 @@ extern void starterListShow(const char* what);
 * starterAdd - 
 */
 extern Starter* starterAdd(Starter* starter);
-extern Starter* starterAdd(Spawner* spawner);
 extern Starter* starterAdd(Process* process);
 
 
@@ -71,13 +69,5 @@ extern Starter* starterLookup(ss::Endpoint* ep);
 * starterLookup - 
 */
 extern Starter* starterLookup(Process* process);
-
-
-
-/* ****************************************************************************
-*
-* starterLookup - 
-*/
-extern Starter* starterLookup(Spawner* spawner);
 
 #endif

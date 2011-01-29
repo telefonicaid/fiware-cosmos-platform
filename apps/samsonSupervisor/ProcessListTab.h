@@ -18,6 +18,7 @@
 #include <QHBoxLayout>
 
 #include "Endpoint.h"           // Endpoint
+#include "Starter.h"            // Starter
 
 
 
@@ -31,6 +32,7 @@ class ProcessListTab : public QWidget
 
 public:
 	ProcessListTab(const char* name, QWidget *parent = 0);
+	void         starterInclude(Starter* starterP);
 
 	QLabel*      logServerRunningLabel;
 	QPushButton* logServerStartButton;
@@ -41,7 +43,7 @@ private slots:
 
 private:
 	QGridLayout*  mainLayout;
-	void          startersCreate(void);
+	void          initialStartersCreate(void);
 };
 
 #endif

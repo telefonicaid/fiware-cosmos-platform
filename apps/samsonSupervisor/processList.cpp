@@ -12,10 +12,12 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
 
+#include "iomConnect.h"         // iomConnect
+#include "globals.h"            // networkP
 #include "ports.h"              // SPAWNER_PORT
-#include "spawnerList.h"        // spawnerAdd, spawnerListShow
 #include "starterList.h"        // starterAdd, starterListShow
 #include "Process.h"            // Process
+#include "Popup.h"              // Popup
 #include "processList.h"        // Own interface
 
 
@@ -44,33 +46,60 @@ void processListInit(unsigned int pMax)
 
 /* ****************************************************************************
 *
+* processTypeName - 
+*/
+const char* processTypeName(ProcessType type)
+{
+	switch (type)
+	{
+	case PtWorkerStarter:       return "WorkerStarter";
+	case PtControllerStarter:   return "ControllerStarter";
+	case PtSpawner:             return "Spawner";
+	}
+
+	return "Unknown Process Type";
+}
+
+
+
+/* ****************************************************************************
+*
+* processTypeName - 
+*/
+const char* processTypeName(Process* processP)
+{
+	return processTypeName(processP->type);
+}
+
+
+
+/* ****************************************************************************
+*
 * processAdd - 
 */
 Process* processAdd(Process* processP)
 {
-	LM_T(LmtProcessList, ("Adding process '%s' in host '%s' (and with %d args)", processP->name, processP->host, processP->argCount));
+	Process* pP;
+
+	LM_T(LmtProcessList, ("Adding process '%s' in host '%s'", processP->name, processP->host));
 
 	if (processIx >= processMax)
 		LM_X(1, ("No room for more Processes (max index is %d) - change and recompile!", processMax));
 
-	if (processLookup(processP->name, processP->host) != NULL)
-		LM_X(1, ("process '%s' in host '%s' already in process list", processP->name, processP->host));
+	if ((pP = processLookup(processP->name, processP->host)) != NULL)
+	{
+		LM_W(("process '%s' in host '%s' already in process list", processP->name, processP->host));
+		LM_TODO(("Destroy processP"));
+		return pP;
+	}
 
 	processV[processIx] = processP;
 
-	LM_T(LmtProcessList, ("Process '%s' in '%s' added - now adding its Spawner if necessary", processP->name, processP->host));
-	processV[processIx]->spawnerP = spawnerLookup(processV[processIx]->host);
-	if (processV[processIx]->spawnerP == NULL)
-	{
-		processV[processIx]->spawnerP = spawnerAdd(processV[processIx]->host, SPAWNER_PORT, -1);
-		if (processV[processIx]->spawnerP == NULL)
-			LM_X(1, ("Error creating spawner for host '%s'", processV[processIx]->host));
-	}
-
 	processListShow("Process added");
-	spawnerListShow("Process added");
 
 	++processIx;
+
+	LM_M(("Added process '%s@%s' with endpoint at %p", processP->name, processP->host, processP->endpoint));
 
 	return processP;
 }
@@ -81,27 +110,57 @@ Process* processAdd(Process* processP)
 *
 * processAdd - 
 */
-Process* processAdd(char* name, char* host, unsigned short port, char** args, int argCount)
+Process* processAdd(const char* name, const char* host, unsigned short port, ss::Endpoint* endpoint, char** args, int argCount)
 {
 	int           argIx;
 	Process*      processP;
+
+	LM_T(LmtProcess, ("Adding process '%s' in '%s'", name, host));
+
+	if ((processP = processLookup(name, host)) != NULL)
+	{
+		char info[256];
+
+		snprintf(info, sizeof(info), "There is already a '%s' process in host '%s'.\nPlease check your configuration files.", name, host);
+		new Popup("Duplicated process", info);
+		LM_X(1, ("Duplicated process: %s", info));
+	}
 
 	processP = (Process*) calloc(1, sizeof(Process));
 	if (processP == NULL)
 		LM_X(1, ("calloc: %s", strerror(errno)));
 
-	processP->name     = strdup(name);
-	processP->host     = strdup(host);
-	processP->port     = port;
+	if (name == NULL)
+		name = "noname";
 
-	processP->argCount = argCount;
-	argIx = 0;
-	while (argIx < argCount)
+	processP->name       = strdup(name);
+	processP->host       = strdup(host);
+	processP->port       = port;
+	processP->spawnInfo  = NULL;
+	processP->endpoint   = endpoint;
+
+	if (strcmp(name, "Controller") == 0)
+		processP->type = PtControllerStarter;
+	else if (strcmp(name, "Worker") == 0)
+		processP->type = PtWorkerStarter;
+	else
+		LM_X(1, ("name ('%s') should be either 'Controller' or 'Worker'", name));
+
+	if (args != NULL)
 	{
-		LM_T(LmtProcessList, ("Copying arg %d", argIx));
-		processP->arg[argIx] = strdup(args[argIx]);
-		LM_T(LmtProcessList, ("arg[%d]: '%s'", argIx, processP->arg[argIx]));
-		++argIx;
+		processP->spawnInfo = (SpawnInfo*) calloc(1, sizeof(SpawnInfo));
+		if (processP->spawnInfo == NULL)
+			LM_RE(NULL, ("error allocating room for SpawnInfo: %s", strerror(errno)));
+
+		processP->spawnInfo->argCount = argCount;
+		argIx = 0;
+		while (argIx < argCount)
+		{
+			LM_T(LmtProcessList, ("Copying arg %d", argIx));
+			processP->spawnInfo->arg[argIx] = strdup(args[argIx]);
+			LM_T(LmtProcessList, ("arg[%d]: '%s'", argIx, processP->spawnInfo->arg[argIx]));
+			++argIx;
+		}
 	}
 
 	return processAdd(processP);
@@ -113,7 +172,7 @@ Process* processAdd(char* name, char* host, unsigned short port, char** args, in
 *
 * processLookup - 
 */
-Process* processLookup(char* name, char* host)
+Process* processLookup(const char* name, const char* host)
 {
 	for (unsigned int ix = 0; ix < processMax; ix++)
 	{
@@ -139,6 +198,34 @@ Process* processLookup(unsigned int ix)
 		LM_X(1, ("cannot return process %d - max process id is %d", processMax));
 
 	return processV[ix];
+}
+
+
+
+/* ****************************************************************************
+*
+* spawnerLookup - 
+*/
+Process* spawnerLookup(char* host)
+{
+	LM_M(("Looking for host '%s' (process 0-%d)", host, processMax));
+
+	for (unsigned int ix = 0; ix < processMax; ix++)
+	{
+		if (processV[ix] == NULL)
+			continue;
+
+		LM_M(("Comparing hosts: '%s' and '%s' (types: '%s' & '%s')", processV[ix]->host, host, processTypeName(processV[ix]), processTypeName(PtSpawner)));
+
+		if ((strcmp(processV[ix]->host, host) == 0) && (processV[ix]->type == PtSpawner))
+		{
+			LM_M(("Found spawner for host '%s'", host));
+			return processV[ix];
+		}
+	}
+
+	LM_M(("Cannot find spawner for host '%s'", host));
+	return NULL;
 }
 
 
@@ -171,14 +258,91 @@ Process** processListGet(void)
 */
 void processListShow(const char* why)
 {
-	LM_T(LmtProcessListShow, ("---------- ProcessList: %s ----------", why));
+	LM_T(LmtProcessListShow, ("---------- Process List: %s ----------", why));
 
 	for (unsigned int ix = 0; ix < processMax; ix++)
 	{
 		if (processV[ix] == NULL)
 			continue;
 
-		LM_T(LmtProcessListShow, ("  %08p process %02d: %-20s %-20s   %d args (spawner at %p, starter at %p)", processV[ix], ix, processV[ix]->name, processV[ix]->host, processV[ix]->argCount, processV[ix]->spawnerP, processV[ix]->starterP));
+		if (processV[ix]->spawnInfo != NULL)
+			LM_T(LmtProcessListShow, ("  %08p process %02d: %-20s %-20s   (endpoint: %p, starter at %p, spawner at %p)  %d args", 
+									  processV[ix], ix, processV[ix]->name, processV[ix]->host,
+									  processV[ix]->endpoint,
+									  processV[ix]->starterP,
+									  processV[ix]->spawnInfo->spawnerP,
+									  processV[ix]->spawnInfo->argCount));
+		else
+			LM_T(LmtProcessListShow, ("  %08p process %02d: %-20s %-20s   (endpoint: %p, starter at %p)",
+									  processV[ix], ix, processV[ix]->name, processV[ix]->host,
+									  processV[ix]->endpoint,
+									  processV[ix]->starterP));
 	}
 	LM_T(LmtProcessListShow, ("------------------------------------"));
+}
+
+
+
+/* ****************************************************************************
+*
+* spawnerAdd - 
+*/
+Process* spawnerAdd(Process* spawnerP)
+{
+	LM_T(LmtSpawnerList, ("Adding spawner for host '%s'", spawnerP->host));
+
+    if (processIx >= processMax)
+		LM_X(1, ("No room for more Spawners/Processes (max index is %d) - change and recompile!", processMax));
+
+	if (spawnerLookup(spawnerP->host) != NULL)
+	{
+		LM_T(LmtProcessList, ("spawner for host '%s' already in process list", spawnerP->host));
+		return spawnerP;
+	}
+
+	processV[processIx] = spawnerP;
+	spawnerP->type      = PtSpawner;
+
+	LM_T(LmtProcessList, ("Spawner for '%s' added", spawnerP->host));
+
+	++processIx;
+	
+	if (spawnerP->endpoint == NULL)
+	{
+		int fd;
+
+		fd = iomConnect(spawnerP->host, spawnerP->port);
+		spawnerP->endpoint = networkP->endpointAdd("Adding spawner", fd, fd, spawnerP->name, spawnerP->name, 0, ss::Endpoint::Temporal, spawnerP->host, spawnerP->port);
+	}
+
+	return spawnerP;
+}
+
+
+
+/* ****************************************************************************
+*
+* spawnerAdd - 
+*/
+Process* spawnerAdd(const char* nameP, const char* host, unsigned short port, ss::Endpoint* endpoint)
+{
+	Process*  spawnerP;
+	char      name[128];
+
+	spawnerP = (Process*) calloc(1, sizeof(Process));
+	if (spawnerP == NULL)
+		LM_X(1, ("calloc: %s", strerror(errno)));
+
+	if (nameP == NULL)
+	{
+		snprintf(name, sizeof(name), "spawner@%s", spawnerP->host);
+		nameP = name;
+	}
+
+	spawnerP->name     = strdup(nameP);
+	spawnerP->host     = strdup(host);
+	spawnerP->port     = port;
+	spawnerP->endpoint = endpoint;
+
+	return spawnerAdd(spawnerP);
 }

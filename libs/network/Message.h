@@ -174,6 +174,18 @@ typedef struct SpawnData
 
 /* ****************************************************************************
 *
+* WorkerVectorData - 
+*/
+typedef struct WorkerVectorData
+{
+	int      workers;
+	Worker*  workerV;
+} WorkerVectorData;
+
+
+
+/* ****************************************************************************
+*
 * messageCode - 
 */
 extern char* messageCode(MessageCode code);

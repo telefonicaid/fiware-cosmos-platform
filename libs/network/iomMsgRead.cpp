@@ -38,7 +38,7 @@ ssize_t full_read(int fd, char* buf, ssize_t bufLen)
 	{
 		ssize_t nb;
 
-		s = iomMsgAwait(fd, 0, 50000);
+		s = iomMsgAwait(fd, 0, 500000);
 		if (s != 1)
 			LM_RE(-1, ("iomMsgAwait returned %d", s));
 

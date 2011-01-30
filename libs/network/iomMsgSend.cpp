@@ -34,7 +34,7 @@ bool iomWriteOk(int fd)
 	struct timeval  timeVal;
 	
 	timeVal.tv_sec  = 0;
-	timeVal.tv_usec = 50000;
+	timeVal.tv_usec = 500000;
 
 	FD_ZERO(&wFds);
 	FD_SET(fd, &wFds);

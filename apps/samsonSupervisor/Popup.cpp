@@ -58,5 +58,6 @@ Popup::Popup(const char* title, const char* text)
 
 	this->move(x, y);
 
-	qApp->exec();
+	if (qApp->activeWindow() == NULL)
+		qApp->exec();
 }

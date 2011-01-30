@@ -212,6 +212,16 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 
 				if (processP->spawnInfo->spawnerP == NULL)
 				{
+					int fd;
+
+					LM_W(("No spawner found in host '%s' - lets try to connect to it", host));
+					fd = iomConnect(host, SPAWNER_PORT);
+					if (fd != -1)
+						processP->spawnInfo->spawnerP = spawnerAdd("Spawner", host, SPAWNER_PORT, NULL);
+				}
+
+				if (processP->spawnInfo->spawnerP == NULL)
+				{
 					char info[256];
 
 					snprintf(info, sizeof(info),

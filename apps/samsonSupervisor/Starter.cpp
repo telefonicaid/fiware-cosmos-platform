@@ -41,7 +41,7 @@ void Starter::qtInit(QGridLayout* grid, int row, int column)
 {
 	LM_T(LmtStarter, ("Creating checkbox for '%s'", process->name));
 
-	checkbox     = new QCheckBox(QString(process->name), this);
+	checkbox     = new QCheckBox(QString(process->name) + "@" + process->host, this);
 	configButton = new QPushButton("Configure");
 
 	grid->addWidget(checkbox,     row + 1, column);

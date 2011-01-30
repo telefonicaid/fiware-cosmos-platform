@@ -45,8 +45,8 @@ int iomAccept(int lfd, char* hostName, int hostNameLen)
 		hName = hP->h_name;
 	else
 	{
+		snprintf(ip, sizeof(ip), "%s", inet_ntoa(peer.sin_addr));
 		LM_W(("gethostbyaddr failed for '%s': %s", ip, strerror(errno)));
-		sprintf(ip, "%s", inet_ntoa(peer.sin_addr));
 		hName = ip;
 	}
 

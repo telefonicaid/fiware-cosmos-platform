@@ -117,8 +117,7 @@ public:
 
 
 	int          helloSend(Endpoint* ep, Message::MessageType type);
-
-	Endpoint*    controller;        // endpoint slot 2
+	Endpoint*    controllerGet(void);
 
 private:
 	bool            iAmReady;

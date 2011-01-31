@@ -171,7 +171,6 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 		endpoint[ME]->workerId = atoi(&alias[6]);
 	else
 		endpoint[ME]->workerId = -2;
-
 }
 
 
@@ -247,14 +246,13 @@ Endpoint* Network::controllerConnect(const char* controllerName)
 		endpoint[CONTROLLER] = new Endpoint(Endpoint::Controller, controllerName);
 		if (endpoint[CONTROLLER] == NULL)
 			LM_XP(1, ("new Endpoint"));
-		controller = endpoint[CONTROLLER];
 
-		LM_T(LmtControllerConnect, ("connecting to controller in %s, port %d", controller->ip.c_str(), controller->port));
-		controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
-		if (controller->rFd == -1)
+		LM_T(LmtControllerConnect, ("connecting to controller in %s, port %d", endpoint[CONTROLLER]->ip.c_str(), endpoint[CONTROLLER]->port));
+		endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip.c_str(), (unsigned short) endpoint[CONTROLLER]->port);
+		if (endpoint[CONTROLLER]->rFd == -1)
 		{
 			if (endpoint[ME]->type != Endpoint::Supervisor)
-				LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
+				LM_X(1, ("error connecting to controller at %s:%d", endpoint[CONTROLLER]->ip.c_str(), endpoint[CONTROLLER]->port));
 			else
 			{
 				iAmReady = true;
@@ -265,17 +263,14 @@ Endpoint* Network::controllerConnect(const char* controllerName)
 		else
 		{
 			LM_T(LmtControllerConnect, ("connected to controller - calling ready after trying to connect to all workers"));
-			controller->wFd   = controller->rFd;
-			controller->state = Endpoint::Connected;
+			endpoint[CONTROLLER]->wFd   = endpoint[CONTROLLER]->rFd;
+			endpoint[CONTROLLER]->state = Endpoint::Connected;
 		}
 	}
 	else
-	{
 		endpoint[CONTROLLER] = NULL;
-		controller           = NULL;
-	}
 
-	return controller;
+	return endpoint[CONTROLLER];
 }
 
 
@@ -306,7 +301,7 @@ void Network::init(const char* controllerName)
 		LM_T(LmtFds, ("opened fd %d to accept incoming connections", endpoint[LISTENER]->rFd));
 	}
 
-	if (controller == NULL)
+	if (endpoint[CONTROLLER] == NULL)
 		controllerConnect(controllerName);
 
 	LM_T(LmtInit, ("I am a '%s', my name: '%s', ip: %s", endpoint[ME]->typeName(), endpoint[ME]->nam(), endpoint[ME]->ip.c_str()));
@@ -984,9 +979,9 @@ Endpoint* Network::endpointAdd
 			endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerAdded, "Controller Added");
 
 		LM_T(LmtInit, ("Setting controller to point to endpoint[%d]", CONTROLLER));
-		this->controller = endpoint[CONTROLLER];
+		this->endpoint[CONTROLLER] = endpoint[CONTROLLER];
 
-		return controller;
+		return endpoint[CONTROLLER];
 
 	case Endpoint::Temporal:
 		for (ix = Endpoints - 1; ix >= FIRST_WORKER + Workers; ix--)
@@ -1088,15 +1083,15 @@ Endpoint* Network::endpointAdd
 	case Endpoint::Worker:
 		if (endpoint[ME]->type == Endpoint::CoreWorker)
 		{
-			if (controller == NULL)
+			if (endpoint[CONTROLLER] == NULL)
 				LM_X(1, ("controller == NULL"));
 
-			controller->rFd    = rFd;
-			controller->wFd    = wFd;
-			controller->name   = std::string(name);
-			controller->alias  = (alias != NULL)? alias : "NO ALIAS" ;
+			endpoint[CONTROLLER]->rFd    = rFd;
+			endpoint[CONTROLLER]->wFd    = wFd;
+			endpoint[CONTROLLER]->name   = std::string(name);
+			endpoint[CONTROLLER]->alias  = (alias != NULL)? alias : "NO ALIAS" ;
 			
-			return controller;
+			return endpoint[CONTROLLER];
 		}
 
 		LM_T(LmtWorkers, ("%d workers", Workers));
@@ -1541,33 +1536,33 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 			}
 		}
 
-		if (ep == controller)
+		if (ep == endpoint[CONTROLLER])
 		{
 			if (endpoint[ME]->type == Endpoint::CoreWorker)
 				LM_X(1, ("My Father (samsonWorker) died, I cannot exist without father process"));
 
 			LM_W(("controller died ... trying to reconnect !"));
 
-			controller->rFd    = -1;
-			controller->state = Endpoint::Disconnected;
+			endpoint[CONTROLLER]->rFd    = -1;
+			endpoint[CONTROLLER]->state = Endpoint::Disconnected;
 
 			if (endpointUpdateReceiver != NULL)
-				endpointUpdateReceiver->endpointUpdate(controller, Endpoint::ControllerDisconnected, "Controller Disconnected");
+				endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerDisconnected, "Controller Disconnected");
 
 			if (endpoint[ME]->type != Endpoint::Supervisor)
 			{
-				while (controller->rFd == -1)
+				while (endpoint[CONTROLLER]->rFd == -1)
 				{
 					LM_T(LmtControllerConnect, ("Reconnecting to Controller"));
-					controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
+					endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip.c_str(), (unsigned short) endpoint[CONTROLLER]->port);
 					sleep(1); // sleep one second before reintenting connection to controller
 				}
 
-				controller->state = Endpoint::Connected;
-				controller->wFd   = controller->rFd;
+				endpoint[CONTROLLER]->state = Endpoint::Connected;
+				endpoint[CONTROLLER]->wFd   = endpoint[CONTROLLER]->rFd;
 
 				if (endpointUpdateReceiver != NULL)
-					endpointUpdateReceiver->endpointUpdate(controller, Endpoint::ControllerReconnected, "Controller Reconnected");
+					endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerReconnected, "Controller Reconnected");
 			}
 		}
 		else if (ep != NULL)
@@ -1792,34 +1787,34 @@ void Network::msgTreat(void* vP)
 			}
 
 			LM_T(LmtSelect, ("Connection closed - ep at %p", ep));
-			if (ep == controller)
+			if (ep == endpoint[CONTROLLER])
 			{
 				if (endpoint[ME]->type == Endpoint::CoreWorker)
 					LM_X(1, ("My Father (samsonWorker) died, I cannot exist without father process"));
 
 				LM_W(("controller died ... trying to reconnect !"));
 
-				controller->rFd    = -1;
-				controller->state = Endpoint::Disconnected;
+				endpoint[CONTROLLER]->rFd    = -1;
+				endpoint[CONTROLLER]->state = Endpoint::Disconnected;
 
 				if (endpointUpdateReceiver != NULL)
-					endpointUpdateReceiver->endpointUpdate(controller, Endpoint::ControllerDisconnected, "Controller Disconnected");
+					endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerDisconnected, "Controller Disconnected");
 
 				if (endpoint[ME]->type == Endpoint::Supervisor)
 					return;
 
-				while (controller->rFd == -1)
+				while (endpoint[CONTROLLER]->rFd == -1)
 				{
 					LM_T(LmtControllerConnect, ("Reconnecting to Controller"));
-					controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
+					endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip.c_str(), (unsigned short) endpoint[CONTROLLER]->port);
 					sleep(1); // sleep one second before reintenting connection to controller
 				}
 
-				controller->state = Endpoint::Connected;
-				controller->wFd   = controller->rFd;
+				endpoint[CONTROLLER]->state = Endpoint::Connected;
+				endpoint[CONTROLLER]->wFd   = endpoint[CONTROLLER]->rFd;
 
 				if (endpointUpdateReceiver != NULL)
-					endpointUpdateReceiver->endpointUpdate(controller, Endpoint::ControllerReconnected, "Controller Reconnected");
+					endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerReconnected, "Controller Reconnected");
 
 				return;
 			}
@@ -1982,13 +1977,13 @@ void Network::msgTreat(void* vP)
 			}
 		}
 
-		if (helloEp == controller)
+		if (helloEp == endpoint[CONTROLLER])
 		{
 			LM_T(LmtWorkerVector, ("Asking Controller for the WorkerVector"));
 			if ((endpoint[ME]->type != Endpoint::CoreWorker) && (endpoint[ME]->type != Endpoint::Controller))
-				iomMsgSend(controller, endpoint[ME], Message::WorkerVector, Message::Msg, NULL, 0, NULL);
+				iomMsgSend(endpoint[CONTROLLER], endpoint[ME], Message::WorkerVector, Message::Msg, NULL, 0, NULL);
 		}
-		else if ((helloEp->type == Endpoint::Controller) && (controller == NULL))
+		else if ((helloEp->type == Endpoint::Controller) && (endpoint[CONTROLLER] == NULL))
 			LM_T(LmtWorkerVector, ("NOT Asking Controller for the WorkerVector - controller == NULL"));
 		else
 			LM_T(LmtWorkerVector, ("NOT Asking '%s/%s' for the WorkerVector!", ep->typeName(), helloEp->typeName()));
@@ -2136,7 +2131,7 @@ void Network::msgTreat(void* vP)
 			else
 			{
 				// Forward Alarm to controller
-				iomMsgSend(controller, endpoint[ME], Message::Alarm, Message::Evt, dataP, dataLen);
+				iomMsgSend(endpoint[CONTROLLER], endpoint[ME], Message::Alarm, Message::Evt, dataP, dataLen);
 			}
 		}
 		else if (endpoint[ME]->type == Endpoint::Controller)
@@ -2574,5 +2569,14 @@ void Network::logServerSet(const char* logServerHost)
 void Network::quit()
 {
 }	
+
+/* ****************************************************************************
+*
+* controllerGet -
+*/
+Endpoint* Network::controllerGet(void)
+{
+	return endpoint[CONTROLLER];
+}
 
 }

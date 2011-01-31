@@ -144,13 +144,16 @@ void ProcessListTab::logServerStart(void)
 		char                        controllerIp[128];
 		char                        workers[1024];
 		char                        spawners[1024];
+		ss::Endpoint*               controller;
 
 		argV[0] = (char*) "samsonLogServer";
 		argC    = 1;
 
-		if (networkP->controller != NULL)
+		controller = networkP->controllerGet();
+
+		if (controller != NULL)
 		{
-			snprintf(controllerIp, sizeof(controllerIp), "%s", networkP->controller->ip.c_str());
+			snprintf(controllerIp, sizeof(controllerIp), "%s", controller->ip.c_str());
 			argV[argC++] = (char*) "-controller";
 			argV[argC++] = controllerIp;
 		}

@@ -391,7 +391,7 @@ int SamsonSupervisor::ready(const char* info)
 	networkP->endpointListShow("Network READY");
 	processListShow("ready");
 
-	if (networkP->controller == NULL)
+	if (networkP->controllerGet() == NULL)
 	{
 		LM_T(LmtNetworkReady, ("Connecting to controller and I return - will come back to this function and then we'll connect to the workers"));
 		connectToController();

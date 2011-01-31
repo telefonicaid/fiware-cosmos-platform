@@ -102,10 +102,15 @@ public:
 
 
 private:
-	Endpoint*    endpointAddLogServer(int rFd, int wFd, const char* name, const char* alias, std::string ip, unsigned short port);
+	Endpoint*    coreWorkerEndpointAdd(int rFd, int wFd, const char* name, const char* alias);
+
+	Endpoint*    endpointAddLogServer(int rFd, int wFd, const char* name, const char* alias, std::string ip, unsigned short port, Endpoint* inheritedFrom);
+	Endpoint*    endpointAddController(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom);
+	Endpoint*    endpointAddTemporal(int rFd, int wFd, const char* name, const char* alias, std::string ip, Endpoint* inheritedFrom);
+	Endpoint*    endpointAddDefault(int rFd, int wFd, const char* name, const char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom);
+	Endpoint*    endpointAddWorker(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom);
 public:
 	Endpoint*    endpointAdd(const char* why, int rFd, int wFd, const char* name, const char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core = -1, Endpoint* inheritFrom = NULL);
-
 
 	Endpoint*    endpointLookup(int fd, int* idP);
 	Endpoint*    endpointLookup(int ix);

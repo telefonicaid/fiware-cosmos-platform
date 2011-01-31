@@ -140,6 +140,11 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 	Endpoints              = endpoints;
 	Workers                = workers;
 
+
+
+	//
+	// Endpoint vector
+	//
 	endpoint = (Endpoint**) calloc(Endpoints, sizeof(Endpoint*));
 	if (endpoint == NULL)
 		LM_XP(1, ("calloc(%d, %d)", Endpoints, sizeof(Endpoint*)));
@@ -549,8 +554,8 @@ static void* senderThread(void* vP)
 
 	while (1)
 	{
-		SendJob job;
-		int     s;
+		SendJob  job;
+		int      s;
 
 		s = iomMsgAwait(ep->senderReadFd, -1);
 		LM_T(LmtSenderThread, ("Got something to read on fd %d", ep->senderReadFd));
@@ -558,11 +563,11 @@ static void* senderThread(void* vP)
 		LM_T(LmtSenderThread, ("read %d bytes from fd %d", s, ep->senderReadFd));
 		if (s != sizeof(job))
 		{
-			LM_E(("bad size read (%d - expected %d)", s, sizeof(job)));
 			if (s == -1)
-				LM_P(("read"));
+				LM_E(("read error: %s", strerror(errno)));
 			else
-				LM_E(("read error (%d returned)", s));
+				LM_E(("read %d bytes - expected %d", s, sizeof(job)));
+
 			continue;
 		}
 
@@ -704,6 +709,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 			snprintf(alias, sizeof(alias), "%sSender", ep->name.c_str());
 			LM_W(("Don't forget to remove this fictive endpoint when a real endpoint restarts ..."));
 			endpointAdd("fictive Sender endpoint", -1, -1, "Sender", alias, 0, Endpoint::ThreadedSender, "", 0);
+
 			pthread_create(&ep->senderTid, NULL, senderThread, ep);
 			LM_W(("This usleep to be removed some day ..."));
 			usleep(1000);
@@ -832,10 +838,68 @@ void Network::endpointListShow(const char* why)
 
 /* ****************************************************************************
 *
+* inheritFrom - 
+*/
+static void inheritFrom(Endpoint* to, Endpoint* from)
+{
+	to->msgsIn         = from->msgsIn;
+	to->msgsOut        = from->msgsOut;
+	to->msgsInErrors   = from->msgsInErrors;
+	to->msgsOutErrors  = from->msgsOutErrors;
+	to->bytesIn        = from->bytesIn;
+	to->bytesOut       = from->bytesOut;
+	to->ip             = from->ip;
+	to->startTime      = from->startTime;
+}
+
+
+
+/* ****************************************************************************
+*
+* endpointFill - 
+*/
+static void endpointFill(Endpoint* ep, Endpoint* inheritedFrom, int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, Endpoint::Type type, unsigned short port, int coreNo)
+{
+	ep->state = Endpoint::Unconnected;
+
+	if (inheritedFrom)
+		inheritFrom(ep, inheritedFrom);
+
+	ep->rFd        = rFd;
+	ep->wFd        = wFd;
+	ep->name       = (name  != NULL)? std::string(name)  : std::string("noname");
+	ep->alias      = (alias != NULL)? std::string(alias) : std::string("noalias");
+	ep->workers    = workers;
+	ep->type       = type;
+	ep->port       = port;
+	ep->coreNo     = coreNo;
+
+	ep->startTime  = time(NULL);
+	ep->restarts   = 0;
+	ep->jobsDone   = 0;	
+
+	if ((ep->ip == "") || (ip != "II.PP"))
+		ep->ip = ip;
+
+	//
+	// If state not changed by 'inheritedFrom', and the socket seems connected,
+	// set the state to 'Connected'
+	//
+	if ((ep->state == Endpoint::Unconnected) && ((rFd != -1) || (wFd != -1)))
+		ep->state = Endpoint::Connected;
+}
+
+
+
+/* ****************************************************************************
+*
 * Network::endpointAddLogServer - 
 */
-Endpoint* Network::endpointAddLogServer(int rFd, int wFd, const char* name, const char* alias, std::string ip, unsigned short port)		
+Endpoint* Network::endpointAddLogServer(int rFd, int wFd, const char* name, const char* alias, std::string ip, unsigned short port, Endpoint* inheritedFrom)
 {
+	if (inheritedFrom != NULL)
+		LM_X(1, ("inheritedFrom != NULL for LogServer - bear in mind when implementing ..."));
+
 	if (endpoint[LOG_SERVER] != NULL)
 	{
 		if (endpoint[LOG_SERVER]->state == Endpoint::Connected)
@@ -858,20 +922,187 @@ Endpoint* Network::endpointAddLogServer(int rFd, int wFd, const char* name, cons
 			LM_T(LmtLogServer, ("*** New LogServer Endpoint '%s' at %p", name, endpoint[LOG_SERVER]));
 	}
 	
-	endpoint[LOG_SERVER]->rFd        = rFd;
-	endpoint[LOG_SERVER]->wFd        = wFd;
-	endpoint[LOG_SERVER]->name       = std::string(name);
-	endpoint[LOG_SERVER]->alias      = std::string(alias);
-	endpoint[LOG_SERVER]->ip         = ip;
-	endpoint[LOG_SERVER]->port       = port;
-	endpoint[LOG_SERVER]->state      = (rFd > 0)? Endpoint::Connected : Endpoint::Unconnected;
-	endpoint[LOG_SERVER]->type       = Endpoint::LogServer;
-	endpoint[LOG_SERVER]->startTime  = time(NULL);
+	endpointFill(endpoint[LOG_SERVER], NULL, rFd, wFd, name, alias, 0, ip, Endpoint::LogServer, port, -1);
 
 	LM_T(LmtLogServer, ("Setting up LM hook function"));
 	lmOutHookSet(logHookFunction, (void*) this);
 
 	return endpoint[LOG_SERVER];
+}
+
+
+
+/* ****************************************************************************
+*
+* endpointAddController - 
+*/
+Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
+{
+	if (endpoint[CONTROLLER] == NULL)
+	{
+		LM_T(LmtInit, ("Allocating room for Controller endpoint"));
+		endpoint[CONTROLLER] = new Endpoint();
+		LM_T(LmtInit, ("*** Controller Endpoint at %p", endpoint[CONTROLLER]));
+	}
+
+	endpointFill(endpoint[CONTROLLER], inheritedFrom, rFd, wFd, name, alias, workers, ip, Endpoint::Controller, port, coreNo);
+
+	if (endpointUpdateReceiver != NULL)
+		endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerAdded, "Controller Added");
+
+	return endpoint[CONTROLLER];
+}
+
+
+
+/* ****************************************************************************
+*
+* Network::endpointAddTemporal - 
+*/
+Endpoint* Network::endpointAddTemporal(int rFd, int wFd, const char* name, const char* alias, std::string ip, Endpoint* inheritedFrom)
+{
+	int ix;
+
+	for (ix = Endpoints - 1; ix >= FIRST_WORKER + Workers; ix--)
+	{
+		if (endpoint[ix] != NULL)
+			continue;
+
+		endpoint[ix] = new Endpoint();
+		if (endpoint[ix] == NULL)
+			LM_XP(1, ("allocating temporal Endpoint"));
+
+		LM_T(LmtTemporalEndpoint, ("*** Temporal Endpoint '%s' at %p", name, endpoint[ix]));
+
+		endpointFill(endpoint[ix], inheritedFrom, rFd, wFd, name, alias, 0, ip, Endpoint::Temporal, 0, -1);
+
+		return endpoint[ix];
+	}
+
+	LM_X(1, ("No temporal endpoint slots available - redefine and recompile!"));
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* Network::endpointAddDefault - 
+*/
+Endpoint* Network::endpointAddDefault(int rFd, int wFd, const char* name, const char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
+{
+	int ix;
+
+	for (ix = FIRST_WORKER + Workers; ix < (int) (Endpoints - 1); ix++)
+	{
+		if (endpoint[ix] != NULL)
+			continue;
+
+		endpoint[ix] = new Endpoint();
+		if (endpoint[ix] == NULL)
+			LM_XP(1, ("allocating Endpoint"));
+
+		LM_T(LmtEndpoint, ("*** New Endpoint '%s' at %p", name, endpoint[ix]));
+
+		endpointFill(endpoint[ix], inheritedFrom, rFd, wFd, name, alias, workers, ip, type, port, coreNo);
+
+		if (endpoint[ix]->type == Endpoint::WebListener)
+			endpoint[ix]->state = Endpoint::Listening;
+
+		endpointListShow("Added default endpoint");
+		return endpoint[ix];
+	}
+
+	LM_X(1, ("No endpoint slots available - redefine and recompile!"));
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* Network::coreWorkerEndpointAdd - 
+*/
+Endpoint* Network::coreWorkerEndpointAdd(int rFd, int wFd, const char* name, const char* alias)
+{
+	if (endpoint[CONTROLLER] == NULL)
+		LM_X(1, ("controller == NULL"));
+
+	endpoint[CONTROLLER]->rFd    = rFd;
+	endpoint[CONTROLLER]->wFd    = wFd;
+	endpoint[CONTROLLER]->name   = std::string(name);
+	endpoint[CONTROLLER]->alias  = (alias != NULL)? alias : "NO ALIAS" ;
+			
+	return endpoint[CONTROLLER];
+}
+
+
+
+/* ****************************************************************************
+*
+* Network::endpointAddWorker - 
+*/
+Endpoint* Network::endpointAddWorker(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
+{
+	int ix;
+
+	if (endpoint[ME]->type == Endpoint::CoreWorker)
+		return coreWorkerEndpointAdd(rFd, wFd, name, alias);
+
+	LM_T(LmtWorkers, ("%d workers", Workers));
+	for (ix = FIRST_WORKER; ix < FIRST_WORKER + Workers; ix++)
+	{
+		Endpoint* ep;
+
+		if (endpoint[ix] == NULL)
+			LM_X(1, ("NULL worker endpoint at slot %d", ix));
+
+		if (((ep = endpointLookup((char*) alias)) != NULL) && (ep->state == Endpoint::Connected))
+		{
+			if (ep->wFd != wFd)
+				LM_E(("write file descriptors don't coincide for endpoint '%s' (%d vs %d)", alias, wFd, ep->wFd));
+
+			if ((ep->type == Endpoint::Temporal) && (ep->wFd == wFd) && (ep->rFd == rFd))
+				inheritedFrom = ep;
+			else
+			{
+				LM_E(("Intent to connect a second Worker with alias '%s' - rejecting connection", alias));
+				iomMsgSend(wFd, name, progName, Message::Die, Message::Evt);
+
+				close(rFd);
+				if (wFd != rFd)
+					close(wFd);
+
+				return NULL;
+			}
+		}
+
+		if ((endpoint[ME]->type == Endpoint::Delilah) || (endpoint[ME]->type == Endpoint::Worker))
+		{
+			endpoint[ix]->useSenderThread = true;
+			LM_T(LmtSenderThread, ("Delilah worker endpoint uses SenderThread"));
+		}
+
+		if (strcmp(endpoint[ix]->alias.c_str(), alias) == 0)
+		{
+			endpointFill(endpoint[ix], inheritedFrom, rFd, wFd, name, alias, workers, ip, Endpoint::Worker, port, coreNo);
+
+			// LM_W(("What state should I use here ... Unconnected (never been connected), Disconnected or just the inherited state ..."));
+			// endpoint[ix]->state    = (rFd > 0)? Endpoint::Connected : Endpoint::Disconnected;   /* XXX */
+
+			LM_T(LmtJob, ("worker '%s' connected - any pending messages for him? (jobQueueHead at %p)", endpoint[ix]->alias.c_str(),  endpoint[ix]->jobQueueHead));
+			
+			if (endpointUpdateReceiver != NULL)
+				endpointUpdateReceiver->endpointUpdate(endpoint[ix], Endpoint::WorkerAdded, "Worker Added");
+
+			return endpoint[ix];
+		}
+	}
+
+	LM_E(("Worker '%s:%d' (alias '%s') not found - rejecting connection with a Die message", ip.c_str(), port, alias));
+	iomMsgSend(wFd, name, progName, Message::Die, Message::Evt);
+
+	return NULL;
 }
 
 
@@ -916,108 +1147,24 @@ Endpoint* Network::endpointAdd
 	Endpoint*        inheritedFrom
 )
 {
-	int ix;
-
 	LM_T(LmtEndpoint, ("%s: adding endpoint '%s' of type '%s' for fd %d (alias: '%s')", why, name, endpoint[ME]->typeName(type), rFd, alias));
 
 	switch (type)
 	{
-	case Endpoint::LogServer:
-		if (inheritedFrom != NULL)
-			LM_X(1, ("inheritedFrom != NULL for LogServer - bear in mind when implementing ..."));
-
-		return endpointAddLogServer(rFd, wFd, name, alias, ip, port);
+	case Endpoint::Controller:
+		return endpointAddController(rFd, wFd, name, alias, workers, ip, port, coreNo, inheritedFrom);
 		break;
 
-	case Endpoint::Sender:
-	case Endpoint::CoreWorker:
-	case Endpoint::Unknown:
-	case Endpoint::Listener:
-		LM_X(1, ("bad type: %d (%s)", type, endpoint[ME]->typeName(type)));
-		return NULL;
+	case Endpoint::Worker:
+		return endpointAddWorker(rFd, wFd, name, alias, workers, ip, port, coreNo, inheritedFrom);
+		break;
 
-	case Endpoint::Controller:
-		if (endpoint[CONTROLLER] == NULL)
-		{
-			LM_T(LmtInit, ("Allocating room for Controller endpoint"));
-			endpoint[CONTROLLER] = new Endpoint();
-			LM_T(LmtInit, ("*** Controller Endpoint at %p", endpoint[CONTROLLER]));
-		}
-
-		if (inheritedFrom != NULL)
-		{
-			endpoint[CONTROLLER]->msgsIn         = inheritedFrom->msgsIn;
-			endpoint[CONTROLLER]->msgsOut        = inheritedFrom->msgsOut;
-			endpoint[CONTROLLER]->msgsInErrors   = inheritedFrom->msgsInErrors;
-			endpoint[CONTROLLER]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
-			endpoint[CONTROLLER]->bytesIn        = inheritedFrom->bytesIn;
-			endpoint[CONTROLLER]->bytesOut       = inheritedFrom->bytesOut;
-		}
-
-		endpoint[CONTROLLER]->rFd      = rFd;
-		endpoint[CONTROLLER]->wFd      = wFd;
-		endpoint[CONTROLLER]->name     = std::string(name);
-		endpoint[CONTROLLER]->alias    = (alias != NULL)? alias : "NO ALIAS" ;
-		endpoint[CONTROLLER]->workers  = workers;
-		endpoint[CONTROLLER]->type     = type;
-		endpoint[CONTROLLER]->port     = port;
-		endpoint[CONTROLLER]->coreNo   = coreNo;
-
-		if ((rFd != -1) || (wFd != -1))
-			endpoint[CONTROLLER]->state = Endpoint::Connected;
-
-		if (strcmp(ip.c_str(), "II.PP") != 0)
-			endpoint[CONTROLLER]->ip       = ip;
-
-		if ((endpoint[ME]->type == Endpoint::Delilah) || (endpoint[ME]->type == Endpoint::Worker))
-		{
-			// endpoint[CONTROLLER]->useSenderThread = true;
-			LM_T(LmtSenderThread, ("Delilah controller endpoint uses SenderThread"));
-		}
-
-		if (endpointUpdateReceiver != NULL)
-			endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerAdded, "Controller Added");
-
-		LM_T(LmtInit, ("Setting controller to point to endpoint[%d]", CONTROLLER));
-		this->endpoint[CONTROLLER] = endpoint[CONTROLLER];
-
-		return endpoint[CONTROLLER];
+	case Endpoint::LogServer:
+		return endpointAddLogServer(rFd, wFd, name, alias, ip, port, inheritedFrom);
+		break;
 
 	case Endpoint::Temporal:
-		for (ix = Endpoints - 1; ix >= FIRST_WORKER + Workers; ix--)
-		{
-			if (endpoint[ix] == NULL)
-			{
-				endpoint[ix] = new Endpoint();
-				if (endpoint[ix] == NULL)
-					LM_XP(1, ("allocating temporal Endpoint"));
-
-				LM_T(LmtTemporalEndpoint, ("*** Temporal Endpoint '%s' at %p", name, endpoint[ix]));
-
-				if (inheritedFrom != NULL)
-				{
-					endpoint[ix]->msgsIn         = inheritedFrom->msgsIn;
-					endpoint[ix]->msgsOut        = inheritedFrom->msgsOut;
-					endpoint[ix]->msgsInErrors   = inheritedFrom->msgsInErrors;
-					endpoint[ix]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
-					endpoint[ix]->bytesIn        = inheritedFrom->bytesIn;
-					endpoint[ix]->bytesOut       = inheritedFrom->bytesOut;
-				}
-
-				endpoint[ix]->name   = std::string(name);
-				endpoint[ix]->rFd    = rFd;
-				endpoint[ix]->wFd    = wFd;
-				endpoint[ix]->type   = Endpoint::Temporal;
-				endpoint[ix]->ip     = ip;
-				endpoint[ix]->alias  = (alias != NULL)? alias : "NO ALIAS" ;
-				endpoint[ix]->state  = (rFd > 0)? Endpoint::Connected : Endpoint::Unconnected;
-
-				return endpoint[ix];
-			}
-		}
-
-		if (endpoint[ix] == NULL)
-			LM_X(1, ("No temporal endpoint slots available - redefine and recompile!"));
+		return endpointAddTemporal(rFd, wFd, name, alias, ip, inheritedFrom);
 		break;
 
 	case Endpoint::Supervisor:
@@ -1028,152 +1175,15 @@ Endpoint* Network::endpointAdd
 	case Endpoint::Delilah:
 	case Endpoint::WebListener:
 	case Endpoint::WebWorker:
-		LM_T(LmtEndpoint, ("%s - adding endpoint of type '%s'", why, endpoint[ME]->typeName(type)));
-		LM_T(LmtWorkers,   ("Workers:   %d", Workers));
-		LM_T(LmtEndpoints, ("Endpoints: %d", Endpoints));
-		for (ix = FIRST_WORKER + Workers; ix < (int) (Endpoints - 1); ix++)
-		{
-			if (endpoint[ix] == NULL)
-			{
-				endpoint[ix] = new Endpoint();
-				if (endpoint[ix] == NULL)
-					LM_XP(1, ("allocating Endpoint"));
-
-				LM_T(LmtEndpoint, ("*** New Endpoint '%s' at %p", name, endpoint[ix]));
-
-				if (inheritedFrom != NULL)
-				{
-					endpoint[ix]->msgsIn         = inheritedFrom->msgsIn;
-					endpoint[ix]->msgsOut        = inheritedFrom->msgsOut;
-					endpoint[ix]->msgsInErrors   = inheritedFrom->msgsInErrors;
-					endpoint[ix]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
-					endpoint[ix]->bytesIn        = inheritedFrom->bytesIn;
-					endpoint[ix]->bytesOut       = inheritedFrom->bytesOut;
-					endpoint[ix]->ip             = inheritedFrom->ip;
-				}
-
-				endpoint[ix]->name       = std::string(name);
-				endpoint[ix]->alias      = (alias != NULL)? alias : "NO ALIAS" ;
-				endpoint[ix]->rFd        = rFd;
-				endpoint[ix]->wFd        = wFd;
-				endpoint[ix]->state      = (rFd > 0)? Endpoint::Connected : Endpoint::Unconnected;
-				endpoint[ix]->type       = type;
-				endpoint[ix]->port       = port;
-				endpoint[ix]->coreNo     = coreNo;
-				endpoint[ix]->restarts   = 0;
-				endpoint[ix]->jobsDone   = 0;
-				endpoint[ix]->startTime  = time(NULL);
-
-				if (endpoint[ix]->type == Endpoint::WebListener)
-					endpoint[ix]->state = Endpoint::Listening;
-
-				if (strcmp(ip.c_str(), "II.PP") != 0)
-					endpoint[ix]->ip       = ip;
-
-				endpointListShow("Added endpoint");
-				return endpoint[ix];
-			}
-		}
-
-		if (endpoint[ix] == NULL)
-			LM_X(1, ("No endpoint slots available - redefine and recompile!"));
-		LM_X(1, ("ERROR ?"));
+		return endpointAddDefault(rFd, wFd, name, alias, workers, type, ip, port, coreNo, inheritedFrom);
 		break;
 
-	case Endpoint::Worker:
-		if (endpoint[ME]->type == Endpoint::CoreWorker)
-		{
-			if (endpoint[CONTROLLER] == NULL)
-				LM_X(1, ("controller == NULL"));
-
-			endpoint[CONTROLLER]->rFd    = rFd;
-			endpoint[CONTROLLER]->wFd    = wFd;
-			endpoint[CONTROLLER]->name   = std::string(name);
-			endpoint[CONTROLLER]->alias  = (alias != NULL)? alias : "NO ALIAS" ;
-			
-			return endpoint[CONTROLLER];
-		}
-
-		LM_T(LmtWorkers, ("%d workers", Workers));
-		for (ix = FIRST_WORKER; ix < FIRST_WORKER + Workers; ix++)
-		{
-			Endpoint* ep;
-
-			if (endpoint[ix] == NULL)
-				LM_X(1, ("NULL worker endpoint at slot %d", ix));
-
-			if (((ep = endpointLookup((char*) alias)) != NULL) && (ep->state == Endpoint::Connected))
-			{
-				if (ep->wFd != wFd)
-					LM_E(("write file descriptors don't coincide for endpoint '%s' (%d vs %d)", alias, wFd, ep->wFd));
-
-				LM_T(LmtTemporalEndpoint, ("ep->type: '%s'", ep->typeName()));
-				LM_T(LmtTemporalEndpoint, ("ep->wFd: %d (wFd: %d)", ep->wFd, wFd));
-				LM_T(LmtTemporalEndpoint, ("ep->rFd: %d (rFd: %d)", ep->rFd, rFd));
-
-				if ((ep->type == Endpoint::Temporal) && (ep->wFd == wFd) && (ep->rFd == rFd))
-					inheritedFrom = ep;
-				else
-				{
-					LM_E(("Intent to connect a second Worker with alias '%s' - rejecting connection", alias));
-					iomMsgSend(wFd, name, progName, Message::Die, Message::Evt);
-
-					close(rFd);
-					if (wFd != rFd)
-						close(wFd);
-
-					return NULL;
-				}
-			}
-
-			if ((endpoint[ME]->type == Endpoint::Delilah) || (endpoint[ME]->type == Endpoint::Worker))
-			{
-				endpoint[ix]->useSenderThread = true;
-				LM_T(LmtSenderThread, ("Delilah worker endpoint uses SenderThread"));
-			}
-
-			if (strcmp(endpoint[ix]->alias.c_str(), alias) == 0)
-			{
-				if (inheritedFrom != NULL)
-				{
-					endpoint[ix]->msgsIn         = inheritedFrom->msgsIn;
-					endpoint[ix]->msgsOut        = inheritedFrom->msgsOut;
-					endpoint[ix]->msgsInErrors   = inheritedFrom->msgsInErrors;
-					endpoint[ix]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
-					endpoint[ix]->bytesIn        = inheritedFrom->bytesIn;
-					endpoint[ix]->bytesOut       = inheritedFrom->bytesOut;
-					endpoint[ix]->ip             = inheritedFrom->ip;
-				}
-
-				endpoint[ix]->rFd      = rFd;
-				endpoint[ix]->wFd      = wFd;
-				endpoint[ix]->name     = std::string(name);
-				endpoint[ix]->alias    = std::string(alias);
-				endpoint[ix]->workers  = workers;
-				endpoint[ix]->type     = Endpoint::Worker;
-				endpoint[ix]->port     = port;
-
-				LM_W(("What state should I use here ... Unconnected (never been connected), Disconnected or just the inherited state ..."));
-				endpoint[ix]->state    = (rFd > 0)? Endpoint::Connected : Endpoint::Disconnected;   /* XXX */
-
-				if (strcmp(ip.c_str(), "II.PP") != 0)
-					endpoint[ix]->ip       = ip;
-
-				LM_T(LmtJob, ("worker '%s' connected - any pending messages for him? (jobQueueHead at %p)", endpoint[ix]->alias.c_str(),  endpoint[ix]->jobQueueHead));
-				
-				if (endpointUpdateReceiver != NULL)
-					endpointUpdateReceiver->endpointUpdate(endpoint[ix], Endpoint::WorkerAdded, "Worker Added");
-
-				return endpoint[ix];
-			}
-		}
-
-		LM_E(("Worker '%s:%d' not found!", ip.c_str(), port));
-
-		LM_E(("alias '%s' - rejecting connection", alias));
-		iomMsgSend(wFd, name, progName, Message::Die, Message::Evt);
-
-		return NULL;
+	case Endpoint::Sender:
+	case Endpoint::CoreWorker:
+	case Endpoint::Unknown:
+	case Endpoint::Listener:
+		LM_X(1, ("bad type: %d (%s)", type, endpoint[ME]->typeName(type)));
+		break;
 	}
 
 	LM_X(1, ("BUG"));
@@ -1695,7 +1705,9 @@ void Network::controllerMsgTreat
 	Packet*               packetP
 )
 {
-	const char* name = ep->name.c_str();
+	Message::Worker*  workerV;
+	int               ix;
+	const char*       name = ep->name.c_str();
 
 	LM_T(LmtMsgTreat, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
@@ -1707,9 +1719,6 @@ void Network::controllerMsgTreat
 	case Message::WorkerVector:
 		if (msgType != Message::Msg)
 			LM_X(1, ("Controller got an ACK for WorkerVector message"));
-
-		Message::Worker*  workerV;
-		int               ix;
 
 		workerV = (Message::Worker*) calloc(Workers, sizeof(Message::Worker));
 		if (workerV == NULL)

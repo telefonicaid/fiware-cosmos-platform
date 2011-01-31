@@ -76,7 +76,7 @@ bool               qtAppRunning      = false;
 * Option variables
 */
 int     endpoints;
-char    controllerName[80];
+char    controllerHost[80];
 char    cfPath[80];
 bool    qt;
 
@@ -90,7 +90,7 @@ bool    qt;
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",  controllerName,  "CONTROLLER",  PaString,  PaReq,   NOC,  PaNL,   PaNL,  "controller IP:port"  },
+	{ "-controller",  controllerHost,  "CONTROLLER",  PaString,  PaReq,   NOC,  PaNL,   PaNL,  "controller IP"       },
 	{ "-endpoints",   &endpoints,      "ENDPOINTS",   PaInt,     PaOpt,    80,     3,    100,  "number of endpoints" },
 	{ "-config",      &cfPath,         "CF_FILE",     PaStr,     PaOpt,   CFP,  PaNL,   PaNL,  "path to config file" },
 	{ "-qt",          &qt,             "QT",          PaBool,    PaOpt,  true, false,   true,  "graphical"           },
@@ -134,7 +134,9 @@ static void mainWinCreate(QApplication* app)
 */
 int main(int argC, const char *argV[])
 {
-    QApplication  app(argC, (char**) argV);
+    QApplication   app(argC, (char**) argV);
+	ss::Endpoint*  controller;
+	Process*       controllerProcess;
 
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);
@@ -155,7 +157,7 @@ int main(int argC, const char *argV[])
 	processListInit(20);
 	starterListInit(30);
 
-	LM_M(("calling ss::Network with %d endpoints", endpoints));
+	LM_T(LmtInit, ("calling ss::Network with %d endpoints", endpoints));
 	networkP    = new ss::Network(ss::Endpoint::Supervisor, "Supervisor", 0, endpoints);
 	supervisorP = new SamsonSupervisor(networkP);
 
@@ -163,75 +165,68 @@ int main(int argC, const char *argV[])
 	networkP->setEndpointUpdateReceiver(supervisorP);
 	networkP->setReadyReceiver(supervisorP);
 
+	LM_T(LmtInit, ("Setting logServer to localhost and trying to connect to it ..."));
 	networkP->logServerSet("localhost");  // log server will always run in 'localhost' for samsonSupervisor ...
 
-
-	//
-	// 1. Connect to controller
-	//
-	ss::Endpoint* controller;
-	Process*      controllerProcess;
-
-	controller = networkP->controllerConnect(controllerName);
-
-	int    args = 20;
-	char*  argVec[20];
-
-	LM_TODO(("If connected OK, ask the controller about its command line options - and fill LogConfig Window accordingly"));
-	memset(argVec, 0, sizeof(argVec));
-	if (configFileParse(controller->ip.c_str(), "Controller", &args, argVec) == -1)
-	{
-		if ((controller == NULL) || (controller->state != ss::Endpoint::Connected))
-		{
-			char eText[256];
-
-			snprintf(eText,
-					 sizeof(eText),
-					 "Unable to connect to controller in '%s'.\nAlso unable to find info on Controller in config file.\nUnable to connect to Controller, sorry.",
-					 controllerName);
-			new Popup("Cannot connect to Controller", eText, true);
-		}
-	}
-	else
-		LM_M(("configFileParse returned %d args for 'Controller'", args));
-
-	controllerProcess = processAdd("Controller", controller->ip.c_str(), controller->port, controller, argVec, args);
 	
 
-
 	//
-	// 2. Connect to controllers Spawner
+	// 1. Connect to Spawner in controller host
 	//
 	int fd;
-	fd = iomConnect(controller->ip.c_str(), SPAWNER_PORT);
+	LM_T(LmtInit, ("Trying to connect to controller in '%s'", controllerHost));
+	fd = iomConnect(controllerHost, SPAWNER_PORT);
 
 	if (fd == -1)
 	{
 		char title[128];
 		char message[256];
 
-		snprintf(title, sizeof(title), "Error connecting to Controller's Spawner");
-		snprintf(message, sizeof(message), "Can't connect to controller's Spawner at %s, port %d\nPlease start all spawners before running this application", controller->ip.c_str(), SPAWNER_PORT);
+		snprintf(title, sizeof(title), "Error connecting to Spawner process in '%s'", controllerHost);
+		snprintf(message, sizeof(message), "Can't connect to controller's Spawner at %s, port %d\nPlease start all spawners before running this application", controllerHost, SPAWNER_PORT);
 		new Popup(title, message, true);
 		app.exec();
 		exit(2);
 	}
 
+
+
 	//
-	// Any pending error from controller conncetion ?
-	// 
+	// 2. Try to connect to controller
+	//
+	LM_T(LmtInit, ("Connecting to controller in '%s'", controllerHost));
+	controller = networkP->controllerConnect(controllerHost);
+
+	int    args = 0;
+	char*  argVec[20];
+
+	memset(argVec, 0, sizeof(argVec));
+
 	if (controller->state != ss::Endpoint::Connected)
 	{
-	   char title[128];
-	   char message[256];
-	   
-	   snprintf(title, sizeof(title), "Error connecting to Controller");
-	   snprintf(message, sizeof(message), "Can't connect to controller at %s, port %d", controller->ip.c_str(), controller->port);
-	   new Popup(title, message);
+		char eText[256];
+
+		LM_TODO(("Not connected to controller - ask the config file about its command line options - and fill LogConfig Window accordingly"));
+		args = 20;
+		if (configFileParse(controllerHost, "Controller", &args, argVec) == -1)
+		{
+			snprintf(eText,
+					 sizeof(eText),
+					 "Unable to connect to controller in '%s'.\nAlso unable to find info on Controller in config file.\nUnable to connect to Controller, sorry.",
+					 controllerHost);
+			new Popup("Cannot connect to Controller", eText, true);
+		}
+		else
+		{
+			LM_W(("configFileParse returned %d args for 'Controller'", args));
+			snprintf(eText, sizeof(eText), "Can't connect to controller at %s, port %d", controller->ip.c_str(), controller->port);
+			new Popup("Error connecting to Controller", eText, false);
+		}
 	}
 
-	controllerProcess->spawnInfo->spawnerP = spawnerAdd("controllerSpawner", controller->ip.c_str(), SPAWNER_PORT);
-
+	LM_TODO(("If connect OK, the config file isn't parsed and so, argVec will be NULL and args == 0 ..."));
+	controllerProcess = processAdd("Controller", controller->ip.c_str(), controller->port, controller, argVec, args);
+	controllerProcess->spawnInfo->spawnerP = spawnerAdd("Spawner", controller->ip.c_str(), SPAWNER_PORT);
 
 	networkP->init();
 

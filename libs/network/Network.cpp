@@ -246,34 +246,39 @@ void Network::setReadyReceiver(ReadyReceiverInterface* receiver)
 Endpoint* Network::controllerConnect(const char* controllerName)
 {
 	LM_TODO(("Perhaps I should include LogServer in this if ..."));
-	if ((endpoint[ME]->type == Endpoint::Worker) || (endpoint[ME]->type == Endpoint::Delilah) || (endpoint[ME]->type == Endpoint::Supervisor))
-	{
-		endpoint[CONTROLLER] = new Endpoint(Endpoint::Controller, controllerName);
-		if (endpoint[CONTROLLER] == NULL)
-			LM_XP(1, ("new Endpoint"));
 
-		LM_T(LmtControllerConnect, ("connecting to controller in %s, port %d", endpoint[CONTROLLER]->ip.c_str(), endpoint[CONTROLLER]->port));
-		endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip.c_str(), (unsigned short) endpoint[CONTROLLER]->port);
-		if (endpoint[CONTROLLER]->rFd == -1)
-		{
-			if (endpoint[ME]->type != Endpoint::Supervisor)
-				LM_X(1, ("error connecting to controller at %s:%d", endpoint[CONTROLLER]->ip.c_str(), endpoint[CONTROLLER]->port));
-			else
-			{
-				iAmReady = true;
-				if (readyReceiver)
-					readyReceiver->ready("unable to connect to controller");
-			}
-		}
+	if ((endpoint[ME]->type != Endpoint::Worker) && (endpoint[ME]->type != Endpoint::Delilah) && (endpoint[ME]->type != Endpoint::Supervisor))
+	{
+		endpoint[CONTROLLER] = NULL;   // Probably not necessary ...
+		return endpoint[CONTROLLER];
+	}
+
+
+	endpoint[CONTROLLER] = new Endpoint(Endpoint::Controller, controllerName);
+	if (endpoint[CONTROLLER] == NULL)
+		LM_XP(1, ("new Endpoint"));
+
+	LM_TODO(("Why do I not call endpointAdd here ... ?"));
+
+	LM_T(LmtControllerConnect, ("connecting to controller in %s, port %d", endpoint[CONTROLLER]->ip.c_str(), endpoint[CONTROLLER]->port));
+	endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip.c_str(), (unsigned short) endpoint[CONTROLLER]->port);
+	if (endpoint[CONTROLLER]->rFd == -1)
+	{
+		if (endpoint[ME]->type != Endpoint::Supervisor)
+			LM_X(1, ("error connecting to controller at %s:%d", endpoint[CONTROLLER]->ip.c_str(), endpoint[CONTROLLER]->port));
 		else
 		{
-			LM_T(LmtControllerConnect, ("connected to controller - calling ready after trying to connect to all workers"));
-			endpoint[CONTROLLER]->wFd   = endpoint[CONTROLLER]->rFd;
-			endpoint[CONTROLLER]->state = Endpoint::Connected;
+			iAmReady = true;
+			if (readyReceiver)
+				readyReceiver->ready("unable to connect to controller");
 		}
 	}
 	else
-		endpoint[CONTROLLER] = NULL;
+	{
+		LM_T(LmtControllerConnect, ("connected to controller - calling ready after trying to connect to all workers"));
+		endpoint[CONTROLLER]->wFd   = endpoint[CONTROLLER]->rFd;
+		endpoint[CONTROLLER]->state = Endpoint::Connected;
+	}
 
 	return endpoint[CONTROLLER];
 }

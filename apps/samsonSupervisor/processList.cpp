@@ -146,12 +146,12 @@ Process* processAdd(const char* name, const char* host, unsigned short port, ss:
 	else
 		LM_X(1, ("name ('%s') should be either 'Controller' or 'Worker'", name));
 
+	processP->spawnInfo = (SpawnInfo*) calloc(1, sizeof(SpawnInfo));
+	if (processP->spawnInfo == NULL)
+		LM_RE(NULL, ("error allocating room for SpawnInfo: %s", strerror(errno)));
+
 	if (args != NULL)
 	{
-		processP->spawnInfo = (SpawnInfo*) calloc(1, sizeof(SpawnInfo));
-		if (processP->spawnInfo == NULL)
-			LM_RE(NULL, ("error allocating room for SpawnInfo: %s", strerror(errno)));
-
 		processP->spawnInfo->argCount = argCount;
 		argIx = 0;
 		while (argIx < argCount)

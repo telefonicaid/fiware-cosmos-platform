@@ -262,6 +262,8 @@ void processStart(Process* processP, Starter* starter)
 				snprintf(errorText, sizeof(errorText), "Error connecting ");
 
 			new Popup("Connect Error", errorText);
+			starter->check();
+			return;
 		}
 
 		usleep(50000);

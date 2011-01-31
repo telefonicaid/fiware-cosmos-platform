@@ -39,6 +39,24 @@
 
 /* ****************************************************************************
 *
+* Predecided indices in the endpoint vector
+*
+* FIRST_WORKER - the index where the workers start
+* CONTROLLER   - the index where the controller reside
+* SUPERVISOR   - the index where the superviros recide
+* LOG_SERVER   - the index where the log server reside
+*/
+#define ME              0
+#define LISTENER        1
+#define CONTROLLER      2
+#define SUPERVISOR      3
+#define LOG_SERVER      4
+#define FIRST_WORKER   10
+
+
+
+/* ****************************************************************************
+*
 * KILO - 
 * MEGA - 
 */
@@ -80,34 +98,8 @@ static void logHookFunction(char* text, char type, const char* file, int lineNo,
 	int                   s;
 	Message::LogLineData  logLine;
 	
-#if 0
-	if (logServer == NULL)
-	{
-		printf("%s - no log sent as logServer == NULL\n", progName);
-		return;
-	}
-
-	if (logServer->wFd == -1)
-	{
-		printf("%s - no log sent as logServer->wFd == -1\n", progName);
-		return;
-	}
-
-	if (logServer->state != Endpoint::Connected)
-	{
-		printf("%s - no log sent as logServer->state != Endpoint::Connected\n", progName);
-		return;
-	}
-
-	if (logServer->helloReceived != true)
-	{
-		printf("%s - no log sent as logServer->helloReceived != true\n", progName);
-		return;
-	}
-#else
 	if ((logServer == NULL) || (logServer->wFd == -1) || (logServer->state != Endpoint::Connected) || (logServer->helloReceived != true))
 		return;
-#endif
 
 	memset(&logLine, 0, sizeof(logLine));
 
@@ -135,7 +127,7 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 		LM_X(1, ("bad number of endpoints (%d)", endpoints));
 	if ((workers > 20) || (workers < 0))
 		LM_X(1, ("bad number of workers (%d)", workers));
-	if (2 * (workers + 3) >= endpoints)
+	if (2 * (workers + FIRST_WORKER) >= endpoints)
 		LM_X(1, ("bad number of workers (%d) and endpoints", workers, endpoints));
 
 	packetReceiver         = NULL;
@@ -256,10 +248,10 @@ Endpoint* Network::controllerConnect(const char* controllerName)
 	LM_TODO(("Perhaps I should include LogServer in this if ..."));
 	if ((me->type == Endpoint::Worker) || (me->type == Endpoint::Delilah) || (me->type == Endpoint::Supervisor))
 	{
-		endpoint[2] = new Endpoint(Endpoint::Controller, controllerName);
-		if (endpoint[2] == NULL)
+		endpoint[CONTROLLER] = new Endpoint(Endpoint::Controller, controllerName);
+		if (endpoint[CONTROLLER] == NULL)
 			LM_XP(1, ("new Endpoint"));
-		controller = endpoint[2];
+		controller = endpoint[CONTROLLER];
 
 		LM_T(LmtControllerConnect, ("connecting to controller in %s, port %d", controller->ip.c_str(), controller->port));
 		controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
@@ -283,8 +275,8 @@ Endpoint* Network::controllerConnect(const char* controllerName)
 	}
 	else
 	{
-		endpoint[2] = NULL;
-		controller  = NULL;
+		endpoint[CONTROLLER] = NULL;
+		controller           = NULL;
 	}
 
 	return controller;
@@ -381,7 +373,7 @@ Endpoint* workerNew(int ix)
 	ep->port    = 0;
 	ep->coreNo  = -1;
 	
-	LM_T(LmtEndpoint, ("Created endpoint %d, worker %d (%s)", 3 + ix, ix, ep->alias.c_str()));
+	LM_T(LmtEndpoint, ("Created endpoint %d, worker %d (%s)", FIRST_WORKER + ix, ix, ep->alias.c_str()));
 
 	return ep;
 }
@@ -398,7 +390,7 @@ void Network::initAsSamsonController(void)
 	init();
 
 	for (int ix = 0; ix < Workers; ix++)
-		endpoint[3 + ix] = workerNew(ix);
+		endpoint[FIRST_WORKER + ix] = workerNew(ix);
 
 	int fd = iomServerOpen(WEB_SERVICE_PORT);
 	if (fd == -1)
@@ -416,7 +408,7 @@ void Network::initAsSamsonController(void)
 int Network::controllerGetIdentifier(void)
 {
 	LM_T(LmtDelilah, ("Asking for controller id"));
-	return 2;
+	return CONTROLLER;
 }
 
 
@@ -425,11 +417,11 @@ int Network::controllerGetIdentifier(void)
 *
 * workerGetIdentifier - 
 *
-* worker 0 is at index 3 in the local endpoint vector
+* worker 0 is at index FIRST_WORKER in the local endpoint vector
 */
 int Network::workerGetIdentifier(int nthWorker)
 {
-	return nthWorker + 3;
+	return nthWorker + FIRST_WORKER;
 }
 	
 	
@@ -438,17 +430,17 @@ int Network::workerGetIdentifier(int nthWorker)
 *
 * getWorkerFromIdentifier - 
 *
-* worker 0 is at index 3 in the local endpoint vector
+* worker 0 is at index FIRST_WORKER in the local endpoint vector
 */
 int Network::getWorkerFromIdentifier(int identifier)
 {
 	if (identifier == 0)
 		return me->workerId;
 
-	if ((identifier <= 2) || (identifier >= 3 + Workers))
+	if ((identifier < FIRST_WORKER) || (identifier >= FIRST_WORKER + Workers))
 		LM_RE(-1, ("invalid worker identifier '%d'  (only have %d workers)", identifier, Workers));
 
-	return identifier - 3;
+	return identifier - FIRST_WORKER;
 }
 
 
@@ -501,7 +493,7 @@ std::vector<Endpoint*> Network::samsonWorkerEndpoints(void)
 
 	LM_T(LmtWorkers, ("%d workers", Workers));
 
-	for (ix = 3; ix <  3 + Workers; ix++)
+	for (ix = FIRST_WORKER; ix <  FIRST_WORKER + Workers; ix++)
 	{
 		if (endpoint[ix] == NULL)
 			continue;
@@ -874,7 +866,7 @@ void Network::endpointListShow(const char* why)
 *  - 1: listener
 *  - 2: controller
 *
-* From slot 3, the worker endpoints are stored. These endpoints have a fix
+* From slot FIRST_WORKER, the worker endpoints are stored. These endpoints have a fix
 * position in the vector and these positions are defined by the response
 * of the WorkerVector from the controller. The controller itself gets the
 * positions from the workers in the configuration file 'setup.txt'.
@@ -919,54 +911,54 @@ Endpoint* Network::endpointAdd
 		return NULL;
 
 	case Endpoint::Controller:
-		if (endpoint[2] == NULL)
+		if (endpoint[CONTROLLER] == NULL)
 		{
 			LM_T(LmtInit, ("Allocating room for Controller endpoint"));
-			endpoint[2] = new Endpoint();
-			LM_T(LmtInit, ("*** Controller Endpoint at %p", endpoint[2]));
+			endpoint[CONTROLLER] = new Endpoint();
+			LM_T(LmtInit, ("*** Controller Endpoint at %p", endpoint[CONTROLLER]));
 		}
 
 		if (inheritedFrom != NULL)
 		{
-			endpoint[2]->msgsIn         = inheritedFrom->msgsIn;
-			endpoint[2]->msgsOut        = inheritedFrom->msgsOut;
-			endpoint[2]->msgsInErrors   = inheritedFrom->msgsInErrors;
-			endpoint[2]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
-			endpoint[2]->bytesIn        = inheritedFrom->bytesIn;
-			endpoint[2]->bytesOut       = inheritedFrom->bytesOut;
+			endpoint[CONTROLLER]->msgsIn         = inheritedFrom->msgsIn;
+			endpoint[CONTROLLER]->msgsOut        = inheritedFrom->msgsOut;
+			endpoint[CONTROLLER]->msgsInErrors   = inheritedFrom->msgsInErrors;
+			endpoint[CONTROLLER]->msgsOutErrors  = inheritedFrom->msgsOutErrors;
+			endpoint[CONTROLLER]->bytesIn        = inheritedFrom->bytesIn;
+			endpoint[CONTROLLER]->bytesOut       = inheritedFrom->bytesOut;
 		}
 
-		endpoint[2]->rFd      = rFd;
-		endpoint[2]->wFd      = wFd;
-		endpoint[2]->name     = std::string(name);
-		endpoint[2]->alias    = (alias != NULL)? alias : "NO ALIAS" ;
-		endpoint[2]->workers  = workers;
-		endpoint[2]->type     = type;
-		endpoint[2]->port     = port;
-		endpoint[2]->coreNo   = coreNo;
+		endpoint[CONTROLLER]->rFd      = rFd;
+		endpoint[CONTROLLER]->wFd      = wFd;
+		endpoint[CONTROLLER]->name     = std::string(name);
+		endpoint[CONTROLLER]->alias    = (alias != NULL)? alias : "NO ALIAS" ;
+		endpoint[CONTROLLER]->workers  = workers;
+		endpoint[CONTROLLER]->type     = type;
+		endpoint[CONTROLLER]->port     = port;
+		endpoint[CONTROLLER]->coreNo   = coreNo;
 
 		if ((rFd != -1) || (wFd != -1))
-			endpoint[2]->state = Endpoint::Connected;
+			endpoint[CONTROLLER]->state = Endpoint::Connected;
 
 		if (strcmp(ip.c_str(), "II.PP") != 0)
-			endpoint[2]->ip       = ip;
+			endpoint[CONTROLLER]->ip       = ip;
 
 		if ((me->type == Endpoint::Delilah) || (me->type == Endpoint::Worker))
 		{
-			// endpoint[2]->useSenderThread = true;
+			// endpoint[CONTROLLER]->useSenderThread = true;
 			LM_T(LmtSenderThread, ("Delilah controller endpoint uses SenderThread"));
 		}
 
 		if (endpointUpdateReceiver != NULL)
-			endpointUpdateReceiver->endpointUpdate(endpoint[2], Endpoint::ControllerAdded, "Controller Added");
+			endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerAdded, "Controller Added");
 
-		LM_T(LmtInit, ("Setting controller to point to endpoint[2]"));
-		this->controller = endpoint[2];
+		LM_T(LmtInit, ("Setting controller to point to endpoint[%d]", CONTROLLER));
+		this->controller = endpoint[CONTROLLER];
 
 		return controller;
 
 	case Endpoint::Temporal:
-		for (ix = Endpoints - 1; ix >= 3 + Workers; ix--)
+		for (ix = Endpoints - 1; ix >= FIRST_WORKER + Workers; ix--)
 		{
 			if (endpoint[ix] == NULL)
 			{
@@ -1014,7 +1006,7 @@ Endpoint* Network::endpointAdd
 		LM_T(LmtEndpoint, ("%s - adding endpoint of type '%s'", why, me->typeName(type)));
 		LM_T(LmtWorkers,   ("Workers:   %d", Workers));
 		LM_T(LmtEndpoints, ("Endpoints: %d", Endpoints));
-		for (ix = 3 + Workers; ix < (int) (Endpoints - 1); ix++)
+		for (ix = FIRST_WORKER + Workers; ix < (int) (Endpoints - 1); ix++)
 		{
 			if (endpoint[ix] == NULL)
 			{
@@ -1084,7 +1076,7 @@ Endpoint* Network::endpointAdd
 		}
 
 		LM_T(LmtWorkers, ("%d workers", Workers));
-		for (ix = 3; ix < 3 + Workers; ix++)
+		for (ix = FIRST_WORKER; ix < FIRST_WORKER + Workers; ix++)
 		{
 			Endpoint* ep;
 
@@ -1652,9 +1644,9 @@ void Network::checkAllWorkersConnected(void)
 
 	for (ix = 0; ix < Workers; ix++)
 	{
-		if (endpoint[3 + ix] == NULL)
+		if (endpoint[FIRST_WORKER + ix] == NULL)
 			return;
-		if (endpoint[3 + ix]->state != Endpoint::Connected)
+		if (endpoint[FIRST_WORKER + ix]->state != Endpoint::Connected)
 			return;
 	}	
 
@@ -1706,16 +1698,16 @@ void Network::controllerMsgTreat
 		if (workerV == NULL)
 			LM_XP(1, ("calloc(%d, %d)", Workers, sizeof(Endpoint)));
 
-		for (ix = 3; ix < 3 + Workers; ix++)
+		for (ix = FIRST_WORKER; ix < FIRST_WORKER + Workers; ix++)
 		{
 			if (endpoint[ix] != NULL)
 			{
-				strncpy(workerV[ix - 3].name,  endpoint[ix]->name.c_str(),  sizeof(workerV[ix - 3].name));
-				strncpy(workerV[ix - 3].alias, endpoint[ix]->alias.c_str(), sizeof(workerV[ix - 3].alias));
-				strncpy(workerV[ix - 3].ip,    endpoint[ix]->ip.c_str(),    sizeof(workerV[ix - 3].ip));
+				strncpy(workerV[ix - FIRST_WORKER].name,  endpoint[ix]->name.c_str(),  sizeof(workerV[ix - FIRST_WORKER].name));
+				strncpy(workerV[ix - FIRST_WORKER].alias, endpoint[ix]->alias.c_str(), sizeof(workerV[ix - FIRST_WORKER].alias));
+				strncpy(workerV[ix - FIRST_WORKER].ip,    endpoint[ix]->ip.c_str(),    sizeof(workerV[ix - FIRST_WORKER].ip));
 
-				workerV[ix - 3].port   = endpoint[ix]->port;
-				workerV[ix - 3].state  = endpoint[ix]->state;
+				workerV[ix - FIRST_WORKER].port   = endpoint[ix]->port;
+				workerV[ix - FIRST_WORKER].state  = endpoint[ix]->state;
 			}
 		}
 
@@ -2023,9 +2015,9 @@ void Network::msgTreat(void* vP)
 				// Adding workers in Endpoint vector
 				for (unsigned int ix = Workers; ix < dataLen / sizeof(Message::Worker); ix++)
 				{
-					endpoint[3 + ix] = workerNew(ix);
-					endpoint[3 + ix]->ip   = workerV[ix].ip;
-					endpoint[3 + ix]->port = workerV[ix].port;
+					endpoint[FIRST_WORKER + ix] = workerNew(ix);
+					endpoint[FIRST_WORKER + ix]->ip   = workerV[ix].ip;
+					endpoint[FIRST_WORKER + ix]->port = workerV[ix].port;
 				}
 			}
 			else if ((unsigned int) Workers > dataLen / sizeof(Message::Worker))
@@ -2039,11 +2031,11 @@ void Network::msgTreat(void* vP)
 
 				for (unsigned int ix = dataLen / sizeof(Message::Worker); ix < (unsigned int) Workers; ix++)
 				{
-					if (endpoint[3 + ix] != NULL)
+					if (endpoint[FIRST_WORKER + ix] != NULL)
 					{
-						LM_T(LmtWorkerVector, ("deleting obsolete worker endpoint %d", 3 + ix));
-						delete endpoint[3 + ix];
-						endpoint[3 + ix] = NULL;
+						LM_T(LmtWorkerVector, ("deleting obsolete worker endpoint %d", FIRST_WORKER + ix));
+						delete endpoint[FIRST_WORKER + ix];
+						endpoint[FIRST_WORKER + ix] = NULL;
 					}
 				}
 			}
@@ -2054,24 +2046,23 @@ void Network::msgTreat(void* vP)
 			{
 				Endpoint* epP;
 
-				if (endpoint[3 + ix] == NULL)
+				if (endpoint[FIRST_WORKER + ix] == NULL)
 				{
-					endpoint[3 + ix]        = new Endpoint(Endpoint::Worker, workerV[ix].name, workerV[ix].ip, workerV[ix].port, -1, -1);
-					endpoint[3 + ix]->state = Endpoint::Unconnected;
-					endpoint[3 + ix]->alias = workerV[ix].alias;
+					endpoint[FIRST_WORKER + ix]        = new Endpoint(Endpoint::Worker, workerV[ix].name, workerV[ix].ip, workerV[ix].port, -1, -1);
+					endpoint[FIRST_WORKER + ix]->state = Endpoint::Unconnected;
+					endpoint[FIRST_WORKER + ix]->alias = workerV[ix].alias;
 
 					LM_T(LmtWorker, ("*** New Worker Endpoint '%s' at %p", workerV[ix].alias, endpoint[ix]));
 				}
 				else
 					LM_T(LmtWorker, ("Should I fill worker %02d with the info the controller gave me ?", ix));
 
-				epP = endpoint[3 + ix];
+				epP = endpoint[FIRST_WORKER + ix];
 
 				if (strcmp(epP->alias.c_str(), me->alias.c_str()) == 0)
 				{
 					LM_T(LmtWorker, ("NOT connecting to myself ..."));
 					epP->name = std::string("me: ") + epP->ip;
-					ME = epP;
 					continue;
 				}
 
@@ -2212,7 +2203,7 @@ void Network::run(void)
 
 			if (me->type == Endpoint::Delilah)  /* reconnect to dead workers */
 			{
-				for (ix = 3; ix < 3 + Workers; ix++)
+				for (ix = FIRST_WORKER; ix < FIRST_WORKER + Workers; ix++)
 				{
 					int workerFd;
 
@@ -2348,8 +2339,8 @@ void Network::run(void)
 			{
 				// Treat endpoint for endpoint vector - skipping the first two ... (me & listener)
 				// For now, only temporal endpoints are in endpoint vector
-				LM_T(LmtSelect, ("looping from %d to %d", 3, Endpoints));
-				for (ix = 2; ix < Endpoints; ix++)
+				LM_T(LmtSelect, ("looping from %d to %d", CONTROLLER, Endpoints));
+				for (ix = CONTROLLER; ix < Endpoints; ix++)
 				{
 					if ((endpoint[ix] == NULL) || (endpoint[ix]->rFd < 0))
 						continue;
@@ -2444,8 +2435,8 @@ int Network::poll(void)
 	{
 		// Treat endpoint for endpoint vector - skipping the first two ... (me & listener)
 		// For now, only temporal endpoints are in endpoint vector
-		LM_T(LmtSelect, ("looping from %d to %d", 3, Endpoints));
-		for (ix = 2; ix < Endpoints; ix++)
+		// LM_T(LmtSelect, ("looping from %d to %d", CONTROLLER, Endpoints));
+		for (ix = CONTROLLER; ix < Endpoints; ix++)
 		{
 			if ((endpoint[ix] == NULL) || (endpoint[ix]->rFd < 0))
 				continue;
@@ -2479,7 +2470,7 @@ std::string Network::getState(std::string selector)
 
 	output = "";
 
-	for (ix = 2; ix < Endpoints; ix++)
+	for (ix = CONTROLLER; ix < Endpoints; ix++)
 	{
 		if (endpoint[ix] == NULL)
 			continue;

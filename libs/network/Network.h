@@ -114,7 +114,6 @@ public:
 
 private:
 	Endpoint*       listener;
-	Endpoint*       ME;
 
 	bool            iAmReady;
 	unsigned short  port;

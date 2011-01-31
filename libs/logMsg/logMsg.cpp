@@ -60,8 +60,9 @@ extern "C" pid_t gettid(void);
 *
 * globals
 */
-int         inSigHandler    = 0;
-static bool lmOutHookActive = false;
+int          inSigHandler    = 0;
+static bool  lmOutHookActive = false;
+static void* lmOutHookParam  = NULL;
 
 
 
@@ -1510,7 +1511,7 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 	memset(format, 0, sizeof(format));
 
 	if (lmOutHook && lmOutHookActive == true)
-		lmOutHook(text, type, file, lineNo, fName, tLev, stre);
+		lmOutHook(lmOutHookParam, text, type, file, lineNo, fName, tLev, stre);
 
 	for (i = 0; i < FDS_MAX; i++)
 	{
@@ -1628,9 +1629,10 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 *
 * lmOutHookSet -
 */
-void lmOutHookSet(LmOutHook hook)
+void lmOutHookSet(LmOutHook hook, void* param)
 {
 	lmOutHook       = hook;
+	lmOutHookParam  = param;
 	lmOutHookActive = true;
 }
 

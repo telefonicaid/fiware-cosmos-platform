@@ -138,7 +138,7 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 
 	memset(&header, 0, sizeof(header));
 
-	s = iomMsgSend(endpoint, networkP->me, ss::Message::ConfigGet, ss::Message::Msg);
+	s = iomMsgSend(endpoint, networkP->endpoint[0], ss::Message::ConfigGet, ss::Message::Msg);
 
 	if (s != 0)
 		LM_E(("iomMsgSend error: %d", s));
@@ -215,7 +215,7 @@ void ConfigWindow::send(void)
 			configData.traceLevels[ix] = false;
 	}
 
-	iomMsgSend(endpoint, networkP->me, ss::Message::ConfigSet, ss::Message::Ack, &configData, sizeof(configData));
+	iomMsgSend(endpoint, networkP->endpoint[0], ss::Message::ConfigSet, ss::Message::Ack, &configData, sizeof(configData));
 }
 
 

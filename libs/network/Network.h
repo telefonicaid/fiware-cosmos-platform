@@ -99,7 +99,14 @@ public:
 	void         controllerMsgTreat(Endpoint* ep, Message::MessageCode msgCode, Message::MessageType msgType, void* dataP, int dataLen, Packet* packetP);
 	std::string  getState(std::string selector);
 
+
+
+private:
+	Endpoint*    endpointAddLogServer(int rFd, int wFd, const char* name, const char* alias, std::string ip, unsigned short port);
+public:
 	Endpoint*    endpointAdd(const char* why, int rFd, int wFd, const char* name, const char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int core = -1, Endpoint* inheritFrom = NULL);
+
+
 	Endpoint*    endpointLookup(int fd, int* idP);
 	Endpoint*    endpointLookup(int ix);
 	Endpoint*    endpointLookup(char* alias);
@@ -107,14 +114,13 @@ public:
 	void         endpointRemove(Endpoint* ep, const char* why);
 	void         endpointListShow(const char* why);
 
+
+
 	int          helloSend(Endpoint* ep, Message::MessageType type);
 
-	Endpoint*    controller;
-	Endpoint*    me;
+	Endpoint*    controller;        // endpoint slot 2
 
 private:
-	Endpoint*       listener;
-
 	bool            iAmReady;
 	unsigned short  port;
 

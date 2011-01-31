@@ -101,7 +101,7 @@ typedef void (*LmWriteFp)(char*);
 *
 * LmOutHook - type for function pointer for lmOut hook
 */
-typedef void (*LmOutHook)(char* text, char type, const char* file, int lineNo, const char* fName, int tLev, const char* stre);
+typedef void (*LmOutHook)(void* vP, char* text, char type, const char* file, int lineNo, const char* fName, int tLev, const char* stre);
 
 
 
@@ -1141,7 +1141,7 @@ extern LmStatus lmOut
 *
 * lmOutHookSet - 
 */
-extern void lmOutHookSet(LmOutHook hook);
+extern void lmOutHookSet(LmOutHook hook, void* vP);
 extern bool lmOutHookInhibit();
 extern void lmOutHookRestore(bool onoff);
 

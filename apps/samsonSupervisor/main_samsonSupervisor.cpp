@@ -67,6 +67,7 @@ TabManager*        tabManager        = NULL;
 ss::Endpoint*      logServerEndpoint = NULL;
 QWidget*           mainWindow        = NULL;
 QDesktopWidget*    desktop           = NULL;
+bool               qtAppRunning      = false;
 
 
 
@@ -179,10 +180,21 @@ int main(int argC, const char *argV[])
 	LM_TODO(("If connected OK, ask the controller about its command line options - and fill LogConfig Window accordingly"));
 	memset(argVec, 0, sizeof(argVec));
 	if (configFileParse(controller->ip.c_str(), "Controller", &args, argVec) == -1)
-		LM_W(("configFileParse failed for 'Controller@%s", controller->ip.c_str()));
+	{
+		if ((controller == NULL) || (controller->state != ss::Endpoint::Connected))
+		{
+			char eText[256];
 
-	LM_TODO(("Here I should take command line option data from the 'platformProcesses' file"));
-	LM_TODO(("Just make sure the IP of the Controller matches the -controller option"));
+			snprintf(eText,
+					 sizeof(eText),
+					 "Unable to connect to controller in '%s'.\nAlso unable to find info on Controller in config file.\nUnable to connect to Controller, sorry.",
+					 controllerName);
+			new Popup("Cannot connect to Controller", eText, true);
+		}
+	}
+	else
+		LM_M(("configFileParse returned %d args for 'Controller'", args));
+
 	controllerProcess = processAdd("Controller", controller->ip.c_str(), controller->port, controller, argVec, args);
 	
 
@@ -200,7 +212,7 @@ int main(int argC, const char *argV[])
 
 		snprintf(title, sizeof(title), "Error connecting to Controller's Spawner");
 		snprintf(message, sizeof(message), "Can't connect to controller's Spawner at %s, port %d\nPlease start all spawners before running this application", controller->ip.c_str(), SPAWNER_PORT);
-		new Popup(title, message);
+		new Popup(title, message, true);
 		app.exec();
 		exit(2);
 	}
@@ -233,6 +245,7 @@ int main(int argC, const char *argV[])
 	mainWindow->show();
 
 	LM_T(LmtInit, ("letting control to QT main loop"));
+	qtAppRunning = true;
 	qApp->exec();
 
 	return 0;

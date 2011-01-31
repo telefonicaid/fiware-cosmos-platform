@@ -10,6 +10,7 @@
 * CREATION DATE            Jan 21 2011
 *
 */
+#include <QObject>
 #include <QDialog>
 
 
@@ -20,8 +21,13 @@
 */
 class Popup : public QDialog
 {
+	Q_OBJECT
+
 public:
-	Popup(const char* title, const char* text);
+	Popup(const char* title, const char* text, bool die = false);
+
+private slots:
+	void die(void);
 };
 
 #endif

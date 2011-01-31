@@ -28,6 +28,7 @@ extern pthread_t          networkThread;
 extern pthread_t          qtThread;
 extern ss::Endpoint*      logServerEndpoint;
 extern int                logServerFd;
+extern bool               qtAppRunning;
 
 
 

@@ -173,6 +173,7 @@ void processStart(Process* processP, Starter* starter)
 	char*                   alias = (char*) "no_alias";
 
 	LM_T(LmtProcessStart, ("starting process '%s' in '%s' with %d parameters", processP->name, processP->host, processP->spawnInfo->argCount));
+	processListShow("starting process");
 
 	LM_TODO(("Lookup starter and don't start if already started!"));
 
@@ -183,6 +184,7 @@ void processStart(Process* processP, Starter* starter)
 	end = spawnData.args;
 
 	networkP->endpointListShow("Looking up logServer");
+	
 	if ((logServer = networkP->logServerLookup()) != NULL)
 	{
 		strcpy(end, "-logServer");
@@ -205,7 +207,12 @@ void processStart(Process* processP, Starter* starter)
 	}
 	*end = 0;
 
-	LM_T(LmtProcessStart, ("starting %s via spawner %p (host: '%s', fd: %d)", spawnData.name, processP->spawnInfo->spawnerP, processP->spawnInfo->spawnerP->host, processP->spawnInfo->spawnerP->endpoint->rFd));
+	LM_T(LmtProcessStart, ("starting %s via spawner %p (host: '%s', fd: %d)",
+						   spawnData.name,
+						   processP->spawnInfo->spawnerP,
+						   processP->spawnInfo->spawnerP->host,
+						   processP->spawnInfo->spawnerP->endpoint->rFd));
+
 	if (strcmp(spawnData.name, "Controller") == 0)
 		s = iomMsgSend(processP->spawnInfo->spawnerP->endpoint->wFd, processP->spawnInfo->spawnerP->host, "samsonSupervisor", ss::Message::ControllerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
 	else if (strcmp(spawnData.name, "Worker") == 0)

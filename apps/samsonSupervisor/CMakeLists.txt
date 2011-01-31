@@ -26,6 +26,7 @@ SET (HEADERS_MOC
 	LogTab.h
 	ProcessListTab.h
 	ConfigWindow.h
+	Popup.h
 )
 
 SET (HEADERS
@@ -38,7 +39,6 @@ SET (HEADERS
 	actions.h
 	globals.h
 	configFile.h
-	Popup.h
 )
 
 

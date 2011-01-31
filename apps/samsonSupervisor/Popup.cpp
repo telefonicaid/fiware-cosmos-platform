@@ -15,11 +15,17 @@
 #include <QSize>
 #include <QDesktopWidget>
 
+#include "logMsg.h"             // LM_X, ...
+#include "globals.h"            // qtAppRunning, ...
 #include "Popup.h"              // Own interface
 
 
 
-Popup::Popup(const char* title, const char* text)
+/* ****************************************************************************
+*
+* Popup::Popup - 
+*/
+Popup::Popup(const char* title, const char* text, bool die)
 {
 	QVBoxLayout*      layout;
 	QLabel*           label;
@@ -37,7 +43,10 @@ Popup::Popup(const char* title, const char* text)
 	label     = new QLabel(text);
 	buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
 
-	connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
+	if (die)
+		connect(buttonBox, SIGNAL(accepted()), this, SLOT(die()));
+	else
+		connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
 
 	setWindowTitle(title);
 
@@ -58,6 +67,20 @@ Popup::Popup(const char* title, const char* text)
 
 	this->move(x, y);
 
-	if (qApp->activeWindow() == NULL)
+	if (qtAppRunning == false)
+	{
+		qtAppRunning = true;
 		qApp->exec();
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* die
+*/
+void Popup::die(void)
+{
+	LM_X(1, ("Dying popup received OK press event"));
 }

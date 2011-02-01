@@ -791,8 +791,8 @@ void Network::endpointListShow(const char* why)
 {
 	int ix;
 
-	LM_T(LmtEndpointListShow, (""));
-	LM_T(LmtEndpointListShow, ("----------- Endpoint List (%s) -----------", why));
+	LM_V((""));
+	LM_V(("----------- Endpoint List (%s) -----------", why));
 
     if (lmVerbose)      LM_F(("Verbose mode is on"));
     if (lmDebug)        LM_F(("Debug mode is on"));
@@ -815,7 +815,7 @@ void Network::endpointListShow(const char* why)
 				sign = '+';
 		}
 
-		LM_T(LmtEndpointListShow, ("%c %08p  Endpoint %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
+		LM_V(("%c %08p  Endpoint %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
 			  sign,
 			  endpoint[ix],
 			  ix,
@@ -836,7 +836,7 @@ void Network::endpointListShow(const char* why)
 			  endpoint[ix]->wAccMbps));
 	}
 
-    LM_T(LmtEndpointListShow, ("--------------------------------"));
+    LM_V(("--------------------------------"));
 }
 
 
@@ -902,9 +902,6 @@ static void endpointFill(Endpoint* ep, Endpoint* inheritedFrom, int rFd, int wFd
 */
 Endpoint* Network::endpointAddLogServer(int rFd, int wFd, const char* name, const char* alias, std::string ip, unsigned short port, Endpoint* inheritedFrom)
 {
-	if (inheritedFrom != NULL)
-		LM_X(1, ("inheritedFrom != NULL for LogServer - bear in mind when implementing ..."));
-
 	if (endpoint[LOG_SERVER] != NULL)
 	{
 		if (endpoint[LOG_SERVER]->state == Endpoint::Connected)
@@ -927,7 +924,7 @@ Endpoint* Network::endpointAddLogServer(int rFd, int wFd, const char* name, cons
 			LM_T(LmtLogServer, ("*** New LogServer Endpoint '%s' at %p", name, endpoint[LOG_SERVER]));
 	}
 	
-	endpointFill(endpoint[LOG_SERVER], NULL, rFd, wFd, name, alias, 0, ip, Endpoint::LogServer, port, -1);
+	endpointFill(endpoint[LOG_SERVER], inheritedFrom, rFd, wFd, name, alias, 0, ip, Endpoint::LogServer, port, -1);
 
 	LM_T(LmtLogServer, ("Setting up LM hook function"));
 	lmOutHookSet(logHookFunction, (void*) this);
@@ -2301,8 +2298,8 @@ void Network::run(void)
 
 			if (showSelectList)
 			{
-				LM_T(LmtEndpointListShow, (""));
-				LM_T(LmtEndpointListShow, ("------------ %.5f secs timeout, %d endpoints -------------------------------------", ((double) tmoSecs + ((double) tmoUsecs) / 1000000), Endpoints));
+				LM_V((""));
+				LM_V(("------------ %.5f secs timeout, %d endpoints -------------------------------------", ((double) tmoSecs + ((double) tmoUsecs) / 1000000), Endpoints));
 			}
 
 			for (ix = 0; ix < Endpoints; ix++)

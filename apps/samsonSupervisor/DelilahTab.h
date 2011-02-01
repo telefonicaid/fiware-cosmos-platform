@@ -3,6 +3,10 @@
 
 #include <QObject>
 #include <QWidget>
+#include <QGridLayout>
+#include <QTextEdit>
+#include <QLineEdit>
+#include <QPushButton>
 
 
 
@@ -16,6 +20,15 @@ class DelilahTab : public QWidget
 
 public:
 	DelilahTab(const char* name, QWidget *parent = 0);
+
+private slots:
+	void send();
+
+private:
+	QGridLayout*  mainLayout;
+	QLineEdit*    input;
+	QPushButton*  sendButton;
+	QTextEdit*    output;
 };
 
 #endif

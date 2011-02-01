@@ -134,6 +134,7 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 		if (pid == 0)
 		{
 			int ix;
+			int s;
 
 			evec[0] = (headerP->code == ss::Message::WorkerSpawn)? (char*) "samsonWorker" : (char*) "samsonController";
 			
@@ -142,7 +143,16 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 			evec[ix + 1] = 0;
 
 			LM_T(LmtSpawn, ("execvp(%s, %s, %s, %s, ...", evec[0], evec[0], evec[1], evec[2]));
-			execvp(evec[0], evec);
+			s = execvp(evec[0], evec);
+			if (s == -1)
+			   LM_E(("Back from EXEC: %s", strerror(errno)));
+			else
+			   LM_E(("Back from EXEC"));
+
+			LM_E(("Tried to start '%s' with the following parameters:", evec[0]));
+			for (ix = 0; ix < argCount + 1; ix++)
+				LM_E(("%02d: %s", ix, evec[ix]));
+
 			LM_X(1, ("Back from EXEC !!!"));
 		}
 		break;

@@ -170,76 +170,74 @@ static void disconnectWorkers(void)
 */
 static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 {
-	Process* processP;
-	Starter* starterP;
+	Process*  processP;
+	Starter*  starterP;
+	char      host[64];
+	char      processName[64];
+	int       args  = 20;
+	char*     argV[20];
+	char      eText[256];
+	int       fd;
 
 	for (int ix = 0; ix < wvDataP->workers; ix++)
 	{
 		LM_M(("Create a Starter for endpoint '%s@%s'", wvDataP->workerV[ix].alias, wvDataP->workerV[ix].ip));
 		if (strcmp(wvDataP->workerV[ix].ip, "II.PP") == 0)
 		{
+			if (configFileParseByAlias(wvDataP->workerV[ix].alias, host, processName, &args, argV) != 0)
+			{
+				snprintf(eText, sizeof(eText), "Controller reports an unknown future worker, aliased '%s'\nCannot find process in config files.\nNo possible way to spawn this process - skipping it", wvDataP->workerV[ix].alias);
+				LM_E(("Cannot find worker process with alias '%s' in platformProcesses - skipping it", wvDataP->workerV[ix].alias));
+				new Popup("Unknown worker", eText);
+				continue;
+			}
+
 			LM_TODO(("Lookup command line options in 'platformProcesses'"));
 			LM_TODO(("OR: Ask Controller about the options"));
 			LM_TODO(("We could use the 'Config' window to input command line options"));
 			LM_TODO(("  and later send this info to controller - which should be the central information holder"));
 			LM_TODO(("For now, I'll just lookup host and command line options in 'platformProcesses'"));
 
-			char   host[64];
-			char   processName[64];
-			int    args  = 20;
-			char*  argV[20];
-
 			LM_M(("looking up worker with alias %s in config file 'platformProcesses'", wvDataP->workerV[ix].alias));
 
-			if (configFileParseByAlias(wvDataP->workerV[ix].alias, host, processName, &args, argV) != 0)
-				LM_E(("Cannot find process with alias '%s' in platformProcesses - skipping it", wvDataP->workerV[ix].alias));
-			else
+			processP = processAdd("Worker", host, 0, NULL, argV, args);
+			if (processP == NULL)
+				LM_X(1, ("NULL processP for Worker@%s", host));
+
+			if (processP->spawnInfo == NULL)
+				LM_X(1, ("How come spawn-info is NULL for Worker (alias: '%s') in host '%s'", wvDataP->workerV[ix].alias, host));
+
+			starterP = starterAdd(processP);
+			if (starterP == NULL)
+				LM_X(1, ("NULL starterP for Worker@%s", host));
+
+			LM_M(("Looking up spawner for host '%s'", host));
+			processP->spawnInfo->spawnerP = spawnerLookup(host);
+			LM_M(("spawner for host '%s' at %p", host, processP->spawnInfo->spawnerP));
+
+			if (processP->spawnInfo->spawnerP == NULL)
 			{
-				processP = processAdd("Worker", host, 0, NULL, argV, args);
-				if (processP == NULL)
-					LM_X(1, ("NULL processP for Worker@%s", host));
-
-				if (processP->spawnInfo == NULL)
-					LM_X(1, ("How come spawn-info is NULL for Worker (alias: '%s') in host '%s'", wvDataP->workerV[ix].alias, host));
-
-				starterP = starterAdd(processP);
-				if (starterP == NULL)
-					LM_X(1, ("NULL starterP for Worker@%s", host));
-
-				LM_M(("Looking up spawner for host '%s'", host));
-				processP->spawnInfo->spawnerP = spawnerLookup(host);
-				LM_M(("spawner for host '%s' at %p", host, processP->spawnInfo->spawnerP));
-
-				if (processP->spawnInfo->spawnerP == NULL)
-				{
-					int fd;
-
-					LM_W(("No spawner found in host '%s' - lets try to connect to it", host));
-					fd = iomConnect(host, SPAWNER_PORT);
-					if (fd != -1)
-						processP->spawnInfo->spawnerP = spawnerAdd("Spawner", host, SPAWNER_PORT, NULL);
-				}
-
-				if (processP->spawnInfo->spawnerP == NULL)
-				{
-					char info[256];
-
-					snprintf(info, sizeof(info),
-							 "In order to spawn worker (with alias '%s') in host '%s',\na samsonSpawner must be running in that host.\nPlease make sure that a samsonSpawner is running in '%s'",
-							 wvDataP->workerV[ix].alias, host, host);
-
-					new Popup("Spawner not running", info);
-					LM_X(1, ("Sorry, no spawner found in host '%s'", host));
-				}
-
-				if ((tabManager != NULL) && (tabManager->processListTab != NULL))
-					tabManager->processListTab->starterInclude(starterP);
+				LM_W(("No spawner found in host '%s' - lets try to connect to it", host));
+				fd = iomConnect(host, SPAWNER_PORT);
+				if (fd != -1)
+					processP->spawnInfo->spawnerP = spawnerAdd("Spawner", host, SPAWNER_PORT, NULL);
 			}
+
+			if (processP->spawnInfo->spawnerP == NULL)
+			{
+				snprintf(eText, sizeof(eText),
+						 "In order to spawn worker (with alias '%s') in host '%s',\na samsonSpawner must be running in that host.\nPlease make sure that a samsonSpawner is running in '%s'",
+						 wvDataP->workerV[ix].alias, host, host);
+				
+				new Popup("Spawner not running", eText);
+				LM_X(1, ("Sorry, no spawner found in host '%s'", host));
+			}
+
+			if ((tabManager != NULL) && (tabManager->processListTab != NULL))
+				tabManager->processListTab->starterInclude(starterP);
 		}
 		else
 		{
-			int fd;
-
 			LM_M(("Connecting to worker in '%s'", wvDataP->workerV[ix].ip));
 			fd = iomConnect(wvDataP->workerV[ix].ip, wvDataP->workerV[ix].port);
 			if (fd == -1)

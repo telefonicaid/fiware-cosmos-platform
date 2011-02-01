@@ -8,6 +8,9 @@
 #include <QLineEdit>
 #include <QPushButton>
 
+#include "Delilah.h"            // ss::Delilah
+#include "DelilahConsole.h"     // ss::DelilahConsole
+
 
 
 /* ****************************************************************************
@@ -24,11 +27,16 @@ public:
 private slots:
 	void send();
 
+public:
+	QTextEdit*    output;
+
 private:
 	QGridLayout*  mainLayout;
 	QLineEdit*    input;
 	QPushButton*  sendButton;
-	QTextEdit*    output;
+
+	ss::Delilah*         delilah;
+	ss::DelilahConsole*  delilahConsole;
 };
 
 #endif

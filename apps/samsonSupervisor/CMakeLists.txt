@@ -53,13 +53,15 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_BINARY_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
+include_directories("${PROJECT_SOURCE_DIR}/libs/delilah")
 
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
+link_directories("${PROJECT_BINARY_DIR}/libs/delilah")
 
 # SAMSON Executable
 ADD_EXECUTABLE(samsonSupervisor ${SOURCES} ${MOC_SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(samsonSupervisor samsonNetworkStatic pa lm pthread ${QT_LIBRARIES})
+TARGET_LINK_LIBRARIES(samsonSupervisor samsonNetworkStatic delilahStatic pa lm readline pthread ${QT_LIBRARIES})
 
 INSTALL(TARGETS               samsonSupervisor
         RUNTIME DESTINATION   bin)

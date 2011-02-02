@@ -1,0 +1,22 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource>
+	<file>images/queue.png</file>
+	<file>images/queue128x128.png</file>
+	<file>images/queue256x256.png</file>
+	<file>images/queue32x32.png</file>
+	<file>images/queue48x48.png</file>
+	<file>images/queue64x64.png</file>
+	<file>images/queue72x72.png</file>
+	<file>images/queue96x96.png</file>
+	<file>images/queueAdd.png</file>
+	<file>images/queueAdd128x128.png</file>
+	<file>images/queueAdd256x256.png</file>
+	<file>images/queueAdd32x32.png</file>
+	<file>images/queueAdd48x48.png</file>
+	<file>images/queueAdd64x64.png</file>
+	<file>images/queueDelete.png</file>
+	<file>images/queueDelete32x32.png</file>
+	<file>images/connect.gif</file>
+ </qresource>
+ </RCC>
+

@@ -10,6 +10,9 @@
 * CREATION DATE            Jan 13 2011
 *
 */
+#include <pthread.h>            // pthread_t
+
+#include "Endpoint.h"           // Endpoint
 #include "Network.h"            // Network
 #include "SamsonSupervisor.h"   // SamsonSupervisor
 #include "TabManager.h"         // TabManager
@@ -39,6 +42,5 @@ extern bool               qtAppRunning;
 extern int     endpoints;
 extern char    controllerName[80];
 extern char    cfPath[80];
-extern bool    qt;
 
 #endif

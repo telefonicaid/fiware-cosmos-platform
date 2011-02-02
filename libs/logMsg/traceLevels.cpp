@@ -91,8 +91,10 @@ char* traceLevelName(TraceLevels level)
 	case LmtFile:                        return (char*) "File";
 	case LmtTask:                        return (char*) "Task";
 	case LmtJob:                         return (char*) "Job";
-
 	case LmtSend:                        return (char*) "Send Callback";
+
+	case LmtQueueConnection:             return (char*) "Queue Connection";
+	case LmtPopupMenu:                   return (char*) "Popup Menu";
 	}
 
 	return (char*) 0;

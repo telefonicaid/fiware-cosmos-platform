@@ -17,6 +17,10 @@ SET (SOURCES
 	configFile.cpp
 	Popup.cpp
 	ConfigWindow.cpp
+	SceneTab.cpp
+	misc.cpp
+	DelilahQueue.cpp
+	DelilahScene.cpp
 )
 
 SET (HEADERS_MOC
@@ -27,6 +31,8 @@ SET (HEADERS_MOC
 	ProcessListTab.h
 	ConfigWindow.h
 	Popup.h
+	SceneTab.h
+	DelilahScene.h
 )
 
 SET (HEADERS
@@ -39,8 +45,15 @@ SET (HEADERS
 	actions.h
 	globals.h
 	configFile.h
+	misc.h
+	DelilahQueue.h
 )
 
+
+SET (RESOURCES
+    ${PROJECT_SOURCE_DIR}/apps/samsonSupervisor/samsonSupervisor.qrc)
+
+QT4_ADD_RESOURCES(RESOURCES_QRC ${RESOURCES})
 
 QT4_WRAP_CPP(MOC_SOURCES ${HEADERS_MOC})
 
@@ -60,8 +73,20 @@ link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
 link_directories("${PROJECT_BINARY_DIR}/libs/delilah")
 
 # SAMSON Executable
-ADD_EXECUTABLE(samsonSupervisor ${SOURCES} ${MOC_SOURCES} ${HEADERS})
+ADD_EXECUTABLE(samsonSupervisor ${SOURCES} ${MOC_SOURCES} ${HEADERS} ${RESOURCES_QRC} )
 TARGET_LINK_LIBRARIES(samsonSupervisor samsonNetworkStatic delilahStatic pa lm readline pthread ${QT_LIBRARIES})
 
-INSTALL(TARGETS               samsonSupervisor
-        RUNTIME DESTINATION   bin)
+install(TARGETS                samsonSupervisor
+        RUNTIME  DESTINATION   bin)
+#		DIRECTORY			   images/ DESTINATION   share)
+
+# images.path     = /usr/local/samson/images
+# images.files   += images/queue.png
+# images.files   += images/queueDelete.png
+# images.files   += images/queueAdd128x128.png
+# images.files   += images/connect.gif
+# images.files   += images/queueDelete.png
+# INSTALLS       += images
+
+# target.path += $$[PROJECT_SOURCE_DIR]/images
+# INSTALLS += target

@@ -78,7 +78,6 @@ bool               qtAppRunning      = false;
 int     endpoints;
 char    controllerHost[80];
 char    cfPath[80];
-bool    qt;
 
 
 
@@ -93,7 +92,6 @@ PaArgument paArgs[] =
 	{ "-controller",  controllerHost,  "CONTROLLER",  PaString,  PaReq,   NOC,  PaNL,   PaNL,  "controller IP"       },
 	{ "-endpoints",   &endpoints,      "ENDPOINTS",   PaInt,     PaOpt,    80,     3,    100,  "number of endpoints" },
 	{ "-config",      &cfPath,         "CF_FILE",     PaStr,     PaOpt,   CFP,  PaNL,   PaNL,  "path to config file" },
-	{ "-qt",          &qt,             "QT",          PaBool,    PaOpt,  true, false,   true,  "graphical"           },
 
 	PA_END_OF_ARGS
 };
@@ -137,6 +135,8 @@ int main(int argC, const char *argV[])
     QApplication   app(argC, (char**) argV);
 	ss::Endpoint*  controller;
 	Process*       controllerProcess;
+
+	Q_INIT_RESOURCE(samsonSupervisor);
 
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);

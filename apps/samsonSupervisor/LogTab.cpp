@@ -1,3 +1,12 @@
+/* ****************************************************************************
+*
+* FILE                     LogTab.cpp
+*
+* AUTHOR                   Ken Zangelin
+*
+* CREATION DATE            Feb 02 2011
+*
+*/
 #include <QWidget>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -29,7 +38,7 @@ LogTab::LogTab(QWidget *parent) : QWidget(parent)
 			if (column == row)
 				continue;
 
-			sprintf(name, "row %d, col %d", row, column);
+			snprintf(name, sizeof(name), "row %d, col %d", row, column);
 			label = new QLabel(tr(name));
 			mainLayout->addWidget(label, row, column);
 		}

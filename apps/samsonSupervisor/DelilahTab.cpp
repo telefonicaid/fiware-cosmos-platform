@@ -1,3 +1,12 @@
+/* ****************************************************************************
+*
+* FILE                     DelilahTab.cpp
+*
+* AUTHOR                   Ken Zangelin
+*
+* CREATION DATE            Feb 02 2011
+*
+*/
 #include <QWidget>
 #include <QGridLayout>
 #include <QTextEdit>

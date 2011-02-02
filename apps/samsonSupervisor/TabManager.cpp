@@ -39,12 +39,14 @@ TabManager::TabManager(QWidget* window, QWidget* parent) : QWidget(parent)
 	tabWidget       = new QTabWidget();
 
 	processListTab  = new ProcessListTab("Processes", window);
-	// logTab          = new LogTab();
-	delilahTab      = new DelilahTab("Delilah");
+	logTab          = new LogTab();
+	delilahTab      = new DelilahTab("Console");
+	sceneTab        = new SceneTab("Delilah");
 
 	tabWidget->addTab(processListTab, tr("Processes"));
-	// tabWidget->addTab(logTab,         tr("Log"));
-	tabWidget->addTab(delilahTab,     tr("Delilah"));
+	tabWidget->addTab(logTab,         tr("Log"));
+	tabWidget->addTab(delilahTab,     tr("Console"));
+	tabWidget->addTab(sceneTab,       tr("Delilah"));
 
 	mainLayout->addWidget(tabWidget);
 	mainLayout->addWidget(quit);

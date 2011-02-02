@@ -14,8 +14,9 @@
 #include <QTimerEvent>
 
 #include "ProcessListTab.h"     // ProcessListTab
-#include "LogTab.h"             // LogTab
 #include "DelilahTab.h"         // DelilahTab
+#include "SceneTab.h"           // SceneTab
+#include "LogTab.h"             // LogTab
 
 
 
@@ -41,6 +42,7 @@ public:
 	ProcessListTab*  processListTab;
 	LogTab*          logTab;
 	DelilahTab*      delilahTab;
+	SceneTab*        sceneTab;
 
 protected:
 	void timerEvent(QTimerEvent* e);

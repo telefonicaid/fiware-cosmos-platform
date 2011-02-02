@@ -90,6 +90,10 @@ typedef enum TraceLevels
 	LmtTask,
 	LmtJob,
 	LmtSend,
+
+	LmtQueueConnection,
+	LmtPopupMenu,
+	
 } TraceLevels;
 
 

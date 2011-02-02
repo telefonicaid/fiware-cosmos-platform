@@ -1,6 +1,15 @@
 #ifndef DELILAH_TAB_H
 #define DELILAH_TAB_H
 
+/* ****************************************************************************
+*
+* FILE                     DelilahTab.h
+*
+* AUTHOR                   Ken Zangelin
+*
+* CREATION DATE            Feb 02 2011
+*
+*/
 #include <QObject>
 #include <QWidget>
 #include <QGridLayout>

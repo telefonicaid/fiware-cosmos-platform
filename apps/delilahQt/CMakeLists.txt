@@ -43,3 +43,4 @@ TARGET_LINK_LIBRARIES(delilahQT ${STATIC_LIBS} )
 
 INSTALL(TARGETS               delilahQT
         RUNTIME DESTINATION   bin)
+

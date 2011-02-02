@@ -1,30 +1,23 @@
-#ifndef LOG_TAB_H
-#define LOG_TAB_H
+#ifndef QT_MISC_H
+#define QT_MISC_H
 
 /* ****************************************************************************
 *
-* FILE                     LogTab.h
+* FILE                     misc.h
 *
 * AUTHOR                   Ken Zangelin
 *
 * CREATION DATE            Feb 02 2011
 *
 */
-#include <QObject>
-#include <QWidget>
+#include <QGraphicsItem>
 
 
 
 /* ****************************************************************************
 *
-* LogTab -
+* centerCoordinates - 
 */
-class LogTab : public QWidget
-{
-	Q_OBJECT
-
-public:
-	LogTab(QWidget *parent = 0);
-};
+extern void centerCoordinates(QGraphicsItem* itemP, qreal* x, qreal* y);
 
 #endif

@@ -12,9 +12,12 @@
 */
 #include <QObject>
 #include <QGraphicsScene>
-#include <QMenu>
 
-#include "DelilahQueue.h"        // DelilahQueue
+class QMenu;
+class QGraphicsItem;
+class QGraphicsSceneMouseEvent;
+class QGraphicsSceneWheelEvent;
+class DelilahQueue;
 
 
 

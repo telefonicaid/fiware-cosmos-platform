@@ -10,7 +10,7 @@
 * CREATION DATE            Feb 02 2011
 *
 */
-#include <QGraphicsItem>
+class QGraphicsItem;
 
 
 

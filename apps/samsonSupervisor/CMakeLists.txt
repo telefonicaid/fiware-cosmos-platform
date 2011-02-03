@@ -21,6 +21,9 @@ SET (SOURCES
 	misc.cpp
 	DelilahQueue.cpp
 	DelilahScene.cpp
+	DelilahConnection.cpp
+	ConnectionMgr.cpp
+	QueueMgr.cpp
 )
 
 SET (HEADERS_MOC
@@ -47,6 +50,9 @@ SET (HEADERS
 	configFile.h
 	misc.h
 	DelilahQueue.h
+	DelilahConnection.h
+	ConnectionMgr.h
+	QueueMgr.h
 )
 
 

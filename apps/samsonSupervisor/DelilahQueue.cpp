@@ -11,10 +11,19 @@
 
 #include <QPixmap>
 #include <QString>
+#include <QGraphicsPixmapItem>
+#include <QGraphicsSimpleTextItem>
+#include <QGraphicsLineItem>
+#include <QMenu>
+#include <QAction>
 
-#include "misc.h"              // centerCoordinates
-#include "DelilahScene.h"      // DelilahScene
-#include "DelilahQueue.h"      // Own interface
+#include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Trace Levels
+
+#include "globals.h"            // connectionMgr, ...
+#include "misc.h"               // centerCoordinates
+#include "DelilahScene.h"       // DelilahScene
+#include "DelilahQueue.h"       // Own interface
 
 
 
@@ -95,16 +104,5 @@ void DelilahQueue::moveTo(int x, int y)
 	pixmapItem->moveBy(x, y);
 	nameItem->moveBy(x, y);
 
-	if (neighbor && connectionLine)
-	{
-		qreal startX;
-		qreal startY;
-		qreal endX;
-		qreal endY;
-
-		centerCoordinates(pixmapItem, &startX, &startY);
-		centerCoordinates(neighbor->pixmapItem, &endX, &endY);
-
-		connectionLine->setLine(startX, startY, endX, endY);
-	}
+	connectionMgr->move(this);
 }

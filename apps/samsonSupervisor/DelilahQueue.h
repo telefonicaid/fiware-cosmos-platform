@@ -10,9 +10,13 @@
 * CREATION DATE            Feb 02 2011
 *
 */
-class QPixmap;
 class QGraphicsPixmapItem;
 class QGraphicsSimpleTextItem;
+class QGraphicsLineItem;
+class QPixmap;
+class QMenu;
+class QAction;
+
 class DelilahScene;
 
 

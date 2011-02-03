@@ -34,9 +34,12 @@ public:
 
 private slots:
 	void about(void);
-	void qDelete(void);
+
 	void qCreate(void);
 	void connection(void);
+	void qDelete(void);
+	void qView(void);
+	void command(void);
 
 private:
 	QGraphicsView* view;

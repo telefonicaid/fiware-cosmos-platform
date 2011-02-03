@@ -16,6 +16,8 @@
 #include "Network.h"            // Network
 #include "SamsonSupervisor.h"   // SamsonSupervisor
 #include "TabManager.h"         // TabManager
+#include "ConnectionMgr.h"      // ConnectionMgr
+#include "QueueMgr.h"           // QueueMgr
 
 
 
@@ -32,6 +34,8 @@ extern pthread_t          qtThread;
 extern ss::Endpoint*      logServerEndpoint;
 extern int                logServerFd;
 extern bool               qtAppRunning;
+extern ConnectionMgr*     connectionMgr;
+extern QueueMgr*          queueMgr;
 
 
 

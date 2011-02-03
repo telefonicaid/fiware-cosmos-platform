@@ -7,19 +7,21 @@
 * CREATION DATE            Feb 02 2011
 *
 */
-#include <stdio.h>             // printf
+#include <stdio.h>              // printf
 
 #include <QObject>
 #include <QMenu>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsItem>
 
-#include "logMsg.h"            // LM_*
-#include "traceLevels.h"       // Lmt*
+#include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Lmt*
 
-#include "Popup.h"             // Popup
-#include "misc.h"              // centerCoordinates
-#include "DelilahScene.h"      // Own interface
+#include "globals.h"            // connectionMgr, ...
+#include "Popup.h"              // Popup
+#include "misc.h"               // centerCoordinates
+#include "DelilahQueue.h"       // DelilahQueue
+#include "DelilahScene.h"       // Own interface
 
 
 
@@ -31,7 +33,6 @@ static QMenu*        popupMenu           = NULL;
 static bool          removeRequested     = false;
 static bool          connectionRequested = false;
 static DelilahQueue* connectFrom         = NULL;
-static DelilahQueue* connectTo           = NULL;
 
 
 
@@ -87,7 +88,7 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 		point = mouseEvent->buttonDownScenePos(Qt::RightButton);
 		item = itemAt(point);
-		q    = lookup(item);
+		q    = queueMgr->lookup(item);
 
 		if (item == NULL)
 			return;
@@ -117,7 +118,7 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		point        = mouseEvent->buttonDownScenePos(Qt::LeftButton);
 		selectedItem = itemAt(point);
 		
-		q = lookup(selectedItem);
+		q = queueMgr->lookup(selectedItem);
 
 		if (q != NULL)
 		{
@@ -132,30 +133,16 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 				}
 				else
 				{
-					connectTo = q;
-
 					LM_T(LmtQueueConnection, ("Connecting '%s' with '%s'", connectFrom->displayName, q->displayName));
-
-					connectFrom->neighbor = connectTo;
-					connectTo->neighbor   = connectFrom;
-					connectionDraw(connectFrom, connectTo);
-
-					connectFrom         = NULL;
-					connectTo           = NULL;
+					connectionMgr->insert(this, connectFrom, q);
 					connectionRequested = false;
 				}
 			}
 			else if (removeRequested == true)
 			{
 				LM_T(LmtQueueConnection, ("removing queue %s ...", q->displayName));
-				if (q->neighbor)
-				{
-					q->neighbor->neighbor       = NULL;
-					q->neighbor->connectionLine = NULL;
 
-					delete q->connectionLine;
-				}
-
+				connectionMgr->remove(q);
 				delete q;
 
 				if (q == testq1)
@@ -177,34 +164,6 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 /* ****************************************************************************
 *
-* DelilahScene::connectionDraw - 
-*/
-void DelilahScene::connectionDraw(DelilahQueue* qFromP, DelilahQueue* qToP)
-{
-	qreal   startX;
-	qreal   startY;
-	qreal   endX;
-	qreal   endY;
-	QPen    pen;
-
-	pen.setWidth(3);
-
-	centerCoordinates(qFromP->pixmapItem, &startX, &startY);
-	centerCoordinates(qToP->pixmapItem,   &endX,   &endY);
-
-	qFromP->connectionLine = addLine(startX, startY, endX, endY);
-	qToP->connectionLine   = qFromP->connectionLine;
-
-	qFromP->connectionLine->setPen(pen);
-
-	qFromP->connectionLine->stackBefore(qFromP->pixmapItem);
-	qFromP->connectionLine->stackBefore(qToP->pixmapItem);
-}
-
-
-
-/* ****************************************************************************
-*
 * DelilahScene::mouseMoveEvent - 
 */
 void DelilahScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
@@ -217,7 +176,7 @@ void DelilahScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 	QPointF lastPoint = mouseEvent->lastScenePos();
 	QPointF point     = mouseEvent->scenePos();
 
-	q = lookup(selectedItem);
+	q = queueMgr->lookup(selectedItem);
 	if (q != NULL)
 		q->moveTo(point.x() - lastPoint.x(), point.y() - lastPoint.y());
 }
@@ -263,33 +222,9 @@ void DelilahScene::qCreate(void)
 
 	q = new DelilahQueue(this, "images/queue.png");
 
-	if (testq1 == NULL)
-		testq1 = q;
-	else
-		testq2 = q;
+	queueMgr->insert(q);
 }
 
-
-
-/* ****************************************************************************
-*
-* lookup - 
-*/
-DelilahQueue* DelilahScene::lookup(QGraphicsItem* gItemP)
-{
-	if (gItemP == NULL)
-		return NULL;
-	else if ((testq1 != NULL) && (gItemP == testq1->pixmapItem))
-		return testq1;
-	else if ((testq1 != NULL) && (gItemP == testq1->nameItem))
-		return testq1;
-	else if ((testq2 != NULL) && (gItemP == testq2->pixmapItem))
-		return testq2;
-	else if ((testq2 != NULL) && (gItemP == testq2->nameItem))
-		return testq2;
-	else
-		return NULL;
-}
 
 
 const char* displayName = "cualquiera";
@@ -345,7 +280,6 @@ void DelilahScene::remove2(void)
 void DelilahScene::connection(void)
 {
 	connectFrom         = NULL;
-	connectTo           = NULL;
 	connectionRequested = true;
 
 	LM_T(LmtQueueConnection, ("Connection Requested"));

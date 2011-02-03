@@ -16,7 +16,8 @@
 	<file>images/queueAdd64x64.png</file>
 	<file>images/queueDelete.png</file>
 	<file>images/queueDelete32x32.png</file>
-	<file>images/connect.gif</file>
+	<file>images/connect.png</file>
+	<file>images/operations.png</file>
  </qresource>
  </RCC>
 

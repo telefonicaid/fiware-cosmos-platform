@@ -14,8 +14,13 @@
 #include <QMessageBox>
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Lmt*
+#include "globals.h"            // connectionMgr, queueMgr, ...
 
+#include "Popup.h"              // Popup
 #include "DelilahScene.h"       // DelilahScene
+#include "ConnectionMgr.h"      // ConnectionMgr
+#include "QueueMgr.h"           // QueueMgr
 #include "SceneTab.h"           // Own interface
 
 
@@ -75,25 +80,34 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 
 
 	//
-	// Creating the three buttons to the left
+	// Creating the buttons to the left
 	//
 	
 	QIcon        queueIcon("images/queueAdd128x128.png");
 	QIcon        connectIcon("images/connect.gif");
 	QIcon        removeIcon("images/queueDelete.png");
+	QIcon        qViewIcon("images/queue128x128.png");
+	QIcon        commandIcon("images/operations.gif");
 
 	QPushButton* queueButton   = new QPushButton(queueIcon,   "New queue");
 	QPushButton* connectButton = new QPushButton(connectIcon, "Connection");
-	QPushButton* removeButton  = new QPushButton(removeIcon,  "Remove Queue/Connection");
+	QPushButton* removeButton  = new QPushButton(removeIcon,  "Remove Queue");
+	QPushButton* qViewButton   = new QPushButton(qViewIcon,   "View queues");
+	QPushButton* commandButton = new QPushButton(commandIcon, "Command List");
 
 	queueButton->connect(queueButton, SIGNAL(clicked()), this, SLOT(qCreate()));
 	connectButton->connect(connectButton, SIGNAL(clicked()), this, SLOT(connection()));
 	removeButton->connect(removeButton, SIGNAL(clicked()), this, SLOT(qDelete()));
+	qViewButton->connect(qViewButton, SIGNAL(clicked()), this, SLOT(qView()));
+	commandButton->connect(commandButton, SIGNAL(clicked()), this, SLOT(command()));
 
 	mainLayout->addLayout(boxLayout);
 	boxLayout->addWidget(queueButton);
 	boxLayout->addWidget(connectButton);
 	boxLayout->addWidget(removeButton);
+	boxLayout->addWidget(qViewButton);
+	boxLayout->addWidget(commandButton);
+
 	boxLayout->addStretch(500);
 
 
@@ -106,6 +120,13 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	scene->setSceneRect(QRectF(0, 0, 5000, 5000));
 
 	mainLayout->addWidget(view);
+
+
+	//
+	// Creating help objects
+	//
+	connectionMgr = new ConnectionMgr(100);
+	queueMgr      = new QueueMgr(100);
 }
 
 
@@ -152,4 +173,26 @@ void SceneTab::qCreate(void)
 void SceneTab::connection(void)
 {
 	scene->connection();
+}
+
+
+
+/* ****************************************************************************
+*
+* SceneTab::qView - 
+*/
+void SceneTab::qView(void)
+{
+   new Popup("Not Implemented", "Sorry, Queue View window is not implemented");
+}
+
+
+
+/* ****************************************************************************
+*
+* SceneTab::command - 
+*/
+void SceneTab::command(void)
+{
+   new Popup("Not Implemented", "Sorry, Command window is not implemented");
 }

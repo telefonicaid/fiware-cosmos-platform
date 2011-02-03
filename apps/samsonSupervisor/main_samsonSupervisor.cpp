@@ -29,6 +29,7 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
 #include "parseArgs.h"          // parseArgs
+
 #include "iomConnect.h"         // iomConnect
 #include "ports.h"              // LOG_SERVER_PORT
 #include "Endpoint.h"           // Endpoint
@@ -41,6 +42,8 @@
 #include "configFile.h"         // configFileParse
 
 #include "TabManager.h"         // TabManager
+#include "ConnectionMgr.h"      // ConnectionMgr
+#include "QueueMgr.h"           // QueueMgr
 #include "SamsonSupervisor.h"   // SamsonSupervisor
 #include "actions.h"            // connectToAllSpawners
 
@@ -68,6 +71,8 @@ ss::Endpoint*      logServerEndpoint = NULL;
 QWidget*           mainWindow        = NULL;
 QDesktopWidget*    desktop           = NULL;
 bool               qtAppRunning      = false;
+ConnectionMgr*     connectionMgr     = NULL;
+QueueMgr*          queueMgr          = NULL;
 
 
 

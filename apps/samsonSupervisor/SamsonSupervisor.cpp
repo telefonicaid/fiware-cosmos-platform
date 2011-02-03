@@ -181,12 +181,14 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 
 	for (int ix = 0; ix < wvDataP->workers; ix++)
 	{
-		LM_M(("Create a Starter for endpoint '%s@%s'", wvDataP->workerV[ix].alias, wvDataP->workerV[ix].ip));
+		LM_T(LmtWorkerVector, ("Create a Starter for endpoint '%s@%s'", wvDataP->workerV[ix].alias, wvDataP->workerV[ix].ip));
+
 		if (strcmp(wvDataP->workerV[ix].ip, "II.PP") == 0)
 		{
 			if (configFileParseByAlias(wvDataP->workerV[ix].alias, host, processName, &args, argV) != 0)
 			{
-				snprintf(eText, sizeof(eText), "Controller reports an unknown future worker, aliased '%s'\nCannot find process in config files.\nNo possible way to spawn this process - skipping it", wvDataP->workerV[ix].alias);
+				snprintf(eText, sizeof(eText), "Controller reports an unknown future worker, aliased '%s'\nCannot find process in config files.\nNo possible way to spawn this process - skipping it",
+						 wvDataP->workerV[ix].alias);
 				LM_E(("Cannot find worker process with alias '%s' in platformProcesses - skipping it", wvDataP->workerV[ix].alias));
 				new Popup("Unknown worker", eText);
 				continue;
@@ -198,7 +200,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 			LM_TODO(("  and later send this info to controller - which should be the central information holder"));
 			LM_TODO(("For now, I'll just lookup host and command line options in 'platformProcesses'"));
 
-			LM_M(("looking up worker with alias %s in config file 'platformProcesses'", wvDataP->workerV[ix].alias));
+			LM_T(LmtWorkerVector, ("looking up worker with alias %s in config file 'platformProcesses'", wvDataP->workerV[ix].alias));
 
 			processP = processAdd("Worker", host, 0, NULL, argV, args);
 			if (processP == NULL)
@@ -211,9 +213,9 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 			if (starterP == NULL)
 				LM_X(1, ("NULL starterP for Worker@%s", host));
 
-			LM_M(("Looking up spawner for host '%s'", host));
+			LM_T(LmtWorkerVector, ("Looking up spawner for host '%s'", host));
 			processP->spawnInfo->spawnerP = spawnerLookup(host);
-			LM_M(("spawner for host '%s' at %p", host, processP->spawnInfo->spawnerP));
+			LM_T(LmtWorkerVector, ("spawner for host '%s' at %p", host, processP->spawnInfo->spawnerP));
 
 			if (processP->spawnInfo->spawnerP == NULL)
 			{
@@ -238,7 +240,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 		}
 		else
 		{
-			LM_M(("Connecting to worker in '%s'", wvDataP->workerV[ix].ip));
+			LM_T(LmtWorkerVector, ("Connecting to worker in '%s'", wvDataP->workerV[ix].ip));
 			fd = iomConnect(wvDataP->workerV[ix].ip, wvDataP->workerV[ix].port);
 			if (fd == -1)
 				LM_E(("Error connecting to worker in '%s' (port %d)", wvDataP->workerV[ix].ip, wvDataP->workerV[ix].port));
@@ -267,7 +269,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 		}
 	}
 
-	LM_M(("Got worker vector with %d workers", wvDataP->workers));
+	LM_T(LmtWorkerVector, ("Got worker vector with %d workers", wvDataP->workers));
 }
 
 

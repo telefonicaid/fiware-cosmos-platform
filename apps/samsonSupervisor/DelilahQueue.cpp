@@ -78,17 +78,28 @@ DelilahQueue::DelilahQueue(DelilahScene* sceneP, const char* imagePath, const ch
 	pixmapItem  = scene->addPixmap(*pixmap);
 	nameItem    = scene->addSimpleText(QString(displayName));
 	
-	pixmapItem->moveBy(xpos, ypos);
+	moveTo(xpos, ypos);
 
-	QRectF nameRect = nameItem->boundingRect();
-	qreal  rx;
-	qreal  ry;
-	qreal  rwidth;
-	qreal  rheight;
+	// Center name ...
+	int      xdiff;
+	qreal    queueWidth;
+	qreal    nameWidth;
+	QRectF   rect;
+	QPointF  point;
+	qreal    rx;
+	qreal    ry;
+	qreal    height;
 
-	nameRect.getRect(&rx, &ry, &rwidth, &rheight);
+	rect = pixmapItem->boundingRect();
+	rect.getRect(&rx, &ry, &queueWidth, &height);
 
-	nameItem->moveBy(xpos + 128/2 - ((int) rwidth)/2, ypos + 20);
+	rect = nameItem->boundingRect();
+	rect.getRect(&rx, &ry, &nameWidth, &height);
+	
+
+	xdiff = queueWidth/2 - nameWidth/2;
+
+	nameItem->moveBy(xdiff, 20);
 
 	++qNo;
 }

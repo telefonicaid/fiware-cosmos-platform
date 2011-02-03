@@ -210,7 +210,7 @@ int configFileParseByAlias(const char* alias, char* processHost, char* processNa
 	char    line[160];
 	FILE*   fP;
 
-	LM_M(("Looking up alias '%s'", alias));
+	LM_T(LmtConfigFile, ("Looking up alias '%s'", alias));
 
 	if (configFilePath == NULL)
 		LM_X(1, ("configFilePath == NULL - please call configFileInit ..."));

@@ -21,6 +21,7 @@
 #include "Popup.h"              // Popup
 #include "misc.h"               // centerCoordinates
 #include "DelilahQueue.h"       // DelilahQueue
+#include "DelilahConnection.h"  // DelilahConnection
 #include "DelilahScene.h"       // Own interface
 
 
@@ -33,6 +34,7 @@ static QMenu*        popupMenu           = NULL;
 static bool          removeRequested     = false;
 static bool          connectionRequested = false;
 static DelilahQueue* connectFrom         = NULL;
+static bool          createRequested     = false;
 
 
 
@@ -40,10 +42,8 @@ static DelilahQueue* connectFrom         = NULL;
 *
 * DelilahScene::DelilahScene - 
 */
-DelilahScene::DelilahScene(QMenu* itemMenu, QObject* parent) : QGraphicsScene(parent)
+DelilahScene::DelilahScene(QObject* parent) : QGraphicsScene(parent)
 {
-	myItemMenu = itemMenu;
-
 	testq1     = NULL;
 	testq2     = NULL;
 }
@@ -74,11 +74,8 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		LM_T(LmtPopupMenu, ("Mouse press with visible popup menu ..."));
 		delete popupMenu;
 		popupMenu = NULL;
-
-		return;
 	}
-
-	if (buttons == Qt::RightButton)
+	else if (buttons == Qt::RightButton)
 	{
 		QGraphicsItem* item;
         DelilahQueue*  q;
@@ -90,37 +87,46 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		item = itemAt(point);
 		q    = queueMgr->lookup(item);
 
-		if (item == NULL)
-			return;
+		if (item != NULL)
+		{
+			popupMenu = new QMenu(q->displayName);
 
-		popupMenu = new QMenu(q->displayName);
+			bindAction   = new QAction("&Bind", NULL);
+			renameAction = new QAction("&Rename", NULL);
+			deleteAction = new QAction("&Delete", NULL);
 
-		bindAction   = new QAction("&Bind", NULL);
-		renameAction = new QAction("&Rename", NULL);
-		deleteAction = new QAction("&Delete", NULL);
+			connect(bindAction,   SIGNAL(triggered()), this, SLOT(bind()));
+			connect(renameAction, SIGNAL(triggered()), this, SLOT(rename()));
+			connect(deleteAction, SIGNAL(triggered()), this, SLOT(remove()));
 
-		connect(bindAction,   SIGNAL(triggered()), this, SLOT(bind()));
-		connect(renameAction, SIGNAL(triggered()), this, SLOT(rename()));
-		connect(deleteAction, SIGNAL(triggered()), this, SLOT(remove()));
+			popupMenu->addAction(bindAction);
+			popupMenu->addSeparator();
+			popupMenu->addAction(renameAction);
+			popupMenu->addAction(deleteAction);
 
-		popupMenu->addAction(bindAction);
-		popupMenu->addSeparator();
-		popupMenu->addAction(renameAction);
-		popupMenu->addAction(deleteAction);
-
-		addWidget(popupMenu);
-		popupMenu->popup(QPoint((int) point.x(), (int) point.y()), bindAction);
+			addWidget(popupMenu);
+			popupMenu->popup(QPoint((int) point.x(), (int) point.y()), bindAction);
+		}
 	}
 	else if (buttons == Qt::LeftButton)
 	{
-		DelilahQueue* q;
+		DelilahQueue*      q = NULL;
+		DelilahConnection* c = NULL;
 
 		point        = mouseEvent->buttonDownScenePos(Qt::LeftButton);
 		selectedItem = itemAt(point);
 		
 		q = queueMgr->lookup(selectedItem);
+		c = connectionMgr->lookup(selectedItem);
 
-		if (q != NULL)
+		if (createRequested)
+		{
+			DelilahQueue* q;
+
+			q = new DelilahQueue(this, "images/queue.png", NULL, point.x() - 64, point.y() - 64);
+			queueMgr->insert(q);			
+		}
+		else if (q != NULL)
 		{
 			LM_TODO(("Make '%s' the top-most item in item stack", q->displayName));
 
@@ -130,36 +136,47 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 				{
 					connectFrom = q;
 					LM_T(LmtQueueConnection, ("Connecting '%s' ...", q->displayName));
+					setCursor("images/to.png");
 				}
 				else
 				{
 					LM_T(LmtQueueConnection, ("Connecting '%s' with '%s'", connectFrom->displayName, q->displayName));
 					connectionMgr->insert(this, connectFrom, q);
 					connectionRequested = false;
+					connectFrom = NULL;
 				}
 			}
 			else if (removeRequested == true)
 			{
-				LM_T(LmtQueueConnection, ("removing queue %s ...", q->displayName));
+				LM_T(LmtQueueConnection, ("removing queue %s (but first its connections) ...", q->displayName));
 
 				connectionMgr->remove(q);
-				delete q;
-
-				if (q == testq1)
-				   testq1 = NULL;
-				else if (q == testq2)
-				   testq2 = NULL;
-
-				removeRequested = false;
+				queueMgr->remove(q);
 			}
 		}
-		else
+		else if (c != NULL)
 		{
-			removeRequested = false;
+			if (removeRequested == true)
+			{
+				LM_T(LmtQueueConnection, ("removing connection '%s' -> '%s'", c->qFromP->displayName, c->qToP->displayName));
+
+				connectionMgr->remove(c);
+			}
 		}
 	}
-}
 
+
+
+	//
+	// Putting it all back, unless a connection is half done
+	//
+	if (connectionRequested == false)
+	{
+		setCursor(NULL);
+		createRequested     = false;
+		removeRequested     = false;
+	}
+}
 
 
 /* ****************************************************************************
@@ -208,21 +225,36 @@ void DelilahScene::wheelEvent(QGraphicsSceneWheelEvent* wheelEvent)
 
 /* ****************************************************************************
 *
+* DelilahScene::setCursor - 
+*/
+void DelilahScene::setCursor(const char* cursorPath)
+{
+	if (cursorPath == NULL)
+	{
+		tabManager->sceneTab->view->setCursor(Qt::ArrowCursor);
+		return;
+	}
+
+	QPixmap  pixmap(cursorPath);
+	QCursor  cursor(pixmap, -1, -1);
+
+	tabManager->sceneTab->view->setCursor(cursor);
+}
+
+
+
+/* ****************************************************************************
+*
 * DelilahScene::qCreate -
 */
 void DelilahScene::qCreate(void)
 {
-	DelilahQueue* q;
+	setCursor("images/queue32x32.png");
 
-	if ((testq1 != NULL) && (testq2 != NULL))
-	{
-		new Popup("No more queues available", "The two test queues already created, sorry ...", false);
-		return;
-	}
-
-	q = new DelilahQueue(this, "images/queue.png");
-
-	queueMgr->insert(q);
+	removeRequested     = false;
+	connectionRequested = false;
+	selectedItem        = NULL;
+	createRequested     = true;
 }
 
 
@@ -256,8 +288,10 @@ void DelilahScene::rename(void)
 */
 void DelilahScene::remove(void)
 {
-	LM_TODO(("DELETE this very queue '%s' (if pressed in Queue-menu)", displayName));
-	removeRequested = true;
+    connectionRequested = false;
+    createRequested     = false;
+	removeRequested     = true;
+	selectedItem        = NULL;
 }
 
 
@@ -268,6 +302,7 @@ void DelilahScene::remove(void)
 */
 void DelilahScene::remove2(void)
 {
+	setCursor("images/queueDelete32x32.png");
 	remove();
 }
 
@@ -279,8 +314,32 @@ void DelilahScene::remove2(void)
 */
 void DelilahScene::connection(void)
 {
-	connectFrom         = NULL;
-	connectionRequested = true;
+	int queues = queueMgr->queues();
 
-	LM_T(LmtQueueConnection, ("Connection Requested"));
+	removeRequested     = false;
+	createRequested     = false;
+	connectionRequested = false;
+	selectedItem        = NULL;
+
+	if (queues < 2)
+	{
+		new Popup("Not enough queues", "You cannot create a connection if you don't have\nat least two queues");
+		return;
+	}
+	else if (queues == 2)
+	{
+		if (connectionMgr->connections() == 1)
+			new Popup("Not enough queues", "You cannot create a connection if you don't have\nat least two (unconnected) queues");
+		else
+			connectionMgr->insert(this, queueMgr->lookup(1), queueMgr->lookup(2));
+	}
+	else
+	{
+		connectFrom         = NULL;
+		connectionRequested = true;
+		selectedItem        = NULL;
+
+		setCursor("images/from.png");
+		LM_T(LmtQueueConnection, ("Connection Requested"));
+	}
 }

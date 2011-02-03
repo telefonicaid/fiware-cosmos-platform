@@ -13,7 +13,6 @@
 #include <QObject>
 #include <QGraphicsScene>
 
-class QMenu;
 class QGraphicsItem;
 class QGraphicsSceneMouseEvent;
 class QGraphicsSceneWheelEvent;
@@ -32,16 +31,15 @@ class DelilahScene : public QGraphicsScene
 public:
 	enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
 
-	DelilahScene(QMenu *itemMenu, QObject *parent = 0);
+	DelilahScene(QObject *parent = 0);
 
 	void           qCreate(void);
 	void           connection(void);
 	void           remove2(void);
 	DelilahQueue*  lookup(QGraphicsItem* gItemP);
+	void           setCursor(const char* cursor);
 
 private:
-	QMenu* myItemMenu;
-
 	virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent);
 	virtual void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent);
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);

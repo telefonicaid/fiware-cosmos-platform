@@ -35,12 +35,52 @@ ConnectionMgr::ConnectionMgr(unsigned int size)
 
 /* ****************************************************************************
 *
+* ConnectionMgr::connections - 
+*/
+int ConnectionMgr::connections(void)
+{
+	unsigned int  ix;
+	int           connectionNo = 0;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (conV[ix] != NULL)
+			++connectionNo;
+	}
+
+	return connectionNo;
+}
+
+
+
+/* ****************************************************************************
+*
 * ConnectionMgr::insert - 
 */
 void ConnectionMgr::insert(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to)
 {
 	unsigned int  ix;
 	int           conIx = -1;
+
+	if (from == to)
+	{
+		char eText[256];
+
+		snprintf(eText, sizeof(eText), "Can't connect to yourself, can you?\nFucking Idiot!");
+		new Popup("Meathead", eText);
+		return;
+	}
+
+
+
+	if (lookup(sceneP, from, to) != NULL)
+	{
+		char eText[256];
+
+		snprintf(eText, sizeof(eText), "The queues '%s' and '%s' are already connected.", from->displayName, to->displayName);
+		new Popup("Connection already exists", eText);
+		return;
+	}
 
 	for (ix = 0; ix < size; ix++)
 	{
@@ -66,6 +106,56 @@ void ConnectionMgr::insert(DelilahScene* sceneP, DelilahQueue* from, DelilahQueu
 
 /* ****************************************************************************
 *
+* ConnectionMgr::lookup - 
+*/
+DelilahConnection* ConnectionMgr::lookup(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to)
+{
+	unsigned int  ix;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (conV[ix] == NULL)
+			continue;
+
+		if (conV[ix]->scene != sceneP)
+			continue;
+
+		if ((conV[ix]->qFromP == from) && (conV[ix]->qToP == to))
+			return conV[ix];
+
+		if ((conV[ix]->qFromP == to) && (conV[ix]->qToP == from))
+			return conV[ix];
+	}
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* ConnectionMgr::lookup - 
+*/
+DelilahConnection* ConnectionMgr::lookup(QGraphicsItem* lineItem)
+{
+	unsigned int  ix;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (conV[ix] == NULL)
+			continue;
+
+		if (conV[ix]->lineItem == lineItem)
+			return conV[ix];
+	}
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * ConnectionMgr::remove - 
 */
 void ConnectionMgr::remove(DelilahQueue* queue)
@@ -78,6 +168,26 @@ void ConnectionMgr::remove(DelilahQueue* queue)
 			continue;
 
 		if ((conV[ix]->qFromP != queue) && (conV[ix]->qToP != queue))
+			continue;
+
+		delete conV[ix];
+		conV[ix] = NULL;
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* ConnectionMgr::remove - 
+*/
+void ConnectionMgr::remove(DelilahConnection* connection)
+{
+	unsigned int ix;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (conV[ix] != connection)
 			continue;
 
 		delete conV[ix];

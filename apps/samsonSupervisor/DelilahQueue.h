@@ -38,7 +38,6 @@ public:
 	QGraphicsSimpleTextItem* nameItem;
 	char*                    displayName;
 	DelilahQueue*            neighbor;
-	QGraphicsLineItem*       connectionLine;
 	int                      xpos;
 	int                      ypos;
 

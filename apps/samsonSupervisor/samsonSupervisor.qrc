@@ -18,6 +18,8 @@
 	<file>images/queueDelete32x32.png</file>
 	<file>images/connect.png</file>
 	<file>images/operations.png</file>
+	<file>images/to.png</file>
+	<file>images/from.png</file>
  </qresource>
  </RCC>
 

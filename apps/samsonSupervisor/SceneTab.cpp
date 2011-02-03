@@ -7,6 +7,7 @@
 * CREATION DATE            Feb 02 2011
 *
 */
+#include <QCursor>
 #include <QWidget>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -34,6 +35,7 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	QHBoxLayout*  mainLayout;
 	QVBoxLayout*  boxLayout;
 
+#if 0
 	//
 	// Creating the actions for the menu items
 	//
@@ -50,23 +52,6 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	aboutAction = new QAction(tr("A&bout"), this);
 	aboutAction->setShortcut(tr("Ctrl+B"));
 	connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
-
-
-#if 0
-	//
-	// Creating menus
-	//
-	fileMenu  = menuBar()->addMenu(tr("&File"));
-	itemMenu  = menuBar()->addMenu(tr("&Item"));
-	aboutMenu = menuBar()->addMenu(tr("&Help"));
-
-	fileMenu->addAction(exitAction);
-
-	itemMenu->addAction(deleteAction);
-	itemMenu->addSeparator();
-	itemMenu->addAction(deleteAction);
-
-	aboutMenu->addAction(aboutAction);
 #endif
 
 
@@ -79,19 +64,20 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	setLayout(mainLayout);
 
 
+
 	//
 	// Creating the buttons to the left
 	//
 	
 	QIcon        queueIcon("images/queueAdd128x128.png");
-	QIcon        connectIcon("images/connect.gif");
+	QIcon        connectIcon("images/connect.png");
 	QIcon        removeIcon("images/queueDelete.png");
 	QIcon        qViewIcon("images/queue128x128.png");
-	QIcon        commandIcon("images/operations.gif");
+	QIcon        commandIcon("images/operations.png");
 
 	QPushButton* queueButton   = new QPushButton(queueIcon,   "New queue");
-	QPushButton* connectButton = new QPushButton(connectIcon, "Connection");
-	QPushButton* removeButton  = new QPushButton(removeIcon,  "Remove Queue");
+	QPushButton* connectButton = new QPushButton(connectIcon, "New Connection");
+	QPushButton* removeButton  = new QPushButton(removeIcon,  "Remove");
 	QPushButton* qViewButton   = new QPushButton(qViewIcon,   "View queues");
 	QPushButton* commandButton = new QPushButton(commandIcon, "Command List");
 
@@ -102,19 +88,20 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	commandButton->connect(commandButton, SIGNAL(clicked()), this, SLOT(command()));
 
 	mainLayout->addLayout(boxLayout);
+
 	boxLayout->addWidget(queueButton);
 	boxLayout->addWidget(connectButton);
+	boxLayout->addStretch(50);
 	boxLayout->addWidget(removeButton);
+	boxLayout->addStretch(500);
 	boxLayout->addWidget(qViewButton);
 	boxLayout->addWidget(commandButton);
-
-	boxLayout->addStretch(500);
 
 
 	//
 	// Creating Graphics Scene and View
 	//
-	scene  = new DelilahScene(itemMenu);
+	scene  = new DelilahScene();
 	view   = new QGraphicsView(scene);
 
 	scene->setSceneRect(QRectF(0, 0, 5000, 5000));
@@ -127,30 +114,6 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	//
 	connectionMgr = new ConnectionMgr(100);
 	queueMgr      = new QueueMgr(100);
-}
-
-
-
-/* ****************************************************************************
-*
-* SceneTab::about
-*/
-void SceneTab::about(void)
-{
-	QMessageBox::about(this, tr("About Samson Delilah"),
-					   tr("The <b>Samson Delilah Tab test</b> example shows "
-						  "how samsonSupervisor will implement the graphical delilah."));
-}
-
-
-
-/* ****************************************************************************
-*
-* SceneTab::qDelete - 
-*/
-void SceneTab::qDelete(void)
-{
-	scene->remove2();
 }
 
 
@@ -173,6 +136,17 @@ void SceneTab::qCreate(void)
 void SceneTab::connection(void)
 {
 	scene->connection();
+}
+
+
+
+/* ****************************************************************************
+*
+* SceneTab::qDelete - 
+*/
+void SceneTab::qDelete(void)
+{
+	scene->remove2();
 }
 
 

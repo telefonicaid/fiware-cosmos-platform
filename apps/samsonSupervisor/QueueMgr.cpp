@@ -33,6 +33,26 @@ QueueMgr::QueueMgr(unsigned int size)
 
 /* ****************************************************************************
 *
+* QueueMgr::queues - 
+*/
+int QueueMgr::queues(void)
+{
+	unsigned int  ix;
+	int           queueNo = 0;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (queueV[ix] != NULL)
+			++queueNo;
+	}
+
+	return queueNo;
+}
+
+
+
+/* ****************************************************************************
+*
 * QueueMgr::insert - 
 */
 void QueueMgr::insert(DelilahQueue* queue)
@@ -57,6 +77,7 @@ void QueueMgr::insert(DelilahQueue* queue)
 		return;
 	}
 
+	LM_T(LmtQueueMgr, ("Inserting queue '%s'", queue->displayName));
 	queueV[queueIx] = queue;
 }
 
@@ -70,11 +91,13 @@ void QueueMgr::remove(DelilahQueue* queue)
 {
 	unsigned int ix;
 
+	LM_T(LmtQueueMgr, ("Trying to remove queue '%s'", queue->displayName));
 	for (ix = 0; ix < size; ix++)
 	{
 		if (queueV[ix] != queue)
 			continue;
 
+		LM_T(LmtQueueMgr, ("Removing queue '%s'", queue->displayName));
 		delete queueV[ix];
 		queueV[ix] = NULL;
 	}
@@ -90,6 +113,9 @@ DelilahQueue* QueueMgr::lookup(QGraphicsItem* itemP)
 {
 	unsigned int ix;
 
+	if (itemP == NULL)
+		return NULL;
+
 	for (ix = 0; ix < size; ix++)
 	{
 		if (queueV[ix] == NULL)
@@ -99,6 +125,31 @@ DelilahQueue* QueueMgr::lookup(QGraphicsItem* itemP)
 		   return queueV[ix];
 		if ((QGraphicsItem*) queueV[ix]->nameItem == itemP)
 		   return queueV[ix];
+	}
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* lookup - 
+*/
+DelilahQueue* QueueMgr::lookup(int cardinal)
+{
+	unsigned int ix;
+	int          qIx = 0;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (queueV[ix] == NULL)
+			continue;
+
+		++qIx;
+
+		if (cardinal == qIx)
+			return queueV[ix];
 	}
 
 	return NULL;

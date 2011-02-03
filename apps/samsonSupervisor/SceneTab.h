@@ -32,9 +32,9 @@ class SceneTab : public QWidget
 public:
 	SceneTab(const char* name, QWidget *parent = 0);
 
-private slots:
-	void about(void);
+	QGraphicsView* view;
 
+private slots:
 	void qCreate(void);
 	void connection(void);
 	void qDelete(void);
@@ -42,17 +42,11 @@ private slots:
 	void command(void);
 
 private:
-	QGraphicsView* view;
 	DelilahScene*  scene;
 
 	QAction* exitAction;
 	QAction* deleteAction;
 	QAction* aboutAction;
-
-
-	QMenu* fileMenu;
-	QMenu* itemMenu;
-	QMenu* aboutMenu;
 };
 
 #endif

@@ -24,9 +24,15 @@ class ConnectionMgr
 {
 public:
 	ConnectionMgr(unsigned int size);
-	void insert(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to);
-	void remove(DelilahQueue* queue);
-	void move(DelilahQueue* queue);
+
+	int                connections(void);
+	void               insert(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to);
+	DelilahConnection* lookup(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to);
+	DelilahConnection* lookup(QGraphicsItem* lineItem);
+
+	void               remove(DelilahQueue* queue);
+	void               remove(DelilahConnection* connection);
+	void               move(DelilahQueue* queue);
 
 private:
 	DelilahConnection** conV;

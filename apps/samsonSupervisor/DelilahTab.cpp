@@ -86,8 +86,6 @@ void DelilahTab::send(void)
 	std::string    commandStdString = commandQString.toStdString();
 	const char*    command          = commandStdString.c_str();
 
-	LM_M(("Sending delilah command '%s'", command));
-
 	input->clear();
 	output->clear();
 	output->append(QString(command) + ":");

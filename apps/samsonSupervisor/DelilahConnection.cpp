@@ -25,7 +25,6 @@
 */
 DelilahConnection::DelilahConnection(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to)
 {
-#if 1
 	QPen    pen;
 
 	scene    = sceneP;
@@ -40,27 +39,6 @@ DelilahConnection::DelilahConnection(DelilahScene* sceneP, DelilahQueue* from, D
 	lineItem->stackBefore(qToP->pixmapItem);
 
 	move();
-#else
-	qreal   fromX;
-	qreal   fromY;
-	qreal   toX;
-	qreal   toY;
-	QPen    pen;
-	
-	centerCoordinates(from->pixmapItem, &fromX, &fromY);
-	centerCoordinates(to->pixmapItem,   &toX,   &toY);
-
-	scene    = sceneP;
-	qFromP   = from;
-	qToP     = to;
-	lineItem = scene->addLine(fromX, fromY, toX, toY);
-
-	pen.setWidth(3);
-	qFromP->connectionLine->setPen(pen);
-
-	lineItem->stackBefore(qFromP->pixmapItem);
-	lineItem->stackBefore(qToP->pixmapItem);
-#endif
 }
 
 

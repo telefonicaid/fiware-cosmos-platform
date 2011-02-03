@@ -99,7 +99,6 @@ public:
 	// In the controllor case, this is exposed to a simple port similar to a telnet service
 	virtual std::string getJSONStatus(std::string in)
 	{
-		LM_M(("JSON request: '%s'", in.c_str()));
 		return "Not implemented\n";
 	}
 

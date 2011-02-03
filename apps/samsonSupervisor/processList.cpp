@@ -99,7 +99,7 @@ Process* processAdd(Process* processP)
 
 	++processIx;
 
-	LM_M(("Added process '%s@%s' with endpoint at %p", processP->name, processP->host, processP->endpoint));
+	LM_T(LmtProcess, ("Added process '%s@%s' with endpoint at %p", processP->name, processP->host, processP->endpoint));
 
 	return processP;
 }
@@ -208,23 +208,23 @@ Process* processLookup(unsigned int ix)
 */
 Process* spawnerLookup(char* host)
 {
-	LM_M(("Looking for host '%s' (process 0-%d)", host, processMax));
+	LM_T(LmtProcess, ("Looking for host '%s' (process 0-%d)", host, processMax));
 
 	for (unsigned int ix = 0; ix < processMax; ix++)
 	{
 		if (processV[ix] == NULL)
 			continue;
 
-		LM_M(("Comparing hosts: '%s' and '%s' (types: '%s' & '%s')", processV[ix]->host, host, processTypeName(processV[ix]), processTypeName(PtSpawner)));
+		LM_T(LmtProcess, ("Comparing hosts: '%s' and '%s' (types: '%s' & '%s')", processV[ix]->host, host, processTypeName(processV[ix]), processTypeName(PtSpawner)));
 
 		if ((strcmp(processV[ix]->host, host) == 0) && (processV[ix]->type == PtSpawner))
 		{
-			LM_M(("Found spawner for host '%s'", host));
+			LM_T(LmtProcess, ("Found spawner for host '%s'", host));
 			return processV[ix];
 		}
 	}
 
-	LM_M(("Cannot find spawner for host '%s'", host));
+	LM_T(LmtProcess, ("Cannot find spawner for host '%s'", host));
 	return NULL;
 }
 

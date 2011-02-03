@@ -93,6 +93,7 @@ typedef enum TraceLevels
 
 	LmtQueueConnection,
 	LmtPopupMenu,
+	LmtQueueMgr,
 	
 } TraceLevels;
 

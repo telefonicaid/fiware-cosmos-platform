@@ -25,9 +25,11 @@ public:
 	QueueMgr(unsigned int size);
 	~QueueMgr();
 
+	int            queues();
 	void           insert(DelilahQueue*  queue);
 	void           remove(DelilahQueue*  queue);
 	DelilahQueue*  lookup(QGraphicsItem* itemP);
+	DelilahQueue*  lookup(int cardinal);
 
 private:
 	DelilahQueue** queueV;

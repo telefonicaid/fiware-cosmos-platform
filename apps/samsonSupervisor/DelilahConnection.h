@@ -29,11 +29,9 @@ public:
 
 	void move(void);
 
+	DelilahScene*       scene;
 	DelilahQueue*       qFromP;
 	DelilahQueue*       qToP;
-
-private:
-	DelilahScene*       scene;
 	QGraphicsLineItem*  lineItem;
 };
 

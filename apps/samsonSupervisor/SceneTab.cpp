@@ -146,7 +146,7 @@ void SceneTab::connection(void)
 */
 void SceneTab::qDelete(void)
 {
-	scene->remove2();
+	scene->remove();
 }
 
 

@@ -16,6 +16,8 @@
 class QGraphicsItem;
 class QGraphicsSceneMouseEvent;
 class QGraphicsSceneWheelEvent;
+class QGraphicsSceneContextMenuEvent;
+class QAction;
 class DelilahQueue;
 
 
@@ -35,24 +37,33 @@ public:
 
 	void           qCreate(void);
 	void           connection(void);
-	void           remove2(void);
 	DelilahQueue*  lookup(QGraphicsItem* gItemP);
 	void           setCursor(const char* cursor);
 
 private:
+	QAction* removeAction;
+	QAction* renameAction;
+	QAction* configAction;
+	QAction* bindAction;
+	QAction* clearAction;
+	QAction* queueAddAction;
+	QAction* aboutAction;
+
 	virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent);
 	virtual void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent);
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
 	virtual void wheelEvent(QGraphicsSceneWheelEvent* wheelEvent);
+	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEvent);
 
-	void connectionDraw(DelilahQueue* qFromP, DelilahQueue* qToP);
-	DelilahQueue* testq1;
-	DelilahQueue* testq2;
-
-private slots:
-	void bind(void);
-	void rename(void);
+public slots:
 	void remove(void);
+	void removeFromMenu(void);
+	void config(void);
+	void bind();
+	void rename();
+	void clear(void);
+	void queueAdd(void);
+	void about(void);
 };
 
 #endif

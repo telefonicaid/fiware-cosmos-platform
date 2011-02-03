@@ -216,3 +216,23 @@ void ConnectionMgr::move(DelilahQueue* queue)
 		conV[ix]->move();
 	}
 }
+
+
+
+/* ****************************************************************************
+*
+* removeAll - 
+*/
+void ConnectionMgr::removeAll(void)
+{
+	unsigned int ix;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (conV[ix] == NULL)
+			continue;
+
+		delete conV[ix];
+		conV[ix] = NULL;
+	}
+}

@@ -28,6 +28,7 @@ public:
 	int            queues();
 	void           insert(DelilahQueue*  queue);
 	void           remove(DelilahQueue*  queue);
+	void           removeAll(void);
 	DelilahQueue*  lookup(QGraphicsItem* itemP);
 	DelilahQueue*  lookup(int cardinal);
 

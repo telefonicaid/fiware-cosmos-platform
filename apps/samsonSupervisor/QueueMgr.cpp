@@ -154,3 +154,23 @@ DelilahQueue* QueueMgr::lookup(int cardinal)
 
 	return NULL;
 }
+
+
+
+/* ****************************************************************************
+*
+* removeAll - 
+*/
+void QueueMgr::removeAll(void)
+{
+	unsigned int ix;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (queueV[ix] == NULL)
+			continue;
+
+		delete queueV[ix];
+		queueV[ix] = NULL;
+	}
+}

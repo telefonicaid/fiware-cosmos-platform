@@ -174,3 +174,22 @@ void QueueMgr::removeAll(void)
 		queueV[ix] = NULL;
 	}
 }
+
+
+
+/* ****************************************************************************
+*
+* move - 
+*/
+void QueueMgr::move(int x, int y)
+{
+	unsigned int ix;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (queueV[ix] == NULL)
+			continue;
+
+		queueV[ix]->moveTo(x, y);
+	}
+}

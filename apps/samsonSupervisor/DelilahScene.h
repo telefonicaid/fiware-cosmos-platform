@@ -54,6 +54,7 @@ private:
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
 	virtual void wheelEvent(QGraphicsSceneWheelEvent* wheelEvent);
 	virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEvent);
+	virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* mouseEvent);
 
 public slots:
 	void remove(void);

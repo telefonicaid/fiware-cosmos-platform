@@ -24,6 +24,10 @@ SET (SOURCES
 	DelilahConnection.cpp
 	ConnectionMgr.cpp
 	QueueMgr.cpp
+	QueueConfigWindow.cpp
+	permissions.cpp
+	UserMgr.cpp
+	LoginWindow.cpp
 )
 
 SET (HEADERS_MOC
@@ -36,6 +40,8 @@ SET (HEADERS_MOC
 	Popup.h
 	SceneTab.h
 	DelilahScene.h
+	QueueConfigWindow.h
+	LoginWindow.h
 )
 
 SET (HEADERS
@@ -53,6 +59,8 @@ SET (HEADERS
 	DelilahConnection.h
 	ConnectionMgr.h
 	QueueMgr.h
+	UserMgr.h
+	permissions.h
 )
 
 

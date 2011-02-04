@@ -236,3 +236,49 @@ void ConnectionMgr::removeAll(void)
 		conV[ix] = NULL;
 	}
 }
+
+
+
+/* ****************************************************************************
+*
+* ConnectionMgr::outgoingConnections - 
+*/
+int ConnectionMgr::outgoingConnections(DelilahQueue* from)
+{
+	unsigned int  ix;
+	int           connections = 0;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (conV[ix] == NULL)
+			continue;
+
+		if (conV[ix]->qFromP == from)
+			++connections;
+	}
+
+	return connections;
+}
+
+
+
+/* ****************************************************************************
+*
+* ConnectionMgr::incomingConnections - 
+*/
+int ConnectionMgr::incomingConnections(DelilahQueue* to)
+{
+	unsigned int  ix;
+	int           connections = 0;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (conV[ix] == NULL)
+			continue;
+
+		if (conV[ix]->qToP == to)
+			++connections;
+	}
+
+	return connections;
+}

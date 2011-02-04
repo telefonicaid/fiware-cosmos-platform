@@ -29,6 +29,8 @@ public:
 	void                insert(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to);
 	DelilahConnection*  lookup(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to);
 	DelilahConnection*  lookup(QGraphicsItem* lineItem);
+	int                 outgoingConnections(DelilahQueue* from);
+	int                 incomingConnections(DelilahQueue* to);
 	void                move(DelilahQueue* queue);
 
 	void                remove(DelilahQueue* queue);

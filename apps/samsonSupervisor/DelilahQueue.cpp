@@ -67,6 +67,8 @@ DelilahQueue::DelilahQueue(DelilahScene* sceneP, const char* imagePath, const ch
 	scene       = sceneP;
 	name        = strdup(qName);
 	displayName = strdup(displayNameP);
+	inType      = strdup("Undefined");
+	outType     = strdup("Undefined");
 
 	pixmap      = new QPixmap(imagePath);
 
@@ -80,26 +82,7 @@ DelilahQueue::DelilahQueue(DelilahScene* sceneP, const char* imagePath, const ch
 	
 	moveTo(xpos, ypos);
 
-	// Center name ...
-	int      xdiff;
-	qreal    queueWidth;
-	qreal    nameWidth;
-	QRectF   rect;
-	QPointF  point;
-	qreal    rx;
-	qreal    ry;
-	qreal    height;
-
-	rect = pixmapItem->boundingRect();
-	rect.getRect(&rx, &ry, &queueWidth, &height);
-
-	rect = nameItem->boundingRect();
-	rect.getRect(&rx, &ry, &nameWidth, &height);
-	
-
-	xdiff = queueWidth/2 - nameWidth/2;
-
-	nameItem->moveBy(xdiff, 20);
+	nameCenter();
 
 	++qNo;
 }
@@ -116,4 +99,79 @@ void DelilahQueue::moveTo(int x, int y)
 	nameItem->moveBy(x, y);
 
 	connectionMgr->move(this);
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahQueue::displayNameSet - 
+*/
+void DelilahQueue::displayNameSet(const char* newName)
+{
+	if (displayName)
+		delete displayName;
+
+	displayName = strdup(newName);
+	nameItem->setText(QString(displayName));
+
+    nameCenter();
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahQueue::nameCenter - 
+*/
+void DelilahQueue::nameCenter(void)
+{
+	int      xdiff;
+	qreal    queueWidth;
+	qreal    nameWidth;
+	QRectF   rect;
+	QPointF  point;
+	qreal    rx;
+	qreal    ry;
+	qreal    height;
+
+	rect = pixmapItem->boundingRect();
+	rect.getRect(&rx, &ry, &queueWidth, &height);
+	point = pixmapItem->scenePos();
+
+	nameItem->setPos(point);
+
+	rect = nameItem->boundingRect();
+	rect.getRect(&rx, &ry, &nameWidth, &height);
+	
+	xdiff = queueWidth/2 - nameWidth/2;
+	nameItem->moveBy(xdiff, 20);
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahQueue::inTypeSet - 
+*/
+void DelilahQueue::inTypeSet(const char* newType)
+{
+	if (inType)
+		delete inType;
+
+	inType = strdup(newType);
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahQueue::outTypeSet - 
+*/
+void DelilahQueue::outTypeSet(const char* newType)
+{
+	if (outType)
+		delete outType;
+
+	outType = strdup(newType);
 }

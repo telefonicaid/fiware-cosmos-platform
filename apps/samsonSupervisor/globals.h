@@ -18,6 +18,7 @@
 #include "TabManager.h"         // TabManager
 #include "ConnectionMgr.h"      // ConnectionMgr
 #include "QueueMgr.h"           // QueueMgr
+#include "UserMgr.h"            // UserMgr
 
 
 
@@ -36,6 +37,7 @@ extern int                logServerFd;
 extern bool               qtAppRunning;
 extern ConnectionMgr*     connectionMgr;
 extern QueueMgr*          queueMgr;
+extern UserMgr*           userMgr;
 
 
 

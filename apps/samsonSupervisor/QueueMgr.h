@@ -31,6 +31,7 @@ public:
 	void           removeAll(void);
 	DelilahQueue*  lookup(QGraphicsItem* itemP);
 	DelilahQueue*  lookup(int cardinal);
+	void           move(int x, int y);
 
 private:
 	DelilahQueue** queueV;

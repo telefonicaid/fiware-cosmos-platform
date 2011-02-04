@@ -13,6 +13,9 @@
 #include <QMenu>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsItem>
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QDir>
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
@@ -22,6 +25,7 @@
 #include "misc.h"               // centerCoordinates
 #include "DelilahQueue.h"       // DelilahQueue
 #include "DelilahConnection.h"  // DelilahConnection
+#include "QueueConfigWindow.h"  // QueueConfigWindow
 #include "DelilahScene.h"       // Own interface
 
 
@@ -61,7 +65,7 @@ DelilahScene::DelilahScene(QObject* parent) : QGraphicsScene(parent)
 	bindAction->setStatusTip(tr("Bind current queue"));
 	connect(bindAction, SIGNAL(triggered()), this, SLOT(bind()));
 
-	clearAction = new QAction(tr("&Clear screen"), this);
+	clearAction = new QAction(tr("Remove &All"), this);
 	clearAction->setStatusTip(tr("Clear the screen - removing all queues and connections"));
 	connect(clearAction, SIGNAL(triggered()), this, SLOT(clear()));
 
@@ -72,6 +76,38 @@ DelilahScene::DelilahScene(QObject* parent) : QGraphicsScene(parent)
 	aboutAction = new QAction(tr("&About"), this);
 	aboutAction->setStatusTip(tr("About this application"));
 	connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahScene::mouseDoubleClickEvent - 
+*/
+void DelilahScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* mouseEvent)
+{
+	Qt::MouseButtons    buttons = mouseEvent->buttons();
+	QPointF             point;
+	QGraphicsItem*      item;
+	DelilahQueue*       q;
+	DelilahConnection*  c;
+
+	if (buttons == Qt::RightButton)
+		point = mouseEvent->buttonDownScenePos(Qt::RightButton);
+	else if (buttons == Qt::MidButton)
+		point = mouseEvent->buttonDownScenePos(Qt::MidButton);
+	else if (buttons == Qt::LeftButton)
+		point = mouseEvent->buttonDownScenePos(Qt::LeftButton);
+
+	item  = itemAt(point);
+	q     = queueMgr->lookup(item);
+	c     = connectionMgr->lookup(item);
+
+	if ((q != NULL) && (buttons == Qt::LeftButton))
+	{
+		menuQueue = q;
+		DelilahScene::config();
+	}
 }
 
 
@@ -98,11 +134,15 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		c     = connectionMgr->lookup(item);
 
 		if (q)
-			LM_M(("Right pressed queue '%s'", q->displayName));
+			LM_T(LmtMouseEvent, ("Right pressed queue '%s'", q->displayName));
 		else if (c)
-			LM_M(("Right pressed connection '%s' -> '%s'", c->qToP->displayName, c->qFromP->displayName));
+			LM_T(LmtMouseEvent, ("Right pressed connection '%s' -> '%s'", c->qToP->displayName, c->qFromP->displayName));
 		else
-			LM_M(("Right pressed canvas"));
+			LM_T(LmtMouseEvent, ("Right pressed canvas"));
+	}
+	else if (buttons == Qt::MidButton)
+	{
+		
 	}
 	else if (buttons == Qt::LeftButton)
 	{
@@ -179,7 +219,16 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 */
 void DelilahScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-	DelilahQueue* q;
+	DelilahQueue*     q;
+	Qt::MouseButtons  buttons = mouseEvent->buttons();
+
+    if (buttons == Qt::MidButton)
+	{
+		QPointF lastPoint = mouseEvent->lastScenePos();
+		QPointF point     = mouseEvent->scenePos();
+
+		queueMgr->move(point.x() - lastPoint.x(), point.y() - lastPoint.y());
+	}
 
 	if (selectedItem == NULL)
 		return;
@@ -355,7 +404,8 @@ void DelilahScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuE
 */
 void DelilahScene::about(void)
 {
-	LM_W(("IN"));
+	QMessageBox::about(NULL, "Delilah",
+					   "The <b>Delilah</b> executable\nStarts, Stops & Configures the Samson platform.");
 }
 
 
@@ -391,13 +441,13 @@ void DelilahScene::removeFromMenu(void)
 {
 	if (menuQueue != NULL)
 	{
-		LM_M(("REMOVE queue '%s'", menuQueue->displayName));
+		LM_T(LmtQueue, ("REMOVE queue '%s'", menuQueue->displayName));
 		connectionMgr->remove(menuQueue);
 		queueMgr->remove(menuQueue);
 	}
 	else if (menuConnection != NULL)
 	{
-		LM_M(("REMOVE connection '%s' -> '%s'", menuConnection->qFromP->displayName, menuConnection->qToP->displayName));
+		LM_T(LmtQueue, ("REMOVE connection '%s' -> '%s'", menuConnection->qFromP->displayName, menuConnection->qToP->displayName));
 		connectionMgr->remove(menuConnection);
 	}
 	else
@@ -413,7 +463,7 @@ void DelilahScene::removeFromMenu(void)
 void DelilahScene::config(void)
 {
 	if (menuQueue != NULL)
-		LM_M(("CONFIG queue '%s' using a popup ... ?", menuQueue->displayName));
+		new QueueConfigWindow(menuQueue);
 	else
 		LM_W(("No menu item active - this is a bug!"));
 }
@@ -429,7 +479,7 @@ void DelilahScene::bind(void)
 	if (menuQueue == NULL)
 		LM_RVE(("No menu queue"));
 
-	LM_M(("BIND queue '%s' to the next queue selected by mouse", menuQueue->displayName));
+	LM_T(LmtQueueConnection, ("BIND queue '%s' to the next queue selected by mouse", menuQueue->displayName));
 
 	connectFrom         = menuQueue;
 	connectionRequested = true;
@@ -445,13 +495,14 @@ void DelilahScene::bind(void)
 */
 void DelilahScene::rename(void)
 {
-	char eText[128];
-
 	if (menuQueue == NULL)
 		LM_RVE(("No menu queue"));
 
-	LM_M(("RENAME queue '%s' using a popup ... ?", menuQueue->displayName));
+	bool    ok;
+	QString text = QInputDialog::getText(NULL, "Renaming a Queue",
+										 "Queue Name:", QLineEdit::Normal,
+										 menuQueue->displayName, &ok);
 
-	snprintf(eText, sizeof(eText), "Please enter a new display name for queue '%s'", menuQueue->displayName);
-	new Popup("Rename Queue", eText);
+	if (ok && !text.isEmpty())
+		menuQueue->displayNameSet(text.toStdString().c_str());
 }

@@ -32,18 +32,24 @@ public:
 	~DelilahQueue();
 
 	void                     moveTo(int x, int y);
+	void                     displayNameSet(const char* newName);
+	void                     inTypeSet(const char* newType);
+	void                     outTypeSet(const char* newType);
+	void                     nameCenter(void);
 
 	DelilahScene*            scene;
 	QGraphicsPixmapItem*     pixmapItem;
 	QGraphicsSimpleTextItem* nameItem;
 	char*                    displayName;
 	DelilahQueue*            neighbor;
+	char*                    outType;
+	char*                    inType;
 	int                      xpos;
 	int                      ypos;
+	char*                    name;
 
 private:
 	QPixmap*                 pixmap;
-	char*                    name;
 	QMenu*                   menu;
 	QAction*                 renameAction;
 	QAction*                 deleteAction;

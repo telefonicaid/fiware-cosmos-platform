@@ -44,8 +44,11 @@
 #include "TabManager.h"         // TabManager
 #include "ConnectionMgr.h"      // ConnectionMgr
 #include "QueueMgr.h"           // QueueMgr
+#include "UserMgr.h"            // UserMgr
 #include "SamsonSupervisor.h"   // SamsonSupervisor
 #include "actions.h"            // connectToAllSpawners
+#include "permissions.h"        // Permissions
+#include "LoginWindow.h"        // LoginWindow
 
 
 
@@ -73,6 +76,7 @@ QDesktopWidget*    desktop           = NULL;
 bool               qtAppRunning      = false;
 ConnectionMgr*     connectionMgr     = NULL;
 QueueMgr*          queueMgr          = NULL;
+UserMgr*           userMgr           = NULL;
 
 
 
@@ -133,6 +137,17 @@ static void mainWinCreate(QApplication* app)
 
 /* ****************************************************************************
 *
+* login - 
+*/
+void login(void)
+{
+	new LoginWindow();
+}
+
+
+
+/* ****************************************************************************
+*
 * main - 
 */
 int main(int argC, const char *argV[])
@@ -155,6 +170,14 @@ int main(int argC, const char *argV[])
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
+
+	userMgr = new UserMgr(10);
+
+	userMgr->insert("superman", "samsonite", UpAll);
+	userMgr->insert("nadie",    "",          UpNothing);
+	userMgr->insert("3rdParty", "please",    UpStartProcesses | UpStopProcesses);
+
+	login();
 
 	LM_TODO(("Try to connect to logServer as early as possible"));
 
@@ -245,8 +268,11 @@ int main(int argC, const char *argV[])
 	mainWindow->show();
 
 	LM_T(LmtInit, ("letting control to QT main loop"));
-	qtAppRunning = true;
-	qApp->exec();
+	if (qtAppRunning == false)
+	{
+		qtAppRunning = true;
+		qApp->exec();
+	}
 
 	return 0;
 }

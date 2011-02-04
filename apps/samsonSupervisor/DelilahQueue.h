@@ -33,23 +33,25 @@ public:
 
 	void                     moveTo(int x, int y);
 	void                     displayNameSet(const char* newName);
-	void                     inTypeSet(const char* newType);
-	void                     outTypeSet(const char* newType);
 	void                     nameCenter(void);
 
 	DelilahScene*            scene;
 	QGraphicsPixmapItem*     pixmapItem;
 	QGraphicsSimpleTextItem* nameItem;
 	char*                    displayName;
-	DelilahQueue*            neighbor;
-	char*                    outType;
-	char*                    inType;
 	int                      xpos;
 	int                      ypos;
 	char*                    name;
+	QPixmap*                 pixmap;
+
+	void                     inTypeSet(const char* newType);
+	void                     outTypeSet(const char* newType);
+	char*                    outType;
+	char*                    inType;
+	int                      inTypeIndex;    // These two values are used in QueueConfigWindow
+	int                      outTypeIndex;   // These two values are used in QueueConfigWindow
 
 private:
-	QPixmap*                 pixmap;
 	QMenu*                   menu;
 	QAction*                 renameAction;
 	QAction*                 deleteAction;

@@ -51,6 +51,8 @@ TabManager::TabManager(QWidget* window, QWidget* parent) : QWidget(parent)
 	mainLayout->addWidget(tabWidget);
 	mainLayout->addWidget(quit);
 
+	logTab->setDisabled(true);
+
 	window->setLayout(mainLayout);
 
 	LM_T(LmtQtTimer, ("Starting timer for Network polling"));

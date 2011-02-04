@@ -38,9 +38,18 @@ private slots:
 	void qCreate(void);
 	void connection(void);
 	void qDelete(void);
+
+	void help(void);
 	void qView(void);
 	void command(void);
-
+	void dataTypes(void);
+	void jobs(void);
+	void workers(void);
+	void env(void);
+	void upload(void);
+	void download(void);
+	void load(void);
+	
 private:
 	DelilahScene*  scene;
 

@@ -63,22 +63,21 @@ DelilahQueue::DelilahQueue(DelilahScene* sceneP, const char* imagePath, const ch
 	if (displayNameP == NULL)
 		displayNameP = qName;
 
-	
-	scene       = sceneP;
-	name        = strdup(qName);
-	displayName = strdup(displayNameP);
-	inType      = strdup("Undefined");
-	outType     = strdup("Undefined");
+	inTypeIndex   = 0;
+	outTypeIndex  = 0;
+	scene         = sceneP;
+	name          = strdup(qName);
+	displayName   = strdup(displayNameP);
+	inType        = strdup("Undefined");
+	outType       = strdup("Undefined");
 
-	pixmap      = new QPixmap(imagePath);
+	pixmap        = new QPixmap(imagePath);
 
-	xpos        = (x == 0)? qNo * 100 : x;
-	ypos        = (y == 0)? qNo *  50 : y;
+	xpos          = (x == 0)? qNo * 100 : x;
+	ypos          = (y == 0)? qNo *  50 : y;
 
-	neighbor    = NULL;
-	
-	pixmapItem  = scene->addPixmap(*pixmap);
-	nameItem    = scene->addSimpleText(QString(displayName));
+	pixmapItem    = scene->addPixmap(*pixmap);
+	nameItem      = scene->addSimpleText(QString(displayName));
 	
 	moveTo(xpos, ypos);
 

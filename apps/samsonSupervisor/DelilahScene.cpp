@@ -34,12 +34,13 @@
 *
 * global variables
 */
-DelilahQueue*        menuQueue           = NULL;
-DelilahConnection*   menuConnection      = NULL;
-static bool          removeRequested     = false;
-static bool          connectionRequested = false;
-static DelilahQueue* connectFrom         = NULL;
-static bool          createRequested     = false;
+DelilahQueue*          menuQueue           = NULL;
+DelilahConnection*     menuConnection      = NULL;
+static bool            removeRequested     = false;
+static bool            connectionRequested = false;
+static DelilahQueue*   connectFrom         = NULL;
+static bool            createRequested     = false;
+static QGraphicsItem*  selectedItem        = NULL;
 
 
 
@@ -112,7 +113,6 @@ void DelilahScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 
 
-QGraphicsItem* selectedItem = NULL;
 /* ****************************************************************************
 *
 * DelilahScene::mousePressEvent - 
@@ -154,6 +154,13 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		
 		q = queueMgr->lookup(selectedItem);
 		c = connectionMgr->lookup(selectedItem);
+
+#if 0
+		if (q)
+			q->pixmap->raise();
+#else
+		LM_TODO(("Raise the selected item (if Queue) in the stacking"));
+#endif
 
 		if (createRequested)
 		{

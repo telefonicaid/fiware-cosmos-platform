@@ -28,6 +28,7 @@ SET (SOURCES
 	permissions.cpp
 	UserMgr.cpp
 	LoginWindow.cpp
+	DataTypeTestWindow.cpp
 )
 
 SET (HEADERS_MOC
@@ -42,6 +43,7 @@ SET (HEADERS_MOC
 	DelilahScene.h
 	QueueConfigWindow.h
 	LoginWindow.h
+	DataTypeTestWindow.h
 )
 
 SET (HEADERS

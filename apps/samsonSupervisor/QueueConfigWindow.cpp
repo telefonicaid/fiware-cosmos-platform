@@ -14,6 +14,7 @@
 #include <QLabel>
 #include <QSize>
 #include <QDesktopWidget>
+#include <QComboBox>
 
 #include "logMsg.h"             // LM_X, ...
 #include "traceLevels.h"        // Trace Levels
@@ -21,6 +22,59 @@
 
 #include "DelilahQueue.h"       // DelilahQueue
 #include "QueueConfigWindow.h"  // Own interface
+
+
+
+/* ****************************************************************************
+*
+* win - 
+*/
+static QueueConfigWindow* win = NULL;
+
+
+
+/* ****************************************************************************
+*
+* dataTypesTextReceiver - 
+*/
+static void dataTypesTextReceiver(const char* type, const char* text)
+{
+	char* cP;
+	char* line;
+
+	line = (char*) text;
+	while ((cP = strchr(line, '\n')) != NULL)
+	{
+		*cP = 0;
+
+		while (*line == ' ')
+			++line;
+		while (line[strlen(line) - 1] == ' ')
+			line[strlen(line) - 1] = 0;
+
+		if ((line[0] != 'D') && (line[0] != '-') && (line[0] != 0))
+		{
+			char* basura;
+
+			if ((basura = strstr(line, " Help coming soon")) != NULL)
+				*basura = 0;
+
+			LM_T(LmtQueue, ("Adding item '%s'", line));
+			win->inTypeCombo->addItem(QString(line));
+			win->outTypeCombo->addItem(QString(line));
+		}
+		line = &cP[1];
+	}
+
+	win->inTypeCombo->addItem(QString(line));
+	win->outTypeCombo->addItem(QString(line));
+
+	LM_T(LmtQueue, ("Setting inTypeCombo  to index %d", win->queue->inTypeIndex));
+	LM_T(LmtQueue, ("Setting outTypeCombo to index %d", win->queue->outTypeIndex));
+
+	win->inTypeCombo->setCurrentIndex(win->queue->inTypeIndex);
+	win->outTypeCombo->setCurrentIndex(win->queue->outTypeIndex);
+}
 
 
 
@@ -56,6 +110,8 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 	int               incoming;
 	int               outgoing;
 
+	win = this;
+
 	this->queue = queue;
 
 	setModal(true);
@@ -71,13 +127,14 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 	displayNameInput->setText(queue->displayName);
 
 	inTypeLabel = new QLabel("Incoming Type");
-	inTypeInput = new QLineEdit();
-	inTypeInput->setText(queue->inType);
+	inTypeCombo = new QComboBox();
 
 	outTypeLabel = new QLabel("Outgoing Type");
-	outTypeInput = new QLineEdit();
-	outTypeInput->setText(queue->outType);
+	outTypeCombo = new QComboBox();
 
+    delilahConsole->writeCallbackSet(dataTypesTextReceiver);
+    delilahConsole->evalCommand("datas");
+	
 	incoming = connectionMgr->incomingConnections(queue);
 	snprintf(textV, sizeof(textV), "%d Incoming connections", incoming);
 	noOfIncomingLabel = new QLabel(textV);
@@ -111,9 +168,9 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 	layout->addWidget(displayNameLabel,  1, 0);
 	layout->addWidget(displayNameInput,  1, 1);
 	layout->addWidget(inTypeLabel,       2, 0);
-	layout->addWidget(inTypeInput,       2, 1);
+	layout->addWidget(inTypeCombo,       2, 1);
 	layout->addWidget(outTypeLabel,      3, 0);
-	layout->addWidget(outTypeInput,      3, 1);
+	layout->addWidget(outTypeCombo,      3, 1);
 	layout->addWidget(noOfIncomingLabel, 5, 0);
 	layout->addWidget(noOfOutgoingLabel, 6, 0);
 	layout->addWidget(realNameLabel,     7, 0);
@@ -181,13 +238,14 @@ void QueueConfigWindow::save(void)
 	if (cP != NULL)
 		queue->displayNameSet(cP);
 
-	cP = (char*) inTypeInput->text().toStdString().c_str();
-    if (cP != NULL)
-		queue->inTypeSet(cP);
+	queue->inTypeSet(inTypeCombo->currentText().toStdString().c_str());
+	queue->outTypeSet(outTypeCombo->currentText().toStdString().c_str());
 
-	cP = (char*) outTypeInput->text().toStdString().c_str();
-    if (cP != NULL)
-		queue->outTypeSet(cP);
+	win->queue->inTypeIndex  = inTypeCombo->currentIndex();
+	win->queue->outTypeIndex = outTypeCombo->currentIndex();
+	
+	LM_T(LmtQueue, ("Set inType  to '%s' (current index: %d)", queue->inType,  win->queue->inTypeIndex));
+	LM_T(LmtQueue, ("Set outType to '%s' (current index: %d)", queue->outType, win->queue->outTypeIndex));
 }
 
 

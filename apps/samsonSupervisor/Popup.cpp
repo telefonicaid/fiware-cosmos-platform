@@ -14,6 +14,8 @@
 #include <QLabel>
 #include <QSize>
 #include <QDesktopWidget>
+#include <QPlainTextEdit>
+#include <QListWidget>
 
 #include "logMsg.h"             // LM_X, ...
 #include "globals.h"            // qtAppRunning, ...
@@ -25,22 +27,56 @@
 *
 * Popup::Popup - 
 */
-Popup::Popup(const char* title, const char* text, bool die)
+Popup::Popup(const char* title, const char* text, bool die, int type)
 {
-	QVBoxLayout*      layout;
-	QLabel*           label;
-	QSize             size;
-	int               screenWidth;
-	int               screenHeight;
-	int               x;
-	int               y;
-	QDesktopWidget*   desktop = QApplication::desktop();
-	QDialogButtonBox* buttonBox;
+	QVBoxLayout*       layout;
+
+	QLabel*            label      = NULL;
+	QPlainTextEdit*    textEdit   = NULL;
+	QListWidget*       listWidget = NULL;
+
+	QSize              size;
+	int                screenWidth;
+	int                screenHeight;
+	int                x;
+	int                y;
+	QDesktopWidget*    desktop = QApplication::desktop();
+	QDialogButtonBox*  buttonBox;
 
 	setModal(true);
 
 	layout    = new QVBoxLayout();
-	label     = new QLabel(text);
+
+	if (type == 2)
+	{
+		char* cP;
+		char* line;
+
+		listWidget = new(QListWidget);
+		line = (char*) text;
+		while ((cP = strchr(line, '\n')) != NULL)
+		{
+			*cP = 0;
+			listWidget->addItem(QString(line));
+			line = &cP[1];
+		}
+		listWidget->addItem(QString(line));
+		layout->addWidget(listWidget);
+		this->setMinimumSize(500, 600);
+	}
+	else if (type == 1)
+	{
+		textEdit = new QPlainTextEdit(text);
+		layout->addWidget(textEdit);
+		textEdit->setReadOnly(true);
+		this->setMinimumSize(800, 900);
+	}
+	else
+	{
+		label = new QLabel(text);
+		layout->addWidget(label);
+	}
+
 	buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
 
 	if (die)
@@ -49,8 +85,6 @@ Popup::Popup(const char* title, const char* text, bool die)
 		connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
 
 	setWindowTitle(title);
-
-	layout->addWidget(label);
 	layout->addWidget(buttonBox);
 
 	this->setLayout(layout);

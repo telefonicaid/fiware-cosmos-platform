@@ -14,6 +14,7 @@
 #include <QDialog>
 
 class QLineEdit;
+class QComboBox;
 class DelilahQueue;
 
 
@@ -31,8 +32,8 @@ public:
 
 	DelilahQueue* queue;
 	QLineEdit*    displayNameInput;
-	QLineEdit*    inTypeInput;
-	QLineEdit*    outTypeInput;
+	QComboBox*    inTypeCombo;
+	QComboBox*    outTypeCombo;
 
 private slots:
 	void die(void);

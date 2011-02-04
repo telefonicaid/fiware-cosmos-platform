@@ -27,17 +27,19 @@ class SamsonSupervisor;
 *
 * Global variables
 */
-extern ss::Network*       networkP;
-extern SamsonSupervisor*  supervisorP;
-extern TabManager*        tabManager;
-extern pthread_t          networkThread;
-extern pthread_t          qtThread;
-extern ss::Endpoint*      logServerEndpoint;
-extern int                logServerFd;
-extern bool               qtAppRunning;
-extern ConnectionMgr*     connectionMgr;
-extern QueueMgr*          queueMgr;
-extern UserMgr*           userMgr;
+extern ss::Network*         networkP;
+extern SamsonSupervisor*    supervisorP;
+extern TabManager*          tabManager;
+extern pthread_t            networkThread;
+extern pthread_t            qtThread;
+extern ss::Endpoint*        logServerEndpoint;
+extern int                  logServerFd;
+extern bool                 qtAppRunning;
+extern ConnectionMgr*       connectionMgr;
+extern QueueMgr*            queueMgr;
+extern UserMgr*             userMgr;
+extern ss::Delilah*         delilah;
+extern ss::DelilahConsole*  delilahConsole;
 
 
 

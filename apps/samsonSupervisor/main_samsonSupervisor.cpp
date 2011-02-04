@@ -49,6 +49,10 @@
 #include "actions.h"            // connectToAllSpawners
 #include "permissions.h"        // Permissions
 #include "LoginWindow.h"        // LoginWindow
+#include "SamsonSetup.h"		// ss::SamsonSetup
+#include "MemoryManager.h"      // ss::MemoryManager
+#include "Delilah.h"            // ss::Delilah
+#include "DelilahConsole.h"     // ss::DelilahConsole
 
 
 
@@ -65,18 +69,20 @@
 *
 * Global variables
 */
-int                logFd             = -1;    // file descriptor for log file
-ss::Network*       networkP          = NULL;
-SamsonSupervisor*  supervisorP       = NULL;
-ss::Endpoint*      controller        = NULL;
-TabManager*        tabManager        = NULL;
-ss::Endpoint*      logServerEndpoint = NULL;
-QWidget*           mainWindow        = NULL;
-QDesktopWidget*    desktop           = NULL;
-bool               qtAppRunning      = false;
-ConnectionMgr*     connectionMgr     = NULL;
-QueueMgr*          queueMgr          = NULL;
-UserMgr*           userMgr           = NULL;
+int                  logFd             = -1;    // file descriptor for log file
+ss::Network*         networkP          = NULL;
+SamsonSupervisor*    supervisorP       = NULL;
+ss::Endpoint*        controller        = NULL;
+TabManager*          tabManager        = NULL;
+ss::Endpoint*        logServerEndpoint = NULL;
+QWidget*             mainWindow        = NULL;
+QDesktopWidget*      desktop           = NULL;
+bool                 qtAppRunning      = false;
+ConnectionMgr*       connectionMgr     = NULL;
+QueueMgr*            queueMgr          = NULL;
+UserMgr*             userMgr           = NULL;
+ss::Delilah*         delilah           = NULL;
+ss::DelilahConsole*  delilahConsole    = NULL;
 
 
 
@@ -87,6 +93,7 @@ UserMgr*           userMgr           = NULL;
 int     endpoints;
 char    controllerHost[80];
 char    cfPath[80];
+bool    nologin;
 
 
 
@@ -101,6 +108,7 @@ PaArgument paArgs[] =
 	{ "-controller",  controllerHost,  "CONTROLLER",  PaString,  PaReq,   NOC,  PaNL,   PaNL,  "controller IP"       },
 	{ "-endpoints",   &endpoints,      "ENDPOINTS",   PaInt,     PaOpt,    80,     3,    100,  "number of endpoints" },
 	{ "-config",      &cfPath,         "CF_FILE",     PaStr,     PaOpt,   CFP,  PaNL,   PaNL,  "path to config file" },
+	{ "-nologin",     &nologin,        "NOLOGIN",     PaBool,    PaHid, false, false,   true,  "no login"            },
 
 	PA_END_OF_ARGS
 };
@@ -145,6 +153,8 @@ void login(void)
 }
 
 
+#define MEGAS(mbs) (1024 * 1024 * (mbs))
+#define GIGAS(gbs) (1024 * MEGAS(gbs))
 
 /* ****************************************************************************
 *
@@ -175,9 +185,12 @@ int main(int argC, const char *argV[])
 
 	userMgr->insert("superman", "samsonite", UpAll);
 	userMgr->insert("nadie",    "",          UpNothing);
+	userMgr->insert("kz",       "kz",        UpAll);
+	userMgr->insert("andreu",   "andreu",    UpAll);
 	userMgr->insert("3rdParty", "please",    UpStartProcesses | UpStopProcesses);
 
-	login();
+	if (nologin == false)
+		login();
 
 	LM_TODO(("Try to connect to logServer as early as possible"));
 
@@ -266,6 +279,20 @@ int main(int argC, const char *argV[])
 	tabManager = new TabManager(mainWindow);
 
 	mainWindow->show();
+
+
+	//
+	// Preparing to send commands to Controller
+	//
+	ss::SamsonSetup::load();
+	ss::SamsonSetup::shared()->memory           = (size_t) GIGAS(1);
+	ss::SamsonSetup::shared()->load_buffer_size = (size_t) MEGAS(64);
+	ss::MemoryManager::init();
+
+
+	delilah        = new ss::Delilah(networkP);
+	delilahConsole = new ss::DelilahConsole(delilah);
+
 
 	LM_T(LmtInit, ("letting control to QT main loop"));
 	if (qtAppRunning == false)

@@ -43,9 +43,6 @@ private:
 	QGridLayout*  mainLayout;
 	QLineEdit*    input;
 	QPushButton*  sendButton;
-
-	ss::Delilah*         delilah;
-	ss::DelilahConsole*  delilahConsole;
 };
 
 #endif

@@ -36,6 +36,8 @@ public:
 	DelilahScene(QObject *parent = 0);
 
 	void           qCreate(void);
+	void           source(void);
+	void           result(void);
 	void           connection(void);
 	DelilahQueue*  lookup(QGraphicsItem* gItemP);
 	void           setCursor(const char* cursor);

@@ -36,6 +36,8 @@ public:
 
 private slots:
 	void qCreate(void);
+	void source(void);
+	void result(void);
 	void connection(void);
 	void qDelete(void);
 

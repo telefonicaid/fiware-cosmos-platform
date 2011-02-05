@@ -10,12 +10,7 @@
 * CREATION DATE            Feb 02 2011
 *
 */
-class QGraphicsPixmapItem;
-class QGraphicsSimpleTextItem;
-class QGraphicsLineItem;
-class QPixmap;
-class QMenu;
-class QAction;
+#include "DelilahSceneItem.h"   // DelilahSceneItem
 
 class DelilahScene;
 
@@ -25,37 +20,19 @@ class DelilahScene;
 *
 * DelilahQueue - 
 */
-class DelilahQueue
+class DelilahQueue : public DelilahSceneItem
 {
 public:
 	DelilahQueue(DelilahScene* sceneP, const char* imagePath, const char* displayNameP = NULL, int x = 0, int y = 0);
 	~DelilahQueue();
 
-	void                     moveTo(int x, int y);
-	void                     displayNameSet(const char* newName);
-	void                     nameCenter(void);
-
-	DelilahScene*            scene;
-	QGraphicsPixmapItem*     pixmapItem;
-	QGraphicsSimpleTextItem* nameItem;
-	char*                    displayName;
-	int                      xpos;
-	int                      ypos;
-	char*                    name;
-	QPixmap*                 pixmap;
-
-	void                     inTypeSet(const char* newType);
-	void                     outTypeSet(const char* newType);
-	char*                    outType;
 	char*                    inType;
-	int                      inTypeIndex;    // These two values are used in QueueConfigWindow
-	int                      outTypeIndex;   // These two values are used in QueueConfigWindow
+	int                      inTypeIndex;    // for QueueConfigWindow
+	void                     inTypeSet(const char* newType);
 
-private:
-	QMenu*                   menu;
-	QAction*                 renameAction;
-	QAction*                 deleteAction;
-	QAction*                 bindAction;   // Change mousepointer and bindqueue to the next selected by mouse
+	char*                    outType;
+	int                      outTypeIndex;   // for QueueConfigWindow
+	void                     outTypeSet(const char* newType);
 };
 
 #endif

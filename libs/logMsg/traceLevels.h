@@ -95,6 +95,8 @@ typedef enum TraceLevels
 	LmtQueue,
 	LmtQueueConnection,
 	LmtQueueMgr,
+	LmtSourceMgr,
+	LmtResultMgr,
 
 	LmtMouseEvent,
 	LmtUser

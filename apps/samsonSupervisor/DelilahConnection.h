@@ -13,7 +13,7 @@
 #include <QGraphicsLineItem>
 
 #include "DelilahScene.h"      // DelilahScene
-#include "DelilahQueue.h"      // DelilahQueue
+#include "DelilahSceneItem.h"  // DelilahSceneItem
 
 
 
@@ -24,14 +24,14 @@
 class DelilahConnection
 {
 public:
-	DelilahConnection(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to);
+	DelilahConnection(DelilahScene* sceneP, DelilahSceneItem* from, DelilahSceneItem* to);
 	~DelilahConnection();
 
 	void move(void);
 
 	DelilahScene*       scene;
-	DelilahQueue*       qFromP;
-	DelilahQueue*       qToP;
+	DelilahSceneItem*   qFromP;
+	DelilahSceneItem*   qToP;
 	QGraphicsLineItem*  lineItem;
 };
 

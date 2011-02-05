@@ -28,23 +28,6 @@
 
 /* ****************************************************************************
 *
-* textReceiver - 
-*/
-void textReceiver(const char* type, const char* text)
-{
-#if 0
-	DelilahTab* dTab = tabManager->delilahTab;
-
-	dTab->output->clear();
-	dTab->output->append(QString(type) + ":");
-	dTab->output->append(QString(text));
-#endif
-}
-
-
-
-/* ****************************************************************************
-*
 * SceneTab::SceneTab - 
 */
 SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
@@ -66,7 +49,9 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	// Creating the buttons to the left
 	//
 	
+	QIcon        sourceIcon("images/Bomba.png");
 	QIcon        queueIcon("images/queueAdd128x128.png");
+	QIcon        resultIcon("images/Result.png");
 	QIcon        connectIcon("images/connect.png");
 	QIcon        removeIcon("images/queueDelete.png");
 
@@ -143,13 +128,14 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	}
 	queueLayout->setAlignment(Qt::AlignRight);
 	queueLayout->insertSpacing(1, 200);
-
-
-#else
-	QPushButton* queueButton     = new QPushButton(queueIcon,       "New Queue       ");
-	QPushButton* connectButton   = new QPushButton(connectIcon,     "New Connection  ");
-	QPushButton* removeButton    = new QPushButton(removeIcon,      "Remove             ");
 #endif
+
+
+	QPushButton* sourceButton    = new QPushButton(sourceIcon,    "Add Source             ");
+	QPushButton* queueButton     = new QPushButton(queueIcon,     "Add Queue       ");
+	QPushButton* resultButton    = new QPushButton(resultIcon,    "Add Result             ");
+	QPushButton* connectButton   = new QPushButton(connectIcon,   "Add Operation  ");
+	QPushButton* removeButton    = new QPushButton(removeIcon,    "Remove             ");
 
 	QPushButton* helpButton      = new QPushButton(helpIcon,      "Help                  ");
 	QPushButton* qViewButton     = new QPushButton(qViewIcon,     "View queues       ");
@@ -162,10 +148,12 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	QPushButton* downloadButton  = new QPushButton(downloadIcon,  "Download Data Sets");
 	QPushButton* loadButton      = new QPushButton(loadIcon,      "Load Info          ");
 
+	sourceButton->connect(sourceButton,       SIGNAL(clicked()), this, SLOT(source()));
 	queueButton->connect(queueButton,         SIGNAL(clicked()), this, SLOT(qCreate()));
+	resultButton->connect(resultButton,       SIGNAL(clicked()), this, SLOT(result()));
 	connectButton->connect(connectButton,     SIGNAL(clicked()), this, SLOT(connection()));
 	removeButton->connect(removeButton,       SIGNAL(clicked()), this, SLOT(qDelete()));
-
+	
 	helpButton->connect(helpButton,           SIGNAL(clicked()), this, SLOT(help()));
 	qViewButton->connect(qViewButton,         SIGNAL(clicked()), this, SLOT(qView()));
 	commandButton->connect(commandButton,     SIGNAL(clicked()), this, SLOT(command()));
@@ -179,9 +167,12 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 
 	mainLayout->addLayout(boxLayout);
 
+	boxLayout->addWidget(sourceButton);
 	boxLayout->addWidget(queueButton);
+	boxLayout->addWidget(resultButton);
 	boxLayout->addWidget(connectButton);
 	boxLayout->addWidget(removeButton);
+	
 	boxLayout->addStretch(500);
 	boxLayout->addWidget(helpButton);
 	boxLayout->addWidget(qViewButton);
@@ -220,6 +211,8 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	//
 	connectionMgr = new ConnectionMgr(100);
 	queueMgr      = new QueueMgr(100);
+	sourceMgr     = new SourceMgr(100);
+	resultMgr     = new ResultMgr(100);
 }
 
 
@@ -231,6 +224,28 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 void SceneTab::qCreate(void)
 {
 	scene->qCreate();
+}
+
+
+
+/* ****************************************************************************
+*
+* SceneTab::source - 
+*/
+void SceneTab::source(void)
+{
+	scene->source();
+}
+
+
+
+/* ****************************************************************************
+*
+* SceneTab::result - 
+*/
+void SceneTab::result(void)
+{
+	scene->result();
 }
 
 

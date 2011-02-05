@@ -18,6 +18,8 @@
 #include "TabManager.h"         // TabManager
 #include "ConnectionMgr.h"      // ConnectionMgr
 #include "QueueMgr.h"           // QueueMgr
+#include "SourceMgr.h"          // SourceMgr
+#include "ResultMgr.h"          // ResultMgr
 #include "UserMgr.h"            // UserMgr
 
 
@@ -37,6 +39,8 @@ extern int                  logServerFd;
 extern bool                 qtAppRunning;
 extern ConnectionMgr*       connectionMgr;
 extern QueueMgr*            queueMgr;
+extern SourceMgr*           sourceMgr;
+extern ResultMgr*           resultMgr;
 extern UserMgr*             userMgr;
 extern ss::Delilah*         delilah;
 extern ss::DelilahConsole*  delilahConsole;

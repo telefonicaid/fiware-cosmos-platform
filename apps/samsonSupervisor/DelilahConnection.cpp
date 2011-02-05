@@ -13,7 +13,7 @@
 #include "traceLevels.h"        // Trace Levels
 
 #include "misc.h"               // centerCoordinates
-#include "DelilahQueue.h"       // DelilahQueue
+#include "DelilahSceneItem.h"   // DelilahSceneItem
 #include "DelilahScene.h"       // DelilahScene
 #include "DelilahConnection.h"  // Own interface
 
@@ -23,7 +23,7 @@
 *
 * Constructor
 */
-DelilahConnection::DelilahConnection(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to)
+DelilahConnection::DelilahConnection(DelilahScene* sceneP, DelilahSceneItem* from, DelilahSceneItem* to)
 {
 	QPen    pen;
 

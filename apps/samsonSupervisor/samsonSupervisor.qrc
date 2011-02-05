@@ -20,6 +20,10 @@
 	<file>images/operations.png</file>
 	<file>images/to.png</file>
 	<file>images/from.png</file>
+	<file>images/Bomba.png</file>
+	<file>images/Bomba32x29.png</file>
+	<file>images/Result.png</file>
+	<file>images/Result32x22.png</file>
  </qresource>
  </RCC>
 

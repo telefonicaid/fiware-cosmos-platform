@@ -10,6 +10,7 @@
 * CREATION DATE            Feb 03 2011
 *
 */
+class DelilahSceneItem;
 class DelilahScene;
 class DelilahQueue;
 class DelilahConnection;
@@ -26,14 +27,14 @@ public:
 	ConnectionMgr(unsigned int size);
 
 	int                 connections(void);
-	void                insert(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to);
-	DelilahConnection*  lookup(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to);
+	void                insert(DelilahScene* sceneP, DelilahSceneItem* from, DelilahSceneItem* to);
+	DelilahConnection*  lookup(DelilahScene* sceneP, DelilahSceneItem* from, DelilahSceneItem* to);
 	DelilahConnection*  lookup(QGraphicsItem* lineItem);
-	int                 outgoingConnections(DelilahQueue* from);
-	int                 incomingConnections(DelilahQueue* to);
-	void                move(DelilahQueue* queue);
+	int                 outgoingConnections(DelilahSceneItem* from);
+	int                 incomingConnections(DelilahSceneItem* to);
+	void                move(DelilahSceneItem* queue);
 
-	void                remove(DelilahQueue* queue);
+	void                remove(DelilahSceneItem* siP);
 	void                remove(DelilahConnection* connection);
 	void                removeAll(void);
 

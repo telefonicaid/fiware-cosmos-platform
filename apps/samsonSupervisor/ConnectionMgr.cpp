@@ -12,7 +12,7 @@
 
 #include "Popup.h"              // Popup
 #include "DelilahScene.h"       // DelilahScene
-#include "DelilahQueue.h"       // DelilahQueue
+#include "DelilahSceneItem.h"   // DelilahSceneItem
 #include "DelilahConnection.h"  // DelilahConnection
 #include "ConnectionMgr.h"      // Own interface
 
@@ -57,7 +57,7 @@ int ConnectionMgr::connections(void)
 *
 * ConnectionMgr::insert - 
 */
-void ConnectionMgr::insert(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to)
+void ConnectionMgr::insert(DelilahScene* sceneP, DelilahSceneItem* from, DelilahSceneItem* to)
 {
 	unsigned int  ix;
 	int           conIx = -1;
@@ -108,7 +108,7 @@ void ConnectionMgr::insert(DelilahScene* sceneP, DelilahQueue* from, DelilahQueu
 *
 * ConnectionMgr::lookup - 
 */
-DelilahConnection* ConnectionMgr::lookup(DelilahScene* sceneP, DelilahQueue* from, DelilahQueue* to)
+DelilahConnection* ConnectionMgr::lookup(DelilahScene* sceneP, DelilahSceneItem* from, DelilahSceneItem* to)
 {
 	unsigned int  ix;
 
@@ -158,7 +158,7 @@ DelilahConnection* ConnectionMgr::lookup(QGraphicsItem* lineItem)
 *
 * ConnectionMgr::remove - 
 */
-void ConnectionMgr::remove(DelilahQueue* queue)
+void ConnectionMgr::remove(DelilahSceneItem* queue)
 {
 	unsigned int ix;
 
@@ -201,7 +201,7 @@ void ConnectionMgr::remove(DelilahConnection* connection)
 *
 * ConnectionMgr::move - 
 */
-void ConnectionMgr::move(DelilahQueue* queue)
+void ConnectionMgr::move(DelilahSceneItem* queue)
 {
 	unsigned int ix;
 
@@ -243,7 +243,7 @@ void ConnectionMgr::removeAll(void)
 *
 * ConnectionMgr::outgoingConnections - 
 */
-int ConnectionMgr::outgoingConnections(DelilahQueue* from)
+int ConnectionMgr::outgoingConnections(DelilahSceneItem* from)
 {
 	unsigned int  ix;
 	int           connections = 0;
@@ -266,7 +266,7 @@ int ConnectionMgr::outgoingConnections(DelilahQueue* from)
 *
 * ConnectionMgr::incomingConnections - 
 */
-int ConnectionMgr::incomingConnections(DelilahQueue* to)
+int ConnectionMgr::incomingConnections(DelilahSceneItem* to)
 {
 	unsigned int  ix;
 	int           connections = 0;

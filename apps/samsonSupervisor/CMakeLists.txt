@@ -19,16 +19,22 @@ SET (SOURCES
 	ConfigWindow.cpp
 	SceneTab.cpp
 	misc.cpp
+	DelilahSceneItem.cpp
 	DelilahQueue.cpp
 	DelilahScene.cpp
 	DelilahConnection.cpp
 	ConnectionMgr.cpp
 	QueueMgr.cpp
+	SourceMgr.cpp
+	ResultMgr.cpp
 	QueueConfigWindow.cpp
 	permissions.cpp
 	UserMgr.cpp
 	LoginWindow.cpp
-	DataTypeTestWindow.cpp
+	DelilahSource.cpp
+	DelilahResult.cpp
+	SourceMgr.cpp
+	ResultMgr.cpp
 )
 
 SET (HEADERS_MOC
@@ -43,7 +49,6 @@ SET (HEADERS_MOC
 	DelilahScene.h
 	QueueConfigWindow.h
 	LoginWindow.h
-	DataTypeTestWindow.h
 )
 
 SET (HEADERS
@@ -57,12 +62,19 @@ SET (HEADERS
 	globals.h
 	configFile.h
 	misc.h
+	DelilahSceneItem.h
 	DelilahQueue.h
+	DelilahSource.h
+	DelilahResult.h
 	DelilahConnection.h
 	ConnectionMgr.h
 	QueueMgr.h
+	SourceMgr.h
+	ResultMgr.h
 	UserMgr.h
 	permissions.h
+	ResultMgr.h
+	SourceMgr.h
 )
 
 
@@ -106,3 +118,4 @@ install(TARGETS                samsonSupervisor
 
 # target.path += $$[PROJECT_SOURCE_DIR]/images
 # INSTALLS += target
+

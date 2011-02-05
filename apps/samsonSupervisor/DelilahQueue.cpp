@@ -37,8 +37,9 @@ DelilahQueue::DelilahQueue(DelilahScene* sceneP, const char* imagePath, const ch
 DelilahSceneItem(DelilahSceneItem::Queue, sceneP, imagePath, displayNameP, x, y)
 {
 	inTypeIndex   = 0;
-	outTypeIndex  = 0;
 	inType        = strdup("Undefined");
+
+	outTypeIndex  = 0;
 	outType       = strdup("Undefined");
 }
 

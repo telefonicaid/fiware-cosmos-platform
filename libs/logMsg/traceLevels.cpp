@@ -95,7 +95,9 @@ char* traceLevelName(TraceLevels level)
 
 	case LmtPopupMenu:                   return (char*) "Popup Menu";
 	case LmtQueue:                       return (char*) "Queue";
-	case LmtQueueConnection:             return (char*) "Queue Connection";
+	case LmtResult:                      return (char*) "Result";
+	case LmtSource:                      return (char*) "Source";
+	case LmtConnection:                  return (char*) "Connection";
 	case LmtQueueMgr:                    return (char*) "Queue Manager";
 	case LmtSourceMgr:                   return (char*) "Source Manager";
 	case LmtResultMgr:                   return (char*) "Result Manager";

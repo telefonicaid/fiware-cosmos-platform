@@ -28,6 +28,8 @@ SET (SOURCES
 	SourceMgr.cpp
 	ResultMgr.cpp
 	QueueConfigWindow.cpp
+	ResultConfigWindow.cpp
+	SourceConfigWindow.cpp
 	permissions.cpp
 	UserMgr.cpp
 	LoginWindow.cpp
@@ -48,6 +50,8 @@ SET (HEADERS_MOC
 	SceneTab.h
 	DelilahScene.h
 	QueueConfigWindow.h
+	ResultConfigWindow.h
+	SourceConfigWindow.h
 	LoginWindow.h
 )
 

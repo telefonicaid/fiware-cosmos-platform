@@ -35,6 +35,8 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	QHBoxLayout*  mainLayout;
 	QVBoxLayout*  boxLayout;
 
+
+
 	//
 	// Creating main widgets
 	//
@@ -55,16 +57,16 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	QIcon        connectIcon("images/connect.png");
 	QIcon        removeIcon("images/queueDelete.png");
 
-	QIcon        helpIcon("images/queue128x128.png");
-	QIcon        qViewIcon("images/queue128x128.png");
+	QIcon        helpIcon("images/help.png");
+	QIcon        qViewIcon("images/eye.png");
 	QIcon        commandIcon("images/operations.png");
 	QIcon        dataTypesIcon("images/queue128x128.png");
 	QIcon        jobsIcon("images/queue128x128.png");
-	QIcon        workersIcon("images/queue128x128.png");
+	QIcon        workersIcon("images/worker.png");
 	QIcon        envIcon("images/queue128x128.png");
 	QIcon        uploadIcon("images/queue128x128.png");
 	QIcon        downloadIcon("images/queue128x128.png");
-	QIcon        loadIcon("images/queue128x128.png");
+	QIcon        loadIcon("images/info.png");
 
 
 
@@ -201,7 +203,12 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	scene  = new DelilahScene();
 	view   = new QGraphicsView(scene);
 
-	scene->setSceneRect(QRectF(0, 0, 5000, 5000));
+	scene->setSceneRect(QRectF(0, 0, 1280, 1024));
+
+	QPixmap*      bg;
+	bg = new QPixmap("images/background.png");
+	scene->addPixmap(*bg);
+
 
 	mainLayout->addWidget(view);
 

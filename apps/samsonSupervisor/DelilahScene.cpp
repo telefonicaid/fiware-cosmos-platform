@@ -74,6 +74,10 @@ DelilahScene::DelilahScene(QObject* parent) : QGraphicsScene(parent)
 	bindAction->setStatusTip(tr("Bind current queue"));
 	connect(bindAction, SIGNAL(triggered()), this, SLOT(bind()));
 
+	emptyAction = new QAction(tr("&Empty"), this);
+	emptyAction->setStatusTip(tr("Empty current queue"));
+	connect(emptyAction, SIGNAL(triggered()), this, SLOT(empty()));
+
 	clearAction = new QAction(tr("Remove &All"), this);
 	clearAction->setStatusTip(tr("Clear the screen - removing all queues and connections"));
 	connect(clearAction, SIGNAL(triggered()), this, SLOT(clear()));
@@ -248,7 +252,19 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 					if (si->type == DelilahSceneItem::Source)
 						new Popup("Bad Item", "Sources cannot take input");
 					else
-						connectionMgr->insert(this, connectFrom, si);
+					{
+						if (strcmp(connectFrom->outType, si->inType) != 0)
+						{
+							char eText[256];
+
+							snprintf(eText, sizeof(eText), "Cannot connect these two items:\n- '%s' with in type '%s'\n- '%s' with out type '%s'\nYou'll need to alter one of these types ...",
+									 connectFrom->displayName, connectFrom->outType,
+									 si->displayName,          si->inType);
+							new Popup("Uncompatible Items", eText);
+						}
+						else
+							connectionMgr->insert(this, connectFrom, si);
+					}
 
 					connectionRequested = false;
 					connectFrom = NULL;
@@ -524,6 +540,7 @@ void DelilahScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuE
 		menu.addAction(removeAction);
 		menu.addAction(configAction);
 		menu.addAction(bindAction);
+		menu.addAction(emptyAction);
 	}
 	else if (menuResult != NULL)
 	{
@@ -637,6 +654,18 @@ void DelilahScene::config(void)
 		LM_W(("Implement the Connection Config Window!"));
 	else
 		LM_W(("No menu item active - this is a bug!"));
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahScene::empty - 
+*/
+void DelilahScene::empty(void)
+{
+	if (menuQueue != NULL)
+	   LM_W(("Empty queue '%s'", menuQueue->displayName));
 }
 
 

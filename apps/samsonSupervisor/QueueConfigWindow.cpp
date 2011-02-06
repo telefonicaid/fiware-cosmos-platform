@@ -35,6 +35,48 @@ static QueueConfigWindow* win = NULL;
 
 /* ****************************************************************************
 *
+* commandTextReceiver - 
+*/
+static void commandTextReceiver(const char* type, const char* text)
+{
+	char* cP;
+	char* line;
+
+	printf("text: '%s'\n", text);
+
+	line = (char*) text;
+	while ((cP = strchr(line, '\n')) != NULL)
+	{
+		*cP = 0;
+
+		while (*line == ' ')
+			++line;
+		while (line[strlen(line) - 1] == ' ')
+			line[strlen(line) - 1] = 0;
+
+		LM_M(("Got line '%s'", line));
+		if (strncmp(line, "** ", 3) == 0)
+		{
+			LM_M(("Got command '%s'", line));
+			line = &line[3];
+			LM_T(LmtQueue, ("Adding item '%s'", line));
+			win->commandCombo->addItem(QString(line));
+		}
+
+		line = &cP[1];
+	}
+	LM_M(("Done ..."));
+
+	win->commandCombo->addItem(QString(line));
+
+	LM_T(LmtQueue, ("Setting commandCombo  to index %d", win->queue->commandIndex));
+	win->commandCombo->setCurrentIndex(win->queue->commandIndex);
+}
+
+
+
+/* ****************************************************************************
+*
 * dataTypesTextReceiver - 
 */
 static void dataTypesTextReceiver(const char* type, const char* text)
@@ -74,6 +116,11 @@ static void dataTypesTextReceiver(const char* type, const char* text)
 
 	win->inTypeCombo->setCurrentIndex(win->queue->inTypeIndex);
 	win->outTypeCombo->setCurrentIndex(win->queue->outTypeIndex);
+
+
+	LM_M(("Delilah command: operations"));
+	delilahConsole->writeCallbackSet(commandTextReceiver);
+	delilahConsole->evalCommand("operations");
 }
 
 
@@ -93,6 +140,7 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 	QLabel*           displayNameLabel;
 	QLabel*           inTypeLabel;
 	QLabel*           outTypeLabel;
+	QLabel*           commandLabel;
 
 	QDialogButtonBox* buttonBox;
 
@@ -132,6 +180,10 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 	outTypeLabel = new QLabel("Outgoing Type");
 	outTypeCombo = new QComboBox();
 
+	commandLabel = new QLabel("Command");
+	commandCombo = new QComboBox();
+
+	LM_M(("Delilah command: datas"));
     delilahConsole->writeCallbackSet(dataTypesTextReceiver);
     delilahConsole->evalCommand("datas");
 	
@@ -171,6 +223,8 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 	layout->addWidget(inTypeCombo,       2, 1);
 	layout->addWidget(outTypeLabel,      3, 0);
 	layout->addWidget(outTypeCombo,      3, 1);
+	layout->addWidget(commandLabel,      4, 0);
+	layout->addWidget(commandCombo,      4, 1);
 	layout->addWidget(noOfIncomingLabel, 5, 0);
 	layout->addWidget(noOfOutgoingLabel, 6, 0);
 	layout->addWidget(realNameLabel,     7, 0);
@@ -240,12 +294,15 @@ void QueueConfigWindow::save(void)
 
 	queue->inTypeSet(inTypeCombo->currentText().toStdString().c_str());
 	queue->outTypeSet(outTypeCombo->currentText().toStdString().c_str());
+	queue->commandSet(commandCombo->currentText().toStdString().c_str());
 
 	win->queue->inTypeIndex  = inTypeCombo->currentIndex();
 	win->queue->outTypeIndex = outTypeCombo->currentIndex();
+	win->queue->commandIndex = commandCombo->currentIndex();
 	
 	LM_T(LmtQueue, ("Set inType  to '%s' (current index: %d)", queue->inType,  win->queue->inTypeIndex));
 	LM_T(LmtQueue, ("Set outType to '%s' (current index: %d)", queue->outType, win->queue->outTypeIndex));
+	LM_T(LmtQueue, ("Set command to '%s' (current index: %d)", queue->command, win->queue->commandIndex));
 }
 
 

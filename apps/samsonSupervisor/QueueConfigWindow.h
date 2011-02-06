@@ -34,6 +34,7 @@ public:
 	QLineEdit*    displayNameInput;
 	QComboBox*    inTypeCombo;
 	QComboBox*    outTypeCombo;
+	QComboBox*    commandCombo;
 
 private slots:
 	void die(void);

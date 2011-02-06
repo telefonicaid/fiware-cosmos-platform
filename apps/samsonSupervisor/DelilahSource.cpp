@@ -36,18 +36,5 @@ DelilahSceneItem(DelilahSceneItem::Source, sceneP, imagePath, displayNameP, x, y
 {
 	outTypeIndex  = 0;
 	outType       = strdup("Undefined");
-}
-
-
-
-/* ****************************************************************************
-*
-* DelilahSource::outTypeSet - 
-*/
-void DelilahSource::outTypeSet(const char* newType)
-{
-	if (outType)
-		delete outType;
-
-	outType = strdup(newType);
+	inType        = strdup("Not used");
 }

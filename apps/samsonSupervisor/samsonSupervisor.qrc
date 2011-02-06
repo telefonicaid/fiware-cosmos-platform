@@ -24,6 +24,11 @@
 	<file>images/Bomba32x29.png</file>
 	<file>images/Result.png</file>
 	<file>images/Result32x22.png</file>
+	<file>images/background.png</file>
+	<file>images/help.png</file>
+	<file>images/worker.png</file>
+	<file>images/info.png</file>
+	<file>images/eye.png</file>
  </qresource>
  </RCC>
 

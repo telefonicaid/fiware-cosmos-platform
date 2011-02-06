@@ -26,13 +26,9 @@ public:
 	DelilahQueue(DelilahScene* sceneP, const char* imagePath, const char* displayNameP = NULL, int x = 0, int y = 0);
 	~DelilahQueue();
 
-	char*   inType;
-	int     inTypeIndex;    // for QueueConfigWindow
-	void    inTypeSet(const char* newType);
-
-	char*   outType;
-	int     outTypeIndex;   // for QueueConfigWindow
-	void    outTypeSet(const char* newType);
+	char*   command;
+	int     commandIndex;   // for QueueConfigWindow
+	void    commandSet(const char* newType);
 };
 
 #endif

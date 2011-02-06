@@ -47,6 +47,7 @@ private:
 	QAction* renameAction;
 	QAction* configAction;
 	QAction* bindAction;
+	QAction* emptyAction;
 	QAction* clearAction;
 	QAction* queueAddAction;
 	QAction* aboutAction;
@@ -63,6 +64,7 @@ public slots:
 	void removeFromMenu(void);
 	void config(void);
 	void bind();
+	void empty();
 	void rename();
 	void clear(void);
 	void queueAdd(void);

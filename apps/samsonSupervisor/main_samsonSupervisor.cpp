@@ -7,7 +7,9 @@
 * CREATION DATE            Dec 14 2010
 *
 */
-#include <semaphore.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include <QApplication>
 #include <QWidget>
@@ -147,6 +149,44 @@ static void mainWinCreate(QApplication* app)
 
 /* ****************************************************************************
 *
+* setStyleSheet - 
+*/
+void setStyleSheet(const char* fileName)
+{
+	int          fd;
+	char         buf[248 * 1024];
+	int          nb;
+	int          tot;
+	struct stat  statBuf;
+
+	if (stat((char*) fileName, &statBuf) == -1)
+		LM_RVE(("stat(%s): %s - no style sheet ...", fileName, strerror(errno)));
+
+	if ((int) statBuf.st_size > (int) sizeof(buf))
+		LM_X(1, ("Increase buffer size for style sheet. File '%s' bigger than buffer ...", fileName));
+
+	fd  = open(fileName, O_RDONLY);
+	if (fd == -1)
+		LM_RVE(("Error opening style sheetfile '%s': %s", fileName, strerror(errno)));
+
+	tot = 0;
+	while (tot < statBuf.st_size)
+	{
+		nb = read(fd, &buf[tot], statBuf.st_size - tot);
+
+		if (nb == -1)
+			LM_RVE(("read(%s): %s", fileName, strerror(errno)));
+
+		tot += nb;
+	}
+
+	qApp->setStyleSheet(buf);
+}
+
+
+
+/* ****************************************************************************
+*
 * login - 
 */
 void login(void)
@@ -182,6 +222,7 @@ int main(int argC, const char *argV[])
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
+
 
 	userMgr = new UserMgr(10);
 
@@ -279,6 +320,54 @@ int main(int argC, const char *argV[])
 
 	mainWinCreate(qApp);
 	tabManager = new TabManager(mainWindow);
+
+	LM_M(("Setting stylesheet - yellow pushbuttons"));
+
+	setStyleSheet("/mnt/sda9/kzangeli/sb/samson/20/apps/samsonSupervisor/samson.css");
+
+#if 0
+	qApp->setStyleSheet("QTabWidget::pane { /* The tab widget frame */"
+						"border-top: 2px solid #C2C7CB;"
+						"position: absolute;"
+						"top: -0.5em;"
+						"}"
+						""
+						"QTabWidget::tab-bar {"
+						"alignment: center;"
+						"}"
+						""
+						"/* Style the tab using the tab sub-control. Note that"
+						"it reads QTabBar _not_ QTabWidget */"
+						"QTabBar::tab {"
+						"background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,"
+						"stop: 0 #E1E1E1, stop: 0.4 #DDDDDD,"
+						"stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);"
+						"border: 2px solid #C4C4C3;"
+						"border-bottom-color: #C2C7CB; /* same as the pane color */"
+						"border-top-left-radius: 4px;"
+						"border-top-right-radius: 4px;"
+						"min-width: 8ex;"
+						"padding: 2px;"
+						"}"
+						""
+						"QTabBar::tab:selected, QTabBar::tab:hover {"
+						"background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,"
+						"stop: 0 #fafafa, stop: 0.4 #f4f4f4,"
+						"stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);"
+						"}"
+						""
+						"QTabBar::tab:selected {"
+						"border-color: #9B9B9B;"
+						"border-bottom-color: #C2C7CB; /* same as pane color */"
+						"}");
+
+	qApp->setStyleSheet("QPushButton { color: tan; background-color: 0x108040; }; background-color: blue;");
+	qApp->setStyleSheet("color: blue;"
+						"background-color: blue;"
+						"selection-color: yellow;"
+						"selection-background-color: blue;"
+						"QPushButton { background-color: tan }");
+#endif
 
 	mainWindow->show();
 

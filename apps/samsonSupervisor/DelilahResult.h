@@ -25,10 +25,6 @@ class DelilahResult : public DelilahSceneItem
 public:
 	DelilahResult(DelilahScene* sceneP, const char* imagePath, const char* displayNameP = NULL, int x = 0, int y = 0);
 	~DelilahResult();
-
-	char*   inType;
-	int     inTypeIndex;    // for ResultConfigWindow
-	void    inTypeSet(const char* newType);
 };
 
 #endif

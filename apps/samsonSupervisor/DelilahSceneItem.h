@@ -53,6 +53,14 @@ public:
 	char*                    name;
 	QPixmap*                 pixmap;
 
+	char*   inType;
+	int     inTypeIndex;    // for QueueConfigWindow
+	void    inTypeSet(const char* newType);
+
+	char*   outType;
+	int     outTypeIndex;   // for QueueConfigWindow
+	void    outTypeSet(const char* newType);
+
 private:
 	QMenu*                   menu;
 	QAction*                 renameAction;

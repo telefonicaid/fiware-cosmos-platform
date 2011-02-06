@@ -62,6 +62,12 @@ DelilahSceneItem::DelilahSceneItem(Type type, DelilahScene* sceneP, const char* 
 {
 	char itemName[32];
 
+	inTypeIndex   = 0;
+	inType        = strdup("Undefined");
+
+	outTypeIndex  = 0;
+	outType       = strdup("Undefined");
+	
 	this->type = type;
 
 	if (type == Source)
@@ -162,4 +168,32 @@ void DelilahSceneItem::nameCenter(void)
 		nameItem->moveBy(xdiff, 120);
 	else if (type == Result)
 		nameItem->moveBy(xdiff, 90);
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahSceneItem::inTypeSet - 
+*/
+void DelilahSceneItem::inTypeSet(const char* newType)
+{
+	if (inType)
+		delete inType;
+
+	inType = strdup(newType);
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahSceneItem::outTypeSet - 
+*/
+void DelilahSceneItem::outTypeSet(const char* newType)
+{
+	if (outType)
+		delete outType;
+
+	outType = strdup(newType);
 }

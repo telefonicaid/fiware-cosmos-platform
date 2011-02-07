@@ -12,6 +12,8 @@
 */
 #include <pthread.h>            // pthread_t
 
+#include <QGraphicsItem>
+
 #include "Endpoint.h"           // Endpoint
 #include "Network.h"            // Network
 #include "SamsonSupervisor.h"   // SamsonSupervisor
@@ -44,6 +46,7 @@ extern ResultMgr*           resultMgr;
 extern UserMgr*             userMgr;
 extern ss::Delilah*         delilah;
 extern ss::DelilahConsole*  delilahConsole;
+extern QGraphicsItem*       sceneLayer1;
 
 
 

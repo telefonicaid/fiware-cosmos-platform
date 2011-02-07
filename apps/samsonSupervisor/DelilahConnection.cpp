@@ -12,6 +12,7 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
 
+#include "globals.h"            // sceneLayer1, ...
 #include "misc.h"               // centerCoordinates
 #include "DelilahSceneItem.h"   // DelilahSceneItem
 #include "DelilahScene.h"       // DelilahScene
@@ -36,8 +37,12 @@ DelilahConnection::DelilahConnection(DelilahScene* sceneP, DelilahSceneItem* fro
 	pen.setWidth(3);
 	lineItem->setPen(pen);
 
+#if 1
+	lineItem->stackBefore(sceneLayer1);
+#else
 	lineItem->stackBefore(qFromP->pixmapItem);
 	lineItem->stackBefore(qToP->pixmapItem);
+#endif
 
 	move();
 }

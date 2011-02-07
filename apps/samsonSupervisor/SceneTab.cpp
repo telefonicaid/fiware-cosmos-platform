@@ -13,6 +13,7 @@
 #include <QVBoxLayout>
 #include <QtGui>
 #include <QMessageBox>
+#include <QGraphicsItem>
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
@@ -23,6 +24,15 @@
 #include "ConnectionMgr.h"      // ConnectionMgr
 #include "QueueMgr.h"           // QueueMgr
 #include "SceneTab.h"           // Own interface
+
+
+
+/* ****************************************************************************
+*
+* Scene layers
+*/
+QGraphicsItem* sceneLayer0 = NULL;
+QGraphicsItem* sceneLayer1 = NULL;
 
 
 
@@ -206,8 +216,14 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	scene->setSceneRect(QRectF(0, 0, 1280, 1024));
 
 	QPixmap*      bg;
+	QPixmap*      bg2;
 	bg = new QPixmap("images/background.png");
-	scene->addPixmap(*bg);
+	bg2 = new QPixmap("images/background.png");
+
+	sceneLayer0 = scene->addPixmap(*bg);
+	sceneLayer1 = scene->addPixmap(*bg2);
+
+	sceneLayer1->setOpacity(0);
 
 
 	mainLayout->addWidget(view);

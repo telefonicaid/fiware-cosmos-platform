@@ -101,8 +101,25 @@ DelilahSceneItem::DelilahSceneItem(Type type, DelilahScene* sceneP, const char* 
 	moveTo(x, y);
 	nameCenter();
 
+	if (scene->highestInStack)
+	{
+		qreal z;
+
+		LM_M(("highestInStack exists (%s)", scene->highestInStack->displayName));
+		z = scene->highestInStack->pixmapItem->zValue();
+		z += 0.01;
+		pixmapItem->setZValue(z);
+		nameItem->setZValue(z);
+		
+		nameItem->update();
+		pixmapItem->update();
+
+		scene->highestInStack->pixmapItem->update();
+		scene->highestInStack->nameItem->update();
+	}
+
 	scene->highestInStack = this;
-	LM_M(("new highestInStack: '%s'", scene->highestInStack->displayName));
+	LM_M(("NEW highestInStack: '%s'", scene->highestInStack->displayName));
 }
 
 

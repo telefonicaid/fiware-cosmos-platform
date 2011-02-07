@@ -237,11 +237,23 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		{
 			if (highestInStack)
 			{
+				qreal z;
+
 				LM_M(("highestInStack exists (%s)", highestInStack->displayName));
-				si->nameItem->stackBefore(highestInStack->pixmapItem);
-				si->pixmapItem->stackBefore(si->nameItem);
-				highestInStack->pixmapItem->stackBefore(si->pixmapItem);
+				z = highestInStack->pixmapItem->zValue();
+				z += 0.01;
+				si->pixmapItem->setZValue(z);
+				si->nameItem->setZValue(z);
+
+				si->nameItem->update();
+				si->pixmapItem->update();
+
+				highestInStack->pixmapItem->update();
+				highestInStack->nameItem->update();
 			}
+			else
+				LM_M(("No highestInStack - so I am!"));
+
 			highestInStack = si;
 			LM_M(("new highestInStack: '%s'", highestInStack->displayName));
 		}

@@ -86,7 +86,7 @@ void UserMgr::insert(const char* name, const char* password, long permissions)
 *
 * UserMgr::lookup - 
 */
-User* UserMgr::lookup(char* name)
+User* UserMgr::lookup(const char* name)
 {
 	unsigned int  ix;
 

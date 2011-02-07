@@ -87,6 +87,7 @@ ResultMgr*           resultMgr         = NULL;
 UserMgr*             userMgr           = NULL;
 ss::Delilah*         delilah           = NULL;
 ss::DelilahConsole*  delilahConsole    = NULL;
+User*                userP             = NULL;
 
 
 
@@ -98,6 +99,7 @@ int     endpoints;
 char    controllerHost[80];
 char    cfPath[80];
 bool    nologin;
+bool    nocss;
 
 
 
@@ -112,7 +114,8 @@ PaArgument paArgs[] =
 	{ "-controller",  controllerHost,  "CONTROLLER",  PaString,  PaReq,   NOC,  PaNL,   PaNL,  "controller IP"       },
 	{ "-endpoints",   &endpoints,      "ENDPOINTS",   PaInt,     PaOpt,    80,     3,    100,  "number of endpoints" },
 	{ "-config",      &cfPath,         "CF_FILE",     PaStr,     PaOpt,   CFP,  PaNL,   PaNL,  "path to config file" },
-	{ "-nologin",     &nologin,        "NOLOGIN",     PaBool,    PaHid, false, false,   true,  "no login"            },
+	{ "-nologin",     &nologin,        "NO_LOGIN",    PaBool,    PaHid, false, false,   true,  "no login"            },
+	{ "-nocss",       &nocss,          "NO_CSS",      PaBool,    PaHid, false, false,   true,  "no css"              },
 
 	PA_END_OF_ARGS
 };
@@ -234,6 +237,11 @@ int main(int argC, const char *argV[])
 
 	if (nologin == false)
 		login();
+	else
+		userP = userMgr->lookup("kz");
+
+	if (userP)
+		LM_M(("Logged in as user '%s'"));
 
 	LM_TODO(("Try to connect to logServer as early as possible"));
 
@@ -321,51 +329,8 @@ int main(int argC, const char *argV[])
 	mainWinCreate(qApp);
 	tabManager = new TabManager(mainWindow);
 
-	setStyleSheet("/mnt/sda9/kzangeli/sb/samson/20/apps/samsonSupervisor/samson.css");
-
-#if 0
-	qApp->setStyleSheet("QTabWidget::pane { /* The tab widget frame */"
-						"border-top: 2px solid #C2C7CB;"
-						"position: absolute;"
-						"top: -0.5em;"
-						"}"
-						""
-						"QTabWidget::tab-bar {"
-						"alignment: center;"
-						"}"
-						""
-						"/* Style the tab using the tab sub-control. Note that"
-						"it reads QTabBar _not_ QTabWidget */"
-						"QTabBar::tab {"
-						"background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,"
-						"stop: 0 #E1E1E1, stop: 0.4 #DDDDDD,"
-						"stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);"
-						"border: 2px solid #C4C4C3;"
-						"border-bottom-color: #C2C7CB; /* same as the pane color */"
-						"border-top-left-radius: 4px;"
-						"border-top-right-radius: 4px;"
-						"min-width: 8ex;"
-						"padding: 2px;"
-						"}"
-						""
-						"QTabBar::tab:selected, QTabBar::tab:hover {"
-						"background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,"
-						"stop: 0 #fafafa, stop: 0.4 #f4f4f4,"
-						"stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);"
-						"}"
-						""
-						"QTabBar::tab:selected {"
-						"border-color: #9B9B9B;"
-						"border-bottom-color: #C2C7CB; /* same as pane color */"
-						"}");
-
-	qApp->setStyleSheet("QPushButton { color: tan; background-color: 0x108040; }; background-color: blue;");
-	qApp->setStyleSheet("color: blue;"
-						"background-color: blue;"
-						"selection-color: yellow;"
-						"selection-background-color: blue;"
-						"QPushButton { background-color: tan }");
-#endif
+	if (nocss == false)
+		setStyleSheet("/mnt/sda9/kzangeli/sb/samson/20/apps/samsonSupervisor/samson.css");
 
 	mainWindow->show();
 

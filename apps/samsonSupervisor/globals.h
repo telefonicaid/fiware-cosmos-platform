@@ -23,6 +23,7 @@
 #include "SourceMgr.h"          // SourceMgr
 #include "ResultMgr.h"          // ResultMgr
 #include "UserMgr.h"            // UserMgr
+#include "user.h"               // User
 
 
 
@@ -47,6 +48,7 @@ extern UserMgr*             userMgr;
 extern ss::Delilah*         delilah;
 extern ss::DelilahConsole*  delilahConsole;
 extern QGraphicsItem*       sceneLayer1;
+extern User*                userP;
 
 
 

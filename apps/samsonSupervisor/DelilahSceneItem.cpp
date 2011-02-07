@@ -223,7 +223,17 @@ void DelilahSceneItem::disable(void)
 	connectionMgr->setOpacity(this, opacity);
 
 	if (type == Source)
+	{
+		QString txt;
+
+		txt = scene->disableAction->text();
+
+		if (txt == "Disable")
+			scene->disableAction->setText("Enable");
+		else
+			scene->disableAction->setText("Disable");
 		chainDisable();
+	}
 
 #if 0
 	char* path;

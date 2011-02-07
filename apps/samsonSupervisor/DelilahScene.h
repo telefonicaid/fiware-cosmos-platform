@@ -42,6 +42,7 @@ public:
 	DelilahQueue*  lookup(QGraphicsItem* gItemP);
 	void           setCursor(const char* cursor);
 
+	QAction* disableAction;
 private:
 	QAction* removeAction;
 	QAction* chainRemoveAction;
@@ -50,7 +51,6 @@ private:
 	QAction* bindAction;
 	QAction* checkAction;
 	QAction* executeAction;
-	QAction* disableAction;
 	QAction* emptyAction;
 	QAction* clearAction;
 	QAction* queueAddAction;

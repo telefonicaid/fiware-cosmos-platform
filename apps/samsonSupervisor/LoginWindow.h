@@ -35,6 +35,7 @@ public:
 private slots:
 	void ok(void);
 	void cancel(void);
+	void guest(void);
 };
 
 #endif

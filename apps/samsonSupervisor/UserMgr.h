@@ -25,7 +25,7 @@ public:
 
 	int           users(void);
 	void          insert(const char* name, const char* password, long permissions);
-	User*         lookup(char* name);
+	User*         lookup(const char* name);
 	bool          allowToEnter(char* name, char* password);
 
 private:

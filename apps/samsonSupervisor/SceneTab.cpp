@@ -213,11 +213,11 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 	scene  = new DelilahScene();
 	view   = new QGraphicsView(scene);
 
-	scene->setSceneRect(QRectF(0, 0, 1280, 1024));
 
+	QSize         pixmapSize;
 	QPixmap*      bg;
 	QPixmap*      bg2;
-	bg = new QPixmap("images/background.png");
+	bg  = new QPixmap("images/background.png");
 	bg2 = new QPixmap("images/background.png");
 
 	sceneLayer0 = scene->addPixmap(*bg);
@@ -225,6 +225,9 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 
 	sceneLayer1->setOpacity(0);
 
+	pixmapSize = bg->size();
+	scene->setSceneRect(QRectF(0, 0, pixmapSize.width(), pixmapSize.height()));
+	view->setMaximumSize(pixmapSize.width(), pixmapSize.height());
 
 	mainLayout->addWidget(view);
 

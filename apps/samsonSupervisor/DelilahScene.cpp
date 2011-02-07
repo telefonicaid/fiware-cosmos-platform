@@ -88,8 +88,9 @@ DelilahScene::DelilahScene(QObject* parent) : QGraphicsScene(parent)
 	connect(executeAction, SIGNAL(triggered()), this, SLOT(execute()));
 
 	disableAction = new QAction(tr("&Disable"), this);
-	disableAction->setStatusTip(tr("Disable current queue"));
+	disableAction->setStatusTip(tr("Disable entire chain"));
 	connect(disableAction, SIGNAL(triggered()), this, SLOT(disable()));
+	disableAction->setText("Disable");
 
 	emptyAction = new QAction(tr("&Empty"), this);
 	emptyAction->setStatusTip(tr("Empty current queue"));

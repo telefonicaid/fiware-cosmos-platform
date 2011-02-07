@@ -69,13 +69,16 @@ LoginWindow::LoginWindow(void)
 
 	QPushButton* okButton      = new QPushButton("OK");
 	QPushButton* cancelButton  = new QPushButton("Cancel");
+	QPushButton* guestButton   = new QPushButton("Enter as 'guest'");
 
 	buttonBox = new QDialogButtonBox();
 	buttonBox->addButton(okButton,     QDialogButtonBox::AcceptRole);
 	buttonBox->addButton(cancelButton, QDialogButtonBox::RejectRole);
+	buttonBox->addButton(guestButton,  QDialogButtonBox::AcceptRole);
 
 	connect(okButton,     SIGNAL(clicked()), this, SLOT(ok()));
 	connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
+	connect(guestButton,  SIGNAL(clicked()), this, SLOT(guest()));
 
 	setWindowTitle("Enter the Samson platform");
 
@@ -128,6 +131,7 @@ void LoginWindow::ok(void)
 		free(password);
 		qApp->exit();
 		qtAppRunning = false;
+		userP = userMgr->lookup(userName);
 		return;
 	}
 
@@ -149,4 +153,22 @@ void LoginWindow::ok(void)
 void LoginWindow::cancel(void)
 {
 	new Popup("Samson Login Cancelled", "You've decided not to give a user/password to enter the Samson platform.\nEntrance not allowed.", true);
+
+	delete this;
+	qApp->exit();
+	qtAppRunning = false;
+}
+
+
+
+/* ****************************************************************************
+*
+* guest
+*/
+void LoginWindow::guest(void)
+{
+	userP = userMgr->lookup("guest");
+	delete this;
+	qApp->exit();
+	qtAppRunning = false;
 }

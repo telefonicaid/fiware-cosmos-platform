@@ -54,10 +54,8 @@ static void commandTextReceiver(const char* type, const char* text)
 		while (line[strlen(line) - 1] == ' ')
 			line[strlen(line) - 1] = 0;
 
-		LM_M(("Got line '%s'", line));
 		if (strncmp(line, "** ", 3) == 0)
 		{
-			LM_M(("Got command '%s'", line));
 			line = &line[3];
 			LM_T(LmtQueue, ("Adding item '%s'", line));
 			win->commandCombo->addItem(QString(line));
@@ -65,7 +63,6 @@ static void commandTextReceiver(const char* type, const char* text)
 
 		line = &cP[1];
 	}
-	LM_M(("Done ..."));
 
 	win->commandCombo->addItem(QString(line));
 
@@ -117,8 +114,6 @@ static void dataTypesTextReceiver(const char* type, const char* text)
 	win->inTypeCombo->setCurrentIndex(win->queue->inTypeIndex);
 	win->outTypeCombo->setCurrentIndex(win->queue->outTypeIndex);
 
-
-	LM_M(("Delilah command: operations"));
 	delilahConsole->writeCallbackSet(commandTextReceiver);
 	delilahConsole->evalCommand("operations");
 }
@@ -132,6 +127,8 @@ static void dataTypesTextReceiver(const char* type, const char* text)
 QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 {
 	QGridLayout*      layout;
+    QLabel*           imageLabel;
+    QPixmap*          image;
 
 	char              textV[128];
 	QLabel*           title;
@@ -166,6 +163,10 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 
 	layout = new QGridLayout();
 
+	image      = new QPixmap("images/queue.png");
+	imageLabel = new QLabel();
+	imageLabel->setPixmap(*image);
+
 	snprintf(textV, sizeof(textV), "Configuring Queue '%s'", queue->displayName);
 	title = new QLabel(textV);
 	title->setFont(titleFont);
@@ -183,7 +184,6 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 	commandLabel = new QLabel("Command");
 	commandCombo = new QComboBox();
 
-	LM_M(("Delilah command: datas"));
     delilahConsole->writeCallbackSet(dataTypesTextReceiver);
     delilahConsole->evalCommand("datas");
 	
@@ -216,19 +216,20 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 
 	setWindowTitle("Samson Queue Configuration");
 
-	layout->addWidget(title,             0, 0, 1, 2);
-	layout->addWidget(displayNameLabel,  1, 0);
-	layout->addWidget(displayNameInput,  1, 1);
-	layout->addWidget(inTypeLabel,       2, 0);
-	layout->addWidget(inTypeCombo,       2, 1);
-	layout->addWidget(outTypeLabel,      3, 0);
-	layout->addWidget(outTypeCombo,      3, 1);
-	layout->addWidget(commandLabel,      4, 0);
-	layout->addWidget(commandCombo,      4, 1);
-	layout->addWidget(noOfIncomingLabel, 5, 0);
-	layout->addWidget(noOfOutgoingLabel, 6, 0);
-	layout->addWidget(realNameLabel,     7, 0);
-	layout->addWidget(buttonBox,         9, 0, 1, 2);
+    layout->addWidget(imageLabel,                 0, 0, 9, 1);
+	layout->addWidget(title,                      0, 1, 1, 2);
+	layout->addWidget(displayNameLabel,           1, 1);
+	layout->addWidget(displayNameInput,           1, 2);
+	layout->addWidget(inTypeLabel,                2, 1);
+	layout->addWidget(inTypeCombo,                2, 2);
+	layout->addWidget(outTypeLabel,               3, 1);
+	layout->addWidget(outTypeCombo,               3, 2);
+	layout->addWidget(commandLabel,               4, 1);
+	layout->addWidget(commandCombo,               4, 2);
+	layout->addWidget(noOfIncomingLabel,          5, 1);
+	layout->addWidget(noOfOutgoingLabel,          6, 1);
+	layout->addWidget(realNameLabel,              7, 1);
+	layout->addWidget(buttonBox,                  9, 1, 1, 2);
 
 	this->setLayout(layout);
 	this->show();

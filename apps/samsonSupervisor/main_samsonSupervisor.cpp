@@ -321,8 +321,6 @@ int main(int argC, const char *argV[])
 	mainWinCreate(qApp);
 	tabManager = new TabManager(mainWindow);
 
-	LM_M(("Setting stylesheet - yellow pushbuttons"));
-
 	setStyleSheet("/mnt/sda9/kzangeli/sb/samson/20/apps/samsonSupervisor/samson.css");
 
 #if 0

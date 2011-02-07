@@ -96,7 +96,7 @@ DelilahSceneItem::DelilahSceneItem(Type type, DelilahScene* sceneP, const char* 
 	pixmapItem    = scene->addPixmap(*pixmap);
 	nameItem      = scene->addSimpleText(QString(displayName));
 	
-	LM_M(("Calling moveTo for '%s'", displayName));
+	LM_T(LmtMove, ("Calling moveTo for '%s'", displayName));
 
 	moveTo(x, y);
 	nameCenter();
@@ -113,7 +113,7 @@ void DelilahSceneItem::moveTo(int x, int y, bool firstTime)
 	xpos += x;
 	ypos += y;
 
-	LM_M(("********** Moving '%s' to  %d, %d", displayName, xpos, ypos));
+	LM_T(LmtMove, ("********** Moving '%s' to  %d, %d", displayName, xpos, ypos));
 
 	pixmapItem->moveBy(x, y);
 
@@ -353,6 +353,6 @@ void DelilahSceneItem::chainMove(float dx, float dy)
 
 	LM_T(LmtSceneItemChain, ("'%s' is done", displayName));
 
-	LM_M(("Calling moveTo for '%s'", displayName));
+	LM_T(LmtMove, ("Calling moveTo for '%s'", displayName));
 	moveTo(dx, dy, true);
 }

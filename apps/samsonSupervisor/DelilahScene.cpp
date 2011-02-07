@@ -377,23 +377,23 @@ void DelilahScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 	{
 		if (q != NULL)
 		{
-			LM_M(("Calling moveTo for '%s'", q->displayName));
+			LM_T(LmtMove, ("Calling moveTo for '%s'", q->displayName));
 			q->moveTo(point.x() - lastPoint.x(), point.y() - lastPoint.y());
 		}
 		else if (r != NULL)
 		{
-			LM_M(("Calling moveTo for '%s'", r->displayName));
+			LM_T(LmtMove, ("Calling moveTo for '%s'", r->displayName));
 			r->moveTo(point.x() - lastPoint.x(), point.y() - lastPoint.y());
 		}
 		else if (s != NULL)
 		{
-			LM_M(("Calling moveTo for '%s'", s->displayName));
+			LM_T(LmtMove, ("Calling moveTo for '%s'", s->displayName));
 			s->moveTo(point.x() - lastPoint.x(), point.y() - lastPoint.y());
 		}
 		else if (si != NULL)
-			LM_M(("Not calling moveTo for '%s'", si->displayName));
+			LM_T(LmtMove, ("Not calling moveTo for '%s'", si->displayName));
 		else
-			LM_M(("Not calling moveTo for unknown SceneItem"));
+			LM_T(LmtMove, ("Not calling moveTo for unknown SceneItem"));
 	}
 }
 
@@ -542,7 +542,7 @@ void DelilahScene::connection(void)
 	int connections  = connectionMgr->connections();
 	int sceneItems   = queues + sources + results;
 
-	LM_M(("We have %d queues, %d sources and %d results (%d scene items and %d connections)", queues, sources, results, sceneItems, connections));
+	LM_T(LmtConnection, ("We have %d queues, %d sources and %d results (%d scene items and %d connections)", queues, sources, results, sceneItems, connections));
 
 	removeRequested        = false;
 	queueCreateRequested   = false;
@@ -594,13 +594,7 @@ void DelilahScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuE
 	menuResult     = resultMgr->lookup(item);
 	menuConnection = connectionMgr->lookup(item);
 
-	if (item == NULL)
-	{
-		menu.addAction(clearAction);
-		menu.addAction(queueAddAction);
-		menu.addAction(aboutAction);
-	}
-	else if (menuSource != NULL)
+	if (menuSource != NULL)
 	{
 		menu.addAction(renameAction);
 		menu.addAction(removeAction);
@@ -625,12 +619,18 @@ void DelilahScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuE
 		menu.addAction(renameAction);
 		menu.addAction(removeAction);
 		menu.addAction(configAction);
-		menu.addAction(bindAction);
 		menu.addAction(disableAction);
 	}
 	else if (menuConnection != NULL)
 	{
 		menu.addAction(removeAction);
+	}
+	else
+	{
+		LM_E(("item: %p", item));
+		menu.addAction(clearAction);
+		menu.addAction(queueAddAction);
+		menu.addAction(aboutAction);
 	}
 
 	menu.exec(screenPos);
@@ -775,7 +775,7 @@ void DelilahScene::check(void)
 	if (menuSource == NULL)
 		LM_RVE(("Not a Source item"));
 
-	LM_M(("Checking pipeline starting at source '%s'", menuSource->displayName));
+	LM_TODO(("Check pipeline starting at source '%s'", menuSource->displayName));
 }
 
 
@@ -789,7 +789,7 @@ void DelilahScene::execute(void)
 	if (menuSource == NULL)
 		LM_RVE(("Not a Source item"));
 
-	LM_M(("Executing pipeline starting at source '%s'", menuSource->displayName));
+	LM_TODO(("Execute pipeline starting at source '%s'", menuSource->displayName));
 }
 
 

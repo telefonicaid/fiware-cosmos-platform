@@ -103,7 +103,8 @@ typedef enum TraceLevels
 	LmtMouseEvent,
 	LmtUser,
 
-	LmtSceneItemChain
+	LmtSceneItemChain,
+	LmtMove
 } TraceLevels;
 
 

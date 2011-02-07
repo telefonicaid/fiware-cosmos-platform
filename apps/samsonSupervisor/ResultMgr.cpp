@@ -190,7 +190,7 @@ void ResultMgr::move(int x, int y)
 		if (resultV[ix] == NULL)
 			continue;
 
-		LM_M(("Calling moveTo for '%s'", resultV[ix]->displayName));
+		LM_T(LmtMove, ("Calling moveTo for '%s'", resultV[ix]->displayName));
 		resultV[ix]->moveTo(x, y);
 	}
 }

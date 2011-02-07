@@ -30,9 +30,10 @@ class ResultConfigWindow : public QDialog
 public:
 	ResultConfigWindow(DelilahResult* result);
 
-	DelilahResult* result;
-	QLineEdit*     displayNameInput;
-	QComboBox*     inTypeCombo;
+	DelilahResult*  result;
+	QLineEdit*      displayNameInput;
+	QComboBox*      inTypeCombo;
+	QLineEdit*      resultFileNameInput;
 
 private slots:
 	void die(void);
@@ -40,6 +41,8 @@ private slots:
 	void save(void);
 	void apply(void);
 	void cancel(void);
+
+	void browse(void);
 };
 
 #endif

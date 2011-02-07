@@ -32,7 +32,20 @@ DelilahResult::~DelilahResult()
 DelilahResult::DelilahResult(DelilahScene* sceneP, const char* imagePath, const char* displayNameP, int x, int y) :
 DelilahSceneItem(DelilahSceneItem::Result, sceneP, imagePath, displayNameP, x, y)
 {
-	inTypeIndex   = 0;
-	inType        = strdup("Undefined");
-	outType       = strdup("Not used");
+	outTypeSet("Not used");
+	resultFileName = NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahResult::resultFileNameSet - 
+*/
+void DelilahResult::resultFileNameSet(const char* newName)
+{
+	if (resultFileName)
+		delete resultFileName;
+
+	resultFileName = strdup(newName);
 }

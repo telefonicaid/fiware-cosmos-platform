@@ -34,10 +34,7 @@ DelilahSource::~DelilahSource()
 DelilahSource::DelilahSource(DelilahScene* sceneP, const char* imagePath, const char* displayNameP, int x, int y) :
 DelilahSceneItem(DelilahSceneItem::Source, sceneP, imagePath, displayNameP, x, y)
 {
-	outTypeIndex   = 0;
-	outType        = strdup("Undefined");
-	inType         = strdup("Not used");
-
+	inTypeSet("Not used");
 	sourceFileName = NULL;
 }
 

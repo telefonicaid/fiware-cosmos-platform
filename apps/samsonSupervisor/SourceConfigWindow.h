@@ -42,6 +42,7 @@ public:
 	QLineEdit*      displayNameInput;
 	QComboBox*      outTypeCombo;
 
+
 	QLineEdit*      sourceFileNameInput;
 	QLabel*         sourceFileNameLabel;
 	QPushButton*    sourceFileNameBrowseButton;

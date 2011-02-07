@@ -25,6 +25,9 @@ class DelilahResult : public DelilahSceneItem
 public:
 	DelilahResult(DelilahScene* sceneP, const char* imagePath, const char* displayNameP = NULL, int x = 0, int y = 0);
 	~DelilahResult();
+
+	void  resultFileNameSet(const char* newName);
+	char* resultFileName;
 };
 
 #endif

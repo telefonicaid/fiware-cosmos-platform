@@ -15,6 +15,7 @@
 #include <QSize>
 #include <QDesktopWidget>
 #include <QComboBox>
+#include <QFileDialog>
 
 #include "logMsg.h"             // LM_X, ...
 #include "traceLevels.h"        // Trace Levels
@@ -81,6 +82,8 @@ static void dataTypesTextReceiver(const char* type, const char* text)
 ResultConfigWindow::ResultConfigWindow(DelilahResult* result)
 {
 	QGridLayout*      layout;
+    QLabel*           imageLabel;
+    QPixmap*          image;
 
 	char              textV[128];
 	QLabel*           title;
@@ -88,6 +91,8 @@ ResultConfigWindow::ResultConfigWindow(DelilahResult* result)
 
 	QLabel*           displayNameLabel;
 	QLabel*           inTypeLabel;
+	QLabel*           resultFileNameLabel;
+	QPushButton*      resultFileNameBrowseButton;
 
 	QDialogButtonBox* buttonBox;
 
@@ -111,6 +116,10 @@ ResultConfigWindow::ResultConfigWindow(DelilahResult* result)
 
 	layout = new QGridLayout();
 
+	image      = new QPixmap("images/Result.png");
+	imageLabel = new QLabel();
+	imageLabel->setPixmap(*image);
+
 	snprintf(textV, sizeof(textV), "Configuring Result '%s'", result->displayName);
 	title = new QLabel(textV);
 	title->setFont(titleFont);
@@ -122,8 +131,16 @@ ResultConfigWindow::ResultConfigWindow(DelilahResult* result)
 	inTypeLabel = new QLabel("Incoming Type");
 	inTypeCombo = new QComboBox();
 
-    delilahConsole->writeCallbackSet(dataTypesTextReceiver);
-    delilahConsole->evalCommand("datas");
+	resultFileNameLabel        = new QLabel("Result File");
+	resultFileNameInput        = new QLineEdit();
+	resultFileNameBrowseButton = new QPushButton("Browse");
+	
+    resultFileNameInput->setText(result->resultFileName);
+
+	connect(resultFileNameBrowseButton, SIGNAL(clicked()), this, SLOT(browse()));
+
+	delilahConsole->writeCallbackSet(dataTypesTextReceiver);
+	delilahConsole->evalCommand("datas");
 	
 	incoming = connectionMgr->incomingConnections(result);
 	snprintf(textV, sizeof(textV), "%d Incoming connections", incoming);
@@ -150,14 +167,18 @@ ResultConfigWindow::ResultConfigWindow(DelilahResult* result)
 
 	setWindowTitle("Samson Result Configuration");
 
-	layout->addWidget(title,             0, 0, 1, 2);
-	layout->addWidget(displayNameLabel,  1, 0);
-	layout->addWidget(displayNameInput,  1, 1);
-	layout->addWidget(inTypeLabel,       2, 0);
-	layout->addWidget(inTypeCombo,       2, 1);
-	layout->addWidget(noOfIncomingLabel, 5, 0);
-	layout->addWidget(realNameLabel,     7, 0);
-	layout->addWidget(buttonBox,         9, 0, 1, 2);
+    layout->addWidget(imageLabel,                  0, 0, 6, 1);
+	layout->addWidget(title,                       0, 1, 1, 2);
+	layout->addWidget(displayNameLabel,            1, 1);
+	layout->addWidget(displayNameInput,            1, 2);
+    layout->addWidget(resultFileNameLabel,         2, 1);
+    layout->addWidget(resultFileNameInput,         2, 2, 1, 1);
+    layout->addWidget(resultFileNameBrowseButton,  2, 3);
+	layout->addWidget(inTypeLabel,                 3, 1);
+	layout->addWidget(inTypeCombo,                 3, 2);
+	layout->addWidget(noOfIncomingLabel,           4, 1);
+	layout->addWidget(realNameLabel,               5, 1);
+	layout->addWidget(buttonBox,                   6, 1, 1, 2);
 
 	this->setLayout(layout);
 	this->show();
@@ -221,6 +242,10 @@ void ResultConfigWindow::save(void)
 	if (cP != NULL)
 		result->displayNameSet(cP);
 
+	cP = (char*) resultFileNameInput->text().toStdString().c_str();
+	if (cP != NULL)
+	   result->resultFileNameSet(cP);
+	
 	result->inTypeSet(inTypeCombo->currentText().toStdString().c_str());
 
 	win->result->inTypeIndex  = inTypeCombo->currentIndex();
@@ -250,4 +275,24 @@ void ResultConfigWindow::cancel(void)
 {
 	LM_T(LmtMouseEvent, ("CANCEL pressed in Result Config Dialog"));
 	delete this;
+}
+
+
+
+/* ****************************************************************************
+*
+* browse
+*/
+void ResultConfigWindow::browse(void)
+{
+	QString fileName;
+
+	LM_T(LmtMouseEvent, ("BROWSE pressed in Result Config Dialog"));
+
+	fileName = QFileDialog::getOpenFileName(this, tr("Result File"), "/");
+	if (fileName != NULL)
+	{
+		result->resultFileNameSet(fileName.toStdString().c_str());
+		resultFileNameInput->setText(result->resultFileName);
+	}
 }

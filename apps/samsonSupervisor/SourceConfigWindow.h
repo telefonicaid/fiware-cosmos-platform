@@ -16,6 +16,9 @@
 class QLineEdit;
 class QComboBox;
 class DelilahSource;
+class QLabel;
+class QPushButton;
+class QSpinBox;
 
 
 
@@ -30,9 +33,22 @@ class SourceConfigWindow : public QDialog
 public:
 	SourceConfigWindow(DelilahSource* source);
 
-	DelilahSource* source;
-	QLineEdit*     displayNameInput;
-	QComboBox*     outTypeCombo;
+	void            sourceFileShow(bool show);
+	void            fakeShow(bool show);
+
+	bool            faked;
+	int             fakeSize;
+	DelilahSource*  source;
+	QLineEdit*      displayNameInput;
+	QComboBox*      outTypeCombo;
+
+	QLineEdit*      sourceFileNameInput;
+	QLabel*         sourceFileNameLabel;
+	QPushButton*    sourceFileNameBrowseButton;
+	QLabel*         fakeLabel;
+	QPushButton*    fakeButton;
+	QPushButton*    sourceFileButton;
+	QSpinBox*       fakeSizeSpinBox;
 
 private slots:
 	void die(void);
@@ -40,6 +56,10 @@ private slots:
 	void save(void);
 	void apply(void);
 	void cancel(void);
+
+	void browse(void);
+	void fake(void);
+	void unfake(void);
 };
 
 #endif

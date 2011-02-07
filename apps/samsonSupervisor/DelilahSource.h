@@ -25,6 +25,11 @@ class DelilahSource : public DelilahSceneItem
 public:
 	DelilahSource(DelilahScene* sceneP, const char* imagePath, const char* displayNameP = NULL, int x = 0, int y = 0);
 	~DelilahSource();
+
+	void  sourceFileNameSet(const char* newName);
+	char* sourceFileName;
+	bool  faked;
+	int   fakeSize;
 };
 
 #endif

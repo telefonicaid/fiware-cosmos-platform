@@ -15,6 +15,8 @@
 #include <QSize>
 #include <QDesktopWidget>
 #include <QComboBox>
+#include <QFileDialog>
+#include <QSpinBox>
 
 #include "logMsg.h"             // LM_X, ...
 #include "traceLevels.h"        // Trace Levels
@@ -81,6 +83,8 @@ static void dataTypesTextReceiver(const char* type, const char* text)
 SourceConfigWindow::SourceConfigWindow(DelilahSource* source)
 {
 	QGridLayout*      layout;
+	QLabel*           imageLabel;
+	QPixmap*          image;
 
 	char              textV[128];
 	QLabel*           title;
@@ -111,6 +115,10 @@ SourceConfigWindow::SourceConfigWindow(DelilahSource* source)
 
 	layout = new QGridLayout();
 
+	image      = new QPixmap("images/Bomba.png");
+	imageLabel = new QLabel();
+	imageLabel->setPixmap(*image);
+
 	snprintf(textV, sizeof(textV), "Configuring Source '%s'", source->displayName);
 	title = new QLabel(textV);
 	title->setFont(titleFont);
@@ -121,6 +129,21 @@ SourceConfigWindow::SourceConfigWindow(DelilahSource* source)
 
 	outTypeLabel = new QLabel("Outgoing Type");
 	outTypeCombo = new QComboBox();
+
+	sourceFileNameLabel        = new QLabel("Source File");
+	sourceFileNameInput        = new QLineEdit();
+	sourceFileNameBrowseButton = new QPushButton("Browse");
+	fakeLabel                  = new QLabel("Fake Input");
+	fakeButton                 = new QPushButton("Fake Source");
+	sourceFileButton           = new QPushButton("File Source");
+	fakeSizeSpinBox            = new QSpinBox();
+
+	sourceFileNameInput->setText(source->sourceFileName);
+	fakeSizeSpinBox->setValue(source->fakeSize);
+
+	connect(sourceFileNameBrowseButton, SIGNAL(clicked()), this, SLOT(browse()));
+	connect(fakeButton, SIGNAL(clicked()), this, SLOT(fake()));
+	connect(sourceFileButton, SIGNAL(clicked()), this, SLOT(unfake()));
 
     delilahConsole->writeCallbackSet(dataTypesTextReceiver);
     delilahConsole->evalCommand("datas");
@@ -150,14 +173,22 @@ SourceConfigWindow::SourceConfigWindow(DelilahSource* source)
 
 	setWindowTitle("Samson Source Configuration");
 
-	layout->addWidget(title,             0, 0, 1, 2);
-	layout->addWidget(displayNameLabel,  1, 0);
-	layout->addWidget(displayNameInput,  1, 1);
-	layout->addWidget(outTypeLabel,      3, 0);
-	layout->addWidget(outTypeCombo,      3, 1);
-	layout->addWidget(noOfOutgoingLabel, 6, 0);
-	layout->addWidget(realNameLabel,     7, 0);
-	layout->addWidget(buttonBox,         9, 0, 1, 2);
+	layout->addWidget(imageLabel,                  0, 0, 9, 1);
+	layout->addWidget(title,                       0, 2, 1, 2);
+	layout->addWidget(displayNameLabel,            1, 1);
+	layout->addWidget(displayNameInput,            1, 2);
+	layout->addWidget(sourceFileNameLabel,         2, 1);
+	layout->addWidget(sourceFileNameInput,         2, 2, 1, 1);
+	layout->addWidget(sourceFileNameBrowseButton,  2, 3);
+	layout->addWidget(fakeButton,                  2, 4);
+	layout->addWidget(fakeLabel,                   2, 1);
+	layout->addWidget(fakeSizeSpinBox,             2, 2);
+	layout->addWidget(sourceFileButton,            2, 3);
+	layout->addWidget(outTypeLabel,                3, 1);
+	layout->addWidget(outTypeCombo,                3, 2);
+	layout->addWidget(noOfOutgoingLabel,           6, 1);
+	layout->addWidget(realNameLabel,               7, 1);
+	layout->addWidget(buttonBox,                   9, 1, 1, 2);
 
 	this->setLayout(layout);
 	this->show();
@@ -172,6 +203,9 @@ SourceConfigWindow::SourceConfigWindow(DelilahSource* source)
 	y = (screenHeight - size.height()) / 2;
 
 	this->move(x, y);
+
+	fakeShow(source->faked);
+	sourceFileShow(!source->faked);
 
 	if (qtAppRunning == false)
 	{
@@ -221,9 +255,16 @@ void SourceConfigWindow::save(void)
 	if (cP != NULL)
 		source->displayNameSet(cP);
 
+	cP = (char*) sourceFileNameInput->text().toStdString().c_str();
+	if (cP != NULL)
+		source->sourceFileNameSet(cP);
+
 	source->outTypeSet(outTypeCombo->currentText().toStdString().c_str());
 	win->source->outTypeIndex = outTypeCombo->currentIndex();
-	
+
+	// faked already saved in DelilahSource
+	source->fakeSize = fakeSizeSpinBox->value();
+
 	LM_T(LmtSource, ("Set outType to '%s' (current index: %d)", source->outType, win->source->outTypeIndex));
 }
 
@@ -249,4 +290,100 @@ void SourceConfigWindow::cancel(void)
 {
 	LM_T(LmtMouseEvent, ("CANCEL pressed in Source Config Dialog"));
 	delete this;
+}
+
+
+
+/* ****************************************************************************
+*
+* SourceConfigWindow::sourceFileShow - 
+*/
+void SourceConfigWindow::sourceFileShow(bool show)
+{
+	if (show == true)
+	{
+		sourceFileNameLabel->show();
+		sourceFileNameInput->show();
+		sourceFileNameBrowseButton->show();
+		fakeButton->show();
+	}
+	else
+	{
+		sourceFileNameLabel->hide();
+		sourceFileNameInput->hide();
+		sourceFileNameBrowseButton->hide();
+		fakeButton->hide();
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* SourceConfigWindow::fakeShow - 
+*/
+void SourceConfigWindow::fakeShow(bool show)
+{
+	if (show == true)
+	{
+		sourceFileButton->show();
+		fakeSizeSpinBox->show();
+		fakeLabel->show();
+	}
+	else
+	{
+		sourceFileButton->hide();
+		fakeSizeSpinBox->hide();
+		fakeLabel->hide();
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* fake
+*/
+void SourceConfigWindow::fake(void)
+{
+	LM_T(LmtMouseEvent, ("FAKE pressed in Source Config Dialog"));
+
+	sourceFileShow(false);
+	fakeShow(true);
+	source->faked = true;
+}
+
+
+
+/* ****************************************************************************
+*
+* unfake
+*/
+void SourceConfigWindow::unfake(void)
+{
+	LM_T(LmtMouseEvent, ("UNFAKE pressed in Source Config Dialog"));
+
+	fakeShow(false);
+	sourceFileShow(true);
+	source->faked = false;
+}
+
+
+
+/* ****************************************************************************
+*
+* browse
+*/
+void SourceConfigWindow::browse(void)
+{
+	QString fileName;
+
+	LM_T(LmtMouseEvent, ("BROWSE pressed in Source Config Dialog"));
+
+	fileName = QFileDialog::getOpenFileName(this, tr("Source File"), "/");
+	if (fileName != NULL)
+	{
+		source->sourceFileNameSet(fileName.toStdString().c_str());
+		sourceFileNameInput->setText(source->sourceFileName);
+	}
 }

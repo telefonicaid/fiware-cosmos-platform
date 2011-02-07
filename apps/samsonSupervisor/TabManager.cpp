@@ -20,6 +20,7 @@
 #include "ProcessListTab.h"     // ProcessListTab
 #include "LogTab.h"             // LogTab
 #include "DelilahTab.h"         // DelilahTab
+#include "ConfigTab.h"          // ConfigTab
 #include "starterList.h"        // starterListShow
 #include "TabManager.h"         // Own interface
 
@@ -42,11 +43,13 @@ TabManager::TabManager(QWidget* window, QWidget* parent) : QWidget(parent)
 	logTab          = new LogTab();
 	delilahTab      = new DelilahTab("Console");
 	sceneTab        = new SceneTab("Delilah");
+	configTab       = new ConfigTab();
 
 	tabWidget->addTab(processListTab, tr("Processes"));
 	tabWidget->addTab(logTab,         tr("Log"));
 	tabWidget->addTab(delilahTab,     tr("Console"));
 	tabWidget->addTab(sceneTab,       tr("Delilah"));
+	tabWidget->addTab(configTab,      tr("Config"));
 
 	mainLayout->addWidget(tabWidget);
 	mainLayout->addWidget(quit);

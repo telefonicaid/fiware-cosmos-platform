@@ -17,6 +17,7 @@
 #include "DelilahTab.h"         // DelilahTab
 #include "SceneTab.h"           // SceneTab
 #include "LogTab.h"             // LogTab
+#include "ConfigTab.h"          // ConfigTab
 
 
 
@@ -43,6 +44,7 @@ public:
 	LogTab*          logTab;
 	DelilahTab*      delilahTab;
 	SceneTab*        sceneTab;
+	ConfigTab*       configTab;
 
 protected:
 	void timerEvent(QTimerEvent* e);

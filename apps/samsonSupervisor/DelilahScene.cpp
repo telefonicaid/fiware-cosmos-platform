@@ -30,6 +30,7 @@
 #include "QueueConfigWindow.h"  // QueueConfigWindow
 #include "SourceConfigWindow.h" // SourceConfigWindow
 #include "ResultConfigWindow.h" // ResultConfigWindow
+#include "ConfigTab.h"          // ConfigTab::Off, ...
 #include "DelilahScene.h"       // Own interface
 
 
@@ -59,6 +60,8 @@ static DelilahSceneItem*  si                     = NULL;
 */
 DelilahScene::DelilahScene(QObject* parent) : QGraphicsScene(parent)
 {
+	highestInStack = NULL;
+
 	renameAction = new QAction(tr("R&ename"), this);
 	renameAction->setStatusTip(tr("Rename the current queue"));
 	connect(renameAction, SIGNAL(triggered()), this, SLOT(rename()));
@@ -230,13 +233,18 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		else if (s) si = s;
 		else if (r) si = r;
 		
-#if 0
-		if (q) q->pixmap->raise();
-		if (s) s->pixmap->raise();
-		if (r) r->pixmap->raise();
-#else
-		LM_TODO(("Raise the selected item (if Queue, Source or Result) in the stacking"));
-#endif
+		if (si && c == NULL)
+		{
+			if (highestInStack)
+			{
+				LM_M(("highestInStack exists (%s)", highestInStack->displayName));
+				si->nameItem->stackBefore(highestInStack->pixmapItem);
+				si->pixmapItem->stackBefore(si->nameItem);
+				highestInStack->pixmapItem->stackBefore(si->pixmapItem);
+			}
+			highestInStack = si;
+			LM_M(("new highestInStack: '%s'", highestInStack->displayName));
+		}
 
 		if (queueCreateRequested)
 		{
@@ -280,17 +288,31 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 						new Popup("Bad Item", "Sources cannot take input");
 					else
 					{
-						if (strcmp(connectFrom->outType, si->inType) != 0)
+						if ((tabManager->configTab->typeCheck == ConfigTab::Off) || (strcmp(connectFrom->outType, si->inType) == 0))
+							connectionMgr->insert(this, connectFrom, si);
+						else
 						{
 							char eText[256];
 
-							snprintf(eText, sizeof(eText), "Cannot connect these two items:\n- '%s' with in type '%s'\n- '%s' with out type '%s'\nYou'll need to alter one of these types ...",
-									 connectFrom->displayName, connectFrom->outType,
-									 si->displayName,          si->inType);
-							new Popup("Uncompatible Items", eText);
+							if (tabManager->configTab->typeCheck == ConfigTab::On)
+							{
+								snprintf(eText, sizeof(eText), "Cannot connect these two items:\n- '%s' with in type '%s'\n- '%s' with out type '%s'\nYou'll need to alter one of these types ...",
+										 connectFrom->displayName, connectFrom->outType,
+										 si->displayName,          si->inType);
+								new Popup("Uncompatible Items", eText);
+							}
+							else if (tabManager->configTab->typeCheck == ConfigTab::Left)
+							{
+								LM_W(("Types differ - I choose the out-type of the left in the connection (%s)", connectFrom->outType));
+								si->inTypeSet(connectFrom->outType);
+								connectionMgr->insert(this, connectFrom, si);
+							}
+							else if (tabManager->configTab->typeCheck == ConfigTab::Popup)
+                            {
+								// new TypeDiffWindow()
+								// connectionMgr->insert(this, connectFrom, si);
+                            }
 						}
-						else
-							connectionMgr->insert(this, connectFrom, si);
 					}
 
 					connectionRequested = false;

@@ -57,7 +57,8 @@ Popup::Popup(const char* title, const char* text, bool die, int type)
 		while ((cP = strchr(line, '\n')) != NULL)
 		{
 			*cP = 0;
-			listWidget->addItem(QString(line));
+			if (strstr(line, "--------") == NULL)
+				listWidget->addItem(QString(line));
 			line = &cP[1];
 		}
 		listWidget->addItem(QString(line));

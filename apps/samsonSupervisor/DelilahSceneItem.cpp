@@ -100,6 +100,9 @@ DelilahSceneItem::DelilahSceneItem(Type type, DelilahScene* sceneP, const char* 
 
 	moveTo(x, y);
 	nameCenter();
+
+	scene->highestInStack = this;
+	LM_M(("new highestInStack: '%s'", scene->highestInStack->displayName));
 }
 
 
@@ -188,6 +191,7 @@ void DelilahSceneItem::inTypeSet(const char* newType)
 		delete inType;
 
 	inType = strdup(newType);
+	LM_M(("New in-type for '%s': '%s'", displayName, inType));
 }
 
 

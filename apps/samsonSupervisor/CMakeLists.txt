@@ -14,6 +14,7 @@ SET (SOURCES
 	DelilahTab.cpp
 	LogTab.cpp
 	ProcessListTab.cpp
+	ConfigTab.cpp
 	configFile.cpp
 	Popup.cpp
 	ConfigWindow.cpp
@@ -48,6 +49,7 @@ SET (HEADERS_MOC
 	ConfigWindow.h
 	Popup.h
 	SceneTab.h
+	ConfigTab.h
 	DelilahScene.h
 	QueueConfigWindow.h
 	ResultConfigWindow.h

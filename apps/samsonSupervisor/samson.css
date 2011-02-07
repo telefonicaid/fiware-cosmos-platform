@@ -1,18 +1,18 @@
 QScrollBar
 {
-	background: brown;
+	background: #85f3cb;
 }
 
 QTabWidget::pane { /* The tab widget frame */
     border-top: 2px solid #C2C7CB;
     position: absolute;
     top: -0.5em;
-    background: brown;
+    background: #85f3cb;
 }
 
 QTabWidget::tab-bar {
     alignment: center;
-    background: brown;
+    background: #85f3cb;
 }
 
 /* Style the tab using the tab sub-control. Note that it reads QTabBar _not_ QTabWidget */
@@ -26,17 +26,17 @@ QTabBar::tab {
     border-top-right-radius: 4px;
     min-width: 8ex;
     padding: 2px;
-    background: brown;
+    background: #85f3cb;
 }
 
 QDialog
 {
-	background: brown;
+	background: #85f3cb;
 }
 
 QWidget
 {
-	background: brown;
+	background: #85f3cb;
 }
 
 QTabBar::tab:hover
@@ -66,7 +66,7 @@ QTabBar::tear {
 
 QTabBar::scroller { /* the width of the scroll buttons */
     width: 20px;
-    background: brown;
+    background: #85f3cb;
 }
 
 QTabBar QToolButton { /* the scroll buttons are tool buttons */
@@ -86,7 +86,25 @@ QLineEdit {
     border: 2px solid gray;
     border-radius: 10px;
     padding: 0 8px;
-    background: tan;
+    background: white;
+    selection-background-color: darkgray;
+}
+
+
+QTextEdit {
+    border: 2px solid gray;
+    border-radius: 10px;
+    padding: 0 8px;
+    background: white;
+    selection-background-color: darkgray;
+}
+
+
+QListWidget {
+    border: 2px solid gray;
+    border-radius: 10px;
+    padding: 0 8px;
+    background: white;
     selection-background-color: darkgray;
 }
 
@@ -96,7 +114,7 @@ QComboBox
     border: 2px solid gray;
     border-radius: 10px;
     padding: 0 8px;
-    background: tan;
+    background: #25805f;
     selection-background-color: darkgray;
 }
 
@@ -106,7 +124,7 @@ QPushButton {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                       stop: 0 #f6f7fa, stop: 1 #dadbde);
     min-width: 150px;
-    background: tan;
+    background: #25805f;
 }
 
 QPushButton:pressed {

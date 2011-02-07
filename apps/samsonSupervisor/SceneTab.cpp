@@ -326,7 +326,7 @@ static void qViewTextReceiver(const char* type, const char* text)
 */
 static void commandTextReceiver(const char* type, const char* text)
 {
-	new Popup("Samson Commands", text, false, 1);
+	new Popup("Samson Commands", text, false, 2);
 }
 
 

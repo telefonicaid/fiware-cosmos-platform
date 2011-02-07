@@ -96,10 +96,15 @@ void DelilahConnection::setOpacity(float opacity)
 */
 void DelilahConnection::disable(void)
 {
-	float opacity;
+	float   opacity;
+	QPen    pen;
 
 	disabled = (disabled == true)? false : true;
 	opacity  = (disabled == true)? 0.2 : 1;
+
+	pen.setWidth((disabled == true)? 1 : 3);
+
+	lineItem->setPen(pen);
 
 	setOpacity(opacity);
 }

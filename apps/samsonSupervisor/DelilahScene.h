@@ -19,6 +19,7 @@ class QGraphicsSceneWheelEvent;
 class QGraphicsSceneContextMenuEvent;
 class QAction;
 class DelilahQueue;
+class DelilahSceneItem;
 
 
 
@@ -35,12 +36,15 @@ public:
 
 	DelilahScene(QObject *parent = 0);
 
-	void           qCreate(void);
-	void           source(void);
-	void           result(void);
-	void           connection(void);
-	DelilahQueue*  lookup(QGraphicsItem* gItemP);
-	void           setCursor(const char* cursor);
+	void               qCreate(void);
+	void               source(void);
+	void               result(void);
+	void               connection(void);
+	DelilahQueue*      lookup(QGraphicsItem* gItemP);
+	void               setCursor(const char* cursor);
+
+	DelilahSceneItem*  highestInStack;
+
 
 	QAction* disableAction;
 private:

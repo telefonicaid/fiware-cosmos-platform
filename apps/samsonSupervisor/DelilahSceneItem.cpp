@@ -23,7 +23,8 @@
 #include "globals.h"            // connectionMgr, ...
 #include "misc.h"               // centerCoordinates
 #include "DelilahScene.h"       // DelilahScene
-#include "DelilahSceneItem.h"       // Own interface
+#include "DelilahConnection.h"  // DelilahConnection
+#include "DelilahSceneItem.h"   // Own interface
 
 
 
@@ -62,6 +63,8 @@ DelilahSceneItem::DelilahSceneItem(Type type, DelilahScene* sceneP, const char* 
 {
 	char itemName[32];
 
+	disabled      = false;
+
 	inTypeIndex   = 0;
 	inType        = strdup("Undefined");
 
@@ -85,20 +88,16 @@ DelilahSceneItem::DelilahSceneItem(Type type, DelilahScene* sceneP, const char* 
 	scene         = sceneP;
 	name          = strdup(itemName);
 	displayName   = strdup(displayNameP);
-
 	pixmap        = new QPixmap(imagePath);
 
-#if 0
-	xpos          = (x == 0)? itemNo * 100 : x;
-	ypos          = (y == 0)? itemNo *  50 : y;
-#else
-	xpos = x;
-	ypos = y;
-#endif
+	xpos          = x;
+	ypos          = y;
 
 	pixmapItem    = scene->addPixmap(*pixmap);
 	nameItem      = scene->addSimpleText(QString(displayName));
 	
+	LM_M(("Calling moveTo for '%s'", displayName));
+
 	moveTo(x, y);
 	nameCenter();
 }
@@ -109,10 +108,17 @@ DelilahSceneItem::DelilahSceneItem(Type type, DelilahScene* sceneP, const char* 
 *
 * moveTo - 
 */
-void DelilahSceneItem::moveTo(int x, int y)
+void DelilahSceneItem::moveTo(int x, int y, bool firstTime)
 {
+	xpos += x;
+	ypos += y;
+
+	LM_M(("********** Moving '%s' to  %d, %d", displayName, xpos, ypos));
+
 	pixmapItem->moveBy(x, y);
-	nameItem->moveBy(x, y);
+
+	if (firstTime)
+		nameItem->moveBy(x, y);
 
 	connectionMgr->move(this);
 }
@@ -196,4 +202,157 @@ void DelilahSceneItem::outTypeSet(const char* newType)
 		delete outType;
 
 	outType = strdup(newType);
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahSceneItem::disable - 
+*/
+void DelilahSceneItem::disable(void)
+{
+	float opacity;
+
+	disabled = (disabled == true)? false : true;
+	opacity  = (disabled == true)? 0.2 : 1;
+
+	pixmapItem->setOpacity(opacity);
+	nameItem->setOpacity(opacity);
+
+	connectionMgr->setOpacity(this, opacity);
+
+	if (type == Source)
+		chainDisable();
+
+#if 0
+	char* path;
+
+	delete pixmap;
+	scene->removeItem(pixmapItem);
+
+	if (disabled)
+	{
+		if (type == Source)
+			path = (char*) "images/sourceDisabled.png";
+		else if (type == Result)
+			path = (char*) "images/resultDisabled.png";
+		else
+			path = (char*) "images/queueDisabled.png";
+	}
+	else
+	{
+		if (type == Source)
+			path = (char*) "images/Bomba.png";
+		else if (type == Result)
+			path = (char*) "images/Result.png";
+		else
+			path = (char*) "images/queue.png";
+	}
+
+	pixmap        = new QPixmap(path);
+	pixmapItem    = scene->addPixmap(*pixmap);
+
+	pixmapItem->stackBefore(nameItem);
+	pixmapItem->setPos(xpos, ypos);
+	nameCenter();
+#endif
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahSceneItem::chainDisable - 
+*/
+void DelilahSceneItem::chainDisable(void)
+{
+	DelilahConnection* outV[20];
+	int                outs;
+	int                ix;
+
+	LM_T(LmtSceneItemChain, ("Disabling '%s'", displayName));
+
+	if (type != Source)
+		disable();
+
+	outs = connectionMgr->outgoingConnections(this, outV);
+	LM_T(LmtSceneItemChain, ("'%s' has %d outgoing connections", displayName, outs));
+	for (ix = 0; ix < outs; ix++)
+	{
+		LM_T(LmtSceneItemChain, ("Disabling connection to '%s'", outV[ix]->qToP->displayName));
+		outV[ix]->disable();
+
+		LM_T(LmtSceneItemChain, ("Recursive call to '%s'", outV[ix]->qToP->displayName));
+		outV[ix]->qToP->chainDisable();
+	}
+
+	LM_T(LmtSceneItemChain, ("'%s' is done", displayName));
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahSceneItem::chainRemove - 
+*/
+void DelilahSceneItem::chainRemove(void)
+{
+	DelilahConnection* outV[20];
+	int                outs;
+	int                ix;
+
+	LM_T(LmtSceneItemChain, ("Removing '%s'", displayName));
+	outs = connectionMgr->outgoingConnections(this, outV);
+	LM_T(LmtSceneItemChain, ("'%s' has %d outgoing connections", displayName, outs));
+	for (ix = 0; ix < outs; ix++)
+	{
+		// LM_T(LmtSceneItemChain, ("Removing connection to '%s'", outV[ix]->qToP->displayName));
+		// outV[ix]->remove();
+
+		LM_T(LmtSceneItemChain, ("Recursive call to '%s'", outV[ix]->qToP->displayName));
+		outV[ix]->qToP->chainRemove();
+	}
+
+	LM_T(LmtSceneItemChain, ("'%s' is done", displayName));
+
+	if (type == Queue)
+	{
+		connectionMgr->remove(this);
+		queueMgr->remove((DelilahQueue*) this);
+	}
+	else if (type == Result)
+	{
+		connectionMgr->remove(this);
+		resultMgr->remove((DelilahResult*) this);
+	}
+	else
+		sourceMgr->remove((DelilahSource*) this);
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahSceneItem::chainMove - 
+*/
+void DelilahSceneItem::chainMove(float dx, float dy)
+{
+	DelilahConnection* outV[20];
+	int                outs;
+	int                ix;
+
+	LM_T(LmtSceneItemChain, ("Moving '%s'", displayName));
+	outs = connectionMgr->outgoingConnections(this, outV);
+	LM_T(LmtSceneItemChain, ("'%s' has %d outgoing connections", displayName, outs));
+	for (ix = 0; ix < outs; ix++)
+	{
+		LM_T(LmtSceneItemChain, ("Recursive call to '%s'", outV[ix]->qToP->displayName));
+		outV[ix]->qToP->chainMove(dx, dy);
+	}
+
+	LM_T(LmtSceneItemChain, ("'%s' is done", displayName));
+
+	LM_M(("Calling moveTo for '%s'", displayName));
+	moveTo(dx, dy, true);
 }

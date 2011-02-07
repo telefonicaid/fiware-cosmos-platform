@@ -190,6 +190,7 @@ void QueueMgr::move(int x, int y)
 		if (queueV[ix] == NULL)
 			continue;
 
+		LM_M(("Calling moveTo for '%s'", queueV[ix]->displayName));
 		queueV[ix]->moveTo(x, y);
 	}
 }

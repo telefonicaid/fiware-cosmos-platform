@@ -44,9 +44,13 @@ public:
 
 private:
 	QAction* removeAction;
+	QAction* chainRemoveAction;
 	QAction* renameAction;
 	QAction* configAction;
 	QAction* bindAction;
+	QAction* checkAction;
+	QAction* executeAction;
+	QAction* disableAction;
 	QAction* emptyAction;
 	QAction* clearAction;
 	QAction* queueAddAction;
@@ -61,9 +65,13 @@ private:
 
 public slots:
 	void remove(void);
+	void chainRemove(void);
 	void removeFromMenu(void);
 	void config(void);
 	void bind();
+	void check();
+	void execute();
+	void disable();
 	void empty();
 	void rename();
 	void clear(void);

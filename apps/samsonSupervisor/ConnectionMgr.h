@@ -30,9 +30,10 @@ public:
 	void                insert(DelilahScene* sceneP, DelilahSceneItem* from, DelilahSceneItem* to);
 	DelilahConnection*  lookup(DelilahScene* sceneP, DelilahSceneItem* from, DelilahSceneItem* to);
 	DelilahConnection*  lookup(QGraphicsItem* lineItem);
-	int                 outgoingConnections(DelilahSceneItem* from);
+	int                 outgoingConnections(DelilahSceneItem* from, DelilahConnection** outV);
 	int                 incomingConnections(DelilahSceneItem* to);
-	void                move(DelilahSceneItem* queue);
+	void                move(DelilahSceneItem* si);
+	void                setOpacity(DelilahSceneItem* si, float opacity);
 
 	void                remove(DelilahSceneItem* siP);
 	void                remove(DelilahConnection* connection);

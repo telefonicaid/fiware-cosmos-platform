@@ -29,6 +29,9 @@
 	<file>images/worker.png</file>
 	<file>images/info.png</file>
 	<file>images/eye.png</file>
+	<file>images/sourceDisabled.png</file>
+	<file>images/resultDisabled.png</file>
+	<file>images/queueDisabled.png</file>
  </qresource>
  </RCC>
 

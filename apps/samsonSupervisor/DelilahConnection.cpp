@@ -27,6 +27,7 @@ DelilahConnection::DelilahConnection(DelilahScene* sceneP, DelilahSceneItem* fro
 {
 	QPen    pen;
 
+	disabled = false;
 	scene    = sceneP;
 	qFromP   = from;
 	qToP     = to;
@@ -69,4 +70,31 @@ void DelilahConnection::move(void)
 	centerCoordinates(qToP->pixmapItem,   &toX,   &toY);
 
 	lineItem->setLine(fromX, fromY, toX, toY);
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahConnection::setOpacity - 
+*/
+void DelilahConnection::setOpacity(float opacity)
+{
+	lineItem->setOpacity(opacity);
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahConnection::disable - 
+*/
+void DelilahConnection::disable(void)
+{
+	float opacity;
+
+	disabled = (disabled == true)? false : true;
+	opacity  = (disabled == true)? 0.2 : 1;
+
+	setOpacity(opacity);
 }

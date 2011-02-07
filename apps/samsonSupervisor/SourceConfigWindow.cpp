@@ -125,7 +125,7 @@ SourceConfigWindow::SourceConfigWindow(DelilahSource* source)
     delilahConsole->writeCallbackSet(dataTypesTextReceiver);
     delilahConsole->evalCommand("datas");
 	
-	outgoing = connectionMgr->outgoingConnections(source);
+	outgoing = connectionMgr->outgoingConnections(source, NULL);
 	snprintf(textV, sizeof(textV), "%d Outgoing connections", outgoing);
 	noOfOutgoingLabel = new QLabel(textV);
 	

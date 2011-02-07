@@ -39,7 +39,7 @@ public:
 	DelilahSceneItem(Type type, DelilahScene* sceneP, const char* imagePath, const char* displayNameP = NULL, int x = 0, int y = 0);
 	~DelilahSceneItem();
 
-	void                     moveTo(int x, int y);
+	void                     moveTo(int x, int y, bool firstTime = true);
 	void                     displayNameSet(const char* newName);
 	void                     nameCenter(void);
 
@@ -52,6 +52,12 @@ public:
 	int                      ypos;
 	char*                    name;
 	QPixmap*                 pixmap;
+	bool                     disabled;
+
+	void                     disable(void);
+	void                     chainDisable(void);
+	void                     chainRemove(void);
+	void                     chainMove(float dx, float dy);
 
 	char*   inType;
 	int     inTypeIndex;    // for QueueConfigWindow

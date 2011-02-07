@@ -191,7 +191,7 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 	snprintf(textV, sizeof(textV), "%d Incoming connections", incoming);
 	noOfIncomingLabel = new QLabel(textV);
 
-	outgoing = connectionMgr->outgoingConnections(queue);
+	outgoing = connectionMgr->outgoingConnections(queue, NULL);
 	snprintf(textV, sizeof(textV), "%d Outgoing connections", outgoing);
 	noOfOutgoingLabel = new QLabel(textV);
 	

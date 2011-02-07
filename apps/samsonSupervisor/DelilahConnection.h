@@ -28,7 +28,10 @@ public:
 	~DelilahConnection();
 
 	void move(void);
+	void setOpacity(float opacity);
+	void disable(void);
 
+	bool                disabled;
 	DelilahScene*       scene;
 	DelilahSceneItem*   qFromP;
 	DelilahSceneItem*   qToP;

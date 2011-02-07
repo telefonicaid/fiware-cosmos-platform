@@ -158,7 +158,7 @@ DelilahConnection* ConnectionMgr::lookup(QGraphicsItem* lineItem)
 *
 * ConnectionMgr::remove - 
 */
-void ConnectionMgr::remove(DelilahSceneItem* queue)
+void ConnectionMgr::remove(DelilahSceneItem* si)
 {
 	unsigned int ix;
 
@@ -167,7 +167,7 @@ void ConnectionMgr::remove(DelilahSceneItem* queue)
 		if (conV[ix] == NULL)
 			continue;
 
-		if ((conV[ix]->qFromP != queue) && (conV[ix]->qToP != queue))
+		if ((conV[ix]->qFromP != si) && (conV[ix]->qToP != si))
 			continue;
 
 		delete conV[ix];
@@ -201,7 +201,7 @@ void ConnectionMgr::remove(DelilahConnection* connection)
 *
 * ConnectionMgr::move - 
 */
-void ConnectionMgr::move(DelilahSceneItem* queue)
+void ConnectionMgr::move(DelilahSceneItem* si)
 {
 	unsigned int ix;
 
@@ -210,10 +210,32 @@ void ConnectionMgr::move(DelilahSceneItem* queue)
 		if (conV[ix] == NULL)
 			continue;
 
-		if ((conV[ix]->qFromP != queue) && (conV[ix]->qToP != queue))
+		if ((conV[ix]->qFromP != si) && (conV[ix]->qToP != si))
 			continue;
 
 		conV[ix]->move();
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* ConnectionMgr::setOpacity - 
+*/
+void ConnectionMgr::setOpacity(DelilahSceneItem* si, float opacity)
+{
+	unsigned int ix;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (conV[ix] == NULL)
+			continue;
+
+		if ((conV[ix]->qFromP != si) && (conV[ix]->qToP != si))
+			continue;
+
+		conV[ix]->setOpacity(opacity);
 	}
 }
 
@@ -242,19 +264,25 @@ void ConnectionMgr::removeAll(void)
 /* ****************************************************************************
 *
 * ConnectionMgr::outgoingConnections - 
+*
+* Make sure outV has enough room ...
 */
-int ConnectionMgr::outgoingConnections(DelilahSceneItem* from)
+int ConnectionMgr::outgoingConnections(DelilahSceneItem* from, DelilahConnection** outV)
 {
 	unsigned int  ix;
 	int           connections = 0;
-
+	
 	for (ix = 0; ix < size; ix++)
 	{
 		if (conV[ix] == NULL)
 			continue;
 
 		if (conV[ix]->qFromP == from)
+		{
+			if (outV != NULL)
+				outV[connections] = conV[ix];
 			++connections;
+		}
 	}
 
 	return connections;

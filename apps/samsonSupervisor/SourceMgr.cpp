@@ -190,6 +190,7 @@ void SourceMgr::move(int x, int y)
 		if (sourceV[ix] == NULL)
 			continue;
 
+        LM_M(("Calling moveTo for '%s'", sourceV[ix]->displayName));
 		sourceV[ix]->moveTo(x, y);
 	}
 }

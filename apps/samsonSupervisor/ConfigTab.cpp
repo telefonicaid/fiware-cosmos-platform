@@ -12,6 +12,7 @@
 #include <QGroupBox>
 #include <QRadioButton>
 #include <QVBoxLayout>
+#include <QCheckBox>
 
 #include "logMsg.h"             // LM_*
 
@@ -25,16 +26,20 @@
 */
 ConfigTab::ConfigTab(QWidget *parent) : QWidget(parent)
 {
-	QGridLayout*  mainLayout  = new QGridLayout(parent);
-	QGroupBox*    connectBox  = new QGroupBox("Connection Type Checking");
-	QVBoxLayout*  vbox        = new QVBoxLayout;
-	QRadioButton* onButton    = new QRadioButton("Error on different types");
-	QRadioButton* offButton   = new QRadioButton("Automatic type checking OFF");
-	QRadioButton* leftButton  = new QRadioButton("Inherit left side out-type");
-	QRadioButton* popupButton = new QRadioButton("Popup to choose type");
+	QGridLayout*  mainLayout       = new QGridLayout(parent);
+	QGroupBox*    connectBox       = new QGroupBox("Connection Type Checking");
+	QVBoxLayout*  vbox             = new QVBoxLayout;
+	QRadioButton* onButton         = new QRadioButton("Error on different types");
+	QRadioButton* offButton        = new QRadioButton("Automatic type checking OFF");
+	QRadioButton* leftButton       = new QRadioButton("Inherit left side out-type");
+	QRadioButton* popupButton      = new QRadioButton("Popup to choose type");
+
+	autoConfigCBox   = new QCheckBox("Config window on SceneItem creation");
+	autoConfigCBox->setCheckState(Qt::Unchecked);
 
 	setLayout(mainLayout);
-	mainLayout->addWidget(connectBox, 0, 0);
+	mainLayout->addWidget(connectBox, 0, 0, 5, 1);
+	mainLayout->addWidget(autoConfigCBox, 0, 1, 1, 1);
 
 	connectBox->setFlat(false);
 	onButton->setChecked(true);

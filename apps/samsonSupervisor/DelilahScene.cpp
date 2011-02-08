@@ -31,6 +31,7 @@
 #include "SourceConfigWindow.h" // SourceConfigWindow
 #include "ResultConfigWindow.h" // ResultConfigWindow
 #include "ConfigTab.h"          // ConfigTab::Off, ...
+#include "DelilahSceneItem.h"   // Own DelilahSceneItem
 #include "DelilahScene.h"       // Own interface
 
 
@@ -320,10 +321,10 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 								connectionMgr->insert(this, connectFrom, si);
 							}
 							else if (tabManager->configTab->typeCheck == ConfigTab::Popup)
-                            {
+							{
 								// new TypeDiffWindow()
 								// connectionMgr->insert(this, connectFrom, si);
-                            }
+							}
 						}
 					}
 
@@ -761,6 +762,24 @@ void DelilahScene::config(void)
 		LM_W(("Implement the Connection Config Window!"));
 	else
 		LM_W(("No menu item active - this is a bug!"));
+}
+
+
+
+/* ****************************************************************************
+*
+* DelilahScene::config - 
+*/
+void DelilahScene::config(DelilahSceneItem* itemP)
+{
+	if (itemP->type == DelilahSceneItem::Queue)
+		new QueueConfigWindow((DelilahQueue*) itemP);
+	else if (itemP->type == DelilahSceneItem::Source)
+		new SourceConfigWindow((DelilahSource*) itemP);
+	else if (itemP->type == DelilahSceneItem::Result)
+		new ResultConfigWindow((DelilahResult*) itemP);
+	else
+		LM_W(("BUG!"));
 }
 
 

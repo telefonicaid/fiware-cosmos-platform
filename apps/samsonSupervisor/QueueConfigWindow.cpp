@@ -42,8 +42,6 @@ static void commandTextReceiver(const char* type, const char* text)
 	char* cP;
 	char* line;
 
-	printf("text: '%s'\n", text);
-
 	line = (char*) text;
 	while ((cP = strchr(line, '\n')) != NULL)
 	{

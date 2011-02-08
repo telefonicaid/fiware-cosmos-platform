@@ -13,6 +13,8 @@
 #include <QObject>
 #include <QWidget>
 
+class QCheckBox;
+
 
 
 /* ****************************************************************************
@@ -35,7 +37,8 @@ public:
 public:
 	ConfigTab(QWidget *parent = 0);
 
-	TypeCheck typeCheck;
+	TypeCheck   typeCheck;
+	QCheckBox*  autoConfigCBox;
 
 private slots:
 	void typeCheckOn(void);

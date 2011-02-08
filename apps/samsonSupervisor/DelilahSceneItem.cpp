@@ -120,6 +120,9 @@ DelilahSceneItem::DelilahSceneItem(Type type, DelilahScene* sceneP, const char* 
 
 	scene->highestInStack = this;
 	LM_M(("NEW highestInStack: '%s'", scene->highestInStack->displayName));
+
+	if (tabManager->configTab->autoConfigCBox->checkState() == Qt::Checked)
+		scene->config(this);
 }
 
 

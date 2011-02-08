@@ -131,7 +131,7 @@ DelilahSource* SourceMgr::lookup(QGraphicsItem* itemP)
 }
 
 
-
+#if 0
 /* ****************************************************************************
 *
 * lookup - 
@@ -154,7 +154,7 @@ DelilahSource* SourceMgr::lookup(int cardinal)
 
 	return NULL;
 }
-
+#endif
 
 
 /* ****************************************************************************

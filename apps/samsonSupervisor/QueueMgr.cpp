@@ -1,6 +1,6 @@
 /* ****************************************************************************
 *
-* FILE                     QueueMgr.h
+* FILE                     QueueMgr.cpp
 *
 * AUTHOR                   Ken Zangelin
 *
@@ -131,7 +131,7 @@ DelilahQueue* QueueMgr::lookup(QGraphicsItem* itemP)
 }
 
 
-
+#if 0
 /* ****************************************************************************
 *
 * lookup - 
@@ -154,7 +154,7 @@ DelilahQueue* QueueMgr::lookup(int cardinal)
 
 	return NULL;
 }
-
+#endif
 
 
 /* ****************************************************************************

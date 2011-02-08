@@ -42,6 +42,7 @@ public:
 	void               connection(void);
 	DelilahQueue*      lookup(QGraphicsItem* gItemP);
 	void               setCursor(const char* cursor);
+	void               config(DelilahSceneItem* itemP);
 
 	DelilahSceneItem*  highestInStack;
 

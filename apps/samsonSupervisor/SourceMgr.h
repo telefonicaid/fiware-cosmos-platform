@@ -30,7 +30,7 @@ public:
 	void            remove(DelilahSource* source);
 	void            removeAll(void);
 	DelilahSource*  lookup(QGraphicsItem* itemP);
-	DelilahSource*  lookup(int cardinal);
+	// DelilahSource*  lookup(int cardinal);
 	void            move(int x, int y);
 
 private:

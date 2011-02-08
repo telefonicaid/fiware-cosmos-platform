@@ -131,7 +131,7 @@ DelilahResult* ResultMgr::lookup(QGraphicsItem* itemP)
 }
 
 
-
+#if 0
 /* ****************************************************************************
 *
 * lookup - 
@@ -154,7 +154,7 @@ DelilahResult* ResultMgr::lookup(int cardinal)
 
 	return NULL;
 }
-
+#endif
 
 
 /* ****************************************************************************

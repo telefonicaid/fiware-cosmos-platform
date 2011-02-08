@@ -135,7 +135,7 @@ ResultConfigWindow::ResultConfigWindow(DelilahResult* result)
 	resultFileNameInput        = new QLineEdit();
 	resultFileNameBrowseButton = new QPushButton("Browse");
 	
-    resultFileNameInput->setText(result->resultFileName);
+	resultFileNameInput->setText(result->resultFileName);
 
 	connect(resultFileNameBrowseButton, SIGNAL(clicked()), this, SLOT(browse()));
 

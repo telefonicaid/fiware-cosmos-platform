@@ -63,6 +63,7 @@ public:
 		ControllerDisconnected,
 		ControllerReconnected,
 		ControllerRemoved,
+		SupervisorAdded,
 		EndpointRemoved,
 		HelloReceived,
 		NoLongerTemporal,
@@ -104,8 +105,7 @@ public:
 		WebWorker,
 		Sender,
 		Spawner,
-		Supervisor,
-		LogServer
+		Supervisor
 	} Type;
 
 public:

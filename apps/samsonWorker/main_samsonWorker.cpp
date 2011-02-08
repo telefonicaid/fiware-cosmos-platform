@@ -33,7 +33,6 @@ char             alias[36];
 bool             noLog;
 bool             local;
 char			 workingDir[1024]; 	
-char             logServer[80];
 
 
 
@@ -54,7 +53,6 @@ PaArgument paArgs[] =
 	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt,  false,  false,   true,  "no logging"          },
 	{ "-local",      &local,       "LOCAL",       PaBool,    PaOpt,  false,  false,   true,  "local execution"     },
 	{ "-working",     workingDir,  "WORKING",     PaString,  PaOpt, DEF_WD,   PaNL,   PaNL,  "working directory"   },
-	{ "-logServer",   logServer,   "LOG_SERVER",  PaString,  PaOpt,   NOLS,   PaNL,   PaNL,  "log server host"     },
 
 	PA_END_OF_ARGS
 };
@@ -108,7 +106,6 @@ int main(int argC, const char *argV[])
 	// --------------------------------------------------------------------
 	ss::Network network(ss::Endpoint::Worker, alias, port, endpoints, workers);
 	network.init(controller);
-	network.logServerSet(logServer);
 	
 	LM_T(LmtInit, ("Waiting for network connection ..."));
 	network.runInBackground();

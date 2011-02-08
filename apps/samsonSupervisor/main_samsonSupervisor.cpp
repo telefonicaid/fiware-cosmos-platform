@@ -62,8 +62,8 @@
 *
 * Window geometry
 */
-#define MAIN_WIN_WIDTH     400
-#define MAIN_WIN_HEIGHT    600
+#define MAIN_WIN_WIDTH     1400
+#define MAIN_WIN_HEIGHT     800
 
 
 
@@ -72,14 +72,13 @@
 * Global variables
 */
 int                  logFd             = -1;    // file descriptor for log file
+bool                 qtAppRunning      = false;
 ss::Network*         networkP          = NULL;
 SamsonSupervisor*    supervisorP       = NULL;
 ss::Endpoint*        controller        = NULL;
 TabManager*          tabManager        = NULL;
-ss::Endpoint*        logServerEndpoint = NULL;
 QWidget*             mainWindow        = NULL;
 QDesktopWidget*      desktop           = NULL;
-bool                 qtAppRunning      = false;
 ConnectionMgr*       connectionMgr     = NULL;
 QueueMgr*            queueMgr          = NULL;
 SourceMgr*           sourceMgr         = NULL;
@@ -88,6 +87,8 @@ UserMgr*             userMgr           = NULL;
 ss::Delilah*         delilah           = NULL;
 ss::DelilahConsole*  delilahConsole    = NULL;
 User*                userP             = NULL;
+int                  mainWinWidth      = MAIN_WIN_WIDTH;
+int                  mainWinHeight     = MAIN_WIN_HEIGHT;
 
 
 
@@ -241,9 +242,7 @@ int main(int argC, const char *argV[])
 		userP = userMgr->lookup("kz");
 
 	if (userP)
-		LM_M(("Logged in as user '%s'"));
-
-	LM_TODO(("Try to connect to logServer as early as possible"));
+		LM_T(LmtUser, ("Logged in as user '%s'"));
 
 	configFileInit("/opt/samson/etc/platformProcesses");
 	processListInit(20);
@@ -256,9 +255,6 @@ int main(int argC, const char *argV[])
 	networkP->setDataReceiver(supervisorP);
 	networkP->setEndpointUpdateReceiver(supervisorP);
 	networkP->setReadyReceiver(supervisorP);
-
-	LM_T(LmtInit, ("Setting logServer to localhost and trying to connect to it ..."));
-	networkP->logServerSet("localhost");  // log server will always run in 'localhost' for samsonSupervisor ...
 
 	
 

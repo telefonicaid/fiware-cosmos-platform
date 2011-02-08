@@ -101,7 +101,7 @@ typedef void (*LmWriteFp)(char*);
 *
 * LmOutHook - type for function pointer for lmOut hook
 */
-typedef void (*LmOutHook)(void* vP, char* text, char type, const char* file, int lineNo, const char* fName, int tLev, const char* stre);
+typedef void (*LmOutHook)(void* vP, char* text, char type, const char* date, const char* file, int lineNo, const char* fName, int tLev, const char* stre);
 
 
 
@@ -238,7 +238,7 @@ do {                                                                     \
                                                                          \
    if ((text = lmTextGet s) != NULL)                                     \
    {                                                                     \
-      lmOut(text, 'F', __FILE__, __LINE__, "FFF", 0, NULL);              \
+      lmOut(text, 'F', __FILE__, __LINE__, "***", 0, NULL);              \
       free(text);                                                        \
    }                                                                     \
 } while (0)

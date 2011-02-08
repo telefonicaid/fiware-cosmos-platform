@@ -28,7 +28,6 @@
 */
 unsigned short   port;
 int              endpoints;
-char             logServer[80];
 
 
 
@@ -41,7 +40,6 @@ PaArgument paArgs[] =
 {
 	{ "-port",       &port,        "PORT",        PaShortU,  PaOpt,  1233,   1025,  65000,  "listen port"         },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    20,      3,    100,  "number of endpoints" },
-	{ "-logServer",  logServer,    "LOG_SERVER",  PaString,  PaOpt,  NOLS,   PaNL,   PaNL,  "log server host"     },
 
 	PA_END_OF_ARGS
 };
@@ -189,7 +187,6 @@ int main(int argC, const char *argV[])
 
 	networkP = new ss::Network(ss::Endpoint::Spawner, NULL, port, endpoints, 0);
 	networkP->init(NULL);
-	networkP->logServerSet(logServer);
 
 	spawnerP = new SamsonSpawner(networkP);
 	networkP->setDataReceiver(spawnerP);

@@ -131,31 +131,6 @@ DelilahQueue* QueueMgr::lookup(QGraphicsItem* itemP)
 }
 
 
-#if 0
-/* ****************************************************************************
-*
-* lookup - 
-*/
-DelilahQueue* QueueMgr::lookup(int cardinal)
-{
-	unsigned int ix;
-	int          qIx = 0;
-
-	for (ix = 0; ix < size; ix++)
-	{
-		if (queueV[ix] == NULL)
-			continue;
-
-		++qIx;
-
-		if (cardinal == qIx)
-			return queueV[ix];
-	}
-
-	return NULL;
-}
-#endif
-
 
 /* ****************************************************************************
 *

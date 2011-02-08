@@ -105,7 +105,6 @@ DelilahSceneItem::DelilahSceneItem(Type type, DelilahScene* sceneP, const char* 
 	{
 		qreal z;
 
-		LM_M(("highestInStack exists (%s)", scene->highestInStack->displayName));
 		z = scene->highestInStack->pixmapItem->zValue();
 		z += 0.01;
 		pixmapItem->setZValue(z);
@@ -119,7 +118,6 @@ DelilahSceneItem::DelilahSceneItem(Type type, DelilahScene* sceneP, const char* 
 	}
 
 	scene->highestInStack = this;
-	LM_M(("NEW highestInStack: '%s'", scene->highestInStack->displayName));
 
 	if (tabManager->configTab->autoConfigCBox->checkState() == Qt::Checked)
 		scene->config(this);
@@ -211,7 +209,6 @@ void DelilahSceneItem::inTypeSet(const char* newType)
 		delete inType;
 
 	inType = strdup(newType);
-	LM_M(("New in-type for '%s': '%s'", displayName, inType));
 }
 
 

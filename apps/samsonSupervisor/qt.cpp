@@ -33,8 +33,8 @@
 *
 * Window geometry
 */
-#define MAIN_WIN_WIDTH     400
-#define MAIN_WIN_HEIGHT    600
+#define MAIN_WIN_WIDTH     1400
+#define MAIN_WIN_HEIGHT     800
 
 
 

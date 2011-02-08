@@ -14,6 +14,12 @@
 #include <unistd.h>             // fork, getpid
 #include <sched.h>              // sched_setaffinity
 #include <pthread.h>            // pthread_t
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
@@ -44,13 +50,11 @@
 * FIRST_WORKER - the index where the workers start
 * CONTROLLER   - the index where the controller reside
 * SUPERVISOR   - the index where the superviros recide
-* LOG_SERVER   - the index where the log server reside
 */
 #define ME              0
 #define LISTENER        1
 #define CONTROLLER      2
 #define SUPERVISOR      3
-#define LOG_SERVER      4
 #define FIRST_WORKER   10
 
 
@@ -79,37 +83,145 @@ namespace ss
 {
 
 
+static int                 logSocket = -1;
+static struct sockaddr_in  logAddr;
+/* ****************************************************************************
+*
+* logHookInit - 
+*/
+static void logHookInit(const char* ip)
+{
+	if (logSocket != -1)
+		close(logSocket);
+	logSocket = -1;
+
+	if (ip == NULL)
+		return;
+
+	LM_T(LmtLogServer, ("Setting up log hook function to send logs to %s, port %d", ip, LOG_MESSAGE_PORT));
+
+	logSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+	if (logSocket == -1)
+		LM_RVE(("socket: %s", strerror(errno)));
+
+	memset((char*) &logAddr, 0, sizeof(logAddr));
+	logAddr.sin_family = AF_INET;
+	logAddr.sin_port   = htons(LOG_MESSAGE_PORT);
+
+	if (inet_aton(ip, &logAddr.sin_addr) == 0)
+	{
+		close(logSocket);
+		logSocket = -1;
+		LM_RVE(("inet_aton failed"));
+	}
+}
+
+
 
 /* ****************************************************************************
 *
 * logHookFunction - 
 */
-static void logHookFunction(void* vP, char* text, char type, const char* file, int lineNo, const char* fName, int tLev, const char* stre)
+static void logHookFunction(void* vP, char* text, char type, const char* date, const char* file, int lineNo, const char* fName, int tLev, const char* stre)
 {
-	int                   s;
+	Message::Header       header;
 	Message::LogLineData  logLine;
 	Network*              networkP = (Network*) vP;
-	Endpoint*             logServer;
+	Endpoint*             supervisor;
 	Endpoint*             me;
+	int                   tot;
+	int                   nb;
+	char*                 buf;
+	int                   bufLen;
+	int                   flags;
+	int                   logAddrLen = sizeof(logAddr);
+	int                   writes     = 0;
 
-	logServer = networkP->endpoint[LOG_SERVER];
-	me        = networkP->endpoint[ME];
+	supervisor = networkP->endpoint[SUPERVISOR];
+	me         = networkP->endpoint[ME];
 
-	if ((logServer == NULL) || (logServer->wFd == -1) || (logServer->state != Endpoint::Connected) || (logServer->helloReceived != true))
+	if ((logSocket == -1) || (supervisor == NULL) || (supervisor->wFd == -1) || (supervisor->state != Endpoint::Connected) || (supervisor->helloReceived != true))
 		return;
 
-	memset(&logLine, 0, sizeof(logLine));
+
+	//
+	// Writing header
+	//
+	flags  = 0;
+	buf    = (char*) &header;
+	bufLen = sizeof(header);
+	tot    = 0;
+	memset(buf, 0, bufLen);
+	
+	header.code    = ss::Message::LogLine;
+	header.type    = ss::Message::Msg;
+	header.dataLen = sizeof(logLine);
+	header.magic   = 0xFEEDC0DE;
+
+	while (tot < bufLen)
+	{
+		++writes;
+
+		nb = sendto(logSocket, &buf[tot], bufLen - tot, flags, (struct sockaddr*) &logAddr, logAddrLen);
+		if (nb == -1)
+		{
+			printf("sendto: %s\n", strerror(errno));
+			return;
+		}
+		else if (nb == 0)
+		{
+			printf("sendto returned 0 bytes (wanted %d) ... (%s)\n", bufLen - tot, strerror(errno));
+			return;
+		}
+
+		tot += nb;
+	}
+
+
+
+	//
+	// Writing data
+	//
+	flags  = 0;
+	buf    = (char*) &logLine;
+	bufLen = sizeof(logLine);
+	tot    = 0;
+	memset(buf, 0, bufLen);
 
 	logLine.type   = type;
 	logLine.lineNo = lineNo;
 	logLine.tLev   = tLev;
 
+	strncpy(logLine.processName, progName, sizeof(logLine.processName) - 1);
+
+	if (text == NULL)
+		LM_X(1, ("NULL text"));
+
+	if (date  != NULL)  strncpy(logLine.date,  date,  sizeof(logLine.date)  - 1);
 	if (text  != NULL)  strncpy(logLine.text,  text,  sizeof(logLine.text)  - 1);
 	if (file  != NULL)  strncpy(logLine.file,  file,  sizeof(logLine.file)  - 1);
 	if (fName != NULL)  strncpy(logLine.fName, fName, sizeof(logLine.fName) - 1);
 	if (stre  != NULL)  strncpy(logLine.stre,  stre,  sizeof(logLine.stre));
 
-	s = iomMsgSend(logServer->wFd, logServer->name.c_str(), me->name.c_str(), Message::LogLine, Message::Msg, &logLine, sizeof(logLine), NULL);
+	while (tot < bufLen)
+	{
+		++writes;
+
+		nb = sendto(logSocket, &buf[tot], bufLen - tot, flags, (struct sockaddr*) &logAddr, logAddrLen);
+		if (nb == -1)
+		{
+			printf("sendto: %s\n", strerror(errno));
+			return;
+		}
+		else if (nb == 0)
+		{
+			printf("sendto returned 0 bytes (wanted %d) ... (%s)\n", bufLen - tot, strerror(errno));
+			return;
+		}
+		
+		tot += nb;
+	}
 }
 
 
@@ -245,8 +357,6 @@ void Network::setReadyReceiver(ReadyReceiverInterface* receiver)
 */
 Endpoint* Network::controllerConnect(const char* controllerName)
 {
-	LM_TODO(("Perhaps I should include LogServer in this if ..."));
-
 	if ((endpoint[ME]->type != Endpoint::Worker) && (endpoint[ME]->type != Endpoint::Delilah) && (endpoint[ME]->type != Endpoint::Supervisor))
 	{
 		endpoint[CONTROLLER] = NULL;   // Probably not necessary ...
@@ -538,17 +648,6 @@ std::vector<Endpoint*> Network::samsonEndpoints(Endpoint::Type type)
 
 /* ****************************************************************************
 *
-* logServerLookup - return log server endpoint
-*/
-Endpoint* Network::logServerLookup(void)
-{
-	return endpoint[LOG_SERVER];
-}
-	
-
-
-/* ****************************************************************************
-*
 * senderThread - 
 */
 static void* senderThread(void* vP)
@@ -794,11 +893,11 @@ void Network::endpointListShow(const char* why)
 	LM_V((""));
 	LM_V(("----------- Endpoint List (%s) -----------", why));
 
-    if (lmVerbose)      LM_F(("Verbose mode is on"));
-    if (lmDebug)        LM_F(("Debug mode is on"));
-    if (lmReads)        LM_F(("Reads mode is on"));
-    if (lmWrites)       LM_F(("Writes mode is on"));
-    if (lmToDo)         LM_F(("ToDo mode is on"));
+	if (lmVerbose)      LM_F(("Verbose mode is on"));
+	if (lmDebug)        LM_D(("Debug mode is on"));
+	if (lmReads)        LM_F(("Reads mode is on"));
+	if (lmWrites)       LM_F(("Writes mode is on"));
+	if (lmToDo)         LM_F(("ToDo mode is on"));
 
 	for (ix = 0; ix < Endpoints; ix++)
 	{
@@ -898,44 +997,6 @@ static void endpointFill(Endpoint* ep, Endpoint* inheritedFrom, int rFd, int wFd
 
 /* ****************************************************************************
 *
-* Network::endpointAddLogServer - 
-*/
-Endpoint* Network::endpointAddLogServer(int rFd, int wFd, const char* name, const char* alias, std::string ip, unsigned short port, Endpoint* inheritedFrom)
-{
-	if (endpoint[LOG_SERVER] != NULL)
-	{
-		if (endpoint[LOG_SERVER]->state == Endpoint::Connected)
-		{
-			LM_W(("Trying to add a log server when one already connected"));
-			close(rFd);
-			if (wFd != rFd)
-				close(wFd);
-			return endpoint[LOG_SERVER];
-		}
-		else
-			LM_T(LmtLogServer, ("*** Reusing LogServer Endpoint '%s' at %p", name, endpoint[LOG_SERVER]));
-	}
-	else
-	{
-		endpoint[LOG_SERVER] = new Endpoint();
-		if (endpoint[LOG_SERVER] == NULL)
-			LM_XP(1, ("allocating LogServer Endpoint"));
-		else
-			LM_T(LmtLogServer, ("*** New LogServer Endpoint '%s' at %p", name, endpoint[LOG_SERVER]));
-	}
-	
-	endpointFill(endpoint[LOG_SERVER], inheritedFrom, rFd, wFd, name, alias, 0, ip, Endpoint::LogServer, port, -1);
-
-	LM_T(LmtLogServer, ("Setting up LM hook function"));
-	lmOutHookSet(logHookFunction, (void*) this);
-
-	return endpoint[LOG_SERVER];
-}
-
-
-
-/* ****************************************************************************
-*
 * endpointAddController - 
 */
 Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
@@ -953,6 +1014,33 @@ Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, con
 		endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerAdded, "Controller Added");
 
 	return endpoint[CONTROLLER];
+}
+
+
+
+/* ****************************************************************************
+*
+* endpointAddSupervisor - 
+*/
+Endpoint* Network::endpointAddSupervisor(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
+{
+	if (endpoint[SUPERVISOR] == NULL)
+	{
+		// LM_T(LmtInit, ("Allocating room for Supervisor endpoint"));
+		endpoint[SUPERVISOR] = new Endpoint();
+		// LM_T(LmtInit, ("*** Supervisor Endpoint at %p", endpoint[SUPERVISOR]));
+	}
+
+	endpointFill(endpoint[SUPERVISOR], inheritedFrom, rFd, wFd, name, alias, workers, ip, Endpoint::Supervisor, port, coreNo);
+
+	if (endpointUpdateReceiver != NULL)
+		endpointUpdateReceiver->endpointUpdate(endpoint[SUPERVISOR], Endpoint::SupervisorAdded, "Supervisor Added");
+
+	// LM_M(("TESTING: Setting up LM hook function"));
+	// logHookInit(ip.c_str());
+	// lmOutHookSet(logHookFunction, (void*) this);
+
+	return endpoint[SUPERVISOR];
 }
 
 
@@ -1161,15 +1249,14 @@ Endpoint* Network::endpointAdd
 		return endpointAddWorker(rFd, wFd, name, alias, workers, ip, port, coreNo, inheritedFrom);
 		break;
 
-	case Endpoint::LogServer:
-		return endpointAddLogServer(rFd, wFd, name, alias, ip, port, inheritedFrom);
-		break;
-
 	case Endpoint::Temporal:
 		return endpointAddTemporal(rFd, wFd, name, alias, ip, inheritedFrom);
 		break;
 
 	case Endpoint::Supervisor:
+		return endpointAddSupervisor(rFd, wFd, name, alias, workers, ip, port, coreNo, inheritedFrom);
+		break;
+
 	case Endpoint::ThreadedReader:
 	case Endpoint::ThreadedSender:
 	case Endpoint::Fd:
@@ -1232,13 +1319,14 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 				if (endpointUpdateReceiver != NULL)
 					endpointUpdateReceiver->endpointUpdate(ep, Endpoint::ControllerRemoved, "Controller Removed");
 			}
-			else if (ep->type == Endpoint::LogServer)
-			{
-				LM_T(LmtLogServer, ("Removing logServer - calling lmOutHookSet(NULL) to disable completely the log server functionality"));
-				lmOutHookSet(NULL, NULL);
-			}
 			else
 			{
+				if (ep->type == Endpoint::Supervisor)
+				{
+					LM_T(LmtLogServer, ("Removing supervisor - calling lmOutHookSet(NULL) to disable completely the log server functionality"));
+					lmOutHookSet(NULL, NULL);
+				}
+
 				LM_T(LmtEndpoint, ("Closing down endpoint '%s'", ep->name.c_str()));
 				ep->state = Endpoint::Closed;
 				if ((endpointUpdateReceiver != NULL) && (ep->type != Endpoint::Temporal))
@@ -1858,24 +1946,43 @@ void Network::msgTreat(void* vP)
 	LM_T(LmtMsgTreat, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
 	{
+	case Message::LogSendingOn:
+		if (ep->type != Endpoint::Supervisor)
+			LM_E(("Got a LogSendingOn message from %s", ep->name.c_str()));
+		else
+		{
+			LM_T(LmtLogServer, ("Setting up LM hook function"));
+			logHookInit(ep->ip.c_str());
+			lmOutHookSet(logHookFunction, (void*) this);
+		}
+		break;
+
+	case Message::LogSendingOff:
+		if (ep->type != Endpoint::Supervisor)
+			LM_E(("Got a LogSendingOff message from %s", ep->name.c_str()));
+		else
+		{
+			LM_T(LmtLogServer, ("Removing LM hook function"));
+			lmOutHookSet(NULL, NULL);
+		}
+		break;
+
 	case Message::WorkerSpawn:
 	case Message::ControllerSpawn:
 		if (dataReceiver == NULL)
-			LM_X(1, ("no data receiver ... Please implement !"));
+			LM_X(1, ("no data receiver ... Please implement one!"));
 		if (dataReceiver)
 			dataReceiver->receive(endpointId, 0, headerP, dataP);
 		break;
 
 	case Message::LogLine:
-		if (endpoint[ME]->type != ss::Endpoint::LogServer)
-			LM_X(1, ("Got a LogLine from '%s' (type %s) - I die", name, ep->typeName()));
+		if (endpoint[ME]->type != ss::Endpoint::Supervisor)
+			LM_X(1, ("Got a LogLine from '%s' (type %s) and I'm not the supervisor ... That is a platform bug, so I die", name, ep->typeName()));
+
+		if (dataReceiver)
+			dataReceiver->receive(endpointId, 0, headerP, dataP);
 		else
-		{
-			if (dataReceiver)
-				dataReceiver->receive(endpointId, 0, headerP, dataP);
-			else
-				LM_X(1, ("LogServer without data receiver ..."));
-		}
+			LM_X(1, ("LogServer without data receiver ..."));
 		break;
 
 	case Message::Die:
@@ -2554,22 +2661,6 @@ void Network::fdSet(int fd, const char* name, const char* alias)
 	LM_T(LmtFds, ("setting state to Endpoint::Connected for fd %d", fd));
 	ep->state = Endpoint::Connected;
 }	
-
-
-
-/* ****************************************************************************
-*
-* logServerSet - 
-*/
-void Network::logServerSet(const char* logServerHost)
-{
-	int fd;
-
-	LM_T(LmtLogServer, ("Connecting to Log Server at '%s', port %d", logServerHost, LOG_SERVER_PORT));
-	fd = iomConnect(logServerHost, LOG_SERVER_PORT);
-	if (fd != -1)
-		endpointAdd("connected to logServer", fd, fd, "logServer", "logServer", 0, Endpoint::LogServer, logServerHost, LOG_SERVER_PORT);
-}
 
 
 

@@ -166,7 +166,6 @@ void connectToAllProcesses(void)
 void processStart(Process* processP, Starter* starter)
 {
 	ss::Message::SpawnData  spawnData;
-	ss::Endpoint*           logServer;
 	int                     ix;
 	char*                   end;
 	int                     s;
@@ -182,20 +181,6 @@ void processStart(Process* processP, Starter* starter)
 	memset(spawnData.args, sizeof(spawnData.args), 0);
 
 	end = spawnData.args;
-
-	networkP->endpointListShow("Looking up logServer");
-	
-	if ((logServer = networkP->logServerLookup()) != NULL)
-	{
-		strcpy(end, "-logServer");
-		LM_T(LmtProcessStart, ("parameter: '%s'", end));
-		end += strlen("-logServer") + 1;  // leave one ZERO character
-		strcpy(end, logServer->ip.c_str());
-		LM_T(LmtProcessStart, ("parameter: '%s'", end));
-		end += strlen(logServer->ip.c_str()) + 1; // leave one ZERO character
-	}
-	else
-		LM_T(LmtProcessStart, ("no log server found!"));
 
 	for (ix = 0; ix < processP->spawnInfo->argCount; ix++)
 	{

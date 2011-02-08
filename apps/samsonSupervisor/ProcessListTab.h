@@ -34,12 +34,8 @@ public:
 	ProcessListTab(const char* name, QWidget *parent = 0);
 	void         starterInclude(Starter* starterP);
 
-	QLabel*      logServerRunningLabel;
-	QPushButton* logServerStartButton;
-
 private slots:
 	void quit();
-	void logServerStart();
 
 private:
 	QGridLayout*  mainLayout;

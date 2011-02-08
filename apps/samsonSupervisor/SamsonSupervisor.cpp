@@ -98,12 +98,6 @@ static void noLongerTemporal(ss::Endpoint* ep, ss::Endpoint* newEp, Starter* sta
 	if (ep->type != ss::Endpoint::Temporal)
 		LM_X(1, ("BUG - endpoint not temporal"));
 
-	if (newEp->type == ss::Endpoint::LogServer)
-	{
-		LM_T(LmtLogServer, ("endpoint is LogServer - nothing to be done ..."));
-		return;
-	}
-
 	if ((newEp->type != ss::Endpoint::Worker) && (newEp->type != ss::Endpoint::Spawner))
 		LM_X(1, ("BUG - new endpoint should be either Worker or Spawner - is '%s'", newEp->typeName()));
 
@@ -295,7 +289,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	else
 		LM_T(LmtEndpointUpdate, ("Got an Update Notification ('%s') for NULL endpoint", reasonText));
 
-	if ((ep != NULL) && (ep->type != ss::Endpoint::LogServer))
+	if (ep != NULL)
 	{
 		LM_T(LmtEndpointUpdate, ("looking for starter with endpoint %p", ep));
 		starterListShow("Before starterLookup");
@@ -309,6 +303,10 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 
 	switch (reason)
 	{
+	case ss::Endpoint::SupervisorAdded:
+		LM_X(1, ("Supervisor Added ..."));
+		break;
+
 	case ss::Endpoint::WorkerVectorReceived:
 		workerVectorReceived(wvDataP);
 		break;
@@ -330,40 +328,16 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		break;
 
 	case ss::Endpoint::EndpointRemoved:
-		LM_W(("Some endpoint closed connection"));
-		if (ep->type == ss::Endpoint::LogServer)
-		{
-			logServerEndpoint = NULL;
-			LM_W(("Log Server closed connection"));
-
-			tabManager->processListTab->logServerRunningLabel->hide();
-			tabManager->processListTab->logServerStartButton->show();
-
-			return -1;
-		}
-		else
-			LM_T(LmtEndpointUpdate, ("Endpoint that is not Log Server was removed"));
-
 	case ss::Endpoint::ControllerRemoved:
 	case ss::Endpoint::WorkerRemoved:
+		LM_W(("Some endpoint closed connection"));
 		if (starter == NULL)
 			LM_RE(-1, ("NULL starter for '%s'", reasonText));
 		starter->check();
 		break;
 
 	case ss::Endpoint::HelloReceived:
-		if (ep == logServerEndpoint)
-		{
-			LM_W(("Got Hello from Log Server (name: '%s'/'%s', ip: '%s'/'%s') - here I should notify Qt thread to update logServer push-button", ep->name.c_str(), newEp->name.c_str(), ep->ip.c_str(), newEp->ip.c_str()));
-			LM_TODO(("Add a QT timeout handler and connect a socket between threads to send a LogServer started message"));
-			LM_TODO(("Even better would be to create a Network::Poll function and have only one thread"));
-
-			
-			tabManager->processListTab->logServerRunningLabel->show();
-			tabManager->processListTab->logServerStartButton->hide();
-		}
-		else
-			LM_W(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
+		LM_W(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
 		break;
 
 	case ss::Endpoint::ControllerAdded:

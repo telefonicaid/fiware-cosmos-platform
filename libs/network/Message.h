@@ -58,7 +58,10 @@ typedef enum MessageCode
 	ThroughputTest                  = CODE('T', 'p', 'u', ' '),
 	LogLine                         = CODE('L', 'o', 'g', ' '),
 	ConfigGet                       = CODE('C', 'f', 'G', ' '),
-	ConfigSet                       = CODE('C', 'f', 'S', ' ')
+	ConfigSet                       = CODE('C', 'f', 'S', ' '),
+	LogSendingOn                    = CODE('L', 'O', 'n', ' '),
+	LogSendingOff                   = CODE('L', 'O', 'f', ' ')
+
 } MessageCode;
 
 
@@ -133,6 +136,8 @@ typedef struct ConfigData
 */
 typedef struct LogLineData
 {
+	char  processName[64];
+	char  date[32];
 	char  text[256];
 	char  file[64];
 	char  fName[64];

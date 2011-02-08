@@ -50,6 +50,8 @@ char* messageCode(MessageCode code)
 	case LogLine:                          return (char*) "LogLine";
 	case ConfigGet:                        return (char*) "ConfigGet";
 	case ConfigSet:                        return (char*) "ConfigSet";
+	case LogSendingOn:                     return (char*) "LogSendingOn";
+	case LogSendingOff:                    return (char*) "LogSendingOff";
 	}
 
 	return (char*) "Unknown";

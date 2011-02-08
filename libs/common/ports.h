@@ -15,9 +15,9 @@
 
 /* ****************************************************************************
 *
-* SPAWNER_PORT - 
+* Common ports for the Samson platform
 */
-#define LOG_SERVER_PORT   1232
+#define LOG_MESSAGE_PORT  1232
 #define SPAWNER_PORT      1233
 #define CONTROLLER_PORT   1234
 #define WORKER_PORT       1235

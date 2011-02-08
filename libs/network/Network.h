@@ -69,8 +69,6 @@ public:
 	std::vector<Endpoint*> samsonWorkerEndpoints();               // Return the list of 'Worker' endpoints
 	std::vector<Endpoint*> samsonEndpoints();                     // Return the list of all endpoints
 	std::vector<Endpoint*> samsonEndpoints(Endpoint::Type type);  // Return the list of all 'type' endpoints
-	Endpoint*              logServerLookup(void);
-	void                   logServerSet(const char* logServerHost);
 
 	/**
 	   This function is expected to return only if quit() function is called
@@ -104,8 +102,8 @@ public:
 private:
 	Endpoint*    coreWorkerEndpointAdd(int rFd, int wFd, const char* name, const char* alias);
 
-	Endpoint*    endpointAddLogServer(int rFd, int wFd, const char* name, const char* alias, std::string ip, unsigned short port, Endpoint* inheritedFrom);
 	Endpoint*    endpointAddController(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom);
+	Endpoint*    endpointAddSupervisor(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom);
 	Endpoint*    endpointAddTemporal(int rFd, int wFd, const char* name, const char* alias, std::string ip, Endpoint* inheritedFrom);
 	Endpoint*    endpointAddDefault(int rFd, int wFd, const char* name, const char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom);
 	Endpoint*    endpointAddWorker(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom);

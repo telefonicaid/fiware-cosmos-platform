@@ -49,6 +49,8 @@ extern ss::Delilah*         delilah;
 extern ss::DelilahConsole*  delilahConsole;
 extern QGraphicsItem*       sceneLayer1;
 extern User*                userP;
+extern int                  mainWinWidth;
+extern int                  mainWinHeight;
 
 
 

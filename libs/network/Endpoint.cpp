@@ -184,7 +184,6 @@ const char* Endpoint::typeName(Endpoint::Type type)
 	case Endpoint::Sender:                return "Sender";
 	case Endpoint::Spawner:               return "Spawner";
 	case Endpoint::Supervisor:            return "Supervisor";
-	case Endpoint::LogServer:             return "LogServer";
 	case Endpoint::Fd:                    return "Fd";
 	}
 

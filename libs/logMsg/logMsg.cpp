@@ -1154,8 +1154,7 @@ LmStatus lmTimeFormat(int index, char* f)
 	STRING_CHECK(f, TF_LEN);
 
 	if (strcmp(f, "DEF") == 0)
-		strncpy(fds[index].timeFormat, TIME_FORMAT_DEF,
-				sizeof(fds[index].timeFormat));
+		strncpy(fds[index].timeFormat, TIME_FORMAT_DEF, sizeof(fds[index].timeFormat));
 	else
 		strncpy(fds[index].timeFormat, f, sizeof(fds[index].timeFormat));
 
@@ -1511,7 +1510,12 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 	memset(format, 0, sizeof(format));
 
 	if (lmOutHook && lmOutHookActive == true)
-		lmOutHook(lmOutHookParam, text, type, file, lineNo, fName, tLev, stre);
+	{
+		char   xin[256];
+		char*  date = dateGet(0, xin, sizeof(xin));
+
+		lmOutHook(lmOutHookParam, text, type, date, file, lineNo, fName, tLev, stre);
+	}
 
 	for (i = 0; i < FDS_MAX; i++)
 	{

@@ -318,6 +318,12 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 							}
 							else if (tabManager->configTab->typeCheck == ConfigTab::Popup)
 							{
+								char eText[256];
+
+								snprintf(eText, sizeof(eText), "I must implement a POPUP to choose between\n%s's out-type '%s' and\n%s's in-type '%s'.",
+										 connectFrom->displayName, connectFrom->outType, si->displayName, si->inType);
+
+								new Popup("Not implemented", eText);
 								// new TypeDiffWindow()
 								// connectionMgr->insert(this, connectFrom, si);
 							}

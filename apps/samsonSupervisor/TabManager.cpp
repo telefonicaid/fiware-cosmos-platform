@@ -55,10 +55,10 @@ TabManager::TabManager(QWidget* window, QWidget* parent) : QWidget(parent)
 	sceneTab        = new SceneTab("Delilah");
 	configTab       = new ConfigTab();
 
-	tabWidget->addTab(processListTab, tr("Startup"));
-	tabWidget->addTab(sceneTab,       tr("Operations"));
+	tabWidget->addTab(processListTab, tr("Processes"));
+	tabWidget->addTab(sceneTab,       tr("MR Operations"));
 	tabWidget->addTab(logTab,         tr("Logging"));
-	tabWidget->addTab(delilahTab,     tr("Raw Platform"));
+	tabWidget->addTab(delilahTab,     tr("Raw Platform access"));
 	tabWidget->addTab(configTab,      tr("Preferences"));
 
 	mainLayout->addWidget(tabWidget);
@@ -66,6 +66,8 @@ TabManager::TabManager(QWidget* window, QWidget* parent) : QWidget(parent)
 
 	if ((userP->permissions & UpSeeLogs) == 0)
 		logTab->setDisabled(true);
+	if ((userP->permissions & UpRawPlatformAccess) == 0)
+		delilahTab->setDisabled(true);
 
 	window->setLayout(mainLayout);
 

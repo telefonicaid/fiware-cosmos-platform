@@ -119,25 +119,31 @@ Process* processAdd(const char* name, const char* host, unsigned short port, ss:
 
 	if ((processP = processLookup(name, host)) != NULL)
 	{
-		char info[256];
+		LM_W(("There is already a '%s' process in host '%s'", name, host));
+		if (processP->endpoint != NULL)
+		{
+			LM_W(("And it has an endpoint, in state '%s'", processP->endpoint->stateName()));
+			if (processP->endpoint->state != ss::Endpoint::Disconnected)
+				LM_W(("WHAT DO I DO HERE ?"));
+		}
+	}
+	else
+	{
+	   processP = (Process*) calloc(1, sizeof(Process));
+	   if (processP == NULL)
+		   LM_X(1, ("calloc: %s", strerror(errno)));
 
-		snprintf(info, sizeof(info), "There is already a '%s' process in host '%s'.\nPlease check your configuration files.", name, host);
-		new Popup("Duplicated process", info);
-		LM_X(1, ("Duplicated process: %s", info));
+	   if (name == NULL)
+		   name = "noname";
+
+	   processP->name       = strdup(name);
+	   processP->host       = strdup(host);
+	   processP->port       = port;
+	   processP->spawnInfo  = NULL;
+	   processP->endpoint   = endpoint;
 	}
 
-	processP = (Process*) calloc(1, sizeof(Process));
-	if (processP == NULL)
-		LM_X(1, ("calloc: %s", strerror(errno)));
-
-	if (name == NULL)
-		name = "noname";
-
-	processP->name       = strdup(name);
-	processP->host       = strdup(host);
-	processP->port       = port;
-	processP->spawnInfo  = NULL;
-	processP->endpoint   = endpoint;
+	processP->sendsLogs  = false;
 
 	if (strcmp(name, "Controller") == 0)
 		processP->type = PtControllerStarter;

@@ -1,18 +1,15 @@
 /* ****************************************************************************
 *
-* FILE                     ConfigWindow.cpp
+* FILE                     ProcessConfigView.cpp
 *
 * AUTHOR                   Ken Zangelin
 *
-* CREATION DATE            Jan 25 2011
+* CREATION DATE            Feb 09 2011
 *
 */
 #include <QGridLayout>
 #include <QLabel>
 #include <QSize>
-#include <QDesktopWidget>
-#include <QDialogButtonBox>
-#include <QApplication>
 #include <QCheckBox>
 #include <QPushButton>
 #include <QListWidget>
@@ -25,30 +22,69 @@
 #include "iomMsgAwait.h"        // iomMsgAwait
 #include "iomMsgRead.h"         // iomMsgRead
 #include "Endpoint.h"           // Endpoint
-#include "ConfigWindow.h"       // Own interface
+#include "Process.h"            // Process
+#include "ProcessConfigView.h"  // Own interface
 
 
 
 /* ****************************************************************************
 *
-* ConfigWindow - 
+* ProcessConfigView::~ProcessConfigView - 
 */
-ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
+ProcessConfigView::~ProcessConfigView()
 {
-	QGridLayout*              layout;
-	QLabel*                   label;
-	QSize                     size;
-	int                       screenWidth;
-	int                       screenHeight;
-	int                       x;
-	int                       y;
-	QDesktopWidget*           desktop = QApplication::desktop();
-	QDialogButtonBox*         buttonBox;
+	int ix;
+
+	for (ix = 0; ix < TRACE_LEVELS; ix++)
+	{
+		delete traceLevelItem[ix];
+	}
+
+
+	label->hide();
+	sendButton->hide();
+	traceLevelLabel->hide();
+	traceLevelList->hide();
+	verboseBox->hide();
+	debugBox->hide();
+	readsBox->hide();
+	writesBox->hide();
+	toDoBox->hide();
+	allTraceLevelsItem->hide();
+
+	grid->removeWidget(label);
+	grid->removeWidget(sendButton);
+	grid->removeWidget(traceLevelLabel);
+	grid->removeWidget(traceLevelList);
+	grid->removeWidget(verboseBox);
+	grid->removeWidget(debugBox);
+	grid->removeWidget(readsBox);
+	grid->removeWidget(writesBox);
+	grid->removeWidget(toDoBox);
+	grid->removeWidget(allTraceLevelsItem);
+
+	delete label;
+	delete sendButton;
+	delete traceLevelLabel;
+	delete traceLevelList;
+	delete verboseBox;
+	delete debugBox;
+	delete readsBox;
+	delete writesBox;
+	delete toDoBox;
+	delete allTraceLevelsItem;
+}
+
+
+
+/* ****************************************************************************
+*
+* ProcessConfigView::ProcessConfigView - 
+*/
+ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process)
+{
 	char                      processName[256];
-	QPushButton*              sendButton;  // To be included in QDialogButtonBox
-	QLabel*                   traceLevelLabel;
-	QListWidget*              traceLevelList;
-	QFont                     labelFont("Times", 20, QFont::Normal);
+	QFont                     labelFont("Times", 18, QFont::Normal);
 	QFont                     traceFont("Helvetica", 10, QFont::Normal);
 	void*                     dataP = NULL;
 	int                       s;
@@ -56,25 +92,20 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 	ss::Message::MessageCode  code;
 	ss::Message::MessageType  type;
 	int                       dataLen;
+	ss::Endpoint*             endpoint = process->endpoint;
 
-	this->endpoint      = endpoint;
-	allTraceLevelsState = false;
-
-	setModal(true);
-
-	layout = new QGridLayout();
+	this->grid    = grid;
+	this->process = process;
 
 	snprintf(processName, sizeof(processName), "%s@%s", endpoint->name.c_str(), endpoint->ip.c_str());
 	
 	label              = new QLabel(processName);
-	buttonBox          = new QDialogButtonBox(QDialogButtonBox::Ok);
 
 	verboseBox         = new QCheckBox("Verbose");
 	debugBox           = new QCheckBox("Debug");
 	readsBox           = new QCheckBox("Reads");
 	writesBox          = new QCheckBox("Writes");
 	toDoBox            = new QCheckBox("ToDo");
-	logBox             = new QCheckBox("Log Output");
 
 	sendButton         = new QPushButton("Send");
 	traceLevelLabel    = new QLabel("Trace Levels");
@@ -85,26 +116,21 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 	traceLevelLabel->setFont(traceFont);
 	traceLevelList->setFont(traceFont);
 
-	connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
 	connect(sendButton, SIGNAL(clicked()), this, SLOT(send()));
 
-	setWindowTitle("Samson Process Configuration");
+	grid->addWidget(label,      0, 0, 1, -1);
 
-	layout->addWidget(label,      0, 1, 1, -1);
+	grid->addWidget(traceLevelLabel,    1, 0, 1, 1);
+	grid->addWidget(allTraceLevelsItem, 1, 2, 1, 2);
+	grid->addWidget(traceLevelList,     3, 0, 5, 4);
 
-	layout->addWidget(verboseBox, 1, 0);
-	layout->addWidget(debugBox,   2, 0);
-	layout->addWidget(readsBox,   3, 0);
-	layout->addWidget(writesBox,  4, 0);
-	layout->addWidget(toDoBox,    5, 0);
-	layout->addWidget(logBox,     6, 0);
+	grid->addWidget(verboseBox, 9,  0);
+	grid->addWidget(debugBox,   10, 0);
+	grid->addWidget(readsBox,   9,  1);
+	grid->addWidget(writesBox,  10, 1);
+	grid->addWidget(toDoBox,     9, 2);
 
-	layout->addWidget(sendButton, 7, 0);
-	layout->addWidget(buttonBox,  8, 0);
-
-	layout->addWidget(traceLevelLabel, 1, 1);
-	layout->addWidget(allTraceLevelsItem, 2, 1);
-	layout->addWidget(traceLevelList,  3, 1);
+	grid->addWidget(sendButton, 13, 0, 1, 4);
 
 	memset(traceLevelItem, 0, sizeof(traceLevelItem));
 
@@ -124,20 +150,9 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 		traceLevelList->addItem(traceLevelItem[ix]);
 		traceLevelItem[ix]->setCheckState(Qt::Checked);
 	}
-
-	this->setLayout(layout);
-	this->show();
-
-	// Window Geometry
-	size = this->size();
-
-	screenWidth  = desktop->width();
-	screenHeight = desktop->height();
-
-	x = (screenWidth  - size.width())  / 2;
-	y = (screenHeight - size.height()) / 2;
-
-	this->move(x, y);
+	// traceLevelList->adjustSize();
+	traceLevelList->setFixedWidth(400);
+	traceLevelList->setFixedHeight(500);
 
 	memset(&header, 0, sizeof(header));
 
@@ -190,8 +205,6 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 			}
 		}
 	}
-
-	this->show();
 }
 
 
@@ -200,7 +213,7 @@ ConfigWindow::ConfigWindow(ss::Endpoint* endpoint)
 *
 * send - 
 */
-void ConfigWindow::send(void)
+void ProcessConfigView::send(void)
 {
 	ss::Message::ConfigData configData;
 
@@ -218,7 +231,7 @@ void ConfigWindow::send(void)
 			configData.traceLevels[ix] = false;
 	}
 
-	iomMsgSend(endpoint, networkP->endpoint[0], ss::Message::ConfigSet, ss::Message::Ack, &configData, sizeof(configData));
+	iomMsgSend(process->endpoint, networkP->endpoint[0], ss::Message::ConfigSet, ss::Message::Ack, &configData, sizeof(configData));
 }
 
 
@@ -227,7 +240,7 @@ void ConfigWindow::send(void)
 *
 * all - 
 */
-void ConfigWindow::all(void)
+void ProcessConfigView::all(void)
 {
 	allTraceLevelsState = (allTraceLevelsState == true)? false : true;
 

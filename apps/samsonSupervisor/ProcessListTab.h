@@ -19,6 +19,7 @@
 
 #include "Endpoint.h"           // Endpoint
 #include "Starter.h"            // Starter
+#include "ProcessConfigView.h"  // ProcessConfigView
 
 
 
@@ -33,13 +34,18 @@ class ProcessListTab : public QWidget
 public:
 	ProcessListTab(const char* name, QWidget *parent = 0);
 	void         starterInclude(Starter* starterP);
+	void         configShow(Starter* starterP);
 
 private slots:
 	void quit();
 
 private:
-	QGridLayout*  mainLayout;
-	void          initialStartersCreate(void);
+	QHBoxLayout*        mainLayout;
+	QVBoxLayout*        leftLayout;
+	QVBoxLayout*        rightLayout;
+	QGridLayout*        rightGrid;
+	ProcessConfigView*  configView;
+	void                initialStartersCreate(void);
 };
 
 #endif

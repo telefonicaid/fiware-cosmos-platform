@@ -84,8 +84,10 @@ static void serverIomRun(int listenFd)
     int             fds;
     fd_set          rFds;
 	int             max;
-	int             fd = -1;
+	ss::Endpoint*   endpoint = new ss::Endpoint();
 	
+	endpoint->rFd = -1;
+
 	LM_V(("Running IOM test as server"));
 
 	while (1)
@@ -97,12 +99,12 @@ static void serverIomRun(int listenFd)
 			FD_SET(listenFd, &rFds);
 			max = listenFd;
 
-			if (fd != -1)
+			if (endpoint->rFd != -1)
 			{
-				FD_SET(fd, &rFds);
-				LM_T(LmtSelect, ("select on fd %d", fd));
-				if (fd > listenFd)
-					max = fd;
+				FD_SET(endpoint->rFd, &rFds);
+				LM_T(LmtSelect, ("select on fd %d", endpoint->rFd));
+				if (endpoint->rFd > listenFd)
+					max = endpoint->rFd;
 			}
 
 			tv.tv_sec  = 5;
@@ -120,7 +122,7 @@ static void serverIomRun(int listenFd)
 		else if ((fds > 0) && (FD_ISSET(listenFd, &rFds)))
 		{
 			LM_T(LmtSelect, ("incoming connection ..."));
-			if (fd != -1)
+			if (endpoint->rFd != -1)
 			{
 				// fd already active - reject the connection
 				int fd2;
@@ -134,10 +136,10 @@ static void serverIomRun(int listenFd)
 			else
 			{
 				LM_V(("... accepting it"));
-				fd = iomAccept(listenFd);
+				endpoint->rFd = iomAccept(listenFd);
 			}
 		}
-		else if ((fds > 0) && (FD_ISSET(fd, &rFds)))
+		else if ((fds > 0) && (FD_ISSET(endpoint->rFd, &rFds)))
 		{
 			void*                     dataP;
 			int                       dataLen;
@@ -155,11 +157,12 @@ static void serverIomRun(int listenFd)
 			if (s != 0)
 				LM_X(1, ("gettimeofday: %s", strerror(errno)));
 
-			s = iomMsgRead(fd, (const char*) progName, &msgCode, &msgType, &dataP, &dataLen);
+			// s = iomMsgRead(endpoint->rFd, (const char*) progName, &msgCode, &msgType, &dataP, &dataLen);
 			if (s != 0)
 			{
 			   LM_W(("iomMsgRead: error %d - closing connection", s));
-			   fd = -1;
+			   close(endpoint->rFd);
+			   endpoint->rFd = -1;
 			   continue;
 			}
 

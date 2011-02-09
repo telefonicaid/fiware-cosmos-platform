@@ -105,7 +105,7 @@ static void noLongerTemporal(ss::Endpoint* ep, ss::Endpoint* newEp, Starter* sta
 	{
 		LM_T(LmtTemporalEndpoint, ("Changing temporal endpoint %p for '%s' endpoint %p", ep, newEp->typeName(), newEp));
 		starter->process->endpoint = newEp;
-		starter->check();
+		starter->check("noLongerTemporal");
 		return;
 	}
 
@@ -203,9 +203,18 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 			if (processP->spawnInfo == NULL)
 				LM_X(1, ("How come spawn-info is NULL for Worker (alias: '%s') in host '%s'", wvDataP->workerV[ix].alias, host));
 
-			starterP = starterAdd(processP);
-			if (starterP == NULL)
-				LM_X(1, ("NULL starterP for Worker@%s", host));
+			if ((starterP = starterLookup(processP)) != NULL)
+				LM_W(("Strange - starter already there - restarted process ?"));
+			else
+			{
+				LM_M(("Calling starterAdd for '%s@%s'", processP->name, processP->host));
+				starterP = starterAdd(processP);
+				if (starterP == NULL)
+					LM_X(1, ("NULL starterP for Worker@%s", host));
+
+				if ((tabManager != NULL) && (tabManager->processListTab != NULL))
+					tabManager->processListTab->starterInclude(starterP);
+			}
 
 			LM_T(LmtWorkerVector, ("Looking up spawner for host '%s'", host));
 			processP->spawnInfo->spawnerP = spawnerLookup(host);
@@ -228,9 +237,6 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 				new Popup("Spawner not running", eText);
 				LM_X(1, ("Sorry, no spawner found in host '%s'", host));
 			}
-
-			if ((tabManager != NULL) && (tabManager->processListTab != NULL))
-				tabManager->processListTab->starterInclude(starterP);
 		}
 		else
 		{
@@ -276,7 +282,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 {
 	ss::Endpoint*                   newEp     = (ss::Endpoint*) info;
 	ss::Message::WorkerVectorData*  wvDataP   = (ss::Message::WorkerVectorData*) info;
-	Starter*                        starter;
+	Starter*                        starter   = NULL;
 
 	if (reason == ss::Endpoint::SelectToBeCalled)
 	{
@@ -298,7 +304,10 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		LM_T(LmtEndpointUpdate, ("starterLookup(%p) returned %p", ep, starter));
 
 		if (starter != NULL)
+		{
 			LM_T(LmtEndpointUpdate, ("found %s-starter '%s'", processTypeName(starter->process), starter->process->name));
+			starter->check("endpointUpdate");
+		}
 	}
 
 	switch (reason)
@@ -317,10 +326,6 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 
 	case ss::Endpoint::WorkerDisconnected:
 	case ss::Endpoint::WorkerAdded:
-		if (starter == NULL)
-			LM_W(("NULL starter for '%s'", reasonText));
-		else
-			starter->check();
 		break;
 
 	case ss::Endpoint::ControllerDisconnected:
@@ -331,9 +336,6 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	case ss::Endpoint::ControllerRemoved:
 	case ss::Endpoint::WorkerRemoved:
 		LM_W(("Some endpoint closed connection"));
-		if (starter == NULL)
-			LM_RE(-1, ("NULL starter for '%s'", reasonText));
-		starter->check();
 		break;
 
 	case ss::Endpoint::HelloReceived:

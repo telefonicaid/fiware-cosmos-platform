@@ -29,22 +29,11 @@
 #include "processList.h"        // processListGet, ...
 #include "starterList.h"        // starterAdd, ...
 #include "Popup.h"              // Popup
+#include "ProcessConfigView.h"  // ProcessConfigView
 #include "ProcessListTab.h"     // Own interface
 
 
 
-/* ****************************************************************************
-*
-* global vars
-*/
-static int                 spawnerColumn = 0;
-static int                 processColumn = 3;
-static int                 spawnerRow    = 1;
-static int                 processRow    = 1;
-
-
-
-#define ROWS 12
 /* ****************************************************************************
 *
 * ProcessListTab::ProcessListTab - 
@@ -53,18 +42,23 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 {
 	Starter**           starterV;
 	unsigned int        starters;
-	const unsigned int  Columns       = 5;
+	
+	mainLayout  = new QHBoxLayout(parent);
+	leftLayout  = new QVBoxLayout();
+	rightLayout = new QVBoxLayout();
+	rightGrid   = new QGridLayout();
 
-	mainLayout = new QGridLayout(parent);
+	mainLayout->addLayout(leftLayout);
+	mainLayout->addStretch(10);
+	mainLayout->addLayout(rightLayout);
+	mainLayout->addStretch(100);
+
+	rightLayout->addLayout(rightGrid);
 	setLayout(mainLayout);
 
+	configView = NULL;
+
 	initialStartersCreate();
-
-	QLabel* spawnersLabel = new QLabel("Spawners");
-	mainLayout->addWidget(spawnersLabel, 0, spawnerColumn);
-
-	QLabel* processesLabel = new QLabel("Processes");
-	mainLayout->addWidget(processesLabel, 0, processColumn);
 
 	starters  = starterMaxGet();
 	starterV  = starterListGet();
@@ -80,11 +74,7 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 		starterInclude(starterV[ix]);
 	}
 
-	for (unsigned int ix = 0; ix < ROWS; ix++)
-		mainLayout->setRowMinimumHeight(ix, 40);
-
-	for (unsigned int ix = 0; ix < Columns; ix++)
-		mainLayout->setColumnMinimumWidth(ix, 100);
+	leftLayout->addStretch(500);
 }
 
 
@@ -103,12 +93,11 @@ void ProcessListTab::quit(void)
 /* ****************************************************************************
 *
 * initialStartersCreate - 
+*
+* One Qt Starter for each Process.
 */
 void ProcessListTab::initialStartersCreate(void)
 {
-	//
-	// One Qt Starter for each Process
-	//
 	Process**     processV;
 	unsigned int  processMax;
 
@@ -139,8 +128,30 @@ void ProcessListTab::initialStartersCreate(void)
 */
 void ProcessListTab::starterInclude(Starter* starterP)
 {
-	if (starterP->process->type == PtSpawner)
-		starterP->qtInit(mainLayout, spawnerRow++, spawnerColumn);
+	starterP->qtInit(leftLayout);
+}
+
+
+
+/* ****************************************************************************
+*
+* configShow - 
+*/
+void ProcessListTab::configShow(Starter* starterP)
+{
+	ss::Endpoint* endpoint;
+
+	endpoint = starterP->process->endpoint;
+	if ((endpoint == NULL) || (endpoint->state != ss::Endpoint::Connected))
+		new Popup("Not Implemented", "Please implement a way to configure a non running process.\nJust being able to select all command line options.");
 	else
-		starterP->qtInit(mainLayout, processRow++, processColumn);
+	{
+		if (configView != NULL)
+		{
+			delete configView;
+			configView = NULL;
+		}
+
+		configView = new ProcessConfigView(rightGrid, starterP->process);
+	}
 }

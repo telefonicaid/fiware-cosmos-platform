@@ -14,6 +14,7 @@
 #include <QVBoxLayout>
 #include <QCheckBox>
 #include <QLabel>
+#include <QSlider>
 
 #include "logMsg.h"             // LM_*
 
@@ -27,24 +28,26 @@
 */
 ConfigTab::ConfigTab(QWidget *parent) : QWidget(parent)
 {
-	QGridLayout*  mainLayout       = new QGridLayout(parent);
-	QGroupBox*    connectBox       = new QGroupBox("Connection Type Checking");
-	QVBoxLayout*  vbox             = new QVBoxLayout;
-	QRadioButton* onButton         = new QRadioButton("Error on different types");
-	QRadioButton* offButton        = new QRadioButton("Automatic type checking OFF");
-	QRadioButton* leftButton       = new QRadioButton("Inherit left side out-type");
-	QRadioButton* popupButton      = new QRadioButton("Popup to choose type");
-	QLabel*       logFontSize      = new QLabel("IMPLEMENT log font size INT-selector");
+	QGridLayout*  mainLayout        = new QGridLayout(parent);
+	QGroupBox*    connectBox        = new QGroupBox("Connection Type Checking");
+	QVBoxLayout*  vbox              = new QVBoxLayout;
+	QRadioButton* onButton          = new QRadioButton("Error on different types");
+	QRadioButton* offButton         = new QRadioButton("Automatic type checking OFF");
+	QRadioButton* leftButton        = new QRadioButton("Inherit left side out-type");
+	QRadioButton* popupButton       = new QRadioButton("Popup to choose type");
+	QLabel*       logFontSizeLabel  = new QLabel("Font size in Log tab");
+	QSlider*      logFontSizeSlider = new QSlider(Qt::Horizontal);
 
 	autoConfigCBox = new QCheckBox("Config window on SceneItem creation");
 	autoConfigCBox->setCheckState(Qt::Unchecked);
 
 	setLayout(mainLayout);
-	mainLayout->addWidget(connectBox,     0, 0, 5, 1);
-	mainLayout->addWidget(autoConfigCBox, 1, 1, 1, 1);
-	mainLayout->addWidget(logFontSize,    2, 1, 1, 1);
+	mainLayout->addWidget(connectBox,           0, 0, 5, 1);
+	mainLayout->addWidget(autoConfigCBox,       1, 1, 1, 1);
 
-	connectBox->setFlat(false);
+	mainLayout->addWidget(logFontSizeLabel,     2, 1, 1, 1);
+	mainLayout->addWidget(logFontSizeSlider,    2, 2, 1, 1);
+
 	onButton->setChecked(true);
 
 	vbox->addWidget(onButton);
@@ -58,6 +61,9 @@ ConfigTab::ConfigTab(QWidget *parent) : QWidget(parent)
 	connect(leftButton,  SIGNAL(clicked()), this, SLOT(typeCheckLeft()));
 	connect(popupButton, SIGNAL(clicked()), this, SLOT(typeCheckPopup()));
 	connectBox->setLayout(vbox);
+	connectBox->setFlat(false);
+	connectBox->setFlat(false);
+	connectBox->setFlat(false);
 
 	typeCheck = On;
 }

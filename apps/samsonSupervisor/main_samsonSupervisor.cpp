@@ -100,7 +100,7 @@ int     endpoints;
 char    controllerHost[80];
 char    cfPath[80];
 bool    nologin;
-bool    nocss;
+bool    usecss;
 
 
 
@@ -116,7 +116,7 @@ PaArgument paArgs[] =
 	{ "-endpoints",   &endpoints,      "ENDPOINTS",   PaInt,     PaOpt,    80,     3,    100,  "number of endpoints" },
 	{ "-config",      &cfPath,         "CF_FILE",     PaStr,     PaOpt,   CFP,  PaNL,   PaNL,  "path to config file" },
 	{ "-nologin",     &nologin,        "NO_LOGIN",    PaBool,    PaHid, false, false,   true,  "no login"            },
-	{ "-nocss",       &nocss,          "NO_CSS",      PaBool,    PaHid, false, false,   true,  "no css"              },
+	{ "-usecss",      &usecss,         "USE_CSS",     PaBool,    PaHid, false, false,   true,  "use css"             },
 
 	PA_END_OF_ARGS
 };
@@ -208,7 +208,7 @@ void login(void)
 */
 int main(int argC, const char *argV[])
 {
-    QApplication   app(argC, (char**) argV);
+	QApplication   app(argC, (char**) argV);
 	ss::Endpoint*  controller;
 	Process*       controllerProcess;
 
@@ -231,10 +231,10 @@ int main(int argC, const char *argV[])
 	userMgr = new UserMgr(10);
 
 	userMgr->insert("superman", "samsonite", UpAll);
-	userMgr->insert("nadie",    "",          UpNothing);
+	userMgr->insert("guest",    "",          UpNothing);
 	userMgr->insert("kz",       "kz",        UpAll);
 	userMgr->insert("andreu",   "andreu",    UpAll);
-	userMgr->insert("3rdParty", "please",    UpStartProcesses | UpStopProcesses);
+	userMgr->insert("3rdParty", "please",    UpStartProcesses | UpStopProcesses | UpSeeLogs);
 
 	if (nologin == false)
 		login();
@@ -325,7 +325,7 @@ int main(int argC, const char *argV[])
 	mainWinCreate(qApp);
 	tabManager = new TabManager(mainWindow);
 
-	if (nocss == false)
+	if (usecss == true)
 		setStyleSheet("/mnt/sda9/kzangeli/sb/samson/20/apps/samsonSupervisor/samson.css");
 
 	mainWindow->show();

@@ -32,6 +32,10 @@
 	<file>images/sourceDisabled.png</file>
 	<file>images/resultDisabled.png</file>
 	<file>images/queueDisabled.png</file>
- </qresource>
+	<file>images/red-ball.gif</file>
+	<file>images/yellow-ball.gif</file>
+	<file>images/green-ball.gif</file>
+	<file>images/blue-ball.gif</file>
+  </qresource>
  </RCC>
 

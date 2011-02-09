@@ -21,6 +21,7 @@
 #include "Process.h"            // Process, processAdd, ...
 #include "processList.h"        // processListGet
 #include "starterList.h"        // starterLookup
+#include "configFile.h"         // configFileParse
 #include "actions.h"            // Own interface
 
 
@@ -171,32 +172,49 @@ void processStart(Process* processP, Starter* starter)
 	int                     s;
 	char*                   alias = (char*) "no_alias";
 
-	LM_T(LmtProcessStart, ("starting process '%s' in '%s' with %d parameters", processP->name, processP->host, processP->spawnInfo->argCount));
-	processListShow("starting process");
-
 	LM_TODO(("Lookup starter and don't start if already started!"));
 
-	spawnData.argCount = processP->spawnInfo->argCount;
+    int    args = 0;
+    char*  argVec[20];
+	
+	if (configFileParse(processP->host, processP->name, &args, argVec) == -1)
+	{
+		char eText[256];
+
+		snprintf(eText,
+				 sizeof(eText),
+				 "Unable to connect to worker in '%s'.\nAlso unable to find info on Worker in config file.\nUnable to connect to Worker, sorry.",
+				 processP->host);
+		new Popup("Cannot connect to Worker", eText, true);
+		return;
+	}
+
+	// LmtProcessStart
+	LM_M(("starting process '%s' in '%s' with %d parameters", processP->name, processP->host, args));
+	processListShow("starting process");
+
+	spawnData.argCount = args;
 	strcpy(spawnData.name, processP->name);
 	memset(spawnData.args, sizeof(spawnData.args), 0);
 
 	end = spawnData.args;
 
-	for (ix = 0; ix < processP->spawnInfo->argCount; ix++)
+	for (ix = 0; ix < args; ix++)
 	{
-		strcpy(end, processP->spawnInfo->arg[ix]);
+		strcpy(end, argVec[ix]);
 		LM_T(LmtProcessStart, ("parameter %d: '%s'", ix, end));
-		end += strlen(processP->spawnInfo->arg[ix]) + 1; // leave one ZERO character
-		if (strcmp(processP->spawnInfo->arg[ix], "-alias") == 0)
+		end += strlen(argVec[ix]) + 1; // leave one ZERO character
+		if (strcmp(argVec[ix], "-alias") == 0)
 			alias = end;
 	}
 	*end = 0;
 
-	LM_T(LmtProcessStart, ("starting %s via spawner %p (host: '%s', fd: %d)",
-						   spawnData.name,
-						   processP->spawnInfo->spawnerP,
-						   processP->spawnInfo->spawnerP->host,
-						   processP->spawnInfo->spawnerP->endpoint->rFd));
+	LM_M(("starting %s via spawner %p (host: '%s', fd: %d). %d params",
+		  spawnData.name,
+		  processP->spawnInfo->spawnerP,
+		  processP->spawnInfo->spawnerP->host,
+		  processP->spawnInfo->spawnerP->endpoint->rFd,
+		  spawnData.argCount));
 
 	if (strcmp(spawnData.name, "Controller") == 0)
 		s = iomMsgSend(processP->spawnInfo->spawnerP->endpoint->wFd, processP->spawnInfo->spawnerP->host, "samsonSupervisor", ss::Message::ControllerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
@@ -247,14 +265,14 @@ void processStart(Process* processP, Starter* starter)
 				snprintf(errorText, sizeof(errorText), "Error connecting ");
 
 			new Popup("Connect Error", errorText);
-			starter->check();
+			starter->check("processStart error");
 			return;
 		}
 
 		usleep(50000);
 	}
 
-	starter->check();
+	starter->check("processStart");
 }
 
 

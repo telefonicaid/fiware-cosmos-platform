@@ -12,33 +12,15 @@
 */
 #include "Packet.h"             // Packet
 #include "Message.h"            // MessageType, Code, etc.
+#include "Endpoint.h"           // Endpoint
 
 
 
 /* ****************************************************************************
 *
-* full_read - read from a socket until completed or error
+* iomMsgPartRead - read from a socket until completed or error
 */
-ssize_t full_read(int fd, char* buf, ssize_t nbyte);
-
-
-
-/* ****************************************************************************
-*
-* iomMsgRead - read a message from a peer
-*/
-extern int iomMsgRead
-(
-	int                        fd,
-	const char*                from,
-	ss::Message::MessageCode*  msgCodeP,
-	ss::Message::MessageType*  msgTypeP,
-	void**                     dataPP,
-	int*                       dataLenP,
-	ss::Packet*                packetP     = NULL,
-	void*                      kvData      = NULL,
-	int*                       kvDataLenP  = NULL
-);
+ssize_t iomMsgPartRead(ss::Endpoint* ep, const char* what, char* buf, ssize_t bufLen);
 
 
 

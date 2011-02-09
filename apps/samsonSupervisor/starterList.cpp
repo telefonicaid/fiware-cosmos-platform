@@ -126,8 +126,17 @@ Starter* starterAdd(Process* processP)
 {
 	Starter* starter;
 
+	if (processP->starterP != NULL)
+	{
+		LM_M(("process '%s@%s' already has a starter", processP->name, processP->host));
+		return processP->starterP;
+	}
+	
+	LM_M(("Allocating a starter for '%s@%s'", processP->name, processP->host));
+
 	starter = new Starter(processP);
 	processP->starterP = starter;
+
 	return starterAdd(starter);
 }
 

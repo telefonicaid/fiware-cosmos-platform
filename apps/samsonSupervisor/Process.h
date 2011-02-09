@@ -61,6 +61,7 @@ typedef struct Process
 	ProcessType      type;
 	Starter*         starterP;
 	SpawnInfo*       spawnInfo;
+	bool             sendsLogs;
 } Process;
 
 #endif

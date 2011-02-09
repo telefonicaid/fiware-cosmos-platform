@@ -87,7 +87,7 @@ char* traceLevelName(TraceLevels level)
 	case LmtProcessListTab:              return (char*) "Process List QT Tab";
 	case LmtQtTimer:                     return (char*) "QT timers";
 
-	case LmtCheck:                       return (char*) "Checkbox state (Supervisor only)";
+	case LmtCheck:                       return (char*) "Check";
 	case LmtFile:                        return (char*) "File";
 	case LmtTask:                        return (char*) "Task";
 	case LmtJob:                         return (char*) "Job";

@@ -1025,20 +1025,12 @@ Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, con
 Endpoint* Network::endpointAddSupervisor(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
 {
 	if (endpoint[SUPERVISOR] == NULL)
-	{
-		// LM_T(LmtInit, ("Allocating room for Supervisor endpoint"));
 		endpoint[SUPERVISOR] = new Endpoint();
-		// LM_T(LmtInit, ("*** Supervisor Endpoint at %p", endpoint[SUPERVISOR]));
-	}
 
 	endpointFill(endpoint[SUPERVISOR], inheritedFrom, rFd, wFd, name, alias, workers, ip, Endpoint::Supervisor, port, coreNo);
 
 	if (endpointUpdateReceiver != NULL)
 		endpointUpdateReceiver->endpointUpdate(endpoint[SUPERVISOR], Endpoint::SupervisorAdded, "Supervisor Added");
-
-	// LM_M(("TESTING: Setting up LM hook function"));
-	// logHookInit(ip.c_str());
-	// lmOutHookSet(logHookFunction, (void*) this);
 
 	return endpoint[SUPERVISOR];
 }
@@ -1610,7 +1602,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	//
 	// Reading header of the message
 	//
-	nb = full_read(ep->rFd, (char*) &header, sizeof(header));
+	nb = iomMsgPartRead(ep, "header", (char*) &header, sizeof(header));
 	
 	if (nb == -1)
 		LM_RVE(("iomMsgRead: error reading message from '%s': %s", ep->name.c_str(), strerror(errno)));
@@ -1641,8 +1633,6 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 			if (endpoint[ME]->type == Endpoint::CoreWorker)
 				LM_X(1, ("My Father (samsonWorker) died, I cannot exist without father process"));
 
-			LM_W(("controller died ... trying to reconnect !"));
-
 			endpoint[CONTROLLER]->rFd    = -1;
 			endpoint[CONTROLLER]->state = Endpoint::Disconnected;
 
@@ -1651,6 +1641,8 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 			if (endpoint[ME]->type != Endpoint::Supervisor)
 			{
+				LM_W(("controller died ... trying to reconnect!"));
+
 				while (endpoint[CONTROLLER]->rFd == -1)
 				{
 					LM_T(LmtControllerConnect, ("Reconnecting to Controller"));
@@ -1664,6 +1656,9 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 				if (endpointUpdateReceiver != NULL)
 					endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerReconnected, "Controller Reconnected");
 			}
+			else
+				LM_W(("controller died ... NOT trying to reconnect!"));
+
 		}
 		else if (ep != NULL)
 		{
@@ -2017,7 +2012,6 @@ void Network::msgTreat(void* vP)
 
 		for (int ix = 0; ix < 256; ix++)
 			lmTraceLevelSet(ix, configDataP->traceLevels[ix]);
-
 		break;
 
 	case Message::Hello:

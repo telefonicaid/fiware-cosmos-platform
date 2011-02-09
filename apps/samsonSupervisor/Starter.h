@@ -13,6 +13,7 @@
 #include <QObject>
 #include <QBoxLayout>
 #include <QCheckBox>
+#include <QToolButton>
 #include <QPushButton>
 #include <QGridLayout>
 
@@ -32,19 +33,21 @@ public:
 	Starter(Process* processP);
 	Starter(Process* processP, SpawnInfo* siP);
 	
-	void            check(void);
-	void            qtInit(QGridLayout* grid, int row, int column);
+	void            check(const char* reason);
+	void            qtInit(QVBoxLayout* layout);
 
 	Process*        process;
 
-	Qt::CheckState  checkState;
-	QCheckBox*      checkbox;
-	QPushButton*    configButton;
+	QToolButton*    startButton;
+	QToolButton*    connectButton;
+	QToolButton*    logButton;
+	QPushButton*    nameButton;
 
 private slots:
-	void spawnerClicked();
-	void processClicked();
-	void configureClicked();
+	void startClicked();
+	void connectClicked();
+	void logClicked();
+	void nameClicked();
 };
 
 #endif

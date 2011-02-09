@@ -28,6 +28,7 @@ const char* permissionName(Permissions p)
 	case UpSeeLogs:              return "SeeLogs";
 	case UpAll:                  return "ALL permissions";
 	case UpNothing:              return "NO permissions";
+	case UpRawPlatformAccess:    return "RawPlatformAccess";
 	}
 
 	return "Unknown Permission";

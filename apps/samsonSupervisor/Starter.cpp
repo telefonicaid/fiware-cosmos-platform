@@ -35,6 +35,7 @@ Starter::Starter(Process* processP)
 }
 
 
+
 /* ****************************************************************************
 *
 * Starter::qtInit - 
@@ -46,27 +47,29 @@ void Starter::qtInit(QVBoxLayout* layout)
 
 	LM_T(LmtStarter, ("Creating checkbox for '%s'", process->name));
 
-	connectButton  = new QToolButton();
+	connectButton  = new QPushButton();
 	connectButton->setIcon(redIcon);
 	connectButton->setToolTip("Connect");
-	connectButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	connectButton->setFlat(true);
 
-	logButton = new QToolButton();
+	logButton = new QPushButton();
 	logButton->setIcon(redIcon);
 	logButton->setToolTip("Make process send log information");
+	logButton->setFlat(true);
 
 	nameButton = new QPushButton(QString(process->name) + "@" + process->host);
-	connectButton->setToolTip("Configure process");
+	nameButton->setToolTip("Configure process");
 	nameButton->setFlat(true);
 
-	startButton = new QToolButton();
+	startButton = new QPushButton();
+	startButton->setIcon(redIcon);
+	startButton->setToolTip("Start Process");
+	startButton->setFlat(true);
 
 	if (process->type != PtSpawner)	
-	{
-		startButton->setIcon(redIcon);
 		startButton->connect(startButton, SIGNAL(clicked()), this, SLOT(startClicked()));
-		startButton->setToolTip("Start Process");
-	}
+//	else
+//		startButton->setDisabled(true);
 
 	box->addWidget(startButton);
 	box->addWidget(connectButton);
@@ -225,6 +228,19 @@ void Starter::startClicked(void)
 {
 	if (process == NULL)
 		LM_X(1, ("NULL process"));
+
+	if (process->type == PtSpawner)
+	{
+		if ((process->endpoint == NULL) || (process->endpoint->state != ss::Endpoint::Connected))
+			processConnect(process);
+		else
+		{
+			networkP->endpointRemove(process->endpoint, "GUI Click");
+			process->endpoint    = NULL;
+		}
+
+		return;
+	}
 
 	if ((process->endpoint == NULL) || (process->endpoint->state != ss::Endpoint::Connected))
 	{

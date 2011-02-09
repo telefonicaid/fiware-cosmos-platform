@@ -51,6 +51,9 @@ DelilahSceneItem::~DelilahSceneItem()
 	if (pixmap)          delete pixmap;
 	if (nameItem)        delete nameItem;
 	if (pixmapItem)      delete pixmapItem;
+
+	if (scene->highestInStack == this)
+		scene->highestInStack = NULL;
 }
 
 

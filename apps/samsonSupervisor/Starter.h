@@ -38,9 +38,9 @@ public:
 
 	Process*        process;
 
-	QToolButton*    startButton;
-	QToolButton*    connectButton;
-	QToolButton*    logButton;
+	QPushButton*    startButton;
+	QPushButton*    connectButton;
+	QPushButton*    logButton;
 	QPushButton*    nameButton;
 
 private slots:

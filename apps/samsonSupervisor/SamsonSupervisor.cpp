@@ -373,19 +373,24 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		{
 			Process* processP;
 
-			LM_T(LmtStarter, ("starter == NULL - looking up process %s@%d", ep->name.c_str(), ep->ip.c_str()));
-			processP = processLookup(ep->name.c_str(), ep->ip.c_str());
-			if (processP != NULL)
-			{
-				if (processP->endpoint == NULL)
-					processP->endpoint = ep;
-				else if (processP->endpoint != ep)
-					LM_E(("********* Should have the same endpoint ...  %p vs %p", processP->endpoint, ep));
-			}
+			if (ep->type == ss::Endpoint::Temporal)
+				LM_W(("Just a temporal endpoint - never mind ...   ?"));
 			else
-				LM_W(("NULL process for endpoint '%s@%s' - create one ?", ep->name.c_str(), ep->ip.c_str()));
+			{
+				LM_T(LmtStarter, ("starter == NULL - looking up process %s@%d", ep->name.c_str(), ep->ip.c_str()));
+				processP = processLookup(ep->name.c_str(), ep->ip.c_str());
+				if (processP != NULL)
+				{
+					if (processP->endpoint == NULL)
+						processP->endpoint = ep;
+					else if (processP->endpoint != ep)
+						LM_E(("********* Should have the same endpoint ...  %p vs %p", processP->endpoint, ep));
+				}
+				else
+					LM_W(("NULL process for endpoint '%s@%s' - create one ?", ep->name.c_str(), ep->ip.c_str()));
 
-			LM_W(("Here I should probably create starter for '%s@%s'", ep->name.c_str(), ep->ip.c_str()));
+				LM_W(("Here I should probably create starter for '%s@%s'", ep->name.c_str(), ep->ip.c_str()));
+			}
 		}
 	}
 

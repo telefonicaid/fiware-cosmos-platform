@@ -122,6 +122,11 @@ void Starter::check(const char* reason)
 			startButton->setIcon(greenIcon);
 			startButton->setToolTip("Kill process");
 		}
+		else
+		{
+		   startButton->setIcon(greenIcon);
+		   startButton->setToolTip("Nothing ...");		   
+		}
 
 		connectButton->setDisabled(false);
 		logButton->setDisabled(false);

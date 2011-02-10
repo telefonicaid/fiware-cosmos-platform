@@ -17,11 +17,13 @@
 #include <QComboBox>
 #include <QFileDialog>
 #include <QSpinBox>
+#include <QLineEdit>
+#include <QPushButton>
 
 #include "logMsg.h"             // LM_X, ...
 #include "traceLevels.h"        // Trace Levels
-#include "globals.h"            // qtAppRunning, ...
 
+#include "globals.h"            // delilahConsole, connectionMgr
 #include "DelilahSource.h"      // DelilahSource
 #include "SourceConfigWindow.h" // Own interface
 
@@ -206,12 +208,6 @@ SourceConfigWindow::SourceConfigWindow(DelilahSource* source)
 
 	fakeShow(source->faked);
 	sourceFileShow(!source->faked);
-
-	if (qtAppRunning == false)
-	{
-		qtAppRunning = true;
-		qApp->exec();
-	}
 }
 
 

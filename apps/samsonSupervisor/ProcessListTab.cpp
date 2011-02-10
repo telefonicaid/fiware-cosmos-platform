@@ -42,16 +42,21 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 {
 	Starter**           starterV;
 	unsigned int        starters;
-	
-	mainLayout  = new QHBoxLayout(parent);
-	leftLayout  = new QVBoxLayout();
-	rightLayout = new QVBoxLayout();
-	rightGrid   = new QGridLayout();
+	QVBoxLayout*        leftBasicLayout;
 
-	mainLayout->addLayout(leftLayout);
+	mainLayout       = new QHBoxLayout(parent);
+	leftBasicLayout  = new QVBoxLayout();
+	leftLayout       = new QVBoxLayout();
+	rightLayout      = new QVBoxLayout();
+	rightGrid        = new QGridLayout();
+
+	mainLayout->addLayout(leftBasicLayout);
 	mainLayout->addStretch(10);
 	mainLayout->addLayout(rightLayout);
 	mainLayout->addStretch(100);
+
+	leftBasicLayout->addLayout(leftLayout);
+	leftBasicLayout->addStretch(100);
 
 	rightLayout->addLayout(rightGrid);
 	setLayout(mainLayout);
@@ -73,8 +78,6 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 
 		starterInclude(starterV[ix]);
 	}
-
-	leftLayout->addStretch(500);
 }
 
 

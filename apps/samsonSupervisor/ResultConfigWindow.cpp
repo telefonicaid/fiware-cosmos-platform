@@ -16,13 +16,15 @@
 #include <QDesktopWidget>
 #include <QComboBox>
 #include <QFileDialog>
+#include <QLineEdit>
+#include <QPushButton>
 
 #include "logMsg.h"             // LM_X, ...
 #include "traceLevels.h"        // Trace Levels
-#include "globals.h"            // qtAppRunning, ...
 
-#include "DelilahResult.h"       // DelilahResult
-#include "ResultConfigWindow.h"  // Own interface
+#include "globals.h"            // delilahConsole, connectionMgr
+#include "DelilahResult.h"      // DelilahResult
+#include "ResultConfigWindow.h" // Own interface
 
 
 
@@ -193,12 +195,6 @@ ResultConfigWindow::ResultConfigWindow(DelilahResult* result)
 	y = (screenHeight - size.height()) / 2;
 
 	this->move(x, y);
-
-	if (qtAppRunning == false)
-	{
-		qtAppRunning = true;
-		qApp->exec();
-	}
 }
 
 

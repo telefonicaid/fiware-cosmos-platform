@@ -18,7 +18,7 @@
 
 #include "logMsg.h"             // LM_X, ...
 #include "traceLevels.h"        // Trace Levels
-#include "globals.h"            // qtAppRunning, ...
+#include "globals.h"            // delilahConsole
 
 #include "DelilahQueue.h"       // DelilahQueue
 #include "QueueConfigWindow.h"  // Own interface
@@ -242,12 +242,6 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 	y = (screenHeight - size.height()) / 2;
 
 	this->move(x, y);
-
-	if (qtAppRunning == false)
-	{
-		qtAppRunning = true;
-		qApp->exec();
-	}
 }
 
 

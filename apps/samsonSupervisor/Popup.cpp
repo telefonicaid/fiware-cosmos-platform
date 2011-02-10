@@ -103,10 +103,7 @@ Popup::Popup(const char* title, const char* text, bool die, int type)
 	this->move(x, y);
 
 	if (qtAppRunning == false)
-	{
-		qtAppRunning = true;
 		qApp->exec();
-	}
 }
 
 

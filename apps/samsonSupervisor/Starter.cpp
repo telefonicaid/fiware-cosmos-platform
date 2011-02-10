@@ -75,7 +75,7 @@ void Starter::qtInit(QVBoxLayout* layout)
 	box->addWidget(connectButton);
 	box->addWidget(logButton);
 	box->addWidget(nameButton);
-	box->addStretch(100);
+	box->addStretch(500);
 
 	connectButton->connect(connectButton, SIGNAL(clicked()), this, SLOT(connectClicked()));
 	logButton->connect(logButton,         SIGNAL(clicked()), this, SLOT(logClicked()));

@@ -189,8 +189,7 @@ void processStart(Process* processP, Starter* starter)
 		return;
 	}
 
-	// LmtProcessStart
-	LM_M(("starting process '%s' in '%s' with %d parameters", processP->name, processP->host, args));
+	LM_T(LmtProcessStart, ("starting process '%s' in '%s' with %d parameters", processP->name, processP->host, args));
 	processListShow("starting process");
 
 	spawnData.argCount = args;
@@ -209,12 +208,12 @@ void processStart(Process* processP, Starter* starter)
 	}
 	*end = 0;
 
-	LM_M(("starting %s via spawner %p (host: '%s', fd: %d). %d params",
-		  spawnData.name,
-		  processP->spawnInfo->spawnerP,
-		  processP->spawnInfo->spawnerP->host,
-		  processP->spawnInfo->spawnerP->endpoint->rFd,
-		  spawnData.argCount));
+	LM_T(LmtProcessStart, ("starting %s via spawner %p (host: '%s', fd: %d). %d params",
+						   spawnData.name,
+						   processP->spawnInfo->spawnerP,
+						   processP->spawnInfo->spawnerP->host,
+						   processP->spawnInfo->spawnerP->endpoint->rFd,
+						   spawnData.argCount));
 
 	if (strcmp(spawnData.name, "Controller") == 0)
 		s = iomMsgSend(processP->spawnInfo->spawnerP->endpoint->wFd, processP->spawnInfo->spawnerP->host, "samsonSupervisor", ss::Message::ControllerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));

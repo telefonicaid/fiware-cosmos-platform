@@ -17,9 +17,8 @@
 #include "iomMsgSend.h"         // iomMsgSend
 
 #include "globals.h"            // networkP
-#include "actions.h"            // spawnerConnect, spawnerDisconnect
-#include "ConfigWindow.h"       // ConfigWindow
 #include "Popup.h"              // Popup
+#include "actions.h"            // spawnerConnect, spawnerDisconnect
 #include "processList.h"        // processTypeName, ...
 #include "Starter.h"            // Own interface
 
@@ -68,8 +67,6 @@ void Starter::qtInit(QVBoxLayout* layout)
 
 	if (process->type != PtSpawner)	
 		startButton->connect(startButton, SIGNAL(clicked()), this, SLOT(startClicked()));
-//	else
-//		startButton->setDisabled(true);
 
 	box->addWidget(startButton);
 	box->addWidget(connectButton);
@@ -108,7 +105,7 @@ void Starter::check(const char* reason)
 	QIcon  greenIcon("images/green-ball.gif");
 	QIcon  redIcon("images/red-ball.gif");
 
-	LM_M(("CHECKING (%s) Starter for %s@%s", reason, process->name, process->host));
+	LM_T(LmtStarter, ("CHECKING (%s) Starter for %s@%s", reason, process->name, process->host));
 
 	if (process->endpoint == NULL)
 		LM_W(("NULL endpoint"));
@@ -152,71 +149,6 @@ void Starter::check(const char* reason)
 		connectButton->setDisabled(true);
 	}
 }
-
-
-
-#if 0
-/* ****************************************************************************
-*
-* Starter::spawnerClicked
-*/
-void Starter::spawnerClicked(void)
-{
-	LM_T(LmtCheck, ("IN, checkState: '%s'",  (checkbox->checkState() == Qt::Checked)? "Checked" : "Unchecked"));
-
-	if (checkbox->checkState() == Qt::Checked)
-	{
-		if (process->endpoint)
-			networkP->endpointRemove(process->endpoint, "GUI Click - endpoint already existed");
-
-		LM_T(LmtSpawnerConnect, ("Connecting to spawner '%s'", process->host));
-		processConnect(process);
-	}
-	else if (checkbox->checkState() == Qt::Unchecked)
-	{
-		if (process->endpoint == NULL)
-		{
-			LM_W(("NULL endpoint - nothing to be done ..."));
-			return;
-		}
-
-		if (process->endpoint->state != ss::Endpoint::Connected)
-			LM_W(("endpoint pointer ok (%p), but not connected", process->endpoint));
-
-		networkP->endpointRemove(process->endpoint, "GUI Click");
-		process->endpoint    = NULL;
-	}
-}
-
-
-
-/* ****************************************************************************
-*
-* Starter::processClicked
-*/
-void Starter::processClicked(void)
-{
-}
-
-
-
-/* ****************************************************************************
-*
-* Starter::configureClicked
-*/
-void Starter::configureClicked(void)
-{
-	if (process->endpoint == NULL)
-	{
-		char info[128];
-
-		snprintf(info, sizeof(info), "%s is not connected", process->name);
-		new Popup("Error", info);
-	}
-	else
-		new ConfigWindow(process->endpoint);
-}
-#endif
 
 
 
@@ -264,7 +196,12 @@ void Starter::startClicked(void)
 */
 void Starter::connectClicked(void)
 {
-	LM_M(("IN"));
+	new Popup("ToDo",
+			  "Remove CONNECT/DISCONNECT column of 'balls'.\n"
+			  "START and CONNECT to use the same button.\n"
+			  "  Start for Controller/Worker and\n"
+			  "  Connect for Spawner.\n\n"
+			  "Log button must stay, of course."); 
 }
 
 

@@ -188,26 +188,15 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 				continue;
 			}
 
-			LM_TODO(("Lookup command line options in 'platformProcesses'"));
-			LM_TODO(("OR: Ask Controller about the options"));
-			LM_TODO(("We could use the 'Config' window to input command line options"));
-			LM_TODO(("  and later send this info to controller - which should be the central information holder"));
-			LM_TODO(("For now, I'll just lookup host and command line options in 'platformProcesses'"));
-
-			LM_T(LmtWorkerVector, ("looking up worker with alias %s in config file 'platformProcesses'", wvDataP->workerV[ix].alias));
-
 			processP = processAdd("Worker", host, 0, NULL, argV, args);
 			if (processP == NULL)
 				LM_X(1, ("NULL processP for Worker@%s", host));
-
 			if (processP->spawnInfo == NULL)
 				LM_X(1, ("How come spawn-info is NULL for Worker (alias: '%s') in host '%s'", wvDataP->workerV[ix].alias, host));
-
 			if ((starterP = starterLookup(processP)) != NULL)
 				LM_W(("Strange - starter already there - restarted process ?"));
 			else
 			{
-				LM_M(("Calling starterAdd for '%s@%s'", processP->name, processP->host));
 				starterP = starterAdd(processP);
 				if (starterP == NULL)
 					LM_X(1, ("NULL starterP for Worker@%s", host));
@@ -216,13 +205,9 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 					tabManager->processListTab->starterInclude(starterP);
 			}
 
-			LM_T(LmtWorkerVector, ("Looking up spawner for host '%s'", host));
 			processP->spawnInfo->spawnerP = spawnerLookup(host);
-			LM_T(LmtWorkerVector, ("spawner for host '%s' at %p", host, processP->spawnInfo->spawnerP));
-
 			if (processP->spawnInfo->spawnerP == NULL)
 			{
-				LM_W(("No spawner found in host '%s' - lets try to connect to it", host));
 				fd = iomConnect(host, SPAWNER_PORT);
 				if (fd != -1)
 					processP->spawnInfo->spawnerP = spawnerAdd("Spawner", host, SPAWNER_PORT, NULL);
@@ -243,29 +228,29 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 			LM_T(LmtWorkerVector, ("Connecting to worker in '%s'", wvDataP->workerV[ix].ip));
 			fd = iomConnect(wvDataP->workerV[ix].ip, wvDataP->workerV[ix].port);
 			if (fd == -1)
-				LM_E(("Error connecting to worker in '%s' (port %d)", wvDataP->workerV[ix].ip, wvDataP->workerV[ix].port));
+				LM_W(("Error connecting to worker in '%s' (port %d) - ***** Here I should create a starter", wvDataP->workerV[ix].ip, wvDataP->workerV[ix].port));
 			else
+				LM_T(LmtStarter, ("Connected to worker in '%s' (no need to create Starter)", wvDataP->workerV[ix].ip));
+
+			LM_TODO(("Perhaps I should create the endpoint here - so I find this process later when Hello arrives"));
+			processP = processAdd("Worker", wvDataP->workerV[ix].ip, wvDataP->workerV[ix].port, NULL, NULL, 0);
+			LM_TODO(("When Hello arrives - lookup this process"));
+			if (processP == NULL)
+				LM_X(1, ("processAdd returned NULL for Worker at %s", wvDataP->workerV[ix].ip));
+
+			starterP = starterAdd(processP);
+
+			if (processP->spawnInfo != NULL)
 			{
-				LM_TODO(("Perhaps I should create the endpoint here - so I find this process later when Hello arrives"));
-				processP = processAdd("Worker", wvDataP->workerV[ix].ip, wvDataP->workerV[ix].port, NULL, NULL, 0);
-				LM_TODO(("When Hello arrives - lookup this process"));
-				if (processP == NULL)
-					LM_X(1, ("processAdd returned NULL for Worker at %s", wvDataP->workerV[ix].ip));
-
-				starterP = starterAdd(processP);
-
-				if (processP->spawnInfo != NULL)
-				{
-					processP->spawnInfo->spawnerP = spawnerLookup(wvDataP->workerV[ix].ip);
-					if (processP->spawnInfo->spawnerP == NULL)
-						LM_X(1, ("Sorry, no spawner found in host '%s'", wvDataP->workerV[ix].ip));
-				}
-				else
-					LM_W(("processAdd returned NULL for spawnInfo for Worker at %s", wvDataP->workerV[ix].ip));
-
-				if ((tabManager != NULL) && (tabManager->processListTab != NULL))
-					tabManager->processListTab->starterInclude(starterP);
+				processP->spawnInfo->spawnerP = spawnerLookup(wvDataP->workerV[ix].ip);
+				if (processP->spawnInfo->spawnerP == NULL)
+					LM_X(1, ("Sorry, no spawner found in host '%s'", wvDataP->workerV[ix].ip));
 			}
+			else
+				LM_W(("processAdd returned NULL for spawnInfo for Worker at %s", wvDataP->workerV[ix].ip));
+
+			if ((tabManager != NULL) && (tabManager->processListTab != NULL))
+				tabManager->processListTab->starterInclude(starterP);
 		}
 	}
 
@@ -306,7 +291,27 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		if (starter != NULL)
 		{
 			LM_T(LmtEndpointUpdate, ("found %s-starter '%s'", processTypeName(starter->process), starter->process->name));
+			if (starter->process->endpoint != ep)
+				LM_E(("********* Should have the same endpoint ...  %p vs %p", starter->process->endpoint, ep));
 			starter->check("endpointUpdate");
+		}
+		else
+		{
+			Process* processP;
+
+			LM_T(LmtStarter, ("starter == NULL - looking up process %s@%d", ep->name.c_str(), ep->ip.c_str()));
+			processP = processLookup(ep->name.c_str(), ep->ip.c_str());
+			if (processP != NULL)
+			{
+				if (processP->endpoint == NULL)
+					processP->endpoint = ep;
+				else if (processP->endpoint != ep)
+					LM_E(("********* Should have the same endpoint ...  %p vs %p", processP->endpoint, ep));
+			}
+			else
+				LM_W(("NULL process for endpoint '%s@%s' - create one ?", ep->name.c_str(), ep->ip.c_str()));
+
+			LM_W(("Here I should probably create starter for '%s@%s'", ep->name.c_str(), ep->ip.c_str()));
 		}
 	}
 

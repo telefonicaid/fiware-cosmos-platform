@@ -2123,16 +2123,6 @@ void Network::msgTreat(void* vP)
 			int                   workers = dataLen / sizeof(Message::Worker);
 			Message::Worker*      workerV = (Message::Worker*) dataP;
 
-			if (endpointUpdateReceiver != NULL)
-			{
-				Message::WorkerVectorData wvData;
-
-				wvData.workers = workers;
-				wvData.workerV = workerV;
-
-				endpointUpdateReceiver->endpointUpdate(NULL, Endpoint::WorkerVectorReceived, "Got Worker Vector", &wvData);
-			}
-
 			for (unsigned int ix = 0; ix < dataLen / sizeof(Message::Worker); ix++)
 				LM_T(LmtWorkerVector, ("Controller gave me a worker in %s:%d", workerV[ix].ip, workerV[ix].port));
 
@@ -2171,10 +2161,9 @@ void Network::msgTreat(void* vP)
 
 			Workers = dataLen / sizeof(Message::Worker);
 
+
 			for (ix = 0; ix < Workers; ix++)
 			{
-				Endpoint* epP;
-
 				if (endpoint[FIRST_WORKER + ix] == NULL)
 				{
 					endpoint[FIRST_WORKER + ix]        = new Endpoint(Endpoint::Worker, workerV[ix].name, workerV[ix].ip, workerV[ix].port, -1, -1);
@@ -2185,6 +2174,21 @@ void Network::msgTreat(void* vP)
 				}
 				else
 					LM_T(LmtWorker, ("Should I fill worker %02d with the info the controller gave me ?", ix));
+			}
+
+			if (endpointUpdateReceiver != NULL)
+			{
+				Message::WorkerVectorData wvData;
+
+				wvData.workers = workers;
+				wvData.workerV = workerV;
+
+				endpointUpdateReceiver->endpointUpdate(NULL, Endpoint::WorkerVectorReceived, "Got Worker Vector", &wvData);
+			}
+
+			for (ix = 0; ix < Workers; ix++)
+			{
+				Endpoint* epP;
 
 				epP = endpoint[FIRST_WORKER + ix];
 

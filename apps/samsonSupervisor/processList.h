@@ -44,7 +44,7 @@ extern Process* processAdd(Process* process);
 *
 * processAdd - 
 */
-extern Process* processAdd(const char* name, const char* host, unsigned short port, ss::Endpoint* endpoint, char** args, int argCount);
+extern Process* processAdd(const char* name, const char* host, unsigned short port, ss::Endpoint* endpoint, char** args = NULL, int argCount = 0);
 
 
 

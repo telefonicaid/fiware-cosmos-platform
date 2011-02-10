@@ -306,13 +306,11 @@ Process* spawnerAdd(Process* spawnerP)
 		return spawnerP;
 	}
 
-	processV[processIx] = spawnerP;
+	processV[processIx++] = spawnerP;
 	spawnerP->type      = PtSpawner;
 
 	LM_T(LmtProcessList, ("Spawner for '%s' added", spawnerP->host));
 
-	++processIx;
-	
 	if (spawnerP->endpoint == NULL)
 	{
 		int fd;

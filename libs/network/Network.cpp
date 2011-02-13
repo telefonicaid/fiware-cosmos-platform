@@ -2220,8 +2220,12 @@ void Network::msgTreat(void* vP)
 				for (int ix = Workers; ix < workerVec->workers; ix++)
 				{
 					endpoint[FIRST_WORKER + ix]       = workerNew(ix);
-					endpoint[FIRST_WORKER + ix]->ip   = workerVec->workerV[ix].ip;
 					endpoint[FIRST_WORKER + ix]->port = workerVec->workerV[ix].port;
+					
+					if (workerVec->workerV[ix].ip[0] != 0)
+						endpoint[FIRST_WORKER + ix]->ip   = workerVec->workerV[ix].ip;
+					else
+						LM_W(("Empty IP for worker %d", ix));
 				}
 			}
 			else if (Workers > workerVec->workers)

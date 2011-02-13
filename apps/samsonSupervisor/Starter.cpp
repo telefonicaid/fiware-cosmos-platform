@@ -285,53 +285,57 @@ void Starter::nameClicked(void)
 void Starter::processStart(void)
 {
 	ss::Message::SpawnData  spawnData;
-	int                     ix;
-	char*                   end;
 	int                     s;
 	char*                   alias = (char*) "no_alias";
+	char*                   end;
 
-    int    args = 0;
-    char*  argVec[20];
-	
-	LM_TODO(("Here I send a message to controller to retrieve the command line options for this process"));
-	LM_TODO(("'etc/platformProcesses' will no longer be used"));
-	if (configFileParse(process->host, process->name, &args, argVec) == -1)
-	{
-		char eText[256];
+	new Popup("Please implement", "Here I should send a message to controller to retrieve the command line options for this process");
 
-		snprintf(eText,
-				 sizeof(eText),
-				 "Unable to connect to worker in '%s'.\nAlso unable to find info on Worker in config file.\nUnable to connect to Worker, sorry.",
-				 process->host);
-		new Popup("Cannot connect to Worker", eText, true);
-		return;
-	}
-
-	LM_T(LmtProcessStart, ("starting process '%s' in '%s' with %d parameters", process->name, process->host, args));
+	LM_T(LmtProcessStart, ("starting process '%s' in '%s' with no parameters", process->name, process->host));
 	processListShow("starting process");
 
-	spawnData.argCount = args;
+	spawnData.argCount = 2;
 	strcpy(spawnData.name, process->name);
-	memset(spawnData.args, sizeof(spawnData.args), 0);
 
+	memset(spawnData.args, sizeof(spawnData.args), 0);
 	end = spawnData.args;
 
-	for (ix = 0; ix < args; ix++)
-	{
-		strcpy(end, argVec[ix]);
-		LM_T(LmtProcessStart, ("parameter %d: '%s'", ix, end));
-		end += strlen(argVec[ix]) + 1; // leave one ZERO character
-		if (strcmp(argVec[ix], "-alias") == 0)
-			alias = end;
-	}
+#if 0
+	strcpy(end, process->name);
+	end += strlen(process->name);
+	*end = 0;
+	++end;
+#endif
+
+	strcpy(end, "-alias");
+	end += strlen("-alias");
+	*end = 0;
+	++end;
+
+	strcpy(end, process->alias);
+	end += strlen(process->alias);
+	*end = 0;
+	++end;
+
 	*end = 0;
 
-	LM_T(LmtProcessStart, ("starting %s via spawner %p (host: '%s', fd: %d). %d params",
+	for (int ix = 0; ix < 64; ix += 8)
+	   LM_M(("%02x %02x %02x %02x %02x %02x %02x %02x",
+			 spawnData.args[ix + 0] & 0xFF, 
+			 spawnData.args[ix + 1] & 0xFF, 
+			 spawnData.args[ix + 2] & 0xFF, 
+			 spawnData.args[ix + 3] & 0xFF, 
+			 spawnData.args[ix + 4] & 0xFF, 
+			 spawnData.args[ix + 5] & 0xFF, 
+			 spawnData.args[ix + 6] & 0xFF, 
+			 spawnData.args[ix + 7] & 0xFF));
+
+	LM_T(LmtProcessStart, ("starting %s (alias '%s') via spawner %p (host: '%s', fd: %d).",
 						   spawnData.name,
+						   process->alias,
 						   process->spawnInfo->spawnerP,
 						   process->spawnInfo->spawnerP->host,
-						   process->spawnInfo->spawnerP->endpoint->rFd,
-						   spawnData.argCount));
+						   process->spawnInfo->spawnerP->endpoint->rFd));
 
 	if (strcmp(spawnData.name, "Controller") == 0)
 		s = iomMsgSend(process->spawnInfo->spawnerP->endpoint->wFd, process->spawnInfo->spawnerP->host, "samsonSupervisor", ss::Message::ControllerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));

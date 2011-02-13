@@ -285,14 +285,10 @@ void QueueConfigWindow::save(void)
 	if (cP != NULL)
 		queue->displayNameSet(cP);
 
-	queue->inTypeSet(inTypeCombo->currentText().toStdString().c_str());
-	queue->outTypeSet(outTypeCombo->currentText().toStdString().c_str());
-	queue->commandSet(commandCombo->currentText().toStdString().c_str());
+	queue->inTypeSet(inTypeCombo->currentText().toStdString().c_str(), inTypeCombo->currentIndex());
+	queue->outTypeSet(outTypeCombo->currentText().toStdString().c_str(), outTypeCombo->currentIndex());
+	queue->commandSet(commandCombo->currentText().toStdString().c_str(), commandCombo->currentIndex());
 
-	win->queue->inTypeIndex  = inTypeCombo->currentIndex();
-	win->queue->outTypeIndex = outTypeCombo->currentIndex();
-	win->queue->commandIndex = commandCombo->currentIndex();
-	
 	LM_T(LmtQueue, ("Set inType  to '%s' (current index: %d)", queue->inType,  win->queue->inTypeIndex));
 	LM_T(LmtQueue, ("Set outType to '%s' (current index: %d)", queue->outType, win->queue->outTypeIndex));
 	LM_T(LmtQueue, ("Set command to '%s' (current index: %d)", queue->command, win->queue->commandIndex));

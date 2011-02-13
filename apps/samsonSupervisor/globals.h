@@ -24,6 +24,7 @@
 #include "ResultMgr.h"          // ResultMgr
 #include "UserMgr.h"            // UserMgr
 #include "user.h"               // User
+#include "InfoWin.h"            // InfoWin
 
 
 
@@ -51,7 +52,7 @@ extern QGraphicsItem*       sceneLayer1;
 extern User*                userP;
 extern int                  mainWinWidth;
 extern int                  mainWinHeight;
-
+extern InfoWin*             infoWin;
 
 
 /* ****************************************************************************

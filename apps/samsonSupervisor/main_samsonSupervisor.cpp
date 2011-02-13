@@ -48,7 +48,6 @@
 #include "QueueMgr.h"           // QueueMgr
 #include "UserMgr.h"            // UserMgr
 #include "SamsonSupervisor.h"   // SamsonSupervisor
-#include "actions.h"            // connectToAllSpawners
 #include "permissions.h"        // Permissions
 #include "LoginWindow.h"        // LoginWindow
 #include "SamsonSetup.h"		// ss::SamsonSetup
@@ -98,6 +97,7 @@ ss::DelilahConsole*  delilahConsole    = NULL;
 User*                userP             = NULL;
 int                  mainWinWidth      = MAIN_WIN_WIDTH;
 int                  mainWinHeight     = MAIN_WIN_HEIGHT;
+InfoWin*             infoWin           = NULL;
 
 
 
@@ -224,7 +224,9 @@ static void userInit(void)
 	userMgr->insert("3rdParty", "please",    UpStartProcesses | UpStopProcesses | UpSeeLogs);
 
 	if (nologin == false)
+	{
 		login();
+	}
 	else
 		userP = userMgr->lookup("kz");
 
@@ -285,17 +287,19 @@ static void spawnerConnect(char* host)
 */
 static void controllerConnect(char* host)
 {
-	char           eText[256];
 	ss::Endpoint*  controller;
-	Process*       controllerProcess;
-	char*          argVec[20];
-	int            args        = 0;
+	Process*       processP;
 
 	LM_T(LmtInit, ("Connecting to controller in '%s'", host));
 	controller = networkP->controllerConnect(host);
 
+#if 0
 	if (controller->state != ss::Endpoint::Connected)
 	{
+		char   eText[256];
+		char*  argVec[20];
+		int    args        = 0;
+
 		LM_TODO(("Not connected to controller - ask the config file about its command line options - and fill LogConfig Window accordingly"));
 
 		args = 20;
@@ -317,9 +321,10 @@ static void controllerConnect(char* host)
 			new Popup("Error connecting to Controller", eText, false);
 		}
 	}
+#endif
 
-	controllerProcess = processAdd("Controller", controller->ip.c_str(), controller->port, controller, argVec, args);
-	controllerProcess->spawnInfo->spawnerP = spawnerAdd("Spawner", controller->ip.c_str(), SPAWNER_PORT);
+	processP = processAdd("Controller", host, CONTROLLER_PORT, (char*) NULL, controller);
+	processP->spawnInfo->spawnerP = spawnerAdd("Spawner", host, SPAWNER_PORT);
 }
 
 

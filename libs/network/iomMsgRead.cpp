@@ -123,8 +123,8 @@ int iomMsgRead
 
 	if (headerP->dataLen != 0)
 	{
-		if (headerP->dataLen > 1000)
-			LM_X(1, ("Reading a '%s' %s from '%s' (dataLens: %d, %d, %d)",
+		if (headerP->dataLen > 10000)
+			LM_X(1, ("Too much data! (Reading a '%s' %s from '%s', dataLens: %d, %d, %d)",
 					 ss::Message::messageCode(headerP->code), ss::Message::messageType(headerP->type), ep->name.c_str(),
 					 headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 

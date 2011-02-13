@@ -9,7 +9,6 @@ SET (SOURCES
 	spawnerList.cpp
 	Starter.cpp
 	starterList.cpp
-	actions.cpp
 	TabManager.cpp
 	DelilahTab.cpp
 	LogTab.cpp
@@ -38,6 +37,7 @@ SET (SOURCES
 	SourceMgr.cpp
 	ResultMgr.cpp
 	ProcessConfigView.cpp
+	InfoWin.cpp
 )
 
 SET (HEADERS_MOC
@@ -55,6 +55,7 @@ SET (HEADERS_MOC
 	SourceConfigWindow.h
 	LoginWindow.h
 	ProcessConfigView.h
+	InfoWin.h
 )
 
 SET (HEADERS
@@ -64,7 +65,6 @@ SET (HEADERS
 	processList.h
 	spawnerList.h
 	starterList.h
-	actions.h
 	globals.h
 	configFile.h
 	misc.h

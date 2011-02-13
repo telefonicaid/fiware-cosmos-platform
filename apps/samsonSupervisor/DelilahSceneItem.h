@@ -53,6 +53,7 @@ public:
 	char*                    name;
 	QPixmap*                 pixmap;
 	bool                     disabled;
+	bool                     moved;
 
 	void                     disable(void);
 	void                     chainDisable(void);
@@ -61,11 +62,11 @@ public:
 
 	char*   inType;
 	int     inTypeIndex;    // for QueueConfigWindow
-	void    inTypeSet(const char* newType);
+	void    inTypeSet(const char* newType, int index);
 
 	char*   outType;
 	int     outTypeIndex;   // for QueueConfigWindow
-	void    outTypeSet(const char* newType);
+	void    outTypeSet(const char* newType, int index);
 
 private:
 	QMenu*                   menu;

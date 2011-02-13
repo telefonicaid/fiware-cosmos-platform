@@ -305,7 +305,7 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 							if (tabManager->configTab->typeCheck == ConfigTab::On)
 							{
-								snprintf(eText, sizeof(eText), "Cannot connect these two items:\n- '%s' with in type '%s'\n- '%s' with out type '%s'\nYou'll need to alter one of these types ...",
+								snprintf(eText, sizeof(eText), "Cannot connect these two items:\n- '%s' with out-type '%s'\n- '%s' with in-type '%s'\nYou'll need to alter one of these types ...",
 										 connectFrom->displayName, connectFrom->outType,
 										 si->displayName,          si->inType);
 								new Popup("Uncompatible Items", eText);
@@ -313,7 +313,7 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 							else if (tabManager->configTab->typeCheck == ConfigTab::Left)
 							{
 								LM_W(("Types differ - I choose the out-type of the left in the connection (%s)", connectFrom->outType));
-								si->inTypeSet(connectFrom->outType);
+								si->inTypeSet(connectFrom->outType, connectFrom->outTypeIndex);
 								connectionMgr->insert(this, connectFrom, si);
 							}
 							else if (tabManager->configTab->typeCheck == ConfigTab::Popup)
@@ -400,15 +400,20 @@ void DelilahScene::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 	else if (s) si = s;
 	else if (r) si = r;
 
-    if (buttons == (Qt::MidButton | Qt::LeftButton))
+	if (buttons == (Qt::MidButton | Qt::LeftButton))
 	{
 		queueMgr->move(point.x() - lastPoint.x(), point.y() - lastPoint.y());
 		resultMgr->move(point.x() - lastPoint.x(), point.y() - lastPoint.y());
 		sourceMgr->move(point.x() - lastPoint.x(), point.y() - lastPoint.y());
 	}
-    else if (buttons == Qt::MidButton)
+	else if (buttons == Qt::MidButton)
 	{
 		LM_T(LmtSceneItemChain, ("Chain Moving from '%s'", si->displayName));
+
+		queueMgr->markMoved(false);
+		resultMgr->markMoved(false);
+		sourceMgr->markMoved(false);
+
 		si->chainMove(point.x() - lastPoint.x(), point.y() - lastPoint.y());
 	}
 	else if (buttons == Qt::LeftButton)

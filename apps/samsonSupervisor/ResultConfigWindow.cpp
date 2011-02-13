@@ -242,10 +242,8 @@ void ResultConfigWindow::save(void)
 	if (cP != NULL)
 	   result->resultFileNameSet(cP);
 	
-	result->inTypeSet(inTypeCombo->currentText().toStdString().c_str());
+	result->inTypeSet(inTypeCombo->currentText().toStdString().c_str(), inTypeCombo->currentIndex());
 
-	win->result->inTypeIndex  = inTypeCombo->currentIndex();
-	
 	LM_T(LmtResult, ("Set inType  to '%s' (current index: %d)", result->inType,  win->result->inTypeIndex));
 }
 

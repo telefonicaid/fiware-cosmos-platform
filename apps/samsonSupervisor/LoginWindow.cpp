@@ -153,10 +153,6 @@ void LoginWindow::ok(void)
 void LoginWindow::cancel(void)
 {
 	new Popup("Samson Login Cancelled", "You've decided not to give a user/password to enter the Samson platform.\nEntrance not allowed.", true);
-
-	delete this;
-	qApp->exit();
-	qtAppRunning = false;
 }
 
 

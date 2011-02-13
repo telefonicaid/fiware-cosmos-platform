@@ -32,6 +32,7 @@ public:
 	DelilahResult*  lookup(QGraphicsItem* itemP);
 	// DelilahResult*  lookup(int cardinal);
 	void            move(int x, int y);
+	void            markMoved(bool moved);
 
 private:
 	DelilahResult** resultV;

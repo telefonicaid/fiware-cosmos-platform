@@ -22,7 +22,6 @@
 #include "globals.h"            // global vars
 #include "ports.h"              // ports ...
 #include "iomConnect.h"         // iomConnect
-#include "actions.h"            // help, list, start, ...
 #include "Starter.h"            // Starter
 #include "Process.h"            // Process
 #include "spawnerList.h"        // spawnerListGet, ...
@@ -47,16 +46,29 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 	mainLayout       = new QHBoxLayout(parent);
 	leftBasicLayout  = new QVBoxLayout();
 	leftLayout       = new QVBoxLayout();
-	rightLayout      = new QVBoxLayout();
-	rightGrid        = new QGridLayout();
+	controllerLayout = new QVBoxLayout();
+	workerLayout     = new QVBoxLayout();
+	spawnerLayout    = new QVBoxLayout();
 
+	rightLayout      = new QVBoxLayout();
+	righterLayout    = new QVBoxLayout();
+	rightGrid        = new QGridLayout();
+	
 	mainLayout->addLayout(leftBasicLayout);
 	mainLayout->addStretch(10);
 	mainLayout->addLayout(rightLayout);
+	mainLayout->addLayout(righterLayout);
 	mainLayout->addStretch(100);
 
 	leftBasicLayout->addLayout(leftLayout);
 	leftBasicLayout->addStretch(100);
+
+	leftLayout->addLayout(controllerLayout);
+	leftLayout->addSpacing(50);
+	leftLayout->addLayout(workerLayout);
+	leftLayout->addSpacing(50);
+	leftLayout->addLayout(spawnerLayout);
+	leftLayout->addStretch(200);
 
 	rightLayout->addLayout(rightGrid);
 	setLayout(mainLayout);
@@ -131,7 +143,7 @@ void ProcessListTab::initialStartersCreate(void)
 */
 void ProcessListTab::starterInclude(Starter* starterP)
 {
-	starterP->qtInit(leftLayout);
+	starterP->qtInit(spawnerLayout, workerLayout, controllerLayout);
 }
 
 
@@ -142,19 +154,17 @@ void ProcessListTab::starterInclude(Starter* starterP)
 */
 void ProcessListTab::configShow(Starter* starterP)
 {
-	ss::Endpoint* endpoint;
+	bool hide = false;
 
-	endpoint = starterP->process->endpoint;
-	if ((endpoint == NULL) || (endpoint->state != ss::Endpoint::Connected))
-		new Popup("Not Implemented", "Please implement a way to configure a non running process.\nJust being able to select all command line options.");
-	else
+	if (configView != NULL)
 	{
-		if (configView != NULL)
-		{
-			delete configView;
-			configView = NULL;
-		}
-
-		configView = new ProcessConfigView(rightGrid, starterP->process);
+		if (configView->process == starterP->process)
+			hide = true;
+		
+		delete configView;
+		configView = NULL;
 	}
+		
+	if (hide == false)
+		configView = new ProcessConfigView(rightGrid, starterP->process);
 }

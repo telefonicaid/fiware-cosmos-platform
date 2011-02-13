@@ -194,3 +194,22 @@ void ResultMgr::move(int x, int y)
 		resultV[ix]->moveTo(x, y);
 	}
 }
+
+
+
+/* ****************************************************************************
+*
+* markMoved - 
+*/
+void ResultMgr::markMoved(bool moved)
+{
+	unsigned int ix;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (resultV[ix] == NULL)
+			continue;
+
+		resultV[ix]->moved = moved;
+	}
+}

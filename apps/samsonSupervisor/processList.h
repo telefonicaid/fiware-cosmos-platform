@@ -44,7 +44,16 @@ extern Process* processAdd(Process* process);
 *
 * processAdd - 
 */
-extern Process* processAdd(const char* name, const char* host, unsigned short port, ss::Endpoint* endpoint, char** args = NULL, int argCount = 0);
+extern Process* processAdd
+(
+	const char*     name,
+	const char*     host,
+	unsigned short  port,
+	const char*     alias,
+	ss::Endpoint*   endpoint,
+	char**          args     = NULL,
+	int             argCount = 0
+);
 
 
 
@@ -76,7 +85,7 @@ extern Process* processLookup(const char* name, const char* host);
 *
 * spawnerLookup - 
 */
-extern Process* spawnerLookup(char* host);
+extern Process* spawnerLookup(const char* host);
 
 
 

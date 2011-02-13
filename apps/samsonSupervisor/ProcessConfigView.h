@@ -19,6 +19,8 @@ class QPushButton;
 class QListWidgetItem;
 class QListWidget;
 class QLabel;
+class QLineEdit;
+class QVBoxLayout;
 
 #include "Process.h"            // Process
 
@@ -44,13 +46,13 @@ public:
 	ProcessConfigView(QGridLayout* grid, Process* process);
 	~ProcessConfigView();
 
-private:
 	Process*          process;
+private:
     bool              allTraceLevelsState;
 
 	QGridLayout*      grid;
 	QLabel*           label;
-	QPushButton*      sendButton;
+	QPushButton*      sButton;
 	QLabel*           traceLevelLabel;
 	QListWidget*      traceLevelList;
     QCheckBox*        verboseBox;
@@ -59,10 +61,16 @@ private:
     QCheckBox*        writesBox;
     QCheckBox*        toDoBox;
     QPushButton*      allTraceLevelsItem;
-    QListWidgetItem*  traceLevelItem[TRACE_LEVELS];
+	QListWidgetItem*  traceLevelItem[TRACE_LEVELS];
+	QLabel*           aliasLabel;
+	QLineEdit*        aliasEdit;
+	QLabel*           hostLabel;
+	QLineEdit*        hostEdit;
+	QVBoxLayout*      ahLayout;
 
 private slots:
 	void send(void);
+	void save(void);
 	void all();
 };
 

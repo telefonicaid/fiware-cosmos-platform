@@ -45,6 +45,9 @@ private slots:
 	void typeCheckOff(void);
 	void typeCheckLeft(void);
 	void typeCheckPopup(void);
+
+	void logViewClear(void);
+	void logViewFit(void);
 };
 
 #endif

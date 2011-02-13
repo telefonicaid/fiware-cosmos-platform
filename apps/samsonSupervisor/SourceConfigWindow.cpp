@@ -255,8 +255,7 @@ void SourceConfigWindow::save(void)
 	if (cP != NULL)
 		source->sourceFileNameSet(cP);
 
-	source->outTypeSet(outTypeCombo->currentText().toStdString().c_str());
-	win->source->outTypeIndex = outTypeCombo->currentIndex();
+	source->outTypeSet(outTypeCombo->currentText().toStdString().c_str(), outTypeCombo->currentIndex());
 
 	// faked already saved in DelilahSource
 	source->fakeSize = fakeSizeSpinBox->value();

@@ -39,9 +39,16 @@ public:
 private slots:
 	void quit();
 
+public:
+	QVBoxLayout*        righterLayout;
+
 private:
 	QHBoxLayout*        mainLayout;
 	QVBoxLayout*        leftLayout;
+	QVBoxLayout*        controllerLayout;
+	QVBoxLayout*      	workerLayout;
+	QVBoxLayout*       	spawnerLayout;
+
 	QVBoxLayout*        rightLayout;
 	QGridLayout*        rightGrid;
 	ProcessConfigView*  configView;

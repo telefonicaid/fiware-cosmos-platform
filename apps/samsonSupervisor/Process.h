@@ -55,6 +55,7 @@ typedef enum ProcessType
 typedef struct Process
 {
 	char*            name;
+	char*            alias;
 	char*            host;      // hostname can also be obtained in spawner
 	unsigned short   port;
 	ss::Endpoint*    endpoint;

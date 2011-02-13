@@ -34,7 +34,10 @@ public:
 	Starter(Process* processP, SpawnInfo* siP);
 	
 	void            check(const char* reason);
-	void            qtInit(QVBoxLayout* layout);
+	void            qtInit(QVBoxLayout* spawnerLayout, QVBoxLayout* workerLayout, QVBoxLayout* controllerLayout);
+	void            processStart(void);
+	void            processKill(void);
+	void            processConnect(void);
 
 	Process*        process;
 

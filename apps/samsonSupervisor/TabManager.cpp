@@ -64,9 +64,12 @@ TabManager::TabManager(QWidget* window, QWidget* parent) : QWidget(parent)
 	mainLayout->addWidget(tabWidget);
 	mainLayout->addWidget(quit);
 
-	if ((userP->permissions & UpSeeLogs) == 0)
+	if ((userP == NULL) || ((userP->permissions & UpSeeLogs) == 0))
+	{
+		LM_W(("disabling Log Tab (user: %p)", userP));
 		logTab->setDisabled(true);
-	if ((userP->permissions & UpRawPlatformAccess) == 0)
+	}
+	if ((userP == NULL) || ((userP->permissions & UpRawPlatformAccess) == 0))
 		delilahTab->setDisabled(true);
 
 	window->setLayout(mainLayout);
@@ -147,6 +150,19 @@ void TabManager::timerEvent(QTimerEvent* e)
 	//
 	if (logSocket != -1)
 		logReceive();
+
+
+	//
+	// Any InfoWin that needs to be killed ?
+	//
+	if (infoWin != NULL)
+	{
+		if ((now.tv_sec > infoWin->dieAt.tv_sec) || ((now.tv_sec == infoWin->dieAt.tv_sec) && (now.tv_usec >= infoWin->dieAt.tv_usec)))
+		{
+			delete infoWin;
+			infoWin = NULL;
+		}
+	}
 }
 
 

@@ -86,7 +86,7 @@ Process* processAdd(Process* processP)
 	if (processIx >= processMax)
 		LM_X(1, ("No room for more Processes (max index is %d) - change and recompile!", processMax));
 
-	if ((pP = processLookup(processP->name, processP->host)) != NULL)
+	if ((strcmp(processP->host, "ip") != 0) && (pP = processLookup(processP->name, processP->host)) != NULL)
 	{
 		LM_W(("process '%s' in host '%s' already in process list", processP->name, processP->host));
 		LM_TODO(("Destroy processP"));
@@ -110,14 +110,23 @@ Process* processAdd(Process* processP)
 *
 * processAdd - 
 */
-Process* processAdd(const char* name, const char* host, unsigned short port, ss::Endpoint* endpoint, char** args, int argCount)
+Process* processAdd
+(
+	const char*     name,
+	const char*     host,
+	unsigned short  port,
+	const char*     alias,
+	ss::Endpoint*   endpoint,
+	char**          args,
+	int             argCount
+)
 {
 	int           argIx;
 	Process*      processP;
 
 	LM_T(LmtProcess, ("Adding process '%s' in '%s'", name, host));
 
-	if ((processP = processLookup(name, host)) != NULL)
+	if ((strcmp(host, "ip") != 0) && (processP = processLookup(name, host)) != NULL)
 	{
 		LM_W(("There is already a '%s' process in host '%s'", name, host));
 		if (processP->endpoint != NULL)
@@ -129,18 +138,21 @@ Process* processAdd(const char* name, const char* host, unsigned short port, ss:
 	}
 	else
 	{
-	   processP = (Process*) calloc(1, sizeof(Process));
-	   if (processP == NULL)
-		   LM_X(1, ("calloc: %s", strerror(errno)));
+		processP = (Process*) calloc(1, sizeof(Process));
+		if (processP == NULL)
+			LM_X(1, ("calloc: %s", strerror(errno)));
 
-	   if (name == NULL)
-		   name = "noname";
+		if (name == NULL)
+			name = "noname";
 
-	   processP->name       = strdup(name);
-	   processP->host       = strdup(host);
-	   processP->port       = port;
-	   processP->spawnInfo  = NULL;
-	   processP->endpoint   = endpoint;
+		processP->name       = strdup(name);
+		processP->host       = strdup(host);
+		processP->port       = port;
+		processP->spawnInfo  = NULL;
+		processP->endpoint   = endpoint;
+
+		if (alias != NULL)
+			processP->alias  = strdup(alias);
 	}
 
 	processP->sendsLogs  = false;
@@ -167,6 +179,13 @@ Process* processAdd(const char* name, const char* host, unsigned short port, ss:
 			LM_T(LmtProcessList, ("arg[%d]: '%s'", argIx, processP->spawnInfo->arg[argIx]));
 			++argIx;
 		}
+	}
+	else
+	{
+		processP->spawnInfo->argCount = 0;
+		argIx = 0;
+		while (argIx < argCount)
+			processP->spawnInfo->arg[argIx] = NULL;
 	}
 
 	return processAdd(processP);
@@ -212,7 +231,7 @@ Process* processLookup(unsigned int ix)
 *
 * spawnerLookup - 
 */
-Process* spawnerLookup(char* host)
+Process* spawnerLookup(const char* host)
 {
 	LM_T(LmtProcess, ("Looking for host '%s' (process 0-%d)", host, processMax));
 

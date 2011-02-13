@@ -206,12 +206,13 @@ void DelilahSceneItem::nameCenter(void)
 *
 * DelilahSceneItem::inTypeSet - 
 */
-void DelilahSceneItem::inTypeSet(const char* newType)
+void DelilahSceneItem::inTypeSet(const char* newType, int index)
 {
 	if (inType)
 		delete inType;
 
-	inType = strdup(newType);
+	inTypeIndex = index;
+	inType      = strdup(newType);
 }
 
 
@@ -220,12 +221,13 @@ void DelilahSceneItem::inTypeSet(const char* newType)
 *
 * DelilahSceneItem::outTypeSet - 
 */
-void DelilahSceneItem::outTypeSet(const char* newType)
+void DelilahSceneItem::outTypeSet(const char* newType, int index)
 {
 	if (outType)
 		delete outType;
 
-	outType = strdup(newType);
+	outTypeIndex = index;
+	outType      = strdup(newType);
 }
 
 
@@ -388,5 +390,7 @@ void DelilahSceneItem::chainMove(float dx, float dy)
 	LM_T(LmtSceneItemChain, ("'%s' is done", displayName));
 
 	LM_T(LmtMove, ("Calling moveTo for '%s'", displayName));
-	moveTo(dx, dy, true);
+	if (moved == false)
+	   moveTo(dx, dy, true);
+	moved = true;
 }

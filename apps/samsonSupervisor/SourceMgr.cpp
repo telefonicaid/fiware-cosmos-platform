@@ -194,3 +194,22 @@ void SourceMgr::move(int x, int y)
 		sourceV[ix]->moveTo(x, y);
 	}
 }
+
+
+
+/* ****************************************************************************
+*
+* markMoved - 
+*/
+void SourceMgr::markMoved(bool moved)
+{
+	unsigned int ix;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (sourceV[ix] == NULL)
+			continue;
+
+		sourceV[ix]->moved = moved;
+	}
+}

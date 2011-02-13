@@ -32,6 +32,7 @@ public:
 	DelilahSource*  lookup(QGraphicsItem* itemP);
 	// DelilahSource*  lookup(int cardinal);
 	void            move(int x, int y);
+	void            markMoved(bool moved);
 
 private:
 	DelilahSource** sourceV;

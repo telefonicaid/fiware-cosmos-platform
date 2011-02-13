@@ -169,3 +169,22 @@ void QueueMgr::move(int x, int y)
 		queueV[ix]->moveTo(x, y);
 	}
 }
+
+
+
+/* ****************************************************************************
+*
+* markMoved - 
+*/
+void QueueMgr::markMoved(bool moved)
+{
+	unsigned int ix;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (queueV[ix] == NULL)
+			continue;
+
+		queueV[ix]->moved = moved;
+	}
+}

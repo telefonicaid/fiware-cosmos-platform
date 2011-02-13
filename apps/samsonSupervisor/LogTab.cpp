@@ -85,21 +85,21 @@ void LogTab::logItemAdd
 LogTab::LogTab(QWidget* parent) : QWidget(parent)
 {
 	QVBoxLayout*  mainLayout  = new QVBoxLayout(parent);
-	QStringList   headerLabels;
 
-	headerLabels << "Type" << "Date" << "Host" << "Process" << "File" << "Line No" << "Function" << "Log Text";
 	Rows        = 10;
 	tableWidget = new QTableWidget(Rows, 8);
 
 	tableWidget->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
 	tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
 
-	tableWidget->setHorizontalHeaderLabels(headerLabels);
+	setHeaderLabels();
 	tableWidget->resize(mainWinWidth, mainWinHeight);
 	tableWidget->resizeColumnsToContents();
 
 	mainLayout->addWidget(tableWidget);
 	setLayout(mainLayout);
+	tableWidget->setGridStyle(Qt::NoPen);
+	row = 0;
 }
 
 
@@ -113,12 +113,41 @@ void LogTab::logLineInsert(struct sockaddr_in* sAddr, ss::Message::Header* heade
 	if (headerP->magic != 0xFEEDC0DE)
 		LM_W(("Bad magic number ... 0x%08x", headerP->magic));
 
-	static int  row = 0;
-	char*       host = inet_ntoa(sAddr->sin_addr);
+	char* host = inet_ntoa(sAddr->sin_addr);
 
-	LM_W(("Got a log line: '%s'", logLine->text));
+	LM_W(("Got a log line (row %d): '%s'", row, logLine->text));
 
 	logItemAdd(row, logLine->type, logLine->date, host, logLine->processName, logLine->file, logLine->lineNo, logLine->fName, logLine->text, logLine->tLev);
+
+	if (row == 0)
+		tableWidget->resizeColumnsToContents();
+
 	++row;
-	tableWidget->resizeColumnsToContents();
+}
+
+
+
+/* ****************************************************************************
+*
+* setHeaderLabels - 
+*/
+void LogTab::setHeaderLabels(void)
+{
+	QStringList   headerLabels;
+
+	headerLabels << "Type" << "Date" << "Host" << "Process" << "File" << "Line No" << "Function" << "Log Text";
+	tableWidget->setHorizontalHeaderLabels(headerLabels);
+}
+
+
+
+/* ****************************************************************************
+*
+* LogTab::clear
+*/
+void LogTab::clear(void)
+{
+	tableWidget->clear();
+	row = 0;
+	setHeaderLabels();
 }

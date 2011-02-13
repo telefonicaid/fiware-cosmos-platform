@@ -52,6 +52,7 @@ DelilahTab::DelilahTab(const char* name, QWidget *parent) : QWidget(parent)
 
 	sendButton->connect(sendButton, SIGNAL(clicked()), this, SLOT(send()));
 	output->setReadOnly(true);
+	connect(input, SIGNAL(returnPressed()), this, SLOT(send()));
 
 	setLayout(mainLayout);
 }

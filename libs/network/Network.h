@@ -86,11 +86,17 @@ protected:
 
 
 public:
-	int          tmoSecs;
-	int          tmoUsecs;
-	int          Workers;
-	int          Endpoints;
-	Endpoint**   endpoint;
+	int                tmoSecs;
+	int                tmoUsecs;
+
+	int                         Workers;
+	Message::WorkerVectorData*  workerVec;
+	int                         workerVecSize;
+	void                        workerVecSet(Message::WorkerVectorData* wvData, int size);
+	Message::Worker*            workerVecLookup(const char* alias);
+
+	int                Endpoints;
+	Endpoint**         endpoint;
 
 	void         msgPreTreat(Endpoint* ep, int endpointId);
 	void         msgTreat(void* vP);

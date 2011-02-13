@@ -25,13 +25,14 @@ public:
 	QueueMgr(unsigned int size);
 	~QueueMgr();
 
-	int            queues();
-	void           insert(DelilahQueue*  queue);
-	void           remove(DelilahQueue*  queue);
-	void           removeAll(void);
-	DelilahQueue*  lookup(QGraphicsItem* itemP);
+	int             queues();
+	void            insert(DelilahQueue*  queue);
+	void            remove(DelilahQueue*  queue);
+	void            removeAll(void);
+	DelilahQueue*   lookup(QGraphicsItem* itemP);
 	// DelilahQueue*  lookup(int cardinal);
-	void           move(int x, int y);
+	void            move(int x, int y);
+	void            markMoved(bool moved);
 
 private:
 	DelilahQueue** queueV;

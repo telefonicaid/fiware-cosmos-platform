@@ -37,10 +37,10 @@ DelilahQueue::DelilahQueue(DelilahScene* sceneP, const char* imagePath, const ch
 DelilahSceneItem(DelilahSceneItem::Queue, sceneP, imagePath, displayNameP, x, y)
 {
 	inTypeIndex   = 0;
-	inTypeSet("Undefined");
+	inTypeSet("Undefined", 0);
 
 	outTypeIndex  = 0;
-	outTypeSet("Undefined");
+	outTypeSet("Undefined", 0);
 
 	commandIndex  = 0;
 	command = strdup("No command");
@@ -52,10 +52,11 @@ DelilahSceneItem(DelilahSceneItem::Queue, sceneP, imagePath, displayNameP, x, y)
 *
 * DelilahQueue::commandSet - 
 */
-void DelilahQueue::commandSet(const char* newType)
+void DelilahQueue::commandSet(const char* newCommand, int index)
 {
 	if (command)
 		delete command;
 
-	command = strdup(newType);
+	command      = strdup(newCommand);
+	commandIndex = index;
 }

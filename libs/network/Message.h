@@ -60,8 +60,9 @@ typedef enum MessageCode
 	ConfigGet                       = CODE('C', 'f', 'G', ' '),
 	ConfigSet                       = CODE('C', 'f', 'S', ' '),
 	LogSendingOn                    = CODE('L', 'O', 'n', ' '),
-	LogSendingOff                   = CODE('L', 'O', 'f', ' ')
-
+	LogSendingOff                   = CODE('L', 'O', 'f', ' '),
+	ConfigChange                    = CODE('C', 'f', 'C', ' '),
+	WorkerConfigGet                 = CODE('W', 'C', 'G', ' '),
 } MessageCode;
 
 
@@ -120,12 +121,15 @@ typedef struct HelloData
 */
 typedef struct ConfigData
 {
-	bool verbose;
-	bool debug;
-	bool reads;
-	bool writes;
-	bool toDo;
-	bool traceLevels[256];
+	char   name[32];
+	char   alias[32];
+	char   host[32];
+	bool   verbose;
+	bool   debug;
+	bool   reads;
+	bool   writes;
+	bool   toDo;
+	char   traceLevels[256];
 } ConfigData;
 
 
@@ -160,6 +164,12 @@ typedef struct Worker
 	char             ip[32];
 	int              port;
 	int              state;
+	bool             verbose;
+	bool             debug;
+	bool             reads;
+	bool             writes;
+	bool             toDo;
+	char             traceV[256];
 } Worker;
 
 
@@ -184,7 +194,7 @@ typedef struct SpawnData
 typedef struct WorkerVectorData
 {
 	int      workers;
-	Worker*  workerV;
+	Worker   workerV[0];
 } WorkerVectorData;
 
 

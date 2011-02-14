@@ -199,9 +199,21 @@ Process* processAdd
 */
 Process* processLookup(const char* name, const char* host)
 {
+	if ((name == NULL) || (name[0] == 0))
+		return NULL;
+
+	if ((host == NULL) || (host[0] == 0))
+		return NULL;
+
 	for (unsigned int ix = 0; ix < processMax; ix++)
 	{
 		if (processV[ix] == NULL)
+			continue;
+
+		if ((processV[ix]->host == NULL) || (processV[ix]->host[0] == 0))
+			continue;
+
+		if ((processV[ix]->name == NULL) || (processV[ix]->name[0] == 0))
 			continue;
 
 		if ((strcmp(processV[ix]->name, name) == 0) && (strcmp(processV[ix]->host, host) == 0))

@@ -17,7 +17,7 @@
 
 #include "logMsg.h"             // LM_X, ...
 #include "traceLevels.h"        // Trace Levels
-#include "globals.h"            // qtAppRunning, ...
+#include "globals.h"            // qtAppRunning, userP, ...
 
 #include "Popup.h"              // Popup
 #include "LoginWindow.h"        // Own interface
@@ -124,14 +124,14 @@ void LoginWindow::ok(void)
 	userName = strdup(userNameInput->text().toStdString().c_str());
 	password = strdup(passwordInput->text().toStdString().c_str());
 
-	if (userMgr->allowToEnter(userName, password) == true)
+	if ((userP = userMgr->allowToEnter(userName, password)) != NULL)
 	{
 		delete this;
 		free(userName);
 		free(password);
 		qApp->exit();
 		qtAppRunning = false;
-		userP = userMgr->lookup(userName);
+		LM_M(("User: %p", userP));
 		return;
 	}
 

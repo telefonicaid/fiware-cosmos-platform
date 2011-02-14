@@ -452,9 +452,9 @@ void ProcessConfigView::save(void)
 
 		if ((host != NULL) && (host[0] != 0))
 		{
-			Process* spawner;
+			Process* spawner = NULL;
 
-			if (processLookup(process->name, host) != NULL)
+			if ((host != NULL) && (processLookup(process->name, host) != NULL))
 			{
 				char eText[256];
 
@@ -468,7 +468,6 @@ void ProcessConfigView::save(void)
 			if (spawner == NULL)
 			{
 				int            fd;
-				Process*       spawner = NULL;
 				Starter*       starter;
 				ss::Endpoint*  ep;
 
@@ -484,13 +483,17 @@ void ProcessConfigView::save(void)
 							 "before you add a worker in this host.", host, host);
 
 					new Popup("Cannot connect to Spawner", eText);
+
+					LM_W(("Setting process->host to NULL ..."));
+					free(process->host);
+					process->host = NULL;
 					return;
 				}
 
-				ep = networkP->endpointAdd("Just connected to new spawner", fd, fd, "Spawner", "Spawner", 0, ss::Endpoint::Spawner, host, SPAWNER_PORT);
+				ep      = networkP->endpointAdd("Just connected to new spawner", fd, fd, "Spawner", "Spawner", 0, ss::Endpoint::Spawner, host, SPAWNER_PORT);
 				spawner = spawnerAdd("Spawner", (char*) host, SPAWNER_PORT, ep);
-
 				starter = starterAdd(spawner);
+
 				if (starter == NULL)
 					LM_X(1, ("NULL starter for Spawner@%s", host));
 				

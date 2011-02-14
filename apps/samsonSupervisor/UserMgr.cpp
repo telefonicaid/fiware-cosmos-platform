@@ -108,22 +108,22 @@ User* UserMgr::lookup(const char* name)
 *
 * UserMgr::allowToEnter - 
 */
-bool UserMgr::allowToEnter(char* name, char* password)
+User* UserMgr::allowToEnter(char* name, char* password)
 {
 	User* user = lookup(name);
 
 	if (user == NULL)
 	{
 		LM_T(LmtUser, ("Cannot find user '%s'", name));
-		return false;
+		return NULL;
 	}
 
 	if (strcmp(user->password, password) == 0)
 	{
 		LM_T(LmtUser, ("User '%s' accepted", name));
-		return true;
+		return user;
 	}
 
 	LM_T(LmtUser, ("Bad password for user '%s'", name));
-	return false;
+	return NULL;
 }

@@ -372,6 +372,13 @@ void Starter::processStart(void)
 						   process->spawnInfo->spawnerP->host,
 						   process->spawnInfo->spawnerP->endpoint->rFd));
 
+	if (process->spawnInfo == NULL)
+		LM_X(1, ("NULL spawnInfo for process '%s@%d'", process->name, process->host));
+	if (process->spawnInfo->spawnerP == NULL)
+		LM_X(1, ("NULL spawner pointer for process '%s@%d'", process->name, process->host));
+	if (process->spawnInfo->spawnerP->endpoint == NULL)
+		LM_X(1, ("NULL spawner pointer for process '%s@%d'", process->name, process->host));
+
 	if (strcmp(spawnData.name, "Controller") == 0)
 		s = iomMsgSend(process->spawnInfo->spawnerP->endpoint->wFd, process->spawnInfo->spawnerP->host, "samsonSupervisor", ss::Message::ControllerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
 	else if (strcmp(spawnData.name, "Worker") == 0)

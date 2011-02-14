@@ -136,8 +136,13 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 
 			evec[0] = (headerP->code == ss::Message::WorkerSpawn)? (char*) "samsonWorker" : (char*) "samsonController";
 			
+			LM_V(("exec arg 0 (prog name): '%s'", evec[0]));
 			for (ix = 0; ix < argCount; ix++)
+			{
 				evec[ix + 1] = args[ix];
+				LM_V(("exec arg %02d: '%s'", ix, evec[ix + 1]));
+			}
+
 			evec[ix + 1] = 0;
 
 			LM_T(LmtSpawn, ("execvp(%s, %s, %s, %s, ...", evec[0], evec[0], evec[1], evec[2]));

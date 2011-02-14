@@ -22,6 +22,7 @@ class Packet;
 	
 
 
+typedef void (*WorkerVecSave)(void);
 /* ****************************************************************************
 *
 * Network - main element that interconnects
@@ -92,8 +93,9 @@ public:
 	int                         Workers;
 	Message::WorkerVectorData*  workerVec;
 	int                         workerVecSize;
-	void                        workerVecSet(Message::WorkerVectorData* wvData, int size);
+	void                        workerVecSet(Message::WorkerVectorData* wvData, int size, WorkerVecSave saveCallback);
 	Message::Worker*            workerVecLookup(const char* alias);
+	WorkerVecSave               workerVecSaveCallback;
 
 	int                Endpoints;
 	Endpoint**         endpoint;

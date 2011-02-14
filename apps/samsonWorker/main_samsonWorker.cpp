@@ -11,6 +11,7 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace levels
 
+#include "ports.h"              // WORKER_PORT
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "MemoryManager.h"		// ss::MemoryManager
@@ -25,7 +26,6 @@
 *
 * Option variables
 */
-unsigned short   port;
 int              endpoints;
 int              workers;
 char             controller[80];
@@ -36,7 +36,6 @@ char			 workingDir[1024];
 
 
 
-#define S01     _i "samson01:1234"
 #define NOLS    _i "no log server"
 #define DEF_WD  _i SAMSON_DEFAULT_WORKING_DIRECTORY
 /* ****************************************************************************
@@ -45,9 +44,8 @@ char			 workingDir[1024];
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt,    S01,   PaNL,   PaNL,  "controller IP:port"  },
+	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaReq,   PaND,   PaNL,   PaNL,  "controller IP:port"  },
 	{ "-alias",       alias,       "ALIAS",       PaString,  PaReq,   PaND,   PaNL,   PaNL,  "alias"               },
-	{ "-port",       &port,        "PORT",        PaShortU,  PaOpt,   1235,   1025,  65000,  "listen port"         },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,     80,      3,    100,  "number of endpoints" },
 	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,      1,      1,    100,  "number of workers"   },
 	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt,  false,  false,   true,  "no logging"          },
@@ -104,7 +102,7 @@ int main(int argC, const char *argV[])
 
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
-	ss::Network network(ss::Endpoint::Worker, alias, port, endpoints, workers);
+	ss::Network network(ss::Endpoint::Worker, alias, WORKER_PORT, endpoints, workers);
 	network.init(controller);
 	
 	LM_T(LmtInit, ("Waiting for network connection ..."));

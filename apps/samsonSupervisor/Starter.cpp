@@ -267,6 +267,7 @@ void Starter::logClicked(void)
 
 
 
+extern ss::Message::Worker* workerLookup(const char* alias);
 /* ****************************************************************************
 *
 * nameClicked - 
@@ -289,46 +290,80 @@ void Starter::processStart(void)
 	char*                   alias = (char*) "no_alias";
 	char*                   end;
 
-	new Popup("Please implement", "Here I should send a message to controller to retrieve the command line options for this process");
-
-	LM_T(LmtProcessStart, ("starting process '%s' in '%s' with no parameters", process->name, process->host));
-	processListShow("starting process");
-
-	spawnData.argCount = 2;
 	strcpy(spawnData.name, process->name);
+	spawnData.argCount = 0;
 
-	memset(spawnData.args, sizeof(spawnData.args), 0);
-	end = spawnData.args;
+	if (strcmp(process->name, "Controller") == 0)
+	{
+		char workersV[16];
 
-#if 0
-	strcpy(end, process->name);
-	end += strlen(process->name);
-	*end = 0;
-	++end;
-#endif
+		LM_M(("Starting Controller in host %s", process->host));
 
-	strcpy(end, "-alias");
-	end += strlen("-alias");
-	*end = 0;
-	++end;
+		spawnData.argCount = 2;
 
-	strcpy(end, process->alias);
-	end += strlen(process->alias);
-	*end = 0;
-	++end;
+		memset(spawnData.args, sizeof(spawnData.args), 0);
+		end = spawnData.args;
 
-	*end = 0;
+		strcpy(end, "-workers");
+		end += strlen(end);
+		++end;
 
-	for (int ix = 0; ix < 64; ix += 8)
-	   LM_M(("%02x %02x %02x %02x %02x %02x %02x %02x",
-			 spawnData.args[ix + 0] & 0xFF, 
-			 spawnData.args[ix + 1] & 0xFF, 
-			 spawnData.args[ix + 2] & 0xFF, 
-			 spawnData.args[ix + 3] & 0xFF, 
-			 spawnData.args[ix + 4] & 0xFF, 
-			 spawnData.args[ix + 5] & 0xFF, 
-			 spawnData.args[ix + 6] & 0xFF, 
-			 spawnData.args[ix + 7] & 0xFF));
+		LM_TODO(("Include number of workers in config view for controller ..."));
+		LM_TODO(("workers is a command line option for samsonSupervisor for now ..."));
+		extern int workers;
+		snprintf(workersV, sizeof(workersV), "%d", workers);
+
+		strcpy(end, workersV);
+		end += strlen(end);
+		++end;
+
+		*end = 0;
+	}
+	else
+	{
+		ss::Message::Worker* workerP;
+
+		workerP = workerLookup(process->alias);
+		if (workerP == NULL)
+			LM_X(1, ("Cannot find worker '%s' (%s@%s)", process->alias, process->name, process->host));
+
+		LM_T(LmtProcessStart, ("starting process '%s' in '%s' with no parameters", process->name, process->host));
+		processListShow("starting process");
+
+		spawnData.argCount = 4;
+
+		memset(spawnData.args, sizeof(spawnData.args), 0);
+		end = spawnData.args;
+
+		strcpy(end, "-alias");
+		end += strlen(end);
+		++end;
+
+		strcpy(end, process->alias);
+		end += strlen(end);
+		++end;
+
+		strcpy(end, "-controller");
+		end += strlen(end);
+		++end;
+
+		strcpy(end, networkP->endpoint[2]->ip.c_str());
+		end += strlen(end);
+		++end;
+
+		*end = 0;
+
+		for (int ix = 0; ix < 64; ix += 8)
+			LM_M(("%02x %02x %02x %02x %02x %02x %02x %02x",
+				  spawnData.args[ix + 0] & 0xFF, 
+				  spawnData.args[ix + 1] & 0xFF, 
+				  spawnData.args[ix + 2] & 0xFF, 
+				  spawnData.args[ix + 3] & 0xFF, 
+				  spawnData.args[ix + 4] & 0xFF, 
+				  spawnData.args[ix + 5] & 0xFF, 
+				  spawnData.args[ix + 6] & 0xFF, 
+				  spawnData.args[ix + 7] & 0xFF));
+	}
 
 	LM_T(LmtProcessStart, ("starting %s (alias '%s') via spawner %p (host: '%s', fd: %d).",
 						   spawnData.name,

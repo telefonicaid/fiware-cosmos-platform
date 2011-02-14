@@ -256,7 +256,7 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 	// This is just used in samsonController ...
 	workerVec              = NULL;
 	workerVecSize          = 0;
-
+	workerVecSaveCallback  = NULL;
 
 	//
 	// Endpoint vector
@@ -1808,6 +1808,8 @@ Message::Worker* Network::workerVecLookup(const char* alias)
 /* ****************************************************************************
 *
 * controllerMsgTreat - 
+*
+* This whole function should move to apps/samsonController ...
 */
 void Network::controllerMsgTreat
 (
@@ -1859,6 +1861,9 @@ void Network::controllerMsgTreat
 			LM_TODO(("If host was something else and the process is running ..."));
 			strncpy(worker->ip,   config->host, sizeof(worker->ip));
 			strncpy(worker->name, config->name, sizeof(worker->name));
+
+			if (workerVecSaveCallback)
+				workerVecSaveCallback();
 		}
 		else
 			LM_X(1, ("Worker '%s' not found", config->alias));
@@ -1867,28 +1872,6 @@ void Network::controllerMsgTreat
 	case Message::WorkerVector:
 		if (msgType != Message::Msg)
 			LM_X(1, ("Controller got an ACK for WorkerVector message"));
-#if 0
-		Message::Worker*  workerV;
-		int               ix;
-
-		workerV = (Message::Worker*) calloc(Workers, sizeof(Message::Worker));
-		if (workerV == NULL)
-			LM_XP(1, ("calloc(%d, %d)", Workers, sizeof(Endpoint)));
-
-		for (ix = FIRST_WORKER; ix < FIRST_WORKER + Workers; ix++)
-		{
-			if (endpoint[ix] != NULL)
-			{
-				strncpy(workerV[ix - FIRST_WORKER].name,  endpoint[ix]->name.c_str(),  sizeof(workerV[ix - FIRST_WORKER].name));
-				strncpy(workerV[ix - FIRST_WORKER].alias, endpoint[ix]->alias.c_str(), sizeof(workerV[ix - FIRST_WORKER].alias));
-				strncpy(workerV[ix - FIRST_WORKER].ip,    endpoint[ix]->ip.c_str(),    sizeof(workerV[ix - FIRST_WORKER].ip));
-
-				workerV[ix - FIRST_WORKER].port   = endpoint[ix]->port;
-				workerV[ix - FIRST_WORKER].state  = endpoint[ix]->state;
-			}
-		}
-#endif
-
 		LM_T(LmtWrite, ("sending ack with entire worker vector to '%s'", name));
 		iomMsgSend(ep, endpoint[ME], Message::WorkerVector, Message::Ack, workerVec, workerVecSize);
 		break;
@@ -1904,10 +1887,11 @@ void Network::controllerMsgTreat
 *
 * workerVecSet - 
 */
-void Network::workerVecSet(Message::WorkerVectorData* wvData, int size)
+void Network::workerVecSet(Message::WorkerVectorData* wvData, int size, WorkerVecSave saveCallback)
 {
-	workerVec     = wvData;
-	workerVecSize = size;
+	workerVec             = wvData;
+	workerVecSize         = size;
+	workerVecSaveCallback = saveCallback;
 }
 
 

@@ -33,23 +33,23 @@ unsigned short   port;
 int              endpoints;
 int              workers;
 char			 workingDir[1024];
-char			 workersFile[1024];
+char			 workerVecFile[1024];
 
 
 
 #define DEF_WD   _i SAMSON_DEFAULT_WORKING_DIRECTORY
-#define DEF_WF   _i "/opt/samson/etc/workers"
+#define DEF_WF   _i "/opt/samson/etc/workerVec"
 /* ****************************************************************************
 *
 * parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-working",       workingDir,  "WORKING",         PaString, PaOpt, DEF_WD,  PaNL,  PaNL, "Working directory"   },
-	{ "-workersFile",   workersFile, "WORKERS_FILE",    PaString, PaOpt, DEF_WF,  PaNL,  PaNL, "Working directory"   },
-	{ "-port",         &port,        "PORT",            PaShortU, PaOpt,   1234,  1025, 65000, "listen port"         },
-	{ "-endpoints",    &endpoints,   "ENDPOINTS",       PaInt,    PaOpt,     80,     3,   100, "number of endpoints" },
-	{ "-workers",      &workers,     "WORKERS",         PaInt,    PaOpt,      5,     1,   100, "number of workers"   },
+	{ "-working",        workingDir,    "WORKING",         PaString, PaOpt, DEF_WD,  PaNL,  PaNL, "Working directory"   },
+	{ "-workerVecFile",  workerVecFile, "WORKERS_FILE",    PaString, PaOpt, DEF_WF,  PaNL,  PaNL, "WorkerVec file"      },
+	{ "-port",          &port,          "PORT",            PaShortU, PaOpt,   1234,  1025, 65000, "listen port"         },
+	{ "-endpoints",     &endpoints,     "ENDPOINTS",       PaInt,    PaOpt,     80,     3,   100, "number of endpoints" },
+	{ "-workers",       &workers,       "WORKERS",         PaInt,    PaOpt,      5,     1,   100, "number of workers"   },
 
 	PA_END_OF_ARGS
 };
@@ -62,14 +62,67 @@ PaArgument paArgs[] =
 */
 int                             logFd      = -1;
 ss::Message::WorkerVectorData*  workerVec  = NULL;
+int                             workerVecSize;
 
 
 
 /* ****************************************************************************
 *
-* workersGet - 
+* workerVecSave - 
 */
-static ss::Message::WorkerVectorData* workersGet(char* path, int* sizeP)
+void workerVecSave(void)
+{
+	int    fd;
+	char*  buf;
+	int    tot;
+	int    nb;
+
+	LM_M(("Saving Worker Vector of %d workers", workerVec->workers));
+	LM_M(("sizeof(Worker): %d", sizeof(workerVec->workerV[0])));
+	LM_M(("file size should be: %d + %d * %d == %d",
+		  sizeof(ss::Message::WorkerVectorData),
+		  workerVec->workers,
+		  sizeof(workerVec->workerV[0]),
+		  sizeof(ss::Message::WorkerVectorData) + workerVec->workers * sizeof(workerVec->workerV[0])));
+
+	if ((fd = open(workerVecFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU)) == -1)
+		LM_RVE(("open-for-writing(%s): %s", workerVecFile, strerror(errno)));
+
+	buf  = (char*) workerVec;
+	tot  = 0;
+
+	while (tot < workerVecSize)
+	{
+		nb = write(fd, &buf[tot], workerVecSize - tot);
+		if (nb == -1)
+		{
+			close(fd);
+			unlink(workerVecFile);
+			LM_RVE(("write(%d bytes to '%s'): %s", workerVecSize - tot, workerVecFile, strerror(errno)));
+		}
+		else if (nb == 0)
+		{
+			close(fd);
+			unlink(workerVecFile);
+			LM_RVE(("write(ZERO bytes to '%s'): %s", workerVecFile, strerror(errno)));
+		}
+
+		tot += nb;
+	}
+
+	close(fd);
+	
+	if (chmod(workerVecFile, S_IRWXU) != 0)
+		LM_E(("chmod(%s): %s", workerVecFile, strerror(errno)));
+}
+
+
+
+/* ****************************************************************************
+*
+* workerVecGet - 
+*/
+static void workerVecGet(void)
 {
 	struct stat  statBuf;
 	int          s = 0;
@@ -78,72 +131,100 @@ static ss::Message::WorkerVectorData* workersGet(char* path, int* sizeP)
 	int          tot;
 	int          nb;
 	int          fd;
-	int          size;
 
-	if ((fd = open(path, O_RDONLY)) == -1)
-		LM_E(("open(%s): %s", strerror(errno)));
-	else if ((s = stat(path, &statBuf)) == -1)
-		LM_E(("stat(%s): %s", strerror(errno)));
+	LM_M(("Retrieving Worker Vector"));
 
-	if ((s == -1) || (fd == -1))
+	if ((fd = open(workerVecFile, O_RDONLY)) == -1)
+		LM_E(("open-for-reading(%s): %s - this is OK iff file-doesn't-exist", workerVecFile, strerror(errno)));
+	else if ((s = stat(workerVecFile, &statBuf)) == -1)
+		LM_E(("stat(%s): %s", workerVecFile, strerror(errno)));
+
+	if ((s == -1) || (fd == -1) || (statBuf.st_size == 0))
 	{
-		ss::Message::Worker* worker;
+		if (fd != -1)
+			close(fd);
 
-		LM_W(("Problems with config file '%s' - using %d empty workers (according to command line options)", path, workers));
-		LM_W(("This actually may be a serious problem. Perhaps I should enter a 'semi sleep' mode, until samsonSupervisor sends info on worker vector (like 'first start')"));
-		LM_W(("At least, the number of worler vectors from command line came from samsonSupervisor - supposing that the cpontroller wasn't started by hand ..."));
+		if ((fd = open(workerVecFile, O_WRONLY | O_CREAT)) == -1)
+			LM_X(1, ("open-for-writing(%s): %s", workerVecFile, strerror(errno)));
 
-		size = sizeof(ss::Message::WorkerVectorData) + workers * sizeof(ss::Message::Worker);
-		workerVec = (ss::Message::WorkerVectorData*) malloc(size);
+		LM_M(("Inventing Worker Vector with %d workers (number came from command line options)", workers));
+
+		LM_W(("Problems with config file '%s' - using %d empty workers (according to command line options)", workerVecFile, workers));
+		LM_W(("This just might be a serious problem. Perhaps I should enter a 'semi sleep' mode, until samsonSupervisor sends info on worker vector (like 'first start')"));
+		LM_W(("At least, the number of workers came from command line came from samsonSupervisor (supposing that the cpontroller wasn't started by hand ...)"));
+
+		workerVecSize = sizeof(ss::Message::WorkerVectorData) + workers * sizeof(ss::Message::Worker);
+		workerVec     = (ss::Message::WorkerVectorData*) malloc(workerVecSize);
+
 		if (workerVec == NULL)
-			LM_X(1, ("error allocating room for Worker Vector (%s bytes): %s", size, strerror(errno)));
+			LM_X(1, ("error allocating room for Worker Vector (%s bytes): %s", workerVecSize, strerror(errno)));
 
-		memset(workerVec, 0, size);
+		memset(workerVec, 0, workerVecSize);
 		workerVec->workers = workers;
-		*sizeP = size;
 
 		for (int ix = 0; ix < workers; ix++)
 		{
-			worker = &workerVec->workerV[ix];
+			ss::Message::Worker* worker = &workerVec->workerV[ix];
 
 			snprintf(worker->name, sizeof(worker->name),   "samsonWorker");
 			snprintf(worker->alias, sizeof(worker->alias), "Worker%02d", ix);
+
 			worker->port  = WORKER_PORT;
 			worker->state = ss::Endpoint::FutureWorker;
 		}
 
-		return workerVec;
+		workerVecSave();
+		close(fd);
 	}
-
-
-	fileSize = statBuf.st_size;
-	buf      = (char*) calloc(1, fileSize);
-	if (buf == NULL)
-		LM_X(1, ("error allocating room for Worker Vector (%s bytes): %s", fileSize, strerror(errno)));
-	LM_T(LmtInit, ("Allocated a buffer of %d bytes for the worker vector", fileSize));
-
-	tot = 0;
-	while (tot < fileSize)
+	else
 	{
-		nb = read(fd, &buf[tot], fileSize - tot);
-		if (nb == -1)
-			LM_X(1, ("Error reading from worker vector file '%s': %s", path, strerror(errno)));
-		else if (nb == 0)
-			LM_X(1, ("Error reading from worker vector file '%s'", path));
+		LM_M(("Retrieving worker vec data from file '%s'", workerVecFile));
 
-		tot += nb;
+		fileSize = statBuf.st_size;
+		buf      = (char*) calloc(1, fileSize);
+
+		if (buf == NULL)
+			LM_X(1, ("error allocating room for Worker Vector (%s bytes): %s", fileSize, strerror(errno)));
+		LM_T(LmtInit, ("Allocated a buffer of %d bytes for the worker vector", fileSize));
+
+		tot = 0;
+		while (tot < fileSize)
+		{
+			nb = read(fd, &buf[tot], fileSize - tot);
+			if (nb == -1)
+				LM_X(1, ("Error reading from worker vector file '%s': %s", workerVecFile, strerror(errno)));
+			else if (nb == 0)
+				LM_X(1, ("Error reading from worker vector file '%s'", workerVecFile));
+
+			tot += nb;
+		}
+
+		workerVec      = (ss::Message::WorkerVectorData*) buf;
+		workerVecSize  = sizeof(ss::Message::WorkerVectorData) + workerVec->workers * sizeof(ss::Message::Worker);
+
+		LM_M(("file size: %d", fileSize));
+		LM_M(("%d workers, each of a size of %d => %d + %d * %d == %d",
+			  workerVec->workers,
+			  sizeof(workerVec->workerV[0]),
+			  sizeof(ss::Message::WorkerVectorData),
+			  workerVec->workers,
+			  sizeof(workerVec->workerV[0]),
+			  sizeof(ss::Message::WorkerVectorData) + workerVec->workers * sizeof(workerVec->workerV[0])));
+
+		if (workerVecSize != fileSize)
+			LM_X(1, ("Size of file '%s' (%d bytes) does not match the size of a Worker Vector of %d workers: %d bytes", workerVecFile, fileSize, workerVec->workers, workerVecSize));
+
+		LM_T(LmtInit, ("Read Workers from '%s' - got %d workers", workerVecFile, workerVec->workers));
+		close(fd);
+
+		LM_M(("Got %d workers", workerVec->workers));
+		for (int ix = 0; ix < workerVec->workers; ix++)
+		{
+			ss::Message::Worker* workerP = &workerVec->workerV[ix];
+
+			LM_M(("  worker %02d: alias: '%s', name: '%s', host: '%s'. port: %d", ix, workerP->alias, workerP->name, workerP->ip, workerP->port));
+		}
 	}
-
-	workerVec = (ss::Message::WorkerVectorData*) buf;
-	size      = sizeof(ss::Message::WorkerVectorData) + workerVec->workers * sizeof(ss::Message::Worker);
-
-	if (size != fileSize)
-		LM_X(1, ("Size of file '%s' (%d bytes) does not match the size of a Worker Vector of %d workers: %d bytes", path, fileSize, workerVec->workers, size));
-
-	LM_T(LmtInit, ("Read Workers from '%s' - got %d workers", path, workerVec->workers));
-	*sizeP = size;
-	return workerVec;
-
 }
 
 
@@ -154,9 +235,6 @@ static ss::Message::WorkerVectorData* workersGet(char* path, int* sizeP)
 */
 int main(int argC, const char* argV[])
 {
-	ss::Message::WorkerVectorData*  workerVec;
-	int                             workerVecSize;
-
 	paConfig("prefix",                        (void*) "SSC_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
@@ -171,7 +249,7 @@ int main(int argC, const char* argV[])
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
 	LM_T(LmtInit, ("ss::Message::WorkerVectorData: %d", sizeof(ss::Message::WorkerVectorData)));
-	workerVec = workersGet(workersFile, &workerVecSize);
+	workerVecGet();
 
 	LM_T(LmtInit, ("%d workers", workerVec->workers));
 
@@ -188,7 +266,7 @@ int main(int argC, const char* argV[])
 	ss::Network network(ss::Endpoint::Controller, "controller", port, endpoints, workers);
 
 	network.initAsSamsonController();
-	network.workerVecSet(workerVec, workerVecSize);
+	network.workerVecSet(workerVec, workerVecSize, workerVecSave);
 	network.runInBackground();
 	
 	

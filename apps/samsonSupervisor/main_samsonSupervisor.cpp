@@ -105,12 +105,11 @@ InfoWin*             infoWin           = NULL;
 *
 * Option variables
 */
-int     endpoints;
 char    controllerHost[80];
-char    cfPath[80];
-bool    nologin;
+bool    kz;
+bool    andreu;
 bool    usecss;
-
+int     workers;
 
 
 #define CFP (long int)  "/opt/samson/etc/platformProcesses"
@@ -121,14 +120,22 @@ bool    usecss;
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",  controllerHost,  "CONTROLLER",  PaString,  PaReq,   NOC,  PaNL,   PaNL,  "controller IP"       },
-	{ "-endpoints",   &endpoints,      "ENDPOINTS",   PaInt,     PaOpt,    80,     3,    100,  "number of endpoints" },
-	{ "-config",      &cfPath,         "CF_FILE",     PaStr,     PaOpt,   CFP,  PaNL,   PaNL,  "path to config file" },
-	{ "-nologin",     &nologin,        "NO_LOGIN",    PaBool,    PaHid, false, false,   true,  "no login"            },
-	{ "-usecss",      &usecss,         "USE_CSS",     PaBool,    PaHid, false, false,   true,  "use css"             },
+	{ "-controller",  controllerHost,  "CONTROLLER",    PaString,  PaReq,   NOC,  PaNL,   PaNL,  "controller IP"       },
+	{ "-workers",     &workers,        "WORKERS",       PaInt,     PaOpt,     5,     1,     20,  "number of workers"   },
+	{ "-kz",          &kz,             "KZ_LOGIN",      PaBool,    PaHid, false, false,   true,  "login as 'kz'"       },
+	{ "-andreu",      &andreu,         "ANDREU_LOGIN",  PaBool,    PaHid, false, false,   true,  "login as 'andreu'"   },
+	{ "-usecss",      &usecss,         "USE_CSS",       PaBool,    PaHid, false, false,   true,  "use css"             },
 
 	PA_END_OF_ARGS
 };
+
+
+
+/* ****************************************************************************
+*
+* Global variables
+*/
+int     endpoints = 80;
 
 
 
@@ -220,15 +227,15 @@ static void userInit(void)
 	userMgr->insert("superman", "samsonite", UpAll);
 	userMgr->insert("guest",    "",          UpNothing);
 	userMgr->insert("kz",       "kz",        UpAll);
-	userMgr->insert("andreu",   "andreu",    UpAll);
+	userMgr->insert("au",       "au",        UpAll);
 	userMgr->insert("3rdParty", "please",    UpStartProcesses | UpStopProcesses | UpSeeLogs);
 
-	if (nologin == false)
-	{
-		login();
-	}
-	else
+	if (kz == true)
 		userP = userMgr->lookup("kz");
+	else if (andreu == true)
+		userP = userMgr->lookup("au");
+	else
+		login();
 
 	if (userP)
 		LM_T(LmtUser, ("Logged in as user '%s'", userP->name));

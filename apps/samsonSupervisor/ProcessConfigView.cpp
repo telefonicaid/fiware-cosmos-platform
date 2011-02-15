@@ -445,6 +445,9 @@ void ProcessConfigView::save(void)
 	if (process->alias != NULL)
 		strncpy(configData.alias, process->alias, sizeof(configData.alias));
 
+	if (process->name != NULL)
+		strncpy(configData.name, process->name, sizeof(configData.name));
+
 	if (hostEdit != NULL)
 	{
 		host = hostEdit->text().toStdString().c_str();

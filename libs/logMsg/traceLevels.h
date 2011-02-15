@@ -22,7 +22,6 @@ typedef enum TraceLevels
 	LmtStarterListShow,
 	LmtSpawnerListShow,
 	LmtProcessListShow,
-	LmtLogProviderListShow,
 
 	LmtInit,
 	LmtConfigFile,
@@ -43,12 +42,10 @@ typedef enum TraceLevels
 	LmtSpawnerList,
 	LmtProcessList,
 	LmtStarterList,
-	LmtLogProviderList,
 
 	LmtStarter,
 	LmtSpawner,
 	LmtProcess,
-	LmtLogProvider,
 
 	LmtSpawnerConnect,
 	LmtProcessConnect,

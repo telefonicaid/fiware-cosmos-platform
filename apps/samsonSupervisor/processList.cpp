@@ -229,6 +229,32 @@ Process* processLookup(const char* name, const char* host)
 *
 * processLookup - 
 */
+Process* processLookup(const char* alias)
+{
+	if ((alias == NULL) || (alias[0] == 0))
+		return NULL;
+
+	for (unsigned int ix = 0; ix < processMax; ix++)
+	{
+		if (processV[ix] == NULL)
+			continue;
+
+		if ((processV[ix]->alias == NULL) || (processV[ix]->alias[0] == 0))
+			continue;
+
+		if (strcmp(processV[ix]->alias, alias) == 0)
+			return processV[ix];
+	}
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* processLookup - 
+*/
 Process* processLookup(unsigned int ix)
 {
 	if (ix > processMax)

@@ -271,8 +271,8 @@ namespace ss
 			output << "             Usage: ls [-begin name] [-end name]\n";
 			output << "\n";
 			output << " add         Add a data set with a particular format for the key and for the value\n";
-			output << "             Usage: add set_name key_type value_type (i.e add_queue pairs system.UInt system.UInt )\n";
-			output << "             Usage: add set_name -txt (i.e add_queue txt_cdrs )\n";
+			output << "             Usage: add set_name key_type value_type (i.e. add pairs system.UInt system.UInt )\n";
+			output << "             Usage: add set_name -txt (i.e. add txt_cdrs )\n";
 			output << "             Option -f to avoid error if queue already exist\n";
 			output << "\n";
 			output << " rm          Remove a given data set\n";

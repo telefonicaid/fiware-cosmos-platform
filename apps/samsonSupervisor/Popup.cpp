@@ -114,5 +114,5 @@ Popup::Popup(const char* title, const char* text, bool die, int type)
 */
 void Popup::die(void)
 {
-	LM_X(1, ("Dying popup received OK press event"));
+	exit(0);
 }

@@ -23,7 +23,6 @@ char* traceLevelName(TraceLevels level)
 	case LmtStarterListShow:             return (char*) "Show Starter List (Supervisor only)";
 	case LmtSpawnerListShow:             return (char*) "Show Spawner List (Supervisor only)";
 	case LmtProcessListShow:             return (char*) "Show Process List (Supervisor only)";
-	case LmtLogProviderListShow:         return (char*) "Show Log Provider List (LogServer only)";
 
 	case LmtInit:                        return (char*) "Initialization, especially in main";
 	case LmtConfigFile:                  return (char*) "Configuration file";
@@ -44,12 +43,10 @@ char* traceLevelName(TraceLevels level)
 	case LmtSpawnerList:                 return (char*) "Spawner List (Supervisor only)";
 	case LmtProcessList:                 return (char*) "Process List (Supervisor only)";
 	case LmtStarterList:                 return (char*) "Starter List (Supervisor only)";
-	case LmtLogProviderList:             return (char*) "Log Provider List (Log Server only)";
 
 	case LmtStarter:                     return (char*) "Starters (Supervisor only)";
 	case LmtSpawner:                     return (char*) "Spawners (Supervisor only)";
 	case LmtProcess:                     return (char*) "Processes (Supervisor only)";
-	case LmtLogProvider:                 return (char*) "Log Provider";
 
 	case LmtSpawnerConnect:              return (char*) "Connecting to Spawner";
 	case LmtProcessConnect:              return (char*) "Connecting to Process";

@@ -1846,7 +1846,7 @@ void Network::controllerMsgTreat
 		break;
 
 	case Message::ConfigChange:
-		LM_M(("Got Configuration change for '%s'", config->alias));
+		LM_M(("Got Configuration change for '%s' (host: '%s')", config->alias, config->host));
 		worker = workerVecLookup(config->alias);
 		if (worker != NULL)
 		{

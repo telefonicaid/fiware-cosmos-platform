@@ -52,7 +52,7 @@ void LogTab::logItemAdd
 
 	if (row >= Rows)
 	{
-		Rows += 10;
+		Rows += 3;
 		tableWidget->setRowCount(Rows);
 	}
 
@@ -86,7 +86,7 @@ LogTab::LogTab(QWidget* parent) : QWidget(parent)
 {
 	QVBoxLayout*  mainLayout  = new QVBoxLayout(parent);
 
-	Rows        = 10;
+	Rows        = 3;
 	tableWidget = new QTableWidget(Rows, 8);
 
 	tableWidget->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
@@ -150,4 +150,6 @@ void LogTab::clear(void)
 	tableWidget->clear();
 	row = 0;
 	setHeaderLabels();
+	tableWidget->setRowCount(0);
+	Rows = 0;
 }

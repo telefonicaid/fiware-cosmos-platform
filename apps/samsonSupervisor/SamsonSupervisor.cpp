@@ -279,6 +279,16 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 
 		if ((host == NULL) || (host[0] == 0) || (strcmp(host, "ip") == 0))
 		{
+			Process* processP;
+
+			if ((processP = processLookup(worker->alias)) != NULL)
+			{
+				LM_W(("Unconfigured worker '%s' seems to already exist", worker->alias));
+				if (processP->starterP)
+					processP->starterP->check("Unconfigured worker seems to already exist");
+				continue;
+			}
+
 			LM_M(("Worker %d is totally unconfigured ...", ix));
 			process = processAdd("Worker", "ip", WORKER_PORT, worker->alias, NULL, NULL, 0);
 
@@ -288,6 +298,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 
 			if ((tabManager != NULL) && (tabManager->processListTab != NULL))
 				tabManager->processListTab->starterInclude(starter);
+
 			continue;
 		}
 

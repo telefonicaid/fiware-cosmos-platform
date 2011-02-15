@@ -40,7 +40,8 @@ public:
 	int             fakeSize;
 	DelilahSource*  source;
 	QLineEdit*      displayNameInput;
-	QComboBox*      outTypeCombo;
+	QComboBox*      outTypeKCombo;
+	QComboBox*      outTypeVCombo;
 
 
 	QLineEdit*      sourceFileNameInput;

@@ -30,6 +30,12 @@ public:
 	char* sourceFileName;
 	bool  faked;
 	int   fakeSize;
+
+	char*   outTypeK;
+	int     outTypeKIndex;   // for QueueConfigWindow
+	char*   outTypeV;
+	int     outTypeVIndex;   // for QueueConfigWindow
+	void    outTypeSet(const char* newTypeK, int indexK, const char* newTypeV, int indexV);
 };
 
 #endif

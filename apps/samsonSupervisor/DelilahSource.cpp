@@ -51,3 +51,25 @@ void DelilahSource::sourceFileNameSet(const char* newName)
 
 	sourceFileName = strdup(newName);
 }
+
+
+
+/* ****************************************************************************
+*
+* DelilahSource::outTypeSet - 
+*/
+void DelilahSource::outTypeSet(const char* newTypeK, int indexK, const char* newTypeV, int indexV)
+{
+	if (outTypeK)
+		delete outTypeK;
+
+	outTypeKIndex = indexK;
+	outTypeK      = strdup(newTypeK);
+
+
+	if (outTypeV)
+		delete outTypeV;
+
+	outTypeVIndex = indexV;
+	outTypeV      = strdup(newTypeV);
+}

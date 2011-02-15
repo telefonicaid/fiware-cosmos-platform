@@ -70,21 +70,8 @@ extern Process* spawnerAdd(const char* nameP, const char* host, unsigned short p
 * processLookup - 
 */
 extern Process* processLookup(unsigned int ix);
-
-
-
-/* ****************************************************************************
-*
-* processLookup - 
-*/
+extern Process* processLookup(const char* alias);
 extern Process* processLookup(const char* name, const char* host);
-
-
-
-/* ****************************************************************************
-*
-* spawnerLookup - 
-*/
 extern Process* spawnerLookup(const char* host);
 
 

@@ -64,16 +64,20 @@ static void dataTypesTextReceiver(const char* type, const char* text)
 				*basura = 0;
 
 			LM_T(LmtSource, ("Adding item '%s'", line));
-			win->outTypeCombo->addItem(QString(line));
+			win->outTypeKCombo->addItem(QString(line));
+			win->outTypeVCombo->addItem(QString(line));
 		}
 		line = &cP[1];
 	}
 
-	win->outTypeCombo->addItem(QString(line));
+	win->outTypeKCombo->addItem(QString(line));
+	win->outTypeVCombo->addItem(QString(line));
 
-	LM_T(LmtSource, ("Setting outTypeCombo to index %d", win->source->outTypeIndex));
+	LM_T(LmtSource, ("Setting outTypeKCombo to index %d", win->source->outTypeKIndex));
+	LM_T(LmtSource, ("Setting outTypeVCombo to index %d", win->source->outTypeVIndex));
 
-	win->outTypeCombo->setCurrentIndex(win->source->outTypeIndex);
+	win->outTypeKCombo->setCurrentIndex(win->source->outTypeKIndex);
+	win->outTypeVCombo->setCurrentIndex(win->source->outTypeVIndex);
 }
 
 
@@ -129,8 +133,9 @@ SourceConfigWindow::SourceConfigWindow(DelilahSource* source)
 	displayNameInput = new QLineEdit();
 	displayNameInput->setText(source->displayName);
 
-	outTypeLabel = new QLabel("Outgoing Type");
-	outTypeCombo = new QComboBox();
+	outTypeLabel  = new QLabel("Outgoing KV Types");
+	outTypeKCombo = new QComboBox();
+	outTypeVCombo = new QComboBox();
 
 	sourceFileNameLabel        = new QLabel("Source File");
 	sourceFileNameInput        = new QLineEdit();
@@ -187,7 +192,8 @@ SourceConfigWindow::SourceConfigWindow(DelilahSource* source)
 	layout->addWidget(fakeSizeSpinBox,             2, 2);
 	layout->addWidget(sourceFileButton,            2, 3);
 	layout->addWidget(outTypeLabel,                3, 1);
-	layout->addWidget(outTypeCombo,                3, 2);
+	layout->addWidget(outTypeKCombo,               3, 2);
+	layout->addWidget(outTypeVCombo,               3, 3, 1, 2);
 	layout->addWidget(noOfOutgoingLabel,           6, 1);
 	layout->addWidget(realNameLabel,               7, 1);
 	layout->addWidget(buttonBox,                   9, 1, 1, 2);
@@ -255,7 +261,7 @@ void SourceConfigWindow::save(void)
 	if (cP != NULL)
 		source->sourceFileNameSet(cP);
 
-	source->outTypeSet(outTypeCombo->currentText().toStdString().c_str(), outTypeCombo->currentIndex());
+	source->outTypeSet(outTypeKCombo->currentText().toStdString().c_str(), outTypeKCombo->currentIndex(), outTypeVCombo->currentText().toStdString().c_str(), outTypeVCombo->currentIndex());
 
 	// faked already saved in DelilahSource
 	source->fakeSize = fakeSizeSpinBox->value();

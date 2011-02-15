@@ -161,8 +161,9 @@ static void workerVecGet(void)
 
 		memset(workerVec, 0, workerVecSize);
 		workerVec->workers = workers;
+		LM_M(("Using global option variable 'workers' to decide how many workers I use: %d workers", workers));
 
-		for (int ix = 0; ix < workers; ix++)
+		for (int ix = 0; ix < workerVec->workers; ix++)
 		{
 			ss::Message::Worker* worker = &workerVec->workerV[ix];
 
@@ -202,6 +203,10 @@ static void workerVecGet(void)
 		workerVec      = (ss::Message::WorkerVectorData*) buf;
 		workerVecSize  = sizeof(ss::Message::WorkerVectorData) + workerVec->workers * sizeof(ss::Message::Worker);
 
+		LM_M(("Changing global variable workers from %d to %d", workers, workerVec->workers));
+		workers        = workerVec->workers;
+
+		
 		LM_M(("file size: %d", fileSize));
 		LM_M(("%d workers, each of a size of %d => %d + %d * %d == %d",
 			  workerVec->workers,

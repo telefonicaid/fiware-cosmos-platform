@@ -42,7 +42,6 @@ public:
 	Process*        process;
 
 	QPushButton*    startButton;
-	QPushButton*    connectButton;
 	QPushButton*    logButton;
 	QPushButton*    nameButton;
 

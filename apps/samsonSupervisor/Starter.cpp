@@ -49,11 +49,6 @@ void Starter::qtInit(QVBoxLayout* spawnerLayout, QVBoxLayout* workerLayout, QVBo
 
 	LM_T(LmtStarter, ("Creating checkbox for '%s'", process->name));
 
-	connectButton  = new QPushButton();
-	connectButton->setIcon(redIcon);
-	connectButton->setToolTip("Connect");
-	connectButton->setFlat(true);
-
 	logButton = new QPushButton();
 	logButton->setIcon(redIcon);
 	logButton->setToolTip("Make process send log information");
@@ -76,12 +71,10 @@ void Starter::qtInit(QVBoxLayout* spawnerLayout, QVBoxLayout* workerLayout, QVBo
 		startButton->connect(startButton, SIGNAL(clicked()), this, SLOT(startClicked()));
 
 	box->addWidget(startButton);
-	// box->addWidget(connectButton);
 	box->addWidget(logButton);
 	box->addWidget(nameButton);
 	box->addStretch(500);
 
-	// connectButton->connect(connectButton, SIGNAL(clicked()), this, SLOT(connectClicked()));
 	logButton->connect(logButton,         SIGNAL(clicked()), this, SLOT(logClicked()));
 	nameButton->connect(nameButton,       SIGNAL(clicked()), this, SLOT(nameClicked()));
 	
@@ -126,8 +119,7 @@ void Starter::check(const char* reason)
 
 	if ((process->endpoint != NULL) && (process->endpoint->state == ss::Endpoint::Connected))
 	{
-		connectButton->setIcon(greenIcon);
-		connectButton->setToolTip("Disconnect");
+		logButton->setDisabled(false);
 
 		if (process->type != PtSpawner)
 		{
@@ -139,9 +131,6 @@ void Starter::check(const char* reason)
 		   startButton->setIcon(greenIcon);
 		   startButton->setToolTip("Nothing ...");		   
 		}
-
-		connectButton->setDisabled(false);
-		logButton->setDisabled(false);
 
 		if (process->sendsLogs)
 		{
@@ -156,14 +145,13 @@ void Starter::check(const char* reason)
 	}
 	else
 	{
+		logButton->setDisabled(true);
+
 		if (process->type != PtSpawner)
         {
 			startButton->setIcon(redIcon);
 			startButton->setToolTip("Start Process");
 		}
-
-		logButton->setDisabled(true);
-		connectButton->setDisabled(true);
 
 		if ((process->host == NULL) || (process->host[0] == 0) || (strcmp(process->host, "ip") == 0))
 			startButton->setDisabled(true);

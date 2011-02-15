@@ -273,7 +273,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 
 	for (int ix = 0; ix < wvDataP->workers; ix++)
 	{
-		LM_T(LmtWorkerVector, ("Create a Starter for endpoint '%s@%s' (unless it already exists ...)", worker->alias, worker->ip));
+		LM_M(("Create a Starter for endpoint '%s@%s' (unless it already exists ...)", worker->alias, worker->ip));
 		worker = &wvDataP->workerV[ix];
 		host   = worker->ip;
 
@@ -283,13 +283,18 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 
 			if ((processP = processLookup(worker->alias)) != NULL)
 			{
-				LM_W(("Unconfigured worker '%s' seems to already exist", worker->alias));
+				LM_W(("Unconfigured worker '%s' seems to already exist - not adding process nor starter", worker->alias));
 				if (processP->starterP)
+				{
+					if (processP->starterP->logButton)
+						processP->starterP->logButton->setDisabled(true);
 					processP->starterP->check("Unconfigured worker seems to already exist");
+				}
+
 				continue;
 			}
 
-			LM_M(("Worker %d is totally unconfigured ...", ix));
+			LM_M(("Worker %d is totally unconfigured - adding it a process and starter", ix));
 			process = processAdd("Worker", "ip", WORKER_PORT, worker->alias, NULL, NULL, 0);
 
 			starter = starterAdd(process);
@@ -328,7 +333,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 		}
 
 		if (spawner == NULL)
-			LM_X(1, ("NULL spawner - this is a SW bug. Ken's first bug ever!"));
+			LM_X(1, ("NULL spawner - this is a SW bug. Probably Ken's first bug ever!"));
 
 		LM_M(("Now, we're connected to the spawner and it is added to out process list - does it have a starter ?"));
 		starter = starterLookup(ep);
@@ -356,7 +361,9 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 			fd = iomConnect(host, WORKER_PORT);
 			ep = networkP->endpointAdd("unconnected worker in workerVector", fd, fd, "Worker", worker->alias, 0, ss::Endpoint::Worker, host, WORKER_PORT);
 		}
-		
+		else
+			LM_M(("Yes, found the endpoint"));
+
 		LM_M(("Now, is this process in our process list ?"));
 		process = processLookup("Worker", host);
 		if (process == NULL)

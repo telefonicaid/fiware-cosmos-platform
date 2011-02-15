@@ -510,8 +510,9 @@ void ProcessConfigView::save(void)
 			process->spawnInfo->spawnerP = spawner;
 		}
 
-		process->starterP->nameButton->setText(QString(process->alias) + "@" + process->host);
+		process->starterP->nameButton->setText(QString(process->name) + "@" + process->host + " (" + process->alias + ")");
 		process->starterP->startButton->setDisabled(false);
+		process->starterP->logButton->setDisabled(true);
 	}
 
 	if ((networkP->endpoint[2] != NULL) && (networkP->endpoint[2]->state == ss::Endpoint::Connected))

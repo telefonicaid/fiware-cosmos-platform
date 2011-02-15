@@ -167,7 +167,7 @@ static void workerVecGet(void)
 		{
 			ss::Message::Worker* worker = &workerVec->workerV[ix];
 
-			snprintf(worker->name, sizeof(worker->name),   "samsonWorker");
+			snprintf(worker->name, sizeof(worker->name),   "Worker");
 			snprintf(worker->alias, sizeof(worker->alias), "Worker%02d", ix);
 
 			worker->port  = WORKER_PORT;

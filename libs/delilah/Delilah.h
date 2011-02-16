@@ -20,8 +20,8 @@
 #include <set>					// std::set
 #include "Lock.h"				// au::Lock
 #include "au_map.h"				// au::map
-#include "samson/Environment.h"	// ss::Environment
-#include "samson.pb.h"			// ss::network::..
+#include "samson/Environment.h"	                // ss::Environment
+#include "samson.pb.h"			        // ss::network::..
 #include "au_map.h"				// au::simple_map
 
 namespace ss {

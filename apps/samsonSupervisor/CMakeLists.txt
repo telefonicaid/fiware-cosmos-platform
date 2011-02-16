@@ -101,6 +101,7 @@ include_directories("${PROJECT_BINARY_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/delilah")
+include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 
 link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")

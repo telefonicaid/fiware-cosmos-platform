@@ -18,6 +18,7 @@
 
 #include "Host.h"               // Host
 #include "HostMgr.h"            // Own interface
+#include <stdlib.h>             // free
 
 
 

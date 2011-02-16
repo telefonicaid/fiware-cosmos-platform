@@ -15,7 +15,7 @@
 #include "Console.h"			// au::Console
 #include "DelilahClient.h"      // ss:DelilahClient
 #include "Delilah.h"			// ss::Delilah
-
+#include <sstream>                  // std::ostringstream
 #include <time.h>
 
 #include <readline/readline.h>

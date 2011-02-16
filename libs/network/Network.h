@@ -12,6 +12,7 @@
 #include "Endpoint.h"			// Endpoint
 #include "Message.h"            // ss::Message::MessageCode
 #include "NetworkInterface.h"	// ss:NetworkInterface 
+#include "HostMgr.h"			// HostMgr
 
 
 
@@ -99,6 +100,8 @@ public:
 
 	int                Endpoints;
 	Endpoint**         endpoint;
+
+	HostMgr*           hostMgr;
 
 	void         msgPreTreat(Endpoint* ep, int endpointId);
 	void         msgTreat(void* vP);

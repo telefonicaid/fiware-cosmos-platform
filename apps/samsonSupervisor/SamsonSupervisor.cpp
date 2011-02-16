@@ -530,7 +530,7 @@ int SamsonSupervisor::ready(const char* info)
 	processListShow("ready");
 
 	if (networkP->controllerGet() == NULL)
-		LM_X(1, ("NULL controller - try to connect to it, asbefore ?"));
+		LM_X(1, ("NULL controller - try to connect to it, as before ?"));
 
 	return 0;
 }

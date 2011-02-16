@@ -36,6 +36,9 @@ DelilahSceneItem(DelilahSceneItem::Source, sceneP, imagePath, displayNameP, x, y
 {
 	inTypeSet("Not used", 0);
 	sourceFileName = NULL;
+
+	outTypeK = NULL;
+	outTypeV = NULL;
 }
 
 

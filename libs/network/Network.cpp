@@ -9,7 +9,7 @@
 */
 #include <sys/select.h>         // select
 #include <string>               // string
-#include <vector>				// ss::vector
+#include <vector>               // ss::vector
 #include <sys/types.h>          // pid_t
 #include <unistd.h>             // fork, getpid
 #include <sched.h>              // sched_setaffinity
@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <unistd.h>
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
@@ -27,9 +26,9 @@
 #include "ports.h"              // Port numbers for samson processes
 
 #include "Misc.h"               // ipGet 
-#include "Endpoint.h"			// Endpoint
+#include "Endpoint.h"           // Endpoint
 #include "Message.h"            // Message::MessageCode
-#include "Packet.h"				// Packet
+#include "Packet.h"             // Packet
 #include "MemoryManager.h"      // MemoryManager
 #include "iomInit.h"            // iomInit
 #include "iomServerOpen.h"      // iomServerOpen
@@ -39,7 +38,9 @@
 #include "iomMsgRead.h"         // iomMsgRead
 #include "iomMsgAwait.h"        // iomMsgAwait
 #include "workerStatus.h"       // workerStatus, WorkerStatusData
-#include "Network.h"			// Own interface
+#include "Host.h"               // Host
+#include "HostMgr.h"            // HostMgr
+#include "Network.h"            // Own interface
 
 
 
@@ -303,6 +304,8 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 Network::Network(Endpoint::Type type, const char* alias, unsigned short port, int endpoints, int workers)
 {
 	reset(type, alias, port, endpoints, workers);
+
+	hostMgr = new HostMgr(20);
 }
 
 

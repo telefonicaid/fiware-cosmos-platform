@@ -10,19 +10,12 @@
 * CREATION DATE            Feb 10 2011
 *
 */
+#include "Host.h"               // Host
 
 
 
-/* ****************************************************************************
-*
-* Host - 
-*/
-typedef struct Host
+namespace ss
 {
-	char* hostName;
-	char* ip;
-	char* alias[10];
-} Host;
 
 
 
@@ -37,14 +30,20 @@ public:
 	~HostMgr();
 
 	int     hosts();
-	void    insert(char* ip);
-	Host*   lookup(char* ip);
-	void    aliasAdd(Host* host, char* alias);
-	void    ipSet(Host* host, char* alias);
+	Host*   insert(const char* name, const char* ip);
+	Host*   lookup(const char* ip);
+	void    aliasAdd(Host* host, const char* alias);
+	void    ipSet(Host* host, const char* alias);
+	void    list(const char* why);
 
 private:
+	void          localIps(void);
+	void          ipsGet(Host* hostP);
+
 	Host**        hostV;
 	unsigned int  size;
 };
+
+}
 
 #endif

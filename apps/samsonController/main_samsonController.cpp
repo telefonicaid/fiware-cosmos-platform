@@ -203,9 +203,11 @@ static void workerVecGet(void)
 		workerVec      = (ss::Message::WorkerVectorData*) buf;
 		workerVecSize  = sizeof(ss::Message::WorkerVectorData) + workerVec->workers * sizeof(ss::Message::Worker);
 
-		LM_M(("Changing global variable workers from %d to %d", workers, workerVec->workers));
-		workers        = workerVec->workers;
-
+		if (workers != workerVec->workers)
+		{
+			LM_M(("Changing global variable workers from %d to %d", workers, workerVec->workers));
+			workers = workerVec->workers;
+		}
 		
 		LM_M(("file size: %d", fileSize));
 		LM_M(("%d workers, each of a size of %d => %d + %d * %d == %d",
@@ -258,7 +260,7 @@ int main(int argC, const char* argV[])
 
 	LM_T(LmtInit, ("%d workers", workerVec->workers));
 
-	au::LockDebugger::shared();         // Debuggin of Lock usage ( necessary here where it is only one thread )
+	au::LockDebugger::shared();         // Lock usage debugging (necessary here where there is only one thread)
 	ss::SamsonSetup::load(workingDir);  // Load setup and create all directories
 	ss::DiskManager::shared();          // Disk manager
 	ss::MemoryManager::init();          // Memory manager
@@ -267,7 +269,7 @@ int main(int argC, const char* argV[])
 	
 	
 	// Instance of network object and initialization
-	// --------------------------------------------------------------------
+	// ---------------------------------------------
 	ss::Network network(ss::Endpoint::Controller, "controller", port, endpoints, workers);
 
 	network.initAsSamsonController();
@@ -275,8 +277,8 @@ int main(int argC, const char* argV[])
 	network.runInBackground();
 	
 	
-	// Instance of the samson controller	
-	// --------------------------------------------------------------------
+	// Instance of the Samson Controller
+	// ---------------------------------
 	
 	ss::SamsonController  controller(&network);
 

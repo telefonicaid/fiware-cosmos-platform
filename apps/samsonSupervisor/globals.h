@@ -54,13 +54,4 @@ extern int                  mainWinWidth;
 extern int                  mainWinHeight;
 extern InfoWin*             infoWin;
 
-
-/* ****************************************************************************
-*
-* Option variables
-*/
-extern int     endpoints;
-extern char    controllerName[80];
-extern char    cfPath[80];
-
 #endif

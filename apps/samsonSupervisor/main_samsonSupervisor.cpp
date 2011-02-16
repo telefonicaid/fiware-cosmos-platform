@@ -98,6 +98,7 @@ User*                userP             = NULL;
 int                  mainWinWidth      = MAIN_WIN_WIDTH;
 int                  mainWinHeight     = MAIN_WIN_HEIGHT;
 InfoWin*             infoWin           = NULL;
+char*                controllerName    = NULL;
 
 
 
@@ -414,6 +415,24 @@ static void qtGo(void)
 
 /* ****************************************************************************
 *
+* controllerHostName - 
+*/
+static char* controllerHostName(void)
+{
+	Host* hostP;
+
+	hostP = networkP->hostMgr->lookup(controllerHost);
+
+	if (hostP != NULL)
+		return hostP->name;
+
+	return controllerHost;
+}
+
+
+
+/* ****************************************************************************
+*
 * main - 
 */
 int main(int argC, const char *argV[])
@@ -428,9 +447,10 @@ int main(int argC, const char *argV[])
 	processListInit(20);
 	starterListInit(30);
 	networkPrepare();
-	spawnerConnect(controllerHost);
-	controllerConnect(controllerHost);
-	networkInit(controllerHost);
+	controllerName = controllerHostName();
+	spawnerConnect(controllerName);
+	controllerConnect(controllerName);
+	networkInit(controllerName);
 	delilahInit();
 	qtGo();
 

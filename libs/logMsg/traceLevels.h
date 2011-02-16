@@ -101,7 +101,14 @@ typedef enum TraceLevels
 	LmtUser,
 
 	LmtSceneItemChain,
-	LmtMove
+	LmtMove,
+
+	LmtUser01 = 250,
+	LmtUser02 = 251,
+	LmtUser03 = 252,
+	LmtUser04 = 253,
+	LmtUser05 = 254,
+	LmtUser06 = 255,
 } TraceLevels;
 
 

@@ -473,14 +473,14 @@ void DelilahScene::setCursor(const char* cursorPath)
 {
 	if (cursorPath == NULL)
 	{
-		tabManager->sceneTab->view->setCursor(Qt::ArrowCursor);
+		tabManager->delilahOldTab->view->setCursor(Qt::ArrowCursor);
 		return;
 	}
 
 	QPixmap  pixmap(cursorPath);
 	QCursor  cursor(pixmap, -1, -1);
 
-	tabManager->sceneTab->view->setCursor(cursor);
+	tabManager->delilahOldTab->view->setCursor(cursor);
 }
 
 

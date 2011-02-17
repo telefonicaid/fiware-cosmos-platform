@@ -1,9 +1,9 @@
-#ifndef DELILAH_TAB_H
-#define DELILAH_TAB_H
+#ifndef DELILAH_RAW_TAB_H
+#define DELILAH_RAW_TAB_H
 
 /* ****************************************************************************
 *
-* FILE                     DelilahTab.h
+* FILE                     DelilahRawTab.h
 *
 * AUTHOR                   Ken Zangelin
 *
@@ -24,14 +24,14 @@
 
 /* ****************************************************************************
 *
-* DelilahTab -
+* DelilahRawTab -
 */
-class DelilahTab : public QWidget
+class DelilahRawTab : public QWidget
 {
 	Q_OBJECT
 
 public:
-	DelilahTab(const char* name, QWidget *parent = 0);
+	DelilahRawTab(const char* name, QWidget *parent = 0);
 
 private slots:
 	void send();

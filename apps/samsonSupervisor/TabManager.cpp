@@ -28,9 +28,11 @@
 #include "permissions.h"        // UpSeeLogs, ...
 #include "Popup.h"              // Popup
 #include "ProcessListTab.h"     // ProcessListTab
+#include "MrOperationsTab.h"    // MrOperationsTab
 #include "LogTab.h"             // LogTab
-#include "DelilahTab.h"         // DelilahTab
+#include "DelilahRawTab.h"      // DelilahRawTab
 #include "ConfigTab.h"          // ConfigTab
+#include "OldMrOperationsTab.h" // OldMrOperationsTab
 #include "starterList.h"        // starterListShow
 #include "TabManager.h"         // Own interface
 
@@ -50,16 +52,18 @@ TabManager::TabManager(QWidget* window, QWidget* parent) : QWidget(parent)
 	tabWidget       = new QTabWidget();
 
 	processListTab  = new ProcessListTab("Processes", window);
+	mrOperationsTab = new MrOperationsTab("MR Operations");
 	logTab          = new LogTab();
-	delilahTab      = new DelilahTab("Console");
-	sceneTab        = new SceneTab("Delilah");
+	delilahRawTab   = new DelilahRawTab("Console");
 	configTab       = new ConfigTab();
+	delilahOldTab   = new OldMrOperationsTab("Old Delilah");
 
-	tabWidget->addTab(processListTab, tr("Processes"));
-	tabWidget->addTab(sceneTab,       tr("MR Operations"));
-	tabWidget->addTab(logTab,         tr("Logging"));
-	tabWidget->addTab(delilahTab,     tr("Raw Platform access"));
-	tabWidget->addTab(configTab,      tr("Preferences"));
+	tabWidget->addTab(processListTab,      tr("Processes"));
+	tabWidget->addTab(mrOperationsTab,     tr("MR Operations"));
+	tabWidget->addTab(logTab,              tr("Logging"));
+	tabWidget->addTab(delilahRawTab,       tr("Raw Platform access"));
+	tabWidget->addTab(configTab,           tr("Preferences"));
+	tabWidget->addTab(delilahOldTab,       tr("Old MR Operations"));
 
 	mainLayout->addWidget(tabWidget);
 	mainLayout->addWidget(quit);
@@ -70,7 +74,7 @@ TabManager::TabManager(QWidget* window, QWidget* parent) : QWidget(parent)
 		logTab->setDisabled(true);
 	}
 	if ((userP == NULL) || ((userP->permissions & UpRawPlatformAccess) == 0))
-		delilahTab->setDisabled(true);
+		delilahRawTab->setDisabled(true);
 
 	window->setLayout(mainLayout);
 

@@ -10,13 +10,16 @@ SET (SOURCES
 	Starter.cpp
 	starterList.cpp
 	TabManager.cpp
-	DelilahTab.cpp
-	LogTab.cpp
+
 	ProcessListTab.cpp
+	MrOperationsTab.cpp
+	LogTab.cpp
+	DelilahRawTab.cpp
 	ConfigTab.cpp
+	OldMrOperationsTab.cpp
+
 	configFile.cpp
 	Popup.cpp
-	SceneTab.cpp
 	misc.cpp
 	DelilahSceneItem.cpp
 	DelilahQueue.cpp
@@ -41,14 +44,17 @@ SET (SOURCES
 )
 
 SET (HEADERS_MOC
-	Starter.h
 	TabManager.h
-	DelilahTab.h
-	LogTab.h
+
 	ProcessListTab.h
-	Popup.h
-	SceneTab.h
+	MrOperationsTab.h
+	LogTab.h
+	DelilahRawTab.h
 	ConfigTab.h
+	OldMrOperationsTab.h
+
+	Starter.h
+	Popup.h
 	DelilahScene.h
 	QueueConfigWindow.h
 	ResultConfigWindow.h

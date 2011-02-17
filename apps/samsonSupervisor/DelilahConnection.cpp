@@ -38,7 +38,7 @@ DelilahConnection::DelilahConnection(DelilahScene* sceneP, DelilahSceneItem* fro
 	lineItem->setPen(pen);
 
 #if 1
-	lineItem->stackBefore(sceneLayer1);
+	lineItem->stackBefore(tabManager->delilahOldTab->sceneLayer1);
 #else
 	lineItem->stackBefore(qFromP->pixmapItem);
 	lineItem->stackBefore(qToP->pixmapItem);

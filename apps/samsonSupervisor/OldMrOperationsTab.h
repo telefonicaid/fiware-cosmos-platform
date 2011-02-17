@@ -1,9 +1,9 @@
-#ifndef SCENE_TAB_H
-#define SCENE_TAB_H
+#ifndef OLD_MR_OPERATIONS_TAB_H
+#define OLD_MR_OPERATIONS_TAB_H
 
 /* ****************************************************************************
 *
-* FILE                     SceneTab.h
+* FILE                     OldMrOperationsTab.h
 *
 * AUTHOR                   Ken Zangelin
 *
@@ -13,6 +13,7 @@
 #include <QObject>
 #include <QWidget>
 #include <QGraphicsView>
+#include <QGraphicsItem>
 #include <QMenu>
 #include <QAction>
 #include <QString>
@@ -23,16 +24,18 @@
 
 /* ****************************************************************************
 *
-* SceneTab -
+* OldMrOperationsTab -
 */
-class SceneTab : public QWidget
+class OldMrOperationsTab : public QWidget
 {
 	Q_OBJECT
 
 public:
-	SceneTab(const char* name, QWidget *parent = 0);
+	OldMrOperationsTab(const char* name, QWidget *parent = 0);
 
 	QGraphicsView* view;
+	QGraphicsItem* sceneLayer0;
+	QGraphicsItem* sceneLayer1;
 
 private slots:
 	void qCreate(void);

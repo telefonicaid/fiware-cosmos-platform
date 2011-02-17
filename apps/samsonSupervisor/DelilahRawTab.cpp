@@ -1,6 +1,6 @@
 /* ****************************************************************************
 *
-* FILE                     DelilahTab.cpp
+* FILE                     DelilahRawTab.cpp
 *
 * AUTHOR                   Ken Zangelin
 *
@@ -16,7 +16,7 @@
 #include "logMsg.h"             // LM_*
 #include "globals.h"            // networkP
 
-#include "DelilahTab.h"         // Own interface
+#include "DelilahRawTab.h"      // Own interface
 
 
 
@@ -26,7 +26,7 @@
 */
 void consoleOut(const char* type, const char* text)
 {
-	DelilahTab* dTab = tabManager->delilahTab;
+	DelilahRawTab* dTab = tabManager->delilahRawTab;
 
 	dTab->output->clear();
 	dTab->output->append(QString(type) + ":");
@@ -37,9 +37,9 @@ void consoleOut(const char* type, const char* text)
 
 /* ****************************************************************************
 *
-* DelilahTab::DelilahTab - 
+* DelilahRawTab::DelilahRawTab - 
 */
-DelilahTab::DelilahTab(const char* name, QWidget *parent) : QWidget(parent)
+DelilahRawTab::DelilahRawTab(const char* name, QWidget *parent) : QWidget(parent)
 {
 	mainLayout  = new QGridLayout();
 	input       = new QLineEdit();
@@ -61,9 +61,9 @@ DelilahTab::DelilahTab(const char* name, QWidget *parent) : QWidget(parent)
 
 /* ****************************************************************************
 *
-* DelilahTab::send - 
+* DelilahRawTab::send - 
 */
-void DelilahTab::send(void)
+void DelilahRawTab::send(void)
 {
 	QString        commandQString   = input->displayText();
 	std::string    commandStdString = commandQString.toStdString();

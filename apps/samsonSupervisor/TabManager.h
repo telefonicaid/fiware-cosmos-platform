@@ -14,10 +14,11 @@
 #include <QTimerEvent>
 
 #include "ProcessListTab.h"     // ProcessListTab
-#include "DelilahTab.h"         // DelilahTab
-#include "SceneTab.h"           // SceneTab
+#include "MrOperationsTab.h"    // MrOperationsTab
 #include "LogTab.h"             // LogTab
+#include "DelilahRawTab.h"      // DelilahRawTab
 #include "ConfigTab.h"          // ConfigTab
+#include "OldMrOperationsTab.h" // OldMrOperationsTab
 
 
 
@@ -40,11 +41,12 @@ class TabManager : public QWidget
 public:
 	TabManager(QWidget* window, QWidget *parent = 0);
 
-	ProcessListTab*  processListTab;
-	LogTab*          logTab;
-	DelilahTab*      delilahTab;
-	SceneTab*        sceneTab;
-	ConfigTab*       configTab;
+	ProcessListTab*      processListTab;
+	MrOperationsTab*     mrOperationsTab;
+	LogTab*              logTab;
+	DelilahRawTab*       delilahRawTab;
+	ConfigTab*           configTab;
+	OldMrOperationsTab*  delilahOldTab;
 
 protected:
 	void timerEvent(QTimerEvent* e);

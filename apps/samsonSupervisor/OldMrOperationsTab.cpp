@@ -1,6 +1,6 @@
 /* ****************************************************************************
 *
-* FILE                     SceneTab.cpp
+* FILE                     OldMrOperationsTab.cpp
 *
 * AUTHOR                   Ken Zangelin
 *
@@ -23,24 +23,15 @@
 #include "DelilahScene.h"       // DelilahScene
 #include "ConnectionMgr.h"      // ConnectionMgr
 #include "QueueMgr.h"           // QueueMgr
-#include "SceneTab.h"           // Own interface
+#include "OldMrOperationsTab.h" // Own interface
 
 
 
 /* ****************************************************************************
 *
-* Scene layers
+* OldMrOperationsTab::OldMrOperationsTab - 
 */
-QGraphicsItem* sceneLayer0 = NULL;
-QGraphicsItem* sceneLayer1 = NULL;
-
-
-
-/* ****************************************************************************
-*
-* SceneTab::SceneTab - 
-*/
-SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
+OldMrOperationsTab::OldMrOperationsTab(const char* name, QWidget *parent) : QWidget(parent)
 {
 	QHBoxLayout*  mainLayout;
 	QVBoxLayout*  boxLayout;
@@ -245,9 +236,9 @@ SceneTab::SceneTab(const char* name, QWidget *parent) : QWidget(parent)
 
 /* ****************************************************************************
 *
-* SceneTab::qCreate - 
+* OldMrOperationsTab::qCreate - 
 */
-void SceneTab::qCreate(void)
+void OldMrOperationsTab::qCreate(void)
 {
 	scene->qCreate();
 }
@@ -256,9 +247,9 @@ void SceneTab::qCreate(void)
 
 /* ****************************************************************************
 *
-* SceneTab::source - 
+* OldMrOperationsTab::source - 
 */
-void SceneTab::source(void)
+void OldMrOperationsTab::source(void)
 {
 	scene->source();
 }
@@ -267,9 +258,9 @@ void SceneTab::source(void)
 
 /* ****************************************************************************
 *
-* SceneTab::result - 
+* OldMrOperationsTab::result - 
 */
-void SceneTab::result(void)
+void OldMrOperationsTab::result(void)
 {
 	scene->result();
 }
@@ -278,9 +269,9 @@ void SceneTab::result(void)
 
 /* ****************************************************************************
 *
-* SceneTab::connection - 
+* OldMrOperationsTab::connection - 
 */
-void SceneTab::connection(void)
+void OldMrOperationsTab::connection(void)
 {
 	scene->connection();
 }
@@ -289,9 +280,9 @@ void SceneTab::connection(void)
 
 /* ****************************************************************************
 *
-* SceneTab::qDelete - 
+* OldMrOperationsTab::qDelete - 
 */
-void SceneTab::qDelete(void)
+void OldMrOperationsTab::qDelete(void)
 {
 	scene->remove();
 }
@@ -388,9 +379,9 @@ static void loadTextReceiver(const char* type, const char* text)
 
 /* ****************************************************************************
 *
-* SceneTab::help
+* OldMrOperationsTab::help
 */
-void SceneTab::help(void)
+void OldMrOperationsTab::help(void)
 {
 	// helpDialog = new HelpDialog();
 
@@ -404,7 +395,7 @@ void SceneTab::help(void)
 *
 * qView - 
 */
-void SceneTab::qView(void)
+void OldMrOperationsTab::qView(void)
 {
 	delilahConsole->writeCallbackSet(qViewTextReceiver);
 	delilahConsole->evalCommand("ls");
@@ -416,7 +407,7 @@ void SceneTab::qView(void)
 *
 * command - 
 */
-void SceneTab::command(void)
+void OldMrOperationsTab::command(void)
 {
 	delilahConsole->writeCallbackSet(commandTextReceiver);
 	delilahConsole->evalCommand("operations");
@@ -428,7 +419,7 @@ void SceneTab::command(void)
 *
 * dataTypes - 
 */
-void SceneTab::dataTypes(void)
+void OldMrOperationsTab::dataTypes(void)
 {
 	delilahConsole->writeCallbackSet(dataTypesTextReceiver);
 	delilahConsole->evalCommand("datas");
@@ -440,7 +431,7 @@ void SceneTab::dataTypes(void)
 *
 * jobs - 
 */
-void SceneTab::jobs(void)
+void OldMrOperationsTab::jobs(void)
 {
 	delilahConsole->writeCallbackSet(jobsTextReceiver);
 	delilahConsole->evalCommand("jobs");
@@ -452,7 +443,7 @@ void SceneTab::jobs(void)
 *
 * workers - 
 */
-void SceneTab::workers(void)
+void OldMrOperationsTab::workers(void)
 {
 	delilahConsole->writeCallbackSet(workersTextReceiver);
 	delilahConsole->evalCommand("workers");
@@ -464,7 +455,7 @@ void SceneTab::workers(void)
 *
 * env - 
 */
-void SceneTab::env(void)
+void OldMrOperationsTab::env(void)
 {
 	delilahConsole->writeCallbackSet(envTextReceiver);
 	delilahConsole->evalCommand("set");
@@ -476,7 +467,7 @@ void SceneTab::env(void)
 *
 * upload - 
 */
-void SceneTab::upload(void)
+void OldMrOperationsTab::upload(void)
 {
 	new Popup("Samson Upload", "Sorry, this window is under construction");
 }
@@ -487,7 +478,7 @@ void SceneTab::upload(void)
 *
 * download - 
 */
-void SceneTab::download(void)
+void OldMrOperationsTab::download(void)
 {
 	new Popup("Samson Download", "Sorry, this window is under construction");
 }
@@ -498,7 +489,7 @@ void SceneTab::download(void)
 *
 * load - 
 */
-void SceneTab::load(void)
+void OldMrOperationsTab::load(void)
 {
 	delilahConsole->writeCallbackSet(loadTextReceiver);
 	delilahConsole->evalCommand("load");

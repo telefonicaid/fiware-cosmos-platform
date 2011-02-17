@@ -100,9 +100,6 @@ namespace ss {
 	
 	class DelilahConsole : public au::Console, public Delilah
 	{
-		Delilah* delilah;	// Internal delilah object to interact with SAMSON
-		
-		
 		
 	public:
 		
@@ -115,7 +112,6 @@ namespace ss {
 		
 		~DelilahConsole()
 		{
-			delete delilah;
 		}
 				
 		// Console funciton

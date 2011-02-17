@@ -238,7 +238,6 @@ namespace ss
 	
 	void DelilahConsole::evalCommand( std::string command )
 	{
-		assert( delilah );
 		
 		au::CommandLine commandLine;
 		commandLine.set_flag_string("name", "null");
@@ -339,7 +338,7 @@ namespace ss
 				std::ostringstream output;
 				output << "Environent variables:\n";
 				output << "------------------------------------\n";
-				output << delilah->environment.toString();
+				output << environment.toString();
 				
 				writeOnConsole( output.str() );
 				return;
@@ -355,7 +354,7 @@ namespace ss
 			std::string name = commandLine.get_argument(1);
 			std::string value = commandLine.get_argument(2);
 			
-			delilah->environment.set( name , value );
+			environment.set( name , value );
 			
 			return ;
 		}
@@ -371,7 +370,7 @@ namespace ss
 			// Set a particular value
 			std::string name = commandLine.get_argument(1);
 			
-			delilah->environment.unset( name );
+			environment.unset( name );
 			
 			return ;
 		}		
@@ -387,7 +386,7 @@ namespace ss
 			std::string queue_name = commandLine.get_argument(1);
 			std::string fileName = commandLine.get_argument(2);
 
-			size_t id = delilah->addDownloadProcess(queue_name, fileName , commandLine.get_flag_bool("show"));
+			size_t id = addDownloadProcess(queue_name, fileName , commandLine.get_flag_bool("show"));
 
 			std::ostringstream o;
 			o << "Download data process (id="<<id<<") started.\n";
@@ -404,7 +403,7 @@ namespace ss
 
 			output << "Upload and download processes....\n";
 			std::map<size_t,DelilahComponent*>::iterator iter;
-			for (iter = delilah->components.begin() ; iter != delilah->components.end() ; iter++)
+			for (iter = components.begin() ; iter != components.end() ; iter++)
 				output << iter->second->getStatus() << "\n";
 			writeOnConsole(output.str());
 			
@@ -415,7 +414,7 @@ namespace ss
 		
 		if( mainCommand == "quit" )
 		{
-			delilah->quit();
+			quit();
 			return;
 		}
 
@@ -423,7 +422,7 @@ namespace ss
 		{
 			std::string s;
 
-			s = delilah->network->getState(command);
+			s = network->getState(command);
 			writeOnConsole(s);
 
 			return;
@@ -450,7 +449,7 @@ namespace ss
 				help->set_operations(true);
 				
 				
-				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Help, p);
+				network->send(this, network->controllerGetIdentifier(), Message::Help, p);
 				return;
 			}
 			
@@ -462,7 +461,7 @@ namespace ss
 				help->set_queues(true);
 				help->set_datas(false);
 				help->set_operations(false);
-				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Help, p);
+				network->send(this, network->controllerGetIdentifier(), Message::Help, p);
 				return;
 			}
 			else if( secondCommand == "datas" )
@@ -472,7 +471,7 @@ namespace ss
 				help->set_datas(true);
 				help->set_operations(false);
 
-				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Help, p);
+				network->send(this, network->controllerGetIdentifier(), Message::Help, p);
 
 				return;
 			}
@@ -483,7 +482,7 @@ namespace ss
 				help->set_datas(false);
 				help->set_operations(true);
 
-				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Help, p);
+				network->send(this, network->controllerGetIdentifier(), Message::Help, p);
 
 				return;
 			}
@@ -565,7 +564,7 @@ namespace ss
 			
 			int max_num_thread = commandLine.get_flag_int("threads"); 
 			
-			size_t id = delilah->addUploadData(fileNames, queue,compresion , max_num_thread);
+			size_t id = addUploadData(fileNames, queue,compresion , max_num_thread);
 			
 			std::ostringstream o;
 			o << "Load data process (id="<<id<<") started with " << fileNames.size() << " files";
@@ -574,7 +573,7 @@ namespace ss
 		}
 		
 		// Normal command send to the controller
-		size_t id = delilah->sendCommand(command);
+		size_t id = sendCommand(command);
 		
 		id = 0;	// To avoid warning
 		//std::ostringstream o;

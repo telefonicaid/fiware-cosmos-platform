@@ -81,7 +81,7 @@ namespace ss
 
 			LM_T(LmtIsolated, ("Isolated process %d(%s): Reading from pipe", id_processItem, stateName()));
 
-			iom = iomMsgAwait(pipeFdPair1[0], 0, 0);
+			iom = iomMsgAwait(pipeFdPair1[0], 60*5, 0);	// 5 minuts time-out
 			if (iom != 1)
 				LM_E(("iomMsgAwait returned error %d", iom));
 			else

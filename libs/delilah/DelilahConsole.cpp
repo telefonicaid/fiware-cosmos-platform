@@ -21,12 +21,9 @@
 #include "CommandLine.h"				// au::CommandLine
 
 namespace ss
-{
-	
+{	
 	// Information about all queues and operations	
-	au::Lock list_lock;						// Lock to protect the list of information
-	network::OperationList *ol = NULL;		// List of operations
-	network::QueueList *ql = NULL;			// List of queues
+	
 	
 	AutoCompletionOptions completion_options;
 	
@@ -300,6 +297,8 @@ namespace ss
 			output << "\n";
 			output << " jobs (j)    Get a list of running jobs\n";
 			output << "             Usage: jobs/j\n";
+			output << " clear_jobs (cj)    Clear finish or error jobs\n";
+			output << "             Usage: clear_jobs/cj\n";
 			output << "\n";
 			output << " workers (w) Get information about what is running on workers and controller\n";
 			output << "             Usage: workers/w\n";
@@ -635,13 +634,16 @@ namespace ss
 					
 					if( cmdLine.get_flag_bool("all") )
 					{
+						// Copy the list of queues for auto-completion
 						list_lock.lock();
 						
 						if( ql )
 							delete ql;
 						ql = new network::QueueList();
 						ql->CopyFrom( packet->message.command_response().queue_list() );
+						
 						list_lock.unlock();
+						
 					}
 					else
 					{
@@ -671,7 +673,9 @@ namespace ss
 							delete ol;
 						ol = new network::OperationList();
 						ol->CopyFrom( packet->message.command_response().operation_list() );
+						
 						list_lock.unlock();
+						
 					}
 					else
 					{
@@ -839,7 +843,6 @@ namespace ss
 				//txt << au::Format::int_string( jl.job(i).progress()*100 , 2) << "%";
 			}
 			
-			txt << std::endl;
 		}
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
 		txt << std::endl;

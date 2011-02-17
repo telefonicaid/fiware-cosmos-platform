@@ -316,6 +316,15 @@ namespace ss {
 					return	 0;
 				}
 
+				if( cmdLine.isArgumentValue(0, "clear_jobs", "cj" ) )
+				{
+					// Clear finish or error jobs
+					jobManager.removeAllFinishJobs();
+					return 0;
+				}
+				
+				
+				// Create a new job with the instructions given here
 				jobManager.addJob( fromId ,  packet->message.command() , packet->message.delilah_id() );
 				return 0;
 				

@@ -30,6 +30,11 @@ namespace ss {
 	class DelilahClient;
 	class DelilahComponent;
 	class DelilahUploadDataProcess;
+
+	extern au::Lock list_lock;						// Lock to protect the list of information
+	extern network::OperationList *ol;
+	extern network::QueueList *ql;
+	
 	
 	/**
 	   Main class for the samson client element
@@ -48,6 +53,9 @@ namespace ss {
 
 		NetworkInterface* network;								// Network interface
 		bool              finish;								// Global flag used by all threads to detect to stop
+
+		
+		// Full information everything in samson controller ( updated with updateInfo() )
 		
 	public:
 		

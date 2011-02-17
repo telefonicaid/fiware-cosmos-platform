@@ -11,7 +11,7 @@ namespace ss {
 	{
 		lock.lock();
 		
-		// New id
+		// Get the new id for this job from the data manager
 		size_t job_id = controller->data.getNewTaskId();
 		
 		if( fromId != -1 )
@@ -37,19 +37,6 @@ namespace ss {
 		// Run the job until a task is scheduled or error/finish
 		j->run();
 		
-		// Send a confirmation message if it is finished
-		if( j->isFinish() )
-		{
-			if( j->isError() )
-				controller->data.cancelTask( job_id , j->getErrorLine() );
-			else
-				controller->data.finishTask( job_id );
-			
-			j->sentConfirmationToDelilah( );
-			
-			_removeJob(j);
-		}
-		
 		lock.unlock();
 		
 	}
@@ -65,7 +52,8 @@ namespace ss {
 		if( task )
 			job = task->job;
 		
-		switch (confirmationMessage->type()) {
+		switch (confirmationMessage->type()) 
+		{
 				
 			case network::WorkerTaskConfirmation::finish:
 			{
@@ -90,11 +78,11 @@ namespace ss {
 				{
 					assert(job->isCurrentTask(task));	// we can only receive finish reports from the current task
 					
-					job->setError("Worker", confirmationMessage->error_message());
-					
+					//job->setError("Worker", confirmationMessage->error_message());
 					task->notifyWorkerFinished( );		
-					if ( task->finish )
-						job->notifyCurrentTaskFinish(task->error, task->error_message);
+					assert ( task->finish );
+					
+					job->notifyCurrentTaskFinish(true, confirmationMessage->error_message()  );
 					
 				}
 				
@@ -104,9 +92,16 @@ namespace ss {
 			{
 				//assert(task);
 				//assert(job);
-				if( task )	
-					task->notifyWorkerComplete( );		
+				if( task && job )
+				{
 				
+					if( task )	
+						task->notifyWorkerComplete( );		
+
+					// Verify if we are only waiting for writing
+					if( job->status() == Job::saving )
+						job->run();
+				}
 				
 			}
 				break;
@@ -114,7 +109,7 @@ namespace ss {
 			{
 				//assert(task);
 				//assert(job);
-				if( task && job)
+				if( task && job )
 				for (int f = 0 ; f < confirmationMessage->file_size() ; f++)
 				{
 					const network::QueueFile& qfile = confirmationMessage->file(f);
@@ -138,25 +133,6 @@ namespace ss {
 			}
 				break;
 				
-		}
-		
-		
-		if( job && job->isFinish() )
-		{
-			if(job->isError() )
-			{
-				controller->data.cancelTask( job->getId() , "Job canceled" );
-				job->sentConfirmationToDelilah( );
-				_removeJob(job);	// Remove job and associated tasks
-			}
-			else if( job->allTasksCompleted() )
-			{
-				controller->data.finishTask( job->getId() );
-				job->sentConfirmationToDelilah( );
-				_removeJob(job);	// Remove job and associated tasks
-			}
-			
-			
 		}
 		
 		lock.unlock();
@@ -200,10 +176,40 @@ namespace ss {
 		return output.str();
 		
 	}
+
+	
+	Job* JobManager::_getNextFinishJob()
+	{
+		
+		std::map<size_t,Job*>::iterator iter;
+		for( iter = job.begin() ; iter != job.end() ; iter++)
+		{
+			Job *job = iter->second;
+			if( ( job->status() == Job::error ) || ( job->status() == Job::finish ) )
+				return job;
+		}
+		
+		return NULL;
+	}	
+	
+	void JobManager::removeAllFinishJobs()
+	{
+		lock.lock();
+
+		Job *job = _getNextFinishJob();
+		while( job )
+		{
+			_removeJob(job);
+			job = _getNextFinishJob();
+		}
+		
+		lock.unlock();		
+	}
+	
 	
 	void JobManager::_removeJob( Job *j )
 	{		
-		assert( j->isFinish() );
+		assert( ( j->status() == Job::error ) || ( j->status() == Job::finish ) );
 		
 		// Remove all tasks associated to this job ( all of them are suppoused to be completed)
 		j->removeTasks();

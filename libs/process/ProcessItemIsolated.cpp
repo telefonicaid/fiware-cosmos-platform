@@ -96,11 +96,11 @@ namespace ss
 
 				LM_T(LmtIsolated, ("Isolated process %d(%s): Set error and break the loop", id_processItem,stateName()));
 				if (nb == -9)
-					snprintf(errorText, sizeof(errorText), "Father process seems to have crashed - iomMsgAwait returned %d", iom);
+					snprintf(errorText, sizeof(errorText), "Operation has crashed - iomMsgAwait returned %d", iom);
 				else if (nb == -1)
-					snprintf(errorText, sizeof(errorText), "Father process seems to have crashed - read(): %s", strerror(errno));
+					snprintf(errorText, sizeof(errorText), "Operation has crashed - read(): %s", strerror(errno));
 				else
-					snprintf(errorText, sizeof(errorText), "Father process seems to have crashed - read returned %d instead of expected %d", nb, (int) sizeof(int));
+					snprintf(errorText, sizeof(errorText), "Operation has crashed - read returned %d instead of expected %d", nb, (int) sizeof(int));
 
 				setError(errorText);
 				s = broken;

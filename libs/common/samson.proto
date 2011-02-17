@@ -166,7 +166,6 @@ message AutomaticOperationList
 	repeated AutomaticOperation automatic_operation = 1;
 }
 
-
 message WorkerStatusList
 {
       repeated WorkerStatus worker_status = 1;	
@@ -230,7 +229,6 @@ message Command
 {
 	required string  command		= 1;    // String to send a txt command
 	optional Environment environment    	= 3;	// Initial environment variables for the new job
-
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -240,7 +238,7 @@ message Command
 
 message CommandResponse
 {
-	required string command	     = 1;	    // Copy of the original command
+	required string command	       = 1;	    // Copy of the original command
 
 	optional uint64 new_job_id     = 2;         // Id of the new job ( if a new job is created )
 	optional uint64 finish_job_id  = 11;        // Id of the job that has finished 
@@ -249,15 +247,15 @@ message CommandResponse
 	optional string error_message = 10;   	    // An error message to show on screen
 	optional int32 ellapsed_seconds = 15;	    // Ellapsed time of this process
 
-	// Information to the user
+	// Information to the user about the status of the controller
 
-	optional JobList       job_list			= 100;
-	optional OperationList operation_list		= 101;
-	optional DataList      data_list	  	= 102;
-	optional QueueList     queue_list		= 103;
+	optional JobList       job_list			         = 100;
+	optional OperationList operation_list		         = 101;
+	optional DataList      data_list	  	         = 102;
+	optional QueueList     queue_list		         = 103;
 	optional AutomaticOperationList automatic_operation_list = 107;
-	optional WorkerStatusList worker_status_list 	= 104;
-	optional ControllerStatus controller_status	= 105;
+	optional WorkerStatusList worker_status_list 	         = 104;
+	optional ControllerStatus controller_status	         = 105;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -417,6 +415,12 @@ message Message
 	optional CompressInfo compress_info=301;			// Information about the compression of companion data
 }
 
+// Full information about the controller ( requested by delilah to get information )
+
+message ControllerStatusInfo
+{
+
+}
 
 
 // Message between Process and Process Assitant

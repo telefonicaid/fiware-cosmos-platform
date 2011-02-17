@@ -54,8 +54,9 @@ namespace ss {
 		
 		// Fill information of this packet
 		void fill(network::JobList *jl , std::string command);
-		
 		void fill( network::ControllerStatus * status );
+
+		void removeAllFinishJobs();
 		
 	private:
 
@@ -64,6 +65,9 @@ namespace ss {
 
 		// Remove a job
 		void _removeJob( Job *j );
+
+		// Get next job to be removed
+		Job* _getNextFinishJob();
 
 	
 		

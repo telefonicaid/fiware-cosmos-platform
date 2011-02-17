@@ -14,6 +14,9 @@ namespace ss {
 
 	Job::Job( JobManager * _jobManager , size_t _id, int fromId, const network::Command &command , size_t _sender_id  )
 	{
+		// By default no current task
+		currenTask = NULL;
+		
 		// Init time for this job
 		time_init = time(NULL);
 		
@@ -38,14 +41,13 @@ namespace ss {
 		items.push_back( j );
 		
 		// Default value for the internal flags
-		error = false;
-		finish = false;
+		_status = running;
 	}
 	
 	
 	void Job::run()
 	{
-		while( !finish && !error && items.size() > 0)	// While there is something to process
+		while( (_status == running) && items.size() > 0)	// While there is something to process
 		{
 			
 			JobItem& item = items.back();
@@ -67,15 +69,52 @@ namespace ss {
 					return;	// No continue since a task has been scheduled ( or an error ocurred )
 			}
 		}
-		
-		if ( error )
-			finish = true;	// Just to make sure we cancel everything
-		
+				
 		// Mark the end of the job if there are no more elements to process
 		if( items.size() == 0)
-			finish = true;
+		{
+			if( allTasksCompleted() )
+				setStatus( finish );
+			else
+				setStatus( saving );
+		}
 		
 	}	
+	
+	
+	void Job::setStatus( JobStatus s )
+	{
+		// Once in error or finish, we cannot set anything else
+		if ( _status == finish )
+		{
+			assert ( s == finish);
+			return;
+		}
+
+		if ( _status == error )
+		{
+			assert ( s == error);
+			return;
+		}
+				
+		// Set the status
+		_status = s;
+		
+		if( _status == error )
+		{
+			sentConfirmationToDelilah();
+			jobManager->controller->data.cancelTask( getId() , "Job error" );
+		}
+
+		if( _status == finish )
+		{
+			sentConfirmationToDelilah();
+			jobManager->controller->data.finishTask( getId() );
+		}
+
+		
+	}
+	
 	bool Job::_processCommand( std::string command )
 	{
 		
@@ -285,16 +324,6 @@ namespace ss {
 		return (currenTask == task);
 	}
 	
-	bool Job::isFinish()
-	{
-		return finish;
-	}
-	
-	bool Job::isError()
-	{
-		return error;
-	}
-	
 	bool Job::allTasksCompleted()
 	{
 		std::set<size_t>::iterator iter;
@@ -325,15 +354,16 @@ namespace ss {
 	
 	void Job::notifyCurrentTaskFinish( bool _error, std::string _error_message )
 	{
-		if( _error)
+		if( _error )
 			setError( "task at workers" ,  _error_message );
-		
-		run();	// Continue execution
+		else
+			run();	// Continue execution
 	}
 	
 	void Job::sentConfirmationToDelilah( )
 	{
-		assert( finish );
+		// Only error of finished jobs can send this message
+		assert( ( _status == finish) || ( _status == error ) );
 		
 		if( fromIdentifier == -1)
 		{
@@ -342,19 +372,22 @@ namespace ss {
 		}
 		else
 		{
+			// Send a packet to delilah
 			
 			Packet *p2 = new Packet();
 			
 			network::CommandResponse *response = p2->message.mutable_command_response();
 			response->set_command(mainCommand);
 
-			if( error )
+			if( _status == error )
 			{
 				response->set_error_message( error_message );
 				response->set_error_job_id( id );
 			}
 			else 
+			{
 				response->set_finish_job_id( id );
+			}
 
 			// Inform about ellapsed time
 			time_t time_finish = time(NULL);
@@ -383,54 +416,61 @@ namespace ss {
 		JobItem& item = items.back();
 		output << ">> " << item.getLastCommand() << std::endl;		
 		output << "\n>>>> Error: " << txt << std::endl;
-		
-		error = true;
+
+		// Set the error status 
 		error_message = output.str();
-		finish = true;	
+		setStatus( error );
 	}
 	
 	void Job::fill( network::Job *job )
 	{
 		job->set_id( id );
 		job->set_status( getStatus() );
-		job->set_main_command( mainCommand );
-		
-		std::list<JobItem>::iterator iter;
-		for ( iter=items.begin() ; iter != items.end() ; iter++ )
-		{
-			network::JobItem *j = job->add_item();
-			iter->fill( j );
-		}
-		
-		if( finish )
-		{
-			// Artifitial jobitem to say this is finish waiting to be confirmed as completed
-			network::JobItem *j = job->add_item();
-			j->set_command( "Finished... waiting to be saved to disk" );
-			j->set_line( 0 );
-			j->set_num_lines( 0 );
-		}
-		else if (currenTask)
-		{
-			// Artifitial jobitem to show current task
-			network::JobItem *j = job->add_item();
-			j->set_command( currenTask->info->operation_name );
-			j->set_line( 0 );
-			j->set_num_lines( 0 );
-		}
 
+		if( status() == error )
+			job->set_main_command( mainCommand + " [ " + error_line + " ]" );
+		else 
+		{
+			job->set_main_command( mainCommand );
 		
+			if ( _status == running )
+			{
+				std::list<JobItem>::iterator iter;
+				for ( iter=items.begin() ; iter != items.end() ; iter++ )
+				{
+					network::JobItem *j = job->add_item();
+					iter->fill( j );
+				}
+				
+				if (( currenTask ))
+				{
+					// Artifitial jobitem to show current task
+					network::JobItem *j = job->add_item();
+					j->set_command( currenTask->info->operation_name );
+					j->set_line( 0 );
+					j->set_num_lines( 0 );
+				}
+			}
+		}
 	}
 
 	std::string Job::getStatus()
 	{
 		std::ostringstream output;
-		if( error )
-			output << "Error: " << error_message;
-		else if (finish )
-			output << "Finish ( Writing output files )";
-		else
-			output << "Runnig " << au::Format::time_string( difftime( time(NULL), time_init ) );
+		switch (_status) {
+			case error:
+				output << "Error         ";
+				break;
+			case saving:
+				output << "Writing       ";
+				break;
+			case running:
+				output << "Runnig        " << au::Format::time_string( difftime( time(NULL), time_init ) );
+				break;
+			case finish:
+				output << "Finished      ";
+		}
+		
 		return output.str();
 	}
 	

@@ -17,6 +17,11 @@
 
 namespace ss {
 
+	au::Lock list_lock;
+	network::OperationList *ol = NULL;		// List of operations ( for auto-completion )
+	network::QueueList *ql = NULL;			// List of queues ( for auto-completion )
+	
+	
 
 /* ****************************************************************************
 *
@@ -31,7 +36,11 @@ Delilah::Delilah( NetworkInterface* _network )
 	id = 1;	// we start with process 1 because 0 is no process
 		
 	finish = false;				// Global flag to finish threads
-		
+
+	
+	// Default component to update local list of queues and operations
+	addComponent( new DelilahUpdater( ) );
+	
 }
 		
 

@@ -46,17 +46,21 @@ namespace ss
 		 */
 		
 		void beginTask( size_t task_id , std::string command  );
-		void finishTask( size_t task_id );
+		DataManagerCommandResponse runOperation( size_t task_id , std::string command );
 		void cancelTask( size_t task_id , std::string error );
 		void addComment( size_t task_id , std::string comment);
-		
-		DataManagerCommandResponse runOperation( size_t task_id , std::string command );
+		void finishTask( size_t task_id );
 		
 	protected:
+		
 		DataManagerCommandResponse _runOperation( size_t task_id , std::string command );
 
 		
 	protected:
+		
+		/**
+		 Get a new task id for this data manager ( not repeated with any previous task )
+		 */
 		
 		size_t _getNewTaskId()
 		{
@@ -64,6 +68,10 @@ namespace ss
 		}
 		
 	public:
+		
+		/**
+		 Get a new task id for this data manager ( not repeated with any previous task )
+		 */
 		
 		size_t getNewTaskId()
 		{
@@ -73,20 +81,24 @@ namespace ss
 			return id;
 		}
 		
+		
 	private:
 
 		friend class DataManagerItem;
 		
 		/**
 		 Unique interface to update the status of this DataManager
+		 This methods have to be implemented by any subclass
 		 */
 
 		virtual void _clear()=0;
 		virtual DataManagerCommandResponse _run( std::string command )=0;
+
+		
+	private:
 		
 		// Static function to get "today" string
 		static std::string today();
-		
 
 		// Reload data form file
 		void _reloadData();

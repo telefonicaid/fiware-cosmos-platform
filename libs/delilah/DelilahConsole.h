@@ -139,10 +139,13 @@ namespace ss {
 		// Functions overloaded from Delilah
 		// --------------------------------------------------------
 		
+		// Confirmation that a loading process has finished
 		virtual void loadDataConfirmation( DelilahUploadDataProcess *process);		
+		
 		// Function to process messages from network elements not handled by Delila class
 		int _receive(int fromId, Message::MessageCode msgCode, Packet* packet);		
-		
+
+		// Notify that an operation hash finish
 		virtual void notifyFinishOperation( size_t id )
 		{
 			std::ostringstream output;
@@ -150,23 +153,21 @@ namespace ss {
 			writeWarningOnConsole( output.str() );
 		}
 		
+		// Show a message on screen
 		virtual void showMessage( std::string message)
 		{
 			writeWarningOnConsole( message );
 		}
 		
-		
 		// Private functions to show content on the console
 		// --------------------------------------------------------
 		
-		void showQueues( const network::QueueList ql);
+		void showQueues( const network::QueueList ql );
 		void showAutomaticOperations( const network::AutomaticOperationList aol);
 		void showDatas( const network::DataList ql);
 		void showOperations( const network::OperationList ql);
 		void showJobs( const network::JobList ql);
 		void showWorkers( const network::ControllerStatus &cs, const network::WorkerStatusList ql);
-
-
 		
 	};
 

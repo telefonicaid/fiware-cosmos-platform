@@ -140,7 +140,7 @@ namespace ss {
 	{
 		lock.lock();
 		
-		// Update the counter so coherent task ids are given
+		// Update the counter so coherent task ids are given latter on
 		if ( task_counter <= task_id )
 			task_counter = task_id+1;
 
@@ -225,7 +225,7 @@ namespace ss {
 		else
 		{
 			ans.error = true;
-			ans.output = "Task was not active in the data manager";
+			ans.output = "Task was not active in the data manager, so this command was not executed";
 		}
 		
 		return ans;

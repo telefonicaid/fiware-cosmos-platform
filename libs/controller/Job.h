@@ -109,21 +109,31 @@ namespace ss {
 	
 	class Job
 	{
+		
+	public:
+		
+		typedef enum JobStatus
+		{
+			running,	// Running task
+			saving,		// Finish but waiting to save generated files
+			error,		// Finish because there was an error
+			finish,		// Completelly finish
+		};
+		
+	private:
+		
+		JobManager *jobManager;			// Pointer to the job manager
 		size_t id;						// Identifier of the job ( this is the one reported to delialh to monitorize a job)
 
 		// Basic information about this job
 		time_t time_init;					// Init time of this job ( to monitor the operation )
-		int fromIdentifier;				// Identifier of the delailah that ordered this job ( -1 if automatic operation )
-		int sender_id;					// Identifier at the sender side (the same delilah could send multiple jobs)
+		int fromIdentifier;					// Identifier of the delailah that ordered this job ( -1 if automatic operation )
+		int sender_id;						// Identifier at the sender side (the same delilah could send multiple jobs)
 		
+		std::string error_line;				// One line message for the error ( used in the cancel message of the data log)
+		std::string error_message;			// Complete error description
 		
-		std::string error_line;			// One line message for the error ( used in the cancel message of the data log)
-		std::string error_message;		// Complete erro description
-		bool error;						// Error flag
-		bool finish;					// Flag to indicate that this job is finished
-		
-					
-		JobManager *jobManager;			// Pointer to the job manager
+		JobStatus _status;	// Status of this job
 		
 		// Information about current running task
 		ControllerTask *currenTask;
@@ -154,10 +164,13 @@ namespace ss {
 		
 		
 		size_t getId();	
-		bool isFinish();
-		bool isError();
-	
-		void sentConfirmationToDelilah( );
+		JobStatus status()
+		{
+			return _status;
+		};
+		// Set the status ( sending a message to delilah if necessary )
+		void setStatus( JobStatus s);
+
 				
 		bool allTasksCompleted();
 		void removeTasks();
@@ -173,10 +186,12 @@ namespace ss {
 		
 		std::string getStatus();
 		
-		
-		
-		void setError( std::string agent , std::string txt );
 
+	private:
+		void setError( std::string agent , std::string txt );
+		void sentConfirmationToDelilah( );
+
+		
 		
 	private:
 		/**
@@ -187,7 +202,6 @@ namespace ss {
 		 */
 		
 		bool _processCommand( std::string command );		
-		
 		
 		// Axiliar function to replace text in strings
 		

@@ -125,6 +125,7 @@ public:
 	Endpoint*    endpointLookup(int ix);
 	Endpoint*    endpointLookup(char* alias);
 	Endpoint*    endpointLookup(Endpoint::Type type, char* ip);
+	Endpoint*    endpointLookup(Endpoint::Type type, Host* hostP);
 	void         endpointRemove(Endpoint* ep, const char* why);
 	void         endpointListShow(const char* why);
 

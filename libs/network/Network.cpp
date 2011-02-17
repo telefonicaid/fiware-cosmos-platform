@@ -1450,6 +1450,37 @@ Endpoint* Network::endpointLookup(Endpoint::Type type, char* ip)
 
 /* ****************************************************************************
 *
+* endpointLookup
+*/
+Endpoint* Network::endpointLookup(Endpoint::Type type, Host* hostP)
+{
+	int ix = 0;
+
+	LM_T(LmtEndpointLookup, ("Looking for '%s' endpoint on host '%s'", endpoint[ME]->typeName(type), hostP->name));
+	for (ix = 0; ix < Endpoints; ix++)
+	{
+		Host* epHostP;
+
+		if (endpoint[ix] == NULL)
+			continue;
+
+		LM_T(LmtEndpointLookup, ("Comparing types: '%s' to '%s'", endpoint[ME]->typeName(type), endpoint[ix]->typeName()));
+		if (endpoint[ix]->type != type)
+			continue;
+
+		epHostP = hostMgr->lookup(endpoint[ix]->ip.c_str());
+		if (epHostP == hostP)
+			return endpoint[ix];
+	}
+
+	LM_T(LmtEndpointLookup, ("'%s' Endpoint on %s not found", endpoint[ME]->typeName(type), hostP->name));
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * MsgTreatParams - 
 */
 typedef struct MsgTreatParams

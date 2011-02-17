@@ -251,6 +251,7 @@ static char* hostForWorker(ss::Message::Worker* workerP, int* argsP, char** argV
 static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 {
 	char*                 host;
+	Host*                 hostP;
 	int                   fd;
 	Process*              spawner;
 	Process*              process;
@@ -311,24 +312,28 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 		LM_M(("Lets lookup spawner, process, and starter for this worker (aliased '%s')", worker->alias));
 		LM_M(("But we start with looking up the network endpoint for the spawner in '%s'", host));
 
-		ep = networkP->endpointLookup(ss::Endpoint::Spawner, host);
+		hostP = networkP->hostMgr->lookup(host);
+		if (hostP == NULL)
+			LM_X(1, ("Host Manager cannot find host '%s' "));
+
+		ep = networkP->endpointLookup(ss::Endpoint::Spawner, hostP);
 		if (ep == NULL)
 		{
-			LM_W(("Not even connected to Spawner in '%s' - lets connect !", host));
+			LM_W(("Not even connected to Spawner in '%s' - lets connect !", hostP->name));
 			fd = iomConnect(host, SPAWNER_PORT);
-			ep = networkP->endpointAdd("unconnected spawner for workerVector", fd, fd, "Spawner", "Spawner", 0, ss::Endpoint::Spawner, host, SPAWNER_PORT);
+			ep = networkP->endpointAdd("unconnected spawner for workerVector", fd, fd, "Spawner", "Spawner", 0, ss::Endpoint::Spawner, hostP->name, SPAWNER_PORT);
 
 			LM_M(("Now, adding this spawner as a process in our lists"));
-			spawner = spawnerAdd("Spawner", (char*) host, SPAWNER_PORT, ep);
+			spawner = spawnerAdd("Spawner", hostP->name, SPAWNER_PORT, ep);
 		}
 		else
 		{
 			LM_M(("We are connected to the spawner, now lets see if we have it in our process list"));
-			spawner = spawnerLookup(host);
+			spawner = spawnerLookup(hostP->name);
 			if (spawner == NULL)
 			{
 				LM_M(("Nope, not there, I better add it ..."));
-				spawner = spawnerAdd("Spawner", host, SPAWNER_PORT, ep);
+				spawner = spawnerAdd("Spawner", hostP->name, SPAWNER_PORT, ep);
 			}
 		}
 
@@ -339,11 +344,11 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 		starter = starterLookup(ep);
 		if (starter == NULL)
 		{
-			LM_M(("Creating starter for spawner in '%s'", host));
+			LM_M(("Creating starter for spawner in '%s'", hostP->name));
 			
 			starter = starterAdd(spawner);
 			if (starter == NULL)
-				LM_X(1, ("NULL starter for Spawner@%s", host));
+				LM_X(1, ("NULL starter for Spawner@%s", hostP->name));
 			
 			if ((tabManager != NULL) && (tabManager->processListTab != NULL))
 				tabManager->processListTab->starterInclude(starter);
@@ -354,22 +359,22 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 
 
 		LM_M(("Let's see first if we're already connected to it"));
-		ep = networkP->endpointLookup(ss::Endpoint::Worker, host);
+		ep = networkP->endpointLookup(ss::Endpoint::Worker, hostP);
 		if (ep == NULL)
 		{
 			LM_M(("Nope, not connected. Let's try to connect"));
 			fd = iomConnect(host, WORKER_PORT);
-			ep = networkP->endpointAdd("unconnected worker in workerVector", fd, fd, "Worker", worker->alias, 0, ss::Endpoint::Worker, host, WORKER_PORT);
+			ep = networkP->endpointAdd("unconnected worker in workerVector", fd, fd, "Worker", worker->alias, 0, ss::Endpoint::Worker, hostP->name, WORKER_PORT);
 		}
 		else
 			LM_M(("Yes, found the endpoint"));
 
 		LM_M(("Now, is this process in our process list ?"));
-		process = processLookup("Worker", host);
+		process = processLookup("Worker", hostP->name);
 		if (process == NULL)
 		{
 			LM_M(("Nope, not in the list - let's add it"));
-			process = processAdd("Worker", host, WORKER_PORT, worker->alias, ep);
+			process = processAdd("Worker", hostP->name, WORKER_PORT, worker->alias, ep);
 		}
 		else
 		{
@@ -396,13 +401,13 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 
 			starter = starterAdd(process);
 			if (starter == NULL)
-                LM_X(1, ("NULL starter for Worker@%s", host));
+                LM_X(1, ("NULL starter for Worker@%s", hostP->name));
 
 			if ((tabManager != NULL) && (tabManager->processListTab != NULL))
 				tabManager->processListTab->starterInclude(starter);
 		}
 		else
-			LM_M(("The starter for Worker@%s already existed ...", host));
+			LM_M(("The starter for Worker@%s already existed ...", hostP->name));
 	}
 
 	LM_T(LmtWorkerVector, ("Treated worker vector with %d workers", wvDataP->workers));

@@ -33,13 +33,17 @@
 */
 MrOperationsTab::MrOperationsTab(const char* name, QWidget *parent) : QWidget(parent)
 {
-	QHBoxLayout*  mainLayout;
+	QVBoxLayout*  mainLayout;
+	QHBoxLayout*  topLayout;
+
+
 
 	//
 	// Creating main widgets
 	//
-	mainLayout = new QHBoxLayout;
-
+	mainLayout = new QVBoxLayout;
+	topLayout  = new QHBoxLayout;
+ 
 	setLayout(mainLayout);
 
 
@@ -66,5 +70,6 @@ MrOperationsTab::MrOperationsTab(const char* name, QWidget *parent) : QWidget(pa
 	scene->setSceneRect(QRectF(0, 0, pixmapSize.width(), pixmapSize.height()));
 	view->setMaximumSize(pixmapSize.width(), pixmapSize.height());
 
+	mainLayout->addLayout(topLayout);
 	mainLayout->addWidget(view);
 }

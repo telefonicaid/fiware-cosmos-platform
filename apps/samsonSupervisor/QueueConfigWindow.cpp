@@ -32,7 +32,7 @@
 static QueueConfigWindow* win = NULL;
 
 
-
+#if 0
 /* ****************************************************************************
 *
 * commandTextReceiver - 
@@ -112,11 +112,11 @@ static void dataTypesTextReceiver(const char* type, const char* text)
 	win->inTypeCombo->setCurrentIndex(win->queue->inTypeIndex);
 	win->outTypeCombo->setCurrentIndex(win->queue->outTypeIndex);
 
-	delilahConsole->writeCallbackSet(commandTextReceiver);
-	delilahConsole->evalCommand("operations");
+	//delilahConsole->writeCallbackSet(commandTextReceiver);
+	//delilahConsole->evalCommand("operations");
 }
 
-
+#endif
 
 /* ****************************************************************************
 *
@@ -182,8 +182,8 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 	commandLabel = new QLabel("Command");
 	commandCombo = new QComboBox();
 
-    delilahConsole->writeCallbackSet(dataTypesTextReceiver);
-    delilahConsole->evalCommand("datas");
+    //delilahConsole->writeCallbackSet(dataTypesTextReceiver);
+    //delilahConsole->evalCommand("datas");
 	
 	incoming = connectionMgr->incomingConnections(queue);
 	snprintf(textV, sizeof(textV), "%d Incoming connections", incoming);

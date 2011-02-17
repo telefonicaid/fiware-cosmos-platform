@@ -264,7 +264,7 @@ int main(int argC, const char* argV[])
 	ss::SamsonSetup::load(workingDir);  // Load setup and create all directories
 	ss::DiskManager::shared();          // Disk manager
 	ss::MemoryManager::init();          // Memory manager
-
+	ss::ModulesManager::init();			// Init the modules manager
 	
 	
 	

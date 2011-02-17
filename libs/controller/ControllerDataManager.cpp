@@ -63,14 +63,14 @@ namespace ss {
 				keyFormat	= commandLine.get_argument( 2 );
 				valueFormat = commandLine.get_argument( 3 );
 				
-				if( !controller->modulesManager.checkData( keyFormat ) )
+				if( !ModulesManager::shared()->checkData( keyFormat ) )
 				{
 					response.output = "Unsupported data format " + keyFormat + "\n";
 					response.error = true;
 					return response;
 				}
 				
-				if( !controller->modulesManager.checkData( valueFormat ) )
+				if( !ModulesManager::shared()->checkData( valueFormat ) )
 				{
 					std::ostringstream output;
 					output << "Unsupported data format " + valueFormat + "\n";

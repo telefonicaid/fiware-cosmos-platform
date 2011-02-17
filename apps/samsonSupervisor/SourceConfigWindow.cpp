@@ -36,7 +36,7 @@
 static SourceConfigWindow* win = NULL;
 
 
-
+#if 0
 /* ****************************************************************************
 *
 * dataTypesTextReceiver - 
@@ -80,7 +80,7 @@ static void dataTypesTextReceiver(const char* type, const char* text)
 	win->outTypeVCombo->setCurrentIndex(win->source->outTypeVIndex);
 }
 
-
+#endif
 
 /* ****************************************************************************
 *
@@ -152,8 +152,8 @@ SourceConfigWindow::SourceConfigWindow(DelilahSource* source)
 	connect(fakeButton, SIGNAL(clicked()), this, SLOT(fake()));
 	connect(sourceFileButton, SIGNAL(clicked()), this, SLOT(unfake()));
 
-    delilahConsole->writeCallbackSet(dataTypesTextReceiver);
-    delilahConsole->evalCommand("datas");
+    //delilahConsole->writeCallbackSet(dataTypesTextReceiver);
+    //delilahConsole->evalCommand("datas");
 	
 	outgoing = connectionMgr->outgoingConnections(source, NULL);
 	snprintf(textV, sizeof(textV), "%d Outgoing connections", outgoing);

@@ -38,7 +38,7 @@ namespace ss {
 	* SamsonController::SamsonController
 	*/
 		
-	SamsonController::SamsonController( NetworkInterface*  network ) : data(this), jobManager(this) , monitor(this)
+	SamsonController::SamsonController( NetworkInterface*  network ) : data(), jobManager(this) , monitor(this)
 	{
 		this->network = network;
 		network->setPacketReceiver(this);

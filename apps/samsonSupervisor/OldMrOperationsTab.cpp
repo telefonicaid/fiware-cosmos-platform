@@ -288,6 +288,7 @@ void OldMrOperationsTab::qDelete(void)
 }
 
 
+#if 0 // Not used 
 
 /* ****************************************************************************
 *
@@ -374,7 +375,7 @@ static void loadTextReceiver(const char* type, const char* text)
 {
 	new Popup("Samson Load", text, false, 0);
 }
-
+#endif
 
 
 /* ****************************************************************************
@@ -385,8 +386,8 @@ void OldMrOperationsTab::help(void)
 {
 	// helpDialog = new HelpDialog();
 
-	delilahConsole->writeCallbackSet(helpTextReceiver);
-	delilahConsole->evalCommand("help");
+	//delilahConsole->writeCallbackSet(helpTextReceiver);
+	//delilahConsole->evalCommand("help");
 }
 
 
@@ -397,8 +398,8 @@ void OldMrOperationsTab::help(void)
 */
 void OldMrOperationsTab::qView(void)
 {
-	delilahConsole->writeCallbackSet(qViewTextReceiver);
-	delilahConsole->evalCommand("ls");
+	//delilahConsole->writeCallbackSet(qViewTextReceiver);
+	//delilahConsole->evalCommand("ls");
 }
 
 
@@ -409,8 +410,8 @@ void OldMrOperationsTab::qView(void)
 */
 void OldMrOperationsTab::command(void)
 {
-	delilahConsole->writeCallbackSet(commandTextReceiver);
-	delilahConsole->evalCommand("operations");
+	//delilahConsole->writeCallbackSet(commandTextReceiver);
+	//delilahConsole->evalCommand("operations");
 }
 
 
@@ -421,8 +422,8 @@ void OldMrOperationsTab::command(void)
 */
 void OldMrOperationsTab::dataTypes(void)
 {
-	delilahConsole->writeCallbackSet(dataTypesTextReceiver);
-	delilahConsole->evalCommand("datas");
+	//delilahConsole->writeCallbackSet(dataTypesTextReceiver);
+	//delilahConsole->evalCommand("datas");
 }
 
 
@@ -433,8 +434,8 @@ void OldMrOperationsTab::dataTypes(void)
 */
 void OldMrOperationsTab::jobs(void)
 {
-	delilahConsole->writeCallbackSet(jobsTextReceiver);
-	delilahConsole->evalCommand("jobs");
+	//delilahConsole->writeCallbackSet(jobsTextReceiver);
+	//delilahConsole->evalCommand("jobs");
 }
 
 
@@ -445,8 +446,8 @@ void OldMrOperationsTab::jobs(void)
 */
 void OldMrOperationsTab::workers(void)
 {
-	delilahConsole->writeCallbackSet(workersTextReceiver);
-	delilahConsole->evalCommand("workers");
+	//delilahConsole->writeCallbackSet(workersTextReceiver);
+	//delilahConsole->evalCommand("workers");
 }
 
 
@@ -457,8 +458,8 @@ void OldMrOperationsTab::workers(void)
 */
 void OldMrOperationsTab::env(void)
 {
-	delilahConsole->writeCallbackSet(envTextReceiver);
-	delilahConsole->evalCommand("set");
+	//delilahConsole->writeCallbackSet(envTextReceiver);
+	//delilahConsole->evalCommand("set");
 }
 
 
@@ -491,6 +492,6 @@ void OldMrOperationsTab::download(void)
 */
 void OldMrOperationsTab::load(void)
 {
-	delilahConsole->writeCallbackSet(loadTextReceiver);
-	delilahConsole->evalCommand("load");
+	//delilahConsole->writeCallbackSet(loadTextReceiver);
+	//delilahConsole->evalCommand("load");
 }

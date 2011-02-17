@@ -60,30 +60,27 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 	
+	ss::SamsonSetup::load();			// Load the main setup file
 	
-	ss::SamsonSetup::load();
-	
-	// Setup parameters from command line
-	ss::SamsonSetup::shared()->memory = (size_t) memory_gb * (size_t) (1024*1024*1024);
+	// Setup parameters from command line ( this is delilah so memory and load buffer size are configurable from command line )
+	ss::SamsonSetup::shared()->memory			= (size_t) memory_gb * (size_t) (1024*1024*1024);
 	ss::SamsonSetup::shared()->load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
 	
-	ss::MemoryManager::init();
+	ss::MemoryManager::init();			// Init the memory manager
 
+	// Init the network element for delilah
 	ss::Network  network(ss::Endpoint::Delilah, "delilah", 0, endpoints, workers);
 	std::cout << "Waiting for network connection ...";
 	
 	network.init(controller);
 	network.runInBackground();
-	
+
+	// What until the network is ready
 	while ( !network.ready() )
 		sleep(1);
 	std::cout << "OK\n";
-	
-	
-	// Create a Delilah object one network is ready for the first time
-	ss::Delilah delilah( &network );
 
-	// Create a DelilahControler once Delilah is ready
-	ss::DelilahConsole console( &delilah );
+	// Create a DelilahControler once network is ready
+	ss::DelilahConsole console( &network );
 	console.run();
 }

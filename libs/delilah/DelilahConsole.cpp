@@ -583,7 +583,7 @@ namespace ss
 		
 	}
 	
-	int DelilahConsole::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+	int DelilahConsole::_receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
 		std::ostringstream  txt;
 

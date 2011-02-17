@@ -28,7 +28,6 @@
 
 namespace ss {
 	
-	
 	typedef struct {
 		const char *name;				/* User printable name of the function. */
 		const char *doc;				/* Documentation for this function.  */
@@ -94,7 +93,12 @@ namespace ss {
 		}
 	};
 
-	class DelilahConsole : public au::Console, public DelilahClient
+	
+	/**
+	 Main class for the DelilahConsole program
+	 */
+	
+	class DelilahConsole : public au::Console, public Delilah
 	{
 		Delilah* delilah;	// Internal delilah object to interact with SAMSON
 		
@@ -102,12 +106,8 @@ namespace ss {
 		
 	public:
 		
-		DelilahConsole( Delilah *_delilah )
+		DelilahConsole( NetworkInterface *network) : Delilah( network )
 		{
-			// double link between delilah and its client
-			delilah = _delilah;
-			delilah->client =  this;	
-			
 			/* completion function for readline library */
 			rl_attempted_completion_function = readline_completion;
 
@@ -118,6 +118,9 @@ namespace ss {
 			delete delilah;
 		}
 				
+		// Console funciton
+		// --------------------------------------------------------
+		
 		virtual std::string getPrompt()
 		{
 			return  "Delilah> ";
@@ -131,21 +134,18 @@ namespace ss {
 		// Eval a command from the command line
 		virtual void evalCommand( std::string command );
 
-		// PacketReceiverInterface
-		int receive(int fromId, Message::MessageCode msgCode, Packet* packet);		
-
 		virtual void quit()
 		{
 			au::Console::quit();
 		}
-	
-		virtual void loadDataConfirmation( DelilahUploadDataProcess *process);		
-	
 		
-		virtual void showMessage( std::string message)
-		{
-			writeWarningOnConsole( message );
-		}
+
+		// Functions overloaded from Delilah
+		// --------------------------------------------------------
+		
+		virtual void loadDataConfirmation( DelilahUploadDataProcess *process);		
+		// Function to process messages from network elements not handled by Delila class
+		int _receive(int fromId, Message::MessageCode msgCode, Packet* packet);		
 		
 		virtual void notifyFinishOperation( size_t id )
 		{
@@ -154,6 +154,14 @@ namespace ss {
 			writeWarningOnConsole( output.str() );
 		}
 		
+		virtual void showMessage( std::string message)
+		{
+			writeWarningOnConsole( message );
+		}
+		
+		
+		// Private functions to show content on the console
+		// --------------------------------------------------------
 		
 		void showQueues( const network::QueueList ql);
 		void showAutomaticOperations( const network::AutomaticOperationList aol);

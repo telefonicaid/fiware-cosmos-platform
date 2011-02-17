@@ -35,7 +35,7 @@
 static ResultConfigWindow* win = NULL;
 
 
-
+#if 0
 /* ****************************************************************************
 *
 * dataTypesTextReceiver - 
@@ -75,7 +75,7 @@ static void dataTypesTextReceiver(const char* type, const char* text)
 	win->inTypeCombo->setCurrentIndex(win->result->inTypeIndex);
 }
 
-
+#endif
 
 /* ****************************************************************************
 *
@@ -141,8 +141,8 @@ ResultConfigWindow::ResultConfigWindow(DelilahResult* result)
 
 	connect(resultFileNameBrowseButton, SIGNAL(clicked()), this, SLOT(browse()));
 
-	delilahConsole->writeCallbackSet(dataTypesTextReceiver);
-	delilahConsole->evalCommand("datas");
+	//delilahConsole->writeCallbackSet(dataTypesTextReceiver);
+	//delilahConsole->evalCommand("datas");
 	
 	incoming = connectionMgr->incomingConnections(result);
 	snprintf(textV, sizeof(textV), "%d Incoming connections", incoming);

@@ -14,22 +14,40 @@
 #include "Endpoint.h"           // Endpoint
 #include "Network.h"            // Network
 #include "Message.h"            // ss::Message::Header
-
+#include "Delilah.h"			// ss::Delilah
 
 
 /* ****************************************************************************
 *
 * SamsonSupervisor - 
 */
-class SamsonSupervisor : public ss::DataReceiverInterface, public ss::EndpointUpdateReceiverInterface, public ss::ReadyReceiverInterface
+class SamsonSupervisor : public ss::Delilah, public ss::DataReceiverInterface, public ss::EndpointUpdateReceiverInterface, public ss::ReadyReceiverInterface
 {
 public:
-	SamsonSupervisor(ss::Network* netP) { networkP = netP; }
+	SamsonSupervisor(ss::Network* netP) : ss::Delilah( netP )
+	{
+		networkP = netP; 
+	}
 
 	virtual int receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
 	virtual int endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info = NULL);
 	virtual int ready(const char* info);
 
+	
+	// Function to overload in Delilah
+	
+	// Function to be implemented by sub-classes to process packets ( not handled by this class )
+	virtual int _receive(int fromId, ss::Message::MessageCode msgCode, ss::Packet* packet){return 0;};
+	
+	// A load data process has finished
+	virtual void loadDataConfirmation( ss::DelilahUploadDataProcess *process ){};
+	
+	// Write something on screen
+	virtual void showMessage(std::string message){};
+	
+	// Callback to notify that a particular operation has finished
+	virtual void notifyFinishOperation( size_t ){};
+	
 private:
 	ss::Network*    networkP;
 };

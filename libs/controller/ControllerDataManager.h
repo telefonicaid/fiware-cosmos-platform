@@ -31,19 +31,17 @@ namespace ss {
 	{
 		//au::Lock lock;	(lock is included in DataManager generic object )
 		
-		FileKVInfo info_kvs;								// Global info of the entire system ( all types of key-values )
-		FileKVInfo info_txt;								// Global info of the entire system ( txt files )
-		au::map< std::string , Queue> queues;				// List of KeyValue queues
+		FileKVInfo info_kvs;										// Global info of the entire system ( all types of key-values )
+		FileKVInfo info_txt;										// Global info of the entire system ( txt files )
+		
+		au::map< std::string , Queue> queues;						// List of ALL KeyValue queues
 		
 		AutomaticOperationManager automatic_operations_manager;		// Manager of automatic operations
-
-		SamsonController *controller;						// Pointer to controller for module access
 		
 	public:
 
-		ControllerDataManager( SamsonController *_controller ) : DataManager( getLogFileName()  )
+		ControllerDataManager( ) : DataManager( getLogFileName() )
 		{
-			controller = _controller;
 			info_kvs.clear();
 			info_txt.clear();
 		}

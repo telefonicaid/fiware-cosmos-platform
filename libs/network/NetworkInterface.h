@@ -136,6 +136,7 @@ public:
 	// Inform about everything ready to start
 	virtual bool ready() = 0;
 			
+	// Init functions of the network element
 	virtual void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL) {};
 	virtual void initAsSamsonController(void) = 0;
 
@@ -151,13 +152,15 @@ public:
 	virtual int getNumWorkers()            = 0;		// Get the number of workers
 	virtual int getNumEndpoints() { return 0; }     // Get the number of endpoints
 
+	// Get information about network state
 	virtual std::string getState(std::string selector) { return std::string("No network state available"); }
 		
 	// Get the "worker cardinal" from the idenfitier
-	// This method should return a value between 0 and (num_workers - 1) or -1 if the identifier provided is not related to any workers
+	// This method should return a value between 0 and (num_workers - 1) or -1 if the identifier provided is not related to any worker
 	virtual int getWorkerFromIdentifier(int identifier) = 0;
 
 	// Main run loop control to the network interface
+	// this call is a blocking call. It only returns if "quit" is called from another thread
 	virtual void run() = 0;
 			
 	// Suspend the network interface, close everything and return the "run" call
@@ -169,14 +172,16 @@ public:
 		return getWorkerFromIdentifier(getMyidentifier());
 	}
 		
-	// Run the "run" method in a background process
+	// Run the "run" method in a background thread and returns control of the current thread
 	void runInBackground();
 		
 	// Send a packet (return a unique id to inform the notifier later)
 	size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP );
 		
 protected:
+	
 	virtual size_t _send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP ) = 0;
+	
 };
 
 }

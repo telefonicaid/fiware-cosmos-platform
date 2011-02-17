@@ -26,11 +26,10 @@
 
 namespace ss {
 	
-
 	// Thread method
-	void* runNetworkThread(void *p);
 	class DelilahClient;
 	class DelilahComponent;
+	class DelilahUploadDataProcess;
 	
 	/**
 	   Main class for the samson client element
@@ -41,11 +40,8 @@ namespace ss {
 		
 	public:
 		
-		DelilahClient* client;			// Console or GUI to work with delilah
-
-		pthread_t     t_network;
-		
 		au::Lock   lock;										// Internal counter for processing packets
+		
 		size_t id;												// Id counter of the command - messages sent to controller ( commands / upload/ download )
 		Environment environment;								// Environment properties to be sent in the next job
 		au::map<size_t , DelilahComponent> components;			// Map of components that intercept messages
@@ -71,6 +67,25 @@ namespace ss {
 		size_t addDownloadProcess( std::string queue , std::string fileName , bool show_on_screen );
 		size_t sendCommand( std::string command );
 		
+		
+		
+	public:
+				
+		/** 
+		 Methonds implemented by subclasses
+		 */
+		
+		// Function to be implemented by sub-classes to process packets ( not handled by this class )
+		virtual int _receive(int fromId, Message::MessageCode msgCode, Packet* packet)=0;
+
+		// A load data process has finished
+		virtual void loadDataConfirmation( DelilahUploadDataProcess *process )=0;
+		
+		// Write something on screen
+		virtual void showMessage(std::string message)=0;
+		
+		// Callback to notify that a particular operation has finished
+		virtual void notifyFinishOperation( size_t )=0;
 		
 	private:		
 		

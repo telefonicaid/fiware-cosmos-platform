@@ -92,8 +92,6 @@ QueueMgr*            queueMgr          = NULL;
 SourceMgr*           sourceMgr         = NULL;
 ResultMgr*           resultMgr         = NULL;
 UserMgr*             userMgr           = NULL;
-ss::Delilah*         delilah           = NULL;
-ss::DelilahConsole*  delilahConsole    = NULL;
 User*                userP             = NULL;
 int                  mainWinWidth      = MAIN_WIN_WIDTH;
 int                  mainWinHeight     = MAIN_WIN_HEIGHT;
@@ -348,9 +346,6 @@ static void delilahInit(void)
 	ss::SamsonSetup::shared()->load_buffer_size = (size_t) MEGAS(64);
 	ss::MemoryManager::init();
 
-
-	delilah        = new ss::Delilah(networkP);
-	delilahConsole = new ss::DelilahConsole(delilah);
 }
 
 

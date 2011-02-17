@@ -147,13 +147,13 @@ namespace ss {
 				if( component_finished )
 				{
 					fclose( file );
-					delilah->client->showMessage("Download completed");
+					delilah->showMessage("Download completed");
 					
 					if( show_on_screen )
 					{
 						if( total_size > 10000)
 						{
-							delilah->client->showMessage("It is not allowed to show files with more than 10Kbyes");
+							delilah->showMessage("It is not allowed to show files with more than 10Kbyes");
 						}
 						else
 						{
@@ -162,7 +162,7 @@ namespace ss {
 							FILE *file = fopen(fileName.c_str(), "r");
 							fread(fileBuffer, 1, total_size, file);
 							
-							delilah->client->showMessage(fileBuffer);
+							delilah->showMessage(fileBuffer);
 							
 							fclose( file );
 							free( fileBuffer );
@@ -171,7 +171,7 @@ namespace ss {
 					
 					// Delete the component from delilah
 					DelilahComponent *component = delilah->components.extractFromMap( id );
-					delilah->client->notifyFinishOperation(id);
+					delilah->notifyFinishOperation(id);
 					delete component;
 					
 					return;

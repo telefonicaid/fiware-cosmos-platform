@@ -74,6 +74,6 @@ void DelilahRawTab::send(void)
 	output->append(QString(command) + ":");
 	output->append(QString(" [ Command '") + QString(command) + QString("' sent. Awaiting completion ... ]"));
 
-	delilahConsole->writeCallbackSet(consoleOut);
-	delilahConsole->evalCommand(commandStdString);
+	//delilahConsole->writeCallbackSet(consoleOut);
+	//delilahConsole->evalCommand(commandStdString);
 }

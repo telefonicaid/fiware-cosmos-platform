@@ -115,8 +115,7 @@ int main(int argC, const char *argV[])
 	ss::SamsonController controller( center.getNetwork(-1) );
 	controller.runBackgroundProcesses();
 	
-	ss::Delilah delilah(center.getNetwork(-2));
-	ss::DelilahConsole delilahConsole( &delilah );
+	ss::DelilahConsole delilahConsole( center.getNetwork(-2) );
 	
 	LM_T(LmtInit, ("SamsonLocal start"));
 	LM_D(("Starting samson demo (logFd == %d)", ::logFd));

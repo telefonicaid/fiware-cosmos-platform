@@ -31,18 +31,15 @@
 
 namespace au {
 
-	typedef void (*WriteCallback)(const char* type, const char* text);
 
 	class Console
 	{
 		Lock lock;										//!< Lock as a control mechanism to log things into the console
 		bool quit_console;								//!< Flag to indicate that we want the console to quit ( can be set from outside the class with quit )
-		WriteCallback  writeCallback;
 
 	public:		
 		Console();
 		virtual ~Console(){}
-		void writeCallbackSet(WriteCallback cb) { writeCallback = cb; }
 
 		virtual std::string getPrompt();				//!< Function to give the current prompt (can be overloaded in subclasses )
 		virtual void evalCommand( std::string command );//!< function to process a command instroduced by user	

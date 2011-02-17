@@ -57,6 +57,7 @@ int iomConnect(const char* ip, unsigned short port)
 		}
 	}
 
+#if 0
 	int bufSize = 64 * 1024 * 1024;
 
 	int s;
@@ -66,6 +67,7 @@ int iomConnect(const char* ip, unsigned short port)
 	s = setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &bufSize, sizeof(bufSize));
 	if (s != 0)
 		LM_X(1, ("setsockopt(SO_SNDBUF): %s", strerror(errno)));
+#endif
 
 #if 0
 	// Disable the Nagle (TCP No Delay) algorithm

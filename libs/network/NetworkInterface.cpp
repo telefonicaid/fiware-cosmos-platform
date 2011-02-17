@@ -42,6 +42,7 @@ size_t NetworkInterface::send(PacketSenderInterface* sender, int endpointId, ss:
 	LM_T(LmtNetworkInterface, ("NETWORK INTERFACE Send packet type %s",messageCode(code)));
 
 	size_t id = _send( sender , endpointId , code , packetP );
+	
 	lock_send.unlock();
 	
 	return id;

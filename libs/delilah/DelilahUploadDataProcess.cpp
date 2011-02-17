@@ -144,7 +144,7 @@ namespace ss
 			{
 			std::ostringstream message;
 			message << "[ " << id << " ] < Buffer " << file_id << " > Compressing buffer ( Size: " <<  au::Format::string(original_size) << " )";
-			pd->delilah->client->showMessage( message.str() );
+			pd->delilah->showMessage( message.str() );
 			}
 			
 			
@@ -163,7 +163,7 @@ namespace ss
 		{
 			std::ostringstream message;
 			message << "[ " << id << " ] < Buffer " << file_id << " > Sending ( Compresed Size: " << au::Format::string(compress_size) << " Original Size: " << au::Format::string(original_size) << ")";
-			pd->delilah->client->showMessage( message.str() );
+			pd->delilah->showMessage( message.str() );
 		}
 		
 		pd->delilah->network->send(pd->delilah, pd->delilah->network->workerGetIdentifier(pd->worker), Message::UploadData, pd->p);
@@ -172,7 +172,7 @@ namespace ss
 		{
 			std::ostringstream message;
 			message << "[ " << id << " ] < Buffer " << file_id << " > Sent ( Compresed Size: " << au::Format::string(compress_size) << " Original Size: " << au::Format::string(original_size) << ")";
-			pd->delilah->client->showMessage( message.str() );
+			pd->delilah->showMessage( message.str() );
 		}
 		
 		
@@ -223,7 +223,7 @@ namespace ss
 			// Send the packet
 			std::ostringstream message;
 			message << "[ " << id << " ] < Buffer " << file_id << " > Created with size: " << au::Format::string( b->getSize() , "B" );
-			delilah->client->showMessage(message.str());
+			delilah->showMessage(message.str());
 
 			lock.lock();
 
@@ -249,7 +249,7 @@ namespace ss
 		{
 			std::ostringstream message;
 			message << "[ " << id << " ] All input data locally processed";
-			delilah->client->showMessage( message.str() );
+			delilah->showMessage( message.str() );
 		}
 		
 		
@@ -280,7 +280,7 @@ namespace ss
 			
 			std::ostringstream output;
 			output << "[ " << id << " ] < Buffer " << file_id << " > Received upload confirmation";
-			delilah->client->showMessage( output.str() );
+			delilah->showMessage( output.str() );
 			
 			created_files.push_back(file);
 			num_confirmed_files++;
@@ -318,7 +318,7 @@ namespace ss
 			error_message	= confirmation.error_message();
 			
 			// Notify to the client to show on scren the result of this load process
-			delilah->client->loadDataConfirmation( this );
+			delilah->loadDataConfirmation( this );
 			
 			// mark the component as finished to be removed by Delilah component
 			component_finished = true;
@@ -326,7 +326,7 @@ namespace ss
 			std::ostringstream output;
 			output << "[ " << id << " ] Received upload data confirmation from controller\n";
 			output << getStatus();
-			delilah->client->showMessage( output.str() );
+			delilah->showMessage( output.str() );
 			
 			
 		}

@@ -66,7 +66,7 @@ int Delilah::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 		if ( component->component_finished )
 		{
 			component = components.extractFromMap(sender_id);
-			client->notifyFinishOperation( sender_id );
+			notifyFinishOperation( sender_id );
 			delete component;
 		}
 		
@@ -77,8 +77,7 @@ int Delilah::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	if( !component )
 	{
 		// Forward the reception of this message to the client
-		assert( client );
-		client->receive( fromId , msgCode , packet );
+		_receive( fromId , msgCode , packet );
 	}
 
 	return 0;

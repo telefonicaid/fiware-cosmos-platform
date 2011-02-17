@@ -37,8 +37,6 @@ SET (SOURCES
 	LoginWindow.cpp
 	DelilahSource.cpp
 	DelilahResult.cpp
-	SourceMgr.cpp
-	ResultMgr.cpp
 	ProcessConfigView.cpp
 	InfoWin.cpp
 )

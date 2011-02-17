@@ -18,6 +18,6 @@
 *
 * iomAccept -  accept an incoming connection
 */
-extern int iomAccept(int fd, char* hostName = NULL, int hostNameLen = 0);
+extern int iomAccept(int fd, char* hostName = NULL, int hostNameLen = 0, char* ip = NULL, int ipLen = 0);
 
 #endif

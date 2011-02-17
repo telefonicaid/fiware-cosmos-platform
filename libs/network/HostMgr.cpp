@@ -12,6 +12,7 @@
 #include <arpa/inet.h>          // sockaddr_in, inet_ntop
 #include <ifaddrs.h>            // getifaddrs
 #include <net/if.h>             // IFF_UP
+#include <netdb.h>              // 
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
@@ -139,31 +140,44 @@ int HostMgr::hosts(void)
 *
 * HostMgr::insert - 
 */
-Host* HostMgr::insert(const char* name, const char* ip)
+Host* HostMgr::insert(Host* hostP)
 {
 	unsigned int  ix;
-	Host*         hostP  = (Host*) calloc(1, sizeof(Host));
-
-	if (name == NULL)
-		LM_X(1, ("NULL name - bad parameter"));
 
 	for (ix = 0; ix < size; ix++)
 	{
 		if (hostV[ix] == NULL)
 		{
 			hostV[ix] = hostP;
-
-			hostP->name = strdup(name);
-			if (ip != NULL)
-				hostP->ip = strdup(ip);
-
-			list("Just inserted new host");
-			return hostP;
+			return hostV[ix];
 		}
 	}
 
-	LM_X(1, ("realloc host vector ..."));
+	LM_X(1, ("realloc host vector (%d hosts not enough) ...", size));
 	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* HostMgr::insert - 
+*/
+Host* HostMgr::insert(const char* name, const char* ip)
+{
+	Host* hostP  = (Host*) calloc(1, sizeof(Host));
+
+	if (hostP == NULL)
+		LM_X(1, ("malloc(%d): %s", sizeof(Host), strerror(errno)));
+
+	if (name == NULL)
+		LM_X(1, ("NULL name - bad parameter"));
+
+	hostP->name = strdup(name);
+	if (ip != NULL)
+		hostP->ip = strdup(ip);
+
+	return insert(hostP);
 }
 
 

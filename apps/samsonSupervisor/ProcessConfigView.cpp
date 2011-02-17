@@ -456,7 +456,15 @@ void ProcessConfigView::save(void)
 		if ((host != NULL) && (host[0] != 0))
 		{
 			Process* spawner = NULL;
+			Host*    hostP;
 
+			hostP = networkP->hostMgr->lookup(host);
+			if (hostP != NULL)
+			{
+				LM_M(("Found host '%s' in my host list. Name: '%s'", host, hostP->name));
+				host = hostP->name;
+			}
+			
 			if ((host != NULL) && (processLookup(process->name, host) != NULL))
 			{
 				char eText[256];
@@ -466,8 +474,10 @@ void ProcessConfigView::save(void)
 				return;
 			}
 
+			networkP->hostMgr->insert(host, NULL);
+
 			process->host = strdup(host);
-			spawner = spawnerLookup(host);
+			spawner       = spawnerLookup(process->host);
 			if (spawner == NULL)
 			{
 				int            fd;

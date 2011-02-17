@@ -25,13 +25,11 @@
 *
 * iomAccept -  worker accept
 */
-int iomAccept(int lfd, char* hostName, int hostNameLen)
+int iomAccept(int lfd, char* hostName, int hostNameLen, char* ip, int ipLen)
 {
 	struct sockaddr_in  peer;
 	unsigned int        len;
 	struct hostent*     hP;
-	char                ip[64];
-	char*               hName;
 	int                 fd;
 
 	memset((char*) &peer, 0, sizeof(struct sockaddr_in));
@@ -40,33 +38,29 @@ int iomAccept(int lfd, char* hostName, int hostNameLen)
 	if ((fd = accept(lfd, (struct sockaddr*) &peer, &len)) == -1)
 		LM_RP(-1, ("accept"));
 
+	// To get hostname:  gethostbyaddr
+	// To get IP:        inet_ntoa
+
 	hP = gethostbyaddr((char*) &peer.sin_addr, sizeof(int), AF_INET);
 	if (hP != NULL)
-		hName = hP->h_name;
-	else
 	{
-		snprintf(ip, sizeof(ip), "%s", inet_ntoa(peer.sin_addr));
-		LM_W(("gethostbyaddr failed for '%s'", ip));
-		hName = ip;
+		if (hostName != NULL)
+			strncpy(hostName, hP->h_name, hostNameLen);
 	}
 
-	LM_T(LmtAccept, ("Accepted connection from host '%s'", hName));
+	if (ip)
+		strncpy(ip, inet_ntoa(peer.sin_addr), ipLen);
 
-	if (hostName)
-		strncpy(hostName, hName, hostNameLen);
-
-/*
-  Andreu: This crashes samsonWorker... deactivating temporary
-*/
-
+	LM_T(LmtAccept, ("Accepted connection from host '%s'", (hostName != NULL)? hostName : inet_ntoa(peer.sin_addr)));
+		
 #if 0
+Andreu: 
+  This crashes samsonWorker ...
+  Deactivating, at least temporary
 
-#if 1
 	int bufSize = 64 * 1024 * 1024;
-#else
-	int bufSize = 4 * 1024;
-#endif
 	int s;
+
 	s = setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &bufSize, sizeof(bufSize));
 	if (s != 0)
 		LM_X(1, ("setsockopt(SO_RCVBUF): %s", strerror(errno)));
@@ -81,7 +75,6 @@ int iomAccept(int lfd, char* hostName, int hostNameLen)
 	if (s != 0)
 		LM_X(1, ("setsockopt(TCP_NODELAY): %s", strerror(errno)));
 #endif
-
 #endif
 
 	return fd;

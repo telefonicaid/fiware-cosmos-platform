@@ -30,6 +30,7 @@ public:
 	~HostMgr();
 
 	int     hosts();
+	Host*   insert(Host*);
 	Host*   insert(const char* name, const char* ip);
 	Host*   lookup(const char* ip);
 	void    aliasAdd(Host* host, const char* alias);

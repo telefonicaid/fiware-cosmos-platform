@@ -1495,8 +1495,9 @@ void Network::webServiceAccept(Endpoint* ep)
 {
 	int   fd;
 	char  hostName[128];
+	char  ip[128];
 
-	fd = iomAccept(ep->rFd, hostName, sizeof(hostName));
+	fd = iomAccept(ep->rFd, hostName, sizeof(hostName), ip, sizeof(ip));
 	if (endpoint[ME]->type != Endpoint::Controller)
 	{
 		LM_E(("got incoming WebListener connection but I'm not the controller ..."));
@@ -2517,10 +2518,11 @@ void Network::run(void)
 			{
 				int  fd;
 				char hostName[128];
+				char ip[128];
 
 				LM_T(LmtSelect, ("incoming message from my listener - I will accept ..."));
 				--fds;
-				fd = iomAccept(endpoint[LISTENER]->rFd, hostName, sizeof(hostName));
+				fd = iomAccept(endpoint[LISTENER]->rFd, hostName, sizeof(hostName), ip, sizeof(ip));
 				if (fd == -1)
 				{
 					LM_P(("iomAccept(%d)", endpoint[LISTENER]->rFd));
@@ -2529,8 +2531,12 @@ void Network::run(void)
 				else
 				{
 					std::string  s   = std::string("tmp:") + std::string(hostName);
-					Endpoint*    ep  = endpointAdd("'run' just accepted an incoming connection", fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
+					Endpoint*    ep;
 
+					ep = endpointAdd("'run' just accepted an incoming connection",
+									 fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
+
+					hostMgr->insert(hostName, ip);
 					endpoint[LISTENER]->msgsIn += 1;
 					LM_T(LmtHello, ("sending hello to newly accepted endpoint"));
 					helloSend(ep, Message::Msg);
@@ -2611,12 +2617,13 @@ int Network::poll(void)
 
 	if (endpoint[LISTENER] && (endpoint[LISTENER]->state == Endpoint::Listening) && FD_ISSET(endpoint[LISTENER]->rFd, &rFds))
 	{
-		int  fd;
-		char hostName[128];
+		int   fd;
+		char  hostName[128];
+		char  ip[128];
 
 		LM_T(LmtSelect, ("incoming message from my listener - I will accept ..."));
 		--fds;
-		fd = iomAccept(endpoint[LISTENER]->rFd, hostName, sizeof(hostName));
+		fd = iomAccept(endpoint[LISTENER]->rFd, hostName, sizeof(hostName), ip, sizeof(ip));
 		if (fd == -1)
 		{
 			LM_P(("iomAccept(%d)", endpoint[LISTENER]->rFd));
@@ -2625,7 +2632,11 @@ int Network::poll(void)
 		else
 		{
 			std::string  s   = std::string("tmp:") + std::string(hostName);
-			Endpoint*    ep  = endpointAdd("'poll' just accepted an incoming connection", fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
+			Endpoint*    ep;
+
+			ep = endpointAdd("'poll' just accepted an incoming connection",
+							 fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
+			hostMgr->insert(hostName, ip);
 
 			endpoint[LISTENER]->msgsIn += 1;
 			LM_T(LmtHello, ("sending hello to newly accepted endpoint"));

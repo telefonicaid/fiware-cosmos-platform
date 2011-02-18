@@ -112,13 +112,13 @@ namespace ss {
 		
 	public:
 		
-		typedef enum JobStatus
+		typedef enum 
 		{
 			running,	// Running task
 			saving,		// Finish but waiting to save generated files
 			error,		// Finish because there was an error
 			finish,		// Completelly finish
-		};
+		}JobStatus;
 		
 	private:
 		

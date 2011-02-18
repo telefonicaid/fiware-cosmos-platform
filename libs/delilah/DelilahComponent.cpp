@@ -79,29 +79,34 @@ namespace ss {
 	void DelilahUpdater::run()
 	{
 		while (true) {
+			
 			sleep(2);
 			
 			// Send a message to the controller to update the local list of operations and queues
-			
+
+			if( delilah->network->isConnected( delilah->network->controllerGetIdentifier()  ) )
 			{
-			// Message to update the local list of queues
-			Packet*           p = new Packet();
-			network::Command* c = p->message.mutable_command();
-			c->set_command( "ls" );
-			p->message.set_delilah_id( id );
-			//copyEnviroment( &environment , c->mutable_environment() );
-			delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Command, p);
+			
+				{
+				// Message to update the local list of queues
+				Packet*           p = new Packet();
+				network::Command* c = p->message.mutable_command();
+				c->set_command( "ls" );
+				p->message.set_delilah_id( id );
+				//copyEnviroment( &environment , c->mutable_environment() );
+				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Command, p);
+				}
+				
+				{
+				// Message to update the local list of operations
+				Packet*           p = new Packet();
+				network::Command* c = p->message.mutable_command();
+				c->set_command( "o" );
+				p->message.set_delilah_id( id );
+				//copyEnviroment( &environment , c->mutable_environment() );
+				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Command, p);
+				}	
 			}
-			
-			{
-			// Message to update the local list of operations
-			Packet*           p = new Packet();
-			network::Command* c = p->message.mutable_command();
-			c->set_command( "o" );
-			p->message.set_delilah_id( id );
-			//copyEnviroment( &environment , c->mutable_environment() );
-			delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Command, p);
-			}	
 			
 		}
 	}

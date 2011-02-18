@@ -59,7 +59,7 @@ namespace ss {
 		
 	public:
 		
-		Delilah( NetworkInterface *_network );
+		Delilah( NetworkInterface *_network ,  bool automatic_update );
 		
 		void initController(std::string controller);
 		void quit();

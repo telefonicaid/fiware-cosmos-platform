@@ -103,7 +103,7 @@ namespace ss {
 		
 	public:
 		
-		DelilahConsole( NetworkInterface *network) : Delilah( network )
+		DelilahConsole( NetworkInterface *network) : Delilah( network , true )
 		{
 			/* completion function for readline library */
 			rl_attempted_completion_function = readline_completion;

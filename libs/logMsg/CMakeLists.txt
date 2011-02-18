@@ -5,7 +5,7 @@ SET (HEADERS
 
 SET (SOURCES
     logMsg.cpp
-	traceLevels.cpp
+    traceLevels.cpp
 )
 
 #ADD_LIBRARY(logMsgStatic STATIC ${SOURCES} ${HEADERS} )
@@ -21,3 +21,4 @@ SET_TARGET_PROPERTIES(logMsgShared PROPERTIES OUTPUT_NAME lm)
 install(TARGETS                logMsgShared
         LIBRARY  DESTINATION   lib)
 
+INSTALL(FILES ${HEADERS} DESTINATION include)

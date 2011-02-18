@@ -24,7 +24,7 @@
 class SamsonSupervisor : public ss::Delilah, public ss::DataReceiverInterface, public ss::EndpointUpdateReceiverInterface, public ss::ReadyReceiverInterface
 {
 public:
-	SamsonSupervisor(ss::Network* netP) : ss::Delilah( netP )
+	SamsonSupervisor(ss::Network* netP) : ss::Delilah( netP , false )
 	{
 		networkP = netP; 
 	}

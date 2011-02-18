@@ -3,7 +3,7 @@
 
 #include "ProcessItem.h"		// ss::ProcessItem
 
-//#define ISOLATED_PROCESS_AS_THREAD
+#define ISOLATED_PROCESS_AS_THREAD
 
 namespace ss {
 	

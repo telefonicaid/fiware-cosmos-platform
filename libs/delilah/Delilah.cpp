@@ -27,7 +27,7 @@ namespace ss {
 *
 * Delilah::Delilah
 */
-Delilah::Delilah( NetworkInterface* _network )
+Delilah::Delilah( NetworkInterface* _network , bool automatic_update )
 {
 		
 	network = _network;		// Keep a pointer to our network interface element
@@ -39,7 +39,8 @@ Delilah::Delilah( NetworkInterface* _network )
 
 	
 	// Default component to update local list of queues and operations
-	addComponent( new DelilahUpdater( ) );
+	if( automatic_update) 
+		addComponent( new DelilahUpdater( ) );
 	
 }
 		

@@ -63,6 +63,8 @@ extern "C" pid_t gettid(void);
 int          inSigHandler    = 0;
 static bool  lmOutHookActive = false;
 static void* lmOutHookParam  = NULL;
+char*        progName;               /* needed for messages (and by lmLib) */
+char         progNameV[512];         /* where to store progName            */
 
 
 

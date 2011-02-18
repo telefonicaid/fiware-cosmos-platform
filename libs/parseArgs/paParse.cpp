@@ -47,8 +47,7 @@
 *
 * variables for user of this library
 */
-char*        progName;               /* needed for messages (and by lmLib) */
-char         progNameV[512];         /* where to store progName            */
+extern char* progNameV;
 char*        rcFileName;             /* needed for messages (and by lmLib) */
 char         paCommandLine[1024];    /* entire command line                */
 char         paResultString[60000];

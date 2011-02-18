@@ -44,7 +44,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 
 ADD_LIBRARY(samsonNetworkStatic STATIC ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES( samsonNetworkStatic  protobuf logMsgStatic samsonMemoryStatic )
+TARGET_LINK_LIBRARIES( samsonNetworkStatic  protobuf lm samsonMemoryStatic )
 SET_TARGET_PROPERTIES(samsonNetworkStatic PROPERTIES OUTPUT_NAME samsonNetwork)
 
 # ADD_LIBRARY(samsonNetworkShared SHARED ${SOURCES} ${HEADERS} )

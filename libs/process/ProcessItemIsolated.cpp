@@ -209,7 +209,7 @@ namespace ss
 		
 		if( nb != sizeof(c) )
 		{
-			std::cerr << "Error in background process reading from pipe";
+			std::cerr << "Error in background process reading from pipe " << "read " << nb << " bytes instead of " << sizeof(c);
 			exit(0);
 		}
 	}

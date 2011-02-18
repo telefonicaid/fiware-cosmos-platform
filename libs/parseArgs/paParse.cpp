@@ -47,7 +47,6 @@
 *
 * variables for user of this library
 */
-extern char* progNameV;
 char*        rcFileName;             /* needed for messages (and by lmLib) */
 char         paCommandLine[1024];    /* entire command line                */
 char         paResultString[60000];
@@ -352,22 +351,29 @@ int paParse
 	/*                                                           */
 	paConfig("make sure paConfigInit is called", 0);
 
+
+
+
+
+
+
+
+
+	// 362
+
 	/* *************************** */
 	/* Setting up the program name */
 	/*                             */
 	if (paProgName == NULL) /* hasn't been set with paConfig */
 	{
 		progNameCopy = strdup(argV[0]);
-		progName     = paProgNameSet(argV[0], level, pid);
-		strncpy(progNameV, progName, sizeof(progNameV));
-		progName     = progNameV;
+		progName     = strdup(paProgNameSet(argV[0], level, pid));
 		paProgName   = strdup(progName);
 	}
 	else
 	{
-		strncpy(progNameV, paProgName, sizeof(progNameV));
-		progNameCopy = strdup(progNameV);
-		progName     = progNameV;
+		progNameCopy = strdup(progName);
+		progName     = strdup(progName);
 	}
 
 

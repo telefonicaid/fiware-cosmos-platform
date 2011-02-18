@@ -20,38 +20,39 @@
 #include "iomAccept.h"          // Own interface
 
 
-
+extern int h_errno;
 /* ****************************************************************************
 *
 * iomAccept -  worker accept
 */
-int iomAccept(int lfd, char* hostName, int hostNameLen, char* ip, int ipLen)
+int iomAccept(int lfd, struct sockaddr_in* sinP, char* hostName, int hostNameLen, char* ip, int ipLen)
 {
-	struct sockaddr_in  peer;
 	unsigned int        len;
 	struct hostent*     hP;
 	int                 fd;
 
-	memset((char*) &peer, 0, sizeof(struct sockaddr_in));
+	memset((char*) sinP, 0, sizeof(struct sockaddr_in));
 	len = sizeof(struct sockaddr_in);
 
-	if ((fd = accept(lfd, (struct sockaddr*) &peer, &len)) == -1)
+	if ((fd = accept(lfd, (struct sockaddr*) sinP, &len)) == -1)
 		LM_RP(-1, ("accept"));
 
 	// To get hostname:  gethostbyaddr
 	// To get IP:        inet_ntoa
 
-	hP = gethostbyaddr((char*) &peer.sin_addr, sizeof(int), AF_INET);
+	hP = gethostbyaddr((void*) &sinP->sin_addr, sizeof(int), AF_INET);
 	if (hP != NULL)
 	{
 		if (hostName != NULL)
 			strncpy(hostName, hP->h_name, hostNameLen);
 	}
+	else
+		LM_E(("gethostbyaddr failed for '0x%x': %s. h_errno: %d", sinP->sin_addr.s_addr, strerror(errno), h_errno));
 
 	if (ip)
-		strncpy(ip, inet_ntoa(peer.sin_addr), ipLen);
+		strncpy(ip, inet_ntoa(sinP->sin_addr), ipLen);
 
-	LM_T(LmtAccept, ("Accepted connection from host '%s'", (hostName != NULL)? hostName : inet_ntoa(peer.sin_addr)));
+	LM_T(LmtAccept, ("Accepted connection from host '%s'", (hostName != NULL)? hostName : inet_ntoa(sinP->sin_addr)));
 		
 #if 0
 Andreu: 

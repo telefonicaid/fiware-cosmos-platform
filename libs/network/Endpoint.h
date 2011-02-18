@@ -8,11 +8,12 @@
 * DESCRIPTION               Class for endpoints
 *
 */
-#include <string>            // std::string ...
-#include <pthread.h>         // pthread_t
+#include <string>               // std::string ...
+#include <pthread.h>            // pthread_t
+#include <netinet/in.h>         // sockaddr_in
 
-#include "Message.h"         // MessageCode, MessageType
-#include "workerStatus.h"    // CoreWorkerState, WorkerStatusData
+#include "Message.h"            // MessageCode, MessageType
+#include "workerStatus.h"       // CoreWorkerState, WorkerStatusData
 
 
 
@@ -113,6 +114,8 @@ public:
 	std::string                  hostname;
 	std::string                  ip;
 	std::string                  alias;
+	struct sockaddr_in           sockin;
+
 	int                          rFd;
 	int                          wFd;
 	unsigned short               port;

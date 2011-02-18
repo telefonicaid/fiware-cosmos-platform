@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>         // sockaddr_in
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
@@ -90,16 +91,16 @@ static struct sockaddr_in  logAddr;
 *
 * logHookInit - 
 */
-static void logHookInit(const char* ip)
+static void logHookInit(struct sockaddr_in* sinP)
 {
 	if (logSocket != -1)
 		close(logSocket);
 	logSocket = -1;
 
-	if (ip == NULL)
+	if (sinP == NULL)
 		return;
 
-	LM_T(LmtLogServer, ("Setting up log hook function to send logs to %s, port %d", ip, LOG_MESSAGE_PORT));
+	LM_T(LmtLogServer, ("Setting up log hook function to send logs to port %d", LOG_MESSAGE_PORT));
 
 	logSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
@@ -109,13 +110,16 @@ static void logHookInit(const char* ip)
 	memset((char*) &logAddr, 0, sizeof(logAddr));
 	logAddr.sin_family = AF_INET;
 	logAddr.sin_port   = htons(LOG_MESSAGE_PORT);
+	memcpy(&logAddr.sin_addr, sinP, sizeof(logAddr.sin_addr));
 
+#if 0
 	if (inet_aton(ip, &logAddr.sin_addr) == 0)
 	{
 		close(logSocket);
 		logSocket = -1;
 		LM_RVE(("inet_aton failed"));
 	}
+#endif
 }
 
 
@@ -1528,7 +1532,7 @@ void Network::webServiceAccept(Endpoint* ep)
 	char  hostName[128];
 	char  ip[128];
 
-	fd = iomAccept(ep->rFd, hostName, sizeof(hostName), ip, sizeof(ip));
+	fd = iomAccept(ep->rFd, &ep->sockin, hostName, sizeof(hostName), ip, sizeof(ip));
 	if (endpoint[ME]->type != Endpoint::Controller)
 	{
 		LM_E(("got incoming WebListener connection but I'm not the controller ..."));
@@ -2044,7 +2048,7 @@ void Network::msgTreat(void* vP)
 		else
 		{
 			LM_T(LmtLogServer, ("Setting up LM hook function"));
-			logHookInit(ep->ip.c_str());
+			logHookInit(&ep->sockin);
 			lmOutHookSet(logHookFunction, (void*) this);
 		}
 		break;
@@ -2550,10 +2554,11 @@ void Network::run(void)
 				int  fd;
 				char hostName[128];
 				char ip[128];
+				struct sockaddr_in sin;
 
 				LM_T(LmtSelect, ("incoming message from my listener - I will accept ..."));
 				--fds;
-				fd = iomAccept(endpoint[LISTENER]->rFd, hostName, sizeof(hostName), ip, sizeof(ip));
+				fd = iomAccept(endpoint[LISTENER]->rFd, &sin, hostName, sizeof(hostName), ip, sizeof(ip));
 				if (fd == -1)
 				{
 					LM_P(("iomAccept(%d)", endpoint[LISTENER]->rFd));
@@ -2566,6 +2571,8 @@ void Network::run(void)
 
 					ep = endpointAdd("'run' just accepted an incoming connection",
 									 fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
+
+					memcpy(&ep->sockin, &sin, sizeof(sin));
 
 					hostMgr->insert(hostName, ip);
 					endpoint[LISTENER]->msgsIn += 1;
@@ -2654,7 +2661,7 @@ int Network::poll(void)
 
 		LM_T(LmtSelect, ("incoming message from my listener - I will accept ..."));
 		--fds;
-		fd = iomAccept(endpoint[LISTENER]->rFd, hostName, sizeof(hostName), ip, sizeof(ip));
+		fd = iomAccept(endpoint[LISTENER]->rFd, &endpoint[LISTENER]->sockin, hostName, sizeof(hostName), ip, sizeof(ip));
 		if (fd == -1)
 		{
 			LM_P(("iomAccept(%d)", endpoint[LISTENER]->rFd));

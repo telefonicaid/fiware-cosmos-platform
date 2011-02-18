@@ -178,6 +178,8 @@ public:
 	// Send a packet (return a unique id to inform the notifier later)
 	size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP );
 		
+	virtual bool isConnected(unsigned int identifier) { return true; };
+
 protected:
 	
 	virtual size_t _send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP ) = 0;

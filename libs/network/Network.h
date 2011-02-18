@@ -133,6 +133,7 @@ public:
 
 	int          helloSend(Endpoint* ep, Message::MessageType type);
 	Endpoint*    controllerGet(void);
+	bool         isConnected(unsigned int identifier);
 
 private:
 	bool            iAmReady;

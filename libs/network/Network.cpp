@@ -2790,4 +2790,24 @@ Endpoint* Network::controllerGet(void)
 	return endpoint[CONTROLLER];
 }
 
+
+
+/* ****************************************************************************
+*
+* controllerGet -
+*/
+bool Network::isConnected(unsigned int identifier)
+{
+	if (identifier >= (unsigned int) Endpoints)
+		return false;
+
+	if (endpoint[identifier] == NULL)
+		return false;
+
+	if (endpoint[identifier]->state == Endpoint::Connected)
+		return true;
+
+	return false;
+}
+
 }

@@ -40,6 +40,8 @@ int iomAccept(int lfd, struct sockaddr_in* sinP, char* hostName, int hostNameLen
 	// To get hostname:  gethostbyaddr
 	// To get IP:        inet_ntoa
 
+	LM_M(("Accepted connection from 0x%x", sinP->sin_addr.s_addr));
+
 	hP = gethostbyaddr((void*) &sinP->sin_addr, sizeof(int), AF_INET);
 	if (hP != NULL)
 	{

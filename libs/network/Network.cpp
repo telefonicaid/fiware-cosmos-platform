@@ -107,10 +107,13 @@ static void logHookInit(struct sockaddr_in* sinP)
 	if (logSocket == -1)
 		LM_RVE(("socket: %s", strerror(errno)));
 
+	LM_M(("************ sinP: 0x%x", sinP->sin_addr.s_addr));
+
 	memset((char*) &logAddr, 0, sizeof(logAddr));
 	logAddr.sin_family = AF_INET;
 	logAddr.sin_port   = htons(LOG_MESSAGE_PORT);
-	memcpy(&logAddr.sin_addr, sinP, sizeof(logAddr.sin_addr));
+	memcpy(&logAddr.sin_addr, &sinP->sin_addr, sizeof(logAddr.sin_addr));
+	LM_M(("************ logAddr.sin_addr: 0x%x", logAddr.sin_addr.s_addr));
 
 #if 0
 	if (inet_aton(ip, &logAddr.sin_addr) == 0)
@@ -146,6 +149,7 @@ static void logHookFunction(void* vP, char* text, char type, const char* date, c
 	supervisor = networkP->endpoint[SUPERVISOR];
 	me         = networkP->endpoint[ME];
 
+	printf("******************* Sending trace ?\n");
 	if ((logSocket == -1) || (supervisor == NULL) || (supervisor->wFd == -1) || (supervisor->state != Endpoint::Connected) || (supervisor->helloReceived != true))
 		return;
 
@@ -168,6 +172,8 @@ static void logHookFunction(void* vP, char* text, char type, const char* date, c
 	{
 		++writes;
 
+		// logAddr.sin_addr.s_addr = htonl(logAddr.sin_addr.s_addr);
+		printf("************ logAddr.sin_addr: 0x%x (text: '%s')\n", logAddr.sin_addr.s_addr, text);
 		nb = sendto(logSocket, &buf[tot], bufLen - tot, flags, (struct sockaddr*) &logAddr, logAddrLen);
 		if (nb == -1)
 		{
@@ -965,6 +971,10 @@ static void inheritFrom(Endpoint* to, Endpoint* from)
 	to->bytesOut       = from->bytesOut;
 	to->ip             = from->ip;
 	to->startTime      = from->startTime;
+	
+	LM_M(("from->sockin: 0x%x (size: %d)", from->sockin.sin_addr.s_addr, sizeof(to->sockin)));
+
+	memcpy(&to->sockin, &from->sockin, sizeof(to->sockin));
 }
 
 
@@ -1038,11 +1048,18 @@ Endpoint* Network::endpointAddSupervisor(int rFd, int wFd, const char* name, con
 	if (endpoint[SUPERVISOR] == NULL)
 		endpoint[SUPERVISOR] = new Endpoint();
 
+	if (inheritedFrom)
+		LM_M(("Adding SUPERVISOR (sockin: 0x%x)", inheritedFrom->sockin.sin_addr.s_addr));
+	else
+		LM_M(("no inheritedFrom"));
+
 	endpointFill(endpoint[SUPERVISOR], inheritedFrom, rFd, wFd, name, alias, workers, ip, Endpoint::Supervisor, port, coreNo);
+	LM_M(("Adding SUPERVISOR (sockin: 0x%x)", endpoint[SUPERVISOR]->sockin.sin_addr.s_addr));
 
 	if (endpointUpdateReceiver != NULL)
 		endpointUpdateReceiver->endpointUpdate(endpoint[SUPERVISOR], Endpoint::SupervisorAdded, "Supervisor Added");
 
+	LM_M(("Adding SUPERVISOR (sockin: 0x%x)", endpoint[SUPERVISOR]->sockin.sin_addr.s_addr));
 	return endpoint[SUPERVISOR];
 }
 
@@ -2572,7 +2589,9 @@ void Network::run(void)
 					ep = endpointAdd("'run' just accepted an incoming connection",
 									 fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
 
+					LM_M(("***** Setting sockin for endpoint '%s' to 0x%x", ep->name.c_str(), sin.sin_addr.s_addr));
 					memcpy(&ep->sockin, &sin, sizeof(sin));
+					LM_M(("***** Setting sockin for endpoint '%s' to 0x%x", ep->name.c_str(), sin.sin_addr.s_addr));
 
 					hostMgr->insert(hostName, ip);
 					endpoint[LISTENER]->msgsIn += 1;

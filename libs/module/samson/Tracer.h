@@ -2,6 +2,10 @@
 #ifndef _H_SS_TRACER
 #define _H_SS_TRACER
 
+#include <stdarg.h>             /* va_start, va_arg, va_end                  */
+#include <stdio.h>
+
+
 namespace ss
 {
 

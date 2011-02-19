@@ -11,7 +11,7 @@
 
 int logFd = -1;
 
-char* progName = (char*) "samsonCat";
+//char* progName = (char*) "samsonCat";
 
 
 int main(int argc, const char *argv[])

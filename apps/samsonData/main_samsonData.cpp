@@ -8,7 +8,7 @@
 
 
 
-char* progName = (char*) "samsonData";
+//char* progName = (char*) "samsonData";
 
 
 

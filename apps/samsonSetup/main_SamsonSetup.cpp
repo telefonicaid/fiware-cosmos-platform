@@ -10,7 +10,7 @@
 
 int logFd = -1;
 
-char* progName = (char*) "samsonSetup";
+//char* progName = (char*) "samsonSetup";
 
 
 int main(int argc, const char *argv[])

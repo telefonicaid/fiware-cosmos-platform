@@ -8,6 +8,7 @@ SET (HEADERS
 	samson/KVVector.h
 	samson/KVWriter.h
 	samson/Module.h
+	samson/Tracer.h
 	samson/Operation.h
 	samson/Environment.h
 	samson/samsonModuleHeader.h

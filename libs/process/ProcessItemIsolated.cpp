@@ -10,13 +10,21 @@
 #include "ProcessItemIsolated.h"  // Own interface
 
 
-
-#define LmtIsolated               100
+// #define ISOLATED_PROCESS_AS_THREAD
 
 namespace ss
 {
 
-
+	
+	typedef struct
+	{
+		int code;				// Code of the operation
+		
+		int trace_channel;			// Trace channel
+		char trace_message[1024];	// Trace message
+		
+	} InterProcessMessage;
+	
 
 	void* run_ProcessItemIsolated( void* p )
 	{
@@ -72,7 +80,8 @@ namespace ss
 		s = starting;
 		
 		// Reading from parent
-		int code;
+		InterProcessMessage message;
+		
 		
 		while( true )
 		{
@@ -86,11 +95,11 @@ namespace ss
 				LM_E(("iomMsgAwait returned error %d", iom));
 			else
 			{
-				nb = read( pipeFdPair1[0] , &code , sizeof(int) );
-				LM_T(LmtIsolated, ("Isolated process %d(%s): read %d bytes (code %d) ",id_processItem,stateName(),nb,code));
+				nb = read( pipeFdPair1[0] , &message , sizeof(message) );
+				LM_T(LmtIsolated, ("Isolated process %d(%s): read %d bytes (code %d) ",id_processItem,stateName(),nb,message.code));
 			}
 
-			if (nb != sizeof(int))
+			if (nb != sizeof(InterProcessMessage))
 			{
 				char errorText[256];
 
@@ -100,7 +109,7 @@ namespace ss
 				else if (nb == -1)
 					snprintf(errorText, sizeof(errorText), "Operation has crashed - read(): %s", strerror(errno));
 				else
-					snprintf(errorText, sizeof(errorText), "Operation has crashed - read returned %d instead of expected %d", nb, (int) sizeof(int));
+					snprintf(errorText, sizeof(errorText), "Operation has crashed - read returned %d instead of expected %d", nb, (int) sizeof(InterProcessMessage));
 
 				setError(errorText);
 				s = broken;
@@ -111,7 +120,8 @@ namespace ss
 				switch (s)
 				{
 					case starting:
-						assert( code == -5);
+						
+						assert( message.code == -5);
 						
 						// Close the unnecessary pipes
 #ifndef ISOLATED_PROCESS_AS_THREAD
@@ -123,17 +133,23 @@ namespace ss
 						s = running;
 						LM_T( LmtIsolated , ("Isolated process %d(%s): Go to running ",id_processItem,stateName()));
 						break;
+						
 					case running:
 						
-						if( code == -5 )
+						if( message.code == -5 )
 						{
 							s = finished;
 							LM_T( LmtIsolated , ("Isolated process %d(%s): Go to finish ",id_processItem,stateName()));
 						}
+						else if ( message.code == -4 )
+						{
+							LM_T( LmtUser01 + message.trace_channel , ( message.trace_message));
+							//LM_M(( "TRACE %d %s", message.trace_channel, message.trace_message)); 
+						}
 						else
 						{
 							LM_T( LmtIsolated , ("Isolated process %d(%s): Executing code ",id_processItem,stateName()));
-							runCode( code );
+							runCode( message.code );
 							LM_T( LmtIsolated , ("Isolated process %d(%s): Executed code ",id_processItem,stateName()));
 						}
 					default:
@@ -141,9 +157,12 @@ namespace ss
 				}
 
 				// Send something to the other side of the pipe to cotinue or finish
-				LM_T( LmtIsolated , ("Isolated process %d(%s): Sending something back to the pipe ",id_processItem,stateName()));
-				int c=1;
-				write( pipeFdPair2[1] , &c , sizeof(c) );
+				LM_T(LmtIsolated , ("Isolated process %d(%s): Sending something back to the pipe ",id_processItem,stateName()));
+				
+				InterProcessMessage m;
+				m.code = -1;
+
+				write( pipeFdPair2[1] , &m , sizeof(m) );
 				LM_T( LmtIsolated , ("Isolated process %d(%s): Sending something back to the pipe... OK! ",id_processItem,stateName()));
 
 				if( s == finished )
@@ -195,24 +214,55 @@ namespace ss
 	// Function used inside runIsolated to send a code to the main process
 	void ProcessItemIsolated::sendCode( int c )
 	{
-		// Write in the pipe
-		int nb = write(pipeFdPair1[1], &c, sizeof(c) );
+		InterProcessMessage message;
+		message.code = c;
 		
-		if( nb != sizeof(c) )
+		// Write in the pipe
+		int nb = write(pipeFdPair1[1], &message, sizeof(message) );
+		
+		if( nb != sizeof(message) )
 		{
 			std::cerr << "Error in background process writing to pipe";
 			exit(0);
 		}
 		
 		// Read something to continue
-		nb = read(pipeFdPair2[0], &c, sizeof(c) );
+		nb = read(pipeFdPair2[0], &message, sizeof(message) );
 		
-		if( nb != sizeof(c) )
+		if( nb != sizeof(message) )
 		{
-			std::cerr << "Error in background process reading from pipe " << "read " << nb << " bytes instead of " << sizeof(c);
+			std::cerr << "Error in background process reading from pipe " << "read " << nb << " bytes instead of " << sizeof(message);
 			exit(0);
 		}
 	}
+
+	// Function used inside runIsolated to send a code to the main process
+	void ProcessItemIsolated::trace( int channel, const char *txt )
+	{
+		InterProcessMessage message;
+		message.code = -4;
+		message.trace_channel = channel;
+		strncpy(message.trace_message, txt, 1024);	// Copy the message
+		message.trace_message[1023] = '\0';
+		
+		// Write in the pipe
+		int nb = write(pipeFdPair1[1], &message, sizeof(message) );
+		
+		if( nb != sizeof(message) )
+		{
+			std::cerr << "Error in background process writing to pipe";
+			exit(0);
+		}
+		
+		// Read something to continue
+		nb = read(pipeFdPair2[0], &message, sizeof(message) );
+		
+		if( nb != sizeof(message) )
+		{
+			std::cerr << "Error in background process reading from pipe " << "read " << nb << " bytes instead of " << sizeof(message);
+			exit(0);
+		}
+	}	
 	
 	void ProcessItemIsolated::runBackgroundProcessRun()
 	{
@@ -228,7 +278,7 @@ namespace ss
 		
 #endif	
 		sendCode( -5 );		// Send an initial code so the other side can close unnecessary pipes
-		
+				
 		runIsolated();
 
 		sendCode( -5 );		// Send a finish code so the other side can close unnecessary pipes

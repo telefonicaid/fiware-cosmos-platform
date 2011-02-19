@@ -69,6 +69,7 @@ namespace ss {
 		generateKeyValues( writer );
 		
 		writer->flushBuffer();
+		
 		delete writer;
 		
 	}

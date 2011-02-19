@@ -2,12 +2,12 @@
 #define _H_PROCESS_ITEM_ISOLATED
 
 #include "ProcessItem.h"		// ss::ProcessItem
+#include "samson/Tracer.h"		// ss::Tracer
 
-#define ISOLATED_PROCESS_AS_THREAD
 
 namespace ss {
 	
-	class ProcessItemIsolated : public ProcessItem
+	class ProcessItemIsolated : public ProcessItem , public Tracer
 	{
 		typedef enum 
 		{
@@ -37,6 +37,9 @@ namespace ss {
 
 		// Function used inside runIsolated to send a code to the main process
 		void sendCode( int c );
+		
+		// Function used indide the runIsaled to send a trace to the main process
+		void trace( int channel , const char *trace );
 		
 		// Function executed before and after
 		virtual void init(){};

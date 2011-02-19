@@ -10,15 +10,18 @@
 
 #include <map>						// std::map
 #include "samson/Environment.h"		// ss::Environment
+#include "samson/Tracer.h"              // ss::Tracer
 
 namespace ss {
 
+	
 	// Function used to "sort" when data type is used as key ( only in reduce operations )
 	typedef int(* OperationInputCompareFunction)(KV *kv1 , KV*kv2);		
 	
 	/**
 	 
 	 \class ss::Operation
+	 
 	 Generic class for all custom operations.\n\n
 	 Depending on the type of operation is desired you should subclass ss::Generator....\n
 	 MRJobExtension is not intended to subclass directly.\n\n	 
@@ -31,6 +34,7 @@ namespace ss {
 	public:
 		
 		Environment	*environment;	// Environment variables
+		Tracer *tracer;				// To send traces for debugging
 		
 		OperationInstance()
 		{

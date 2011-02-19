@@ -79,6 +79,8 @@ typedef enum TraceLevels
 	LmtLogServer,
 	LmtSpawn,
 
+	LmtIsolated,
+
 	LmtProcessListTab,
 	LmtQtTimer,
 
@@ -103,6 +105,9 @@ typedef enum TraceLevels
 	LmtSceneItemChain,
 	LmtMove,
 
+	
+	LmtOperations,			// Opertions organization ( map & reduce level )
+	
 	LmtUser01 = 250,
 	LmtUser02 = 251,
 	LmtUser03 = 252,

@@ -231,6 +231,7 @@ namespace ss {
 		// Run the generator over the ProcessWriter to emit all key-values
 		ParserOut *parserOut = (ParserOut*) operation->getInstance();
 		parserOut->environment = &environment;
+		parserOut->tracer = this;
 		
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
 		
@@ -324,6 +325,8 @@ namespace ss {
 		// Run the generator over the ProcessWriter to emit all key-values
 		Map *map = (Map*) operation->getInstance();
 		map->environment = &environment;
+		map->tracer = this;						// To be able to send traces
+
 		
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
 		
@@ -420,7 +423,8 @@ namespace ss {
 		// Run the generator over the ProcessWriter to emit all key-values
 		Reduce *reduce = (Reduce*) operation->getInstance();
 		reduce->environment = &environment;
-		
+		reduce->tracer = this;						// To be able to send traces
+
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
 		
 		int num_inputs		= operationSubTask->task->workerTask.input_size();

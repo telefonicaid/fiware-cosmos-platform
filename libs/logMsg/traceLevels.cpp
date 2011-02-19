@@ -58,6 +58,8 @@ char* traceLevelName(TraceLevels level)
 	case LmtProcessLookup:               return (char*) "Looking up a Process (Supervisor only)";
 	case LmtSpawnerLookup:               return (char*) "Looking up a Spawner (Supervisor only)";
 
+	case LmtIsolated:                    return (char*) "Isolated process";
+			
 	case LmtOpen:                        return (char*) "open system calls";
 	case LmtConnect:                     return (char*) "socket connect system calls";
 	case LmtAccept:                      return (char*) "Accept";
@@ -105,6 +107,8 @@ char* traceLevelName(TraceLevels level)
 	case LmtSceneItemChain:              return (char*) "Scene Item Chain";
 	case LmtMove:                        return (char*) "Move";
 
+	case LmtOperations:	                 return (char*) "Operations";  
+			
 	case LmtUser01:                      return (char*) "User 01";
 	case LmtUser02:                      return (char*) "User 02";
 	case LmtUser03:                      return (char*) "User 03";

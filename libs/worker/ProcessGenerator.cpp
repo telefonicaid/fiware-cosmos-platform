@@ -28,7 +28,8 @@ namespace ss {
 		// Get a generator instance
 		
 		Generator * generator  = (Generator*) op->getInstance();
-		generator->environment = &environment;
+		generator->environment = &environment;			// To be able to access environment
+		generator->tracer = this;						// To be able to send traces
 		
 		generator->run( writer );
 		

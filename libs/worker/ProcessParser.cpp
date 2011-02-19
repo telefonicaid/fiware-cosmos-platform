@@ -36,6 +36,7 @@ namespace ss
 		// Run the generator over the ProcessWriter to emit all key-values
 		Parser *parser = (Parser*) operation->getInstance();
 		parser->environment = &environment;
+		parser->tracer = this;
 		
 		
 		BufferHeader *header = (BufferHeader*)data;

@@ -46,6 +46,7 @@ char* messageCode(MessageCode code)
 	case IDie:                             return (char*) "IDie";
 	case WorkerSpawn:                      return (char*) "WorkerSpawn";
 	case ControllerSpawn:                  return (char*) "ControllerSpawn";
+	case ProcessSpawn:                     return (char*) "ProcessSpawn";
 	case ThroughputTest:                   return (char*) "ThroughputTest";
 	case LogLine:                          return (char*) "LogLine";
 	case ConfigGet:                        return (char*) "ConfigGet";

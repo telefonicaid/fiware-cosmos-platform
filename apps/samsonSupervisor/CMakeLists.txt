@@ -65,7 +65,6 @@ SET (HEADERS_MOC
 SET (HEADERS
 	SamsonSupervisor.h
 	baTerm.h
-	Process.h
 	processList.h
 	spawnerList.h
 	starterList.h

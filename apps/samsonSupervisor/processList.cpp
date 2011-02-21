@@ -26,7 +26,7 @@
 *
 * static global vars
 */
-static Process**      processV    = NULL;
+static ss::Process**  processV    = NULL;
 static unsigned int   processMax  = 0;
 static unsigned int   processIx   = 0;
 
@@ -39,7 +39,7 @@ static unsigned int   processIx   = 0;
 void processListInit(unsigned int pMax)
 {
 	processMax = pMax;
-	processV   = (Process**) calloc(processMax, sizeof(Process*));
+	processV   = (ss::Process**) calloc(processMax, sizeof(ss::Process*));
 }
 
 
@@ -48,13 +48,13 @@ void processListInit(unsigned int pMax)
 *
 * processTypeName - 
 */
-const char* processTypeName(ProcessType type)
+const char* processTypeName(ss::ProcessType type)
 {
 	switch (type)
 	{
-	case PtWorkerStarter:       return "WorkerStarter";
-	case PtControllerStarter:   return "ControllerStarter";
-	case PtSpawner:             return "Spawner";
+	case ss::PtWorkerStarter:       return "WorkerStarter";
+	case ss::PtControllerStarter:   return "ControllerStarter";
+	case ss::PtSpawner:             return "Spawner";
 	}
 
 	return "Unknown Process Type";
@@ -66,7 +66,7 @@ const char* processTypeName(ProcessType type)
 *
 * processTypeName - 
 */
-const char* processTypeName(Process* processP)
+const char* processTypeName(ss::Process* processP)
 {
 	return processTypeName(processP->type);
 }
@@ -77,9 +77,9 @@ const char* processTypeName(Process* processP)
 *
 * processAdd - 
 */
-Process* processAdd(Process* processP)
+ss::Process* processAdd(ss::Process* processP)
 {
-	Process* pP;
+	ss::Process* pP;
 
 	LM_T(LmtProcessList, ("Adding process '%s' in host '%s'", processP->name, processP->host));
 
@@ -105,12 +105,12 @@ Process* processAdd(Process* processP)
 }
 
 
-
+extern char* controllerHostP;
 /* ****************************************************************************
 *
 * processAdd - 
 */
-Process* processAdd
+ss::Process* processAdd
 (
 	const char*     name,
 	const char*     host,
@@ -119,7 +119,7 @@ Process* processAdd
 	ss::Endpoint*   endpoint
 )
 {
-	Process* processP;
+	ss::Process* processP;
 
 	LM_T(LmtProcess, ("Adding process '%s' in '%s'", name, host));
 
@@ -135,12 +135,12 @@ Process* processAdd
 	}
 	else
 	{
-		processP = (Process*) calloc(1, sizeof(Process));
+		processP = (ss::Process*) calloc(1, sizeof(ss::Process));
 		if (processP == NULL)
 			LM_X(1, ("calloc: %s", strerror(errno)));
 
 		if (name == NULL)
-			name = "noname";
+			name = "noProcessName";
 
 		strncpy(processP->name, name, sizeof(processP->name));
 		strncpy(processP->host, host, sizeof(processP->host));
@@ -155,11 +155,13 @@ Process* processAdd
 	processP->sendsLogs  = false;
 
 	if (strcmp(name, "Controller") == 0)
-		processP->type = PtControllerStarter;
+		processP->type = ss::PtControllerStarter;
 	else if (strcmp(name, "Worker") == 0)
-		processP->type = PtWorkerStarter;
+		processP->type = ss::PtWorkerStarter;
 	else
 		LM_X(1, ("name ('%s') should be either 'Controller' or 'Worker'", name));
+
+	strncpy(processP->controllerHost, controllerHostP, sizeof(processP->controllerHost));
 
 	return processAdd(processP);
 }
@@ -170,7 +172,7 @@ Process* processAdd
 *
 * processLookup - 
 */
-Process* processLookup(const char* name, const char* host)
+ss::Process* processLookup(const char* name, const char* host)
 {
 	if ((name == NULL) || (name[0] == 0))
 		return NULL;
@@ -202,7 +204,7 @@ Process* processLookup(const char* name, const char* host)
 *
 * processLookup - 
 */
-Process* processLookup(const char* alias)
+ss::Process* processLookup(const char* alias)
 {
 	if ((alias == NULL) || (alias[0] == 0))
 		return NULL;
@@ -228,7 +230,7 @@ Process* processLookup(const char* alias)
 *
 * processLookup - 
 */
-Process* processLookup(unsigned int ix)
+ss::Process* processLookup(unsigned int ix)
 {
 	if (ix > processMax)
 		LM_X(1, ("cannot return process %d - max process id is %d", processMax));
@@ -242,7 +244,7 @@ Process* processLookup(unsigned int ix)
 *
 * spawnerLookup - 
 */
-Process* spawnerLookup(const char* host)
+ss::Process* spawnerLookup(const char* host)
 {
 	LM_T(LmtProcess, ("Looking for host '%s' (process 0-%d)", host, processMax));
 
@@ -251,9 +253,9 @@ Process* spawnerLookup(const char* host)
 		if (processV[ix] == NULL)
 			continue;
 
-		LM_T(LmtProcess, ("Comparing hosts: '%s' and '%s' (types: '%s' & '%s')", processV[ix]->host, host, processTypeName(processV[ix]), processTypeName(PtSpawner)));
+		LM_T(LmtProcess, ("Comparing hosts: '%s' and '%s' (types: '%s' & '%s')", processV[ix]->host, host, processTypeName(processV[ix]), processTypeName(ss::PtSpawner)));
 
-		if ((strcmp(processV[ix]->host, host) == 0) && (processV[ix]->type == PtSpawner))
+		if ((strcmp(processV[ix]->host, host) == 0) && (processV[ix]->type == ss::PtSpawner))
 		{
 			LM_T(LmtProcess, ("Found spawner for host '%s'", host));
 			return processV[ix];
@@ -281,7 +283,7 @@ unsigned int processMaxGet(void)
 *
 * processListGet - 
 */
-Process** processListGet(void)
+ss::Process** processListGet(void)
 {
 	return processV;
 }
@@ -316,7 +318,7 @@ void processListShow(const char* why)
 *
 * spawnerAdd - 
 */
-Process* spawnerAdd(Process* spawnerP)
+ss::Process* spawnerAdd(ss::Process* spawnerP)
 {
 	LM_T(LmtSpawnerList, ("Adding spawner for host '%s'", spawnerP->host));
 
@@ -350,12 +352,12 @@ Process* spawnerAdd(Process* spawnerP)
 *
 * spawnerAdd - 
 */
-Process* spawnerAdd(const char* nameP, const char* host, unsigned short port, ss::Endpoint* endpoint)
+ss::Process* spawnerAdd(const char* nameP, const char* host, unsigned short port, ss::Endpoint* endpoint)
 {
-	Process*  spawnerP;
-	char      name[128];
+	ss::Process*  spawnerP;
+	char          name[128];
 
-	spawnerP = (Process*) calloc(1, sizeof(Process));
+	spawnerP = (ss::Process*) calloc(1, sizeof(ss::Process));
 	if (spawnerP == NULL)
 		LM_X(1, ("calloc: %s", strerror(errno)));
 
@@ -371,7 +373,7 @@ Process* spawnerAdd(const char* nameP, const char* host, unsigned short port, ss
 	
 	spawnerP->port      = port;
 	spawnerP->endpoint  = endpoint;
-	spawnerP->type      = PtSpawner;
+	spawnerP->type      = ss::PtSpawner;
 
 	return spawnerAdd(spawnerP);
 }

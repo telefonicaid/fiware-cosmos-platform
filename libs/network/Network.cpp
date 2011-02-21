@@ -2067,6 +2067,7 @@ void Network::msgTreat(void* vP)
 		}
 		break;
 
+	case Message::ProcessSpawn:
 	case Message::WorkerSpawn:
 	case Message::ControllerSpawn:
 		if (dataReceiver == NULL)

@@ -18,6 +18,7 @@
 #include <QHBoxLayout>
 
 #include "Endpoint.h"           // Endpoint
+#include "Process.h"            // Process
 #include "Starter.h"            // Starter
 #include "ProcessConfigView.h"  // ProcessConfigView
 
@@ -36,7 +37,7 @@ public:
 
 	void         starterInclude(Starter* starterP);
 	void         configShow(Starter* starterP);
-	void         processConfigRequest(Process* processP);
+	void         processConfigRequest(ss::Process* processP);
 
 private slots:
 	void quit();

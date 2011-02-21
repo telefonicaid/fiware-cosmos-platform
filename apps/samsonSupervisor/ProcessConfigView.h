@@ -22,7 +22,8 @@ class QLabel;
 class QLineEdit;
 class QVBoxLayout;
 
-#include "Process.h"            // Process
+#include "Process.h"            // ss::Process
+#include "Message.h"            // ss::Message
 
 
 
@@ -43,16 +44,16 @@ class ProcessConfigView : public QWidget
 	Q_OBJECT
 
 public:
-	ProcessConfigView(QGridLayout* grid, Process* process, ss::Message::ConfigData* configData);
-	ProcessConfigView(QGridLayout* grid, Process* process, ss::Message::Worker*     workerP);
-	ProcessConfigView(QGridLayout* grid, Process* process);
+	ProcessConfigView(QGridLayout* grid, ss::Process* process, ss::Message::ConfigData* configData);
+	ProcessConfigView(QGridLayout* grid, ss::Process* process, ss::Message::Worker*     workerP);
+	ProcessConfigView(QGridLayout* grid, ss::Process* process);
 	~ProcessConfigView();
 
-	void init(QGridLayout* grid, Process* process);
-	void fill(QGridLayout* grid, Process* process);
+	void init(QGridLayout* grid, ss::Process* process);
+	void fill(QGridLayout* grid, ss::Process* process);
 	void processSave(void);
 
-	Process*          process;
+	ss::Process*      process;
 	bool              hostEditable;
 
 private:

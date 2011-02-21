@@ -1016,6 +1016,7 @@ extern LmStatus lmTraceSub(char* levelFormat);
 * lmTraceGet - 
 */
 extern char* lmTraceGet(char* levelString);
+extern char* lmTraceGet(char* levelString, int levelStringSize, char* traceV);
 
 
 

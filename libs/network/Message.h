@@ -6,6 +6,9 @@
 * FILE                     Message.h - message definitions for all Samson IPC
 *
 */
+#include "Process.h"            // Process
+
+
 
 namespace ss
 {
@@ -53,6 +56,7 @@ typedef enum MessageCode
 	IDie							= CODE('I', 'D', 'i', ' '),
 	WorkerSpawn                     = CODE('W', 'S', 'p', ' '),
 	ControllerSpawn                 = CODE('C', 'S', 'p', ' '),
+	ProcessSpawn                    = CODE('S', 'p', 'w', ' '),
 	ThroughputTest                  = CODE('T', 'p', 'u', ' '),
 	LogLine                         = CODE('L', 'o', 'g', ' '),
 	ConfigGet                       = CODE('C', 'f', 'G', ' '),

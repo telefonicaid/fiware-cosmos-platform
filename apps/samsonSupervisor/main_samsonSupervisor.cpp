@@ -136,6 +136,7 @@ PaArgument paArgs[] =
 * Global variables
 */
 int     endpoints = 80;
+char*   controllerHostP = &controllerHost[0];
 
 
 
@@ -295,7 +296,7 @@ static void spawnerConnect(char* host)
 static void controllerConnect(char* host)
 {
 	ss::Endpoint*  controller;
-	Process*       processP;
+	ss::Process*   processP;
 
 	LM_T(LmtInit, ("Connecting to controller in '%s'", host));
 	controller = networkP->controllerConnect(host);

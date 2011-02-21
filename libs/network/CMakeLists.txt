@@ -17,6 +17,7 @@ SET (HEADERS
 	easyzlib.h
 	HostMgr.h
 	Host.h
+	Process.h
 )
 
 SET (SOURCES

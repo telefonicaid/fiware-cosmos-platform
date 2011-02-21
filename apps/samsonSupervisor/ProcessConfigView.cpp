@@ -82,7 +82,7 @@ ProcessConfigView::~ProcessConfigView()
 *
 * init - 
 */
-void ProcessConfigView::init(QGridLayout* grid, Process* process)
+void ProcessConfigView::init(QGridLayout* grid, ss::Process* process)
 {
 	ss::Endpoint*  endpoint = process->endpoint;
 	char           processName[256];
@@ -180,7 +180,7 @@ extern void workerUpdate(ss::Message::Worker* workerDataP);
 *
 * ProcessConfigView::ProcessConfigView - 
 */
-ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process, ss::Message::ConfigData* configData)
+ProcessConfigView::ProcessConfigView(QGridLayout* grid, ss::Process* process, ss::Message::ConfigData* configData)
 {
 	// The data to fill this view is taken from:
 	//
@@ -214,7 +214,7 @@ ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process, ss::Me
 *
 * ProcessConfigView::ProcessConfigView - 
 */
-ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process, ss::Message::Worker* workerP)
+ProcessConfigView::ProcessConfigView(QGridLayout* grid, ss::Process* process, ss::Message::Worker* workerP)
 {
 	init(grid, process);
 
@@ -244,7 +244,7 @@ ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process, ss::Me
 *
 * ProcessConfigView::ProcessConfigView - 
 */
-ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process)
+ProcessConfigView::ProcessConfigView(QGridLayout* grid, ss::Process* process)
 {
 	// The data to fill this view is taken from:
 	//
@@ -278,7 +278,7 @@ ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process)
 *
 * fill - 
 */
-void ProcessConfigView::fill(QGridLayout* grid, Process* process)
+void ProcessConfigView::fill(QGridLayout* grid, ss::Process* process)
 {
 #if 0
 	verboseBox->setCheckState(Qt::Unchecked);
@@ -446,8 +446,8 @@ void ProcessConfigView::save(void)
 
 		if ((host != NULL) && (host[0] != 0))
 		{
-			Process* spawner = NULL;
-			Host*    hostP;
+			ss::Process* spawner = NULL;
+			Host*        hostP;
 
 			strncpy(configData.host, host, sizeof(configData.host));
 

@@ -1025,6 +1025,82 @@ char* lmTraceGet(char* levelString)
 
 /* ****************************************************************************
 *
+* lmTraceGet - 
+*
+* NOTE
+* levelString must be a string of at least 80 characters
+*/
+char* lmTraceGet(char* levelString, int levelStringSize, char* traceV)
+{
+	int       i;
+	int       j = 0;
+	int       levels[256];
+
+	if (levelString == NULL)
+	{
+		LOG_OUT(("returning NULL"));
+		return NULL;
+	}
+	
+	levelString[0] = 0;
+
+	for (i = 0; i < 256; i++)
+	{
+		if (traceV[i] == true)
+		{
+			LOG_OUT(("GET: trace level %d is set", i));
+			levels[j++] = i;
+		}
+	}
+
+	if (j == 0)
+	{
+		LOG_OUT(("returning '%s'", levelString));
+		return levelString;
+	}
+	
+	snprintf(levelString, levelStringSize, "%d", levels[0]);
+	
+	for (i = 1; i < j; i++)
+	{
+		int       prev   = levels[i - 1];
+		int       diss   = levels[i];
+		int       next   = levels[i + 1];
+		bool      before = (diss == prev + 1);
+		bool      after  = (diss == next - 1);
+
+		if (i == 255)
+			after = false;
+
+		if (before && after)
+			;
+		else if (before && !after)
+		{
+			char str[12];
+			snprintf(str, sizeof(str), "-%d", diss);
+			strncat(levelString, str, 80);
+		}
+		else if (!before && after)
+		{
+			char str[12];
+			snprintf(str, sizeof(str), ",%d", diss);
+			strncat(levelString, str, 80);
+		}
+		else if (!before && !after)
+		{
+			char str[12];
+			snprintf(str, sizeof(str), ",%d", diss);
+			strncat(levelString, str, 80);
+		}
+	}
+	
+	return levelString;
+}
+
+
+
+/* ****************************************************************************
+*
 * lmWriteFunction - use alternative write function
 */
 LmStatus lmWriteFunction(int i, LmWriteFp fp)

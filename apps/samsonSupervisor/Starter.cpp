@@ -15,6 +15,7 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
 #include "Message.h"            // ss::Message
+#include "Process.h"            // ss::Process
 #include "iomMsgSend.h"         // iomMsgSend
 #include "iomConnect.h"         // iomConnect
 #include "ports.h"              // SPAWNER_PORT, ...
@@ -31,7 +32,7 @@
 *
 * Starter::Starter
 */
-Starter::Starter(Process* processP)
+Starter::Starter(ss::Process* processP)
 {
 	process  = processP;
 }
@@ -67,7 +68,7 @@ void Starter::qtInit(QVBoxLayout* spawnerLayout, QVBoxLayout* workerLayout, QVBo
 	startButton->setToolTip("Start Process");
 	startButton->setFlat(true);
 
-	if (process->type != PtSpawner)	
+	if (process->type != ss::PtSpawner)	
 		startButton->connect(startButton, SIGNAL(clicked()), this, SLOT(startClicked()));
 
 	box->addWidget(startButton);
@@ -78,7 +79,7 @@ void Starter::qtInit(QVBoxLayout* spawnerLayout, QVBoxLayout* workerLayout, QVBo
 	logButton->connect(logButton,         SIGNAL(clicked()), this, SLOT(logClicked()));
 	nameButton->connect(nameButton,       SIGNAL(clicked()), this, SLOT(nameClicked()));
 	
-	if (process->type == PtSpawner)
+	if (process->type == ss::PtSpawner)
 		spawnerLayout->addLayout(box);
 	else if (strcmp(process->name, "Worker") == 0)
 		workerLayout->addLayout(box);
@@ -88,7 +89,7 @@ void Starter::qtInit(QVBoxLayout* spawnerLayout, QVBoxLayout* workerLayout, QVBo
 	LM_T(LmtStarter, ("looking up endpoint for a starter"));
 	if (process->endpoint == NULL)
 	{
-		if (process->type == PtSpawner)
+		if (process->type == ss::PtSpawner)
 			process->endpoint = networkP->endpointLookup(ss::Endpoint::Spawner, process->host);
 		else if (strcmp(process->name, "Controller") == 0)
 			process->endpoint = networkP->endpointLookup(ss::Endpoint::Controller, process->host);
@@ -121,7 +122,7 @@ void Starter::check(const char* reason)
 	{
 		logButton->setDisabled(false);
 
-		if (process->type != PtSpawner)
+		if (process->type != ss::PtSpawner)
 		{
 			startButton->setIcon(greenIcon);
 			startButton->setToolTip("Kill process");
@@ -147,7 +148,7 @@ void Starter::check(const char* reason)
 	{
 		logButton->setDisabled(true);
 
-		if (process->type != PtSpawner)
+		if (process->type != ss::PtSpawner)
         {
 			startButton->setIcon(redIcon);
 			startButton->setToolTip("Start Process");
@@ -171,7 +172,7 @@ void Starter::startClicked(void)
 	if (process == NULL)
 		LM_X(1, ("NULL process"));
 
-	if (process->type == PtSpawner)
+	if (process->type == ss::PtSpawner)
 	{
 		if ((process->endpoint == NULL) || (process->endpoint->state != ss::Endpoint::Connected))
 			processConnect();
@@ -269,9 +270,22 @@ void Starter::nameClicked(void)
 */
 void Starter::processStart(void)
 {
-	ss::Message::SpawnData  spawnData;
 	int                     s;
-	char*                   alias = (char*) "no_alias";
+	
+#if 1
+	if (process == NULL)
+	   LM_RVE(("NULL process"));
+
+	if (process->spawnerP == NULL)
+		LM_X(1, ("NULL spawner pointer for process '%s@%d'", process->name, process->host));
+	if (process->spawnerP->endpoint == NULL)
+		LM_X(1, ("NULL spawner pointer for process '%s@%d'", process->name, process->host));
+
+	s = iomMsgSend(process->spawnerP->endpoint->wFd, process->spawnerP->host, "samsonSupervisor", ss::Message::ProcessSpawn, ss::Message::Msg, process, sizeof(*process));
+    if (s != 0)
+		LM_RVE(("iomMsgSend: error %d", s));
+#else
+	ss::Message::SpawnData  spawnData;
 	char*                   end;
 
 	strcpy(spawnData.name, process->name);
@@ -354,16 +368,19 @@ void Starter::processStart(void)
 		s = iomMsgSend(process->spawnerP->endpoint->wFd, process->spawnerP->host, "samsonSupervisor", ss::Message::WorkerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
 	if (s != 0)
 		LM_E(("iomMsgSend: error %d", s));
+#endif
 
 	LM_T(LmtProcessStart, ("started process '%s' in '%s')", process->name, process->host));
-	LM_T(LmtProcessStart, ("Connecting to newly started process (%s) ...", spawnData.name));
+	LM_T(LmtProcessStart, ("Connecting to newly started process (%s) ...", process->name));
+
+	char*  alias = (char*) process->alias;
 
 	int tries = 0;
 	while (1)
 	{
 		int fd;
 
-		if (strcmp(spawnData.name, "Controller") == 0)
+		if (strcmp(process->name, "Controller") == 0)
 		{
 			fd = iomConnect(process->spawnerP->host, CONTROLLER_PORT);
 			if (fd != -1)
@@ -372,26 +389,28 @@ void Starter::processStart(void)
 				break;
 			}			
 		}
-		else if (strcmp(spawnData.name, "Worker") == 0)
+		else if (strcmp(process->name, "Worker") == 0)
 		{
 			fd = iomConnect(process->spawnerP->host, WORKER_PORT);
 
 			if (fd != -1)
 			{
-				process->endpoint = networkP->endpointAdd("connected to worker", fd, fd, spawnData.name, alias, 0, ss::Endpoint::Temporal, process->host, WORKER_PORT);
+				process->endpoint = networkP->endpointAdd("connected to worker", fd, fd, process->name, alias, 0, ss::Endpoint::Temporal, process->host, WORKER_PORT);
 				break;
 			}
 
 			LM_TODO(("This endpoint is TEMPORAL and will be changed when the Hello is received - fix this problem!"));
 		}
-		
+		else
+			LM_X(1, ("Bad process name: '%s'", process->name));
+
 		if (++tries > 20)
 		{
 			char errorText[256];
 
-			if (strcmp(spawnData.name, "Worker") == 0)
+			if (strcmp(process->name, "Worker") == 0)
 				snprintf(errorText, sizeof(errorText), "Error connecting to Samson Worker in '%s', port %d", process->spawnerP->host, WORKER_PORT);
-			else if (strcmp(spawnData.name, "Controller") == 0)
+			else if (strcmp(process->name, "Controller") == 0)
 				snprintf(errorText, sizeof(errorText), "Error connecting to Samson Controller in '%s', port %d", process->spawnerP->host, CONTROLLER_PORT);
 			else
 				snprintf(errorText, sizeof(errorText), "Error connecting ");

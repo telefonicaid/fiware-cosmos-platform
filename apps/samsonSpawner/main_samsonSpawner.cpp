@@ -15,6 +15,7 @@
 
 #include "NetworkInterface.h"   // DataReceiverInterface
 #include "Network.h"            // Network
+#include "Process.h"            // Process
 #include "iomMsgSend.h"         // iomMsgSend
 #include "iomConnect.h"         // iomConnect
 #include "ports.h"              // LOG_SERVER_PORT
@@ -63,6 +64,7 @@ class SamsonSpawner : public ss::DataReceiverInterface
 {
 public:
 	SamsonSpawner(ss::Network* nwP) { networkP = nwP; }
+	void processSpawn(ss::Process* processP);
 
 	virtual int receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
 
@@ -104,6 +106,73 @@ void spawnParse(ss::Message::SpawnData* spawnData, char** args, int argCount)
 
 /* ****************************************************************************
 *
+* processSpawn - 
+*/
+void SamsonSpawner::processSpawn(ss::Process* processP)
+{
+	pid_t  pid;
+	char*  argV[50];
+	int    argC = 0;
+
+	if (processP->type == ss::PtWorkerStarter)
+	{
+		argV[argC++] = (char*) "samsonWorker";
+		argV[argC++] = (char*) "-alias";
+		argV[argC++] = processP->alias;
+		argV[argC++] = (char*) "-controller";
+		argV[argC++] = (char*) processP->controllerHost;
+	}
+	else if (processP->type == ss::PtControllerStarter)
+		argV[argC++] = (char*) "samsonController";
+	else
+		LM_X(1, ("Will only start workers and controllers - bad process type %d", processP->type));
+
+	if (processP->verbose == true)   argV[argC++] = (char*) "-v";
+	if (processP->debug   == true)   argV[argC++] = (char*) "-d";
+	if (processP->reads   == true)   argV[argC++] = (char*) "-r";
+	if (processP->writes  == true)   argV[argC++] = (char*) "-w";
+	// if (processP->toDo == true)   argV[argC++] = (char*) "-toDo";
+
+	char traceLevels[512];
+	lmTraceGet(traceLevels, sizeof(traceLevels), processP->traceLevels);
+	if (traceLevels[0] != 0)
+	{
+		argV[argC++] = (char*) "-t";
+		argV[argC++] = traceLevels;
+	}
+
+	argV[argC] = NULL;
+
+	for (int ix = 0; ix < argC; ix++)
+		LM_M(("argV[%d]: '%s'", ix, argV[ix]));
+
+
+	pid = fork();
+	if (pid == 0)
+	{
+		int ix;
+		int s;
+
+		LM_V(("Spawning a '%s' with %d parameters", argV[0], argC));
+
+		s = execvp(argV[0], argV);
+		if (s == -1)
+			LM_E(("Back from EXEC: %s", strerror(errno)));
+		else
+			LM_E(("Back from EXEC"));
+
+		LM_E(("Tried to start '%s' with the following parameters:", argV[0]));
+		for (ix = 0; ix < argC + 1; ix++)
+			LM_E(("%02d: %s", ix, argV[ix]));
+
+		LM_X(1, ("Back from EXEC !!!"));
+	}
+}
+
+
+
+/* ****************************************************************************
+*
 * SamsonSpawner::receive - 
 */
 int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP)
@@ -114,6 +183,10 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 
 	switch (headerP->code)
 	{
+	case ss::Message::ProcessSpawn:
+		processSpawn((ss::Process*) dataP);
+		break;
+
 	case ss::Message::WorkerSpawn:
 	case ss::Message::ControllerSpawn:
 		pid_t  pid;

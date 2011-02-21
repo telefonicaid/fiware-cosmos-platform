@@ -11,7 +11,7 @@
 *
 */
 #include "Endpoint.h"           // Endpoint
-#include "Process.h"            // Process
+#include "Process.h"            // ss::Process
 
 
 
@@ -27,8 +27,8 @@ extern void processListInit(unsigned int pMax);
 *
 * processTypeName - 
 */
-extern const char* processTypeName(Process* processP);
-extern const char* processTypeName(ProcessType type);
+extern const char* processTypeName(ss::Process* processP);
+extern const char* processTypeName(ss::ProcessType type);
 
 
 
@@ -36,7 +36,7 @@ extern const char* processTypeName(ProcessType type);
 *
 * processAdd - 
 */
-extern Process* processAdd(Process* process);
+extern ss::Process* processAdd(ss::Process* process);
 
 
 
@@ -44,7 +44,7 @@ extern Process* processAdd(Process* process);
 *
 * processAdd - 
 */
-extern Process* processAdd
+extern ss::Process* processAdd
 (
 	const char*     name,
 	const char*     host,
@@ -59,7 +59,7 @@ extern Process* processAdd
 *
 * spawnerAdd - 
 */
-extern Process* spawnerAdd(const char* nameP, const char* host, unsigned short port, ss::Endpoint* endpoint = NULL);
+extern ss::Process* spawnerAdd(const char* nameP, const char* host, unsigned short port, ss::Endpoint* endpoint = NULL);
 
 
 
@@ -67,10 +67,10 @@ extern Process* spawnerAdd(const char* nameP, const char* host, unsigned short p
 *
 * processLookup - 
 */
-extern Process* processLookup(unsigned int ix);
-extern Process* processLookup(const char* alias);
-extern Process* processLookup(const char* name, const char* host);
-extern Process* spawnerLookup(const char* host);
+extern ss::Process* processLookup(unsigned int ix);
+extern ss::Process* processLookup(const char* alias);
+extern ss::Process* processLookup(const char* name, const char* host);
+extern ss::Process* spawnerLookup(const char* host);
 
 
 
@@ -86,7 +86,7 @@ extern unsigned int processMaxGet(void);
 *
 * processListGet - 
 */
-extern Process** processListGet(void);
+extern ss::Process** processListGet(void);
 
 
 

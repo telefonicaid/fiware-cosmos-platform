@@ -30,7 +30,7 @@ class Starter : public QWidget
 	Q_OBJECT
 
 public:
-	Starter(Process* processP);
+	Starter(ss::Process* processP);
 	
 	void            check(const char* reason);
 	void            qtInit(QVBoxLayout* spawnerLayout, QVBoxLayout* workerLayout, QVBoxLayout* controllerLayout);
@@ -38,7 +38,7 @@ public:
 	void            processKill(void);
 	void            processConnect(void);
 
-	Process*        process;
+	ss::Process*    process;
 
 	QPushButton*    startButton;
 	QPushButton*    logButton;

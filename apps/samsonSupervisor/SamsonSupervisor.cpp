@@ -20,7 +20,7 @@
 #include "Message.h"            // ss::Message::Header
 #include "qt.h"                 // qtRun, ...
 #include "Starter.h"            // Starter
-#include "Process.h"            // Process
+#include "Process.h"            // ss::Process
 #include "starterList.h"        // starterLookup
 #include "spawnerList.h"        // spawnerListGet, ...
 #include "processList.h"        // processListGet, ...
@@ -75,8 +75,8 @@ void workerUpdate(ss::Message::Worker* workerDataP)
 
 
 
-extern Process*     processToBeConfigured;
-extern QGridLayout* gridForProcessToBeConfigured;
+extern ss::Process*  processToBeConfigured;
+extern QGridLayout*  gridForProcessToBeConfigured;
 /* ****************************************************************************
 *
 * SamsonSupervisor::receive - 
@@ -161,7 +161,7 @@ void disconnectAllWorkers(void)
 */
 static void noLongerTemporal(ss::Endpoint* ep, ss::Endpoint* newEp, Starter* starter)
 {
-	Process* processP = NULL;
+	ss::Process* processP = NULL;
 
 	if (ep->type != ss::Endpoint::Temporal)
 		LM_X(1, ("BUG - endpoint not temporal"));
@@ -277,8 +277,8 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 	char*                 host;
 	Host*                 hostP;
 	int                   fd;
-	Process*              spawner;
-	Process*              process;
+	ss::Process*          spawner;
+	ss::Process*          process;
 	Starter*              starter;
 	ss::Message::Worker*  worker;
 	ss::Endpoint*         ep;
@@ -304,7 +304,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 
 		if ((host == NULL) || (host[0] == 0) || (strcmp(host, "ip") == 0))
 		{
-			Process* processP;
+			ss::Process* processP;
 
 			if ((processP = processLookup(worker->alias)) != NULL)
 			{
@@ -477,7 +477,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		}
 		else
 		{
-			Process* processP;
+			ss::Process* processP;
 
 			if (ep->type == ss::Endpoint::Temporal)
 				LM_W(("Just a temporal endpoint - never mind ...   ?"));

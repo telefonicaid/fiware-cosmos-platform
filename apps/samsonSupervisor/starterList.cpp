@@ -11,7 +11,7 @@
 #include "traceLevels.h"        // Lmt*
 
 #include "Starter.h"            // Starter
-#include "Process.h"            // Process
+#include "Process.h"            // ss::Process
 #include "processList.h"        // processListShow
 #include "starterList.h"        // Own interface
 
@@ -122,7 +122,7 @@ Starter* starterAdd(Starter* starter)
 *
 * starterAdd - 
 */
-Starter* starterAdd(Process* processP)
+Starter* starterAdd(ss::Process* processP)
 {
 	Starter* starter;
 
@@ -174,7 +174,7 @@ Starter* starterLookup(ss::Endpoint* ep)
 *
 * starterLookup - 
 */
-Starter* starterLookup(Process* process)
+Starter* starterLookup(ss::Process* process)
 {
 	unsigned int  ix;
 

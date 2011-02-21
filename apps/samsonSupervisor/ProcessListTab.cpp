@@ -24,7 +24,7 @@
 #include "Network.h"            // samsonWorkerEndpoints
 #include "Endpoint.h"           // ss::Endpoint
 #include "Starter.h"            // Starter
-#include "Process.h"            // Process
+#include "Process.h"            // ss::Process
 #include "spawnerList.h"        // spawnerListGet, ...
 #include "processList.h"        // processListGet, ...
 #include "starterList.h"        // starterAdd, ...
@@ -114,8 +114,8 @@ void ProcessListTab::quit(void)
 */
 void ProcessListTab::initialStartersCreate(void)
 {
-	Process**     processV;
-	unsigned int  processMax;
+	ss::Process**  processV;
+	unsigned int   processMax;
 
 	processV   = processListGet();
 	processMax = processMaxGet();
@@ -149,7 +149,7 @@ void ProcessListTab::starterInclude(Starter* starterP)
 
 
 
-Process*     processToBeConfigured          = NULL;
+ss::Process* processToBeConfigured          = NULL;
 QGridLayout* gridForProcessToBeConfigured   = NULL;
 /* ****************************************************************************
 *
@@ -193,7 +193,7 @@ void ProcessListTab::configShow(Starter* starterP)
 *
 * processConfigRequest - 
 */
-void ProcessListTab::processConfigRequest(Process* processP)
+void ProcessListTab::processConfigRequest(ss::Process* processP)
 {
 	int s;
 

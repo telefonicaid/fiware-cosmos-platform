@@ -11,7 +11,7 @@
 *
 */
 #include "Starter.h"            // Starter
-#include "Process.h"            // Process
+#include "Process.h"            // ss::Process
 
 
 
@@ -52,7 +52,7 @@ extern void starterListShow(const char* what);
 * starterAdd - 
 */
 extern Starter* starterAdd(Starter* starter);
-extern Starter* starterAdd(Process* process);
+extern Starter* starterAdd(ss::Process* process);
 
 
 
@@ -68,6 +68,6 @@ extern Starter* starterLookup(ss::Endpoint* ep);
 *
 * starterLookup - 
 */
-extern Starter* starterLookup(Process* process);
+extern Starter* starterLookup(ss::Process* process);
 
 #endif

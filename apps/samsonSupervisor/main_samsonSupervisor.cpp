@@ -330,7 +330,7 @@ static void controllerConnect(char* host)
 	}
 #endif
 
-	processP           = processAdd("Controller", host, CONTROLLER_PORT, (char*) NULL, controller);
+	processP           = processAdd("Controller", host, CONTROLLER_PORT, "Controller", controller);
 	processP->spawnerP = spawnerAdd("Spawner", host, SPAWNER_PORT);
 }
 

@@ -320,7 +320,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 			}
 
 			LM_T(LmtWorkerVector, ("Worker %d is totally unconfigured - adding it a process and starter", ix));
-			process = processAdd("Worker", "ip", WORKER_PORT, worker->alias, NULL, NULL, 0);
+			process = processAdd("Worker", "ip", WORKER_PORT, worker->alias, NULL);
 
 			starter = starterAdd(process);
 			if (starter == NULL)

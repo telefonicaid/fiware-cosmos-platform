@@ -182,6 +182,15 @@ extern void workerUpdate(ss::Message::Worker* workerDataP);
 */
 ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process, ss::Message::ConfigData* configData)
 {
+	// The data to fill this view is taken from:
+	//
+	// 1. The process itself, if it is running
+	// 2. The Controller, if it is running
+	// 3. Locally, from the Process structure
+	//
+	// When saving the data, it is saved locally in the Process structure and if possible, it is sent to the controller
+	//
+
 	init(grid, process);
 
 	verboseBox->setCheckState((configData->verbose == true)? Qt::Checked : Qt::Unchecked);
@@ -196,7 +205,7 @@ ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process, ss::Me
 		  traceLevelItem[ix]->setCheckState((configData->traceLevels[ix] == true)? Qt::Checked : Qt::Unchecked);
 	}
 
-	fill(grid, process, false);
+	fill(grid, process);
 }
 
 
@@ -212,7 +221,7 @@ ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process, ss::Me
 	workerUpdate(workerP);
 
 	if ((process->host == NULL) || (process->host[0] == 0) || (strcmp(process->host, "ip") == 0))
-		process->host = strdup(workerP->ip);
+		strncpy(process->host, workerP->ip, sizeof(process->host));
 
 	verboseBox->setCheckState((workerP->verbose == true)? Qt::Checked : Qt::Unchecked);
 	debugBox->setCheckState((workerP->debug     == true)? Qt::Checked : Qt::Unchecked);
@@ -226,7 +235,41 @@ ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process, ss::Me
 			traceLevelItem[ix]->setCheckState((workerP->traceV[ix] == true)? Qt::Checked : Qt::Unchecked);
 	}
 
-	fill(grid, process, false);
+	fill(grid, process);
+}
+
+
+
+/* ****************************************************************************
+*
+* ProcessConfigView::ProcessConfigView - 
+*/
+ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process)
+{
+	// The data to fill this view is taken from:
+	//
+	// 1. The process itself, if it is running
+	// 2. The Controller, if it is running
+	// 3. Locally, from the Process structure
+	//
+	// When saving the data, it is saved locally in the Process structure and if possible, it is sent to the controller
+	//
+
+	init(grid, process);
+
+	verboseBox->setCheckState((process->verbose == true)? Qt::Checked : Qt::Unchecked);
+	debugBox->setCheckState((process->debug     == true)? Qt::Checked : Qt::Unchecked);
+	readsBox->setCheckState((process->reads     == true)? Qt::Checked : Qt::Unchecked);
+	writesBox->setCheckState((process->writes   == true)? Qt::Checked : Qt::Unchecked);
+	toDoBox->setCheckState((process->toDo       == true)? Qt::Checked : Qt::Unchecked);
+						
+	for (int ix = 0; ix < TRACE_LEVELS; ix++)
+	{
+	   if (traceLevelItem[ix])
+		  traceLevelItem[ix]->setCheckState((process->traceLevels[ix] == true)? Qt::Checked : Qt::Unchecked);
+	}
+
+	fill(grid, process);
 }
 
 
@@ -235,24 +278,21 @@ ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process, ss::Me
 *
 * fill - 
 */
-void ProcessConfigView::fill(QGridLayout* grid, Process* process, bool allFilled)
+void ProcessConfigView::fill(QGridLayout* grid, Process* process)
 {
-	if (allFilled == false)
-	{
-		verboseBox->setCheckState(Qt::Unchecked);
-		debugBox->setCheckState(Qt::Unchecked);
-		readsBox->setCheckState(Qt::Unchecked);
-		writesBox->setCheckState(Qt::Unchecked);
-		toDoBox->setCheckState(Qt::Unchecked);
+#if 0
+	verboseBox->setCheckState(Qt::Unchecked);
+	debugBox->setCheckState(Qt::Unchecked);
+	readsBox->setCheckState(Qt::Unchecked);
+	writesBox->setCheckState(Qt::Unchecked);
+	toDoBox->setCheckState(Qt::Unchecked);
 
-		for (int ix = 0; ix < TRACE_LEVELS; ix++)
-		{
-			if (traceLevelItem[ix])
-				traceLevelItem[ix]->setCheckState(Qt::Unchecked);
-		}
+	for (int ix = 0; ix < TRACE_LEVELS; ix++)
+	{
+		if (traceLevelItem[ix])
+			traceLevelItem[ix]->setCheckState(Qt::Unchecked);
 	}
-	else
-		LM_X(1, ("all filled == TRUE"));
+#endif
 
 	if (hostEditable == true)
 	{
@@ -336,6 +376,37 @@ void ProcessConfigView::all(void)
 
 /* ****************************************************************************
 *
+* processSave - 
+*/
+void ProcessConfigView::processSave(void)
+{
+	process->verbose    = (verboseBox->checkState() == Qt::Checked)? true : false;
+	process->debug      = (debugBox->checkState()   == Qt::Checked)? true : false;
+	process->reads      = (readsBox->checkState()   == Qt::Checked)? true : false;
+	process->writes     = (writesBox->checkState()  == Qt::Checked)? true : false;
+	process->toDo       = (toDoBox->checkState()    == Qt::Checked)? true : false;
+	
+	for (int ix = 0; ix < TRACE_LEVELS; ix++)
+	{
+		if (traceLevelItem[ix] != NULL)
+			process->traceLevels[ix] = (traceLevelItem[ix]->checkState() == Qt::Checked)? true : false;
+		else
+			process->traceLevels[ix] = false;
+	}
+
+	if (hostEdit != NULL)
+	{
+		char* host;
+
+		host = (char*) hostEdit->text().toStdString().c_str();
+		strncpy(process->host, host, sizeof(process->host));
+	}
+}
+
+
+
+/* ****************************************************************************
+*
 * save - 
 */
 void ProcessConfigView::save(void)
@@ -344,7 +415,10 @@ void ProcessConfigView::save(void)
 	int                      s;
 	const char*              host = NULL;
 
+	processSave();
+
 	memset(&configData, 0, sizeof(configData));
+
 	configData.verbose    = (verboseBox->checkState() == Qt::Checked)? true : false;
 	configData.debug      = (debugBox->checkState()   == Qt::Checked)? true : false;
 	configData.reads      = (readsBox->checkState()   == Qt::Checked)? true : false;
@@ -359,6 +433,7 @@ void ProcessConfigView::save(void)
 			configData.traceLevels[ix] = false;
 	}
 
+
 	if (process->alias != NULL)
 		strncpy(configData.alias, process->alias, sizeof(configData.alias));
 
@@ -368,12 +443,13 @@ void ProcessConfigView::save(void)
 	if (hostEdit != NULL)
 	{
 		host = hostEdit->text().toStdString().c_str();
-		strncpy(configData.host, host, sizeof(configData.host));
 
 		if ((host != NULL) && (host[0] != 0))
 		{
 			Process* spawner = NULL;
 			Host*    hostP;
+
+			strncpy(configData.host, host, sizeof(configData.host));
 
 			hostP = networkP->hostMgr->lookup(host);
 			if (hostP != NULL)
@@ -390,8 +466,9 @@ void ProcessConfigView::save(void)
 
 			networkP->hostMgr->insert(host, NULL);
 
-			process->host = strdup(host);
-			spawner       = spawnerLookup(process->host);
+			strncpy(process->host, host, sizeof(process->host));
+
+			spawner = spawnerLookup(process->host);
 			if (spawner == NULL)
 			{
 				int            fd;
@@ -412,8 +489,7 @@ void ProcessConfigView::save(void)
 					new Popup("Cannot connect to Spawner", eText);
 
 					LM_W(("Setting process->host to NULL ..."));
-					free(process->host);
-					process->host = NULL;
+					process->host[0] = 0;
 					return;
 				}
 
@@ -446,7 +522,10 @@ void ProcessConfigView::save(void)
 			LM_E(("iomMsgSend returned %d", s));
 	}
 	else
-		new Popup("Controller not connected", "Not connected to controller.\nCan only save this configuration information locally, sorry.\n");
+	{
+		if (process->endpoint != networkP->endpoint[2])
+			new Popup("Controller not connected", "Not connected to controller.\nCan only save this configuration information locally, sorry.\n");
+	}
 
 	tabManager->processListTab->configShow(process->starterP);
 }

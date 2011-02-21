@@ -50,9 +50,7 @@ extern Process* processAdd
 	const char*     host,
 	unsigned short  port,
 	const char*     alias,
-	ss::Endpoint*   endpoint,
-	char**          args     = NULL,
-	int             argCount = 0
+	ss::Endpoint*   endpoint
 );
 
 

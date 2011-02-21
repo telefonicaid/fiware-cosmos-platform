@@ -34,7 +34,6 @@
 
 
 
-ss::Message::ConfigData configDataForController;
 /* ****************************************************************************
 *
 * ProcessListTab::ProcessListTab - 
@@ -44,8 +43,6 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 	Starter**           starterV;
 	unsigned int        starters;
 	QVBoxLayout*        leftBasicLayout;
-
-	memset(&configDataForController, 0, sizeof(configDataForController));
 
 	mainLayout       = new QHBoxLayout(parent);
 	leftBasicLayout  = new QVBoxLayout();
@@ -213,7 +210,7 @@ void ProcessListTab::processConfigRequest(Process* processP)
 	{
 		if ((networkP->endpoint[2] == NULL) || (networkP->endpoint[2]->state != ss::Endpoint::Connected))
 		{
-			configView = new ProcessConfigView(rightGrid, processP, &configDataForController);
+			configView = new ProcessConfigView(rightGrid, processP);
 			LM_RVE(("Not connected to controller"));
 		}
 		else

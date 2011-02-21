@@ -116,13 +116,10 @@ Process* processAdd
 	const char*     host,
 	unsigned short  port,
 	const char*     alias,
-	ss::Endpoint*   endpoint,
-	char**          args,
-	int             argCount
+	ss::Endpoint*   endpoint
 )
 {
-	int           argIx;
-	Process*      processP;
+	Process* processP;
 
 	LM_T(LmtProcess, ("Adding process '%s' in '%s'", name, host));
 
@@ -145,13 +142,14 @@ Process* processAdd
 		if (name == NULL)
 			name = "noname";
 
-		processP->name       = strdup(name);
-		processP->host       = strdup(host);
+		strncpy(processP->name, name, sizeof(processP->name));
+		strncpy(processP->host, host, sizeof(processP->host));
+		
 		processP->port       = port;
 		processP->endpoint   = endpoint;
 
 		if (alias != NULL)
-			processP->alias  = strdup(alias);
+		   strncpy(processP->alias, alias, sizeof(processP->alias));
 	}
 
 	processP->sendsLogs  = false;
@@ -162,26 +160,6 @@ Process* processAdd
 		processP->type = PtWorkerStarter;
 	else
 		LM_X(1, ("name ('%s') should be either 'Controller' or 'Worker'", name));
-
-	if (args != NULL)
-	{
-		processP->argCount = argCount;
-		argIx = 0;
-		while (argIx < argCount)
-		{
-			LM_T(LmtProcessList, ("Copying arg %d", argIx));
-			processP->arg[argIx] = strdup(args[argIx]);
-			LM_T(LmtProcessList, ("arg[%d]: '%s'", argIx, processP->arg[argIx]));
-			++argIx;
-		}
-	}
-	else
-	{
-		processP->argCount = 0;
-		argIx = 0;
-		while (argIx < argCount)
-			processP->arg[argIx] = NULL;
-	}
 
 	return processAdd(processP);
 }
@@ -323,12 +301,11 @@ void processListShow(const char* why)
 		if (processV[ix] == NULL)
 			continue;
 
-		LM_T(LmtProcessListShow, ("  %08p process %02d: %-20s %-20s   (endpoint: %p, starter at %p, spawner at %p)  %d args", 
+		LM_T(LmtProcessListShow, ("  %08p process %02d: %-20s %-20s   (endpoint: %p, starter at %p, spawner at %p)", 
 								  processV[ix], ix, processV[ix]->name, processV[ix]->host,
 								  processV[ix]->endpoint,
 								  processV[ix]->starterP,
-								  processV[ix]->spawnerP,
-								  processV[ix]->argCount));
+								  processV[ix]->spawnerP));
 	}
 	LM_T(LmtProcessListShow, ("------------------------------------"));
 }
@@ -353,7 +330,6 @@ Process* spawnerAdd(Process* spawnerP)
 	}
 
 	processV[processIx++] = spawnerP;
-	spawnerP->type      = PtSpawner;
 
 	LM_T(LmtProcessList, ("Spawner for '%s' added", spawnerP->host));
 
@@ -389,10 +365,13 @@ Process* spawnerAdd(const char* nameP, const char* host, unsigned short port, ss
 		nameP = name;
 	}
 
-	spawnerP->name     = strdup(nameP);
-	spawnerP->host     = strdup(host);
-	spawnerP->port     = port;
-	spawnerP->endpoint = endpoint;
+	strncpy(spawnerP->name, nameP,      sizeof(spawnerP->name));
+	strncpy(spawnerP->host, host,       sizeof(spawnerP->host));
+	strncpy(spawnerP->alias, "Spawner", sizeof(spawnerP->alias));
+	
+	spawnerP->port      = port;
+	spawnerP->endpoint  = endpoint;
+	spawnerP->type      = PtSpawner;
 
 	return spawnerAdd(spawnerP);
 }

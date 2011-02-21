@@ -45,10 +45,12 @@ class ProcessConfigView : public QWidget
 public:
 	ProcessConfigView(QGridLayout* grid, Process* process, ss::Message::ConfigData* configData);
 	ProcessConfigView(QGridLayout* grid, Process* process, ss::Message::Worker*     workerP);
+	ProcessConfigView(QGridLayout* grid, Process* process);
 	~ProcessConfigView();
 
 	void init(QGridLayout* grid, Process* process);
-	void fill(QGridLayout* grid, Process* process, bool allFilled);
+	void fill(QGridLayout* grid, Process* process);
+	void processSave(void);
 
 	Process*          process;
 	bool              hostEditable;

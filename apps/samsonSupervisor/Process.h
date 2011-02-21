@@ -41,19 +41,23 @@ typedef enum ProcessType
 */
 typedef struct Process
 {
-	char*            name;
-	char*            alias;
-	char*            host;
+	char             name[32];
+	char             alias[32];
+	char             host[32];
 	unsigned short   port;
-	ss::Endpoint*    endpoint;
-	ProcessType      type;
-	Starter*         starterP;
+	int              state;
+	bool             verbose;
+	bool             debug;
+	bool             reads;
+	bool             writes;
+	bool             toDo;
+	char             traceLevels[256];
 	bool             sendsLogs;
 
-	// Spawn Info
-	struct Process*  spawnerP;
-	int              argCount;
-	char*            arg[20];
+	ss::Endpoint*    endpoint;
+	ProcessType      type;
+	Starter*         starterP;     // QT stuff
+	struct Process*  spawnerP;     // The process to contact to start me
 } Process;
 
 #endif

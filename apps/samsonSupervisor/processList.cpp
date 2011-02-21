@@ -148,7 +148,6 @@ Process* processAdd
 		processP->name       = strdup(name);
 		processP->host       = strdup(host);
 		processP->port       = port;
-		processP->spawnInfo  = NULL;
 		processP->endpoint   = endpoint;
 
 		if (alias != NULL)
@@ -164,28 +163,24 @@ Process* processAdd
 	else
 		LM_X(1, ("name ('%s') should be either 'Controller' or 'Worker'", name));
 
-	processP->spawnInfo = (SpawnInfo*) calloc(1, sizeof(SpawnInfo));
-	if (processP->spawnInfo == NULL)
-		LM_RE(NULL, ("error allocating room for SpawnInfo: %s", strerror(errno)));
-
 	if (args != NULL)
 	{
-		processP->spawnInfo->argCount = argCount;
+		processP->argCount = argCount;
 		argIx = 0;
 		while (argIx < argCount)
 		{
 			LM_T(LmtProcessList, ("Copying arg %d", argIx));
-			processP->spawnInfo->arg[argIx] = strdup(args[argIx]);
-			LM_T(LmtProcessList, ("arg[%d]: '%s'", argIx, processP->spawnInfo->arg[argIx]));
+			processP->arg[argIx] = strdup(args[argIx]);
+			LM_T(LmtProcessList, ("arg[%d]: '%s'", argIx, processP->arg[argIx]));
 			++argIx;
 		}
 	}
 	else
 	{
-		processP->spawnInfo->argCount = 0;
+		processP->argCount = 0;
 		argIx = 0;
 		while (argIx < argCount)
-			processP->spawnInfo->arg[argIx] = NULL;
+			processP->arg[argIx] = NULL;
 	}
 
 	return processAdd(processP);
@@ -328,18 +323,12 @@ void processListShow(const char* why)
 		if (processV[ix] == NULL)
 			continue;
 
-		if (processV[ix]->spawnInfo != NULL)
-			LM_T(LmtProcessListShow, ("  %08p process %02d: %-20s %-20s   (endpoint: %p, starter at %p, spawner at %p)  %d args", 
-									  processV[ix], ix, processV[ix]->name, processV[ix]->host,
-									  processV[ix]->endpoint,
-									  processV[ix]->starterP,
-									  processV[ix]->spawnInfo->spawnerP,
-									  processV[ix]->spawnInfo->argCount));
-		else
-			LM_T(LmtProcessListShow, ("  %08p process %02d: %-20s %-20s   (endpoint: %p, starter at %p)",
-									  processV[ix], ix, processV[ix]->name, processV[ix]->host,
-									  processV[ix]->endpoint,
-									  processV[ix]->starterP));
+		LM_T(LmtProcessListShow, ("  %08p process %02d: %-20s %-20s   (endpoint: %p, starter at %p, spawner at %p)  %d args", 
+								  processV[ix], ix, processV[ix]->name, processV[ix]->host,
+								  processV[ix]->endpoint,
+								  processV[ix]->starterP,
+								  processV[ix]->spawnerP,
+								  processV[ix]->argCount));
 	}
 	LM_T(LmtProcessListShow, ("------------------------------------"));
 }

@@ -31,7 +31,6 @@ class Starter : public QWidget
 
 public:
 	Starter(Process* processP);
-	Starter(Process* processP, SpawnInfo* siP);
 	
 	void            check(const char* reason);
 	void            qtInit(QVBoxLayout* spawnerLayout, QVBoxLayout* workerLayout, QVBoxLayout* controllerLayout);

@@ -334,38 +334,24 @@ void Starter::processStart(void)
 		++end;
 
 		*end = 0;
-#if 0
-		for (int ix = 0; ix < 64; ix += 8)
-		   LM_M(("%02x %02x %02x %02x %02x %02x %02x %02x",   OUTDEFFED !
-				  spawnData.args[ix + 0] & 0xFF, 
-				  spawnData.args[ix + 1] & 0xFF, 
-				  spawnData.args[ix + 2] & 0xFF, 
-				  spawnData.args[ix + 3] & 0xFF, 
-				  spawnData.args[ix + 4] & 0xFF, 
-				  spawnData.args[ix + 5] & 0xFF, 
-				  spawnData.args[ix + 6] & 0xFF, 
-				  spawnData.args[ix + 7] & 0xFF));
-#endif
 	}
 
 	LM_T(LmtProcessStart, ("starting %s (alias '%s') via spawner %p (host: '%s', fd: %d).",
 						   spawnData.name,
 						   process->alias,
-						   process->spawnInfo->spawnerP,
-						   process->spawnInfo->spawnerP->host,
-						   process->spawnInfo->spawnerP->endpoint->rFd));
+						   process->spawnerP,
+						   process->spawnerP->host,
+						   process->spawnerP->endpoint->rFd));
 
-	if (process->spawnInfo == NULL)
-		LM_X(1, ("NULL spawnInfo for process '%s@%d'", process->name, process->host));
-	if (process->spawnInfo->spawnerP == NULL)
+	if (process->spawnerP == NULL)
 		LM_X(1, ("NULL spawner pointer for process '%s@%d'", process->name, process->host));
-	if (process->spawnInfo->spawnerP->endpoint == NULL)
+	if (process->spawnerP->endpoint == NULL)
 		LM_X(1, ("NULL spawner pointer for process '%s@%d'", process->name, process->host));
 
 	if (strcmp(spawnData.name, "Controller") == 0)
-		s = iomMsgSend(process->spawnInfo->spawnerP->endpoint->wFd, process->spawnInfo->spawnerP->host, "samsonSupervisor", ss::Message::ControllerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
+		s = iomMsgSend(process->spawnerP->endpoint->wFd, process->spawnerP->host, "samsonSupervisor", ss::Message::ControllerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
 	else if (strcmp(spawnData.name, "Worker") == 0)
-		s = iomMsgSend(process->spawnInfo->spawnerP->endpoint->wFd, process->spawnInfo->spawnerP->host, "samsonSupervisor", ss::Message::WorkerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
+		s = iomMsgSend(process->spawnerP->endpoint->wFd, process->spawnerP->host, "samsonSupervisor", ss::Message::WorkerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
 	if (s != 0)
 		LM_E(("iomMsgSend: error %d", s));
 
@@ -379,16 +365,16 @@ void Starter::processStart(void)
 
 		if (strcmp(spawnData.name, "Controller") == 0)
 		{
-			fd = iomConnect(process->spawnInfo->spawnerP->host, CONTROLLER_PORT);
+			fd = iomConnect(process->spawnerP->host, CONTROLLER_PORT);
 			if (fd != -1)
 			{
-				process->endpoint = networkP->endpointAdd("connected to spawner", fd, fd, "Controller", "Controller", 0, ss::Endpoint::Controller, process->spawnInfo->spawnerP->host, CONTROLLER_PORT);
+				process->endpoint = networkP->endpointAdd("connected to spawner", fd, fd, "Controller", "Controller", 0, ss::Endpoint::Controller, process->spawnerP->host, CONTROLLER_PORT);
 				break;
 			}			
 		}
 		else if (strcmp(spawnData.name, "Worker") == 0)
 		{
-			fd = iomConnect(process->spawnInfo->spawnerP->host, WORKER_PORT);
+			fd = iomConnect(process->spawnerP->host, WORKER_PORT);
 
 			if (fd != -1)
 			{
@@ -404,9 +390,9 @@ void Starter::processStart(void)
 			char errorText[256];
 
 			if (strcmp(spawnData.name, "Worker") == 0)
-				snprintf(errorText, sizeof(errorText), "Error connecting to Samson Worker in '%s', port %d", process->spawnInfo->spawnerP->host, WORKER_PORT);
+				snprintf(errorText, sizeof(errorText), "Error connecting to Samson Worker in '%s', port %d", process->spawnerP->host, WORKER_PORT);
 			else if (strcmp(spawnData.name, "Controller") == 0)
-				snprintf(errorText, sizeof(errorText), "Error connecting to Samson Controller in '%s', port %d", process->spawnInfo->spawnerP->host, CONTROLLER_PORT);
+				snprintf(errorText, sizeof(errorText), "Error connecting to Samson Controller in '%s', port %d", process->spawnerP->host, CONTROLLER_PORT);
 			else
 				snprintf(errorText, sizeof(errorText), "Error connecting ");
 

@@ -431,7 +431,7 @@ void ProcessConfigView::save(void)
 				}
 			}
 
-			process->spawnInfo->spawnerP = spawner;
+			process->spawnerP = spawner;
 		}
 
 		process->starterP->nameButton->setText(QString(process->name) + "@" + process->host + " (" + process->alias + ")");

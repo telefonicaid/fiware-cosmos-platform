@@ -34,6 +34,7 @@
 
 
 
+ss::Message::ConfigData configDataForController;
 /* ****************************************************************************
 *
 * ProcessListTab::ProcessListTab - 
@@ -43,6 +44,8 @@ ProcessListTab::ProcessListTab(const char* name, QWidget *parent) : QWidget(pare
 	Starter**           starterV;
 	unsigned int        starters;
 	QVBoxLayout*        leftBasicLayout;
+
+	memset(&configDataForController, 0, sizeof(configDataForController));
 
 	mainLayout       = new QHBoxLayout(parent);
 	leftBasicLayout  = new QVBoxLayout();
@@ -197,6 +200,8 @@ void ProcessListTab::processConfigRequest(Process* processP)
 {
 	int s;
 
+	LM_M(("requesting Config Data for process '%s'", processP->name));
+
 	if ((processP->endpoint != NULL) && (processP->endpoint->state == ss::Endpoint::Connected))
 	{
 		s = iomMsgSend(processP->endpoint, networkP->endpoint[0], ss::Message::ConfigGet, ss::Message::Msg);
@@ -207,12 +212,17 @@ void ProcessListTab::processConfigRequest(Process* processP)
 	else
 	{
 		if ((networkP->endpoint[2] == NULL) || (networkP->endpoint[2]->state != ss::Endpoint::Connected))
+		{
+			configView = new ProcessConfigView(rightGrid, processP, &configDataForController);
 			LM_RVE(("Not connected to controller"));
+		}
+		else
+		{
+			LM_M(("Asking samsonController for WorkerConfig for process '%s'", processP->alias));
+			s = iomMsgSend(networkP->endpoint[2], networkP->endpoint[0], ss::Message::WorkerConfigGet, ss::Message::Msg, processP->alias, 32);
 
-		LM_M(("Asking samsonController for WorkerConfig for process '%s'", processP->alias));
-		s = iomMsgSend(networkP->endpoint[2], networkP->endpoint[0], ss::Message::WorkerConfigGet, ss::Message::Msg, processP->alias, 32);
-
-		if (s != 0)
-			LM_RVE(("iomMsgSend error: %d", s));
+			if (s != 0)
+				LM_RVE(("iomMsgSend error: %d", s));
+		}
 	}
 }

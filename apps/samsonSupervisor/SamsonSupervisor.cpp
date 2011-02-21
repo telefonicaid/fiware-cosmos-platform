@@ -412,9 +412,8 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 		}
 
 		LM_T(LmtWorkerVector, ("Now, how is it started? Pues, via its spawner!"));
-		if (process->spawnInfo == NULL)
-			LM_X(1, ("No spawn info for a starter - a bug!"));
-		process->spawnInfo->spawnerP = spawner;
+
+		process->spawnerP = spawner;
 		LM_T(LmtWorkerVector, ("process complete - with spawner and everything!"));
 
 		LM_T(LmtWorkerVector, ("OK, process there, now its starter ..."));

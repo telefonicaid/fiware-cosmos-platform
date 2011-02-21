@@ -24,19 +24,6 @@ class Starter;
 
 /* ****************************************************************************
 *
-* SpawnInfo
-*/
-typedef struct SpawnInfo
-{
-	struct Process*  spawnerP;
-	int              argCount;
-	char*            arg[20];
-} SpawnInfo;
-
-
-
-/* ****************************************************************************
-*
 * ProcessType
 */
 typedef enum ProcessType
@@ -56,13 +43,17 @@ typedef struct Process
 {
 	char*            name;
 	char*            alias;
-	char*            host;      // hostname can also be obtained in spawner
+	char*            host;
 	unsigned short   port;
 	ss::Endpoint*    endpoint;
 	ProcessType      type;
 	Starter*         starterP;
-	SpawnInfo*       spawnInfo;
 	bool             sendsLogs;
+
+	// Spawn Info
+	struct Process*  spawnerP;
+	int              argCount;
+	char*            arg[20];
 } Process;
 
 #endif

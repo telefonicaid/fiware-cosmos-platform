@@ -36,6 +36,7 @@
 #include "starterList.h"        // starterListShow
 #include "TabManager.h"         // Own interface
 
+#include "samson/Log.h"			// LogLineData
 
 
 /* ****************************************************************************
@@ -182,7 +183,7 @@ void TabManager::logReceive(void)
 	int                       flags;
 	ssize_t                   nb;
 	unsigned int              tot;
-	ss::Message::LogLineData  logLine;
+	ss::LogLineData  logLine;
 	ss::Message::Header       header;
 	char*                     buf;
 	unsigned int              bufLen;

@@ -7,8 +7,6 @@
 *
 */
 
-
-
 namespace ss
 {
 namespace Message
@@ -131,25 +129,6 @@ typedef struct ConfigData
 	bool   toDo;
 	char   traceLevels[256];
 } ConfigData;
-
-
-
-/* ****************************************************************************
-*
-* LogLineData
-*/
-typedef struct LogLineData
-{
-	char  processName[64];
-	char  date[32];
-	char  text[256];
-	char  file[64];
-	char  fName[64];
-	char  stre[64];
-	char  type;
-	int   lineNo;
-	char  tLev;
-} LogLineData;
 
 
 

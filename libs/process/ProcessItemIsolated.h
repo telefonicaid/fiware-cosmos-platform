@@ -5,6 +5,7 @@
 #include "samson/Tracer.h"		// ss::Tracer
 
 
+
 namespace ss {
 	
 	class ProcessItemIsolated : public ProcessItem , public Tracer
@@ -39,7 +40,7 @@ namespace ss {
 		void sendCode( int c );
 		
 		// Function used indide the runIsaled to send a trace to the main process
-		void trace( int channel , const char *trace );
+		void trace(LogLineData *logData);
 		
 		// Function executed before and after
 		virtual void init(){};

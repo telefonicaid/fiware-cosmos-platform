@@ -25,6 +25,7 @@
 #include "Message.h"            // ss::Message::Header, ss::Message::LogLineData
 #include "LogTab.h"             // Own interface
 
+#include "samson/Log.h"			// LogLineData
 
 
 /* ****************************************************************************
@@ -108,7 +109,7 @@ LogTab::LogTab(QWidget* parent) : QWidget(parent)
 *
 * logLineInsert - 
 */
-void LogTab::logLineInsert(struct sockaddr_in* sAddr, ss::Message::Header* headerP, ss::Message::LogLineData* logLine)
+void LogTab::logLineInsert(struct sockaddr_in* sAddr, ss::Message::Header* headerP, ss::LogLineData* logLine)
 {
 	if (headerP->magic != 0xFEEDC0DE)
 		LM_W(("Bad magic number ... 0x%08x", headerP->magic));

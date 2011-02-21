@@ -10,19 +10,15 @@
 #include "ProcessItemIsolated.h"  // Own interface
 
 
-// #define ISOLATED_PROCESS_AS_THREAD
+//#define ISOLATED_PROCESS_AS_THREAD
 
 namespace ss
 {
-
 	
 	typedef struct
 	{
 		int code;				// Code of the operation
-		
-		int trace_channel;			// Trace channel
-		char trace_message[1024];	// Trace message
-		
+		LogLineData logData;	// Trace information
 	} InterProcessMessage;
 	
 
@@ -143,7 +139,11 @@ namespace ss
 						}
 						else if ( message.code == -4 )
 						{
-							LM_T( LmtUser01 + message.trace_channel , ( message.trace_message));
+							LogLineData *l = &message.logData;
+							if (lmOk(l->type, l->tLev) == LmsOk)
+								lmOut(l->text, l->type , l->file, l->lineNo , l->fName, l->tLev , l->stre );
+
+							// LM_T( LmtUser01 + message.trace_channel , ( message.trace_message));
 							//LM_M(( "TRACE %d %s", message.trace_channel, message.trace_message)); 
 						}
 						else
@@ -237,13 +237,11 @@ namespace ss
 	}
 
 	// Function used inside runIsolated to send a code to the main process
-	void ProcessItemIsolated::trace( int channel, const char *txt )
+	void ProcessItemIsolated::trace( LogLineData *logData )
 	{
 		InterProcessMessage message;
 		message.code = -4;
-		message.trace_channel = channel;
-		strncpy(message.trace_message, txt, 1024);	// Copy the message
-		message.trace_message[1023] = '\0';
+		memcpy(&message.logData, logData, sizeof( LogLineData) );
 		
 		// Write in the pipe
 		int nb = write(pipeFdPair1[1], &message, sizeof(message) );

@@ -2,9 +2,10 @@
 #ifndef _H_SS_TRACER
 #define _H_SS_TRACER
 
+
 #include <stdarg.h>             /* va_start, va_arg, va_end                  */
 #include <stdio.h>
-
+#include "samson/Log.h"
 
 namespace ss
 {
@@ -14,10 +15,17 @@ namespace ss
    class Tracer
    {
    public:
+
 	   
-      virtual void trace( int channel , const char *trace ) = 0;
-   
-	   void trace_print(int channel, const char* format, ...)
+	   /**
+		Unique function to send traces to the parent process
+		*/
+	   virtual void trace(LogLineData *logData)=0;
+	   
+	   /**
+		Handy function used by macros to get the message string
+		*/
+	   static char* print( const char* format, ...)
 	   {
 		   va_list        args;
 		   char           vmsg[1024];
@@ -36,10 +44,10 @@ namespace ss
 			   *nl = 0;
 		   
 		   allocedString = (char*) strdup(vmsg);
-
-		   trace(channel, allocedString );
+		   return allocedString;
 		   
-		   free( allocedString );
+		  // trace(channel, allocedString );
+		  // free( allocedString );
 		   
 	   }
 	   

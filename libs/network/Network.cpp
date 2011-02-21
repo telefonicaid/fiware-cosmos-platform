@@ -43,7 +43,7 @@
 #include "HostMgr.h"            // HostMgr
 #include "Network.h"            // Own interface
 
-
+#include "samson/Log.h"			// LogLineData
 
 /* ****************************************************************************
 *
@@ -122,7 +122,7 @@ static void logHookInit(struct sockaddr_in* sinP)
 static void logHookFunction(void* vP, char* text, char type, const char* date, const char* file, int lineNo, const char* fName, int tLev, const char* stre)
 {
 	Message::Header       header;
-	Message::LogLineData  logLine;
+	ss::LogLineData  logLine;
 	Network*              networkP = (Network*) vP;
 	Endpoint*             supervisor;
 	Endpoint*             me;

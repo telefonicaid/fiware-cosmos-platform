@@ -1,4 +1,5 @@
 SET (HEADERS
+        samson/samson.h
 	samson/Data.h
 	samson/DataInstance.h
 	samson/Factory.h
@@ -15,6 +16,7 @@ SET (HEADERS
 	samson/samsonTypes.h
 	samson/var_int.h
 	samson/samsonVersion.h 
+	samson/Log.h
 )
 
 

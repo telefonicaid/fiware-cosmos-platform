@@ -128,7 +128,7 @@ namespace ss
 			file << "\n";
 			file << "\n";
 			
-			file << "#include <samson/Operation.h>\n";
+			file << "#include <samson/samson.h>\n";
 			
 			file << "\n";
 			file << "\n";

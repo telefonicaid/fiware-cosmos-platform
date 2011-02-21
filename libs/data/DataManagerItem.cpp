@@ -8,6 +8,6 @@ namespace ss {
 	{
 		
 		for (size_t i = 0 ; i < command.size() ; i++)
-			manager->_run( command[i] );
+			manager->_run( task_id, command[i] );
 	}
 }

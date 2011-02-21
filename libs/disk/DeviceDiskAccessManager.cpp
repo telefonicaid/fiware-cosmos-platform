@@ -103,8 +103,11 @@ namespace ss {
 		if( o->mode == "w" )
 		{
 			// Create a new file
-
-			FILE *file = fopen( o->fileName.c_str() , "w" );
+			
+			std::ostringstream fn;
+			fn << SamsonSetup::shared()->dataDirectory << "/" << o->fileName;
+			
+			FILE *file = fopen( fn.str().c_str() , "w" );
 			assert( file );
 			
 			if( fwrite(o->buffer->getData(), o->size, 1 , file) == 1 )
@@ -128,7 +131,10 @@ namespace ss {
 			//FileAccess *file = new FileAccess( o->fileName , o->mode );
 			//result = file->read(o->read_buffer, o->offset , o->size);
 			
-			FILE *file = fopen( o->fileName.c_str() , "r" );
+			std::ostringstream fn;
+			fn << SamsonSetup::shared()->dataDirectory << "/" << o->fileName;
+			
+			FILE *file = fopen(fn.str().c_str() , "r" );
 			assert(file);
 
 			fseek(file, o->offset, SEEK_SET);				// Seek to the rigth offset

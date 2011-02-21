@@ -25,12 +25,12 @@ namespace ss
 	{
 		LogFile file;							// File to write
 		size_t task_counter;					// Internal counter to give new task ids
-		
-		std::set<size_t> active_tasks;			// Set of active tasks ( to ingnore non active tasks commands )
+
 		
 	protected:
 		
 		au::Lock lock;							// Lock to protect multi-thread
+		std::set<size_t> active_tasks;			// Set of active tasks ( to ignore non active tasks commands )
 		
 	public:
 		
@@ -92,7 +92,10 @@ namespace ss
 		 */
 
 		virtual void _clear()=0;
-		virtual DataManagerCommandResponse _run( std::string command )=0;
+		virtual void _beginTask( size_t task )=0;
+		virtual void _cancelTask( size_t task )=0;
+		virtual void _finishTask( size_t task )=0;
+		virtual DataManagerCommandResponse _run( size_t task , std::string command )=0;
 
 		
 	private:

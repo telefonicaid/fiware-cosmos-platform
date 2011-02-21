@@ -20,7 +20,57 @@
 
 namespace ss {
 	
-	DataManagerCommandResponse ControllerDataManager::_run( std::string command )
+	
+	void ActiveTask::addFiles( Queue *q )
+	{
+		// Add the files from this queue
+		for ( std::list< QueueFile* >::iterator i = q->files.begin() ; i != q->files.end() ; i++)
+			files.insert( (*i)->fileName );
+	}
+	
+
+#pragma mark ----
+	
+	void ControllerDataManager::_beginTask( size_t task )
+	{
+		//Create the structure for this task
+		
+		ActiveTask* active_task = tasks.extractFromMap( task );
+		if( active_task )
+			delete active_task;
+		
+		tasks.insertInMap( task , new ActiveTask() );
+	}
+	
+	void ControllerDataManager::_cancelTask( size_t task )
+	{
+		// Extract the list of files for this operation
+		ActiveTask* active_task = tasks.extractFromMap( task );
+		if( active_task )
+			delete active_task;
+	}
+	
+	void ControllerDataManager::_finishTask( size_t task )
+	{
+		// Extract the list of files for this operation
+		ActiveTask* active_task = tasks.extractFromMap( task );
+		if( active_task )
+			delete active_task;
+	}
+	
+	void ControllerDataManager::_clear(  )
+	{
+		info_kvs.clear();
+		info_txt.clear();
+		
+		queues.clearMap();
+		automatic_operations_manager.clear();
+		tasks.clearMap();
+		
+	}
+	
+	
+	DataManagerCommandResponse ControllerDataManager::_run( size_t task_id, std::string command )
 	{
 		DataManagerCommandResponse response;
 		
@@ -215,6 +265,7 @@ namespace ss {
 
 		if( commandLine.isArgumentValue(0, "remove_all" , "remove_all" ) )
 		{
+			// Not controlled files to not be removed
 			
 			queues.clear();
 			
@@ -256,6 +307,11 @@ namespace ss {
 				}
 				else
 				{
+					// Add the removed files to the associated list to be preserved until the task is not completed
+					ActiveTask *at = tasks.findInMap( task_id );
+					if(at)
+						at->addFiles( tmp );
+					
 					delete tmp;
 				}
 			}
@@ -289,7 +345,14 @@ namespace ss {
 					return response;
 				}
 				else
+				{
+					// Protect this files until task is confirmed
+					ActiveTask *at = tasks.findInMap( task_id );
+					if(at)
+						at->addFiles( tmp );
+					
 					tmp->clear();
+				}
 			}
 			
 			response.output = "OK";
@@ -534,14 +597,6 @@ namespace ss {
 		return response;
 	}
 	
-	void ControllerDataManager::_clear(  )
-	{
-		info_kvs.clear();
-		info_txt.clear();
-
-		queues.clearMap();
-		automatic_operations_manager.clear();
-	}
 	
 	
 	std::string ControllerDataManager::getLogFileName(   )
@@ -612,7 +667,15 @@ namespace ss {
 				}
 			}
 			
-			
+		}
+
+		// List of active tasks ( list of files that should not be removed )
+		std::map< size_t , ActiveTask*>::iterator t;
+		for (t = tasks.begin() ; t!= tasks.end() ;t++)
+		{
+			network::ActiveTask* at = ql->add_tasks();
+			for ( std::set<std::string>::iterator f = (t->second)->files.begin() ; f != (t->second)->files.begin() ; f++)
+				at->add_filename( *f );
 		}
 		
 		

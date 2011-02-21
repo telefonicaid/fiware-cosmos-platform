@@ -2,6 +2,9 @@
 
 #include "logMsg.h"                     // lmInit, LM_*
 #include "traceLevels.h"                // Trace Levels
+#include <dlfcn.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 #include "Message.h"                    // Message
 #include "Macros.h"                     // EXIT, ...
@@ -56,7 +59,22 @@ void SamsonWorker::runStatusUpdate()
 	while (true)
 	{
 		if( network->ready() )
+		{
 			sendWorkerStatus();
+
+			// Send a message to receive a complete list of the queues ( to remove old files )
+			{
+				Packet*           p = new Packet();
+				network::Command* c = p->message.mutable_command();
+				c->set_command( "ls" );
+				p->message.set_delilah_id( 0 ); // At the moment no sence at the controller
+				//copyEnviroment( &environment , c->mutable_environment() );
+				network->send(this, network->controllerGetIdentifier(), Message::Command, p);
+			}
+			
+			
+			
+		}
 		sleep(3);
 	}
 	
@@ -108,6 +126,15 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		return 0;
 	}
 
+	
+	// List of local file ( remove unnecessary files )
+	if (msgCode == Message::CommandResponse)
+	{
+		processListOfFiles( packet->message.command_response().queue_list() );
+		return 0;
+	}
+
+	
 	// Load data files to be latter confirmed to controller
 	if (msgCode == Message::UploadData)
 	{
@@ -160,4 +187,80 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	return 0;
 	}
 
+	
+	void SamsonWorker::processListOfFiles( const ::ss::network::QueueList& ql)
+	{
+		// Generate list of local files ( to not remove them )
+		std::set<std::string> files;
+		std::set<size_t> active_tasks;
+		
+		for (int q = 0 ; q < ql.queue_size() ; q++)
+		{
+			const network::FullQueue& queue = ql.queue(q);
+			for (int f = 0 ; f < queue.file_size() ; f++)
+			{
+				const network::File &file =  queue.file(f);
+				if( file.worker() == _myWorkerId )
+				{
+					files.insert( file.name() );
+				}
+			}
+		}
+
+		// Get the files from the active tasks to not remove them
+		for (int t = 0 ; t < ql.tasks_size() ; t++)
+			for (int f = 0 ; f < ql.tasks(t).filename_size() ; f++)
+				files.insert( ql.tasks(t).filename(f)  );
+		
+		
+		// Get the list of files to be removed
+		
+		std::set< std::string > remove_files;
+		
+		DIR *dp;
+		struct dirent *dirp;
+		if((dp  = opendir( SamsonSetup::shared()->dataDirectory.c_str() )) == NULL) {
+
+			// LOG and error to indicate that data directory cannot be access
+			return;
+		}
+		
+		while ((dirp = readdir(dp)) != NULL) {
+			
+			std::string path = SamsonSetup::shared()->dataDirectory + "/" + dirp->d_name;
+			
+			struct ::stat info;
+			stat(path.c_str(), &info);
+			
+			if( S_ISREG(info.st_mode) )
+			{
+				// Get the task from the file name 
+				std::string file_name = dirp->d_name;
+				size_t pos = file_name.find("_");
+				size_t task = 0;
+				if( pos != std::string::npos )
+					task = atoll( file_name.substr( 0 , pos ).c_str() );
+				
+				if( files.find( file_name ) == files.end() )
+				{
+					// If the file is not in the list remove this
+					remove_files.insert( path );
+				}
+				
+			}
+			
+		}
+		closedir(dp);
+		
+		// Remove the selected files
+		for ( std::set< std::string >::iterator f = remove_files.begin() ; f != remove_files.end() ; f++)
+		{
+			LM_TODO(("Check if the remove operation was OK"));
+			remove( f->c_str() );
+		}
+		
+		
+	}
+
+	
 }

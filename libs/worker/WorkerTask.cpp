@@ -609,11 +609,17 @@ namespace ss
 		
 #pragma mark FileName
 	
+	// Get a new file Name for a file
 	
 	std::string WorkerTask::newFileName( std::string queue )
 	{
 		std::ostringstream fileName;
-		fileName << SamsonSetup::shared()->dataDirectory << "/" << "file_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000;
+		
+		int worker_id = taskManager->worker->_myWorkerId; 
+		
+		//fileName << SamsonSetup::shared()->dataDirectory << "/" << "file_" << worker_id << "_" << task_id << "_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000;
+		fileName << worker_id << "_" << task_id << "_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000 << rand()%10000;
+		
 		return fileName.str();
 	}
 	

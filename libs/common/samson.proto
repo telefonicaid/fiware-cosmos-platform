@@ -139,11 +139,17 @@ message WorkerStatus
 
 }
 
+message ActiveTask
+{
+	repeated string fileName=1;	// List of files for this task
+}
+
 // Lists of elements
 
 message QueueList
 {
-	repeated FullQueue queue = 1;
+	repeated FullQueue queue = 1;      // List of queues with its files
+	repeated ActiveTask tasks = 2;    // List of active tasks ( files associated with this tasks can not be removed at workers )
 }
 
 message DataList

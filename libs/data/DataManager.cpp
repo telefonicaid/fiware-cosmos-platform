@@ -18,8 +18,7 @@ namespace ss {
 
 	DataManager::DataManager( std::string  fileName  ) : file( fileName ) 
 	{
-		task_counter = 0;
-		
+		task_counter = 1;
 		// Open in write mode
 		if( !file.openToAppend( ) )
 		{
@@ -67,7 +66,10 @@ namespace ss {
 						// Create the task item to run
 						DataManagerItem *item = task.findInMap( task_id );
 						if( !item )
+						{
 							task.insertInMap( task_id  , new DataManagerItem( task_id ) );
+							_beginTask(task_id);
+						}
 					}
 						break;
 					case data::Command_Action_Finish:
@@ -76,6 +78,9 @@ namespace ss {
 						DataManagerItem *item = task.extractFromMap( task_id );
 						item->run(this);
 						delete item;
+						
+						_finishTask(task_id);
+
 					}
 						break;
 					case data::Command_Action_Cancel:
@@ -83,6 +88,9 @@ namespace ss {
 						// Extract the item but no run any of them
 						DataManagerItem *item = task.extractFromMap( task_id );
 						delete item;
+						
+						_cancelTask(task_id);
+
 					}
 						break;
 						
@@ -150,6 +158,8 @@ namespace ss {
 			file.write( task_id , command , data::Command_Action_Begin  );
 		}
 		
+		_beginTask(task_id);
+		
 		lock.unlock();
 	}
 	
@@ -162,6 +172,8 @@ namespace ss {
 			active_tasks.erase( task_id );
 			file.write( task_id , "" , data::Command_Action_Finish  );
 		}
+		
+		_finishTask(task_id);
 		
 		lock.unlock();
 	}
@@ -208,7 +220,7 @@ namespace ss {
 		
 		if( active_tasks.find( task_id ) != active_tasks.end() )
 		{
-			ans = _run( command );
+			ans = _run( task_id, command );
 			file.write( task_id , command ,data::Command_Action_Operation );
 			
 			// Log the answer for debugging

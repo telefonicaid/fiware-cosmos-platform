@@ -33,6 +33,7 @@ namespace ss {
 		 */
 		
 		friend class Monitor;
+		friend class ActiveTask;
 		MonitorBlock monitor;				// Set of parameters to monitor for this queue
 
 		friend class ControllerDataManager;

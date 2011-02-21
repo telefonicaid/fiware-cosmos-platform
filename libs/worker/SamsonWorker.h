@@ -22,6 +22,7 @@
 #include "DataBuffer.h"			// ss::DataBuffer
 #include "LoadDataManager.h"	// ss::LoadDataManager
 #include "Status.h"				// au::Status
+#include "samson.pb.h"			// ss::network::
 
 namespace ss {
 	
@@ -53,6 +54,9 @@ namespace ss {
 		
 		// Nothing function to avoid warning
 		void touch(){};	
+		
+		// Process list of files ( to remove unnecessary files )
+		void processListOfFiles( const network::QueueList& ql);
 		
 	private:
 		

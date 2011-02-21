@@ -23,6 +23,15 @@ namespace ss {
 	class ControllerTaskInfo;
 	class QueueAutomaticOperation;
 	
+	class ActiveTask
+	{
+	public:
+		std::set<std::string> files;		// List of files to not delete from disk
+		
+		void addFiles( Queue *q );			// Add all the files of this queue to the list of protected files
+		
+	};
+	
 	/**
 	 Data manager at the controller
 	 */
@@ -35,6 +44,8 @@ namespace ss {
 		FileKVInfo info_txt;										// Global info of the entire system ( txt files )
 		
 		au::map< std::string , Queue> queues;						// List of ALL KeyValue queues
+		
+		au::map< size_t , ActiveTask > tasks;						// List of active tasks ( information about the files that should not be deleted )
 		
 		AutomaticOperationManager automatic_operations_manager;		// Manager of automatic operations
 		
@@ -102,8 +113,10 @@ namespace ss {
 		void _retreveInfoForTask( ControllerTaskInfo *info );		
 		
 		virtual void _clear();
-		virtual DataManagerCommandResponse _run( std::string command );
-		
+		virtual DataManagerCommandResponse _run( size_t task, std::string command );
+		virtual void _beginTask( size_t task );
+		virtual void _cancelTask( size_t task );
+		virtual void _finishTask( size_t task );
 		
 		
 	};

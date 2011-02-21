@@ -105,7 +105,7 @@ public:
 
 	void         msgPreTreat(Endpoint* ep, int endpointId);
 	void         msgTreat(void* vP);
-	void         controllerMsgTreat(Endpoint* ep, Message::MessageCode msgCode, Message::MessageType msgType, void* dataP, int dataLen, Packet* packetP);
+	void         controllerMsgTreat(Endpoint* ep, int endpointId, Message::Header* headerP, void* dataP, int dataLen, Packet* packetP);
 	std::string  getState(std::string selector);
 
 

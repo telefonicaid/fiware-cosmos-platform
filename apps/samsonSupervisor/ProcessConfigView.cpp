@@ -78,29 +78,24 @@ ProcessConfigView::~ProcessConfigView()
 
 
 
-extern void workerUpdate(ss::Message::Worker* workerDataP);
 /* ****************************************************************************
 *
-* ProcessConfigView::ProcessConfigView - 
+* init - 
 */
-ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process)
+void ProcessConfigView::init(QGridLayout* grid, Process* process)
 {
-	char                      processName[256];
-	QFont                     labelFont("Times", 18, QFont::Normal);
-	QFont                     traceFont("Helvetica", 10, QFont::Normal);
-	void*                     dataP = NULL;
-	int                       s;
-	ss::Message::Header       header;
-	ss::Message::MessageCode  code;
-	ss::Message::MessageType  type;
-	int                       dataLen;
-	ss::Endpoint*             endpoint  = process->endpoint;
-	bool                      allFilled    = false;
-	bool                      hostEditable = false;
+	ss::Endpoint*  endpoint = process->endpoint;
+	char           processName[256];
+	QFont          labelFont("Times", 18, QFont::Normal);
+	QFont          traceFont("Helvetica", 10, QFont::Normal);
 
-	this->grid    = grid;
-	this->process = process;
+	this->grid         = grid;
+	this->process      = process;
+	this->hostEditable = false;
 
+	ahLayout   = NULL;
+	hostLabel  = NULL;
+	hostEdit   = NULL;
 
 	if ((process->alias != NULL) && (process->alias[0] != 0))
 	{
@@ -176,145 +171,72 @@ ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process)
 	// traceLevelList->adjustSize();
 	traceLevelList->setFixedWidth(400);
 	traceLevelList->setFixedHeight(500);
+}
 
-	memset(&header, 0, sizeof(header));
 
-	if ((endpoint != NULL) && (endpoint->state == ss::Endpoint::Connected))
-	{
-		s = iomMsgSend(endpoint, networkP->endpoint[0], ss::Message::ConfigGet, ss::Message::Msg);
 
-		if (s != 0)
-		{
-			LM_E(("iomMsgSend error: %d", s));
-			goto fill;
-		}
+extern void workerUpdate(ss::Message::Worker* workerDataP);
+/* ****************************************************************************
+*
+* ProcessConfigView::ProcessConfigView - 
+*/
+ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process, ss::Message::ConfigData* configData)
+{
+	init(grid, process);
 
-		s = iomMsgAwait(endpoint->rFd, 2, 0);
-		if (s != 1)
-		{
-			LM_E(("iomMsgAwait error: %d", s));
-			goto fill;
-		}
-
-		s = iomMsgPartRead(endpoint, "header", (char*) &header, sizeof(header));
-		if (s != sizeof(header))
-		{
-			LM_E(("Bad length of header read (read len: %d)", s));
-			goto fill;
-		}
-
-		ss::Message::ConfigData  configData;
-		ss::Message::ConfigData* configDataP;
-				
-		dataP   = &configData;
-		dataLen = sizeof(configData);
-
-		s = iomMsgRead(endpoint, &header, &code, &type, &dataP, &dataLen);
-		configDataP = (ss::Message::ConfigData*) dataP;
-		if (s != 0)
-		{
-			LM_E(("iomMsgRead returned %d", s));
-			goto fill;
-		}
-
-		// Fill checkboxes and trace levels according to 'dataP' contents
-		if (dataP == NULL)
-		{
-			LM_E(("iomMsgRead didn't fill the data pointer ..."));
-			goto fill;
-		}
-
-		verboseBox->setCheckState((configDataP->verbose == true)? Qt::Checked : Qt::Unchecked);
-		debugBox->setCheckState((configDataP->debug     == true)? Qt::Checked : Qt::Unchecked);
-		readsBox->setCheckState((configDataP->reads     == true)? Qt::Checked : Qt::Unchecked);
-		writesBox->setCheckState((configDataP->writes   == true)? Qt::Checked : Qt::Unchecked);
-		toDoBox->setCheckState((configDataP->toDo       == true)? Qt::Checked : Qt::Unchecked);
+	verboseBox->setCheckState((configData->verbose == true)? Qt::Checked : Qt::Unchecked);
+	debugBox->setCheckState((configData->debug     == true)? Qt::Checked : Qt::Unchecked);
+	readsBox->setCheckState((configData->reads     == true)? Qt::Checked : Qt::Unchecked);
+	writesBox->setCheckState((configData->writes   == true)? Qt::Checked : Qt::Unchecked);
+	toDoBox->setCheckState((configData->toDo       == true)? Qt::Checked : Qt::Unchecked);
 						
-		for (int ix = 0; ix < TRACE_LEVELS; ix++)
-		{
-			if (traceLevelItem[ix])
-				traceLevelItem[ix]->setCheckState((configDataP->traceLevels[ix] == true)? Qt::Checked : Qt::Unchecked);
-		}
-		
-		allFilled = true;
-	}
-	else
+	for (int ix = 0; ix < TRACE_LEVELS; ix++)
 	{
-		// Asking controller for configuration
-		if ((networkP->endpoint[2] == NULL) || (networkP->endpoint[2]->state != ss::Endpoint::Connected))
-		{
-			LM_W(("Not connected to controller"));
-			goto fill;
-		}
-
-		LM_M(("Asking samsonController for WorkerConfig for process '%s'", process->alias));
-		s = iomMsgSend(networkP->endpoint[2], networkP->endpoint[0], ss::Message::WorkerConfigGet, ss::Message::Msg, process->alias, 32);
-
-		if (s != 0)
-		{
-			LM_E(("iomMsgSend error: %d", s));
-			goto fill;
-		}
-
-		s = iomMsgAwait(networkP->endpoint[2]->rFd, 2, 0);
-		if (s != 1)
-		{
-			LM_E(("iomMsgAwait error: %d", s));
-			goto fill;
-		}
-
-		s = iomMsgPartRead(networkP->endpoint[2], "header", (char*) &header, sizeof(header));
-		if (s != sizeof(header))
-		{
-			LM_E(("Bad length of header read (read len: %d)", s));
-			goto fill;
-		}
-
-		ss::Message::Worker  worker;
-		ss::Message::Worker* workerP;
-				
-		dataP   = &worker;
-		dataLen = sizeof(worker);
-
-		s = iomMsgRead(networkP->endpoint[2], &header, &code, &type, &dataP, &dataLen);
-		workerP = (ss::Message::Worker*) dataP;
-		if (s != 0)
-		{
-			LM_E(("iomMsgRead returned %d", s));
-			goto fill;
-		}
-
-		workerUpdate(workerP);
-
-		if ((process->host == NULL) || (process->host[0] == 0) || (strcmp(process->host, "ip") == 0))
-		{
-			LM_M(("Setting host name '%s' to '%s'", process->host, workerP->ip));
-			process->host = strdup(workerP->ip);
-		}
-
-		// Fill checkboxes and trace levels according to 'dataP' contents
-		if (dataP == NULL)
-		{
-			LM_E(("iomMsgRead didn't fill the data pointer ..."));
-			goto fill;
-		}
-
-		verboseBox->setCheckState((workerP->verbose == true)? Qt::Checked : Qt::Unchecked);
-		debugBox->setCheckState((workerP->debug     == true)? Qt::Checked : Qt::Unchecked);
-		readsBox->setCheckState((workerP->reads     == true)? Qt::Checked : Qt::Unchecked);
-		writesBox->setCheckState((workerP->writes   == true)? Qt::Checked : Qt::Unchecked);
-		toDoBox->setCheckState((workerP->toDo       == true)? Qt::Checked : Qt::Unchecked);
-						
-		for (int ix = 0; ix < TRACE_LEVELS; ix++)
-		{
-			if (traceLevelItem[ix])
-				traceLevelItem[ix]->setCheckState((workerP->traceV[ix] == true)? Qt::Checked : Qt::Unchecked);
-		}
-
-		allFilled = true;
+	   if (traceLevelItem[ix])
+		  traceLevelItem[ix]->setCheckState((configData->traceLevels[ix] == true)? Qt::Checked : Qt::Unchecked);
 	}
 
-fill:
+	fill(grid, process, false);
+}
+
+
+
+/* ****************************************************************************
+*
+* ProcessConfigView::ProcessConfigView - 
+*/
+ProcessConfigView::ProcessConfigView(QGridLayout* grid, Process* process, ss::Message::Worker* workerP)
+{
+	init(grid, process);
+
+	workerUpdate(workerP);
+
+	if ((process->host == NULL) || (process->host[0] == 0) || (strcmp(process->host, "ip") == 0))
+		process->host = strdup(workerP->ip);
+
+	verboseBox->setCheckState((workerP->verbose == true)? Qt::Checked : Qt::Unchecked);
+	debugBox->setCheckState((workerP->debug     == true)? Qt::Checked : Qt::Unchecked);
+	readsBox->setCheckState((workerP->reads     == true)? Qt::Checked : Qt::Unchecked);
+	writesBox->setCheckState((workerP->writes   == true)? Qt::Checked : Qt::Unchecked);
+	toDoBox->setCheckState((workerP->toDo       == true)? Qt::Checked : Qt::Unchecked);
+						
+	for (int ix = 0; ix < TRACE_LEVELS; ix++)
+	{
+		if (traceLevelItem[ix])
+			traceLevelItem[ix]->setCheckState((workerP->traceV[ix] == true)? Qt::Checked : Qt::Unchecked);
+	}
+
+	fill(grid, process, false);
+}
+
+
+
+/* ****************************************************************************
+*
+* fill - 
+*/
+void ProcessConfigView::fill(QGridLayout* grid, Process* process, bool allFilled)
+{
 	if (allFilled == false)
 	{
 		verboseBox->setCheckState(Qt::Unchecked);
@@ -322,17 +244,15 @@ fill:
 		readsBox->setCheckState(Qt::Unchecked);
 		writesBox->setCheckState(Qt::Unchecked);
 		toDoBox->setCheckState(Qt::Unchecked);
-						
+
 		for (int ix = 0; ix < TRACE_LEVELS; ix++)
 		{
 			if (traceLevelItem[ix])
 				traceLevelItem[ix]->setCheckState(Qt::Unchecked);
 		}
 	}
-
-	ahLayout   = NULL;
-	hostLabel  = NULL;
-	hostEdit   = NULL;
+	else
+		LM_X(1, ("all filled == TRUE"));
 
 	if (hostEditable == true)
 	{
@@ -349,9 +269,6 @@ fill:
 		ahLayout->addStretch(500);
 
 		layout->addLayout(ahLayout);
-	}
-	else if (strcmp(process->name, "Controller") == 0)
-	{
 	}
 }
 
@@ -460,10 +377,7 @@ void ProcessConfigView::save(void)
 
 			hostP = networkP->hostMgr->lookup(host);
 			if (hostP != NULL)
-			{
-				LM_M(("Found host '%s' in my host list. Name: '%s'", host, hostP->name));
 				host = hostP->name;
-			}
 			
 			if ((host != NULL) && (processLookup(process->name, host) != NULL))
 			{
@@ -527,7 +441,6 @@ void ProcessConfigView::save(void)
 
 	if ((networkP->endpoint[2] != NULL) && (networkP->endpoint[2]->state == ss::Endpoint::Connected))
 	{
-		LM_M(("Sending %d bytes of ConfigSet data to controller", sizeof(configData)));
 		s = iomMsgSend(networkP->endpoint[2], networkP->endpoint[0], ss::Message::ConfigChange, ss::Message::Msg, &configData, sizeof(configData));
 		if (s != 0)
 			LM_E(("iomMsgSend returned %d", s));

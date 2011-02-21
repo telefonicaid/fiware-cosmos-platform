@@ -43,10 +43,16 @@ class ProcessConfigView : public QWidget
 	Q_OBJECT
 
 public:
-	ProcessConfigView(QGridLayout* grid, Process* process);
+	ProcessConfigView(QGridLayout* grid, Process* process, ss::Message::ConfigData* configData);
+	ProcessConfigView(QGridLayout* grid, Process* process, ss::Message::Worker*     workerP);
 	~ProcessConfigView();
 
+	void init(QGridLayout* grid, Process* process);
+	void fill(QGridLayout* grid, Process* process, bool allFilled);
+
 	Process*          process;
+	bool              hostEditable;
+
 private:
     bool              allTraceLevelsState;
 

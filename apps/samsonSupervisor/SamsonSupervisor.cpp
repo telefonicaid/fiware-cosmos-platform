@@ -70,19 +70,23 @@ void workerUpdate(ss::Message::Worker* workerDataP)
 		LM_RVE(("Cannot find worker '%s'", workerDataP->alias));
 
 	memcpy(worker, workerDataP, sizeof(ss::Message::Worker));
-	LM_M(("Updated worker '%s' in local worker vec (host: '%s')", worker->alias, worker->ip));
+	LM_T(LmtWorker, ("Updated worker '%s' in local worker vec (host: '%s')", worker->alias, worker->ip));
 }
 
 
 
+extern Process*     processToBeConfigured;
+extern QGridLayout* gridForProcessToBeConfigured;
 /* ****************************************************************************
 *
 * SamsonSupervisor::receive - 
 */
 int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP)
 {
-	ss::Endpoint* ep = networkP->endpointLookup(fromId);
-
+	ss::Endpoint*             ep = networkP->endpointLookup(fromId);
+	ss::Message::ConfigData*  configDataP;
+	ss::Message::Worker*      workerP;
+	
 	if (ep == NULL)
 		LM_RE(0, ("Cannot find endpoint with id %d", fromId));
 
@@ -91,6 +95,26 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 
 	switch (headerP->code)
 	{
+	case ss::Message::ConfigGet:
+		configDataP = (ss::Message::ConfigData*) dataP;
+
+		if (headerP->type != ss::Message::Ack)
+			LM_X(1, ("Bad msg type '%d'", headerP->type));
+
+		tabManager->processListTab->configView = new ProcessConfigView(gridForProcessToBeConfigured, processToBeConfigured, configDataP);
+		LM_M(("Set configView to %p", tabManager->processListTab->configView));
+		break;
+
+	case ss::Message::WorkerConfigGet:
+		workerP = (ss::Message::Worker*) dataP;
+
+		if (headerP->type != ss::Message::Ack)
+			LM_X(1, ("Bad msg type '%d'", headerP->type));
+
+		tabManager->processListTab->configView = new ProcessConfigView(gridForProcessToBeConfigured, processToBeConfigured, workerP);
+		LM_M(("Set configView to %p", tabManager->processListTab->configView));
+		break;
+
 	case ss::Message::WorkerSpawn:
 	case ss::Message::ControllerSpawn:
 
@@ -221,8 +245,8 @@ static char* hostForWorker(ss::Message::Worker* workerP, int* argsP, char** argV
 
 	if (strcmp(host, "II.PP") == 0)
 	{
-		LM_M(("Worker '%s' has no valid IP - thus has never connected to Controller.", workerP->alias));
-		LM_M(("Must consult Config File (platformProcesses) to get its IP"));
+		LM_T(LmtWorker, ("Worker '%s' has no valid IP - thus has never connected to Controller.", workerP->alias));
+		LM_T(LmtWorker, ("Must consult Config File (platformProcesses) to get its IP"));
 		if (configFileParseByAlias(workerP->alias, xhost, processName, argsP, argV) != 0)
 		{
 			snprintf(eText, sizeof(eText), "Controller reports an unknown future worker, aliased '%s'\n"
@@ -260,7 +284,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 	ss::Endpoint*         ep;
 	int                   size;
 
-	LM_M(("Got Worker Vector from Controller (with %d workers)", wvDataP->workers));
+	LM_T(LmtWorkerVector, ("Got Worker Vector from Controller (with %d workers)", wvDataP->workers));
 	size      = sizeof(ss::Message::WorkerVectorData) + wvDataP->workers * sizeof(ss::Message::Worker);
 	workerVec = (ss::Message::WorkerVectorData*) malloc(size);
 	memset(workerVec, 0, size);
@@ -269,12 +293,12 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 	for (int ix = 0; ix < wvDataP->workers; ix++)
 	{
 		worker = &wvDataP->workerV[ix];
-		LM_M(("Worker %d (name: '%s', alias: '%s') in host %s", ix, worker->name, worker->alias, worker->ip));
+		LM_T(LmtWorkerVector, ("Worker %d (name: '%s', alias: '%s') in host %s", ix, worker->name, worker->alias, worker->ip));
 	}
 
 	for (int ix = 0; ix < wvDataP->workers; ix++)
 	{
-		LM_M(("Create a Starter for endpoint '%s@%s' (unless it already exists ...)", worker->alias, worker->ip));
+		LM_T(LmtWorkerVector, ("Create a Starter for endpoint '%s@%s' (unless it already exists ...)", worker->alias, worker->ip));
 		worker = &wvDataP->workerV[ix];
 		host   = worker->ip;
 
@@ -295,7 +319,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 				continue;
 			}
 
-			LM_M(("Worker %d is totally unconfigured - adding it a process and starter", ix));
+			LM_T(LmtWorkerVector, ("Worker %d is totally unconfigured - adding it a process and starter", ix));
 			process = processAdd("Worker", "ip", WORKER_PORT, worker->alias, NULL, NULL, 0);
 
 			starter = starterAdd(process);
@@ -308,9 +332,9 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 			continue;
 		}
 
-		LM_M(("Now I really have the IP for the worker (and its Spawner ...): '%s'", host));
-		LM_M(("Lets lookup spawner, process, and starter for this worker (aliased '%s')", worker->alias));
-		LM_M(("But we start with looking up the network endpoint for the spawner in '%s'", host));
+		LM_T(LmtWorkerVector, ("Now I really have the IP for the worker (and its Spawner ...): '%s'", host));
+		LM_T(LmtWorkerVector, ("Lets lookup spawner, process, and starter for this worker (aliased '%s')", worker->alias));
+		LM_T(LmtWorkerVector, ("But we start with looking up the network endpoint for the spawner in '%s'", host));
 
 		hostP = networkP->hostMgr->lookup(host);
 		if (hostP == NULL)
@@ -323,16 +347,16 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 			fd = iomConnect(host, SPAWNER_PORT);
 			ep = networkP->endpointAdd("unconnected spawner for workerVector", fd, fd, "Spawner", "Spawner", 0, ss::Endpoint::Spawner, hostP->name, SPAWNER_PORT);
 
-			LM_M(("Now, adding this spawner as a process in our lists"));
+			LM_T(LmtWorkerVector, ("Now, adding this spawner as a process in our lists"));
 			spawner = spawnerAdd("Spawner", hostP->name, SPAWNER_PORT, ep);
 		}
 		else
 		{
-			LM_M(("We are connected to the spawner, now lets see if we have it in our process list"));
+			LM_T(LmtWorkerVector, ("We are connected to the spawner, now lets see if we have it in our process list"));
 			spawner = spawnerLookup(hostP->name);
 			if (spawner == NULL)
 			{
-				LM_M(("Nope, not there, I better add it ..."));
+				LM_T(LmtWorkerVector, ("Nope, not there, I better add it ..."));
 				spawner = spawnerAdd("Spawner", hostP->name, SPAWNER_PORT, ep);
 			}
 		}
@@ -340,11 +364,11 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 		if (spawner == NULL)
 			LM_X(1, ("NULL spawner - this is a SW bug. Probably Ken's first bug ever!"));
 
-		LM_M(("Now, we're connected to the spawner and it is added to out process list - does it have a starter ?"));
+		LM_T(LmtWorkerVector, ("Now, we're connected to the spawner and it is added to out process list - does it have a starter ?"));
 		starter = starterLookup(ep);
 		if (starter == NULL)
 		{
-			LM_M(("Creating starter for spawner in '%s'", hostP->name));
+			LM_T(LmtWorkerVector, ("Creating starter for spawner in '%s'", hostP->name));
 			
 			starter = starterAdd(spawner);
 			if (starter == NULL)
@@ -354,31 +378,31 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 				tabManager->processListTab->starterInclude(starter);
 		}
 
-		LM_M(("OK, spawner complete - now the worker itself."));
+		LM_T(LmtWorkerVector, ("OK, spawner complete - now the worker itself."));
 
 
 
-		LM_M(("Let's see first if we're already connected to it"));
+		LM_T(LmtWorkerVector, ("Let's see first if we're already connected to it"));
 		ep = networkP->endpointLookup(ss::Endpoint::Worker, hostP);
 		if (ep == NULL)
 		{
-			LM_M(("Nope, not connected. Let's try to connect"));
+			LM_T(LmtWorkerVector, ("Nope, not connected. Let's try to connect"));
 			fd = iomConnect(host, WORKER_PORT);
 			ep = networkP->endpointAdd("unconnected worker in workerVector", fd, fd, "Worker", worker->alias, 0, ss::Endpoint::Worker, hostP->name, WORKER_PORT);
 		}
 		else
-			LM_M(("Yes, found the endpoint"));
+			LM_T(LmtWorkerVector, ("Yes, found the endpoint"));
 
-		LM_M(("Now, is this process in our process list ?"));
+		LM_T(LmtWorkerVector, ("Now, is this process in our process list ?"));
 		process = processLookup("Worker", hostP->name);
 		if (process == NULL)
 		{
-			LM_M(("Nope, not in the list - let's add it"));
+			LM_T(LmtWorkerVector, ("Nope, not in the list - let's add it"));
 			process = processAdd("Worker", hostP->name, WORKER_PORT, worker->alias, ep);
 		}
 		else
 		{
-			LM_M(("Process already existed, is its endpoint OK?"));
+			LM_T(LmtWorkerVector, ("Process already existed, is its endpoint OK?"));
 			if (process->endpoint != ep)
 			{
 				LM_W(("Strange, another endpoint ...  I change it to the new one!"));
@@ -387,17 +411,17 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 			}
 		}
 
-		LM_M(("Now, how is it started? Pues, via its spawner!"));
+		LM_T(LmtWorkerVector, ("Now, how is it started? Pues, via its spawner!"));
 		if (process->spawnInfo == NULL)
 			LM_X(1, ("No spawn info for a starter - a bug!"));
 		process->spawnInfo->spawnerP = spawner;
-		LM_M(("process complete - with spawner and everything!"));
+		LM_T(LmtWorkerVector, ("process complete - with spawner and everything!"));
 
-		LM_M(("OK, process there, now its starter ..."));
+		LM_T(LmtWorkerVector, ("OK, process there, now its starter ..."));
 		starter = starterLookup(ep);
 		if (starter == NULL)
 		{
-			LM_M(("No starter, let's create it ..."));
+			LM_T(LmtWorkerVector, ("No starter, let's create it ..."));
 
 			starter = starterAdd(process);
 			if (starter == NULL)
@@ -407,7 +431,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 				tabManager->processListTab->starterInclude(starter);
 		}
 		else
-			LM_M(("The starter for Worker@%s already existed ...", hostP->name));
+			LM_T(LmtWorkerVector, ("The starter for Worker@%s already existed ...", hostP->name));
 	}
 
 	LM_T(LmtWorkerVector, ("Treated worker vector with %d workers", wvDataP->workers));

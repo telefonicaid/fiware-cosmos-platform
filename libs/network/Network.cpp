@@ -107,22 +107,10 @@ static void logHookInit(struct sockaddr_in* sinP)
 	if (logSocket == -1)
 		LM_RVE(("socket: %s", strerror(errno)));
 
-	LM_M(("************ sinP: 0x%x", sinP->sin_addr.s_addr));
-
 	memset((char*) &logAddr, 0, sizeof(logAddr));
 	logAddr.sin_family = AF_INET;
 	logAddr.sin_port   = htons(LOG_MESSAGE_PORT);
 	memcpy(&logAddr.sin_addr, &sinP->sin_addr, sizeof(logAddr.sin_addr));
-	LM_M(("************ logAddr.sin_addr: 0x%x", logAddr.sin_addr.s_addr));
-
-#if 0
-	if (inet_aton(ip, &logAddr.sin_addr) == 0)
-	{
-		close(logSocket);
-		logSocket = -1;
-		LM_RVE(("inet_aton failed"));
-	}
-#endif
 }
 
 
@@ -972,8 +960,6 @@ static void inheritFrom(Endpoint* to, Endpoint* from)
 	to->ip             = from->ip;
 	to->startTime      = from->startTime;
 	
-	LM_M(("from->sockin: 0x%x (size: %d)", from->sockin.sin_addr.s_addr, sizeof(to->sockin)));
-
 	memcpy(&to->sockin, &from->sockin, sizeof(to->sockin));
 }
 
@@ -1048,18 +1034,11 @@ Endpoint* Network::endpointAddSupervisor(int rFd, int wFd, const char* name, con
 	if (endpoint[SUPERVISOR] == NULL)
 		endpoint[SUPERVISOR] = new Endpoint();
 
-	if (inheritedFrom)
-		LM_M(("Adding SUPERVISOR (sockin: 0x%x)", inheritedFrom->sockin.sin_addr.s_addr));
-	else
-		LM_M(("no inheritedFrom"));
-
 	endpointFill(endpoint[SUPERVISOR], inheritedFrom, rFd, wFd, name, alias, workers, ip, Endpoint::Supervisor, port, coreNo);
-	LM_M(("Adding SUPERVISOR (sockin: 0x%x)", endpoint[SUPERVISOR]->sockin.sin_addr.s_addr));
 
 	if (endpointUpdateReceiver != NULL)
 		endpointUpdateReceiver->endpointUpdate(endpoint[SUPERVISOR], Endpoint::SupervisorAdded, "Supervisor Added");
 
-	LM_M(("Adding SUPERVISOR (sockin: 0x%x)", endpoint[SUPERVISOR]->sockin.sin_addr.s_addr));
 	return endpoint[SUPERVISOR];
 }
 
@@ -1848,10 +1827,10 @@ Message::Worker* Network::workerVecLookup(const char* alias)
 		return NULL;
 	}
 
-	LM_M(("Comparing %d workers with alias '%s'", workerVec->workers, alias));
+	LM_T(LmtWorker, ("Comparing %d workers with alias '%s'", workerVec->workers, alias));
 	for (int ix = 0; ix < workerVec->workers; ix++)
 	{
-		LM_M(("Comparing '%s' to '%s'", workerVec->workerV[ix].alias, alias));
+		LM_T(LmtWorker, ("Comparing '%s' to '%s'", workerVec->workerV[ix].alias, alias));
 		if (strcmp(workerVec->workerV[ix].alias, alias) == 0)
 			return &workerVec->workerV[ix];
 	}
@@ -1870,17 +1849,19 @@ Message::Worker* Network::workerVecLookup(const char* alias)
 void Network::controllerMsgTreat
 (
 	Endpoint*             ep,
-	Message::MessageCode  msgCode,
-	Message::MessageType  msgType,
+	int                   endpointId,
+	Message::Header*      headerP,
 	void*                 dataP,
 	int                   dataLen,
 	Packet*               packetP
 )
 {
-	const char*           name   = ep->name.c_str();
-	Message::ConfigData*  config = (Message::ConfigData*) dataP;
+	const char*           name     = ep->name.c_str();
+	Message::ConfigData*  config   = (Message::ConfigData*) dataP;
 	Message::Worker*      worker;
-	char*                 alias  = (char*) dataP;
+	char*                 alias    = (char*) dataP;
+	Message::MessageCode  msgCode  = headerP->code;
+	Message::MessageType  msgType  = headerP->type;
 
 	LM_T(LmtMsgTreat, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
@@ -1890,23 +1871,29 @@ void Network::controllerMsgTreat
 		break;
 
 	case Message::WorkerConfigGet:
-		LM_M(("Asked for worker config for '%s'", alias));
-		worker = workerVecLookup(alias);
-		if (worker != NULL)
+		if (msgType == Message::Msg)
 		{
-			LM_T(LmtWrite, ("sending ack with worker '%s' to '%s'", alias, name));
-			iomMsgSend(ep, endpoint[ME], Message::WorkerVector, Message::Ack, worker, sizeof(Message::Worker));
+			LM_T(LmtWorker, ("Asked for worker config for '%s'", alias));
+			worker = workerVecLookup(alias);
+			if (worker != NULL)
+			{
+				LM_T(LmtWrite, ("sending ack with worker '%s' to '%s'", alias, name));
+				iomMsgSend(ep, endpoint[ME], msgCode, Message::Ack, worker, sizeof(Message::Worker));
+			}
+			else
+				iomMsgSend(ep, endpoint[ME], msgCode, Message::Nak, NULL, 0);
 		}
 		else
-			iomMsgSend(ep, endpoint[ME], Message::WorkerVector, Message::Nak, NULL, 0);
+		{
+			if (dataReceiver)
+				dataReceiver->receive(endpointId, 0, headerP, dataP);
+		}
 		break;
 
 	case Message::ConfigChange:
-		LM_M(("Got Configuration change for '%s' (host: '%s')", config->alias, config->host));
 		worker = workerVecLookup(config->alias);
 		if (worker != NULL)
 		{
-			LM_M(("found worker with alias '%s'", config->alias));
 			worker->verbose = config->verbose;
 			worker->debug   = config->debug;
 			worker->reads   = config->reads;
@@ -1929,7 +1916,7 @@ void Network::controllerMsgTreat
 		if (msgType != Message::Msg)
 			LM_X(1, ("Controller got an ACK for WorkerVector message"));
 		LM_T(LmtWrite, ("sending ack with entire worker vector to '%s'", name));
-		iomMsgSend(ep, endpoint[ME], Message::WorkerVector, Message::Ack, workerVec, workerVecSize);
+		iomMsgSend(ep, endpoint[ME], msgCode, Message::Ack, workerVec, workerVecSize);
 		break;
 
 	default:
@@ -2108,15 +2095,23 @@ void Network::msgTreat(void* vP)
 		break;
 
 	case Message::ConfigGet:
-		configData.verbose = lmVerbose;
-		configData.debug   = lmDebug;
-		configData.reads   = lmReads;
-		configData.writes  = lmWrites;
-		configData.toDo    = lmToDo;
-		for (int ix = 0; ix < 256; ix++)
-			configData.traceLevels[ix] = lmTraceIsSet(ix);
+		if (msgType == Message::Msg)
+		{
+			configData.verbose = lmVerbose;
+			configData.debug   = lmDebug;
+			configData.reads   = lmReads;
+			configData.writes  = lmWrites;
+			configData.toDo    = lmToDo;
+			for (int ix = 0; ix < 256; ix++)
+				configData.traceLevels[ix] = lmTraceIsSet(ix);
 
-		iomMsgSend(ep, endpoint[ME], Message::ConfigGet, Message::Ack, &configData, sizeof(configData));
+			iomMsgSend(ep, endpoint[ME], Message::ConfigGet, Message::Ack, &configData, sizeof(configData));
+		}
+		else
+		{
+			if (dataReceiver)
+				dataReceiver->receive(endpointId, 0, headerP, dataP);
+		}
 		break;
 
 	case Message::ConfigSet:
@@ -2134,10 +2129,23 @@ void Network::msgTreat(void* vP)
 
 	case Message::WorkerConfigGet:
 	case Message::ConfigChange:
-		if (endpoint[ME]->type == Endpoint::Controller)
-			controllerMsgTreat(ep, msgCode, msgType, dataP, dataLen, &packet);
+		if (msgType == Message::Msg)
+		{
+			if (endpoint[ME]->type == Endpoint::Controller)
+				controllerMsgTreat(ep, endpointId, headerP, dataP, dataLen, &packet);
+			else
+				LM_X(1, ("Got a %s request and I'm not the controller ...", messageCode(msgCode)));
+		}
 		else
-			LM_X(1, ("Got a %s message and I'm not the controller ...", messageCode(msgCode)));
+		{
+			if (endpoint[ME]->type == Endpoint::Supervisor)
+			{
+				if (dataReceiver)
+					dataReceiver->receive(endpointId, 0, headerP, dataP);
+			}
+			else
+				LM_X(1, ("Got a %s acknowledge and I'm not the controller ...", messageCode(msgCode)));
+		}
 		break;
 
 	case Message::Hello:
@@ -2234,7 +2242,7 @@ void Network::msgTreat(void* vP)
 			LM_X(1, ("Got a WorkerVector request from '%s' but I'm not the controller ...", name));
 
 		if (endpoint[ME]->type == Endpoint::Controller)
-			controllerMsgTreat(ep, msgCode, msgType, dataP, dataLen, &packet);
+			controllerMsgTreat(ep, endpointId, headerP, dataP, dataLen, &packet);
 		else
 		{
 			if (msgType != Message::Ack)
@@ -2589,9 +2597,7 @@ void Network::run(void)
 					ep = endpointAdd("'run' just accepted an incoming connection",
 									 fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
 
-					LM_M(("***** Setting sockin for endpoint '%s' to 0x%x", ep->name.c_str(), sin.sin_addr.s_addr));
 					memcpy(&ep->sockin, &sin, sizeof(sin));
-					LM_M(("***** Setting sockin for endpoint '%s' to 0x%x", ep->name.c_str(), sin.sin_addr.s_addr));
 
 					hostMgr->insert(hostName, ip);
 					endpoint[LISTENER]->msgsIn += 1;

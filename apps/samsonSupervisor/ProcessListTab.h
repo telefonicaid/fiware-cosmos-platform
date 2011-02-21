@@ -33,14 +33,17 @@ class ProcessListTab : public QWidget
 
 public:
 	ProcessListTab(const char* name, QWidget *parent = 0);
+
 	void         starterInclude(Starter* starterP);
 	void         configShow(Starter* starterP);
+	void         processConfigRequest(Process* processP);
 
 private slots:
 	void quit();
 
 public:
 	QVBoxLayout*        righterLayout;
+	ProcessConfigView*  configView;
 
 private:
 	QHBoxLayout*        mainLayout;
@@ -51,7 +54,6 @@ private:
 
 	QVBoxLayout*        rightLayout;
 	QGridLayout*        rightGrid;
-	ProcessConfigView*  configView;
 	void                initialStartersCreate(void);
 };
 

@@ -111,15 +111,16 @@ bool    usecss;
 int     workers;
 
 
+
 #define CFP (long int)  "/opt/samson/etc/platformProcesses"
-#define NOC  (long int) "no controller"
+#define LOC  (long int) "localhost"
 /* ****************************************************************************
 *
 * Parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",  controllerHost,  "CONTROLLER",    PaString,  PaReq,   NOC,  PaNL,   PaNL,  "controller IP"       },
+	{ "-controller",  controllerHost,  "CONTROLLER",    PaString,  PaOpt,   LOC,  PaNL,   PaNL,  "controller IP"       },
 	{ "-workers",     &workers,        "WORKERS",       PaInt,     PaOpt,     5,     1,     20,  "number of workers"   },
 	{ "-kz",          &kz,             "KZ_LOGIN",      PaBool,    PaHid, false, false,   true,  "login as 'kz'"       },
 	{ "-andreu",      &andreu,         "ANDREU_LOGIN",  PaBool,    PaHid, false, false,   true,  "login as 'andreu'"   },

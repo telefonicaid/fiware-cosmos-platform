@@ -174,13 +174,9 @@ void Starter::startClicked(void)
 	if (process->type == PtSpawner)
 	{
 		if ((process->endpoint == NULL) || (process->endpoint->state != ss::Endpoint::Connected))
-		{
-			LM_M(("Connecting to spawner in %s", process->host));
 			processConnect();
-		}
 		else
 		{
-			LM_M(("Disconnecting from spawner in %s (by removing its endpoint)", process->host));
 			LM_TODO(("Send IDie first ?"));
 			networkP->endpointRemove(process->endpoint, "GUI Click");
 			process->endpoint    = NULL;
@@ -285,8 +281,6 @@ void Starter::processStart(void)
 	{
 		char workersV[16];
 
-		LM_M(("Starting Controller in host %s", process->host));
-
 		spawnData.argCount = 2;
 
 		memset(spawnData.args, sizeof(spawnData.args), 0);
@@ -340,9 +334,9 @@ void Starter::processStart(void)
 		++end;
 
 		*end = 0;
-
+#if 0
 		for (int ix = 0; ix < 64; ix += 8)
-			LM_M(("%02x %02x %02x %02x %02x %02x %02x %02x",
+		   LM_M(("%02x %02x %02x %02x %02x %02x %02x %02x",   OUTDEFFED !
 				  spawnData.args[ix + 0] & 0xFF, 
 				  spawnData.args[ix + 1] & 0xFF, 
 				  spawnData.args[ix + 2] & 0xFF, 
@@ -351,6 +345,7 @@ void Starter::processStart(void)
 				  spawnData.args[ix + 5] & 0xFF, 
 				  spawnData.args[ix + 6] & 0xFF, 
 				  spawnData.args[ix + 7] & 0xFF));
+#endif
 	}
 
 	LM_T(LmtProcessStart, ("starting %s (alias '%s') via spawner %p (host: '%s', fd: %d).",

@@ -17,11 +17,12 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
 
-#include "Endpoint.h"           // ss::Endpoint
-#include "Network.h"            // samsonWorkerEndpoints
 #include "globals.h"            // global vars
 #include "ports.h"              // ports ...
 #include "iomConnect.h"         // iomConnect
+#include "iomMsgSend.h"         // iomMsgSend
+#include "Network.h"            // samsonWorkerEndpoints
+#include "Endpoint.h"           // ss::Endpoint
 #include "Starter.h"            // Starter
 #include "Process.h"            // Process
 #include "spawnerList.h"        // spawnerListGet, ...
@@ -148,23 +149,70 @@ void ProcessListTab::starterInclude(Starter* starterP)
 
 
 
+Process*     processToBeConfigured          = NULL;
+QGridLayout* gridForProcessToBeConfigured   = NULL;
 /* ****************************************************************************
 *
 * configShow - 
 */
 void ProcessListTab::configShow(Starter* starterP)
 {
-	bool hide = false;
+	bool show = true;
+
+	LM_M(("configView: %p", configView));
 
 	if (configView != NULL)
 	{
 		if (configView->process == starterP->process)
-			hide = true;
+		{
+			LM_M(("Hide Config View (process %s)", starterP->process->name));
+			show = false;
+		}
 		
 		delete configView;
 		configView = NULL;
 	}
-		
-	if (hide == false)
-		configView = new ProcessConfigView(rightGrid, starterP->process);
+	else
+        LM_M(("configView == NULL - no hiding needed"));
+
+	if (show == true)
+	{
+		LM_M(("Showing config view for '%s'", starterP->process->name));
+
+		processToBeConfigured        = starterP->process;
+		gridForProcessToBeConfigured = rightGrid;
+		processConfigRequest(starterP->process);
+	}
+	else
+		LM_M(("Not asking for config view for '%s'", starterP->process->name));
+}
+
+
+
+/* ****************************************************************************
+*
+* processConfigRequest - 
+*/
+void ProcessListTab::processConfigRequest(Process* processP)
+{
+	int s;
+
+	if ((processP->endpoint != NULL) && (processP->endpoint->state == ss::Endpoint::Connected))
+	{
+		s = iomMsgSend(processP->endpoint, networkP->endpoint[0], ss::Message::ConfigGet, ss::Message::Msg);
+
+		if (s != 0)
+			LM_E(("iomMsgSend error: %d", s));
+	}
+	else
+	{
+		if ((networkP->endpoint[2] == NULL) || (networkP->endpoint[2]->state != ss::Endpoint::Connected))
+			LM_RVE(("Not connected to controller"));
+
+		LM_M(("Asking samsonController for WorkerConfig for process '%s'", processP->alias));
+		s = iomMsgSend(networkP->endpoint[2], networkP->endpoint[0], ss::Message::WorkerConfigGet, ss::Message::Msg, processP->alias, 32);
+
+		if (s != 0)
+			LM_RVE(("iomMsgSend error: %d", s));
+	}
 }

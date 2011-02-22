@@ -16,6 +16,7 @@
 #include "ProcessItemIsolated.h"	// ss:ProcessItemIsolated
 #include "NetworkInterface.h"		// ss::NetworkInterface
 #include "ProcessWriter.h"			// ss::ProcessWriter
+#include "samson.pb.h"				// ss::network::...
 
 #define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER	1
 
@@ -46,11 +47,16 @@ namespace ss
 		ProcessBaseType type;
 		
 		// Elements defining this task
+		//WorkerTask *task;
 		
-		WorkerTask *task;
+		int num_outputs;						// Number of outputs
+		int num_servers;						// Number of workers in the cluster
+
+		size_t task_id;
 		
-		int num_outputs;					// Number of outputs
-		int num_servers;					// Number of workers in the cluster
+		network::WorkerTask *workerTask;		// Message received from the controller
+		//WorkerTaskManager *workerTaskManager;	// Pointer to the task manager
+		NetworkInterface *network;
 		
 		int shm_id;							// Shared memory area used in this operation
 		SharedMemoryItem *item;				// Share memory item

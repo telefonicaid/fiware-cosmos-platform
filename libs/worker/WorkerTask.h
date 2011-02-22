@@ -100,8 +100,6 @@ namespace ss {
 
 		void notifyFinishMemoryRequest( MemoryRequest *request );
 		
-		
-		
 		// Notify that a worker has finished producing data for this task
 		void finishWorker( );
 
@@ -116,6 +114,14 @@ namespace ss {
 			
 			// Set the flag of completed to cancel this task automatically
 			status = completed;
+		}
+		
+		
+		// Kill( from a message from the controller )
+		void kill()
+		{
+			// In the future it should kill the running tasks
+			//TODO: Free all memory correctly
 		}
 		
 		// Processign income buffers

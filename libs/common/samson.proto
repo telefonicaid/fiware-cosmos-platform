@@ -201,6 +201,16 @@ message WorkerTask
 
 // ////////////////////////////////////////////////////////////////////////////
 //
+// Message to kill a particular task
+//
+
+message WorkerTaskKill
+{
+	required uint64 task_id = 1;  // Id of the task that is killed
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
 // Update of a task from a worker to the controller
 //
 
@@ -398,6 +408,8 @@ message Message
 	optional WorkerTask             worker_task	          = 105;  // Work task message
 	optional WorkerTaskConfirmation worker_task_confirmation  = 106;  // Work task confirmation message
 
+	optional WorkerTaskKill         worker_task_kill          = 202;  // Work task killed from controller
+
 	optional WorkerDataExchange  	data                      = 107;  // Exchange of data packets between nodes     
 	optional WorkerDataExchangeClose data_close		  = 108;  // Message to finish data transmission between workers
 
@@ -421,40 +433,3 @@ message Message
 	optional CompressInfo compress_info=301;			// Information about the compression of companion data
 }
 
-// Full information about the controller ( requested by delilah to get information )
-
-message ControllerStatusInfo
-{
-
-}
-
-
-// Message between Process and Process Assitant
-
-message ProcessMessage
-{
-        enum Code
-        {
-		run = 1;
-                process_output = 2;
-		continue_run = 3;
-                finished = 4;
-		error = 5;
-		crash = 6;
- 	};
-
-	required Code code=1;			// Main type of packet		
-
-	optional int32 input_shm = 2;		// Input shared memory to be used ( only in run messages for map, reduce, parse operations)
-	optional int32 output_shm = 3;		// Output shared memory to be used( only in run messages for all operations)
-	optional int32 input_size = 8;		// size of the input ( necessary when reading input )
-	optional int32 num_servers=4;		// Num of servers ( only in run messages )
-	optional int32 num_inputs=5;		// Number of outputs (only un run messages)
-	optional int32 num_outputs=6;		// Number of outputs (only un run messages)
-	optional string operation =7;		// Name of the operation to run ( only in run messages for all operations)
-	optional bool output_kvs=13;		// Indicate that key-values are necessary at the output ( map,reduce,generator )
-	optional bool output_txt=14;		// Indicate that txt files are necessary at the output ( parseOut )
-	optional WorkerTask worker_task=10;	// Entire copy of the worker task
-	optional uint32 num_input_files=12;	// total number of files included at the input ( map,reduce,parseOut operations )
-
-}

@@ -41,6 +41,9 @@ namespace ss {
 		// Add a task from a message comming from the controller
 		void addTask( const network::WorkerTask &task );
 
+		// Kill a task
+		void killTask( const network::WorkerTaskKill &task_kill );
+		
 		// Add a buffer from other workers ( associated to a particular task and output queue)
 		void addBuffer( size_t task_id , network::Queue , Buffer* buffer , bool txt  );
 		

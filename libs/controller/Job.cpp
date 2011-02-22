@@ -474,6 +474,26 @@ namespace ss {
 		return output.str();
 	}
 	
+
+	void Job::kill()
+	{
+		// Set the error status 
+		error_message = "Killed by user";
+		setStatus( error );
+		
+		// Send a kill worker task to each worker for each task (only one is active )
+		for ( std::set<size_t>::iterator t =  all_tasks.begin() ; t != all_tasks.end() ; t++)
+			for (int i = 0 ; i < jobManager->controller->num_workers ; i++ )
+			{
+				Packet *p = new Packet();
+				p->message.mutable_worker_task_kill()->set_task_id( *t );
+				NetworkInterface *network = jobManager->controller->network;
+				network->send(jobManager->controller, network->workerGetIdentifier(i), Message::WorkerTaskKill, p);
+				
+			}
+
+		
+	}
 	
 	
 	

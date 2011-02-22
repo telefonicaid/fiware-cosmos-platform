@@ -49,6 +49,23 @@ namespace ss {
 
 	}
 	
+	void WorkerTaskManager::killTask( const network::WorkerTaskKill &task_kill )
+	{
+		token.retain();
+		
+		// Create the task
+		WorkerTask *t = task.extractFromMap( task_kill.task_id() );
+
+		if( t )
+		{
+			t->kill();
+			delete t;
+		}
+		
+		token.release();
+	}
+	
+	
 	void WorkerTaskManager::addBuffer( size_t task_id , network::Queue queue , Buffer* buffer , bool txt  )
 	{
 		token.retain();

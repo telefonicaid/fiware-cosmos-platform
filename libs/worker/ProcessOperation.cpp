@@ -136,7 +136,7 @@ namespace ss {
 		operationSubTask = _operationSubTask;
 		
 		// Name of the generator
-		operation_name = task->workerTask.operation();	
+		operation_name = workerTask->operation();	
 		
 		// Description with the name of the generator
 		setStatus( operation_name );

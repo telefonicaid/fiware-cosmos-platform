@@ -288,6 +288,30 @@ namespace ss {
 					return	 0;
 				}
 
+				// Spetial commands
+				if( cmdLine.isArgumentValue( 0 , "kill" , "k" ) )
+				{
+					if( cmdLine.get_num_arguments() > 1)
+					{
+						// Get the number of the job
+						size_t job_id = atoll( cmdLine.get_argument(1).c_str() );
+					
+						jobManager.kill( job_id );
+						
+						// Send a message to delilah to confirm this operation ?
+						/*
+						Packet *p2 = new Packet();
+						network::CommandResponse *response = p2->message.mutable_command_response();;
+						response->set_command( command );
+						p2->message.set_delilah_id( packet->message.delilah_id() );
+						network->send(this, fromId, Message::CommandResponse, p2);
+						 */
+
+					}
+					
+					return	 0;
+				}				
+				
 				if( cmdLine.isArgumentValue( 0 , "w" , "workers" ) )
 				{
 					// Send a message with the list of jobs

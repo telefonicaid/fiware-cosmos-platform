@@ -126,6 +126,17 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		return 0;
 	}
 
+	if (msgCode == Message::WorkerTaskKill)
+	{
+		// A packet with a particular command is received (controller expect to send a confirmation message)
+		LM_T(LmtTask, ("Got a WorkerTaskKill message"));
+		
+		// add task to the task manager
+		taskManager.killTask( packet->message.worker_task_kill() );
+		return 0;
+	}
+	
+	
 	
 	// List of local file ( remove unnecessary files )
 	if (msgCode == Message::CommandResponse)
@@ -187,6 +198,10 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	return 0;
 	}
 
+	
+	/**
+	 Process the list of files removing unnecessary files
+	 */
 	
 	void SamsonWorker::processListOfFiles( const ::ss::network::QueueList& ql)
 	{

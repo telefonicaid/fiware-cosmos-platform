@@ -299,6 +299,8 @@ namespace ss
 			output << "             Usage: jobs/j\n";
 			output << " clear_jobs (cj)    Clear finish or error jobs\n";
 			output << "             Usage: clear_jobs/cj\n";
+			output << " kill (k)    Kill a particular job and all its sub-tasks\n";
+			output << "             Usage: kill job_id\n";
 			output << "\n";
 			output << " workers (w) Get information about what is running on workers and controller\n";
 			output << "             Usage: workers/w\n";

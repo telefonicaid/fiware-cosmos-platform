@@ -186,6 +186,7 @@ namespace ss {
 		
 		std::string getStatus();
 		
+		void kill();	// Kill this job ( similar to error )
 
 	private:
 		void setError( std::string agent , std::string txt );

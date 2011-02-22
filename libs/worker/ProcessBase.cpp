@@ -16,20 +16,32 @@ namespace ss {
 	
 #pragma mark ProcessItemKVGenerator
 	
-	ProcessBase::ProcessBase( WorkerTask *_task , ProcessBaseType _type )
+	ProcessBase::ProcessBase( WorkerTask *task , ProcessBaseType _type )
 	{
 		// Pointer to the task in task manager
-		task = _task;
+		//task = _task;
 		type = _type;
 		
 		num_outputs = task->workerTask.output_size();
 		num_servers = task->workerTask.servers();
+
+		// copy the message received from the controller
+		workerTask = new network::WorkerTask();
+		workerTask->CopyFrom( task->workerTask );
 		
+		// Get the pointer to the network interface to send messages
+		network = task->taskManager->worker->network;
 		
+		// Get the task_id
+		task_id = task->workerTask.task_id();
+
+									
 		copyEnviroment( task->workerTask.environment() , &environment ); 
 		
 		item = NULL; // Initialized at init function
-		
+
+									
+									
 	}
 	
 	ProcessBase::~ProcessBase()
@@ -118,12 +130,14 @@ namespace ss {
 		
 #pragma mark ---
 		
-		size_t task_id = task->workerTask.task_id();
+		//size_t task_id = task->workerTask.task_id();
 		
 		for (int o = 0 ; o < num_outputs ; o++)
 		{
 			// Name of the queue to sent this packet ( if any )
-			network::Queue output_queue = task->workerTask.output( o );
+			//network::Queue output_queue = task->workerTask.output( o );
+			network::Queue output_queue = workerTask->output( o );
+			
 			
 			for (int s = 0 ; s < num_servers ; s++)
 			{				
@@ -178,8 +192,7 @@ namespace ss {
 					dataMessage->set_task_id(task_id);
 					dataMessage->mutable_queue( )->CopyFrom( output_queue );
 					
-					NetworkInterface *network = task->taskManager->worker->network;
-					network->send(task->taskManager->worker, network->workerGetIdentifier(s) , Message::WorkerDataExchange, p);
+					network->send(NULL, network->workerGetIdentifier(s) , Message::WorkerDataExchange, p);
 					
 				}
 			}
@@ -218,13 +231,14 @@ namespace ss {
 		if( *size > 0)
 		{
 			
-			size_t task_id = task->workerTask.task_id();
+			//size_t task_id = task->workerTask.task_id();
 			
 			Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessTXTWriter", *size );
 			assert( buffer );
 			
 			// There is only one output queue
-			network::Queue output_queue = task->workerTask.output( 0 );
+			//network::Queue output_queue = task->workerTask.output( 0 );
+			network::Queue output_queue = workerTask->output( 0 );
 			
 			// copy the entire buffer to here
 			memcpy(buffer->getData(), data, *size);
@@ -238,8 +252,7 @@ namespace ss {
 			dataMessage->mutable_queue( )->CopyFrom( output_queue );
 			dataMessage->set_txt(true);
 			
-			NetworkInterface *network = task->taskManager->worker->network;
-			network->send(task->taskManager->worker, network->getMyidentifier() , Message::WorkerDataExchange, p);
+			network->send(NULL, network->getMyidentifier() , Message::WorkerDataExchange, p);
 		}
 	}		
 	

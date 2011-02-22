@@ -41,6 +41,19 @@ namespace ss {
 		
 	}
 
+	// Kill a particular job
+	void JobManager::kill( size_t job_id )
+	{
+		lock.lock();
+
+		Job* j = job.findInMap( job_id );
+		if( j )
+			j->kill();
+		
+		lock.unlock();
+	}
+	
+	
 	void JobManager::notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage  )
 	{
 		lock.lock();

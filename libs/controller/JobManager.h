@@ -49,6 +49,9 @@ namespace ss {
 		// Add a job from a delilah command
 		void addJob(int fromId , const network::Command &command , size_t sender_id  );
 	
+		// Kill a particular job
+		void kill( size_t job_id );
+		
 		// Notification from the network( workers ) about a particular task
 		void notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage );
 		

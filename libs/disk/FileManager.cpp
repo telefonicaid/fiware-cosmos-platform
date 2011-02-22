@@ -70,7 +70,7 @@ namespace ss
 	 It is notified when a write / read is finished
 	 */
 	
-	void FileManager::diskManagerNotifyFinish( size_t id, bool success)
+	void FileManager::diskManagerNotifyFinish( size_t id, bool error , std::string error_message )
 	{
 		
 		lock.lock();
@@ -82,7 +82,7 @@ namespace ss
 			size_t fm_id = ids.extractFromMap( dm_id );
 			lock.unlock();
 			
-			finishItem( fm_id , success );
+			finishItem( fm_id , error , error_message );
 			return;
 			
 		}
@@ -96,17 +96,20 @@ namespace ss
 	}
 	
 	
-	void FileManager::finishItem( size_t fm_id , bool success )
+	void FileManager::finishItem( size_t fm_id , bool error , std::string error_message )
 	{
 		
 		lock.lock();
 		
 		FileManagerItem *item = items.extractFromMap( fm_id );
 		
+		
+		if( error )
+			item->setError( error_message );
+		
 		if( item )
 		{
 			item->addStatistics( &statistics );
-			
 			item->freeResources();
 			
 		}

@@ -157,8 +157,6 @@ namespace ss
 		lock.unlock();
 		
 	}
-	
-
 
 	void LoadDataManager::notifyFinishReadItem( FileManagerReadItem *item  )
 	{
@@ -176,8 +174,6 @@ namespace ss
 		
 		delete item;
 	}
-	
-	
 
 	void LoadDataManager::notifyFinishWriteItem( FileManagerWriteItem *item  )
 	{

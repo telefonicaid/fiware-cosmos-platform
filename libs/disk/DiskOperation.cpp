@@ -12,6 +12,9 @@ namespace ss {
 		// By default
 		buffer = NULL;
 		read_buffer = NULL;
+		
+		// By default no error
+		error = false;
 	}
 	
 	size_t DiskOperation::idGet()
@@ -64,4 +67,15 @@ namespace ss {
 		// Something wrong...
 		return false;
 	}
+	
+	void DiskOperation::setError( std::string message )
+	{
+		std::ostringstream o;
+		
+		error = true;
+		o << message << " ( File: " << fileName << " Mode:" << mode << " Size:" << au::Format::string(size,"B") << " ["<< size << "B] Offset:" << offset << " )";
+		error_message = o.str();
+	}
+
+	
 }

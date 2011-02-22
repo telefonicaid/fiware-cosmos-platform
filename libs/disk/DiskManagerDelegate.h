@@ -29,7 +29,7 @@ namespace ss {
 	{
 	public:
 		// Notify that this operation has finished
-		virtual void diskManagerNotifyFinish(size_t id, bool success) = 0;	
+		virtual void diskManagerNotifyFinish(size_t id, bool error , std::string error_message ) = 0;	
 	};
 	
 	/**

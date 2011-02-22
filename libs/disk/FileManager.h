@@ -78,9 +78,9 @@ namespace ss {
 		 It is notified when a write / read is finished
 		 */
 		
-		void diskManagerNotifyFinish( size_t id, bool success);
+		void diskManagerNotifyFinish( size_t id, bool error , std::string error_message);
 		
-		void finishItem( size_t fm_id , bool success );		
+		void finishItem( size_t fm_id , bool error , std::string error_message );		
 		
 		void fill(network::WorkerStatus*  ws);
 		

@@ -8,9 +8,9 @@ namespace ss {
 	{
 		delegate = _delegate;
 		type = _type;
-
 		
-		error = false;	// No error by default
+		// No error by default
+		error = false;	
 		
 		// Type of disk operation for statistics
 		switch (type) {
@@ -40,4 +40,12 @@ namespace ss {
 	{
 		fm_id = _id;		// Set the file manager id
 	}
+	
+	void FileManagerItem::setError( std::string _error_message )
+	{
+		error = true;
+		error_message = _error_message;
+	}
+	
+	
 }

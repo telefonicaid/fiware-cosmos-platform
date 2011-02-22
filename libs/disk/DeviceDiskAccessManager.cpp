@@ -96,7 +96,6 @@ namespace ss {
 	void DeviceDiskAccessManager::run( DiskOperation *o )
 	{
 		
-		bool result;
 		struct timeval start,stop;
 		gettimeofday(&start, NULL);
 		
@@ -108,20 +107,24 @@ namespace ss {
 			fn << SamsonSetup::shared()->dataDirectory << "/" << o->fileName;
 			
 			FILE *file = fopen( fn.str().c_str() , "w" );
-			assert( file );
-			
-			if( fwrite(o->buffer->getData(), o->size, 1 , file) == 1 )
-			{
-				fflush(file);
-				result = true;
-			}
+			if ( !file )
+				o->setError("Error opening file");
 			else
-				result = false;
+			{
+				
+				if( fwrite(o->buffer->getData(), o->size, 1 , file) == 1 )
+				{
+					fflush(file);
+					
+					gettimeofday(&stop, NULL);
+					statistics.add(DiskStatistics::write, o->size, DiskStatistics::timevaldiff( &start , &stop) );
+				}
+				else
+				{
+					o->setError("Error writing data to the file");
+				}
+			}
 						
-			gettimeofday(&stop, NULL);
-			if( result )
-				statistics.add(DiskStatistics::write, o->size, DiskStatistics::timevaldiff( &start , &stop) );
-
 			fclose(file);
 		}
 		
@@ -135,21 +138,29 @@ namespace ss {
 			fn << SamsonSetup::shared()->dataDirectory << "/" << o->fileName;
 			
 			FILE *file = fopen(fn.str().c_str() , "r" );
-			assert(file);
+			if( !file )
+				o->setError("Error opening file");
+			else
+			{
+				if( fseek(file, o->offset, SEEK_SET) != 0)
+					o->setError("Error in fseek operation");
+				else
+				{
+					if ( fread(o->read_buffer, o->size, 1, file) == 1 )
+					{
+						gettimeofday(&stop, NULL);
+						statistics.add(DiskStatistics::read, o->size, DiskStatistics::timevaldiff( &start , &stop) );
+					}
+					else
+						o->setError("Error while reading data from file");
+				}
 
-			fseek(file, o->offset, SEEK_SET);				// Seek to the rigth offset
-			
-			result = ( fread(o->read_buffer, o->size, 1, file) == 1 );
-			
-			gettimeofday(&stop, NULL);
-			if( result )
-				statistics.add(DiskStatistics::read, o->size, DiskStatistics::timevaldiff( &start , &stop) );
-
-			fclose(file);
+				fclose(file);
+			}
 		}
 		
 		// Nofity end of a task
-		o->delegate->diskManagerNotifyFinish(o->idGet(), result);
+		o->delegate->diskManagerNotifyFinish(o->idGet(), o->error , o->error_message );
 		
 	}
 	

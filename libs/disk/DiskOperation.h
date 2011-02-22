@@ -36,9 +36,12 @@ namespace ss {
 		size_t offset;					// Offset inside the file ( onlu for read operations )
 		dev_t st_dev;					// Device where this file is stored
 
-		DiskOperation( size_t id );
-		
 		DiskManagerDelegate *delegate;	// Who should be notified
+		
+		bool error;						// Flag to indicate that there was an error
+		std::string error_message;		// Error message
+		
+		DiskOperation( size_t id );
 		
 		size_t idGet();
 		
@@ -46,6 +49,7 @@ namespace ss {
 		
 		bool setDevice( );
 		
+		void setError( std::string message );
 	};
 	
 }

@@ -191,7 +191,11 @@ namespace ss {
 		WorkerTask *t = task.findInMap( task_id );
 		if( t )
 		{
-			t->notifyFinishReadItem( item );
+			if( item->error )
+				t->setError(item->error_message);
+			else
+				t->notifyFinishReadItem( item );
+			
 			if( t->status == WorkerTask::completed )
 			{
 				// Remove the tasks from the task manager
@@ -205,11 +209,16 @@ namespace ss {
 	void WorkerTaskManager::notifyFinishWriteItem( FileManagerWriteItem *item  )
 	{
 		token.retain();
+		
 		size_t task_id = item->tag;
 		WorkerTask *t = task.findInMap( task_id );
 		if( t )
 		{
-			t->notifyFinishWriteItem( item );
+			if( item->error )
+				t->setError( item->error_message );
+			else
+				t->notifyFinishWriteItem( item );
+			
 			if( t->status == WorkerTask::completed )
 			{
 				// Remove the tasks from the task manager
@@ -217,6 +226,7 @@ namespace ss {
 			}
 		}
 		delete item;
+		
 		token.release();
 		
 	}

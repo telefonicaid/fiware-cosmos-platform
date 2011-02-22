@@ -47,6 +47,7 @@ namespace ss {
 		size_t sub_tag;
 		
 	public:
+		
 		bool error;
 		std::string error_message;
 		
@@ -71,6 +72,7 @@ namespace ss {
 				
 		virtual void freeResources()=0;
 		
+		void setError( std::string _error_message );
 		
 	private:
 		void setId(size_t _id);

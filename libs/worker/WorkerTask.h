@@ -107,6 +107,7 @@ namespace ss {
 
 		void setError(std::string _error_message)
 		{
+			// Set the error of the operation
 			error = true;
 			error_message = _error_message;
 

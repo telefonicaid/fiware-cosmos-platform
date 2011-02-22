@@ -131,7 +131,7 @@ void LoginWindow::ok(void)
 		free(password);
 		qApp->exit();
 		qtAppRunning = false;
-		LM_M(("User: %p", userP));
+
 		return;
 	}
 

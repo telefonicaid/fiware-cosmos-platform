@@ -41,8 +41,6 @@ HostMgr::HostMgr(unsigned int size)
 		LM_X(1, ("error allocating room for %d delilah hosts", size));
 
 	localIps();
-
-	list("At creation");
 }
 
 
@@ -105,8 +103,6 @@ void HostMgr::localIps(void)
 		snprintf(domainedName, sizeof(domainedName), "%s.%s", hostName, domain);
 		aliasAdd(hostP, domainedName);
 	}
-	else
-		LM_W(("No domain ..."));
 
 	aliasAdd(hostP, "localhost");
 	aliasAdd(hostP, "127.0.0.1");
@@ -165,13 +161,21 @@ Host* HostMgr::insert(Host* hostP)
 */
 Host* HostMgr::insert(const char* name, const char* ip)
 {
-	Host* hostP  = (Host*) calloc(1, sizeof(Host));
+	Host* hostP;
 
-	if (hostP == NULL)
-		LM_X(1, ("malloc(%d): %s", sizeof(Host), strerror(errno)));
 
 	if (name == NULL)
 		LM_X(1, ("NULL name - bad parameter"));
+
+	if ((hostP = lookup(name)) != NULL)
+		return hostP;
+
+	if ((ip != NULL) && (ip[0] != 0) && ((hostP = lookup(ip)) != NULL))
+		return hostP;
+
+	hostP  = (Host*) calloc(1, sizeof(Host));
+	if (hostP == NULL)
+		LM_X(1, ("malloc(%d): %s", sizeof(Host), strerror(errno)));
 
 	hostP->name = strdup(name);
 	if (ip != NULL)
@@ -189,17 +193,13 @@ Host* HostMgr::insert(const char* name, const char* ip)
 void HostMgr::aliasAdd(Host* host, const char* alias)
 {
 	if (lookup(alias) != NULL)
-	{
-		LM_W(("alias '%s' already exists"));
 		return;
-	}
 
 	for (unsigned int ix = 0; ix < sizeof(alias) / sizeof(alias[0]); ix++)
 	{
 		if (host->alias[ix] == NULL)
 		{
 			host->alias[ix] = strdup(alias);
-			list("Just added an alias");
 			return;
 		}
 	}

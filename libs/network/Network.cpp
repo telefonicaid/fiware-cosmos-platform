@@ -26,6 +26,7 @@
 #include "Alarm.h"              // ALARM
 #include "ports.h"              // Port numbers for samson processes
 
+#include "samson/Log.h"			// LogLineData
 #include "Misc.h"               // ipGet 
 #include "Endpoint.h"           // Endpoint
 #include "Message.h"            // Message::MessageCode
@@ -43,7 +44,7 @@
 #include "HostMgr.h"            // HostMgr
 #include "Network.h"            // Own interface
 
-#include "samson/Log.h"			// LogLineData
+
 
 /* ****************************************************************************
 *
@@ -58,6 +59,15 @@
 #define CONTROLLER      2
 #define SUPERVISOR      3
 #define FIRST_WORKER   10
+
+
+
+/* ****************************************************************************
+*
+* XLOG - turn on to debug log hook functionality
+*/
+#define XLOG(s) 
+//#define XLOG(s) printf s
 
 
 
@@ -137,7 +147,7 @@ static void logHookFunction(void* vP, char* text, char type, const char* date, c
 	supervisor = networkP->endpoint[SUPERVISOR];
 	me         = networkP->endpoint[ME];
 
-	printf("******************* Sending trace ?\n");
+	XLOG(("******************* Sending trace ?\n"));
 	if ((logSocket == -1) || (supervisor == NULL) || (supervisor->wFd == -1) || (supervisor->state != Endpoint::Connected) || (supervisor->helloReceived != true))
 		return;
 
@@ -161,16 +171,16 @@ static void logHookFunction(void* vP, char* text, char type, const char* date, c
 		++writes;
 
 		// logAddr.sin_addr.s_addr = htonl(logAddr.sin_addr.s_addr);
-		printf("************ logAddr.sin_addr: 0x%x (text: '%s')\n", logAddr.sin_addr.s_addr, text);
+		XLOG(("************ logAddr.sin_addr: 0x%x (text: '%s')\n", logAddr.sin_addr.s_addr, text));
 		nb = sendto(logSocket, &buf[tot], bufLen - tot, flags, (struct sockaddr*) &logAddr, logAddrLen);
 		if (nb == -1)
 		{
-			printf("sendto: %s\n", strerror(errno));
+			XLOG(("sendto: %s\n", strerror(errno)));
 			return;
 		}
 		else if (nb == 0)
 		{
-			printf("sendto returned 0 bytes (wanted %d) ... (%s)\n", bufLen - tot, strerror(errno));
+			XLOG(("sendto returned 0 bytes (wanted %d) ... (%s)\n", bufLen - tot, strerror(errno)));
 			return;
 		}
 
@@ -210,12 +220,12 @@ static void logHookFunction(void* vP, char* text, char type, const char* date, c
 		nb = sendto(logSocket, &buf[tot], bufLen - tot, flags, (struct sockaddr*) &logAddr, logAddrLen);
 		if (nb == -1)
 		{
-			printf("sendto: %s\n", strerror(errno));
+			XLOG(("sendto: %s\n", strerror(errno)));
 			return;
 		}
 		else if (nb == 0)
 		{
-			printf("sendto returned 0 bytes (wanted %d) ... (%s)\n", bufLen - tot, strerror(errno));
+			XLOG(("sendto returned 0 bytes (wanted %d) ... (%s)\n", bufLen - tot, strerror(errno)));
 			return;
 		}
 		

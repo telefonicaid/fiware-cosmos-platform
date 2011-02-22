@@ -116,8 +116,6 @@ void LogTab::logLineInsert(struct sockaddr_in* sAddr, ss::Message::Header* heade
 
 	char* host = inet_ntoa(sAddr->sin_addr);
 
-	LM_W(("Got a log line (row %d): '%s'", row, logLine->text));
-
 	logItemAdd(row, logLine->type, logLine->date, host, logLine->processName, logLine->file, logLine->lineNo, logLine->fName, logLine->text, logLine->tLev);
 
 	if (row == 0)

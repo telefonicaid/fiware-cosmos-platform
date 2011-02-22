@@ -52,5 +52,6 @@ extern User*                userP;
 extern int                  mainWinWidth;
 extern int                  mainWinHeight;
 extern InfoWin*             infoWin;
+extern int                  workers;
 
 #endif

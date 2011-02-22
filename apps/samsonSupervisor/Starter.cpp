@@ -113,9 +113,7 @@ void Starter::check(const char* reason)
 
 	LM_T(LmtStarter, ("CHECKING (%s) Starter for %s@%s", reason, process->name, process->host));
 
-	if (process->endpoint == NULL)
-		LM_W(("NULL endpoint"));
-	else
+	if (process->endpoint != NULL)
 		LM_T(LmtCheck, ("endpoint state: '%s'", process->endpoint->stateName()));
 
 	if ((process->endpoint != NULL) && (process->endpoint->state == ss::Endpoint::Connected))
@@ -147,12 +145,12 @@ void Starter::check(const char* reason)
 	else
 	{
 		logButton->setDisabled(true);
+		startButton->setIcon(redIcon);
 
-		if (process->type != ss::PtSpawner)
-        {
-			startButton->setIcon(redIcon);
+		if (process->type == ss::PtSpawner)
 			startButton->setToolTip("Start Process");
-		}
+		else
+			startButton->setToolTip("Connect to Spawner");
 
 		if ((process->host == NULL) || (process->host[0] == 0) || (strcmp(process->host, "ip") == 0))
 			startButton->setDisabled(true);
@@ -443,7 +441,7 @@ void Starter::processKill(void)
 		LM_E(("can't kill starter for process '%s' at %s as its endpoint is in state '%s'", process->name, process->host, process->endpoint->stateName()));
 	else
 	{
-		LM_T(LmtDie, ("Now really sending 'Die' to '%s' at '%s' (name: '%s')", process->endpoint->typeName(), process->endpoint->ip.c_str(), process->endpoint->name.c_str()));
+		LM_W(("Sending 'Die' to '%s' at '%s' (name: '%s')", process->endpoint->typeName(), process->endpoint->ip.c_str(), process->endpoint->name.c_str()));
 		s = iomMsgSend(process->endpoint->wFd, process->endpoint->ip.c_str(), "samsonSupervisor", ss::Message::Die, ss::Message::Msg);
 	}
 }

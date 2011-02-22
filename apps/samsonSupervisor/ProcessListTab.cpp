@@ -159,32 +159,21 @@ void ProcessListTab::configShow(Starter* starterP)
 {
 	bool show = true;
 
-	LM_M(("configView: %p", configView));
-
 	if (configView != NULL)
 	{
 		if (configView->process == starterP->process)
-		{
-			LM_M(("Hide Config View (process %s)", starterP->process->name));
 			show = false;
-		}
 		
 		delete configView;
 		configView = NULL;
 	}
-	else
-        LM_M(("configView == NULL - no hiding needed"));
 
 	if (show == true)
 	{
-		LM_M(("Showing config view for '%s'", starterP->process->name));
-
 		processToBeConfigured        = starterP->process;
 		gridForProcessToBeConfigured = rightGrid;
 		processConfigRequest(starterP->process);
 	}
-	else
-		LM_M(("Not asking for config view for '%s'", starterP->process->name));
 }
 
 
@@ -196,8 +185,6 @@ void ProcessListTab::configShow(Starter* starterP)
 void ProcessListTab::processConfigRequest(ss::Process* processP)
 {
 	int s;
-
-	LM_M(("requesting Config Data for process '%s'", processP->name));
 
 	if ((processP->endpoint != NULL) && (processP->endpoint->state == ss::Endpoint::Connected))
 	{
@@ -215,7 +202,6 @@ void ProcessListTab::processConfigRequest(ss::Process* processP)
 		}
 		else
 		{
-			LM_M(("Asking samsonController for WorkerConfig for process '%s'", processP->alias));
 			s = iomMsgSend(networkP->endpoint[2], networkP->endpoint[0], ss::Message::WorkerConfigGet, ss::Message::Msg, processP->alias, 32);
 
 			if (s != 0)

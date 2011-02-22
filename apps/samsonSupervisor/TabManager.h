@@ -48,13 +48,6 @@ public:
 	ConfigTab*           configTab;
 	OldMrOperationsTab*  delilahOldTab;
 
-protected:
-	void timerEvent(QTimerEvent* e);
-
-	int  logSocket;
-	void logReceiverInit(unsigned short port);
-	void logReceive(void);
-
 private:
 	QTabWidget*       tabWidget;
 };

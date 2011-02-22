@@ -123,7 +123,15 @@ void SamsonSpawner::processSpawn(ss::Process* processP)
 		argV[argC++] = (char*) processP->controllerHost;
 	}
 	else if (processP->type == ss::PtControllerStarter)
+	{
+		char workersV[16];
+
+		snprintf(workersV, sizeof(workersV), "%d", processP->workers);
+
 		argV[argC++] = (char*) "samsonController";
+		argV[argC++] = (char*) "-workers";
+		argV[argC++] = workersV;
+	}
 	else
 		LM_X(1, ("Will only start workers and controllers - bad process type %d", processP->type));
 
@@ -142,10 +150,6 @@ void SamsonSpawner::processSpawn(ss::Process* processP)
 	}
 
 	argV[argC] = NULL;
-
-	for (int ix = 0; ix < argC; ix++)
-		LM_M(("argV[%d]: '%s'", ix, argV[ix]));
-
 
 	pid = fork();
 	if (pid == 0)

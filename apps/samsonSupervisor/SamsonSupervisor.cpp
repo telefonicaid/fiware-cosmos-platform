@@ -7,6 +7,8 @@
 * CREATION DATE            Dec 15 2010
 *
 */
+#include <sys/time.h>           // getimeofday
+
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
 
@@ -102,7 +104,6 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 			LM_X(1, ("Bad msg type '%d'", headerP->type));
 
 		tabManager->processListTab->configView = new ProcessConfigView(gridForProcessToBeConfigured, processToBeConfigured, configDataP);
-		LM_M(("Set configView to %p", tabManager->processListTab->configView));
 		break;
 
 	case ss::Message::WorkerConfigGet:
@@ -112,7 +113,6 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 			LM_X(1, ("Bad msg type '%d'", headerP->type));
 
 		tabManager->processListTab->configView = new ProcessConfigView(gridForProcessToBeConfigured, processToBeConfigured, workerP);
-		LM_M(("Set configView to %p", tabManager->processListTab->configView));
 		break;
 
 	case ss::Message::WorkerSpawn:
@@ -223,48 +223,6 @@ static void disconnectWorkers(void)
 		networkP->endpointRemove(starterV[ix]->process->endpoint, "Controller disconnected");
 	}
 }
-
-
-
-#if 0
-/* ****************************************************************************
-*
-* hostForWorker - 
-*/
-static char* hostForWorker(ss::Message::Worker* workerP, int* argsP, char** argV)
-{
-	char   xhost[64];
-	char   processName[64];
-	char*  host;
-	char   eText[256];
-
-	host = workerP->ip;
-
-	memset(argV, 0, sizeof(argV));
-	*argsP = 0;
-
-	if (strcmp(host, "II.PP") == 0)
-	{
-		LM_T(LmtWorker, ("Worker '%s' has no valid IP - thus has never connected to Controller.", workerP->alias));
-		LM_T(LmtWorker, ("Must consult Config File (platformProcesses) to get its IP"));
-		if (configFileParseByAlias(workerP->alias, xhost, processName, argsP, argV) != 0)
-		{
-			snprintf(eText, sizeof(eText), "Controller reports an unknown future worker, aliased '%s'\n"
-					 "Cannot find process in config files.\n"
-					 "No possible way to spawn this process.\n"
-					 "\nCannot continue, sorry."
-					 "You need no check the configuration files ...", workerP->alias);
-
-			new Popup("Unknown worker", eText, true);
-			LM_X(1, (eText));
-		}
-
-		host = xhost;
-	}
-
-	return strdup(host);
-}
-#endif
 
 
 
@@ -447,6 +405,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	ss::Endpoint*                   newEp     = (ss::Endpoint*) info;
 	ss::Message::WorkerVectorData*  wvDataP   = (ss::Message::WorkerVectorData*) info;
 	Starter*                        starter   = NULL;
+	ss::Process*                    processP  = NULL;
 
 	if (reason == ss::Endpoint::SelectToBeCalled)
 	{
@@ -469,16 +428,16 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 
 		if (starter != NULL)
 		{
-			LM_T(LmtEndpointUpdate, ("found %s-starter '%s'", processTypeName(starter->process), starter->process->name));
-			if (starter->process->endpoint != ep)
-				LM_E(("********* Should have the same endpoint ...  %p vs %p", starter->process->endpoint, ep));
+			processP = starter->process;
+
+			LM_T(LmtEndpointUpdate, ("found %s-starter '%s'", processTypeName(processP), processP->name));
+			if (processP->endpoint != ep)
+				LM_E(("********* Should have the same endpoint ...  %p vs %p", processP->endpoint, ep));
 			if ((tabManager != NULL) && (tabManager->processListTab != NULL))
 				starter->check("endpointUpdate");
 		}
 		else
 		{
-			ss::Process* processP;
-
 			if (ep->type == ss::Endpoint::Temporal)
 				LM_W(("Just a temporal endpoint - never mind ...   ?"));
 			else
@@ -492,12 +451,18 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 					else if (processP->endpoint != ep)
 						LM_E(("********* Should have the same endpoint ...  %p vs %p", processP->endpoint, ep));
 				}
-				else
-					LM_W(("NULL process for endpoint '%s@%s' - create one ?", ep->name.c_str(), ep->ip.c_str()));
-
-				LM_W(("Here I should probably create starter for '%s@%s'", ep->name.c_str(), ep->ip.c_str()));
 			}
 		}
+	}
+
+
+	if (starter == NULL)
+		starter = starterLookup(ep);
+
+	if (processP == NULL)
+	{
+		if (starter)
+			processP = starter->process;
 	}
 
 	switch (reason)
@@ -514,22 +479,61 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		noLongerTemporal(ep, newEp, starter);
 		break;
 
-	case ss::Endpoint::WorkerDisconnected:
 	case ss::Endpoint::WorkerAdded:
+		if (processP != NULL)
+			LM_W(("WorkerAdded and I take no action (%s@%s) ...", processP->alias, processP->host));
+		else
+			LM_W(("WorkerAdded and I take no action ..."));
 		break;
 
 	case ss::Endpoint::ControllerDisconnected:
 		disconnectWorkers();
 		break;
 
+	case ss::Endpoint::WorkerDisconnected:
 	case ss::Endpoint::EndpointRemoved:
 	case ss::Endpoint::ControllerRemoved:
 	case ss::Endpoint::WorkerRemoved:
-		LM_W(("Some endpoint closed connection"));
+        if (processP != NULL)
+			LM_W(("Endpoint %s@%s closed connection", processP->name, processP->host));
+		else
+			LM_W(("Some endpoint closed connection"));
+
+		if (starter == NULL)
+		{
+			LM_W(("No starter found for endpoint %p", ep));
+			return 0;
+		}
+
+		char eText[256];
+		starter->check("Some endpoint closed connection");
+		if (starter->process->type == ss::PtSpawner)
+		{
+			snprintf(eText, sizeof(eText), "Lost connection to samsonSpawner in host '%s'.\nThis process is a vital part of the samson platform,\nso please restart the process as soon as possible.", starter->process->host);
+			new Popup("Lost Connection to Spawner", eText);
+		}
+		else if (starter->process->type == ss::PtControllerStarter)
+		{
+			snprintf(eText, sizeof(eText), "Lost connection to samsonController in host '%s'.\nThis process is a vital part of the samson platform,\nso please restart the process as soon as possible.", starter->process->host);
+			new Popup("Lost Connection to Controller", eText);
+		}
+		else if (starter->process->type == ss::PtWorkerStarter)
+		{
+			snprintf(eText, sizeof(eText), "Lost connection to samsonWorker in host '%s'.\nThis process is a vital part of the samson platform,\nso please restart the process as soon as possible.", starter->process->host);
+			new Popup("Lost Connection to Worker", eText);
+		}
 		break;
 
 	case ss::Endpoint::HelloReceived:
-		LM_W(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
+		if (ep != NULL)
+		{
+			if (processP != NULL)
+				LM_W(("Got a '%s' endpoint-update-reason from %s@%s and I take no action ...", reasonText, processP->name, processP->host));
+			else
+				LM_W(("Got a '%s' endpoint-update-reason from %s and I take no action ...", reasonText, ep->ip.c_str()));
+		}
+		else
+			LM_W(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
 		break;
 
 	case ss::Endpoint::ControllerAdded:
@@ -561,4 +565,210 @@ int SamsonSupervisor::ready(const char* info)
 		LM_X(1, ("NULL controller - try to connect to it, as before ?"));
 
 	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* logReceiverInit - 
+*/
+void SamsonSupervisor::logReceiverInit(unsigned short port)
+{
+	struct sockaddr_in  sAddr;
+
+	logSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+	if (logSocket == -1)
+	{
+		new Popup("Internal Error", "No log will be available.\nSee log file for more info");
+		LM_E(("socket: %s", strerror(errno)));
+		return;
+	}
+
+	memset((char*) &sAddr, 0, sizeof(sAddr));
+	sAddr.sin_family = AF_INET;
+	sAddr.sin_port = htons(port);
+	sAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if (bind(logSocket, (struct sockaddr*) &sAddr, sizeof(sAddr)) == -1)
+	{
+		new Popup("Internal Error", "No log will be available.\nSee log file for more info");
+		LM_E(("bind: %s", strerror(errno)));
+		::close(logSocket);
+		logSocket = -1;
+        return;
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* logReceive - 
+*/
+void SamsonSupervisor::logReceive(void)
+{
+	struct sockaddr_in        sAddr;
+	socklen_t                 sAddrLen = sizeof(sAddr);
+	int                       flags;
+	ssize_t                   nb;
+	unsigned int              tot;
+	ss::LogLineData           logLine;
+	ss::Message::Header       header;
+	char*                     buf;
+	unsigned int              bufLen;
+
+	flags = MSG_DONTWAIT;
+
+	while (1)
+	{
+		//
+		// 1. Read header
+		//
+		tot    = 0;
+		bufLen = sizeof(header);
+		buf    = (char*) &header;
+		memset(buf, 0, bufLen);
+
+		while (tot < bufLen)
+		{
+			nb = recvfrom(logSocket, &buf[tot], bufLen - tot, flags, (struct sockaddr*) &sAddr, &sAddrLen);
+			if (nb == -1)
+			{
+				if ((errno == EAGAIN) && (tot == 0))
+					return;
+
+				new Popup("Internal Error", "No log lines from other processes will be available.\nSee local samsonSupervisor log file for more info.");
+				LM_E(("recvfrom: %s", strerror(errno)));
+				logSocket = -1;
+				LM_TODO(("Inform processes that the logging mechanism has stopped"));
+				return;
+			}
+			else if (nb == 0)
+				LM_E(("recvfrom returned 0 bytes ..."));
+
+			tot += nb;
+		}
+
+
+
+		//
+		// Read data
+		//
+		tot    = 0;
+		bufLen = header.dataLen;
+		buf    = (char*) &logLine;
+		memset(buf, 0, bufLen);
+		
+		while (tot < bufLen)
+		{
+			nb = recvfrom(logSocket, &buf[tot], bufLen - tot, flags, (struct sockaddr*) &sAddr, &sAddrLen);
+			if (nb == -1)
+			{
+				if ((errno == EAGAIN) && (tot == 0))
+				{
+					LM_E(("No data ..."));
+					return;
+				}
+
+				new Popup("Internal Error", "No log lines from other processes will be available.\nSee local samsonSupervisor log file for more info.");
+				LM_E(("recvfrom: %s", strerror(errno)));
+				logSocket = -1;
+				LM_TODO(("Inform processes that the logging mechanism has stopped"));
+				return;
+			}
+			else if (nb == 0)
+				LM_E(("recvfrom returned 0 bytes ..."));
+
+			tot += nb;
+		}
+
+		if ((tot == bufLen) && (header.magic == 0xFEEDC0DE))
+		{
+			tabManager->logTab->logLineInsert(&sAddr, &header, &logLine);
+		}
+		else
+			LM_W(("skipping log line as its garbage ..."));
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* SamsonSupervisor::timerEvent - 
+*/
+void SamsonSupervisor::timerEvent(QTimerEvent* e)
+{
+	static struct timeval  lastShow = { 0, 0 };
+	struct timeval         now;
+
+	gettimeofday(&now, NULL);
+	if (now.tv_sec - lastShow.tv_sec > 10)
+	{
+		if (networkP != NULL)
+			networkP->endpointListShow("periodic");
+
+		starterListShow("periodic");
+		processListShow("periodic");
+
+		lastShow = now;
+	}
+
+
+
+	//
+	// Poll Samson Network modules
+	//
+	if (networkP != NULL)
+		networkP->poll();
+
+
+	//
+	// Try to connect to unconnected Controller, Worker and Spawner
+	//
+	ss::Process** processV = processListGet();
+	for (unsigned int ix = 0; ix < processMaxGet(); ix++)
+	{
+		if (processV[ix] == NULL)
+			continue;
+
+		if (processV[ix]->endpoint == NULL)
+			continue;
+
+		if (processV[ix]->endpoint->state != ss::Endpoint::Connected)
+		{
+			int fd;
+
+			fd = iomConnect(processV[ix]->host, processV[ix]->port);
+			if (fd >= 0)
+			{
+				processV[ix]->endpoint->rFd = fd;
+				processV[ix]->endpoint->wFd = fd;
+				processV[ix]->endpoint->state = ss::Endpoint::Connected;
+				processV[ix]->starterP->check("Reconnected");
+			}
+		}
+	}
+
+
+	//
+	// Read Log messages from other Samson processes
+	//
+	if (logSocket != -1)
+		logReceive();
+
+
+	//
+	// Any InfoWin that needs to be killed ?
+	//
+	if (infoWin != NULL)
+	{
+		if ((now.tv_sec > infoWin->dieAt.tv_sec) || ((now.tv_sec == infoWin->dieAt.tv_sec) && (now.tv_usec >= infoWin->dieAt.tv_usec)))
+		{
+			delete infoWin;
+			infoWin = NULL;
+		}
+	}
 }

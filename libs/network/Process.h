@@ -58,7 +58,7 @@ typedef struct Process
 	bool                 toDo;
 	char                 traceLevels[256];
 	bool                 sendsLogs;
-
+	int                  workers;
 	char                 controllerHost[32];
 
 	ss::Endpoint*        endpoint;

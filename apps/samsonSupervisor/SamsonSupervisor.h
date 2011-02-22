@@ -10,6 +10,9 @@
 * CREATION DATE            Dec 15 2010
 *
 */
+#include <QWidget>
+
+#include "ports.h"              // LOG_MESSAGE_PORT
 #include "NetworkInterface.h"   // DataReceiverInterface, EndpointUpdateInterface
 #include "Endpoint.h"           // Endpoint
 #include "Network.h"            // Network
@@ -17,16 +20,22 @@
 #include "Delilah.h"			// ss::Delilah
 
 
+
 /* ****************************************************************************
 *
 * SamsonSupervisor - 
 */
-class SamsonSupervisor : public ss::Delilah, public ss::DataReceiverInterface, public ss::EndpointUpdateReceiverInterface, public ss::ReadyReceiverInterface
+class SamsonSupervisor : public ss::Delilah, public ss::DataReceiverInterface, public ss::EndpointUpdateReceiverInterface, public ss::ReadyReceiverInterface, public QWidget
 {
 public:
-	SamsonSupervisor(ss::Network* netP) : ss::Delilah( netP , false )
+	SamsonSupervisor(ss::Network* netP) : ss::Delilah(netP, false)
 	{
 		networkP = netP; 
+
+		logReceiverInit(LOG_MESSAGE_PORT);
+
+		LM_T(LmtQtTimer, ("Starting timer for Network polling"));
+		startTimer(1000);  // 1 second timer (was 10 ms)
 	}
 
 	virtual int receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
@@ -50,6 +59,14 @@ public:
 	
 private:
 	ss::Network*    networkP;
+
+
+protected:
+	void timerEvent(QTimerEvent* e);
+
+	int  logSocket;
+	void logReceiverInit(unsigned short port);
+	void logReceive(void);
 };
 
 #endif

@@ -77,9 +77,9 @@ void workerVecSave(void)
 	int    tot;
 	int    nb;
 
-	LM_M(("Saving Worker Vector of %d workers", workerVec->workers));
-	LM_M(("sizeof(Worker): %d", sizeof(workerVec->workerV[0])));
-	LM_M(("file size should be: %d + %d * %d == %d",
+	LM_T(LmtWorkerVector, ("Saving Worker Vector of %d workers", workerVec->workers));
+	LM_T(LmtWorkerVector, ("sizeof(Worker): %d", sizeof(workerVec->workerV[0])));
+	LM_T(LmtWorkerVector, ("file size should be: %d + %d * %d == %d",
 		  sizeof(ss::Message::WorkerVectorData),
 		  workerVec->workers,
 		  sizeof(workerVec->workerV[0]),
@@ -87,6 +87,8 @@ void workerVecSave(void)
 
 	if ((fd = open(workerVecFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU)) == -1)
 		LM_RVE(("open-for-writing(%s): %s", workerVecFile, strerror(errno)));
+	if (chmod(workerVecFile, 0744) != 0)
+		LM_E(("Error setting permissions on '%s': %s", workerVecFile, strerror(errno)));
 
 	buf  = (char*) workerVec;
 	tot  = 0;
@@ -132,12 +134,14 @@ static void workerVecGet(void)
 	int          nb;
 	int          fd;
 
-	LM_M(("Retrieving Worker Vector"));
+	LM_T(LmtWorkerVector, ("Retrieving Worker Vector"));
 
 	if ((fd = open(workerVecFile, O_RDONLY)) == -1)
 		LM_E(("open-for-reading(%s): %s - this is OK iff file-doesn't-exist", workerVecFile, strerror(errno)));
 	else if ((s = stat(workerVecFile, &statBuf)) == -1)
 		LM_E(("stat(%s): %s", workerVecFile, strerror(errno)));
+	if (chmod(workerVecFile, 0744) != 0)
+		LM_E(("Error setting permissions on '%s': %s", workerVecFile, strerror(errno)));
 
 	if ((s == -1) || (fd == -1) || (statBuf.st_size == 0))
 	{
@@ -146,8 +150,10 @@ static void workerVecGet(void)
 
 		if ((fd = open(workerVecFile, O_WRONLY | O_CREAT)) == -1)
 			LM_X(1, ("open-for-writing(%s): %s", workerVecFile, strerror(errno)));
+		if (chmod(workerVecFile, 0744) != 0)
+			LM_E(("Error setting permissions on '%s': %s", workerVecFile, strerror(errno)));
 
-		LM_M(("Inventing Worker Vector with %d workers (number came from command line options)", workers));
+		LM_T(LmtWorkerVector, ("Inventing Worker Vector with %d workers (number came from command line options)", workers));
 
 		LM_W(("Problems with config file '%s' - using %d empty workers (according to command line options)", workerVecFile, workers));
 		LM_W(("This just might be a serious problem. Perhaps I should enter a 'semi sleep' mode, until samsonSupervisor sends info on worker vector (like 'first start')"));
@@ -161,7 +167,7 @@ static void workerVecGet(void)
 
 		memset(workerVec, 0, workerVecSize);
 		workerVec->workers = workers;
-		LM_M(("Using global option variable 'workers' to decide how many workers I use: %d workers", workers));
+		LM_T(LmtWorkerVector, ("Using global option variable 'workers' to decide how many workers I use: %d workers", workers));
 
 		for (int ix = 0; ix < workerVec->workers; ix++)
 		{
@@ -179,7 +185,7 @@ static void workerVecGet(void)
 	}
 	else
 	{
-		LM_M(("Retrieving worker vec data from file '%s'", workerVecFile));
+		LM_T(LmtWorkerVector, ("Retrieving worker vec data from file '%s'", workerVecFile));
 
 		fileSize = statBuf.st_size;
 		buf      = (char*) calloc(1, fileSize);
@@ -205,12 +211,12 @@ static void workerVecGet(void)
 
 		if (workers != workerVec->workers)
 		{
-			LM_M(("Changing global variable workers from %d to %d", workers, workerVec->workers));
+			LM_T(LmtWorkerVector, ("Changing global variable workers from %d to %d", workers, workerVec->workers));
 			workers = workerVec->workers;
 		}
 		
-		LM_M(("file size: %d", fileSize));
-		LM_M(("%d workers, each of a size of %d => %d + %d * %d == %d",
+		LM_T(LmtWorkerVector, ("file size: %d", fileSize));
+		LM_T(LmtWorkerVector, ("%d workers, each of a size of %d => %d + %d * %d == %d",
 			  workerVec->workers,
 			  sizeof(workerVec->workerV[0]),
 			  sizeof(ss::Message::WorkerVectorData),
@@ -224,12 +230,12 @@ static void workerVecGet(void)
 		LM_T(LmtInit, ("Read Workers from '%s' - got %d workers", workerVecFile, workerVec->workers));
 		close(fd);
 
-		LM_M(("Got %d workers", workerVec->workers));
+		LM_T(LmtWorkerVector, ("Got %d workers", workerVec->workers));
 		for (int ix = 0; ix < workerVec->workers; ix++)
 		{
 			ss::Message::Worker* workerP = &workerVec->workerV[ix];
 
-			LM_M(("  worker %02d: alias: '%s', name: '%s', host: '%s'. port: %d", ix, workerP->alias, workerP->name, workerP->ip, workerP->port));
+			LM_T(LmtWorkerVector, ("  worker %02d: alias: '%s', name: '%s', host: '%s'. port: %d", ix, workerP->alias, workerP->name, workerP->ip, workerP->port));
 		}
 	}
 }

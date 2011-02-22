@@ -147,6 +147,7 @@ ss::Process* processAdd
 		
 		processP->port       = port;
 		processP->endpoint   = endpoint;
+		processP->workers    = workers;   // Parseargs variable
 
 		if (alias != NULL)
 		   strncpy(processP->alias, alias, sizeof(processP->alias));

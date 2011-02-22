@@ -280,36 +280,22 @@ ProcessConfigView::ProcessConfigView(QGridLayout* grid, ss::Process* process)
 */
 void ProcessConfigView::fill(QGridLayout* grid, ss::Process* process)
 {
-#if 0
-	verboseBox->setCheckState(Qt::Unchecked);
-	debugBox->setCheckState(Qt::Unchecked);
-	readsBox->setCheckState(Qt::Unchecked);
-	writesBox->setCheckState(Qt::Unchecked);
-	toDoBox->setCheckState(Qt::Unchecked);
+	if (hostEditable == false)
+		return;
 
-	for (int ix = 0; ix < TRACE_LEVELS; ix++)
-	{
-		if (traceLevelItem[ix])
-			traceLevelItem[ix]->setCheckState(Qt::Unchecked);
-	}
-#endif
+	QVBoxLayout* layout = tabManager->processListTab->righterLayout;
+	ahLayout = new QVBoxLayout();
 
-	if (hostEditable == true)
-	{
-		QVBoxLayout* layout = tabManager->processListTab->righterLayout;
-		ahLayout = new QVBoxLayout();
+	hostLabel  = new QLabel("Host:");
+	hostEdit   = new QLineEdit();
+	hostEdit->setText(process->host);
 
-		hostLabel  = new QLabel("Host:");
-		hostEdit   = new QLineEdit();
-		hostEdit->setText(process->host);
-
-		ahLayout->addSpacing(200);
-		ahLayout->addWidget(hostLabel);		
-		ahLayout->addWidget(hostEdit);
-		ahLayout->addStretch(500);
-
-		layout->addLayout(ahLayout);
-	}
+	ahLayout->addSpacing(200);
+	ahLayout->addWidget(hostLabel);		
+	ahLayout->addWidget(hostEdit);
+	ahLayout->addStretch(500);
+	
+	layout->addLayout(ahLayout);
 }
 
 
@@ -401,6 +387,8 @@ void ProcessConfigView::processSave(void)
 		host = (char*) hostEdit->text().toStdString().c_str();
 		strncpy(process->host, host, sizeof(process->host));
 	}
+	else
+		LM_W(("hostEdit is NULL"));
 }
 
 
@@ -413,10 +401,9 @@ void ProcessConfigView::save(void)
 {
 	ss::Message::ConfigData  configData;
 	int                      s;
-	const char*              host = NULL;
+	char                     host[64];
 
-	processSave();
-
+	memset(host,        0, sizeof(host));
 	memset(&configData, 0, sizeof(configData));
 
 	configData.verbose    = (verboseBox->checkState() == Qt::Checked)? true : false;
@@ -442,9 +429,11 @@ void ProcessConfigView::save(void)
 
 	if (hostEdit != NULL)
 	{
-		host = hostEdit->text().toStdString().c_str();
+		ss::Process* processP;
 
-		if ((host != NULL) && (host[0] != 0))
+		strncpy(host, hostEdit->text().toStdString().c_str(), sizeof(host));
+
+		if (host[0] != 0)
 		{
 			ss::Process* spawner = NULL;
 			Host*        hostP;
@@ -453,16 +442,23 @@ void ProcessConfigView::save(void)
 
 			hostP = networkP->hostMgr->lookup(host);
 			if (hostP != NULL)
-				host = hostP->name;
+				strncpy(host, hostP->name, sizeof(host));
 			
-			if ((host != NULL) && (processLookup(process->name, host) != NULL))
+			processListShow("Just before looking up process");
+			if ((host != NULL) && ((processP = processLookup(process->name, host)) != NULL))
 			{
 				char eText[256];
 
-				snprintf(eText, sizeof(eText), "There is already a process '%s' in host '%s'.\nCan't have two in the same machine ...", process->name, host);
+				LM_W(("Process '%s@%s' already in process list", process->name, host));
+				processListShow("Process already exists");
+				snprintf(eText, sizeof(eText), "There is already a '%s' process in host '%s'.\nCan't have two in the same machine ...", process->name, host);
 				new Popup("Process already exists", eText);
 				return;
 			}
+
+			processListShow("Before saving process");
+			processSave();
+			processListShow("After saving process");
 
 			networkP->hostMgr->insert(host, NULL);
 

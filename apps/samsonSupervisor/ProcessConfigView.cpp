@@ -403,6 +403,14 @@ void ProcessConfigView::save(void)
 	int                      s;
 	char                     host[64];
 
+	if (process->type == ss::PtControllerStarter)
+	{
+		LM_M(("saving Controller startup options"));
+		processSave();
+		tabManager->processListTab->configShow(process->starterP);
+		return;
+	}
+
 	memset(host,        0, sizeof(host));
 	memset(&configData, 0, sizeof(configData));
 

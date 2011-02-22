@@ -112,7 +112,7 @@ void Starter::check(const char* reason)
 	static QIcon  greenIcon("images/green-ball.gif");
 	static QIcon  redIcon("images/red-ball.gif");
 #else
-	I get a SIGSEGV here if I don't use static QIcons ...
+	I get a SIGSEGV here if I dont use static QIcons ...
 
 #0  0xb76a08b8 in QIcon::pixmap(QSize const&, QIcon::Mode, QIcon::State) const () from /usr/lib/libQtGui.so.4
 #1  0xb7993f30 in QGtkStyle::drawControl(QStyle::ControlElement, QStyleOption const*, QPainter*, QWidget const*) const () from /usr/lib/libQtGui.so.4

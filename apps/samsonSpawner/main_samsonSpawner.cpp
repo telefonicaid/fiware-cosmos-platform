@@ -76,36 +76,6 @@ private:
 
 /* ****************************************************************************
 *
-* spawnParse - 
-*/
-void spawnParse(ss::Message::SpawnData* spawnData, char** args, int argCount)
-{
-	int    arg = 0;
-	char*  end;
-
-	end = spawnData->args;
-	while (1)
-	{
-	   if ((end[0] == 0) && (end[1] == 0))
-			break;
-
-		args[arg] = end;
-		LM_T(LmtInit, ("arg %d: '%s'", arg, args[arg]));
-		end = end + strlen(args[arg]) + 1;
-		++arg;
-
-		if (arg == argCount)
-		{
-			args[arg] = NULL;
-			break;
-		}
-	}
-}
-
-
-
-/* ****************************************************************************
-*
 * processSpawn - 
 */
 void SamsonSpawner::processSpawn(ss::Process* processP)
@@ -181,60 +151,10 @@ void SamsonSpawner::processSpawn(ss::Process* processP)
 */
 int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP)
 {
-	char*  args[20];
-	int    argCount;
-	ss::Message::SpawnData* spawnData;
-
 	switch (headerP->code)
 	{
 	case ss::Message::ProcessSpawn:
 		processSpawn((ss::Process*) dataP);
-		break;
-
-	case ss::Message::WorkerSpawn:
-	case ss::Message::ControllerSpawn:
-		pid_t  pid;
-		char*  evec[21];
-
-		spawnData = (ss::Message::SpawnData*) dataP;
-		argCount = spawnData->argCount;
-		LM_T(LmtSpawn, ("Got a '%s' spawn message (with %d parameters)", ss::Message::messageCode(headerP->code), argCount));
-
-		spawnParse(spawnData, args, argCount);
-		LM_T(LmtSpawn, ("Spawning %s with %d parameters:", (headerP->code == ss::Message::WorkerSpawn)? "samsonWorker" : "samsonController", argCount));
-		for (int ix = 0; ix < argCount; ix++)
-			LM_T(LmtSpawn, ("o '%s'", args[ix]));
-
-		pid = fork();
-		if (pid == 0)
-		{
-			int ix;
-			int s;
-
-			evec[0] = (headerP->code == ss::Message::WorkerSpawn)? (char*) "samsonWorker" : (char*) "samsonController";
-			
-			LM_V(("exec arg 0 (prog name): '%s'", evec[0]));
-			for (ix = 0; ix < argCount; ix++)
-			{
-				evec[ix + 1] = args[ix];
-				LM_V(("exec arg %02d: '%s'", ix, evec[ix + 1]));
-			}
-
-			evec[ix + 1] = 0;
-
-			LM_T(LmtSpawn, ("execvp(%s, %s, %s, %s, ...", evec[0], evec[0], evec[1], evec[2]));
-			s = execvp(evec[0], evec);
-			if (s == -1)
-			   LM_E(("Back from EXEC: %s", strerror(errno)));
-			else
-			   LM_E(("Back from EXEC"));
-
-			LM_E(("Tried to start '%s' with the following parameters:", evec[0]));
-			for (ix = 0; ix < argCount + 1; ix++)
-				LM_E(("%02d: %s", ix, evec[ix]));
-
-			LM_X(1, ("Back from EXEC !!!"));
-		}
 		break;
 
 	default:

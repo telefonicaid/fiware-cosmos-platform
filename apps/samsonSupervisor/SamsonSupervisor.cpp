@@ -115,9 +115,6 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 		tabManager->processListTab->configView = new ProcessConfigView(gridForProcessToBeConfigured, processToBeConfigured, workerP);
 		break;
 
-	case ss::Message::WorkerSpawn:
-	case ss::Message::ControllerSpawn:
-
 	default:
 		LM_X(1, ("Don't know how to treat '%s' message", ss::Message::messageCode(headerP->code)));
 	}

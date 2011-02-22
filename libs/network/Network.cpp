@@ -1141,7 +1141,7 @@ Endpoint* Network::coreWorkerEndpointAdd(int rFd, int wFd, const char* name, con
 *
 * Network::endpointAddWorker - 
 */
-Endpoint* Network::endpointAddWorker(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
+Endpoint* Network::endpointAddWorker(const char* why, int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
 {
 	int ix;
 
@@ -1255,7 +1255,7 @@ Endpoint* Network::endpointAdd
 		break;
 
 	case Endpoint::Worker:
-		return endpointAddWorker(rFd, wFd, name, alias, workers, ip, port, coreNo, inheritedFrom);
+		return endpointAddWorker(why, rFd, wFd, name, alias, workers, ip, port, coreNo, inheritedFrom);
 		break;
 
 	case Endpoint::Temporal:

@@ -108,8 +108,22 @@ void Starter::qtInit(QVBoxLayout* spawnerLayout, QVBoxLayout* workerLayout, QVBo
 */
 void Starter::check(const char* reason)
 {
+#if 1
+	static QIcon  greenIcon("images/green-ball.gif");
+	static QIcon  redIcon("images/red-ball.gif");
+#else
+	I get a SIGSEGV here if I don't use static QIcons ...
+
+#0  0xb76a08b8 in QIcon::pixmap(QSize const&, QIcon::Mode, QIcon::State) const () from /usr/lib/libQtGui.so.4
+#1  0xb7993f30 in QGtkStyle::drawControl(QStyle::ControlElement, QStyleOption const*, QPainter*, QWidget const*) const () from /usr/lib/libQtGui.so.4
+#2  0xb7993dd7 in QGtkStyle::drawControl(QStyle::ControlElement, QStyleOption const*, QPainter*, QWidget const*) const () from /usr/lib/libQtGui.so.4
+#3  0xb7a9231b in QPushButton::paintEvent(QPaintEvent*) () from /usr/lib/libQtGui.so.4
+
+etc ...
+
 	QIcon  greenIcon("images/green-ball.gif");
 	QIcon  redIcon("images/red-ball.gif");
+#endif
 
 	LM_T(LmtStarter, ("CHECKING (%s) Starter for %s@%s", reason, process->name, process->host));
 
@@ -127,8 +141,8 @@ void Starter::check(const char* reason)
 		}
 		else
 		{
-		   startButton->setIcon(greenIcon);
-		   startButton->setToolTip("Nothing ...");		   
+			startButton->setIcon(greenIcon);
+			startButton->setToolTip("Nothing ...");		   
 		}
 
 		if (process->sendsLogs)
@@ -268,9 +282,8 @@ void Starter::nameClicked(void)
 */
 void Starter::processStart(void)
 {
-	int                     s;
+	int s;
 	
-#if 1
 	if (process == NULL)
 	   LM_RVE(("NULL process"));
 
@@ -282,91 +295,6 @@ void Starter::processStart(void)
 	s = iomMsgSend(process->spawnerP->endpoint->wFd, process->spawnerP->host, "samsonSupervisor", ss::Message::ProcessSpawn, ss::Message::Msg, process, sizeof(*process));
     if (s != 0)
 		LM_RVE(("iomMsgSend: error %d", s));
-#else
-	ss::Message::SpawnData  spawnData;
-	char*                   end;
-
-	strcpy(spawnData.name, process->name);
-	spawnData.argCount = 0;
-
-	if (strcmp(process->name, "Controller") == 0)
-	{
-		char workersV[16];
-
-		spawnData.argCount = 2;
-
-		memset(spawnData.args, sizeof(spawnData.args), 0);
-		end = spawnData.args;
-
-		strcpy(end, "-workers");
-		end += strlen(end);
-		++end;
-
-		LM_TODO(("Include number of workers in config view for controller ..."));
-		LM_TODO(("workers is a command line option for samsonSupervisor for now ..."));
-		extern int workers;
-		snprintf(workersV, sizeof(workersV), "%d", workers);
-
-		strcpy(end, workersV);
-		end += strlen(end);
-		++end;
-
-		*end = 0;
-	}
-	else
-	{
-		ss::Message::Worker* workerP;
-
-		workerP = workerLookup(process->alias);
-		if (workerP == NULL)
-			LM_X(1, ("Cannot find worker '%s' (%s@%s)", process->alias, process->name, process->host));
-
-		LM_T(LmtProcessStart, ("starting process '%s' in '%s' with no parameters", process->name, process->host));
-		processListShow("starting process");
-
-		spawnData.argCount = 4;
-
-		memset(spawnData.args, sizeof(spawnData.args), 0);
-		end = spawnData.args;
-
-		strcpy(end, "-alias");
-		end += strlen(end);
-		++end;
-
-		strcpy(end, process->alias);
-		end += strlen(end);
-		++end;
-
-		strcpy(end, "-controller");
-		end += strlen(end);
-		++end;
-
-		strcpy(end, networkP->endpoint[2]->ip.c_str());
-		end += strlen(end);
-		++end;
-
-		*end = 0;
-	}
-
-	LM_T(LmtProcessStart, ("starting %s (alias '%s') via spawner %p (host: '%s', fd: %d).",
-						   spawnData.name,
-						   process->alias,
-						   process->spawnerP,
-						   process->spawnerP->host,
-						   process->spawnerP->endpoint->rFd));
-
-	if (process->spawnerP == NULL)
-		LM_X(1, ("NULL spawner pointer for process '%s@%d'", process->name, process->host));
-	if (process->spawnerP->endpoint == NULL)
-		LM_X(1, ("NULL spawner pointer for process '%s@%d'", process->name, process->host));
-
-	if (strcmp(spawnData.name, "Controller") == 0)
-		s = iomMsgSend(process->spawnerP->endpoint->wFd, process->spawnerP->host, "samsonSupervisor", ss::Message::ControllerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
-	else if (strcmp(spawnData.name, "Worker") == 0)
-		s = iomMsgSend(process->spawnerP->endpoint->wFd, process->spawnerP->host, "samsonSupervisor", ss::Message::WorkerSpawn, ss::Message::Msg, &spawnData, sizeof(spawnData));
-	if (s != 0)
-		LM_E(("iomMsgSend: error %d", s));
-#endif
 
 	LM_T(LmtProcessStart, ("started process '%s' in '%s')", process->name, process->host));
 	LM_T(LmtProcessStart, ("Connecting to newly started process (%s) ...", process->name));

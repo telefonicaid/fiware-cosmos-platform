@@ -27,7 +27,7 @@ namespace ss {
 void Endpoint::init(void)
 {
 	this->name             = "no name";
-	this->ip               = "localhost";
+	this->ip               = NULL;
 	this->port             = 0xFFFF;
 	this->rFd              = -1;
 	this->wFd              = -1;
@@ -53,8 +53,6 @@ void Endpoint::init(void)
 	this->wMbps            = 0;   // Bytes per second in last write transfer
 	this->wAccMbps         = 0;   // Bytes per second in all write transfers
 	this->writes           = 0;   // Number of writes accounted for in 'wAccMbps'
-
-	hostnameGet();
 }
 
 
@@ -119,7 +117,7 @@ Endpoint::Endpoint(Type type, std::string ipAndPort)
 	}
 
 	this->name  = ipAndPort;
-	this->ip    = ipAndPort;
+	ipSet(ipAndPort.c_str());
 }
 
 
@@ -134,30 +132,12 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 
 	this->type             = type;
 	this->name             = name;
-	this->ip               = ip;
 	this->port             = port;
 	this->rFd              = rFd;
 	this->wFd              = wFd;
 	this->state            = (rFd == -1)? Unconnected : Connected;
-}
 
-
-
-/* ****************************************************************************
-*
-* hostnameGet - 
-*/
-void Endpoint::hostnameGet(void)
-{
-	char hn[128];
-
-	if (gethostname(hn, sizeof(hn)) == 0)
-	{
-		hostname = std::string(hn);
-		LM_T(LmtInit, ("hostname: '%s'", hostname.c_str()));
-	}
-	else
-		LM_P(("gethostname"));
+	ipSet(ip.c_str());
 }
 
 
@@ -318,4 +298,19 @@ SendJob* Endpoint::jobPop(void)
 	free(qP);
 	return jobP;
 }
+
+
+
+/* ****************************************************************************
+*
+* ipSet - 
+*/
+void Endpoint::ipSet(const char* ip)
+{
+	if (this->ip != NULL)
+		free(this->ip);
+
+	this->ip = strdup(ip);
+}
+
 }

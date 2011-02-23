@@ -21,5 +21,6 @@
 #define SPAWNER_PORT      1233
 #define CONTROLLER_PORT   1234
 #define WORKER_PORT       1235
+#define WEB_SERVICE_PORT  9898
 
 #endif

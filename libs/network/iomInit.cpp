@@ -22,9 +22,9 @@
 */
 void iomInit(ss::Endpoint* controller)
 {
-	controller->rFd = iomConnect((const char*) controller->ip.c_str(), (unsigned short) controller->port);
+	controller->rFd = iomConnect((const char*) controller->ip, (unsigned short) controller->port);
 	if (controller->rFd == -1)
-		LM_X(1, ("error connecting to controller at %s:%d", controller->ip.c_str(), controller->port));
+		LM_X(1, ("error connecting to controller at %s:%d", controller->ip, controller->port));
 
 	controller->state = ss::Endpoint::Connected;
 	controller->wFd   = controller->rFd;

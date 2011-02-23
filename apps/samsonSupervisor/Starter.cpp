@@ -369,8 +369,8 @@ void Starter::processKill(void)
 		LM_E(("can't kill starter for process '%s' at %s as its endpoint is in state '%s'", process->name, process->host, process->endpoint->stateName()));
 	else
 	{
-		LM_W(("Sending 'Die' to '%s' at '%s' (name: '%s')", process->endpoint->typeName(), process->endpoint->ip.c_str(), process->endpoint->name.c_str()));
-		s = iomMsgSend(process->endpoint->wFd, process->endpoint->ip.c_str(), "samsonSupervisor", ss::Message::Die, ss::Message::Msg);
+		LM_W(("Sending 'Die' to '%s' at '%s' (name: '%s')", process->endpoint->typeName(), process->endpoint->ip, process->endpoint->name.c_str()));
+		s = iomMsgSend(process->endpoint->wFd, process->endpoint->ip, "samsonSupervisor", ss::Message::Die, ss::Message::Msg);
 	}
 }
 

@@ -159,7 +159,7 @@ void disconnectAllWorkers(void)
 
 		if (ep->type == ss::Endpoint::Worker)
 		{
-			LM_W(("Closing connection to Worker %02d: %-20s %-20s   %s", ix, ep->name.c_str(), ep->ip.c_str(), ep->stateName()));
+			LM_W(("Closing connection to Worker %02d: %-20s %-20s   %s", ix, ep->name.c_str(), ep->ip, ep->stateName()));
 			close(ep->wFd);
 			networkP->endpointRemove(ep, "Disconnecting all workers");
 		}
@@ -210,7 +210,7 @@ static void disconnectWorkers(void)
 		if (starterV[ix]->process->endpoint->type != ss::Endpoint::Worker)
 			continue;
 
-		LM_W(("Removing endpoint for worker in %s", starterV[ix]->process->endpoint->ip.c_str()));
+		LM_W(("Removing endpoint for worker in %s", starterV[ix]->process->endpoint->ip));
 		networkP->endpointRemove(starterV[ix]->process->endpoint, "Controller disconnected");
 		processRemove(starterV[ix]->process);
 		starterRemove(starterV[ix]);
@@ -411,7 +411,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	}
 
 	if (ep != NULL)
-		LM_T(LmtEndpointUpdate, ("Got an Update Notification ('%s') for endpoint %p '%s' at '%s'", reasonText, ep, ep->name.c_str(), ep->ip.c_str()));
+		LM_T(LmtEndpointUpdate, ("Got an Update Notification ('%s') for endpoint %p '%s' at '%s'", reasonText, ep, ep->name.c_str(), ep->ip));
 	else
 		LM_T(LmtEndpointUpdate, ("Got an Update Notification ('%s') for NULL endpoint", reasonText));
 
@@ -439,8 +439,8 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 				LM_TODO(("Just a temporal endpoint (%p) - never mind ...   ?", ep));
 			else
 			{
-				LM_T(LmtStarter, ("starter == NULL - looking up process %s@%d", ep->name.c_str(), ep->ip.c_str()));
-				processP = processLookup(ep->name.c_str(), ep->ip.c_str());
+				LM_T(LmtStarter, ("starter == NULL - looking up process %s@%d", ep->name.c_str(), ep->ip));
+				processP = processLookup(ep->name.c_str(), ep->ip);
 				if (processP != NULL)
 				{
 					if (processP->endpoint == NULL)
@@ -557,7 +557,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 				else
 					LM_T(LmtProcess, ("... YES. Found the process for endpoint %p: %s@%s", info, processP->name, processP->host));
 
-				LM_W(("Got a '%s' endpoint-update-reason from %s@%s (ep %p) and I take no action (processP == NULL)", reasonText, ep->name.c_str(), ep->ip.c_str(), ep));
+				LM_W(("Got a '%s' endpoint-update-reason from %s@%s (ep %p) and I take no action (processP == NULL)", reasonText, ep->name.c_str(), ep->ip, ep));
 			}
 		}
 		else

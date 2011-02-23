@@ -385,12 +385,12 @@ Endpoint* Network::controllerConnect(const char* controllerName)
 
 	LM_TODO(("Why do I not call endpointAdd here ... ?"));
 
-	LM_T(LmtControllerConnect, ("connecting to controller in %s, port %d", endpoint[CONTROLLER]->ip.c_str(), endpoint[CONTROLLER]->port));
-	endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip.c_str(), (unsigned short) endpoint[CONTROLLER]->port);
+	LM_T(LmtControllerConnect, ("connecting to controller in %s, port %d", endpoint[CONTROLLER]->ip, endpoint[CONTROLLER]->port));
+	endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
 	if (endpoint[CONTROLLER]->rFd == -1)
 	{
 		if (endpoint[ME]->type != Endpoint::Supervisor)
-			LM_X(1, ("error connecting to controller at %s:%d", endpoint[CONTROLLER]->ip.c_str(), endpoint[CONTROLLER]->port));
+			LM_X(1, ("error connecting to controller at %s:%d", endpoint[CONTROLLER]->ip, endpoint[CONTROLLER]->port));
 		else
 		{
 			iAmReady = true;
@@ -439,7 +439,7 @@ void Network::init(const char* controllerName)
 	if (endpoint[CONTROLLER] == NULL)
 		controllerConnect(controllerName);
 
-	LM_T(LmtInit, ("I am a '%s', my name: '%s', ip: %s", endpoint[ME]->typeName(), endpoint[ME]->nam(), endpoint[ME]->ip.c_str()));
+	LM_T(LmtInit, ("I am a '%s', my name: '%s', ip: %s", endpoint[ME]->typeName(), endpoint[ME]->nam(), endpoint[ME]->ip));
 }
 
 
@@ -453,7 +453,7 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 	Message::HelloData hello;
 
 	strncpy(hello.name,   endpoint[ME]->name.c_str(),   sizeof(hello.name));
-	strncpy(hello.ip,     endpoint[ME]->ip.c_str(),     sizeof(hello.ip));
+	strncpy(hello.ip,     endpoint[ME]->ip,     sizeof(hello.ip));
 	strncpy(hello.alias,  endpoint[ME]->alias.c_str(),  sizeof(hello.alias));
 
 	hello.type     = endpoint[ME]->type;
@@ -495,10 +495,11 @@ Endpoint* workerNew(int ix)
 	ep->workers = 0;
 	ep->state   = Endpoint::FutureWorker;
 	ep->type    = Endpoint::Worker;
-	ep->ip      = "II.PP";
 	ep->port    = 0;
 	ep->coreNo  = -1;
 	
+	ep->ipSet("II.PP");
+
 	LM_T(LmtEndpoint, ("Created endpoint %d, worker %d (%s)", FIRST_WORKER + ix, ix, ep->alias.c_str()));
 
 	return ep;
@@ -506,7 +507,6 @@ Endpoint* workerNew(int ix)
 
 
 
-#define WEB_SERVICE_PORT (unsigned short) 9898
 /* ****************************************************************************
 *
 * initAsSamsonController - 
@@ -936,7 +936,7 @@ void Network::endpointListShow(const char* why)
 			  endpoint[ix]->typeName(),
 			  endpoint[ix]->name.c_str(),
 			  endpoint[ix]->alias.c_str(),
-			  endpoint[ix]->ip.c_str(),
+			  endpoint[ix]->ip,
 			  endpoint[ix]->port,
 			  endpoint[ix]->stateName(),
 			  endpoint[ix]->rFd,
@@ -967,9 +967,10 @@ static void inheritFrom(Endpoint* to, Endpoint* from)
 	to->msgsOutErrors  = from->msgsOutErrors;
 	to->bytesIn        = from->bytesIn;
 	to->bytesOut       = from->bytesOut;
-	to->ip             = from->ip;
 	to->startTime      = from->startTime;
 	
+	to->ipSet(from->ip);
+
 	memcpy(&to->sockin, &from->sockin, sizeof(to->sockin));
 }
 
@@ -999,8 +1000,8 @@ static void endpointFill(Endpoint* ep, Endpoint* inheritedFrom, int rFd, int wFd
 	ep->restarts   = 0;
 	ep->jobsDone   = 0;	
 
-	if ((ep->ip == "") || (ip != "II.PP"))
-		ep->ip = ip;
+	if (ip != "II.PP")
+		ep->ipSet(ip.c_str());
 
 	//
 	// If state not changed by 'inheritedFrom', and the socket seems connected,
@@ -1149,12 +1150,6 @@ Endpoint* Network::endpointAddWorker(const char* why, int rFd, int wFd, const ch
 		return coreWorkerEndpointAdd(rFd, wFd, name, alias);
 
 	LM_T(LmtWorkers, ("%d workers", Workers));
-
-#if 0
-	lmVerbose = true;
-	endpointListShow("Adding a worker");
-	lmVerbose = false;
-#endif
 
 	for (ix = FIRST_WORKER; ix < FIRST_WORKER + Workers; ix++)
 	{
@@ -1454,8 +1449,8 @@ Endpoint* Network::endpointLookup(Endpoint::Type type, char* ip)
 				continue;
 		}
 
-		LM_T(LmtEndpointLookup, ("Comparing IPs: '%s' to '%s'", endpoint[ix]->ip.c_str(), ip));
-		if (strcmp(endpoint[ix]->ip.c_str(), ip) == 0)
+		LM_T(LmtEndpointLookup, ("Comparing IPs: '%s' to '%s'", endpoint[ix]->ip, ip));
+		if (strcmp(endpoint[ix]->ip, ip) == 0)
 		{
 			LM_T(LmtEndpointLookup, ("FOUND Endpoint at %s", ip));
 			return endpoint[ix];
@@ -1488,7 +1483,7 @@ Endpoint* Network::endpointLookup(Endpoint::Type type, Host* hostP)
 		if (endpoint[ix]->type != type)
 			continue;
 
-		epHostP = hostMgr->lookup(endpoint[ix]->ip.c_str());
+		epHostP = hostMgr->lookup(endpoint[ix]->ip);
 		if (epHostP == hostP)
 			return endpoint[ix];
 	}
@@ -1705,7 +1700,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 				while (endpoint[CONTROLLER]->rFd == -1)
 				{
 					LM_T(LmtControllerConnect, ("Reconnecting to Controller"));
-					endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip.c_str(), (unsigned short) endpoint[CONTROLLER]->port);
+					endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
 					sleep(1); // sleep one second before reintenting connection to controller
 				}
 
@@ -2025,7 +2020,7 @@ void Network::msgTreat(void* vP)
 				while (endpoint[CONTROLLER]->rFd == -1)
 				{
 					LM_T(LmtControllerConnect, ("Reconnecting to Controller"));
-					endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip.c_str(), (unsigned short) endpoint[CONTROLLER]->port);
+					endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
 					sleep(1); // sleep one second before reintenting connection to controller
 				}
 
@@ -2201,7 +2196,7 @@ void Network::msgTreat(void* vP)
 			endpointUpdateReceiver->endpointUpdate(ep, Endpoint::HelloReceived, "Hello Received", helloEp);
 
 		LM_T(LmtHello, ("Got Hello %s from %s, type %s, %s:%d, workers: %d",
-			  messageType(msgType), helloEp->name.c_str(), helloEp->typeName(), helloEp->ip.c_str(), helloEp->port, helloEp->workers));
+			  messageType(msgType), helloEp->name.c_str(), helloEp->typeName(), helloEp->ip, helloEp->port, helloEp->workers));
 
 		if (ep && ep->type == Endpoint::Temporal)
 		{
@@ -2355,9 +2350,9 @@ void Network::msgTreat(void* vP)
 					int workerFd;
 
 					LM_T(LmtWorker, ("Connect to worker %d: %s (host %s, port %d, alias '%s')",
-									   ix, epP->name.c_str(), epP->ip.c_str(), epP->port, epP->alias.c_str()));
+									   ix, epP->name.c_str(), epP->ip, epP->port, epP->alias.c_str()));
 
-					if ((workerFd = iomConnect(epP->ip.c_str(), epP->port)) == -1)
+					if ((workerFd = iomConnect(epP->ip, epP->port)) == -1)
 					{
 						if (endpoint[ME]->type == Endpoint::Delilah)
 						{
@@ -2365,7 +2360,7 @@ void Network::msgTreat(void* vP)
 						}
 
 						LM_T(LmtWorker, ("worker %d: %s (host %s, port %d) not there - no problem, he'll connect to me",
-									   ix, epP->name.c_str(), epP->ip.c_str(), epP->port));
+									   ix, epP->name.c_str(), epP->ip, epP->port));
 					}
 					else
 					{
@@ -2500,28 +2495,28 @@ void Network::run(void)
 					if (endpoint[ix]->state == Endpoint::Closed)
 					{
 						LM_T(LmtReconnect, ("delilah reconnecting to %s:%d (type: '%s', state: '%s')",
-											endpoint[ix]->ip.c_str(), endpoint[ix]->port, endpoint[ix]->typeName(),
+											endpoint[ix]->ip, endpoint[ix]->port, endpoint[ix]->typeName(),
 											endpoint[ix]->stateName()));
-						workerFd = iomConnect(endpoint[ix]->ip.c_str(), endpoint[ix]->port);
+						workerFd = iomConnect(endpoint[ix]->ip, endpoint[ix]->port);
 						if (workerFd != -1)
 						{
 							endpointAdd("reconnecting to dead worker", workerFd, workerFd, (char*) "Reconnecting worker", NULL, 0, Endpoint::Temporal,
-										endpoint[ix]->ip.c_str(),
+										endpoint[ix]->ip,
 										endpoint[ix]->port);
 							endpoint[ix]->state = Endpoint::Reconnecting;
 						}
 					}
 					else if (endpoint[ix]->state == Endpoint::Disconnected)
 					{
-						LM_T(LmtEndpoint, ("Connect to %s:%d ?", endpoint[ix]->ip.c_str(), endpoint[ix]->port));
+						LM_T(LmtEndpoint, ("Connect to %s:%d ?", endpoint[ix]->ip, endpoint[ix]->port));
 
-						workerFd = iomConnect(endpoint[ix]->ip.c_str(), endpoint[ix]->port);
+						workerFd = iomConnect(endpoint[ix]->ip, endpoint[ix]->port);
 						if (workerFd != -1)
 						{
 							Endpoint* ep;
 
 							ep = endpointAdd("reconnecting to Disconnected worker", workerFd, workerFd, (char*) "New Worker", NULL, 0, Endpoint::Temporal,
-											 endpoint[ix]->ip.c_str(),
+											 endpoint[ix]->ip,
 											 endpoint[ix]->port);
 							if (ep != NULL)
 								LM_T(LmtEndpoint, ("Added ep with state '%s'", ep->stateName()));
@@ -2780,7 +2775,7 @@ std::string Network::getState(std::string selector)
 					 endpoint[ix]->typeName(),
 					 endpoint[ix]->name.c_str(),
 					 endpoint[ix]->alias.c_str(),
-					 endpoint[ix]->ip.c_str(),
+					 endpoint[ix]->ip,
 					 endpoint[ix]->port,
 					 endpoint[ix]->stateName(),
 					 endpoint[ix]->rFd,
@@ -2794,7 +2789,7 @@ std::string Network::getState(std::string selector)
 					 endpoint[ix]->typeName(),
 					 endpoint[ix]->name.c_str(),
 					 endpoint[ix]->alias.c_str(),
-					 endpoint[ix]->ip.c_str(),
+					 endpoint[ix]->ip,
 					 endpoint[ix]->port,
 					 endpoint[ix]->stateName(),
 					 endpoint[ix]->rFd,

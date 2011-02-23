@@ -118,7 +118,7 @@ int iomMsgRead
 	if (headerP->magic != 0xFEEDC0DE)
 	{
 		LM_READS(ep->name.c_str(), "header", headerP, sizeof(ss::Message::Header), LmfByte);
-		LM_X(1, ("bad magic number in message from %s@%s (fd: %d) ", ep->name.c_str(), ep->ip.c_str(), ep->rFd));
+		LM_X(1, ("bad magic number in message from %s@%s (fd: %d) ", ep->name.c_str(), ep->ip, ep->rFd));
 	}
 
 	if (headerP->dataLen != 0)
@@ -131,7 +131,7 @@ int iomMsgRead
 		LM_T(LmtRead, ("Reading %d bytes of data", headerP->dataLen));
 		if (headerP->dataLen > (unsigned int) *dataLenP)
 		{
-			LM_W(("Allocating extra space for the data part of incoming message '%s' from %s@%s", ss::Message::messageCode(headerP->code), ep->name.c_str(), ep->ip.c_str()));
+			LM_W(("Allocating extra space for the data part of incoming message '%s' from %s@%s", ss::Message::messageCode(headerP->code), ep->name.c_str(), ep->ip));
 			*dataPP = (char*) malloc(headerP->dataLen);
 			if (*dataPP == NULL)
 				LM_X(1, ("malloc(%d)", headerP->dataLen));

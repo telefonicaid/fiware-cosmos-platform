@@ -111,10 +111,11 @@ public:
 
 public:
 	std::string                  name;
-	std::string                  hostname;
-	std::string                  ip;
+	char*                        ip;
 	std::string                  alias;
 	struct sockaddr_in           sockin;
+
+	void                         ipSet(const char* ip);
 
 	int                          rFd;
 	int                          wFd;
@@ -162,7 +163,6 @@ public:
 	const char*     nam();
 	void            reset();
 	void            init();
-	void            hostnameGet(void);
 
 	SendJobQueue*   jobQueueHead;
 

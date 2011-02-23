@@ -104,8 +104,33 @@ int main(int argc, const char *argv[])
 
 
 	if( cmdLine.get_flag_bool("header") )
+	{
 		std::cout << "Total: " << header.info.str() << std::endl;
+		
+	}
+	
+	// Compute dispersion
+	size_t max_size = 0;
+	size_t average = 0;
+	size_t squeare_average = 0;
+	for ( int i = 0 ; i < KV_NUM_HASHGROUPS ; i++ )
+	{
+		size_t _size = info[i].size;
+		if(  _size > max_size )
+			max_size = _size;
+		
+		average += _size;
+		squeare_average += _size*_size;	
+	}
+	average /= KV_NUM_HASHGROUPS;
+	squeare_average /= KV_NUM_HASHGROUPS;
+	
+	double d = sqrt( (double) squeare_average - (double) average*average ) / (double) average;
 
+	
+	std::cout << "Max size per hash-group " << au::Format::string( max_size ) << "\n";
+	std::cout << "Average size per hash-group " << au::Format::string( average ) << "\n" ; 
+	std::cout << "Dispersion in size per hash-group " << d << "\n" ; 
 	
 	if( cmdLine.get_flag_bool("header") )
 		exit(0);

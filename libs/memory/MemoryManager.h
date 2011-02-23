@@ -52,14 +52,7 @@ namespace ss {
 		size_t tag;
 		size_t sub_tag;
 	
-		
-		MemoryRequest( size_t _size , Buffer **_buffer,  MemoryRequestDelegate *_delegate )
-		{
-			size = _size;
-			buffer = _buffer;
-			delegate = _delegate;	// There is no sence a request for memory with no delegate ;)
-		}
-
+		MemoryRequest( size_t _size , Buffer **_buffer,  MemoryRequestDelegate *_delegate );
 		
 		void notifyDelegate()
 		{

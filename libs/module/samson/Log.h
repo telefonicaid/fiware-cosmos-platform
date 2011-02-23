@@ -1,8 +1,6 @@
 #ifndef _H_SAMSON_LOG
 #define _H_SAMSON_LOG
 
-#include "logMsg.h"		// lmOut
-
 namespace ss
 {
 

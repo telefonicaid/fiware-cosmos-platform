@@ -19,6 +19,17 @@
 namespace ss
 {
 	
+	
+	MemoryRequest::MemoryRequest( size_t _size , Buffer **_buffer,  MemoryRequestDelegate *_delegate )
+	{
+		size = _size;
+		buffer = _buffer;
+		delegate = _delegate;	// There is no sence a request for memory with no delegate ;)
+	}
+	
+	
+#pragma mark -----
+	
 	void* runMemoryManagerThread(void*p)
 	{
 		((MemoryManager*)p)->runThread();
@@ -286,6 +297,12 @@ namespace ss
 	
 	void MemoryManager::addMemoryRequest( MemoryRequest *request)
 	{
+		if( request->size > memory )
+		{
+			LM_X(-1,("Error managing memory: excesive memory request"));	
+		}
+
+		
 		token.retain();
 		memoryRequets.push_back( request );
 		token.release();

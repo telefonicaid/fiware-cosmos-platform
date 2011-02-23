@@ -146,6 +146,13 @@ namespace ss
 							// LM_T( LmtUser01 + message.trace_channel , ( message.trace_message));
 							//LM_M(( "TRACE %d %s", message.trace_channel, message.trace_message)); 
 						}
+						else if ( message.code == -3 ) // Error in the operation
+						{
+							LogLineData *l = &message.logData;
+							setError(l->text);
+							s = broken;
+							break;	// Not loop any more
+						}
 						else
 						{
 							LM_T( LmtIsolated , ("Isolated process %d(%s): Executing code ",id_processItem,stateName()));
@@ -236,6 +243,25 @@ namespace ss
 		}
 	}
 
+	void ProcessItemIsolated::setUserError( std::string error_message )
+	{
+		// Send a message to the parent reporting this error and exit
+		InterProcessMessage message;
+		message.code = -3; // Error in the operation
+
+		// Copy of the message
+		strncpy(message.logData.text, error_message.c_str() , sizeof(message.logData.text) );  
+		
+		// Write in the pipe
+		write(pipeFdPair1[1], &message, sizeof(message) );
+		
+		// Exit this task ( in the background )
+		assert( false );
+		//exit(0);
+		
+	}
+	
+	
 	// Function used inside runIsolated to send a code to the main process
 	void ProcessItemIsolated::trace( LogLineData *logData )
 	{

@@ -41,6 +41,9 @@ namespace ss {
 		
 		// Function used indide the runIsaled to send a trace to the main process
 		void trace(LogLineData *logData);
+
+		// Set the error and finish the task
+		void setUserError( std::string message ); 
 		
 		// Function executed before and after
 		virtual void init(){};

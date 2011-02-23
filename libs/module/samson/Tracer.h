@@ -20,7 +20,12 @@ namespace ss
 	   /**
 		Unique function to send traces to the parent process
 		*/
-	   virtual void trace(LogLineData *logData)=0;
+	   virtual void trace( LogLineData *logData )=0;
+
+	   /** 
+		Report an error and exit the function
+		*/
+	   virtual void setUserError( std::string message )=0; 
 	   
 	   /**
 		Handy function used by macros to get the message string

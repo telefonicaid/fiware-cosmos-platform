@@ -28,7 +28,7 @@ namespace ss {
 		token.retain();
 
 		// Look at the operation to 
-		Operation *op = worker->modulesManager.getOperation( worker_task.operation() );
+		Operation *op = ModulesManager::shared()->getOperation( worker_task.operation() );
 		assert( op );		// TODO: Better handling of no operation error
 
 		// Id of this operations

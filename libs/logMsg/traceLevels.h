@@ -34,6 +34,8 @@ typedef enum TraceLevels
 	LmtWorkers,
 	LmtWorkerVector,
 
+	LmtModuleManager,
+	
 	LmtEndpoint,
 	LmtEndpoints,
 	LmtEndpointUpdate,

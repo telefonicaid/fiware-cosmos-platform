@@ -90,13 +90,13 @@ namespace ss {
 		if ( packet->message.help().datas() )
 		{
 			// Fill with datas information
-			modulesManager.helpDatas( response , packet->message.help() );
+		  ModulesManager::shared()->helpDatas( response , packet->message.help() );
 		}
 
 		if( packet->message.help().operations() )
 		{
 			// Fill with operations information
-			modulesManager.helpOperations( response , packet->message.help() );
+		  ModulesManager::shared()->helpOperations( response , packet->message.help() );
 		}
 			
 		// copy the id when returning
@@ -254,7 +254,7 @@ namespace ss {
 					network::CommandResponse *response = p2->message.mutable_command_response();
 					response->set_command( command );
 					p2->message.set_delilah_id( packet->message.delilah_id() );
-					modulesManager.fill( response->mutable_data_list() , command );
+					ModulesManager::shared()->fill( response->mutable_data_list() , command );
 					network->send(this, fromId, Message::CommandResponse, p2);
 					
 					return	 0;
@@ -268,7 +268,7 @@ namespace ss {
 					network::CommandResponse *response = p2->message.mutable_command_response();
 					response->set_command( command );
 					p2->message.set_delilah_id( packet->message.delilah_id() );
-					modulesManager.fill( response->mutable_operation_list() , command );
+					ModulesManager::shared()->fill( response->mutable_operation_list() , command );
 					network->send(this, fromId, Message::CommandResponse, p2);
 					
 					return	 0;
@@ -344,6 +344,26 @@ namespace ss {
 				{
 					// Clear finish or error jobs
 					jobManager.removeAllFinishJobs();
+					return 0;
+				}
+				
+				
+				if ( cmdLine.isArgumentValue(0,"reload_modules" , "reload") )
+				{
+					// Reload modules
+					ModulesManager::shared()->reloadModules();
+					
+					// Send a message to each worker to also reload modules
+					for (int i = 0 ; i < num_workers ; i++)
+					{
+						Packet *p = new Packet();
+						network::WorkerTask* wt=  p->message.mutable_worker_task();
+						wt->set_operation( "reload_modules" );	// Spetial operation to reload modules
+						network->send(this,  network->workerGetIdentifier(i) , Message::WorkerTask,  p);
+						
+					}
+					
+					
 					return 0;
 				}
 				

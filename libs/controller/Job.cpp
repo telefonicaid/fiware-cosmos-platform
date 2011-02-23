@@ -171,7 +171,7 @@ namespace ss {
 			
 			
 			// Get the operation to run
-			Operation *operation = jobManager->controller->modulesManager.getOperation( c );
+			Operation *operation = ModulesManager::shared()->getOperation( c );
 			
 			if( operation )
 			{

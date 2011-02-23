@@ -305,6 +305,9 @@ namespace ss
 			output << " workers (w) Get information about what is running on workers and controller\n";
 			output << "             Usage: workers/w\n";
 			output << "\n";
+			output << " reload_modules Reload modules present used by the platform.\n";
+			output << "             Usage: reload_modules/reload\n";
+			output << "\n";
 			output << "---------------------------------------------------------------------\n";
 			output << "\n";
 			output << " upload		Load txt files to the platform\n";

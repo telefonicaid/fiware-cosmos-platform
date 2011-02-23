@@ -19,6 +19,7 @@
 #include "ModulesManager.h"			/* Own interface                            */
 #include <samson/Data.h>			/* ss::system::UInt ... */
 #include "logMsg.h"
+#include "traceLevels.h"			// Lmt...
 #include "MessagesOperations.h"		// evalHelpFilter(.)
 #include "SamsonSetup.h"			// ss::SamsonSetup
 
@@ -87,7 +88,10 @@ namespace ss
 			stat(path.c_str(), &info);
 			
 			if( S_ISREG(info.st_mode) )
+			{
+				LM_T( LmtModuleManager ,  ("Adding module from %s", path.c_str()));
 				addModule( path );
+			}
 			
 		}
 		closedir(dp);
@@ -97,6 +101,8 @@ namespace ss
 	
 	void ModulesManager::reloadModules()
 	{
+		LM_T(LmtModuleManager,("Reloading modules"));
+		
 		lock.lock();
 		
 		// Remove all modules unloading from memory
@@ -109,6 +115,10 @@ namespace ss
 		}
 		modules.clear();
 		
+		// Clear this module itself (operations and datas)
+		clearModule();
+		
+		LM_T(LmtModuleManager,("Adding modules again..."));
 		
 		// Add modules again
 		addModules();

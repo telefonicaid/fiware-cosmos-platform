@@ -40,6 +40,8 @@ char* traceLevelName(TraceLevels level)
 	case LmtEndpointUpdate:              return (char*) "Updating an Endpoint";
 	case LmtTemporalEndpoint:            return (char*) "Temporal Endpoints";
 
+	case LmtModuleManager:				 return (char*) "ModuleManager";
+			
 	case LmtSpawnerList:                 return (char*) "Spawner List (Supervisor only)";
 	case LmtProcessList:                 return (char*) "Process List (Supervisor only)";
 	case LmtStarterList:                 return (char*) "Starter List (Supervisor only)";

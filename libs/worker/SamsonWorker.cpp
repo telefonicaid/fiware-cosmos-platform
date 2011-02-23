@@ -121,6 +121,13 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		// A packet with a particular command is received (controller expect to send a confirmation message)
 		LM_T(LmtTask, ("Got a WorkerTask message"));
 		
+		if( packet->message.worker_task().operation() == "reload_modules" )
+		{
+			// Spetial operation to reload modules
+			ModulesManager::shared()->reloadModules();
+			return 0;
+		}
+		
 		// add task to the task manager
 		taskManager.addTask( packet->message.worker_task() );
 		return 0;

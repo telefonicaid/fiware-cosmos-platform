@@ -107,6 +107,12 @@ namespace ss
 			
 		}
 		
+		void clearModule()
+		{
+			datas.clear();
+			operations.clear();
+		}
+		
 		
 	};
 }

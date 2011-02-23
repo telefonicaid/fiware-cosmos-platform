@@ -40,7 +40,6 @@ namespace ss {
 
 		// Elements inside the SamsonController
 		NetworkInterface*     network;						// Network interface
-		ModulesManager        modulesManager;				// Manager of the modules ( to check data types and map/reduce/scripts functions)
 
 		ControllerDataManager data;							// Data manager for the controller
 		JobManager jobManager;								// Top level job manager

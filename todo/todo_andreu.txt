@@ -1,0 +1,58 @@
+
+
+TODO:
+
+
+* File Management ( errors while uploading / downloading )
+* Check queues when uploading
+* New upload model notifying first the controller
+* Automatic operations ?
+* Detect problems with memory running operations ( not well distributed per hash-group)
+* Informacion about time in the jobs list
+
+ON-GOING
+
+* Kill jobs ( kill the task )
+
+DONE
+
+* Reload modules to detect changes
+* operations can emit errors to cancel the operation
+* samsonCat -header with information about hash-group distribution
+* Check String type
+* Memory problem with OSN Data ( Goyo )
+* Remove unnecessary files in /opt/samson/data
+
+Mail Goyo:
+
+PROBLEMAS
+
+
+
+FILE MANAGEMENT
+----------------------------------------------------------------------------------------------------------------
+
+-Otro error que tira el cliente:
+[ 3 ] Received upload data confirmation from controller
+[ 3 ]   Uploading  147MB to queue: users_txt Running time: 00:00:03State: All data uploaded and confirmed.
+          Progress:  [ Upload  147MB 100%  393Mbps   393Mbps/w  ]  [ Processed  147MB 100%  393Mbps   393Mbps/w  ]
+Finished local delilah process with : 3
+Delilah> graph.compute_graph_O2 cdrs_txt users_txt graph_O2
+Job scheduled [2]  (graph.compute_graph_O2 cdrs_txt users_txt graph_O2 )
+Delilah> samsonLocal: /home/jges/trunk/libs/disk/DeviceDiskAccessManager.cpp:132: void 
+ss::DeviceDiskAccessManager::run(ss::DiskOperation*): Assertion `file' failed.
+Aborted
+
+- En la tarea de osn, calculando el total de URLs, aunque teóricamente la cola tiene un elemento
+(o dos, que he probado a replicarlo), el parserOut no ve ninguno.
+
+- En la tarea de osn, cuando lanzo los 5GB, el map (he probado un par de ellos), se bloquea porque
+parece que se come toda la memoria. Parece que usar .assign() en vez de = ha ayudado en el parser,
+pero no en el map. Voy a probar a hacer un clear() después del emit(), pero es posible que el problema
+esté en el hash del String, que mande todas las URLs al mismo mapper. Efectivamente, parece que el problema
+está más bien relacionado con el parse().
+
+SUGERENCIAS
+
+- Estaría bien si al crear el prototipo, se añadiera un comentario con los parámetros de entrada y salida
+

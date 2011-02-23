@@ -1,0 +1,8 @@
+
+
+* Pestaña en samsonSupervisor con una grafica utilizando la libreria qwt ( http://qwt.sourceforge.net/ )
+
+* (ANDREU) Method to send a packet to all delilahs and supervisor
+* (ANDREU) Metodo para averiguar la cola ( numero de paquetes y tamaño ) de salida para cada endpoint
+* (ANDREU) Error en la recepción de paquetes ( lees directamente de un endpoint .... )
+* (ANDREU) Error de Spawner en la parte de arriba de la ventada

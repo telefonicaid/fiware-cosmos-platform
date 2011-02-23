@@ -190,16 +190,30 @@ static void disconnectWorkers(void)
 			continue;
 
 		if (starterV[ix]->process == NULL)
+		{
+			LM_M(("Should I really remove this starter with a NULL process (is it even possible to reach this point) ?"));
+			starterRemove(starterV[ix]);
+			continue;
+		}
+
+		if (starterV[ix]->process->type != ss::PtWorker)
 			continue;
 
 		if (starterV[ix]->process->endpoint == NULL)
+		{
+			LM_M(("Should I really remove this starter with a NULL endpoint?"));
+			processRemove(starterV[ix]->process);
+			starterRemove(starterV[ix]);
 			continue;
+		}
 
 		if (starterV[ix]->process->endpoint->type != ss::Endpoint::Worker)
 			continue;
 
 		LM_W(("Removing endpoint for worker in %s", starterV[ix]->process->endpoint->ip.c_str()));
 		networkP->endpointRemove(starterV[ix]->process->endpoint, "Controller disconnected");
+		processRemove(starterV[ix]->process);
+		starterRemove(starterV[ix]);
 	}
 }
 
@@ -262,7 +276,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 			}
 
 			LM_T(LmtWorkerVector, ("Worker %d is totally unconfigured - adding it a process and starter", ix));
-			process = processAdd("Worker", "ip", WORKER_PORT, worker->alias, NULL);
+			process = processAdd(ss::PtWorker, "Worker", "ip", WORKER_PORT, worker->alias, NULL);
 
 			starter = starterAdd(process);
 			if (starter == NULL)
@@ -340,7 +354,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 		if (process == NULL)
 		{
 			LM_T(LmtWorkerVector, ("Nope, not in the list - let's add it"));
-			process = processAdd("Worker", hostP->name, WORKER_PORT, worker->alias, ep);
+			process = processAdd(ss::PtWorker, "Worker", hostP->name, WORKER_PORT, worker->alias, ep);
 		}
 		else
 		{
@@ -505,7 +519,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 
 			new Popup("Lost Connection to Spawner", eText);
 		}
-		else if (starter->process->type == ss::PtControllerStarter)
+		else if (starter->process->type == ss::PtController)
 		{
 			snprintf(eText, sizeof(eText), "Lost connection to samsonController in host '%s'.\n"
 					                       "This process is a vital part of the samson platform,\n"
@@ -514,7 +528,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 
 			new Popup("Lost Connection to Controller", eText);
 		}
-		else if (starter->process->type == ss::PtWorkerStarter)
+		else if (starter->process->type == ss::PtWorker)
 		{
 			snprintf(eText, sizeof(eText), "Lost connection to samsonWorker in host '%s'.\n"
 					                       "This process is a vital part of the samson platform,\n"

@@ -33,8 +33,8 @@ class Endpoint;
 */
 typedef enum ProcessType
 {
-	PtWorkerStarter,
-	PtControllerStarter,
+	PtWorker = 1,
+	PtController,
 	PtSpawner
 } ProcessType;
 

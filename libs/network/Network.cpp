@@ -1149,6 +1149,13 @@ Endpoint* Network::endpointAddWorker(const char* why, int rFd, int wFd, const ch
 		return coreWorkerEndpointAdd(rFd, wFd, name, alias);
 
 	LM_T(LmtWorkers, ("%d workers", Workers));
+
+#if 0
+	lmVerbose = true;
+	endpointListShow("Adding a worker");
+	lmVerbose = false;
+#endif
+
 	for (ix = FIRST_WORKER; ix < FIRST_WORKER + Workers; ix++)
 	{
 		Endpoint* ep;

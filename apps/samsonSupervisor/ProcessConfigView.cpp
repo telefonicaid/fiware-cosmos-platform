@@ -403,7 +403,7 @@ void ProcessConfigView::save(void)
 	int                      s;
 	char                     host[64];
 
-	if (process->type == ss::PtControllerStarter)
+	if (process->type == ss::PtController)
 	{
 		processSave();
 		tabManager->processListTab->configShow(process->starterP);

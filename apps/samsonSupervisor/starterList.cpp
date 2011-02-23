@@ -144,6 +144,28 @@ Starter* starterAdd(ss::Process* processP)
 
 /* ****************************************************************************
 *
+* starterRemove - 
+*/
+void starterRemove(Starter* starterP)
+{
+	for (unsigned int ix = 0; ix < starterMax; ix++)
+	{
+		if (starterV[ix] == starterP)
+		{
+			if (starterP->startButton)  delete starterP->startButton;
+			if (starterP->logButton)    delete starterP->logButton;
+			if (starterP->nameButton)   delete starterP->nameButton;
+
+			delete starterP;
+			starterV[ix] = NULL;
+		}
+	}
+}
+
+
+
+/* ****************************************************************************
+*
 * starterLookup - 
 */
 Starter* starterLookup(ss::Endpoint* ep)

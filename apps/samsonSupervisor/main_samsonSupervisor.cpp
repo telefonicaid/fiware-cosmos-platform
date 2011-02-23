@@ -304,7 +304,7 @@ static void controllerConnect(char* host, ss::Process* spawnerP)
 	LM_T(LmtInit, ("Connecting to controller in '%s'", host));
 	controller = networkP->controllerConnect(host);
 
-	processP           = processAdd("Controller", host, CONTROLLER_PORT, "Controller", controller);
+	processP           = processAdd(ss::PtController, "Controller", host, CONTROLLER_PORT, "Controller", controller);
 	processP->spawnerP = spawnerP;
 }
 

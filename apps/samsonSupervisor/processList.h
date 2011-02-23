@@ -46,11 +46,12 @@ extern ss::Process* processAdd(ss::Process* process);
 */
 extern ss::Process* processAdd
 (
-	const char*     name,
-	const char*     host,
-	unsigned short  port,
-	const char*     alias,
-	ss::Endpoint*   endpoint
+	ss::ProcessType  type,
+	const char*      name,
+	const char*      host,
+	unsigned short   port,
+	const char*      alias,
+	ss::Endpoint*    endpoint
 );
 
 
@@ -60,6 +61,14 @@ extern ss::Process* processAdd
 * spawnerAdd - 
 */
 extern ss::Process* spawnerAdd(const char* nameP, const char* host, unsigned short port, ss::Endpoint* endpoint = NULL);
+
+
+
+/* ****************************************************************************
+*
+* processRemove - 
+*/
+extern void processRemove(ss::Process* processP);
 
 
 

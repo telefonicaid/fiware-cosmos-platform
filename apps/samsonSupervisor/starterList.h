@@ -25,6 +25,32 @@ extern void starterListInit(unsigned int starters);
 
 /* ****************************************************************************
 *
+* starterAdd - 
+*/
+extern Starter* starterAdd(Starter* starter);
+extern Starter* starterAdd(ss::Process* process);
+
+
+
+/* ****************************************************************************
+*
+* starterRemove - 
+*/
+extern void starterRemove(Starter* starterP);
+
+
+
+/* ****************************************************************************
+*
+* starterLookup - 
+*/
+extern Starter* starterLookup(ss::Process* process);
+extern Starter* starterLookup(ss::Endpoint* ep);
+
+
+
+/* ****************************************************************************
+*
 * starterMaxGet - 
 */
 extern unsigned int starterMaxGet(void);
@@ -44,30 +70,5 @@ extern Starter** starterListGet(void);
 * starterListShow - 
 */
 extern void starterListShow(const char* what);
-
-
-
-/* ****************************************************************************
-*
-* starterAdd - 
-*/
-extern Starter* starterAdd(Starter* starter);
-extern Starter* starterAdd(ss::Process* process);
-
-
-
-/* ****************************************************************************
-*
-* starterLookup - 
-*/
-extern Starter* starterLookup(ss::Endpoint* ep);
-
-
-
-/* ****************************************************************************
-*
-* starterLookup - 
-*/
-extern Starter* starterLookup(ss::Process* process);
 
 #endif

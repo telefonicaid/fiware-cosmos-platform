@@ -84,7 +84,7 @@ void SamsonSpawner::processSpawn(ss::Process* processP)
 	char*  argV[50];
 	int    argC = 0;
 
-	if (processP->type == ss::PtWorkerStarter)
+	if (processP->type == ss::PtWorker)
 	{
 		argV[argC++] = (char*) "samsonWorker";
 		argV[argC++] = (char*) "-alias";
@@ -92,7 +92,7 @@ void SamsonSpawner::processSpawn(ss::Process* processP)
 		argV[argC++] = (char*) "-controller";
 		argV[argC++] = (char*) processP->controllerHost;
 	}
-	else if (processP->type == ss::PtControllerStarter)
+	else if (processP->type == ss::PtController)
 	{
 		char workersV[16];
 

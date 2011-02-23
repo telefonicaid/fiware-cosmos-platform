@@ -70,6 +70,7 @@ extern ss::Process* spawnerAdd(const char* nameP, const char* host, unsigned sho
 extern ss::Process* processLookup(unsigned int ix);
 extern ss::Process* processLookup(const char* alias);
 extern ss::Process* processLookup(const char* name, const char* host);
+extern ss::Process* processLookup(ss::Endpoint* ep);
 extern ss::Process* spawnerLookup(const char* host);
 
 
@@ -94,6 +95,6 @@ extern ss::Process** processListGet(void);
 *
 * processListShow - 
 */
-extern void processListShow(const char* why);
+extern void processListShow(const char* why, bool forcedOn = false);
 
 #endif

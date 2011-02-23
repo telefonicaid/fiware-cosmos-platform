@@ -265,9 +265,10 @@ static void networkPrepare(void)
 *
 * spawnerConnect - 
 */
-static void spawnerConnect(char* host)
+static ss::Process* spawnerConnect(char* host)
 {
-	int fd;
+	int           fd;
+	ss::Process*  spawnerP;
 
 	LM_T(LmtInit, ("Trying to connect to spawner in '%s'", host));
 	fd = iomConnect(host, SPAWNER_PORT);
@@ -284,7 +285,9 @@ static void spawnerConnect(char* host)
 		exit(2);
 	}
 
+	spawnerP = spawnerAdd("Spawner", host, SPAWNER_PORT, NULL);
 	LM_T(LmtInit, ("Connected to spawner"));
+	return spawnerP;
 }
 
 
@@ -293,7 +296,7 @@ static void spawnerConnect(char* host)
 *
 * controllerConnect
 */
-static void controllerConnect(char* host)
+static void controllerConnect(char* host, ss::Process* spawnerP)
 {
 	ss::Endpoint*  controller;
 	ss::Process*   processP;
@@ -301,38 +304,8 @@ static void controllerConnect(char* host)
 	LM_T(LmtInit, ("Connecting to controller in '%s'", host));
 	controller = networkP->controllerConnect(host);
 
-#if 0
-	if (controller->state != ss::Endpoint::Connected)
-	{
-		char   eText[256];
-		char*  argVec[20];
-		int    args        = 0;
-
-		LM_TODO(("Not connected to controller - ask the config file about its command line options - and fill LogConfig Window accordingly"));
-
-		args = 20;
-		memset(argVec, 0, sizeof(argVec));
-
-		if (configFileParse(host, "Controller", &args, argVec) == -1)
-		{
-			snprintf(eText,
-					 sizeof(eText),
-					 "Unable to connect to controller in '%s'.\nAlso unable to find info on Controller in config file.\nUnable to connect to Controller, sorry.",
-					 host);
-			new Popup("Cannot connect to Controller", eText, true);
-		}
-		else
-		{
-			LM_W(("configFileParse returned %d args for 'Controller'", args));
-			snprintf(eText, sizeof(eText), "Can't connect to controller at %s, port %d", controller->ip.c_str(), controller->port);
-			
-			new Popup("Error connecting to Controller", eText, false);
-		}
-	}
-#endif
-
 	processP           = processAdd("Controller", host, CONTROLLER_PORT, "Controller", controller);
-	processP->spawnerP = spawnerAdd("Spawner", host, SPAWNER_PORT);
+	processP->spawnerP = spawnerP;
 }
 
 
@@ -404,8 +377,6 @@ static void qtGo(void)
 
 	qtAppRunning = true;
 	qApp->exec();
-
-	LM_W(("After QT main loop - Popup problem ... ?"));
 }
 
 
@@ -435,6 +406,7 @@ static char* controllerHostName(void)
 int main(int argC, const char *argV[])
 {
 	QApplication   app(argC, (char**) argV);
+	ss::Process*   spawnerP;
 
 	Q_INIT_RESOURCE(samsonSupervisor);
 
@@ -444,9 +416,11 @@ int main(int argC, const char *argV[])
 	processListInit(20);
 	starterListInit(30);
 	networkPrepare();
+
 	controllerName = controllerHostName();
-	spawnerConnect(controllerName);
-	controllerConnect(controllerName);
+	spawnerP = spawnerConnect(controllerName);
+	controllerConnect(controllerName, spawnerP);
+
 	networkInit(controllerName);
 	delilahInit();
 	qtGo();

@@ -95,11 +95,11 @@ ss::Process* processAdd(ss::Process* processP)
 
 	processV[processIx] = processP;
 
-	processListShow("Process added");
-
 	++processIx;
 
 	LM_T(LmtProcess, ("Added process '%s@%s' with endpoint at %p", processP->name, processP->host, processP->endpoint));
+
+	processListShow("Process added");
 
 	return processP;
 }
@@ -243,6 +243,29 @@ ss::Process* processLookup(unsigned int ix)
 
 /* ****************************************************************************
 *
+* processLookup - 
+*/
+ss::Process* processLookup(ss::Endpoint* ep)
+{
+	if (ep == NULL)
+		return NULL;
+
+	for (unsigned int ix = 0; ix < processMax; ix++)
+	{
+		if (processV[ix] == NULL)
+			continue;
+
+		if (processV[ix]->endpoint == ep)
+			return processV[ix];
+	}
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * spawnerLookup - 
 */
 ss::Process* spawnerLookup(const char* host)
@@ -295,22 +318,36 @@ ss::Process** processListGet(void)
 *
 * processListShow - 
 */
-void processListShow(const char* why)
+void processListShow(const char* why, bool forcedOn)
 {
-	LM_T(LmtProcessListShow, ("---------- Process List: %s ----------", why));
+	if (forcedOn)
+		LM_F(("---------- Process List: %s ----------", why));
+	else
+		LM_T(LmtProcessListShow, ("---------- Process List: %s ----------", why));
 
 	for (unsigned int ix = 0; ix < processMax; ix++)
 	{
 		if (processV[ix] == NULL)
 			continue;
 
-		LM_T(LmtProcessListShow, ("  %08p process %02d: %-20s %-20s   (endpoint: %p, starter at %p, spawner at %p)", 
-								  processV[ix], ix, processV[ix]->name, processV[ix]->host,
-								  processV[ix]->endpoint,
-								  processV[ix]->starterP,
-								  processV[ix]->spawnerP));
+		if (forcedOn)
+			LM_F(("  %08p process %02d: %-20s %-20s   (endpoint: %p, starter at %p, spawner at %p)", 
+				  processV[ix], ix, processV[ix]->name, processV[ix]->host,
+				  processV[ix]->endpoint,
+				  processV[ix]->starterP,
+				  processV[ix]->spawnerP));
+		else
+			LM_T(LmtProcessListShow, ("  %08p process %02d: %-20s %-20s   (endpoint: %p, starter at %p, spawner at %p)", 
+									  processV[ix], ix, processV[ix]->name, processV[ix]->host,
+									  processV[ix]->endpoint,
+									  processV[ix]->starterP,
+									  processV[ix]->spawnerP));
 	}
-	LM_T(LmtProcessListShow, ("------------------------------------"));
+
+	if (forcedOn)
+		LM_F(("------------------------------------"));
+	else
+		LM_T(LmtProcessListShow, ("------------------------------------"));
 }
 
 
@@ -342,8 +379,10 @@ ss::Process* spawnerAdd(ss::Process* spawnerP)
 
 		fd = iomConnect(spawnerP->host, spawnerP->port);
 		spawnerP->endpoint = networkP->endpointAdd("Adding spawner", fd, fd, spawnerP->name, spawnerP->name, 0, ss::Endpoint::Temporal, spawnerP->host, spawnerP->port);
+		LM_T(LmtSpawnerList, ("Set spawner endpoint to %p", spawnerP->endpoint));
 	}
 
+	processListShow("Spawner added");
 	return spawnerP;
 }
 
@@ -357,6 +396,8 @@ ss::Process* spawnerAdd(const char* nameP, const char* host, unsigned short port
 {
 	ss::Process*  spawnerP;
 	char          name[128];
+
+	LM_T(LmtSpawnerList, ("** Adding spawner '%s@%s' endpoint %p", nameP, host, endpoint));
 
 	spawnerP = (ss::Process*) calloc(1, sizeof(ss::Process));
 	if (spawnerP == NULL)

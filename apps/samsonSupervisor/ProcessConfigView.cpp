@@ -405,7 +405,6 @@ void ProcessConfigView::save(void)
 
 	if (process->type == ss::PtControllerStarter)
 	{
-		LM_M(("saving Controller startup options"));
 		processSave();
 		tabManager->processListTab->configShow(process->starterP);
 		return;

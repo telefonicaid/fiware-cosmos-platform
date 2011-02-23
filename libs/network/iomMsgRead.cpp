@@ -131,7 +131,7 @@ int iomMsgRead
 		LM_T(LmtRead, ("Reading %d bytes of data", headerP->dataLen));
 		if (headerP->dataLen > (unsigned int) *dataLenP)
 		{
-			LM_W(("Allocating extra space for message"));
+			LM_W(("Allocating extra space for the data part of incoming message '%s' from %s@%s", ss::Message::messageCode(headerP->code), ep->name.c_str(), ep->ip.c_str()));
 			*dataPP = (char*) malloc(headerP->dataLen);
 			if (*dataPP == NULL)
 				LM_X(1, ("malloc(%d)", headerP->dataLen));

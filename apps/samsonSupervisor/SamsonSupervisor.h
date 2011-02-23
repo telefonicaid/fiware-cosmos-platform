@@ -28,15 +28,7 @@
 class SamsonSupervisor : public ss::Delilah, public ss::DataReceiverInterface, public ss::EndpointUpdateReceiverInterface, public ss::ReadyReceiverInterface, public QWidget
 {
 public:
-	SamsonSupervisor(ss::Network* netP) : ss::Delilah(netP, false)
-	{
-		networkP = netP; 
-
-		logReceiverInit(LOG_MESSAGE_PORT);
-
-		LM_T(LmtQtTimer, ("Starting timer for Network polling"));
-		startTimer(1000);  // 1 second timer (was 10 ms)
-	}
+	SamsonSupervisor(ss::Network* netP);
 
 	virtual int receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
 	virtual int endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info = NULL);

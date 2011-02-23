@@ -1248,6 +1248,9 @@ Endpoint* Network::endpointAdd
 {
 	LM_T(LmtEndpoint, ("%s: adding endpoint '%s' of type '%s' for fd %d (alias: '%s')", why, name, endpoint[ME]->typeName(type), rFd, alias));
 
+	if (inheritedFrom != NULL)
+		LM_T(LmtEndpoint, ("%s: '%s' inherits from '%s' (old endpoint: %p)", why, name, inheritedFrom->name.c_str(), inheritedFrom));
+
 	switch (type)
 	{
 	case Endpoint::Controller:
@@ -1955,7 +1958,7 @@ void Network::workerVecSet(Message::WorkerVectorData* wvData, int size, WorkerVe
 */
 void Network::msgTreat(void* vP)
 {
-	char                  data[1024];
+	char                  data[8 * 1024];
 	void*                 dataP        = data;
 	int                   dataLen      = sizeof(data);
 	Message::ConfigData   configData;

@@ -42,6 +42,22 @@ ss::Message::WorkerVectorData* workerVec = NULL;
 
 /* ****************************************************************************
 *
+* SamsonSupervisor constructor - 
+*/
+SamsonSupervisor::SamsonSupervisor(ss::Network* netP) : ss::Delilah(netP, false)
+{
+	networkP = netP; 
+		
+	logReceiverInit(LOG_MESSAGE_PORT);
+	
+	LM_T(LmtQtTimer, ("Starting timer for Network polling"));
+	startTimer(50);  // 50 millisecond timer
+}
+
+
+
+/* ****************************************************************************
+*
 * workerLookup - 
 */
 ss::Message::Worker* workerLookup(const char* alias)
@@ -154,40 +170,6 @@ void disconnectAllWorkers(void)
 
 /* ****************************************************************************
 *
-* noLongerTemporal - 
-*/
-static void noLongerTemporal(ss::Endpoint* ep, ss::Endpoint* newEp, Starter* starter)
-{
-	ss::Process* processP = NULL;
-
-	if (ep->type != ss::Endpoint::Temporal)
-		LM_X(1, ("BUG - endpoint not temporal"));
-
-	if ((newEp->type != ss::Endpoint::Worker) && (newEp->type != ss::Endpoint::Spawner))
-		LM_X(1, ("BUG - new endpoint should be either Worker or Spawner - is '%s'", newEp->typeName()));
-
-	if (starter != NULL)
-	{
-		LM_T(LmtTemporalEndpoint, ("Changing temporal endpoint %p for '%s' endpoint %p", ep, newEp->typeName(), newEp));
-		starter->process->endpoint = newEp;
-		starter->check("noLongerTemporal");
-		return;
-	}
-
-	LM_T(LmtStarterLookup, ("starter not found for '%s' endpoint '%s' at '%s'", ep->typeName(), ep->name.c_str(), ep->ip.c_str()));
-	LM_T(LmtProcessLookup, ("Lookup spawner/process instead!"));
-
-	processP = processLookup((char*) ep->name.c_str(), (char*) ep->ip.c_str());
-	if (processP == NULL)
-		LM_T(LmtProcessLookup, ("Cannot find process %s@%s!", ep->name.c_str(), ep->ip.c_str()));
-	else
-		processP->endpoint = ep;
-}
-
-
-
-/* ****************************************************************************
-*
 * disconnectWorkers - 
 */
 static void disconnectWorkers(void)
@@ -245,11 +227,16 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 	memset(workerVec, 0, size);
 	memcpy(workerVec, wvDataP, size);
 
+	networkP->endpointListShow("Got Worker Vector");
+	processListShow("Got Worker Vector");
+
+	LM_T(LmtWorkerVector, ("------------------ Worker Vector ------------------"));
 	for (int ix = 0; ix < wvDataP->workers; ix++)
 	{
 		worker = &wvDataP->workerV[ix];
 		LM_T(LmtWorkerVector, ("Worker %d (name: '%s', alias: '%s') in host %s", ix, worker->name, worker->alias, worker->ip));
 	}
+	LM_T(LmtWorkerVector, ("-------------------------------------------------------"));
 
 	for (int ix = 0; ix < wvDataP->workers; ix++)
 	{
@@ -399,7 +386,6 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 */
 int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info)
 {
-	ss::Endpoint*                   newEp     = (ss::Endpoint*) info;
 	ss::Message::WorkerVectorData*  wvDataP   = (ss::Message::WorkerVectorData*) info;
 	Starter*                        starter   = NULL;
 	ss::Process*                    processP  = NULL;
@@ -436,7 +422,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		else
 		{
 			if (ep->type == ss::Endpoint::Temporal)
-				LM_W(("Just a temporal endpoint - never mind ...   ?"));
+				LM_TODO(("Just a temporal endpoint (%p) - never mind ...   ?", ep));
 			else
 			{
 				LM_T(LmtStarter, ("starter == NULL - looking up process %s@%d", ep->name.c_str(), ep->ip.c_str()));
@@ -462,6 +448,9 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 			processP = starter->process;
 	}
 
+	if (processP == NULL)
+		processP = processLookup(ep);
+
 	switch (reason)
 	{
 	case ss::Endpoint::SupervisorAdded:
@@ -473,7 +462,10 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		break;
 
 	case ss::Endpoint::NoLongerTemporal:
-		noLongerTemporal(ep, newEp, starter);
+        if (processP != NULL)
+            LM_TODO(("Got 'NoLongerTemporal' and I take no action (%s@%s) ...", processP->alias, processP->host));
+		else
+			LM_TODO(("Got 'NoLongerTemporal' and I take no action ..."));
 		break;
 
 	case ss::Endpoint::WorkerAdded:
@@ -506,17 +498,29 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		starter->check("Some endpoint closed connection");
 		if (starter->process->type == ss::PtSpawner)
 		{
-			snprintf(eText, sizeof(eText), "Lost connection to samsonSpawner in host '%s'.\nThis process is a vital part of the samson platform,\nso please restart the process as soon as possible.", starter->process->host);
+			snprintf(eText, sizeof(eText), "Lost connection to samsonSpawner in host '%s'.\n"
+					                       "This process is a vital part of the samson platform,\n"
+					                       "so please restart the process as soon as possible.",
+					 starter->process->host);
+
 			new Popup("Lost Connection to Spawner", eText);
 		}
 		else if (starter->process->type == ss::PtControllerStarter)
 		{
-			snprintf(eText, sizeof(eText), "Lost connection to samsonController in host '%s'.\nThis process is a vital part of the samson platform,\nso please restart the process as soon as possible.", starter->process->host);
+			snprintf(eText, sizeof(eText), "Lost connection to samsonController in host '%s'.\n"
+					                       "This process is a vital part of the samson platform,\n"
+					                       "so please restart the process as soon as possible.",
+					 starter->process->host);
+
 			new Popup("Lost Connection to Controller", eText);
 		}
 		else if (starter->process->type == ss::PtWorkerStarter)
 		{
-			snprintf(eText, sizeof(eText), "Lost connection to samsonWorker in host '%s'.\nThis process is a vital part of the samson platform,\nso please restart the process as soon as possible.", starter->process->host);
+			snprintf(eText, sizeof(eText), "Lost connection to samsonWorker in host '%s'.\n"
+					                       "This process is a vital part of the samson platform,\n"
+                                           "so please restart the process as soon as possible.",
+					 starter->process->host);
+
 			new Popup("Lost Connection to Worker", eText);
 		}
 		break;
@@ -525,17 +529,30 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		if (ep != NULL)
 		{
 			if (processP != NULL)
-				LM_W(("Got a '%s' endpoint-update-reason from %s@%s and I take no action ...", reasonText, processP->name, processP->host));
+			{
+				LM_T(LmtProcess, ("Changing endpoint for '%s@%s' from %p to %p", processP->name, processP->host, processP->endpoint, info));
+				processP->endpoint = (ss::Endpoint*) info;
+				processListShow("Changed endpoint for Spawner");
+			}
 			else
-				LM_W(("Got a '%s' endpoint-update-reason from %s and I take no action ...", reasonText, ep->ip.c_str()));
+			{
+				LM_T(LmtProcess, ("No process found for endpoint %p - but perhaps I find one for the new endpoint %p ?", ep, info));
+				processP = processLookup((ss::Endpoint*) info);
+				if (processP == NULL)
+					LM_T(LmtProcess, ("... NO. didn't find a process for endpoint %p either", info));
+				else
+					LM_T(LmtProcess, ("... YES. Found the process for endpoint %p: %s@%s", info, processP->name, processP->host));
+
+				LM_W(("Got a '%s' endpoint-update-reason from %s@%s (ep %p) and I take no action (processP == NULL)", reasonText, ep->name.c_str(), ep->ip.c_str(), ep));
+			}
 		}
 		else
-			LM_W(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
+			LM_W(("Got a '%s' endpoint-update-reason and I take no action (ep == NULL)", reasonText));
 		break;
 
 	case ss::Endpoint::ControllerAdded:
 	case ss::Endpoint::ControllerReconnected:
-		LM_W(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
+		LM_TODO(("Got a '%s' endpoint-update-reason and I take no action ...", reasonText));
 		break;
 
 	case ss::Endpoint::SelectToBeCalled:

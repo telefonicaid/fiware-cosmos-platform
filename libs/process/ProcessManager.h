@@ -50,6 +50,12 @@ namespace ss {
 		// Fill information
 		void fill(network::WorkerStatus*  ws);
 		
+		int getNumProcess()
+		{
+			return num_processes;
+		}
+		
+		
 	private:
 		
 		ProcessItem * getNextItemToProcess();

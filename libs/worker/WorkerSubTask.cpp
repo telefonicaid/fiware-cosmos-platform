@@ -11,7 +11,7 @@
 #include "FileManagerReadItem.h"			// ss::FileManagerReadItem
 #include "ProcessOperation.h"				// ss::ProcessOperation
 #include "ProcessParser.h"					// ss::ProcessParser
-
+#include "ProcessManager.h"					// ss::ProcessManager
 namespace ss
 {
 	
@@ -141,6 +141,13 @@ namespace ss
 		int max_num_hgs = KV_NUM_HASHGROUPS / num_process;	// Minimum num_process divisions for force multicore approach
 
 		size_t max_item_content_size = SamsonSetup::shared()->max_input_buffer_size - reduceInformation->total_num_input_files*max_num_hgs*sizeof(FileKVInfo) - sizeof(SharedHeader);
+
+		LM_TODO(("Consider if 10%% of memory is a good value to limit the size division"));
+		size_t max_item_content_size_per_memory = MemoryManager::shared()->getMemory() / ( 10 * ProcessManager::shared()->getNumProcess() );
+		
+		if( max_item_content_size > max_item_content_size_per_memory)
+			max_item_content_size = max_item_content_size_per_memory;
+		
 		
 		// Create necessary reduce operations
 		int hg = 1;												// Evaluating current hash group	

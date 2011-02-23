@@ -223,6 +223,11 @@ namespace ss {
 		}
 		
 		
+		size_t getMemory()
+		{
+			return memory;
+		}
+		
 	public:
 		
 		// Function for the main thread of memory

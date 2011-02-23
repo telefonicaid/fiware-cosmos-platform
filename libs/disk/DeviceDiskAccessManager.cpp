@@ -152,7 +152,10 @@ namespace ss {
 						statistics.add(DiskStatistics::read, o->size, DiskStatistics::timevaldiff( &start , &stop) );
 					}
 					else
-						o->setError("Error while reading data from file");
+					{
+						if( o->size != 0 )	// If size is 0, fread returns 0 and it is correct
+							o->setError("Error while reading data from file");
+					}
 				}
 
 				fclose(file);

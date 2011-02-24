@@ -47,6 +47,8 @@ public:
 private slots:
 	void logViewClear(void);
 	void logViewFit(void);
+	void logFileDownload(void);
+	void oldLogFileDownload(void);
 };
 
 #endif

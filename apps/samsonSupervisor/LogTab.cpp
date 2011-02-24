@@ -89,6 +89,8 @@ LogTab::LogTab(QWidget* parent) : QWidget(parent)
 	QHBoxLayout*  buttonLayout  = new QHBoxLayout();
 	QPushButton*  logClear      = new QPushButton("Clear Log Window");
 	QPushButton*  logFit        = new QPushButton("Fit Log Window");
+	QPushButton*  logFile       = new QPushButton("Download Log File");
+	QPushButton*  oldLogFile    = new QPushButton("Download Old Log File");
 	
 	Rows        = 3;
 	tableWidget = new QTableWidget(Rows, 8);
@@ -111,10 +113,14 @@ LogTab::LogTab(QWidget* parent) : QWidget(parent)
 	//
 	buttonLayout->addWidget(logClear);
 	buttonLayout->addWidget(logFit);
+	buttonLayout->addWidget(logFile);
+	buttonLayout->addWidget(oldLogFile);
 
 
 	connect(logClear,    SIGNAL(clicked()), this, SLOT(logViewClear()));
 	connect(logFit,      SIGNAL(clicked()), this, SLOT(logViewFit()));
+	connect(logFile,     SIGNAL(clicked()), this, SLOT(logFileDownload()));
+	connect(oldLogFile,  SIGNAL(clicked()), this, SLOT(oldLogFileDownload()));
 }
 
 
@@ -187,4 +193,26 @@ void LogTab::logViewClear(void)
 void LogTab::logViewFit(void)
 {
 	tableWidget->resizeColumnsToContents();
+}
+
+
+
+/* ****************************************************************************
+*
+* LogTab::logFileDownload - 
+*/
+void LogTab::logFileDownload(void)
+{
+	new InfoWin("Not implemented", "Sorry, the feature 'Download Entire Log File'\nisn't implemented ...", 2, 0);
+}
+
+
+
+/* ****************************************************************************
+*
+* LogTab::oldLogFileDownload - 
+*/
+void LogTab::oldLogFileDownload(void)
+{
+	new InfoWin("Not implemented", "Sorry, the feature 'Download Old Log File'\nisn't implemented ...", 2, 0);
 }

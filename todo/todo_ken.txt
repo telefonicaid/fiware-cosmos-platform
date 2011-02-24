@@ -3,8 +3,11 @@ o Friday 25/2:  Test with 9 Workers
 o Controller sometimes loosing hostname when saving a Worker 
   This makes the Supervisor believe the Worker is totally uninitialized ...
 
-o Buttons in LogTab
 o Retrieve logFile and old logFile
+  - LogFileWindow that shows the contents of the entire downloaded log file
+    - The process is chosen by pressing a line in the log view (I will retrieve 'process name' and 'ip')
+    - button to "Save a copy"
+
 o Will probably need list of processes in LogTab as well ... Complicated !
 
 o Memory leaks ...

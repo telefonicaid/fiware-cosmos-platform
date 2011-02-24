@@ -42,6 +42,11 @@ public:
 	QTableWidget*  tableWidget;
 	int            Rows;
 	int            row;
+
+
+private slots:
+	void logViewClear(void);
+	void logViewFit(void);
 };
 
 #endif

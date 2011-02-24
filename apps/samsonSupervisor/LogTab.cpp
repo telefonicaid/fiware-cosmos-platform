@@ -23,9 +23,9 @@
 
 #include "globals.h"            // mainWinWidth, ...
 #include "Message.h"            // ss::Message::Header, ss::Message::LogLineData
+#include "samson/Log.h"			// LogLineData
 #include "LogTab.h"             // Own interface
 
-#include "samson/Log.h"			// LogLineData
 
 
 /* ****************************************************************************
@@ -85,8 +85,11 @@ void LogTab::logItemAdd
 */
 LogTab::LogTab(QWidget* parent) : QWidget(parent)
 {
-	QVBoxLayout*  mainLayout  = new QVBoxLayout(parent);
-
+	QVBoxLayout*  mainLayout    = new QVBoxLayout(parent);
+	QHBoxLayout*  buttonLayout  = new QHBoxLayout();
+	QPushButton*  logClear      = new QPushButton("Clear Log Window");
+	QPushButton*  logFit        = new QPushButton("Fit Log Window");
+	
 	Rows        = 3;
 	tableWidget = new QTableWidget(Rows, 8);
 
@@ -97,10 +100,21 @@ LogTab::LogTab(QWidget* parent) : QWidget(parent)
 	tableWidget->resize(mainWinWidth, mainWinHeight);
 	tableWidget->resizeColumnsToContents();
 
+	mainLayout->addLayout(buttonLayout);
 	mainLayout->addWidget(tableWidget);
 	setLayout(mainLayout);
 	tableWidget->setGridStyle(Qt::NoPen);
 	row = 0;
+
+	//
+	// Pushbuttons
+	//
+	buttonLayout->addWidget(logClear);
+	buttonLayout->addWidget(logFit);
+
+
+	connect(logClear,    SIGNAL(clicked()), this, SLOT(logViewClear()));
+	connect(logFit,      SIGNAL(clicked()), this, SLOT(logViewFit()));
 }
 
 
@@ -151,4 +165,26 @@ void LogTab::clear(void)
 	setHeaderLabels();
 	tableWidget->setRowCount(0);
 	Rows = 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* LogTab::logViewClear - 
+*/
+void LogTab::logViewClear(void)
+{
+	clear();
+}
+
+
+
+/* ****************************************************************************
+*
+* LogTab::logViewFit - 
+*/
+void LogTab::logViewFit(void)
+{
+	tableWidget->resizeColumnsToContents();
 }

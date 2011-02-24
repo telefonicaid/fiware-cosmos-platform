@@ -500,13 +500,6 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		workerVectorReceived(wvDataP);
 		break;
 
-	case ss::Endpoint::NoLongerTemporal:
-        if (processP != NULL)
-            LM_TODO(("Got 'NoLongerTemporal' and I take no action (%s@%s) ...", processP->alias, processP->host));
-		else
-			LM_TODO(("Got 'NoLongerTemporal' and I take no action ..."));
-		break;
-
 	case ss::Endpoint::WorkerAdded:
 		if (processP != NULL)
 			LM_W(("WorkerAdded and I take no action (%s@%s) ...", processP->alias, processP->host));

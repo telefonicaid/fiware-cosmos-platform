@@ -1,18 +1,29 @@
+o Friday 25/2:  Test with 9 Workers
+                Stress the Supervisor
+o Controller sometimes loosing hostname when saving a Worker 
+  This makes the Supervisor believe the Worker is totally uninitialized ...
+
+o Buttons in LogTab
+o Retrieve logFile and old logFile
+o Will probably need list of processes in LogTab as well ... Complicated !
+
+o Memory leaks ...
+
 o (ANDREU) Pestanya en samsonSupervisor con una grafica utilizando la libreria QWT ( http://qwt.sourceforge.net/ )
-o (ANDREU) Method to send a packet to all delilahs and supervisor
+o (ANDREU) Method to send a packet to all delilahs and supervisor (workers as well?)
 o (ANDREU) Metodo para averiguar la cola (numero de paquetes y tamanyo) de salida para cada endpoint
 
 o Refactoring of NetworkInterface - the whole callback story ...
 
-o Problems at home when VPN functioning ...
-  HostMgr seems OK, but when killing and starting Controller,
-  a running worker isn't detected ...
+o Implement '-toDo' in paParse 
+o Get rid of all Endpoint::Temporal
+o EndpointMgr for Network
 
-o When a Worker is restarted, if it had a third green ball, it will have the third ball on at
-  next startup as well, which is erroneous. Must set the ball to red when a process is killed.
+o Problems at home when VPN functioning ...
+  HostMgr seems OK, but when killing and starting Controller, a running worker isn't detected ...
 
 o When spawning a process, make sure the data saved in the workerVector is used!
-o Whenever Process name, alias, ip is changed, its Enpoint counterparts must a,so be changed!
+o Whenever Process name, alias, ip is changed, its Enpoint counterparts must also be changed!
 o Implement a way to retrieve the old log file AND the entire new log file.
 
 o Stop using 'QueueMgr', 'SourceMgr' and 'ResultMgr' - use the one and only 'SceneItemMgr'

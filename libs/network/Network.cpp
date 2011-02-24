@@ -1206,9 +1206,6 @@ Endpoint* Network::endpointAddWorker(const char* why, int rFd, int wFd, const ch
 		{
 			endpointFill(endpoint[ix], inheritedFrom, rFd, wFd, name, alias, workers, ip, Endpoint::Worker, port, coreNo);
 
-			// LM_W(("What state should I use here ... Unconnected (never been connected), Disconnected or just the inherited state ..."));
-			// endpoint[ix]->state    = (rFd > 0)? Endpoint::Connected : Endpoint::Disconnected;   /* XXX */
-
 			LM_T(LmtJob, ("worker '%s' connected - any pending messages for him? (jobQueueHead at %p)", endpoint[ix]->aliasGet(),  endpoint[ix]->jobQueueHead));
 			
 			if (endpointUpdateReceiver != NULL)
@@ -1303,7 +1300,7 @@ Endpoint* Network::endpointAdd
 	case Endpoint::CoreWorker:
 	case Endpoint::Unknown:
 	case Endpoint::Listener:
-		LM_X(1, ("bad type: %d (%s)", type, endpoint[ME]->typeName(type)));
+		LM_X(1, ("bad endpoint type for 'add' operation: %d (%s)", type, endpoint[ME]->typeName(type)));
 		break;
 	}
 

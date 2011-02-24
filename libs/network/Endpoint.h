@@ -67,7 +67,6 @@ public:
 		SupervisorAdded,
 		EndpointRemoved,
 		HelloReceived,
-		NoLongerTemporal,
 		WorkerAdded,
 		WorkerDisconnected,
 		WorkerRemoved,

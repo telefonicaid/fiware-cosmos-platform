@@ -329,8 +329,7 @@ void Starter::processStart(void)
 
 			if (fd != -1)
 			{
-				// LM_M(("Creating Worker as ss::Endpoint::Worker instead of ss::Endpoint::Temporal"));
-				process->endpoint = networkP->endpointAdd("connected to worker", fd, fd, process->name, alias, 0, ss::Endpoint::Temporal, process->host, WORKER_PORT);
+				process->endpoint = networkP->endpointAdd("connected to worker", fd, fd, process->name, alias, 0, ss::Endpoint::Worker, process->host, WORKER_PORT);
 				break;
 			}
 
@@ -414,7 +413,7 @@ void Starter::processConnect(void)
 										 "Process",
 										 NULL,
 										 0,
-										 ss::Endpoint::Temporal,
+										 ss::Endpoint::Spawner,
 										 std::string(process->host),
 										 process->port);
 }

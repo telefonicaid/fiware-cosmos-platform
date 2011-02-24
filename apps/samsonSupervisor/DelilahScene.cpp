@@ -52,6 +52,7 @@ static bool               sourceCreateRequested  = false;
 static bool               resultCreateRequested  = false;
 static QGraphicsItem*     selectedItem           = NULL;
 static DelilahSceneItem*  si                     = NULL;
+static char               imageV[256];           // Stores absolute path to images
 
 
 
@@ -257,17 +258,17 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 		if (queueCreateRequested)
 		{
-			q = new DelilahQueue(this, "images/queue.png", NULL, point.x() - 64, point.y() - 64);
+			q = new DelilahQueue(this, imagePath("queue.png", imageV, sizeof(imageV)), NULL, point.x() - 64, point.y() - 64);
 			queueMgr->insert(q);			
 		}
 		else if (resultCreateRequested)
 		{
-			r = new DelilahResult(this, "images/Result.png", NULL, point.x() - 64, point.y() - 64);
+			r = new DelilahResult(this, imagePath("Result.png", imageV, sizeof(imageV)), NULL, point.x() - 64, point.y() - 64);
 			resultMgr->insert(r);
 		}
 		else if (sourceCreateRequested)
 		{
-			s = new DelilahSource(this, "images/Bomba.png", NULL, point.x() - 64, point.y() - 64);
+			s = new DelilahSource(this, imagePath("Bomba.png", imageV, sizeof(imageV)), NULL, point.x() - 64, point.y() - 64);
 			sourceMgr->insert(s);
 		}
 		else if (si != NULL)
@@ -287,7 +288,7 @@ void DelilahScene::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 					else
 					{
 						connectFrom = si;
-						setCursor("images/to.png");
+						setCursor(imagePath("to.png", imageV, sizeof(imageV)));
 					}
 				}
 				else
@@ -491,7 +492,7 @@ void DelilahScene::setCursor(const char* cursorPath)
 */
 void DelilahScene::qCreate(void)
 {
-	setCursor("images/queue32x32.png");
+	setCursor(imagePath("queue32x32.png", imageV, sizeof(imageV)));
 
 	removeRequested        = false;
 	connectionRequested    = false;
@@ -509,7 +510,7 @@ void DelilahScene::qCreate(void)
 */
 void DelilahScene::source(void)
 {
-	setCursor("images/Bomba32x29.png");
+	setCursor(imagePath("Bomba32x29.png", imageV, sizeof(imageV)));
 
 	removeRequested        = false;
 	connectionRequested    = false;
@@ -527,7 +528,7 @@ void DelilahScene::source(void)
 */
 void DelilahScene::result(void)
 {
-	setCursor("images/Result32x22.png");
+	setCursor(imagePath("Result32x22.png", imageV, sizeof(imageV)));
 
 	removeRequested        = false;
 	connectionRequested    = false;
@@ -546,7 +547,7 @@ const char* displayName = "cualquiera";
 */
 void DelilahScene::remove(void)
 {
-	setCursor("images/queueDelete32x32.png");
+	setCursor(imagePath("queueDelete32x32.png", imageV, sizeof(imageV)));
 
 	removeRequested        = true;
     connectionRequested    = false;
@@ -610,7 +611,7 @@ void DelilahScene::connection(void)
 		connectionRequested = true;
 		selectedItem        = NULL;
 
-		setCursor("images/from.png");
+		setCursor(imagePath("from.png", imageV, sizeof(imageV)));
 		LM_T(LmtConnection, ("Connection Requested"));
 	}
 }
@@ -822,7 +823,7 @@ void DelilahScene::bind(void)
 
 	connectionRequested = true;
 
-	setCursor("images/to.png");
+	setCursor(imagePath("to.png", imageV, sizeof(imageV)));
 }
 
 

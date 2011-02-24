@@ -32,91 +32,14 @@
 static QueueConfigWindow* win = NULL;
 
 
-#if 0
-/* ****************************************************************************
-*
-* commandTextReceiver - 
-*/
-static void commandTextReceiver(const char* type, const char* text)
-{
-	char* cP;
-	char* line;
-
-	line = (char*) text;
-	while ((cP = strchr(line, '\n')) != NULL)
-	{
-		*cP = 0;
-
-		while (*line == ' ')
-			++line;
-		while (line[strlen(line) - 1] == ' ')
-			line[strlen(line) - 1] = 0;
-
-		if (strncmp(line, "** ", 3) == 0)
-		{
-			line = &line[3];
-			LM_T(LmtQueue, ("Adding item '%s'", line));
-			win->commandCombo->addItem(QString(line));
-		}
-
-		line = &cP[1];
-	}
-
-	win->commandCombo->addItem(QString(line));
-
-	LM_T(LmtQueue, ("Setting commandCombo  to index %d", win->queue->commandIndex));
-	win->commandCombo->setCurrentIndex(win->queue->commandIndex);
-}
-
-
 
 /* ****************************************************************************
 *
-* dataTypesTextReceiver - 
+* imageV - stores absolute path to images
 */
-static void dataTypesTextReceiver(const char* type, const char* text)
-{
-	char* cP;
-	char* line;
+static char imageV[256];
 
-	line = (char*) text;
-	while ((cP = strchr(line, '\n')) != NULL)
-	{
-		*cP = 0;
 
-		while (*line == ' ')
-			++line;
-		while (line[strlen(line) - 1] == ' ')
-			line[strlen(line) - 1] = 0;
-
-		if ((line[0] != 'D') && (line[0] != '-') && (line[0] != 0))
-		{
-			char* basura;
-
-			if ((basura = strstr(line, " Help coming soon")) != NULL)
-				*basura = 0;
-
-			LM_T(LmtQueue, ("Adding item '%s'", line));
-			win->inTypeCombo->addItem(QString(line));
-			win->outTypeCombo->addItem(QString(line));
-		}
-		line = &cP[1];
-	}
-
-	win->inTypeCombo->addItem(QString(line));
-	win->outTypeCombo->addItem(QString(line));
-
-	LM_T(LmtQueue, ("Setting inTypeCombo  to index %d", win->queue->inTypeIndex));
-	LM_T(LmtQueue, ("Setting outTypeCombo to index %d", win->queue->outTypeIndex));
-
-	win->inTypeCombo->setCurrentIndex(win->queue->inTypeIndex);
-	win->outTypeCombo->setCurrentIndex(win->queue->outTypeIndex);
-
-	//delilahConsole->writeCallbackSet(commandTextReceiver);
-	//delilahConsole->evalCommand("operations");
-}
-
-#endif
 
 /* ****************************************************************************
 *
@@ -161,7 +84,7 @@ QueueConfigWindow::QueueConfigWindow(DelilahQueue* queue)
 
 	layout = new QGridLayout();
 
-	image      = new QPixmap("images/queue.png");
+	image      = new QPixmap(imagePath("queue.png", imageV, sizeof(imageV)));
 	imageLabel = new QLabel();
 	imageLabel->setPixmap(*image);
 

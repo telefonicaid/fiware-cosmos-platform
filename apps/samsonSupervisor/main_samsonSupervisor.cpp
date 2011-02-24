@@ -104,16 +104,19 @@ char*                controllerName    = NULL;
 *
 * Option variables
 */
-char    controllerHost[80];
+char    controllerHost[128];
+char    imageDir[128];
 bool    kz;
 bool    andreu;
 bool    usecss;
 int     workers;
+bool    noPopups;
 
 
 
 #define CFP (long int)  "/opt/samson/etc/platformProcesses"
 #define LOC  (long int) "localhost"
+#define IMD  (long int) "/opt/samson/config/images"
 /* ****************************************************************************
 *
 * Parse arguments
@@ -121,10 +124,12 @@ int     workers;
 PaArgument paArgs[] =
 {
 	{ "-controller",  controllerHost,  "CONTROLLER",    PaString,  PaOpt,   LOC,  PaNL,   PaNL,  "controller IP"       },
-	{ "-workers",     &workers,        "WORKERS",       PaInt,     PaOpt,     5,     1,     20,  "number of workers"   },
+	{ "-imageDir",    imageDir,        "IMAGE_DIR",     PaString,  PaOpt,   IMD,  PaNL,   PaNL,  "image directory"     },
+	{ "-workers",     &workers,        "WORKERS",       PaInt,     PaOpt,     1,     1,     20,  "number of workers"   },
 	{ "-kz",          &kz,             "KZ_LOGIN",      PaBool,    PaHid, false, false,   true,  "login as 'kz'"       },
 	{ "-andreu",      &andreu,         "ANDREU_LOGIN",  PaBool,    PaHid, false, false,   true,  "login as 'andreu'"   },
 	{ "-usecss",      &usecss,         "USE_CSS",       PaBool,    PaHid, false, false,   true,  "use css"             },
+	{ "-noPopups",    &noPopups,       "NO_POPUPS",     PaBool,    PaOpt, false, false,   true,  "No popup windows"    },
 
 	PA_END_OF_ARGS
 };
@@ -137,6 +142,19 @@ PaArgument paArgs[] =
 */
 int     endpoints = 80;
 char*   controllerHostP = &controllerHost[0];
+
+
+
+
+/* ****************************************************************************
+*
+* imagePath - 
+*/
+char* imagePath(const char* fileName, char* buf, int bufLen)
+{
+	snprintf(buf, bufLen, "%s/%s", imageDir, fileName);
+	return buf;
+}
 
 
 

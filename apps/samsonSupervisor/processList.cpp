@@ -126,11 +126,11 @@ ss::Process* processAdd
 	ss::Process* processP;
 
 	if (type == ss::PtWorker)
-		LM_M(("Adding a Worker process"));
+		LM_T(LmtProcess, ("Adding a Worker process"));
 	else if (type == ss::PtController)
-		LM_M(("Adding a Controller process"));
+		LM_T(LmtProcess, ("Adding a Controller process"));
 	else if (type == ss::PtSpawner)
-		LM_M(("Adding a Spawner process"));
+		LM_T(LmtProcess, ("Adding a Spawner process"));
 	else
 		LM_X(1, ("Bad process type"));
 
@@ -189,7 +189,7 @@ ss::Process* spawnerAdd(ss::Process* spawnerP)
 
 		fd = iomConnect(spawnerP->host, spawnerP->port);
 		LM_TODO(("Why Temporal?  Its as Spawner, I could use endpoint[3] directly ... ?"));
-		spawnerP->endpoint = networkP->endpointAdd("Adding spawner", fd, fd, spawnerP->name, spawnerP->name, 0, ss::Endpoint::Temporal, spawnerP->host, spawnerP->port);
+		spawnerP->endpoint = networkP->endpointAdd("Adding spawner", fd, fd, spawnerP->name, spawnerP->name, 0, ss::Endpoint::Spawner, spawnerP->host, spawnerP->port);
 		LM_T(LmtSpawnerList, ("Set spawner endpoint to %p", spawnerP->endpoint));
 	}
 

@@ -29,6 +29,14 @@
 
 /* ****************************************************************************
 *
+* imageV - stores absolute path to images
+*/
+static char imageV[256];
+
+
+
+/* ****************************************************************************
+*
 * OldMrOperationsTab::OldMrOperationsTab - 
 */
 OldMrOperationsTab::OldMrOperationsTab(const char* name, QWidget *parent) : QWidget(parent)
@@ -52,22 +60,22 @@ OldMrOperationsTab::OldMrOperationsTab(const char* name, QWidget *parent) : QWid
 	// Creating the buttons to the left
 	//
 	
-	QIcon        sourceIcon("images/Bomba.png");
-	QIcon        queueIcon("images/queueAdd128x128.png");
-	QIcon        resultIcon("images/Result.png");
-	QIcon        connectIcon("images/connect.png");
-	QIcon        removeIcon("images/queueDelete.png");
+	QIcon        sourceIcon(imagePath("Bomba.png", imageV, sizeof(imageV)));
+	QIcon        queueIcon(imagePath("queueAdd128x128.png", imageV, sizeof(imageV)));
+	QIcon        resultIcon(imagePath("Result.png", imageV, sizeof(imageV)));
+	QIcon        connectIcon(imagePath("connect.png", imageV, sizeof(imageV)));
+	QIcon        removeIcon(imagePath("queueDelete.png", imageV, sizeof(imageV)));
 
-	QIcon        helpIcon("images/help.png");
-	QIcon        qViewIcon("images/eye.png");
-	QIcon        commandIcon("images/operations.png");
-	QIcon        dataTypesIcon("images/queue128x128.png");
-	QIcon        jobsIcon("images/queue128x128.png");
-	QIcon        workersIcon("images/worker.png");
-	QIcon        envIcon("images/queue128x128.png");
-	QIcon        uploadIcon("images/queue128x128.png");
-	QIcon        downloadIcon("images/queue128x128.png");
-	QIcon        loadIcon("images/info.png");
+	QIcon        helpIcon(imagePath("help.png", imageV, sizeof(imageV)));
+	QIcon        qViewIcon(imagePath("eye.png", imageV, sizeof(imageV)));
+	QIcon        commandIcon(imagePath("operations.png", imageV, sizeof(imageV)));
+	QIcon        dataTypesIcon(imagePath("queue128x128.png", imageV, sizeof(imageV)));
+	QIcon        jobsIcon(imagePath("queue128x128.png", imageV, sizeof(imageV)));
+	QIcon        workersIcon(imagePath("worker.png", imageV, sizeof(imageV)));
+	QIcon        envIcon(imagePath("queue128x128.png", imageV, sizeof(imageV)));
+	QIcon        uploadIcon(imagePath("queue128x128.png", imageV, sizeof(imageV)));
+	QIcon        downloadIcon(imagePath("queue128x128.png", imageV, sizeof(imageV)));
+	QIcon        loadIcon(imagePath("info.png", imageV, sizeof(imageV)));
 
 
 
@@ -103,7 +111,7 @@ OldMrOperationsTab::OldMrOperationsTab(const char* name, QWidget *parent) : QWid
 	//
 	QPushButton* removeButton    = new QPushButton();
 	QHBoxLayout* rLayout         = new QHBoxLayout();
-	QPixmap*     removePixmap    = new QPixmap("images/queueDelete32x32.png");
+	QPixmap*     removePixmap    = new QPixmap(imagePath("queueDelete32x32.png", imageV, sizeof(imageV)));
 	QLabel*      removeLabel     = new QLabel("     Remove");
 	QLabel*      removeImage     = new QLabel();
 
@@ -208,8 +216,8 @@ OldMrOperationsTab::OldMrOperationsTab(const char* name, QWidget *parent) : QWid
 	QSize         pixmapSize;
 	QPixmap*      bg;
 	QPixmap*      bg2;
-	bg  = new QPixmap("images/background.png");
-	bg2 = new QPixmap("images/background.png");
+	bg  = new QPixmap(imagePath("background.png", imageV, sizeof(imageV)));
+	bg2 = new QPixmap(imagePath("background.png", imageV, sizeof(imageV)));
 
 	sceneLayer0 = scene->addPixmap(*bg);
 	sceneLayer1 = scene->addPixmap(*bg2);

@@ -267,23 +267,25 @@ void DelilahSceneItem::disable(void)
 	delete pixmap;
 	scene->removeItem(pixmapItem);
 
+	static char imageV[256];
+
 	if (disabled)
 	{
 		if (type == Source)
-			path = (char*) "images/sourceDisabled.png";
+			path = (char*) imagePath("sourceDisabled.png", imageV, sizeof(imageV));
 		else if (type == Result)
-			path = (char*) "images/resultDisabled.png";
+			path = (char*) imagePath("resultDisabled.png", imageV, sizeof(imageV));
 		else
-			path = (char*) "images/queueDisabled.png";
+			path = (char*) imagePath("queueDisabled.png", imageV, sizeof(imageV));
 	}
 	else
 	{
 		if (type == Source)
-			path = (char*) "images/Bomba.png";
+			path = (char*) imagePath("Bomba.png", imageV, sizeof(imageV));
 		else if (type == Result)
-			path = (char*) "images/Result.png";
+			path = (char*) imagePath("Result.png", imageV, sizeof(imageV));
 		else
-			path = (char*) "images/queue.png";
+			path = (char*) imagePath("queue.png", imageV, sizeof(imageV));
 	}
 
 	pixmap        = new QPixmap(path);

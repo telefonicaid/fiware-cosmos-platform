@@ -49,7 +49,7 @@ PaArgument paArgs[] =
 	{ "-workerVecFile",  workerVecFile, "WORKERS_FILE",    PaString, PaOpt, DEF_WF,  PaNL,  PaNL, "WorkerVec file"      },
 	{ "-port",          &port,          "PORT",            PaShortU, PaOpt,   1234,  1025, 65000, "listen port"         },
 	{ "-endpoints",     &endpoints,     "ENDPOINTS",       PaInt,    PaOpt,     80,     3,   100, "number of endpoints" },
-	{ "-workers",       &workers,       "WORKERS",         PaInt,    PaOpt,      5,     1,   100, "number of workers"   },
+	{ "-workers",       &workers,       "WORKERS",         PaInt,    PaOpt,      1,     1,   100, "number of workers"   },
 
 	PA_END_OF_ARGS
 };
@@ -133,18 +133,41 @@ static void workerVecGet(void)
 	int          tot;
 	int          nb;
 	int          fd;
+	bool         seriousError = true;
 
 	LM_T(LmtWorkerVector, ("Retrieving Worker Vector"));
 
 	if ((fd = open(workerVecFile, O_RDONLY)) == -1)
-		LM_E(("open-for-reading(%s): %s - this is OK iff file-doesn't-exist", workerVecFile, strerror(errno)));
+	{
+		if (errno != ENOENT)
+			LM_E(("open-for-reading(%s): %s - this is OK iff file-doesn't-exist", workerVecFile, strerror(errno)));
+		else
+			seriousError = false;
+	}
 	else if ((s = stat(workerVecFile, &statBuf)) == -1)
+	{
 		LM_E(("stat(%s): %s", workerVecFile, strerror(errno)));
+		seriousError = true;
+	}
+
 	if (chmod(workerVecFile, 0744) != 0)
-		LM_E(("Error setting permissions on '%s': %s", workerVecFile, strerror(errno)));
+	{
+		seriousError = true;
+        if (errno != ENOENT)
+			LM_E(("Error setting permissions on '%s': %s", workerVecFile, strerror(errno)));
+		else
+			seriousError = false;
+	}
 
 	if ((s == -1) || (fd == -1) || (statBuf.st_size == 0))
 	{
+		if (seriousError == true)
+		{
+			LM_W(("Problems with config file '%s' - using %d empty workers (according to command line options)", workerVecFile, workers));
+			LM_W(("This just might be a serious problem. Perhaps I should enter a 'semi sleep' mode, until samsonSupervisor sends info on worker vector (like 'first start')"));
+			LM_W(("At least, the number of workers came from command line came from samsonSupervisor (supposing that the cpontroller wasn't started by hand ...)"));
+		}
+
 		if (fd != -1)
 			close(fd);
 
@@ -154,10 +177,6 @@ static void workerVecGet(void)
 			LM_E(("Error setting permissions on '%s': %s", workerVecFile, strerror(errno)));
 
 		LM_T(LmtWorkerVector, ("Inventing Worker Vector with %d workers (number came from command line options)", workers));
-
-		LM_W(("Problems with config file '%s' - using %d empty workers (according to command line options)", workerVecFile, workers));
-		LM_W(("This just might be a serious problem. Perhaps I should enter a 'semi sleep' mode, until samsonSupervisor sends info on worker vector (like 'first start')"));
-		LM_W(("At least, the number of workers came from command line came from samsonSupervisor (supposing that the cpontroller wasn't started by hand ...)"));
 
 		workerVecSize = sizeof(ss::Message::WorkerVectorData) + workers * sizeof(ss::Message::Worker);
 		workerVec     = (ss::Message::WorkerVectorData*) malloc(workerVecSize);
@@ -276,7 +295,7 @@ int main(int argC, const char* argV[])
 	
 	// Instance of network object and initialization
 	// ---------------------------------------------
-	ss::Network network(ss::Endpoint::Controller, "controller", port, endpoints, workers);
+	ss::Network network(ss::Endpoint::Controller, "Controller", port, endpoints, workers);
 
 	network.initAsSamsonController();
 	network.workerVecSet(workerVec, workerVecSize, workerVecSave);

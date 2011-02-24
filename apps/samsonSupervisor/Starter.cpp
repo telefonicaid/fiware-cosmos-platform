@@ -30,6 +30,14 @@
 
 /* ****************************************************************************
 *
+* imageV - stores absolute path to images
+*/
+static char imageV[256];
+
+
+
+/* ****************************************************************************
+*
 * Starter::Starter
 */
 Starter::Starter(ss::Process* processP)
@@ -45,7 +53,7 @@ Starter::Starter(ss::Process* processP)
 */
 void Starter::qtInit(QVBoxLayout* spawnerLayout, QVBoxLayout* workerLayout, QVBoxLayout* controllerLayout)
 {
-	QIcon        redIcon("images/red-ball.gif");
+	QIcon        redIcon(imagePath("red-ball.gif", imageV, sizeof(imageV)));
 	QHBoxLayout* box = new QHBoxLayout();
 
 	LM_T(LmtStarter, ("Creating checkbox for '%s'", process->name));
@@ -109,8 +117,8 @@ void Starter::qtInit(QVBoxLayout* spawnerLayout, QVBoxLayout* workerLayout, QVBo
 void Starter::check(const char* reason)
 {
 #if 1
-	static QIcon  greenIcon("images/green-ball.gif");
-	static QIcon  redIcon("images/red-ball.gif");
+	static QIcon  greenIcon(imagePath("green-ball.gif", imageV, sizeof(imageV)));
+	static QIcon  redIcon(imagePath("red-ball.gif", imageV, sizeof(imageV)));
 #else
 	I get a SIGSEGV here if I dont use static QIcons ...
 
@@ -121,8 +129,8 @@ void Starter::check(const char* reason)
 
 etc ...
 
-	QIcon  greenIcon("images/green-ball.gif");
-	QIcon  redIcon("images/red-ball.gif");
+	QIcon  greenIcon(imagePath("green-ball.gif", imageV, sizeof(imageV)));
+	QIcon  redIcon(imagePath("red-ball.gif", imageV, sizeof(imageV)));
 #endif
 
 	LM_T(LmtStarter, ("CHECKING (%s) Starter for %s@%s", reason, process->name, process->host));
@@ -244,7 +252,7 @@ void Starter::logClicked(void)
 
 	if (process->sendsLogs)
 	{
-		QIcon redIcon("images/red-ball.gif");
+		QIcon redIcon(imagePath("red-ball.gif", imageV, sizeof(imageV)));
 
 		logButton->setIcon(redIcon);
 		logButton->setToolTip("Make process send log information");		
@@ -253,7 +261,7 @@ void Starter::logClicked(void)
 	}
 	else
 	{
-		QIcon greenIcon("images/green-ball.gif");
+		QIcon greenIcon(imagePath("green-ball.gif", imageV, sizeof(imageV)));
 
 		logButton->setIcon(greenIcon);
 		logButton->setToolTip("Make process stop sending log information");		

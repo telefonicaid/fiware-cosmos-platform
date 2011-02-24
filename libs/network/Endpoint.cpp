@@ -28,6 +28,7 @@ void Endpoint::init(void)
 {
 	this->name             = "no name";
 	this->ip               = NULL;
+	this->alias            = NULL;
 	this->port             = 0xFFFF;
 	this->rFd              = -1;
 	this->wFd              = -1;
@@ -91,7 +92,7 @@ Endpoint::Endpoint(Type type, char* alias)
 	init();
 
 	this->type             = type;
-	this->alias            = alias;
+	aliasSet(alias);
 }
 
 
@@ -310,7 +311,38 @@ void Endpoint::ipSet(const char* ip)
 	if (this->ip != NULL)
 		free(this->ip);
 
-	this->ip = strdup(ip);
+	if (ip == NULL)
+		this->ip = strdup("noip");
+	else
+		this->ip = strdup(ip);
+}
+
+
+
+/* ****************************************************************************
+*
+* aliasGet - 
+*/
+char* Endpoint::aliasGet(void)
+{
+	return alias;
+}
+
+
+
+/* ****************************************************************************
+*
+* aliasSet - 
+*/
+void Endpoint::aliasSet(const char* alias)
+{
+	if (this->alias != NULL)
+		free(this->alias);
+
+	if ((alias == NULL) || (alias[0] == 0))
+		this->alias = strdup("noalias");
+	else
+		this->alias = strdup(alias);
 }
 
 }

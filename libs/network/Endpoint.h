@@ -109,13 +109,17 @@ public:
 		Supervisor
 	} Type;
 
+private:
+	char*                        alias;
+
 public:
 	std::string                  name;
 	char*                        ip;
-	std::string                  alias;
 	struct sockaddr_in           sockin;
 
 	void                         ipSet(const char* ip);
+	void                         aliasSet(const char* alias);
+	char*                        aliasGet(void);
 
 	int                          rFd;
 	int                          wFd;

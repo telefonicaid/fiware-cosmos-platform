@@ -30,6 +30,14 @@
 
 /* ****************************************************************************
 *
+* imageV - stores absolute path to images
+*/
+static char imageV[256];
+
+
+
+/* ****************************************************************************
+*
 * win - 
 */
 static ResultConfigWindow* win = NULL;
@@ -118,7 +126,7 @@ ResultConfigWindow::ResultConfigWindow(DelilahResult* result)
 
 	layout = new QGridLayout();
 
-	image      = new QPixmap("images/Result.png");
+	image      = new QPixmap(imagePath("Result.png", imageV, sizeof(imageV)));
 	imageLabel = new QLabel();
 	imageLabel->setPixmap(*image);
 

@@ -29,6 +29,14 @@
 
 /* ****************************************************************************
 *
+* imageV - stores absolute path to images
+*/
+static char imageV[256];
+
+
+
+/* ****************************************************************************
+*
 * MrOperationsTab::MrOperationsTab - 
 */
 MrOperationsTab::MrOperationsTab(const char* name, QWidget *parent) : QWidget(parent)
@@ -58,8 +66,9 @@ MrOperationsTab::MrOperationsTab(const char* name, QWidget *parent) : QWidget(pa
 	QSize         pixmapSize;
 	QPixmap*      bg;
 	QPixmap*      bg2;
-	bg  = new QPixmap("images/background.png");
-	bg2 = new QPixmap("images/background.png");
+
+	bg  = new QPixmap(imagePath("background.png", imageV, sizeof(imageV)));
+	bg2 = new QPixmap(imagePath("background.png", imageV, sizeof(imageV)));
 
 	sceneLayer0 = scene->addPixmap(*bg);
 	sceneLayer1 = scene->addPixmap(*bg2);

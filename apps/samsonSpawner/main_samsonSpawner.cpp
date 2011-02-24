@@ -40,7 +40,7 @@ int              endpoints;
 PaArgument paArgs[] =
 {
 	{ "-port",       &port,        "PORT",        PaShortU,  PaOpt,  1233,   1025,  65000,  "listen port"         },
-	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    20,      3,    100,  "number of endpoints" },
+	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,    80,     10,    100,  "number of endpoints" },
 
 	PA_END_OF_ARGS
 };
@@ -187,7 +187,7 @@ int main(int argC, const char *argV[])
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
-	networkP = new ss::Network(ss::Endpoint::Spawner, NULL, port, endpoints, 0);
+	networkP = new ss::Network(ss::Endpoint::Spawner, "Spawner", port, endpoints, 0);
 	networkP->init(NULL);
 
 	spawnerP = new SamsonSpawner(networkP);

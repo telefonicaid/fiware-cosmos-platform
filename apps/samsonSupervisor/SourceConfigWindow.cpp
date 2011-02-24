@@ -31,6 +31,14 @@
 
 /* ****************************************************************************
 *
+* imageV - stores absolute path to images
+*/
+static char imageV[256];
+
+
+
+/* ****************************************************************************
+*
 * win - 
 */
 static SourceConfigWindow* win = NULL;
@@ -121,7 +129,7 @@ SourceConfigWindow::SourceConfigWindow(DelilahSource* source)
 
 	layout = new QGridLayout();
 
-	image      = new QPixmap("images/Bomba.png");
+	image      = new QPixmap(imagePath("Bomba.png", imageV, sizeof(imageV)));
 	imageLabel = new QLabel();
 	imageLabel->setPixmap(*image);
 

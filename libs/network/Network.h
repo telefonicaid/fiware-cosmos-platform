@@ -132,6 +132,10 @@ public:
 
 
 	int          helloSend(Endpoint* ep, Message::MessageType type);
+	void         helloReceived(Endpoint* ep, Message::HelloData* hello, Message::MessageType  msgType);
+	int          endpointSlotGet(Endpoint* ep);
+	void         jobQueueFlush(Endpoint* ep);
+
 	Endpoint*    controllerGet(void);
 	bool         isConnected(unsigned int identifier);
 

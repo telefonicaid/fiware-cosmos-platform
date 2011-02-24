@@ -122,10 +122,11 @@ Starter* starterAdd(Starter* starter)
 *
 * starterAdd - 
 */
-Starter* starterAdd(ss::Process* processP)
+Starter* starterAdd(const char* why, ss::Process* processP)
 {
 	Starter* starter;
 
+	LM_T(LmtStarter, ("%s - creating starter for %s@%s", why, processP->name, processP->host));
 	if (processP->starterP != NULL)
 	{
 		LM_T(LmtStarter, ("process '%s@%s' already has a starter", processP->name, processP->host));

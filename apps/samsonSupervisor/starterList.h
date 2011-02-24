@@ -28,7 +28,7 @@ extern void starterListInit(unsigned int starters);
 * starterAdd - 
 */
 extern Starter* starterAdd(Starter* starter);
-extern Starter* starterAdd(ss::Process* process);
+extern Starter* starterAdd(const char* why, ss::Process* process);
 
 
 

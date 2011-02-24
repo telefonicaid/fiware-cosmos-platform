@@ -498,7 +498,7 @@ void ProcessConfigView::save(void)
 
 				ep      = networkP->endpointAdd("Just connected to new spawner", fd, fd, "Spawner", "Spawner", 0, ss::Endpoint::Spawner, host, SPAWNER_PORT);
 				spawner = spawnerAdd("Spawner", (char*) host, SPAWNER_PORT, ep);
-				starter = starterAdd(spawner);
+				starter = starterAdd("Adding starter for just connected Spawner", spawner);
 
 				if (starter == NULL)
 					LM_X(1, ("NULL starter for Spawner@%s", host));

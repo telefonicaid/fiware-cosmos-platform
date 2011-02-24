@@ -132,7 +132,7 @@ void ProcessListTab::initialStartersCreate(void)
 		}
 
 		LM_T(LmtStarter, ("Adding starter for process '%s' in '%s'", processV[ix]->name, processV[ix]->host));
-		starterAdd(processV[ix]);
+		starterAdd("Creating initial starters", processV[ix]);
 	}
 }
 

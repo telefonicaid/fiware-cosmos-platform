@@ -53,5 +53,14 @@ extern int                  mainWinWidth;
 extern int                  mainWinHeight;
 extern InfoWin*             infoWin;
 extern int                  workers;
+extern bool                 noPopups;
+
+
+
+/* ****************************************************************************
+*
+* imagePath -
+*/
+extern char* imagePath(const char* fileName, char* buf, int bufLen);
 
 #endif

@@ -43,6 +43,9 @@ Popup::Popup(const char* title, const char* text, bool die, int type)
 	QDesktopWidget*    desktop = QApplication::desktop();
 	QDialogButtonBox*  buttonBox;
 
+	if (noPopups == true)
+		return;
+
 	setModal(true);
 
 	layout    = new QVBoxLayout();

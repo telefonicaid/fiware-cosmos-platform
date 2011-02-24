@@ -2,13 +2,6 @@ o (ANDREU) Pestanya en samsonSupervisor con una grafica utilizando la libreria Q
 o (ANDREU) Method to send a packet to all delilahs and supervisor
 o (ANDREU) Metodo para averiguar la cola (numero de paquetes y tamanyo) de salida para cada endpoint
 
-o Make Spawner wait on its children (I get Zombies ...)
-  For that, invent a Timeout service in Network->run
-  I don't want to receive SIGCLD, prefer to poll this ...
-    waitpid(-1, WNOHANG)
-      -1:       wait for any child process
-      WNOHANG:  return immediately if no child has exited
-
 o Refactoring of NetworkInterface - the whole callback story ...
 
 o Problems at home when VPN functioning ...

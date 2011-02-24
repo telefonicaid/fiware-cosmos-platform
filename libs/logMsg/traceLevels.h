@@ -106,9 +106,9 @@ typedef enum TraceLevels
 
 	LmtSceneItemChain,
 	LmtMove,
-
+	LmtWait,
 	
-	LmtOperations,			// Opertions organization ( map & reduce level )
+	LmtOperations,           // Operations organization (map & reduce level)
 	
 	LmtUser01 = 250,
 	LmtUser02 = 251,

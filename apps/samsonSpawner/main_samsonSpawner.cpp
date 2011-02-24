@@ -8,6 +8,8 @@
 *
 */
 #include <unistd.h>             // fork & exec
+#include <sys/types.h>          // pid_t
+#include <sys/wait.h>           // waitpid
 
 #include "parseArgs.h"          // parseArgs
 #include "logMsg.h"             // LM_*
@@ -60,17 +62,43 @@ ss::Network*       networkP          = NULL;
 *
 * SamsonSpawner - 
 */
-class SamsonSpawner : public ss::DataReceiverInterface
+class SamsonSpawner : public ss::DataReceiverInterface, public ss::TimeoutReceiverInterface
 {
 public:
 	SamsonSpawner(ss::Network* nwP) { networkP = nwP; }
 	void processSpawn(ss::Process* processP);
 
 	virtual int receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
+	virtual int timeoutFunction(void);
 
 private:
 	ss::Network*    networkP;
 };
+
+
+
+/* ****************************************************************************
+*
+* timeoutFunction - 
+*/
+int SamsonSpawner::timeoutFunction(void)
+{
+	pid_t  pid;
+	int    status;
+
+	pid = waitpid(-1, &status, WNOHANG);
+	if (pid == 0)
+		LM_T(LmtWait, ("Children running, no one has exited since last sweep"));
+	else if (pid == -1)
+	{
+		if (errno != ECHILD)
+			LM_E(("waitpid error: %s", strerror(errno)));
+	}
+	else
+		LM_W(("Process %d died with status 0x%x", pid, status));
+
+	return 0;
+}
 
 
 
@@ -192,6 +220,7 @@ int main(int argC, const char *argV[])
 
 	spawnerP = new SamsonSpawner(networkP);
 	networkP->setDataReceiver(spawnerP);
+	networkP->setTimeoutReceiver(spawnerP, 1, 0); // Tiemout every second
 	networkP->run();
 
 	return 0;

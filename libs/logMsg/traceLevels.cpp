@@ -109,8 +109,9 @@ char* traceLevelName(TraceLevels level)
 	case LmtSceneItemChain:              return (char*) "Scene Item Chain";
 	case LmtMove:                        return (char*) "Move";
 
-	case LmtOperations:	                 return (char*) "Operations";  
-			
+	case LmtOperations:                  return (char*) "Operations";
+	case LmtWait:                        return (char*) "Wait";
+
 	case LmtUser01:                      return (char*) "User 01";
 	case LmtUser02:                      return (char*) "User 02";
 	case LmtUser03:                      return (char*) "User 03";

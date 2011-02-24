@@ -44,6 +44,19 @@ public:
 
 /* ****************************************************************************
 *
+* TimeoutReceiverInterface - 
+*/
+class TimeoutReceiverInterface
+{
+public:
+	virtual int   timeoutFunction() = 0;
+	virtual      ~TimeoutReceiverInterface() {};
+};
+
+
+
+/* ****************************************************************************
+*
 * EndpointUpdateReceiverInterface - 
 */
 class EndpointUpdateReceiverInterface

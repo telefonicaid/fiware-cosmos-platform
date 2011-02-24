@@ -45,11 +45,15 @@ public:
 	virtual void setDataReceiver(DataReceiverInterface* receiver);
 	virtual void setEndpointUpdateReceiver(EndpointUpdateReceiverInterface* receiver);
 	virtual void setReadyReceiver(ReadyReceiverInterface* receiver);
+	virtual void setTimeoutReceiver(TimeoutReceiverInterface* receiver, int secs, int usecs);
 
 	PacketReceiverInterface*           packetReceiver;
 	DataReceiverInterface*             dataReceiver;
 	EndpointUpdateReceiverInterface*   endpointUpdateReceiver;
 	ReadyReceiverInterface*            readyReceiver;
+	TimeoutReceiverInterface*          timeoutReceiver;
+	int                                timeoutSecs;
+	int                                timeoutUsecs;
 
 	virtual void   initAsSamsonController(void);
 	void           fdSet(int fd, const char* name, const char* alias);

@@ -252,6 +252,7 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 	dataReceiver           = NULL;
 	endpointUpdateReceiver = NULL;
 	readyReceiver          = NULL;
+	timeoutReceiver        = NULL;
 
 	iAmReady               = false;
 
@@ -363,6 +364,20 @@ void Network::setReadyReceiver(ReadyReceiverInterface* receiver)
 {
 	LM_T(LmtDelilah, ("Setting Ready receiver to %p", receiver));
 	readyReceiver = receiver;
+}
+
+
+
+/* ****************************************************************************
+*
+* setTimeoutReceiver - 
+*/
+void Network::setTimeoutReceiver(TimeoutReceiverInterface* receiver, int secs, int usecs)
+{
+	LM_T(LmtDelilah, ("Setting Timeout receiver to %p", receiver));
+	timeoutReceiver = receiver;
+	timeoutSecs  = secs;
+	timeoutUsecs = usecs;
 }
 
 
@@ -2503,6 +2518,7 @@ void Network::run(void)
 	time_t          now   = 0;
 	time_t          then  = time(NULL);
 	int             max;
+	int             lastTimeout = time(NULL);
 
 	if (iAmReady && stopWhenReady)
 		return;
@@ -2520,6 +2536,16 @@ void Network::run(void)
 				{
 					// workerStatusToController();
 					then = now;
+				}
+			}
+
+			if (timeoutReceiver != NULL)
+			{
+				now = time(NULL);
+				if (now - lastTimeout > timeoutSecs)
+				{
+					timeoutReceiver->timeoutFunction();
+					lastTimeout = now;
 				}
 			}
 

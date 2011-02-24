@@ -33,7 +33,6 @@ public:
 	virtual int receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
 	virtual int endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info = NULL);
 	virtual int ready(const char* info);
-
 	
 	// Function to overload in Delilah
 	

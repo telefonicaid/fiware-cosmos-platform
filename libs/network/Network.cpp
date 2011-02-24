@@ -2175,7 +2175,7 @@ void Network::logFileSend(Endpoint* ep, Message::MessageCode msgCode, bool oldLo
 	if ((fd = open(logFilePath, O_RDONLY)) == -1)
 		LM_RVE(("open%s) for reading only: %s", logFilePath, strerror(errno)));
 
-	buf = (char*) malloc(statBuf.st_size);
+	buf = (char*) calloc(1, statBuf.st_size);
 	if (buf == NULL)
 	{
 		close(fd);
@@ -2189,9 +2189,9 @@ void Network::logFileSend(Endpoint* ep, Message::MessageCode msgCode, bool oldLo
 	buf[statBuf.st_size] = 0;
 
 	tot = 0;
-	while (tot < statBuf.st_size)
+	while (tot < size)
 	{
-		nb = read(fd, &buf[tot], statBuf.st_size - tot);
+		nb = read(fd, &buf[tot], size - tot);
 		if (nb == -1)
 		{
 			LM_E(("read(%s): %s", logFilePath, strerror(errno)));

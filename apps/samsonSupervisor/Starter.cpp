@@ -329,6 +329,7 @@ void Starter::processStart(void)
 
 			if (fd != -1)
 			{
+				// LM_M(("Creating Worker as ss::Endpoint::Worker instead of ss::Endpoint::Temporal"));
 				process->endpoint = networkP->endpointAdd("connected to worker", fd, fd, process->name, alias, 0, ss::Endpoint::Temporal, process->host, WORKER_PORT);
 				break;
 			}
@@ -379,6 +380,7 @@ void Starter::processKill(void)
 	{
 		LM_W(("Sending 'Die' to '%s' at '%s' (name: '%s')", process->endpoint->typeName(), process->endpoint->ip, process->endpoint->name.c_str()));
 		s = iomMsgSend(process->endpoint->wFd, process->endpoint->ip, "samsonSupervisor", ss::Message::Die, ss::Message::Msg);
+		process->sendsLogs = false;
 	}
 }
 

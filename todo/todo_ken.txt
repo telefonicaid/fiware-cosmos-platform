@@ -1,8 +1,109 @@
+o (ANDREU) Pestanya en samsonSupervisor con una grafica utilizando la libreria QWT ( http://qwt.sourceforge.net/ )
+o (ANDREU) Method to send a packet to all delilahs and supervisor
+o (ANDREU) Metodo para averiguar la cola (numero de paquetes y tamanyo) de salida para cada endpoint
 
+o Make Spawner wait on its children (I get Zombies ...)
+  For that, invent a Timeout service in Network->run
+  I don't want to receive SIGCLD, prefer to poll this ...
+    waitpid(-1, WNOHANG)
+      -1:       wait for any child process
+      WNOHANG:  return immediately if no child has exited
 
-* Pestaña en samsonSupervisor con una grafica utilizando la libreria qwt ( http://qwt.sourceforge.net/ )
+o Refactoring of NetworkInterface - the whole callback story ...
 
-* (ANDREU) Method to send a packet to all delilahs and supervisor
-* (ANDREU) Metodo para averiguar la cola ( numero de paquetes y tamaño ) de salida para cada endpoint
-* (ANDREU) Error en la recepción de paquetes ( lees directamente de un endpoint .... )
-* (ANDREU) Error de Spawner en la parte de arriba de la ventada
+o Problems at home when VPN functioning ...
+  HostMgr seems OK, but when killing and starting Controller,
+  a running worker isn't detected ...
+
+o When a Worker is restarted, if it had a third green ball, it will have the third ball on at
+  next startup as well, which is erroneous. Must set the ball to red when a process is killed.
+
+o When spawning a process, make sure the data saved in the workerVector is used!
+o Whenever Process name, alias, ip is changed, its Enpoint counterparts must a,so be changed!
+o Implement a way to retrieve the old log file AND the entire new log file.
+
+o Stop using 'QueueMgr', 'SourceMgr' and 'ResultMgr' - use the one and only 'SceneItemMgr'
+  - will need to add a few methods from SQR managers to SceneItemMgr, I guess ...
+
+o MenuBar etc in supervisor window ... ?
+
+o LogTab
+  - A QPushButton to resizeColumnsToContents()
+  - Fix the sizes of the columns initially (more or less)
+  - Possibility to have a window per process ?
+  - A button to download the entire log file
+  - A button to download the entire OLD log file
+  - Change name of ConfigWindow to LogConfigWindow
+  - Include the CheckBox 'Send log to Supervisor' in LogConfigWindow
+  - When a process dies, its window in LogServer stays, just that later if I
+    manually restart the process, another window appears in the LogServer window ...
+    I must check if existing before I create a new List in the LogServer
+===============================================================================
+o Refactoring
+  - samsonSupervisor - QueueMgr, SourceMgr and ResultMgr should be ONE manager - SceneItemMgr
+  - Try to not use iomMsgSend(int fd, ...)
+  - Close On Exec for all sockets ... ?
+  - Network.cpp
+    - shorten too long nethods
+    - move parts to main_
+  - What name to use: Data Sets or Queues ?
+===============================================================================
+o Really create the queues in samsonController
+  - But not to be executed until RUN
+  - When terminated, some graphical way to show the results
+===============================================================================
+o Stability
+  - Sometimes coredumps at startup
+  - Test with 9 Workers
+  - Stability Tests ...
+
+===============================================================================
+o Tonterias
+  - More Config about logMsg (Keep lines, Empty log file, etc.)
+  - Replace QCheckbox in ProcessListTab for something nicer, with pixmaps and stuff ...
+    - Perhaps a checkbox to include in LogServer window
+    - Pixmaps: Red, Yellow and Green
+    - Enter a config page when process name is clicked - connect/unconnect when pixmap is clicked
+  - Animations for error login and running chain ?
+  - While running, the whole chain should be in "disabled" mode.
+    - a button to cancel the operation.
+  - Make the Queues and Connection lines highlight when the cursor moves over them (hover?)
+  - The modes of a Queue/Source/Config Scene Item:
+    1. When a queue is created, a lighter icon
+    2. When the queue is really created (command sent to Controller), its real icon should be shown.
+    3. Disable 
+  - Nicer SceneTab popups
+    - ls              View Queues    (data sets (Queues) - show, add, remove, clear ...) 
+    - operations      Command List   (Window with filters: "Starts with", "Ends in", ...)
+    - datas           Data Types     (Actually, this is 'Types' - this list will be used in QueueConfigWindow)
+    - upload          Upload         (file selection dialog to choose file to upload)
+    - load            Load           (just a text window - showing the current status of upload and downloads)
+    - download        Download       (popup window to ask for set_name AND local_file_name)
+  - ProcessListTab - Controller on top of the list, before any worker ...
+  - Way to change size of logProvider log window
+===============================================================================
+o Permissions and Users
+  - Create Permission for every operation
+  - Make each operation look in permissions before doing anything
+===============================================================================
+o samsonSupervisor startup:
+  1.   Normal startup with everything running
+  1.1. Connect to '-controller' - create Process
+  1.2. Ask controller for WorkerVector 
+  1.3. Connect to all workers - create Processes
+  1.4. Connect to the controllers spawner - create Spawner
+  1.5. Connect to each workers spawner - unless workers IP is II.PP and state Unconnected - cerate Spawners
+  1.6. Start Qt and create Starters for all Pocess and Spawner
+
+  2.   Initial startup - only spawners running
+  2.1. Connect to '-controller' - FAILURE and POPUP
+  2.2. Connect to the controllers spawner - create Spawner
+  2.3. Start Qt and create Starter for the controller
+  2.4. When user starts Controller - Ask controller for WorkerVector
+  2.5. Connect to all workers - create Processes and Starters (as Qt already is running ...)
+
+  3.   Strange startup (1) - not even controller's spawner is running
+  3.1. Connect to '-controller' - FAILURE and POPUP
+  3.2. Connect to the controllers spawnerPopup - FAILURE and POPUP
+===============================================================================
+

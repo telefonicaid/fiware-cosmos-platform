@@ -399,7 +399,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 				tabManager->processListTab->starterInclude(starter);
 		}
 		else
-		   starter->check("workerVectorReceived - just created a Worker");
+			starter->check("workerVectorReceived - just created a Worker");
 	}
 
 	LM_T(LmtWorkerVector, ("Treated worker vector with %d workers", wvDataP->workers));
@@ -431,6 +431,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 			if (starter)
 				starter->check("Worker Helloed");
 		}
+
 		return 0;
 	}
 

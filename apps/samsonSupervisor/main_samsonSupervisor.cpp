@@ -441,6 +441,9 @@ int main(int argC, const char *argV[])
 
 	networkInit(controllerName);
 	delilahInit();
+
+	// networkP->hostMgr->list("Init");
+
 	qtGo();
 
 	return 0;

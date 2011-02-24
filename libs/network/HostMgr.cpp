@@ -248,6 +248,38 @@ Host* HostMgr::lookup(const char* name)
 
 /* ****************************************************************************
 *
+* lookup - 
+*/
+bool HostMgr::match(Host* host, const char* ip)
+{
+	if (ip == NULL)
+		return NULL;
+
+	if (ip[0] == 0)
+		return NULL;
+
+	if ((host->name != NULL) && (strcmp(host->name, ip) == 0))
+		return true;
+
+	if ((host->ip != NULL) && (strcmp(host->ip, ip) == 0))
+		return true;
+
+	for (unsigned int aIx = 0; aIx < sizeof(host->alias) / sizeof(host->alias[0]); aIx++)
+	{
+		if (host->alias[aIx] == NULL)
+			continue;
+
+		if (strcmp(host->alias[aIx], ip) == 0)
+			return true;
+	}
+
+	return false;
+}
+
+
+
+/* ****************************************************************************
+*
 * list - list the hosts in the list
 */
 void HostMgr::list(const char* why)

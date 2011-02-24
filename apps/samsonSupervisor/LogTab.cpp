@@ -23,6 +23,8 @@
 
 #include "globals.h"            // mainWinWidth, ...
 #include "Message.h"            // ss::Message::Header, ss::Message::LogLineData
+#include "Endpoint.h"           // ss::Endpoint
+#include "iomMsgSend.h"         // iomMsgSend
 #include "samson/Log.h"			// LogLineData
 #include "LogTab.h"             // Own interface
 
@@ -50,6 +52,11 @@ void LogTab::logItemAdd
 	char               type[2];
 	QTableWidgetItem*  wi[8];
 	QFont              font("Courier", 10, QFont::Normal);
+	Host*              hostP;
+
+	hostP = networkP->hostMgr->lookup(host);
+	if (hostP == NULL)
+		LM_X(1, ("Cannot find host '%s' in Host Manager"));
 
 	if (row >= Rows)
 	{
@@ -63,7 +70,7 @@ void LogTab::logItemAdd
 
 	wi[0] = new QTableWidgetItem(type);
 	wi[1] = new QTableWidgetItem(date);
-	wi[2] = new QTableWidgetItem(host);
+	wi[2] = new QTableWidgetItem(hostP->name);
 	wi[3] = new QTableWidgetItem(pName);
 	wi[4] = new QTableWidgetItem(file);
 	wi[5] = new QTableWidgetItem(line);
@@ -136,6 +143,11 @@ void LogTab::logLineInsert(struct sockaddr_in* sAddr, ss::Message::Header* heade
 
 	char* host = inet_ntoa(sAddr->sin_addr);
 
+	if (strcmp(host, "127.0.1.1") == 0)
+		host = (char*) "127.0.0.1";
+
+	LM_M(("Host: '%s' 0x%x", host, sAddr->sin_addr.s_addr));
+
 	logItemAdd(row, logLine->type, logLine->date, host, logLine->processName, logLine->file, logLine->lineNo, logLine->fName, logLine->text, logLine->tLev);
 
 	if (row == 0)
@@ -199,11 +211,69 @@ void LogTab::logViewFit(void)
 
 /* ****************************************************************************
 *
+* getHostAndProcess - 
+*/
+int LogTab::getHostAndProcess(char* host, char* processName)
+{
+	QTableWidgetItem* processItem;
+	QTableWidgetItem* hostItem;
+	int               currentRow = tableWidget->currentRow();
+	
+	if (currentRow == -1)
+	{
+		new InfoWin("Nothing selected", "Please select a row.\nThis way indicates which process you want the log file from.");
+		return -1;
+	}
+
+	LM_M(("currentRow: %d", currentRow));
+
+	processItem = tableWidget->item(currentRow, 3);
+	hostItem    = tableWidget->item(currentRow, 2);
+
+	if ((processItem == NULL) || (hostItem == NULL))
+	{
+		new InfoWin("Internal error", "Sorry, cannot deduct what process to use ...");
+		return -1;
+	}
+
+	strcpy(host, hostItem->text().toStdString().c_str());
+	strcpy(processName, processItem->text().toStdString().c_str());
+
+	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
 * LogTab::logFileDownload - 
 */
 void LogTab::logFileDownload(void)
 {
-	new InfoWin("Not implemented", "Sorry, the feature 'Download Entire Log File'\nisn't implemented ...", 2, 0);
+	char           host[64];
+	char           processName[64];
+	ss::Endpoint*  ep;
+	int            s;
+
+	if (getHostAndProcess(host, processName) == -1)
+		return;
+
+	ep = networkP->endpointLookup(processName, host);
+	if (ep == NULL)
+	{
+		new InfoWin("Process lookup error", "Sorry, cannot find process - please check that it is connected.");
+		return;
+	}
+
+	if (ep->state != ss::Endpoint::Connected)
+	{
+		new InfoWin("Process not connected", "Sorry, the selected process is no longer connected");
+		return;
+	}
+	
+	s = iomMsgSend(ep, networkP->endpoint[0], ss::Message::EntireLogFile);
+	if (s != 0)
+		new InfoWin("Internal Error", "Error sending message to endpoint");
 }
 
 
@@ -214,5 +284,28 @@ void LogTab::logFileDownload(void)
 */
 void LogTab::oldLogFileDownload(void)
 {
-	new InfoWin("Not implemented", "Sorry, the feature 'Download Old Log File'\nisn't implemented ...", 2, 0);
+	char           host[64];
+	char           processName[64];
+	ss::Endpoint*  ep;
+	int            s;
+
+	if (getHostAndProcess(host, processName) == -1)
+		return;
+	
+	ep = networkP->endpointLookup(processName, host);
+	if (ep == NULL)
+	{
+		new InfoWin("Process lookup error", "Sorry, cannot find process - please check that it is connected.");
+		return;
+	}
+
+	if (ep->state != ss::Endpoint::Connected)
+	{
+		new InfoWin("Process not connected", "Sorry, the selected process is no longer connected");
+		return;
+	}
+
+	s = iomMsgSend(ep, networkP->endpoint[0], ss::Message::EntireOldLogFile);
+	if (s != 0)
+		new InfoWin("Internal Error", "Error sending message to endpoint");
 }

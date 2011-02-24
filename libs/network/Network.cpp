@@ -7,6 +7,8 @@
 * CREATION DATE            Oct 11 2010
 *
 */
+#include <sys/types.h>
+#include <sys/stat.h>           // struct stat
 #include <sys/select.h>         // select
 #include <string>               // string
 #include <vector>               // ss::vector
@@ -17,9 +19,10 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>         // sockaddr_in
+#include <unistd.h>             // stat
+#include <fcntl.h>              // open, O_RDONLY
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
@@ -1489,6 +1492,40 @@ Endpoint* Network::endpointLookup(Endpoint::Type type, char* ip)
 *
 * endpointLookup
 */
+Endpoint* Network::endpointLookup(const char* name, const char* ip)
+{
+	int    ix = 0;
+	Host*  hostP;
+
+	hostP = hostMgr->lookup(ip);
+
+	if (hostP == NULL)
+		LM_RE(NULL, ("Cannot find host '%s' in hostMgr"));
+
+	for (ix = 0; ix < Endpoints; ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if (strcmp(endpoint[ix]->name.c_str(), name) != 0)
+			continue;
+
+		if (hostMgr->match(hostP, ip) == false)
+			continue;
+
+		return endpoint[ix];
+	}
+
+	LM_T(LmtEndpointLookup, ("Endpoint %s@%s not found", name, ip));
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* endpointLookup
+*/
 Endpoint* Network::endpointLookup(Endpoint::Type type, Host* hostP)
 {
 	int ix = 0;
@@ -2110,6 +2147,72 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 
 /* ****************************************************************************
 *
+* logFileSend - 
+*/
+void Network::logFileSend(Endpoint* ep, Message::MessageCode msgCode, bool oldLogFile)
+{
+	char          logFilePath[256];
+	struct stat   statBuf;
+	char*         buf;
+	int           nb;
+	int           tot;
+	int           s;
+	int           fd;
+
+	LM_TODO(("Ask logMsg library for the path name of the log file"));
+
+	if (oldLogFile == true)
+		snprintf(logFilePath, sizeof(logFilePath), "/tmp/%sLog.old", progName);
+	else
+		snprintf(logFilePath, sizeof(logFilePath), "/tmp/%sLog", progName);
+
+	if (stat(logFilePath, &statBuf) == -1)
+		LM_RVE(("stat(%s): %s", logFilePath, strerror(errno)));
+
+	if (statBuf.st_size > 50 * 1024 * 1024)
+		LM_RVE(("Logfile '%s' too big! (%d megabytes)", logFilePath, statBuf.st_size / (1024 * 1024)));
+
+	if ((fd = open(logFilePath, O_RDONLY)) == -1)
+		LM_RVE(("open%s) for reading only: %s", logFilePath, strerror(errno)));
+
+	buf = (char*) malloc(statBuf.st_size);
+	if (buf == NULL)
+	{
+		close(fd);
+		LM_E(("malloc(%d bytes): %s", statBuf.st_size, strerror(errno)));
+		return;
+	}
+
+	tot = 0;
+	while (tot < statBuf.st_size)
+	{
+		nb = read(fd, &buf[tot], statBuf.st_size - tot);
+		if (nb == -1)
+		{
+			LM_E(("read(%s): %s", logFilePath, strerror(errno)));
+			break;
+		}
+		else if (nb == 0)
+		{
+			LM_E(("read(%s): ZERO bytes returned", logFilePath));
+			break;
+		}
+
+		tot += nb;
+	}
+
+	if (tot == 0)
+		LM_RVE(("Sorry, ZERO bytes read from log file '%s'", logFilePath));
+
+	s = iomMsgSend(ep, endpoint[ME], msgCode, ss::Message::Ack, buf, tot);
+	if (s != 0)
+		LM_E(("iomMsgError"));
+}
+
+
+
+/* ****************************************************************************
+*
 * msgTreat - 
 */
 void Network::msgTreat(void* vP)
@@ -2215,6 +2318,26 @@ void Network::msgTreat(void* vP)
 	LM_T(LmtMsgTreat, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
 	{
+	case Message::EntireLogFile:
+		if (msgType == Message::Msg)
+			logFileSend(ep, msgCode);
+		else
+		{
+			if (dataReceiver)
+				dataReceiver->receive(endpointId, 0, headerP, dataP);
+		}
+		break;
+
+	case Message::EntireOldLogFile:
+		if (msgType == Message::Msg)
+			logFileSend(ep, msgCode, true);
+		else
+		{
+			if (dataReceiver)
+				dataReceiver->receive(endpointId, 0, headerP, dataP);
+		}
+		break;
+
 	case Message::LogSendingOn:
 		if (ep->type != Endpoint::Supervisor)
 			LM_E(("Got a LogSendingOn message from %s", ep->name.c_str()));

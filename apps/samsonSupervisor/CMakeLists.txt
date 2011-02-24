@@ -39,6 +39,7 @@ SET (SOURCES
 	DelilahResult.cpp
 	ProcessConfigView.cpp
 	InfoWin.cpp
+	LogFileWindow.cpp
 )
 
 SET (HEADERS_MOC
@@ -60,6 +61,7 @@ SET (HEADERS_MOC
 	LoginWindow.h
 	ProcessConfigView.h
 	InfoWin.h
+	LogFileWindow.h
 )
 
 SET (HEADERS

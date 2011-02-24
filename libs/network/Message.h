@@ -66,6 +66,8 @@ typedef enum MessageCode
 	LogSendingOff                   = CODE('L', 'O', 'f', ' '),
 	ConfigChange                    = CODE('C', 'f', 'C', ' '),
 	WorkerConfigGet                 = CODE('W', 'C', 'G', ' '),
+	EntireLogFile                   = CODE('E', 'L', 'F', ' '),
+	EntireOldLogFile                = CODE('O', 'L', 'F', ' ')
 } MessageCode;
 
 

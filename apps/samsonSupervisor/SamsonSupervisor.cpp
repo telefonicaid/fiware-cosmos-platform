@@ -26,8 +26,8 @@
 #include "starterList.h"        // starterLookup
 #include "spawnerList.h"        // spawnerListGet, ...
 #include "processList.h"        // processListGet, ...
-#include "configFile.h"         // configFileParseByAlias
 #include "Popup.h"              // Popup
+#include "LogFileWindow.h"      // LogFileWindow
 #include "SamsonSupervisor.h"   // Own interface
 
 
@@ -129,6 +129,16 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 			LM_X(1, ("Bad msg type '%d'", headerP->type));
 
 		tabManager->processListTab->configView = new ProcessConfigView(gridForProcessToBeConfigured, processToBeConfigured, workerP);
+		break;
+
+	case ss::Message::EntireLogFile:
+		LM_M(("Got entire log file (%d bytes): %s", headerP->dataLen, (char*) dataP));
+		new LogFileWindow(ep, (char*) dataP);
+		break;
+
+	case ss::Message::EntireOldLogFile:
+		LM_M(("Got old log file (%d bytes): %s", headerP->dataLen, (char*) dataP));
+		new LogFileWindow(ep, (char*) dataP, true);
 		break;
 
 	default:
@@ -735,6 +745,7 @@ void SamsonSupervisor::logReceive(void)
 
 		if ((tot == bufLen) && (header.magic == 0xFEEDC0DE))
 		{
+			LM_M(("sAddr: 0x%x", sAddr.sin_addr.s_addr));
 			tabManager->logTab->logLineInsert(&sAddr, &header, &logLine);
 		}
 		else

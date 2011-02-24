@@ -56,6 +56,8 @@ char* messageCode(MessageCode code)
 	case LogSendingOff:                    return (char*) "LogSendingOff";
 	case ConfigChange:                     return (char*) "ConfigChange";
 	case WorkerConfigGet:                  return (char*) "WorkerConfigGet";
+	case EntireLogFile:                    return (char*) "EntireLogFile";
+	case EntireOldLogFile:                 return (char*) "EntireOldLogFile";
 	}
 
 	return (char*) "Unknown";

@@ -43,6 +43,8 @@ public:
 	int            Rows;
 	int            row;
 
+private:
+	int getHostAndProcess(char* host, char* processName);
 
 private slots:
 	void logViewClear(void);

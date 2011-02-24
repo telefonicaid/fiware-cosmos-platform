@@ -129,12 +129,14 @@ public:
 	Endpoint*    endpointLookup(int ix);
 	Endpoint*    endpointLookup(char* alias);
 	Endpoint*    endpointLookup(Endpoint::Type type, char* ip);
+	Endpoint*    endpointLookup(const char* name, const char* ip);
 	Endpoint*    endpointLookup(Endpoint::Type type, Host* hostP);
 	void         endpointRemove(Endpoint* ep, const char* why);
 	void         endpointListShow(const char* why);
 
 
 
+	void         logFileSend(Endpoint* ep, Message::MessageCode msgCode, bool oldLogFile = false);
 	int          helloSend(Endpoint* ep, Message::MessageType type);
 	void         helloReceived(Endpoint* ep, Message::HelloData* hello, Message::MessageType  msgType);
 	int          endpointSlotGet(Endpoint* ep);

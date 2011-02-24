@@ -146,8 +146,6 @@ void LogTab::logLineInsert(struct sockaddr_in* sAddr, ss::Message::Header* heade
 	if (strcmp(host, "127.0.1.1") == 0)
 		host = (char*) "127.0.0.1";
 
-	LM_M(("Host: '%s' 0x%x", host, sAddr->sin_addr.s_addr));
-
 	logItemAdd(row, logLine->type, logLine->date, host, logLine->processName, logLine->file, logLine->lineNo, logLine->fName, logLine->text, logLine->tLev);
 
 	if (row == 0)
@@ -224,8 +222,6 @@ int LogTab::getHostAndProcess(char* host, char* processName)
 		new InfoWin("Nothing selected", "Please select a row.\nThis way indicates which process you want the log file from.");
 		return -1;
 	}
-
-	LM_M(("currentRow: %d", currentRow));
 
 	processItem = tableWidget->item(currentRow, 3);
 	hostItem    = tableWidget->item(currentRow, 2);

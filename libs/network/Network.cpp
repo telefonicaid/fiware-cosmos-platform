@@ -2183,6 +2183,11 @@ void Network::logFileSend(Endpoint* ep, Message::MessageCode msgCode, bool oldLo
 		return;
 	}
 
+	int size = statBuf.st_size + 1;
+
+	// Zero terminating the buffer (string)
+	buf[statBuf.st_size] = 0;
+
 	tot = 0;
 	while (tot < statBuf.st_size)
 	{

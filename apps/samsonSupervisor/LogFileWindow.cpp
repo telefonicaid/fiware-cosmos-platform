@@ -30,7 +30,7 @@ LogFileWindow::LogFileWindow(ss::Endpoint* ep, char* text, bool old)
 {
 	QVBoxLayout*       layout;
 	QPlainTextEdit*    textEdit;
-	QFont              font("Courier", 10, QFont::Normal);
+	QFont              font("Courier", 8, QFont::Normal);
 	char               title[128];
 
 	QSize              size;
@@ -50,9 +50,11 @@ LogFileWindow::LogFileWindow(ss::Endpoint* ep, char* text, bool old)
 
 	textEdit = new QPlainTextEdit(text);
 	textEdit->setFont(font);
-	layout->addWidget(textEdit);
+	textEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
 	textEdit->setReadOnly(true);
-	this->setMinimumSize(800, 900);
+
+	layout->addWidget(textEdit);
+	this->setMinimumSize(1400, 700);
 
 	buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
 	connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));

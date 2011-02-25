@@ -7,9 +7,10 @@
 
 namespace ss {
 
-	DelilahComponent::DelilahComponent()
+	DelilahComponent::DelilahComponent( DelilaComponentType _type )
 	{
 		component_finished =  false;
+		type = _type;
 	}
 	
 	void DelilahComponent::setId( Delilah * _delilah ,  size_t _id )

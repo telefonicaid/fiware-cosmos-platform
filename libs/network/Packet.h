@@ -14,7 +14,7 @@
 #include "MemoryManager.h"   // MemoryManager
 #include "Endpoint.h"        // Endpoint
 #include "easyzlib.h"	     // zlib utility library
-
+#include "logMsg.h"			 // LM_TODO()
 
 namespace ss {
 	
@@ -22,7 +22,9 @@ namespace ss {
 	class Buffer;
 	
 
+	// This has been removed for simplicity. Files are now uploaded with a particular extension to indicate the compression mode
 	
+	/*
 	typedef struct 
 	{
 		int compressed;			// Information about the compression format ( 0 not compressed , 1 gzip compression )
@@ -45,7 +47,9 @@ namespace ss {
 		}
 		
 	} BufferHeader;
-	
+	*/
+	 
+	 
 	/** 
 	 Unique packet type sent over the network between controller, samson and delilah
 	 */
@@ -68,41 +72,36 @@ namespace ss {
 		{
 			
 			// Check input buffer format
-			BufferHeader *_header = (BufferHeader*) buffer->getData();
-			assert( _header->check() );
-			assert( _header->compressed == 0);
+			//BufferHeader *_header = (BufferHeader*) buffer->getData();
+			//assert( _header->check() );
+			//assert( _header->compressed == 0);
 			
 			// Create the header for the output buffer
-			BufferHeader header;						// Header to write as header output
-			header.init( 1 );							// Init header ( and magic number )
+			//BufferHeader header;						// Header to write as header output
+			//header.init( 1 );							// Init header ( and magic number )
 
 			// Get the original size
-			header.original_size = buffer->getSize() - sizeof(BufferHeader);	// Set the original size
+			size_t original_size = buffer->getSize();
 			
 			// Destination buffer
-			long int cm_max_len = EZ_COMPRESSMAXDESTLENGTH( header.original_size );
+			long int cm_max_len = EZ_COMPRESSMAXDESTLENGTH( original_size );
 			long int cm_len = cm_max_len;
 
 			// Get a new buffer ( a little bit larger )
-			Buffer *b = MemoryManager::shared()->newBuffer( "Compressed buffer", cm_len + sizeof(BufferHeader)  );
+			Buffer *b = MemoryManager::shared()->newBuffer( "Compressed buffer", cm_len  );
 			
-			int ans_compress = ezcompress( ( unsigned char*) ( b->getData() + sizeof(BufferHeader) ), &cm_len, ( unsigned char*) (buffer->getData() + sizeof(BufferHeader)) , header.original_size );
+			int ans_compress = ezcompress( ( unsigned char*) ( b->getData() ), &cm_len, ( unsigned char*) (buffer->getData() ) , original_size );
 			assert( !ans_compress );
+			b->setSize(cm_len  );			// Set the size of the compressed buffer
 
-			header.compressed_size = cm_len; 
-			
-			memcpy(b->getData(),(char*) &header, sizeof(BufferHeader));
-			
-			b->setSize(cm_len + sizeof( BufferHeader ) );			// Set the size of the compressed buffer
-
-			
-			//return b;
 			
 			// Create a new buffer with the rigth size
 			Buffer *b2 = MemoryManager::shared()->newBuffer( "Compressed buffer2", b->getSize()	);
 			memcpy(b2->getData(), b->getData(), b->getSize());
 			b2->setSize(b->getSize());
+
 			MemoryManager::shared()->destroyBuffer( b );
+			
 			return b2;
 			
 		}
@@ -115,23 +114,20 @@ namespace ss {
 		
 		static Buffer* decompressBuffer( char * data , size_t length )
 		{
-			// Decompress
-			BufferHeader *header = (BufferHeader*) data;
-			assert( header->check() );
-			assert( header->compressed_size == (length - sizeof(BufferHeader)) );
-
-			assert( header->compressed == 1 );	// Otherwise this function should not be called
-			
 			// Get the buffer with the rigth size
-			long int m2_len = header->original_size;	
+			LM_TODO(("Review the decompression process estimating the original size on the fly"));
+			assert( false );	
+			
+			size_t compressed_size = length;
+			
+			long int m2_len = 0; //?
 			Buffer *b =  MemoryManager::shared()->newBuffer( "Decompressed buffer" , m2_len );
 			b->setSize(m2_len);
 			
 			// Decompress information
-			int ans_decompress = ezuncompress( (unsigned char*) b->getData(), &m2_len, (unsigned char*) ( data + sizeof( BufferHeader ) ) , header->compressed_size );	
+			int ans_decompress = ezuncompress( (unsigned char*) b->getData(), &m2_len, (unsigned char*) ( data  ) , compressed_size );	
 			assert(!ans_decompress);
 			
-			assert( (size_t)m2_len == header->original_size );
 			
 			return b;
 			

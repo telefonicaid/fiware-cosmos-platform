@@ -10,22 +10,21 @@
 #include "SamsonWorker.h"				// ss::SamsonWorker
 #include "Packet.h"						// ss::Packet
 #include "SamsonSetup.h"				// ss::SamsonSetup
-#include <cstring>			// size_t
-#include <string>			// std::string
-#include "au_map.h"			// au::map
-#include "Lock.h"			// au::Lock
-#include <vector>			// std::vector
-#include "coding.h"			// ss::hg_info , ss::hg_size 
-#include "Buffer.h"			// ss::Buffer
-#include "MemoryManager.h"	// ss::MemoryManager
-#include "DiskManagerDelegate.h"	// ss::DiskManagerDelegate
-#include <set>						// std::set
-#include "samson.pb.h"				// ss::network::...
-#include "BufferVector.h"			// ss::BufferVector
-#include "Status.h"					// au::Status
-#include "ProcessItem.h"			// ss::ProcessItem
-#include "FileManagerWriteItem.h"	// ss::FileManagerWriteItem
-
+#include <cstring>						// size_t
+#include <string>						// std::string
+#include "au_map.h"						// au::map
+#include "Lock.h"						// au::Lock
+#include <vector>						// std::vector
+#include "coding.h"						// ss::hg_info , ss::hg_size 
+#include "Buffer.h"						// ss::Buffer
+#include "MemoryManager.h"				// ss::MemoryManager
+#include "DiskManagerDelegate.h"		// ss::DiskManagerDelegate
+#include <set>							// std::set
+#include "samson.pb.h"					// ss::network::...
+#include "BufferVector.h"				// ss::BufferVector
+#include "Status.h"						// au::Status
+#include "ProcessItem.h"				// ss::ProcessItem
+#include "FileManagerWriteItem.h"		// ss::FileManagerWriteItem
 
 namespace ss {
 	

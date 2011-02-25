@@ -7,8 +7,8 @@
 #include "FileManagerReadItem.h"
 #include "FileManagerWriteItem.h"
 #include "LoadDataManager.h"		// Own interface
-
-
+#include "MessagesOperations.h"		// setErrorMessage
+#include "SamsonSetup.h"			// ss::SamsonSetup
 
 namespace ss
 {
@@ -25,10 +25,11 @@ namespace ss
 
 #pragma mark UploadItem
 	
-	UploadItem::UploadItem(size_t id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadData &_uploadData ,size_t _sender_id, Buffer * _buffer ) 
+	UploadItem::UploadItem(size_t id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadDataFile &_upload_data_file ,size_t _sender_id, Buffer * _buffer ) 
 		: LoadDataManagerItem( id,  _fromIdentifier , dataManager)
 	{
-		uploadData = _uploadData;	// Copy the message
+		upload_data_file = new network::UploadDataFile();
+		upload_data_file->CopyFrom( _upload_data_file );	// Copy the message
 		sender_id = _sender_id;
 
 		buffer = _buffer;			// Point to the buffer
@@ -38,6 +39,10 @@ namespace ss
 		
 	}
 
+	UploadItem::~UploadItem()
+	{
+		delete upload_data_file;
+	}
 
 
 	size_t UploadItem::submitToFileManager()
@@ -47,21 +52,20 @@ namespace ss
 		item->tag = id;	// Use my id as tag
 		return FileManager::shared()->addItemToWrite( item );
 	}
-	
-
 
 	void UploadItem::sendResponse( bool error , std::string error_message )
 	{
 		// Sen a packet bak to delilah to confirm this update
 		Packet *p = new Packet();
-		network::UploadDataResponse *response = p->message.mutable_upload_data_response();
-		response->mutable_upload_data()->CopyFrom( uploadData );
+		network::UploadDataFileResponse *response = p->message.mutable_upload_data_file_response();
+
+		// Copy the original message
+		response->mutable_query()->CopyFrom( *upload_data_file );
+		
+		// Set the delalilah identifier
 		p->message.set_delilah_id( sender_id );
 		
-		response->set_error( error );
-		response->set_error_message( error_message );
-		
-		// Information about the created file
+		// Set the file just created
 		network::File *file = response->mutable_file();
 		file->set_name( fileName );
 		file->set_worker( dataManager->worker->network->getWorkerId());
@@ -69,26 +73,37 @@ namespace ss
 		info->set_kvs(1);
 		info->set_size(size);
 		
+		// Set the error int the response message if necessary
+		if( error )
+			response->mutable_error()->set_message( error_message );
+
+		// Send the message to delilah
 		NetworkInterface *network = dataManager->worker->network;
-		network->send( dataManager->worker , fromIdentifier , Message::UploadDataResponse , p);
+		network->send( dataManager->worker , fromIdentifier , Message::UploadDataFileResponse , p);
 	}
 	
 	
 	
 #pragma mark DownloadItem
 	
-	DownloadItem::DownloadItem(size_t id, int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadData &_downloadData ,size_t _sender_id) 
+	DownloadItem::DownloadItem(size_t id, int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadDataFile &_download_data_file ,size_t _sender_id) 
 		: LoadDataManagerItem( id, _fromIdentifier , dataManager )
 	{
-		downloadData = _downloadData;	// Copy the message
+		download_data_file = new network::DownloadDataFile();
+		download_data_file->CopyFrom( _download_data_file );	// Copy the message
 		sender_id = _sender_id;
 		
+	}
+	
+	DownloadItem::~DownloadItem()
+	{
+		delete download_data_file;
 	}
 
 	size_t DownloadItem::submitToFileManager()
 	{
-		std::string fileName = downloadData.file().name();
-		size_t size = au::Format::sizeOfFile( fileName );
+		std::string fileName = download_data_file->file().name();
+		size_t size = au::Format::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );
 
 		buffer = MemoryManager::shared()->newBuffer( "Buffer for downloading data" , size );
 		buffer->setSize( size );
@@ -99,35 +114,36 @@ namespace ss
 	}
 	
 
-
-	DownloadItem::~DownloadItem()
-	{
-	}
-	
-
-
 	void DownloadItem::sendResponse( bool error , std::string error_message )
 	{
 		// Sen a packet bak to delilah to confirm this update
 		Packet *p = new Packet();
-		network::DownloadDataResponse *response = p->message.mutable_download_data_response();
-		response->mutable_download_data()->CopyFrom( downloadData );
+		network::DownloadDataFileResponse *response = p->message.mutable_download_data_file_response();
+
+		// Copy the original message
+		response->mutable_query()->CopyFrom( *download_data_file );
+		
+		// Set the delilah identifier
 		p->message.set_delilah_id( sender_id );
+		
+		// Put the buffer where the file is loaded
 		p->buffer = buffer;	// Put the buffer here
-		
-		response->set_error( error );
-		response->set_error_message( error_message );
-		
+
+		// Set the rigth error if necessary
+		if( error )
+			response->mutable_error()->set_message( error_message );
+
+		// Send the message
 		
 		NetworkInterface *network = dataManager->worker->network;
-		network->send( dataManager->worker , fromIdentifier , Message::DownloadDataResponse , p);
+		network->send( dataManager->worker , fromIdentifier , Message::DownloadDataFileResponse , p);
 	}	
 	
 #pragma mark LoadDataManager
 	
 
 
-	void LoadDataManager::addUploadItem( int fromIdentifier, const network::UploadData &uploadData ,size_t sender_id, Buffer * buffer )
+	void LoadDataManager::addUploadItem( int fromIdentifier, const network::UploadDataFile &uploadData ,size_t sender_id, Buffer * buffer )
 	{
 		lock.lock();
 		
@@ -144,7 +160,7 @@ namespace ss
 	
 
 
-	void LoadDataManager::addDownloadItem( int fromIdentifier, const network::DownloadData &downloadData , size_t sender_id )
+	void LoadDataManager::addDownloadItem( int fromIdentifier, const network::DownloadDataFile &downloadData , size_t sender_id )
 	{
 		lock.lock();
 		

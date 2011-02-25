@@ -12,65 +12,16 @@
 
 namespace ss
 {
-	
-	
-#pragma mark -
-	
-	void TXTFileSet::fill( Buffer *b )
-	{
-		
-		// First the header
-		BufferHeader *header = (BufferHeader *)b->getData();
-		b->skipWrite(sizeof(BufferHeader) );
-		
-		if( finish )
-		{
-			return;	// Just in case
-		}
-		
-		// Write the previous characters here
-		bool ans = b->write( previousBuffer, previousBufferSize );
-		assert( ans );	// There have to space for the previous buffer
-		
-		while( b->getAvailableWrite() > 0 )	// While there is space to fill
-		{
-			
-			b->write( inputStream );
-			
-			// Open the next file if necessary
-			if( inputStream.eof() )
-			{
-				inputStream.close();
-				openNextFile();
-				if( finish )
-				{
-					// Information in the header
-					header->init( 0 );	// Non compressed header
-					header->original_size = b->getSize() - sizeof( BufferHeader );
-					header->compressed_size = b->getSize() - sizeof( BufferHeader );
-					return;
-				}
-			}
-		}
-		
-		// Full buffer
-		// Remove the last chars until a complete line and keep for the next read
-		previousBufferSize =  b->removeLastUnfinishedLine( previousBuffer );
 
-		// Information in the header
-		header->init( 0 );	// Non compressed header
-		header->original_size = b->getSize() - sizeof( BufferHeader );
-		header->compressed_size = b->getSize() - sizeof( BufferHeader );
-		
-		
-	}
+	// Function used by a parallel thread to process new uploads to be send to workers 
+	// May use compression algorithms ( that is the reason to put in this task in a thread )
+	void* processUploadPacketData( void *p );
+	
 	
 #pragma mark -
 	
-	
-	DelilahUploadDataProcess::DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression, int _max_num_threads ) : fileSet( fileNames )
+	DelilahUploadDataProcess::DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression, int _max_num_threads ) : DelilahComponent(DelilahComponent::load) , fileSet( fileNames ) 
 	{
-		
 		// Get initial time
 		gettimeofday(&init_time, NULL);
 		
@@ -92,16 +43,30 @@ namespace ss
 		for ( size_t i =  0 ; i < fileNames.size() ; i++)
 			totalSize += au::Format::sizeOfFile( fileNames[i] );
 
-		// Initial worker to sent data
-		worker = 0; // rand()%num_workers;		// Random worker to start
-
 		// Init counters of created and confirmed files
 		num_files = 0;
 		num_confirmed_files = 0;
+
 		
-		finish = false;
-		completed = false;
+		// Response from the controller initially NULL
+		upload_data_finish = NULL;
+
+		// Unninitialized status
+		status = uninitialized;
+
+		if( totalSize == 0)
+		{
+			error.set("Not data to upload");
+			status = finish_with_error;
+		}
+		
 	}	
+	
+	DelilahUploadDataProcess::~DelilahUploadDataProcess()
+	{
+		if ( upload_data_finish ) 
+			delete upload_data_finish;
+	}
 	
 	void* runThreadDelilahLoadDataProcess(void *p)
 	{
@@ -113,84 +78,56 @@ namespace ss
 	
 	void DelilahUploadDataProcess::run()
 	{
+		
+		if( status == finish_with_error )
+		{
+			delilah->uploadDataConfirmation(this);
+			return; // Nothing else to do
+		}
+		
+		assert( status == uninitialized );
+		
+		// Initial status ( We will send the first message to controller latter )
+		status = waiting_controller_init_response;
+		
+		// Send the message to the controller
+		Packet *p = new Packet();
+		
+		p->message.set_delilah_id( id );
+		ss::network::UploadDataInit *upload_data_init = p->message.mutable_upload_data_init();
+		upload_data_init->set_queue( queue );
+		delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::UploadDataInit, p);
+		
+		
 		// Set the number of workers
 		num_workers = delilah->network->getNumWorkers();
 		
-		// Create the thread for this load process
-		pthread_create(&t, NULL, runThreadDelilahLoadDataProcess, this);
+		// Select a random worker to send the first packet
+		worker = rand()%num_workers;
 	}
+	
 	
 	struct UploadPacketData {
-		Packet *p;
-		int worker;
-		Delilah* delilah;
-		DelilahUploadDataProcess* uploadDataProcess;
+		Packet *p;											// Packet prepared to upload
+		network::UploadDataFile *loadDataFile;				// Message inside the packet to complete information about upload 
+		int worker;											// Worker to send this packet
+		Delilah* delilah;									// Delilah client pointer to use the network element
+		DelilahUploadDataProcess* uploadDataProcess;		// Pointer to the global upload to get information about compression and report finish
 	};
 	
-	void* processUploadPacketData( void *p )
-	{
-		UploadPacketData * pd = (UploadPacketData*)p;
-
-		size_t original_size = pd->p->buffer->getSize();
-		size_t compress_size = pd->p->buffer->getSize();
-
-		size_t file_id = pd->p->message.upload_data().file_id();
-		size_t id = pd->uploadDataProcess->id;
-		
-		// Compress the buffer
-		if ( pd->uploadDataProcess->compression )
-		{
-			
-			{
-			std::ostringstream message;
-			message << "[ " << id << " ] < Buffer " << file_id << " > Compressing buffer ( Size: " <<  au::Format::string(original_size) << " )";
-			pd->delilah->showMessage( message.str() );
-			}
-			
-			
-			Buffer *buffer = Packet::compressBuffer( pd->p->buffer );
-			MemoryManager::shared()->destroyBuffer( pd->p->buffer );
-			pd->p->buffer = buffer;
-
-			compress_size = pd->p->buffer->getSize();
-			
-		}
-		
-		// Notify that the thread finished
-		pd->uploadDataProcess->finishCompressionThread(original_size);
-		
-		// Send the packet
-		{
-			std::ostringstream message;
-			message << "[ " << id << " ] < Buffer " << file_id << " > Sending ( Compresed Size: " << au::Format::string(compress_size) << " Original Size: " << au::Format::string(original_size) << ")";
-			pd->delilah->showMessage( message.str() );
-		}
-		
-		pd->delilah->network->send(pd->delilah, pd->delilah->network->workerGetIdentifier(pd->worker), Message::UploadData, pd->p);
-
-		// Send the packet
-		{
-			std::ostringstream message;
-			message << "[ " << id << " ] < Buffer " << file_id << " > Sent ( Compresed Size: " << au::Format::string(compress_size) << " Original Size: " << au::Format::string(original_size) << ")";
-			pd->delilah->showMessage( message.str() );
-		}
-		
-		
-		// Free allocated input parameter
-		free( p );
-		
-		return NULL;
-	}
 	
 	void DelilahUploadDataProcess::_run()
 	{
 		
 		while( !fileSet.isFinish() )
 		{
+			// No more things to do
+			if( status == finish_with_error )
+				return;
+			
 			// Wait if memory is not released
 			while( ( MemoryManager::shared()->getMemoryUsage() > 0.7 ) || ( num_threads >= max_num_threads ) )
 				sleep(1);
-			
 			
 			// Create a buffer
 			Buffer *b = MemoryManager::shared()->newBuffer( "Loading buffer" , ss::SamsonSetup::shared()->load_buffer_size );
@@ -205,7 +142,7 @@ namespace ss
 			if( fileSet.isFinish() )
 			{
 				lock.lock();
-				finish =  true;
+				status = waiting_file_upload_confirmations;	// Waiting at least the confirmation of this last file
 				lock.unlock();
 			}
 			
@@ -214,28 +151,27 @@ namespace ss
 			p->buffer = b;	// Add the buffer to the packet
 
 			// Set message fields
-			network::UploadData *loadData = p->message.mutable_upload_data();	
-			loadData->set_file_id( file_id );				// File id
-			loadData->set_original_size( b->getSize() );	// Size of the file we are uploading
-			p->message.set_delilah_id( id );				// Global id of delilah jobs
+			network::UploadDataFile *loadDataFile = p->message.mutable_upload_data_file();	
 
+			p->message.set_delilah_id( id );				
+			loadDataFile->set_load_id( load_id );		// load id operation at the controller
+			loadDataFile->set_file_id( num_files );		// File id
 			
 			// Send the packet
 			std::ostringstream message;
 			message << "[ " << id << " ] < Buffer " << file_id << " > Created with size: " << au::Format::string( b->getSize() , "B" );
-			delilah->showMessage(message.str());
+			delilah->showTrace( message.str() );
 
 			lock.lock();
 
-			// Create a thread to compress this message and send it
+			// Thread to process this upload. It may use compression algorithms before sending to the worker
 			
 			UploadPacketData *data  = (UploadPacketData*)malloc( sizeof(UploadPacketData) );
 			
 			data->p = p;
+			data->loadDataFile = loadDataFile;
 			data->delilah = delilah;
 			data->worker = worker++;
-			if ( worker >= num_workers )
-				worker = 0;
 			data->uploadDataProcess = this;
 			
 			pthread_t t;
@@ -244,81 +180,195 @@ namespace ss
 			
 			lock.unlock();
 			
+			if( worker == num_workers )
+				worker = 0;
+			
+			
 		}
 		
 		{
 			std::ostringstream message;
 			message << "[ " << id << " ] All input data locally processed";
-			delilah->showMessage( message.str() );
+			delilah->showTrace( message.str() );
 		}
 		
 		
 	}
 	
+	void* processUploadPacketData( void *p )
+	{
+		UploadPacketData * pd = (UploadPacketData*)p;
+		
+		size_t original_size = pd->p->buffer->getSize();
+		size_t compress_size = pd->p->buffer->getSize();
+		
+		size_t file_id = pd->p->message.upload_data_file().file_id();
+		size_t id = pd->uploadDataProcess->id;
+		
+		// Compress the buffer
+		if ( pd->uploadDataProcess->compression )
+		{
+			
+			{
+				std::ostringstream message;
+				message << "[ " << id << " ] < Buffer " << file_id << " > Compressing buffer ( Size: " <<  au::Format::string(original_size) << " )";
+				pd->delilah->showTrace( message.str() );
+			}
+			
+			
+			Buffer *buffer = Packet::compressBuffer( pd->p->buffer );
+			MemoryManager::shared()->destroyBuffer( pd->p->buffer );
+			pd->p->buffer = buffer;
+			
+			compress_size = pd->p->buffer->getSize();
+		
+			pd->loadDataFile->set_file_ext("txt.gz" );
+			
+		}
+		else
+			pd->loadDataFile->set_file_ext("txt" );
 
+		
+		// Complete information in the upload message
+		pd->loadDataFile->set_file_size( compress_size );
+		
+		// Notify that the thread finished
+		pd->uploadDataProcess->finishCompressionThread(original_size);
+		
+		// Send the packet
+		{
+			std::ostringstream message;
+			message << "[ " << id << " ] < Buffer " << file_id << " > Sending ( Compresed Size: " << au::Format::string(compress_size) << " Original Size: " << au::Format::string(original_size) << ")";
+			pd->delilah->showTrace( message.str() );
+		}
+		
+		pd->delilah->network->send(pd->delilah, pd->delilah->network->workerGetIdentifier(pd->worker), Message::UploadDataFile, pd->p);
+		
+		// Send the packet
+		{
+			std::ostringstream message;
+			message << "[ " << id << " ] < Buffer " << file_id << " > Sent ( Compresed Size: " << au::Format::string(compress_size) << " Original Size: " << au::Format::string(original_size) << ")";
+			pd->delilah->showTrace( message.str() );
+		}
+		
+		
+		// Free allocated input parameter
+		free( p );
+		
+		return NULL;
+	}
+	
 	
 	void DelilahUploadDataProcess::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
 		
-		lock.lock();
+		if( status == finish_with_error )
+			return;	// No more processign of incoming packets
 		
-		if (msgCode == Message::UploadDataResponse )
+		lock.lock();
+
+		if (msgCode == Message::UploadDataInitResponse )
+		{
+			// Only valid in this mode
+			assert( status == waiting_controller_init_response);
+
+			// Get the identifier at the controller for this operation
+			load_id = packet->message.upload_data_init_response().load_id();
+
+			// At this level, errors are not expected at the moment
+			
+			if( packet->message.upload_data_init_response().has_error() )
+			{
+				error.set(  packet->message.upload_data_init_response().error().message() );
+				status = finish_with_error;
+				
+				lock.unlock();
+				
+				// Notify to the client to show on scren the result of this load process
+				delilah->uploadDataConfirmation( this );
+				
+				lock.lock();
+				
+			}
+			else
+			{
+				
+				// Chage the status so the background thread starts sending data
+				status = sending_files_to_workers;
+
+				upload_data_finish = new ss::network::UploadDataFinish();
+				upload_data_finish->set_load_id( load_id );		// load id operation at the controller
+				upload_data_finish->set_queue( queue );			// Set the queue to send data
+				
+				// Create the thread for this load process
+				pthread_create(&t, NULL, runThreadDelilahLoadDataProcess, this);
+			}
+			
+			
+		}
+		else if (msgCode == Message::UploadDataFileResponse )
 		{
 			//size_t file_id = packet->message.upload_data_response().upload_data().file_id();
 			
+			if( packet->message.upload_data_file_response().has_error() )
+			{
+				error.set(  packet->message.upload_data_finish_response().error().message() );
+				status = finish_with_error;
+			}
 			
-			error				= packet->message.upload_data_response().error();
-			error_message		= packet->message.upload_data_response().error_message();
+			// Add the generated file to the packet prepared for the final confirmation
+			upload_data_finish->add_files()->CopyFrom( packet->message.upload_data_file_response().file() );
 			
-			network::File file	= packet->message.upload_data_response().file();
-			
-			// update the uploaded data
-			uploadedSize +=  packet->message.upload_data_response().upload_data().original_size();
-			//uploadedSize += file.info().size();
+			// Update the uploaded size
+			uploadedSize +=  packet->message.upload_data_file_response().query().file_size();
 
-			size_t file_id = packet->message.upload_data_response().upload_data().file_id();
+			// Get the uploaded file_id 
+			size_t file_id = packet->message.upload_data_file_response().query().file_id();
 			
 			std::ostringstream output;
 			output << "[ " << id << " ] < Buffer " << file_id << " > Received upload confirmation";
-			delilah->showMessage( output.str() );
-			
-			created_files.push_back(file);
+			delilah->showTrace( output.str() );
+
+			// Increate the number of confirmed files
 			num_confirmed_files++;
-			
-			if( finish )
+
+			// Check the upload operation is complete to send the final message
+			if( status == waiting_file_upload_confirmations )
 				if ( num_files == num_confirmed_files)
-					completed = true;
-			
-			if ( completed )
-			{
-				// Send the final packet to the controller notifying about the loading process
-				Packet *p = new Packet();
-				network::UploadDataConfirmation *confirmation	= p->message.mutable_upload_data_confirmation();
-				confirmation->set_queue( queue );
-				p->message.set_delilah_id( id );
-				
-				for (size_t i = 0 ; i < created_files.size() ; i++)
 				{
-					network::File *file = confirmation->add_file();
-					file->CopyFrom(created_files[i]);
+					// Change the status to waiting the final confirmation message
+					status = waiting_controller_finish_response;
+					
+					// Send the final packet to the controller notifying about the loading process
+					Packet *p = new Packet();
+					network::UploadDataFinish *_upload_data_finish	= p->message.mutable_upload_data_finish();
+					_upload_data_finish->CopyFrom( *upload_data_finish );
+
+					// Set the general id for delilah
+					p->message.set_delilah_id( id );
+
+					// Set the final files used in this upload ( usign information from the initial message )
+					
+					delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::UploadDataFinish, p);
 				}
-				
-				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::UploadDataConfirmation, p);
-			}
 
 			
 			
-		} else if (msgCode == Message::UploadDataConfirmationResponse )
+		} else if (msgCode == Message::UploadDataFinishResponse )
 		{
-			assert( finish );
-			assert( completed );
 			
-			network::UploadDataConfirmationResponse confirmation = packet->message.upload_data_confirmation_response();
-			error			= confirmation.error();
-			error_message	= confirmation.error_message();
+			assert( status == waiting_controller_finish_response );	
+
+			if( packet->message.upload_data_finish_response().has_error() )
+			{
+				error.set(  packet->message.upload_data_finish_response().error().message() );
+				status = finish_with_error;
+			}
+			else
+				status = finish;
 			
 			// Notify to the client to show on scren the result of this load process
-			delilah->loadDataConfirmation( this );
+			delilah->uploadDataConfirmation( this );
 			
 			// mark the component as finished to be removed by Delilah component
 			component_finished = true;
@@ -326,7 +376,7 @@ namespace ss
 			std::ostringstream output;
 			output << "[ " << id << " ] Received upload data confirmation from controller\n";
 			output << getStatus();
-			delilah->showMessage( output.str() );
+			delilah->showTrace( output.str() );
 			
 			
 		}
@@ -382,31 +432,52 @@ namespace ss
 		
 		int seconds = au::Format::ellapsedSeconds(&init_time);
 		
-		output << "[ "<< id << " ]\tUploading " << au::Format::string( totalSize ,"B" ) <<" to queue: " << queue;
-		
-		output << " Running time: " << au::Format::time_string(seconds) ;
+		output << "[ "<< id << " ] Uploading " << au::Format::string( totalSize ,"B" ) <<" to queue: " << queue << " ( ";
 
+		switch (status) {
+			case uninitialized:
+				output << "Uninitialized";
+				break;
+			case waiting_controller_init_response:
+				output << "Waiting controller response to our init message";
+				break;
+			case sending_files_to_workers:
+				output << "Sending data";
+				break;
+			case waiting_file_upload_confirmations:
+				output << "Waiting confirmation of received data";
+				break;
+			case waiting_controller_finish_response:
+				output << "Waiting final message confirmation from controller";
+				break;
+			case finish_with_error:
+				output << "ERROR: " << error.getMessage();
+				break;
+			case finish:
+				output << "Finished correctly";
+				break;
+		}
+		output << " )";
 		
-		if( completed )
-			output << "State: All data uploaded and confirmed.";
-		else
+		if( status == sending_files_to_workers )
 		{
-			output << " State: " << num_threads << " threads compressing data.";
+			output << "\n\tRunning time: " << au::Format::time_string(seconds) << " " ;
+			output << " [ " << num_threads << " threads compressing data ]";
 
 			if( uploadedSize > 0)
 			{
 				size_t pending_secs =  ( totalSize - uploadedSize ) * seconds / uploadedSize;
 				output << "[ETA " << au::Format::time_string( pending_secs ) << "] ";
 			}
-		}
 		
-		
-		output <<"\n\tProgress: ";
+			output <<"\n\tProgress: ";
 
-		output <<  showProgress( "Upload" , uploadedSize );
-		output << " ";
-		output <<  showProgress( "Processed" , processedSize );
-		
+			output <<  showProgress( "Upload" , uploadedSize );
+			output << " ";
+			output <<  showProgress( "Processed" , processedSize );
+			
+		}
+
 
 		return output.str();
 	}

@@ -29,21 +29,30 @@ namespace ss {
 
 		// Look at the operation to 
 		Operation *op = ModulesManager::shared()->getOperation( worker_task.operation() );
-		assert( op );		// TODO: Better handling of no operation error
-
-		// Id of this operations
-		size_t task_id = worker_task.task_id();
 		
-		// Create the task
-		WorkerTask *t = task.findInMap( task_id );
-		if( !t )
+		if( !op )
 		{
-			t = new WorkerTask( this );
-			task.insertInMap( task_id , t );
+			LM_TODO(("Notify the controller than this task has an error"));
+			return;
 		}
+		else
+		{
+		
 
-		// Setup the operation with all the information comming from controller
-		t->setup( op->getType() , worker_task );
+			// Id of this operations
+			size_t task_id = worker_task.task_id();
+			
+			// Create the task
+			WorkerTask *t = task.findInMap( task_id );
+			if( !t )
+			{
+				t = new WorkerTask( this );
+				task.insertInMap( task_id , t );
+			}
+
+			// Setup the operation with all the information comming from controller
+			t->setup( op->getType() , worker_task );
+		}
 		
 		token.release();
 

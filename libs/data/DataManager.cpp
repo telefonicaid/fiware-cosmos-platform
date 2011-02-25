@@ -63,12 +63,15 @@ namespace ss {
 				switch (c.action()) {
 					case data::Command_Action_Begin:
 					{
+						// Make sure we never repeate task id
+						if( task_counter <= task_id)
+							task_counter = task_id+1;
+						
 						// Create the task item to run
 						DataManagerItem *item = task.findInMap( task_id );
 						if( !item )
 						{
 							task.insertInMap( task_id  , new DataManagerItem( task_id ) );
-							_beginTask(task_id);
 						}
 					}
 						break;
@@ -76,10 +79,12 @@ namespace ss {
 					{
 						// Extract the item with all the commands
 						DataManagerItem *item = task.extractFromMap( task_id );
+
+						_beginTask(task_id);
 						item->run(this);
+						_finishTask(task_id);
 						delete item;
 						
-						_finishTask(task_id);
 
 					}
 						break;
@@ -88,8 +93,6 @@ namespace ss {
 						// Extract the item but no run any of them
 						DataManagerItem *item = task.extractFromMap( task_id );
 						delete item;
-						
-						_cancelTask(task_id);
 
 					}
 						break;

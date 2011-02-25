@@ -5,6 +5,7 @@ SET (SOURCES
 	DelilahComponent.cpp
 	DelilahDownloadDataProcess.cpp
 	DelilahUploadDataProcess.cpp
+	TXTFileSet.cpp
 )
 	
 SET (HEADERS
@@ -14,6 +15,7 @@ SET (HEADERS
 	DelilahComponent.h
 	DelilahDownloadDataProcess.h
 	DelilahUploadDataProcess.h
+	TXTFileSet.h
 )
 	
 SET (STATIC_LIBS

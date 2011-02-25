@@ -75,7 +75,7 @@ namespace ss {
 
 		void fill( network::QueueList *ql , std::string command);
 		void fill( network::AutomaticOperationList *aol , std::string command);
-		
+		void fill( network::DownloadDataInitResponse* response , std::string queue );
 		
 		void retreveInfoForTask( size_t job_id , ControllerTaskInfo *info , bool clear_inputs );		
 		
@@ -84,8 +84,7 @@ namespace ss {
 			std::ostringstream command;
 			command << "add_file " <<  worker << " " << fileName << " " << size << " " << kvs << " " << queue;
 			return command.str();
-		}
-		
+		}		
 		
 		FileKVInfo get_info_kvs()
 		{
@@ -118,6 +117,11 @@ namespace ss {
 		virtual void _cancelTask( size_t task );
 		virtual void _finishTask( size_t task );
 		
+
+		
+		// Handy functions
+		static void copyQueue( Queue * q_from , network::FullQueue * q_to );
+
 		
 	};
 

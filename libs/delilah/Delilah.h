@@ -30,6 +30,7 @@ namespace ss {
 	class DelilahClient;
 	class DelilahComponent;
 	class DelilahUploadDataProcess;
+	class DelilahDownloadDataProcess;
 
 	extern au::Lock list_lock;						// Lock to protect the list of information
 	extern network::OperationList *ol;
@@ -87,13 +88,23 @@ namespace ss {
 		virtual int _receive(int fromId, Message::MessageCode msgCode, Packet* packet)=0;
 
 		// A load data process has finished
-		virtual void loadDataConfirmation( DelilahUploadDataProcess *process )=0;
+		virtual void uploadDataConfirmation( DelilahUploadDataProcess *process ){};
+
+		// A download process has finished
+		virtual void downloadDataConfirmation( DelilahDownloadDataProcess *process ){};
 		
 		// Write something on screen
-		virtual void showMessage(std::string message)=0;
+		virtual void showMessage( std::string message)=0;
+
+		// Show traces  ( by default it does nothing )
+		virtual void showTrace( std::string message){};
 		
 		// Callback to notify that a particular operation has finished
 		virtual void notifyFinishOperation( size_t )=0;
+		
+	protected:
+		
+		void clearComponents();
 		
 	private:		
 		

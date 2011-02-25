@@ -26,7 +26,9 @@ namespace ss
 		// Geting the operation and the data base address
 		ModulesManager *modulesManager = ModulesManager::shared();
 		operation = modulesManager->getOperation( operation_name );
+
 		data = parserSubTask->buffer->getData();
+		size = parserSubTask->buffer->getSize();
 		
 		
 	}
@@ -38,33 +40,19 @@ namespace ss
 		parser->environment = &environment;
 		parser->tracer = this;
 		
-		
-		BufferHeader *header = (BufferHeader*)data;
-		assert( header->check() );
-		
-		if( header->compressed == 0 )
-		{
-			// Non compressed fiels
-			parser->init();
 
-			parser->run( data + sizeof(BufferHeader) , header->original_size ,  writer );
-			
-			parser->finish();
-			
-		}
-		else 
-		{
-			assert ( header->compressed == 1);	// Only supported 1
-			
-			Buffer* b = Packet::decompressBuffer( parserSubTask->buffer );
-			
-			parser->init();
-			parser->run( b->getData() , b->getSize() ,  writer );
-			parser->finish();
-			
-			MemoryManager::shared()->destroyBuffer(b);
-			
-		}
-	}
-	
+		// Non compressed fiels
+		parser->init();
+		parser->run( data , size ,  writer );
+		parser->finish();
+
+		/*
+		 // Compressed files
+		Buffer* b = Packet::decompressBuffer( parserSubTask->buffer );
+		parser->init();
+		parser->run( b->getData() , b->getSize() ,  writer );
+		parser->finish();
+		MemoryManager::shared()->destroyBuffer(b);
+		*/	
+	}	
 }

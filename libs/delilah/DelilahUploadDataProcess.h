@@ -13,6 +13,7 @@
 #include <sstream>			// std::ostringstream
 #include "Format.h"			// au::Format
 #include <list>				// std::list
+#include "TXTFileSet.h"		// ss::TXTFileSet
 
 namespace ss {
 
@@ -23,82 +24,32 @@ namespace ss {
 	class Buffer;
 	
 	
-	class TXTFileSet
-	{
-		
-		std::vector<std::string> fileNames;		// List of files to read
-		std::ifstream inputStream;				// Stream of the file we are reading	
-		
-		int file;
-		bool finish;
-		
-		char previousBuffer[ 10000 ];			// Part of the previous buffer waiting for the next read
-		size_t previousBufferSize;
-
-		std::vector<std::string> failedFiles;		// List of files that could not be uploaded		
-		
-		
-	public:
-		
-		TXTFileSet( std::vector<std::string> &_fileNames )
-		{
-			fileNames = _fileNames;
-			
-			previousBufferSize = 0;
-			
-			finish = false;
-			file = 0;	
-			
-			openNextFile();
-		}
-		
-		void openNextFile()
-		{
-			while ( !inputStream.is_open() ) 
-			{
-				
-				if( file >= (int)fileNames.size() )
-				{
-					finish = true;
-					return;
-				}
-				
-				inputStream.open( fileNames[file].c_str() );
-				if( !inputStream.is_open() )
-					failedFiles.push_back( fileNames[file] );	// Add to the list of failed files
-				file++;
-				
-			}
-		}
-		
-		
-		bool isFinish()
-		{
-			return finish;
-		}
-		
-		// Read as much as possible breaking in lines
-		void fill( Buffer *b );
-
-		std::vector<std::string> getFailedFiles()
-		{
-			return failedFiles;
-		}
-		
-		
-	};
-	
-	
 	// All the information related with a load process
 	class DelilahUploadDataProcess : public DelilahComponent
 	{
+		
+		typedef enum
+		{
+			uninitialized,
+			waiting_controller_init_response,				// Waiting for the init response
+			sending_files_to_workers,						// Sending files and receiving response messaged
+			waiting_file_upload_confirmations,				// Files are completelly scheduled, so we are waiting confirmations form controllers
+			waiting_controller_finish_response,				// Pending to receive the final message from controller
+			finish_with_error,								// Some error ocurred in the process
+			finish											// Everything finished fine
+		} UploadStatus;
+
+		UploadStatus status;			// Status of the upload process
+		
 		au::Lock lock;					// Lock mechanish to protext ( async confirmation of the workers )
 		
 		int num_workers;				// Total number of workers
-		int worker;						// Current worker
 		
 		pthread_t t;					// Thread of this process
+
+		// Data information
 		
+		std::string queue;				// Name of the queue we are uploading
 		TXTFileSet fileSet;				// Input txt files
 		
 		size_t num_files;				// Num files generated
@@ -107,12 +58,11 @@ namespace ss {
 		int num_threads;				// Number of paralel threads to wait if necessary
 		int max_num_threads;			// Maximum number of paralell threads
 		
-		std::vector<network::File> created_files;			// Created files ( answers from workers )
+		// Message prepared for the final confirmation
+		ss::network::UploadDataFinish *upload_data_finish;						
 		
-		bool finish;			// Flag to notify that all data has been sent to workers
-		bool completed;			// Flag to notify that the process is complete ( everything is confirmed from the workers )
-
-		std::string queue;		// Name of the queue we are uploading
+		// Id of the operation at the controller
+		size_t load_id;
 		
 		// Sumary information
 		size_t totalSize;				// Total size to be uploaded ( all files )
@@ -121,23 +71,28 @@ namespace ss {
 		size_t uploadedSize;			// Total size of uploaded files
 		size_t uploadedCompressedSize;	// Total size uploaded to workers ( compressed )
 
-		// Error management
-		bool error;
-		std::string error_message;
 
 		// Initial time stamp of the operation
 		struct timeval init_time;
 		
+		// Worker to send the next packet
+		int worker;
+		
 	public:
 
+		// Error log ( public since it is access from delilah )
+		au::Error error;
+		
 		bool compression;	// Public since it has to be accessible from the thread
 		
 		DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression , int _max_num_threads );		
+		~DelilahUploadDataProcess();
 		
-		void run();		
+		void run();	// Main method to start the upload process ( sending an init message to controller )
+		
 		void _run();	// Method only called by a separeted thread		
 		
-		void fillLoadDataConfirmationMessage( network::UploadDataConfirmation *confirmation );		
+		void fillUpLoadDataFinishMessage( network::UploadDataFinish *confirmation );		
 		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 		
 		std::string getStatus();		

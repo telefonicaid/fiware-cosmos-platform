@@ -72,13 +72,16 @@ int Delilah::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	if ( component )
 	{
 		component->receive( fromId, msgCode, packet );
-		
+
+		// Automatical remove of components is disabled, since now the user can remove completed components when done
+		/*
 		if ( component->component_finished )
 		{
 			component = components.extractFromMap(sender_id);
 			notifyFinishOperation( sender_id );
 			delete component;
 		}
+		*/
 		
 	}
 	
@@ -118,7 +121,7 @@ void Delilah::notificationSent(size_t id, bool success)
 		size_t tmp_id = addComponent(d);	
 		
 		d->run();
-			
+		
 		return tmp_id;
 	}
 	
@@ -148,6 +151,29 @@ void Delilah::notificationSent(size_t id, bool success)
 		
 		return tmp_id;
 	}
+	
+	void Delilah::clearComponents()
+	{
+
+		std::vector<size_t> components_to_remove;
+		
+		lock.lock();
+		
+		for ( au::map<size_t , DelilahComponent>::iterator c =  components.begin() ;  c != components.end() ; c++)
+			if ( c->second->component_finished )
+				components_to_remove.push_back( c->first );
+
+		for (size_t i = 0 ; i < components_to_remove.size() ; i++)
+		{
+			DelilahComponent *component = components.extractFromMap( components_to_remove[i] );
+			if( component )
+				delete component;
+		}
+			 
+		lock.unlock();
+	}
+	
+	
 	
 	size_t Delilah::sendCommand(  std::string command )
 	{

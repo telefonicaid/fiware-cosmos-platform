@@ -11,6 +11,7 @@
 #include <sys/stat.h>           // umask
 #include <unistd.h>             // getppid, fork, setsid
 #include <stdio.h>              // stdin, stdout, stderr
+#include <stdlib.h>             // free
 
 #include "logMsg.h"             // LM_*
 #include "daemonize.h"          // Own interface

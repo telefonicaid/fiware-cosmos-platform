@@ -143,8 +143,6 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		return 0;
 	}
 	
-	
-	
 	// List of local file ( remove unnecessary files )
 	if (msgCode == Message::CommandResponse)
 	{
@@ -154,16 +152,16 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 
 	
 	// Load data files to be latter confirmed to controller
-	if (msgCode == Message::UploadData)
+	if (msgCode == Message::UploadDataFile)
 	{
-		loadDataManager.addUploadItem(fromId, packet->message.upload_data(), packet->message.delilah_id() , packet->buffer );
+		loadDataManager.addUploadItem(fromId, packet->message.upload_data_file(), packet->message.delilah_id() , packet->buffer );
 		return 0;
 	}
 
 	// Download data files
-	if (msgCode == Message::DownloadData)
+	if (msgCode == Message::DownloadDataFile)
 	{
-		loadDataManager.addDownloadItem(fromId, packet->message.download_data() , packet->message.delilah_id() );
+		loadDataManager.addDownloadItem(fromId, packet->message.download_data_file() , packet->message.delilah_id() );
 		return 0;
 	}
 
@@ -214,7 +212,7 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	{
 		// Generate list of local files ( to not remove them )
 		std::set<std::string> files;
-		std::set<size_t> active_tasks;
+		std::set<size_t> load_id;
 		
 		for (int q = 0 ; q < ql.queue_size() ; q++)
 		{
@@ -234,6 +232,10 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 			for (int f = 0 ; f < ql.tasks(t).filename_size() ; f++)
 				files.insert( ql.tasks(t).filename(f)  );
 		
+		// Get the list of active load_ids to not remove temporal files of these upload operations
+		for (int t = 0 ; t < ql.load_id_size() ; t++)
+			load_id.insert(ql.load_id(t));
+
 		
 		// Get the list of files to be removed
 		
@@ -254,23 +256,48 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 			struct ::stat info;
 			stat(path.c_str(), &info);
 			
+			
 			if( S_ISREG(info.st_mode) )
 			{
-				// Get the task from the file name 
-				std::string file_name = dirp->d_name;
-				size_t pos = file_name.find("_");
-				size_t task = 0;
-				if( pos != std::string::npos )
-					task = atoll( file_name.substr( 0 , pos ).c_str() );
 				
-				if( files.find( file_name ) == files.end() )
+				// Get modification date to see if it was just created
+				time_t now;
+				time (&now);
+				double age = difftime ( now , info.st_mtime );
+
+				if( age > 60 ) // Get some time to avoid cross-message between controller and worker
 				{
-					// If the file is not in the list remove this
-					remove_files.insert( path );
-				}
 				
+					// Get the task from the file name 
+					std::string file_name = dirp->d_name;
+					size_t pos = file_name.find("_");
+					size_t task = 0;
+					if( pos != std::string::npos )
+						task = atoll( file_name.substr( 0 , pos ).c_str() );
+					
+					if( files.find( file_name ) == files.end() )
+					{
+						// If the file is not in the list remove this
+						
+						if( file_name.substr( 0 , 14 ) == "file_updaload_" )
+						{
+							// Exception: temporal upload files
+							size_t pos = file_name.find("_" , 14);
+							size_t _load_id = atoll( file_name.substr(14 , pos).c_str() );
+							if( load_id.find(_load_id ) == load_id.end() )
+							{
+								//LM_M(("Removing file %s since the id (%lu) is not in the list of active load operations (size:%d)", file_name.c_str() , _load_id , load_id.size() ));
+								remove_files.insert( path );
+							}
+						}
+						else
+						{
+							//LM_M(("Remove file %s since it is not in any queue", file_name.c_str()));
+							remove_files.insert( path );
+						}
+					}
+				}
 			}
-			
 		}
 		closedir(dp);
 		

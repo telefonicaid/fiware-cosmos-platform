@@ -9,7 +9,8 @@
 #include "DelilahConsole.h"				// Own interface
 #include "Packet.h"						// ss:Packet
 #include "Format.h"						// au::Format
-#include "DelilahUploadDataProcess.h"		// ss::DelilahLoadDataProcess
+#include "DelilahUploadDataProcess.h"		// ss::DelilahUpLoadDataProcess
+#include "DelilahDownloadDataProcess.h"		// ss::DelilahDownLoadDataProcess
 #include "MemoryManager.h"				// ss::MemoryManager
 #include <iostream>
 #include <iomanip>
@@ -318,6 +319,10 @@ namespace ss
 			output << "\n";
 			output << " load		Check status of upload and downloads \n";
 			output << "\n";
+			output << " load_clear	Clear complete upload and download processes\n";
+			output << "\n";
+			output << " load_trace	Activate or deactivate traces for upload and download processes \n";
+			output << "             Usage: load_trace on/off\n";
 			output << "---------------------------------------------------------------------\n";
 			
 			output << "\n";
@@ -363,6 +368,42 @@ namespace ss
 			return ;
 		}
 
+		if ( mainCommand == "load_trace")
+		{
+			if ( commandLine.get_num_arguments() == 1)
+			{
+				if( trace_on )
+					writeOnConsole( "Traces are activated" );
+				else
+					writeOnConsole( "Traces are NOT activated" );
+				return;
+			}
+			
+			if( commandLine.get_argument(1) == "on" )
+			{
+				trace_on = true;
+				writeOnConsole( "Traces are now activated" );
+				return;
+			}
+			if( commandLine.get_argument(1) == "off" )
+			{
+				trace_on = false;
+				writeOnConsole( "Traces are now NOT activated" );
+				return;
+			}
+			
+			writeErrorOnConsole("Usage: trace on/off");
+			return;
+		}
+		
+		if ( mainCommand == "load_clear" )
+		{
+			// Clear completed upload and download process
+			clearComponents();
+			return ;
+		}
+		
+		
 		if ( mainCommand == "unset")
 		{
 			if ( commandLine.get_num_arguments() < 2 )
@@ -404,11 +445,25 @@ namespace ss
 		{
 			
 			std::ostringstream output;
-
+			bool present = false;
+			
+			output << "-----------------------------------------------------------------\n";
 			output << "Upload and download processes....\n";
+			output << "-----------------------------------------------------------------\n";
+			output << "\n";
 			std::map<size_t,DelilahComponent*>::iterator iter;
 			for (iter = components.begin() ; iter != components.end() ; iter++)
-				output << iter->second->getStatus() << "\n";
+			{
+				if ( iter->second->type == DelilahComponent::load )
+				{
+					output << iter->second->getStatus() << "\n";
+					present = true;
+				}
+			}
+			if( !present )
+				output << "\tNo upload or download process.\n";
+			output << "\n";
+			output << "-----------------------------------------------------------------\n";
 			writeOnConsole(output.str());
 			
 			return ;
@@ -515,16 +570,24 @@ namespace ss
 				
 				if( S_ISREG(buf.st_mode) )
 				{
-					std::ostringstream message;
-					message << "Including regular file " << fileName;
-					writeOnConsole( message.str() );
+					if( trace_on )
+					{
+						 
+						std::ostringstream message;
+						message << "Including regular file " << fileName;
+						writeOnConsole( message.str() );
+					}
+					
 					fileNames.push_back( fileName );
 				}
 				else if ( S_ISDIR(buf.st_mode) )
 				{
-					std::ostringstream message;
-					message << "Including directory " << fileName;
-					writeOnConsole( message.str() );
+					if( trace_on )
+					{
+						std::ostringstream message;
+						message << "Including directory " << fileName;
+						writeOnConsole( message.str() );
+					}
 					
 					{
 						// first off, we need to create a pointer to a directory
@@ -552,26 +615,32 @@ namespace ss
 				} 
 				else
 				{
-					std::ostringstream message;
-					message << "Skipping " << fileName;
-					writeOnConsole( message.str() );
+					if( trace_on )
+					{
+						std::ostringstream message;
+						message << "Skipping " << fileName;
+						writeOnConsole( message.str() );
+					}
 				}
 			}
 			
 			std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
 
 			bool compresion = false;
+			/*
+			 // Compression deactivated temporary
 			if( commandLine.get_flag_bool("gz") )
 				compresion = true;
 			if( commandLine.get_flag_bool("plain") )
 				compresion = false;
+			 */
 			
 			int max_num_thread = commandLine.get_flag_int("threads"); 
 			
 			size_t id = addUploadData(fileNames, queue,compresion , max_num_thread);
 			
 			std::ostringstream o;
-			o << "Load data process (id="<<id<<") started with " << fileNames.size() << " files";
+			o << "[ " << id << " ] Load data process started with " << fileNames.size() << " files";
 			writeWarningOnConsole(o.str());
 			return;
 		}
@@ -706,13 +775,38 @@ namespace ss
 		return 0;
 	}	
 	
-	void DelilahConsole::loadDataConfirmation( DelilahUploadDataProcess *process)
+	void DelilahConsole::uploadDataConfirmation( DelilahUploadDataProcess *process)
 	{
-		std::ostringstream o;
-		o << "Alert: Load data process finished\n";
-		o << process->getStatus();
-		writeWarningOnConsole(o.str());
+		if( process->error.isActivated() )
+		{
+			std::ostringstream o;
+			o << "[ " << process->id << " ] Upload data process finished with error ("<< process->error.getMessage() << "). Type XXX for more information";
+			writeErrorOnConsole(o.str());
+		}
+		else
+		{
+			std::ostringstream o;
+			o << "[ " << process->id << " ] Upload data process finished correctly\n";
+			writeWarningOnConsole(o.str());
+		}
 	};
+	
+	void DelilahConsole::downloadDataConfirmation( DelilahDownloadDataProcess *process)
+	{
+		if( process->error.isActivated() )
+		{
+			std::ostringstream o;
+			o << "[ " << process->id << " ] Download data process finished with error ("<< process->error.getMessage() << "). Type XXX for more information";
+			writeErrorOnConsole(o.str());
+		}
+		else
+		{
+			std::ostringstream o;
+			o << "[ " << process->id << " ] Download data process finished correctly\n";
+			writeWarningOnConsole(o.str());
+		}
+	};
+	
 	
 	
 	void DelilahConsole::showAutomaticOperations( const network::AutomaticOperationList aol)

@@ -20,6 +20,32 @@
 
 namespace ss {
 	
+	// Handy function
+
+	void ControllerDataManager::copyQueue( Queue * q_from , network::FullQueue * q_to )
+	{
+		 network::Queue *q = q_to->mutable_queue();
+		 
+		 // Set the name
+		 q->set_name( q_from->name() );
+		 
+		 // Format
+		 fillKVFormat( q->mutable_format() , q_from->format() );
+		 
+		 //Info
+		 fillKVInfo( q->mutable_info(), q_from->info() );
+		 
+		 // Add file information
+		 std::list< QueueFile* >::iterator iter;
+		 
+		 for ( iter = q_from->files.begin() ; iter != q_from->files.end() ; iter++)
+		 {
+			 network::File *file = q_to->add_file();
+			 (*iter)->fill( file );
+		 }		
+	}
+
+#pragma mark ----
 	
 	void ActiveTask::addFiles( Queue *q )
 	{
@@ -27,10 +53,9 @@ namespace ss {
 		for ( std::list< QueueFile* >::iterator i = q->files.begin() ; i != q->files.end() ; i++)
 			files.insert( (*i)->fileName );
 	}
-	
 
 #pragma mark ----
-	
+
 	void ControllerDataManager::_beginTask( size_t task )
 	{
 		//Create the structure for this task
@@ -319,6 +344,41 @@ namespace ss {
 			response.output = "OK";
 			return response;
 		}
+
+		if( commandLine.isArgumentValue(0, "check" , "check" ) )
+		{
+			// Add queue command
+			if( commandLine.get_num_arguments() < 2 )
+			{
+				response.output = "Usage: check name";
+				response.error = true;
+				return response;
+			}
+			
+			for (int i = 1 ; i < commandLine.get_num_arguments() ; i++)
+			{
+				
+				std::string name = commandLine.get_argument( i );
+				
+				// Check if queue exist
+				Queue *tmp =  queues.findInMap(name);
+				if( !tmp )
+				{
+					if( !forceFlag )
+					{
+						std::ostringstream output;
+						output << "Queue " + name + " does not exist\n";
+						response.output = output.str();
+						response.error = true;
+						return response;
+					}
+				}
+			}
+			
+			response.output = "OK";
+			return response;
+		}
+		
 		
 		if( commandLine.isArgumentValue(0, "clear" , "clear" ) )
 		{
@@ -645,9 +705,9 @@ namespace ss {
 			if( filterName( i->first , begin, end) )
 			{
 				network::FullQueue *fq = ql->add_queue();
-
 				
 				network::Queue *q = fq->mutable_queue();
+				
 				q->set_name( i->first );
 				
 				// Format
@@ -681,6 +741,18 @@ namespace ss {
 		
 		lock.unlock();		
 	}
+	
+	void ControllerDataManager::fill( network::DownloadDataInitResponse* response , std::string queue )
+	{
+		lock.lock();
+		
+		Queue * q = queues.findInMap( queue );
+		if( q )
+			copyQueue( q , response->mutable_queue() );
+		
+		lock.unlock();
+	}
+	
 	
 	
 	void ControllerDataManager::helpQueues( network::HelpResponse *response , network::Help help )

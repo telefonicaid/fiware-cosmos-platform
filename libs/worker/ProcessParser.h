@@ -19,7 +19,9 @@ namespace ss {
 		ParserSubTask *parserSubTask;
 		std::string operation_name;
 		Operation * operation;
+
 		char *data;
+		size_t size;
 		
 		// Constructor
 		ProcessParser( ParserSubTask *parserSubTask );

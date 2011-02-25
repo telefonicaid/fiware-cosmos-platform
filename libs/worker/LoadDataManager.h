@@ -29,6 +29,7 @@ namespace ss {
 		int fromIdentifier;						// Dalilah identifier to send responses		
 		Buffer *buffer;							// Buffer allocated for this task		
 		LoadDataManager *dataManager;			// Pointer to the data manager		
+		
 		LoadDataManagerItem( size_t _id, int _fromIdentifier , LoadDataManager *dataManager );		
 		virtual ~LoadDataManagerItem(){}
 		virtual std::string getStatus( )=0;
@@ -41,21 +42,23 @@ namespace ss {
 
 	public:
 		
-		network::UploadData uploadData;		// Information about the request
-		size_t sender_id;					// id of the sender
+		network::UploadDataFile *upload_data_file;	// Information about the file-request to upload
+		size_t sender_id;							// id of the sender
 		
-		std::string fileName;				// Filename fo the new upload
-		size_t size;						// Size of the uploaded file
+		std::string fileName;						// Filename of the new upload
+		size_t size;								// Size of the uploaded file
 		
-		UploadItem( size_t _id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadData &_uploadData , size_t sender_id,  Buffer * buffer );
-	
+		
+		UploadItem( size_t _id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadDataFile &_uploadDataFile , size_t sender_id,  Buffer * buffer );
+		~UploadItem();
+		
 		size_t submitToFileManager();
 		void sendResponse( bool error , std::string error_message );
 		
-		static std::string newFileName()
+		std::string newFileName()
 		{
 			std::ostringstream fileName;
-			fileName << SamsonSetup::shared()->dataDirectory << "/file_updaload_" << rand()%10000 << rand()%10000 << rand()%10000;
+			fileName << "file_updaload_" << upload_data_file->load_id() << "_" << rand()%10000 << rand()%10000 << rand()%10000 << "." << upload_data_file->file_ext();
 			return fileName.str();
 		}
 		
@@ -82,11 +85,11 @@ namespace ss {
 	public:
 		
 		
-		network::DownloadData downloadData;		// Information about the request
-		size_t sender_id;					// id of the sender
+		network::DownloadDataFile *download_data_file;	// Information about the request
+		size_t sender_id;								// id of the sender
 		
 		
-		DownloadItem(size_t _id, int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadData &_downloadData, size_t sender_id);		
+		DownloadItem(size_t _id, int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadDataFile &_download_data_file, size_t sender_id);		
 		~DownloadItem();
 
 		size_t submitToFileManager();
@@ -130,10 +133,10 @@ namespace ss {
 		}
 		
 		// Add item to upload data
-		void addUploadItem( int fromIdentifier, const network::UploadData &uploadData ,size_t sender_id, Buffer * buffer  );
+		void addUploadItem( int fromIdentifier, const network::UploadDataFile &uploadDataFile ,size_t sender_id, Buffer * buffer  );
 		
 		// add item to download data
-		void addDownloadItem( int fromIdentifier, const network::DownloadData &downloadData, size_t sender_id );
+		void addDownloadItem( int fromIdentifier, const network::DownloadDataFile &downloadDataFile, size_t sender_id );
 		
 		// Disk Manager notifications
 		void notifyFinishReadItem( FileManagerReadItem *item  );	

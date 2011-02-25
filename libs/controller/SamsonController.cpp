@@ -19,19 +19,14 @@
 #include "MemoryManager.h"          // ss::MemoryManager
 #include "FileManager.h"            // ss::FileManager
 
-
-
 namespace ss {
 
-
-	
 	void* runBackgroundThreadAutomaticOperation(void* p)
 	{
 		((SamsonController*)p)->runAutomaticOperationThread();
 		assert( false ); // It is not suppoused to return
 		return NULL;
 	}
-	
 	
 	/* ****************************************************************************
 	*
@@ -154,55 +149,196 @@ namespace ss {
 
 			return 0;
 			break;
-				
-			case Message::UploadDataConfirmation:
+	
+			case Message::DownloadDataInit:
 			{
-				// Uptade data and sent a LoadDataConfirmationResponde message
+				// Get a new task id for this operation
+				size_t task_id = data.getNewTaskId();
 				
-				bool error = false;	// By default, no error
-				std::string error_message = "No error message";
+				std::string queue = packet->message.download_data_init().queue();
 				
-				size_t job_id = data.getNewTaskId();
-				data.beginTask(job_id, "Load process from Delilah");
+				// Init the task at the data manager
+				data.beginTask(task_id, "Download process for queue " + queue );
 				
-				data.addComment( job_id , "Comments for load process...");
+				// Comment to inform about this download proces
+				data.addComment( task_id , "Download operation");
 				
-				const network::UploadDataConfirmation& loadDataConfirmation = packet->message.upload_data_confirmation();
-					
-				for (int i = 0 ; i < loadDataConfirmation.file_size() ; i++)
+				// Check if queue exist
+				
+				std::stringstream command;
+				command << "check " << queue;
+				
+				DataManagerCommandResponse r = data.runOperation(task_id, command.str());
+				
+				if( r.error )
 				{
-					const network::File& file = loadDataConfirmation.file(i);
+					// Error since queue does not exist
+					data.cancelTask(task_id, "Queue does not exist");
 					
-					std::stringstream command;	
-					command << "add_data_file " << file.worker() << " " << file.name() << " " << file.info().size() << " " << loadDataConfirmation.queue();
-					DataManagerCommandResponse response =  data.runOperation( job_id , command.str() );
-						
-					if( response.error )
-					{
-						error = true;
-						error_message = response.output;
-						break;
-					}
+					// Response message informing about the name of new files
+					Packet *p = new Packet();
+					network::DownloadDataInitResponse * download_data_init_response = p->message.mutable_download_data_init_response();
+					download_data_init_response->mutable_query()->CopyFrom( packet->message.download_data_init() );
+					
+					// Set the error
+					download_data_init_response->mutable_error()->set_message("Queue does not exist");
+					
+					// Copy the delilah id of this task
+					p->message.set_delilah_id( packet->message.delilah_id() );	// Get the same id
+					
+					// Send the message back to delilah
+					network->send(this, fromId, Message::DownloadDataInitResponse, p);
+					
 				}
-					
-				if( error )
-					data.cancelTask(job_id, error_message);
 				else
-					data.finishTask(job_id);
+				{
+					
+					// Response message informing about the load_id ( necessary to download files )
+					Packet *p = new Packet();
+					
+					network::DownloadDataInitResponse * download_data_init_response = p->message.mutable_download_data_init_response();
+					download_data_init_response->mutable_query()->CopyFrom( packet->message.download_data_init() );
+					download_data_init_response->set_load_id( task_id );
+
+					// Fill with the necessary files for this download
+					data.fill( download_data_init_response, queue );
+					
+					// Create the upload operation
+					loadManager.addDownload( task_id );
+					
+					// Copy the delilah id of this task
+					p->message.set_delilah_id( packet->message.delilah_id() );	// Get the same id
+					
+					// Send the message back to delilah
+					network->send(this, fromId, Message::DownloadDataInitResponse, p);
+				}
+				
+			}
+				
+			return 0;
+			break;
+				
+			case Message::UploadDataInit:
+			{
+				
+				
+				// Get a new task id for this operation
+				size_t task_id = data.getNewTaskId();
+
+				std::string queue = packet->message.upload_data_init().queue();
+
+				// Init the task at the data manager
+				data.beginTask(task_id, "Upload process to queue " + queue );
+				
+				// Comment to inform about this upload proces
+				data.addComment( task_id , "Upload operation");
+				
+				
+				// Check if queue exist
+				
+				std::stringstream command;
+				command << "check " << queue;
+				
+				DataManagerCommandResponse r = data.runOperation(task_id, command.str());
+				
+				if( r.error )
+				{
+					// Error since queue does not exist
+					
+					data.cancelTask(task_id, "Queue does not exist");
+					
+					// Response message informing about the name of new files
+					Packet *p = new Packet();
+					network::UploadDataInitResponse * upload_data_init_response = p->message.mutable_upload_data_init_response();
+					upload_data_init_response->mutable_query()->CopyFrom( packet->message.upload_data_init() );
+
+					// Set the error
+					upload_data_init_response->mutable_error()->set_message("Queue does not exist");
+					
+					// Copy the delilah id of this task
+					p->message.set_delilah_id( packet->message.delilah_id() );	// Get the same id
+					
+					// Send the message back to delilah
+					network->send(this, fromId, Message::UploadDataInitResponse, p);
+					
+					
+				}
+				else
+				{
+					
+					// Create the upload operation
+					loadManager.addUpload( task_id );
+					
+					// Response message informing about the load_id ( necessary to upload files )
+					Packet *p = new Packet();
+					network::UploadDataInitResponse * upload_data_init_response = p->message.mutable_upload_data_init_response();
+					upload_data_init_response->mutable_query()->CopyFrom( packet->message.upload_data_init() );
+					upload_data_init_response->set_load_id( task_id );
+
+					// Copy the delilah id of this task
+					p->message.set_delilah_id( packet->message.delilah_id() );	// Get the same id
+					
+					// Send the message back to delilah
+					network->send(this, fromId, Message::UploadDataInitResponse, p);
+				}
+				
+			}
+			
+			return 0;
+			break;
+				
+			case Message::UploadDataFinish:
+			{
+				au::Error error;	// Error estructure for the entire process
+				
+				// Final message of the upload proces
+				const network::UploadDataFinish& upload_data_finish = packet->message.upload_data_finish();
+				
+				// Recover the upload operation from the loadManager
+				ControllerUploadOperation* uploadOperation = loadManager.extractUploadOperation( upload_data_finish.load_id() );
+
+				if( !uploadOperation )
+					error.set( "Unknown upload operation at the controller" );
+				else
+				{
+					size_t task_id = uploadOperation->task_id;
+					
+					
+					for (int i = 0 ; i < upload_data_finish.files_size() ; i++)
+					{
+						const network::File& file = upload_data_finish.files(i);
+						
+						
+						std::string command = ControllerDataManager::getAddFileCommand(file.worker(), file.name(), file.info().size(), file.info().kvs(), upload_data_finish.queue());
+						DataManagerCommandResponse response =  data.runOperation( task_id , command );
+						
+						if( response.error )
+						{
+							error.set( response.output );
+							break;
+						}
+					}
+					
+					if( error.isActivated() )
+						data.cancelTask(task_id, error.getMessage() );
+					else
+						data.finishTask(task_id);					
+					
+					// remove the opload operation once evrything is reported in data
+					delete uploadOperation;
+				}
 					
 				// A message is always sent back to delilah to confirm changes
 				Packet *p = new Packet();
-				network::UploadDataConfirmationResponse * confirmationResponse = p->message.mutable_upload_data_confirmation_response();
-				confirmationResponse->set_error( error );
-				confirmationResponse->set_error_message( error_message );
+				network::UploadDataFinishResponse * upload_data_finish_response = p->message.mutable_upload_data_finish_response();
+				if( error.isActivated() )
+					upload_data_finish_response->mutable_error()->set_message( error.getMessage() );
 				
 				p->message.set_delilah_id( packet->message.delilah_id() );	// Get the same id
 				
-				network->send(this, fromId, Message::UploadDataConfirmationResponse, p);
+				network->send(this, fromId, Message::UploadDataFinishResponse, p);
 			}
 			break;
-
-			
 				
 			case Message::Command:
 			{
@@ -225,7 +361,13 @@ namespace ss {
 					network::CommandResponse *response = p2->message.mutable_command_response();
 					response->set_command( command );
 					p2->message.set_delilah_id( packet->message.delilah_id() );
-					data.fill( response->mutable_queue_list() , command );
+
+					ss::network::QueueList *ql = response->mutable_queue_list();
+					data.fill( ql , command );
+					
+					// Complement with information about active upload-download operations
+					loadManager.fill( ql );
+					
 					network->send(this, fromId, Message::CommandResponse, p2);
 					
 					return	 0;

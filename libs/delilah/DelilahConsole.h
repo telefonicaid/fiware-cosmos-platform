@@ -101,6 +101,7 @@ namespace ss {
 	class DelilahConsole : public au::Console, public Delilah
 	{
 		
+		bool trace_on;
 	public:
 		
 		DelilahConsole( NetworkInterface *network) : Delilah( network , true )
@@ -108,6 +109,7 @@ namespace ss {
 			/* completion function for readline library */
 			rl_attempted_completion_function = readline_completion;
 
+			trace_on = false;
 		}
 		
 		~DelilahConsole()
@@ -140,7 +142,8 @@ namespace ss {
 		// --------------------------------------------------------
 		
 		// Confirmation that a loading process has finished
-		virtual void loadDataConfirmation( DelilahUploadDataProcess *process);		
+		virtual void uploadDataConfirmation( DelilahUploadDataProcess *process);
+		virtual void downloadDataConfirmation( DelilahDownloadDataProcess *process );
 		
 		// Function to process messages from network elements not handled by Delila class
 		int _receive(int fromId, Message::MessageCode msgCode, Packet* packet);		
@@ -158,6 +161,13 @@ namespace ss {
 		{
 			writeWarningOnConsole( message );
 		}
+		
+		virtual void showTrace( std::string message)
+		{
+			if( trace_on )
+				writeWarningOnConsole( message );
+		}
+
 		
 		// Private functions to show content on the console
 		// --------------------------------------------------------

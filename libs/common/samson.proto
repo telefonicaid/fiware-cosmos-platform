@@ -1,5 +1,6 @@
 package ss.network;
 
+
 // ////////////////////////////////////////////////////////////////////////////
 //
 // Common 
@@ -33,7 +34,7 @@ message File
 {
 	required string name=1;		// Name of file
 	required int32 worker=2;	// Worker where this file has been created
-	required KVInfo info=3;		// Information about this file
+	optional KVInfo info=3;		// Information about this file
 }
 
 message Queue
@@ -106,6 +107,12 @@ message Job
 	repeated JobItem item = 10;	// Stack of Items in this job
 }
 
+message Error
+{
+	// When Error is used inside another message, it is always optional
+	required string message = 2;	// String with the error definition ( if any )
+}
+
 // Information about a worker ( diskManager / fileManager / Process runing / etc..)
 
 message ControllerStatus
@@ -148,8 +155,9 @@ message ActiveTask
 
 message QueueList
 {
-	repeated FullQueue queue = 1;      // List of queues with its files
+	repeated FullQueue queue = 1;     // List of queues with its files
 	repeated ActiveTask tasks = 2;    // List of active tasks ( files associated with this tasks can not be removed at workers )
+	repeated uint64 load_id = 3;	  // Ids of active load operations ( not remove incomming files )
 }
 
 message DataList
@@ -307,7 +315,6 @@ message HelpResponse
 }
 
 
-
 // ////////////////////////////////////////////////////////////////////////////
 //
 // Message to exchange information between workers
@@ -331,58 +338,131 @@ message WorkerDataExchangeClose
 
 // ////////////////////////////////////////////////////////////////////////////
 //
-// Message to Load data from Delilah to a Worker and response
+// Message to Upload and Download data from Delilah to a Worker and response
 //
 
-message UploadData
+/*
+
+To upload files to samson, take this steps:
+
+--> delilah sends a message to controller (UploadDataInit) informing about the number of files to upload
+--> controller answers informing about the name of the files using (UploadDataInitResponse)
+--> delilah connects with each working uploading data using ( UploadDataFile )
+--> workers answer to delilah using ( UploadDataFile )
+--> Finally, delilah send a message to the controller ( UploadDataFinish )
+--> Controller confirm this message with ( UploadDataFinishResponse )
+
+*/
+
+// Message from delilah to init an upload operation
+message UploadDataInit
 {
-	required uint64 file_id=2;		// Id of the file ( multiple files for the same process)		
-	optional uint64 original_size=3;	// Original size of the file ( note that compression can be applyed )
+	required string queue=1;	// Name of the queue ( to check at controller )
 }
 
-message UploadDataResponse
+// Answer message from the controller
+message UploadDataInitResponse
 {
-	required UploadData	upload_data	=1;	// Copy of the upload_data message
+	required UploadDataInit query=1;	// Original query
+	required uint64 load_id=3;		// Id of the operation ( at the controller )
 
-	required bool error = 3;			// Flag to indicate if there was an error
-	optional string error_message = 4;		// Possible error message ( if error )
-
-	required File file = 5;				// Created file
+	optional Error error=100;		// Possible error in this operation
 }
 
-message UploadDataConfirmation
+// Message from delilah to worker to upload a particular file
+
+message UploadDataFile
 {
-	required string queue=2;		// Name of the queue to upload
-	repeated File   file=3;			// List of uploaded files
+	required uint64 load_id=1;	// If of the operation ( at the controller )
+
+	// Information about uploaded file
+        required uint64 file_id=2;      // Id of the file ( multiple files for the same process)
+	required uint64 file_size=3;	// Information about the size of the buffer ( to monitorize uploaded size at delilah )
+	required string file_ext=4;	// Extension of the file ( used to determine the type of file )
 }
 
-message UploadDataConfirmationResponse
+// Answer from the worker
+message UploadDataFileResponse
 {
-	required bool error=2;				// Flag to indicarte if there was an error				   	
-	required string error_message=3;		// String message to show to the user
+	required UploadDataFile query=1;	// Original query
+
+	required File file=2;			// Generated file
+	optional Error error=100;       	// Possible error in this operation
+}
+
+// Message from delilah to controller to confirm upload process
+message UploadDataFinish
+{
+	required uint64 load_id=3;	// Id of the operation ( at the controller )
+
+	required string queue=4;	// Queue to upload files
+	repeated File files=5;		// Uploaded files
+
+	optional Error error = 100;	// Optional place to report errors to the controller
+		       	       		// If an error is reported, upload operation is canceled and files are automatically removed at workers
+}
+
+// Answer from the controller
+message UploadDataFinishResponse
+{
+	required UploadDataFinish query=1;		// Original message send from delilah
+
+	optional Error error=100; 			// Optional error message in the last steps of the upload process
 }
 
 
 // ////////////////////////////////////////////////////////////////////////////
 //
-// Messages for unload data
+// Messages for download data
 //
 
 
-message DownloadData
+message DownloadDataInit
 {
-	required int32 file_id		=2;	// File id we are requesting
-	required File file 		=3;	// Files that we would like to download
+	required string queue		=1;	// Queue we want to download
 }
 
-message DownloadDataResponse
+message DownloadDataInitResponse
 {
-	required DownloadData download_data	=1;	// copy of the request message
+	required DownloadDataInit query=1;		// Original query
 
-	required bool error = 3;			// Flag to indicate if there was an error
-	optional string error_message = 4;		// Possible error message ( if error )
+	required uint64 load_id=2;			// Id of the operation at the controller
+
+	optional FullQueue queue=3;			// Information of this queue ( this include all the files ) ( optional because maybe there is an error )
+
+	optional Error error=100;			// Optional error field for problems like queue does not exist
 }
 
+
+message DownloadDataFile
+{
+        required uint64 file_id=2;      // Id of the file ( multiple files for the same process)
+	required uint64 load_id=3;	// If of the operation ( at the controller )
+
+	required File file=4;
+}
+
+message DownloadDataFileResponse
+{
+	required DownloadDataFile query=1;	// Original query
+
+	optional Error error = 100;		// Optional flag to reports error in this operations
+}
+
+message DownloadDataFinish
+{
+        required uint64 file_id=2;      // Id of the file ( multiple files for the same process)
+        required uint64 load_id=3;      // If of the operation ( at the controller )
+
+	optional Error error = 100;	// Optinal field to reports errors	
+}
+
+message DownloadDataFinishResponse
+{
+	required DownloadDataFinish query=1;	// Original query of this message
+
+	optional Error error = 100;			// Optional flag to reports errors
+}
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -416,14 +496,22 @@ message Message
 	optional Help                   help                      = 109;  // Ask for help ( queues / datas / operations )
 	optional HelpResponse           help_response             = 110;  // Response for the ask help message   			     
 
-	optional UploadData		upload_data		  = 111;  // Load data ( Delilah to Worker )
-	optional UploadDataResponse	upload_data_response	  = 112;  // Load data ( Worker to Delilah )
+	// Upload and Download messages
+	
+	optional UploadDataInit			upload_data_init		= 111;
+	optional UploadDataInitResponse		upload_data_init_response	= 112;
+	optional UploadDataFile			upload_data_file		= 113;
+	optional UploadDataFileResponse		upload_data_file_response	= 114;
+	optional UploadDataFinish		upload_data_finish		= 115;
+	optional UploadDataFinishResponse	upload_data_finish_response	= 116;
 
-	optional UploadDataConfirmation   upload_data_confirmation	  = 113;  // Confirmation of a load data process ( Delilah to Controller)
-	optional UploadDataConfirmationResponse upload_data_confirmation_response = 114; 	  // Reponse of the previous message
+	optional DownloadDataInit		download_data_init		= 117;
+	optional DownloadDataInitResponse	download_data_init_response	= 118;
+	optional DownloadDataFile		download_data_file		= 119;
+	optional DownloadDataFileResponse	download_data_file_response	= 120;
+	optional DownloadDataFinish		download_data_finish		= 121;
+	optional DownloadDataFinishResponse	download_data_finish_response	= 122;
 
-	optional DownloadData		download_data		= 200;		//
-	optional DownloadDataResponse	download_data_response	= 201;		//
 
 	optional WorkerStatus worker_status = 170;			// Worker status update
 

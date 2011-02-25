@@ -292,7 +292,7 @@ namespace ss
 		buffer = NULL;
 		
 		// Compute the required size for this operation
-		fileSize = au::Format::sizeOfFile( fileName );	
+		fileSize = au::Format::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );	
 
 		description = "P"; // Parser
 	}

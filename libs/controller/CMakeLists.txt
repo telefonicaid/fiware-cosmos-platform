@@ -6,6 +6,7 @@ SET (HEADERS
 	ControllerTask.h
 	ControllerTaskInfo.h
 	ControllerTaskManager.h
+	ControllerLoadManager.h
 	Job.h
 	JobManager.h
 	Monitor.h
@@ -22,6 +23,7 @@ SET (SOURCES
     ControllerTask.cpp
     ControllerTaskInfo.cpp
     ControllerTaskManager.cpp
+    ControllerLoadManager.cpp
     Job.cpp
     JobManager.cpp
     Monitor.cpp

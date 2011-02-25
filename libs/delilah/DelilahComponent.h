@@ -14,13 +14,23 @@ namespace ss {
 	class DelilahComponent
 	{
 		
+		
 	public:
+		
+		typedef enum 
+		{
+			load,
+			updater
+		}DelilaComponentType;
+		
+		DelilaComponentType type;
 		
 		size_t id;
 		Delilah *delilah;
-		bool component_finished;		// Flag to be removed
+		bool component_finished;		// Flag to be removed when indicated by user
 		
-		DelilahComponent();
+		DelilahComponent( DelilaComponentType _type);
+		virtual ~DelilahComponent(){};	// Virtual destructor necessary in this class since subclasses are deleted using parent pointers
 		
 		void setId( Delilah * _delilah ,  size_t _id );
 		virtual void receive(int fromId, Message::MessageCode msgCode, Packet* packet)=0;
@@ -28,7 +38,6 @@ namespace ss {
 		virtual std::string getStatus()=0;
 		
 	};
-
 	
 	// Class to update local list of queues and operations for auto-completion
 	
@@ -39,7 +48,7 @@ namespace ss {
 	public:
 		
 		
-		DelilahUpdater()
+		DelilahUpdater() : DelilahComponent(DelilahComponent::updater)
 		{
 			// Create a thread to send this message every secon
 			pthread_t t;

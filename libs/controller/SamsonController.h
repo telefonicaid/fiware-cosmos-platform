@@ -26,7 +26,7 @@
 #include "JobManager.h"                 // ss::JobManager
 #include "Monitor.h"                    // ss::Monitor
 #include "Status.h"                     // au::Status
-
+#include "ControllerLoadManager.h"		// ss::ControllerLoadManager
 
 
 namespace ss {
@@ -37,22 +37,29 @@ namespace ss {
 	
 	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface 
 	{
-
 		// Elements inside the SamsonController
-		NetworkInterface*     network;						// Network interface
+		
+		// Network interface
+		NetworkInterface*     network;						
 
-		ControllerDataManager data;							// Data manager for the controller
-		JobManager jobManager;								// Top level job manager
-		Monitor monitor;									// Monitorization control for web-based moitoring tool
+		// Data manager for the controller
+		ControllerDataManager data;							
+		
+		// Top level job manager
+		JobManager jobManager;								
+
+		// Monitorization control for web-based moitoring tool
+		Monitor monitor;									
+		
+		// Load manager
+		ControllerLoadManager loadManager;
 		
 		// Status information of the workers
 		network::WorkerStatus** worker_status;				// Status of the workers reported periodically
 		struct timeval *worker_status_time;					// Last time status was reported
 		au::Lock worker_status_lock;						// Lock to protect this
 		int num_workers;
-		
-		//Message::WorkerStatusData status[100];		    // Status update from all workers
-		
+				
 		friend class ControllerTaskManager;
 		friend class Job;
 		friend class JobManager;

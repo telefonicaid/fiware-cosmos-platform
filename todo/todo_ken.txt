@@ -1,3 +1,11 @@
+ANDREW "COMMENTS"
+
+ o Error when connecting samsonSupervisor to samson01.hi.inet
+
+     planas2:~ andreu$ samsonSupervisor -controller samson01.hi.inet -workers 5 -andreu
+     X:samsonSupervisor: Host Manager cannot find host '10.95.109.98'
+     Assertion failed: (false), function lmOut, file /Users/andreu/devel/samson/libs/logMsg/logMsg.cpp, line 1682.
+
 BUGS
   o Annoying '-' at the end of the progName ...
 

@@ -165,6 +165,8 @@ public:
 	virtual int getNumWorkers()            = 0;		// Get the number of workers
 	virtual int getNumEndpoints() { return 0; }     // Get the number of endpoints
 
+    virtual void jobInfo(int endpointId, int* messages, long long* dataLen) { *messages = 0; *dataLen = 0; }
+
 	// Get information about network state
 	virtual std::string getState(std::string selector) { return std::string("No network state available"); }
 		

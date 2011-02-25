@@ -141,6 +141,7 @@ public:
 	void         helloReceived(Endpoint* ep, Message::HelloData* hello, Message::MessageType  msgType);
 	int          endpointSlotGet(Endpoint* ep);
 	void         jobQueueFlush(Endpoint* ep);
+	virtual void jobInfo(int endpointId, int* messages, long long* dataLen);
 
 	Endpoint*    controllerGet(void);
 	bool         isConnected(unsigned int identifier);

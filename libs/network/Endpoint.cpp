@@ -12,6 +12,7 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
 
+#include "Packet.h"             // Packet
 #include "Endpoint.h"           // Own interface
 
 
@@ -299,6 +300,37 @@ SendJob* Endpoint::jobPop(void)
 
 	free(qP);
 	return jobP;
+}
+
+
+
+/* ****************************************************************************
+*
+* jobInfo - 
+*/
+void Endpoint::jobInfo(int* messages, long long* dataLen)
+{
+	SendJobQueue* qP;
+	
+	*messages = 0;
+	*dataLen  = 0;
+
+	if (jobQueueHead == NULL)
+		return;
+
+
+	qP = jobQueueHead;
+	while (qP->next != NULL)
+	{
+		if (qP->job->packetP == NULL)
+			continue;
+
+		*messages += 1;
+		*dataLen  += qP->job->packetP->buffer->getSize();
+		*dataLen  += qP->job->packetP->message.ByteSize();
+
+        qP = qP->next;
+	}
 }
 
 

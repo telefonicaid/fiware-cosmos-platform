@@ -20,10 +20,17 @@
 namespace ss {
 
 
+
+/* ****************************************************************************
+*
+* Forward declarationsaa of classes
+*/
 class PacketSenderInterface;
 class Endpoint;
 class Packet;
 class Network;
+
+
 
 /* ****************************************************************************
 *
@@ -179,6 +186,7 @@ public:
 
 	SendJob* jobPop(void);
 	void     jobPush(SendJob*);
+	void     jobInfo(int* messages, long long* dataLen);
 
 	std::string str() { return name; }
 };

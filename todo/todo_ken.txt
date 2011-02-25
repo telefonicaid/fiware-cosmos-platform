@@ -47,6 +47,9 @@ STARTUP
 
 NEW FEATURES
   o (ANDREU) Metodo para averiguar la cola (numero de paquetes y tamanyo) de salida para cada endpoint
+             - getPendingJobs(int endpointId, int* messagesPending, int* totalDataLen);
+               Add all pending Google protocol buffer messages.
+               Size: SendJob->packet->message.getSize()
   o (ANDREU) Pestanya en samsonSupervisor con una grafica utilizando la libreria QWT ( http://qwt.sourceforge.net/ )
   o (ANDREU) Method to send a packet to all delilahs and supervisor (workers as well?)
   o MenuBar etc in supervisor window ... ?
@@ -66,10 +69,11 @@ TEST
 
 ------------------------------------------------------------------------------------------------------------------------
 
-REFACTORING
-  o Refactoring of NetworkInterface - the whole callback story ...
+REFACTORING AND CLEANUP
+  o Remove all '-port' options - ports are defined in common/ports.h !
   o Get rid of all Endpoint::Temporal
   o EndpointMgr for Network
+  o Refactoring of NetworkInterface - the whole callback story ...
   o DelilahTab: Stop using 'QueueMgr', 'SourceMgr' and 'ResultMgr' - use the one and only 'SceneItemMgr'
     - will need to add a few methods from SQR managers to SceneItemMgr, I guess ...
   o samsonSupervisor - QueueMgr, SourceMgr and ResultMgr should be ONE manager - SceneItemMgr

@@ -2094,6 +2094,22 @@ void Network::jobQueueFlush(Endpoint* ep)
 
 /* ****************************************************************************
 *
+* jobInfo - 
+*/
+void Network::jobInfo(int endpointId, int* messages, long long* dataLen)
+{
+	Endpoint* ep = endpoint[endpointId];
+
+	if (ep == NULL)
+		LM_RVE(("NULL endpoint for index %d", endpointId));
+
+	ep->jobInfo(messages, dataLen);
+}
+
+
+
+/* ****************************************************************************
+*
 * helloReceived - 
 */
 void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::MessageType  msgType)

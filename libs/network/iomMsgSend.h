@@ -15,7 +15,7 @@
 #include "Message.h"            // Message::MessageCode, Message::MessageType
 
 
-
+#if 0
 /* ****************************************************************************
 *
 * iomMsgSend - send a message to a peer and await the reply
@@ -31,6 +31,7 @@ extern int iomMsgSend
 	int                       dataLen    = 0,
 	ss::Packet*               packetP    = NULL
 );
+#endif
 
 
 

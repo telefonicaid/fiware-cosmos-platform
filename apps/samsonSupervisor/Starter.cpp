@@ -300,7 +300,7 @@ void Starter::processStart(void)
 	if (process->spawnerP->endpoint == NULL)
 		LM_X(1, ("NULL spawner pointer for process '%s@%d'", process->name, process->host));
 
-	s = iomMsgSend(process->spawnerP->endpoint->wFd, process->spawnerP->host, "samsonSupervisor", ss::Message::ProcessSpawn, ss::Message::Msg, process, sizeof(*process));
+	s = iomMsgSend(process->spawnerP->endpoint, networkP->endpoint[0], ss::Message::ProcessSpawn, ss::Message::Msg, process, sizeof(*process));
     if (s != 0)
 		LM_RVE(("iomMsgSend: error %d", s));
 
@@ -378,7 +378,7 @@ void Starter::processKill(void)
 	else
 	{
 		LM_W(("Sending 'Die' to '%s' at '%s' (name: '%s')", process->endpoint->typeName(), process->endpoint->ip, process->endpoint->name.c_str()));
-		s = iomMsgSend(process->endpoint->wFd, process->endpoint->ip, "samsonSupervisor", ss::Message::Die, ss::Message::Msg);
+		s = iomMsgSend(process->endpoint, networkP->endpoint[0], ss::Message::Die, ss::Message::Msg);
 		process->sendsLogs = false;
 	}
 }

@@ -1165,10 +1165,15 @@ Endpoint* Network::coreWorkerEndpointAdd(int rFd, int wFd, const char* name, con
 */
 Endpoint* Network::endpointAddWorker(const char* why, int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
 {
-	int ix;
+	int      ix;
+	Endpoint rejected;
 
 	if (endpoint[ME]->type == Endpoint::CoreWorker)
 		return coreWorkerEndpointAdd(rFd, wFd, name, alias);
+
+	// Filling in the 'rejected' endpoint to use just to reject it, in case it's needed
+	rejected.wFd  = wFd;
+	rejected.name = name;
 
 	LM_T(LmtWorkers, ("%d workers", Workers));
 
@@ -1189,7 +1194,7 @@ Endpoint* Network::endpointAddWorker(const char* why, int rFd, int wFd, const ch
 			else
 			{
 				LM_E(("Intent to connect a second Worker with alias '%s' - rejecting connection", alias));
-				iomMsgSend(wFd, name, progName, Message::Die, Message::Evt);
+				iomMsgSend(&rejected, endpoint[0], Message::Die, Message::Evt);  // Die message before closing fd just to reject second worker 
 
 				close(rFd);
 				if (wFd != rFd)
@@ -1219,7 +1224,9 @@ Endpoint* Network::endpointAddWorker(const char* why, int rFd, int wFd, const ch
 	}
 
 	LM_E(("Worker '%s:%d' (alias '%s') not found - rejecting connection with a Die message", ip.c_str(), port, alias));
-	iomMsgSend(wFd, name, progName, Message::Die, Message::Evt);
+
+	iomMsgSend(&rejected, endpoint[0], Message::Die, Message::Evt);  // Die message before closing fd just to reject as alias is unknown
+	close(wFd);
 
 	return NULL;
 }
@@ -1731,8 +1738,10 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 			if (packetReceiver)
 				packetReceiver->notifyWorkerDied(ep->workerId);
 			
-			if (endpointUpdateReceiver != NULL)
-				endpointUpdateReceiver->endpointUpdate(ep, Endpoint::WorkerDisconnected, "Worker Disconnected");
+			// Commented out this callback as the very same callback is done further down ...
+			// 
+			// if (endpointUpdateReceiver != NULL)
+			// 	    endpointUpdateReceiver->endpointUpdate(ep, Endpoint::WorkerDisconnected, "Worker Disconnected");
 
 			if (endpoint[ME]->type == Endpoint::Delilah)
 			{

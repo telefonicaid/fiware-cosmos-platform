@@ -52,7 +52,7 @@ bool iomWriteOk(int fd)
 }
 
 
-
+#if 0
 /* ****************************************************************************
 *
 * iomMsgSend - send a message to an endpoint
@@ -173,6 +173,7 @@ int iomMsgSend
 	lmOutHookRestore(outHook);
 	return 0;
 }	
+#endif
 
 
 

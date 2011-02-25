@@ -1,5 +1,16 @@
-o Log file filters
 o LogFileWindow button to "Save a copy"
+o Filters in LogFileWindow
+o Searches in log file content
+o More Config about logMsg (Keep lines, Empty log file, etc.)
+o Make all samson machines start samsonSpawner (/etc/rc3.d and /etc/init.d)
+
+o Sometimes, when the Supervisor is starter with Spawner, Controller and workers already running, it gets a strange error from Spawner.
+    T:Friday 25 Feb 11:41:45 2011:samsonSupervisor-/Network.cpp[2145] helloReceived: ---------------------------------------------------------------------------------------------------------
+    T:Friday 25 Feb 11:41:45 2011:samsonSupervisor-/Network.cpp[2840] run: incoming message from 'Spawner' endpoint samsonSpawner (fd 23)
+    E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/iomMsgAwait.cpp[53] iomMsgAwait: timeout
+    E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/iomMsgRead.cpp[43] iomMsgPartRead: iomMsgAwait(samsonSpawner) returned -2
+    E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/Network.cpp[1721] msgPreTreat: iomMsgRead: error reading message from 'samsonSpawner': Success
+
 o (ANDREU) Metodo para averiguar la cola (numero de paquetes y tamanyo) de salida para cada endpoint
 o lmAux as aa thread variable
 
@@ -27,22 +38,14 @@ o When spawning a process, make sure the data saved in the workerVector is used!
 o Whenever Process name, alias, ip is changed, its Enpoint counterparts must also be changed!
 o Implement a way to retrieve the old log file AND the entire new log file.
 
-o Stop using 'QueueMgr', 'SourceMgr' and 'ResultMgr' - use the one and only 'SceneItemMgr'
+o DelilahTab: Stop using 'QueueMgr', 'SourceMgr' and 'ResultMgr' - use the one and only 'SceneItemMgr'
   - will need to add a few methods from SQR managers to SceneItemMgr, I guess ...
 
 o MenuBar etc in supervisor window ... ?
 
 o LogTab
-  - A QPushButton to resizeColumnsToContents()
   - Fix the sizes of the columns initially (more or less)
   - Possibility to have a window per process ?
-  - A button to download the entire log file
-  - A button to download the entire OLD log file
-  - Change name of ConfigWindow to LogConfigWindow
-  - Include the CheckBox 'Send log to Supervisor' in LogConfigWindow
-  - When a process dies, its window in LogServer stays, just that later if I
-    manually restart the process, another window appears in the LogServer window ...
-    I must check if existing before I create a new List in the LogServer
 ===============================================================================
 o Refactoring
   - samsonSupervisor - QueueMgr, SourceMgr and ResultMgr should be ONE manager - SceneItemMgr
@@ -64,7 +67,6 @@ o Stability
 
 ===============================================================================
 o Tonterias
-  - More Config about logMsg (Keep lines, Empty log file, etc.)
   - Replace QCheckbox in ProcessListTab for something nicer, with pixmaps and stuff ...
     - Perhaps a checkbox to include in LogServer window
     - Pixmaps: Red, Yellow and Green

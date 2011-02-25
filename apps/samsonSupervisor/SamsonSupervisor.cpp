@@ -424,6 +424,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 	ss::Message::WorkerVectorData*  wvDataP   = (ss::Message::WorkerVectorData*) info;
 	Starter*                        starter   = NULL;
 	ss::Process*                    processP  = NULL;
+	char                            eText[256];
 
 	if (reason == ss::Endpoint::SelectToBeCalled)
 	{
@@ -517,9 +518,18 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 
 	case ss::Endpoint::ControllerDisconnected:
 		disconnectWorkers();
+		snprintf(eText, sizeof(eText), "Lost connection to samsonController in host '%s'.\n"
+				 "This process is a vital part of the samson platform,\n"
+				 "so please restart the process as soon as possible.",
+				 starter->process->host);
+		
+		new Popup("Lost Connection to Controller", eText);
 		break;
 
 	case ss::Endpoint::WorkerDisconnected:
+		LM_W(("Worker %s%s (%s) disconnected and I do nothing ...", processP->name, processP->host, processP->alias));
+		break;
+
 	case ss::Endpoint::EndpointRemoved:
 	case ss::Endpoint::ControllerRemoved:
 	case ss::Endpoint::WorkerRemoved:
@@ -534,7 +544,6 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 			return 0;
 		}
 
-		char eText[256];
 		starter->check("Some endpoint closed connection");
 		if (starter->process->type == ss::PtSpawner)
 		{

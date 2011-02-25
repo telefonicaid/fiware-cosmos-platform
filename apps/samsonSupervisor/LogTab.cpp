@@ -26,7 +26,181 @@
 #include "Endpoint.h"           // ss::Endpoint
 #include "iomMsgSend.h"         // iomMsgSend
 #include "samson/Log.h"			// LogLineData
+#include "Popup.h"              // Popup
 #include "LogTab.h"             // Own interface
+
+
+
+/* ****************************************************************************
+*
+* LogItem - 
+*/
+typedef struct LogItem
+{
+	QTableWidgetItem* type;
+	QTableWidgetItem* date;
+	QTableWidgetItem* host;
+	QTableWidgetItem* process;
+	QTableWidgetItem* file;
+	QTableWidgetItem* line;
+	QTableWidgetItem* fName;
+	QTableWidgetItem* text;
+} LogItem;
+
+
+
+/* ****************************************************************************
+*
+* LogItem list variables
+*/
+LogItem** logItemV    = NULL;
+int       logItemMax  = 500;
+int       logItems    = 0;
+
+
+
+/* ****************************************************************************
+*
+* logItemInit - 
+*/
+static void logItemInit()
+{
+	logItemV = (LogItem**) calloc(logItemMax, sizeof(LogItem*));
+	if (logItemV == NULL)
+		LM_X(1, ("calloc(%d, %d): %s", logItemMax, sizeof(LogItem*), strerror(errno)));
+
+	logItems = 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* logItemInsert - 
+*/
+static void logItemInsert(LogItem* logItemP)
+{
+	if (logItems >= logItemMax)
+	{
+		logItemMax += 100;
+		logItemV = (LogItem**) realloc(logItemV, logItemMax * sizeof(LogItem*));
+		if (logItemV == NULL)
+			LM_X(1, ("malloc(%d): %s", logItemMax * sizeof(LogItem*), strerror(errno)));
+	}
+
+	logItemV[logItems] = logItemP;
+	++logItems;
+}
+
+
+#if 0
+/* ****************************************************************************
+*
+* logItemFree - 
+*/
+static void logItemFree(LogItem* logItemP)
+{
+	if (logItemP == NULL)
+		return;
+
+	if (logItemP->type    != NULL)  delete logItemP->type;
+	if (logItemP->date    != NULL)  delete logItemP->date;
+	if (logItemP->host    != NULL)  delete logItemP->host;
+	if (logItemP->process != NULL)  delete logItemP->process;
+	if (logItemP->file    != NULL)  delete logItemP->file;
+	if (logItemP->line    != NULL)  delete logItemP->line;
+	if (logItemP->fName   != NULL)  delete logItemP->fName;
+	if (logItemP->text    != NULL)  delete logItemP->text;
+}
+#endif
+
+
+/* ****************************************************************************
+*
+* LogTab::LogTab - 
+*/
+LogTab::LogTab(QWidget* parent) : QWidget(parent)
+{
+	QFont         font("Courier", 10, QFont::Normal);
+
+	QVBoxLayout*  mainLayout    = new QVBoxLayout(parent);
+	QHBoxLayout*  buttonLayout  = new QHBoxLayout();
+	QHBoxLayout*  filterLayout  = new QHBoxLayout();
+
+	QPushButton*  logClear      = new QPushButton("Clear Log Window");
+	QPushButton*  logFit        = new QPushButton("Fit Log Window");
+	QPushButton*  logFile       = new QPushButton("Download Log File");
+	QPushButton*  oldLogFile    = new QPushButton("Download Old Log File");
+
+	QLabel*       filterLabel   = new QLabel("Filter");
+	QPushButton*  filterButton  = new QPushButton("Update");
+
+	filter = new QLineEdit();
+
+
+	//
+	// Initializing log item list
+	//
+	logItemInit();
+
+
+
+	//
+	// Creating Table Widget (holding the log lines)
+	//
+	Rows        = 3;
+	row         = 0;
+	tableWidget = new QTableWidget(Rows, 8);
+
+	tableWidget->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
+	tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+	setHeaderLabels();
+	tableWidget->resize(mainWinWidth, mainWinHeight);
+	tableWidget->resizeColumnsToContents();
+	tableWidget->setGridStyle(Qt::NoPen);
+	tableWidget->setFont(font);
+
+
+
+	//
+	// Filling Page
+	//	
+	mainLayout->addLayout(buttonLayout);
+	mainLayout->addWidget(tableWidget);
+	mainLayout->addLayout(filterLayout);
+	setLayout(mainLayout);
+
+
+
+	//
+	// Placing Command Pushbuttons
+	//
+	buttonLayout->addWidget(logClear);
+	buttonLayout->addWidget(logFit);
+	buttonLayout->addWidget(logFile);
+	buttonLayout->addWidget(oldLogFile);
+
+
+
+	//
+	// Placing Filter items
+	//
+	filterLayout->addWidget(filterLabel);
+	filterLayout->addWidget(filter);
+	filterLayout->addWidget(filterButton);
+
+
+
+	//
+	// Connect buttons
+	//
+	connect(logClear,     SIGNAL(clicked()), this, SLOT(logViewClear()));
+	connect(logFit,       SIGNAL(clicked()), this, SLOT(logViewFit()));
+	connect(logFile,      SIGNAL(clicked()), this, SLOT(logFileDownload()));
+	connect(oldLogFile,   SIGNAL(clicked()), this, SLOT(oldLogFileDownload()));
+	connect(filterButton, SIGNAL(clicked()), this, SLOT(filterLog()));
+}
 
 
 
@@ -45,13 +219,13 @@ void LogTab::logItemAdd
 	int          lineNo,
 	const char*  fName,
 	const char*  text,
-	int          tLevel
+	int          tLevel,
+	bool         addToList
 )
 {
 	char               line[16];
 	char               type[2];
-	QTableWidgetItem*  wi[8];
-	QFont              font("Courier", 10, QFont::Normal);
+	LogItem*           logItemP;
 	Host*              hostP;
 
 	hostP = networkP->hostMgr->lookup(host);
@@ -68,66 +242,33 @@ void LogTab::logItemAdd
 	type[0] = typ;
 	type[1] = 0;
 
-	wi[0] = new QTableWidgetItem(type);
-	wi[1] = new QTableWidgetItem(date);
-	wi[2] = new QTableWidgetItem(hostP->name);
-	wi[3] = new QTableWidgetItem(pName);
-	wi[4] = new QTableWidgetItem(file);
-	wi[5] = new QTableWidgetItem(line);
-	wi[6] = new QTableWidgetItem(fName);
-	wi[7] = new QTableWidgetItem(text);
-
-	for (unsigned int ix = 0; ix < sizeof(wi) / sizeof(wi[0]); ix++)
+	logItemP = (LogItem*) calloc(1, sizeof(LogItem));
+	if (logItemP == NULL)
 	{
-		tableWidget->setItem(row, ix, wi[ix]);
-		tableWidget->setFont(font);
+		new Popup("Memory allocation error", "Error allocating memory for a Log item.\nCannot continue, sorry", true);
+		LM_X(1, ("calloc(%d bytes): %s", sizeof(LogItem), strerror(errno)));
 	}
-}
 
+	logItemP->type    = new QTableWidgetItem(type);
+	logItemP->date    = new QTableWidgetItem(date);
+	logItemP->host    = new QTableWidgetItem(hostP->name);
+	logItemP->process = new QTableWidgetItem(pName);
+	logItemP->file    = new QTableWidgetItem(file);
+	logItemP->line    = new QTableWidgetItem(line);
+	logItemP->fName   = new QTableWidgetItem(fName);
+	logItemP->text    = new QTableWidgetItem(text);
 
+	tableWidget->setItem(row, 0, logItemP->type);
+	tableWidget->setItem(row, 1, logItemP->date);
+	tableWidget->setItem(row, 2, logItemP->host);
+	tableWidget->setItem(row, 3, logItemP->process);
+	tableWidget->setItem(row, 4, logItemP->file);
+	tableWidget->setItem(row, 5, logItemP->line);
+	tableWidget->setItem(row, 6, logItemP->fName);
+	tableWidget->setItem(row, 7, logItemP->text);
 
-/* ****************************************************************************
-*
-* LogTab::LogTab - 
-*/
-LogTab::LogTab(QWidget* parent) : QWidget(parent)
-{
-	QVBoxLayout*  mainLayout    = new QVBoxLayout(parent);
-	QHBoxLayout*  buttonLayout  = new QHBoxLayout();
-	QPushButton*  logClear      = new QPushButton("Clear Log Window");
-	QPushButton*  logFit        = new QPushButton("Fit Log Window");
-	QPushButton*  logFile       = new QPushButton("Download Log File");
-	QPushButton*  oldLogFile    = new QPushButton("Download Old Log File");
-	
-	Rows        = 3;
-	tableWidget = new QTableWidget(Rows, 8);
-
-	tableWidget->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
-	tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-
-	setHeaderLabels();
-	tableWidget->resize(mainWinWidth, mainWinHeight);
-	tableWidget->resizeColumnsToContents();
-
-	mainLayout->addLayout(buttonLayout);
-	mainLayout->addWidget(tableWidget);
-	setLayout(mainLayout);
-	tableWidget->setGridStyle(Qt::NoPen);
-	row = 0;
-
-	//
-	// Pushbuttons
-	//
-	buttonLayout->addWidget(logClear);
-	buttonLayout->addWidget(logFit);
-	buttonLayout->addWidget(logFile);
-	buttonLayout->addWidget(oldLogFile);
-
-
-	connect(logClear,    SIGNAL(clicked()), this, SLOT(logViewClear()));
-	connect(logFit,      SIGNAL(clicked()), this, SLOT(logViewFit()));
-	connect(logFile,     SIGNAL(clicked()), this, SLOT(logFileDownload()));
-	connect(oldLogFile,  SIGNAL(clicked()), this, SLOT(oldLogFileDownload()));
+	if (addToList)
+		logItemInsert(logItemP);
 }
 
 
@@ -172,15 +313,37 @@ void LogTab::setHeaderLabels(void)
 
 /* ****************************************************************************
 *
-* LogTab::clear
+* LogTab::empty
 */
-void LogTab::clear(void)
+void LogTab::empty(void)
 {
-	tableWidget->clear();
+	tableWidget->clearContents();
 	row = 0;
 	setHeaderLabels();
 	tableWidget->setRowCount(0);
 	Rows = 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* LogTab::clear
+*/
+void LogTab::clear(void)
+{
+    tableWidget->clear();
+	empty();
+
+#if 0
+	// Seems that tableWidget->clear() takes care of this ...
+
+	for (int ix = 0; ix < logItems; ix++)
+	{
+		logItemFree(logItemV[ix]);
+		free(logItemV[ix]);
+	}
+#endif
 }
 
 
@@ -304,4 +467,52 @@ void LogTab::oldLogFileDownload(void)
 	s = iomMsgSend(ep, networkP->endpoint[0], ss::Message::EntireOldLogFile);
 	if (s != 0)
 		new InfoWin("Internal Error", "Error sending message to endpoint");
+}
+
+
+
+/* ****************************************************************************
+*
+* LogTab::filterLog - 
+*/
+void LogTab::filterLog(void)
+{
+	int    ix;
+	char*  filterText = strdup(filter->displayText().toStdString().c_str());
+
+	if (filterText == NULL)
+		return;
+
+	if ((filterText[0] == '^') && (filterText[1] == 0))
+		filterText[0] = 0;
+
+	for (ix = 0; ix < logItems; ix++)
+	{
+		char wholeLine[1024];
+
+		if (logItemV[ix] == NULL)
+		{
+			LM_W(("logItem %d is NULL!", ix));
+			continue;
+		}
+
+		snprintf(wholeLine, sizeof(wholeLine), "%s:%s:%s:%s:%s:%s:%s:%s",
+				 logItemV[ix]->type->text().toStdString().c_str(),
+				 logItemV[ix]->date->text().toStdString().c_str(),
+				 logItemV[ix]->host->text().toStdString().c_str(),
+				 logItemV[ix]->process->text().toStdString().c_str(),
+				 logItemV[ix]->file->text().toStdString().c_str(),
+				 logItemV[ix]->line->text().toStdString().c_str(),
+				 logItemV[ix]->fName->text().toStdString().c_str(),
+				 logItemV[ix]->text->text().toStdString().c_str());
+				 
+		tableWidget->hideRow(ix);
+
+		if ((strstr(wholeLine, filterText) != NULL)
+		|| ((filterText[0] == '^') && (strncmp(&filterText[1], logItemV[ix]->text->text().toStdString().c_str(), strlen(&filterText[1])) == 0))
+		||  (filterText[0] == 0))
+			tableWidget->showRow(ix);
+	}
+
+	free(filterText);
 }

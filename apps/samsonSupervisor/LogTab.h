@@ -20,6 +20,7 @@
 #include "samson/Log.h"			// LogLineData
 
 class QTableWidget;
+class QLineEdit;
 
 
 
@@ -34,12 +35,14 @@ class LogTab : public QWidget
 public:
 	LogTab(QWidget *parent = 0);
 
+	void empty(void);
 	void clear(void);
-	void logItemAdd(int row, const char  typ, const char* date, const char* host, const char* pName, const char* file, int lineNo, const char* fName, const char* text, int tLevel = 0);
+	void logItemAdd(int row, const char  typ, const char* date, const char* host, const char* pName, const char* file, int lineNo, const char* fName, const char* text, int tLevel = 0, bool addToList = true);
 	void logLineInsert(struct sockaddr_in* sAddr, ss::Message::Header* headerP, ss::LogLineData* logLine);
 	void setHeaderLabels(void);
 
 	QTableWidget*  tableWidget;
+	QLineEdit*     filter;
 	int            Rows;
 	int            row;
 
@@ -51,6 +54,7 @@ private slots:
 	void logViewFit(void);
 	void logFileDownload(void);
 	void oldLogFileDownload(void);
+	void filterLog(void);
 };
 
 #endif

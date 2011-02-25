@@ -44,51 +44,6 @@ static char imageV[256];
 static SourceConfigWindow* win = NULL;
 
 
-#if 0
-/* ****************************************************************************
-*
-* dataTypesTextReceiver - 
-*/
-static void dataTypesTextReceiver(const char* type, const char* text)
-{
-	char* cP;
-	char* line;
-
-	line = (char*) text;
-	while ((cP = strchr(line, '\n')) != NULL)
-	{
-		*cP = 0;
-
-		while (*line == ' ')
-			++line;
-		while (line[strlen(line) - 1] == ' ')
-			line[strlen(line) - 1] = 0;
-
-		if ((line[0] != 'D') && (line[0] != '-') && (line[0] != 0))
-		{
-			char* basura;
-
-			if ((basura = strstr(line, " Help coming soon")) != NULL)
-				*basura = 0;
-
-			LM_T(LmtSource, ("Adding item '%s'", line));
-			win->outTypeKCombo->addItem(QString(line));
-			win->outTypeVCombo->addItem(QString(line));
-		}
-		line = &cP[1];
-	}
-
-	win->outTypeKCombo->addItem(QString(line));
-	win->outTypeVCombo->addItem(QString(line));
-
-	LM_T(LmtSource, ("Setting outTypeKCombo to index %d", win->source->outTypeKIndex));
-	LM_T(LmtSource, ("Setting outTypeVCombo to index %d", win->source->outTypeVIndex));
-
-	win->outTypeKCombo->setCurrentIndex(win->source->outTypeKIndex);
-	win->outTypeVCombo->setCurrentIndex(win->source->outTypeVIndex);
-}
-
-#endif
 
 /* ****************************************************************************
 *

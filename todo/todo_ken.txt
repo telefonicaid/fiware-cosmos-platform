@@ -1,116 +1,110 @@
-o LogFileWindow button to "Save a copy"
-o Filters in LogFileWindow
-o Searches in log file content
-o More Config about logMsg (Keep lines, Empty log file, etc.)
-o Make all samson machines start samsonSpawner (/etc/rc3.d and /etc/init.d)
+BUGS
+  o Sometimes, when the Supervisor is starter with Spawner, Controller and workers already running, it gets a strange error from Spawner.
+      T:Friday 25 Feb 11:41:45 2011:samsonSupervisor-/Network.cpp[2145] helloReceived: ------------------------------- ...
+      T:Friday 25 Feb 11:41:45 2011:samsonSupervisor-/Network.cpp[2840] run: incoming message from 'Spawner' endpoint samsonSpawner (fd 23)
+      E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/iomMsgAwait.cpp[53] iomMsgAwait: timeout
+      E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/iomMsgRead.cpp[43] iomMsgPartRead: iomMsgAwait(samsonSpawner) returned -2
+      E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/Network.cpp[1721] msgPreTreat: iomMsgRead: error reading message from 'samsonSpawner': Success
 
-o Sometimes, when the Supervisor is starter with Spawner, Controller and workers already running, it gets a strange error from Spawner.
-    T:Friday 25 Feb 11:41:45 2011:samsonSupervisor-/Network.cpp[2145] helloReceived: ---------------------------------------------------------------------------------------------------------
-    T:Friday 25 Feb 11:41:45 2011:samsonSupervisor-/Network.cpp[2840] run: incoming message from 'Spawner' endpoint samsonSpawner (fd 23)
-    E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/iomMsgAwait.cpp[53] iomMsgAwait: timeout
-    E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/iomMsgRead.cpp[43] iomMsgPartRead: iomMsgAwait(samsonSpawner) returned -2
-    E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/Network.cpp[1721] msgPreTreat: iomMsgRead: error reading message from 'samsonSpawner': Success
+  o Controller sometimes loosing hostname when saving a Worker 
+    This makes the Supervisor believe the Worker is totally uninitialized ...
 
-o (ANDREU) Metodo para averiguar la cola (numero de paquetes y tamanyo) de salida para cada endpoint
-o lmAux as aa thread variable
+  o Hunt down all memory leaks ...
 
-o Friday 25/2:  Test with 9 Workers
-                Stress the Supervisor
+  o Problems at home when VPN functioning ...
+    HostMgr seems OK, but when killing and starting Controller, a running worker isn't detected ...
 
-o Controller sometimes loosing hostname when saving a Worker 
-  This makes the Supervisor believe the Worker is totally uninitialized ...
+  o When spawning a process, make sure the data saved in the workerVector is used!
 
-o Memory leaks ...
+  o Whenever Process name, alias, ip is changed, its Enpoint counterparts must also be changed!
 
-o (ANDREU) Pestanya en samsonSupervisor con una grafica utilizando la libreria QWT ( http://qwt.sourceforge.net/ )
-o (ANDREU) Method to send a packet to all delilahs and supervisor (workers as well?)
 
-o Refactoring of NetworkInterface - the whole callback story ...
 
-o Implement '-toDo' in paParse 
-o Get rid of all Endpoint::Temporal
-o EndpointMgr for Network
+------------------------------------------------------------------------------------------------------------------------
 
-o Problems at home when VPN functioning ...
-  HostMgr seems OK, but when killing and starting Controller, a running worker isn't detected ...
+LOGGING
+  o LogFileWindow button to "Save a copy"
+  o Filters in LogFileWindow?
+  o Searches in log file content?
+  o More Config about logMsg (Keep lines, Empty log file, etc.)
+  o lmAux as a thread variable
+  o Implement '-toDo' in paParse 
+  o Fix the sizes of the columns initially (more or less)
+  o Possibility to have a window per process ?
 
-o When spawning a process, make sure the data saved in the workerVector is used!
-o Whenever Process name, alias, ip is changed, its Enpoint counterparts must also be changed!
-o Implement a way to retrieve the old log file AND the entire new log file.
 
-o DelilahTab: Stop using 'QueueMgr', 'SourceMgr' and 'ResultMgr' - use the one and only 'SceneItemMgr'
-  - will need to add a few methods from SQR managers to SceneItemMgr, I guess ...
 
-o MenuBar etc in supervisor window ... ?
+------------------------------------------------------------------------------------------------------------------------
 
-o LogTab
-  - Fix the sizes of the columns initially (more or less)
-  - Possibility to have a window per process ?
-===============================================================================
-o Refactoring
-  - samsonSupervisor - QueueMgr, SourceMgr and ResultMgr should be ONE manager - SceneItemMgr
-  - Try to not use iomMsgSend(int fd, ...)
-  - Close On Exec for all sockets ... ?
-  - Network.cpp
-    - shorten too long nethods
+STARTUP
+  o Make all samson machines start samsonSpawner (/etc/rc3.d and /etc/init.d)
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+NEW FEATURES
+  o (ANDREU) Metodo para averiguar la cola (numero de paquetes y tamanyo) de salida para cada endpoint
+  o (ANDREU) Pestanya en samsonSupervisor con una grafica utilizando la libreria QWT ( http://qwt.sourceforge.net/ )
+  o (ANDREU) Method to send a packet to all delilahs and supervisor (workers as well?)
+  o MenuBar etc in supervisor window ... ?
+  o Permissions and Users
+    - Create Permission for every operation
+    - Make each operation look in permissions before doing anything
+  o New MR Operations tab ...
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+TEST
+  o Test with 9 Workers
+    Stress the Supervisor
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+REFACTORING
+  o Refactoring of NetworkInterface - the whole callback story ...
+  o Get rid of all Endpoint::Temporal
+  o EndpointMgr for Network
+  o DelilahTab: Stop using 'QueueMgr', 'SourceMgr' and 'ResultMgr' - use the one and only 'SceneItemMgr'
+    - will need to add a few methods from SQR managers to SceneItemMgr, I guess ...
+  o samsonSupervisor - QueueMgr, SourceMgr and ResultMgr should be ONE manager - SceneItemMgr
+  o Try to not use iomMsgSend(int fd, ...)
+  o Close On Exec for all sockets ... ?
+  o Network.cpp
+    - shorten too long methods
     - move parts to main_
-  - What name to use: Data Sets or Queues ?
-===============================================================================
-o Really create the queues in samsonController
-  - But not to be executed until RUN
-  - When terminated, some graphical way to show the results
-===============================================================================
-o Stability
-  - Sometimes coredumps at startup
-  - Test with 9 Workers
-  - Stability Tests ...
+  o What name to use: Data Sets or Queues ?
 
-===============================================================================
-o Tonterias
-  - Replace QCheckbox in ProcessListTab for something nicer, with pixmaps and stuff ...
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+TONTERIAS
+  o Replace QCheckbox in ProcessListTab for something nicer, with pixmaps and stuff ...
     - Perhaps a checkbox to include in LogServer window
     - Pixmaps: Red, Yellow and Green
     - Enter a config page when process name is clicked - connect/unconnect when pixmap is clicked
-  - Animations for error login and running chain ?
-  - While running, the whole chain should be in "disabled" mode.
+  o Animations for error login and running chain ?
+  o While running, the whole chain should be in "disabled" mode.
     - a button to cancel the operation.
-  - Make the Queues and Connection lines highlight when the cursor moves over them (hover?)
-  - The modes of a Queue/Source/Config Scene Item:
+  o Make the Queues and Connection lines highlight when the cursor moves over them (hover?)
+  o The modes of a Queue/Source/Config Scene Item:
     1. When a queue is created, a lighter icon
     2. When the queue is really created (command sent to Controller), its real icon should be shown.
     3. Disable 
-  - Nicer SceneTab popups
+  o Nicer SceneTab popups
     - ls              View Queues    (data sets (Queues) - show, add, remove, clear ...) 
     - operations      Command List   (Window with filters: "Starts with", "Ends in", ...)
     - datas           Data Types     (Actually, this is 'Types' - this list will be used in QueueConfigWindow)
     - upload          Upload         (file selection dialog to choose file to upload)
     - load            Load           (just a text window - showing the current status of upload and downloads)
     - download        Download       (popup window to ask for set_name AND local_file_name)
-  - ProcessListTab - Controller on top of the list, before any worker ...
-  - Way to change size of logProvider log window
-===============================================================================
-o Permissions and Users
-  - Create Permission for every operation
-  - Make each operation look in permissions before doing anything
-===============================================================================
-o samsonSupervisor startup:
-  1.   Normal startup with everything running
-  1.1. Connect to '-controller' - create Process
-  1.2. Ask controller for WorkerVector 
-  1.3. Connect to all workers - create Processes
-  1.4. Connect to the controllers spawner - create Spawner
-  1.5. Connect to each workers spawner - unless workers IP is II.PP and state Unconnected - cerate Spawners
-  1.6. Start Qt and create Starters for all Pocess and Spawner
+  o ProcessListTab - Controller on top of the list, before any worker ...
+  o Way to change size of logProvider log window
 
-  2.   Initial startup - only spawners running
-  2.1. Connect to '-controller' - FAILURE and POPUP
-  2.2. Connect to the controllers spawner - create Spawner
-  2.3. Start Qt and create Starter for the controller
-  2.4. When user starts Controller - Ask controller for WorkerVector
-  2.5. Connect to all workers - create Processes and Starters (as Qt already is running ...)
 
-  3.   Strange startup (1) - not even controller's spawner is running
-  3.1. Connect to '-controller' - FAILURE and POPUP
-  3.2. Connect to the controllers spawnerPopup - FAILURE and POPUP
-===============================================================================
 
+------------------------------------------------------------------------------------------------------------------------

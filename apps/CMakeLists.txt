@@ -8,6 +8,7 @@ ADD_SUBDIRECTORY(samsonSetup)
 ADD_SUBDIRECTORY(samsonData)
 ADD_SUBDIRECTORY(samsonSpawner)
 ADD_SUBDIRECTORY(samsonSupervisor)
+ADD_SUBDIRECTORY(samsonKiller)
 
 # ADD_SUBDIRECTORY(samsonTest)
 # ADD_SUBDIRECTORY(samsonDiskTest)

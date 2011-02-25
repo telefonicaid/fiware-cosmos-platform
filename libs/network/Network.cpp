@@ -1306,6 +1306,7 @@ Endpoint* Network::endpointAdd
 		return endpointAddDefault(rFd, wFd, name, alias, workers, type, ip, port, coreNo, inheritedFrom);
 		break;
 
+	case Endpoint::Killer:
 	case Endpoint::Sender:
 	case Endpoint::CoreWorker:
 	case Endpoint::Unknown:

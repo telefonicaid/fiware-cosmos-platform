@@ -105,7 +105,8 @@ public:
 		WebWorker,
 		Sender,
 		Spawner,
-		Supervisor
+		Supervisor,
+		Killer
 	} Type;
 
 private:

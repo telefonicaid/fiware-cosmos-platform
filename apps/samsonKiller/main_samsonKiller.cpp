@@ -48,10 +48,9 @@ int main(int argC, const char *argV[])
 	ss::Endpoint  ep;
 	ss::Endpoint  me;
 
-	paConfig("prefix",                        (void*) "SSK_");
-	paConfig("usage and exit on any warning", (void*) true);
-	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
-	paConfig("log to file",                   (void*) true);
+	close(0);
+	close(1);
+	close(2);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 

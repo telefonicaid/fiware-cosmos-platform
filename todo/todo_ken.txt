@@ -1,4 +1,6 @@
 BUGS
+  o Annoying '-' at the end of the progName ...
+
   o Sometimes, when the Supervisor is starter with Spawner, Controller and workers already running, it gets a strange error from Spawner.
       T:Friday 25 Feb 11:41:45 2011:samsonSupervisor-/Network.cpp[2145] helloReceived: ------------------------------- ...
       T:Friday 25 Feb 11:41:45 2011:samsonSupervisor-/Network.cpp[2840] run: incoming message from 'Spawner' endpoint samsonSpawner (fd 23)
@@ -28,7 +30,7 @@ LOGGING
   o Searches in log file content?
   o More Config about logMsg (Keep lines, Empty log file, etc.)
   o lmAux as a thread variable
-  o Implement '-toDo' in paParse 
+  o Implement '-toDo' in paParse (paBuiltin.cpp)
   o Fix the sizes of the columns initially (more or less)
   o Possibility to have a window per process ?
 

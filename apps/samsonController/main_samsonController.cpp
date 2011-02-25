@@ -22,6 +22,7 @@
 #include "FileManager.h"		// ss::FileManager
 #include "LockDebugger.h"       // au::LockDebugger
 #include "Message.h"            // WorkerVectorData
+#include "daemonize.h"          // daemonize
 
 
 
@@ -267,6 +268,8 @@ static void workerVecGet(void)
 */
 int main(int argC, const char* argV[])
 {
+	daemonize();
+
 	paConfig("prefix",                        (void*) "SSC_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");

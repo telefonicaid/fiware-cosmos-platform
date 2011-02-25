@@ -21,7 +21,7 @@
 #include "iomMsgSend.h"         // iomMsgSend
 #include "iomConnect.h"         // iomConnect
 #include "ports.h"              // LOG_SERVER_PORT
-
+#include "daemonize.h"          // daemonize
 
 
 
@@ -200,8 +200,10 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 */
 int main(int argC, const char *argV[])
 {
-	SamsonSpawner*         spawnerP;
+	SamsonSpawner* spawnerP;
 	
+	daemonize();
+
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");

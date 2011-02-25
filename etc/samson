@@ -1,0 +1,48 @@
+case "$1" in
+  start)
+		sudo -u samson samsonSpawner
+		sudo -u samson samsonWorker
+        ;;
+
+  restart|reload|force-reload)
+		samsonKiller -port 1233
+		samsonKiller -port 1235
+		sudo -u samson samsonSpawner
+		sudo -u samson samsonWorker
+        ;;
+
+  stop)
+		samsonKiller -port 1233
+        samsonKiller -port 1235
+        ;;
+
+  workerStart)
+        sudo -u samson samsonWorker
+		;;
+
+  workerStop)
+        samsonKiller -port 1235
+		;;
+
+  workerRestart)
+        samsonKiller -port 1235
+        sudo -u samson samsonWorker
+        ;;
+
+  spawnerStart)
+        sudo -u samson samsonSpawner
+        ;;
+
+  spawnerStop)
+        samsonKiller -port 1233
+
+  spawnerRestart)
+        samsonKiller -port 1233
+        sudo -u samson samsonSpawner
+
+
+  *)
+        echo "Usage: $0 start|stop|restart" >&2
+        exit 3
+        ;;
+esac

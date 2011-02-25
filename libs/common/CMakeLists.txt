@@ -16,6 +16,7 @@ SET (HEADERS
 	MessagesOperations.h
 	Console.h
 	CommandLine.h
+	daemonize.h
 )
 
 SET (SOURCES
@@ -31,6 +32,7 @@ SET (SOURCES
 	Console.cpp
 	Format.cpp
 	CommandLine.cpp
+	daemonize.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''

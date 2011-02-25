@@ -19,6 +19,7 @@
 #include "DiskManager.h"		// ss::DiskManager
 #include "FileManager.h"		// ss::FileManager
 #include "ProcessManager.h"		// ss::ProcessManager
+#include "daemonize.h"          // daemonize
 
 
 
@@ -71,6 +72,8 @@ int logFd = -1;
 */
 int main(int argC, const char *argV[])
 {
+	daemonize();
+
 	paConfig("prefix",                        (void*) "SSW_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");

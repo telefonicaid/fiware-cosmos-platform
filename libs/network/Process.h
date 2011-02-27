@@ -43,6 +43,10 @@ typedef enum ProcessType
 /* ****************************************************************************
 *
 * Process - 
+*
+* All pointers must be the last in the structure, otherwise it wint work in a
+* 32-bit machine when sending the message ...
+* The pointers aren't interesting on the other side 
 */
 typedef struct Process
 {
@@ -61,8 +65,8 @@ typedef struct Process
 	int                  workers;
 	char                 controllerHost[32];
 
-	ss::Endpoint*        endpoint;
 	ss::ProcessType      type;
+	ss::Endpoint*        endpoint;
 	Starter*             starterP;     // QT stuff
 	struct ss::Process*  spawnerP;     // The process to contact to start me
 } Process;

@@ -435,6 +435,8 @@ int main(int argC, const char *argV[])
 	starterListInit(30);
 	networkPrepare();
 
+	networkP->hostMgr->insert(controllerHostName(), NULL);
+
 	controllerName = controllerHostName();
 	spawnerP = spawnerConnect(controllerName);
 	controllerConnect(controllerName, spawnerP);

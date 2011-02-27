@@ -315,7 +315,14 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 
 		hostP = networkP->hostMgr->lookup(worker->ip);
 		if (hostP == NULL)
-			LM_X(1, ("Host Manager cannot find host '%s'", worker->ip));
+		{
+			networkP->hostMgr->insert(NULL, worker->ip);
+			networkP->hostMgr->list("Got Worker Vector");
+
+			hostP = networkP->hostMgr->lookup(worker->ip);
+			if (hostP == NULL)
+				LM_X(1, ("Host Manager cannot find host '%s'", worker->ip));
+		}
 
 		ep = networkP->endpointLookup(ss::Endpoint::Spawner, hostP);
 		if (ep == NULL)

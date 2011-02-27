@@ -32,8 +32,6 @@ static void ip2string(int ip, char* ipString, int ipStringLen)
 			 (ip & 0xFF00) >> 8,
 			 (ip & 0xFF0000) >> 16,
 			 (ip & 0xFF000000) >> 24);
-			 
-	LM_M(("********************************* ip 0x%x: '%s'", ip, ipString));
 }
 
 

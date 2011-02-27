@@ -1,15 +1,16 @@
-ANDREW "COMMENTS"
-
- o Error when connecting samsonSupervisor to samson01.hi.inet
-
+TO BE TESTED
+ o Error when connecting samsonSupervisor to samson01.hi.inet (from wifi?)
      planas2:~ andreu$ samsonSupervisor -controller samson01.hi.inet -workers 5 -andreu
-     X:samsonSupervisor: Host Manager cannot find host '10.95.109.98'
-     Assertion failed: (false), function lmOut, file /Users/andreu/devel/samson/libs/logMsg/logMsg.cpp, line 1682.
+       X:samsonSupervisor: Host Manager cannot find host '10.95.109.98'
+
+
+
+------------------------------------------------------------------------------------------------------------------------
 
 BUGS
-  o Annoying '-' at the end of the progName ...
+  o Annoying '-' at the end of the progName in samsonSpawner ...
 
-  o Sometimes, when the Supervisor is starter with Spawner, Controller and workers already running, it gets a strange error from Spawner.
+  o Sometimes, when the Supervisor is started with Spawner, Controller and workers already running, it gets a strange error from Spawner.
       T:Friday 25 Feb 11:41:45 2011:samsonSupervisor-/Network.cpp[2145] helloReceived: ------------------------------- ...
       T:Friday 25 Feb 11:41:45 2011:samsonSupervisor-/Network.cpp[2840] run: incoming message from 'Spawner' endpoint samsonSpawner (fd 23)
       E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/iomMsgAwait.cpp[53] iomMsgAwait: timeout
@@ -21,8 +22,7 @@ BUGS
 
   o Hunt down all memory leaks ...
 
-  o Problems at home when VPN functioning ...
-    HostMgr seems OK, but when killing and starting Controller, a running worker isn't detected ...
+  o Hunt down and stop using all thread-unsafe functions
 
   o When spawning a process, make sure the data saved in the workerVector is used!
 

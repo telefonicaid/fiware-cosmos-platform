@@ -1,12 +1,3 @@
-TO BE TESTED
- o Error when connecting samsonSupervisor to samson01.hi.inet (from wifi?)
-     planas2:~ andreu$ samsonSupervisor -controller samson01.hi.inet -workers 5 -andreu
-       X:samsonSupervisor: Host Manager cannot find host '10.95.109.98'
-
-
-
-------------------------------------------------------------------------------------------------------------------------
-
 BUGS
   o Annoying '-' at the end of the progName in samsonSpawner ...
 

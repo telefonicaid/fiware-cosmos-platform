@@ -106,8 +106,9 @@ int main(int argC, const char *argV[])
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
 	ss::Network network(ss::Endpoint::Worker, alias, WORKER_PORT, endpoints, workers);
+	network.hostMgr->insert(controller, NULL);
 	network.init(controller);
-	
+
 	LM_T(LmtInit, ("Waiting for network connection ..."));
 	network.runInBackground();
 

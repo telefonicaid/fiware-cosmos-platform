@@ -1627,6 +1627,7 @@ void Network::webServiceAccept(Endpoint* ep)
 	}
 	else
 	{
+		hostMgr->insert(hostName, NULL);
 		endpointAdd("Accepted incoming web service request", fd, fd, "Web Worker", "Webworker", 0, Endpoint::WebWorker, hostName, 0);
 		ep->msgsIn += 1;
 	}
@@ -2836,6 +2837,7 @@ void Network::run(void)
 					std::string  s   = std::string("tmp:") + std::string(hostName);
 					Endpoint*    ep;
 
+					hostMgr->insert(hostName, NULL);
 					ep = endpointAdd("'run' just accepted an incoming connection",
 									 fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
 
@@ -2939,9 +2941,10 @@ int Network::poll(void)
 			std::string  s   = std::string("tmp:") + std::string(hostName);
 			Endpoint*    ep;
 
+			hostMgr->insert(hostName, NULL);
+
 			ep = endpointAdd("'poll' just accepted an incoming connection",
 							 fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
-			hostMgr->insert(hostName, ip);
 
 			endpoint[LISTENER]->msgsIn += 1;
 			LM_T(LmtHello, ("sending hello to newly accepted endpoint"));

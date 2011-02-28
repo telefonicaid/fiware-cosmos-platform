@@ -1,3 +1,13 @@
+NOW
+  o Start controller in s01 andworker in s02 - will fail - add host in main_samsonWorker.cpp just like in Supervisor
+  o hostAdd after iomConnect ?
+  o Add semaphore around jobQueue
+  o Add semaphore around send
+  o Test etc/samson in torkel /etc/init.d
+
+
+
+------------------------------------------------------------------------------------------------------------------------
 BUGS
   o Annoying '-' at the end of the progName in samsonSpawner ...
 

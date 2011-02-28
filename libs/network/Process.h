@@ -59,6 +59,7 @@ typedef struct Process
 	bool                 debug;
 	bool                 reads;
 	bool                 writes;
+	bool                 hidden;
 	bool                 toDo;
 	char                 traceLevels[256];
 	bool                 sendsLogs;

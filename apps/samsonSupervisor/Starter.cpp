@@ -300,6 +300,7 @@ void Starter::processStart(void)
 	if (process->spawnerP->endpoint == NULL)
 		LM_X(1, ("NULL spawner pointer for process '%s@%d'", process->name, process->host));
 
+	process->hidden = true;
 	LM_M(("Asking spawner in host '%s' to start process '%s', type %d. %d bytes of data", process->spawnerP->endpoint->ip, process->name, process->type, sizeof(*process)));
 	s = iomMsgSend(process->spawnerP->endpoint, networkP->endpoint[0], ss::Message::ProcessSpawn, ss::Message::Msg, process, sizeof(*process));
     if (s != 0)

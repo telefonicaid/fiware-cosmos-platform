@@ -2122,7 +2122,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 	if (hello->type == Endpoint::Worker)
 		LM_M(("Got a Hello from Worker %s@%s '%s' with workerId %d", hello->name, hello->ip, hello->alias, hello->workerId));
 	else
-		LM_M(("Got a Hello from %s@s '%s'", hello->name, hello->ip, hello->alias));
+		LM_M(("Got a Hello from %s@%s '%s'", hello->name, hello->ip, hello->alias));
 
 	endpointListShow("helloReceived");
 
@@ -2162,6 +2162,8 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 		endpoint[oldSlot] = NULL;
 		endpoint[newSlot] = ep;
 	}
+	else
+		LM_M(("NOT changing %s (%s@%s) from slot %d to slot %d", hello->alias, hello->name, hello->ip, oldSlot, newSlot));
 #endif
 
 	helloInfoCopy(ep, hello);

@@ -316,7 +316,7 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 		hostP = networkP->hostMgr->lookup(worker->ip);
 		if (hostP == NULL)
 		{
-			networkP->hostMgr->insert(NULL, worker->ip);
+			networkP->hostMgr->insert(worker->ip, NULL);
 			networkP->hostMgr->list("Got Worker Vector");
 
 			hostP = networkP->hostMgr->lookup(worker->ip);

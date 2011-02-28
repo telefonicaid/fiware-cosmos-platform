@@ -3,6 +3,7 @@
 
 
 #include <string>
+#include <sstream>
 
 /**
  
@@ -30,7 +31,7 @@ namespace ss {
 	};
 	
 	
-	class ProcessItem
+	class ProcessItem  
 	{
 		// Delegate to notify when finishing
 		ProcessManagerDelegate * delegate;
@@ -38,6 +39,8 @@ namespace ss {
 		std::string status_letter;
 		std::string status;
 		
+	protected:
+		double progress;		// Progress of the operation ( if internally reported somehow )
 	public:
 		
 		// Error management
@@ -68,12 +71,21 @@ namespace ss {
 			
 			status_letter =  "R";
 			status = "unknown";	// Default message for the status
+			
+			progress = 0;	// Initial progress to "0"
 		}
 		
 		
 		std::string getStatus()
 		{
-			return status_letter + std::string(":") + status;
+			int p = progress*100.0;
+			std::ostringstream o;
+			
+			o << status_letter << std::string(":") << status;
+			if ( p!= 0)
+				o << "(" << p << "%)";
+			return o.str();
+			
 		}
 		
 		void setStatus(std::string _status)

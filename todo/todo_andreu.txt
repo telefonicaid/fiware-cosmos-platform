@@ -3,9 +3,6 @@
 TODO:
 
 * rm at the DiskManager to avoid colision between read and rm
-* File Management ( errors while uploading / downloading )
-* Check queues when uploading
-* New upload model notifying first the controller
 * Automatic operations ?
 * Detect problems with memory running operations ( not well distributed per hash-group)
 * Informacion about time in the jobs list
@@ -13,8 +10,10 @@ TODO:
 (m) independent Error.h Error.cpp files and remove Status.cpp/.h file since it is not used any more...
 
 ON-GOING
-
-* Kill jobs ( kill the task )
+* New upload model notifying first the controller
+* Kill jobs ( kill the task ) --> Memory leaks
+* File Management ( errors while uploading / downloading )
+* Check queues when uploading
 
 DONE
 

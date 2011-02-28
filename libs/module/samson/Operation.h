@@ -8,9 +8,11 @@
 #include "samson/KVWriter.h"       // KVWriter
 #include "samson/KVFormat.h"       // KVFormat
 
-#include <map>						// std::map
-#include "samson/Environment.h"		// ss::Environment
-#include "samson/Tracer.h"              // ss::Tracer
+#include <map>							// std::map
+
+#include <samson/Environment.h>			// ss::Environment
+#include <samson/Tracer.h>              // ss::Tracer
+#include <samson/OperationController.h>	// ss::OperationController
 
 namespace ss {
 
@@ -33,8 +35,9 @@ namespace ss {
 		
 	public:
 		
-		Environment	*environment;	// Environment variables
-		Tracer *tracer;				// To send traces for debugging
+		Environment	*environment;					// Environment variables
+		Tracer *tracer;								// To send traces for debugging
+		OperationController *operationController;	// Element to interact for operation stuff ( report progress at the moment )
 		
 		OperationInstance()
 		{

@@ -10,6 +10,7 @@ SET (HEADERS
 	samson/KVWriter.h
 	samson/Module.h
 	samson/Tracer.h
+	samson/OperationController.h
 	samson/Operation.h
 	samson/Environment.h
 	samson/samsonModuleHeader.h

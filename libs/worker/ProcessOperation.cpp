@@ -232,6 +232,7 @@ namespace ss {
 		ParserOut *parserOut = (ParserOut*) operation->getInstance();
 		parserOut->environment = &environment;
 		parserOut->tracer = this;
+		parserOut->operationController = this;
 		
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
 		
@@ -326,6 +327,7 @@ namespace ss {
 		Map *map = (Map*) operation->getInstance();
 		map->environment = &environment;
 		map->tracer = this;						// To be able to send traces
+		map->operationController = this;
 
 		
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
@@ -424,6 +426,7 @@ namespace ss {
 		Reduce *reduce = (Reduce*) operation->getInstance();
 		reduce->environment = &environment;
 		reduce->tracer = this;						// To be able to send traces
+		reduce->operationController = this;
 
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
 		

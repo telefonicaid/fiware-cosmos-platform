@@ -39,6 +39,7 @@ namespace ss
 		Parser *parser = (Parser*) operation->getInstance();
 		parser->environment = &environment;
 		parser->tracer = this;
+		parser->operationController = this;
 		
 
 		// Non compressed fiels

@@ -17,6 +17,7 @@
 #include "NetworkInterface.h"		// ss::NetworkInterface
 #include "ProcessWriter.h"			// ss::ProcessWriter
 #include "samson.pb.h"				// ss::network::...
+#include "samson/OperationController.h"	// ss::OperationController
 
 #define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER	1
 

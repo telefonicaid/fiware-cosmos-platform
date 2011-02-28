@@ -12,6 +12,11 @@
 
 //#define ISOLATED_PROCESS_AS_THREAD
 
+#define CODE_REPORT_PROGRESS	-2
+#define CODE_USER_ERROR			-3
+#define CODE_TRACE				-4
+#define CODE_OPERATION_CONTROL	-5
+
 namespace ss
 {
 	
@@ -19,6 +24,7 @@ namespace ss
 	{
 		int code;				// Code of the operation
 		LogLineData logData;	// Trace information
+		double progress;		// Progress report
 	} InterProcessMessage;
 	
 
@@ -145,6 +151,11 @@ namespace ss
 
 							// LM_T( LmtUser01 + message.trace_channel , ( message.trace_message));
 							//LM_M(( "TRACE %d %s", message.trace_channel, message.trace_message)); 
+						}
+						else if ( message.code == CODE_REPORT_PROGRESS )
+						{
+							double p = message.progress;
+							progress = p;
 						}
 						else if ( message.code == -3 ) // Error in the operation
 						{
@@ -287,6 +298,33 @@ namespace ss
 			exit(0);
 		}
 	}	
+	
+	void ProcessItemIsolated::reportProgress( double p )
+	{
+		InterProcessMessage message;
+		message.code = CODE_REPORT_PROGRESS;
+		message.progress = p;
+		
+		// Write in the pipe
+		int nb = write(pipeFdPair1[1], &message, sizeof(message) );
+		
+		if( nb != sizeof(message) )
+		{
+			std::cerr << "Error in background process writing to pipe";
+			exit(0);
+		}
+		
+		// Read something to continue
+		nb = read(pipeFdPair2[0], &message, sizeof(message) );
+		
+		if( nb != sizeof(message) )
+		{
+			std::cerr << "Error in background process reading from pipe " << "read " << nb << " bytes instead of " << sizeof(message);
+			exit(0);
+		}
+		
+	}
+
 	
 	void ProcessItemIsolated::runBackgroundProcessRun()
 	{

@@ -3,12 +3,12 @@
 
 #include "ProcessItem.h"		// ss::ProcessItem
 #include "samson/Tracer.h"		// ss::Tracer
-
+#include "samson/OperationController.h"		// ss::Tracer
 
 
 namespace ss {
 	
-	class ProcessItemIsolated : public ProcessItem , public Tracer
+	class ProcessItemIsolated : public ProcessItem , public Tracer , public OperationController
 	{
 		typedef enum 
 		{
@@ -42,6 +42,9 @@ namespace ss {
 		// Function used indide the runIsaled to send a trace to the main process
 		void trace(LogLineData *logData);
 
+		// Function used inside the runIsolated to send progress to the main process
+		void reportProgress( double p );
+		
 		// Set the error and finish the task
 		void setUserError( std::string message ); 
 		

@@ -35,6 +35,7 @@ int              endpoints;
 int              workers;
 char			 workingDir[1024];
 char			 workerVecFile[1024];
+bool             notdaemon;
 
 
 
@@ -46,11 +47,12 @@ char			 workerVecFile[1024];
 */
 PaArgument paArgs[] =
 {
-	{ "-working",        workingDir,    "WORKING",         PaString, PaOpt, DEF_WD,  PaNL,  PaNL, "Working directory"   },
-	{ "-workerVecFile",  workerVecFile, "WORKERS_FILE",    PaString, PaOpt, DEF_WF,  PaNL,  PaNL, "WorkerVec file"      },
-	{ "-port",          &port,          "PORT",            PaShortU, PaOpt,   1234,  1025, 65000, "listen port"         },
-	{ "-endpoints",     &endpoints,     "ENDPOINTS",       PaInt,    PaOpt,     80,     3,   100, "number of endpoints" },
-	{ "-workers",       &workers,       "WORKERS",         PaInt,    PaOpt,      1,     1,   100, "number of workers"   },
+	{ "-working",        workingDir,    "WORKING",         PaString, PaOpt, DEF_WD,  PaNL,  PaNL, "Working directory"     },
+	{ "-workerVecFile",  workerVecFile, "WORKERS_FILE",    PaString, PaOpt, DEF_WF,  PaNL,  PaNL, "WorkerVec file"        },
+	{ "-port",          &port,          "PORT",            PaShortU, PaOpt,   1234,  1025, 65000, "listen port"           },
+	{ "-endpoints",     &endpoints,     "ENDPOINTS",       PaInt,    PaOpt,     80,     3,   100, "number of endpoints"   },
+	{ "-workers",       &workers,       "WORKERS",         PaInt,    PaOpt,      1,     1,   100, "number of workers"     },
+	{ "-notdaemon",     &notdaemon,     "NOT_DAEMON",      PaBool,   PaOpt,  false, false,  true, "don't start as daemon" },
 
 	PA_END_OF_ARGS
 };
@@ -268,8 +270,6 @@ static void workerVecGet(void)
 */
 int main(int argC, const char* argV[])
 {
-	daemonize();
-
 	paConfig("prefix",                        (void*) "SSC_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
@@ -282,6 +282,9 @@ int main(int argC, const char* argV[])
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
+
+	if (notdaemon == false)
+		daemonize();
 
 	LM_T(LmtInit, ("ss::Message::WorkerVectorData: %d", sizeof(ss::Message::WorkerVectorData)));
 	workerVecGet();

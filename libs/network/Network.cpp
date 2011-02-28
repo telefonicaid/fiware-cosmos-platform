@@ -141,7 +141,7 @@ static void logHookFunction(void* vP, char* text, char type, const char* date, c
 	supervisor = networkP->endpoint[SUPERVISOR];
 	me         = networkP->endpoint[ME];
 
-	LM_H(("******************* Sending trace ?\n"));
+	// LM_H(("******************* Sending trace ?\n"));
 	if ((logSocket == -1) || (supervisor == NULL) || (supervisor->wFd == -1) || (supervisor->state != Endpoint::Connected) || (supervisor->helloReceived != true))
 		return;
 
@@ -165,16 +165,16 @@ static void logHookFunction(void* vP, char* text, char type, const char* date, c
 		++writes;
 
 		// logAddr.sin_addr.s_addr = htonl(logAddr.sin_addr.s_addr);
-		LM_H(("************ logAddr.sin_addr: 0x%x (text: '%s')\n", logAddr.sin_addr.s_addr, text));
+		// LM_H(("************ logAddr.sin_addr: 0x%x (text: '%s')\n", logAddr.sin_addr.s_addr, text));
 		nb = sendto(logSocket, &buf[tot], bufLen - tot, flags, (struct sockaddr*) &logAddr, logAddrLen);
 		if (nb == -1)
 		{
-			LM_H(("sendto: %s\n", strerror(errno)));
+			// LM_H(("sendto: %s\n", strerror(errno)));
 			return;
 		}
 		else if (nb == 0)
 		{
-			LM_H(("sendto returned 0 bytes (wanted %d) ... (%s)\n", bufLen - tot, strerror(errno)));
+			// LM_H(("sendto returned 0 bytes (wanted %d) ... (%s)\n", bufLen - tot, strerror(errno)));
 			return;
 		}
 
@@ -214,12 +214,12 @@ static void logHookFunction(void* vP, char* text, char type, const char* date, c
 		nb = sendto(logSocket, &buf[tot], bufLen - tot, flags, (struct sockaddr*) &logAddr, logAddrLen);
 		if (nb == -1)
 		{
-			LM_H(("sendto: %s\n", strerror(errno)));
+			// LM_H(("sendto: %s\n", strerror(errno)));
 			return;
 		}
 		else if (nb == 0)
 		{
-			LM_H(("sendto returned 0 bytes (wanted %d) ... (%s)\n", bufLen - tot, strerror(errno)));
+			// LM_H(("sendto returned 0 bytes (wanted %d) ... (%s)\n", bufLen - tot, strerror(errno)));
 			return;
 		}
 		
@@ -2155,8 +2155,8 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 	if (endpoint[newSlot] != NULL)
 		LM_TODO(("Endpoint Slot %d was occupied - please make sure this doesn't happen!", newSlot));
 	
-#if 0
-	if (oldSlot != newSlot)
+#if 1
+	if (newSlot == 3)
 	{
 		LM_M(("So, make slot %d NULL and use slot %d to reference this endpoint", oldSlot, newSlot));
 		endpoint[oldSlot] = NULL;

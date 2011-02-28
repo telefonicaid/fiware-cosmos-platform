@@ -2116,6 +2116,20 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 	int newSlot;
 	int oldSlot;
 
+	if ((hello->type == Endpoint::Supervisor) && (endpoint[SUPERVISOR] != NULL))
+	{
+		LM_W(("A second supervisor is connecting - rejecting it!"));
+		iomMsgSend(ep, endpoint[0], Message::Die, Message::Evt);  // Die message before closing fd just to reject second Supervisor
+		
+		close(ep->rFd);
+		if (ep->wFd != ep->rFd)
+			close(ep->wFd);
+
+		endpointRemove(ep, "Second Supervisor");
+
+		return;
+	}
+
 	LM_T(LmtHello, ("--------------------- Got Hello from %s (%s@%s - %s) ------------------------", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hello->name, hello->ip, hello->alias));
 	LM_T(LmtHello, ("Current endpoint '%s@%s' is of type '%s'", ep->name.c_str(), ep->ip, ep->typeName()));
 

@@ -1,6 +1,4 @@
 NOW
-  o Start controller in s01 andworker in s02 - will fail - add host in main_samsonWorker.cpp just like in Supervisor
-  o hostAdd after iomConnect ?
   o Add semaphore around jobQueue
   o Add semaphore around send
   o Test etc/samson in torkel /etc/init.d
@@ -39,7 +37,6 @@ LOGGING
   o Searches in log file content?
   o More Config about logMsg (Keep lines, Empty log file, etc.)
   o lmAux as a thread variable
-  o Implement '-toDo' in paParse (paBuiltin.cpp)
   o Fix the sizes of the columns initially (more or less)
   o Possibility to have a window per process ?
 
@@ -65,15 +62,7 @@ NEW FEATURES
   o Permissions and Users
     - Create Permission for every operation
     - Make each operation look in permissions before doing anything
-  o New MR Operations tab ...
-
-
-------------------------------------------------------------------------------------------------------------------------
-
-TEST
-  o Test with 9 Workers
-    Stress the Supervisor
-
+  o Implement the new MR Operations tab ...
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -86,7 +75,6 @@ REFACTORING AND CLEANUP
   o DelilahTab: Stop using 'QueueMgr', 'SourceMgr' and 'ResultMgr' - use the one and only 'SceneItemMgr'
     - will need to add a few methods from SQR managers to SceneItemMgr, I guess ...
   o samsonSupervisor - QueueMgr, SourceMgr and ResultMgr should be ONE manager - SceneItemMgr
-  o Try to not use iomMsgSend(int fd, ...)
   o Close On Exec for all sockets ... ?
   o Network.cpp
     - shorten too long methods

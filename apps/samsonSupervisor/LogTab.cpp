@@ -91,6 +91,7 @@ static void logItemInsert(LogItem* logItemP)
 	logItemV[logItems] = logItemP;
 	++logItems;
 
+	LM_TODO(("Here I should consult a variable from Config Tab instead of always scrolling"));
 	tabManager->logTab->tableWidget->scrollToBottom();
 }
 

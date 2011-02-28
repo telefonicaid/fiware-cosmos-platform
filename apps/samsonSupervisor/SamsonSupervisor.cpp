@@ -525,12 +525,15 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 
 	case ss::Endpoint::ControllerDisconnected:
 		disconnectWorkers();
-		snprintf(eText, sizeof(eText), "Lost connection to samsonController in host '%s'.\n"
-				 "This process is a vital part of the samson platform,\n"
-				 "so please restart the process as soon as possible.",
-				 starter->process->host);
+		if (starter && starter->process)
+		{
+			snprintf(eText, sizeof(eText), "Lost connection to samsonController in host '%s'.\n"
+					 "This process is a vital part of the samson platform,\n"
+					 "so please restart the process as soon as possible.",
+					 starter->process->host);
 		
-		new Popup("Lost Connection to Controller", eText);
+			new Popup("Lost Connection to Controller", eText);
+		}
 		break;
 
 	case ss::Endpoint::WorkerDisconnected:

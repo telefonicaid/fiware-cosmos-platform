@@ -374,8 +374,6 @@ namespace ss {
 		 */
 		virtual void run(KVSetStruct* inputs , TXTWriter *writer )=0;
 
-		virtual void runFinish(  TXTWriter *writer ){};
-		
 	};
 	
 	

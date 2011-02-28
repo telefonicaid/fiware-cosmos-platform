@@ -21,7 +21,7 @@
 
 #include "logMsg.h"             // LM_*
 
-#include "globals.h"            // mainWinWidth, ...
+#include "globals.h"            // mainWinWidth, tabManager, ...
 #include "Message.h"            // ss::Message::Header, ss::Message::LogLineData
 #include "Endpoint.h"           // ss::Endpoint
 #include "iomMsgSend.h"         // iomMsgSend
@@ -90,29 +90,10 @@ static void logItemInsert(LogItem* logItemP)
 
 	logItemV[logItems] = logItemP;
 	++logItems;
+
+	tabManager->logTab->tableWidget->scrollToBottom();
 }
 
-
-#if 0
-/* ****************************************************************************
-*
-* logItemFree - 
-*/
-static void logItemFree(LogItem* logItemP)
-{
-	if (logItemP == NULL)
-		return;
-
-	if (logItemP->type    != NULL)  delete logItemP->type;
-	if (logItemP->date    != NULL)  delete logItemP->date;
-	if (logItemP->host    != NULL)  delete logItemP->host;
-	if (logItemP->process != NULL)  delete logItemP->process;
-	if (logItemP->file    != NULL)  delete logItemP->file;
-	if (logItemP->line    != NULL)  delete logItemP->line;
-	if (logItemP->fName   != NULL)  delete logItemP->fName;
-	if (logItemP->text    != NULL)  delete logItemP->text;
-}
-#endif
 
 
 /* ****************************************************************************

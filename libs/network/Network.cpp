@@ -448,7 +448,7 @@ void Network::init(const char* controllerName)
 
 		endpoint[LISTENER]->state    = Endpoint::Listening;
 		endpoint[LISTENER]->type     = Endpoint::Listener;
-		endpoint[LISTENER]->ip       = endpoint[ME]->ip;
+		endpoint[LISTENER]->ip       = strdup(endpoint[ME]->ip);
 		endpoint[LISTENER]->name     = "Listener";
 		endpoint[LISTENER]->wFd      = endpoint[LISTENER]->rFd;
 
@@ -2535,7 +2535,7 @@ void Network::msgTreat(void* vP)
 					endpoint[FIRST_WORKER + ix]->port = workerVec->workerV[ix].port;
 					
 					if (workerVec->workerV[ix].ip[0] != 0)
-						endpoint[FIRST_WORKER + ix]->ip   = workerVec->workerV[ix].ip;
+						endpoint[FIRST_WORKER + ix]->ip   = strdup(workerVec->workerV[ix].ip);
 					else
 						LM_W(("Empty IP for worker %d", ix));
 				}

@@ -535,6 +535,12 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 
 	case ss::Endpoint::WorkerDisconnected:
 		LM_W(("Worker %s@%s (%s) disconnected and I do nothing ...", processP->name, processP->host, processP->alias));
+		snprintf(eText, sizeof(eText), "Lost connection to samsonWorker in host '%s'.\n"
+				 "This process is a vital part of the samson platform,\n"
+				 "so please restart the process as soon as possible.",
+				 starter->process->host);
+
+		new Popup("Lost Connection to Worker", eText);
 		break;
 
 	case ss::Endpoint::EndpointRemoved:
@@ -554,31 +560,36 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		starter->check("Some endpoint closed connection");
 		if (starter->process->type == ss::PtSpawner)
 		{
-			snprintf(eText, sizeof(eText), "Lost connection to samsonSpawner in host '%s'.\n"
-					                       "This process is a vital part of the samson platform,\n"
-					                       "so please restart the process as soon as possible.",
+			snprintf(eText, sizeof(eText),
+					 "Lost connection to samsonSpawner in host '%s'.\n"
+					 "This process is a vital part of the samson platform,\n"
+					 "so please restart the process as soon as possible.",
 					 starter->process->host);
 
 			new Popup("Lost Connection to Spawner", eText);
 		}
 		else if (starter->process->type == ss::PtController)
 		{
-			snprintf(eText, sizeof(eText), "Lost connection to samsonController in host '%s'.\n"
-					                       "This process is a vital part of the samson platform,\n"
-					                       "so please restart the process as soon as possible.",
+			snprintf(eText, sizeof(eText),
+					 "Lost connection to samsonController in host '%s'.\n"
+					 "This process is a vital part of the samson platform,\n"
+					 "so please restart the process as soon as possible.",
 					 starter->process->host);
 
 			new Popup("Lost Connection to Controller", eText);
 		}
+#if 0
 		else if (starter->process->type == ss::PtWorker)
 		{
-			snprintf(eText, sizeof(eText), "Lost connection to samsonWorker in host '%s'.\n"
-					                       "This process is a vital part of the samson platform,\n"
-                                           "so please restart the process as soon as possible.",
+			snprintf(eText, sizeof(eText),
+					 "Lost connection to samsonWorker in host '%s'.\n"
+					 "This process is a vital part of the samson platform,\n"
+					 "so please restart the process as soon as possible.",
 					 starter->process->host);
 
 			new Popup("Lost Connection to Worker", eText);
 		}
+#endif
 		break;
 
 	case ss::Endpoint::HelloReceived:

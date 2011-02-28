@@ -73,6 +73,8 @@ char*      paTracelevels         = NULL;
 
 bool       paVerbose             = false;
 bool       paDebug               = false;
+bool       paHidden              = false;
+bool       paToDo                = false;
 bool       paReads               = false;
 bool       paWrites              = false;
 bool       paFix                 = false;
@@ -222,12 +224,14 @@ int paConfig(const char* item, void* value)
 		paVerbose = (bool) val;
 	else if (strcmp(item, "debug mode") == 0)
 		paDebug = (bool) val;
+	else if (strcmp(item, "hidden mode") == 0)
+		paHidden = (bool) val;
+	else if (strcmp(item, "toDo mode") == 0)
+		paToDo = (bool) val;
 	else if (strcmp(item, "reads mode") == 0)
 		paReads = (bool) val;
 	else if (strcmp(item, "writes mode") == 0)
 		paWrites = (bool) val;
-	else if (strcmp(item, "debug mode") == 0)
-		paDebug = (bool) val;
 	else if (strcmp(item, "fix mode") == 0)
 		paFix = (bool) val;
 	else if (strcmp(item, "bug mode") == 0)
@@ -313,6 +317,8 @@ int paConfigActions(bool preTreat)
 {
 	lmVerbose = paVerbose;
 	lmDebug   = paDebug;
+	lmHidden  = paHidden;
+	lmToDo    = paToDo;
 	lmReads   = paReads;
 	lmWrites  = paWrites;
 	lmFix     = paFix;

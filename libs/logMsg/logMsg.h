@@ -151,6 +151,7 @@ typedef char* (*LmTracelevelName)(int level);
 #ifdef LM_OFF
  #define LM_NO_V
  #define LM_NO_M
+ #define LM_NO_H
  #define LM_NO_W
  #define LM_NO_E
  #define LM_NO_P
@@ -199,6 +200,26 @@ do {                                                                       \
    if ((text = lmTextGet s) != NULL)                                       \
    {                                                                       \
       lmOut(text, 'M', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
+      free(text);                                                          \
+   }                                                                       \
+} while (0)
+#endif
+
+
+#ifdef LM_NO_H
+#define LM_H(s)
+#else
+/* ****************************************************************************
+*
+* LM_H - "hidden" log message
+*/
+#define LM_H(s)                                                            \
+do {                                                                       \
+   char* text;                                                             \
+                                                                           \
+   if ((text = lmTextGet s) != NULL)                                       \
+   {                                                                       \
+      lmOut(text, 'H', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
       free(text);                                                          \
    }                                                                       \
 } while (0)
@@ -938,6 +959,7 @@ extern int  lmBug2;
 extern bool lmBug;
 extern bool lmVerbose;
 extern bool lmDebug;
+extern bool lmHidden;
 extern bool lmToDo;
 extern bool lmFix;
 extern bool lmDoubt;

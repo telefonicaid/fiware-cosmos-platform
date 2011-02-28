@@ -137,7 +137,7 @@ void SamsonSpawner::processSpawn(ss::Process* processP)
 	if (processP->debug   == true)   argV[argC++] = (char*) "-d";
 	if (processP->reads   == true)   argV[argC++] = (char*) "-r";
 	if (processP->writes  == true)   argV[argC++] = (char*) "-w";
-	// if (processP->toDo == true)   argV[argC++] = (char*) "-toDo";
+	if (processP->toDo    == true)   argV[argC++] = (char*) "-toDo";
 
 	char traceLevels[512];
 	lmTraceGet(traceLevels, sizeof(traceLevels), processP->traceLevels);

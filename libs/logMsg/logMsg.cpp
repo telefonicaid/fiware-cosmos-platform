@@ -232,11 +232,13 @@ static LmTracelevelName  userTracelevelName     = NULL;
 static int               lmSd                   = -1;
 
 
+
 /* ****************************************************************************
 *
 * Global variables
 */
 bool  lmDebug   = false;
+bool  lmHidden  = false;
 bool  lmVerbose = false;
 bool  lmToDo    = false;
 bool  lmDoubt   = false;
@@ -1369,6 +1371,8 @@ LmStatus lmOk(char type, int tLev)
 		return LmsNull;
 	if ((type == 'D') && (lmDebug == false))
 		return LmsNull;
+	if ((type == 'H') && (lmHidden == false))
+		return LmsNull;
 	if ((type == 'V') && (lmVerbose == false))
 		return LmsNull;
 	if ((type == 't') && (lmToDo == false))
@@ -1587,7 +1591,7 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 	memset(line,   0, sizeof(line));
 	memset(format, 0, sizeof(format));
 
-	if (lmOutHook && lmOutHookActive == true)
+	if ((type != 'H') && lmOutHook && lmOutHookActive == true)
 	{
 		char   xin[256];
 		char*  date = dateGet(0, xin, sizeof(xin));
@@ -1604,6 +1608,7 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 		{
 			if ((type == 'T')
 			||  (type == 'D')
+			||  (type == 'H')
 			||  (type == 't'))
 				continue;
 		}

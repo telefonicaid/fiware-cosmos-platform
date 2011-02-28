@@ -2155,16 +2155,14 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 	if (endpoint[newSlot] != NULL)
 		LM_TODO(("Endpoint Slot %d was occupied - please make sure this doesn't happen!", newSlot));
 	
-#if 1
-	if (newSlot == 3)
+	if (hello->type == Endpoint::Supervisor || hello->type == Endpoint::Worker)
 	{
 		LM_M(("So, make slot %d NULL and use slot %d to reference this endpoint", oldSlot, newSlot));
 		endpoint[oldSlot] = NULL;
 		endpoint[newSlot] = ep;
 	}
 	else
-		LM_M(("NOT changing %s (%s@%s) from slot %d to slot %d", hello->alias, hello->name, hello->ip, oldSlot, newSlot));
-#endif
+        LM_M(("NOT changing %s (%s@%s) from slot %d to slot %d", hello->alias, hello->name, hello->ip, oldSlot, newSlot));
 
 	helloInfoCopy(ep, hello);
 	ep->helloReceived = true;

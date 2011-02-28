@@ -23,7 +23,6 @@
 *
 * Option variables
 */
-unsigned short   port;
 char             name[80];
 
 
@@ -34,7 +33,6 @@ char             name[80];
 */
 PaArgument paArgs[] =
 {
-	{ "-port",       &port,        "PORT",        PaShortU,  PaOpt,  1025,   1025,  65000,  "port of prcess to kill"         },
 	{ " ",            name,        "NAME",        PaString,  PaOpt,  PaND,   PaNL,   PaNL,  "name of prcess to kill"         },
 
 	PA_END_OF_ARGS
@@ -44,13 +42,41 @@ PaArgument paArgs[] =
 
 /* ****************************************************************************
 *
-* main - 
+* killProcess - 
 */
-int main(int argC, const char *argV[])
+static int killProcess(const char* name, unsigned short port)
 {
 	ss::Endpoint  ep;
 	ss::Endpoint  me;
 
+	ep.name = name;
+	ep.wFd  = iomConnect("localhost", port);
+	
+	if (ep.wFd == -1)
+	{
+		printf("error connecting to %s at 'localhost', port %d - probably means the process isn't running\n", name, port);
+		return 3;
+	}
+
+	me.name = "samsonKiller";
+
+	if (iomMsgSend(&ep, &me, ss::Message::Die, ss::Message::Msg) != 0)
+	{
+		printf("error sending 'Die' message to endpoint (port %d)\n", port);
+		return 4;
+	}
+
+	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* main - 
+*/
+int main(int argC, const char *argV[])
+{
 	name[0] = 0;
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
@@ -61,51 +87,27 @@ int main(int argC, const char *argV[])
 		printf("  %02d: '%s'\n", ix, argV[ix]);
 #endif
 
-	if ((port == 1025) && (name[0] == 0))
-	{
-		printf("Must specify either the option '-port' or an argument giving the name of the process\n");
-		paUsage(paArgs);
-		exit(1);
-	}
-
-
 	if (name[0] != 0)
 	{
-		if (strcasecmp(name, "spawner") == 0)
-			port = SPAWNER_PORT;
-		else if (strcasecmp(name, "worker") == 0)
-			port = WORKER_PORT;
-		else if (strcasecmp(name, "controller") == 0)
-			port = CONTROLLER_PORT;
+		if ((strcasecmp(name, "worker") == 0) || (strcasecmp(name, "samsonWorker") == 0))
+            return killProcess("samsonWorker", WORKER_PORT);
+		else if ((strcasecmp(name, "controller") == 0) || (strcasecmp(name, "samsonController") == 0))
+            return killProcess("samsonController", CONTROLLER_PORT);
+		else if ((strcasecmp(name, "spawner") == 0) || (strcasecmp(name, "samsonSpawner") == 0))
+			return killProcess("samsonSpawner", SPAWNER_PORT);
+		else if (strcasecmp(name, "all") == 0)
+		{
+		   killProcess("samsonWorker",     WORKER_PORT);
+		   killProcess("samsonController", CONTROLLER_PORT);
+		   killProcess("samsonSpawner",    SPAWNER_PORT);
+
+		   return 0;
+		}
 		else
 		{
 			printf("non-familiar process '%s'\n", name);
 			exit(1);
 		}
-	}
-
-
-	if ((port != SPAWNER_PORT) && (port != WORKER_PORT) && (port != CONTROLLER_PORT))
-	{
-		printf("non-familiar port: %d\n", port);
-		exit(2);
-	}
-
-	ep.name = "toBeKilled";
-	ep.wFd = iomConnect("localhost", port);
-	
-	if (ep.wFd == -1)
-	{
-		printf("error connecting to 'localhost', port %d - probably means the process isn't running\n", port);
-		exit(3);
-	}
-
-	me.name = "samsonKiller";
-
-	if (iomMsgSend(&ep, &me, ss::Message::Die, ss::Message::Msg) != 0)
-	{
-		printf("error sending 'Die' message to endpoint (port %d)\n", port);
-		exit(4);
 	}
 
 	return 0;

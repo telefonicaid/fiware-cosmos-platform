@@ -6,10 +6,11 @@ SET (HEADERS
 )
 
 SET (STATIC_LIBS
-     samsonNetworkStatic
-     samsonCoreStatic
-     samsonCommonStatic
-     delilahStatic
+     samsonNetwork
+     samsonCore
+     samsonCommon
+     samsonMemory
+     delilahLib
      pa
      lm
      protobuf
@@ -19,7 +20,8 @@ SET (STATIC_LIBS
      readline
 )
 
-
+# Include directories
+# ------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
@@ -31,10 +33,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 
 
-link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
-link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
-
-# SAMSON Executable
+# Executable declaration
+# ------------------------------------------------------------
 ADD_EXECUTABLE(delilah ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(delilah ${STATIC_LIBS} )
 

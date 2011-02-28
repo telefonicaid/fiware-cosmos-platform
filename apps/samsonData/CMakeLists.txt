@@ -1,21 +1,24 @@
 SET (SOURCES
-    main_samsonData.cpp
+    main_SamsonData.cpp
 )
 
 SET (HEADERS
 )
 
 SET( STATIC_LIBS
-     samsonNetworkStatic
-     samsonCoreStatic
-     samsonCommonStatic
-     delilahStatic
+     samsonNetwork
+     samsonCore
+     samsonCommon
+     samsonDataLib
+     delilahLib
      protobuf
      pthread
      dl
      lm
 )
 
+# Include directories
+# ------------------------------------------------------------
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
@@ -30,11 +33,9 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/coding
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")")
 include_directories("${PROJECT_SOURCE_DIR}/libs/process")
 
+# Executable declaration
+# ------------------------------------------------------------
 
-link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
-
-
-# SAMSON Executable
 ADD_EXECUTABLE(samsonData ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(samsonData ${STATIC_LIBS})
 

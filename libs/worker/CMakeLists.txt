@@ -31,23 +31,8 @@ SET (SOURCES
 	ProcessWriter.cpp
 )
 
-SET (STATIC_LIBS
-    samsonNetworkStatic 
-    samsonModuleStatic 
-    samsonCommonStatic 
-    samsonCodingStatic
-    samsonMemoryStatic
-    samsonNetworkStatic 
-    samsonDiskStatic
-    samsonDataStatic
-    samsonProcessStatic
-    samsonCoreStatic
-    protobuf 
-    dl 
-    pthread
-    ncurses
-)
-
+# Include directories
+# -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
@@ -60,11 +45,9 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/data")
 include_directories("${PROJECT_SOURCE_DIR}/libs/process")
 include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 
-
-
-ADD_LIBRARY(samsonWorkerStatic STATIC ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES( samsonWorkerStatic ${STATIC_LIBS} )
-SET_TARGET_PROPERTIES(samsonWorkerStatic PROPERTIES OUTPUT_NAME samsonWorker)
+# Library declaration
+# -----------------------------------------------------------------
+ADD_LIBRARY(samsonWorkerLib STATIC ${SOURCES} ${HEADERS} )
 
 
 

@@ -6,9 +6,10 @@ SET (HEADERS
 )
 
 SET( STATIC_LIBS
-     samsonNetworkStatic
-     samsonCoreStatic
-     samsonCommonStatic
+     samsonNetwork
+     samsonCore
+     samsonCommon
+     samsonMemory
      protobuf
      pthread
      dl
@@ -16,6 +17,8 @@ SET( STATIC_LIBS
 )
 
 
+# Include directories
+# -----------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_BINARY_DIR}/libs/network")
@@ -30,10 +33,10 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/disk")")
 include_directories("${PROJECT_SOURCE_DIR}/libs/process")
 
 
-link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
-
 
 # SAMSON Executable
+# -----------------------------------------------------------
+
 ADD_EXECUTABLE(samsonSetup ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(samsonSetup ${STATIC_LIBS})
 

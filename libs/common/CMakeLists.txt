@@ -17,6 +17,7 @@ SET (HEADERS
 	Console.h
 	CommandLine.h
 	daemonize.h
+	EnvironmentOperations.h
 )
 
 SET (SOURCES
@@ -33,6 +34,7 @@ SET (SOURCES
 	Format.cpp
 	CommandLine.cpp
 	daemonize.cpp
+	EnvironmentOperations.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''
@@ -43,18 +45,12 @@ add_custom_command (
   MAIN_DEPENDENCY samson.proto
 )
 
-
+# Inclue directories
+# -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
-link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
-
-ADD_LIBRARY(samsonCommonStatic STATIC ${SOURCES} ${HEADERS} ${HEADERS_SAMSON})
-TARGET_LINK_LIBRARIES(samsonCommonStatic  protobuf lm z)
-
-SET_TARGET_PROPERTIES(samsonCommonStatic PROPERTIES OUTPUT_NAME samsonCommon)
-
-# ADD_LIBRARY(samsonCommonShared SHARED ${SOURCES} ${HEADERS} ${HEADERS_SAMSON})
-# TARGET_LINK_LIBRARIES(samsonCommonShared  protobuf)
-# SET_TARGET_PROPERTIES(samsonCommonShared PROPERTIES OUTPUT_NAME samsonCommon)
+include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 
 
-
+# Library declaration
+# -----------------------------------------------------------------
+ADD_LIBRARY(samsonCommon STATIC ${SOURCES} ${HEADERS})

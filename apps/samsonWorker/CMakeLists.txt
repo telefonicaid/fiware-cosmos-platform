@@ -7,12 +7,13 @@ SET (HEADERS
 
 
 SET (LIBS
-samsonWorkerStatic 
-samsonModuleStatic
-samsonProcessStatic
-samsonNetworkStatic
-samsonCoreStatic
-samsonCommonStatic
+samsonWorkerLib
+samsonProcess
+samsonNetwork
+samsonCore
+samsonCommon
+samsonMemory
+samsonDisk
 pa
 lm
 protobuf

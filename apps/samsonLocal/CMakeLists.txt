@@ -12,27 +12,27 @@ SET (HEADERS
 )
 
 SET( STATIC_LIBS
-     samsonWorkerStatic
-     samsonModuleStatic
-     samsonProcessStatic
-     samsonNetworkStatic
-     samsonCommonStatic
-     samsonCoreStatic
-     samsonControllerStatic
-     delilahStatic
-     pa
-     lm
-     protobuf
-     pthread
-     dl
-     readline
+samsonWorkerLib
+samsonControllerLib
+delilahLib
+samsonCommon
+samsonCore
+samsonDataLib
+samsonDisk
+samsonMemory
+samsonNetwork
+samsonProcess
+lm
+pa
+protobuf
+dl
+pthread
+readline
+curses
 )
 
-SET (RESOURCES
-    ${PROJECT_SOURCE_DIR}/libs/delilah/resources/objects.qrc
-    ${PROJECT_SOURCE_DIR}/libs/delilah/resources/icons.qrc)
-
-
+# Include directories
+# ------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
@@ -49,11 +49,10 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/process")
 include_directories("${PROJECT_SOURCE_DIR}/libs/controller")
 include_directories("${PROJECT_SOURCE_DIR}/libs/worker")
 
-link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
-link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
 
+# Executable declaration
+# ------------------------------------------------------------
 
-# SAMSON Executable
 ADD_EXECUTABLE(samsonLocal ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(samsonLocal ${STATIC_LIBS})
 

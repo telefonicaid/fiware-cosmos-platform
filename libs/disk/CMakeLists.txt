@@ -25,27 +25,14 @@ SET (SOURCES
 	FileManagerItem.cpp
 	FileManagerReadItem.cpp
 	FileManagerWriteItem.cpp
-        FileManagerCacheItem.cpp
-        FileManagerCacheTask.cpp
-        FileManagerCacheSystem.cpp
+    FileManagerCacheItem.cpp
+    FileManagerCacheTask.cpp
+    FileManagerCacheSystem.cpp
 	DiskStatistics.cpp
 )
 
-SET (STATIC_LIBS
-	samsonNetworkStatic
-	samsonModuleStatic
-	samsonCommonStatic
-	samsonCodingStatic
-	samsonMemoryStatic
-	samsonNetworkStatic
-	samsonDataStatic
-	protobuf
-	dl
-	pthread
-	ncurses
-)
-
-
+# Inclue directories
+# -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
@@ -53,14 +40,9 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 
-link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
+# Library declaration
+# -----------------------------------------------------------------
+ADD_LIBRARY(samsonDisk STATIC ${SOURCES} ${HEADERS} )
 
-ADD_LIBRARY(samsonDiskStatic STATIC ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES( samsonDiskStatic  ${STATIC_LIBS} )
-SET_TARGET_PROPERTIES(samsonDiskStatic PROPERTIES OUTPUT_NAME samsonDisk)
-
-# ADD_LIBRARY(samsonDiskShared SHARED ${SOURCES} ${HEADERS} )
-# TARGET_LINK_LIBRARIES(samsonDiskShared  ${LIBS_SHARED} )
-# SET_TARGET_PROPERTIES(samsonDiskShared PROPERTIES OUTPUT_NAME samsonDisk)
 
 

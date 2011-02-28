@@ -373,6 +373,8 @@ namespace ss {
 		 Main function to overload by the map
 		 */
 		virtual void run(KVSetStruct* inputs , TXTWriter *writer )=0;
+
+		virtual void runFinish(  TXTWriter *writer ){};
 		
 	};
 	

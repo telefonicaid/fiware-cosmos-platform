@@ -33,24 +33,8 @@ SET (SOURCES
     SamsonController.cpp
 )
 
-SET (STATIC_LIBS
-    samsonNetworkStatic 
-    samsonModuleStatic 
-    samsonCommonStatic 
-    samsonCodingStatic
-    samsonMemoryStatic
-    samsonNetworkStatic 
-    samsonDiskStatic
-    samsonDataStatic
-    samsonProcessStatic
-    samsonCoreStatic
-    protobuf 
-    dl 
-    pthread
-    ncurses
-)
-
-
+# Inclue directories
+# -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
@@ -64,10 +48,9 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/process")
 include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 
 
-
-ADD_LIBRARY(samsonControllerStatic STATIC ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES( samsonControllerStatic ${STATIC_LIBS} )
-SET_TARGET_PROPERTIES(samsonControllerStatic PROPERTIES OUTPUT_NAME samsonCore)
+# Library declaration
+# -----------------------------------------------------------------
+ADD_LIBRARY(samsonControllerLib STATIC ${SOURCES} ${HEADERS} )
 
 
 

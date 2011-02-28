@@ -5,6 +5,16 @@ SET (SOURCES
 SET (HEADERS
 )
 
+SET (LIBS
+samsonNetwork
+samsonMemory
+samsonCommon
+pa
+lm
+pthread	
+protobuf
+)
+
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
@@ -18,7 +28,7 @@ link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
 
 # SAMSON Executable
 ADD_EXECUTABLE(samsonKiller ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(samsonKiller pa lm samsonNetworkStatic pthread)
+TARGET_LINK_LIBRARIES(samsonKiller ${LIBS})
 
 INSTALL(TARGETS               samsonKiller
         RUNTIME DESTINATION   bin)

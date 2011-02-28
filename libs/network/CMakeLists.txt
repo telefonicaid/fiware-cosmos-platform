@@ -39,16 +39,15 @@ SET (SOURCES
 	HostMgr.cpp
 )
 
+# Include directories
+# -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 
-ADD_LIBRARY(samsonNetworkStatic STATIC ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES( samsonNetworkStatic  protobuf lm samsonMemoryStatic )
-SET_TARGET_PROPERTIES(samsonNetworkStatic PROPERTIES OUTPUT_NAME samsonNetwork)
+# Library declaration
+# -----------------------------------------------------------------
+ADD_LIBRARY(samsonNetwork STATIC ${SOURCES} ${HEADERS} )
 
-# ADD_LIBRARY(samsonNetworkShared SHARED ${SOURCES} ${HEADERS} )
-# TARGET_LINK_LIBRARIES( samsonNetworkShared  protobuf logMsgShared )
-# SET_TARGET_PROPERTIES(samsonNetworkShared PROPERTIES OUTPUT_NAME samsonNetwork)

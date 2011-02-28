@@ -210,6 +210,9 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 	
 	void SamsonWorker::processListOfFiles( const ::ss::network::QueueList& ql)
 	{
+		// Get my identifier as worker
+		_myWorkerId = network->getWorkerId();
+		
 		// Generate list of local files ( to not remove them )
 		std::set<std::string> files;
 		std::set<size_t> load_id;

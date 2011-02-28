@@ -14,20 +14,8 @@ SET (SOURCES
     data.pb.cc
 )
 
-SET (STATIC_LIBS
-    samsonNetworkStatic 
-    samsonModuleStatic 
-    samsonCommonStatic 
-    samsonCodingStatic
-    samsonMemoryStatic
-    samsonNetworkStatic 
-    samsonDiskStatic
-    protobuf 
-    dl 
-    pthread
-    ncurses
-)
-
+# Inclue directories
+# -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
@@ -37,9 +25,6 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
 
-
-link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
-
 # Generate 'data.pb.h' and 'data.pb.cc' from ''data.proto''
 add_custom_command (
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/data.pb.cc
@@ -48,7 +33,7 @@ add_custom_command (
   MAIN_DEPENDENCY data.proto
 )
 
-ADD_LIBRARY(samsonDataStatic STATIC ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES( samsonDataStatic ${STATIC_LIBS} )
-SET_TARGET_PROPERTIES(samsonDataStatic PROPERTIES OUTPUT_NAME samsonData)
+# Library declaration
+# -----------------------------------------------------------------
+ADD_LIBRARY(samsonDataLib STATIC ${SOURCES} ${HEADERS} )
 

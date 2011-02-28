@@ -50,8 +50,10 @@ SET (SOURCES
 	baStd.cpp
 )
 
+# Inclue directories
+# -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 
-ADD_LIBRARY(parseArgsStatic STATIC ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(parseArgsStatic)
-SET_TARGET_PROPERTIES(parseArgsStatic PROPERTIES OUTPUT_NAME pa)
+# Library declaration
+# -----------------------------------------------------------------
+ADD_LIBRARY(pa STATIC ${SOURCES} ${HEADERS})

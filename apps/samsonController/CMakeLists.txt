@@ -6,7 +6,25 @@ SET (HEADERS
 
 )
 
+SET (LIBS
+samsonControllerLib
+samsonProcess
+samsonNetwork
+samsonCore
+samsonCommon
+samsonMemory
+samsonDataLib
+samsonDisk
+pa
+lm
+protobuf
+pthread
+dl
+readline
+)
 
+# Include directories
+# ------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
@@ -21,13 +39,12 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 
-link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
-link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 
+# Executable declaration
+# ------------------------------------------------------------
 
-# SAMSON Executable
 ADD_EXECUTABLE(samsonController ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(samsonController samsonControllerStatic samsonNetworkStatic samsonCoreStatic samsonCommonStatic pa lm protobuf pthread dl curses readline)
+TARGET_LINK_LIBRARIES(samsonController ${LIBS})
 
 INSTALL(TARGETS               samsonController
         RUNTIME DESTINATION   bin)

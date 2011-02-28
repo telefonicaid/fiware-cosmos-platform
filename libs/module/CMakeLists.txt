@@ -1,5 +1,5 @@
 SET (HEADERS
-        samson/samson.h
+	samson/samson.h
 	samson/Data.h
 	samson/DataInstance.h
 	samson/Factory.h
@@ -20,27 +20,6 @@ SET (HEADERS
 	samson/Log.h
 )
 
-
-SET( HEADERS_NO_INSTALL
-     EnvironmentOperations.h
-)
-
-
-SET (SOURCES
-	main.cpp
-     EnvironmentOperations.cpp
-)
-
-
-include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
-include_directories("${PROJECT_SOURCE_DIR}/libs/common")
-
-
-ADD_LIBRARY(samsonModuleStatic STATIC ${SOURCES} ${HEADERS} ${HEADERS_NO_INSTALL} )
-#ADD_LIBRARY(samsonModuleShared SHARED ${SOURCES} ${HEADERS} )
-
-TARGET_LINK_LIBRARIES( samsonModuleStatic protobuf )
-
-SET_TARGET_PROPERTIES( samsonModuleStatic PROPERTIES OUTPUT_NAME samsonModule)
-
+# Instalation header files
+# -----------------------------------------------------------------
 INSTALL(FILES ${HEADERS} DESTINATION include/samson)

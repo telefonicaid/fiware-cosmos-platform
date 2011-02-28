@@ -2,7 +2,7 @@ find_package(Qt4 COMPONENTS QtCore QtGui QtSvg REQUIRED )
 INCLUDE(${QT_USE_FILE})
 
 SET (SOURCES
-    main_samsonSupervisor.cpp
+	   main_samsonSupervisor.cpp
 	SamsonSupervisor.cpp
 	baTerm.cpp
 	processList.cpp
@@ -10,14 +10,14 @@ SET (SOURCES
 	Starter.cpp
 	starterList.cpp
 	TabManager.cpp
-
+	
 	ProcessListTab.cpp
 	MrOperationsTab.cpp
 	LogTab.cpp
 	DelilahRawTab.cpp
 	ConfigTab.cpp
 	OldMrOperationsTab.cpp
-
+	
 	configFile.cpp
 	Popup.cpp
 	misc.cpp
@@ -88,6 +88,17 @@ SET (HEADERS
 	SourceMgr.h
 )
 
+SET (LIBS
+	samsonNetwork 
+	samsonMemory
+	samsonCommon
+	delilahLib 
+	pa 
+	lm 
+	readline 
+	pthread
+	protobuf
+)
 
 SET (RESOURCES
     ${PROJECT_SOURCE_DIR}/apps/samsonSupervisor/samsonSupervisor.qrc)
@@ -114,7 +125,7 @@ link_directories("${PROJECT_BINARY_DIR}/libs/delilah")
 
 # SAMSON Executable
 ADD_EXECUTABLE(samsonSupervisor ${SOURCES} ${MOC_SOURCES} ${HEADERS} ${RESOURCES_QRC} )
-TARGET_LINK_LIBRARIES(samsonSupervisor samsonNetworkStatic delilahStatic pa lm readline pthread ${QT_LIBRARIES})
+TARGET_LINK_LIBRARIES(samsonSupervisor ${LIBS} ${QT_LIBRARIES})
 
 install(TARGETS                samsonSupervisor
         RUNTIME  DESTINATION   bin)

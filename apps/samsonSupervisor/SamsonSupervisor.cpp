@@ -534,13 +534,13 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		break;
 
 	case ss::Endpoint::WorkerDisconnected:
-		LM_W(("Worker %s%s (%s) disconnected and I do nothing ...", processP->name, processP->host, processP->alias));
+		LM_W(("Worker %s@%s (%s) disconnected and I do nothing ...", processP->name, processP->host, processP->alias));
 		break;
 
 	case ss::Endpoint::EndpointRemoved:
 	case ss::Endpoint::ControllerRemoved:
 	case ss::Endpoint::WorkerRemoved:
-        if (processP != NULL)
+		if (processP != NULL)
 			LM_W(("Endpoint %s@%s closed connection", processP->name, processP->host));
 		else
 			LM_W(("Some endpoint closed connection"));

@@ -482,7 +482,7 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 	hello.workerId = endpoint[ME]->workerId;
 
 	if (endpoint[ME]->type == Endpoint::Worker)
-		LM_M(("My slot: '%d' (alias: '%s')", hello.workerId, endpoint[ME]->aliasGet()));
+		LM_M(("My workerId: '%d' (alias: '%s')", hello.workerId, endpoint[ME]->aliasGet()));
 
 	LM_T(LmtWrite, ("sending hello %s to '%s' (name: '%s', type: '%s')", messageType(type), ep->name.c_str(), hello.name, endpoint[ME]->typeName()));
 
@@ -2129,7 +2129,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 	LM_T(LmtHello, ("Current endpoint '%s@%s' is of type '%s'", ep->name.c_str(), ep->ip, ep->typeName()));
 
 	if (hello->type == Endpoint::Worker)
-		LM_M(("Got a Hello from Worker %s@s '%s' with workerId %d", hello->name, hello->ip, hello->alias, hello->workerId));
+		LM_M(("Got a Hello from Worker %s@%s '%s' with workerId %d", hello->name, hello->ip, hello->alias, hello->workerId));
 	else
 		LM_M(("Got a Hello from %s@s '%s'", hello->name, hello->ip, hello->alias));
 
@@ -2137,7 +2137,6 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 
 	oldSlot = endpointSlotGet(ep);
 	// LmtHello
-	LM_M(("Old endpoint slot: %d for '%s' endpoint", oldSlot, endpoint[ME]->typeName((ss::Endpoint::Type) hello->type)));
 
 	if (hello->type == Endpoint::Controller)             newSlot = 2;
 	else if (hello->type == Endpoint::Supervisor)        newSlot = 3;
@@ -2156,6 +2155,8 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 
 		LM_M(("Slot to use for spawner: %d", newSlot));
 	}
+
+	LM_M(("Old endpoint slot: %d for '%s' endpoint. New slot: %d", oldSlot, endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), newSlot));
 
 	// LmtHello
 	LM_T(LmtHello, ("This endpoint is of type '%s', use endpoint slot %d", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), newSlot));

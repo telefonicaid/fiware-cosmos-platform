@@ -34,6 +34,7 @@ char             alias[36];
 bool             noLog;
 bool             local;
 char			 workingDir[1024]; 	
+bool             notdaemon;
 
 
 
@@ -45,13 +46,14 @@ char			 workingDir[1024];
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaReq,   PaND,   PaNL,   PaNL,  "controller IP:port"  },
-	{ "-alias",       alias,       "ALIAS",       PaString,  PaReq,   PaND,   PaNL,   PaNL,  "alias"               },
-	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,     80,      3,    100,  "number of endpoints" },
-	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,      1,      1,    100,  "number of workers"   },
-	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt,  false,  false,   true,  "no logging"          },
-	{ "-local",      &local,       "LOCAL",       PaBool,    PaOpt,  false,  false,   true,  "local execution"     },
-	{ "-working",     workingDir,  "WORKING",     PaString,  PaOpt, DEF_WD,   PaNL,   PaNL,  "working directory"   },
+	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaReq,   PaND,   PaNL,   PaNL,  "controller IP:port"    },
+	{ "-alias",       alias,       "ALIAS",       PaString,  PaReq,   PaND,   PaNL,   PaNL,  "alias"                 },
+	{ "-notdaemon",  &notdaemon,   "NOT_DAEMON",  PaBool,    PaOpt,  false,  false,   true,  "don't start as daemon" },
+	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,     80,      3,    100,  "number of endpoints"   },
+	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,      1,      1,    100,  "number of workers"     },
+	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt,  false,  false,   true,  "no logging"            },
+	{ "-local",      &local,       "LOCAL",       PaBool,    PaOpt,  false,  false,   true,  "local execution"       },
+	{ "-working",     workingDir,  "WORKING",     PaString,  PaOpt, DEF_WD,   PaNL,   PaNL,  "working directory"     },
 
 	PA_END_OF_ARGS
 };
@@ -72,8 +74,6 @@ int logFd = -1;
 */
 int main(int argC, const char *argV[])
 {
-	daemonize();
-
 	paConfig("prefix",                        (void*) "SSW_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
@@ -88,6 +88,9 @@ int main(int argC, const char *argV[])
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
+
+	if (notdaemon == false)
+		daemonize();
 
 	logFd = lmFirstDiskFileDescriptor();
 

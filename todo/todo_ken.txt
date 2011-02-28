@@ -2,7 +2,7 @@ NOW
   o Add semaphore around jobQueue
   o Add semaphore around send
   o Test etc/samson in torkel /etc/init.d
-
+  o LogTab - if a filter is active, consult the filter before inserting line !
 
 
 ------------------------------------------------------------------------------------------------------------------------

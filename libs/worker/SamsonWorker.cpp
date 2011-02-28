@@ -286,13 +286,13 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 							size_t _load_id = atoll( file_name.substr(14 , pos).c_str() );
 							if( load_id.find(_load_id ) == load_id.end() )
 							{
-								LM_M(("Removing file %s since the id (%lu) is not in the list of active load operations (size:%d)", file_name.c_str() , _load_id , load_id.size() ));
+								//LM_M(("Removing file %s since the id (%lu) is not in the list of active load operations (size:%d)", file_name.c_str() , _load_id , load_id.size() ));
 								remove_files.insert( path );
 							}
 						}
 						else
 						{
-							LM_M(("Remove file %s since it is not in any queue", file_name.c_str()));
+							//LM_M(("Remove file %s since it is not in any queue", file_name.c_str()));
 							remove_files.insert( path );
 						}
 					}

@@ -7,12 +7,13 @@ SET (HEADERS
 
 SET (LIBS
     samsonNetwork
-    samsonCommon
     samsonMemory
     pa
     lm
     pthread
     protobuf
+    samsonCommon
+
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")

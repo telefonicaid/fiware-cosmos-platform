@@ -89,15 +89,17 @@ SET (HEADERS
 )
 
 SET (LIBS
+	delilahLib 
 	samsonNetwork 
 	samsonMemory
 	samsonCommon
-	delilahLib 
+	z
 	pa 
 	lm 
 	readline 
 	pthread
 	protobuf
+
 )
 
 SET (RESOURCES

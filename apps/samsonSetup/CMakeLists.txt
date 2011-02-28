@@ -6,10 +6,10 @@ SET (HEADERS
 )
 
 SET( STATIC_LIBS
-     samsonNetwork
      samsonCore
-     samsonCommon
      samsonMemory
+     samsonNetwork
+     samsonCommon
      protobuf
      pthread
      dl

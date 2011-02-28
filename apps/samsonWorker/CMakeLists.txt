@@ -36,10 +36,6 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/process")
 
-
-link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
-link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
-
 # SAMSON Executable
 ADD_EXECUTABLE(samsonWorker ${SOURCES} ${HEADERS})
 TARGET_LINK_LIBRARIES(samsonWorker ${LIBS})

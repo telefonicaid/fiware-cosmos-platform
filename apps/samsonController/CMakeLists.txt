@@ -11,9 +11,7 @@ samsonControllerLib
 samsonProcess
 samsonNetwork
 samsonCore
-samsonCommon
 samsonMemory
-samsonDataLib
 samsonDisk
 pa
 lm
@@ -21,6 +19,8 @@ protobuf
 pthread
 dl
 readline
+samsonDataLib
+samsonCommon
 )
 
 # Include directories
@@ -35,7 +35,6 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 include_directories("${PROJECT_SOURCE_DIR}/libs/controller")
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
-include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 

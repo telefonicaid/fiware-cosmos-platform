@@ -6,9 +6,7 @@ SET (HEADERS
 )
 
 SET (STATIC_LIBS
-     samsonNetwork
      samsonCore
-     samsonCommon
      samsonMemory
      delilahLib
      pa
@@ -18,6 +16,8 @@ SET (STATIC_LIBS
      dl
      curses
      readline
+     samsonNetwork
+     samsonCommon	 
 )
 
 # Include directories

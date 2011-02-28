@@ -15,13 +15,13 @@ SET( STATIC_LIBS
 samsonWorkerLib
 samsonControllerLib
 delilahLib
-samsonCommon
 samsonCore
 samsonDataLib
 samsonDisk
 samsonMemory
-samsonNetwork
 samsonProcess
+samsonNetwork
+samsonCommon
 lm
 pa
 protobuf

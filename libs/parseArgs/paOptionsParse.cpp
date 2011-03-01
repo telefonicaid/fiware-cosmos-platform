@@ -219,6 +219,7 @@ static int sListFix(char** sV, char* s, int* error)
 	long   ix   = 0;
 
 	LM_T(LmtPaSList, ("incoming list: '%s'", s));
+	LM_T(LmtPaSList, ("list vector at %p", sV));
 	baWsStrip(s);
 
 	while ((unsigned long) tmP < (unsigned long) endP)
@@ -232,7 +233,7 @@ static int sListFix(char** sV, char* s, int* error)
 		if (tmP == NULL) /* last argument */
 		{
 			sV[ix + 1] = s;
-			LM_T(LmtPaSList, ("item %d in string-list: '%s'", ix + 1, sV[ix + 1]));
+			LM_T(LmtPaSList, ("item %d in string-list: '%s' (pointer at %p)", ix + 1, sV[ix + 1], sV[ix + 1]));
 			++ix;
 			sV[0] = (char*) ix;
 			break;

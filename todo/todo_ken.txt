@@ -1,9 +1,12 @@
 NOW
+  o Non-graphical Executable to create the initial workerVec - change the name to 'samsonPlatformProcesses'
+  o Remove dead code (endpointAddController, etc.)
+  o Remove all '-port' options - ports are defined in common/ports.h !
   o Add semaphore around jobQueue
   o Add semaphore around send
   o Test etc/samson in torkel /etc/init.d
   o LogTab - if a filter is active, consult the filter before inserting line !
-
+  o Stop using 'Worker' use 'Process'
 
 ------------------------------------------------------------------------------------------------------------------------
 BUGS
@@ -68,7 +71,6 @@ NEW FEATURES
 ------------------------------------------------------------------------------------------------------------------------
 
 REFACTORING AND CLEANUP
-  o Remove all '-port' options - ports are defined in common/ports.h !
   o Get rid of all Endpoint::Temporal
   o EndpointMgr for Network
   o Refactoring of NetworkInterface - the whole callback story ...

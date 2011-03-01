@@ -28,7 +28,6 @@
 * Option variables
 */
 int              endpoints;
-int              workers;
 char             controller[80];
 char             alias[36];
 bool             noLog;
@@ -50,7 +49,6 @@ PaArgument paArgs[] =
 	{ "-alias",       alias,       "ALIAS",       PaString,  PaReq,   PaND,   PaNL,   PaNL,  "alias"                 },
 	{ "-notdaemon",  &notdaemon,   "NOT_DAEMON",  PaBool,    PaOpt,  false,  false,   true,  "don't start as daemon" },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,     80,      3,    100,  "number of endpoints"   },
-	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,      1,      1,    100,  "number of workers"     },
 	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt,  false,  false,   true,  "no logging"            },
 	{ "-local",      &local,       "LOCAL",       PaBool,    PaOpt,  false,  false,   true,  "local execution"       },
 	{ "-working",     workingDir,  "WORKING",     PaString,  PaOpt, DEF_WD,   PaNL,   PaNL,  "working directory"     },
@@ -108,7 +106,7 @@ int main(int argC, const char *argV[])
 
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
-	ss::Network network(ss::Endpoint::Worker, alias, WORKER_PORT, endpoints, workers);
+	ss::Network network(ss::Endpoint::Worker, alias, WORKER_PORT, endpoints, 1);
 	network.hostMgr->insert(controller, NULL);
 	network.init(controller);
 
@@ -119,13 +117,6 @@ int main(int argC, const char *argV[])
 		sleep(1);
 
 	LM_T(LmtInit, ("Network OK"));
-	
-	// This is only necessary when running multiple samson workers as separate processes in the same machine
-	if (local)
-	{
-		int worker_id = atoi(&alias[6]);
-		ss::MemoryManager::shared()->setOtherSharedMemoryAsMarked(worker_id, workers);
-	}
 	
 	// Instance of SamsonWorker object (network contains at least the number of wokers)
 	// -----------------------------------------------------------------------------------

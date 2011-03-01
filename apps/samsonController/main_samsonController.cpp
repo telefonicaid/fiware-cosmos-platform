@@ -13,8 +13,8 @@
 
 #include "parseArgs.h"          // parseArgs
 
-#include "ports.h"              // WORKER_PORT
-#include "samsonDirectories.h"  // SAMSON_SETUP_FILE
+#include "ports.h"              // CONTROLLER_PORT
+#include "samsonDirectories.h"  // SAMSON_PLATFORM_PROCESSES
 #include "SamsonController.h"	// ss::SamsonController
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "MemoryManager.h"		// ss::MemoryManager
@@ -30,29 +30,25 @@
 *
 * Option variables
 */
-unsigned short   port;
 int              endpoints;
-int              workers;
 char			 workingDir[1024];
-char			 workerVecFile[1024];
+char			 ppFile[1024];
 bool             notdaemon;
 
 
 
 #define DEF_WD   _i SAMSON_DEFAULT_WORKING_DIRECTORY
-#define DEF_WF   _i "/opt/samson/etc/workerVec"
+#define DEF_WF   _i SAMSON_PLATFORM_PROCESSES
 /* ****************************************************************************
 *
 * parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-working",        workingDir,    "WORKING",         PaString, PaOpt, DEF_WD,  PaNL,  PaNL, "Working directory"     },
-	{ "-workerVecFile",  workerVecFile, "WORKERS_FILE",    PaString, PaOpt, DEF_WF,  PaNL,  PaNL, "WorkerVec file"        },
-	{ "-port",          &port,          "PORT",            PaShortU, PaOpt,   1234,  1025, 65000, "listen port"           },
-	{ "-endpoints",     &endpoints,     "ENDPOINTS",       PaInt,    PaOpt,     80,     3,   100, "number of endpoints"   },
-	{ "-workers",       &workers,       "WORKERS",         PaInt,    PaOpt,      1,     1,   100, "number of workers"     },
-	{ "-notdaemon",     &notdaemon,     "NOT_DAEMON",      PaBool,   PaOpt,  false, false,  true, "don't start as daemon" },
+	{ "-working",     workingDir,    "WORKING",                  PaString, PaOpt, DEF_WD,  PaNL,  PaNL, "working directory"       },
+	{ "-ppFile",      ppFile,        "PLATFORM_PROCESSES_FILE",  PaString, PaOpt, DEF_WF,  PaNL,  PaNL, "platform processes file" },
+	{ "-endpoints",  &endpoints,     "ENDPOINTS",                PaInt,    PaOpt,     80,     3,   100, "number of endpoints"     },
+	{ "-notdaemon",  &notdaemon,     "NOT_DAEMON",               PaBool,   PaOpt,  false, false,  true, "don't start as daemon"   },
 
 	PA_END_OF_ARGS
 };
@@ -88,10 +84,10 @@ void workerVecSave(void)
 		  sizeof(workerVec->workerV[0]),
 		  sizeof(ss::Message::WorkerVectorData) + workerVec->workers * sizeof(workerVec->workerV[0])));
 
-	if ((fd = open(workerVecFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU)) == -1)
-		LM_RVE(("open-for-writing(%s): %s", workerVecFile, strerror(errno)));
-	if (chmod(workerVecFile, 0744) != 0)
-		LM_E(("Error setting permissions on '%s': %s", workerVecFile, strerror(errno)));
+	if ((fd = open(ppFile, O_WRONLY | O_CREAT | O_TRUNC, 0744)) == -1)
+		LM_RVE(("open-for-writing(%s): %s", ppFile, strerror(errno)));
+	if (chmod(ppFile, 0744) != 0)
+		LM_E(("Error setting permissions on '%s': %s", ppFile, strerror(errno)));
 
 	buf  = (char*) workerVec;
 	tot  = 0;
@@ -102,14 +98,14 @@ void workerVecSave(void)
 		if (nb == -1)
 		{
 			close(fd);
-			unlink(workerVecFile);
-			LM_RVE(("write(%d bytes to '%s'): %s", workerVecSize - tot, workerVecFile, strerror(errno)));
+			unlink(ppFile);
+			LM_RVE(("write(%d bytes to '%s'): %s", workerVecSize - tot, ppFile, strerror(errno)));
 		}
 		else if (nb == 0)
 		{
 			close(fd);
-			unlink(workerVecFile);
-			LM_RVE(("write(ZERO bytes to '%s'): %s", workerVecFile, strerror(errno)));
+			unlink(ppFile);
+			LM_RVE(("write(ZERO bytes to '%s'): %s", ppFile, strerror(errno)));
 		}
 
 		tot += nb;
@@ -117,8 +113,8 @@ void workerVecSave(void)
 
 	close(fd);
 	
-	if (chmod(workerVecFile, S_IRWXU) != 0)
-		LM_E(("chmod(%s): %s", workerVecFile, strerror(errno)));
+	if (chmod(ppFile, 0744) != 0)
+		LM_E(("chmod(%s): %s", ppFile, strerror(errno)));
 }
 
 
@@ -140,74 +136,28 @@ static void workerVecGet(void)
 
 	LM_T(LmtWorkerVector, ("Retrieving Worker Vector"));
 
-	if ((fd = open(workerVecFile, O_RDONLY)) == -1)
+	if ((fd = open(ppFile, O_RDONLY)) == -1)
+		LM_X(1, ("error opening samson platform processes file '%s': %s", ppFile, strerror(errno)));
+	else if ((s = stat(ppFile, &statBuf)) == -1)
 	{
-		if (errno != ENOENT)
-			LM_E(("open-for-reading(%s): %s - this is OK iff file-doesn't-exist", workerVecFile, strerror(errno)));
-		else
-			seriousError = false;
-	}
-	else if ((s = stat(workerVecFile, &statBuf)) == -1)
-	{
-		LM_E(("stat(%s): %s", workerVecFile, strerror(errno)));
+		LM_E(("stat(%s): %s", ppFile, strerror(errno)));
 		seriousError = true;
 	}
 
-	if (chmod(workerVecFile, 0744) != 0)
+	if (chmod(ppFile, 0744) != 0)
 	{
 		seriousError = true;
         if (errno != ENOENT)
-			LM_E(("Error setting permissions on '%s': %s", workerVecFile, strerror(errno)));
+			LM_E(("Error setting permissions on '%s': %s", ppFile, strerror(errno)));
 		else
 			seriousError = false;
 	}
 
 	if ((s == -1) || (fd == -1) || (statBuf.st_size == 0))
-	{
-		if (seriousError == true)
-		{
-			LM_W(("Problems with config file '%s' - using %d empty workers (according to command line options)", workerVecFile, workers));
-			LM_W(("This just might be a serious problem. Perhaps I should enter a 'semi sleep' mode, until samsonSupervisor sends info on worker vector (like 'first start')"));
-			LM_W(("At least, the number of workers came from command line came from samsonSupervisor (supposing that the cpontroller wasn't started by hand ...)"));
-		}
-
-		if (fd != -1)
-			close(fd);
-
-		if ((fd = open(workerVecFile, O_WRONLY | O_CREAT)) == -1)
-			LM_X(1, ("open-for-writing(%s): %s", workerVecFile, strerror(errno)));
-		if (chmod(workerVecFile, 0744) != 0)
-			LM_E(("Error setting permissions on '%s': %s", workerVecFile, strerror(errno)));
-
-		LM_T(LmtWorkerVector, ("Inventing Worker Vector with %d workers (number came from command line options)", workers));
-
-		workerVecSize = sizeof(ss::Message::WorkerVectorData) + workers * sizeof(ss::Message::Worker);
-		workerVec     = (ss::Message::WorkerVectorData*) malloc(workerVecSize);
-
-		if (workerVec == NULL)
-			LM_X(1, ("error allocating room for Worker Vector (%s bytes): %s", workerVecSize, strerror(errno)));
-
-		memset(workerVec, 0, workerVecSize);
-		workerVec->workers = workers;
-		LM_T(LmtWorkerVector, ("Using global option variable 'workers' to decide how many workers I use: %d workers", workers));
-
-		for (int ix = 0; ix < workerVec->workers; ix++)
-		{
-			ss::Message::Worker* worker = &workerVec->workerV[ix];
-
-			snprintf(worker->name, sizeof(worker->name),   "Worker");
-			snprintf(worker->alias, sizeof(worker->alias), "Worker%02d", ix);
-
-			worker->port  = WORKER_PORT;
-			worker->state = ss::Endpoint::FutureWorker;
-		}
-
-		workerVecSave();
-		close(fd);
-	}
+		LM_X(1, ("problems with samson platform processes file '%s'", ppFile));
 	else
 	{
-		LM_T(LmtWorkerVector, ("Retrieving worker vec data from file '%s'", workerVecFile));
+		LM_T(LmtWorkerVector, ("Retrieving worker vec data from file '%s'", ppFile));
 
 		fileSize = statBuf.st_size;
 		buf      = (char*) calloc(1, fileSize);
@@ -221,9 +171,9 @@ static void workerVecGet(void)
 		{
 			nb = read(fd, &buf[tot], fileSize - tot);
 			if (nb == -1)
-				LM_X(1, ("Error reading from worker vector file '%s': %s", workerVecFile, strerror(errno)));
+				LM_X(1, ("Error reading from worker vector file '%s': %s", ppFile, strerror(errno)));
 			else if (nb == 0)
-				LM_X(1, ("Error reading from worker vector file '%s'", workerVecFile));
+				LM_X(1, ("Error reading from worker vector file '%s'", ppFile));
 
 			tot += nb;
 		}
@@ -231,12 +181,6 @@ static void workerVecGet(void)
 		workerVec      = (ss::Message::WorkerVectorData*) buf;
 		workerVecSize  = sizeof(ss::Message::WorkerVectorData) + workerVec->workers * sizeof(ss::Message::Worker);
 
-		if (workers != workerVec->workers)
-		{
-			LM_T(LmtWorkerVector, ("Changing global variable workers from %d to %d", workers, workerVec->workers));
-			workers = workerVec->workers;
-		}
-		
 		LM_T(LmtWorkerVector, ("file size: %d", fileSize));
 		LM_T(LmtWorkerVector, ("%d workers, each of a size of %d => %d + %d * %d == %d",
 			  workerVec->workers,
@@ -247,9 +191,9 @@ static void workerVecGet(void)
 			  sizeof(ss::Message::WorkerVectorData) + workerVec->workers * sizeof(workerVec->workerV[0])));
 
 		if (workerVecSize != fileSize)
-			LM_X(1, ("Size of file '%s' (%d bytes) does not match the size of a Worker Vector of %d workers: %d bytes", workerVecFile, fileSize, workerVec->workers, workerVecSize));
+			LM_X(1, ("Size of file '%s' (%d bytes) does not match the size of a Worker Vector of %d workers: %d bytes", ppFile, fileSize, workerVec->workers, workerVecSize));
 
-		LM_T(LmtInit, ("Read Workers from '%s' - got %d workers", workerVecFile, workerVec->workers));
+		LM_T(LmtInit, ("Read Workers from '%s' - got %d workers", ppFile, workerVec->workers));
 		close(fd);
 
 		LM_T(LmtWorkerVector, ("Got %d workers", workerVec->workers));
@@ -283,13 +227,13 @@ int main(int argC, const char* argV[])
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
-	if (notdaemon == false)
-		daemonize();
-
 	LM_T(LmtInit, ("ss::Message::WorkerVectorData: %d", sizeof(ss::Message::WorkerVectorData)));
 	workerVecGet();
 
 	LM_T(LmtInit, ("%d workers", workerVec->workers));
+
+	if (notdaemon == false)
+		daemonize();
 
 	au::LockDebugger::shared();         // Lock usage debugging (necessary here where there is only one thread)
 	ss::SamsonSetup::load(workingDir);  // Load setup and create all directories
@@ -301,7 +245,7 @@ int main(int argC, const char* argV[])
 	
 	// Instance of network object and initialization
 	// ---------------------------------------------
-	ss::Network network(ss::Endpoint::Controller, "Controller", port, endpoints, workers);
+	ss::Network network(ss::Endpoint::Controller, "Controller", CONTROLLER_PORT, endpoints, workerVec->workers);
 
 	network.initAsSamsonController();
 	network.workerVecSet(workerVec, workerVecSize, workerVecSave);

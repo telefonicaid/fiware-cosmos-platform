@@ -1,5 +1,5 @@
 SET (SOURCES
-    main_SamsonSetup.cpp
+    main_SamsonCheck.cpp
 )
 
 SET (HEADERS
@@ -37,9 +37,9 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/process")
 # SAMSON Executable
 # -----------------------------------------------------------
 
-ADD_EXECUTABLE(samsonSetup ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonSetup ${STATIC_LIBS})
+ADD_EXECUTABLE(samsonCheck ${SOURCES} ${HEADERS} )
+TARGET_LINK_LIBRARIES(samsonCheck ${STATIC_LIBS})
 
-INSTALL(TARGETS               samsonSetup
+INSTALL(TARGETS               samsonCheck
         RUNTIME DESTINATION   bin)
 

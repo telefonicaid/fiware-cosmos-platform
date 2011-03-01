@@ -38,6 +38,7 @@ char* traceLevelName(TraceLevels level)
 	case LmtEndpoint:                    return (char*) "Endpoint";
 	case LmtEndpoints:                   return (char*) "Endpoints";
 	case LmtEndpointUpdate:              return (char*) "Updating an Endpoint";
+	case LmtEndpointSlots:               return (char*) "Endpoint Slots";
 	case LmtTemporalEndpoint:            return (char*) "Temporal Endpoints";
 
 	case LmtModuleManager:				 return (char*) "ModuleManager";

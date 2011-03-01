@@ -16,9 +16,10 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace levels
 
+#include "samsonDirectories.h"  // SAMSON_IMAGES
+#include "ports.h"              // WORKER_PORT
 #include "Process.h"            // Process
 #include "Message.h"            // Worker
-#include "ports.h"              // WORKER_PORT
 
 
 
@@ -49,9 +50,9 @@ PaArgument paArgs[] =
 *
 * Global variables
 */
-int         logFd                 = -1;
-const char* EtcDirPath            = "/opt/samson/etc";
-const char* PlatformProcessesPath = "/opt/samson/etc/samsonPlatformProcesses";
+int         logFd                  = -1;
+const char* EtcDirPath             = SAMSON_ETC;
+const char* PlatformProcessesPath  = SAMSON_PLATFORM_PROCESSES;
 
 
 

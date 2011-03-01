@@ -1,8 +1,10 @@
 SET (SOURCES
     main_samsonSpawner.cpp
+	processList.cpp
 )
 
 SET (HEADERS
+	processList.h
 )
 
 SET (LIBS

@@ -11,6 +11,19 @@
 
 
 
+/* ****************************************************************************
+*
+* Directories
+*/
+#define SAMSON_ETC     "/opt/samson/etc"
+#define SAMSON_IMAGES  "/opt/samson/config/images"
 
+
+
+/* ****************************************************************************
+*
+* Files
+*/
+#define SAMSON_PLATFORM_PROCESSES "/opt/samson/etc/samsonPlatformProcesses"
 
 #endif

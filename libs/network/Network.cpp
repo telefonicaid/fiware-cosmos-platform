@@ -472,9 +472,6 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 	hello.coreNo   = endpoint[ME]->coreNo;
 	hello.workerId = endpoint[ME]->workerId;
 
-	if (endpoint[ME]->type == Endpoint::Worker)
-		LM_M(("My workerId: '%d' (alias: '%s')", hello.workerId, endpoint[ME]->aliasGet()));
-
 	LM_T(LmtWrite, ("sending hello %s to '%s' (name: '%s', type: '%s')", messageType(type), ep->name.c_str(), hello.name, endpoint[ME]->typeName()));
 
 	return iomMsgSend(ep, endpoint[ME], Message::Hello, type, &hello, sizeof(hello));
@@ -1034,7 +1031,6 @@ static void endpointFill(Endpoint* ep, Endpoint* inheritedFrom, int rFd, int wFd
 */
 Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
 {
-	LM_M(("***********************************************"));
 	if (endpoint[CONTROLLER] == NULL)
 	{
 		LM_T(LmtInit, ("Allocating room for Controller endpoint"));
@@ -1058,7 +1054,6 @@ Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, con
 */
 Endpoint* Network::endpointAddSupervisor(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
 {
-	LM_M(("***********************************************"));
 	if (endpoint[SUPERVISOR] == NULL)
 		endpoint[SUPERVISOR] = new Endpoint();
 
@@ -1079,8 +1074,6 @@ Endpoint* Network::endpointAddSupervisor(int rFd, int wFd, const char* name, con
 Endpoint* Network::endpointAddTemporal(int rFd, int wFd, const char* name, const char* alias, std::string ip, Endpoint* inheritedFrom)
 {
 	int ix;
-
-	LM_M(("***********************************************"));
 
 	for (ix = Endpoints - 1; ix >= FIRST_WORKER + Workers; ix--)
 	{
@@ -1111,8 +1104,6 @@ Endpoint* Network::endpointAddTemporal(int rFd, int wFd, const char* name, const
 Endpoint* Network::endpointAddDefault(int rFd, int wFd, const char* name, const char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
 {
 	int ix;
-
-	LM_M(("***********************************************"));
 
 	for (ix = FIRST_WORKER + Workers; ix < (int) (Endpoints - 1); ix++)
 	{
@@ -1146,8 +1137,6 @@ Endpoint* Network::endpointAddDefault(int rFd, int wFd, const char* name, const 
 */
 Endpoint* Network::coreWorkerEndpointAdd(int rFd, int wFd, const char* name, const char* alias)
 {
-	LM_M(("***********************************************"));
-
 	if (endpoint[CONTROLLER] == NULL)
 		LM_X(1, ("controller == NULL"));
 
@@ -1169,8 +1158,6 @@ Endpoint* Network::endpointAddWorker(const char* why, int rFd, int wFd, const ch
 {
 	int      ix;
 	Endpoint rejected;
-
-	LM_M(("***********************************************"));
 
 	if (endpoint[ME]->type == Endpoint::CoreWorker)
 		return coreWorkerEndpointAdd(rFd, wFd, name, alias);
@@ -1285,8 +1272,6 @@ Endpoint* Network::endpointAdd
 
 	if (inheritedFrom != NULL)
 		LM_T(LmtEndpoint, ("%s: '%s' inherits from '%s' (old endpoint: %p)", why, name, inheritedFrom->name.c_str(), inheritedFrom));
-
-	LM_M(("***********************************************"));
 
 	switch (type)
 	{
@@ -2146,9 +2131,9 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 	LM_T(LmtHello, ("Current endpoint '%s@%s' is of type '%s'", ep->name.c_str(), ep->ip, ep->typeName()));
 
 	if (hello->type == Endpoint::Worker)
-		LM_M(("Got a Hello from Worker %s@%s '%s' with workerId %d", hello->name, hello->ip, hello->alias, hello->workerId));
+		LM_T(LmtHello, ("Got a Hello from Worker %s@%s '%s' with workerId %d", hello->name, hello->ip, hello->alias, hello->workerId));
 	else
-		LM_M(("Got a Hello from %s@%s '%s'", hello->name, hello->ip, hello->alias));
+		LM_T(LmtHello, ("Got a Hello from %s@%s '%s'", hello->name, hello->ip, hello->alias));
 
 	endpointListShow("helloReceived");
 
@@ -2163,32 +2148,32 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 		LM_X(1, ("Unexpected type '%s'", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type)));
 	
 	if (hello->type == Endpoint::Worker)
-		LM_M(("Worker: newSlot: %d", newSlot));
+		LM_T(LmtEndpointSlots, ("Worker: newSlot: %d", newSlot));
 
 	if (hello->type == Endpoint::Spawner)
 	{
 		while (endpoint[newSlot] != NULL)
 			++newSlot;
 
-		LM_M(("Slot to use for spawner: %d", newSlot));
+		LM_T(LmtEndpointSlots, ("Slot to use for spawner: %d", newSlot));
 	}
 
-	LM_M(("Old endpoint slot: %d for '%s' endpoint. New slot: %d", oldSlot, endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), newSlot));
+	LM_T(LmtEndpointSlots, ("Old endpoint slot: %d for '%s' endpoint. New slot: %d", oldSlot, endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), newSlot));
 
 	// LmtHello
-	LM_T(LmtHello, ("This endpoint is of type '%s', use endpoint slot %d", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), newSlot));
+	LM_T(LmtEndpointSlots, ("This endpoint is of type '%s', use endpoint slot %d", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), newSlot));
 
 	if (endpoint[newSlot] != NULL)
 		LM_TODO(("Endpoint Slot %d was occupied - please make sure this doesn't happen!", newSlot));
 	
-	if (hello->type == Endpoint::Supervisor || hello->type == Endpoint::Worker)
+	if ((oldSlot != newSlot) && (hello->type == Endpoint::Supervisor || hello->type == Endpoint::Worker))
 	{
-		LM_M(("So, make slot %d NULL and use slot %d to reference this endpoint", oldSlot, newSlot));
+		LM_T(LmtEndpointSlots, ("So, make slot %d NULL and use slot %d to reference this endpoint", oldSlot, newSlot));
 		endpoint[oldSlot] = NULL;
 		endpoint[newSlot] = ep;
 	}
 	else
-        LM_M(("NOT changing %s (%s@%s) from slot %d to slot %d", hello->alias, hello->name, hello->ip, oldSlot, newSlot));
+        LM_T(LmtEndpointSlots, ("NOT changing %s (%s@%s) from slot %d to slot %d", hello->alias, hello->name, hello->ip, oldSlot, newSlot));
 
 	helloInfoCopy(ep, hello);
 	ep->helloReceived = true;
@@ -2203,10 +2188,8 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 
 	checkAllWorkersConnected();
 
-#if 1
 	if (endpointUpdateReceiver != NULL)
 		endpointUpdateReceiver->endpointUpdate(ep, Endpoint::HelloReceived, "Hello Received");
-#endif
 
 	 LM_T(LmtHello, ("---------------------------------------------------------------------------------------------------------"));
 }

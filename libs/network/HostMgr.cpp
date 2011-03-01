@@ -204,9 +204,6 @@ Host* HostMgr::insert(const char* name, const char* ip)
 			ip2string(*((int*) heP->h_addr_list[ix]), ipX, sizeof(ipX));
 			ip = ipX; 
 
-			LM_M(("IP address for '%s': %s", heP->h_name, ip));
-
-
 			while (heP->h_aliases[ix] != NULL)
 			{
 				LM_W(("alias %d: '%s' - should be added also", ix, heP->h_aliases[ix]));

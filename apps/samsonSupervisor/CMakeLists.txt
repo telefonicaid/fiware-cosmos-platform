@@ -2,7 +2,7 @@ find_package(Qt4 COMPONENTS QtCore QtGui QtSvg REQUIRED )
 INCLUDE(${QT_USE_FILE})
 
 SET (SOURCES
-	   main_samsonSupervisor.cpp
+	main_samsonSupervisor.cpp
 	SamsonSupervisor.cpp
 	baTerm.cpp
 	processList.cpp
@@ -18,7 +18,6 @@ SET (SOURCES
 	ConfigTab.cpp
 	OldMrOperationsTab.cpp
 	
-	configFile.cpp
 	Popup.cpp
 	misc.cpp
 	DelilahSceneItem.cpp
@@ -71,7 +70,6 @@ SET (HEADERS
 	spawnerList.h
 	starterList.h
 	globals.h
-	configFile.h
 	misc.h
 	DelilahSceneItem.h
 	DelilahQueue.h

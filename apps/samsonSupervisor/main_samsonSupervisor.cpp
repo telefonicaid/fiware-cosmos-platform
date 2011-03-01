@@ -32,8 +32,9 @@
 #include "traceLevels.h"        // Trace Levels
 #include "parseArgs.h"          // parseArgs
 
-#include "iomConnect.h"         // iomConnect
+#include "samsonDirectories.h"  // SAMSON_IMAGES
 #include "ports.h"              // LOG_SERVER_PORT
+#include "iomConnect.h"         // iomConnect
 #include "Endpoint.h"           // Endpoint
 #include "Network.h"            // Network
 
@@ -41,7 +42,6 @@
 #include "Popup.h"              // Popup
 #include "processList.h"        // processListInit
 #include "starterList.h"        // starterListInit
-#include "configFile.h"         // configFileParse
 
 #include "TabManager.h"         // TabManager
 #include "ConnectionMgr.h"      // ConnectionMgr
@@ -109,14 +109,12 @@ char    imageDir[128];
 bool    kz;
 bool    andreu;
 bool    usecss;
-int     workers;
 bool    noPopups;
 
 
 
-#define CFP (long int)  "/opt/samson/etc/platformProcesses"
 #define LOC  (long int) "localhost"
-#define IMD  (long int) "/opt/samson/config/images"
+#define IMD  (long int) SAMSON_IMAGES
 /* ****************************************************************************
 *
 * Parse arguments
@@ -125,7 +123,6 @@ PaArgument paArgs[] =
 {
 	{ "-controller",  controllerHost,  "CONTROLLER",    PaString,  PaOpt,   LOC,  PaNL,   PaNL,  "controller IP"       },
 	{ "-imageDir",    imageDir,        "IMAGE_DIR",     PaString,  PaOpt,   IMD,  PaNL,   PaNL,  "image directory"     },
-	{ "-workers",     &workers,        "WORKERS",       PaInt,     PaOpt,     1,     1,     20,  "number of workers"   },
 	{ "-kz",          &kz,             "KZ_LOGIN",      PaBool,    PaHid, false, false,   true,  "login as 'kz'"       },
 	{ "-andreu",      &andreu,         "ANDREU_LOGIN",  PaBool,    PaHid, false, false,   true,  "login as 'andreu'"   },
 	{ "-usecss",      &usecss,         "USE_CSS",       PaBool,    PaHid, false, false,   true,  "use css"             },
@@ -430,7 +427,6 @@ int main(int argC, const char *argV[])
 
 	parseArgs(argC, (char**) argV);
 	userInit();
-	configFileInit("/opt/samson/etc/platformProcesses");
 	processListInit(20);
 	starterListInit(30);
 	networkPrepare();

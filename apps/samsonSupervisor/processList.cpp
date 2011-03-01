@@ -153,7 +153,7 @@ ss::Process* processAdd
 	processP->type       = type;
 	processP->port       = port;
 	processP->endpoint   = endpoint;
-	processP->workers    = workers;   // Parseargs variable
+	processP->workers    = networkP->Workers;
 	processP->sendsLogs  = false;
 
 	if (alias != NULL)

@@ -10,6 +10,8 @@
 * CREATION DATE            Jan 07 2011
 *
 */
+#include <sys/types.h>          // pid_t
+#include <sys/time.h>           // struct timeval
 
 
 
@@ -64,12 +66,16 @@ typedef struct Process
 	char                 traceLevels[256];
 	bool                 sendsLogs;
 	int                  workers;
-	char                 controllerHost[32];
 
-	ss::ProcessType      type;
-	ss::Endpoint*        endpoint;
-	Starter*             starterP;     // QT stuff
-	struct ss::Process*  spawnerP;     // The process to contact to start me
+	char                 controllerHost[32];  // For Supervisor and Spawner
+
+	pid_t                pid;                 // For Spawner
+	struct timeval       startTime;           // For Spawner
+
+	ss::ProcessType      type;                // For ...
+	ss::Endpoint*        endpoint;            // For ...
+	Starter*             starterP;            // For Supervisor only
+	struct ss::Process*  spawnerP;            // For Supervisor only
 } Process;
 
 }

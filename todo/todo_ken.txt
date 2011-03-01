@@ -1,13 +1,11 @@
 NOW
-  o Non-graphical Executable to create the initial workerVec - change the name to 'samsonPlatformProcesses'
-  o Remove dead code (endpointAddController, etc.)
-  o Remove all '-port' options - ports are defined in common/ports.h !
+  o Remove -workers option from Supervisor and Controller
   o Add semaphore around jobQueue
   o Add semaphore around send
   o Test etc/samson in torkel /etc/init.d
   o LogTab - if a filter is active, consult the filter before inserting line !
   o Stop using 'Worker' use 'Process'
-
+  o Move workerVecGet and workerVecSet to separate library, used in controller and in samsonSetup
 ------------------------------------------------------------------------------------------------------------------------
 BUGS
   o Annoying '-' at the end of the progName in samsonSpawner ...
@@ -71,8 +69,15 @@ NEW FEATURES
 ------------------------------------------------------------------------------------------------------------------------
 
 REFACTORING AND CLEANUP
+  o Network.cpp
+    - EndpointMgr
+    - LogHookMgr
+    - Messages (helloSend/Received, logFileSend, ...)
+    - SenderThread
+    - WorkerVector
+    - Postponed Jobs
+
   o Get rid of all Endpoint::Temporal
-  o EndpointMgr for Network
   o Refactoring of NetworkInterface - the whole callback story ...
   o DelilahTab: Stop using 'QueueMgr', 'SourceMgr' and 'ResultMgr' - use the one and only 'SceneItemMgr'
     - will need to add a few methods from SQR managers to SceneItemMgr, I guess ...

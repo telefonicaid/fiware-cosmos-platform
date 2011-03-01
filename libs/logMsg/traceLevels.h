@@ -39,6 +39,7 @@ typedef enum TraceLevels
 	LmtEndpoint,
 	LmtEndpoints,
 	LmtEndpointUpdate,
+	LmtEndpointSlots,
 	LmtTemporalEndpoint,
 
 	LmtSpawnerList,

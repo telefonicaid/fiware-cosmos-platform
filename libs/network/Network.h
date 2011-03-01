@@ -109,7 +109,10 @@ public:
 
 	void         msgPreTreat(Endpoint* ep, int endpointId);
 	void         msgTreat(void* vP);
+	int          msgTreatConnectionClosed(Endpoint* ep, int s);
 	void         controllerMsgTreat(Endpoint* ep, int endpointId, Message::Header* headerP, void* dataP, int dataLen, Packet* packetP);
+	void         workerVectorReceived(Message::WorkerVectorData* workerVec);
+
 	std::string  getState(std::string selector);
 
 

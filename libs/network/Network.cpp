@@ -1034,6 +1034,7 @@ static void endpointFill(Endpoint* ep, Endpoint* inheritedFrom, int rFd, int wFd
 */
 Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
 {
+	LM_M(("***********************************************"));
 	if (endpoint[CONTROLLER] == NULL)
 	{
 		LM_T(LmtInit, ("Allocating room for Controller endpoint"));
@@ -1057,6 +1058,7 @@ Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, con
 */
 Endpoint* Network::endpointAddSupervisor(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
 {
+	LM_M(("***********************************************"));
 	if (endpoint[SUPERVISOR] == NULL)
 		endpoint[SUPERVISOR] = new Endpoint();
 
@@ -1077,6 +1079,8 @@ Endpoint* Network::endpointAddSupervisor(int rFd, int wFd, const char* name, con
 Endpoint* Network::endpointAddTemporal(int rFd, int wFd, const char* name, const char* alias, std::string ip, Endpoint* inheritedFrom)
 {
 	int ix;
+
+	LM_M(("***********************************************"));
 
 	for (ix = Endpoints - 1; ix >= FIRST_WORKER + Workers; ix--)
 	{
@@ -1107,6 +1111,8 @@ Endpoint* Network::endpointAddTemporal(int rFd, int wFd, const char* name, const
 Endpoint* Network::endpointAddDefault(int rFd, int wFd, const char* name, const char* alias, int workers, Endpoint::Type type, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
 {
 	int ix;
+
+	LM_M(("***********************************************"));
 
 	for (ix = FIRST_WORKER + Workers; ix < (int) (Endpoints - 1); ix++)
 	{
@@ -1140,6 +1146,8 @@ Endpoint* Network::endpointAddDefault(int rFd, int wFd, const char* name, const 
 */
 Endpoint* Network::coreWorkerEndpointAdd(int rFd, int wFd, const char* name, const char* alias)
 {
+	LM_M(("***********************************************"));
+
 	if (endpoint[CONTROLLER] == NULL)
 		LM_X(1, ("controller == NULL"));
 
@@ -1161,6 +1169,8 @@ Endpoint* Network::endpointAddWorker(const char* why, int rFd, int wFd, const ch
 {
 	int      ix;
 	Endpoint rejected;
+
+	LM_M(("***********************************************"));
 
 	if (endpoint[ME]->type == Endpoint::CoreWorker)
 		return coreWorkerEndpointAdd(rFd, wFd, name, alias);
@@ -1275,6 +1285,8 @@ Endpoint* Network::endpointAdd
 
 	if (inheritedFrom != NULL)
 		LM_T(LmtEndpoint, ("%s: '%s' inherits from '%s' (old endpoint: %p)", why, name, inheritedFrom->name.c_str(), inheritedFrom));
+
+	LM_M(("***********************************************"));
 
 	switch (type)
 	{
@@ -2274,6 +2286,195 @@ void Network::logFileSend(Endpoint* ep, Message::MessageCode msgCode, bool oldLo
 
 /* ****************************************************************************
 *
+* msgTreatConnectionClosed - 
+*/
+int Network::msgTreatConnectionClosed(Endpoint* ep, int s)
+{
+	if (ep->type == Endpoint::Worker)
+	{
+		LM_W(("Worker %d just died !", ep->workerId));
+		packetReceiver->notifyWorkerDied(ep->workerId);
+
+		if (endpoint[ME]->type == Endpoint::Delilah)
+		{
+			LM_T(LmtTimeout, ("Lower select timeout to ONE second to poll restarting worker"));
+			tmoSecs = 1;
+		}
+	}
+
+	LM_T(LmtSelect, ("Connection closed - ep at %p", ep));
+	if (ep == endpoint[CONTROLLER])
+	{
+		if (endpoint[ME]->type == Endpoint::CoreWorker)
+			LM_X(1, ("My Father (samsonWorker) died, I cannot exist without father process"));
+
+		LM_W(("controller died ... trying to reconnect !"));
+
+		endpoint[CONTROLLER]->rFd    = -1;
+		endpoint[CONTROLLER]->state = Endpoint::Disconnected;
+
+		if (endpointUpdateReceiver != NULL)
+			endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerDisconnected, "Controller Disconnected");
+
+		if (endpoint[ME]->type == Endpoint::Supervisor)
+			return 1;
+
+		while (endpoint[CONTROLLER]->rFd == -1)
+		{
+			LM_T(LmtControllerConnect, ("Reconnecting to Controller"));
+			endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
+			sleep(1); // sleep one second before reintenting connection to controller
+		}
+
+		endpoint[CONTROLLER]->state = Endpoint::Connected;
+		endpoint[CONTROLLER]->wFd   = endpoint[CONTROLLER]->rFd;
+
+		if (endpointUpdateReceiver != NULL)
+			endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerReconnected, "Controller Reconnected");
+		
+		return 1;
+	}
+	else if (ep != NULL)
+	{
+		if (ep->type == Endpoint::Worker)
+		{
+			--endpoint[ME]->workers;
+
+			close(ep->rFd);
+			if (ep->wFd == ep->rFd)
+				close(ep->wFd);
+
+			ep->state = Endpoint::Closed;
+			ep->rFd   = -1;
+			ep->wFd   = -1;
+			ep->name  = "-----";
+		}
+		else if (ep->type == Endpoint::CoreWorker)
+			LM_X(1, ("should get no messages from core worker ..."));
+		else
+			endpointRemove(ep, "connection closed 2");
+	}
+
+	return 0;
+}
+
+
+
+
+/* ****************************************************************************
+*
+* workerVectorReceived - 
+*/
+void Network::workerVectorReceived(Message::WorkerVectorData* workerVec)
+{
+	int ix;
+
+	LM_T(LmtWorkerVector, ("Got the worker vector from the Controller - now connect to them all ..."));
+
+	
+	for (int ix = 0; ix < workerVec->workers; ix++)
+		LM_T(LmtWorkerVector, ("Controller gave me a worker in %s:%d", workerVec->workerV[ix].ip, workerVec->workerV[ix].port));
+
+	if (Workers < workerVec->workers)
+	{
+		LM_T(LmtWorkerVector, ("Got %d workers from Controller - I thought there were %d workers - changing to %d workers",
+							   workerVec->workers, Workers, workerVec->workers));
+
+		// Adding workers in Endpoint vector
+		for (int ix = Workers; ix < workerVec->workers; ix++)
+		{
+			endpoint[FIRST_WORKER + ix]       = workerNew(ix);
+			endpoint[FIRST_WORKER + ix]->port = workerVec->workerV[ix].port;
+					
+			if (workerVec->workerV[ix].ip[0] != 0)
+				endpoint[FIRST_WORKER + ix]->ip   = strdup(workerVec->workerV[ix].ip);
+			else
+				LM_W(("Empty IP for worker %d", ix));
+		}
+	}
+	else if (Workers > workerVec->workers)
+	{
+		// Removing workers from Endpoint vector
+		LM_T(LmtWorkerVector, ("I had %d workers - Controller tells me I should have %d - deleting the rest (%d - %d)",
+							   Workers,
+							   workerVec->workers,
+							   workerVec->workers,
+							   Workers));
+
+		for (unsigned int ix = workerVec->workers; ix < (unsigned int) Workers; ix++)
+		{
+			if (endpoint[FIRST_WORKER + ix] != NULL)
+			{
+				LM_T(LmtWorkerVector, ("deleting obsolete worker endpoint %d", FIRST_WORKER + ix));
+				delete endpoint[FIRST_WORKER + ix];
+				endpoint[FIRST_WORKER + ix] = NULL;
+			}
+		}
+	}
+
+	Workers = workerVec->workers;
+
+
+	LM_T(LmtWorker, ("Creating %d worker endpoint%s", Workers, (Workers > 1)? "s" : ""));
+	for (ix = 0; ix < Workers; ix++)
+	{
+		if (endpoint[FIRST_WORKER + ix] == NULL)
+		{
+			LM_T(LmtWorker, ("Creating endpoint for worker %d", ix));
+			endpoint[FIRST_WORKER + ix]        = new Endpoint(Endpoint::Worker, workerVec->workerV[ix].name, workerVec->workerV[ix].ip, workerVec->workerV[ix].port, -1, -1);
+			endpoint[FIRST_WORKER + ix]->state = Endpoint::Unconnected;
+			endpoint[FIRST_WORKER + ix]->aliasSet(workerVec->workerV[ix].alias);
+			
+			LM_T(LmtWorker, ("*** New Worker Endpoint '%s' at %p", workerVec->workerV[ix].alias, endpoint[ix]));
+		}
+		else
+			LM_T(LmtWorker, ("Should I fill worker %02d with the info the controller gave me ?", ix));
+	}
+
+	if (endpointUpdateReceiver != NULL)
+		endpointUpdateReceiver->endpointUpdate(NULL, Endpoint::WorkerVectorReceived, "Got Worker Vector", workerVec);
+
+	for (ix = 0; ix < Workers; ix++)
+	{
+		Endpoint* epP;
+
+		epP = endpoint[FIRST_WORKER + ix];
+
+		if (strcmp(epP->aliasGet(), endpoint[ME]->aliasGet()) == 0)
+		{
+			LM_T(LmtWorker, ("NOT connecting to myself ..."));
+			epP->name = std::string("me: ") + epP->ip;
+			continue;
+		}
+
+		{
+			int workerFd;
+
+			LM_T(LmtWorker, ("Connect to worker %d: %s (host %s, port %d, alias '%s')",
+							 ix, epP->name.c_str(), epP->ip, epP->port, epP->aliasGet()));
+
+			if ((workerFd = iomConnect(epP->ip, epP->port)) == -1)
+			{
+				if (endpoint[ME]->type == Endpoint::Delilah)
+					LM_X(1, ("Unable to connect to worker %d (%s) - delilah must connect to all workers", ix, workerVec->workerV[ix].name));
+
+				LM_T(LmtWorker, ("worker %d: %s (host %s, port %d) not there - no problem, he'll connect to me",
+								 ix, epP->name.c_str(), epP->ip, epP->port));
+			}
+			else
+			{
+				epP->rFd = workerFd;
+				epP->wFd = workerFd;
+				epP->state = Endpoint::Connected;
+			}
+		}
+	}
+}
+
+
+
+/* ****************************************************************************
+*
 * msgTreat - 
 */
 void Network::msgTreat(void* vP)
@@ -2306,70 +2507,8 @@ void Network::msgTreat(void* vP)
 
 		if (s == -2) /* Connection closed */
 		{
-			if (ep->type == Endpoint::Worker)
-			{
-				LM_W(("Worker %d just died !", ep->workerId));
-				packetReceiver->notifyWorkerDied(ep->workerId);
-
-				if (endpoint[ME]->type == Endpoint::Delilah)
-				{
-					LM_T(LmtTimeout, ("Lower select timeout to ONE second to poll restarting worker"));
-					tmoSecs = 1;
-				}
-			}
-
-			LM_T(LmtSelect, ("Connection closed - ep at %p", ep));
-			if (ep == endpoint[CONTROLLER])
-			{
-				if (endpoint[ME]->type == Endpoint::CoreWorker)
-					LM_X(1, ("My Father (samsonWorker) died, I cannot exist without father process"));
-
-				LM_W(("controller died ... trying to reconnect !"));
-
-				endpoint[CONTROLLER]->rFd    = -1;
-				endpoint[CONTROLLER]->state = Endpoint::Disconnected;
-
-				if (endpointUpdateReceiver != NULL)
-					endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerDisconnected, "Controller Disconnected");
-
-				if (endpoint[ME]->type == Endpoint::Supervisor)
-					return;
-
-				while (endpoint[CONTROLLER]->rFd == -1)
-				{
-					LM_T(LmtControllerConnect, ("Reconnecting to Controller"));
-					endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
-					sleep(1); // sleep one second before reintenting connection to controller
-				}
-
-				endpoint[CONTROLLER]->state = Endpoint::Connected;
-				endpoint[CONTROLLER]->wFd   = endpoint[CONTROLLER]->rFd;
-
-				if (endpointUpdateReceiver != NULL)
-					endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerReconnected, "Controller Reconnected");
-
+			if (msgTreatConnectionClosed(ep, s) != 0)
 				return;
-			}
-			else if (ep != NULL)
-			{
-				if (ep->type == Endpoint::Worker)
-				{
-					--endpoint[ME]->workers;
-
-					close(ep->rFd);
-					if (ep->wFd == ep->rFd)
-						close(ep->wFd);
-
-					ep->state = Endpoint::Closed;
-					ep->rFd   = -1;
-					ep->wFd   = -1;
-					ep->name  = "-----";
-				}
-				else if (ep->type == Endpoint::CoreWorker)
-					LM_X(1, ("should get no messages from core worker ..."));
-				else
-					endpointRemove(ep, "connection closed 2");
-			}
 		}
 
 		LM_RVE(("iomMsgRead: error reading message from '%s'", name));
@@ -2520,108 +2659,7 @@ void Network::msgTreat(void* vP)
 			if (ep->type != Endpoint::Controller)
 				LM_X(1, ("Got a WorkerVector ack NOT from Controller ... (endpoint type: %d)", ep->type));
 
-			LM_T(LmtWorkerVector, ("Got the worker vector from the Controller - now connect to them all ..."));
-
-			int                         ix;
-			Message::WorkerVectorData*  workerVec = (Message::WorkerVectorData*) dataP;
-
-			for (int ix = 0; ix < workerVec->workers; ix++)
-				LM_T(LmtWorkerVector, ("Controller gave me a worker in %s:%d", workerVec->workerV[ix].ip, workerVec->workerV[ix].port));
-
-			if (Workers < workerVec->workers)
-			{
-				LM_T(LmtWorkerVector, ("Got %d workers from Controller - I thought there were %d workers - changing to %d workers",
-									   workerVec->workers, Workers, workerVec->workers));
-
-				// Adding workers in Endpoint vector
-				for (int ix = Workers; ix < workerVec->workers; ix++)
-				{
-					endpoint[FIRST_WORKER + ix]       = workerNew(ix);
-					endpoint[FIRST_WORKER + ix]->port = workerVec->workerV[ix].port;
-					
-					if (workerVec->workerV[ix].ip[0] != 0)
-						endpoint[FIRST_WORKER + ix]->ip   = strdup(workerVec->workerV[ix].ip);
-					else
-						LM_W(("Empty IP for worker %d", ix));
-				}
-			}
-			else if (Workers > workerVec->workers)
-			{
-				// Removing workers from Endpoint vector
-				LM_T(LmtWorkerVector, ("I had %d workers - Controller tells me I should have %d - deleting the rest (%d - %d)",
-									   Workers,
-									   workerVec->workers,
-									   workerVec->workers,
-									   Workers));
-
-				for (unsigned int ix = workerVec->workers; ix < (unsigned int) Workers; ix++)
-				{
-					if (endpoint[FIRST_WORKER + ix] != NULL)
-					{
-						LM_T(LmtWorkerVector, ("deleting obsolete worker endpoint %d", FIRST_WORKER + ix));
-						delete endpoint[FIRST_WORKER + ix];
-						endpoint[FIRST_WORKER + ix] = NULL;
-					}
-				}
-			}
-
-			Workers = workerVec->workers;
-
-
-			LM_T(LmtWorker, ("Creating %d worker endpoint%s", Workers, (Workers > 1)? "s" : ""));
-			for (ix = 0; ix < Workers; ix++)
-			{
-				if (endpoint[FIRST_WORKER + ix] == NULL)
-				{
-					LM_T(LmtWorker, ("Creating endpoint for worker %d", ix));
-					endpoint[FIRST_WORKER + ix]        = new Endpoint(Endpoint::Worker, workerVec->workerV[ix].name, workerVec->workerV[ix].ip, workerVec->workerV[ix].port, -1, -1);
-					endpoint[FIRST_WORKER + ix]->state = Endpoint::Unconnected;
-					endpoint[FIRST_WORKER + ix]->aliasSet(workerVec->workerV[ix].alias);
-
-					LM_T(LmtWorker, ("*** New Worker Endpoint '%s' at %p", workerVec->workerV[ix].alias, endpoint[ix]));
-				}
-				else
-					LM_T(LmtWorker, ("Should I fill worker %02d with the info the controller gave me ?", ix));
-			}
-
-			if (endpointUpdateReceiver != NULL)
-				endpointUpdateReceiver->endpointUpdate(NULL, Endpoint::WorkerVectorReceived, "Got Worker Vector", workerVec);
-
-			for (ix = 0; ix < Workers; ix++)
-			{
-				Endpoint* epP;
-
-				epP = endpoint[FIRST_WORKER + ix];
-
-				if (strcmp(epP->aliasGet(), endpoint[ME]->aliasGet()) == 0)
-				{
-					LM_T(LmtWorker, ("NOT connecting to myself ..."));
-					epP->name = std::string("me: ") + epP->ip;
-					continue;
-				}
-
-				{
-					int workerFd;
-
-					LM_T(LmtWorker, ("Connect to worker %d: %s (host %s, port %d, alias '%s')",
-									 ix, epP->name.c_str(), epP->ip, epP->port, epP->aliasGet()));
-
-					if ((workerFd = iomConnect(epP->ip, epP->port)) == -1)
-					{
-						if (endpoint[ME]->type == Endpoint::Delilah)
-							LM_X(1, ("Unable to connect to worker %d (%s) - delilah must connect to all workers", ix, workerVec->workerV[ix].name));
-
-						LM_T(LmtWorker, ("worker %d: %s (host %s, port %d) not there - no problem, he'll connect to me",
-									   ix, epP->name.c_str(), epP->ip, epP->port));
-					}
-					else
-					{
-						epP->rFd = workerFd;
-						epP->wFd = workerFd;
-						epP->state = Endpoint::Connected;
-					}
-				}
-			}
+			workerVectorReceived((Message::WorkerVectorData*) dataP);
 		}
 
 		iAmReady = true;

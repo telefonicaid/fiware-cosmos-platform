@@ -1,6 +1,6 @@
 /* ****************************************************************************
 *
-* FILE                     main_samsonPlatformInit.cpp
+* FILE                     main_samsonSetup.cpp
 *
 * AUTHOR                   Ken Zangelin
 *

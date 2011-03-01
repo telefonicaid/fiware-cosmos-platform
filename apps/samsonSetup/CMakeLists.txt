@@ -1,5 +1,5 @@
 SET (SOURCES
-    main_samsonPlatformSetup.cpp
+    main_samsonSetup.cpp
 )
 
 SET (HEADERS
@@ -28,8 +28,8 @@ link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
 
 # SAMSON Executable
-ADD_EXECUTABLE(samsonPlatformSetup ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(samsonPlatformSetup ${LIBS})
+ADD_EXECUTABLE(samsonSetup ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(samsonSetup ${LIBS})
 
-INSTALL(TARGETS               samsonPlatformSetup
+INSTALL(TARGETS               samsonSetup
         RUNTIME DESTINATION   bin)

@@ -594,7 +594,7 @@ namespace ss
 					std::ostringstream message;
 					message << "Job finished [" << packet->message.command_response().finish_job_id() << "] ";
 					message << " [ "<< au::Format::time_string( packet->message.command_response().ellapsed_seconds() ) << " ] ";
-					message << " (" << packet->message.command_response().command() << " )";
+					message << " ( " << packet->message.command_response().command() << " )";
 					writeWarningOnConsole( message.str() );
 					return 0;
 				}
@@ -603,7 +603,7 @@ namespace ss
 				{
 					std::ostringstream message;
 					message << "Job finished with error [" << packet->message.command_response().error_job_id() << "] ";
-					message << " (" << packet->message.command_response().command() << ")\n\n";
+					message << " ( " << packet->message.command_response().command() << ")\n\n";
 					
 					if( packet->message.command_response().has_error_message() )
 						message <<  packet->message.command_response().error_message();

@@ -6,12 +6,6 @@ package ss.network;
 // Common 
 //
 
-message CompressInfo
-{
-	required uint64 original_size=1;	// Original size of the message
-	required uint64 compress_size=2;	// Compress size of the message
-}
-
 message EnvironmentVariable
 {
 	required string name	=1;	// Name of the property
@@ -282,38 +276,6 @@ message CommandResponse
 	optional ControllerStatus controller_status	         = 105;
 }
 
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Help from Delilah to controller
-//
-
-message Help
-{
-	required bool queues = 1;
-	required bool datas = 3;
-	required bool operations = 4;
-
-	// Filters for the operations
-	optional string name = 5;	// Optinal parameter to specify the name of the queue/data/operation I would like to be informed
-	optional string begin = 6;	// Optional parameter to specify the begining of the name
-}
-
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Help response from Controller to Delilah
-//
-
-message HelpResponse
-{
-	// Original message to know what request is refering to
-   	required Help help=1;	
-
-	// Information
-	repeated FullQueue queue = 2;
-	repeated Data data = 4;
-	repeated Operation operation = 5;
-}
-
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -493,9 +455,6 @@ message Message
 	optional WorkerDataExchange  	data                      = 107;  // Exchange of data packets between nodes     
 	optional WorkerDataExchangeClose data_close		  = 108;  // Message to finish data transmission between workers
 
-	optional Help                   help                      = 109;  // Ask for help ( queues / datas / operations )
-	optional HelpResponse           help_response             = 110;  // Response for the ask help message   			     
-
 	// Upload and Download messages
 	
 	optional UploadDataInit			upload_data_init		= 111;
@@ -515,9 +474,8 @@ message Message
 
 	optional WorkerStatus worker_status = 170;			// Worker status update
 
-	// Common information
-	
+	// Common information	
 	optional uint64  delilah_id = 300;				// Used in commands , upload and download process with delilah
-	optional CompressInfo compress_info=301;			// Information about the compression of companion data
+
 }
 

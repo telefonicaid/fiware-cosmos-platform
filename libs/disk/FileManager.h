@@ -71,7 +71,7 @@ namespace ss {
 		
 		size_t addItemToRead( FileManagerReadItem* v );
 		size_t addItemToWrite( FileManagerWriteItem* v );
-		
+		size_t addItemToRemove( FileManagerRemoveItem* v );
 		
 		/**
 		 Delegate interface of DiskManager

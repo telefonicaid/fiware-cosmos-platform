@@ -59,6 +59,14 @@ namespace ss {
 		
 		size_t write( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate );
 		
+		/**
+		 Schedule a remove operation
+		 Return inmediatelly
+		 Latter a notification is send to delegate
+		 */
+		
+		size_t remove( std::string fileName , DiskManagerDelegate *delegate);
+		
 		
 		// Fill the rigth information in this message
 		void fill(network::WorkerStatus*  ws);

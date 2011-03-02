@@ -30,8 +30,6 @@ char* messageCode(MessageCode code)
 		case WorkerStatus:                     return (char*) "WorkerStatus";
 		case Command:                          return (char*) "Command";
 		case CommandResponse:		           return (char*) "CommandResponse";
-		case Help:                             return (char*) "Help";
-		case HelpResponse:		               return (char*) "HelpResponse";
 		case StatusRequest:                    return (char*) "StatusRequest";
 		case StatusResponse:		           return (char*) "StatusResponse";
 		case UploadDataInit:                   return (char*) "UploadDataInit";
@@ -62,8 +60,8 @@ char* messageCode(MessageCode code)
 		case LogSendingOff:                    return (char*) "LogSendingOff";
 		case ConfigChange:                     return (char*) "ConfigChange";
 		case WorkerConfigGet:                  return (char*) "WorkerConfigGet";
-	case EntireLogFile:                    return (char*) "EntireLogFile";
-	case EntireOldLogFile:                 return (char*) "EntireOldLogFile";
+		case EntireLogFile:                    return (char*) "EntireLogFile";
+		case EntireOldLogFile:                 return (char*) "EntireOldLogFile";
 	}
 
 	return (char*) "Unknown";

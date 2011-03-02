@@ -76,9 +76,6 @@ namespace ss {
 		int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 		void notifyWorkerDied( int worker );
 		
-		// Specialized receive functions
-		int receiveHelp(int fromId, Packet* packet);
-		
 		// PacketSenderInterface
 		virtual void notificationSent( size_t id , bool success );
 

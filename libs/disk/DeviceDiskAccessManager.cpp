@@ -162,6 +162,14 @@ namespace ss {
 			}
 		}
 		
+		if( o->mode == "x")
+		{
+			// Remove the file
+			int c = remove( o->fileName.c_str() );
+			if( c != 0 )
+				o->setError("Erro while removing file");
+		}
+
 		// Nofity end of a task
 		o->delegate->diskManagerNotifyFinish(o->idGet(), o->error , o->error_message );
 		

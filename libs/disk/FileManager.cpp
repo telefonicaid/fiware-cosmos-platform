@@ -18,8 +18,6 @@ namespace ss
 			sharedFileManager = new FileManager();
 		return sharedFileManager;
 	}
-
-	
 	
 	size_t FileManager::addItemToRead( FileManagerReadItem* v )
 	{
@@ -63,6 +61,25 @@ namespace ss
 		return fm_id;
 	};
 	
+	size_t FileManager::addItemToRemove( FileManagerRemoveItem* v )
+	{
+		lock.lock();
+		
+		size_t fm_id = current_fm_id++;
+		v->setId(fm_id);
+		
+		items.insertInMap( fm_id , v );
+		
+		size_t dm_id = DiskManager::shared()->remove( v->fileName , this );
+		
+		// add the relation between both ids
+		ids.insertInMap( dm_id , fm_id );
+		
+		lock.unlock();
+		
+		return fm_id;
+		
+	}
 	
 	
 	/**

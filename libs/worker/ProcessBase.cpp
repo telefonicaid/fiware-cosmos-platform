@@ -102,7 +102,7 @@ namespace ss {
 	{
 		
 		// Only flush data if memory is under 0.7
-		while( MemoryManager::shared()->getUsedMemory() > 0.7)
+		while( MemoryManager::shared()->getMemoryUsage() > 0.7)
 		{
 			setStatusLetter("H");	// Halted for memory
 			sleep(1);
@@ -208,7 +208,7 @@ namespace ss {
 	{
 		
 		// Only flush data if memory is under 0.7
-		while( MemoryManager::shared()->getUsedMemory() > 0.7)
+		while( MemoryManager::shared()->getMemoryUsage() > 0.7)
 		{
 			setStatusLetter("H");	// Halted for memory
 			sleep(1);

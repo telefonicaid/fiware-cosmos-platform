@@ -23,5 +23,5 @@ include_directories("${PROJECT_SOURCE_DIR}/testing/module_test")
 ADD_LIBRARY(module_test MODULE ${SOURCES} ${HEADERS})
 
 add_custom_command ( TARGET module_test POST_BUILD   COMMAND mkdir ${PROJECT_BINARY_DIR}/testing/modules 2>/dev/null  || true )
-add_custom_command ( TARGET module_test POST_BUILD   COMMAND cp -f *.so ${PROJECT_BINARY_DIR}/testing/modules  )
+add_custom_command ( TARGET module_test POST_BUILD   COMMAND cp -f *.so ${PROJECT_BINARY_DIR}/testing/modules || true  )
 

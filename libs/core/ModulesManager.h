@@ -50,9 +50,6 @@ namespace ss {
 		std::string showModule(std::string module);
 		std::string showFind( std::string command);
 		
-		void helpDatas( network::HelpResponse *response , network::Help help  );
-		void helpOperations( network::HelpResponse *response, network::Help help  );
-
 		void fill( network::OperationList *ol , std::string command  );
 		void fill( network::DataList *dl, std::string command  );
 		

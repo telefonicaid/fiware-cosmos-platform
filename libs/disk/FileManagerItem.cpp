@@ -16,6 +16,7 @@ namespace ss {
 		switch (type) {
 			case read: operation = DiskStatistics::read; break;
 			case write: operation = DiskStatistics::write; break;
+			case remove: operation = DiskStatistics::unknown; break;
 		}
 		
 		size = _size;

@@ -14,7 +14,6 @@ namespace ss {
 	class DelilahComponent
 	{
 		
-		
 	public:
 		
 		typedef enum 

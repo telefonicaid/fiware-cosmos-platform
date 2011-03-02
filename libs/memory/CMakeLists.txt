@@ -1,5 +1,6 @@
 SET (HEADERS
     Buffer.h
+    SimpleBuffer.h
     MemoryManager.h
 )
 

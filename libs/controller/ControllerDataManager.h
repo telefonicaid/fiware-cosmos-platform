@@ -70,9 +70,6 @@ namespace ss {
 		
 		static std::string getLogFileName( );
 
-		// Get help about data stuff
-		void helpQueues( network::HelpResponse *response , network::Help help );
-
 		void fill( network::QueueList *ql , std::string command);
 		void fill( network::AutomaticOperationList *aol , std::string command);
 		void fill( network::DownloadDataInitResponse* response , std::string queue );

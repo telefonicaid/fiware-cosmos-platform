@@ -67,40 +67,7 @@ namespace ss {
 	}
 	
 	
-	/* ****************************************************************************
-	*
-	* receiveHelp - 
-	*/
-	int SamsonController::receiveHelp(int fromId, Packet* packet)
-	{
-		// Prepare the help message and sent back to Delilah
-		Packet *p = new Packet();
-			
-		network::HelpResponse *response = p->message.mutable_help_response();
-		response->mutable_help()->CopyFrom( packet->message.help() );
-		
-		// We check if queues or data_queues is selected inside
-		data.helpQueues( response , packet->message.help() );
-			
-		if ( packet->message.help().datas() )
-		{
-			// Fill with datas information
-		  ModulesManager::shared()->helpDatas( response , packet->message.help() );
-		}
 
-		if( packet->message.help().operations() )
-		{
-			// Fill with operations information
-		  ModulesManager::shared()->helpOperations( response , packet->message.help() );
-		}
-			
-		// copy the id when returning
-		p->message.set_delilah_id( packet->message.delilah_id() );
-		
-		network->send(this, fromId, Message::HelpResponse, p);
-		return 0;
-	}
-		
 		
 
 	/* ****************************************************************************
@@ -111,13 +78,6 @@ namespace ss {
 	{
 		switch (msgCode)
 		{
-			case Message::Help:
-			{
-				receiveHelp( fromId , packet );
-				return 0;
-				break;
-			}
-		
 			case Message::WorkerTaskConfirmation:
 			{
 				network::WorkerTaskConfirmation c = packet->message.worker_task_confirmation();

@@ -753,48 +753,6 @@ namespace ss {
 		lock.unlock();
 	}
 	
-	
-	
-	void ControllerDataManager::helpQueues( network::HelpResponse *response , network::Help help )
-	{
-		lock.lock();
-		
-		if( help.queues() )
-		{
-			std::map< std::string , Queue*>::iterator i;
-			for (i = queues.begin() ; i!= queues.end() ;i++)
-			{
-				if(  evalHelpFilter( &help , i->first ) )
-				{
-					
-					Queue *queue = i->second;
-					network::FullQueue *fq = response->add_queue();
-					
-					network::Queue *q = fq->mutable_queue();
-					q->set_name( i->first );
-					
-					// Format
-					fillKVFormat( q->mutable_format() , queue->format() );
-					
-					//Info
-					fillKVInfo( q->mutable_info(), queue->info() );
-
-					
-					// Add file information
-					std::list< QueueFile* >::iterator iter;
-
-					for ( iter = queue->files.begin() ; iter != queue->files.end() ; iter++)
-					{
-						network::File *file = fq->add_file();
-						(*iter)->fill( file );
-					}
-				}
-			}
-		}
-		
-		lock.unlock();
-	}
-	
 	void ControllerDataManager::retreveInfoForTask( size_t job_id , ControllerTaskInfo *info , bool clear_inputs )		
 	{
 		lock.lock();

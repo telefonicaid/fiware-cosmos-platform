@@ -70,7 +70,7 @@ namespace ss
 	}
 												   
 
-	SamsonSetup::SamsonSetup(  )
+	SamsonSetup::SamsonSetup( )
 	{
 		std::map<std::string,std::string> items;
 		init( items );
@@ -83,26 +83,21 @@ namespace ss
 	{
 
 		baseDirectory = workingDirectory;
-		// TODO: Remove the last / if necessary
 
 		controllerDirectory = workingDirectory + "/controller";
 		dataDirectory		= workingDirectory + "/data";
 		modulesDirectory	= workingDirectory + "/modules";
 		setupDirectory		= workingDirectory + "/etc";
-		setupFile			= setupDirectory + "/setup.txt";
+		setupFile			= setupDirectory   + "/setup.txt";
 				
 		// Create directories if necessary
-		
 		createDirectory( workingDirectory );
 		createDirectory(controllerDirectory);
 		createDirectory(dataDirectory);
         createDirectory(modulesDirectory);        
 		createDirectory(setupDirectory);			
 		
-
-		
 		// Load values from file ( if exist )
-		
 		std::map<std::string,std::string> items;
 		
 		FILE *file = fopen( setupFile.c_str()  ,"r");

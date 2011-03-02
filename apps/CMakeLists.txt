@@ -11,6 +11,4 @@ ADD_SUBDIRECTORY(samsonSupervisor)
 ADD_SUBDIRECTORY(samsonKiller)
 ADD_SUBDIRECTORY(samsonSetup)
 
-# ADD_SUBDIRECTORY(samsonTest)
-# ADD_SUBDIRECTORY(samsonDiskTest)
-# ADD_SUBDIRECTORY(samsonMemoryTest)
+

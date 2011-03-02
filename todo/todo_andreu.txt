@@ -1,8 +1,6 @@
 
-
 TODO:
-* Remove help message since it is not used any more
-* rm at the DiskManager to avoid colision between read and rm
+
 * Automatic operations ?
 * Detect problems with memory running operations ( not well distributed per hash-group)
 * Informacion about time in the jobs list
@@ -10,13 +8,14 @@ TODO:
 (m) independent Error.h Error.cpp files and remove Status.cpp/.h file since it is not used any more...
 
 ON-GOING
-* New upload model notifying first the controller
 * Kill jobs ( kill the task ) --> Memory leaks
-* File Management ( errors while uploading / downloading )
-* Check queues when uploading
 
 DONE
-
+* File Management ( errors while uploading / downloading )
+* Check queues when uploading
+* New upload model notifying first the controller
+* rm at the DiskManager to avoid colision between read and rm
+* Remove help message since it is not used any more
 * Reload modules to detect changes
 * operations can emit errors to cancel the operation
 * samsonCat -header with information about hash-group distribution
@@ -32,17 +31,6 @@ PROBLEMAS
 
 FILE MANAGEMENT
 ----------------------------------------------------------------------------------------------------------------
-
--Otro error que tira el cliente:
-[ 3 ] Received upload data confirmation from controller
-[ 3 ]   Uploading  147MB to queue: users_txt Running time: 00:00:03State: All data uploaded and confirmed.
-          Progress:  [ Upload  147MB 100%  393Mbps   393Mbps/w  ]  [ Processed  147MB 100%  393Mbps   393Mbps/w  ]
-Finished local delilah process with : 3
-Delilah> graph.compute_graph_O2 cdrs_txt users_txt graph_O2
-Job scheduled [2]  (graph.compute_graph_O2 cdrs_txt users_txt graph_O2 )
-Delilah> samsonLocal: /home/jges/trunk/libs/disk/DeviceDiskAccessManager.cpp:132: void 
-ss::DeviceDiskAccessManager::run(ss::DiskOperation*): Assertion `file' failed.
-Aborted
 
 - En la tarea de osn, calculando el total de URLs, aunque teóricamente la cola tiene un elemento
 (o dos, que he probado a replicarlo), el parserOut no ve ninguno.

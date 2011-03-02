@@ -35,8 +35,6 @@ namespace ss {
 		// Replace the delegate ( before sending to File Manager )
 		void setDelegate( FileManagerDelegate *_delegate );
 		
-		void getStatus( std::ostream &output , std::string prefix_per_line );
-		
 		void notifyToDelegate()
 		{
 			if( delegate )

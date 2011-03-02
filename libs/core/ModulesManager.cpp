@@ -393,66 +393,6 @@ namespace ss
 	}
 	
 	
-
-	
-	
-	// Fill help responses
-	void ModulesManager::helpOperations( network::HelpResponse *response, network::Help help  )
-	{
-		lock.lock();
-		
-		{
-			for (std::map<std::string , Operation*>::iterator j = operations.begin() ; j != operations.end() ; j++ )
-			{
-				Operation * op = j->second;
-
-				if( evalHelpFilter( &help , op->getName() ) )
-				{
-				
-					network::Operation *o = response->add_operation();
-					o->set_name( j->first );
-					o->set_help( op->help() );
-					o->set_help_line( op->helpLine() );
-					
-					// Format
-					std::vector<KVFormat> input_formats = op->getInputFormats();
-					std::vector<KVFormat> output_formats = op->getOutputFormats();
-					
-					for (size_t i = 0 ; i < input_formats.size() ; i++)
-						fillKVFormat( o->add_input() , input_formats[i] );
-					
-					for (size_t i = 0 ; i < output_formats.size() ; i++)
-						fillKVFormat( o->add_output() , output_formats[i] );
-				}
-				
-			}
-		}
-		
-		lock.unlock();
-	}
-	
-	void ModulesManager::helpDatas( network::HelpResponse *response , network::Help help  )
-	{
-		lock.lock();
-		
-		{
-			for (std::map<std::string , Data*>::iterator j = datas.begin() ; j != datas.end() ; j++ )
-			{
-				
-				if( !help.has_name() || j->first == help.name() )
-				{
-					Data * data = j->second;
-					network::Data *d = response->add_data();
-					d->set_name( j->first );
-					d->set_help( data->help() );
-				}
-				
-			}
-		}
-				
-		lock.unlock();
-	}	
-	
 	void ModulesManager::fill( network::OperationList *ol , std::string command  )
 	{
 		au::CommandLine cmdLine;

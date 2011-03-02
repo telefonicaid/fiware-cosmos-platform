@@ -26,8 +26,4 @@ namespace ss {
 		delegate = _delegate;
 	}
 
-	void FileManagerReadItem::getStatus( std::ostream &output , std::string prefix_per_line )
-	{
-		output << "Read Item File: " << fileName << " Offset: " << offset << " Size: " << au::Format::string( size , "bytes") << "\n";
-	}
 }

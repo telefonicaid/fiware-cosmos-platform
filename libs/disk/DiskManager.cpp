@@ -86,6 +86,35 @@ namespace ss {
 		return id;
 	}
 		
+	size_t DiskManager::remove( std::string fileName , DiskManagerDelegate *delegate)
+	{
+		size_t id;
+		
+		lock.lock();
+		
+		DiskOperation *o = new DiskOperation(counter_id++);
+		
+		o->fileName = fileName;
+		o->mode = "x";
+		o->delegate = delegate;
+		
+		if( o->setDevice() )
+		{
+			_addOperation( o );
+			id = o->idGet();
+		}
+		else
+		{
+			delete o;
+			id = 0;
+		}
+		
+		lock.unlock();
+		
+		return id;
+	}
+	
+	
 	DeviceDiskAccessManager *DiskManager::_getDeviceDiskAccessManagerForDev( dev_t st_dev )
 	{
 		DeviceDiskAccessManager *device = item.findInMap( st_dev );

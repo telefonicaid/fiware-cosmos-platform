@@ -63,6 +63,9 @@ namespace ss
 			case write:
 				item_write.add( size, micro_seconds);
 				break;
+			case unknown:
+				// Nothing to do in this case
+				break;
 		}
 		
 		item_total.add( size, micro_seconds);

@@ -43,8 +43,6 @@ typedef enum MessageCode
 	WorkerTaskConfirmation			= CODE('W', 'T', 'C', ' '),
 	Command							= CODE('C', 'o', 'm', ' '),
 	CommandResponse					= CODE('C', 'R', 'e', ' '),
-	Help							= CODE('H', 'e', 'p', ' '),
-	HelpResponse					= CODE('H', 'R', 'e', ' '),
 	StatusRequest					= CODE('S', 'r', 'q', ' '),
 	StatusResponse					= CODE('S', 'r', 's', ' '),
 	UploadDataInit					= CODE('U', 'D', 'a', ' '),

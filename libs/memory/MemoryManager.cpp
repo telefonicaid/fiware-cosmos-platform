@@ -7,6 +7,7 @@
 * CREATION DATE            2010
 *
 */
+
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
 
@@ -14,11 +15,8 @@
 #include "Buffer.h"				// ss::Buffer
 #include "SamsonSetup.h"		// ss:SamsonSetup
 
-
-
 namespace ss
 {
-	
 	
 	MemoryRequest::MemoryRequest( size_t _size , Buffer **_buffer,  MemoryRequestDelegate *_delegate )
 	{
@@ -52,7 +50,7 @@ namespace ss
 	
 	MemoryManager* MemoryManager::shared()
 	{
-		assert( _memoryManager );
+		assert( _memoryManager );	// Make sure memory manager has been initialized with init
 		return _memoryManager;
 	}
 	
@@ -68,10 +66,9 @@ namespace ss
 		
 		memory = SamsonSetup::shared()->memory;
 		
-		shared_memory_size_per_buffer = SamsonSetup::shared()->shared_memory_size_per_buffer;
-		shared_memory_num_buffers = SamsonSetup::shared()->shared_memory_num_buffers;
+		shared_memory_size_per_buffer	= SamsonSetup::shared()->shared_memory_size_per_buffer;
+		shared_memory_num_buffers		= SamsonSetup::shared()->shared_memory_num_buffers;
 		
-
 		assert( shared_memory_size_per_buffer > 0);
 		
 		// Boolean vector showing if a buffer is used
@@ -233,42 +230,11 @@ namespace ss
 		assert( id < shared_memory_num_buffers);
 		
 		token.retain();
+		
 		shared_memory_used_buffers[id] = false;
 		used_memory -= shared_memory_size_per_buffer;
+		
 		token.release();
-		
-	}	
-	
-
-	
-	double MemoryManager::getMemoryUsage()
-	{
-		double per;
-		if( memory == 0 )
-			per = 0;
-		else
-			per =  ( (double) used_memory / (double)memory );
-
-		return per;
-	}
-
-	void MemoryManager::getStatus( std::ostream &output , std::string prefix_per_line )
-	{
-		int num_shm_buffers = 0;
-		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
-			if( shared_memory_used_buffers[i] )
-				num_shm_buffers++;
-		
-		int per_memory = (int) ( getMemoryUsage()*100.0 );
-		output <<"\n";	// All in new lines
-		output << prefix_per_line << "Used memory: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)"<< std::endl;
-		output << prefix_per_line << "Buffers in action " << num_buffers << std::endl;
-		output <<  prefix_per_line << "Shared memory Buffers " << num_shm_buffers << " / " << shared_memory_num_buffers << std::endl;
-		output <<  prefix_per_line << "Buffers: ";
-		std::set<Buffer*>::iterator iter;
-		for (iter = buffers.begin() ; iter != buffers.end() ; iter++ )
-			output << (*iter)->_name << " ";
-		output << std::endl;
 		
 	}	
 	
@@ -304,9 +270,10 @@ namespace ss
 
 		
 		token.retain();
-		memoryRequets.push_back( request );
+		memoryRequests.push_back( request );
 		token.release();
 		
+		// Wake up the background process to check if 
 		stopper.wakeUp();
 		
 	}
@@ -318,14 +285,14 @@ namespace ss
 		
 		while( true )
 		{
-			double p = getUsedMemory();
+			double p = getMemoryUsage();
 
 			MemoryRequest *r = NULL;
 				
 			if ( p < 0.5 )
 			{
 				token.retain();
-				r = memoryRequets.extractFront();
+				r = memoryRequests.extractFront();
 				token.release();
 			}
 
@@ -333,15 +300,37 @@ namespace ss
 				stopper.stop();	// Stop for no more requets of no memory available
 			else
 			{
-				*(r->buffer) = newBuffer("", r->size);
+				*(r->buffer) = newBuffer("Buffer from request", r->size);
 				r->notifyDelegate();
 			}
-
-
-			
-			
 		}
 		
+	}
+	
+	size_t MemoryManager::getUsedMemory()
+	{
+		return used_memory;
+	}
+	
+	size_t MemoryManager::getMemory()
+	{
+		return memory;
+	}	
+	
+	double MemoryManager::getMemoryUsage()
+	{
+		double per;
+		if( memory == 0 )
+			per = 0;
+		else
+			per =  ( (double) used_memory / (double)memory );
+		
+		return per;
+	}
+	
+	int MemoryManager::getUsedBuffers()
+	{
+		return num_buffers;
 	}
 
 	

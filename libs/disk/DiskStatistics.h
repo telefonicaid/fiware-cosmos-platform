@@ -43,7 +43,8 @@ namespace ss {
 		typedef enum 
 		{
 			write,
-			read
+			read,
+			unknown
 		}Operation;
 		
 		void add( Operation type, size_t size , size_t micro_seconds );

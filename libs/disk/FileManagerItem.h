@@ -56,7 +56,8 @@ namespace ss {
 		typedef enum
 		{
 			write,
-			read
+			read,
+			remove
 		} Type;
 		
 		Type type;
@@ -79,6 +80,40 @@ namespace ss {
 		
 		
 	};	
+	
+	
+	/**
+	 Request of a file to be removed
+	 */
+	
+	class FileManagerRemoveItem : public FileManagerItem
+	{
+		
+	public:
+		
+		std::string fileName;				// Name of the file
+		
+		FileManagerRemoveItem( std::string _fileName , FileManagerDelegate* delegate ) : FileManagerItem( delegate ,  FileManagerItem::remove  , 0 )
+		{
+			fileName = _fileName;
+		}
+		
+		void notifyToDelegate()
+		{
+			if( delegate )
+				delegate->notifyFinishRemoveItem(this);
+			else
+				delete this;	// Auto-remove to myself since no-one will handle me
+		}
+		
+		void freeResources()
+		{
+			// nothing to do here
+		}
+
+		
+	};
+	
 }
 
 

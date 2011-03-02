@@ -1,58 +1,25 @@
+/* ****************************************************************************
+ *
+ * FILE                     Buffer.h
+ *
+ * AUTHOR                   Andreu Urruela
+ *
+ * CREATION DATE            2010
+ *
+ */
+
 #ifndef _H_BUFFER
 #define _H_BUFFER
 
 #include <cstring>			// size_t
 #include <cstdlib>			// malloc, ...
 #include <fstream>			// std::ifstream
+#include "SimpleBuffer.h"	// ss::SimpleBuffer
 
 namespace ss {
-
 	
 	/**
-	 Simple class to specify an allocated space in memory
-	 */
-	
-	class SimpleBuffer
-	{
-		
-		char *_data;
-		size_t _size;
-		
-	public:
-		
-		SimpleBuffer()
-		{
-			_data = NULL;
-			_size = 0;
-		}
-		
-		SimpleBuffer( char *data , size_t size )
-		{
-			_data = data;
-			_size = size;
-		}
-		
-		bool checkSize( size_t size )
-		{
-			return ( _size >= size );
-		}
-		
-		char* getData()
-		{
-			return _data;
-		}
-		
-		size_t getSize()
-		{
-			return _size;
-		}
-		
-	};
-	
-	
-	/**
-	 Buffer class to hold data manager by MemoryManager
-	 It has to be accessible by multiple process identified by offset and size
+	 Buffer class to hold data managed by MemoryManager
 	 */
 	
 	class Buffer
@@ -62,7 +29,6 @@ namespace ss {
 		size_t _max_size;		// Maximum size of this buffer
 		
 		std::string _name;		// Internal name for debugging
-		
 		
 		/**
 		 Current size used in this buffer 
@@ -81,41 +47,30 @@ namespace ss {
 	private:
 		
 		// Private constructor/destructors since it can be only access by MemoryManager
+		
+		Buffer( std::string name ,   size_t max_size );
+		~Buffer();
+		
+		void free();
+
 		friend class MemoryManager;
 		
-		Buffer( std::string name ,   size_t max_size )
-		{
-			_max_size = max_size;
-			_offset = 0;
-			
-			_name = name;
-			
-			if( max_size > 0)
-				_data = (char *) malloc(max_size);
-			else
-				_data = NULL;
-			
-			_size = 0;
-		}
-		
-		~Buffer()
-		{
-			free();
-		}
-		
-		void free()
-		{
-			if( _data )
-			{
-				::free( _data );
-				_data = NULL;
-			}
-			_max_size = 0;
-			_size = 0;
-			_offset = 0;
-		}
-		
 	public:
+		
+		// Main functions
+		// ------------------------------------------
+		
+		// Get the maximum size of the buffer
+		size_t getMaxSize();
+		
+		// Get used size of this buffer ( not necessary the maximum )
+		size_t getSize();
+		
+		// Get a description of the buffer
+		std::string str();
+		
+		// Writing content to the buffer
+		// ------------------------------------------
 		
 		/**
 		 Function to write content updating the size variable coherently
@@ -123,132 +78,49 @@ namespace ss {
 		 So, it never try to write less than input_size bytes
 		 */
 		
-		bool write( char * input_buffer , size_t input_size )
-		{
-			if( _size + input_size > _max_size )
-				return false;
-			
-			memcpy(_data + _size, input_buffer, input_size);
-			_size += input_size;
-			
-			return true;
-		}
+		bool write( char * input_buffer , size_t input_size );
 		
+		// Skip some space without writing anything
+		bool skipWrite( size_t size );
 		
-		bool skipWrite( size_t size )
-		{
-			if( _size + size <= _max_size)
-			{
-				_size += size;
-				return true;
-			}
-			else
-				return false;
-		}
-			
+		// Write on the buffer the maximum possible ammount of data
+		void write( std::ifstream &inputStream );
 		
-		size_t skipRead( size_t size)
-		{
-			if( _offset + size > _max_size)
-				size = (_max_size - _offset);	// Max offset
-				
-			_offset += size;
-			return size;
-						
-		}
+		// Get available space to write with "write call"
+		size_t getAvailableWrite();
 		
-		/**
-		 Write on the buffer the maximum possible ammount of data
-		 */
+		// Reading content from the buffer
+		// ------------------------------------------
 		
-		void write( std::ifstream &inputStream )
-		{
-			inputStream.read( _data + _size , _max_size - _size ); 
-			_size += inputStream.gcount();
-		}
+		// Skip some space without reading
+		size_t skipRead( size_t size);
 		
+		// Read command
+		size_t read( char *output_buffer, size_t output_size);
+		
+		// Get pending bytes to be read
+		size_t getSizePendingRead();
+		
+		// Manual manipulation of data
+		// ------------------------------------------
+		
+		// Get a pointer to the data space
+		char *getData();
+		
+		// Set used size manually
+		void setSize( size_t size );
 
-		/* 
-		 Remove the last characters of an unfinished line and put them in buffer.
-		 Remove the size of this set of characters
-		 */
+		// Interface with SimpleBuffer
+		// ------------------------------------------
 		
-		size_t removeLastUnfinishedLine( char * buffer)
-		{
-			size_t last_line_size = 0;
-			while( _data[_size - last_line_size - 1] != '\n')
-				last_line_size++;
-
-			memcpy(buffer, _data + _size - last_line_size , last_line_size);
-			
-			_size -= last_line_size;
-			return last_line_size;
-		}
+		SimpleBuffer getSimpleBuffer();
+		SimpleBuffer getSimpleBufferAtOffset(size_t offset);
 		
-		/**
-		 Read content of the buffer in a continuous way
-		 */
+		// Spetial functions
+		// ------------------------------------------
 		
-		size_t read( char *output_buffer, size_t output_size)
-		{
-			size_t read_size = output_size;
-			if( read_size > ( _size - _offset ) )
-				read_size = (_size - _offset);
-			
-			memcpy(output_buffer, _data+_offset, read_size);
-			_offset += read_size;
-			return read_size;
-		}
-
-		/**
-		 Auxilir functions to work directly with the content
-		 */
-		
-		size_t getSizePendingRead()
-		{
-			return _size - _offset;
-		}
-		
-		size_t getAvailableWrite()
-		{
-			return _max_size - _size;
-		}
-		
-		char *getData()
-		{
-			return _data;
-		}
-		
-		size_t getMaxSize()
-		{
-			return _max_size;
-		}
-		
-		size_t getSize()
-		{
-			return _size;
-		}
-		
-		void setSize( size_t size )
-		{
-			if (( size >= 0) && (size <= _max_size))
-				_size = size;
-		}
-		
-		std::string str();
-		
-		
-		SimpleBuffer getSimpleBuffer()
-		{
-			return SimpleBuffer( _data , _max_size );
-		}
-		
-		SimpleBuffer getSimpleBufferAtOffset(size_t offset)
-		{
-			return SimpleBuffer( _data + offset , _max_size - offset );
-		}
-		
-		
+		// Remove the last characters of an unfinished line and put them in buffer.
+		size_t removeLastUnfinishedLine( char * buffer );
 
 	};
 

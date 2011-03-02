@@ -1,3 +1,13 @@
+/* ****************************************************************************
+ *
+ * FILE                     MemoryManager.h
+ *
+ * AUTHOR                   Andreu Urruela
+ *
+ * CREATION DATE            2010
+ *
+ */
+
 #ifndef _H_MEMORY_MANAGER
 #define _H_MEMORY_MANAGER
 
@@ -28,6 +38,10 @@ namespace ss {
 
 	class MemoryRequest;
 	
+	/*
+	 Interface for objects that want to receive the notification about memory request
+	 */
+	
 	class MemoryRequestDelegate
 	{
 	public:
@@ -43,11 +57,11 @@ namespace ss {
 		
 	public:
 		
-		size_t size;						// Required size
+		size_t size;							// Required size
 		Buffer **buffer;						// Provides buffer
-		MemoryRequestDelegate *delegate;	// Delegate to notify when ready
+		MemoryRequestDelegate *delegate;		// Delegate to notify when ready
 		
-		// Reference elements
+		// Reference elements ( to be used in the delegate notification to identify this memory request )
 		int component;
 		size_t tag;
 		size_t sub_tag;
@@ -62,15 +76,16 @@ namespace ss {
 		
 	};
 	
-	/**
-	 Memory manager is a singleton implementation of shared memory
-	 It should be able to provide buffers of memory to be used across multiple apps
+	/*
+	 SharedMemoryItem is a class that contains information about a region of memory shared between different processes
+	 Memory manager singleton provides pointers to these objects
 	 */
 	
 	class SharedMemoryItem 
 	{
 		
 	public:
+		
 		int id;						/* Identifier of the shared memory area */
 		int shmid;					/* return value from shmget() */ 
 		char *data;					/* Shared memory data */
@@ -80,6 +95,10 @@ namespace ss {
 		{
 			id = _id;
 		}
+		
+		// --------------------------------------------------------------------------------
+		// Interfaces to get SimpleBuffer elements in order to read or write to them
+		// --------------------------------------------------------------------------------
 		
 		SimpleBuffer getSimpleBuffer()
 		{
@@ -99,11 +118,19 @@ namespace ss {
 		
 	};
 
-		
+	/**
+	 
+	 Memory manager is a singleton implementation to manager the memory used by any component of SAMSON
+	 A unifierd view of the memory is necessary to block some data-generator elements when we are close to the maximum memory
+	 It is also responsible to manage shared-memory areas to share between differnt processes. 
+	 Shared memory is used to isolate operations from main process
+	 
+	 */
+	
 	class MemoryManager 
 	{
 		
-		au::Token token;							// Token to protect "used_memory"
+		au::Token token;							// Token to protect "used_memory" and memoryRequests
 		au::Stopper stopper;						// Stopper for the main-thread to notify new buffers
 
 		size_t used_memory;							// Monitor the used memory
@@ -121,9 +148,8 @@ namespace ss {
 		// Some debug info
 		int num_buffers;
 		
-		
 		// List of memory requests
-		au::list <MemoryRequest> memoryRequets;
+		au::list <MemoryRequest> memoryRequests;
 		
 		MemoryManager();
 		
@@ -140,6 +166,10 @@ namespace ss {
 		
 		static MemoryManager* shared();
 
+		 /*--------------------------------------------------------------------
+		 DIRECT mecanish to request buffers
+		 --------------------------------------------------------------------*/
+		
 		/**
 		 Interface to get a buffer of memory
 		 Used by networkInterface , DataBuffer and FileManager
@@ -152,25 +182,24 @@ namespace ss {
 		 */
 		void destroyBuffer( Buffer *b );
 		
-
+		
+		/*--------------------------------------------------------------------
+		 Delayes mecanish to get memory
+		 --------------------------------------------------------------------*/
 		
 		/**
 		 Add a delayed request ( only served when memory is bellow a threshold )
 		 */
 		
-		void addMemoryRequest( MemoryRequest *request);
-		
-		/**
-		 Get the current usage of memory
-		 Used by DiskManager to controll the amount of memory that can use for keeping just writed files on memory
-		 */
-		
-		double getMemoryUsage();
-		
-		
+		void addMemoryRequest( MemoryRequest *request );
+				
 		/**
 		 Remove this shared memory. Tipically because we want to change the size...
 		 */
+		
+		/*--------------------------------------------------------------------
+		 Shared memory mecanish
+		 --------------------------------------------------------------------*/
 		
 		void removeSharedMemory( int i );
 		
@@ -188,45 +217,18 @@ namespace ss {
 		SharedMemoryItem* getSharedMemory( int i );
 		void freeSharedMemory(SharedMemoryItem* item);
 		
-		/**
-		 Debug function to mark as used shared memory areas used by other process
-		 */
-		void setOtherSharedMemoryAsMarked( int workerId , int num_workers )
-		{
-			for (int i = 0 ; i < shared_memory_num_buffers ; i++)
-			{
-				if( (i%num_workers )!= workerId)
-					shared_memory_used_buffers[i] = true;
-			}
-			
-		}
-		
-		
-		/**
-		 Get a string describing status of memory manager
-		 */
-		
-		void getStatus( std::ostream &output , std::string prefix_per_line );
+		/*--------------------------------------------------------------------
+		 Get information about memory usage
+		 --------------------------------------------------------------------*/
 		
 		// Fill information
 		void fill(network::WorkerStatus*  ws);
-	
-		
-		size_t get_used_memory()
-		{
-			return used_memory;
-		}
-		
-		double getUsedMemory()
-		{
-			return (double)used_memory / (double) memory;
-		}
-		
-		
-		size_t getMemory()
-		{
-			return memory;
-		}
+
+		// Get information about current memory usage
+		double getMemoryUsage();
+		size_t getUsedMemory();
+		size_t getMemory();
+		int getUsedBuffers();
 		
 	public:
 		

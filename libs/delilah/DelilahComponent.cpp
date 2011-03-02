@@ -19,9 +19,6 @@ namespace ss {
 		id = _id;
 	}
 	
-	
-	
-	
 #pragma mark ----
 	
 	void* DelilahUpdaterBackgroundThread( void* p )
@@ -76,7 +73,6 @@ namespace ss {
 		
 	}
 	
-	
 	void DelilahUpdater::run()
 	{
 		while (true) {
@@ -121,8 +117,11 @@ namespace ss {
 	
 	void CommandDelilahComponent::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
-		// It is finished just after receiving one command
-		component_finished = true;	
+		if( msgCode == Message::CommandResponse )
+		{
+			if( packet->message.command_response().has_finish_job_id() || packet->message.command_response().has_error_job_id() )
+				component_finished = true;	
+		}
 		
 		// Always forward the message to delilah
 		delilah->_receive( fromId , msgCode , packet );

@@ -19,6 +19,7 @@
 #include "MemoryManager.h"				// ss::SharedMemory
 #include "FileManager.h"				// ss::FileManager
 #include "ProcessManager.h"				// ss::ProcessManager
+#include "FileManagerItem.h"			// ss::FileManagerRemoveItem
 
 namespace ss {
 
@@ -101,9 +102,8 @@ void SamsonWorker::sendWorkerStatus(void)
 	ProcessManager::shared()->fill( ws );
 	
 	loadDataManager.fill( ws );
-
 	
-	ws->set_used_memory( MemoryManager::shared()->get_used_memory() );
+	ws->set_used_memory( MemoryManager::shared()->getUsedMemory() );
 	
 	network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);
 }
@@ -307,8 +307,10 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		// Remove the selected files
 		for ( std::set< std::string >::iterator f = remove_files.begin() ; f != remove_files.end() ; f++)
 		{
-			LM_TODO(("Check if the remove operation was OK"));
-			remove( f->c_str() );
+			//remove( f->c_str() );
+			FileManager::shared()->addItemToRemove( new FileManagerRemoveItem( *f , NULL ) );
+
+			
 		}
 		
 		

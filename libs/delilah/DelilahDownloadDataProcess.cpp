@@ -42,6 +42,14 @@ namespace ss {
 		download_data_init_response = NULL;
 		
 	}
+	
+	std::string DelilahDownloadDataProcess::getDescription()
+	{
+		std::ostringstream o;
+		o << "Downloading from queue " << queue << " to local file " << fileName;
+		return o.str();
+	}
+
 
 	void DelilahDownloadDataProcess::run()
 	{

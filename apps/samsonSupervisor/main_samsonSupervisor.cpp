@@ -53,7 +53,6 @@
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "MemoryManager.h"      // ss::MemoryManager
 #include "Delilah.h"            // ss::Delilah
-#include "DelilahConsole.h"     // ss::DelilahConsole
 
 
 

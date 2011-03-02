@@ -5,7 +5,6 @@ PROJECT(Samson)
 cmake_minimum_required(VERSION 2.6)
 
 
-
 #
 # DEBUG or RELEASE build ?
 #
@@ -31,6 +30,13 @@ elseif (CMAKE_BUILD_TYPE STREQUAL RELEASE)
 else (CMAKE_BUILD_TYPE STREQUAL DEBUG)
     MESSAGE("cmake: bad value for CMAKE_BUILD_TYPE - please set the variable to either DEBUG or RELEASE")
     set(error 1)
+endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
+
+#
+# Enabling testing in debug mode
+#
+if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
+   ENABLE_TESTING()
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 
@@ -72,6 +78,7 @@ if (error EQUAL 0)
   MESSAGE("cmake: OK")
   ADD_SUBDIRECTORY(libs)
   ADD_SUBDIRECTORY(apps)
+  ADD_SUBDIRECTORY(testing)	# Test module and ctest stuff
 #  ADD_SUBDIRECTORY(etc)	# Add setup file when installing
 else ()
     MESSAGE("cmake: NOT OK")

@@ -63,29 +63,16 @@ void Delilah::quit()
 */
 int Delilah::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 {
-	
-	lock.lock();
+	token.retain();
 	
 	size_t sender_id = packet->message.delilah_id();
 	DelilahComponent *component = components.findInMap( sender_id );
+
 	
 	if ( component )
-	{
 		component->receive( fromId, msgCode, packet );
-
-		// Automatical remove of components is disabled, since now the user can remove completed components when done
-		/*
-		if ( component->component_finished )
-		{
-			component = components.extractFromMap(sender_id);
-			notifyFinishOperation( sender_id );
-			delete component;
-		}
-		*/
-		
-	}
 	
-	lock.unlock();
+	token.release();
 	
 	if( !component )
 	{
@@ -143,11 +130,13 @@ void Delilah::notificationSent(size_t id, bool success)
 	
 	size_t Delilah::addComponent( DelilahComponent* component )
 	{
-		lock.lock();
+		token.retain();
+
 		size_t tmp_id = id++;
 		component->setId(this, tmp_id);
 		components.insertInMap( tmp_id , component );
-		lock.unlock();
+
+		token.release();
 		
 		return tmp_id;
 	}
@@ -157,7 +146,7 @@ void Delilah::notificationSent(size_t id, bool success)
 
 		std::vector<size_t> components_to_remove;
 		
-		lock.lock();
+		token.retain();
 		
 		for ( au::map<size_t , DelilahComponent>::iterator c =  components.begin() ;  c != components.end() ; c++)
 			if ( c->second->component_finished )
@@ -170,29 +159,67 @@ void Delilah::notificationSent(size_t id, bool success)
 				delete component;
 		}
 			 
-		lock.unlock();
+		token.release();
 	}
 	
-	
+
+	std::string Delilah::getListOfLoads()
+	{
+		std::stringstream output;
+		bool present = false;
+		output << "-----------------------------------------------------------------\n";
+		output << "Upload and download processes....\n";
+		output << "-----------------------------------------------------------------\n";
+		output << "\n";
+		std::map<size_t,DelilahComponent*>::iterator iter;
+		for (iter = components.begin() ; iter != components.end() ; iter++)
+		{
+			if ( iter->second->type == DelilahComponent::load )
+			{
+				output << iter->second->getStatus() << "\n";
+				present = true;
+			}
+		}
+		
+		if( !present )
+			output << "\tNo upload or download process.\n";
+		output << "\n";
+		output << "-----------------------------------------------------------------\n";
+		
+		return output.str();
+	}
 	
 	size_t Delilah::sendCommand(  std::string command )
 	{
-		size_t tmp_id;
 		
-		lock.lock();
-		tmp_id = id++;
-		lock.unlock();
+		// Add a components for the reception
+		CommandDelilahComponent *c = new CommandDelilahComponent( command );
+
+		// Get the id of this operation
+		size_t tmp_id = addComponent( c );
 		
-		// Send the packet to create a job
-		Packet*           p = new Packet();
-		network::Command* c = p->message.mutable_command();
-		c->set_command( command );
-		p->message.set_delilah_id( tmp_id );
-		copyEnviroment( &environment , c->mutable_environment() );
-		network->send(this, network->controllerGetIdentifier(), Message::Command, p);
+		// Send the packet to the controller
+		c->run();
 		
 		return tmp_id;
 	}	
+
+	
+	bool Delilah::isActive( size_t id )
+	{
+		bool ans = false;
+		
+		token.retain();
+		
+		DelilahComponent *c = components.findInMap( id );
+		if( c && !c->component_finished )
+			ans = true;
+		
+		token.release();
+		
+		return ans;
+	}
+
 		
 	
 }

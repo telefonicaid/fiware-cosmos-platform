@@ -68,6 +68,8 @@ namespace ss {
 		
 		virtual std::string getStatus();
 
+		std::string getDescription(); 
+		
 		
 	};
 

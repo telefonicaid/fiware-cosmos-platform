@@ -19,6 +19,7 @@ namespace ss {
 		
 		typedef enum 
 		{
+			command,
 			load,
 			updater
 		}DelilaComponentType;
@@ -65,6 +66,27 @@ namespace ss {
 		}
 		
 	};
+	
+	/**
+	 Simple component created when a command is send to the controller ( waiting for answeres )
+	 */
+	
+	class CommandDelilahComponent : public DelilahComponent
+	{
+		std::string command;
+		
+	public:
+		
+		CommandDelilahComponent(std::string _command);
+		
+		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
+
+		void run();
+		
+		std::string getStatus();
+		
+	};
+	
 	
 	
 }

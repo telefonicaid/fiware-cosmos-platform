@@ -2,6 +2,9 @@ all:
 	./scripts/prepareBuild
 	make -C build
 
+test:
+	make test -C build
+
 package: all
 	make -C build package 
 

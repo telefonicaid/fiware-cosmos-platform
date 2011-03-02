@@ -1,7 +1,7 @@
 
 
 TODO:
-* call runFinish at parserOut
+* Remove help message since it is not used any more
 * rm at the DiskManager to avoid colision between read and rm
 * Automatic operations ?
 * Detect problems with memory running operations ( not well distributed per hash-group)

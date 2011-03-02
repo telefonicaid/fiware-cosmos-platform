@@ -14,6 +14,7 @@
 #include "traceLevels.h"        // Trace Levels
 #include "Process.h"            // ss::Process
 #include "processList.h"        // Own interface
+#include <stdlib.h>             // free()
 
 
 

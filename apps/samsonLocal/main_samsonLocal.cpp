@@ -25,7 +25,7 @@
 #include "FileManager.h"		// ss::FileManager
 #include "ProcessManager.h"		// ss::ProcessManager
 
-
+#include <string.h>				// strcmp
 #include <signal.h>				// signal(.)
 
 
@@ -37,7 +37,7 @@ char             controller[80];
 int              workers;
 bool             noLog;
 char			 workingDir[1024]; 	
-
+char			 commandFileName[1024];
 
 
 #define S01 (long int) "samson01:1234"
@@ -47,10 +47,11 @@ char			 workingDir[1024];
  */
 PaArgument paArgs[] =
 {
-	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaOpt,   S01,   PaNL,   PaNL,  "controller IP:port"  },
-	{ "-workers",    &workers,     "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
-	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt, false,  false,   true,  "no logging"          },
-	{ "-working",     workingDir,  "WORKING",     PaString,  PaOpt,  _i SAMSON_DEFAULT_WORKING_DIRECTORY,   PaNL,   PaNL,  "Working directory"     },
+	{ "-controller",  controller,       "CONTROLLER",  PaString,  PaOpt,   S01,   PaNL,   PaNL,  "controller IP:port"  },
+	{ "-workers",     &workers,         "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
+	{ "-nolog",       &noLog,           "NO_LOG",      PaBool,    PaOpt, false,  false,   true,  "no logging"          },
+	{ "-working",     workingDir,       "WORKING",     PaString,  PaOpt,  _i SAMSON_DEFAULT_WORKING_DIRECTORY,   PaNL,   PaNL,  "Working directory"     },
+	{ "-f",           commandFileName,  "FILE_NAME",   PaString,  PaOpt,  _i "",   PaNL,   PaNL,  "File with commands to run"     },
 	PA_END_OF_ARGS
 };
 
@@ -90,7 +91,7 @@ int main(int argC, const char *argV[])
 	paParse(paArgs, argC, (char**) argV, 1, false);// No more pid in the log file name
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
-
+	
 	/*
 	LM_D(("Starting samson demo (logFd == %d)", ::logFd));
 	for (int i = 0 ; i < 256 ; i++)
@@ -130,6 +131,41 @@ int main(int argC, const char *argV[])
 	// Run the network center in background
 	pthread_t t;
 	pthread_create(&t, NULL, run_in_background<ss::NetworkFakeCenter> , &center);
+
+	
+	if ( strcmp( commandFileName,"") != 0 )
+	{
+		FILE *f = fopen( commandFileName , "r" );
+		if( !f )
+		{
+			LM_E(("Error opening commands file %s", commandFileName));
+			exit(0);
+		}
+		
+		char line[1024];
+
+		//LM_M(("Processing commands file %s", commandFileName ));
+		while( fgets(line, sizeof(line), f) )
+		{
+			// Remove the last return of a string
+			while( ( strlen( line ) > 0 ) && ( line[ strlen(line)-1] == '\n') > 0 )
+				line[ strlen(line)-1]= '\0';
+			
+			//LM_M(("Processing line: %s", line ));
+			size_t id = delilahConsole.runAsyncCommand( line );
+			
+			if( id != 0)
+			{
+				//LM_M(("Waiting until delilah-component %ul finish", id ));
+				// Wait until this operation is finished
+				while (delilahConsole.isActive( id ) )
+					sleep(1);
+			}
+		}
+		
+		fclose(f);
+		exit(0);
+	}
 	
 	// Run delilah client in foreground
 	delilahConsole.run();

@@ -1,0 +1,3 @@
+remove_all
+module_test.test
+download out.txt out.txt

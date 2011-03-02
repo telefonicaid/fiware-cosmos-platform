@@ -21,6 +21,7 @@
 #include "platformProcesses.h"  // ss::platformProcessesGet, ss::platformProcessesSave
 #include "Process.h"            // Process
 #include "Worker.h"             // Worker
+#include <stdlib.h>             // free()
 
 
 

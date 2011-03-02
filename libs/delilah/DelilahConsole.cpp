@@ -233,8 +233,12 @@ namespace ss
 		return (matches);
 	}	
 	
-	
 	void DelilahConsole::evalCommand( std::string command )
+	{
+		runAsyncCommand( command );
+	}
+	
+	size_t DelilahConsole::runAsyncCommand( std::string command )
 	{
 		
 		au::CommandLine commandLine;
@@ -251,7 +255,7 @@ namespace ss
 		if( commandLine.get_num_arguments() == 0)
 		{
 			clear();
-			return;
+			return 0;	// Zero means no pending operation to check
 		}
 		else
 			mainCommand = commandLine.get_argument(0);
@@ -329,14 +333,15 @@ namespace ss
 			
 			
 			writeOnConsole( output.str() );
-			return;
+			return 0;
 		}
 		
 		if ( commandLine.isArgumentValue(0,"quit","") )
 		{
 			Console::quit();
+			quit();
 			exit(0);
-			return;
+			return 0;
 		}
 		
 		if ( mainCommand == "set")
@@ -350,13 +355,13 @@ namespace ss
 				output << environment.toString();
 				
 				writeOnConsole( output.str() );
-				return;
+				return 0;
 			}
 			
 			if ( commandLine.get_num_arguments() < 3 )
 			{
 				writeErrorOnConsole("Usage: set name value.");
-				return;
+				return 0;
 			}
 			
 			// Set a particular value
@@ -364,8 +369,10 @@ namespace ss
 			std::string value = commandLine.get_argument(2);
 			
 			environment.set( name , value );
-			
-			return ;
+			std::ostringstream o;
+			o << "Environment variable " << name << " set to " << value;
+			writeOnConsole( o.str() );
+			return 0;
 		}
 
 		if ( mainCommand == "load_trace")
@@ -376,31 +383,31 @@ namespace ss
 					writeOnConsole( "Traces are activated" );
 				else
 					writeOnConsole( "Traces are NOT activated" );
-				return;
+				return 0;
 			}
 			
 			if( commandLine.get_argument(1) == "on" )
 			{
 				trace_on = true;
 				writeOnConsole( "Traces are now activated" );
-				return;
+				return 0;
 			}
 			if( commandLine.get_argument(1) == "off" )
 			{
 				trace_on = false;
 				writeOnConsole( "Traces are now NOT activated" );
-				return;
+				return 0;
 			}
 			
 			writeErrorOnConsole("Usage: trace on/off");
-			return;
+			return 0;
 		}
 		
 		if ( mainCommand == "load_clear" )
 		{
 			// Clear completed upload and download process
 			clearComponents();
-			return ;
+			return 0;
 		}
 		
 		
@@ -409,7 +416,7 @@ namespace ss
 			if ( commandLine.get_num_arguments() < 2 )
 			{
 				writeErrorOnConsole("Usage: unset name.");
-				return;
+				return 0;
 			}
 			
 			// Set a particular value
@@ -417,7 +424,7 @@ namespace ss
 			
 			environment.unset( name );
 			
-			return ;
+			return 0;
 		}		
 		
 		if ( mainCommand == "download")
@@ -425,7 +432,7 @@ namespace ss
 			if ( commandLine.get_num_arguments() < 3)
 			{
 				writeErrorOnConsole( "Error: Usage: download queue local_file_name\n");
-				return;
+				return 0;
 			}
 			
 			std::string queue_name = commandLine.get_argument(1);
@@ -434,47 +441,21 @@ namespace ss
 			size_t id = addDownloadProcess(queue_name, fileName , commandLine.get_flag_bool("show"));
 
 			std::ostringstream o;
-			o << "Download data process (id="<<id<<") started.\n";
+			o << "[ " << id << " ] Download data process started.";
 			writeWarningOnConsole(o.str());
-			return;
+			return id;
 		}
 		
 		
 		
 		if ( mainCommand == "load" )
 		{
-			
 			std::ostringstream output;
-			bool present = false;
-			
-			output << "-----------------------------------------------------------------\n";
-			output << "Upload and download processes....\n";
-			output << "-----------------------------------------------------------------\n";
-			output << "\n";
-			std::map<size_t,DelilahComponent*>::iterator iter;
-			for (iter = components.begin() ; iter != components.end() ; iter++)
-			{
-				if ( iter->second->type == DelilahComponent::load )
-				{
-					output << iter->second->getStatus() << "\n";
-					present = true;
-				}
-			}
-			if( !present )
-				output << "\tNo upload or download process.\n";
-			output << "\n";
-			output << "-----------------------------------------------------------------\n";
+			output << getListOfLoads();
 			writeOnConsole(output.str());
 			
-			return ;
+			return 0;
 			
-		}
-		
-		
-		if( mainCommand == "quit" )
-		{
-			quit();
-			return;
 		}
 
 		if (mainCommand == "netstate")
@@ -484,72 +465,7 @@ namespace ss
 			s = network->getState(command);
 			writeOnConsole(s);
 
-			return;
-		}
-		
-		if ( mainCommand == "help" )
-		{
-			
-			// Ask for all help
-			Packet*         p    = new Packet();
-			network::Help*  help = p->message.mutable_help();
-
-			if( commandLine.get_flag_string("name") != "null")
-				help->set_name( commandLine.get_flag_string("name") );
-			
-			if( commandLine.get_flag_string("begin") != "null")
-				help->set_begin( commandLine.get_flag_string("begin") );
-			
-			
-			if( commandLine.get_num_arguments() < 2)
-			{
-				help->set_queues(true);
-				help->set_datas(true);
-				help->set_operations(true);
-				
-				
-				network->send(this, network->controllerGetIdentifier(), Message::Help, p);
-				return;
-			}
-			
-			std::string secondCommand = commandLine.get_argument(1);
-			
-			if( secondCommand == "queues" )
-			{
-				// Ask for queues
-				help->set_queues(true);
-				help->set_datas(false);
-				help->set_operations(false);
-				network->send(this, network->controllerGetIdentifier(), Message::Help, p);
-				return;
-			}
-			else if( secondCommand == "datas" )
-			{
-				// Ask for datas
-				help->set_queues(false);
-				help->set_datas(true);
-				help->set_operations(false);
-
-				network->send(this, network->controllerGetIdentifier(), Message::Help, p);
-
-				return;
-			}
-			else if( secondCommand == "operations" )
-			{
-				// Ask for operations
-				help->set_queues(false);
-				help->set_datas(false);
-				help->set_operations(true);
-
-				network->send(this, network->controllerGetIdentifier(), Message::Help, p);
-
-				return;
-			}
-			
-			writeErrorOnConsole("Please, help [queues] [data_queues] [datas] [operations]");
-			return;
-			
-			
+			return 0;
 		}
 		
 		if( mainCommand == "upload" )
@@ -557,7 +473,7 @@ namespace ss
 			if( commandLine.get_num_arguments() < 3)
 			{
 				writeErrorOnConsole("Usage: upload file <file2> .... <fileN> queue");
-				return;
+				return 0;
 			}
 			
 			std::vector<std::string> fileNames;
@@ -642,13 +558,13 @@ namespace ss
 			std::ostringstream o;
 			o << "[ " << id << " ] Load data process started with " << fileNames.size() << " files";
 			writeWarningOnConsole(o.str());
-			return;
+			return id;
 		}
 		
 		// Normal command send to the controller
 		size_t id = sendCommand(command);
-		
-		id = 0;	// To avoid warning
+		return id;
+
 		//std::ostringstream o;
 		//o << "Sent command to controller (id="<<id<<") : " << command;
 		//writeWarningOnConsole(o.str());
@@ -796,13 +712,14 @@ namespace ss
 		if( process->error.isActivated() )
 		{
 			std::ostringstream o;
-			o << "[ " << process->id << " ] Download data process finished with error ("<< process->error.getMessage() << "). Type XXX for more information";
+			o << "[ " << process->id << " ] Download data process finished with error ( "<< process->getDescription() << " )\n";
+			o << "\tERROR: " << process->error.getMessage();
 			writeErrorOnConsole(o.str());
 		}
 		else
 		{
 			std::ostringstream o;
-			o << "[ " << process->id << " ] Download data process finished correctly\n";
+			o << "[ " << process->id << " ] Download data process finished correctly ( "<< process->getDescription() << " )";
 			writeWarningOnConsole(o.str());
 		}
 	};

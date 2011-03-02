@@ -100,8 +100,8 @@ namespace ss {
 	
 	class DelilahConsole : public au::Console, public Delilah
 	{
-		
 		bool trace_on;
+		
 	public:
 		
 		DelilahConsole( NetworkInterface *network) : Delilah( network , true )
@@ -132,6 +132,9 @@ namespace ss {
 		// Eval a command from the command line
 		virtual void evalCommand( std::string command );
 
+		// Run asynch command and returns the internal operation in delilah
+		size_t runAsyncCommand( std::string command );
+		
 		virtual void quit()
 		{
 			au::Console::quit();

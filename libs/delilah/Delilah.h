@@ -18,7 +18,7 @@
 #include "Endpoint.h"			// Endpoint
 #include "traces.h"				// TRACE_DALILAH
 #include <set>					// std::set
-#include "Lock.h"				// au::Lock
+#include "Token.h"				// au::Lock
 #include "au_map.h"				// au::map
 #include "samson/Environment.h"	                // ss::Environment
 #include "samson.pb.h"			        // ss::network::..
@@ -43,14 +43,17 @@ namespace ss {
 
 	class Delilah : public PacketReceiverInterface, public PacketSenderInterface
 	{
+		// Id counter of the command - messages sent to controller ( commands / upload/ download )
+		size_t id;												
+		
+		// Private token to protect the local list of components
+		au::Token token;
+		// Map of components that intercept messages
+		au::map<size_t , DelilahComponent> components;			
 		
 	public:
 		
-		au::Lock   lock;										// Internal counter for processing packets
-		
-		size_t id;												// Id counter of the command - messages sent to controller ( commands / upload/ download )
 		Environment environment;								// Environment properties to be sent in the next job
-		au::map<size_t , DelilahComponent> components;			// Map of components that intercept messages
 
 		NetworkInterface* network;								// Network interface
 		bool              finish;								// Global flag used by all threads to detect to stop
@@ -77,6 +80,8 @@ namespace ss {
 		size_t sendCommand( std::string command );
 		
 		
+		// Check a particular if
+		bool isActive( size_t id );
 		
 	public:
 				
@@ -101,6 +106,9 @@ namespace ss {
 		
 		// Callback to notify that a particular operation has finished
 		virtual void notifyFinishOperation( size_t )=0;
+		
+		// Get info about the list of loads
+		std::string getListOfLoads();
 		
 	protected:
 		

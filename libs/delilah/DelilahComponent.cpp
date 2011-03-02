@@ -112,6 +112,41 @@ namespace ss {
 		}
 	}
 	
+#pragma mark ----
+	
+	CommandDelilahComponent::CommandDelilahComponent(std::string _command) : DelilahComponent( DelilahComponent::command )
+	{
+		command = _command;
+	}
+	
+	void CommandDelilahComponent::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+	{
+		// It is finished just after receiving one command
+		component_finished = true;	
+		
+		// Always forward the message to delilah
+		delilah->_receive( fromId , msgCode , packet );
+	}
+	
+	void CommandDelilahComponent::run()
+	{
+		// Send the message with the command
+		// Send the packet to create a job
+		Packet*           p = new Packet();
+		network::Command* c = p->message.mutable_command();
+		c->set_command( command );
+		p->message.set_delilah_id( id );
+		copyEnviroment( &delilah->environment , c->mutable_environment() );
+		delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Command, p);
+		
+	}		
+	
+	std::string CommandDelilahComponent::getStatus()
+	{
+		std::ostringstream o;
+		o << "Command Component: " << command;
+		return o.str();
+	}
 	
 	
 }

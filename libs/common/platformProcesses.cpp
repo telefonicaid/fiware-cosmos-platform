@@ -17,6 +17,7 @@
 #include "Worker.h"             // WorkerVectorData - will be replaced
 #include "Process.h"            // Process - that will replace WorkerVectorData
 #include "platformProcesses.h"  // Own interface
+#include <stdlib.h>             // free()
 
 
 namespace ss

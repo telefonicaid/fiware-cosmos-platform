@@ -1,10 +1,11 @@
 NOW
+  o Stop using 'Worker' use 'Process'
+  o Split Process - make a tree 
   o Remove -workers option from Supervisor and Controller
   o Add semaphore around jobQueue
   o Add semaphore around send
   o Test etc/samson in torkel /etc/init.d
   o LogTab - if a filter is active, consult the filter before inserting line !
-  o Stop using 'Worker' use 'Process'
   o Move workerVecGet and workerVecSet to separate library, used in controller and in samsonSetup
 ------------------------------------------------------------------------------------------------------------------------
 BUGS

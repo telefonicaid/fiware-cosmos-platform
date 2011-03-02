@@ -177,7 +177,7 @@ static int platformFileCreate(int workers, char* ip[])
 	//
 	// Filling the worker vector buffer to be written to file
 	//
-	for (int ix = 0; ix < (int) ip[0]; ix++)
+	for (int ix = 0; ix < (long) ip[0]; ix++)
 	{
 		strncpy(wv->workerV[ix].name,  "samsonWorker", sizeof(wv->workerV[ix].name));
 		strncpy(wv->workerV[ix].ip, ip[ix + 1], sizeof(wv->workerV[ix].ip));
@@ -290,20 +290,20 @@ int main(int argC, const char *argV[])
 	}
 	else
 	{
-		if (workers > (int) ip[0])
+		if (workers > (long) ip[0])
 		{
 			printf("Samson Platform Setup Error.\n"
 				   "You specified %d workers with the '-workers' option, but gave only %d IP:s in the '-ip' option.\n"
 				   "Please correct this error and try again.\n",
-				   workers, (int) ip[0]);
+				   workers, (int) (long) ip[0]);
 			err = 1;
 		}
-		else if (workers < (int) ip[0])
+		else if (workers < (long) ip[0])
 		{
 			printf("Samson Platform Setup Error.\n"
 				   "You specified %d workers with the '-workers' option, but gave %d IP:s in the '-ip' option.\n"
 				   "Please correct this error and try again.\n",
-				   workers, (int) ip[0]);
+				   workers, (int) (long) ip[0]);
 			err = 2;
 		}
 	}

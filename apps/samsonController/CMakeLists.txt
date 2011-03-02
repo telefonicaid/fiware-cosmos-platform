@@ -7,20 +7,20 @@ SET (HEADERS
 )
 
 SET (LIBS
-samsonControllerLib
-samsonProcess
-samsonNetwork
-samsonCore
-samsonMemory
-samsonDisk
-pa
-lm
-protobuf
-pthread
-dl
-readline
-samsonDataLib
-samsonCommon
+	samsonControllerLib
+	samsonProcess
+	samsonNetwork
+	samsonCore
+	samsonMemory
+	samsonDisk
+	pa
+	lm
+	protobuf
+	pthread
+	dl
+	readline
+	samsonDataLib
+	samsonCommon
 )
 
 # Include directories

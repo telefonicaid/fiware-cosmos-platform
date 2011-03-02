@@ -15,6 +15,7 @@
 #include "baTerm.h"             // baTermSetup
 #include "globals.h"            // tabManager, ...
 #include "ports.h"              // WORKER_PORT, ...
+#include "Worker.h"             // ss::Worker
 #include "NetworkInterface.h"   // DataReceiverInterface, EndpointUpdateInterface
 #include "Endpoint.h"           // Endpoint
 #include "Network.h"            // Network
@@ -36,7 +37,7 @@
 *
 * Global variables
 */
-ss::Message::WorkerVectorData* workerVec = NULL;
+ss::WorkerVectorData* workerVec = NULL;
 
 
 
@@ -60,7 +61,7 @@ SamsonSupervisor::SamsonSupervisor(ss::Network* netP) : ss::Delilah(netP, false)
 *
 * workerLookup - 
 */
-ss::Message::Worker* workerLookup(const char* alias)
+ss::Worker* workerLookup(const char* alias)
 {
 	if (workerVec == NULL)
 		return NULL;
@@ -80,14 +81,14 @@ ss::Message::Worker* workerLookup(const char* alias)
 *
 * workerUpdate - 
 */
-void workerUpdate(ss::Message::Worker* workerDataP)
+void workerUpdate(ss::Worker* workerDataP)
 {
-	ss::Message::Worker* worker = workerLookup(workerDataP->alias);
+	ss::Worker* worker = workerLookup(workerDataP->alias);
 
 	if (worker == NULL)
 		LM_RVE(("Cannot find worker '%s'", workerDataP->alias));
 
-	memcpy(worker, workerDataP, sizeof(ss::Message::Worker));
+	memcpy(worker, workerDataP, sizeof(ss::Worker));
 	LM_T(LmtWorker, ("Updated worker '%s' in local worker vec (host: '%s')", worker->alias, worker->ip));
 }
 
@@ -103,7 +104,7 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 {
 	ss::Endpoint*             ep = networkP->endpointLookup(fromId);
 	ss::Message::ConfigData*  configDataP;
-	ss::Message::Worker*      workerP;
+	ss::Worker*               workerP;
 	
 	if (ep == NULL)
 		LM_RE(0, ("Cannot find endpoint with id %d", fromId));
@@ -123,7 +124,7 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 		break;
 
 	case ss::Message::WorkerConfigGet:
-		workerP = (ss::Message::Worker*) dataP;
+		workerP = (ss::Worker*) dataP;
 
 		if (headerP->type != ss::Message::Ack)
 			LM_X(1, ("Bad msg type '%d'", headerP->type));
@@ -223,7 +224,7 @@ static bool hostValid(const char* host)
 *
 * emptyStarter - 
 */
-static void emptyStarter(ss::Message::Worker* worker, int workerId)
+static void emptyStarter(ss::Worker* worker, int workerId)
 {
 	ss::Process* processP;
 	Starter*     starter;
@@ -259,21 +260,21 @@ static void emptyStarter(ss::Message::Worker* worker, int workerId)
 *
 * workerVectorReceived - 
 */
-static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
+static void workerVectorReceived(ss::WorkerVectorData*  wvDataP)
 {
-	Host*                 hostP;
-	int                   fd;
-	ss::Process*          spawner;
-	ss::Process*          process;
-	Starter*              starter;
-	ss::Message::Worker*  worker;
-	ss::Endpoint*         ep;
-	int                   size;
+	Host*            hostP;
+	int              fd;
+	ss::Process*     spawner;
+	ss::Process*     process;
+	Starter*         starter;
+	ss::Worker*      worker;
+	ss::Endpoint*    ep;
+	int              size;
 
 	LM_T(LmtWorkerVector, ("Got Worker Vector from Controller (with %d workers)", wvDataP->workers));
 
-	size      = sizeof(ss::Message::WorkerVectorData) + wvDataP->workers * sizeof(ss::Message::Worker);
-	workerVec = (ss::Message::WorkerVectorData*) malloc(size);
+	size      = sizeof(ss::WorkerVectorData) + wvDataP->workers * sizeof(ss::Worker);
+	workerVec = (ss::WorkerVectorData*) malloc(size);
 
 	if (workerVec == NULL)
 		LM_X(1, ("malloc(%d): %s", size, strerror(errno)));
@@ -428,10 +429,10 @@ static void workerVectorReceived(ss::Message::WorkerVectorData*  wvDataP)
 */
 int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info)
 {
-	ss::Message::WorkerVectorData*  wvDataP   = (ss::Message::WorkerVectorData*) info;
-	Starter*                        starter   = NULL;
-	ss::Process*                    processP  = NULL;
-	char                            eText[256];
+	ss::WorkerVectorData*  wvDataP   = (ss::WorkerVectorData*) info;
+	Starter*               starter   = NULL;
+	ss::Process*           processP  = NULL;
+	char                   eText[256];
 
 	if (reason == ss::Endpoint::SelectToBeCalled)
 	{

@@ -23,6 +23,7 @@ class QLineEdit;
 class QVBoxLayout;
 
 #include "Process.h"            // ss::Process
+#include "Worker.h"             // ss::Worker
 #include "Message.h"            // ss::Message
 
 
@@ -45,7 +46,7 @@ class ProcessConfigView : public QWidget
 
 public:
 	ProcessConfigView(QGridLayout* grid, ss::Process* process, ss::Message::ConfigData* configData);
-	ProcessConfigView(QGridLayout* grid, ss::Process* process, ss::Message::Worker*     workerP);
+	ProcessConfigView(QGridLayout* grid, ss::Process* process, ss::Worker*              workerP);
 	ProcessConfigView(QGridLayout* grid, ss::Process* process);
 	~ProcessConfigView();
 

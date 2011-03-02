@@ -18,8 +18,9 @@
 
 #include "samsonDirectories.h"  // SAMSON_IMAGES
 #include "ports.h"              // WORKER_PORT
+#include "platformProcesses.h"  // ss::platformProcessesGet, ss::platformProcessesSave
 #include "Process.h"            // Process
-#include "Message.h"            // Worker
+#include "Worker.h"             // Worker
 
 
 
@@ -53,6 +54,7 @@ PaArgument paArgs[] =
 int         logFd                  = -1;
 const char* EtcDirPath             = SAMSON_ETC;
 const char* PlatformProcessesPath  = SAMSON_PLATFORM_PROCESSES;
+const char* ppFile                 = PlatformProcessesPath;
 
 
 
@@ -144,13 +146,9 @@ static int accessCheck(void)
 */
 static int platformFileCreate(int workers, char* ip[])
 {
-	int                             s;
-	int                             size;
-	ss::Message::WorkerVectorData*  wv;
-	int                             fd;
-	int                             tot;
-	int                             nb;
-	char*                           buf;
+	int                    s;
+	int                    size;
+	ss::WorkerVectorData*  wv;
 
 
 
@@ -165,8 +163,8 @@ static int platformFileCreate(int workers, char* ip[])
 	//
 	// Initializing variables for the worker vector
 	//
-	size = sizeof(ss::Message::WorkerVectorData) + workers * sizeof(ss::Message::Worker);
-	wv   = (ss::Message::WorkerVectorData*) malloc(size);
+	size = sizeof(ss::WorkerVectorData) + workers * sizeof(ss::Worker);
+	wv   = (ss::WorkerVectorData*) malloc(size);
 
 	memset(wv, 0, size);
 
@@ -188,60 +186,10 @@ static int platformFileCreate(int workers, char* ip[])
 	}
 
 
-
 	//
-	// Opening the file
+	// Saving the file to disk
 	//
-	fd = open(PlatformProcessesPath, O_RDWR | O_CREAT | O_TRUNC);
-	if (fd == -1)
-	{
-		printf("Samson Platform Setup Error.\n"
-			   "Unable to open the Samson Platform Setup file '%s': %s\n",
-			   PlatformProcessesPath, strerror(errno));
-
-		return 11;
-	}
-
-
-
-	//
-	// Writing the buffer to file
-	//
-	buf = (char*) wv;
-	tot = 0;
-	while (tot < size)
-	{
-		nb = write(fd, &buf[tot], size - tot);
-		if (nb == -1)
-		{
-			printf("Samson Platform Setup Error.\n"
-				   "Unable to write to the Samson Platform Setup file '%s': %s\n",
-				   PlatformProcessesPath, strerror(errno));
-
-			return 12;
-		}
-		else if (nb == 0)
-		{
-			printf("Samson Platform Setup Error.\n"
-				   "Unable to write to the Samson Platform Setup file '%s': %s\n",
-				   PlatformProcessesPath, strerror(errno));
-
-			return 13;
-		}
-
-		tot += nb;
-	}
-
-	close(fd);
-
-	if (chmod(PlatformProcessesPath, 0744) != 0)
-	{
-		printf("Samson Platform Setup Error.\n"
-			   "Unable to change permissions for the Samson Platform Setup file '%s': %s\n",
-			   PlatformProcessesPath, strerror(errno));
-
-		return 14;
-	}
+	ss::platformProcessesSave(wv);
 
 	return 0;
 }

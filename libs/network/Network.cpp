@@ -1898,7 +1898,7 @@ void Network::checkAllWorkersConnected(void)
 *
 * workerVecLookup - 
 */
-Message::Worker* Network::workerVecLookup(const char* alias)
+Worker* Network::workerVecLookup(const char* alias)
 {
 	if (workerVec == NULL)
 	{
@@ -1935,12 +1935,12 @@ void Network::controllerMsgTreat
 	Packet*               packetP
 )
 {
-	const char*           name     = ep->name.c_str();
-	Message::ConfigData*  config   = (Message::ConfigData*) dataP;
-	Message::Worker*      worker;
-	char*                 alias    = (char*) dataP;
-	Message::MessageCode  msgCode  = headerP->code;
-	Message::MessageType  msgType  = headerP->type;
+	const char*           name       = ep->name.c_str();
+	Message::ConfigData*  config     = (Message::ConfigData*) dataP;
+	Worker*               worker;
+	char*                 alias      = (char*) dataP;
+	Message::MessageCode  msgCode    = headerP->code;
+	Message::MessageType  msgType    = headerP->type;
 
 	LM_T(LmtMsgTreat, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
@@ -1957,7 +1957,7 @@ void Network::controllerMsgTreat
 			if (worker != NULL)
 			{
 				LM_T(LmtWrite, ("sending ack with worker '%s' to '%s'", alias, name));
-				iomMsgSend(ep, endpoint[ME], msgCode, Message::Ack, worker, sizeof(Message::Worker));
+				iomMsgSend(ep, endpoint[ME], msgCode, Message::Ack, worker, sizeof(Worker));
 			}
 			else
 				iomMsgSend(ep, endpoint[ME], msgCode, Message::Nak, NULL, 0);
@@ -1970,6 +1970,9 @@ void Network::controllerMsgTreat
 		break;
 
 	case Message::ConfigChange:
+		if (endpoint[ME]->type == Endpoint::Spawner)
+			LM_W(("Got a change in platform processes ... !"));
+
 		worker = workerVecLookup(config->alias);
 		if (worker != NULL)
 		{
@@ -1985,7 +1988,7 @@ void Network::controllerMsgTreat
 			strncpy(worker->name, config->name, sizeof(worker->name));
 
 			if (workerVecSaveCallback)
-				workerVecSaveCallback();
+				workerVecSaveCallback(workerVec);
 		}
 		else
 			LM_X(1, ("Worker '%s' not found", config->alias));
@@ -2009,7 +2012,7 @@ void Network::controllerMsgTreat
 *
 * workerVecSet - 
 */
-void Network::workerVecSet(Message::WorkerVectorData* wvData, int size, WorkerVecSave saveCallback)
+void Network::workerVecSet(WorkerVectorData* wvData, int size, WorkerVecSave saveCallback)
 {
 	workerVec             = wvData;
 	workerVecSize         = size;
@@ -2348,7 +2351,7 @@ int Network::msgTreatConnectionClosed(Endpoint* ep, int s)
 *
 * workerVectorReceived - 
 */
-void Network::workerVectorReceived(Message::WorkerVectorData* workerVec)
+void Network::workerVectorReceived(WorkerVectorData* workerVec)
 {
 	int ix;
 
@@ -2642,7 +2645,7 @@ void Network::msgTreat(void* vP)
 			if (ep->type != Endpoint::Controller)
 				LM_X(1, ("Got a WorkerVector ack NOT from Controller ... (endpoint type: %d)", ep->type));
 
-			workerVectorReceived((Message::WorkerVectorData*) dataP);
+			workerVectorReceived((WorkerVectorData*) dataP);
 		}
 
 		iAmReady = true;

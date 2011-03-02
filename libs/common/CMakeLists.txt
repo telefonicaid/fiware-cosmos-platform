@@ -18,6 +18,9 @@ SET (HEADERS
 	CommandLine.h
 	daemonize.h
 	EnvironmentOperations.h
+	platformProcesses.h
+	Process.h
+	Worker.h
 )
 
 SET (SOURCES
@@ -35,6 +38,7 @@ SET (SOURCES
 	CommandLine.cpp
 	daemonize.cpp
 	EnvironmentOperations.cpp
+	platformProcesses.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''
@@ -45,7 +49,7 @@ add_custom_command (
   MAIN_DEPENDENCY samson.proto
 )
 
-# Inclue directories
+# Include directories
 # -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")

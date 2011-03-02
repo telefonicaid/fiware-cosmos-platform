@@ -16,6 +16,7 @@
 #include "traceLevels.h"        // Trace Levels
 #include "Message.h"            // ss::Message
 #include "Process.h"            // ss::Process
+#include "Worker.h"             // ss::Worker
 #include "iomMsgSend.h"         // iomMsgSend
 #include "iomConnect.h"         // iomConnect
 #include "ports.h"              // SPAWNER_PORT, ...
@@ -271,7 +272,7 @@ void Starter::logClicked(void)
 
 
 
-extern ss::Message::Worker* workerLookup(const char* alias);
+extern ss::Worker* workerLookup(const char* alias);
 /* ****************************************************************************
 *
 * nameClicked - 

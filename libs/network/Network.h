@@ -13,7 +13,8 @@
 #include "Message.h"            // ss::Message::MessageCode
 #include "NetworkInterface.h"	// ss:NetworkInterface 
 #include "HostMgr.h"			// HostMgr
-
+#include "Worker.h"             // Worker, WorkerVectorData
+#include "Process.h"            // Process
 
 
 namespace ss {
@@ -23,7 +24,7 @@ class Packet;
 	
 
 
-typedef void (*WorkerVecSave)(void);
+typedef void (*WorkerVecSave)(WorkerVectorData* wvP);
 /* ****************************************************************************
 *
 * Network - main element that interconnects
@@ -95,12 +96,12 @@ public:
 	int                tmoSecs;
 	int                tmoUsecs;
 
-	int                         Workers;
-	Message::WorkerVectorData*  workerVec;
-	int                         workerVecSize;
-	void                        workerVecSet(Message::WorkerVectorData* wvData, int size, WorkerVecSave saveCallback);
-	Message::Worker*            workerVecLookup(const char* alias);
-	WorkerVecSave               workerVecSaveCallback;
+	int                Workers;
+	WorkerVectorData*  workerVec;
+	int                workerVecSize;
+	void               workerVecSet(WorkerVectorData* wvData, int size, WorkerVecSave saveCallback);
+	Worker*            workerVecLookup(const char* alias);
+	WorkerVecSave      workerVecSaveCallback;
 
 	int                Endpoints;
 	Endpoint**         endpoint;
@@ -111,7 +112,7 @@ public:
 	void         msgTreat(void* vP);
 	int          msgTreatConnectionClosed(Endpoint* ep, int s);
 	void         controllerMsgTreat(Endpoint* ep, int endpointId, Message::Header* headerP, void* dataP, int dataLen, Packet* packetP);
-	void         workerVectorReceived(Message::WorkerVectorData* workerVec);
+	void         workerVectorReceived(WorkerVectorData* workerVec);
 
 	std::string  getState(std::string selector);
 

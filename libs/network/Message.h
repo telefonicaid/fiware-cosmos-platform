@@ -7,6 +7,7 @@
 *
 */
 #include "Process.h"            // Process
+#include "Worker.h"             // Worker
 
 
 
@@ -147,27 +148,6 @@ typedef struct ConfigData
 
 /* ****************************************************************************
 *
-* Worker
-*/
-typedef struct Worker
-{
-	char             name[32];
-	char             alias[32];
-	char             ip[32];
-	int              port;
-	int              state;
-	bool             verbose;
-	bool             debug;
-	bool             reads;
-	bool             writes;
-	bool             toDo;
-	char             traceV[256];
-} Worker;
-
-
-
-/* ****************************************************************************
-*
 * SpawnData - 
 */
 typedef struct SpawnData
@@ -176,18 +156,6 @@ typedef struct SpawnData
 	int             argCount;
 	char            args[256];
 } SpawnData;
-
-
-
-/* ****************************************************************************
-*
-* WorkerVectorData - 
-*/
-typedef struct WorkerVectorData
-{
-	int      workers;
-	Worker   workerV[0];
-} WorkerVectorData;
 
 
 

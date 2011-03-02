@@ -27,6 +27,7 @@
 #include "iomMsgRead.h"         // iomMsgRead
 #include "Endpoint.h"           // Endpoint
 #include "Process.h"            // Process
+#include "Worker.h"             // ss::Worker
 #include "processList.h"        // spawnerLookup
 #include "starterList.h"        // starterAdd
 #include "ProcessConfigView.h"  // Own interface
@@ -175,7 +176,7 @@ void ProcessConfigView::init(QGridLayout* grid, ss::Process* process)
 
 
 
-extern void workerUpdate(ss::Message::Worker* workerDataP);
+extern void workerUpdate(ss::Worker* workerDataP);
 /* ****************************************************************************
 *
 * ProcessConfigView::ProcessConfigView - 
@@ -214,7 +215,7 @@ ProcessConfigView::ProcessConfigView(QGridLayout* grid, ss::Process* process, ss
 *
 * ProcessConfigView::ProcessConfigView - 
 */
-ProcessConfigView::ProcessConfigView(QGridLayout* grid, ss::Process* process, ss::Message::Worker* workerP)
+ProcessConfigView::ProcessConfigView(QGridLayout* grid, ss::Process* process, ss::Worker* workerP)
 {
 	init(grid, process);
 

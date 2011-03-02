@@ -19,7 +19,6 @@
 #include "DiskManager.h"		// ss::DiskManager
 #include "FileManager.h"		// ss::FileManager
 #include "ProcessManager.h"		// ss::ProcessManager
-#include "daemonize.h"          // daemonize
 
 
 
@@ -33,7 +32,6 @@ char             alias[36];
 bool             noLog;
 bool             local;
 char			 workingDir[1024]; 	
-bool             notdaemon;
 
 
 
@@ -47,7 +45,6 @@ PaArgument paArgs[] =
 {
 	{ "-controller",  controller,  "CONTROLLER",  PaString,  PaReq,   PaND,   PaNL,   PaNL,  "controller IP:port"    },
 	{ "-alias",       alias,       "ALIAS",       PaString,  PaReq,   PaND,   PaNL,   PaNL,  "alias"                 },
-	{ "-notdaemon",  &notdaemon,   "NOT_DAEMON",  PaBool,    PaOpt,  false,  false,   true,  "don't start as daemon" },
 	{ "-endpoints",  &endpoints,   "ENDPOINTS",   PaInt,     PaOpt,     80,      3,    100,  "number of endpoints"   },
 	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt,  false,  false,   true,  "no logging"            },
 	{ "-local",      &local,       "LOCAL",       PaBool,    PaOpt,  false,  false,   true,  "local execution"       },
@@ -86,9 +83,6 @@ int main(int argC, const char *argV[])
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
-
-	if (notdaemon == false)
-		daemonize();
 
 	logFd = lmFirstDiskFileDescriptor();
 

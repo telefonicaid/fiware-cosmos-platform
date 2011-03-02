@@ -163,12 +163,10 @@ void SamsonSpawner::processSpawn(ss::Process* processP)
 		argV[argC++] = processP->alias;
 		argV[argC++] = (char*) "-controller";
 		argV[argC++] = (char*) processP->controllerHost;
-		argV[argC++] = (char*) "-notdaemon";
 	}
 	else if (processP->type == ss::PtController)
 	{
 		argV[argC++] = (char*) "samsonController";
-		argV[argC++] = (char*) "-notdaemon";
 	}
 	else
 		LM_X(1, ("Will only start workers and controllers - bad process type %d", processP->type));

@@ -16,6 +16,7 @@
 * Directories
 */
 #define SAMSON_ETC     "/opt/samson/etc"
+#define SAMSON_CONFIG  "/opt/samson/config"
 #define SAMSON_IMAGES  "/opt/samson/config/images"
 
 
@@ -24,6 +25,6 @@
 *
 * Files
 */
-#define SAMSON_PLATFORM_PROCESSES "/opt/samson/etc/samsonPlatformProcesses"
+#define SAMSON_PLATFORM_PROCESSES "/opt/samson/config/samsonPlatformProcesses"
 
 #endif

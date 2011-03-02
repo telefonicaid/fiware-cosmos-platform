@@ -22,7 +22,6 @@
 #include "FileManager.h"		// ss::FileManager
 #include "LockDebugger.h"       // au::LockDebugger
 #include "Message.h"            // WorkerVectorData
-#include "daemonize.h"          // daemonize
 
 
 
@@ -33,7 +32,6 @@
 int              endpoints;
 char			 workingDir[1024];
 char			 ppFile[1024];
-bool             notdaemon;
 
 
 
@@ -48,7 +46,6 @@ PaArgument paArgs[] =
 	{ "-working",     workingDir,    "WORKING",                  PaString, PaOpt, DEF_WD,  PaNL,  PaNL, "working directory"       },
 	{ "-ppFile",      ppFile,        "PLATFORM_PROCESSES_FILE",  PaString, PaOpt, DEF_WF,  PaNL,  PaNL, "platform processes file" },
 	{ "-endpoints",  &endpoints,     "ENDPOINTS",                PaInt,    PaOpt,     80,     3,   100, "number of endpoints"     },
-	{ "-notdaemon",  &notdaemon,     "NOT_DAEMON",               PaBool,   PaOpt,  false, false,  true, "don't start as daemon"   },
 
 	PA_END_OF_ARGS
 };
@@ -231,9 +228,6 @@ int main(int argC, const char* argV[])
 	workerVecGet();
 
 	LM_T(LmtInit, ("%d workers", workerVec->workers));
-
-	if (notdaemon == false)
-		daemonize();
 
 	au::LockDebugger::shared();         // Lock usage debugging (necessary here where there is only one thread)
 	ss::SamsonSetup::load(workingDir);  // Load setup and create all directories

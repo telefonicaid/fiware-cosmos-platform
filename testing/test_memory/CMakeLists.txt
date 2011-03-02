@@ -9,5 +9,5 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 # Test file
 # -----------------------------------------------------------------
 ADD_EXECUTABLE(test_memory main_memory_test.cpp )
-TARGET_LINK_LIBRARIES(test_memory samsonMemory samsonCommon protobuf lm)
-ADD_TEST(test_memory ${PROJECT_BINARY_DIR}/testing/test_memory/test_memory )
+TARGET_LINK_LIBRARIES(test_memory samsonMemory samsonCommon protobuf lm pthread)
+ADD_TEST(test_memory ${PROJECT_BINARY_DIR}/testing/test_memory/test_memory  )

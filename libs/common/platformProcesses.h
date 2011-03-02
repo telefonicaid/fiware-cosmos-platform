@@ -10,8 +10,7 @@
 * CREATION DATE            Mar 02 2011
 *
 */
-#include "Worker.h"             // WorkerVectorData - will be replaced
-#include "Process.h"            // Process - that will replace WorkerVectorData
+#include "Process.h"            // Process
 
 
 namespace ss
@@ -23,7 +22,7 @@ namespace ss
 *
 * platformProcessesSave - 
 */
-extern void platformProcessesSave(WorkerVectorData* wvP);
+extern void platformProcessesSave(ProcessVector* wvP);
 
 
 
@@ -31,7 +30,7 @@ extern void platformProcessesSave(WorkerVectorData* wvP);
 *
 * platformProcessesGet -
 */
-extern WorkerVectorData* platformProcessesGet(int* sizeP);
+extern ProcessVector* platformProcessesGet(int* sizeP);
 
 }
 

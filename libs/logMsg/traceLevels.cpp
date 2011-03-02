@@ -23,6 +23,7 @@ char* traceLevelName(TraceLevels level)
 	case LmtStarterListShow:             return (char*) "Show Starter List (Supervisor only)";
 	case LmtSpawnerListShow:             return (char*) "Show Spawner List (Supervisor only)";
 	case LmtProcessListShow:             return (char*) "Show Process List (Supervisor only)";
+	case LmtProcessVector:               return (char*) "Process Vector";
 
 	case LmtInit:                        return (char*) "Initialization, especially in main";
 	case LmtConfigFile:                  return (char*) "Configuration file";
@@ -33,7 +34,6 @@ char* traceLevelName(TraceLevels level)
 
 	case LmtWorker:                      return (char*) "Worker";
 	case LmtWorkers:                     return (char*) "Worker List";
-	case LmtWorkerVector:                return (char*) "Worker Vector";
 
 	case LmtEndpoint:                    return (char*) "Endpoint";
 	case LmtEndpoints:                   return (char*) "Endpoints";

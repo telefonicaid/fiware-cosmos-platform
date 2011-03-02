@@ -23,8 +23,8 @@ class QLineEdit;
 class QVBoxLayout;
 
 #include "Process.h"            // ss::Process
-#include "Worker.h"             // ss::Worker
 #include "Message.h"            // ss::Message
+#include "Worker.h"             // Worker
 
 
 

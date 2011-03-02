@@ -26,7 +26,14 @@ class Starter;
 namespace ss
 {
 
+
+
+/* ****************************************************************************
+*
+* Forward class declarations
+*/
 class Endpoint;
+
 
 
 /* ****************************************************************************
@@ -77,6 +84,18 @@ typedef struct Process
 	Starter*             starterP;            // For Supervisor only
 	struct ss::Process*  spawnerP;            // For Supervisor only
 } Process;
+
+
+
+/* ****************************************************************************
+*
+* ProcessVector
+*/
+typedef struct ProcessVector
+{
+	int      processes;
+	Process  processV[];
+} ProcessVector;
 
 }
 

@@ -7,7 +7,6 @@
 *
 */
 #include "Process.h"            // Process
-#include "Worker.h"             // Worker
 
 
 

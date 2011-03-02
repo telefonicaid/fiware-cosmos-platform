@@ -32,7 +32,6 @@ typedef enum TraceLevels
 
 	LmtWorker,
 	LmtWorkers,
-	LmtWorkerVector,
 
 	LmtModuleManager,
 	
@@ -45,6 +44,7 @@ typedef enum TraceLevels
 	LmtSpawnerList,
 	LmtProcessList,
 	LmtStarterList,
+	LmtProcessVector,
 
 	LmtStarter,
 	LmtSpawner,

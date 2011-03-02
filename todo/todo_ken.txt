@@ -1,18 +1,15 @@
 NOW
-  o Move workerVecGet and workerVecSet to separate library, used in controller and in samsonSetup (and soon in Spawner)
-    libs/common/platformConfig.[h|cpp]
-  o change the function names workerVecGet and workerVecSet to 'platformConfigGet/Set'?
-  o Stop using 'Worker' - use 'Process'
-  o Merge Endpoint::Type and Process::Type - use ProcessType (if possible)
-  o move Process.h to libs/common
-  o Make samsonSetup be aware of the Controller
+  o Stop sending the workerVec message - just read the file samsonPlatformProcesses in Network::init
+  o Change all old 'worker' names to 'process', especially in Network
+  o Make Spawner, Controller and Worker coincide in value in types Endpoint::Type and ProcessType
+  o Make samsonSetup be aware of the Controller - add the process to 'samsonPlatformProcesses'
   o Make samsonSetup connect to a Spawner and send him 'samsonPlatformProcesses'
-  o Stop sending the workerVec message - just read the file samsonPlatformProcesses in Network::init!
 
   o Create the "KillSamsonProcesses", received by Spawner
   o samsonSetup -shutdown - send KillSamsonProcesses to a Spawner
   o Interconnect all spawners
   o samsonSetup -check ip - list of all running samson processes
+  o samsonSetup -view - to see the processes 
   o Split Process - make a tree 
   o I have too many list implementations - unify !
   o Add semaphore around jobQueue

@@ -22,8 +22,6 @@
 #include "DiskManager.h"		// ss::DiskManager
 #include "FileManager.h"		// ss::FileManager
 #include "LockDebugger.h"       // au::LockDebugger
-#include "Worker.h"             // Worker, WorkerVectorData
-//#include "Message.h"            //
 
 
 
@@ -117,9 +115,9 @@ void platformProcessesSave(ss::WorkerVectorData* wvP)
 
 /* ****************************************************************************
 *
-* workerVecGet - 
+* processVecGet - 
 */
-static ss::WorkerVectorData* workerVecGet(int* sizeP)
+static ss::WorkerVectorData* processVecGet(int* sizeP)
 {
 	int                             s            = 0;
 	bool                            seriousError = true;
@@ -217,8 +215,8 @@ static ss::WorkerVectorData* workerVecGet(int* sizeP)
 */
 int main(int argC, const char* argV[])
 {
-	ss::WorkerVectorData*  workerVec;
-	int                    workerVecSize;
+	ss::ProcessVector*  processVec;
+	int                 processVecSize;
 
 	paConfig("prefix",                        (void*) "SSC_");
 	paConfig("usage and exit on any warning", (void*) true);
@@ -233,11 +231,11 @@ int main(int argC, const char* argV[])
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
-	workerVec = ss::platformProcessesGet(&workerVecSize);
-	if (workerVec == NULL)
+	processVec = ss::platformProcessesGet(&processVecSize);
+	if (processVec == NULL)
 		LM_X(1, ("Error retreiving info about the platform processes - can't function without it!"));
 
-	LM_T(LmtInit, ("%d workers", workerVec->workers));
+	LM_T(LmtInit, ("%d workers", processVec->processes));
 
 	au::LockDebugger::shared();         // Lock usage debugging (necessary here where there is only one thread)
 	ss::SamsonSetup::load(workingDir);  // Load setup and create all directories
@@ -249,10 +247,10 @@ int main(int argC, const char* argV[])
 	
 	// Instance of network object and initialization
 	// ---------------------------------------------
-	ss::Network network(ss::Endpoint::Controller, "Controller", CONTROLLER_PORT, endpoints, workerVec->workers);
+	ss::Network network(ss::Endpoint::Controller, "Controller", CONTROLLER_PORT, endpoints, processVec->processes);
 
 	network.initAsSamsonController();
-	network.workerVecSet(workerVec, workerVecSize, ss::platformProcessesSave);
+	network.workerVecSet(processVec, processVecSize, ss::platformProcessesSave);
 	network.runInBackground();
 	
 	

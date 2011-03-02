@@ -20,7 +20,6 @@
 #include "ports.h"              // WORKER_PORT
 #include "platformProcesses.h"  // ss::platformProcessesGet, ss::platformProcessesSave
 #include "Process.h"            // Process
-#include "Worker.h"             // Worker
 #include <stdlib.h>             // free()
 
 
@@ -147,9 +146,9 @@ static int accessCheck(void)
 */
 static int platformFileCreate(int workers, char* ip[])
 {
-	int                    s;
-	int                    size;
-	ss::WorkerVectorData*  wv;
+	int                 s;
+	int                 size;
+	ss::ProcessVector*  pv;
 
 
 
@@ -164,33 +163,33 @@ static int platformFileCreate(int workers, char* ip[])
 	//
 	// Initializing variables for the worker vector
 	//
-	size = sizeof(ss::WorkerVectorData) + workers * sizeof(ss::Worker);
-	wv   = (ss::WorkerVectorData*) malloc(size);
+	size = sizeof(ss::ProcessVector) + workers * sizeof(ss::Process);
+	pv   = (ss::ProcessVector*) malloc(size);
 
-	memset(wv, 0, size);
+	memset(pv, 0, size);
 
-	wv->workers = workers;
+	pv->processes = workers;
 
 
 
 	//
-	// Filling the worker vector buffer to be written to file
+	// Filling the process vector buffer to be written to file
 	//
 	for (int ix = 0; ix < (long) ip[0]; ix++)
 	{
-		strncpy(wv->workerV[ix].name,  "samsonWorker", sizeof(wv->workerV[ix].name));
-		strncpy(wv->workerV[ix].ip, ip[ix + 1], sizeof(wv->workerV[ix].ip));
+		strncpy(pv->processV[ix].name,  "samsonWorker", sizeof(pv->processV[ix].name));
+		strncpy(pv->processV[ix].host, ip[ix + 1], sizeof(pv->processV[ix].host));
 
-		snprintf(wv->workerV[ix].alias, sizeof(wv->workerV[ix].alias), "Worker%02d", ix);
+		snprintf(pv->processV[ix].alias, sizeof(pv->processV[ix].alias), "Worker%02d", ix);
 
-		wv->workerV[ix].port = WORKER_PORT;
+		pv->processV[ix].port = WORKER_PORT;
 	}
 
 
 	//
 	// Saving the file to disk
 	//
-	ss::platformProcessesSave(wv);
+	ss::platformProcessesSave(pv);
 
 	return 0;
 }

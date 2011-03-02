@@ -26,8 +26,7 @@
 #include "iomMsgAwait.h"        // iomMsgAwait
 #include "iomMsgRead.h"         // iomMsgRead
 #include "Endpoint.h"           // Endpoint
-#include "Process.h"            // Process
-#include "Worker.h"             // ss::Worker
+#include "Process.h"            // ss::Process
 #include "processList.h"        // spawnerLookup
 #include "starterList.h"        // starterAdd
 #include "ProcessConfigView.h"  // Own interface

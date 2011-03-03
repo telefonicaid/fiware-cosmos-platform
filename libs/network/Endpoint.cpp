@@ -168,6 +168,7 @@ const char* Endpoint::typeName(Endpoint::Type type)
 	case Endpoint::Supervisor:            return "Supervisor";
 	case Endpoint::Killer:                return "Killer";
 	case Endpoint::Fd:                    return "Fd";
+	case Endpoint::Setup:                 return "Setup";
 	}
 
 	return "UnknownType";

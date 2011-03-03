@@ -21,6 +21,7 @@ SET (HEADERS
 	platformProcesses.h
 	Process.h
 	Worker.h
+	samsonConfig.h
 )
 
 SET (SOURCES

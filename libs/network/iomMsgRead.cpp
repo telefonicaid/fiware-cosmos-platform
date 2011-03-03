@@ -43,13 +43,12 @@ static ssize_t iomMsgPartRead(const char* from, const char* what, int fd, char* 
 			LM_RE(-1, ("iomMsgAwait(%s) returned %d", from, s));
 
 		nb = read(fd, (char*) buf + tot , bufLen - tot);
-
 		if (nb == -1)
 		{
 			if (errno == EBADF)
 				LM_RE(-2, ("read(%s): %s (treating as Connection Closed)", from, strerror(errno)));
 
-			LM_RE(-1, ("read(%s): %s", from, strerror(errno)));
+			LM_RE(-2, ("read(%s): %s", from, strerror(errno)));
 		}
 		else if (nb == 0)
 		{

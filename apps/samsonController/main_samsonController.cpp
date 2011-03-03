@@ -250,7 +250,7 @@ int main(int argC, const char* argV[])
 	ss::Network network(ss::Endpoint::Controller, "Controller", CONTROLLER_PORT, endpoints, processVec->processes);
 
 	network.initAsSamsonController();
-	network.workerVecSet(processVec, processVecSize, ss::platformProcessesSave);
+	network.procVecSet(processVec, processVecSize, ss::platformProcessesSave);
 	network.runInBackground();
 	
 	

@@ -29,7 +29,9 @@
 #include "Alarm.h"              // ALARM
 #include "ports.h"              // Port numbers for samson processes
 
+#include "samsonConfig.h"       // SAMSON_MAX_HOSTS
 #include "samson/Log.h"			// LogLineData
+#include "platformProcesses.h"  // platformProcessesGet
 #include "Misc.h"               // ipGet 
 #include "Endpoint.h"           // Endpoint
 #include "Message.h"            // Message::MessageCode
@@ -92,6 +94,9 @@ namespace ss
 
 static int                 logSocket = -1;
 static struct sockaddr_in  logAddr;
+
+
+
 /* ****************************************************************************
 *
 * logHookInit - 
@@ -256,12 +261,11 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 	this->port             = port;
 	Endpoints              = endpoints;
 	Workers                = workers;
+	LM_M(("Workers: %d", Workers));
 
-
-	// This is just used in samsonController ...
-	workerVec              = NULL;
-	workerVecSize          = 0;
-	workerVecSaveCallback  = NULL;
+	procVec                = NULL;
+	procVecSize            = 0;
+	procVecSaveCallback  = NULL;
 
 	//
 	// Endpoint vector
@@ -310,7 +314,7 @@ Network::Network(Endpoint::Type type, const char* alias, unsigned short port, in
 {
 	reset(type, alias, port, endpoints, workers);
 
-	hostMgr = new HostMgr(20);
+	hostMgr = new HostMgr(SAMSON_MAX_HOSTS);
 }
 
 
@@ -423,6 +427,56 @@ Endpoint* Network::controllerConnect(const char* controllerName)
 
 /* ****************************************************************************
 *
+* platformProcesses - 
+*/
+void Network::platformProcesses(void)
+{
+	procVec = platformProcessesGet();
+
+	if (procVec == NULL)
+	{
+		if (endpoint[ME]->type != Endpoint::Spawner)
+			LM_X(1, ("No platform process configuration file found - please setup the platform, using 'samsonSetup'"));
+
+		LM_W(("platform processes file error - awaiting data from samsonSetup"));
+
+		return;
+	}
+
+
+
+	//
+	// Spawner:
+	//   Send 'Shutdown' and then disconnect all spawners
+	//   Start all local processes in the process vector 'procVec'
+	//   Connect to Spawners in all hosts in procVec.
+	
+	//
+	// Worker:
+	//   Connect to all Workers and the Controller in the process vector 'procVec' (ALL processes)
+	//   Avoid connecting to myself ...
+	//
+
+	//
+	// Controller:
+	//   Connect to all Workers in the process vector 'procVec' (ALL processes)
+	//
+
+	//
+	// Supervisor:
+	//   Connect to all Workers and the Controller in the process vector 'procVec' (ALL processes)
+	//
+
+	//
+	// Setup:
+	//   Connect to Spawners in all hosts in procVec
+	//
+}
+
+
+
+/* ****************************************************************************
+*
 * init - create endpoints 0 and 1
 */
 void Network::init(const char* controllerName)
@@ -446,6 +500,9 @@ void Network::init(const char* controllerName)
 
 		LM_T(LmtFds, ("opened fd %d to accept incoming connections", endpoint[LISTENER]->rFd));
 	}
+
+	if (endpoint[ME]->type == Endpoint::Spawner)
+		platformProcesses();
 
 	if (endpoint[CONTROLLER] == NULL)
 		controllerConnect(controllerName);
@@ -1302,6 +1359,7 @@ Endpoint* Network::endpointAdd
 		return endpointAddDefault(rFd, wFd, name, alias, workers, type, ip, port, coreNo, inheritedFrom);
 		break;
 
+	case Endpoint::Setup:
 	case Endpoint::Killer:
 	case Endpoint::Sender:
 	case Endpoint::CoreWorker:
@@ -1897,22 +1955,22 @@ void Network::checkAllWorkersConnected(void)
 
 /* ****************************************************************************
 *
-* workerVecLookup - 
+* procVecLookup - 
 */
-Process* Network::workerVecLookup(const char* alias)
+Process* Network::procVecLookup(const char* alias)
 {
-	if (workerVec == NULL)
+	if (procVec == NULL)
 	{
-		LM_E(("NULL worker vector!"));
+		LM_E(("NULL process vector!"));
 		return NULL;
 	}
 
-	LM_T(LmtWorker, ("Comparing %d workers with alias '%s'", workerVec->processes, alias));
-	for (int ix = 0; ix < workerVec->processes; ix++)
+	LM_T(LmtWorker, ("Comparing %d workers with alias '%s'", procVec->processes, alias));
+	for (int ix = 0; ix < procVec->processes; ix++)
 	{
-		LM_T(LmtWorker, ("Comparing '%s' to '%s'", workerVec->processV[ix].alias, alias));
-		if (strcmp(workerVec->processV[ix].alias, alias) == 0)
-			return &workerVec->processV[ix];
+		LM_T(LmtWorker, ("Comparing '%s' to '%s'", procVec->processV[ix].alias, alias));
+		if (strcmp(procVec->processV[ix].alias, alias) == 0)
+			return &procVec->processV[ix];
 	}
 
 	return NULL;
@@ -1954,7 +2012,7 @@ void Network::controllerMsgTreat
 		if (msgType == Message::Msg)
 		{
 			LM_T(LmtWorker, ("Asked for worker config for '%s'", alias));
-			worker = workerVecLookup(alias);
+			worker = procVecLookup(alias);
 			if (worker != NULL)
 			{
 				LM_T(LmtWrite, ("sending ack with worker '%s' to '%s'", alias, name));
@@ -1974,7 +2032,7 @@ void Network::controllerMsgTreat
 		if (endpoint[ME]->type == Endpoint::Spawner)
 			LM_W(("Got a change in platform processes ... !"));
 
-		worker = workerVecLookup(config->alias);
+		worker = procVecLookup(config->alias);
 		if (worker != NULL)
 		{
 			worker->verbose = config->verbose;
@@ -1988,8 +2046,8 @@ void Network::controllerMsgTreat
 			strncpy(worker->host,   config->host, sizeof(worker->host));
 			strncpy(worker->name, config->name, sizeof(worker->name));
 
-			if (workerVecSaveCallback)
-				workerVecSaveCallback(workerVec);
+			if (procVecSaveCallback)
+				procVecSaveCallback(procVec);
 		}
 		else
 			LM_X(1, ("Worker '%s' not found", config->alias));
@@ -1999,7 +2057,7 @@ void Network::controllerMsgTreat
 		if (msgType != Message::Msg)
 			LM_X(1, ("Controller got an ACK for WorkerVector message"));
 		LM_T(LmtWrite, ("sending ack with entire worker vector to '%s'", name));
-		iomMsgSend(ep, endpoint[ME], msgCode, Message::Ack, workerVec, workerVecSize);
+		iomMsgSend(ep, endpoint[ME], msgCode, Message::Ack, procVec, procVecSize);
 		break;
 
 	default:
@@ -2011,13 +2069,13 @@ void Network::controllerMsgTreat
 
 /* ****************************************************************************
 *
-* workerVecSet - 
+* procVecSet - 
 */
-void Network::workerVecSet(ProcessVector* wvData, int size, ProcessVecSave saveCallback)
+void Network::procVecSet(ProcessVector* wvData, int size, ProcessVecSave saveCallback)
 {
-	workerVec             = wvData;
-	workerVecSize         = size;
-	workerVecSaveCallback = saveCallback;
+	procVec             = wvData;
+	procVecSize         = size;
+	procVecSaveCallback = saveCallback;
 }
 
 
@@ -2148,6 +2206,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 	else if (hello->type == Endpoint::Supervisor)        newSlot = 3;
 	else if (hello->type == Endpoint::Spawner)           newSlot = 30;
 	else if (hello->type == Endpoint::Worker)            newSlot = 10 + hello->workerId;
+	else if (hello->type == Endpoint::Setup)             newSlot = 50;
 	else
 		LM_X(1, ("Unexpected type '%s'", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type)));
 	
@@ -2350,45 +2409,51 @@ int Network::msgTreatConnectionClosed(Endpoint* ep, int s)
 
 /* ****************************************************************************
 *
-* workerVectorReceived - 
+* procVecReceived - 
 */
-void Network::workerVectorReceived(ProcessVector* processVec)
+void Network::procVecReceived(ProcessVector* processVec)
 {
 	int ix;
+	int workers;
 
-	LM_T(LmtProcessVector, ("Got the worker vector from the Controller - now connect to them all ..."));
+	LM_T(LmtProcessVector, ("Got the worker vector from the Controller (%d processes) - now connect to them all ...", processVec->processes));
 
-	
-	for (int ix = 0; ix < processVec->processes; ix++)
+	for (int ix = 1; ix < processVec->processes; ix++)
 		LM_T(LmtProcessVector, ("Controller gave me a worker in %s:%d", processVec->processV[ix].host, processVec->processV[ix].port));
 
-	if (Workers < processVec->processes)
+	// process 0 is the controller
+	workers = processVec->processes - 1; 
+	LM_M(("Workers:              %d", Workers));
+	LM_M(("workers from procVec: %d", workers));
+
+	if (Workers < workers)
 	{
-		LM_T(LmtProcessVector, ("Got %d workers from Controller - I thought there were %d workers - changing to %d workers",
-							   processVec->processes, Workers, processVec->processes));
+		// LM_T(LmtProcessVector, ...
+		LM_M(("Got %d processes from Controller - I thought there were %d workers - changing to %d workers",
+			  processVec->processes, Workers, workers));
 
 		// Adding workers in Endpoint vector
-		for (int ix = Workers; ix < processVec->processes; ix++)
+		for (int ix = Workers; ix < workers; ix++)
 		{
 			endpoint[FIRST_WORKER + ix]       = workerNew(ix);
-			endpoint[FIRST_WORKER + ix]->port = processVec->processV[ix].port;
+			endpoint[FIRST_WORKER + ix]->port = processVec->processV[ix + 1].port;
 					
-			if (processVec->processV[ix].host[0] != 0)
-				endpoint[FIRST_WORKER + ix]->ip   = strdup(processVec->processV[ix].host);
+			if (processVec->processV[ix + 1].host[0] != 0)
+				endpoint[FIRST_WORKER + ix]->ipSet(processVec->processV[ix + 1].host);
 			else
 				LM_W(("Empty IP for worker %d", ix));
 		}
 	}
-	else if (Workers > processVec->processes)
+	else if (Workers > workers)
 	{
 		// Removing workers from Endpoint vector
 		LM_T(LmtProcessVector, ("I had %d workers - Controller tells me I should have %d - deleting the rest (%d - %d)",
 							   Workers,
-							   processVec->processes,
-							   processVec->processes,
+							   workers,
+							   workers,
 							   Workers));
 
-		for (unsigned int ix = processVec->processes; ix < (unsigned int) Workers; ix++)
+		for (unsigned int ix = workers; ix < (unsigned int) Workers; ix++)
 		{
 			if (endpoint[FIRST_WORKER + ix] != NULL)
 			{
@@ -2399,23 +2464,30 @@ void Network::workerVectorReceived(ProcessVector* processVec)
 		}
 	}
 
-	Workers = processVec->processes;
+	Workers = workers;
 
 
-	LM_T(LmtWorker, ("Creating %d worker endpoint%s", Workers, (Workers > 1)? "s" : ""));
+	// LM_T(LmtWorker, ...
+	LM_M(("Initializing %d worker endpoint%s", Workers, (Workers > 1)? "s" : ""));
 	for (ix = 0; ix < Workers; ix++)
 	{
+		Endpoint* ep;
+
 		if (endpoint[FIRST_WORKER + ix] == NULL)
 		{
-			LM_T(LmtWorker, ("Creating endpoint for worker %d", ix));
-			endpoint[FIRST_WORKER + ix]        = new Endpoint(Endpoint::Worker, processVec->processV[ix].name, processVec->processV[ix].host, processVec->processV[ix].port, -1, -1);
-			endpoint[FIRST_WORKER + ix]->state = Endpoint::Unconnected;
-			endpoint[FIRST_WORKER + ix]->aliasSet(processVec->processV[ix].alias);
-			
-			LM_T(LmtWorker, ("*** New Worker Endpoint '%s' at %p", processVec->processV[ix].alias, endpoint[ix]));
+			endpoint[FIRST_WORKER + ix] = new Endpoint(Endpoint::Worker, processVec->processV[ix + 1].name, processVec->processV[ix + 1].host, processVec->processV[ix + 1].port, -1, -1);
+			if (endpoint[FIRST_WORKER + ix] == NULL)
+				LM_X(1, ("error allocating endpoint"));
 		}
-		else
-			LM_T(LmtWorker, ("Should I fill worker %02d with the info the controller gave me ?", ix));
+
+		LM_M(("Filling worker %02d with the info the controller gave me ('%s' '%s' '%s')", ix, processVec->processV[ix + 1].name, processVec->processV[ix + 1].host, processVec->processV[ix + 1].alias));
+		ep = endpoint[FIRST_WORKER + ix];
+
+		ep->name  = processVec->processV[ix + 1].name;
+		ep->state = Endpoint::Unconnected;
+		ep->port  = processVec->processV[ix + 1].port;
+		ep->aliasSet(processVec->processV[ix + 1].alias);
+		ep->ipSet(processVec->processV[ix + 1].host);		
 	}
 
 	if (endpointUpdateReceiver != NULL)
@@ -2450,8 +2522,8 @@ void Network::workerVectorReceived(ProcessVector* processVec)
 			}
 			else
 			{
-				epP->rFd = workerFd;
-				epP->wFd = workerFd;
+				epP->rFd   = workerFd;
+				epP->wFd   = workerFd;
 				epP->state = Endpoint::Connected;
 			}
 		}
@@ -2505,6 +2577,13 @@ void Network::msgTreat(void* vP)
 	LM_T(LmtMsgTreat, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
 	{
+	case Message::ProcessVector:
+		if (dataReceiver)
+			dataReceiver->receive(endpointId, 0, headerP, dataP);
+		else
+			LM_X(1, ("no date receiver to treat ProcessVector message"));
+	   break;
+
 	case Message::EntireLogFile:
 		if (msgType == Message::Msg)
 			logFileSend(ep, msgCode);
@@ -2646,7 +2725,7 @@ void Network::msgTreat(void* vP)
 			if (ep->type != Endpoint::Controller)
 				LM_X(1, ("Got a WorkerVector ack NOT from Controller ... (endpoint type: %d)", ep->type));
 
-			workerVectorReceived((ProcessVector*) dataP);
+			procVecReceived((ProcessVector*) dataP);
 		}
 
 		iAmReady = true;

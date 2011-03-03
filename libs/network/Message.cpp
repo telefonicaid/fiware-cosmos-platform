@@ -23,10 +23,11 @@ char* messageCode(MessageCode code)
 	{
 		case Alarm:                            return (char*) "Alarm";
 		case Hello:                            return (char*) "Hello";
+		case ProcessVector:                    return (char*) "ProcessVector";
+		case WorkerVector:                     return (char*) "WorkerVector";
 		case WorkerTask:                       return (char*) "WorkerTask";
 		case WorkerTaskKill:                   return (char*) "WorkerTaskKill";
 		case WorkerTaskFinish:                 return (char*) "WorkerTaskFinish";
-		case WorkerVector:                     return (char*) "WorkerVector";
 		case WorkerStatus:                     return (char*) "WorkerStatus";
 		case Command:                          return (char*) "Command";
 		case CommandResponse:		           return (char*) "CommandResponse";

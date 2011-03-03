@@ -33,6 +33,7 @@ typedef enum MessageCode
 {
 	Alarm							= CODE('A', 'l', 'm', ' '),
 	Hello							= CODE('H', 'e', 'l', ' '),
+	ProcessVector					= CODE('P', 'V', 'c', ' '),
 	WorkerVector					= CODE('W', 'V', 'c', ' '),
 	WorkerStatus					= CODE('W', 'S', 't', ' '),
 	WorkerTask						= CODE('W', 'T', 'a', ' '),

@@ -30,7 +30,7 @@ extern void platformProcessesSave(ProcessVector* wvP);
 *
 * platformProcessesGet -
 */
-extern ProcessVector* platformProcessesGet(int* sizeP);
+extern ProcessVector* platformProcessesGet(int* sizeP = NULL);
 
 }
 

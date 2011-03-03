@@ -39,6 +39,7 @@ public:
 	Network(Endpoint::Type type, const char* alias, unsigned short port = 0, int endpoints = 80, int workers = 10);
 
 	void         init(const char* controllerName = NULL);
+	void         platformProcesses(void);
 	Endpoint*    controllerConnect(const char* controllerName);
 
 	virtual void setPacketReceiver(PacketReceiverInterface* receiver);
@@ -96,11 +97,12 @@ public:
 	int                tmoUsecs;
 
 	int                Workers;
-	ProcessVector*     workerVec;
-	int                workerVecSize;
-	void               workerVecSet(ProcessVector* wvData, int size, ProcessVecSave saveCallback);
-	Process*           workerVecLookup(const char* alias);
-	ProcessVecSave     workerVecSaveCallback;
+
+	ProcessVector*     procVec;
+	int                procVecSize;
+	void               procVecSet(ProcessVector* wvData, int size, ProcessVecSave saveCallback);
+	Process*           procVecLookup(const char* alias);
+	ProcessVecSave     procVecSaveCallback;
 
 	int                Endpoints;
 	Endpoint**         endpoint;
@@ -111,7 +113,7 @@ public:
 	void         msgTreat(void* vP);
 	int          msgTreatConnectionClosed(Endpoint* ep, int s);
 	void         controllerMsgTreat(Endpoint* ep, int endpointId, Message::Header* headerP, void* dataP, int dataLen, Packet* packetP);
-	void         workerVectorReceived(ProcessVector* processVec);
+	void         procVecReceived(ProcessVector* processVec);
 
 	std::string  getState(std::string selector);
 

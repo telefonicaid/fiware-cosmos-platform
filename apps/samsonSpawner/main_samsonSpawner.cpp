@@ -223,10 +223,22 @@ void SamsonSpawner::processSpawn(ss::Process* processP)
 */
 int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP)
 {
+	ss::Endpoint* ep      = networkP->endpoint[fromId];
+	ss::Process*  process = (ss::Process*)  dataP;
+
+	if (ep == NULL)
+		LM_X(1, ("Received a message for a NULL endpoint ..."));
+
 	switch (headerP->code)
 	{
 	case ss::Message::ProcessSpawn:
-		processSpawn((ss::Process*) dataP);
+		processSpawn(process);
+		break;
+
+	case ss::Message::ProcessVector:
+		LM_M(("Got ProcessVector - now do something about it ..."));
+		LM_M(("Sending ack"));
+		iomMsgSend(ep, networkP->endpoint[0], ss::Message::ProcessVector, ss::Message::Ack);
 		break;
 
 	default:

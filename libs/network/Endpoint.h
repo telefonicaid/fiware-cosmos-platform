@@ -113,7 +113,8 @@ public:
 		Sender,
 		Spawner,
 		Supervisor,
-		Killer
+		Killer,
+		Setup
 	} Type;
 
 private:

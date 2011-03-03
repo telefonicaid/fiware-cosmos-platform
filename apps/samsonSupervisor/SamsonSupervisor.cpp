@@ -36,7 +36,7 @@
 *
 * Global variables
 */
-ss::WorkerVectorData* workerVec = NULL;
+ss::ProcessVector* procVec = NULL;
 
 
 
@@ -60,15 +60,15 @@ SamsonSupervisor::SamsonSupervisor(ss::Network* netP) : ss::Delilah(netP, false)
 *
 * workerLookup - 
 */
-ss::Worker* workerLookup(const char* alias)
+ss::Process* workerLookup(const char* alias)
 {
-	if (workerVec == NULL)
+	if (procVec == NULL)
 		return NULL;
 
-	for (int ix = 0; ix < workerVec->workers; ix++)
+	for (int ix = 1; ix < procVec->processes; ix++)
 	{
-		if (strcmp(workerVec->workerV[ix].alias, alias) == 0)
-			return &workerVec->workerV[ix];
+		if (strcmp(procVec->processV[ix].alias, alias) == 0)
+			return &procVec->processV[ix];
 	}
 
 	return NULL;
@@ -82,13 +82,13 @@ ss::Worker* workerLookup(const char* alias)
 */
 void workerUpdate(ss::Worker* workerDataP)
 {
-	ss::Worker* worker = workerLookup(workerDataP->alias);
+	ss::Process* worker = workerLookup(workerDataP->alias);
 
 	if (worker == NULL)
 		LM_RVE(("Cannot find worker '%s'", workerDataP->alias));
 
 	memcpy(worker, workerDataP, sizeof(ss::Worker));
-	LM_T(LmtWorker, ("Updated worker '%s' in local worker vec (host: '%s')", worker->alias, worker->ip));
+	LM_T(LmtWorker, ("Updated worker '%s' in local worker vec (host: '%s')", worker->alias, worker->host));
 }
 
 
@@ -223,7 +223,7 @@ static bool hostValid(const char* host)
 *
 * emptyStarter - 
 */
-static void emptyStarter(ss::Worker* worker, int workerId)
+static void emptyStarter(ss::Process* worker, int workerId)
 {
 	ss::Process* processP;
 	Starter*     starter;
@@ -246,7 +246,7 @@ static void emptyStarter(ss::Worker* worker, int workerId)
 
 	starter = starterAdd("workerVectorReceived - Starter for Worker without valid IP address", processP);
 	if (starter == NULL)
-		LM_X(1, ("NULL starter for Worker@%s", worker->ip));
+		LM_X(1, ("NULL starter for Worker@%s", worker->host));
 
 	if ((tabManager != NULL) && (tabManager->processListTab != NULL))
 		tabManager->processListTab->starterInclude(starter);
@@ -259,40 +259,42 @@ static void emptyStarter(ss::Worker* worker, int workerId)
 *
 * workerVectorReceived - 
 */
-static void workerVectorReceived(ss::WorkerVectorData*  wvDataP)
+static void workerVectorReceived(ss::ProcessVector* pVec)
 {
 	Host*            hostP;
 	int              fd;
 	ss::Process*     spawner;
 	ss::Process*     process;
 	Starter*         starter;
-	ss::Worker*      worker;
+	ss::Process*     worker;
 	ss::Endpoint*    ep;
 	int              size;
+	int              workers;
 
-	LM_T(LmtProcessVector, ("Got Worker Vector from Controller (with %d workers)", wvDataP->workers));
+	workers = pVec->processes - 1;
 
-	size      = sizeof(ss::WorkerVectorData) + wvDataP->workers * sizeof(ss::Worker);
-	workerVec = (ss::WorkerVectorData*) malloc(size);
+	LM_T(LmtProcessVector, ("Got Worker Vector from Controller (with %d workers)", workers));
 
-	if (workerVec == NULL)
+	size     = sizeof(ss::ProcessVector) + pVec->processes * sizeof(ss::Process);
+	procVec  = (ss::ProcessVector*) malloc(size);
+
+	if (procVec == NULL)
 		LM_X(1, ("malloc(%d): %s", size, strerror(errno)));
 
-	memset(workerVec, 0, size);
-	memcpy(workerVec, wvDataP, size);
+	memcpy(procVec, pVec, size);
 
-	networkP->endpointListShow("Got Worker Vector");
-	processListShow("Got Worker Vector");
+	networkP->endpointListShow("Got Process Vector");
+	processListShow("Got Process Vector");
 
-	LM_T(LmtProcessVector, ("------------------ Worker Vector ------------------"));
-	for (int ix = 0; ix < wvDataP->workers; ix++)
+	LM_T(LmtProcessVector, ("------------------ Process Vector ------------------"));
+	for (int ix = 0; ix < procVec->processes; ix++)
 	{
-		worker = &wvDataP->workerV[ix];
-		LM_T(LmtProcessVector, ("Worker %d (name: '%s', alias: '%s') in host %s", ix, worker->name, worker->alias, worker->ip));
+		process = &procVec->processV[ix];
+		LM_T(LmtProcessVector, ("Process %d (name: '%s', alias: '%s') in host %s", ix, process->name, process->alias, process->host));
 	}
 	LM_T(LmtProcessVector, ("-------------------------------------------------------"));
 
-	for (int ix = 0; ix < wvDataP->workers; ix++)
+	for (int ix = 1; ix <= workers; ix++)
 	{
 		// process Lookup/Add
 		// starter
@@ -300,28 +302,28 @@ static void workerVectorReceived(ss::WorkerVectorData*  wvDataP)
 		// show?
 		
 
-		LM_T(LmtProcessVector, ("Create a Starter for endpoint '%s@%s' (unless it already exists ...)", worker->alias, worker->ip));
-		worker = &wvDataP->workerV[ix];
+		worker = &procVec->processV[ix];
+		LM_T(LmtProcessVector, ("Create a Starter for endpoint '%s@%s' (unless it already exists ...)", worker->alias, worker->host));
 
-		if (hostValid(worker->ip) == false)
+		if (hostValid(worker->host) == false)
 		{
-			emptyStarter(worker, ix);
+			emptyStarter(worker, ix - 1);
 			continue;
 		}
 
-		LM_T(LmtProcessVector, ("Now I have a valid IP for the worker (and its Spawner ...): '%s'", worker->ip));
+		LM_T(LmtProcessVector, ("Now I have a valid IP for the worker (and its Spawner ...): '%s'", worker->host));
 		LM_T(LmtProcessVector, ("Lets lookup spawner, process, and starter for this worker (aliased '%s')", worker->alias));
-		LM_T(LmtProcessVector, ("But we start with looking up the network endpoint for the spawner in '%s'", worker->ip));
+		LM_T(LmtProcessVector, ("But we start with looking up the network endpoint for the spawner in '%s'", worker->host));
 
-		hostP = networkP->hostMgr->lookup(worker->ip);
+		hostP = networkP->hostMgr->lookup(worker->host);
 		if (hostP == NULL)
 		{
-			networkP->hostMgr->insert(worker->ip, NULL);
+			networkP->hostMgr->insert(worker->host, NULL);
 			networkP->hostMgr->list("Got Worker Vector");
 
-			hostP = networkP->hostMgr->lookup(worker->ip);
+			hostP = networkP->hostMgr->lookup(worker->host);
 			if (hostP == NULL)
-				LM_X(1, ("Host Manager cannot find host '%s'", worker->ip));
+				LM_X(1, ("Host Manager cannot find host '%s'", worker->host));
 		}
 
 		ep = networkP->endpointLookup(ss::Endpoint::Spawner, hostP);
@@ -417,7 +419,7 @@ static void workerVectorReceived(ss::WorkerVectorData*  wvDataP)
 			starter->check("workerVectorReceived - just created a Worker");
 	}
 
-	LM_T(LmtProcessVector, ("Treated worker vector with %d workers", wvDataP->workers));
+	LM_T(LmtProcessVector, ("Treated worker vector with %d workers", workers));
 }
 
 
@@ -428,7 +430,7 @@ static void workerVectorReceived(ss::WorkerVectorData*  wvDataP)
 */
 int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info)
 {
-	ss::WorkerVectorData*  wvDataP   = (ss::WorkerVectorData*) info;
+	ss::ProcessVector*     procVec   = (ss::ProcessVector*) info;
 	Starter*               starter   = NULL;
 	ss::Process*           processP  = NULL;
 	char                   eText[256];
@@ -513,7 +515,7 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		break;
 
 	case ss::Endpoint::WorkerVectorReceived:
-		workerVectorReceived(wvDataP);
+		workerVectorReceived(procVec);
 		break;
 
 	case ss::Endpoint::WorkerAdded:

@@ -271,7 +271,7 @@ void Starter::logClicked(void)
 
 
 
-extern ss::Worker* workerLookup(const char* alias);
+extern ss::Process* workerLookup(const char* alias);
 /* ****************************************************************************
 *
 * nameClicked - 

@@ -80,14 +80,14 @@ ss::Process* workerLookup(const char* alias)
 *
 * workerUpdate - 
 */
-void workerUpdate(ss::Worker* workerDataP)
+void workerUpdate(ss::Process* processP)
 {
-	ss::Process* worker = workerLookup(workerDataP->alias);
+	ss::Process* worker = workerLookup(processP->alias);
 
 	if (worker == NULL)
-		LM_RVE(("Cannot find worker '%s'", workerDataP->alias));
+		LM_RVE(("Cannot find worker '%s'", processP->alias));
 
-	memcpy(worker, workerDataP, sizeof(ss::Worker));
+	memcpy(worker, processP, sizeof(ss::Process));
 	LM_T(LmtWorker, ("Updated worker '%s' in local worker vec (host: '%s')", worker->alias, worker->host));
 }
 
@@ -103,7 +103,7 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 {
 	ss::Endpoint*             ep = networkP->endpointLookup(fromId);
 	ss::Message::ConfigData*  configDataP;
-	ss::Worker*               workerP;
+	ss::Process*              workerP;
 	
 	if (ep == NULL)
 		LM_RE(0, ("Cannot find endpoint with id %d", fromId));
@@ -123,7 +123,7 @@ int SamsonSupervisor::receive(int fromId, int nb, ss::Message::Header* headerP, 
 		break;
 
 	case ss::Message::WorkerConfigGet:
-		workerP = (ss::Worker*) dataP;
+		workerP = (ss::Process*) dataP;
 
 		if (headerP->type != ss::Message::Ack)
 			LM_X(1, ("Bad msg type '%d'", headerP->type));

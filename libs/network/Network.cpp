@@ -35,7 +35,6 @@
 #include "Misc.h"               // ipGet 
 #include "Endpoint.h"           // Endpoint
 #include "Message.h"            // Message::MessageCode
-#include "Worker.h"             // Worker
 #include "Packet.h"             // Packet
 #include "MemoryManager.h"      // MemoryManager
 #include "iomInit.h"            // iomInit
@@ -2016,7 +2015,7 @@ void Network::controllerMsgTreat
 			if (worker != NULL)
 			{
 				LM_T(LmtWrite, ("sending ack with worker '%s' to '%s'", alias, name));
-				iomMsgSend(ep, endpoint[ME], msgCode, Message::Ack, worker, sizeof(Worker));
+				iomMsgSend(ep, endpoint[ME], msgCode, Message::Ack, worker, sizeof(Process));
 			}
 			else
 				iomMsgSend(ep, endpoint[ME], msgCode, Message::Nak, NULL, 0);

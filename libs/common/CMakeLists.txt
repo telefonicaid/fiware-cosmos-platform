@@ -20,7 +20,6 @@ SET (HEADERS
 	EnvironmentOperations.h
 	platformProcesses.h
 	Process.h
-	Worker.h
 	samsonConfig.h
 )
 

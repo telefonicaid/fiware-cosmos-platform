@@ -175,7 +175,7 @@ void ProcessConfigView::init(QGridLayout* grid, ss::Process* process)
 
 
 
-extern void workerUpdate(ss::Worker* workerDataP);
+extern void workerUpdate(ss::Process* processP);
 /* ****************************************************************************
 *
 * ProcessConfigView::ProcessConfigView - 
@@ -214,14 +214,14 @@ ProcessConfigView::ProcessConfigView(QGridLayout* grid, ss::Process* process, ss
 *
 * ProcessConfigView::ProcessConfigView - 
 */
-ProcessConfigView::ProcessConfigView(QGridLayout* grid, ss::Process* process, ss::Worker* workerP)
+ProcessConfigView::ProcessConfigView(QGridLayout* grid, ss::Process* process, ss::Process* workerP)
 {
 	init(grid, process);
 
 	workerUpdate(workerP);
 
 	if ((process->host == NULL) || (process->host[0] == 0) || (strcmp(process->host, "ip") == 0))
-		strncpy(process->host, workerP->ip, sizeof(process->host));
+		strncpy(process->host, workerP->host, sizeof(process->host));
 
 	verboseBox->setCheckState((workerP->verbose == true)? Qt::Checked : Qt::Unchecked);
 	debugBox->setCheckState((workerP->debug     == true)? Qt::Checked : Qt::Unchecked);
@@ -232,7 +232,7 @@ ProcessConfigView::ProcessConfigView(QGridLayout* grid, ss::Process* process, ss
 	for (int ix = 0; ix < TRACE_LEVELS; ix++)
 	{
 		if (traceLevelItem[ix])
-			traceLevelItem[ix]->setCheckState((workerP->traceV[ix] == true)? Qt::Checked : Qt::Unchecked);
+			traceLevelItem[ix]->setCheckState((workerP->traceLevels[ix] == true)? Qt::Checked : Qt::Unchecked);
 	}
 
 	fill(grid, process);

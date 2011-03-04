@@ -8,10 +8,7 @@ namespace ss {
 	{
 		delegate = _delegate;
 		type = _type;
-		
-		// No error by default
-		error = false;	
-		
+				
 		// Type of disk operation for statistics
 		switch (type) {
 			case read: operation = DiskStatistics::read; break;
@@ -41,12 +38,5 @@ namespace ss {
 	{
 		fm_id = _id;		// Set the file manager id
 	}
-	
-	void FileManagerItem::setError( std::string _error_message )
-	{
-		error = true;
-		error_message = _error_message;
-	}
-	
-	
+		
 }

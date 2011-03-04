@@ -9,6 +9,7 @@ SET (HEADERS
 	FileManagerItem.h
 	FileManagerReadItem.h
 	FileManagerWriteItem.h
+	FileManagerRemoveItem.h
 	FileManagerCacheItem.h
 	FileManagerCacheTask.h
 	FileManagerCacheSystem.h
@@ -25,9 +26,10 @@ SET (SOURCES
 	FileManagerItem.cpp
 	FileManagerReadItem.cpp
 	FileManagerWriteItem.cpp
-    FileManagerCacheItem.cpp
-    FileManagerCacheTask.cpp
-    FileManagerCacheSystem.cpp
+	FileManagerRemoveItem.cpp
+    	FileManagerCacheItem.cpp
+    	FileManagerCacheTask.cpp
+    	FileManagerCacheSystem.cpp
 	DiskStatistics.cpp
 )
 

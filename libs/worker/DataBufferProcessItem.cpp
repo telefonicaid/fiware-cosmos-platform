@@ -22,7 +22,6 @@
 #include <set>							// std::set
 #include "samson.pb.h"					// ss::network::...
 #include "BufferVector.h"				// ss::BufferVector
-#include "Status.h"						// au::Status
 #include "ProcessItem.h"				// ss::ProcessItem
 #include "FileManagerWriteItem.h"		// ss::FileManagerWriteItem
 

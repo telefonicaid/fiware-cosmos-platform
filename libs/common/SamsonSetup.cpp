@@ -76,8 +76,6 @@ namespace ss
 		init( items );
 		
 	}
-
-	
 	
 	SamsonSetup::SamsonSetup( std::string workingDirectory )
 	{
@@ -92,10 +90,10 @@ namespace ss
 				
 		// Create directories if necessary
 		createDirectory( workingDirectory );
-		createDirectory(controllerDirectory);
-		createDirectory(dataDirectory);
-        createDirectory(modulesDirectory);        
-		createDirectory(setupDirectory);			
+		createDirectory( controllerDirectory );
+		createDirectory( dataDirectory );
+        createDirectory( modulesDirectory );        
+		createDirectory( setupDirectory );			
 		
 		// Load values from file ( if exist )
 		std::map<std::string,std::string> items;

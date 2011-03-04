@@ -1,4 +1,22 @@
 
+/* ****************************************************************************
+ *
+ * FILE                     FileManager.h
+ *
+ * AUTHOR                   Andreu Urruela
+ *
+ * CREATION DATE            2010
+ *
+ */
+
+/*
+ 
+ FileManager is the singleton class that organizes the operations to disk.
+ It uses the underlying DiskManager to schedule tasks like read, write etc.. if necessary
+ At this level, we include a cache system to avoid exesive read/ write operations and the bridge to a consolidated external storage system
+ 
+ */
+
 #ifndef _H_FILE_MANAGER
 #define _H_FILE_MANAGER
 
@@ -13,7 +31,6 @@
 #include "DiskManager.h"			// ss::DiskManager
 #include "DiskManagerDelegate.h"	// ss::DiskManagerDelegate
 #include "DiskStatistics.h"			// ss::DiskStatistics
-#include "Status.h"					// au::Status
 #include "FileManagerCacheSystem.h"	// ss::FileManagerCacheSystem
 #include "samson.pb.h"				// ss::network...
 
@@ -23,6 +40,7 @@ namespace ss {
 	class FileManagerItem;
 	class FileManagerReadItem;
 	class FileManagerWriteItem;
+	class FileManagerRemoveItem;
 	
 	/**
 	 Class used as interface between samson and DiskManager

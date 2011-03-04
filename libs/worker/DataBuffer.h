@@ -11,10 +11,8 @@
 #include "MemoryManager.h"	// ss::MemoryManager
 #include "DiskManagerDelegate.h"	// ss::DiskManagerDelegate && ss::FileManagerDelegate
 #include <set>						// std::set
-#include "Status.h"		// getStatusFromArray(.)
 #include "samson.pb.h"				// network::...
 #include "au_map.h"					// au::simple_map
-#include "Status.h"				// au::Status
 
 namespace ss {
 

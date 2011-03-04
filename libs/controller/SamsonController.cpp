@@ -18,6 +18,7 @@
 #include "Buffer.h"                 // ss::Buffer
 #include "MemoryManager.h"          // ss::MemoryManager
 #include "FileManager.h"            // ss::FileManager
+#include "Error.h"					// au::Error
 
 namespace ss {
 

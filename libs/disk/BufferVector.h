@@ -1,3 +1,20 @@
+/* ****************************************************************************
+ *
+ * FILE                     BufferVector.h
+ *
+ * AUTHOR                   Andreu Urruela
+ *
+ * CREATION DATE            2010
+ *
+ */
+
+/*
+ 
+ BufferVector 
+ 
+ */
+
+
 #ifndef _H_BUFFER_VECTOR
 #define _H_BUFFER_VECTOR
 

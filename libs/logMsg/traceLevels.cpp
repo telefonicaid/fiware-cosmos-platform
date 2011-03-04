@@ -41,6 +41,7 @@ char* traceLevelName(TraceLevels level)
 	case LmtEndpointSlots:               return (char*) "Endpoint Slots";
 	case LmtTemporalEndpoint:            return (char*) "Temporal Endpoints";
 
+    case LmtDisk:                        return (char*) "Disk library";
 	case LmtModuleManager:				 return (char*) "ModuleManager";
 			
 	case LmtSpawnerList:                 return (char*) "Spawner List (Supervisor only)";

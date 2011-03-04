@@ -8,7 +8,7 @@
 #include "samson/Operation.h"	// ss::Operation
 #include "samson.pb.h"			// ss::network::...
 #include "samson/Environment.h"	// ss::Environment
-#include "Status.h"				// au::Status
+#include <set>					// std::set
 
 #define WORKER_TASK_COMPONENT_PROCESS				1
 #define WORKER_TASK_COMPONENT_DATA_BUFFER_PROCESS	2

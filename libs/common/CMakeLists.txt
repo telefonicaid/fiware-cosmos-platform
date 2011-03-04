@@ -12,7 +12,7 @@ SET (HEADERS
 	SamsonSetup.h
 	traces.h
 	au_map.h
-	Status.h
+	Error.h
 	MessagesOperations.h
 	Console.h
 	CommandLine.h
@@ -31,7 +31,7 @@ SET (SOURCES
 	Stopper.cpp
 	SamsonSetup.cpp
 	traces.cpp
-	Status.cpp
+	Error.cpp
 	MessagesOperations.cpp
 	Console.cpp
 	Format.cpp

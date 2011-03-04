@@ -1,5 +1,6 @@
 ADD_SUBDIRECTORY(module_test)	# test module
 ADD_SUBDIRECTORY(test_memory)	# test_memory
+ADD_SUBDIRECTORY(test_disk )	# test_disk
 
 
 # Prepare the files for the test
@@ -10,4 +11,4 @@ add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND cp -f ${PROJECT_SOUR
 
 # Add the tests
 # --------------------------------------------------
-ADD_TEST(test_complete ${PROJECT_SOURCE_DIR}/scripts/test_complete >${CMAKE_BINARY_DIR}/out_test_complete  )
+ADD_TEST(test_complete ${PROJECT_SOURCE_DIR}/scripts/test_complete >${CMAKE_BINARY_DIR}/testing/test_complete_stdout  2>${CMAKE_BINARY_DIR}/testing/test_complete_sterr  )

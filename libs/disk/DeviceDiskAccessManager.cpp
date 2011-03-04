@@ -2,8 +2,8 @@
 #include "DiskManagerDelegate.h"			// DiskManagerDelegate
 #include "SamsonSetup.h"					// SamsonSetup
 #include "DeviceDiskAccessManager.h"		// Own interface
-
-
+#include "traceLevels.h"					// LmtDisk
+#include "logMsg.h"							// LM_T
 
 namespace ss {
 	
@@ -80,12 +80,7 @@ namespace ss {
 	{
 		
 		lock.lock();
-		
-		if( o->mode == "w" )
-			operation.push_back( o );	
-		else
-			operation.push_back( o );	
-		
+		operation.push_back( o );	
 		lock.unlock();
 		
 		// Wake up the thread if necessary
@@ -96,16 +91,19 @@ namespace ss {
 	void DeviceDiskAccessManager::run( DiskOperation *o )
 	{
 		
+		LM_T( LmtDisk , ("DiskManager: Running operation %s", o->getDescription().c_str() ));
+		
 		struct timeval start,stop;
 		gettimeofday(&start, NULL);
 		
-		if( o->mode == "w" )
+		if( o->type == DiskOperation::write )
 		{
 			// Create a new file
 			
 			std::ostringstream fn;
 			fn << SamsonSetup::shared()->dataDirectory << "/" << o->fileName;
-			
+
+			LM_T( LmtDisk , ("DiskManager: Opening file %s to write", fn.str().c_str() ));
 			FILE *file = fopen( fn.str().c_str() , "w" );
 			if ( !file )
 				o->setError("Error opening file");
@@ -128,7 +126,7 @@ namespace ss {
 			fclose(file);
 		}
 		
-		if( o->mode == "r")
+		if( o->type == DiskOperation::read )
 		{
 			// Create a new one
 			//FileAccess *file = new FileAccess( o->fileName , o->mode );
@@ -136,6 +134,8 @@ namespace ss {
 			
 			std::ostringstream fn;
 			fn << SamsonSetup::shared()->dataDirectory << "/" << o->fileName;
+
+			LM_T( LmtDisk , ("DiskManager: Opening file %s to read", fn.str().c_str() ));
 			
 			FILE *file = fopen(fn.str().c_str() , "r" );
 			if( !file )
@@ -162,16 +162,21 @@ namespace ss {
 			}
 		}
 		
-		if( o->mode == "x")
+		if( o->type == DiskOperation::remove)
 		{
+			std::ostringstream fn;
+			fn << SamsonSetup::shared()->dataDirectory << "/" << o->fileName;
+			
+			LM_T( LmtDisk , ("DiskManager: Removing file %s to read", fn.str().c_str() ));
+			
 			// Remove the file
-			int c = remove( o->fileName.c_str() );
+			int c = remove( fn.str().c_str() );
 			if( c != 0 )
-				o->setError("Erro while removing file");
+				o->setError("Error while removing file");
 		}
 
 		// Nofity end of a task
-		o->delegate->diskManagerNotifyFinish(o->idGet(), o->error , o->error_message );
+		o->delegate->diskManagerNotifyFinish( o->idGet(), o->error.isActivated() , o->error.getMessage() );
 		
 	}
 	

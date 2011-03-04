@@ -9,7 +9,6 @@
 #include <sstream>				// std::ostringstream
 #include "FileManager.h"		// ss::FileManager ( and derivates )
 #include "samson.pb.h"			// ss::network::...
-#include "Status.h"				// au::Status
 #include "coding.h"				// ss::ProcessAssistantSharedFile
 #include "Lock.h"				// au::Lock
 #include "ProcessItem.h"		// ss::ProcessItem

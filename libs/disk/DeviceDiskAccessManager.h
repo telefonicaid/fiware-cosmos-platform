@@ -16,9 +16,7 @@
 #include <time.h>			// clock(.)
 #include "DeviceDiskAccessStatistics.h"	//DeviceDiskAccessStatistics
 #include "au_map.h"			// au::map
-#include "Status.h"				// au::Status
 #include "DiskStatistics.h"		// ss::DiskStatistics
-#include "Status.h"				// au::Status
 
 #define MAX_NUM_THREADS_PER_DEVICE 10
 

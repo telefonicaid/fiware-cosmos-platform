@@ -1,4 +1,23 @@
 
+/* ****************************************************************************
+ *
+ * FILE                     FileManagerItem.h
+ *
+ * AUTHOR                   Andreu Urruela
+ *
+ * CREATION DATE            2010
+ *
+ */
+
+/*
+ 
+ Notes: 
+ 
+ FileManagerItem is the base class for all the operations that can be squeduled at the FileManger
+ 
+*/
+
+
 #ifndef _H_FILE_MANAGER_ITEM
 #define _H_FILE_MANAGER_ITEM
 
@@ -13,7 +32,8 @@
 #include "DiskManager.h"			// ss::DiskManager
 #include "DiskManagerDelegate.h"	// ss::DiskManagerDelegate
 #include "DiskStatistics.h"			// ss::DiskStatistics
-#include "Status.h"					// au::Status
+#include "FileManagerDelegate.h"	// ss::FileManagerDelegate
+#include "Error.h"					// au::Error
 
 namespace ss {
 	
@@ -48,8 +68,7 @@ namespace ss {
 		
 	public:
 		
-		bool error;
-		std::string error_message;
+		au::Error error;
 		
 	public:
 		
@@ -73,8 +92,6 @@ namespace ss {
 				
 		virtual void freeResources()=0;
 		
-		void setError( std::string _error_message );
-		
 	private:
 		void setId(size_t _id);
 		
@@ -82,37 +99,7 @@ namespace ss {
 	};	
 	
 	
-	/**
-	 Request of a file to be removed
-	 */
-	
-	class FileManagerRemoveItem : public FileManagerItem
-	{
-		
-	public:
-		
-		std::string fileName;				// Name of the file
-		
-		FileManagerRemoveItem( std::string _fileName , FileManagerDelegate* delegate ) : FileManagerItem( delegate ,  FileManagerItem::remove  , 0 )
-		{
-			fileName = _fileName;
-		}
-		
-		void notifyToDelegate()
-		{
-			if( delegate )
-				delegate->notifyFinishRemoveItem(this);
-			else
-				delete this;	// Auto-remove to myself since no-one will handle me
-		}
-		
-		void freeResources()
-		{
-			// nothing to do here
-		}
 
-		
-	};
 	
 }
 

@@ -13,8 +13,6 @@ namespace ss {
 		buffer = NULL;
 		read_buffer = NULL;
 		
-		// By default no error
-		error = false;
 	}
 	
 	size_t DiskOperation::idGet()
@@ -49,7 +47,7 @@ namespace ss {
 		}
 		
 		// File currently does not exist ( it wil be writed )
-		if( mode != "w" )
+		if( type != DiskOperation::write )
 			return false;
 		
 		// Get the path of the directory
@@ -67,13 +65,34 @@ namespace ss {
 		return false;
 	}
 	
-	void DiskOperation::setError( std::string message )
+	
+	std::string DiskOperation::getDescription()
 	{
 		std::ostringstream o;
 		
-		error = true;
-		o << message << " ( File: " << fileName << " Mode:" << mode << " Size:" << au::Format::string(size,"B") << " ["<< size << "B] Offset:" << offset << " )";
-		error_message = o.str();
+		switch (type) {
+			case write:
+				o << "Write file: '" << fileName << "' Size:" << au::Format::string(size,"B");
+				break;
+			case read:
+				o << "Read file: '" << fileName << "' Size:" << au::Format::string(size,"B") << " ["<< size << "B] Offset:" << offset;
+				break;
+			case remove:
+				o << "Remove file: '" << fileName << "'";
+				break;
+		}
+		
+		
+		return o.str();		
+	}
+
+	
+	void DiskOperation::setError( std::string message )
+	{
+		
+		std::ostringstream o;
+		o << message << " ( " << getDescription() << " )";
+		error.set( o.str() );
 	}
 
 	

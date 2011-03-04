@@ -25,7 +25,6 @@
 #include "Message.h"                    // Message::WorkerStatus, ...
 #include "JobManager.h"                 // ss::JobManager
 #include "Monitor.h"                    // ss::Monitor
-#include "Status.h"                     // au::Status
 #include "ControllerLoadManager.h"		// ss::ControllerLoadManager
 
 

@@ -14,7 +14,7 @@
 #include "MemoryManager.h"		// Own interface
 #include "Buffer.h"				// ss::Buffer
 #include "SamsonSetup.h"		// ss:SamsonSetup
-
+#include <sstream>				// std::stringstream
 namespace ss
 {
 	

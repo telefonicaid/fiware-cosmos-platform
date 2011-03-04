@@ -8,9 +8,9 @@
 #include <list>								// std::list
 #include "samson.pb.h"						// ss::network::...
 #include <iostream>							// std::cout
-#include "Status.h"				// ss::ObjectWithStatus
 #include "samson/Environment.h"				// ss::Environment
 #include "EnvironmentOperations.h"			// copyEnviroment(.)
+#include <set>								// std::set
 
 namespace ss {
 	

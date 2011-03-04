@@ -27,7 +27,6 @@
 #include "Stopper.h"				// au::Stopper
 #include "au_map.h"					// au::map
 #include "Format.h"					// au::Format
-#include "Status.h"					// au::Status
 
 #include "samson.pb.h"				// network::..
 

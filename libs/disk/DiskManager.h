@@ -1,3 +1,22 @@
+/* ****************************************************************************
+ *
+ * FILE                     DiskManager.h
+ *
+ * AUTHOR                   Andreu Urruela
+ *
+ * CREATION DATE            2010
+ *
+ */
+
+/*
+ Notes:
+ 
+ DiskManager is a singleton class used to schedule disk-operations like read, write, remove, etc.
+ DiskManager can be setup for a particular policy ( only one operation at time for instance ).
+ When operations are finished, a notification is sent using DiskManagerDelegate interface
+ */
+
+
 #ifndef _H_DISK_MANAGER
 #define _H_DISK_MANAGER
 
@@ -15,7 +34,6 @@
 #include <Format.h>			// au::Format
 #include <time.h>			// clock(.)
 #include "Buffer.h"			// ss::Buffer
-#include "Status.h"			// au::Status
 #include "au_map.h"			// au::map
 #include "samson.pb.h"				// ss::network...
 

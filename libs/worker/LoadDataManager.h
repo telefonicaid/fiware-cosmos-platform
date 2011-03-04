@@ -6,11 +6,9 @@
 #include "samson.pb.h"					// ss::network:...
 #include "au_map.h"						// au::map
 #include "Lock.h"						// au::Lock
-#include "DiskManagerDelegate.h"		// ss::DiskManagerDelegate
-#include "Status.h"						// ss::getStatusFromArray(.)
 #include "samsonDirectories.h"			// SAMSON_DATA_DIRECTORY
-#include "Status.h"						// au::Status
 #include "SamsonSetup.h"				// ss::SamsonSetup
+#include "FileManagerDelegate.h"		// ss::FileManagerDelegate
 
 namespace ss {
 

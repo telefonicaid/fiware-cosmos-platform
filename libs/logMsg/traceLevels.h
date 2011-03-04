@@ -33,7 +33,8 @@ typedef enum TraceLevels
 	LmtWorker,
 	LmtWorkers,
 
-	LmtModuleManager,
+	LmtDisk,					// disk library	
+	LmtModuleManager,			// Module Manager component
 	
 	LmtEndpoint,
 	LmtEndpoints,

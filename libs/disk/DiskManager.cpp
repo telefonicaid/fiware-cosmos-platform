@@ -31,7 +31,7 @@ namespace ss {
 		DiskOperation *o = new DiskOperation(counter_id++);
 		
 		o->fileName = fileName;
-		o->mode = "r";
+		o->type = DiskOperation::read;
 		o->read_buffer = data;
 		o->size = size;
 		o->offset = offset;
@@ -63,7 +63,7 @@ namespace ss {
 		DiskOperation *o = new DiskOperation(counter_id++);
 		
 		o->fileName = fileName;
-		o->mode = "w";
+		o->type = DiskOperation::write;
 		o->buffer = buffer;
 		o->size = buffer->getSize();
 		o->offset = 0;
@@ -95,7 +95,7 @@ namespace ss {
 		DiskOperation *o = new DiskOperation(counter_id++);
 		
 		o->fileName = fileName;
-		o->mode = "x";
+		o->type = DiskOperation::remove;
 		o->delegate = delegate;
 		
 		if( o->setDevice() )

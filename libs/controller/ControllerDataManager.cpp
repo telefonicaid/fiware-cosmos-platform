@@ -10,7 +10,6 @@
 #include "SamsonController.h"				// ss::SamsonController
 #include "coding.h"						// ss::KVInfo
 #include "ModulesManager.h"					// Utility functions
-#include "Status.h"				// getStatusFromArray(.)
 #include "samson/Operation.h"				// ss::Operation
 #include "QueueFile.h"						// ss::QueueFile
 #include "samsonDirectories.h"				// SAMSON_CONTROLLER_DIRECTORY

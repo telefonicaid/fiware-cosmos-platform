@@ -14,6 +14,7 @@
 #include "Format.h"			// au::Format
 #include <list>				// std::list
 #include "TXTFileSet.h"		// ss::TXTFileSet
+#include "Error.h"			// au::Error
 
 namespace ss {
 

@@ -20,6 +20,7 @@
 #include "FileManager.h"				// ss::FileManager
 #include "ProcessManager.h"				// ss::ProcessManager
 #include "FileManagerItem.h"			// ss::FileManagerRemoveItem
+#include "FileManagerRemoveItem.h"		// ss::FileManagerRemoveItem
 
 namespace ss {
 

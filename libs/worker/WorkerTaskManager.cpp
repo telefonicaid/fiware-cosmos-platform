@@ -217,8 +217,8 @@ namespace ss {
 		WorkerTask *t = task.findInMap( task_id );
 		if( t )
 		{
-			if( item->error )
-				t->setError(item->error_message);
+			if( item->error.isActivated() )
+				t->setError(item->error.getMessage());
 			else
 				t->notifyFinishReadItem( item );
 			
@@ -240,8 +240,8 @@ namespace ss {
 		WorkerTask *t = task.findInMap( task_id );
 		if( t )
 		{
-			if( item->error )
-				t->setError( item->error_message );
+			if( item->error.isActivated() )
+				t->setError(item->error.getMessage());
 			else
 				t->notifyFinishWriteItem( item );
 			

@@ -182,7 +182,7 @@ namespace ss
 		
 		if( download )
 		{
-			download->sendResponse( item->error , item->error_message);
+			download->sendResponse( item->error.isActivated() , item->error.getMessage());
 			delete download;
 		}
 		
@@ -199,7 +199,7 @@ namespace ss
 		
 		if( upload )
 		{
-			upload->sendResponse(item->error , item->error_message);
+			upload->sendResponse(item->error.isActivated() , item->error.getMessage());
 			delete upload;
 		}
 		

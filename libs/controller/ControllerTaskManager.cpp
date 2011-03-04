@@ -4,7 +4,6 @@
 #include "CommandLine.h"				// au::CommandLine
 #include "Endpoint.h"					// ss::Endpoint
 #include "Packet.h"						// ss::Packet
-#include "Status.h"						// ss::getStatusFromArray(.)
 #include "samson/Environment.h"			// ss::Environment
 #include "Job.h"						// ss::Job
 #include "ControllerTask.h"				// ss::ControllerTask

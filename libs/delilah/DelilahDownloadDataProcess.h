@@ -8,7 +8,7 @@
 #include "Delilah.h"					// ss::Delilah
 #include "DelilahClient.h"				// ss::DelilahClient
 #include <list>							// std::list
-
+#include "Error.h"						// au::Error
 
 namespace ss {
 

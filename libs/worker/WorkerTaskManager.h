@@ -1,19 +1,15 @@
 #ifndef _H_WORKER_TASK_MANAGER
 #define _H_WORKER_TASK_MANAGER
 
-#include <list>						// std::list
-
-#include "au_map.h"					// au::map
-#include "samson.pb.h"				// WorkerTask
-#include "Status.h"
-#include "Token.h"					// au::Token
-#include "samson.pb.h"				// ss::network::...
-#include "DiskManagerDelegate.h"	// ss::FileManagerDelegate
-#include "Status.h"				// au::Status
-#include "ProcessItem.h"		// ss::ProcessManagerDelegate
-#include "Buffer.h"				// ss::Buffer
-#include "MemoryManager.h"		// ss::MemoryRequestDelegate
-
+#include <list>							// std::list
+#include "au_map.h"						// au::map
+#include "samson.pb.h"					// WorkerTask
+#include "Token.h"						// au::Token
+#include "samson.pb.h"					// ss::network::...
+#include "ProcessItem.h"				// ss::ProcessManagerDelegate
+#include "Buffer.h"						// ss::Buffer
+#include "MemoryManager.h"				// ss::MemoryRequestDelegate
+#include "FileManagerDelegate.h"		// ss::FileManagerDelegate
 namespace ss {
 
 

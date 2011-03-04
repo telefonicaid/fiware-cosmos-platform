@@ -21,7 +21,6 @@
 #include "WorkerTaskManager.h"	// ss::WorkerTaskManager
 #include "DataBuffer.h"			// ss::DataBuffer
 #include "LoadDataManager.h"	// ss::LoadDataManager
-#include "Status.h"				// au::Status
 #include "samson.pb.h"			// ss::network::
 
 namespace ss {

@@ -1,9 +1,10 @@
 
 
-#include "FileManager.h"			// Own interface
-#include "FileManagerItem.h"
-#include "FileManagerReadItem.h"
-#include "FileManagerWriteItem.h"
+#include "FileManager.h"				// Own interface
+#include "FileManagerItem.h"			// ss::FileManagerItem
+#include "FileManagerReadItem.h"		// ss::FileManagerReadItem
+#include "FileManagerWriteItem.h"		// ss::FileManagerWriteItem
+#include "FileManagerRemoveItem.h"		// ss::FileManagerRemoveItem
 
 
 namespace ss
@@ -122,7 +123,7 @@ namespace ss
 		
 		
 		if( error )
-			item->setError( error_message );
+			item->error.set( error_message );
 		
 		if( item )
 		{

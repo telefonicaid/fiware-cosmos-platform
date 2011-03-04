@@ -1,3 +1,21 @@
+/* ****************************************************************************
+ *
+ * FILE                     DiskManagerDelegate.h
+ *
+ * AUTHOR                   Andreu Urruela
+ *
+ * CREATION DATE            2010
+ *
+ */
+
+/*
+ Notes:
+ 
+ DiskManagerDelegate is the interface used to notify when a disk operation has finished
+ 
+ */
+
+
 #ifndef _H_DISK_MANAGER_DELEGATE
 #define _H_DISK_MANAGER_DELEGATE
 
@@ -18,10 +36,6 @@
 
 namespace ss {
 	
-	class FileManagerReadItem;
-	class FileManagerWriteItem;
-	class FileManagerRemoveItem;
-	
 	/**
 	 Interface to receive notifictions from DiskManager
 	 */
@@ -32,19 +46,6 @@ namespace ss {
 		// Notify that this operation has finished
 		virtual void diskManagerNotifyFinish(size_t id, bool error , std::string error_message ) = 0;	
 	};
-	
-	/**
-	 General item of the file manager
-	 */
-	
-	class FileManagerDelegate
-	{
-	public:
-		virtual void notifyFinishReadItem( FileManagerReadItem *item  ) = 0;	
-		virtual void notifyFinishWriteItem( FileManagerWriteItem *item  ) = 0;	
-		virtual void notifyFinishRemoveItem( FileManagerRemoveItem *item  ){};	
-	};
-	
 	
 }
 

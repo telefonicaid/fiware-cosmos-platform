@@ -13,6 +13,7 @@
 #include <ifaddrs.h>            // getifaddrs
 #include <net/if.h>             // IFF_UP
 #include <netdb.h>              // 
+#include <string.h>             // strstr
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
@@ -96,6 +97,7 @@ void HostMgr::localIps(void)
 	memset(domainedName, 0, sizeof(domainedName));
 	if (getdomainname(domain, sizeof(domain)) == -1)
 		LM_X(1, ("getdomainname: %s", strerror(errno)));
+	LM_M(("domain: '%s'", domain));
 
 	LM_TODO(("Would gethostname ever returned the 'domained' name ?"));
 
@@ -173,12 +175,41 @@ static void ip2string(int ip, char* ipString, int ipStringLen)
 
 /* ****************************************************************************
 *
+* onlyDigitsAndDots - 
+*/
+static bool onlyDigitsAndDots(const char* string)
+{
+	if ((string == NULL) || (string[0] == 0))
+		LM_RE(false, ("Empty IP ..."));
+
+	for (unsigned int ix = 0; ix < strlen(string); ix++)
+	{
+		if (string[ix] == 0)
+			return true;
+
+		if (string[ix] == '.')
+			continue;
+
+		if ((string[ix] >= '0') && (string[ix] <= '9'))
+			continue;
+
+		return false;
+	}
+
+	return true;
+}
+
+
+
+/* ****************************************************************************
+*
 * HostMgr::insert - 
 */
 Host* HostMgr::insert(const char* name, const char* ip)
 {
-	Host* hostP;
-	char ipX[64];
+	Host*  hostP;
+	char   ipX[64];
+	char*  dotP;
 
 	if ((name == NULL) && (ip == NULL))
 		LM_X(1, ("name AND ip NULL - cannot add a ghost host ..."));
@@ -186,13 +217,15 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	if (name == NULL)
 		name = "nohostname";
 
-	if ((name != NULL) && ((hostP = lookup(name)) != NULL))
+	LM_M(("looking up host '%s'", name));
+	if ((hostP = lookup(name)) != NULL)
 		return hostP;
 
 	if (ip == NULL)
 	{
 		struct hostent* heP;
 
+		LM_M(("ip == NULL, name: '%s'", name));
 		heP = gethostbyname(name);
 
 		if (heP == NULL)
@@ -203,6 +236,8 @@ Host* HostMgr::insert(const char* name, const char* ip)
 
 			ip2string(*((int*) heP->h_addr_list[ix]), ipX, sizeof(ipX));
 			ip = ipX; 
+
+			name = heP->h_name;
 
 			while (heP->h_aliases[ix] != NULL)
 			{
@@ -236,6 +271,19 @@ Host* HostMgr::insert(const char* name, const char* ip)
 
 	if (ip != NULL)
 		hostP->ip = strdup(ip);
+
+	if ((dotP = (char*) strstr(name, ".")) != NULL)
+	{
+		if (onlyDigitsAndDots(name) == false)
+		{
+			LM_M(("Found a dot in hostname '%s' - adding alias without domain", name));
+			*dotP = 0;
+			LM_M(("New alias: '%s'", name));
+			aliasAdd(hostP, name);
+		}
+		else
+			LM_M(("only Digits And Dots in '%s'", name));
+	}
 
 	return insert(hostP);
 }
@@ -271,10 +319,19 @@ void HostMgr::aliasAdd(Host* host, const char* alias)
 */
 Host* HostMgr::lookup(const char* name)
 {
-	unsigned int ix;
+	unsigned int  ix;
+	char*         nameNoDot = NULL;
+	char*         dotP;
 
 	if (name == NULL)
 		return NULL;
+
+	if ((dotP = (char*) strstr(name, ".")) != NULL)
+	{
+		nameNoDot = strdup(name);
+		dotP      = (char*) strstr(nameNoDot, ".");
+		*dotP     = 0;
+	}
 
 	for (ix = 0; ix < size; ix++)
 	{
@@ -282,10 +339,32 @@ Host* HostMgr::lookup(const char* name)
 			continue;
 
 		if ((hostV[ix]->name != NULL) && (strcmp(hostV[ix]->name, name) == 0))
-		   return hostV[ix];
+		{
+			if (nameNoDot != NULL)
+				free(nameNoDot);
+			return hostV[ix];
+		}
+
+		if ((nameNoDot != NULL) && (hostV[ix]->name != NULL) && (strcmp(hostV[ix]->name, nameNoDot) == 0))
+		{
+			if (nameNoDot != NULL)
+				free(nameNoDot);
+			return hostV[ix];
+		}
 
 		if ((hostV[ix]->ip != NULL) && (strcmp(hostV[ix]->ip, name) == 0))
-		   return hostV[ix];
+		{
+			if (nameNoDot != NULL)
+				free(nameNoDot);
+			return hostV[ix];
+		}
+
+		if ((nameNoDot != NULL) && (hostV[ix]->ip != NULL) && (strcmp(hostV[ix]->ip, nameNoDot) == 0))
+		{
+			if (nameNoDot != NULL)
+				free(nameNoDot);
+			return hostV[ix];
+		}
 
 		for (unsigned int aIx = 0; aIx < sizeof(hostV[ix]->alias) / sizeof(hostV[ix]->alias[0]); aIx++)
 		{
@@ -293,7 +372,18 @@ Host* HostMgr::lookup(const char* name)
 				continue;
 
 			if (strcmp(hostV[ix]->alias[aIx], name) == 0)
+			{
+				if (nameNoDot != NULL)
+					free(nameNoDot);
 				return hostV[ix];
+			}
+
+			if ((nameNoDot != NULL) && (strcmp(hostV[ix]->alias[aIx], nameNoDot) == 0))
+			{
+				if (nameNoDot != NULL)
+					free(nameNoDot);
+				return hostV[ix];
+			}
 		}
 	}
 
@@ -367,6 +457,7 @@ void HostMgr::list(const char* why)
 
 		LM_F((line));
 	}
+	LM_F(("---------------------------------------------------"));
 }
 
 

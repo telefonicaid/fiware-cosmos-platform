@@ -437,7 +437,7 @@ void Network::platformProcesses(void)
 		if (endpoint[ME]->type != Endpoint::Spawner)
 			LM_X(1, ("No platform process configuration file found - please setup the platform, using 'samsonSetup'"));
 
-		LM_W(("platform processes file error - awaiting data from samsonSetup"));
+		LM_W(("platform processes file error - awaiting data from samsonSetup/samsonSpawner"));
 
 		return;
 	}
@@ -2169,7 +2169,7 @@ void Network::jobInfo(int endpointId, int* messages, long long* dataLen)
 *
 * helloReceived - 
 */
-void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::MessageType msgType)
+void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Header* headerP)
 {
 	int newSlot;
 	int oldSlot;
@@ -2203,9 +2203,9 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 
 	if (hello->type == Endpoint::Controller)             newSlot = 2;
 	else if (hello->type == Endpoint::Supervisor)        newSlot = 3;
+	else if (hello->type == Endpoint::Setup)             newSlot = 4;
 	else if (hello->type == Endpoint::Spawner)           newSlot = 30;
 	else if (hello->type == Endpoint::Worker)            newSlot = 10 + hello->workerId;
-	else if (hello->type == Endpoint::Setup)             newSlot = 50;
 	else
 		LM_X(1, ("Unexpected type '%s'", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type)));
 	
@@ -2240,7 +2240,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 	helloInfoCopy(ep, hello);
 	ep->helloReceived = true;
 
-	if (msgType == Message::Msg)
+	if (headerP->type == Message::Msg)
 		helloSend(ep, Message::Ack);
 
 	jobQueueFlush(ep);
@@ -2251,7 +2251,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Me
 	checkAllWorkersConnected();
 
 	if (endpointUpdateReceiver != NULL)
-		endpointUpdateReceiver->endpointUpdate(ep, Endpoint::HelloReceived, "Hello Received");
+		endpointUpdateReceiver->endpointUpdate(ep, Endpoint::HelloReceived, "Hello Received", headerP);
 
 	 LM_T(LmtHello, ("---------------------------------------------------------------------------------------------------------"));
 }
@@ -2707,7 +2707,7 @@ void Network::msgTreat(void* vP)
 		break;
 
 	case Message::Hello:
-		helloReceived(ep, (Message::HelloData*) dataP, msgType);
+		helloReceived(ep, (Message::HelloData*) dataP, headerP);
 		break;
 
 	case Message::WorkerVector:

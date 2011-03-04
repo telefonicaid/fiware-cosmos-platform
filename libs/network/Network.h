@@ -143,7 +143,7 @@ public:
 
 	void         logFileSend(Endpoint* ep, Message::MessageCode msgCode, bool oldLogFile = false);
 	int          helloSend(Endpoint* ep, Message::MessageType type);
-	void         helloReceived(Endpoint* ep, Message::HelloData* hello, Message::MessageType  msgType);
+	void         helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Header* headerP);
 	int          endpointSlotGet(Endpoint* ep);
 	void         jobQueueFlush(Endpoint* ep);
 	virtual void jobInfo(int endpointId, int* messages, long long* dataLen);

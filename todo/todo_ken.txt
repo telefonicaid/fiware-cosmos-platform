@@ -1,17 +1,10 @@
 NOW
   o Stop sending the workerVec message - just read the file samsonPlatformProcesses in Network::init
-    1. Make samsonSetup connect to a spawner
-    2. samsonSetup sends the platformProcessList file to the spawner
-    3. The spawner connects to all spawners in the platformProcessList
-    4. The spawner sends the platformProcessList file to all spawners in the platformProcessList
-  o Change all old 'worker' names to 'process', especially in Network
-  o Make Spawner, Controller and Worker coincide in value in types Endpoint::Type and ProcessType
-  o Make samsonSetup be aware of the Controller - add the process to 'samsonPlatformProcesses'
-  o Make samsonSetup connect to a Spawner and send him 'samsonPlatformProcesses'
+  o Make samsonSpawner start Worker (and Controller) at startup
+  o Make samsonSpawner restart itself after saving platformProcessList to disk ?
 
-  o Create the "KillSamsonProcesses", received by Spawner
+  o Send Die to local worker and controller (if necessary) upon reception of 'ProcessVector'
   o samsonSetup -shutdown - send KillSamsonProcesses to a Spawner
-  o Interconnect all spawners
   o samsonSetup -check ip - list of all running samson processes
   o samsonSetup -view - to see the processes 
   o Split Process - make a tree 

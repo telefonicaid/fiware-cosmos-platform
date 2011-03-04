@@ -83,6 +83,10 @@ typedef struct Process
 	ss::Endpoint*        endpoint;            // For ...
 	Starter*             starterP;            // For Supervisor only
 	struct ss::Process*  spawnerP;            // For Supervisor only
+
+#ifndef __LP64__
+	int                 padding[6];            // To make this struct the same size in 32 and 64 bit machines
+#endif
 } Process;
 
 
@@ -94,6 +98,7 @@ typedef struct Process
 typedef struct ProcessVector
 {
 	int      processes;
+	int      padding64_32;
 	Process  processV[];
 } ProcessVector;
 

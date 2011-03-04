@@ -98,23 +98,23 @@ public:
 
 	typedef enum Type
 	{
-		Unknown,
-		Fd,
-		Temporal,
-		Listener,
-		Controller,
+		Unknown = 0,
 		Worker,
+		Controller,
+		Spawner,
+		Supervisor,
+		Delilah,
+		Killer,
+		Setup,
+		Listener,
+		Sender,
+		Temporal,
 		CoreWorker,
 		ThreadedReader,
 		ThreadedSender,
-		Delilah,
 		WebListener,
 		WebWorker,
-		Sender,
-		Spawner,
-		Supervisor,
-		Killer,
-		Setup
+		Fd
 	} Type;
 
 private:

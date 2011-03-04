@@ -18,6 +18,9 @@
 #include "traceLevels.h"        // Trace levels
 
 #include "samsonDirectories.h"  // SAMSON_IMAGES
+#include "samsonConfig.h"       // SAMSON_MAX_HOSTS
+#include "Host.h"               // Host
+#include "HostMgr.h"            // HostMgr
 #include "ports.h"              // WORKER_PORT
 #include "Endpoint.h"           // ss::Endpoint
 #include "Message.h"            // ss::Message
@@ -65,6 +68,7 @@ const char*         PlatformProcessesPath  = SAMSON_PLATFORM_PROCESSES;
 const char*         ppFile                 = PlatformProcessesPath;
 char*               spawnerIp              = NULL;
 ss::ProcessVector*  procVec                = NULL;
+ss::HostMgr*        hostMgr                = NULL;
 
 
 
@@ -156,9 +160,9 @@ static int accessCheck(void)
 */
 static int platformFileCreate(int workers, char* ip[])
 {
-	int                 s;
-	int                 size;
-
+	int     s;
+	int     size;
+	Host*   hostP;
 
 
 	//
@@ -177,8 +181,8 @@ static int platformFileCreate(int workers, char* ip[])
 
 	memset(procVec, 0, size);
 
-	procVec->processes = workers + 1;
-
+	procVec->processes    = workers + 1;
+	procVec->padding64_32 = ('-' << 24) | ('-' << 16) | ('-' << 8) | '-';
 
 
 	//
@@ -186,8 +190,12 @@ static int platformFileCreate(int workers, char* ip[])
 	//
 
 	// 1. Controller
+	hostP = hostMgr->lookup(controllerHost);
+	if (hostP == NULL)
+		LM_X(1, ("Error looking up host '%s' in host manager list", controllerHost));
+
 	strncpy(procVec->processV[0].name,   "samsonController",  sizeof(procVec->processV[0].name));
-	strncpy(procVec->processV[0].host,   controllerHost,      sizeof(procVec->processV[0].host));
+	strncpy(procVec->processV[0].host,   hostP->name,         sizeof(procVec->processV[0].host));
 	strncpy(procVec->processV[0].alias,  "Controller",        sizeof(procVec->processV[0].alias));
 
 	procVec->processV[0].port = CONTROLLER_PORT;
@@ -195,8 +203,13 @@ static int platformFileCreate(int workers, char* ip[])
 	// 2. Workers
 	for (int ix = 1; ix < (long) ip[0] + 1; ix++)
 	{
+		hostP = hostMgr->lookup(ip[ix]);
+
+		if (hostP == NULL)
+			LM_X(1, ("Error looking up host '%s' in host manager list", ip[ix]));
+
 		strncpy(procVec->processV[ix].name,  "samsonWorker", sizeof(procVec->processV[ix].name));
-		strncpy(procVec->processV[ix].host, ip[ix], sizeof(procVec->processV[ix].host));
+		strncpy(procVec->processV[ix].host, hostP->name,     sizeof(procVec->processV[ix].host));
 
 		snprintf(procVec->processV[ix].alias, sizeof(procVec->processV[ix].alias), "Worker%02d", ix - 1);
 
@@ -208,6 +221,14 @@ static int platformFileCreate(int workers, char* ip[])
 	// Saving the file to disk
 	//
 	ss::platformProcessesSave(procVec);
+
+#if 0
+	LM_M(("---------------------- Processes ----------------------"));
+	for (int ix = 0; ix < procVec->processes; ix++)
+		LM_M(("  %02d: %-20s %-20s %-20s %d", ix, procVec->processV[ix].name, procVec->processV[ix].host, procVec->processV[ix].alias, procVec->processV[ix].port));
+	LM_M(("---------------------- Processes ----------------------"));
+	exit(0);
+#endif
 
 	return 0;
 }
@@ -510,6 +531,17 @@ int main(int argC, const char *argV[])
 	}
 
 	
+	//
+	// Host Manager 
+	//
+	hostMgr = new ss::HostMgr(SAMSON_MAX_HOSTS);
+	hostMgr->insert(controllerHost, NULL);
+	
+	for (int ix = 1; ix < (long) ip[0] + 1; ix++)
+		hostMgr->insert(ip[ix], NULL);
+
+
+
 	if (err == 0)
 	{
 		err = platformFileCreate(workers, ip);

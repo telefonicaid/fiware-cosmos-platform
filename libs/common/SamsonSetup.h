@@ -7,12 +7,9 @@
 #include <stdlib.h>         // atoll
 #include <sys/stat.h>		// mkdir
 
-#define SAMSON_CONTROLLER_DEFAULT_PORT	1234
-#define SAMSON_WORKER_DEFAULT_PORT		1235
-
-
+#define SAMSON_CONTROLLER_DEFAULT_PORT		1234
+#define SAMSON_WORKER_DEFAULT_PORT			1235
 #define SAMSON_DEFAULT_WORKING_DIRECTORY	"/opt/samson"
-
 
 namespace ss {
 	
@@ -46,7 +43,6 @@ namespace ss {
 		//  Memory - System
 		size_t memory;
 		size_t shared_memory_size_per_buffer;
-		int shared_memory_num_buffers;
 		
 		// Max size of kv files
 		size_t max_file_size;
@@ -54,8 +50,12 @@ namespace ss {
 		// Load Data suze
 		size_t load_buffer_size;
 		
-		// Maximum input buffer size
-		size_t max_input_buffer_size;
+		
+		// DERIVED PARAMETERS
+		// --------------------------------------------
+		
+		int num_max_outputs;	// Maximum number of outputs for all the working operations
+		
 		
 	private:
 		

@@ -126,11 +126,11 @@ namespace ss
 				return;
 			
 			// Wait if memory is not released
-			while( ( MemoryManager::shared()->getMemoryUsage() > 0.7 ) || ( num_threads >= max_num_threads ) )
+			while( ( MemoryManager::shared()->getMemoryUsageOutput() > 1.0 ) || ( num_threads >= max_num_threads ) )
 				sleep(1);
 			
 			// Create a buffer
-			Buffer *b = MemoryManager::shared()->newBuffer( "Loading buffer" , ss::SamsonSetup::shared()->load_buffer_size );
+			Buffer *b = MemoryManager::shared()->newBuffer( "Loading buffer" , ss::SamsonSetup::shared()->load_buffer_size , Buffer::output );
 			
 			// Fill the buffer with the contents from the file
 			fileSet.fill( b );

@@ -1,6 +1,7 @@
 
 TODO:
 
+* Limit the number of operaitons for outputs
 * Automatic operations ?
 * Detect problems with memory running operations ( not well distributed per hash-group)
 * Informacion about time in the jobs list

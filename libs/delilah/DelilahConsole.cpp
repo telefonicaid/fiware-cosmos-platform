@@ -353,14 +353,15 @@ namespace ss
 				output << "Environent variables:\n";
 				output << "------------------------------------\n";
 				output << environment.toString();
-				
+				output << "\n";
+				output << "\n";
 				writeOnConsole( output.str() );
 				return 0;
 			}
 			
 			if ( commandLine.get_num_arguments() < 3 )
 			{
-				writeErrorOnConsole("Usage: set name value.");
+				writeErrorOnConsole("Usage: set name value.\n");
 				return 0;
 			}
 			
@@ -370,10 +371,30 @@ namespace ss
 			
 			environment.set( name , value );
 			std::ostringstream o;
-			o << "Environment variable " << name << " set to " << value;
+			o << "Environment variable " << name << " set to " << value << "\n";
 			writeOnConsole( o.str() );
 			return 0;
 		}
+		
+		if ( mainCommand == "unset")
+		{
+			if ( commandLine.get_num_arguments() < 2 )
+			{
+				writeErrorOnConsole("Usage: unset name.\n");
+				return 0;
+			}
+			
+			// Set a particular value
+			std::string name = commandLine.get_argument(1);
+			environment.unset( name );
+			
+			std::ostringstream o;
+			o << "Environment variable " << name << " removed\n";
+			writeOnConsole( o.str() );
+			
+			
+			return 0;
+		}	
 
 		if ( mainCommand == "load_trace")
 		{
@@ -411,21 +432,7 @@ namespace ss
 		}
 		
 		
-		if ( mainCommand == "unset")
-		{
-			if ( commandLine.get_num_arguments() < 2 )
-			{
-				writeErrorOnConsole("Usage: unset name.");
-				return 0;
-			}
-			
-			// Set a particular value
-			std::string name = commandLine.get_argument(1);
-			
-			environment.unset( name );
-			
-			return 0;
-		}		
+	
 		
 		if ( mainCommand == "download")
 		{

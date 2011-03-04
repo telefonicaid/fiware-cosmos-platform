@@ -76,17 +76,7 @@ namespace ss {
 		}
 		
 		
-		std::string getStatus()
-		{
-			int p = progress*100.0;
-			std::ostringstream o;
-			
-			o << status_letter << std::string(":") << status;
-			if ( p!= 0)
-				o << "(" << p << "%)";
-			return o.str();
-			
-		}
+		std::string getStatus();
 		
 		void setStatus(std::string _status)
 		{

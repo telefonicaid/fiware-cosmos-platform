@@ -65,7 +65,7 @@ namespace ss {
 		size_t tag;
 		size_t sub_tag;
 	
-		MemoryRequest( size_t _size , Buffer **_buffer,  MemoryRequestDelegate *_delegate );
+		MemoryRequest( size_t _size , Buffer **_buffer, MemoryRequestDelegate *_delegate );
 		
 		void notifyDelegate()
 		{
@@ -132,28 +132,27 @@ namespace ss {
 		au::Token token;							// Token to protect "used_memory" and memoryRequests
 		au::Stopper stopper;						// Stopper for the main-thread to notify new buffers
 
-		size_t used_memory;							// Monitor the used memory
-
-		// Setup parameters ( loaded at constructor )
+		size_t memory;								// Total available memory used
 		
-		int num_processes;							// Number of cores to use in this server
-		size_t memory;								// Total memory used ( used to limit workers , and free buffered files )
+		// Monitorization information
+		
+		size_t used_memory_input;	    			// Memory used for input 
+		size_t used_memory_output;	    			// Memory used for output
 
+		int num_buffers_input;						// Number of buffers used as inputs
+		int num_buffers_output;						// Number of buffers used as outputs
+		
+		
+		// Setup parameters ( loaded at constructor )
 		size_t shared_memory_size_per_buffer;		// Shared memory used in eery buffer
 		int shared_memory_num_buffers;				// Number of shared memory buffers to create
 		
 		bool* shared_memory_used_buffers;			// Bool vector showing if a particular shared memory buffer is used
 		
-		// Some debug info
-		int num_buffers;
-		
 		// List of memory requests
-		au::list <MemoryRequest> memoryRequests;
+		au::list <MemoryRequest> memoryRequests;	// Only used for inputs
 		
 		MemoryManager();
-		
-		// Buffers in action
-		std::set< Buffer* > buffers;
 		
 	public:
 
@@ -174,7 +173,7 @@ namespace ss {
 		 Used by networkInterface , DataBuffer and FileManager
 		 */
 		
-		Buffer *newBuffer( std::string name ,  size_t size );
+		Buffer *newBuffer( std::string name ,  size_t size , Buffer::BufferType type );
 
 		/**
 		 Interface to destroy a buffer of memory
@@ -224,10 +223,19 @@ namespace ss {
 		void fill(network::WorkerStatus*  ws);
 
 		// Get information about current memory usage
-		double getMemoryUsage();
-		size_t getUsedMemory();
+		
 		size_t getMemory();
-		int getUsedBuffers();
+		
+		size_t getUsedMemory();
+		size_t getUsedMemoryInput();
+		size_t getUsedMemoryOutput();
+
+		int getNumBuffers();
+		int getNumBuffersInput();
+		int getNumBuffersOutput();
+		
+		double getMemoryUsageInput();
+		double getMemoryUsageOutput();
 		
 	public:
 		

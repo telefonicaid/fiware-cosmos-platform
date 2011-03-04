@@ -11,24 +11,18 @@
 #define SETUP_DEFAULT_num_io_threads_per_device			1
 
 #define SETUP_max_file_size								"max_file_size"
-#define SETUP_DEFAULT_max_file_size						209715200	// 200Mb
+#define SETUP_DEFAULT_max_file_size						104857600	// 100Mb
 
 #define SETUP_num_processes								"num_processes"
 #define SETUP_DEFAULT_num_processes						2
 
 #define SETUP_memory									"memory"
-#define SETUP_DEFAULT_memory							1073741824
+#define SETUP_DEFAULT_memory							2147483648 // 2Gb
 
 #define SETUP_shared_memory_size_per_buffer						"shm_size_per_buffer"
 #define SETUP_DEFAULT_shared_memory_size_per_buffer				67108864	// 64 Mb
 
-#define SETUP_shared_memory_num_buffers							"shm_num_buffers"
-#define SETUP_DEFAULT_shared_memory_num_buffers					6
-
-#define SETUP_max_input_buffer_size								"max_input_buffer_size"
-#define SETUP_DEFAULT_max_input_buffer_size						1000000000
-
-#define SETUP_DEFAULT_load_buffer_size							67108864
+#define SETUP_DEFAULT_load_buffer_size							67108864	// 64 Mb
 
 namespace ss
 {
@@ -159,15 +153,16 @@ namespace ss
 		   SETUP_DEFAULT_memory);
 
 		shared_memory_size_per_buffer	= getUInt64( items, SETUP_shared_memory_size_per_buffer , SETUP_DEFAULT_shared_memory_size_per_buffer );
-		shared_memory_num_buffers		= getInt( items, SETUP_shared_memory_num_buffers , SETUP_DEFAULT_shared_memory_num_buffers );
-
-		
-		max_input_buffer_size			= getUInt64( items, SETUP_max_input_buffer_size , SETUP_DEFAULT_max_input_buffer_size );
 		
 		
 		// Default value for other fields
-
 		load_buffer_size = SETUP_DEFAULT_load_buffer_size;
+		
+		
+		
+		// Derived parameters
+		
+		num_max_outputs = ( memory - num_processes*shared_memory_size_per_buffer ) / (4*max_file_size);
 		
 		
 		if( !check() )
@@ -189,24 +184,6 @@ namespace ss
 		}
 		 */
 		
-		if( memory < 1.2* ( shared_memory_num_buffers * shared_memory_size_per_buffer ) )
-		{
-			std::cerr << "Memory should be at least 1.2  total shared Memory\n";
-			return false;
-		}
-
-#if 0
-		if ( shared_memory_size_per_buffer < 64*1024*1024)
-		{
-			std::cerr << "Shared Memory Size should be at least 64Mb\n";
-			return false;
-		}
-#endif	
-		if( shared_memory_num_buffers < num_processes )
-		{
-			std::cerr << "Number of shared memory buffers should be at least number of process.\n";
-			return false;
-		}
 		if ( num_io_threads_per_device < 1)
 		{
 			std::cerr << "Minimum number of threads per device 1.\n";
@@ -215,6 +192,12 @@ namespace ss
 		if ( num_io_threads_per_device > 10)
 		{
 			std::cerr << "Maximum number of threads per device 10.\n";
+			return false;
+		}
+		
+		if ( num_max_outputs < 3 )
+		{
+			std::cerr << "Error in the memory setup. Please, review setup since the maximum number of outputs for all operations would be only " << num_max_outputs <<"\n";
 			return false;
 		}
 		

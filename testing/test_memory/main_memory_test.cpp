@@ -25,26 +25,26 @@ int main( int args , char *argv[] )
 	assert( mm );
 
 	// Default value for memory
-	assert( mm->getUsedMemory() == 0 );
+	assert( mm->getUsedMemoryInput() == 0 );
 
 	// Get a buffer of a particular size
-	ss::Buffer *b = mm->newBuffer( "buffer_1" ,  10000 );
+	ss::Buffer *b = mm->newBuffer( "buffer_1" ,  10000 , ss::Buffer::input );
 
 	// Check memory is reserved correclty
-	assert( mm->getUsedMemory() == 10000 );
+	assert( mm->getUsedMemoryInput() == 10000 );
 	
 	// Get a buffer of a particular size
-	ss::Buffer *b2 = mm->newBuffer( "buffer_2" ,  20000 );
+	ss::Buffer *b2 = mm->newBuffer( "buffer_2" ,  20000, ss::Buffer::input );
 
 	// Check memory is reserved correclty
-	assert( mm->getUsedMemory() == 30000 );
+	assert( mm->getUsedMemoryInput() == 30000 );
 
 	// Destroy buffers
 	mm->destroyBuffer(b);
 	mm->destroyBuffer(b2);
 	
 	// Check memory is reserved correclty
-	assert( mm->getUsedMemory() == 0 );
+	assert( mm->getUsedMemoryInput() == 0 );
 	
 	return 0;
 }

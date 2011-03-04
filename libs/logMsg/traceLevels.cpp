@@ -40,9 +40,6 @@ char* traceLevelName(TraceLevels level)
 	case LmtEndpointUpdate:              return (char*) "Updating an Endpoint";
 	case LmtEndpointSlots:               return (char*) "Endpoint Slots";
 	case LmtTemporalEndpoint:            return (char*) "Temporal Endpoints";
-
-    case LmtDisk:                        return (char*) "Disk library";
-	case LmtModuleManager:				 return (char*) "ModuleManager";
 			
 	case LmtSpawnerList:                 return (char*) "Spawner List (Supervisor only)";
 	case LmtProcessList:                 return (char*) "Process List (Supervisor only)";
@@ -74,7 +71,6 @@ char* traceLevelName(TraceLevels level)
 
 	case LmtFds:                         return (char*) "File descriptors";
 	case LmtNetworkReady:                return (char*) "Actions on Network module ready";
-	case LmtSharedMemory:                return (char*) "Shared Memory";
 	case LmtAlarm:                       return (char*) "At issuing an Alarm";
 	case LmtSenderThread:                return (char*) "Network Sender Thread";
 	case LmtThreadedMsgTreat:            return (char*) "Threaded Msg Treat function";
@@ -111,6 +107,9 @@ char* traceLevelName(TraceLevels level)
 	case LmtSceneItemChain:              return (char*) "Scene Item Chain";
 	case LmtMove:                        return (char*) "Move";
 
+	case LmtModuleManager:				 return (char*) "ModuleManager";
+	case LmtDisk:                        return (char*) "Disk library";
+	case LmtMemory:						 return (char*) "Memory library";
 	case LmtOperations:                  return (char*) "Operations";
 	case LmtWait:                        return (char*) "Wait";
 

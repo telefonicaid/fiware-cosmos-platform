@@ -25,6 +25,16 @@ namespace ss {
 	class Buffer
 	{
 
+	public:
+		
+		typedef enum
+		{
+			input,
+			output
+		} BufferType;
+
+	private:
+		
 		char * _data;			// Buffer of data
 		size_t _max_size;		// Maximum size of this buffer
 		
@@ -44,11 +54,17 @@ namespace ss {
 		
 		size_t _offset;
 		
+		/**
+		 Type of buffer. Used in the memory manager to monitori how much memory is used for input and for output
+		 */
+		
+		BufferType _type;
+		
 	private:
 		
 		// Private constructor/destructors since it can be only access by MemoryManager
 		
-		Buffer( std::string name ,   size_t max_size );
+		Buffer( std::string name ,   size_t max_size, BufferType type );
 		~Buffer();
 		
 		void free();
@@ -121,6 +137,10 @@ namespace ss {
 		
 		// Remove the last characters of an unfinished line and put them in buffer.
 		size_t removeLastUnfinishedLine( char * buffer );
+
+		
+		// Get the type to be used in the MemoryManager
+		BufferType getType();
 
 	};
 

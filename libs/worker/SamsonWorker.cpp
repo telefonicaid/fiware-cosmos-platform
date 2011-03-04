@@ -214,8 +214,6 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		// Get my identifier as worker
 		_myWorkerId = network->getWorkerId();
 
-		LM_M(("My worker id %d", _myWorkerId));
-		
 		// Generate list of local files ( to not remove them )
 		std::set<std::string> files;
 		std::set<size_t> load_id;
@@ -232,8 +230,6 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 				}
 			}
 		}
-
-		LM_M(("Received a message from controller with %d queues and %d files", ql.queue_size() , files.size() ));
 
 		// Get the files from the active tasks to not remove them
 		for (int t = 0 ; t < ql.tasks_size() ; t++)
@@ -294,14 +290,14 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 							size_t _load_id = atoll( file_name.substr(14 , pos).c_str() );
 							if( load_id.find(_load_id ) == load_id.end() )
 							{
-								LM_M(("Removing file %s since the id (%lu) is not in the list of active load operations (size:%d)", file_name.c_str() , _load_id , load_id.size() ));
-								remove_files.insert( path );
+								LM_T(LmtDisk,("Removing file %s since the id (%lu) is not in the list of active load operations (size:%d)", file_name.c_str() , _load_id , load_id.size() ));
+								remove_files.insert( dirp->d_name );
 							}
 						}
 						else
 						{
-							LM_M(("Remove file %s since it is not in any queue", file_name.c_str()));
-							remove_files.insert( path );
+							LM_T(LmtDisk,("Remove file %s since it is not in any queue", file_name.c_str()));
+							remove_files.insert( dirp->d_name );
 						}
 					}
 				}

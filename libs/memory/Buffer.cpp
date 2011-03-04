@@ -14,10 +14,12 @@
 
 namespace ss {
 
-	Buffer::Buffer( std::string name ,   size_t max_size )
+	Buffer::Buffer( std::string name ,   size_t max_size ,BufferType type )
 	{
 		_max_size = max_size;
 		_offset = 0;
+		
+		_type = type;
 		
 		_name = name;
 		
@@ -183,5 +185,10 @@ namespace ss {
 		return SimpleBuffer( _data + offset , _max_size - offset );
 	}
 	
+	Buffer::BufferType Buffer::getType()
+	{
+		return _type;
+	}
+
 	
 }

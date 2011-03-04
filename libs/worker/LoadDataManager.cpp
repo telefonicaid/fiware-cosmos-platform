@@ -105,7 +105,7 @@ namespace ss
 		std::string fileName = download_data_file->file().name();
 		size_t size = au::Format::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );
 
-		buffer = MemoryManager::shared()->newBuffer( "Buffer for downloading data" , size );
+		buffer = MemoryManager::shared()->newBuffer( "Buffer for downloading data" , size , Buffer::output );
 		buffer->setSize( size );
 
 		FileManagerReadItem *item = new FileManagerReadItem( fileName , 0 , size , buffer->getSimpleBuffer(), dataManager );

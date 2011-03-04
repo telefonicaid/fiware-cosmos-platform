@@ -7,6 +7,7 @@
 
 #include "SamsonSetup.h"			// ss::SamsonSetup
 #include "MemoryManager.h"			// ss::MemoryManager
+#include "SamsonSetup.h"			// ss::SamsonSetup
 
 int logFd = -1;
 
@@ -32,9 +33,9 @@ int main(int argc, const char *argv[])
 		
 		ss::MemoryManager *mm = ss::MemoryManager::shared();
 		
-		for (int i = 0 ; i < s->shared_memory_num_buffers ; i++)
+		for (int i = 0 ; i < ss::SamsonSetup::shared()->num_processes ; i++)
 		{
-			std::cout << "Removing shared memory " << i << " / " << s->shared_memory_num_buffers << std::endl;
+			std::cout << "Removing shared memory " << i << " / " << ss::SamsonSetup::shared()->num_processes << std::endl;
 			mm->removeSharedMemory(i);
 		}
 		
@@ -57,7 +58,7 @@ int main(int argc, const char *argv[])
 	std::cout << "\n";
 	std::cout << "** Memory-system setup:\n";
 	std::cout << "Memory: " << au::Format::string( s->memory ) << std::endl;
-	std::cout << "Shared memory: " << s->shared_memory_num_buffers << " x " << au::Format::string( s->shared_memory_size_per_buffer ) << std::endl;
+	std::cout << "Shared memory: " << ss::SamsonSetup::shared()->num_processes << " x " << au::Format::string( s->shared_memory_size_per_buffer ) << std::endl;
 	std::cout << "\n";
 	std::cout << "** Disk setup:\n";
 	std::cout << "Num threads per devide:    " << s->num_io_threads_per_device << "\n";
@@ -67,9 +68,9 @@ int main(int argc, const char *argv[])
 
 	ss::MemoryManager *mm = ss::MemoryManager::shared();
 	
-	for (int i = 0 ; i < s->shared_memory_num_buffers ; i++)
+	for (int i = 0 ; i < ss::SamsonSetup::shared()->num_processes ; i++)
 	{
-		std::cout << "Geting shared memory " << i << " / " << s->shared_memory_num_buffers << std::endl;
+		std::cout << "Geting shared memory " << i << " / " << ss::SamsonSetup::shared()->num_processes << std::endl;
 		ss::SharedMemoryItem *item =  mm->getSharedMemory(i);
 		
 		if( item )

@@ -101,8 +101,13 @@ namespace ss {
 	void ProcessBase::flushKVBuffer( )
 	{
 		
-		// Only flush data if memory is under 0.7
-		while( MemoryManager::shared()->getMemoryUsage() > 0.7)
+		/*
+		 Only flush data if used memory for output is under 100%
+		 Note that temporary, it can be over 100% since data is received masivelly from the network 
+		 or a lot of data is generated from a particular operation ( example generator )
+		 */
+		
+		while( MemoryManager::shared()->getMemoryUsageOutput() > 1.0)
 		{
 			setStatusLetter("H");	// Halted for memory
 			sleep(1);
@@ -145,7 +150,7 @@ namespace ss {
 				
 				if( _channel->info.size > 0)
 				{
-					Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessWriter", NETWORK_TOTAL_HEADER_SIZE + _channel->info.size );
+					Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessWriter", NETWORK_TOTAL_HEADER_SIZE + _channel->info.size , Buffer::output );
 					assert( buffer );
 					
 					// Pointer to the header
@@ -207,8 +212,13 @@ namespace ss {
 	void ProcessBase::flushTXTBuffer(  )
 	{
 		
-		// Only flush data if memory is under 0.7
-		while( MemoryManager::shared()->getMemoryUsage() > 0.7)
+		/*
+		 Only flush data if used memory for output is under 100%
+		 Note that temporary, it can be over 100% since data is received masivelly from the network 
+		 or a lot of data is generated from a particular operation ( example generator )
+		 */
+		
+		while( MemoryManager::shared()->getMemoryUsageOutput() > 1.0)
 		{
 			setStatusLetter("H");	// Halted for memory
 			sleep(1);
@@ -233,7 +243,7 @@ namespace ss {
 			
 			//size_t task_id = task->workerTask.task_id();
 			
-			Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessTXTWriter", *size );
+			Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessTXTWriter", *size , Buffer::output );
 			assert( buffer );
 			
 			// There is only one output queue

@@ -1,19 +1,19 @@
-# Number of workers
-num_workers	5
 
-# Number of paralel cores in this worker
+
+# Desktop setup 
+# ------------------------------------------------------------------------------------------
+memory 2147483648		# 2Gb of RAM memory
+max_file_size 100000000		# 100 Mb
 num_processes 	2		# Number of parallel processes working on this maxine	
+shm_size_per_buffer 67108864	# Buffer of 64 Mbytes
+max_open_files_per_device	20  #Currently unused
 
-# Main  memory
-memory 2147483648		# 2Gb of RAM memory  
-
-# Generate internal files
-max_file_size 1000000000        # 1Gb
-max_input_buffer_size           1000000000      # 1Gb  ( maximum size of input buffer for map,reduce,parserOur,parser )
-
-# Shared memory setup
-shm_size_per_buffer 67108864	# Buffer of 64 Mbytes ( now used only as output of operations )
-shm_num_buffers	    2		# Number of buffers ( num_cores )
-
+# Server setup
+# ------------------------------------------------------------------------------------------
+#memory 10000000000		# 10Gb of RAM memory
+#max_file_size 1000000000	# 1 Gb
+#num_processes 	8		# Number of parallel processes working on this maxine	
+#shm_size_per_buffer 256000000	# Buffer of 256 Mbytes
+#max_open_files_per_device	20  #Currently unused
 
 

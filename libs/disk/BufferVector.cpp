@@ -94,7 +94,7 @@ namespace ss {
 			file_size += buffer[i]->getSize();
 		
 		// Crearte the buffer
-		Buffer *b = MemoryManager::shared()->newBuffer( "Creating txt file from buffers" , file_size );
+		Buffer *b = MemoryManager::shared()->newBuffer( "Creating txt file from buffers" , file_size , Buffer::output );
 		
 		for (size_t i=0;i < buffer.size() ;i++)
 			b->write( buffer[i]->getData(), buffer[i]->getSize() );
@@ -135,7 +135,7 @@ namespace ss {
 		size_t file_size = FILE_TOTAL_HEADER_SIZE + info.size;	
 
 		// Crearte the buffer
-		Buffer *b = MemoryManager::shared()->newBuffer( "Creating file from network buffers" , file_size );
+		Buffer *b = MemoryManager::shared()->newBuffer( "Creating file from network buffers" , file_size , Buffer::output );
 		
 		// Global header of the file with magic number and format
 		FileHeader fileHeader;

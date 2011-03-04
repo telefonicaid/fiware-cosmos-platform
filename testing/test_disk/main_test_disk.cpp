@@ -54,7 +54,7 @@ namespace ss {
 		
 		Buffer *getNewBuffer()
 		{
-			Buffer *buffer = ss::MemoryManager::shared()->newBuffer("test",DISK_TEST_SIZE_FILE );
+			Buffer *buffer = ss::MemoryManager::shared()->newBuffer("test",DISK_TEST_SIZE_FILE , Buffer::input );
 			buffer->setSize( DISK_TEST_SIZE_FILE );
 			char *content = buffer->getData();
 			for (size_t i = 0 ; i < DISK_TEST_SIZE_FILE ; i++)
@@ -83,7 +83,7 @@ namespace ss {
 		
 		void addRead( std::string fileName )
 		{
-			Buffer *buffer = ss::MemoryManager::shared()->newBuffer("test read" , DISK_TEST_SIZE_FILE );
+			Buffer *buffer = ss::MemoryManager::shared()->newBuffer("test read" , DISK_TEST_SIZE_FILE , Buffer::input );
 			
 			FileManagerReadItem *fmi = new FileManagerReadItem(fileName , 0 , DISK_TEST_SIZE_FILE , buffer , this);
 			fri.insert( fmi );

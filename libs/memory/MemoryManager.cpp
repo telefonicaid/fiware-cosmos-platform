@@ -57,17 +57,19 @@ namespace ss
 	
 	MemoryManager::MemoryManager()
 	{
-		used_memory = 0;
+		// Init usage counters
+		used_memory_input=0;
+		used_memory_output=0;
 		
-		num_buffers = 0;
+		num_buffers_input  = 0;
+		num_buffers_output = 0;
 		
-		// Load setup parameters
-		num_processes = SamsonSetup::shared()->num_processes;
-		
+		// Total available memory
 		memory = SamsonSetup::shared()->memory;
-		
+
+		// Shared memory setup
 		shared_memory_size_per_buffer	= SamsonSetup::shared()->shared_memory_size_per_buffer;
-		shared_memory_num_buffers		= SamsonSetup::shared()->shared_memory_num_buffers;
+		shared_memory_num_buffers		= SamsonSetup::shared()->num_processes;
 		
 		assert( shared_memory_size_per_buffer > 0);
 		
@@ -76,14 +78,13 @@ namespace ss
 		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
 			shared_memory_used_buffers[i] = false;
 
-		
 		// Create the shared memory areas
 		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
 		{
-			LM_T(LmtSharedMemory, ("Removing shared memory area %d",i));
+			LM_T(LmtMemory, ("Removing shared memory area %d",i));
 			removeSharedMemory(i);
 
-			LM_T(LmtSharedMemory, ("Creating shared memory area %d",i));			
+			LM_T(LmtMemory, ("Creating shared memory area %d",i));			
 			SharedMemoryItem *tmp = getSharedMemory(i);
 			freeSharedMemory(tmp);
 		}
@@ -158,20 +159,22 @@ namespace ss
 	}
 
 	
-	
-	
-	Buffer *MemoryManager::newBuffer( std::string name , size_t size )
+	Buffer *MemoryManager::newBuffer( std::string name , size_t size , Buffer::BufferType type )
 	{
 		token.retain();
+
+		switch (type) {
+			case Buffer::input:
+				used_memory_input += size;
+				num_buffers_input++;
+				break;
+			case Buffer::output:
+				used_memory_output += size;
+				num_buffers_output++;
+				break;
+		}
 		
-		// Keep counter of the used memory
-		used_memory += size;
-		
-		
-		// Increase the number of used memory buffers
-		num_buffers++;
-		
-		Buffer *b = new Buffer( name, size );
+		Buffer *b = new Buffer( name, size, type );
 
 		token.release();
 		return b;
@@ -184,13 +187,21 @@ namespace ss
 
 		token.retain();
 		
-		// Keep counter of the used memory
-		used_memory -= b->getMaxSize();
+		switch (b->getType()) {
+			case Buffer::input:
+				used_memory_input -= b->getMaxSize();
+				num_buffers_input--;
+				break;
+			case Buffer::output:
+				used_memory_output -= b->getMaxSize();
+				num_buffers_output--;
+				break;
+				
+		}
 		
-		LM_T(LmtSharedMemory, ("destroying buffer with max size %sbytes", au::Format::string( b->getMaxSize() ).c_str() ) );
+
+		LM_T(LmtMemory, ("destroying buffer with max size %sbytes", au::Format::string( b->getMaxSize() ).c_str() ) );
 		
-		// Decrease the number of used buffers
-		num_buffers--;
 		
 		b->free();
 		delete b;
@@ -211,8 +222,6 @@ namespace ss
 				shared_memory_used_buffers[i] = true;
 				token.release();
 				
-				used_memory += shared_memory_size_per_buffer;
-				
 				return i;
 			}
 		
@@ -232,7 +241,6 @@ namespace ss
 		token.retain();
 		
 		shared_memory_used_buffers[id] = false;
-		used_memory -= shared_memory_size_per_buffer;
 		
 		token.release();
 		
@@ -249,17 +257,13 @@ namespace ss
 		
 		std::ostringstream output;
 
-		int per_memory = (int) ( getMemoryUsage()*100.0 );
-		output << "Used: " << au::Format::string( used_memory ) << " / " << au::Format::string(memory) << " (" << per_memory << "%)";
-		output << " Buffers in action: " << num_buffers;
-		output << " Shared memory Buffers: " << num_shm_buffers << " / " << shared_memory_num_buffers;
+		output << "Input [ Used: " << num_buffers_input << " buffers with " << au::Format::string( used_memory_input , "B" ) << " " << ((int)(getMemoryUsageInput()*100.0)) << "%";
+		output << " Output [ Used: " << num_buffers_output << " buffers with " << au::Format::string( used_memory_output , "B" ) << " " << ((int)(getMemoryUsageOutput()*100.0)) << "%";
 		ws->set_memory_status( output.str() );
-		
 
 		ws->set_total_memory( memory );
-		ws->set_used_memory( used_memory );
+		ws->set_used_memory( getUsedMemory() );
 	}
-	
 	
 	void MemoryManager::addMemoryRequest( MemoryRequest *request)
 	{
@@ -285,7 +289,7 @@ namespace ss
 		
 		while( true )
 		{
-			double p = getMemoryUsage();
+			double p = getMemoryUsageInput();	// Only used for inputs
 
 			MemoryRequest *r = NULL;
 				
@@ -300,7 +304,7 @@ namespace ss
 				stopper.stop();	// Stop for no more requets of no memory available
 			else
 			{
-				*(r->buffer) = newBuffer("Buffer from request", r->size);
+				*(r->buffer) = newBuffer("Buffer from request", r->size , Buffer::input);
 				r->notifyDelegate();
 			}
 		}
@@ -309,7 +313,17 @@ namespace ss
 	
 	size_t MemoryManager::getUsedMemory()
 	{
-		return used_memory;
+		return used_memory_input + used_memory_output + shared_memory_num_buffers*shared_memory_size_per_buffer;
+	}
+
+	size_t MemoryManager::getUsedMemoryInput()
+	{
+		return used_memory_input;
+	}
+
+	size_t MemoryManager::getUsedMemoryOutput()
+	{
+		return used_memory_output;
 	}
 	
 	size_t MemoryManager::getMemory()
@@ -317,22 +331,38 @@ namespace ss
 		return memory;
 	}	
 	
-	double MemoryManager::getMemoryUsage()
+	double MemoryManager::getMemoryUsageInput()
 	{
 		double per;
 		if( memory == 0 )
 			per = 0;
 		else
-			per =  ( (double) used_memory / (double)memory );
+			per =  2 * ( (double) used_memory_input / (double) ( memory - shared_memory_num_buffers*shared_memory_size_per_buffer ) );
 		
 		return per;
 	}
 	
-	int MemoryManager::getUsedBuffers()
+	double MemoryManager::getMemoryUsageOutput()
 	{
-		return num_buffers;
+		double per;
+		if( memory == 0 )
+			per = 0;
+		else
+			per =  2 * ( (double) used_memory_output / (double) ( memory - shared_memory_num_buffers*shared_memory_size_per_buffer ) );
+		
+		return per;
 	}
-
+	
+	int MemoryManager::getNumBuffersInput()
+	{
+		return num_buffers_input;
+	}
+	
+	int MemoryManager::getNumBuffersOutput()
+	{
+		return num_buffers_output;
+	}
+	
 	
 
 }

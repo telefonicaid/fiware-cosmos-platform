@@ -88,7 +88,7 @@ namespace ss {
 			long int cm_len = cm_max_len;
 
 			// Get a new buffer ( a little bit larger )
-			Buffer *b = MemoryManager::shared()->newBuffer( "Compressed buffer", cm_len  );
+			Buffer *b = MemoryManager::shared()->newBuffer( "Compressed buffer", cm_len , buffer->getType() );
 			
 			int ans_compress = ezcompress( ( unsigned char*) ( b->getData() ), &cm_len, ( unsigned char*) (buffer->getData() ) , original_size );
 			assert( !ans_compress );
@@ -96,7 +96,7 @@ namespace ss {
 
 			
 			// Create a new buffer with the rigth size
-			Buffer *b2 = MemoryManager::shared()->newBuffer( "Compressed buffer2", b->getSize()	);
+			Buffer *b2 = MemoryManager::shared()->newBuffer( "Compressed buffer2", b->getSize() , buffer->getType()	);
 			memcpy(b2->getData(), b->getData(), b->getSize());
 			b2->setSize(b->getSize());
 
@@ -108,11 +108,11 @@ namespace ss {
 		
 		static Buffer* decompressBuffer(Buffer *buffer)
 		{
-			return decompressBuffer( buffer->getData() , buffer->getSize() );
+			return decompressBuffer( buffer->getData() , buffer->getSize() , buffer->getType() );
 		}
 		
 		
-		static Buffer* decompressBuffer( char * data , size_t length )
+		static Buffer* decompressBuffer( char * data , size_t length , Buffer::BufferType type )
 		{
 			// Get the buffer with the rigth size
 			LM_TODO(("Review the decompression process estimating the original size on the fly"));
@@ -121,7 +121,7 @@ namespace ss {
 			size_t compressed_size = length;
 			
 			long int m2_len = 0; //?
-			Buffer *b =  MemoryManager::shared()->newBuffer( "Decompressed buffer" , m2_len );
+			Buffer *b =  MemoryManager::shared()->newBuffer( "Decompressed buffer" , m2_len , type );
 			b->setSize(m2_len);
 			
 			// Decompress information

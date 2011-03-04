@@ -32,9 +32,6 @@ typedef enum TraceLevels
 
 	LmtWorker,
 	LmtWorkers,
-
-	LmtDisk,					// disk library	
-	LmtModuleManager,			// Module Manager component
 	
 	LmtEndpoint,
 	LmtEndpoints,
@@ -71,7 +68,6 @@ typedef enum TraceLevels
 
 	LmtFds,
 	LmtNetworkReady,
-	LmtSharedMemory,
 	LmtAlarm,
 	LmtSenderThread,
 	LmtThreadedMsgTreat,
@@ -110,7 +106,10 @@ typedef enum TraceLevels
 	LmtMove,
 	LmtWait,
 	
-	LmtOperations,           // Operations organization (map & reduce level)
+	LmtDisk,					// disk library	
+	LmtModuleManager,			// Module Manager component
+	LmtMemory,					// memory library	
+	LmtOperations,				// Operations organization (map & reduce level)
 	
 	LmtUser01 = 250,
 	LmtUser02 = 251,

@@ -110,41 +110,39 @@ int SamsonSpawner::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason r
 	int                   s;
 	int                   procVecSize;
 	ss::Message::Header*  headerP      = (ss::Message::Header*) info;
-	Host*                 hostP;
+	Host*                 controllerHostP;
 	Host*                 localhostP;
 
-	if (reason != ss::Endpoint::HelloReceived)
-		return 0;
 
-	if (ep->type != ss::Endpoint::Spawner)
-		return 0;
-
-	if (procVec == NULL)
-		return 0;
-
-	//
-	// samsonSpawner that runs in controller host distributes to the rest of spawners
-	//
-	hostP      = networkP->hostMgr->lookup(procVec->processV[0].host);
-	localhostP = networkP->hostMgr->lookup("localhost");
-
-	if (hostP != localhostP)
+	if ((reason == ss::Endpoint::HelloReceived) && (ep->type == ss::Endpoint::Spawner))
 	{
-		LM_M(("hostP: %p (%s)",      hostP, procVec->processV[0].host));
-		LM_M(("localhostP: %p", localhostP));
-		LM_M(("ProcessVector: not controller host - I do nothing"));
-		return 0;
-	}
+		if (procVec == NULL)
+			return 0;
 
-	LM_M(("ProcessVector: got Hello Msg/Ack from %s@%s", ep->name.c_str(), ep->ip));
-	if (headerP->type == ss::Message::Msg)
-	{
-		procVecSize = sizeof(ss::ProcessVector) + procVec->processes * sizeof(ss::Process);
+		controllerHostP  = networkP->hostMgr->lookup(procVec->processV[0].host);
+		localhostP       = networkP->hostMgr->lookup("localhost");
 
-		LM_M(("Sending ProcessVector to spawner in '%s' (%d processes)", ep->ip, procVec->processes));
-		s = iomMsgSend(ep, networkP->endpoint[0], ss::Message::ProcessVector, ss::Message::Msg, procVec, procVecSize);
-		if (s != 0)
-			LM_E(("iomMsgSend(%s, ProcessVector)", ep->ip));
+		//
+		// samsonSpawner that runs in controller host distributes to the rest of spawners
+		//
+		if (controllerHostP != localhostP)
+		{
+			LM_M(("controllerHostP: %p (%s)", controllerHostP, procVec->processV[0].host));
+			LM_M(("localhostP: %p", localhostP));
+			LM_M(("ProcessVector: not controller host - I do nothing"));
+			return 0;
+		}
+
+		LM_M(("ProcessVector: got Hello Msg/Ack from %s@%s", ep->name.c_str(), ep->ip));
+		if (headerP->type == ss::Message::Msg)
+		{
+			procVecSize = sizeof(ss::ProcessVector) + procVec->processes * sizeof(ss::Process);
+
+			LM_M(("Sending ProcessVector to spawner in '%s' (%d processes)", ep->ip, procVec->processes));
+			s = iomMsgSend(ep, networkP->endpoint[0], ss::Message::ProcessVector, ss::Message::Msg, procVec, procVecSize);
+			if (s != 0)
+				LM_E(("iomMsgSend(%s, ProcessVector)", ep->ip));
+		}
 	}
 
 	return 0;
@@ -558,6 +556,43 @@ void SamsonSpawner::init(ss::ProcessVector* procVec)
 }
 
 
+
+/* ****************************************************************************
+*
+* spawnerForward - 
+*/
+void spawnerForward(ss::Message::MessageCode code)
+{
+	int    s;
+	Host*  localHostP = networkP->hostMgr->lookup("localhost");
+	Host*  hostP;
+
+	if (localHostP == NULL)
+		LM_X(1, ("cannot find 'localhost' in host manager host list"));
+
+	for (int ix = 4; ix < networkP->Endpoints; ix++)
+	{
+		if (networkP->endpoint[ix] == NULL)
+			continue;
+
+		if (networkP->endpoint[ix]->type != ss::Endpoint::Spawner)
+			continue;
+
+		hostP = networkP->hostMgr->lookup(networkP->endpoint[ix]->ip);
+		if (localHostP == NULL)
+			LM_X(1, ("cannot find '%s' in host manager host list", networkP->endpoint[ix]->ip));
+		else if (hostP == localHostP)
+			LM_W(("How come I'm connected to myself ?"));
+		else
+		{
+			s = iomMsgSend(networkP->endpoint[ix], networkP->endpoint[0], code, ss::Message::Msg);
+			if (s != 0)
+				LM_E(("error forwarding '%s' to spawner in '%s'", messageCode(code)));
+		}
+	}
+}
+
+
 /* ****************************************************************************
 *
 * SamsonSpawner::receive - 
@@ -577,13 +612,25 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 	switch (headerP->code)
 	{
 	case ss::Message::Reset:
-		LM_M(("Got a Reset message from '%s'", ep->name.c_str()));
-		LM_M(("unlinking '%s'", SAMSON_PLATFORM_PROCESSES));
-		unlink(SAMSON_PLATFORM_PROCESSES);
-		LM_M(("killing processes"));
-		processesShutdown();
-		LM_M(("Sending ack"));
-		iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
+		if (headerP->type == ss::Message::Msg)
+		{
+			LM_M(("Got a Reset message from '%s'", ep->name.c_str()));
+			LM_M(("unlinking '%s'", SAMSON_PLATFORM_PROCESSES));
+			unlink(SAMSON_PLATFORM_PROCESSES);
+
+			if (ep->type == ss::Endpoint::Setup) 
+			{
+				LM_M(("Got RESET from samsonSetup - forwarding RESET to all spawners"));
+				spawnerForward(headerP->code);
+			}
+			else
+				LM_M(("Got RESET from '%s' - NOT forwarding RESET to all spawners", ep->name.c_str()));
+			
+			LM_M(("killing local processes"));
+			processesShutdown();
+			LM_M(("Sending ack to RESET message to %s@%s", ep->name.c_str(), ep->ip));
+			iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
+		}
 		break;
 
 	case ss::Message::ProcessSpawn:

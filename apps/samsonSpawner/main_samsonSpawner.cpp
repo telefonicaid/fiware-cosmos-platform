@@ -416,17 +416,17 @@ static int hello(ss::Endpoint* me, ss::Endpoint* ep, int* errP)
 
 	*errP = 0;
 
-	LM__T(LmtHello, ("Awaiting Hello message"));
+	LM_T(LmtHello, ("Awaiting Hello message"));
 	s = iomMsgAwait(ep->rFd, 5, 0);
 	if (s != 1)
 		LM_RE(s, ("error awaiting hello from '%s'", ep->name.c_str()));
 
-	LM__T(LmtHello, ("Reading Hello header"));
+	LM_T(LmtHello, ("Reading Hello header"));
 	s = iomMsgPartRead(ep, "hello header", (char*) &header, sizeof(header));
 	if (s != sizeof(header))
 		LM_RE(-1, ("error reading hello header from '%s'", ep->name.c_str()));
 
-	LM__T(LmtHello, ("Reading Hello data"));
+	LM_T(LmtHello, ("Reading Hello data"));
 	s = iomMsgRead(ep, &header, &msgCode, &msgType, &dataP, &dataLen);
 	if (s != 0)
 		LM_RE(-1, ("error reading hello data from '%s'", ep->name.c_str()));
@@ -607,20 +607,20 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 		if (headerP->type == ss::Message::Msg)
 		{
 			LM_T(LmtReset, ("Got a Reset message from '%s'", ep->name.c_str()));
-			LM_T(LmtReset, "unlinking '%s'", SAMSON_PLATFORM_PROCESSES));
+			LM_T(LmtReset, ("unlinking '%s'", SAMSON_PLATFORM_PROCESSES));
 			unlink(SAMSON_PLATFORM_PROCESSES);
 
 			if (ep->type == ss::Endpoint::Setup) 
 			{
-				LM_T(LmtReset, "Got RESET from samsonSetup - forwarding RESET to all spawners"));
+				LM_T(LmtReset, ("Got RESET from samsonSetup - forwarding RESET to all spawners"));
 				spawnerForward(headerP->code);
 			}
 			else
-				LM_T(LmtReset, "Got RESET from '%s' - NOT forwarding RESET to all spawners", ep->name.c_str()));
+				LM_T(LmtReset, ("Got RESET from '%s' - NOT forwarding RESET to all spawners", ep->name.c_str()));
 			
-			LM_T(LmtReset, "killing local processes"));
+			LM_T(LmtReset, ("killing local processes"));
 			processesShutdown();
-			LM_T(LmtReset, "Sending ack to RESET message to %s@%s", ep->name.c_str(), ep->ip));
+			LM_T(LmtReset, ("Sending ack to RESET message to %s@%s", ep->name.c_str(), ep->ip));
 			iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
 
 			bool verbose;
@@ -639,26 +639,26 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 	case ss::Message::ProcessVector:
 		if (headerP->type == ss::Message::Msg)
 		{
-			LM__T(LmtProcessVector, ("Received a ProcessVector from '%s'. dataLen: %d", ep->name.c_str(), headerP->dataLen));
+			LM_T(LmtProcessVector, ("Received a ProcessVector from '%s'. dataLen: %d", ep->name.c_str(), headerP->dataLen));
 			if ((procVec->processes <= 0) || (procVec->processes > 10))
 				LM_X(1, ("Bad number of processes in process vector: %d", procVec->processes));
 
-			LM__T(LmtProcessVector, ("--------------- Process Vector ---------------"));
+			LM_T(LmtProcessVector, ("--------------- Process Vector ---------------"));
 			for (int ix = 0; ix < procVec->processes; ix++)
-				LM__T(LmtProcessVector, ("  %02d: %-20s %-20s %-20s %d", ix, procVec->processV[ix].name, procVec->processV[ix].host, procVec->processV[ix].alias, procVec->processV[ix].port));
-			LM__T(LmtProcessVector, ("----------------------------------------------"));
+				LM_T(LmtProcessVector, ("  %02d: %-20s %-20s %-20s %d", ix, procVec->processV[ix].name, procVec->processV[ix].host, procVec->processV[ix].alias, procVec->processV[ix].port));
+			LM_T(LmtProcessVector, ("----------------------------------------------"));
 
 			s = processVector(ep, procVec);
-			LM__T(LmtProcessVector, ("Sending ProcessVector ack to '%s' in '%s'", ep->name.c_str(), ep->ip));
+			LM_T(LmtProcessVector, ("Sending ProcessVector ack to '%s' in '%s'", ep->name.c_str(), ep->ip));
 			if (s == 0)
 				iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
 			else
 				iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Nak);
 		}
 		else if (headerP->type == ss::Message::Ack)
-			LM__T(LmtProcessVector, ("Received a ProcessVector Ack from '%s'", ep->name.c_str()));
+			LM_T(LmtProcessVector, ("Received a ProcessVector Ack from '%s'", ep->name.c_str()));
 		else if (headerP->type == ss::Message::Nak)
-			LM__T(LmtProcessVector, ("Received a ProcessVector Nak from '%s'", ep->name.c_str()));
+			LM_T(LmtProcessVector, ("Received a ProcessVector Nak from '%s'", ep->name.c_str()));
 		else
 			LM_X(1, ("Bad message type in ProcessVector message (%d)", headerP->type));
 		break;

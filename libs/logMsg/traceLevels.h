@@ -110,7 +110,8 @@ typedef enum TraceLevels
 	LmtModuleManager,			// Module Manager component
 	LmtMemory,					// memory library	
 	LmtOperations,				// Operations organization (map & reduce level)
-	
+	LmtReset,
+
 	LmtUser01 = 250,
 	LmtUser02 = 251,
 	LmtUser03 = 252,

@@ -713,7 +713,7 @@ int main(int argC, const char *argV[])
 	if (notdaemon == false)
 		daemonize();
 
-	processListInit(10);
+	processListInit(101);
 
 	networkP = new ss::Network(ss::Endpoint::Spawner, "Spawner", SPAWNER_PORT, 80, 0);
 	

@@ -95,4 +95,12 @@ extern ss::Process** processListGet(void);
 */
 extern void processListShow(const char* why, bool forcedOn = false);
 
+
+
+/* ****************************************************************************
+*
+* processSpawn - 
+*/
+extern void processSpawn(ss::Process* processP);
+
 #endif

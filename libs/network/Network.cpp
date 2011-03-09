@@ -63,7 +63,9 @@
 #define LISTENER        1
 #define CONTROLLER      2
 #define SUPERVISOR      3
+#define SETUP           4
 #define FIRST_WORKER   10
+#define FIRST_SPAWNER  30
 
 
 
@@ -439,17 +441,31 @@ void Network::platformProcesses(void)
 
 		LM_W(("platform processes file error - awaiting data from samsonSetup/samsonSpawner"));
 
+		if (endpoint[ME]->type == Endpoint::Spawner)
+		{
+			if (dataReceiver == NULL)
+				LM_X(1, ("Sorry, no data receiver present - please implement!"));
+			dataReceiver->init(NULL);
+		}
+
 		return;
 	}
 
-
-
-	//
-	// Spawner:
-	//   Send 'Shutdown' and then disconnect all spawners
-	//   Start all local processes in the process vector 'procVec'
-	//   Connect to Spawners in all hosts in procVec.
 	
+
+	// Later on, I will call this callback function for all types of endpoints.
+	// For now, I only use it for the Spawner, and I keep using the ProcessVector message
+	// that the Controller sends to all workers
+
+	if (endpoint[ME]->type == Endpoint::Spawner)
+	{
+		if (dataReceiver == NULL)
+			LM_X(1, ("Sorry, no data receiver present - please implement!"));
+		dataReceiver->init(procVec);
+	}
+
+	// Spawner: Already taken care of! 
+
 	//
 	// Worker:
 	//   Connect to all Workers and the Controller in the process vector 'procVec' (ALL processes)
@@ -500,8 +516,7 @@ void Network::init(const char* controllerName)
 		LM_T(LmtFds, ("opened fd %d to accept incoming connections", endpoint[LISTENER]->rFd));
 	}
 
-	if (endpoint[ME]->type == Endpoint::Spawner)
-		platformProcesses();
+	platformProcesses();
 
 	if (endpoint[CONTROLLER] == NULL)
 		controllerConnect(controllerName);
@@ -2003,6 +2018,16 @@ void Network::controllerMsgTreat
 	LM_T(LmtMsgTreat, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
 	{
+	case Message::Reset:
+		if (msgType == Message::Msg)
+		{
+			if (dataReceiver)
+				dataReceiver->receive(endpointId, 0, headerP, dataP);
+			else
+				LM_X(1, ("Got a RESET message from '%s' - what do I do?"));
+		}
+		break;
+
 	case Message::LogLine:
 		LM_X(1, ("Got a LogLine from '%s' (%s) - I die", name, ep->typeName()));
 		break;
@@ -2201,11 +2226,11 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	oldSlot = endpointSlotGet(ep);
 	// LmtHello
 
-	if (hello->type == Endpoint::Controller)             newSlot = 2;
-	else if (hello->type == Endpoint::Supervisor)        newSlot = 3;
-	else if (hello->type == Endpoint::Setup)             newSlot = 4;
-	else if (hello->type == Endpoint::Spawner)           newSlot = 30;
-	else if (hello->type == Endpoint::Worker)            newSlot = 10 + hello->workerId;
+	if (hello->type == Endpoint::Controller)             newSlot = CONTROLLER;
+	else if (hello->type == Endpoint::Supervisor)        newSlot = SUPERVISOR;
+	else if (hello->type == Endpoint::Setup)             newSlot = SETUP;
+	else if (hello->type == Endpoint::Spawner)           newSlot = FIRST_SPAWNER;
+	else if (hello->type == Endpoint::Worker)            newSlot = FIRST_WORKER + hello->workerId;
 	else
 		LM_X(1, ("Unexpected type '%s'", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type)));
 	
@@ -2490,7 +2515,7 @@ void Network::procVecReceived(ProcessVector* processVec)
 	}
 
 	if (endpointUpdateReceiver != NULL)
-		endpointUpdateReceiver->endpointUpdate(NULL, Endpoint::WorkerVectorReceived, "Got Worker Vector", processVec);
+		endpointUpdateReceiver->endpointUpdate(NULL, Endpoint::ProcessVectorReceived, "Got Process Vector", processVec);
 
 	for (ix = 0; ix < Workers; ix++)
 	{
@@ -2576,11 +2601,18 @@ void Network::msgTreat(void* vP)
 	LM_T(LmtMsgTreat, ("Treating %s %s from %s", messageCode(msgCode), messageType(msgType), name));
 	switch (msgCode)
 	{
+	case Message::Reset:
+		if (dataReceiver)
+			dataReceiver->receive(endpointId, 0, headerP, dataP);
+		else
+			LM_X(1, ("no date receiver to treat 'Reset' message"));
+	   break;
+
 	case Message::ProcessVector:
 		if (dataReceiver)
 			dataReceiver->receive(endpointId, 0, headerP, dataP);
 		else
-			LM_X(1, ("no date receiver to treat ProcessVector message"));
+			LM_X(1, ("no date receiver to treat 'ProcessVector' message"));
 	   break;
 
 	case Message::EntireLogFile:

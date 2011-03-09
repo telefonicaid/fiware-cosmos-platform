@@ -37,6 +37,7 @@ class DataReceiverInterface
 {
 public:
 	virtual int   receive(int fromId, int nb, Message::Header* headerP, void* dataP) = 0;
+	virtual void  init(ProcessVector* procVec) = 0;
 	virtual      ~DataReceiverInterface() {};
 };
 

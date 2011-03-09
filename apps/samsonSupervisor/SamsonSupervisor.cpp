@@ -58,6 +58,17 @@ SamsonSupervisor::SamsonSupervisor(ss::Network* netP) : ss::Delilah(netP, false)
 
 /* ****************************************************************************
 *
+* init - 
+*/
+void SamsonSupervisor::init(ss::ProcessVector* procVec)
+{
+	LM_X(1, ("this callback is only used for Spawner for now ..."));
+}
+
+
+
+/* ****************************************************************************
+*
 * workerLookup - 
 */
 ss::Process* workerLookup(const char* alias)
@@ -243,8 +254,7 @@ static void emptyStarter(ss::Process* worker, int workerId)
 
 	LM_T(LmtProcessVector, ("Worker %d is totally unconfigured - adding it a process and starter", workerId));
 	processP = processAdd(ss::PtWorker, "Worker", "ip", WORKER_PORT, worker->alias, NULL);
-
-	starter = starterAdd("workerVectorReceived - Starter for Worker without valid IP address", processP);
+	starter  = starterAdd("procVecReceived - Starter for Worker without valid IP address", processP);
 	if (starter == NULL)
 		LM_X(1, ("NULL starter for Worker@%s", worker->host));
 
@@ -257,9 +267,9 @@ static void emptyStarter(ss::Process* worker, int workerId)
 
 /* ****************************************************************************
 *
-* workerVectorReceived - 
+* procVecReceived - 
 */
-static void workerVectorReceived(ss::ProcessVector* pVec)
+static void procVecReceived(ss::ProcessVector* pVec)
 {
 	Host*            hostP;
 	int              fd;
@@ -273,7 +283,7 @@ static void workerVectorReceived(ss::ProcessVector* pVec)
 
 	workers = pVec->processes - 1;
 
-	LM_T(LmtProcessVector, ("Got Worker Vector from Controller (with %d workers)", workers));
+	LM_T(LmtProcessVector, ("Got Process Vector from Controller (with %d workers)", workers));
 
 	size     = sizeof(ss::ProcessVector) + pVec->processes * sizeof(ss::Process);
 	procVec  = (ss::ProcessVector*) malloc(size);
@@ -319,7 +329,7 @@ static void workerVectorReceived(ss::ProcessVector* pVec)
 		if (hostP == NULL)
 		{
 			networkP->hostMgr->insert(worker->host, NULL);
-			networkP->hostMgr->list("Got Worker Vector");
+			networkP->hostMgr->list("Got Process Vector");
 
 			hostP = networkP->hostMgr->lookup(worker->host);
 			if (hostP == NULL)
@@ -356,7 +366,7 @@ static void workerVectorReceived(ss::ProcessVector* pVec)
 		{
 			LM_T(LmtProcessVector, ("Creating starter for spawner in '%s'", hostP->name));
 			
-			starter = starterAdd("workerVectorReceived - Starter for Spawner", spawner);
+			starter = starterAdd("procVecReceived - Starter for Spawner", spawner);
 			if (starter == NULL)
 				LM_X(1, ("NULL starter for Spawner@%s", hostP->name));
 			
@@ -408,7 +418,7 @@ static void workerVectorReceived(ss::ProcessVector* pVec)
 		{
 			LM_T(LmtProcessVector, ("No starter, let's create it ..."));
 
-			starter = starterAdd("workerVectorReceived - Starter for Worker", process);
+			starter = starterAdd("procVecReceived - Starter for Worker", process);
 			if (starter == NULL)
                 LM_X(1, ("NULL starter for Worker@%s", hostP->name));
 
@@ -416,7 +426,7 @@ static void workerVectorReceived(ss::ProcessVector* pVec)
 				tabManager->processListTab->starterInclude(starter);
 		}
 		else
-			starter->check("workerVectorReceived - just created a Worker");
+			starter->check("procVecReceived - just created a Worker");
 	}
 
 	LM_T(LmtProcessVector, ("Treated worker vector with %d workers", workers));
@@ -514,8 +524,8 @@ int SamsonSupervisor::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReaso
 		LM_X(1, ("Supervisor Added ..."));
 		break;
 
-	case ss::Endpoint::WorkerVectorReceived:
-		workerVectorReceived(procVec);
+	case ss::Endpoint::ProcessVectorReceived:
+		procVecReceived(procVec);
 		break;
 
 	case ss::Endpoint::WorkerAdded:

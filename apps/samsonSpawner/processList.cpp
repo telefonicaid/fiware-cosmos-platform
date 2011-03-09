@@ -9,6 +9,8 @@
 */
 #include <string.h>             // memset, strcpy, ...
 #include <sys/time.h>           // struct timeval
+#include <unistd.h>             // fork & exec
+#include <sys/types.h>          // pid_t
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
@@ -256,4 +258,76 @@ void processRemove(ss::Process* processP)
 	}
 
 	processListShow("Removed a process");
+}
+
+
+
+/* ****************************************************************************
+*
+* processSpawn - 
+*/
+void processSpawn(ss::Process* processP)
+{
+	pid_t  pid;
+	char*  argV[50];
+	int    argC = 0;
+
+	if (processP->type == ss::PtWorker)
+	{
+		argV[argC++] = (char*) "samsonWorker";
+
+		argV[argC++] = (char*) "-alias";
+		argV[argC++] = processP->alias;
+		argV[argC++] = (char*) "-controller";
+		argV[argC++] = (char*) processP->controllerHost;
+	}
+	else if (processP->type == ss::PtController)
+	{
+		argV[argC++] = (char*) "samsonController";
+	}
+	else
+		LM_X(1, ("Will only start workers and controllers - bad process type %d", processP->type));
+
+	if (processP->verbose == true)   argV[argC++] = (char*) "-v";
+	if (processP->debug   == true)   argV[argC++] = (char*) "-d";
+	if (processP->reads   == true)   argV[argC++] = (char*) "-r";
+	if (processP->writes  == true)   argV[argC++] = (char*) "-w";
+	if (processP->toDo    == true)   argV[argC++] = (char*) "-toDo";
+
+	char traceLevels[512];
+	lmTraceGet(traceLevels, sizeof(traceLevels), processP->traceLevels);
+	if (traceLevels[0] != 0)
+	{
+		argV[argC++] = (char*) "-t";
+		argV[argC++] = traceLevels;
+	}
+
+	argV[argC] = NULL;
+
+	LM_M(("Spawning process '%s'", argV[0]));
+	for (int ix = 0; ix < argC; ix++)
+		LM_M(("  argV[%d]: '%s'", ix, argV[ix]));
+
+	pid = fork();
+	if (pid == 0)
+	{
+		int ix;
+		int s;
+
+		LM_V(("Spawning a '%s' with %d parameters", argV[0], argC));
+
+		s = execvp(argV[0], argV);
+		if (s == -1)
+			LM_E(("Back from EXEC: %s", strerror(errno)));
+		else
+			LM_E(("Back from EXEC"));
+
+		LM_E(("Tried to start '%s' with the following parameters:", argV[0]));
+		for (ix = 0; ix < argC + 1; ix++)
+			LM_E(("%02d: %s", ix, argV[ix]));
+
+		LM_X(1, ("Back from EXEC !!!"));
+	}
+
+	processAdd(processP->type, argV[0], processP->alias, processP->controllerHost, pid, NULL);
 }

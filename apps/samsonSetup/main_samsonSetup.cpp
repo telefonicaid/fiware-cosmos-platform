@@ -37,21 +37,26 @@
 *
 * Option variables
 */
-int    workers;
-char*  ip[100];
-char   controllerHost[80];
+int      workers;
+char*    ip[100];
+char     controllerHost[256];
+char     rIp[256];
+bool     reset;
 
 
 
+#define NOIP (long) "noip"
 /* ****************************************************************************
 *
 * parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-ips",          ip,          "IP_LIST",    PaSList,   PaOpt,  PaND,   PaNL,  PaNL,  "listen port"         },
-	{ "-controller",   controllerHost,  "CONTROLLER", PaString,  PaOpt,  PaND,   PaNL,  PaNL,  "Controller host"     },
-	{ "-workers",     &workers,     "WORKERS",    PaInt,     PaOpt,     0,     0,   100,   "number of workers"   },
+	{ "-reset",       &reset,           "RESET",      PaBool,    PaOpt,  false, false,  true,  "reset platform"           },
+	{ "-ip",           rIp,             "IP",         PaStr,     PaOpt,  NOIP,   PaNL,  PaNL,  "IP to one samson machine" },
+	{ "-ips",          ip,              "IP_LIST",    PaSList,   PaOpt,  PaND,   PaNL,  PaNL,  "listen port"              },
+	{ "-controller",   controllerHost,  "CONTROLLER", PaString,  PaOpt,  PaND,   PaNL,  PaNL,  "Controller host"          },
+	{ "-workers",     &workers,         "WORKERS",    PaInt,     PaOpt,     0,     0,   100,   "number of workers"        },
 
 	PA_END_OF_ARGS
 };
@@ -121,6 +126,16 @@ static int accessCheck(void)
 
 	if (access(PlatformProcessesPath, R_OK) == 0)
 	{
+#if 1
+		printf("Samson Platform Setup Error.\n"
+			   "The platform process file '%s' already exists.\n"
+			   "In order to change the platform configuration,\n"
+			   "you have to stop the platform manually (for now).\n"
+			   "You also must delete the platform process file before rerunning Setup.\n",
+			   PlatformProcessesPath);
+
+		return 9;
+#else
 		char answer[32];
 
 		printf("Samson Platform Setup Error.\n"
@@ -147,6 +162,7 @@ static int accessCheck(void)
 				   "Incorrect answer (%s).\n", answer);
 			return 8;
 		}
+#endif
 	}
 
 	return 0;
@@ -199,7 +215,8 @@ static int platformFileCreate(int workers, char* ip[])
 	strncpy(procVec->processV[0].alias,  "Controller",        sizeof(procVec->processV[0].alias));
 
 	procVec->processV[0].port = CONTROLLER_PORT;
-	
+	procVec->processV[0].type = ss::PtController;
+
 	// 2. Workers
 	for (int ix = 1; ix < (long) ip[0] + 1; ix++)
 	{
@@ -208,12 +225,14 @@ static int platformFileCreate(int workers, char* ip[])
 		if (hostP == NULL)
 			LM_X(1, ("Error looking up host '%s' in host manager list", ip[ix]));
 
-		strncpy(procVec->processV[ix].name,  "samsonWorker", sizeof(procVec->processV[ix].name));
-		strncpy(procVec->processV[ix].host, hostP->name,     sizeof(procVec->processV[ix].host));
+		strncpy(procVec->processV[ix].name,           "samsonWorker",  sizeof(procVec->processV[ix].name));
+		strncpy(procVec->processV[ix].host,           hostP->name,     sizeof(procVec->processV[ix].host));
+		strncpy(procVec->processV[ix].controllerHost, controllerHost,  sizeof(procVec->processV[ix].controllerHost));
 
 		snprintf(procVec->processV[ix].alias, sizeof(procVec->processV[ix].alias), "Worker%02d", ix - 1);
 
 		procVec->processV[ix].port = WORKER_PORT;
+		procVec->processV[ix].type = ss::PtWorker;
 	}
 
 
@@ -239,17 +258,20 @@ static int platformFileCreate(int workers, char* ip[])
 *
 * spawnerConnect - 
 */
-static int spawnerConnect(int* errP)
+static int spawnerConnect(const char* host, int* errP)
 {
 	int fd;
 
-	fd = iomConnect(controllerHost, SPAWNER_PORT);
+	LM_M(("Connecting to spawner in '%s'", host));
+
+	fd = iomConnect(host, SPAWNER_PORT);
+	LM_M(("iomConnect returned %d", fd));
 	if (fd == -1)
 	{
 		printf("Samson Platform Setup Error.\n"
 			   "Samson platform process 'spawner' in host '%s' doesn't respond.\n"
-			   "Please check that the host '%s' is in order before you try again.",
-			   controllerHost, controllerHost);
+			   "Please check that the host '%s' is in order before you try again.\n",
+			   host, host);
 
 		*errP = 21;
 	}
@@ -276,18 +298,20 @@ static int hello(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 
 	*errP = 0;
 
+	LM_M(("Awaiting Hello message"));
 	s = iomMsgAwait(spawner->rFd, 5, 0);
 	if (s != 1)
 	{
 		printf("Samson Platform Setup Error.\n"
 			   "Timeout awaiting response from Samson platform process 'spawner' in host '%s'.\n"
-			   "Please check that the host '%s' is in order before you try again.",
+			   "Please check that the host '%s' is in order before you try again.\n",
 			   controllerHost, controllerHost);
 
 		*errP = 31;
 		return -1;
 	}
 
+	LM_M(("Reading Hello header"));
 	s = iomMsgPartRead(spawner, "hello header", (char*) &header, sizeof(header));
 	if (s != sizeof(header))
 	{
@@ -301,6 +325,7 @@ static int hello(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 		return -1;
 	}
 
+	LM_M(("Reading Hello data"));
 	s = iomMsgRead(spawner, &header, &msgCode, &msgType, &dataP, &dataLen);
 	if (s != 0)
 	{
@@ -322,12 +347,13 @@ static int hello(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 
 	hello.type = ss::Endpoint::Setup;
 
+	LM_M(("Sending Hello ack"));
 	s = iomMsgSend(spawner, me, ss::Message::Hello, ss::Message::Ack, &hello, sizeof(hello));
 	if (s != 0)
 	{
 		printf("Samson Platform Setup Error.\n"
 			   "Error sending message to platform process 'spawner' in host '%s'.\n"
-			   "Please check that the host '%s' is in order before you try again.",
+			   "Please check that the host '%s' is in order before you try again.\n",
 			   controllerHost, controllerHost);
 
 		*errP = 34;
@@ -361,7 +387,7 @@ static int procVecSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 	{
 		printf("Samson Platform Setup Error.\n"
 			   "Error sending Samson Platform Process List to platform process 'spawner' in host '%s'.\n"
-			   "Please check that the host '%s' is in order before you try again.",
+			   "Please check that the host '%s' is in order before you try again.\n",
 			   controllerHost, controllerHost);
 
 		*errP = 41;
@@ -373,7 +399,7 @@ static int procVecSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 	{
 		printf("Samson Platform Setup Error.\n"
 			   "Timeout awaiting response from Samson platform process 'spawner' in host '%s'.\n"
-			   "Please check that the host '%s' is in order before you try again.",
+			   "Please check that the host '%s' is in order before you try again.\n",
 			   controllerHost, controllerHost);
 
  		*errP = 42;
@@ -418,7 +444,7 @@ static int procVecSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 
 		printf("Samson Platform Setup Error.\n"
 			   "Internal error flagged in response from Samson platform process 'spawner' in host '%s'.\n"
-			   "Please check that the host '%s' is in order before you try again.",
+			   "Please check that the host '%s' is in order before you try again.\n",
 			   controllerHost, controllerHost);
 
 		*errP = 45;
@@ -434,14 +460,14 @@ static int procVecSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 *
 * distribute - 
 */
-static int distribute(void)
+static int distribute(const char* host)
 {
 	int                         fd;
 	ss::Endpoint                me;
 	ss::Endpoint                spawner;
 	int                         err      = 0;
 
-	if ((fd = spawnerConnect(&err)) == -1)
+	if ((fd = spawnerConnect(host, &err)) == -1)
 		return err;
 
 	me.name      = progName;
@@ -454,7 +480,130 @@ static int distribute(void)
 		return err;
 	
 	if (procVecSend(&me, &spawner, &err) == -1)
-        return err;
+		return err;
+
+	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* resetSend - 
+*/
+static int resetSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
+{
+	int                         s;
+	ss::Message::Header         header;
+	ss::Message::MessageCode    msgCode;
+	ss::Message::MessageType    msgType;
+   	char                        data[1];
+	void*                       dataP       = data;
+	int                         dataLen     = sizeof(data);
+
+	*errP = 0;
+
+	LM_M(("Sending Reset message to spawner"));
+	s = iomMsgSend(spawner, me, ss::Message::Reset, ss::Message::Msg);
+	if (s != 0)
+	{
+		printf("Samson Platform Setup Error.\n"
+			   "Error sending 'Reset' to platform process 'spawner' in host '%s'.\n"
+			   "Please check that the host '%s' is in order before you try again.\n",
+			   controllerHost, controllerHost);
+
+		*errP = 51;
+		return -1;
+	}
+
+	s = iomMsgAwait(spawner->rFd, 10, 0);
+	if (s != 1)
+	{
+		printf("Samson Platform Setup Error.\n"
+			   "Timeout awaiting response from Samson platform process 'spawner' in host '%s'.\n"
+			   "Please check that the host '%s' is in order before you try again.\n",
+			   controllerHost, controllerHost);
+
+ 		*errP = 52;
+		return -1;
+	}
+
+	LM_M(("Calling iomMsgPartRead (reading header)"));
+	s = iomMsgPartRead(spawner, "header", (char*) &header, sizeof(header));
+	LM_M(("iomMsgPartRead returned %d", s));
+	if (s != sizeof(header))
+	{
+		LM_M(("iomMsgPartRead error %d", s));
+		printf("Samson Platform Setup Error.\n"
+			   "Error reading response header from Samson platform process 'spawner' in host '%s'.\n"
+			   "Please check that the host '%s' is in order before you try again.\n",
+			   controllerHost, controllerHost);
+
+		*errP = 53;
+		return -1;
+	}
+
+
+	s = iomMsgRead(spawner, &header, &msgCode, &msgType, &dataP, &dataLen);
+	LM_M(("iomMsgRead returned %d", s));
+	if (s != 0)
+	{
+		printf("Samson Platform Setup Error.\n"
+			   "Error reading response from Samson platform process 'spawner' in host '%s'.\n"
+			   "Please check that the host '%s' is in order before you try again.\n",
+			   controllerHost, controllerHost);
+
+		*errP = 54;
+		return -1;
+	}
+
+	if ((msgCode != ss::Message::Reset) || (msgType != ss::Message::Ack))
+	{
+		if (msgCode != ss::Message::Reset)
+			LM_E(("Bad message code: %d", msgCode));
+		if (msgType != ss::Message::Ack)
+			LM_E(("Bad message type: %d", msgType));
+
+		printf("Samson Platform Setup Error.\n"
+			   "Internal error flagged in response from Samson platform process 'spawner' in host '%s'.\n"
+			   "Please check that the host '%s' is in order before you try again.\n",
+			   controllerHost, controllerHost);
+
+		*errP = 55;
+		return -1;
+	}
+
+	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* resetPlatform - 
+*/
+static int resetPlatform(const char* host)
+{
+	int                         fd;
+	ss::Endpoint                me;
+	ss::Endpoint                spawner;
+	int                         err      = 0;
+
+	if ((fd = spawnerConnect(host, &err)) == -1)
+		return err;
+
+	me.name      = progName;
+	spawner.name = "Spawner";
+	spawner.ip   = strdup(host);
+	spawner.rFd  = fd;
+	spawner.wFd  = fd;
+
+	
+	if (hello(&me, &spawner, &err) == -1)
+		return err;
+	
+	if (resetSend(&me, &spawner, &err) == -1)
+		return err;
 
 	return 0;
 }
@@ -483,6 +632,22 @@ int main(int argC, const char *argV[])
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
+
+	if (reset)
+	{
+		if (strcmp(rIp, "noip") == 0)
+		{
+			printf("Please give the IP of one of the platform hosts> ");
+			fflush(stdout);
+			scanf("%s", rIp);
+		}
+
+		err = resetPlatform(rIp);
+		if (err != 0)
+			printf("Reset error.\n");
+
+		return err;
+	}
 
 	if (controllerHost[0] == 0)
 	{
@@ -552,7 +717,7 @@ int main(int argC, const char *argV[])
 
 	if (err == 0)
 	{
-		err = distribute();
+		err = distribute(controllerHost);
 
 		if (err != 0)
 			printf("Error distributing platform file.\n");

@@ -72,7 +72,8 @@ typedef enum MessageCode
 	ConfigChange                    = CODE('C', 'f', 'C', ' '),
 	WorkerConfigGet                 = CODE('W', 'C', 'G', ' '),
 	EntireLogFile                   = CODE('E', 'L', 'F', ' '),
-	EntireOldLogFile                = CODE('O', 'L', 'F', ' ')
+	EntireOldLogFile                = CODE('O', 'L', 'F', ' '),
+	Reset                           = CODE('R', 's', 't', ' ')
 } MessageCode;
 
 

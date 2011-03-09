@@ -43,7 +43,7 @@ namespace ss {
 
 		// PacketReceiverInterface
 		virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
-
+		
 		// Send information about the state of this worker to the controller
 		void sendWorkerStatus();
 		

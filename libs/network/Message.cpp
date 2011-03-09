@@ -63,6 +63,7 @@ char* messageCode(MessageCode code)
 		case WorkerConfigGet:                  return (char*) "WorkerConfigGet";
 		case EntireLogFile:                    return (char*) "EntireLogFile";
 		case EntireOldLogFile:                 return (char*) "EntireOldLogFile";
+		case Reset:                            return (char*) "Reset";
 	}
 
 	return (char*) "Unknown";

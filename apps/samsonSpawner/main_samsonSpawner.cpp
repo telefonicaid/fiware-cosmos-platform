@@ -7,10 +7,10 @@
 * CREATION DATE            Dec 14 2010
 *
 */
-#include <unistd.h>             // fork & exec
+#include <sys/time.h>           // gettimeofday
 #include <sys/types.h>          // pid_t
 #include <sys/wait.h>           // waitpid
-#include <sys/time.h>           // gettimeofday
+#include <signal.h>             // kill, SIGINT, ...
 
 #include "parseArgs.h"          // parseArgs
 #include "logMsg.h"             // LM_*
@@ -18,6 +18,9 @@
 
 #include "NetworkInterface.h"   // DataReceiverInterface
 #include "Network.h"            // Network
+#include "iomMsgSend.h"         // iomMsgSend
+#include "iomMsgRead.h"         // iomMsgRead
+#include "iomMsgAwait.h"        // iomMsgAwait
 #include "Process.h"            // Process
 #include "platformProcesses.h"  // platformProcessesSave
 #include "iomMsgSend.h"         // iomMsgSend
@@ -25,6 +28,7 @@
 #include "ports.h"              // LOG_SERVER_PORT
 #include "daemonize.h"          // daemonize
 #include "processList.h"        // processListInit, Add, Remove and Lookup
+
 
 
 /* ****************************************************************************
@@ -55,7 +59,7 @@ PaArgument paArgs[] =
 */
 int                 logFd        = -1;
 ss::Network*        networkP     = NULL;
-ss::ProcessVector*  procVec      = NULL;
+ss::ProcessVector*  procVec      = NULL;   // Should use Network's procVec, not a local copy ... 
 
 
 
@@ -67,11 +71,11 @@ class SamsonSpawner : public ss::DataReceiverInterface, public ss::TimeoutReceiv
 {
 public:
 	SamsonSpawner(ss::Network* nwP) { networkP = nwP; }
-	void processSpawn(ss::Process* processP);
 
-	virtual int receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
-	virtual int endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info = NULL);
-	virtual int timeoutFunction(void);
+	virtual int  receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
+	virtual void init(ss::ProcessVector* procVec);
+	virtual int  endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info = NULL);
+	virtual int  timeoutFunction(void);
 
 private:
 	ss::Network*    networkP;
@@ -179,17 +183,23 @@ int SamsonSpawner::timeoutFunction(void)
 			struct timeval  now;
 			struct timeval  diff;
 
-			LM_W(("'%s' died - restarting it?", processP->name));
+			if (access(SAMSON_PLATFORM_PROCESSES, R_OK) != 0)
+				LM_W(("'%s' died - NOT restarting it as the platform processes file isn't in place", processP->name));
+			else
+			{
+				LM_W(("'%s' died - restarting it", processP->name));
 
-			if (gettimeofday(&now, NULL) != 0)
-				LM_X(1, ("gettimeofday failed (fatal error): %s", strerror(errno)));
+				if (gettimeofday(&now, NULL) != 0)
+					LM_X(1, ("gettimeofday failed (fatal error): %s", strerror(errno)));
 
-			timeDiff(&processP->startTime, &now, &diff);
+				timeDiff(&processP->startTime, &now, &diff);
 
-			LM_M(("Process %d '%s' died after %d.%06d seconds of uptime", processP->pid, processP->name, diff.tv_sec, diff.tv_usec));
-			LM_TODO(("If process only been running for a few seconds, don't restart it - use this to initiate a Controller takeover"));
-			newProcessP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, pid, &now);
-			processSpawn(newProcessP);
+				LM_M(("Process %d '%s' died after %d.%06d seconds of uptime", processP->pid, processP->name, diff.tv_sec, diff.tv_usec));
+				LM_TODO(("If process only been running for a few seconds, don't restart it - use this to initiate a Controller takeover"));
+				newProcessP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, pid, &now);
+				processSpawn(newProcessP);
+			}
+
 			processRemove(processP);
 		}
 	}
@@ -201,73 +211,112 @@ int SamsonSpawner::timeoutFunction(void)
 
 /* ****************************************************************************
 *
-* processSpawn - 
+* processesStart - 
 */
-void SamsonSpawner::processSpawn(ss::Process* processP)
+static void processesStart(ss::ProcessVector* procVec)
 {
-	pid_t  pid;
-	char*  argV[50];
-	int    argC = 0;
+	ss::Process*  processP;
+	int           ix;
+	Host*         localhostP;
+	Host*         hostP;
 
-	if (processP->type == ss::PtWorker)
+	localhostP = networkP->hostMgr->lookup("localhost");
+
+	LM_M(("Got %d processes", procVec->processes));
+	for (ix = 0; ix < procVec->processes; ix++)
 	{
-		argV[argC++] = (char*) "samsonWorker";
+		processP = &procVec->processV[ix];
 
-		argV[argC++] = (char*) "-alias";
-		argV[argC++] = processP->alias;
-		argV[argC++] = (char*) "-controller";
-		argV[argC++] = (char*) processP->controllerHost;
-	}
-	else if (processP->type == ss::PtController)
-	{
-		argV[argC++] = (char*) "samsonController";
-	}
-	else
-		LM_X(1, ("Will only start workers and controllers - bad process type %d", processP->type));
+		hostP = networkP->hostMgr->lookup(processP->host);
+		if (hostP != localhostP)
+		{
+			LM_M(("Cannot start process in other host '%s'", processP->host));
+			continue;
+		}
 
-	if (processP->verbose == true)   argV[argC++] = (char*) "-v";
-	if (processP->debug   == true)   argV[argC++] = (char*) "-d";
-	if (processP->reads   == true)   argV[argC++] = (char*) "-r";
-	if (processP->writes  == true)   argV[argC++] = (char*) "-w";
-	if (processP->toDo    == true)   argV[argC++] = (char*) "-toDo";
+		LM_M(("Spawning process '%s'", hostP->name));
 
-	char traceLevels[512];
-	lmTraceGet(traceLevels, sizeof(traceLevels), processP->traceLevels);
-	if (traceLevels[0] != 0)
-	{
-		argV[argC++] = (char*) "-t";
-		argV[argC++] = traceLevels;
-	}
+		processP->verbose = lmVerbose;
+		processP->debug   = lmDebug;
+		processP->reads   = lmReads;
+		processP->writes  = lmWrites;
 
-	argV[argC] = NULL;
+		// processP->traceLevels
 
-	LM_M(("Spawning process '%s'", argV[0]));
-	for (int ix = 0; ix < argC; ix++)
-		LM_M(("  argV[%d]: '%s'", ix, argV[ix]));
-
-	pid = fork();
-	if (pid == 0)
-	{
-		int ix;
-		int s;
-
-		LM_V(("Spawning a '%s' with %d parameters", argV[0], argC));
-
-		s = execvp(argV[0], argV);
-		if (s == -1)
-			LM_E(("Back from EXEC: %s", strerror(errno)));
-		else
-			LM_E(("Back from EXEC"));
-
-		LM_E(("Tried to start '%s' with the following parameters:", argV[0]));
-		for (ix = 0; ix < argC + 1; ix++)
-			LM_E(("%02d: %s", ix, argV[ix]));
-
-		LM_X(1, ("Back from EXEC !!!"));
-	}
-
-	processAdd(processP->type, argV[0], processP->alias, processP->controllerHost, pid, NULL);
+		processSpawn(processP);
+	}	
 }
+
+
+
+/* ****************************************************************************
+*
+* spawnersConnect
+*
+* Disconnect from spawners that run in hosts not in 'procVec' and connect to added spawners
+* But, for now, just connect to the spawners.
+*/
+void spawnersConnect(ss::ProcessVector* procVec)
+{
+	Host*         localhostP;
+	Host*         hostP;
+	int           ix;
+	ss::Process*  processP;
+
+	localhostP = networkP->hostMgr->lookup("localhost");
+	if (localhostP == NULL)
+		LM_X(1, ("Error finding localhost in host manager"));
+
+	for (ix = 0; ix < procVec->processes; ix++)
+	{
+		int fd;
+
+		processP = &procVec->processV[ix];		
+		hostP    = networkP->hostMgr->lookup(processP->host);
+
+		if (hostP != NULL)
+		{
+			ss::Endpoint* ep;
+
+			ep = networkP->endpointLookup(ss::Endpoint::Spawner, hostP->name);
+
+			if ((ep != NULL) && (ep->state == ss::Endpoint::Connected))
+			{
+				LM_M(("Not connecting to spawner in '%s'", hostP->name));
+				continue;
+			}
+		}
+
+		LM_M(("ProcessVector: current host is '%s'", procVec->processV[ix].host));
+		LM_M(("ProcessVector: localhost    is '%s'", localhostP->name));
+
+		if (hostP == localhostP)
+		{
+			LM_M(("ProcessVector: not connecting to myself ..."));
+			continue;
+		}
+
+		processP = &procVec->processV[ix];
+		LM_M(("Inserting host for process %d ('%s')", ix, processP->host));
+		hostP   = networkP->hostMgr->insert(processP->host, NULL);
+		LM_M(("Inserted host for process %d ('%s')", ix, hostP->name));
+
+		if (networkP->endpointLookup(ss::Endpoint::Spawner, hostP->name) != NULL)
+		{
+			LM_M(("Already connected to spawner in '%s'", hostP->name));
+			LM_TODO(("What about sending the ProcessVector ..."));
+			continue;
+		}
+
+		LM_M(("ProcessVector: connecting to spawner in '%s'", hostP->name));
+		fd = iomConnect(hostP->name, SPAWNER_PORT);
+		if (fd == -1)
+			LM_E(("iomConnect('%s', %d): %s", hostP->name, SPAWNER_PORT, strerror(errno)));
+		else
+			networkP->endpointAdd("New Spawner", fd, fd, "Spawner", "Spawner", procVec->processes - 1, ss::Endpoint::Spawner, hostP->name, SPAWNER_PORT);
+	}
+}
+
 
 
 
@@ -277,10 +326,6 @@ void SamsonSpawner::processSpawn(ss::Process* processP)
 */
 static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 {
-	int           ix;
-	ss::Process*  process;
-	Host*         hostP;
-	Host*         localhostP;
 	int           procVecSize;
 	int           error = 0;
 
@@ -301,60 +346,216 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 	LM_TODO(("Send 'Die' to Controller"));
 	LM_TODO(("Send 'Die' to Worker"));
 
-	localhostP = networkP->hostMgr->lookup("localhost");
-	if (localhostP == NULL)
-		LM_X(1, ("Cannot find 'localhost' in host manager ..."));
-
-	LM_M(("Got a Process Vector with %d processes", procVec->processes));
-	for (ix = 0; ix < procVec->processes; ix++)
-	{
-		int fd;
-
-		hostP = networkP->hostMgr->lookup(procVec->processV[ix].host);
-		if (hostP != NULL)
-		{
-			LM_TODO(("Check if we're really connected to the spawner in '%s' before continuing", procVec->processV[ix].host));
-			LM_M(("Not connecting to spawner in '%s'", hostP->name));
-			continue;
-		}
-
-		LM_M(("ProcessVector: current host is '%s'", procVec->processV[ix].host));
-		LM_M(("ProcessVector: localhost    is '%s'", localhostP->name));
-
-		if (hostP == localhostP)
-		{
-			LM_M(("ProcessVector: not connecting to myself ..."));
-			continue;
-		}
-
-		process = &procVec->processV[ix];
-		LM_M(("Inserting host for process %d ('%s')", ix, process->host));
-		hostP   = networkP->hostMgr->insert(process->host, NULL);
-		LM_M(("Inserted host for process %d ('%s')", ix, hostP->name));
-
-		if (networkP->endpointLookup(ss::Endpoint::Spawner, hostP->name) != NULL)
-		{
-			LM_M(("Already connected to spawner in '%s'", hostP->name));
-			LM_TODO(("What about sending the ProcessVector ..."));
-			continue;
-		}
-
-		LM_M(("ProcessVector: connecting to spawner in '%s'", hostP->name));
-		fd = iomConnect(hostP->name, SPAWNER_PORT);
-		if (fd == -1)
-		{
-			LM_E(("iomConnect('%s', %d): %s", hostP->name, SPAWNER_PORT, strerror(errno)));
-			error = 1;
-		}
-		else
-			networkP->endpointAdd("New Spawner", fd, fd, "Spawner", "Spawner", procVec->processes - 1, ss::Endpoint::Spawner, hostP->name, SPAWNER_PORT);
-	}
-
-	LM_M(("Done connecting to spawners, now I await the callbacks to 'endpointUpdate'"));
+	processesStart(procVec);
+	spawnersConnect(procVec);
 
 	return error;
 }
 
+
+
+/* ****************************************************************************
+*
+* processesShutdown - 
+*/
+static void processesShutdown(void)
+{
+	ss::Process*  processP;
+	ss::Process** processList;
+	int           processes;
+	int           ix;
+	int           s;
+
+	processes   = processMaxGet();
+	processList = processListGet();
+
+	for (ix = processes - 1; ix >= 0; ix--)
+	{
+		processP = processList[ix];
+
+		if (processP == NULL)
+			continue;
+
+		if (processP->pid <= 0)
+		{
+			LM_M(("process '%s' has pid %d ...", processP->name, processP->pid));
+			continue;
+		}
+
+		if (processP->endpoint != NULL)
+		{
+			LM_M(("Sending 'Die' to %s", processP->name));
+
+			s = iomMsgSend(processP->endpoint, networkP->endpoint[0], ss::Message::Die, ss::Message::Msg);
+			LM_M(("iomMsgSend returned %d", s));
+			if (s != 0)
+				LM_E(("Error sending 'Die' to %s", processP->endpoint->name.c_str()));
+
+			usleep(50000);
+		}
+
+		LM_M(("Sending SIGINT to '%s'", processP->name));
+		kill(processP->pid, SIGINT);
+		usleep(50000);
+
+		LM_M(("Sending SIGKILL to '%s'", processP->name));
+		kill(processP->pid, SIGKILL);
+
+		if (processP->endpoint)
+			networkP->endpointRemove(processP->endpoint, "shutting down");
+
+		// NOT removing process here - that will be done when the process is waited for
+	}
+
+	processListShow("After shutdown");
+}
+
+
+
+/* ****************************************************************************
+*
+* hello - 
+*/
+static int hello(ss::Endpoint* me, ss::Endpoint* ep, int* errP)
+{
+	int                             s;
+	ss::Message::Header             header;
+	ss::Message::MessageCode        msgCode;
+	ss::Message::MessageType        msgType;
+	char                            data[1];
+	void*                           dataP   = data;
+	int                             dataLen = sizeof(data);
+	ss::Message::HelloData          hello;
+
+	*errP = 0;
+
+	LM_M(("Awaiting Hello message"));
+	s = iomMsgAwait(ep->rFd, 5, 0);
+	if (s != 1)
+		LM_RE(s, ("error awaiting hello from '%s'", ep->name.c_str()));
+
+	LM_M(("Reading Hello header"));
+	s = iomMsgPartRead(ep, "hello header", (char*) &header, sizeof(header));
+	if (s != sizeof(header))
+		LM_RE(-1, ("error reading hello header from '%s'", ep->name.c_str()));
+
+	LM_M(("Reading Hello data"));
+	s = iomMsgRead(ep, &header, &msgCode, &msgType, &dataP, &dataLen);
+	if (s != 0)
+		LM_RE(-1, ("error reading hello data from '%s'", ep->name.c_str()));
+
+	memset(&hello, 0, sizeof(hello));
+
+	strncpy(hello.name,   "samsonSpawner", sizeof(hello.name));
+	strncpy(hello.ip,     "myip",          sizeof(hello.ip));
+	strncpy(hello.alias,  "samsonSetup",   sizeof(hello.alias));
+
+	hello.type = ss::Endpoint::Spawner;
+
+	s = iomMsgSend(ep, me, ss::Message::Hello, ss::Message::Ack, &hello, sizeof(hello));
+	if (s != 0)
+		LM_RE(-1, ("error sending Hello ack to '%s'", ep->name.c_str()));
+
+	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* dieSend - 
+*/
+static int dieSend(ss::Endpoint* me, ss::Endpoint* ep)
+{
+	int s;
+
+	LM_M(("Sending Die message to endpoint '%s'", ep->name.c_str()));
+	s = iomMsgSend(ep, me, ss::Message::Die, ss::Message::Msg);
+	if (s != 0)
+		LM_RE(1, ("error sending Die to endpoint '%s'", ep->name.c_str()));
+
+	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* processesSteal - 
+*/
+static void processesSteal(void)
+{
+	int            fd;
+	int            err = 0;
+	ss::Endpoint   ep;
+	ss::Endpoint   me;
+
+
+
+	//
+	// Connecting to and sending 'Die' to worker
+	//
+	fd = iomConnect("localhost", WORKER_PORT);
+	if (fd != -1)
+	{
+		LM_M(("Found an 'orphaned' worker - killing it"));
+		ep.rFd   = fd;
+		ep.wFd   = fd;
+		ep.name  = "samsonWorkerToDie";
+		ep.type  = ss::Endpoint::Worker;
+		ep.ip    = (char*) "localhost";
+
+		hello(networkP->endpoint[0], &ep, &err);
+		if (err != 0)
+			LM_E(("Error Helloing worker"));
+		else
+			dieSend(networkP->endpoint[0], &ep);
+	}
+	else
+		LM_M(("Found NO 'orphaned' worker"));
+
+
+
+	//
+	// Connecting to and sending 'Die' to controller
+	//
+	fd = iomConnect("localhost", CONTROLLER_PORT);
+	if (fd != -1)
+	{
+		LM_M(("Found an 'orphaned' controller - killing it"));
+		ep.rFd   = fd;
+		ep.wFd   = fd;
+		ep.name  = "samsonControllerToDie";
+		ep.type  = ss::Endpoint::Controller;
+		ep.ip    = (char*) "localhost";
+	
+		hello(networkP->endpoint[0], &ep, &err);
+		if (err != 0)
+			LM_E(("Error Helloing controller"));
+		else
+			dieSend(networkP->endpoint[0], &ep);
+	}
+	else
+		LM_M(("Found NO 'orphaned' controller"));
+}
+
+
+
+/* ****************************************************************************
+*
+* SamsonSpawner::init - 
+*/
+void SamsonSpawner::init(ss::ProcessVector* procVec)
+{
+	processesSteal();
+	processesShutdown();
+
+	if (procVec != NULL)
+	{
+		processesStart(procVec);
+		spawnersConnect(procVec);
+	}
+}
 
 
 /* ****************************************************************************
@@ -375,6 +576,16 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 
 	switch (headerP->code)
 	{
+	case ss::Message::Reset:
+		LM_M(("Got a Reset message from '%s'", ep->name.c_str()));
+		LM_M(("unlinking '%s'", SAMSON_PLATFORM_PROCESSES));
+		unlink(SAMSON_PLATFORM_PROCESSES);
+		LM_M(("killing processes"));
+		processesShutdown();
+		LM_M(("Sending ack"));
+		iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
+		break;
+
 	case ss::Message::ProcessSpawn:
 		processSpawn(process);
 		break;
@@ -392,11 +603,11 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 			LM_M(("----------------------------------------------"));
 
 			s = processVector(ep, procVec);
-			LM_M(("Sending ProcessVector ack to spawner in '%s'", ep->name.c_str()));
+			LM_M(("Sending ProcessVector ack to '%s' in '%s'", ep->name.c_str(), ep->ip));
 			if (s == 0)
-				iomMsgSend(ep, networkP->endpoint[0], ss::Message::ProcessVector, ss::Message::Ack);
+				iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
 			else
-				iomMsgSend(ep, networkP->endpoint[0], ss::Message::ProcessVector, ss::Message::Nak);
+				iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Nak);
 		}
 		else if (headerP->type == ss::Message::Ack)
 			LM_M(("Received a ProcessVector Ack from '%s'", ep->name.c_str()));
@@ -451,14 +662,14 @@ int main(int argC, const char *argV[])
 	processListInit(10);
 
 	networkP = new ss::Network(ss::Endpoint::Spawner, "Spawner", SPAWNER_PORT, 80, 0);
-	networkP->init(NULL);
-
+	
 	spawnerP = new SamsonSpawner(networkP);
 
 	networkP->setDataReceiver(spawnerP);
 	networkP->setEndpointUpdateReceiver(spawnerP);
 	networkP->setTimeoutReceiver(spawnerP, 1, 0); // Timeout every second
 
+	networkP->init(NULL);
 	networkP->run();
 
 	return 0;

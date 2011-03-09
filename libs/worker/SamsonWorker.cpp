@@ -49,6 +49,18 @@ SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , l
 }
 
 
+#if 0
+/* ****************************************************************************
+*
+* init - 
+*/
+void SamsonWorker::init(ss::ProcessVector* procVec)
+{
+	LM_X(1, ("this callback is only used for Spawner for now ..."));
+}
+#endif
+
+
 
 /* ****************************************************************************
 *

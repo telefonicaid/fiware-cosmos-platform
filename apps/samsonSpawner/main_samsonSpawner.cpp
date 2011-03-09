@@ -552,6 +552,8 @@ static void processesSteal(void)
 */
 void SamsonSpawner::init(ss::ProcessVector* procVec)
 {
+	bool verbose;
+
 	processesSteal();
 	processesShutdown();
 
@@ -560,6 +562,13 @@ void SamsonSpawner::init(ss::ProcessVector* procVec)
 		processesStart(procVec);
 		spawnersConnect(procVec);
 	}
+
+
+	verbose = lmVerbose;
+	lmVerbose = true;
+	processListShow("INIT");
+	networkP->endpointListShow("INIT");
+	lmVerbose = verbose;
 }
 
 
@@ -637,6 +646,13 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 			processesShutdown();
 			LM_M(("Sending ack to RESET message to %s@%s", ep->name.c_str(), ep->ip));
 			iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
+
+			bool verbose;
+			verbose = lmVerbose;
+			lmVerbose = true;
+			processListShow("Got RESET");
+			networkP->endpointListShow("Got RESET");
+			lmVerbose = verbose;
 		}
 		break;
 

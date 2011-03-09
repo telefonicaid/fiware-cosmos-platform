@@ -241,14 +241,6 @@ static int platformFileCreate(int workers, char* ip[])
 	//
 	ss::platformProcessesSave(procVec);
 
-#if 0
-	LM_M(("---------------------- Processes ----------------------"));
-	for (int ix = 0; ix < procVec->processes; ix++)
-		LM_M(("  %02d: %-20s %-20s %-20s %d", ix, procVec->processV[ix].name, procVec->processV[ix].host, procVec->processV[ix].alias, procVec->processV[ix].port));
-	LM_M(("---------------------- Processes ----------------------"));
-	exit(0);
-#endif
-
 	return 0;
 }
 
@@ -262,10 +254,8 @@ static int spawnerConnect(const char* host, int* errP)
 {
 	int fd;
 
-	LM_M(("Connecting to spawner in '%s'", host));
 
 	fd = iomConnect(host, SPAWNER_PORT);
-	LM_M(("iomConnect returned %d", fd));
 	if (fd == -1)
 	{
 		printf("Samson Platform Setup Error.\n"
@@ -298,7 +288,6 @@ static int hello(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 
 	*errP = 0;
 
-	LM_M(("Awaiting Hello message"));
 	s = iomMsgAwait(spawner->rFd, 5, 0);
 	if (s != 1)
 	{
@@ -311,11 +300,9 @@ static int hello(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 		return -1;
 	}
 
-	LM_M(("Reading Hello header"));
 	s = iomMsgPartRead(spawner, "hello header", (char*) &header, sizeof(header));
 	if (s != sizeof(header))
 	{
-		LM_M(("iomMsgPartRead error %d", s));
 		printf("Samson Platform Setup Error.\n"
 			   "Error reading response header from Samson platform process 'spawner' in host '%s'.\n"
 			   "Please check that the host '%s' is in order before you try again.\n",
@@ -325,7 +312,6 @@ static int hello(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 		return -1;
 	}
 
-	LM_M(("Reading Hello data"));
 	s = iomMsgRead(spawner, &header, &msgCode, &msgType, &dataP, &dataLen);
 	if (s != 0)
 	{
@@ -347,7 +333,6 @@ static int hello(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 
 	hello.type = ss::Endpoint::Setup;
 
-	LM_M(("Sending Hello ack"));
 	s = iomMsgSend(spawner, me, ss::Message::Hello, ss::Message::Ack, &hello, sizeof(hello));
 	if (s != 0)
 	{
@@ -406,12 +391,9 @@ static int procVecSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 		return -1;
 	}
 
-	LM_M(("Calling iomMsgPartRead (reading header)"));
 	s = iomMsgPartRead(spawner, "header", (char*) &header, sizeof(header));
-	LM_M(("iomMsgPartRead returned %d", s));
 	if (s != sizeof(header))
 	{
-		LM_M(("iomMsgPartRead error %d", s));
 		printf("Samson Platform Setup Error.\n"
 			   "Error reading response header from Samson platform process 'spawner' in host '%s'.\n"
 			   "Please check that the host '%s' is in order before you try again.\n",
@@ -423,7 +405,6 @@ static int procVecSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 
 
 	s = iomMsgRead(spawner, &header, &msgCode, &msgType, &dataP, &dataLen);
-	LM_M(("iomMsgRead returned %d", s));
 	if (s != 0)
 	{
 		printf("Samson Platform Setup Error.\n"
@@ -503,7 +484,6 @@ static int resetSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 
 	*errP = 0;
 
-	LM_M(("Sending Reset message to spawner"));
 	s = iomMsgSend(spawner, me, ss::Message::Reset, ss::Message::Msg);
 	if (s != 0)
 	{
@@ -528,12 +508,9 @@ static int resetSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 		return -1;
 	}
 
-	LM_M(("Calling iomMsgPartRead (reading header)"));
 	s = iomMsgPartRead(spawner, "header", (char*) &header, sizeof(header));
-	LM_M(("iomMsgPartRead returned %d", s));
 	if (s != sizeof(header))
 	{
-		LM_M(("iomMsgPartRead error %d", s));
 		printf("Samson Platform Setup Error.\n"
 			   "Error reading response header from Samson platform process 'spawner' in host '%s'.\n"
 			   "Please check that the host '%s' is in order before you try again.\n",
@@ -545,7 +522,6 @@ static int resetSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 
 
 	s = iomMsgRead(spawner, &header, &msgCode, &msgType, &dataP, &dataLen);
-	LM_M(("iomMsgRead returned %d", s));
 	if (s != 0)
 	{
 		printf("Samson Platform Setup Error.\n"

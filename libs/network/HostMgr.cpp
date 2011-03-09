@@ -97,7 +97,6 @@ void HostMgr::localIps(void)
 	memset(domainedName, 0, sizeof(domainedName));
 	if (getdomainname(domain, sizeof(domain)) == -1)
 		LM_X(1, ("getdomainname: %s", strerror(errno)));
-	LM_M(("domain: '%s'", domain));
 
 	LM_TODO(("Would gethostname ever returned the 'domained' name ?"));
 
@@ -217,7 +216,6 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	if (name == NULL)
 		name = "nohostname";
 
-	LM_M(("looking up host '%s'", name));
 	if ((hostP = lookup(name)) != NULL)
 		return hostP;
 
@@ -225,7 +223,6 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	{
 		struct hostent* heP;
 
-		LM_M(("ip == NULL, name: '%s'", name));
 		heP = gethostbyname(name);
 
 		if (heP == NULL)
@@ -276,13 +273,9 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	{
 		if (onlyDigitsAndDots(name) == false)
 		{
-			LM_M(("Found a dot in hostname '%s' - adding alias without domain", name));
 			*dotP = 0;
-			LM_M(("New alias: '%s'", name));
 			aliasAdd(hostP, name);
 		}
-		else
-			LM_M(("only Digits And Dots in '%s'", name));
 	}
 
 	return insert(hostP);

@@ -262,7 +262,6 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 	this->port             = port;
 	Endpoints              = endpoints;
 	Workers                = workers;
-	LM_M(("Workers: %d", Workers));
 
 	procVec                = NULL;
 	procVecSize            = 0;
@@ -2447,13 +2446,11 @@ void Network::procVecReceived(ProcessVector* processVec)
 
 	// process 0 is the controller
 	workers = processVec->processes - 1; 
-	LM_M(("Workers:              %d", Workers));
-	LM_M(("workers from procVec: %d", workers));
 
 	if (Workers < workers)
 	{
 		// LM_T(LmtProcessVector, ...
-		LM_M(("Got %d processes from Controller - I thought there were %d workers - changing to %d workers",
+		LM_T(LmtProcessVector, ("Got %d processes from Controller - I thought there were %d workers - changing to %d workers",
 			  processVec->processes, Workers, workers));
 
 		// Adding workers in Endpoint vector
@@ -2491,8 +2488,7 @@ void Network::procVecReceived(ProcessVector* processVec)
 	Workers = workers;
 
 
-	// LM_T(LmtWorker, ...
-	LM_M(("Initializing %d worker endpoint%s", Workers, (Workers > 1)? "s" : ""));
+	LM_T(LmtWorker, ("Initializing %d worker endpoint%s", Workers, (Workers > 1)? "s" : ""));
 	for (ix = 0; ix < Workers; ix++)
 	{
 		Endpoint* ep;
@@ -2504,7 +2500,6 @@ void Network::procVecReceived(ProcessVector* processVec)
 				LM_X(1, ("error allocating endpoint"));
 		}
 
-		LM_M(("Filling worker %02d with the info the controller gave me ('%s' '%s' '%s')", ix, processVec->processV[ix + 1].name, processVec->processV[ix + 1].host, processVec->processV[ix + 1].alias));
 		ep = endpoint[FIRST_WORKER + ix];
 
 		ep->name  = processVec->processV[ix + 1].name;

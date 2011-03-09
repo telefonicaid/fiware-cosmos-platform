@@ -304,9 +304,9 @@ void processSpawn(ss::Process* processP)
 
 	argV[argC] = NULL;
 
-	LM_M(("Spawning process '%s'", argV[0]));
+	LM_T(LmtSpawn, ("Spawning process '%s'", argV[0]));
 	for (int ix = 0; ix < argC; ix++)
-		LM_M(("  argV[%d]: '%s'", ix, argV[ix]));
+	   LM_T(LmtSpawn, ("  argV[%d]: '%s'", ix, argV[ix]));
 
 	pid = fork();
 	if (pid == 0)

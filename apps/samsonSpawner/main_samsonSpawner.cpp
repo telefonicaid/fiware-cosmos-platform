@@ -256,10 +256,13 @@ static void processesStart(ss::ProcessVector* procVec)
 */
 void spawnersConnect(ss::ProcessVector* procVec)
 {
-	Host*         localhostP;
-	Host*         hostP;
-	int           ix;
-	ss::Process*  processP;
+	Host*          localhostP;
+	Host*          hostP;
+	int            ix;
+	ss::Process*   processP;
+	ss::Endpoint*  ep;
+	int            s;
+	int            procVecSize;
 
 	localhostP = networkP->hostMgr->lookup("localhost");
 	if (localhostP == NULL)
@@ -299,10 +302,14 @@ void spawnersConnect(ss::ProcessVector* procVec)
 		hostP   = networkP->hostMgr->insert(processP->host, NULL);
 		LM_M(("Inserted host for process %d ('%s')", ix, hostP->name));
 
-		if (networkP->endpointLookup(ss::Endpoint::Spawner, hostP->name) != NULL)
+		if ((ep = networkP->endpointLookup(ss::Endpoint::Spawner, hostP->name)) != NULL)
 		{
-			LM_M(("Already connected to spawner in '%s'", hostP->name));
-			LM_TODO(("What about sending the ProcessVector ..."));
+			LM_M(("Already connected to spawner in '%s' - sending it the process vector", hostP->name));
+
+			procVecSize = sizeof(ss::ProcessVector) + procVec->processes * sizeof(ss::Process);
+			s = iomMsgSend(ep, networkP->endpoint[0], ss::Message::ProcessVector, ss::Message::Msg, procVec, procVecSize);
+			if (s != 0)
+				LM_E(("Error sending ProcessVector message to spawner in '%s'", ep->name.c_str()));
 			continue;
 		}
 

@@ -697,18 +697,30 @@ int main(int argC, const char *argV[])
 
 	
 	//
-	// Host Manager 
+	// If more than worker, the controller mustn't be 'localhost'
 	//
-	hostMgr = new ss::HostMgr(SAMSON_MAX_HOSTS);
-	hostMgr->insert(controllerHost, NULL);
-	
-	for (int ix = 1; ix < (long) ip[0] + 1; ix++)
-		hostMgr->insert(ip[ix], NULL);
+	if ((workers > 1) && ((strcmp(controllerHost, "localhost") == 0) || (strcmp(controllerHost, "127.0.0.1") == 0)))
+	{
+		printf("Samson Platform Setup Error.\n"
+			   "You specified %d workers and controller host as '%s' -\n"
+			   "this cannot be, please enter the IP address of the controller.\n",
+			   workers, controllerHost);
+		err = 3;
+	}
 
 
 
 	if (err == 0)
 	{
+		//
+		// Host Manager 
+		//
+		hostMgr = new ss::HostMgr(SAMSON_MAX_HOSTS);
+		hostMgr->insert(controllerHost, NULL);
+	
+		for (int ix = 1; ix < (long) ip[0] + 1; ix++)
+			hostMgr->insert(ip[ix], NULL);
+
 		err = platformFileCreate(workers, ip);
 
 		if (err != 0)

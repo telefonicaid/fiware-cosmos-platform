@@ -1339,7 +1339,15 @@ Endpoint* Network::endpointAdd
 	Endpoint*        inheritedFrom
 )
 {
+	Host* hostP;
+
 	LM_T(LmtEndpoint, ("%s: adding endpoint '%s' of type '%s' for fd %d (alias: '%s')", why, name, endpoint[ME]->typeName(type), rFd, alias));
+
+	hostP = hostMgr->lookup(ip.c_str());
+	if (hostP == NULL)
+		LM_W(("Host '%s' not found in host manager list", ip.c_str()));
+	else if (endpointLookup(type, hostP) != NULL)
+		LM_W(("**************** A '%s' endpoint '%s@%s' already exists (%s) ********************", endpoint[ME]->typeName(type), name, hostP->name, why));
 
 	if (inheritedFrom != NULL)
 		LM_T(LmtEndpoint, ("%s: '%s' inherits from '%s' (old endpoint: %p)", why, name, inheritedFrom->name.c_str(), inheritedFrom));
@@ -2198,6 +2206,41 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	int newSlot;
 	int oldSlot;
 
+#if 1
+	Host*     hostP = hostMgr->lookup(hello->ip);
+	Endpoint* epp;
+
+	if (hostP == NULL)
+	{
+		LM_W(("Host '%s' not found in hostMgr", hello->ip));
+
+		epp = endpointLookup((ss::Endpoint::Type) hello->type, hello->ip);
+		if (epp)
+			LM_W(("Endpoint of type '%s' in host '%s' already exists in endpointList (%s@%s)", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hello->ip, epp->name.c_str(), epp->ip));
+	}
+	else
+	{
+		epp = endpointLookup((ss::Endpoint::Type) hello->type, hostP);
+		if (epp)
+		{
+			LM_W(("Endpoint of type '%s' in host '%s' already exists in endpointList (%s@%s)", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hostP->name, epp->name.c_str(), epp->ip));
+#if 0
+			close(epp->rFd);
+			if (epp->wFd != epp->rFd)
+				close(epp->wFd);
+			endpointRemove(ep, "duplicate");
+			return;
+#endif
+		}
+		else
+		{
+			epp = endpointLookup((ss::Endpoint::Type) hello->type, hello->ip);
+			if (epp)
+				LM_W(("Endpoint of type '%s' in host '%s' already exists in endpointList (%s@%s)", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hello->ip, epp->name.c_str(), epp->ip));
+		}
+	}
+#endif
+
 	if ((hello->type == Endpoint::Supervisor) && (endpoint[SUPERVISOR] != NULL))
 	{
 		LM_W(("A second supervisor is connecting - rejecting it!"));
@@ -2933,12 +2976,13 @@ void Network::run(void)
 			else
 				showSelectList = false;
 
+#if 0
 			if (showSelectList)
 			{
 				LM_V((""));
 				LM_V(("------------ %.5f secs timeout, %d endpoints -------------------------------------", ((double) tmoSecs + ((double) tmoUsecs) / 1000000), Endpoints));
 			}
-
+#endif
 			for (ix = 0; ix < Endpoints; ix++)
 			{
 				if (endpoint[ix] == NULL)
@@ -2954,7 +2998,7 @@ void Network::run(void)
 
 			if (showSelectList)
 			{
-				endpointListShow("periodic");
+				// endpointListShow("periodic");
 
 				if (endpointUpdateReceiver != NULL)
 					endpointUpdateReceiver->endpointUpdate(NULL, Endpoint::SelectToBeCalled, "Select to be called");

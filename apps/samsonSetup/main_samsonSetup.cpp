@@ -285,6 +285,9 @@ static int hello(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 	void*                           dataP   = data;
 	int                             dataLen = sizeof(data);
 	ss::Message::HelloData          hello;
+	Host*                           hostP;
+
+	hostP = hostMgr->lookup("localhost");
 
 	*errP = 0;
 
@@ -328,7 +331,7 @@ static int hello(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 	memset(&hello, 0, sizeof(hello));
 
 	strncpy(hello.name,   "samsonSetup",   sizeof(hello.name));
-	strncpy(hello.ip,     "myip",          sizeof(hello.ip));
+	strncpy(hello.ip,      hostP->name,    sizeof(hello.ip));
 	strncpy(hello.alias,  "samsonSetup",   sizeof(hello.alias));
 
 	hello.type = ss::Endpoint::Setup;
@@ -609,6 +612,14 @@ int main(int argC, const char *argV[])
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
+
+
+	//
+	// Host Manager 
+	//
+	hostMgr = new ss::HostMgr(SAMSON_MAX_HOSTS);
+
+
 	if (reset)
 	{
 		if (strcmp(rIp, "noip") == 0)
@@ -688,10 +699,6 @@ int main(int argC, const char *argV[])
 
 	if (err == 0)
 	{
-		//
-		// Host Manager 
-		//
-		hostMgr = new ss::HostMgr(SAMSON_MAX_HOSTS);
 		hostMgr->insert(controllerHost, NULL);
 	
 		for (int ix = 1; ix < (long) ip[0] + 1; ix++)

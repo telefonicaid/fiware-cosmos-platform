@@ -68,7 +68,10 @@ ss::Process* processAdd(ss::Process* processP)
 	ss::Process*  pP;
 	unsigned int  ix;
 
-	LM_T(LmtProcessList, ("Adding process '%s' of type '%s'. pid: %d", processP->name, processTypeName(processP), processP->pid));
+	if (processMax == 0)
+	   LM_X(1, ("processMax == 0 - processListInit not called !"));
+
+	LM_M(("Adding process '%s' of type '%s'. pid: %d", processP->name, processTypeName(processP), processP->pid));
 
 	if ((pP = processLookup(processP->pid)) != NULL)
 	{
@@ -248,6 +251,8 @@ void processListShow(const char* why, bool forcedOn)
 */
 void processRemove(ss::Process* processP)
 {
+	LM_M(("Removing process '%s'", processP->name));
+
 	for (unsigned int ix = 0; ix < processMax; ix++)
 	{
 		if (processV[ix] == processP)
@@ -271,6 +276,8 @@ void processSpawn(ss::Process* processP)
 	pid_t  pid;
 	char*  argV[50];
 	int    argC = 0;
+
+	LM_M(("spawning process '%s'", processP->name));
 
 	if (processP->type == ss::PtWorker)
 	{
@@ -304,17 +311,15 @@ void processSpawn(ss::Process* processP)
 
 	argV[argC] = NULL;
 
-	LM_T(LmtSpawn, ("Spawning process '%s'", argV[0]));
+	LM_M(("Spawning process '%s'", argV[0]));
 	for (int ix = 0; ix < argC; ix++)
-	   LM_T(LmtSpawn, ("  argV[%d]: '%s'", ix, argV[ix]));
+	   LM_M(("  argV[%d]: '%s'", ix, argV[ix]));
 
 	pid = fork();
 	if (pid == 0)
 	{
 		int ix;
 		int s;
-
-		LM_V(("Spawning a '%s' with %d parameters", argV[0], argC));
 
 		s = execvp(argV[0], argV);
 		if (s == -1)

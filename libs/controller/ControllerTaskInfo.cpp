@@ -29,8 +29,9 @@ namespace ss {
 	
 	ControllerTaskInfo::~ControllerTaskInfo()
 	{
-		for ( size_t i = 0 ; i < input_files.size() ; i++)
-			delete input_files[i];
+
+		for ( size_t i = 0 ; i < input_queues.size() ; i++)
+			delete input_queues[i];		
 		
 		for ( size_t i = 0 ; i < output_queues.size() ; i++)
 			delete output_queues[i];		

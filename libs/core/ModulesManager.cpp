@@ -48,7 +48,7 @@ namespace ss
 	
 	ModulesManager::ModulesManager()
 	{
-		addModules();
+		reloadModules();
 	}
 	
 	void ModulesManager::init()
@@ -122,6 +122,16 @@ namespace ss
 		
 		// Add modules again
 		addModules();
+		
+		// Add spetial function here
+		
+		/*
+		 Spetial operation to be moved to a proper file
+		 */
+		
+		Operation *compact = new Operation( "samson.compact" , Operation::system );
+		compact->inputFormats.push_back( ss::KVFormat::format("*" ,"*") );
+		add( compact );
 		
 		lock.unlock();
 	}

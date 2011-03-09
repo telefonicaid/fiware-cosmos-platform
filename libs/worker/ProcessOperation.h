@@ -8,6 +8,7 @@ namespace ss {
 	
 	class WorkerTask;
 	class OperationSubTask;
+	class CompactSubTask;
 	
 	// Individual item of a generator
 	
@@ -33,6 +34,29 @@ namespace ss {
 		void runMap( KVWriter *writer );
 		void runReduce( KVWriter *writer );
 		void runParserOut(TXTWriter *writer );
+		
+	};
+	
+	class WorkerTaskManager;
+	
+	class ProcessCompact : public ProcessItem
+	{
+		CompactSubTask * compactSubTask;
+
+		// Information we need to report new file
+		std::string fileName;
+		std::string queue;
+		
+		WorkerTaskManager *tm;
+		size_t task_id;
+		
+	public:
+		
+		ProcessCompact( CompactSubTask * _compactSubTask );
+		~ProcessCompact();
+		
+		void run();
+
 		
 	};
 	

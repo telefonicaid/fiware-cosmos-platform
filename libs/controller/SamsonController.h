@@ -67,7 +67,7 @@ namespace ss {
 
 	public:
 		
-		SamsonController(NetworkInterface* network);
+		SamsonController( NetworkInterface* network );
 		
 		void runBackgroundProcesses();
 		

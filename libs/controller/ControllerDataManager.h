@@ -10,7 +10,7 @@
 #include "au_map.h"				// au::map
 #include "samson.pb.h"			// ss::network::...
 #include "MonitorParameter.h"	// ss::MonitorBlock
-#include "coding.h"				// FileKVInfo
+#include "coding.h"				// KVInfo
 #include "AutomaticOperationManager.h"	// ss::AutomaticOperationManager
 
 namespace ss {
@@ -26,8 +26,8 @@ namespace ss {
 	class ActiveTask
 	{
 	public:
+
 		std::set<std::string> files;		// List of files to not delete from disk
-		
 		void addFiles( Queue *q );			// Add all the files of this queue to the list of protected files
 		
 	};
@@ -40,13 +40,13 @@ namespace ss {
 	{
 		//au::Lock lock;	(lock is included in DataManager generic object )
 		
-		FileKVInfo info_kvs;										// Global info of the entire system ( all types of key-values )
-		FileKVInfo info_txt;										// Global info of the entire system ( txt files )
+		KVInfo info_kvs;										// Global info of the entire system ( all types of key-values )
+		KVInfo info_txt;										// Global info of the entire system ( txt files )
 		
 		au::map< std::string , Queue> queues;						// List of ALL KeyValue queues
-		
 		au::map< size_t , ActiveTask > tasks;						// List of active tasks ( information about the files that should not be deleted )
 		
+
 		AutomaticOperationManager automatic_operations_manager;		// Manager of automatic operations
 		
 	public:
@@ -82,13 +82,20 @@ namespace ss {
 			command << "add_file " <<  worker << " " << fileName << " " << size << " " << kvs << " " << queue;
 			return command.str();
 		}		
+
+		static std::string getRemoveFileCommand(int worker , std::string fileName , size_t size , size_t kvs , std::string queue )
+		{
+			std::ostringstream command;
+			command << "remove_file " <<  worker << " " << fileName << " " << size << " " << kvs << " " << queue;
+			return command.str();
+		}		
 		
-		FileKVInfo get_info_kvs()
+		KVInfo get_info_kvs()
 		{
 			return info_kvs;
 		}
 		
-		FileKVInfo get_info_txt()
+		KVInfo get_info_txt()
 		{
 			return info_txt;
 		}

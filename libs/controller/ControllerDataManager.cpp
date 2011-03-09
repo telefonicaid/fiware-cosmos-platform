@@ -35,12 +35,12 @@ namespace ss {
 		 fillKVInfo( q->mutable_info(), q_from->info() );
 		 
 		 // Add file information
-		 std::list< QueueFile* >::iterator iter;
+		au::map< std::string , QueueFile >::iterator iter;
 		 
 		 for ( iter = q_from->files.begin() ; iter != q_from->files.end() ; iter++)
 		 {
 			 network::File *file = q_to->add_file();
-			 (*iter)->fill( file );
+			 (iter->second)->fill( file );
 		 }		
 	}
 
@@ -49,8 +49,8 @@ namespace ss {
 	void ActiveTask::addFiles( Queue *q )
 	{
 		// Add the files from this queue
-		for ( std::list< QueueFile* >::iterator i = q->files.begin() ; i != q->files.end() ; i++)
-			files.insert( (*i)->fileName );
+		for ( au::map< std::string , QueueFile >::iterator i = q->files.begin() ; i != q->files.end() ; i++ )
+			files.insert( i->first );
 	}
 
 #pragma mark ----
@@ -627,10 +627,6 @@ namespace ss {
 
 			size_t size = strtoll(commandLine.get_argument( 3 ).c_str(), (char **)NULL, 10);
 			size_t kvs = strtoll(commandLine.get_argument( 4 ).c_str(), (char **)NULL, 10);
-			
-			
-			info_kvs.append( size , kvs );			
-			
 			std::string queue		= commandLine.get_argument( 5 );
 			
 			// Check valid queue
@@ -644,11 +640,55 @@ namespace ss {
 				return response;
 			}
 			
+			info_kvs.append( size , kvs );			
 			q->addFile( worker , fileName , KVInfo( size , kvs)  );
 			response.output = "OK";
 			return response;
 		}				
 		
+		
+		if( commandLine.get_argument(0) == "remove_file" )
+		{
+			// Add queue command
+			if( commandLine.get_num_arguments() < 6 )
+			{
+				response.output = "Usage: remove_file worker fileName size kvs queue";
+				response.error = true;
+				return response;
+			}
+			
+			int worker = (int)strtol(commandLine.get_argument( 1 ).c_str(), (char **)NULL, 10);
+			
+			std::string fileName	= commandLine.get_argument( 2 );
+			
+			size_t size = strtoll(commandLine.get_argument( 3 ).c_str(), (char **)NULL, 10);
+			size_t kvs = strtoll(commandLine.get_argument( 4 ).c_str(), (char **)NULL, 10);
+			std::string queue		= commandLine.get_argument( 5 );
+			
+			// Check valid queue
+			Queue *q =  queues.findInMap(queue);
+			if( !q )
+			{
+				std::ostringstream output;
+				output << "Queue " << queue << " does not exist\n";
+				response.output = output.str();
+				response.error = true;
+				return response;
+			}
+			
+			if( q->removeFile( worker , fileName , KVInfo( size , kvs)  ) )
+			{
+				info_kvs.remove( size , kvs );			
+				response.output = "OK";
+				return response;
+			}
+			else
+			{
+				response.output = "File not found in this queue";
+				response.error = true;
+				return response;
+			}
+		}				
 		
 		
 		response.error = true;
@@ -717,12 +757,12 @@ namespace ss {
 				
 				
 				// Add file information
-				std::list< QueueFile* >::iterator iter;
+				au::map< std::string , QueueFile >::iterator iter;
 				
 				for ( iter = queue->files.begin() ; iter != queue->files.end() ; iter++)
 				{
 					network::File *file = fq->add_file();
-					(*iter)->fill( file );
+					iter->second->fill( file );
 				}
 			}
 			
@@ -774,7 +814,6 @@ namespace ss {
 	
 	void ControllerDataManager::_retreveInfoForTask( ControllerTaskInfo *info )		
 	{
-		
 		std::ostringstream error_message;
 		
 		// Check inputs	
@@ -795,12 +834,10 @@ namespace ss {
 					return; 
 				}
 				
-				// Add the input files for this input
+				// add queu to be emitted in the WorkerTask packet
+				network::FullQueue *fq = q->getFullQueue();
+				info->input_queues.push_back( fq ); 
 				
-				network::FileList *fileList = new network::FileList();
-				q->insertFilesIn( fileList );
-				info->input_files.push_back( fileList ); 
-
 				
 			}
 			else
@@ -830,13 +867,8 @@ namespace ss {
 				}
 
 				// add queu to be emitted in the WorkerTask packet
-				
-				network::Queue *qq = new network::Queue();
-				qq->set_name( q->getName() );
-				network::KVFormat *f = qq->mutable_format();
-				f->set_keyformat( q->format().keyFormat );
-				f->set_valueformat( q->format().valueFormat );
-				info->output_queues.push_back( qq ); 
+				network::FullQueue *fq = q->getFullQueue();
+				info->output_queues.push_back( fq ); 
 				
 			}
 			else

@@ -55,7 +55,7 @@ namespace ss {
 		else
 		{
 			// Update the total ( size and number of kvs )
-			NetworkHeader * header = (( NetworkHeader *) b->getData());
+			KVHeader * header = (( KVHeader *) b->getData());
 			
 			// Assert magic number of incoming data packets
 			assert( header->check() );	
@@ -113,17 +113,16 @@ namespace ss {
 	{
 		KVFormat queue_format( queue->format().keyformat() , queue->format().valueformat() );
 		
-		
 		// Check all network buffers to be correct
 		size_t global_size = 0;
 		
 		for (size_t i=0; i < buffer.size() ;i++)
 		{
-			NetworkHeader *header = (NetworkHeader*) buffer[i]->getData(); 
-			NetworkKVInfo *info	  = (NetworkKVInfo*)( buffer[i]->getData() + sizeof( NetworkHeader ) );
+			KVHeader *header = (KVHeader*) buffer[i]->getData(); 
+			KVInfo *info	  = (KVInfo*)( buffer[i]->getData() + sizeof( KVHeader ) );
 			
 			size_t total_size=0;
-			for (int hg = 0 ; hg < KV_NUM_HASHGROUPS ; hg++)
+			for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
 				total_size += info[hg].size;
 			assert( total_size == header->info.size );
 			global_size += total_size;
@@ -132,31 +131,29 @@ namespace ss {
 		
 		
 		// Get a buffer to be able to put all data in memory
-		size_t file_size = FILE_TOTAL_HEADER_SIZE + info.size;	
+		size_t file_size = KVFILE_TOTAL_HEADER_SIZE + info.size;	
 
 		// Crearte the buffer
 		Buffer *b = MemoryManager::shared()->newBuffer( "Creating file from network buffers" , file_size , Buffer::output );
 		
 		// Global header of the file with magic number and format
-		FileHeader fileHeader;
-		fileHeader.init( );
-		fileHeader.setInfo( info );	
-		fileHeader.setFormat( queue_format );
+		KVHeader fileHeader;
+		fileHeader.init( queue_format , info );
 		
-		memcpy(b->getData(), &fileHeader, sizeof(FileHeader) );	
+		memcpy(b->getData(), &fileHeader, sizeof(KVHeader) );	
 
 		// Vector with per-hash info
-		FileKVInfo *file_info = (FileKVInfo*) (b->getData() + sizeof(fileHeader));
+		KVInfo *file_info = (KVInfo*) (b->getData() + sizeof(fileHeader));
 		
 		// Global data and offset in the resulting buffer
 		char *data = b->getData();
-		size_t offset = FILE_TOTAL_HEADER_SIZE;	// Initial offset at the file outptu
+		size_t offset = KVFILE_TOTAL_HEADER_SIZE;	// Initial offset at the file outptu
 		
 		// Init the offset in each file
 		for (size_t i = 0 ; i < buffer.size() ; i++)
-			buffer[i]->skipRead( NETWORK_TOTAL_HEADER_SIZE );
+			buffer[i]->skipRead( KVFILE_TOTAL_HEADER_SIZE );
 				
-		for (int i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
+		for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
 		{
 			file_info[i].kvs = 0;
 			file_info[i].size = 0;
@@ -164,8 +161,8 @@ namespace ss {
 			// Fill data and sizes from all buffers
 			for (size_t j = 0 ; j <  buffer.size() ; j++)
 			{
-				NetworkKVInfo *_sub_info = (NetworkKVInfo*) ( buffer[j]->getData() + sizeof( NetworkHeader ) );
-				NetworkKVInfo sub_info = _sub_info[i];
+				KVInfo *_sub_info = (KVInfo*) ( buffer[j]->getData() + sizeof( KVHeader ) );
+				KVInfo sub_info = _sub_info[i];
 
 				size_t read_size = buffer[j]->read( data + offset , sub_info.size );
 				assert( read_size == sub_info.size);

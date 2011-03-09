@@ -890,22 +890,17 @@ namespace ss
 			
 			const network::WorkerStatus worker_status = l.worker_status(i);
 			
-			txt << "Worker " << i << "     " << "( Time of update: " << worker_status.time() << " )";
-			
-			txt << " [Memory: " << worker_status.used_memory() << " / " << worker_status.total_memory() << " ]";
-			txt << " [Cores: " << worker_status.used_cores() << " / " << worker_status.total_cores() << " ]";
+			txt << "Worker " << i << "     " << "            ( Time of update: " << worker_status.time() << " )";
 			txt << "\n";
-			
-			
-			txt << "\tMemory Manager: " << worker_status.memory_status() << "\n";
-			txt << "\tDisk Manager: " << worker_status.disk_manager_status() << "\n";
-			txt << "\tFile Manager: " << worker_status.file_manager_status() << "\n";
+			txt << "\tMemory Manager:    " << worker_status.memory_status() << "\n";
+			txt << "\tDisk Manager:      " << worker_status.disk_manager_status() << "\n";
+			txt << "\tFile Manager:      " << worker_status.file_manager_status() << "\n";
 //			txt << "\tFile Manager Cache: " << worker_status.file_manager_cache_status() << "\n";
-			txt << "\tProcess Manager: " << worker_status.process_manager_status() << "\n";
+			txt << "\tProcess Manager:   " << worker_status.process_manager_status() << "\n";
 			txt << "\t----\n";
 			txt << "\tLoad Data Manager: " << worker_status.load_data_manager_status() << "\n";
 			txt << "\t----\n";
-			txt << "\tTask Manager: " << worker_status.task_manager_status() << "\n";
+			txt << "\tTask Manager:      " << worker_status.task_manager_status() << "\n";
 			txt << "\t----\n";
 			
 			txt << "\n";

@@ -38,7 +38,7 @@ namespace ss {
 		num_servers = workerTaskItem->num_servers;
 		
 		// Init the minibuffer
-		miniBuffer = (char*) malloc( KV_MAX_SIZE );
+		miniBuffer = (char*) malloc( KVFILE_MAX_KV_SIZE );
 		miniBufferSize = 0;
 		
 		// Outputs structures placed at the begining of the buffer
@@ -72,7 +72,7 @@ namespace ss {
 		miniBufferSize		= key_size + value_size;
 		
 		// Emit the miniBuffer to the rigth place
-		ss_hg hg = key->hash(KV_NUM_HASHGROUPS); 
+		int hg = key->hash(KVFILE_NUM_HASHGROUPS); 
 		
 		// Detect the server to sent
 		int server = key->hash(num_servers);

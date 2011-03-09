@@ -136,12 +136,11 @@ namespace ss {
 		
 		// Monitorization information
 		
-		size_t used_memory_input;	    			// Memory used for input 
+		size_t used_memory_input;	    			// Memory used for input
 		size_t used_memory_output;	    			// Memory used for output
 
 		int num_buffers_input;						// Number of buffers used as inputs
 		int num_buffers_output;						// Number of buffers used as outputs
-		
 		
 		// Setup parameters ( loaded at constructor )
 		size_t shared_memory_size_per_buffer;		// Shared memory used in eery buffer

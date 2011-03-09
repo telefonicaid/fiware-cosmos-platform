@@ -257,10 +257,13 @@ namespace ss
 		
 		std::ostringstream output;
 
-		output << "Input [ Used: " << num_buffers_input << " buffers with " << au::Format::string( used_memory_input , "B" ) << " " << ((int)(getMemoryUsageInput()*100.0)) << "%";
-		output << " Output [ Used: " << num_buffers_output << " buffers with " << au::Format::string( used_memory_output , "B" ) << " " << ((int)(getMemoryUsageOutput()*100.0)) << "%";
+		output << "Input: " << ((int)(getMemoryUsageInput()*100.0)) << "% "; 
+		output << "Output: " << ((int)(getMemoryUsageOutput()*100.0)) << "% "; 
+		
+		output << "[ Input: " << num_buffers_input << " buffers with " << au::Format::string( used_memory_input , "B" );
+		output << " Output: " << num_buffers_output << " buffers with " << au::Format::string( used_memory_output , "B" ) << " ]";
+		
 		ws->set_memory_status( output.str() );
-
 		ws->set_total_memory( memory );
 		ws->set_used_memory( getUsedMemory() );
 	}
@@ -293,7 +296,7 @@ namespace ss
 
 			MemoryRequest *r = NULL;
 				
-			if ( p < 0.5 )
+			if ( p < 1.0 )
 			{
 				token.retain();
 				r = memoryRequests.extractFront();

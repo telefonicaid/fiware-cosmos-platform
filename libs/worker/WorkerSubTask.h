@@ -110,7 +110,7 @@ namespace ss
 		FileManagerReadItem * getFileMangerReadItem( ProcessAssistantSharedFile* file );
 		
 	};	
-	
+
 	
 	// Subtask that runs a particular sub-tasks like a map,reduce or parserOut
 		 
@@ -139,6 +139,9 @@ namespace ss
 		 ProcessItem * _getProcessItem();		
 	 
 	 };	
+
+	
+	
 	
 	
 	// Subtask that runs a particular sub-tasks like a map,reduce or parserOut
@@ -168,7 +171,59 @@ namespace ss
 	};	
 		
 	
+	// Subtask that runs system - operation ( like samson compact )
+	
+	class SystemSubTask : public WorkerSubTask
+	{		
+	public:
+		
+		SystemSubTask( WorkerTask *task );		
+		
+		// Function to get all the read operations necessary for this task
+		std::vector< FileManagerReadItem*>* _getFileMangerReadItems();
+		
+		// Function to get the ProcessManagerItem to run
+		ProcessItem * _getProcessItem();		
+		
+	private:
+		
+		FileManagerReadItem * getFileMangerReadItem( ProcessAssistantSharedFile* file );
+		
+		
+	};	
 
+	/**
+	 Spetial operation to compact files into new set of files
+	 */
+	
+	class CompactSubTask : public WorkerSubTask
+	{
+		
+	public:
+		
+		int hg_begin;
+		int hg_end;
+		int num_hash_groups;
+		
+		size_t memory_requested;
+		
+		Buffer *buffer;						// Buffer provided by memory request
+		
+		CompactSubTask( WorkerTask * task , int _hg_begin , int _hg_end  );
+		
+		~CompactSubTask();
+
+		// Memory request for this task
+		MemoryRequest *_getMemoryRequest();
+		
+		// Function to get all the read operations necessary for this task
+		std::vector< FileManagerReadItem*>* _getFileMangerReadItems();
+		
+		// Function to get the ProcessManagerItem to run
+		ProcessItem * _getProcessItem();		
+		
+	};	
+	
 }
 
 #endif

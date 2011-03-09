@@ -10,6 +10,7 @@
 #include <vector>						// std::vector
 #include <iostream>						// std::cout
 #include "Lock.h"						// au::Lock
+#include "au_map.h"						// au::map
 
 namespace ss {
 	
@@ -26,19 +27,23 @@ namespace ss {
 	{
 		std::string _name;				// Name of this queue
 		KVFormat _format;				// Format of the queue
-		KVInfo _info;					// Information about this queue
 
+		// Global information
+		KVInfo _info;					// Information about this queue
+		int _num_files;					// Thread safe number of files ( only for monitoring )
+
+		au::map< std::string , QueueFile > files;		// Map of files included in this queue
+		
+		
 		/**
 		 Monitoring system
 		 */
 		
 		friend class Monitor;
 		friend class ActiveTask;
-		MonitorBlock monitor;				// Set of parameters to monitor for this queue
+		MonitorBlock monitor;							// Set of parameters to monitor for this queue
 
 		friend class ControllerDataManager;
-		std::list< QueueFile* > files;		// List of files included in this queue
-		int _num_files;						// Thread safe number of files ( only for monitoring )
 
 		
 	public:
@@ -55,6 +60,13 @@ namespace ss {
 		 Main functions to add files to this queue
 		 */
 		void addFile( int worker, std::string _fileName , KVInfo info );
+
+
+		/*
+		 Function to remove an existing file. It return true if the file exists
+		 */
+		
+		bool removeFile( int worker, std::string _fileName , KVInfo info );
 		
 		
 		/**
@@ -77,10 +89,12 @@ namespace ss {
 		void rename( std::string name );
 				
 		/**
-		 Insert files in another place
+		 Get all the information of this queue in "GPB" way
 		 */
-		 
-		void insertFilesIn( network::FileList *fileList);
+		
+		network::FullQueue *getFullQueue();
+
+		
 		
 		std::string getStatus()
 		{

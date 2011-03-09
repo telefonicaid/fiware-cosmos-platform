@@ -195,7 +195,7 @@ namespace ss
 			return false;
 		}
 		
-		if ( num_max_outputs < 3 )
+		if ( num_max_outputs < 2 )
 		{
 			std::cerr << "Error in the memory setup. Please, review setup since the maximum number of outputs for all operations would be only " << num_max_outputs <<"\n";
 			return false;

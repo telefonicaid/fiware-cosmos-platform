@@ -126,7 +126,6 @@ namespace ss {
 		commandLine.set_flag_boolean("ncreate");	/// Flag to anulate the effect of -c
 		commandLine.set_flag_boolean("clear");	/// Flag to clear outputs before emiting key-values
 		commandLine.set_flag_boolean("nclear");	/// Flag to anulate the effect of -clear
-		
 		commandLine.set_flag_boolean("clear_inputs");	/// Flag to clear inputs after emiting key-values
 		
 		commandLine.parse(command);
@@ -302,6 +301,7 @@ namespace ss {
 			}
 			else
 			{
+				
 				// It not any operation, run directly to the data manager to process
 				DataManagerCommandResponse response = jobManager->controller->data.runOperation( id,  command  );
 				if( response.error )
@@ -315,7 +315,7 @@ namespace ss {
 			
 		}
 		
-		setError( "JobManager", std::string("Command without any command: ") + command);
+		setError( "JobManager", std::string("Command without any command: ") + command );
 		return false;
 	}
 	

@@ -1,10 +1,12 @@
 
-#include "ProcessOperation.h"		// Own interface
-#include "ModulesManager.h"			// ss::ModulesManager
-#include "WorkerTask.h"				// ss::WorkerTask
-#include "WorkerSubTask.h"		// ss::OrganizerSubTask
-#include "Packet.h"					
-#include <algorithm>    // std::sorr
+#include "ProcessOperation.h"			// Own interface
+#include "ModulesManager.h"				// ss::ModulesManager
+#include "WorkerTask.h"					// ss::WorkerTask
+#include "WorkerSubTask.h"				// ss::OrganizerSubTask
+#include "Packet.h"						// ss::Packet
+#include <algorithm>					// std::sort
+#include "WorkerTaskManager.h"			// ss::TaskManager
+#include "SamsonWorker.h"				// ss::SamsonWorker
 
 namespace ss {
 	
@@ -87,7 +89,7 @@ namespace ss {
 			char *data = file.data + file.offset;
 			
 			// Get the info we should read
-			FileKVInfo info = file.info[ file.hg ];
+			KVInfo info = file.info[ file.hg ];
 			
 			
 			// Local offset
@@ -236,10 +238,10 @@ namespace ss {
 		
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
 		
-		int num_inputs		= operationSubTask->task->workerTask.input_size();
+		int num_inputs		= operationSubTask->task->workerTask.input_queue_size();
 		int num_input_files = 0;
 		for (int i = 0 ; i < num_inputs ; i++)
-			num_input_files += operationSubTask->task->workerTask.input(i).file_size();
+			num_input_files += operationSubTask->task->workerTask.input_queue(i).file_size();
 		
 		assert( num_inputs == (int) inputFormats.size() );
 		
@@ -254,10 +256,10 @@ namespace ss {
 		
 		
 		// Get the number of hash groups and make sure all the files have the same number
-		int num_hash_groups = reduce_file[0].header->num_hash_groups();
+		uint32 num_hash_groups = reduce_file[0].header->getNumHashGroups();
 		for (int i = 0 ; i < num_input_files ; i++ )
 		{
-			assert( reduce_file[i].header->num_hash_groups() == num_hash_groups);
+			assert( reduce_file[i].header->getNumHashGroups() == num_hash_groups);
 		}
 		
 		
@@ -279,7 +281,7 @@ namespace ss {
 		parserOut->init();
 		
 		
-		for (int hg = 0 ; hg < num_hash_groups ; hg++)
+		for (uint32 hg = 0 ; hg < num_hash_groups ; hg++ )
 		{
 			
 			// Counte the number of key-values I will have in this round
@@ -333,11 +335,10 @@ namespace ss {
 		
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
 		
-		int num_inputs		= operationSubTask->task->workerTask.input_size();
+		int num_inputs		= operationSubTask->task->workerTask.input_queue_size();
 		int num_input_files = 0;
 		for (int i = 0 ; i < num_inputs ; i++)
-			num_input_files += operationSubTask->task->workerTask.input(i).file_size();
-		
+			num_input_files += operationSubTask->task->workerTask.input_queue(i).file_size();
 		
 		assert( num_inputs == (int) inputFormats.size() );
 		
@@ -356,10 +357,10 @@ namespace ss {
 			offset += reduce_file[i].set( data + offset );
 		
 		// Get the number of hash groups and make sure all the files have the same number
-		int num_hash_groups = reduce_file[0].header->num_hash_groups();
-		for (int i = 0 ; i < num_input_files ; i++ )
+		uint32 num_hash_groups = reduce_file[0].header->getNumHashGroups();
+		for (uint32 i = 0 ; i < (uint32)num_input_files ; i++ )
 		{
-			assert( reduce_file[i].header->num_hash_groups() == num_hash_groups);
+			assert( reduce_file[i].header->getNumHashGroups() == num_hash_groups);
 		}
 		
 		
@@ -381,7 +382,7 @@ namespace ss {
 		map->init();
 		
 		
-		for (int hg = 0 ; hg < num_hash_groups ; hg++)
+		for (uint32 hg = 0 ; hg < num_hash_groups ; hg++)
 		{
 			
 			// Counte the number of key-values I will have in this round
@@ -431,10 +432,10 @@ namespace ss {
 
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
 		
-		int num_inputs		= operationSubTask->task->workerTask.input_size();
+		int num_inputs		= operationSubTask->task->workerTask.input_queue_size();
 		int num_input_files = 0;
 		for (int i = 0 ; i < num_inputs ; i++)
-			num_input_files += operationSubTask->task->workerTask.input(i).file_size();
+			num_input_files += operationSubTask->task->workerTask.input_queue(i).file_size();
 		
 		if( num_input_files == 0)
 			return;	// If no input file, no process required
@@ -452,10 +453,10 @@ namespace ss {
 			offset += reduce_file[i].set( data + offset );
 		
 		// Get the number of hash groups and make sure all the files have the same number
-		int num_hash_groups = reduce_file[0].header->num_hash_groups();
-		for (int i = 0 ; i < num_input_files ; i++ )
+		uint32 num_hash_groups = reduce_file[0].header->getNumHashGroups();
+		for (uint32 i = 0 ; i < (uint32)num_input_files ; i++ )
 		{
-			assert( reduce_file[i].header->num_hash_groups() == num_hash_groups);
+			assert( reduce_file[i].header->getNumHashGroups() == num_hash_groups);
 		}
 		
 		
@@ -484,7 +485,7 @@ namespace ss {
 		reduce->init();
 		
 		
-		for (int hg = 0 ; hg < num_hash_groups ; hg++)
+		for (uint32 hg = 0 ; hg < num_hash_groups ; hg++)
 		{
 			
 			// Counte the number of key-values I will have in this round
@@ -565,18 +566,115 @@ namespace ss {
 		
 	}		
 		
-		/*
-		 
+#pragma mark -
+	
+	ProcessCompact::ProcessCompact( CompactSubTask * _compactSubTask )
+	{
+		compactSubTask = _compactSubTask;
+
+		// Informationk about the generated file
+		fileName = compactSubTask->task->newFileName(); 
+		queue = compactSubTask->task->workerTask.input_queue(0).queue().name();  
+
+		// Pointer to the task manager to report when finish
+		tm = compactSubTask->task->taskManager;
+		task_id = compactSubTask->task->task_id;
+
+	}
+	
+	ProcessCompact::~ProcessCompact()
+	{
+	}
+
+	
+	void ProcessCompact::run()
+	{
+		char *data = compactSubTask->buffer->getData();
 		
-		// Get a generator instance
+		int num_inputs		=  compactSubTask->task->workerTask.input_queue_size();
+		int num_input_files = 0;
+		for (int i = 0 ; i < num_inputs ; i++)
+			num_input_files += compactSubTask->task->workerTask.input_queue(i).file_size();
 		
-		Generator * generator  = (Generator*) op->getInstance();
-		generator->environment = &environment;
+		// If no input files, no operation is needed
+		if( num_input_files == 0)
+			return;
 		
-		generator->run( writer );
+		// Process all input files [ Header ] [ Info ] [ Data ]
+		ProcessSharedFile *reduce_file = new ProcessSharedFile[ num_input_files ];
+		size_t offset = 0;
+		for (int i = 0 ; i < num_input_files ; i++ )
+			offset += reduce_file[i].set( data + offset );
 		
-		delete generator;
-		 */
+		// Get the number of hash groups and make sure all the files have the same number
+		uint32 num_hash_groups = reduce_file[0].header->getNumHashGroups();
+
+		// Rigth now, compact only work with full-hash-group files
+		assert( num_hash_groups == KVFILE_NUM_HASHGROUPS);
 		
+		// Compact operation only works with 1 input
+		assert( num_inputs == 1 );	
+
+		KVInfo total_info;
+		total_info.clear();
+		size_t outputBufferSize = sizeof( KVHeader ) + sizeof(KVInfo)*KVFILE_NUM_HASHGROUPS; 
+		for (uint32 i = 0 ; i < (uint32)num_input_files ; i++ )
+		{
+			assert( reduce_file[i].header->getNumHashGroups() == num_hash_groups);
+			total_info.append( reduce_file[i].header->info );
+			
+			outputBufferSize += reduce_file[i].header->info.size;	// Total size of data buffer
+		}
+
+		// create the output buffer with the rigth size
+		Buffer *outputBuffer = MemoryManager::shared()->newBuffer( "Compact output buffer", outputBufferSize , Buffer::output );
+		
+		// Output header and KVInfo vector
+		KVHeader *outputHeader = (KVHeader*) outputBuffer->getData();
+		KVInfo *outputInfo = (KVInfo*) ( outputBuffer->getData() + sizeof(KVHeader) );
+		char *outputData = outputBuffer->getData() + sizeof( KVHeader ) + sizeof(KVInfo) * num_hash_groups;
+		
+		// Contents of the header
+		outputHeader->init( reduce_file[0].header->getFormat() , total_info );
+		outputHeader->setHashGroups( 0 , KVFILE_NUM_HASHGROUPS );	// Full hash-group
+		
+		for (uint32 hg = 0 ; hg < num_hash_groups ; hg++)
+		{
+			outputInfo[hg].clear();
+			
+			// Counte the number of key-values I will have in this round
+			for (int f = 0 ; f < num_input_files ; f++)
+			{
+				outputInfo[hg].append( reduce_file[f].info[hg] );
+				
+				if ( reduce_file[f].info[hg].size > 0 )
+				{
+					memcpy(outputData, reduce_file[f].hg_data[hg], reduce_file[f].info[hg].size );
+					outputData += reduce_file[f].info[hg].size;
+				}
+				
+			}
+		}
+		
+		// Set the maximum size ( it was allocated using the final size )
+		outputBuffer->setSize( outputBuffer->getMaxSize() );
+		
+		// Queue File to report new file
+		network::QueueFile qf;
+		qf.set_queue( queue );
+		
+		network::File *file = qf.mutable_file();
+		file->set_name( fileName );
+		file->set_worker( tm->worker->network->getWorkerId() );
+		network::KVInfo *info = file->mutable_info();
+		
+		info->set_size( total_info.size );
+		info->set_kvs( total_info.kvs );
+		
+		// Create the new files using the new buffer
+		tm->addFile( task_id , qf , outputBuffer );
+		
+	}
+
 	
 }

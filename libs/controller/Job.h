@@ -11,6 +11,7 @@
 #include "samson/Environment.h"				// ss::Environment
 #include "EnvironmentOperations.h"			// copyEnviroment(.)
 #include <set>								// std::set
+#include <samson/Operation.h>				// ss::Operation
 
 namespace ss {
 	
@@ -118,7 +119,7 @@ namespace ss {
 			saving,		// Finish but waiting to save generated files
 			error,		// Finish because there was an error
 			finish,		// Completelly finish
-		}JobStatus;
+		} JobStatus;
 		
 	private:
 		

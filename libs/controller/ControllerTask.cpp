@@ -69,28 +69,20 @@ namespace ss {
 	void ControllerTask::fillInfo( network::WorkerTask *t , int workerIdentifier )
 	{
 		t->set_operation( info->operation_name );
+
 		
-		// Set input files
-		for (size_t f = 0 ; f < info->input_files.size() ; f++)
+		// Set the input queues
+		for (int i = 0 ; i < (int)info->inputs.size() ; i++)
 		{
-			network::FileList *all_fl = info->input_files[f];
-			network::FileList *fl = t->add_input();
-			
-			// Add only files that are placed at that worker
-			for (int i = 0 ; i < all_fl->file_size() ; i++)
-			{
-				if( all_fl->file(i).worker() == workerIdentifier)
-					fl->add_file()->CopyFrom( all_fl->file(i) );
-			}
-			
-			//fl->CopyFrom();
+			network::FullQueue *q = t->add_input_queue();
+			q->CopyFrom( *info->input_queues[i] ); 
 		}
 		
 		
 		// Set the output queues
 		for (int i = 0 ; i < (int)info->outputs.size() ; i++)
 		{
-			network::Queue *q = t->add_output();
+			network::FullQueue *q = t->add_output_queue();
 			q->CopyFrom( *info->output_queues[i] ); 
 		}
 		

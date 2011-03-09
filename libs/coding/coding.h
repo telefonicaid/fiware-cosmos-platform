@@ -14,20 +14,12 @@
 #include <string.h>				// std::string
 #include "Buffer.h"				// ss::SimpleBuffer
 
-/*
-#define KV_BUFFER_SIZE			1024*1024*256									
-#define KV_BUFFER_MAX_NUM_KVS	 1024*1024*64									
- */
 
-#define KV_MAX_SIZE			   64*1024*1024				// Max size for an individual key-value
-#define KV_NUM_HASHGROUPS			64*1024				// Number of hash-groups
+#define KVFILE_MAX_KV_SIZE			   64*1024*1024				// Max size for an individual key-value
+#define KVFILE_NUM_HASHGROUPS			64*1024					// Number of hash-groups
 
-#define NETWORK_KV_HASH_GROUP_VECTOR_SIZE	(sizeof(NetworkKVInfo)*KV_NUM_HASHGROUPS)	// Size of the structure of every network message ) 
-#define FILE_KV_HASH_GROUP_VECTOR_SIZE		(sizeof(FileKVInfo)*KV_NUM_HASHGROUPS)		// Size of the structure of every file
-
-
-#define NETWORK_TOTAL_HEADER_SIZE	(sizeof( NetworkHeader ) + NETWORK_KV_HASH_GROUP_VECTOR_SIZE)	// Total size of the header + info vector
-#define FILE_TOTAL_HEADER_SIZE		(sizeof( FileHeader )    + FILE_KV_HASH_GROUP_VECTOR_SIZE)	// Total size of the header + info vector
+#define KVFILE_HASH_GROUP_VECTOR_SIZE		(sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS)					// Size of the vector containing information for each hash-group
+#define KVFILE_TOTAL_HEADER_SIZE			(sizeof( KVHeader ) + KVFILE_HASH_GROUP_VECTOR_SIZE )		// Total size of the header + info vector
 
 namespace ss {
 
@@ -35,53 +27,38 @@ namespace ss {
 	 
 	 This file defines all the formats used to store key-values in files , network-buffers and shared-memory buffers
 
-	 FILE: (KVFile)
+	 FILE & Network messages: (KVFile)
 	 --------------------------------------------------------------------------------
 	 	 
 	 SAMSON platforms stores all key-values in a set of files with the following format:
 	 
-	 [FileHeader][Info for each hash-group][data]
+	 [KVHeader][KVInfo for each hash-group][data]
 	 
 	 Where
 	 
-	 * FileHeader is a struct with some information about the format and content of the file
-	 * Info for each hash-group is a vector of "KV_NUM_HASH_GROUPS" structs of type FileKVInfo
+	 * KVHeader is a struct with some information about the format and content of the file
+	 * Info for each hash-group is a vector of "KV_NUM_HASH_GROUPS" structs of type KVInfo
 	 * data is the buffer of real data with the key-values cofidied using the rigth serialization
 
 	 Note: In this case, all hash-groups are allways present
-	 
-	 NETOWRK: (KVNetworkFile)
-	 --------------------------------------------------------------------------------
-
-	 When travelling for the network, key-value buffers ( at the output of map, reduce, generator operations) have the following format
-	 
-	 [NetworkHeader][Info for each hash-group][data]
-	 
-	 where:
-	 
-	 * NetworkHeader is a struct with some information about the buffer ( like total size and number of key-values)
-	 * Info for each hash-group is a vector of "KV_NUM_HASH_GROUPS" structs of type NetworkKVInfo
-	 * data is the buffer of real data with the key-values cofidied using the rigth serialization
-	 
-	 Note: In this case, all hash-groups are allways present, so the info vector size is constant = KV_NUM_HASH_GROUPS*sizeof( NetworkKVInfo )
 	 
 	 
 	 SHARED MEMORY: (KVSharedFile)
 	 --------------------------------------------------------------------------------
 
-	 When a partiuclar operation is executed (map,recuce of parseout), we need to store part or entire KVFile into a shared memory buffers
+	 When a particular operation is executed (map,recuce of parseout), we need to store part or entire KVFile into a shared memory buffers
 	 Indeed, if multiple files are needed, we store more than one in the same shared memory buffer
 	 
-	 [SharedHeader][KVSharedFile1][KVSharedFile2][KVSharedFile3][KVSharedFile4] ....
+	 [KVHeader][KVSharedFile1][KVSharedFile2][KVSharedFile3][KVSharedFile4] ....
 	 
-	 Where SharedHeader informs about the number of files and some additional information
+	 Where KVHeader informs about the number of files and some additional information
 	 Each KVSharedFile has the following format
 	 
-	 [SharedHeader][Info for each hash-group][data]
+	 [KVHeader][Info for each hash-group][data]
 	 
 	 where:
-	 * SharedHeader is a struct with some information about the process ( like total number of shared files and hash-group range)
-	 * Info for each hash-group is a vector of "KV_NUM_HASH_GROUPS" structs of type FileKVInfo
+	 * KVHeader is a struct with some information about the process ( like total number of shared files and hash-group range)
+	 * Info for each hash-group is a vector of "KV_NUM_HASH_GROUPS" structs of type KVInfo
 	 * data is the buffer of real data with the key-values cofidied using the rigth serialization
 
 	 Note that in this case, not all hash-group ranges have to be present.
@@ -89,37 +66,31 @@ namespace ss {
 	 */
 	
 
-	// Unsigned types with different lengths in bits
+	// Unsigned types with different bits lengths
+	
 	typedef size_t uint64; 
 	typedef unsigned int uint32;
 	typedef unsigned short uint16;
 	typedef unsigned char uint8;
 	
-	typedef uint16 ss_hg;		// Hashgroup identifier			(16bits since we have 2^16 hash-groups)
-	typedef uint16 ss_kv_size;	// Size for a particular KV
-	
-
 	/****************************************************************
 	 Template class for the KVInfo structure
 	 ****************************************************************/
 	
-	typedef uint32 hg_net_size;			// Size of a hashgroup			(32bits)
-	typedef uint32 hg_net_kvs;			// Num KVs inside a hashgroup	(32bits)
 	
-	template <typename T_kvs,typename T_size >
-	struct BaseKVInfo
+	struct KVInfo
 	{
-		T_size size;	// Total size
-		T_kvs kvs;		// Total number of kvs
+		uint32 size;	// Total size
+		uint32 kvs;		// Total number of kvs
 
 		
-		BaseKVInfo(T_size _size ,T_kvs _kvs )
+		KVInfo(uint32 _size ,uint32 _kvs )
 		{
 			kvs = _kvs;
 			size = _size;
 		}
 		
-		BaseKVInfo()
+		KVInfo()
 		{
 			kvs = 0;
 			size = 0;
@@ -131,17 +102,30 @@ namespace ss {
 			size = 0;
 		}
 		
-		void append( T_size _size , T_kvs _kvs )
+		void append( uint32 _size , uint32 _kvs )
 		{
-			kvs += _kvs;
 			size += _size;
+			kvs += _kvs;
 		}
 		
-		void append( BaseKVInfo<T_kvs,T_size> o )
+		void append( KVInfo other )
 		{
-			kvs += o.kvs;
-			size += o.size;
+			size += other.size;
+			kvs += other.kvs;
 		}
+
+		void remove( uint32 _size , uint32 _kvs )
+		{
+			size -= _size;
+			kvs -= _kvs;
+		}
+		
+		void remove( KVInfo other )
+		{
+			size -= other.size;
+			kvs -= other.kvs;
+		}
+		
 		
 		std::string str()
 		{
@@ -157,27 +141,55 @@ namespace ss {
 		
 	};	
 	
-	template <typename Info> 
-	struct BaseHeader 
+	/**
+	 Header used in KV-Sets ( Files, Network messages, Operations, etc...)
+	 */
+	
+	struct KVHeader 
 	{
+		
+		// Information about the packet
+		// ---------------------------------------------------------------
+		
 		int magic_number;			// Magic number to make sure reception is correct
 		char keyFormat[100];		// Format for the key
 		char valueFormat[100];		// Format for the value
-		Info info;					// Total information in this file
+		KVInfo info;				// Total information in this package ( in all hash-groups )
+
+		uint32 hg_begin;			// Hash group range it covers
+		uint32 hg_end;
 		
-		void init( )
+		
+		// Specific fields only used in particular operations
+		// ---------------------------------------------------------------
+		
+		int input;				// Input channel
+		int num_inputs;			// Total number of inputs
+
+		
+		// Init header
+		// ---------------------------------------------------------------
+		
+		void init( KVFormat format , KVInfo _info )		// Complete init function
 		{
 			magic_number =  4652783;
+
+			setFormat( format );
+			setInfo( _info );
+			
+			// Default initialization of the hash-group to full-files
+			hg_begin = 0;
+			hg_end = KVFILE_NUM_HASHGROUPS;
+
+			// Default init for the input/num_inputs field ( only used in particular operations )
+			input = 0 ;
+			num_inputs = 0;
 		}
-		
-		void setInfo( Info _info)
+
+		void setHashGroups( uint32 _hg_begin , uint32 _hg_end )
 		{
-			info = _info;
-		}
-		
-		KVFormat getFormat()
-		{
-			return KVFormat( keyFormat , valueFormat );
+			hg_begin = _hg_begin;
+			hg_end = _hg_end;
 		}
 		
 		void setFormat( KVFormat format )
@@ -186,76 +198,52 @@ namespace ss {
 			snprintf(valueFormat, 100, "%s", format.valueFormat.c_str());
 		}
 		
+		
+		// Functions to set of get information from the header
+		// ---------------------------------------------------------------
+		
+		void setInfo( KVInfo _info )
+		{
+			info = _info;
+		}
+		
+		uint32 getTotalSize()
+		{
+			// Get the total size of the message including header, hash-group info and data
+			return  sizeof(KVHeader) + sizeof(KVInfo)*getNumHashGroups() + info.size;	
+		}
+
+		uint32 getNumHashGroups()
+		{
+			return hg_end - hg_begin;
+		}
+		
+		// Format operations
+		// ---------------------------------------------------------------
+		
+		KVFormat getFormat()
+		{
+			return KVFormat( keyFormat , valueFormat );
+		}
+		
+		
+		// Check operations ( magic number and other conditions )
+		// ---------------------------------------------------------------
+		
 		bool check()
 		{
 			return ( magic_number == 4652783);
 		}
 		
-	};
-	
-	typedef BaseKVInfo<size_t,size_t> KVInfo;	// Old common definition ( to be substituted by File or Network )
-	
-	
-	/****************************************************************
-	 Network interface
-	 ****************************************************************/
-	
-	typedef uint32 hg_net_size;			// Size of a hashgroup			(32bits)
-	typedef uint32 hg_net_kvs;			// Num KVs inside a hashgroup	(32bits)
-
-	typedef BaseKVInfo<hg_net_kvs,hg_net_size>  NetworkKVInfo;
-	typedef BaseHeader<NetworkKVInfo> NetworkHeader;
-
-	/****************************************************************
-	 File interface
-	 ****************************************************************/
-	
-	typedef uint32 hg_file_size;		// Size of a hashgroup			(32bits)
-	typedef uint32 hg_file_kvs;			// Num KVs inside a hashgroup	(32bits)
-	
-	typedef BaseKVInfo<hg_file_kvs,hg_file_size>  FileKVInfo;
-	typedef BaseHeader<FileKVInfo> FileHeader;
-	
-	/****************************************************************
-	 Shared Memory ( use the file definitions )
-	 ****************************************************************/
-
-	struct SharedHeader
-	{
-		int magic_number;		// Magic number for the Reduce File Header
-		
-		int input;				// Input channel
-		int num_inputs;			// Total number of inputs
-		
-		FileKVInfo info;		// Total info for this set of hash-groups
-		
-		int hg_begin;			// Hash group range we are processing
-		int hg_end;
-
-		size_t total_size;		// total size of this file including this header , info vector (FileKVInfo) and data
-		
-		void init(  )
+		bool checkInput()
 		{
-			magic_number =  5972384;
-		}
-		
-		bool check()
-		{
-			if( magic_number != 5972384)
-				return false;
-			
 			if( input >= num_inputs)
 				return false;
 			
 			return true;
 		}
 		
-		int num_hash_groups()
-		{
-			return hg_end - hg_begin;
-		}
 	};
-
 	
 	/**
 	 A SharedFile from the Process side
@@ -266,21 +254,30 @@ namespace ss {
 	public:
 		
 		// Pointer to the header
-		SharedHeader *header;
+		KVHeader *header;
 		
 		// Pointer to the info for each hash-group
-		FileKVInfo *info;
+		KVInfo *info;
+
+		// Pointers to each hash-groups and size
+		char ** hg_data;
 		
-		// Data pointer to data
+		// Old mechanism to access data of the hash-groups
 		char *data;
-		
-		// Current hash group
 		int hg;
 		size_t offset;
+		
 		
 		ProcessSharedFile()
 		{
 			hg = 0;
+			hg_data = NULL;
+		}
+		
+		~ProcessSharedFile()
+		{
+			if( hg_data )
+				free(hg_data);
 		}
 		
 		// Set the real pointer to the current data and returns the toal size of this file in the shared memory area
@@ -288,17 +285,33 @@ namespace ss {
 		{
 			offset = 0;	// Init the offset of this file
 						
-			header = (SharedHeader*) _data;
+			header = (KVHeader*) _data;
 			assert( header->check() );	// Check magic number
 
 			// Get the number of hash group from header
-			int num_hash_groups = header->num_hash_groups();
+			uint32 num_hash_groups = header->getNumHashGroups();
 			
-			info = (FileKVInfo*) ( _data + sizeof(SharedHeader) );
-			data = (_data + sizeof(SharedHeader) + sizeof(FileKVInfo)*num_hash_groups);
+			info = (KVInfo*) ( _data + sizeof(KVHeader) );
+			data = (_data + sizeof(KVHeader) + sizeof(KVInfo)*num_hash_groups);
 			
-			size_t total_size = sizeof(SharedHeader) + sizeof(FileKVInfo)*num_hash_groups + header->info.size;
-			assert( total_size == header->total_size );
+			size_t total_size = sizeof(KVHeader) + sizeof(KVInfo)*num_hash_groups + header->info.size;
+			assert( total_size == header->getTotalSize() );
+			
+			
+			// Pointer and size of every hash-group
+			// ------------------------------------------------
+			if( hg_data )
+				free(hg_data);
+
+			hg_data = (char **) malloc( sizeof(char*) * num_hash_groups );
+			
+			char * current_data = _data + sizeof(KVHeader) + num_hash_groups * sizeof(KVInfo); // Point to the begining of data
+			
+			for (uint hg = 0 ; hg < num_hash_groups ; hg++)
+			{
+				hg_data[hg] = current_data;
+				current_data += info[hg].size;
+			}
 			
 			return total_size;
 			
@@ -322,21 +335,28 @@ namespace ss {
 	{
 	public:
 		
-		FileKVInfo *info;				// Information about key-values ( read directly from file )
-		FileKVInfo *cumulative_info;	// Cumulative information
+		KVInfo *info;					// Information about key-values ( read directly from file )
+		KVInfo *cumulative_info;		// Cumulative information
 		
 		int input;						// Input of this file ( input channel )
 		int num_inputs;					// total number of inputs
-		std::string fileName;			// fileName of this file
 		
-		ProcessAssistantSharedFile( int _input  , int _num_inputs ,  std::string _fileName)
+		std::string fileName;			// fileName of this file
+
+		KVFormat format;
+		KVInfo total_info;
+		
+		ProcessAssistantSharedFile( KVFormat _format , KVInfo _info , int _input  , int _num_inputs ,  std::string _fileName)
 		{
 			input = _input;
 			fileName = _fileName;
 			num_inputs = _num_inputs;
 			
-			info				=  (FileKVInfo*) malloc( sizeof( FileKVInfo) * KV_NUM_HASHGROUPS );
-			cumulative_info		=  (FileKVInfo*) malloc( sizeof( FileKVInfo) * KV_NUM_HASHGROUPS );
+			format = _format;
+			total_info = _info;
+			
+			info				=  (KVInfo*) malloc( sizeof( KVInfo) * KVFILE_NUM_HASHGROUPS );
+			cumulative_info		=  (KVInfo*) malloc( sizeof( KVInfo) * KVFILE_NUM_HASHGROUPS );
 		}
 		
 		~ProcessAssistantSharedFile()
@@ -347,14 +367,14 @@ namespace ss {
 		
 		SimpleBuffer getSimpleBufferForInfo()
 		{
-			return SimpleBuffer( (char*) info , sizeof( FileKVInfo) * KV_NUM_HASHGROUPS );
+			return SimpleBuffer( (char*) info , sizeof( KVInfo) * KVFILE_NUM_HASHGROUPS );
 		}
 		
 		void setup()
 		{
-			FileKVInfo cumulative;
+			KVInfo cumulative;
 			cumulative.clear();
-			for (int i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
+			for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
 			{
 				cumulative.append( info[i] );
 				cumulative_info[i] = cumulative;
@@ -364,11 +384,11 @@ namespace ss {
 		
 		// Get the header of this file for a particular range of hash-groups
 		
-		SharedHeader getSharedHeader( int hg_begin , int hg_end )
+		KVHeader getKVHeader( int hg_begin , int hg_end )
 		{
 			// Header to be written on shared memory
-			SharedHeader header;
-			header.init( );
+			KVHeader header;
+			header.init( format , total_info );
 			
 			// Input channel information
 			header.input = input;				
@@ -381,9 +401,6 @@ namespace ss {
 			header.hg_begin = hg_begin;			
 			header.hg_end = hg_end;			
 			
-			// total size of this file including this header , info vector (FileKVInfo) and data
-			header.total_size =  sizeof(SharedHeader) + sizeof(FileKVInfo)*(hg_end-hg_begin) + header.info.size ;	
-			
 			assert( header.check() );
 			return header;
 		}
@@ -391,9 +408,9 @@ namespace ss {
 		
 		// Operation to get information when processing a subset of hash-groups ( reduce item operation )
 		
-		FileKVInfo getKVInfo( int hg_begin , int hg_end )
+		KVInfo getKVInfo( int hg_begin , int hg_end )
 		{
-			FileKVInfo _info;
+			KVInfo _info;
 			if (hg_begin == 0)
 			{
 				// Spetial case with the first operation
@@ -410,7 +427,7 @@ namespace ss {
 		
 		size_t getFileOffset( int hg_begin )
 		{
-			size_t file_offset = FILE_TOTAL_HEADER_SIZE;
+			size_t file_offset = KVFILE_TOTAL_HEADER_SIZE;
 			if( hg_begin > 0)
 				file_offset += cumulative_info[hg_begin-1].size;
 			
@@ -437,20 +454,24 @@ namespace ss {
 		ProcessAssistantSharedFileCollection( const network::WorkerTask & workerTask  )
 		{
 			// Get the number of inputs & files per input
-			int num_inputs = workerTask.input_size();
+			int num_inputs = workerTask.input_queue_size();
 			total_num_input_files = 0;
 			num_input_files = (int*) malloc( sizeof(int) * num_inputs );
 			for( int i = 0 ; i < num_inputs ; i++)
 			{
-				num_input_files[i] = workerTask.input(i).file_size();
+				KVFormat format( workerTask.input_queue(i).queue().format().keyformat() , workerTask.input_queue(i).queue().format().valueformat() );
+				
+				num_input_files[i] = workerTask.input_queue(i).file_size();
 				for (int j = 0 ; j < num_input_files[i] ; j++)
-					file.push_back( new ProcessAssistantSharedFile( i , num_inputs ,workerTask.input(i).file(j).name() ) );
+				{
+					KVInfo info( workerTask.input_queue(i).file(j).info().size() , workerTask.input_queue(i).file(j).info().kvs() );
+					file.push_back( new ProcessAssistantSharedFile( format , info , i , num_inputs ,workerTask.input_queue(i).file(j).name() ) );
+				}
 				total_num_input_files += num_input_files[i];
 			}
 			
-			
 			// Size of each hash-group
-			size_of_hg = (size_t*) malloc(KV_NUM_HASHGROUPS *sizeof(size_t));
+			size_of_hg = (size_t*) malloc(KVFILE_NUM_HASHGROUPS *sizeof(size_t));
 			
 		}
 		
@@ -460,7 +481,7 @@ namespace ss {
 				file[i]->setup();
 			
 			// Compute the total size per hash group	
-			for (int hg = 0 ; hg < KV_NUM_HASHGROUPS ; hg++)
+			for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
 			{
 				size_of_hg[hg] = 0;
 				for (int f = 0 ; f < total_num_input_files ; f++)
@@ -497,7 +518,7 @@ namespace ss {
 	
 	struct HashGroupOutput {
 		
-		NetworkKVInfo info;		// Basic info of this hg
+		KVInfo info;		// Basic info of this hg
 		uint32 first_node;		// First block with output for this hash gorup
 		uint32 last_node;		// Last block with output for this hash gorup
 		
@@ -516,13 +537,13 @@ namespace ss {
 	
 	struct OutputChannel {
 		
-		NetworkKVInfo info;
-		HashGroupOutput hg[ KV_NUM_HASHGROUPS ];
+		KVInfo info;
+		HashGroupOutput hg[ KVFILE_NUM_HASHGROUPS ];
 		
 		void init()
 		{
 			info.clear();
-			for (int i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
+			for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
 				hg[i].init();
 		}
 	};

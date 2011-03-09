@@ -103,7 +103,6 @@ namespace ss
 
 #pragma mark OrganizerSubTask
 	
-	
 	OrganizerSubTask::OrganizerSubTask( WorkerTask *_task  ) : WorkerSubTask( _task )
 	{
 		
@@ -138,16 +137,16 @@ namespace ss
 		
 		// Organize the reduce in multiple WorkerTaskItems to process each set of hash-groups
 		int num_process = SamsonSetup::shared()->num_processes;
-		int max_num_hgs = KV_NUM_HASHGROUPS / num_process;	// Minimum num_process divisions for force multicore approach
+		int max_num_hgs = KVFILE_NUM_HASHGROUPS / num_process;	// Minimum num_process divisions for force multicore approach
 		
-		size_t max_item_content_size = (SamsonSetup::shared()->memory/4) - reduceInformation->total_num_input_files*max_num_hgs*sizeof(FileKVInfo) - sizeof(SharedHeader);
+		size_t max_item_content_size = (SamsonSetup::shared()->memory/4) - reduceInformation->total_num_input_files*max_num_hgs*sizeof(KVInfo) - sizeof(KVHeader);
 		
 		// Create necessary reduce operations
 		int hg = 1;												// Evaluating current hash group	
 		int	item_hg_begin = 0;									// Starting at hash-group
 		size_t total_size = reduceInformation->size_of_hg[0];	// Total size for this operation
 		
-		while( hg < KV_NUM_HASHGROUPS )
+		while( hg < KVFILE_NUM_HASHGROUPS )
 		{
 			size_t current_hg_size = reduceInformation->size_of_hg[hg];
 			
@@ -169,7 +168,7 @@ namespace ss
 		}
 
 		
-		task->addSubTask( new OperationSubTask( task ,item_hg_begin , KV_NUM_HASHGROUPS ) );
+		task->addSubTask( new OperationSubTask( task ,item_hg_begin , KVFILE_NUM_HASHGROUPS ) );
 		
 		// No real process for this sub-task
 		return NULL;
@@ -178,8 +177,8 @@ namespace ss
 	FileManagerReadItem * OrganizerSubTask::getFileMangerReadItem( ProcessAssistantSharedFile* file  )
 	{
 		// Read the key-value information for each hash group for each input files
-		size_t offset			= sizeof( FileHeader );					// We skip the file header
-		size_t size				= sizeof(FileKVInfo) * KV_NUM_HASHGROUPS;
+		size_t offset			= sizeof( KVHeader );					// We skip the file header
+		size_t size				= sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
 		
 		FileManagerReadItem *item = new FileManagerReadItem( file->fileName , offset , size , file->getSimpleBufferForInfo() , task->taskManager );
 		item->tag = task->task_id;
@@ -200,7 +199,7 @@ namespace ss
 		buffer = NULL;
 		
 		// Compute the required size for this operation
-		memory_requested = task->reduceInformation->total_num_input_files*( ( num_hash_groups )*sizeof(FileKVInfo) + sizeof(SharedHeader) );
+		memory_requested = task->reduceInformation->total_num_input_files*( ( num_hash_groups )*sizeof(KVInfo) + sizeof(KVHeader) );
 		for (int hg = hg_begin ; hg < hg_end ; hg++)
 			memory_requested += task->reduceInformation->size_of_hg[hg];
 
@@ -238,12 +237,12 @@ namespace ss
 		 for (int f = 0 ;  f < reduceInformation->total_num_input_files ; f++)
 		 {
 			 // Header
-			 SharedHeader header = reduceInformation->file[f]->getSharedHeader( hg_begin , hg_end );
-			 memcpy(data+offset, &header, sizeof(SharedHeader));
-			 offset+= sizeof(SharedHeader);
+			 KVHeader header = reduceInformation->file[f]->getKVHeader( hg_begin , hg_end );
+			 memcpy(data+offset, &header, sizeof(KVHeader));
+			 offset+= sizeof(KVHeader);
 			 
 			 // Copy the info vector
-			 size_t size_info = ( hg_end - hg_begin ) * sizeof( FileKVInfo );
+			 size_t size_info = ( hg_end - hg_begin ) * sizeof( KVInfo );
 			 memcpy(data + offset , &task->reduceInformation->file[f]->info[hg_begin],  size_info  );
 			 offset += size_info;
 			 
@@ -323,6 +322,178 @@ namespace ss
 		return new ProcessParser( this );
 	}
 	
+#pragma mark SystemSubTask
+	
+	SystemSubTask::SystemSubTask( WorkerTask *_task  ) : WorkerSubTask( _task )
+	{
+		// Create the reduce information ( stored at the worker task to share with the rest of reduce items )
+		task->reduceInformation = new ProcessAssistantSharedFileCollection( task->workerTask );
+		description = "Sys"; // System
+
+		// add all the File elements to be removed when the operation is complete
+		for (int i = 0 ; i < task->workerTask.input_queue(0).file_size() ; i++)
+		{
+			network::QueueFile qf;
+			qf.set_queue( task->workerTask.input_queue(0).queue().name() );
+			qf.mutable_file()->CopyFrom( task->workerTask.input_queue(0).file(i) );
+			task->removeFile( qf );
+		}
+	}
+	
+	// Function to get all the read operations necessary for this task
+	std::vector< FileManagerReadItem*>* SystemSubTask::_getFileMangerReadItems()
+	{
+		// Create a vector of files to be read for this sub-task
+		std::vector< FileManagerReadItem*>* files = new std::vector< FileManagerReadItem*>();		
+		
+		for (int f = 0 ; f < task->reduceInformation->total_num_input_files ; f++)
+		{
+			FileManagerReadItem *item = getFileMangerReadItem( task->reduceInformation->file[f] );
+			files->push_back( item );
+		}
+		
+		return files;
+	}
+	
+	// Function to get the ProcessManagerItem to run
+	
+	ProcessItem * SystemSubTask::_getProcessItem()
+	{
+		
+		ProcessAssistantSharedFileCollection *reduceInformation = task->reduceInformation;
+		reduceInformation->setup();
+		
+		// Organize the content so, that we generate necessary files
+		size_t max_item_content_size = SamsonSetup::shared()->max_file_size;
+		
+		// Create necessary reduce operations
+		int hg = 1;												// Evaluating current hash group	
+		int	item_hg_begin = 0;									// Starting at hash-group
+		size_t total_size = reduceInformation->size_of_hg[0];	// Total size for this operation
+		
+		while( hg < KVFILE_NUM_HASHGROUPS )
+		{
+			size_t current_hg_size = reduceInformation->size_of_hg[hg];
+			
+			if( ( ( total_size + current_hg_size  ) > max_item_content_size ) )
+			{
+				
+				if( total_size > 0 )
+					task->addSubTask( new CompactSubTask( task , item_hg_begin , hg  ) );
+				
+				
+				// Ready for the next item
+				item_hg_begin = hg;
+				total_size = current_hg_size;
+			}
+			else
+				total_size+=current_hg_size;
+			
+			hg++;
+		}
+		
+		task->addSubTask( new CompactSubTask( task ,item_hg_begin , KVFILE_NUM_HASHGROUPS ) );
+		 
+		// No real process for this sub-task
+		return NULL;
+	}
+	
+	FileManagerReadItem * SystemSubTask::getFileMangerReadItem( ProcessAssistantSharedFile* file  )
+	{
+		// Read the key-value information for each hash group for each input files
+		size_t offset			= sizeof( KVHeader );					// We skip the file header
+		size_t size				= sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
+		
+		FileManagerReadItem *item = new FileManagerReadItem( file->fileName , offset , size , file->getSimpleBufferForInfo() , task->taskManager );
+		item->tag = task->task_id;
+		return item;
+	}		
+	
+#pragma mark -
+	
+	
+	CompactSubTask::CompactSubTask( WorkerTask * task , int _hg_begin , int _hg_end  ) : WorkerSubTask( task  )
+	{
+		// Starting and ending hash-group
+		hg_begin = _hg_begin;
+		hg_end = _hg_end;
+		num_hash_groups = hg_end - hg_begin;
+		
+		// It will be assigned calling a MemoryRequest
+		buffer = NULL;
+		
+		// Compute the required size for this operation
+		memory_requested = task->reduceInformation->total_num_input_files * ( sizeof(KVHeader) + ( num_hash_groups )*sizeof(KVInfo) );
+		for (int hg = hg_begin ; hg < hg_end ; hg++)
+			memory_requested += task->reduceInformation->size_of_hg[hg];
+		
+		description = "Sys";// System
+	}
+	
+	CompactSubTask::~CompactSubTask()
+	{
+		if( buffer )
+			MemoryManager::shared()->destroyBuffer( buffer );
+	}
+	
+	
+	
+	MemoryRequest *CompactSubTask::_getMemoryRequest()
+	{
+		return new MemoryRequest( memory_requested, &buffer , task->taskManager);
+	}
+	
+	
+	std::vector< FileManagerReadItem*>* CompactSubTask::_getFileMangerReadItems()
+	{
+		std::vector< FileManagerReadItem*>* files = new std::vector< FileManagerReadItem*>();
+		
+		// Pointer to the buffer
+		char* data = buffer->getData();
+		
+		// Reduce information is stored in the parent task ( common to all reduce task-items )
+		ProcessAssistantSharedFileCollection *reduceInformation = task->reduceInformation;
+		
+		// Offset while writing into the shared memory area
+		size_t offset = 0;		
+		
+		// Write all files at the shared memory
+		for (int f = 0 ;  f < reduceInformation->total_num_input_files ; f++)
+		{
+			// Header
+			KVHeader header = reduceInformation->file[f]->getKVHeader( hg_begin , hg_end );
+			memcpy(data+offset, &header, sizeof(KVHeader));
+			offset+= sizeof(KVHeader);
+			
+			// Copy the info vector
+			size_t size_info = ( hg_end - hg_begin ) * sizeof( KVInfo );
+			memcpy(data + offset , &task->reduceInformation->file[f]->info[hg_begin],  size_info  );
+			offset += size_info;
+			
+			// Schedule the read operation into the FileManager to read data content
+			FileManagerReadItem *item 
+			= new FileManagerReadItem( \
+									  reduceInformation->file[f]->fileName , \
+									  reduceInformation->file[f]->getFileOffset( hg_begin ), \
+									  header.info.size, \
+									  buffer->getSimpleBufferAtOffset(offset) \
+									  , NULL );
+			
+			files->push_back( item );
+			
+			offset += header.info.size;
+		}
+		
+		
+		return files;
+		
+	}
+	
+	// Function to get the ProcessManagerItem to run
+	ProcessItem * CompactSubTask::_getProcessItem()
+	{
+		return new ProcessCompact( this );
+	}
 	
 	
 }

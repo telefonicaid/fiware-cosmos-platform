@@ -65,6 +65,39 @@ namespace ss {
 		if( task )
 			job = task->job;
 		
+		
+		if( task && job )
+		{
+			for (int f = 0 ; f < confirmationMessage->add_file_size() ; f++)
+			{
+				const network::QueueFile& qfile = confirmationMessage->add_file(f);
+				const network::File& file = qfile.file();
+				const network::KVInfo& info = file.info();
+				
+				std::string command = ControllerDataManager::getAddFileCommand(file.worker() , file.name(),  info.size() , info.kvs() , qfile.queue() );
+				DataManagerCommandResponse response = controller->data.runOperation( job->getId() , command );
+				
+				// Since this is an internally generated command, it can not have any error of format
+				assert( !response.error );
+			}
+			
+			for (int f = 0 ; f < confirmationMessage->remove_file_size() ; f++)
+			{
+				const network::QueueFile& qfile = confirmationMessage->remove_file(f);
+				const network::File& file = qfile.file();
+				const network::KVInfo& info = file.info();
+				
+				std::string command = ControllerDataManager::getRemoveFileCommand(file.worker() , file.name(),  info.size() , info.kvs() , qfile.queue() );
+				DataManagerCommandResponse response = controller->data.runOperation( job->getId() , command );
+				
+				// Since this is an internally generated command, it can not have any error of format
+				assert( !response.error );
+			}
+			
+		}
+		
+		
+		
 		switch (confirmationMessage->type()) 
 		{
 				
@@ -118,31 +151,9 @@ namespace ss {
 				
 			}
 				break;
-			case network::WorkerTaskConfirmation::new_file:
-			{
-				//assert(task);
-				//assert(job);
-				if( task && job )
-				for (int f = 0 ; f < confirmationMessage->file_size() ; f++)
-				{
-					const network::QueueFile& qfile = confirmationMessage->file(f);
-					const network::File& file = qfile.file();
-					const network::KVInfo& info = file.info();
-					
-					std::string command = ControllerDataManager::getAddFileCommand(file.worker() , file.name(),  info.size() , info.kvs() , qfile.queue() );
-					DataManagerCommandResponse response = controller->data.runOperation( job->getId() , command );
-					
-					// Since this is an internally generated command, it can not have any error of format
-					assert( !response.error );
-				}
-				
-				
-			}
-				break;
-				
 			case network::WorkerTaskConfirmation::update:
 			{
-				// TODO: Process this to update status
+				// Nothing in particular here
 			}
 				break;
 				

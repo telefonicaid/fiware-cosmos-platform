@@ -33,14 +33,9 @@ message File
 
 message Queue
 {
-	required string name = 1;
-	required KVFormat format = 2;
-	optional KVInfo info = 3;
-}
-
-message FileList
-{
-	repeated File file=1;		// List of files
+	required string name		 = 1;
+	required KVFormat format	 = 2;
+	optional KVInfo info 		 = 3;
 }
 
 message FullQueue
@@ -188,17 +183,16 @@ message WorkerStatusList
 message WorkerTask
 {
 	required uint64 task_id		  = 1;	// Id of the top level ( controller ) task
-	
 	required string operation 	  = 2;	// Name of the operation to run
 
-	repeated FileList input		  = 3;  // Input files ( all inputs for each queue )
-	repeated Queue output		  = 4;  // output queues
+	repeated FullQueue input_queue	  = 4;  // Full information about input queues ( including only files of interes )
+	repeated FullQueue output_queue   = 5;  // Full information about output queues ( including all file )
 
-	required int32 servers		  = 7;	// Number of servers ( all the workers )
+	required int32 servers		  = 6;	// Number of servers ( all the workers )
 
-	optional bool generator		  = 5;	// Optional flag only used in the generator operations
+	optional bool generator		  = 7;	// Optional flag only used in the generator operations ( only one generator generates data )
 
-	required Environment environment  = 6;	// Environment operations for this task
+	required Environment environment  = 8;	// Environment operations for this task
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -220,21 +214,23 @@ message WorkerTaskConfirmation
 {
 	enum WorkerTaskConfirmationType
 	{
-		new_file=1;
-		finish=2;
-		complete=3;
-		error=4;
-		update=5;
+		update=1;	// Update information ( new files, remove files, progress ,etc...9
+		finish=2;	// Notify that the task has finish at this worker
+		complete=3;	// Notify the the task has been completed at this worker ( files saved to disk )
+		error=4;	// Notify that there has been an error, the task has been removed from this worker
 	}
 
 	
-	required int64 task_id				= 1;	// Id of the controller task 
-	required WorkerTaskConfirmationType type 	= 2;	// Type of message
+	required int64 task_id				= 1;		// Id of the controller task 
+	required WorkerTaskConfirmationType type 	= 2;		// Type of message
 	
-	repeated QueueFile file			= 3;    // File created with this operation that should be added to the queue
-	optional int32 num_items      	  	= 4;	// Number of items for this task in this worker
-	optional int32 num_finished_items 	= 5;   // Number of finish items for this task in this worker
-	optional string error_message 		= 6;    // Message to debug the error
+	repeated QueueFile add_file			= 3;		// File created with this operation that should be added to the queue
+	repeated QueueFile remove_file			= 4;		// File created with this operation that should be removed to the queue
+
+	optional int32 num_items      	  		= 5;		// Number of items for this task in this worker
+	optional int32 num_finished_items 		= 6;   		// Number of finish items for this task in this worker
+
+	optional string error_message 			= 7;    	// Message to debug the error ( only present if type == error )
 
 }
 

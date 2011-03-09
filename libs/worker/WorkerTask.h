@@ -12,6 +12,7 @@
 
 #define WORKER_TASK_COMPONENT_PROCESS				1
 #define WORKER_TASK_COMPONENT_DATA_BUFFER_PROCESS	2
+#define WORKER_TASK_COMPONENT_ADD_FILE				3		// Add files directly ( used in compact operation )
 
 namespace ss {
 
@@ -34,6 +35,7 @@ namespace ss {
 		typedef enum
 		{
 			pending_definition,			// Pending to receive message from the controller
+			ready,						// Message from the controller has been received but task is not executed ( divided in subtasks )
 			running,					// Running operation
 			local_content_finished,		// Output content is completed ( a message is send to the other workers to notify ) 
 			all_content_finish,			// The content from all the workers is received ( file are starting to be saved )
@@ -49,7 +51,11 @@ namespace ss {
 		
 		WorkerTaskManager *taskManager;					// Pointer to the task manager
 
+		// Message from and to the controller
 		network::WorkerTask workerTask;					// Copy of the message received from the controller
+
+		network::WorkerTaskConfirmation *finish_message;			// Message prepared to be send to the controller ( finish task )
+		network::WorkerTaskConfirmation *complete_message;			// Message prepared to be send to the controller ( complete task : all saved )
 		
 		size_t task_id;									// identifier of the task
 		WorkerTaskStatus status;						// Status of this task
@@ -62,7 +68,8 @@ namespace ss {
 		std::string error_message;
 		
 		// Operation to be executed
-		std::string operation;					
+		Operation::Type type;			// Type of operation
+		std::string operation;			// Name of the operation
 				
 		// Debuggin string
 		std::string getStatus();
@@ -90,14 +97,15 @@ namespace ss {
 		// Setup with the information comming from the controller
 		void setup(Operation::Type type , const network::WorkerTask &task);	
 		
+		// The task is now executed ( divided in subtasks )
+		void run();
+		
 #pragma mark Notifications about finish process and IO operations and memory requests
 		
 		// Notification that a process has finish ( from ProcessManager )
 		void notifyFinishProcess( ProcessItem * i );
-
 		void notifyFinishReadItem( FileManagerReadItem *item  );
 		void notifyFinishWriteItem( FileManagerWriteItem *item  );
-
 		void notifyFinishMemoryRequest( MemoryRequest *request );
 		
 		// Notify that a worker has finished producing data for this task
@@ -116,7 +124,6 @@ namespace ss {
 			status = completed;
 		}
 		
-		
 		// Kill( from a message from the controller )
 		void kill()
 		{
@@ -130,16 +137,23 @@ namespace ss {
 		void flush( QueueuBufferVector *bv );
 		void flush();
 		
+		// add a buffer to be saved as a key-value file
+		void addFile( network::QueueFile &qf , Buffer *buffer);
+		
+		// add a file to be removed when the operation is finished
+		void removeFile( network::QueueFile &qf);
+		
 #pragma mark Messages
 		
 		void sendCloseMessages();
 		void sendFinishTaskMessageToController( );		
-		void sendCompleteTaskMessageToController( );
+		void sendCompleteTaskMessageToController( );		
 		void sendAddFileMessageToController( QueueuBufferVector *bv ,  std::string fileName , Buffer *b );
 		
 #pragma mark FileNames
 		
 		std::string newFileName( std::string queue );
+		std::string newFileName( );
 
 #pragma mark Manager SubTasks
 		
@@ -148,7 +162,8 @@ namespace ss {
 #pragma mark Check
 		
 	private:
-		// Internal function to verytfy the internal status of this task
+		
+		// Internal function to verytfy the internal status of this task ( and change status if necessary )
 		void check();
 
 		

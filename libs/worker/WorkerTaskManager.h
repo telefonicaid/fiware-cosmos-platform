@@ -27,9 +27,9 @@ namespace ss {
 
 	private:
 
-		au::Token token;					// Token to protect task
-		au::map<size_t,WorkerTask> task;	// List of tasks
-		
+		au::Token token;									// Token to protect task
+		au::map<size_t,WorkerTask> task;					// List of tasks
+				
 	public:
 		
 		WorkerTaskManager(SamsonWorker *_worker);
@@ -43,6 +43,9 @@ namespace ss {
 		// Add a buffer from other workers ( associated to a particular task and output queue)
 		void addBuffer( size_t task_id , network::Queue , Buffer* buffer , bool txt  );
 		
+		// Add a file directly to a task
+		void addFile( size_t task_id , network::QueueFile &qf , Buffer *buffer);
+		
 		// Notification that a worker has finish produccing data for a task
 		void finishWorker( size_t task_id );
 
@@ -55,12 +58,12 @@ namespace ss {
 #pragma mark Notifications from Process and FileManager and MemoryManager
 		
 	public:
+		
 		void notifyFinishProcess( ProcessItem * item );
 		void notifyFinishReadItem( FileManagerReadItem *item  );
 		void notifyFinishWriteItem( FileManagerWriteItem *item  );
-		void notifyFinishMemoryRequest( MemoryRequest *request );
-		
-		
+		void notifyFinishMemoryRequest( MemoryRequest *request );		
+
 	public:		
 		// Send messages functions 
 		static void send_update_message_to_controller(NetworkInterface *network , size_t task_id ,int num_finished_items, int num_items );
@@ -71,6 +74,9 @@ namespace ss {
 		
 		// Function used to send the confirmation of this task to the controller
 		void sendWorkTaskConfirmation( WorkerTask *t );
+	
+		// Function to run tasks if enougth output channels are free
+		void _check_run_tasks();
 		
 	};
 	 

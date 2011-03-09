@@ -38,7 +38,6 @@ namespace ss {
 		else
 		{
 		
-
 			// Id of this operations
 			size_t task_id = worker_task.task_id();
 			
@@ -52,6 +51,10 @@ namespace ss {
 
 			// Setup the operation with all the information comming from controller
 			t->setup( op->getType() , worker_task );
+			
+			// Function to run tasks if ready and enougth output queue-buffers
+			_check_run_tasks();
+			
 		}
 		
 		token.release();
@@ -70,6 +73,8 @@ namespace ss {
 			t->kill();
 			delete t;
 		}
+		
+		_check_run_tasks();
 		
 		token.release();
 	}
@@ -91,6 +96,24 @@ namespace ss {
 		
 	}
 	
+	void WorkerTaskManager::addFile( size_t task_id , network::QueueFile &qf , Buffer *buffer)
+	{
+		token.retain();
+		
+		LM_TODO(("Solve this ;)"));
+		
+		// Create the task
+		WorkerTask *t = task.findInMap( task_id );
+
+		if( t )
+			t->addFile( qf , buffer );
+		else
+			MemoryManager::shared()->destroyBuffer( buffer );
+		
+		token.release();		
+	}
+	
+	
 	void WorkerTaskManager::finishWorker( size_t task_id )
 	{
 		token.retain();
@@ -107,6 +130,8 @@ namespace ss {
 				delete task.extractFromMap( task_id );
 			}
 		}
+		
+		_check_run_tasks();
 		
 		token.release();
 	}
@@ -194,7 +219,9 @@ namespace ss {
 		
 	void WorkerTaskManager::notifyFinishProcess( ProcessItem * item )
 	{
+		
 		token.retain();
+		
 		size_t task_id = item->tag;
 		WorkerTask *t = task.findInMap( task_id );
 		if( t )
@@ -207,6 +234,9 @@ namespace ss {
 			}
 		}
 		delete item;
+		
+		_check_run_tasks();
+		
 		token.release();
 	}
 	
@@ -229,6 +259,9 @@ namespace ss {
 			}
 		}
 		delete item;
+		
+		_check_run_tasks();
+		
 		token.release();
 	}
 	
@@ -253,6 +286,8 @@ namespace ss {
 		}
 		delete item;
 		
+		_check_run_tasks();
+		
 		token.release();
 		
 	}
@@ -273,6 +308,9 @@ namespace ss {
 		}
 
 		delete request;
+		
+		_check_run_tasks();
+		
 		token.release();
 		
 	}
@@ -288,8 +326,9 @@ namespace ss {
 		
 		std::map<size_t,WorkerTask*>::iterator iter;
 		
+		output << "\n";
 		for ( iter = task.begin() ; iter != task.end() ; iter++)
-			output << "[" << iter->second->getStatus() << "]";
+			output << "\t\t\t[" << iter->second->getStatus() << "]\n";
 		
 		token.release();
 		
@@ -319,5 +358,30 @@ namespace ss {
 	}
 	
 
+	
+	void WorkerTaskManager::_check_run_tasks()
+	{
+		int num_outputs_allowed = SamsonSetup::shared()->num_max_outputs;
+		
+		au::map<size_t,WorkerTask>::iterator t;
+		for ( t = task.begin() ; t != task.end() ; t++)
+		{
+			if( t->second->status == WorkerTask::running )
+			{
+				// Number of output for this particular operation
+				num_outputs_allowed -= t->second->workerTask.output_queue_size();
+			}
+			
+			if ( t->second->status == WorkerTask::ready )
+			{
+				if( t->second->workerTask.output_queue_size() <= num_outputs_allowed )
+				{
+					t->second->run();
+					num_outputs_allowed -= t->second->workerTask.output_queue_size();
+				}
+			}
+		}		
+	}
+	
 	
 }

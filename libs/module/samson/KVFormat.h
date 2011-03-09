@@ -24,7 +24,6 @@ namespace ss {
 	public:
 		std::string keyFormat;
 		std::string valueFormat;
-
 		
 		KVFormat()
 		{
@@ -37,13 +36,12 @@ namespace ss {
 		}
 		
 		
-		void init( 	std::string _keyFormat, std::string _valueFormat )
+		void init( std::string _keyFormat, std::string _valueFormat )
 		{
 			keyFormat = _keyFormat;
 			valueFormat = _valueFormat;
 		}
-		
-		
+				
 		void setFromString( std::string key_value )
 		{
 			size_t pos = key_value.find_last_of('-');
@@ -60,86 +58,36 @@ namespace ss {
 		}
 		
 		
+		static bool compare_format( std::string &format_1 , std::string &format_2 )
+		{
+		  if( format_1 == "*" )
+		    return true;
+		  if( format_2 == "*" )
+		    return true;
+		  return ( format_1 == format_2 );
+		}
+
 		bool isEqual(  KVFormat otherFormat )
 		{
-			if( keyFormat.compare( otherFormat.keyFormat ) != 0)
-				return false;
-			if(	valueFormat.compare( otherFormat.valueFormat ) != 0)
-				return false;
+		  if( !compare_format( keyFormat , otherFormat.keyFormat  ) )
+		      return false;
+		  if( !compare_format( valueFormat , otherFormat.valueFormat  ) )
+		      return false;
 			
-			return true;
+		  return true;
 		}
 		
-		bool isEqualKey(  KVFormat otherFormat )
+		bool isEqualKey( KVFormat otherFormat )
 		{
-			if( keyFormat.compare( otherFormat.keyFormat ) != 0)
-				return false;
-			return true;
+                  if( !compare_format( keyFormat , otherFormat.keyFormat  ) )
+                      return false;
+	          return true;
 		}
 		
 		std::string str()
 		{
 			return keyFormat + "-" + valueFormat;
-		}
-		
-		
-		/**
-		 Static function to create a vector of formats
-		 */
-
-		static std::vector<KVFormat> vectorOfFormats( KVFormat format1 , KVFormat format2 , KVFormat format3, KVFormat format4 )
-		{
-			std::vector<KVFormat> formats;
-			
-			formats.push_back( format1 );
-			formats.push_back( format2 );
-			formats.push_back( format3 );
-			formats.push_back( format4 );
-			
-			return formats;
-		}
-		
-		
-		static std::vector<KVFormat> vectorOfFormats( KVFormat format1 , KVFormat format2 , KVFormat format3 )
-		{
-			std::vector<KVFormat> formats;
-			
-			formats.push_back( format1 );
-			formats.push_back( format2 );
-			formats.push_back( format3 );
-			
-			return formats;
-		}
-
-		static std::vector<KVFormat> vectorOfFormats( KVFormat format1 , KVFormat format2 )
-		{
-			std::vector<KVFormat> formats;
-			
-			formats.push_back( format1 );
-			formats.push_back( format2 );
-			
-			return formats;
-		}
-
-		static std::vector<KVFormat> vectorOfFormats( KVFormat format1 )
-		{
-			std::vector<KVFormat> formats;
-			
-			formats.push_back( format1 );
-			
-			return formats;
-		}
-		
-		
-		static std::vector<KVFormat> vectorOfFormats( KVFormat format , int n_times )
-		{
-			std::vector<KVFormat> formats;
-			
-			for (int i = 0 ; i < n_times ; i++)
-			formats.push_back( format );
-			
-			return formats;
-		}
+		}		
 		
 		static KVFormat format( std::string key_format , std::string value_format )
 		{

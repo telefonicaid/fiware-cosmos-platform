@@ -23,6 +23,8 @@ int main(int argc, const char *argv[])
 	cmdLine.parse(argc, argv);
 	
 	ss::SamsonSetup::load( cmdLine.get_flag_string("working") );
+	ss::MemoryManager::init();
+	
 	ss::SamsonSetup *s = ss::SamsonSetup::shared();	// Load setup file and create main directories
 	
 	if ( cmdLine.get_flag_bool("clean" ) )
@@ -62,6 +64,9 @@ int main(int argc, const char *argv[])
 	std::cout << "\n";
 	std::cout << "** Disk setup:\n";
 	std::cout << "Num threads per devide:    " << s->num_io_threads_per_device << "\n";
+	std::cout << "\n";
+	std::cout << "** Derived parameres:\n";
+	std::cout << "Max num paralel outputs: " << ss::SamsonSetup::shared()->num_max_outputs << "\n";
 	
 	std::cout << "\n\n\n";
 	std::cout << "Testing shared memory...\n";

@@ -32,28 +32,60 @@ namespace ss
 		// Status of confirmation from all the workers
 		num_workers = taskManager->worker->network->getNumWorkers();
 		num_finished_workers = 0;
-
+		
+		
+		finish_message = NULL;
+		complete_message = NULL;
 	}
 	
 	WorkerTask::~WorkerTask()
 	{
 		if( reduceInformation )
 			delete reduceInformation;
+		
+		if( finish_message )
+			delete finish_message;
+		
+		if( complete_message )
+			delete complete_message;
 	}
 	
 	
-	void WorkerTask::setup(Operation::Type type , const network::WorkerTask &task)
+	void WorkerTask::setup(Operation::Type _type , const network::WorkerTask &task)
 	{
-		// Copy of the message form the controller
-		workerTask = task;
-		
 		assert( status == pending_definition);
 		
+		// Copy of the message form the controller
+		workerTask = task;
+
+		// Copy the type of operation
+		type = _type;
+		
+		// Get the operation and task_id from the message
 		operation = task.operation();	// Save the operation to perform		
 		task_id = task.task_id();		// Save the task id
 		
+		// Messages prepared to be send to the controller
+		finish_message = new network::WorkerTaskConfirmation();
+		finish_message->set_task_id( task_id );
+		finish_message->set_type( network::WorkerTaskConfirmation::finish );
+		
+		complete_message = new network::WorkerTaskConfirmation();
+		complete_message->set_task_id( task_id );
+		complete_message->set_type( network::WorkerTaskConfirmation::complete );
+		
+		
 		// By default no error
 		error = false;
+
+		status = ready;
+		
+		
+	}
+
+	void WorkerTask::run()
+	{
+		assert( status == ready );
 		
 		// Set status to runnign until all the tasks are completed ( or error )
 		status = running;
@@ -61,7 +93,7 @@ namespace ss
 		switch (type) {
 				
 			case Operation::generator :
-				if( task.generator() )
+				if( workerTask.generator() )
 				{
 					GeneratorSubTask * tmp = new GeneratorSubTask( this );
 					addSubTask( tmp );
@@ -71,11 +103,10 @@ namespace ss
 			case Operation::parser:
 			{
 				// An item per file
-				assert( task.input_size() == 1);	// Only one input
-				network::FileList fl = task.input(0);
+				assert( workerTask.input_queue_size() == 1);	// Only one input
 				
-				for (size_t i = 0 ; i < (size_t) fl.file_size() ; i++)
-					addSubTask( new ParserSubTask( this, fl.file(i).name() ) );
+				for (size_t i = 0 ; i < (size_t) workerTask.input_queue(0).file_size() ; i++)
+					addSubTask( new ParserSubTask( this, workerTask.input_queue(0).file(i).name() ) );
 			}
 				break;
 				
@@ -87,7 +118,16 @@ namespace ss
 				addSubTask( tmp );
 			}
 				break;
-
+				
+				
+			case Operation::system:
+			{
+				// Spetial system operations 
+				SystemSubTask *tmp = new SystemSubTask( this );
+				addSubTask( tmp );
+			}
+				break;
+				
 			default:
 				assert( false ); // Operation not supported
 				break;
@@ -95,10 +135,7 @@ namespace ss
 		
 		
 		// For those tasks with any particular task
-		check();
-		
-
-		
+		check();	
 	}
 	
 	void WorkerTask::addSubTask( WorkerSubTask *subTask )
@@ -343,11 +380,14 @@ namespace ss
 				
 			case WORKER_TASK_COMPONENT_DATA_BUFFER_PROCESS:
 			{
-				
 				writeItems.erase( item );
-				
 				check();
-				
+			}
+				break;
+			case WORKER_TASK_COMPONENT_ADD_FILE:
+			{
+				writeItems.erase( item );
+				check();
 			}
 				break;
 			default:
@@ -414,8 +454,27 @@ namespace ss
 	std::string WorkerTask::getStatus()
 	{
 		std::ostringstream output;
-		output << "ID:" << task_id << " OP:" << operation << ") ";
+		output << "ID:" << task_id << " OP:" << operation << " ";
 
+		switch (status) {
+			case ready:
+				output << "Ready";
+				break;
+			case running:
+				output << "Running";
+				break;
+			case finish:
+				output << "Finish";
+				break;
+			case completed:
+				output << "Completed";
+				break;
+			default:
+				break;
+		}
+		
+		output << " ";
+		
 		//output << "Memory: " << subTasksWaitingForMemory.size();
 		//output << " Read:" << subTasksWaitingForReadItems.size() 
 		//output << " Run:" << subTasksWaitingForProcess.size();
@@ -462,8 +521,8 @@ namespace ss
 			buffer_size = buffer->getSize();
 		else
 		{
-			// It is suppoused to be a NetworkHeader
-			NetworkHeader * header = (( NetworkHeader *) buffer->getData());
+			// It is suppoused to be a KVHeader
+			KVHeader * header = (( KVHeader *) buffer->getData());
 			assert( header->check() );					// Assert magic number of incoming data packets
 			buffer_size = header->info.size;
 		}
@@ -499,6 +558,30 @@ namespace ss
 		ProcessManager::shared()->addProcessItem( tmp );
 	}
 	
+	// add a buffer to be saved as a key-value file
+	void WorkerTask::addFile( network::QueueFile &qf , Buffer *buffer )
+	{
+		// Add as an "add file" in the finish message ( it will be notified when the finish message is sent )
+		finish_message->add_add_file( )->CopyFrom( qf );
+
+		// Create and submit the FileManagerWriteItem to be saved on disk
+		FileManagerWriteItem *item = new FileManagerWriteItem( qf.file().name() , buffer , taskManager);
+		item->tag = task_id;									// Tag is used with the number of the task
+		item->component = WORKER_TASK_COMPONENT_ADD_FILE;		// Component is used to route the notification at the TaskManager
+		writeItems.insert( item );								// Insert in out local list of files to be saved
+		
+		FileManager::shared()->addItemToWrite( item );			// Schedule the new element to be saved on disk
+		
+	}
+	
+	void WorkerTask::removeFile( network::QueueFile &qf)
+	{
+		// Add as an "remove file" in the finish message ( it will be notified when the finish message is sent )
+		finish_message->add_remove_file( )->CopyFrom( qf );
+	}
+	
+	
+	
 	void WorkerTask::flush()
 	{
 		au::map<std::string , QueueuBufferVector>::iterator iter;
@@ -533,7 +616,9 @@ namespace ss
 		
 		Packet *p = new Packet();
 		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-		confirmation->set_task_id( task_id );
+		
+		// Copy all the information from the prepared message
+		confirmation->CopyFrom(*finish_message);
 		
 		if( error )
 		{
@@ -554,7 +639,9 @@ namespace ss
 		
 		Packet *p = new Packet();
 		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-		confirmation->set_task_id( task_id );
+
+		// Copy all the information from the prepared message
+		confirmation->CopyFrom(*complete_message);
 		
 		if( error )
 		{
@@ -590,7 +677,7 @@ namespace ss
 		}
 		else
 		{
-			FileHeader * header = (FileHeader*) ( b->getData() );
+			KVHeader * header = (KVHeader*) ( b->getData() );
 			info->set_size( header->info.size);
 			info->set_kvs(header->info.kvs);
 		}
@@ -598,10 +685,9 @@ namespace ss
 		Packet *p = new Packet();
 		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
 		confirmation->set_task_id( task_id );
-		confirmation->set_type( network::WorkerTaskConfirmation::new_file );
-		confirmation->add_file()->CopyFrom( qf );
+		confirmation->set_type( network::WorkerTaskConfirmation::update );
+		confirmation->add_add_file()->CopyFrom( qf );
 		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
-		
 		
 	}
 	
@@ -619,6 +705,18 @@ namespace ss
 		
 		//fileName << SamsonSetup::shared()->dataDirectory << "/" << "file_" << worker_id << "_" << task_id << "_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000;
 		fileName << worker_id << "_" << task_id << "_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000 << rand()%10000;
+		
+		return fileName.str();
+	}
+
+	std::string WorkerTask::newFileName( )
+	{
+		std::ostringstream fileName;
+		
+		int worker_id = taskManager->worker->_myWorkerId; 
+		
+		//fileName << SamsonSetup::shared()->dataDirectory << "/" << "file_" << worker_id << "_" << task_id << "_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000;
+		fileName << worker_id << "_" << task_id << "_" << rand()%10000 << rand()%10000 << rand()%10000 << rand()%10000;
 		
 		return fileName.str();
 	}

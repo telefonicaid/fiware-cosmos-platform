@@ -85,6 +85,7 @@ namespace ss {
 			generator,
 			parserOut,
 			script,
+			system,		// Spetial operation of the system
 			unknown
 		} Type;
 
@@ -208,13 +209,14 @@ namespace ss {
 		std::string getTypeName()
 		{
 			switch (getType()) {
-				case parser:		return "parser"; break;
+				case parser:		return "parser";	break;
 				case parserOut:		return "parserOut"; break;
-				case map:			return "map"; break;
-				case reduce:		return "reduce"; break;
+				case map:			return "map";		break;
+				case reduce:		return "reduce";	break;
 				case generator:		return "generator"; break;
-				case script:		return "script"; break;
-				case unknown:		return "unkown"; break;
+				case script:		return "script";	break;
+				case system:		return "system";	break;
+				case unknown:		return "unkown";	break;
 			}
 			return "?";
 		}

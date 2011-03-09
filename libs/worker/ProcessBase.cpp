@@ -22,7 +22,7 @@ namespace ss {
 		//task = _task;
 		type = _type;
 		
-		num_outputs = task->workerTask.output_size();
+		num_outputs = task->workerTask.output_queue_size();
 		num_servers = task->workerTask.servers();
 
 		// copy the message received from the controller
@@ -141,7 +141,7 @@ namespace ss {
 		{
 			// Name of the queue to sent this packet ( if any )
 			//network::Queue output_queue = task->workerTask.output( o );
-			network::Queue output_queue = workerTask->output( o );
+			network::Queue output_queue = workerTask->output_queue( o ).queue();
 			
 			
 			for (int s = 0 ; s < num_servers ; s++)
@@ -150,23 +150,22 @@ namespace ss {
 				
 				if( _channel->info.size > 0)
 				{
-					Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessWriter", NETWORK_TOTAL_HEADER_SIZE + _channel->info.size , Buffer::output );
+					Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessWriter", KVFILE_TOTAL_HEADER_SIZE + _channel->info.size , Buffer::output );
 					assert( buffer );
 					
 					// Pointer to the header
-					NetworkHeader *header = (NetworkHeader*) buffer->getData();
+					KVHeader *header = (KVHeader*) buffer->getData();
 					
 					// Pointer to the info vector
-					NetworkKVInfo *info = (NetworkKVInfo*) (buffer->getData() + sizeof( NetworkHeader ));
+					KVInfo *info = (KVInfo*) (buffer->getData() + sizeof( KVHeader ));
 					
 					// Initial offset for the buffer to write data
-					buffer->skipWrite(NETWORK_TOTAL_HEADER_SIZE);
+					buffer->skipWrite(KVFILE_TOTAL_HEADER_SIZE);
+
+					KVFormat format = KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() );
+					header->init( format , _channel->info );
 					
-					header->init();
-					header->setInfo(  _channel->info );	// Global information of this buffer
-					header->setFormat( KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() ) );
-					
-					for (int i = 0 ; i < KV_NUM_HASHGROUPS ; i++)
+					for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
 					{
 						HashGroupOutput * _hgOutput	= &_channel->hg[i];							// Current hash-group output
 						
@@ -248,7 +247,7 @@ namespace ss {
 			
 			// There is only one output queue
 			//network::Queue output_queue = task->workerTask.output( 0 );
-			network::Queue output_queue = workerTask->output( 0 );
+			network::Queue output_queue = workerTask->output_queue( 0 ).queue();
 			
 			// copy the entire buffer to here
 			memcpy(buffer->getData(), data, *size);

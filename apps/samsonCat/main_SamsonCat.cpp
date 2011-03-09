@@ -19,7 +19,7 @@ int main(int argc, const char *argv[])
 	au::CommandLine cmdLine;
 	cmdLine.set_flag_boolean("header");
 	cmdLine.set_flag_boolean("debug");
-	cmdLine.set_flag_int("limit" , KV_NUM_HASHGROUPS);
+	cmdLine.set_flag_int("limit" , KVFILE_NUM_HASHGROUPS);
 	cmdLine.set_flag_string("working",SAMSON_DEFAULT_WORKING_DIRECTORY);
 	cmdLine.parse(argc , argv);
 
@@ -44,8 +44,8 @@ int main(int argc, const char *argv[])
 		exit(0);
 	}
 	
-	ss::FileHeader header;
-	fread(&header, 1, sizeof(ss::FileHeader), file);
+	ss::KVHeader header;
+	fread(&header, 1, sizeof(ss::KVHeader), file);
 
 	if( !header.check() )
 	{
@@ -59,13 +59,13 @@ int main(int argc, const char *argv[])
 	stat( fileName.c_str() , &filestatus );
 	
 	
-	size_t expected_size =   (size_t)( sizeof(ss::FileHeader) + (sizeof(ss::FileKVInfo)*KV_NUM_HASHGROUPS) + header.info.size ) ;
+	size_t expected_size =   (size_t)( sizeof(ss::KVHeader) + (sizeof(ss::KVInfo)*KVFILE_NUM_HASHGROUPS) + header.info.size ) ;
 	if( (size_t)filestatus.st_size != expected_size)
 	{
 		std::cerr << "Worng file length\n";
 		std::cerr << "Expected:";
-		std::cerr << " Header: " << sizeof(ss::FileHeader);
-		std::cerr << " + Info: " << (sizeof(ss::FileKVInfo)*KV_NUM_HASHGROUPS);
+		std::cerr << " Header: " << sizeof(ss::KVHeader);
+		std::cerr << " + Info: " << (sizeof(ss::KVInfo)*KVFILE_NUM_HASHGROUPS);
 		std::cerr << " + Data: " <<  header.info.size;
 		std::cerr << " = " << expected_size << "\n";
 		std::cerr << "File size: " << filestatus.st_size << " bytes\n";
@@ -99,8 +99,8 @@ int main(int argc, const char *argv[])
 		exit(0);
 	}
 	
-	ss::FileKVInfo *info = (ss::FileKVInfo*) malloc(  sizeof(ss::FileKVInfo)*(KV_NUM_HASHGROUPS)  );
-	fread(info, 1, sizeof(ss::FileKVInfo)*(KV_NUM_HASHGROUPS) , file);
+	ss::KVInfo *info = (ss::KVInfo*) malloc(  sizeof(ss::KVInfo)*(KVFILE_NUM_HASHGROUPS)  );
+	fread(info, 1, sizeof(ss::KVInfo)*(KVFILE_NUM_HASHGROUPS) , file);
 
 
 	if( cmdLine.get_flag_bool("header") )
@@ -113,7 +113,7 @@ int main(int argc, const char *argv[])
 	size_t max_size = 0;
 	size_t average = 0;
 	size_t squeare_average = 0;
-	for ( int i = 0 ; i < KV_NUM_HASHGROUPS ; i++ )
+	for ( int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++ )
 	{
 		size_t _size = info[i].size;
 		if(  _size > max_size )
@@ -122,8 +122,8 @@ int main(int argc, const char *argv[])
 		average += _size;
 		squeare_average += _size*_size;	
 	}
-	average /= KV_NUM_HASHGROUPS;
-	squeare_average /= KV_NUM_HASHGROUPS;
+	average /= KVFILE_NUM_HASHGROUPS;
+	squeare_average /= KVFILE_NUM_HASHGROUPS;
 	
 	double d = sqrt( (double) squeare_average - (double) average*average ) / (double) average;
 
@@ -139,7 +139,7 @@ int main(int argc, const char *argv[])
 	ss::DataInstance *key = keyData->getInstance();
 	ss::DataInstance *value = valueData->getInstance();
 	
-	for (int i = 0 ; i < KV_NUM_HASHGROUPS ;i++)
+	for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ;i++)
 	{
 		if( i == limit)
 			break;

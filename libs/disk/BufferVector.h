@@ -41,7 +41,7 @@ namespace ss {
 	public:
 		
 		std::vector<Buffer*> buffer;	// Vector of buffers
-		FileKVInfo info;				// Total info about the number of kvs and size to write in a file 
+		KVInfo info;				// Total info about the number of kvs and size to write in a file 
 		size_t size;					// size of the file it will generate ( both txt and kvs )
 		
 		network::Queue* queue;			// Information about the queue we are buffering buffers to

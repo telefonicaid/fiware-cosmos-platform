@@ -146,6 +146,9 @@ namespace ss
 				output << "Idle";
 			output << "] ";
 		}
+		
+		output << " ( " << items.size() << " queued processes )";
+		
 		token.release();
 		
 		return output.str();

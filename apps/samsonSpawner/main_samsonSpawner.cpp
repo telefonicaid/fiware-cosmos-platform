@@ -266,6 +266,21 @@ void spawnersConnect(ss::ProcessVector* procVec)
 		processP = &procVec->processV[ix];		
 		hostP    = networkP->hostMgr->lookup(processP->host);
 
+#if 1
+		if (hostP != NULL)
+		{
+			ss::Endpoint* ep;
+
+			ep = networkP->endpointLookup(ss::Endpoint::Spawner, hostP->name);
+			
+			if ((ep != NULL) && (ep->state == ss::Endpoint::Connected))
+			{
+				LM_M(("Not connecting to spawner in '%s' - nor sending it the ProcessVector", hostP->name));
+				continue;
+			}
+		}
+#endif
+
 		if (hostP == localhostP)
 		{
 			LM_T(LmtProcessVector, ("ProcessVector: not connecting to myself ..."));

@@ -42,6 +42,7 @@ char*    ip[100];
 char     controllerHost[256];
 char     rIp[256];
 bool     reset;
+bool     silent;
 
 
 
@@ -57,6 +58,7 @@ PaArgument paArgs[] =
 	{ "-ips",          ip,              "IP_LIST",    PaSList,   PaOpt,  PaND,   PaNL,  PaNL,  "listen port"              },
 	{ "-controller",   controllerHost,  "CONTROLLER", PaString,  PaOpt,  PaND,   PaNL,  PaNL,  "Controller host"          },
 	{ "-workers",     &workers,         "WORKERS",    PaInt,     PaOpt,     0,     0,   100,   "number of workers"        },
+	{ "-silent",      &silent,          "SILENT",     PaBool,    PaOpt,  false, false,  true,  "no log to stdout"         },
 
 	PA_END_OF_ARGS
 };
@@ -608,6 +610,9 @@ int main(int argC, const char *argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
+	if (silent)
+		paConfig("log to screen",                 (void*) false);
+
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
@@ -721,5 +726,5 @@ int main(int argC, const char *argV[])
 	if (err != 0)
 		printf("Operation terminated with failure %d.\n", err);
 
-	return 0;
+	return err;
 }

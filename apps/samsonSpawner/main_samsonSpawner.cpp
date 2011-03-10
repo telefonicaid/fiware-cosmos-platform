@@ -251,7 +251,7 @@ static void processesStart(ss::ProcessVector* procVec)
 * Disconnect from spawners that run in hosts not in 'procVec' and connect to added spawners
 * But, for now, just connect to the spawners.
 */
-void spawnersConnect(ss::ProcessVector* procVec)
+void spawnersConnect(ss::ProcessVector* procVec, bool force = false)
 {
 	Host*          localhostP;
 	Host*          hostP;
@@ -304,6 +304,15 @@ void spawnersConnect(ss::ProcessVector* procVec)
 
 		LM_T(LmtProcessVector, ("ProcessVector: current host is '%s'", hostP->name));
 		LM_T(LmtProcessVector, ("ProcessVector: localhost    is '%s'", localhostP->name));
+
+		//
+		// Only connect to spawners whose host names comes before localhost alphabetically
+		//
+		if ((strcmp(hostP->name, localhostP->name) > 0) && (force == false))
+		{
+			LM_M(("Not connecting to '%s' (I am '%s')", hostP->name, localhostP->name));
+			continue;
+		}
 
 		if ((ep = networkP->endpointLookup(ss::Endpoint::Spawner, hostP)) != NULL)
 		{
@@ -366,7 +375,15 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 
 	LM_M(("Calling processesStart"));
 	processesStart(procVec);
-	spawnersConnect(procVec);
+
+
+	//
+	// The spawner that gets the message from 'samsonSetup' connects to all spawners
+	//
+	if (ep->type == ss::Endpoint::Setup) 
+		spawnersConnect(procVec, true);
+	else
+		spawnersConnect(procVec, false);
 
 	return error;
 }

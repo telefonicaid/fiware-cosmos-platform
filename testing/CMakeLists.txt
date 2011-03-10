@@ -1,6 +1,7 @@
-ADD_SUBDIRECTORY(module_test)	# test module
-ADD_SUBDIRECTORY(test_memory)	# test_memory
-ADD_SUBDIRECTORY(test_disk )	# test_disk
+ADD_SUBDIRECTORY(module_test)   # test module
+ADD_SUBDIRECTORY(test_memory)   # test_memory
+ADD_SUBDIRECTORY(test_disk)	    # test_disk
+ADD_SUBDIRECTORY(test_hostMgr)  # test_hostMgr
 
 
 # Prepare the files for the test

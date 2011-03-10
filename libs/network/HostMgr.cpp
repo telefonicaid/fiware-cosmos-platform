@@ -41,6 +41,7 @@ HostMgr::HostMgr(unsigned int size)
 	if (hostV == NULL)
 		LM_X(1, ("error allocating room for %d delilah hosts", size));
 
+	LM_M(("Allocated a Host Vector for %d hosts", size));
 	localIps();
 	list("init");
 }
@@ -67,7 +68,10 @@ void HostMgr::ipsGet(Host* hostP)
 			inet_ntop(iap->ifa_addr->sa_family, (void*) &(sa->sin_addr), buf, sizeof(buf));
 
 			if ((hostP->ip == NULL) && (strcmp(buf, "127.0.0.1") != 0))
+			{
 				hostP->ip = strdup(buf);
+				LM_M(("Setting IP '%s' for host '%s'", hostP->ip, hostP->name));
+			}
 			else
 				aliasAdd(hostP, buf);
 		}
@@ -145,6 +149,7 @@ Host* HostMgr::insert(Host* hostP)
 	{
 		if (hostV[ix] == NULL)
 		{
+			LM_M(("Inserting host '%s'", hostP->name));
 			hostV[ix] = hostP;
 			list("Host Added");
 			return hostV[ix];
@@ -209,48 +214,56 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	Host*  hostP;
 	char   ipX[64];
 	char*  dotP;
+	char*  alias = NULL;
+
+	LM_M(("***** New host: name: '%s', ip: '%s'", name, ip));
 
 	if ((name == NULL) && (ip == NULL))
 		LM_X(1, ("name AND ip NULL - cannot add a ghost host ..."));
 
 	if (name == NULL)
+	{
+		LM_W(("NULL host name for IP '%s'", ip));
 		name = "nohostname";
+	}
 
 	if ((hostP = lookup(name)) != NULL)
 		return hostP;
 
-	if (ip == NULL)
+
+	struct hostent* heP;
+
+	heP = gethostbyname(name);
+	
+	if (heP == NULL)
+		LM_W(("gethostbyname(%s) error", name));
+	else
 	{
-		struct hostent* heP;
+		int ix = 0;
 
-		heP = gethostbyname(name);
-
-		if (heP == NULL)
-			LM_W(("gethostbyname(%s) error", name));
-		else
-		{
-			int ix = 0;
-
-			ip2string(*((int*) heP->h_addr_list[ix]), ipX, sizeof(ipX));
+		LM_M(("gethostbyname proposed the name '%s' for '%s'", heP->h_name, name));
+		ip2string(*((int*) heP->h_addr_list[ix]), ipX, sizeof(ipX));
+		if (ip == NULL)
 			ip = ipX; 
+		else
+			alias = ipX;
 
-			name = heP->h_name;
+		name = heP->h_name;
 
-			while (heP->h_aliases[ix] != NULL)
+		while (heP->h_aliases[ix] != NULL)
+		{
+			LM_W(("alias %d: '%s' - should be added also", ix, heP->h_aliases[ix]));
+			++ix;
+		}
+
+		for (ix = 1; ix < heP->h_length / 4; ix++)
+		{
+			if (heP->h_addr_list[ix] != NULL)
 			{
-				LM_W(("alias %d: '%s' - should be added also", ix, heP->h_aliases[ix]));
-				++ix;
-			}
+				char ipY[64];
 
-			for (ix = 1; ix < heP->h_length / 4; ix++)
-			{
-				if (heP->h_addr_list[ix] != NULL)
-				{
-					char ipY[64];
-
-					ip2string(*((int*) heP->h_addr_list[ix]), ipX, sizeof(ipX));
-					LM_W(("addr %d: '%s' should be added also", ix, ipY));
-				}
+				ip2string(*((int*) heP->h_addr_list[ix]), ipX, sizeof(ipX));
+				LM_W(("addr %d: '%s' should be added also", ix, ipY));
 			}
 		}
 	}
@@ -263,11 +276,15 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	if (hostP == NULL)
 		LM_X(1, ("malloc(%d): %s", sizeof(Host), strerror(errno)));
 
+	LM_M(("name: '%s'", name));
 	if (name != NULL)
 		hostP->name = strdup(name);
 
 	if (ip != NULL)
 		hostP->ip = strdup(ip);
+
+	if (alias != NULL)
+		aliasAdd(hostP, alias);
 
 	if ((dotP = (char*) strstr(name, ".")) != NULL)
 	{
@@ -297,6 +314,7 @@ void HostMgr::aliasAdd(Host* host, const char* alias)
 		if (host->alias[ix] == NULL)
 		{
 			host->alias[ix] = strdup(alias);
+			LM_M(("Added alias '%s' for host '%s'", host->alias[ix], host->name));
 			return;
 		}
 	}

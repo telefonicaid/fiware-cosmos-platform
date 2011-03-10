@@ -32,6 +32,7 @@ public:
 	int     hosts();
 	Host*   insert(Host*);
 	Host*   insert(const char* name, const char* ip);
+	bool    remove(const char* name);
 	Host*   lookup(const char* ip);
 	bool    match(Host* host, const char* ip);
 	void    aliasAdd(Host* host, const char* alias);

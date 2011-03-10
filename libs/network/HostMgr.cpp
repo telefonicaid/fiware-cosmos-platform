@@ -156,8 +156,7 @@ Host* HostMgr::insert(Host* hostP)
 		}
 	}
 
-	LM_X(1, ("realloc host vector (%d hosts not enough) ...", size));
-	return NULL;
+	LM_RE(NULL, ("Please realloc host vector (%d hosts not enough) ...", size));
 }
 
 
@@ -320,6 +319,43 @@ void HostMgr::aliasAdd(Host* host, const char* alias)
 	}
 
 	LM_W(("Unable to add alias '%s' to host '%s' - no room in alias vector", alias, host->name));
+}
+
+
+
+/* ****************************************************************************
+*
+* remove - 
+*/
+bool HostMgr::remove(const char* name)
+{
+	Host*          hostP;
+	unsigned int   ix;
+
+	hostP = lookup(name);
+	if (hostP == NULL)
+		LM_RE(false, ("Host '%s' not in list"));
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (hostV[ix] != hostP)
+			continue;
+
+		if (hostP->name != NULL)
+			free(hostP->name);
+
+		if (hostP->ip != NULL)
+			free(hostP->ip);
+
+		LM_TODO(("Also free up aliases ..."));
+
+		free(hostP);
+		hostV[ix] = NULL;
+
+		return true;
+	}
+
+	LM_RE(false, ("host pointer reurned from lookup not found ... internal bug!"));
 }
 
 

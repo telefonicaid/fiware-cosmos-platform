@@ -568,7 +568,7 @@ namespace ss {
 		
 #pragma mark -
 	
-	ProcessCompact::ProcessCompact( CompactSubTask * _compactSubTask )
+	ProcessCompact::ProcessCompact( CompactSubTask * _compactSubTask ) : ProcessItem( ProcessItem::pure_process )
 	{
 		compactSubTask = _compactSubTask;
 

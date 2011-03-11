@@ -9,23 +9,11 @@ namespace ss
 {
 	
 	static ProcessManager *processManager;
-	
-	class ProcessManagerRunInfo
-	{
-	public:
-		
-		int id;
-		ProcessManager* processManager;
-	};
-	
+
 	void *run_thread_process_manager(void*p)
 	{
-		ProcessManagerRunInfo* tmp = (ProcessManagerRunInfo*) p;
-
-		tmp->processManager->runThread( tmp->id );
-		
-		delete tmp;
-		
+		ProcessManager* tmp = (ProcessManager*) p;
+		tmp->runThread();
 		return NULL;
 	}
 	
@@ -43,27 +31,13 @@ namespace ss
 	
 	ProcessManager::ProcessManager ( )
 	{
-		// Take the num of process from setup
+		// Take the num of process from setup and init the current number of concurrent process
 		num_processes = SamsonSetup::shared()->num_processes;
+		num_current_processes = 0;
 		
-		// Id counter to assign a new id to each process
-		id = 0;
-		
-		// Pointers to the running items
-		runing_item = (ProcessItem**) malloc( sizeof( ProcessItem * ) * num_processes );
-		
-		// Runt he threads
-		for (int i = 0 ; i < num_processes ; i++)
-		{
-			runing_item[i] = NULL;
-			pthread_t t;
-			
-			ProcessManagerRunInfo *tmp = new ProcessManagerRunInfo();
-			tmp->id = i;
-			tmp->processManager = this;
-			
-			pthread_create(&t, NULL, run_thread_process_manager, tmp);
-		}
+		// Run main thread
+		pthread_t t;
+		pthread_create(&t, NULL, run_thread_process_manager, this);
 		
 	}
 	
@@ -71,14 +45,18 @@ namespace ss
 	{
 		token.retain();
 		
-		// Give an id to each ProcessItem
-		item->id_processItem =  id++;
-		
-		items.push_back( item );
-		
+		switch (item->type) {
+			case ProcessItem::pure_process:
+				items_pure_process.push_back( item );		// Insert in the list
+				break;
+			case ProcessItem::data_generator:
+				items_data_generator.push_back( item );		// Insert in the list
+				break;
+		}
+
 		token.release();
 		
-		stopper.wakeUp();
+		stopper.wakeUp();				// Wake up main thread to see if it is necessary to runa  new thread
 		
 	}
 	
@@ -86,44 +64,56 @@ namespace ss
 	 Function executed by all threads running things
 	 */
 	
-	void ProcessManager::runThread(int id)
+	void ProcessManager::runThread()
 	{
 		while(true)
 		{
-			// Get the next element to process
-			ProcessItem *item = getNextItemToProcess();
 			
-			runing_item[id] = item;	// For debuggin
+			// Stop until there are less current process than allowed
+			while( num_current_processes >= num_processes )
+				stopper.stop();
 			
-			// Execute
-			item->run();
+			// Get the next process item to process
+			ProcessItem * item = NULL;
+			while( !item )
+			{
+				// Get the next item to process ( protect with a mutex )
+				token.retain();
+				
+				item = items_pure_process.extractFront();
+				if( !item )
+					item = items_data_generator.extractFront();
+				
+				token.release();
 
-			runing_item[id] = NULL;	// For debuggin
+				if( !item )
+					stopper.stop();	// Stop this thread
+			}
+
+			// Create a thread to run this process
+			token.retain();
+			item->processManager =  this;	// Set a pointer to me to be notified
+			running_items.insert( item );
+			num_current_processes++;
+			token.release();
+
+			// Run this item in a separate thread
+			item->runInBackground();
 			
-			// Notify about the end of the execution
-			item->notifyFinishToDelegate();
 		}
 	}
 	
-	/**
-	 Get the next item to process
-	 */
 	
-	ProcessItem * ProcessManager::getNextItemToProcess()
+	void ProcessManager::notifyFinishProcessItem( ProcessItem *item )
 	{
+		token.retain();
 		
-		while( true )
-		{
-			// Get the next item to process ( protect with a mutex )
-			token.retain();
-			ProcessItem * item = items.extractFront();
-			token.release();
-			
-			if( item )
-				return item;
-			
-			stopper.stop();
-		}
+		running_items.erase(item);
+		num_current_processes--;
+		
+		token.release();
+		
+		stopper.wakeUp();
 		
 	}
 	
@@ -137,17 +127,10 @@ namespace ss
 		
 		token.retain();
 		
-		for (int i = 0 ; i < num_processes ; i++)
-		{
-			output << "[";
-			if( runing_item[i] )
-				output << runing_item[i]->getStatus();
-			else
-				output << "Idle";
-			output << "] ";
-		}
+		for ( std::set<ProcessItem*>::iterator i = running_items.begin () ; i != running_items.end() ; i++ )
+			output << "[" << (*i)->getStatus() << "] ";
 		
-		output << " ( " << items.size() << " queued processes )";
+		output << " ( " << items_pure_process.size()+items_data_generator.size() << " queued processes )";
 		
 		token.release();
 		

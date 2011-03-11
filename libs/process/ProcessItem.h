@@ -4,6 +4,7 @@
 
 #include <string>
 #include <sstream>
+#include "Error.h"			// au::Error
 
 /**
  
@@ -19,6 +20,7 @@ namespace ss {
 
 	
 	class ProcessItem;
+	class ProcessManager;
 	
 	/**
 	 Delegate interface to receive notifications about finished ProcessItems
@@ -26,13 +28,23 @@ namespace ss {
 	
 	class ProcessManagerDelegate
 	{
+		
 	public:
 		virtual void notifyFinishProcess( ProcessItem * item ) = 0;
+		
 	};
 	
 	
 	class ProcessItem  
 	{
+
+	public:
+		
+		// Pointer to the process manager to notify that we are finished
+		ProcessManager *processManager;
+
+	private:
+		
 		// Delegate to notify when finishing
 		ProcessManagerDelegate * delegate;
 
@@ -40,78 +52,52 @@ namespace ss {
 		std::string status;
 		
 	protected:
+		
 		double progress;		// Progress of the operation ( if internally reported somehow )
+		
 	public:
 		
-		// Error management
-		bool error;
-		std::string error_message;
+		au::Error error;		// Error management
 
 		
-		// Identifier in the Process manager ( for debuggin mainly )
-		size_t id_processItem;
-		
-		
-		void setError( std::string _error_message )
+		typedef enum	
 		{
-			error = true;
-			error_message = _error_message;
-		}
+			data_generator,		// Any operation that generates data ( halt if output memory is not available )
+			pure_process		// Any operation with no output that only process data ( necer halt )
+			
+		} ProcessManagerItemType;
+		
+		ProcessManagerItemType type;
 		
 	public:
 
 		size_t component;		// Used by clients to indentify the component inside delegate to receive notiffication
 		size_t tag;				// Used by clients to identify element inside delegate
 		size_t sub_tag;			// Used by clients to identify sub-element inside delegate
+
+		// Constructor with or without a delegate
 		
-		ProcessItem( ProcessManagerDelegate * _delegate )
-		{
-			delegate = _delegate;
-			error =  false;	// No error by default
-			
-			status_letter =  "R";
-			status = "unknown";	// Default message for the status
-			
-			progress = 0;	// Initial progress to "0"
-		}
+		ProcessItem( ProcessManagerItemType type );
 		
+		// Status management
 		
+		void setStatus(std::string _status);
+		void setStatusLetter( std::string _status_letter);
 		std::string getStatus();
 		
-		void setStatus(std::string _status)
-		{
-			status =  _status;
-		}
+		// Assign the delegate begore constructor
+		void setProcessManagerDelegate( ProcessManagerDelegate * _delegate );
 		
-		void setStatusLetter( std::string _status_letter)
-		{
-			status_letter = _status_letter;
-		}
-		
-		ProcessItem()
-		{
-			delegate = NULL;
-			error =  false;	// No error by default
-		}
-		
-		void setProcessManagerDelegate( ProcessManagerDelegate * _delegate )
-		{
-			delegate = _delegate;
-		}
-		
-		void notifyFinishToDelegate()
-		{
-			if( delegate )
-				delegate->notifyFinishProcess(this);
-			else
-			{
-				// Autodelete if there is no delegate to handle notification
-				delete this;
-			}
-		}
+		// Notify delegate if any
+		void notifyFinishToDelegate();		
 		
 		// What to do when processor is available
 		virtual void run()=0;
+
+		// Function to create a new thread and run "run" in background
+		void runInBackground();
+		
+		
 	};
 	
 

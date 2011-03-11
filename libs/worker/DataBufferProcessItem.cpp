@@ -27,7 +27,7 @@
 
 namespace ss {
 	
-	DataBufferProcessItem::DataBufferProcessItem( QueueuBufferVector * _bv )
+	DataBufferProcessItem::DataBufferProcessItem( QueueuBufferVector * _bv ) : ProcessItem( ProcessItem::pure_process )
 	{
 		bv = _bv;
 		

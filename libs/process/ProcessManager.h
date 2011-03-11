@@ -6,6 +6,7 @@
 #include <list>					// std::list
 #include "au_map.h"				// au::list
 #include "samson.pb.h"			// ss::network::...
+#include <set>					// std::set
 
 /**
  ProcessManager
@@ -16,6 +17,9 @@
  At the moment it is implemented as a simple list of pending things.
  It could be improved implementing a priority level indicator
  
+ Bug known: If stopper and token are disconnected, there is a possibility to not wake up processes if a task finish exactly after a new task
+ is squeduled and the wake up command is executed. It is a minor stuff is multiple operations are performed
+ 
  */
 
 namespace ss {
@@ -25,45 +29,38 @@ namespace ss {
 	class ProcessManager
 	{
 		
-		au::list<ProcessItem> items;		//	List of items to be executed
+		au::list<ProcessItem> items_pure_process;		// List of items to be executed ( pure_process items )
+		au::list<ProcessItem> items_data_generator;		// List of items to be executed ( data_generator items )
 
-		au::Token token;					// Token to unique access the items list
-		au::Stopper stopper;				// Stopper for the threads where there is nothing to do
+		au::Token token;							// Token to unique access the items list
+		au::Stopper stopper;						// Stopper for the threads where there is nothing to do
 		
-		int num_processes;					// Number of simultaneous process running ( from setup )
-
-		size_t id;							// Counter to give an id to each process
+		int num_processes;							// Number of maximum simultaneous process running ( from setup )
+		int num_current_processes;					// Current number of simltaneous process
 		
-		ProcessManager ( );					// Private constructor ( singleton )
-
-		ProcessItem **runing_item;			// Pointers to the running items
+		std::set<ProcessItem*> running_items;		// Set of items currently being executed
 		
-	public:
-		
-		static void init();
-		static ProcessManager *shared();
-
-		void addProcessItem( ProcessItem *item );
-
-		std::string getStatus();
-		
-		// Fill information
-		void fill(network::WorkerStatus*  ws);
-		
-		int getNumProcess()
-		{
-			return num_processes;
-		}
-		
-		
-	private:
-		
-		ProcessItem * getNextItemToProcess();
+		ProcessManager ( );							// Private constructor ( singleton )
 
 		
 	public:
-		void runThread(int id);	// Only executed by thread_create
+		
+		static void init();							// Unique function to init this where there is only a single thread
+		static ProcessManager *shared();			// Common function to access the singleton implementation
 
+		void addProcessItem( ProcessItem *item );	// Function to add a Process. It will be notifier by delegate mechanism
+
+		std::string getStatus();					// Function to get a string version of the internal status ( running processes )
+		
+		void fill(network::WorkerStatus*  ws);		// Function to fill part of the message sent to the controller ( informing about status )
+				
+	public:
+		
+		void runThread( );					// Only executed by thread_create
+		
+	public:
+		
+		void notifyFinishProcessItem( ProcessItem *item );	// Notification from that this ProcessItem has finished
 		
 	};
 

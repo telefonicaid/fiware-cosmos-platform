@@ -111,7 +111,7 @@ namespace ss
 					flushBuffer();	// Flush the generated buffer with new key-values
 					break;
 				default:
-					setError("System error: Unknown code in the isolated process communication");
+					error.set("System error: Unknown code in the isolated process communication");
 					break;
 			}
 		}
@@ -122,10 +122,10 @@ namespace ss
 		 enum State
 		 {
 		 definition,				// Defining the task
-		 no_memory,				// Waiting for a shared memory item to be assigned
-		 ready_to_load_inputs,	// Ready to load data from inputs
+		 no_memory,					// Waiting for a shared memory item to be assigned
+		 ready_to_load_inputs,		// Ready to load data from inputs
 		 loading_inputs,			// Loading data from disk
-		 ready_to_run,			// Ready to be process by any ProcessAssistant
+		 ready_to_run,				// Ready to be process by any ProcessAssistant
 		 running					// It has beent taken by a ProcessAssistant (should report finish)
 		 };
 		 

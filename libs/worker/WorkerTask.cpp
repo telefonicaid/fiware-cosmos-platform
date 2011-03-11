@@ -289,8 +289,8 @@ namespace ss
 				delete st;
 
 				// Get the possible error from the process execution
-				if( i->error )
-					setError(i->error_message);
+				if( i->error.isActivated() )
+					setError(i->error.getMessage() );
 				
 				check();
 				

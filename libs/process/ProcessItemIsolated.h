@@ -8,7 +8,7 @@
 
 namespace ss {
 	
-	class ProcessItemIsolated : public ProcessItem , public Tracer , public OperationController
+	class ProcessItemIsolated : public  ProcessItem, public Tracer , public OperationController
 	{
 		typedef enum 
 		{
@@ -29,6 +29,10 @@ namespace ss {
 		void run();
 		
 	public:
+		
+		
+		// Constructor
+		ProcessItemIsolated();
 		
 		// Function to be implemented ( running on a different process )
 		virtual void runIsolated() = 0;

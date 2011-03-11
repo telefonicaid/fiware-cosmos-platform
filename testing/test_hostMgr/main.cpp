@@ -7,6 +7,7 @@
 #include "Host.h"               // Host
 #include "HostMgr.h"            // Network
 
+#include <stdlib.h>             // free()
 
 
 /* ****************************************************************************

@@ -2,8 +2,20 @@ all:
 	./scripts/prepareBuild
 	make -C build
 
-test:
+
+test: 	 	ctest itest
+
+
+itest:		test_processes
+
+
+ctest:
 	make test -C build
+
+
+test_processes:
+	./scripts/test_processes
+
 
 package: all
 	make -C build package 

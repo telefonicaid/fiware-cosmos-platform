@@ -247,7 +247,7 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 	if ((workers > 20) || (workers < 0))
 		LM_X(1, ("bad number of workers (%d)", workers));
 	if (endpoints < 2 * workers + 5)
-		LM_X(1, ("bad number of workers (%d) and endpoints (%d)", workers, endpoints));
+		LM_X(1, ("bad relation of workers (%d) and endpoints (%d)", workers, endpoints));
 
 	packetReceiver         = NULL;
 	dataReceiver           = NULL;

@@ -6,15 +6,15 @@ all:
 test: 	 	ctest itest
 
 
-itest:		test_processes
+itest:		test_local_processes
 
 
 ctest:
 	make test -C build
 
 
-test_processes:
-	./scripts/test_processes
+test_local_processes:
+	./scripts/test_local_processes
 
 
 package: all

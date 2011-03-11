@@ -10,6 +10,8 @@ echo "Samson Process test in progress" > $logFile
 date >> $logFile
 
 
+xterm -geometry 120x6+0+0 -e ./scripts/samsonProcessesSupervise &
+xtermpid=$!
 
 # #############################################################################
 #
@@ -32,6 +34,7 @@ trap interrupted SIGINT
 #
 function cleanup
 {
+	kill $xtermpid
 	samsonKiller all > /dev/null
 	rm -f $PLATFORM_PROCESSES
 }
@@ -61,7 +64,8 @@ function check
 
 	if [ "$REPLY" != "y" ] && [ "$REPLY" != "Y" ]
 	then
-		echo Test terminated by user
+		echo
+		echo "  Test interrupted by user - reported as error"
 		cleanup
 		exit 1
 	fi
@@ -107,6 +111,7 @@ function testHeader()
 # Preparing localhost to run test
 #
 mainHeader
+echo xtermpid=$xtermpid
 procs=$(ps aux | egrep samson[WSC])
 
 if [ -f $PLATFORM_PROCESSES ] || [ "$procs" != "" ]

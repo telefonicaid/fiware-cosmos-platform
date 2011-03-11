@@ -1,0 +1,27 @@
+#!/bin/bash
+
+
+
+# #############################################################################
+#
+# samsonProcesses -
+#
+function samsonProcesses
+{
+	echo '------------------------ Samson Platform process list ------------------------'
+	ps aux | egrep '  [0-9]*:[0-9]* samsonWorker|  [0-9]*:[0-9]* samsonController|  [0-9]*:[0-9]* samsonSpawner' | grep -v '<defunct>'
+	echo '------------------------------------------------------------------------------'
+}
+
+
+
+# #############################################################################
+#
+# looping ...
+#
+while /bin/true
+do
+	clear
+	samsonProcesses
+	sleep 1
+done

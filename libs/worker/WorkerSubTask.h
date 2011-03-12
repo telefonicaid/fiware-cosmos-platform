@@ -16,8 +16,17 @@ namespace ss
 	class Buffer;
 	
 	/**
-	 Subtask inside WorkTask.
-	 It could be a generator , map , reduce , organizer , parser , etc...
+	 ------------------------------------------------------------------------------------------------
+	 WorkerSubTask is a subclass describing a particular operation executed inside a WorkerTask
+		It could be a generator , map , reduce , organizer , parser , etc...
+		All the sub-tasks is the SAMSON ecosystem are divided in three steps:	
+			- Memory request
+			- Read operations
+			- Process item
+	 
+		Rigth now, these three steps are executed sequentially. Three function return the necessitied 
+		for each particular subtask.
+	 ------------------------------------------------------------------------------------------------
 	 */
 	
 	class WorkerSubTask
@@ -27,13 +36,16 @@ namespace ss
 
 	public:
 
-		std::string description;// Short description for debuggin
+		std::string description;	// Short description for debuggin
 				
-		WorkerTask *task;
-		size_t id;
+		WorkerTask *task;			// Pointer to the parent task
+		size_t id;					// ID of the parent task
 		
+		// Constructor with the parent task
 		WorkerSubTask( WorkerTask *_task );
-		virtual ~WorkerSubTask(){};		// Destructor has to be virtual ( calling delete from this parent class )
+		
+		// Destructor has to be virtual ( calling delete from this parent class )
+		virtual ~WorkerSubTask(){};		
 		
 		// Function to get the memory request ( if any )
 		virtual MemoryRequest *_getMemoryRequest()
@@ -41,13 +53,13 @@ namespace ss
 			return NULL;
 		}
 		
-		// Function to get all the read operations necessary for this task
+		// Function to get all the read operations necessary for this task ( if any )
 		virtual std::vector< FileManagerReadItem*>* _getFileMangerReadItems()
 		{
 			return NULL;
 		}
 		
-		// Function to get the ProcessManagerItem to run
+		// Function to get the ProcessManagerItem to run ( if necessary )
 		virtual ProcessItem *_getProcessItem()
 		{
 			return NULL;
@@ -71,27 +83,36 @@ namespace ss
 		
 	};
 	
-	
-	// Unique sub task for generator
+	/*
+	------------------------------------------------------------------------------------------------
+	 GeneratorSubTask
+	 
+	 Specific sub-tasks for generator tasks
+
+	------------------------------------------------------------------------------------------------
+	*/
 	
 	class GeneratorSubTask : public WorkerSubTask
 	{
 		
 	public:
 		
-		GeneratorSubTask( WorkerTask * task  ) : WorkerSubTask( task  )
-		{
-		   description = "G"; // Generator
-		}
+		GeneratorSubTask( WorkerTask * task  );
 		
 		// Function to get the ProcessManagerItem to run
 		ProcessItem * _getProcessItem();
-		
 	};
-
 	
-	// SubTask to organize any map, reduce, parserOut operations
-	
+	/*
+	 ------------------------------------------------------------------------------------------------
+	 OrganizerSubTask
+	 
+		Tasks that organize the operationsSubTasks necessary to process a particular data set
+		It reads the "info" vectors for ech involved file and decides how to organize
+		groups of hash-groups fo efficiency
+	 ------------------------------------------------------------------------------------------------
+	 */
+		
 	class OrganizerSubTask : public WorkerSubTask
 	{		
 	public:
@@ -112,7 +133,14 @@ namespace ss
 	};	
 
 	
-	// Subtask that runs a particular sub-tasks like a map,reduce or parserOut
+	/*
+	 ------------------------------------------------------------------------------------------------
+	 OperationSubTask
+	 
+		Basic task for a map, reduce, parseOut
+	 
+	 ------------------------------------------------------------------------------------------------
+	 */
 		 
 	 class OperationSubTask : public WorkerSubTask
 	 {
@@ -142,7 +170,15 @@ namespace ss
 
 	
 	
-	
+	/*
+	 ------------------------------------------------------------------------------------------------
+	 ParserSubTask
+	 
+	 Specific sub-tasks for parser tasks
+	 
+	 ------------------------------------------------------------------------------------------------
+	 */
+		
 	
 	// Subtask that runs a particular sub-tasks like a map,reduce or parserOut
 	
@@ -171,8 +207,15 @@ namespace ss
 	};	
 		
 	
-	// Subtask that runs system - operation ( like samson compact )
-	
+	/*
+	 ------------------------------------------------------------------------------------------------
+	 ParserSubTask
+	 
+	 Specific sub-tasks system operations ( like compact )
+	 
+	 ------------------------------------------------------------------------------------------------
+	 */
+		
 	class SystemSubTask : public WorkerSubTask
 	{		
 	public:
@@ -188,8 +231,6 @@ namespace ss
 	private:
 		
 		FileManagerReadItem * getFileMangerReadItem( ProcessAssistantSharedFile* file );
-		
-		
 	};	
 
 	/**

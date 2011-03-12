@@ -9,6 +9,7 @@
 #include "samson.pb.h"			// ss::network::...
 #include "samson/Environment.h"	// ss::Environment
 #include <set>					// std::set
+#include "Error.h"				// au::Error
 
 #define WORKER_TASK_COMPONENT_PROCESS				1
 #define WORKER_TASK_COMPONENT_DATA_BUFFER_PROCESS	2
@@ -64,8 +65,7 @@ namespace ss {
 		ProcessAssistantSharedFileCollection *reduceInformation;
 		
 		// Error management
-		bool error;
-		std::string error_message;
+		au::Error error;
 		
 		// Operation to be executed
 		Operation::Type type;			// Type of operation
@@ -114,8 +114,7 @@ namespace ss {
 		void setError(std::string _error_message)
 		{
 			// Set the error of the operation
-			error = true;
-			error_message = _error_message;
+			error.set( _error_message );
 
 			// Send the confirmation to the controller
 			sendCompleteTaskMessageToController();

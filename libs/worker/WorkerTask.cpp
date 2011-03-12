@@ -75,9 +75,6 @@ namespace ss
 		complete_message->set_type( network::WorkerTaskConfirmation::complete );
 		
 		
-		// By default no error
-		error = false;
-
 		status = ready;
 		
 		
@@ -143,7 +140,7 @@ namespace ss
 		// Give the task an id
 		subTask->id = subTaskId++;
 		
-		if( status == error)
+		if( error.isActivated() )
 		{
 			delete subTask;
 			return;
@@ -265,7 +262,7 @@ namespace ss
 		
 		// Spetial confition if
 		if( status != completed)
-			if( error )
+			if( error.isActivated() )
 			{
 				status = completed;
 				
@@ -620,10 +617,10 @@ namespace ss
 		// Copy all the information from the prepared message
 		confirmation->CopyFrom(*finish_message);
 		
-		if( error )
+		if( error.isActivated() )
 		{
 			confirmation->set_type( network::WorkerTaskConfirmation::error );
-			confirmation->set_error_message( error_message );
+			confirmation->set_error_message( error.getMessage() );
 		}
 		else
 		{
@@ -643,10 +640,10 @@ namespace ss
 		// Copy all the information from the prepared message
 		confirmation->CopyFrom(*complete_message);
 		
-		if( error )
+		if( error.isActivated() )
 		{
 			confirmation->set_type( network::WorkerTaskConfirmation::error );
-			confirmation->set_error_message( error_message );
+			confirmation->set_error_message( error.getMessage() );
 		}
 		else
 		{

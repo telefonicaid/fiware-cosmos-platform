@@ -40,6 +40,7 @@ xcode:
 reset_svn:
 	sudo rm -Rf build/*
 	sudo rm -Rf xcode_proj
+	
 
 uninstall:
 	sudo rm -f /usr/local/bin/samson* 
@@ -52,6 +53,7 @@ reset:
 	sudo rm -f libs/common/samson.pb.*
 	sudo rm -f libs/data/data.pb.*
 	sudo rm -Rf /usr/local/include/samson
+	sudo rm -f testing/module_test/Module.*
 
 module:
 	make -C build/apps/samsonModuleParser

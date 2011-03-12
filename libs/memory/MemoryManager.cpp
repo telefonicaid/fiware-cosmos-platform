@@ -355,6 +355,16 @@ namespace ss
 		
 		return per;
 	}
+
+	size_t MemoryManager::getMemoryOutput()
+	{
+		return ( memory - shared_memory_num_buffers*shared_memory_size_per_buffer )/2;
+	}
+	
+	size_t MemoryManager::getMemoryInput()
+	{
+		return ( memory - shared_memory_num_buffers*shared_memory_size_per_buffer )/2;
+	}
 	
 	
 	bool MemoryManager::availableMemoryOutput()

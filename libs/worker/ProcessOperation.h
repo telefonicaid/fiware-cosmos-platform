@@ -34,6 +34,11 @@ namespace ss {
 		void runMap( KVWriter *writer );
 		void runReduce( KVWriter *writer );
 		void runParserOut(TXTWriter *writer );
+	
+		
+	private:
+		// Get an instance of the operation and setup correctly ( environment, tracer, etc )
+		OperationInstance* getOperationInstance();
 		
 	};
 	

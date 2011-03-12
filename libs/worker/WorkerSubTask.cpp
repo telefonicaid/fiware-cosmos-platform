@@ -95,6 +95,11 @@ namespace ss
 	
 #pragma mark GeneratorSubTask
 	
+	GeneratorSubTask::GeneratorSubTask(WorkerTask * task ) : WorkerSubTask( task  )
+	{
+		description = "G";
+	}
+	
 	ProcessItem * GeneratorSubTask::_getProcessItem()
 	{
 		return new ProcessGenerator( task );
@@ -136,10 +141,20 @@ namespace ss
 		reduceInformation->setup();
 		
 		// Organize the reduce in multiple WorkerTaskItems to process each set of hash-groups
+		// Division is done in such a way that any of the parts do not get overloaded
+
+		// Number of paralel processes in this system
 		int num_process = SamsonSetup::shared()->num_processes;
-		int max_num_hgs = KVFILE_NUM_HASHGROUPS / num_process;	// Minimum num_process divisions for force multicore approach
+
+		// Maximum size per hash-group
+		size_t max_size_per_group = reduceInformation->total_size / num_process;
 		
-		size_t max_item_content_size = (SamsonSetup::shared()->memory/4) - reduceInformation->total_num_input_files*max_num_hgs*sizeof(KVInfo) - sizeof(KVHeader);
+		// Another limit for memory reasons
+		size_t max_size_per_group2 = (SamsonSetup::shared()->memory/4) - reduceInformation->total_num_input_files*KVFILE_NUM_HASHGROUPS*sizeof(KVInfo) - sizeof(KVHeader);
+		if( max_size_per_group2 < max_size_per_group)
+			max_size_per_group = max_size_per_group2;
+		
+		size_t limit_size_per_group = MemoryManager::shared()->getMemoryInput();
 		
 		// Create necessary reduce operations
 		int hg = 1;												// Evaluating current hash group	
@@ -150,7 +165,13 @@ namespace ss
 		{
 			size_t current_hg_size = reduceInformation->size_of_hg[hg];
 			
-			if( ( ( total_size + current_hg_size  ) > max_item_content_size ) || (hg - item_hg_begin ) > max_num_hgs )
+			if( current_hg_size > limit_size_per_group )
+			{
+				task->setError("Max size for a hash-group exedeed. Operation not suported");
+				return NULL;
+			}
+			
+			if( ( ( total_size + current_hg_size  ) > max_size_per_group ) )
 			{
 				
 				 if( total_size > 0 )

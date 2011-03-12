@@ -8,11 +8,11 @@ SET (HEADERS
 	WorkerSubTask.h
 	ProcessBase.h
 	ProcessGenerator.h
-	ProcessOrganizer.h
+	ProcessCompact.h
 	ProcessOperation.h
 	ProcessParser.h
-	ProcessParserOut.h
 	ProcessWriter.h
+	KVInputVector.h
 )
 
 SET (SOURCES
@@ -24,11 +24,11 @@ SET (SOURCES
         WorkerSubTask.cpp
         ProcessBase.cpp
 	ProcessGenerator.cpp
-	ProcessOrganizer.cpp
+	ProcessCompact.cpp
 	ProcessOperation.cpp
 	ProcessParser.cpp
-	ProcessParserOut.cpp
 	ProcessWriter.cpp
+	KVInputVector.cpp
 )
 
 # Include directories

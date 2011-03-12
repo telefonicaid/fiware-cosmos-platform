@@ -74,9 +74,8 @@ namespace ss {
 	typedef unsigned char uint8;
 	
 	/****************************************************************
-	 Template class for the KVInfo structure
+	 KVInfo structure to keep information about size and # kvs
 	 ****************************************************************/
-	
 	
 	struct KVInfo
 	{
@@ -140,6 +139,10 @@ namespace ss {
 		}
 		
 	};	
+	
+	/***********************************************************************
+	 FullKVInfo (64 bits) structure to keep information about size and # kvs
+	 ***********************************************************************/
 	
 	struct FullKVInfo
 	{
@@ -357,7 +360,6 @@ namespace ss {
 		int hg;
 		size_t offset;
 		
-		
 		ProcessSharedFile()
 		{
 			hg = 0;
@@ -541,6 +543,8 @@ namespace ss {
 		
 		size_t* size_of_hg;			// Vector with the total size per hash_group ( necessary when organizing reduce )
 		
+		size_t total_size;
+		
 		ProcessAssistantSharedFileCollection( const network::WorkerTask & workerTask  )
 		{
 			// Get the number of inputs & files per input
@@ -571,11 +575,14 @@ namespace ss {
 				file[i]->setup();
 			
 			// Compute the total size per hash group	
+			total_size = 0;
 			for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
 			{
 				size_of_hg[hg] = 0;
 				for (int f = 0 ; f < total_num_input_files ; f++)
 					size_of_hg[hg] += file[f]->info[hg].size;
+				
+				total_size += size_of_hg[hg];
 			}
 		}
 		

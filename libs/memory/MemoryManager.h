@@ -229,6 +229,9 @@ namespace ss {
 		size_t getUsedMemoryInput();
 		size_t getUsedMemoryOutput();
 
+		size_t getMemoryInput();
+		size_t getMemoryOutput();
+		
 		int getNumBuffers();
 		int getNumBuffersInput();
 		int getNumBuffersOutput();

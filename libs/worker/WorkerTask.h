@@ -152,7 +152,6 @@ namespace ss {
 		
 #pragma mark FileNames
 		
-		std::string newFileName( std::string queue );
 		std::string newFileName( );
 
 #pragma mark Manager SubTasks

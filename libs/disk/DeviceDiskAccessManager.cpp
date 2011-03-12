@@ -22,9 +22,6 @@ namespace ss {
 		// We have removed the FileManager cache so read operations over save is assured sice read operations arrives latter that write operations
 		// If multithread is reactivated then, we have to make sure read operations wait until write has finished
 		num_threads = 1;	
-
-		// Set the number of running operations to 0
-		running_operations = 0;
 		
 		// Create the thread for this disk operations
 		for (int i  =0 ; i < num_threads ; i++)
@@ -37,10 +34,10 @@ namespace ss {
 		
 		lock.lock();
 		
-		if( operation.size() > 0)
+		if( pending_operations.size() > 0)
 		{
-			o = operation.front();
-			operation.pop_front();
+			o = pending_operations.extractFront();
+			running_operations.insert( o );
 		}
 		
 		lock.unlock();
@@ -55,17 +52,15 @@ namespace ss {
 			
 			if( o )
 			{
-				lock.lock();
-				running_operations++;
-				lock.unlock();
 				
 				
 				run (o);
-				delete o;
 				
 				lock.lock();
-				running_operations--;
+				running_operations.erase( o );
 				lock.unlock();
+				delete o;
+				
 			}
 			else
 			{
@@ -80,7 +75,7 @@ namespace ss {
 	{
 		
 		lock.lock();
-		operation.push_back( o );	
+		pending_operations.push_back( o );	
 		lock.unlock();
 		
 		// Wake up the thread if necessary
@@ -185,7 +180,16 @@ namespace ss {
 	{
 		std::ostringstream output;
 		lock.lock();
-		output << "Run:" << running_operations << " Wait:" << operation.size() << " Statis:" << statistics.getStatus();
+
+		output << "\n\t\tRunning:  ";
+		for ( std::set<DiskOperation*>::iterator i = running_operations.begin() ; i != running_operations.end() ; i++)
+			output << "\n\t\t\t" << (*i)->getDescription();
+
+		output << "\n\t\tPending:  ";
+		for ( au::list<DiskOperation>::iterator i = pending_operations.begin() ; i != pending_operations.end() ; i++)
+			output << (*i)->getShortDescription() << ",";
+		
+		output << "\n\t\tStatis:   " << statistics.getStatus();
 		lock.unlock();
 		return output.str();
 	}

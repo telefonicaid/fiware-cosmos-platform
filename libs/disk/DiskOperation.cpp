@@ -86,6 +86,25 @@ namespace ss {
 		return o.str();		
 	}
 
+	std::string DiskOperation::getShortDescription()
+	{
+		std::ostringstream o;
+		
+		switch (type) {
+			case write:
+				o << "[W]";
+				break;
+			case read:
+				o << "[R]";
+				break;
+			case remove:
+				o << "[X]";
+				break;
+		}
+		
+		
+		return o.str();		
+	}
 	
 	void DiskOperation::setError( std::string message )
 	{

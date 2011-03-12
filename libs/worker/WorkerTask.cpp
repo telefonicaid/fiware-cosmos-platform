@@ -305,7 +305,7 @@ namespace ss
 				
 				// New file to be saved
 				std::string queue_name = tmp->bv->queue->name();
-				std::string fileName = newFileName( queue_name );
+				std::string fileName = newFileName( );
 				
 				// Notify the controller that a new file is created
 				sendAddFileMessageToController( tmp->bv , fileName , tmp->buffer );
@@ -696,18 +696,6 @@ namespace ss
 #pragma mark FileName
 	
 	// Get a new file Name for a file
-	
-	std::string WorkerTask::newFileName( std::string queue )
-	{
-		std::ostringstream fileName;
-		
-		int worker_id = taskManager->worker->_myWorkerId; 
-		
-		//fileName << SamsonSetup::shared()->dataDirectory << "/" << "file_" << worker_id << "_" << task_id << "_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000;
-		fileName << worker_id << "_" << task_id << "_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000 << rand()%10000;
-		
-		return fileName.str();
-	}
 
 	std::string WorkerTask::newFileName( )
 	{

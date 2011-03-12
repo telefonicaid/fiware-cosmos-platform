@@ -4,7 +4,8 @@
 
 #include <string>
 #include <sstream>
-#include "Error.h"			// au::Error
+#include "Error.h"				// au::Error
+#include "Stopper.h"			// au::Stopper
 
 /**
  
@@ -40,15 +41,28 @@ namespace ss {
 
 	public:
 		
+		typedef enum 
+		{
+			queued,
+			running,
+			halted
+		} ProcessItemStatus;
+		
+		ProcessItemStatus  state;
+		
 		// Pointer to the process manager to notify that we are finished
 		ProcessManager *processManager;
 
 	private:
 		
+		au::Stopper stopper;	// Stopper to block the main thread until output memory is available again
+		
+	private:
+		
 		// Delegate to notify when finishing
 		ProcessManagerDelegate * delegate;
 
-		std::string status_letter;
+		// Information about the status
 		std::string status;
 		
 	protected:
@@ -58,13 +72,11 @@ namespace ss {
 	public:
 		
 		au::Error error;		// Error management
-
 		
 		typedef enum	
 		{
 			data_generator,		// Any operation that generates data ( halt if output memory is not available )
 			pure_process		// Any operation with no output that only process data ( necer halt )
-			
 		} ProcessManagerItemType;
 		
 		ProcessManagerItemType type;
@@ -80,9 +92,7 @@ namespace ss {
 		ProcessItem( ProcessManagerItemType type );
 		
 		// Status management
-		
 		void setStatus(std::string _status);
-		void setStatusLetter( std::string _status_letter);
 		std::string getStatus();
 		
 		// Assign the delegate begore constructor
@@ -96,7 +106,15 @@ namespace ss {
 
 		// Function to create a new thread and run "run" in background
 		void runInBackground();
+
+	protected:
 		
+		void halt();			// command executed inside run() to stop the task until output memory are free again
+		
+	public:
+		
+		void unHalt();			// Method to unhalt the process ( executed from the ProcessManager when output memory is available )
+
 		
 	};
 	

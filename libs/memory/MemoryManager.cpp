@@ -356,6 +356,12 @@ namespace ss
 		return per;
 	}
 	
+	
+	bool MemoryManager::availableMemoryOutput()
+	{
+		return ( getMemoryUsageOutput() < 1.0 );
+	}
+	
 	int MemoryManager::getNumBuffersInput()
 	{
 		return num_buffers_input;

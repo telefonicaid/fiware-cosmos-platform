@@ -102,18 +102,12 @@ namespace ss {
 	{
 		
 		/*
-		 Only flush data if used memory for output is under 100%
-		 Note that temporary, it can be over 100% since data is received masivelly from the network 
-		 or a lot of data is generated from a particular operation ( example generator )
+		 After flushing we check that available memory is under 100%.
+		 Otherwise we halt notifying this to the ProcessManager
 		 */
 		
-		while( MemoryManager::shared()->getMemoryUsageOutput() > 1.0)
-		{
-			setStatusLetter("H");	// Halted for memory
-			sleep(1);
-		}
-		
-		setStatusLetter("F");
+		if( MemoryManager::shared()->getMemoryUsageOutput() >= 1.0)
+			halt();
 		
 #pragma mark ---		
 		
@@ -203,7 +197,6 @@ namespace ss {
 			
 		}
 		
-		setStatusLetter("R");	// Back to running in the other thread
 		
 	}	
 
@@ -212,18 +205,12 @@ namespace ss {
 	{
 		
 		/*
-		 Only flush data if used memory for output is under 100%
-		 Note that temporary, it can be over 100% since data is received masivelly from the network 
-		 or a lot of data is generated from a particular operation ( example generator )
+		 After flushing we check that available memory is under 100%.
+		 Otherwise we halt notifying this to the ProcessManager
 		 */
 		
-		while( MemoryManager::shared()->getMemoryUsageOutput() > 1.0)
-		{
-			setStatusLetter("H");	// Halted for memory
-			sleep(1);
-		}
-		
-		setStatusLetter("F");
+		if( MemoryManager::shared()->getMemoryUsageOutput() >= 1.0)
+			halt();
 		
 #pragma mark ---		
 		

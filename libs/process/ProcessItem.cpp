@@ -12,12 +12,13 @@ namespace ss
 		
 		delegate = NULL;	
 		
-		status_letter =  "R";
 		status = "unknown";	// Default message for the status
 		
-		progress = 0;	// Initial progress to "0"
+		progress = 0;		// Initial progress to "0"
 		
 		processManager = NULL;	// No init of the processManager pointer
+		
+		state = queued;
 	}
 	
 	
@@ -26,7 +27,19 @@ namespace ss
 		int p = progress*100.0;
 		std::ostringstream o;
 		
-		o << status_letter << std::string(":") << status;
+		switch (state) {
+			case queued:
+				o << "Q";
+				break;
+			case running:
+				o << "R";
+				break;
+			case halted:
+				o << "H";
+				break;
+		}
+		
+		o << std::string(":") << status;
 		if ( (p> 0) && (p < 100))
 			o << "(" << p << "%)";
 		return o.str();
@@ -38,10 +51,6 @@ namespace ss
 		status =  _status;
 	}
 	
-	void ProcessItem::setStatusLetter( std::string _status_letter)
-	{
-		status_letter = _status_letter;
-	}
 	
 	void ProcessItem::setProcessManagerDelegate( ProcessManagerDelegate * _delegate )
 	{
@@ -60,7 +69,7 @@ namespace ss
 	}
 	
 	
-	void* runProcessItem( void* p)
+	void* runProcessItem( void* p )
 	{
 		
 		ProcessItem* processItem = (ProcessItem*)p;
@@ -89,6 +98,25 @@ namespace ss
 		pthread_create(&t, NULL, runProcessItem, this);
 	}
 	
+	void ProcessItem::halt()
+	{
+		state = halted;
+		
+		// Notify the ProcessManager about this
+		
+		processManager->notifyHaltProcessItem(this);
+		
+		// Stop this thread in the stopper loop
+		stopper.stop();
+		
+		state = running;
+	}
+	
+	void ProcessItem::unHalt()
+	{
+		// Wake up this process
+		stopper.wakeUp();
+	}
 	
 	
 	

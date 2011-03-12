@@ -36,9 +36,9 @@ namespace ss {
 		au::Stopper stopper;						// Stopper for the threads where there is nothing to do
 		
 		int num_processes;							// Number of maximum simultaneous process running ( from setup )
-		int num_current_processes;					// Current number of simltaneous process
 		
 		std::set<ProcessItem*> running_items;		// Set of items currently being executed
+		au::list<ProcessItem> halted_items;		// Set of items currently being executed but halted
 		
 		ProcessManager ( );							// Private constructor ( singleton )
 
@@ -60,7 +60,9 @@ namespace ss {
 		
 	public:
 		
-		void notifyFinishProcessItem( ProcessItem *item );	// Notification from that this ProcessItem has finished
+		void notifyFinishProcessItem( ProcessItem *item );	// Notification that this ProcessItem has finished
+
+		void notifyHaltProcessItem( ProcessItem *item );	// Notification that this ProcessItem is halted ( blocked until output memory is ready ) 
 		
 	};
 

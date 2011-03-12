@@ -3,7 +3,8 @@
 #include "ProcessManager.h"				// Own interface
 #include "ProcessItem.h"				// ss::ProcessItem
 #include "SamsonSetup.h"				// ss::SamsonSetup
-#include <sstream>				// std::ostringstream
+#include <sstream>						// std::ostringstream
+#include "MemoryManager.h"				// ss::MemoryManager
 
 namespace ss
 {
@@ -33,7 +34,6 @@ namespace ss
 	{
 		// Take the num of process from setup and init the current number of concurrent process
 		num_processes = SamsonSetup::shared()->num_processes;
-		num_current_processes = 0;
 		
 		// Run main thread
 		pthread_t t;
@@ -69,36 +69,68 @@ namespace ss
 		while(true)
 		{
 			
-			// Stop until there are less current process than allowed
-			while( num_current_processes >= num_processes )
-				stopper.stop();
-			
-			// Get the next process item to process
+			// Get the next process item to process ( if CPU slots available )
 			ProcessItem * item = NULL;
-			while( !item )
-			{
-				// Get the next item to process ( protect with a mutex )
-				token.retain();
-				
-				item = items_pure_process.extractFront();
-				if( !item )
-					item = items_data_generator.extractFront();
-				
-				token.release();
+			bool halted_process = false;
 
+			// Get the next item to process ( protect with a mutex )
+			token.retain();
+			
+			
+			if( (int)running_items.size() < num_processes )
+			{
+				// Priority for the pure processes	
+				item = items_pure_process.extractFront();
+				
 				if( !item )
-					stopper.stop();	// Stop this thread
+				{
+
+					if( halted_items.size() > 0 )
+					{
+						// Check if there is output memory prior to continue this execution
+						if( MemoryManager::shared()->availableMemoryOutput() )
+							item = halted_items.extractFront();
+						
+					}
+					else
+						item = items_data_generator.extractFront();
+				}
 			}
 
-			// Create a thread to run this process
-			token.retain();
-			item->processManager =  this;	// Set a pointer to me to be notified
-			running_items.insert( item );
-			num_current_processes++;
+			if( item )
+			{
+				item->processManager =  this;	// Set a pointer to me to be notified
+				running_items.insert( item );
+			}
+			
+			halted_process = (halted_items.size() > 0 );
+			
 			token.release();
 
-			// Run this item in a separate thread
-			item->runInBackground();
+			// Run this item in a separate thread or block until next event
+			if( item )
+			{
+				switch (item->state) {
+					case ProcessItem::queued:
+						item->state = ProcessItem::running;
+						item->runInBackground();
+						break;
+					case ProcessItem::halted:
+						item->state = ProcessItem::running;
+						item->unHalt();
+						break;
+					default:
+						assert(false);
+						break;
+				}
+			}
+			else
+			{
+				if( halted_process )
+					stopper.stop(1);
+				else
+					stopper.stop();
+			}
 			
 		}
 	}
@@ -107,30 +139,51 @@ namespace ss
 	void ProcessManager::notifyFinishProcessItem( ProcessItem *item )
 	{
 		token.retain();
-		
 		running_items.erase(item);
-		num_current_processes--;
-		
 		token.release();
 		
+		// Wake up the main thread to start new threads if necessary
 		stopper.wakeUp();
 		
 	}
 	
-	
-#pragma mark DEBUG
-	
+	void ProcessManager::notifyHaltProcessItem( ProcessItem *item )
+	{
+		token.retain();
+
+		running_items.erase(item);
+		halted_items.push_back(item);
+		
+		token.release();
+		
+		// Wake up the main thread to start new threads if necessary
+		stopper.wakeUp();
+		
+	}
 	
 	std::string ProcessManager::getStatus()
 	{
 		std::ostringstream output;
 		
 		token.retain();
-		
+		output << "\n\t\t\tRunning: ";
 		for ( std::set<ProcessItem*>::iterator i = running_items.begin () ; i != running_items.end() ; i++ )
 			output << "[" << (*i)->getStatus() << "] ";
+
+		output << "\n\t\t\tHalted: ";
+		for ( std::list<ProcessItem*>::iterator i = halted_items.begin () ; i != halted_items.end() ; i++ )
+			output << "[" << (*i)->getStatus() << "] ";
+
+		output << "\n\t\t\tQueued: " << items_pure_process.size() << " & " << items_data_generator.size();
 		
-		output << " ( " << items_pure_process.size()+items_data_generator.size() << " queued processes )";
+		/*
+		output << "\n\t\t\tQueued: ";
+		for ( std::list<ProcessItem*>::iterator i = items_pure_process.begin () ; i != items_pure_process.end() ; i++ )
+			output << "[" << (*i)->getStatus() << "] ";
+		output << "\n\t\t\tQueued: ";
+		for ( std::list<ProcessItem*>::iterator i = items_data_generator.begin () ; i != items_data_generator.end() ; i++ )
+			output << "[" << (*i)->getStatus() << "] ";
+		*/
 		
 		token.release();
 		

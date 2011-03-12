@@ -235,6 +235,9 @@ namespace ss {
 		
 		double getMemoryUsageInput();
 		double getMemoryUsageOutput();
+
+		// Informs about the usage of the output memory ( it is used to block data generators if necessary )
+		bool availableMemoryOutput();
 		
 	public:
 		

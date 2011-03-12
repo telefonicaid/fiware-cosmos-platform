@@ -79,7 +79,9 @@ namespace ss {
 		static std::string directoryPath( std::string path );
 		void setError( std::string message );
 		bool setDevice( );
+
 		std::string getDescription();
+		std::string getShortDescription();
 		
 	};
 	

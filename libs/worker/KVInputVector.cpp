@@ -1,5 +1,6 @@
 
 #include "KVInputVector.h"		// Own interface
+#include <algorithm>            // std::sort
 
 namespace ss
 {

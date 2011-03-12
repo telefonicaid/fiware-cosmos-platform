@@ -6,6 +6,7 @@
 #include "SamsonSetup.h"		// Own interface
 #include <assert.h>				// assert(.)
 #include <errno.h>
+#include "Format.h"             // au::Format
 
 #define SETUP_num_io_threads_per_device					"num_io_threads_per_device"
 #define SETUP_DEFAULT_num_io_threads_per_device			1
@@ -198,6 +199,9 @@ namespace ss
 		if ( num_max_outputs < 2 )
 		{
 			std::cerr << "Error in the memory setup. Please, review setup since the maximum number of outputs for all operations would be only " << num_max_outputs <<"\n";
+			std::cerr << "Memory: " << au::Format::string( memory , "B" ) << "\n";
+		    std::cerr << "Shared memory: " << au::Format::string( num_processes*shared_memory_size_per_buffer , "B" ) << "\n";
+			std::cerr << "Max file size: " << au::Format::string( max_file_size , "B" ) << "\n";
 			return false;
 		}
 		

@@ -44,7 +44,13 @@ namespace ss
 		info->set_size( i.size );
 		info->set_kvs( i.kvs );
 	}
-
+	
+	void fillFullKVInfo( network::KVInfo* info , FullKVInfo i )
+	{
+		info->set_size( i.size );
+		info->set_kvs( i.kvs );
+	}
+	
 	
 	ModulesManager::ModulesManager()
 	{

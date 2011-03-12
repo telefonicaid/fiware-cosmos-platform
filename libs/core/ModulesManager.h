@@ -58,6 +58,7 @@ namespace ss {
 	// Utility functions
 	void fillKVFormat( network::KVFormat* format , KVFormat f );
 	void fillKVInfo( network::KVInfo* info , KVInfo i );
+	void fillFullKVInfo( network::KVInfo* info , FullKVInfo i );
 	
 	
 	

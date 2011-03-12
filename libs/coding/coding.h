@@ -141,6 +141,96 @@ namespace ss {
 		
 	};	
 	
+	struct FullKVInfo
+	{
+		uint64 size;	// Total size
+		uint64 kvs;		// Total number of kvs
+		
+		
+		FullKVInfo(uint32 _size ,uint32 _kvs )
+		{
+			kvs = _kvs;
+			size = _size;
+		}
+		
+		FullKVInfo()
+		{
+			kvs = 0;
+			size = 0;
+		}
+		
+		void clear()
+		{
+			kvs = 0;
+			size = 0;
+		}
+		
+		void append( uint64 _size , uint64 _kvs )
+		{
+			size += _size;
+			kvs += _kvs;
+		}
+		
+		void append( FullKVInfo other )
+		{
+			size += other.size;
+			kvs += other.kvs;
+		}
+		
+		void remove( uint64 _size , uint64 _kvs )
+		{
+			size -= _size;
+			kvs -= _kvs;
+		}
+		
+		void remove( FullKVInfo other )
+		{
+			size -= other.size;
+			kvs -= other.kvs;
+		}
+
+#pragma mark ----
+		
+		void append( uint32 _size , uint32 _kvs )
+		{
+			size += _size;
+			kvs += _kvs;
+		}
+		
+		void append( KVInfo other )
+		{
+			size += other.size;
+			kvs += other.kvs;
+		}
+		
+		void remove( uint32 _size , uint32 _kvs )
+		{
+			size -= _size;
+			kvs -= _kvs;
+		}
+		
+		void remove( KVInfo other )
+		{
+			size -= other.size;
+			kvs -= other.kvs;
+		}
+		
+		
+		
+		std::string str()
+		{
+			std::ostringstream o;
+			o <<  "( " << au::Format::string( kvs , "kvs" ) << " in " << au::Format::string( size ,"bytes" ) << " )";  
+			return o.str();
+		}
+		
+		bool isEmpty()
+		{
+			return ((kvs==0)&&(size==0));
+		}
+		
+	};	
+	
 	/**
 	 Header used in KV-Sets ( Files, Network messages, Operations, etc...)
 	 */
@@ -507,7 +597,7 @@ namespace ss {
 	{
 		std::string queue;
 		std::string format;
-		KVInfo info;
+		FullKVInfo info;
 		int num_files;
 	} QueueMonitorInfo;
 	

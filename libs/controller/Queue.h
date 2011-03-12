@@ -29,7 +29,7 @@ namespace ss {
 		KVFormat _format;				// Format of the queue
 
 		// Global information
-		KVInfo _info;					// Information about this queue
+		FullKVInfo _info;				// Information about this queue
 		int _num_files;					// Thread safe number of files ( only for monitoring )
 
 		au::map< std::string , QueueFile > files;		// Map of files included in this queue
@@ -54,7 +54,7 @@ namespace ss {
 		
 		std::string getName(){ return _name; }
 		KVFormat format() { return _format; }
-		KVInfo info() { return _info; }
+		FullKVInfo info() { return _info; }
 
 		/**
 		 Main functions to add files to this queue

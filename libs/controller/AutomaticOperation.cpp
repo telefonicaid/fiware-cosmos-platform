@@ -18,7 +18,7 @@ namespace ss {
 	bool AOQueueThrigger::thrigger()
 	{
 		
-		KVInfo info = queue->info();
+		FullKVInfo info = queue->info();
 		
 		if( info.isEmpty() )	// If no content, never thrigger...
 			return false;

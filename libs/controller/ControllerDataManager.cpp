@@ -32,7 +32,7 @@ namespace ss {
 		 fillKVFormat( q->mutable_format() , q_from->format() );
 		 
 		 //Info
-		 fillKVInfo( q->mutable_info(), q_from->info() );
+		 fillFullKVInfo( q->mutable_info(), q_from->info() );
 		 
 		 // Add file information
 		au::map< std::string , QueueFile >::iterator iter;
@@ -753,7 +753,7 @@ namespace ss {
 				fillKVFormat( q->mutable_format() , queue->format() );
 				
 				//Info
-				fillKVInfo( q->mutable_info(), queue->info() );
+				fillFullKVInfo( q->mutable_info(), queue->info() );
 				
 				
 				// Add file information

@@ -10,7 +10,6 @@
 #include "DiskManager.h"             // ss::DiskManager
 #include "FileManager.h"             // ss::FileManager
 #include "Buffer.h" 	             // ss::Buffer
-#include <assert.h>                  // assert
 
 #include "FileManagerWriteItem.h"    // ss::FileManagerWriteItem
 #include "FileManagerReadItem.h"     // ss::FileManagerReadItem
@@ -104,13 +103,16 @@ namespace ss {
 			LM_M(("Received a read item for file %s", item->fileName.c_str()));
 			
 			// No errors in the operation
-			assert( !item->error.isActivated() );
+			if( item->error.isActivated() )
+				LM_X(1,("Error at notifyFinishReadItem: %s", item->error.getMessage().c_str() ));
 			
 			// Correct content
-			assert( verifyContent( item->buffer->getData() ) );
+			if( !verifyContent( item->buffer->getData() ) )
+				LM_X(1,("Error verifying content"));
 			
 			token.retain();
-			assert( fri.find( item ) != fri.end() );
+			if( fri.find( item ) == fri.end() )
+				LM_X(1,("Error since item was not in the list"));
 			fri.erase( item );
 			token.release();
 			
@@ -122,10 +124,12 @@ namespace ss {
 			LM_M(("Received a write item for file %s", item->fileName.c_str()));
 
 			// No errors in the operation
-			assert( !item->error.isActivated() );
+			if( item->error.isActivated() )
+				LM_X(1,("Error at notifyFinishWriteItem: %s", item->error.getMessage().c_str() ));
 			
 			token.retain();
-			assert( fwi.find( item ) != fwi.end() );
+			if( fwi.find( item ) == fwi.end() )
+				LM_X(1,("Error since item was not in the list"));
 			fwi.erase( item );
 			token.release();
 			
@@ -135,11 +139,14 @@ namespace ss {
 		void notifyFinishRemoveItem( FileManagerRemoveItem *item  )
 		{
 			// No errors in the operation
-			assert( !item->error.isActivated() );
+			if( item->error.isActivated() )
+				LM_X(1,("Error at notifyFinishRemoveItem: %s", item->error.getMessage().c_str() ));
+
 			
 			LM_M(("Received a remove item for file %s", item->fileName.c_str()));
 			token.retain();
-			assert( fxi.find( item ) != fxi.end() );
+			if( fxi.find( item ) == fxi.end() )
+				LM_X(1,("Error since item was not in the list"));
 			fxi.erase( item );
 			token.release();
 			

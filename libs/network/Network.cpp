@@ -1844,7 +1844,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 				while (endpoint[CONTROLLER]->rFd == -1)
 				{
-					LM_T(LmtControllerConnect, ("Reconnecting to Controller"));
+				  LM_M( ("Reconnecting to Controller %s:%d",endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port));
 					endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
 					sleep(1); // sleep one second before reintenting connection to controller
 				}
@@ -3068,9 +3068,12 @@ void Network::run(void)
 					{
 						--fds;
 						LM_T(LmtSelect, ("incoming message from '%s' endpoint %s (fd %d)", endpoint[ix]->typeName(), endpoint[ix]->name.c_str(), endpoint[ix]->rFd));
-						msgPreTreat(endpoint[ix], ix);
 						if (endpoint[ix])
+						{
 							FD_CLR(endpoint[ix]->rFd, &rFds);
+							msgPreTreat(endpoint[ix], ix);
+						}
+
 					}
 				}
 			}

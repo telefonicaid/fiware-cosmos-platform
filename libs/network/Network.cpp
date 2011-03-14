@@ -2274,13 +2274,14 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	else if (hello->type == Endpoint::Setup)             newSlot = SETUP;
 	else if (hello->type == Endpoint::Spawner)           newSlot = FIRST_SPAWNER;
 	else if (hello->type == Endpoint::Worker)            newSlot = FIRST_WORKER + hello->workerId;
+	else if (hello->type == Endpoint::Delilah)           newSlot = FIRST_SPAWNER;
 	else
 		LM_X(1, ("Unexpected type '%s'", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type)));
 	
 	if (hello->type == Endpoint::Worker)
 		LM_T(LmtEndpointSlots, ("Worker: newSlot: %d", newSlot));
 
-	if (hello->type == Endpoint::Spawner)
+	if ((hello->type == Endpoint::Spawner) || (hello->type == Endpoint::Delilah))
 	{
 		while (endpoint[newSlot] != NULL)
 			++newSlot;

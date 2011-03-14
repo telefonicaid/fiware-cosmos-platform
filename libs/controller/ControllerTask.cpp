@@ -66,6 +66,17 @@ namespace ss {
 			complete = true;
 	}
 	
+	// Auxiliar function to copy a FullQueue including only files for a particular worker_id
+	void copy( network::FullQueue * from_queue , network::FullQueue * to_queue , int worker_id )
+	{
+		to_queue->mutable_queue()->CopyFrom( from_queue->queue() );
+		for ( int i = 0 ; i < from_queue->file_size() ; i++)
+		{
+			if( from_queue->file(i).worker() == worker_id )
+				to_queue->add_file()->CopyFrom( from_queue->file(i) );
+		}
+	}
+	
 	void ControllerTask::fillInfo( network::WorkerTask *t , int workerIdentifier )
 	{
 		t->set_operation( info->operation_name );
@@ -75,7 +86,7 @@ namespace ss {
 		for (int i = 0 ; i < (int)info->inputs.size() ; i++)
 		{
 			network::FullQueue *q = t->add_input_queue();
-			q->CopyFrom( *info->input_queues[i] ); 
+			copy( info->input_queues[i] , q , workerIdentifier );
 		}
 		
 		
@@ -83,7 +94,7 @@ namespace ss {
 		for (int i = 0 ; i < (int)info->outputs.size() ; i++)
 		{
 			network::FullQueue *q = t->add_output_queue();
-			q->CopyFrom( *info->output_queues[i] ); 
+			copy( info->output_queues[i] , q , workerIdentifier );
 		}
 		
 		

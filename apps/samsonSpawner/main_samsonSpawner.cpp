@@ -39,7 +39,7 @@ bool fg;
 bool noRestarts;
 
 
-#define NOLS (long int) "no log server"
+
 /* ****************************************************************************
 *
 * parse arguments
@@ -733,19 +733,10 @@ int main(int argC, const char *argV[])
 {
 	SamsonSpawner* spawnerP;
 
-#if 0
-	ss::Process    process;
-    printf("sizeof(ss::Process): %d\n", (int) sizeof(ss::Process));
-    printf("state at offset   %d\n", (int) ((long) &process.state   - (long) &process));
-    printf("verbose at offset %d\n", (int) ((long) &process.verbose - (long) &process));
-    printf("workers at offset %d\n", (int) ((long) &process.workers - (long) &process));
-    exit(1);
-#endif
-
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
-	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
+	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC/FILE[LINE] FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE:EXEC: TEXT");
 	paConfig("log to file",                   (void*) true);
 

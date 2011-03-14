@@ -33,10 +33,25 @@ char             name[80];
 */
 PaArgument paArgs[] =
 {
-	{ " ",            name,        "NAME",        PaString,  PaOpt,  PaND,   PaNL,   PaNL,  "name of prcess to kill"         },
+	{ " ",            name,        "NAME",        PaString,  PaOpt,  (long) "all",   PaNL,   PaNL,  "name of prcess to kill"         },
 
 	PA_END_OF_ARGS
 };
+
+
+
+/* ****************************************************************************
+*
+* sysKill - 
+*/
+static void sysKill(const char* name)
+{
+	char com[256];
+
+	snprintf(com, sizeof(com), "killall -9 %s > /dev/null 2>&1", name);
+	system(com);
+	printf("Killed %s\n", name);
+}
 
 
 
@@ -48,22 +63,27 @@ static int killProcess(const char* name, unsigned short port)
 {
 	ss::Endpoint  ep;
 	ss::Endpoint  me;
+	int           s;
 
 	ep.name = name;
 	ep.wFd  = iomConnect("localhost", port);
-	
-	if (ep.wFd == -1)
-	{
-		printf("error connecting to %s at 'localhost', port %d - probably means the process isn't running\n", name, port);
-		return 3;
-	}
-
+	LM_M(("%s: ep.wFd == %d", name, ep.wFd));
 	me.name = "samsonKiller";
-
-	if (iomMsgSend(&ep, &me, ss::Message::Die, ss::Message::Msg) != 0)
+	
+	if ((ep.wFd == -1) || ((s = iomMsgSend(&ep, &me, ss::Message::Die, ss::Message::Msg)) != 0))
 	{
-		printf("error sending 'Die' message to endpoint (port %d)\n", port);
-		return 4;
+		LM_M(("%s: s = %d", name, s));
+		sysKill(name);
+	}
+	else
+	{
+		int fd = iomConnect("localhost", port);
+
+		LM_M(("%s: second connect: fd == %d", name, fd));
+		if (fd != -1)
+			sysKill(name);
+		else
+			printf("killed '%s'\n", name);
 	}
 
 	return 0;
@@ -79,13 +99,8 @@ int main(int argC, const char *argV[])
 {
 	name[0] = 0;
 
+	paConfig("log to file", (void*) true);
 	paParse(paArgs, argC, (char**) argV, 1, false);
-
-#if 0
-	printf("Started with arguments:\n");
-	for (int ix = 0; ix < argC; ix++)
-		printf("  %02d: '%s'\n", ix, argV[ix]);
-#endif
 
 	if (name[0] != 0)
 	{

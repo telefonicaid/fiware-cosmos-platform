@@ -9,7 +9,7 @@
 function samsonProcesses
 {
 	echo '------------------------ Samson Platform process list ------------------------'
-	ps aux | egrep '  [0-9]*:[0-9]* samsonWorker|  [0-9]*:[0-9]* samsonController|  [0-9]*:[0-9]* samsonSpawner' | grep -v '<defunct>'
+	ps aux | egrep '[0-9]*.[0-9]* samsonWorker|[0-9]*.[0-9]* samsonController|[0-9]*.[0-9]* samsonSpawner' | grep -v '<defunct>' | grep -v egrep | sort
 	echo '------------------------------------------------------------------------------'
 }
 

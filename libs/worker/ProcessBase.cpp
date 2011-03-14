@@ -13,7 +13,6 @@
 
 namespace ss {
 	
-	
 #pragma mark ProcessItemKVGenerator
 	
 	ProcessBase::ProcessBase( WorkerTask *task , ProcessBaseType _type )
@@ -39,6 +38,8 @@ namespace ss {
 		copyEnviroment( task->workerTask.environment() , &environment ); 
 		
 		item = NULL; // Initialized at init function
+		
+		workerTaskManager = task->taskManager;
 									
 	}
 	
@@ -84,20 +85,26 @@ namespace ss {
 		
 	}
 
-	void ProcessBase::flushBuffer( )
+	int ProcessBase::flushBuffer( )
 	{
 		switch (type) {
 			case key_value:
-				flushKVBuffer();
+				return flushKVBuffer();
 				break;
 			case txt:
-				flushTXTBuffer();
+				return flushTXTBuffer();
 				break;
 		}
+		
+		// Unkown code, kill the process for security
+		return PI_CODE_KILL;
 	}
 
-	void ProcessBase::flushKVBuffer( )
+	int ProcessBase::flushKVBuffer( )
 	{
+		// If the task has been killed, return KILL_CODE
+		if( !workerTaskManager->checkTask( task_id ) )
+			return PI_CODE_KILL;
 		
 		/*
 		 After flushing we check that available memory is under 100%.
@@ -195,12 +202,17 @@ namespace ss {
 			
 		}
 		
+		return PI_CODE_CONTINUE;
+		
 		
 	}	
 
 	
-	void ProcessBase::flushTXTBuffer(  )
+	int ProcessBase::flushTXTBuffer(  )
 	{
+
+		if( !workerTaskManager->checkTask( task_id ) )
+			return PI_CODE_KILL;
 		
 		/*
 		 After flushing we check that available memory is under 100%.
@@ -247,6 +259,10 @@ namespace ss {
 			
 			network->send(NULL, network->getMyidentifier() , Message::WorkerDataExchange, p);
 		}
+		
+		return PI_CODE_CONTINUE;
+		
 	}		
 	
+
 }

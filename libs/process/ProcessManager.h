@@ -32,31 +32,31 @@ namespace ss {
 		au::list<ProcessItem> items_pure_process;		// List of items to be executed ( pure_process items )
 		au::list<ProcessItem> items_data_generator;		// List of items to be executed ( data_generator items )
 
-		au::Token token;							// Token to unique access the items list
-		au::Stopper stopper;						// Stopper for the threads where there is nothing to do
+		au::Token token;								// Token to unique access the items list
+		au::Stopper stopper;							// Stopper for the threads where there is nothing to do
 		
-		int num_processes;							// Number of maximum simultaneous process running ( from setup )
+		int num_processes;								// Number of maximum simultaneous process running ( from setup )
 		
-		std::set<ProcessItem*> running_items;		// Set of items currently being executed
-		au::list<ProcessItem> halted_items;		// Set of items currently being executed but halted
+		std::set<ProcessItem*> running_items;			// Set of items currently being executed
+		au::list<ProcessItem> halted_items;				// Set of items currently being executed but halted
 		
-		ProcessManager ( );							// Private constructor ( singleton )
+		ProcessManager ( );								// Private constructor ( singleton )
 
 		
 	public:
 		
-		static void init();							// Unique function to init this where there is only a single thread
-		static ProcessManager *shared();			// Common function to access the singleton implementation
+		static void init();									// Unique function to init this where there is only a single thread
+		static ProcessManager *shared();					// Common function to access the singleton implementation
 
-		void addProcessItem( ProcessItem *item );	// Function to add a Process. It will be notifier by delegate mechanism
-
-		std::string getStatus();					// Function to get a string version of the internal status ( running processes )
+		void addProcessItem( ProcessItem *item );			// Function to add a Process. It will be notifier by delegate mechanism
 		
-		void fill(network::WorkerStatus*  ws);		// Function to fill part of the message sent to the controller ( informing about status )
+		std::string getStatus();							// Function to get a string version of the internal status ( running processes )
+			
+		void fill(network::WorkerStatus*  ws);				// Function to fill part of the message sent to the controller ( informing about status )
 				
 	public:
 		
-		void runThread( );					// Only executed by thread_create
+		void runThread( );									// Only executed by thread_create
 		
 	public:
 		

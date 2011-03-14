@@ -707,4 +707,37 @@ namespace ss
 	}
 	
 	
+#pragma mark KILL	
+	
+	void WorkerTask::kill()
+	{
+		
+		// Revove the subtasks
+		for ( au::map<size_t , WorkerSubTask>::iterator i = subTasksWaitingForMemory.begin() ; i != subTasksWaitingForMemory.end() ; i++)
+			delete i->second;
+		subTasksWaitingForMemory.clear();
+		
+		for ( au::map<size_t , WorkerSubTask>::iterator i = subTasksWaitingForReadItems.begin() ; i != subTasksWaitingForReadItems.end() ; i++)
+			delete i->second;
+		subTasksWaitingForReadItems.clear();
+
+		for ( au::map<size_t , WorkerSubTask>::iterator i = subTasksWaitingForProcess.begin() ; i != subTasksWaitingForProcess.end() ; i++)
+			delete i->second;
+		subTasksWaitingForProcess.clear();
+		
+		
+		
+		// Remove the output buffers
+		for ( au::map<std::string , QueueuBufferVector>::iterator i =  queueBufferVectors.begin() ; i != queueBufferVectors.end() ; i++ )
+		{
+			QueueuBufferVector* qbv = i->second;
+			qbv->clear();
+			delete qbv;
+		}
+		
+		queueBufferVectors.clear();
+		
+	}
+	
+	
 }

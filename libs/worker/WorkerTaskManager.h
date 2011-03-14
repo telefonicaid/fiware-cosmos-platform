@@ -52,6 +52,9 @@ namespace ss {
 		// Full with information about status
 		void fill(network::WorkerStatus*  ws);
 		
+		// Check if a particular task is still active
+		bool checkTask( size_t task_id );
+		
 		// Get a debugging string
 		std::string getStatus();
 

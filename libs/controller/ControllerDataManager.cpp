@@ -139,7 +139,7 @@ namespace ss {
 				
 				if( !ModulesManager::shared()->checkData( keyFormat ) )
 				{
-					response.output = "Unsupported data format " + keyFormat + "\n";
+					response.output = "Unsupported data format " + keyFormat;
 					response.error = true;
 					return response;
 				}
@@ -147,7 +147,7 @@ namespace ss {
 				if( !ModulesManager::shared()->checkData( valueFormat ) )
 				{
 					std::ostringstream output;
-					output << "Unsupported data format " + valueFormat + "\n";
+					output << "Unsupported data format " + valueFormat;
 					response.output = output.str();
 					response.error = true;
 					return response;
@@ -176,7 +176,7 @@ namespace ss {
 					else
 					{
 						std::ostringstream output;
-						output << "Queue " + name + " already exist with another formats: (" << _queue->_format.str() << "). Option -f is not enougth.\n";
+						output << "Queue " + name + " already exist with another formats: (" << _queue->_format.str() << ").( Option -f is not enougth ).";
 						response.output = output.str();
 						response.error = true;
 						return response;
@@ -186,7 +186,7 @@ namespace ss {
 				else
 				{
 					std::ostringstream output;
-					output << "Queue " + name + " already exist\n";
+					output << "Queue " + name + " already exist";
 					response.output = output.str();
 					response.error = true;
 					return response;
@@ -261,7 +261,7 @@ namespace ss {
 				if( !queue )
 				{
 					std::ostringstream output;
-					output << "Queue " + queue_name + " does not exist\n";
+					output << "Queue " + queue_name + " does not exist";
 					response.output = output.str();
 					response.error = true;
 					return response;				
@@ -323,7 +323,7 @@ namespace ss {
 					if( !forceFlag )
 					{
 						std::ostringstream output;
-						output << "Queue " + name + " does not exist\n";
+						output << "Queue " + name + " does not exist";
 						response.output = output.str();
 						response.error = true;
 						return response;
@@ -366,7 +366,7 @@ namespace ss {
 					if( !forceFlag )
 					{
 						std::ostringstream output;
-						output << "Queue " + name + " does not exist\n";
+						output << "Queue " + name + " does not exist";
 						response.output = output.str();
 						response.error = true;
 						return response;
@@ -398,7 +398,7 @@ namespace ss {
 				if( !tmp )
 				{
 					std::ostringstream output;
-					output << "Queue " + name + " does not exist\n";
+					output << "Queue " + name + " does not exist";
 					response.output = output.str();
 					response.error = true;
 					return response;
@@ -440,14 +440,14 @@ namespace ss {
 			if( !tmp )
 			{
 				std::ostringstream output;
-				output << "Queue " + name + " does not exist\n";
+				output << "Queue " + name + " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;
 			} else if( tmp2 )
 			{
 				std::ostringstream output;
-				output << "Queue " + name + " exist. Please, remove it first with remove_queue command\n";
+				output << "Queue " + name + " exist. Please, remove it first with remove_queue command";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -485,7 +485,7 @@ namespace ss {
 			if( !tmp )
 			{
 				std::ostringstream output;
-				output << "Queue " + name + " does not exist\n";
+				output << "Queue " + name + " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -493,7 +493,7 @@ namespace ss {
 			else if( tmp2 )
 			{
 				std::ostringstream output;
-				output << "Queue " + name + " exist. Please, remove it first with remove_queue command\n";
+				output << "Queue " + name + " exist. Please, remove it first with remove_queue command";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -533,7 +533,7 @@ namespace ss {
 			if( !tmp )
 			{
 				std::ostringstream output;
-				output << "Queue " << name << " does not exist\n";
+				output << "Queue " << name << " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -542,7 +542,7 @@ namespace ss {
 			if( !tmp2 )
 			{
 				std::ostringstream output;
-				output << "Queue " << name << " does not exist\n";
+				output << "Queue " << name << " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -556,7 +556,7 @@ namespace ss {
 			if( ! f1.isEqual( f2 ) )
 			{
 				std::ostringstream output;
-				output << "Queues " << name << " and " << name2 << " does not have the same format (key-values).\n";
+				output << "Queues " << name << " and " << name2 << " does not have the same format (key-values).";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -597,7 +597,7 @@ namespace ss {
 			if( !q )
 			{
 				std::ostringstream output;
-				output << "Data Queue " << queue << " does not exist\n";
+				output << "Data Queue " << queue << " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -634,7 +634,7 @@ namespace ss {
 			if( !q )
 			{
 				std::ostringstream output;
-				output << "Queue " << queue << " does not exist\n";
+				output << "Queue " << queue << " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -670,7 +670,7 @@ namespace ss {
 			if( !q )
 			{
 				std::ostringstream output;
-				output << "Queue " << queue << " does not exist\n";
+				output << "Queue " << queue << " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;

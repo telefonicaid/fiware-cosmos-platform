@@ -68,9 +68,10 @@ int main(int argC, const char *argV[])
 	
 	ss::MemoryManager::init();			// Init the memory manager
 
+	std::cout << "Waiting for network connection ...";
+	
 	// Init the network element for delilah
 	ss::Network  network(ss::Endpoint::Delilah, "delilah", 0, endpoints, workers);
-	std::cout << "Waiting for network connection ...";
 	
 	network.init(controller);
 	network.runInBackground();

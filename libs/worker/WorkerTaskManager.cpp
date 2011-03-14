@@ -216,6 +216,17 @@ namespace ss {
 		ws->set_task_manager_status( getStatus() );
 	}
 	
+	// Check if a particular task is still active
+	bool WorkerTaskManager::checkTask( size_t task_id )
+	{
+		token.retain();
+		bool tmp = ( task.findInMap( task_id ) != NULL);
+		token.release();
+		
+		return tmp;
+	}
+	
+	
 		
 	void WorkerTaskManager::notifyFinishProcess( ProcessItem * item )
 	{

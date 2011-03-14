@@ -25,6 +25,7 @@ namespace ss
 {
 	
 	class WorkerTask;
+	class WorkerTaskManager;
 	
 	/**
 	 A particular process that runs in as isolated mode generating key-values
@@ -55,7 +56,7 @@ namespace ss
 		size_t task_id;
 		
 		network::WorkerTask *workerTask;		// Message received from the controller
-		//WorkerTaskManager *workerTaskManager;	// Pointer to the task manager
+		WorkerTaskManager *workerTaskManager;	// Pointer to the task manager
 		NetworkInterface *network;
 		
 		int shm_id;							// Shared memory area used in this operation
@@ -99,21 +100,23 @@ namespace ss
 		
 		
 		// Flush the buffer ( front process ) in key-value and txt mode
-		void flushBuffer( );
-		void flushKVBuffer( );
-		void flushTXTBuffer( );
+		int flushBuffer( );
+		int flushKVBuffer( );
+		int flushTXTBuffer( );
 		
 		// Function executed at this process side when a code is sent from the background process
-		void runCode( int c )
+		int runCode( int c )
 		{
 			switch (c) {
 				case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:
-					flushBuffer();	// Flush the generated buffer with new key-values
+					return flushBuffer();	// Flush the generated buffer with new key-values
 					break;
 				default:
 					error.set("System error: Unknown code in the isolated process communication");
 					break;
 			}
+			
+			return PI_CODE_KILL;
 		}
 
 		

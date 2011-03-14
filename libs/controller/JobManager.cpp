@@ -126,9 +126,9 @@ namespace ss {
 					
 					//job->setError("Worker", confirmationMessage->error_message());
 					task->notifyWorkerFinished( );		
-					assert ( task->finish );
 					
-					job->notifyCurrentTaskFinish(true, confirmationMessage->error_message()  );
+					if ( task->finish );
+						job->notifyCurrentTaskFinish(true, confirmationMessage->error_message()  );
 					
 				}
 				

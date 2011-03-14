@@ -12,10 +12,7 @@
 
 //#define ISOLATED_PROCESS_AS_THREAD
 
-#define CODE_REPORT_PROGRESS	-2
-#define CODE_USER_ERROR			-3
-#define CODE_TRACE				-4
-#define CODE_OPERATION_CONTROL	-5
+
 
 namespace ss
 {
@@ -123,6 +120,12 @@ namespace ss
 			}
 			else
 			{
+				
+				// Message prepared for the answer to the isolated process
+				InterProcessMessage m;
+				m.code = PI_CODE_CONTINUE;
+				
+				
 				switch (s)
 				{
 					case starting:
@@ -171,7 +174,7 @@ namespace ss
 						else
 						{
 							LM_T( LmtIsolated , ("Isolated process %s(%s): Executing code ",getStatus().c_str(),stateName()));
-							runCode( message.code );
+							m.code = runCode( message.code );
 							LM_T( LmtIsolated , ("Isolated process %s(%s): Executed code ",getStatus().c_str(),stateName()));
 						}
 					default:
@@ -180,9 +183,6 @@ namespace ss
 
 				// Send something to the other side of the pipe to cotinue or finish
 				LM_T(LmtIsolated , ("Isolated process %s(%s): Sending something back to the pipe ",getStatus().c_str(),stateName()));
-				
-				InterProcessMessage m;
-				m.code = -1;
 
 				write( pipeFdPair2[1] , &m , sizeof(m) );
 				LM_T( LmtIsolated , ("Isolated process %s(%s): Sending something back to the pipe... OK! ",getStatus().c_str(),stateName()));
@@ -256,6 +256,13 @@ namespace ss
 			std::cerr << "Error in background process reading from pipe " << "read " << nb << " bytes instead of " << sizeof(message);
 			exit(0);
 		}
+		
+		if( message.code == PI_CODE_KILL )
+		{
+			// Message received from the platform to kill me
+			exit(0);
+		}
+		
 	}
 
 	void ProcessItemIsolated::setUserError( std::string error_message )

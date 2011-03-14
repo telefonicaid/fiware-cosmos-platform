@@ -1,4 +1,8 @@
 
+SUGGESTION:
+
+Use boost::FileSystem library
+
 TODO:
 
 * Wait for killed process

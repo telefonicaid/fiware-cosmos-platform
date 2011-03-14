@@ -124,11 +124,7 @@ namespace ss {
 		}
 		
 		// Kill( from a message from the controller )
-		void kill()
-		{
-			// In the future it should kill the running tasks
-			//TODO: Free all memory correctly
-		}
+		void kill();
 		
 		// Processign income buffers
 		

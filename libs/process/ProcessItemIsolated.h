@@ -5,6 +5,17 @@
 #include "samson/Tracer.h"		// ss::Tracer
 #include "samson/OperationController.h"		// ss::Tracer
 
+// CODES FROM ISOLATED TO PLATFORM 
+
+#define CODE_REPORT_PROGRESS	-2
+#define CODE_USER_ERROR			-3
+#define CODE_TRACE				-4
+#define CODE_OPERATION_CONTROL	-5
+
+//  CODES FROM PLATFORM TO ISOLATED
+
+#define PI_CODE_CONTINUE			-3
+#define PI_CODE_KILL				-4
 
 namespace ss {
 	
@@ -38,7 +49,8 @@ namespace ss {
 		virtual void runIsolated() = 0;
 
 		// Function executed at this process side when a code is sent from the background process
-		virtual void runCode( int c ) = 0;
+		// The returned value is the code send to the isolated process back ( contunue or kill )
+		virtual int runCode( int c ) = 0;
 
 		// Function used inside runIsolated to send a code to the main process
 		void sendCode( int c );

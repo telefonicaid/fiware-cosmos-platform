@@ -56,7 +56,7 @@ namespace ss
 
 		token.release();
 		
-		stopper.wakeUp();				// Wake up main thread to see if it is necessary to runa  new thread
+		stopper.wakeUp();	// Wake up main thread to see if it is necessary to runa  new thread
 		
 	}
 	

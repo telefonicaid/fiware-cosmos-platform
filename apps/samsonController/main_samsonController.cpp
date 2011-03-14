@@ -95,7 +95,7 @@ int main(int argC, const char* argV[])
 	
 	// Instance of network object and initialization
 	// ---------------------------------------------
-	ss::Network network(ss::Endpoint::Controller, "Controller", CONTROLLER_PORT, endpoints, processVec->processes);
+	ss::Network network(ss::Endpoint::Controller, "Controller", CONTROLLER_PORT, endpoints, processVec->processes - 1);
 
 	network.initAsSamsonController();
 	network.procVecSet(processVec, processVecSize, ss::platformProcessesSave);

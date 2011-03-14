@@ -8,6 +8,8 @@
 #include <errno.h>
 #include "Format.h"             // au::Format
 
+#include "logMsg.h"				// LM_X
+
 #define SETUP_num_io_threads_per_device					"num_io_threads_per_device"
 #define SETUP_DEFAULT_num_io_threads_per_device			1
 
@@ -32,10 +34,7 @@ namespace ss
 	SamsonSetup *SamsonSetup::shared()
 	{
 		if( !samsonSetup)
-		{
-			std::cerr << "Error: Setup not loaded\n";
-			assert(false);
-		}
+			LM_X(1,("SamsonSetup not loaded. It should be initizalized at the begining of the main process"));
 		
 		return samsonSetup;
 	}

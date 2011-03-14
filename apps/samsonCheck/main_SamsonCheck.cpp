@@ -29,7 +29,7 @@ int main(int argc, const char *argv[])
 	
 	if ( cmdLine.get_flag_bool("clean" ) )
 	{
-		// Spetial command to clena shared memory areas
+		// Spetial command to clean shared memory areas
 		
 		std::cout << "Cleaning shared memory areas\n";
 		
@@ -59,11 +59,15 @@ int main(int argc, const char *argv[])
 	std::cout << "Num processes: " << s->num_processes << "\n";
 	std::cout << "\n";
 	std::cout << "** Memory-system setup:\n";
-	std::cout << "Memory: " << au::Format::string( s->memory ) << std::endl;
-	std::cout << "Shared memory: " << ss::SamsonSetup::shared()->num_processes << " x " << au::Format::string( s->shared_memory_size_per_buffer ) << std::endl;
+	std::cout << "Memory:           " << au::Format::string( s->memory ) << std::endl;
+	std::cout << "Shared memory:    " << ss::SamsonSetup::shared()->num_processes << " x " << au::Format::string( s->shared_memory_size_per_buffer ) << std::endl;
+	std::cout << "File size:        " << au::Format::string( s->max_file_size ) << std::endl;
 	std::cout << "\n";
+
+	/*
 	std::cout << "** Disk setup:\n";
 	std::cout << "Num threads per devide:    " << s->num_io_threads_per_device << "\n";
+	 */
 	std::cout << "\n";
 	std::cout << "** Derived parameres:\n";
 	std::cout << "Max num paralel outputs: " << ss::SamsonSetup::shared()->num_max_outputs << "\n";

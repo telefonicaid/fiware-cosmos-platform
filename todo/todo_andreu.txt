@@ -5,6 +5,10 @@ Use boost::FileSystem library
 
 TODO:
 
+* assetr -> LM_X
+* shared_memory automatization
+* Shared memory 64M vs 256M
+
 * Wait for killed process
 * When all the "process" running are hold, we can not run "Process Buffers" to get buffer ready for writing!!
 * Detect problems with memory running operations ( not well distributed per hash-group)

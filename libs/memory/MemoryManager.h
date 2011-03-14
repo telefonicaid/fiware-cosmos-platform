@@ -198,7 +198,6 @@ namespace ss {
 		 Shared memory mecanish
 		 --------------------------------------------------------------------*/
 		
-		void removeSharedMemory( int i );
 		
 		/**
 		 Function to retain and release a free shared-memory area
@@ -213,6 +212,7 @@ namespace ss {
 		
 		SharedMemoryItem* getSharedMemory( int i );
 		void freeSharedMemory(SharedMemoryItem* item);
+		void removeSharedMemory( int i );
 		
 		/*--------------------------------------------------------------------
 		 Get information about memory usage

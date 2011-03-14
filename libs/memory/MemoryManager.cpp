@@ -71,7 +71,8 @@ namespace ss
 		shared_memory_size_per_buffer	= SamsonSetup::shared()->shared_memory_size_per_buffer;
 		shared_memory_num_buffers		= SamsonSetup::shared()->num_processes;
 		
-		assert( shared_memory_size_per_buffer > 0);
+		if( shared_memory_size_per_buffer == 0)
+			LM_X(1,("Error in setup, invalid value for shared memory size %u", shared_memory_size_per_buffer ));
 		
 		// Boolean vector showing if a buffer is used
 		shared_memory_used_buffers = (bool*) malloc( shared_memory_num_buffers * sizeof(bool ) );
@@ -100,7 +101,7 @@ namespace ss
 		
 		key = SS_SHARED_MEMORY_KEY_ID + i; 
 		shmflg = IPC_CREAT | 384;			// Permission to read / write ( only owner )
-		size = shared_memory_size_per_buffer;
+		size = 1;							// Make sure it is does not return an error since the size is to large
 		
 		// Get the id
 		int id = shmget (key, size, shmflg);
@@ -115,29 +116,39 @@ namespace ss
 	
 	SharedMemoryItem* MemoryManager::getSharedMemory( int i )
 	{
-		SharedMemoryItem* _info = new SharedMemoryItem(i);
 		
 		key_t key;		/* key to be passed to shmget() */ 
 		int shmflg;		/* shmflg to be passed to shmget() */ 
 		size_t size;	/* size to be passed to shmget() */ 
 		
+		int shmid;		// Result of shmget
 		
 		key = SS_SHARED_MEMORY_KEY_ID + i; 
 		size = shared_memory_size_per_buffer;
 		shmflg = IPC_CREAT | 384;			// Permission to read / write ( only owner )
 		
-		if ((_info->shmid = shmget(key, size, shmflg)) == -1)
-			LM_RE(NULL, ("shmget: %s", strerror(errno)));
+		if ((shmid = shmget(key, size, shmflg)) == -1)
+		{
+			// Remove it
+			removeSharedMemory(i);
+
+			// Second try
+			if ((shmid = shmget(key, size, shmflg)) == -1)
+				LM_X(1 , ("shmget: %s", strerror(errno)));
+		}
+
+		//
+		SharedMemoryItem* _info = new SharedMemoryItem(i);
+		_info->shmid = shmid;
 		
 		// Attach to local-space memory
 		_info->data = (char *)shmat(_info->shmid, 0, 0);
 		if( _info->data == (char*)-1 )
 		{
 			perror("shmat: shmat failed"); 
-			std::cerr << "Error with shared memory while attaching to local memory\n";
-			assert( false );
-			exit(1);
+			LM_X(1, ("Error with shared memory while attaching to local memory (shared memory id %d )\n",i));
 		}
+		
 		_info->size = size;
 		
 		return _info;		

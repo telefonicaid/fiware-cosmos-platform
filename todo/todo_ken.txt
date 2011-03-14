@@ -1,11 +1,11 @@
 NOW
-  o Make worker not require options (-controller + -alias) - look in processVec file
-  o New option for spawner to NOT restart processes (or just do it ONCE)
+  o Make WORKER respond to messages while CONTROLLER disconnected
+  o Make WORKER not require options (-controller + -alias) - look in processVec file
   o Stop sending the workerVec message - just read the file samsonPlatformProcesses in Network::init
-  o Make samsonSpawner start Worker (and Controller) at startup
   o Make samsonSpawner restart itself after saving platformProcessList to disk ?
+  o SETUP: unlink the samsonPlatformProcesses file at startup
 
-  o Send Die to local worker and controller (if necessary) upon reception of 'ProcessVector'
+  o Send Die to local WORKER and CONTROLLER (if necessary) upon reception of 'ProcessVector'
   o samsonSetup -shutdown - send KillSamsonProcesses to a Spawner
   o samsonSetup -check ip - list of all running samson processes
   o samsonSetup -view - to see the processes 
@@ -19,15 +19,15 @@ NOW
 BUGS
   o Annoying '-' at the end of the progName in samsonSpawner ...
 
-  o Sometimes, when the Supervisor is started with Spawner, Controller and workers already running, it gets a strange error from Spawner.
+  o Sometimes, when the Supervisor is started with Spawner, CONTROLLER and workers already running, it gets a strange error from Spawner.
       T:Friday 25 Feb 11:41:45 2011:samsonSupervisor-/Network.cpp[2145] helloReceived: ------------------------------- ...
       T:Friday 25 Feb 11:41:45 2011:samsonSupervisor-/Network.cpp[2840] run: incoming message from 'Spawner' endpoint samsonSpawner (fd 23)
       E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/iomMsgAwait.cpp[53] iomMsgAwait: timeout
       E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/iomMsgRead.cpp[43] iomMsgPartRead: iomMsgAwait(samsonSpawner) returned -2
       E:Friday 25 Feb 11:41:46 2011:samsonSupervisor-/Network.cpp[1721] msgPreTreat: iomMsgRead: error reading message from 'samsonSpawner': Success
 
-  o Controller sometimes loosing hostname when saving a Worker 
-    This makes the Supervisor believe the Worker is totally uninitialized ...
+  o CONTROLLER sometimes loosing hostname when saving a WORKER 
+    This makes the Supervisor believe the WORKER is totally uninitialized ...
 
   o Hunt down all memory leaks ...
 
@@ -112,7 +112,7 @@ TONTERIAS
   o Make the Queues and Connection lines highlight when the cursor moves over them (hover?)
   o The modes of a Queue/Source/Config Scene Item:
     1. When a queue is created, a lighter icon
-    2. When the queue is really created (command sent to Controller), its real icon should be shown.
+    2. When the queue is really created (command sent to CONTROLLER), its real icon should be shown.
     3. Disable 
   o Nicer SceneTab popups
     - ls              View Queues    (data sets (Queues) - show, add, remove, clear ...) 
@@ -121,7 +121,7 @@ TONTERIAS
     - upload          Upload         (file selection dialog to choose file to upload)
     - load            Load           (just a text window - showing the current status of upload and downloads)
     - download        Download       (popup window to ask for set_name AND local_file_name)
-  o ProcessListTab - Controller on top of the list, before any worker ...
+  o ProcessListTab - CONTROLLER on top of the list, before any WORKER ...
   o Way to change size of logProvider log window
 
 

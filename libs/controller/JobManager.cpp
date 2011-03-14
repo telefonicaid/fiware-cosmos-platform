@@ -128,7 +128,13 @@ namespace ss {
 					task->notifyWorkerFinished( );		
 					
 					if ( task->finish );
-						job->notifyCurrentTaskFinish(true, confirmationMessage->error_message()  );
+					{
+						std::ostringstream str_error;
+						str_error << "[W:" << worker_id << "] ";
+						str_error << confirmationMessage->error_message();
+						job->notifyCurrentTaskFinish(true, str_error.str() );
+					}
+						
 					
 				}
 				

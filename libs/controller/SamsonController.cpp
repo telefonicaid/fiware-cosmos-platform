@@ -82,7 +82,8 @@ namespace ss {
 			case Message::WorkerTaskConfirmation:
 			{
 				network::WorkerTaskConfirmation c = packet->message.worker_task_confirmation();
-				jobManager.notifyWorkerConfirmation(fromId, &c );
+				int workerId = network->getWorkerFromIdentifier(fromId);			
+				jobManager.notifyWorkerConfirmation(workerId, &c );
 				return 0;
 			}
 				break;

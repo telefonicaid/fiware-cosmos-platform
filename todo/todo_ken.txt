@@ -1,4 +1,6 @@
 NOW
+  o Make worker not require options (-controller + -alias) - look in processVec file
+  o New option for spawner to NOT restart processes (or just do it ONCE)
   o Stop sending the workerVec message - just read the file samsonPlatformProcesses in Network::init
   o Make samsonSpawner start Worker (and Controller) at startup
   o Make samsonSpawner restart itself after saving platformProcessList to disk ?

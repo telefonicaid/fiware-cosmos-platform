@@ -35,8 +35,8 @@
 *
 * Option variables
 */
-bool notdaemon;
-
+bool fg;
+bool noRestarts;
 
 
 #define NOLS (long int) "no log server"
@@ -46,7 +46,8 @@ bool notdaemon;
 */
 PaArgument paArgs[] =
 {
-	{ "-notdaemon",  &notdaemon,   "NOT_DAEMON",  PaBool,   PaOpt,  false,  false,   true, "don't start as daemon" },
+	{ "-fg",          &fg,          "FOREGROUND",   PaBool,   PaOpt,  false,  false,   true, "don't start as daemon"   },
+	{ "-noRestarts",  &noRestarts,  "NO_RESTARTS",  PaBool,   PaOpt,  false,  false,   true, "don't restart processes" },
 
 	PA_END_OF_ARGS
 };
@@ -184,17 +185,22 @@ int SamsonSpawner::timeoutFunction(void)
 				LM_W(("'%s' died - NOT restarting it as the platform processes file isn't in place", processP->name));
 			else
 			{
-				LM_W(("'%s' died - restarting it", processP->name));
+				if (noRestarts == true)
+					LM_W(("'%s' died - NOT restarting it", processP->name));
+				else
+				{
+					LM_W(("'%s' died - restarting it", processP->name));
 
-				if (gettimeofday(&now, NULL) != 0)
-					LM_X(1, ("gettimeofday failed (fatal error): %s", strerror(errno)));
+					if (gettimeofday(&now, NULL) != 0)
+						LM_X(1, ("gettimeofday failed (fatal error): %s", strerror(errno)));
 
-				timeDiff(&processP->startTime, &now, &diff);
+					timeDiff(&processP->startTime, &now, &diff);
 
-				LM_W(("Process %d '%s' died after %d.%06d seconds of uptime", processP->pid, processP->name, diff.tv_sec, diff.tv_usec));
-				LM_TODO(("If process only been running for a few seconds, don't restart it - use this to initiate a Controller takeover"));
-				newProcessP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, pid, &now);
-				processSpawn(newProcessP);
+					LM_W(("Process %d '%s' died after %d.%06d seconds of uptime", processP->pid, processP->name, diff.tv_sec, diff.tv_usec));
+					LM_TODO(("If process only been running for a few seconds, don't restart it - use this to initiate a Controller takeover"));
+					newProcessP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, pid, &now);
+					processSpawn(newProcessP);
+				}
 			}
 
 			processRemove(processP);
@@ -749,7 +755,7 @@ int main(int argC, const char *argV[])
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
-	if (notdaemon == false)
+	if (fg == false)
 		daemonize();
 
 	processListInit(101);

@@ -76,7 +76,7 @@ Endpoint::Endpoint(void)
 */
 Endpoint::Endpoint(Type type, unsigned short port)
 {
-	Endpoint();
+	init();
 
 	this->type             = type;
 	this->port             = port;

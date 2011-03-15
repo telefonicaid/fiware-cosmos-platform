@@ -738,6 +738,7 @@ void sigHandler(int sigNo)
 
 			delete networkP->hostMgr;
 			delete networkP;
+			delete spawnerP;
 
 			exit(1);
 		}

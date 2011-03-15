@@ -53,6 +53,9 @@ namespace ss {
 		// Pointer to the process manager to notify that we are finished
 		ProcessManager *processManager;
 
+		// Thread used to run this in background
+		pthread_t t;
+		
 	private:
 		
 		au::Stopper stopper;	// Stopper to block the main thread until output memory is available again
@@ -62,12 +65,13 @@ namespace ss {
 		// Delegate to notify when finishing
 		ProcessManagerDelegate * delegate;
 
-		// Information about the status
-		std::string status;
 		
 	protected:
-		
-		double progress;		// Progress of the operation ( if internally reported somehow )
+
+		// Information about the status of this process
+		std::string operation_name;			// Name of the operation
+		double progress;					// Progress of the operation ( if internally reported somehow )
+		std::string sub_status;				// Letter describing internal status
 		
 	public:
 		
@@ -92,7 +96,6 @@ namespace ss {
 		ProcessItem( ProcessManagerItemType type );
 		
 		// Status management
-		void setStatus(std::string _status);
 		std::string getStatus();
 		
 		// Assign the delegate begore constructor

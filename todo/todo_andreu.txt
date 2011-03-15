@@ -5,15 +5,6 @@ Use boost::FileSystem library
 
 TODO:
 
-* assetr -> LM_X
-* shared_memory automatization
-* Shared memory 64M vs 256M
-
-* Wait for killed process
-* When all the "process" running are hold, we can not run "Process Buffers" to get buffer ready for writing!!
-* Detect problems with memory running operations ( not well distributed per hash-group)
-* Refactoring (m) independent Error.h Error.cpp files and remove Status.cpp/.h file since it is not used any more...
-
 FUTURE:
 review setup since the maximum number of outputs
 
@@ -21,6 +12,11 @@ ON-GOING
 * Kill jobs ( kill the task ) --> Memory leaks
 
 DONE
+* Refactoring (m) independent Error.h Error.cpp files and remove Status.cpp/.h file since it is not used any more...
+* When all the "process" running are hold, we can not run "Process Buffers" to get buffer ready for writing!!
+* assetr -> LM_X
+* shared_memory automatization
+* Wait for killed process
 * Informacion about time in the jobs list
 * Limit the number of operaitons for outputs
 * File Management ( errors while uploading / downloading )

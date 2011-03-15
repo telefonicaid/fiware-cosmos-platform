@@ -34,7 +34,7 @@ namespace ss {
 		// Set the status 
 		std::ostringstream statusStream;
 		statusStream << "Prewrite of " << au::Format::string( bv->size ,"Bytes" ) ;
-		setStatus( statusStream.str() );
+		operation_name = statusStream.str();
 	}
 	
 	void DataBufferProcessItem::run()

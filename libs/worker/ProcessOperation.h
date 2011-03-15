@@ -18,7 +18,6 @@ namespace ss {
 	public:
 
 		OperationSubTask *operationSubTask;
-		std::string operation_name;
 		Operation * operation;
 		char *data;
 		

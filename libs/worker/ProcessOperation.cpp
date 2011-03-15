@@ -21,10 +21,7 @@ namespace ss {
 		
 		// Name of the generator
 		operation_name = workerTask->operation();	
-		
-		// Description with the name of the generator
-		setStatus( operation_name );
-		
+				
 		// Set the buffer size the max size
 		operationSubTask->buffer->setSize( operationSubTask->buffer->getMaxSize() );
 		

@@ -39,7 +39,7 @@ namespace ss {
 		
 		std::set<ProcessItem*> running_items;			// Set of items currently being executed
 		au::list<ProcessItem> halted_items;				// Set of items currently being executed but halted
-		
+						
 		ProcessManager ( );								// Private constructor ( singleton )
 
 		

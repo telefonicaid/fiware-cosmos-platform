@@ -12,7 +12,7 @@ namespace ss {
 		generator = task->workerTask.operation();	
 		
 		// Description with the name of the generator
-		setStatus( std::string("G:") + generator );
+		operation_name =  std::string("G:") + generator;
 	}
 	
 	

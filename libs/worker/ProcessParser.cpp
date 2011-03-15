@@ -17,9 +17,6 @@ namespace ss
 		// Name of the generator
 		operation_name = workerTask->operation();	
 		
-		// Description with the name of the generator
-		setStatus( operation_name );
-		
 		// Set the buffer size the max size
 		parserSubTask->buffer->setSize( parserSubTask->buffer->getMaxSize() );
 		
@@ -28,8 +25,7 @@ namespace ss
 		operation = modulesManager->getOperation( operation_name );
 
 		data = parserSubTask->buffer->getData();
-		size = parserSubTask->buffer->getSize();
-		
+		size = parserSubTask->buffer->getSize();		
 		
 	}
 

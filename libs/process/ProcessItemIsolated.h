@@ -7,10 +7,11 @@
 
 // CODES FROM ISOLATED TO PLATFORM 
 
-#define CODE_REPORT_PROGRESS	-2
-#define CODE_USER_ERROR			-3
-#define CODE_TRACE				-4
-#define CODE_OPERATION_CONTROL	-5
+#define PI_CODE_REPORT_PROGRESS		-2
+#define PI_CODE_USER_ERROR			-3
+#define PI_CODE_TRACE				-4
+#define PI_CODE_BEGIN_BACKGROUND	-5
+#define PI_CODE_END_BACKGROUND		-6
 
 //  CODES FROM PLATFORM TO ISOLATED
 
@@ -26,7 +27,8 @@ namespace ss {
 			starting,
 			running,
 			finished,
-			broken
+			broken,			// Something is broken in the background process
+			waiting			// Waiting the background process to die
 		} state;
 		
 		// Pipes used between two process
@@ -89,6 +91,9 @@ namespace ss {
 					break;
 				case broken:
 					return "broken";
+					break;
+				case waiting:
+					return "waiting";
 					break;
 			}
 			

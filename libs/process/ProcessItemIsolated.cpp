@@ -11,14 +11,13 @@
 
 //#define ISOLATED_PROCESS_AS_THREAD
 
-
-
 namespace ss
 {
-	
-	ProcessItemIsolated::ProcessItemIsolated() : ProcessItem( ProcessItem::data_generator ) 	
-	{
-	}
+
+	/*
+	 Struct of data used to exchange information in the pipe connecting the platform
+	 and the isolated process
+	 */
 	
 	typedef struct
 	{
@@ -27,13 +26,17 @@ namespace ss
 		double progress;		// Progress report
 	} InterProcessMessage;
 	
-
+	// Function to run by the backgroudn thread
 	void* run_ProcessItemIsolated( void* p )
 	{
 		ProcessItemIsolated* tmp = (ProcessItemIsolated*)p;
 		tmp->runBackgroundProcessRun();
 		return NULL;
 	}
+	
+	ProcessItemIsolated::ProcessItemIsolated() : ProcessItem( ProcessItem::data_generator ) 	
+	{
+	}	
 	
 	void ProcessItemIsolated::run()
 	{
@@ -43,10 +46,10 @@ namespace ss
 		LM_T( LmtIsolated , ("Isolated process %s start in fork mode",getStatus().c_str()));
 #endif
 	
+		// Init function ( subclasses implements this )
 		init();
 		
 		// Create a couple of pipes to communicate both process
-		
 		if ( pipe(pipeFdPair1) != 0 )
 		{
 			error.set("System error: not possible to create pipes when running this process");
@@ -81,11 +84,11 @@ namespace ss
 		}
 #endif
 		
+		// Set the state to the "starting" mode
 		s = starting;
 		
 		// Reading from parent
 		InterProcessMessage message;
-		
 		
 		while( true )
 		{
@@ -126,14 +129,13 @@ namespace ss
 				InterProcessMessage m;
 				m.code = PI_CODE_CONTINUE;
 				
-				
 				switch (s)
 				{
 					case starting:
 						
-						if( message.code != -5)
+						if( message.code != PI_CODE_BEGIN_BACKGROUND)
 						{
-							LM_W(("Error in the protocol of the isolated process. Received a code %d instead of the expected %d", message.code , 5));
+							LM_W(("Error in the protocol of the isolated process. Received a code %d instead of the expected %d", message.code , PI_CODE_BEGIN_BACKGROUND));
 							s = broken;
 							break;
 						}
@@ -144,19 +146,20 @@ namespace ss
 						close(pipeFdPair1[1]);
 						close(pipeFdPair2[0]);
 #endif
-						
+							
+						// Set the state to running mode
 						s = running;
 						LM_T( LmtIsolated , ("Isolated process %s(%s): Go to running ",getStatus().c_str(),stateName()));
 						break;
 						
 					case running:
 						
-						if( message.code == -5 )
+						if( message.code == PI_CODE_END_BACKGROUND )
 						{
 							s = finished;
 							LM_T( LmtIsolated , ("Isolated process %s(%s): Go to finish ",getStatus().c_str(),stateName()));
 						}
-						else if ( message.code == -4 )
+						else if ( message.code == PI_CODE_TRACE )
 						{
 							LogLineData *l = &message.logData;
 							if (lmOk(l->type, l->tLev) == LmsOk)
@@ -165,12 +168,12 @@ namespace ss
 							// LM_T( LmtUser01 + message.trace_channel , ( message.trace_message));
 							//LM_M(( "TRACE %d %s", message.trace_channel, message.trace_message)); 
 						}
-						else if ( message.code == CODE_REPORT_PROGRESS )
+						else if ( message.code == PI_CODE_REPORT_PROGRESS )
 						{
 							double p = message.progress;
 							progress = p;
 						}
-						else if ( message.code == -3 ) // Error in the operation
+						else if ( message.code == PI_CODE_USER_ERROR ) // Error in the operation
 						{
 							LogLineData *l = &message.logData;
 							error.set(l->text);
@@ -179,6 +182,8 @@ namespace ss
 						}
 						else
 						{
+							// Run axuiliar codes
+							// Note: Get the return code from runCode call
 							LM_T( LmtIsolated , ("Isolated process %s(%s): Executing code ",getStatus().c_str(),stateName()));
 							m.code = runCode( message.code );
 							LM_T( LmtIsolated , ("Isolated process %s(%s): Executed code ",getStatus().c_str(),stateName()));
@@ -200,7 +205,7 @@ namespace ss
 				}
 			}
 			
-			// Read again from the pipe to see what is going on
+			// If we are not running any more, break the loop
 			if( s != running )
 			{
 				LM_T( LmtIsolated , ("Isolated process %s(%s): Break the loop sice we are not running any more ",getStatus().c_str(),stateName()));
@@ -224,16 +229,29 @@ namespace ss
 		finish();
 		
 
-		setStatus( "Killing" );
 		
 		// Kill and wait the process
 #ifndef ISOLATED_PROCESS_AS_THREAD
-		/*
+		
+		// Loop until the background thread is killed
+		sub_status = "Waiting";
+		s = waiting;
 		int stat_loc;
-		kill( pid , SIGTERM );
-		pid_t p = waitpid(pid, &stat_loc , 0 );
-		assert( p!= -1 );
-		 */
+		pid_t p=0;
+		do
+		{
+			p = waitpid(pid, &stat_loc , WNOHANG );
+			
+			// Send a kill message if still not died
+			if( p!= pid )
+			{
+				kill( pid , SIGKILL );
+			
+				// Give the background process so air to die in peace
+				sleep(0.1);
+			}
+			
+		} while (p != pid);
 #endif
 		
 	}
@@ -317,7 +335,7 @@ namespace ss
 	void ProcessItemIsolated::reportProgress( double p )
 	{
 		InterProcessMessage message;
-		message.code = CODE_REPORT_PROGRESS;
+		message.code = PI_CODE_REPORT_PROGRESS;
 		message.progress = p;
 		
 		// Write in the pipe
@@ -354,11 +372,11 @@ namespace ss
 				close( i );
 		
 #endif	
-		sendCode( -5 );		// Send an initial code so the other side can close unnecessary pipes
+		sendCode( PI_CODE_BEGIN_BACKGROUND );		// Send an initial code so the other side can close unnecessary pipes
 				
 		runIsolated();
 
-		sendCode( -5 );		// Send a finish code so the other side can close unnecessary pipes
+		sendCode( PI_CODE_END_BACKGROUND );			// Send a finish code so the other side can close unnecessary pipes
 		
 		// Close the other side of the pipe
 #ifndef ISOLATED_PROCESS_AS_THREAD

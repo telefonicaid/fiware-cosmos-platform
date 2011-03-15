@@ -29,16 +29,16 @@ namespace ss {
 		friend class ControllerDataManager;
 		friend class JobManager;
 
-		ControllerTaskInfo *info;		// Information for this task ( extracted from DataManager )
+		ControllerTaskInfo *info;			// Information for this task ( extracted from DataManager )
 		
-		Job *job;						// Pointer to the job we belong
-		size_t id;						// Id of the task ( shared by all the workers )
+		Job *job;							// Pointer to the job we belong
+		size_t id;							// Id of the task ( shared by all the workers )
 
-		int num_workers;				// Total workers that have to confirm the task
+		int num_workers;					// Total workers that have to confirm the task
 		int finished_workers;				// List of worker ids that have reported finish
-		int complete_workers;			// List of worker ids that have reported complete	
+		int complete_workers;				// List of worker ids that have reported complete	
 		
-		int generator;					// Spetial flag to be removed from here ;)
+		int generator;						// Spetial flag to be removed from here ;)
 		
 		// Error management
 		bool error;
@@ -49,6 +49,7 @@ namespace ss {
 		
 	public:
 		
+		bool running;					// Flag to indicate that the task is running
 		bool finish;					// Flag to indicate that the task is finished ( by all workers )
 		bool complete;					// Flag to indicate that the task is completed ( by all workers )
 		
@@ -69,6 +70,24 @@ namespace ss {
 			o << "Id " << id << " F:" << finished_workers << " C:" << complete_workers << " T:" << num_workers;
 			return o.str();
 		}
+		
+		int getNumUsedOutputs()
+		{
+			if( !running || finish || complete )
+				return 0;
+			
+			return getNumOutputs();
+			
+		}
+		
+		int getNumOutputs()
+		{
+			if( info ) 
+				return info->outputs.size();
+			
+			return 0;
+		}
+		
 		
 	};
 	

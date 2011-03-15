@@ -7,9 +7,19 @@
 #include "samson/Environment.h"			// ss::Environment
 #include "Job.h"						// ss::Job
 #include "ControllerTask.h"				// ss::ControllerTask
+#include "SamsonSetup.h"				// ss::SamsonSetup
 
 namespace ss
 {
+	
+	ControllerTaskManager::ControllerTaskManager( JobManager * _jobManager)
+	{
+		jobManager = _jobManager;
+		current_task_id = 1;		// First task is "1" since "0" means error running task
+		
+		
+	}
+	
 
 	ControllerTask* ControllerTaskManager::addTask( ControllerTaskInfo *info ,Job *job )
 	{
@@ -20,9 +30,8 @@ namespace ss
 		// Stak into internal map
 		size_t id = t->getId();
 		task.insertInMap( id , t ); 
-		
-		// Send this task to all the workers
-		sendWorkerTasks( t );										
+
+		reviewTasks();
 
 		return t;
 		
@@ -39,6 +48,42 @@ namespace ss
 		assert( t );
 		delete t;
 	}
+	
+	
+	void ControllerTaskManager::reviewTasks()
+	{
+		int max_num_paralell_outputs =  SamsonSetup::shared()->num_paralell_outputs;
+		int num_paralell_outputs = 0;
+
+		// Count the number of paralel outputs used in active operations over the cluster
+		for ( au::map< size_t , ControllerTask >::iterator t =  task.begin() ; t != task.end() ; t++ )
+			num_paralell_outputs += t->second->getNumUsedOutputs();
+		
+		if( num_paralell_outputs < max_num_paralell_outputs )
+		{
+			for ( au::map< size_t , ControllerTask >::iterator t =  task.begin() ; t != task.end() ; t++ )
+			{
+				if( !t->second->running )
+				{
+					int num_outputs = t->second->getNumOutputs();
+					
+					if( num_outputs <= (max_num_paralell_outputs - num_paralell_outputs ) )
+					{
+						// Send this task to all the workers
+						t->second->running = true;
+						sendWorkerTasks( t->second );										
+						
+						num_paralell_outputs += num_outputs;
+					}
+				}
+		
+			}
+			
+		}
+		
+		
+		
+	};
 	
 	
 	/* ****************************************************************************

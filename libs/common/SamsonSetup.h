@@ -54,7 +54,7 @@ namespace ss {
 		// DERIVED PARAMETERS
 		// --------------------------------------------
 		
-		int num_max_outputs;	// Maximum number of outputs for all the working operations
+		int num_paralell_outputs;	// Maximum number of outputs for all the working operations
 		
 		
 	private:

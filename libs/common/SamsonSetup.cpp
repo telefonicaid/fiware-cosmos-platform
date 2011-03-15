@@ -27,6 +27,9 @@
 
 #define SETUP_DEFAULT_load_buffer_size							67108864	// 64 Mb
 
+#define SETUP_num_paralell_outputs						"num_paralell_outputs"
+#define SETUP_DEFAULT_num_paralell_outputs				2
+
 namespace ss
 {
 	static SamsonSetup *samsonSetup = NULL;
@@ -158,9 +161,7 @@ namespace ss
 		
 		
 		// Derived parameters
-		
-		num_max_outputs = ( memory - num_processes*shared_memory_size_per_buffer ) / (4*max_file_size);
-		
+		num_paralell_outputs = getInt( items, SETUP_num_paralell_outputs , SETUP_DEFAULT_num_paralell_outputs );
 		
 		if( !check() )
 		{
@@ -192,9 +193,17 @@ namespace ss
 			return false;
 		}
 		
-		if ( num_max_outputs < 2 )
+		int max_num_paralell_outputs =  ( memory - num_processes*shared_memory_size_per_buffer ) / (4*max_file_size);
+		if( num_paralell_outputs > max_num_paralell_outputs )
 		{
-			std::cerr << "Error in the memory setup. Please, review setup since the maximum number of outputs for all operations would be only " << num_max_outputs <<"\n";
+			LM_X(1,("Num of maximum paralell outputs is to high to the memory setup. Review num_paralell_outputs in setup.txt file.Current value %d Max value %d", max_num_paralell_outputs , max_num_paralell_outputs ));
+			return false;
+		}
+
+		
+		if ( num_paralell_outputs < 2 )
+		{
+			std::cerr << "Error in the memory setup. Please, review setup since the maximum number of outputs has to be at least 2\n";
 			std::cerr << "Memory: " << au::Format::string( memory , "B" ) << "\n";
 		    std::cerr << "Shared memory: " << au::Format::string( num_processes*shared_memory_size_per_buffer , "B" ) << "\n";
 			std::cerr << "Max file size: " << au::Format::string( max_file_size , "B" ) << "\n";

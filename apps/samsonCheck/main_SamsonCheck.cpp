@@ -70,7 +70,7 @@ int main(int argc, const char *argv[])
 	 */
 	std::cout << "\n";
 	std::cout << "** Derived parameres:\n";
-	std::cout << "Max num paralel outputs: " << ss::SamsonSetup::shared()->num_max_outputs << "\n";
+	std::cout << "Max num paralel outputs: " << ss::SamsonSetup::shared()->num_paralell_outputs << "\n";
 	
 	std::cout << "\n\n\n";
 	std::cout << "Testing shared memory...\n";

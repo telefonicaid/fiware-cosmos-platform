@@ -59,8 +59,9 @@ namespace ss {
 		lock.lock();
 
 		// Get the task
-		size_t task_id = confirmationMessage->task_id();
-		ControllerTask *task = taskManager.getTask( task_id );
+		size_t task_id			= confirmationMessage->task_id();	// Get the task_id
+		ControllerTask *task	= taskManager.getTask( task_id );	// Get the task it refers to		
+		
 		Job* job = NULL;
 		if( task )
 			job = task->job;
@@ -164,6 +165,10 @@ namespace ss {
 				break;
 				
 		}
+		
+		// Review the task manager to see if it is necessary to run new tasks
+		taskManager.reviewTasks();
+		
 		
 		lock.unlock();
 	}

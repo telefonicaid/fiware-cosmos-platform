@@ -31,6 +31,8 @@ namespace ss {
 		// In generators, this is used to determine how is the active user
 		generator = rand()%num_workers;
 		
+		// Flag to indicate that we are not running
+		running = false;
 		
 	}
 	

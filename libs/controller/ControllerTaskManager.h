@@ -30,11 +30,7 @@ namespace ss {
 		
 	public:
 		
-		ControllerTaskManager( JobManager * _jobManager)
-		{
-			jobManager = _jobManager;
-			current_task_id = 1;		// First task is "1" since "0" means error running task
-		}
+		ControllerTaskManager( JobManager * _jobManager);
 
 		/**
 		 Add a particular task into the controller scheduler from delailah command
@@ -49,14 +45,24 @@ namespace ss {
 		ControllerTask* getTask( size_t task_id );
 	
 		/**
+		 Review if it is necessary to start another task
+		 Sometimes it is not possible to run multiple tasks concurrently to limit the number of "outputs"
+		 If to much outputs are active, buffers at the workers will staturate memory
+		 */
+		
+		void reviewTasks();
+		
+		/**
 		 Remove a task ( because the job it belongs finished )
 		 */
 		
 		void removeTask( size_t task_id );
 		
+		/**
+		 Status string of the Controller Task Manager
+		 */
+		
 		std::string getStatus();
-		
-		
 		
 	private:
 

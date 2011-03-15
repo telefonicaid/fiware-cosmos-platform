@@ -451,9 +451,12 @@ namespace ss
 	std::string WorkerTask::getStatus()
 	{
 		std::ostringstream output;
-		output << "ID:" << task_id << " OP:" << operation << " ";
+		output << "ID:" << task_id << " OP:" << operation << " State:";
 
 		switch (status) {
+			case pending_definition:
+				output << "Pending definition";
+				break;
 			case ready:
 				output << "Ready";
 				break;
@@ -466,7 +469,11 @@ namespace ss
 			case completed:
 				output << "Completed";
 				break;
-			default:
+			case local_content_finished:
+				output << "Local content finish";
+				break;
+			case all_content_finish:
+				output << "All content finish";
 				break;
 		}
 		

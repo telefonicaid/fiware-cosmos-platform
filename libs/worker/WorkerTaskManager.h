@@ -66,20 +66,6 @@ namespace ss {
 		void notifyFinishReadItem( FileManagerReadItem *item  );
 		void notifyFinishWriteItem( FileManagerWriteItem *item  );
 		void notifyFinishMemoryRequest( MemoryRequest *request );		
-
-	public:		
-		// Send messages functions 
-		static void send_update_message_to_controller(NetworkInterface *network , size_t task_id ,int num_finished_items, int num_items );
-
-		void send_finish_task_message_to_controller(NetworkInterface *network , size_t task_id );
-		
-	private:
-		
-		// Function used to send the confirmation of this task to the controller
-		void sendWorkTaskConfirmation( WorkerTask *t );
-	
-		// Function to run tasks if enougth output channels are free
-		void _check_run_tasks();
 		
 	};
 	 

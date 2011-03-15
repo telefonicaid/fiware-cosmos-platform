@@ -848,6 +848,13 @@ namespace ss {
 			}
 		}
 		
+		if( (int)info->outputs.size() > SamsonSetup::shared()->num_paralell_outputs )
+		{
+			error_message << "Operation with too many outputs ( " << info->outputs.size() << " ). The limit in this SAMSON cluster is " << SamsonSetup::shared()->num_paralell_outputs;
+			info->setError( error_message.str() );
+			return; 
+		}
+		
 		// Check output	
 		for (int i = 0 ; i < (int)info->outputs.size() ; i++)
 		{

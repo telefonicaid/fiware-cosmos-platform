@@ -52,8 +52,8 @@ namespace ss {
 			// Setup the operation with all the information comming from controller
 			t->setup( op->getType() , worker_task );
 			
-			// Function to run tasks if ready and enougth output queue-buffers
-			_check_run_tasks();
+			// Run the operation
+			t->run();
 			
 		}
 		
@@ -73,8 +73,6 @@ namespace ss {
 			t->kill();
 			delete t;
 		}
-		
-		_check_run_tasks();
 		
 		token.release();
 	}
@@ -131,8 +129,6 @@ namespace ss {
 			}
 		}
 		
-		_check_run_tasks();
-		
 		token.release();
 	}
 
@@ -171,8 +167,6 @@ namespace ss {
 		}
 		delete item;
 		
-		_check_run_tasks();
-		
 		token.release();
 	}
 	
@@ -195,8 +189,6 @@ namespace ss {
 			}
 		}
 		delete item;
-		
-		_check_run_tasks();
 		
 		token.release();
 	}
@@ -222,8 +214,6 @@ namespace ss {
 		}
 		delete item;
 		
-		_check_run_tasks();
-		
 		token.release();
 		
 	}
@@ -244,9 +234,7 @@ namespace ss {
 		}
 
 		delete request;
-		
-		_check_run_tasks();
-		
+				
 		token.release();
 		
 	}
@@ -269,54 +257,6 @@ namespace ss {
 		token.release();
 		
 		return output.str();
-	}
-
-	
-#if 0
-	void WorkerTaskManager::addInputFile( size_t fm_id , WorkerTaskItem* item )
-	{
-		pendingInputFiles.insertInMap( fm_id , item );
-	}
-#endif
-	
-		
-	
-	void WorkerTaskManager::send_update_message_to_controller(NetworkInterface *network , size_t task_id ,int num_finished_items, int num_items )
-	{		
-		Packet *p = new Packet();
-		network::WorkerTaskConfirmation *confirmation = p->message.mutable_worker_task_confirmation();
-		confirmation->set_task_id( task_id );
-		confirmation->set_type( network::WorkerTaskConfirmation::update );
-		confirmation->set_num_items(num_items );
-		confirmation->set_num_finished_items( num_finished_items );
-
-		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
-	}
-	
-
-	
-	void WorkerTaskManager::_check_run_tasks()
-	{
-		int num_outputs_allowed = SamsonSetup::shared()->num_max_outputs;
-		
-		au::map<size_t,WorkerTask>::iterator t;
-		for ( t = task.begin() ; t != task.end() ; t++)
-		{
-			if( t->second->status == WorkerTask::running )
-			{
-				// Number of output for this particular operation
-				num_outputs_allowed -= t->second->workerTask.output_queue_size();
-			}
-			
-			if ( t->second->status == WorkerTask::ready )
-			{
-				if( t->second->workerTask.output_queue_size() <= num_outputs_allowed )
-				{
-					t->second->run();
-					num_outputs_allowed -= t->second->workerTask.output_queue_size();
-				}
-			}
-		}		
 	}
 	
 	

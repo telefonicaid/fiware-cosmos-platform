@@ -2,6 +2,7 @@
 
 #include "Token.h"				// Own interface
 #include "LockDebugger.h"		// LockDebugger
+#include "logMsg.h"					 // LM_M()
 
 
 namespace au
@@ -26,7 +27,8 @@ namespace au
 #endif		
 		// LOCK the mutex
 		int ans = pthread_mutex_lock(&_lock);
-		assert(!ans); // We do not accept falling simple mutex
+		if( ans )
+			LM_X(1,("pthread_mutex_lock return an error"));
 
 		
 		while( true )
@@ -37,7 +39,8 @@ namespace au
 				
 				// UNLOCK the mutex
 				int ans = pthread_mutex_unlock(&_lock);
-				assert(!ans); // We do not accept falling simple mutex
+				if( ans )
+					LM_X(1,("pthread_mutex_unlock return an error"));
 				
 				return;// Now we have the tocken
 			}
@@ -57,21 +60,23 @@ namespace au
 #endif		
 		// LOCK the mutex
 		int ans = pthread_mutex_lock(&_lock);
-		assert(!ans); // We do not accept falling simple mutex
+		if( ans )
+			LM_X(1,("pthread_mutex_lock return an error"));
 		
-		assert(taken);	// We are the taken of this one
+		if( !taken )
+			LM_X(1,("Internal error of the au::token library since we are releasing a token that was never taken"));
+
 		taken = false;
 		
 		// Wake up one of the sleeping elements
 		ans = pthread_cond_signal(&_condition);
-		assert( !ans );
+		if( ans ) 
+			LM_X(1,("pthread_cond_signal return an error"));
 		
 		// UNLOCK the mutex
 		ans = pthread_mutex_unlock(&_lock);
-		assert(!ans); // We do not accept falling simple mutex
-		
+		if( ans ) 
+			LM_X(1,("pthread_mutex_unlock return an error"));
 		
 	}
-	
-	
 }

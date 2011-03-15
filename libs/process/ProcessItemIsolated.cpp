@@ -1,6 +1,5 @@
 #include <pthread.h>
 #include <iostream>               // std::cerr
-#include <assert.h>               // assert(.)
 #include <signal.h>               // kill(.)
 #include <stdlib.h>               // exit()
 
@@ -72,7 +71,9 @@ namespace ss
 #else
 		
 		pid_t pid = fork();
-		assert( pid >= 0 );
+		if ( pid < 0 )
+			LM_X(1,("fork return an error"));
+		
 		if( pid == 0 )	// Children running the background process
 		{
 			runBackgroundProcessRun();
@@ -130,7 +131,12 @@ namespace ss
 				{
 					case starting:
 						
-						assert( message.code == -5);
+						if( message.code != -5)
+						{
+							LM_W(("Error in the protocol of the isolated process. Received a code %d instead of the expected %d", message.code , 5));
+							s = broken;
+							break;
+						}
 						
 						// Close the unnecessary pipes
 #ifndef ISOLATED_PROCESS_AS_THREAD
@@ -278,9 +284,7 @@ namespace ss
 		write(pipeFdPair1[1], &message, sizeof(message) );
 		
 		// Exit this task ( in the background )
-		assert( false );
-		//exit(0);
-		
+		exit(0);
 	}
 	
 	

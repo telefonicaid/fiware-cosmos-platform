@@ -1,6 +1,5 @@
 
 #include "ProcessWriter.h"			// Own interface
-#include <assert.h>					// assert(.)
 
 #include "Buffer.h"					// ss::Buffer
 #include "MemoryManager.h"			// ss::MemoryManager

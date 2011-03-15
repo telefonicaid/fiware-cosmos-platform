@@ -33,7 +33,8 @@ namespace ss
 	
 	bool LogFile::read( data::Command &c )
 	{
-		assert(input.is_open());
+		if( !input.is_open() )
+			LM_X(1, ("Error in log-file processing in read operation"));
 		
 		if( input.eof() )
 			return false;
@@ -54,7 +55,9 @@ namespace ss
 	
 	void LogFile::write( data::Command &c )
 	{
-		assert( output.is_open() );
+		if ( !output.is_open() )
+			LM_X(1, ("Error in log-file processing in write operation"));
+
 		
 		size_t message_size = c.ByteSize();
 		size_t packet_size = c.ByteSize() + sizeof( size_t );

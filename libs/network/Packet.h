@@ -8,7 +8,6 @@
 * DESCRIPTION				Definition of the packet to be exchanged in the samson-ecosystem
 *
 */
-#include <assert.h>	         // assert
 
 #include "samson.pb.h"       // google protocol buffers
 #include "MemoryManager.h"   // MemoryManager

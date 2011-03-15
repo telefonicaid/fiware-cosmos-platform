@@ -4,11 +4,11 @@
 #include "samsonDirectories.h"	// SAMSON_SETUP_FILE
 #include "CommandLine.h"		// au::CommandLine
 #include "SamsonSetup.h"		// Own interface
-#include <assert.h>				// assert(.)
 #include <errno.h>
 #include "Format.h"             // au::Format
 
 #include "logMsg.h"				// LM_X
+
 
 #define SETUP_num_io_threads_per_device					"num_io_threads_per_device"
 #define SETUP_DEFAULT_num_io_threads_per_device			1
@@ -56,10 +56,7 @@ namespace ss
 		if( mkdir(path.c_str()	, 0755) == -1 )
 		{
 			if( errno != EEXIST )
-			{
-				std::cout << "Error creating directory " << path << "\n";
-				assert(false);
-			}
+				LM_X(1,("Error creating directory %s", path.c_str()));
 		}
 	}
 												   

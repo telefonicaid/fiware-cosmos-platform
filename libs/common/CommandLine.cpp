@@ -1,7 +1,6 @@
 
 #include "CommandLine.h"		// Own interface
 #include <iostream>				// std::cout
-#include <assert.h>				// assert(.)
 
 namespace au
 {

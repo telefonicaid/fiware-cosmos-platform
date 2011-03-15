@@ -4,7 +4,6 @@
 
 
 #include <cstring>				// size_t		
-#include <assert.h>				// assert(.)
 #include <string>				// std::string
 #include <sstream>				// std::ostringstream
 #include "FileManager.h"		// ss::FileManager ( and derivates )

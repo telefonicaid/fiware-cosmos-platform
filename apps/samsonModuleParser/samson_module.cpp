@@ -13,20 +13,33 @@
 #include "CommandLine.h"			/* AUCommandLine                              */
 #include "DataContainer.h"
 #include "DataCreator.h"
+#include "parseArgs.h"          // parseArgs
+#include "paUsage.h"            // paUsage
+
+
+
+char name[100];
+/* ****************************************************************************
+ *
+ * parse arguments
+ */
+
+PaArgument paArgs[] =
+{
+	{ " ",            name,        "NAME",        PaString,  PaOpt,  PaND,   PaNL,   PaNL,  "name of prcess to kill"         },
+	PA_END_OF_ARGS
+};
 
 
 /** 
  Main function to parse everything 
  */
 
-int main( int args , const char *argv[])
+int main( int argC , const char *argV[])
 {
 	
-	// debug
-	//ss::DataCreator _module_creator( "/Users/andreu/devel/samson_modules/sna/module"  );		// A data creator object to generate the code
-	//_module_creator.print();
-	//return 0;
-	
+	// Init the lm library
+	paParse(paArgs, argC, (char**) argV, 1, false);
 	
 
 	fprintf(stderr,"SAMSON Module tool  (v %s)\n", SAMSON_MODULE_PARSER_VERSION);
@@ -35,7 +48,7 @@ int main( int args , const char *argv[])
 	//Help parameter in the comman line
 	au::CommandLine cmdLine;
 	cmdLine.set_flag_boolean("help");		// Get this help
-	cmdLine.parse(args , argv);
+	cmdLine.parse(argC , argV);
 	
 	if ( cmdLine.get_flag_bool("help") )
 	{
@@ -49,7 +62,7 @@ int main( int args , const char *argv[])
 	
 	if( cmdLine.get_num_arguments() < 2 )
 	{
-		fprintf(stderr, "Usage: %s module_file \n" , argv[0]);
+		fprintf(stderr, "Usage: %s module_file \n" , argV[0]);
 		fprintf(stderr, "Type -help for more help\n\n");
 		exit(0);
 	}

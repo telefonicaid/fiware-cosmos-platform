@@ -9,7 +9,6 @@
 #include <samson/Data.h>
 #include "Format.h"				// au::Format
 #include "samson/KVFormat.h"	// ss::KVFormat
-#include <assert.h>				// assert(.)
 #include "samson.pb.h"			// network:...
 #include <string.h>				// std::string
 #include "Buffer.h"				// ss::SimpleBuffer

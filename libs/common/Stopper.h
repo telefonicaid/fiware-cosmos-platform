@@ -3,7 +3,6 @@
 #define _H_AU_STOPPER
 
 #include <pthread.h>             /* pthread_mutex_t                          */
-#include <assert.h>              /* assert                                   */
 
 namespace au
 {

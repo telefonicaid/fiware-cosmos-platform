@@ -9,7 +9,7 @@ Test program for the samsonMemory library
 #include "SamsonSetup.h"             // ss::SamsonSetup
 #include "MemoryManager.h"           // ss::MemoryManager
 #include "Buffer.h" 	             // ss::Buffer
-#include <assert.h>                  // assert
+#include "logMsg.h"					 // LM_M()
 
 int main( int args , char *argv[] )
 {
@@ -22,29 +22,35 @@ int main( int args , char *argv[] )
 	
 	// Get the global pointer
 	ss::MemoryManager* mm = ss::MemoryManager::shared();
-	assert( mm );
 
 	// Default value for memory
-	assert( mm->getUsedMemoryInput() == 0 );
+	if( mm->getUsedMemoryInput() != 0 )
+		LM_X(1, ("Error in memory manager test since init memory is not 0"));
+
 
 	// Get a buffer of a particular size
 	ss::Buffer *b = mm->newBuffer( "buffer_1" ,  10000 , ss::Buffer::input );
 
 	// Check memory is reserved correclty
-	assert( mm->getUsedMemoryInput() == 10000 );
+	if( mm->getUsedMemoryInput() != 10000 )
+		LM_X(1, ("Error in memory manager test since memory used is not set correctly"));
+
 	
 	// Get a buffer of a particular size
 	ss::Buffer *b2 = mm->newBuffer( "buffer_2" ,  20000, ss::Buffer::input );
 
 	// Check memory is reserved correclty
-	assert( mm->getUsedMemoryInput() == 30000 );
+	if( mm->getUsedMemoryInput() != 30000 )
+		LM_X(1, ("Error in memory manager test since memory used is not set correctly"));
+
 
 	// Destroy buffers
 	mm->destroyBuffer(b);
 	mm->destroyBuffer(b2);
 	
 	// Check memory is reserved correclty
-	assert( mm->getUsedMemoryInput() == 0 );
+	if( mm->getUsedMemoryInput() != 0 )
+		LM_X(1, ("Error in memory manager test since memory is not realeased correctly"));
 	
 	return 0;
 }

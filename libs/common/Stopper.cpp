@@ -1,5 +1,7 @@
 #include "Stopper.h"				// Own interface
 #include <sys/time.h>            // struct timeval
+#include "logMsg.h"					 // LM_M()
+
 
 namespace au
 {
@@ -21,14 +23,16 @@ namespace au
 		
 		// LOCK the mutex
 		int ans = pthread_mutex_lock(&_lock);
-		assert(!ans); // We do not accept falling simple mutex
+		if ( ans )
+			LM_X(1,("pthread_mutex_lock return an error"));
 
 		// This unlock the mutex and froze the process in the condition
 		pthread_cond_wait(&_condition, &_lock);
 		
 		// UNLOCK the mutex
 		ans = pthread_mutex_unlock(&_lock);
-		assert(!ans); // We do not accept falling simple mutex
+		if( ans )
+			LM_X(1,("pthread_mutex_unlock return an error"));
 		
 	}
 
@@ -38,7 +42,8 @@ namespace au
 		
 		// LOCK the mutex
 		int ans = pthread_mutex_lock(&_lock);
-		assert(!ans); // We do not accept falling simple mutex
+		if ( ans )
+			LM_X(1,("pthread_mutex_lock return an error"));
 
         struct timeval tv;
         struct timespec ts;
@@ -52,7 +57,8 @@ namespace au
 		
 		// UNLOCK the mutex
 		ans = pthread_mutex_unlock(&_lock);
-		assert(!ans); // We do not accept falling simple mutex
+		if ( ans )
+			LM_X(1,("pthread_mutex_unlock return an error"));
 		
 	}
 	
@@ -61,13 +67,16 @@ namespace au
 		int ans;
 		
 		ans = pthread_mutex_lock(&_lock);
-		assert(!ans); // We do not accept falling simple mutex
+		if ( ans )
+			LM_X(1,("pthread_mutex_lock return an error"));
 
 		ans = pthread_cond_signal(&_condition);
-		assert(!ans); // We do not accept falling simple mutex
+		if ( ans )
+			LM_X(1,("pthread_cond_signal return an error"));
 
 		ans = pthread_mutex_unlock(&_lock);
-		assert(!ans); // We do not accept falling simple mutex
+		if ( ans )
+			LM_X(1,("pthread_mutex_unlock return an error"));
 
 	}
 	

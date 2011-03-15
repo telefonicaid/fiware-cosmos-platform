@@ -48,7 +48,9 @@ namespace ss {
 		int pos = begin;
 		while( pos < end )
 		{
-			assert( !module_creator->isSpecial( pos ) );
+			if( module_creator->isSpecial( pos ) )
+				LM_X(1,("Error parsing an operation definition"));
+
 			std::string mainCommand = module_creator->itemAtPos( pos++ );
 			
 			if( mainCommand == "file" )
@@ -89,10 +91,14 @@ namespace ss {
 			else if( mainCommand == "in" )
 			{
 				
-				assert( !module_creator->isSpecial( pos ) );
+				if( module_creator->isSpecial( pos ) )
+					LM_X(1,("Error parsing an operation definition. Wrong format"));
+
 				std::string keyFormat = module_creator->itemAtPos( pos++ );
 				
-				assert( !module_creator->isSpecial( pos ) );
+				if( module_creator->isSpecial( pos ) )
+					LM_X(1,("Error parsing an operation definition. Wrong format"));
+
 				std::string valueFormat = module_creator->itemAtPos( pos++ );		
 				
 				inputs.push_back( KVFormat::format(keyFormat, valueFormat) );
@@ -101,10 +107,14 @@ namespace ss {
 			else if( mainCommand == "out" )
 			{
 				
-				assert( !module_creator->isSpecial( pos ) );
+				if( module_creator->isSpecial( pos ) )
+					LM_X(1,("Error parsing an operation definition. Wrong format"));
+
 				std::string keyFormat = module_creator->itemAtPos( pos++ );
 				
-				assert( !module_creator->isSpecial( pos ) );
+				if( module_creator->isSpecial( pos ) )
+					LM_X(1,("Error parsing an operation definition. Wrong format"));
+
 				std::string valueFormat = module_creator->itemAtPos( pos++ );		
 				
 				outputs.push_back( KVFormat::format(keyFormat, valueFormat) );
@@ -119,7 +129,8 @@ namespace ss {
 			
 		}
 		
-		assert( pos == (end+1));	//Make sure parsing is correct
+		if( pos != (end+1))
+			LM_X(1,("Error parsing an operation definition. Invalid number of items"));
 		
 	}
 }

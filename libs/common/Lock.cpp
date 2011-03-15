@@ -36,10 +36,7 @@ namespace au
 		int ans = pthread_mutex_lock(&_lock);	// Block until the mutex is free
 
 		if (ans != 0)
-		{
-			LM_E(("pthread_mutex_lock returned %d: %s", ans, strerror(errno)));
-			assert(ans == 0);
-		}
+			LM_X(1,("pthread_mutex_lock returned %d: %s", ans, strerror(errno)));
 	}
 
 	void Lock::unlock()

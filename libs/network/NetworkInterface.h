@@ -6,7 +6,6 @@
 * FILE                     NetworkInterface.h - network interface
 *
 */
-#include <assert.h>				// assert
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // LmtNetworkInterface, ...

@@ -11,7 +11,6 @@
 *
 */
 #include <pthread.h>             /* pthread_mutex_t                          */
-#include <assert.h>              /* assert                                   */
 #include <string>                /* std::string                              */
 
 #include "StopLock.h"            /* StopLock                                 */

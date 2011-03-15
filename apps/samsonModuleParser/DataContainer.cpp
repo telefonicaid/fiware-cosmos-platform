@@ -13,6 +13,7 @@
 #include <cstdio>
 #include <map>
 #include "AUTockenizer.h"	// AUTockenizer
+#include "logMsg.h"					 // LM_M()
 
 namespace ss {
 
@@ -25,7 +26,9 @@ namespace ss {
 		
 		while( pos < end )
 		{
-			assert( !module_creator->isSpecial( pos ) );
+			if( module_creator->isSpecial( pos ) )
+				LM_X(1,("Error parsing data-type definition"));
+			
 			std::string mainCommand = module_creator->itemAtPos( pos++ );
 		
 			if( mainCommand == "vector" )
@@ -33,13 +36,19 @@ namespace ss {
 				//Vector fiels
 				
 				
-				assert( !module_creator->isSpecial( pos ) );
+				if( module_creator->isSpecial( pos ) )
+					LM_X(1,("Error parsing data-type definition"));
+
 				std::string _full_type = module_creator->itemAtPos( pos++ );
 				
-				assert( !module_creator->isSpecial( pos ) );
+				if( module_creator->isSpecial( pos ) )
+					LM_X(1,("Error parsing data-type definition"));
+
 				std::string _name = module_creator->itemAtPos( pos++ );
 				
-				assert( module_creator->isSemiColom( pos ) );
+				if( !module_creator->isSemiColom( pos ) )
+					LM_X(1,("Error parsing data-type definition"));
+
 				pos++;
 				
 				
@@ -52,7 +61,9 @@ namespace ss {
 				//Normal fiels
 				std::string  _full_type = mainCommand;
 
-				assert( !module_creator->isSpecial( pos ) );
+				if( module_creator->isSpecial( pos ) )
+					LM_X(1,("Error parsing data-type definition."));
+
 				std::string _name = module_creator->itemAtPos( pos++ );
 
 				if( !module_creator->isSemiColom( pos ) )
@@ -69,7 +80,9 @@ namespace ss {
 			
 		}
 		
-		assert( pos == (end+1));	//Make sure parsing is correct
+		if( pos != (end+1))
+			LM_X(1,("Error parsing data-type definition. Number of items is not correct at the end of parsing"));
+
 									  
 
 	//How to parse an element like this

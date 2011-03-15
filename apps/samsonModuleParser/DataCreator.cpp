@@ -82,9 +82,14 @@ namespace ss {
 		int pos = 0;
 		while ( pos < (int)t->items.size() )
 		{
-			assert( !t->isSpecial(pos) );
+			if( t->isSpecial(pos) )
+				LM_X(1,("Error parsing data-type since we found an spetial character instead of a name"));
+
 			std::string command = t->itemAtPos(pos++);
-			assert( !t->isSpecial(pos) );
+			
+			if( t->isSpecial(pos) )
+				LM_X(1,("Error parsing data-type since we found an spetial character instead of a name"));
+			
 			std::string name = t->itemAtPos(pos++);
 			
 			int position_start,position_finish;

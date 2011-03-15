@@ -4,7 +4,7 @@
 #include <map>		// std::map
 #include <list>		// std::list
 #include <vector>	// std::vector
-#include <assert.h>	// assert(.)
+#include "logMsg.h"					 // LM_M()
 
 namespace au {
 
@@ -356,7 +356,11 @@ namespace au {
 			typename std::map<K, V >::iterator iter = std::map<K,V>::find(key);
 			typename std::map<K, V >::iterator iter_end = std::map<K,V>::end();
 			
-			assert( iter != iter_end );	// Make sure to call isInMap before
+			if( iter == iter_end )
+			{
+				// Make sure to call isInMap before
+				LM_X(1,("Error extracting an element from an au::simple_map without checking first it was included"));
+			}
 			
 			V v = iter->second;
 			std::map<K,V>::erase(iter);

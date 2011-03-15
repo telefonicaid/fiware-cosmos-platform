@@ -16,7 +16,8 @@
 
 #include "LockDebugger.h"        /* Own interface                            */
 #include "samsonLogMsg.h"		 /* LOG_ERROR								 */
-#include <assert.h>				// assert(.)
+
+#include "logMsg.h"					 // LM_M()
 
 /* ****************************************************************************
 *
@@ -62,8 +63,7 @@ namespace au {
 		// Make sure there are no errors with lock
 		if (ans != 0)
 		{
-			LOG_ERROR(("pthread_mutex_lock error"));
-			assert(ans == 0);
+			LM_X(1,("pthread_mutex_lock error"));
 		}
 		
 		std::set<void*> *locksVector = _getLocksVector();
@@ -74,15 +74,13 @@ namespace au {
 		// We do not autoblock
 		if (locksVector->find( new_lock ) !=  locksVector->end() )
 		{
-			std::cerr << "Autolock detected\n";
-			assert( false );
+			LM_X(1,("Autolock detected"));
 		}
 
 		// We are not blocked
 		if ( _cross_blocking(new_lock) )
 		{
-			std::cerr << "Cross lock detected \n";
-			assert( false );
+			LM_X(1,("Cross lock detected"));
 		}
 		
 		// Add the new lock
@@ -102,8 +100,7 @@ namespace au {
 
 		if (ans != 0)
 		{
-			LOG_ERROR(("pthread_mutex_lock error"));
-			assert(ans == 0);
+			LM_X(1,("pthread_mutex_lock error"));
 		}
 		
 		std::set<void*> *locksVector = _getLocksVector();
@@ -114,7 +111,8 @@ namespace au {
 		std::cout << o.str();
 #endif		
 		// Make sure it was there
-		assert( locksVector->find( new_lock ) != locksVector->end() );
+		if( locksVector->find( new_lock ) == locksVector->end() )
+			LM_X(1,("Error debugging locks. Removing a lock that was not previously defined"));
 		
 		locksVector->erase( new_lock );
 		
@@ -192,8 +190,7 @@ namespace au {
 
 		if (!data)
 		{
-			LOG_ERROR(("pthread_getspecific returned NULL"));
-			assert(!data);  // Only put the name on the thread once
+			LM_X(1,("pthread_getspecific returned NULL during lock debugging"));
 		}
 	
 		pthread_setspecific( lockDebugger->key_title  , new std::string( title ) );

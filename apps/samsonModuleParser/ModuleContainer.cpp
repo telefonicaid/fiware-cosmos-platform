@@ -16,6 +16,72 @@
 
 namespace ss {
 	
+	
+	ModuleContainer::ModuleContainer( std::string _name )
+	{
+		// Nick name could be sna or sna.cdrs or sna.cdrs.spain.... reverse domain
+		name = _name;
+	}
+	
+#pragma mark DEFINE NAME
+	
+	std::string ModuleContainer::getDefineUniqueName()
+	{
+		std::ostringstream o;
+		o << "_H_SS_";
+		
+		std::vector<std::string> tockens = tockenizeWithDots( name.c_str() );	
+		for (size_t i = 0 ; i < tockens.size() ; i++)
+			o << tockens[i] << "_";
+		
+		o << "Module";
+		return o.str();
+		
+	}
+	
+	
+	
+#pragma mark Begin and End namepsace definitions
+	
+	std::string ModuleContainer::getClassName()
+	{
+		return "Module";
+	}
+	
+	std::string ModuleContainer::getFullClassName()
+	{
+		
+		std::ostringstream o;
+		o << "ss::";
+		
+		std::vector<std::string> tockens = tockenizeWithDots( name.c_str() );	
+		for (size_t i = 0 ; i < tockens.size() ; i++)
+			o << tockens[i] << "::";
+		
+		o << "Module";
+		return o.str();
+	}
+	
+	
+#pragma mark Begin and End namepsace definitions
+	
+	
+	std::vector<std::string> ModuleContainer::tockenizeWithDots( std::string myString )
+	{
+		if( myString.length() > 1000 )
+			LM_X(1,("Error tokenizing a string with more than 1000 characters"));
+		
+		char tmp[1000];
+		strcpy(tmp, myString.c_str() );
+		std::vector<std::string> tockens;
+		char *p = strtok(tmp, ".");
+		while (p) {
+			tockens.push_back( std::string(p) ); 
+			p = strtok(NULL, " ");
+		}			
+		return tockens;
+	}
+
 	void ModuleContainer::parse( AUTockenizer *module_creator ,  int begin ,int end )
 	{
 		
@@ -23,7 +89,9 @@ namespace ss {
 		
 		while( pos < end )
 		{
-			assert( !module_creator->isSpecial( pos ) );
+			if( module_creator->isSpecial( pos ) )
+				LM_X(1,("Error parsing module definition"));
+
 			std::string mainCommand = module_creator->itemAtPos( pos++ );
 			
 			if( mainCommand == "title" )
@@ -60,7 +128,8 @@ namespace ss {
 			
 		}
 		
-		assert( pos == (end+1));	//Make sure parsing is correct
+		if( pos != (end+1))
+			LM_X(1,("Error parsing module definition. Invalid number of items in the definition"));
 		
 	}
 }

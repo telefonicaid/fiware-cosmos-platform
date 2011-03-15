@@ -23,13 +23,16 @@ samsonCommon
 protobuf
 pthread
 dl
-curses
+lm
+pa
 )
 
 # Include directories
 # ------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
+include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
+include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 
 
 # SAMSON Executable

@@ -3,7 +3,6 @@
 
 #include <sstream>
 #include "au_map.h"
-#include "assert.h"			// assert(.)
 
 namespace ss {
   

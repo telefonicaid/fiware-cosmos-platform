@@ -17,7 +17,7 @@
 #include <errno.h>              /* errno                                     */
 #include <string.h>             /* strerror                                  */
 #include <stdarg.h>             /* ellipses                                  */
-
+#include <stdlib.h>				/* free()									 */
 
 
 /******************************************************************************

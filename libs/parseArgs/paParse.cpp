@@ -408,8 +408,11 @@ int paParse
 	if ((s != -2) && ((s = paDefaultValues(paList)) == -1))
 		RETURN_ERROR("paDefaultValues");
 
+#if 0
+	// Samson doesn't use paRcFileParse ...
 	if ((s != -2) && ((s = paRcFileParse(paList)) == -1))
 		RETURN_ERROR("paRcFileParse");
+#endif
 
 	if ((s != -2) && ((s = paEnvVals(paList)) == -1))
 		RETURN_ERROR("paEnvVals");

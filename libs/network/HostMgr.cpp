@@ -41,9 +41,29 @@ HostMgr::HostMgr(unsigned int size)
 	if (hostV == NULL)
 		LM_X(1, ("error allocating room for %d delilah hosts", size));
 
-	LM_M(("Allocated a Host Vector for %d hosts", size));
 	localIps();
 	list("init");
+}
+
+
+
+/* ****************************************************************************
+*
+* ~HostMgr
+*/
+HostMgr::~HostMgr()
+{
+	unsigned int  ix;
+
+	for (ix = 0; ix < size; ix++)
+	{
+		if (hostV[ix] == NULL)
+			continue;
+
+		remove(hostV[ix]->name);
+	}
+	
+	free(hostV);
 }
 
 
@@ -70,7 +90,6 @@ void HostMgr::ipsGet(Host* hostP)
 			if ((hostP->ip == NULL) && (strcmp(buf, "127.0.0.1") != 0))
 			{
 				hostP->ip = strdup(buf);
-				LM_M(("Setting IP '%s' for host '%s'", hostP->ip, hostP->name));
 			}
 			else
 				aliasAdd(hostP, buf);
@@ -149,7 +168,6 @@ Host* HostMgr::insert(Host* hostP)
 	{
 		if (hostV[ix] == NULL)
 		{
-			LM_M(("Inserting host '%s'", hostP->name));
 			hostV[ix] = hostP;
 			list("Host Added");
 			return hostV[ix];
@@ -215,8 +233,6 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	char*  dotP;
 	char*  alias = NULL;
 
-	LM_M(("***** New host: name: '%s', ip: '%s'", name, ip));
-
 	if ((name == NULL) && (ip == NULL))
 		LM_X(1, ("name AND ip NULL - cannot add a ghost host ..."));
 
@@ -240,7 +256,6 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	{
 		int ix = 0;
 
-		LM_M(("gethostbyname proposed the name '%s' for '%s'", heP->h_name, name));
 		ip2string(*((int*) heP->h_addr_list[ix]), ipX, sizeof(ipX));
 		if (ip == NULL)
 			ip = ipX; 
@@ -275,7 +290,6 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	if (hostP == NULL)
 		LM_X(1, ("malloc(%d): %s", sizeof(Host), strerror(errno)));
 
-	LM_M(("name: '%s'", name));
 	if (name != NULL)
 		hostP->name = strdup(name);
 
@@ -313,7 +327,6 @@ void HostMgr::aliasAdd(Host* host, const char* alias)
 		if (host->alias[ix] == NULL)
 		{
 			host->alias[ix] = strdup(alias);
-			LM_M(("Added alias '%s' for host '%s'", host->alias[ix], host->name));
 			return;
 		}
 	}
@@ -347,7 +360,13 @@ bool HostMgr::remove(const char* name)
 		if (hostP->ip != NULL)
 			free(hostP->ip);
 
-		LM_TODO(("Also free up aliases ..."));
+		for (unsigned int aIx = 0; aIx < sizeof(hostP->alias) / sizeof(hostP->alias[0]); aIx++)
+		{
+			if (hostP->alias[aIx] == NULL)
+				continue;
+
+			free(hostP->alias[aIx]);
+		}
 
 		free(hostP);
 		hostV[ix] = NULL;

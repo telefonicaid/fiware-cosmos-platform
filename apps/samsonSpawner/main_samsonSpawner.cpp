@@ -13,6 +13,7 @@
 #include <signal.h>             // kill, SIGINT, ...
 
 #include "parseArgs.h"          // parseArgs
+#include "paConfig.h"           // paConfigCleanup
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace levels
 
@@ -725,6 +726,25 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 
 
 
+void sigHandler(int sigNo)
+{
+	printf("Caught signal %d\n", sigNo);
+
+	if (sigNo == SIGINT)
+	{
+		if (networkP && networkP->hostMgr)
+		{
+			printf("Deleting Host Manager\n");
+
+			delete networkP->hostMgr;
+			delete networkP;
+
+			exit(1);
+		}
+	}
+}
+
+
 /* ****************************************************************************
 *
 * main - 
@@ -732,6 +752,8 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 int main(int argC, const char *argV[])
 {
 	SamsonSpawner* spawnerP;
+
+	signal(SIGINT, sigHandler);
 
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);
@@ -741,6 +763,7 @@ int main(int argC, const char *argV[])
 	paConfig("log to file",                   (void*) true);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
+	paConfigCleanup();
 
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)

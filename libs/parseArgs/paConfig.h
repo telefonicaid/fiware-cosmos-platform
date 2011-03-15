@@ -72,4 +72,12 @@ extern char       paPid[16];
 */
 extern int paConfigActions(bool preTreat);
 
+
+
+/* ****************************************************************************
+*
+* paConfigCleanup - 
+*/
+extern void paConfigCleanup(void);
+
 #endif

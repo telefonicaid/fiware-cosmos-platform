@@ -41,7 +41,7 @@ char*      paPrefix              = NULL;
 int        paVersion             = 0;
 char*      paVersionString       = NULL;
 char*      paExecVersion         = NULL;
-char*      paTraceInfoAtEol      = (char*) "#";
+char*      paTraceInfoAtEol      = NULL;
 char*      paProgName            = NULL;
 char*      paRcFileName          = NULL;
 char*      paRcFileDir           = NULL;
@@ -53,12 +53,11 @@ bool       paLogToScreen         = false;
 bool       paLogScreenToStderr   = false;
 bool       paLogScreenOnlyErrors = false;
 
-char*      paLogFilePath         = (char*) "/tmp";
-char*      paLogFileLineFormat   = (char*) "DEF";
-char*      paLogFileTimeFormat   = (char*) "DEF";
-
-char*      paLogScreenLineFormat = (char*) "DEF";
-char*      paLogScreenTimeFormat = (char*) "DEF";
+char*      paLogFilePath         = NULL;
+char*      paLogFileLineFormat   = NULL;
+char*      paLogFileTimeFormat   = NULL;
+char*      paLogScreenLineFormat = NULL;
+char*      paLogScreenTimeFormat = NULL;
 
 bool       paLogClearing         = false;
 char*      paHelpFile            = NULL;
@@ -127,18 +126,6 @@ static void paConfigInit(void)
 		paVersionString       = strdup(paVersionString);
 	if (paExecVersion)
 		paExecVersion         = strdup(paExecVersion);
-	if (paTraceInfoAtEol)
-		paTraceInfoAtEol      = strdup(paTraceInfoAtEol);
-	if (paLogFilePath)
-		paLogFilePath         = strdup(paLogFilePath);
-	if (paLogFileLineFormat)
-		paLogFileLineFormat   = strdup(paLogFileLineFormat);
-	if (paLogFileTimeFormat)
-		paLogFileTimeFormat   = strdup(paLogFileTimeFormat);
-	if (paLogScreenLineFormat)
-		paLogScreenLineFormat = strdup(paLogScreenLineFormat);
-	if (paLogScreenTimeFormat)
-		paLogScreenTimeFormat = strdup(paLogScreenTimeFormat);
 	if (paHelpFile)
 		paHelpFile            = strdup(paHelpFile);
 	if (paHelpText)
@@ -146,7 +133,39 @@ static void paConfigInit(void)
 	if (paTracelevels)
 		paTracelevels         = strdup(paTracelevels);
 
-	/* Should these be freed after paParse finishes? */
+
+	if (paTraceInfoAtEol)
+		paTraceInfoAtEol      = strdup(paTraceInfoAtEol);
+	else
+	   paTraceInfoAtEol      = strdup("#");
+
+	if (paLogFilePath)
+		paLogFilePath         = strdup(paLogFilePath);
+	else
+		paLogFilePath         = strdup("/tmp");
+
+
+	if (paLogFileLineFormat)
+		paLogFileLineFormat   = strdup(paLogFileLineFormat);
+	else
+		paLogFileLineFormat   = strdup("DEF");
+
+	if (paLogFileTimeFormat)
+		paLogFileTimeFormat   = strdup(paLogFileTimeFormat);
+	else
+		paLogFileTimeFormat   = strdup("DEF");
+
+	if (paLogScreenLineFormat)
+		paLogScreenLineFormat = strdup(paLogScreenLineFormat);
+	else
+		paLogScreenLineFormat = strdup("DEF");
+
+	if (paLogScreenTimeFormat)
+		paLogScreenTimeFormat = strdup(paLogScreenTimeFormat);
+	else
+		paLogScreenTimeFormat = strdup("DEF");
+
+	/* Should all these be freed after paParse finishes? */
 }
 
 
@@ -346,4 +365,46 @@ int paConfigActions(bool preTreat)
 	}
 
 	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* paConfigCleanup - 
+*/
+void paConfigCleanup(void)
+{
+	if (paPrefix)
+		free(paPrefix);
+	if (paProgName)
+		free(paProgName);
+	if (paRcFileName)
+		free(paRcFileName);
+	if (paRcFileDir)
+		free(paRcFileDir);
+	if (paGenericRcDir)
+		free(paGenericRcDir);
+	if (paVersionString)
+		free(paVersionString);
+	if (paExecVersion)
+		free(paExecVersion);
+	if (paHelpFile)
+		free(paHelpFile);
+	if (paHelpText)
+		free(paHelpText);
+	if (paTracelevels)
+		free(paTracelevels);
+	if (paTraceInfoAtEol)
+		free(paTraceInfoAtEol);
+	if (paLogFilePath)
+		free(paLogFilePath);
+	if (paLogFileLineFormat)
+		free(paLogFileLineFormat);
+	if (paLogFileTimeFormat)
+		free(paLogFileTimeFormat);
+	if (paLogScreenLineFormat)
+		free(paLogScreenLineFormat);
+	if (paLogScreenTimeFormat)
+		free(paLogScreenTimeFormat);
 }

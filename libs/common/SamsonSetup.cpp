@@ -20,7 +20,11 @@
 #define SETUP_DEFAULT_num_processes						2
 
 #define SETUP_memory									"memory"
+#ifdef __LP64__
 #define SETUP_DEFAULT_memory							2147483648 // 2Gb
+#else
+#define SETUP_DEFAULT_memory							0x6fffffff // 1Gb
+#endif
 
 #define SETUP_shared_memory_size_per_buffer						"shm_size_per_buffer"
 #define SETUP_DEFAULT_shared_memory_size_per_buffer				67108864	// 64 Mb

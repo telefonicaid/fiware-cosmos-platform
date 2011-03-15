@@ -37,6 +37,7 @@ class Network : public NetworkInterface
 
 public:
 	Network(Endpoint::Type type, const char* alias, unsigned short port = 0, int endpoints = 80, int workers = 10);
+	~Network();
 
 	void         init(const char* controllerName = NULL);
 	void         platformProcesses(void);

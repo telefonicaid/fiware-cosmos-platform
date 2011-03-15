@@ -184,6 +184,7 @@ public:
 	Endpoint(Type type, char* alias);
 	Endpoint(Type type, std::string ipAndPort);
 	Endpoint(Type type, std::string name, std::string ip, unsigned short port, int rFd, int wFd);
+	~Endpoint();
 
 	SendJob* jobPop(void);
 	void     jobPush(SendJob*);

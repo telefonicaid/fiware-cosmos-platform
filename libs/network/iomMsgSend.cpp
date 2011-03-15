@@ -236,7 +236,7 @@ int iomMsgSend
 	int                  s;
 	struct timeval       start;
 	struct timeval       end;
-	bool                  outHook;
+	bool                 outHook;
 
 	outHook = lmOutHookInhibit();
 

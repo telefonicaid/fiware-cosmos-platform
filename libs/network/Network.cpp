@@ -321,6 +321,30 @@ Network::Network(Endpoint::Type type, const char* alias, unsigned short port, in
 
 /* ****************************************************************************
 *
+* Destructor
+*/
+Network::~Network()
+{
+	int ix;
+
+	if (hostMgr)
+		delete hostMgr;
+
+	for (ix = 0; ix < Endpoints; ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		delete endpoint[ix];
+	}	
+
+	free(endpoint);
+}
+
+
+
+/* ****************************************************************************
+*
 * setPacketReceiver - set the element to be notified when packages arrive
 */
 void Network::setPacketReceiver(PacketReceiverInterface* receiver)
@@ -532,6 +556,8 @@ void Network::init(const char* controllerName)
 int Network::helloSend(Endpoint* ep, Message::MessageType type)
 {
 	Message::HelloData hello;
+
+	memset(&hello, 0, sizeof(hello));
 
 	strncpy(hello.name,   endpoint[ME]->name.c_str(),   sizeof(hello.name));
 	strncpy(hello.ip,     endpoint[ME]->ip,             sizeof(hello.ip));
@@ -1844,7 +1870,7 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 				while (endpoint[CONTROLLER]->rFd == -1)
 				{
-				  LM_M( ("Reconnecting to Controller %s:%d",endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port));
+					LM_M( ("Reconnecting to Controller %s:%d",endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port));
 					endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
 					sleep(1); // sleep one second before reintenting connection to controller
 				}
@@ -2304,7 +2330,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 		endpoint[newSlot] = ep;
 	}
 	else
-        LM_T(LmtEndpointSlots, ("NOT changing %s (%s@%s) from slot %d to slot %d", hello->alias, hello->name, hello->ip, oldSlot, newSlot));
+		LM_T(LmtEndpointSlots, ("NOT changing %s (%s@%s) from slot %d to slot %d", hello->alias, hello->name, hello->ip, oldSlot, newSlot));
 
 	helloInfoCopy(ep, hello);
 	ep->helloReceived = true;

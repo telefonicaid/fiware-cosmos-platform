@@ -76,7 +76,7 @@ Endpoint::Endpoint(void)
 */
 Endpoint::Endpoint(Type type, unsigned short port)
 {
-	init();
+	Endpoint();
 
 	this->type             = type;
 	this->port             = port;
@@ -140,6 +140,22 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 	this->state            = (rFd == -1)? Unconnected : Connected;
 
 	ipSet(ip.c_str());
+}
+
+
+
+/* ****************************************************************************
+*
+* Destructor
+*/
+Endpoint::~Endpoint()
+{
+	if (ip != NULL)
+		free(ip);
+
+	if (alias != NULL)
+		free(alias);
+
 }
 
 
@@ -343,12 +359,19 @@ void Endpoint::jobInfo(int* messages, long long* dataLen)
 void Endpoint::ipSet(const char* ip)
 {
 	if (this->ip != NULL)
+	{
 		free(this->ip);
+		
+	}
 
 	if (ip == NULL)
+	{
 		this->ip = strdup("noip");
+	}
 	else
+	{
 		this->ip = strdup(ip);
+	}
 }
 
 

@@ -11,7 +11,7 @@ max_open_files_per_device	20  	# Currently unused
 
 # Server setup
 # ------------------------------------------------------------------------------------------
-#memory 10000000000			# 10Gb of RAM memory
+#memory 15000000000			# 15Gb of RAM memory
 #max_file_size 500000000	  	# 500 Mb
 #num_processes 	8		  	# Number of parallel processes working on this maxine	
 #shm_size_per_buffer 256000000	  	# Buffer of 256 Mbytes

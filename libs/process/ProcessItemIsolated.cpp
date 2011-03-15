@@ -8,6 +8,8 @@
 #include "iomMsgAwait.h"          // iomMsgAwait
 #include "ProcessItemIsolated.h"  // Own interface
 
+#include <sys/types.h>      
+#include <sys/wait.h>             // waitpid()
 
 //#define ISOLATED_PROCESS_AS_THREAD
 

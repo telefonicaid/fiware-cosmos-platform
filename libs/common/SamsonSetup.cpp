@@ -196,7 +196,7 @@ namespace ss
 		int max_num_paralell_outputs =  ( memory - num_processes*shared_memory_size_per_buffer ) / (4*max_file_size);
 		if( num_paralell_outputs > max_num_paralell_outputs )
 		{
-			LM_X(1,("Num of maximum paralell outputs is to high to the memory setup. Review num_paralell_outputs in setup.txt file.Current value %d Max value %d", max_num_paralell_outputs , max_num_paralell_outputs ));
+			LM_X(1,("Num of maximum paralell outputs is to high to the memory setup. Review num_paralell_outputs in setup.txt file.Current value %d Max value %d", num_paralell_outputs , max_num_paralell_outputs ));
 			return false;
 		}
 

@@ -103,4 +103,12 @@ extern void processListShow(const char* why, bool forcedOn = false);
 */
 extern void processSpawn(ss::Process* processP);
 
+
+
+/* ****************************************************************************
+*
+* processListDelete - 
+*/
+extern void processListDelete(void);
+
 #endif

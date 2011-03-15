@@ -336,3 +336,25 @@ void processSpawn(ss::Process* processP)
 
 	processAdd(processP->type, argV[0], processP->alias, processP->controllerHost, pid, NULL);
 }
+
+
+
+/* ****************************************************************************
+*
+* processListDelete - 
+*/
+void processListDelete(void)
+{
+	for (unsigned int ix = 0; ix < processMax; ix++)
+	{
+		if (processV[ix] == NULL)
+			continue;
+
+		processRemove(processV[ix]);
+	}
+
+	free(processV);
+}
+
+
+

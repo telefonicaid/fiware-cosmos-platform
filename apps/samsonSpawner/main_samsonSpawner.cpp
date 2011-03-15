@@ -36,8 +36,8 @@
 *
 * Option variables
 */
-bool fg;
-bool noRestarts;
+bool  fg;
+bool  noRestarts;
 
 
 
@@ -52,16 +52,6 @@ PaArgument paArgs[] =
 
 	PA_END_OF_ARGS
 };
-
-
-
-/* ****************************************************************************
-*
-* Global variables
-*/
-int                 logFd        = -1;
-ss::Network*        networkP     = NULL;
-ss::ProcessVector*  procVec      = NULL;   // Should use Network's procVec, not a local copy ... 
 
 
 
@@ -82,6 +72,17 @@ public:
 private:
 	ss::Network*    networkP;
 };
+
+
+
+/* ****************************************************************************
+*
+* Global variables
+*/
+int                 logFd        = -1;
+ss::Network*        networkP     = NULL;
+ss::ProcessVector*  procVec      = NULL;   // Should use Network's procVec, not a local copy ... 
+SamsonSpawner*      spawnerP     = NULL;
 
 
 
@@ -732,16 +733,23 @@ void sigHandler(int sigNo)
 
 	if (sigNo == SIGINT)
 	{
-		if (networkP && networkP->hostMgr)
-		{
-			printf("Deleting Host Manager\n");
+		printf("Cleaning up\n");
 
-			delete networkP->hostMgr;
+		if (networkP)
 			delete networkP;
+
+		if (spawnerP)
 			delete spawnerP;
 
-			exit(1);
-		}
+		if (procVec)
+			free(procVec);
+
+		if (progName)
+			free(progName);
+
+		processListDelete();
+
+		exit(1);
 	}
 }
 
@@ -752,8 +760,6 @@ void sigHandler(int sigNo)
 */
 int main(int argC, const char *argV[])
 {
-	SamsonSpawner* spawnerP;
-
 	signal(SIGINT, sigHandler);
 
 	paConfig("prefix",                        (void*) "SSS_");

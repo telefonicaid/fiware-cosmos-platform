@@ -167,11 +167,13 @@ namespace ss {
 			size = 0;
 		}
 		
+#ifdef __LP64__
 		void append( uint64 _size , uint64 _kvs )
 		{
 			size += _size;
 			kvs += _kvs;
 		}
+#endif
 		
 		void append( FullKVInfo other )
 		{
@@ -179,11 +181,13 @@ namespace ss {
 			kvs += other.kvs;
 		}
 		
+#ifdef __LP64__
 		void remove( uint64 _size , uint64 _kvs )
 		{
 			size -= _size;
 			kvs -= _kvs;
 		}
+#endif
 		
 		void remove( FullKVInfo other )
 		{

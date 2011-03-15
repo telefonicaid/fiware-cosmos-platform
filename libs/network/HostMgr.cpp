@@ -434,6 +434,9 @@ Host* HostMgr::lookup(const char* name)
 		}
 	}
 
+	if (nameNoDot != NULL)
+		free(nameNoDot);
+
 	return NULL;
 }
 

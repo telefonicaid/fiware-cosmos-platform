@@ -101,11 +101,16 @@ int main(int argC, const char *argV[])
 	ss::SamsonSetup::load( workingDir );		// Load setup and create default directories
 
 	// Init singlelton in single thread mode
+	ss::DiskManager::init();		// Disk manager
+	ss::FileManager::init();		// File manager
 	ss::MemoryManager::init();		// Memory manager
 	ss::ProcessManager::init();		// Init process manager
 	ss::ModulesManager::init();		// Init the modules manager
 	ss::DiskManager::shared();		// Disk manager
 	ss::FileManager::shared();		// File manager
+	
+	// Google protocol buffer deallocation
+	atexit(	google::protobuf::ShutdownProtobufLibrary );
 	
 	LM_M(("samsonLocal started with memory=%s and #processors=%d", au::Format::string( ss::SamsonSetup::shared()->memory, "B").c_str() , ss::SamsonSetup::shared()->num_processes ));
 	
@@ -171,9 +176,8 @@ int main(int argC, const char *argV[])
 	
 	// Run delilah client in foreground
 	delilahConsole.run();
-	
-	assert( false );	// We never come back to here
-	
+
+	LM_M(("samsonLocal exit correctly"));
 }
 
 

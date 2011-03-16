@@ -56,6 +56,20 @@ namespace ss {
 		}	
 		
 	}	
+	
+	SamsonController::~SamsonController()
+	{
+		
+		for (int i = 0 ; i < num_workers ; i++ )
+			delete worker_status[i];
+
+		free(worker_status);
+		free(worker_status_time);
+		
+		
+	}
+	
+	
 
 	void SamsonController::runBackgroundProcesses()
 	{

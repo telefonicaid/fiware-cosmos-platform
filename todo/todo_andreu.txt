@@ -4,6 +4,7 @@ SUGGESTION:
 Use boost::FileSystem library
 
 TODO:
+* Avoid scripts to fail for too many outputs
 * Process manager implemented with priorities and not type ( priority to halt processes and top priority processes )
 * Inform about the memory and process used when running samsonLocal
 * Valgrind debuign

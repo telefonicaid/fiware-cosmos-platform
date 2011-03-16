@@ -12,11 +12,29 @@ namespace ss
 
 	
 	static FileManager* sharedFileManager=NULL;
+
+	void free_FileManager(void)
+	{
+		if( sharedFileManager )
+			delete sharedFileManager;
+		sharedFileManager = NULL;
+	}
+	
+	void FileManager::init()
+	{
+		if( sharedFileManager )
+			LM_X(1,("Error at init the DiskManager singlenton"));
+		
+		sharedFileManager = new FileManager();
+		
+		atexit(free_FileManager);
+		
+	}
 	
 	FileManager* FileManager::shared()
 	{
-		if( !  sharedFileManager )
-			sharedFileManager = new FileManager();
+		if( ! sharedFileManager )
+			LM_X(1,("Call DiskManager::init() to use this singlenton"));
 		return sharedFileManager;
 	}
 	

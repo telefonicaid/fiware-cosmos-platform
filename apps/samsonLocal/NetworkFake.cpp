@@ -58,7 +58,7 @@ namespace ss {
 	size_t NetworkFake::_send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP)
 	{
 		// Add packet in the list of the center
-	   center->addPacket(new NetworkFakeCenterPacket(code,*packetP, getMyidentifier(), endpointId, sender));
+	   center->addPacket( new NetworkFakeCenterPacket(code, packetP , getMyidentifier(), endpointId, sender) );
 
 		return 0;
 	}

@@ -57,6 +57,9 @@ namespace ss {
 		
 	public:
 
+		// Init the singlenton when there is only one thread
+		static void init();
+		
 		/**
 		 Singleton implementation of disk manager
 		 */

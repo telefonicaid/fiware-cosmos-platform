@@ -19,8 +19,18 @@
 
 namespace ss {
 	
-	// Handy function
-
+	ControllerDataManager::ControllerDataManager( ) : DataManager( getLogFileName() )
+	{
+		info_kvs.clear();
+		info_txt.clear();
+	}
+	
+	ControllerDataManager::~ControllerDataManager()
+	{
+		// Clear all queues and automatic operations
+		_clear();
+	}
+	
 	void ControllerDataManager::copyQueue( Queue * q_from , network::FullQueue * q_to )
 	{
 		 network::Queue *q = q_to->mutable_queue();
@@ -289,9 +299,8 @@ namespace ss {
 
 		if( commandLine.isArgumentValue(0, "remove_all" , "remove_all" ) )
 		{
-			// Not controlled files to not be removed
-			
-			queues.clear();
+			// remove completelly queues
+			queues.clearMap();
 			
 			info_kvs.clear();
 			info_txt.clear();
@@ -847,13 +856,15 @@ namespace ss {
 				return; 
 			}
 		}
-		
-		if( (int)info->outputs.size() > SamsonSetup::shared()->num_paralell_outputs )
-		{
-			error_message << "Operation with too many outputs ( " << info->outputs.size() << " ). The limit in this SAMSON cluster is " << SamsonSetup::shared()->num_paralell_outputs;
-			info->setError( error_message.str() );
-			return; 
-		}
+
+		// Check too many outputs error
+		if( info->operation->getType() != Operation::script )
+			if( (int)info->outputs.size() > SamsonSetup::shared()->num_paralell_outputs )
+			{
+				error_message << "Operation with too many outputs ( " << info->outputs.size() << " ). The limit in this SAMSON cluster is " << SamsonSetup::shared()->num_paralell_outputs;
+				info->setError( error_message.str() );
+				return; 
+			}
 		
 		// Check output	
 		for (int i = 0 ; i < (int)info->outputs.size() ; i++)

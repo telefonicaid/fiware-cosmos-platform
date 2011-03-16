@@ -15,6 +15,7 @@
 #include "Buffer.h"				// ss::Buffer
 #include "SamsonSetup.h"		// ss:SamsonSetup
 #include <sstream>				// std::stringstream
+
 namespace ss
 {
 	
@@ -37,10 +38,20 @@ namespace ss
 	
 	static MemoryManager *_memoryManager = NULL;
 
+	void free_MemoryManager(void)
+	{
+		if( _memoryManager )
+			delete _memoryManager;
+		_memoryManager = NULL;
+	}
+	
 	void MemoryManager::init()
 	{
 		assert( !_memoryManager );
 		_memoryManager = new MemoryManager ();
+		
+		// Schedule the free function at exit
+		atexit( free_MemoryManager );
 		
 		// Create the thread to serve memory requests.
 		pthread_t t;
@@ -90,6 +101,12 @@ namespace ss
 			freeSharedMemory(tmp);
 		}
 		
+	}
+	
+	MemoryManager::~MemoryManager()
+	{
+		// Free the vector of flags for shared memory areas
+		free(shared_memory_used_buffers);
 	}
 	
 	

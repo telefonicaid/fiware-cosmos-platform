@@ -5,7 +5,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 
-add_definitions( -fprofile-arcs -ftest-coverage )
+#add_definitions( -fprofile-arcs -ftest-coverage )
 
 
 # Test file

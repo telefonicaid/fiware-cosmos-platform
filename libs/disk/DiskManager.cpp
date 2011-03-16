@@ -9,11 +9,29 @@ namespace ss {
 
 	static DiskManager* sharedDiskManager=NULL;
 	
+	void free_DiskManager(void)
+	{
+		if( sharedDiskManager )
+			delete sharedDiskManager;
+		sharedDiskManager = NULL;
+	}
+	
+	void DiskManager::init()
+	{
+		if( sharedDiskManager )
+			LM_X(1,("Error at init the DiskManager singlenton"));
+		
+		sharedDiskManager = new DiskManager();
+		
+		atexit(free_DiskManager);
+		
+	}
+	
 	DiskManager* DiskManager::shared()
 	{
-		if( !  sharedDiskManager )
-			sharedDiskManager = new DiskManager();
-			return sharedDiskManager;
+		if( ! sharedDiskManager )
+			LM_X(1,("Call DiskManager::init() to use this singlenton"));
+		return sharedDiskManager;
 	}
 	
 	DiskManager::DiskManager()

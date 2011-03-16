@@ -11,6 +11,13 @@ namespace ss
 	
 	static ProcessManager *processManager;
 
+	void free_ProcessManager(void)
+	{
+		if( processManager )
+			delete processManager;
+		processManager = NULL;
+	}
+	
 	void *run_thread_process_manager(void*p)
 	{
 		ProcessManager* tmp = (ProcessManager*) p;
@@ -22,6 +29,8 @@ namespace ss
 	{
 		assert( ! processManager );// Init only once
 		processManager = new ProcessManager();	  
+		
+		atexit(free_ProcessManager);
 	}
 	
 	ProcessManager* ProcessManager::shared()

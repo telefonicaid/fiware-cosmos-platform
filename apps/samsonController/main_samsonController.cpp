@@ -105,12 +105,16 @@ int main(int argC, const char* argV[])
 
 	LM_T(LmtInit, ("%d workers", processVec->processes - 1));
 
+	// Init singlentons
 	au::LockDebugger::shared();         // Lock usage debugging (necessary here where there is only one thread)
 	ss::SamsonSetup::load(workingDir);  // Load setup and create all directories
-	ss::DiskManager::shared();          // Disk manager
+	ss::DiskManager::init();		// Disk manager
+	ss::FileManager::init();		// File manager
 	ss::MemoryManager::init();          // Memory manager
 	ss::ModulesManager::init();			// Init the modules manager
 	
+	// Google protocol buffer deallocation
+	atexit(	google::protobuf::ShutdownProtobufLibrary );
 	
 	
 	// Instance of network object and initialization

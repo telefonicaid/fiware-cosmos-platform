@@ -51,11 +51,8 @@ namespace ss {
 		
 	public:
 
-		ControllerDataManager( ) : DataManager( getLogFileName() )
-		{
-			info_kvs.clear();
-			info_txt.clear();
-		}
+		ControllerDataManager( );
+		~ControllerDataManager();
 		
 		/**
 		 Get a string describing status

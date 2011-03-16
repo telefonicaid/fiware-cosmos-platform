@@ -39,6 +39,11 @@ namespace ss
 			hndl    = NULL;
 		}
 		
+		~Module()
+		{
+			clearModule();
+		}
+		
 	public:		
 		
 		Operation* getOperation( std::string name )
@@ -100,15 +105,28 @@ namespace ss
 			datas.insert( std::pair<std::string , Data*> ( data->getName() , data ) );
 		}
 
-		void copyFrom( Module *m)
+		void moveFrom( Module *m )
 		{
 			datas.insert( m->datas.begin() ,  m->datas.end() );
 			operations.insert( m->operations.begin() , m->operations.end());
+
+			// We clear here since otherwise will be deleted twice at the destructor
+			m->datas.clear();
+			m->operations.clear();
 			
 		}
 		
 		void clearModule()
 		{
+			
+			// Remove all operations and datas
+			
+			for ( std::map<std::string, Operation*>::iterator o = operations.begin() ; o != operations.end() ; o++)
+				delete o->second;
+			
+			for ( std::map<std::string, Data*>::iterator d = datas.begin() ; d != datas.end() ; d++)
+				delete d->second;
+			
 			datas.clear();
 			operations.clear();
 		}

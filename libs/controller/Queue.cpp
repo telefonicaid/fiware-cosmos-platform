@@ -13,6 +13,7 @@ namespace ss
 	
 	Queue::Queue( std::string name , KVFormat format )
 	{
+
 		_name = name;
 		_format = format;
 		
@@ -20,16 +21,23 @@ namespace ss
 		monitor.addMainParameter( "format" , _format.str() );
 		
 		_num_files =0 ;
-		
+
+		//LM_M(("Creating queue %s %p", _name.c_str(),this));
 		
 	}
 	
 	Queue::~Queue()
 	{
+		// Clear the map including the instances inside
+		//LM_M(("Destroying queue %s %p", _name.c_str(),this));
+		files.clearMap();
 	}
 	
 	void Queue::addFile( int worker, std::string _fileName , KVInfo info )
 	{
+		
+		//LM_M(("Pushing file into queue queue %s", _name.c_str()));
+		
 		// Update global info
 		_info.append( info );
 		
@@ -77,7 +85,7 @@ namespace ss
 	void Queue::clear()
 	{
 		_info.clear();
-		files.clear();
+		files.clearMap();	// Clear files including the instances inside
 	}
 	
 	void Queue::copyFileFrom( Queue *q )

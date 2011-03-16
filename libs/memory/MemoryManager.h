@@ -154,7 +154,10 @@ namespace ss {
 		MemoryManager();
 		
 	public:
+		
+		~MemoryManager();
 
+		// Init the singlenton
 		static void init();
 		
 		/**

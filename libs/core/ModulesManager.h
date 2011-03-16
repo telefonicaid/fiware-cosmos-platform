@@ -19,11 +19,11 @@ namespace ss {
 	{
 		
 		au::Lock lock;								//!< General lock for modules access
-		std::map<std::string, Module*> modules;		//!< Modules managed by the platform
 		
 	public:
 
 		ModulesManager();				//!< Private constructor to implement singleton
+		~ModulesManager();
 		
 		static void init();
 		static ModulesManager* shared();
@@ -35,7 +35,7 @@ namespace ss {
 		void addModule(  Module *container );
 		
 		
-		Module *_getModule( std::string name );
+		//Module *_getModule( std::string name );
 		std::string getObjectName( std::string name );
 				
 		void addModules();
@@ -44,11 +44,11 @@ namespace ss {
 		
 		void reloadModules();
 		
-		Module *getModule( std::string name );
+		//Module *getModule( std::string name );
 		
-		std::string showModules();
-		std::string showModule(std::string module);
-		std::string showFind( std::string command);
+		//std::string showModules();
+		//std::string showModule(std::string module);
+		//std::string showFind( std::string command);
 		
 		void fill( network::OperationList *ol , std::string command  );
 		void fill( network::DataList *dl, std::string command  );

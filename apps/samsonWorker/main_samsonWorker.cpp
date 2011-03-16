@@ -110,13 +110,16 @@ int main(int argC, const char *argV[])
 	
 	// Init singleton in single thread mode
 	// --------------------------------------------------------------------
+	ss::DiskManager::init();		// Disk manager
+	ss::FileManager::init();		// File manager
 	ss::MemoryManager::init();
 	ss::ProcessManager::init();
 	ss::ModulesManager::init();
 	ss::DiskManager::shared();
 	ss::FileManager::shared();
 	
-
+	// Google protocol buffer deallocation
+	atexit(	google::protobuf::ShutdownProtobufLibrary );
 
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------

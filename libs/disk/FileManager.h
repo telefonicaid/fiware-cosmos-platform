@@ -79,7 +79,7 @@ namespace ss {
 		/** 
 		 Singleton implementation
 		 */
-		
+		static void init();
 		static FileManager *shared();
 		
 

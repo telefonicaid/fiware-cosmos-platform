@@ -134,12 +134,6 @@ namespace ss {
 
 		// Run asynch command and returns the internal operation in delilah
 		size_t runAsyncCommand( std::string command );
-		
-		virtual void quit()
-		{
-			au::Console::quit();
-		}
-		
 
 		// Functions overloaded from Delilah
 		// --------------------------------------------------------

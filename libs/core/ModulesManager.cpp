@@ -57,10 +57,24 @@ namespace ss
 		reloadModules();
 	}
 	
+	ModulesManager::~ModulesManager()
+	{
+		
+	}
+
+	
+	void free_ModulesManager(void)
+	{
+		if( modulesManager )
+			delete modulesManager;
+		modulesManager = NULL;
+	}
+	
 	void ModulesManager::init()
 	{
 		assert(!modulesManager);
 		modulesManager = new ModulesManager();
+		atexit(free_ModulesManager);
 	}
 	
 	ModulesManager* ModulesManager::shared()
@@ -111,16 +125,6 @@ namespace ss
 		
 		lock.lock();
 		
-		// Remove all modules unloading from memory
-		for( std::map<std::string, Module*>::iterator i = modules.begin() ; i != modules.end() ; i++)
-		{
-			Module *module = i->second;
-			if( module->hndl)
-				dlclose(module->hndl);
-			delete module;
-		}
-		modules.clear();
-		
 		// Clear this module itself (operations and datas)
 		clearModule();
 		
@@ -128,8 +132,6 @@ namespace ss
 		
 		// Add modules again
 		addModules();
-		
-		// Add spetial function here
 		
 		/*
 		 Spetial operation to be moved to a proper file
@@ -198,11 +200,12 @@ namespace ss
 	void ModulesManager::addModule(  Module *container )
 	{
 		// Copy all the opertion to this top-level module
-		modules.insert( std::pair<std::string , Module*>( container->name , container) );
-		copyFrom( container	);
+		moveFrom( container	);
+		delete container;
 	}
 
 	
+#if 0
 	Module *ModulesManager::getModule( std::string name )
 	{
 		
@@ -212,7 +215,6 @@ namespace ss
 		
 		return module;
 	}
-	
 	
 	Module *ModulesManager::_getModule( std::string name )
 	{
@@ -231,6 +233,7 @@ namespace ss
 		else
 			return i->second;
 	}
+#endif
 	
 	std::string ModulesManager::getObjectName( std::string name )
 	{
@@ -244,7 +247,7 @@ namespace ss
 		
 	}
 	
-	
+#if	 0
 	std::string ModulesManager::showModules()
 	{
 		
@@ -315,6 +318,7 @@ namespace ss
 		lock.unlock();
 		return o.str();
 	}
+	
 	
 	std::string ModulesManager::showFind( std::string command)
 	{
@@ -408,6 +412,7 @@ namespace ss
 		
 	}
 	
+#endif
 	
 	void ModulesManager::fill( network::OperationList *ol , std::string command  )
 	{

@@ -204,8 +204,10 @@ int main( int argC , char *argV[] )
 	// Init SamsonSetup 
 	ss::SamsonSetup::load( workingDir );		// Load setup and create default directories
 	
-	// Init memory manager
+	// Init singlentons
 	ss::MemoryManager::init();
+	ss::DiskManager::init();
+	ss::FileManager::init();
 	
 	// Object to keep all the information of the test
 	ss::DiskTest test;

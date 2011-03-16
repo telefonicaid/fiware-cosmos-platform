@@ -57,12 +57,14 @@ namespace au {
 
 		
 		// Insert a pair of elements ( easy method )
-		// Returns the previous elements if any
-		V* insertInMap( K& key , V* value)
+		// If a previous element was inserted with the same key, it is automatically deleted
+		void insertInMap( K& key , V* value)
 		{
 			V* tmp =  extractFromMap( key );
+			if( tmp )
+				delete tmp;
+			
 			insert( std::pair<K,V*>( key, value) );
-			return tmp;
 		}
 		
 		/*

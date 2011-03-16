@@ -151,11 +151,16 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 Endpoint::~Endpoint()
 {
 	if (ip != NULL)
+	{
 		free(ip);
+		ip = NULL;
+	}
 
 	if (alias != NULL)
+	{
 		free(alias);
-
+		alias = NULL;
+	}
 }
 
 
@@ -361,7 +366,7 @@ void Endpoint::ipSet(const char* ip)
 	if (this->ip != NULL)
 	{
 		free(this->ip);
-		
+		this->ip = NULL;
 	}
 
 	if (ip == NULL)
@@ -394,7 +399,10 @@ char* Endpoint::aliasGet(void)
 void Endpoint::aliasSet(const char* alias)
 {
 	if (this->alias != NULL)
+	{
 		free(this->alias);
+		this->alias = NULL;
+	}
 
 	if ((alias == NULL) || (alias[0] == 0))
 		this->alias = strdup("noalias");

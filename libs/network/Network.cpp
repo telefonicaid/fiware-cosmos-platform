@@ -292,7 +292,10 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 	endpoint[ME]->state    = Endpoint::Me;
 
 	if (endpoint[ME]->ip != NULL)
+	{
 		free(endpoint[ME]->ip);
+		endpoint[ME]->ip = NULL;
+	}
 
 	endpoint[ME]->ip       = ipGet();         // ipGet returns a strdupped value;
 
@@ -339,6 +342,9 @@ Network::~Network()
 	}	
 
 	free(endpoint);
+
+	if (procVec != NULL)
+		free(procVec);
 }
 
 
@@ -835,7 +841,10 @@ static void* senderThread(void* vP)
 		}
 
 		if (job.dataP)
+		{
 			free(job.dataP);
+			job.dataP = NULL;
+		}
 	}
 
 	// Cannot really get here ... !!!
@@ -956,6 +965,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 				else if (nb != sizeof(SendJob))
 					LM_E(("error writing SendJob. Written %d bytes and not %d", nb, sizeof(SendJob)));
 				free(jobP);
+				jobP = NULL;
 			}
 
 			LM_T(LmtJob, ("sender thread created - job queue flushed"));
@@ -1694,6 +1704,7 @@ static void* msgTreatThreadFunction(void* vP)
 	LM_T(LmtThreadedMsgTreat, ("back after msgTreat - setting back state for '%s' to %d (was in 'Threaded' state while msgTreat ran)", ep->name.c_str(), ep->state));
 	
 	free(vP);
+	vP = NULL;
 	close(paramP->fd);
 
 	return NULL;
@@ -2869,7 +2880,10 @@ void Network::msgTreat(void* vP)
 	}
 
 	if (dataP != data)
+	{
 		free(dataP);
+		dataP = NULL;
+	}
 }
 
 

@@ -463,10 +463,10 @@ static int hello(ss::Endpoint* me, ss::Endpoint* ep, int* errP)
 	ss::Message::Header             header;
 	ss::Message::MessageCode        msgCode;
 	ss::Message::MessageType        msgType;
-	char                            data[1];
-	void*                           dataP   = data;
-	int                             dataLen = sizeof(data);
-	ss::Message::HelloData          hello;
+	ss::Message::HelloData          helloIn;
+	ss::Message::HelloData          helloOut;
+	void*                           dataP   = (void*) &helloIn;
+	int                             dataLen = sizeof(helloIn);
 
 	*errP = 0;
 
@@ -485,15 +485,15 @@ static int hello(ss::Endpoint* me, ss::Endpoint* ep, int* errP)
 	if (s != 0)
 		LM_RE(-1, ("error reading hello data from '%s'", ep->name.c_str()));
 
-	memset(&hello, 0, sizeof(hello));
+	memset(&helloOut, 0, sizeof(helloOut));
 
-	strncpy(hello.name,   "samsonSpawner", sizeof(hello.name));
-	strncpy(hello.ip,     "myip",          sizeof(hello.ip));
-	strncpy(hello.alias,  "samsonSetup",   sizeof(hello.alias));
+	strncpy(helloOut.name,   "samsonSpawner", sizeof(helloOut.name));
+	strncpy(helloOut.ip,     "myip",          sizeof(helloOut.ip));
+	strncpy(helloOut.alias,  "samsonSetup",   sizeof(helloOut.alias));
 
-	hello.type = ss::Endpoint::Spawner;
+	helloOut.type = ss::Endpoint::Spawner;
 
-	s = iomMsgSend(ep, me, ss::Message::Hello, ss::Message::Ack, &hello, sizeof(hello));
+	s = iomMsgSend(ep, me, ss::Message::Hello, ss::Message::Ack, &helloOut, sizeof(helloOut));
 	if (s != 0)
 		LM_RE(-1, ("error sending Hello ack to '%s'", ep->name.c_str()));
 
@@ -748,6 +748,8 @@ void sigHandler(int sigNo)
 			free(progName);
 
 		processListDelete();
+
+		google::protobuf::ShutdownProtobufLibrary();
 
 		exit(1);
 	}

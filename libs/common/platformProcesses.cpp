@@ -124,7 +124,12 @@ ProcessVector* platformProcessesGet(int* sizeP)
 	}
 
 	if ((s == -1) || (fd == -1) || (statBuf.st_size == 0))
+	{
+		if (fd != -1)
+			close(fd);
+
 		LM_RE(NULL, ("problems with samson platform processes file '%s'", ppFile));
+	}
 	else
 	{
 		LM_T(LmtProcessVector, ("Retrieving process vec data from file '%s'", ppFile));
@@ -141,12 +146,20 @@ ProcessVector* platformProcessesGet(int* sizeP)
 		{
 			nb = read(fd, &buf[tot], fileSize - tot);
 			if (nb == -1)
+			{
+				close(fd);
 				LM_RE(NULL, ("Error reading from process vector file '%s': %s", ppFile, strerror(errno)));
+			}
 			else if (nb == 0)
+			{
+				close(fd);
 				LM_RE(NULL, ("Error reading from process vector file '%s'", ppFile));
+			}
 
 			tot += nb;
 		}
+
+		close(fd);
 
 		pv      = (ProcessVector*) buf;
 		pvSize  = sizeof(ProcessVector) + pv->processes * sizeof(Process);

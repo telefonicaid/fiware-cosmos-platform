@@ -52,9 +52,28 @@ PaArgument paArgs[] =
 
 /* ****************************************************************************
 *
-* logFd - file descriptor for log file used in all libraries
+* global variables
 */
-int logFd = -1;
+int                 logFd      = -1;
+ss::ProcessVector*  processVec = NULL;
+
+
+
+/* ****************************************************************************
+*
+* exitFunction - 
+*/
+void exitFunction(void)
+{
+	if (processVec)
+		free(processVec);
+
+	if (progName)
+		free(progName);
+
+	google::protobuf::ShutdownProtobufLibrary();
+}
+
 
 
 /* ****************************************************************************
@@ -63,8 +82,7 @@ int logFd = -1;
 */
 int main(int argC, const char* argV[])
 {
-	ss::ProcessVector*  processVec;
-	int                 processVecSize;
+	int  processVecSize;
 
 	paConfig("prefix",                        (void*) "SSC_");
 	paConfig("usage and exit on any warning", (void*) true);
@@ -78,6 +96,8 @@ int main(int argC, const char* argV[])
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
+
+	atexit(exitFunction);
 
 	processVec = ss::platformProcessesGet(&processVecSize);
 	if (processVec == NULL)

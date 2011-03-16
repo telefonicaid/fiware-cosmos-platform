@@ -11,7 +11,18 @@ USAGE:
     o DHAT               - another heap profiler                - 
     o Ptrcheck           - experimental heap, stack and global array overrun detector
 
+
   Valgrind options
+    o --track-fds=yes           - print out a list of open file descriptors on exit. Along with each file descriptor 
+                                  is printed a stack backtrace of where the file was opened and any details relating 
+                                  to the file descriptor such as the file name or socket details.
+    o --trace-children=yes      - trace into sub-processes initiated via the exec system call.
+
+    o --trace-children-skip=pat - works only when --trace-children=yes is specified. It allows for some children to be skipped.
+                                  The option takes a comma separated list of patterns for the names of child executables that
+                                  Valgrind should not trace into.
+                                  Patterns may include the metacharacters ? and *, which have the usual meaning.
+
     o -gen-suppressions=yes     - print suppression for errors (as to avoid uninteresting errors) 
                                   The output should be copied into a 'suppressions' file.    
 
@@ -115,29 +126,29 @@ SUPPRESSING ERRORS
     The easiest way to add suppressions is to use the --gen-suppressions=yes option and edit the suppressions file using the
     knowledge of the suppression names.
 
-	Suppression file format
+    Suppression file format
       A file can contain various suppressions, each inside a {} block
       Each valgrind subcommand (e.g. memcheck) can have different suppressions in the suppression file. So the suppression line
       contains the name of the tool to use it.
-	  The first line of a suppression block is a user-defined name of the suppression.
+      The first line of a suppression block is a user-defined name of the suppression.
       The second line contains the filter (that tells valgrind what tool should use it) and the real name of the suppression.
       These 'real' suppression names are found in the output of a valgrind execution with the '--gen-suppressions=yes' option and '-v'
 
-	  Example of a suppression file with two suppressions:
-	  -----------------------------------------------------------
-	  {
-		HackCond
-      	Memcheck,Cachegrind:dl-hack3-cond-1
-	  }
+      Example of a suppression file with two suppressions:
+      -----------------------------------------------------------
+      {
+        HackCond
+        Memcheck,Cachegrind:dl-hack3-cond-1
+      }
 
-	  {
-		AnotherSuppression
-		Memcheck:Param
-	  }
-	  -----------------------------------------------------------
+      {
+        AnotherSuppression
+        Memcheck:Param
+      }
+      -----------------------------------------------------------
 
       Now, we have a suppression file and we can start the execution using it by:
-	  % valgrind --suppressions=<suppression file path> <executable> <options for executable>
+      % valgrind --suppressions=<suppression file path> <executable> <options for executable>
 
       After the first two lines in a suppression block comes the calling context for the error -
       the chain of function calls that led to it.

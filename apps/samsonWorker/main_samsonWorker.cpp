@@ -59,7 +59,25 @@ PaArgument paArgs[] =
 *
 * logFd - file descriptor for log file used in all libraries
 */
-int logFd = -1;
+int               logFd  = -1;
+ss::SamsonWorker* worker = NULL;
+
+
+
+/* ****************************************************************************
+*
+* exitFunction - 
+*/
+void exitFunction(void)
+{
+	if (worker)
+		delete worker;
+
+	if (progName)
+		free(progName);
+
+	google::protobuf::ShutdownProtobufLibrary();
+}
 
 
 
@@ -79,6 +97,8 @@ int main(int argC, const char *argV[])
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
 	lmAux((char*) "father");
+
+	atexit(exitFunction);
 
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
@@ -110,12 +130,12 @@ int main(int argC, const char *argV[])
 	while (!network.ready())
 		sleep(1);
 
-	LM_T(LmtInit, ("Network OK"));
+	LM_T(LmtInit, ("Network Ready"));
 	
 	// Instance of SamsonWorker object (network contains at least the number of wokers)
 	// -----------------------------------------------------------------------------------
 	
-	ss::SamsonWorker* worker = new ss::SamsonWorker(&network);
+	worker = new ss::SamsonWorker(&network);
 
 	worker->touch();
 	

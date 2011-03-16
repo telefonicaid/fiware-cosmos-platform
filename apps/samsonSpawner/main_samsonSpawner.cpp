@@ -727,33 +727,47 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 
 
 
+/* ****************************************************************************
+*
+* sigHandler - 
+*/
 void sigHandler(int sigNo)
 {
 	printf("Caught signal %d\n", sigNo);
 
 	if (sigNo == SIGINT)
 	{
-		printf("Cleaning up\n");
-
-		if (networkP)
-			delete networkP;
-
-		if (spawnerP)
-			delete spawnerP;
-
-		if (procVec)
-			free(procVec);
-
-		if (progName)
-			free(progName);
-
-		processListDelete();
-
-		google::protobuf::ShutdownProtobufLibrary();
-
-		exit(1);
+		printf("Got SIGINT\n");
 	}
+
+	exit(1);
 }
+
+
+
+/* ****************************************************************************
+*
+* exitFunction - 
+*/
+void exitFunction(void)
+{
+	if (networkP)
+		delete networkP;
+
+	if (spawnerP)
+		delete spawnerP;
+
+	if (procVec)
+		free(procVec);
+
+	if (progName)
+		free(progName);
+
+	processListDelete();
+
+	google::protobuf::ShutdownProtobufLibrary();
+}
+
 
 
 /* ****************************************************************************
@@ -780,6 +794,8 @@ int main(int argC, const char *argV[])
 
 	if (fg == false)
 		daemonize();
+
+	atexit(exitFunction);
 
 	processListInit(101);
 

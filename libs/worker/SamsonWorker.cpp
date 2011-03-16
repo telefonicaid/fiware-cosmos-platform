@@ -25,11 +25,17 @@
 namespace ss {
 
 
-	void* run_runStatusUpdate(void *p)
-	{
-		((SamsonWorker *)p)->runStatusUpdate();
-		return NULL;
-	}
+
+/* ****************************************************************************
+*
+* run_runStatusUpdate - 
+*/
+static void* run_runStatusUpdate(void *p)
+{
+	((SamsonWorker *)p)->runStatusUpdate();
+	return NULL;
+}
+
 
 
 /* ****************************************************************************
@@ -41,24 +47,12 @@ SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , l
 	this->network = network;
 	network->setPacketReceiver(this);
 
-	srand( (unsigned int) time(NULL) );
+	srand((unsigned int) time(NULL));
 	
 	// Create a thread to run "runStatusUpdate"
 	pthread_t t;
 	pthread_create(&t, NULL, run_runStatusUpdate, this);
 }
-
-
-#if 0
-/* ****************************************************************************
-*
-* init - 
-*/
-void SamsonWorker::init(ss::ProcessVector* procVec)
-{
-	LM_X(1, ("this callback is only used for Spawner for now ..."));
-}
-#endif
 
 
 
@@ -72,11 +66,11 @@ void SamsonWorker::runStatusUpdate()
 	
 	while (true)
 	{
-		if( network->ready() )
+		if (network->ready())
 		{
 			sendWorkerStatus();
 
-			// Send a message to receive a complete list of the queues ( to remove old files )
+			// Send a message to receive a complete list of the queues (to remove old files)
 			{
 				Packet*           p = new Packet();
 				network::Command* c = p->message.mutable_command();
@@ -84,11 +78,11 @@ void SamsonWorker::runStatusUpdate()
 				p->message.set_delilah_id( 0 ); // At the moment no sence at the controller
 				//copyEnviroment( &environment , c->mutable_environment() );
 				network->send(this, network->controllerGetIdentifier(), Message::Command, p);
+
+				LM_TODO(("Who deletes Packet ?"));
 			}
-			
-			
-			
 		}
+
 		sleep(3);
 	}
 	

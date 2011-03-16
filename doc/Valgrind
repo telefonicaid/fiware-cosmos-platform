@@ -29,6 +29,11 @@ USAGE:
 
 
 
+EXAMPLE USAGE
+  % valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  samsonLocal  2> valgrind.out.03
+
+
+
 PERFORMANCE ISSUES
   Valgrind takes control of your program before it starts, makes the program run on a synthetic CPU provided by the Valgrind core.
   'Memcheck' checks every memory access and every value computed, making it run 10-50 times slower than natively.

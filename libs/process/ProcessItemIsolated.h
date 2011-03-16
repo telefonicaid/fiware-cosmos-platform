@@ -70,6 +70,9 @@ namespace ss {
 		virtual void init(){};
 		virtual void finish(){};
 		
+		// Function to specify if we are ready to be executed of continued from a halt	
+		bool isReady();
+		
 		
 	public:		
 

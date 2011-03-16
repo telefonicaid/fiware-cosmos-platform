@@ -29,8 +29,7 @@ namespace ss {
 	class ProcessManager
 	{
 		
-		au::list<ProcessItem> items_pure_process;		// List of items to be executed ( pure_process items )
-		au::list<ProcessItem> items_data_generator;		// List of items to be executed ( data_generator items )
+		std::set<ProcessItem*> items;					// List of items to be executed ( all priorities  )
 
 		au::Token token;								// Token to unique access the items list
 		au::Stopper stopper;							// Stopper for the threads where there is nothing to do
@@ -38,7 +37,7 @@ namespace ss {
 		int num_processes;								// Number of maximum simultaneous process running ( from setup )
 		
 		std::set<ProcessItem*> running_items;			// Set of items currently being executed
-		au::list<ProcessItem> halted_items;				// Set of items currently being executed but halted
+		std::set<ProcessItem*> halted_items;			// Set of items currently being executed but halted
 						
 		ProcessManager ( );								// Private constructor ( singleton )
 
@@ -63,6 +62,11 @@ namespace ss {
 		void notifyFinishProcessItem( ProcessItem *item );	// Notification that this ProcessItem has finished
 
 		void notifyHaltProcessItem( ProcessItem *item );	// Notification that this ProcessItem is halted ( blocked until output memory is ready ) 
+
+	private:
+		
+		ProcessItem* _getNextItemToRun();
+
 		
 	};
 

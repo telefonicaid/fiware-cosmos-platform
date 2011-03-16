@@ -44,15 +44,8 @@ namespace ss
 	void ProcessManager::addProcessItem( ProcessItem *item )
 	{
 		token.retain();
-		
-		switch (item->type) {
-			case ProcessItem::pure_process:
-				items_pure_process.push_back( item );		// Insert in the list
-				break;
-			case ProcessItem::data_generator:
-				items_data_generator.push_back( item );		// Insert in the list
-				break;
-		}
+
+		items.insert( item );		// Insert in the list
 
 		token.release();
 		
@@ -64,6 +57,46 @@ namespace ss
 	 Function executed by all threads running things
 	 */
 	
+
+	ProcessItem* ProcessManager::_getNextItemToRun()
+	{
+		
+		ProcessItem* item = NULL;
+		
+		// Halted process comes first 
+		
+		for (std::set<ProcessItem*>::iterator i = halted_items.begin() ; i != halted_items.end() ; i++ )
+		{
+			if( (*i)->isReady() )
+			{
+				item = *i;
+				halted_items.erase( item );
+				return item;
+			}
+		}
+
+		// If not process in the halt list is ready,
+		// we get the highest priority element in the queue of pending processes
+				 
+		for ( std::set<ProcessItem*>::iterator i =  items.begin() ; i!= items.end() ; i++)
+		{
+			if( !item )
+				item = *i;
+			else
+			{
+				if( (*i)->priority > item->priority )
+					item = *i;
+			}
+		}
+		
+		if( item )
+			items.erase( item );	// Remove form the pending list
+		
+		// It is null if no process is required to be executed
+		return item;
+		
+	}
+	
 	void ProcessManager::runThread()
 	{
 		while(true)
@@ -71,39 +104,23 @@ namespace ss
 			
 			// Get the next process item to process ( if CPU slots available )
 			ProcessItem * item = NULL;
-			bool halted_process = false;
 
 			// Get the next item to process ( protect with a mutex )
 			token.retain();
 			
-			
 			if( (int)running_items.size() < num_processes )
 			{
-				// Priority for the pure processes	
-				item = items_pure_process.extractFront();
-				
-				if( !item )
-				{
-
-					if( halted_items.size() > 0 )
-					{
-						// Check if there is output memory prior to continue this execution
-						if( MemoryManager::shared()->availableMemoryOutput() )
-							item = halted_items.extractFront();
-						
-					}
-					else
-						item = items_data_generator.extractFront();
-				}
+				// Space for another process running... get the item to be executed or continued
+				item = _getNextItemToRun();
 			}
 
 			if( item )
 			{
 				item->processManager =  this;	// Set a pointer to me to be notified
-				running_items.insert( item );
+				running_items.insert( item );	// Insert in the set of running processes
 			}
 			
-			halted_process = (halted_items.size() > 0 );
+			bool halted_process = ( halted_items.size() > 0 );
 			
 			token.release();
 
@@ -152,7 +169,7 @@ namespace ss
 		token.retain();
 
 		running_items.erase(item);
-		halted_items.push_back(item);
+		halted_items.insert(item);
 		
 		token.release();
 		
@@ -171,10 +188,10 @@ namespace ss
 			output << "[" << (*i)->getStatus() << "] ";
 
 		output << "\n\t\t\tHalted: ";
-		for ( std::list<ProcessItem*>::iterator i = halted_items.begin () ; i != halted_items.end() ; i++ )
+		for ( std::set<ProcessItem*>::iterator i = halted_items.begin () ; i != halted_items.end() ; i++ )
 			output << "[" << (*i)->getStatus() << "] ";
 
-		output << "\n\t\t\tQueued: " << items_pure_process.size() << " & " << items_data_generator.size();
+		output << "\n\t\t\tQueued: " << items.size();
 		
 		/*
 		output << "\n\t\t\tQueued: ";

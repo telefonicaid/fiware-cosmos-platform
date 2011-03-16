@@ -7,9 +7,11 @@
 #include "traceLevels.h"          // LmtIsolated, etc. 
 #include "iomMsgAwait.h"          // iomMsgAwait
 #include "ProcessItemIsolated.h"  // Own interface
+#include "MemoryManager.h"			// ss::MemoryManager
 
 #include <sys/types.h>      
 #include <sys/wait.h>             // waitpid()
+
 
 //#define ISOLATED_PROCESS_AS_THREAD
 
@@ -36,7 +38,7 @@ namespace ss
 		return NULL;
 	}
 	
-	ProcessItemIsolated::ProcessItemIsolated() : ProcessItem( ProcessItem::data_generator ) 	
+	ProcessItemIsolated::ProcessItemIsolated() : ProcessItem( PI_PRIORITY_NORMAL_OPERATION ) 	
 	{
 	}	
 	
@@ -387,6 +389,13 @@ namespace ss
 #endif
 		
 	}	
+	
+	
+	// Function to specify if we are ready to be executed of continued from a halt	
+	bool ProcessItemIsolated::isReady()
+	{
+		return MemoryManager::shared()->availableMemoryOutput();
+	}
 	
 	
 }

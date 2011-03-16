@@ -7,6 +7,13 @@
 #include "Error.h"				// au::Error
 #include "Stopper.h"			// au::Stopper
 
+#define PI_PRIORITY_NORMAL_OPERATION	1
+
+#define PI_PRIORITY_NORMAL_COMPACT		5		// Compact operation
+
+#define PI_PRIORITY_BUFFER_PREWRITE		10		// Processing an output buffer to generate what is stored on disk
+
+
 /**
  
  ProcessItem
@@ -77,13 +84,7 @@ namespace ss {
 		
 		au::Error error;		// Error management
 		
-		typedef enum	
-		{
-			data_generator,		// Any operation that generates data ( halt if output memory is not available )
-			pure_process		// Any operation with no output that only process data ( necer halt )
-		} ProcessManagerItemType;
-		
-		ProcessManagerItemType type;
+		int priority;			// Priority level ( 0 = low priority ,  10 = high priority )
 		
 	public:
 
@@ -93,7 +94,7 @@ namespace ss {
 
 		// Constructor with or without a delegate
 		
-		ProcessItem( ProcessManagerItemType type );
+		ProcessItem( int _priority );
 		
 		// Status management
 		std::string getStatus();
@@ -110,6 +111,9 @@ namespace ss {
 		// Function to create a new thread and run "run" in background
 		void runInBackground();
 
+		// Function to check if the process if ready to be executed ( usually after calling halt )
+		virtual bool isReady(){ return true; };
+		
 	protected:
 		
 		void halt();			// command executed inside run() to stop the task until output memory are free again

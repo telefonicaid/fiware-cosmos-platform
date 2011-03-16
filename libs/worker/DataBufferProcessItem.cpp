@@ -27,7 +27,7 @@
 
 namespace ss {
 	
-	DataBufferProcessItem::DataBufferProcessItem( QueueuBufferVector * _bv ) : ProcessItem( ProcessItem::pure_process )
+	DataBufferProcessItem::DataBufferProcessItem( QueueuBufferVector * _bv ) : ProcessItem( PI_PRIORITY_BUFFER_PREWRITE )
 	{
 		bv = _bv;
 		

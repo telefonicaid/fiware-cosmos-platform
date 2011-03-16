@@ -31,9 +31,10 @@ namespace ss
 	
 #pragma mark ----
 
-	ProcessItem::ProcessItem(  ProcessManagerItemType _type )
+	ProcessItem::ProcessItem(  int _priority )
 	{
-		type = _type;
+
+		priority = _priority;
 		
 		delegate = NULL;	
 		
@@ -63,7 +64,11 @@ namespace ss
 				o << "H";
 				break;
 		}
-		o << "," << sub_status;
+		
+		o << ":" << priority;
+		if ( sub_status.length() > 0)
+			o << "," << sub_status;
+		
 		o << std::string(":") << operation_name;
 		if ( (p> 0) && (p < 100))
 			o << "(" << p << "%)";

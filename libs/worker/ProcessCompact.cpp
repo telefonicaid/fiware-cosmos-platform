@@ -14,7 +14,7 @@ namespace ss
 
 #pragma mark -
   
-  ProcessCompact::ProcessCompact( CompactSubTask * _compactSubTask ) : ProcessItem( ProcessItem::pure_process )
+  ProcessCompact::ProcessCompact( CompactSubTask * _compactSubTask ) : ProcessItem( PI_PRIORITY_NORMAL_COMPACT )
   {
     compactSubTask = _compactSubTask;
 

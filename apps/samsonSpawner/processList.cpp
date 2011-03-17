@@ -73,7 +73,7 @@ ss::Process* processAdd(ss::Process* processP)
 
 	LM_T(LmtProcessList, ("Adding process '%s' of type '%s'. pid: %d", processP->name, processTypeName(processP), processP->pid));
 
-	if ((pP = processLookup(processP->pid)) != NULL)
+	if ((processP->pid != 0) && ((pP = processLookup(processP->pid)) != NULL))
 	{
 		LM_W(("process '%s' (pid %d) already in process list", processP->name, processP->pid));
 		free(processP);
@@ -277,7 +277,7 @@ void processSpawn(ss::Process* processP)
 	char*  argV[50];
 	int    argC = 0;
 
-	LM_T(LmtProcessList, ("spawning process '%s'", processP->name));
+	LM_T(LmtProcessList, ("spawning process '%s' (incoming pid: %d)", processP->name, processP->pid));
 
 	if (processP->type == ss::PtWorker)
 	{
@@ -333,6 +333,8 @@ void processSpawn(ss::Process* processP)
 
 		LM_X(1, ("Back from EXEC !!!"));
 	}
+
+	processP->pid = pid;
 }
 
 
@@ -353,6 +355,3 @@ void processListDelete(void)
 
 	free(processV);
 }
-
-
-

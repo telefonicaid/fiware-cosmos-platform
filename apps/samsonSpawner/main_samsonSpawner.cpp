@@ -200,7 +200,7 @@ int SamsonSpawner::timeoutFunction(void)
 
 					LM_W(("Process %d '%s' died after %d.%06d seconds of uptime", processP->pid, processP->name, diff.tv_sec, diff.tv_usec));
 					LM_TODO(("If process only been running for a few seconds, don't restart it - use this to initiate a Controller takeover"));
-					newProcessP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, pid, &now);
+					newProcessP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, 0, &now);
 					processSpawn(newProcessP);
 				}
 			}
@@ -241,11 +241,13 @@ static void processesStart(ss::ProcessVector* procVec)
 		processP->debug   = lmDebug;
 		processP->reads   = lmReads;
 		processP->writes  = lmWrites;
+		processP->pid     = 0;
+		// processP->traceLevels ...
 
-		// processP->traceLevels
-
-		processSpawn(processP);
-	}	
+		ss::Process* pP;
+		pP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, 0, NULL);
+		processSpawn(pP);
+	}
 }
 
 
@@ -760,12 +762,12 @@ void exitFunction(void)
 	if (procVec)
 		free(procVec);
 
-	if (progName)
-		free(progName);
-
 	processListDelete();
 
 	google::protobuf::ShutdownProtobufLibrary();
+
+	if (progName)
+		free(progName);
 }
 
 

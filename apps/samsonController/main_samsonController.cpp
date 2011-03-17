@@ -69,11 +69,11 @@ void exitFunction(void)
 	if (processVec)
 		free(processVec);
 
-	if (progName)
-		free(progName);
-
 	if (networkP)
 	   delete networkP;
+
+	if (progName)
+		free(progName);
 }
 
 

@@ -2318,10 +2318,10 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	// and I remove the temporal endpoint
 	if (epp)
 	{
-		LM_TODO(("Make sure thischange really works ..."));
+		LM_TODO(("Make sure this change really works ..."));
 		epp->rFd   = ep->rFd;
 		epp->wFd   = ep->wFd;
-		epp->state = ep->state;
+		epp->state = Endpoint::Connected;
 
 		endpointRemove(ep, "Worker Endpoint already existed - reconnection ?");
 		ep = epp;

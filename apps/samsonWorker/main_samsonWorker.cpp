@@ -75,8 +75,6 @@ void exitFunction(void)
 
 	if (progName)
 		free(progName);
-
-	google::protobuf::ShutdownProtobufLibrary();
 }
 
 
@@ -98,6 +96,7 @@ int main(int argC, const char *argV[])
 
 	lmAux((char*) "father");
 
+	atexit(	google::protobuf::ShutdownProtobufLibrary );
 	atexit(exitFunction);
 
 	LM_T(LmtInit, ("Started with arguments:"));
@@ -118,8 +117,6 @@ int main(int argC, const char *argV[])
 	ss::DiskManager::shared();
 	ss::FileManager::shared();
 	
-	// Google protocol buffer deallocation
-	atexit(	google::protobuf::ShutdownProtobufLibrary );
 
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------

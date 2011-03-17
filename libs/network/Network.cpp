@@ -2285,14 +2285,16 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 
 		epp = endpointLookup((ss::Endpoint::Type) hello->type, hello->ip);
 		if (epp)
-			LM_W(("Endpoint of type '%s' in host '%s' already exists in endpointList (%s@%s)", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hello->ip, epp->name.c_str(), epp->ip));
+			LM_W(("Endpoint of type '%s' in host '%s' already exists in endpointList (%s@%s)",
+				  endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hello->ip, epp->name.c_str(), epp->ip));
 	}
 	else
 	{
 		epp = endpointLookup((ss::Endpoint::Type) hello->type, hostP);
 		if (epp)
 		{
-			LM_W(("Endpoint of type '%s' in host '%s' already exists in endpointList (%s@%s) (ep is of type '%s'", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hostP->name, epp->name.c_str(), epp->ip, ep->typeName()));
+			LM_W(("Endpoint of type '%s' in host '%s' already exists in endpointList (%s@%s) (ep is of type '%s'",
+				  endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hostP->name, epp->name.c_str(), epp->ip, ep->typeName()));
 			
 #if 0
 			close(epp->rFd);
@@ -2306,9 +2308,25 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 		{
 			epp = endpointLookup((ss::Endpoint::Type) hello->type, hello->ip);
 			if (epp)
-				LM_W(("Endpoint of type '%s' in host '%s' already exists in endpointList (%s@%s)", endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hello->ip, epp->name.c_str(), epp->ip));
+				LM_W(("Endpoint of type '%s' in host '%s' already exists in endpointList (%s@%s)",
+					  endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hello->ip, epp->name.c_str(), epp->ip));
 		}
 	}
+
+	// The worker already in endpoint list (an older instance).
+	// So, I let the old instance inherit the new data, like fds and state,
+	// and I remove the temporal endpoint
+	if (epp)
+	{
+		LM_TODO(("Make sure thischange really works ..."));
+		epp->rFd   = ep->rFd;
+		epp->wFd   = ep->wFd;
+		epp->state = ep->state;
+
+		endpointRemove(ep, "Worker Endpoint already existed - reconnection ?");
+		ep = epp;
+	}
+
 #endif
 
 	if ((hello->type == Endpoint::Supervisor) && (endpoint[SUPERVISOR] != NULL))

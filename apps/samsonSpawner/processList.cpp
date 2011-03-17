@@ -127,7 +127,7 @@ ss::Process* processAdd
 
 	if ((processP = processLookup(pid)) != NULL)
 	{
-		LM_W(("There is already a '%s' with pid %d", name, pid));
+	   LM_W(("There is already a '%s' (with pid %d)", name, pid));
 		return processP;
 	}
 
@@ -333,8 +333,6 @@ void processSpawn(ss::Process* processP)
 
 		LM_X(1, ("Back from EXEC !!!"));
 	}
-
-	processAdd(processP->type, argV[0], processP->alias, processP->controllerHost, pid, NULL);
 }
 
 

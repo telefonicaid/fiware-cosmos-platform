@@ -640,8 +640,14 @@ void Network::initAsSamsonController(void)
 {
 	init();
 
+#if 0
 	for (int ix = 0; ix < Workers; ix++)
+	{
 		endpoint[FIRST_WORKER + ix] = workerNew(ix);
+		LM_M(("Setting endpoint[%d] to %p", FIRST_WORKER + ix, endpoint[FIRST_WORKER + ix]));
+	}
+#endif
+	LM_TODO(("Check that controller really works without preallocating workers"));
 
 	int fd = iomServerOpen(WEB_SERVICE_PORT);
 	if (fd == -1)
@@ -1203,7 +1209,7 @@ Endpoint* Network::endpointAddTemporal(int rFd, int wFd, const char* name, const
 		if (endpoint[ix] != NULL)
 			continue;
 
-		LM_M(("new Endpoint for index %d", ix));
+		LM_M(("new Endpoint (%s) for index %d", name, ix));
 		endpoint[ix] = new Endpoint();
 		if (endpoint[ix] == NULL)
 			LM_XP(1, ("allocating temporal Endpoint"));
@@ -1234,7 +1240,7 @@ Endpoint* Network::endpointAddDefault(int rFd, int wFd, const char* name, const 
 		if (endpoint[ix] != NULL)
 			continue;
 
-		LM_M(("new Endpoint for index %d", ix));
+		LM_M(("new Endpoint (%s) for index %d", name, ix));
 		endpoint[ix] = new Endpoint();
 		if (endpoint[ix] == NULL)
 			LM_XP(1, ("allocating Endpoint"));
@@ -2567,6 +2573,8 @@ void Network::procVecReceived(ProcessVector* processVec)
 			endpoint[FIRST_WORKER + ix]       = workerNew(ix);
 			endpoint[FIRST_WORKER + ix]->port = processVec->processV[ix + 1].port;
 					
+			LM_M(("Setting endpoint[%d] to %p", FIRST_WORKER + ix, endpoint[FIRST_WORKER + ix]));
+
 			if (processVec->processV[ix + 1].host[0] != 0)
 				endpoint[FIRST_WORKER + ix]->ipSet(processVec->processV[ix + 1].host);
 			else
@@ -2605,6 +2613,7 @@ void Network::procVecReceived(ProcessVector* processVec)
 		{
 			LM_M(("new Endpoint for index %d", FIRST_WORKER + ix));
 			endpoint[FIRST_WORKER + ix] = new Endpoint(Endpoint::Worker, processVec->processV[ix + 1].name, processVec->processV[ix + 1].host, processVec->processV[ix + 1].port, -1, -1);
+			LM_M(("Setting endpoint[%d] to %p", FIRST_WORKER + ix, endpoint[FIRST_WORKER + ix]));
 			if (endpoint[FIRST_WORKER + ix] == NULL)
 				LM_X(1, ("error allocating endpoint"));
 		}

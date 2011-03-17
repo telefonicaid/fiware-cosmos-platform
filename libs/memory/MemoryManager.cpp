@@ -151,8 +151,8 @@ namespace ss
 
 			// Second try
 			if ((shmid = shmget(key, size, shmflg)) == -1)
-				LM_RE(NULL, ("shmget: %s", strerror(errno)));
-				// LM_X(1, ("shmget: %s", strerror(errno)));
+				LM_X(1, ("shmget: %s", strerror(errno)));
+				// LM_RE(NULL, ("shmget: %s", strerror(errno)));
 		}
 
 		//

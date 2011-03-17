@@ -1477,15 +1477,16 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 		if (endpoint[ix] == NULL)
 			continue;
 
+		close(ep->rFd);
+		if (ep->wFd != ep->rFd)
+			close(ep->wFd);
+
+		ep->rFd   = -1;
+		ep->wFd   = -1;
+		ep->state = Endpoint::Disconnected;
+
 		if (ep->type == Endpoint::Worker)
 		{
-			close(ep->rFd);
-			if (ep->wFd != ep->rFd)
-				close(ep->wFd);
-
-			ep->rFd   = -1;
-			ep->wFd   = -1;
-			ep->state = Endpoint::Disconnected;
 			ep->name  = std::string("To be a worker");
 				
 			if (endpointUpdateReceiver != NULL)
@@ -1493,9 +1494,6 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 		}
 		else if (ep->type == Endpoint::Controller)
 		{
-			ep->rFd   = -1;
-			ep->wFd   = -1;
-			ep->state = Endpoint::Disconnected;
 			LM_W(("NOT removing Controller"));
 			if (endpointUpdateReceiver != NULL)
 				endpointUpdateReceiver->endpointUpdate(ep, Endpoint::ControllerRemoved, "Controller Removed");
@@ -1526,8 +1524,8 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 			endpoint[ix] = NULL;
 		}
 
-		if (ep != NULL)
-			memset(ep, sizeof(*ep), 0);
+		memset(ep, sizeof(*ep), 0);
+		return;
 	}
 }
 
@@ -1869,6 +1867,15 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	else if ((nb == 0) || (nb == -2)) /* Connection closed */
 	{
 		LM_T(LmtSelect, ("Connection closed - ep at %p", ep));
+
+		if (ep->rFd != -1)
+			close(ep->rFd);
+		if ((ep->wFd != ep->rFd) && (ep->wFd != -1))
+			close(ep->wFd);
+
+		ep->rFd   = -1;
+		ep->wFd   = -1;
+		ep->name  = "-----";
 		ep->msgsInErrors += 1;
 		ep->state = Endpoint::Disconnected;
 
@@ -1923,18 +1930,11 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		}
 		else if (ep != NULL)
 		{
+			ep->state = Endpoint::Closed;
+
 			if (ep->type == Endpoint::Worker)
 			{
 				--endpoint[ME]->workers;
-
-				close(ep->rFd);
-				if (ep->wFd == ep->rFd)
-					close(ep->wFd);
-
-				ep->state = Endpoint::Closed;
-				ep->rFd   = -1;
-				ep->wFd   = -1;
-				ep->name  = "-----";
 
 				if (endpointUpdateReceiver != NULL)
 					endpointUpdateReceiver->endpointUpdate(ep, Endpoint::WorkerDisconnected, "Worker Disconnected");

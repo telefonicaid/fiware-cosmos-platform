@@ -1159,11 +1159,11 @@ Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, con
 	if (endpoint[CONTROLLER] == NULL)
 	{
 		LM_T(LmtInit, ("Allocating room for Controller endpoint"));
-		LM_M(("new Endpoint for index %d", CONTROLLER));
 		endpoint[CONTROLLER] = new Endpoint();
 		LM_T(LmtInit, ("*** Controller Endpoint at %p", endpoint[CONTROLLER]));
 	}
 
+	LM_M(("Adding controller"));
 	endpointFill(endpoint[CONTROLLER], inheritedFrom, rFd, wFd, name, alias, workers, ip, Endpoint::Controller, port, coreNo);
 
 	if (endpointUpdateReceiver != NULL)
@@ -1493,6 +1493,8 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 		}
 		else if (ep->type == Endpoint::Controller)
 		{
+			ep->rFd   = -1;
+			ep->wFd   = -1;
 			ep->state = Endpoint::Disconnected;
 			LM_W(("NOT removing Controller"));
 			if (endpointUpdateReceiver != NULL)
@@ -2295,14 +2297,6 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 		{
 			LM_W(("Endpoint of type '%s' in host '%s' already exists in endpointList (%s@%s) (ep is of type '%s'",
 				  endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hostP->name, epp->name.c_str(), epp->ip, ep->typeName()));
-			
-#if 0
-			close(epp->rFd);
-			if (epp->wFd != epp->rFd)
-				close(epp->wFd);
-			endpointRemove(ep, "duplicate");
-			return;
-#endif
 		}
 		else
 		{
@@ -2312,21 +2306,6 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 					  endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hello->ip, epp->name.c_str(), epp->ip));
 		}
 	}
-
-	// The worker already in endpoint list (an older instance).
-	// So, I let the old instance inherit the new data, like fds and state,
-	// and I remove the temporal endpoint
-	if (epp)
-	{
-		LM_TODO(("Make sure this change really works ..."));
-		epp->rFd   = ep->rFd;
-		epp->wFd   = ep->wFd;
-		epp->state = Endpoint::Connected;
-
-		endpointRemove(ep, "Worker Endpoint already existed - reconnection ?");
-		ep = epp;
-	}
-
 #endif
 
 	if ((hello->type == Endpoint::Supervisor) && (endpoint[SUPERVISOR] != NULL))
@@ -2529,6 +2508,8 @@ int Network::msgTreatConnectionClosed(Endpoint* ep, int s)
 
 		endpoint[CONTROLLER]->state = Endpoint::Connected;
 		endpoint[CONTROLLER]->wFd   = endpoint[CONTROLLER]->rFd;
+
+		endpointListShow("Reconnected to controller");
 
 		if (endpointUpdateReceiver != NULL)
 			endpointUpdateReceiver->endpointUpdate(endpoint[CONTROLLER], Endpoint::ControllerReconnected, "Controller Reconnected");

@@ -158,8 +158,6 @@ int iomMsgRead
 		if (dataP == NULL)
 			LM_X(1, ("malloc(%d)", headerP->gbufLen));
 
-		LM_M(("MALLOC: allocated buffer of %d bytes", headerP->gbufLen + 1));
-
 		LM_T(LmtRead, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
 		nb = iomMsgPartRead(ep, "google protocol buffer data", dataP, headerP->gbufLen);
 		LM_T(LmtRead, ("read %d bytes GPROTBUF from '%s'", nb, ep->name.c_str()));

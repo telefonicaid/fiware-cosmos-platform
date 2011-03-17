@@ -56,6 +56,7 @@ PaArgument paArgs[] =
 */
 int                 logFd      = -1;
 ss::ProcessVector*  processVec = NULL;
+ss::Network*        networkP   = NULL;
 
 
 
@@ -71,7 +72,8 @@ void exitFunction(void)
 	if (progName)
 		free(progName);
 
-	google::protobuf::ShutdownProtobufLibrary();
+	if (networkP)
+	   delete networkP;
 }
 
 
@@ -98,6 +100,7 @@ int main(int argC, const char* argV[])
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
 	atexit(exitFunction);
+	atexit(google::protobuf::ShutdownProtobufLibrary);
 
 	processVec = ss::platformProcessesGet(&processVecSize);
 	if (processVec == NULL)
@@ -112,24 +115,20 @@ int main(int argC, const char* argV[])
 	ss::FileManager::init();		// File manager
 	ss::MemoryManager::init();          // Memory manager
 	ss::ModulesManager::init();			// Init the modules manager
-	
-	// Google protocol buffer deallocation
-	atexit(	google::protobuf::ShutdownProtobufLibrary );
-	
-	
+
 	// Instance of network object and initialization
 	// ---------------------------------------------
-	ss::Network network(ss::Endpoint::Controller, "Controller", CONTROLLER_PORT, endpoints, processVec->processes - 1);
+	networkP = new ss::Network(ss::Endpoint::Controller, "Controller", CONTROLLER_PORT, endpoints, processVec->processes - 1);
 
-	network.initAsSamsonController();
-	network.procVecSet(processVec, processVecSize, ss::platformProcessesSave);
-	network.runInBackground();
+	networkP->initAsSamsonController();
+	networkP->procVecSet(processVec, processVecSize, ss::platformProcessesSave);
+	networkP->runInBackground();
 	
 	
 	// Instance of the Samson Controller
 	// ---------------------------------
 	
-	ss::SamsonController  controller(&network);
+	ss::SamsonController  controller(networkP);
 
 	controller.runBackgroundProcesses();
 	controller.touch();

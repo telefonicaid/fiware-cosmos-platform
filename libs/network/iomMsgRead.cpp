@@ -158,21 +158,35 @@ int iomMsgRead
 		if (dataP == NULL)
 			LM_X(1, ("malloc(%d)", headerP->gbufLen));
 
+		LM_M(("MALLOC: allocated buffer of %d bytes", headerP->gbufLen + 1));
+
 		LM_T(LmtRead, ("reading %d bytes of google protocol buffer data", headerP->gbufLen));
 		nb = iomMsgPartRead(ep, "google protocol buffer data", dataP, headerP->gbufLen);
 		LM_T(LmtRead, ("read %d bytes GPROTBUF from '%s'", nb, ep->name.c_str()));
 		if (nb == -2)
+		{
+			free(dataP);
 			LM_RE(-2, ("Connection closed by %s", ep->name.c_str()));
+		}
 		else if (nb == -1)
+		{
+			free(dataP);
 			LM_RP(1, ("read(%d bytes from '%s')", headerP->gbufLen, ep->name.c_str()));
+		}
 		else if (nb != (int) headerP->gbufLen)
+		{
+			free(dataP);
 			LM_E(("Read %d bytes from '%s', %d expected ...", nb, ep->name.c_str(), headerP->gbufLen));
+		}
 
 		((char*) dataP)[nb] = 0;
 		
 		packetP->message.ParseFromArray(dataP, nb);
-		if( packetP->message.IsInitialized() == false)
+		if (packetP->message.IsInitialized() == false)
 			LM_X(1, ("Error parsing Google Protocol Buffer of %d bytes because a message %s is not initialized!", nb, ss::Message::messageCode(headerP->code)));
+
+		memset(dataP, 0, headerP->gbufLen + 1);
+		free(dataP);
 	}
 
 	if (headerP->kvDataLen != 0)
@@ -192,6 +206,8 @@ int iomMsgRead
 		int    size2  = packetP->buffer->getMaxSize();
 		int    tot    = 0;
 		int    nb;
+
+		LM_TODO(("Should this memory buffer be freed ?"));
 
 		LM_T(LmtRead, ("reading a KV buffer of %d bytes", size2));
 		nb = iomMsgPartRead(ep, "KV Data", kvBuf, headerP->kvDataLen);

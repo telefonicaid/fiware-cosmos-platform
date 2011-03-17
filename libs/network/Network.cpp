@@ -265,7 +265,7 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 
 	procVec                = NULL;
 	procVecSize            = 0;
-	procVecSaveCallback  = NULL;
+	procVecSaveCallback    = NULL;
 
 	//
 	// Endpoint vector
@@ -281,6 +281,7 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 	//
 	// me
 	//
+	LM_M(("new Endpoint for index %d", ME));
 	endpoint[ME] = new Endpoint(type, port);
 	if (endpoint[ME] == NULL)
 		LM_XP(1, ("new Endpoint"));
@@ -331,20 +332,28 @@ Network::~Network()
 	int ix;
 
 	if (hostMgr)
+	{
+		LM_M(("Freeing hostMgr"));
 		delete hostMgr;
+	}
 
 	for (ix = 0; ix < Endpoints; ix++)
 	{
 		if (endpoint[ix] == NULL)
 			continue;
 
+		LM_M(("Freeing endpoint[ix]", ix));
 		delete endpoint[ix];
 	}	
 
+	LM_M(("Freeing endpoint"));
 	free(endpoint);
 
 	if (procVec != NULL)
+	{
+		LM_M(("Freeing procVec"));
 		free(procVec);
+	}
 }
 
 
@@ -424,6 +433,7 @@ Endpoint* Network::controllerConnect(const char* controllerName)
 	}
 
 
+	LM_M(("new Endpoint for index %d", CONTROLLER));
 	endpoint[CONTROLLER] = new Endpoint(Endpoint::Controller, controllerName);
 	if (endpoint[CONTROLLER] == NULL)
 		LM_XP(1, ("new Endpoint"));
@@ -461,7 +471,7 @@ Endpoint* Network::controllerConnect(const char* controllerName)
 */
 void Network::platformProcesses(void)
 {
-	procVec = platformProcessesGet();
+	procVec = platformProcessesGet(&procVecSize);
 
 	if (procVec == NULL)
 	{
@@ -527,6 +537,7 @@ void Network::init(const char* controllerName)
 {
 	if (this->port != 0)
 	{
+		LM_M(("new Endpoint for index %d", LISTENER));
 		endpoint[LISTENER] = new Endpoint(*endpoint[ME]);
 		if (endpoint[LISTENER] == NULL)
 			LM_XP(1, ("new Endpoint"));
@@ -595,6 +606,7 @@ Endpoint* workerNew(int ix)
 	snprintf(alias, sizeof(alias), "Worker%02d",  ix);
 	snprintf(name,  sizeof(name),  "Worker %02d", ix);
 
+	LM_M(("new Endpoint for worker %d", ix));
 	ep = new Endpoint();
 	if (ep == NULL)
 		LM_XP(1, ("new Endpoint"));
@@ -1141,6 +1153,7 @@ Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, con
 	if (endpoint[CONTROLLER] == NULL)
 	{
 		LM_T(LmtInit, ("Allocating room for Controller endpoint"));
+		LM_M(("new Endpoint for index %d", CONTROLLER));
 		endpoint[CONTROLLER] = new Endpoint();
 		LM_T(LmtInit, ("*** Controller Endpoint at %p", endpoint[CONTROLLER]));
 	}
@@ -1162,7 +1175,10 @@ Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, con
 Endpoint* Network::endpointAddSupervisor(int rFd, int wFd, const char* name, const char* alias, int workers, std::string ip, unsigned short port, int coreNo, Endpoint* inheritedFrom)
 {
 	if (endpoint[SUPERVISOR] == NULL)
+	{
+		LM_M(("new Endpoint for index %d", SUPERVISOR));
 		endpoint[SUPERVISOR] = new Endpoint();
+	}
 
 	endpointFill(endpoint[SUPERVISOR], inheritedFrom, rFd, wFd, name, alias, workers, ip, Endpoint::Supervisor, port, coreNo);
 
@@ -1187,6 +1203,7 @@ Endpoint* Network::endpointAddTemporal(int rFd, int wFd, const char* name, const
 		if (endpoint[ix] != NULL)
 			continue;
 
+		LM_M(("new Endpoint for index %d", ix));
 		endpoint[ix] = new Endpoint();
 		if (endpoint[ix] == NULL)
 			LM_XP(1, ("allocating temporal Endpoint"));
@@ -1217,6 +1234,7 @@ Endpoint* Network::endpointAddDefault(int rFd, int wFd, const char* name, const 
 		if (endpoint[ix] != NULL)
 			continue;
 
+		LM_M(("new Endpoint for index %d", ix));
 		endpoint[ix] = new Endpoint();
 		if (endpoint[ix] == NULL)
 			LM_XP(1, ("allocating Endpoint"));
@@ -2141,7 +2159,15 @@ void Network::controllerMsgTreat
 */
 void Network::procVecSet(ProcessVector* wvData, int size, ProcessVecSave saveCallback)
 {
-	procVec             = wvData;
+	if (procVec != NULL)
+	{
+		LM_W(("Process Vector already here ..."));
+		if (procVecSize != size)
+			LM_X(1, ("Process Vector Size differs (%d != %d) - can't have that!", procVecSize, size));
+	}
+	else
+		procVec         = wvData;
+
 	procVecSize         = size;
 	procVecSaveCallback = saveCallback;
 }
@@ -2577,6 +2603,7 @@ void Network::procVecReceived(ProcessVector* processVec)
 
 		if (endpoint[FIRST_WORKER + ix] == NULL)
 		{
+			LM_M(("new Endpoint for index %d", FIRST_WORKER + ix));
 			endpoint[FIRST_WORKER + ix] = new Endpoint(Endpoint::Worker, processVec->processV[ix + 1].name, processVec->processV[ix + 1].host, processVec->processV[ix + 1].port, -1, -1);
 			if (endpoint[FIRST_WORKER + ix] == NULL)
 				LM_X(1, ("error allocating endpoint"));

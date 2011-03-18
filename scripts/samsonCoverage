@@ -1,0 +1,20 @@
+# --------------------------------------------
+# SAMSON CODE COVERAGE Generation
+# --------------------------------------------
+# To be executed in BUILD_DEBUG
+
+mkdir coverage || true
+lcov -d . --zerocounters
+./testing/test_unit/test_unit
+
+./testing/test_disk/test_disk
+./testing/test_hostMgr/test_hostMgr
+./testing/test_memory/test_memory
+
+lcov -d . --capture  -output-file coverage/samson.info
+
+# Remove system - libraries report and testing elements
+lcov -r coverage/samson.info "/usr/include/*" "/usr/local/*" "testing/*" -o coverage/samson.info
+
+# Generate the HTML output for nice visualitzation
+genhtml -o coverage coverage/samson.info

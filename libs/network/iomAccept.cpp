@@ -79,13 +79,11 @@ Andreu:
 	if (s != 0)
 		LM_X(1, ("setsockopt(SO_SNDBUF): %s", strerror(errno)));
 
-#if 0
 	// Disable the Nagle (TCP No Delay) algorithm
 	int flag = 1;
 	s = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (char*) &flag, sizeof(flag));
 	if (s != 0)
 		LM_X(1, ("setsockopt(TCP_NODELAY): %s", strerror(errno)));
-#endif
 #endif
 
 	return fd;

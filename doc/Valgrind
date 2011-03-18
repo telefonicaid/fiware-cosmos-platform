@@ -23,7 +23,7 @@ USAGE:
                                   Valgrind should not trace into.
                                   Patterns may include the metacharacters ? and *, which have the usual meaning.
 
-    o -gen-suppressions=yes     - print suppression for errors (as to avoid uninteresting errors) 
+    o --gen-suppressions=yes    - print suppression for errors (as to avoid uninteresting errors) 
                                   The output should be copied into a 'suppressions' file.    
 
   Compilation

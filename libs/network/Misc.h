@@ -13,8 +13,11 @@
 
 
 
-namespace ss
-{
+/* ****************************************************************************
+*
+* ipGet -
+*/
+extern char* ipGet(void);
 
 
 
@@ -23,15 +26,5 @@ namespace ss
 * wordClean - 
 */
 extern char* wordClean(char* str);
-
-
-
-/* ****************************************************************************
-*
-* ipGet -
-*/
-extern char* ipGet(void);
-
-}
 
 #endif

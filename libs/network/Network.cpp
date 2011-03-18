@@ -2293,12 +2293,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	else
 	{
 		epp = endpointLookup((ss::Endpoint::Type) hello->type, hostP);
-		if (epp)
-		{
-			LM_W(("Endpoint of type '%s' in host '%s' already exists in endpointList (%s@%s) (ep is of type '%s'",
-				  endpoint[ME]->typeName((ss::Endpoint::Type) hello->type), hostP->name, epp->name.c_str(), epp->ip, ep->typeName()));
-		}
-		else
+		if (epp == NULL)
 		{
 			epp = endpointLookup((ss::Endpoint::Type) hello->type, hello->ip);
 			if (epp)

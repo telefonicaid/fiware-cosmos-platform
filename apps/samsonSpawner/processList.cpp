@@ -321,6 +321,13 @@ void processSpawn(ss::Process* processP)
 		int ix;
 		int s;
 
+		extern int logFd;
+		if (logFd != -1)
+		{
+			close(logFd);
+			logFd = -1;
+		}
+
 		s = execvp(argV[0], argV);
 		if (s == -1)
 			LM_E(("Back from EXEC: %s", strerror(errno)));

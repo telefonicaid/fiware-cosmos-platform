@@ -8,7 +8,7 @@
 *
 */
 #include <stdio.h>              // FILE, popen, fgets, ...
-#include <cstdlib>				// free(.)
+#include <cstdlib>				// free
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
@@ -17,34 +17,79 @@
 
 
 
-namespace ss
-{
+#ifdef __linux__
+
+#include <stropts.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <linux/netdevice.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <unistd.h>
+
+
 
 /* ****************************************************************************
 *
-* wordClean - 
+* ipGet - 
 */
-char* wordClean(char* str)
+char* ipGet(void)
 {
-	char* endP;
+	int             s;
+	struct ifconf   ifconf;
+	struct ifreq    ifr[50];
+	int             ifs;
+	int             i;
+	int             domain = AF_INET;
 
-	while ((*str == ' ') || (*str == '\t'))
-		++str;
+	LM_M(("********************** IN"));
 
-	endP = str;
-	while ((*endP != 0) && (*endP != ' ') && (*endP != '\t'))
-		++endP;
-	*endP = 0;
+	s = socket(domain, SOCK_STREAM, 0);
+	if (s < 0)
+	{
+		LM_E(("socket: %s", strerror(errno)));
+		return strdup("noip");
+	}
 
-	return str;
+	ifconf.ifc_buf = (char *) ifr;
+	ifconf.ifc_len = sizeof ifr;
+
+	if (ioctl(s, SIOCGIFCONF, &ifconf) == -1)
+	{
+		LM_E(("ioctl(SIOCGIFCONF): %s", strerror(errno)));
+		close(s);
+		return strdup("noip");
+	}
+
+	ifs = ifconf.ifc_len / sizeof(ifr[0]);
+	for (i = 0; i < ifs; i++)
+	{
+		char ip[INET_ADDRSTRLEN];
+		struct sockaddr_in* s_in = (struct sockaddr_in*) &ifr[i].ifr_addr;
+
+		if (!inet_ntop(domain, &s_in->sin_addr, ip, sizeof(ip)))
+		{
+			LM_E(("inet_ntop: %s", strerror(errno)));
+			close(s);
+			return strdup("noip");
+		}
+
+		LM_M(("********************** %s: %s", ifr[i].ifr_name, ip));
+		if (strncmp(ifr[i].ifr_name, "eth", 3) == 0)
+		{
+			close(s);
+			LM_M(("********************** Returning IP '%s'", ip));
+			return strdup(ip);
+		}
+	}
+
+	close(s);
+
+	return strdup("noip");
 }
 
+#else
 
-
-/* ****************************************************************************
-*
-* ipGet -
-*/
 char* ipGet(void)
 {
 	char  line[80];
@@ -66,5 +111,25 @@ char* ipGet(void)
 
 	return strdup(ipP);
 }
+#endif
 
+
+
+/* ****************************************************************************
+*
+* wordClean - 
+*/
+char* wordClean(char* str)
+{
+	char* endP;
+
+	while ((*str == ' ') || (*str == '\t'))
+		++str;
+
+	endP = str;
+	while ((*endP != 0) && (*endP != ' ') && (*endP != '\t'))
+		++endP;
+	*endP = 0;
+
+	return str;
 }

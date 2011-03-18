@@ -20,6 +20,7 @@ protobuf
 pthread
 dl
 readline
+${COMMON_SAMSON_LIBS}
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")

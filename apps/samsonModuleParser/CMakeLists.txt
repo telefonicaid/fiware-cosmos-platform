@@ -25,6 +25,7 @@ pthread
 dl
 lm
 pa
+${COMMON_SAMSON_LIBS}
 )
 
 # Include directories

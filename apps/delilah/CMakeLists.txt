@@ -18,6 +18,7 @@ SET (STATIC_LIBS
      readline
      samsonNetwork
      samsonCommon	 
+     ${COMMON_SAMSON_LIBS}
 )
 
 # Include directories

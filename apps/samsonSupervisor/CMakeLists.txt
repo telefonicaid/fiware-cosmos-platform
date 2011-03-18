@@ -97,7 +97,7 @@ SET (LIBS
 	readline 
 	pthread
 	protobuf
-
+	${COMMON_SAMSON_LIBS}
 )
 
 SET (RESOURCES

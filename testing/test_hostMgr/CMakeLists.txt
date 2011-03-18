@@ -10,7 +10,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 # Exec file
 # -----------------------------------------------------------------
 ADD_EXECUTABLE(test_hostMgr main.cpp )
-TARGET_LINK_LIBRARIES(test_hostMgr samsonNetwork protobuf lm pa pthread)
+TARGET_LINK_LIBRARIES(test_hostMgr samsonNetwork protobuf lm pa pthread ${COMMON_SAMSON_LIBS})
 
 
 # TEST

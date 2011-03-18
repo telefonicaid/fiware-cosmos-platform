@@ -15,7 +15,7 @@ SET (STATIC_LIBS
      protobuf
      pthread
      dl
-     curses
+     ${COMMON_SAMSON_LIBS}
 )
 
 

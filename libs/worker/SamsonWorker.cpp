@@ -50,8 +50,7 @@ SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , l
 	srand((unsigned int) time(NULL));
 	
 	// Create a thread to run "runStatusUpdate"
-	pthread_t t;
-	pthread_create(&t, NULL, run_runStatusUpdate, this);
+	pthread_create(&t_status_updater, NULL, run_runStatusUpdate, this);
 }
 
 
@@ -322,6 +321,5 @@ int SamsonWorker::receive(int fromId, Message::MessageCode msgCode, Packet* pack
 		
 		
 	}
-
 	
 }

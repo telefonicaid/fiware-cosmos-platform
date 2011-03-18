@@ -21,6 +21,7 @@ SET (LIBS
 	readline
 	samsonDataLib
 	samsonCommon
+	${COMMON_SAMSON_LIBS}
 )
 
 # Include directories
@@ -44,6 +45,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 
 ADD_EXECUTABLE(samsonController ${SOURCES} ${HEADERS})
 TARGET_LINK_LIBRARIES(samsonController ${LIBS})
+
 
 INSTALL(TARGETS               samsonController
         RUNTIME DESTINATION   bin)

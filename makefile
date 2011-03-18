@@ -1,55 +1,58 @@
-all:
-	./scripts/prepareBuild
-	make -C build
+debug:
+	mkdir BUILD_DEBUG || TRUE
+	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True
+	make -C BUILD_DEBUG
+
+release:
+	mkdir BUILD_RELEASE || TRUE
+	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE
+	make -C BUILD_RELEASE
+
+test: ctest itest
 
 
-test: 	 	ctest itest
-
-
-itest:		test_local_processes
+itest:	test_local_processes
 
 
 ctest:
-	make test -C build
-
+	make test -C BUILD_DEBUG
 
 test_local_processes:
 	./scripts/test_local_processes
 
 
-package: all
-	make -C build package 
+package: release
+	make -C BUILD_RELEASE package 
 
-install: all
-	sudo make -C build install
+install: release
+	sudo make -C BUILD_RELEASE install
 
 distribute: install
 	./scripts/samsonDistribute
 
 i: install
 
-d:
-	samsonLocal
 
 clean:
-	make -C build clean
+	make -C BUILD_DEBUG clean
 
 xcode:	
 	./scripts/prepareXcode
 
 reset_svn:
-	sudo rm -Rf build/*
+	sudo rm -Rf BUILD_DEBUG/*
+	sudo rm -Rf BUILD_RELEASE/*
 	sudo rm -Rf xcode_proj
 	
 
 uninstall:
 	sudo rm -f /usr/local/bin/samson* 
-	sudo rm -Rf /usr/local/include/samson	
+	sudo rm -Rf /usr/local/include/samson
 
 reset:
-#	sudo rm -Rf build/*
-#	sudo rm -Rf xcode_proj
-	sudo rm -f modules/example/Module.*
+	sudo rm -Rf BUILD_DEBUG/*
+	sudo rm -Rf BUILD_RELEASE/*
+	sudo rm -Rf xcode_proj
 	sudo rm -f libs/common/samson.pb.*
 	sudo rm -f libs/data/data.pb.*
 	sudo rm -Rf /usr/local/include/samson
@@ -59,25 +62,11 @@ module:
 	make -C build/apps/samsonModuleParser
 
 
-core:
-	make -C build/libs/module
-	sudo make install -C build/libs/module
-	
-
-example:
-	touch modules/example/Module
-	make -C build/modules/example
-	sudo make install -C build/modules/example
-
 qt:
 	make -C build/apps/delilahQt
 
 clean_qt:
 	make -C build/apps/delilahQt clean
-
-
-m:
-	mkdir modulesBuild;cd modulesBuild;cmake ../modules;make;cd ..
 
 memory_128:
 	sudo sysctl -w kernel.shmmax=134217728
@@ -87,3 +76,6 @@ memory_256::
 
 v_sl:
 	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  samsonLocal  2> output_valgrind_samsonLocal
+
+coverage: debug
+	cd BUILD_DEBUG ; ../scripts/samsonCoverage

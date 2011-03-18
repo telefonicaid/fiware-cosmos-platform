@@ -15,7 +15,7 @@ SET (LIBS
     pthread
     protobuf
     samsonCommon
-
+    ${COMMON_SAMSON_LIBS}
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")

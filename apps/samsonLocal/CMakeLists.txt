@@ -29,6 +29,7 @@ dl
 pthread
 readline
 curses
+${COMMON_SAMSON_LIBS}
 )
 
 # Include directories

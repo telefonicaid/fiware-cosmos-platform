@@ -28,6 +28,8 @@ namespace ss {
 	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
 	{
 		
+		pthread_t t_status_updater;	// Thread of the status-updater
+		
 	public:
 		
 		SamsonWorker(NetworkInterface* network);

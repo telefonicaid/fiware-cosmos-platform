@@ -18,7 +18,7 @@ link_directories("${PROJECT_BINARY_DIR}/libs/network")
 
 # networkTest Executable
 ADD_EXECUTABLE(networkTest ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(networkTest samsonNetworkStatic pa lm pthread)
+TARGET_LINK_LIBRARIES(networkTest samsonNetworkStatic pa lm pthread ${COMMON_SAMSON_LIBS})
 
 INSTALL(TARGETS               networkTest
         RUNTIME DESTINATION   bin)

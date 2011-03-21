@@ -42,7 +42,7 @@ HostMgr::HostMgr(unsigned int size)
 		LM_X(1, ("error allocating room for %d delilah hosts", size));
 
 	localIps();
-	list("init");
+	// list("init");
 }
 
 
@@ -169,7 +169,7 @@ Host* HostMgr::insert(Host* hostP)
 		if (hostV[ix] == NULL)
 		{
 			hostV[ix] = hostP;
-			list("Host Added");
+			// list("Host Added");
 			return hostV[ix];
 		}
 	}
@@ -266,7 +266,7 @@ Host* HostMgr::insert(const char* name, const char* ip)
 
 		while (heP->h_aliases[ix] != NULL)
 		{
-			LM_W(("alias %d: '%s' - should be added also", ix, heP->h_aliases[ix]));
+			LM_TODO(("alias %d: '%s' - should also be added?", ix, heP->h_aliases[ix]));
 			++ix;
 		}
 
@@ -277,7 +277,7 @@ Host* HostMgr::insert(const char* name, const char* ip)
 				char ipY[64];
 
 				ip2string(*((int*) heP->h_addr_list[ix]), ipX, sizeof(ipX));
-				LM_W(("addr %d: '%s' should be added also", ix, ipY));
+				LM_TODO(("addr %d: '%s' should also be added?", ix, ipY));
 			}
 		}
 	}

@@ -42,8 +42,6 @@ char* ipGet(void)
 	int             i;
 	int             domain = AF_INET;
 
-	LM_M(("********************** IN"));
-
 	s = socket(domain, SOCK_STREAM, 0);
 	if (s < 0)
 	{
@@ -74,11 +72,9 @@ char* ipGet(void)
 			return strdup("noip");
 		}
 
-		LM_M(("********************** %s: %s", ifr[i].ifr_name, ip));
 		if (strncmp(ifr[i].ifr_name, "eth", 3) == 0)
 		{
 			close(s);
-			LM_M(("********************** Returning IP '%s'", ip));
 			return strdup(ip);
 		}
 	}

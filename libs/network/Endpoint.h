@@ -181,7 +181,7 @@ public:
 public:
 	Endpoint(void);
 	Endpoint(Type type, unsigned short port);
-	Endpoint(Type type, char* alias);
+	Endpoint(Type type, const char* alias, int nada);
 	Endpoint(Type type, std::string ipAndPort);
 	Endpoint(Type type, std::string name, std::string ip, unsigned short port, int rFd, int wFd);
 	~Endpoint();

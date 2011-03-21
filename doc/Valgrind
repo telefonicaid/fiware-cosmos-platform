@@ -42,7 +42,7 @@ USAGE:
 
 EXAMPLE USAGE
   % valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  samsonLocal  2> valgrind.out.03
-
+  % valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  --trace-children=yes --trace-children-skip=samsonWorker samsonSpawner -fg  2> valgrind.out.01
 
 
 PERFORMANCE ISSUES

@@ -281,7 +281,6 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 	//
 	// me
 	//
-	LM_M(("new Endpoint for index %d", ME));
 	endpoint[ME] = new Endpoint(type, port);
 	if (endpoint[ME] == NULL)
 		LM_XP(1, ("new Endpoint"));
@@ -433,7 +432,6 @@ Endpoint* Network::controllerConnect(const char* controllerName)
 	}
 
 
-	LM_M(("new Endpoint for index %d", CONTROLLER));
 	endpoint[CONTROLLER] = new Endpoint(Endpoint::Controller, controllerName);
 	if (endpoint[CONTROLLER] == NULL)
 		LM_XP(1, ("new Endpoint"));
@@ -537,7 +535,6 @@ void Network::init(const char* controllerName)
 {
 	if (this->port != 0)
 	{
-		LM_M(("new Endpoint for index %d", LISTENER));
 		endpoint[LISTENER] = new Endpoint(*endpoint[ME]);
 		if (endpoint[LISTENER] == NULL)
 			LM_XP(1, ("new Endpoint"));
@@ -606,8 +603,7 @@ Endpoint* workerNew(int ix)
 	snprintf(alias, sizeof(alias), "Worker%02d",  ix);
 	snprintf(name,  sizeof(name),  "Worker %02d", ix);
 
-	LM_M(("new Endpoint for worker %d", ix));
-	ep = new Endpoint();
+	ep = new Endpoint(ss::Endpoint::Worker, alias);
 	if (ep == NULL)
 		LM_XP(1, ("new Endpoint"));
 
@@ -623,7 +619,6 @@ Endpoint* workerNew(int ix)
 	ep->coreNo  = -1;
 	
 	ep->ipSet("II.PP");
-	ep->aliasSet(alias);
 
 	LM_T(LmtEndpoint, ("Created endpoint %d, worker %d (%s)", FIRST_WORKER + ix, ix, ep->aliasGet()));
 
@@ -1159,7 +1154,7 @@ Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, con
 	if (endpoint[CONTROLLER] == NULL)
 	{
 		LM_T(LmtInit, ("Allocating room for Controller endpoint"));
-		endpoint[CONTROLLER] = new Endpoint();
+		endpoint[CONTROLLER] = new Endpoint(Endpoint::Controller, alias, 0);
 		LM_T(LmtInit, ("*** Controller Endpoint at %p", endpoint[CONTROLLER]));
 	}
 
@@ -1182,8 +1177,7 @@ Endpoint* Network::endpointAddSupervisor(int rFd, int wFd, const char* name, con
 {
 	if (endpoint[SUPERVISOR] == NULL)
 	{
-		LM_M(("new Endpoint for index %d", SUPERVISOR));
-		endpoint[SUPERVISOR] = new Endpoint();
+	   endpoint[SUPERVISOR] = new Endpoint(Endpoint::Supervisor, alias, 0);
 	}
 
 	endpointFill(endpoint[SUPERVISOR], inheritedFrom, rFd, wFd, name, alias, workers, ip, Endpoint::Supervisor, port, coreNo);
@@ -1209,8 +1203,8 @@ Endpoint* Network::endpointAddTemporal(int rFd, int wFd, const char* name, const
 		if (endpoint[ix] != NULL)
 			continue;
 
-		LM_M(("new Endpoint (%s) for index %d", name, ix));
-		endpoint[ix] = new Endpoint();
+		endpoint[ix] = new Endpoint(Endpoint::Temporal, alias, 0);
+		LM_M(("new Endpoint: created endpoint %p as a Temporal endpoint with alias '%s'", endpoint[ix], alias));
 		if (endpoint[ix] == NULL)
 			LM_XP(1, ("allocating temporal Endpoint"));
 
@@ -1240,8 +1234,7 @@ Endpoint* Network::endpointAddDefault(int rFd, int wFd, const char* name, const 
 		if (endpoint[ix] != NULL)
 			continue;
 
-		LM_M(("new Endpoint (%s) for index %d", name, ix));
-		endpoint[ix] = new Endpoint();
+		endpoint[ix] = new Endpoint(type, alias);
 		if (endpoint[ix] == NULL)
 			LM_XP(1, ("allocating Endpoint"));
 
@@ -1487,10 +1480,16 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 
 		if (ep->type == Endpoint::Worker)
 		{
+			LM_W(("NOT removing Worker ... (Really?)"));
 			ep->name  = std::string("To be a worker");
 				
 			if (endpointUpdateReceiver != NULL)
 				endpointUpdateReceiver->endpointUpdate(ep, Endpoint::WorkerRemoved, "Worker Removed");
+
+			LM_W(("NO, I am removing the worker !"));
+			delete ep;
+			ep = NULL;
+			endpoint[ix] = NULL;
 		}
 		else if (ep->type == Endpoint::Controller)
 		{
@@ -1524,7 +1523,8 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 			endpoint[ix] = NULL;
 		}
 
-		memset(ep, sizeof(*ep), 0);
+		if (ep != NULL)
+			memset(ep, sizeof(*ep), 0);
 		return;
 	}
 }
@@ -1881,20 +1881,17 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 		if (ep->type == Endpoint::Worker)
 		{
-			LM_W(("Worker %d just died !", ep->workerId));
+			LM_W(("Worker %d just died (endpoint at %p)", ep->workerId, ep));
 			if (packetReceiver)
 				packetReceiver->notifyWorkerDied(ep->workerId);
 			
-			// Commented out this callback as the very same callback is done further down ...
-			// 
-			// if (endpointUpdateReceiver != NULL)
-			// 	    endpointUpdateReceiver->endpointUpdate(ep, Endpoint::WorkerDisconnected, "Worker Disconnected");
-
 			if (endpoint[ME]->type == Endpoint::Delilah)
 			{
 				LM_T(LmtTimeout, ("Lower select timeout to ONE second to poll restarting worker"));
 				tmoSecs = 1;
 			}
+
+			endpointRemove(ep, "Worker just died");
 		}
 
 		if (ep == endpoint[CONTROLLER])
@@ -2167,14 +2164,16 @@ void Network::controllerMsgTreat
 */
 void Network::procVecSet(ProcessVector* wvData, int size, ProcessVecSave saveCallback)
 {
-	if (procVec != NULL)
-	{
-		LM_W(("Process Vector already here ..."));
-		if (procVecSize != size)
-			LM_X(1, ("Process Vector Size differs (%d != %d) - can't have that!", procVecSize, size));
-	}
+	if ((procVec != NULL) && (procVecSize != size))
+		LM_X(1, ("Process Vector Size differs (%d != %d) - can't have that!", procVecSize, size));
 	else
-		procVec         = wvData;
+	{
+		LM_M(("Setting procVec from %p to %p - freeing up the old one ...", procVec, wvData));
+		if (procVec != NULL)
+			free(procVec);
+
+		procVec = wvData;
+	}
 
 	procVecSize         = size;
 	procVecSaveCallback = saveCallback;
@@ -2605,7 +2604,6 @@ void Network::procVecReceived(ProcessVector* processVec)
 
 		if (endpoint[FIRST_WORKER + ix] == NULL)
 		{
-			LM_M(("new Endpoint for index %d", FIRST_WORKER + ix));
 			endpoint[FIRST_WORKER + ix] = new Endpoint(Endpoint::Worker, processVec->processV[ix + 1].name, processVec->processV[ix + 1].host, processVec->processV[ix + 1].port, -1, -1);
 			LM_M(("Setting endpoint[%d] to %p", FIRST_WORKER + ix, endpoint[FIRST_WORKER + ix]));
 			if (endpoint[FIRST_WORKER + ix] == NULL)

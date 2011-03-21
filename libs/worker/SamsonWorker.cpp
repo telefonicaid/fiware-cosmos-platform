@@ -79,12 +79,12 @@ void SamsonWorker::runStatusUpdate()
 				network->send(this, network->controllerGetIdentifier(), Message::Command, p);
 
 				LM_TODO(("Who deletes Packet ?"));
+				delete p;
 			}
 		}
 
 		sleep(3);
 	}
-	
 }
 
 
@@ -112,6 +112,7 @@ void SamsonWorker::sendWorkerStatus(void)
 	ws->set_used_memory( MemoryManager::shared()->getUsedMemory() );
 	
 	network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);
+	delete p;
 }
 
 

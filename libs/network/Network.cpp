@@ -858,6 +858,12 @@ static void* senderThread(void* vP)
 			free(job.dataP);
 			job.dataP = NULL;
 		}
+
+		if (job.packetP != NULL)
+		{
+			delete job.packetP;
+			job.packetP = NULL;
+		}
 	}
 
 	// Cannot really get here ... !!!
@@ -977,6 +983,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 					LM_P(("write(SendJob)"));
 				else if (nb != sizeof(SendJob))
 					LM_E(("error writing SendJob. Written %d bytes and not %d", nb, sizeof(SendJob)));
+
 				free(jobP);
 				jobP = NULL;
 			}
@@ -1010,6 +1017,10 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 
 	LM_T(LmtSenderThread, ("Sending message directly (%d bytes)", packetP->message.ByteSize()));
 	nb = iomMsgSend(ep, endpoint[ME], code, Message::Msg, NULL, 0, packetP);
+
+	if (packetP != NULL)
+		delete packetP;
+
 
 	return nb;
 }

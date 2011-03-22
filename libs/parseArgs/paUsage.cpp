@@ -149,7 +149,7 @@ void paUsage(PaArgument* paList)
     memset(spacePad, 0x20202020, strlen(spacePad));  /* replace progName */
 
     sprintf(s, "Usage: %s ", progName);
-    strncat(paResultString, s, sizeof(paResultString));
+    strncat(paResultString, s, sizeof(paResultString) - 1);
 
     paIterateInit();
     LM_T(LmtPaUsage, ("presenting usage"));
@@ -172,13 +172,13 @@ void paUsage(PaArgument* paList)
 	    strcpy(xName, "                    ");
 
 	sprintf(s, " %s\n", xName);
-	strncat(paResultString, s, sizeof(paResultString));
+	strncat(paResultString, s, sizeof(paResultString) - 1);
 	sprintf(s, "%s        ", spacePad); /* 8 spaces for "Usage:  " */
-	strncat(paResultString, s, sizeof(paResultString));
+	strncat(paResultString, s, sizeof(paResultString) - 1);
     }
 
     LM_T(LmtPaUsage, ("presenting usage"));
-    strncat(paResultString, "\r", sizeof(paResultString));
+    strncat(paResultString, "\r", sizeof(paResultString) - 1);
     if (paExitOnUsage == true)
     {
 	printf("%s\n", paResultString);
@@ -336,12 +336,12 @@ void paExtendedUsage(PaArgument* paList)
 		}
 	
 		sprintf(s, format, (firstLine)? progNAME : spacePad, optName, varName, vals, from);
-		strncat(paResultString, s, sizeof(paResultString));
+		strncat(paResultString, s, sizeof(paResultString) - 1);
 	
 		firstLine = false;
 	}
 
-	strncat(paResultString, "\r", sizeof(paResultString));
+	strncat(paResultString, "\r", sizeof(paResultString) - 1);
     
 	free(spacePad);
 }
@@ -406,10 +406,10 @@ void paHelp(PaArgument* paList)
 		LM_T(LmtHelp, ("Got a help text"));
 
 		sprintf(s, "----- %s Help -----\n", progName);
-		strncat(paResultString, s, sizeof(paResultString));
+		strncat(paResultString, s, sizeof(paResultString) - 1);
 
 		sprintf(s, "%s\n---------------------------------------------\n", paHelpText);
-		strncat(paResultString, s, sizeof(paResultString));
+		strncat(paResultString, s, sizeof(paResultString) - 1);
 	}
 	else if (paHelpFile != NULL)
 	{
@@ -422,12 +422,12 @@ void paHelp(PaArgument* paList)
 		LM_T(LmtHelp, ("Got help file '%s'", paHelpFile));
 
 		sprintf(s, "----- %s Help -----\n", progName);
-		strncat(paResultString, s, sizeof(paResultString));
+		strncat(paResultString, s, sizeof(paResultString) - 1);
 
 		if ((fP = fopen(paHelpFile, "r")) == NULL)
 		{
 			sprintf(s, "error opening help file '%s': %s", paHelpFile, strerror(errno));
-			strncat(paResultString, s, sizeof(paResultString));
+			strncat(paResultString, s, sizeof(paResultString) - 1);
 			return;
 		}
 	
@@ -460,13 +460,13 @@ void paHelp(PaArgument* paList)
 				}
 			} while (changes != 0);
 
-			strncat(paResultString, line, sizeof(paResultString));
+			strncat(paResultString, line, sizeof(paResultString) - 1);
 		}
 
 		fclose(fP);
 		strncat(paResultString, 
 				"\n---------------------------------------------\n",
-				sizeof(paResultString));
+~				sizeof(paResultString) - 1);
 	}
 	else
 		paUsage(paList);

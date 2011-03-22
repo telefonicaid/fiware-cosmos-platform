@@ -49,8 +49,8 @@ static void sysKill(const char* name)
 	char com[256];
 
 	snprintf(com, sizeof(com), "killall -9 %s > /dev/null 2>&1", name);
-	system(com);
-	printf("Killed %s\n", name);
+	if (system(com) == 0)
+		printf("Killed %s\n", name);
 }
 
 

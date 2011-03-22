@@ -200,7 +200,11 @@ namespace ss
 				// Send something to the other side of the pipe to cotinue or finish
 				LM_T(LmtIsolated , ("Isolated process %s(%s): Sending something back to the pipe ",getStatus().c_str(),stateName()));
 
-				write( pipeFdPair2[1] , &m , sizeof(m) );
+				int s;
+				s = write(pipeFdPair2[1], &m, sizeof(m));
+				if (s != sizeof(m))
+					LM_W(("written only %d bytes (wanted to write %d)", s, sizeof(m)));
+
 				LM_T( LmtIsolated , ("Isolated process %s(%s): Sending something back to the pipe... OK! ",getStatus().c_str(),stateName()));
 
 				if( s == finished )
@@ -304,7 +308,9 @@ namespace ss
 		strncpy(message.logData.text, error_message.c_str() , sizeof(message.logData.text) );  
 		
 		// Write in the pipe
-		write(pipeFdPair1[1], &message, sizeof(message) );
+		int nb;
+		if ((nb = write(pipeFdPair1[1], &message, sizeof(message))) != sizeof(message))
+			LM_W(("written only %d bytes (wanted to write %d)", nb, sizeof(message)));
 		
 		// Exit this task ( in the background )
 		exit(0);

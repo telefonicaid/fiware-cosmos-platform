@@ -45,9 +45,14 @@ int main(int argc, const char *argv[])
 	}
 	
 	ss::KVHeader header;
-	fread(&header, 1, sizeof(ss::KVHeader), file);
+	int          nb;
+	nb = fread(&header, 1, sizeof(ss::KVHeader), file);
 
-	if( !header.check() )
+	if (nb != sizeof(ss::KVHeader))
+		printf("WARNING: read only %d bytes (wanted to read %d)\n", nb, sizeof(ss::KVHeader));
+		
+
+	if (!header.check())
 	{
 		std::cout << "Error: Wrong magic number\n";
 		exit(0);
@@ -70,11 +75,13 @@ int main(int argc, const char *argv[])
 		std::cerr << " = " << expected_size << "\n";
 		std::cerr << "File size: " << filestatus.st_size << " bytes\n";
 	}
-	else {
-		if( debug )
+	else
+	{
+		if (debug)
 			std::cerr << "File with rigth size according to header\n";
 	}
-
+		
+		
 	
 	
 	
@@ -99,11 +106,14 @@ int main(int argc, const char *argv[])
 		exit(0);
 	}
 	
-	ss::KVInfo *info = (ss::KVInfo*) malloc(  sizeof(ss::KVInfo)*(KVFILE_NUM_HASHGROUPS)  );
-	fread(info, 1, sizeof(ss::KVInfo)*(KVFILE_NUM_HASHGROUPS) , file);
+	ss::KVInfo*  info = (ss::KVInfo*) malloc(  sizeof(ss::KVInfo)*(KVFILE_NUM_HASHGROUPS));
+	int          total_size =  sizeof(ss::KVInfo) * (KVFILE_NUM_HASHGROUPS);
+	nb = fread(info, 1, total_size, file);
+	if (nb != total_size)
+		printf("WARNING: read only %d bytes (wanted to read %d)\n", nb, total_size);
 
 
-	if( cmdLine.get_flag_bool("header") )
+	if (cmdLine.get_flag_bool("header"))
 	{
 		std::cout << "Total: " << header.info.str() << std::endl;
 		

@@ -1538,7 +1538,7 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 		}
 
 		if (ep != NULL)
-			memset(ep, sizeof(*ep), 0);
+			memset(ep, 0, sizeof(*ep));
 		return;
 	}
 }
@@ -1810,12 +1810,16 @@ void Network::webServiceTreat(Endpoint* ep)
 	}
 	else
 	{
+		ssize_t s;
+
 		std::string command     = packetReceiver->getJSONStatus(std::string(buf));
 		int         commandLen  = command.size();
 
 		ep->msgsIn  += 1;
 		ep->msgsOut += 1;
-		write(ep->wFd, command.c_str(), commandLen);
+		s = write(ep->wFd, command.c_str(), commandLen);
+		if (s != commandLen)
+			LM_W(("written only %d bytes (wanted to write %d)", s, commandLen));
 	}
 
 	close(ep->wFd);
@@ -2287,7 +2291,7 @@ void Network::jobInfo(int endpointId, int* messages, long long* dataLen)
 */
 void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::Header* headerP)
 {
-	int newSlot;
+	int newSlot = 0;
 	int oldSlot;
 
 #if 1

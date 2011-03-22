@@ -24,8 +24,9 @@ extern "C" void exit(int);
 */
 void daemonize(void)
 {
-	pid_t pid;
-	pid_t sid;
+	pid_t  pid;
+	pid_t  sid;
+	FILE*  s;
 
 	// already daemon
 	if (getppid() == 1)
@@ -53,7 +54,7 @@ void daemonize(void)
 		LM_X(1, ("chdir: %s", strerror(errno)));
 
 	// Redirect standard files to /dev/null
-	freopen("/dev/null", "r", stdin);
-	freopen("/dev/null", "w", stdout);
-	freopen("/dev/null", "w", stderr);
+	s = freopen("/dev/null", "r", stdin);
+	s = freopen("/dev/null", "w", stdout);
+	s = freopen("/dev/null", "w", stderr);
 }

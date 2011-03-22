@@ -92,6 +92,7 @@ ss::HostMgr*        hostMgr                = NULL;
 static int accessCheck(void)
 {
 	struct stat statBuf;
+	int         s;
 
 	if (stat(EtcDirPath, &statBuf) == -1)
 	{
@@ -144,7 +145,11 @@ static int accessCheck(void)
 			   "The platform process file '%s' already exists.\n"
 			   "Do you wish to overwrite it (Y/N)?> ", PlatformProcessesPath);
 		fflush(stdout);
-		scanf("%s", answer);
+
+		s = scanf("%s", answer);
+		if (s == EOF)
+			LM_X(1, ("Error reading reply"));
+
 		if (((answer[0] == 'N') || (answer[0] == 'n')) && (answer[1] == 0))
 			return 6;
 		else if (((answer[0] == 'Y') || (answer[0] == 'y')) && (answer[1] == 0))
@@ -597,7 +602,8 @@ static int resetPlatform(const char* host)
 */
 int main(int argC, const char *argV[])
 {
-	int err = 0;
+	int  err = 0;
+	int  s;
 
 	memset(controllerHost, 0, sizeof(controllerHost));
 
@@ -631,7 +637,9 @@ int main(int argC, const char *argV[])
 		{
 			printf("Please give the IP of one of the platform hosts> ");
 			fflush(stdout);
-			scanf("%s", rIp);
+			s = scanf("%s", rIp);
+			if (s == EOF)
+				LM_X(1, ("Error reading IP of a platform host"));
 		}
 
 		err = resetPlatform(rIp);
@@ -645,14 +653,18 @@ int main(int argC, const char *argV[])
 	{
 		printf("In what host will the controller run?> ");
 		fflush(stdout);
-		scanf("%s", controllerHost);
+		s = scanf("%s", controllerHost);
+		if (s == EOF)
+			LM_X(1, ("Error reading controller host"));
 	}
 
 	if (workers == 0)
 	{
 		printf("Number of workers> ");
 		fflush(stdout);
-		scanf("%d", &workers);
+		s = scanf("%d", &workers);
+		if (s == EOF)
+			LM_X(1, ("Error reading number of workers"));
 
 		ip[0] = (char*) workers;
 
@@ -662,7 +674,9 @@ int main(int argC, const char *argV[])
 
 			printf("Please enter the IP address (or host name) for host number %d> ", ix + 1);
 			fflush(stdout);
-			scanf("%s", ipaddress);
+			s = scanf("%s", ipaddress);
+			if (s == EOF)
+				LM_X(1, ("Error reading IP-address for worker %d", ix + 1));
 
 			ip[ix + 1] = strdup(ipaddress);
 		}

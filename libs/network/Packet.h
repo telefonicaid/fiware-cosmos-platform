@@ -99,8 +99,10 @@ namespace ss {
 			Buffer *b = Engine::shared()->memoryManager.newBuffer( "Compressed buffer", cm_len , buffer->getType() );
 			
 			int ans_compress = ezcompress( ( unsigned char*) ( b->getData() ), &cm_len, ( unsigned char*) (buffer->getData() ) , original_size );
-			assert( !ans_compress );
-			b->setSize(cm_len  );			// Set the size of the compressed buffer
+			if (ans_compress != 0)
+				LM_X(1, ("ezcompress error"));
+
+			b->setSize(cm_len);			// Set the size of the compressed buffer
 
 			
 			// Create a new buffer with the rigth size
@@ -134,7 +136,9 @@ namespace ss {
 			
 			// Decompress information
 			int ans_decompress = ezuncompress( (unsigned char*) b->getData(), &m2_len, (unsigned char*) ( data  ) , compressed_size );	
-			assert(!ans_decompress);
+
+			if (ans_decompress != 0)
+				LM_X(1, ("ezuncompress error"));
 			
 			
 			return b;

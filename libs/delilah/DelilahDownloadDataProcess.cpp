@@ -190,8 +190,13 @@ namespace ss {
 							char *fileBuffer = (char*)malloc( total_size+1);
 							fileBuffer[total_size] = '\0';
 							
-							FILE *file = fopen(fileName.c_str(), "r");
-							fread(fileBuffer, 1, total_size, file);
+							FILE*  file = fopen(fileName.c_str(), "r");
+							size_t nb;
+
+							nb = fread(fileBuffer, 1, total_size, file);
+							if (nb != total_size)
+								LM_W(("read only %d bytes (wanted to read %d)", nb, total_size));
+							
 							delilah->showMessage(fileBuffer);
 							fclose( file );
 							

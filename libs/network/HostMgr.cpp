@@ -511,7 +511,7 @@ void HostMgr::list(const char* why)
             continue;
 
 		hostP = hostV[ix];
-		memset(line, sizeof(line), 0);
+		memset(line, 0, sizeof(line));
 		snprintf(line, sizeof(line), "%02d: %-20s %-20s", ix, hostP->name, hostP->ip);
 
 		for (unsigned int aIx = 0; aIx < sizeof(hostP->alias) / sizeof(hostP->alias[0]); aIx++)
@@ -521,7 +521,7 @@ void HostMgr::list(const char* why)
 				continue;
 
 			snprintf(part, sizeof(part), " %-20s", hostP->alias[aIx]);
-			strncat(line, part, sizeof(line));
+			strncat(line, part, sizeof(line) - 1);
 		}
 
 		LM_F((line));

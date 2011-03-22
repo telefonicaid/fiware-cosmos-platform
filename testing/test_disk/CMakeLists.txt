@@ -12,7 +12,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
 # Exec file
 # -----------------------------------------------------------------
 ADD_EXECUTABLE(test_disk main_test_disk.cpp )
-TARGET_LINK_LIBRARIES(test_disk  samsonCommon samsonCore protobuf lm pa pthread ${COMMON_SAMSON_LIBS})
+TARGET_LINK_LIBRARIES(test_disk  samsonCore samsonCommon  protobuf lm pa pthread ${COMMON_SAMSON_LIBS})
 
 
 # TEST

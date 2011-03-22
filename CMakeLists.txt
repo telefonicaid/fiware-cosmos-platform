@@ -99,7 +99,7 @@ endif (error EQUAL 0)
 if(COVERAGE)
   set_target_properties( 
 		pa lm
-		samsonMemory samsonCore samsonCommon samsonCoding samsonProcess samsonDataLib samsonDisk samsonNetwork
+		 samsonCore samsonCommon   samsonDataLib  samsonNetwork
 		delilahLib samsonWorkerLib samsonControllerLib 
 		test_memory test_disk test_hostMgr test_unit
                 PROPERTIES

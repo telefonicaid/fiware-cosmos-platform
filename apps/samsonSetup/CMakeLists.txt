@@ -7,12 +7,12 @@ SET (HEADERS
 
 SET (LIBS
     samsonNetwork
+    samsonCore
     pa
     lm
     pthread
     protobuf
     samsonCommon
-    samsonCore
     ${COMMON_SAMSON_LIBS}
 )
 

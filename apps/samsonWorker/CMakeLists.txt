@@ -7,8 +7,8 @@ SET (HEADERS
 
 
 SET (LIBS
-samsonCore
 samsonWorkerLib
+samsonCore
 samsonNetwork
 samsonCommon
 pa

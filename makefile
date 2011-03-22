@@ -1,15 +1,15 @@
 debug:
-	mkdir BUILD_DEBUG || TRUE
+	mkdir BUILD_DEBUG || true
 	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG
 	make -C BUILD_DEBUG
 
 debug_coverage:
-	mkdir BUILD_DEBUG_COVERAGE || TRUE
+	mkdir BUILD_DEBUG_COVERAGE || true
 	cd BUILD_DEBUG_COVERAGE; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True
 	make -C BUILD_DEBUG_COVERAGE
 
 release:
-	mkdir BUILD_RELEASE || TRUE
+	mkdir BUILD_RELEASE || true
 	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE
 	make -C BUILD_RELEASE
 

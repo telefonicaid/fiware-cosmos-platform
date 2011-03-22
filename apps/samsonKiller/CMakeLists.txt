@@ -7,8 +7,8 @@ SET (HEADERS
 
 SET (LIBS
 samsonNetwork
-samsonCommon
 samsonCore
+samsonCommon
 pa
 lm
 pthread	

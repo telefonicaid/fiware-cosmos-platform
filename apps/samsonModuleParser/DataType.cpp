@@ -21,10 +21,7 @@ namespace ss
 		type = getNameFromFullName( _full_type );
 		
 		if (tockenizeWithDots(fullType).size() <= 1)
-		{
-			std::cerr << "Error: Please specify a full data-type name (ex sna.Link). Input: " << fullType << "\n";
-			::exit(1);
-		}
+			LM_X(1,("Error: Please specify a full data-type name (ex sna.Link). Input: %s", fullType.c_str() ) );
 		
 		name = _name;
 	}

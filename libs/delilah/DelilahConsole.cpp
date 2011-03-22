@@ -585,47 +585,47 @@ namespace ss
 			case Message::CommandResponse:
 			{
 				
-				if( packet->message.command_response().has_new_job_id() )
+				if( packet->message->command_response().has_new_job_id() )
 				{
 					std::ostringstream message;
-					message << "Job scheduled [" << packet->message.command_response().new_job_id() << "] ";
-					message << " (" << packet->message.command_response().command() << " )";
+					message << "Job scheduled [" << packet->message->command_response().new_job_id() << "] ";
+					message << " (" << packet->message->command_response().command() << " )";
 					writeWarningOnConsole( message.str() );
 					return 0;
 				}
 				
-				if( packet->message.command_response().has_finish_job_id() )
+				if( packet->message->command_response().has_finish_job_id() )
 				{
 					std::ostringstream message;
-					message << "Job finished [" << packet->message.command_response().finish_job_id() << "] ";
-					message << " [ "<< au::Format::time_string( packet->message.command_response().ellapsed_seconds() ) << " ] ";
-					message << " ( " << packet->message.command_response().command() << " )";
+					message << "Job finished [" << packet->message->command_response().finish_job_id() << "] ";
+					message << " [ "<< au::Format::time_string( packet->message->command_response().ellapsed_seconds() ) << " ] ";
+					message << " ( " << packet->message->command_response().command() << " )";
 					writeWarningOnConsole( message.str() );
 					return 0;
 				}
 	
-				if( packet->message.command_response().has_error_job_id() )
+				if( packet->message->command_response().has_error_job_id() )
 				{
 					std::ostringstream message;
-					message << "Job finished with error [" << packet->message.command_response().error_job_id() << "] ";
-					message << " ( " << packet->message.command_response().command() << ")\n\n";
+					message << "Job finished with error [" << packet->message->command_response().error_job_id() << "] ";
+					message << " ( " << packet->message->command_response().command() << ")\n\n";
 					
-					if( packet->message.command_response().has_error_message() )
-						message <<  packet->message.command_response().error_message();
+					if( packet->message->command_response().has_error_message() )
+						message <<  packet->message->command_response().error_message();
 					writeErrorOnConsole( message.str() );
 					return 0;
 				}
 				
-				if( packet->message.command_response().has_error_message() )
-					writeErrorOnConsole( packet->message.command_response().error_message()  );
+				if( packet->message->command_response().has_error_message() )
+					writeErrorOnConsole( packet->message->command_response().error_message()  );
 
-				if( packet->message.command_response().has_queue_list() )
+				if( packet->message->command_response().has_queue_list() )
 				{
 					
 					// Check if it is a -all command
 					au::CommandLine cmdLine;
 					cmdLine.set_flag_boolean("all");
-					cmdLine.parse(packet->message.command_response().command() );
+					cmdLine.parse(packet->message->command_response().command() );
 					
 					if( cmdLine.get_flag_bool("all") )
 					{
@@ -635,30 +635,30 @@ namespace ss
 						if( ql )
 							delete ql;
 						ql = new network::QueueList();
-						ql->CopyFrom( packet->message.command_response().queue_list() );
+						ql->CopyFrom( packet->message->command_response().queue_list() );
 						
 						list_lock.unlock();
 						
 					}
 					else
 					{
-						showQueues( packet->message.command_response().queue_list() );
+						showQueues( packet->message->command_response().queue_list() );
 					}
 					
 				}
 				
-				if( packet->message.command_response().has_automatic_operation_list() )
-					showAutomaticOperations( packet->message.command_response().automatic_operation_list() );
+				if( packet->message->command_response().has_automatic_operation_list() )
+					showAutomaticOperations( packet->message->command_response().automatic_operation_list() );
 				
-				if( packet->message.command_response().has_data_list() )
-					showDatas( packet->message.command_response().data_list() );
+				if( packet->message->command_response().has_data_list() )
+					showDatas( packet->message->command_response().data_list() );
 				
-				if( packet->message.command_response().has_operation_list() )
+				if( packet->message->command_response().has_operation_list() )
 				{
 					// Check if it is a -all command
 					au::CommandLine cmdLine;
 					cmdLine.set_flag_boolean("all");
-					cmdLine.parse(packet->message.command_response().command() );
+					cmdLine.parse(packet->message->command_response().command() );
 					
 					if( cmdLine.get_flag_bool("all") )
 					{
@@ -667,22 +667,22 @@ namespace ss
 						if( ol )
 							delete ol;
 						ol = new network::OperationList();
-						ol->CopyFrom( packet->message.command_response().operation_list() );
+						ol->CopyFrom( packet->message->command_response().operation_list() );
 						
 						list_lock.unlock();
 						
 					}
 					else
 					{
-						showOperations( packet->message.command_response().operation_list() );
+						showOperations( packet->message->command_response().operation_list() );
 					}					
 				}
 				
-				if( packet->message.command_response().has_job_list() )
-					showJobs( packet->message.command_response().job_list() );
+				if( packet->message->command_response().has_job_list() )
+					showJobs( packet->message->command_response().job_list() );
 				
-				if( packet->message.command_response().has_worker_status_list() )
-					showWorkers( packet->message.command_response().controller_status(), packet->message.command_response().worker_status_list() );
+				if( packet->message->command_response().has_worker_status_list() )
+					showWorkers( packet->message->command_response().controller_status(), packet->message->command_response().worker_status_list() );
 			}
 				break;
 				

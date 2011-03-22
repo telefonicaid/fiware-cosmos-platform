@@ -18,11 +18,11 @@ namespace ss {
 	class ModulesManager : public Module
 	{
 		
-		au::Lock lock;								//!< General lock for modules access
+		au::Lock lock;			//!< General lock for modules access
 		
 	public:
 
-		ModulesManager();				//!< Private constructor to implement singleton
+		ModulesManager();		//!< Private constructor to implement singleton
 		~ModulesManager();
 		
 		static void init();
@@ -30,36 +30,28 @@ namespace ss {
 		
 	private:
 		
+		// Add Modules funcitons
 		void addModulesFromDirectory( std::string dir_name );
 		void addModule( std::string path );
 		void addModule(  Module *container );
-		
-		
-		//Module *_getModule( std::string name );
-		std::string getObjectName( std::string name );
-				
 		void addModules();
 		
 	public:
 		
+		// Reload modules from default directories
 		void reloadModules();
-		
-		//Module *getModule( std::string name );
-		
-		//std::string showModules();
-		//std::string showModule(std::string module);
-		//std::string showFind( std::string command);
-		
+
+		// Fill Information for network messages
 		void fill( network::OperationList *ol , std::string command  );
 		void fill( network::DataList *dl, std::string command  );
 		
 	};
 	
+	
 	// Utility functions
 	void fillKVFormat( network::KVFormat* format , KVFormat f );
 	void fillKVInfo( network::KVInfo* info , KVInfo i );
 	void fillFullKVInfo( network::KVInfo* info , FullKVInfo i );
-	
 	
 	
 }

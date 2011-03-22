@@ -356,7 +356,7 @@ void Endpoint::jobInfo(int* messages, long long* dataLen)
 
 		*messages += 1;
 		*dataLen  += qP->job->packetP->buffer->getSize();
-		*dataLen  += qP->job->packetP->message.ByteSize();
+		*dataLen  += qP->job->packetP->message->ByteSize();
 
         qP = qP->next;
 	}

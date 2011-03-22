@@ -26,7 +26,7 @@
 #include "JobManager.h"                 // ss::JobManager
 #include "Monitor.h"                    // ss::Monitor
 #include "ControllerLoadManager.h"		// ss::ControllerLoadManager
-
+#include "EngineElement.h"				// ss::EngineElement
 
 namespace ss {
 	
@@ -48,6 +48,7 @@ namespace ss {
 		JobManager jobManager;								
 
 		// Monitorization control for web-based moitoring tool
+		friend class SamsonControllerMonitor;
 		Monitor monitor;									
 		
 		// Load manager
@@ -56,7 +57,6 @@ namespace ss {
 		// Status information of the workers
 		network::WorkerStatus** worker_status;				// Status of the workers reported periodically
 		struct timeval *worker_status_time;					// Last time status was reported
-		au::Lock worker_status_lock;						// Lock to protect this
 		int num_workers;
 				
 		friend class ControllerTaskManager;
@@ -69,11 +69,9 @@ namespace ss {
 		
 		SamsonController( NetworkInterface* network );
 		~SamsonController();
-		
-		void runBackgroundProcesses();
-		
+				
 		// PacketReceiverInterface
-		int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
+		void receive( Packet* packet );
 		void notifyWorkerDied( int worker );
 		
 		// PacketSenderInterface
@@ -91,9 +89,60 @@ namespace ss {
 		
 		void pushSystemMonitor( MonitorBlock  *);
 		
-		void runAutomaticOperationThread();
+		// Function to check if it is necessary to run any automatic-operation
+		void checkAutomaticOperations();
 		
 	};
+	
+	
+	// Class to send an "ls" every 3 seconds to control files to be removed at the response
+	
+	class SamsonControllerAutomaticOperations : public EngineElement
+	{
+		SamsonController * samsonController;
+		
+	public:
+		
+		SamsonControllerAutomaticOperations( SamsonController * _samsonController ) : EngineElement( 3 )
+		{
+			samsonController = _samsonController;
+			description = "SamsonControllerAutomaticOperations";
+		}
+		
+		void run()
+		{
+			// Send the status updater message
+			samsonController->checkAutomaticOperations();
+		}
+		
+	};
+	
+
+	// Class to send an "ls" every 3 seconds to control files to be removed at the response
+	
+	class SamsonControllerMonitor : public EngineElement
+	{
+		SamsonController * samsonController;
+		
+	public:
+		
+		SamsonControllerMonitor( SamsonController * _samsonController ) : EngineElement( 5 )
+		{
+			samsonController = _samsonController;
+			description = "SamsonControllerMonitor";
+		}
+		
+		void run()
+		{
+			// Take samples of the controller
+			samsonController->monitor.takeSamples();
+		}
+		
+	};
+	
+	
+	
+	
 	
 }
 

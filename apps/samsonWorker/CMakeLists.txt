@@ -7,13 +7,10 @@ SET (HEADERS
 
 
 SET (LIBS
-samsonWorkerLib
-samsonProcess
-samsonNetwork
 samsonCore
+samsonWorkerLib
+samsonNetwork
 samsonCommon
-samsonMemory
-samsonDisk
 pa
 lm
 protobuf

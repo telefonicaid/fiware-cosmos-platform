@@ -1,5 +1,6 @@
 #include "SamsonSetup.h"             // ss::SamsonSetup
 #include "MemoryManager.h"           // ss::MemoryManager
+#include "Engine.h"                  // ss::Engine
 #include "Buffer.h" 	             // ss::Buffer
 #include "logMsg.h"		     // LM_M()
 #include <cppunit/extensions/HelperMacros.h>
@@ -24,11 +25,15 @@ class MemoryTest : public CPPUNIT_NS::TestFixture
 	ss::SamsonSetup::load();
 	
 	// Init the memory manager
-	ss::MemoryManager::init();
+	ss::Engine::init();
+
+	ss::Engine::shared()->runInBackground();
   }
 
   void tearDown()
   {
+	ss::Engine::shared()->quit();
+	ss::Engine::destroy();
   }
 
  protected:
@@ -37,7 +42,7 @@ class MemoryTest : public CPPUNIT_NS::TestFixture
   {
 	
 	// Get the global pointer
-	ss::MemoryManager* mm = ss::MemoryManager::shared();
+	ss::MemoryManager* mm = &ss::Engine::shared()->memoryManager;
 
 	// Default value for memory
 	CPPUNIT_ASSERT( mm->getUsedMemoryInput() == 0 );

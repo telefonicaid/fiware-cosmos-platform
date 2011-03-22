@@ -7,7 +7,6 @@ SET (HEADERS
 
 SET( STATIC_LIBS
      samsonCore
-     samsonMemory
      samsonNetwork
      samsonCommon
      protobuf

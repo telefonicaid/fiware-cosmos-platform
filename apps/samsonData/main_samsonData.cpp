@@ -88,8 +88,7 @@ int main( int argc , char *argv[] )
 
 	if( !processFile( fileName ) )
 	{
-		std::cerr << "Error opening " << fileName << std::endl; 
-		exit(1);
+		LM_X(1,("Error opening data file %s ",fileName.c_str() ));
 	}
 
 	

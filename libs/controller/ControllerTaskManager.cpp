@@ -109,7 +109,7 @@ namespace ss
 		// Get status of controller
 		Packet *p2 = new Packet();
 		
-		network::WorkerTask *t = p2->message.mutable_worker_task();
+		network::WorkerTask *t = p2->message->mutable_worker_task();
 		t->set_task_id( task->id );
 		
 		t->set_servers( jobManager->controller->network->getNumWorkers() );

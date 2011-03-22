@@ -1,14 +1,16 @@
 SET (SOURCES
-    main_samsonLocal.cpp
-    FakeEndpoint.cpp
-    NetworkFake.cpp
-    NetworkFakeCenter.ccp
+	FakeEndpoint.cpp
+	NetworkFake.cpp
+	NetworkFakeCenterPacket.cpp
+	NetworkCenter.cpp
+	main_samsonLocal.cpp
 )
 
 SET (HEADERS
-    FakeEndpoint.h
-    NetworkFake.h
-    NetworkFakeCenter.h
+	FakeEndpoint.h
+	NetworkFake.h
+	NetworkCenter.h
+	NetworkFakeCenterPacket.h
 )
 
 SET( STATIC_LIBS
@@ -17,9 +19,6 @@ samsonControllerLib
 delilahLib
 samsonCore
 samsonDataLib
-samsonDisk
-samsonMemory
-samsonProcess
 samsonNetwork
 samsonCommon
 lm
@@ -59,4 +58,5 @@ TARGET_LINK_LIBRARIES(samsonLocal ${STATIC_LIBS})
 
 INSTALL(TARGETS               samsonLocal
         RUNTIME DESTINATION   bin)
+
 

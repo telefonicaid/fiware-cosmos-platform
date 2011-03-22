@@ -8,6 +8,8 @@ namespace ss {
 
 	bool filterName( const std::string& name , const std::string& begin , const std::string& end);
 	
+	
+	
 }
 
 #endif

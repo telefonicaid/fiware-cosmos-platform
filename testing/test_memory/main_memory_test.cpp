@@ -10,6 +10,7 @@ Test program for the samsonMemory library
 #include "MemoryManager.h"           // ss::MemoryManager
 #include "Buffer.h" 	             // ss::Buffer
 #include "logMsg.h"					 // LM_M()
+#include "Engine.h"                  // ss::Engine
 
 int main( int args , char *argv[] )
 {
@@ -18,10 +19,10 @@ int main( int args , char *argv[] )
 	ss::SamsonSetup::load();
 	
 	// Init the memory manager
-	ss::MemoryManager::init();
+	ss::Engine::init();
 	
 	// Get the global pointer
-	ss::MemoryManager* mm = ss::MemoryManager::shared();
+	ss::MemoryManager* mm = &ss::Engine::shared()->memoryManager;
 
 	// Default value for memory
 	if( mm->getUsedMemoryInput() != 0 )

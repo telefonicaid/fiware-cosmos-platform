@@ -16,10 +16,7 @@
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "MemoryManager.h"		// ss::MemoryManager
 #include "Endpoint.h"			// ss::Endpoint
-#include "DiskManager.h"		// ss::DiskManager
-#include "FileManager.h"		// ss::FileManager
-#include "ProcessManager.h"		// ss::ProcessManager
-
+#include "Engine.h"				// ss::Engine
 
 
 /* ****************************************************************************
@@ -106,16 +103,8 @@ int main(int argC, const char *argV[])
 	logFd = lmFirstDiskFileDescriptor();
 
 	ss::SamsonSetup::load(workingDir);  // Load setup and create default directories
-	
-	// Init singleton in single thread mode
-	// --------------------------------------------------------------------
-	ss::DiskManager::init();		// Disk manager
-	ss::FileManager::init();		// File manager
-	ss::MemoryManager::init();
-	ss::ProcessManager::init();
+	ss::Engine::init();
 	ss::ModulesManager::init();
-	ss::DiskManager::shared();
-	ss::FileManager::shared();
 	
 
 	// Instance of network object and initialization
@@ -137,8 +126,6 @@ int main(int argC, const char *argV[])
 	
 	worker = new ss::SamsonWorker(&network);
 
-	worker->touch();
+	ss::Engine::shared()->run();
 	
-	while (true)
-		sleep(10000);
 }

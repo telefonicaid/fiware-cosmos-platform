@@ -6,13 +6,10 @@
 #include "SamsonWorker.h"         // SamsonWorker
 #include "WorkerTaskManager.h"    // Own interface
 #include "Packet.h"               // ss::Packet
-#include "DataBufferItem.h"       // ss::DataBufferItem
 
 #include "WorkerTask.h"           // ss::WorkerTask
 #include "SamsonSetup.h"          // ss::SamsonSetup
-#include "FileManagerReadItem.h"  // ss::FileManagerReadItem
-#include "FileManagerWriteItem.h" // ss::FileManagerWriteItem
-
+#include "DiskOperation.h"			// ss::DiskOperation
 
 
 namespace ss {
@@ -24,9 +21,6 @@ namespace ss {
 	
 	void WorkerTaskManager::addTask(const network::WorkerTask &worker_task )
 	{
-		
-		token.retain();
-
 		// Look at the operation to 
 		Operation *op = ModulesManager::shared()->getOperation( worker_task.operation() );
 		
@@ -57,14 +51,10 @@ namespace ss {
 			
 		}
 		
-		token.release();
-
 	}
 	
 	void WorkerTaskManager::killTask( const network::WorkerTaskKill &task_kill )
 	{
-		token.retain();
-		
 		// Create the task
 		WorkerTask *t = task.extractFromMap( task_kill.task_id() );
 
@@ -73,15 +63,11 @@ namespace ss {
 			t->kill();
 			delete t;
 		}
-		
-		token.release();
 	}
 	
 	
 	void WorkerTaskManager::addBuffer( size_t task_id , network::Queue queue , Buffer* buffer , bool txt  )
 	{
-		token.retain();
-		
 		// Create the task
 		WorkerTask *t = task.findInMap( task_id );
 		if( !t )
@@ -90,15 +76,10 @@ namespace ss {
 		// Add the buffer to the task item
 		t->addBuffer( queue , buffer , txt );
 		
-		token.release();
-		
 	}
 	
 	void WorkerTaskManager::addFile( size_t task_id , network::QueueFile &qf , Buffer *buffer)
 	{
-		token.retain();
-		
-		LM_TODO(("Solve this ;)"));
 		
 		// Create the task
 		WorkerTask *t = task.findInMap( task_id );
@@ -106,15 +87,13 @@ namespace ss {
 		if( t )
 			t->addFile( qf , buffer );
 		else
-			MemoryManager::shared()->destroyBuffer( buffer );
+			Engine::shared()->memoryManager.destroyBuffer( buffer );
 		
-		token.release();		
 	}
 	
 	
 	void WorkerTaskManager::finishWorker( size_t task_id )
 	{
-		token.retain();
 		
 		// Create the task
 		WorkerTask *t = task.findInMap( task_id );
@@ -128,8 +107,6 @@ namespace ss {
 				delete task.extractFromMap( task_id );
 			}
 		}
-		
-		token.release();
 	}
 
 	void WorkerTaskManager::fill(network::WorkerStatus*  ws)
@@ -140,19 +117,13 @@ namespace ss {
 	// Check if a particular task is still active
 	bool WorkerTaskManager::checkTask( size_t task_id )
 	{
-		token.retain();
-		bool tmp = ( task.findInMap( task_id ) != NULL);
-		token.release();
-		
-		return tmp;
+		return ( task.findInMap( task_id ) != NULL);
 	}
 	
 	
 		
 	void WorkerTaskManager::notifyFinishProcess( ProcessItem * item )
 	{
-		
-		token.retain();
 		
 		size_t task_id = item->tag;
 		WorkerTask *t = task.findInMap( task_id );
@@ -166,61 +137,64 @@ namespace ss {
 			}
 		}
 		delete item;
-		
-		token.release();
 	}
 	
-	void WorkerTaskManager::notifyFinishReadItem( FileManagerReadItem *item  )
+	
+	void WorkerTaskManager::diskManagerNotifyFinish(  DiskOperation *operation )
 	{
-		token.retain();
-		size_t task_id = item->tag;
-		WorkerTask *t = task.findInMap( task_id );
-		if( t )
-		{
-			if( item->error.isActivated() )
-				t->setError(item->error.getMessage());
-			else
-				t->notifyFinishReadItem( item );
-			
-			if( t->status == WorkerTask::completed )
+		switch (operation->getType()) {
+				
+			case DiskOperation::read:
 			{
-				// Remove the tasks from the task manager
-				delete task.extractFromMap( task_id );
+				size_t task_id = operation->tag;
+				WorkerTask *t = task.findInMap( task_id );
+				if( t )
+				{
+					if( operation->error.isActivated() )
+						t->setError(operation->error.getMessage());
+					else
+						t->diskManagerNotifyFinish( operation );
+					
+					if( t->status == WorkerTask::completed )
+					{
+						// Remove the tasks from the task manager
+						delete task.extractFromMap( task_id );
+					}
+				}
 			}
-		}
-		delete item;
+				
+				break;
+			case DiskOperation::write:
+			{
+				size_t task_id = operation->tag;
+				WorkerTask *t = task.findInMap( task_id );
+				if( t )
+				{
+					if( operation->error.isActivated() )
+						t->setError(operation->error.getMessage());
+					else
+						t->diskManagerNotifyFinish( operation );
+					
+					if( t->status == WorkerTask::completed )
+					{
+						// Remove the tasks from the task manager
+						delete task.extractFromMap( task_id );
+					}
+				}
+			}
+				break;
+			case DiskOperation::remove:
+				break;
+			default:
+				break;
+		}		
 		
-		token.release();
 	}
 	
-	void WorkerTaskManager::notifyFinishWriteItem( FileManagerWriteItem *item  )
-	{
-		token.retain();
-		
-		size_t task_id = item->tag;
-		WorkerTask *t = task.findInMap( task_id );
-		if( t )
-		{
-			if( item->error.isActivated() )
-				t->setError(item->error.getMessage());
-			else
-				t->notifyFinishWriteItem( item );
-			
-			if( t->status == WorkerTask::completed )
-			{
-				// Remove the tasks from the task manager
-				delete task.extractFromMap( task_id );
-			}
-		}
-		delete item;
-		
-		token.release();
-		
-	}
+
 	
 	void WorkerTaskManager::notifyFinishMemoryRequest( MemoryRequest *request )
 	{
-		token.retain();
 		size_t task_id = request->tag;
 		WorkerTask *t = task.findInMap( task_id );
 		if( t )
@@ -232,11 +206,6 @@ namespace ss {
 				delete task.extractFromMap( task_id );
 			}
 		}
-
-		delete request;
-				
-		token.release();
-		
 	}
 
 	
@@ -246,15 +215,11 @@ namespace ss {
 		
 		std::ostringstream output;
 		
-		token.retain();
-		
 		std::map<size_t,WorkerTask*>::iterator iter;
 		
 		output << "\n";
 		for ( iter = task.begin() ; iter != task.end() ; iter++)
 			output << "\t\t\t[" << iter->second->getStatus() << "]\n";
-		
-		token.release();
 		
 		return output.str();
 	}

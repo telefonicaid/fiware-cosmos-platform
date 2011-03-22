@@ -2,10 +2,7 @@
 #include "DataBufferProcessItem.h"		// Own interface
 #include "Buffer.h"						// ss::Buffer
 #include "MemoryManager.h"				// ss::MemoryManager
-#include "DiskManager.h"				// ss::DiskManager
-#include "FileManager.h"				// ss::FileManager	
 #include "BufferVector.h"				// ss::BufferVector
-#include "DataBufferItemDelegate.h"		// ss::DataBufferItemDelegate
 #include "DataBuffer.h"					// ss::DataBuffer
 #include "SamsonWorker.h"				// ss::SamsonWorker
 #include "Packet.h"						// ss::Packet
@@ -18,12 +15,11 @@
 #include "coding.h"						// ss::hg_info , ss::hg_size 
 #include "Buffer.h"						// ss::Buffer
 #include "MemoryManager.h"				// ss::MemoryManager
-#include "DiskManagerDelegate.h"		// ss::DiskManagerDelegate
+#include "EngineDelegates.h"			// ss::DiskManagerDelegate
 #include <set>							// std::set
 #include "samson.pb.h"					// ss::network::...
 #include "BufferVector.h"				// ss::BufferVector
 #include "ProcessItem.h"				// ss::ProcessItem
-#include "FileManagerWriteItem.h"		// ss::FileManagerWriteItem
 
 namespace ss {
 	

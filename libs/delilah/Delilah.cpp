@@ -30,6 +30,10 @@ namespace ss {
 Delilah::Delilah( NetworkInterface* _network , bool automatic_update )
 {
 		
+	// Description for the PacketReceiver
+	packetReceiverDescription = "delilah";
+	
+	
 	network = _network;		// Keep a pointer to our network interface element
 	network->setPacketReceiver(this);
 		
@@ -61,11 +65,14 @@ void Delilah::quit()
 *
 * receive - 
 */
-int Delilah::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+void Delilah::receive( Packet* packet )
 {
+	int fromId = packet->fromId;
+	Message::MessageCode msgCode = packet->msgCode;
+	
 	token.retain();
 	
-	size_t sender_id = packet->message.delilah_id();
+	size_t sender_id = packet->message->delilah_id();
 	DelilahComponent *component = components.findInMap( sender_id );
 
 	
@@ -80,7 +87,7 @@ int Delilah::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 		_receive( fromId , msgCode , packet );
 	}
 
-	return 0;
+
 }
 	
 

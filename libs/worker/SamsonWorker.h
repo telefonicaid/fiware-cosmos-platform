@@ -22,13 +22,12 @@
 #include "DataBuffer.h"			// ss::DataBuffer
 #include "LoadDataManager.h"	// ss::LoadDataManager
 #include "samson.pb.h"			// ss::network::
+#include "EngineElement.h"		// ss::EngineElement
 
 namespace ss {
 	
 	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
 	{
-		
-		pthread_t t_status_updater;	// Thread of the status-updater
 		
 	public:
 		
@@ -36,21 +35,23 @@ namespace ss {
 
 	public:
 
-		NetworkInterface*    network;           // Network interface
+		NetworkInterface*    network;           // Network interface to send packets
+		
 		WorkerTaskManager    taskManager;       // Task manager
 		LoadDataManager      loadDataManager;   // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
+		
 		int                  _myWorkerId;       // My id as worker : 0 , 1 ,2 ,3
 
 	public:
 
 		// PacketReceiverInterface
-		virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
+		void receive( Packet* packet );
 		
 		// Send information about the state of this worker to the controller
 		void sendWorkerStatus();
 		
-		// Sent status messages to the controllor periodically
-		void runStatusUpdate();
+		// Sent an "ls" to get the list of files ( to remove the rest )
+		void sendFilesMessage();
 		
 		// Nothing function to avoid warning
 		void touch(){};	
@@ -63,6 +64,53 @@ namespace ss {
 		virtual void notificationSent(size_t id, bool success) {}
 		
 	};
+	
+	
+	// Class to run the status update
+	
+	class SamsonWorkerStatusUpdater : public EngineElement
+	{
+		SamsonWorker * samsonWorker;
+		
+	public:
+		
+		SamsonWorkerStatusUpdater( SamsonWorker * _samsonWorker ) : EngineElement( 3 )
+		{
+			samsonWorker = _samsonWorker;
+			description = "SamsonWorkerStatusUpdater";
+		}
+		
+		void run()
+		{
+			// Send the status updater message
+			samsonWorker->sendWorkerStatus();
+		}
+		
+	};
+
+	// Class to send an "ls" every 3 seconds to control files to be removed at the response
+	
+	class SamsonWorkerFileUpdater : public EngineElement
+	{
+		SamsonWorker * samsonWorker;
+		
+	public:
+		
+		SamsonWorkerFileUpdater( SamsonWorker * _samsonWorker ) : EngineElement( 3 )
+		{
+			samsonWorker = _samsonWorker;
+			description = "SamsonWorkerFileUpdater";
+		}
+		
+		void run()
+		{
+			// Send the status updater message
+			samsonWorker->sendFilesMessage();
+		}
+		
+	};
+	
+	
 }
 
 #endif

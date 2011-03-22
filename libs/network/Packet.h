@@ -14,6 +14,8 @@
 #include "Endpoint.h"        // Endpoint
 #include "easyzlib.h"	     // zlib utility library
 #include "logMsg.h"			 // LM_TODO()
+#include "Message.h"		 // ss::MessageType 
+#include "Engine.h"			 // ss::Engine
 
 namespace ss {
 	
@@ -57,14 +59,21 @@ namespace ss {
 	{
 	public:
 		
-		network::Message message;		// Message with necessary fields ( codified with Google Protocol Buffers )
+		int fromId;						// Identifier of the sender of this packet
+		Message::MessageCode msgCode;	// Message code ( sent in the header of the network interface )		
+		network::Message *message;		// Message with necessary fields ( codified with Google Protocol Buffers )
 		Buffer*         buffer;			// Data for key-values
 		
 		Packet() 
 		{
 			buffer = NULL;
+			message = new network::Message();
 		};
 
+		~Packet()
+		{
+			delete message;
+		}
 		
 
 		static Buffer* compressBuffer( Buffer *buffer )
@@ -87,7 +96,7 @@ namespace ss {
 			long int cm_len = cm_max_len;
 
 			// Get a new buffer ( a little bit larger )
-			Buffer *b = MemoryManager::shared()->newBuffer( "Compressed buffer", cm_len , buffer->getType() );
+			Buffer *b = Engine::shared()->memoryManager.newBuffer( "Compressed buffer", cm_len , buffer->getType() );
 			
 			int ans_compress = ezcompress( ( unsigned char*) ( b->getData() ), &cm_len, ( unsigned char*) (buffer->getData() ) , original_size );
 			assert( !ans_compress );
@@ -95,11 +104,11 @@ namespace ss {
 
 			
 			// Create a new buffer with the rigth size
-			Buffer *b2 = MemoryManager::shared()->newBuffer( "Compressed buffer2", b->getSize() , buffer->getType()	);
+			Buffer *b2 = Engine::shared()->memoryManager.newBuffer( "Compressed buffer2", b->getSize() , buffer->getType()	);
 			memcpy(b2->getData(), b->getData(), b->getSize());
 			b2->setSize(b->getSize());
 
-			MemoryManager::shared()->destroyBuffer( b );
+			Engine::shared()->memoryManager.destroyBuffer( b );
 			
 			return b2;
 			
@@ -120,7 +129,7 @@ namespace ss {
 			size_t compressed_size = length;
 			
 			long int m2_len = 0; //?
-			Buffer *b =  MemoryManager::shared()->newBuffer( "Decompressed buffer" , m2_len , type );
+			Buffer *b =  Engine::shared()->memoryManager.newBuffer( "Decompressed buffer" , m2_len , type );
 			b->setSize(m2_len);
 			
 			// Decompress information
@@ -134,9 +143,6 @@ namespace ss {
 
 		
 		
-		~Packet()
-		{
-		}
 	};
 }
 

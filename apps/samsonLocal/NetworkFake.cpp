@@ -1,4 +1,4 @@
-#include "NetworkFakeCenter.h"       // NetworkFakeCenter
+#include "NetworkCenter.h"       // NetworkFakeCenter
 #include "NetworkFake.h"             // Own interface
 
 

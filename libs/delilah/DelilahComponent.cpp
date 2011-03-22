@@ -38,7 +38,7 @@ namespace ss {
 			case Message::CommandResponse:
 			{
 				
-				if( packet->message.command_response().has_queue_list() )
+				if( packet->message->command_response().has_queue_list() )
 				{
 					// Copy the list of queues for auto-completion
 					list_lock.lock();
@@ -46,20 +46,20 @@ namespace ss {
 					if( ql )
 						delete ql;
 					ql = new network::QueueList();
-					ql->CopyFrom( packet->message.command_response().queue_list() );
+					ql->CopyFrom( packet->message->command_response().queue_list() );
 					
 					list_lock.unlock();
 					
 				}
 				
-				if( packet->message.command_response().has_operation_list() )
+				if( packet->message->command_response().has_operation_list() )
 				{
 					list_lock.lock();
 					
 					if( ol )
 						delete ol;
 					ol = new network::OperationList();
-					ol->CopyFrom( packet->message.command_response().operation_list() );
+					ol->CopyFrom( packet->message->command_response().operation_list() );
 					
 					list_lock.unlock();
 				}
@@ -87,9 +87,9 @@ namespace ss {
 				{
 				// Message to update the local list of queues
 				Packet*           p = new Packet();
-				network::Command* c = p->message.mutable_command();
+				network::Command* c = p->message->mutable_command();
 				c->set_command( "ls" );
-				p->message.set_delilah_id( id );
+				p->message->set_delilah_id( id );
 				//copyEnviroment( &environment , c->mutable_environment() );
 				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Command, p);
 				}
@@ -97,9 +97,9 @@ namespace ss {
 				{
 				// Message to update the local list of operations
 				Packet*           p = new Packet();
-				network::Command* c = p->message.mutable_command();
+				network::Command* c = p->message->mutable_command();
 				c->set_command( "o" );
-				p->message.set_delilah_id( id );
+				p->message->set_delilah_id( id );
 				//copyEnviroment( &environment , c->mutable_environment() );
 				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Command, p);
 				}	
@@ -119,7 +119,7 @@ namespace ss {
 	{
 		if( msgCode == Message::CommandResponse )
 		{
-			if( packet->message.command_response().has_finish_job_id() || packet->message.command_response().has_error_job_id() )
+			if( packet->message->command_response().has_finish_job_id() || packet->message->command_response().has_error_job_id() )
 				component_finished = true;	
 		}
 		
@@ -132,9 +132,9 @@ namespace ss {
 		// Send the message with the command
 		// Send the packet to create a job
 		Packet*           p = new Packet();
-		network::Command* c = p->message.mutable_command();
+		network::Command* c = p->message->mutable_command();
 		c->set_command( command );
-		p->message.set_delilah_id( id );
+		p->message->set_delilah_id( id );
 		copyEnviroment( &delilah->environment , c->mutable_environment() );
 		delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Command, p);
 		

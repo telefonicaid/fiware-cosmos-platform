@@ -1,7 +1,12 @@
 debug:
 	mkdir BUILD_DEBUG || TRUE
-	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True
+	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG
 	make -C BUILD_DEBUG
+
+debug_coverage:
+	mkdir BUILD_DEBUG_COVERAGE || TRUE
+	cd BUILD_DEBUG_COVERAGE; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True
+	make -C BUILD_DEBUG_COVERAGE
 
 release:
 	mkdir BUILD_RELEASE || TRUE
@@ -14,7 +19,7 @@ test: ctest itest
 itest:	test_local_processes
 
 
-ctest:
+ctest: debug
 	make test -C BUILD_DEBUG
 
 test_local_processes:
@@ -39,19 +44,14 @@ clean:
 xcode:	
 	./scripts/prepareXcode
 
-reset_svn:
-	sudo rm -Rf BUILD_DEBUG/*
-	sudo rm -Rf BUILD_RELEASE/*
-	sudo rm -Rf xcode_proj
-	
-
 uninstall:
 	sudo rm -f /usr/local/bin/samson* 
 	sudo rm -Rf /usr/local/include/samson
 
 reset:
-	sudo rm -Rf BUILD_DEBUG/*
-	sudo rm -Rf BUILD_RELEASE/*
+	sudo rm -Rf BUILD_DEBUG
+	sudo rm -Rf BUILD_RELEASE
+	sudo rm -Rf BUILD_DEBUG_COVERAGE
 	sudo rm -Rf xcode_proj
 	sudo rm -f libs/common/samson.pb.*
 	sudo rm -f libs/data/data.pb.*
@@ -75,7 +75,7 @@ memory_256::
 	sudo sysctl -w kernel.shmmax=268435456
 
 v_sl:
-	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  samsonLocal  2> output_valgrind_samsonLocal
+	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  ./BUILD_DEBUG/apps/samsonLocal/samsonLocal  2> output_valgrind_samsonLocal
 
 coverage: debug
 	cd BUILD_DEBUG ; ../scripts/samsonCoverage

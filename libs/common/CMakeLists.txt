@@ -21,6 +21,8 @@ SET (HEADERS
 	platformProcesses.h
 	Process.h
 	samsonConfig.h
+	coding.h
+	SimpleBuffer.h
 )
 
 SET (SOURCES
@@ -39,6 +41,7 @@ SET (SOURCES
 	daemonize.cpp
 	EnvironmentOperations.cpp
 	platformProcesses.cpp
+	coding.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''

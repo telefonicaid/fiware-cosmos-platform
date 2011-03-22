@@ -390,7 +390,7 @@ namespace ss {
 				
 			}
 
-			output << "\t\tadd( operation ); // Add this operation to the module\n";
+			output << "\t\t\tadd( operation ); // Add this operation to the module\n";
 			output << "\t\t}\n";
 		}
 		

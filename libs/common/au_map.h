@@ -4,10 +4,34 @@
 #include <map>		// std::map
 #include <list>		// std::list
 #include <vector>	// std::vector
+#include <set>		// std::set
+
 #include "logMsg.h"					 // LM_M()
 
 namespace au {
 
+	/**
+	 CLass to use list structures of <class*> with additional function for easy manipulation
+	 */
+	
+	template <class V>
+	class set: public std::list<V*>
+	{
+	public:
+		
+		void clearSet()
+		{
+			typename std::set<V* >::iterator iter;
+			
+			for (iter =  std::set<V*>::begin() ; iter != std::set<V*>::end() ; iter++)
+			{
+				delete *iter;
+			}
+			std::set<V*>::clear();
+		}
+	};	
+	
+	
 	/**
 	 CLass to use list structures of <class*> with additional function for easy manipulation
 	 */
@@ -39,6 +63,18 @@ namespace au {
 				return tmp;
 			}
 		}
+		
+		void clearList()
+		{
+			typename std::list<V* >::iterator iter;
+			
+			for (iter =  std::list<V*>::begin() ; iter != std::list<V*>::end() ; iter++)
+			{
+				delete *iter;
+			}
+			std::list<V*>::clear();
+		}
+		
 		
 	};	
 	

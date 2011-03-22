@@ -8,6 +8,7 @@
 #include "SamsonSetup.h"			// ss::SamsonSetup
 #include "MemoryManager.h"			// ss::MemoryManager
 #include "SamsonSetup.h"			// ss::SamsonSetup
+#include "Engine.h"			 // ss::Engine
 
 int logFd = -1;
 
@@ -23,9 +24,11 @@ int main(int argc, const char *argv[])
 	cmdLine.parse(argc, argv);
 	
 	ss::SamsonSetup::load( cmdLine.get_flag_string("working") );
-	ss::MemoryManager::init();
 	
 	ss::SamsonSetup *s = ss::SamsonSetup::shared();	// Load setup file and create main directories
+	ss::Engine::init();	// Init the engine
+
+	ss::MemoryManager *mm = &(ss::Engine::shared()->memoryManager);
 	
 	if ( cmdLine.get_flag_bool("clean" ) )
 	{
@@ -33,7 +36,6 @@ int main(int argc, const char *argv[])
 		
 		std::cout << "Cleaning shared memory areas\n";
 		
-		ss::MemoryManager *mm = ss::MemoryManager::shared();
 		
 		for (int i = 0 ; i < ss::SamsonSetup::shared()->num_processes ; i++)
 		{
@@ -45,8 +47,6 @@ int main(int argc, const char *argv[])
 		exit(0);
 		
 	}
-	
-	
 	
 	std::cout << "\n";
 	std::cout << "----------------------------------------------------\n";
@@ -74,8 +74,6 @@ int main(int argc, const char *argv[])
 	
 	std::cout << "\n\n\n";
 	std::cout << "Testing shared memory...\n";
-
-	ss::MemoryManager *mm = ss::MemoryManager::shared();
 	
 	for (int i = 0 ; i < ss::SamsonSetup::shared()->num_processes ; i++)
 	{

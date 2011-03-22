@@ -23,10 +23,9 @@ namespace ss {
 	class WorkerSubTask;
 	class QueueuBufferVector;
 	class DataBufferProcessItem;
-	class FileManagerWriteItem;
-	class FileManagerReadItem;
 	class MemoryRequest;
 	class Buffer;
+	class DiskOperation;
 	
 	class WorkerTask 
 	{
@@ -87,7 +86,7 @@ namespace ss {
 		std::set<DataBufferProcessItem*> processWriteItems;	
 		
 		// Set of items pendign to be written
-		std::set<FileManagerWriteItem*> writeItems;			
+		std::set<DiskOperation*> writeItems;			
 		
 		public:
 
@@ -105,9 +104,9 @@ namespace ss {
 		
 		// Notification that a process has finish ( from ProcessManager )
 		void notifyFinishProcess( ProcessItem * i );
-		void notifyFinishReadItem( FileManagerReadItem *item  );
-		void notifyFinishWriteItem( FileManagerWriteItem *item  );
 		void notifyFinishMemoryRequest( MemoryRequest *request );
+
+		void diskManagerNotifyFinish(  DiskOperation *operation );	
 		
 		// Notify that a worker has finished producing data for this task
 		void finishWorker( );

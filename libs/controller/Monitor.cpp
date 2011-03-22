@@ -10,75 +10,51 @@ namespace ss {
 #pragma mark SSMonitor
 	
 
-	void *runMonitoring( void*p)
-	{
-		((Monitor*)p)->run();
-		return NULL;
-	}
 	
-	
-	Monitor::Monitor( SamsonController * _controller)
+	Monitor::Monitor( SamsonController * _controller )
 	{
 		// Keep a pointer to the controller
 		controller = _controller;
 		
 	}
-
-	void Monitor::runInBackground()
-	{
-		// Create the monitoring thread
-		pthread_create(&t, NULL, runMonitoring, this);
-	}
 	
-	
-	void Monitor::run()
+	void Monitor::takeSamples()
 	{		
-		while( true )
-		{			
 
-			lock.lock();						
-
-		   controller->pushSystemMonitor( &system ); 
+	   controller->pushSystemMonitor( &system ); 
 
 
-			// For each queue, take sample
-			std::vector<QueueMonitorInfo> queuesMonitorInfo;
-			controller->data.getQueuesMonitorInfo( queuesMonitorInfo ); // Get the names for all the queues
-			
-			au::map<std::string,MonitorBlock> tmp_queues;			// Temporal vector to hold all the queues
-			
-			for ( size_t i = 0 ; i < queuesMonitorInfo.size() ; i++ )
+		// For each queue, take sample
+		std::vector<QueueMonitorInfo> queuesMonitorInfo;
+		controller->data.getQueuesMonitorInfo( queuesMonitorInfo ); // Get the names for all the queues
+		
+		au::map<std::string,MonitorBlock> tmp_queues;			// Temporal vector to hold all the queues
+		
+		for ( size_t i = 0 ; i < queuesMonitorInfo.size() ; i++ )
+		{
+			MonitorBlock* mb = queues.extractFromMap( queuesMonitorInfo[i].queue );
+			if( !mb )
 			{
-				MonitorBlock* mb = queues.extractFromMap( queuesMonitorInfo[i].queue );
-				if( !mb )
-				{
-					mb = new MonitorBlock();
-					mb->addMainParameter( "name" , queuesMonitorInfo[i].queue );
-					mb->addMainParameter( "format" , queuesMonitorInfo[i].format );
-					
-				}
+				mb = new MonitorBlock();
+				mb->addMainParameter( "name" , queuesMonitorInfo[i].queue );
+				mb->addMainParameter( "format" , queuesMonitorInfo[i].format );
 				
-				mb->push("size", queuesMonitorInfo[i].info.size );
-				mb->push("kvs", queuesMonitorInfo[i].info.kvs );
-				mb->push("num_files", queuesMonitorInfo[i].num_files );
-
-				tmp_queues.insertInMap(queuesMonitorInfo[i].queue, mb);
 			}
+			
+			mb->push("size", queuesMonitorInfo[i].info.size );
+			mb->push("kvs", queuesMonitorInfo[i].info.kvs );
+			mb->push("num_files", queuesMonitorInfo[i].num_files );
 
-			// Remove the previous queues not used any more and copy the prepared samples
-			queues.clearAndCopyFromMap( tmp_queues );
-			
-
-			lock.unlock();
-			
-			
-			sleep(1);				// Sleep for the next snapshot
+			tmp_queues.insertInMap(queuesMonitorInfo[i].queue, mb);
 		}
+
+		// Remove the previous queues not used any more and copy the prepared samples
+		queues.clearAndCopyFromMap( tmp_queues );
+		
 	}
 	
 	std::string Monitor::getJSONString( std::string command )
 	{
-		lock.lock();
 
 		std::stringstream o;
 	
@@ -106,9 +82,6 @@ namespace ss {
 		o << ",";
 		o << "}";
 		// ------------------------------------------------------------------------------------------------
-		
-				
-		lock.unlock();
 
 		return o.str();
 		

@@ -17,6 +17,7 @@ SET (HEADERS
 	easyzlib.h
 	HostMgr.h
 	Host.h
+	PacketReceivedNotification.h
 )
 
 SET (SOURCES
@@ -36,6 +37,7 @@ SET (SOURCES
 	Misc.cpp
 	easyzlib.c
 	HostMgr.cpp
+	PacketReceivedNotification.cpp
 )
 
 # Include directories
@@ -45,6 +47,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
+include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 
 # Library declaration
 # -----------------------------------------------------------------

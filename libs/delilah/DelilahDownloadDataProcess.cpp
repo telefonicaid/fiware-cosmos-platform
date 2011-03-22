@@ -59,8 +59,8 @@ namespace ss {
 		
 		// Send the message to the controller
 		Packet *p = new Packet();
-		p->message.set_delilah_id( id );
-		ss::network::DownloadDataInit *download_data_init = p->message.mutable_download_data_init();
+		p->message->set_delilah_id( id );
+		ss::network::DownloadDataInit *download_data_init = p->message->mutable_download_data_init();
 		download_data_init->set_queue( queue );	// Set the queue we want to download
 		delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::DownloadDataInit, p);
 		
@@ -78,7 +78,7 @@ namespace ss {
 
 			// Copy the message received from the controller
 			download_data_init_response = new ss::network::DownloadDataInitResponse();
-			download_data_init_response->CopyFrom( packet->message.download_data_init_response() );
+			download_data_init_response->CopyFrom( packet->message->download_data_init_response() );
 
 			// Chage the status to download files
 			status = downloading_files_from_workers;
@@ -102,8 +102,8 @@ namespace ss {
 			for ( int i = 0 ; i < download_data_init_response->queue().file_size() ; i++)
 			{
 				Packet *p = new Packet();
-				p->message.set_delilah_id( id );
-				ss::network::DownloadDataFile *download_data_file = p->message.mutable_download_data_file();
+				p->message->set_delilah_id( id );
+				ss::network::DownloadDataFile *download_data_file = p->message->mutable_download_data_file();
 
 				// Copy the file information
 				download_data_file->mutable_file()->CopyFrom( download_data_init_response->queue().file(i) );
@@ -167,7 +167,7 @@ namespace ss {
 				
 				fwrite( buffer->getData(), buffer->getSize() , 1 , file );
 				total_size += buffer->getSize();
-				MemoryManager::shared()->destroyBuffer( buffer );
+				Engine::shared()->memoryManager.destroyBuffer( buffer );
 				
 			}
 			else

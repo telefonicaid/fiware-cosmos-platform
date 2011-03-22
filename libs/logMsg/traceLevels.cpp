@@ -114,6 +114,8 @@ char* traceLevelName(TraceLevels level)
 	case LmtWait:                        return (char*) "Wait";
 	case LmtReset:                       return (char*) "Reset";
 
+	case LmtEngine:						 return (char*) "Engine";
+			
 	case LmtUser01:                      return (char*) "User 01";
 	case LmtUser02:                      return (char*) "User 02";
 	case LmtUser03:                      return (char*) "User 03";

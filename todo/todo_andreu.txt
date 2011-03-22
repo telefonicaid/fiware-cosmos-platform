@@ -4,8 +4,10 @@ SUGGESTION:
 Use boost::FileSystem library
 
 TODO:
-* Avoid scripts to fail for too many outputs
-* Process manager implemented with priorities and not type ( priority to halt processes and top priority processes )
+
+* Engine status using work status
+* Disk statictics
+
 * Inform about the memory and process used when running samsonLocal
 * Valgrind debuign
 
@@ -17,6 +19,10 @@ ON-GOING
 * Kill jobs ( kill the task ) --> Memory leaks
 
 DONE
+* Fuse Process library with the Engine Lib
+* Notify Disk operations using Engine
+* Process manager implemented with priorities and not type ( priority to halt processes and top priority processes )
+* Avoid scripts to fail for too many outputs
 * Refactoring (m) independent Error.h Error.cpp files and remove Status.cpp/.h file since it is not used any more...
 * When all the "process" running are hold, we can not run "Process Buffers" to get buffer ready for writing!!
 * assetr -> LM_X

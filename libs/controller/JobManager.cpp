@@ -9,7 +9,6 @@ namespace ss {
 
 	void JobManager::addJob(int fromId, const network::Command &command , size_t sender_id )
 	{
-		lock.lock();
 		
 		// Get the new id for this job from the data manager
 		size_t job_id = controller->data.getNewTaskId();
@@ -18,10 +17,10 @@ namespace ss {
 		{			
 			// Send a message to delilah to confirm this new job
 			Packet *p2 = new Packet();
-			network::CommandResponse *response = p2->message.mutable_command_response();
+			network::CommandResponse *response = p2->message->mutable_command_response();
 			response->set_command(command.command());
 			response->set_new_job_id( job_id );
-			p2->message.set_delilah_id( sender_id );
+			p2->message->set_delilah_id( sender_id );
 			controller->network->send(controller, fromId, Message::CommandResponse, p2);
 		}
 		
@@ -37,26 +36,21 @@ namespace ss {
 		// Run the job until a task is scheduled or error/finish
 		j->run();
 		
-		lock.unlock();
-		
 	}
 
 	// Kill a particular job
 	void JobManager::kill( size_t job_id )
 	{
-		lock.lock();
 
 		Job* j = job.findInMap( job_id );
 		if( j )
 			j->kill();
 		
-		lock.unlock();
 	}
 	
 	
 	void JobManager::notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage  )
 	{
-		lock.lock();
 
 		// Get the task
 		size_t task_id			= confirmationMessage->task_id();	// Get the task_id
@@ -169,13 +163,10 @@ namespace ss {
 		// Review the task manager to see if it is necessary to run new tasks
 		taskManager.reviewTasks();
 		
-		
-		lock.unlock();
 	}
 	
 	void JobManager::fill(network::JobList *jl , std::string command)
 	{
-		lock.lock();
 		
 		std::map<size_t,Job*>::iterator iter;
 		for( iter = job.begin() ; iter != job.end() ; iter++)
@@ -187,18 +178,16 @@ namespace ss {
 			job->fill( j );
 		}
 		
-		lock.unlock();
 	}
 	
 	
 	void JobManager::fill( network::ControllerStatus * status )
 	{
-		lock.lock();
-		
+
+	
 		status->set_job_manager_status( _getStatus() );
 		status->set_task_manager_status( taskManager.getStatus() );
 		
-		lock.unlock();
 	}
 	
 	std::string JobManager::_getStatus()
@@ -229,7 +218,6 @@ namespace ss {
 	
 	void JobManager::removeAllFinishJobs()
 	{
-		lock.lock();
 
 		Job *job = _getNextFinishJob();
 		while( job )
@@ -238,7 +226,6 @@ namespace ss {
 			job = _getNextFinishJob();
 		}
 		
-		lock.unlock();		
 	}
 	
 	

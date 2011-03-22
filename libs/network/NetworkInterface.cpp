@@ -1,6 +1,9 @@
 
 #include "NetworkInterface.h"	// Own interface
-
+#include "Packet.h"				// ss::Packet
+#include "Engine.h"				// ss::Engine
+#include "EngineElement.h"		// ss::EngineElement
+#include "PacketReceivedNotification.h"	// ss::PacketReceivedNotification
 namespace ss
 {
 
@@ -30,6 +33,21 @@ void NetworkInterface::runInBackground(void)
 }
 	
 
+	/* ****************************************************************************
+	 *
+	 * send - send a packet (return a unique id to inform the notifier later)
+	 */
+	
+	void PacketReceiverInterface::_receive( Packet* packet )
+	{
+		LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet type %s",messageCode(packet->msgCode)));
+		
+		// Using the engine to call the packet receiver asynchronously in a unique thread form
+		Engine::shared()->add( new PacketReceivedNotification( this , packet ) );
+		//receive( packet );
+	}
+	
+	
 
 /* ****************************************************************************
 *

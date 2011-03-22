@@ -6,7 +6,6 @@
 #include <cstring>				// size_t		
 #include <string>				// std::string
 #include <sstream>				// std::ostringstream
-#include "FileManager.h"		// ss::FileManager ( and derivates )
 #include "samson.pb.h"			// ss::network::...
 #include "coding.h"				// ss::ProcessAssistantSharedFile
 #include "Lock.h"				// au::Lock
@@ -16,6 +15,7 @@
 #include "ProcessWriter.h"			// ss::ProcessWriter
 #include "samson.pb.h"				// ss::network::...
 #include "samson/OperationController.h"	// ss::OperationController
+#include "Engine.h"			 // ss::Engine
 
 #define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER	1
 
@@ -76,14 +76,14 @@ namespace ss
 		
 		void init()
 		{
-			shm_id = MemoryManager::shared()->retainSharedMemoryArea();
-			item = MemoryManager::shared()->getSharedMemory( shm_id );
+			shm_id = Engine::shared()->memoryManager.retainSharedMemoryArea();
+			item = Engine::shared()->memoryManager.getSharedMemory( shm_id );
 		}
 		
 		void finish()
 		{
-			MemoryManager::shared()->releaseSharedMemoryArea( shm_id );		
-			MemoryManager::shared()->freeSharedMemory( item );
+			Engine::shared()->memoryManager.releaseSharedMemoryArea( shm_id );		
+			Engine::shared()->memoryManager.freeSharedMemory( item );
 		}
 		
 		// Function to be implemented ( running on a different process )

@@ -48,7 +48,7 @@
 #include "Host.h"               // Host
 #include "HostMgr.h"            // HostMgr
 #include "Network.h"            // Own interface
-
+#include "Engine.h"				// ss::Engine
 
 
 /* ****************************************************************************
@@ -804,7 +804,7 @@ static void* senderThread(void* vP)
 
 		s = iomMsgAwait(ep->senderReadFd, -1);
 		LM_T(LmtSenderThread, ("Got something to read on fd %d", ep->senderReadFd));
-		s = read(ep->senderReadFd, &job, sizeof(job));
+		s = ::read(ep->senderReadFd, &job, sizeof(job));
 		LM_T(LmtSenderThread, ("read %d bytes from fd %d", s, ep->senderReadFd));
 		if (s != sizeof(job))
 		{
@@ -823,13 +823,19 @@ static void* senderThread(void* vP)
 				   ep->wFd,
 				   job.packetP));
 		LM_T(LmtSenderThread, ("google protocol 'message': %p (packet at %p)", &job.packetP->message, job.packetP));
-		LM_T(LmtSenderThread, ("google protocol buffer data len: %d", job.packetP->message.ByteSize()));
+		LM_T(LmtSenderThread, ("google protocol buffer data len: %d", job.packetP->message->ByteSize()));
 
 		// To be improved ...
 		if (strcmp(ep->aliasGet(), job.me->aliasGet()) == 0)
 		{
 			if (job.network->packetReceiver)
-				job.network->packetReceiver->_receive(0, job.msgCode, job.packetP);
+			{
+				// Put in the engine to be processed
+				job.packetP->msgCode = job.msgCode;
+				job.packetP->fromId = 0;
+				job.network->packetReceiver->_receive( job.packetP );
+				//job.network->packetReceiver->_receive(0, job.msgCode, job.packetP);
+			}
 		}
 		else
 		{
@@ -889,7 +895,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 	int       nb;
 
 	if (packetP != NULL)
-		LM_T(LmtSend, ("Request to send '%s' package with %d packet size (to endpoint '%s')", messageCode(code), packetP->message.ByteSize(), ep->name.c_str()));
+		LM_T(LmtSend, ("Request to send '%s' package with %d packet size (to endpoint '%s')", messageCode(code), packetP->message->ByteSize(), ep->name.c_str()));
 	else
 		LM_T(LmtSend, ("Request to send '%s' package without data (to endpoint '%s')", messageCode(code), ep->name.c_str()));
 
@@ -898,7 +904,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 
 	if (packetP != NULL)
 	{
-		if (packetP->message.ByteSize() == 0)
+		if (packetP->message->ByteSize() == 0)
 			LM_W(("packet not NULL but its data len is 0 ..."));
 	}
 
@@ -1003,7 +1009,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 		job.network = this;
 
 		LM_T(LmtSenderThread, ("Sending '%s' job to '%s' sender (real destiny fd: %d) with %d packet size - the job is tunneled over fd %d (packet pointer: %p)",
-						   messageCode(job.msgCode), ep->name.c_str(), ep->wFd, job.packetP->message.ByteSize(), ep->senderWriteFd, job.packetP));
+						   messageCode(job.msgCode), ep->name.c_str(), ep->wFd, job.packetP->message->ByteSize(), ep->senderWriteFd, job.packetP));
 		
 		nb = write(ep->senderWriteFd, &job, sizeof(job));
 		if (nb != (sizeof(job)))
@@ -1015,11 +1021,8 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 		return 0;
 	}
 
-	LM_T(LmtSenderThread, ("Sending message directly (%d bytes)", packetP->message.ByteSize()));
+	LM_T(LmtSenderThread, ("Sending message directly (%d bytes)", packetP->message->ByteSize()));
 	nb = iomMsgSend(ep, endpoint[ME], code, Message::Msg, NULL, 0, packetP);
-
-	if (packetP != NULL)
-		delete packetP;
 
 
 	return nb;
@@ -2690,14 +2693,17 @@ void Network::msgTreat(void* vP)
 	Message::Header*      headerP      = &paramsP->header;
 
 	char*                 name         = (char*) ep->name.c_str();
-	Packet                packet;
+	Packet                *packet;
 	Packet                ack;
 	Message::MessageCode  msgCode;
 	Message::MessageType  msgType;
 	int                   s;
 
+	// New packet with the incomming data
+	packet = new Packet();
+	
 	LM_T(LmtRead, ("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
-	s = iomMsgRead(ep, headerP, &msgCode, &msgType, &dataP, &dataLen, &packet, NULL, 0);
+	s = iomMsgRead(ep, headerP, &msgCode, &msgType, &dataP, &dataLen, packet, NULL, 0);
 	LM_T(LmtRead, ("iomMsgRead returned %d (dataLens: %d, %d, %d)", s, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 
 	if (s != 0)
@@ -2838,7 +2844,7 @@ void Network::msgTreat(void* vP)
 		if (msgType == Message::Msg)
 		{
 			if (endpoint[ME]->type == Endpoint::Controller)
-				controllerMsgTreat(ep, endpointId, headerP, dataP, dataLen, &packet);
+				controllerMsgTreat(ep, endpointId, headerP, dataP, dataLen, packet);
 			else
 				LM_X(1, ("Got a %s request and I'm not the controller ...", messageCode(msgCode)));
 		}
@@ -2863,7 +2869,7 @@ void Network::msgTreat(void* vP)
 			LM_X(1, ("Got a WorkerVector request from '%s' but I'm not the controller ...", name));
 
 		if (endpoint[ME]->type == Endpoint::Controller)
-			controllerMsgTreat(ep, endpointId, headerP, dataP, dataLen, &packet);
+			controllerMsgTreat(ep, endpointId, headerP, dataP, dataLen, packet);
 		else
 		{
 			if (msgType != Message::Ack)
@@ -2907,13 +2913,18 @@ void Network::msgTreat(void* vP)
 		LM_T(LmtSenderThread, ("calling receiver->receive for message code '%s'", messageCode(msgCode)));
 		if (packetReceiver)
 		{
-			packetReceiver->_receive(endpointId, msgCode, &packet);
+			packet->msgCode = msgCode;
+			packet->fromId = endpointId;
+			packetReceiver->_receive( packet );
+			//packetReceiver->_receive(endpointId, msgCode, &packet);
 			LM_T(LmtSenderThread, ("back from receiver->receive for message code '%s'", messageCode(msgCode)));
 		}
 		else
 		{
-			if (packet.buffer)
-				MemoryManager::shared()->destroyBuffer(packet.buffer);
+			// Remove everything if there is no receiver
+			if (packet->buffer)
+				Engine::shared()->memoryManager.destroyBuffer(packet->buffer);
+			delete packet;	
 		}
 		break;
 	}

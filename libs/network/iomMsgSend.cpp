@@ -166,7 +166,7 @@ int iomMsgSend
 
 	if (packetP != NULL)
 	{
-		ss::MemoryManager::shared()->destroyBuffer(packetP->buffer);
+		ss::Engine::shared()->memoryManager.destroyBuffer(packetP->buffer);
 		delete packetP;
 	}
 
@@ -254,8 +254,8 @@ int iomMsgSend
 	if ((dataLen != 0) && (data != NULL))
 		header.dataLen = dataLen;
 
-	if ((packetP != NULL) && (packetP->message.ByteSize() != 0))
-		header.gbufLen = packetP->message.ByteSize();
+	if ((packetP != NULL) && (packetP->message->ByteSize() != 0))
+		header.gbufLen = packetP->message->ByteSize();
 
 	if (packetP && (packetP->buffer != 0))
 		header.kvDataLen = packetP->buffer->getSize();
@@ -282,7 +282,7 @@ int iomMsgSend
 		}
 	}
 
-	if ((packetP != NULL) && (packetP->message.ByteSize() != 0))
+	if ((packetP != NULL) && (packetP->message->ByteSize() != 0))
 	{
 		char* outputVec;
 
@@ -290,14 +290,14 @@ int iomMsgSend
 		if (outputVec == NULL)
 			LM_XP(1, ("malloc(%d)", header.gbufLen));
 
-		if (packetP->message.SerializeToArray(outputVec, header.gbufLen) == false)
+		if (packetP->message->SerializeToArray(outputVec, header.gbufLen) == false)
 			LM_X(1, ("SerializeToArray failed"));
 
-		s = partWrite(to, outputVec, packetP->message.ByteSize(), "Google Protocol Buffer");
+		s = partWrite(to, outputVec, packetP->message->ByteSize(), "Google Protocol Buffer");
 		free(outputVec);
-		if (s != packetP->message.ByteSize())
+		if (s != packetP->message->ByteSize())
 		{
-			LM_E(("partWrite returned %d and not the expected %d", s, packetP->message.ByteSize()));
+			LM_E(("partWrite returned %d and not the expected %d", s, packetP->message->ByteSize()));
 			lmOutHookRestore(outHook);
 			return -1;
 		}
@@ -316,7 +316,7 @@ int iomMsgSend
 
 	if (packetP != NULL)
 	{
-		ss::MemoryManager::shared()->destroyBuffer(packetP->buffer);
+		ss::Engine::shared()->memoryManager.destroyBuffer(packetP->buffer);
 		delete packetP;
 	}
 

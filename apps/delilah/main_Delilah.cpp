@@ -3,7 +3,7 @@
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "Format.h"				// au::Format
 #include "MemoryManager.h"      // ss::MemoryManager
-
+#include "Engine.h"				// ss::Engine
 
 
 /* ****************************************************************************
@@ -65,9 +65,9 @@ int main(int argC, const char *argV[])
 	// Setup parameters from command line ( this is delilah so memory and load buffer size are configurable from command line )
 	ss::SamsonSetup::shared()->memory			= (size_t) memory_gb * (size_t) (1024*1024*1024);
 	ss::SamsonSetup::shared()->load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
-	
-	ss::MemoryManager::init();			// Init the memory manager
 
+	ss::Engine::init();
+	
 	std::cout << "Waiting for network connection ...";
 	
 	// Init the network element for delilah
@@ -83,5 +83,13 @@ int main(int argC, const char *argV[])
 
 	// Create a DelilahControler once network is ready
 	ss::DelilahConsole console( &network );
+	
+	
+	ss::Engine::shared()->runInBackground();
+	
 	console.run();
+	
+	ss::Engine::shared()->quit();
+	ss::Engine::destroy();
+	
 }

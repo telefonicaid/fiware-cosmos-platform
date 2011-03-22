@@ -88,19 +88,15 @@ public:
 class PacketReceiverInterface
 {
 public:
-		
-	// Notify that a nessage has been received.
-	// If 'receive' returns ZERO, a JobDone is sent as Ack.
-	// If non-zero is returned, a JobError is sent as Ack.
-	
-	int _receive(int fromId, Message::MessageCode msgCode, Packet* packet)
-	{
-		LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet type %s",messageCode(msgCode)));
-		return receive(fromId, msgCode, packet);
-	}
 
-	virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet) = 0;
+	std::string packetReceiverDescription;
 	
+	// Method to receive a packet
+	// It is responsability of this callback to delete the received packet with "delete packet"
+	virtual void receive( Packet* packet ) = 0;
+
+	// Convenient way to run the receive methods using Engine
+	void _receive( Packet* packet );
 	
 	// Notify that a worker has died 
 	virtual void notifyWorkerDied(int worker)

@@ -21,14 +21,10 @@ namespace ss {
 	
 	class Monitor
 	{
-		au::Lock lock;
 		
 		SamsonController *controller;				// Pointer to samsonController to access controller & data manager
-		
 		MonitorBlock system;						// Parameter for the system
-		au::map<std::string,MonitorBlock> queues;			// Monotor parameter for each Queue
-		
-		pthread_t t;								// Thread to perform the snapshots
+		au::map<std::string,MonitorBlock> queues;	// Monotor parameter for each Queue
 		
 	public:
 		
@@ -37,8 +33,7 @@ namespace ss {
 
 	public:
 		
-		void runInBackground();	// Function to start the thread of monitoring
-		void run();				// Function called by thread ( not call directly )
+		void takeSamples();		// Function to take samples of the controller
 
 		
 	};

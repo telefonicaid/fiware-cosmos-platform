@@ -7,8 +7,8 @@ SET (HEADERS
 
 SET (LIBS
 samsonNetwork
-samsonMemory
 samsonCommon
+samsonCore
 pa
 lm
 pthread	
@@ -19,6 +19,7 @@ ${COMMON_SAMSON_LIBS}
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
+include_directories("${PROJECT_SOURCE_DIR}/libs/core")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_BINARY_DIR}/libs/network")

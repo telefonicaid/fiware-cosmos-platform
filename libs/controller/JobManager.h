@@ -30,7 +30,6 @@ namespace ss {
 	class JobManager
 	{
 		au::map<size_t ,Job> job;				// List of jobs pending to be executed
-		au::Lock lock;							// Mutex to protect "job"
 		
 		SamsonController * controller;			// Pointer to the controller
 		ControllerTaskManager taskManager;		// Internal task manager to submit tasks ( a task is a distributd command)

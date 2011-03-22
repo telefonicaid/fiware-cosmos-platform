@@ -93,8 +93,8 @@ namespace ss
 		// Send the message to the controller
 		Packet *p = new Packet();
 		
-		p->message.set_delilah_id( id );
-		ss::network::UploadDataInit *upload_data_init = p->message.mutable_upload_data_init();
+		p->message->set_delilah_id( id );
+		ss::network::UploadDataInit *upload_data_init = p->message->mutable_upload_data_init();
 		upload_data_init->set_queue( queue );
 		delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::UploadDataInit, p);
 		
@@ -126,11 +126,11 @@ namespace ss
 				return;
 			
 			// Wait if memory is not released
-			while( ( MemoryManager::shared()->getMemoryUsageOutput() > 1.0 ) || ( num_threads >= max_num_threads ) )
+			while( ( Engine::shared()->memoryManager.getMemoryUsageOutput() > 1.0 ) || ( num_threads >= max_num_threads ) )
 				sleep(1);
 			
 			// Create a buffer
-			Buffer *b = MemoryManager::shared()->newBuffer( "Loading buffer" , ss::SamsonSetup::shared()->load_buffer_size , Buffer::output );
+			Buffer *b = Engine::shared()->memoryManager.newBuffer( "Loading buffer" , ss::SamsonSetup::shared()->load_buffer_size , Buffer::output );
 			
 			// Fill the buffer with the contents from the file
 			fileSet.fill( b );
@@ -151,9 +151,9 @@ namespace ss
 			p->buffer = b;	// Add the buffer to the packet
 
 			// Set message fields
-			network::UploadDataFile *loadDataFile = p->message.mutable_upload_data_file();	
+			network::UploadDataFile *loadDataFile = p->message->mutable_upload_data_file();	
 
-			p->message.set_delilah_id( id );				
+			p->message->set_delilah_id( id );				
 			loadDataFile->set_load_id( load_id );		// load id operation at the controller
 			loadDataFile->set_file_id( num_files );		// File id
 			
@@ -202,7 +202,7 @@ namespace ss
 		size_t original_size = pd->p->buffer->getSize();
 		size_t compress_size = pd->p->buffer->getSize();
 		
-		size_t file_id = pd->p->message.upload_data_file().file_id();
+		size_t file_id = pd->p->message->upload_data_file().file_id();
 		size_t id = pd->uploadDataProcess->id;
 		
 		// Compress the buffer
@@ -217,7 +217,7 @@ namespace ss
 			
 			
 			Buffer *buffer = Packet::compressBuffer( pd->p->buffer );
-			MemoryManager::shared()->destroyBuffer( pd->p->buffer );
+			Engine::shared()->memoryManager.destroyBuffer( pd->p->buffer );
 			pd->p->buffer = buffer;
 			
 			compress_size = pd->p->buffer->getSize();
@@ -273,13 +273,13 @@ namespace ss
 			assert( status == waiting_controller_init_response);
 
 			// Get the identifier at the controller for this operation
-			load_id = packet->message.upload_data_init_response().load_id();
+			load_id = packet->message->upload_data_init_response().load_id();
 
 			// At this level, errors are not expected at the moment
 			
-			if( packet->message.upload_data_init_response().has_error() )
+			if( packet->message->upload_data_init_response().has_error() )
 			{
-				error.set(  packet->message.upload_data_init_response().error().message() );
+				error.set(  packet->message->upload_data_init_response().error().message() );
 				status = finish_with_error;
 				
 				lock.unlock();
@@ -308,22 +308,22 @@ namespace ss
 		}
 		else if (msgCode == Message::UploadDataFileResponse )
 		{
-			//size_t file_id = packet->message.upload_data_response().upload_data().file_id();
+			//size_t file_id = packet->message->upload_data_response().upload_data().file_id();
 			
-			if( packet->message.upload_data_file_response().has_error() )
+			if( packet->message->upload_data_file_response().has_error() )
 			{
-				error.set(  packet->message.upload_data_finish_response().error().message() );
+				error.set(  packet->message->upload_data_finish_response().error().message() );
 				status = finish_with_error;
 			}
 			
 			// Add the generated file to the packet prepared for the final confirmation
-			upload_data_finish->add_files()->CopyFrom( packet->message.upload_data_file_response().file() );
+			upload_data_finish->add_files()->CopyFrom( packet->message->upload_data_file_response().file() );
 			
 			// Update the uploaded size
-			uploadedSize +=  packet->message.upload_data_file_response().query().file_size();
+			uploadedSize +=  packet->message->upload_data_file_response().query().file_size();
 
 			// Get the uploaded file_id 
-			size_t file_id = packet->message.upload_data_file_response().query().file_id();
+			size_t file_id = packet->message->upload_data_file_response().query().file_id();
 			
 			std::ostringstream output;
 			output << "[ " << id << " ] < Buffer " << file_id << " > Received upload confirmation";
@@ -341,11 +341,11 @@ namespace ss
 					
 					// Send the final packet to the controller notifying about the loading process
 					Packet *p = new Packet();
-					network::UploadDataFinish *_upload_data_finish	= p->message.mutable_upload_data_finish();
+					network::UploadDataFinish *_upload_data_finish	= p->message->mutable_upload_data_finish();
 					_upload_data_finish->CopyFrom( *upload_data_finish );
 
 					// Set the general id for delilah
-					p->message.set_delilah_id( id );
+					p->message->set_delilah_id( id );
 
 					// Set the final files used in this upload ( usign information from the initial message )
 					
@@ -359,9 +359,9 @@ namespace ss
 			
 			assert( status == waiting_controller_finish_response );	
 
-			if( packet->message.upload_data_finish_response().has_error() )
+			if( packet->message->upload_data_finish_response().has_error() )
 			{
-				error.set(  packet->message.upload_data_finish_response().error().message() );
+				error.set(  packet->message->upload_data_finish_response().error().message() );
 				status = finish_with_error;
 			}
 			else

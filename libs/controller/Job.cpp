@@ -376,7 +376,7 @@ namespace ss {
 			
 			Packet *p2 = new Packet();
 			
-			network::CommandResponse *response = p2->message.mutable_command_response();
+			network::CommandResponse *response = p2->message->mutable_command_response();
 			response->set_command(mainCommand);
 
 			if( _status == error )
@@ -394,7 +394,7 @@ namespace ss {
 			response->set_ellapsed_seconds( difftime( time_finish, time_init ) );
 										  
 			// global sender id of delilah
-			p2->message.set_delilah_id( sender_id );
+			p2->message->set_delilah_id( sender_id );
 			
 			jobManager->controller->network->send(jobManager->controller, fromIdentifier, Message::CommandResponse, p2);
 		}
@@ -486,7 +486,7 @@ namespace ss {
 			for (int i = 0 ; i < jobManager->controller->num_workers ; i++ )
 			{
 				Packet *p = new Packet();
-				p->message.mutable_worker_task_kill()->set_task_id( *t );
+				p->message->mutable_worker_task_kill()->set_task_id( *t );
 				NetworkInterface *network = jobManager->controller->network;
 				network->send(jobManager->controller, network->workerGetIdentifier(i), Message::WorkerTaskKill, p);
 				

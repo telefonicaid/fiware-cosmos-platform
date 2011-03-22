@@ -3,8 +3,6 @@
 #include "ProcessBase.h"			// Own interface
 #include "WorkerTask.h"				// ss::WorkerTask
 #include "WorkerTaskManager.h"		// ss::WorkerTaskManager
-#include "FileManagerReadItem.h"
-#include "FileManagerWriteItem.h"
 #include "coding.h"					// All data definitions
 #include "Packet.h"					// ss::Packet
 #include "EnvironmentOperations.h"	// copyEnviroment
@@ -111,7 +109,7 @@ namespace ss {
 		 Otherwise we halt notifying this to the ProcessManager
 		 */
 		
-		if( MemoryManager::shared()->getMemoryUsageOutput() >= 1.0)
+		if( Engine::shared()->memoryManager.getMemoryUsageOutput() >= 1.0)
 			halt();
 		
 #pragma mark ---		
@@ -149,7 +147,7 @@ namespace ss {
 				
 				if( _channel->info.size > 0)
 				{
-					Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessWriter", KVFILE_TOTAL_HEADER_SIZE + _channel->info.size , Buffer::output );
+					Buffer *buffer = Engine::shared()->memoryManager.newBuffer( "ProcessWriter", KVFILE_TOTAL_HEADER_SIZE + _channel->info.size , Buffer::output );
 					assert( buffer );
 					
 					// Pointer to the header
@@ -190,7 +188,7 @@ namespace ss {
 					
 					Packet *p = new Packet();
 					p->buffer = buffer;
-					network::WorkerDataExchange *dataMessage =  p->message.mutable_data();
+					network::WorkerDataExchange *dataMessage =  p->message->mutable_data();
 					
 					dataMessage->set_task_id(task_id);
 					dataMessage->mutable_queue( )->CopyFrom( output_queue );
@@ -219,7 +217,7 @@ namespace ss {
 		 Otherwise we halt notifying this to the ProcessManager
 		 */
 		
-		if( MemoryManager::shared()->getMemoryUsageOutput() >= 1.0)
+		if( Engine::shared()->memoryManager.getMemoryUsageOutput() >= 1.0)
 			halt();
 		
 #pragma mark ---		
@@ -238,7 +236,7 @@ namespace ss {
 			
 			//size_t task_id = task->workerTask.task_id();
 			
-			Buffer *buffer = MemoryManager::shared()->newBuffer( "ProcessTXTWriter", *size , Buffer::output );
+			Buffer *buffer = Engine::shared()->memoryManager.newBuffer( "ProcessTXTWriter", *size , Buffer::output );
 			assert( buffer );
 			
 			// There is only one output queue
@@ -251,7 +249,7 @@ namespace ss {
 			
 			Packet *p = new Packet();
 			p->buffer = buffer;
-			network::WorkerDataExchange *dataMessage =  p->message.mutable_data();
+			network::WorkerDataExchange *dataMessage =  p->message->mutable_data();
 			
 			dataMessage->set_task_id(task_id);
 			dataMessage->mutable_queue( )->CopyFrom( output_queue );

@@ -69,7 +69,7 @@ namespace ss {
 		void quit();
 
 		// PacketReceiverInterface
-		virtual int receive(int fromId, Message::MessageCode msgCode, Packet* packet);
+		void receive( Packet* packet );
 
 		// PacketSenderInterface
 		virtual void notificationSent(size_t id, bool success);

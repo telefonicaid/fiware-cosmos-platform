@@ -1,14 +1,11 @@
 #include "Buffer.h"					// ss::Buffer
-#include "FileManager.h"			// ss::FileManager
 #include "SamsonWorker.h"			// ss::SamsonWorker
 #include "Packet.h"					// ss::Packet
 #include "Buffer.h"					// ss::Buffer
-#include "FileManager.h"			// ss::FileManager
-#include "FileManagerReadItem.h"
-#include "FileManagerWriteItem.h"
 #include "LoadDataManager.h"		// Own interface
 #include "MessagesOperations.h"		// setErrorMessage
 #include "SamsonSetup.h"			// ss::SamsonSetup
+#include "DiskOperation.h"			// ss::DiskOperation
 
 namespace ss
 {
@@ -45,25 +42,27 @@ namespace ss
 	}
 
 
-	size_t UploadItem::submitToFileManager()
+	void UploadItem::submitToFileManager()
 	{
 		// Add to the file manager to be stored on disk
-		FileManagerWriteItem * item = new FileManagerWriteItem( fileName , buffer , dataManager );
-		item->tag = id;	// Use my id as tag
-		return FileManager::shared()->addItemToWrite( item );
+		DiskOperation *operation = DiskOperation::newWriteOperation( buffer , fileName , dataManager );
+		operation->tag = id;	// Use my id as tag
+
+		// Submit to the engine
+		Engine::shared()->add( operation  );
 	}
 
 	void UploadItem::sendResponse( bool error , std::string error_message )
 	{
 		// Sen a packet bak to delilah to confirm this update
 		Packet *p = new Packet();
-		network::UploadDataFileResponse *response = p->message.mutable_upload_data_file_response();
+		network::UploadDataFileResponse *response = p->message->mutable_upload_data_file_response();
 
 		// Copy the original message
 		response->mutable_query()->CopyFrom( *upload_data_file );
 		
 		// Set the delalilah identifier
-		p->message.set_delilah_id( sender_id );
+		p->message->set_delilah_id( sender_id );
 		
 		// Set the file just created
 		network::File *file = response->mutable_file();
@@ -100,17 +99,19 @@ namespace ss
 		delete download_data_file;
 	}
 
-	size_t DownloadItem::submitToFileManager()
+	void DownloadItem::submitToFileManager()
 	{
 		std::string fileName = download_data_file->file().name();
 		size_t size = au::Format::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );
 
-		buffer = MemoryManager::shared()->newBuffer( "Buffer for downloading data" , size , Buffer::output );
+		buffer = Engine::shared()->memoryManager.newBuffer( "Buffer for downloading data" , size , Buffer::output );
 		buffer->setSize( size );
 
-		FileManagerReadItem *item = new FileManagerReadItem( fileName , 0 , size , buffer->getSimpleBuffer(), dataManager );
-		item->tag = id;	// Use my id as tag
-		return FileManager::shared()->addItemToRead( item );
+		DiskOperation *operation = DiskOperation::newReadOperation( buffer->getData() , fileName , 0 , size , dataManager );
+		operation->tag = id;	// Use my id as tag
+
+		// Submit the operation to the engine
+		Engine::shared()->add( operation );
 	}
 	
 
@@ -118,13 +119,13 @@ namespace ss
 	{
 		// Sen a packet bak to delilah to confirm this update
 		Packet *p = new Packet();
-		network::DownloadDataFileResponse *response = p->message.mutable_download_data_file_response();
+		network::DownloadDataFileResponse *response = p->message->mutable_download_data_file_response();
 
 		// Copy the original message
 		response->mutable_query()->CopyFrom( *download_data_file );
 		
 		// Set the delilah identifier
-		p->message.set_delilah_id( sender_id );
+		p->message->set_delilah_id( sender_id );
 		
 		// Put the buffer where the file is loaded
 		p->buffer = buffer;	// Put the buffer here
@@ -141,7 +142,12 @@ namespace ss
 	
 #pragma mark LoadDataManager
 	
-
+	LoadDataManager::LoadDataManager( SamsonWorker *_worker )
+	{
+		worker = _worker;
+		upload_size = 0;
+	}
+	
 
 	void LoadDataManager::addUploadItem( int fromIdentifier, const network::UploadDataFile &uploadData ,size_t sender_id, Buffer * buffer )
 	{
@@ -173,41 +179,45 @@ namespace ss
 		lock.unlock();
 		
 	}
-
-	void LoadDataManager::notifyFinishReadItem( FileManagerReadItem *item  )
+	
+	void LoadDataManager::diskManagerNotifyFinish(  DiskOperation *operation )
 	{
-		lock.lock();
 		
-		DownloadItem* download		= downloadItem.extractFromMap( item->tag );
+		switch (operation->getType()) {
+
+			case DiskOperation::read:
+			{
+				DownloadItem* download = downloadItem.extractFromMap( operation->tag );
+				
+				if( download )
+				{
+					download->sendResponse( operation->error.isActivated() , operation->error.getMessage() );
+					delete download;
+				}
+				
+			}
 		
-		if( download )
-		{
-			download->sendResponse( item->error.isActivated() , item->error.getMessage());
-			delete download;
+				break;
+			case DiskOperation::write:
+			{
+				UploadItem* upload = uploadItem.extractFromMap( operation->tag );
+				
+				if( upload )
+				{
+					upload->sendResponse(operation->error.isActivated() , operation->error.getMessage());
+					delete upload;
+				}
+				
+			}
+				break;
+			case DiskOperation::remove:
+				break;
+			default:
+				break;
 		}
 		
-		lock.unlock();
-		
-		delete item;
 	}
 
-	void LoadDataManager::notifyFinishWriteItem( FileManagerWriteItem *item  )
-	{
-		lock.lock();
-		
-		UploadItem* upload	= uploadItem.extractFromMap(item->tag );
-		
-		if( upload )
-		{
-			upload->sendResponse(item->error.isActivated() , item->error.getMessage());
-			delete upload;
-		}
-		
-		lock.unlock();
-		
-		delete item;
-		
-	}
 
 	
 

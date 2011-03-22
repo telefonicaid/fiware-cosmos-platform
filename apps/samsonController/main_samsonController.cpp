@@ -19,10 +19,8 @@
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "platformProcesses.h"  // ss::platformProcessesGet, ss::platformProcessesSave
 #include "MemoryManager.h"		// ss::MemoryManager
-#include "DiskManager.h"		// ss::DiskManager
-#include "FileManager.h"		// ss::FileManager
 #include "LockDebugger.h"       // au::LockDebugger
-
+#include "Engine.h"				// ss::Engine
 
 
 /* ****************************************************************************
@@ -111,9 +109,7 @@ int main(int argC, const char* argV[])
 	// Init singlentons
 	au::LockDebugger::shared();         // Lock usage debugging (necessary here where there is only one thread)
 	ss::SamsonSetup::load(workingDir);  // Load setup and create all directories
-	ss::DiskManager::init();		// Disk manager
-	ss::FileManager::init();		// File manager
-	ss::MemoryManager::init();          // Memory manager
+	ss::Engine::init();					// Init the SamsonEngine
 	ss::ModulesManager::init();			// Init the modules manager
 
 	// Instance of network object and initialization
@@ -130,9 +126,8 @@ int main(int argC, const char* argV[])
 	
 	ss::SamsonController  controller(networkP);
 
-	controller.runBackgroundProcesses();
-	controller.touch();
+
+	// Run the engine function
+	ss::Engine::shared()->run();
 	
-	while (true)
-		sleep(10000);
 }

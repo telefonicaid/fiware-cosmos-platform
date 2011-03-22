@@ -105,13 +105,16 @@ typedef enum TraceLevels
 	LmtSceneItemChain,
 	LmtMove,
 	LmtWait,
-	
-	LmtDisk,					// disk library	
-	LmtModuleManager,			// Module Manager component
-	LmtMemory,					// memory library	
-	LmtOperations,				// Operations organization (map & reduce level)
+
+	LmtEngine=200,					// SamsonEngine
+	LmtDisk=201,					// disk library	
+	LmtMemory=202,					// memory library	
+
+	LmtModuleManager=210,			// Module Manager component
+	LmtOperations=211,				// Operations organization (map & reduce level)
 	LmtReset,
 
+	
 	LmtUser01 = 250,
 	LmtUser02 = 251,
 	LmtUser03 = 252,

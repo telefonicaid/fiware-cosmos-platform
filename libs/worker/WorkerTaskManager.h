@@ -8,8 +8,9 @@
 #include "samson.pb.h"					// ss::network::...
 #include "ProcessItem.h"				// ss::ProcessManagerDelegate
 #include "Buffer.h"						// ss::Buffer
-#include "MemoryManager.h"				// ss::MemoryRequestDelegate
-#include "FileManagerDelegate.h"		// ss::FileManagerDelegate
+#include "MemoryRequest.h"				// ss::MemoryRequest & MemoryRequestDelegate
+#include "EngineDelegates.h"
+
 namespace ss {
 
 
@@ -18,7 +19,7 @@ namespace ss {
 	class WorkerTask;
 	class NetworkInterface;
 	
-	class WorkerTaskManager : public ProcessManagerDelegate, public FileManagerDelegate , public MemoryRequestDelegate		// Receive notifications from the process manager
+	class WorkerTaskManager : public ProcessManagerDelegate, public DiskManagerDelegate , public MemoryRequestDelegate		// Receive notifications from the process manager
 	{
 		
 	public:
@@ -27,7 +28,6 @@ namespace ss {
 
 	private:
 
-		au::Token token;									// Token to protect task
 		au::map<size_t,WorkerTask> task;					// List of tasks
 				
 	public:
@@ -63,9 +63,10 @@ namespace ss {
 	public:
 		
 		void notifyFinishProcess( ProcessItem * item );
-		void notifyFinishReadItem( FileManagerReadItem *item  );
-		void notifyFinishWriteItem( FileManagerWriteItem *item  );
+		
 		void notifyFinishMemoryRequest( MemoryRequest *request );		
+		
+		void diskManagerNotifyFinish(  DiskOperation *operation );	
 		
 	};
 	 

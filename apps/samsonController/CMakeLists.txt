@@ -8,11 +8,8 @@ SET (HEADERS
 
 SET (LIBS
 	samsonControllerLib
-	samsonProcess
 	samsonNetwork
 	samsonCore
-	samsonMemory
-	samsonDisk
 	pa
 	lm
 	protobuf

@@ -9,7 +9,6 @@
 #include "coding.h"			// ss::hg_info , ss::hg_size 
 #include "Buffer.h"			// ss::Buffer
 #include "MemoryManager.h"	// ss::MemoryManager
-#include "DiskManagerDelegate.h"	// ss::DiskManagerDelegate && ss::FileManagerDelegate
 #include <set>						// std::set
 #include "samson.pb.h"				// network::...
 #include "au_map.h"					// au::simple_map

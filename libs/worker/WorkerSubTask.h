@@ -10,7 +10,7 @@ namespace ss
 	
 	class WorkerTask;
 	class MemoryRequest;
-	class FileManagerReadItem;
+	class DiskOperation;
 	class ProcessItem;
 	class ProcessAssistantSharedFile;
 	class Buffer;
@@ -54,7 +54,7 @@ namespace ss
 		}
 		
 		// Function to get all the read operations necessary for this task ( if any )
-		virtual std::vector< FileManagerReadItem*>* _getFileMangerReadItems()
+		virtual std::vector<DiskOperation*>* _getFileMangerReadItems()
 		{
 			return NULL;
 		}
@@ -66,7 +66,7 @@ namespace ss
 		}
 
 		// Function to get all the read operations necessary for this task
-		std::vector< FileManagerReadItem*>* getFileMangerReadItems();
+		std::vector< DiskOperation*>* getFileMangerReadItems();
 		
 		// Function to get the ProcessManagerItem to run
 		ProcessItem *getProcessItem();
@@ -121,14 +121,14 @@ namespace ss
 		
 		
 		// Function to get all the read operations necessary for this task
-		std::vector< FileManagerReadItem*>* _getFileMangerReadItems();
+		std::vector< DiskOperation*>* _getFileMangerReadItems();
 		
 		// Function to get the ProcessManagerItem to run
 		ProcessItem * _getProcessItem();		
 		
 	private:
 		
-		FileManagerReadItem * getFileMangerReadItem( ProcessAssistantSharedFile* file );
+		DiskOperation * getFileMangerReadItem( ProcessAssistantSharedFile* file );
 		
 	};	
 
@@ -161,7 +161,7 @@ namespace ss
 		 MemoryRequest *_getMemoryRequest();
 		 
 		 // Function to get all the read operations necessary for this task
-		 std::vector< FileManagerReadItem*>* _getFileMangerReadItems();
+		 std::vector< DiskOperation*>* _getFileMangerReadItems();
 
 		 // Function to get the ProcessManagerItem to run
 		 ProcessItem * _getProcessItem();		
@@ -199,7 +199,7 @@ namespace ss
 		MemoryRequest *_getMemoryRequest();
 		
 		// Function to get all the read operations necessary for this task
-		std::vector< FileManagerReadItem*>* _getFileMangerReadItems();
+		std::vector< DiskOperation*>* _getFileMangerReadItems();
 		
 		// Function to get the ProcessManagerItem to run
 		ProcessItem * _getProcessItem();		
@@ -223,14 +223,14 @@ namespace ss
 		SystemSubTask( WorkerTask *task );		
 		
 		// Function to get all the read operations necessary for this task
-		std::vector< FileManagerReadItem*>* _getFileMangerReadItems();
+		std::vector< DiskOperation*>* _getFileMangerReadItems();
 		
 		// Function to get the ProcessManagerItem to run
 		ProcessItem * _getProcessItem();		
 		
 	private:
 		
-		FileManagerReadItem * getFileMangerReadItem( ProcessAssistantSharedFile* file );
+		DiskOperation * getFileMangerReadItem( ProcessAssistantSharedFile* file );
 	};	
 
 	/**
@@ -258,7 +258,7 @@ namespace ss
 		MemoryRequest *_getMemoryRequest();
 		
 		// Function to get all the read operations necessary for this task
-		std::vector< FileManagerReadItem*>* _getFileMangerReadItems();
+		std::vector< DiskOperation*>* _getFileMangerReadItems();
 		
 		// Function to get the ProcessManagerItem to run
 		ProcessItem * _getProcessItem();		

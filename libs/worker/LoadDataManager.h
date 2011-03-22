@@ -8,7 +8,7 @@
 #include "Lock.h"						// au::Lock
 #include "samsonDirectories.h"			// SAMSON_DATA_DIRECTORY
 #include "SamsonSetup.h"				// ss::SamsonSetup
-#include "FileManagerDelegate.h"		// ss::FileManagerDelegate
+#include "EngineDelegates.h"				// ss::FileManagerDelegate
 
 namespace ss {
 
@@ -50,7 +50,7 @@ namespace ss {
 		UploadItem( size_t _id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadDataFile &_uploadDataFile , size_t sender_id,  Buffer * buffer );
 		~UploadItem();
 		
-		size_t submitToFileManager();
+		void submitToFileManager();
 		void sendResponse( bool error , std::string error_message );
 		
 		std::string newFileName()
@@ -68,10 +68,7 @@ namespace ss {
 			return output.str();
 		}
 		
-		
-		
 	};	
-	
 	
 	/**
 	 Item requested to be downloaded
@@ -90,7 +87,7 @@ namespace ss {
 		DownloadItem(size_t _id, int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadDataFile &_download_data_file, size_t sender_id);		
 		~DownloadItem();
 
-		size_t submitToFileManager();
+		void submitToFileManager();
 		void sendResponse( bool error , std::string error_message );
 
 		std::string getStatus( )
@@ -104,7 +101,7 @@ namespace ss {
 	};
 	
 	
-	class LoadDataManager : public FileManagerDelegate
+	class LoadDataManager : public DiskManagerDelegate
 	{
 		friend class UploadItem;
 		friend class DownloadItem;
@@ -124,11 +121,7 @@ namespace ss {
 		size_t upload_size;			// Simple information about the size of upload
 		
 		
-		LoadDataManager( SamsonWorker *_worker )
-		{
-			worker = _worker;
-			upload_size = 0;
-		}
+		LoadDataManager( SamsonWorker *_worker );
 		
 		// Add item to upload data
 		void addUploadItem( int fromIdentifier, const network::UploadDataFile &uploadDataFile ,size_t sender_id, Buffer * buffer  );
@@ -137,9 +130,7 @@ namespace ss {
 		void addDownloadItem( int fromIdentifier, const network::DownloadDataFile &downloadDataFile, size_t sender_id );
 		
 		// Disk Manager notifications
-		void notifyFinishReadItem( FileManagerReadItem *item  );	
-		void notifyFinishWriteItem( FileManagerWriteItem *item  );	
-
+		void diskManagerNotifyFinish(  DiskOperation *operation );	
 
 		// Fill status information	
 		void fill( network::WorkerStatus* ws);

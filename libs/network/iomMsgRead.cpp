@@ -179,8 +179,8 @@ int iomMsgRead
 
 		((char*) dataP)[nb] = 0;
 		
-		packetP->message.ParseFromArray(dataP, nb);
-		if (packetP->message.IsInitialized() == false)
+		packetP->message->ParseFromArray(dataP, nb);
+		if (packetP->message->IsInitialized() == false)
 			LM_X(1, ("Error parsing Google Protocol Buffer of %d bytes because a message %s is not initialized!", nb, ss::Message::messageCode(headerP->code)));
 
 		memset(dataP, 0, headerP->gbufLen + 1);
@@ -197,7 +197,7 @@ int iomMsgRead
 
 		// By default all the input packets are for writing locally, so they are unknown.
 		// Note that at the "receive" function, they can be switched to input
-		packetP->buffer = ss::MemoryManager::shared()->newBuffer(name, headerP->kvDataLen, ss::Buffer::output );
+		packetP->buffer = ss::Engine::shared()->memoryManager.newBuffer(name, headerP->kvDataLen, ss::Buffer::output );
 
 		int    size   = headerP->kvDataLen;
 		char*  kvBuf  = packetP->buffer->getData();

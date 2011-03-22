@@ -73,7 +73,7 @@ namespace ss
       }
 
     // create the output buffer with the rigth size
-    Buffer *outputBuffer = MemoryManager::shared()->newBuffer( "Compact output buffer", outputBufferSize , Buffer::output );
+    Buffer *outputBuffer = Engine::shared()->memoryManager.newBuffer( "Compact output buffer", outputBufferSize , Buffer::output );
     
     // Output header and KVInfo vector
     KVHeader *outputHeader = (KVHeader*) outputBuffer->getData();

@@ -12,7 +12,6 @@ namespace au
 		bool error;
 		std::string message;
 		
-		
 	public:
 		
 		Error()
@@ -38,8 +37,6 @@ namespace au
 		
 	};
 	
-	
-	// Not used any more...
 }
 
 

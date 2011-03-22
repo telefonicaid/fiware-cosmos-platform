@@ -7,7 +7,6 @@ SET (HEADERS
 
 SET (STATIC_LIBS
      samsonCore
-     samsonMemory
      delilahLib
      pa
      lm

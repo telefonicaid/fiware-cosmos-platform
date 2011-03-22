@@ -49,7 +49,7 @@ namespace ss
 		parser->init();
 		parser->run( b->getData() , b->getSize() ,  writer );
 		parser->finish();
-		MemoryManager::shared()->destroyBuffer(b);
+		Engine::shared()->memoryManager.destroyBuffer(b);
 		*/	
 	}	
 }

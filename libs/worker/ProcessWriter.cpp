@@ -19,7 +19,7 @@ namespace ss {
 		workerTaskItem = _workerTaskItem;
 		
 		// Get the assignated shared memory region
-		item = MemoryManager::shared()->getSharedMemory( workerTaskItem->shm_id );
+		item = Engine::shared()->memoryManager.getSharedMemory( workerTaskItem->shm_id );
 		
 		// General output buffer
 		buffer = item->data;
@@ -56,7 +56,7 @@ namespace ss {
 	ProcessWriter::~ProcessWriter()
 	{
 		// Free the map of the shared memory
-		MemoryManager::shared()->freeSharedMemory( item );		
+		Engine::shared()->memoryManager.freeSharedMemory( item );		
 		
 		// Free minibuffer used to serialize key-value here!!
 		free( miniBuffer );
@@ -163,7 +163,7 @@ namespace ss {
 		workerTaskItem = _workerTaskItem;
 		
 		// Get the assignated shared memory region
-		item = MemoryManager::shared()->getSharedMemory( workerTaskItem->shm_id );
+		item = Engine::shared()->memoryManager.getSharedMemory( workerTaskItem->shm_id );
 		
 		// Size if the firt thing in the buffer
 		size = (size_t*) item->data;

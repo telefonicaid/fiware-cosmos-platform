@@ -6,30 +6,23 @@
  
  */
 
-#include "SamsonSetup.h"             // ss::SamsonSetup
-#include "DiskManager.h"             // ss::DiskManager
-#include "FileManager.h"             // ss::FileManager
-#include "Buffer.h" 	             // ss::Buffer
-
-#include "FileManagerWriteItem.h"    // ss::FileManagerWriteItem
-#include "FileManagerReadItem.h"     // ss::FileManagerReadItem
-#include "FileManagerDelegate.h"	 // ss::FileManagerDelegate
-#include "FileManagerRemoveItem.h"	 // ss::FileManagerRemoveItem
-
+#include "SamsonSetup.h"        // ss::SamsonSetup
+#include "Buffer.h" 	        // ss::Buffer
 #include "parseArgs.h"          // parseArgs
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace levels
-
 #include "parseArgs.h"          // parseArgs
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace levels
-
+#include "Engine.h"				// ss::Engine
+#include "Token.h"				// au::Token
 
 #define DISK_TEST_NUM_FILES		50
 #define DISK_TEST_SIZE_FILE		100000
 
 namespace ss {
 	
+	/*
 	class DiskTest : public FileManagerDelegate
 	{
 		// Token to protect list of stuff
@@ -37,9 +30,9 @@ namespace ss {
 		
 		
 		// Items send to write
-		std::set<FileManagerWriteItem*> fwi;
-		std::set<FileManagerReadItem*> fri;
-		std::set<FileManagerRemoveItem*> fxi;
+		std::set<DiskOperation*> fwi;
+		std::set<DiskOperation*> fri;
+		std::set<DiskOperation*> fxi;
 		
 		// Pointer to the File Manager singleton
 		ss::FileManager *fm;
@@ -53,7 +46,7 @@ namespace ss {
 		
 		Buffer *getNewBuffer()
 		{
-			Buffer *buffer = ss::MemoryManager::shared()->newBuffer("test",DISK_TEST_SIZE_FILE , Buffer::input );
+			Buffer *buffer = ss::Engine::shared()->memoryManager.newBuffer("test",DISK_TEST_SIZE_FILE , Buffer::input );
 			buffer->setSize( DISK_TEST_SIZE_FILE );
 			char *content = buffer->getData();
 			for (size_t i = 0 ; i < DISK_TEST_SIZE_FILE ; i++)
@@ -82,7 +75,7 @@ namespace ss {
 		
 		void addRead( std::string fileName )
 		{
-			Buffer *buffer = ss::MemoryManager::shared()->newBuffer("test read" , DISK_TEST_SIZE_FILE , Buffer::input );
+			Buffer *buffer = ss::Engine::shared()->memoryManager.newBuffer("test read" , DISK_TEST_SIZE_FILE , Buffer::input );
 			
 			FileManagerReadItem *fmi = new FileManagerReadItem(fileName , 0 , DISK_TEST_SIZE_FILE , buffer , this);
 			fri.insert( fmi );
@@ -170,6 +163,7 @@ namespace ss {
 		
 	};
 	
+	 */
 }
 
 
@@ -204,11 +198,10 @@ int main( int argC , char *argV[] )
 	// Init SamsonSetup 
 	ss::SamsonSetup::load( workingDir );		// Load setup and create default directories
 	
-	// Init singlentons
-	ss::MemoryManager::init();
-	ss::DiskManager::init();
-	ss::FileManager::init();
-	
+	// Init Engine
+	ss::Engine::init();
+
+	/*
 	// Object to keep all the information of the test
 	ss::DiskTest test;
 	
@@ -227,10 +220,14 @@ int main( int argC , char *argV[] )
 		test.addRemove( o.str() );
 		
 	}
+*/	
+
+	ss::Engine::shared()->runInBackground();
+
+	//test.loop();
 	
-	
-	test.loop();
-	
+	ss::Engine::shared()->quit();
+	ss::Engine::destroy();
 	
 	return 0;
 }

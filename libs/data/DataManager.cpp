@@ -22,8 +22,7 @@ namespace ss {
 		// Open in write mode
 		if( !file.openToAppend( ) )
 		{
-			std::cerr << "Error opening controller log file " << file.getFileName() << std::endl;
-			exit(1);
+			LM_X(1, ("Error opening controller log file %s" , file.getFileName().c_str() ));
 		}
 		
 		

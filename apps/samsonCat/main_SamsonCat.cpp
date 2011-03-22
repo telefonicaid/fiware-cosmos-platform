@@ -49,7 +49,7 @@ int main(int argc, const char *argv[])
 	nb = fread(&header, 1, sizeof(ss::KVHeader), file);
 
 	if (nb != sizeof(ss::KVHeader))
-		printf("WARNING: read only %d bytes (wanted to read %d)\n", nb, sizeof(ss::KVHeader));
+		printf("WARNING: read only %d bytes (wanted to read %ld)\n", nb, (long int) sizeof(ss::KVHeader));
 		
 
 	if (!header.check())

@@ -92,7 +92,6 @@ ss::HostMgr*        hostMgr                = NULL;
 static int accessCheck(void)
 {
 	struct stat statBuf;
-	int         s;
 
 	if (stat(EtcDirPath, &statBuf) == -1)
 	{

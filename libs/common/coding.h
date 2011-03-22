@@ -12,6 +12,7 @@
 #include "samson.pb.h"			// network:...
 #include <string.h>			// std::string
 #include "SimpleBuffer.h"		// ss::SimpleBuffer
+#include "LogMsg.h"                     // LM_X
 
 
 #define KVFILE_MAX_KV_SIZE			   64*1024*1024				// Max size for an individual key-value
@@ -381,7 +382,8 @@ namespace ss {
 			offset = 0;	// Init the offset of this file
 						
 			header = (KVHeader*) _data;
-			assert( header->check() );	// Check magic number
+			if( !header->check() )
+			  LM_X(1,("Error checking the magic number of header in ProcessSharedFile"));
 
 			// Get the number of hash group from header
 			uint32 num_hash_groups = header->getNumHashGroups();
@@ -390,7 +392,8 @@ namespace ss {
 			data = (_data + sizeof(KVHeader) + sizeof(KVInfo)*num_hash_groups);
 			
 			size_t total_size = sizeof(KVHeader) + sizeof(KVInfo)*num_hash_groups + header->info.size;
-			assert( total_size == header->getTotalSize() );
+			if( total_size != header->getTotalSize() )
+			  LM_X(1,("Error checking size of a message inside ProcessSharedFile"));
 			
 			
 			// Pointer and size of every hash-group
@@ -496,7 +499,8 @@ namespace ss {
 			header.hg_begin = hg_begin;			
 			header.hg_end = hg_end;			
 			
-			assert( header.check() );
+			if( !header.check() )
+			  LM_X(1,("Error cheking magic number of KVHeader"));
 			return header;
 		}
 		

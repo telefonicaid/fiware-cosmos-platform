@@ -219,7 +219,7 @@ namespace ss
 			for (size_t i = 0 ; i < inputs.size() ; i++)
 				output << "\t\tcase "<<i<<": return ("<< getCompareFunctionForData( inputs[i].valueFormat ) <<"(kv1->value , kv2->value)<0); break;\n";
 			
-			output << "\t\tdefault: assert(false); break;\n";
+			output << "\t\tdefault: exit(1); break;\n";
 			output << "\t\t}\n";
 			
 			output << "\t\treturn 0;\n";

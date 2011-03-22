@@ -49,7 +49,8 @@ namespace ss
 	
 	void WorkerTask::setup(Operation::Type _type , const network::WorkerTask &task)
 	{
-		assert( status == pending_definition);
+		if( status != pending_definition)
+			LM_X(1,("Internal error: Unexpected status of a WorkerTask at setup" ));
 		
 		// Copy of the message form the controller
 		workerTask = task;
@@ -78,7 +79,8 @@ namespace ss
 
 	void WorkerTask::run()
 	{
-		assert( status == ready );
+		if( status != ready )
+			LM_X(1,("Internal error: Unexpected status when running a WorkerTask"));
 		
 		// Set status to runnign until all the tasks are completed ( or error )
 		status = running;
@@ -96,7 +98,8 @@ namespace ss
 			case Operation::parser:
 			{
 				// An item per file
-				assert( workerTask.input_queue_size() == 1);	// Only one input
+				if( workerTask.input_queue_size() != 1)
+					LM_X(1,("Internal error: Trying to parse multple inputs in one operation"));
 				
 				for (size_t i = 0 ; i < (size_t) workerTask.input_queue(0).file_size() ; i++)
 					addSubTask( new ParserSubTask( this, workerTask.input_queue(0).file(i).name() ) );
@@ -122,7 +125,7 @@ namespace ss
 				break;
 				
 			default:
-				assert( false ); // Operation not supported
+				LM_X(1,("Internal error"));
 				break;
 		}
 		
@@ -143,7 +146,9 @@ namespace ss
 		}
 		
 		// Only mode to add new tasks
-		assert( status == running);
+		if( status != running)
+			LM_X(1,("Internal error"));
+
 		
 		MemoryRequest *mr = subTask->getMemoryRequest();
 		if( mr )
@@ -157,7 +162,9 @@ namespace ss
 		std::vector<DiskOperation*>* items = subTask->getFileMangerReadItems();
 		if( items )
 		{
-		    assert( items->size() > 0);  // Otherwise return NULL
+		    if( items->size() < 0)
+				LM_X(1,("Internal error"));
+
 			
 			subTasksWaitingForReadItems.insertInMap( subTask->id , subTask );
 			
@@ -278,7 +285,10 @@ namespace ss
 			{
 				
 				WorkerSubTask *st = subTasksWaitingForProcess.extractFromMap( i->sub_tag );
-				assert( st );
+				
+				if( !st )
+					LM_X(1,("Internal error"));
+
 				delete st;
 				
 				// Get the possible error from the process execution
@@ -314,7 +324,7 @@ namespace ss
 			}
 				break;
 			default:
-				assert( false );
+				LM_X(1,("Internal error"));
 				break;
 		}
 
@@ -327,7 +337,9 @@ namespace ss
 			case DiskOperation::read:
 			{
 				WorkerSubTask * subTask = subTasksWaitingForReadItems.findInMap( operation->sub_tag );
-				assert( subTask );
+				if( !subTask )
+					LM_X(1,("Internal error"));
+
 				
 				if ( subTask->notifyReadFinish() )
 				{
@@ -367,7 +379,7 @@ namespace ss
 				switch (operation->component) {
 					case WORKER_TASK_COMPONENT_PROCESS:
 					{
-						assert( false );
+						LM_X(1,("Internal error"));
 					}
 						break;
 						
@@ -384,7 +396,7 @@ namespace ss
 					}
 						break;
 					default:
-						assert( false );
+						LM_X(1,("Internal error"));
 						break;
 				}
 				
@@ -403,7 +415,9 @@ namespace ss
 	void WorkerTask::notifyFinishMemoryRequest( MemoryRequest *request )
 	{
 		WorkerSubTask * subTask = subTasksWaitingForMemory.extractFromMap( request->sub_tag );
-		assert( subTask );
+		if( !subTask )
+			LM_X(1,("Internal error"));
+
 		
 		
 		// If no memory request go to the inputs
@@ -434,7 +448,7 @@ namespace ss
 			return;
 		}
 		
-		assert( false );
+		LM_X(1,("Internal error"));
 		
 		
 	}
@@ -533,7 +547,9 @@ namespace ss
 		{
 			// It is suppoused to be a KVHeader
 			KVHeader * header = (( KVHeader *) buffer->getData());
-			assert( header->check() );					// Assert magic number of incoming data packets
+			if( !header->check() )	// Assert magic number of incoming data packets
+				LM_X(1,("Internal error"));
+
 			buffer_size = header->info.size;
 		}
 		
@@ -542,7 +558,8 @@ namespace ss
 		if( buffer_size + bv->size > SamsonSetup::shared()->max_file_size )
 		{
 			QueueuBufferVector* bv = queueBufferVectors.extractFromMap( queue_name );
-			assert( bv );
+			if( !bv )
+				LM_X(1,("Internal error:"));
 			
 			// Process bv to generate a new file
 			flush( bv );

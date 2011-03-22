@@ -139,7 +139,8 @@ namespace ss
 		int ans = shmdt( item->data);
 		
 		// Make sure operation is correct
-		assert( ans != -1);
+		if( ans == -1)
+			LM_X(1,("Error calling shmdt"));
 		
 		// remove the item created with getSharedMemory
 		delete item;
@@ -232,8 +233,8 @@ namespace ss
 	
 	void MemoryManager::releaseSharedMemoryArea( int id )
 	{
-		assert( id >= 0);
-		assert( id < shared_memory_num_buffers);
+		if( (id < 0) || ( id > shared_memory_num_buffers) )
+			LM_X(1, ("Releaseing a wrong Shared Memory Id %d",id));
 		
 		token.retain();
 		

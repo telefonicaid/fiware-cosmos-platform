@@ -1,0 +1,12 @@
+
+
+This is the internal protocol to check that everything is Ok before submitting a commit to the SVN
+
+// At the trunk directory
+make					[ Compilation in DEBUG Mode   ]
+make install				[ Compulation in RELEASE Mode ]
+
+// At the samson_modules direcotry
+cd test
+make					[ Make the test module, install and run the test ]    
+

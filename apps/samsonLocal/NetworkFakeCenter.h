@@ -103,14 +103,16 @@ namespace ss {
 		NetworkFake* getNetwork( int worker_id )
 		{
 			std::map<int,NetworkFake*>::iterator i =  network.find( worker_id );
-			assert( i != network.end() );
+			if( i == network.end() )
+			  LM_X(1,("Error in NetworkFake::getNetwork"));
 			return i->second;
 		}
 		
 		FakeEndpoint* getEndpoint( int worker_id )
 		{
 			std::map<int,FakeEndpoint*>::iterator i =  endpoint.find( worker_id );
-			assert( i != endpoint.end() );
+			if( i == endpoint.end() )
+			  LM_X(1,("Error in NetworkFake::getEndpoint"));
 			return i->second;
 		}
 		

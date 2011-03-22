@@ -688,7 +688,7 @@ namespace ss
 				
 			default:
 				txt << "Unknwn packet received\n";
-				assert(false);
+				exit(1);
 				break;
 		}
 		

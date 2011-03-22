@@ -1965,7 +1965,6 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 	else if (nb != sizeof(header))
 	{
 		LM_RVE(("iomMsgRead: error reading header from '%s' (read %d, wanted %d bytes", ep->name.c_str(), nb, sizeof(header)));
-		assert(false);
 	}
 
 	if (header.magic != 0xFEEDC0DE)

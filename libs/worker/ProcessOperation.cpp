@@ -40,7 +40,8 @@ namespace ss {
 	void ProcessOperation::generateTXT( TXTWriter *writer )
 	{
 		// Run the operation
-		assert( operation );
+		if( !operation )
+			LM_X(1,("Internal error: No operation in ProcessOperation"));
 		
 		switch (operation->getType()) {
 				
@@ -51,7 +52,7 @@ namespace ss {
 			}
 				
 			default:
-				assert( false );
+				LM_X(1,("Internal error: Non valid process operation"));
 				break;
 		}		
 		
@@ -62,7 +63,9 @@ namespace ss {
 	{
 		
 		// Run the operation
-		assert( operation );
+		if( !operation )
+			LM_X(1,("Internal error"));
+
 		
 		switch (operation->getType()) {
 
@@ -77,7 +80,7 @@ namespace ss {
 			}
 				
 			default:
-				assert( false );
+				LM_X(1,("Internal error"));
 				break;
 		}		
 		
@@ -107,7 +110,9 @@ namespace ss {
 		int num_input_files = 0;
 		for (int i = 0 ; i < num_inputs ; i++)
 			num_input_files += operationSubTask->task->workerTask.input_queue(i).file_size();
-		assert( num_inputs == (int) inputFormats.size() );
+		if( num_inputs != (int) inputFormats.size() )
+			LM_X(1,("Internal error"));
+
 		
 		// Complete structure to prepare inputs
 		KVInputVector inputs(num_inputs);
@@ -123,7 +128,9 @@ namespace ss {
 		uint32 num_hash_groups = reduce_file[0].header->getNumHashGroups();
 		for (int i = 0 ; i < num_input_files ; i++ )
 		{
-			assert( reduce_file[i].header->getNumHashGroups() == num_hash_groups);
+			if( reduce_file[i].header->getNumHashGroups() != num_hash_groups)
+				LM_X(1,("Internal error"));
+
 		}
 		
 		
@@ -133,8 +140,12 @@ namespace ss {
 			Data *keyData	= ModulesManager::shared()->getData( inputFormats[i].keyFormat );
 			Data *valueData	= ModulesManager::shared()->getData( inputFormats[i].valueFormat );
 			
-			assert( keyData );
-			assert( valueData );
+			if( !keyData )
+				LM_X(1,("Internal error"));
+
+			if( !valueData )
+				LM_X(1,("Internal error"));
+
 			
 			inputs.keySize = keyData->getSizeFunction();		// Common to all inputs
 			inputs.valueSize[i] = valueData->getSizeFunction();	
@@ -166,11 +177,15 @@ namespace ss {
 			}
 			
 			// Make sure we have read all the key-values
-			assert( inputs.num_kvs == num_kvs );
+			if( inputs.num_kvs != num_kvs )
+				LM_X(1,("Internal error"));
+
 			
 			
 			// Prepare inputStucts
-			assert( num_inputs == 1);
+			if( num_inputs != 1)
+				LM_X(1,("Internal error"));
+
 			
 			inputStructs[0].kvs = &inputs._kv[0];
 			inputStructs[0].num_kvs = inputs.num_kvs;
@@ -201,7 +216,8 @@ namespace ss {
 		for (int i = 0 ; i < num_inputs ; i++)
 			num_input_files += operationSubTask->task->workerTask.input_queue(i).file_size();
 		
-		assert( num_inputs == (int) inputFormats.size() );
+		if( num_inputs != (int) inputFormats.size() )
+			LM_X(1,("Internal error:"));
 		
 		// If no input files, no operation is needed
 		if( num_input_files == 0)
@@ -221,7 +237,9 @@ namespace ss {
 		uint32 num_hash_groups = reduce_file[0].header->getNumHashGroups();
 		for (uint32 i = 0 ; i < (uint32)num_input_files ; i++ )
 		{
-			assert( reduce_file[i].header->getNumHashGroups() == num_hash_groups);
+			if( reduce_file[i].header->getNumHashGroups() != num_hash_groups)
+				LM_X(1,("Internal error:"));
+
 		}
 		
 		
@@ -231,8 +249,12 @@ namespace ss {
 			Data *keyData	= ModulesManager::shared()->getData( inputFormats[i].keyFormat );
 			Data *valueData	= ModulesManager::shared()->getData( inputFormats[i].valueFormat );
 			
-			assert( keyData );
-			assert( valueData );
+			if( !keyData )
+				LM_X(1,("Internal error:"));
+
+			if( !valueData )
+				LM_X(1,("Internal error:"));
+
 			
 			inputs.keySize = keyData->getSizeFunction();		// Common to all inputs
 			inputs.valueSize[i] = valueData->getSizeFunction();	
@@ -262,11 +284,15 @@ namespace ss {
 			}
 			
 			// Make sure we have read all the key-values
-			assert( inputs.num_kvs == num_kvs );
+			if( inputs.num_kvs != num_kvs )
+				LM_X(1,("Internal error:"));
+
 			
 			
 			// Prepare inputStucts
-			assert( num_inputs == 1);
+			if( num_inputs != 1)
+				LM_X(1,("Internal error:"));
+
 			
 			inputStructs[0].kvs = &inputs._kv[0];
 			inputStructs[0].num_kvs = inputs.num_kvs;
@@ -298,7 +324,9 @@ namespace ss {
 			num_input_files += operationSubTask->task->workerTask.input_queue(i).file_size();
 		if( num_input_files == 0)
 			return;	// If no input file, no process required
-		assert( num_inputs == (int) inputFormats.size() );
+		if( num_inputs != (int) inputFormats.size() )
+			LM_X(1,("Internal error:"));
+
 		
 		// Complete structure to prepare inputs
 		KVInputVector inputs(num_inputs);
@@ -313,7 +341,9 @@ namespace ss {
 		uint32 num_hash_groups = reduce_file[0].header->getNumHashGroups();
 		for (uint32 i = 0 ; i < (uint32)num_input_files ; i++ )
 		{
-			assert( reduce_file[i].header->getNumHashGroups() == num_hash_groups);
+			if( reduce_file[i].header->getNumHashGroups() != num_hash_groups)
+				LM_X(1,("Internal error:"));
+
 		}
 		
 		
@@ -323,8 +353,12 @@ namespace ss {
 			Data *keyData	= ModulesManager::shared()->getData( inputFormats[i].keyFormat );
 			Data *valueData	= ModulesManager::shared()->getData( inputFormats[i].valueFormat );
 			
-			assert( keyData );
-			assert( valueData );
+			if( !keyData )
+				LM_X(1,("Internal error:"));
+
+			if( !valueData )
+				LM_X(1,("Internal error:"));
+
 			
 			inputs.keySize = keyData->getSizeFunction();		// Common to all inputs
 			inputs.valueSize[i] = valueData->getSizeFunction();	
@@ -361,7 +395,9 @@ namespace ss {
 			}
 			
 			// Make sure we have read all the key-values
-			assert( inputs.num_kvs == num_kvs );
+			if( inputs.num_kvs != num_kvs )
+				LM_X(1,("Internal error:"));
+
 			
 			//std::cout << "Hash group with " << num_kvs << " kvs inputs ready\n";
 			

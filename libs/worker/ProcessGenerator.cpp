@@ -22,7 +22,8 @@ namespace ss {
 		ModulesManager *modulesManager = ModulesManager::shared();
 		
 		Operation * op = modulesManager->getOperation( generator );
-		assert( op );
+		if( !op )
+			LM_X(1,("Internal error: Unknown operation at ProcessGenerator"));
 		
 		
 		// Get a generator instance

@@ -87,13 +87,15 @@ namespace ss {
 		// Once in error or finish, we cannot set anything else
 		if ( _status == finish )
 		{
-			assert ( s == finish);
+			if ( s != finish)
+				LM_W(("Seting a different state for a finished job"));
 			return;
 		}
 
 		if ( _status == error )
 		{
-			assert ( s == error);
+			if ( s != error)
+				LM_W(("Seting a different state for a error-finished job"));
 			return;
 		}
 				
@@ -363,7 +365,8 @@ namespace ss {
 	void Job::sentConfirmationToDelilah( )
 	{
 		// Only error of finished jobs can send this message
-		assert( ( _status == finish) || ( _status == error ) );
+		if( ( _status != finish) && ( _status != error ) )
+			LM_X(1,("Unexpected status when sending confirmation to delilah"));
 		
 		if( fromIdentifier == -1)
 		{

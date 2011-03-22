@@ -85,7 +85,8 @@ namespace ss
 		}
 		
 		// Make sure the parsing is OK!
-		assert( offset == info.size );
+		if( offset != info.size )
+			LM_X(1,("Error adding key-values to a KVInputVector"));
 		
 		// update the  file for the next round
 		file.hg++;

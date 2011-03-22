@@ -347,7 +347,7 @@ namespace ss
 						item->unHalt();
 						break;
 					default:
-						assert(false);
+						LM_X(1,("Unexpected state running item at Engine"));
 						break;
 				}
 			}

@@ -24,7 +24,8 @@ namespace ss
 		
 		// Write the previous characters here
 		bool ans = b->write( previousBuffer, previousBufferSize );
-		assert( ans );	// There have to space for the previous buffer
+		if( !ans )
+			LM_X(1,("Error writing in a TXTFileSet"));
 		
 		while( b->getAvailableWrite() > 0 )	// While there is space to fill
 		{

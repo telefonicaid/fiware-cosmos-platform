@@ -45,8 +45,9 @@ namespace ss
 	void ControllerTaskManager::removeTask( size_t task_id )
 	{
 		ControllerTask * t = task.extractFromMap( task_id );
-		assert( t );
-		delete t;
+
+		if(t)
+			delete t;
 	}
 	
 	

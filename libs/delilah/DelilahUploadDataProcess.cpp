@@ -85,7 +85,8 @@ namespace ss
 			return; // Nothing else to do
 		}
 		
-		assert( status == uninitialized );
+		if( status != uninitialized )
+			LM_X(1,("Unexpected status running an upload data process"));
 		
 		// Initial status ( We will send the first message to controller latter )
 		status = waiting_controller_init_response;
@@ -270,7 +271,8 @@ namespace ss
 		if (msgCode == Message::UploadDataInitResponse )
 		{
 			// Only valid in this mode
-			assert( status == waiting_controller_init_response);
+			if( status != waiting_controller_init_response)
+				LM_X(1,("Unexpected status in an upload data process"));
 
 			// Get the identifier at the controller for this operation
 			load_id = packet->message->upload_data_init_response().load_id();
@@ -357,7 +359,9 @@ namespace ss
 		} else if (msgCode == Message::UploadDataFinishResponse )
 		{
 			
-			assert( status == waiting_controller_finish_response );	
+			if( status != waiting_controller_finish_response )
+				LM_X(1,("Unexpected status in an upload data process"));
+
 
 			if( packet->message->upload_data_finish_response().has_error() )
 			{

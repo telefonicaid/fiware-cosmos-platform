@@ -75,7 +75,8 @@ namespace ss {
 		
 		SimpleBuffer getSimpleBufferAtOffsetWithMaxSize(size_t offset , size_t _size)
 		{
-			assert( _size <= ( size - offset ) );
+			if( _size > ( size - offset ) )
+			  LM_X(1,("Error cheking size of a simple Buffer"));
 			return SimpleBuffer( data + offset , _size );
 		}
 		

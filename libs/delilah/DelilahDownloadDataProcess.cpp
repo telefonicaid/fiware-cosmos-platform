@@ -54,7 +54,9 @@ namespace ss {
 	void DelilahDownloadDataProcess::run()
 	{
 		
-		assert( status == uninitialized );
+		if( status != uninitialized )
+			LM_X(1,("Unexpected status in an download data process"));
+
 		status = waiting_controller_init_response;
 		
 		// Send the message to the controller
@@ -74,7 +76,8 @@ namespace ss {
 		if (msgCode == Message::DownloadDataInitResponse )
 		{
 			// Reponse from the controller
-			assert( status == waiting_controller_init_response);
+			if( status != waiting_controller_init_response)
+				LM_X(1,("Unexpected status in an download data process"));
 
 			// Copy the message received from the controller
 			download_data_init_response = new ss::network::DownloadDataInitResponse();

@@ -73,14 +73,17 @@ namespace ss
 	
 	void ModulesManager::init()
 	{
-		assert(!modulesManager);
+		if(modulesManager)
+			LM_X(1,("Error initializing Modules Manager twice"));
 		modulesManager = new ModulesManager();
 		atexit(free_ModulesManager);
 	}
 	
 	ModulesManager* ModulesManager::shared()
 	{
-		assert( modulesManager );
+		if( !modulesManager )
+			LM_X(1,("Modules Manager not initialized"));
+
 		return modulesManager;
 	}
 	

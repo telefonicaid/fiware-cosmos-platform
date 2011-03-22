@@ -624,7 +624,6 @@ namespace ss {
 			// Add queue command
 			if( commandLine.get_num_arguments() < 6 )
 			{
-				assert( false );
 				response.output = "Usage: add_file worker fileName size kvs queue";
 				response.error = true;
 				return response;
@@ -814,7 +813,6 @@ namespace ss {
 				command << info->inputs[i] << " ";
 
 			DataManagerCommandResponse ans =  _runOperation( job_id , command.str() );
-			//assert( !ans.error );	// Internal command ( no error possible )
 		}
 		
 		lock.unlock();

@@ -10,6 +10,7 @@
 #include <vector>						// std::vector
 #include <iostream>						// std::cout
 #include "Lock.h"						// au::Lock
+#include "LogMsg.h" // LM_X
 
 namespace ss {
 	
@@ -50,7 +51,8 @@ namespace ss {
 		
 		AOQueueThrigger( Queue* _queue , size_t _min_size , size_t _min_num_kvs )
 		{
-			assert(_queue);
+			if(!_queue)
+			  LM_X(1,("Error in AOQueueThrigger"));
 			queue = _queue;
 			min_size = _min_size;
 			min_num_kvs = _min_num_kvs;
@@ -98,7 +100,8 @@ namespace ss {
 		
 		void add( AOThrigger * t)
 		{
-			assert(t);
+			if(!t)
+			  LM_X(1,("Error adding a AUTrigger"));
 			thriggers.push_back( t );
 		}
 		
@@ -132,7 +135,8 @@ namespace ss {
 		
 		void finish ( bool error, std::string error_message )
 		{
-			assert( running );
+			if( !running )
+			  LM_X(1,("Not running automatic operation called finish"));
 			running = false;
 			
 			last_error = error;

@@ -11,12 +11,11 @@
 
 #pragma once
 
-#include <assert.h>
+
 #include <map>
 #include <string>
 #include <sstream>
 #include <cstdio>
-
 
 namespace au
 {
@@ -126,7 +125,11 @@ namespace au
 			
 			//Get the factory
 			std::map< std::string , Factory >::iterator iter = factories.find( type );
-			assert( iter != factories.end() );	//Make sure now it exist
+			if( iter == factories.end() )
+			{
+			  printf("Error adding elements inside the factory (FactoryCollection)\n");
+			  exit(1);
+			}
 			
 			//Add the element to be generated
 			iter->second.add(name, function);

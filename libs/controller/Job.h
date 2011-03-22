@@ -12,6 +12,7 @@
 #include "EnvironmentOperations.h"			// copyEnviroment(.)
 #include <set>								// std::set
 #include <samson/Operation.h>				// ss::Operation
+#include "LogMsg.h" //LM_X
 
 namespace ss {
 	
@@ -61,7 +62,8 @@ namespace ss {
 		
 		std::string getNextCommand()
 		{
-			assert( command_pos < (int) num_lines );
+			if( command_pos > (int) num_lines )
+			  LM_X(1,("Error in Job: Current line %d, num lines %d", (int)command_pos ,(int) num_lines));
 			return command[command_pos++];
 		}
 		

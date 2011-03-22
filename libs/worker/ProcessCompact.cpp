@@ -56,27 +56,30 @@ namespace ss
     uint32 num_hash_groups = reduce_file[0].header->getNumHashGroups();
 
     // Rigth now, compact only work with full-hash-group files
-    assert( num_hash_groups == KVFILE_NUM_HASHGROUPS);
-    
-    // Compact operation only works with 1 input
-    assert( num_inputs == 1 );
-
-    KVInfo total_info;
-    total_info.clear();
-    size_t outputBufferSize = sizeof( KVHeader ) + sizeof(KVInfo)*KVFILE_NUM_HASHGROUPS; 
-    for (uint32 i = 0 ; i < (uint32)num_input_files ; i++ )
+    if( num_hash_groups != KVFILE_NUM_HASHGROUPS)
+		LM_X(1,("Internal error: Compact operation can only process full-hash-group files"));
+	  
+	  // Compact operation only works with 1 input
+	  if( num_inputs != 1 )
+		  LM_X(1,("Internal error: Compact operation can only process one input"));
+	  
+	  KVInfo total_info;
+	  total_info.clear();
+	  size_t outputBufferSize = sizeof( KVHeader ) + sizeof(KVInfo)*KVFILE_NUM_HASHGROUPS; 
+	  for (uint32 i = 0 ; i < (uint32)num_input_files ; i++ )
       {
-	assert( reduce_file[i].header->getNumHashGroups() == num_hash_groups);
-	total_info.append( reduce_file[i].header->info );
-	
-	outputBufferSize += reduce_file[i].header->info.size;// Total size of data buffer
+		  if( reduce_file[i].header->getNumHashGroups() != num_hash_groups)
+			  LM_X(1,("Internal error: Invalid number of hash-groups in compact operation" ));
+		  total_info.append( reduce_file[i].header->info );
+		  
+		  outputBufferSize += reduce_file[i].header->info.size;// Total size of data buffer
       }
-
-    // create the output buffer with the rigth size
-    Buffer *outputBuffer = Engine::shared()->memoryManager.newBuffer( "Compact output buffer", outputBufferSize , Buffer::output );
-    
-    // Output header and KVInfo vector
-    KVHeader *outputHeader = (KVHeader*) outputBuffer->getData();
+	  
+	  // create the output buffer with the rigth size
+	  Buffer *outputBuffer = Engine::shared()->memoryManager.newBuffer( "Compact output buffer", outputBufferSize , Buffer::output );
+	  
+	  // Output header and KVInfo vector
+	  KVHeader *outputHeader = (KVHeader*) outputBuffer->getData();
     KVInfo *outputInfo = (KVInfo*) ( outputBuffer->getData() + sizeof(KVHeader) );
     char *outputData = outputBuffer->getData() + sizeof( KVHeader ) + sizeof(KVInfo) * num_hash_groups;
     

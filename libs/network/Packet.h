@@ -81,8 +81,10 @@ namespace ss {
 			
 			// Check input buffer format
 			//BufferHeader *_header = (BufferHeader*) buffer->getData();
-			//assert( _header->check() );
-			//assert( _header->compressed == 0);
+			//if( !_header->check() )
+		        // LM_X(1,("Error checking header magin number"));
+			//if( _header->compressed != 0)
+                        // LM_X(1,("Error checking header of compressed file"));
 			
 			// Create the header for the output buffer
 			//BufferHeader header;						// Header to write as header output
@@ -126,7 +128,7 @@ namespace ss {
 		{
 			// Get the buffer with the rigth size
 			LM_TODO(("Review the decompression process estimating the original size on the fly"));
-			assert( false );	
+			exit(1);
 			
 			size_t compressed_size = length;
 			

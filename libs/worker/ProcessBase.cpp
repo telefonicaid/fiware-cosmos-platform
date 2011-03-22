@@ -120,8 +120,11 @@ namespace ss {
 		size_t size = item->size;
 		
 		// Make sure everything is correct
-		assert( buffer );
-		assert( size > 0);
+		if( !buffer )
+			LM_X(1,("Internal error: Missing buffer in ProcessBase"));
+		if( size == 0)
+			LM_X(1,("Internal error: Wrong size for ProcessBase"));
+
 		
 		// Outputs structures placed at the begining of the buffer
 		OutputChannel *channel = (OutputChannel*) buffer;
@@ -148,7 +151,8 @@ namespace ss {
 				if( _channel->info.size > 0)
 				{
 					Buffer *buffer = Engine::shared()->memoryManager.newBuffer( "ProcessWriter", KVFILE_TOTAL_HEADER_SIZE + _channel->info.size , Buffer::output );
-					assert( buffer );
+					if( !buffer )
+						LM_X(1,("Internal error: Missing buffer in ProcessBase"));
 					
 					// Pointer to the header
 					KVHeader *header = (KVHeader*) buffer->getData();
@@ -175,14 +179,17 @@ namespace ss {
 						while( node_id != KV_NODE_UNASIGNED )
 						{
 							bool ans = buffer->write( (char*) node[node_id].data, node[node_id].size );
-							assert( ans );
+							if( !ans )
+								LM_X(1,("Error writing key-values into a temporal Buffer"));
 							
 							// Go to the next node
 							node_id = node[node_id].next;
 						}
 					}
 					
-					assert( buffer->getSize() == buffer->getMaxSize() );
+					if( buffer->getSize() != buffer->getMaxSize() )
+						LM_X(1,("Internal error"));
+
 					
 					// Create packet for this output
 					
@@ -237,7 +244,9 @@ namespace ss {
 			//size_t task_id = task->workerTask.task_id();
 			
 			Buffer *buffer = Engine::shared()->memoryManager.newBuffer( "ProcessTXTWriter", *size , Buffer::output );
-			assert( buffer );
+			if( !buffer )
+				LM_X(1,("Internal error"));
+
 			
 			// There is only one output queue
 			//network::Queue output_queue = task->workerTask.output( 0 );

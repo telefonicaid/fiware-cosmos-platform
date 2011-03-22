@@ -50,6 +50,7 @@ int main(int argc, const char *argv[])
 
 	if (nb != sizeof(ss::KVHeader))
 		printf("WARNING: read only %d bytes (wanted to read %ld)\n", nb, (long int) sizeof(ss::KVHeader));
+
 		
 
 	if (!header.check())
@@ -184,7 +185,8 @@ int main(int argc, const char *argv[])
 				std::cout << key->str() << " " << value->str() << std::endl;
 			}
 			
-			assert( offset = size);
+			if( offset != size)
+				LM_X(1 , ("Wrong file format"));
 			
 			free( data );
 		}

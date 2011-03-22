@@ -38,7 +38,8 @@ namespace ss {
 		
 		// Create space for the worker updates
 		num_workers = network->getNumWorkers();
-		assert( num_workers > 0);
+		if( num_workers <= 0)
+			LM_X(1,("Internal error: SamsonController starts with %d workers",num_workers));
 		
 		worker_status		= (network::WorkerStatus**) malloc( sizeof(network::WorkerStatus*) * num_workers);
 		worker_status_time	= (struct timeval *) malloc( sizeof( struct timeval ) * num_workers ); 

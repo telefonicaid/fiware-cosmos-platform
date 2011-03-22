@@ -27,8 +27,10 @@ namespace ss {
 		
 		//std::cout << "Process Writer with " << size << " bytes\n";
 		
-		assert( buffer );
-		assert( size > 0);
+		if( !buffer )
+			LM_X(1,("Internal error: No buffer in a ProcessWriter"));
+		if( size == 0)
+			LM_X(1,("Wrong size in a ProcessWriter operation"));
 		
 		// Number of outputs
 		num_outputs = workerTaskItem->num_outputs;
@@ -43,7 +45,8 @@ namespace ss {
 		// Outputs structures placed at the begining of the buffer
 		channel = (OutputChannel*) buffer;
 		
-		assert( size > sizeof(OutputChannel)* num_outputs* num_servers );
+		if( size < sizeof(OutputChannel)* num_outputs* num_servers )
+			LM_X(1,("Wrong size for a ProcessWriter operation"));
 		
 		// Buffer starts next
 		node = (NodeBuffer*) ( buffer + sizeof(OutputChannel) * num_outputs * num_servers );
@@ -104,7 +107,9 @@ namespace ss {
 		NodeBuffer *_node;
 		if(  _hgOutput->last_node == KV_NODE_UNASIGNED )
 		{
-			assert( new_node < num_nodes );
+			if( new_node >= num_nodes )
+				LM_X(1,("Internal error"));
+
 			node[new_node].init();				// Init the new node
 			_hgOutput->first_node = new_node;	// Update the HasgGroup structure to point here
 			_hgOutput->last_node = new_node;	// Update the HasgGroup structure to point here
@@ -113,7 +118,9 @@ namespace ss {
 		}
 		else
 		{
-			assert( _hgOutput->last_node < num_nodes );
+			if( _hgOutput->last_node >= num_nodes )
+				LM_X(1,("Internal error"));
+
 			_node = &node[ _hgOutput->last_node ];				// Current write node
 		}
 		
@@ -129,7 +136,9 @@ namespace ss {
 				_node->setNext( new_node );			// Set the next in my last node
 				node[new_node].init();				// Init the new node
 				_hgOutput->last_node = new_node;	// Update the HasgGroup structure to point here
-				assert( new_node < num_nodes );
+				if( new_node > num_nodes )
+					LM_X(1,("Internal error"));
+
 				_node = &node[new_node];			// Point to this one to write
 				new_node++;
 			}

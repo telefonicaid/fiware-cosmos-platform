@@ -146,7 +146,6 @@ int main(int argC, const char *argV[])
 	
 	LM_M(("samsonLocal started with memory=%s and #processors=%d", au::Format::string( ss::SamsonSetup::shared()->memory, "B").c_str() , ss::SamsonSetup::shared()->num_processes ));
 	
-	assert( workers != -1 );
 	
 	// Fake network element with N workers
 	ss::NetworkFakeCenter center(workers);		

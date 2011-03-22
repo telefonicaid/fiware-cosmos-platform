@@ -1,7 +1,6 @@
 #ifndef SAMSON_MONITOR_H
 #define SAMSON_MONITOR_H
 
-#include <assert.h>
 #include <fstream>
 #include <sstream>
 #include <string>

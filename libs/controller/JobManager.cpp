@@ -72,8 +72,7 @@ namespace ss {
 				std::string command = ControllerDataManager::getAddFileCommand(file.worker() , file.name(),  info.size() , info.kvs() , qfile.queue() );
 				DataManagerCommandResponse response = controller->data.runOperation( job->getId() , command );
 				
-				// Since this is an internally generated command, it can not have any error of format
-				assert( !response.error );
+
 			}
 			
 			for (int f = 0 ; f < confirmationMessage->remove_file_size() ; f++)
@@ -85,8 +84,6 @@ namespace ss {
 				std::string command = ControllerDataManager::getRemoveFileCommand(file.worker() , file.name(),  info.size() , info.kvs() , qfile.queue() );
 				DataManagerCommandResponse response = controller->data.runOperation( job->getId() , command );
 				
-				// Since this is an internally generated command, it can not have any error of format
-				assert( !response.error );
 			}
 			
 		}
@@ -98,12 +95,11 @@ namespace ss {
 				
 			case network::WorkerTaskConfirmation::finish:
 			{
-				//assert(task);
-				//assert(job);
 				if( task && job )
 				{
-					assert(job->isCurrentTask(task));	// we can only receive finish reports from the current task
-					
+					if(!job->isCurrentTask(task))	// we can only receive finish reports from the current task
+						LM_X(1,("Internal error"));
+								
 					task->notifyWorkerFinished( );		
 					if ( task->finish )
 						job->notifyCurrentTaskFinish(task->error, task->error_message);
@@ -113,12 +109,11 @@ namespace ss {
 				break;
 			case network::WorkerTaskConfirmation::error:
 			{
-				//assert(task);
-				//assert(job);
 				if( task && job )
 				{
-					assert(job->isCurrentTask(task));	// we can only receive finish reports from the current task
-					
+					if(!job->isCurrentTask(task))	// we can only receive finish reports from the current task
+						LM_X(1,("Internal error"));
+
 					//job->setError("Worker", confirmationMessage->error_message());
 					task->notifyWorkerFinished( );		
 					
@@ -137,8 +132,6 @@ namespace ss {
 				break;
 			case network::WorkerTaskConfirmation::complete:
 			{
-				//assert(task);
-				//assert(job);
 				if( task && job )
 				{
 				
@@ -231,7 +224,8 @@ namespace ss {
 	
 	void JobManager::_removeJob( Job *j )
 	{		
-		assert( ( j->status() == Job::error ) || ( j->status() == Job::finish ) );
+		if( ( j->status() != Job::error ) && ( j->status() != Job::finish ) )
+			LM_X(1,("Internal error"));
 		
 		// Remove all tasks associated to this job ( all of them are suppoused to be completed)
 		j->removeTasks();

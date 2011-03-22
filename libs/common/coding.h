@@ -12,7 +12,7 @@
 #include "samson.pb.h"			// network:...
 #include <string.h>			// std::string
 #include "SimpleBuffer.h"		// ss::SimpleBuffer
-#include "LogMsg.h"                     // LM_X
+#include "logMsg.h"                     // LM_X
 
 
 #define KVFILE_MAX_KV_SIZE			   64*1024*1024				// Max size for an individual key-value

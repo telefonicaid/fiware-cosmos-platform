@@ -12,7 +12,7 @@
 #include "EnvironmentOperations.h"			// copyEnviroment(.)
 #include <set>								// std::set
 #include <samson/Operation.h>				// ss::Operation
-#include "LogMsg.h" //LM_X
+#include "logMsg.h" //LM_X
 
 namespace ss {
 	

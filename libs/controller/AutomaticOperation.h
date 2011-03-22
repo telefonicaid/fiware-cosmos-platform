@@ -10,7 +10,7 @@
 #include <vector>						// std::vector
 #include <iostream>						// std::cout
 #include "Lock.h"						// au::Lock
-#include "LogMsg.h" // LM_X
+#include "logMsg.h" // LM_X
 
 namespace ss {
 	

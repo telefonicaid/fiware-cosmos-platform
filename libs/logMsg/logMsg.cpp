@@ -282,9 +282,9 @@ char* lmProgName(char* pn, int levels, bool pid)
 	if (pid == true)
 	{
 		char  pid[8];
-		strncat(pName, "_", sizeof(pName));
+		strncat(pName, "_", sizeof(pName) - 1);
 		sprintf(pid, "%d", (int) getpid());
-		strncat(pName, pid, sizeof(pName));		
+		strncat(pName, pid, sizeof(pName) - 1);		
 	}
 
 	return pName;
@@ -582,17 +582,17 @@ static char* timeStampGet(char *line)
 #define CHAR_ADD(c, l)                     \
 do                                         \
 {                                          \
-	char xin[2];                           \
+	char xin[3];                           \
 	xin[0] = c;                            \
 	xin[1] = 0;                            \
-	strncat(line, xin, sizeof(xin));       \
+	strncat(line, xin, sizeof(xin) - 1);   \
 	fi += l;                               \
 } while (0)
 
 #define STRING_ADD(s, l)                   \
 do                                         \
 {                                          \
-	strncat(line, s, lineLen);             \
+	strncat(line, s, lineLen - 1);         \
 	fi += l;                               \
 } while (0)
 
@@ -601,21 +601,21 @@ do                                         \
 {                                          \
 	char xin[20];                          \
 	snprintf(xin, sizeof(xin), "%d", i);   \
-	strncat(line, xin, lineLen);           \
+	strncat(line, xin, lineLen - 1);       \
 	fi += l;                               \
 } while (0)
 
-#define TLEV_ADD(type, tLev)                                    \
-do                                                              \
-{                                                               \
-	char xin[4];                                            \
-                                                                \
-	if ((type != 'T') && (type != 'X'))                     \
-		strncpy(xin, "   ", sizeof(xin));               \
-	else                                                    \
-		snprintf(xin, sizeof(xin), "%03d", tLev);       \
-	strncat(line, xin, lineLen);                            \
-	fi += 4;                                                \
+#define TLEV_ADD(type, tLev)                      \
+do                                                \
+{                                                 \
+	char xin[4];                                  \
+                                                  \
+	if ((type != 'T') && (type != 'X'))           \
+		strncpy(xin, "   ", sizeof(xin));         \
+	else                                          \
+		snprintf(xin, sizeof(xin), "%03d", tLev); \
+	strncat(line, xin, lineLen - 1);              \
+	fi += 4;                                      \
 } while (0)
 
 
@@ -685,7 +685,7 @@ static char* lmLineFix
 	else
 		strncpy(xin, "\n", sizeof(xin));
 
-	strncat(line, xin, lineLen);
+	strncat(line, xin, lineLen - 1);
 
 	return line;
 }
@@ -757,7 +757,7 @@ static void asciiToLeft
 	}
 
 	while (offset-- >= 0)
-		strncat(line, " ", lineLen);
+		strncat(line, " ", lineLen - 1);
     
 	for (i = 0; i < size; i++)
 	{
@@ -768,7 +768,7 @@ static void asciiToLeft
 		else
 			strncpy(tmp, ".", sizeof(tmp));
 
-		strncat(line, tmp, lineLen);
+		strncat(line, tmp, lineLen - 1);
 	}
 }
 
@@ -1002,19 +1002,19 @@ char* lmTraceGet(char* levelString)
 		{
 			char str[12];
 			snprintf(str, sizeof(str), "-%d", diss);
-			strncat(levelString, str, 80);
+			strncat(levelString, str, 80 - 1);
 		}
 		else if (!before && after)
 		{
 			char str[12];
 			snprintf(str, sizeof(str), ", %d", diss);
-			strncat(levelString, str, 80);
+			strncat(levelString, str, 80 - 1);
 		}
 		else if (!before && !after)
 		{
 			char str[12];
 			snprintf(str, sizeof(str), ", %d", diss);
-			strncat(levelString, str, 80);
+			strncat(levelString, str, 80 - 1);
 		}
 	}
 	
@@ -1078,19 +1078,19 @@ char* lmTraceGet(char* levelString, int levelStringSize, char* traceV)
 		{
 			char str[12];
 			snprintf(str, sizeof(str), "-%d", diss);
-			strncat(levelString, str, 80);
+			strncat(levelString, str, 80 - 1);
 		}
 		else if (!before && after)
 		{
 			char str[12];
 			snprintf(str, sizeof(str), ",%d", diss);
-			strncat(levelString, str, 80);
+			strncat(levelString, str, 80 - 1);
 		}
 		else if (!before && !after)
 		{
 			char str[12];
 			snprintf(str, sizeof(str), ",%d", diss);
-			strncat(levelString, str, 80);
+			strncat(levelString, str, 80 - 1);
 		}
 	}
 	
@@ -1636,7 +1636,7 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 				snprintf(line, sizeof(line), format, text);
 		}
 		if (stre != NULL)
-			strncat(line, stre, sizeof(line));
+			strncat(line, stre, sizeof(line) - 1);
 
 
 		sz = strlen(line);
@@ -1872,14 +1872,14 @@ int lmBufferPresent
 			if (bIndex + 4 <= size)
 			{
 				snprintf(tmp, sizeof(tmp),"%.8x ",*((int*) &buffer[bIndex]));
-				strncat(line, tmp, sizeof(line));
+				strncat(line, tmp, sizeof(line) - 1);
 				bIndex += 4;
 			}				
 			else if (bIndex + 1 == size)
 			{
 				snprintf(tmp, sizeof(tmp), "%.2xxxxxxx",
 						(*((int*) &buffer[bIndex]) & 0xFF000000) >> 24);
-				strncat(line, tmp, sizeof(line));
+				strncat(line, tmp, sizeof(line) - 1);
 				bIndex += 1;
 				xx=1;
 			}
@@ -1887,7 +1887,7 @@ int lmBufferPresent
 			{
 				snprintf(tmp, sizeof(tmp), "%.4xxxxx",
 						(*((int*) &buffer[bIndex]) & 0xFFFF0000) >> 16);
-				strncat(line, tmp, sizeof(line));
+				strncat(line, tmp, sizeof(line) - 1);
 				bIndex += 2;
 				xx=2;
 			}
@@ -1895,7 +1895,7 @@ int lmBufferPresent
 			{
 				snprintf(tmp, sizeof(tmp), "%.6xxx",
 						(*((int*) &buffer[bIndex]) & 0xFFFFFF00) >> 8);
-				strncat(line, tmp, sizeof(line));
+				strncat(line, tmp, sizeof(line) - 1);
 				bIndex += 3;
 				xx=3;
 			}
@@ -1907,14 +1907,14 @@ int lmBufferPresent
 			{
 				snprintf(tmp, sizeof(tmp), "%.4x ", 
 						   *((short*) &buffer[bIndex]) & 0xFFFF);
-				strncat(line, tmp, sizeof(line));
+				strncat(line, tmp, sizeof(line) - 1);
 				bIndex += 2;
 			}
 			else
 			{
 				snprintf(tmp, sizeof(tmp), "%.2xxx",
 						(*((short*) &buffer[bIndex]) & 0xFF00) >> 8);
-				strncat(line, tmp, sizeof(line));
+				strncat(line, tmp, sizeof(line) - 1);
 				bIndex += 1;
 				xx=1;
 			}
@@ -1922,7 +1922,7 @@ int lmBufferPresent
 
 		case LmfByte:
 			snprintf(tmp, sizeof(tmp), "%.2x ", buffer[bIndex] & 0xFF);
-			strncat(line, tmp, sizeof(line));
+			strncat(line, tmp, sizeof(line) - 1);
 			bIndex += 1;
 			break;
 		}
@@ -2256,9 +2256,12 @@ void lmShowLog(int logFd)
 
 	snprintf(com, sizeof(com), "echo xterm -e tail -f %s & > /tmp/xxx",
 			   fds[logFd].info);
-	system(com);
-	chmod("/tmp/xxx", 0700);
-	system("/tmp/xxx");
+	if (system(com) == 0)
+	{
+	   chmod("/tmp/xxx", 0700);
+	   if (system("/tmp/xxx") != 0)
+		  printf("error in call to 'system'\n");
+	}
 }
 
 

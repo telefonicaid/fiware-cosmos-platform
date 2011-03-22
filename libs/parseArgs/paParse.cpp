@@ -289,9 +289,9 @@ static char* paProgNameSet(char* pn, int levels, bool pid)
 	if (pid == true)
 	{
 		char  pid[8];
-		strncat(pName, "_", sizeof(pName));
+		strncat(pName, "_", sizeof(pName) - 1);
 		sprintf(pid, "%d", (int) getpid());
-		strncat(pName, pid, sizeof(pName));
+		strncat(pName, pid, sizeof(pName) - 1);
 	}
 
 	return pName;
@@ -340,8 +340,8 @@ int paParse
 		strncpy(paCommandLine, argV[1], sizeof(paCommandLine));
 		for (ix = 2; ix < argC; ix++)
 		{
-			strncat(paCommandLine, " ", sizeof(paCommandLine));
-			strncat(paCommandLine, argV[ix], sizeof(paCommandLine));
+			strncat(paCommandLine, " ", sizeof(paCommandLine) - 1);
+			strncat(paCommandLine, argV[ix], sizeof(paCommandLine) - 1);
 		}
 	}
 
@@ -464,15 +464,15 @@ int paParse
 			sprintf(paResultString, "\nEntire command line options: '%s'\n\n", paCommandLine);
 			
 			sprintf(s, "--- %s warnings ---\n", progName);
-			strncat(paResultString, s, sizeof(paResultString));
+			strncat(paResultString, s, sizeof(paResultString) - 1);
 
 			for (ix = 0; ix < paWarnings; ix++)
 			{
 				sprintf(s, "Severity % 2d: %s\n\n", paWarning[ix].severity, paWarning[ix].string);
-				strncat(paResultString, s, sizeof(paResultString));
+				strncat(paResultString, s, sizeof(paResultString) - 1);
 			}
 
-			strncat(paResultString, "\n\n", sizeof(paResultString));
+			strncat(paResultString, "\n\n", sizeof(paResultString) - 1);
 
 			if (paUsageOnAnyWarning)
 			{

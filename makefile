@@ -74,7 +74,7 @@ memory_128:
 memory_256::
 	sudo sysctl -w kernel.shmmax=268435456
 
-v_sl:
+v: debug
 	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  ./BUILD_DEBUG/apps/samsonLocal/samsonLocal  2> output_valgrind_samsonLocal
 
 coverage: debug

@@ -227,7 +227,13 @@ int main(int argC, const char *argV[])
 	
 	// Destroy the engine
 	ss::Engine::destroy();
+
 	
+    // Destroying workwers
+    for ( size_t i = 0 ; i < _workers.size() ; i++)
+        delete _workers[i];
+    _workers.clear();
+    
 	LM_M(("samsonLocal exit correctly"));
 }
 

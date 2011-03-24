@@ -97,20 +97,67 @@ namespace ss
 		
 		void add( Operation *operation )
 		{
+            Operation * previous_operation  = extractOperation( operation->getName() );
+            if ( previous_operation )
+                delete previous_operation;
+            
 			operations.insert( std::pair<std::string , Operation*>( operation->getName() , operation) );
 		}
 		
 		void add( Data* data )
 		{
+            Data *previous_data = extractData( data->getName() );
+            if ( previous_data )
+                delete previous_data;
+            
 			datas.insert( std::pair<std::string , Data*> ( data->getName() , data ) );
 		}
 
+        /*
+         Remove operations and datas
+         */
+        
+		Operation* extractOperation( std::string name )
+		{
+			std::map<std::string , Operation*>::iterator iter = operations.find(name);
+			
+			if( iter == operations.end() )
+				return NULL;
+			else
+			{
+				Operation* operation = iter->second;
+				operations.erase(iter);
+				return operation;
+			}
+			
+		}		
+        
+		Data* extractData( std::string name )
+		{
+			std::map<std::string , Data*>::iterator iter = datas.find(name);
+			
+			if( iter == datas.end() )
+				return NULL;
+			else
+			{
+				Data* data = iter->second;
+				datas.erase(iter);
+				return data;
+			}
+			
+		}		
+        
+        /*
+         Mode operation between modulues
+         */
+        
 		void moveFrom( Module *m )
 		{
 			datas.insert( m->datas.begin() ,  m->datas.end() );
 			operations.insert( m->operations.begin() , m->operations.end());
 
 			// We clear here since otherwise will be deleted twice at the destructor
+            // Note that we are not removing objects
 			m->datas.clear();
 			m->operations.clear();
 			

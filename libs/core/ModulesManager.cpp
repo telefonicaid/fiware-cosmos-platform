@@ -60,9 +60,8 @@ namespace ss
 	
 	ModulesManager::~ModulesManager()
 	{
-		
+        LM_T(LmtModuleManager,("Destroying ModulesManager"));
 	}
-
 	
 	void free_ModulesManager(void)
 	{

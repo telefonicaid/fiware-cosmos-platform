@@ -48,8 +48,12 @@ namespace ss {
 			tmp_queues.insertInMap(queuesMonitorInfo[i].queue, mb);
 		}
 
+        // Remove the rest of unused queue information
+        queues.clearMap();
+        
 		// Remove the previous queues not used any more and copy the prepared samples
-		queues.clearAndCopyFromMap( tmp_queues );
+        queues.insert( tmp_queues.begin() , tmp_queues.end() );
+        tmp_queues.clear(); // Note here we are not deleting internal elements
 		
 	}
 	

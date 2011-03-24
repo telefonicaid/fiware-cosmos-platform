@@ -15,7 +15,7 @@ namespace au {
 	 */
 	
 	template <class V>
-	class set: public std::list<V*>
+	class set: public std::set<V*>
 	{
 	public:
 		
@@ -29,6 +29,7 @@ namespace au {
 			}
 			std::set<V*>::clear();
 		}
+        
 	};	
 	
 	
@@ -181,15 +182,6 @@ namespace au {
 			}
 			std::map<K, V* >::clear();
 		}
-
-		// This operation produce leaks if keys are already present in destination
-		
-		void clearAndCopyFromMap( std::map<K,V*>& _map )
-		{
-			std::map<K,V*>::clear();
-			insert( _map.begin() , _map.end() );
-		}
-		
 		
 	};
 

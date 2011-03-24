@@ -4,8 +4,8 @@ SUGGESTION:
 Use boost::FileSystem library
 
 TODO:
-
-* Engine status using work status
+* Check scandir
+* Engine status using work status message
 * Disk statictics
 
 * Inform about the memory and process used when running samsonLocal

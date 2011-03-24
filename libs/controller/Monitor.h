@@ -16,8 +16,6 @@ namespace ss {
 	class SamsonController;
 	class Queue;
 	
-	
-	
 	class Monitor
 	{
 		

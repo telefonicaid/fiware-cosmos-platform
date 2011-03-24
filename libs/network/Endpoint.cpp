@@ -77,7 +77,7 @@ Endpoint::Endpoint(void)
 */
 Endpoint::Endpoint(Type type, unsigned short port)
 {
-	LM_M(("new Endpoint: %p type %d and port (%d)", this, (int) type, port));
+	LM_T(LmtEndpoint,("new Endpoint: %p type %d and port (%d)", this, (int) type, port));
 	init();
 
 	this->type             = type;
@@ -92,7 +92,7 @@ Endpoint::Endpoint(Type type, unsigned short port)
 */
 Endpoint::Endpoint(Type type, const char* alias, int nada)
 {
-	LM_M(("new Endpoint: %p type %d and alias (%s)", this, (int) type, alias));
+	LM_T(LmtEndpoint,("new Endpoint: %p type %d and alias (%s)", this, (int) type, alias));
 	nada = 0;
 	init();
 
@@ -110,7 +110,7 @@ Endpoint::Endpoint(Type type, std::string ipAndPort)
 {
 	char* port = strchr((char*) ipAndPort.c_str(), ':');
 
-	LM_M(("new Endpoint: %p type %d and ipAndPort (%s)", this, (int) type, ipAndPort.c_str()));
+	LM_T(LmtEndpoint,("new Endpoint: %p type %d and ipAndPort (%s)", this, (int) type, ipAndPort.c_str()));
 	init();
 
 	if (port == NULL)
@@ -135,7 +135,7 @@ Endpoint::Endpoint(Type type, std::string ipAndPort)
 */
 Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short port, int rFd, int wFd)
 {
-	LM_M(("new Endpoint: %p type %d, name (%s), port (%d), rFd (%d), wFd (%d)", this, (int) type, name.c_str(), port, rFd, wFd));
+	LM_T(LmtEndpoint,("new Endpoint: %p type %d, name (%s), port (%d), rFd (%d), wFd (%d)", this, (int) type, name.c_str(), port, rFd, wFd));
 	init();
 
 	this->type             = type;
@@ -156,7 +156,7 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 */
 Endpoint::~Endpoint()
 {
-	LM_M(("new Endpoint: destroying endpoint %p (name '%s')", this, name.c_str()));
+	LM_T(LmtEndpoint,("new Endpoint: destroying endpoint %p (name '%s')", this, name.c_str()));
 	if (ip != NULL)
 	{
 		free(ip);

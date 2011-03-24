@@ -20,6 +20,15 @@ SET (HEADERS
 	samson/Log.h
 )
 
+SET (SOURCES
+    module.cpp
+)
+
+# Library declaration
+# -----------------------------------------------------------------
+ADD_LIBRARY(samsonModule STATIC ${SOURCES} ${HEADERS} )
+
+
 # Instalation header files
 # -----------------------------------------------------------------
 INSTALL(FILES ${HEADERS} DESTINATION include/samson)

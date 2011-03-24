@@ -526,15 +526,11 @@ namespace ss {
 			
 			system->push( "memory"			, used_memory );
 			system->push( "total_memory"	, total_memory );
-			
 			system->push( "cores"			, used_cores );
 			system->push( "total_cores"		, total_cores );
-			
 			system->push( "TotalTxTSize"	, data.get_info_txt().size );
 			system->push( "TotalKvs"		, data.get_info_kvs().kvs );
-			
 			system->push( "TotalSize"		, data.get_info_kvs().size + data.get_info_txt().size );
-
 			system->push( "UploadSize"		, upload_size );
 			
 		}

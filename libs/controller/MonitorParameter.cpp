@@ -44,10 +44,7 @@ namespace ss
 	
 	MonitorBlock::~MonitorBlock()
 	{
-		for (au::map< std::string , MonitorParameter>::iterator p =  parameters.begin() ; p != parameters.end() ; p++)
-			delete p->second;
-		parameters.clear();
-		
+		parameters.clearMap();
 	}
 	
 	void MonitorBlock::addMainParameter( std::string name , std::string value)

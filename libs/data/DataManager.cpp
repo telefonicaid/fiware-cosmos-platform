@@ -69,11 +69,12 @@ namespace ss {
 						// Create the task item to run
 						DataManagerItem *item = task.findInMap( task_id );
 						if( !item )
-						{
 							task.insertInMap( task_id  , new DataManagerItem( task_id ) );
-						}
+                        else
+                            LM_W(("Global job with id %u started twice. Skipping...",task_id));
 					}
 						break;
+                        
 					case data::Command_Action_Finish:
 					{
 						// Extract the item with all the commands
@@ -87,11 +88,16 @@ namespace ss {
 
 					}
 						break;
+                        
 					case data::Command_Action_Cancel:
 					{
 						// Extract the item but no run any of them
 						DataManagerItem *item = task.extractFromMap( task_id );
-						delete item;
+                        if( item )
+                            delete item;
+                        else
+                            LM_W(("Global job with id %u canceles but never started. Skipping...",task_id));
+                            
 
 					}
 						break;
@@ -110,10 +116,8 @@ namespace ss {
 							item->addCommand( command );	// Record to undo commands if necessary
 						}
 						else 
-						{
-							std::cout << "Warning: Ignored command since task is not iniciated " << c.command() << "\n";
-							// Ignore command since it has not been iniciated before...
-						}
+                            LM_W(("Ignored command '%s' since  global job %u is started.",  c.command().c_str() , task_id));
+
 						
 					}
 						break;
@@ -127,6 +131,10 @@ namespace ss {
 			}
 		}
 		
+        
+        // Clear the open operations
+        task.clearMap();
+        
 		// Close the log file as "read mode"
 		read_file.close();
 		

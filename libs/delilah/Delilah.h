@@ -64,7 +64,8 @@ namespace ss {
 	public:
 		
 		Delilah( NetworkInterface *_network ,  bool automatic_update );
-		
+		~Delilah();
+        
 		void initController(std::string controller);
 		void quit();
 
@@ -109,10 +110,12 @@ namespace ss {
 		
 		// Get info about the list of loads
 		std::string getListOfLoads();
-		
+        std::string getListOfComponents();
+        
 	protected:
 		
 		void clearComponents();
+        void clearAllComponents();  // Force all of them to be removed
 		
 	private:		
 		

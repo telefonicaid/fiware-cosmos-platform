@@ -119,6 +119,9 @@ namespace ss {
 	{
 		if( msgCode == Message::CommandResponse )
 		{
+            if( packet->message->command_response().has_finish_command() && packet->message->command_response().finish_command() )
+                component_finished = true;
+            
 			if( packet->message->command_response().has_finish_job_id() || packet->message->command_response().has_error_job_id() )
 				component_finished = true;	
 		}

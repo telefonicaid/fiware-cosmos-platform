@@ -77,5 +77,8 @@ memory_256::
 v: debug
 	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  ./BUILD_DEBUG/apps/samsonLocal/samsonLocal  2> output_valgrind_samsonLocal
 
+sl: debug
+	./BUILD_DEBUG/apps/samsonLocal/samsonLocal
+
 coverage: debug
 	cd BUILD_DEBUG ; ../scripts/samsonCoverage

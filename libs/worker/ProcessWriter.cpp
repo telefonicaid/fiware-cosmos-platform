@@ -174,12 +174,12 @@ namespace ss {
 		// Get the assignated shared memory region
 		item = Engine::shared()->memoryManager.getSharedMemory( workerTaskItem->shm_id );
 		
-		// Size if the firt thing in the buffer
+		// Size if the firt position in the buffer 
 		size = (size_t*) item->data;
 		
 		// Init the data buffer used here	
 		data = item->data + sizeof(size_t);
-		max_size = item->size;
+		max_size = item->size - sizeof(size_t); // This is the available space int he buffer
 
 		// Init the size of the output
 		*size = 0;

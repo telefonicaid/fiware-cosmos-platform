@@ -328,6 +328,7 @@ namespace ss {
 					
 					Packet *p2 = new Packet();
 					network::CommandResponse *response = p2->message->mutable_command_response();
+                    response->set_finish_command(true);
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 
@@ -348,6 +349,7 @@ namespace ss {
 					
 					Packet *p2 = new Packet();
 					network::CommandResponse *response = p2->message->mutable_command_response();
+                    response->set_finish_command(true);
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					data.fill( response->mutable_automatic_operation_list() , command );
@@ -363,6 +365,7 @@ namespace ss {
 					
 					Packet *p2 = new Packet();
 					network::CommandResponse *response = p2->message->mutable_command_response();
+                    response->set_finish_command(true);
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					ModulesManager::shared()->fill( response->mutable_data_list() , command );
@@ -377,6 +380,7 @@ namespace ss {
 					
 					Packet *p2 = new Packet();
 					network::CommandResponse *response = p2->message->mutable_command_response();
+                    response->set_finish_command(true);
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					ModulesManager::shared()->fill( response->mutable_operation_list() , command );
@@ -391,6 +395,7 @@ namespace ss {
 					
 					Packet *p2 = new Packet();
 					network::CommandResponse *response = p2->message->mutable_command_response();
+                    response->set_finish_command(true);
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					jobManager.fill( response->mutable_job_list() , command );
@@ -410,13 +415,14 @@ namespace ss {
 						jobManager.kill( job_id );
 						
 						// Send a message to delilah to confirm this operation ?
-						/*
+						
 						Packet *p2 = new Packet();
-						network::CommandResponse *response = p2->message.mutable_command_response();;
+						network::CommandResponse *response = p2->message->mutable_command_response();;
 						response->set_command( command );
-						p2->message.set_delilah_id( packet->message->delilah_id() );
+                        response->set_finish_command(true);
+						p2->message->set_delilah_id( packet->message->delilah_id() );
 						network->send(this, fromId, Message::CommandResponse, p2);
-						 */
+						 
 
 					}
 					
@@ -429,6 +435,7 @@ namespace ss {
 					
 					Packet *p2 = new Packet();
 					network::CommandResponse *response = p2->message->mutable_command_response();
+                    response->set_finish_command(true);
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					
@@ -453,7 +460,16 @@ namespace ss {
 				{
 					// Clear finish or error jobs
 					jobManager.removeAllFinishJobs();
-					return;
+
+					
+                    Packet *p2 = new Packet();
+                    network::CommandResponse *response = p2->message->mutable_command_response();;
+                    response->set_command( command );
+                    response->set_finish_command(true);
+                    p2->message->set_delilah_id( packet->message->delilah_id() );
+                    network->send(this, fromId, Message::CommandResponse, p2);
+                    
+                    return;
 				}
 				
 				
@@ -469,8 +485,14 @@ namespace ss {
 						network::WorkerTask* wt=  p->message->mutable_worker_task();
 						wt->set_operation( "reload_modules" );	// Spetial operation to reload modules
 						network->send(this,  network->workerGetIdentifier(i) , Message::WorkerTask,  p);
-						
 					}
+
+                    Packet *p2 = new Packet();
+                    network::CommandResponse *response = p2->message->mutable_command_response();;
+                    response->set_command( command );
+                    response->set_finish_command(true);
+                    p2->message->set_delilah_id( packet->message->delilah_id() );
+                    network->send(this, fromId, Message::CommandResponse, p2);
 					
 					
 					return;

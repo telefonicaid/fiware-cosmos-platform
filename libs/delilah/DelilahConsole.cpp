@@ -429,8 +429,12 @@ namespace ss
 			return 0;
 		}
 		
-		
-	
+		if ( mainCommand == "clear" )
+		{
+			// Clear completed upload and download process
+			clearComponents();
+			return 0;
+		}
 		
 		if ( mainCommand == "download")
 		{
@@ -463,6 +467,17 @@ namespace ss
 			
 		}
 
+		if ( mainCommand == "ps" )
+		{
+			std::ostringstream output;
+			output << getListOfComponents();
+			writeOnConsole(output.str());
+			
+			return 0;
+			
+		}
+        
+        
 		if (mainCommand == "netstate")
 		{
 			std::string s;

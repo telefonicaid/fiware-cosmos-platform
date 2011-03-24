@@ -170,13 +170,13 @@ namespace ss {
 		
 		switch (type) {
 			case write:
-				o << "[W]";
+				o << "W";
 				break;
 			case read:
-				o << "[R]";
+				o << "R";
 				break;
 			case remove:
-				o << "[X]";
+				o << "X";
 				break;
 		}
 		
@@ -221,18 +221,20 @@ namespace ss {
 				setError("Error opening file");
 			else
 			{
-				
-				if( fwrite(buffer->getData(), size, 1 , file) == 1 )
-				{
-					fflush(file);
-					
-					gettimeofday(&stop, NULL);
-					operation_time = DiskStatistics::timevaldiff( &start , &stop);
-				}
-				else
-				{
-					setError("Error writing data to the file");
-				}
+				if( size > 0 )
+                {
+                    if( fwrite(buffer->getData(), size, 1 , file) == 1 )
+                    {
+                        fflush(file);
+                        gettimeofday(&stop, NULL);
+                        operation_time = DiskStatistics::timevaldiff( &start , &stop);
+                    }
+                    else
+                        setError("Error writing data to the file");
+                }
+                else
+                    operation_time = 0;
+
 			}
 			
 			fclose(file);
@@ -258,17 +260,19 @@ namespace ss {
 					setError("Error in fseek operation");
 				else
 				{
-					if ( fread(read_buffer, size, 1, file) == 1 )
-					{
-						gettimeofday(&stop, NULL);
-						LM_TODO(("Fix statistics using Engine"));
-						operation_time = DiskStatistics::timevaldiff( &start , &stop);
-					}
-					else
-					{
-						if( size != 0 )	// If size is 0, fread returns 0 and it is correct
-							setError("Error while reading data from file");
-					}
+                    if(size > 0 )
+                    {
+                        if ( fread(read_buffer, size, 1, file) == 1 )
+                        {
+                            gettimeofday(&stop, NULL);
+                            LM_TODO(("Fix statistics using Engine"));
+                            operation_time = DiskStatistics::timevaldiff( &start , &stop);
+                        }
+                        else
+                            setError("Error while reading data from file");
+                    }
+                    else
+                        operation_time = 0;
 				}
 				
 				fclose(file);

@@ -48,6 +48,11 @@ Delilah::Delilah( NetworkInterface* _network , bool automatic_update )
 	
 }
 		
+    
+    Delilah::~Delilah()
+    {
+        clearAllComponents();
+    }
 
 /* ****************************************************************************
 *
@@ -168,7 +173,28 @@ void Delilah::notificationSent(size_t id, bool success)
 			 
 		token.release();
 	}
+
+	void Delilah::clearAllComponents()
+	{
+        
+		std::vector<size_t> components_to_remove;
+		
+		token.retain();
+		
+		for ( au::map<size_t , DelilahComponent>::iterator c =  components.begin() ;  c != components.end() ; c++)
+				components_to_remove.push_back( c->first );
+        
+		for (size_t i = 0 ; i < components_to_remove.size() ; i++)
+		{
+			DelilahComponent *component = components.extractFromMap( components_to_remove[i] );
+			if( component )
+				delete component;
+		}
+        
+		token.release();
+	}
 	
+    
 
 	std::string Delilah::getListOfLoads()
 	{
@@ -196,6 +222,29 @@ void Delilah::notificationSent(size_t id, bool success)
 		return output.str();
 	}
 	
+    std::string Delilah::getListOfComponents()
+    {
+		std::stringstream output;
+		bool present = false;
+		output << "-----------------------------------------------------------------\n";
+		output << "List of delilah processes....\n";
+		output << "-----------------------------------------------------------------\n";
+		output << "\n";
+		std::map<size_t,DelilahComponent*>::iterator iter;
+		for (iter = components.begin() ; iter != components.end() ; iter++)
+		{
+            output << iter->second->getStatus() << "\n";
+            present = true;
+		}
+		
+		if( !present )
+			output << "\tNo processes here.\n";
+		output << "\n";
+		output << "-----------------------------------------------------------------\n";
+		
+		return output.str();    
+    }
+    
 	size_t Delilah::sendCommand(  std::string command )
 	{
 		

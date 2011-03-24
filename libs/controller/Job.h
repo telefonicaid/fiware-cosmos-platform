@@ -141,7 +141,7 @@ namespace ss {
 		// Information about current running task
 		ControllerTask *currenTask;
 		
-		std::list<JobItem> items;		// Stack of items that we are running
+		std::list<JobItem> items;           // Stack of items that we are running
 		
 		// List of all tasks ( all of them have to be completed before considering the job completed)
 		std::set<size_t> all_tasks;

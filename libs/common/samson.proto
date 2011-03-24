@@ -261,6 +261,9 @@ message CommandResponse
 	optional string error_message = 10;   	    // An error message to show on screen
 	optional int32 ellapsed_seconds = 15;	    // Ellapsed time of this process
 
+	// Flag to indicate that this command is finished at the controller side ( note simple commands like ls )
+	optional bool finish_command = 16;
+
 	// Information to the user about the status of the controller
 
 	optional JobList       job_list			         = 100;

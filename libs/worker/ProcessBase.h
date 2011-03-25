@@ -17,7 +17,8 @@
 #include "samson/OperationController.h"	// ss::OperationController
 #include "Engine.h"			 // ss::Engine
 
-#define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER	1
+#define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER          1
+#define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH	2
 
 
 namespace ss
@@ -52,8 +53,10 @@ namespace ss
 		int num_outputs;						// Number of outputs
 		int num_servers;						// Number of workers in the cluster
 
-		size_t task_id;
-		
+		size_t task_id;                         
+        int worker;                             // Information about the my worker id
+		int hg_set;                             // Inormation about the hash-group of this process
+        
 		network::WorkerTask *workerTask;		// Message received from the controller
 		WorkerTaskManager *workerTaskManager;	// Pointer to the task manager
 		NetworkInterface *network;
@@ -99,16 +102,19 @@ namespace ss
 		
 		
 		// Flush the buffer ( front process ) in key-value and txt mode
-		int flushBuffer( );
-		int flushKVBuffer( );
-		int flushTXTBuffer( );
+		int flushBuffer( bool finish );
+		int flushKVBuffer( bool finish );
+		int flushTXTBuffer( bool finish );
 		
 		// Function executed at this process side when a code is sent from the background process
 		int runCode( int c )
 		{
 			switch (c) {
 				case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:
-					return flushBuffer();	// Flush the generated buffer with new key-values
+					return flushBuffer(false);	// Flush the generated buffer with new key-values
+					break;
+				case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH:
+					return flushBuffer(true);	// Flush the generated buffer with new key-values
 					break;
 				default:
 					error.set("System error: Unknown code in the isolated process communication");

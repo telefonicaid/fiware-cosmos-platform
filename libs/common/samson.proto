@@ -282,9 +282,12 @@ message CommandResponse
 //
 message WorkerDataExchange
 {
-	required int64 task_id  = 1;	// Identifier of the controller task
+	required int64 task_id	 = 1;	// Identifier of the controller task
 	required Queue queue     = 2;  	// Name of the queue where we store information
-	optional bool txt = 3;	       	// Flag to indicate that this is a txt buffer, so go to disk directly whiout buffering or merging
+	required bool txt 	 = 3;	// Flag to indicate that this is a txt buffer, so go to disk directly whiout buffering or merging
+	required int32 worker	 = 4;	// Identifier of the worker that generated this buffer
+	required int32 hg_set	 = 5;	// identifier of the hash-group set
+	required bool finish	 = 6;	// Identifier if this is the last buffer from this hash-group
 }
 
 // ////////////////////////////////////////////////////////////////////////////

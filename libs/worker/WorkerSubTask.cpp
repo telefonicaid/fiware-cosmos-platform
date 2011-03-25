@@ -161,7 +161,9 @@ namespace ss
 		int hg = 1;												// Evaluating current hash group	
 		int	item_hg_begin = 0;									// Starting at hash-group
 		size_t total_size = reduceInformation->size_of_hg[0];	// Total size for this operation
-		
+
+		int hg_set = 0 ;                                        // Counter of the hash-group
+        
 		while( hg < KVFILE_NUM_HASHGROUPS )
 		{
 			size_t current_hg_size = reduceInformation->size_of_hg[hg];
@@ -176,7 +178,11 @@ namespace ss
 			{
 				
 				if( total_size > 0 )
-					task->addSubTask( new OperationSubTask( task , item_hg_begin , hg  ) );
+                {
+                    OperationSubTask * tmp = new OperationSubTask( task , item_hg_begin , hg  );
+                    tmp->hg_set = hg_set++;
+					task->addSubTask( tmp  );
+                }
 				
 				
 				// Ready for the next item
@@ -189,8 +195,9 @@ namespace ss
 			hg++;
 		}
 		
-		
-		task->addSubTask( new OperationSubTask( task ,item_hg_begin , KVFILE_NUM_HASHGROUPS ) );
+        OperationSubTask * tmp = new OperationSubTask( task ,item_hg_begin , KVFILE_NUM_HASHGROUPS );
+        tmp->hg_set = hg_set++;
+		task->addSubTask( tmp );
 		
 		// No real process for this sub-task
 		return NULL;
@@ -290,7 +297,9 @@ namespace ss
 	// Function to get the ProcessManagerItem to run
 	ProcessItem * OperationSubTask::_getProcessItem()
 	{
-		return new ProcessOperation( this );
+		ProcessOperation * item = new ProcessOperation( this );
+        item->hg_set = hg_set;
+        return item;
 	}
 	
 	

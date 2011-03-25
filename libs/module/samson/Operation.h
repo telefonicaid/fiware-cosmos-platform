@@ -79,11 +79,12 @@ namespace ss {
 	public:
 		typedef enum  
 		{ 
-			parser,
+			generator,
 			map,
 			reduce,
-			generator,
+			parser,
 			parserOut,
+			parserOutReduce,
 			script,
 			system,		// Spetial operation of the system
 			unknown
@@ -209,14 +210,15 @@ namespace ss {
 		std::string getTypeName()
 		{
 			switch (getType()) {
-				case parser:		return "parser";	break;
-				case parserOut:		return "parserOut"; break;
-				case map:			return "map";		break;
-				case reduce:		return "reduce";	break;
-				case generator:		return "generator"; break;
-				case script:		return "script";	break;
-				case system:		return "system";	break;
-				case unknown:		return "unkown";	break;
+				case parser:            return "parser";	break;
+				case parserOut:         return "parserOut"; break;
+				case parserOutReduce:	return "parserReduce"; break;
+				case map:               return "map";		break;
+				case reduce:            return "reduce";	break;
+				case generator:         return "generator"; break;
+				case script:            return "script";	break;
+				case system:            return "system";	break;
+				case unknown:           return "unkown";	break;
 			}
 			return "?";
 		}
@@ -351,7 +353,7 @@ namespace ss {
 	{
 	public:
 		/**
-		 Main function to overload by the map
+		 Main function to overload by the operation
 		 */
 		virtual void run(KVSetStruct* inputs , KVWriter *writer )=0;
 		
@@ -372,12 +374,33 @@ namespace ss {
 	{
 	public:
 		/**
-		 Main function to overload by the map
+		 Main function to overload by the operation
 		 */
 		virtual void run(KVSetStruct* inputs , TXTWriter *writer )=0;
 
 	};
+
+	/**
+	 
+	 \class ParserOutReduce
+	 
+	 A ParserOut consist in generating line-based txt files from KVs
+	 This class should be subclasses to create custom "parserOut".
+	 Operation is like a map but emitting txt instead of key-values
+	 
+	 */	
 	
+	class ParserOutReduce : public OperationInstance
+	{
+	public:
+		/**
+		 Main function to overload by the operation
+		 */
+		virtual void run(KVSetStruct* inputs , TXTWriter *writer )=0;
+        
+	};
+	
+    
 	
 	/**
 	 

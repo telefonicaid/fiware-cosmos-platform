@@ -66,7 +66,7 @@ namespace ss {
 	}
 	
 	
-	void WorkerTaskManager::addBuffer( size_t task_id , network::Queue queue , Buffer* buffer , bool txt  )
+	void WorkerTaskManager::addBuffer( size_t task_id , network::WorkerDataExchange& workerDataExchange , Buffer* buffer  )
 	{
 		// Create the task
 		WorkerTask *t = task.findInMap( task_id );
@@ -74,7 +74,7 @@ namespace ss {
 			t = new WorkerTask( this );
 
 		// Add the buffer to the task item
-		t->addBuffer( queue , buffer , txt );
+		t->addBuffer( workerDataExchange , buffer );
 		
 	}
 	

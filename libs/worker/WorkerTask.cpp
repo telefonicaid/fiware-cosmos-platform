@@ -99,7 +99,7 @@ namespace ss
 			{
 				// An item per file
 				if( workerTask.input_queue_size() != 1)
-					LM_X(1,("Internal error: Trying to parse multple inputs in one operation"));
+					LM_X(1,("Internal error: Trying to parse multiple inputs in one operation"));
 				
 				for (size_t i = 0 ; i < (size_t) workerTask.input_queue(0).file_size() ; i++)
 					addSubTask( new ParserSubTask( this, workerTask.input_queue(0).file(i).name() ) );
@@ -108,6 +108,7 @@ namespace ss
 				
 			case Operation::map :
 			case Operation::parserOut :
+			case Operation::parserOutReduce :
 			case Operation::reduce :
 			{
 				OrganizerSubTask * tmp = new OrganizerSubTask( this );
@@ -162,9 +163,6 @@ namespace ss
 		std::vector<DiskOperation*>* items = subTask->getFileMangerReadItems();
 		if( items )
 		{
-		    if( items->size() < 0)
-				LM_X(1,("Internal error"));
-
 			
 			subTasksWaitingForReadItems.insertInMap( subTask->id , subTask );
 			
@@ -528,8 +526,14 @@ namespace ss
 	
 #pragma mark Buffers processing
 	
-	void WorkerTask::addBuffer( network::Queue queue , Buffer *buffer ,bool txt )
+	void WorkerTask::addBuffer( network::WorkerDataExchange& workerDataExchange , Buffer *buffer )
 	{
+        
+        //LM_M(("Received a buffer from worker %d hash-set %d (%s)",  workerDataExchange.worker() , workerDataExchange.hg_set() , workerDataExchange.finish()?"finished":"not finished" ));
+        
+        network::Queue queue = workerDataExchange.queue();
+        bool txt = workerDataExchange.txt();
+        
 		std::string queue_name = queue.name();
 		QueueuBufferVector* bv = queueBufferVectors.findInMap( queue_name );
 		
@@ -552,32 +556,27 @@ namespace ss
 
 			buffer_size = header->info.size;
 		}
+        
+		// Add the buffer to the queue vector
+		bv->addBuffer( workerDataExchange, buffer );
+        
+		// Check of there is enougth data to produce a new file
+        QueueuBufferVector* new_bv = bv->getQueueuBufferVectorToWrite();
+        
+        // Schedule this new buffer vector to be writted to disk
+        if( new_bv )
+			flush( new_bv );
 		
-		// If the new buffer will exceeed max file size, then create a new one
-		
-		if( buffer_size + bv->size > SamsonSetup::shared()->max_file_size )
-		{
-			QueueuBufferVector* bv = queueBufferVectors.extractFromMap( queue_name );
-			if( !bv )
-				LM_X(1,("Internal error:"));
-			
-			// Process bv to generate a new file
-			flush( bv );
-			
-			// Create a new one to store the new one
-			bv = new QueueuBufferVector( queue , txt );
-			queueBufferVectors.insertInMap( queue_name , bv  );
-		}
-		
-		// Add the buffer properly
-		bv->addBuffer( buffer );
 	}
 	
 	void WorkerTask::flush( QueueuBufferVector *bv )
 	{
 		DataBufferProcessItem* tmp = new DataBufferProcessItem( bv );
-		tmp->tag = task_id;											// Tag is used with the number of the task
-		tmp->component = WORKER_TASK_COMPONENT_DATA_BUFFER_PROCESS;	// Component is used to route the notification at the TaskManager
+        // Tag is used with the number of the task
+		tmp->tag = task_id;		
+        // Component is used to route the notification at the TaskManager
+		tmp->component = WORKER_TASK_COMPONENT_DATA_BUFFER_PROCESS;	
+        // Delegate is the process manager so this operation can be killed without any problem
 		tmp->setProcessManagerDelegate(taskManager);
 		processWriteItems.insert( tmp );
 		

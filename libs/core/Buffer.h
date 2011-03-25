@@ -37,7 +37,6 @@ namespace ss {
 		
 		char * _data;			// Buffer of data
 		size_t _max_size;		// Maximum size of this buffer
-		
 		std::string _name;		// Internal name for debugging
 		
 		/**
@@ -142,6 +141,12 @@ namespace ss {
 		// Get the type to be used in the MemoryManager
 		BufferType getType();
 
+    public:
+        
+        int worker;     // Identifier of the worker
+        int hg_set;     // Identifier of ther hash_group-set
+        bool finish;    // Flag ot the finish hash-group-set
+        
 	};
 
 }

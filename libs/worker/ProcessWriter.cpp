@@ -93,7 +93,7 @@ namespace ss {
 		if( miniBufferSize >= availableSpace )
 		{
 			// Process the output buffer and clear to continue
-			flushBuffer();
+			flushBuffer(false);
 			clear();
 		}
 		
@@ -145,10 +145,13 @@ namespace ss {
 		}
 	}
 	
-	void ProcessWriter::flushBuffer()
+	void ProcessWriter::flushBuffer(bool finish)
 	{
 		// Send code to be understoo
-		workerTaskItem->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER );
+        if ( finish ) 
+            workerTaskItem->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH );
+        else
+            workerTaskItem->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER );
 		
 		// Clear the buffer
 		clear();
@@ -185,11 +188,15 @@ namespace ss {
 		*size = 0;
 	}
 	
-	void ProcessTXTWriter::flushBuffer()
+	void ProcessTXTWriter::flushBuffer(bool finish)
 	{
 		// Send code to be understoo
-		workerTaskItem->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER );
+        if ( finish ) 
+            workerTaskItem->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH );
+        else
+            workerTaskItem->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER );
 		
+        
 		// Clear the buffer
 		*size = 0;
 	}
@@ -198,7 +205,7 @@ namespace ss {
 	{
 		
 		if( *size + _size  > max_size )
-			flushBuffer();
+			flushBuffer(false);
 		
 		memcpy(data+ (*size), _data, _size);
 		*size += _size;

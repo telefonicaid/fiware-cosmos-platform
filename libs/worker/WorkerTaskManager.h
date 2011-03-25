@@ -41,7 +41,7 @@ namespace ss {
 		void killTask( const network::WorkerTaskKill &task_kill );
 		
 		// Add a buffer from other workers ( associated to a particular task and output queue)
-		void addBuffer( size_t task_id , network::Queue , Buffer* buffer , bool txt  );
+		void addBuffer( size_t task_id , network::WorkerDataExchange& workerDataExchange , Buffer* buffer );
 		
 		// Add a file directly to a task
 		void addFile( size_t task_id , network::QueueFile &qf , Buffer *buffer);

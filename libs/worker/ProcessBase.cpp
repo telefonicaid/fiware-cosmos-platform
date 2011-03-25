@@ -38,7 +38,9 @@ namespace ss {
 		item = NULL; // Initialized at init function
 		
 		workerTaskManager = task->taskManager;
-									
+        worker = task->taskManager->worker->_myWorkerId;    // Get the worker id information
+        hg_set = 0; // Default hg_set
+        
 	}
 	
 	ProcessBase::~ProcessBase()
@@ -66,7 +68,7 @@ namespace ss {
 		// Generate the key-values
 		generateTXT( writer );
 		
-		writer->flushBuffer();
+		writer->flushBuffer(true);
 		delete writer;
 	}
 	
@@ -77,20 +79,20 @@ namespace ss {
 		// Generate the key-values
 		generateKeyValues( writer );
 		
-		writer->flushBuffer();
+		writer->flushBuffer(true);
 		
 		delete writer;
 		
 	}
 
-	int ProcessBase::flushBuffer( )
+	int ProcessBase::flushBuffer( bool finish )
 	{
 		switch (type) {
 			case key_value:
-				return flushKVBuffer();
+				return flushKVBuffer(finish);
 				break;
 			case txt:
-				return flushTXTBuffer();
+				return flushTXTBuffer(finish);
 				break;
 		}
 		
@@ -98,7 +100,7 @@ namespace ss {
 		return PI_CODE_KILL;
 	}
 
-	int ProcessBase::flushKVBuffer( )
+	int ProcessBase::flushKVBuffer( bool finish )
 	{
 		// If the task has been killed, return KILL_CODE
 		if( !workerTaskManager->checkTask( task_id ) )
@@ -198,7 +200,11 @@ namespace ss {
 					network::WorkerDataExchange *dataMessage =  p->message->mutable_data();
 					
 					dataMessage->set_task_id(task_id);
+                    dataMessage->set_txt( false );
 					dataMessage->mutable_queue( )->CopyFrom( output_queue );
+                    dataMessage->set_worker( worker );
+                    dataMessage->set_hg_set( hg_set );
+                    dataMessage->set_finish( finish );
 					
 					network->send(NULL, network->workerGetIdentifier(s) , Message::WorkerDataExchange, p);
 					
@@ -213,7 +219,7 @@ namespace ss {
 	}	
 
 	
-	int ProcessBase::flushTXTBuffer(  )
+	int ProcessBase::flushTXTBuffer( bool finish )
 	{
 
 		if( !workerTaskManager->checkTask( task_id ) )
@@ -263,6 +269,9 @@ namespace ss {
 			dataMessage->set_task_id(task_id);
 			dataMessage->mutable_queue( )->CopyFrom( output_queue );
 			dataMessage->set_txt(true);
+            dataMessage->set_worker( worker );
+            dataMessage->set_hg_set( hg_set );
+            dataMessage->set_finish( finish );
 			
 			network->send(NULL, network->getMyidentifier() , Message::WorkerDataExchange, p);
 		}

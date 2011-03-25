@@ -62,7 +62,7 @@ namespace ss {
 		void clear();
 
 		// Function used to flush the content of the buffer ( it sends a code to the "parent" process to emit througt network )
-		void flushBuffer();
+		void flushBuffer(bool finish);
 		
 		
 	};
@@ -85,7 +85,7 @@ namespace ss {
 		
 		void emit( const char * _data , size_t _size);
 
-		void flushBuffer( );
+		void flushBuffer(bool finish);
 		
 	};
 

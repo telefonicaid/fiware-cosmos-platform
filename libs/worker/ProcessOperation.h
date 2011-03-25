@@ -33,6 +33,7 @@ namespace ss {
 		void runMap( KVWriter *writer );
 		void runReduce( KVWriter *writer );
 		void runParserOut(TXTWriter *writer );
+		void runParserOutReduce(TXTWriter *writer );
 	
 		
 	private:

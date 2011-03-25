@@ -90,7 +90,11 @@ namespace ss
 			
 			if( type == "parserOut")
 				return "ss::ParserOut";
+
+			if( type == "parserOutReduce")
+				return "ss::ParserOutReduce";
 			
+            
 			fprintf(stderr, "Error: Unknown type of operation in the operation section (%s)\n" , type.c_str());
 			_exit(0);
 			
@@ -159,7 +163,7 @@ namespace ss
 					file << "\t\tvoid run( ss::KVWriter *writer )\n\t\t{\n\t\t}\n";
 				if( type == "parser" )
 					file << "\t\tvoid run( char *data , size_t length , ss::KVWriter *writer )\n\t\t{\n\t\t}\n";
-				if( type == "parserOut" )
+				if( ( type == "parserOut" ) || ( type == "parserOutReduce" ) )
 					file << "\t\tvoid run(KVSetStruct* inputs , TXTWriter *writer )\n\t\t{\n\t\t}\n";
 
 			}

@@ -53,13 +53,12 @@ namespace ss {
 		WorkerTaskManager *taskManager;					// Pointer to the task manager
 
 		// Message from and to the controller
-		network::WorkerTask workerTask;					// Copy of the message received from the controller
-
+		network::WorkerTask workerTask;                             // Copy of the message received from the controller
 		network::WorkerTaskConfirmation *finish_message;			// Message prepared to be send to the controller ( finish task )
 		network::WorkerTaskConfirmation *complete_message;			// Message prepared to be send to the controller ( complete task : all saved )
 		
-		size_t task_id;									// identifier of the task
-		WorkerTaskStatus status;						// Status of this task
+		size_t task_id;                                             // identifier of the task
+		WorkerTaskStatus status;                                    // Status of this task
 
 		// Common information for this task
 		ProcessAssistantSharedFileCollection *reduceInformation;
@@ -128,7 +127,7 @@ namespace ss {
 		
 		// Processign income buffers
 		
-		void addBuffer( network::Queue queue , Buffer *buffer ,bool txt );
+		void addBuffer( network::WorkerDataExchange& workerDataExchange , Buffer *buffer );
 		void flush( QueueuBufferVector *bv );
 		void flush();
 		

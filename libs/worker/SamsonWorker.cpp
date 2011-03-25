@@ -154,14 +154,9 @@ namespace ss {
 		{
 			// New data packet for a particular queue inside a particular task environment
 			
-			size_t task_id = packet->message->data().task_id();
-			network::Queue queue = packet->message->data().queue();
-			
-			bool txt = false;
-			if( packet->message->data().has_txt() && packet->message->data().txt() )
-				txt = true;
-			
-			taskManager.addBuffer( task_id , queue, packet->buffer , txt );
+			size_t task_id = packet->message->data().task_id();			
+            network::WorkerDataExchange data = packet->message->data();
+			taskManager.addBuffer( task_id , data, packet->buffer );
 			
 			return;
 		}

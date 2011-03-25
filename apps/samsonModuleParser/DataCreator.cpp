@@ -124,11 +124,12 @@ namespace ss {
 				
 			} 
 			else if( 
-					( command == "script" ) ||
-					( command == "generator" )	|| 
-					( command == "map" )		|| 
-					( command == "parser" )		|| 
-					( command == "parserOut" )	|| 
+					( command == "script" )             ||
+					( command == "generator" )          || 
+					( command == "map" )                || 
+					( command == "parser" )             || 
+					( command == "parserOut" )          || 
+					( command == "parserOutReduce" )	|| 
 					( command == "reduce" )
 					)
 			{
@@ -266,7 +267,7 @@ namespace ss {
 		for ( vector <OperationContainer>::iterator iter = operations.begin() ; iter < operations.end() ; iter++)
 		{
 			OperationContainer op = *iter;
-			if( op.type == "reduce")
+			if( ( op.type == "reduce") || ( op.type == "parserOutReduce") )
 				op.getIncludes( includes );
 		}
 		for( std::set<std::string>::iterator iter = includes.begin() ; iter != includes.end() ; iter++)
@@ -298,7 +299,7 @@ namespace ss {
 		for ( vector <OperationContainer>::iterator iter = operations.begin() ; iter < operations.end() ; iter++)
 		{
 			OperationContainer op = *iter;
-			if( op.type == "reduce")
+			if( ( op.type == "reduce") || ( op.type == "parserOutReduce") )
 			{
 				output << op.getCompareFunction();
 				output << op.getCompareByKeyFunction();
@@ -337,7 +338,7 @@ namespace ss {
 			
 			if( op.type == "script")
 				output << "\t\t\tss::Operation * operation = new ss::Operation( \"" << op.module << "." << op.name << "\" , ss::Operation::"<< op.type <<");"<<std::endl;
-			else if( op.type == "reduce")
+			else if( ( op.type == "reduce") || ( op.type == "parserOutReduce" ) )
 				output << "\t\t\tss::Operation * operation = new ss::Operation( \"" << op.module << "." << op.name << "\" , ss::Operation::"<< op.type <<" , au::factory<"<< op.name <<">, " << op.getCompareFunctionName() <<  ", " << op.getCompareByKeyFunctionName() <<  " );"<<std::endl;
 			else
 				output << "\t\t\tss::Operation * operation = new ss::Operation( \"" << op.module << "." << op.name << "\" , ss::Operation::"<< op.type <<" , au::factory<"<< op.name <<"> );"<<std::endl;

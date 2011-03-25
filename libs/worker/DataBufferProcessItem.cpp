@@ -29,13 +29,13 @@ namespace ss {
 		
 		// Set the status 
 		std::ostringstream statusStream;
-		statusStream << "Prewrite of " << au::Format::string( bv->size ,"Bytes" ) ;
+		statusStream << "Prewrite " << au::Format::string( bv->getTotalSize() ,"Bytes" ) ;
 		operation_name = statusStream.str();
 	}
 	
 	void DataBufferProcessItem::run()
 	{
 		// Joint the buffer to get a new one
-		buffer =  bv->getJoinedBufferAndClear();
+		buffer =  bv->getJoinedBuffer();
 	}	
 }

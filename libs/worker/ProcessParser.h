@@ -17,7 +17,6 @@ namespace ss {
 	public:
 		
 		ParserSubTask *parserSubTask;
-		std::string operation_name;
 		Operation * operation;
 
 		char *data;

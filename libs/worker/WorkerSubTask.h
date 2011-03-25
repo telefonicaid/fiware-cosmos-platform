@@ -151,6 +151,8 @@ namespace ss
 		 int hg_end;
 		 int num_hash_groups;
 		 
+         int hg_set;    // Identifier of the hash-group
+         
 		 size_t memory_requested;
 		 Buffer *buffer;				// Buffer provided by memory request
 

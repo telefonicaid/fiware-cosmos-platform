@@ -14,7 +14,7 @@
 #include "Engine.h"			 // ss::Engine
 
 
-#define ISOLATED_PROCESS_AS_THREAD
+//#define ISOLATED_PROCESS_AS_THREAD
 
 namespace ss
 {

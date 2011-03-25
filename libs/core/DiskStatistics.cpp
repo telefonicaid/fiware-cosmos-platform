@@ -78,7 +78,6 @@ namespace ss
 				break;
 			case DiskOperation::remove:
 			{
-				item_write.add( size, micro_seconds);
 			}
 				break;
 		}

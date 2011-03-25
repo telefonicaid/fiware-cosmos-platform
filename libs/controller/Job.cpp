@@ -267,8 +267,7 @@ namespace ss {
 					
 					return false;	// No continue until confirmation of this task is received
 				}
-				
-				if( operation->getType() == Operation::script ) 
+                else
 				{
 					
 					// Add comment to data manager to log that a script is initiated

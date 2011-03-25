@@ -77,7 +77,7 @@ namespace ss {
 		int hg = key->hash(KVFILE_NUM_HASHGROUPS); 
 		
 		// Detect the server to sent
-		int server = key->hash(num_servers);
+		int server = key->partition(num_servers);
 		
 		// Get a pointer to the current node
 		OutputChannel * _channel		= &channel[ output * num_servers + server ];	// Output channel ( output + server )

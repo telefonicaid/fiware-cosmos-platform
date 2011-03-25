@@ -1,20 +1,19 @@
 #include <pthread.h>
-#include <iostream>               // std::cerr
-#include <signal.h>               // kill(.)
-#include <stdlib.h>               // exit()
+#include <iostream>                 // std::cerr
+#include <signal.h>                 // kill(.)
+#include <stdlib.h>                 // exit()
 
-#include "logMsg.h"               // LM_*
-#include "traceLevels.h"          // LmtIsolated, etc. 
-#include "iomMsgAwait.h"          // iomMsgAwait
-#include "ProcessItemIsolated.h"  // Own interface
+#include "logMsg.h"                 // LM_*
+#include "traceLevels.h"            // LmtIsolated, etc. 
+#include "iomMsgAwait.h"            // iomMsgAwait
+#include "ProcessItemIsolated.h"    // Own interface
 #include "MemoryManager.h"			// ss::MemoryManager
 
 #include <sys/types.h>      
-#include <sys/wait.h>             // waitpid()
-#include "Engine.h"			 // ss::Engine
+#include <sys/wait.h>               // waitpid()
+#include "Engine.h"                 // ss::Engine
 
-
-//#define ISOLATED_PROCESS_AS_THREAD
+#define ISOLATED_PROCESS_AS_THREAD
 
 namespace ss
 {

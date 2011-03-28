@@ -1,17 +1,17 @@
 debug:
 	mkdir BUILD_DEBUG || true
 	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG
-	make -C BUILD_DEBUG
+	make -C BUILD_DEBUG -j
 
 debug_coverage:
 	mkdir BUILD_DEBUG_COVERAGE || true
 	cd BUILD_DEBUG_COVERAGE; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True
-	make -C BUILD_DEBUG_COVERAGE
+	make -C BUILD_DEBUG_COVERAGE -j
 
 release:
 	mkdir BUILD_RELEASE || true
 	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE
-	make -C BUILD_RELEASE
+	make -C BUILD_RELEASE -j
 
 test: ctest itest
 

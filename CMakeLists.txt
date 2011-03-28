@@ -90,6 +90,7 @@ if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 #  ADD_SUBDIRECTORY(etc)	# Add setup file when installing
+
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)

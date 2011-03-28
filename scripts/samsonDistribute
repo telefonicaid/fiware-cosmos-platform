@@ -1,7 +1,7 @@
 localMachine=$(uname -n)
-if [ "$localMachine" != "samson01" ] && [ "$localMachine" != "torkel" ]
+if  [ "$localMachine" != "samson09" ] && [ "$localMachine" != "torkel" ]
 then
-	echo "Will only distribute from 'samson01' or 'torkel'" 
+	echo "Will only distribute from 'samson09'  or 'torkel'" 
 	exit 1
 fi
 
@@ -16,11 +16,11 @@ fi
 # 	done
 # fi
  
-#for mach in samson02 samson03 samson04 samson05 samson06 samson07 samson09
-for mach in samson02 samson03 samson04 samson05
+#for mach in samson01 samson02 samson03 samson04 samson05 samson06 samson07 samson08
+for mach in samson01 samson02 samson03 samson04 samson05
 do
 	echo Installing samson in $mach
 	rsync -r /opt/samson/etc              samson@$mach:/opt/samson
 	rsync -r /opt/samson/modules          samson@$mach:/opt/samson
-	rsync -r /usr/local/bin       		  samson@$mach:/usr/local/
+	rsync -r /usr/local/bin  		      samson@$mach:/usr/local/
 done

@@ -35,6 +35,9 @@ install: release
 distribute: install
 	./scripts/samsonDistribute
 
+testdistribute: install
+	./scripts/samsonTestDistributer
+
 i: install
 
 

@@ -1,7 +1,13 @@
+#!/bin/bash
 hname=$(hostname)
-if [ "$hname" == "samson06" ]
+echo
+echo '-------------------------------------------------------------'
+echo $0 running in host \'$hname\'
+
+if [ "$hname" = "samson06" ]
 then
-	for host in samson07 # samson08
+	echo $hname: I am the distributer
+	for host in samson07 samson08
 	do
 		echo "$hname: Preparing $host receive directories"
 		ssh samson@$host rm -rf samsonToBeDistributed
@@ -25,8 +31,11 @@ then
 		ssh samson@$host bin/samsonTestDistributer
 	done
 else
+	echo $hname: I am NOT the distributer
 	echo $hname: Copying samson files to their respective directories
 	sudo cp ~/samsonToBeDistributed/bin/*     /usr/local/bin/
 	sudo cp ~/samsonToBeDistributed/modules/* /opt/samson/modules/
 	sudo cp ~/samsonToBeDistributed/etc/*     /opt/samson/etc/
 fi
+
+echo '-------------------------------------------------------------'

@@ -18,6 +18,7 @@
 #define PI_CODE_CONTINUE			-3
 #define PI_CODE_KILL				-4
 
+
 namespace ss {
 	
 	class ProcessItemIsolated : public  ProcessItem, public Tracer , public OperationController
@@ -40,6 +41,8 @@ namespace ss {
 	public:
 		
 		void run();
+
+        static bool isolated_process_as_tread;
 		
 	public:
 		

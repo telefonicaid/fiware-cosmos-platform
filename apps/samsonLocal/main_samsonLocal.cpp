@@ -27,6 +27,8 @@
 
 #include "Engine.h"				// ss::Engine
 
+#include "ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
+
 /*
  To be removed
  */
@@ -83,6 +85,7 @@ int              workers;
 bool             noLog;
 char			 workingDir[1024]; 	
 char			 commandFileName[1024];
+bool             thread_mode;
 
 
 #define S01 (long int) "samson01:1234"
@@ -94,7 +97,8 @@ PaArgument paArgs[] =
 {
 	{ "-controller",  controller,       "CONTROLLER",  PaString,  PaOpt,   S01,   PaNL,   PaNL,  "controller IP:port"  },
 	{ "-workers",     &workers,         "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
-	{ "-nolog",       &noLog,           "NO_LOG",      PaBool,    PaOpt, false,  false,   true,  "no logging"          },
+	{ "-nolog",       &noLog,           "NO_LOG",      PaBool,    PaOpt,    false,  false,   true,  "no logging"          },
+	{ "-thread_mode", &thread_mode,     "THREAD_MODE", PaBool,    PaOpt,    false,  false,   true,  "thread_mode"          },
 	{ "-working",     workingDir,       "WORKING",     PaString,  PaOpt,  _i SAMSON_DEFAULT_WORKING_DIRECTORY,   PaNL,   PaNL,  "Working directory"     },
 	{ "-f",           commandFileName,  "FILE_NAME",   PaString,  PaOpt,  _i "",   PaNL,   PaNL,  "File with commands to run"     },
 	PA_END_OF_ARGS
@@ -134,6 +138,15 @@ int main(int argC, const char *argV[])
 	for (int i = 0 ; i < 256 ; i++)
 		LM_T(i,("Trace test %d",i));
 	 */
+    
+    thread_mode = true;
+    
+    if( thread_mode )
+    {
+        LM_M(("samsonLocal started in thread mode"));
+        ss::ProcessItemIsolated::isolated_process_as_tread = true;
+    }
+    
 	
 	ss::SamsonSetup::load( workingDir );		// Load setup and create default directories
 

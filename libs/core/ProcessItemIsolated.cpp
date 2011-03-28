@@ -13,11 +13,12 @@
 #include <sys/wait.h>               // waitpid()
 #include "Engine.h"                 // ss::Engine
 
-#define ISOLATED_PROCESS_AS_THREAD
-
 namespace ss
 {
 
+    // Static variable to active the "thread" mode of the background process execution
+    bool ProcessItemIsolated::isolated_process_as_tread = false;
+    
 	/*
 	 Struct of data used to exchange information in the pipe connecting the platform
 	 and the isolated process
@@ -44,11 +45,11 @@ namespace ss
 	
 	void ProcessItemIsolated::run()
 	{
-#ifdef ISOLATED_PROCESS_AS_THREAD
-		LM_T( LmtIsolated , ("Isolated process %s start in thread mode",getStatus().c_str()));
-#else		
-		LM_T( LmtIsolated , ("Isolated process %s start in fork mode",getStatus().c_str()));
-#endif
+        if( isolated_process_as_tread )
+            LM_T( LmtIsolated , ("Isolated process %s start in thread mode",getStatus().c_str()));
+        else
+            LM_T( LmtIsolated , ("Isolated process %s start in fork mode",getStatus().c_str()));
+        
 	
 		// Init function ( subclasses implements this )
 		init();
@@ -71,22 +72,25 @@ namespace ss
 		
 		
 		// Create the other process to run the other side
-#ifdef ISOLATED_PROCESS_AS_THREAD
-		ProcessItemIsolated *tmp = (this);
-		pthread_t t;
-		pthread_create(&t, NULL, run_ProcessItemIsolated, tmp);
-#else
-		
-		pid_t pid = fork();
-		if ( pid < 0 )
-			LM_X(1,("fork return an error"));
-		
-		if( pid == 0 )	// Children running the background process
-		{
-			runBackgroundProcessRun();
-			exit(0);
-		}
-#endif
+        pid_t pid;
+        if( isolated_process_as_tread )
+        {
+            ProcessItemIsolated *tmp = (this);
+            pthread_t t;
+            pthread_create(&t, NULL, run_ProcessItemIsolated, tmp);
+        }
+        else
+        {
+            pid = fork();
+            if ( pid < 0 )
+                LM_X(1,("Fork return an error"));
+            
+            if( pid == 0 )	// Children running the background process
+            {
+                runBackgroundProcessRun();
+                exit(0);
+            }
+        }
 		
 		// Set the state to the "starting" mode
 		s = starting;
@@ -116,11 +120,11 @@ namespace ss
 
 				LM_T(LmtIsolated, ("Isolated process %s(%s): Set error and break the loop", getStatus().c_str(),stateName()));
 				if (nb == -9)
-					snprintf(errorText, sizeof(errorText), "Operation has crashed - iomMsgAwait returned %d", iom);
+					snprintf(errorText, sizeof(errorText), "Operation has crashed - [iomMsgAwait returned %d]", iom);
 				else if (nb == -1)
-					snprintf(errorText, sizeof(errorText), "Operation has crashed - read(): %s", strerror(errno));
+					snprintf(errorText, sizeof(errorText), "Operation has crashed - [read(): %s]", strerror(errno));
 				else
-					snprintf(errorText, sizeof(errorText), "Operation has crashed - read returned %d instead of expected %d", nb, (int) sizeof(InterProcessMessage));
+					snprintf(errorText, sizeof(errorText), "Operation has crashed - [ Broken pipe between background and foreground processes ]");
 
 				error.set(errorText);
 				s = broken;
@@ -145,11 +149,13 @@ namespace ss
 						}
 						
 						// Close the unnecessary pipes
-#ifndef ISOLATED_PROCESS_AS_THREAD
-						LM_T( LmtIsolated , ("Isolated process %s(%s): Closing secondary fds of pipes ",getStatus().c_str(),stateName()));
-						close(pipeFdPair1[1]);
-						close(pipeFdPair2[0]);
-#endif
+                        if( !isolated_process_as_tread )
+                        {
+                            LM_T( LmtIsolated , ("Isolated process %s(%s): Closing secondary fds of pipes ",getStatus().c_str(),stateName()));
+                            close(pipeFdPair1[1]);
+                            close(pipeFdPair2[0]);
+                        }
+
 							
 						// Set the state to running mode
 						s = running;
@@ -223,11 +229,12 @@ namespace ss
 		
 		// Close the rest of pipes all pipes
 		
-#ifdef ISOLATED_PROCESS_AS_THREAD	// These were not closed before
-		LM_T( LmtIsolated , ("Isolated process %s(%s): Closing unused side of the pipe (thread mode) ",getStatus().c_str(),stateName()));
-		close(pipeFdPair1[1]);
-		close(pipeFdPair2[0]);
-#endif
+        if( isolated_process_as_tread )
+        {
+            LM_T( LmtIsolated , ("Isolated process %s(%s): Closing unused side of the pipe (thread mode) ",getStatus().c_str(),stateName()));
+            close(pipeFdPair1[1]);
+            close(pipeFdPair2[0]);
+        }
 		
 		LM_T( LmtIsolated , ("Isolated process %s(%s): Closing the rest of fds of the pipe ",getStatus().c_str(),stateName()));
 		close(pipeFdPair1[0]);
@@ -239,28 +246,29 @@ namespace ss
 
 		
 		// Kill and wait the process
-#ifndef ISOLATED_PROCESS_AS_THREAD
-		
-		// Loop until the background thread is killed
-		sub_status = "Waiting";
-		s = waiting;
-		int stat_loc;
-		pid_t p=0;
-		do
-		{
-			p = waitpid(pid, &stat_loc , WNOHANG );
-			
-			// Send a kill message if still not died
-			if( p!= pid )
-			{
-				kill( pid , SIGKILL );
-			
-				// Give the background process so air to die in peace
-				sleep(0.1);
-			}
-			
-		} while (p != pid);
-#endif
+        if( !isolated_process_as_tread )
+        {
+            
+            // Loop until the background thread is killed
+            sub_status = "Waiting";
+            s = waiting;
+            int stat_loc;
+            pid_t p=0;
+            do
+            {
+                p = waitpid(pid, &stat_loc , WNOHANG );
+                
+                // Send a kill message if still not died
+                if( p!= pid )
+                {
+                    kill( pid , SIGKILL );
+                    
+                    // Give the background process so air to die in peace
+                    sleep(0.1);
+                }
+                
+            } while (p != pid);
+        }
 		
 	}
 	
@@ -373,15 +381,18 @@ namespace ss
 	{
 
 		// Close the other side of the pipes ( if it is in thread-mode, we cannot close)
-#ifndef ISOLATED_PROCESS_AS_THREAD
-		close(pipeFdPair1[0]);
-		close(pipeFdPair2[1]);
-		
-		for (int i = 0 ;  i < 1024 ; i++)
-			if( ( i != pipeFdPair1[1] ) && ( i!= pipeFdPair2[0] ) )
-				close( i );
-		
-#endif	
+
+        if( !isolated_process_as_tread )
+        {
+
+            close(pipeFdPair1[0]);
+            close(pipeFdPair2[1]);
+            
+            for (int i = 0 ;  i < 1024 ; i++)
+                if( ( i != pipeFdPair1[1] ) && ( i!= pipeFdPair2[0] ) )
+                    close( i );
+        }
+
 		sendCode( PI_CODE_BEGIN_BACKGROUND );		// Send an initial code so the other side can close unnecessary pipes
 				
 		runIsolated();
@@ -389,11 +400,12 @@ namespace ss
 		sendCode( PI_CODE_END_BACKGROUND );			// Send a finish code so the other side can close unnecessary pipes
 		
 		// Close the other side of the pipe
-#ifndef ISOLATED_PROCESS_AS_THREAD
-		close(pipeFdPair1[1]);
-		close(pipeFdPair2[0]);
-#endif
-		
+        if( !isolated_process_as_tread )
+        {
+            close(pipeFdPair1[1]);
+            close(pipeFdPair2[0]);
+        }
+            
 	}	
 	
 	

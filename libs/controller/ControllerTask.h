@@ -47,6 +47,8 @@ namespace ss {
 		friend class ControllerTaskManager;
 		friend class Job;
 		
+        
+        
 	public:
 		
 		bool running;					// Flag to indicate that the task is running

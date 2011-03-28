@@ -108,6 +108,8 @@ namespace ss {
 				p->message->set_delilah_id( id );
 				ss::network::DownloadDataFile *download_data_file = p->message->mutable_download_data_file();
 
+                download_data_file->set_file_id(i);
+                
 				// Copy the file information
 				download_data_file->mutable_file()->CopyFrom( download_data_init_response->queue().file(i) );
 				

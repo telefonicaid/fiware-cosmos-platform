@@ -101,18 +101,16 @@ namespace ss {
 			{
 				int workerId = network->getWorkerFromIdentifier(fromId);			
 
-				/*
-				if (workerId == -1)
-					LM_RE(2, ("getWorkerFromIdentifier(%d) failed", fromId));
-				status[workerId] = *((Message::WorkerStatusData*) packet->buffer->getData());
-				*/
-				
 				// Copy all the information here to be access when requesting that info
 				if (workerId != -1)
 				{
 					worker_status[workerId]->CopyFrom( packet->message->worker_status() );
 					gettimeofday(&worker_status_time[workerId], NULL);
 				}
+                else
+                {
+                    LM_W(("Received a WorkerStatus from something different than a worker. From id %d", fromId )); 
+                }
 			}
 
 			return;
@@ -300,6 +298,7 @@ namespace ss {
 				// A message is always sent back to delilah to confirm changes
 				Packet *p = new Packet();
 				network::UploadDataFinishResponse * upload_data_finish_response = p->message->mutable_upload_data_finish_response();
+                upload_data_finish_response->mutable_query()->CopyFrom(upload_data_finish);
 				if( error.isActivated() )
 					upload_data_finish_response->mutable_error()->set_message( error.getMessage() );
 				

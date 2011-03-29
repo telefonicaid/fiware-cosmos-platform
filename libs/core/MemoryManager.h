@@ -31,56 +31,12 @@
 #include "samson.pb.h"				// network::..
 
 
-#define SS_SHARED_MEMORY_KEY_ID					872934	// the first one
+// #define SS_SHARED_MEMORY_KEY_ID	872934	// Not used any more since now, IPC_PRIVATE shared memory can be created
 
 namespace ss {
 
 	class MemoryRequest;
 	class MemoryRequestDelegate;
-
-	
-	/*
-	 SharedMemoryItem is a class that contains information about a region of memory shared between different processes
-	 Memory manager singleton provides pointers to these objects
-	 */
-	
-	class SharedMemoryItem 
-	{
-		
-	public:
-		
-		int id;						/* Identifier of the shared memory area */
-		int shmid;					/* return value from shmget() */ 
-		char *data;					/* Shared memory data */
-		size_t size;				/* Information about the size of this shared memory item */
-		
-		SharedMemoryItem( int _id)
-		{
-			id = _id;
-		}
-		
-		// --------------------------------------------------------------------------------
-		// Interfaces to get SimpleBuffer elements in order to read or write to them
-		// --------------------------------------------------------------------------------
-		
-		SimpleBuffer getSimpleBuffer()
-		{
-			return SimpleBuffer( data , size );
-		}
-		
-		SimpleBuffer getSimpleBufferAtOffset(size_t offset)
-		{
-			return SimpleBuffer( data + offset , size - offset );
-		}
-		
-		SimpleBuffer getSimpleBufferAtOffsetWithMaxSize(size_t offset , size_t _size)
-		{
-			if( _size > ( size - offset ) )
-			  LM_X(1,("Error cheking size of a simple Buffer"));
-			return SimpleBuffer( data + offset , _size );
-		}
-		
-	};
 
 	/**
 	 
@@ -105,13 +61,7 @@ namespace ss {
 
 		int num_buffers_input;						// Number of buffers used as inputs
 		int num_buffers_output;						// Number of buffers used as outputs
-		
-		// Setup parameters ( loaded at constructor )
-		size_t shared_memory_size_per_buffer;		// Shared memory used in eery buffer
-		int shared_memory_num_buffers;				// Number of shared memory buffers to create
-		
-		bool* shared_memory_used_buffers;			// Bool vector showing if a particular shared memory buffer is used
-		
+				
 		// List of memory requests
 		au::list <MemoryRequest> memoryRequests;	// Only used for inputs
 		
@@ -165,27 +115,7 @@ namespace ss {
 		
 	public:
 		
-		
-		/*--------------------------------------------------------------------
-		 Shared memory mecanish
-		 --------------------------------------------------------------------*/
-		
-		
-		/**
-		 Function to retain and release a free shared-memory area
-		 */
-
-		int retainSharedMemoryArea();
-		void releaseSharedMemoryArea( int id );
-
-		/**
-		 Functions to get and release a shared memory area
-		 */
-		
-		SharedMemoryItem* getSharedMemory( int i );
-		void freeSharedMemory(SharedMemoryItem* item);
-		void removeSharedMemory( int i );
-		
+        
 		/*--------------------------------------------------------------------
 		 Get information about memory usage
 		 --------------------------------------------------------------------*/

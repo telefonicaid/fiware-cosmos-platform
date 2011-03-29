@@ -16,7 +16,8 @@ namespace ss {
 
 
 	class ProcessBase;
-	
+	class SharedMemoryItem;
+    
 	/**
 	 Class to emit key-values ( for maps , reducers, generators, parsers, etc )
 	 */

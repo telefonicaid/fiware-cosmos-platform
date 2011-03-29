@@ -1,28 +1,37 @@
 
-SUGGESTION:
-
-Use boost::FileSystem library
+BUGS FROM TEST:
 
 TODO:
-* Check scandir
-* Engine status using work status message
-* Disk statictics
-
-* Inform about the memory and process used when running samsonLocal
 * Valgrind debuign
+* Delilah to save pakets in order
 
+
+PENDING MORE TEST
+* libprotobuf ERROR google/protobuf/message_lite.cc:123] Can't parse message of type "ss.data.Command" because it is missing required fields: time
 * Delilah crashes if the queue specified for the download command does not exists
-* Delilah displays the last performed command after it's execution. Example: execute help will display "Delilah> helpDelilah>"
-* Solve the current name miss match for the same concept "queue = set_name" 
-
+SUGGESTION:
+Use boost::FileSystem library
 
 FUTURE:
 review setup since the maximum number of outputs
+Add a buffer of strings to notify in delilah insetead of flushing to the std::out in the middle of whatever...
 
 ON-GOING
 * Kill jobs ( kill the task ) --> Memory leaks
 
+REJECTED:
+* Parameter in samsonLocal to use different share-memory id
+
+
 DONE
+* Solve the current name miss match for the same concept "queue = set_name" 
+* Create folder config for Ken
+* Delilah displays the last performed command after it's execution. Example: execute help will display "Delilah> helpDelilah>"
+* Inform about the memory and process used when running samsonLocal
+* Error with shared memory
+* Engine status using work status message
+* Disk statictics
+* Check scandir
 * Fuse Process library with the Engine Lib
 * Notify Disk operations using Engine
 * Process manager implemented with priorities and not type ( priority to halt processes and top priority processes )

@@ -19,6 +19,8 @@
 #include "EngineDelegates.h"	
 #include "Engine.h"				// ss::Engine
 
+
+
 namespace ss
 {
 	
@@ -34,118 +36,11 @@ namespace ss
 		// Total available memory
 		memory = SamsonSetup::shared()->memory;
 
-		
-		// Shared memory setup
-		shared_memory_size_per_buffer	= SamsonSetup::shared()->shared_memory_size_per_buffer;
-		shared_memory_num_buffers		= SamsonSetup::shared()->num_processes;
-		
-		if( shared_memory_size_per_buffer == 0)
-			LM_X(1,("Error in setup, invalid value for shared memory size %u", shared_memory_size_per_buffer ));
-		
-		// Boolean vector showing if a buffer is used
-		shared_memory_used_buffers = (bool*) malloc( shared_memory_num_buffers * sizeof(bool ) );
-		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
-			shared_memory_used_buffers[i] = false;
-
-		// Create the shared memory areas
-		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
-		{
-			LM_T(LmtMemory, ("Removing shared memory area %d",i));
-			removeSharedMemory(i);
-
-			LM_T(LmtMemory, ("Creating shared memory area %d",i));			
-			SharedMemoryItem *tmp = getSharedMemory(i);
-			freeSharedMemory(tmp);
-		}
-		
-		LM_T(LmtMemory , ("MemoryManager init with %s and %d shared memory areas", au::Format::string( memory , "B").c_str() , shared_memory_num_buffers ) );
 	}
 	
 	MemoryManager::~MemoryManager()
 	{
-		// Free the vector of flags for shared memory areas
-		free(shared_memory_used_buffers);
 	}
-	
-	
-	void MemoryManager::removeSharedMemory( int i )
-	{
-		key_t key;		/* key to be passed to shmget() */ 
-		int shmflg;		/* shmflg to be passed to shmget() */ 
-		size_t size;	/* size to be passed to shmget() */ 
-		
-		key = SS_SHARED_MEMORY_KEY_ID + i; 
-		shmflg = IPC_CREAT | 384;			// Permission to read / write ( only owner )
-		size = 1;							// Make sure it is does not return an error since the size is to large
-		
-		// Get the id
-		int id = shmget (key, size, shmflg);
-
-		if( id != -1)
-		{
-			// Remove
-			shmctl( id , IPC_RMID, NULL);
-		}
-			
-	}
-	
-	SharedMemoryItem* MemoryManager::getSharedMemory( int i )
-	{
-		
-		key_t key;		/* key to be passed to shmget() */ 
-		int shmflg;		/* shmflg to be passed to shmget() */ 
-		size_t size;	/* size to be passed to shmget() */ 
-		
-		int shmid;		// Result of shmget
-		
-		key = SS_SHARED_MEMORY_KEY_ID + i; 
-		size = shared_memory_size_per_buffer;
-		shmflg = IPC_CREAT | 384;			// Permission to read / write ( only owner )
-		
-		if ((shmid = shmget(key, size, shmflg)) == -1)
-		{
-			// Remove it
-			removeSharedMemory(i);
-
-			// Second try
-			if ((shmid = shmget(key, size, shmflg)) == -1)
-				LM_X(1, ("shmget: %s", strerror(errno)));
-				// LM_RE(NULL, ("shmget: %s", strerror(errno)));
-		}
-
-		//
-		SharedMemoryItem* _info = new SharedMemoryItem(i);
-		_info->shmid = shmid;
-		
-		// Attach to local-space memory
-		_info->data = (char *)shmat(_info->shmid, 0, 0);
-		if( _info->data == (char*)-1 )
-		{
-			perror("shmat: shmat failed"); 
-			LM_X(1, ("Error with shared memory while attaching to local memory (shared memory id %d )\n",i));
-		}
-		
-		_info->size = size;
-		
-		return _info;		
-	}
-	
-	void MemoryManager::freeSharedMemory(SharedMemoryItem* item)
-	{
-		if (item == NULL)
-			LM_RVE(("NULL SharedMemoryItem as input ..."));
-
-		// Detach data
-		int ans = shmdt( item->data);
-		
-		// Make sure operation is correct
-		if( ans == -1)
-			LM_X(1,("Error calling shmdt"));
-		
-		// remove the item created with getSharedMemory
-		delete item;
-	}
-
 	
 	Buffer *MemoryManager::newBuffer( std::string name , size_t size , Buffer::BufferType type )
 	{
@@ -211,48 +106,12 @@ namespace ss
 		
 	}
 	
-	int MemoryManager::retainSharedMemoryArea()
-	{
-		token.retain();
-		
-		for (int i = 0  ; i < shared_memory_num_buffers ; i++)
-			if ( !shared_memory_used_buffers[i] )
-			{
-				shared_memory_used_buffers[i] = true;
-				token.release();
-				return i;
-			}
-		
-		token.release();
-		
-		LM_X(1,("Error since there are no available shared memory buffers"));
-		return -1;	// There are no available memory buffers, so we will never get this point
-	}
 	
-	
-	
-	void MemoryManager::releaseSharedMemoryArea( int id )
-	{
-		if( (id < 0) || ( id > shared_memory_num_buffers) )
-			LM_X(1, ("Releaseing a wrong Shared Memory Id %d",id));
-		
-		token.retain();
-		
-		shared_memory_used_buffers[id] = false;
-		
-		token.release();
-		
-	}	
 	
 	// Fill information
 	void MemoryManager::fill(network::WorkerStatus*  ws)
 	{
-		
-		int num_shm_buffers = 0;
-		for (int i = 0 ; i < shared_memory_num_buffers ; i++)
-			if( shared_memory_used_buffers[i] )
-				num_shm_buffers++;
-		
+				
 		std::ostringstream output;
 
 		output << "Input: " << ((int)(getMemoryUsageInput()*100.0)) << "% "; 
@@ -323,7 +182,7 @@ namespace ss
 	 
 	size_t MemoryManager::getUsedMemory()
 	{
-		return used_memory_input + used_memory_output + shared_memory_num_buffers*shared_memory_size_per_buffer;
+		return used_memory_input + used_memory_output;
 	}
 
 	size_t MemoryManager::getUsedMemoryInput()
@@ -347,7 +206,7 @@ namespace ss
 		if( memory == 0 )
 			per = 0;
 		else
-			per =  2 * ( (double) used_memory_input / (double) ( memory - shared_memory_num_buffers*shared_memory_size_per_buffer ) );
+			per =  2 * ( (double) used_memory_input / (double) memory );
 		
 		return per;
 	}
@@ -358,19 +217,19 @@ namespace ss
 		if( memory == 0 )
 			per = 0;
 		else
-			per =  2 * ( (double) used_memory_output / (double) ( memory - shared_memory_num_buffers*shared_memory_size_per_buffer ) );
+			per =  2 * ( (double) used_memory_output / (double) memory  );
 		
 		return per;
 	}
 
 	size_t MemoryManager::getMemoryOutput()
 	{
-		return ( memory - shared_memory_num_buffers*shared_memory_size_per_buffer )/2;
+		return ( memory )/2;
 	}
 	
 	size_t MemoryManager::getMemoryInput()
 	{
-		return ( memory - shared_memory_num_buffers*shared_memory_size_per_buffer )/2;
+		return ( memory )/2;
 	}
 	
 	
@@ -388,7 +247,7 @@ namespace ss
 	{
 		return num_buffers_output;
 	}
-	
+    
 	
 
 }

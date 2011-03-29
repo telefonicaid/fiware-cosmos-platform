@@ -26,7 +26,8 @@ namespace ss
 	
 	class WorkerTask;
 	class WorkerTaskManager;
-	
+	class SharedMemoryItem;
+    
 	/**
 	 A particular process that runs in as isolated mode generating key-values
 	 A shared memory area is used to exchange data between the background process and the foreground thread
@@ -79,14 +80,14 @@ namespace ss
 		
 		void init()
 		{
-			shm_id = Engine::shared()->memoryManager.retainSharedMemoryArea();
-			item = Engine::shared()->memoryManager.getSharedMemory( shm_id );
+			shm_id = Engine::shared()->sharedMemoryManager.retainSharedMemoryArea();
+			item = Engine::shared()->sharedMemoryManager.getSharedMemory( shm_id );
 		}
 		
 		void finish()
 		{
-			Engine::shared()->memoryManager.releaseSharedMemoryArea( shm_id );		
-			Engine::shared()->memoryManager.freeSharedMemory( item );
+			Engine::shared()->sharedMemoryManager.releaseSharedMemoryArea( shm_id );		
+			Engine::shared()->sharedMemoryManager.freeSharedMemory( item );
 		}
 		
 		// Function to be implemented ( running on a different process )

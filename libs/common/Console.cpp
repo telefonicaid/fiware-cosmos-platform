@@ -73,6 +73,9 @@ namespace au
 				evalCommand(line);
 				free(line);
 			}
+
+            std::cout << "\n\n";
+			std::cout.flush();
 			
 			// rl_line_buffer[0] = '\0';
 		}

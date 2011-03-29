@@ -8,6 +8,7 @@
 #include "EnvironmentOperations.h"	// copyEnviroment
 #include "WorkerTask.h"				// ss::WorkerTask
 #include "SamsonWorker.h"			// ss::SamsonWorker
+#include "SharedMemoryItem.h"       // ss::SharedMemoryItem
 
 namespace ss {
 	

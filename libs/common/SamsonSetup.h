@@ -33,6 +33,7 @@ namespace ss {
 		std::string modulesDirectory;
 		std::string setupDirectory;
 		std::string setupFile;
+		std::string configDirectory;
 		
 		// General setup
 		int num_processes;

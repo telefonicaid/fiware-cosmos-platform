@@ -274,7 +274,7 @@ namespace ss
 			output << " add         Add a data set with a particular format for the key and for the value\n";
 			output << "             Usage: add set_name key_type value_type (i.e. add pairs system.UInt system.UInt )\n";
 			output << "             Usage: add set_name -txt (i.e. add txt_cdrs )\n";
-			output << "             Option -f to avoid error if queue already exist\n";
+			output << "             Option -f to avoid error if the data set already exist\n";
 			output << "\n";
 			output << " rm          Remove a given data set\n";
 			output << "             Usage: rm set_name\n";
@@ -440,7 +440,7 @@ namespace ss
 		{
 			if ( commandLine.get_num_arguments() < 3)
 			{
-				writeErrorOnConsole( "Error: Usage: download queue local_file_name\n");
+				writeErrorOnConsole( "Error: Usage: download data_set_name local_file_name\n");
 				return 0;
 			}
 			

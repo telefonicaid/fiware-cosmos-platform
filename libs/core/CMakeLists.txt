@@ -8,6 +8,8 @@ EngineDelegates.h
 Engine.h
 EngineElement.h
 MemoryManager.h
+SharedMemoryManager.h
+SharedMemoryItem.h
 MemoryRequest.h
 ModulesManager.h
 ProcessItem.h
@@ -22,6 +24,8 @@ DiskStatistics.cpp
 Engine.cpp
 EngineElement.cpp
 MemoryManager.cpp
+SharedMemoryManager.cpp
+SharedMemoryItem.cpp
 MemoryRequest.cpp
 ModulesManager.cpp
 ProcessItem.cpp

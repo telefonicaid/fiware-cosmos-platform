@@ -708,7 +708,7 @@ int main(int argC, const char *argV[])
 	{
 		printf("Samson Platform Setup Error.\n"
 			   "You specified %d workers and controller host as '%s' -\n"
-			   "this cannot be, please enter the IP address of the controller.\n",
+			   "Please, specify controller with an explicit hostname\n",
 			   workers, controllerHost);
 		err = 3;
 	}

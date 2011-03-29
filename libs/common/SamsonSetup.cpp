@@ -85,6 +85,7 @@ namespace ss
 		modulesDirectory	= workingDirectory + "/modules";
 		setupDirectory		= workingDirectory + "/etc";
 		setupFile			= setupDirectory   + "/setup.txt";
+		configDirectory			= workingDirectory + "/config";
 				
 		// Create directories if necessary
 		createDirectory( workingDirectory );
@@ -92,6 +93,7 @@ namespace ss
 		createDirectory( dataDirectory );
         createDirectory( modulesDirectory );        
 		createDirectory( setupDirectory );			
+		createDirectory( configDirectory );			
 		
 		// Load values from file ( if exist )
 		std::map<std::string,std::string> items;

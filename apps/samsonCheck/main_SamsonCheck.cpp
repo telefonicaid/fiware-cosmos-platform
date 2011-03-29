@@ -8,7 +8,8 @@
 #include "SamsonSetup.h"			// ss::SamsonSetup
 #include "MemoryManager.h"			// ss::MemoryManager
 #include "SamsonSetup.h"			// ss::SamsonSetup
-#include "Engine.h"			 // ss::Engine
+#include "Engine.h"                 // ss::Engine
+#include "SharedMemoryManager.h"    // ss::SharedMemoryManager
 
 int logFd = -1;
 
@@ -20,7 +21,6 @@ int main(int argc, const char *argv[])
 	
 	au::CommandLine cmdLine;
 	cmdLine.set_flag_string("working", SAMSON_DEFAULT_WORKING_DIRECTORY);
-	cmdLine.set_flag_boolean("clean");		// Clean shared memory areas
 	cmdLine.parse(argc, argv);
 	
 	ss::SamsonSetup::load( cmdLine.get_flag_string("working") );
@@ -28,25 +28,7 @@ int main(int argc, const char *argv[])
 	ss::SamsonSetup *s = ss::SamsonSetup::shared();	// Load setup file and create main directories
 	ss::Engine::init();	// Init the engine
 
-	ss::MemoryManager *mm = &(ss::Engine::shared()->memoryManager);
-	
-	if ( cmdLine.get_flag_bool("clean" ) )
-	{
-		// Spetial command to clean shared memory areas
-		
-		std::cout << "Cleaning shared memory areas\n";
-		
-		
-		for (int i = 0 ; i < ss::SamsonSetup::shared()->num_processes ; i++)
-		{
-			std::cout << "Removing shared memory " << i << " / " << ss::SamsonSetup::shared()->num_processes << std::endl;
-			mm->removeSharedMemory(i);
-		}
-		
-		std::cout << "Done!\n";
-		exit(0);
-		
-	}
+	ss::SharedMemoryManager *mm = &(ss::Engine::shared()->sharedMemoryManager);
 	
 	std::cout << "\n";
 	std::cout << "----------------------------------------------------\n";
@@ -89,15 +71,6 @@ int main(int argc, const char *argv[])
 		{
 			std::cout << "ERROR\n";
 		}
-		
-		
-		
 	}
-	
-	
-	
-	
-	
-	
-	
+    
 }

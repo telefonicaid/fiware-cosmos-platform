@@ -139,8 +139,6 @@ int main(int argC, const char *argV[])
 		LM_T(i,("Trace test %d",i));
 	 */
     
-    thread_mode = true;
-    
     if( thread_mode )
     {
         LM_M(("samsonLocal started in thread mode"));

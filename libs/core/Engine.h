@@ -6,10 +6,11 @@
 #include <pthread.h>
 #include <list>
 #include <string>
-#include <iostream>				// std::cout
-#include "au_map.h"				// au::list
-#include "MemoryManager.h"		// ss::MemoryManager
-#include "DiskStatistics.h"		// ss::DiskStatistics
+#include <iostream>                 // std::cout
+#include "au_map.h"                 // au::list
+#include "MemoryManager.h"          // ss::MemoryManager
+#include "SharedMemoryManager.h"    // ss::SharedMemoryManager
+#include "DiskStatistics.h"         // ss::DiskStatistics
 
 namespace ss
 {
@@ -60,6 +61,7 @@ namespace ss
 	public:
 		
 		MemoryManager memoryManager;				// Memory manager
+		SharedMemoryManager sharedMemoryManager;	// SharedMemory manager
 		
 	public:
 		

@@ -53,6 +53,7 @@ namespace ss {
 		{
 			read,
 			write,
+            append,
 			remove
 		} DiskOperationType;		
 		
@@ -89,6 +90,7 @@ namespace ss {
 		
 		static DiskOperation* newReadOperation( char *data , std::string fileName , size_t offset , size_t size , DiskManagerDelegate *delegate );
 		static DiskOperation* newWriteOperation( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate );
+		static DiskOperation* newAppendOperation( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate );
 		static DiskOperation* newRemoveOperation( std::string fileName , DiskManagerDelegate *delegate);
 		
 		static DiskOperation * newReadOperation( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer simpleBuffer , DiskManagerDelegate *_delegate );

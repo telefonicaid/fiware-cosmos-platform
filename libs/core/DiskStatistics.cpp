@@ -71,6 +71,7 @@ namespace ss
 				item_read.add( size, micro_seconds);
 			}
 				break;
+			case DiskOperation::append:
 			case DiskOperation::write:
 			{
 				item_write.add( size, micro_seconds);

@@ -84,7 +84,23 @@ namespace ss {
 		
 		return o;
 	}
+
 	
+	DiskOperation* DiskOperation::newAppendOperation( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate )
+	{
+		DiskOperation *o = new DiskOperation();
+		
+		o->fileName = fileName;
+		o->type = DiskOperation::append;
+		o->buffer = buffer;
+		o->size = buffer->getSize();
+		o->offset = 0;
+		o->delegate = delegate;
+		o->setDevice();
+		
+		return o;
+	}	
+    
 	DiskOperation* DiskOperation::newRemoveOperation( std::string fileName , DiskManagerDelegate *delegate)
 	{
 		DiskOperation *o = new DiskOperation();
@@ -150,10 +166,13 @@ namespace ss {
 		
 		switch (type) {
 			case write:
-				o << "Write file: '" << fileName << "' Size:" << au::Format::string(size,"B");
+				o << "Write to file: '" << fileName << "' Size:" << au::Format::string(size,"B");
+				break;
+			case append:
+				o << "Append to file: '" << fileName << "' Size:" << au::Format::string(size,"B");
 				break;
 			case read:
-				o << "Read file: '" << fileName << "' Size:" << au::Format::string(size,"B") << " ["<< size << "B] Offset:" << offset;
+				o << "Read from file: '" << fileName << "' Size:" << au::Format::string(size,"B") << " ["<< size << "B] Offset:" << offset;
 				break;
 			case remove:
 				o << "Remove file: '" << fileName << "'";
@@ -171,6 +190,9 @@ namespace ss {
 		switch (type) {
 			case write:
 				o << "W";
+				break;
+			case append:
+				o << "A";
 				break;
 			case read:
 				o << "R";
@@ -239,7 +261,40 @@ namespace ss {
 			
 			fclose(file);
 		}
-		
+
+		if( type == DiskOperation::append )
+		{
+			// Create a new file
+			
+			std::ostringstream fn;
+			fn << SamsonSetup::shared()->dataDirectory << "/" << fileName;
+			
+			LM_T( LmtDisk , ("DiskManager: Opening file %s to write", fn.str().c_str() ));
+			FILE *file = fopen( fn.str().c_str() , "a" );
+			if ( !file )
+				setError("Error opening file");
+			else
+			{
+				if( size > 0 )
+                {
+                    if( fwrite(buffer->getData(), size, 1 , file) == 1 )
+                    {
+                        fflush(file);
+                        gettimeofday(&stop, NULL);
+                        operation_time = DiskStatistics::timevaldiff( &start , &stop);
+                    }
+                    else
+                        setError("Error writing data to the file");
+                }
+                else
+                    operation_time = 0;
+                
+			}
+			
+			fclose(file);
+		}
+        
+        
 		if( type == DiskOperation::read )
 		{
 			// Create a new one

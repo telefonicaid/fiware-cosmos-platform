@@ -13,6 +13,7 @@ TODO:
 
 * Delilah crashes if the queue specified for the download command does not exists
 * Delilah displays the last performed command after it's execution. Example: execute help will display "Delilah> helpDelilah>"
+* Solve the current name miss match for the same concept "queue = set_name" 
 
 
 FUTURE:

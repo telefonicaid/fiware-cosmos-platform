@@ -11,6 +11,9 @@ TODO:
 * Inform about the memory and process used when running samsonLocal
 * Valgrind debuign
 
+* Delilah crashes if the queue specified for the download command does not exists
+* Delilah displays the last performed command after it's execution. Example: execute help will display "Delilah> helpDelilah>"
+
 
 FUTURE:
 review setup since the maximum number of outputs

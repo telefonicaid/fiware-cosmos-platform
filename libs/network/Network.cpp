@@ -1598,6 +1598,8 @@ Endpoint* Network::endpointLookup(char* alias)
 		if (endpoint[ix] == NULL)
 			continue;
 
+		if (endpoint[ix]->aliasGet() == NULL)
+			LM_X(1, ("NULL alias for endpoint %d", ix));
 		if (strcmp(endpoint[ix]->aliasGet(), alias) == 0)
 			return endpoint[ix];
 	}
@@ -2292,6 +2294,45 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 {
 	int newSlot = 0;
 	int oldSlot;
+	
+	//
+	// Worker Id within limits ?
+	//
+	if (hello->workerId >= Workers)
+	{
+		if (headerP->type == Message::Msg)
+			helloSend(ep, Message::Ack);
+
+		LM_W(("Got Hello from worker with workerID %d (I only accept %d workers) - rejecting it with a 'Die' message", hello->workerId, Workers));
+		iomMsgSend(ep, endpoint[0], Message::Die, Message::Evt);  // Die message before closing fd just to reject second Supervisor
+		endpointRemove(ep, "alias not within limits");
+		return;
+	}
+
+
+
+	//
+	// Check that Worker alias doesn't already exist
+	//
+	Endpoint* xep;
+	LM_M(("Looking up endpoint with alias '%s', type: %s", hello->alias, endpoint[ME]->typeName((ss::Endpoint::Type) hello->type)));
+	if (hello->type == Endpoint::Worker)
+	{
+		if ((xep = endpointLookup(hello->alias)) != NULL)
+		{
+			if (xep->state == Endpoint::Connected)
+			{
+				if (headerP->type == Message::Msg)
+					helloSend(ep, Message::Ack);
+
+				LM_W(("Got Hello from worker with taken alias '%s' - rejecting it with a 'Die' message", hello->alias));
+				iomMsgSend(ep, endpoint[0], Message::Die, Message::Evt);  // Die message before closing fd just to reject second Supervisor
+				endpointRemove(ep, "duplicated alias");
+				return;
+			}
+		}
+	}
+
 
 #if 1
 	Host*     hostP = hostMgr->lookup(hello->ip);

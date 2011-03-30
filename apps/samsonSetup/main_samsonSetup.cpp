@@ -55,7 +55,7 @@ PaArgument paArgs[] =
 {
 	{ "-reset",       &reset,           "RESET",      PaBool,    PaOpt,  false, false,  true,  "reset platform"           },
 	{ "-ip",           rIp,             "IP",         PaStr,     PaOpt,  NOIP,   PaNL,  PaNL,  "IP to one samson machine" },
-	{ "-ips",          ip,              "IP_LIST",    PaSList,   PaOpt,  PaND,   PaNL,  PaNL,  "listen port"              },
+	{ "-ips",          ip,              "IP_LIST",    PaSList,   PaOpt,  PaND,   PaNL,  PaNL,  "list of worker IPs"       },
 	{ "-controller",   controllerHost,  "CONTROLLER", PaString,  PaOpt,  PaND,   PaNL,  PaNL,  "Controller host"          },
 	{ "-workers",     &workers,         "WORKERS",    PaInt,     PaOpt,     0,     0,   100,   "number of workers"        },
 	{ "-silent",      &silent,          "SILENT",     PaBool,    PaOpt,  false, false,  true,  "no log to stdout"         },

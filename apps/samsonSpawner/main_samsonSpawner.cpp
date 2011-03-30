@@ -399,64 +399,6 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 
 /* ****************************************************************************
 *
-* processesShutdown - 
-*/
-static void processesShutdown(void)
-{
-	ss::Process*  processP;
-	ss::Process** processList;
-	int           processes;
-	int           ix;
-	int           s;
-
-	processes   = processMaxGet();
-	processList = processListGet();
-
-	for (ix = processes - 1; ix >= 0; ix--)
-	{
-		processP = processList[ix];
-
-		if (processP == NULL)
-			continue;
-
-		if (processP->pid <= 0)
-		{
-			LM_T(LmtProcess, ("process '%s' has pid %d ...", processP->name, processP->pid));
-			continue;
-		}
-
-		if (processP->endpoint != NULL)
-		{
-			LM_T(LmtProcess, ("Sending 'Die' to %s", processP->name));
-
-			s = iomMsgSend(processP->endpoint, networkP->endpoint[0], ss::Message::Die, ss::Message::Msg);
-			LM_T(LmtProcess, ("iomMsgSend returned %d", s));
-			if (s != 0)
-				LM_E(("Error sending 'Die' to %s", processP->endpoint->name.c_str()));
-
-			usleep(50000);
-		}
-
-		LM_T(LmtProcess, ("Sending SIGINT to '%s'", processP->name));
-		kill(processP->pid, SIGINT);
-		usleep(50000);
-
-		LM_T(LmtProcess, ("Sending SIGKILL to '%s'", processP->name));
-		kill(processP->pid, SIGKILL);
-
-		if (processP->endpoint)
-			networkP->endpointRemove(processP->endpoint, "shutting down");
-
-		// NOT removing process here - that will be done when the process is waited for
-	}
-
-	processListShow("After shutdown");
-}
-
-
-
-/* ****************************************************************************
-*
 * hello - 
 */
 static int hello(ss::Endpoint* me, ss::Endpoint* ep, int* errP)
@@ -524,20 +466,22 @@ static int dieSend(ss::Endpoint* me, ss::Endpoint* ep)
 
 /* ****************************************************************************
 *
-* processesSteal - 
+* localProcessesKill - 
 */
-static void processesSteal(void)
+static void localProcessesKill(void)
 {
 	int            fd;
 	int            err = 0;
 	ss::Endpoint   ep;
 	ss::Endpoint   me;
+	int            s;
 
 
-
+	LM_M(("---------------------- IN ---------------------------"));
 	//
 	// Connecting to and sending 'Die' to worker
 	//
+	LM_M(("Connecting to worker in localhost"));
 	fd = iomConnect("localhost", WORKER_PORT);
 	if (fd != -1)
 	{
@@ -545,20 +489,37 @@ static void processesSteal(void)
 		ep.wFd   = fd;
 		ep.name  = "samsonWorkerToDie";
 		ep.type  = ss::Endpoint::Worker;
-		ep.ip    = (char*) "localhost";
+		ep.ip    = strdup("localhost");
 
+		LM_M(("Connected to worker - sending Hello"));
 		hello(networkP->endpoint[0], &ep, &err);
 		if (err != 0)
 			LM_E(("Error Helloing worker"));
 		else
+		{
+			LM_M(("Sending Die to worker"));
 			dieSend(networkP->endpoint[0], &ep);
+		}
 	}
+
+	usleep(100000);
+	LM_M(("system(\"killall samsonWorker\")"));
+	s = system("killall samsonWorker 2> /dev/null");
+	if (s != 0)
+		LM_E((" system(\"killall samsonWorker\"): %s", strerror(errno)));
+
+	usleep(100000);
+	LM_M(("system(\"killall -9 samsonWorker \")"));
+	s = system("killall -9 samsonWorker 2> /dev/null");
+	if (s != 0)
+		LM_E((" system(\"killall -9 samsonWorker\"): %s", strerror(errno)));
 
 
 
 	//
 	// Connecting to and sending 'Die' to controller
 	//
+	LM_M(("Connecting to controller in localhost"));
 	fd = iomConnect("localhost", CONTROLLER_PORT);
 	if (fd != -1)
 	{
@@ -566,14 +527,30 @@ static void processesSteal(void)
 		ep.wFd   = fd;
 		ep.name  = "samsonControllerToDie";
 		ep.type  = ss::Endpoint::Controller;
-		ep.ip    = (char*) "localhost";
+		ep.ip    = strdup("localhost");
 	
+        LM_M(("Connected to controller - sending Hello"));
 		hello(networkP->endpoint[0], &ep, &err);
 		if (err != 0)
 			LM_E(("Error Helloing controller"));
 		else
+		{
+			LM_M(("Sending Die to controller"));
 			dieSend(networkP->endpoint[0], &ep);
+		}
 	}
+
+	usleep(100000);
+    LM_M(("system(\"killall samsonController\")"));
+	s = system("killall samsonController 2> /dev/null");
+	if (s != 0)
+		LM_E((" system(\"killall samsonController\"): %s", strerror(errno)));
+
+	usleep(100000);
+    LM_M(("system(\"killall -9 samsonController\")"));
+	s = system("killall -9 samsonController 2> /dev/null");
+	if (s != 0)
+		LM_E((" system(\"killall -9 samsonController\"): %s", strerror(errno)));
 }
 
 
@@ -586,8 +563,7 @@ void SamsonSpawner::init(ss::ProcessVector* procVec)
 {
 	bool verbose;
 
-	processesSteal();
-	processesShutdown();
+	localProcessesKill();
 
 	if (procVec != NULL)
 	{
@@ -675,7 +651,7 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 				LM_T(LmtReset, ("Got RESET from '%s' - NOT forwarding RESET to all spawners", ep->name.c_str()));
 			
 			LM_T(LmtReset, ("killing local processes"));
-			processesShutdown();
+			localProcessesKill();
 			LM_T(LmtReset, ("Sending ack to RESET message to %s@%s", ep->name.c_str(), ep->ip));
 			iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
 

@@ -64,14 +64,22 @@ ss::Network*        networkP   = NULL;
 */
 void exitFunction(void)
 {
-	if (processVec)
-		free(processVec);
+	LM_M(("Freeing stuff before EXITING"));
+	LM_W(("process vector is sent to Network and freed by Network"));
 
 	if (networkP)
-	   delete networkP;
+	{
+		LM_M(("deleting Network instance"));
+		delete networkP;
+		networkP = NULL;
+	}
 
 	if (progName)
+	{
+		LM_M(("Freeing progName"));
 		free(progName);
+		progName = NULL;
+	}
 }
 
 

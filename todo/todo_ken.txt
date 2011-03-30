@@ -1,4 +1,7 @@
 NOW
+  o Alias > WORKER_FIRST + Workers: accept and Die
+  o Stop using aliases for Workers - use IP
+  o If error on messages - send Die and close connection - don't LM_X ...
   o Make WORKER respond to messages while CONTROLLER disconnected
   o Make WORKER not require options (-controller + -alias) - look in processVec file
   o Stop sending the workerVec message - just read the file samsonPlatformProcesses in Network::init

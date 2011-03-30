@@ -2298,17 +2298,19 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	//
 	// Worker Id within limits ?
 	//
-	if (hello->workerId >= Workers)
+    if (hello->type == Endpoint::Worker)
 	{
-		if (headerP->type == Message::Msg)
-			helloSend(ep, Message::Ack);
+		if (hello->workerId >= Workers)
+		{
+			if (headerP->type == Message::Msg)
+				helloSend(ep, Message::Ack);
 
-		LM_W(("Got Hello from worker with workerID %d (I only accept %d workers) - rejecting it with a 'Die' message", hello->workerId, Workers));
-		iomMsgSend(ep, endpoint[0], Message::Die, Message::Evt);  // Die message before closing fd just to reject second Supervisor
-		endpointRemove(ep, "alias not within limits");
-		return;
+			LM_W(("Got Hello from worker with workerID %d (I only accept %d workers) - rejecting it with a 'Die' message", hello->workerId, Workers));
+			iomMsgSend(ep, endpoint[0], Message::Die, Message::Evt);  // Die message before closing fd just to reject second Supervisor
+			endpointRemove(ep, "alias not within limits");
+			return;
+		}
 	}
-
 
 
 	//

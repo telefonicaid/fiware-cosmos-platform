@@ -79,10 +79,11 @@ private:
 *
 * Global variables
 */
-int                 logFd        = -1;
-ss::Network*        networkP     = NULL;
-ss::ProcessVector*  procVec      = NULL;   // Should use Network's procVec, not a local copy ... 
-SamsonSpawner*      spawnerP     = NULL;
+int                 logFd             = -1;
+ss::Network*        networkP          = NULL;
+ss::ProcessVector*  procVec           = NULL;   // Should use Network's procVec, not a local copy ... 
+SamsonSpawner*      spawnerP          = NULL;
+static bool         restartInProgress = false;
 
 
 
@@ -185,6 +186,8 @@ int SamsonSpawner::timeoutFunction(void)
 
 			if (access(SAMSON_PLATFORM_PROCESSES, R_OK) != 0)
 				LM_W(("'%s' died - NOT restarting it as the platform processes file isn't in place", processP->name));
+			else if (restartInProgress)
+				LM_W(("'%s' died - NOT restarting it as the platform is restarting", processP->name));
 			else
 			{
 				if (noRestarts == true)
@@ -640,6 +643,7 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 		{
 			LM_T(LmtReset, ("Got a Reset message from '%s'", ep->name.c_str()));
 			LM_T(LmtReset, ("unlinking '%s'", SAMSON_PLATFORM_PROCESSES));
+			restartInProgress = true;
 			unlink(SAMSON_PLATFORM_PROCESSES);
 
 			if (ep->type == ss::Endpoint::Setup) 
@@ -671,6 +675,7 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 	case ss::Message::ProcessVector:
 		if (headerP->type == ss::Message::Msg)
 		{
+			restartInProgress = false;
 			LM_T(LmtProcessVector, ("Received a ProcessVector from '%s'. dataLen: %d", ep->name.c_str(), headerP->dataLen));
 
 			if ((procVec->processes <= 0) || (procVec->processes > 10))

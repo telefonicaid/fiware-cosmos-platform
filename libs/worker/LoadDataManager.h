@@ -8,14 +8,13 @@
 #include "Lock.h"						// au::Lock
 #include "samsonDirectories.h"			// SAMSON_DATA_DIRECTORY
 #include "SamsonSetup.h"				// ss::SamsonSetup
-#include "EngineDelegates.h"				// ss::FileManagerDelegate
 
 namespace ss {
 
 	class Buffer;
 	class SamsonWorker;
 	class LoadDataManager;
-
+    class DiskOperation;
 	
 	class LoadDataManagerItem
 	{
@@ -96,12 +95,10 @@ namespace ss {
 			output << "<Down:?>";
 			return output.str();
 		}
-		
-		
 	};
 	
 	
-	class LoadDataManager : public DiskManagerDelegate
+	class LoadDataManager : public EngineNotificationListener
 	{
 		friend class UploadItem;
 		friend class DownloadItem;
@@ -120,8 +117,8 @@ namespace ss {
 
 		size_t upload_size;			// Simple information about the size of upload
 		
-		
 		LoadDataManager( SamsonWorker *_worker );
+        ~LoadDataManager();
 		
 		// Add item to upload data
 		void addUploadItem( int fromIdentifier, const network::UploadDataFile &uploadDataFile ,size_t sender_id, Buffer * buffer  );
@@ -129,8 +126,10 @@ namespace ss {
 		// add item to download data
 		void addDownloadItem( int fromIdentifier, const network::DownloadDataFile &downloadDataFile, size_t sender_id );
 		
-		// Disk Manager notifications
-		void diskManagerNotifyFinish(  DiskOperation *operation );	
+		// Notifications
+        void notify( EngineNotification* notification );
+        bool acceptNotification( EngineNotification* notification );
+        void setNotificationCommonEnvironment( EngineNotification* notification );
 
 		// Fill status information	
 		void fill( network::WorkerStatus* ws);

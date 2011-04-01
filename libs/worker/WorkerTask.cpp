@@ -29,9 +29,17 @@ namespace ss
 		num_workers = taskManager->worker->network->getNumWorkers();
 		num_finished_workers = 0;
 		
+        // Init counter of pending things
+        num_process_items = 0;
+        num_disk_operations = 0;
 		
-		finish_message = NULL;
 		complete_message = NULL;
+        
+        
+        // Add as a listener for notification_sub_task_finished
+        Engine::shared()->notificationSystem.add( notification_sub_task_finished, this );
+        Engine::shared()->notificationSystem.add( notification_process_request_response, this );
+        Engine::shared()->notificationSystem.add( notification_disk_operation_request_response, this );
 	}
 	
 	WorkerTask::~WorkerTask()
@@ -39,15 +47,14 @@ namespace ss
 		if( reduceInformation )
 			delete reduceInformation;
 		
-		if( finish_message )
-			delete finish_message;
-		
 		if( complete_message )
 			delete complete_message;
+        
+        Engine::shared()->notificationSystem.remove( this );
 	}
 	
 	
-	void WorkerTask::setup(Operation::Type _type , const network::WorkerTask &task)
+	void WorkerTask::setupAndRun(Operation::Type _type , const network::WorkerTask &task)
 	{
 		if( status != pending_definition)
 			LM_X(1,("Internal error: Unexpected status of a WorkerTask at setup" ));
@@ -63,24 +70,10 @@ namespace ss
 		task_id = task.task_id();		// Save the task id
 		
 		// Messages prepared to be send to the controller
-		finish_message = new network::WorkerTaskConfirmation();
-		finish_message->set_task_id( task_id );
-		finish_message->set_type( network::WorkerTaskConfirmation::finish );
 		
 		complete_message = new network::WorkerTaskConfirmation();
 		complete_message->set_task_id( task_id );
 		complete_message->set_type( network::WorkerTaskConfirmation::complete );
-		
-		
-		status = ready;
-		
-		
-	}
-
-	void WorkerTask::run()
-	{
-		if( status != ready )
-			LM_X(1,("Internal error: Unexpected status when running a WorkerTask"));
 		
 		// Set status to runnign until all the tasks are completed ( or error )
 		status = running;
@@ -137,63 +130,80 @@ namespace ss
 	
 	void WorkerTask::addSubTask( WorkerSubTask *subTask )
 	{
-		// Give the task an id
-		subTask->id = subTaskId++;
-		
-		if( error.isActivated() )
-		{
-			delete subTask;
-			return;
-		}
-		
-		// Only mode to add new tasks
-		if( status != running)
-			LM_X(1,("Internal error"));
+        if( !subTask )
+            LM_X(1,("WorkerTask tried to add a NULL subTask"));
+        
+		// Information about ids
+        subTask->task_id = task_id;
+		subTask->sub_task_id = subTaskId++;
 
-		
-		MemoryRequest *mr = subTask->getMemoryRequest();
-		if( mr )
-		{
-			subTasksWaitingForMemory.insertInMap( subTask->id , subTask );
-			Engine::shared()->memoryManager.addMemoryRequest( mr );
-			return;
-		}
-		
-		// If no memory request go to the inputs
-		std::vector<DiskOperation*>* items = subTask->getFileMangerReadItems();
-		if( items )
-		{
-			
-			subTasksWaitingForReadItems.insertInMap( subTask->id , subTask );
-			
-			for ( size_t i = 0 ; i < items->size() ; i++ )
-				Engine::shared()->add( items->at(i) );
-			
-			delete items;
-			
-			// Submit all the items to be read...
-			return;
-		}
-		
-		// If not take the process to run...
-		ProcessItem* processItem =  subTask->getProcessItem();
-		
-		if ( processItem )
-		{
-			// Add to the list of waiting sub-tasks
-			subTasksWaitingForProcess.insertInMap( subTask->id , subTask );
-			
-			// Schedule the proces item
-			Engine::shared()->addProcessItem( processItem );
-			
-			return;
-		}
-		
-		// Nothing to do
-		delete subTask;
-		check();
+		subTasks.insertInMap(subTask->sub_task_id , subTask);
+        subTask->run();   // Start the subtask querying a memory request / read operation / process / etc
 	}
-	
+    
+    void WorkerTask::notify( EngineNotification* notification )
+    {
+        //LM_M(("WorkerTask: %s", notification->getDescription().c_str() ));
+        
+        switch (notification->channel) {
+                
+            case notification_disk_operation_request_response:
+            {
+                num_disk_operations--;
+                check();
+                break;
+            }
+                
+            case notification_process_request_response:
+            {
+                num_process_items--;
+                
+                if ( notification->object.size() == 0 )
+                    LM_X(1 , ("WorkerTask receive a notification_process_request_response without an object"));
+                if ( notification->object.size() > 1 )
+                    LM_X(1 , ("WorkerTask receive a notification_process_request_response with %d objects instead of 1",(int) notification->object.size() ));
+                
+                DataBufferProcessItem* tmp = (DataBufferProcessItem*) notification->object[0] ;
+                
+                // New file to be saved
+                std::string queue_name = tmp->bv->queue->name();
+                std::string fileName = newFileName( );
+                
+                // Add a file as output for this operation
+                addKVFile(fileName, queue_name, tmp->buffer);
+                
+                delete tmp;
+                notification->object.clear();   // Remove the objexct
+                
+                break;
+            }
+                
+            case notification_sub_task_finished:
+            {
+                size_t sub_task_id = notification->getSizeT("sub_task_id", 0);
+
+                WorkerSubTask *subTask = subTasks.extractFromMap( sub_task_id );
+                
+                if( subTask )
+                {
+                    error.set( &subTask->error );
+                    delete subTask;
+                }
+                else
+                {
+                    LM_W(("Subtask finished and not found in a vector of %d positions", (int)subTasks.size() ));
+                }
+                
+                check();
+                
+                break;
+            }
+                
+            default:
+                LM_X(1, ("WorkerTask received an unexpected notification"));
+                break;
+        }
+    }
 	
 	void WorkerTask::check()
 	{
@@ -212,15 +222,12 @@ namespace ss
 		if ( status == running )
 		{
 			// If no more tasks, then set to finish and send a message to the rest of workers
-			if( subTasksWaitingForMemory.size() == 0 )
-				if( subTasksWaitingForReadItems.size() == 0 )
-					if( subTasksWaitingForProcess.size() == 0 )
-				    {				
-						// Send a close message to all the workers
-						sendCloseMessages();
-						
-						status = local_content_finished;
-					}
+			if( subTasks.size() == 0 )
+            {				
+                // Send a close message to all the workers
+                sendCloseMessages();
+                status = local_content_finished;
+            }
 		}
 		
 		if( status == local_content_finished )
@@ -238,7 +245,7 @@ namespace ss
 		
 		if (status == all_content_finish )
 		{
-			if( processWriteItems.size() == 0 )	 // No more files to be generated
+			if( num_process_items == 0 )	 // No more files to be generated
 			{
 				status = finish;
 				
@@ -249,10 +256,9 @@ namespace ss
 		
 		
 		if ( status == finish)
-			if( ( writeItems.size() == 0 ) && ( processWriteItems.size() == 0 ) )
+			if( num_disk_operations == 0 )
 			{
 				// If no more elements to write
-				
 				status = completed;
 				
 				//Send a message to the controller to notify about this
@@ -261,7 +267,7 @@ namespace ss
 		
 		
 		
-		// Spetial confition if
+		// Spetial condition
 		if( status != completed)
 			if( error.isActivated() )
 			{
@@ -271,212 +277,31 @@ namespace ss
 				sendCompleteTaskMessageToController();
 				
 			}
-		
-		
-	}
-	
-	void WorkerTask::notifyFinishProcess( ProcessItem * i )
-	{
-		
-		switch (i->component) {
-			case WORKER_TASK_COMPONENT_PROCESS:
-			{
-				
-				WorkerSubTask *st = subTasksWaitingForProcess.extractFromMap( i->sub_tag );
-				
-				if( !st )
-					LM_X(1,("Internal error"));
-
-				delete st;
-				
-				// Get the possible error from the process execution
-				if( i->error.isActivated() )
-					setError(i->error.getMessage() );
-				
-				check();
-				
-			}
-				break;
-				
-			case WORKER_TASK_COMPONENT_DATA_BUFFER_PROCESS:
-			{
-				DataBufferProcessItem* tmp = (DataBufferProcessItem*) i;
-				
-				processWriteItems.erase(tmp);
-				
-				// New file to be saved
-				std::string queue_name = tmp->bv->queue->name();
-				std::string fileName = newFileName( );
-				
-				// Notify the controller that a new file is created
-				sendAddFileMessageToController( tmp->bv , fileName , tmp->buffer );
-				
-				DiskOperation *operation = DiskOperation::newWriteOperation( tmp->buffer , fileName , taskManager);
-				operation->tag = task_id;											// Tag is used with the number of the task
-				operation->component = WORKER_TASK_COMPONENT_DATA_BUFFER_PROCESS;	// Component is used to route the notification at the TaskManager
-				writeItems.insert( operation );
-				
-				// Schedule the new element to be saved on disk
-				Engine::shared()->add( operation );
-				
-			}
-				break;
-			default:
-				LM_X(1,("Internal error"));
-				break;
-		}
-
-	}
-	
-	void WorkerTask::diskManagerNotifyFinish(  DiskOperation *operation )
-	{
-		switch (operation->getType()) {
-				
-			case DiskOperation::read:
-			{
-				WorkerSubTask * subTask = subTasksWaitingForReadItems.findInMap( operation->sub_tag );
-				if( !subTask )
-					LM_X(1,("Internal error"));
-
-				
-				if ( subTask->notifyReadFinish() )
-				{
-					// Extract 
-					subTask = subTasksWaitingForReadItems.extractFromMap( operation->sub_tag );
-					
-					// Once read all files go to the process
-					
-					ProcessItem* processItem =  subTask->getProcessItem();
-					
-					if ( processItem )
-					{
-						// Add to the list of waiting sub-tasks
-						subTasksWaitingForProcess.insertInMap( subTask->id , subTask );
-						
-						// Schedule the proces item
-						Engine::shared()->addProcessItem( processItem );
-						
-						return;
-					}
-					else
-					{
-						// Remove the subtask since it will be not necessary any more
-						delete subTask;
-					}
-					
-					// Internal check for status
-					check();
-					
-				}
-			}
-				break;
-			case DiskOperation::write:
-			{
-				// Buffers have been saved to disk
-				
-				switch (operation->component) {
-					case WORKER_TASK_COMPONENT_PROCESS:
-					{
-						LM_X(1,("Internal error"));
-					}
-						break;
-						
-					case WORKER_TASK_COMPONENT_DATA_BUFFER_PROCESS:
-					{
-						writeItems.erase( operation );
-						check();
-					}
-						break;
-					case WORKER_TASK_COMPONENT_ADD_FILE:
-					{
-						writeItems.erase( operation );
-						check();
-					}
-						break;
-					default:
-						LM_X(1,("Internal error"));
-						break;
-				}
-				
-			}
-				break;
-			case DiskOperation::remove:
-				break;
-			default:
-				break;
-		}			
-		
-		
+        
+        if( status == completed )
+        {
+            EngineNotification *notification = new EngineNotification( notification_task_finished );
+            notification->setSizeT("task_id", task_id);
+            notification->setInt("worker", taskManager->worker->network->getWorkerId());
+            Engine::shared()->notify(notification);
+        }
 		
 	}
-	
-	void WorkerTask::notifyFinishMemoryRequest( MemoryRequest *request )
-	{
-		WorkerSubTask * subTask = subTasksWaitingForMemory.extractFromMap( request->sub_tag );
-		if( !subTask )
-			LM_X(1,("Internal error"));
-
 		
-		
-		// If no memory request go to the inputs
-		std::vector<DiskOperation*>* items = subTask->getFileMangerReadItems();
-		if( items )
-		{
-			subTasksWaitingForReadItems.insertInMap( subTask->id , subTask );
-			
-			for ( size_t i = 0 ; i < items->size() ; i++ )
-				Engine::shared()->add( items->at(i) );
-			
-			delete items;
-			
-			return;
-		}
-		
-		// If not take the process to run...
-		ProcessItem* processItem =  subTask->getProcessItem();
-		
-		if ( processItem )
-		{
-			// Add to the list of waiting sub-tasks
-			subTasksWaitingForProcess.insertInMap( subTask->id , subTask );
-			
-			// Schedule the proces item
-			Engine::shared()->addProcessItem( processItem );
-			
-			return;
-		}
-		
-		LM_X(1,("Internal error"));
-		
-		
-	}
-	
-	
-	
 	void WorkerTask::finishWorker()
 	{
 		num_finished_workers++;
 		check();
 	}
-
-    void printSubTasks( std::ostringstream & output , au::map<size_t , WorkerSubTask> & subtasks)
-	{
-	   au::map<size_t , WorkerSubTask>::iterator i;
-	   for (i = subtasks.begin() ; i != subtasks.end() ; i++)
-		  output << "[" << i->second->description << "]";
-	}
 	
 	std::string WorkerTask::getStatus()
 	{
 		std::ostringstream output;
-		output << "ID:" << task_id << " OP:" << operation << " State:";
+		output << "\t\t[ ID:" << task_id << " OP:" << operation << " State:";
 
 		switch (status) {
 			case pending_definition:
-				output << "Pending definition";
-				break;
-			case ready:
-				output << "Ready";
+				output << "Def";
 				break;
 			case running:
 				output << "Running";
@@ -494,29 +319,15 @@ namespace ss
 				output << "All content finish";
 				break;
 		}
-		
-		output << " ";
-		
-		//output << "Memory: " << subTasksWaitingForMemory.size();
-		//output << " Read:" << subTasksWaitingForReadItems.size() 
-		//output << " Run:" << subTasksWaitingForProcess.size();
-
-		output << "Memory: ";
-		printSubTasks( output, subTasksWaitingForMemory );
-		output << " Read:";
-		printSubTasks( output, subTasksWaitingForReadItems ); 
-		output << " Run:";
-		printSubTasks( output, subTasksWaitingForProcess );
-
-		output << " Writing:" << processWriteItems.size() << "/" <<writeItems.size(); 
-		
-		if( queueBufferVectors.size() > 0)
-		{
-			output << " B: ";
-			au::map<std::string , QueueuBufferVector>::iterator q;
-			for ( q = queueBufferVectors.begin() ; q != queueBufferVectors.end() ; q++)	
-				output << "(" << q->first << "=" << q->second->getStatus() << ")";
-		}
+		output << " Workers " << num_finished_workers << "/" << num_workers;
+		output << " DiskOperations " << num_disk_operations;
+		output << " BufferPreproces " << num_process_items;
+        output << " ]";
+        
+		output << "\t\t\t Subtasks:";
+	        
+        for (au::map<size_t,WorkerSubTask>::iterator i = subTasks.begin() ; i != subTasks.end() ; i++)
+            output << i->second->getStatus();
 		
 		return output.str();
 	}
@@ -528,93 +339,99 @@ namespace ss
 	
 	void WorkerTask::addBuffer( network::WorkerDataExchange& workerDataExchange , Buffer *buffer )
 	{
-        
         //LM_M(("Received a buffer from worker %d hash-set %d (%s)",  workerDataExchange.worker() , workerDataExchange.hg_set() , workerDataExchange.finish()?"finished":"not finished" ));
         
         network::Queue queue = workerDataExchange.queue();
         bool txt = workerDataExchange.txt();
-        
 		std::string queue_name = queue.name();
-		QueueuBufferVector* bv = queueBufferVectors.findInMap( queue_name );
-		
-		if( !bv )
-		{
-			bv = new QueueuBufferVector(  queue , txt );
-			queueBufferVectors.insertInMap( queue_name , bv  );
-		}
-		
-		// Compute the size of the new buffer
-		size_t buffer_size;
-		if( txt )
-			buffer_size = buffer->getSize();
-		else
-		{
-			// It is suppoused to be a KVHeader
-			KVHeader * header = (( KVHeader *) buffer->getData());
-			if( !header->check() )	// Assert magic number of incoming data packets
-				LM_X(1,("Internal error"));
+        
+        if( txt )
+        {
+            // Add directly the append operation for each hash-group set
+            int hg_set = workerDataExchange.hg_set();
+            addFile( newFileNameForTXTOutput( hg_set ) , queue_name , KVInfo( buffer->getSize() , 0 ) , buffer );
+        }
+        else
+        {
+        
+            QueueuBufferVector* bv = queueBufferVectors.findInMap( queue_name );
+            
+            if( !bv )
+            {
+                bv = new QueueuBufferVector(  queue , txt );
+                queueBufferVectors.insertInMap( queue_name , bv  );
+            }
+            
+            // Add the buffer to the queue vector
+            bv->addBuffer( workerDataExchange, buffer );
+            
+            // Check if there is enougth data to produce a new file
+            QueueuBufferVector* new_bv = bv->getQueueuBufferVectorToWrite();
+            
+            // Schedule this new buffer vector to be writted to disk
+            if( new_bv )
+            {
+                DataBufferProcessItem* tmp = new DataBufferProcessItem( new_bv );
+                addProcessItem(tmp);
+            }
+        }
+	}
+    
+    void WorkerTask::addKVFile( std::string fileName , std::string queue , Buffer *buffer )
+    {
+        KVHeader * header = (KVHeader*) ( buffer->getData() );
+        addFile(fileName, queue, header->info , buffer );
+    }
+    
+    
+    void WorkerTask::addFile( std::string fileName , std::string queue , KVInfo info )
+    {
+        WorkerTaskOutputFile * outputFile = outputFiles.findInMap( fileName ); 
+        
+        if ( !outputFile )
+        {
+            outputFile = new WorkerTaskOutputFile( fileName , queue , taskManager->worker->network->getWorkerId() );
+            outputFiles.insertInMap( fileName, outputFile );
+        }
 
-			buffer_size = header->info.size;
-		}
+        // Append generated content for this file
+        outputFile->info.append( info );
         
-		// Add the buffer to the queue vector
-		bv->addBuffer( workerDataExchange, buffer );
-        
-		// Check of there is enougth data to produce a new file
-        QueueuBufferVector* new_bv = bv->getQueueuBufferVectorToWrite();
-        
-        // Schedule this new buffer vector to be writted to disk
-        if( new_bv )
-			flush( new_bv );
-		
-	}
-	
-	void WorkerTask::flush( QueueuBufferVector *bv )
-	{
-		DataBufferProcessItem* tmp = new DataBufferProcessItem( bv );
-        // Tag is used with the number of the task
-		tmp->tag = task_id;		
-        // Component is used to route the notification at the TaskManager
-		tmp->component = WORKER_TASK_COMPONENT_DATA_BUFFER_PROCESS;	
-        // Delegate is the process manager so this operation can be killed without any problem
-		tmp->setProcessManagerDelegate(taskManager);
-		processWriteItems.insert( tmp );
-		
-		// Add the process to joint the buffer
-		Engine::shared()->addProcessItem( tmp );
-	}
-	
+    }
+    
 	// add a buffer to be saved as a key-value file
-	void WorkerTask::addFile( network::QueueFile &qf , Buffer *buffer )
+	void WorkerTask::addFile(  std::string fileName , std::string queue , KVInfo info , Buffer *buffer )
 	{
-		// Add as an "add file" in the finish message ( it will be notified when the finish message is sent )
-		finish_message->add_add_file( )->CopyFrom( qf );
+        
+        // Add the file to be reported to the controller
+        addFile( fileName , queue , info );
 
-		// Create and submit the FileManagerWriteItem to be saved on disk
-		
-		DiskOperation *operation = DiskOperation::newWriteOperation(  buffer , qf.file().name() , taskManager);
-		operation->tag = task_id;									// Tag is used with the number of the task
-		operation->component = WORKER_TASK_COMPONENT_ADD_FILE;		// Component is used to route the notification at the TaskManager
-		writeItems.insert( operation );								// Insert in out local list of files to be saved
-		
-		Engine::shared()->add( operation );			// Schedule the new element to be saved on disk
-		
+		// Submit the operation
+		DiskOperation *operation = DiskOperation::newAppendOperation(  buffer , fileName );
+        addDiskOperation(operation);
 	}
 	
-	void WorkerTask::removeFile( network::QueueFile &qf)
+	void WorkerTask::removeFile(  std::string fileName , std::string queue )
 	{
-		// Add as an "remove file" in the finish message ( it will be notified when the finish message is sent )
-		finish_message->add_remove_file( )->CopyFrom( qf );
+        WorkerTaskOutputFile * outputFile = outputRemoveFiles.findInMap( fileName ); 
+        
+        if ( !outputFile )
+        {
+            outputFile = new WorkerTaskOutputFile( fileName , queue , taskManager->worker->network->getWorkerId() );
+            outputRemoveFiles.insertInMap( fileName, outputFile );
+        }
 	}
-	
-	
 	
 	void WorkerTask::flush()
 	{
 		au::map<std::string , QueueuBufferVector>::iterator iter;
 		
-		for ( iter = queueBufferVectors.begin() ; iter != queueBufferVectors.end() ; iter++)
-			flush( iter->second );
+		for ( iter = queueBufferVectors.begin() ; iter != queueBufferVectors.end() ; iter++ )
+        {
+            DataBufferProcessItem* tmp = new DataBufferProcessItem( iter->second );
+            addProcessItem(tmp);
+        }
+        
 		queueBufferVectors.clear();
 	}	
 	
@@ -642,20 +459,23 @@ namespace ss
 		NetworkInterface *network = taskManager->worker->network;
 		
 		Packet *p = new Packet();
-		network::WorkerTaskConfirmation *confirmation = p->message->mutable_worker_task_confirmation();
-		
-		// Copy all the information from the prepared message
-		confirmation->CopyFrom(*finish_message);
+		network::WorkerTaskConfirmation *finish_message = p->message->mutable_worker_task_confirmation();
+        
+        finish_message->set_task_id( task_id );
+
+        // Add a file for each generated file
+        for ( au::map<std::string , WorkerTaskOutputFile>::iterator f = outputFiles.begin( ) ; f!=outputFiles.end() ; f++)
+            f->second->fill( finish_message->add_add_file( ) );
+        
 		
 		if( error.isActivated() )
 		{
-			confirmation->set_type( network::WorkerTaskConfirmation::error );
-			confirmation->set_error_message( error.getMessage() );
+			finish_message->set_type( network::WorkerTaskConfirmation::error );
+			finish_message->set_error_message( error.getMessage() );
 		}
 		else
-		{
-			confirmation->set_type( network::WorkerTaskConfirmation::finish );
-		}
+			finish_message->set_type( network::WorkerTaskConfirmation::finish );
+        
 		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
 		
 	}	
@@ -683,42 +503,6 @@ namespace ss
 		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
 	}
 	
-	
-	
-	void WorkerTask::sendAddFileMessageToController( QueueuBufferVector *bv , std::string fileName , Buffer *b )
-	{
-		NetworkInterface *network = taskManager->worker->network;
-		
-		network::QueueFile qf;
-		qf.set_queue( bv->queue->name() );
-		network::File *file = qf.mutable_file();
-		file->set_name( fileName );
-		file->set_worker( network->getWorkerId() );
-		network::KVInfo *info = file->mutable_info();
-		
-		// This is suppoused to be a file ( txt or kv )
-		if( bv->txt )
-		{
-			info->set_size( b->getSize() );
-			info->set_kvs( 1 );
-		}
-		else
-		{
-			KVHeader * header = (KVHeader*) ( b->getData() );
-			info->set_size( header->info.size);
-			info->set_kvs(header->info.kvs);
-		}
-		
-		Packet *p = new Packet();
-		network::WorkerTaskConfirmation *confirmation = p->message->mutable_worker_task_confirmation();
-		confirmation->set_task_id( task_id );
-		confirmation->set_type( network::WorkerTaskConfirmation::update );
-		confirmation->add_add_file()->CopyFrom( qf );
-		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
-		
-	}
-	
-	
 		
 #pragma mark FileName
 	
@@ -728,28 +512,42 @@ namespace ss
 	{
 		std::ostringstream fileName;
 		
-		int worker_id = taskManager->worker->_myWorkerId; 
+		int worker_id = taskManager->worker->network->getWorkerId();
 		
 		//fileName << SamsonSetup::shared()->dataDirectory << "/" << "file_" << worker_id << "_" << task_id << "_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000;
 		fileName << worker_id << "_" << task_id << "_" << rand()%10000 << rand()%10000 << rand()%10000 << rand()%10000;
 		
 		return fileName.str();
 	}
+    
+    std::string WorkerTask::newFileNameForTXTOutput( int hg_set )
+    {
+		std::ostringstream fileName;
+		
+		int worker_id = taskManager->worker->network->getWorkerId();
+		
+		//fileName << SamsonSetup::shared()->dataDirectory << "/" << "file_" << worker_id << "_" << task_id << "_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000;
+		fileName << worker_id << "_" << task_id << "_txt_" << hg_set ;
+		
+		return fileName.str();
+    }
+    
 	
 	
 #pragma mark KILL	
 	
 	void WorkerTask::kill()
 	{
-		
-		// Revove the subtasks
-		for ( au::map<size_t , WorkerSubTask>::iterator i = subTasksWaitingForMemory.begin() ; i != subTasksWaitingForMemory.end() ; i++)
-			delete i->second;
-		subTasksWaitingForMemory.clear();
-		
-		for ( au::map<size_t , WorkerSubTask>::iterator i = subTasksWaitingForReadItems.begin() ; i != subTasksWaitingForReadItems.end() ; i++)
-			delete i->second;
-		subTasksWaitingForReadItems.clear();
+		/*
+         
+         // Revove the subtasks
+         for ( au::map<size_t , WorkerSubTask>::iterator i = subTasksWaitingForMemory.begin() ; i != subTasksWaitingForMemory.end() ; i++)
+         delete i->second;
+         subTasksWaitingForMemory.clear();
+         
+         for ( au::map<size_t , WorkerSubTask>::iterator i = subTasksWaitingForReadItems.begin() ; i != subTasksWaitingForReadItems.end() ; i++)
+         delete i->second;
+         subTasksWaitingForReadItems.clear();
 
 		for ( au::map<size_t , WorkerSubTask>::iterator i = subTasksWaitingForProcess.begin() ; i != subTasksWaitingForProcess.end() ; i++)
 			delete i->second;
@@ -766,8 +564,67 @@ namespace ss
 		}
 		
 		queueBufferVectors.clear();
+         
+         */
 		
 	}
-	
+    
+    void WorkerTask::setError(std::string _error_message)
+    {
+        // Set the error of the operation
+        error.set( _error_message );
+        
+        // Send the confirmation to the controller
+        sendCompleteTaskMessageToController();
+        
+        // Set the flag of completed to cancel this task automatically
+        status = completed;
+    }
+    
+#pragma Notifications
+    
+    void WorkerTask::addDiskOperation( DiskOperation *operation )
+    {
+        EngineNotification *notification = new EngineNotification( notification_disk_operation_request , operation );
+        setNotificationCommonEnvironment( notification );
+        num_disk_operations++;
+        Engine::shared()->notify( notification );
+    }
+
+    void WorkerTask::addProcessItem( ProcessItem *item )
+    {
+        EngineNotification *notification = new EngineNotification( notification_process_request , item );
+        setNotificationCommonEnvironment( notification );
+        num_process_items++;
+        Engine::shared()->notify( notification );
+    }
+    
+    
+#pragma mark Basic notifications
+    
+    void WorkerTask::setNotificationCommonEnvironment( EngineNotification *notification )
+    {
+        notification->set("target" , "WorkerTask" );
+        notification->setSizeT("task_id", task_id );
+        notification->setInt("worker",  taskManager->worker->network->getWorkerId() );
+        
+    }    
+        
+    bool WorkerTask::acceptNotification( EngineNotification* notification )
+    {
+        //LM_M(("WorkerTask accept? %s", notification->getDescription().c_str() ));
+        
+        if( notification->get("target","") != "WorkerTask" )
+            return false;
+        if( notification->getSizeT("task_id", 0) != task_id )
+            return false;
+        if( notification->getInt("worker", -1) != taskManager->worker->network->getWorkerId() )
+            return false;
+        
+        return  true;
+    }
+
+    
+
 	
 }

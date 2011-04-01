@@ -17,6 +17,10 @@ namespace ss {
 	WorkerTaskManager::WorkerTaskManager(SamsonWorker* _worker)
 	{
 		worker = _worker;
+
+        // Add as a listener for notification_task_finished notifications
+        Engine::shared()->notificationSystem.add( notification_task_finished , this );
+        
 	}
 	
 	void WorkerTaskManager::addTask(const network::WorkerTask &worker_task )
@@ -44,15 +48,54 @@ namespace ss {
 			}
 
 			// Setup the operation with all the information comming from controller
-			t->setup( op->getType() , worker_task );
-			
-			// Run the operation
-			t->run();
+			t->setupAndRun( op->getType() , worker_task );
 			
 		}
 		
 	}
 	
+    // Notification from the engine about finished tasks
+    void WorkerTaskManager::notify( EngineNotification* notification )
+    {
+        switch ( notification->channel ) 
+        {
+            case notification_task_finished:
+            {
+                // Create the task
+                size_t task_id = notification->getSizeT("task_id", 0);
+
+                WorkerTask *t = task.findInMap( task_id );
+                
+                if( t )
+                {
+                    if( t->status == WorkerTask::completed )
+                    {
+                        // Remove the tasks from the task manager
+                        delete task.extractFromMap( task_id );
+                    }
+                    else
+                        LM_X(1,("WorkerTaskManager received a notification about a finished task but it is not"));
+                }
+                
+            }
+                break;
+                
+            default:
+                LM_X(1,("WorkerTaskManager received an unexpected notification"));
+                break;
+        }
+        
+    }
+    
+    
+    bool WorkerTaskManager::acceptNotification( EngineNotification* notification )
+    {
+        if( notification->getInt("worker", -1) != worker->network->getWorkerId() )
+            return false;
+        return true;
+        
+    }    
+    
 	void WorkerTaskManager::killTask( const network::WorkerTaskKill &task_kill )
 	{
 		// Create the task
@@ -74,39 +117,14 @@ namespace ss {
 			t = new WorkerTask( this );
 
 		// Add the buffer to the task item
-		t->addBuffer( workerDataExchange , buffer );
-		
+		t->addBuffer( workerDataExchange , buffer );		
 	}
-	
-	void WorkerTaskManager::addFile( size_t task_id , network::QueueFile &qf , Buffer *buffer)
-	{
-		
-		// Create the task
-		WorkerTask *t = task.findInMap( task_id );
-
-		if( t )
-			t->addFile( qf , buffer );
-		else
-			Engine::shared()->memoryManager.destroyBuffer( buffer );
-		
-	}
-	
 	
 	void WorkerTaskManager::finishWorker( size_t task_id )
 	{
-		
-		// Create the task
 		WorkerTask *t = task.findInMap( task_id );
-
 		if( t )
-		{
 			t->finishWorker();
-			if( t->status == WorkerTask::completed )
-			{
-				// Remove the tasks from the task manager
-				delete task.extractFromMap( task_id );
-			}
-		}
 	}
 
 	void WorkerTaskManager::fill(network::WorkerStatus*  ws)
@@ -120,96 +138,6 @@ namespace ss {
 		return ( task.findInMap( task_id ) != NULL);
 	}
 	
-	
-		
-	void WorkerTaskManager::notifyFinishProcess( ProcessItem * item )
-	{
-		
-		size_t task_id = item->tag;
-		WorkerTask *t = task.findInMap( task_id );
-		if( t )
-		{
-			t->notifyFinishProcess( item );
-			if( t->status == WorkerTask::completed )
-			{
-				// Remove the tasks from the task manager
-				delete task.extractFromMap( task_id );
-			}
-		}
-		delete item;
-	}
-	
-	
-	void WorkerTaskManager::diskManagerNotifyFinish(  DiskOperation *operation )
-	{
-		switch (operation->getType()) {
-				
-			case DiskOperation::read:
-			{
-				size_t task_id = operation->tag;
-				WorkerTask *t = task.findInMap( task_id );
-				if( t )
-				{
-					if( operation->error.isActivated() )
-						t->setError(operation->error.getMessage());
-					else
-						t->diskManagerNotifyFinish( operation );
-					
-					if( t->status == WorkerTask::completed )
-					{
-						// Remove the tasks from the task manager
-						delete task.extractFromMap( task_id );
-					}
-				}
-			}
-				
-				break;
-			case DiskOperation::write:
-			{
-				size_t task_id = operation->tag;
-				WorkerTask *t = task.findInMap( task_id );
-				if( t )
-				{
-					if( operation->error.isActivated() )
-						t->setError(operation->error.getMessage());
-					else
-						t->diskManagerNotifyFinish( operation );
-					
-					if( t->status == WorkerTask::completed )
-					{
-						// Remove the tasks from the task manager
-						delete task.extractFromMap( task_id );
-					}
-				}
-			}
-				break;
-			case DiskOperation::remove:
-				break;
-			default:
-				break;
-		}		
-		
-	}
-	
-
-	
-	void WorkerTaskManager::notifyFinishMemoryRequest( MemoryRequest *request )
-	{
-		size_t task_id = request->tag;
-		WorkerTask *t = task.findInMap( task_id );
-		if( t )
-		{
-			t->notifyFinishMemoryRequest( request );
-			if( t->status == WorkerTask::completed )
-			{
-				// Remove the tasks from the task manager
-				delete task.extractFromMap( task_id );
-			}
-		}
-	}
-
-	
-	
 	std::string WorkerTaskManager::getStatus()
 	{
 		
@@ -219,7 +147,7 @@ namespace ss {
 		
 		output << "\n";
 		for ( iter = task.begin() ; iter != task.end() ; iter++)
-			output << "\t\t\t[" << iter->second->getStatus() << "]\n";
+			output << iter->second->getStatus() << "\n";
 		
 		return output.str();
 	}

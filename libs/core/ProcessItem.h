@@ -4,13 +4,13 @@
 
 #include <string>
 #include <sstream>
-#include "Error.h"				// au::Error
-#include "Stopper.h"			// au::Stopper
+#include "Error.h"                  // au::Error
+#include "Stopper.h"                // au::Stopper
+#include "EngineNotification.h"
+#include "samson/Environment.h"
 
 #define PI_PRIORITY_NORMAL_OPERATION	1
-
 #define PI_PRIORITY_NORMAL_COMPACT		5		// Compact operation
-
 #define PI_PRIORITY_BUFFER_PREWRITE		10		// Processing an output buffer to generate what is stored on disk
 
 
@@ -30,7 +30,7 @@ namespace ss {
 	class ProcessItem;
 	class ProcessManagerDelegate;
 	
-	class ProcessItem  
+	class ProcessItem  : public EngineNotificationObject
 	{
 
 	public:
@@ -52,11 +52,6 @@ namespace ss {
 		
 		au::Stopper stopper;	// Stopper to block the main thread until output memory is available again
 		
-	public:
-		
-		// Delegate to notify when finishing
-		ProcessManagerDelegate * delegate;
-		
 	protected:
 
 		// Information about the status of this process
@@ -72,10 +67,9 @@ namespace ss {
 		
 	public:
 
-		size_t component;		// Used by clients to indentify the component inside delegate to receive notiffication
-		size_t tag;				// Used by clients to identify element inside delegate
-		size_t sub_tag;			// Used by clients to identify sub-element inside delegate
-
+        // Environment variables
+        Environment environment;
+        
 		// Constructor with or without a delegate
 		
 		ProcessItem( int _priority );
@@ -84,7 +78,7 @@ namespace ss {
 		std::string getStatus();
 		
 		// Assign the delegate begore constructor
-		void setProcessManagerDelegate( ProcessManagerDelegate * _delegate );
+		void setProcessManagerDelegate( );
 		
 		// Notify delegate if any
 		void notifyFinishToDelegate();		

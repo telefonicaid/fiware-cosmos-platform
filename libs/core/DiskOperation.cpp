@@ -2,8 +2,7 @@
 #include "logMsg.h"					// LM_T
 #include "traceLevels.h"			// LmtDisk
 #include "SamsonSetup.h"			// ss::SamsonSetup
-#include "Engine.h"						// ss::Engine
-#include "EngineDelegates.h"	
+#include "Engine.h"					// ss::Engine
 
 namespace ss {
 	
@@ -19,7 +18,7 @@ namespace ss {
 			diskOperation->destroyBuffer();
 		
 		// Notify to the engine
-		Engine::shared()->finishDiskOperation( diskOperation );
+		Engine::shared()->diskManager.finishDiskOperation( diskOperation );
 		
 		return NULL;
 	}
@@ -36,7 +35,7 @@ namespace ss {
 		
 	}
 	
-	DiskOperation* DiskOperation::newReadOperation( char *data , std::string fileName , size_t offset , size_t size , DiskManagerDelegate *delegate )
+	DiskOperation* DiskOperation::newReadOperation( char *data , std::string fileName , size_t offset , size_t size  )
 	{
 		
 		DiskOperation *o = new DiskOperation();
@@ -46,13 +45,12 @@ namespace ss {
 		o->read_buffer = data;
 		o->size = size;
 		o->offset = offset;
-		o->delegate = delegate;
 		o->setDevice();
 		
 		return o;
 	}
 	
-	DiskOperation * DiskOperation::newReadOperation( std::string fileName , size_t offset , size_t size ,  SimpleBuffer simpleBuffer , DiskManagerDelegate *delegate )
+	DiskOperation * DiskOperation::newReadOperation( std::string fileName , size_t offset , size_t size ,  SimpleBuffer simpleBuffer )
 	{
 		
 		DiskOperation *o = new DiskOperation();
@@ -62,7 +60,6 @@ namespace ss {
 		o->read_buffer = simpleBuffer.getData();
 		o->size = size;
 		o->offset = offset;
-		o->delegate = delegate;
 		o->setDevice();
 		
 		return o;
@@ -70,7 +67,7 @@ namespace ss {
 	
 	
 	
-	DiskOperation* DiskOperation::newWriteOperation( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate )
+	DiskOperation* DiskOperation::newWriteOperation( Buffer* buffer ,  std::string fileName  )
 	{
 		DiskOperation *o = new DiskOperation();
 		
@@ -79,14 +76,13 @@ namespace ss {
 		o->buffer = buffer;
 		o->size = buffer->getSize();
 		o->offset = 0;
-		o->delegate = delegate;
 		o->setDevice();
 		
 		return o;
 	}
 
 	
-	DiskOperation* DiskOperation::newAppendOperation( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate )
+	DiskOperation* DiskOperation::newAppendOperation( Buffer* buffer ,  std::string fileName )
 	{
 		DiskOperation *o = new DiskOperation();
 		
@@ -95,19 +91,17 @@ namespace ss {
 		o->buffer = buffer;
 		o->size = buffer->getSize();
 		o->offset = 0;
-		o->delegate = delegate;
 		o->setDevice();
 		
 		return o;
 	}	
     
-	DiskOperation* DiskOperation::newRemoveOperation( std::string fileName , DiskManagerDelegate *delegate)
+	DiskOperation* DiskOperation::newRemoveOperation( std::string fileName )
 	{
 		DiskOperation *o = new DiskOperation();
 		
 		o->fileName = fileName;
 		o->type = DiskOperation::remove;
-		o->delegate = delegate;
 		o->setDevice();
 		
 		return o;
@@ -348,11 +342,6 @@ namespace ss {
 		}
 		
 	}	
-
-	void DiskOperation::setDelegate( DiskManagerDelegate * _delegate )
-	{
-		delegate = _delegate;
-	}
 	
 	void DiskOperation::destroyBuffer()
 	{

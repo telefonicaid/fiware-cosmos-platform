@@ -15,6 +15,7 @@
 #include <cstdlib>			// malloc, ...
 #include <fstream>			// std::ifstream
 #include "SimpleBuffer.h"	// ss::SimpleBuffer
+#include "EngineNotification.h" // ss::EngineNotificationObject
 
 namespace ss {
 	
@@ -22,7 +23,7 @@ namespace ss {
 	 Buffer class to hold data managed by MemoryManager
 	 */
 	
-	class Buffer
+	class Buffer : public EngineNotificationObject
 	{
 
 	public:
@@ -33,6 +34,8 @@ namespace ss {
 			output
 		} BufferType;
 
+        int tag;
+        
 	private:
 		
 		char * _data;			// Buffer of data

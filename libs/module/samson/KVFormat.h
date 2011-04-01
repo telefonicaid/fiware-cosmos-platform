@@ -57,7 +57,6 @@ namespace ss {
 			init( key , value );
 		}
 		
-		
 		static bool compare_format( std::string &format_1 , std::string &format_2 )
 		{
 		  if( format_1 == "*" )

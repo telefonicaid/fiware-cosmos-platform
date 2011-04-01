@@ -102,20 +102,27 @@ namespace ss {
 			status = downloading_files_from_workers;
 			
 			// Request for all the files
+            size_t offset = 0;
+            
 			for ( int i = 0 ; i < download_data_init_response->queue().file_size() ; i++)
 			{
 				Packet *p = new Packet();
 				p->message->set_delilah_id( id );
 				ss::network::DownloadDataFile *download_data_file = p->message->mutable_download_data_file();
 
-                download_data_file->set_file_id(i);
+                // Order in witch the files will be downloaded
+                download_data_file->set_file_id( i );
                 
 				// Copy the file information
 				download_data_file->mutable_file()->CopyFrom( download_data_init_response->queue().file(i) );
 				
 				// Send to the rigth worker
 				int worker = download_data_init_response->queue().file(i).worker();
+                
 				delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker) , Message::DownloadDataFile, p);
+                
+                offset_per_file.push_back( offset );
+                offset += download_data_init_response->queue().file(i).info().size();
 			}
 			
 			
@@ -131,7 +138,7 @@ namespace ss {
 			if ( num_files_downloaded == num_files_to_download)
 				status = waiting_file_downloads_confirmations;
 
-			
+            packet->buffer->tag =  (int) packet->message->download_data_file_response().query().file_id();
 			buffers.push_back( packet->buffer );
 			
 			lock.unlock();
@@ -169,7 +176,13 @@ namespace ss {
 			{
 				// Write stuff to disk
 				std::ostringstream out;
-				
+
+				int file_id = buffer->tag;
+                
+                if( ( file_id < 0 ) || (file_id >= (int)offset_per_file.size() ) )
+                    LM_X(1,("Wrong file id while downloading data from SAMSON"));
+                
+                fseek( file, offset_per_file[file_id], SEEK_SET );  // Position in the rigth place
 				fwrite( buffer->getData(), buffer->getSize() , 1 , file );
 				total_size += buffer->getSize();
 				Engine::shared()->memoryManager.destroyBuffer( buffer );

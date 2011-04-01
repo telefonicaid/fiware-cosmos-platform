@@ -6,6 +6,7 @@
 #include "MessagesOperations.h"		// setErrorMessage
 #include "SamsonSetup.h"			// ss::SamsonSetup
 #include "DiskOperation.h"			// ss::DiskOperation
+#include "Engine.h"                 // ss::Engine
 
 namespace ss
 {
@@ -45,11 +46,15 @@ namespace ss
 	void UploadItem::submitToFileManager()
 	{
 		// Add to the file manager to be stored on disk
-		DiskOperation *operation = DiskOperation::newWriteOperation( buffer , fileName , dataManager );
+		DiskOperation *operation = DiskOperation::newWriteOperation( buffer , fileName );
 		operation->tag = id;	// Use my id as tag
 
 		// Submit to the engine
-		Engine::shared()->add( operation  );
+        EngineNotification *notification = new EngineNotification( notification_disk_operation_request , operation );
+        notification->set("target", "LoadDataManager");
+        notification->setSizeT("id", id);
+        notification->setInt("worker", dataManager->worker->network->getWorkerId());
+        Engine::shared()->notify( notification);
 	}
 
 	void UploadItem::sendResponse( bool error , std::string error_message )
@@ -107,11 +112,18 @@ namespace ss
 		buffer = Engine::shared()->memoryManager.newBuffer( "Buffer for downloading data" , size , Buffer::output );
 		buffer->setSize( size );
 
-		DiskOperation *operation = DiskOperation::newReadOperation( buffer->getData() , fileName , 0 , size , dataManager );
-		operation->tag = id;	// Use my id as tag
-
+		DiskOperation *operation = DiskOperation::newReadOperation( buffer->getData() , fileName , 0 , size );
+        operation->tag = id;
+        
 		// Submit the operation to the engine
-		Engine::shared()->add( operation );
+        EngineNotification *notification = new EngineNotification( notification_disk_operation_request , operation );
+        
+        notification->set("target", "LoadDataManager");
+        notification->setSizeT("id", id);
+        notification->setInt("worker", dataManager->worker->network->getWorkerId());
+        
+        // add something here to identify as yours
+        Engine::shared()->notify( notification);
 	}
 	
 
@@ -146,9 +158,16 @@ namespace ss
 	{
 		worker = _worker;
 		upload_size = 0;
+        
+        Engine::shared()->notificationSystem.add( notification_disk_operation_request_response , this );
 	}
 	
 
+    LoadDataManager::~LoadDataManager()
+    {
+        Engine::shared()->notificationSystem.remove( this );
+    }
+    
 	void LoadDataManager::addUploadItem( int fromIdentifier, const network::UploadDataFile &uploadData ,size_t sender_id, Buffer * buffer )
 	{
 		lock.lock();
@@ -175,16 +194,40 @@ namespace ss
 
 		item->submitToFileManager();
 		
-		
 		lock.unlock();
 		
 	}
 	
-	void LoadDataManager::diskManagerNotifyFinish(  DiskOperation *operation )
-	{
-		
-		switch (operation->getType()) {
-
+    void LoadDataManager::setNotificationCommonEnvironment( EngineNotification* notification )
+    {
+        notification->set("target", "LoadDataManager" );
+        notification->setInt("worker", worker->network->getWorkerId());
+    }
+    
+    bool LoadDataManager::acceptNotification( EngineNotification* notification )
+    {
+        if( notification->get("target","") != "LoadDataManager" )
+            return false;
+        
+        if( notification->getInt("worker", -1) != worker->network->getWorkerId() )
+            return false;
+        
+        return  true;
+    }
+    
+    void LoadDataManager::notify( EngineNotification* notification )
+    {
+        if( notification->channel != notification_disk_operation_request_response )
+            LM_X(1,("LoadDataManager received a wrong notification"));
+        
+        if( notification->object.size() != 1)
+            LM_X(1,("LoadDataManager received a notification_disk_operation_request_response with a wrong number of parameters"));
+        
+        DiskOperation *operation = (DiskOperation*) notification->object[0];
+        notification->object.clear();
+        
+        switch ( operation->getType() ) {
+                
 			case DiskOperation::read:
 			{
 				DownloadItem* download = downloadItem.extractFromMap( operation->tag );
@@ -196,7 +239,7 @@ namespace ss
 				}
 				
 			}
-		
+                
 				break;
 			case DiskOperation::write:
 			{
@@ -215,10 +258,10 @@ namespace ss
 			default:
 				break;
 		}
-		
-	}
-
-
+        
+        delete operation;
+        
+    }
 	
 
 	void LoadDataManager::fill( network::WorkerStatus* ws)

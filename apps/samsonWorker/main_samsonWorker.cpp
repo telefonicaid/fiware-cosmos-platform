@@ -126,6 +126,5 @@ int main(int argC, const char *argV[])
 	
 	worker = new ss::SamsonWorker(&network);
 
-	ss::Engine::shared()->run();
 	
 }

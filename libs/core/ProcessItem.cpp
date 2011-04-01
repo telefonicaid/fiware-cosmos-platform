@@ -2,7 +2,6 @@
 
 #include "ProcessItem.h"				// ss::ProcessItem
 #include "Engine.h"						// ss::Engine
-#include "EngineDelegates.h"
 
 namespace ss
 {
@@ -19,11 +18,7 @@ namespace ss
 		processItem->run();
 		
 		// Notify the process manager that we have finished
-		Engine::shared()->finishProcessItem( processItem );
-		
-		// Notify the delegate about this finish
-		processItem->notifyFinishToDelegate();
-		
+		Engine::shared()->processManager.finishProcessItem( processItem );
 		
 		return NULL;
 	}
@@ -34,13 +29,8 @@ namespace ss
 	{
 
 		priority = _priority;
-		
-		delegate = NULL;	
-		
 		operation_name = "unknown";	// Default message for the status
-		
 		progress = 0;		// Initial progress to "0"
-		
 		state = queued;
 	}
 	
@@ -73,16 +63,7 @@ namespace ss
 		
 	}
 	
-	
-	void ProcessItem::setProcessManagerDelegate( ProcessManagerDelegate * _delegate )
-	{
-		delegate = _delegate;
-	}
-	
-	void ProcessItem::notifyFinishToDelegate()
-	{
-		Engine::shared()->add( new ProcessManagerNotification( this ) );
-	}
+
 	
 	void ProcessItem::runInBackground()
 	{
@@ -102,7 +83,7 @@ namespace ss
 		
 		// Notify the ProcessManager about this
 		
-		Engine::shared()->haltProcessItem(this);
+		Engine::shared()->processManager.haltProcessItem(this);
 		
 		// Stop this thread in the stopper loop
 		stopper.stop();

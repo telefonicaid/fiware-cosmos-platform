@@ -11,6 +11,10 @@
 #include "MemoryManager.h"          // ss::MemoryManager
 #include "SharedMemoryManager.h"    // ss::SharedMemoryManager
 #include "DiskStatistics.h"         // ss::DiskStatistics
+#include <set>                      // std::set
+#include "EngineNotification.h"     // ss::EngineNotification
+#include "ProcessManager.h"         // ss::ProcessManager
+#include "DiskManager.h"            // ss::DiskManager
 
 namespace ss
 {
@@ -18,7 +22,8 @@ namespace ss
 	class EngineElement;
 	class ProcessItem;
 	class DiskOperation;
-	
+	class EngineNotification;
+ 
 	/**
 	 Main engine platform
 	 */
@@ -31,20 +36,7 @@ namespace ss
 		
 		au::list<EngineElement> elements;			// Elements of the samson engine
 		EngineElement *running_element;				// Element that is currently running
-
-
-		// Background processes
-		// --------------------------------------------------------------------
-		int num_processes;							// Number of maximum simultaneous process running ( from setup )
-		std::set<ProcessItem*> items;				// List of items to be executed ( all priorities  )
-		std::set<ProcessItem*> running_items;		// Set of items currently being executed
-		std::set<ProcessItem*> halted_items;		// Set of items currently being executed but halted
 		
-		// Disk Operations
-		int num_disk_operations;						// Number of paralell disk operations allowed
-		au::list<DiskOperation> pending_operations;		// List of pending operations
-		std::set<DiskOperation*> running_operations;	// Running operations
-		DiskStatistics diskStatistics;
 		
 		// Engine Status Flags 
 		// ---------------------------------------------------------------------------
@@ -60,9 +52,14 @@ namespace ss
 		
 	public:
 		
-		MemoryManager memoryManager;				// Memory manager
-		SharedMemoryManager sharedMemoryManager;	// SharedMemory manager
+        EngineNotificationSystem notificationSystem;    // Notification system
+        
+		MemoryManager memoryManager;                    // Memory manager
+		SharedMemoryManager sharedMemoryManager;        // SharedMemory manager
 		
+        ProcessManager processManager;                  // Process manager for background jobs
+        DiskManager diskManager;                        // Disk manager
+        
 	public:
 		
 		Engine();
@@ -72,7 +69,6 @@ namespace ss
 		 Singleton management
 		 */
 		static void init();
-		static void destroy();
 		static Engine *shared();
 
 		/*
@@ -89,18 +85,13 @@ namespace ss
 		
 		// Function to add an element in the system ( inside or not )
 		void add( EngineElement *element );					// Function to add a ForeGroundProcess 
-		void addProcessItem( ProcessItem *item );			// Function to add a Process. It will be notifier by delegate mechanism
-		
-		void finishProcessItem( ProcessItem *item );		// Notification that this ProcessItem has finished
-		void haltProcessItem( ProcessItem *item );			// Notification that this ProcessItem is halted ( blocked until output memory is ready ) 
 
-		void add( DiskOperation *operation );				// Add a disk operation to be executed in the background
-		
-		void finishDiskOperation( DiskOperation *diskOperation );	// Notification that a disk operation has finished
-		
-		void checkBackgroundProcesses();	// Check background process in order to see if new threads have to be created
-		void checkDiskOperations();			// Check if we can run more disk operations
-		
+        /*
+         Method to add a notification ( a particular EngineElement )
+         */
+        
+        void notify( EngineNotification*  notification );
+        
 		/*
 		 Methods to get information about the state
 		 */
@@ -113,8 +104,6 @@ namespace ss
 		// Find the position in the list to inser a new element
 		std::list<EngineElement*>::iterator _find_pos( EngineElement *e);
 
-		// Get the next background element to be executed in a parallel thread
-		ProcessItem* _getNextItemToRun();
 		
 		
 	};

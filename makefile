@@ -1,17 +1,17 @@
 debug:
 	mkdir BUILD_DEBUG || true
 	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG
-	make -C BUILD_DEBUG -j
+	make -C BUILD_DEBUG 
 
 debug_coverage:
 	mkdir BUILD_DEBUG_COVERAGE || true
 	cd BUILD_DEBUG_COVERAGE; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True
-	make -C BUILD_DEBUG_COVERAGE -j
+	make -C BUILD_DEBUG_COVERAGE -j8
 
 release:
 	mkdir BUILD_RELEASE || true
 	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE
-	make -C BUILD_RELEASE -j
+	make -C BUILD_RELEASE -j8
 
 test: ctest itest
 
@@ -88,3 +88,6 @@ sl: debug
 
 coverage: debug
 	cd BUILD_DEBUG ; ../scripts/samsonCoverage
+
+cm:
+	echo $(for i in `ipcs -m | grep andreu | awk '{print $2}'`; do ipcrm -m $i; done)

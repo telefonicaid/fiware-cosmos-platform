@@ -1,35 +1,41 @@
-
 SET (HEADERS
 Buffer.h
 BufferVector.h
-DiskOperation.h
-DiskStatistics.h
-EngineDelegates.h
 Engine.h
+EngineNotification.h
+EngineNotificationElement.h
 EngineElement.h
 MemoryManager.h
+MemoryRequest.h
 SharedMemoryManager.h
 SharedMemoryItem.h
-MemoryRequest.h
 ModulesManager.h
+ProcessManager.h
 ProcessItem.h
 ProcessItemIsolated.h
+DiskManager.h
+DiskOperation.h
+DiskStatistics.h
 )
 
 SET (SOURCES
+ModulesManager.cpp
 Buffer.cpp
 BufferVector.cpp
-DiskOperation.cpp
-DiskStatistics.cpp
 Engine.cpp
+EngineNotification.cpp
+EngineNotificationElement.cpp
 EngineElement.cpp
 MemoryManager.cpp
 SharedMemoryManager.cpp
 SharedMemoryItem.cpp
 MemoryRequest.cpp
-ModulesManager.cpp
+ProcessManager.cpp
 ProcessItem.cpp
 ProcessItemIsolated.cpp
+DiskManager.cpp
+DiskOperation.cpp
+DiskStatistics.cpp
 )
 
 # Inclue directories

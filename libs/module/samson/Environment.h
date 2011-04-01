@@ -90,6 +90,27 @@ namespace ss {
 			set( name , v.str() ); 
 		}	
 		
+		void setInt( std::string name  , int value)
+		{
+			std::ostringstream v;
+			v << value;
+			set( name , v.str() ); 
+		}	
+		void setSizeT( std::string name  , size_t value)
+		{
+			std::ostringstream v;
+			v << value;
+			set( name , v.str() ); 
+		}	
+
+		void setDouble( std::string name  , double value)
+		{
+			std::ostringstream v;
+			v << value;
+			set( name , v.str() ); 
+		}	
+        
+        
 		int getInt( std::string name , int defaultValue)
 		{
 			if( !isSet(name) )
@@ -110,6 +131,19 @@ namespace ss {
 				return defaultValue;
 			return atof( get( name , "0" ).c_str() );
 		}
+        
+        // Description
+        
+        std::string getEnvironmentDescription()
+        {
+            std::ostringstream output;
+            output << "(";
+            for( std::map<std::string,std::string>::iterator i = environment.begin() ; i != environment.end() ; i++ )	
+                output << i->first << "=" << i->second << ",";
+            output << ")";
+
+            return output.str();
+        }
 		
 	};	
 

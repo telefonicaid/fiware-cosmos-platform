@@ -15,8 +15,6 @@
 #include "Buffer.h"				// ss::Buffer
 #include "SamsonSetup.h"		// ss:SamsonSetup
 #include <sstream>				// std::stringstream
-#include "MemoryRequest.h"		// ss::MemoryRequest
-#include "EngineDelegates.h"	
 #include "Engine.h"				// ss::Engine
 
 

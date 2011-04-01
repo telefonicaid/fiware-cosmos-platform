@@ -121,8 +121,10 @@ namespace ss
     info->set_kvs( total_info.kvs );
     
     // Create the new files using the new buffer
-    tm->addFile( task_id , qf , outputBuffer );
-    
+    //tm->addFile( task_id , qf , outputBuffer );
+      
+      LM_TODO(("Reimplement using notifications!!"));
+
   }
 
 

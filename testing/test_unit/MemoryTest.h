@@ -33,7 +33,6 @@ class MemoryTest : public CPPUNIT_NS::TestFixture
   void tearDown()
   {
 	ss::Engine::shared()->quit();
-	ss::Engine::destroy();
   }
 
  protected:

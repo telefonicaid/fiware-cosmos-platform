@@ -90,6 +90,5 @@ int main(int argC, const char *argV[])
 	console.run();
 	
 	ss::Engine::shared()->quit();
-	ss::Engine::destroy();
 	
 }

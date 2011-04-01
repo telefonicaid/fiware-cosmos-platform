@@ -30,14 +30,16 @@
 
 #include "samson.pb.h"				// network::..
 
+#include "EngineNotification.h"     // ss:EngineNotificationListener
+
 
 // #define SS_SHARED_MEMORY_KEY_ID	872934	// Not used any more since now, IPC_PRIVATE shared memory can be created
 
 namespace ss {
 
-	class MemoryRequest;
-	class MemoryRequestDelegate;
 
+    class MemoryRequest;
+    
 	/**
 	 
 	 Memory manager is a singleton implementation to manager the memory used by any component of SAMSON
@@ -47,7 +49,7 @@ namespace ss {
 	 
 	 */
 	
-	class MemoryManager 
+	class MemoryManager : public EngineNotificationListener
 	{
 		
 		au::Token token;							// Token to protect this instance and memoryRequests
@@ -86,6 +88,9 @@ namespace ss {
 		
 		Buffer *_newBuffer( std::string name ,  size_t size , Buffer::BufferType type );
 
+        // Check the pending memory requests
+        void checkMemoryRequests();
+        
 	public:
 		
 		/**
@@ -94,27 +99,13 @@ namespace ss {
 		void destroyBuffer( Buffer *b );
 		
 		
-		/*--------------------------------------------------------------------
-		 Delayes mecanish to get memory
-		 --------------------------------------------------------------------*/
-		
-		/**
-		 Add a delayed request ( only served when memory is bellow a threshold )
-		 */
-		
-		void addMemoryRequest( MemoryRequest *request );
-
-
-		/**
-		 Check if a new memory request can be accepted.
-		 If possible, a new element is added to Engine to notify
-		 */
-		
-		void checkMemoryRequests();
-		
+        /* 
+         Function to receive notifications (memory requests)
+         */
+        
+        void notify( EngineNotification* notification );
 		
 	public:
-		
         
 		/*--------------------------------------------------------------------
 		 Get information about memory usage
@@ -130,14 +121,12 @@ namespace ss {
 		size_t getUsedMemory();
 		size_t getUsedMemoryInput();
 		size_t getUsedMemoryOutput();
-
-		size_t getMemoryInput();
-		size_t getMemoryOutput();
 		
 		int getNumBuffers();
 		int getNumBuffersInput();
 		int getNumBuffersOutput();
 		
+		double getMemoryUsage();
 		double getMemoryUsageInput();
 		double getMemoryUsageOutput();
 

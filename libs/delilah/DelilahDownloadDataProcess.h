@@ -41,8 +41,12 @@ namespace ss {
 		au::StopLock stopLock;		// Waiting room for the thread
 		FILE *file;					// File descriptor
 		
-		std::list<Buffer*> buffers;	// List of buffers pendign to be writen
+        // List of buffers pendign to be writen per worker
+		std::list<Buffer*> buffers;	
 		
+        // Offset for each file
+        std::vector<size_t> offset_per_file;
+        
 		pthread_t t;				// Secondary thread to write stuff to disk
 		
 		bool show_on_screen;		// Flag to indicate if we should show this at the end on screen

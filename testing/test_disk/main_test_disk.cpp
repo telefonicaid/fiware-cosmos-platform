@@ -227,7 +227,6 @@ int main( int argC , char *argV[] )
 	//test.loop();
 	
 	ss::Engine::shared()->quit();
-	ss::Engine::destroy();
 	
 	return 0;
 }

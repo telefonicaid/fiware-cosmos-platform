@@ -3,8 +3,14 @@ BUGS FROM TEST:
 
 TODO:
 * Valgrind debuign
+* Reimplement system.compact
 * Delilah to save pakets in order
+* More information in load processes ( waiting for upload without number pendign paket label)
+* More information about the running tasks of the workers ( at least knowing the size generated )
 
+New notification model
+* Delete objects in notifications without delivery
+* Ignore buffers from other workers from killed task_id
 
 PENDING MORE TEST
 * libprotobuf ERROR google/protobuf/message_lite.cc:123] Can't parse message of type "ss.data.Command" because it is missing required fields: time

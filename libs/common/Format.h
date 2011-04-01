@@ -30,6 +30,8 @@ namespace au {
 
 		static std::string time_string_ellapsed( struct timeval *init_time );	
 		
+        static std::string string(const char* format, ...);
+        
 		
 	};
 		

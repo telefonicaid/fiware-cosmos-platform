@@ -15,7 +15,6 @@
 #include "coding.h"						// ss::hg_info , ss::hg_size 
 #include "Buffer.h"						// ss::Buffer
 #include "MemoryManager.h"				// ss::MemoryManager
-#include "EngineDelegates.h"			// ss::DiskManagerDelegate
 #include <set>							// std::set
 #include "samson.pb.h"					// ss::network::...
 #include "BufferVector.h"				// ss::BufferVector

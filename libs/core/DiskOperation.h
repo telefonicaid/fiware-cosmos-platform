@@ -39,12 +39,11 @@
 #include <time.h>			// clock(.)
 #include "Buffer.h"			// Buffer used to read or write
 #include "Error.h"			// ss::Error
+#include "EngineNotification.h" //ss::EngineNotification
 
 namespace ss {
 	
-	class DiskManagerDelegate;
-	
-	class DiskOperation
+	class DiskOperation : public EngineNotificationObject
 	{
 		
 	public:
@@ -57,13 +56,6 @@ namespace ss {
 			remove
 		} DiskOperationType;		
 		
-	public:
-		
-		// Identifiers of the operations to be used in callbacks	
-		int component;
-		size_t tag;
-		size_t sub_tag;		
-		
 	private:
 		
 		DiskOperationType type;				// Type of operation ( read, write , remove , etc.. )
@@ -75,7 +67,6 @@ namespace ss {
 		dev_t st_dev;						// Device where this file is stored
 		
 		friend class DiskManagerNotification;
-		DiskManagerDelegate *delegate;		// Delegate to notify when finish
 	
 		pthread_t t;						// Background thread to run the operation
 				
@@ -83,17 +74,19 @@ namespace ss {
 		
 	public:
 
+        int tag;                            // General tag to identify the operation
+        
 		au::Error error;					// Management of the error during this operation
 		size_t operation_time;				// Time spend in this operation for performance estimation
 		
 		// Constructors used to create Disk Operations ( to be submitted to Engine )
 		
-		static DiskOperation* newReadOperation( char *data , std::string fileName , size_t offset , size_t size , DiskManagerDelegate *delegate );
-		static DiskOperation* newWriteOperation( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate );
-		static DiskOperation* newAppendOperation( Buffer* buffer ,  std::string fileName , DiskManagerDelegate *delegate );
-		static DiskOperation* newRemoveOperation( std::string fileName , DiskManagerDelegate *delegate);
+		static DiskOperation* newReadOperation( char *data , std::string fileName , size_t offset , size_t size  );
+		static DiskOperation* newWriteOperation( Buffer* buffer ,  std::string fileName  );
+		static DiskOperation* newAppendOperation( Buffer* buffer ,  std::string fileName  );
+		static DiskOperation* newRemoveOperation( std::string fileName );
 		
-		static DiskOperation * newReadOperation( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer simpleBuffer , DiskManagerDelegate *_delegate );
+		static DiskOperation * newReadOperation( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer simpleBuffer );
 		
 		
 		static std::string directoryPath( std::string path );
@@ -102,9 +95,6 @@ namespace ss {
 		std::string getDescription();
 		std::string getShortDescription();
 
-		
-		void setDelegate( DiskManagerDelegate * _delegate );
-		
 		DiskOperationType getType()
 		{
 			return type;

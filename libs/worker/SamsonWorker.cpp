@@ -43,7 +43,7 @@ namespace ss {
 		
 		// Add the file updater to the Engine
 		Engine::shared()->add( new SamsonWorkerFileUpdater(this) );
-
+        
 	}
 	
 	
@@ -184,9 +184,7 @@ namespace ss {
 	
 	void SamsonWorker::processListOfFiles( const ::ss::network::QueueList& ql)
 	{
-		// Get my identifier as worker
-		_myWorkerId = network->getWorkerId();
-		
+        
 		// Generate list of local files ( to not remove them )
 		std::set<std::string> files;
 		std::set<size_t> load_id;
@@ -197,10 +195,7 @@ namespace ss {
 			for (int f = 0 ; f < queue.file_size() ; f++)
 			{
 				const network::File &file =  queue.file(f);
-				if( file.worker() == _myWorkerId )
-				{
-					files.insert( file.name() );
-				}
+                files.insert( file.name() );
 			}
 		}
 		
@@ -282,8 +277,9 @@ namespace ss {
 		for ( std::set< std::string >::iterator f = remove_files.begin() ; f != remove_files.end() ; f++)
 		{
 			// Add a remove opertion to the engine
-			Engine::shared()->add( DiskOperation::newRemoveOperation(*f , NULL) );
-			
+            DiskOperation * operation =  DiskOperation::newRemoveOperation( *f );
+            EngineNotification *notification = new EngineNotification( notification_disk_operation_request , operation );
+			Engine::shared()->notify( notification );
 		}
 		
 		

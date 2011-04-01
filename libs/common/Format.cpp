@@ -114,5 +114,26 @@ namespace au
 		return time_string( ellapsedSeconds( init_time ) );
 	}
 	
+    std::string Format::string(const char* format, ...)
+    {
+        va_list        args;
+        char           vmsg[2048];
+        char*          nl;
+        
+        /* "Parse" the varible arguments */
+        va_start(args, format);
+        
+        /* Print message to variable */
+        vsnprintf(vmsg, sizeof(vmsg), format, args);
+        vmsg[2047] = 0;
+        va_end(args);
+        
+        if ((nl = strchr(vmsg, '\n')) != NULL)
+            *nl = 0;
+        
+        return std::string(vmsg);
+    }        
+    
+    
 	
 }

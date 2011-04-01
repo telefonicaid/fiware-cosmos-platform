@@ -9,7 +9,7 @@
 #include "ProcessItem.h"				// ss::ProcessManagerDelegate
 #include "Buffer.h"						// ss::Buffer
 #include "MemoryRequest.h"				// ss::MemoryRequest & MemoryRequestDelegate
-#include "EngineDelegates.h"
+#include "EngineNotification.h"         // ss::EngineNotification
 
 namespace ss {
 
@@ -19,7 +19,7 @@ namespace ss {
 	class WorkerTask;
 	class NetworkInterface;
 	
-	class WorkerTaskManager : public ProcessManagerDelegate, public DiskManagerDelegate , public MemoryRequestDelegate		// Receive notifications from the process manager
+	class WorkerTaskManager : public EngineNotificationListener 		// Receive notifications from the process manager
 	{
 		
 	public:
@@ -42,10 +42,7 @@ namespace ss {
 		
 		// Add a buffer from other workers ( associated to a particular task and output queue)
 		void addBuffer( size_t task_id , network::WorkerDataExchange& workerDataExchange , Buffer* buffer );
-		
-		// Add a file directly to a task
-		void addFile( size_t task_id , network::QueueFile &qf , Buffer *buffer);
-		
+				
 		// Notification that a worker has finish produccing data for a task
 		void finishWorker( size_t task_id );
 
@@ -57,17 +54,12 @@ namespace ss {
 		
 		// Get a debugging string
 		std::string getStatus();
-
-#pragma mark Notifications from Process and FileManager and MemoryManager
-		
-	public:
-		
-		void notifyFinishProcess( ProcessItem * item );
-		
-		void notifyFinishMemoryRequest( MemoryRequest *request );		
-		
-		void diskManagerNotifyFinish(  DiskOperation *operation );	
-		
+	
+        // Notification from the engine about finished tasks
+        void notify( EngineNotification* notification );
+        
+        virtual bool acceptNotification( EngineNotification* notification );
+        
 	};
 	 
 }

@@ -40,8 +40,6 @@ namespace ss {
 		WorkerTaskManager    taskManager;       // Task manager
 		LoadDataManager      loadDataManager;   // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
 		
-		int                  _myWorkerId;       // My id as worker : 0 , 1 ,2 ,3
-
 	public:
 
 		// PacketReceiverInterface

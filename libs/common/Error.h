@@ -14,27 +14,16 @@ namespace au
 		
 	public:
 		
-		Error()
-		{
-			error = false;
-		}
+		Error();
 		
-		void set( std::string _message )
-		{
-			error = true;
-			message = _message;
-		}
+		void set( std::string _message );
 		
-		bool isActivated()
-		{
-			return error;
-		}
+		bool isActivated();
 		
-		std::string getMessage()
-		{
-			return message;
-		}
+		std::string getMessage(); 
 		
+        void set( Error *otherError );
+        
 	};
 	
 }

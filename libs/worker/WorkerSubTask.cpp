@@ -12,6 +12,7 @@
 #include "ProcessOperation.h"				// ss::ProcessOperation
 #include "ProcessParser.h"					// ss::ProcessParser
 #include "DiskOperation.h"					// ss::DiskOperation
+#include "SamsonWorker.h"                   // ss::SamsonWorker
 
 namespace ss
 {
@@ -19,79 +20,238 @@ namespace ss
 	WorkerSubTask::WorkerSubTask( WorkerTask *_task )
 	{
 		task = _task;
-		
+        
+        num_read_operations = 0;
 		num_read_operations_confirmed = 0;
-		
-		description = "U"; // Unknown
+        
+        num_processes = 0;
+        num_processes_confirmed = 0;
+        
+		description = "U";                  // Unknown   
+        status = init;                      // Initial status
+        buffer = NULL;                      // By default we have no memory
+        
+        // Add to receive notification about memory , read operations and process items
+        Engine::shared()->notificationSystem.add( notification_memory_request_response , this ); 
+        Engine::shared()->notificationSystem.add( notification_disk_operation_request_response , this ); 
+        Engine::shared()->notificationSystem.add( notification_process_request_response , this ); 
 	}
-	
-	
-	
-	ProcessItem *WorkerSubTask::getProcessItem()
-	{
-		ProcessItem *item = _getProcessItem();
-		if( item )
-		{
-			item->setProcessManagerDelegate(task->taskManager);		// Delegate is the task manager
-			item->tag = task->task_id;								// Tag is used with the number of the task
-			item->sub_tag = id;										// id of the subtask
-			item->component = WORKER_TASK_COMPONENT_PROCESS;		// Component to recognize the delegate call
-		}
-		
-		return item;
-	}
-	
-	MemoryRequest *WorkerSubTask::getMemoryRequest()
-	{
-		MemoryRequest*request = _getMemoryRequest();
-		
-		if( request )
-		{
-			request->tag = task->task_id;								// Tag is used with the number of the task
-			request->sub_tag = id;										// id of the subtask
-			request->component = WORKER_TASK_COMPONENT_PROCESS;		// Component to recognize the delegate call
-			
-		}
-		
-		return request;
-		
-	}
-	
-	
-	std::vector< DiskOperation*>* WorkerSubTask::getFileMangerReadItems()
-	{
-		std::vector< DiskOperation*>* tmp = _getFileMangerReadItems();
-		
-		if( tmp )
-		{
-			
-			for ( size_t i = 0 ; i < tmp->size() ; i++)
-			{
-				tmp->at(i)->component = WORKER_TASK_COMPONENT_PROCESS;		// Component to recognize the delegate call
-				tmp->at(i)->tag = task->task_id;
-				tmp->at(i)->sub_tag = id;
-				tmp->at(i)->setDelegate( task->taskManager );
-			}
-			num_read_operations = tmp->size();
-		}
-		
-		else
-			num_read_operations = 0;
-		
-		num_read_operations_confirmed = 0;
-		
-		// Avoid no-files requests
-		if( tmp && (tmp->size() == 0))
-		{
-			delete tmp;
-			return NULL;
-		}
-		
-		return tmp;
-	}
-	
-	
-	
+    
+    WorkerSubTask::~WorkerSubTask()
+    {
+        if( buffer )
+        {
+            Engine::shared()->memoryManager.destroyBuffer( buffer );
+            buffer = NULL;
+        }
+        
+        Engine::shared()->notificationSystem.remove( this ); 
+        
+    };		
+    
+    void WorkerSubTask::notify( EngineNotification* notification )
+    {
+        switch (notification->channel) {
+                
+            case notification_memory_request_response:
+            {
+                if( notification->object.size() == 0 )
+                    LM_X(1,("Received a notification_memory_request_response without buffer"));
+                
+                buffer = (Buffer*) notification->object[0];
+                run();
+                break;
+            }
+                
+            case notification_disk_operation_request_response:
+            {
+                
+                if( notification->object.size() == 0 )
+                    LM_X(1,("Received a notification_disk_operation_request_response without DiskOperation object"));
+                
+                DiskOperation* operation = (DiskOperation*)notification->object[0];
+                delete operation;
+                
+                num_read_operations_confirmed++;
+                run();
+                break;
+            }
+
+            case notification_process_request_response:
+            {
+                
+                if( notification->object.size() == 0 )
+                    LM_X(1,("Received a notification_process_request_response without ProcessItem object"));
+                
+                ProcessItem* item = (ProcessItem*)notification->object[0];
+                delete item;
+                notification->object.clear();
+                
+                num_processes_confirmed++;
+                run();
+                
+                break;
+            }
+                
+            default:
+                LM_X(1,("WorkerSubTask received an unexpected notification"));
+                break;
+        }
+    }
+    
+    void WorkerSubTask::run()
+    {
+        switch (status) {
+            case init:
+            {
+                // Memory request if necessary
+                size_t memory = getRequiredMemory();
+                status = waiting_memory;
+                if( !buffer && (memory > 0) )
+                {
+                    addMemoryRequest( memory );
+                    return;
+                }
+                else
+                    run(); // Recursive call for next step if no buffer is required for this sub task
+                break;
+            }
+                
+            case waiting_memory:
+            {
+                status = waiting_reads;
+                run_read_operations();
+
+                if( num_read_operations == 0 )
+                    run(); // Recursive calls if no reads are necessary for this task
+                
+                break;
+            }
+         
+            case waiting_reads:
+            {
+                if( num_read_operations_confirmed == num_read_operations )
+                {
+
+                    status = waiting_process;
+                    run_process();
+                    
+                    if( num_processes == 0 )
+                        run();  // Recursive call if no process is required
+                }
+                break;
+            }
+                
+            case waiting_process:
+            {
+                if( num_processes_confirmed == num_processes )
+                {
+
+                    status = finished;
+                    
+                    // Notification that this sub-task is finished
+                    EngineNotification * notification  = new EngineNotification( notification_sub_task_finished );
+                    setNotificationCommandEnvironment(notification);
+                    notification->set("target", "WorkerTask");      // Modify to "send" this notification to the worker task
+                    Engine::shared()->notify( notification );
+                }
+                break;
+            }
+                
+            case finished:
+            {
+                // Nothing to do
+            }
+                
+        }
+        
+        
+        
+
+    }
+
+    bool WorkerSubTask::acceptNotification( EngineNotification *notification )
+    {
+        //LM_M(("WorkerSubTask: Accept %s" , notification->getDescription().c_str() ));
+        
+        if( notification->get( "target" , "" ) != "WorkerSubTask" )
+            return false;
+        
+        if( notification->getInt("worker", -1) != task->taskManager->worker->network->getWorkerId() )
+            return false;
+        
+        if( notification->getSizeT( "task_id" , 0 ) != task_id  )
+            return false;
+        
+        if( notification->getSizeT( "sub_task_id" , 0 ) != sub_task_id  )
+            return false;
+
+        return true;
+    }
+    
+    void WorkerSubTask::setNotificationCommandEnvironment( EngineNotification *notification)
+    {
+        notification->set( "target" , "WorkerSubTask" );
+        notification->setInt("worker",  task->taskManager->worker->network->getWorkerId() );
+        notification->setSizeT( "task_id" , task_id ); 
+        notification->setSizeT( "sub_task_id" , sub_task_id ); 
+    }
+    
+    
+    void WorkerSubTask::addMemoryRequest( size_t size )
+    {
+        EngineNotification *memory_request = new EngineNotification( notification_memory_request );
+        memory_request->setSizeT( "size", size );
+        setNotificationCommandEnvironment(memory_request);
+        Engine::shared()->notify( memory_request );
+    }
+    
+    
+    void WorkerSubTask::addReadOperation( DiskOperation *operation )
+    {
+        // Increase the counter of operations to read
+        num_read_operations++;
+        
+        // Add the read operation to the Engine
+        EngineNotification *notification = new EngineNotification( notification_disk_operation_request  , operation );
+        setNotificationCommandEnvironment(notification);
+        Engine::shared()->shared()->notify( notification );
+    }
+    
+    void WorkerSubTask::addProcess( ProcessItem* processItem )
+    {
+        // Increase the counter of operations to read
+        num_processes++;
+        
+        // Add the read operation to the Engine
+        EngineNotification *notification = new EngineNotification( notification_process_request  , processItem );
+        setNotificationCommandEnvironment(notification);
+        Engine::shared()->shared()->notify( notification );
+        
+    }
+    
+    
+    std::string WorkerSubTask::getStatus()
+    {
+        std::ostringstream output;
+        output << "[" << description << ":";
+
+        if( error.isActivated() )
+            output << "E " << error.getMessage();
+        else
+        {
+            switch (status) {
+                case init: output << "I"; break;
+                case waiting_memory: output << "M"; break;
+                case waiting_reads: output << "R"; break;
+                case waiting_process: output << "P"; break;
+                case finished: output << "F"; break;
+            }
+        }
+        output << "]";
+        return output.str();
+    }
+    
 	
 	
 #pragma mark GeneratorSubTask
@@ -101,9 +261,9 @@ namespace ss
 		description = "G";
 	}
 	
-	ProcessItem * GeneratorSubTask::_getProcessItem()
+	void GeneratorSubTask::run_process()
 	{
-		return new ProcessGenerator( task );
+		addProcess( new ProcessGenerator( task ) );
 	}
 	
 	
@@ -120,23 +280,19 @@ namespace ss
 	}
 	
 	// Function to get all the read operations necessary for this task
-	std::vector< DiskOperation*>* OrganizerSubTask::_getFileMangerReadItems()
+    void OrganizerSubTask::run_read_operations()
 	{
-		// Create a vector of files to be read for this sub-task
-		std::vector< DiskOperation*>* files = new std::vector< DiskOperation*>();		
 		
 		for (int f = 0 ; f < task->reduceInformation->total_num_input_files ; f++)
 		{
 			DiskOperation *item = getFileMangerReadItem( task->reduceInformation->file[f] );
-			files->push_back( item );
+            addReadOperation( item );
 		}
-		
-		return files;
 	}
 	
 	// Function to get the ProcessManagerItem to run
-	
-	ProcessItem * OrganizerSubTask::_getProcessItem()
+
+	void OrganizerSubTask::run_process()
 	{
 		ProcessAssistantSharedFileCollection *reduceInformation = task->reduceInformation;
 		reduceInformation->setup();
@@ -155,7 +311,7 @@ namespace ss
 		if( max_size_per_group2 < max_size_per_group)
 			max_size_per_group = max_size_per_group2;
 		
-		size_t limit_size_per_group = Engine::shared()->memoryManager.getMemoryInput();
+		size_t limit_size_per_group = Engine::shared()->memoryManager.getMemory()/2;
 		
 		// Create necessary reduce operations
 		int hg = 1;												// Evaluating current hash group	
@@ -171,7 +327,7 @@ namespace ss
 			if( current_hg_size > limit_size_per_group )
 			{
 				task->setError("Max size for a hash-group exedeed. Operation not suported");
-				return NULL;
+				return;
 			}
 			
 			if( ( ( total_size + current_hg_size  ) > max_size_per_group ) )
@@ -199,8 +355,6 @@ namespace ss
         tmp->hg_set = hg_set++;
 		task->addSubTask( tmp );
 		
-		// No real process for this sub-task
-		return NULL;
 	}
 	
 	DiskOperation * OrganizerSubTask::getFileMangerReadItem( ProcessAssistantSharedFile* file  )
@@ -209,7 +363,7 @@ namespace ss
 		size_t offset			= sizeof( KVHeader );					// We skip the file header
 		size_t size				= sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
 		
-		DiskOperation *item = DiskOperation::newReadOperation( file->fileName , offset , size , file->getSimpleBufferForInfo() , task->taskManager );
+		DiskOperation *item = DiskOperation::newReadOperation( file->fileName , offset , size , file->getSimpleBufferForInfo() );
 		item->tag = task->task_id;
 		return item;
 	}	
@@ -237,22 +391,19 @@ namespace ss
 	
 	OperationSubTask::~OperationSubTask()
 	{
-		if( buffer )
-			Engine::shared()->memoryManager.destroyBuffer( buffer );
 	}
 	
-	
-	
-	MemoryRequest *OperationSubTask::_getMemoryRequest()
+	size_t OperationSubTask::getRequiredMemory()
 	{
-		return new MemoryRequest( memory_requested, &buffer , task->taskManager);
+		return memory_requested;
 	}
 	
-	
-	std::vector< DiskOperation*>* OperationSubTask::_getFileMangerReadItems()
+	void OperationSubTask::run_read_operations()
 	{
-		std::vector< DiskOperation*>* files = new std::vector< DiskOperation*>();
-		
+        // If no memory, means that no process is required
+		if( memory_requested == 0)
+            return;
+        
 		// Pointer to the buffer
 		char* data = buffer->getData();
 		
@@ -281,25 +432,26 @@ namespace ss
 									  reduceInformation->file[f]->fileName , \
 									  reduceInformation->file[f]->getFileOffset( hg_begin ), \
 									  header.info.size, \
-									  buffer->getSimpleBufferAtOffset(offset) \
-									  , NULL );
+									  buffer->getSimpleBufferAtOffset(offset) );
 			
-			files->push_back( item );
+			addReadOperation( item );
 			
 			offset += header.info.size;
 		}
 		
 		
-		return files;
-		
 	}
 	
 	// Function to get the ProcessManagerItem to run
-	ProcessItem * OperationSubTask::_getProcessItem()
+	void OperationSubTask::run_process()
 	{
+        // If no memory, means that no process is required
+		if( memory_requested == 0)
+            return;
+        
 		ProcessOperation * item = new ProcessOperation( this );
         item->hg_set = hg_set;
-        return item;
+        addProcess(item);
 	}
 	
 	
@@ -322,35 +474,26 @@ namespace ss
 	
 	ParserSubTask::~ParserSubTask()
 	{
-		if( buffer )
-			Engine::shared()->memoryManager.destroyBuffer( buffer );
+	}
+	
+	size_t ParserSubTask::getRequiredMemory()
+	{
+		return fileSize;
 	}
 	
 	
-	
-	MemoryRequest *ParserSubTask::_getMemoryRequest()
+	void ParserSubTask::run_read_operations()
 	{
-		return new MemoryRequest( fileSize, &buffer , task->taskManager);
-	}
-	
-	
-	std::vector< DiskOperation*>* ParserSubTask::_getFileMangerReadItems()
-	{
-		std::vector< DiskOperation*>* files = new std::vector< DiskOperation*>();
-		
 		// Single file to be parsed
-		DiskOperation *item = DiskOperation::newReadOperation( fileName , 0, fileSize, buffer->getSimpleBuffer() , NULL );
-		
-		files->push_back( item );
-		
-		return files;
+		DiskOperation *item = DiskOperation::newReadOperation( fileName , 0, fileSize, buffer->getSimpleBuffer() );
+		addReadOperation(item);
 		
 	}
 	
 	// Function to get the ProcessManagerItem to run
-	ProcessItem * ParserSubTask::_getProcessItem()
+	void ParserSubTask::run_process()
 	{
-		return new ProcessParser( this );
+		addProcess(new ProcessParser( this ) );
 	}
 	
 #pragma mark SystemSubTask
@@ -364,31 +507,30 @@ namespace ss
 		// add all the File elements to be removed when the operation is complete
 		for (int i = 0 ; i < task->workerTask.input_queue(0).file_size() ; i++)
 		{
+            /*
 			network::QueueFile qf;
 			qf.set_queue( task->workerTask.input_queue(0).queue().name() );
 			qf.mutable_file()->CopyFrom( task->workerTask.input_queue(0).file(i) );
 			task->removeFile( qf );
+             */
+            
+            LM_TODO(("Reimplement using notifications!!"));
 		}
 	}
 	
 	// Function to get all the read operations necessary for this task
-	std::vector< DiskOperation*>* SystemSubTask::_getFileMangerReadItems()
+	void SystemSubTask::run_read_operations()
 	{
-		// Create a vector of files to be read for this sub-task
-		std::vector< DiskOperation*>* files = new std::vector< DiskOperation*>();		
-		
 		for (int f = 0 ; f < task->reduceInformation->total_num_input_files ; f++)
 		{
 			DiskOperation *item = getFileMangerReadItem( task->reduceInformation->file[f] );
-			files->push_back( item );
+            addReadOperation(item);
 		}
-		
-		return files;
 	}
 	
 	// Function to get the ProcessManagerItem to run
 	
-	ProcessItem * SystemSubTask::_getProcessItem()
+	void SystemSubTask::run_process()
 	{
 		
 		ProcessAssistantSharedFileCollection *reduceInformation = task->reduceInformation;
@@ -426,7 +568,6 @@ namespace ss
 		task->addSubTask( new CompactSubTask( task ,item_hg_begin , KVFILE_NUM_HASHGROUPS ) );
 		
 		// No real process for this sub-task
-		return NULL;
 	}
 	
 	DiskOperation * SystemSubTask::getFileMangerReadItem( ProcessAssistantSharedFile* file  )
@@ -435,7 +576,7 @@ namespace ss
 		size_t offset			= sizeof( KVHeader );					// We skip the file header
 		size_t size				= sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
 		
-		DiskOperation *item = DiskOperation::newReadOperation( file->fileName , offset , size , file->getSimpleBufferForInfo() , task->taskManager );
+		DiskOperation *item = DiskOperation::newReadOperation( file->fileName , offset , size , file->getSimpleBufferForInfo() );
 		item->tag = task->task_id;
 		return item;
 	}		
@@ -463,21 +604,18 @@ namespace ss
 	
 	CompactSubTask::~CompactSubTask()
 	{
-		if( buffer )
-			Engine::shared()->memoryManager.destroyBuffer( buffer );
 	}
 	
 	
 	
-	MemoryRequest *CompactSubTask::_getMemoryRequest()
+	size_t CompactSubTask::getRequiredMemory()
 	{
-		return new MemoryRequest( memory_requested, &buffer , task->taskManager);
+		return memory_requested;
 	}
 	
 	
-	std::vector< DiskOperation*>* CompactSubTask::_getFileMangerReadItems()
+	void CompactSubTask::run_read_operations()
 	{
-		std::vector< DiskOperation*>* files = new std::vector< DiskOperation*>();
 		
 		// Pointer to the buffer
 		char* data = buffer->getData();
@@ -507,23 +645,20 @@ namespace ss
 									  reduceInformation->file[f]->fileName , \
 									  reduceInformation->file[f]->getFileOffset( hg_begin ), \
 									  header.info.size, \
-									  buffer->getSimpleBufferAtOffset(offset) \
-									  , NULL );
+									  buffer->getSimpleBufferAtOffset(offset) );
 			
-			files->push_back( item );
-			
+            // Add this item to be read
+            addReadOperation(item);
+            
 			offset += header.info.size;
 		}
-		
-		
-		return files;
 		
 	}
 	
 	// Function to get the ProcessManagerItem to run
-	ProcessItem * CompactSubTask::_getProcessItem()
+	void CompactSubTask::run_process()
 	{
-		return new ProcessCompact( this );
+		addProcess( new ProcessCompact( this ) );
 	}
 	
 	

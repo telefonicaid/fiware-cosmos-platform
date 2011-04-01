@@ -39,7 +39,7 @@ namespace ss {
 		item = NULL; // Initialized at init function
 		
 		workerTaskManager = task->taskManager;
-        worker = task->taskManager->worker->_myWorkerId;    // Get the worker id information
+        worker = task->taskManager->worker->network->getWorkerId();    // Get the worker id information
         hg_set = 0; // Default hg_set
         
 	}

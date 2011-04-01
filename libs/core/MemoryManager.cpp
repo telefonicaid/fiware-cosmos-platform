@@ -16,13 +16,16 @@
 #include "SamsonSetup.h"		// ss:SamsonSetup
 #include <sstream>				// std::stringstream
 #include "MemoryRequest.h"		// ss::MemoryRequest
-#include "EngineDelegates.h"	
 #include "Engine.h"				// ss::Engine
 
 
 
 namespace ss
 {
+    
+
+    
+#pragma mark ------------------------------------------------------------------------
 	
 	MemoryManager::MemoryManager()
 	{
@@ -102,7 +105,7 @@ namespace ss
 		checkMemoryRequests();
 		
 		// Check process halted in the Engine
-		Engine::shared()->checkBackgroundProcesses();
+		Engine::shared()->processManager.checkBackgroundProcesses();
 		
 	}
 	
@@ -125,23 +128,37 @@ namespace ss
 		ws->set_used_memory( getUsedMemory() );
 	}
 	
-	void MemoryManager::addMemoryRequest( MemoryRequest *request)
-	{
-		
-		if( request->size > memory )
-			LM_X(-1,("Error managing memory: excesive memory request"));	
+    void MemoryManager::notify( EngineNotification* notification )
+    {
+        switch (notification->channel) {
+            case notification_memory_request:
+            {
+                //LM_M(("Memory manager received a notification for memory"));
+               
+                MemoryRequest *request = new MemoryRequest( notification );
+                
+                if( request->size > memory )
+                    LM_X(-1,("Error managing memory: excesive memory request"));	
+                
+                LM_T( LmtMemory , ("Adding memory request for %s" , au::Format::string( request->size , "B" ).c_str() ));
+                
+                token.retain();
+                memoryRequests.push_back( request );
+                token.release();
+                
+                LM_T( LmtMemory , ("[DONE] Adding memory request for %s" , au::Format::string( request->size , "B" ).c_str() ));
+                
+                checkMemoryRequests();
+            }
+                break;
+                
+            default:
+                LM_X(1,("Memory manager received a wrong notification"));
+                break;
+        }
+    }
 
-		LM_T( LmtMemory , ("Adding memory request for %s" , au::Format::string( request->size , "B" ).c_str() ));
-		
-		token.retain();
-		memoryRequests.push_back( request );
-		token.release();
-
-		LM_T( LmtMemory , ("[DONE] Adding memory request for %s" , au::Format::string( request->size , "B" ).c_str() ));
-		
-		checkMemoryRequests();
-	}
-	
+    	
 	 
 	// Function to check memory requests and notify using Engine if necessary
 	void MemoryManager::checkMemoryRequests()
@@ -152,11 +169,10 @@ namespace ss
 		
 		while( true )
 		{
-			double p = getMemoryUsageInput();	// Only used for inputs
 
 			MemoryRequest *r = NULL;
 				
-			if ( p < 1.0 )
+			if ( getMemoryUsageInput() < 0.5 )  // Maximum usage for input 50% of memory
 			{
 				r = memoryRequests.extractFront();
 			}
@@ -168,8 +184,12 @@ namespace ss
 			}
 			else
 			{
-				*(r->buffer) = _newBuffer("Buffer from request", r->size , Buffer::input);
-				Engine::shared()->add( new MemoryRequestNotification( r ) );
+				Buffer *buffer = _newBuffer("Buffer from request", r->size , Buffer::input);
+                EngineNotification *notification  = new EngineNotification( notification_memory_request_response , buffer  );
+                notification->copyFrom( r );
+                Engine::shared()->notify(notification);
+                
+                delete r; // Remove the memory request ( only used internally )
 			}
 			
 		}
@@ -200,42 +220,24 @@ namespace ss
 		return memory;
 	}	
 	
+    double MemoryManager::getMemoryUsage()
+    {
+		return ( ((double) used_memory_output + (double) used_memory_input) / (double) memory );
+    }
+
 	double MemoryManager::getMemoryUsageInput()
 	{
-		double per;
-		if( memory == 0 )
-			per = 0;
-		else
-			per =  2 * ( (double) used_memory_input / (double) memory );
-		
-		return per;
+		return ( (double) used_memory_input / (double) memory );
 	}
 	
 	double MemoryManager::getMemoryUsageOutput()
 	{
-		double per;
-		if( memory == 0 )
-			per = 0;
-		else
-			per =  2 * ( (double) used_memory_output / (double) memory  );
-		
-		return per;
+		return ( (double) used_memory_output / (double) memory );
 	}
-
-	size_t MemoryManager::getMemoryOutput()
-	{
-		return ( memory )/2;
-	}
-	
-	size_t MemoryManager::getMemoryInput()
-	{
-		return ( memory )/2;
-	}
-	
 	
 	bool MemoryManager::availableMemoryOutput()
 	{
-		return ( getMemoryUsageOutput() < 1.0 );
+		return ( getMemoryUsage() < 1.0 );
 	}
 	
 	int MemoryManager::getNumBuffersInput()

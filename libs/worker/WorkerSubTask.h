@@ -1,9 +1,11 @@
 #ifndef _H_WORKER_SUB_TASK
 #define _H_WORKER_SUB_TASK
 
-#include <cstring>			// size_t
-#include <vector>			// std::vector
-#include <string>			// std::string
+#include <cstring>                  // size_t
+#include <vector>                   // std::vector
+#include <string>                   // std::string
+#include "EngineNotification.h"     // ss::EngineNotificationListener
+#include "Error.h"                  // au::Error
 
 namespace ss
 {
@@ -20,6 +22,7 @@ namespace ss
 	 WorkerSubTask is a subclass describing a particular operation executed inside a WorkerTask
 		It could be a generator , map , reduce , organizer , parser , etc...
 		All the sub-tasks is the SAMSON ecosystem are divided in three steps:	
+     
 			- Memory request
 			- Read operations
 			- Process item
@@ -29,58 +32,78 @@ namespace ss
 	 ------------------------------------------------------------------------------------------------
 	 */
 	
-	class WorkerSubTask
+	class WorkerSubTask : public EngineNotificationListener
 	{
-		int num_read_operations;
-		int num_read_operations_confirmed;
 
+		int num_read_operations;            // Read operations
+		int num_read_operations_confirmed;  // Read operations confirmed by DiskManager
+
+        
+        int num_processes;                  // Number of Engine ProcessItems to run
+        int num_processes_confirmed;        // Number of Engine ProcessItem executed
+        
 	public:
 
-		std::string description;	// Short description for debuggin
+        Buffer *buffer;                     // Buffer memory obtained from Memory Manager
+        
+        // Error management
+        au::Error error;
+        
+        typedef enum 
+        {
+            init,                       // In definition
+            waiting_memory,             // Waiting for memory
+            waiting_reads,              // Waiting for the read operations
+            waiting_process,            // Processing ( running itself )
+            finished                    // Operation is finished
+        } WorkerSubTaskStatus;
+        
+        WorkerSubTaskStatus status;         // Status of the subtask
+		std::string description;            // Short description for debuggin
 				
-		WorkerTask *task;			// Pointer to the parent task
-		size_t id;					// ID of the parent task
+		WorkerTask *task;                   // Pointer to the parent task
+		size_t task_id;                     // ID of the parent task
+		size_t sub_task_id;                 // ID of the parent task
 		
 		// Constructor with the parent task
 		WorkerSubTask( WorkerTask *_task );
 		
 		// Destructor has to be virtual ( calling delete from this parent class )
-		virtual ~WorkerSubTask(){};		
+		virtual ~WorkerSubTask();
 		
 		// Function to get the memory request ( if any )
-		virtual MemoryRequest *_getMemoryRequest()
+		virtual size_t getRequiredMemory()
 		{
-			return NULL;
-		}
-		
-		// Function to get all the read operations necessary for this task ( if any )
-		virtual std::vector<DiskOperation*>* _getFileMangerReadItems()
-		{
-			return NULL;
-		}
-		
-		// Function to get the ProcessManagerItem to run ( if necessary )
-		virtual ProcessItem *_getProcessItem()
-		{
-			return NULL;
+			return 0;
 		}
 
-		// Function to get all the read operations necessary for this task
-		std::vector< DiskOperation*>* getFileMangerReadItems();
-		
-		// Function to get the ProcessManagerItem to run
-		ProcessItem *getProcessItem();
-		
-		// Function to get the memory request ( if any )
-		MemoryRequest *getMemoryRequest();
-		
-		
-		bool notifyReadFinish()
-		{
-			num_read_operations_confirmed++;
-			return( num_read_operations_confirmed == num_read_operations);
-		}
-		
+        // Add the read operations ( calls to addReadOperation are expected )
+        virtual void run_read_operations(){};
+
+        // Add process ( calls to addProcess are extected here )
+        virtual void run_process(){}
+        
+        // Get a debugging string
+        std::string getStatus();
+	
+        // General notification function ( memory requests / disk operations / process )
+        void notify( EngineNotification* notification );
+
+        // Init function to start asking thinks to the engine
+        void run();
+
+    protected:
+        
+        void addMemoryRequest( size_t size );
+        void addReadOperation( DiskOperation *operation );
+        void addProcess( ProcessItem* processItem );
+        
+    private:
+        
+        // Function to check if a particular notification is for me
+        bool acceptNotification( EngineNotification *notification );
+        void setNotificationCommandEnvironment( EngineNotification *notification);
+
 	};
 	
 	/*
@@ -99,8 +122,7 @@ namespace ss
 		
 		GeneratorSubTask( WorkerTask * task  );
 		
-		// Function to get the ProcessManagerItem to run
-		ProcessItem * _getProcessItem();
+		void run_process();
 	};
 	
 	/*
@@ -119,12 +141,8 @@ namespace ss
 		
 		OrganizerSubTask( WorkerTask *task);		
 		
-		
-		// Function to get all the read operations necessary for this task
-		std::vector< DiskOperation*>* _getFileMangerReadItems();
-		
-		// Function to get the ProcessManagerItem to run
-		ProcessItem * _getProcessItem();		
+		void run_read_operations();
+        void run_process();
 		
 	private:
 		
@@ -154,19 +172,15 @@ namespace ss
          int hg_set;    // Identifier of the hash-group
          
 		 size_t memory_requested;
-		 Buffer *buffer;				// Buffer provided by memory request
 
 		 OperationSubTask( WorkerTask * task , int _hg_begin , int _hg_end  );
 		 
 		 ~OperationSubTask();
-		 
-		 MemoryRequest *_getMemoryRequest();
-		 
-		 // Function to get all the read operations necessary for this task
-		 std::vector< DiskOperation*>* _getFileMangerReadItems();
 
-		 // Function to get the ProcessManagerItem to run
-		 ProcessItem * _getProcessItem();		
+		 // Get the nececessary size for the buffer
+		 size_t getRequiredMemory();
+         void run_read_operations();
+         void run_process();
 	 
 	 };	
 
@@ -192,19 +206,16 @@ namespace ss
 		std::string fileName;		// Input file name
 		size_t fileSize;			// Memory requested for the input file
 		
-		Buffer *buffer;				// Buffer provided by memory request
 		
 		ParserSubTask( WorkerTask * task , std::string fileName  );
 		
 		~ParserSubTask();
 		
-		MemoryRequest *_getMemoryRequest();
+		size_t getRequiredMemory();
 		
 		// Function to get all the read operations necessary for this task
-		std::vector< DiskOperation*>* _getFileMangerReadItems();
-		
-		// Function to get the ProcessManagerItem to run
-		ProcessItem * _getProcessItem();		
+		void run_read_operations();
+        void run_process();
 		
 	};	
 		
@@ -225,10 +236,10 @@ namespace ss
 		SystemSubTask( WorkerTask *task );		
 		
 		// Function to get all the read operations necessary for this task
-		std::vector< DiskOperation*>* _getFileMangerReadItems();
+		void run_read_operations();
 		
 		// Function to get the ProcessManagerItem to run
-		ProcessItem * _getProcessItem();		
+        void run_process();
 		
 	private:
 		
@@ -250,20 +261,19 @@ namespace ss
 		
 		size_t memory_requested;
 		
-		Buffer *buffer;						// Buffer provided by memory request
 		
 		CompactSubTask( WorkerTask * task , int _hg_begin , int _hg_end  );
 		
 		~CompactSubTask();
 
 		// Memory request for this task
-		MemoryRequest *_getMemoryRequest();
+		size_t getRequiredMemory();
 		
 		// Function to get all the read operations necessary for this task
-		std::vector< DiskOperation*>* _getFileMangerReadItems();
+		void run_read_operations();
 		
 		// Function to get the ProcessManagerItem to run
-		ProcessItem * _getProcessItem();		
+        void run_process();
 		
 	};	
 	

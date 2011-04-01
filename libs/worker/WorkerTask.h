@@ -10,10 +10,8 @@
 #include "samson/Environment.h"	// ss::Environment
 #include <set>					// std::set
 #include "Error.h"				// au::Error
-
-#define WORKER_TASK_COMPONENT_PROCESS				1
-#define WORKER_TASK_COMPONENT_DATA_BUFFER_PROCESS	2
-#define WORKER_TASK_COMPONENT_ADD_FILE				3		// Add files directly ( used in compact operation )
+#include "EngineNotification.h" // ss::EngineNotificationListener
+#include "coding.h"             // ss::KVInfo
 
 namespace ss {
 
@@ -27,15 +25,56 @@ namespace ss {
 	class Buffer;
 	class DiskOperation;
 	
-	class WorkerTask 
+    
+    /*
+     Class to store information about the generated file
+     */
+    
+    class WorkerTaskOutputFile
+    {
+        
+    public:
+        
+        std::string fileName;       // Name of the file
+        std::string queue;          // Name of the queue
+        int worker;                 // Worker that generated this file
+        KVInfo info;                // Global information for this file
+        
+        WorkerTaskOutputFile( std::string _fileName , std::string _queue , int _worker )
+        {
+            fileName = _fileName;
+            queue = _queue;
+            worker = _worker;
+            
+            info.clear();
+        }
+        
+        void fill( network::QueueFile *qf )
+        {
+            // Fill information in this GPB structure
+            qf->set_queue( queue );
+            network::File *file = qf->mutable_file();
+            file->set_name( fileName );
+            file->set_worker( worker );
+            network::KVInfo * network_info = file->mutable_info();
+            network_info->set_size( info.size );
+            network_info->set_kvs( info.kvs );
+        }
+        
+    };
+        
+	class WorkerTask : public EngineNotificationListener
 	{
 		
+        
+		// List of subtasks
+        au::map<size_t,WorkerSubTask> subTasks;
+        
 	public:
 		
 		typedef enum
 		{
 			pending_definition,			// Pending to receive message from the controller
-			ready,						// Message from the controller has been received but task is not executed ( divided in subtasks )
 			running,					// Running operation
 			local_content_finished,		// Output content is completed ( a message is send to the other workers to notify ) 
 			all_content_finish,			// The content from all the workers is received ( file are starting to be saved )
@@ -44,49 +83,43 @@ namespace ss {
 			
 		} WorkerTaskStatus;
 		
+        
+		WorkerTaskManager *taskManager;         // Pointer to the task manager
+		size_t task_id;                         // identifier of the task
+        size_t subTaskId;                       // Internal counter to give a number to each sub-task
+		WorkerTaskStatus status;                // Status of this task
+		Operation::Type type;                   // Type of operation
+		std::string operation;                  // Name of the operation
+        
+        
 		// Number of workers that confirmed the end of data
 		int num_workers;
 		int num_finished_workers;
 
-		size_t subTaskId;								// Internal counter to give a number to each sub-task
-		
-		WorkerTaskManager *taskManager;					// Pointer to the task manager
+        // Number of buffer to process
+        int num_process_items;
 
+        // Number of pending disk operations
+        int num_disk_operations;
+        
 		// Message from and to the controller
 		network::WorkerTask workerTask;                             // Copy of the message received from the controller
-		network::WorkerTaskConfirmation *finish_message;			// Message prepared to be send to the controller ( finish task )
 		network::WorkerTaskConfirmation *complete_message;			// Message prepared to be send to the controller ( complete task : all saved )
 		
-		size_t task_id;                                             // identifier of the task
-		WorkerTaskStatus status;                                    // Status of this task
-
 		// Common information for this task
 		ProcessAssistantSharedFileCollection *reduceInformation;
 		
 		// Error management
 		au::Error error;
 		
-		// Operation to be executed
-		Operation::Type type;			// Type of operation
-		std::string operation;			// Name of the operation
-				
 		// Debuggin string
 		std::string getStatus();
-
-		// Items management
-		au::map<size_t , WorkerSubTask> subTasksWaitingForMemory;			
-		au::map<size_t , WorkerSubTask> subTasksWaitingForReadItems;			
-		au::map<size_t , WorkerSubTask> subTasksWaitingForProcess;			
 		
 		// Set of vectorBuffers for each output queue
-		au::map<std::string , QueueuBufferVector> queueBufferVectors;			
-
-		// Set of items pendign to be process to joint buffers
-		std::set<DataBufferProcessItem*> processWriteItems;	
-		
-		// Set of items pendign to be written
-		std::set<DiskOperation*> writeItems;			
-		
+		au::map<std::string , QueueuBufferVector> queueBufferVectors;		// Buffer of vector for key-value outputs ( buffered in memory for performance )	
+        au::map<std::string , WorkerTaskOutputFile> outputFiles;            // List of the output files to be used when reporting the finish message
+        au::map<std::string , WorkerTaskOutputFile> outputRemoveFiles;      // List of the output files that should be removed ( compact operation )
+        
 		public:
 
 		// Constructor and destructor
@@ -94,64 +127,56 @@ namespace ss {
 		~WorkerTask();
 
 		// Setup with the information comming from the controller
-		void setup(Operation::Type type , const network::WorkerTask &task);	
+		void setupAndRun( Operation::Type type , const network::WorkerTask &task );	
 		
-		// The task is now executed ( divided in subtasks )
-		void run();
-		
-#pragma mark Notifications about finish process and IO operations and memory requests
-		
-		// Notification that a process has finish ( from ProcessManager )
-		void notifyFinishProcess( ProcessItem * i );
-		void notifyFinishMemoryRequest( MemoryRequest *request );
+        // Set error
+		void setError(std::string _error_message);
 
-		void diskManagerNotifyFinish(  DiskOperation *operation );	
-		
-		// Notify that a worker has finished producing data for this task
-		void finishWorker( );
-
-		void setError(std::string _error_message)
-		{
-			// Set the error of the operation
-			error.set( _error_message );
-
-			// Send the confirmation to the controller
-			sendCompleteTaskMessageToController();
-			
-			// Set the flag of completed to cancel this task automatically
-			status = completed;
-		}
 		
 		// Kill( from a message from the controller )
 		void kill();
 		
 		// Processign income buffers
-		
 		void addBuffer( network::WorkerDataExchange& workerDataExchange , Buffer *buffer );
-		void flush( QueueuBufferVector *bv );
+
+        // Notification that a particular worker has finished generating data
+        void finishWorker();
+        
+        // General notification function
+        void notify( EngineNotification* notification );
+
+        
+    public:
+        
+        void addKVFile( std::string fileName , std::string queue , Buffer *buffer );   // Only key-value vectors
+        
+ 		void addFile(  std::string fileName , std::string queue , KVInfo info , Buffer *buffer);    // Add registration of this file and notify the disk operation
+        void addFile( std::string fileName , std::string queue , KVInfo info );                     // Basic call to add registration
+		void removeFile(  std::string fileName , std::string queue );
+
+		// Add subtasks
+		void addSubTask( WorkerSubTask *subTask );
 		void flush();
-		
-		// add a buffer to be saved as a key-value file
-		void addFile( network::QueueFile &qf , Buffer *buffer);
-		
-		// add a file to be removed when the operation is finished
-		void removeFile( network::QueueFile &qf);
-		
+
+		std::string newFileName( );
+		std::string newFileNameForTXTOutput( int hg_set );
+        
+    private:
+
+        void addDiskOperation( DiskOperation *operation );
+        void addProcessItem( ProcessItem *item );
+        
+        void setNotificationCommonEnvironment( EngineNotification*notification );
+        bool acceptNotification( EngineNotification* notification );
+        
 #pragma mark Messages
 		
 		void sendCloseMessages();
 		void sendFinishTaskMessageToController( );		
 		void sendCompleteTaskMessageToController( );		
-		void sendAddFileMessageToController( QueueuBufferVector *bv ,  std::string fileName , Buffer *b );
-		
-#pragma mark FileNames
-		
-		std::string newFileName( );
 
-#pragma mark Manager SubTasks
-		
-		void addSubTask( WorkerSubTask *subTask );
-
+        
+        
 #pragma mark Check
 		
 	private:

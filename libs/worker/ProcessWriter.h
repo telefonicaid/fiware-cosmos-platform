@@ -64,7 +64,7 @@ namespace ss {
 
 		// Function used to flush the content of the buffer ( it sends a code to the "parent" process to emit througt network )
 		void flushBuffer(bool finish);
-		
+
 		
 	};
 	

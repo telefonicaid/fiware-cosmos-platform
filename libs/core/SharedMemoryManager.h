@@ -45,21 +45,28 @@ namespace ss {
 	 Shared memory is used to isolate operations from main process
 	 
 	 */
-	
+    
+    class SharedMemoryManager;
+    
+    
 	class SharedMemoryManager 
 	{
             
-		au::Token token;							// Token to protect this instance and memoryRequests
+        
+		au::Token token;                                    // Token to protect this instance and memoryRequests
 	
 		// Shared memory management
-		size_t shared_memory_size_per_buffer;		// Shared memory used in eery buffer
-		int shared_memory_num_buffers;				// Number of shared memory buffers to create
-		bool* shared_memory_used_buffers;			// Bool vector showing if a particular shared memory buffer is used
-        int * shm_ids;                              // Vector containing all the shared memory identifiers
+		size_t shared_memory_size_per_buffer;               // Shared memory used in eery buffer
+		int shared_memory_num_buffers;                      // Number of shared memory buffers to create
+		bool* shared_memory_used_buffers;                   // Bool vector showing if a particular shared memory buffer is used
+        int * shm_ids;                                      // Vector containing all the shared memory identifiers
 		
 		
+        std::string sharedMemoryIdsFileName;
+        
 	public:
 		
+
 		SharedMemoryManager();
 		~SharedMemoryManager();
 		
@@ -76,8 +83,22 @@ namespace ss {
 		
 		SharedMemoryItem* getSharedMemory( int i );
 		void freeSharedMemory(SharedMemoryItem* item);
-        void createNewSharedMemoryBuffers();
-		
+
+        /*
+         Function to create shared memory segments.
+         */
+        
+        void createSharedMemorySegments( );
+        
+        static void removeSharedMemorySegments( int *ids , int length );
+        
+        // Function to work with files
+        void removeSharedMemorySegmentsOnDisk( );
+        
+        
+		// Init and destroy functions
+        static void init();
+        static SharedMemoryManager* shared();
 	};
 	
 };

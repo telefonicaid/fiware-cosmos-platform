@@ -7,6 +7,7 @@ TODO:
 * Delilah to save pakets in order
 * More information in load processes ( waiting for upload without number pendign paket label)
 * More information about the running tasks of the workers ( at least knowing the size generated )
+* Buffer of background notifictions
 
 New notification model
 * Delete objects in notifications without delivery

@@ -29,6 +29,8 @@
 
 #include "ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
 
+#include "SharedMemoryManager.h"    // ss::SharedMemoryManager
+
 /*
  To be removed
  */
@@ -145,10 +147,11 @@ int main(int argC, const char *argV[])
         ss::ProcessItemIsolated::isolated_process_as_tread = true;
     }
     
-	
 	ss::SamsonSetup::load( workingDir );		// Load setup and create default directories
 
 	// Init singlelton in single thread mode
+    ss::SharedMemoryManager::init();
+    
 	ss::Engine::init();
 	ss::ModulesManager::init();		// Init the modules manager
 	

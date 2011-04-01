@@ -17,6 +17,7 @@
 #include "MemoryManager.h"		// ss::MemoryManager
 #include "Endpoint.h"			// ss::Endpoint
 #include "Engine.h"				// ss::Engine
+#include "SharedMemoryManager.h"    // ss::SharedMemoryManager
 
 
 /* ****************************************************************************
@@ -103,6 +104,7 @@ int main(int argC, const char *argV[])
 	logFd = lmFirstDiskFileDescriptor();
 
 	ss::SamsonSetup::load(workingDir);  // Load setup and create default directories
+    ss::SharedMemoryManager::init();
 	ss::Engine::init();
 	ss::ModulesManager::init();
 	

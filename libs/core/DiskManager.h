@@ -9,7 +9,6 @@
 #include <iostream>                 // std::cout
 #include "au_map.h"                 // au::list
 #include "MemoryManager.h"          // ss::MemoryManager
-#include "SharedMemoryManager.h"    // ss::SharedMemoryManager
 #include "DiskStatistics.h"         // ss::DiskStatistics
 #include <set>                      // std::set
 #include "EngineNotification.h"     // ss::EngineNotification

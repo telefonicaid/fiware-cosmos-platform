@@ -9,7 +9,7 @@
 #include "MemoryManager.h"			// ss::MemoryManager
 #include "SamsonSetup.h"			// ss::SamsonSetup
 #include "Engine.h"                 // ss::Engine
-#include "SharedMemoryManager.h"    // ss::SharedMemoryManager
+#include "SharedMemoryManager.h"    // SharedMemoryManager
 
 int logFd = -1;
 
@@ -26,10 +26,9 @@ int main(int argc, const char *argv[])
 	ss::SamsonSetup::load( cmdLine.get_flag_string("working") );
 	
 	ss::SamsonSetup *s = ss::SamsonSetup::shared();	// Load setup file and create main directories
+    ss::SharedMemoryManager::init();
 	ss::Engine::init();	// Init the engine
 
-	ss::SharedMemoryManager *mm = &(ss::Engine::shared()->sharedMemoryManager);
-	
 	std::cout << "\n";
 	std::cout << "----------------------------------------------------\n";
 	std::cout << "Current setup analysis\n";
@@ -60,12 +59,12 @@ int main(int argc, const char *argv[])
 	for (int i = 0 ; i < ss::SamsonSetup::shared()->num_processes ; i++)
 	{
 		std::cout << "Geting shared memory " << i << " / " << ss::SamsonSetup::shared()->num_processes << std::endl;
-		ss::SharedMemoryItem *item =  mm->getSharedMemory(i);
+		ss::SharedMemoryItem *item =  ss::SharedMemoryManager::shared()->getSharedMemory(i);
 		
 		if( item )
 		{
 			std::cout << "OK\n";
-			mm->freeSharedMemory( item );
+            ss::SharedMemoryManager::shared()->freeSharedMemory( item );
 		}
 		else
 		{

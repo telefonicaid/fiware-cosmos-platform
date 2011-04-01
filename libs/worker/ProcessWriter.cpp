@@ -9,6 +9,7 @@
 #include "WorkerTask.h"				// ss::WorkerTask
 #include "ProcessBase.h"			// ss::ProcessBase
 #include "SharedMemoryItem.h"       // ss::SharedMemoryItem
+#include "SharedMemoryManager.h"    // ss::SharedMemoryManager
 
 namespace ss {
 
@@ -19,7 +20,7 @@ namespace ss {
 		workerTaskItem = _workerTaskItem;
 		
 		// Get the assignated shared memory region
-		item = Engine::shared()->sharedMemoryManager.getSharedMemory( workerTaskItem->shm_id );
+		item = SharedMemoryManager::shared()->getSharedMemory( workerTaskItem->shm_id );
 		
 		// General output buffer
 		buffer = item->data;
@@ -59,7 +60,7 @@ namespace ss {
 	ProcessWriter::~ProcessWriter()
 	{
 		// Free the map of the shared memory
-		Engine::shared()->sharedMemoryManager.freeSharedMemory( item );		
+		SharedMemoryManager::shared()->freeSharedMemory( item );		
 		
 		// Free minibuffer used to serialize key-value here!!
 		free( miniBuffer );
@@ -175,7 +176,7 @@ namespace ss {
 		workerTaskItem = _workerTaskItem;
 		
 		// Get the assignated shared memory region
-		item = Engine::shared()->sharedMemoryManager.getSharedMemory( workerTaskItem->shm_id );
+		item = SharedMemoryManager::shared()->getSharedMemory( workerTaskItem->shm_id );
 		
 		// Size if the firt position in the buffer 
 		size = (size_t*) item->data;

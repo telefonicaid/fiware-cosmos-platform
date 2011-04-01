@@ -199,19 +199,13 @@ namespace ss {
         {
             
             current_param = words[i];
-
-            LM_M(("--> '%s' param_name '%s'", current_param.c_str() , param_name.c_str() ));
-            
             
             if( param_name != "" )
             {
                 if( current_param.c_str()[0] == '-' )
                     e.set(param_name, "true" );
                 else
-                {
-                    LM_M(("Seting value %s=%s", param_name.c_str() , current_param.c_str()));
                     e.set(param_name, current_param );
-                }
 
             }
             

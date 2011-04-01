@@ -13,9 +13,11 @@
 #include "ProcessItemIsolated.h"	// ss:ProcessItemIsolated
 #include "NetworkInterface.h"		// ss::NetworkInterface
 #include "ProcessWriter.h"			// ss::ProcessWriter
-#include "samson.pb.h"				// ss::network::...
-#include "samson/OperationController.h"	// ss::OperationController
-#include "Engine.h"			 // ss::Engine
+#include "samson.pb.h"                      // ss::network::...
+#include "samson/OperationController.h"     // ss::OperationController
+#include "Engine.h"                         // ss::Engine
+#include "SharedMemoryManager.h"            // ss::SharedMemoryManager
+
 
 #define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER          1
 #define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH	2
@@ -80,14 +82,14 @@ namespace ss
 		
 		void init()
 		{
-			shm_id = Engine::shared()->sharedMemoryManager.retainSharedMemoryArea();
-			item = Engine::shared()->sharedMemoryManager.getSharedMemory( shm_id );
+			shm_id = SharedMemoryManager::shared()->retainSharedMemoryArea();
+			item = SharedMemoryManager::shared()->getSharedMemory( shm_id );
 		}
 		
 		void finish()
 		{
-			Engine::shared()->sharedMemoryManager.releaseSharedMemoryArea( shm_id );		
-			Engine::shared()->sharedMemoryManager.freeSharedMemory( item );
+			SharedMemoryManager::shared()->releaseSharedMemoryArea( shm_id );		
+			SharedMemoryManager::shared()->freeSharedMemory( item );
 		}
 		
 		// Function to be implemented ( running on a different process )

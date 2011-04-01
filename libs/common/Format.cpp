@@ -1,6 +1,10 @@
 
 #include "Format.h"		// Own interface
 #include <sys/stat.h>	// stat(.)
+#include <stdarg.h>             /* va_start, va_arg, va_end                  */
+#include <string.h>             // strchr
+
+
 namespace au
 {
 	std::string Format::percentage_string( double value , double total )

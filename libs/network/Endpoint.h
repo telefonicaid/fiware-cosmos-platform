@@ -127,6 +127,7 @@ public:
 
 	void                         ipSet(const char* ip);
 	void                         aliasSet(const char* alias);
+	void                         aliasUpdate(const char* alias);
 	char*                        aliasGet(void);
 
 	int                          rFd;

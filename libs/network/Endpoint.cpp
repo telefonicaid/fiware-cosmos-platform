@@ -406,6 +406,19 @@ char* Endpoint::aliasGet(void)
 
 /* ****************************************************************************
 *
+* aliasUpdate - 
+*/
+void Endpoint::aliasUpdate(const char* alias)
+{
+	LM_W(("Updating alias to '%s'", alias));
+
+	this->alias = strdup(alias);
+}
+
+
+
+/* ****************************************************************************
+*
 * aliasSet - 
 */
 void Endpoint::aliasSet(const char* alias)

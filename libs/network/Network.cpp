@@ -550,6 +550,8 @@ void Network::init(const char* controllerName)
 		endpoint[LISTENER]->name     = "Listener";
 		endpoint[LISTENER]->wFd      = endpoint[LISTENER]->rFd;
 
+		endpoint[LISTENER]->aliasUpdate("Listener"); // Must use this special method as alias is 'inherited' from endpoint[ME] ...
+
 		LM_T(LmtFds, ("opened fd %d to accept incoming connections", endpoint[LISTENER]->rFd));
 	}
 

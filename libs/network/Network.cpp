@@ -1591,12 +1591,15 @@ Endpoint* Network::endpointLookup(int rFd, int* idP)
 *
 * endpointLookup
 */
-Endpoint* Network::endpointLookup(char* alias)
+Endpoint* Network::endpointLookup(char* alias, Endpoint* notThis)
 {
 	int ix = 0;
 
 	for (ix = 0; ix < Endpoints; ix++)
 	{
+		if (endpoint[ix] == notThis)
+			continue;
+
 		if (endpoint[ix] == NULL)
 			continue;
 
@@ -2322,14 +2325,21 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	LM_M(("Looking up endpoint with alias '%s', type: %s", hello->alias, endpoint[ME]->typeName((ss::Endpoint::Type) hello->type)));
 	if (hello->type == Endpoint::Worker)
 	{
-		if ((xep = endpointLookup(hello->alias)) != NULL)
+	   if ((xep = endpointLookup(hello->alias, ep)) != NULL)
 		{
 			if (xep->state == Endpoint::Connected)
 			{
+#if 0
 				LM_M(("ep:  %p", ep));
 				LM_M(("xep: %p", xep));
 
+
+				bool oldVerbose;
+				oldVerbose = lmVerbose;
+				lmVerbose  = true;
 				endpointListShow("About to send Die to an alias-duplicated worker");
+				lmVerbose  = oldVerbose;
+#endif
 
 				if (headerP->type == Message::Msg)
 					helloSend(ep, Message::Ack);

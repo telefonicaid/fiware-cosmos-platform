@@ -133,7 +133,7 @@ public:
 
 	Endpoint*    endpointLookup(int fd, int* idP);
 	Endpoint*    endpointLookup(int ix);
-	Endpoint*    endpointLookup(char* alias);
+	Endpoint*    endpointLookup(char* alias, Endpoint* notThis = NULL);
 	Endpoint*    endpointLookup(Endpoint::Type type, char* ip);
 	Endpoint*    endpointLookup(const char* name, const char* ip);
 	Endpoint*    endpointLookup(Endpoint::Type type, Host* hostP);

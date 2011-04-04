@@ -262,6 +262,7 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 	this->port             = port;
 	Endpoints              = endpoints;
 	Workers                = workers;
+	LM_M(("Set Workers to %d", Workers));
 
 	procVec                = NULL;
 	procVecSize            = 0;
@@ -489,6 +490,8 @@ void Network::platformProcesses(void)
 	}
 
 	
+	Workers = procVec->processes - 1;
+	LM_M(("Got a process vector with %d Workers", Workers));
 
 	// Later on, I will call this callback function for all types of endpoints.
 	// For now, I only use it for the Spawner, and I keep using the ProcessVector message
@@ -2630,6 +2633,7 @@ void Network::procVecReceived(ProcessVector* processVec)
 
 	// process 0 is the controller
 	workers = processVec->processes - 1; 
+	LM_M(("processVec->processes == %d, workers = %d", processVec->processes, workers));
 
 	if (Workers < workers)
 	{
@@ -2671,8 +2675,9 @@ void Network::procVecReceived(ProcessVector* processVec)
 		}
 	}
 
-	Workers = workers;
 
+	Workers = workers;
+	LM_M(("Set Workers to %d", Workers));
 
 	LM_T(LmtWorker, ("Initializing %d worker endpoint%s", Workers, (Workers > 1)? "s" : ""));
 	for (ix = 0; ix < Workers; ix++)

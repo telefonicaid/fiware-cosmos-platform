@@ -32,10 +32,17 @@ package: release
 install: release
 	sudo make -C BUILD_RELEASE install
 
+di:	debuginstall
+
 debuginstall: debug
 	sudo make -C BUILD_DEBUG install
 
 distribute: install
+	./scripts/samsonDistribute
+
+dd:	debugdistribute
+
+debugdistribute: debuginstall
 	./scripts/samsonDistribute
 
 testdistribute: install

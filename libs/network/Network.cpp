@@ -341,7 +341,7 @@ Network::~Network()
 		if (endpoint[ix] == NULL)
 			continue;
 
-		LM_M(("Freeing endpoint[ix]", ix));
+		LM_M(("Freeing endpoint[%d]", ix));
 		delete endpoint[ix];
 	}	
 
@@ -2329,7 +2329,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 				if (headerP->type == Message::Msg)
 					helloSend(ep, Message::Ack);
 
-				LM_W(("Got Hello from worker with taken alias '%s' - rejecting it with a 'Die' message", hello->alias));
+				LM_W(("Got Hello from worker@%s with taken alias '%s' - rejecting it with a 'Die' message", hello->ip, hello->alias));
 				iomMsgSend(ep, endpoint[0], Message::Die, Message::Evt);  // Die message before closing fd just to reject second Supervisor
 				endpointRemove(ep, "duplicated alias");
 				return;
@@ -2846,7 +2846,7 @@ void Network::msgTreat(void* vP)
 		break;
 
 	case Message::Die:
-		LM_X(1, ("Got a Die message from '%s' (%s) - I die", name, ep->typeName()));
+		LM_X(1, ("Got a Die message from '%s@%s' (%s) - I die", name, ep->ip, ep->typeName()));
 		break;
 
 	case Message::IDie:

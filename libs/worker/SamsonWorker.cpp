@@ -29,7 +29,6 @@ namespace ss {
 	 */
 	SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , loadDataManager(this)
 	{
-
 		// Description for the PacketReceiver
 		packetReceiverDescription = "samsonWorker";
 		
@@ -43,7 +42,6 @@ namespace ss {
 		
 		// Add the file updater to the Engine
 		Engine::shared()->add( new SamsonWorkerFileUpdater(this) );
-        
 	}
 	
 	

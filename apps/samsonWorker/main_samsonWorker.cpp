@@ -132,7 +132,8 @@ int main(int argC, const char *argV[])
 	// -----------------------------------------------------------------------------------
 	
 	worker = new ss::SamsonWorker(&network);
-	LM_M(("Got to END-OF main ..."));
-	while (1)
-	   sleep(1000);
+
+	// Run the main engine
+	ss::Engine::shared()->run();
+
 }

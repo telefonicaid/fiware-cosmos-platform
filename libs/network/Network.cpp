@@ -2326,6 +2326,11 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 		{
 			if (xep->state == Endpoint::Connected)
 			{
+				LM_M(("ep:  %p", ep));
+				LM_M(("xep: %p", xep));
+
+				endpointListShow("About to send Die to an alias-duplicated worker");
+
 				if (headerP->type == Message::Msg)
 					helloSend(ep, Message::Ack);
 

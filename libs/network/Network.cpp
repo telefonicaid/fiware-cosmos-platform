@@ -2329,7 +2329,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 		{
 			if (xep->state == Endpoint::Connected)
 			{
-#if 0
+#if 1
 				LM_M(("ep:  %p", ep));
 				LM_M(("xep: %p", xep));
 
@@ -2715,8 +2715,14 @@ void Network::procVecReceived(ProcessVector* processVec)
 		{
 			int workerFd;
 
-			LM_T(LmtWorker, ("Connect to worker %d: %s (host %s, port %d, alias '%s')",
-							 ix, epP->name.c_str(), epP->ip, epP->port, epP->aliasGet()));
+			if (strcmp(endpoint[ME]->aliasGet(), epP->aliasGet()) > 0)
+			{
+				LM_M(("NOT Connecting to Worker with alias '%s' as my alias is 'bigger' (%s)", epP->aliasGet(), endpoint[ME]->aliasGet()));
+				continue;
+			}
+
+			// LM_T(LmtWorker
+			LM_M(("Connect to worker %d: %s (host %s, port %d, alias '%s'). My alias is '%s'", ix, epP->name.c_str(), epP->ip, epP->port, epP->aliasGet(), endpoint[ME]->aliasGet()));
 
 			if ((workerFd = iomConnect(epP->ip, epP->port)) == -1)
 			{

@@ -238,7 +238,7 @@ static void processesStart(ss::ProcessVector* procVec)
 		if (hostP != localhostP)
 			continue;
 
-		LM_T(LmtProcess, ("Spawning process '%s'", hostP->name));
+		LM_T(LmtProcess, ("Spawning process '%s'", processP->name));
 
 		processP->verbose = lmVerbose;
 		processP->debug   = lmDebug;
@@ -355,48 +355,6 @@ void spawnersConnect(ss::ProcessVector* procVec, bool force = false)
 	}
 }
 
-
-
-
-/* ****************************************************************************
-*
-* processVector - 
-*/
-static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
-{
-	int           procVecSize;
-	int           error = 0;
-
-	LM_T(LmtProcessVector, ("Received a procVec with %d processes from %s@%s", pVec->processes, ep->name.c_str(), ep->ip));
-
-	procVecSize = sizeof(ss::ProcessVector) + pVec->processes * sizeof(ss::Process);
-	procVec     = (ss::ProcessVector*) malloc(procVecSize);
-	if (procVec == NULL)
-		LM_X(1, ("error allocating space for proc vector (%d bytes): %s", procVecSize, strerror(errno)));
-
-	memcpy(procVec, pVec, procVecSize);
-
-	if (networkP->hostMgr->lookup("localhost") == NULL)
-		LM_X(1, ("Cannot find 'localhost' in my host manager"));
-
-	platformProcessesSave(procVec);
-
-	LM_TODO(("Send 'Die' to Controller"));
-	LM_TODO(("Send 'Die' to Worker"));
-
-	processesStart(procVec);
-
-
-	//
-	// The spawner that gets the message from 'samsonSetup' connects to all spawners
-	//
-	if (ep->type == ss::Endpoint::Setup) 
-		spawnersConnect(procVec, true);
-	else
-		spawnersConnect(procVec, false);
-
-	return error;
-}
 
 
 
@@ -554,6 +512,53 @@ static void localProcessesKill(void)
 	s = system("killall -9 samsonController 2> /dev/null");
 	if (s != 0)
 		LM_E((" system(\"killall -9 samsonController\"): %s", strerror(errno)));
+}
+
+
+
+/* ****************************************************************************
+*
+* processVector - 
+*/
+static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
+{
+	int           procVecSize;
+	int           error = 0;
+
+	LM_T(LmtProcessVector, ("Received a procVec with %d processes from %s@%s", pVec->processes, ep->name.c_str(), ep->ip));
+
+	LM_M(("First, I kill all local processes ..."));
+	localProcessesKill();
+	LM_M(("Local processes should not be running, sleeping for 50 msecs ..."));
+	usleep(50000);
+
+	if (procVec != NULL)
+	   free(procVec);
+
+	procVecSize = sizeof(ss::ProcessVector) + pVec->processes * sizeof(ss::Process);
+	procVec     = (ss::ProcessVector*) malloc(procVecSize);
+	if (procVec == NULL)
+		LM_X(1, ("error allocating space for proc vector (%d bytes): %s", procVecSize, strerror(errno)));
+
+	memcpy(procVec, pVec, procVecSize);
+
+	if (networkP->hostMgr->lookup("localhost") == NULL)
+		LM_X(1, ("Cannot find 'localhost' in my host manager"));
+
+	
+	platformProcessesSave(procVec);
+	processesStart(procVec);
+
+
+	//
+	// The spawner that gets the message from 'samsonSetup' connects to all spawners
+	//
+	if (ep->type == ss::Endpoint::Setup) 
+		spawnersConnect(procVec, true);
+	else
+		spawnersConnect(procVec, false);
+
+	return error;
 }
 
 

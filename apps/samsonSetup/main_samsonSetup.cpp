@@ -128,7 +128,7 @@ static int accessCheck(void)
 
 	if (access(PlatformProcessesPath, R_OK) == 0)
 	{
-#if 1
+#if 0
 		printf("Samson Platform Setup Error.\n"
 			   "The platform process file '%s' already exists.\n"
 			   "In order to change the platform configuration,\n"
@@ -145,7 +145,7 @@ static int accessCheck(void)
 			   "Do you wish to overwrite it (Y/N)?> ", PlatformProcessesPath);
 		fflush(stdout);
 
-		s = scanf("%s", answer);
+		int s = scanf("%s", answer);
 		if (s == EOF)
 			LM_X(1, ("Error reading reply"));
 

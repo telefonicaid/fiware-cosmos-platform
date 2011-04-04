@@ -97,4 +97,4 @@ coverage: debug
 	cd BUILD_DEBUG ; ../scripts/samsonCoverage
 
 cm:
-	echo $(for i in `ipcs -m | grep andreu | awk '{print $2}'`; do ipcrm -m $i; done)
+	echo $(for i in `ipcs -m | grep $USER | awk '{print $2}'`; do ipcrm -m $i; done)

@@ -841,6 +841,14 @@ static void* senderThread(void* vP)
 				job.network->packetReceiver->_receive( job.packetP );
 				//job.network->packetReceiver->_receive(0, job.msgCode, job.packetP);
 			}
+			else
+			{
+				if (job.packetP != NULL)
+				{
+					delete job.packetP;
+					job.packetP = NULL;
+				}
+			}
 		}
 		else
 		{
@@ -861,6 +869,12 @@ static void* senderThread(void* vP)
 					ep->packetSender->notificationSent(0, true);
 			}
 
+			if (job.packetP != NULL)
+			{
+				delete job.packetP;
+				job.packetP = NULL;
+			}
+
 			LM_T(LmtSenderThread, ("iomMsgSend ok"));
 		}
 
@@ -868,12 +882,6 @@ static void* senderThread(void* vP)
 		{
 			free(job.dataP);
 			job.dataP = NULL;
-		}
-
-		if (job.packetP != NULL)
-		{
-			delete job.packetP;
-			job.packetP = NULL;
 		}
 	}
 
@@ -1505,10 +1513,7 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 			if (endpointUpdateReceiver != NULL)
 				endpointUpdateReceiver->endpointUpdate(ep, Endpoint::WorkerRemoved, "Worker Removed");
 
-			LM_W(("NO, I am removing the worker !"));
-			delete ep;
-			ep = NULL;
-			endpoint[ix] = NULL;
+			LM_W(("NOT removing the worker !"));
 		}
 		else if (ep->type == Endpoint::Controller)
 		{
@@ -1542,8 +1547,12 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 			endpoint[ix] = NULL;
 		}
 
-		if (ep != NULL)
-			memset(ep, 0, sizeof(*ep));
+		if ((ep != NULL) && (ep->type != Endpoint::Worker))
+		{
+			if (ep != NULL)
+				memset(ep, 0, sizeof(*ep));
+		}
+
 		return;
 	}
 }
@@ -2321,6 +2330,8 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	}
 
 
+
+#if 0
 	//
 	// Check that Worker alias doesn't already exist
 	//
@@ -2332,7 +2343,6 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 		{
 			if (xep->state == Endpoint::Connected)
 			{
-#if 1
 				LM_M(("ep:  %p", ep));
 				LM_M(("xep: %p", xep));
 
@@ -2340,9 +2350,8 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 				bool oldVerbose;
 				oldVerbose = lmVerbose;
 				lmVerbose  = true;
-				endpointListShow("About to send Die to an alias-duplicated worker");
+				endpointListShow("About to send Die to an alias-duplIcated worker");
 				lmVerbose  = oldVerbose;
-#endif
 
 				if (headerP->type == Message::Msg)
 					helloSend(ep, Message::Ack);
@@ -2354,6 +2363,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 			}
 		}
 	}
+#endif
 
 
 #if 1
@@ -2463,6 +2473,11 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 		endpointUpdateReceiver->endpointUpdate(ep, Endpoint::HelloReceived, "Hello Received", headerP);
 
 	 LM_T(LmtHello, ("---------------------------------------------------------------------------------------------------------"));
+
+	 if (endpoint[ME]->type == Endpoint::Delilah)
+	 {
+		 
+	 }
 }
 
 
@@ -2720,11 +2735,11 @@ void Network::procVecReceived(ProcessVector* processVec)
 		{
 			int workerFd;
 
-			if (strcmp(endpoint[ME]->aliasGet(), epP->aliasGet()) > 0)
-			{
-				LM_M(("NOT Connecting to Worker with alias '%s' as my alias is 'bigger' (%s)", epP->aliasGet(), endpoint[ME]->aliasGet()));
-				continue;
-			}
+			// if (strcmp(endpoint[ME]->aliasGet(), epP->aliasGet()) > 0)
+			// {
+			//	LM_M(("NOT Connecting to Worker with alias '%s' as my alias is 'bigger' (%s)", epP->aliasGet(), endpoint[ME]->aliasGet()));
+			//	continue;
+			// }
 
 			// LM_T(LmtWorker
 			LM_M(("Connect to worker %d: %s (host %s, port %d, alias '%s'). My alias is '%s'", ix, epP->name.c_str(), epP->ip, epP->port, epP->aliasGet(), endpoint[ME]->aliasGet()));
@@ -2773,7 +2788,7 @@ void Network::msgTreat(void* vP)
 	Message::MessageType  msgType;
 	int                   s;
 
-	// New packet with the incomming data
+	// New packet with the incoming data
 	packet = new Packet();
 	
 	LM_T(LmtRead, ("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
@@ -2983,6 +2998,30 @@ void Network::msgTreat(void* vP)
 			LM_X(1, ("Got an alarm event from %s endpoint '%s' - not supposed to happen!", ep->typeName(), ep->name.c_str()));
 		break;
 
+	case Message::ProcessVectorGet:
+		if ((endpoint[ME]->type == Endpoint::Controller) && (ep->type == Endpoint::Delilah))
+		{
+			if (headerP->type != Message::Msg)
+				LM_X(1, ("Delilah sent an ProcessVectorGet:ACK ..."));
+			s = iomMsgSend(ep, endpoint[ME], Message::ProcessVectorGet, Message::Ack, procVec, procVecSize);
+			if (s != 0)
+				LM_E(("Error sending procVec to Delilah"));
+		}
+		else if ((endpoint[ME]->type == Endpoint::Delilah) && (ep->type == Endpoint::Controller))
+		{
+			procVec     = (ProcessVector*) dataP;
+			procVecSize = dataLen;
+			dataP       = NULL;     // This way, dataP will not de freed at the end of this function
+
+			if (headerP->type != Message::Ack)
+				LM_X(1, ("Controller sent an ProcessVectorGet:MSG ..."));
+
+			procVecReceived(procVec);
+		}
+		else
+			LM_X(1, ("Got a ProcessVectorGet message/ack not being a Controller/Delilah communication ..."));
+		break;
+
 	default:
 		LM_T(LmtSenderThread, ("calling receiver->receive for message code '%s'", messageCode(msgCode)));
 		if (packetReceiver)
@@ -3003,7 +3042,7 @@ void Network::msgTreat(void* vP)
 		break;
 	}
 
-	if (dataP != data)
+	if ((dataP != NULL) && (dataP != data))
 	{
 		free(dataP);
 		dataP = NULL;
@@ -3164,7 +3203,7 @@ void Network::run(void)
 
 			if (showSelectList)
 			{
-				// endpointListShow("periodic");
+				endpointListShow("periodic");
 
 				if (endpointUpdateReceiver != NULL)
 					endpointUpdateReceiver->endpointUpdate(NULL, Endpoint::SelectToBeCalled, "Select to be called");

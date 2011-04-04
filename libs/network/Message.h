@@ -73,7 +73,8 @@ typedef enum MessageCode
 	WorkerConfigGet                 = CODE('W', 'C', 'G', ' '),
 	EntireLogFile                   = CODE('E', 'L', 'F', ' '),
 	EntireOldLogFile                = CODE('O', 'L', 'F', ' '),
-	Reset                           = CODE('R', 's', 't', ' ')
+	Reset                           = CODE('R', 's', 't', ' '),
+	ProcessVectorGet                = CODE('P', 'V', 'G', ' ')
 } MessageCode;
 
 

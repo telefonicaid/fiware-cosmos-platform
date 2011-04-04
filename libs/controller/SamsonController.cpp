@@ -483,6 +483,9 @@ namespace ss {
 						Packet *p = new Packet();
 						network::WorkerTask* wt=  p->message->mutable_worker_task();
 						wt->set_operation( "reload_modules" );	// Spetial operation to reload modules
+
+                        wt->set_task_id(0); // Special case for reload operation
+                        
 						network->send(this,  network->workerGetIdentifier(i) , Message::WorkerTask,  p);
 					}
 

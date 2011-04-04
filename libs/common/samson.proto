@@ -189,11 +189,11 @@ message WorkerTask
 	repeated FullQueue input_queue	  = 4;  // Full information about input queues ( including only files of interes )
 	repeated FullQueue output_queue   = 5;  // Full information about output queues ( including all file )
 
-	required int32 servers		  = 6;	// Number of servers ( all the workers )
+	optional int32 servers		  = 6;	// Number of servers ( all the workers )
 
 	optional bool generator		  = 7;	// Optional flag only used in the generator operations ( only one generator generates data )
 
-	required Environment environment  = 8;	// Environment operations for this task
+	optional Environment environment  = 8;	// Environment operations for this task
 }
 
 // ////////////////////////////////////////////////////////////////////////////

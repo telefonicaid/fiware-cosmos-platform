@@ -531,14 +531,13 @@ namespace ss
     
     std::string WorkerTask::newFileNameForTXTOutput( int hg_set )
     {
-		std::ostringstream fileName;
-		
+		// Get the worker id
 		int worker_id = taskManager->worker->network->getWorkerId();
-		
-		//fileName << SamsonSetup::shared()->dataDirectory << "/" << "file_" << worker_id << "_" << task_id << "_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000;
-		fileName << worker_id << "_" << task_id << "_txt_" << hg_set ;
-		
-		return fileName.str();
+
+		// Create the nme of the file
+        char fileName[2000];
+        sprintf(fileName, "%d_%lu_txt_%010d" , worker_id , task_id , hg_set );
+		return fileName;
     }
     
 	

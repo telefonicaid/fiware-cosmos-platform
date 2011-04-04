@@ -29,6 +29,7 @@
 #include "Alarm.h"              // ALARM
 #include "ports.h"              // Port numbers for samson processes
 
+#include "Format.h"             // au::Format::string
 #include "samsonConfig.h"       // SAMSON_MAX_HOSTS
 #include "samson/Log.h"			// LogLineData
 #include "platformProcesses.h"  // platformProcessesGet
@@ -1086,7 +1087,7 @@ void Network::endpointListShow(const char* why)
 				sign = '+';
 		}
 
-		LM_V(("%c %08p  Endpoint %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%09d, out: %03d/%09d) r:%d (acc %d) - w:%d (acc: %d))",
+		LM_V(("%c %08p  Endpoint %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%s, out: %03d/%s) r:%d (acc %d) - w:%d (acc: %d))",
 			  sign,
 			  endpoint[ix],
 			  ix,
@@ -1098,9 +1099,9 @@ void Network::endpointListShow(const char* why)
 			  endpoint[ix]->stateName(),
 			  endpoint[ix]->rFd,
 			  endpoint[ix]->msgsIn,
-			  endpoint[ix]->bytesIn,
+			  au::Format::string(endpoint[ix]->bytesIn, "B").c_str(),
 			  endpoint[ix]->msgsOut,
-			  endpoint[ix]->bytesOut,
+			  au::Format::string(endpoint[ix]->bytesOut, "B").c_str(),
 			  endpoint[ix]->rMbps,
 			  endpoint[ix]->rAccMbps,
 			  endpoint[ix]->wMbps,
@@ -3409,7 +3410,7 @@ std::string Network::getState(std::string selector)
 		if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) && (endpoint[ix]->rFd >= 0))
 		{
 			++eps;
-			snprintf(partString, sizeof(partString), "+ %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d, out: %03d)\n",
+			snprintf(partString, sizeof(partString), "+ %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%s, out: %03d/%s)\n",
 					 ix,
 					 endpoint[ix]->typeName(),
 					 endpoint[ix]->name.c_str(),
@@ -3419,11 +3420,13 @@ std::string Network::getState(std::string selector)
 					 endpoint[ix]->stateName(),
 					 endpoint[ix]->rFd,
 					 endpoint[ix]->msgsIn,
-					 endpoint[ix]->msgsOut);
+					 au::Format::string(endpoint[ix]->bytesIn, "B").c_str(),
+					 endpoint[ix]->msgsOut,
+					 au::Format::string(endpoint[ix]->bytesOut, "B").c_str());
 		}
 		else
 		{
-			snprintf(partString, sizeof(partString), "- %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d, out: %03d)\n",
+			snprintf(partString, sizeof(partString), "- %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%s, out: %03d/%s)\n",
 					 ix,
 					 endpoint[ix]->typeName(),
 					 endpoint[ix]->name.c_str(),
@@ -3433,7 +3436,10 @@ std::string Network::getState(std::string selector)
 					 endpoint[ix]->stateName(),
 					 endpoint[ix]->rFd,
 					 endpoint[ix]->msgsIn,
-					 endpoint[ix]->msgsOut);
+                     au::Format::string(endpoint[ix]->bytesIn, "B").c_str(),
+					 endpoint[ix]->msgsOut,
+                     au::Format::string(endpoint[ix]->bytesOut, "B").c_str());
+
 		}
 
 		output += partString;

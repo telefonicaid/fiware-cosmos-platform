@@ -87,3 +87,4 @@ SUGERENCIAS
 
 - Estaría bien si al crear el prototipo, se añadiera un comentario con los parámetros de entrada y salida
 
+123

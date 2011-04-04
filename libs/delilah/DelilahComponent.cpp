@@ -65,7 +65,34 @@ namespace ss {
 					
 					list_lock.unlock();
 				}
+
+                // Update of the worker status
+				if( packet->message->command_response().has_worker_status_list() )
+				{
+					list_lock.lock();
+					
+					if( wl )
+						delete wl;
+					wl = new network::WorkerStatusList();
+					wl->CopyFrom( packet->message->command_response().worker_status_list() );
+					
+					list_lock.unlock();
+				}
+
+                // Update of the controller status
+				if( packet->message->command_response().has_controller_status() )
+				{
+					list_lock.lock();
+					
+					if( cs )
+						delete cs;
+					cs = new network::ControllerStatus();
+					cs->CopyFrom( packet->message->command_response().controller_status() );
+					
+					list_lock.unlock();
+				}
 				
+                
 			}
 				break;
 				
@@ -105,6 +132,17 @@ namespace ss {
 				//copyEnviroment( &environment , c->mutable_environment() );
 				delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Command, p);
 				}	
+                
+				{
+                    // Message to update the worker status list
+                    Packet*           p = new Packet();
+                    network::Command* c = p->message->mutable_command();
+                    c->set_command( "w" );
+                    p->message->set_delilah_id( id );
+                    //copyEnviroment( &environment , c->mutable_environment() );
+                    delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Command, p);
+				}	
+                
 			}
 			
 		}

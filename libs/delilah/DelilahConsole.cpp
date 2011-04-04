@@ -455,8 +455,6 @@ namespace ss
 			return id;
 		}
 		
-		
-		
 		if ( mainCommand == "load" )
 		{
 			std::ostringstream output;
@@ -477,7 +475,6 @@ namespace ss
 			
 		}
         
-        
 		if (mainCommand == "netstate")
 		{
 			std::string s;
@@ -488,6 +485,35 @@ namespace ss
 			return 0;
 		}
 		
+        
+		if ( mainCommand == "w" )
+		{
+            if ( wl )
+                showWorkers(*wl);
+            else
+            {
+                writeWarningOnConsole("Worker status still not received from SAMSON platform");
+            }
+			return 0;
+			
+		}
+
+		if ( mainCommand == "net" )
+		{
+            if ( wl )
+            {
+                showNetworkInformation();
+            }
+            else
+            {
+                writeWarningOnConsole("Worker status still not received from SAMSON platform");
+            }
+			return 0;
+			
+		}
+        
+        
+        
 		if( mainCommand == "upload" )
 		{
 			if( commandLine.get_num_arguments() < 3)
@@ -697,7 +723,11 @@ namespace ss
 					showJobs( packet->message->command_response().job_list() );
 				
 				if( packet->message->command_response().has_worker_status_list() )
-					showWorkers( packet->message->command_response().controller_status(), packet->message->command_response().worker_status_list() );
+					showWorkers( packet->message->command_response().worker_status_list() );
+
+				if( packet->message->command_response().has_controller_status() )
+                    showControllerStatus( packet->message->command_response().controller_status() );
+                
 			}
 				break;
 				
@@ -887,7 +917,7 @@ namespace ss
 		
 	}
 	
-	void DelilahConsole::showWorkers( const network::ControllerStatus &cs , const network::WorkerStatusList l)
+	void DelilahConsole::showControllerStatus( const network::ControllerStatus &cs )
 	{
 		std::ostringstream txt;
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
@@ -895,6 +925,16 @@ namespace ss
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
 		txt << "\tJobManager: " << cs.job_manager_status() << std::endl;
 		txt << "\tTaskManager: " << cs.task_manager_status() << std::endl;
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		txt << std::endl;
+
+		writeOnConsole( txt.str() );
+		
+	}
+    
+	void DelilahConsole::showWorkers( const network::WorkerStatusList l)
+	{
+		std::ostringstream txt;
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
 		txt << "Workers" << std::endl;
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
@@ -908,12 +948,14 @@ namespace ss
 			txt << "\tMemory Manager:    " << worker_status.memory_status() << "\n";
 			txt << "\tDisk Manager:      " << worker_status.disk_manager_status() << "\n";
 			txt << "\tFile Manager:      " << worker_status.file_manager_status() << "\n";
-//			txt << "\tFile Manager Cache: " << worker_status.file_manager_cache_status() << "\n";
+            //			txt << "\tFile Manager Cache: " << worker_status.file_manager_cache_status() << "\n";
 			txt << "\tProcess Manager:   " << worker_status.process_manager_status() << "\n";
 			txt << "\t----\n";
 			txt << "\tLoad Data Manager: " << worker_status.load_data_manager_status() << "\n";
 			txt << "\t----\n";
 			txt << "\tTask Manager:      " << worker_status.task_manager_status() << "\n";
+			txt << "\t----\n";
+			txt << "\tNetwork:    \n" << worker_status.network_status() << "\n";
 			txt << "\t----\n";
 			
 			txt << "\n";
@@ -921,9 +963,28 @@ namespace ss
 		}
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
 		txt << std::endl;
-
+        
 		writeOnConsole( txt.str() );
 		
-	}
+	}    
+    
+    void DelilahConsole::showNetworkInformation( )
+    {
+		std::ostringstream txt;
+		for (int i = 0 ; i < wl->worker_status_size() ; i++)
+		{
+            
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+            txt << "Worker " << i << std::endl;
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+			const network::WorkerStatus worker_status = wl->worker_status(i);
+			txt << worker_status.network_status() << "\n";
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+		}
+		txt << std::endl;
+        
+		writeOnConsole( txt.str() );        
+    }
+    
 	
 }

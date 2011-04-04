@@ -2,6 +2,9 @@
 BUGS FROM TEST:
 
 TODO:
+* Disk statictics with remove files wrong!
+* Test a lot test.test for different setups
+* More informative error when shared memories cannot be created
 * Valgrind debuign
 * Reimplement system.compact
 * Delilah to save pakets in order

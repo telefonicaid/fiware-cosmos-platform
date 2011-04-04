@@ -58,16 +58,14 @@ namespace ss
 	void DiskManager::finishDiskOperation( DiskOperation *operation )
 	{
 		pthread_mutex_lock(&mutex);
-		
 		running_operations.erase( operation );
-		
 		diskStatistics.add( operation );
 		
 		pthread_mutex_unlock(&mutex);
 		
 		// Add a notification for this operation ( removed when delegate is notified )
         EngineNotification *notification = new EngineNotification( notification_disk_operation_request_response , operation );
-        notification->copyFrom( operation );    // Recover the environment variables to identify this request
+        notification->copyFrom( operation );        // Recover the environment variables to identify this request
         Engine::shared()->notify(notification);    
 		
 		// Check if there are more operation to be executed

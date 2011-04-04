@@ -35,6 +35,10 @@ namespace ss {
 	extern au::Lock list_lock;						// Lock to protect the list of information
 	extern network::OperationList *ol;
 	extern network::QueueList *ql;
+    
+    extern network::ControllerStatus *cs;
+    extern network::WorkerStatusList *wl;            
+    
 	
 	
 	/**

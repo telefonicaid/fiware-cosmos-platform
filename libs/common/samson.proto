@@ -123,6 +123,7 @@ message WorkerStatus
 	optional string load_data_manager_status=14;			// Information about load ( upload / download ) data manager
 	optional string memory_status=6;				// Information about memory status
 	optional string process_manager_status=1;			// Information about the process manager
+	optional string network_status=20;				// Information about the network
 
 	optional uint64 used_memory=10;
 	optional uint64 total_memory=11;

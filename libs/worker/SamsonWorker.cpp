@@ -75,9 +75,13 @@ namespace ss {
 		
 		// Fill information related with file manager and disk manager
 		Engine::shared()->fill( ws );
-		
+
+		// Load data manager
 		loadDataManager.fill( ws );
 		
+        // Network status
+        ws->set_network_status( network->getState("") );
+        
 		ws->set_used_memory( Engine::shared()->memoryManager.getUsedMemory() );
 		
 		network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);

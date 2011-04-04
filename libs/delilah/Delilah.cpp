@@ -20,6 +20,9 @@ namespace ss {
 	au::Lock list_lock;
 	network::OperationList *ol = NULL;		// List of operations ( for auto-completion )
 	network::QueueList *ql = NULL;			// List of queues ( for auto-completion )
+  
+    network::ControllerStatus *cs=NULL;     // Controller status ( updated continously )
+    network::WorkerStatusList *wl=NULL;     // Information about workers ( updated continuously )
 	
 	
 

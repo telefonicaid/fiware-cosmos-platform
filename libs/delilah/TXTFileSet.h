@@ -70,6 +70,19 @@ namespace ss {
 			return failedFiles;
 		}
 		
+        
+        std::string getStatus()
+        {
+            std::ostringstream output;
+            output << "TXTFile: ";
+            if( finish )
+                output << " finished";
+            else
+                output << " running: " << fileNames.size() << " pending files and " << failedFiles.size() << " failed files";
+            return  output.str();
+        }
+                            
+        
 		
 	};
 	

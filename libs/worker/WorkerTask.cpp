@@ -149,6 +149,15 @@ namespace ss
                 
             case notification_disk_operation_request_response:
             {
+                if( notification->object.size() < 1 )
+                    LM_X(1,("Error since WorkerTasks receive a notification_disk_operation_request_response without an object"));
+                
+                DiskOperation *diskOperation =  (DiskOperation*) notification->object[0];
+                diskOperation->destroyBuffer();
+                delete diskOperation;
+                
+                
+                // Internal operations to process this finish
                 num_disk_operations--;
                 check();
                 break;
@@ -324,7 +333,7 @@ namespace ss
 		output << " BufferPreproces " << num_process_items;
         output << " ]";
         
-		output << "\t\t\t Subtasks:";
+		output << "\n\t\t\t Subtasks:";
 	        
         for (au::map<size_t,WorkerSubTask>::iterator i = subTasks.begin() ; i != subTasks.end() ; i++)
             output << i->second->getStatus();

@@ -79,21 +79,28 @@ namespace ss {
 		// Worker to send the next packet
 		int worker;
 		
+        // final time in seconds
+        int final_time_in_seconds;
+        
 	public:
 
 		// Error log ( public since it is access from delilah )
 		au::Error error;
 		
-		bool compression;	// Public since it has to be accessible from the thread
+        // Public since it has to be accessible from the thread
+		bool compression;	
 		
 		DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression , int _max_num_threads );		
 		~DelilahUploadDataProcess();
 		
-		void run();	// Main method to start the upload process ( sending an init message to controller )
+		void run();     // Main method to start the upload process ( sending an init message to controller )
 		
 		void _run();	// Method only called by a separeted thread		
 		
+        // Functions to create the final confirmation message
 		void fillUpLoadDataFinishMessage( network::UploadDataFinish *confirmation );		
+
+        // Function to receive packets
 		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 		
 		std::string getStatus();		

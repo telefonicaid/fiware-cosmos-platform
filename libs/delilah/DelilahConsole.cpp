@@ -429,7 +429,7 @@ namespace ss
 			return 0;
 		}
 		
-		if ( mainCommand == "clear" )
+		if ( mainCommand == "clear_components" )
 		{
 			// Clear completed upload and download process
 			clearComponents();

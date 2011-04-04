@@ -58,6 +58,7 @@ namespace ss
 		{
 			error.set("Not data to upload");
 			status = finish_with_error;
+            final_time_in_seconds = au::Format::ellapsedSeconds(&init_time);
 		}
 		
 	}	
@@ -128,7 +129,10 @@ namespace ss
 			
 			// Wait if memory is not released
 			while( ( Engine::shared()->memoryManager.getMemoryUsageOutput() > 1.0 ) || ( num_threads >= max_num_threads ) )
+            {
+                // Bloques for memory of thread puposes
 				sleep(1);
+            }
 			
 			// Create a buffer
 			Buffer *b = Engine::shared()->memoryManager.newBuffer( "Loading buffer" , ss::SamsonSetup::shared()->load_buffer_size , Buffer::output );
@@ -156,7 +160,7 @@ namespace ss
 
 			p->message->set_delilah_id( id );				
 			loadDataFile->set_load_id( load_id );		// load id operation at the controller
-			loadDataFile->set_file_id( num_files );		// File id
+			loadDataFile->set_file_id( file_id );		// File id
 			
 			// Send the packet
 			std::ostringstream message;
@@ -172,7 +176,7 @@ namespace ss
 			data->p = p;
 			data->loadDataFile = loadDataFile;
 			data->delilah = delilah;
-			data->worker = worker++;
+			data->worker = worker;
 			data->uploadDataProcess = this;
 			
 			pthread_t t;
@@ -180,13 +184,16 @@ namespace ss
 			num_threads++;
 			
 			lock.unlock();
-			
+
+			// Randomize worker to send the file
+            worker++;
 			if( worker == num_workers )
 				worker = 0;
 			
 			
 		}
 		
+        // Show a message on screen
 		{
 			std::ostringstream message;
 			message << "[ " << id << " ] All input data locally processed";
@@ -244,14 +251,6 @@ namespace ss
 		}
 		
 		pd->delilah->network->send(pd->delilah, pd->delilah->network->workerGetIdentifier(pd->worker), Message::UploadDataFile, pd->p);
-		
-		// Send the packet
-		{
-			std::ostringstream message;
-			message << "[ " << id << " ] < Buffer " << file_id << " > Sent ( Compresed Size: " << au::Format::string(compress_size) << " Original Size: " << au::Format::string(original_size) << ")";
-			pd->delilah->showTrace( message.str() );
-		}
-		
 		
 		// Free allocated input parameter
 		free( p );
@@ -371,6 +370,10 @@ namespace ss
 			else
 				status = finish;
 			
+            // Set the final time
+            final_time_in_seconds = au::Format::ellapsedSeconds(&init_time);
+
+            
 			// Notify to the client to show on scren the result of this load process
 			delilah->uploadDataConfirmation( this );
 			
@@ -436,7 +439,7 @@ namespace ss
 		
 		int seconds = au::Format::ellapsedSeconds(&init_time);
 		
-		output << "[ "<< id << " ] Uploading " << au::Format::string( totalSize ,"B" ) <<" to queue: " << queue << " ( ";
+		output << "[ "<< id << " ] Uploading " << au::Format::string( totalSize ,"B" ) << " to queue: " << queue << " ( Status ";
 
 		switch (status) {
 			case uninitialized:
@@ -462,7 +465,21 @@ namespace ss
 				break;
 		}
 		output << " )";
-		
+
+        if ( ( status == finish ) || ( status == finish_with_error) )
+            output << " [ " << au::Format::time_string( final_time_in_seconds ) << " ] ";
+        
+        // General status
+        output << "\n\tConfirmed " << num_confirmed_files << " buffers of " << num_files;
+        
+        // Memory and process
+        output << "\n\tParalel processes: " << num_threads << " / " << max_num_threads;
+        output << "\n\tOutput memory usage " << au::Format::percentage_string( Engine::shared()->memoryManager.getMemoryUsageOutput() );
+        output << " of " << au::Format::string( Engine::shared()->memoryManager.getMemory() , "B" );
+        
+        // Status of the file source
+		output << "\n\tFile source: " << fileSet.getStatus();
+        
 		if( status == sending_files_to_workers )
 		{
 			output << "\n\tRunning time: " << au::Format::time_string(seconds) << " " ;

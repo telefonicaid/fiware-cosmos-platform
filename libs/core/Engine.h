@@ -53,8 +53,7 @@ namespace ss
 		
         EngineNotificationSystem notificationSystem;    // Notification system
         
-		MemoryManager memoryManager;                    // Memory manager
-		
+		MemoryManager memoryManager;                    // Memory manager		
         ProcessManager processManager;                  // Process manager for background jobs
         DiskManager diskManager;                        // Disk manager
         

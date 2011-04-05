@@ -41,19 +41,28 @@ namespace ss
 	
 	ProcessItemIsolated::ProcessItemIsolated() : ProcessItem( PI_PRIORITY_NORMAL_OPERATION ) 	
 	{
+        // By default we have no asignation of shared memory
+        shm_id = -1;
+        item = NULL;
 	}	
+
+	ProcessItemIsolated::~ProcessItemIsolated()
+    {
+        if( shm_id != -1 )
+            SharedMemoryManager::shared()->releaseSharedMemoryArea( shm_id );		
+        
+        if ( item )
+			SharedMemoryManager::shared()->freeSharedMemory( item );
+    }
 	
+    
 	void ProcessItemIsolated::run()
 	{
         if( isolated_process_as_tread )
             LM_T( LmtIsolated , ("Isolated process %s start in thread mode",getStatus().c_str()));
         else
             LM_T( LmtIsolated , ("Isolated process %s start in fork mode",getStatus().c_str()));
-        
-	
-		// Init function ( subclasses implements this )
-		init();
-		
+        			
 		// Create a couple of pipes to communicate both process
 		if ( pipe(pipeFdPair1) != 0 )
 		{
@@ -241,9 +250,6 @@ namespace ss
 		close(pipeFdPair2[1]);
 		
 		LM_T( LmtIsolated , ("Isolated process %s(%s): finish ",getStatus().c_str(),stateName()));
-		finish();
-		
-
 		
 		// Kill and wait the process
         if( !isolated_process_as_tread )
@@ -412,7 +418,18 @@ namespace ss
 	// Function to specify if we are ready to be executed of continued from a halt	
 	bool ProcessItemIsolated::isReady()
 	{
-		return Engine::shared()->memoryManager.availableMemoryOutput();
+        if( shm_id == -1 )
+        {
+            // Try to get a shared memory buffer to produce output
+            shm_id = SharedMemoryManager::shared()->retainSharedMemoryArea();
+            if( shm_id != -1 )
+                item = SharedMemoryManager::shared()->getSharedMemory( shm_id );
+        }
+        
+		bool available_memory = Engine::shared()->memoryManager.availableMemoryOutput();
+        
+        // Return true only if output memory is available and there is a shared memory buffer for me
+        return  ( available_memory && item );
 	}
 	
 	

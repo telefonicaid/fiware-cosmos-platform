@@ -122,6 +122,7 @@ message WorkerStatus
 	optional string data_buffer_status=5;				// Information about data_buffer status
 	optional string load_data_manager_status=14;			// Information about load ( upload / download ) data manager
 	optional string memory_status=6;				// Information about memory status
+	optional string shared_memory_status=22;			// Information about shared memory
 	optional string process_manager_status=1;			// Information about the process manager
 	optional string network_status=20;				// Information about the network
 

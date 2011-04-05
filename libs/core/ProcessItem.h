@@ -61,9 +61,9 @@ namespace ss {
 		
 	public:
 		
-		au::Error error;		// Error management
+		au::Error error;                    // Error management
 		
-		int priority;			// Priority level ( 0 = low priority ,  10 = high priority )
+		int priority;                       // Priority level ( 0 = low priority ,  10 = high priority )
 		
 	public:
 

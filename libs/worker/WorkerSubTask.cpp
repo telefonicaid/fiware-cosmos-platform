@@ -484,9 +484,15 @@ namespace ss
 	
 	void ParserSubTask::run_read_operations()
 	{
-		// Single file to be parsed
-		DiskOperation *item = DiskOperation::newReadOperation( fileName , 0, fileSize, buffer->getSimpleBuffer() );
-		addReadOperation(item);
+        
+        if( fileSize > 0)
+        {
+            if( !buffer )
+                LM_X(1,("Intern error: No buffer in read operations of task"));
+            // Single file to be parsed
+            DiskOperation *item = DiskOperation::newReadOperation( fileName , 0, fileSize, buffer->getSimpleBuffer() );
+            addReadOperation(item);
+        }
 		
 	}
 	

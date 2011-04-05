@@ -960,6 +960,7 @@ namespace ss
 			txt << "Worker " << i << "     " << "            ( Time of update: " << worker_status.time() << " )";
 			txt << "\n";
 			txt << "\tMemory Manager:    " << worker_status.memory_status() << "\n";
+			txt << "\tShared Memory Manager:    " << worker_status.shared_memory_status() << "\n";
 			txt << "\tDisk Manager:      " << worker_status.disk_manager_status() << "\n";
 			txt << "\tFile Manager:      " << worker_status.file_manager_status() << "\n";
             //			txt << "\tFile Manager Cache: " << worker_status.file_manager_cache_status() << "\n";
@@ -968,10 +969,6 @@ namespace ss
 			txt << "\tLoad Data Manager: " << worker_status.load_data_manager_status() << "\n";
 			txt << "\t----\n";
 			txt << "\tTask Manager:      " << worker_status.task_manager_status() << "\n";
-			txt << "\t----\n";
-			txt << "\tNetwork:    \n" << worker_status.network_status() << "\n";
-			txt << "\t----\n";
-			
 			txt << "\n";
 			
 		}

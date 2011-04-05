@@ -21,6 +21,8 @@
 
 namespace ss {
 	
+    class SharedMemoryItem;
+    
 	class ProcessItemIsolated : public  ProcessItem, public Tracer , public OperationController
 	{
 		typedef enum 
@@ -37,7 +39,12 @@ namespace ss {
 		int pipeFdPair2[2];
 
 		state s;
-		
+
+    public:
+        
+        int shm_id;							// Shared memory area used in this operation
+		SharedMemoryItem *item;				// Share memory item
+        
 	public:
 		
 		void run();
@@ -50,6 +57,9 @@ namespace ss {
 		// Constructor
 		ProcessItemIsolated();
 		
+        // Destructor ( free the shared memory segment used internally )
+        ~ProcessItemIsolated();
+        
 		// Function to be implemented ( running on a different process )
 		virtual void runIsolated() = 0;
 
@@ -69,13 +79,8 @@ namespace ss {
 		// Set the error and finish the task
 		void setUserError( std::string message ); 
 		
-		// Function executed before and after
-		virtual void init(){};
-		virtual void finish(){};
-		
-		// Function to specify if we are ready to be executed of continued from a halt	
+		// Function to specify if we are ready to be executed or continued from a halt	
 		bool isReady();
-		
 		
 	public:		
 

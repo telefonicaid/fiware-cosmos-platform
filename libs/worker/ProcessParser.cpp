@@ -18,30 +18,42 @@ namespace ss
 		operation_name = workerTask->operation();	
 		
 		// Set the buffer size the max size
-		parserSubTask->buffer->setSize( parserSubTask->buffer->getMaxSize() );
-		
-		// Geting the operation and the data base address
-		ModulesManager *modulesManager = ModulesManager::shared();
-		operation = modulesManager->getOperation( operation_name );
+        if( parserSubTask->buffer )
+        {
+            parserSubTask->buffer->setSize( parserSubTask->buffer->getMaxSize() );
+            
+            // Geting the operation and the data base address
+            ModulesManager *modulesManager = ModulesManager::shared();
+            operation = modulesManager->getOperation( operation_name );
 
-		data = parserSubTask->buffer->getData();
-		size = parserSubTask->buffer->getSize();		
+            data = parserSubTask->buffer->getData();
+            size = parserSubTask->buffer->getSize();		
+        }
+        else
+        {
+            data = NULL;
+            size = 0;
+        }
 		
 	}
 
 	void ProcessParser::generateKeyValues( KVWriter *writer )
 	{
-		// Run the generator over the ProcessWriter to emit all key-values
-		Parser *parser = (Parser*) operation->getInstance();
-		parser->environment = &environment;
-		parser->tracer = this;
-		parser->operationController = this;
-		
+        
+        if( data )
+        {
+            // Run the generator over the ProcessWriter to emit all key-values
+            Parser *parser = (Parser*) operation->getInstance();
+            parser->environment = &environment;
+            parser->tracer = this;
+            parser->operationController = this;
+            
 
-		// Non compressed fiels
-		parser->init();
-		parser->run( data , size ,  writer );
-		parser->finish();
+            // Non compressed fiels
+            parser->init();
+            parser->run( data , size ,  writer );
+            parser->finish();
+        }
 
 		/*
 		 // Compressed files

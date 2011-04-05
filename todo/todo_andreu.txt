@@ -2,6 +2,8 @@
 BUGS FROM TEST:
 
 TODO:
+* Not accept parerOut with no output txt txt 
+* Wrong cores and memory reporting
 * Disk statictics with remove files wrong!
 * Test a lot test.test for different setups
 * More informative error when shared memories cannot be created

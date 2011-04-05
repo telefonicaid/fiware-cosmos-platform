@@ -64,8 +64,6 @@ namespace ss
 		WorkerTaskManager *workerTaskManager;	// Pointer to the task manager
 		NetworkInterface *network;
 		
-		int shm_id;							// Shared memory area used in this operation
-		SharedMemoryItem *item;				// Share memory item
 		
 		Environment environment;			// Environment of the operation
 		
@@ -78,18 +76,6 @@ namespace ss
 		void setProcessBaseMode(ProcessBaseType _type)
 		{
 			type = _type;
-		}
-		
-		void init()
-		{
-			shm_id = SharedMemoryManager::shared()->retainSharedMemoryArea();
-			item = SharedMemoryManager::shared()->getSharedMemory( shm_id );
-		}
-		
-		void finish()
-		{
-			SharedMemoryManager::shared()->releaseSharedMemoryArea( shm_id );		
-			SharedMemoryManager::shared()->freeSharedMemory( item );
 		}
 		
 		// Function to be implemented ( running on a different process )

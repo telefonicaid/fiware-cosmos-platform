@@ -86,12 +86,15 @@ namespace ss
         
         for ( std::set<ProcessItem*>::iterator i =  items.begin() ; i!= items.end() ; i++)
         {
-            if( !item )
-                item = *i;
-            else
+            if( (*i)->isReady() )   // Let's check if the process is ready to be executed
             {
-                if( (*i)->priority > item->priority )
+                if( !item  )
                     item = *i;
+                else
+                {
+                    if( (*i)->priority > item->priority )
+                        item = *i;
+                }
             }
         }
         

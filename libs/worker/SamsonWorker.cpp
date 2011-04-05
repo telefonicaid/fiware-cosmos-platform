@@ -82,6 +82,9 @@ namespace ss {
         // Network status
         ws->set_network_status( network->getState("") );
         
+        // Shared memory manager status
+        SharedMemoryManager::shared()->fill( ws );
+        
         // Send the message    
 		network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);
 	}

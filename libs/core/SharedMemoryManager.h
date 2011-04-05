@@ -99,6 +99,11 @@ namespace ss {
 		// Init and destroy functions
         static void init();
         static SharedMemoryManager* shared();
+        
+        
+        // Status report
+		void fill( network::WorkerStatus* ws);
+
 	};
 	
 };

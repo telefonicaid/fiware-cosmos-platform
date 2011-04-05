@@ -18,7 +18,7 @@
 #include "MemoryRequest.h"		// ss::MemoryRequest
 #include "Engine.h"				// ss::Engine
 #include "SharedMemoryItem.h"   // ss::SharedMemoryItem
-
+#include "Format.h"             // au::Format
 
 namespace ss
 {
@@ -189,7 +189,6 @@ namespace ss
 		
 		token.release();
 		
-		LM_X(1,("Error since there are no available shared memory buffers"));
 		return -1;	// There are no available memory buffers, so we will never get this point
 	}
 	
@@ -246,5 +245,24 @@ namespace ss
 		delete item;
 	}
 	
+    void SharedMemoryManager::fill( network::WorkerStatus* ws)
+    {
+        std::ostringstream output;
+        
+        int used_shared_memory_num_buffers = 0;
+        for (int i = 0 ; i < shared_memory_num_buffers ; i++)
+            if( shared_memory_used_buffers[i] )
+                used_shared_memory_num_buffers++;
+        
+        output << au::Format::string("Size: %s Used %d/%d", 
+                                     au::Format::string(shared_memory_size_per_buffer).c_str() , 
+                                     used_shared_memory_num_buffers , 
+                                     shared_memory_num_buffers);
+        
+        ws->set_shared_memory_status( output.str() );
+        
+    }
+    
+    
 
 }

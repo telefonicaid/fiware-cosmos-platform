@@ -3,7 +3,7 @@
 #include <sys/stat.h>	// stat(.)
 #include <stdarg.h>             /* va_start, va_arg, va_end                  */
 #include <string.h>             // strchr
-
+#include <sstream>              // std::ostringstream
 
 namespace au
 {
@@ -18,7 +18,7 @@ namespace au
 	std::string Format::percentage_string( double p )
 	{
 		char line[2000];
-		sprintf(line, "%03.1f%%",p*100);
+		sprintf(line, "%04.1f%%",p*100);
 		return std::string(line);
 		
 	}
@@ -122,21 +122,39 @@ namespace au
     {
         va_list        args;
         char           vmsg[2048];
-        char*          nl;
         
         /* "Parse" the varible arguments */
         va_start(args, format);
         
         /* Print message to variable */
         vsnprintf(vmsg, sizeof(vmsg), format, args);
-        vmsg[2047] = 0;
+        //vmsg[2047] = 0;
         va_end(args);
-        
-        if ((nl = strchr(vmsg, '\n')) != NULL)
-            *nl = 0;
         
         return std::string(vmsg);
     }        
+    
+    std::string Format::progress_bar( double p , int len )
+    {
+        std::ostringstream output;
+    
+        
+        if( p < 0 )
+            p = 0;
+        if( p > 1 )
+            p = 1;
+
+        int pos = len * p;
+        
+        output << " [ ";
+        for (int s = 0 ; s < pos ; s++ )
+        output << "*";
+        for (int s = pos ; s < len ; s++ )
+        output << ".";
+        output << " ] ";
+        
+        return  output.str();
+    }
     
     
 	

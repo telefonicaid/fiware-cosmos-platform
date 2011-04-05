@@ -33,6 +33,9 @@ namespace au {
         static std::string string(const char* format, ...);
         
 		
+        static std::string progress_bar( double p , int len );
+
+        
 	};
 		
 }

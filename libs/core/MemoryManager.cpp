@@ -126,6 +126,7 @@ namespace ss
 		ws->set_memory_status( output.str() );
 		ws->set_total_memory( memory );
 		ws->set_used_memory( getUsedMemory() );
+
 	}
 	
     void MemoryManager::notify( EngineNotification* notification )

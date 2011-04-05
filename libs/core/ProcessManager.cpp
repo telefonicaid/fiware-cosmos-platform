@@ -178,7 +178,10 @@ namespace ss
     {
         
         pthread_mutex_lock(&mutex);
-        
+
+        // Basic information about the number of cores running
+        ws->set_used_cores(running_items.size());
+        ws->set_total_cores(num_processes);
         
         // Process Manager Status
         // ----------------------------------------------------------------------------

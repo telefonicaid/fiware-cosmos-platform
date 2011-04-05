@@ -98,6 +98,8 @@ namespace ss
 		
 		pthread_mutex_lock(&mutex);
 		
+        ws->set_disk_pending_operations( pending_operations.size() + running_operations.size() );
+        
 		// Disk Manager
 		// ----------------------------------------------------------------------------
 		std::ostringstream disk_manager_status;

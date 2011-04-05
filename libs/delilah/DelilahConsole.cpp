@@ -511,6 +511,20 @@ namespace ss
 			return 0;
 			
 		}
+
+		if ( mainCommand == "cores" )
+		{
+            if ( wl )
+            {
+                showMemoryAndCoresInformation();
+            }
+            else
+            {
+                writeWarningOnConsole("Worker status still not received from SAMSON platform");
+            }
+			return 0;
+			
+		}
         
         
         
@@ -985,6 +999,57 @@ namespace ss
         
 		writeOnConsole( txt.str() );        
     }
+
+    void DelilahConsole::showMemoryAndCoresInformation( )
+    {
+		std::ostringstream txt;
+		for (int i = 0 ; i < wl->worker_status_size() ; i++)
+		{
+            txt << au::Format::string("Worker %03d", i);
+
+            int used_cores = wl->worker_status(i).used_cores();
+            int total_cores = wl->worker_status(i).total_cores();
+            double per_cores = (total_cores==0)?0:((double) used_cores / (double) total_cores);
+            
+            txt << au::Format::string("\n\tCores  [ %s ] %s / %s :" , 
+                                      au::Format::percentage_string(per_cores).c_str() , 
+                                      au::Format::string(used_cores).c_str() , 
+                                      au::Format::string(total_cores).c_str() );
+            
+            txt << au::Format::progress_bar( per_cores , 70 );
+            
+            size_t used_memory = wl->worker_status(i).used_memory();
+            size_t total_memory = wl->worker_status(i).total_memory();
+            double per_memory = (total_memory==0)?0:((double) used_memory / (double) total_memory);
+            
+            txt << au::Format::string("\n\tMemory [ %s ] %s / %s :" , 
+                                      au::Format::percentage_string(per_memory).c_str() , 
+                                      au::Format::string(used_memory).c_str() , 
+                                      au::Format::string(total_memory).c_str() );
+            
+            txt << au::Format::progress_bar( per_memory , 70 );
+
+            // Disk operations
+            int disk_pending_operations = wl->worker_status(i).disk_pending_operations();
+            double per_disk = (total_memory==0)?0:((double) disk_pending_operations / (double) 40);
+            
+            txt << au::Format::string("\n\tDisk                     %s :" , 
+                                      au::Format::string(disk_pending_operations).c_str() );
+            
+            txt << au::Format::progress_bar( per_disk , 70 );
+            
+            
+            txt << "\n";
+            
+            
+		}
+		txt << std::endl;
+        
+		writeOnConsole( txt.str() );        
+    }
+    
+    
+    
     
 	
 }

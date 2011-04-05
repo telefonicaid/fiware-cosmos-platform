@@ -82,8 +82,7 @@ namespace ss {
         // Network status
         ws->set_network_status( network->getState("") );
         
-		ws->set_used_memory( Engine::shared()->memoryManager.getUsedMemory() );
-		
+        // Send the message    
 		network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);
 	}
 	

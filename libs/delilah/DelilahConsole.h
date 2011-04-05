@@ -178,7 +178,7 @@ namespace ss {
         void showControllerStatus( const network::ControllerStatus &cs );
 
         void showNetworkInformation( );
-		
+		void showMemoryAndCoresInformation();
         
 	};
 

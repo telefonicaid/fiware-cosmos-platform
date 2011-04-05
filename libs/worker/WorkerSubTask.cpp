@@ -364,7 +364,7 @@ namespace ss
 		size_t size				= sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
 		
 		DiskOperation *item = DiskOperation::newReadOperation( file->fileName , offset , size , file->getSimpleBufferForInfo() );
-		item->tag = task->task_id;
+		//item->tag = task->task_id;
 		return item;
 	}	
 	
@@ -577,7 +577,7 @@ namespace ss
 		size_t size				= sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
 		
 		DiskOperation *item = DiskOperation::newReadOperation( file->fileName , offset , size , file->getSimpleBufferForInfo() );
-		item->tag = task->task_id;
+		//item->tag = task->task_id;
 		return item;
 	}		
 	

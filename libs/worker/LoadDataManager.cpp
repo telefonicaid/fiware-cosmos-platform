@@ -47,7 +47,6 @@ namespace ss
 	{
 		// Add to the file manager to be stored on disk
 		DiskOperation *operation = DiskOperation::newWriteOperation( buffer , fileName );
-		operation->tag = id;	// Use my id as tag
 
 		// Submit to the engine
         EngineNotification *notification = new EngineNotification( notification_disk_operation_request , operation );
@@ -113,7 +112,6 @@ namespace ss
 		buffer->setSize( size );
 
 		DiskOperation *operation = DiskOperation::newReadOperation( buffer->getData() , fileName , 0 , size );
-        operation->tag = id;
         
 		// Submit the operation to the engine
         EngineNotification *notification = new EngineNotification( notification_disk_operation_request , operation );
@@ -159,6 +157,10 @@ namespace ss
 		worker = _worker;
 		upload_size = 0;
         
+        // Initial value for the id of the laod operations
+        id = 1;
+        
+        // Add this object as a listener of notification_disk_operation_request_response
         Engine::shared()->notificationSystem.add( notification_disk_operation_request_response , this );
 	}
 	
@@ -226,11 +228,16 @@ namespace ss
         DiskOperation *operation = (DiskOperation*) notification->object[0];
         notification->object.clear();
         
+        size_t _id = notification->getSizeT("id", 0);
+        
+        if( _id == 0)
+            LM_W(("LoadDataManger received a notification_disk_operation_request_response without id field"));
+        
         switch ( operation->getType() ) {
                 
 			case DiskOperation::read:
 			{
-				DownloadItem* download = downloadItem.extractFromMap( operation->tag );
+				DownloadItem* download = downloadItem.extractFromMap( _id );
 				
 				if( download )
 				{
@@ -243,7 +250,7 @@ namespace ss
 				break;
 			case DiskOperation::write:
 			{
-				UploadItem* upload = uploadItem.extractFromMap( operation->tag );
+				UploadItem* upload = uploadItem.extractFromMap( _id );
 				
 				if( upload )
 				{

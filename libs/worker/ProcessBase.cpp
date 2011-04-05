@@ -9,6 +9,7 @@
 #include "WorkerTask.h"				// ss::WorkerTask
 #include "SamsonWorker.h"			// ss::SamsonWorker
 #include "SharedMemoryItem.h"       // ss::SharedMemoryItem
+#include "logMsg.h"                 // LM_X
 
 namespace ss {
 	
@@ -257,6 +258,9 @@ namespace ss {
 			
 			// There is only one output queue
 			//network::Queue output_queue = task->workerTask.output( 0 );
+			if( workerTask->output_queue_size() == 0)
+			  LM_X(1,("Internal error: WorkerTask message without output queue"));
+
 			network::Queue output_queue = workerTask->output_queue( 0 ).queue();
 			
 			// copy the entire buffer to here

@@ -10,6 +10,13 @@ namespace ss {
     
 #pragma mark BufferVector   
     
+    BufferVector::~BufferVector()
+    {
+        // Clear the buffer if there is any buffer inside ( only in killed jobs )
+        clear();
+    }
+
+    
     void BufferVector::clear()
     {
         for (std::list<Buffer*>::iterator i = buffers.begin() ; i != buffers.end() ; i++)

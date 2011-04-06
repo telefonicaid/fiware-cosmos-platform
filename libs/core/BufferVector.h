@@ -48,6 +48,8 @@ namespace ss {
         
     public:
         
+        virtual ~BufferVector();
+        
         // Add a paricular buffer to the vector following a particular order
         
         void addBuffer( Buffer *b )

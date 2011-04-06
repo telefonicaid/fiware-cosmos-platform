@@ -13,9 +13,8 @@ namespace ss {
 		DiskOperation *diskOperation = (DiskOperation*) _diskOperation;
 		diskOperation->run();
 
-		// If write operation, destroy the buffer
-		if( diskOperation->getType() == DiskOperation::write )
-			diskOperation->destroyBuffer();
+		// If write operation, destroy the buffer ( only in write and append operations )
+        diskOperation->destroyBuffer();
 		
 		// Notify to the engine
 		Engine::shared()->diskManager.finishDiskOperation( diskOperation );
@@ -34,7 +33,12 @@ namespace ss {
 		read_buffer = NULL;
 		
 	}
+
+    DiskOperation::~DiskOperation()
+    {
+    }
 	
+    
 	DiskOperation* DiskOperation::newReadOperation( char *data , std::string fileName , size_t offset , size_t size  )
 	{
 		
@@ -346,8 +350,11 @@ namespace ss {
 	
 	void DiskOperation::destroyBuffer()
 	{
-		Engine::shared()->memoryManager.destroyBuffer( buffer );
-		buffer = NULL;
+        if( buffer )
+        {
+            Engine::shared()->memoryManager.destroyBuffer( buffer );
+            buffer = NULL;
+        }
 	}
 	
 

@@ -55,6 +55,9 @@ namespace ss
         // Remove pending tasks ( if canceled before any of them finish )
         subTasks.clearMap();
         
+        // Remove buffers in the output queues for killed jobs
+        queueBufferVectors.clearMap();
+        
         Engine::shared()->notificationSystem.remove( this );
 	}
 	
@@ -558,6 +561,9 @@ namespace ss
 	
 	void WorkerTask::kill()
 	{
+        error.set("Killed by user");
+        check();
+        
 		/*
          
          // Revove the subtasks

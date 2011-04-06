@@ -7,10 +7,8 @@ TODO:
 * Wrong cores and memory reporting
 * Valgrind debuign
 * Reimplement system.compact
-* Delilah to save pakets in order
-* More information in load processes ( waiting for upload without number pendign paket label)
 * More information about the running tasks of the workers ( at least knowing the size generated )
-* Buffer of background notifictions
+
 
 
 PENDING MORE TEST
@@ -21,6 +19,9 @@ FUTURE:
 * Add a buffer of strings to notify in delilah insetead of flushing to the std::out in the middle of whatever...
 
 DONE
+* More information in load processes ( waiting for upload without number pendign paket label)
+* Delilah to save pakets in order
+* Buffer of background notifictions
 * Delete notification objects in notifications without delivery ( at the end, it removes all pending objects after all deliveries )
 * Disk statictics with remove files wrong!
 * Crash of background process is not detected

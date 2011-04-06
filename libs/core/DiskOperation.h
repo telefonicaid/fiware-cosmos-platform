@@ -71,9 +71,11 @@ namespace ss {
 		pthread_t t;						// Background thread to run the operation
 				
 		DiskOperation( );
-		
+        
 	public:
 
+		~DiskOperation();
+        
         //int tag;                            // General tag to identify the operation
         
 		au::Error error;					// Management of the error during this operation

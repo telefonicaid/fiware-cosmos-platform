@@ -45,8 +45,6 @@ namespace au
 		quit_console = true;
 		// Do something to force quit?
 	}
-
-
 	
 	void Console::run()
 	{

@@ -2,12 +2,9 @@
 BUGS FROM TEST:
 
 TODO:
-* Crash of background process is not detected
+* Kill jobs
 * Not accept parerOut with no output txt txt 
 * Wrong cores and memory reporting
-* Disk statictics with remove files wrong!
-* Test a lot test.test for different setups
-* More informative error when shared memories cannot be created
 * Valgrind debuign
 * Reimplement system.compact
 * Delilah to save pakets in order
@@ -15,28 +12,18 @@ TODO:
 * More information about the running tasks of the workers ( at least knowing the size generated )
 * Buffer of background notifictions
 
-New notification model
-* Delete objects in notifications without delivery
-* Ignore buffers from other workers from killed task_id
 
 PENDING MORE TEST
-* libprotobuf ERROR google/protobuf/message_lite.cc:123] Can't parse message of type "ss.data.Command" because it is missing required fields: time
 * Delilah crashes if the queue specified for the download command does not exists
-SUGGESTION:
-Use boost::FileSystem library
 
 FUTURE:
-review setup since the maximum number of outputs
-Add a buffer of strings to notify in delilah insetead of flushing to the std::out in the middle of whatever...
-
-ON-GOING
-* Kill jobs ( kill the task ) --> Memory leaks
-
-REJECTED:
-* Parameter in samsonLocal to use different share-memory id
-
+* review setup since the maximum number of outputs
+* Add a buffer of strings to notify in delilah insetead of flushing to the std::out in the middle of whatever...
 
 DONE
+* Delete notification objects in notifications without delivery ( at the end, it removes all pending objects after all deliveries )
+* Disk statictics with remove files wrong!
+* Crash of background process is not detected
 * Solve the current name miss match for the same concept "queue = set_name" 
 * Create folder config for Ken
 * Delilah displays the last performed command after it's execution. Example: execute help will display "Delilah> helpDelilah>"

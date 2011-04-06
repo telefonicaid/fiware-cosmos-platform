@@ -27,17 +27,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
-
+#include <sstream>
 
 namespace au {
 
 
 	class Console
 	{
-		Lock lock;										//!< Lock as a control mechanism to log things into the console
-		bool quit_console;								//!< Flag to indicate that we want the console to quit ( can be set from outside the class with quit )
+		Lock lock;				//!< Lock as a control mechanism to log things into the console
+		bool quit_console;		//!< Flag to indicate that we want the console to quit ( can be set from outside the class with quit )
 
+        std::ostringstream background_notifications;    // String buffer of background notifications
+        
 	public:		
+        
 		Console();
 		virtual ~Console(){}
 
@@ -51,7 +54,6 @@ namespace au {
 
 		void quit(); // Set the console to quit
 		
-		/** Main function to run the console */
 		
 	private:
 		

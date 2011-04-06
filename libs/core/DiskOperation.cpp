@@ -103,6 +103,7 @@ namespace ss {
 		o->fileName = fileName;
 		o->type = DiskOperation::remove;
 		o->setDevice();
+        o->size = 0;
 		
 		return o;
 	}

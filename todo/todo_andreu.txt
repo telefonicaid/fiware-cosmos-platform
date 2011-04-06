@@ -2,6 +2,7 @@
 BUGS FROM TEST:
 
 TODO:
+* Not write kvs in the txt format when uploading files
 * Not accept parerOut with no output txt txt 
 * Wrong cores and memory reporting
 * Valgrind debuign

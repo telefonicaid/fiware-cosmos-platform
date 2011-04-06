@@ -56,6 +56,9 @@ namespace ss
 		completion_options.addOption("help");
 		completion_options.addOption("set");
 		completion_options.addOption("unset");
+        completion_options.addOption("info_net");
+        completion_options.addOption("info_cores");
+        completion_options.addOption("info_task_manager");
 
 		// add available operations...
 		list_lock.lock();
@@ -498,7 +501,7 @@ namespace ss
 			
 		}
 
-		if ( mainCommand == "net" )
+		if ( mainCommand == "info_net" )
 		{
             if ( wl )
             {
@@ -512,7 +515,7 @@ namespace ss
 			
 		}
 
-		if ( mainCommand == "cores" )
+		if ( mainCommand == "info_cores" )
 		{
             if ( wl )
             {
@@ -525,6 +528,22 @@ namespace ss
 			return 0;
 			
 		}
+
+		if ( mainCommand == "info_task_manager" )
+		{
+            if ( wl )
+            {
+                showTaskManagersInfo();
+            }
+            else
+            {
+                writeWarningOnConsole("Worker status still not received from SAMSON platform");
+            }
+			return 0;
+			
+		}
+        
+        
         
         
         
@@ -1043,6 +1062,19 @@ namespace ss
 		txt << std::endl;
         
 		writeOnConsole( txt.str() );        
+    }
+    
+    void DelilahConsole::showTaskManagersInfo()
+    {
+		std::ostringstream txt;
+		for (int i = 0 ; i < wl->worker_status_size() ; i++)
+		{
+            txt << au::Format::string("Worker %03d", i) << "\n";
+            txt << wl->worker_status(i).task_manager_status() << "\n";
+		}
+		txt << std::endl;
+        
+		writeOnConsole( txt.str() );          
     }
     
     

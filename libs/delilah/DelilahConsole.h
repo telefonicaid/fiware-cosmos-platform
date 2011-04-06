@@ -176,9 +176,10 @@ namespace ss {
 		void showJobs( const network::JobList ql);
         void showWorkers( const network::WorkerStatusList l);
         void showControllerStatus( const network::ControllerStatus &cs );
-
+        
         void showNetworkInformation( );
 		void showMemoryAndCoresInformation();
+        void showTaskManagersInfo();
         
 	};
 

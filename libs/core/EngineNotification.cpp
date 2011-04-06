@@ -10,6 +10,7 @@ namespace ss {
     EngineNotification::EngineNotification( NotificationChannel _channel )
     {
         channel = _channel;
+
     }
     
     // Constructor with one object
@@ -22,6 +23,14 @@ namespace ss {
     std::string EngineNotification::getDescription()
     {
         return au::Format::string("[ Notification %s %s]" , notificationChannelName() , getEnvironmentDescription().c_str() );
+    }    
+    
+    void EngineNotification::destroyObjects()
+    {
+        // Removing pending objects in the object vector
+        for ( size_t i = 0 ; i < object.size() ; i++ )
+            delete object[i];
+        object.clear();        
     }
     
     const char * EngineNotification::notificationChannelName()

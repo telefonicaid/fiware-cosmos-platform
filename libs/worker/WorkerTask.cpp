@@ -38,6 +38,7 @@ namespace ss
         
         // Add as a listener for notification_sub_task_finished
         Engine::shared()->notificationSystem.add( notification_sub_task_finished, this );
+        
         Engine::shared()->notificationSystem.add( notification_process_request_response, this );
         Engine::shared()->notificationSystem.add( notification_disk_operation_request_response, this );
 	}
@@ -49,6 +50,10 @@ namespace ss
 		
 		if( complete_message )
 			delete complete_message;
+
+        
+        // Remove pending tasks ( if canceled before any of them finish )
+        subTasks.clearMap();
         
         Engine::shared()->notificationSystem.remove( this );
 	}
@@ -149,17 +154,21 @@ namespace ss
                 
             case notification_disk_operation_request_response:
             {
-                if( notification->object.size() < 1 )
+                if( notification->object.size() != 1 )
                     LM_X(1,("Error since WorkerTasks receive a notification_disk_operation_request_response without an object"));
-                
-                DiskOperation *diskOperation =  (DiskOperation*) notification->object[0];
-                diskOperation->destroyBuffer();
-                delete diskOperation;
-                
-                
-                // Internal operations to process this finish
-                num_disk_operations--;
-                check();
+                else
+                {
+                    
+                    DiskOperation *diskOperation =  (DiskOperation*) notification->object[0];
+                    diskOperation->destroyBuffer();
+                    delete diskOperation;
+                    notification->object.clear();
+                    
+                    // Internal operations to process this finish
+                    num_disk_operations--;
+                    check();
+                    
+                }
                 break;
             }
                 
@@ -167,22 +176,23 @@ namespace ss
             {
                 num_process_items--;
                 
-                if ( notification->object.size() == 0 )
-                    LM_X(1 , ("WorkerTask receive a notification_process_request_response without an object"));
-                if ( notification->object.size() > 1 )
-                    LM_X(1 , ("WorkerTask receive a notification_process_request_response with %d objects instead of 1",(int) notification->object.size() ));
-                
-                DataBufferProcessItem* tmp = (DataBufferProcessItem*) notification->object[0] ;
-                
-                // New file to be saved
-                std::string queue_name = tmp->bv->queue->name();
-                std::string fileName = newFileName( );
-                
-                // Add a file as output for this operation
-                addKVFile(fileName, queue_name, tmp->buffer);
-                
-                delete tmp;
-                notification->object.clear();   // Remove the objexct
+                if ( notification->object.size() != 1 )
+                    LM_W(("WorkerTask receive a notification_process_request_response without an object"));
+                else
+                {
+                    
+                    DataBufferProcessItem* tmp = (DataBufferProcessItem*) notification->object[0] ;
+                    
+                    // New file to be saved
+                    std::string queue_name = tmp->bv->queue->name();
+                    std::string fileName = newFileName( );
+                    
+                    // Add a file as output for this operation
+                    addKVFile(fileName, queue_name, tmp->buffer);
+                    
+                    delete tmp;
+                    notification->object.clear();   // Remove the objexct
+                }
                 
                 break;
             }
@@ -195,7 +205,9 @@ namespace ss
                 
                 if( subTask )
                 {
+                    // Copy the error if necessary
                     error.set( &subTask->error );
+                    
                     delete subTask;
                 }
                 else
@@ -221,11 +233,11 @@ namespace ss
 		 Evoluction of the status
 		 
 		 pending_definition,			// Pending to receive message from the controller
-		 running,					// Running operation
+		 running,                       // Running operation
 		 local_content_finished,		// Output content is completed ( a message is send to the other workers to notify ) 
 		 all_content_finish,			// The content from all the workers is received ( file are starting to be saved )
 		 finish,						// All the output files are generated ( not saved ). Controller is notified about this to continue scripts
-		 completed					// Output content is saved on disk ( task can be removed from task manager )
+		 completed                      // Output content is saved on disk ( task can be removed from task manager )
 		 */
 		
 		if ( status == running )

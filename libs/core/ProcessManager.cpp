@@ -37,10 +37,12 @@ namespace ss
         if( notification->channel != notification_process_request )
             LM_X(1,("Wrong notification at ProcessManager"));
         
-        if( notification->object.size() == 0 )
+        if( notification->object.size() != 1 )
             LM_X(1,("ProcessManager received a notification_process_request without an object"));
         
         ProcessItem *item = (ProcessItem*) notification->object[0];
+        notification->object.clear();   // Remove from the vector, it would be automatically deleted by engine
+        
         item->environment.copyFrom( notification );
         addProcessItem( item );
     }
@@ -115,7 +117,7 @@ namespace ss
         // Notify this using the notification
         EngineNotification * notification = new EngineNotification( notification_process_request_response , item );
         notification->copyFrom( &item->environment );
-        Engine::shared()->notify( notification   );
+        Engine::shared()->notify( notification );
         
         checkBackgroundProcesses();
     }

@@ -28,6 +28,6 @@ namespace au {
     void Error::set( Error *otherError )
     {
         if( otherError->isActivated() )
-            otherError->set( otherError->getMessage() );
+            set( otherError->getMessage() );
     }
 }

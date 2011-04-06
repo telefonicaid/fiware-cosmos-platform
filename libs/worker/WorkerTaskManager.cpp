@@ -20,7 +20,7 @@ namespace ss {
 
         // Add as a listener for notification_task_finished notifications
         Engine::shared()->notificationSystem.add( notification_task_finished , this );
-        
+
 	}
 	
 	void WorkerTaskManager::addTask(const network::WorkerTask &worker_task )
@@ -57,12 +57,15 @@ namespace ss {
     // Notification from the engine about finished tasks
     void WorkerTaskManager::notify( EngineNotification* notification )
     {
+        // Generic parameters of the message
+        size_t task_id = notification->getSizeT("task_id", 0);
+        
+        
         switch ( notification->channel ) 
         {
             case notification_task_finished:
             {
                 // Create the task
-                size_t task_id = notification->getSizeT("task_id", 0);
 
                 WorkerTask *t = task.findInMap( task_id );
                 
@@ -81,7 +84,7 @@ namespace ss {
                 break;
                 
             default:
-                LM_X(1,("WorkerTaskManager received an unexpected notification"));
+                LM_W(("Unexpected notification at WorkerTaskManager %s", notification->getDescription().c_str() ));
                 break;
         }
         
@@ -90,8 +93,10 @@ namespace ss {
     
     bool WorkerTaskManager::acceptNotification( EngineNotification* notification )
     {
+        // Only accept notifications for my worker. This is only necessary when testing samsonLocal with multiple workers
         if( notification->getInt("worker", -1) != worker->network->getWorkerId() )
             return false;
+        
         return true;
         
     }    

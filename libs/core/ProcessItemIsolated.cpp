@@ -269,13 +269,16 @@ namespace ss
                 {
                     kill( pid , SIGKILL );
                     
-                    // Give the background process so air to die in peace
+                    // Give the background process some air to die in peace
                     sleep(0.1);
                 }
                 
             } while (p != pid);
         }
 		
+		LM_T( LmtIsolated , ("Isolated process %s(%s): finish and children process killed ",getStatus().c_str(),stateName()));
+        
+        
 	}
 	
 	

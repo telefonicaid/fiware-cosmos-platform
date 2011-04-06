@@ -6,6 +6,7 @@
 #include "au_map.h"                     // au::map
 #include <assert.h>
 #include "Format.h"                     // au::Format
+#include "traceLevels.h"                // LmtEngine
 
 namespace ss
 {
@@ -39,7 +40,6 @@ namespace ss
     class EngineNotificationObject : public Environment
     {
         public:        
-            virtual void destroy(){};
             virtual ~EngineNotificationObject(){};      // Force virtual destrutor for correct release of memory
     };
     
@@ -60,6 +60,9 @@ namespace ss
         // Get a string for debug
         std::string getDescription();
       
+        // Destroy pending objects ( not processed by any listener )
+        void destroyObjects();
+        
         const char * notificationChannelName();
         
     };
@@ -99,36 +102,37 @@ namespace ss
         
         void add( EngineNotificationListener* listener )
         {
-            listeners.insert( listener);
+            listeners.insert( listener );
         }
         
         void remove( EngineNotificationListener* listener )
         {
-            listeners.erase( listener);
+            listeners.erase( listener );
         }
         
         void notify( EngineNotification* notification )
         {
-            if( listeners.size() == 0)
-            {
-                // Delete objects inside the notification ( otherwise we will have memory leaks )
-                for ( size_t i = 0 ; i < notification->object.size() ; i++)
-                {
-                    notification->object[i]->destroy();
-                    delete notification->object[i];
-                }
-                notification->object.clear();
-                
-            }
-            else
-            {
-                for ( std::set<EngineNotificationListener*>::iterator i = listeners.begin() ; i != listeners.end() ; i++)
-                    if ( (*i)->acceptNotification( notification ) )
-                        (*i)->notify( notification );
-            }
+
+            LM_T(LmtEngine, ("Delibering notification [%s] to %d listeners " , notification->getDescription().c_str() , (int) listeners.size() ));
             
+            for ( std::set<EngineNotificationListener*>::iterator i = listeners.begin() ; i != listeners.end() ; i++)
+            {
+                LM_T(LmtEngine, ("Delibering notification [%s] to %p " , notification->getDescription().c_str() , *i ));
+                
+                if ( (*i)->acceptNotification( notification ) )
+                    (*i)->notify( notification );
+            }
+
+            LM_T(LmtEngine, ("Destroying %d pending objects in the notification [%s]" 
+                             , (int) notification->object.size() 
+                             , notification->getDescription().c_str() ));
+            
+            notification->destroyObjects();
+            
+            LM_T(LmtEngine, ("Finish Delibering notification [%s] to %d listeners " , notification->getDescription().c_str() , (int) listeners.size() ));
             
             delete notification;
+            
         }
         
     };
@@ -152,6 +156,8 @@ namespace ss
         // Remove this listener from all
         void remove( EngineNotificationListener* listener )
         {
+            LM_T(LmtEngine , ("Engine removing general listener %p", listener ));
+            
             for( au::map<NotificationChannel,EngineDelivery>::iterator d = deliveries.begin() ; d != deliveries.end() ; d++ )
                 d->second->remove( listener );
         }

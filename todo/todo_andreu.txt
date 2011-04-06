@@ -2,6 +2,7 @@
 BUGS FROM TEST:
 
 TODO:
+* Crash of background process is not detected
 * Not accept parerOut with no output txt txt 
 * Wrong cores and memory reporting
 * Disk statictics with remove files wrong!

@@ -35,6 +35,7 @@ namespace ss
         Engine::shared()->notificationSystem.add( notification_memory_request_response , this ); 
         Engine::shared()->notificationSystem.add( notification_disk_operation_request_response , this ); 
         Engine::shared()->notificationSystem.add( notification_process_request_response , this ); 
+        
 	}
     
     WorkerSubTask::~WorkerSubTask()
@@ -44,7 +45,8 @@ namespace ss
             Engine::shared()->memoryManager.destroyBuffer( buffer );
             buffer = NULL;
         }
-        
+
+        // Remove this item from all the cannels
         Engine::shared()->notificationSystem.remove( this ); 
         
     };		
@@ -55,25 +57,37 @@ namespace ss
                 
             case notification_memory_request_response:
             {
-                if( notification->object.size() == 0 )
-                    LM_X(1,("Received a notification_memory_request_response without buffer"));
-                
-                buffer = (Buffer*) notification->object[0];
-                run();
+                if( notification->object.size() != 1 )
+                    LM_W(("Received a notification_memory_request_response without buffer"));
+                else{
+                    buffer = (Buffer*) notification->object[0];
+                    notification->object.clear();   // To avoid other to use the same buffer accidentally
+                    run();
+                }
+                    
                 break;
             }
                 
             case notification_disk_operation_request_response:
             {
                 
-                if( notification->object.size() == 0 )
-                    LM_X(1,("Received a notification_disk_operation_request_response without DiskOperation object"));
-                
-                DiskOperation* operation = (DiskOperation*)notification->object[0];
-                delete operation;
-                
-                num_read_operations_confirmed++;
-                run();
+                if( notification->object.size() != 1 )
+                    LM_W(("Received a notification_disk_operation_request_response without DiskOperation object"));
+                else
+                {
+                    
+                    DiskOperation* operation = (DiskOperation*)notification->object[0];
+
+                    // Copy the error ( if any )
+                    error.set( &operation->error );
+                    delete operation;
+                    notification->object.clear();   
+                                        
+                    num_read_operations_confirmed++;
+                    
+                    run();
+                    
+                }
                 break;
             }
 
@@ -81,14 +95,24 @@ namespace ss
             {
                 
                 if( notification->object.size() == 0 )
-                    LM_X(1,("Received a notification_process_request_response without ProcessItem object"));
-                
-                ProcessItem* item = (ProcessItem*)notification->object[0];
-                delete item;
-                notification->object.clear();
-                
-                num_processes_confirmed++;
-                run();
+                    LM_W(("Received a notification_process_request_response without ProcessItem object"));
+                else if( notification->object.size() != 1 )
+                    LM_W(("Received a notification_process_request_response with more than one element"));
+                else
+                {
+                    
+                    ProcessItem* item = (ProcessItem*)notification->object[0];
+                    
+                    // Copy the error ( if any )
+                    error.set( &item->error );
+                    
+                    delete item;
+                    notification->object.clear();
+                    
+                    num_processes_confirmed++;
+                    run();
+                    
+                }
                 
                 break;
             }
@@ -101,6 +125,20 @@ namespace ss
     
     void WorkerSubTask::run()
     {
+
+        // Spetial case for any kind of error
+        if ( (status != finished) && error.isActivated() )
+        {
+            status = finished;
+            
+            // Notification that this sub-task is finished
+            EngineNotification * notification  = new EngineNotification( notification_sub_task_finished );
+            setNotificationCommandEnvironment(notification);
+            notification->set("target", "WorkerTask");      // Modify to "send" this notification to the worker task
+            Engine::shared()->notify( notification );
+            return;
+        }
+        
         switch (status) {
             case init:
             {

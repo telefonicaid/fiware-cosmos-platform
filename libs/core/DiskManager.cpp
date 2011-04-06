@@ -39,7 +39,10 @@ namespace ss
         if ( notification->object.size() != 1)
             LM_X(1,("DiskManager received a notification with a wrong number of parameters (%d instead of 1)", notification->object.size() ));
         
+        // Get the objecy ( not leave in the vector since it would be automatically deleted by engine )
         DiskOperation *diskOperation = (DiskOperation*) notification->object[0];
+        notification->object.clear();
+        
         diskOperation->copyFrom( notification );    // Copy all the environment variables for the notification comming back
         add( diskOperation );
     }

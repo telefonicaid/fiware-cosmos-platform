@@ -36,8 +36,6 @@ namespace au {
 	{
 		Lock lock;				//!< Lock as a control mechanism to log things into the console
 		bool quit_console;		//!< Flag to indicate that we want the console to quit ( can be set from outside the class with quit )
-
-        std::ostringstream background_notifications;    // String buffer of background notifications
         
 	public:		
         
@@ -62,6 +60,8 @@ namespace au {
 		void _print();
 		void print();
 		
+        void write( std::string message );
+        
 	public:
 
 		void run();

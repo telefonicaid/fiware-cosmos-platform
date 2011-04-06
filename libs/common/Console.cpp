@@ -26,19 +26,36 @@ namespace au
 	/* Methods to write things on screen */
 	void Console::writeWarningOnConsole( std::string message )
 	{
-		background_notifications << "\r\033[1;35m"<< message << "\033[0m\n";
+        std::ostringstream output;
+		output << "\033[1;35m"<< message << "\033[0m";
+        write( output.str() );
 	}
 	
 	void Console::writeErrorOnConsole( std::string message )
 	{
-		background_notifications << "\r\033[1;31m"<< message << "\033[0m\n";
+        std::ostringstream output;
+		output << "\033[1;31m"<< message << "\033[0m";
+        write( output.str() );
 	}
 
 	void Console::writeOnConsole( std::string message )
 	{
-		background_notifications << "\r" << message << "\n";
+        write( message );
 	}
 
+    void Console::write( std::string message )
+    {
+        std::ostringstream output;
+        output << "\r" << message << "\n";
+        std::cout << output.str();
+        std::cout.flush();
+        
+        rl_forced_update_display();
+        rl_redisplay();
+        
+
+    }
+    
 	void Console::quit()
 	{
 		write_history(NULL);
@@ -66,11 +83,6 @@ namespace au
 				free(line);
 			}
 
-            // Flush all output
-            std::cout << background_notifications.str();
-            background_notifications.str("");
-			std::cout.flush();
-			
 			// rl_line_buffer[0] = '\0';
 		}
 		

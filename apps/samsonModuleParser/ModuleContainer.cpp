@@ -122,7 +122,7 @@ namespace ss {
 			else
 			{
 				fprintf(stderr, "Error: Unknown command inside module section (%s)\n", mainCommand.c_str());
-				exit(0);
+				exit(1);
 			}
 			
 			

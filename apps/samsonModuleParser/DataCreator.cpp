@@ -148,7 +148,7 @@ namespace ss {
 			else
 			{
 				fprintf(stderr, "Unknown command %s\n", command.c_str() );
-				exit(0);
+				exit(1);
 			}
 		}
 		
@@ -342,11 +342,19 @@ namespace ss {
 				output << "\t\t\tss::Operation * operation = new ss::Operation( \"" << op.module << "." << op.name << "\" , ss::Operation::"<< op.type <<" , au::factory<"<< op.name <<">, " << op.getCompareFunctionName() <<  ", " << op.getCompareByKeyFunctionName() <<  " );"<<std::endl;
 			else
 				output << "\t\t\tss::Operation * operation = new ss::Operation( \"" << op.module << "." << op.name << "\" , ss::Operation::"<< op.type <<" , au::factory<"<< op.name <<"> );"<<std::endl;
-			
+
+			// Automatic adding input and output of the parser and parserOut
 			
 			if( op.type == "parser")
 				output << "\t\t\toperation->inputFormats.push_back( ss::KVFormat::format(\"txt\" ,\"txt\") );"<<std::endl;
+
+			if( op.type == "parserOut")
+				output << "\t\t\toperation->outputFormats.push_back( ss::KVFormat::format(\"txt\" ,\"txt\") );"<<std::endl;
+            
+			if( op.type == "parserOutReduce")
+				output << "\t\t\toperation->outputFormats.push_back( ss::KVFormat::format(\"txt\" ,\"txt\") );"<<std::endl;
 			
+            
 			
 			for (size_t i = 0 ; i < op.inputs.size() ; i++)
 				output << "\t\t\toperation->inputFormats.push_back( ss::KVFormat::format(\""<< op.inputs[i].keyFormat <<"\" ,\"" << op.inputs[i].valueFormat << "\") );"<<std::endl;

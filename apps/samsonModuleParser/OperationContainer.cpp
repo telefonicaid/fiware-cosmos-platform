@@ -45,6 +45,8 @@ namespace ss {
 	
 	void OperationContainer::parse( AUTockenizer *module_creator ,  int begin ,int end )
 	{
+        LM_M(("Parsing operation %s", name.c_str()));
+        
 		int pos = begin;
 		while( pos < end )
 		{
@@ -101,7 +103,7 @@ namespace ss {
 
 				std::string valueFormat = module_creator->itemAtPos( pos++ );		
 				
-				inputs.push_back( KVFormat::format(keyFormat, valueFormat) );
+                addInput( KVFormat::format(keyFormat, valueFormat) );
 				
 			}
 			else if( mainCommand == "out" )
@@ -117,13 +119,13 @@ namespace ss {
 
 				std::string valueFormat = module_creator->itemAtPos( pos++ );		
 				
-				outputs.push_back( KVFormat::format(keyFormat, valueFormat) );
+                addOutput(KVFormat::format(keyFormat, valueFormat));
 				
 			}
 			else
 			{
 				fprintf(stderr, "Error: Unknown command inside  opertion section (%s)\n", mainCommand.c_str());
-				exit(0);
+				exit(1);
 			}
 			
 			
@@ -131,6 +133,8 @@ namespace ss {
 		
 		if( pos != (end+1))
 			LM_X(1,("Error parsing an operation definition. Invalid number of items"));
-		
+	
+        // Check everything is correct
+        check();
 	}
 }

@@ -64,7 +64,7 @@ int main( int argC , const char *argV[])
 	{
 		fprintf(stderr, "Usage: %s module_file \n" , argV[0]);
 		fprintf(stderr, "Type -help for more help\n\n");
-		exit(0);
+		exit(1);
 	}
 	
 	std::string moduleFileName = cmdLine.get_argument(1);

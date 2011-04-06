@@ -69,6 +69,56 @@ namespace ss
 			destructor = false;
 		}
 		
+        void addInput( KVFormat input_format )
+        {
+            if( type == "parser" )
+            {
+                std::cerr << "Error in operation " << name << ": Not possible to add inputs to a parser. The unique txt-txt input will be added automatically\n";
+                exit(1);
+            }
+            
+            if( type == "map" && inputs.size() > 0)
+            {
+                std::cerr << "Error in operation " << name << ": Maps can only contain one input\n";
+                exit(1);
+            }
+                
+            inputs.push_back(input_format);
+        }
+        
+        void addOutput( KVFormat output_format )
+        {
+            
+            printf("Adding output %s ( %s ) ", name.c_str() , type.c_str() );
+            
+            if( ( type == "parserOut" ) || ( type == "parserOutReduce" ) )
+            {
+                std::cerr << "Error in operation " << name << ": Not possible to add outputs to a parserOut or parserOutReduce. The unique txt-txt output will be added automatically\n";
+                exit(1);
+            }
+            
+            outputs.push_back(output_format);
+        }
+        
+        void check()
+        {
+            // Check everything is correct
+            if ( ( type == "map" ) || ( type == "reduce" ) || ( type == "parser" ) )
+                if (outputs.size() == 0)
+                {
+                    std::cerr << "Error in operation " << name << ": Operation needs an output\n";
+                    exit(1);
+                }
+            
+            if ( ( type == "map" ) || ( type == "reduce" ) || ( type == "parserOut" ) || ( type == "parserOutReduce" ) )
+                if (inputs.size() == 0)
+                {
+                    std::cerr << "Error in operation " << name << ": Operation needs an input\n";
+                    exit(1);
+                }
+            
+        }
+        
 		void parse( AUTockenizer *module_creator , int begin , int end );
 		
 		std::string parentClass()
@@ -96,7 +146,7 @@ namespace ss
 			
             
 			fprintf(stderr, "Error: Unknown type of operation in the operation section (%s)\n" , type.c_str());
-			_exit(0);
+			_exit(1);
 			
 		}
 		

@@ -2,7 +2,6 @@
 BUGS FROM TEST:
 
 TODO:
-* Kill jobs
 * Not accept parerOut with no output txt txt 
 * Wrong cores and memory reporting
 * Valgrind debuign
@@ -12,13 +11,14 @@ TODO:
 
 
 PENDING MORE TEST
-* Delilah crashes if the queue specified for the download command does not exists
+ Delilah crashes if the queue specified for the download command does not exists
 
 FUTURE:
 * review setup since the maximum number of outputs
 * Add a buffer of strings to notify in delilah insetead of flushing to the std::out in the middle of whatever...
 
 DONE
+* Kill jobs
 * More information in load processes ( waiting for upload without number pendign paket label)
 * Delilah to save pakets in order
 * Buffer of background notifictions

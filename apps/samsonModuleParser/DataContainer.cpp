@@ -69,7 +69,7 @@ namespace ss {
 				if( !module_creator->isSemiColom( pos ) )
 				{
 					fprintf(stderr, "Error parsing document at Data %s (%s %s) \n", name.c_str() ,  _full_type.c_str() , _name.c_str());
-					exit(0);
+					exit(1);
 				}
 				pos++;
 				

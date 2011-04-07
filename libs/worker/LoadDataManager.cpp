@@ -290,10 +290,7 @@ namespace ss
 			for ( iter = uploadItem.begin() ; iter != uploadItem.end() ; iter++)
 				output << iter->second->getStatus();
 		}
-		
 
-		ws->set_upload_size( upload_size );
-		
 		upload_size = 0;	// Reset the counter of upload bytes
 		
 		lock.unlock();

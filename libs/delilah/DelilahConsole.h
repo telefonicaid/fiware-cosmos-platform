@@ -174,12 +174,9 @@ namespace ss {
 		void showDatas( const network::DataList ql);
 		void showOperations( const network::OperationList ql);
 		void showJobs( const network::JobList ql);
-        void showWorkers( const network::WorkerStatusList l);
-        void showControllerStatus( const network::ControllerStatus &cs );
         
-        void showNetworkInformation( );
-		void showMemoryAndCoresInformation();
-        void showTaskManagersInfo();
+        void showInfo( std::string command );
+        
         
 	};
 

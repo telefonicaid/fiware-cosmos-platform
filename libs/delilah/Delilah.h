@@ -32,14 +32,11 @@ namespace ss {
 	class DelilahUploadDataProcess;
 	class DelilahDownloadDataProcess;
 
-	extern au::Lock list_lock;						// Lock to protect the list of information
-	extern network::OperationList *ol;
-	extern network::QueueList *ql;
+	extern au::Lock info_lock;						// Lock to protect the information provided here
     
-    extern network::ControllerStatus *cs;
-    extern network::WorkerStatusList *wl;            
-    
-	
+	extern network::OperationList *ol;              // List of available opertions ( updated periodically for autocompletion )
+	extern network::QueueList *ql;                  // List of queues in the system ( updated periodically for autocompletion )
+    extern network::SamsonStatus *samsonStatus;     // Global status information of the platform            
 	
 	/**
 	   Main class for the samson client element
@@ -52,6 +49,7 @@ namespace ss {
 		
 		// Private token to protect the local list of components
 		au::Token token;
+        
 		// Map of components that intercept messages
 		au::map<size_t , DelilahComponent> components;			
 		

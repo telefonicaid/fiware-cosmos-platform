@@ -56,18 +56,24 @@ namespace ss
 		completion_options.addOption("help");
 		completion_options.addOption("set");
 		completion_options.addOption("unset");
+        completion_options.addOption("info");
         completion_options.addOption("info_net");
         completion_options.addOption("info_cores");
         completion_options.addOption("info_task_manager");
+        completion_options.addOption("info_disk_manager");
+        completion_options.addOption("info_process_manager");
+        completion_options.addOption("info_memory_manager");
+        completion_options.addOption("info_load_data_manager");
 
+        
 		// add available operations...
-		list_lock.lock();
+		info_lock.lock();
 		
 		if( ol )
 			for (int i = 0 ; i < ol->operation_size()  ; i++)
 				completion_options.addOption( ol->operation(i).name() );
 		
-		list_lock.unlock();
+		info_lock.unlock();
 		
 	}
 	
@@ -78,7 +84,7 @@ namespace ss
 		completion_options.clearOptions();
 		
 		// add available queues...
-		list_lock.lock();
+		info_lock.lock();
 				
 		if( ql )
 			for (int i = 0 ; i < ql->queue_size()  ; i++)
@@ -103,7 +109,7 @@ namespace ss
 				}
 			}
 		
-		list_lock.unlock();
+		info_lock.unlock();
 		
 	}
 	
@@ -188,7 +194,7 @@ namespace ss
 
 				
 				// If it is a particular operation... lock for the rigth queue
-				list_lock.lock();
+				info_lock.lock();
 				
 				
 				if( ol )
@@ -214,7 +220,7 @@ namespace ss
 							break; // No more for...
 						}
 				
-				list_lock.unlock();
+				info_lock.unlock();
 
 				
 				// Use format if any
@@ -487,64 +493,26 @@ namespace ss
 
 			return 0;
 		}
-		
         
-		if ( mainCommand == "w" )
-		{
-            if ( wl )
-                showWorkers(*wl);
-            else
-            {
-                writeWarningOnConsole("Worker status still not received from SAMSON platform");
-            }
-			return 0;
-			
-		}
+        // Show info based of the periodically received information about status
+        // ------------------------------------------------------------------------------------
 
-		if ( mainCommand == "info_net" )
-		{
-            if ( wl )
-            {
-                showNetworkInformation();
-            }
-            else
-            {
-                writeWarningOnConsole("Worker status still not received from SAMSON platform");
-            }
-			return 0;
-			
-		}
+        if( mainCommand == "w" )
+        {
+            showInfo("info_full");
+            return 0;
+        }
+        
+        if( strncmp(mainCommand.c_str(), "info", 4) == 0)
+        {
+            showInfo( mainCommand );
+            return 0;
+        }
+        
 
-		if ( mainCommand == "info_cores" )
-		{
-            if ( wl )
-            {
-                showMemoryAndCoresInformation();
-            }
-            else
-            {
-                writeWarningOnConsole("Worker status still not received from SAMSON platform");
-            }
-			return 0;
-			
-		}
-
-		if ( mainCommand == "info_task_manager" )
-		{
-            if ( wl )
-            {
-                showTaskManagersInfo();
-            }
-            else
-            {
-                writeWarningOnConsole("Worker status still not received from SAMSON platform");
-            }
-			return 0;
-			
-		}
         
-        
-        
+        // Upload and download operations
+        // ------------------------------------------------------------------------------------
         
         
 		if( mainCommand == "upload" )
@@ -704,14 +672,14 @@ namespace ss
 					if( cmdLine.get_flag_bool("all") )
 					{
 						// Copy the list of queues for auto-completion
-						list_lock.lock();
+						info_lock.lock();
 						
 						if( ql )
 							delete ql;
 						ql = new network::QueueList();
 						ql->CopyFrom( packet->message->command_response().queue_list() );
 						
-						list_lock.unlock();
+						info_lock.unlock();
 						
 					}
 					else
@@ -736,14 +704,14 @@ namespace ss
 					
 					if( cmdLine.get_flag_bool("all") )
 					{
-						list_lock.lock();
+						info_lock.lock();
 						
 						if( ol )
 							delete ol;
 						ol = new network::OperationList();
 						ol->CopyFrom( packet->message->command_response().operation_list() );
 						
-						list_lock.unlock();
+						info_lock.unlock();
 						
 					}
 					else
@@ -754,12 +722,6 @@ namespace ss
 				
 				if( packet->message->command_response().has_job_list() )
 					showJobs( packet->message->command_response().job_list() );
-				
-				if( packet->message->command_response().has_worker_status_list() )
-					showWorkers( packet->message->command_response().worker_status_list() );
-
-				if( packet->message->command_response().has_controller_status() )
-                    showControllerStatus( packet->message->command_response().controller_status() );
                 
 			}
 				break;
@@ -949,133 +911,140 @@ namespace ss
 		writeOnConsole( txt.str() );
 		
 	}
-	
-	void DelilahConsole::showControllerStatus( const network::ControllerStatus &cs )
-	{
-		std::ostringstream txt;
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << "Controller" << std::endl;
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << "\tJobManager: " << cs.job_manager_status() << std::endl;
-		txt << "\tTaskManager: " << cs.task_manager_status() << std::endl;
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << std::endl;
-
-		writeOnConsole( txt.str() );
-		
-	}
     
-	void DelilahConsole::showWorkers( const network::WorkerStatusList l)
-	{
-		std::ostringstream txt;
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << "Workers" << std::endl;
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		for (int i = 0 ; i < l.worker_status_size() ; i++)
-		{
-			
-			const network::WorkerStatus worker_status = l.worker_status(i);
-			
-			txt << "Worker " << i << "     " << "            ( Time of update: " << worker_status.time() << " )";
-			txt << "\n";
-			txt << "\tMemory Manager:    " << worker_status.memory_status() << "\n";
-			txt << "\tShared Memory Manager:    " << worker_status.shared_memory_status() << "\n";
-			txt << "\tDisk Manager:      " << worker_status.disk_manager_status() << "\n";
-			txt << "\tFile Manager:      " << worker_status.file_manager_status() << "\n";
-            //			txt << "\tFile Manager Cache: " << worker_status.file_manager_cache_status() << "\n";
-			txt << "\tProcess Manager:   " << worker_status.process_manager_status() << "\n";
-			txt << "\t----\n";
-			txt << "\tLoad Data Manager: " << worker_status.load_data_manager_status() << "\n";
-			txt << "\t----\n";
-			txt << "\tTask Manager:      " << worker_status.task_manager_status() << "\n";
-			txt << "\n";
-			
-		}
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << std::endl;
-        
-		writeOnConsole( txt.str() );
-		
-	}    
-    
-    void DelilahConsole::showNetworkInformation( )
+    void DelilahConsole::showInfo( std::string command )
     {
-		std::ostringstream txt;
-		for (int i = 0 ; i < wl->worker_status_size() ; i++)
-		{
+        if ( !samsonStatus )
+        {
+            // If samsonStatus is not received, show a message informing about this
+            writeWarningOnConsole("Worker status still not received from SAMSON platform");
+            return;
+        }
+        
+        // Lock the info vector to avoid other thread access this information
+        info_lock.lock();
+        
+        // Common string buffer to accumulate the output of the info message        
+        std::ostringstream txt;
+
+
+        txt << "================================================================================================" << std::endl;
+        txt << "SAMSON STATUS" << std::endl;
+        txt << "================================================================================================" << std::endl;
+        
+        if( command == "info_full" )
+        {
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+            txt << "Controller" << std::endl;
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+            txt << "\tJobManager: " << samsonStatus->controller_status().job_manager_status() << std::endl;
+            txt << "\tTaskManager: " << samsonStatus->controller_status().task_manager_status() << std::endl;
+            txt << std::endl;
+        }
+
+        if( command == "info_task_manager" )
+        {
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+            txt << "Controller" << std::endl;
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+            txt << "\tTaskManager: " << samsonStatus->controller_status().task_manager_status() << std::endl;
+            txt << std::endl;
+        }
+        
+        
+        for (int i = 0 ; i < samsonStatus->worker_status_size() ; i++)
+        {
+            const network::WorkerStatus worker_status = samsonStatus->worker_status(i);
             
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
-            txt << "Worker " << i << std::endl;
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
-			const network::WorkerStatus worker_status = wl->worker_status(i);
-			txt << worker_status.network_status() << "\n";
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		}
-		txt << std::endl;
-        
-		writeOnConsole( txt.str() );        
-    }
-
-    void DelilahConsole::showMemoryAndCoresInformation( )
-    {
-		std::ostringstream txt;
-		for (int i = 0 ; i < wl->worker_status_size() ; i++)
-		{
-            txt << au::Format::string("Worker %03d", i);
-
-            int used_cores = wl->worker_status(i).used_cores();
-            int total_cores = wl->worker_status(i).total_cores();
+            int used_cores = worker_status.used_cores();
+            int total_cores = worker_status.total_cores();
             double per_cores = (total_cores==0)?0:((double) used_cores / (double) total_cores);
-            
-            txt << au::Format::string("\n\tCores  [ %s ] %s / %s :" , 
-                                      au::Format::percentage_string(per_cores).c_str() , 
-                                      au::Format::string(used_cores).c_str() , 
-                                      au::Format::string(total_cores).c_str() );
-            
-            txt << au::Format::progress_bar( per_cores , 70 );
-            
-            size_t used_memory = wl->worker_status(i).used_memory();
-            size_t total_memory = wl->worker_status(i).total_memory();
+            size_t used_memory = worker_status.used_memory();
+            size_t total_memory = worker_status.total_memory();
             double per_memory = (total_memory==0)?0:((double) used_memory / (double) total_memory);
-            
-            txt << au::Format::string("\n\tMemory [ %s ] %s / %s :" , 
-                                      au::Format::percentage_string(per_memory).c_str() , 
-                                      au::Format::string(used_memory).c_str() , 
-                                      au::Format::string(total_memory).c_str() );
-            
-            txt << au::Format::progress_bar( per_memory , 70 );
-
-            // Disk operations
-            int disk_pending_operations = wl->worker_status(i).disk_pending_operations();
+            int disk_pending_operations = worker_status.disk_pending_operations();
             double per_disk = (total_memory==0)?0:((double) disk_pending_operations / (double) 40);
             
-            txt << au::Format::string("\n\tDisk                     %s :" , 
-                                      au::Format::string(disk_pending_operations).c_str() );
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+            txt << "Worker " << i;
+            txt << "     Process: " << au::Format::percentage_string(per_cores).c_str();
+            txt << " Memory: " << au::Format::percentage_string(per_memory);
+            txt << " Disk: " << disk_pending_operations;
+            txt << "    ( Time since last update: " << au::Format::time_string( worker_status.time()/1000 ) << " )" << std::endl;
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+
+                        
+            if( ( command == "info_full" ) || (command == "info_memory_manager" ) )
+            {
+                txt << "\tMemory Manager:    " << worker_status.memory_status() << "\n";
+                txt << "\tShared Memory Manager:    " << worker_status.shared_memory_status() << "\n";
+            }
             
-            txt << au::Format::progress_bar( per_disk , 70 );
+            if( ( command == "info_full" ) || (command == "info_load_data_manager" ) )
+                txt << "\tLoad Data Manager: " << worker_status.load_data_manager_status() << "\n";
+            
+            if( ( command == "info_full" ) || (command == "info_process_manager" ) )
+                txt << "\tProcess Manager:   " << worker_status.process_manager_status() << "\n";
+            
+            if( ( command == "info_full" ) || (command == "info_task_manager" ) )
+                txt << "\tTask Manager:      " << worker_status.task_manager_status() << "\n";
+            
+            if( ( command == "info_full" ) || (command == "info_disk_manager" ) )
+                txt << "\tDisk Manager:      " << worker_status.disk_manager_status() << "\n";
             
             
-            txt << "\n";
+            if( command == "info_cores" )
+            {
+                txt << au::Format::string("Worker %03d", i);
+                
+                
+                txt << au::Format::string("\n\tCores  [ %s ] %s / %s :" , 
+                                          au::Format::percentage_string(per_cores).c_str() , 
+                                          au::Format::string(used_cores).c_str() , 
+                                          au::Format::string(total_cores).c_str() );
+                
+                txt << au::Format::progress_bar( per_cores , 50 );
+                
+                
+                txt << au::Format::string("\n\tMemory [ %s ] %s / %s :" , 
+                                          au::Format::percentage_string(per_memory).c_str() , 
+                                          au::Format::string(used_memory).c_str() , 
+                                          au::Format::string(total_memory).c_str() );
+                
+                txt << au::Format::progress_bar( per_memory , 50 );
+                
+                // Disk operations
+                
+                txt << au::Format::string("\n\tDisk                     %s :" , 
+                                          au::Format::string(disk_pending_operations).c_str() );
+                
+                txt << au::Format::progress_bar( per_disk , 50 );
+                
+                
+                txt << "\n";                    
+            }
             
+            if ( command == "info_net" ) 
+            {
+                txt << worker_status.network_status() << "\n";
+            }
+
             
-		}
-		txt << std::endl;
+        }
         
-		writeOnConsole( txt.str() );        
+        txt << "================================================================================================" << std::endl;
+        txt << std::endl;
+        
+        
+        // Send to the console screen
+        writeOnConsole( txt.str() );
+        
+        // Unlock the common information lock    
+        info_lock.unlock();
+
     }
     
-    void DelilahConsole::showTaskManagersInfo()
-    {
-		std::ostringstream txt;
-		for (int i = 0 ; i < wl->worker_status_size() ; i++)
-		{
-            txt << au::Format::string("Worker %03d", i) << "\n";
-            txt << wl->worker_status(i).task_manager_status() << "\n";
-		}
-		txt << std::endl;
-        
-		writeOnConsole( txt.str() );          
-    }
+
     
     
     

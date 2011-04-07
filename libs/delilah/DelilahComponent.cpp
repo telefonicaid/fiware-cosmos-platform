@@ -43,53 +43,40 @@ namespace ss {
 				if( packet->message->command_response().has_queue_list() )
 				{
 					// Copy the list of queues for auto-completion
-					list_lock.lock();
+					info_lock.lock();
 					
 					if( ql )
 						delete ql;
 					ql = new network::QueueList();
 					ql->CopyFrom( packet->message->command_response().queue_list() );
 					
-					list_lock.unlock();
+					info_lock.unlock();
 					
 				}
 				
 				if( packet->message->command_response().has_operation_list() )
 				{
-					list_lock.lock();
+					info_lock.lock();
 					
 					if( ol )
 						delete ol;
 					ol = new network::OperationList();
 					ol->CopyFrom( packet->message->command_response().operation_list() );
 					
-					list_lock.unlock();
+					info_lock.unlock();
 				}
 
-                // Update of the worker status
-				if( packet->message->command_response().has_worker_status_list() )
+                // Update of the samson status
+				if( packet->message->command_response().has_samson_status() )
 				{
-					list_lock.lock();
+					info_lock.lock();
 					
-					if( wl )
-						delete wl;
-					wl = new network::WorkerStatusList();
-					wl->CopyFrom( packet->message->command_response().worker_status_list() );
+					if( samsonStatus )
+						delete samsonStatus;
+					samsonStatus = new network::SamsonStatus();
+					samsonStatus->CopyFrom( packet->message->command_response().samson_status() );
 					
-					list_lock.unlock();
-				}
-
-                // Update of the controller status
-				if( packet->message->command_response().has_controller_status() )
-				{
-					list_lock.lock();
-					
-					if( cs )
-						delete cs;
-					cs = new network::ControllerStatus();
-					cs->CopyFrom( packet->message->command_response().controller_status() );
-					
-					list_lock.unlock();
+					info_lock.unlock();
 				}
 				
                 

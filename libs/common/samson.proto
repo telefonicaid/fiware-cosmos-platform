@@ -112,19 +112,17 @@ message ControllerStatus
 
 message WorkerStatus
 {
-	optional uint64 time=8;						// Time since the last update from the worker
+	optional uint64 time = 8;					// Time since the last update from the worker
 
-	optional string task_manager_status=7;				// Status of the task manager
-
-	optional string file_manager_status=2;				// Information about the file manager
+	optional string task_manager_status=7;				// Information about task manager
 	optional string disk_manager_status=3;				// Information about the disk manager
-	optional string file_manager_cache_status=4;			// Information about the status of cache inside the file manager
-	optional string data_buffer_status=5;				// Information about data_buffer status
 	optional string load_data_manager_status=14;			// Information about load ( upload / download ) data manager
-	optional string memory_status=6;				// Information about memory status
-	optional string shared_memory_status=22;			// Information about shared memory
 	optional string process_manager_status=1;			// Information about the process manager
 	optional string network_status=20;				// Information about the network
+	optional string memory_status=6;				// Information about memory status
+	optional string shared_memory_status=22;			// Information about shared memory
+
+	// Numerical values for quick system evaluation
 
 	optional uint64 used_memory=10;
 	optional uint64 total_memory=11;
@@ -133,10 +131,6 @@ message WorkerStatus
 	optional int32 used_cores=13;
 
 	optional int32 disk_pending_operations=17;
-
-// Old stuff
-	optional uint64 upload_size=15;
-
 }
 
 message ActiveTask
@@ -173,11 +167,11 @@ message AutomaticOperationList
 	repeated AutomaticOperation automatic_operation = 1;
 }
 
-message WorkerStatusList
+message SamsonStatus
 {
-      repeated WorkerStatus worker_status = 1;	
+	optional ControllerStatus controller_status = 1;		// Status of the controller
+	repeated WorkerStatus worker_status = 2;			// Status of all the workers
 }
-
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -275,8 +269,9 @@ message CommandResponse
 	optional DataList      data_list	  	         = 102;
 	optional QueueList     queue_list		         = 103;
 	optional AutomaticOperationList automatic_operation_list = 107;
-	optional WorkerStatusList worker_status_list 	         = 104;
-	optional ControllerStatus controller_status	         = 105;
+
+	// System wide status information
+	optional SamsonStatus samson_status 	      		 = 104;
 }
 
 

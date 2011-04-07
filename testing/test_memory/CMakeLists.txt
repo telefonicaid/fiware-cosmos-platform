@@ -4,6 +4,7 @@
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/core")
+include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 
 
 # Test file

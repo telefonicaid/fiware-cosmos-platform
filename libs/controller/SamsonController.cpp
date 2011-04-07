@@ -438,17 +438,18 @@ namespace ss {
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					
-					network::WorkerStatusList *wl = response->mutable_worker_status_list();
+                    network::SamsonStatus *samsonStatus = response->mutable_samson_status();
+                    
 					int i;
 					
 					for (i = 0 ; i < num_workers ; i++)
 					{
-						network::WorkerStatus *ws =wl->add_worker_status();
+						network::WorkerStatus *ws =samsonStatus->add_worker_status();
 						ws->CopyFrom( *worker_status[i] );
 						ws->set_time(  DiskStatistics::timeSince( &worker_status_time[i] ) );
 					}
 					
-					fill( response->mutable_controller_status() );
+					fill( samsonStatus->mutable_controller_status() );
 					
 					network->send(this, fromId, Message::CommandResponse, p2);
 					
@@ -543,8 +544,6 @@ namespace ss {
 					used_cores  += worker_status[i]->used_cores();
 					total_cores += worker_status[i]->total_cores();
 					
-					
-					upload_size += worker_status[i]->upload_size();
 				}
 			}
 			

@@ -1,4 +1,19 @@
 
+
+----------------------------------------------------------------------------------------------------
+he estado haciendo pruebas, con el ultimo comit delilah vuelve a tener comportamientos extraños, como aquel que se dejaba el prompt del cliente al lado de otro prompt junto con el último comando que habías ejecutado. Ejemplo: help devuelve un "Delilah> helpDelilah>" y esto pasa también con los resultados de algunas operaciones.
+
+ Delilah> upload 05092008.txt 05092008.txt
+[ 15 ] Load data process started with 1 files
+Delilah> upload 05092008.txt 05092008.txt Delilah>
+
+
+Saludos, Jorge.
+----------------------------------------------------------------------------------------------------
+
+
+
+
 BUGS FROM TEST:
 
 TODO:

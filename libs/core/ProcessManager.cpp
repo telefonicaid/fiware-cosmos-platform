@@ -210,4 +210,19 @@ namespace ss
         
     }	
     
+    
+    void ProcessManager::quit()
+    {
+        
+		items.clearSet();				// List of items to be executed ( all priorities  )
+		halted_items.clearSet();		// Set of items currently being executed but halted
+        
+        while( running_items.size() > 0 )
+        {
+            LM_M(("Waiting to finish running background processes"));
+            sleep(1);
+        }
+        
+    }
+    
 }

@@ -19,7 +19,12 @@ namespace ss
 		
 		
 	}
-	
+    
+    ControllerTaskManager::~ControllerTaskManager()
+    {
+        // Remove objects of pending tasks
+        task.clearMap();
+    }
 
 	ControllerTask* ControllerTaskManager::addTask( ControllerTaskInfo *info ,Job *job )
 	{

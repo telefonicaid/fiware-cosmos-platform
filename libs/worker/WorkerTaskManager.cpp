@@ -22,6 +22,13 @@ namespace ss {
         Engine::shared()->notificationSystem.add( notification_task_finished , this );
 
 	}
+    
+    WorkerTaskManager::~WorkerTaskManager()
+    {
+        // Remove objects of pending tasks
+        task.clearMap();
+    }
+
 	
 	void WorkerTaskManager::addTask(const network::WorkerTask &worker_task )
 	{

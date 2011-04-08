@@ -347,7 +347,7 @@ namespace ss
 		
 		if ( commandLine.isArgumentValue(0,"quit","") )
 		{
-			Console::quit();	// Quit the console
+			Console::quitConsole();	// Quit the console
 			return 0;
 		}
 		

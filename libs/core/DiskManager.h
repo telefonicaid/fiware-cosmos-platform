@@ -46,6 +46,8 @@ namespace ss
 		// Function to fill part of the message sent to the controller ( informing about status )
 		void fill(network::WorkerStatus*  ws);				
         
+        // Remove pending operations and wait for the running ones
+        void quit();
     };
 
 }

@@ -38,6 +38,13 @@ namespace ss {
 		
 	}
 
+    JobManager::~JobManager()
+    {
+        // Remove pending jobs objects
+        job.clearMap();
+    }
+
+    
 	// Kill a particular job
 	void JobManager::kill( size_t job_id )
 	{

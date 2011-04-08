@@ -1,5 +1,7 @@
 
 #include "Console.h"		// Own interface
+#include "logMsg.h"         // LM_M
+
 
 namespace au
 {
@@ -56,8 +58,9 @@ namespace au
 
     }
     
-	void Console::quit()
+	void Console::quitConsole()
 	{
+        
 		write_history(NULL);
 		quit_console = true;
 		// Do something to force quit?

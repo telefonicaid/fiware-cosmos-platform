@@ -58,6 +58,14 @@ namespace ss
         // Remove buffers in the output queues for killed jobs
         queueBufferVectors.clearMap();
         
+        // Clear colection of output files ( delete is called for each one )
+        outputFiles.clearMap(); 
+        outputRemoveFiles.clearMap();
+
+        // Clear buffersVector structures create for each output
+        queueBufferVectors.clearMap();
+        
+        // Remove myself as a listener
         Engine::shared()->notificationSystem.remove( this );
 	}
 	
@@ -185,6 +193,7 @@ namespace ss
                 {
                     
                     DataBufferProcessItem* tmp = (DataBufferProcessItem*) notification->object[0] ;
+                    notification->object.clear();   // Remove the objexct
                     
                     // New file to be saved
                     std::string queue_name = tmp->bv->queue->name();
@@ -194,7 +203,6 @@ namespace ss
                     addKVFile(fileName, queue_name, tmp->buffer);
                     
                     delete tmp;
-                    notification->object.clear();   // Remove the objexct
                 }
                 
                 break;

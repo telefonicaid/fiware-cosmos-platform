@@ -47,7 +47,8 @@ namespace ss {
 	
 	ProcessBase::~ProcessBase()
 	{
-		
+        // Remove local copy of the workerTask message
+        delete workerTask;
 	}
 	
 	void ProcessBase::runIsolated()

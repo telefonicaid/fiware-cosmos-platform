@@ -232,9 +232,10 @@ int main(int argC, const char *argV[])
 	// Run delilah client in foreground
 	delilahConsole.run();	
 	
-
 	// Exit the engine
 	ss::Engine::shared()->quit();
+
+	LM_M(("Removing samsonWorkers"));
 	
     // Destroying workwers
     for ( size_t i = 0 ; i < _workers.size() ; i++)

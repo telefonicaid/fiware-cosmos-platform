@@ -26,6 +26,8 @@ namespace ss {
 	public:
 		
 		Monitor( SamsonController *controller );
+        ~Monitor();
+        
 		std::string getJSONString( std::string command );
 
 	public:

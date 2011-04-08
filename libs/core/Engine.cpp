@@ -53,8 +53,15 @@ namespace ss
 	
 	Engine::~Engine()
 	{
+        
+        LM_M(("Destroying Samson Engine"));
+        
 		pthread_mutex_destroy(&elements_mutex);			// Mutex to protect elements
 		pthread_cond_destroy(&elements_cond) ;			// Conditional to block the thread while waiting the next event
+        
+        // clear the pending elements to be executed
+        elements.clearList();
+        
 	}
 	
 	void Engine::init()
@@ -168,12 +175,17 @@ namespace ss
 	
 	void Engine::quit()
 	{
-		
-		
-		pthread_mutex_lock(&elements_mutex);
-
 		// Flag to avoid more "adds"
 		_quit = true;	
+        
+        // Quit the process manager means remove all pending processes and wait for the current ones.
+        processManager.quit();
+
+        // Remove pending disk operations and wait for the running ones
+        diskManager.quit();
+        
+		pthread_mutex_lock(&elements_mutex);
+
 
 		// Remove All elements
 		elements.clearList();		
@@ -192,7 +204,7 @@ namespace ss
 			while( _running )
 				sleep(1);
 			
-			LM_M(("Finish waiting samson engine to finish...."));
+			LM_M(("Samson engine completelly finished"));
 		}
 		
 	}
@@ -216,10 +228,7 @@ namespace ss
 		
 		pthread_mutex_unlock(&elements_mutex);
 		
-		
 	}
-
-
 	
 	
 	std::list<EngineElement*>::iterator Engine::_find_pos( EngineElement *e)
@@ -233,22 +242,15 @@ namespace ss
 		return elements.end();
 	}
 	
-
-	
 #pragma mark -----
-	
-	
     
     void Engine::notify( EngineNotification*  notification )
     {
         // Add an element to notify latter
         add( new EngineNotificationElement( notification ) );
     }
-
-	
 	
 #pragma mark ----
-	
 	
 	void Engine::fill(network::WorkerStatus*  ws)
 	{
@@ -257,9 +259,6 @@ namespace ss
         diskManager.fill( ws );
         processManager.fill( ws );
 		
-		
 	}	
-	
-	
 	
 }

@@ -49,7 +49,7 @@ namespace ss
     public:
         
         NotificationChannel channel;
-        std::vector<EngineNotificationObject*> object;                          // Vector of objects to be used as parameters        
+        std::vector<EngineNotificationObject*> object;         // Vector of objects to be used as parameters        
 
         // Simples constructor
         EngineNotification( NotificationChannel _channel );
@@ -63,10 +63,10 @@ namespace ss
         // Destroy pending objects ( not processed by any listener )
         void destroyObjects();
         
+        // Name of the notification channel
         const char * notificationChannelName();
         
     };
-    
     
     /**
      Notification listener
@@ -113,7 +113,7 @@ namespace ss
         void notify( EngineNotification* notification )
         {
 
-            LM_T(LmtEngine, ("Delibering notification [%s] to %d listeners " , notification->getDescription().c_str() , (int) listeners.size() ));
+            LM_T(LmtEngine, ("Delivering notification [%s] to %d listeners " , notification->getDescription().c_str() , (int) listeners.size() ));
             
             for ( std::set<EngineNotificationListener*>::iterator i = listeners.begin() ; i != listeners.end() ; i++)
             {
@@ -127,12 +127,12 @@ namespace ss
                              , (int) notification->object.size() 
                              , notification->getDescription().c_str() ));
             
+            // Destroy the rest of objects that are still inside the notification
             notification->destroyObjects();
             
             LM_T(LmtEngine, ("Finish Delibering notification [%s] to %d listeners " , notification->getDescription().c_str() , (int) listeners.size() ));
             
             delete notification;
-            
         }
         
     };
@@ -142,6 +142,12 @@ namespace ss
         au::map<NotificationChannel,EngineDelivery> deliveries;
         
     public:
+        
+        ~EngineNotificationSystem()
+        {
+            // Destroy all the Enginedelivery elements ( delete is called for each one )
+            deliveries.clearMap();
+        }
         
         void add( NotificationChannel channel , EngineNotificationListener* listener )
         {

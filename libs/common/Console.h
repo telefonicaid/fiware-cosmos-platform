@@ -40,7 +40,7 @@ namespace au {
 	public:		
         
 		Console();
-		virtual ~Console(){}
+		virtual ~Console(){};
 
 		virtual std::string getPrompt();				//!< Function to give the current prompt (can be overloaded in subclasses )
 		virtual void evalCommand( std::string command );//!< function to process a command instroduced by user	
@@ -50,7 +50,7 @@ namespace au {
 		void writeErrorOnConsole( std::string message );
 		void writeOnConsole( std::string message );
 
-		void quit(); // Set the console to quit
+		void quitConsole(); // Set the console to quit
 		
 		
 	private:

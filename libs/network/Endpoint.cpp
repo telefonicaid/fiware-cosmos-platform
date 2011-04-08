@@ -156,7 +156,7 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 */
 Endpoint::~Endpoint()
 {
-	LM_M(("destroying endpoint %p (name '%s')", this, name.c_str()));
+	//LM_M(("destroying endpoint %p (name '%s')", this, name.c_str()));
 
 	if (ip != NULL)
 	{
@@ -172,7 +172,7 @@ Endpoint::~Endpoint()
 		alias = NULL;
 	}
 
-	LM_M(("Done destroying endpoint"));
+	//LM_M(("Done destroying endpoint"));
 }
 
 

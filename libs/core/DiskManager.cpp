@@ -124,4 +124,16 @@ namespace ss
 		
 	}	
     
+    void DiskManager::quit()
+    {
+		pending_operations.clearList();		// Remove pending operations ( will never be notified )
+		
+        while( running_operations.size() > 0)
+        {
+            LM_M(("Waiting %d running disk operations to finish " , running_operations.size() ));
+            sleep(1);
+        }
+        
+    }
+    
 }

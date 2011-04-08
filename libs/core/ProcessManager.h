@@ -13,6 +13,7 @@
 #include "DiskStatistics.h"         // ss::DiskStatistics
 #include <set>                      // std::set
 #include "EngineNotification.h"     // ss::EngineNotification
+#include "au_map.h"                 // au::set
 
 namespace ss
 {
@@ -33,9 +34,9 @@ namespace ss
 		// --------------------------------------------------------------------
 		pthread_mutex_t mutex;                      // Mutex to protect the background process notifications
 		int num_processes;							// Number of maximum simultaneous process running ( from setup )
-		std::set<ProcessItem*> items;				// List of items to be executed ( all priorities  )
-		std::set<ProcessItem*> running_items;		// Set of items currently being executed
-		std::set<ProcessItem*> halted_items;		// Set of items currently being executed but halted
+		au::set<ProcessItem> items;				// List of items to be executed ( all priorities  )
+		au::set<ProcessItem> running_items;		// Set of items currently being executed
+		au::set<ProcessItem> halted_items;		// Set of items currently being executed but halted
         
     public:
         
@@ -51,6 +52,9 @@ namespace ss
         
 		// Function to fill part of the message sent to the controller ( informing about status )
 		void fill(network::WorkerStatus*  ws);				
+        
+        // Remove pending stuff and wait for the running
+        void quit();
         
     private:
         

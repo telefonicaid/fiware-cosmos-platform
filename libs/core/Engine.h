@@ -48,7 +48,6 @@ namespace ss
 		pthread_cond_t elements_cond;				// Conditional to block the thread while waiting the next event
 		pthread_t t;								// Thread to run the engine in background ( if necessary )
 		
-		
 	public:
 		
         EngineNotificationSystem notificationSystem;    // Notification system
@@ -100,12 +99,9 @@ namespace ss
 
 		// Find the position in the list to inser a new element
 		std::list<EngineElement*>::iterator _find_pos( EngineElement *e);
-
-		
 		
 	};
 	
 };
-
 
 #endif

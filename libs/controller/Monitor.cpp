@@ -17,6 +17,12 @@ namespace ss {
 		controller = _controller;
 		
 	}
+    
+    Monitor::~Monitor()
+    {
+        // Remove all the objects allocated
+        queues.clearMap();
+    }
 	
 	void Monitor::takeSamples()
 	{		

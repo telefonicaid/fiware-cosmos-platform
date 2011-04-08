@@ -107,6 +107,8 @@ namespace ss
             
             int length = fileSize / sizeof(int);
             int *ids = (int*) malloc( length * sizeof(int) );
+            if( !ids )
+                LM_X(1,("Malloc returned NULL"));
             
             FILE *file = fopen( sharedMemoryIdsFileName.c_str() , "r" );
             if( file )
@@ -118,6 +120,8 @@ namespace ss
                 }
                 fclose(file);
             }
+            
+            free( ids );
         }
         
         // Create a new shared memory buffer starting at SS_SHARED_MEMORY_KEY_ID + start_id
@@ -164,10 +168,11 @@ namespace ss
     
     void SharedMemoryManager::removeSharedMemorySegments( int * ids , int length )
     {
+        LM_M(("Releasing %d shared memory buffers", length ));
+        
         for ( int i = 0 ; i < length ; i++)
         {
             // Remove the shared memory areas
-            LM_M(("Releasing shared memory buffers"));
             if( shmctl( ids[i] , IPC_RMID , NULL ) == -1 )
                 LM_W(("Error trying to release a shared memory buffer Please review shared-memory problems in SAMSON documentation"));
         }

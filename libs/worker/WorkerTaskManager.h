@@ -33,7 +33,8 @@ namespace ss {
 	public:
 		
 		WorkerTaskManager(SamsonWorker *_worker);
-
+        ~WorkerTaskManager();
+        
 		// Add a task from a message comming from the controller
 		void addTask( const network::WorkerTask &task );
 

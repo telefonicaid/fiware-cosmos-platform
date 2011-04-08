@@ -32,6 +32,8 @@ namespace ss {
 		
 		ControllerTaskManager( JobManager * _jobManager);
 
+        ~ControllerTaskManager();
+        
 		/**
 		 Add a particular task into the controller scheduler from delailah command
 		 */

@@ -45,6 +45,8 @@ namespace ss {
 			
 		}
 		
+        ~JobManager();
+        
 		// Add a job from a delilah command
 		void addJob(int fromId , const network::Command &command , size_t sender_id  );
 	

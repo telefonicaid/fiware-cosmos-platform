@@ -203,6 +203,10 @@ int SamsonSpawner::timeoutFunction(void)
 
 					LM_W(("Process %d '%s' died after %d.%06d seconds of uptime", processP->pid, processP->name, diff.tv_sec, diff.tv_usec));
 					LM_TODO(("If process only been running for a few seconds, don't restart it - use this to initiate a Controller takeover"));
+
+					if (diff.tv_sec < 5)
+						LM_X(1, ("Error starting process '%s' - this bug must be fixed!", processP->name));
+
 					newProcessP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, 0, &now);
 					processSpawn(newProcessP);
 				}
@@ -694,7 +698,10 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 			s = processVector(ep, procVec);
 			LM_T(LmtProcessVector, ("Sending ProcessVector ack to '%s' in '%s'", ep->name.c_str(), ep->ip));
 			if (s == 0)
+			{
 				iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
+				platformProcessesSave(procVec);
+			}
 			else
 				iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Nak);
 		}

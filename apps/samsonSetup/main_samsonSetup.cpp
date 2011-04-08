@@ -130,47 +130,14 @@ static int accessCheck(void)
 
 	if (access(PlatformProcessesPath, R_OK) == 0)
 	{
-#if 0
-		printf("Samson Platform Setup Error.\n"
-			   "The platform process file '%s' already exists.\n"
-			   "In order to change the platform configuration,\n"
-			   "you have to stop the platform manually (for now).\n"
-			   "You also must delete the platform process file before rerunning Setup.\n",
-			   PlatformProcessesPath);
-
-		return 9;
-#else
-		char answer[32];
-
-		printf("Samson Platform Setup Error.\n"
-			   "The platform process file '%s' already exists.\n"
-			   "Do you wish to overwrite it (Y/N)?> ", PlatformProcessesPath);
-		fflush(stdout);
-
-		int s = scanf("%s", answer);
-		if (s == EOF)
-			LM_X(1, ("Error reading reply"));
-
-		if (((answer[0] == 'N') || (answer[0] == 'n')) && (answer[1] == 0))
-			return 6;
-		else if (((answer[0] == 'Y') || (answer[0] == 'y')) && (answer[1] == 0))
-		{
-			if (unlink(PlatformProcessesPath) == -1)
-			{
-				printf("Samson Platform Setup Error.\n"
-					   "Unable to remove the Samson Platform Setup file '%s': %s\n",
-					   PlatformProcessesPath, strerror(errno));
-
-				return 7;
-			}
-		}
-		else
+		if (unlink(PlatformProcessesPath) == -1)
 		{
 			printf("Samson Platform Setup Error.\n"
-				   "Incorrect answer (%s).\n", answer);
-			return 8;
+				   "Unable to remove the Samson Platform Setup file '%s': %s\n",
+				   PlatformProcessesPath, strerror(errno));
+			
+			return 7;
 		}
-#endif
 	}
 
 	return 0;

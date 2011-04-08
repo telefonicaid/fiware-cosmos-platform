@@ -705,11 +705,18 @@ int main(int argC, const char *argV[])
 	{
 		if (workers > (long) ip[0])
 		{
-			printf("Samson Platform Setup Error.\n"
-				   "You specified %d workers with the '-workers' option, but gave only %d IP:s in the '-ip' option.\n"
-				   "Please correct this error and try again.\n",
-				   workers, (int) (long) ip[0]);
-			err = 1;
+			for (int ix = (long) ip[0]; ix < workers; ix++)
+			{
+				char ipaddress[64];
+
+				printf("Please enter the IP address (or host name) for host number %d> ", ix + 1);
+				fflush(stdout);
+				s = scanf("%s", ipaddress);
+				if (s == EOF)
+					LM_X(1, ("Error reading IP-address for worker %d", ix + 1));
+
+				ip[ix + 1] = strdup(ipaddress);
+			}
 		}
 		else if (workers < (long) ip[0])
 		{
@@ -723,7 +730,7 @@ int main(int argC, const char *argV[])
 
 	
 	//
-	// If more than worker, the controller mustn't be 'localhost'
+	// If more than ONE worker, the controller mustn't be 'localhost'
 	//
 	if ((workers > 1) && ((strcmp(controllerHost, "localhost") == 0) || (strcmp(controllerHost, "127.0.0.1") == 0)))
 	{

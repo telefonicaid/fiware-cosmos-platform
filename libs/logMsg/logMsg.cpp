@@ -50,8 +50,6 @@
 
 #include "logMsg.h"             /* Own interface                             */
 
-#include <assert.h>
-
 extern "C" pid_t gettid(void);
 
 
@@ -1684,7 +1682,6 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 			exitFunction(tLev, exitInput, text, (char*) stre);
 
 		/* exit here, just in case */
-        assert(false);
 		exit(tLev);
 	}
 	

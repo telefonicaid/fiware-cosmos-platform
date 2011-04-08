@@ -30,6 +30,10 @@ namespace ss {
 		
 	SamsonController::SamsonController( NetworkInterface*  network ) : data(), jobManager(this) , monitor(this)
 	{
+        
+        // Get initial time
+		gettimeofday(&init_time, NULL);
+
 		this->network = network;
 		network->setPacketReceiver(this);
 
@@ -446,7 +450,8 @@ namespace ss {
 					{
 						network::WorkerStatus *ws =samsonStatus->add_worker_status();
 						ws->CopyFrom( *worker_status[i] );
-						ws->set_time(  DiskStatistics::timeSince( &worker_status_time[i] ) );
+                        // Modify the update time
+						ws->set_update_time(  DiskStatistics::timeSince( &worker_status_time[i] ) );
 					}
 					
 					fill( samsonStatus->mutable_controller_status() );
@@ -520,6 +525,10 @@ namespace ss {
 		void SamsonController::fill( network::ControllerStatus *status )
 		{
 			jobManager.fill( status );
+            status->set_network_status(network->getState(""));
+            // Set up time information
+            status->set_up_time(au::Format::ellapsedSeconds(&init_time));
+
 		}
 
 

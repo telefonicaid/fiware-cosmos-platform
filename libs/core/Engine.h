@@ -73,7 +73,7 @@ namespace ss
 		
 		void run();
 		void runInBackground();
-		void quit();
+        void quit();
 		
 		/*
 		 Methods to add and remove foregrond and background processes

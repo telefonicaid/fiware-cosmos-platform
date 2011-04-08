@@ -106,17 +106,17 @@ message Error
 
 message ControllerStatus
 {
-//	optional uint64 up_time = 8;					// Time since the the worker started
+	optional uint64 up_time = 8;					// Time since the the worker started
 
 	optional string job_manager_status=1;				// Status of the job manager
 	optional string task_manager_status=2;				// Status of the task manager ( more in contact with workers )
+	optional string network_status=3;				// Information about the network connections
 }
 
 message WorkerStatus
 {
-//	optional uint64 up_time = 23;					// Time since the the worker started
-//	optional uint64 update_time = 8;				// Time since the last update from the worker
-	optional uint64 time = 8;					// Time since the last update from the worker
+	optional uint64 up_time = 23;					// Time since the the worker started
+	optional uint64 update_time = 8;				// Time since the last update from the worker
 
 	optional string task_manager_status=7;				// Information about task manager
 	optional string disk_manager_status=3;				// Information about the disk manager

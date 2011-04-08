@@ -29,6 +29,9 @@ namespace ss {
 	 */
 	SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , loadDataManager(this)
 	{
+        // Get initial time
+		gettimeofday(&init_time, NULL);
+        
 		// Description for the PacketReceiver
 		packetReceiverDescription = "samsonWorker";
 		
@@ -84,12 +87,13 @@ namespace ss {
         
         // Shared memory manager status
         SharedMemoryManager::shared()->fill( ws );
+
+        // Set up time information
+        ws->set_up_time(au::Format::ellapsedSeconds(&init_time));
         
         // Send the message    
 		network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);
 	}
-	
-	
 	
 	/* ****************************************************************************
 	 *

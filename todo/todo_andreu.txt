@@ -17,6 +17,7 @@ Saludos, Jorge.
 BUGS FROM TEST:
 
 TODO:
+* Not updating information from workers
 * Name of the files with the job if to make sure names are not reused ( not random )
 * Not write kvs in the txt format when uploading files
 * Not accept parerOut with no output txt txt 

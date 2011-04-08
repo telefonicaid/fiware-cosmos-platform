@@ -36,7 +36,8 @@ namespace ss {
 	
 	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface 
 	{
-		// Elements inside the SamsonController
+		// Initial time stamp 
+		struct timeval init_time;
 		
 		// Network interface
 		NetworkInterface*     network;						

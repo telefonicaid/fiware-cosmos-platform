@@ -29,6 +29,9 @@ namespace ss {
 	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
 	{
 		
+		// Initial time stamp 
+		struct timeval init_time;
+        
 	public:
 		
 		SamsonWorker(NetworkInterface* network);
@@ -57,6 +60,8 @@ namespace ss {
 		// Process list of files ( to remove unnecessary files )
 		void processListOfFiles( const network::QueueList& ql);
 		
+        
+        
 	private:
 		
 		virtual void notificationSent(size_t id, bool success) {}

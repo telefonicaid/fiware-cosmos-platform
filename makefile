@@ -11,7 +11,7 @@ debug_coverage:
 release:
 	mkdir BUILD_RELEASE || true
 	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE
-	make -C BUILD_RELEASE -j8
+	make -C BUILD_RELEASE 
 
 test: ctest itest
 

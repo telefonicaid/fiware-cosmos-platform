@@ -931,11 +931,20 @@ namespace ss
         txt << "================================================================================================" << std::endl;
         txt << "SAMSON STATUS" << std::endl;
         txt << "================================================================================================" << std::endl;
+
+        
+        if( command == "info" )
+        {
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+            txt << "Controller      ( uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )" << std::endl;
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+        }
+        
         
         if( command == "info_full" )
         {
             txt << "------------------------------------------------------------------------------------------------" << std::endl;
-            txt << "Controller" << std::endl;
+            txt << "Controller      ( uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )" << std::endl;
             txt << "------------------------------------------------------------------------------------------------" << std::endl;
             txt << "\tJobManager: " << samsonStatus->controller_status().job_manager_status() << std::endl;
             txt << "\tTaskManager: " << samsonStatus->controller_status().task_manager_status() << std::endl;
@@ -945,9 +954,19 @@ namespace ss
         if( command == "info_task_manager" )
         {
             txt << "------------------------------------------------------------------------------------------------" << std::endl;
-            txt << "Controller" << std::endl;
+            txt << "Controller      ( uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )" << std::endl;
             txt << "------------------------------------------------------------------------------------------------" << std::endl;
             txt << "\tTaskManager: " << samsonStatus->controller_status().task_manager_status() << std::endl;
+            txt << std::endl;
+        }
+        
+        if ( command == "info_net" ) 
+        {
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+            txt << "Controller      ( uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )" << std::endl;
+            txt << std::endl;
+            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+            txt << samsonStatus->controller_status().network_status() << "\n";
             txt << std::endl;
         }
         
@@ -967,10 +986,11 @@ namespace ss
             
             txt << "------------------------------------------------------------------------------------------------" << std::endl;
             txt << "Worker " << i;
-            txt << "     Process: " << au::Format::percentage_string(per_cores).c_str();
+            txt << "  Process: " << au::Format::percentage_string(per_cores).c_str();
             txt << " Memory: " << au::Format::percentage_string(per_memory);
             txt << " Disk: " << disk_pending_operations;
-            txt << "    ( Time since last update: " << au::Format::time_string( worker_status.time()/1000 ) << " )" << std::endl;
+            txt << "  ( uptime: " << au::Format::time_string( worker_status.up_time() ) << " )";
+            txt << " ( updated: " << au::Format::time_string( worker_status.update_time()/1000 ) << " )" << std::endl;
             txt << "------------------------------------------------------------------------------------------------" << std::endl;
 
                         
@@ -991,6 +1011,8 @@ namespace ss
             
             if( ( command == "info_full" ) || (command == "info_disk_manager" ) )
                 txt << "\tDisk Manager:      " << worker_status.disk_manager_status() << "\n";
+            if ( command == "info_net" ) 
+                txt << worker_status.network_status() << "\n";
             
             
             if( command == "info_cores" )
@@ -1024,10 +1046,6 @@ namespace ss
                 txt << "\n";                    
             }
             
-            if ( command == "info_net" ) 
-            {
-                txt << worker_status.network_status() << "\n";
-            }
 
             
         }

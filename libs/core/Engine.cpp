@@ -28,7 +28,10 @@ namespace ss
     void destroy_engine()
     {
         if( e )
+        {
+            e->quit();   // Quit if still not quited
             delete e;
+        }
         e = NULL;
     }
 	
@@ -175,17 +178,26 @@ namespace ss
 	
 	void Engine::quit()
 	{
+        
+        LM_M(("Quiting samson engine...."));
+        
+       if( ! _running )
+            return; // Not necessary to quit anything.
+
 		// Flag to avoid more "adds"
 		_quit = true;	
+        
+        LM_M(("Quiting process manager...."));
         
         // Quit the process manager means remove all pending processes and wait for the current ones.
         processManager.quit();
 
+        LM_M(("Quiting disk manager...."));
+        
         // Remove pending disk operations and wait for the running ones
         diskManager.quit();
         
 		pthread_mutex_lock(&elements_mutex);
-
 
 		// Remove All elements
 		elements.clearList();		

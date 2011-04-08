@@ -43,6 +43,7 @@ char     controllerHost[256];
 char     rIp[256];
 bool     reset;
 bool     silent;
+bool     show;
 
 
 
@@ -53,12 +54,13 @@ bool     silent;
 */
 PaArgument paArgs[] =
 {
-	{ "-reset",       &reset,           "RESET",      PaBool,    PaOpt,  false, false,  true,  "reset platform"           },
-	{ "-ip",           rIp,             "IP",         PaStr,     PaOpt,  NOIP,   PaNL,  PaNL,  "IP to one samson machine" },
-	{ "-ips",          ip,              "IP_LIST",    PaSList,   PaOpt,  PaND,   PaNL,  PaNL,  "list of worker IPs"       },
-	{ "-controller",   controllerHost,  "CONTROLLER", PaString,  PaOpt,  PaND,   PaNL,  PaNL,  "Controller host"          },
-	{ "-workers",     &workers,         "WORKERS",    PaInt,     PaOpt,     0,     0,   100,   "number of workers"        },
-	{ "-silent",      &silent,          "SILENT",     PaBool,    PaOpt,  false, false,  true,  "no log to stdout"         },
+	{ "-reset",       &reset,           "RESET",      PaBool,    PaOpt,  false, false,  true,  "reset platform"                },
+	{ "-ip",           rIp,             "IP",         PaStr,     PaOpt,  NOIP,   PaNL,  PaNL,  "IP to one samson machine"      },
+	{ "-ips",          ip,              "IP_LIST",    PaSList,   PaOpt,  PaND,   PaNL,  PaNL,  "list of worker IPs"            },
+	{ "-controller",   controllerHost,  "CONTROLLER", PaString,  PaOpt,  PaND,   PaNL,  PaNL,  "Controller host"               },
+	{ "-workers",     &workers,         "WORKERS",    PaInt,     PaOpt,     0,     0,   100,   "number of workers"             },
+	{ "-silent",      &silent,          "SILENT",     PaBool,    PaOpt,  false, false,  true,  "no log to stdout"              },
+	{ "-show",        &show,            "SHOW",       PaBool,    PaOpt,  false, false,  true,  "show content of platform file" },
 
 	PA_END_OF_ARGS
 };
@@ -623,6 +625,25 @@ int main(int argC, const char *argV[])
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
 
+	if (show)
+	{
+		int procVecSize;
+
+		procVec = ss::platformProcessesGet(&procVecSize);
+
+		printf("Samson platform contains %d processes:\n\n", procVec->processes);
+		printf("  Name               Alias              Host         Controller\n");
+		for (int ix = 0; ix < procVec->processes; ix++)
+		{
+			ss::Process* p =  &procVec->processV[ix];
+
+			printf("  %-18s %-18s %-12s %s\n", p->name, p->alias, p->host, p->controllerHost);
+		}
+
+		return 0;
+	}
+
+
 
 	//
 	// Host Manager 
@@ -632,7 +653,7 @@ int main(int argC, const char *argV[])
 
 	if (reset)
 	{
-		if (strcmp(rIp, "noip") == 0)
+		if (controllerHost[0] == 0)
 		{
 			printf("Please give the IP of one of the platform hosts> ");
 			fflush(stdout);
@@ -641,7 +662,7 @@ int main(int argC, const char *argV[])
 				LM_X(1, ("Error reading IP of a platform host"));
 		}
 
-		err = resetPlatform(rIp);
+		err = resetPlatform(controllerHost);
 		if (err != 0)
 			printf("Reset error.\n");
 

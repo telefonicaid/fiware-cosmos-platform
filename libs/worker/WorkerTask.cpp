@@ -16,6 +16,8 @@ namespace ss
 	
 	WorkerTask::WorkerTask( WorkerTaskManager *_taskManager )
 	{
+        num_file_output = 0;            // Init this counter to give name to the generated files
+            
 		taskManager = _taskManager;		// Pointer to the task manager
 		reduceInformation = NULL;		// By default this is not used
 		
@@ -61,9 +63,6 @@ namespace ss
         // Clear colection of output files ( delete is called for each one )
         outputFiles.clearMap(); 
         outputRemoveFiles.clearMap();
-
-        // Clear buffersVector structures create for each output
-        queueBufferVectors.clearMap();
         
         // Remove myself as a listener
         Engine::shared()->notificationSystem.remove( this );
@@ -84,6 +83,7 @@ namespace ss
 		// Get the operation and task_id from the message
 		operation = task.operation();	// Save the operation to perform		
 		task_id = task.task_id();		// Save the task id
+		job_id = task.job_id();		// Save the job id
 		
 		// Messages prepared to be send to the controller
 		
@@ -542,14 +542,16 @@ namespace ss
 
 	std::string WorkerTask::newFileName( )
 	{
-		std::ostringstream fileName;
-		
+		//fileName << worker_id << "_" << task_id << "_" << rand()%10000 << rand()%10000 << rand()%10000 << rand()%10000;
+        
+		// Get the worker id
 		int worker_id = taskManager->worker->network->getWorkerId();
-		
-		//fileName << SamsonSetup::shared()->dataDirectory << "/" << "file_" << worker_id << "_" << task_id << "_" << queue << "_" << rand()%10000 << rand()%10000 << rand()%10000;
-		fileName << worker_id << "_" << task_id << "_" << rand()%10000 << rand()%10000 << rand()%10000 << rand()%10000;
-		
-		return fileName.str();
+        
+		// Create the nme of the file
+        char fileName[2000];
+        sprintf(fileName, "worker_%d_job_%lu_task_%lu_file_%010d" , worker_id , job_id ,task_id, num_file_output++ );
+		return fileName;
+        
 	}
     
     std::string WorkerTask::newFileNameForTXTOutput( int hg_set )
@@ -559,7 +561,7 @@ namespace ss
 
 		// Create the nme of the file
         char fileName[2000];
-        sprintf(fileName, "%d_%lu_txt_%010d" , worker_id , task_id , hg_set );
+        sprintf(fileName, "worker_%d_job_%lu_task_%lu_file_txt_%010d" , worker_id , job_id, task_id , hg_set );
 		return fileName;
     }
     

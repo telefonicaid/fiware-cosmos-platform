@@ -85,7 +85,8 @@ namespace ss {
 		
         
 		WorkerTaskManager *taskManager;         // Pointer to the task manager
-		size_t task_id;                         // identifier of the task
+		size_t job_id;                         // identifier of the task
+ 		size_t task_id;                         // identifier of the task
         size_t subTaskId;                       // Internal counter to give a number to each sub-task
 		WorkerTaskStatus status;                // Status of this task
 		Operation::Type type;                   // Type of operation
@@ -158,6 +159,8 @@ namespace ss {
 		void addSubTask( WorkerSubTask *subTask );
 		void flush();
 
+        
+        int num_file_output;    // Incremental value to give names to the files
 		std::string newFileName( );
 		std::string newFileNameForTXTOutput( int hg_set );
         

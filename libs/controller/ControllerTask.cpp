@@ -81,6 +81,11 @@ namespace ss {
 	
 	void ControllerTask::fillInfo( network::WorkerTask *t , int workerIdentifier )
 	{
+        // Identifier of the job and task ( job is always incremental , task starts from 0 any time platform is restarted )
+        t->set_job_id( job->getId() );
+		t->set_task_id( id );
+
+        // Set the operation name
 		t->set_operation( info->operation_name );
 
 		

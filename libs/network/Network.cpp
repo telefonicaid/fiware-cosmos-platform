@@ -2439,7 +2439,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 		if ((endpoint[ME]->type == Endpoint::Delilah) || (endpoint[ME]->type == Endpoint::Worker))
 		{
 			LM_M(("NOT Setting useSenderThread for worker '%s@%s'", ep->name.c_str(), ep->ip));
-			ep->useSenderThread = true;
+			// ep->useSenderThread = true;
 		}
 	}
 

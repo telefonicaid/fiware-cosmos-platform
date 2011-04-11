@@ -35,7 +35,7 @@ namespace ss
 		
 		au::list<EngineElement> elements;			// Elements of the samson engine
 		EngineElement *running_element;				// Element that is currently running
-		
+		int _sleeping_seconds;                       // Time of sleep in the last call
 		
 		// Engine Status Flags 
 		// ---------------------------------------------------------------------------

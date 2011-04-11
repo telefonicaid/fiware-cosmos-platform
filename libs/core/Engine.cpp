@@ -40,6 +40,8 @@ namespace ss
 		_quit = false;									// By default, this flag is false
 		_running =  false;								// Not running until "run" method is called
 		
+        _sleeping_seconds = 0;
+        
 		pthread_mutex_init(&elements_mutex, 0);			// Mutex to protect elements
 		pthread_cond_init(&elements_cond, 0) ;			// Conditional to block the thread while waiting the next event
         
@@ -158,12 +160,20 @@ namespace ss
 			}
 			else
 			{
-				int seconds = elements.front()->getThriggerTime() - now;
+                
+                size_t trigger_time = elements.front()->getThriggerTime();
+                
+                if( trigger_time > now )
+                    _sleeping_seconds =  trigger_time - now;
+                else
+                    LM_X(1,("Time triggered is not greater than now..."));
 				
+                LM_M(("Sleeping time in seconds %d" , _sleeping_seconds ));
+                
 				struct timeval tv;
 				struct timespec ts;
 				gettimeofday(&tv, NULL);
-				ts.tv_sec = tv.tv_sec + seconds;
+				ts.tv_sec = tv.tv_sec + _sleeping_seconds;
 				ts.tv_nsec = 0;
 				
 				//LM_M(("Sleeping %d seconds",  seconds ));
@@ -280,11 +290,22 @@ namespace ss
         diskManager.fill( ws );
         processManager.fill( ws );
 		
-        std::ostringstream engine_state;
+		pthread_mutex_lock(&elements_mutex);
         
-        engine_state << "Loops: " << counter << " Current: " << elements.size() << " ";
+        std::ostringstream engine_state;
+        engine_state << "Loops: " << counter;
+        engine_state << " Current: ";
+        
+        if( running_element )
+            engine_state << running_element->getDescription();
+        else
+            engine_state << "( Sleeping for " << _sleeping_seconds << ")";
+        
+        engine_state <<  " Queue: " << elements.size() << " ";
         for ( au::list<EngineElement>::iterator el = elements.begin() ; el != elements.end() ; el++)
             engine_state << "[" << (*el)->getShortDescription() <<"]";
+        
+		pthread_mutex_unlock(&elements_mutex);
         
         ws->set_engine_status( engine_state.str() );
         

@@ -167,55 +167,54 @@ int SamsonSpawner::timeoutFunction(void)
 
 	pid = waitpid(-1, &status, WNOHANG);
 	if (pid == 0)
+	{
 		LM_T(LmtWait, ("Children running, no one has exited since last sweep"));
-	else if (pid == -1)
+		return 0;
+	}
+
+	if (pid == -1)
 	{
 		if (errno != ECHILD)
 			LM_E(("waitpid error: %s", strerror(errno)));
+		return 0;
 	}
+
+	processP = processLookup(pid);
+	if (processP == NULL)
+	{
+		LM_W(("Unknown process %d died with status 0x%x", pid, status));
+		return 0;
+	}
+
+
+	ss::Process*    newProcessP;
+	struct timeval  now;
+	struct timeval  diff;
+	
+	if (access(SAMSON_PLATFORM_PROCESSES, R_OK) != 0)
+		LM_W(("'%s' died - NOT restarting it as the platform processes file isn't in place", processP->name));
+	else if (noRestarts == true)
+		LM_W(("'%s' died - NOT restarting it (option '-noRestarts' used)", processP->name));
+	else if (restartInProgress == true)
+		LM_W(("'%s' died - NOT restarting it (Restart in progress)", processP->name));
 	else
 	{
-		processP = processLookup(pid);
-		if (processP == NULL)
-			LM_W(("Unknown process %d died with status 0x%x", pid, status));
-		else
-		{
-			ss::Process*    newProcessP;
-			struct timeval  now;
-			struct timeval  diff;
+		LM_W(("'%s' died - restarting it", processP->name));
 
-			if (access(SAMSON_PLATFORM_PROCESSES, R_OK) != 0)
-				LM_W(("'%s' died - NOT restarting it as the platform processes file isn't in place", processP->name));
-			else if (restartInProgress)
-				LM_W(("'%s' died - NOT restarting it as the platform is restarting", processP->name));
-			else
-			{
-				if (noRestarts == true)
-					LM_W(("'%s' died - NOT restarting it", processP->name));
-				else
-				{
-					LM_W(("'%s' died - restarting it", processP->name));
+		if (gettimeofday(&now, NULL) != 0)
+			LM_X(1, ("gettimeofday failed (fatal error): %s", strerror(errno)));
 
-					if (gettimeofday(&now, NULL) != 0)
-						LM_X(1, ("gettimeofday failed (fatal error): %s", strerror(errno)));
+		timeDiff(&processP->startTime, &now, &diff);
 
-					timeDiff(&processP->startTime, &now, &diff);
+		LM_W(("Process %d '%s' died after only %d.%06d seconds of uptime", processP->pid, processP->name, diff.tv_sec, diff.tv_usec));
+		if (diff.tv_sec < 5)
+			LM_X(1, ("Error starting process '%s' - this bug must be fixed!", processP->name));
 
-					LM_W(("Process %d '%s' died after %d.%06d seconds of uptime", processP->pid, processP->name, diff.tv_sec, diff.tv_usec));
-					LM_TODO(("If process only been running for a few seconds, don't restart it - use this to initiate a Controller takeover"));
-
-					if (diff.tv_sec < 5)
-						LM_X(1, ("Error starting process '%s' - this bug must be fixed!", processP->name));
-
-					newProcessP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, 0, &now);
-					processSpawn(newProcessP);
-				}
-			}
-
-			processRemove(processP);
-		}
+		newProcessP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, 0, &now);
+		processSpawn(newProcessP);
 	}
 
+	processRemove(processP);
 	return 0;
 }
 
@@ -374,8 +373,15 @@ static int hello(ss::Endpoint* me, ss::Endpoint* ep, int* errP)
 	ss::Message::MessageType        msgType;
 	ss::Message::HelloData          helloIn;
 	ss::Message::HelloData          helloOut;
-	void*                           dataP   = (void*) &helloIn;
-	int                             dataLen = sizeof(helloIn);
+	void*                           dataP     = (void*) &helloIn;
+	int                             dataLen   = sizeof(helloIn);
+	Host*                           localhost = networkP->hostMgr->lookup("localhost");
+	char*                           hostname;
+
+	if (localhost)
+		hostname = localhost->name;
+	else
+		hostname = (char*) "localhost";
 
 	*errP = 0;
 
@@ -397,7 +403,7 @@ static int hello(ss::Endpoint* me, ss::Endpoint* ep, int* errP)
 	memset(&helloOut, 0, sizeof(helloOut));
 
 	strncpy(helloOut.name,   "samsonSpawner", sizeof(helloOut.name));
-	strncpy(helloOut.ip,     "myip",          sizeof(helloOut.ip));
+	strncpy(helloOut.ip,     hostname,        sizeof(helloOut.ip));
 	strncpy(helloOut.alias,  "samsonSetup",   sizeof(helloOut.alias));
 
 	helloOut.type = ss::Endpoint::Spawner;
@@ -437,10 +443,12 @@ static void localProcessesKill(void)
 {
 	int            fd;
 	int            err = 0;
-	ss::Endpoint   ep;
 	ss::Endpoint   me;
 	int            s;
+	bool           oldRestartInProgress;
 
+	oldRestartInProgress = restartInProgress;
+	restartInProgress    = true;
 
 	LM_M(("---------------------- IN ---------------------------"));
 	//
@@ -450,6 +458,8 @@ static void localProcessesKill(void)
 	fd = iomConnect("localhost", WORKER_PORT);
 	if (fd != -1)
 	{
+		ss::Endpoint   ep;
+
 		ep.rFd   = fd;
 		ep.wFd   = fd;
 		ep.name  = "samsonWorkerToDie";
@@ -467,15 +477,15 @@ static void localProcessesKill(void)
 		}
 	}
 
-	usleep(100000);
+	usleep(200000);
 	LM_M(("system(\"killall samsonWorker\")"));
-	s = system("killall samsonWorker 2> /dev/null");
+	s = system("killall samsonWorker > /dev/null 2>&1");
 	if (s != 0)
 		LM_E((" system(\"killall samsonWorker\"): %s", strerror(errno)));
 
-	usleep(100000);
+	usleep(200000);
 	LM_M(("system(\"killall -9 samsonWorker \")"));
-	s = system("killall -9 samsonWorker 2> /dev/null");
+	s = system("killall -9 samsonWorker > /dev/null 2>&1");
 	if (s != 0)
 		LM_E((" system(\"killall -9 samsonWorker\"): %s", strerror(errno)));
 
@@ -488,6 +498,8 @@ static void localProcessesKill(void)
 	fd = iomConnect("localhost", CONTROLLER_PORT);
 	if (fd != -1)
 	{
+		ss::Endpoint   ep;
+
 		ep.rFd   = fd;
 		ep.wFd   = fd;
 		ep.name  = "samsonControllerToDie";
@@ -505,17 +517,22 @@ static void localProcessesKill(void)
 		}
 	}
 
-	usleep(100000);
+	usleep(200000);
     LM_M(("system(\"killall samsonController\")"));
-	s = system("killall samsonController 2> /dev/null");
+	s = system("killall samsonController > /dev/null 2>&1");
 	if (s != 0)
 		LM_E((" system(\"killall samsonController\"): %s", strerror(errno)));
 
-	usleep(100000);
+	usleep(200000);
     LM_M(("system(\"killall -9 samsonController\")"));
-	s = system("killall -9 samsonController 2> /dev/null");
+	s = system("killall -9 samsonController > /dev/null 2>&1");
 	if (s != 0)
 		LM_E((" system(\"killall -9 samsonController\"): %s", strerror(errno)));
+
+	LM_M(("Calling timeoutFunction twice to cleanup dead processes"));
+	spawnerP->timeoutFunction();
+	spawnerP->timeoutFunction();
+	restartInProgress = oldRestartInProgress;
 }
 
 
@@ -533,8 +550,7 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 
 	LM_M(("First, I kill all local processes ..."));
 	localProcessesKill();
-	LM_M(("Local processes should not be running, sleeping for 50 msecs ..."));
-	usleep(50000);
+	LM_M(("Local processes should not be running ..."));
 
 	if (procVec != NULL)
 	   free(procVec);
@@ -551,6 +567,8 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 
 	
 	platformProcessesSave(procVec);
+
+	LM_M(("Calling processesStart to start the processes according to the Process Vector received"));
 	processesStart(procVec);
 
 
@@ -573,8 +591,6 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 */
 void SamsonSpawner::init(ss::ProcessVector* procVec)
 {
-	bool verbose;
-
 	localProcessesKill();
 
 	if (procVec != NULL)
@@ -583,12 +599,8 @@ void SamsonSpawner::init(ss::ProcessVector* procVec)
 		spawnersConnect(procVec);
 	}
 
-
-	verbose   = lmVerbose;
-	lmVerbose = true;
 	processListShow("INIT", true);
-	networkP->endpointListShow("INIT");
-	lmVerbose = verbose;
+	networkP->endpointListShow("INIT", true);
 }
 
 
@@ -650,9 +662,8 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 	case ss::Message::Reset:
 		if (headerP->type == ss::Message::Msg)
 		{
-			LM_T(LmtReset, ("Got a Reset message from '%s'", ep->name.c_str()));
+			LM_M(("Got a Reset message from '%s'", ep->name.c_str()));
 			LM_T(LmtReset, ("unlinking '%s'", SAMSON_PLATFORM_PROCESSES));
-			restartInProgress = true;
 			unlink(SAMSON_PLATFORM_PROCESSES);
 
 			if (ep->type == ss::Endpoint::Setup) 
@@ -668,12 +679,8 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 			LM_T(LmtReset, ("Sending ack to RESET message to %s@%s", ep->name.c_str(), ep->ip));
 			iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
 
-			bool verbose;
-			verbose   = lmVerbose;
-			lmVerbose = true;
 			processListShow("Got RESET", true);
-			networkP->endpointListShow("Got RESET");
-			lmVerbose = verbose;
+			networkP->endpointListShow("Got RESET", true);
 		}
 		break;
 
@@ -684,7 +691,7 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 	case ss::Message::ProcessVector:
 		if (headerP->type == ss::Message::Msg)
 		{
-			restartInProgress = false;
+			LM_M(("Got a ProcessVector message"));
 			LM_T(LmtProcessVector, ("Received a ProcessVector from '%s'. dataLen: %d", ep->name.c_str(), headerP->dataLen));
 
 			if ((procVec->processes <= 0) || (procVec->processes > 10))

@@ -138,7 +138,7 @@ public:
 	Endpoint*    endpointLookup(const char* name, const char* ip);
 	Endpoint*    endpointLookup(Endpoint::Type type, Host* hostP);
 	void         endpointRemove(Endpoint* ep, const char* why);
-	void         endpointListShow(const char* why);
+	void         endpointListShow(const char* why, bool forced = false);
 
 
 

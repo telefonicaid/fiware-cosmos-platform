@@ -1059,9 +1059,16 @@ bool Network::ready()
 *
 * Network::endpointListShow - 
 */
-void Network::endpointListShow(const char* why)
+void Network::endpointListShow(const char* why, bool forced)
 {
-	int ix;
+	int  ix;
+	bool oldVerbose = false;
+
+	if (forced)
+	{
+	   oldVerbose = lmVerbose;
+	   lmVerbose  = true;
+	}
 
 	LM_V((""));
 	LM_V(("----------- Endpoint List (%s) -----------", why));
@@ -1109,6 +1116,9 @@ void Network::endpointListShow(const char* why)
 	}
 
     LM_V(("--------------------------------"));
+
+	if (forced)
+	   lmVerbose = oldVerbose;
 }
 
 

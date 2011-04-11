@@ -263,7 +263,6 @@ void Network::reset(Endpoint::Type type, const char* alias, unsigned short port,
 	this->port             = port;
 	Endpoints              = endpoints;
 	Workers                = workers;
-	LM_M(("Set Workers to %d", Workers));
 
 	procVec                = NULL;
 	procVecSize            = 0;
@@ -333,28 +332,20 @@ Network::~Network()
 	int ix;
 
 	if (hostMgr)
-	{
-		LM_M(("Freeing hostMgr"));
 		delete hostMgr;
-	}
 
 	for (ix = 0; ix < Endpoints; ix++)
 	{
 		if (endpoint[ix] == NULL)
 			continue;
 
-		LM_M(("Freeing endpoint[%d]", ix));
 		delete endpoint[ix];
 	}	
 
-	LM_M(("Freeing endpoint"));
 	free(endpoint);
 
 	if (procVec != NULL)
-	{
-		LM_M(("Freeing procVec"));
 		free(procVec);
-	}
 }
 
 
@@ -492,7 +483,6 @@ void Network::platformProcesses(void)
 
 	
 	Workers = procVec->processes - 1;
-	LM_M(("Got a process vector with %d Workers", Workers));
 
 	// Later on, I will call this callback function for all types of endpoints.
 	// For now, I only use it for the Spawner, and I keep using the ProcessVector message
@@ -645,7 +635,6 @@ void Network::initAsSamsonController(void)
 	for (int ix = 0; ix < Workers; ix++)
 	{
 		endpoint[FIRST_WORKER + ix] = workerNew(ix);
-		LM_M(("Setting endpoint[%d] to %p", FIRST_WORKER + ix, endpoint[FIRST_WORKER + ix]));
 	}
 #endif
 	LM_TODO(("Check that controller really works without preallocating workers"));
@@ -1196,7 +1185,6 @@ Endpoint* Network::endpointAddController(int rFd, int wFd, const char* name, con
 		LM_T(LmtInit, ("*** Controller Endpoint at %p", endpoint[CONTROLLER]));
 	}
 
-	LM_M(("Adding controller"));
 	endpointFill(endpoint[CONTROLLER], inheritedFrom, rFd, wFd, name, alias, workers, ip, Endpoint::Controller, port, coreNo);
 
 	if (endpointUpdateReceiver != NULL)
@@ -1242,7 +1230,6 @@ Endpoint* Network::endpointAddTemporal(int rFd, int wFd, const char* name, const
 			continue;
 
 		endpoint[ix] = new Endpoint(Endpoint::Temporal, alias, 0);
-		LM_M(("new Endpoint: created endpoint %p as a Temporal endpoint with alias '%s'", endpoint[ix], alias));
 		if (endpoint[ix] == NULL)
 			LM_XP(1, ("allocating temporal Endpoint"));
 
@@ -1518,17 +1505,13 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 
 		if (ep->type == Endpoint::Worker)
 		{
-			LM_W(("NOT removing Worker ... (Really?)"));
 			ep->name  = std::string("To be a worker");
 				
 			if (endpointUpdateReceiver != NULL)
 				endpointUpdateReceiver->endpointUpdate(ep, Endpoint::WorkerRemoved, "Worker Removed");
-
-			LM_W(("NOT removing the worker !"));
 		}
 		else if (ep->type == Endpoint::Controller)
 		{
-			LM_W(("NOT removing Controller"));
 			if (endpointUpdateReceiver != NULL)
 				endpointUpdateReceiver->endpointUpdate(ep, Endpoint::ControllerRemoved, "Controller Removed");
 		}
@@ -1548,8 +1531,9 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 			if (ep->type != Endpoint::Temporal)
 			{
 				LM_W(("Closing fd %d for endpoint '%s'", ep->rFd, ep->name.c_str()));
-				close(ep->rFd);
-				if (ep->wFd != ep->rFd)
+				if (ep->rFd != -1)
+					close(ep->rFd);
+				if ((ep->wFd != ep->rFd) && (ep->wFd != -1))
 					close(ep->wFd);
 			}
 
@@ -1959,7 +1943,6 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 
 				while (endpoint[CONTROLLER]->rFd == -1)
 				{
-					LM_M( ("Reconnecting to Controller %s:%d",endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port));
 					endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
 					sleep(1); // sleep one second before reintenting connection to controller
 				}
@@ -2215,7 +2198,6 @@ void Network::procVecSet(ProcessVector* wvData, int size, ProcessVecSave saveCal
 		LM_X(1, ("Process Vector Size differs (%d != %d) - can't have that!", procVecSize, size));
 	else
 	{
-		LM_M(("Setting procVec from %p to %p - freeing up the old one ...", procVec, wvData));
 		if (procVec != NULL)
 			free(procVec);
 
@@ -2347,23 +2329,12 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	// Check that Worker alias doesn't already exist
 	//
 	Endpoint* xep;
-	LM_M(("Looking up endpoint with alias '%s', type: %s", hello->alias, endpoint[ME]->typeName((ss::Endpoint::Type) hello->type)));
 	if (hello->type == Endpoint::Worker)
 	{
 	   if ((xep = endpointLookup(hello->alias, ep)) != NULL)
 		{
 			if (xep->state == Endpoint::Connected)
 			{
-				LM_M(("ep:  %p", ep));
-				LM_M(("xep: %p", xep));
-
-
-				bool oldVerbose;
-				oldVerbose = lmVerbose;
-				lmVerbose  = true;
-				endpointListShow("About to send Die to an alias-duplIcated worker");
-				lmVerbose  = oldVerbose;
-
 				if (headerP->type == Message::Msg)
 					helloSend(ep, Message::Ack);
 
@@ -2659,7 +2630,6 @@ void Network::procVecReceived(ProcessVector* processVec)
 
 	// process 0 is the controller
 	workers = processVec->processes - 1; 
-	LM_M(("processVec->processes == %d, workers = %d", processVec->processes, workers));
 
 	if (Workers < workers)
 	{
@@ -2673,8 +2643,6 @@ void Network::procVecReceived(ProcessVector* processVec)
 			endpoint[FIRST_WORKER + ix]       = workerNew(ix);
 			endpoint[FIRST_WORKER + ix]->port = processVec->processV[ix + 1].port;
 					
-			LM_M(("Setting endpoint[%d] to %p", FIRST_WORKER + ix, endpoint[FIRST_WORKER + ix]));
-
 			if (processVec->processV[ix + 1].host[0] != 0)
 				endpoint[FIRST_WORKER + ix]->ipSet(processVec->processV[ix + 1].host);
 			else
@@ -2703,7 +2671,6 @@ void Network::procVecReceived(ProcessVector* processVec)
 
 
 	Workers = workers;
-	LM_M(("Set Workers to %d", Workers));
 
 	LM_T(LmtWorker, ("Initializing %d worker endpoint%s", Workers, (Workers > 1)? "s" : ""));
 	for (ix = 0; ix < Workers; ix++)
@@ -2713,7 +2680,6 @@ void Network::procVecReceived(ProcessVector* processVec)
 		if (endpoint[FIRST_WORKER + ix] == NULL)
 		{
 			endpoint[FIRST_WORKER + ix] = new Endpoint(Endpoint::Worker, processVec->processV[ix + 1].name, processVec->processV[ix + 1].host, processVec->processV[ix + 1].port, -1, -1);
-			LM_M(("Setting endpoint[%d] to %p", FIRST_WORKER + ix, endpoint[FIRST_WORKER + ix]));
 			if (endpoint[FIRST_WORKER + ix] == NULL)
 				LM_X(1, ("error allocating endpoint"));
 		}
@@ -2748,12 +2714,10 @@ void Network::procVecReceived(ProcessVector* processVec)
 
 			// if (strcmp(endpoint[ME]->aliasGet(), epP->aliasGet()) > 0)
 			// {
-			//	LM_M(("NOT Connecting to Worker with alias '%s' as my alias is 'bigger' (%s)", epP->aliasGet(), endpoint[ME]->aliasGet()));
 			//	continue;
 			// }
 
 			// LM_T(LmtWorker
-			LM_M(("Connect to worker %d: %s (host %s, port %d, alias '%s'). My alias is '%s'", ix, epP->name.c_str(), epP->ip, epP->port, epP->aliasGet(), endpoint[ME]->aliasGet()));
 
 			if ((workerFd = iomConnect(epP->ip, epP->port)) == -1)
 			{

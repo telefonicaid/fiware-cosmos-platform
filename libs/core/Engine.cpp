@@ -57,7 +57,7 @@ namespace ss
 	Engine::~Engine()
 	{
         
-        LM_M(("Destroying Samson Engine"));
+		//LM_M(("Destroying Samson Engine"));
         
 		pthread_mutex_destroy(&elements_mutex);			// Mutex to protect elements
 		pthread_cond_destroy(&elements_cond) ;			// Conditional to block the thread while waiting the next event
@@ -119,7 +119,7 @@ namespace ss
 			if( elements.size() == 0)
 			{
 				// No more things to do
-				LM_T( LmtEngine, ("SamsonEngine: No more elements to process in the engine. Quiting ..."));
+				LM_T( LmtEngine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
 				pthread_mutex_unlock(&elements_mutex);
 
 				_running = false;	// Flag to indicate that the engine is not running any more
@@ -181,7 +181,7 @@ namespace ss
 	void Engine::quit()
 	{
         
-        LM_M(("Quiting samson engine...."));
+	   //LM_M(("Quitting samson engine...."));
         
        if( ! _running )
             return; // Not necessary to quit anything.
@@ -189,12 +189,12 @@ namespace ss
 		// Flag to avoid more "adds"
 		_quit = true;	
         
-        LM_M(("Quiting process manager...."));
+        // LM_M(("Quitting process manager...."));
         
         // Quit the process manager means remove all pending processes and wait for the current ones.
         processManager.quit();
 
-        LM_M(("Quiting disk manager...."));
+        // LM_M(("Quitting disk manager...."));
         
         // Remove pending disk operations and wait for the running ones
         diskManager.quit();
@@ -213,12 +213,12 @@ namespace ss
 		if( pthread_self() != t )
 		{
 			
-			LM_M(("Waiting samson engine to finish...."));
+			// LM_M(("Awaiting samson engine to finish...."));
 			
 			while( _running )
 				sleep(1);
 			
-			LM_M(("Samson engine completelly finished"));
+			//LM_M(("Samson engine completely finished"));
 		}
 		
 	}

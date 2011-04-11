@@ -450,11 +450,9 @@ static void localProcessesKill(void)
 	oldRestartInProgress = restartInProgress;
 	restartInProgress    = true;
 
-	LM_M(("---------------------- IN ---------------------------"));
 	//
 	// Connecting to and sending 'Die' to worker
 	//
-	LM_M(("Connecting to worker in localhost"));
 	fd = iomConnect("localhost", WORKER_PORT);
 	if (fd != -1)
 	{
@@ -466,25 +464,22 @@ static void localProcessesKill(void)
 		ep.type  = ss::Endpoint::Worker;
 		ep.ip    = strdup("localhost");
 
-		LM_M(("Connected to worker - sending Hello"));
 		hello(networkP->endpoint[0], &ep, &err);
 		if (err != 0)
 			LM_E(("Error Helloing worker"));
 		else
 		{
-			LM_M(("Sending Die to worker"));
+			LM_V(("Sending Die to worker"));
 			dieSend(networkP->endpoint[0], &ep);
 		}
 	}
 
 	usleep(200000);
-	LM_M(("system(\"killall samsonWorker\")"));
 	s = system("killall samsonWorker > /dev/null 2>&1");
 	if (s != 0)
 		LM_E((" system(\"killall samsonWorker\"): %s", strerror(errno)));
 
 	usleep(200000);
-	LM_M(("system(\"killall -9 samsonWorker \")"));
 	s = system("killall -9 samsonWorker > /dev/null 2>&1");
 	if (s != 0)
 		LM_E((" system(\"killall -9 samsonWorker\"): %s", strerror(errno)));
@@ -494,7 +489,6 @@ static void localProcessesKill(void)
 	//
 	// Connecting to and sending 'Die' to controller
 	//
-	LM_M(("Connecting to controller in localhost"));
 	fd = iomConnect("localhost", CONTROLLER_PORT);
 	if (fd != -1)
 	{
@@ -506,30 +500,26 @@ static void localProcessesKill(void)
 		ep.type  = ss::Endpoint::Controller;
 		ep.ip    = strdup("localhost");
 	
-        LM_M(("Connected to controller - sending Hello"));
 		hello(networkP->endpoint[0], &ep, &err);
 		if (err != 0)
 			LM_E(("Error Helloing controller"));
 		else
 		{
-			LM_M(("Sending Die to controller"));
+			LM_V(("Sending Die to controller"));
 			dieSend(networkP->endpoint[0], &ep);
 		}
 	}
 
 	usleep(200000);
-    LM_M(("system(\"killall samsonController\")"));
 	s = system("killall samsonController > /dev/null 2>&1");
 	if (s != 0)
 		LM_E((" system(\"killall samsonController\"): %s", strerror(errno)));
 
 	usleep(200000);
-    LM_M(("system(\"killall -9 samsonController\")"));
 	s = system("killall -9 samsonController > /dev/null 2>&1");
 	if (s != 0)
 		LM_E((" system(\"killall -9 samsonController\"): %s", strerror(errno)));
 
-	LM_M(("Calling timeoutFunction twice to cleanup dead processes"));
 	spawnerP->timeoutFunction();
 	spawnerP->timeoutFunction();
 	restartInProgress = oldRestartInProgress;
@@ -548,9 +538,7 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 
 	LM_T(LmtProcessVector, ("Received a procVec with %d processes from %s@%s", pVec->processes, ep->name.c_str(), ep->ip));
 
-	LM_M(("First, I kill all local processes ..."));
 	localProcessesKill();
-	LM_M(("Local processes should not be running ..."));
 
 	if (procVec != NULL)
 	   free(procVec);
@@ -568,7 +556,6 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 	
 	platformProcessesSave(procVec);
 
-	LM_M(("Calling processesStart to start the processes according to the Process Vector received"));
 	processesStart(procVec);
 
 
@@ -662,8 +649,7 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 	case ss::Message::Reset:
 		if (headerP->type == ss::Message::Msg)
 		{
-			LM_M(("Got a Reset message from '%s'", ep->name.c_str()));
-			LM_T(LmtReset, ("unlinking '%s'", SAMSON_PLATFORM_PROCESSES));
+			LM_V(("Got a Reset message from '%s'", ep->name.c_str()));
 			unlink(SAMSON_PLATFORM_PROCESSES);
 
 			if (ep->type == ss::Endpoint::Setup) 
@@ -691,9 +677,7 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 	case ss::Message::ProcessVector:
 		if (headerP->type == ss::Message::Msg)
 		{
-			LM_M(("Got a ProcessVector message"));
-			LM_T(LmtProcessVector, ("Received a ProcessVector from '%s'. dataLen: %d", ep->name.c_str(), headerP->dataLen));
-
+			LM_V(("Got a ProcessVector message"));
 			if ((procVec->processes <= 0) || (procVec->processes > 10))
 				LM_X(1, ("Bad number of processes in process vector: %d", procVec->processes));
 

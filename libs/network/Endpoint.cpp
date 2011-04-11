@@ -65,7 +65,6 @@ void Endpoint::init(void)
 */
 Endpoint::Endpoint(void)
 {
-	LM_M(("new Endpoint: %p EMPTY", this));
 	init();
 }
 
@@ -156,23 +155,17 @@ Endpoint::Endpoint(Type type, std::string name, std::string ip, unsigned short p
 */
 Endpoint::~Endpoint()
 {
-	//LM_M(("destroying endpoint %p (name '%s')", this, name.c_str()));
-
 	if (ip != NULL)
 	{
-		LM_M(("freeing ip '%s'", ip));
 		free(ip);
 		ip = NULL;
 	}
 
 	if (alias != NULL)
 	{
-		LM_M(("freeing alias"));
 		free(alias);
 		alias = NULL;
 	}
-
-	//LM_M(("Done destroying endpoint"));
 }
 
 

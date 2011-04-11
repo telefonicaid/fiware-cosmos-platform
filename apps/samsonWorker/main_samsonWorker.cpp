@@ -94,8 +94,6 @@ int main(int argC, const char *argV[])
 
 	lmAux((char*) "father");
 
-	LM_M(("Controller: '%s'", controller));
-
 	atexit(	google::protobuf::ShutdownProtobufLibrary );
 	atexit(exitFunction);
 
@@ -107,15 +105,12 @@ int main(int argC, const char *argV[])
 
 	ss::SamsonSetup::load(workingDir);  // Load setup and create default directories
     ss::SharedMemoryManager::init();
-	LM_M(("Calling ss::Engine::init"));
 	ss::Engine::init();
-	LM_M(("Calling ss::ModulesManager::init"));
 	ss::ModulesManager::init();
 	
 
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
-	LM_M(("Calling Network::Network"));
 	ss::Network network(ss::Endpoint::Worker, alias, WORKER_PORT, endpoints, 1);
 	network.hostMgr->insert(controller, NULL);
 	network.init(controller);

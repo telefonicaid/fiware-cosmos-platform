@@ -67,19 +67,15 @@ static int killProcess(const char* name, unsigned short port)
 
 	ep.name = name;
 	ep.wFd  = iomConnect("localhost", port);
-	LM_M(("%s: ep.wFd == %d", name, ep.wFd));
+
 	me.name = "samsonKiller";
 	
 	if ((ep.wFd == -1) || ((s = iomMsgSend(&ep, &me, ss::Message::Die, ss::Message::Msg)) != 0))
-	{
-		LM_M(("%s: s = %d", name, s));
 		sysKill(name);
-	}
 	else
 	{
 		int fd = iomConnect("localhost", port);
 
-		LM_M(("%s: second connect: fd == %d", name, fd));
 		if (fd != -1)
 			sysKill(name);
 		else

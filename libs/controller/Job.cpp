@@ -467,7 +467,7 @@ namespace ss {
 				output << "Writing       ";
 				break;
 			case running:
-				output << "Runnig        " << au::Format::time_string( difftime( time(NULL), time_init ) );
+				output << "Running       " << au::Format::time_string( difftime( time(NULL), time_init ) );
 				break;
 			case finish:
 				output << "Finished      ";

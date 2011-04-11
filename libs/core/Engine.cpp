@@ -161,14 +161,14 @@ namespace ss
 			else
 			{
                 
-                size_t trigger_time = elements.front()->getThriggerTime();
+                time_t trigger_time = elements.front()->getThriggerTime();
                 
                 if( trigger_time > now )
                     _sleeping_seconds =  trigger_time - now;
                 else
                     LM_X(1,("Time triggered is not greater than now..."));
 				
-                LM_M(("Sleeping time in seconds %d" , _sleeping_seconds ));
+                // LM_M(("Sleeping time in seconds %d" , _sleeping_seconds ));
                 
 				struct timeval tv;
 				struct timespec ts;

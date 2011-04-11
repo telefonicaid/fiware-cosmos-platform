@@ -562,6 +562,59 @@ static char* dateGet(int index, char* line, int lineSize)
 }
 
 
+
+/* ****************************************************************************
+*
+* timeGet - 
+*/
+static char* timeGet(int index, char* line, int lineSize)
+{
+	time_t     secondsNow = time(NULL);
+
+	if (strcmp(fds[index].timeFormat, "UNIX") == 0)
+	{
+		char secs[32];
+
+		sprintf(secs, "%ds", (int) secondsNow);
+		strncpy(line, secs, lineSize);
+	}
+	else
+	{
+		int tm = (int) secondsNow - (int) secondsAtStart;
+		int days;
+		int hours;
+		int mins;
+		int secs;
+		
+		if (strcmp(fds[index].timeFormat, "DIFF") == 0)
+			tm = (int) secondsNow - (int) secondsAtStart;
+		else
+			tm = (int) secondsNow;
+
+		secs  = tm % 60;
+		tm    = tm / 60;
+		mins  = tm % 60;
+		tm    = tm / 60;
+		hours = tm % 24;
+		tm    = tm / 24;
+		days  = tm;
+
+		if (strcmp(fds[index].timeFormat, "DIFF") == 0)
+		{
+		   if (days != 0)
+			  snprintf(line, lineSize, "%d days %02d:%02d:%02d",
+					   days, hours, mins, secs);
+		   else
+			  snprintf(line, lineSize, "%02d:%02d:%02d", hours, mins, secs);
+		}
+		else
+			snprintf(line, lineSize, "%02d:%02d:%02d", hours, mins, secs);
+	}
+
+	return line;
+}
+
+
 /* ****************************************************************************
 *
 * timeStampGet - 
@@ -653,6 +706,8 @@ static char* lmLineFix
 			INT_ADD((int) getpid(), 3);
 		else if (strncmp(&format[fi], "DATE", 4) == 0)
 			STRING_ADD(dateGet(index, xin, sizeof(xin)), 4);
+		else if (strncmp(&format[fi], "TIME", 4) == 0)
+			STRING_ADD(timeGet(index, xin, sizeof(xin)), 4);
 //		else if (strncmp(&format[fi], "TID", 3) == 0)
 //			INT_ADD((int) gettid(), 3);
 		else if (strncmp(&format[fi], "EXEC", 4) == 0)

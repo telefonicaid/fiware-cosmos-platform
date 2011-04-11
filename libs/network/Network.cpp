@@ -2348,7 +2348,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 #endif
 
 
-#if 1
+#if 0
 	Host*     hostP = hostMgr->lookup(hello->ip);
 	Endpoint* epp;
 
@@ -2429,14 +2429,26 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	if (endpoint[newSlot] != NULL)
 		LM_TODO(("Endpoint Slot %d was occupied - please make sure this doesn't happen!", newSlot));
 	
-	if ((oldSlot != newSlot) && (hello->type == Endpoint::Supervisor || hello->type == Endpoint::Worker))
+	if ((oldSlot != newSlot) && ((hello->type == Endpoint::Supervisor) || (hello->type == Endpoint::Worker)))
 	{
+		if (endpoint[newSlot] && (endpoint[newSlot]->state == Endpoint::Connected))
+			LM_W(("Overwriting connected endpoint %s@%s", endpoint[newSlot]->name.c_str(), endpoint[newSlot]->ip));
+
 		LM_T(LmtEndpointSlots, ("So, make slot %d NULL and use slot %d to reference this endpoint", oldSlot, newSlot));
 		endpoint[oldSlot] = NULL;
 		endpoint[newSlot] = ep;
 	}
 	else
 		LM_T(LmtEndpointSlots, ("NOT changing %s (%s@%s) from slot %d to slot %d", hello->alias, hello->name, hello->ip, oldSlot, newSlot));
+
+	if ((ep->type == Endpoint::Worker) || (ep->type == Endpoint::Delilah))
+	{
+		if ((endpoint[ME]->type == Endpoint::Delilah) || (endpoint[ME]->type == Endpoint::Worker))
+		{
+			LM_M(("NOT Setting useSenderThread for worker '%s@%s'", ep->name.c_str(), ep->ip));
+			// ep->useSenderThread = true;
+		}
+	}
 
 	helloInfoCopy(ep, hello);
 	ep->helloReceived = true;
@@ -2710,6 +2722,7 @@ void Network::procVecReceived(ProcessVector* processVec)
 		}
 
 		{
+#if 0
 			int workerFd;
 
 			// if (strcmp(endpoint[ME]->aliasGet(), epP->aliasGet()) > 0)
@@ -2733,6 +2746,7 @@ void Network::procVecReceived(ProcessVector* processVec)
 				epP->wFd   = workerFd;
 				epP->state = Endpoint::Connected;
 			}
+#endif
 		}
 	}
 }
@@ -3039,6 +3053,49 @@ void Network::runUntilReady(void)
 
 
 
+/* ****************************************************************************
+*
+* workersConnect - 
+*/
+void Network::workersConnect(void)
+{
+	int workerFd;
+	
+	for (int ix = 0; ix < Workers; ix++)
+	{
+		Endpoint* epP;
+
+		epP = endpoint[FIRST_WORKER + ix];
+
+		if (epP == NULL)
+			continue;
+
+		if (epP->state == Endpoint::Connected)
+			continue;
+
+		if (endpoint[ME]->type == Endpoint::Worker)
+		{
+			if (strcmp(endpoint[ME]->aliasGet(), epP->aliasGet()) >= 0)
+			{
+				// LM_M(("NOT trying to connect to '%s@%s'", epP->aliasGet(), epP->ip));
+				continue;
+			}
+		}
+
+		LM_M(("Trying to connect to '%s@%s'", epP->aliasGet(), epP->ip));
+		if ((workerFd = iomConnect(epP->ip, epP->port)) == -1)
+			LM_M(("worker %d: %s (host %s, port %d) not there - new retry later ...", ix, epP->name.c_str(), epP->ip, epP->port));
+		else
+		{
+			epP->rFd   = workerFd;
+			epP->wFd   = workerFd;
+			epP->state = Endpoint::Connected;
+		}
+	}
+}
+
+
+
 #define PeriodForSendingWorkerStatusToController  10
 /* ****************************************************************************
 *
@@ -3060,6 +3117,9 @@ void Network::run(void)
 	while (1)
 	{
 		int ix;
+
+		if ((endpoint[ME]->type == Endpoint::Worker) || (endpoint[ME]->type == Endpoint::Delilah))
+			workersConnect();
 
 		do
 		{
@@ -3115,6 +3175,7 @@ void Network::run(void)
 							endpoint[ix]->state = Endpoint::Reconnecting;
 						}
 					}
+#if 0
 					else if (endpoint[ix]->state == Endpoint::Disconnected)
 					{
 						LM_T(LmtEndpoint, ("Connect to %s:%d ?", endpoint[ix]->ip, endpoint[ix]->port));
@@ -3135,6 +3196,7 @@ void Network::run(void)
 							endpoint[ix]->state = Endpoint::Connected;
 						}
 					}
+#endif
 				}
 			}
 
@@ -3251,7 +3313,6 @@ void Network::run(void)
 							FD_CLR(endpoint[ix]->rFd, &rFds);
 							msgPreTreat(endpoint[ix], ix);
 						}
-
 					}
 				}
 			}

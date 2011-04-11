@@ -65,6 +65,8 @@ public:
                                              // The worker expects to be connected to all the workers and the controller
                                              // Delilah expects to be connected to all the workers and the controller
 
+	void workersConnect(void);               // Poll connections to all workers
+
 	// Get identifiers of known elements
 	virtual int controllerGetIdentifier();	         // Get the identifier of the controller
 	virtual int workerGetIdentifier(int nthWorker);  // Get the identifier of the i-th worker

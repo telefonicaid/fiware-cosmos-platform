@@ -81,7 +81,7 @@ namespace ss
 		
 		
 		// Create the other process to run the other side
-        pid_t pid;
+        pid_t pid = 0;
         if( isolated_process_as_tread )
         {
             ProcessItemIsolated *tmp = (this);

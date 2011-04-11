@@ -17,6 +17,7 @@ namespace ss
     
     typedef enum 
     {
+        notification_nothing,                            // Notification used for nerver-ending loop of the engine
         
         notification_memory_request,                     // Request of memory        
         notification_memory_request_response,            // Response of a memory request
@@ -30,6 +31,11 @@ namespace ss
         notification_sub_task_finished,                  // Notification that a particular sub task has finished
     
         notification_task_finished,                      // Notification that a partitular task is finished ( only the Worker Task Manager should be interestes in this )
+
+        notification_worker_update_files,                // Periodic notification to update files 
+        
+        notification_monitorization,                     // Take a sample for monitorization 
+        notification_check_automatic_operations,         // Check for automatic operations   
         
     } NotificationChannel;
     
@@ -59,7 +65,8 @@ namespace ss
         
         // Get a string for debug
         std::string getDescription();
-      
+        std::string getShortDescription();
+        
         // Destroy pending objects ( not processed by any listener )
         void destroyObjects();
         
@@ -132,7 +139,6 @@ namespace ss
             
             LM_T(LmtEngine, ("Finish Delibering notification [%s] to %d listeners " , notification->getDescription().c_str() , (int) listeners.size() ));
             
-            delete notification;
         }
         
     };

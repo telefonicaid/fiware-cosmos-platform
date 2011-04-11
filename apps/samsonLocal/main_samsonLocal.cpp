@@ -31,52 +31,6 @@
 
 #include "SharedMemoryManager.h"    // ss::SharedMemoryManager
 
-/*
- To be removed
- */
-
-/**
- Examples to test the platform
- */
-
-namespace ss {
-
-	class EngineElementText : public EngineElement
-	{
-		std::string text;
-	public:
-		
-		EngineElementText( std::string _text ) : EngineElement(  )
-		{
-			text = _text;
-		}
-		
-		void run()
-		{
-			//std::cout << "Example: " << text << "\n";
-		}
-	};
-	
-	
-	class EngineElementRepeatedText : public EngineElement
-	{
-		std::string text;
-	public:
-		
-		EngineElementRepeatedText( std::string _text , int seconds ) : EngineElement( seconds )
-		{
-			text = _text;
-		}
-		
-		void run()
-		{
-			//std::cout << "Example: " << text << "\n";
-			//Engine::shared()->add( new EngineElementText( std::string("Callback: ") + text ) );
-		}
-	};
-
-}
-
 
 /* ****************************************************************************
  *

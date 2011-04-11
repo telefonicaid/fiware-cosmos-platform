@@ -99,16 +99,18 @@ namespace ss
 	{
 		// Keep the thread for not calling quit from the same thread
 		t = pthread_self();	
-		
-		// Add the Nothing Engine Element to loop continuously
-		add( new ss::NothingEngineElement() );
+
+		// Repeated notification for not ending the loop of the engine
+        notify( new EngineNotification( notification_nothing ) , 5 );
 		
 		LM_T( LmtEngine , ("Engine run"));
 		_running =  true;
 		
+        counter = 0;    // Init the counter to elements managed by this run-time
 		while( true )
 		{
-			
+			counter++;  // Keep a total counter of loops
+            
 			pthread_mutex_lock(&elements_mutex);
 
 			time_t now = time(NULL);
@@ -261,6 +263,13 @@ namespace ss
         // Add an element to notify latter
         add( new EngineNotificationElement( notification ) );
     }
+    
+    void Engine::notify( EngineNotification*  notification , int seconds )
+    {
+        // Add an element to notify latter
+        add( new EngineNotificationElement( notification , seconds ) );
+    }
+    
 	
 #pragma mark ----
 	
@@ -271,6 +280,15 @@ namespace ss
         diskManager.fill( ws );
         processManager.fill( ws );
 		
+        std::ostringstream engine_state;
+        
+        engine_state << "Loops: " << counter << " Current: " << elements.size() << " ";
+        for ( au::list<EngineElement>::iterator el = elements.begin() ; el != elements.end() ; el++)
+            engine_state << "[" << (*el)->getShortDescription() <<"]";
+        
+        ws->set_engine_status( engine_state.str() );
+        
+        
 	}	
 	
 }

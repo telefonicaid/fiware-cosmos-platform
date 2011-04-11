@@ -57,12 +57,22 @@ namespace ss {
 		// Description for the PacketReceiver
 		packetReceiverDescription = "samsonController";
 		
-		
-		// Schedule the check of the automatic operations
-		Engine::shared()->add( new SamsonControllerAutomaticOperations(this) );
-		
-		// Schedule the process to take samples of the contorller ( monitor )
-		Engine::shared()->add( new SamsonControllerMonitor(this) );
+        
+        Engine::shared()->notificationSystem.add(notification_monitorization, this);
+        Engine::shared()->notificationSystem.add(notification_check_automatic_operations, this);
+
+
+        {
+            EngineNotification *notification = new EngineNotification( notification_monitorization );
+            notification->set("target", "SamsonController" );
+            Engine::shared()->notify( notification , 5  );
+        }
+
+        {
+            EngineNotification * notification = new EngineNotification( notification_check_automatic_operations );
+            notification->set("target", "SamsonController" );
+            Engine::shared()->notify( notification , 5  );
+        }
 		
 	}	
 	
@@ -75,10 +85,37 @@ namespace ss {
 		free(worker_status);
 		free(worker_status_time);
 		
-		
 	}
 
-		
+    void SamsonController::notify( EngineNotification* notification )
+    {
+        switch (notification->channel) {
+            case notification_monitorization:
+                monitor.takeSamples();
+                break;
+                
+            case notification_check_automatic_operations:
+                checkAutomaticOperations();
+                break;
+                
+            default:
+                LM_X(1,("Unexpected notification channel at SamsonController"));
+                break;
+        }
+        
+    }
+    
+    bool SamsonController::acceptNotification( EngineNotification* notification )
+    {
+        if( notification->get("target","") != "SamsonController" )
+            return false;
+        
+        return true;
+        
+        
+    }
+
+    
 
 	/* ****************************************************************************
 	*

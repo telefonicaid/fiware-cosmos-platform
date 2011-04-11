@@ -16,7 +16,11 @@ namespace ss
         EngineNotification * notification;
         
     public:
+        
+        ~EngineNotificationElement();
+        
         EngineNotificationElement(  EngineNotification * _notification );
+        EngineNotificationElement(  EngineNotification * _notification , int seconds );
         void run();
     };
     

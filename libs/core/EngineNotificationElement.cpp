@@ -9,7 +9,20 @@ namespace ss
     {
         notification = _notification;
         description = au::Format::string("Notification %s", notification->getDescription().c_str() );
-
+        shortDescription = "Not:" + notification->getShortDescription();
+    }
+ 
+    EngineNotificationElement::~EngineNotificationElement()
+    {
+        delete notification;
+    }
+    
+    
+    EngineNotificationElement::EngineNotificationElement(  EngineNotification * _notification , int seconds ) : EngineElement( seconds )
+    {
+        notification = _notification;
+        description = au::Format::string("Notification %s", notification->getDescription().c_str() );
+        shortDescription = "Not:" + notification->getShortDescription();
     }
     
     void EngineNotificationElement::run()

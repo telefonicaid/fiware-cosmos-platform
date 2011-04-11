@@ -125,6 +125,7 @@ message WorkerStatus
 	optional string network_status=20;				// Information about the network
 	optional string memory_status=6;				// Information about memory status
 	optional string shared_memory_status=22;			// Information about shared memory
+	optional string engine_status=24;				// Informaiion about the engine
 
 	// Numerical values for quick system evaluation
 

@@ -26,7 +26,7 @@
 
 namespace ss {
 	
-	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface
+	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface, public EngineNotificationListener
 	{
 		
 		// Initial time stamp 
@@ -51,21 +51,25 @@ namespace ss {
 		// Send information about the state of this worker to the controller
 		void sendWorkerStatus();
 		
-		// Sent an "ls" to get the list of files ( to remove the rest )
-		void sendFilesMessage();
-		
 		// Nothing function to avoid warning
 		void touch(){};	
 		
 		// Process list of files ( to remove unnecessary files )
 		void processListOfFiles( const network::QueueList& ql);
 		
-        
+        // Notification from the engine about finished tasks
+        void notify( EngineNotification* notification );
+        bool acceptNotification( EngineNotification* notification );
         
 	private:
 		
 		virtual void notificationSent(size_t id, bool success) {}
+
 		
+		// Sent an "ls" to get the list of files ( to remove the rest )
+		void sendFilesMessage();
+        
+        
 	};
 	
 	
@@ -81,6 +85,9 @@ namespace ss {
 		{
 			samsonWorker = _samsonWorker;
 			description = "SamsonWorkerStatusUpdater";
+            
+            shortDescription = "StatusUpdater";
+
 		}
 		
 		void run()
@@ -92,7 +99,9 @@ namespace ss {
 	};
 
 	// Class to send an "ls" every 3 seconds to control files to be removed at the response
-	
+    // Not implemented with notifications
+    
+	/*
 	class SamsonWorkerFileUpdater : public EngineElement
 	{
 		SamsonWorker * samsonWorker;
@@ -103,6 +112,8 @@ namespace ss {
 		{
 			samsonWorker = _samsonWorker;
 			description = "SamsonWorkerFileUpdater";
+            shortDescription = "FileUpdater";
+
 		}
 		
 		void run()
@@ -112,6 +123,7 @@ namespace ss {
 		}
 		
 	};
+     */
 	
 	
 }

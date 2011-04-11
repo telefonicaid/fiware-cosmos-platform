@@ -57,6 +57,7 @@ namespace ss
 		completion_options.addOption("set");
 		completion_options.addOption("unset");
         completion_options.addOption("info");
+        completion_options.addOption("info_full");
         completion_options.addOption("info_net");
         completion_options.addOption("info_cores");
         completion_options.addOption("info_task_manager");
@@ -64,6 +65,7 @@ namespace ss
         completion_options.addOption("info_process_manager");
         completion_options.addOption("info_memory_manager");
         completion_options.addOption("info_load_data_manager");
+        completion_options.addOption("info_engine");
 
         
 		// add available operations...
@@ -931,44 +933,26 @@ namespace ss
         txt << "================================================================================================" << std::endl;
         txt << "SAMSON STATUS" << std::endl;
         txt << "================================================================================================" << std::endl;
-
         
-        if( command == "info" )
+        
+        txt << "------------------------------------------------------------------------------------------------" << std::endl;
+        txt << "Controller      ( uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )" << std::endl;
+        txt << "------------------------------------------------------------------------------------------------" << std::endl;
+        
+        if( ( command == "info_full" ) || ( command == "info_task_manager" ))
         {
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
-            txt << "Controller      ( uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )" << std::endl;
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
-        }
-        
-        
-        if( command == "info_full" )
-        {
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
-            txt << "Controller      ( uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )" << std::endl;
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
             txt << "\tJobManager: " << samsonStatus->controller_status().job_manager_status() << std::endl;
-            txt << "\tTaskManager: " << samsonStatus->controller_status().task_manager_status() << std::endl;
-            txt << std::endl;
-        }
-
-        if( command == "info_task_manager" )
-        {
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
-            txt << "Controller      ( uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )" << std::endl;
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
             txt << "\tTaskManager: " << samsonStatus->controller_status().task_manager_status() << std::endl;
             txt << std::endl;
         }
         
         if ( command == "info_net" ) 
         {
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
-            txt << "Controller      ( uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )" << std::endl;
-            txt << std::endl;
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
             txt << samsonStatus->controller_status().network_status() << "\n";
             txt << std::endl;
         }
+        
+        txt << std::endl;
         
         
         for (int i = 0 ; i < samsonStatus->worker_status_size() ; i++)
@@ -1011,6 +995,9 @@ namespace ss
             
             if( ( command == "info_full" ) || (command == "info_disk_manager" ) )
                 txt << "\tDisk Manager:      " << worker_status.disk_manager_status() << "\n";
+            if( ( command == "info_full" ) || (command == "info_engine" ) )
+                txt << "\tEngine:      " << worker_status.engine_status() << "\n";
+            
             if ( command == "info_net" ) 
                 txt << worker_status.network_status() << "\n";
             

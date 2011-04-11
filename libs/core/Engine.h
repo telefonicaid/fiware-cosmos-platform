@@ -48,6 +48,8 @@ namespace ss
 		pthread_cond_t elements_cond;				// Conditional to block the thread while waiting the next event
 		pthread_t t;								// Thread to run the engine in background ( if necessary )
 		
+        size_t counter;                             // Counter
+        
 	public:
 		
         EngineNotificationSystem notificationSystem;    // Notification system
@@ -87,6 +89,7 @@ namespace ss
          */
         
         void notify( EngineNotification*  notification );
+        void notify( EngineNotification*  notification , int seconds ); // Repeated notification
         
 		/*
 		 Methods to get information about the state

@@ -27,6 +27,7 @@
 #include "Monitor.h"                    // ss::Monitor
 #include "ControllerLoadManager.h"		// ss::ControllerLoadManager
 #include "EngineElement.h"				// ss::EngineElement
+#include "EngineNotification.h"         // ss::EngineNotificationListener
 
 namespace ss {
 	
@@ -34,7 +35,7 @@ namespace ss {
 	 Main class for Samson Controller
 	 */
 	
-	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface 
+	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface , public EngineNotificationListener
 	{
 		// Initial time stamp 
 		struct timeval init_time;
@@ -83,63 +84,26 @@ namespace ss {
 			return monitor.getJSONString( in );
 		}
 	
-		// Nothing function to avoid warning
-		void touch(){};	
-
 		void fill( network::ControllerStatus *status );
 		
 		void pushSystemMonitor( MonitorBlock  *);
-		
-		// Function to check if it is necessary to run any automatic-operation
+        
+        // Notifications
+        void notify( EngineNotification* notification );
+        bool acceptNotification( EngineNotification* notification );
+
+
+        
+    private:
+        
+        // Function to check if it is necessary to run any automatic-operation
 		void checkAutomaticOperations();
-		
-	};
-	
-	
-	// Class to send an "ls" every 3 seconds to control files to be removed at the response
-	
-	class SamsonControllerAutomaticOperations : public EngineElement
-	{
-		SamsonController * samsonController;
-		
-	public:
-		
-		SamsonControllerAutomaticOperations( SamsonController * _samsonController ) : EngineElement( 3 )
-		{
-			samsonController = _samsonController;
-			description = "SamsonControllerAutomaticOperations";
-		}
-		
-		void run()
-		{
-			// Send the status updater message
-			samsonController->checkAutomaticOperations();
-		}
+
+        
 		
 	};
 	
 
-	// Class to send an "ls" every 3 seconds to control files to be removed at the response
-	
-	class SamsonControllerMonitor : public EngineElement
-	{
-		SamsonController * samsonController;
-		
-	public:
-		
-		SamsonControllerMonitor( SamsonController * _samsonController ) : EngineElement( 5 )
-		{
-			samsonController = _samsonController;
-			description = "SamsonControllerMonitor";
-		}
-		
-		void run()
-		{
-			// Take samples of the controller
-			samsonController->monitor.takeSamples();
-		}
-		
-	};
 	
 	
 	

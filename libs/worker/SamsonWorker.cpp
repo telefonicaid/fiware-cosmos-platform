@@ -44,7 +44,17 @@ namespace ss {
 		Engine::shared()->add( new SamsonWorkerStatusUpdater(this) );
 		
 		// Add the file updater to the Engine
-		Engine::shared()->add( new SamsonWorkerFileUpdater(this) );
+		//Engine::shared()->add( new SamsonWorkerFileUpdater(this) );
+        
+        // Add SamsonWorker as listener of the update files
+        Engine::shared()->notificationSystem.add(notification_worker_update_files, this);
+        
+        // Notification of the files
+        EngineNotification *notification = new EngineNotification(notification_worker_update_files);
+        notification->set("target", "SamsonWorker");
+        notification->setInt("worker", network->getWorkerId() );
+        Engine::shared()->notify( notification, 5 );
+        
 	}
 	
 	
@@ -54,7 +64,7 @@ namespace ss {
 	 */
 	
 	void SamsonWorker::sendFilesMessage()
-	{
+	{        
 		Packet*           p = new Packet();
 		network::Command* c = p->message->mutable_command();
 		c->set_command( "ls" );
@@ -185,6 +195,35 @@ namespace ss {
 		
 	}
 	
+    // Receive notifications
+    void SamsonWorker::notify( EngineNotification* notification )
+    {
+        switch (notification->channel) {
+
+            case notification_worker_update_files:
+                sendFilesMessage();
+                break;
+                
+            default:
+                LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
+                break;
+        }
+        
+    }
+    
+    bool SamsonWorker::acceptNotification( EngineNotification* notification )
+    {
+        // Only accept notifications for my worker. This is only necessary when testing samsonLocal with multiple workers
+        
+        if( notification->get("target","") != "SamsonWorker" )
+            return  false;
+        
+        if( notification->getInt("worker", -1) != network->getWorkerId() )
+            return false;
+        
+        return true;
+        
+    }    
 	
 	/**
 	 Process the list of files removing unnecessary files

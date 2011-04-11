@@ -30,6 +30,8 @@ class PacketReceivedNotification : public EngineElement
       std::ostringstream txt;
       txt << "PacketReceivedNotification ( Receiver: " << receiver->packetReceiverDescription << " Packet: " << messageCode( packet->msgCode ) << ")";
       description = txt.str();
+        
+      shortDescription = "Packet";
       
     }
   

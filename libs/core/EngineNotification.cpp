@@ -25,6 +25,27 @@ namespace ss {
         return au::Format::string("[ Notification %s %s]" , notificationChannelName() , getEnvironmentDescription().c_str() );
     }    
     
+    std::string EngineNotification::getShortDescription()
+    {
+        switch (channel) {
+            case notification_nothing:                          return "nothing"; break;
+            case notification_memory_request:                   return "mem_req"; break;
+            case notification_memory_request_response:          return "mem_req_resp"; break;
+            case notification_disk_operation_request:           return "disk_req"; break;
+            case notification_disk_operation_request_response:  return "disk_req_resp"; break;
+            case notification_process_request:                  return "process_req"; break;
+            case notification_process_request_response:         return "process_req_resp"; break;
+            case notification_sub_task_finished:                return "sub_task_finished"; break;
+            case notification_task_finished:                    return "task_finished"; break;
+            case notification_worker_update_files:              return "update_files"; break;
+            case notification_check_automatic_operations:       return "check_ao"; break;
+            case notification_monitorization:                   return "monirotization"; break;
+        }   
+        return "Unknown";
+        
+    }
+    
+    
     void EngineNotification::destroyObjects()
     {
         // Removing pending objects in the object vector
@@ -36,14 +57,18 @@ namespace ss {
     const char * EngineNotification::notificationChannelName()
     {
         switch (channel) {
-            case notification_memory_request: return "notification_memory_request"; break;
-            case notification_memory_request_response: return "notification_memory_request_response"; break;
-            case notification_disk_operation_request: return "notification_disk_operation_request"; break;
-            case notification_disk_operation_request_response: return "notification_disk_operation_request_response"; break;
-            case notification_process_request: return "notification_process_request"; break;
-            case notification_process_request_response: return "notification_process_request_response"; break;
-            case notification_sub_task_finished: return "notification_sub_task_finished"; break;
-            case notification_task_finished: return "notificaiton_task_finished"; break;
+            case notification_nothing:                          return "nothing"; break;
+            case notification_memory_request:                   return "notification_memory_request"; break;
+            case notification_memory_request_response:          return "notification_memory_request_response"; break;
+            case notification_disk_operation_request:           return "notification_disk_operation_request"; break;
+            case notification_disk_operation_request_response:  return "notification_disk_operation_request_response"; break;
+            case notification_process_request:                  return "notification_process_request"; break;
+            case notification_process_request_response:         return "notification_process_request_response"; break;
+            case notification_sub_task_finished:                return "notification_sub_task_finished"; break;
+            case notification_task_finished:                    return "notificaiton_task_finished"; break;
+            case notification_worker_update_files:              return "notification_worker_update_files"; break;
+            case notification_check_automatic_operations:       return "notification_check_automatic_operations"; break;
+            case notification_monitorization:                   return "notification_monitorization"; break;
         }   
         return "Unknown";
     }

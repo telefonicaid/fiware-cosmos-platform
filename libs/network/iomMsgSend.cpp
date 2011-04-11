@@ -27,27 +27,34 @@
 *
 * iomWriteOk - 
 */
-bool iomWriteOk(int fd)
+bool iomWriteOk(int fd, const char* name, const char* ip)
 {
 	int             fds;
 	fd_set          wFds;
 	struct timeval  timeVal;
-	
-	timeVal.tv_sec  = 0;
-	timeVal.tv_usec = 500000;
+	int             tryh;
+	int             tries = 30;
 
-	FD_ZERO(&wFds);
-	FD_SET(fd, &wFds);
-	
-	do
+	for (tryh = 0; tryh < tries; tryh++)
 	{
-		fds = select(fd + 1, NULL, &wFds, NULL, &timeVal);
-	} while ((fds == -1) && (errno == EINTR));
+		timeVal.tv_sec  = 0;
+		timeVal.tv_usec = 1000000;
 
-	if ((fds == 1) && (FD_ISSET(fd, &wFds)))
-		return true;
+		FD_ZERO(&wFds);
+		FD_SET(fd, &wFds);
+	
+		do
+		{
+			fds = select(fd + 1, NULL, &wFds, NULL, &timeVal);
+		} while ((fds == -1) && (errno == EINTR));
 
-	LM_W(("cannot write to fd %d", fd));
+		if ((fds == 1) && (FD_ISSET(fd, &wFds)))
+			return true;
+
+		LM_W(("Problems to send to %s@%s (%d/%d secs)", name, ip, tryh, tries));
+	}
+
+	LM_X(1, ("cannot write to fd %d", fd));
 	return false;
 }
 
@@ -65,7 +72,7 @@ static int partWrite(ss::Endpoint* to, void* dataP, int dataLen, const char* wha
 
 	while (tot < dataLen)
 	{
-		if (iomWriteOk(to->wFd) == false)
+		if (iomWriteOk(to->wFd, to->name.c_str(), to->ip) == false)
 		{
 			LM_E(("Cannot write to '%s' (fd %d) (returning -2 as if it was a 'connection closed' ...)", to->name.c_str(), to->wFd));
 			return -2;

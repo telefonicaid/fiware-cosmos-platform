@@ -83,10 +83,8 @@
 /* ****************************************************************************
 *
 * THREAD_BUF_SIZE_THRESHOLD
-* SEND_SIZE_TO_USE_THREAD
 */
 #define THREAD_BUF_SIZE_THRESHOLD    (MEGA(10))
-#define SEND_SIZE_TO_USE_THREAD      (MEGA(10))
 
 
 
@@ -835,6 +833,7 @@ static void* senderThread(void* vP)
 			{
 				if (job.packetP != NULL)
 				{
+					LM_M(("Destroying packet %p", job.packetP));
 					delete job.packetP;
 					job.packetP = NULL;
 				}
@@ -843,7 +842,8 @@ static void* senderThread(void* vP)
 		else
 		{
 			s = iomMsgSend(ep, NULL, job.msgCode, job.msgType, job.dataP, job.dataLen, job.packetP);
-		
+			job.packetP = NULL; // As iomMsgSend deletes it
+
 			LM_T(LmtSenderThread, ("iomMsgSend returned %d", s));
 			if (s != 0)
 			{
@@ -857,12 +857,6 @@ static void* senderThread(void* vP)
 				LM_T(LmtSenderThread, ("iomMsgSend OK"));
 				if (ep->packetSender)
 					ep->packetSender->notificationSent(0, true);
-			}
-
-			if (job.packetP != NULL)
-			{
-				delete job.packetP;
-				job.packetP = NULL;
 			}
 
 			LM_T(LmtSenderThread, ("iomMsgSend ok"));
@@ -1024,9 +1018,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 		return 0;
 	}
 
-	LM_T(LmtSenderThread, ("Sending message directly (%d bytes)", packetP->message->ByteSize()));
 	nb = iomMsgSend(ep, endpoint[ME], code, Message::Msg, NULL, 0, packetP);
-
 
 	return nb;
 }
@@ -1482,7 +1474,8 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 {
 	int ix;
 
-	LM_T(LmtEndpoint, ("Removing endpoint %p", ep));
+	LM_W(("Removing endpoint %p (%s@%s): %s", ep, ep->name.c_str(), ep->ip, why));
+
 	if (ep == NULL)
 		LM_RVE(("CANNOT remove NULL endpoint"));
 
@@ -2446,7 +2439,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 		if ((endpoint[ME]->type == Endpoint::Delilah) || (endpoint[ME]->type == Endpoint::Worker))
 		{
 			LM_M(("NOT Setting useSenderThread for worker '%s@%s'", ep->name.c_str(), ep->ip));
-			// ep->useSenderThread = true;
+			ep->useSenderThread = true;
 		}
 	}
 
@@ -3026,6 +3019,7 @@ void Network::msgTreat(void* vP)
 			// Remove everything if there is no receiver
 			if (packet->buffer)
 				Engine::shared()->memoryManager.destroyBuffer(packet->buffer);
+			LM_M(("Destroying packet %p", packet));
 			delete packet;	
 		}
 		break;
@@ -3153,13 +3147,14 @@ void Network::run(void)
 			{
 				for (ix = FIRST_WORKER; ix < FIRST_WORKER + Workers; ix++)
 				{
-					int workerFd;
-
 					if (endpoint[ix] == NULL)
 						continue;
 
 					if (endpoint[ix]->type != Endpoint::Worker)
 						continue;
+
+#if 0
+					int workerFd;
 
 					if (endpoint[ix]->state == Endpoint::Closed)
 					{
@@ -3175,7 +3170,6 @@ void Network::run(void)
 							endpoint[ix]->state = Endpoint::Reconnecting;
 						}
 					}
-#if 0
 					else if (endpoint[ix]->state == Endpoint::Disconnected)
 					{
 						LM_T(LmtEndpoint, ("Connect to %s:%d ?", endpoint[ix]->ip, endpoint[ix]->port));
@@ -3445,7 +3439,8 @@ std::string Network::getState(std::string selector)
 		if ((endpoint[ix]->state == Endpoint::Connected || endpoint[ix]->state == Endpoint::Listening) && (endpoint[ix]->rFd >= 0))
 		{
 			++eps;
-			snprintf(partString, sizeof(partString), "+ %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%s, out: %03d/%s)\n",
+			snprintf(partString, sizeof(partString), "+%c%02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%s, out: %03d/%s)\n",
+					 (endpoint[ix]->useSenderThread == true)? 's' : '-',
 					 ix,
 					 endpoint[ix]->typeName(),
 					 endpoint[ix]->name.c_str(),
@@ -3461,7 +3456,8 @@ std::string Network::getState(std::string selector)
 		}
 		else
 		{
-			snprintf(partString, sizeof(partString), "- %02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%s, out: %03d/%s)\n",
+			snprintf(partString, sizeof(partString), "-%c%02d: %-15s %-20s %-12s %15s:%05d %16s  fd: %02d  (in: %03d/%s, out: %03d/%s)\n",
+					 (endpoint[ix]->useSenderThread == true)? 's' : '-',
 					 ix,
 					 endpoint[ix]->typeName(),
 					 endpoint[ix]->name.c_str(),

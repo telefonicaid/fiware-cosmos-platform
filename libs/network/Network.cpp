@@ -3064,7 +3064,7 @@ void Network::workersConnect(void)
 		if (epP == NULL)
 			continue;
 
-		if (epP->state == Endpoint::Connected)
+		if ( (epP->state == Endpoint::Connected) || (epP->state == Endpoint::Threaded) )
 			continue;
 
 		if (endpoint[ME]->type == Endpoint::Worker)
@@ -3076,7 +3076,7 @@ void Network::workersConnect(void)
 			}
 		}
 
-		LM_M(("Trying to connect to '%s@%s'", epP->aliasGet(), epP->ip));
+		LM_M(("Trying to connect to '%s@%s' because state is %s", epP->aliasGet(), epP->ip , epP->stateName()  ));
 		if ((workerFd = iomConnect(epP->ip, epP->port)) == -1)
 			LM_M(("worker %d: %s (host %s, port %d) not there - new retry later ...", ix, epP->name.c_str(), epP->ip, epP->port));
 		else

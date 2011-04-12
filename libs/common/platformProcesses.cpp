@@ -128,6 +128,7 @@ ProcessVector* platformProcessesGet(int* sizeP)
 		if (fd != -1)
 			close(fd);
 
+		LM_E(("s==%d, fd==%d, statBuf.st_size==%d", s, fd, statBuf.st_size));
 		LM_RE(NULL, ("problems with samson platform processes file '%s'", ppFile));
 	}
 	else

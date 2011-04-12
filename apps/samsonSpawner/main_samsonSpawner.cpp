@@ -536,8 +536,9 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 	int           procVecSize;
 	int           error = 0;
 
-	LM_T(LmtProcessVector, ("Received a procVec with %d processes from %s@%s", pVec->processes, ep->name.c_str(), ep->ip));
+	LM_M(("Received a procVec with %d processes from %s@%s", pVec->processes, ep->name.c_str(), ep->ip));
 
+	restartInProgress = true;
 	localProcessesKill();
 
 	if (procVec != NULL)
@@ -555,8 +556,13 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 
 	
 	platformProcessesSave(procVec);
-
+	LM_M(("Saved Platform Processes File"));
+	if (system("ls -l /opt/samson/config/samsonPlatformProcesses") != 0)
+		LM_E(("system command failed"));
+	sleep(1);
+	restartInProgress = false;
 	processesStart(procVec);
+
 
 
 	//
@@ -578,7 +584,9 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 */
 void SamsonSpawner::init(ss::ProcessVector* procVec)
 {
+	restartInProgress    = true;
 	localProcessesKill();
+	restartInProgress    = false;
 
 	if (procVec != NULL)
 	{
@@ -661,7 +669,9 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 				LM_T(LmtReset, ("Got RESET from '%s' - NOT forwarding RESET to all spawners", ep->name.c_str()));
 			
 			LM_T(LmtReset, ("killing local processes"));
+			restartInProgress    = true;
 			localProcessesKill();
+			restartInProgress    = false;
 			LM_T(LmtReset, ("Sending ack to RESET message to %s@%s", ep->name.c_str(), ep->ip));
 			iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
 

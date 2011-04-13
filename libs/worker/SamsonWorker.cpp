@@ -284,7 +284,7 @@ namespace ss {
 				time (&now);
 				double age = difftime ( now , info.st_mtime );
 				
-				if( age > 60 ) // Get some time to avoid cross-message between controller and worker
+				if( age > 7200 ) // Get some time to avoid cross-message between controller and worker
 				{
 					
 					// Get the task from the file name 

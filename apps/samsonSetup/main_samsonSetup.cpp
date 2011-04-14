@@ -172,8 +172,8 @@ static int platformFileCreate(int workers, char* ip[])
 
 	memset(procVec, 0, size);
 
-	procVec->processes    = workers + 1;
-	procVec->padding64_32 = ('-' << 24) | ('-' << 16) | ('-' << 8) | '-';
+	procVec->processes      = workers + 1;
+	procVec->processVecSize = sizeof(ss::ProcessVector) + procVec->processes * sizeof(ss::Process);
 
 
 	//

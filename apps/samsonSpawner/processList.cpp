@@ -51,7 +51,6 @@ const char* processTypeName(ss::Process* processP)
 	{
 	case ss::PtWorker:       return "WorkerStarter";
 	case ss::PtController:   return "ControllerStarter";
-	case ss::PtSpawner:      return "Spawner";
 	}
 
 	return "Unknown Process Type";

@@ -18,6 +18,11 @@ SET (HEADERS
 	HostMgr.h
 	Host.h
 	PacketReceivedNotification.h
+
+	EndpointManager.h
+	Endpoint2.h
+	Network2.h
+	JobQueue.h
 )
 
 SET (SOURCES
@@ -38,6 +43,11 @@ SET (SOURCES
 	easyzlib.c
 	HostMgr.cpp
 	PacketReceivedNotification.cpp
+
+	EndpointManager.cpp
+	Endpoint2.cpp
+	Network2.cpp
+	JobQueue.cpp
 )
 
 # Include directories

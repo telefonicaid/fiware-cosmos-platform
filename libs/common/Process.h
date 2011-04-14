@@ -42,9 +42,8 @@ class Endpoint;
 */
 typedef enum ProcessType
 {
-	PtWorker = 1,
-	PtController,
-	PtSpawner
+	PtWorker      = 1,
+	PtController  = 2
 } ProcessType;
 
 
@@ -98,7 +97,7 @@ typedef struct Process
 typedef struct ProcessVector
 {
 	int      processes;
-	int      padding64_32;
+	int      processVecSize;
 	Process  processV[];
 } ProcessVector;
 

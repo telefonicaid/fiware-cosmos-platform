@@ -189,6 +189,8 @@ ProcessVector* platformProcessesGet(int* sizeP)
 		}
 	}
 
+	pv->processVecSize = pvSize;
+
 	if (sizeP != NULL)
 		*sizeP = pvSize;
 

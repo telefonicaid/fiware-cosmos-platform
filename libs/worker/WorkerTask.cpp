@@ -549,7 +549,13 @@ namespace ss
         
 		// Create the nme of the file
         char fileName[2000];
-        sprintf(fileName, "worker_%d_job_%lu_task_%lu_file_%010d" , worker_id , job_id ,task_id, num_file_output++ );
+
+#ifdef __LP64__
+        sprintf(fileName, "worker_%d_job_%lu_task_%lu_file_%010d", worker_id, job_id, task_id, num_file_output++);
+#else
+        sprintf(fileName, "worker_%d_job_%d_task_%d_file_%010d", worker_id, job_id, task_id, num_file_output++);
+#endif
+
 		return fileName;
         
 	}
@@ -560,8 +566,13 @@ namespace ss
 		int worker_id = taskManager->worker->network->getWorkerId();
 
 		// Create the nme of the file
-        char fileName[2000];
-        sprintf(fileName, "worker_%d_job_%lu_task_%lu_file_txt_%010d" , worker_id , job_id, task_id , hg_set );
+        char fileName[256];
+
+#ifdef __LP64__
+        snprintf(fileName, sizeof(fileName), "worker_%d_job_%lu_task_%lu_file_txt_%010d" , worker_id , job_id, task_id , hg_set );
+#else
+		snprintf(fileName, sizeof(fileName), "worker_%d_job_%d_task_%d_file_txt_%010d" , worker_id , job_id, task_id , hg_set );
+#endif
 		return fileName;
     }
     

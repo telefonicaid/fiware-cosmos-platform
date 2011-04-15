@@ -24,14 +24,6 @@ namespace ss
 
 /* ****************************************************************************
 *
-* EndpointManagerIterator - 
-*/
-typedef int (*EndpointManagerIterator)(Endpoint2*, void*);
-
-
-
-/* ****************************************************************************
-*
 * EndpointManager - 
 */
 class EndpointManager
@@ -56,10 +48,11 @@ public:
 	Endpoint2*      add(Endpoint2::Type type, const char* name, const char* alias, Host* host, unsigned short port, int rFd, int wFd);
 	void            remove(Endpoint2* ep);
 	Endpoint2*      get(unsigned int index);
+	Endpoint2*      get(unsigned int index, int* rFdP);
 	Endpoint2*      lookup(Endpoint2::Type type, const char* ip);
 	Endpoint2*      lookup(const char* alias);
 	void            list(const char* why, bool forced = false);
-	int             iterate(EndpointManagerIterator iter, void* vP);  // iterates until any 'iterator' returns != 0
+	
 };
 
 }

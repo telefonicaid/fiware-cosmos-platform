@@ -43,13 +43,27 @@ class EndpointManager;
 class Endpoint2
 {
 public:
+	typedef enum Status
+	{
+		OK,
+		NotImplemented,
+		ConnectionClosed,
+		ReadError,
+		WriteError,
+		Timeout,
+
+		NullAlias,
+		BadAlias,
+		BadHost,
+		Duplicated
+	} Status;
+
 	typedef enum State
 	{
-		NeverConnected,
-		Listening,
-		Connected,
-		ScheduledForRemoval,
-		Reconnecting          // Disconnected ?
+		Usused,
+		Ready,
+		Disconnected,
+		ScheduledForRemoval
 	} State;
 
 	typedef enum Type
@@ -71,11 +85,14 @@ public:
 		WebWorker
 	} Type;
 
+
 public:
-	Endpoint2(Type _type, const char* _name, const char* _alias, Host* _host, unsigned short _port = 0, int _rFd = -1, int _wFd = -1);
+	Endpoint2(EndpointManager* _epMgr, Type _type, const char* _name, const char* _alias, Host* _host, unsigned short _port = 0, int _rFd = -1, int _wFd = -1);
 	~Endpoint2();
+	const char*          status(Status s);
 
 private:
+	EndpointManager*     epMgr;
 	Host*                host;
 	Type                 type;
 	char*                name;
@@ -107,20 +124,23 @@ public:
 	void                 aliasSet(const char* alias);
 	const char*          aliasGet(void);
 
-	void                 helloDataAdd(EndpointManager* epMgr, Type _type, const char* _name, const char* _alias);
+	int                  rFdGet(void);
+	State                stateGet(void);
+
+	Status               helloDataAdd(Type _type, const char* _name, const char* _alias);
 
 	Endpoint2*           connect(bool addToEpVec);   // the fd from connect is added as an Anonymous-typed endpoint
 	Endpoint2*           accept(bool addToEpVec);
-	int                  msgAwait(int secs, int usecs);
-	int                  receive(Endpoint2* from, Message::Header* headerP, void** dataPP, int* dataLenP, ss::Packet* packetP);
-	int                  send(Endpoint2* to, Message::MessageType type, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
-	int                  helloSend(Endpoint2* self, Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
+	Status               msgAwait(int secs, int usecs);
+	Status               receive(Endpoint2* from, Message::Header* headerP, void** dataPP, int* dataLenP, Packet* packetP);
+	Status               send(Endpoint2* to, Message::MessageType type, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
+	Status               helloSend(Endpoint2* self, Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
 
-	int                  msgTreat(void);
-	virtual int          msgTreat2() { /* To be implemented */ LM_X(1, ("NOT IMPLEMENTED")); return 1; };
+	Status               msgTreat(void);
+	virtual Status       msgTreat2(Endpoint2* ep, Message::Header* headerP, void* dataP, int dataLen, Packet* packetP) { LM_X(1, ("NOT IMPLEMENTED")); return NotImplemented; };
 
 private:
-	int                  listenerPrepare(void);
+	Status               listenerPrepare(void);
 	                                                                       // Or, the accepted fd is added as an Anonymous endpoint?
 };
 

@@ -19,6 +19,7 @@
 
 #include "samsonDirectories.h"  // SAMSON_IMAGES
 #include "samsonConfig.h"       // SAMSON_MAX_HOSTS
+#include "Process.h"            // Process, ProcessVector
 #include "Host.h"               // Host
 #include "HostMgr.h"            // HostMgr
 #include "ports.h"              // WORKER_PORT
@@ -174,6 +175,7 @@ static int platformFileCreate(int workers, char* ip[])
 
 	procVec->processes      = workers + 1;
 	procVec->processVecSize = sizeof(ss::ProcessVector) + procVec->processes * sizeof(ss::Process);
+
 
 
 	//

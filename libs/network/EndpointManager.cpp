@@ -114,8 +114,9 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints)
 	// Create the 'self' or 'me' endpoint
 	//
 	// Do I put this endpoint into the list or not ... ?
+	// For now, it's left out from the list
 	//
-	me = new Endpoint2(type, "unknown name", "unknown alias", host); // port == 0 by default
+	me = new Endpoint2(this, type, "unknown name", "unknown alias", host); // port == 0 by default
 	if (me == NULL)
 		LM_X(1, ("error allocating 'me' endpoint: %s", strerror(errno)));
 
@@ -169,7 +170,7 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints)
 
 
 	//
-	// Process Vector 2 (Spawner)
+	// Process Vector, part II (Spawner only)
 	//
 	if (type == Endpoint2::Spawner)
 	{
@@ -192,10 +193,13 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints)
 */
 EndpointManager::~EndpointManager()
 {
-	delete endpoint;
-	delete hostMgr;
+    if (endpoint != NULL)
+		delete endpoint;
 
-	if (procVec)
+    if (hostMgr != NULL)
+		delete hostMgr;
+
+	if (procVec != NULL)
 		delete procVec;
 }
 
@@ -212,7 +216,7 @@ Endpoint2* EndpointManager::add(Endpoint2::Type type, const char* name, const ch
 	if ((type == Endpoint2::Controller) || (type == Endpoint2::Worker))
 		LM_X(1, ("Please don't add Controller and Worker with correct type, await the Hello and use addHelloData for this purpose (use the type 'Anonymous')"));
 
-	ep = new Endpoint2(type, name, alias, host, port, rFd, wFd);
+	ep = new Endpoint2(this, type, name, alias, host, port, rFd, wFd);
 	if (ep == NULL)
 		LM_X(1, ("Error allocating endpoint of %d bytes", sizeof(Endpoint2)));
 
@@ -263,6 +267,35 @@ Endpoint2* EndpointManager::get(unsigned int index)
 		return NULL;
 
 	return endpoint[index];
+}
+
+
+
+/* ****************************************************************************
+*
+* get - 
+*/
+Endpoint2* EndpointManager::get(unsigned int index, int* rFdP)
+{
+	unsigned int found = 0;
+
+	for (unsigned int ix = 0; ix <= endpoints; ix++)
+	{
+		if (index == endpoints)
+			return NULL;
+
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if (index == found++)
+		{
+			if (rFdP != NULL)
+				*rFdP = endpoint[index]->rFdGet();
+			return endpoint[index];
+		}
+	}
+
+	return NULL;
 }
 
 
@@ -334,35 +367,6 @@ void EndpointManager::list(const char* why, bool forced)
 
 	if (forced)
 		lmVerbose = savedVerbose;
-}
-
-
-
-/* ****************************************************************************
-*
-* iterate
-*
-* iterates until any 'iterator' returns != 0
-*/
-int EndpointManager::iterate(EndpointManagerIterator iter, void* vP)
-{
-	int s;
-
-	if (iter == NULL)
-		return 2;
-
-	for (unsigned int ix = 0; ix < endpoints; ix++)
-	{
-		if (endpoint[ix] == NULL)
-            continue;
-
-		s = iter(endpoint[ix], vP);
-
-		if (s != 0)
-			return s;
-	}
-
-	return 0;
 }
 
 

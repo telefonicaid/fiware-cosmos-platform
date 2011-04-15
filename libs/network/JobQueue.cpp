@@ -12,8 +12,6 @@
 * This class is used by the sender thread whenever its remote peer is not connected.
 * The other 'local' side of the thread will be unaware about whether the peer is
 * up or not, all messages meant for that peer will just be sent to the sender thread.
-*
-*
 */
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
@@ -103,7 +101,7 @@ JobQueue::Job* JobQueue::pop(void)
 			LM_X(1, ("job list empty but totalSize == %d ...", totalSize));
 	}
 
-	return jobP;
+	return last;
 }
 
 

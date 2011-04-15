@@ -30,14 +30,16 @@ namespace ss
 class Network2 : public NetworkInterface
 {
 private:
-	EndpointManager* epMgr;
+	EndpointManager*  epMgr;
+	int               tmoSecs;
+	int               tmoUSecs;
 
 public:
 	Network2(EndpointManager* epMgr);
 	~Network2();
 
-	void  run();                                                 // Main run loop - loops forever
-	int   poll();                                                // Poll endpoint connections ant treat if necessary
+	void  tmoSet(int secs, int usecs);  // Set timeout for select loop
+	void  run(bool oneShot);            // Main run loop - loops forever, unless 'oneShot' is true ...
 };
 
 }

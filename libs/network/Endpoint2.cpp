@@ -15,6 +15,7 @@
 #include "traceLevels.h"        // Trace Levels
 
 #include "ports.h"              // WORKER_PORT, ...
+#include "Packet.h"             // Packet
 #include "HostMgr.h"            // HostMgr
 #include "Message.h"            // Message::Code, Message::Type
 #include "EndpointManager.h"    // EndpointManager
@@ -30,14 +31,15 @@ namespace ss
 *
 * Endpoint2::Endpoint2 - Constructor
 */
-Endpoint2::Endpoint2(Type _type, const char* _name, const char* _alias, Host* _host, unsigned short _port, int _rFd, int _wFd)
+Endpoint2::Endpoint2(EndpointManager* _epMgr, Type _type, const char* _name, const char* _alias, Host* _host, unsigned short _port, int _rFd, int _wFd)
 {
+	epMgr            = _epMgr;
 	type             = _type;
 	host             = _host;
 	rFd              = _rFd;
 	wFd              = _wFd;
 	port             = _port;
-	state            = NeverConnected;
+	state            = Usused;
 	useSenderThread  = false;
 
 	name             = NULL;
@@ -214,6 +216,28 @@ const char* Endpoint2::aliasGet(void)
 
 /* ****************************************************************************
 *
+* rFdGet - 
+*/
+int Endpoint2::rFdGet(void)
+{
+	return rFd;
+}
+
+
+
+/* ****************************************************************************
+*
+* stateGet - 
+*/
+Endpoint2::State Endpoint2::stateGet(void)
+{
+	return state;
+}
+
+
+
+/* ****************************************************************************
+*
 * processLookup - 
 */
 static Process* processLookup(ProcessVector* procVec, const char* alias)
@@ -239,7 +263,7 @@ static Process* processLookup(ProcessVector* procVec, const char* alias)
 * When the Hello data arrives, a check will be performed to see whether the 
 * connection is valid (not occupied).
 */
-void Endpoint2::helloDataAdd(EndpointManager* epMgr, Endpoint2::Type _type, const char* _name, const char* _alias)
+Endpoint2::Status Endpoint2::helloDataAdd(Endpoint2::Type _type, const char* _name, const char* _alias)
 {
 	if ((_type == Endpoint2::Controller) || (_type == Endpoint2::Worker))
 	{
@@ -248,26 +272,26 @@ void Endpoint2::helloDataAdd(EndpointManager* epMgr, Endpoint2::Type _type, cons
 		if (_alias == NULL)
 		{
 			state = ScheduledForRemoval;
-			LM_RVE(("NULL alias"));
+			LM_RE(NullAlias, ("NULL alias"));
 		}
 
 		if ((proc = processLookup(epMgr->procVec, _alias)) == NULL)
 		{
 			state = ScheduledForRemoval;
-			LM_RVE(("alias '%s' not found in process vector", _alias));
+			LM_RE(BadAlias, ("alias '%s' not found in process vector", _alias));
 		}
 
 		if (epMgr->hostMgr->match(host, proc->host) == false)  // Host could become a class and to its own matching
 		{
 			state = ScheduledForRemoval;
-			LM_RVE(("The host for alias '%s' must be '%s'. This endpoints host ('%s') is incorrect",
-					_alias, hostname(), proc->host));
+			LM_RE(BadHost, ("The host for alias '%s' must be '%s'. This endpoints host ('%s') is incorrect",
+							_alias, hostname(), proc->host));
 		}
 
 		if (epMgr->lookup(_type, _alias) != NULL)
 		{
 			state = ScheduledForRemoval;
-			LM_RVE(("Duplicated process"));
+			LM_RE(Duplicated, ("Duplicated process"));
 		}
 
 		if (_type == Endpoint2::Controller)
@@ -279,6 +303,7 @@ void Endpoint2::helloDataAdd(EndpointManager* epMgr, Endpoint2::Type _type, cons
 	aliasSet(_alias);
 
 	// Create sender thread right here ? Guess so ...
+	return OK;
 }
 
 
@@ -287,11 +312,11 @@ void Endpoint2::helloDataAdd(EndpointManager* epMgr, Endpoint2::Type _type, cons
 *
 * send - 
 */
-int Endpoint2::send(Endpoint2* me, Message::MessageType type, Message::MessageCode code, void* data, int dataLen, Packet* packetP)
+Endpoint2::Status Endpoint2::send(Endpoint2* me, Message::MessageType type, Message::MessageCode code, void* data, int dataLen, Packet* packetP)
 {
 	// Implement iomMsgSend here
 
-	LM_RE(-1, ("Not implemented"));
+	LM_RE(NotImplemented, ("Not implemented"));
 }
 
 
@@ -300,11 +325,11 @@ int Endpoint2::send(Endpoint2* me, Message::MessageType type, Message::MessageCo
 *
 * receive - 
 */
-int Endpoint2::receive(Endpoint2* me, Message::Header* headerP, void** dataPP, int* dataLenP, ss::Packet* packetP)
+Endpoint2::Status Endpoint2::receive(Endpoint2* me, Message::Header* headerP, void** dataPP, int* dataLenP, Packet* packetP)
 {
 	// Implement iomMsgRead here
 
-	LM_RE(-1, ("Not implemented"));
+	LM_RE(NotImplemented, ("Not implemented"));
 }
 
 
@@ -348,7 +373,7 @@ Endpoint2* Endpoint2::accept(bool addToEpVec)
 *
 * helloSend - 
 */
-int Endpoint2::helloSend(Endpoint2* self, Message::MessageType type)
+Endpoint2::Status Endpoint2::helloSend(Endpoint2* self, Message::MessageType type)
 {
 	Message::HelloData hello;
 
@@ -373,11 +398,11 @@ int Endpoint2::helloSend(Endpoint2* self, Message::MessageType type)
 *
 * listenerPrepare - 
 */
-int Endpoint2::listenerPrepare(void)
+Endpoint2::Status Endpoint2::listenerPrepare(void)
 {
 	// Implement iomServerOpen here
 
-	return 0;
+	return NotImplemented;
 }
 
 
@@ -386,11 +411,11 @@ int Endpoint2::listenerPrepare(void)
 *
 * msgAwait - 
 */
-int Endpoint2::msgAwait(int secs, int usecs)
+Endpoint2::Status Endpoint2::msgAwait(int secs, int usecs)
 {
 	// Implement iomMsgAwait here
 
-	return 0;
+	return NotImplemented;
 }
 
 
@@ -399,15 +424,28 @@ int Endpoint2::msgAwait(int secs, int usecs)
 *
 * msgTreat - 
 */
-int Endpoint2::msgTreat(void)
+Endpoint2::Status Endpoint2::msgTreat(void)
 {
+	Message::Header    header;
+	void*              dataP    = NULL;
+	int                dataLen  = 0;
+	Packet             packet;
+	Endpoint2::Status  s;
+
+	s = receive(epMgr->me, &header, &dataP, &dataLen, &packet);
+	if (s != 0)
+		LM_RE(s, ("receive error '%s'", status(s)));
+	{
+		
+	}
+
 	// Implement Network::msgTreat/msgPreTreat here
 
 	// This method will use Endpoint2::receive to read the message
 	// [ or Endpoint2::accept in the case of a Listener ]
 	// and Endpoint2::send to respond with an ack
 
-	return 0;
+	return NotImplemented;
 }
 
 
@@ -449,6 +487,32 @@ const char* Endpoint2::typeName(Type type)
 const char* Endpoint2::typeName(void)
 {
 	return typeName(type);
+}
+
+
+
+/* *******************************************************************************
+*
+* status - 
+*/
+const char* Endpoint2::status(Status s)
+{
+	switch (s)
+	{
+	case OK:                   return "OK";
+	case NotImplemented:       return "NotImplemented";
+	case ConnectionClosed:     return "ConnectionClosed";
+	case ReadError:            return "ReadError";
+	case WriteError:           return "WriteError";
+	case Timeout:              return "Timeout";
+
+	case NullAlias:            return "NullAlias";
+	case BadAlias:             return "BadAlias";
+	case BadHost:              return "BadHost";
+	case Duplicated:           return "Duplicated";
+	}
+
+	return "Unknown Status";
 }
 
 }

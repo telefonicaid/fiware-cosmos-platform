@@ -55,7 +55,14 @@ public:
 		NullAlias,
 		BadAlias,
 		BadHost,
-		Duplicated
+		Duplicated,
+		AcceptError,
+		NotListener,
+		SelectError,
+		Error,
+		SocketError,
+		BindError,
+		ListenError
 	} Status;
 
 	typedef enum State
@@ -87,7 +94,18 @@ public:
 
 
 public:
-	Endpoint2(EndpointManager* _epMgr, Type _type, const char* _name, const char* _alias, Host* _host, unsigned short _port = 0, int _rFd = -1, int _wFd = -1);
+	Endpoint2
+	(
+		EndpointManager* _epMgr,
+		Type             _type,
+		const char*      _name,
+		const char*      _alias,
+		Host*            _host,
+		unsigned short   _port  = 0,
+		int              _rFd   = -1,
+		int              _wFd   = -1
+	);
+
 	~Endpoint2();
 	const char*          status(Status s);
 
@@ -127,17 +145,23 @@ public:
 	int                  rFdGet(void);
 	State                stateGet(void);
 
-	Status               helloDataAdd(Type _type, const char* _name, const char* _alias);
-
 	Endpoint2*           connect(bool addToEpVec);   // the fd from connect is added as an Anonymous-typed endpoint
 	Endpoint2*           accept(bool addToEpVec);
 	Status               msgAwait(int secs, int usecs);
-	Status               receive(Endpoint2* from, Message::Header* headerP, void** dataPP, int* dataLenP, Packet* packetP);
-	Status               send(Endpoint2* to, Message::MessageType type, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
-	Status               helloSend(Endpoint2* self, Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
+
+	Status               partRead(void* vbuf, long bufLen, long* bufLenP = NULL);
+	Status               receive(Message::Header* headerP, void** dataPP, int* dataLenP, Packet* packetP);
+
+	Status               okToSend(void);
+	Status               partSend(void* dataP, int dataLen, const char* what);
+	Status               send(Message::MessageType type, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
+
+	Status               helloDataAdd(Type _type, const char* _name, const char* _alias);
+	Status               helloSend(Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
 
 	Status               msgTreat(void);
-	virtual Status       msgTreat2(Endpoint2* ep, Message::Header* headerP, void* dataP, int dataLen, Packet* packetP) { LM_X(1, ("NOT IMPLEMENTED")); return NotImplemented; };
+	virtual Status       msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
+	                     { LM_X(1, ("NOT IMPLEMENTED")); return NotImplemented; };
 
 private:
 	Status               listenerPrepare(void);

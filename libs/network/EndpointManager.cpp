@@ -415,7 +415,7 @@ void EndpointManager::setupAwait(void)
 
 
 		// Receiving ?Hello? data ...
-		if (ep->receive(me, &header, &dataP, &dataLen, &packet) != 0)
+		if (ep->receive(&header, &dataP, &dataLen, &packet) != 0)
 		{
 			LM_E(("Endpoint2::receive error"));
 			delete ep;
@@ -443,7 +443,7 @@ void EndpointManager::setupAwait(void)
 
 
 		// Responding to the Hello
-		if (ep->helloSend(me, Message::Ack) != 0)
+		if (ep->helloSend(Message::Ack) != 0)
 		{
 			LM_E(("error acking Hello to '%s@%s'", helloP->alias, ep->hostname()));
 			delete ep;
@@ -464,7 +464,7 @@ void EndpointManager::setupAwait(void)
 		// Reading the message
 		dataP   = NULL;
 		dataLen = 0;
-		if (ep->receive(me, &header, &dataP, &dataLen, &packet) != 0)
+		if (ep->receive(&header, &dataP, &dataLen, &packet) != 0)
 		{
 			LM_E(("Endpoint2::receive error"));
 			delete ep;

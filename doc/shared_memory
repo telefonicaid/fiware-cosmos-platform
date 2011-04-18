@@ -19,7 +19,7 @@ shm_size_per_buffer 134217728
 
 kern.sysv.shmmax: 1610612736
 
-* If necessary, adapt the max size usign "sysctl -w kern.sysv.shmmax=256000000
+* If necessary, adapt the max size usign "sysctl -w kern.sysv.shmmax=256000000" or "sudo sysctl -w kernel.shmmax=268435456"
 
 * Finallly, it samsonLocal or samsonWorker does not finish correctly, the created shared-memory buffers persist in the system. This can be a problem since total available system-wide share memory could be reduced.
 

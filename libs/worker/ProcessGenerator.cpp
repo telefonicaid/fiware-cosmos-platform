@@ -32,8 +32,10 @@ namespace ss {
 		generator->environment = &environment;			// To be able to access environment
 		generator->tracer = this;						// To be able to send traces
 		generator->operationController = this;
-		
+
+		generator->init();
 		generator->run( writer );
+		generator->finish();
 		
 		delete generator;
 		

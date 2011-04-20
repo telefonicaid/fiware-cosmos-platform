@@ -15,13 +15,12 @@
 #include "easyzlib.h"	     // zlib utility library
 #include "logMsg.h"			 // LM_TODO()
 #include "Message.h"		 // ss::MessageType 
-#include "Engine.h"			 // ss::Engine
+#include "Engine.h"			 // engine::Engine
+#include "Buffer.h"          // engine::Buffer
 
 namespace ss {
 	
 	class Endpoint;
-	class engine::Buffer;
-	
 
 	// This has been removed for simplicity. Files are now uploaded with a particular extension to indicate the compression mode
 	

@@ -467,8 +467,8 @@ Endpoint2::Status Endpoint2::send
 
 	if (packetP != NULL)
 	{
-		ss::Engine::shared()->memoryManager.destroyBuffer(packetP->buffer);
-		delete packetP;
+	   engine::MemoryManager::shared()->destroyBuffer( packetP->buffer );
+	   delete packetP;
 	}
 	
 	return OK;
@@ -578,7 +578,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, in
 		sprintf(kvName, "%s:%d", name, bIx);
 		++bIx;
 
-		packetP->buffer = ss::Engine::shared()->memoryManager.newBuffer(kvName, headerP->kvDataLen, ss::Buffer::output);
+		packetP->buffer = engine::MemoryManager::shared()->newBuffer(kvName, headerP->kvDataLen, engine::Buffer::output);
 
 		char*  kvBuf  = packetP->buffer->getData();
 		long   nb     = 0;

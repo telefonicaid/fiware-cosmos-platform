@@ -1,5 +1,4 @@
 SET (HEADERS
-        SamsonNotifications.h
 	samson.pb.h
 	ports.h
 	samsonDirectories.h

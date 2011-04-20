@@ -1,7 +1,7 @@
 #ifndef _H_DELILAH_LOAD_DATA_PROCESS
 #define _H_DELILAH_LOAD_DATA_PROCESS
 
-#include "Lock.h"				// au::Lock
+#include "au/Lock.h"				// au::Lock
 #include <fstream>				// ifstream
 #include <vector>				// std::vector
 #include <set>				// std::vector
@@ -11,10 +11,10 @@
 #include "Delilah.h"			// ss::Delilah
 
 #include <sstream>			// std::ostringstream
-#include "Format.h"			// au::Format
+#include "au/Format.h"			// au::Format
 #include <list>				// std::list
 #include "TXTFileSet.h"		// ss::TXTFileSet
-#include "Error.h"			// au::Error
+#include "au/Error.h"			// au::Error
 
 namespace ss {
 

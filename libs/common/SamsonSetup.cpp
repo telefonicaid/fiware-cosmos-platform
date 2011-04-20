@@ -2,10 +2,10 @@
 #include <iostream>				// std::cerr
 
 #include "samsonDirectories.h"	// SAMSON_SETUP_FILE
-#include "CommandLine.h"		// au::CommandLine
+#include "au/CommandLine.h"		// au::CommandLine
 #include "SamsonSetup.h"		// Own interface
 #include <errno.h>
-#include "Format.h"             // au::Format
+#include "au/Format.h"             // au::Format
 
 #include "logMsg.h"				// LM_X
 
@@ -46,6 +46,16 @@ namespace ss
 		return samsonSetup;
 	}
 	
+    void destroy_samson_setup()
+    {
+        if( samsonSetup )
+        {
+            delete samsonSetup;
+            samsonSetup = NULL;
+        }
+        
+    }
+    
 	void SamsonSetup::load()
 	{
 		samsonSetup = new SamsonSetup( );
@@ -54,6 +64,8 @@ namespace ss
 	void SamsonSetup::load( std::string workingDirectory )
 	{
 		samsonSetup = new SamsonSetup( workingDirectory );
+        
+        atexit(destroy_samson_setup);
 	}
 
 	
@@ -219,7 +231,12 @@ namespace ss
 		return true;
 	}
 
+    std::string SamsonSetup::dataFile( std::string filename )
+    {
+        return samsonSetup->dataDirectory + "/" + filename;
+    }
 
+    
 	
 	size_t SamsonSetup::getUInt64(std::map<std::string,std::string> &items, std::string name , size_t defaultValue )
 	{

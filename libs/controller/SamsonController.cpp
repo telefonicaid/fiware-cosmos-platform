@@ -9,7 +9,7 @@
 #include "Packet.h"                 // ss::Packet
 #include "Network.h"                // NetworkInterface
 #include "Endpoint.h"               // EndPoint
-#include "CommandLine.h"            // CommandLine
+#include "au/CommandLine.h"            // CommandLine
 #include "ModulesManager.h"         // ss:ModulesManager
 #include "ControllerTaskManager.h"  // ss:ControllerTaskManager
 #include "ControllerTask.h"         // ss:ControllerTask
@@ -17,7 +17,7 @@
 #include "SamsonSetup.h"            // ss::SamsonSetup
 #include "Buffer.h"                 // ss::Buffer
 #include "MemoryManager.h"          // ss::MemoryManager
-#include "Error.h"					// au::Error
+#include "au/Error.h"					// au::Error
 #include "Engine.h"					// ss::Engine
 #include "DiskStatistics.h"			// ss::DiskStatistics
 
@@ -58,20 +58,20 @@ namespace ss {
 		packetReceiverDescription = "samsonController";
 		
         
-        Engine::shared()->notificationSystem.add(notification_monitorization, this);
-        Engine::shared()->notificationSystem.add(notification_check_automatic_operations, this);
+        engine::Engine::add( notification_monitorization, this );
+        engine::Engine::add( notification_check_automatic_operations, this );
 
 
         {
-            EngineNotification *notification = new EngineNotification( notification_monitorization );
-            notification->set("target", "SamsonController" );
-            Engine::shared()->notify( notification , 5  );
+            engine::Notification *notification = new engine::Notification( notification_monitorization );
+            notification->environment.set("target", "SamsonController" );
+            engine::Engine::notify( notification , 5  );
         }
 
         {
-            EngineNotification * notification = new EngineNotification( notification_check_automatic_operations );
-            notification->set("target", "SamsonController" );
-            Engine::shared()->notify( notification , 5  );
+            engine::Notification * notification = new engine::Notification( notification_check_automatic_operations );
+            notification->environment.set("target", "SamsonController" );
+            engine::Engine::notify( notification , 5  );
         }
 		
 	}	
@@ -81,33 +81,26 @@ namespace ss {
 		
 		for (int i = 0 ; i < num_workers ; i++ )
 			delete worker_status[i];
-
+        
 		free(worker_status);
 		free(worker_status_time);
 		
 	}
-
-    void SamsonController::notify( EngineNotification* notification )
+    
+    void SamsonController::notify( engine::Notification* notification )
     {
-        switch (notification->channel) {
-            case notification_monitorization:
-                monitor.takeSamples();
-                break;
-                
-            case notification_check_automatic_operations:
-                checkAutomaticOperations();
-                break;
-                
-            default:
-                LM_X(1,("Unexpected notification channel at SamsonController"));
-                break;
-        }
+        if( notification->isName(notification_monitorization) )
+            monitor.takeSamples();
+        else if( notification->isName( notification_check_automatic_operations ) )
+            checkAutomaticOperations();
+        else
+            LM_X(1,("Unexpected notification channel at SamsonController"));
         
     }
     
-    bool SamsonController::acceptNotification( EngineNotification* notification )
+    bool SamsonController::acceptNotification( engine::Notification* notification )
     {
-        if( notification->get("target","") != "SamsonController" )
+        if( notification->environment.get("target","") != "SamsonController" )
             return false;
         
         return true;
@@ -488,7 +481,7 @@ namespace ss {
 						network::WorkerStatus *ws =samsonStatus->add_worker_status();
 						ws->CopyFrom( *worker_status[i] );
                         // Modify the update time
-						ws->set_update_time(  DiskStatistics::timeSince( &worker_status_time[i] ) );
+						ws->set_update_time(  engine::DiskStatistics::timeSince( &worker_status_time[i] ) );
 					}
 					
 					fill( samsonStatus->mutable_controller_status() );

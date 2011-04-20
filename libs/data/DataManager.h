@@ -11,8 +11,8 @@
 
 #include "data.pb.h"
 #include "traces.h"
-#include "Lock.h"							// au::Lock
-#include "au_map.h"							// au::map
+#include "au/Lock.h"							// au::Lock
+#include "au/map.h"							// au::map
 #include "LogFile.h"						// ss::LogFile
 #include "DataManagerCommandResponse.h"		// ss::DataManagerCommandResponse
 

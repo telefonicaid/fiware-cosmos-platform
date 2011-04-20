@@ -10,7 +10,7 @@
 #include <samson/samsonVersion.h>   /* SAMSON_VERSION                             */
 #include "samson_module.h"			/* Own interface                              */
 #include <samson/Data.h>            /* DataInstance                               */
-#include "CommandLine.h"			/* AUCommandLine                              */
+#include "au/CommandLine.h"			/* AUCommandLine                              */
 #include "DataContainer.h"
 #include "DataCreator.h"
 #include "parseArgs.h"          // parseArgs

@@ -3,15 +3,15 @@
 
 #include <cstring>			// size_t
 #include <string>			// std::string
-#include "au_map.h"			// au::map
-#include "Lock.h"			// au::Lock
+#include "au/map.h"			// au::map
+#include "au/Lock.h"		// au::Lock
 #include <vector>			// std::vector
 #include "coding.h"			// ss::hg_info , ss::hg_size 
 #include "Buffer.h"			// ss::Buffer
 #include "MemoryManager.h"	// ss::MemoryManager
-#include <set>						// std::set
-#include "samson.pb.h"				// network::...
-#include "au_map.h"					// au::simple_map
+#include <set>				// std::set
+#include "samson.pb.h"		// network::...
+#include "au/map.h"			// au::simple_map
 
 namespace ss {
 

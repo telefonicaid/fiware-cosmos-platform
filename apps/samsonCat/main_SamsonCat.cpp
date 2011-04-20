@@ -1,6 +1,6 @@
 
 #include <iostream>
-#include "CommandLine.h"			// au::CommandLine
+#include "au/CommandLine.h"			// au::CommandLine
 #include "coding.h"					// ss::FormatHeader
 #include "samson/KVFormat.h"		// ss::KVFormat
 #include "ModulesManager.h"			// ss::ModulesManager

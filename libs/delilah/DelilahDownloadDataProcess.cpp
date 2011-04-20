@@ -162,7 +162,7 @@ namespace ss {
 			
 			lock.lock();
 			
-			Buffer *buffer = NULL;
+            engine::Buffer *buffer = NULL;
 			
 			if( buffers.size() > 0)
 			{
@@ -185,7 +185,9 @@ namespace ss {
                 fseek( file, offset_per_file[file_id], SEEK_SET );  // Position in the rigth place
 				fwrite( buffer->getData(), buffer->getSize() , 1 , file );
 				total_size += buffer->getSize();
-				Engine::shared()->memoryManager.destroyBuffer( buffer );
+                
+                engine::MemoryManager::shared()->destroyBuffer(buffer);
+                buffer = NULL;
 				
 			}
 			else

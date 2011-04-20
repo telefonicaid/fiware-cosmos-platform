@@ -9,8 +9,8 @@
 #include "samson.pb.h"					// ss::network::...
 #include <vector>						// std::vector
 #include <iostream>						// std::cout
-#include "Lock.h"						// au::Lock
-#include "au_map.h"						// au::map
+#include "au/Lock.h"						// au::Lock
+#include "au/map.h"						// au::map
 
 namespace ss {
 	

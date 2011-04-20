@@ -25,11 +25,14 @@
 #include <string.h>				// strcmp
 #include <signal.h>				// signal(.)
 
-#include "Engine.h"				// ss::Engine
+#include "Engine.h"				// engine::Engine
 
 #include "ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
 
 #include "SharedMemoryManager.h"    // ss::SharedMemoryManager
+
+#include "DiskManager.h"            // engine::DiskManager
+#include "ProcessManager.h"         // engine::ProcessManager
 
 
 /* ****************************************************************************
@@ -101,19 +104,22 @@ int main(int argC, const char *argV[])
         ss::ProcessItemIsolated::isolated_process_as_tread = true;
     }
     
+    LM_M(("samsonLocal: Seting working directory as %s", workingDir ));
 	ss::SamsonSetup::load( workingDir );		// Load setup and create default directories
 
-	// Init singlelton in single thread mode
-    ss::SharedMemoryManager::init();
     
-	ss::Engine::init();
+	engine::Engine::init();
 	ss::ModulesManager::init();		// Init the modules manager
+
+	engine::SharedMemoryManager::init( ss::SamsonSetup::shared()->num_processes * 2 , ss::SamsonSetup::shared()->shared_memory_size_per_buffer );
+	engine::DiskManager::init( 1 );
+	engine::ProcessManager::init( ss::SamsonSetup::shared()->num_processes );
+	engine::MemoryManager::init(  ss::SamsonSetup::shared()->memory );    
 	
 	// Google protocol buffer deallocation
 	atexit(	google::protobuf::ShutdownProtobufLibrary );
 	
 	LM_M(("samsonLocal started with memory=%s and #processors=%d", au::Format::string( ss::SamsonSetup::shared()->memory, "B").c_str() , ss::SamsonSetup::shared()->num_processes ));
-	
 	
 	// Fake network element with N workers
 	ss::NetworkFakeCenter center(workers);		
@@ -139,7 +145,7 @@ int main(int argC, const char *argV[])
 
 
 	// Run the samson engine
-	ss::Engine::shared()->runInBackground();
+	engine::Engine::runInBackground();
 	
 	if ( strcmp( commandFileName,"") != 0 )
 	{
@@ -173,24 +179,15 @@ int main(int argC, const char *argV[])
 		
 		fclose(f);
 		
-		// Exit the engine
-		ss::Engine::shared()->quit();
 				
 		LM_M(("samsonLocal exit correctly"));
 		
 		exit(0);
 	}
 	
-	
-	
 	// Run delilah client in foreground
 	delilahConsole.run();	
-	
-	// Exit the engine
-	ss::Engine::shared()->quit();
-
-	LM_M(("Removing samsonWorkers"));
-	
+		
     // Destroying workwers
     for ( size_t i = 0 ; i < _workers.size() ; i++)
         delete _workers[i];

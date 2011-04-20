@@ -2,7 +2,7 @@
 #include "traceLevels.h"          // Trace Levels
 
 #include "iomMsgSend.h"           // iomMsgSend
-#include "CommandLine.h"          // au::CommandLine
+#include "au/CommandLine.h"          // au::CommandLine
 #include "SamsonWorker.h"         // SamsonWorker
 #include "WorkerTaskManager.h"    // Own interface
 #include "Packet.h"               // ss::Packet
@@ -19,7 +19,7 @@ namespace ss {
 		worker = _worker;
 
         // Add as a listener for notification_task_finished notifications
-        Engine::shared()->notificationSystem.add( notification_task_finished , this );
+        engine::Engine::add( notification_task_finished , this );
 
 	}
     
@@ -53,7 +53,7 @@ namespace ss {
 				t = new WorkerTask( this );
 				task.insertInMap( task_id , t );
 			}
-
+            
 			// Setup the operation with all the information comming from controller
 			t->setupAndRun( op->getType() , worker_task );
 			
@@ -62,46 +62,38 @@ namespace ss {
 	}
 	
     // Notification from the engine about finished tasks
-    void WorkerTaskManager::notify( EngineNotification* notification )
+    void WorkerTaskManager::notify( engine::Notification* notification )
     {
         // Generic parameters of the message
-        size_t task_id = notification->getSizeT("task_id", 0);
+        size_t task_id = notification->environment.getSizeT("task_id", 0);
         
         
-        switch ( notification->channel ) 
+        if( notification->isName(notification_task_finished) )
         {
-            case notification_task_finished:
+            // Create the task
+            
+            WorkerTask *t = task.findInMap( task_id );
+            
+            if( t )
             {
-                // Create the task
-
-                WorkerTask *t = task.findInMap( task_id );
-                
-                if( t )
+                if( t->status == WorkerTask::completed )
                 {
-                    if( t->status == WorkerTask::completed )
-                    {
-                        // Remove the tasks from the task manager
-                        delete task.extractFromMap( task_id );
-                    }
-                    else
-                        LM_X(1,("WorkerTaskManager received a notification about a finished task but it is not"));
+                    // Remove the tasks from the task manager
+                    delete task.extractFromMap( task_id );
                 }
-                
+                else
+                    LM_X(1,("WorkerTaskManager received a notification about a finished task but it is not"));
             }
-                break;
-                
-            default:
-                LM_W(("Unexpected notification at WorkerTaskManager %s", notification->getDescription().c_str() ));
-                break;
         }
+        else
+            LM_W(("Unexpected notification at WorkerTaskManager %s", notification->getDescription().c_str() ));
         
     }
     
-    
-    bool WorkerTaskManager::acceptNotification( EngineNotification* notification )
+    bool WorkerTaskManager::acceptNotification( engine::Notification* notification )
     {
         // Only accept notifications for my worker. This is only necessary when testing samsonLocal with multiple workers
-        if( notification->getInt("worker", -1) != worker->network->getWorkerId() )
+        if( notification->environment.getInt("worker", -1) != worker->network->getWorkerId() )
             return false;
         
         return true;
@@ -121,7 +113,7 @@ namespace ss {
 	}
 	
 	
-	void WorkerTaskManager::addBuffer( size_t task_id , network::WorkerDataExchange& workerDataExchange , Buffer* buffer  )
+	void WorkerTaskManager::addBuffer( size_t task_id , network::WorkerDataExchange& workerDataExchange , engine::Buffer* buffer  )
 	{
 		// Create the task
 		WorkerTask *t = task.findInMap( task_id );

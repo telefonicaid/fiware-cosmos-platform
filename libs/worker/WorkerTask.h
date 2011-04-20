@@ -2,16 +2,22 @@
 #ifndef _H_WORKER_TASK
 #define _H_WORKER_TASK
 
-#include "au_map.h"				// au::map
+#include "au/map.h"				// au::map
 #include <cstring>				// size_t
 #include <string>				// std::string
 #include "samson/Operation.h"	// ss::Operation
 #include "samson.pb.h"			// ss::network::...
 #include "samson/Environment.h"	// ss::Environment
 #include <set>					// std::set
-#include "Error.h"				// au::Error
+#include "au/Error.h"				// au::Error
 #include "EngineNotification.h" // ss::EngineNotificationListener
 #include "coding.h"             // ss::KVInfo
+#include "Buffer.h"
+#include "MemoryRequest.h"  
+#include "DiskOperation.h"  
+#include "ProcessItem.h"
+
+#define notification_sub_task_finished      "notification_sub_task_finished"
 
 namespace ss {
 
@@ -21,9 +27,6 @@ namespace ss {
 	class WorkerSubTask;
 	class QueueuBufferVector;
 	class DataBufferProcessItem;
-	class MemoryRequest;
-	class Buffer;
-	class DiskOperation;
 	
     
     /*
@@ -63,7 +66,7 @@ namespace ss {
         
     };
         
-	class WorkerTask : public EngineNotificationListener
+	class WorkerTask : public engine::NotificationListener
 	{
 		
         
@@ -138,20 +141,20 @@ namespace ss {
 		void kill();
 		
 		// Processign income buffers
-		void addBuffer( network::WorkerDataExchange& workerDataExchange , Buffer *buffer );
+		void addBuffer( network::WorkerDataExchange& workerDataExchange , engine::Buffer *buffer );
 
         // Notification that a particular worker has finished generating data
         void finishWorker();
         
         // General notification function
-        void notify( EngineNotification* notification );
+        void notify( engine::Notification* notification );
 
         
     public:
         
-        void addKVFile( std::string fileName , std::string queue , Buffer *buffer );   // Only key-value vectors
+        void addKVFile( std::string fileName , std::string queue , engine::Buffer *buffer );   // Only key-value vectors
         
- 		void addFile(  std::string fileName , std::string queue , KVInfo info , Buffer *buffer);    // Add registration of this file and notify the disk operation
+ 		void addFile(  std::string fileName , std::string queue , KVInfo info , engine::Buffer *buffer);    // Add registration of this file and notify the disk operation
         void addFile( std::string fileName , std::string queue , KVInfo info );                     // Basic call to add registration
 		void removeFile(  std::string fileName , std::string queue );
 
@@ -166,11 +169,11 @@ namespace ss {
         
     private:
 
-        void addDiskOperation( DiskOperation *operation );
-        void addProcessItem( ProcessItem *item );
+        void addDiskOperation( engine::DiskOperation *operation );
+        void addProcessItem( engine::ProcessItem *item );
         
-        void setNotificationCommonEnvironment( EngineNotification*notification );
-        bool acceptNotification( EngineNotification* notification );
+        void setNotificationCommonEnvironment( engine::Notification*notification );
+        bool acceptNotification( engine::Notification* notification );
         
 #pragma mark Messages
 		

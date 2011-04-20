@@ -114,7 +114,7 @@ namespace ss {
 		 Otherwise we halt notifying this to the ProcessManager
 		 */
 		
-		if( Engine::shared()->memoryManager.getMemoryUsageOutput() >= 1.0)
+		if( engine::MemoryManager::shared()->getMemoryUsageOutput() >= 1.0)
 			halt();
 		
 #pragma mark ---		
@@ -155,7 +155,7 @@ namespace ss {
 				
 				if( _channel->info.size > 0)
 				{
-					Buffer *buffer = Engine::shared()->memoryManager.newBuffer( "ProcessWriter", KVFILE_TOTAL_HEADER_SIZE + _channel->info.size , Buffer::output );
+                    engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "ProcessWriter", KVFILE_TOTAL_HEADER_SIZE + _channel->info.size , engine::Buffer::output );
 					if( !buffer )
 						LM_X(1,("Internal error: Missing buffer in ProcessBase"));
 					
@@ -233,7 +233,7 @@ namespace ss {
 		 Otherwise we halt notifying this to the ProcessManager
 		 */
 		
-		if( Engine::shared()->memoryManager.getMemoryUsageOutput() >= 1.0)
+		if( engine::MemoryManager::shared()->getMemoryUsageOutput() >= 1.0)
 			halt();
 		
 #pragma mark ---		
@@ -252,7 +252,7 @@ namespace ss {
 			
 			//size_t task_id = task->workerTask.task_id();
 			
-			Buffer *buffer = Engine::shared()->memoryManager.newBuffer( "ProcessTXTWriter", *size , Buffer::output );
+			engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "ProcessTXTWriter", *size , engine::Buffer::output );
 			if( !buffer )
 				LM_X(1,("Internal error"));
 

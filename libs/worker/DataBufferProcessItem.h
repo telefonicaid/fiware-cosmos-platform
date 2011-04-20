@@ -3,20 +3,20 @@
 
 
 #include "ProcessItem.h"		// ss::ProcessItem
+#include "Buffer.h"
 
 namespace ss {
 	
 	class QueueuBufferVector;
-	class Buffer;
 	
 	
-	class DataBufferProcessItem : public ProcessItem
+	class DataBufferProcessItem : public engine::ProcessItem
 	{
 		
 	public:
 		
 		QueueuBufferVector *bv;		// Input vector of buffers
-		Buffer *buffer;				// Resulting new buffer
+		engine::Buffer *buffer;				// Resulting new buffer
 		
 		DataBufferProcessItem( QueueuBufferVector * _bv );
 		

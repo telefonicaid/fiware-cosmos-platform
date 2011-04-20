@@ -29,7 +29,7 @@
 #include "ports.h"              // LOG_SERVER_PORT
 #include "daemonize.h"          // daemonize
 #include "processList.h"        // processListInit, Add, Remove and Lookup
-
+#include "samsonDirectories.h"  // SAMSON_PLATFORM_PROCESSES
 
 
 /* ****************************************************************************

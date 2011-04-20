@@ -1,13 +1,13 @@
 #ifndef _H_CONTROLLER_TASK_MANAGER
 #define _H_CONTROLLER_TASK_MANAGER
 
-#include "Lock.h"							// au::Lock
+#include "au/Lock.h"							// au::Lock
 #include <map>								// std::map
 #include <vector>							// std::vector
 #include "Endpoint.h"						// ss::Endpoint
 #include <sstream>							// ss::ostringstream
 #include "samson.pb.h"						// network::Messages...
-#include "au_map.h"							// au::map
+#include "au/map.h"							// au::map
 
 namespace ss {
 

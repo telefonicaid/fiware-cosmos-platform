@@ -8,7 +8,6 @@
 
 namespace ss
 {
-	
 
 	ProcessParser::ProcessParser( ParserSubTask *_parserSubTask ) : ProcessBase( _parserSubTask->task , ProcessBase::key_value  )
 	{
@@ -34,7 +33,6 @@ namespace ss
             data = NULL;
             size = 0;
         }
-		
 	}
 
 	void ProcessParser::generateKeyValues( KVWriter *writer )
@@ -64,4 +62,5 @@ namespace ss
 		Engine::shared()->memoryManager.destroyBuffer(b);
 		*/	
 	}	
+
 }

@@ -1,7 +1,7 @@
 #ifndef _H_JOB
 #define _H_JOB
 
-#include "Lock.h"							// au::Lock
+#include "au/Lock.h"							// au::Lock
 #include <map>								// std::map
 #include <vector>							// std::vector
 #include <sstream>							// ss::ostringstream

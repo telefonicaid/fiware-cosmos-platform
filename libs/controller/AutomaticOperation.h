@@ -9,7 +9,7 @@
 #include "samson.pb.h"					// ss::network::...
 #include <vector>						// std::vector
 #include <iostream>						// std::cout
-#include "Lock.h"						// au::Lock
+#include "au/Lock.h"						// au::Lock
 #include "logMsg.h" // LM_X
 
 namespace ss {

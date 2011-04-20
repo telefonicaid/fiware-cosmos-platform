@@ -8,8 +8,8 @@
 #include <set>
 #include <iostream>
 #include "MonitorParameter.h"			// ss::MonitorParameter
-#include "Lock.h"						// au::Lock
-#include "au_map.h"						// au::map
+#include "au/Lock.h"						// au::Lock
+#include "au/map.h"						// au::map
 
 namespace ss {
 

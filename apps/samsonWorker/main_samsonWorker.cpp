@@ -19,6 +19,9 @@
 #include "Engine.h"				// ss::Engine
 #include "SharedMemoryManager.h"    // ss::SharedMemoryManager
 
+#include "DiskManager.h"            // engine::DiskManager
+#include "ProcessManager.h"         // engine::ProcessManager
+
 
 /* ****************************************************************************
 *
@@ -104,11 +107,15 @@ int main(int argC, const char *argV[])
 	logFd = lmFirstDiskFileDescriptor();
 
 	ss::SamsonSetup::load(workingDir);  // Load setup and create default directories
-    ss::SharedMemoryManager::init();
-	ss::Engine::init();
+    
+	engine::SharedMemoryManager::init(ss::SamsonSetup::shared()->num_processes * 2 , ss::SamsonSetup::shared()->shared_memory_size_per_buffer);
+	engine::Engine::init();
 	ss::ModulesManager::init();
-	
+	engine::DiskManager::init( 1 );
+	engine::ProcessManager::init( ss::SamsonSetup::shared()->num_processes );
+	engine::MemoryManager::init(  ss::SamsonSetup::shared()->memory );    
 
+    
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
 	ss::Network network(ss::Endpoint::Worker, alias, WORKER_PORT, endpoints, 1);
@@ -129,6 +136,6 @@ int main(int argC, const char *argV[])
 	worker = new ss::SamsonWorker(&network);
 
 	// Run the main engine
-	ss::Engine::shared()->run();
+	engine::Engine::run();
 
 }

@@ -12,8 +12,8 @@
 #include "FakeEndpoint.h"		// ss::EndPoint
 #include "NetworkFake.h"        // NetworkFake
 #include "Packet.h"				// ss::Packet
-#include "Token.h"				// au::Token
-#include "Stopper.h"			// au::Stopper
+#include "au/Token.h"				// au::Token
+#include "au/Stopper.h"			// au::Stopper
 
 namespace ss {
 	

@@ -1,9 +1,9 @@
 #include "parseArgs.h"          // parseArgs
 #include "DelilahConsole.h"		// ss::DelilahConsole
 #include "SamsonSetup.h"		// ss::SamsonSetup
-#include "Format.h"				// au::Format
+#include "au/Format.h"				// au::Format
 #include "MemoryManager.h"      // ss::MemoryManager
-#include "Engine.h"				// ss::Engine
+#include "Engine.h"				// engine::Engine
 
 
 /* ****************************************************************************
@@ -68,7 +68,7 @@ int main(int argC, const char *argV[])
 	ss::SamsonSetup::shared()->memory			= (size_t) memory_gb * (size_t) (1024*1024*1024);
 	ss::SamsonSetup::shared()->load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
 
-	ss::Engine::init();
+	engine::Engine::init();
 	
 	std::cout << "Waiting for network connection ...";
 	
@@ -87,7 +87,7 @@ int main(int argC, const char *argV[])
 	ss::DelilahConsole delilahConsole( &network );
 	
 	
-	ss::Engine::shared()->runInBackground();
+	engine::Engine::runInBackground();
 	
     
 	if ( strcmp( commandFileName,"") != 0 )
@@ -122,8 +122,6 @@ int main(int argC, const char *argV[])
 		
 		fclose(f);
 		
-		// Exit the engine
-		ss::Engine::shared()->quit();
         
 		LM_M(("samsonLocal exit correctly"));
 		
@@ -131,7 +129,5 @@ int main(int argC, const char *argV[])
 	}    
     
 	delilahConsole.run();
-	
-	ss::Engine::shared()->quit();
 	
 }

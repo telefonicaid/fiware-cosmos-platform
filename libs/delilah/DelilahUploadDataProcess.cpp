@@ -128,14 +128,14 @@ namespace ss
 				return;
 			
 			// Wait if memory is not released
-			while( ( Engine::shared()->memoryManager.getMemoryUsageOutput() > 1.0 ) || ( num_threads >= max_num_threads ) )
+			while( ( engine::MemoryManager::shared()->getMemoryUsageOutput() > 1.0 ) || ( num_threads >= max_num_threads ) )
             {
                 // Bloques for memory of thread puposes
 				sleep(1);
             }
 			
 			// Create a buffer
-			Buffer *b = Engine::shared()->memoryManager.newBuffer( "Loading buffer" , ss::SamsonSetup::shared()->load_buffer_size , Buffer::output );
+            engine::Buffer *b = engine::MemoryManager::shared()->newBuffer( "Loading buffer" , ss::SamsonSetup::shared()->load_buffer_size , engine::Buffer::output );
 			
 			// Fill the buffer with the contents from the file
 			fileSet.fill( b );
@@ -216,21 +216,10 @@ namespace ss
 		// Compress the buffer
 		if ( pd->uploadDataProcess->compression )
 		{
-			
-			{
-				std::ostringstream message;
-				message << "[ " << id << " ] < Buffer " << file_id << " > Compressing buffer ( Size: " <<  au::Format::string(original_size) << " )";
-				pd->delilah->showTrace( message.str() );
-			}
-			
-			
-			Buffer *buffer = Packet::compressBuffer( pd->p->buffer );
-			Engine::shared()->memoryManager.destroyBuffer( pd->p->buffer );
-			pd->p->buffer = buffer;
-			
-			compress_size = pd->p->buffer->getSize();
-		
-			pd->loadDataFile->set_file_ext("txt.gz" );
+            LM_X(1,("Not implemented!!"));
+            /*
+             ??
+             */
 			
 		}
 		else
@@ -474,8 +463,8 @@ namespace ss
         
         // Memory and process
         output << "\n\tParalel processes: " << num_threads << " / " << max_num_threads;
-        output << "\n\tOutput memory usage " << au::Format::percentage_string( Engine::shared()->memoryManager.getMemoryUsageOutput() );
-        output << " of " << au::Format::string( Engine::shared()->memoryManager.getMemory() , "B" );
+        output << "\n\tOutput memory usage " << au::Format::percentage_string( engine::MemoryManager::shared()->getMemoryUsageOutput() );
+        output << " of " << au::Format::string( engine::MemoryManager::shared()->getMemory() , "B" );
         
         // Status of the file source
 		output << "\n\tFile source: " << fileSet.getStatus();

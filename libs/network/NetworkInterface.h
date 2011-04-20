@@ -12,7 +12,7 @@
 
 #include "Message.h"            // ss::Message::MessageCode
 #include "Endpoint.h"           // ss::Endpoint::Type
-#include "Lock.h"				// au::Lock
+#include "au/Lock.h"				// au::Lock
 
 
 

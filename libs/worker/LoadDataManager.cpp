@@ -7,6 +7,7 @@
 #include "SamsonSetup.h"			// ss::SamsonSetup
 #include "DiskOperation.h"			// ss::DiskOperation
 #include "Engine.h"                 // ss::Engine
+#include "DiskManager.h"            // Notifications
 
 namespace ss
 {
@@ -23,7 +24,7 @@ namespace ss
 
 #pragma mark UploadItem
 	
-	UploadItem::UploadItem(size_t id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadDataFile &_upload_data_file ,size_t _sender_id, Buffer * _buffer ) 
+	UploadItem::UploadItem(size_t id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadDataFile &_upload_data_file ,size_t _sender_id, engine::Buffer * _buffer ) 
 		: LoadDataManagerItem( id,  _fromIdentifier , dataManager)
 	{
 		upload_data_file = new network::UploadDataFile();
@@ -46,14 +47,14 @@ namespace ss
 	void UploadItem::submitToFileManager()
 	{
 		// Add to the file manager to be stored on disk
-		DiskOperation *operation = DiskOperation::newWriteOperation( buffer , fileName );
+        engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( buffer , SamsonSetup::dataFile( fileName ) );
 
 		// Submit to the engine
-        EngineNotification *notification = new EngineNotification( notification_disk_operation_request , operation );
-        notification->set("target", "LoadDataManager");
-        notification->setSizeT("id", id);
-        notification->setInt("worker", dataManager->worker->network->getWorkerId());
-        Engine::shared()->notify( notification);
+        engine::Notification *notification = new engine::Notification( notification_disk_operation_request , operation );
+        notification->environment.set("target", "LoadDataManager");
+        notification->environment.setSizeT("id", id);
+        notification->environment.setInt("worker", dataManager->worker->network->getWorkerId());
+        engine::Engine::notify( notification);
 	}
 
 	void UploadItem::sendResponse( bool error , std::string error_message )
@@ -108,20 +109,20 @@ namespace ss
 		std::string fileName = download_data_file->file().name();
 		size_t size = au::Format::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );
 
-		buffer = Engine::shared()->memoryManager.newBuffer( "Buffer for downloading data" , size , Buffer::output );
+		buffer = engine::MemoryManager::shared()->newBuffer( "Buffer for downloading data" , size , engine::Buffer::output );
 		buffer->setSize( size );
 
-		DiskOperation *operation = DiskOperation::newReadOperation( buffer->getData() , fileName , 0 , size );
+        engine::DiskOperation *operation = engine::DiskOperation::newReadOperation( buffer->getData() ,  SamsonSetup::dataFile(fileName) , 0 , size );
         
 		// Submit the operation to the engine
-        EngineNotification *notification = new EngineNotification( notification_disk_operation_request , operation );
+        engine::Notification *notification = new engine::Notification( notification_disk_operation_request , operation );
         
-        notification->set("target", "LoadDataManager");
-        notification->setSizeT("id", id);
-        notification->setInt("worker", dataManager->worker->network->getWorkerId());
+        notification->environment.set("target", "LoadDataManager");
+        notification->environment.setSizeT("id", id);
+        notification->environment.setInt("worker", dataManager->worker->network->getWorkerId());
         
         // add something here to identify as yours
-        Engine::shared()->notify( notification);
+        engine::Engine::notify( notification);
 	}
 	
 
@@ -161,16 +162,16 @@ namespace ss
         id = 1;
         
         // Add this object as a listener of notification_disk_operation_request_response
-        Engine::shared()->notificationSystem.add( notification_disk_operation_request_response , this );
+        engine::Engine::add( notification_disk_operation_request_response , this );
 	}
 	
 
     LoadDataManager::~LoadDataManager()
     {
-        Engine::shared()->notificationSystem.remove( this );
+        engine::Engine::remove( this );
     }
     
-	void LoadDataManager::addUploadItem( int fromIdentifier, const network::UploadDataFile &uploadData ,size_t sender_id, Buffer * buffer )
+	void LoadDataManager::addUploadItem( int fromIdentifier, const network::UploadDataFile &uploadData ,size_t sender_id, engine::Buffer * buffer )
 	{
 		lock.lock();
 		
@@ -200,42 +201,42 @@ namespace ss
 		
 	}
 	
-    void LoadDataManager::setNotificationCommonEnvironment( EngineNotification* notification )
+    void LoadDataManager::setNotificationCommonEnvironment( engine::Notification* notification )
     {
-        notification->set("target", "LoadDataManager" );
-        notification->setInt("worker", worker->network->getWorkerId());
+        notification->environment.set("target", "LoadDataManager" );
+        notification->environment.setInt("worker", worker->network->getWorkerId());
     }
     
-    bool LoadDataManager::acceptNotification( EngineNotification* notification )
+    bool LoadDataManager::acceptNotification( engine::Notification* notification )
     {
-        if( notification->get("target","") != "LoadDataManager" )
+        if( notification->environment.get("target","") != "LoadDataManager" )
             return false;
         
-        if( notification->getInt("worker", -1) != worker->network->getWorkerId() )
+        if( notification->environment.getInt("worker", -1) != worker->network->getWorkerId() )
             return false;
         
         return  true;
     }
     
-    void LoadDataManager::notify( EngineNotification* notification )
+    void LoadDataManager::notify( engine::Notification* notification )
     {
-        if( notification->channel != notification_disk_operation_request_response )
+        if( !notification->isName( notification_disk_operation_request_response ) )
             LM_X(1,("LoadDataManager received a wrong notification"));
         
-        if( notification->object.size() != 1)
+        if( !notification->object )
             LM_X(1,("LoadDataManager received a notification_disk_operation_request_response with a wrong number of parameters"));
         
-        DiskOperation *operation = (DiskOperation*) notification->object[0];
-        notification->object.clear();
+        engine::DiskOperation *operation = (engine::DiskOperation*) notification->object;
+        notification->object = NULL;
         
-        size_t _id = notification->getSizeT("id", 0);
+        size_t _id = notification->environment.getSizeT("id", 0);
         
         if( _id == 0)
             LM_W(("LoadDataManger received a notification_disk_operation_request_response without id field"));
         
         switch ( operation->getType() ) {
                 
-			case DiskOperation::read:
+			case engine::DiskOperation::read:
 			{
 				DownloadItem* download = downloadItem.extractFromMap( _id );
 				
@@ -248,7 +249,7 @@ namespace ss
 			}
                 
 				break;
-			case DiskOperation::write:
+			case engine::DiskOperation::write:
 			{
 				UploadItem* upload = uploadItem.extractFromMap( _id );
 				
@@ -260,7 +261,7 @@ namespace ss
 				
 			}
 				break;
-			case DiskOperation::remove:
+			case engine::DiskOperation::remove:
 				break;
 			default:
 				break;

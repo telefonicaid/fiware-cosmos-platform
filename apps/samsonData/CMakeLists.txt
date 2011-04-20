@@ -7,7 +7,7 @@ SET (HEADERS
 
 SET( STATIC_LIBS
      samsonNetwork
-     samsonCore
+     engine
      samsonCommon
      samsonDataLib
      delilahLib
@@ -21,6 +21,7 @@ SET( STATIC_LIBS
 # Include directories
 # ------------------------------------------------------------
 
+include_directories("${PROJECT_SOURCE_DIR}/libs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_BINARY_DIR}/libs/network")

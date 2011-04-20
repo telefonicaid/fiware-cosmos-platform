@@ -63,7 +63,7 @@ namespace ss {
 		}
 		
 		// Read as much as possible breaking in lines
-		void fill( Buffer *b );
+		void fill( engine::Buffer *b );
 		
 		std::vector<std::string> getFailedFiles()
 		{

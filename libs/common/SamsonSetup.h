@@ -56,7 +56,8 @@ namespace ss {
 		// --------------------------------------------
 		
 		int num_paralell_outputs;	// Maximum number of outputs for all the working operations
-		
+        
+        static std::string dataFile( std::string filename );
 		
 	private:
 		

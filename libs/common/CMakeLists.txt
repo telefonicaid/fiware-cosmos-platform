@@ -1,43 +1,25 @@
 SET (HEADERS
+        SamsonNotifications.h
 	samson.pb.h
 	ports.h
 	samsonDirectories.h
 	samsonLogMsg.h
-	Format.h
-	LockDebugger.h
-	Token.h
-	Stopper.h
-	Lock.h
-	StopLock.h
 	SamsonSetup.h
 	traces.h
-	au_map.h
-	Error.h
 	MessagesOperations.h
-	Console.h
-	CommandLine.h
 	daemonize.h
 	EnvironmentOperations.h
 	platformProcesses.h
 	Process.h
 	samsonConfig.h
 	coding.h
-	SimpleBuffer.h
 )
 
 SET (SOURCES
 	samson.pb.cc
-	LockDebugger.cpp
-	Lock.cpp
-	Token.cpp
-	Stopper.cpp
 	SamsonSetup.cpp
 	traces.cpp
-	Error.cpp
 	MessagesOperations.cpp
-	Console.cpp
-	Format.cpp
-	CommandLine.cpp
 	daemonize.cpp
 	EnvironmentOperations.cpp
 	platformProcesses.cpp
@@ -54,8 +36,11 @@ add_custom_command (
 
 # Include directories
 # -----------------------------------------------------------------
+include_directories("${PROJECT_SOURCE_DIR}/libs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
+include_directories("${PROJECT_SOURCE_DIR}/libs/engine")
+
 
 
 # Library declaration

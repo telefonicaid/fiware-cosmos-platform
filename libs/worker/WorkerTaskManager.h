@@ -2,9 +2,9 @@
 #define _H_WORKER_TASK_MANAGER
 
 #include <list>							// std::list
-#include "au_map.h"						// au::map
+#include "au/map.h"						// au::map
 #include "samson.pb.h"					// WorkerTask
-#include "Token.h"						// au::Token
+#include "au/Token.h"						// au::Token
 #include "samson.pb.h"					// ss::network::...
 #include "ProcessItem.h"				// ss::ProcessManagerDelegate
 #include "Buffer.h"						// ss::Buffer
@@ -19,7 +19,9 @@ namespace ss {
 	class WorkerTask;
 	class NetworkInterface;
 	
-	class WorkerTaskManager : public EngineNotificationListener 		// Receive notifications from the process manager
+    #define notification_task_finished  "notification_task_finished"
+    
+	class WorkerTaskManager : public engine::NotificationListener 		// Receive notifications from the process manager
 	{
 		
 	public:
@@ -42,7 +44,7 @@ namespace ss {
 		void killTask( const network::WorkerTaskKill &task_kill );
 		
 		// Add a buffer from other workers ( associated to a particular task and output queue)
-		void addBuffer( size_t task_id , network::WorkerDataExchange& workerDataExchange , Buffer* buffer );
+		void addBuffer( size_t task_id , network::WorkerDataExchange& workerDataExchange , engine::Buffer* buffer );
 				
 		// Notification that a worker has finish produccing data for a task
 		void finishWorker( size_t task_id );
@@ -57,9 +59,9 @@ namespace ss {
 		std::string getStatus();
 	
         // Notification from the engine about finished tasks
-        void notify( EngineNotification* notification );
+        void notify( engine::Notification* notification );
         
-        virtual bool acceptNotification( EngineNotification* notification );
+        virtual bool acceptNotification( engine::Notification* notification );
         
 	};
 	 

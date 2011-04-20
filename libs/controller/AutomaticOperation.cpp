@@ -1,7 +1,7 @@
 
 #include "AutomaticOperation.h"			// Own interface
 #include "Queue.h"						// ss::Queue
-#include "Format.h"						// au::Format
+#include "au/Format.h"						// au::Format
 
 namespace ss {
 

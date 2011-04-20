@@ -11,15 +11,21 @@
 #include "Packet.h"                     // ss::Packet
 #include "Network.h"                    // NetworkInterface
 #include "Endpoint.h"                   // Endpoint
-#include "CommandLine.h"                // CommandLine
+#include "au/CommandLine.h"                // CommandLine
 #include "SamsonWorker.h"               // Own interfce
 #include "SamsonSetup.h"				// ss::SamsonSetup
-#include "Format.h"						// au::Format
+#include "au/Format.h"						// au::Format
 
 #include "MemoryManager.h"				// ss::SharedMemory
 
-#include "Engine.h"						// ss::Engine
+#include "Engine.h"						// engine::Engine
 #include "DiskOperation.h"				// ss::DiskOperation
+#include "DiskManager.h"                // Notifications
+#include "ProcessManager.h"             // engine::ProcessManager
+#include "SharedMemoryManager.h"        // engine::SharedMemoryManager
+
+
+#define notification_worker_update_files    "notification_worker_update_files"
 
 namespace ss {
 	
@@ -39,21 +45,29 @@ namespace ss {
 		network->setPacketReceiver(this);
 		
 		srand((unsigned int) time(NULL));
-		
-		// Add the updater to the Engine
-		Engine::shared()->add( new SamsonWorkerStatusUpdater(this) );
-		
-		// Add the file updater to the Engine
-		//Engine::shared()->add( new SamsonWorkerFileUpdater(this) );
         
         // Add SamsonWorker as listener of the update files
-        Engine::shared()->notificationSystem.add(notification_worker_update_files, this);
+        engine::Engine::add(notification_worker_update_files, this);
+        
+        // Add samsonWorker as listere to send an update of the satatus
+        engine::Engine::add(notification_samson_worker_send_status_update, this);
         
         // Notification of the files
-        EngineNotification *notification = new EngineNotification(notification_worker_update_files);
-        notification->set("target", "SamsonWorker");
-        notification->setInt("worker", network->getWorkerId() );
-        Engine::shared()->notify( notification, 5 );
+        {
+        engine::Notification *notification = new engine::Notification(notification_worker_update_files);
+        notification->environment.set("target", "SamsonWorker");
+        notification->environment.setInt("worker", network->getWorkerId() );
+        engine::Engine::notify( notification, 5 );
+        }
+        
+        // Notification to update state
+        {
+        engine::Notification *notification = new engine::Notification(notification_samson_worker_send_status_update);
+        notification->environment.set("target", "SamsonWorker");
+        notification->environment.setInt("worker", network->getWorkerId() );
+        engine::Engine::notify( notification, 3 );
+        }
+        
         
 	}
 	
@@ -87,8 +101,17 @@ namespace ss {
 		taskManager.fill(ws);
 		
 		// Fill information related with file manager and disk manager
-		Engine::shared()->fill( ws );
+        ws->set_engine_status( engine::Engine::str() );
 
+        // Memory manager
+        ws->set_memory_status( engine::MemoryManager::str() );
+
+        // Process manager
+        ws->set_process_manager_status( engine::ProcessManager::str() );
+
+        // Disk manager
+        ws->set_disk_manager_status( engine::DiskManager::str() );
+        
 		// Load data manager
 		loadDataManager.fill( ws );
 		
@@ -96,13 +119,24 @@ namespace ss {
         ws->set_network_status( network->getState("") );
         
         // Shared memory manager status
-        SharedMemoryManager::shared()->fill( ws );
+        ws->set_shared_memory_status( engine::SharedMemoryManager::str() );
 
         // Set up time information
         ws->set_up_time(au::Format::ellapsedSeconds(&init_time));
         
         // Send the message    
 		network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);
+        
+        // Numerical information for better presentation
+        
+        ws->set_total_memory( engine::MemoryManager::getMemory());
+        ws->set_used_memory( engine::MemoryManager::getUsedMemory());
+        
+        ws->set_total_cores(engine::ProcessManager::getNumCores());
+        ws->set_used_cores(engine::ProcessManager::getNumUsedCores());
+
+        ws->set_disk_pending_operations(engine::DiskManager::getNumOperations());
+        
 	}
 	
 	/* ****************************************************************************
@@ -196,29 +230,24 @@ namespace ss {
 	}
 	
     // Receive notifications
-    void SamsonWorker::notify( EngineNotification* notification )
+    void SamsonWorker::notify( engine::Notification* notification )
     {
-        switch (notification->channel) {
-
-            case notification_worker_update_files:
-                sendFilesMessage();
-                break;
-                
-            default:
-                LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
-                break;
-        }
-        
+        if ( notification->isName(notification_worker_update_files) )
+            sendFilesMessage();
+        else if ( notification->isName(notification_samson_worker_send_status_update))
+			sendWorkerStatus();
+        else
+            LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
     }
     
-    bool SamsonWorker::acceptNotification( EngineNotification* notification )
+    bool SamsonWorker::acceptNotification( engine::Notification* notification )
     {
         // Only accept notifications for my worker. This is only necessary when testing samsonLocal with multiple workers
         
-        if( notification->get("target","") != "SamsonWorker" )
+        if( notification->environment.get("target","") != "SamsonWorker" )
             return  false;
         
-        if( notification->getInt("worker", -1) != network->getWorkerId() )
+        if( notification->environment.getInt("worker", -1) != network->getWorkerId() )
             return false;
         
         return true;
@@ -324,9 +353,9 @@ namespace ss {
 		for ( std::set< std::string >::iterator f = remove_files.begin() ; f != remove_files.end() ; f++)
 		{
 			// Add a remove opertion to the engine
-            DiskOperation * operation =  DiskOperation::newRemoveOperation( *f );
-            EngineNotification *notification = new EngineNotification( notification_disk_operation_request , operation );
-			Engine::shared()->notify( notification );
+            engine::DiskOperation * operation =  engine::DiskOperation::newRemoveOperation(  SamsonSetup::dataFile(*f) );
+            engine::Notification *notification = new engine::Notification( notification_disk_operation_request , operation );
+			engine::Engine::notify( notification );
 		}
 		
 		

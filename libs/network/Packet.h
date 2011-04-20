@@ -20,7 +20,7 @@
 namespace ss {
 	
 	class Endpoint;
-	class Buffer;
+	class engine::Buffer;
 	
 
 	// This has been removed for simplicity. Files are now uploaded with a particular extension to indicate the compression mode
@@ -62,7 +62,7 @@ namespace ss {
 		int fromId;						// Identifier of the sender of this packet
 		Message::MessageCode msgCode;	// Message code ( sent in the header of the network interface )		
 		network::Message *message;		// Message with necessary fields ( codified with Google Protocol Buffers )
-		Buffer*         buffer;			// Data for key-values
+		engine::Buffer* buffer;			// Data for key-values
 		
 		Packet() 
 		{
@@ -75,78 +75,6 @@ namespace ss {
 			delete message;
 		}
 		
-
-		static Buffer* compressBuffer( Buffer *buffer )
-		{
-			
-			// Check input buffer format
-			//BufferHeader *_header = (BufferHeader*) buffer->getData();
-			//if( !_header->check() )
-		        // LM_X(1,("Error checking header magin number"));
-			//if( _header->compressed != 0)
-                        // LM_X(1,("Error checking header of compressed file"));
-			
-			// Create the header for the output buffer
-			//BufferHeader header;						// Header to write as header output
-			//header.init( 1 );							// Init header ( and magic number )
-
-			// Get the original size
-			size_t original_size = buffer->getSize();
-			
-			// Destination buffer
-			long int cm_max_len = EZ_COMPRESSMAXDESTLENGTH( original_size );
-			long int cm_len = cm_max_len;
-
-			// Get a new buffer ( a little bit larger )
-			Buffer *b = Engine::shared()->memoryManager.newBuffer( "Compressed buffer", cm_len , buffer->getType() );
-			
-			int ans_compress = ezcompress( ( unsigned char*) ( b->getData() ), &cm_len, ( unsigned char*) (buffer->getData() ) , original_size );
-			if (ans_compress != 0)
-				LM_X(1, ("ezcompress error"));
-
-			b->setSize(cm_len);			// Set the size of the compressed buffer
-
-			
-			// Create a new buffer with the rigth size
-			Buffer *b2 = Engine::shared()->memoryManager.newBuffer( "Compressed buffer2", b->getSize() , buffer->getType()	);
-			memcpy(b2->getData(), b->getData(), b->getSize());
-			b2->setSize(b->getSize());
-
-			Engine::shared()->memoryManager.destroyBuffer( b );
-			
-			return b2;
-			
-		}
-		
-		static Buffer* decompressBuffer(Buffer *buffer)
-		{
-			return decompressBuffer( buffer->getData() , buffer->getSize() , buffer->getType() );
-		}
-		
-		
-		static Buffer* decompressBuffer( char * data , size_t length , Buffer::BufferType type )
-		{
-			// Get the buffer with the rigth size
-			LM_TODO(("Review the decompression process estimating the original size on the fly"));
-			exit(1);
-			
-			size_t compressed_size = length;
-			
-			long int m2_len = 0; //?
-			Buffer *b =  Engine::shared()->memoryManager.newBuffer( "Decompressed buffer" , m2_len , type );
-			b->setSize(m2_len);
-			
-			// Decompress information
-			int ans_decompress = ezuncompress( (unsigned char*) b->getData(), &m2_len, (unsigned char*) ( data  ) , compressed_size );	
-
-			if (ans_decompress != 0)
-				LM_X(1, ("ezuncompress error"));
-			
-			
-			return b;
-			
-		}
-
 		
 		
 	};

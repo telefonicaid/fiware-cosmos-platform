@@ -8,7 +8,7 @@
 #include "Delilah.h"					// ss::Delilah
 #include "DelilahClient.h"				// ss::DelilahClient
 #include <list>							// std::list
-#include "Error.h"						// au::Error
+#include "au/Error.h"						// au::Error
 
 namespace ss {
 
@@ -42,7 +42,7 @@ namespace ss {
 		FILE *file;					// File descriptor
 		
         // List of buffers pendign to be writen per worker
-		std::list<Buffer*> buffers;	
+		std::list<engine::Buffer*> buffers;	
 		
         // Offset for each file
         std::vector<size_t> offset_per_file;

@@ -4,8 +4,8 @@
 #include <string>
 
 #include "samson.pb.h"					// ss::network:...
-#include "au_map.h"						// au::map
-#include "Lock.h"						// au::Lock
+#include "au/map.h"						// au::map
+#include "au/Lock.h"						// au::Lock
 #include "samsonDirectories.h"			// SAMSON_DATA_DIRECTORY
 #include "SamsonSetup.h"				// ss::SamsonSetup
 
@@ -24,7 +24,7 @@ namespace ss {
 		size_t id;								// Identifier inside LoadDataManager
 		
 		int fromIdentifier;						// Dalilah identifier to send responses		
-		Buffer *buffer;							// Buffer allocated for this task		
+		engine::Buffer *buffer;							// Buffer allocated for this task		
 		LoadDataManager *dataManager;			// Pointer to the data manager		
 		
 		LoadDataManagerItem( size_t _id, int _fromIdentifier , LoadDataManager *dataManager );		
@@ -46,7 +46,7 @@ namespace ss {
 		size_t size;								// Size of the uploaded file
 		
 		
-		UploadItem( size_t _id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadDataFile &_uploadDataFile , size_t sender_id,  Buffer * buffer );
+		UploadItem( size_t _id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadDataFile &_uploadDataFile , size_t sender_id,  engine::Buffer * buffer );
 		~UploadItem();
 		
 		void submitToFileManager();
@@ -98,7 +98,7 @@ namespace ss {
 	};
 	
 	
-	class LoadDataManager : public EngineNotificationListener
+	class LoadDataManager : public engine::NotificationListener
 	{
 		friend class UploadItem;
 		friend class DownloadItem;
@@ -121,15 +121,15 @@ namespace ss {
         ~LoadDataManager();
 		
 		// Add item to upload data
-		void addUploadItem( int fromIdentifier, const network::UploadDataFile &uploadDataFile ,size_t sender_id, Buffer * buffer  );
+		void addUploadItem( int fromIdentifier, const network::UploadDataFile &uploadDataFile ,size_t sender_id, engine::Buffer * buffer  );
 		
 		// add item to download data
 		void addDownloadItem( int fromIdentifier, const network::DownloadDataFile &downloadDataFile, size_t sender_id );
 		
 		// Notifications
-        void notify( EngineNotification* notification );
-        bool acceptNotification( EngineNotification* notification );
-        void setNotificationCommonEnvironment( EngineNotification* notification );
+        void notify( engine::Notification* notification );
+        bool acceptNotification( engine::Notification* notification );
+        void setNotificationCommonEnvironment( engine::Notification* notification );
 
 		// Fill status information	
 		void fill( network::WorkerStatus* ws);

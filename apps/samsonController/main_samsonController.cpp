@@ -19,9 +19,8 @@
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "platformProcesses.h"  // ss::platformProcessesGet, ss::platformProcessesSave
 #include "MemoryManager.h"		// ss::MemoryManager
-#include "LockDebugger.h"       // au::LockDebugger
-#include "Engine.h"				// ss::Engine
-
+#include "Engine.h"				// engine::Engine
+#include "au/LockDebugger.h"    // au::LockDebugger
 
 /* ****************************************************************************
 *
@@ -117,7 +116,7 @@ int main(int argC, const char* argV[])
 	// Init singlentons
 	au::LockDebugger::shared();         // Lock usage debugging (necessary here where there is only one thread)
 	ss::SamsonSetup::load(workingDir);  // Load setup and create all directories
-	ss::Engine::init();					// Init the SamsonEngine
+	engine::Engine::init();					// Init the SamsonEngine
 	ss::ModulesManager::init();			// Init the modules manager
 
 	// Instance of network object and initialization
@@ -136,6 +135,6 @@ int main(int argC, const char* argV[])
 
 
 	// Run the engine function
-	ss::Engine::shared()->run();
+	engine::Engine::run();
 	
 }

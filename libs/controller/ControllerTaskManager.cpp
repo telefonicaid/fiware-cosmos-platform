@@ -1,7 +1,7 @@
 #include "ControllerTaskManager.h"		// Own interface
 #include "ControllerTask.h"				// ss::ControllerTask
 #include "SamsonController.h"			// ss::SamsonController
-#include "CommandLine.h"				// au::CommandLine
+#include "au/CommandLine.h"				// au::CommandLine
 #include "Endpoint.h"					// ss::Endpoint
 #include "Packet.h"						// ss::Packet
 #include "samson/Environment.h"			// ss::Environment

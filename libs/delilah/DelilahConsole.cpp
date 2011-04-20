@@ -8,7 +8,7 @@
 #include "Delilah.h"					// ss::Delailh
 #include "DelilahConsole.h"				// Own interface
 #include "Packet.h"						// ss:Packet
-#include "Format.h"						// au::Format
+#include "au/Format.h"						// au::Format
 #include "DelilahUploadDataProcess.h"		// ss::DelilahUpLoadDataProcess
 #include "DelilahDownloadDataProcess.h"		// ss::DelilahDownLoadDataProcess
 #include "MemoryManager.h"				// ss::MemoryManager
@@ -19,7 +19,7 @@
 #include "samson/samsonVersion.h"		// SAMSON_VERSION
 #include <sys/stat.h>					// stat(.)
 #include <dirent.h>						// DIR directory header	
-#include "CommandLine.h"				// au::CommandLine
+#include "au/CommandLine.h"				// au::CommandLine
 
 namespace ss
 {	

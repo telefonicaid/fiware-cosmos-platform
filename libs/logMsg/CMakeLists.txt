@@ -5,7 +5,6 @@ SET (HEADERS
 
 SET (SOURCES
     logMsg.cpp
-    traceLevels.cpp
 )
 
 # Inclue directories

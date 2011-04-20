@@ -9,8 +9,8 @@
 #include "SamsonSetup.h"				// ss::SamsonSetup
 #include <cstring>						// size_t
 #include <string>						// std::string
-#include "au_map.h"						// au::map
-#include "Lock.h"						// au::Lock
+#include "au/map.h"						// au::map
+#include "au/Lock.h"						// au::Lock
 #include <vector>						// std::vector
 #include "coding.h"						// ss::hg_info , ss::hg_size 
 #include "Buffer.h"						// ss::Buffer
@@ -19,6 +19,7 @@
 #include "samson.pb.h"					// ss::network::...
 #include "BufferVector.h"				// ss::BufferVector
 #include "ProcessItem.h"				// ss::ProcessItem
+#include "Buffer.h"
 
 namespace ss {
 	

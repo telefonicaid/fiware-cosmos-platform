@@ -2,10 +2,10 @@
 
 #include "ControllerDataManager.h"			// Own interface
 #include "ControllerTask.h"					// ControllerTask
-#include "CommandLine.h"					// au::CommandLine
+#include "au/CommandLine.h"					// au::CommandLine
 #include "samson/KVFormat.h"				// ss::KVFormat
 #include "Queue.h"				// ss::Queue
-#include "au_map.h"							// au::insertInMap
+#include "au/map.h"							// au::insertInMap
 #include "DataManager.h"					// ss::DataManagerCommandResponse
 #include "SamsonController.h"				// ss::SamsonController
 #include "coding.h"						// ss::KVInfo

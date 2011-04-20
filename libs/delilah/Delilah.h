@@ -18,11 +18,12 @@
 #include "Endpoint.h"			// Endpoint
 #include "traces.h"				// TRACE_DALILAH
 #include <set>					// std::set
-#include "Token.h"				// au::Lock
-#include "au_map.h"				// au::map
-#include "samson/Environment.h"	                // ss::Environment
-#include "samson.pb.h"			        // ss::network::..
-#include "au_map.h"				// au::simple_map
+#include "au/Token.h"				// au::Lock
+#include "au/map.h"				// au::map
+#include "samson/Environment.h"	// ss::Environment
+#include "samson.pb.h"			// ss::network::..
+#include "au/map.h"				// au::simple_map
+#include "EngineNotification.h" // engine::NotificationListener
 
 namespace ss {
 	
@@ -42,7 +43,7 @@ namespace ss {
 	   Main class for the samson client element
 	 */
 
-	class Delilah : public PacketReceiverInterface, public PacketSenderInterface
+	class Delilah : public PacketReceiverInterface, public PacketSenderInterface , public engine::NotificationListener
 	{
 		// Id counter of the command - messages sent to controller ( commands / upload/ download )
 		size_t id;												
@@ -71,6 +72,9 @@ namespace ss {
 		void initController(std::string controller);
 		void quit();
 
+        // Notification system
+        void notify( engine::Notification* notification );
+        
 		// PacketReceiverInterface
 		void receive( Packet* packet );
 
@@ -122,6 +126,9 @@ namespace ss {
 	private:		
 		
 		size_t addComponent( DelilahComponent* component );
+        
+        void _receive_global_update( Packet *packet );
+        
 		
 	};
 }

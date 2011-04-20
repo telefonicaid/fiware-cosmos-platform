@@ -2,7 +2,7 @@
 
 #include "Job.h"				// Own interface
 #include "SamsonController.h"	// ss::SamsonController
-#include "CommandLine.h"		// au::CommandLine
+#include "au/CommandLine.h"		// au::CommandLine
 #include "samson/Operation.h"	// ss::Operation
 #include "Packet.h"				// ss::Packet
 #include "ControllerTask.h"		// ss::ControllerTaskInfo

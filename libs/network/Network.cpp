@@ -29,7 +29,7 @@
 #include "Alarm.h"              // ALARM
 #include "ports.h"              // Port numbers for samson processes
 
-#include "Format.h"             // au::Format::string
+#include "au/Format.h"             // au::Format::string
 #include "samsonConfig.h"       // SAMSON_MAX_HOSTS
 #include "samson/Log.h"			// LogLineData
 #include "platformProcesses.h"  // platformProcessesGet
@@ -3018,7 +3018,10 @@ void Network::msgTreat(void* vP)
 		{
 			// Remove everything if there is no receiver
 			if (packet->buffer)
-				Engine::shared()->memoryManager.destroyBuffer(packet->buffer);
+            {
+                engine::MemoryManager::shared()->destroyBuffer(packet->buffer);
+                packet->buffer = NULL;
+            }
 			LM_M(("Destroying packet %p", packet));
 			delete packet;	
 		}

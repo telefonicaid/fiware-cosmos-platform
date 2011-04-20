@@ -1,13 +1,13 @@
 #ifndef _H_CONTROLLER_DATA_MANAGER
 #define _H_CONTROLLER_DATA_MANAGER
 
-#include "Lock.h"				// au::Lock
+#include "au/Lock.h"				// au::Lock
 #include <sstream>				// std::ostringstream
 #include "samson/KVFormat.h"	// ss:: KVFormat
-#include "Format.h"				// au::Format
+#include "au/Format.h"				// au::Format
 #include <map>					// std::map
 #include "DataManager.h"		// ss::DataManager
-#include "au_map.h"				// au::map
+#include "au/map.h"				// au::map
 #include "samson.pb.h"			// ss::network::...
 #include "MonitorParameter.h"	// ss::MonitorBlock
 #include "coding.h"				// KVInfo

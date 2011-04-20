@@ -10,7 +10,7 @@
 
 #include <map>							// std::map
 
-#include <samson/Environment.h>			// ss::Environment
+#include <samson/Environment.h>		// ss::Environment
 #include <samson/Tracer.h>              // ss::Tracer
 #include <samson/OperationController.h>	// ss::OperationController
 
@@ -35,8 +35,8 @@ namespace ss {
 		
 	public:
 		
-		Environment	*environment;					// Environment variables
-		Tracer *tracer;								// To send traces for debugging
+		Environment *environment;			// Environment variables
+		Tracer *tracer;					// To send traces for debugging
 		OperationController *operationController;	// Element to interact for operation stuff ( report progress at the moment )
 		
 		OperationInstance()
@@ -48,8 +48,7 @@ namespace ss {
 		}
 
 		/** 
-		 Optional method that can be implemented by custom operation. This method is called with the command line parameters
-		 specified by the user in the MR Console.
+		 Optional method that can be implemented by user
 		 */
 		
 		virtual void setup( std::string command ){}		
@@ -59,14 +58,14 @@ namespace ss {
 		 Perfect place to alloc memory space if necessary
 		 */
 		
-		virtual void init(){};		//Called once when used in a map/reduce
+		virtual void init(){};		//Called once before running any operation
 		
 		/**
 		 Optional method that can be implemented bu custom operation. It is suppoused to be called once at the end of the operation.\n
 		 Perfect place to release memory space if necessary
 		 */
 		
-		virtual void finish(){};	//Called once when used in a map/reduce
+		virtual void finish(){};	//Called once after all operations are executed
 
 	};
 	

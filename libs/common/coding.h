@@ -7,7 +7,7 @@
 *
 */
 #include <samson/Data.h>
-#include "Format.h"			// au::Format
+#include "au/Format.h"			// au::Format
 #include "samson/KVFormat.h"	        // ss::KVFormat
 #include "samson.pb.h"			// network:...
 #include <string.h>			// std::string
@@ -463,9 +463,9 @@ namespace ss {
 			free( cumulative_info );
 		}
 		
-		SimpleBuffer getSimpleBufferForInfo()
+        engine::SimpleBuffer getSimpleBufferForInfo()
 		{
-			return SimpleBuffer( (char*) info , sizeof( KVInfo) * KVFILE_NUM_HASHGROUPS );
+			return engine::SimpleBuffer( (char*) info , sizeof( KVInfo) * KVFILE_NUM_HASHGROUPS );
 		}
 		
 		void setup()

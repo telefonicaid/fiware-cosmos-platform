@@ -12,7 +12,7 @@
 namespace ss
 {
 	
-	void TXTFileSet::fill( Buffer *b )
+	void TXTFileSet::fill( engine::Buffer *b )
 	{
 		
 		// First the header

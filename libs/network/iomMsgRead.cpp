@@ -197,7 +197,7 @@ int iomMsgRead
 
 		// By default all the input packets are for writing locally, so they are unknown.
 		// Note that at the "receive" function, they can be switched to input
-		packetP->buffer = ss::Engine::shared()->memoryManager.newBuffer(name, headerP->kvDataLen, ss::Buffer::output );
+		packetP->buffer = engine::MemoryManager::shared()->newBuffer(name, headerP->kvDataLen, engine::Buffer::output );
 
 		int    size   = headerP->kvDataLen;
 		char*  kvBuf  = packetP->buffer->getData();

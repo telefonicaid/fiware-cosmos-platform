@@ -1,6 +1,6 @@
 #include "logMsg.h"			// Log message
 
-#include "CommandLine.h"	// au::CommandLine
+#include "au/CommandLine.h"	// au::CommandLine
 #include "Macros.h"			// EXIT
 #include "traces.h"			// Own interface
 

@@ -3,6 +3,7 @@
 #define _H_PROCESS_OPERATION
 
 #include "ProcessBase.h"			// ss::ProcessBase
+#include "ProcessItem.h"            // engine::ProcessItem
 
 namespace ss
 {
@@ -10,7 +11,7 @@ namespace ss
 	class WorkerTaskManager;
 	class CompactSubTask;
 	
-	class ProcessCompact : public ProcessItem
+	class ProcessCompact : public engine::ProcessItem
 	{
 		CompactSubTask * compactSubTask;
 		

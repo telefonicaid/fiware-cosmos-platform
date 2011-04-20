@@ -14,6 +14,10 @@
 #include "DiskOperation.h"					// ss::DiskOperation
 #include "SamsonWorker.h"                   // ss::SamsonWorker
 
+#include "DiskManager.h"            // Notifications
+#include "ProcessManager.h"         // Notifications
+#include "MemoryManager.h"          // Notifications
+
 namespace ss
 {
 	
@@ -32,9 +36,9 @@ namespace ss
         buffer = NULL;                      // By default we have no memory
         
         // Add to receive notification about memory , read operations and process items
-        Engine::shared()->notificationSystem.add( notification_memory_request_response , this ); 
-        Engine::shared()->notificationSystem.add( notification_disk_operation_request_response , this ); 
-        Engine::shared()->notificationSystem.add( notification_process_request_response , this ); 
+        engine::Engine::add( notification_memory_request_response , this ); 
+        engine::Engine::add( notification_disk_operation_request_response , this ); 
+        engine::Engine::add( notification_process_request_response , this ); 
         
 	}
     
@@ -42,85 +46,72 @@ namespace ss
     {
         if( buffer )
         {
-            Engine::shared()->memoryManager.destroyBuffer( buffer );
+            engine::MemoryManager::shared()->destroyBuffer(buffer);
             buffer = NULL;
         }
 
         // Remove this item from all the cannels
-        Engine::shared()->notificationSystem.remove( this ); 
+        engine::Engine::remove( this ); 
         
     };		
     
-    void WorkerSubTask::notify( EngineNotification* notification )
+    void WorkerSubTask::notify( engine::Notification* notification )
     {
-        switch (notification->channel) {
-                
-            case notification_memory_request_response:
-            {
-                if( notification->object.size() != 1 )
-                    LM_W(("Received a notification_memory_request_response without buffer"));
-                else{
-                    buffer = (Buffer*) notification->object[0];
-                    notification->object.clear();   // To avoid other to use the same buffer accidentally
-                    run();
-                }
-                    
-                break;
+        if( notification->isName(notification_memory_request_response) )
+        {
+            if( !notification->object )
+                LM_W(("Received a notification_memory_request_response without buffer"));
+            else{
+                buffer = (engine::Buffer*) notification->object;
+                notification->object = NULL;   // To avoid other to use the same buffer accidentally
+                run();
             }
-                
-            case notification_disk_operation_request_response:
-            {
-                
-                if( notification->object.size() != 1 )
-                    LM_W(("Received a notification_disk_operation_request_response without DiskOperation object"));
-                else
-                {
-                    
-                    DiskOperation* operation = (DiskOperation*)notification->object[0];
-
-                    // Copy the error ( if any )
-                    error.set( &operation->error );
-                    delete operation;
-                    notification->object.clear();   
-                                        
-                    num_read_operations_confirmed++;
-                    
-                    run();
-                    
-                }
-                break;
-            }
-
-            case notification_process_request_response:
-            {
-                
-                if( notification->object.size() == 0 )
-                    LM_W(("Received a notification_process_request_response without ProcessItem object"));
-                else if( notification->object.size() != 1 )
-                    LM_W(("Received a notification_process_request_response with more than one element"));
-                else
-                {
-                    
-                    ProcessItem* item = (ProcessItem*)notification->object[0];
-                    
-                    // Copy the error ( if any )
-                    error.set( &item->error );
-                    
-                    delete item;
-                    notification->object.clear();
-                    
-                    num_processes_confirmed++;
-                    run();
-                    
-                }
-                
-                break;
-            }
-                
-            default:
-                LM_X(1,("WorkerSubTask received an unexpected notification"));
-                break;
         }
+        else if ( notification->isName( notification_disk_operation_request_response ) )
+        {
+            
+            if( !notification->object )
+                LM_W(("Received a notification_disk_operation_request_response without DiskOperation object"));
+            else
+            {
+                
+                engine::DiskOperation* operation = (engine::DiskOperation*)notification->object;
+                
+                // Copy the error ( if any )
+                error.set( &operation->error );
+                delete operation;
+                notification->object = NULL;   
+                
+                num_read_operations_confirmed++;
+                
+                run();
+                
+            }
+        }
+        else if ( notification->isName(notification_process_request_response) )
+        {
+            
+            if( !notification->object )
+                LM_W(("Received a notification_process_request_response without ProcessItem object"));
+            else
+            {
+                
+                engine::ProcessItem* item = (engine::ProcessItem*)notification->object;
+                
+                // Copy the error ( if any )
+                error.set( &item->error );
+                
+                delete item;
+                notification->object = NULL;
+                
+                num_processes_confirmed++;
+                run();
+                
+            }
+            
+        }
+        else
+            LM_X(1,("WorkerSubTask received an unexpected notification"));
     }
     
     void WorkerSubTask::run()
@@ -132,10 +123,10 @@ namespace ss
             status = finished;
             
             // Notification that this sub-task is finished
-            EngineNotification * notification  = new EngineNotification( notification_sub_task_finished );
+            engine::Notification * notification  = new engine::Notification( notification_sub_task_finished );
             setNotificationCommandEnvironment(notification);
-            notification->set("target", "WorkerTask");      // Modify to "send" this notification to the worker task
-            Engine::shared()->notify( notification );
+            notification->environment.set("target", "WorkerTask");      // Modify to "send" this notification to the worker task
+            engine::Engine::notify( notification );
             return;
         }
         
@@ -188,10 +179,10 @@ namespace ss
                     status = finished;
                     
                     // Notification that this sub-task is finished
-                    EngineNotification * notification  = new EngineNotification( notification_sub_task_finished );
+                    engine::Notification * notification  = new engine::Notification( notification_sub_task_finished );
                     setNotificationCommandEnvironment(notification);
-                    notification->set("target", "WorkerTask");      // Modify to "send" this notification to the worker task
-                    Engine::shared()->notify( notification );
+                    notification->environment.set("target", "WorkerTask");      // Modify to "send" this notification to the worker task
+                    engine::Engine::notify( notification );
                 }
                 break;
             }
@@ -208,63 +199,63 @@ namespace ss
 
     }
 
-    bool WorkerSubTask::acceptNotification( EngineNotification *notification )
+    bool WorkerSubTask::acceptNotification( engine::Notification *notification )
     {
         //LM_M(("WorkerSubTask: Accept %s" , notification->getDescription().c_str() ));
         
-        if( notification->get( "target" , "" ) != "WorkerSubTask" )
+        if( notification->environment.get( "target" , "" ) != "WorkerSubTask" )
             return false;
         
-        if( notification->getInt("worker", -1) != task->taskManager->worker->network->getWorkerId() )
+        if( notification->environment.getInt("worker", -1) != task->taskManager->worker->network->getWorkerId() )
             return false;
         
-        if( notification->getSizeT( "task_id" , 0 ) != task_id  )
+        if( notification->environment.getSizeT( "task_id" , 0 ) != task_id  )
             return false;
         
-        if( notification->getSizeT( "sub_task_id" , 0 ) != sub_task_id  )
+        if( notification->environment.getSizeT( "sub_task_id" , 0 ) != sub_task_id  )
             return false;
 
         return true;
     }
     
-    void WorkerSubTask::setNotificationCommandEnvironment( EngineNotification *notification)
+    void WorkerSubTask::setNotificationCommandEnvironment( engine::Notification *notification)
     {
-        notification->set( "target" , "WorkerSubTask" );
-        notification->setInt("worker",  task->taskManager->worker->network->getWorkerId() );
-        notification->setSizeT( "task_id" , task_id ); 
-        notification->setSizeT( "sub_task_id" , sub_task_id ); 
+        notification->environment.set( "target" , "WorkerSubTask" );
+        notification->environment.setInt("worker",  task->taskManager->worker->network->getWorkerId() );
+        notification->environment.setSizeT( "task_id" , task_id ); 
+        notification->environment.setSizeT( "sub_task_id" , sub_task_id ); 
     }
     
     
     void WorkerSubTask::addMemoryRequest( size_t size )
     {
-        EngineNotification *memory_request = new EngineNotification( notification_memory_request );
-        memory_request->setSizeT( "size", size );
+        engine::Notification *memory_request = new engine::Notification( notification_memory_request );
+        memory_request->environment.setSizeT( "size", size );
         setNotificationCommandEnvironment(memory_request);
-        Engine::shared()->notify( memory_request );
+        engine::Engine::notify( memory_request );
     }
     
     
-    void WorkerSubTask::addReadOperation( DiskOperation *operation )
+    void WorkerSubTask::addReadOperation( engine::DiskOperation *operation )
     {
         // Increase the counter of operations to read
         num_read_operations++;
         
         // Add the read operation to the Engine
-        EngineNotification *notification = new EngineNotification( notification_disk_operation_request  , operation );
+        engine::Notification *notification = new engine::Notification( notification_disk_operation_request  , operation );
         setNotificationCommandEnvironment(notification);
-        Engine::shared()->shared()->notify( notification );
+        engine::Engine::notify( notification );
     }
     
-    void WorkerSubTask::addProcess( ProcessItem* processItem )
+    void WorkerSubTask::addProcess(  engine::ProcessItem* processItem )
     {
         // Increase the counter of operations to read
         num_processes++;
         
         // Add the read operation to the Engine
-        EngineNotification *notification = new EngineNotification( notification_process_request  , processItem );
+        engine::Notification *notification = new engine::Notification( notification_process_request  , processItem );
         setNotificationCommandEnvironment(notification);
-        Engine::shared()->shared()->notify( notification );
+        engine::Engine::notify( notification );
         
     }
     
@@ -323,7 +314,7 @@ namespace ss
 		
 		for (int f = 0 ; f < task->reduceInformation->total_num_input_files ; f++)
 		{
-			DiskOperation *item = getFileMangerReadItem( task->reduceInformation->file[f] );
+			engine::DiskOperation *item = getFileMangerReadItem( task->reduceInformation->file[f] );
             addReadOperation( item );
 		}
 	}
@@ -349,7 +340,7 @@ namespace ss
 		if( max_size_per_group2 < max_size_per_group)
 			max_size_per_group = max_size_per_group2;
 		
-		size_t limit_size_per_group = Engine::shared()->memoryManager.getMemory()/2;
+		size_t limit_size_per_group = engine::MemoryManager::shared()->getMemory()/2;
 		
 		// Create necessary reduce operations
 		int hg = 1;												// Evaluating current hash group	
@@ -395,13 +386,13 @@ namespace ss
 		
 	}
 	
-	DiskOperation * OrganizerSubTask::getFileMangerReadItem( ProcessAssistantSharedFile* file  )
+    engine::DiskOperation * OrganizerSubTask::getFileMangerReadItem( ProcessAssistantSharedFile* file  )
 	{
 		// Read the key-value information for each hash group for each input files
 		size_t offset			= sizeof( KVHeader );					// We skip the file header
 		size_t size				= sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
 		
-		DiskOperation *item = DiskOperation::newReadOperation( file->fileName , offset , size , file->getSimpleBufferForInfo() );
+		engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::dataFile( file->fileName ) , offset , size , file->getSimpleBufferForInfo() );
 		//item->tag = task->task_id;
 		return item;
 	}	
@@ -465,9 +456,9 @@ namespace ss
 			offset += size_info;
 			
 			// Schedule the read operation into the FileManager to read data content
-			DiskOperation *item 
-			= DiskOperation::newReadOperation( \
-									  reduceInformation->file[f]->fileName , \
+			engine::DiskOperation *item 
+			= engine::DiskOperation::newReadOperation( \
+									   SamsonSetup::dataFile( reduceInformation->file[f]->fileName ) , \
 									  reduceInformation->file[f]->getFileOffset( hg_begin ), \
 									  header.info.size, \
 									  buffer->getSimpleBufferAtOffset(offset) );
@@ -528,7 +519,7 @@ namespace ss
             if( !buffer )
                 LM_X(1,("Intern error: No buffer in read operations of task"));
             // Single file to be parsed
-            DiskOperation *item = DiskOperation::newReadOperation( fileName , 0, fileSize, buffer->getSimpleBuffer() );
+            engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::dataFile(fileName) , 0, fileSize, buffer->getSimpleBuffer() );
             addReadOperation(item);
         }
 		
@@ -567,7 +558,7 @@ namespace ss
 	{
 		for (int f = 0 ; f < task->reduceInformation->total_num_input_files ; f++)
 		{
-			DiskOperation *item = getFileMangerReadItem( task->reduceInformation->file[f] );
+			engine::DiskOperation *item = getFileMangerReadItem( task->reduceInformation->file[f] );
             addReadOperation(item);
 		}
 	}
@@ -614,13 +605,13 @@ namespace ss
 		// No real process for this sub-task
 	}
 	
-	DiskOperation * SystemSubTask::getFileMangerReadItem( ProcessAssistantSharedFile* file  )
+	engine::DiskOperation * SystemSubTask::getFileMangerReadItem( ProcessAssistantSharedFile* file  )
 	{
 		// Read the key-value information for each hash group for each input files
 		size_t offset			= sizeof( KVHeader );					// We skip the file header
 		size_t size				= sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
 		
-		DiskOperation *item = DiskOperation::newReadOperation( file->fileName , offset , size , file->getSimpleBufferForInfo() );
+		engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::dataFile(file->fileName) , offset , size , file->getSimpleBufferForInfo() );
 		//item->tag = task->task_id;
 		return item;
 	}		
@@ -684,9 +675,9 @@ namespace ss
 			offset += size_info;
 			
 			// Schedule the read operation into the FileManager to read data content
-			DiskOperation *item 
-			= DiskOperation::newReadOperation( \
-									  reduceInformation->file[f]->fileName , \
+			engine::DiskOperation *item 
+			= engine::DiskOperation::newReadOperation( \
+									   SamsonSetup::dataFile( reduceInformation->file[f]->fileName ) , \
 									  reduceInformation->file[f]->getFileOffset( hg_begin ), \
 									  header.info.size, \
 									  buffer->getSimpleBufferAtOffset(offset) );

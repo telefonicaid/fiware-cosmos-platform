@@ -51,7 +51,11 @@ bool iomWriteOk(int fd, const char* name, const char* ip)
 		if ((fds == 1) && (FD_ISSET(fd, &wFds)))
 			return true;
 
+        if( fds == -1 )
+            LM_X(1, ("Error while writing to fd %d", fd));
+             
 		LM_W(("Problems to send to %s@%s (%d/%d secs)", name, ip, tryh, tries));
+        sleep(1);
 	}
 
 	LM_X(1, ("cannot write to fd %d", fd));
@@ -202,7 +206,7 @@ int iomMsgSend
 
 	if (packetP != NULL)
 	{
-		ss::Engine::shared()->memoryManager.destroyBuffer(packetP->buffer);
+        engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
 		delete packetP;
 	}
 

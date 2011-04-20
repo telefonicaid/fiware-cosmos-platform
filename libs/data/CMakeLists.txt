@@ -16,6 +16,7 @@ SET (SOURCES
 
 # Inclue directories
 # -----------------------------------------------------------------
+include_directories("${PROJECT_SOURCE_DIR}/libs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")

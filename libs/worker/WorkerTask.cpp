@@ -10,6 +10,9 @@
 #include "MemoryManager.h"				// ss::MemoryRequest
 #include "Engine.h"						// ss::Engine
 #include "DiskOperation.h"				// ss::DiskOperation
+#include "Buffer.h"                     // engine::Buffer
+#include "ProcessManager.h"             // Notifications
+#include "DiskManager.h"                // Notifications
 
 namespace ss
 {
@@ -39,10 +42,10 @@ namespace ss
         
         
         // Add as a listener for notification_sub_task_finished
-        Engine::shared()->notificationSystem.add( notification_sub_task_finished, this );
+        engine::Engine::add( notification_sub_task_finished, this );
         
-        Engine::shared()->notificationSystem.add( notification_process_request_response, this );
-        Engine::shared()->notificationSystem.add( notification_disk_operation_request_response, this );
+        engine::Engine::add( notification_process_request_response, this );
+        engine::Engine::add( notification_disk_operation_request_response, this );
 	}
 	
 	WorkerTask::~WorkerTask()
@@ -65,7 +68,7 @@ namespace ss
         outputRemoveFiles.clearMap();
         
         // Remove myself as a listener
-        Engine::shared()->notificationSystem.remove( this );
+        engine::Engine::remove( this );
 	}
 	
 	
@@ -76,7 +79,7 @@ namespace ss
 		
 		// Copy of the message form the controller
 		workerTask = task;
-
+        
 		// Copy the type of operation
 		type = _type;
 		
@@ -152,89 +155,78 @@ namespace ss
 		// Information about ids
         subTask->task_id = task_id;
 		subTask->sub_task_id = subTaskId++;
-
+        
 		subTasks.insertInMap(subTask->sub_task_id , subTask);
         subTask->run();   // Start the subtask querying a memory request / read operation / process / etc
 	}
     
-    void WorkerTask::notify( EngineNotification* notification )
+    void WorkerTask::notify( engine::Notification* notification )
     {
         //LM_M(("WorkerTask: %s", notification->getDescription().c_str() ));
         
-        switch (notification->channel) {
-                
-            case notification_disk_operation_request_response:
+        if( notification->isName(notification_disk_operation_request_response) )
+        {
+            if( !notification->object )
+                LM_X(1,("Error since WorkerTasks receive a notification_disk_operation_request_response without an object"));
+            else
             {
-                if( notification->object.size() != 1 )
-                    LM_X(1,("Error since WorkerTasks receive a notification_disk_operation_request_response without an object"));
-                else
-                {
-                    
-                    DiskOperation *diskOperation =  (DiskOperation*) notification->object[0];
-                    diskOperation->destroyBuffer();
-                    delete diskOperation;
-                    notification->object.clear();
-                    
-                    // Internal operations to process this finish
-                    num_disk_operations--;
-                    check();
-                    
-                }
-                break;
-            }
                 
-            case notification_process_request_response:
-            {
-                num_process_items--;
+                engine::DiskOperation *diskOperation =  (engine::DiskOperation*) notification->object;
+                diskOperation->destroyBuffer();
+                delete diskOperation;
+                notification->object = NULL;
                 
-                if ( notification->object.size() != 1 )
-                    LM_W(("WorkerTask receive a notification_process_request_response without an object"));
-                else
-                {
-                    
-                    DataBufferProcessItem* tmp = (DataBufferProcessItem*) notification->object[0] ;
-                    notification->object.clear();   // Remove the objexct
-                    
-                    // New file to be saved
-                    std::string queue_name = tmp->bv->queue->name();
-                    std::string fileName = newFileName( );
-                    
-                    // Add a file as output for this operation
-                    addKVFile(fileName, queue_name, tmp->buffer);
-                    
-                    delete tmp;
-                }
-                
-                break;
-            }
-                
-            case notification_sub_task_finished:
-            {
-                size_t sub_task_id = notification->getSizeT("sub_task_id", 0);
-
-                WorkerSubTask *subTask = subTasks.extractFromMap( sub_task_id );
-                
-                if( subTask )
-                {
-                    // Copy the error if necessary
-                    error.set( &subTask->error );
-                    
-                    delete subTask;
-                }
-                else
-                {
-                    LM_W(("Subtask finished and not found in a vector of %d positions", (int)subTasks.size() ));
-                }
-                
+                // Internal operations to process this finish
+                num_disk_operations--;
                 check();
                 
-                break;
             }
-                
-            default:
-                LM_X(1, ("WorkerTask received an unexpected notification"));
-                break;
         }
+        else if( notification->isName( notification_process_request_response ) )
+        {
+            num_process_items--;
+            
+            if ( !notification->object )
+                LM_W(("WorkerTask receive a notification_process_request_response without an object"));
+            else
+            {
+                
+                DataBufferProcessItem* tmp = (DataBufferProcessItem*) notification->object;
+                notification->object = NULL;   // Remove the object
+                
+                // New file to be saved
+                std::string queue_name = tmp->bv->queue->name();
+                std::string fileName = newFileName( );
+                
+                // Add a file as output for this operation
+                addKVFile(fileName, queue_name, tmp->buffer);
+                
+                delete tmp;
+            }
+            
+        }
+        else if( notification->isName(notification_sub_task_finished) )
+        {
+            size_t sub_task_id = notification->environment.getSizeT("sub_task_id", 0);
+            
+            WorkerSubTask *subTask = subTasks.extractFromMap( sub_task_id );
+            
+            if( subTask )
+            {
+                // Copy the error if necessary
+                error.set( &subTask->error );
+                
+                delete subTask;
+            }
+            else
+            {
+                LM_W(("Subtask finished and not found in a vector of %d positions", (int)subTasks.size() ));
+            }
+            
+            check();
+        }
+        else
+            LM_X(1, ("WorkerTask received an unexpected notification"));
     }
 	
 	void WorkerTask::check()
@@ -312,10 +304,10 @@ namespace ss
         
         if( status == completed )
         {
-            EngineNotification *notification = new EngineNotification( notification_task_finished );
-            notification->setSizeT("task_id", task_id);
-            notification->setInt("worker", taskManager->worker->network->getWorkerId());
-            Engine::shared()->notify(notification);
+            engine::Notification *notification = new engine::Notification( notification_task_finished );
+            notification->environment.setSizeT("task_id", task_id);
+            notification->environment.setInt("worker", taskManager->worker->network->getWorkerId());
+            engine::Engine::notify(notification);
         }
 		
 	}
@@ -369,7 +361,7 @@ namespace ss
 	
 #pragma mark Buffers processing
 	
-	void WorkerTask::addBuffer( network::WorkerDataExchange& workerDataExchange , Buffer *buffer )
+	void WorkerTask::addBuffer( network::WorkerDataExchange& workerDataExchange , engine::Buffer *buffer )
 	{
         //LM_M(("Received a buffer from worker %d hash-set %d (%s)",  workerDataExchange.worker() , workerDataExchange.hg_set() , workerDataExchange.finish()?"finished":"not finished" ));
         
@@ -409,7 +401,7 @@ namespace ss
         }
 	}
     
-    void WorkerTask::addKVFile( std::string fileName , std::string queue , Buffer *buffer )
+    void WorkerTask::addKVFile( std::string fileName , std::string queue , engine::Buffer *buffer )
     {
         KVHeader * header = (KVHeader*) ( buffer->getData() );
         addFile(fileName, queue, header->info , buffer );
@@ -432,14 +424,14 @@ namespace ss
     }
     
 	// add a buffer to be saved as a key-value file
-	void WorkerTask::addFile(  std::string fileName , std::string queue , KVInfo info , Buffer *buffer )
+	void WorkerTask::addFile(  std::string fileName , std::string queue , KVInfo info , engine::Buffer *buffer )
 	{
         
         // Add the file to be reported to the controller
         addFile( fileName , queue , info );
 
 		// Submit the operation
-		DiskOperation *operation = DiskOperation::newAppendOperation(  buffer , fileName );
+        engine::DiskOperation *operation = engine::DiskOperation::newAppendOperation(  buffer ,  SamsonSetup::dataFile( fileName ) );
         addDiskOperation(operation);
 	}
 	
@@ -630,42 +622,42 @@ namespace ss
     
 #pragma Notifications
     
-    void WorkerTask::addDiskOperation( DiskOperation *operation )
+    void WorkerTask::addDiskOperation( engine::DiskOperation *operation )
     {
-        EngineNotification *notification = new EngineNotification( notification_disk_operation_request , operation );
+        engine::Notification *notification = new engine::Notification( notification_disk_operation_request , operation );
         setNotificationCommonEnvironment( notification );
         num_disk_operations++;
-        Engine::shared()->notify( notification );
+        engine::Engine::notify( notification );
     }
 
-    void WorkerTask::addProcessItem( ProcessItem *item )
+    void WorkerTask::addProcessItem( engine::ProcessItem *item )
     {
-        EngineNotification *notification = new EngineNotification( notification_process_request , item );
+        engine::Notification *notification = new engine::Notification( notification_process_request , item );
         setNotificationCommonEnvironment( notification );
         num_process_items++;
-        Engine::shared()->notify( notification );
+        engine::Engine::notify( notification );
     }
     
     
 #pragma mark Basic notifications
     
-    void WorkerTask::setNotificationCommonEnvironment( EngineNotification *notification )
+    void WorkerTask::setNotificationCommonEnvironment( engine::Notification *notification )
     {
-        notification->set("target" , "WorkerTask" );
-        notification->setSizeT("task_id", task_id );
-        notification->setInt("worker",  taskManager->worker->network->getWorkerId() );
+        notification->environment.set("target" , "WorkerTask" );
+        notification->environment.setSizeT("task_id", task_id );
+        notification->environment.setInt("worker",  taskManager->worker->network->getWorkerId() );
         
     }    
         
-    bool WorkerTask::acceptNotification( EngineNotification* notification )
+    bool WorkerTask::acceptNotification( engine::Notification* notification )
     {
         //LM_M(("WorkerTask accept? %s", notification->getDescription().c_str() ));
         
-        if( notification->get("target","") != "WorkerTask" )
+        if( notification->environment.get("target","") != "WorkerTask" )
             return false;
-        if( notification->getSizeT("task_id", 0) != task_id )
+        if( notification->environment.getSizeT("task_id", 0) != task_id )
             return false;
-        if( notification->getInt("worker", -1) != taskManager->worker->network->getWorkerId() )
+        if( notification->environment.getInt("worker", -1) != taskManager->worker->network->getWorkerId() )
             return false;
         
         return  true;

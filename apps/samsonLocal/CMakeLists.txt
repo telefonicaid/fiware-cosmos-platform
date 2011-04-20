@@ -17,10 +17,12 @@ SET( STATIC_LIBS
 samsonWorkerLib
 samsonControllerLib
 delilahLib
-samsonCore
+engine
+samsonModule
 samsonDataLib
 samsonNetwork
 samsonCommon
+au
 lm
 pa
 protobuf
@@ -33,12 +35,13 @@ ${COMMON_SAMSON_LIBS}
 
 # Include directories
 # ------------------------------------------------------------
+include_directories("${PROJECT_SOURCE_DIR}/libs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_BINARY_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
-include_directories("${PROJECT_SOURCE_DIR}/libs/core")
+include_directories("${PROJECT_SOURCE_DIR}/libs/engine")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/delilah")

@@ -3,11 +3,12 @@
 
 #include "coding.h"					// High level definition of KV_*
 #include "samson/DataInstance.h"	// ss::DataInstance
-#include "Format.h"					// au::Format
+#include "au/Format.h"					// au::Format
 #include <iostream>					// std::cout
 #include "samson/Operation.h"		// ss::Operation
 #include "MemoryManager.h"
 #include "samson/KVWriter.h"				// ss::KVWriter
+#include "SharedMemoryItem.h"
 
 #define KV_NODE_SIZE	255
 #define KV_NODE_UNASIGNED 4294967295u	// 2^32-1
@@ -16,7 +17,6 @@ namespace ss {
 
 
 	class ProcessBase;
-	class SharedMemoryItem;
     
 	/**
 	 Class to emit key-values ( for maps , reducers, generators, parsers, etc )
@@ -26,7 +26,7 @@ namespace ss {
 	{
 		ProcessBase * workerTaskItem;	// Pointer to the workTaskItem to emit codes through the pipe
 		
-		SharedMemoryItem *item;				// Shared memory item used at this side ( fork in the middle )
+		engine::SharedMemoryItem *item;				// Shared memory item used at this side ( fork in the middle )
 		
 		char * buffer;		// General output buffer
 		size_t size;		// General output buffer size
@@ -79,7 +79,7 @@ namespace ss {
 		size_t *size;
 		size_t max_size;
 		
-		SharedMemoryItem *item;
+		engine::SharedMemoryItem *item;
 		
 		ProcessTXTWriter( ProcessBase * _workerTaskItem  );
 

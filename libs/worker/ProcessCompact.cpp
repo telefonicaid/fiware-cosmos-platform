@@ -76,12 +76,12 @@ namespace ss
       }
 	  
 	  // create the output buffer with the rigth size
-	  Buffer *outputBuffer = Engine::shared()->memoryManager.newBuffer( "Compact output buffer", outputBufferSize , Buffer::output );
+	  engine::Buffer *outputBuffer = engine::MemoryManager::shared()->newBuffer( "Compact output buffer", outputBufferSize , engine::Buffer::output );
 	  
 	  // Output header and KVInfo vector
 	  KVHeader *outputHeader = (KVHeader*) outputBuffer->getData();
-    KVInfo *outputInfo = (KVInfo*) ( outputBuffer->getData() + sizeof(KVHeader) );
-    char *outputData = outputBuffer->getData() + sizeof( KVHeader ) + sizeof(KVInfo) * num_hash_groups;
+      KVInfo *outputInfo = (KVInfo*) ( outputBuffer->getData() + sizeof(KVHeader) );
+      char *outputData = outputBuffer->getData() + sizeof( KVHeader ) + sizeof(KVInfo) * num_hash_groups;
     
     // Contents of the header
     outputHeader->init( reduce_file[0].header->getFormat() , total_info );

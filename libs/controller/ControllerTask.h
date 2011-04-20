@@ -1,7 +1,7 @@
 #ifndef _H_CONTROLLER_TASK
 #define _H_CONTROLLER_TASK
 
-#include "Lock.h"							// au::Lock
+#include "au/Lock.h"							// au::Lock
 #include <map>								// std::map
 #include <vector>							// std::vector
 #include "Endpoint.h"						// ss::Endpoint

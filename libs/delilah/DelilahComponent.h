@@ -21,6 +21,7 @@ namespace ss {
 			command,
 			load,
 			updater
+            
 		}DelilaComponentType;
 		
 		DelilaComponentType type;
@@ -39,32 +40,6 @@ namespace ss {
 		
 	};
 	
-	// Class to update local list of queues and operations for auto-completion
-	
-	void* DelilahUpdaterBackgroundThread( void* );
-	
-	class DelilahUpdater : public DelilahComponent
-	{
-	public:
-		
-		
-		DelilahUpdater() : DelilahComponent(DelilahComponent::updater)
-		{
-			// Create a thread to send this message every secon
-			pthread_t t;
-			pthread_create(&t, NULL,DelilahUpdaterBackgroundThread , this);
-		}
-		
-		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
-
-		void run();
-		
-		virtual std::string getStatus()
-		{
-			return "Updater: local list of queues and operations";
-		}
-		
-	};
 	
 	/**
 	 Simple component created when a command is send to the controller ( waiting for answeres )

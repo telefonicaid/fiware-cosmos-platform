@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include "samson.pb.h"
-#include "CommandLine.h"			// au::CommandLine
+#include "au/CommandLine.h"			// au::CommandLine
 namespace ss {
 
 	class Operation;

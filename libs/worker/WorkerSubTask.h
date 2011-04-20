@@ -5,17 +5,19 @@
 #include <vector>                   // std::vector
 #include <string>                   // std::string
 #include "EngineNotification.h"     // ss::EngineNotificationListener
-#include "Error.h"                  // au::Error
+#include "au/Error.h"                  // au::Error
+#include "Buffer.h"                 // engine::Buffer
+#include "MemoryRequest.h"
+#include "DiskOperation.h"
+#include "ProcessItem.h"
+
+
 
 namespace ss
 {
 	
 	class WorkerTask;
-	class MemoryRequest;
-	class DiskOperation;
-	class ProcessItem;
 	class ProcessAssistantSharedFile;
-	class Buffer;
 	
 	/**
 	 ------------------------------------------------------------------------------------------------
@@ -32,7 +34,7 @@ namespace ss
 	 ------------------------------------------------------------------------------------------------
 	 */
 	
-	class WorkerSubTask : public EngineNotificationListener
+	class WorkerSubTask : public engine::NotificationListener
 	{
 
 		int num_read_operations;            // Read operations
@@ -44,7 +46,7 @@ namespace ss
         
 	public:
 
-        Buffer *buffer;                     // Buffer memory obtained from Memory Manager
+        engine::Buffer *buffer;                     // Buffer memory obtained from Memory Manager
         
         // Error management
         au::Error error;
@@ -87,7 +89,7 @@ namespace ss
         std::string getStatus();
 	
         // General notification function ( memory requests / disk operations / process )
-        void notify( EngineNotification* notification );
+        void notify( engine::Notification* notification );
 
         // Init function to start asking thinks to the engine
         void run();
@@ -95,14 +97,14 @@ namespace ss
     protected:
         
         void addMemoryRequest( size_t size );
-        void addReadOperation( DiskOperation *operation );
-        void addProcess( ProcessItem* processItem );
+        void addReadOperation( engine::DiskOperation *operation );
+        void addProcess( engine::ProcessItem* processItem );
         
     private:
         
         // Function to check if a particular notification is for me
-        bool acceptNotification( EngineNotification *notification );
-        void setNotificationCommandEnvironment( EngineNotification *notification);
+        bool acceptNotification( engine::Notification *notification );
+        void setNotificationCommandEnvironment( engine::Notification *notification);
 
 	};
 	
@@ -146,7 +148,7 @@ namespace ss
 		
 	private:
 		
-		DiskOperation * getFileMangerReadItem( ProcessAssistantSharedFile* file );
+		engine::DiskOperation * getFileMangerReadItem( ProcessAssistantSharedFile* file );
 		
 	};	
 
@@ -243,7 +245,7 @@ namespace ss
 		
 	private:
 		
-		DiskOperation * getFileMangerReadItem( ProcessAssistantSharedFile* file );
+		engine::DiskOperation * getFileMangerReadItem( ProcessAssistantSharedFile* file );
 	};	
 
 	/**

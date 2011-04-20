@@ -25,7 +25,7 @@ kern.sysv.shmmax: 1610612736
 
 In this situations, we can remove existing shared-memory buffers with ipcrm command using something like:
 
-for i in `ipcs -m | grep user | awk '{print $2}'`; do ipcrm -m $i; done
+for i in `ipcs -m | grep $USER | awk '{print $2}'`; do ipcrm -m $i; done
 
 
 

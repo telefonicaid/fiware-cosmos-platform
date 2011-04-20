@@ -15,7 +15,7 @@
 #include "Macros.h"                     // EXIT, ...
 #include "Network.h"                    // NetworkInterface
 #include "Endpoint.h"                   // Endpoint
-#include "CommandLine.h"                // au::CommandLine
+#include "au/CommandLine.h"                // au::CommandLine
 #include "samsonDirectories.h"          // File to load setup
 #include "ControllerDataManager.h"      // ss::ControllerDataManager
 #include "ModulesManager.h"             // ss::ModulesManager
@@ -29,13 +29,17 @@
 #include "EngineElement.h"				// ss::EngineElement
 #include "EngineNotification.h"         // ss::EngineNotificationListener
 
+
+#define notification_monitorization                 "notification_monitorization"
+#define notification_check_automatic_operations     "notification_check_automatic_operations"
+
 namespace ss {
 	
 	/**
 	 Main class for Samson Controller
 	 */
 	
-	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface , public EngineNotificationListener
+	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface , public engine::NotificationListener
 	{
 		// Initial time stamp 
 		struct timeval init_time;
@@ -89,8 +93,8 @@ namespace ss {
 		void pushSystemMonitor( MonitorBlock  *);
         
         // Notifications
-        void notify( EngineNotification* notification );
-        bool acceptNotification( EngineNotification* notification );
+        void notify( engine::Notification* notification );
+        bool acceptNotification( engine::Notification* notification );
 
 
         

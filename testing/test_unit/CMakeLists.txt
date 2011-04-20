@@ -13,5 +13,5 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 # Test file
 # -----------------------------------------------------------------
 ADD_EXECUTABLE(test_unit main_test_unit.cpp )
-TARGET_LINK_LIBRARIES(test_unit  samsonCore samsonCommon  protobuf lm pthread cppunit gcov)
+TARGET_LINK_LIBRARIES(test_unit  engine samsonCommon  protobuf lm pthread cppunit gcov)
 ADD_TEST(test_unit ${PROJECT_BINARY_DIR}/testing/test_unit/test_unit  )

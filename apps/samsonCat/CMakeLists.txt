@@ -7,11 +7,13 @@ SET (HEADERS
 
 SET( STATIC_LIBS
      samsonNetwork
-     samsonCore
+     engine
+     samsonModule
      samsonCommon
      delilahLib
      protobuf
      pthread
+     au
      dl
      lm
      ${COMMON_SAMSON_LIBS}
@@ -20,11 +22,12 @@ SET( STATIC_LIBS
 # Include directories
 # ------------------------------------------------------------
 
+include_directories("${PROJECT_SOURCE_DIR}/libs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/network")
 include_directories("${PROJECT_BINARY_DIR}/libs/network")
 include_directories("${PROJECT_SOURCE_DIR}/libs/common")
-include_directories("${PROJECT_SOURCE_DIR}/libs/core")
+include_directories("${PROJECT_SOURCE_DIR}/libs/engine")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
 include_directories("${PROJECT_SOURCE_DIR}/libs/delilah")

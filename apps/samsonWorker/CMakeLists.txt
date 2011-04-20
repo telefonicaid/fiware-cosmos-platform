@@ -9,8 +9,8 @@ SET (HEADERS
 SET (LIBS
     samsonWorkerLib
     samsonNetwork
-    samsonCommon
     samsonModule
+    samsonCommon
     engine
     au
     pa

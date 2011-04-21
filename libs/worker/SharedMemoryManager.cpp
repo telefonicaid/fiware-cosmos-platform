@@ -18,6 +18,7 @@
 #include "Engine.h"				// ss::Engine
 #include "SharedMemoryItem.h"   // ss::SharedMemoryItem
 #include "au/Format.h"             // au::Format
+#include "SamsonSetup.h"   // ss::SamsonSetup
 
 namespace engine
 {
@@ -40,7 +41,7 @@ namespace engine
         // Init the global shard memory element ( after init samsonSetup )
         sharedMemoryManager = new SharedMemoryManager(  _shared_memory_num_buffers ,_shared_memory_size_per_buffer ); 
         
-        //atexit(destroy_SharedMemoryManager);
+        atexit(destroy_SharedMemoryManager);
     }
     
     SharedMemoryManager* SharedMemoryManager::shared()
@@ -59,7 +60,7 @@ namespace engine
         shared_memory_num_buffers = _shared_memory_num_buffers;
         shared_memory_size_per_buffer	= _shared_memory_size_per_buffer;
 		
-        sharedMemoryIdsFileName =   "./.shared_memory_ids.data";
+        sharedMemoryIdsFileName =   ss::SamsonSetup::shared()->baseDirectory + "/shared_memory_ids.data";
         
 		if( shared_memory_size_per_buffer == 0)
 			LM_X(1,("Error in setup, invalid value for shared memory size %u", shared_memory_size_per_buffer ));

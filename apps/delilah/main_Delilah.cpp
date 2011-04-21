@@ -69,6 +69,10 @@ int main(int argC, const char *argV[])
 	ss::SamsonSetup::shared()->load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
 
 	engine::Engine::init();
+	// Goyo. Groping in the dark (blind sticks for an easier translation)
+	engine::MemoryManager::init(  ss::SamsonSetup::shared()->memory );
+	// Goyo. End of groping in the dark
+
 	
 	std::cout << "Waiting for network connection ...";
 	

@@ -48,14 +48,14 @@ int iomMsgAwait(int fd, int secs, int usecs)
 	} while ((fds == -1) && (errno == EINTR));
 
 	if (fds == -1)
-		LM_RP(-1, ("select"));
+		LM_RP(-1, ("iomMsgAwait: select"));
 	else if (fds == 0)
-		LM_RE(-2, ("timeout"));
+		LM_RE(-2, ("iomMsgAwait: timeout"));
 	else if ((fds > 0) && (!FD_ISSET(fd, &rFds)))
-		LM_X(1, ("some other fd has a read pending - this is impossible !"));
+		LM_X(1, ("iomMsgAwait: some other fd has a read pending - this is impossible !"));
 	else if ((fds > 0) && (FD_ISSET(fd, &rFds)))
 		return 1;
 
-	LM_X(1, ("Other very strange error"));
+	LM_X(1, ("iomMsgAwait: Other very strange error"));
 	return -1;
 }	

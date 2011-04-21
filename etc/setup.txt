@@ -8,6 +8,7 @@ num_processes 	2			# Number of parallel processes working on this maxine
 shm_size_per_buffer 67108864		# Buffer of 64 Mbytes
 num_paralell_outputs            2	# Maximum number of outputs for	any operation (	reduce / map / etc ... )
 max_open_files_per_device	20  	# Currently unused
+timeout_secs_isolatedProcess   600     # Isolated Process timeout (in secs)
 
 # Server setup
 # ------------------------------------------------------------------------------------------
@@ -17,4 +18,5 @@ max_open_files_per_device	20  	# Currently unused
 #shm_size_per_buffer 256000000	  	# Buffer of 256 Mbytes
 #num_paralell_outputs            4	# Maximum number of outputs for any operation ( reduce / map / etc ... )
 #max_open_files_per_device	20  	# Currently unused
+#timeout_secs_isolatedProcess       600      # Isolated Process timeout (in secs)
 

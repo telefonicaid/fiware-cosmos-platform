@@ -118,6 +118,9 @@ int main(int argC, const char* argV[])
 	ss::SamsonSetup::load(workingDir);  // Load setup and create all directories
 	engine::Engine::init();					// Init the SamsonEngine
 	ss::ModulesManager::init();			// Init the modules manager
+	// Goyo. Groping in the dark (blind sticks for an easier translation)
+	engine::MemoryManager::init(  ss::SamsonSetup::shared()->memory );
+	// Goyo. End of groping in the dark
 
 	// Instance of network object and initialization
 	// ---------------------------------------------

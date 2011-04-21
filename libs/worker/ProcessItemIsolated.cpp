@@ -7,6 +7,9 @@
 #include "traceLevels.h"            // LmtIsolated, etc. 
 #include "iomMsgAwait.h"            // iomMsgAwait
 
+#include "SamsonSetup.h"                // Goyo: ss:SamsonSetup
+
+
 #include <sys/types.h>      
 #include <sys/wait.h>               // waitpid()
 
@@ -117,9 +120,12 @@ namespace ss
 
 			LM_T(LmtIsolated, ("Isolated process %s(%s): Reading from pipe", getStatus().c_str(), stateName()));
 
-			iom = iomMsgAwait(pipeFdPair1[0], 60*5, 0);	// 5 minuts time-out
+			// Goyo. timeout configurable desde el setup
+			//iom = iomMsgAwait(pipeFdPair1[0], 60*5, 0);	// 5 minuts time-out
+			int timeout_setup = SamsonSetup::shared()->timeout_secs_isolatedProcess;
+			iom = iomMsgAwait(pipeFdPair1[0], timeout_setup, 0);	// Now configurable, before 5 minuts time-out
 			if (iom != 1)
-				LM_E(("iomMsgAwait returned error %d", iom));
+				LM_E(("worker/ProcessItemIsolated: iomMsgAwait returned error %d with timeout:%d", iom, timeout_setup));
 			else
 			{
 				nb = read( pipeFdPair1[0] , &message , sizeof(message) );

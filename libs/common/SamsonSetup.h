@@ -51,6 +51,8 @@ namespace ss {
 		// Load Data suze
 		size_t load_buffer_size;
 		
+		// IsolatedProcess timeout
+		int timeout_secs_isolatedProcess;
 		
 		// DERIVED PARAMETERS
 		// --------------------------------------------

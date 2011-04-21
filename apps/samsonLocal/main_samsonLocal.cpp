@@ -78,8 +78,22 @@ void *run_DelilahConsole(void* d)
 	return NULL;
 }
 
+void
+atexit_function(void)
+{
+	fprintf(stderr, "Han llamado a atexit_function\n");
+}
+
 int main(int argC, const char *argV[])
 {
+	int atexit_return;
+
+	atexit_return = atexit(atexit_function);
+
+	if (atexit_return != 0)
+	{
+		fprintf(stderr, "cannot set exit function\n");
+	}
 	
 	paConfig("prefix",                        (void*) "SSW_");
 	paConfig("usage and exit on any warning", (void*) true);

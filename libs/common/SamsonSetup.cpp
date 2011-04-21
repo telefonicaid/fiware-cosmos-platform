@@ -34,6 +34,9 @@
 #define SETUP_num_paralell_outputs						"num_paralell_outputs"
 #define SETUP_DEFAULT_num_paralell_outputs				2
 
+#define SETUP_timeout_secs_isolatedProcess						"timeout_secs_isolatedProcess"
+#define SETUP_DEFAULT_timeout_secs_isolatedProcess				300
+
 namespace ss
 {
 	static SamsonSetup *samsonSetup = NULL;
@@ -172,6 +175,8 @@ namespace ss
 
 		shared_memory_size_per_buffer	= getUInt64( items, SETUP_shared_memory_size_per_buffer , SETUP_DEFAULT_shared_memory_size_per_buffer );
 		
+		// IsolatedProcess timeout
+		timeout_secs_isolatedProcess	= getInt( items, SETUP_timeout_secs_isolatedProcess , SETUP_DEFAULT_timeout_secs_isolatedProcess );
 		
 		// Default value for other fields
 		load_buffer_size = SETUP_DEFAULT_load_buffer_size;
@@ -214,7 +219,7 @@ namespace ss
 		int max_num_paralell_outputs =  ( memory - num_processes*shared_memory_size_per_buffer ) / (4*max_file_size);
 		if( num_paralell_outputs > max_num_paralell_outputs )
 		{
-			LM_X(1,("Num of maximum paralell outputs is to high to the memory setup. Review num_paralell_outputs in setup.txt file.Current value %d Max value %d", num_paralell_outputs , max_num_paralell_outputs ));
+			LM_X(1,("Num of maximum paralell outputs is too high to the memory setup. Review num_paralell_outputs in setup.txt file. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (4*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size ));
 			return false;
 		}
 

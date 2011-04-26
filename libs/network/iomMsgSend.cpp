@@ -37,8 +37,8 @@ bool iomWriteOk(int fd, const char* name, const char* ip)
 
 	for (tryh = 0; tryh < tries; tryh++)
 	{
-		timeVal.tv_sec  = 0;
-		timeVal.tv_usec = 1000000;
+		timeVal.tv_sec  = 1;
+		timeVal.tv_usec = 0;
 
 		FD_ZERO(&wFds);
 		FD_SET(fd, &wFds);
@@ -51,11 +51,11 @@ bool iomWriteOk(int fd, const char* name, const char* ip)
 		if ((fds == 1) && (FD_ISSET(fd, &wFds)))
 			return true;
 
-        if( fds == -1 )
-            LM_X(1, ("Error while writing to fd %d", fd));
+		if (fds == -1 )
+		  LM_W(("write select error on fd %d: %s", fd, strerror(errno)));
              
 		LM_W(("Problems to send to %s@%s (%d/%d secs)", name, ip, tryh, tries));
-        sleep(1);
+		sleep(1);
 	}
 
 	LM_X(1, ("cannot write to fd %d", fd));

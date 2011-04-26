@@ -9,6 +9,7 @@
 #include "ProcessItem.h"					// ss::ProcessItem
 #include "DiskOperation.h"					// ss::DiskOperation
 #include "EngineNotificationElement.h"      // ss::EngineNotificationElement
+#include <signal.h>   // SIGKILL
 
 #define ENGINE_MAX_RUNNING_TIME     60
 

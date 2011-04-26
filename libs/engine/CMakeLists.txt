@@ -34,7 +34,6 @@ DiskStatistics.cpp
 
 include_directories("${PROJECT_SOURCE_DIR}/libs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
-include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 
 
 # Library declaration

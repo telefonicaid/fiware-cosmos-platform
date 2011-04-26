@@ -14,6 +14,7 @@ list.h
 set.h
 ListMap.h
 varint.h
+Cronometer.h
 )
 
 SET (SOURCES
@@ -25,6 +26,7 @@ Lock.cpp
 LockDebugger.cpp
 Stopper.cpp
 Token.cpp
+Cronometer.cpp
 )
 
 

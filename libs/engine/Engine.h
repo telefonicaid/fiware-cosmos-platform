@@ -10,6 +10,7 @@
 #include <set>                      // std::set
 #include "au/list.h"                // au::list
 #include "EngineNotification.h"     // ss::EngineNotification
+#include "au/Cronometer.h"             // au::Cronometer
 
 namespace engine
 {
@@ -42,10 +43,14 @@ namespace engine
 		// ---------------------------------------------------------------------------
 		pthread_mutex_t elements_mutex;                 // Mutex to protect elements
 		pthread_cond_t elements_cond;                   // Conditional to block the thread while waiting the next event
+
 		pthread_t t;                                    // Thread to run the engine in background ( if necessary )
+        pthread_t t_check;                              // Secondary thread to check that an "element" in the Engine take execessive time
 		
         size_t counter;                                 // Counter
 
+        au::Cronometer cronometer;                      // Cronometer to count the time spend by the current element ( maximum 60 seconds )
+        
         friend class NotificationElement;
                 
         EngineNotificationSystem notificationSystem;    // Notification system
@@ -105,8 +110,12 @@ namespace engine
         
 
     public:
+        
         // Only used internally
         void _quit();
+
+        // Used internally for debugging
+        void _check();
         
 	};
 	

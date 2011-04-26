@@ -28,7 +28,7 @@
 #include "ControllerLoadManager.h"		// ss::ControllerLoadManager
 #include "EngineElement.h"				// ss::EngineElement
 #include "EngineNotification.h"         // ss::EngineNotificationListener
-
+#include "au/Cronometer.h"              // au::Cronometer
 
 #define notification_monitorization                 "notification_monitorization"
 #define notification_check_automatic_operations     "notification_check_automatic_operations"
@@ -62,7 +62,7 @@ namespace ss {
 		
 		// Status information of the workers
 		network::WorkerStatus** worker_status;				// Status of the workers reported periodically
-		struct timeval *worker_status_time;					// Last time status was reported
+        au::Cronometer *worker_status_cronometer;           // Cronometer to count the last update from workers
 		int num_workers;
 				
 		friend class ControllerTaskManager;

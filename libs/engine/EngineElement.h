@@ -44,6 +44,28 @@ namespace engine
 		
 	};
 
+    // Class used only to test the automatic cancelation works
+    
+    class EngineElementSleepTest : public EngineElement
+    {
+        
+        public:
+        
+        EngineElementSleepTest() : EngineElement(10)
+        {
+            description = au::Format::string("Sleep element just to sleep %d seconds", 10 );    
+            shortDescription = description;
+        }
+        
+		virtual void run()
+        {
+            LM_M(("Running EngineElementSleepTest for 60 seconds..."));
+            sleep( 60 );    // Test the program exit
+            LM_M(("End of Running EngineElementSleepTest for 60 seconds..."));
+        }
+        
+    };
+    
 	
 	
 }

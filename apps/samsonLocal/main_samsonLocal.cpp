@@ -22,10 +22,11 @@
 #include "samson/Operation.h"	// ss::Operation
 #include "SamsonSetup.h"		// ss::SamsonSetup
 
-#include <string.h>				// strcmp
-#include <signal.h>				// signal(.)
+#include <string.h>                 // strcmp
+#include <signal.h>                 // signal(.)
 
-#include "Engine.h"				// engine::Engine
+#include "Engine.h"                 // engine::Engine
+#include "EngineElement.h"          // engine::EngineElement
 
 #include "ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
 
@@ -78,22 +79,8 @@ void *run_DelilahConsole(void* d)
 	return NULL;
 }
 
-void
-atexit_function(void)
-{
-	fprintf(stderr, "Han llamado a atexit_function\n");
-}
-
 int main(int argC, const char *argV[])
 {
-	int atexit_return;
-
-	atexit_return = atexit(atexit_function);
-
-	if (atexit_return != 0)
-	{
-		fprintf(stderr, "cannot set exit function\n");
-	}
 	
 	paConfig("prefix",                        (void*) "SSW_");
 	paConfig("usage and exit on any warning", (void*) true);
@@ -121,8 +108,11 @@ int main(int argC, const char *argV[])
     LM_M(("samsonLocal: Seting working directory as %s", workingDir ));
 	ss::SamsonSetup::load( workingDir );		// Load setup and create default directories
 
-    
 	engine::Engine::init();
+    
+    // Add this element to test how Engine crash for exesive task time
+    // engine::Engine::add( new engine::EngineElementSleepTest() );
+    
 	ss::ModulesManager::init();		// Init the modules manager
 
 	engine::SharedMemoryManager::init( ss::SamsonSetup::shared()->num_processes * 2 , ss::SamsonSetup::shared()->shared_memory_size_per_buffer );

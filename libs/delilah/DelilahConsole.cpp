@@ -401,7 +401,6 @@ namespace ss
 			o << "Environment variable " << name << " removed\n";
 			writeOnConsole( o.str() );
 			
-			
 			return 0;
 		}	
 
@@ -934,9 +933,9 @@ namespace ss
         txt << "SAMSON STATUS" << std::endl;
         txt << "================================================================================================" << std::endl;
         
-        
         txt << "------------------------------------------------------------------------------------------------" << std::endl;
-        txt << "Controller      ( uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )" << std::endl;
+        txt << "Controller      ( uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )";
+        txt << " ( updated: " << cronometer_samsonStatus.str() <<  " )" <<  std::endl;
         txt << "------------------------------------------------------------------------------------------------" << std::endl;
         
         if( ( command == "info_full" ) || ( command == "info_task_manager" ))
@@ -974,7 +973,7 @@ namespace ss
             txt << " Memory: " << au::Format::percentage_string(per_memory);
             txt << " Disk: " << disk_pending_operations;
             txt << "  ( uptime: " << au::Format::time_string( worker_status.up_time() ) << " )";
-            txt << " ( updated: " << au::Format::time_string( worker_status.update_time()/1000 ) << " )" << std::endl;
+            txt << " ( updated: " << au::Format::time_string( cronometer_samsonStatus.diffTimeInSeconds() + worker_status.update_time() ) << " )" << std::endl;
             txt << "------------------------------------------------------------------------------------------------" << std::endl;
 
                         

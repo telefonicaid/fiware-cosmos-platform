@@ -46,12 +46,12 @@ namespace ss {
 			LM_X(1,("Internal error: SamsonController starts with %d workers",num_workers));
 		
 		worker_status		= (network::WorkerStatus**) malloc( sizeof(network::WorkerStatus*) * num_workers);
-		worker_status_time	= (struct timeval *) malloc( sizeof( struct timeval ) * num_workers ); 
+        worker_status_cronometer = new au::Cronometer[ num_workers ];  // Cronometer to count the last update from workers
+
 		
 		for (int i = 0 ; i < num_workers ; i++ )
 		{
 			worker_status[i] = new network::WorkerStatus();
-			gettimeofday(&worker_status_time[i], NULL);
 		}	
 
 		// Description for the PacketReceiver
@@ -83,7 +83,7 @@ namespace ss {
 			delete worker_status[i];
         
 		free(worker_status);
-		free(worker_status_time);
+        delete[] worker_status_cronometer;
 		
 	}
     
@@ -139,7 +139,7 @@ namespace ss {
 				if (workerId != -1)
 				{
 					worker_status[workerId]->CopyFrom( packet->message->worker_status() );
-					gettimeofday(&worker_status_time[workerId], NULL);
+                    worker_status_cronometer[workerId].reset();
 				}
                 else
                 {
@@ -481,7 +481,7 @@ namespace ss {
 						network::WorkerStatus *ws =samsonStatus->add_worker_status();
 						ws->CopyFrom( *worker_status[i] );
                         // Modify the update time
-						ws->set_update_time(  engine::DiskStatistics::timeSince( &worker_status_time[i] ) );
+						ws->set_update_time(  worker_status_cronometer[i].diffTimeInSeconds() );
 					}
 					
 					fill( samsonStatus->mutable_controller_status() );

@@ -1411,7 +1411,7 @@ Endpoint* Network::endpointAdd
 {
 	Host* hostP;
 
-	LM_T(LmtEndpoint, ("%s: adding endpoint '%s' of type '%s' for fd %d (alias: '%s')", why, name, endpoint[ME]->typeName(type), rFd, alias));
+	LM_M(("%s: adding endpoint '%s' of type '%s' for fd %d %d (alias: '%s')", why, name, endpoint[ME]->typeName(type), rFd, wFd, alias));
 
 	hostP = hostMgr->lookup(ip.c_str());
 	if (hostP == NULL)
@@ -3269,6 +3269,7 @@ void Network::run(void)
 				LM_T(LmtSelect, ("incoming message from my listener - I will accept ..."));
 				--fds;
 				fd = iomAccept(endpoint[LISTENER]->rFd, &sin, hostName, sizeof(hostName), ip, sizeof(ip));
+				LM_M(("iomAccept returned fd %d", fd));
 				if (fd == -1)
 				{
 					LM_P(("iomAccept(%d)", endpoint[LISTENER]->rFd));
@@ -3280,13 +3281,14 @@ void Network::run(void)
 					Endpoint*    ep;
 
 					hostMgr->insert(hostName, NULL);
+					LM_M(("Adding endpoint with fds %d %d", fd, fd));
 					ep = endpointAdd("'run' just accepted an incoming connection",
 									 fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
 
 					memcpy(&ep->sockin, &sin, sizeof(sin));
 
 					endpoint[LISTENER]->msgsIn += 1;
-					LM_T(LmtHello, ("sending hello to newly accepted endpoint"));
+					LM_T(LmtHello, ("sending hello to newly accepted endpoint, fd %d", ep->wFd));
 					helloSend(ep, Message::Msg);
 				}
 			}

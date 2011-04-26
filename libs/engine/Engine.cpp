@@ -10,6 +10,8 @@
 #include "DiskOperation.h"					// ss::DiskOperation
 #include "EngineNotificationElement.h"      // ss::EngineNotificationElement
 
+#define ENGINE_MAX_RUNNING_TIME     60
+
 namespace engine
 {
 
@@ -23,7 +25,18 @@ namespace engine
         Engine::run();
 		return NULL;
 	}
+
+	void*runEngineCheck(void*e)
+	{
+        if( engine )
+            engine->_check();   // Quit if still not quited
+        else
+			LM_X(1,("Please, init the engine"));
+        
+		return NULL;
+	}
 	
+    
     void destroy_engine()
     {
         LM_M(("Engine terminating..."));
@@ -184,9 +197,35 @@ namespace engine
     
     // ------------------------------------------------------------------------------------------------------------------------------
 	
+    void Engine::_check()
+    {
+        
+        while( true )
+        {
+            time_t time_in_seconds = cronometer.diffTimeInSeconds();
+
+            /*
+            if( running_element )
+                LM_M(("Checking running task... %s %d " , running_element->getDescription().c_str(),  time_in_seconds));
+            else
+                LM_M(("Checking running task but there is no runnign task"));
+            */
+            
+            if( running_element && (time_in_seconds> ENGINE_MAX_RUNNING_TIME  ) )
+                LM_X(1, ("Excesive time (%d secs, max %d secs) for engine Element '%s'." , 
+                         time_in_seconds , ENGINE_MAX_RUNNING_TIME, running_element->getDescription().c_str() ));
+            
+            sleep( ENGINE_MAX_RUNNING_TIME /2 );
+            
+        }
+    }
 
 	void Engine::_run()
 	{
+        
+        // Init the check thread to check exesive time threads
+        pthread_create(&t_check, NULL, runEngineCheck, NULL);
+        
 		// Keep the thread for not calling quit from the same thread
 		t = pthread_self();	
 
@@ -231,8 +270,15 @@ namespace engine
 
 				LM_T( LmtEngine, ("[START] Engine executing %s" , running_element->getDescription().c_str()));
 
+                cronometer.reset();
+                
 				running_element->run();
 
+                time_t t = cronometer.diffTimeInSeconds();
+                
+                if( t > 60 )
+                    LM_W(("Task %s spent %d seconds. This should not be more than 60", running_element->getDescription().c_str() , (int)t ));
+                
 				LM_T( LmtEngine, ("[DONE] Engine executing %s" , running_element->getDescription().c_str()));
                     
                 EngineElement * _running_element = running_element;
@@ -247,7 +293,6 @@ namespace engine
 				}
 				else
 					delete _running_element;
-                
 				
 			}
 			else
@@ -300,16 +345,33 @@ namespace engine
 		pthread_cond_signal(&elements_cond);
 		
 		pthread_mutex_unlock(&elements_mutex);
-			
+        
 		// If we are calling quit from another thread, we will wait until the main thead is finished
 		if( pthread_self() != t )
 		{
-			while( flag_running )
-            {
-                LM_M(("Awaiting samson engine to finish...."));
-				sleep(1);
-            }
+            LM_M(("Engine: Killing main thread"));
+            int r = pthread_kill(t, SIGKILL);
+            if( r )
+                LM_W(("Not possible to kill main thread of Engine"));
+            
+            int r2 = pthread_join( t,NULL);
+            if( r2 )
+                LM_W(("Error while canceling main thread of Engine"));
 		}
+        
+        
+		if( pthread_self() != t_check )
+        {
+            LM_M(("Engine: Killing secondary thread for checking"));
+            int r = pthread_kill(t_check, SIGKILL);
+            if( r )
+                LM_W(("Not possible to kill check-thread of Engine"));
+            
+            int r2 = pthread_join( t_check ,NULL);
+            if( r2 )
+                LM_W(("Error while canceling check-thread of Engine"));
+        }
+        
 		
 	}
 			

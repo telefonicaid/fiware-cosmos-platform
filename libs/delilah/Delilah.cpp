@@ -14,7 +14,9 @@
 #include "DelilahDownloadDataProcess.h"	// ss::DelilahLoadDataProcess
 #include "EnvironmentOperations.h"
 
+#include "au/Cronometer.h"      // au::Cronometer
 #define notification_delilah_automatic_update "notification_delilah_automatic_update"
+
 
 namespace ss {
     
@@ -22,6 +24,7 @@ namespace ss {
 	network::OperationList *ol = NULL;              // List of operations ( for auto-completion )
 	network::QueueList *ql = NULL;                  // List of queues ( for auto-completion )
     network::SamsonStatus *samsonStatus=NULL;       // Information about workers ( updated continuously )
+    au::Cronometer cronometer_samsonStatus;      // Cronometer for this updated message
     
     /* ****************************************************************************
      *
@@ -188,6 +191,9 @@ namespace ss {
         // Update of the samson status
         if( packet->message->command_response().has_samson_status() )
         {
+            // Reset the cronometer of the samsonStatus report
+            cronometer_samsonStatus.reset();
+            
             info_lock.lock();
             
             if( samsonStatus )

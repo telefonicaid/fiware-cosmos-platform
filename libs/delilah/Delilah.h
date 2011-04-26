@@ -24,6 +24,7 @@
 #include "samson.pb.h"			// ss::network::..
 #include "au/map.h"				// au::simple_map
 #include "EngineNotification.h" // engine::NotificationListener
+#include "au/Cronometer.h"      // au::Cronometer
 
 namespace ss {
 	
@@ -37,7 +38,9 @@ namespace ss {
     
 	extern network::OperationList *ol;              // List of available opertions ( updated periodically for autocompletion )
 	extern network::QueueList *ql;                  // List of queues in the system ( updated periodically for autocompletion )
+
     extern network::SamsonStatus *samsonStatus;     // Global status information of the platform            
+    extern au::Cronometer cronometer_samsonStatus;      // Cronometer for this updated message
 	
 	/**
 	   Main class for the samson client element

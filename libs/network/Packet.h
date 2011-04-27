@@ -69,6 +69,26 @@ namespace ss {
 			message = new network::Message();
 		};
 
+        
+		Packet( Packet * p ) 
+		{
+            // Copy the buffer ( if any )
+            if( p->buffer )
+            {
+                buffer = engine::MemoryManager::shared()->newBuffer("", p->buffer->getSize(), p->buffer->getType() );
+                memcpy(buffer->getData(), p->buffer->getData(), p->buffer->getSize() );
+                buffer->setSize( p->buffer->getSize() );
+            }
+            else
+                buffer = NULL;
+
+            // Google protocol buffer message
+			message = new network::Message();
+            message->CopyFrom( *p->message );
+            
+		};
+        
+        
 		~Packet()
 		{
 			delete message;

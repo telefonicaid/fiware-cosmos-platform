@@ -7,6 +7,8 @@
 * CREATION DATE            Apr 06 2011
 *
 */
+#include <pthread.h>            // pthread_t
+
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
 
@@ -159,15 +161,17 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints, 
 	// If this endpoint needs to accept incoming connections, add the listener endpoint
 	//
 	if (me->portGet() != 0)
-		listener = new ListenerEndpoint(this, Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
+		listener = (ListenerEndpoint*) add(Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
+	//  listener = new ListenerEndpoint(this, Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
 
 
 
 	//
 	// Controller also serves as Web Listener
 	//
-	if (me->typeGet() == Endpoint2::Controller)
-		webListener = new ListenerEndpoint(this, Endpoint2::WebListener, 0, "ME", "Web Listener", me->hostGet(), WEB_SERVICE_PORT, -1, -1);
+	//if (me->typeGet() == Endpoint2::Controller)
+	//	webListener = (WebListenerEndpoint*) add(Endpoint2::WebListener, 0, "ME", "Web Listener", me->hostGet(), WEB_SERVICE_PORT, -1, -1);
+	//  webListener = new ListenerEndpoint(this, Endpoint2::WebListener, 0, "ME", "Web Listener", me->hostGet(), WEB_SERVICE_PORT, -1, -1);
 
 
 
@@ -192,8 +196,9 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints, 
 	//
 	if (type == Endpoint2::Worker)
 	{
-		Process* p;
-		Host*    hostP;
+		Process*   p;
+		Host*      hostP;
+		Endpoint2* ep;
 
 		p = &procVec->processV[0];
 		if (p->type != PtController)
@@ -203,8 +208,8 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints, 
 		if (hostP == NULL)
 			hostP = hostMgr->insert(p->host, NULL);
 
-		controller = add(Endpoint2::Controller, 0, p->name, p->alias, hostP, p->port, -1, -1);
-		controller->connect();
+		ep = add(Endpoint2::Controller, 0, p->name, p->alias, hostP, p->port, -1, -1);
+		ep->connect();
 	}
 
 
@@ -279,6 +284,25 @@ EndpointManager::~EndpointManager()
 
 /* ****************************************************************************
 *
+* endpointRunInThread - 
+*/
+static void* endpointRunInThread(void* vP)
+{
+	Endpoint2* ep = (Endpoint2*) vP;
+
+	LM_M(("Calling run for endpoint %s@%s", ep->nameGet(), ep->hostGet()->name));
+	ep->run();
+
+	ep->stateSet(Endpoint2::ScheduledForRemoval);
+	LM_W(("Endpoint '%s@%s' is back from Endpoint2::run", ep->nameGet(), ep->hostGet()->name));
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * add - 
 */
 Endpoint2* EndpointManager::add(Endpoint2* ep)
@@ -289,6 +313,20 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 			continue;
 
 		endpoint[ix] = ep;
+
+		if ((ep->type == Endpoint2::Controller) || (ep->type == Endpoint2::Worker) || (ep->type == Endpoint2::Delilah))
+		{
+			int        s;
+			pthread_t  tid;
+
+			LM_M(("Creating thread for endpoint %s@%s", ep->name, ep->host->name));
+			if ((s = pthread_create(&tid, NULL, endpointRunInThread, ep)) != 0)
+			{
+				LM_E(("pthread_create returned %d for %s@%s", s, ep->name, ep->host->name));
+				remove(ep);
+				return NULL;
+			}
+		}
 		return ep;
 	}
 
@@ -306,7 +344,20 @@ Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, const char* name, 
 {
 	Endpoint2* ep;
 
-	ep = new Endpoint2(this, type, id, name, alias, host, port, rFd, wFd);
+	switch (type)
+	{
+	case Endpoint2::Listener:
+		ep = new ListenerEndpoint(this, id, name, alias, host, port, rFd, wFd);
+		break;
+
+	case Endpoint2::Unhelloed:
+		ep = new UnhelloedEndpoint(this, id, name, alias, host, port, rFd, wFd);
+		break;
+
+	default:
+		LM_X(1, ("Please Implement!"));
+	}
+
 	if (ep == NULL)
 		LM_X(1, ("Error allocating endpoint of %d bytes", sizeof(Endpoint2)));
 
@@ -595,6 +646,8 @@ void EndpointManager::run(bool oneShot)
 		
 	while (1)
 	{
+		// Call cleanup function that removes all endpoints marked as 'ScheduledForRemoval' 
+
 		// Populate rFds for select
 		do
 		{
@@ -602,16 +655,17 @@ void EndpointManager::run(bool oneShot)
 			ix   = 0;
 			max  = 0;
 
-			if (listener != NULL)
+			for (unsigned int ix = 0; ix < endpoints; ix++)
 			{
-				max = MAX(max, listener->rFd);
-				FD_SET(listener->rFd, &rFds);
-			}
+				ep = endpoint[ix];
 
-			if (webListener != NULL)
-			{
-				max = MAX(max, webListener->rFd);
-				FD_SET(webListener->rFd, &rFds);
+				if (ep == NULL)
+					continue;
+				if ((ep->type != Endpoint2::Listener) && (ep->type != Endpoint2::WebListener) && (ep->type != Endpoint2::Unhelloed))
+					continue;
+
+				max = MAX(max, ep->rFd);
+				FD_SET(ep->rFd, &rFds);
 			}
 
 			tv.tv_sec  = tmoSecs;

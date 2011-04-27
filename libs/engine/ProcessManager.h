@@ -18,6 +18,7 @@
 #define notification_process_request                            "notification_process_request"
 #define notification_process_request_response                   "notification_process_request_response"
 #define notification_process_manager_check_background_process   "notification_process_manager_check_background_process"
+#define notification_process_cancel                             "notification_process_cancel"
 
 namespace engine
 {
@@ -42,6 +43,7 @@ namespace engine
 		au::set<ProcessItem> items;				// List of items to be executed ( all priorities  )
 		au::set<ProcessItem> running_items;		// Set of items currently being executed
 		au::set<ProcessItem> halted_items;		// Set of items currently being executed but halted
+		au::set<ProcessItem> canceled_items;	// Set of items currently being executed but canceled ( so waiting to be finished )
         
         ProcessManager( int _num_processes);
         
@@ -55,7 +57,8 @@ namespace engine
         static std::string str();
         static int getNumCores();
         static int getNumUsedCores();
-        
+
+        // All the interface is using notification mechanism
         void notify( Notification* notification );
 
     public:

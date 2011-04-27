@@ -124,9 +124,6 @@ namespace ss {
         // Set up time information
         ws->set_up_time(au::Format::ellapsedSeconds(&init_time));
         
-        // Send the message    
-		network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);
-        
         // Numerical information for better presentation
         
         ws->set_total_memory( engine::MemoryManager::getMemory());
@@ -136,6 +133,9 @@ namespace ss {
         ws->set_used_cores(engine::ProcessManager::getNumUsedCores());
 
         ws->set_disk_pending_operations(engine::DiskManager::getNumOperations());
+
+        // Send the message    
+		network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);
         
 	}
 	

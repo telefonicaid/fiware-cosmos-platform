@@ -51,6 +51,9 @@ namespace engine
 			case halted:
 				o << "H";
 				break;
+			case canceled:
+				o << "C";
+				break;
 		}
 		
 		o << ":" << priority;
@@ -98,6 +101,19 @@ namespace engine
 		stopper.wakeUp();
 	}
 	
+    
+    bool ProcessItem::isProcessItemCanceled()
+    {
+        return (state == canceled);
+    }
+
+    void ProcessItem::cancel()
+    {
+        // switch to state canceled
+        state =  canceled;
+    }
 	
+    
+    
 	
 }

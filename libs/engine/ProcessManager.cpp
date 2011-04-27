@@ -77,6 +77,33 @@ namespace engine
         }
         else if( notification->isName( notification_process_manager_check_background_process ) )                 
                 _checkBackgroundProcesses();
+        else if( notification->isName( notification_process_cancel ) )
+        {
+            // Cancel process
+            if( !notification->object )
+                LM_X(1,("ProcessManager received a notification_process_cancel without an object"));
+            ProcessItem *item = (ProcessItem*) notification->object;
+            
+            if ( items.extractFromMap( item ) )
+                delete item;
+            else if ( running_items.extractFromMap( item ) )
+            {
+                //item->cancel();
+                canceled_items.insert( item );
+                
+            }
+            else if ( halted_items.extractFromMap( item ) )
+            {
+                //item->cancel();
+                canceled_items.insert( item );
+                
+                item->unHalt();
+                
+            }
+
+                
+            
+        }
         else        
                 LM_X(1,("Wrong notification at ProcessManager"));
         

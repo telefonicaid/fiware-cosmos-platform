@@ -115,6 +115,7 @@ namespace ss
 		
 		while( true )
 		{
+            
 			int iom;
 			int nb = -9;
 
@@ -223,6 +224,14 @@ namespace ss
 				// Send something to the other side of the pipe to cotinue or finish
 				LM_T(LmtIsolated , ("Isolated process %s(%s): Sending something back to the pipe ",getStatus().c_str(),stateName()));
 
+                // Eval if the process has been canceled by ProcessManager, if so, it shoudl return assap
+                if( isProcessItemCanceled() )
+                {
+                    s = broken;
+                    error.set( "ProcessItem canceled" );
+                    m.code = PI_CODE_KILL;
+                }
+                
 				int s;
 				s = write(pipeFdPair2[1], &m, sizeof(m));
 				if (s != sizeof(m))

@@ -40,14 +40,17 @@ namespace engine {
 		
 		typedef enum 
 		{
-			queued,
-			running,
-			halted
+            
+			queued,         // In the queu waiting to be executed
+			running,        // Running in a background process
+			halted,         // temporary halted, when a slot is ready, read() function is evaluated to see if it can countinue
+            canceled,       // The process has been canceled at ProcessManager, so it should finish as soon as possible   
 		} ProcessItemStatus;
-		
+		        
+        // Internal state of the process
 		ProcessItemStatus  state;
 		
-        // Pointer to the process manager
+        // Pointer to the process manager to notify 'halt' 'finish' and so...
         ProcessManager* processManager;
 
 		// Thread used to run this in background
@@ -55,7 +58,7 @@ namespace engine {
 		
 	private:
 		
-		au::Stopper stopper;	// Stopper to block the main thread until output memory is available again
+		au::Stopper stopper;	// Stopper to block the main thread until ready() returns true
 		
 	protected:
 
@@ -96,14 +99,23 @@ namespace engine {
 
 		// Function to check if the process if ready to be executed ( usually after calling halt )
 		virtual bool isReady(){ return true; };
-		
+
+    protected:
+        
+        // Function used indide _run to evaluate if the ProcessItem has been canceled. If so, it shoudl return assap in the _run
+        bool isProcessItemCanceled();      
+
+    private:
+        
+        void cancel();
+        
 	protected:
 		
-		void halt();			// command executed inside run() to stop the task until output memory are free again
+		void halt();			// command executed inside run() to stop the task until ready returns true
 		
 	public:
 		
-		void unHalt();			// Method to unhalt the process ( executed from the ProcessManager when output memory is available )
+		void unHalt();			// Method to unhalt the process ( executed from the ProcessManager when ready() returns true )
 
 		
 	};

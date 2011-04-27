@@ -3,7 +3,8 @@
 
 #include <stdio.h>             /* sprintf */
 #include <string>				// std::string
-#include <sys/time.h>		// struct timeval
+#include <sys/time.h>           // struct timeval
+#include "logMsg.h"             // LM_W
 
 namespace au {
 
@@ -31,12 +32,10 @@ namespace au {
 		static std::string time_string_ellapsed( struct timeval *init_time );	
         static std::string string(const char* format, ...);
         
-		
         static std::string progress_bar( double p , int len );
-
         
 	};
-		
+    
 }
 
 #endif

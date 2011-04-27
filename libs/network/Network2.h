@@ -31,8 +31,6 @@ class Network2 : public NetworkInterface
 {
 private:
 	EndpointManager*  epMgr;
-	int               tmoSecs;
-	int               tmoUSecs;
 
 public:
 	Network2(EndpointManager* epMgr);

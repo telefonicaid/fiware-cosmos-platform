@@ -17,7 +17,8 @@
 
 
 
-namespace ss {
+namespace ss
+{
 
 
 

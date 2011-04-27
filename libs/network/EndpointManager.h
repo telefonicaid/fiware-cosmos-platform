@@ -33,19 +33,24 @@ private:
 	unsigned int    endpoints;
 	unsigned int    workers;
 
+	int               tmoSecs;
+	int               tmoUSecs;
+
 public:
 	ProcessVector*  procVec;
 	HostMgr*        hostMgr;
 
-	Endpoint2*      me;
-	Endpoint2*      controller;
-	Endpoint2*      listener;
+	Endpoint2*         me;
+	Endpoint2*         controller;
+	ListenerEndpoint*  listener;
+	ListenerEndpoint*  webListener;
 
-	EndpointManager(Endpoint2::Type _type, unsigned int _endpoints = -1);
+	EndpointManager(Endpoint2::Type _type, unsigned int _endpoints = -1, const char* controllerIp = NULL);
 	~EndpointManager();
 
 	void            setupAwait(void);
-	Endpoint2*      add(Endpoint2::Type type, const char* name, const char* alias, Host* host, unsigned short port, int rFd, int wFd);
+	Endpoint2*      add(Endpoint2* ep);
+	Endpoint2*      add(Endpoint2::Type type, int id, const char* name, const char* alias, Host* host, unsigned short port, int rFd, int wFd);
 	void            remove(Endpoint2* ep);
 	Endpoint2*      get(unsigned int index);
 	Endpoint2*      get(unsigned int index, int* rFdP);
@@ -53,6 +58,8 @@ public:
 	Endpoint2*      lookup(const char* alias);
 	void            list(const char* why, bool forced = false);
 	
+	void            tmoSet(int secs, int usecs);  // Set timeout for select loop
+	void            run(bool oneShot);            // Main run loop - loops forever, unless 'oneShot' is true ...
 };
 
 }

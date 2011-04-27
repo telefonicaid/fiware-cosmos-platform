@@ -12,7 +12,10 @@
 * CREATION DATE            Apr 12 2011
 *
 */
+#include <stdio.h>              // NULL
 #include <netinet/in.h>         // sockaddr_in
+
+#include "logMsg.h"             // LM_X
 
 #include "Message.h"            // Message::Code, Message::Type
 #include "Host.h"               // Host
@@ -33,6 +36,7 @@ namespace ss
 class Endpoint2;
 class Packet;
 class EndpointManager;
+class ListenerEndpoint;
 
 
 
@@ -42,6 +46,9 @@ class EndpointManager;
 */
 class Endpoint2
 {
+   friend class EndpointManager;
+   friend class ListenerEndpoint;
+
 public:
 	typedef enum Status
 	{
@@ -67,15 +74,15 @@ public:
 
 	typedef enum State
 	{
-		Usused,
+		Unused,
 		Ready,
 		Disconnected,
 		ScheduledForRemoval
 	} State;
 
-	typedef enum Type
+	typedef enum Type  // Move this enum to common/Process, called ProcessType
 	{
-		Anonymous    = 0,
+		Unhelloed    = 0,
 		Worker       = 1, /* Must be the same value as libs/common/Process.h:PtWorker      */
 		Controller   = 2, /* Must be the same value as libs/common/Process.h:PtController  */
 		Spawner,
@@ -98,6 +105,7 @@ public:
 	(
 		EndpointManager* _epMgr,
 		Type             _type,
+		int              _id,
 		const char*      _name,
 		const char*      _alias,
 		Host*            _host,
@@ -111,8 +119,10 @@ public:
 
 private:
 	EndpointManager*     epMgr;
-	Host*                host;
+
 	Type                 type;
+	int                  id;
+	Host*                host;
 	char*                name;
 	char*                alias;
 	unsigned short       port;
@@ -120,7 +130,6 @@ private:
 	int                  wFd;
 	State                state;
 	struct sockaddr_in   sockin;
-	int                  workerId;         // Worker
 	bool                 useSenderThread;  // Worker/Delilah
 	JobQueue*            jobQ;
 
@@ -130,7 +139,11 @@ public:
 	Type                 typeGet();
 	void                 typeSet(Type type);
 
+	void                 idSet(int _id);
+	int                  idGet(void);
+
 	Host*                hostGet(void);
+	Host*                hostSet(Host* hostP);
 	const char*          hostname(void);
 
 	void                 portSet(unsigned short _port);
@@ -142,11 +155,14 @@ public:
 	void                 aliasSet(const char* alias);
 	const char*          aliasGet(void);
 
-	int                  rFdGet(void);
 	State                stateGet(void);
+	void                 stateSet(State _state);
 
-	Endpoint2*           connect(bool addToEpVec);   // the fd from connect is added as an Anonymous-typed endpoint
-	Endpoint2*           accept(bool addToEpVec);
+	int                  rFdGet(void);
+
+
+
+	Endpoint2*           connect(void);
 	Status               msgAwait(int secs, int usecs);
 
 	Status               partRead(void* vbuf, long bufLen, long* bufLenP = NULL);
@@ -156,16 +172,21 @@ public:
 	Status               partSend(void* dataP, int dataLen, const char* what);
 	Status               send(Message::MessageType type, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
 
-	Status               helloDataAdd(Type _type, const char* _name, const char* _alias);
-	Status               helloSend(Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
-
+	void                 run(void);
 	Status               msgTreat(void);
+
 	virtual Status       msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
-	                     { LM_X(1, ("NOT IMPLEMENTED")); return NotImplemented; };
+	{
+	   LM_X(1, ("NOT IMPLEMENTED")); return NotImplemented;
+	};
+
+	virtual Status       msgTreat2(void)
+	{
+	   LM_X(1, ("NOT IMPLEMENTED")); return NotImplemented;
+	};
 
 private:
 	Status               listenerPrepare(void);
-	                                                                       // Or, the accepted fd is added as an Anonymous endpoint?
 };
 
 }

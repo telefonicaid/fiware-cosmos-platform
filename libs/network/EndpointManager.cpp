@@ -16,6 +16,8 @@
 #include "platformProcesses.h"  // platformProcessesGet
 #include "Host.h"               // Host
 #include "Endpoint2.h"          // Endpoint2
+#include "ListenerEndpoint.h"   // ListenerEndpoint
+#include "UnhelloedEndpoint.h"  // UnhelloedEndpoint
 #include "EndpointManager.h"    // Own interface
 
 
@@ -27,32 +29,11 @@ namespace ss
 
 /* ****************************************************************************
 *
-* typeValidityCheck - 
-*/
-static void typeValidityCheck(Endpoint2::Type type)
-{
-	switch (type)
-	{
-	case Endpoint2::Worker:
-	case Endpoint2::Controller:
-	case Endpoint2::Spawner:
-	case Endpoint2::Delilah:
-	case Endpoint2::Supervisor:
-		LM_V(("Creating the endpoint manager for %s", Endpoint2::typeName(type)));
-		break;
-
-	default:
-		LM_X(1, ("The endpoint type '%s' cannot have an Endpoint Manager", Endpoint2::typeName(type)));
-	}
-}
-
-
-
-/* ****************************************************************************
-*
 * platformProcessLookup - 
+*
+* To be moved to libs/common/platformProcesses.[ch]
 */
-static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, Endpoint2::Type type, Host* host)
+static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, Endpoint2::Type type, Host* host, int* ixP = NULL)
 {
 	for (int ix = 0; ix < procVec->processes; ix++)
 	{
@@ -64,6 +45,8 @@ static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, 
 		if (hostMgr->match(host, p->host) == false)
 			continue;
 
+		if (ixP != NULL)
+			*ixP = ix;
 		return p;
 	}
 
@@ -76,16 +59,34 @@ static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, 
 *
 * Constructor
 */
-EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints)
+EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints, const char* controllerIp)
 {
-	Host* host;
+	Host*     host;
+	Process*  self = NULL;
 
 	endpoints   = (_endpoints == 0)? 100 : _endpoints;
 	workers     = 0;
 	controller  = NULL;
 	listener    = NULL;
 
-	typeValidityCheck(type);
+
+
+	//
+	// 	Type Validity Check
+	//
+	switch (type)
+	{
+	case Endpoint2::Worker:
+	case Endpoint2::Controller:
+	case Endpoint2::Spawner:
+	case Endpoint2::Delilah:
+	case Endpoint2::Supervisor:
+		LM_V(("Creating Endpoint Manager for %s", Endpoint2::typeName(type)));
+		break;
+
+	default:
+		LM_X(1, ("The endpoint type '%s' cannot have an Endpoint Manager", Endpoint2::typeName(type)));
+	}
 
 
 
@@ -114,9 +115,9 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints)
 	// Create the 'self' or 'me' endpoint
 	//
 	// Do I put this endpoint into the list or not ... ?
-	// For now, it's left out from the list
+	// For now, it's left out from the list, just a part of EndpointManager.
 	//
-	me = new Endpoint2(this, type, "unknown name", "unknown alias", host); // port == 0 by default
+	me = new Endpoint2(this, type, 0, "unknown name", "unknown alias", host); // port == 0 by default
 	if (me == NULL)
 		LM_X(1, ("error allocating 'me' endpoint: %s", strerror(errno)));
 
@@ -130,16 +131,17 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints)
 	//
 	if ((type == Endpoint2::Worker) || (type == Endpoint2::Controller))
 	{
-		Process* self;
+		int ix;
 
 		if ((procVec = platformProcessesGet()) == NULL)
-			LM_X(1, ("No process vector"));
+			LM_X(1, ("Error retrieving vector of platform processes"));
 
-		if ((self = platformProcessLookup(hostMgr, procVec, type, host)) == NULL)
-			LM_X(1, ("I'm not in Process Vector ..."));
+		if ((self = platformProcessLookup(hostMgr, procVec, type, host, &ix)) == NULL)
+			LM_X(1, ("Cannot find myself in platform processes vector."));
 
 		me->portSet(self->port);
 		me->aliasSet(self->alias);        // This method could check the alias for validity ('WorkerXX', 'Controller', ...)
+		me->idSet(ix);
 	}
 	else if (type == Endpoint2::Spawner)
 	{
@@ -157,7 +159,7 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints)
 	// If this endpoint needs to accept incoming connections, add the listener endpoint
 	//
 	if (me->portGet() != 0)
-		listener = add(Endpoint2::Listener, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
+		listener = new ListenerEndpoint(this, Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
 
 
 
@@ -165,7 +167,7 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints)
 	// Controller also serves as Web Listener
 	//
 	if (me->typeGet() == Endpoint2::Controller)
-		add(Endpoint2::WebListener, "ME", "Web Listener", me->hostGet(), WEB_SERVICE_PORT, -1, -1);
+		webListener = new ListenerEndpoint(this, Endpoint2::WebListener, 0, "ME", "Web Listener", me->hostGet(), WEB_SERVICE_PORT, -1, -1);
 
 
 
@@ -174,13 +176,83 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints)
 	//
 	if (type == Endpoint2::Spawner)
 	{
-        if ((procVec = platformProcessesGet()) == NULL)
+		if ((procVec = platformProcessesGet()) == NULL)
 		{
 			setupAwait();
 			platformProcessesSave(procVec);
 
 			// After this, I can start my local processes and also ...
 			// ... send the procVec to all other Spawners (if I continue to do that).
+		}
+	}
+
+
+	//
+	// Workers connect to controller
+	//
+	if (type == Endpoint2::Worker)
+	{
+		Process* p;
+		Host*    hostP;
+
+		p = &procVec->processV[0];
+		if (p->type != PtController)
+			LM_X(1, ("First process in process vector has to be the controller!"));
+
+		hostP = hostMgr->lookup(p->host);
+		if (hostP == NULL)
+			hostP = hostMgr->insert(p->host, NULL);
+
+		controller = add(Endpoint2::Controller, 0, p->name, p->alias, hostP, p->port, -1, -1);
+		controller->connect();
+	}
+
+
+
+	//
+	// Delilahs connect to controller
+	//
+	// Delilahs need to ask the Controller for the platform process list
+	//
+	//
+	if (type == Endpoint2::Delilah)
+	{
+		Host* hostP;
+
+		hostP = hostMgr->lookup(controllerIp);
+		if (hostP == NULL)
+			hostP = hostMgr->insert(controllerIp, NULL);
+
+		controller = add(Endpoint2::Controller, 0, "Controller", "Controller", hostP, CONTROLLER_PORT, -1, -1);
+		controller->connect();
+		return;
+	}
+
+
+	
+
+	//
+	// Workers to connect to all workers with an identifier (ep->id) less than own id
+	//
+	if (type == Endpoint2::Worker)
+	{
+		for (int ix = 1; ix < procVec->processes; ix++)
+		{
+			Process*    p;
+			Host*       hostP;
+			Endpoint2*  ep;
+
+			p = &procVec->processV[ix];
+			if (p->type != PtWorker)
+				LM_X(1, ("Process %d in process vector has to be a worker - corrupt platform processes file!", ix));
+
+			hostP = hostMgr->lookup(p->host);
+			if (hostP == NULL)
+				hostP = hostMgr->insert(p->host, NULL);
+
+			ep = add(Endpoint2::Worker, ix, p->name, p->alias, hostP, p->port, -1, -1);
+			if (ep->idGet() < me->idGet())
+				ep->connect();  // Connect, but don't add to endpoint vector
 		}
 	}
 }
@@ -209,29 +281,36 @@ EndpointManager::~EndpointManager()
 *
 * add - 
 */
-Endpoint2* EndpointManager::add(Endpoint2::Type type, const char* name, const char* alias, Host* host, unsigned short port, int rFd, int wFd)
+Endpoint2* EndpointManager::add(Endpoint2* ep)
 {
-	Endpoint2* ep;
-
-	if ((type == Endpoint2::Controller) || (type == Endpoint2::Worker))
-		LM_X(1, ("Please don't add Controller and Worker with correct type, await the Hello and use addHelloData for this purpose (use the type 'Anonymous')"));
-
-	ep = new Endpoint2(this, type, name, alias, host, port, rFd, wFd);
-	if (ep == NULL)
-		LM_X(1, ("Error allocating endpoint of %d bytes", sizeof(Endpoint2)));
-
 	for (unsigned int ix = 0; ix < endpoints; ix++)
 	{
 		if (endpoint[ix] != NULL)
 			continue;
 
 		endpoint[ix] = ep;
-
 		return ep;
 	}
 
 	LM_X(1, ("No room in endpoint vector (%d occupied slots) - realloc?", endpoints));
 	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* add - 
+*/
+Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, const char* name, const char* alias, Host* host, unsigned short port, int rFd, int wFd)
+{
+	Endpoint2* ep;
+
+	ep = new Endpoint2(this, type, id, name, alias, host, port, rFd, wFd);
+	if (ep == NULL)
+		LM_X(1, ("Error allocating endpoint of %d bytes", sizeof(Endpoint2)));
+
+	return add(ep);
 }
 
 
@@ -362,7 +441,7 @@ void EndpointManager::list(const char* why, bool forced)
 			continue;
 
 		ep = endpoint[ix];
-		LM_V(("%c %02d: %-20s %-20s %-20s", (ep->typeGet() != Endpoint2::Anonymous)? '+' : '-', ix, ep->aliasGet(), ep->nameGet(), ep->hostname()));
+		LM_V(("%c %02d: %-20s %-20s %-20s", (ep->rFd == -1)? '-' : '+', ix, ep->aliasGet(), ep->nameGet(), ep->hostname()));
 	}
 
 	if (forced)
@@ -383,12 +462,11 @@ void EndpointManager::setupAwait(void)
 	LM_V(("Awaiting samsonSetup/Spawner to connect and forward the Process Vector"));
 	while (1)
 	{
-		Endpoint2*            ep;
+		UnhelloedEndpoint*    ep;
 		Message::Header       header;
 		int                   dataLen = 0;
 		void*                 dataP   = NULL;
 		Message::HelloData*   helloP;
-		ProcessVector*        procVecP;
 		Packet                packet;
 
 
@@ -397,8 +475,7 @@ void EndpointManager::setupAwait(void)
 			LM_X(1, ("Endpoint2::msgAwait error"));
 
 
-		// Accept the connection without adding the endpoint to the endpoint vector (false)
-		if ((ep = listener->accept(false)) == NULL)
+		if ((ep = listener->accept()) == NULL)
 		{
 			LM_E(("error accepting an incoming connection"));
 			continue;
@@ -436,7 +513,7 @@ void EndpointManager::setupAwait(void)
 		helloP = (Message::HelloData*) dataP;
 		if (helloP->type != Endpoint2::Setup) //   && (helloP->type != Endpoint2::Spawner) ???
 		{
-			LM_E(("The incoming connection was from a '%s' - closing the connection", Endpoint2::typeName((Endpoint2::Type) helloP->type)));
+			LM_E(("The incoming connection was from a '%s'", Endpoint2::typeName((Endpoint2::Type) helloP->type)));
 			delete ep;
 			continue;
 		}
@@ -455,7 +532,7 @@ void EndpointManager::setupAwait(void)
 		// Awaiting the message to arrive 
 		if (listener->msgAwait(5, 0) != 0)
 		{
-			LM_E(("Endpoint2::msgAwait error, expecting a ProcessVector"));
+			LM_E(("5 second timeout expired, expecting a ProcessVector"));
 			delete ep;
 			continue;
 		}
@@ -476,25 +553,91 @@ void EndpointManager::setupAwait(void)
 		if ((header.code != Message::ProcessVector) || (header.type != Message::Msg))
 		{
 			LM_E(("Message read not a ProcessVector Msg (%s %s)", messageCode(header.code), messageType(header.type)));
+			if (dataP != NULL)
+				free(dataP);
 			delete ep;
 			continue;
 		}
-		procVecP = (ProcessVector*) dataP;
 
 
 		// Copying 
-		this->procVec = (ProcessVector*) malloc(procVecP->processVecSize);
+		this->procVec = (ProcessVector*) malloc(dataLen);
 		if (this->procVec == NULL)
-			LM_X(1, ("Error allocating %d bytes for the Process Vector", procVecP->processVecSize));
+			LM_X(1, ("Error allocating %d bytes for the Process Vector", dataLen));
 
-		memcpy(this->procVec, procVecP, procVecP->processVecSize);
-
+		memcpy(this->procVec, dataP, dataLen);
+		free(dataP);
 
 		// Await samsonSetup to close connection ?
 		// What if it's another Spawner ... ? 
 		delete ep;
 
 		return;
+	}
+}
+
+
+/* ****************************************************************************
+*
+* run - 
+*/
+void EndpointManager::run(bool oneShot)
+{
+	Endpoint2*       ep;
+	int              ix;
+	fd_set           rFds;
+	int              max;
+	struct timeval   tv;
+	int              fds;
+
+	if ((listener == NULL) && (webListener == NULL))
+		LM_X(1, ("No listeners ..."));
+		
+	while (1)
+	{
+		// Populate rFds for select
+		do
+		{
+			FD_ZERO(&rFds);
+			ix   = 0;
+			max  = 0;
+
+			if (listener != NULL)
+			{
+				max = MAX(max, listener->rFd);
+				FD_SET(listener->rFd, &rFds);
+			}
+
+			if (webListener != NULL)
+			{
+				max = MAX(max, webListener->rFd);
+				FD_SET(webListener->rFd, &rFds);
+			}
+
+			tv.tv_sec  = tmoSecs;
+			tv.tv_usec = tmoUSecs;
+			
+			fds = select(max + 1,  &rFds, NULL, NULL, &tv);
+		} while ((fds == -1) && (errno == EINTR));
+
+		if (fds == -1)
+			LM_X(1, ("select: %s", strerror(errno)));
+		else if (fds == 0)
+		{
+			LM_D(("timeout"));
+		}
+		else
+		{
+			ep = NULL;
+			if ((listener != NULL) && (FD_ISSET(listener->rFd, &rFds)))
+				listener->msgTreat();
+
+			if ((webListener != NULL) && (FD_ISSET(webListener->rFd, &rFds)))
+				webListener->msgTreat();
+		}
+
+		if (oneShot)
+			return;
 	}
 }
 

@@ -34,8 +34,7 @@ namespace ss
 Network2::Network2(EndpointManager* _epMgr)
 {
 	epMgr     = _epMgr;
-	tmoSecs   = 2;
-	tmoUSecs  = 0;
+	epMgr->tmoSet(2, 0);
 }
 
 
@@ -46,8 +45,7 @@ Network2::Network2(EndpointManager* _epMgr)
 */
 void Network2::tmoSet(int secs, int usecs)
 {
-	tmoSecs   = secs;
-	tmoUSecs  = usecs;
+	epMgr->tmoSet(secs, usecs);
 }
 
 
@@ -58,56 +56,7 @@ void Network2::tmoSet(int secs, int usecs)
 */
 void Network2::run(bool oneShot)
 {
-	Endpoint2*       ep;
-	int              ix;
-	fd_set           rFds;
-	int              rFd;
-	int              max;
-	struct timeval   tv;
-	int              fds;
-
-	while (1)
-	{
-		// Populate rFds for select
-		do
-		{
-			FD_ZERO(&rFds);
-			ix   = 0;
-			max  = 0;
-			while ((ep = epMgr->get(ix++, &rFd)) != NULL)
-			{
-				if (ep->stateGet() != Endpoint2::Ready)
-					continue;
-
-				max = MAX(max, rFd);
-				FD_SET(rFd, &rFds);
-			}
-
-			tv.tv_sec  = tmoSecs;
-			tv.tv_usec = tmoUSecs;
-			
-			fds = select(max + 1,  &rFds, NULL, NULL, &tv);
-		} while ((fds == -1) && (errno == EINTR));
-
-		if (fds == -1)
-			LM_X(1, ("select: %s", strerror(errno)));
-		else if (fds == 0)
-		{
-		}
-		else
-		{
-			// Treat messages
-			ix = 0;
-			while ((ep = epMgr->get(ix++, &rFd)) != NULL)
-			{
-				if (FD_ISSET(rFd, &rFds))
-					ep->msgTreat();
-			}
-		}
-
-		if (oneShot)
-			return;
-	}
+	epMgr->run(oneShot);
 }
 
 }

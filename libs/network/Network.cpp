@@ -52,6 +52,7 @@
 #include "Engine.h"				// ss::Engine
 
 
+
 /* ****************************************************************************
 *
 * Predecided indices in the endpoint vector
@@ -897,7 +898,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 		LM_T(LmtSend, ("Request to send '%s' package without data (to endpoint '%s')", messageCode(code), ep->name.c_str()));
 
 	if (ep == NULL)
-		LM_X(1, ("No endpoint at index %d", endpointId));
+		LM_RE(1, ("No endpoint at index %d", endpointId));
 
 	if (packetP != NULL)
 	{
@@ -919,7 +920,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 		if (ep->useSenderThread == false)
 		{
 			// LM_X(1, ("cannot send to an unconnected peer '%s' if not using sender threads, sorry ...", ep->name.c_str()));
-		   LM_RE(0, ("cannot send to non connected (%s) peer '%s' if not using sender threads, sorry ...", ep->stateName(), ep->name.c_str()));
+		   LM_RE(1, ("cannot send to non connected (%s) peer '%s' if not using sender threads, sorry ...", ep->stateName(), ep->name.c_str()));
 		}
 
 		SendJob* jobP = new SendJob();
@@ -935,7 +936,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 		LM_T(LmtJob, ("pushing a job for endpoint '%s'", ep->name.c_str()));
 		ep->jobPush(jobP);
 
-		return 0;
+		return 0;  // What do return here ?
 	}
 
 	ep->packetSender  = packetSender;
@@ -978,6 +979,9 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 			SendJob* jobP;
 
 			LM_T(LmtJob, ("sender thread created - flushing job queue"));
+
+			writeSem.lock();
+
 			while ((jobP = ep->jobPop()) != NULL)
 			{
 				LM_T(LmtJob, ("sending a queued job to job-sender"));
@@ -990,6 +994,8 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 				free(jobP);
 				jobP = NULL;
 			}
+
+			writeSem.unlock();
 
 			LM_T(LmtJob, ("sender thread created - job queue flushed"));
 		}
@@ -1008,19 +1014,23 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Messa
 		LM_T(LmtSenderThread, ("Sending '%s' job to '%s' sender (real destiny fd: %d) with %d packet size - the job is tunneled over fd %d (packet pointer: %p)",
 						   messageCode(job.msgCode), ep->name.c_str(), ep->wFd, job.packetP->message->ByteSize(), ep->senderWriteFd, job.packetP));
 		
+		writeSem.lock();
 		nb = write(ep->senderWriteFd, &job, sizeof(job));
+		writeSem.unlock();
 		if (nb != (sizeof(job)))
 		{
 			LM_E(("write(written only %d bytes (of %d) to sender thread)", nb, sizeof(job)));
-			return -1;
+			return 1;
 		}
 
 		return 0;
 	}
 
+	writeSem.lock();
 	nb = iomMsgSend(ep, endpoint[ME], code, Message::Msg, NULL, 0, packetP);
+	writeSem.unlock();
 
-	return nb;
+	return 0;
 }
 
 
@@ -3537,6 +3547,35 @@ bool Network::isConnected(unsigned int identifier)
 		return true;
 
 	return false;
+}
+
+
+
+/* ****************************************************************************
+*
+* delilahSend - 
+*/ 
+void Network::delilahSend(PacketSenderInterface* packetSender, Packet* packetP)
+{
+	Endpoint* ep;
+	size_t    sz;
+
+	for (int ix = 0; ix < Endpoints; ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		ep = endpoint[ix];
+
+		if (ep->type != Endpoint::Delilah)
+			continue;
+
+		sz = _send(packetSender, ix, packetP->msgCode, new Packet(packetP));
+		if (sz != 0)
+			LM_E(("Error sending a packet to %s@%s", ep->name.c_str(), ep->ip));
+	}
+
+	delete packetP;
 }
 
 }

@@ -9,6 +9,7 @@
 #include <cstring>				// size_t
 #include <vector>				// vector
 
+#include "au/Lock.h"            // au::Lock
 #include "Endpoint.h"			// Endpoint
 #include "Message.h"            // ss::Message::MessageCode
 #include "NetworkInterface.h"	// ss:NetworkInterface 
@@ -153,8 +154,10 @@ public:
 
 	Endpoint*    controllerGet(void);
 	bool         isConnected(unsigned int identifier);
+	void         delilahSend(PacketSenderInterface* packetSender, Packet* packetP);
 
 private:
+	au::Lock        writeSem;  // Semaphore to protect multi-thread access to 'write'
 	bool            iAmReady;
 	unsigned short  port;
 

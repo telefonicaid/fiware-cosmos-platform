@@ -9,6 +9,14 @@
 * CREATION DATE            Apr 12 2011
 *
 */
+#include <sys/types.h>          // types needed by socket include files
+#include <stdlib.h>             // free
+#include <sys/socket.h>         // socket, bind, listen
+#include <sys/un.h>             // sockaddr_un
+#include <netinet/in.h>         // struct sockaddr_in
+#include <netdb.h>              // gethostbyname
+#include <arpa/inet.h>          // inet_ntoa
+#include <netinet/tcp.h>        // TCP_NODELAY
 #include <unistd.h>             // close
 #include <fcntl.h>              // fcntl, F_SETFD
 
@@ -32,15 +40,27 @@ namespace ss
 *
 * Endpoint2::Endpoint2 - Constructor
 */
-Endpoint2::Endpoint2(EndpointManager* _epMgr, Type _type, const char* _name, const char* _alias, Host* _host, unsigned short _port, int _rFd, int _wFd)
+Endpoint2::Endpoint2
+(
+	EndpointManager*  _epMgr,
+	Type              _type,
+	int               _id,
+	const char*       _name,
+	const char*       _alias,
+	Host*             _host,
+	unsigned short    _port,
+	int               _rFd,
+	int               _wFd
+)
 {
 	epMgr            = _epMgr;
 	type             = _type;
+	id               = _id;
 	host             = _host;
 	rFd              = _rFd;
 	wFd              = _wFd;
 	port             = _port;
-	state            = Usused;
+	state            = Unused;
 	useSenderThread  = false;
 
 	name             = NULL;
@@ -124,6 +144,28 @@ Endpoint2::Type Endpoint2::typeGet(void)
 void Endpoint2::typeSet(Type _type)
 {
 	type = _type;
+}
+
+
+
+/* ****************************************************************************
+*
+* idGet - 
+*/
+int Endpoint2::idGet(void)
+{
+	return id;
+}
+
+
+
+/* ****************************************************************************
+*
+* idSet - 
+*/
+void Endpoint2::idSet(int _id)
+{
+	id = _id;
 }
 
 
@@ -217,11 +259,11 @@ const char* Endpoint2::aliasGet(void)
 
 /* ****************************************************************************
 *
-* rFdGet - 
+* stateSet - 
 */
-int Endpoint2::rFdGet(void)
+void Endpoint2::stateSet(State _state)
 {
-	return rFd;
+	state = _state;
 }
 
 
@@ -239,74 +281,12 @@ Endpoint2::State Endpoint2::stateGet(void)
 
 /* ****************************************************************************
 *
-* processLookup - 
+* rFdGet - 
 */
-static Process* processLookup(ProcessVector* procVec, const char* alias)
+int Endpoint2::rFdGet(void)
 {
-	for (int ix = 0; ix < procVec->processes; ix++)
-	{
-		Process* p = &procVec->processV[ix];
-
-		if (strcmp(p->alias, alias) == 0)
-			return p;
-	}
-
-	return NULL;
+	return rFd;
 }
-
-
-
-/* ****************************************************************************
-*
-* helloDataAdd - 
-*
-* Controller and Worker endpoints should all be added with the type 'Unknown'.
-* When the Hello data arrives, a check will be performed to see whether the 
-* connection is valid (not occupied).
-*/
-Endpoint2::Status Endpoint2::helloDataAdd(Endpoint2::Type _type, const char* _name, const char* _alias)
-{
-	if ((_type == Endpoint2::Controller) || (_type == Endpoint2::Worker))
-	{
-		Process*  proc;
-
-		if (_alias == NULL)
-		{
-			state = ScheduledForRemoval;
-			LM_RE(NullAlias, ("NULL alias"));
-		}
-
-		if ((proc = processLookup(epMgr->procVec, _alias)) == NULL)
-		{
-			state = ScheduledForRemoval;
-			LM_RE(BadAlias, ("alias '%s' not found in process vector", _alias));
-		}
-
-		if (epMgr->hostMgr->match(host, proc->host) == false)  // Host could become a class and to its own matching
-		{
-			state = ScheduledForRemoval;
-			LM_RE(BadHost, ("The host for alias '%s' must be '%s'. This endpoints host ('%s') is incorrect",
-							_alias, hostname(), proc->host));
-		}
-
-		if (epMgr->lookup(_type, _alias) != NULL)
-		{
-			state = ScheduledForRemoval;
-			LM_RE(Duplicated, ("Duplicated process"));
-		}
-
-		if (_type == Endpoint2::Controller)
-			epMgr->controller = this;
-	}
-
-	type = _type;
-	nameSet(_name);
-	aliasSet(_alias);
-
-	// Create sender thread right here ? Guess so ...
-	return OK;
-}
-
 
 
 
@@ -526,10 +506,15 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, in
 
 	if (type == Listener)
 	{
+		LM_X(1, ("Listener endpoint - should never get here ..."));
+
+		// This to be moved to ListenerEndpoint ...
+#if 0
 		if (accept(true) == NULL)
 			return AcceptError;
 		else
 			return OK;
+#endif
 	}
 
 	*dataPP = NULL;
@@ -599,138 +584,65 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, in
 *
 * connect - 
 */
-Endpoint2* Endpoint2::connect(bool addToEpVec)
+Endpoint2* Endpoint2::connect(void)
 {
+	struct hostent*     hp;
+	struct sockaddr_in  peer;
+
+	if (host == NULL)
+		LM_RE(NULL, ("Cannot connect to endpoint '%s' with NULL host!", name));
 	if (port == 0)
 		LM_RE(NULL, ("Cannot connect to '%s@%s' - port is ZERO", name, host->name));
 
-	// Implement iomConnect here
-	// if (addToEpVec) - add the accepted endpoint to endpoint vector with type Anonymous
-
-	return NULL;
-}
-
-
-
-/* ****************************************************************************
-*
-* ip2string - convert integer ip address to string
-*/
-static void ip2string(int ip, char* ipString, int ipStringLen)
-{
-	snprintf(ipString, ipStringLen, "%d.%d.%d.%d",
-			 ip & 0xFF,
-			 (ip & 0xFF00) >> 8,
-			 (ip & 0xFF0000) >> 16,
-			 (ip & 0xFF000000) >> 24);
-}
-
-
-
-/* ****************************************************************************
-*
-* accept - 
-*/
-Endpoint2* Endpoint2::accept(bool addToEpVec)
-{
-	int                 fd;
-	struct sockaddr_in  sin;
-	char                hostName[64];
-	unsigned int        len         = sizeof(sin);
-	int                 hostNameLen = sizeof(hostName);
-	Endpoint2*          ep          = NULL;
-
-	if (type != Listener)
-		LM_RE(NULL, ("A non Listener endpoint cannot accept connections ..."));
-	
-	memset((char*) &sin, 0, len);
-
-	if ((fd = ::accept(rFd, (struct sockaddr*) &sin, &len)) == -1)
-		LM_RP(NULL, ("accept"));
-
-	ip2string(sin.sin_addr.s_addr, hostName, hostNameLen);
-
-	Host* hostP;
-	hostP = epMgr->hostMgr->insert(NULL, hostName);
-
-	if (addToEpVec == true)
-		ep = epMgr->add(Anonymous, NULL, NULL, hostP, 0, fd, fd);
-
-	return ep;
-}
-
-
-
-/* ****************************************************************************
-*
-* helloSend - 
-*/
-Endpoint2::Status Endpoint2::helloSend(Message::MessageType type)
-{
-	Message::HelloData hello;
-
-	memset(&hello, 0, sizeof(hello));
-
-	strncpy(hello.name,   epMgr->me->nameGet(),    sizeof(hello.name));
-	strncpy(hello.ip,     epMgr->me->hostname(),   sizeof(hello.ip));
-	strncpy(hello.alias,  epMgr->me->aliasGet(),   sizeof(hello.alias));
-
-	hello.type     = epMgr->me->typeGet();
-	hello.coreNo   = 0;
-	hello.workerId = 0;
-
-	LM_T(LmtWrite, ("sending hello %s to '%s' (my name: '%s', my type: '%s')", messageType(type), name, hello.name, epMgr->me->typeName()));
-
-	return send(type, Message::Hello, &hello, sizeof(hello));
-}
-
-
-
-/* ****************************************************************************
-*
-* listenerPrepare - 
-*/
-Endpoint2::Status Endpoint2::listenerPrepare(void)
-{
-	int                 reuse = 1;
-	struct sockaddr_in  sock;
-	struct sockaddr_in  peer;
-
-	if (type != Listener)
-		LM_RE(NotListener, ("Cannot prepare an Endpoint that is not a listener ..."));
-
-	if (rFd != -1)
-		LM_W(("This listener already seems to be prepared ... Continuing anuway"));
+	if ((hp = gethostbyname(host->name)) == NULL)
+	   LM_RE(NULL, ("gethostbyname(%s): %s", host->name, strerror(errno)));
 
 	if ((rFd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		LM_RP(SocketError, ("socket"));
+		LM_RE(NULL, ("socket: %s", strerror(errno)));
+	
+	wFd = rFd;
 
-	fcntl(rFd, F_SETFD, 1);
-
-	memset((char*) &sock, 0, sizeof(sock));
 	memset((char*) &peer, 0, sizeof(peer));
 
-	sock.sin_family      = AF_INET;
-	sock.sin_addr.s_addr = INADDR_ANY;
-	sock.sin_port        = htons(port);
-	
-	setsockopt(rFd, SOL_SOCKET, SO_REUSEADDR, (char*) &reuse, sizeof(reuse));
-	
-	if (bind(rFd, (struct sockaddr*) &sock, sizeof(struct sockaddr_in)) == -1)
+	peer.sin_family      = AF_INET;
+	peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
+	peer.sin_port        = htons(port);
+
+	if (::connect(wFd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 	{
-		close(rFd);
-		rFd = -1;
-		LM_RP(BindError, ("bind to port %d: %s", port, strerror(errno)));
+		usleep(50000);
+		if (::connect(wFd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
+		{
+			close(rFd);
+			rFd = -1;
+			wFd = -1;
+			LM_RE(NULL, ("Cannot connect to %s, port %d", host->name, port));
+		}
 	}
 
-	if (listen(rFd, 10) == -1)
-	{
-		close(rFd);
-		rFd = -1;
-		LM_RP(ListenError, ("listen to port %d", port));
-	}
+#if 0
+	int bufSize = 64 * 1024 * 1024;
 
-	return OK;
+	int s;
+	s = setsockopt(wFd, SOL_SOCKET, SO_RCVBUF, &bufSize, sizeof(bufSize));
+	if (s != 0)
+		LM_X(1, ("setsockopt(SO_RCVBUF): %s", strerror(errno)));
+	s = setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &bufSize, sizeof(bufSize));
+	if (s != 0)
+		LM_X(1, ("setsockopt(SO_SNDBUF): %s", strerror(errno)));
+#endif
+
+#if 0
+	// Disable the Nagle (TCP No Delay) algorithm
+	int flag = 1;
+	s = setsockopt(wFd, IPPROTO_TCP, TCP_NODELAY, (char*) &flag, sizeof(flag));
+	if (s != 0)
+		LM_X(1, ("setsockopt(TCP_NODELAY): %s", strerror(errno)));
+#endif
+
+	LM_T(LmtConnect, ("connected to '%s', port %d on fd %d", host->name, port, wFd));
+
+	return NULL;
 }
 
 
@@ -790,23 +702,21 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	int                  dataLen  = 0;
 	Packet               packet;
 	Endpoint2::Status    s;
-	Message::HelloData*  helloP;
+
+	if (type == Listener)
+		return msgTreat2();
+	if (type == WebListener)
+		return msgTreat2();
 
 	s = receive(&header, &dataP, &dataLen, &packet);
 	if (s != 0)
 		LM_RE(s, ("receive error '%s'", status(s)));
 
+	if (type == Unhelloed)
+		return msgTreat2(&header, dataP, dataLen, &packet);
+
 	switch (header.code)
 	{
-	case Message::Hello:
-		helloP = (Message::HelloData*) dataP;
-		s = helloDataAdd((Type) helloP->type, helloP->name, helloP->alias);
-		if (s != OK)
-			LM_RE(s, ("Bad hello data"));
-		if (header.type == Message::Msg)
-			helloSend(Message::Ack);
-		break;
-
 	default:
 		s = msgTreat2(&header, dataP, dataLen, &packet);
 		if (s != OK)
@@ -827,7 +737,7 @@ const char* Endpoint2::typeName(Type type)
 {
 	switch (type)
 	{
-	case Anonymous:      return "Anonymous";
+	case Unhelloed:      return "Unhelloed";
 	case Worker:         return "Worker";
 	case Controller:     return "Controller";
 	case Spawner:        return "Spawner";

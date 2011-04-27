@@ -21,6 +21,7 @@ SET (HEADERS
 
 	EndpointManager.h
 	Endpoint2.h
+	ListenerEndpoint.h
 	Network2.h
 	JobQueue.h
 )
@@ -46,6 +47,7 @@ SET (SOURCES
 
 	EndpointManager.cpp
 	Endpoint2.cpp
+	ListenerEndpoint.cpp
 	Network2.cpp
 	JobQueue.cpp
 )

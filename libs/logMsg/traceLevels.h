@@ -79,8 +79,6 @@ typedef enum TraceLevels
 	LmtLogServer,
 	LmtSpawn,
 
-	LmtIsolated,
-
 	LmtProcessListTab,
 	LmtQtTimer,
 
@@ -108,14 +106,15 @@ typedef enum TraceLevels
 
 	LmtEngine=200,					// SamsonEngine
 	LmtEngineNotification,
-	LmtDisk,					// disk library	
-	LmtMemory,					// memory library	
+	LmtDisk,                        // disk library	
+	LmtMemory,                      // memory library	
 	LmtProcessManager,
 
-	LmtModuleManager,			// Module Manager component
-	LmtOperations,				// Operations organization (map & reduce level)
+	LmtModuleManager,               // Module Manager component
+	LmtOperations,                  // Operations organization (map & reduce level)
 	LmtReset,
 
+	LmtIsolated,
 	
 	LmtUser01 = 250,
 	LmtUser02 = 251,

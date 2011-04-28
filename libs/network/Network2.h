@@ -11,7 +11,7 @@
 
 #include "Endpoint2.h"          // Endpoint2
 #include "EndpointManager.h"    // EndpointManager
-#include "NetworkInterface.h"   // ss:NetworkInterface 
+#include "NetworkInterface.h"   // ss:NetworkInterface
 
 
 
@@ -38,6 +38,7 @@ public:
 
 	void  tmoSet(int secs, int usecs);  // Set timeout for select loop
 	void  run(bool oneShot);            // Main run loop - loops forever, unless 'oneShot' is true ...
+	void  setPacketReceiver(PacketReceiverInterface* receiver);
 };
 
 }

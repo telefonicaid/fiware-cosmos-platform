@@ -13,8 +13,11 @@
 #include <fcntl.h>              // F_SETFD
 #include <pthread.h>            // pthread_t
 
+#include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Lmt*
+
 #include "EndpointManager.h"    // EndpointManager
-#include "UnhelloedEndpoint.h"   // Own interface
+#include "UnhelloedEndpoint.h"  // Own interface
 
 
 
@@ -78,9 +81,10 @@ UnhelloedEndpoint::~UnhelloedEndpoint() // : ~Endpoint2()
 *
 * msgTreat2 - 
 */
-Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
+Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 {
 	Message::HelloData* helloP;
+	Endpoint2::Status   s;
 
 	switch (headerP->code)
 	{
@@ -89,15 +93,15 @@ Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int d
 		s = helloDataAdd((Type) helloP->type, helloP->name, helloP->alias);
 		if (s != OK)
 		{
-			state = ScheduledForRemoval;
+			stateSet(ScheduledForRemoval);
 			LM_RE(s, ("Bad hello data"));
 		}
 
-		if (header.type == Message::Msg)
+		if (headerP->type == Message::Msg)
 		{
 			if ((s = helloSend(Message::Ack)) != OK)
 			{
-				state = ScheduledForRemoval;
+				stateSet(ScheduledForRemoval);
 				LM_RE(s, ("helloSend error"));
 			}
 		}
@@ -105,8 +109,8 @@ Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int d
 		break;
 
 	default:
-		LM_E(("I only treat Hello messages - removing endpoint"));
-		state = ScheduledForRemoval;
+		LM_E(("I only treat Hello messages - got a '%s', removing endpoint", messageCode(headerP->code)));
+		stateSet(ScheduledForRemoval);
 		return Error;
 	}
 
@@ -119,7 +123,7 @@ Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int d
 *
 * helloDataAdd - 
 */
-Status UnhelloedEndpoint::helloDataAdd(Type _type, const char* _name, const char* _alias)
+Endpoint2::Status UnhelloedEndpoint::helloDataAdd(Type _type, const char* _name, const char* _alias)
 {
 	Process*  proc;
 
@@ -149,7 +153,7 @@ Status UnhelloedEndpoint::helloDataAdd(Type _type, const char* _name, const char
 *
 * helloSend - 
 */
-Endpoint2::Status Endpoint2::helloSend(Message::MessageType type)
+Endpoint2::Status UnhelloedEndpoint::helloSend(Message::MessageType type)
 {
 	Message::HelloData hello;
 
@@ -166,22 +170,6 @@ Endpoint2::Status Endpoint2::helloSend(Message::MessageType type)
 	LM_T(LmtWrite, ("sending hello %s to '%s' (my name: '%s', my type: '%s')", messageType(type), name, hello.name, epMgr->me->typeName()));
 
 	return send(type, Message::Hello, &hello, sizeof(hello));
-}
-
-
-
-/* ****************************************************************************
-*
-* helloRead - 
-*
-* Perhaps I should create a subclass 'TemporalEndpoint' to treat with all the
-* 'Hello' stuff.
-* When the helloes are exchanged, the endpoint can be incorporated as a normal
-* endpoint
-*/
-Endpoint2::Status helloRead(void)
-{
-	
 }
 
 }

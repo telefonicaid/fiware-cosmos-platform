@@ -37,6 +37,9 @@ class Endpoint2;
 class Packet;
 class EndpointManager;
 class ListenerEndpoint;
+class UnhelloedEndpoint;
+class WebListenerEndpoint;
+class WebWorkerEndpoint;
 
 
 
@@ -46,8 +49,11 @@ class ListenerEndpoint;
 */
 class Endpoint2
 {
-   friend class EndpointManager;
-   friend class ListenerEndpoint;
+	friend class EndpointManager;
+	friend class ListenerEndpoint;
+	friend class UnhelloedEndpoint;
+	friend class WebListenerEndpoint;
+	friend class WebWorkerEndpoint;
 
 public:
 	typedef enum Status
@@ -133,10 +139,17 @@ private:
 	bool                 useSenderThread;  // Worker/Delilah
 	JobQueue*            jobQ;
 
+
+	// Statistics
+	int                  msgsIn;
+	int                  msgsOut;
+	int                  msgsInErrors;
+	int                  msgsOutErrors;
+
 public:
 	static const char*   typeName(Type type);
-	const char*          typeName();
-	Type                 typeGet();
+	const char*          typeName(void);
+	Type                 typeGet(void);
 	void                 typeSet(Type type);
 
 	void                 idSet(int _id);
@@ -172,7 +185,7 @@ public:
 	Status               partSend(void* dataP, int dataLen, const char* what);
 	Status               send(Message::MessageType type, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
 
-	void                 run(void);
+	virtual void         run(void);
 	Status               msgTreat(void);
 
 	virtual Status       msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)

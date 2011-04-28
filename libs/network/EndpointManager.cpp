@@ -7,20 +7,22 @@
 * CREATION DATE            Apr 06 2011
 *
 */
-#include <pthread.h>            // pthread_t
+#include <pthread.h>              // pthread_t
 
-#include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // Lmt*
+#include "logMsg.h"               // LM_*
+#include "traceLevels.h"          // Lmt*
 
-#include "ports.h"              // All ports for the samson system
-#include "Packet.h"             // Packet
-#include "Process.h"            // Process, ProcessVector
-#include "platformProcesses.h"  // platformProcessesGet
-#include "Host.h"               // Host
-#include "Endpoint2.h"          // Endpoint2
-#include "ListenerEndpoint.h"   // ListenerEndpoint
-#include "UnhelloedEndpoint.h"  // UnhelloedEndpoint
-#include "EndpointManager.h"    // Own interface
+#include "NetworkInterface.h"     // ss:NetworkInterface 
+#include "ports.h"                // All ports for the samson system
+#include "Packet.h"               // Packet
+#include "Process.h"              // Process, ProcessVector
+#include "platformProcesses.h"    // platformProcessesGet
+#include "Host.h"                 // Host
+#include "Endpoint2.h"            // Endpoint2
+#include "ListenerEndpoint.h"     // ListenerEndpoint
+#include "WebListenerEndpoint.h"  // WebListenerEndpoint
+#include "UnhelloedEndpoint.h"    // UnhelloedEndpoint
+#include "EndpointManager.h"      // Own interface
 
 
 
@@ -693,6 +695,17 @@ void EndpointManager::run(bool oneShot)
 		if (oneShot)
 			return;
 	}
+}
+
+
+
+/* ****************************************************************************
+*
+* setPacketReceiver - 
+*/
+void EndpointManager::setPacketReceiver(PacketReceiverInterface* receiver)
+{
+	packetReceiver = receiver;
 }
 
 }

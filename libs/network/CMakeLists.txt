@@ -19,11 +19,14 @@ SET (HEADERS
 	Host.h
 	PacketReceivedNotification.h
 
+	Network2.h
+	JobQueue.h
 	EndpointManager.h
 	Endpoint2.h
 	ListenerEndpoint.h
-	Network2.h
-	JobQueue.h
+	UnhelloedEndpoint.cpp
+	WebListenerEndpoint.h
+	WebWorkerEndpoint.h
 )
 
 SET (SOURCES
@@ -45,11 +48,14 @@ SET (SOURCES
 	HostMgr.cpp
 	PacketReceivedNotification.cpp
 
+	Network2.cpp
+	JobQueue.cpp
 	EndpointManager.cpp
 	Endpoint2.cpp
 	ListenerEndpoint.cpp
-	Network2.cpp
-	JobQueue.cpp
+	UnhelloedEndpoint.cpp
+	WebListenerEndpoint.cpp
+	WebWorkerEndpoint.cpp
 )
 
 # Include directories

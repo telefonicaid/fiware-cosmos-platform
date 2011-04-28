@@ -12,8 +12,7 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
 
-#include "iomServerOpen.h"      // iomServerOpen
-#include "iomMsgSend.h"         // iomMsgSend
+#include "NetworkInterface.h"	// ss:NetworkInterface 
 #include "Host.h"               // Host
 #include "HostMgr.h"            // HostMgr
 #include "Endpoint2.h"          // Endpoint2
@@ -57,6 +56,17 @@ void Network2::tmoSet(int secs, int usecs)
 void Network2::run(bool oneShot)
 {
 	epMgr->run(oneShot);
+}
+
+
+
+/* ****************************************************************************
+*
+* setPacketReceiver - 
+*/
+void Network2::setPacketReceiver(PacketReceiverInterface* receiver)
+{
+	epMgr->setPacketReceiver(receiver);
 }
 
 }

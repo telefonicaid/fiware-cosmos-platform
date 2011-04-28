@@ -43,11 +43,10 @@ public:
 
 	virtual Status       msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP);
 	Status               helloDataAdd(Type _type, const char* _name, const char* _alias);
-	Status               helloSend(Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
-	Status               helloRead(void);
+	Endpoint2::Status    helloSend(Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
 
 private:
-	Endpoint2::Status  init(void);
+	Endpoint2::Status    init(void);
 };
 
 }

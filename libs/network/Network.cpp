@@ -431,7 +431,27 @@ Endpoint* Network::controllerConnect(const char* controllerName)
 	LM_TODO(("Why do I not call endpointAdd here ... ?"));
 
 	LM_T(LmtControllerConnect, ("connecting to controller in %s, port %d", endpoint[CONTROLLER]->ip, endpoint[CONTROLLER]->port));
-	endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
+
+    int controller_connections_tries = 0;
+    endpoint[CONTROLLER]->rFd = -1;
+    
+    while( endpoint[CONTROLLER]->rFd == -1 )
+    {
+        LM_M(("Trying to connect to controller %s:%d",(const char*) endpoint[CONTROLLER]->ip , (unsigned short) endpoint[CONTROLLER]->port  ));
+        endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
+
+        if( endpoint[CONTROLLER]->rFd == -1 )
+        {
+            LM_W(("Not possible to connect to controller, trial %d/%d",controller_connections_tries,10));
+            sleep(1);
+            if( controller_connections_tries++ == 10)
+                break;
+        }
+        else
+            LM_M(("Connected to controller %s:%d",(const char*) endpoint[CONTROLLER]->ip , (unsigned short) endpoint[CONTROLLER]->port  ));
+        
+    }
+    
 	if (endpoint[CONTROLLER]->rFd == -1)
 	{
 		if (endpoint[ME]->type != Endpoint::Supervisor)
@@ -3559,17 +3579,20 @@ void Network::delilahSend(PacketSenderInterface* packetSender, Packet* packetP)
 {
 	Endpoint* ep;
 	size_t    sz;
-
+    
 	for (int ix = 0; ix < Endpoints; ix++)
 	{
 		if (endpoint[ix] == NULL)
 			continue;
 
-		ep = endpoint[ix];
+        LM_M(("Testing %d %s", ix , endpoint[ix]->typeName() ));
 
+		ep = endpoint[ix];
+        
 		if (ep->type != Endpoint::Delilah)
 			continue;
 
+        LM_M(("Sending message to a delilah %d", ix ));
 		sz = _send(packetSender, ix, packetP->msgCode, new Packet(packetP));
 		if (sz != 0)
 			LM_E(("Error sending a packet to %s@%s", ep->name.c_str(), ep->ip));

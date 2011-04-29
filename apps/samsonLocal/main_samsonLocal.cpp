@@ -79,9 +79,16 @@ void *run_DelilahConsole(void* d)
 	return NULL;
 }
 
+
+void atExitAssert()
+{
+    assert(false);
+}
+
 int main(int argC, const char *argV[])
 {
-	
+	atexit(atExitAssert );
+    
 	paConfig("prefix",                        (void*) "SSW_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");

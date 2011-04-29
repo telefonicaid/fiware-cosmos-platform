@@ -65,6 +65,7 @@ char* messageCode(MessageCode code)
 		case EntireOldLogFile:                 return (char*) "EntireOldLogFile";
 		case Reset:                            return (char*) "Reset";
 		case ProcessVectorGet:                 return (char*) "ProcessVectorGet";
+        case Trace:                            return (char*) "Trace";
 	}
 
 	return (char*) "Unknown";

@@ -88,26 +88,21 @@ namespace ss {
 		
 	}
 
-	int ProcessBase::flushBuffer( bool finish )
+	void ProcessBase::flushBuffer( bool finish )
 	{
 		switch (type) {
 			case key_value:
-				return flushKVBuffer(finish);
+				flushKVBuffer(finish);
 				break;
 			case txt:
-				return flushTXTBuffer(finish);
+				flushTXTBuffer(finish);
 				break;
 		}
 		
-		// Unkown code, kill the process for security
-		return PI_CODE_KILL;
 	}
 
-	int ProcessBase::flushKVBuffer( bool finish )
+	void ProcessBase::flushKVBuffer( bool finish )
 	{
-		// If the task has been killed, return KILL_CODE
-		if( !workerTaskManager->checkTask( task_id ) )
-			return PI_CODE_KILL;
 		
 		/*
 		 After flushing we check that available memory is under 100%.
@@ -216,18 +211,12 @@ namespace ss {
 			
 		}
 		
-		return PI_CODE_CONTINUE;
-		
-		
 	}	
 
 	
-	int ProcessBase::flushTXTBuffer( bool finish )
+	void ProcessBase::flushTXTBuffer( bool finish )
 	{
 
-		if( !workerTaskManager->checkTask( task_id ) )
-			return PI_CODE_KILL;
-		
 		/*
 		 After flushing we check that available memory is under 100%.
 		 Otherwise we halt notifying this to the ProcessManager
@@ -281,8 +270,6 @@ namespace ss {
 			
 			network->send(NULL, network->getMyidentifier() , Message::WorkerDataExchange, p);
 		}
-		
-		return PI_CODE_CONTINUE;
 		
 	}		
 	

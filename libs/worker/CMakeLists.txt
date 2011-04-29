@@ -17,7 +17,6 @@ SET (HEADERS
 	ProcessItemIsolated.h
 	SharedMemoryManager.h
 	SharedMemoryItem.h
-
 )
 
 SET (SOURCES
@@ -39,6 +38,7 @@ SET (SOURCES
 	SharedMemoryManager.cpp
 	SharedMemoryItem.cpp
 )
+
 
 # Include directories
 # -----------------------------------------------------------------

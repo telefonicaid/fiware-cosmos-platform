@@ -81,7 +81,7 @@ namespace au
 			
 			if (line)
 			{
-				add_history(line);
+                add_history(line);
 				evalCommand(line);
 				free(line);
 			}

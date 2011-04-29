@@ -102,6 +102,19 @@ message Error
 	required string message = 2;	// String with the error definition ( if any )
 }
 
+message Trace
+{
+	
+	required string text	=1; 
+	required int32  type	=2;
+	required string file	=3;
+	required int32 lineNo	=4;
+	required string fName	=5;
+	required int32 tLev	=6;
+	required string stre	=7;	
+}
+
+
 // Information about a worker ( diskManager / fileManager / Process runing / etc..)
 
 message ControllerStatus
@@ -433,6 +446,49 @@ message DownloadDataFinishResponse
 	optional Error error = 100;			// Optional flag to reports errors
 }
 
+
+//
+// Messages used in the isolated process protocol
+//
+
+
+
+message MessageProcessPlatform
+{
+	enum Code
+	{
+		code_begin		  = 1;    // Begin code
+                code_end           	  = 2;    // End code
+		code_operation	  	  = 3;	  // Run a particular operation
+		code_trace		  = 4;	  // A trace is send to the controller
+		code_user_error	  	  = 5;	  // Error reported by user
+		code_progress		  = 6;	  // Report progress of a particular task
+        }
+
+    required Code code = 1;
+
+    // Optional parameters
+
+    optional int32 operation	   = 2;  // Indicator of the operation
+    optional Trace trace	  = 3;	// Optional trace 
+    optional double progress	  = 4;	// Optional progress report
+    optional string error	  = 5;	// Error reported by user
+
+}
+
+message MessagePlatformProcess
+{
+    enum Code
+    {
+        code_ok            = 1;    // Continue after running operation
+        code_kill          = 2;    // Kill the process since it has been canceled at platform
+    }
+
+    required Code code = 1;
+
+}
+
+
 // ////////////////////////////////////////////////////////////////////////////
 //
 // General message
@@ -480,6 +536,8 @@ message Message
 
 
 	optional WorkerStatus worker_status = 170;			// Worker status update
+
+	optional Trace trace = 171;	      				// optional trace to all delilahs;
 
 	// Common information	
 	optional uint64  delilah_id = 300;				// Used in commands , upload and download process with delilah

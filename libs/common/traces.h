@@ -3,16 +3,13 @@
 
 
 
-namespace ss {
-
-
-
 /* ****************************************************************************
-*
-* logFd - file descriptor of log file for later manipulation
-*/
+ *
+ * logFd - file descriptor of log file for later manipulation
+ */
 extern int logFd;
 
+namespace ss {
 
 
 /* ****************************************************************************

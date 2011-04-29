@@ -54,7 +54,7 @@ namespace ss {
 	 Unique packet type sent over the network between controller, samson and delilah
 	 */
 
-	class Packet
+	class Packet : public engine::Object
 	{
 	public:
 		

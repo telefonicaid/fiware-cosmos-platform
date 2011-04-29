@@ -22,7 +22,7 @@ namespace ss {
 		receiver = _receiver;
 	}
 	
-	 bool NetworkFake::ready()
+	bool NetworkFake::ready()
 	{
 		return true;
 	}
@@ -58,11 +58,17 @@ namespace ss {
 	size_t NetworkFake::_send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP)
 	{
 		// Add packet in the list of the center
-	   center->addPacket( new NetworkFakeCenterPacket(code, packetP , getMyidentifier(), endpointId, sender) );
+	        center->addPacket( new NetworkFakeCenterPacket(code, packetP , getMyidentifier(), endpointId, sender) );
 
 		return 0;
 	}
-	
+    
+    void NetworkFake::delilahSend(PacketSenderInterface* packetSender, Packet* packetP)
+    {
+        // send to delilah
+        _send( packetSender , -2 , packetP->msgCode , packetP );
+    }
+
 	 void NetworkFake::run()
 	{
 		// Nothing to do here

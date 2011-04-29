@@ -17,7 +17,7 @@
 #include "Endpoint.h"           // Endpoint
 #include "iomMsgAwait.h"        // Own interface
 
-
+#include <assert.h>
 
 /* ****************************************************************************
 *

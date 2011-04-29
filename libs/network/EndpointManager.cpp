@@ -135,7 +135,7 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints, 
 	//
 	if ((type == Endpoint2::Worker) || (type == Endpoint2::Controller))
 	{
-		int ix;
+		int ix=0;
 
 		if ((procVec = platformProcessesGet()) == NULL)
 			LM_X(1, ("Error retrieving vector of platform processes"));
@@ -344,7 +344,7 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 */
 Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, const char* name, const char* alias, Host* host, unsigned short port, int rFd, int wFd)
 {
-	Endpoint2* ep;
+	Endpoint2* ep = NULL;
 
 	switch (type)
 	{

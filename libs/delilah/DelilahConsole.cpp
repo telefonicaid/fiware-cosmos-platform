@@ -625,6 +625,32 @@ namespace ss
 
 		switch (msgCode) {
 				
+            case Message::Trace:
+            {
+                std::string _text   = packet->message->trace().text();
+                std::string file    = packet->message->trace().file();
+                std::string fname   = packet->message->trace().fname();
+                std::string stre    = packet->message->trace().stre();
+                
+                //writeOnConsole( au::Format::string("Trace: %s", _text.c_str() ) );
+                
+                if (lmOk(packet->message->trace().type(), packet->message->trace().tlev() ) == LmsOk)
+                {
+                                        
+                    lmOut(
+                          (char*)_text.c_str(),   
+                          (char) packet->message->trace().type() , 
+                          file.c_str(), 
+                          packet->message->trace().lineno() , 
+                          fname.c_str(), 
+                          packet->message->trace().tlev() , 
+                          stre.c_str() 
+                          );
+                }
+                
+            }
+                break;
+                
 			case Message::CommandResponse:
 			{
 				

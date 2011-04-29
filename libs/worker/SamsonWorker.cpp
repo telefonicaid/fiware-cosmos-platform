@@ -52,6 +52,10 @@ namespace ss {
         // Add samsonWorker as listere to send an update of the satatus
         engine::Engine::add(notification_samson_worker_send_status_update, this);
         
+        // Add samsonWorker as lister to send traces to delilahs
+        engine::Engine::add(notification_samson_worker_send_trace, this);
+        
+        
         // Notification of the files
         {
         engine::Notification *notification = new engine::Notification(notification_worker_update_files);
@@ -236,12 +240,31 @@ namespace ss {
             sendFilesMessage();
         else if ( notification->isName(notification_samson_worker_send_status_update))
 			sendWorkerStatus();
+        else if ( notification->isName(notification_samson_worker_send_trace))
+        {
+            if ( !notification->object )
+            {
+                LM_W(("SamsonWorker: Send trace without an object"));
+                return;
+            }
+            else
+            {
+                //LM_M(("SamsonWorking sending a trace to all delilahs..."));
+                Packet *p = (Packet*) notification->object;
+                network->delilahSend( this , p );
+                notification->object = NULL;
+            }
+        }
         else
             LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
     }
     
     bool SamsonWorker::acceptNotification( engine::Notification* notification )
     {
+        // Spetial case: Accept always
+        if( notification->isName(notification_samson_worker_send_trace) )
+            return true;
+        
         // Only accept notifications for my worker. This is only necessary when testing samsonLocal with multiple workers
         
         if( notification->environment.get("target","") != "SamsonWorker" )

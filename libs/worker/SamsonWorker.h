@@ -25,7 +25,7 @@
 #include "EngineElement.h"		// ss::EngineElement
 
 #define notification_samson_worker_send_status_update "notification_samson_worker_send_status_update"
-
+#define notification_samson_worker_send_trace "notification_samson_worker_send_trace"
 
 namespace ss {
 	
@@ -35,7 +35,7 @@ namespace ss {
 		// Initial time stamp 
 		struct timeval init_time;
         
-	public:
+	public: 
 		
 		SamsonWorker(NetworkInterface* network);
 

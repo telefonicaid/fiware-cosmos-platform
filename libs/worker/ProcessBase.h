@@ -18,10 +18,8 @@
 #include "Engine.h"                         // ss::Engine
 #include "SharedMemoryManager.h"            // ss::SharedMemoryManager
 
-
 #define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER          1
 #define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH	2
-
 
 namespace ss
 {
@@ -91,26 +89,28 @@ namespace ss
 		
 		
 		// Flush the buffer ( front process ) in key-value and txt mode
-		int flushBuffer( bool finish );
-		int flushKVBuffer( bool finish );
-		int flushTXTBuffer( bool finish );
+		void flushBuffer( bool finish );
+		void flushKVBuffer( bool finish );
+		void flushTXTBuffer( bool finish );
 		
 		// Function executed at this process side when a code is sent from the background process
-		int runCode( int c )
+		void runCode( int c )
 		{
 			switch (c) {
 				case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:
-					return flushBuffer(false);	// Flush the generated buffer with new key-values
-					break;
+					flushBuffer(false);	// Flush the generated buffer with new key-values
+					return;
+                    break;
 				case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH:
-					return flushBuffer(true);	// Flush the generated buffer with new key-values
-					break;
+					flushBuffer(true);	// Flush the generated buffer with new key-values
+                    return;
+                    break;
 				default:
 					error.set("System error: Unknown code in the isolated process communication");
 					break;
 			}
 			
-			return PI_CODE_KILL;
+			return;
 		}
 
 		

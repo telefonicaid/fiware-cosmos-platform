@@ -1,4 +1,5 @@
 SET (HEADERS
+gpb.h
 Environment.h
 CommandLine.h
 Console.h

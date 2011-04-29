@@ -42,7 +42,7 @@ namespace engine
     }
 
         
-    ProcessManager::ProcessManager( int _num_processes)
+    ProcessManager::ProcessManager( int _num_processes )
     {
         pthread_mutex_init(&mutex, 0);			// Mutex to protect elements
         

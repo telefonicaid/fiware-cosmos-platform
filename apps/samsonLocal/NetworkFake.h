@@ -56,6 +56,9 @@ namespace ss {
 		
 		// Syspend the network interface, close everything and return the "run" call
 		virtual void quit();	
+        
+        void delilahSend(PacketSenderInterface* packetSender, Packet* packetP);
+        
 	};
 	
 }

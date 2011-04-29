@@ -24,7 +24,7 @@ SET (HEADERS
 	EndpointManager.h
 	Endpoint2.h
 	ListenerEndpoint.h
-	UnhelloedEndpoint.cpp
+	UnhelloedEndpoint.h
 	WebListenerEndpoint.h
 	WebWorkerEndpoint.h
 )
@@ -66,7 +66,6 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/common")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 include_directories("${PROJECT_SOURCE_DIR}/libs/memory")
 include_directories("${PROJECT_SOURCE_DIR}/libs/module")
-include_directories("${PROJECT_SOURCE_DIR}/libs/engine")
 
 # Library declaration
 # -----------------------------------------------------------------

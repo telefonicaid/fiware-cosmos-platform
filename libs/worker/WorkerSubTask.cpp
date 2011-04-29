@@ -3,7 +3,7 @@
 #include "WorkerSubTask.h"			// Own interface
 #include "WorkerTaskManager.h"		// ss::WorkerTaskManager
 #include "WorkerTask.h"				// ss::WorkerTask
-#include "ProcessItem.h"			// ss::ProcessItem
+#include "engine/ProcessItem.h"			// ss::ProcessItem
 #include "ProcessOperation.h"       // ss::ProcessOperation
 #include "ProcessCompact.h"         // ss::ProcessCompact
 #include "ProcessGenerator.h"		// ss::ProcessGenerator
@@ -11,12 +11,12 @@
 #include "SamsonSetup.h"					// ss::SamsonSetup
 #include "ProcessOperation.h"				// ss::ProcessOperation
 #include "ProcessParser.h"					// ss::ProcessParser
-#include "DiskOperation.h"					// ss::DiskOperation
+#include "engine/DiskOperation.h"					// ss::DiskOperation
 #include "SamsonWorker.h"                   // ss::SamsonWorker
 
-#include "DiskManager.h"            // Notifications
-#include "ProcessManager.h"         // Notifications
-#include "MemoryManager.h"          // Notifications
+#include "engine/DiskManager.h"            // Notifications
+#include "engine/ProcessManager.h"         // Notifications
+#include "engine/MemoryManager.h"          // Notifications
 
 namespace ss
 {

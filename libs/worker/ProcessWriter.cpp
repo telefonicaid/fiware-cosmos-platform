@@ -1,8 +1,8 @@
 
 #include "ProcessWriter.h"			// Own interface
 
-#include "Buffer.h"					// ss::Buffer
-#include "MemoryManager.h"			// ss::MemoryManager
+#include "engine/Buffer.h"					// ss::Buffer
+#include "engine/MemoryManager.h"			// ss::MemoryManager
 #include "Packet.h"					// ss::Packet
 #include "NetworkInterface.h"		// ss::NetworkInterface
 #include "WorkerTaskManager.h"		// ss::WorkerTaskItemWithOutput

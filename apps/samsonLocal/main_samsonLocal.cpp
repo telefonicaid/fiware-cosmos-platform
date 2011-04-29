@@ -25,15 +25,15 @@
 #include <string.h>                 // strcmp
 #include <signal.h>                 // signal(.)
 
-#include "Engine.h"                 // engine::Engine
-#include "EngineElement.h"          // engine::EngineElement
+#include "engine/Engine.h"                 // engine::Engine
+#include "engine/EngineElement.h"          // engine::EngineElement
 
 #include "ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
 
 #include "SharedMemoryManager.h"    // ss::SharedMemoryManager
 
-#include "DiskManager.h"            // engine::DiskManager
-#include "ProcessManager.h"         // engine::ProcessManager
+#include "engine/DiskManager.h"            // engine::DiskManager
+#include "engine/ProcessManager.h"         // engine::ProcessManager
 
 
 /* ****************************************************************************

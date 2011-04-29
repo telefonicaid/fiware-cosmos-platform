@@ -9,13 +9,13 @@
 #include "samson.pb.h"			// ss::network::...
 #include "coding.h"				// ss::ProcessAssistantSharedFile
 #include "au/Lock.h"				// au::Lock
-#include "ProcessItem.h"		// ss::ProcessItem
+#include "engine/ProcessItem.h"		// ss::ProcessItem
 #include "ProcessItemIsolated.h"	// ss:ProcessItemIsolated
 #include "NetworkInterface.h"		// ss::NetworkInterface
 #include "ProcessWriter.h"			// ss::ProcessWriter
 #include "samson.pb.h"                      // ss::network::...
 #include "samson/OperationController.h"     // ss::OperationController
-#include "Engine.h"                         // ss::Engine
+#include "engine/Engine.h"                         // ss::Engine
 #include "SharedMemoryManager.h"            // ss::SharedMemoryManager
 
 #define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER          1

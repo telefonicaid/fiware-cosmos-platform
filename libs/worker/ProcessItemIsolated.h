@@ -1,10 +1,10 @@
 #ifndef _H_PROCESS_ITEM_ISOLATED
 #define _H_PROCESS_ITEM_ISOLATED
 
-#include "ProcessItem.h"                    // ss::ProcessItem
+#include "engine/ProcessItem.h"                    // ss::ProcessItem
 #include "samson/Tracer.h"                  // ss::Tracer
 #include "samson/OperationController.h"		// ss::Tracer
-#include "ProcessItem.h"
+#include "engine/ProcessItem.h"
 #include "SharedMemoryItem.h"               // engine::SharedMemoryItem
 #include "samson.pb.h"                      // ss::network
 

@@ -4,12 +4,12 @@
 #include <cstring>                  // size_t
 #include <vector>                   // std::vector
 #include <string>                   // std::string
-#include "EngineNotification.h"     // ss::EngineNotificationListener
+#include "engine/EngineNotification.h"     // ss::EngineNotificationListener
 #include "au/Error.h"                  // au::Error
-#include "Buffer.h"                 // engine::Buffer
-#include "MemoryRequest.h"
-#include "DiskOperation.h"
-#include "ProcessItem.h"
+#include "engine/Buffer.h"                 // engine::Buffer
+#include "engine/MemoryRequest.h"
+#include "engine/DiskOperation.h"
+#include "engine/ProcessItem.h"
 
 
 

@@ -15,8 +15,8 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // LmtWrite, ...
 
-#include "Buffer.h"				// ss::Buffer
-#include "MemoryManager.h"      // MemoryManager
+#include "engine/Buffer.h"				// ss::Buffer
+#include "engine/MemoryManager.h"      // MemoryManager
 #include "Endpoint.h"           // Endpoint
 #include "Message.h"            // Message::Header, MessageCode, MessageType, ...
 #include "Packet.h"             // Packet

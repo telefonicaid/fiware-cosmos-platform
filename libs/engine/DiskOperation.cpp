@@ -1,8 +1,8 @@
-#include "DiskOperation.h"			// Own interface
-#include "logMsg.h"					// LM_T
-#include "traceLevels.h"			// LmtDisk
-#include "Engine.h"					// ss::Engine
-#include "DiskManager.h"            // DiskManager
+#include "engine/DiskOperation.h"		// Own interface
+#include "logMsg.h"                     // LM_T
+#include "traceLevels.h"                // LmtDisk
+#include "engine/Engine.h"				// engine::Engine
+#include "engine/DiskManager.h"         // engine::DiskManager
 
 namespace engine {
 	

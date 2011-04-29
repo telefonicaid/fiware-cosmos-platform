@@ -1,7 +1,7 @@
 
 #include "DelilahUploadDataProcess.h"			// Own interface
-#include "MemoryManager.h"					// ss::MemoryManager
-#include "Buffer.h"							// ss::Buffer
+#include "engine/MemoryManager.h"					// ss::MemoryManager
+#include "engine/Buffer.h"							// ss::Buffer
 #include "Packet.h"							// ss::Packet
 #include "Message.h"						// ss::Message
 #include "Delilah.h"						// ss::Delilah

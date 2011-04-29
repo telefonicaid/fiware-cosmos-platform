@@ -3,7 +3,8 @@
 
 #include <sys/time.h>
 #include <string>				// std::string
-#include "DiskOperation.h"		// DiskOperationType
+
+#include "engine/DiskOperation.h"		// engine::DiskOperationType
 
 #define STATISTICS_BUFFER_SIZE 100
 

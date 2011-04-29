@@ -4,12 +4,12 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include "DiskManager.h"                    // Own interface
-#include "Engine.h"							// ss::Engine
-#include "EngineElement.h"					// ss::EngineElement
-#include "ProcessItem.h"					// ss::ProcessItem
-#include "DiskOperation.h"					// ss::DiskOperation
-#include "EngineNotificationElement.h"      // ss::EngineNotificationElement
+#include "engine/DiskManager.h"                    // Own interface
+#include "engine/Engine.h"							// engine::Engine
+#include "engine/EngineElement.h"					// engine::EngineElement
+#include "engine/ProcessItem.h"                     // engine::ProcessItem
+#include "engine/DiskOperation.h"					// engine::DiskOperation
+#include "engine/EngineNotificationElement.h"      // engine::EngineNotificationElement
 
 namespace engine
 {

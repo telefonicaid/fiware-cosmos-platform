@@ -9,7 +9,7 @@
 #include <sys/types.h>      
 #include <sys/wait.h>               // waitpid()
 #include "ProcessItemIsolated.h"    // Own interface
-#include "MemoryManager.h"			// ss::MemoryManager
+#include "engine/MemoryManager.h"			// ss::MemoryManager
 #include "SharedMemoryItem.h"           // engine::SharedMemoryItem
 #include "SharedMemoryManager.h"    
 #include "au/gpb.h"                     // au::readGPB & au::writeGPB

@@ -18,8 +18,8 @@
 #include "iomMsgAwait.h"        // iomMsgAwait
 #include "Endpoint.h"           // Endpoint
 #include "Packet.h"             // Packet
-#include "Buffer.h"             // Buffer
-#include "MemoryManager.h"      // MemoryManager
+#include "engine/Buffer.h"             // Buffer
+#include "engine/MemoryManager.h"      // MemoryManager
 #include "iomMsgRead.h"         // Own interface
 #include "logMsg.h" // Logs
 

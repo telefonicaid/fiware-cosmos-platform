@@ -12,10 +12,10 @@
 #include "traceLevels.h"        // Trace Levels
 
 #include "SharedMemoryManager.h"		// Own interface
-#include "Buffer.h"				// ss::Buffer
+#include "engine/Buffer.h"				// ss::Buffer
 #include <sstream>				// std::stringstream
-#include "MemoryRequest.h"		// ss::MemoryRequest
-#include "Engine.h"				// ss::Engine
+#include "engine/MemoryRequest.h"		// ss::MemoryRequest
+#include "engine/Engine.h"				// ss::Engine
 #include "SharedMemoryItem.h"   // ss::SharedMemoryItem
 #include "au/Format.h"             // au::Format
 #include "SamsonSetup.h"   // ss::SamsonSetup

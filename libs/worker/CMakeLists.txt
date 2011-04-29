@@ -53,7 +53,6 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 include_directories("${PROJECT_SOURCE_DIR}/libs/disk")
 include_directories("${PROJECT_SOURCE_DIR}/libs/data")
 include_directories("${PROJECT_SOURCE_DIR}/libs/process")
-include_directories("${PROJECT_SOURCE_DIR}/libs/engine")
 
 # Library declaration
 # -----------------------------------------------------------------

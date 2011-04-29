@@ -14,13 +14,13 @@
 #include "ports.h"              // WORKER_PORT
 #include "SamsonWorker.h"		// ss::SamsonWorker
 #include "SamsonSetup.h"		// ss::SamsonSetup
-#include "MemoryManager.h"		// ss::MemoryManager
+#include "engine/MemoryManager.h"		// ss::MemoryManager
 #include "Endpoint.h"			// ss::Endpoint
-#include "Engine.h"				// ss::Engine
+#include "engine/Engine.h"				// ss::Engine
 #include "SharedMemoryManager.h"    // ss::SharedMemoryManager
 
-#include "DiskManager.h"            // engine::DiskManager
-#include "ProcessManager.h"         // engine::ProcessManager
+#include "engine/DiskManager.h"            // engine::DiskManager
+#include "engine/ProcessManager.h"         // engine::ProcessManager
 
 
 /* ****************************************************************************

@@ -6,10 +6,10 @@
 #include "samson.pb.h"					// WorkerTask
 #include "au/Token.h"						// au::Token
 #include "samson.pb.h"					// ss::network::...
-#include "ProcessItem.h"				// ss::ProcessManagerDelegate
-#include "Buffer.h"						// ss::Buffer
-#include "MemoryRequest.h"				// ss::MemoryRequest & MemoryRequestDelegate
-#include "EngineNotification.h"         // ss::EngineNotification
+#include "engine/ProcessItem.h"				// ss::ProcessManagerDelegate
+#include "engine/Buffer.h"						// ss::Buffer
+#include "engine/MemoryRequest.h"				// ss::MemoryRequest & MemoryRequestDelegate
+#include "engine/EngineNotification.h"         // ss::EngineNotification
 
 namespace ss {
 

@@ -6,7 +6,7 @@
 #include "au/Format.h"					// au::Format
 #include <iostream>					// std::cout
 #include "samson/Operation.h"		// ss::Operation
-#include "MemoryManager.h"
+#include "engine/MemoryManager.h"
 #include "samson/KVWriter.h"				// ss::KVWriter
 #include "SharedMemoryItem.h"
 

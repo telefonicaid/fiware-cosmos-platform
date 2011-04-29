@@ -7,12 +7,12 @@
 #include "BufferVector.h"
 #include "SamsonWorker.h"				// ss::SamsonWorker
 #include "DataBufferProcessItem.h"		// ss::DataBufferProcessItem
-#include "MemoryManager.h"				// ss::MemoryRequest
-#include "Engine.h"						// ss::Engine
-#include "DiskOperation.h"				// ss::DiskOperation
-#include "Buffer.h"                     // engine::Buffer
-#include "ProcessManager.h"             // Notifications
-#include "DiskManager.h"                // Notifications
+#include "engine/MemoryManager.h"				// ss::MemoryRequest
+#include "engine/Engine.h"						// ss::Engine
+#include "engine/DiskOperation.h"				// ss::DiskOperation
+#include "engine/Buffer.h"                     // engine::Buffer
+#include "engine/ProcessManager.h"             // Notifications
+#include "engine/DiskManager.h"                // Notifications
 
 namespace ss
 {

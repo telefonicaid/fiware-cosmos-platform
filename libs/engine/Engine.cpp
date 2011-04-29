@@ -3,13 +3,13 @@
 #include "logMsg.h"				// LM_X
 #include <time.h>
 #include <sys/time.h>
-
-#include "Engine.h"							// Own interface
-#include "EngineElement.h"					// ss::EngineElement
-#include "ProcessItem.h"					// ss::ProcessItem
-#include "DiskOperation.h"					// ss::DiskOperation
-#include "EngineNotificationElement.h"      // ss::EngineNotificationElement
 #include <signal.h>   // SIGKILL
+
+#include "engine/Engine.h"							// Own interface
+#include "engine/EngineElement.h"					// engine::EngineElement
+#include "engine/ProcessItem.h"                     // engine::ProcessItem
+#include "engine/DiskOperation.h"					// engine::DiskOperation
+#include "engine/EngineNotificationElement.h"       // engine::EngineNotificationElement
 
 #define ENGINE_MAX_RUNNING_TIME     60
 

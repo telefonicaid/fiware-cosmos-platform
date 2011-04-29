@@ -3,7 +3,7 @@
 #define _H_PROCESS_OPERATION
 
 #include "ProcessBase.h"			// ss::ProcessBase
-#include "ProcessItem.h"            // engine::ProcessItem
+#include "engine/ProcessItem.h"            // engine::ProcessItem
 
 namespace ss
 {

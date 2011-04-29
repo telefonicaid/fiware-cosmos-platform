@@ -1,13 +1,13 @@
-#include "Buffer.h"					// ss::Buffer
+#include "engine/Buffer.h"					// ss::Buffer
 #include "SamsonWorker.h"			// ss::SamsonWorker
 #include "Packet.h"					// ss::Packet
-#include "Buffer.h"					// ss::Buffer
+#include "engine/Buffer.h"					// ss::Buffer
 #include "LoadDataManager.h"		// Own interface
 #include "MessagesOperations.h"		// setErrorMessage
 #include "SamsonSetup.h"			// ss::SamsonSetup
-#include "DiskOperation.h"			// ss::DiskOperation
-#include "Engine.h"                 // ss::Engine
-#include "DiskManager.h"            // Notifications
+#include "engine/DiskOperation.h"			// ss::DiskOperation
+#include "engine/Engine.h"                 // ss::Engine
+#include "engine/DiskManager.h"            // Notifications
 
 namespace ss
 {

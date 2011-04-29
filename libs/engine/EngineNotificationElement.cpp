@@ -1,7 +1,7 @@
 
-#include "EngineNotificationElement.h"      // Own interface
-#include "Engine.h"                         // ss::Engine
-#include "EngineNotification.h"             // ss::EngineNotification
+#include "engine/EngineNotificationElement.h"      // Own interface
+#include "engine/Engine.h"                         // engine::Engine
+#include "engine/EngineNotification.h"             // engine::EngineNotification
 
 namespace engine
 {

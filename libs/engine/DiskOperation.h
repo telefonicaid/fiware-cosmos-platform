@@ -29,17 +29,19 @@
 #include <map>				// std::map
 #include <set>				// std::set
 #include <list>				// std::list
-#include "au/Lock.h"			// au::Lock
-#include "au/StopLock.h"		// au::StopLock
 #include <pthread.h>        /* pthread_mutex_init, ...                  */
 #include <sys/stat.h>		// stat(.)
 #include <iostream>			// std::cout
 #include <sstream>			// std::ostringstream
-#include <au/Format.h>			// au::Format
 #include <time.h>			// clock(.)
-#include "Buffer.h"			// Buffer used to read or write
+
+#include "au/Lock.h"			// au::Lock
+#include "au/StopLock.h"		// au::StopLock
+#include "au/Format.h"			// au::Format
 #include "au/Error.h"			// ss::Error
-#include "EngineNotification.h" //ss::EngineNotification
+
+#include "engine/Buffer.h"              // engine::Buffer
+#include "engine/EngineNotification.h"  // engine::EngineNotification
 
 namespace engine {
 	

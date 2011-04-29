@@ -8,9 +8,9 @@
  *
  */
 
-#include "Buffer.h"		// Own interface
+#include <sstream>          // std::stringstream
 #include "au/Format.h"		// au::Format
-#include <sstream>		// std::stringstream
+#include "engine/Buffer.h"	// Own interface
 
 namespace engine {
 

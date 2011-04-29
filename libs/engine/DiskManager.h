@@ -7,12 +7,13 @@
 #include <list>
 #include <string>
 #include <iostream>                 // std::cout
-#include "au/list.h"                 // au::list
-#include "MemoryManager.h"          // ss::MemoryManager
-#include "DiskStatistics.h"         // ss::DiskStatistics
 #include <set>                      // std::set
-#include "EngineNotification.h"     // ss::EngineNotification
 
+#include "au/list.h"                 // au::list
+
+#include "engine/EngineNotification.h"     // engine::EngineNotification
+#include "engine/MemoryManager.h"          // engine::MemoryManager
+#include "engine/DiskStatistics.h"         // engine::DiskStatistics
 
 #define notification_disk_operation_request             "notification_disk_operation_request"
 #define notification_disk_operation_request_response    "notification_disk_operation_request_response"

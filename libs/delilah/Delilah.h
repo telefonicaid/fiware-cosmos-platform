@@ -23,7 +23,7 @@
 #include "samson/Environment.h"	// ss::Environment
 #include "samson.pb.h"			// ss::network::..
 #include "au/map.h"				// au::simple_map
-#include "EngineNotification.h" // engine::NotificationListener
+#include "engine/EngineNotification.h" // engine::NotificationListener
 #include "au/Cronometer.h"      // au::Cronometer
 
 namespace ss {

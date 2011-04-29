@@ -1,8 +1,8 @@
 
 #include "NetworkInterface.h"	// Own interface
 #include "Packet.h"				// ss::Packet
-#include "Engine.h"				// ss::Engine
-#include "EngineElement.h"		// ss::EngineElement
+#include "engine/Engine.h"				// ss::Engine
+#include "engine/EngineElement.h"		// ss::EngineElement
 #include "PacketReceivedNotification.h"	// ss::PacketReceivedNotification
 namespace ss
 {

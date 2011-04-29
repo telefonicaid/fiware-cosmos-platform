@@ -1,7 +1,7 @@
 #ifndef _H_PACKET_RECEIVER_NOTIFICATION
 #define _H_PACKET_RECEIVER_NOTIFICATION
 
-#include "EngineElement.h"// ss::EngineElement
+#include "engine/EngineElement.h"// ss::EngineElement
 #include "Network.h"		// ss::DataReceiverInterface
 #include "Packet.h"			// ss::Packet
 

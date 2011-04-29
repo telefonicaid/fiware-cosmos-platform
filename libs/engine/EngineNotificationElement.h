@@ -1,7 +1,7 @@
 #ifndef _H_ENGINE_NOTIFICATION_ELEMENT
 #define  _H_ENGINE_NOTIFICATION_ELEMENT
 
-#include "EngineElement.h"
+#include "engine/EngineElement.h"   // engine::EngineElement
 
 namespace engine
 {

@@ -18,8 +18,8 @@
 #include "SamsonController.h"	// ss::SamsonController
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "platformProcesses.h"  // ss::platformProcessesGet, ss::platformProcessesSave
-#include "MemoryManager.h"		// ss::MemoryManager
-#include "Engine.h"				// engine::Engine
+#include "engine/MemoryManager.h"		// ss::MemoryManager
+#include "engine/Engine.h"				// engine::Engine
 #include "au/LockDebugger.h"    // au::LockDebugger
 
 /* ****************************************************************************

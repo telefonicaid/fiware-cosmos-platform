@@ -16,12 +16,12 @@
 #include "SamsonSetup.h"				// ss::SamsonSetup
 #include "au/Format.h"						// au::Format
 
-#include "MemoryManager.h"				// ss::SharedMemory
+#include "engine/MemoryManager.h"				// ss::SharedMemory
 
-#include "Engine.h"						// engine::Engine
-#include "DiskOperation.h"				// ss::DiskOperation
-#include "DiskManager.h"                // Notifications
-#include "ProcessManager.h"             // engine::ProcessManager
+#include "engine/Engine.h"						// engine::Engine
+#include "engine/DiskOperation.h"				// ss::DiskOperation
+#include "engine/DiskManager.h"                // Notifications
+#include "engine/ProcessManager.h"             // engine::ProcessManager
 #include "SharedMemoryManager.h"        // engine::SharedMemoryManager
 
 

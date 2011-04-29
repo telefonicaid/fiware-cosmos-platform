@@ -9,8 +9,8 @@
 #include <iostream>                 // std::cout
 #include <set>                      // std::set
 #include "au/list.h"                // au::list
-#include "EngineNotification.h"     // ss::EngineNotification
-#include "au/Cronometer.h"             // au::Cronometer
+#include "au/Cronometer.h"                  // au::Cronometer
+#include "engine/EngineNotification.h"      // engine::EngineNotification
 
 namespace engine
 {

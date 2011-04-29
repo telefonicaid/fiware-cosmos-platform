@@ -10,12 +10,12 @@
 #include "samson/Environment.h"	// ss::Environment
 #include <set>					// std::set
 #include "au/Error.h"				// au::Error
-#include "EngineNotification.h" // ss::EngineNotificationListener
+#include "engine/EngineNotification.h" // ss::EngineNotificationListener
 #include "coding.h"             // ss::KVInfo
-#include "Buffer.h"
-#include "MemoryRequest.h"  
-#include "DiskOperation.h"  
-#include "ProcessItem.h"
+#include "engine/Buffer.h"
+#include "engine/MemoryRequest.h"  
+#include "engine/DiskOperation.h"  
+#include "engine/ProcessItem.h"
 
 #define notification_sub_task_finished      "notification_sub_task_finished"
 

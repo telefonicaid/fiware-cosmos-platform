@@ -1,6 +1,6 @@
 
 
-#include "ProcessManager.h"
+#include "engine/ProcessManager.h"
 
 
 
@@ -8,12 +8,12 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include "ProcessManager.h"                 // ss::Process
-#include "Engine.h"							// ss::Engine
-#include "EngineElement.h"					// ss::EngineElement
-#include "ProcessItem.h"					// ss::ProcessItem
-#include "DiskOperation.h"					// ss::DiskOperation
-#include "EngineNotificationElement.h"      // ss::EngineNotificationElement
+#include "engine/ProcessManager.h"                  // engine::Process
+#include "engine/Engine.h"							// engine::Engine
+#include "engine/EngineElement.h"					// engine::EngineElement
+#include "engine/ProcessItem.h"                     // engine::ProcessItem
+#include "engine/DiskOperation.h"					// engine::DiskOperation
+#include "engine/EngineNotificationElement.h"       // engine::EngineNotificationElement
 
 namespace engine
 {

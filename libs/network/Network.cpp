@@ -37,7 +37,7 @@
 #include "Endpoint.h"           // Endpoint
 #include "Message.h"            // Message::MessageCode
 #include "Packet.h"             // Packet
-#include "MemoryManager.h"      // MemoryManager
+#include "engine/MemoryManager.h"      // MemoryManager
 #include "iomInit.h"            // iomInit
 #include "iomServerOpen.h"      // iomServerOpen
 #include "iomConnect.h"         // iomConnect
@@ -49,7 +49,7 @@
 #include "Host.h"               // Host
 #include "HostMgr.h"            // HostMgr
 #include "Network.h"            // Own interface
-#include "Engine.h"				// ss::Engine
+#include "engine/Engine.h"				// ss::Engine
 
 
 

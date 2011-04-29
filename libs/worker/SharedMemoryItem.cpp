@@ -11,11 +11,11 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace Levels
 
-#include "MemoryManager.h"		// Own interface
-#include "Buffer.h"				// ss::Buffer
+#include "engine/MemoryManager.h"		// Own interface
+#include "engine/Buffer.h"				// ss::Buffer
 #include "SamsonSetup.h"		// ss:SamsonSetup
 #include <sstream>				// std::stringstream
-#include "Engine.h"				// ss::Engine
+#include "engine/Engine.h"				// ss::Engine
 
 
 

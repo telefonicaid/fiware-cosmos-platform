@@ -9,7 +9,7 @@
 
 #include "WorkerTask.h"           // ss::WorkerTask
 #include "SamsonSetup.h"          // ss::SamsonSetup
-#include "DiskOperation.h"			// ss::DiskOperation
+#include "engine/DiskOperation.h"			// ss::DiskOperation
 
 
 namespace ss {

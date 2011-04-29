@@ -14,8 +14,8 @@
 #include <cstring>			// size_t
 #include <cstdlib>			// malloc, ...
 #include <fstream>			// std::ifstream
-#include "SimpleBuffer.h"	// ss::SimpleBuffer
-#include "EngineNotification.h" // ss::EngineNotificationObject
+#include "engine/SimpleBuffer.h"        // engine::SimpleBuffer
+#include "engine/EngineNotification.h"  // engine::EngineNotificationObject
 
 namespace engine {
 	

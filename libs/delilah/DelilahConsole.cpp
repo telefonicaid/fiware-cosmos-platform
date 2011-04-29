@@ -11,7 +11,7 @@
 #include "au/Format.h"						// au::Format
 #include "DelilahUploadDataProcess.h"		// ss::DelilahUpLoadDataProcess
 #include "DelilahDownloadDataProcess.h"		// ss::DelilahDownLoadDataProcess
-#include "MemoryManager.h"				// ss::MemoryManager
+#include "engine/MemoryManager.h"				// ss::MemoryManager
 #include <iostream>
 #include <iomanip>
 #include "EnvironmentOperations.h"						// Environment operations (CopyFrom)

@@ -8,11 +8,12 @@
 #include <string>
 #include <iostream>                 // std::cout
 #include "au/map.h"                 // au::list
-#include "MemoryManager.h"          // ss::MemoryManager
-#include "DiskStatistics.h"         // ss::DiskStatistics
 #include <set>                      // std::set
-#include "EngineNotification.h"     // ss::EngineNotification
 #include "au/set.h"                 // au::set
+
+#include "engine/EngineNotification.h"     // engine::EngineNotification
+#include "engine/MemoryManager.h"          // engine::MemoryManager
+#include "engine/DiskStatistics.h"         // engine::DiskStatistics
 
 
 #define notification_process_request                            "notification_process_request"

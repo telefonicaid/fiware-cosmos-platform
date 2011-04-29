@@ -7,11 +7,11 @@
 *
 */
 #include <samson/Data.h>
-#include "au/Format.h"			// au::Format
+#include "au/Format.h"                  // au::Format
 #include "samson/KVFormat.h"	        // ss::KVFormat
-#include "samson.pb.h"			// network:...
-#include <string.h>			// std::string
-#include "SimpleBuffer.h"		// ss::SimpleBuffer
+#include "samson.pb.h"                  // network:...
+#include <string.h>                     // std::string
+#include "engine/SimpleBuffer.h"		// engine::SimpleBuffer
 #include "logMsg.h"                     // LM_X
 
 

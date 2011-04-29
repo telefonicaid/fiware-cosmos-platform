@@ -20,7 +20,7 @@
 #include <list>						// std::list
 #include <iostream>					// std::cout
 
-#include "Buffer.h"					// ss::Buffer
+#include "engine/Buffer.h"					// ss::Buffer
 #include "au/Token.h"					// au::Token
 #include "au/Stopper.h"				// au::Stopper
 #include "au/map.h"					// au::map
@@ -28,8 +28,7 @@
 #include "au/Format.h"					// au::Format
 
 
-#include "EngineNotification.h"     // ss:EngineNotificationListener
-
+#include "engine/EngineNotification.h"          // engine:EngineNotificationListener
 
 #define notification_memory_request             "notification_memory_request"
 #define notification_memory_request_response    "notification_memory_request_response"

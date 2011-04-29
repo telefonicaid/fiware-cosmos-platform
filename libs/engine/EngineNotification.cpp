@@ -1,6 +1,6 @@
 
 
-#include "EngineNotification.h"
+#include "engine/EngineNotification.h"  // Own interface
 
 
 namespace engine {

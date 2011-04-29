@@ -24,8 +24,8 @@
 #include "au/Lock.h"			// au::Lock
 #include <vector>			// std::vector
 #include "coding.h"			// ss::hg_info , ss::hg_size 
-#include "Buffer.h"					// ss::Buffer
-#include "MemoryManager.h"			// ss::MemoryManager
+#include "engine/Buffer.h"					// ss::Buffer
+#include "engine/MemoryManager.h"			// ss::MemoryManager
 #include <set>						// std::set
 
 namespace ss {

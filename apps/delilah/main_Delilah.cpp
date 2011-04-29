@@ -2,8 +2,8 @@
 #include "DelilahConsole.h"		// ss::DelilahConsole
 #include "SamsonSetup.h"		// ss::SamsonSetup
 #include "au/Format.h"				// au::Format
-#include "MemoryManager.h"      // ss::MemoryManager
-#include "Engine.h"				// engine::Engine
+#include "engine/MemoryManager.h"      // ss::MemoryManager
+#include "engine/Engine.h"				// engine::Engine
 
 
 /* ****************************************************************************

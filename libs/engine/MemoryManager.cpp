@@ -9,13 +9,14 @@
 */
 
 #include "logMsg.h"                   // LM_*
-#include "MemoryManager.h"	          // Own interface
-#include "Buffer.h"		              // ss::Buffer
+#include "engine/Buffer.h"		              // ss::Buffer
 #include <sstream>		              // std::stringstream
-#include "MemoryRequest.h"	          // ss::MemoryRequest
-#include "Engine.h"		              // ss::Engine
-#include "DiskManager.h"              // Notifications
-#include "ProcessManager.h"           // Notifications
+
+#include "engine/MemoryManager.h"	          // Own interface
+#include "engine/MemoryRequest.h"	          // engine::MemoryRequest
+#include "engine/Engine.h"		              // engine::Engine
+#include "engine/DiskManager.h"               // enigne::DiskManager
+#include "engine/ProcessManager.h"            // engine::ProcessManager
 
 namespace engine
 {

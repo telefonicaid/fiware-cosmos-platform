@@ -15,11 +15,11 @@
 #include "ControllerTask.h"         // ss:ControllerTask
 #include "SamsonController.h"       // Own interface ss::SamsonController
 #include "SamsonSetup.h"            // ss::SamsonSetup
-#include "Buffer.h"                 // ss::Buffer
-#include "MemoryManager.h"          // ss::MemoryManager
+#include "engine/Buffer.h"                 // ss::Buffer
+#include "engine/MemoryManager.h"          // ss::MemoryManager
 #include "au/Error.h"					// au::Error
-#include "Engine.h"					// ss::Engine
-#include "DiskStatistics.h"			// ss::DiskStatistics
+#include "engine/Engine.h"					// ss::Engine
+#include "engine/DiskStatistics.h"			// ss::DiskStatistics
 
 namespace ss {
 

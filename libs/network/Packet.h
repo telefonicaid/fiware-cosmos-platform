@@ -10,13 +10,13 @@
 */
 
 #include "samson.pb.h"       // google protocol buffers
-#include "MemoryManager.h"   // MemoryManager
+#include "engine/MemoryManager.h"   // MemoryManager
 #include "Endpoint.h"        // Endpoint
 #include "easyzlib.h"	     // zlib utility library
 #include "logMsg.h"			 // LM_TODO()
 #include "Message.h"		 // ss::MessageType 
-#include "Engine.h"			 // engine::Engine
-#include "Buffer.h"          // engine::Buffer
+#include "engine/Engine.h"			 // engine::Engine
+#include "engine/Buffer.h"          // engine::Buffer
 
 namespace ss {
 	

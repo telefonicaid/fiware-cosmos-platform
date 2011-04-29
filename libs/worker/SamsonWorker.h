@@ -22,7 +22,7 @@
 #include "DataBuffer.h"			// ss::DataBuffer
 #include "LoadDataManager.h"	// ss::LoadDataManager
 #include "samson.pb.h"			// ss::network::
-#include "EngineElement.h"		// ss::EngineElement
+#include "engine/EngineElement.h"		// ss::EngineElement
 
 #define notification_samson_worker_send_status_update "notification_samson_worker_send_status_update"
 #define notification_samson_worker_send_trace "notification_samson_worker_send_trace"

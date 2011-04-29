@@ -8,7 +8,7 @@
 #include "au/Stopper.h"                // au::Stopper
 #include "au/Environment.h"            // au::Environment
 
-#include "EngineNotification.h"
+#include "engine/EngineNotification.h"  // engine::EngineNotification
 
 
 #define PI_PRIORITY_NORMAL_OPERATION	1

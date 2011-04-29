@@ -22,7 +22,7 @@
 #include "samsonDirectories.h"		// SAMSON_SETUP_FILE
 
 
-#include "Buffer.h"					// ss::Buffer
+#include "engine/Buffer.h"					// ss::Buffer
 #include "au/Token.h"					// au::Token
 #include "au/Stopper.h"				// au::Stopper
 #include "au/map.h"					// au::map

@@ -1,7 +1,7 @@
 
 
-#include "MemoryRequest.h"		// Own interface
-#include "Buffer.h"				// ss::Buffer
+#include "engine/MemoryRequest.h"		// Own interface
+#include "engine/Buffer.h"				// ss::Buffer
 #include "logMsg.h"				// LM_X
 
 namespace engine

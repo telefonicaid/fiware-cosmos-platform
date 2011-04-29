@@ -1,8 +1,8 @@
 
-#include "Buffer.h"					// ss::Buffer
-#include "MemoryManager.h"			// ss::MemoryManager
+#include "engine/Buffer.h"					// ss::Buffer
+#include "engine/MemoryManager.h"			// ss::MemoryManager
 #include "BufferVector.h"			// Own interface
-#include "Engine.h"			 // ss::Engine
+#include "engine/Engine.h"			 // ss::Engine
 #include "SamsonSetup.h"    // ss::SamsonSetup
 
 namespace ss {

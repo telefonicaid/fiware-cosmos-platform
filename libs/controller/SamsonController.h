@@ -26,8 +26,8 @@
 #include "JobManager.h"                 // ss::JobManager
 #include "Monitor.h"                    // ss::Monitor
 #include "ControllerLoadManager.h"		// ss::ControllerLoadManager
-#include "EngineElement.h"				// ss::EngineElement
-#include "EngineNotification.h"         // ss::EngineNotificationListener
+#include "engine/EngineElement.h"				// ss::EngineElement
+#include "engine/EngineNotification.h"         // ss::EngineNotificationListener
 #include "au/Cronometer.h"              // au::Cronometer
 
 #define notification_monitorization                 "notification_monitorization"

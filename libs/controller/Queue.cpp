@@ -101,9 +101,8 @@ namespace ss
 		
 	}
 
-	network::FullQueue * Queue::getFullQueue()
+    void Queue::fill( network::FullQueue *network_fq )
 	{
-		network::FullQueue *network_fq = new network::FullQueue();
 
 		// Queue information
 		network::Queue* network_q = network_fq->mutable_queue();
@@ -127,7 +126,6 @@ namespace ss
 			info->set_kvs( (f->second)->info.kvs );
 		}
 		
-		return network_fq;
 	}
 	
 	

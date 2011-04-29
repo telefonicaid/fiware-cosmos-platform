@@ -750,28 +750,12 @@ namespace ss {
 			Queue *queue = i->second;
 			
 			if( filterName( i->first , begin, end) )
-			{
+			{                
+                
 				network::FullQueue *fq = ql->add_queue();
+			
+                queue->fill( fq );
 				
-				network::Queue *q = fq->mutable_queue();
-				
-				q->set_name( i->first );
-				
-				// Format
-				fillKVFormat( q->mutable_format() , queue->format() );
-				
-				//Info
-				fillFullKVInfo( q->mutable_info(), queue->info() );
-				
-				
-				// Add file information
-				au::map< std::string , QueueFile >::iterator iter;
-				
-				for ( iter = queue->files.begin() ; iter != queue->files.end() ; iter++)
-				{
-					network::File *file = fq->add_file();
-					iter->second->fill( file );
-				}
 			}
 			
 		}
@@ -842,7 +826,9 @@ namespace ss {
 				}
 				
 				// add queu to be emitted in the WorkerTask packet
-				network::FullQueue *fq = q->getFullQueue();
+                network::FullQueue *fq = new network::FullQueue();
+				q->fill( fq );
+                
 				info->input_queues.push_back( fq ); 
 				
 				
@@ -883,7 +869,8 @@ namespace ss {
 				}
 
 				// add queu to be emitted in the WorkerTask packet
-				network::FullQueue *fq = q->getFullQueue();
+				network::FullQueue *fq = new network::FullQueue();
+                q->fill(fq);
 				info->output_queues.push_back( fq ); 
 				
 			}

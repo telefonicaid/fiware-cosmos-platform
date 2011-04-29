@@ -92,8 +92,9 @@ namespace ss {
 		 Get all the information of this queue in "GPB" way
 		 */
 		
-		network::FullQueue *getFullQueue();
 
+		void fill( network::FullQueue *fq );
+        
 		
 		
 		std::string getStatus()

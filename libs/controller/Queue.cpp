@@ -112,12 +112,19 @@ namespace ss
 		network_kvformat->set_keyformat( _format.keyFormat );
 		network_kvformat->set_valueformat( _format.valueFormat );
 		
+        network::KVInfo *network_kvInfo = network_q->mutable_info();
+        network_kvInfo->set_size( _info.size);
+        network_kvInfo->set_kvs( _info.kvs );
+        
 		// File list infromation
 		au::map< std::string , QueueFile >::iterator f;
 		for (f = files.begin() ; f != files.end() ; f++)
 		{
 			network::File * file = network_fq->add_file();
-			file->set_name( (f->second)->fileName );
+            
+            std::string file_name = (f->second)->fileName;
+            
+			file->set_name( file_name  );
 			file->set_worker( (f->second)->worker );
 
 			network::KVInfo *info = file->mutable_info();

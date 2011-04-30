@@ -160,6 +160,10 @@ namespace ss
                 {
 
                     status = waiting_process;
+                    
+                    // Send a progress report to controller
+                    task->sendUpdateMessageToController( info , KVInfo(0,0) );
+                    
                     run_process();
                     
                     if( num_processes == 0 )
@@ -174,6 +178,9 @@ namespace ss
                 {
 
                     status = finished;
+                    
+                    // Send a progress report to controller
+                    task->sendUpdateMessageToController( KVInfo(0,0) , info );
                     
                     // Notification that this sub-task is finished
                     engine::Notification * notification  = new engine::Notification( notification_sub_task_finished );
@@ -342,13 +349,13 @@ namespace ss
 		// Create necessary reduce operations
 		int hg = 1;												// Evaluating current hash group	
 		int	item_hg_begin = 0;									// Starting at hash-group
-		size_t total_size = reduceInformation->size_of_hg[0];	// Total size for this operation
+		size_t total_size = reduceInformation->info_hg[0].size;	// Total size for this operation
 
 		int hg_set = 0 ;                                        // Counter of the hash-group
         
 		while( hg < KVFILE_NUM_HASHGROUPS )
 		{
-			size_t current_hg_size = reduceInformation->size_of_hg[hg];
+			size_t current_hg_size = reduceInformation->info_hg[hg].size;
 			
 			if( current_hg_size > limit_size_per_group )
 			{
@@ -410,7 +417,10 @@ namespace ss
 		// Compute the required size for this operation
 		memory_requested = task->reduceInformation->total_num_input_files*( ( num_hash_groups )*sizeof(KVInfo) + sizeof(KVHeader) );
 		for (int hg = hg_begin ; hg < hg_end ; hg++)
-			memory_requested += task->reduceInformation->size_of_hg[hg];
+        {
+			memory_requested += task->reduceInformation->info_hg[hg].size;
+            info.append( task->reduceInformation->info_hg[hg] );    // Accumulated total input data
+        }
 		
 		description = "Op";// Operation
 	}
@@ -474,7 +484,7 @@ namespace ss
         // If no memory, means that no process is required
 		if( memory_requested == 0)
             return;
-        
+
 		ProcessOperation * item = new ProcessOperation( this );
         item->hg_set = hg_set;
         addProcess(item);
@@ -574,11 +584,11 @@ namespace ss
 		// Create necessary reduce operations
 		int hg = 1;												// Evaluating current hash group	
 		int	item_hg_begin = 0;									// Starting at hash-group
-		size_t total_size = reduceInformation->size_of_hg[0];	// Total size for this operation
+		size_t total_size = reduceInformation->info_hg[0].size;	// Total size for this operation
 		
 		while( hg < KVFILE_NUM_HASHGROUPS )
 		{
-			size_t current_hg_size = reduceInformation->size_of_hg[hg];
+			size_t current_hg_size = reduceInformation->info_hg[hg].size;
 			
 			if( ( ( total_size + current_hg_size  ) > max_item_content_size ) )
 			{
@@ -629,7 +639,7 @@ namespace ss
 		// Compute the required size for this operation
 		memory_requested = task->reduceInformation->total_num_input_files * ( sizeof(KVHeader) + ( num_hash_groups )*sizeof(KVInfo) );
 		for (int hg = hg_begin ; hg < hg_end ; hg++)
-			memory_requested += task->reduceInformation->size_of_hg[hg];
+			memory_requested += task->reduceInformation->info_hg[hg].size;
 		
 		description = "Sys";// System
 	}

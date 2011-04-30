@@ -459,18 +459,20 @@ namespace ss {
 	std::string Job::getStatus()
 	{
 		std::ostringstream output;
+        output << "id " << id << " ";
+        
 		switch (_status) {
 			case error:
-				output << "Error         ";
+				output << "Error";
 				break;
 			case saving:
-				output << "Writing       ";
+				output << "Writing";
 				break;
 			case running:
-				output << "Running       " << au::Format::time_string( difftime( time(NULL), time_init ) );
+				output << "Running " << au::Format::time_string( difftime( time(NULL), time_init ) );
 				break;
 			case finish:
-				output << "Finished      ";
+				output << "Finished";
 		}
 		
 		return output.str();

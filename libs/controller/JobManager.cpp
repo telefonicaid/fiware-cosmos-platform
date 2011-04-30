@@ -67,7 +67,7 @@ namespace ss {
 		if( task )
 			job = task->job;
 		
-		
+		// Add of Remove files independently of the type of message
 		if( task && job )
 		{
 			for (int f = 0 ; f < confirmationMessage->add_file_size() ; f++)
@@ -95,9 +95,7 @@ namespace ss {
 			
 		}
 		
-		
-		
-		switch (confirmationMessage->type()) 
+		switch ( confirmationMessage->type() ) 
 		{
 				
 			case network::WorkerTaskConfirmation::finish:
@@ -154,6 +152,10 @@ namespace ss {
 				break;
 			case network::WorkerTaskConfirmation::update:
 			{
+                if (task)
+                {
+                    task->update( confirmationMessage );
+                }
 				// Nothing in particular here
 			}
 				break;

@@ -10,7 +10,7 @@
 #include "engine/MemoryRequest.h"
 #include "engine/DiskOperation.h"
 #include "engine/ProcessItem.h"
-
+#include "coding.h"                         // KVInfo
 
 
 namespace ss
@@ -23,14 +23,14 @@ namespace ss
 	 ------------------------------------------------------------------------------------------------
 	 WorkerSubTask is a subclass describing a particular operation executed inside a WorkerTask
 		It could be a generator , map , reduce , organizer , parser , etc...
-		All the sub-tasks is the SAMSON ecosystem are divided in three steps:	
+		All the sub-tasks in SAMSON ecosystem are divided in three steps:	
      
 			- Memory request
 			- Read operations
 			- Process item
 	 
-		Rigth now, these three steps are executed sequentially. Three function return the necessitied 
-		for each particular subtask.
+		Rigth now, these three steps are executed sequentially and cannot be reverted: 
+        i.e. if memory is reserved, it cannot be discarted and start again...
 	 ------------------------------------------------------------------------------------------------
 	 */
 	
@@ -50,6 +50,8 @@ namespace ss
         
         // Error management
         au::Error error;
+        
+        KVInfo info;                    // Input data used in this task ( used to report progress to controller )
         
         typedef enum 
         {
@@ -174,7 +176,7 @@ namespace ss
          int hg_set;    // Identifier of the hash-group
          
 		 size_t memory_requested;
-
+         
 		 OperationSubTask( WorkerTask * task , int _hg_begin , int _hg_end  );
 		 
 		 ~OperationSubTask();

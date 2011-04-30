@@ -474,7 +474,31 @@ namespace ss
 			network->send(taskManager->worker, network->workerGetIdentifier(s) , p);
 		}
 	}	
+
+	void WorkerTask::sendUpdateMessageToController( KVInfo running_info , KVInfo processed_info )
+	{
+		NetworkInterface *network = taskManager->worker->network;
+		
+		Packet *p = new Packet( Message::WorkerTaskConfirmation );
+
+		network::WorkerTaskConfirmation *confirmation_message = p->message->mutable_worker_task_confirmation();
+        
+        confirmation_message->set_task_id( task_id );
+        
+        confirmation_message->set_type( network::WorkerTaskConfirmation::update );
+        
+        network::KVInfo * process = confirmation_message->mutable_progressprocessed();
+        process->set_size( processed_info.size );
+        process->set_kvs( processed_info.kvs );
+
+        network::KVInfo * running = confirmation_message->mutable_progressrunning();
+        running->set_size( running_info.size );
+        running->set_kvs( running_info.kvs );
+        
+		network->send( NULL, network->controllerGetIdentifier(), p);	
+    }	
 	
+    
 	void WorkerTask::sendFinishTaskMessageToController( )
 	{		
 		

@@ -250,6 +250,9 @@ message WorkerTaskConfirmation
 
 	optional string error_message 			= 7;    	// Message to debug the error ( only present if type == error )
 
+	optional KVInfo progressRunning			= 8;		// Amount of information that starts to be executed
+	optional KVInfo progressProcessed		= 9;		// Amount of information that has been processed
+
 }
 
 // ////////////////////////////////////////////////////////////////////////////

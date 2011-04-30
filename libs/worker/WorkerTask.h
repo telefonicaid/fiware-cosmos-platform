@@ -135,7 +135,6 @@ namespace ss {
 		
         // Set error
 		void setError(std::string _error_message);
-
 		
 		// Kill( from a message from the controller )
 		void kill();
@@ -180,6 +179,8 @@ namespace ss {
 		void sendCloseMessages();
 		void sendFinishTaskMessageToController( );		
 		void sendCompleteTaskMessageToController( );		
+    public:
+        void sendUpdateMessageToController( KVInfo running_info , KVInfo processed_info );
 
         
         
@@ -190,8 +191,6 @@ namespace ss {
 		// Internal function to verytfy the internal status of this task ( and change status if necessary )
 		void check();
 
-		
-		
 	};
 
 	

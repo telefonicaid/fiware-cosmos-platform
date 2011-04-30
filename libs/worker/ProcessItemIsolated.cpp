@@ -440,12 +440,14 @@ namespace ss
         // Read the response message
         ss::network::MessagePlatformProcess *response;
 
-        // If problems during read, abort
-        int read_ans = au::readGPB(pipeFdPair2[0], &response, 10);
+        // Read the answer from the platform
+        int read_ans = au::readGPB(pipeFdPair2[0], &response, -1);
 
         // If problems during read, die
         if( read_ans!=0)
         {
+            LM_W(("Background process did not receive an answer from message with code %d to the platform. Error code %d", 
+                    message->code(), read_ans));
             LM_T(LmtIsolated,("Error sending message from process to platform read-error %d", read_ans));
             if( isolated_process_as_tread )
                 return;

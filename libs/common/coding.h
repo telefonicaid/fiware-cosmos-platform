@@ -547,8 +547,8 @@ namespace ss {
 		int num_inputs;				// Number of input channels
 		int *num_input_files;		// Number of input files per input channels
 		int total_num_input_files;	// Total number of files
-		
-		size_t* size_of_hg;			// Vector with the total size per hash_group ( necessary when organizing reduce )
+
+		KVInfo *info_hg;            // Vector with the total info per hash_group ( necessary when organizing reduce );
 		
 		size_t total_size;
 		
@@ -572,7 +572,7 @@ namespace ss {
 			}
 			
 			// Size of each hash-group
-			size_of_hg = (size_t*) malloc(KVFILE_NUM_HASHGROUPS *sizeof(size_t));
+			info_hg = (KVInfo*) malloc( KVFILE_NUM_HASHGROUPS * sizeof(KVInfo) );
 			
 		}
 		
@@ -585,18 +585,18 @@ namespace ss {
 			total_size = 0;
 			for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
 			{
-				size_of_hg[hg] = 0;
+				info_hg[hg].clear();
 				for (int f = 0 ; f < total_num_input_files ; f++)
-					size_of_hg[hg] += file[f]->info[hg].size;
+					info_hg[hg].append( file[f]->info[hg] );
 				
-				total_size += size_of_hg[hg];
+				total_size += info_hg[hg].size;
 			}
 		}
 		
 		~ProcessAssistantSharedFileCollection()
 		{
 			free( num_input_files);
-			free( size_of_hg );
+			free( info_hg );
 			
 			for (size_t i = 0 ; i < file.size() ;i++)
 				delete file[i];

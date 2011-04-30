@@ -33,6 +33,16 @@ namespace ss {
 		
 		// Flag to indicate that we are not running
 		running = false;
+        
+        // Init the total amount of information to be process
+        if( info )
+        {
+            for ( size_t i = 0 ; i < info->input_queues.size() ; i++)
+            {
+                network::FullQueue * q = info->input_queues[i]; 
+                total_info.append( q->queue().info().size() , q->queue().info().kvs() );
+            }
+        }
 		
 	}
 	
@@ -41,7 +51,17 @@ namespace ss {
 		delete info;
 	}
 	
-	
+    void ControllerTask::update( network::WorkerTaskConfirmation* confirmationMessage )
+    {
+        // Update the internal state of this task
+        
+        if( confirmationMessage->has_progressprocessed() )
+            processed_info.append( confirmationMessage->progressprocessed().size() , confirmationMessage->progressprocessed().kvs() );
+
+        if( confirmationMessage->has_progressrunning() )
+            running_info.append( confirmationMessage->progressrunning().size() , confirmationMessage->progressrunning().kvs() );
+    }
+    
 	size_t ControllerTask::getId()
 	{
 		return id;
@@ -120,6 +140,31 @@ namespace ss {
 		
 	}
 	
+    
+    std::string ControllerTask::getStatus()
+    {
+        std::ostringstream o;
+        o << id << " (job: " << job->getId() << ") ";
+        
+        if( error )
+            o << "error";
+        else
+        {
+            if ( complete )
+                o << " completed";
+            else
+                if ( finish )
+                    o << " finished";
+                    else if( running )
+                    {
+                        o << " Workers:" << finished_workers << " / " << complete_workers << " / " << num_workers;
+                        o << " Progress: " << running_info.str() << " / " << processed_info.str() << " / " << total_info.str(); 
+                    }
+        }
+        
+        return o.str();
+    }
+
 	
 }
 

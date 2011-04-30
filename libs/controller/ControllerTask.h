@@ -13,6 +13,8 @@
 #include "samson.pb.h"						// ss::network::...
 #include "samson/Environment.h"				// ss::Environment
 #include "Job.h"							// ss::Job
+#include "coding.h"                         // KVInfo
+#include "samson.pb.h"                      // network::
 
 namespace ss {
 	
@@ -46,8 +48,11 @@ namespace ss {
 
 		friend class ControllerTaskManager;
 		friend class Job;
-		
         
+        // Information about progress
+        KVInfo total_info;                  // Total amount of information to be processed
+        KVInfo running_info;                // Total amount that started to run at some point ( accumulated )
+        KVInfo processed_info;               // Total amount that has been processed
         
 	public:
 		
@@ -58,6 +63,8 @@ namespace ss {
 		ControllerTask( size_t _id , Job *_job, ControllerTaskInfo *_info , int _total_workers );
 		~ControllerTask();
 		
+        void update( network::WorkerTaskConfirmation* confirmationMessage );
+        
 		size_t getId();
 		size_t getJobId();
 		
@@ -66,12 +73,7 @@ namespace ss {
 		
 		void fillInfo( network::WorkerTask *t , int workerIdentifier );		
 		
-		std::string getStatus()
-		{
-			std::ostringstream o;
-			o << "Id " << id << " F:" << finished_workers << " C:" << complete_workers << " T:" << num_workers;
-			return o.str();
-		}
+		std::string getStatus();
 		
 		int getNumUsedOutputs()
 		{

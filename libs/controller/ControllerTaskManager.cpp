@@ -128,14 +128,15 @@ namespace ss
 		NetworkInterface *network = jobManager->controller->network;
 		network->send(jobManager->controller,  network->workerGetIdentifier(workerIdentifier) ,  p2);
 	}
-	
+	    
+    
 	
 	std::string ControllerTaskManager::getStatus()
 	{
 		std::ostringstream output;
 		std::map< size_t , ControllerTask* >::iterator iter;
 		for( iter = task.begin() ; iter != task.end() ; iter++)
-			output << "[" << iter->second->getStatus() << "]";
+			output << "\n\t\t\t[" << iter->second->getStatus() << "]";
 		return output.str();
 	}
 	

@@ -124,7 +124,7 @@ namespace engine
         
     }
     
-    void Engine::notify( Notification*  notification )
+    void Engine::add( Notification*  notification )
     {
         if (engine)
         {
@@ -156,7 +156,7 @@ namespace engine
     
     
     
-    void Engine::notify( Notification*  notification , int seconds )
+    void Engine::add( Notification*  notification , int seconds )
     {
         if (engine)
             engine->add( new NotificationElement( notification, seconds ) );
@@ -168,7 +168,7 @@ namespace engine
         
     }
     
-    void Engine::add( std::string name , NotificationListener*listener)
+    void Engine::add( const char* name , NotificationListener*listener)
     {
         if( engine )
             engine->notificationSystem.add( name , listener );
@@ -231,7 +231,7 @@ namespace engine
 		t = pthread_self();	
 
 		// Repeated notification for not ending the loop of the engine
-		notify( new Notification( "endless loop notification" ) , 5 );
+		add( new Notification( "endless loop notification" ) , 5 );
 		
 		LM_T( LmtEngine , ("Engine run"));
 		flag_running =  true;

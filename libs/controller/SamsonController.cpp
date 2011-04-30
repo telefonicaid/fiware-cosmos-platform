@@ -65,13 +65,13 @@ namespace ss {
         {
             engine::Notification *notification = new engine::Notification( notification_monitorization );
             notification->environment.set("target", "SamsonController" );
-            engine::Engine::notify( notification , 5  );
+            engine::Engine::add( notification , 5  );
         }
 
         {
             engine::Notification * notification = new engine::Notification( notification_check_automatic_operations );
             notification->environment.set("target", "SamsonController" );
-            engine::Engine::notify( notification , 5  );
+            engine::Engine::add( notification , 5  );
         }
 		
 	}	

@@ -76,11 +76,11 @@ namespace engine
 		static void add( EngineElement *element );	
 
         // Methods to add notifications
-        static void notify( Notification*  notification );
-        static void notify( Notification*  notification , int seconds ); // Repeated notification
+        static void add( Notification*  notification );
+        static void add( Notification*  notification , int seconds ); // Repeated notification
 
         // Add and remove listeners
-        static void add( std::string name , NotificationListener*listener);
+        static void add( const char* name , NotificationListener*listener);
         static void remove( NotificationListener* listener );
 
         // Debug string

@@ -64,12 +64,11 @@ namespace engine
         if( ! notification->isName(notification_disk_operation_request) )
             LM_X(1,("DiskManager received a wrong notification"));
         
-        if ( !notification->object )
+        if ( !notification->containsObject() )
             LM_X(1,("DiskManager received a notification without object" ));
         
         // Get the objecy ( not leave in the vector since it would be automatically deleted by engine )
-        DiskOperation *diskOperation = (DiskOperation*) notification->object;
-        notification->object = NULL;
+        DiskOperation *diskOperation = (DiskOperation*) notification->extractObject();
         
         diskOperation->environment.copyFrom( &notification->environment );    // Copy all the environment variables for the notification comming back
         add( diskOperation );
@@ -100,7 +99,7 @@ namespace engine
 		// Add a notification for this operation ( removed when delegate is notified )
         Notification *notification = new Notification( notification_disk_operation_request_response , operation );
         notification->environment.copyFrom( &operation->environment );        // Recover the environment variables to identify this request
-        Engine::notify(notification);    
+        Engine::add(notification);    
 		
 		// Check if there are more operation to be executed
 		checkDiskOperations();

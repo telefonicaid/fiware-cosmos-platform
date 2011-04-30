@@ -7,14 +7,14 @@ namespace engine {
     
     
     // Simples constructor
-    Notification::Notification( std::string _name )
+    Notification::Notification( const char* _name )
     {
         name = _name;
         object = NULL;
     }
     
     // Constructor with one object
-    Notification::Notification( std::string _name , Object * _object )
+    Notification::Notification( const char* _name , Object * _object )
     {
         name = _name;
         object = _object;
@@ -22,12 +22,12 @@ namespace engine {
     
     std::string Notification::getDescription()
     {
-      return au::Format::string("[ Notification %s %s ]" , name.c_str(),  environment.getEnvironmentDescription().c_str() );
+      return au::Format::string("[ Notification %s %s ]" , name,  environment.getEnvironmentDescription().c_str() );
     }    
     
   std::string Notification::getShortDescription()
     {
-      return au::Format::string("[ Not: %s]" , name.c_str() );
+      return au::Format::string("[ Not: %s]" , name );
     }
 
     
@@ -42,4 +42,19 @@ namespace engine {
         }
     }
 
+    // Extract the object of this notification
+    Object* Notification::extractObject()
+    {
+        Object *tmp = object;
+        object = NULL;
+        return tmp;
+    }
+    
+    // Check if there is an object in this notification
+    bool Notification::containsObject()
+    {
+        return ( object != NULL );
+    }
+    
+    
 }

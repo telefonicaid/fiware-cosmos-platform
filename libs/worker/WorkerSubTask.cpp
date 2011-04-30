@@ -59,28 +59,26 @@ namespace ss
     {
         if( notification->isName(notification_memory_request_response) )
         {
-            if( !notification->object )
+            if( !notification->containsObject() )
                 LM_W(("Received a notification_memory_request_response without buffer"));
             else{
-                buffer = (engine::Buffer*) notification->object;
-                notification->object = NULL;   // To avoid other to use the same buffer accidentally
+                buffer = (engine::Buffer*) notification->extractObject();
                 run();
             }
         }
         else if ( notification->isName( notification_disk_operation_request_response ) )
         {
             
-            if( !notification->object )
+            if( !notification->containsObject() )
                 LM_W(("Received a notification_disk_operation_request_response without DiskOperation object"));
             else
             {
                 
-                engine::DiskOperation* operation = (engine::DiskOperation*)notification->object;
+                engine::DiskOperation* operation = (engine::DiskOperation*)notification->extractObject();
                 
                 // Copy the error ( if any )
                 error.set( &operation->error );
                 delete operation;
-                notification->object = NULL;   
                 
                 num_read_operations_confirmed++;
                 
@@ -91,18 +89,17 @@ namespace ss
         else if ( notification->isName(notification_process_request_response) )
         {
             
-            if( !notification->object )
+            if( !notification->containsObject() )
                 LM_W(("Received a notification_process_request_response without ProcessItem object"));
             else
             {
                 
-                engine::ProcessItem* item = (engine::ProcessItem*)notification->object;
+                engine::ProcessItem* item = (engine::ProcessItem*)notification->extractObject();
                 
                 // Copy the error ( if any )
                 error.set( &item->error );
                 
                 delete item;
-                notification->object = NULL;
                 
                 num_processes_confirmed++;
                 run();
@@ -126,7 +123,7 @@ namespace ss
             engine::Notification * notification  = new engine::Notification( notification_sub_task_finished );
             setNotificationCommandEnvironment(notification);
             notification->environment.set("target", "WorkerTask");      // Modify to "send" this notification to the worker task
-            engine::Engine::notify( notification );
+            engine::Engine::add( notification );
             return;
         }
         
@@ -182,7 +179,7 @@ namespace ss
                     engine::Notification * notification  = new engine::Notification( notification_sub_task_finished );
                     setNotificationCommandEnvironment(notification);
                     notification->environment.set("target", "WorkerTask");      // Modify to "send" this notification to the worker task
-                    engine::Engine::notify( notification );
+                    engine::Engine::add( notification );
                 }
                 break;
             }
@@ -232,7 +229,7 @@ namespace ss
         engine::Notification *memory_request = new engine::Notification( notification_memory_request );
         memory_request->environment.setSizeT( "size", size );
         setNotificationCommandEnvironment(memory_request);
-        engine::Engine::notify( memory_request );
+        engine::Engine::add( memory_request );
     }
     
     
@@ -244,7 +241,7 @@ namespace ss
         // Add the read operation to the Engine
         engine::Notification *notification = new engine::Notification( notification_disk_operation_request  , operation );
         setNotificationCommandEnvironment(notification);
-        engine::Engine::notify( notification );
+        engine::Engine::add( notification );
     }
     
     void WorkerSubTask::addProcess(  engine::ProcessItem* processItem )
@@ -255,7 +252,7 @@ namespace ss
         // Add the read operation to the Engine
         engine::Notification *notification = new engine::Notification( notification_process_request  , processItem );
         setNotificationCommandEnvironment(notification);
-        engine::Engine::notify( notification );
+        engine::Engine::add( notification );
         
     }
     

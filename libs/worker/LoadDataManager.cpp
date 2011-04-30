@@ -54,7 +54,7 @@ namespace ss
         notification->environment.set("target", "LoadDataManager");
         notification->environment.setSizeT("id", id);
         notification->environment.setInt("worker", dataManager->worker->network->getWorkerId());
-        engine::Engine::notify( notification);
+        engine::Engine::add( notification);
 	}
 
 	void UploadItem::sendResponse( bool error , std::string error_message )
@@ -122,7 +122,7 @@ namespace ss
         notification->environment.setInt("worker", dataManager->worker->network->getWorkerId());
         
         // add something here to identify as yours
-        engine::Engine::notify( notification);
+        engine::Engine::add( notification);
 	}
 	
 
@@ -223,11 +223,10 @@ namespace ss
         if( !notification->isName( notification_disk_operation_request_response ) )
             LM_X(1,("LoadDataManager received a wrong notification"));
         
-        if( !notification->object )
+        if( !notification->containsObject() )
             LM_X(1,("LoadDataManager received a notification_disk_operation_request_response with a wrong number of parameters"));
         
-        engine::DiskOperation *operation = (engine::DiskOperation*) notification->object;
-        notification->object = NULL;
+        engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
         
         size_t _id = notification->environment.getSizeT("id", 0);
         

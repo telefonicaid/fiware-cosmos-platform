@@ -1,11 +1,13 @@
 #ifndef _H_ENGINE_NOTIFICATION
 #define _H_ENGINE_NOTIFICATION
 
-#include "au/Environment.h"                // ss::Environment
-#include <set>                          // std::set
-#include "au/map.h"                     // au::map
-#include "au/Format.h"                     // au::Format
 #include <assert.h>
+#include <set>                          // std::set
+
+#include "au/Environment.h"             // ss::Environment
+#include "au/map.h"                     // au::map
+#include "au/Format.h"                  // au::Format
+
 #include "traceLevels.h"                // LmtEngine
 
 namespace engine
@@ -21,31 +23,45 @@ namespace engine
         virtual ~Object(){};      // Force virtual destrutor for correct release of memory at the end of the notification
     };
     
+    
+    /** 
+     Function to use when creating a map with const char* type for keys
+     */
+    
+    struct strCompare : public std::binary_function<const char*, const char*, bool> {
+    public:
+        bool operator() (const char* str1, const char* str2) const
+        { return std::strcmp(str1, str2) < 0; }
+    };
+    
+    /**
+     Main class for Notifications
+     */
+    
     class Notification
     {
-        std::string name;                       // Name of the notification
+        const char* name;                       // Name of the notification
+        Object* object;                         // Single object to be used as parameter
         
     public:
 
-        Object* object;                         // Single object to be used as parameter
         au::Environment environment;            // Dictionary of properties for maximum flexibility
         
-        
-        std::string getName()
+        const char* getName()
         {
             return name;
         }
         
-        bool isName( std::string _name)
+        bool isName( const char * _name )
         {
-            return (name == _name);
+            return strcmp( name , _name ) == 0;
         }
         
         // Simples constructor
-        Notification( std::string _name );
+        Notification( const char* _name );
         
         // Constructor with one object as "main"
-        Notification( std::string _name , Object * _object );
+        Notification( const char* _name , Object * _object );
         
         // Get a string for debug
         std::string getDescription();
@@ -53,6 +69,12 @@ namespace engine
         
         // Destroy pending objects ( not processed by any listener )
         void destroyObjects();
+
+        // Extract the object of this notification
+        Object* extractObject();
+
+        // Check if there is an object in this notification
+        bool containsObject();
         
     };
     
@@ -71,12 +93,6 @@ namespace engine
             return true;
         }
         
-        // Callback received when a notification is not received by anyone
-        virtual void calcelNotification( Notification * notification)
-        {
-            
-        }
-        
     };
     
     /**
@@ -86,11 +102,11 @@ namespace engine
     class NotificationListenerSet
     {
         std::set<NotificationListener*> listeners;
-        std::string name;
+        const char* name;   // Name of the notification we are listening
         
     public:
         
-        NotificationListenerSet( std::string _name )
+        NotificationListenerSet( const char* _name )
         {
             name = _name;
         }
@@ -120,7 +136,6 @@ namespace engine
 
             notification->destroyObjects();
             
-            
         }
         
     };
@@ -129,22 +144,28 @@ namespace engine
     class EngineNotificationSystem
     {
         // Map of deliveries per channel
-        au::map<std::string,NotificationListenerSet> listenersSets;
+        std::map< const char* , NotificationListenerSet* , strCompare > listenersSets;
         
     public:
         
         ~EngineNotificationSystem()
         {
+            
             // Destroy all the Enginedelivery elements ( delete is called for each one )
-            listenersSets.clearMap();
+            
+            std::map< const char* , NotificationListenerSet* , strCompare >::iterator iter;
+			for (iter = listenersSets.begin() ; iter != listenersSets.end() ; iter++)
+				delete iter->second;
+            listenersSets.clear();
+            
         }
         
-        void add( std::string name , NotificationListener* listener )
+        void add( const char* name , NotificationListener* listener )
         {
             get(name)->add( listener );
         }
         
-        void remove( std::string name , NotificationListener* listener )
+        void remove( const char* name , NotificationListener* listener )
         {
             get(name)->remove( listener );
         }
@@ -154,7 +175,9 @@ namespace engine
         {
             LM_T(LmtEngineNotification , ("Engine removing general listener %p", listener ));
             
-            for( au::map<std::string,NotificationListenerSet>::iterator d = listenersSets.begin() ; d != listenersSets.end() ; d++ )
+            std::map< const char* , NotificationListenerSet* , strCompare >::iterator d;
+            
+            for( d = listenersSets.begin() ; d != listenersSets.end() ; d++ )
                 d->second->remove( listener );
         }
         
@@ -166,13 +189,22 @@ namespace engine
         
     private:
         
-        NotificationListenerSet* get( std::string name )
+        NotificationListenerSet* get( const char* name )
         {
-            NotificationListenerSet* delivery = listenersSets.findInMap( name );
+            NotificationListenerSet* delivery;
+            
+            std::map< const char* , NotificationListenerSet* , strCompare >::iterator d;
+            d = listenersSets.find( name );
+            
+            if( d == listenersSets.end() )
+                delivery = NULL;
+            else
+                delivery = d->second;
+            
             if( !delivery )
             {
                 delivery = new NotificationListenerSet(name);
-                listenersSets.insertInMap(name, delivery);
+                listenersSets.insert( std::pair< const char* , NotificationListenerSet*>(name, delivery) );
             }
             return delivery;
         }

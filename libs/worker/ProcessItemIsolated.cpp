@@ -291,7 +291,7 @@ namespace ss
                     Packet * p = new Packet();
                     p->msgCode = Message::Trace;
                     p->message->mutable_trace()->CopyFrom( message->trace() );
-                    engine::Engine::notify( new engine::Notification( notification_samson_worker_send_trace , p ) );
+                    engine::Engine::add( new engine::Notification( notification_samson_worker_send_trace , p ) );
                     //LM_M(("Notifying a trace to the engine"));
                     
                     // Old trace system, tracing here... to be removed

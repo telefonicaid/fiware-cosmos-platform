@@ -49,7 +49,7 @@ namespace ss {
         engine::Engine::add( notification_delilah_automatic_update , this );
         
         // Emit a periodic notification
-        engine::Engine::notify( new engine::Notification( notification_delilah_automatic_update ) , 2 );
+        engine::Engine::add( new engine::Notification( notification_delilah_automatic_update ) , 2 );
         
     }
     

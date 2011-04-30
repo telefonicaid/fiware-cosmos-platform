@@ -166,15 +166,14 @@ namespace ss
         
         if( notification->isName(notification_disk_operation_request_response) )
         {
-            if( !notification->object )
+            if( !notification->containsObject() )
                 LM_X(1,("Error since WorkerTasks receive a notification_disk_operation_request_response without an object"));
             else
             {
                 
-                engine::DiskOperation *diskOperation =  (engine::DiskOperation*) notification->object;
+                engine::DiskOperation *diskOperation =  (engine::DiskOperation*) notification->extractObject();
                 diskOperation->destroyBuffer();
                 delete diskOperation;
-                notification->object = NULL;
                 
                 // Internal operations to process this finish
                 num_disk_operations--;
@@ -186,13 +185,12 @@ namespace ss
         {
             num_process_items--;
             
-            if ( !notification->object )
+            if ( !notification->containsObject() )
                 LM_W(("WorkerTask receive a notification_process_request_response without an object"));
             else
             {
                 
-                DataBufferProcessItem* tmp = (DataBufferProcessItem*) notification->object;
-                notification->object = NULL;   // Remove the object
+                DataBufferProcessItem* tmp = (DataBufferProcessItem*) notification->extractObject();
                 
                 // New file to be saved
                 std::string queue_name = tmp->bv->queue->name();
@@ -307,7 +305,7 @@ namespace ss
             engine::Notification *notification = new engine::Notification( notification_task_finished );
             notification->environment.setSizeT("task_id", task_id);
             notification->environment.setInt("worker", taskManager->worker->network->getWorkerId());
-            engine::Engine::notify(notification);
+            engine::Engine::add(notification);
         }
 		
 	}
@@ -627,7 +625,7 @@ namespace ss
         engine::Notification *notification = new engine::Notification( notification_disk_operation_request , operation );
         setNotificationCommonEnvironment( notification );
         num_disk_operations++;
-        engine::Engine::notify( notification );
+        engine::Engine::add( notification );
     }
 
     void WorkerTask::addProcessItem( engine::ProcessItem *item )
@@ -635,7 +633,7 @@ namespace ss
         engine::Notification *notification = new engine::Notification( notification_process_request , item );
         setNotificationCommonEnvironment( notification );
         num_process_items++;
-        engine::Engine::notify( notification );
+        engine::Engine::add( notification );
     }
     
     

@@ -61,7 +61,7 @@ namespace ss {
         engine::Notification *notification = new engine::Notification(notification_worker_update_files);
         notification->environment.set("target", "SamsonWorker");
         notification->environment.setInt("worker", network->getWorkerId() );
-        engine::Engine::notify( notification, 5 );
+        engine::Engine::add( notification, 5 );
         }
         
         // Notification to update state
@@ -69,7 +69,7 @@ namespace ss {
         engine::Notification *notification = new engine::Notification(notification_samson_worker_send_status_update);
         notification->environment.set("target", "SamsonWorker");
         notification->environment.setInt("worker", network->getWorkerId() );
-        engine::Engine::notify( notification, 3 );
+        engine::Engine::add( notification, 3 );
         }
         
         
@@ -242,7 +242,7 @@ namespace ss {
 			sendWorkerStatus();
         else if ( notification->isName(notification_samson_worker_send_trace))
         {
-            if ( !notification->object )
+            if ( !notification->containsObject() )
             {
                 LM_W(("SamsonWorker: Send trace without an object"));
                 return;
@@ -250,9 +250,8 @@ namespace ss {
             else
             {
                 //LM_M(("SamsonWorking sending a trace to all delilahs..."));
-                Packet *p = (Packet*) notification->object;
+                Packet *p = (Packet*) notification->extractObject();
                 network->delilahSend( this , p );
-                notification->object = NULL;
             }
         }
         else
@@ -378,7 +377,7 @@ namespace ss {
 			// Add a remove opertion to the engine
             engine::DiskOperation * operation =  engine::DiskOperation::newRemoveOperation(  SamsonSetup::dataFile(*f) );
             engine::Notification *notification = new engine::Notification( notification_disk_operation_request , operation );
-			engine::Engine::notify( notification );
+			engine::Engine::add( notification );
 		}
 		
 		

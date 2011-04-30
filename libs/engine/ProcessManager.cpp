@@ -66,11 +66,10 @@ namespace engine
 
         if( notification->isName( notification_process_request ) )                 
         {
-            if( !notification->object )
+            if( !notification->containsObject() )
                 LM_X(1,("ProcessManager received a notification_process_request without an object"));
             
-            ProcessItem *item = (ProcessItem*) notification->object;
-            notification->object=NULL; // Remove from the vector, it would be automatically deleted by engine
+            ProcessItem *item = (ProcessItem*) notification->extractObject();
             
             item->environment.copyFrom( &notification->environment );
             _addProcessItem( item );
@@ -80,9 +79,10 @@ namespace engine
         else if( notification->isName( notification_process_cancel ) )
         {
             // Cancel process
-            if( !notification->object )
+            if( !notification->containsObject() )
                 LM_X(1,("ProcessManager received a notification_process_cancel without an object"));
-            ProcessItem *item = (ProcessItem*) notification->object;
+            
+            ProcessItem *item = (ProcessItem*) notification->extractObject();
             
             if ( items.extractFromMap( item ) )
                 delete item;
@@ -90,7 +90,6 @@ namespace engine
             {
                 //item->cancel();
                 canceled_items.insert( item );
-                
             }
             else if ( halted_items.extractFromMap( item ) )
             {
@@ -123,7 +122,7 @@ namespace engine
         // Notify this using the notification
         Notification * notification = new Notification( notification_process_request_response , item );
         notification->environment.copyFrom( &item->environment );
-        Engine::notify( notification );
+        Engine::add( notification );
         
     }
     

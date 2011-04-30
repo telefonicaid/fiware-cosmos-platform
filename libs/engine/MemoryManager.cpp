@@ -158,7 +158,7 @@ namespace engine
 		checkMemoryRequests();
 		
 		// Check process halted in the Engine
-        Engine::notify( new Notification( notification_process_manager_check_background_process ) );
+        Engine::add( new Notification( notification_process_manager_check_background_process ) );
 		
 	}
 	
@@ -244,7 +244,7 @@ namespace engine
 				Buffer *buffer = _newBuffer("Buffer from request", r->size , Buffer::input);
                 Notification *notification  = new Notification( notification_memory_request_response , buffer  );
                 notification->environment.copyFrom( r );
-                Engine::notify(notification);
+                Engine::add(notification);
                 
                 delete r; // Remove the memory request ( only used internally )
 			}

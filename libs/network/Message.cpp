@@ -66,6 +66,7 @@ char* messageCode(MessageCode code)
 		case Reset:                            return (char*) "Reset";
 		case ProcessVectorGet:                 return (char*) "ProcessVectorGet";
         case Trace:                            return (char*) "Trace";
+        case Unknown:                          return (char*) "Unknown";
 	}
 
 	return (char*) "Unknown";

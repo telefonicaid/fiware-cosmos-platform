@@ -193,7 +193,7 @@ namespace ss {
 					
 					// Create packet for this output
 					
-					Packet *p = new Packet();
+					Packet *p = new Packet( Message::WorkerDataExchange );
 					p->buffer = buffer;
 					network::WorkerDataExchange *dataMessage =  p->message->mutable_data();
 					
@@ -204,7 +204,7 @@ namespace ss {
                     dataMessage->set_hg_set( hg_set );
                     dataMessage->set_finish( finish );
 					
-					network->send(NULL, network->workerGetIdentifier(s) , Message::WorkerDataExchange, p);
+					network->send(NULL, network->workerGetIdentifier(s) , p);
 					
 				}
 			}
@@ -257,7 +257,7 @@ namespace ss {
 			memcpy(buffer->getData(), data, *size);
 			buffer->setSize(*size);
 			
-			Packet *p = new Packet();
+			Packet *p = new Packet( Message::WorkerDataExchange );
 			p->buffer = buffer;
 			network::WorkerDataExchange *dataMessage =  p->message->mutable_data();
 			
@@ -268,7 +268,7 @@ namespace ss {
             dataMessage->set_hg_set( hg_set );
             dataMessage->set_finish( finish );
 			
-			network->send(NULL, network->getMyidentifier() , Message::WorkerDataExchange, p);
+			network->send(NULL, network->getMyidentifier() , p);
 		}
 		
 	}		

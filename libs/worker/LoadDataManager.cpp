@@ -60,7 +60,7 @@ namespace ss
 	void UploadItem::sendResponse( bool error , std::string error_message )
 	{
 		// Sen a packet bak to delilah to confirm this update
-		Packet *p = new Packet();
+		Packet *p = new Packet( Message::UploadDataFileResponse );
 		network::UploadDataFileResponse *response = p->message->mutable_upload_data_file_response();
 
 		// Copy the original message
@@ -83,7 +83,7 @@ namespace ss
 
 		// Send the message to delilah
 		NetworkInterface *network = dataManager->worker->network;
-		network->send( dataManager->worker , fromIdentifier , Message::UploadDataFileResponse , p);
+		network->send( dataManager->worker , fromIdentifier  , p);
 	}
 	
 	
@@ -129,7 +129,7 @@ namespace ss
 	void DownloadItem::sendResponse( bool error , std::string error_message )
 	{
 		// Sen a packet bak to delilah to confirm this update
-		Packet *p = new Packet();
+		Packet *p = new Packet( Message::DownloadDataFileResponse );
 		network::DownloadDataFileResponse *response = p->message->mutable_download_data_file_response();
 
 		// Copy the original message
@@ -148,7 +148,7 @@ namespace ss
 		// Send the message
 		
 		NetworkInterface *network = dataManager->worker->network;
-		network->send( dataManager->worker , fromIdentifier , Message::DownloadDataFileResponse , p);
+		network->send( dataManager->worker , fromIdentifier  , p);
 	}	
 	
 #pragma mark LoadDataManager

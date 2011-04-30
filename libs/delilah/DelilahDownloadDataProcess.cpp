@@ -60,11 +60,11 @@ namespace ss {
 		status = waiting_controller_init_response;
 		
 		// Send the message to the controller
-		Packet *p = new Packet();
+		Packet *p = new Packet(Message::DownloadDataInit);
 		p->message->set_delilah_id( id );
 		ss::network::DownloadDataInit *download_data_init = p->message->mutable_download_data_init();
 		download_data_init->set_queue( queue );	// Set the queue we want to download
-		delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::DownloadDataInit, p);
+		delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), p);
 		
 		// Init the thread to process data in background
 		pthread_create(&t, 0, runDelilahDownloadDataProcessThread, this);
@@ -106,7 +106,7 @@ namespace ss {
             
 			for ( int i = 0 ; i < download_data_init_response->queue().file_size() ; i++)
 			{
-				Packet *p = new Packet();
+				Packet *p = new Packet( Message::DownloadDataFile);
 				p->message->set_delilah_id( id );
 				ss::network::DownloadDataFile *download_data_file = p->message->mutable_download_data_file();
 
@@ -119,7 +119,7 @@ namespace ss {
 				// Send to the rigth worker
 				int worker = download_data_init_response->queue().file(i).worker();
                 
-				delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker) , Message::DownloadDataFile, p);
+				delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker) , p);
                 
                 offset_per_file.push_back( offset );
                 offset += download_data_init_response->queue().file(i).info().size();

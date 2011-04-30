@@ -907,11 +907,14 @@ static void* senderThread(void* vP)
 *
 * send - 
 */
-size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Message::MessageCode code, Packet* packetP)
+size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Packet* packetP)
 {
 	Endpoint* ep        = endpoint[endpointId];
 	int       nb;
 
+    
+    Message::MessageCode code = packetP->msgCode;
+    
 	if (packetP != NULL)
 		LM_T(LmtSend, ("Request to send '%s' package with %d packet size (to endpoint '%s')", messageCode(code), packetP->message->ByteSize(), ep->name.c_str()));
 	else
@@ -2795,13 +2798,12 @@ void Network::msgTreat(void* vP)
 
 	char*                 name         = (char*) ep->name.c_str();
 	Packet                *packet;
-	Packet                ack;
 	Message::MessageCode  msgCode;
 	Message::MessageType  msgType;
 	int                   s;
 
 	// New packet with the incoming data
-	packet = new Packet();
+	packet = new Packet( Message::Unknown );
 	
 	LM_T(LmtRead, ("treating incoming message from '%s' (ep at %p) (dataLens: %d, %d, %d)", name, ep, headerP->dataLen, headerP->gbufLen, headerP->kvDataLen));
 	s = iomMsgRead(ep, headerP, &msgCode, &msgType, &dataP, &dataLen, packet, NULL, 0);
@@ -3593,7 +3595,7 @@ void Network::delilahSend(PacketSenderInterface* packetSender, Packet* packetP)
 			continue;
 
         LM_M(("Sending message to a delilah %d", ix ));
-		sz = _send(packetSender, ix, packetP->msgCode, new Packet(packetP));
+		sz = _send(packetSender, ix, new Packet(packetP));
 		if (sz != 0)
 			LM_E(("Error sending a packet to %s@%s", ep->name.c_str(), ep->ip));
 	}

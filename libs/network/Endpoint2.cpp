@@ -705,7 +705,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	Message::Header      header;
 	void*                dataP    = NULL;
 	int                  dataLen  = 0;
-	Packet               packet;
+	Packet               packet(Message::Unknown);
 	Endpoint2::Status    s;
 
 	if (type == Listener)

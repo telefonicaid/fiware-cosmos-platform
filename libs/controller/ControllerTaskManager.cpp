@@ -113,7 +113,7 @@ namespace ss
 	void ControllerTaskManager::sendWorkerTask(int workerIdentifier, ControllerTask *task  )
 	{
 		// Get status of controller
-		Packet *p2 = new Packet();
+		Packet *p2 = new Packet( Message::WorkerTask );
 		
 		network::WorkerTask *t = p2->message->mutable_worker_task();
 		
@@ -126,7 +126,7 @@ namespace ss
 		t->set_generator( task->generator == workerIdentifier );	
 		
 		NetworkInterface *network = jobManager->controller->network;
-		network->send(jobManager->controller,  network->workerGetIdentifier(workerIdentifier) , Message::WorkerTask,  p2);
+		network->send(jobManager->controller,  network->workerGetIdentifier(workerIdentifier) ,  p2);
 	}
 	
 	

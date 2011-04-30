@@ -91,7 +91,7 @@ namespace ss {
 	{
 		// Send the message with the command
 		// Send the packet to create a job
-		Packet*           p = new Packet();
+		Packet*           p = new Packet( Message::Command );
 		network::Command* c = p->message->mutable_command();
 		c->set_command( command );
 		p->message->set_delilah_id( id );
@@ -130,7 +130,7 @@ namespace ss {
         }
         
 		copyEnviroment( &e , c->mutable_environment() );
-		delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::Command, p);
+		delilah->network->send(delilah, delilah->network->controllerGetIdentifier() , p);
 		
 	}		
 	

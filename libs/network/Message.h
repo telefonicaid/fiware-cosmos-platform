@@ -75,7 +75,8 @@ typedef enum MessageCode
 	EntireOldLogFile                = CODE('O', 'L', 'F', ' '),
 	Reset                           = CODE('R', 's', 't', ' '),
 	ProcessVectorGet                = CODE('P', 'V', 'G', ' '),
-    Trace                           = CODE('T', 'r', 'a', ' ')
+    Trace                           = CODE('T', 'r', 'a', ' '),
+    Unknown                         = CODE('U', 'n', 'k', ' ')
 } MessageCode;
 
 

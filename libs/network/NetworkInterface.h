@@ -187,14 +187,14 @@ public:
 	void runInBackground();
 		
 	// Send a packet (return a unique id to inform the notifier later)
-	size_t send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP );
+	size_t send(PacketSenderInterface* sender, int endpointId, Packet* packetP );
 		
 	virtual bool isConnected(unsigned int identifier) { return true; };
     virtual void delilahSend(PacketSenderInterface* packetSender, Packet* packetP)=0;
     
 protected:
 	
-	virtual size_t _send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP ) = 0;
+	virtual size_t _send(PacketSenderInterface* sender, int endpointId, Packet* packetP ) = 0;
 	
 };
 

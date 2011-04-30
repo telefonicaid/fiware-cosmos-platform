@@ -53,13 +53,13 @@ void NetworkInterface::runInBackground(void)
 *
 * send - send a packet (return a unique id to inform the notifier later)
 */
-size_t NetworkInterface::send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP )
+size_t NetworkInterface::send(PacketSenderInterface* sender, int endpointId, Packet* packetP )
 {
 	lock_send.lock();
 
-	LM_T(LmtNetworkInterface, ("NETWORK INTERFACE Send packet type %s",messageCode(code)));
+	LM_T(LmtNetworkInterface, ("NETWORK INTERFACE Send packet type %s",messageCode(packetP->msgCode)));
 
-	size_t id = _send( sender , endpointId , code , packetP );
+	size_t id = _send( sender , endpointId , packetP );
 	
 	lock_send.unlock();
 	

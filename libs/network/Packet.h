@@ -22,34 +22,6 @@ namespace ss {
 	
 	class Endpoint;
 
-	// This has been removed for simplicity. Files are now uploaded with a particular extension to indicate the compression mode
-	
-	/*
-	typedef struct 
-	{
-		int compressed;			// Information about the compression format ( 0 not compressed , 1 gzip compression )
-		size_t original_size;	// Size of the original buffer
-		size_t compressed_size;	// Size of the compressed version of the buffer
-		int magic_number;		// Magic number to check everything is correct
-		
-		
-		void init( int _compressed )
-		{
-			compressed = _compressed;
-			original_size = 0;
-			compressed_size = 0;
-			magic_number = 8345762;
-		}
-		
-		bool check( )
-		{
-			return (magic_number == 8345762);
-		}
-		
-	} BufferHeader;
-	*/
-	 
-	 
 	/** 
 	 Unique packet type sent over the network between controller, samson and delilah
 	 */
@@ -63,8 +35,9 @@ namespace ss {
 		network::Message *message;		// Message with necessary fields ( codified with Google Protocol Buffers )
 		engine::Buffer* buffer;			// Data for key-values
 		
-		Packet() 
+		Packet( Message::MessageCode _msgCode ) 
 		{
+            msgCode = _msgCode;
 			buffer = NULL;
 			message = new network::Message();
 		};
@@ -72,6 +45,9 @@ namespace ss {
         
 		Packet( Packet * p ) 
 		{
+            // Copy the message type
+            msgCode = p->msgCode;
+            
             // Copy the buffer ( if any )
             if( p->buffer )
             {
@@ -91,6 +67,7 @@ namespace ss {
         
 		~Packet()
 		{
+            // Note: Not remove buffer since it can be used outside the scope of this packet
 			delete message;
 		}
 		

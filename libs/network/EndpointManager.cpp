@@ -520,7 +520,7 @@ void EndpointManager::setupAwait(void)
 		int                   dataLen = 0;
 		void*                 dataP   = NULL;
 		Message::HelloData*   helloP;
-		Packet                packet;
+		Packet                packet(Message::Unknown);
 
 
 		// Await FOREVER for an incoming connection

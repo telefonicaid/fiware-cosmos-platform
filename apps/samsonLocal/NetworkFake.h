@@ -49,7 +49,7 @@ namespace ss {
 		
 		
 		// Send a packet (return a unique id to inform the notifier later)
-		size_t _send(PacketSenderInterface* sender, int endpointId, ss::Message::MessageCode code, Packet* packetP = NULL);
+		size_t _send(PacketSenderInterface* sender, int endpointId, Packet* packetP = NULL);
 		
 		// Main run loop control to the network interface
 		virtual void run();           

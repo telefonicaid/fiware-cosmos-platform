@@ -83,12 +83,12 @@ namespace ss {
 	
 	void SamsonWorker::sendFilesMessage()
 	{        
-		Packet*           p = new Packet();
+		Packet*           p = new Packet(Message::Command);
 		network::Command* c = p->message->mutable_command();
 		c->set_command( "ls" );
 		p->message->set_delilah_id( 0 ); // At the moment no sence at the controller
 		//copyEnviroment( &environment , c->mutable_environment() );
-		network->send(this, network->controllerGetIdentifier(), Message::Command, p);
+		network->send(this, network->controllerGetIdentifier(), p);
 	}
 	
 	
@@ -98,7 +98,7 @@ namespace ss {
 	 */
 	void SamsonWorker::sendWorkerStatus(void)
 	{
-		Packet*                  p  = new Packet();
+		Packet*                  p  = new Packet( Message::WorkerStatus );
 		network::WorkerStatus*   ws = p->message->mutable_worker_status();
 		
 		// Fill to all data related with task manager
@@ -139,7 +139,7 @@ namespace ss {
         ws->set_disk_pending_operations(engine::DiskManager::getNumOperations());
 
         // Send the message    
-		network->send(this, network->controllerGetIdentifier(), Message::WorkerStatus, p);
+		network->send(this, network->controllerGetIdentifier(), p);
         
 	}
 	

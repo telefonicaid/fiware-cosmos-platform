@@ -177,7 +177,7 @@ namespace ss {
 					data.cancelTask(task_id, "Queue does not exist");
 					
 					// Response message informing about the name of new files
-					Packet *p = new Packet();
+					Packet *p = new Packet(Message::DownloadDataInitResponse);
 					network::DownloadDataInitResponse * download_data_init_response = p->message->mutable_download_data_init_response();
 					download_data_init_response->mutable_query()->CopyFrom( packet->message->download_data_init() );
 					
@@ -188,14 +188,14 @@ namespace ss {
 					p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 					
 					// Send the message back to delilah
-					network->send(this, fromId, Message::DownloadDataInitResponse, p);
+					network->send(this, fromId, p);
 					
 				}
 				else
 				{
 					
 					// Response message informing about the load_id ( necessary to download files )
-					Packet *p = new Packet();
+					Packet *p = new Packet(Message::DownloadDataInitResponse);
 					
 					network::DownloadDataInitResponse * download_data_init_response = p->message->mutable_download_data_init_response();
 					download_data_init_response->mutable_query()->CopyFrom( packet->message->download_data_init() );
@@ -211,7 +211,7 @@ namespace ss {
 					p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 					
 					// Send the message back to delilah
-					network->send(this, fromId, Message::DownloadDataInitResponse, p);
+					network->send(this, fromId, p);
 				}
 				
 			}
@@ -249,7 +249,7 @@ namespace ss {
 					data.cancelTask(task_id, "Queue does not exist");
 					
 					// Response message informing about the name of new files
-					Packet *p = new Packet();
+					Packet *p = new Packet(Message::UploadDataInitResponse);
 					network::UploadDataInitResponse * upload_data_init_response = p->message->mutable_upload_data_init_response();
 					upload_data_init_response->mutable_query()->CopyFrom( packet->message->upload_data_init() );
 
@@ -260,7 +260,7 @@ namespace ss {
 					p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 					
 					// Send the message back to delilah
-					network->send(this, fromId, Message::UploadDataInitResponse, p);
+					network->send(this, fromId, p);
 					
 					
 				}
@@ -271,7 +271,7 @@ namespace ss {
 					loadManager.addUpload( task_id );
 					
 					// Response message informing about the load_id ( necessary to upload files )
-					Packet *p = new Packet();
+					Packet *p = new Packet(Message::UploadDataInitResponse);
 					network::UploadDataInitResponse * upload_data_init_response = p->message->mutable_upload_data_init_response();
 					upload_data_init_response->mutable_query()->CopyFrom( packet->message->upload_data_init() );
 					upload_data_init_response->set_load_id( task_id );
@@ -280,7 +280,7 @@ namespace ss {
 					p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 					
 					// Send the message back to delilah
-					network->send(this, fromId, Message::UploadDataInitResponse, p);
+					network->send(this, fromId, p);
 				}
 				
 			}
@@ -330,7 +330,7 @@ namespace ss {
 				}
 					
 				// A message is always sent back to delilah to confirm changes
-				Packet *p = new Packet();
+				Packet *p = new Packet(Message::UploadDataFinishResponse);
 				network::UploadDataFinishResponse * upload_data_finish_response = p->message->mutable_upload_data_finish_response();
                 upload_data_finish_response->mutable_query()->CopyFrom(upload_data_finish);
 				if( error.isActivated() )
@@ -338,7 +338,7 @@ namespace ss {
 				
 				p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 				
-				network->send(this, fromId, Message::UploadDataFinishResponse, p);
+				network->send(this, fromId, p);
 			}
 			break;
 				
@@ -359,7 +359,7 @@ namespace ss {
 				{
 					// Send a message with the list of queues
 					
-					Packet *p2 = new Packet();
+					Packet *p2 = new Packet(Message::CommandResponse);
 					network::CommandResponse *response = p2->message->mutable_command_response();
                     response->set_finish_command(true);
 					response->set_command( command );
@@ -371,7 +371,7 @@ namespace ss {
 					// Complement with information about active upload-download operations
 					loadManager.fill( ql );
 					
-					network->send(this, fromId, Message::CommandResponse, p2);
+					network->send(this, fromId,  p2);
 					
 					return;
 				}
@@ -380,13 +380,13 @@ namespace ss {
 				{
 					// Send a message with the list of queues
 					
-					Packet *p2 = new Packet();
+					Packet *p2 = new Packet(Message::CommandResponse);
 					network::CommandResponse *response = p2->message->mutable_command_response();
                     response->set_finish_command(true);
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					data.fill( response->mutable_automatic_operation_list() , command );
-					network->send(this, fromId, Message::CommandResponse, p2);
+					network->send(this, fromId, p2);
 					
 					return;
 				}
@@ -396,13 +396,13 @@ namespace ss {
 				{
 					// Send a message with the list of datas
 					
-					Packet *p2 = new Packet();
+					Packet *p2 = new Packet(Message::CommandResponse);
 					network::CommandResponse *response = p2->message->mutable_command_response();
                     response->set_finish_command(true);
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					ModulesManager::shared()->fill( response->mutable_data_list() , command );
-					network->send(this, fromId, Message::CommandResponse, p2);
+					network->send(this, fromId, p2);
 					
 					return;
 				}
@@ -411,13 +411,13 @@ namespace ss {
 				{
 					// Send a message with the list of operations
 					
-					Packet *p2 = new Packet();
+					Packet *p2 = new Packet(Message::CommandResponse);
 					network::CommandResponse *response = p2->message->mutable_command_response();
                     response->set_finish_command(true);
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					ModulesManager::shared()->fill( response->mutable_operation_list() , command );
-					network->send(this, fromId, Message::CommandResponse, p2);
+					network->send(this, fromId, p2);
 					
 					return;
 				}
@@ -426,13 +426,13 @@ namespace ss {
 				{
 					// Send a message with the list of jobs
 					
-					Packet *p2 = new Packet();
+					Packet *p2 = new Packet(Message::CommandResponse);
 					network::CommandResponse *response = p2->message->mutable_command_response();
                     response->set_finish_command(true);
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					jobManager.fill( response->mutable_job_list() , command );
-					network->send(this, fromId, Message::CommandResponse, p2);
+					network->send(this, fromId, p2);
 					
 					return;
 				}
@@ -449,12 +449,12 @@ namespace ss {
 						
 						// Send a message to delilah to confirm this operation ?
 						
-						Packet *p2 = new Packet();
+						Packet *p2 = new Packet(Message::CommandResponse);
 						network::CommandResponse *response = p2->message->mutable_command_response();;
 						response->set_command( command );
                         response->set_finish_command(true);
 						p2->message->set_delilah_id( packet->message->delilah_id() );
-						network->send(this, fromId, Message::CommandResponse, p2);
+						network->send(this, fromId, p2);
 						 
 
 					}
@@ -466,7 +466,7 @@ namespace ss {
 				{
 					// Send a message with the list of jobs
 					
-					Packet *p2 = new Packet();
+					Packet *p2 = new Packet(Message::CommandResponse);
 					network::CommandResponse *response = p2->message->mutable_command_response();
                     response->set_finish_command(true);
 					response->set_command( command );
@@ -486,7 +486,7 @@ namespace ss {
 					
 					fill( samsonStatus->mutable_controller_status() );
 					
-					network->send(this, fromId, Message::CommandResponse, p2);
+					network->send(this, fromId, p2);
 					
 					return;
 				}
@@ -497,12 +497,12 @@ namespace ss {
 					jobManager.removeAllFinishJobs();
 
 					
-                    Packet *p2 = new Packet();
+                    Packet *p2 = new Packet( Message::CommandResponse);
                     network::CommandResponse *response = p2->message->mutable_command_response();;
                     response->set_command( command );
                     response->set_finish_command(true);
                     p2->message->set_delilah_id( packet->message->delilah_id() );
-                    network->send(this, fromId, Message::CommandResponse, p2);
+                    network->send(this, fromId, p2);
                     
                     return;
 				}
@@ -516,21 +516,21 @@ namespace ss {
 					// Send a message to each worker to also reload modules
 					for (int i = 0 ; i < num_workers ; i++)
 					{
-						Packet *p = new Packet();
+						Packet *p = new Packet(Message::WorkerTask);
 						network::WorkerTask* wt=  p->message->mutable_worker_task();
 						wt->set_operation( "reload_modules" );	// Spetial operation to reload modules
 
                         wt->set_task_id(0); // Special case for reload operation
                         
-						network->send(this,  network->workerGetIdentifier(i) , Message::WorkerTask,  p);
+						network->send(this,  network->workerGetIdentifier(i) ,  p);
 					}
 
-                    Packet *p2 = new Packet();
+                    Packet *p2 = new Packet(Message::CommandResponse);
                     network::CommandResponse *response = p2->message->mutable_command_response();;
                     response->set_command( command );
                     response->set_finish_command(true);
                     p2->message->set_delilah_id( packet->message->delilah_id() );
-                    network->send(this, fromId, Message::CommandResponse, p2);
+                    network->send(this, fromId, p2);
 					
 					
 					return;

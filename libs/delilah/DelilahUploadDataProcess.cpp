@@ -93,12 +93,12 @@ namespace ss
 		status = waiting_controller_init_response;
 		
 		// Send the message to the controller
-		Packet *p = new Packet();
+		Packet *p = new Packet(Message::UploadDataInit);
 		
 		p->message->set_delilah_id( id );
 		ss::network::UploadDataInit *upload_data_init = p->message->mutable_upload_data_init();
 		upload_data_init->set_queue( queue );
-		delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::UploadDataInit, p);
+		delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), p);
 		
 		
 		// Set the number of workers
@@ -152,7 +152,7 @@ namespace ss
 			}
 			
 			// Send to the rigth worker
-			Packet *p = new Packet();
+			Packet *p = new Packet(Message::UploadDataFile);
 			p->buffer = b;	// Add the buffer to the packet
 
 			// Set message fields
@@ -239,7 +239,7 @@ namespace ss
 			pd->delilah->showTrace( message.str() );
 		}
 		
-		pd->delilah->network->send(pd->delilah, pd->delilah->network->workerGetIdentifier(pd->worker), Message::UploadDataFile, pd->p);
+		pd->delilah->network->send(pd->delilah, pd->delilah->network->workerGetIdentifier(pd->worker), pd->p);
 		
 		// Free allocated input parameter
 		free( p );
@@ -330,7 +330,7 @@ namespace ss
 					status = waiting_controller_finish_response;
 					
 					// Send the final packet to the controller notifying about the loading process
-					Packet *p = new Packet();
+					Packet *p = new Packet( Message::UploadDataFinish );
 					network::UploadDataFinish *_upload_data_finish	= p->message->mutable_upload_data_finish();
 					_upload_data_finish->CopyFrom( *upload_data_finish );
 
@@ -339,7 +339,7 @@ namespace ss
 
 					// Set the final files used in this upload ( usign information from the initial message )
 					
-					delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), Message::UploadDataFinish, p);
+					delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), p);
 				}
 
 			

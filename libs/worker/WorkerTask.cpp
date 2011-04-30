@@ -468,10 +468,10 @@ namespace ss
 		
 		for (int s = 0 ; s < num_workers ; s++)
 		{				
-			Packet *p = new Packet();
+			Packet *p = new Packet( Message::WorkerDataExchangeClose );
 			network::WorkerDataExchangeClose *dataMessage =  p->message->mutable_data_close();
 			dataMessage->set_task_id(task_id);
-			network->send(taskManager->worker, network->workerGetIdentifier(s) , Message::WorkerDataExchangeClose, p);
+			network->send(taskManager->worker, network->workerGetIdentifier(s) , p);
 		}
 	}	
 	
@@ -480,7 +480,7 @@ namespace ss
 		
 		NetworkInterface *network = taskManager->worker->network;
 		
-		Packet *p = new Packet();
+		Packet *p = new Packet( Message::WorkerTaskConfirmation );
 		network::WorkerTaskConfirmation *finish_message = p->message->mutable_worker_task_confirmation();
         
         finish_message->set_task_id( task_id );
@@ -498,7 +498,7 @@ namespace ss
 		else
 			finish_message->set_type( network::WorkerTaskConfirmation::finish );
         
-		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
+		network->send( NULL, network->controllerGetIdentifier(), p);
 		
 	}	
 	
@@ -506,7 +506,7 @@ namespace ss
 	{	
 		NetworkInterface *network = taskManager->worker->network;
 		
-		Packet *p = new Packet();
+		Packet *p = new Packet(Message::WorkerTaskConfirmation);
 		network::WorkerTaskConfirmation *confirmation = p->message->mutable_worker_task_confirmation();
 
 		// Copy all the information from the prepared message
@@ -522,7 +522,7 @@ namespace ss
 			confirmation->set_type( network::WorkerTaskConfirmation::complete );
 		}
 		
-		network->send( NULL, network->controllerGetIdentifier(), Message::WorkerTaskConfirmation, p);
+		network->send( NULL, network->controllerGetIdentifier(), p);
 	}
 	
 		

@@ -72,32 +72,32 @@ namespace ss {
             
             {
 				// Message to update the local list of queues
-				Packet*           p = new Packet();
+				Packet*           p = new Packet(Message::Command);
 				network::Command* c = p->message->mutable_command();
 				c->set_command( "ls -global_update" );
 				p->message->set_delilah_id( 1 );    // Spetial id for global update
 				//copyEnviroment( &environment , c->mutable_environment() );
-				network->send(this, network->controllerGetIdentifier(), Message::Command, p);
+				network->send(this, network->controllerGetIdentifier(), p);
             }
             
             {
 				// Message to update the local list of operations
-				Packet*           p = new Packet();
+				Packet*           p = new Packet(Message::Command);
 				network::Command* c = p->message->mutable_command();
 				c->set_command( "o -global_update" );
 				p->message->set_delilah_id( 1 );    // Spetial id for global update
 				//copyEnviroment( &environment , c->mutable_environment() );
-				network->send(this, network->controllerGetIdentifier(), Message::Command, p);
+				network->send(this, network->controllerGetIdentifier(), p);
             }	
             
             {
                 // Message to update the worker status list
-                Packet*           p = new Packet();
+                Packet*           p = new Packet(Message::Command);
                 network::Command* c = p->message->mutable_command();
                 c->set_command( "w -global_update" );
                 p->message->set_delilah_id( 1 );    // Spetial id for global update
                 //copyEnviroment( &environment , c->mutable_environment() );
-                network->send(this, network->controllerGetIdentifier(), Message::Command, p);
+                network->send(this, network->controllerGetIdentifier(), p);
             }	
             
         }

@@ -376,7 +376,7 @@ namespace ss {
 		{
 			// Send a packet to delilah
 			
-			Packet *p2 = new Packet();
+			Packet *p2 = new Packet( Message::CommandResponse );
 			
 			network::CommandResponse *response = p2->message->mutable_command_response();
 			response->set_command(mainCommand);
@@ -398,7 +398,7 @@ namespace ss {
 			// global sender id of delilah
 			p2->message->set_delilah_id( sender_id );
 			
-			jobManager->controller->network->send(jobManager->controller, fromIdentifier, Message::CommandResponse, p2);
+			jobManager->controller->network->send(jobManager->controller, fromIdentifier, p2);
 		}
 	}
 	
@@ -487,10 +487,10 @@ namespace ss {
 		for ( std::set<size_t>::iterator t =  all_tasks.begin() ; t != all_tasks.end() ; t++)
 			for (int i = 0 ; i < jobManager->controller->num_workers ; i++ )
 			{
-				Packet *p = new Packet();
+				Packet *p = new Packet( Message::WorkerTaskKill );
 				p->message->mutable_worker_task_kill()->set_task_id( *t );
 				NetworkInterface *network = jobManager->controller->network;
-				network->send(jobManager->controller, network->workerGetIdentifier(i), Message::WorkerTaskKill, p);
+				network->send(jobManager->controller, network->workerGetIdentifier(i), p);
 				
 			}
 

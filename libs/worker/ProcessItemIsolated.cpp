@@ -288,8 +288,7 @@ namespace ss
                      */
                     
 
-                    Packet * p = new Packet();
-                    p->msgCode = Message::Trace;
+                    Packet * p = new Packet( Message::Trace );
                     p->message->mutable_trace()->CopyFrom( message->trace() );
                     engine::Engine::add( new engine::Notification( notification_samson_worker_send_trace , p ) );
                     //LM_M(("Notifying a trace to the engine"));

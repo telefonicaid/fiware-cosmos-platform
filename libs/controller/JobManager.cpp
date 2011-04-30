@@ -16,12 +16,12 @@ namespace ss {
 		if( fromId != -1 )
 		{			
 			// Send a message to delilah to confirm this new job
-			Packet *p2 = new Packet();
+			Packet *p2 = new Packet(Message::CommandResponse);
 			network::CommandResponse *response = p2->message->mutable_command_response();
 			response->set_command(command.command());
 			response->set_new_job_id( job_id );
 			p2->message->set_delilah_id( sender_id );
-			controller->network->send(controller, fromId, Message::CommandResponse, p2);
+			controller->network->send(controller, fromId, p2);
 		}
 		
 		// Create the job itself
@@ -124,7 +124,7 @@ namespace ss {
 					//job->setError("Worker", confirmationMessage->error_message());
 					task->notifyWorkerFinished( );		
 					
-					if ( task->finish );
+					if ( task->finish )
 					{
 						std::ostringstream str_error;
 						str_error << "[W:" << worker_id << "] ";

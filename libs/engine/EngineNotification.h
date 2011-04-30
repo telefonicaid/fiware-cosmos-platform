@@ -3,6 +3,8 @@
 
 #include <assert.h>
 #include <set>                          // std::set
+#include <functional>
+#include <cstring>
 
 #include "au/Environment.h"             // ss::Environment
 #include "au/map.h"                     // au::map

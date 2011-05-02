@@ -907,6 +907,18 @@ static void* senderThread(void* vP)
 *
 * send - 
 */
+    size_t Network::send(PacketSenderInterface* packetSender, int endpointId, Packet* packetP)
+    {
+        writeSem.lock();
+        
+        size_t r = _send( packetSender , endpointId , packetP );
+        
+        writeSem.unlock();
+        
+        return r;
+    }
+
+    
 size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Packet* packetP)
 {
 	Endpoint* ep        = endpoint[endpointId];
@@ -957,9 +969,10 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Packe
 		jobP->network = this;
 
 		LM_T(LmtJob, ("pushing a job for endpoint '%s'", ep->name.c_str()));
+        
 		ep->jobPush(jobP);
 
-		return 0;  // What do return here ?
+		return 0;  //
 	}
 
 	ep->packetSender  = packetSender;
@@ -1003,7 +1016,6 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Packe
 
 			LM_T(LmtJob, ("sender thread created - flushing job queue"));
 
-			writeSem.lock();
 
 			while ((jobP = ep->jobPop()) != NULL)
 			{
@@ -1018,7 +1030,6 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Packe
 				jobP = NULL;
 			}
 
-			writeSem.unlock();
 
 			LM_T(LmtJob, ("sender thread created - job queue flushed"));
 		}
@@ -1037,9 +1048,8 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Packe
 		LM_T(LmtSenderThread, ("Sending '%s' job to '%s' sender (real destiny fd: %d) with %d packet size - the job is tunneled over fd %d (packet pointer: %p)",
 						   messageCode(job.msgCode), ep->name.c_str(), ep->wFd, job.packetP->message->ByteSize(), ep->senderWriteFd, job.packetP));
 		
-		writeSem.lock();
 		nb = write(ep->senderWriteFd, &job, sizeof(job));
-		writeSem.unlock();
+
 		if (nb != (sizeof(job)))
 		{
 			LM_E(("write(written only %d bytes (of %d) to sender thread)", nb, sizeof(job)));
@@ -1049,9 +1059,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Packe
 		return 0;
 	}
 
-	writeSem.lock();
 	nb = iomMsgSend(ep, endpoint[ME], code, Message::Msg, NULL, 0, packetP);
-	writeSem.unlock();
 
 	return 0;
 }
@@ -3596,7 +3604,7 @@ void Network::delilahSend(PacketSenderInterface* packetSender, Packet* packetP)
 
         //LM_M(("Sending message to a delilah %d", ix ));
         
-		sz = _send(packetSender, ix, new Packet(packetP));
+		sz = send(packetSender, ix, new Packet(packetP));
 		if (sz != 0)
 			LM_E(("Error sending a packet to %s@%s", ep->name.c_str(), ep->ip));
 	}

@@ -55,7 +55,7 @@ namespace ss {
 	}
 
 	// Send a packet (return a unique id to inform the notifier later)
-	size_t NetworkFake::_send(PacketSenderInterface* sender, int endpointId, Packet* packetP)
+	size_t NetworkFake::send(PacketSenderInterface* sender, int endpointId, Packet* packetP)
 	{
         ss::Message::MessageCode code = packetP->msgCode;
 		// Add packet in the list of the center
@@ -67,7 +67,7 @@ namespace ss {
     void NetworkFake::delilahSend(PacketSenderInterface* packetSender, Packet* packetP)
     {
         // send to the only delilah we have here
-        _send( packetSender , -2 , packetP );
+        send( packetSender , -2 , packetP );
     }
 
 	 void NetworkFake::run()

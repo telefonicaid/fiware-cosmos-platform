@@ -137,9 +137,9 @@ public:
 */
 class  NetworkInterface
 {
-	au::Lock lock_send;	// Lock to protect multi-thread access to lock
-		
+    
 public:
+    
 	virtual ~NetworkInterface() {};
 			
 	// Inform about everything ready to start
@@ -187,14 +187,12 @@ public:
 	void runInBackground();
 		
 	// Send a packet (return a unique id to inform the notifier later)
-	size_t send(PacketSenderInterface* sender, int endpointId, Packet* packetP );
+	virtual size_t send(PacketSenderInterface* sender, int endpointId, Packet* packetP )=0;
 		
 	virtual bool isConnected(unsigned int identifier) { return true; };
     virtual void delilahSend(PacketSenderInterface* packetSender, Packet* packetP)=0;
     
-protected:
 	
-	virtual size_t _send(PacketSenderInterface* sender, int endpointId, Packet* packetP ) = 0;
 	
 };
 

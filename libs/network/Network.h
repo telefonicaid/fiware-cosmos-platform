@@ -91,10 +91,12 @@ public:
 	// Syspend the network interface, close everything and return the "run" call
 	void quit();
 
-protected:
+public:
 	// Send a packet (return a unique id to inform the notifier later)
-	size_t _send(PacketSenderInterface* sender, int endpointId, Packet* packetP = NULL);
+	size_t send(PacketSenderInterface* sender, int endpointId, Packet* packetP = NULL);
 
+private:
+	size_t _send(PacketSenderInterface* sender, int endpointId, Packet* packetP = NULL);
 
 public:
 	int                tmoSecs;

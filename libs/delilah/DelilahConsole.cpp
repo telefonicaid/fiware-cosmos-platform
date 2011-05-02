@@ -991,10 +991,12 @@ namespace ss
                         double running_progress  = (double) task.running_info().size() / (double) task.total_info().size();
                         double processed_completed = (double) task.processed_info().size() / (double) task.total_info().size();
                         
-                        //txt << " Processed: " << processed_completed << " / Running:" << running_progress;
-                        
+                        txt << " Progress: ";
+                        txt << au::Format::string( task.running_info().size() );
+                        txt << " / " << au::Format::string( task.processed_info().size() );
+                        txt << "/" << au::Format::string( task.total_info().size() ) << " ";
                         txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', 60);
-                        
+                        txt << "\n";    
                         break;
                         
                 }

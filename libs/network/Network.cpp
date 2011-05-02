@@ -3587,14 +3587,15 @@ void Network::delilahSend(PacketSenderInterface* packetSender, Packet* packetP)
 		if (endpoint[ix] == NULL)
 			continue;
 
-        LM_M(("Testing %d %s", ix , endpoint[ix]->typeName() ));
+        //LM_M(("Testing %d %s", ix , endpoint[ix]->typeName() ));
 
 		ep = endpoint[ix];
         
 		if (ep->type != Endpoint::Delilah)
 			continue;
 
-        LM_M(("Sending message to a delilah %d", ix ));
+        //LM_M(("Sending message to a delilah %d", ix ));
+        
 		sz = _send(packetSender, ix, new Packet(packetP));
 		if (sz != 0)
 			LM_E(("Error sending a packet to %s@%s", ep->name.c_str(), ep->ip));

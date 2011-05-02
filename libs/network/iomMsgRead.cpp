@@ -38,7 +38,7 @@ static ssize_t iomMsgPartRead(const char* from, const char* what, int fd, char* 
 	{
 		ssize_t nb;
 
-		s = iomMsgAwait(fd, 0, 500000);
+		s = iomMsgAwait(fd, -1, 0);
 		if (s != 1)
 			LM_RE(-1, ("iomMsgAwait(%s) returned %d", from, s));
 

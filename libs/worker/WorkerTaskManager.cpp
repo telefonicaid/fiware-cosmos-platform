@@ -64,13 +64,20 @@ namespace ss {
     // Notification from the engine about finished tasks
     void WorkerTaskManager::notify( engine::Notification* notification )
     {
+        if( !notification->isName(notification_task_finished) )
+        {
+            LM_W(("WorkerTaskManager received a non correct notification"));
+            return;
+        }
+        
         // Generic parameters of the message
         size_t task_id = notification->environment.getSizeT("task_id", 0);
         
-        
-        if( notification->isName(notification_task_finished) )
+        if( notification->isName( notification_task_finished ) )
         {
-            // Create the task
+            // Find the task to be removed
+            
+            LM_M(("Received a finish task for task_id %l", task_id));
             
             WorkerTask *t = task.findInMap( task_id );
             
@@ -102,8 +109,13 @@ namespace ss {
     
 	void WorkerTaskManager::killTask( const network::WorkerTaskKill &task_kill )
 	{
+        
+        size_t task_id = task_kill.task_id();
+        
+        LM_W(("Kill task received for task_id %l", task_id));
+        
 		// Create the task
-		WorkerTask *t = task.extractFromMap( task_kill.task_id() );
+		WorkerTask *t = task.extractFromMap( task_id );
 
 		if( t )
 		{

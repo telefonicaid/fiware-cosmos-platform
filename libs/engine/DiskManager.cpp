@@ -10,6 +10,8 @@
 #include "engine/ProcessItem.h"                     // engine::ProcessItem
 #include "engine/DiskOperation.h"					// engine::DiskOperation
 #include "engine/EngineNotificationElement.h"      // engine::EngineNotificationElement
+#include "au/Descriptors.h"                         // au::Descriptors
+
 
 namespace engine
 {
@@ -159,30 +161,27 @@ namespace engine
 		
 		disk_manager_status << "\n\t\tQueued: ";
         {
-            int num_reads = 0;
-            int num_writes = 0;
-            int num_appends = 0;
-            int num_removes = 0;
+            au::Descriptors descriptors;
             
             for ( au::list<DiskOperation>::iterator i = pending_operations.begin() ; i != pending_operations.end() ; i++)
             {
                 switch ( (*i)->getType() ) {
                     case DiskOperation::read:
-                        num_reads++;
+                        descriptors.add("reads");
                         break;
                     case DiskOperation::write:
-                        num_writes++;
+                        descriptors.add("writes");
                         break;
                     case DiskOperation::append:
-                        num_appends++;
+                        descriptors.add("appends");
                         break;
                     case DiskOperation::remove:
-                        num_removes++;
+                        descriptors.add("removes");
                         break;
                 }
             }
             
-            disk_manager_status << au::Format::string("Reads %d Writes %d Appends %d Removes %d", num_reads , num_writes , num_appends , num_removes );
+            disk_manager_status << descriptors.str();
             
         }
         

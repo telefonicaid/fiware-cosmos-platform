@@ -1,4 +1,5 @@
 SET (HEADERS
+Descriptors.h
 gpb.h
 Environment.h
 CommandLine.h
@@ -19,6 +20,7 @@ Cronometer.h
 )
 
 SET (SOURCES
+Descriptors.cpp
 CommandLine.cpp
 Console.cpp
 Error.cpp

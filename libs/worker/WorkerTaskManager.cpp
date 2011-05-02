@@ -77,7 +77,7 @@ namespace ss {
         {
             // Find the task to be removed
             
-            LM_M(("Received a finish task for task_id %l", task_id));
+		   LM_M(("Received a finish task for task_id %lu with notification %s", task_id , notification->getDescription().c_str() ));
             
             WorkerTask *t = task.findInMap( task_id );
             
@@ -141,6 +141,9 @@ namespace ss {
 		WorkerTask *t = task.findInMap( task_id );
 		if( t )
 			t->finishWorker();
+        else
+		   LM_E(("Finish worker message received for a non-existing task %lu", task_id ));
+
 	}
 
 	void WorkerTaskManager::fill(network::WorkerStatus*  ws)

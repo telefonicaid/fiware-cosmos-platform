@@ -38,7 +38,27 @@ static ssize_t iomMsgPartRead(const char* from, const char* what, int fd, char* 
 	{
 		ssize_t nb;
 
-		s = iomMsgAwait(fd, -1, 0);
+
+		int trials = 0;
+		do
+		{
+		   s = iomMsgAwait(fd, 0, 500000);
+		   if ( s!=1 )
+		   {
+			  sleep(1);
+			  trials++;
+
+			  if( trials > 5 )
+				 LM_W(("iomMsgAwait returned %d. Trial %d. Sleeping and trying again...",s,trials));
+			  else
+				 LM_D(("iomMsgAwait returned %d. Trial %d. Sleeping and trying again...",s,trials));			  
+			  
+			  if( trials >= 50 )
+				 break;
+		   }
+		} while( s!= 1 );
+
+
 		if (s != 1)
 			LM_RE(-1, ("iomMsgAwait(%s) returned %d", from, s));
 

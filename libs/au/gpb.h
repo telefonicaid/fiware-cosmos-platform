@@ -58,7 +58,10 @@ namespace au
         //LM_M(("Reading a GPB message from fd %d (size %d)", fd , (int) size ));
         
         if( header.size > 1000000)
-            return 3;    // Too much bytes to read
+		{
+		   LM_W(("Large size %l for a background process message",header.size));
+           //return 3;    // Too much bytes to read
+		}
         
         void *data  = (void*) malloc( header.size );
         
@@ -97,7 +100,10 @@ namespace au
         header.init(  t->ByteSize() );
         
         if ( header.size > 100000 )
-            return 3;
+		{
+		   LM_W(("Large size %l for a background process message",header.size));
+           //return 3;
+		}
         
         void *data = (void*) malloc( header.size );
         

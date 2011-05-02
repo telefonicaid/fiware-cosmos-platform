@@ -404,7 +404,7 @@ namespace ss
 			return 0;
 		}	
 
-		if ( mainCommand == "load_trace")
+		if ( mainCommand == "trace")
 		{
 			if ( commandLine.get_num_arguments() == 1)
 			{
@@ -633,7 +633,7 @@ namespace ss
                 std::string stre    = packet->message->trace().stre();
                 
                 //writeOnConsole( au::Format::string("Trace: %s", _text.c_str() ) );
-                
+                if( trace_on )
                 if (lmOk(packet->message->trace().type(), packet->message->trace().tlev() ) == LmsOk)
                 {
                                         
@@ -967,7 +967,46 @@ namespace ss
         if( ( command == "info_full" ) || ( command == "info_task_manager" ))
         {
             txt << "\tJobManager: " << samsonStatus->controller_status().job_manager_status() << std::endl;
-            txt << "\tTaskManager: " << samsonStatus->controller_status().task_manager_status() << std::endl;
+            txt << "\tTaskManager: " << std::endl;
+            
+            for ( int i = 0 ; i < samsonStatus->controller_status().task_manager_status().task_size() ; i++)
+            {
+                const network::ControllerTask &task =  samsonStatus->controller_status().task_manager_status().task(i);
+                
+                txt << "\t\t" << "[" << task.task_id() << " / Job: " << task.job_id() << " ] ";
+ 
+                switch (task.status()) {
+                    case network::ControllerTask_ControllerTaskStatus_ControllerTaskError:
+                        txt << "ERROR";
+                        break;
+                    case network::ControllerTask_ControllerTaskStatus_ControllerTaskCompleted:
+                        txt << "Completed";
+                        break;
+                    case network::ControllerTask_ControllerTaskStatus_ControllerTaskFinish:
+                        txt << "Finished";
+                        break;
+                    case network::ControllerTask_ControllerTaskStatus_ControllerTaskRunning:
+                        txt << "Running";
+                        
+                        double running_progress  = (double) task.running_info().size() / (double) task.total_info().size();
+                        double processed_completed = (double) task.processed_info().size() / (double) task.total_info().size();
+                        
+                        //txt << " Processed: " << processed_completed << " / Running:" << running_progress;
+                        
+                        txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', 60);
+                        
+                        break;
+                        
+                }
+                   
+                txt << "\n";
+                
+                   
+                
+                //samsonStatus->controller_status().task_manager_status();
+            }
+                 
+            
             txt << std::endl;
         }
         

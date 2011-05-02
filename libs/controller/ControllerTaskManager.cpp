@@ -140,6 +140,12 @@ namespace ss
 		return output.str();
 	}
 	
-	
+    void ControllerTaskManager::fill( network::ControllerTaskManagerStatus * status )
+    {
+		std::map< size_t , ControllerTask* >::iterator iter;
+		for( iter = task.begin() ; iter != task.end() ; iter++)
+			iter->second->fill( status->add_task() );
+        
+    }
 	
 }

@@ -73,6 +73,8 @@ namespace ss {
 		
 		void fillInfo( network::WorkerTask *t , int workerIdentifier );		
 		
+        void fill( network::ControllerTask* task );
+        
 		std::string getStatus();
 		
 		int getNumUsedOutputs()

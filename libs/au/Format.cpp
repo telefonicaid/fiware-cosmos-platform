@@ -155,6 +155,45 @@ namespace au
         
         return  output.str();
     }
+
+    std::string Format::double_progress_bar( double p1 , double p2 , char c1 ,char c2 , int len )
+    {
+        std::ostringstream output;
+        
+        
+        if( p1 < 0 )
+            p1 = 0;
+        if( p1 > 1 )
+            p1 = 1;
+
+        if( p2 < 0 )
+            p2 = 0;
+        if( p2 > 1 )
+            p2 = 1;
+        
+        if( p2 < p1 )
+            p2 = p1;    // no sense
+        
+        
+        int pos1 = (double)len * p1;
+        int pos2 = (double)len * p2;
+        
+        output << " [ ";
+        
+        for (int s = 0 ; s < pos1 ; s++ )
+            output << c1;
+        
+        for (int s = pos1 ; s < pos2 ; s++ )
+            output << c2;
+        
+        for (int s = pos2 ; s < len ; s++ )
+            output << ".";
+        
+        output << " ] ";
+        
+        return  output.str();
+    }
+    
     
     
 	

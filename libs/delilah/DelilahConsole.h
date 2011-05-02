@@ -100,7 +100,6 @@ namespace ss {
 	
 	class DelilahConsole : public au::Console, public Delilah
 	{
-		bool trace_on;
 		
 	public:
 		

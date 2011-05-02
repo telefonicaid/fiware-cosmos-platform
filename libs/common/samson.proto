@@ -117,13 +117,41 @@ message Trace
 
 // Information about a worker ( diskManager / fileManager / Process runing / etc..)
 
+message ControllerTask
+{
+	enum ControllerTaskStatus
+	{
+		ControllerTaskError	 = 1;
+		ControllerTaskFinish     = 2;
+		ControllerTaskCompleted  = 3;
+		ControllerTaskRunning 	 = 4;
+	}
+
+	required ControllerTaskStatus status=1;
+
+	required int64 job_id = 2;
+	required int64 task_id = 3;
+
+        optional KVInfo total_info=4;                  // Total amount of information to be processed
+        optional KVInfo running_info=5;                // Total amount that started to run at some point ( accumulated )
+        optional KVInfo processed_info=6;               // Total amount that has been processed
+
+}
+
+message ControllerTaskManagerStatus
+{
+	repeated ControllerTask task = 1;		// Task currently running 
+
+}
+
 message ControllerStatus
 {
 	optional uint64 up_time = 8;					// Time since the the worker started
 
 	optional string job_manager_status=1;				// Status of the job manager
-	optional string task_manager_status=2;				// Status of the task manager ( more in contact with workers )
 	optional string network_status=3;				// Information about the network connections
+
+	optional ControllerTaskManagerStatus task_manager_status = 4;	// Status of the task manager
 }
 
 message WorkerStatus

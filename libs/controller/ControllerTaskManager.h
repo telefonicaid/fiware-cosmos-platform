@@ -65,7 +65,10 @@ namespace ss {
 		 */
 		
 		std::string getStatus();
+
 		
+        void fill( network::ControllerTaskManagerStatus * status );
+        
 	private:
 
 		// Send a message to a worker with a particular task

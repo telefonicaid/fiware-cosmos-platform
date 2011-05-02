@@ -188,7 +188,7 @@ namespace ss {
 
 	
 		status->set_job_manager_status( _getStatus() );
-		status->set_task_manager_status( taskManager.getStatus() );
+        taskManager.fill( status->mutable_task_manager_status() );
 		
 	}
 	

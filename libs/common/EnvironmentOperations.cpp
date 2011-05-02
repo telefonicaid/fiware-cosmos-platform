@@ -26,4 +26,10 @@ namespace ss {
 			to->set( name , value );
 		}
 	}
+    
+    void copy( KVInfo * from , network::KVInfo* to)
+    {
+        to->set_kvs(from->kvs);
+        to->set_size(from->size);
+    }
 }

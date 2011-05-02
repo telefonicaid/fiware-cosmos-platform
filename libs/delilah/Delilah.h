@@ -57,6 +57,10 @@ namespace ss {
 		// Map of components that intercept messages
 		au::map<size_t , DelilahComponent> components;			
 		
+        protected:
+        
+        bool trace_on;
+
 	public:
 		
 		Environment environment;								// Environment properties to be sent in the next job

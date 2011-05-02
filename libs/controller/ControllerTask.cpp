@@ -158,11 +158,33 @@ namespace ss {
                     else if( running )
                     {
                         o << " Workers:" << finished_workers << " / " << complete_workers << " / " << num_workers;
-                        o << " Progress: " << running_info.str() << " / " << processed_info.str() << " / " << total_info.str(); 
+                        o << " Progress: " << processed_info.str() << " / " << running_info.str() << " / " << total_info.str(); 
                     }
         }
         
         return o.str();
+    }
+
+    void ControllerTask::fill( network::ControllerTask* task )
+    {
+        if( error )
+            task->set_status( network::ControllerTask_ControllerTaskStatus_ControllerTaskError );
+        else if ( complete )
+            task->set_status( network::ControllerTask_ControllerTaskStatus_ControllerTaskCompleted );
+        else if ( finish )
+            task->set_status( network::ControllerTask_ControllerTaskStatus_ControllerTaskFinish );
+        else
+            task->set_status( network::ControllerTask_ControllerTaskStatus_ControllerTaskRunning );
+            
+        
+        task->set_job_id( job->getId() );
+        task->set_task_id( id );
+
+        // KVInfo for total running and process
+        copy( &total_info , task->mutable_total_info() );
+        copy( &running_info , task->mutable_running_info() );
+        copy( &processed_info , task->mutable_processed_info() );
+        
     }
 
 	

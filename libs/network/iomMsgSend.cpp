@@ -27,7 +27,7 @@
 *
 * iomWriteOk - 
 */
-bool iomWriteOk(int fd, const char* name, const char* ip)
+static bool iomWriteOk(int fd, const char* name, const char* ip)
 {
 	int             fds;
 	fd_set          wFds;

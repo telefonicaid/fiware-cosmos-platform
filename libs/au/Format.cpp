@@ -156,7 +156,7 @@ namespace au
         return  output.str();
     }
 
-    std::string Format::double_progress_bar( double p1 , double p2 , char c1 ,char c2 , int len )
+    std::string Format::double_progress_bar( double p1 , double p2 , char c1 ,char c2 , char c3, int len )
     {
         std::ostringstream output;
         
@@ -187,7 +187,7 @@ namespace au
             output << c2;
         
         for (int s = pos2 ; s < len ; s++ )
-            output << ".";
+            output << c3;
         
         output << " ] ";
         

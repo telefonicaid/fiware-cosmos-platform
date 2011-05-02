@@ -158,8 +158,33 @@ namespace engine
 			disk_manager_status << "[" << (*i)->getDescription() << "] ";
 		
 		disk_manager_status << "\n\t\tQueued: ";
-		for ( au::list<DiskOperation>::iterator i = pending_operations.begin() ; i != pending_operations.end() ; i++)
-			disk_manager_status << "[" << (*i)->getShortDescription() << "] ";
+        {
+            int num_reads = 0;
+            int num_writes = 0;
+            int num_appends = 0;
+            int num_removes = 0;
+            
+            for ( au::list<DiskOperation>::iterator i = pending_operations.begin() ; i != pending_operations.end() ; i++)
+            {
+                switch ( (*i)->getType() ) {
+                    case DiskOperation::read:
+                        num_reads++;
+                        break;
+                    case DiskOperation::write:
+                        num_writes++;
+                        break;
+                    case DiskOperation::append:
+                        num_appends++;
+                        break;
+                    case DiskOperation::remove:
+                        num_removes++;
+                        break;
+                }
+            }
+            
+            disk_manager_status << au::Format::string("Reads %d Writes %d Appends %d Removes %d", num_reads , num_writes , num_appends , num_removes );
+            
+        }
         
 		disk_manager_status << "\n\t\tStatistics: ";
 		disk_manager_status << diskStatistics.getStatus();

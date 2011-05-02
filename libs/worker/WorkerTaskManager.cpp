@@ -11,7 +11,6 @@
 #include "SamsonSetup.h"          // ss::SamsonSetup
 #include "engine/DiskOperation.h"			// ss::DiskOperation
 
-#include "au/Descriptors.h"         // au::Descriptors
 
 namespace ss {
 	
@@ -170,12 +169,9 @@ namespace ss {
 		
 		output << "\n";
         
-        au::Descriptors descriptors;
         
 		for ( iter = task.begin() ; iter != task.end() ; iter++)
-            descriptors.add( iter->second->getStatus() ); 
-			
-        output << descriptors.str() << "\n";
+			output << iter->second->getStatus() << "\n";
 		
 		return output.str();
 	}

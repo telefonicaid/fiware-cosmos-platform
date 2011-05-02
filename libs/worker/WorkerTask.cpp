@@ -13,6 +13,7 @@
 #include "engine/Buffer.h"                     // engine::Buffer
 #include "engine/ProcessManager.h"             // Notifications
 #include "engine/DiskManager.h"                // Notifications
+#include "au/Descriptors.h"         // au::Descriptors
 
 namespace ss
 {
@@ -344,12 +345,18 @@ namespace ss
 		output << " Workers " << num_finished_workers << "/" << num_workers;
 		output << " DiskOperations " << num_disk_operations;
 		output << " BufferPreproces " << num_process_items;
+                
         output << " ]";
         
+        
 		output << "\n\t\t\t Subtasks:";
-	        
+
+        
+        au::Descriptors descriptors;
         for (au::map<size_t,WorkerSubTask>::iterator i = subTasks.begin() ; i != subTasks.end() ; i++)
-            output << i->second->getStatus();
+            descriptors.add( i->second->getStatus() ); 
+
+        output << descriptors.str();
 		
 		return output.str();
 	}

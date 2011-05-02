@@ -136,11 +136,14 @@ namespace ss {
 		t->addBuffer( workerDataExchange , buffer );		
 	}
 	
-	void WorkerTaskManager::finishWorker( size_t task_id )
+	void WorkerTaskManager::finishWorker( int worker_from , size_t task_id )
 	{
 		WorkerTask *t = task.findInMap( task_id );
 		if( t )
-			t->finishWorker();
+        {
+            LM_M(("Finish worker message received for task %lu from worker_from %d ", task_id , worker_from ));
+			t->finishWorker( worker_from );
+        }
         else
 		   LM_E(("Finish worker message received for a non-existing task %lu", task_id ));
 

@@ -226,7 +226,10 @@ namespace ss {
 		{
 			
 			size_t task_id = packet->message->data_close().task_id();
-			taskManager.finishWorker( task_id );
+            int worker_from = network->getWorkerFromIdentifier( fromId );
+            
+			taskManager.finishWorker( worker_from , task_id );
+            
 			return;
 		}
 		

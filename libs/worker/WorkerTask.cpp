@@ -310,7 +310,7 @@ namespace ss
 		
 	}
 		
-	void WorkerTask::finishWorker()
+	void WorkerTask::finishWorker( int worker_from )
 	{
 		num_finished_workers++;
 		check();

@@ -47,7 +47,7 @@ namespace ss {
 		void addBuffer( size_t task_id , network::WorkerDataExchange& workerDataExchange , engine::Buffer* buffer );
 				
 		// Notification that a worker has finish produccing data for a task
-		void finishWorker( size_t task_id );
+		void finishWorker( int worker_from , size_t task_id );
 
 		// Full with information about status
 		void fill(network::WorkerStatus*  ws);

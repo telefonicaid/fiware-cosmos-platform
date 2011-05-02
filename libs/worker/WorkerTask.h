@@ -143,7 +143,7 @@ namespace ss {
 		void addBuffer( network::WorkerDataExchange& workerDataExchange , engine::Buffer *buffer );
 
         // Notification that a particular worker has finished generating data
-        void finishWorker();
+        void finishWorker( int worker_from );
         
         // General notification function
         void notify( engine::Notification* notification );

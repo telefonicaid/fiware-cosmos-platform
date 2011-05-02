@@ -31,7 +31,7 @@ namespace ss
         num_processes = 0;
         num_processes_confirmed = 0;
         
-		description = "U";                  // Unknown   
+		description = "Unknown";                  // Unknown   
         status = init;                      // Initial status
         buffer = NULL;                      // By default we have no memory
         
@@ -270,15 +270,15 @@ namespace ss
         output << "[" << description << ":";
 
         if( error.isActivated() )
-            output << "E " << error.getMessage();
+            output << "Error " << error.getMessage();
         else
         {
             switch (status) {
-                case init: output << "I"; break;
-                case waiting_memory: output << "M"; break;
-                case waiting_reads: output << "R"; break;
-                case waiting_process: output << "P"; break;
-                case finished: output << "F"; break;
+                case init: output << "Init"; break;
+                case waiting_memory: output << "Waiting Memory"; break;
+                case waiting_reads: output << "Reading"; break;
+                case waiting_process: output << "Running"; break;
+                case finished: output << "Finished"; break;
             }
         }
         output << "]";
@@ -291,7 +291,7 @@ namespace ss
 	
 	GeneratorSubTask::GeneratorSubTask(WorkerTask * task ) : WorkerSubTask( task  )
 	{
-		description = "G";
+		description = "Generator ";
 	}
 	
 	void GeneratorSubTask::run_process()
@@ -308,7 +308,7 @@ namespace ss
 		// Create the reduce information ( stored at the worker task to share with the rest of reduce items )
 		task->reduceInformation = new ProcessAssistantSharedFileCollection( task->workerTask );
 		
-		description = "Or"; // Organizer
+		description = "Operation Organizer"; // Organizer
 		
 	}
 	
@@ -422,7 +422,7 @@ namespace ss
             info.append( task->reduceInformation->info_hg[hg] );    // Accumulated total input data
         }
 		
-		description = "Op";// Operation
+		description = "Operation";// Operation
 	}
 	
 	OperationSubTask::~OperationSubTask()
@@ -505,7 +505,7 @@ namespace ss
 		// Compute the required size for this operation
 		fileSize = au::Format::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );	
 		
-		description = "P"; // Parser
+		description = "Parser"; // Parser
 	}
 	
 	ParserSubTask::~ParserSubTask()
@@ -544,7 +544,7 @@ namespace ss
 	{
 		// Create the reduce information ( stored at the worker task to share with the rest of reduce items )
 		task->reduceInformation = new ProcessAssistantSharedFileCollection( task->workerTask );
-		description = "Sys"; // System
+		description = "System"; // System
 		
 		// add all the File elements to be removed when the operation is complete
 		for (int i = 0 ; i < task->workerTask.input_queue(0).file_size() ; i++)
@@ -641,7 +641,7 @@ namespace ss
 		for (int hg = hg_begin ; hg < hg_end ; hg++)
 			memory_requested += task->reduceInformation->info_hg[hg].size;
 		
-		description = "Sys";// System
+		description = "System";// System
 	}
 	
 	CompactSubTask::~CompactSubTask()

@@ -222,6 +222,23 @@ void Network2::quit(void)
 
 /* ****************************************************************************
 *
+* send - 
+*/
+size_t Network2::send(PacketSenderInterface* psi, int id, ss::Packet* packetP)
+{
+	size_t r;
+
+	// writeSem.lock();
+	r = epMgr->send(psi, id, packetP);
+	// writeSem.unlock();
+
+	return r;
+}
+
+
+
+/* ****************************************************************************
+*
 * _send - 
 */
 size_t Network2::_send(PacketSenderInterface* psi, int id, ss::Packet* packetP)

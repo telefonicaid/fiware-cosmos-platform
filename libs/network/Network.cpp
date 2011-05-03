@@ -907,18 +907,23 @@ static void* senderThread(void* vP)
 *
 * send - 
 */
-    size_t Network::send(PacketSenderInterface* packetSender, int endpointId, Packet* packetP)
-    {
-        writeSem.lock();
+size_t Network::send(PacketSenderInterface* packetSender, int endpointId, Packet* packetP)
+{
+	writeSem.lock();
         
-        size_t r = _send( packetSender , endpointId , packetP );
+	size_t r = _send( packetSender , endpointId , packetP );
         
-        writeSem.unlock();
+	writeSem.unlock();
         
-        return r;
-    }
+	return r;
+}
 
     
+
+/* ****************************************************************************
+*
+* _send - 
+*/
 size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Packet* packetP)
 {
 	Endpoint* ep        = endpoint[endpointId];

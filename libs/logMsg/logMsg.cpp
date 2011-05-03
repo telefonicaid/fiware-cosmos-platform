@@ -1698,7 +1698,11 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 		if (fds[i].write != NULL)
 			fds[i].write(line);
 		else
-		   write(fds[i].fd, line, sz);
+		{
+		   ssize_t ans = write(fds[i].fd, line, sz);
+		   ans = 0;
+		   // Nothing to do if write fails since we cannot "log" ;)
+		}
 	}
 	
 	++logLines;

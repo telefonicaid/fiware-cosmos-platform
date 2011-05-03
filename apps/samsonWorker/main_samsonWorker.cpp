@@ -7,20 +7,20 @@
 * CREATION DATE            Dec 14 2010
 *
 */
-#include "parseArgs.h"          // parseArgs
-#include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // Trace levels
+#include "parseArgs.h"             // parseArgs
+#include "logMsg.h"                // LM_*
+#include "traceLevels.h"           // Trace levels
 
-#include "ports.h"              // WORKER_PORT
-#include "SamsonWorker.h"		// ss::SamsonWorker
-#include "SamsonSetup.h"		// ss::SamsonSetup
-#include "engine/MemoryManager.h"		// ss::MemoryManager
-#include "Endpoint.h"			// ss::Endpoint
-#include "engine/Engine.h"				// ss::Engine
-#include "SharedMemoryManager.h"    // ss::SharedMemoryManager
+#include "ports.h"                 // WORKER_PORT
+#include "SamsonWorker.h"          // ss::SamsonWorker
+#include "SamsonSetup.h"           // ss::SamsonSetup
+#include "engine/MemoryManager.h"  // ss::MemoryManager
+#include "Endpoint.h"              // ss::Endpoint
+#include "engine/Engine.h"         // ss::Engine
+#include "SharedMemoryManager.h"   // ss::SharedMemoryManager
 
-#include "engine/DiskManager.h"            // engine::DiskManager
-#include "engine/ProcessManager.h"         // engine::ProcessManager
+#include "engine/DiskManager.h"    // engine::DiskManager
+#include "engine/ProcessManager.h" // engine::ProcessManager
 
 
 /* ****************************************************************************
@@ -32,7 +32,7 @@ char             controller[80];
 char             alias[36];
 bool             noLog;
 bool             local;
-char			 workingDir[1024]; 	
+char             workingDir[1024];
 
 
 

@@ -61,8 +61,6 @@ UnhelloedEndpoint::UnhelloedEndpoint
 	int               _wFd
 ) : Endpoint2(_epMgr, Unhelloed, _id, _name, _alias, _host, _port, _rFd, _wFd)
 {
-	if (init() != Endpoint2::OK)
-		LM_X(1, ("Error setting up listen socket for endpoint '%s'", nameGet()));
 }
 
 
@@ -130,7 +128,7 @@ Endpoint2::Status UnhelloedEndpoint::helloDataAdd(Type _type, const char* _name,
 	if (_alias == NULL)
 		LM_RE(NullAlias, ("NULL alias"));
 
-	if ((proc = processLookup(epMgr->procVec, _alias)) == NULL)
+	if ((proc = processLookup(epMgr->procVecGet(), _alias)) == NULL)
 		LM_RE(BadAlias, ("alias '%s' not found in process vector", _alias));
 
 	if (epMgr->hostMgr->match(host, proc->host) == false)  // Host could become a class and do its own matching

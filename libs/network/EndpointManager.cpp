@@ -22,6 +22,8 @@
 #include "ListenerEndpoint.h"     // ListenerEndpoint
 #include "WebListenerEndpoint.h"  // WebListenerEndpoint
 #include "UnhelloedEndpoint.h"    // UnhelloedEndpoint
+#include "WorkerEndpoint.h"       // WorkerEndpoint
+#include "ControllerEndpoint.h"   // ControllerEndpoint
 #include "EndpointManager.h"      // Own interface
 
 
@@ -63,12 +65,8 @@ static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, 
 *
 * Constructor
 */
-EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints, const char* controllerIp)
+EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 {
-	Host*     host;
-	Process*  self = NULL;
-
-	endpoints   = (_endpoints == 0)? 100 : _endpoints;
 	workers     = 0;
 	controller  = NULL;
 	listener    = NULL;
@@ -76,36 +74,20 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints, 
 
 
 	//
-	// 	Type Validity Check
+	// Create the endpoint vector
 	//
-	switch (type)
-	{
-	case Endpoint2::Worker:
-	case Endpoint2::Controller:
-	case Endpoint2::Spawner:
-	case Endpoint2::Delilah:
-	case Endpoint2::Supervisor:
-		LM_V(("Creating Endpoint Manager for %s", Endpoint2::typeName(type)));
-		break;
-
-	default:
-		LM_X(1, ("The endpoint type '%s' cannot have an Endpoint Manager", Endpoint2::typeName(type)));
-	}
-
-
-
-	//
-	// Endpoints
-	//
-	endpoint = (Endpoint2**) calloc(endpoints, sizeof(Endpoint2*));
+	endpoints = 100;
+	endpoint  = (Endpoint2**) calloc(endpoints, sizeof(Endpoint2*));
 	if (endpoint == NULL)
 		LM_X(1, ("Error allocating endpoint vector of %d endpoint pointers", endpoint));
 
 
 
 	//
-	// Host Manager
+	// Create Host Manager
 	//
+	Host* host;
+
 	if ((hostMgr = new HostMgr(endpoints)) == NULL)
 		LM_X(1, ("error creating Host Manager for %d endpoints", endpoints));
 
@@ -116,10 +98,7 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints, 
 
 
 	//
-	// Create the 'self' or 'me' endpoint
-	//
-	// Do I put this endpoint into the list or not ... ?
-	// For now, it's left out from the list, just a part of EndpointManager.
+	// Create the endpoint 'me'
 	//
 	me = new Endpoint2(this, type, 0, "unknown name", "unknown alias", host); // port == 0 by default
 	if (me == NULL)
@@ -128,140 +107,209 @@ EndpointManager::EndpointManager(Endpoint2::Type type, unsigned int _endpoints, 
 
 
 	//
-	// Process Vector, part I
+	// Endpoint-type specialized initializations
 	//
-	// The Worker and the Controller needs the Process Vector to continue.
-	// Their port number and alias are in there, for example.
+	// These methods to be moved to their respective executables
 	//
-	if ((type == Endpoint2::Worker) || (type == Endpoint2::Controller))
+	switch (type)
 	{
-		int ix=0;
+	case Endpoint2::Worker:        initWorker();                 break;
+	case Endpoint2::Controller:    initController();             break;
+	case Endpoint2::Spawner:       initSpawner();                break;
+	case Endpoint2::Delilah:       initDelilah(controllerIp);    break;
+	case Endpoint2::Supervisor:    initSupervisor();             break;
 
-		if ((procVec = platformProcessesGet()) == NULL)
-			LM_X(1, ("Error retrieving vector of platform processes"));
-
-		if ((self = platformProcessLookup(hostMgr, procVec, type, host, &ix)) == NULL)
-			LM_X(1, ("Cannot find myself in platform processes vector."));
-
-		me->portSet(self->port);
-		me->aliasSet(self->alias);        // This method could check the alias for validity ('WorkerXX', 'Controller', ...)
-		me->idSet(ix);
+    default:
+		LM_X(1, ("The endpoint type '%s' cannot have an Endpoint Manager", Endpoint2::typeName(type)));
 	}
-	else if (type == Endpoint2::Spawner)
+}
+
+
+
+/* ****************************************************************************
+*
+* initWorker - 
+*
+* This method should probably be moved to apps/worker
+*/
+void EndpointManager::initWorker(void)
+{
+	//
+	// Process Vector
+	//
+	int       ix;
+	Process*  self = NULL;
+
+	if ((procVec = platformProcessesGet()) == NULL)
+		LM_X(1, ("Error retrieving vector of platform processes"));
+
+	if ((self = platformProcessLookup(hostMgr, procVec, Endpoint2::Worker, me->host, &ix)) == NULL)
+		LM_X(1, ("Cannot find myself in platform processes vector."));
+	
+	me->aliasSet(self->alias);        // This method could check the alias for validity ('WorkerXX', 'Controller', ...)
+	me->idSet(ix);
+	me->portSet(WORKER_PORT);
+
+
+
+	//
+	// Opening listener to accept incoming  connections
+	//
+	listener = (ListenerEndpoint*) add(Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
+	if (listener == NULL)
+		LM_X(1, ("error creating listener endpoint - no use to continue ..."));
+
+
+
+	//
+	// Connect to Controller
+	//
+	Process*   p;
+	Host*      hostP;
+	Endpoint2* ep;
+
+	p = &procVec->processV[0];
+	if (p->type != PtController)
+		LM_X(1, ("First process in process vector has to be the controller!"));
+
+	hostP = hostMgr->lookup(p->host);
+	if (hostP == NULL)
+		hostP = hostMgr->insert(p->host, NULL);
+
+	ep = add(Endpoint2::Controller, 0, p->name, p->alias, hostP, p->port, -1, -1);
+	ep->connect();
+
+
+
+	for (int ix = 1; ix < procVec->processes; ix++)
 	{
-		me->portSet(SPAWNER_PORT);
-		me->aliasSet("Spawner");
-	}
-	else if (type ==  Endpoint2::Delilah)
-		me->aliasSet("Delilah");
-	else if (type ==  Endpoint2::Supervisor)
-		me->aliasSet("Supervisor");
+		Process*    p;
+		Host*       hostP;
+		Endpoint2*  ep;
 
-
-
-	//
-	// If this endpoint needs to accept incoming connections, add the listener endpoint
-	//
-	if (me->portGet() != 0)
-		listener = (ListenerEndpoint*) add(Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
-	//  listener = new ListenerEndpoint(this, Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
-
-
-
-	//
-	// Controller also serves as Web Listener
-	//
-	//if (me->typeGet() == Endpoint2::Controller)
-	//	webListener = (WebListenerEndpoint*) add(Endpoint2::WebListener, 0, "ME", "Web Listener", me->hostGet(), WEB_SERVICE_PORT, -1, -1);
-	//  webListener = new ListenerEndpoint(this, Endpoint2::WebListener, 0, "ME", "Web Listener", me->hostGet(), WEB_SERVICE_PORT, -1, -1);
-
-
-
-	//
-	// Process Vector, part II (Spawner only)
-	//
-	if (type == Endpoint2::Spawner)
-	{
-		if ((procVec = platformProcessesGet()) == NULL)
-		{
-			setupAwait();
-			platformProcessesSave(procVec);
-
-			// After this, I can start my local processes and also ...
-			// ... send the procVec to all other Spawners (if I continue to do that).
-		}
-	}
-
-
-	//
-	// Workers connect to controller
-	//
-	if (type == Endpoint2::Worker)
-	{
-		Process*   p;
-		Host*      hostP;
-		Endpoint2* ep;
-
-		p = &procVec->processV[0];
-		if (p->type != PtController)
-			LM_X(1, ("First process in process vector has to be the controller!"));
+		p = &procVec->processV[ix];
+		if (p->type != PtWorker)
+			LM_X(1, ("Process %d in process vector has to be a worker - corrupt platform processes file!", ix));
 
 		hostP = hostMgr->lookup(p->host);
 		if (hostP == NULL)
 			hostP = hostMgr->insert(p->host, NULL);
 
-		ep = add(Endpoint2::Controller, 0, p->name, p->alias, hostP, p->port, -1, -1);
-		ep->connect();
+		ep = add(Endpoint2::Worker, ix, p->name, p->alias, hostP, p->port, -1, -1);
+		if (ep->idGet() < me->idGet())
+			ep->connect();  // Connect, but don't add to endpoint vector
 	}
+}
+
+
+
+/* ****************************************************************************
+*
+* initController - 
+*
+* This method should probably be moved to apps/controller
+*/
+void EndpointManager::initController(void)
+{
+	//
+	// Process Vector
+	//
+	Process*  self;
+
+	if ((procVec = platformProcessesGet()) == NULL)
+		LM_X(1, ("Error retrieving vector of platform processes"));
+
+	if ((self = platformProcessLookup(hostMgr, procVec, Endpoint2::Controller, me->host)) == NULL)
+		LM_X(1, ("Cannot find myself in platform processes vector."));
+	
+	me->aliasSet(self->alias);        // This method could check the alias for validity ('WorkerXX', 'Controller', ...)
+	me->portSet(CONTROLLER_PORT);
 
 
 
 	//
-	// Delilahs connect to controller
+	// Opening listeners to accept incoming connections
+	//
+	listener    = (ListenerEndpoint*)    add(Endpoint2::Listener,    0, "ME", "Listener",     me->hostGet(), me->portGet(),    -1, -1);
+	webListener = (WebListenerEndpoint*) add(Endpoint2::WebListener, 0, "ME", "Web Listener", me->hostGet(), WEB_SERVICE_PORT, -1, -1);
+
+	if (listener == NULL)
+		LM_X(1, ("error creating listener endpoint - no use to continue ..."));
+	if (webListener == NULL)
+		LM_W(("error creating web listener endpoint!"));
+}
+
+
+
+/* ****************************************************************************
+*
+* initSpawner - 
+*
+* This method should probably be moved to apps/spawner
+*/
+void EndpointManager::initSpawner(void)
+{
+	me->portSet(SPAWNER_PORT);
+	me->aliasSet("Spawner");
+
+	listener = (ListenerEndpoint*) add(Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
+
+
+	if ((procVec = platformProcessesGet()) == NULL)
+	{
+		setupAwait();
+		platformProcessesSave(procVec);
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* initDelilah - 
+*
+* This method should probably be moved to apps/delilah
+*/
+void EndpointManager::initDelilah(const char* controllerIp)
+{
+	//
+	// alias
+	//
+	me->aliasSet("Delilah");
+
+
+
+	//
+	// Connect to controller
+	//
+	Host* hostP;
+
+	hostP = hostMgr->lookup(controllerIp);
+	if (hostP == NULL)
+		hostP = hostMgr->insert(controllerIp, NULL);
+
+	controller = add(Endpoint2::Controller, 0, "Controller", "Controller", hostP, CONTROLLER_PORT, -1, -1);
+	controller->connect();
+
+
+
 	//
 	// Delilahs need to ask the Controller for the platform process list
 	//
-	//
-	if (type == Endpoint2::Delilah)
-	{
-		Host* hostP;
-
-		hostP = hostMgr->lookup(controllerIp);
-		if (hostP == NULL)
-			hostP = hostMgr->insert(controllerIp, NULL);
-
-		controller = add(Endpoint2::Controller, 0, "Controller", "Controller", hostP, CONTROLLER_PORT, -1, -1);
-		controller->connect();
-		return;
-	}
+	LM_X(1, ("Delilah init needs to be implemented"));
+}
 
 
-	
 
-	//
-	// Workers to connect to all workers with an identifier (ep->id) less than own id
-	//
-	if (type == Endpoint2::Worker)
-	{
-		for (int ix = 1; ix < procVec->processes; ix++)
-		{
-			Process*    p;
-			Host*       hostP;
-			Endpoint2*  ep;
+/* ****************************************************************************
+*
+* initSupervisor - 
+*/
+void EndpointManager::initSupervisor(void)
+{
+	me->aliasSet("Supervisor");
 
-			p = &procVec->processV[ix];
-			if (p->type != PtWorker)
-				LM_X(1, ("Process %d in process vector has to be a worker - corrupt platform processes file!", ix));
-
-			hostP = hostMgr->lookup(p->host);
-			if (hostP == NULL)
-				hostP = hostMgr->insert(p->host, NULL);
-
-			ep = add(Endpoint2::Worker, ix, p->name, p->alias, hostP, p->port, -1, -1);
-			if (ep->idGet() < me->idGet())
-				ep->connect();  // Connect, but don't add to endpoint vector
-		}
-	}
+	LM_X(1, ("Supervisor init needs to be implemented"));
 }
 
 
@@ -356,8 +404,16 @@ Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, const char* name, 
 		ep = new UnhelloedEndpoint(this, id, name, alias, host, port, rFd, wFd);
 		break;
 
+	case Endpoint2::Worker:
+		ep = new WorkerEndpoint(this, id, name, alias, host, port, rFd, wFd);
+		break;
+
+	case Endpoint2::Controller:
+		ep = new ControllerEndpoint(this, id, name, alias, host, port, rFd, wFd);
+		break;
+
 	default:
-		LM_X(1, ("Please Implement!"));
+		LM_X(1, ("Please Implement addition of '%s' endpoint!", Endpoint2::typeName(type)));
 	}
 
 	if (ep == NULL)
@@ -436,12 +492,38 @@ Endpoint2* EndpointManager::get(unsigned int index, int* rFdP)
 *
 * lookup - 
 */
-Endpoint2* EndpointManager::lookup(Endpoint2::Type type, const char* host)
+Endpoint2* EndpointManager::lookup(Endpoint2::Type type, int id, int* ixP)
 {
 	for (unsigned int ix = 0; ix < endpoints; ix++)
     {
         if (endpoint[ix] == NULL)
             continue;
+
+		if ((endpoint[ix]->type == true) && (endpoint[ix]->id == id))
+		{
+			if (ixP != NULL)
+				*ixP = ix;
+			return endpoint[ix];
+		}
+	}
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* lookup - 
+*/
+Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, const char* host)
+{
+	for (unsigned int ix = 0; ix < endpoints; ix++)
+    {
+        if (endpoint[ix] == NULL)
+            continue;
+
+		if (endpoint[ix]->type != typ)
+			continue;
 
 		if (hostMgr->match(endpoint[ix]->hostGet(), host) == true)
 			return endpoint[ix];
@@ -680,7 +762,7 @@ void EndpointManager::run(bool oneShot)
 			LM_X(1, ("select: %s", strerror(errno)));
 		else if (fds == 0)
 		{
-			LM_D(("timeout"));
+			show("timeout");
 		}
 		else
 		{
@@ -706,6 +788,188 @@ void EndpointManager::run(bool oneShot)
 void EndpointManager::setPacketReceiver(PacketReceiverInterface* receiver)
 {
 	packetReceiver = receiver;
+}
+
+
+
+/* ****************************************************************************
+*
+* setDataReceiver - 
+*/
+void EndpointManager::setDataReceiver(DataReceiverInterface* receiver)
+{
+	dataReceiver = receiver;
+}
+
+
+
+/* ****************************************************************************
+*
+* endpointCount - 
+*/
+int EndpointManager::endpointCount(Endpoint2::Type epType)
+{
+	int noOf = 0;
+
+	for (unsigned int ix = 0; ix < endpoints; ix++)
+    {
+        if (endpoint[ix] == NULL)
+            continue;
+
+		if (endpoint[ix]->type == epType)
+			++noOf;
+	}
+
+	return noOf;
+}
+
+
+
+/* ****************************************************************************
+*
+* send - 
+*/
+size_t EndpointManager::send(PacketSenderInterface* psi, int endpointIx, Packet* packetP)
+{
+	if (endpoint[endpointIx] == NULL)
+		LM_RE(1, ("Cannot send to endpoint %d - NULL", endpointIx));
+
+	return endpoint[endpointIx]->send(psi, packetP->msgCode, packetP);
+}
+
+
+
+/* ****************************************************************************
+*
+* multiSend - 
+*/
+int EndpointManager::multiSend(PacketSenderInterface* psi, Endpoint2::Type typ, Packet* packetP)
+{
+	int sends = 0;
+
+	for (unsigned int ix = 0; ix < endpoints; ix++)
+	{
+		if (endpoint[ix] != NULL)
+			continue;
+
+		if (endpoint[ix]->type != typ)
+			continue;
+
+		send(psi, ix, packetP); // Probably need to 'new' packetP so it wont be deleted before used by all ...
+		++sends;
+	}
+
+	return sends;
+}
+
+
+
+/* ****************************************************************************
+*
+* multiSend - 
+*/
+int EndpointManager::multiSend(Endpoint2::Type typ, Message::MessageCode code, void* dataP, int dataLen)
+{
+	int sends = 0;
+
+	for (unsigned int ix = 0; ix < endpoints; ix++)
+	{
+		if (endpoint[ix] != NULL)
+			continue;
+
+		if (endpoint[ix]->type != typ)
+			continue;
+
+		endpoint[ix]->send(Message::Msg, code, dataP, dataLen);
+		++sends;
+	}
+
+	return sends;
+}
+
+
+
+/* ****************************************************************************
+*
+* show - 
+*/
+void EndpointManager::show(const char* why, bool forced)
+{
+	bool verbose = lmVerbose;
+
+	if (forced)
+		lmVerbose = true;
+
+	LM_V((""));
+	LM_V(("-------------------- Endpoint list (%s) ---------------", why));
+	LM_V((""));
+	LM_V(("ix  %-12s id  %-20s Port", "Type", "Name"));
+	LM_V(("-------------------------------------------------------"));
+
+	for (unsigned int ix = 0; ix < endpoints; ix++)
+	{
+		Endpoint2* ep;
+
+		ep = endpoint[ix];
+		if (ep == NULL)
+			continue;
+
+		LM_V(("%02d: %-12s %02d  %-20s %d", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->port));
+	}
+	LM_V(("-------------------------------------------------------"));
+
+	if (forced)
+		lmVerbose = verbose;
+}
+
+
+
+/* ****************************************************************************
+*
+* procVecSet - 
+*/
+int EndpointManager::procVecSet(ProcessVector* _procVec)
+{
+	int size;
+
+	if ((_procVec->processes <= 0) || (_procVec->processes > 100))
+		LM_RE(1, ("Bad number of processes in process vector: %d", _procVec->processes));
+
+	if (procVec)
+		free(procVec);
+
+	size    = sizeof(ProcessVector) + _procVec->processes * sizeof(Process);
+	procVec = (ProcessVector*) malloc(size);
+	memcpy(procVec, _procVec, size);
+
+	platformProcessesSave(procVec);
+	LM_W(("sleeping for a second after  saving Process Vector to file system"));
+	sleep(1);
+
+	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* procVecGet - 
+*/
+ProcessVector* EndpointManager::procVecGet(void)
+{
+	return procVec;
+}
+
+
+
+/* ****************************************************************************
+*
+* tmoSet - 
+*/
+void EndpointManager::tmoSet(int secs, int usecs)
+{
+	tmoSecs   = secs;
+	tmoUSecs  = usecs;
 }
 
 }

@@ -10,7 +10,7 @@
 * CREATION DATE            Apr 06 2011
 *
 */
-#include "NetworkInterface.h"	// ss:NetworkInterface 
+#include "NetworkInterface.h"	// NetworkInterface 
 #include "Host.h"               // Host
 #include "HostMgr.h"            // HostMgr
 #include "Process.h"            // ProcessVector
@@ -44,9 +44,9 @@ private:
 
 	int                       tmoSecs;
 	int                       tmoUSecs;
+	ProcessVector*            procVec;
 
 public:
-	ProcessVector*            procVec;
 	HostMgr*                  hostMgr;
 	
 	Endpoint2*                me;
@@ -54,23 +54,41 @@ public:
 	ListenerEndpoint*         listener;
 	WebListenerEndpoint*      webListener;
 	PacketReceiverInterface*  packetReceiver;
+	DataReceiverInterface*    dataReceiver;
 
-	EndpointManager(Endpoint2::Type _type, unsigned int _endpoints = -1, const char* controllerIp = NULL);
+	EndpointManager(Endpoint2::Type _type, const char* controllerIp = NULL);
 	~EndpointManager();
 
-	void            setupAwait(void);
-	Endpoint2*      add(Endpoint2* ep);
-	Endpoint2*      add(Endpoint2::Type type, int id, const char* name, const char* alias, Host* host, unsigned short port, int rFd, int wFd);
-	void            remove(Endpoint2* ep);
-	Endpoint2*      get(unsigned int index);
-	Endpoint2*      get(unsigned int index, int* rFdP);
-	Endpoint2*      lookup(Endpoint2::Type type, const char* ip);
-	Endpoint2*      lookup(const char* alias);
-	void            list(const char* why, bool forced = false);
-	
-	void            tmoSet(int secs, int usecs);  // Set timeout for select loop
-	void            run(bool oneShot);            // Main run loop - loops forever, unless 'oneShot' is true ...
-	void            setPacketReceiver(PacketReceiverInterface* receiver);
+	void           initWorker();
+	void           initController();
+	void           initSpawner();
+	void           initDelilah(const char* controllerIp);
+	void           initSupervisor();
+
+	int            procVecSet(ProcessVector* _procVec);
+	ProcessVector* procVecGet(void);
+	void           setupAwait(void);
+	Endpoint2*     add(Endpoint2* ep);
+	Endpoint2*     add(Endpoint2::Type type, int id, const char* name, const char* alias, Host* host, unsigned short port, int rFd = -1, int wFd = -1);
+	void           remove(Endpoint2* ep);
+	Endpoint2*     get(unsigned int index);
+	Endpoint2*     get(unsigned int index, int* rFdP);
+	Endpoint2*     lookup(Endpoint2::Type type, const char* ip);
+	Endpoint2*     lookup(Endpoint2::Type type, int id, int* ixP);
+	Endpoint2*     lookup(const char* alias);
+	void           list(const char* why, bool forced = false);
+	int            endpointCount(Endpoint2::Type type);
+	void           show(const char* why, bool forced = false);
+
+	void           tmoSet(int secs, int usecs);  // Set timeout for select loop
+	void           run(bool oneShot);            // Main run loop - loops forever, unless 'oneShot' is true ...
+
+	void           setPacketReceiver(PacketReceiverInterface* receiver);
+	void           setDataReceiver(DataReceiverInterface* receiver);
+
+	size_t         send(PacketSenderInterface* psi,      int endpointIx,       Packet* packetP);
+	int            multiSend(PacketSenderInterface* psi, Endpoint2::Type type, Packet* packetP);
+	int            multiSend(Endpoint2::Type typ, Message::MessageCode code, void* dataP = NULL, int dataLen = 0);
 };
 
 }

@@ -110,12 +110,11 @@ void HostMgr::localIps(void)
 	char   hostName[128];
 	char   domain[128];
 	char   domainedName[128];
-	Host*  hostP;
 
 	if (gethostname(hostName, sizeof(hostName)) == -1)
 		LM_X(1, ("gethostname: %s", strerror(errno)));
 
-	hostP = insert(hostName, "127.0.0.1");
+	localhostP = insert(hostName, "127.0.0.1");
 
 	memset(domainedName, 0, sizeof(domainedName));
 	if (getdomainname(domain, sizeof(domain)) == -1)
@@ -126,12 +125,12 @@ void HostMgr::localIps(void)
 	if (domainedName[0] != 0)
 	{
 		snprintf(domainedName, sizeof(domainedName), "%s.%s", hostName, domain);
-		aliasAdd(hostP, domainedName);
+		aliasAdd(localhostP, domainedName);
 	}
 
-	aliasAdd(hostP, "localhost");
+	aliasAdd(localhostP, "localhost");
 
-	ipsGet(hostP);
+	ipsGet(localhostP);
 }
 
 

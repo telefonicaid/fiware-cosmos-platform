@@ -56,26 +56,51 @@ class Endpoint2
 	friend class WebWorkerEndpoint;
 
 public:
+	typedef enum UpdateReason
+	{
+		ControllerAdded,
+		ControllerDisconnected,
+		ControllerReconnected,
+		ControllerRemoved,
+		SupervisorAdded,
+		EndpointRemoved,
+		HelloReceived,
+		WorkerAdded,
+		WorkerDisconnected,
+		WorkerRemoved,
+		SelectToBeCalled,
+		ProcessVectorReceived
+	} UpdateReason;
+
 	typedef enum Status
 	{
 		OK,
 		NotImplemented,
-		ConnectionClosed,
-		ReadError,
-		WriteError,
-		Timeout,
 
 		NullAlias,
 		BadAlias,
+		NullHost,
 		BadHost,
+		NullPort,
 		Duplicated,
+		KillError,
+		NotHello,
+		NotAck,
+		NotMsg,
+
+		Error,
+		ConnectError,
 		AcceptError,
 		NotListener,
 		SelectError,
-		Error,
 		SocketError,
+		GetHostByNameError,
 		BindError,
-		ListenError
+		ListenError,
+		ReadError,
+		WriteError,
+		Timeout,
+		ConnectionClosed
 	} Status;
 
 	typedef enum State
@@ -89,8 +114,8 @@ public:
 	typedef enum Type  // Move this enum to common/Process, called ProcessType
 	{
 		Unhelloed    = 0,
-		Worker       = 1, /* Must be the same value as libs/common/Process.h:PtWorker      */
-		Controller   = 2, /* Must be the same value as libs/common/Process.h:PtController  */
+		Worker       = 1, // Must be the same value as libs/common/Process.h:PtWorker
+		Controller   = 2, // Must be the same value as libs/common/Process.h:PtController
 		Spawner,
 		Supervisor,
 		Delilah,
@@ -175,7 +200,7 @@ public:
 
 
 
-	Endpoint2*           connect(void);
+	Status               connect(void);
 	Status               msgAwait(int secs, int usecs);
 
 	Status               partRead(void* vbuf, long bufLen, long* bufLenP = NULL);
@@ -183,8 +208,8 @@ public:
 
 	Status               okToSend(void);
 	Status               partSend(void* dataP, int dataLen, const char* what);
-	Status               send(Message::MessageType type, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
-
+	Status               send(Message::MessageType typ, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
+	size_t               send(PacketSenderInterface* psi, Message::MessageCode code, Packet* packetP);
 	virtual void         run(void);
 	Status               msgTreat(void);
 
@@ -197,6 +222,9 @@ public:
 	{
 	   LM_X(1, ("NOT IMPLEMENTED")); return NotImplemented;
 	};
+
+	Status               hello(int secs, int usecs = 0);     // send hello and await ack, with timeout
+	Status               die(int secs, int usecs = 0);       // send 'die' to endpoint, and await death, with timeout
 
 private:
 	Status               listenerPrepare(void);

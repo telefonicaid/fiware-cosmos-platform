@@ -38,6 +38,7 @@ public:
 	void    aliasAdd(Host* host, const char* alias);
 	void    ipSet(Host* host, const char* alias);
 	void    list(const char* why);
+	Host*   localhostP;
 
 private:
 	void          localIps(void);

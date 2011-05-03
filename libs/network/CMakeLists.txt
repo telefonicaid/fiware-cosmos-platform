@@ -27,6 +27,8 @@ SET (HEADERS
 	UnhelloedEndpoint.h
 	WebListenerEndpoint.h
 	WebWorkerEndpoint.h
+	WorkerEndpoint.h
+	ControllerEndpoint.h
 )
 
 SET (SOURCES
@@ -56,6 +58,8 @@ SET (SOURCES
 	UnhelloedEndpoint.cpp
 	WebListenerEndpoint.cpp
 	WebWorkerEndpoint.cpp
+	WorkerEndpoint.cpp
+	ControllerEndpoint.cpp
 )
 
 # Include directories

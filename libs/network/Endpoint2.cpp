@@ -73,9 +73,6 @@ Endpoint2::Endpoint2
 	if (_alias != NULL)
 		alias = strdup(_alias);
 
-	if ((type == Listener) || (type == WebListener))
-		listenerPrepare();
-
 	msgsIn        = 0;
 	msgsOut       = 0;
 	msgsInErrors  = 0;
@@ -479,7 +476,9 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP)
 		if (s != 1)
 			LM_RE(s, ("msgAwait(%s): %s", name, status(s)));
 
+		LM_M(("Reading from fd %d", rFd));
 		nb = read(rFd, (void*) &buf[tot] , bufLen - tot);
+		LM_M(("read returned %d", nb));
 		if (nb == -1)
 		{
 			if (errno == EBADF)
@@ -508,43 +507,36 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP)
 Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, int* dataLenP, Packet* packetP)
 {
 	Status s;
+	long   bufLen;
 
-	if (type == Listener)
-	{
+	if ((type == Listener) || (type == WebListener))
 		LM_X(1, ("Listener endpoint - should never get here ..."));
-
-		// This to be moved to ListenerEndpoint ...
-#if 0
-		if (accept(true) == NULL)
-			return AcceptError;
-		else
-			return OK;
-#endif
-	}
 
 	*dataPP = NULL;
 
-	s = partRead(headerP, sizeof(Message::Header));
+	s = partRead(headerP, sizeof(Message::Header), &bufLen);
 	if (s != OK)
 		LM_RE(s, ("partRead::Header(%s): %s", name, status(s)));
 
+	LM_M(("Read %d bytes of header", bufLen));
 	if (headerP->dataLen != 0)
 	{
 		*dataPP = calloc(1, headerP->dataLen);
 
-		s = partRead(*dataPP, headerP->dataLen);
+		s = partRead(*dataPP, headerP->dataLen, &bufLen);
 		if (s != OK)
 		{
 			free(*dataPP);
 			LM_RE(s, ("partRead::Data(%s): %s", name, status(s)));
 		}
+		LM_M(("Read %d bytes of data", bufLen));
 	}
 
 	if (headerP->gbufLen != 0)
 	{
 		char* dataP = (char*) calloc(1, headerP->gbufLen + 1);
 
-		s = partRead(dataP, headerP->gbufLen);
+		s = partRead(dataP, headerP->gbufLen, &bufLen);
 		if (s != OK)
 		{
 			free(dataP);
@@ -552,6 +544,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, in
 				free(*dataPP);
 			LM_RE(s, ("partRead::GoogleProtocolBuffer(%s): %s", name, status(s)));
 		}
+		LM_M(("Read %d bytes of google data", bufLen));
 
 		packetP->message->ParseFromArray(dataP, headerP->gbufLen);
 		if (packetP->message->IsInitialized() == false)
@@ -576,6 +569,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, in
 		s = partRead(kvBuf, headerP->kvDataLen, &nb);
 		if (s != OK)
 			LM_RE(s, ("partRead::kvData(%s): %s", kvName, status(s)));
+		LM_M(("Read %d bytes of KV data", nb));
 
 		packetP->buffer->setSize(nb);
 	}
@@ -589,21 +583,23 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, in
 *
 * connect - 
 */
-Endpoint2* Endpoint2::connect(void)
+Endpoint2::Status Endpoint2::connect(void)
 {
 	struct hostent*     hp;
 	struct sockaddr_in  peer;
 
 	if (host == NULL)
-		LM_RE(NULL, ("Cannot connect to endpoint '%s' with NULL host!", name));
+		LM_RE(NullHost, ("Cannot connect to endpoint '%s' with NULL host!", name));
 	if (port == 0)
-		LM_RE(NULL, ("Cannot connect to '%s@%s' - port is ZERO", name, host->name));
+		LM_RE(NullPort, ("Cannot connect to '%s@%s' - port is ZERO", name, host->name));
+
+	LM_T(LmtConnect, ("Trying to connect to %s at %s:%d", name, host->name, port));
 
 	if ((hp = gethostbyname(host->name)) == NULL)
-	   LM_RE(NULL, ("gethostbyname(%s): %s", host->name, strerror(errno)));
+		LM_RE(GetHostByNameError, ("gethostbyname(%s): %s", host->name, strerror(errno)));
 
 	if ((rFd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		LM_RE(NULL, ("socket: %s", strerror(errno)));
+		LM_RE(SocketError, ("socket: %s", strerror(errno)));
 	
 	wFd = rFd;
 
@@ -621,7 +617,7 @@ Endpoint2* Endpoint2::connect(void)
 			close(rFd);
 			rFd = -1;
 			wFd = -1;
-			LM_RE(NULL, ("Cannot connect to %s, port %d", host->name, port));
+			LM_RE(ConnectError, ("Cannot connect to %s, port %d", host->name, port));
 		}
 	}
 
@@ -635,9 +631,7 @@ Endpoint2* Endpoint2::connect(void)
 	s = setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &bufSize, sizeof(bufSize));
 	if (s != 0)
 		LM_X(1, ("setsockopt(SO_SNDBUF): %s", strerror(errno)));
-#endif
 
-#if 0
 	// Disable the Nagle (TCP No Delay) algorithm
 	int flag = 1;
 	s = setsockopt(wFd, IPPROTO_TCP, TCP_NODELAY, (char*) &flag, sizeof(flag));
@@ -647,7 +641,7 @@ Endpoint2* Endpoint2::connect(void)
 
 	LM_T(LmtConnect, ("connected to '%s', port %d on fd %d", host->name, port, wFd));
 
-	return NULL;
+	return OK;
 }
 
 
@@ -715,6 +709,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	if (type == WebWorker)
 		return msgTreat2();
 	
+	LM_M(("Reading a message from '%s' '%s@%s', type '%s'", name, alias, host->name, typeName()));
 	s = receive(&header, &dataP, &dataLen, &packet);
 	if (s != 0)
 		LM_RE(s, ("receive error '%s'", status(s)));
@@ -725,6 +720,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	switch (header.code)
 	{
 	default:
+		LM_M(("Cannot treat '%s' '%s' (code %d), passing it to msgTreat2", messageCode(header.code), messageType(header.type), header.code));
 		s = msgTreat2(&header, dataP, dataLen, &packet);
 		if (s != OK)
 			LM_RE(s, ("msgTreat2: %s", s));
@@ -787,27 +783,53 @@ const char* Endpoint2::status(Status s)
 	{
 	case OK:                   return "OK";
 	case NotImplemented:       return "NotImplemented";
-	case ConnectionClosed:     return "ConnectionClosed";
-	case Timeout:              return "Timeout";
 
 	case NullAlias:            return "NullAlias";
 	case BadAlias:             return "BadAlias";
+	case NullHost:             return "NullHost";
 	case BadHost:              return "BadHost";
+	case NullPort:             return "NullPort";
 	case Duplicated:           return "Duplicated";
+	case KillError:            return "KillError";
+	case NotHello:             return "NotHello";
+	case NotAck:               return "NotAck";
+	case NotMsg:               return "NotMsg";
 
 	case Error:                return "Error";
-	case ReadError:            return "ReadError";
-	case WriteError:           return "WriteError";
+	case ConnectError:         return "ConnectError";
 	case AcceptError:          return "AcceptError";
 	case NotListener:          return "NotListener";
 	case SelectError:          return "SelectError";
+	case SocketError:          return "SocketError";
+	case GetHostByNameError:   return "GetHostByNameError";
 	case BindError:            return "BindError";
 	case ListenError:          return "ListenError";
-	case SocketError:          return "SocketError";
+	case ReadError:            return "ReadError";
+	case WriteError:           return "WriteError";
+	case Timeout:              return "Timeout";
+	case ConnectionClosed:     return "ConnectionClosed";
 	}
 
 	return "Unknown Status";
 }
+
+
+
+/* ****************************************************************************
+*
+* send - 
+*/
+size_t Endpoint2::send(PacketSenderInterface* psi, Message::MessageCode code, Packet* packetP)
+{
+	// semTake(jobQueueSem);
+	// jobEnqueue(pi, code, packetP);
+	// semGive(jobQueueSem);
+	//
+	// The thread will notice the packet at next run-timeout
+	//
+	return 0;
+}
+
 
 
 /* ****************************************************************************
@@ -819,6 +841,75 @@ void Endpoint2::run()
 	LM_M(("Endpoint '%s@%s' is running", name, host->name));
 	while (1)
 		msgTreat();
+}
+
+
+
+/* ****************************************************************************
+*
+* hello - send hello and await ack, with timeout
+*/
+Endpoint2::Status Endpoint2::hello(int secs, int usecs)
+{
+	Message::HelloData   h;
+	Message::Header      header;
+	void*                dataP = &header;
+	int                  dataLen;
+	Endpoint2::Status    s;
+	Packet               packet(Message::Hello);
+
+	strncpy(h.name,  epMgr->me->nameGet(),  sizeof(h.name)  - 1);
+	strncpy(h.ip,    epMgr->me->hostname(), sizeof(h.ip)    - 1);
+	strncpy(h.alias, epMgr->me->aliasGet(), sizeof(h.alias) - 1);
+
+	h.type      = epMgr->me->typeGet();
+	h.workers   = -1;     // no longer used?
+	h.coreNo    = -1;     // no longer used?
+	h.workerId  = -1;     // no longer used?
+
+	if ((s = send(Message::Msg, Message::Hello, &h, sizeof(h))) != OK)
+		LM_RE(s, ("send(Hello Msg): %s", status(s)));
+
+	if ((s = msgAwait(secs, usecs)) != OK)
+		LM_RE(s, ("msgAwait: %s", status(s)));
+
+	dataLen = sizeof(h);
+	if ((s = receive(&header, &dataP, &dataLen, &packet)) != OK)
+		LM_RE(s, ("receive: %s", status(s)));
+
+	if (header.code != Message::Hello)
+		LM_RE(NotHello, ("Wanted an ack for a hello, got a '%s' for '%s'", Message::messageType(header.type), Message::messageCode(header.code)));
+	if (header.type != Message::Ack)
+		LM_RE(NotAck, ("Wanted an ack for a hello, got a '%s' for '%s'",   Message::messageType(header.type), Message::messageCode(header.code)));
+
+	return OK;
+}
+
+
+
+/* ****************************************************************************
+*
+* die - send die to endpoint and await death, with timeout
+*/
+Endpoint2::Status Endpoint2::die(int secs, int usecs)
+{
+	char    c;
+	int     nb;
+	Status  s;
+
+	if ((s = send(Message::Msg, Message::Die)) != OK)
+		LM_RE(s, ("send(Die Msg): %s", status(s)));
+
+	if ((s = msgAwait(secs, usecs)) != OK)
+		LM_RE(s, ("msgAwait: %s", status(s)));
+
+	nb = read(rFd, &c, 1);
+	if (nb == -1)
+		LM_RE(ReadError, ("Expected to read 0 bytes, meaning 'Connection Closed', but read() returned -1: %s", strerror(errno)));
+	else if (nb != 0)
+		LM_RE(KillError, ("Endpoint not dead, even though a Die message was sent!"));
+
+	return OK;
 }
 
 }

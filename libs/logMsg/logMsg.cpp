@@ -1621,7 +1621,6 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 	int   i;
 	char  line[LINE_MAX];
 	int   sz;
-	int   nb;
 	char  format[FORMAT_LEN + 1];
 	char* tmP;
 
@@ -1699,18 +1698,7 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 		if (fds[i].write != NULL)
 			fds[i].write(line);
 		else
-		{
-			if ((nb = write(fds[i].fd, line, sz)) != sz)
-			{
-				if ((nb == -1) && (errno != EINTR))
-				{
-					LM_E(("written only %d bytes instead of %d", nb, sz));
-					exit(191);
-				}
-
-				return LmsWrite;
-			}
-		}
+		   write(fds[i].fd, line, sz);
 	}
 	
 	++logLines;

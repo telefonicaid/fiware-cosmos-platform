@@ -44,7 +44,7 @@ namespace engine
         
         memoryManager =  new MemoryManager( _memory );
         
-        atexit( destroy_memory_manager );
+        //atexit( destroy_memory_manager );
         
     }
 

@@ -299,7 +299,9 @@ namespace ss
 		if( status != completed)
 			if( error.isActivated() )
 			{
-                LM_M(("There has been an error in task %lu ('%s'). Moving status to completed", task_id , error.getMessage().c_str() ));
+                LM_M(("There has been an error for some task . Moving status to completed" ));
+                //LM_M(("There has been an error in task %lu. Moving status to completed", task_id ));
+                //LM_M(("There has been an error in task %lu ('%s'). Moving status to completed", task_id , error.getMessage().c_str() ));
 				status = completed;
 				
 				// Send complete message with error
@@ -493,7 +495,7 @@ namespace ss
 		}
 	}	
 
-	void WorkerTask::sendUpdateMessageToController( KVInfo running_info , KVInfo processed_info )
+	void WorkerTask::sendUpdateMessageToController( FullKVInfo running_info , FullKVInfo processed_info )
 	{
 		NetworkInterface *network = taskManager->worker->network;
 		

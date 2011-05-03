@@ -137,7 +137,7 @@ void EndpointManager::initWorker(void)
 	//
 	// Process Vector
 	//
-	int       ix;
+	int       ix=0;
 	Process*  self = NULL;
 
 	if ((procVec = platformProcessesGet()) == NULL)

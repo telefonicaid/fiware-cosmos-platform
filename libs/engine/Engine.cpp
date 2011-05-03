@@ -89,7 +89,7 @@ namespace engine
 		engine = new Engine();
 	
         // At exit destroy
-        atexit( destroy_engine  );
+        //atexit( destroy_engine  );
 
 	}
     

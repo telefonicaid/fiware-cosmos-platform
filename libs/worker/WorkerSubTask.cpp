@@ -162,7 +162,7 @@ namespace ss
                     status = waiting_process;
                     
                     // Send a progress report to controller
-                    task->sendUpdateMessageToController( info , KVInfo(0,0) );
+                    task->sendUpdateMessageToController( info , FullKVInfo(0,0) );
                     
                     run_process();
                     
@@ -180,7 +180,7 @@ namespace ss
                     status = finished;
                     
                     // Send a progress report to controller
-                    task->sendUpdateMessageToController( KVInfo(0,0) , info );
+                    task->sendUpdateMessageToController( FullKVInfo(0,0) , info );
                     
                     // Notification that this sub-task is finished
                     engine::Notification * notification  = new engine::Notification( notification_sub_task_finished );

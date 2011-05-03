@@ -180,7 +180,7 @@ namespace ss {
 		void sendFinishTaskMessageToController( );		
 		void sendCompleteTaskMessageToController( );		
     public:
-        void sendUpdateMessageToController( KVInfo running_info , KVInfo processed_info );
+        void sendUpdateMessageToController( FullKVInfo running_info , FullKVInfo processed_info );
 
         
         

@@ -1,5 +1,6 @@
 
-* Disk report no opertions when running only 11
+* Report progress of reduce operations
+ 
 
 ----------------------------------------------------------------------------------------------------
 he estado haciendo pruebas, con el ultimo comit delilah vuelve a tener comportamientos extraños, como aquel que se dejaba el prompt del cliente al lado de otro prompt junto con el último comando que habías ejecutado. Ejemplo: help devuelve un "Delilah> helpDelilah>" y esto pasa también con los resultados de algunas operaciones.

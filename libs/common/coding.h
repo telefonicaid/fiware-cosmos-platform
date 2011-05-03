@@ -548,7 +548,7 @@ namespace ss {
 		int *num_input_files;		// Number of input files per input channels
 		int total_num_input_files;	// Total number of files
 
-		KVInfo *info_hg;            // Vector with the total info per hash_group ( necessary when organizing reduce );
+		FullKVInfo *info_hg;            // Vector with the total info per hash_group ( necessary when organizing reduce );
 		
 		size_t total_size;
 		
@@ -572,7 +572,7 @@ namespace ss {
 			}
 			
 			// Size of each hash-group
-			info_hg = (KVInfo*) malloc( KVFILE_NUM_HASHGROUPS * sizeof(KVInfo) );
+			info_hg = (FullKVInfo*) malloc( KVFILE_NUM_HASHGROUPS * sizeof(FullKVInfo) );
 			
 		}
 		

@@ -51,7 +51,7 @@ namespace ss
         // Error management
         au::Error error;
         
-        KVInfo info;                    // Input data used in this task ( used to report progress to controller )
+        FullKVInfo info;                    // Input data used in this task ( used to report progress to controller )
         
         typedef enum 
         {

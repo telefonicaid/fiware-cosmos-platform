@@ -1066,7 +1066,7 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Packe
 
     // If not sender-thread, just send and delete the packet
 	nb = iomMsgSend(ep, endpoint[ME], code, Message::Msg, NULL, 0, packetP);
-    delete packetP;
+    //delete packetP;
 
 	return 0;
 }

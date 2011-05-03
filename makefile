@@ -40,6 +40,8 @@ debuginstall: debug
 distribute: install
 	./scripts/samsonDistribute
 
+d:	distribute
+
 dd:	debugdistribute
 
 debugdistribute: debuginstall

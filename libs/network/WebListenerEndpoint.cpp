@@ -143,7 +143,7 @@ UnhelloedEndpoint* WebListenerEndpoint::accept(void)
 	if (hostP == NULL)
 		hostP = epMgr->hostMgr->insert(NULL, hostName);
 
-	ep = new UnhelloedEndpoint(epMgr, 0, NULL, NULL, hostP, 0, fd, fd);
+	ep = new UnhelloedEndpoint(epMgr, hostP, 0, fd, fd);
 	epMgr->add(ep);
 
 	return ep;

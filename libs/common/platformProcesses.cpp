@@ -107,7 +107,7 @@ ProcessVector* platformProcessesGet(int* sizeP)
 	LM_T(LmtProcessVector, ("Retrieving Process Vector"));
 
 	if ((fd = open(ppFile, O_RDONLY)) == -1)
-		LM_RE(NULL, ("error opening samson platform processes file '%s': %s", ppFile, strerror(errno)));
+		return NULL;
 	else if ((s = stat(ppFile, &statBuf)) == -1)
 	{
 		LM_E(("stat(%s): %s", ppFile, strerror(errno)));

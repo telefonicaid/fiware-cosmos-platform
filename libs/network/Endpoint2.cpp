@@ -70,9 +70,14 @@ Endpoint2::Endpoint2
 
 	if (_name != NULL)
 		name  = strdup(_name);
+	else
+		name  = strdup("endpoint");
+
 	if (_alias != NULL)
 		alias = strdup(_alias);
-
+	else
+		alias = strdup("endpoint");
+	
 	msgsIn        = 0;
 	msgsOut       = 0;
 	msgsInErrors  = 0;
@@ -383,6 +388,17 @@ Endpoint2::Status Endpoint2::partSend(void* dataP, int dataLen, const char* what
 
 /* ****************************************************************************
 *
+* ack - 
+*/
+Endpoint2::Status Endpoint2::ack(Message::MessageCode code, void* data, int dataLen)
+{
+	return send(Message::Ack, code, data, dataLen);
+}
+
+
+
+/* ****************************************************************************
+*
 * send - 
 */
 Endpoint2::Status Endpoint2::send
@@ -488,14 +504,15 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP)
 {
 	ssize_t  tot = 0;
 	Status   s;
-	const char* buf = (const char*) vbuf;
+	char*    buf = (char*) vbuf;
 
+	LM_M(("Reading %d bytes of data", bufLen));
 	while (tot < bufLen)
 	{
 		ssize_t nb;
 
 		s = msgAwait(0, 500000);
-		if (s != 1)
+		if (s != OK)
 			LM_RE(s, ("msgAwait(%s): %s", name, status(s)));
 
 		LM_M(("Reading from fd %d", rFd));
@@ -515,8 +532,12 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP)
 	}
 
 	if (bufLenP)
+	{
 		*bufLenP = tot;
+		LM_M(("Set *bufLenP to %d", *bufLenP));
+	}
 
+	LM_M(("Read %d bytes of data", tot));
 	return OK;
 }
 
@@ -536,15 +557,17 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, in
 
 	*dataPP = NULL;
 
+	LM_M(("Calling partRead for header"));
 	s = partRead(headerP, sizeof(Message::Header), &bufLen);
 	if (s != OK)
 		LM_RE(s, ("partRead::Header(%s): %s", name, status(s)));
 
-	LM_M(("Read %d bytes of header", bufLen));
+	LM_M(("Read header of %d bytes (next is %d bytes of data)", bufLen, headerP->dataLen));
 	if (headerP->dataLen != 0)
 	{
 		*dataPP = calloc(1, headerP->dataLen);
 
+		LM_M(("Calling partRead for data"));
 		s = partRead(*dataPP, headerP->dataLen, &bufLen);
 		if (s != OK)
 		{

@@ -101,7 +101,13 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 	//
 	// Create the endpoint 'me'
 	//
-	me = new Endpoint2(this, type, 0, "unknown name", "unknown alias", host); // port == 0 by default
+	//  Who sets name and alias?
+	//    Controller:  when ProcessVector is read from file
+	//    Worker:      when ProcessVector is read from file
+	//    Spawner:     NOWHERE !!!
+	//    Delilah:     NOWHERE !!!
+	//
+	me = new Endpoint2(this, type, -1, NULL, NULL, host); // id == -1, port == 0 ...
 	if (me == NULL)
 		LM_X(1, ("error allocating 'me' endpoint: %s", strerror(errno)));
 
@@ -404,7 +410,7 @@ Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, const char* name, 
 		break;
 
 	case Endpoint2::Unhelloed:
-		ep = new UnhelloedEndpoint(this, id, name, alias, host, port, rFd, wFd);
+		ep = new UnhelloedEndpoint(this, host, port, rFd, wFd);
 		break;
 
 	case Endpoint2::Worker:
@@ -599,48 +605,54 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 	if (listener == NULL)
 		LM_RE(Endpoint2::Error, ("Cannot await the setup to arrive if I have no Listener ..."));
 
-	LM_V(("Awaiting samsonSetup/Spawner to connect and forward the Process Vector"));
+	LM_M(("Awaiting samsonSetup/Spawner to connect and forward the Process Vector"));
 	while (1)
 	{
 		UnhelloedEndpoint* ep;
 
-		// Await FOREVER for an incoming connection
+		LM_M(("Await FOREVER for an incoming connection"));
 		if (listener->msgAwait(-1, -1) != 0)
 			LM_X(1, ("Endpoint2::msgAwait error"));
+		LM_M(("Detected an incoming connection"));
 
-
+		LM_M(("Accepting the incoming connection"));
 		if ((ep = listener->accept()) == NULL)
 		{
 			LM_E(("error accepting an incoming connection"));
 			continue;
 		}
+		LM_M(("Accepted the incoming connection, fds: %d, %d", ep->rFdGet(), ep->wFdGet()));
 
+		LM_M(("Exchanging helloes"));
 		if ((s = ep->helloExchange(5, 0)) != Endpoint2::OK)
 		{
 			LM_E(("Hello Exchange error: %s", ep->status(s)));
 			delete ep;
 			continue;
 		}
+		LM_M(("Helloes exchanged"));
 
 		
 		// Is the newly connected peer a 'samsonSetup' ?
+		LM_M(("Checking Endpoint type of the other side"));
 		if ((ep->type != Endpoint2::Setup) && (ep->type != Endpoint2::Spawner))
 		{
 			LM_E(("The incoming connection was from a '%s' (only Setup and Spawner allowed)", ep->typeName()));
 			delete ep;
 			continue;
 		}
-
+		LM_M(("Endpoint type: %s", ep->typeName()));
 
 		// Hello exchanged, now the endpoint will send a ProcessVector message
 		// Awaiting the message to arrive 
+		LM_M(("Awaiting ProcessVector message to arrive from '%s@%s'", ep->nameGet(), ep->hostname()));
 		if ((s = ep->msgAwait(5, 0)) != 0)
 		{
 			LM_E(("msgAwait(ProcessVector): %s", ep->status(s)));
 			delete ep;
 			continue;
 		}
-
+		LM_M(("Something to read, hopefully a Process Vector ..."));
 
 		// Reading the message (supposed ProcessVector)
 		Message::Header  header;
@@ -648,6 +660,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		int              dataLen = 0;
 		Packet           packet(Message::Unknown);
 
+		LM_M(("Receiving the message"));
 		if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != 0)
 		{
 			LM_E(("Endpoint2::receive error"));
@@ -665,7 +678,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 			delete ep;
 			continue;
 		}
-
+		LM_M(("All OK - it was a ProcessVector Msg"));
 
 		// Copying 
 		this->procVec = (ProcessVector*) malloc(dataLen);
@@ -676,21 +689,30 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		free(dataP);
 
 
-		// Await samsonSetup to close connection ?
+		LM_M(("Acknowledging the Process Vector"));
+		if ((s = ep->ack(header.code)) != Endpoint2::OK)
+			LM_E(("Error acking Process Vector: %s", ep->status(s)));
+
+		LM_M(("Await samsonSetup to close connection"));
 		if (ep->type == Endpoint2::Setup)
 		{
 			if ((s = ep->msgAwait(2, 0)) != Endpoint2::OK)
 				LM_W(("All OK, except that samsonSetup didn't close connection in time. msgAwait(): %s", ep->status(s)));
 			else if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != Endpoint2::ConnectionClosed)
 				LM_W(("All OK, except that samsonSetup didn't close connection when it was supposed to. receive(): %s", ep->status(s)));
+			else
+				LM_M(("Everything's just perfect"));
 
+			LM_M(("I now have the process vector and I can start my processes and also send the process vector to the other spawners"));
 			delete ep;
 			return Endpoint2::OK;
 		}
 
+
 		//
 		// So, the message came from another samsonSpawner ...
 		//
+		LM_M(("Creating spawner endpoint from the 'unhelloed' + the Hello data received from the remote spawner"));
 		SpawnerEndpoint* spawner = new SpawnerEndpoint(ep);
 		if (add(spawner) == NULL)
 			LM_W(("error adding spawner"));

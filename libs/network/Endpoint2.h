@@ -212,6 +212,7 @@ public:
 	Status               okToSend(void);
 	Status               partSend(void* dataP, int dataLen, const char* what);
 	Status               send(Message::MessageType typ, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
+	Status               ack(Message::MessageCode code, void* data = NULL, int dataLen = 0);
 	size_t               send(PacketSenderInterface* psi, Message::MessageCode code, Packet* packetP);
 	virtual void         run(void);
 	Status               msgTreat(void);

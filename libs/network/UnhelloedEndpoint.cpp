@@ -33,6 +33,15 @@ namespace ss
 */
 static Process* processLookup(ProcessVector* procVec, const char* alias)
 {
+	if (procVec == NULL)
+		LM_RE(NULL, ("NULL process vector"));
+
+	if (alias == NULL)
+		LM_RE(NULL, ("NULL alias"));
+
+	if (alias[0] == 0)
+		LM_RE(NULL, ("EMPTY alias"));
+
 	for (int ix = 0; ix < procVec->processes; ix++)
 	{
 		Process* p = &procVec->processV[ix];
@@ -53,14 +62,11 @@ static Process* processLookup(ProcessVector* procVec, const char* alias)
 UnhelloedEndpoint::UnhelloedEndpoint
 (
 	EndpointManager*  _epMgr,
-	int               _id,
-	const char*       _name,
-	const char*       _alias,
 	Host*             _host,
 	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
-) : Endpoint2(_epMgr, Unhelloed, _id, _name, _alias, _host, _port, _rFd, _wFd)
+) : Endpoint2(_epMgr, Unhelloed, -1, "unhelloed", "unhelloed", _host, _port, _rFd, _wFd)
 {
 }
 
@@ -129,12 +135,17 @@ Endpoint2::Status UnhelloedEndpoint::helloDataSet(Type _type, const char* _name,
 	if (_alias == NULL)
 		LM_RE(NullAlias, ("NULL alias"));
 
-	if ((proc = processLookup(epMgr->procVecGet(), _alias)) == NULL)
-		LM_RE(BadAlias, ("alias '%s' not found in process vector", _alias));
-
-	if (epMgr->hostMgr->match(host, proc->host) == false)  // Host could become a class and do its own matching
-		LM_RE(BadHost, ("The host for alias '%s' must be '%s'. This endpoints host ('%s') is incorrect",
-						_alias, hostname(), proc->host));
+	// If we have the process vector, check that alias is consistent
+	if (epMgr->procVecGet() != NULL)
+	{
+		if ((proc = processLookup(epMgr->procVecGet(), _alias)) != NULL)
+		{
+			LM_TODO(("Host could become a class and do its own matching"));
+			if (epMgr->hostMgr->match(host, proc->host) == false)  
+				LM_RE(BadHost, ("The host for alias '%s' must be '%s'. This endpoints host ('%s') is incorrect",
+								_alias, hostname(), proc->host));
+		}
+	}
 
 	if (epMgr->lookup(_type, _alias) != NULL)
 		LM_RE(Duplicated, ("Duplicated process"));
@@ -186,27 +197,31 @@ Endpoint2::Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 	Packet                packet(Message::Unknown);
 	Endpoint2::Status     s;
 
+	LM_M(("Sending Hello Msg to %s@%s", name, hostname()));
+	if ((s = helloSend(Message::Msg)) != 0)
+	{
+		free(dataP);
+		LM_RE(s, ("helloSend(%s@%s): %s", helloP->alias, hostname(), status(s)));
+	}
+	LM_M(("Hello sent successfully"));
+
+	LM_M(("Awaiting reply"));
 	if ((s = msgAwait(secs, usecs)) != 0)
 		LM_RE(s, ("Endpoint2::msgAwait(expecting Hello): %s", status(s)));
+	LM_M(("Reply seems on its way in"));
 
+	LM_M(("Reading reply"));
 	if ((s = receive(&header, &dataP, &dataLen, &packet)) != OK)
 		LM_RE(s, ("Endpoint2::receive(expecting Hello): %s", status(s)));
 
-	// Checking validity of message
-	if ((header.code != Message::Hello) || (header.type != Message::Msg))
+	LM_M(("Checking validity of reply (code: 0x%x)", header.code));
+	if ((header.code != Message::Hello) || (header.type != Message::Ack))
 	{
 		free(dataP);
 		LM_RE(Error, ("Message read not a Hello Msg (%s %s)", messageCode(header.code), messageType(header.type)));
 	}
 
-	// Responding to the Hello
-	if ((s = helloSend(Message::Ack)) != 0)
-	{
-		free(dataP);
-		LM_RE(s, ("helloSend(%s@%s): %s", helloP->alias, hostname(), status(s)));
-	}
-
-	// Adapting the KNOWN endpoints characteristics
+    LM_M(("Adapting the KNOWN endpoints characteristics"));
 	helloP = (Message::HelloData*) dataP;
 	if ((s = helloDataSet((Endpoint2::Type) helloP->type, helloP->name, helloP->alias)) != OK)
 	{
@@ -215,7 +230,7 @@ Endpoint2::Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 	}
 
 	free(dataP);
-	LM_M(("Successful Hewllo interchange"));
+	LM_M(("Successful Hello interchange"));
 	
 	return OK;
 }

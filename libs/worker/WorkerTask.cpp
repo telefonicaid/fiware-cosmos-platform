@@ -250,6 +250,7 @@ namespace ss
                 // Send a close message to all the workers
                 sendCloseMessages();
                 status = local_content_finished;
+                LM_M(("Task %lu: Status changed to local content finished", task_id));
             }
 		}
 		
@@ -262,6 +263,8 @@ namespace ss
 				
 				// Now the status is waiting for the all the workers confirm ( me included ) finish generating data
 				status = all_content_finish;	
+                LM_M(("Task %lu: Status changed to all content finished", task_id));
+
 			}
 		}
 		
@@ -274,6 +277,7 @@ namespace ss
 				
 				// Send a message indicating that operation finished
 				sendFinishTaskMessageToController();
+                LM_M(("Task %lu: Status changed to finished", task_id));
 			}
 		}
 		
@@ -286,6 +290,7 @@ namespace ss
 				
 				//Send a message to the controller to notify about this
 				sendCompleteTaskMessageToController();
+                LM_M(("Task %lu: Status changed to completed", task_id));
 			}
 		
 		
@@ -294,6 +299,7 @@ namespace ss
 		if( status != completed)
 			if( error.isActivated() )
 			{
+                LM_M(("There has been an error in task %lu ('%s'). Moving status to completed", task_id , error.getMessage().c_str() ));
 				status = completed;
 				
 				// Send complete message with error
@@ -313,7 +319,12 @@ namespace ss
 		
 	void WorkerTask::finishWorker( int worker_from )
 	{
+        
 		num_finished_workers++;
+        
+        LM_M(("Finish worker message received for task %lu from worker_from %d. Now the state is %d / %d workers have finished producing content ", 
+                task_id , worker_from , num_finished_workers , num_workers ));
+        
 		check();
 	}
 	

@@ -141,7 +141,6 @@ namespace ss {
 		WorkerTask *t = task.findInMap( task_id );
 		if( t )
         {
-            LM_M(("Finish worker message received for task %lu from worker_from %d ", task_id , worker_from ));
 			t->finishWorker( worker_from );
         }
         else

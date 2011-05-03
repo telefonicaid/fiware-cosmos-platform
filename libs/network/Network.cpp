@@ -1456,7 +1456,7 @@ Endpoint* Network::endpointAdd
 
 	hostP = hostMgr->lookup(ip.c_str());
 	if (hostP == NULL)
-		LM_W(("Host '%s' not found in host manager list", ip.c_str()));
+		LM_T(LmtEndpoint,("Host '%s' not found in host manager list", ip.c_str()));
 	else if (endpointLookup(type, hostP) != NULL)
 		LM_W(("**************** A '%s' endpoint '%s@%s' already exists (%s) ********************", endpoint[ME]->typeName(type), name, hostP->name, why));
 
@@ -1515,7 +1515,7 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 {
 	int ix;
 
-	LM_W(("Removing endpoint %p (%s@%s): %s", ep, ep->name.c_str(), ep->ip, why));
+	LM_T(LmtEndpoint,("Removing endpoint %p (%s@%s): %s", ep, ep->name.c_str(), ep->ip, why));
 
 	if (ep == NULL)
 		LM_RVE(("CANNOT remove NULL endpoint"));
@@ -1564,7 +1564,7 @@ void Network::endpointRemove(Endpoint* ep, const char* why)
 
 			if (ep->type != Endpoint::Temporal)
 			{
-				LM_W(("Closing fd %d for endpoint '%s'", ep->rFd, ep->name.c_str()));
+				LM_T(LmtEndpoint,("Closing fd %d for endpoint '%s'", ep->rFd, ep->name.c_str()));
 				if (ep->rFd != -1)
 					close(ep->rFd);
 				if ((ep->wFd != ep->rFd) && (ep->wFd != -1))
@@ -3321,7 +3321,7 @@ void Network::run(void)
 					Endpoint*    ep;
 
 					hostMgr->insert(hostName, NULL);
-					LM_M(("Adding endpoint with fds %d %d", fd, fd));
+					LM_T(LmtEndpoint,("Adding endpoint with fds %d %d", fd, fd));
 					ep = endpointAdd("'run' just accepted an incoming connection",
 									 fd, fd, (char*) s.c_str(), NULL, 0, Endpoint::Temporal, hostName, 0);
 

@@ -103,6 +103,17 @@ Endpoint2::~Endpoint2()
 
 /* ****************************************************************************
 *
+* epMgrGet - 
+*/
+EndpointManager* Endpoint2::epMgrGet(void)
+{
+	return epMgr;
+}
+
+
+
+/* ****************************************************************************
+*
 * hostGet - 
 */
 Host* Endpoint2::hostGet(void)
@@ -288,6 +299,17 @@ Endpoint2::State Endpoint2::stateGet(void)
 int Endpoint2::rFdGet(void)
 {
 	return rFd;
+}
+
+
+
+/* ****************************************************************************
+*
+* wFdGet - 
+*/
+int Endpoint2::wFdGet(void)
+{
+	return wFd;
 }
 
 

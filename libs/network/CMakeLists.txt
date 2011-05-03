@@ -29,6 +29,7 @@ SET (HEADERS
 	WebWorkerEndpoint.h
 	WorkerEndpoint.h
 	ControllerEndpoint.h
+	SpawnerEndpoint.h
 )
 
 SET (SOURCES
@@ -60,6 +61,7 @@ SET (SOURCES
 	WebWorkerEndpoint.cpp
 	WorkerEndpoint.cpp
 	ControllerEndpoint.cpp
+	SpawnerEndpoint.cpp
 )
 
 # Include directories

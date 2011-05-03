@@ -172,6 +172,8 @@ private:
 	int                  msgsOutErrors;
 
 public:
+	EndpointManager*     epMgrGet();
+
 	static const char*   typeName(Type type);
 	const char*          typeName(void);
 	Type                 typeGet(void);
@@ -197,6 +199,7 @@ public:
 	void                 stateSet(State _state);
 
 	int                  rFdGet(void);
+	int                  wFdGet(void);
 
 
 

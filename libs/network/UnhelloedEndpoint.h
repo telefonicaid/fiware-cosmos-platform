@@ -42,9 +42,9 @@ public:
 	~UnhelloedEndpoint();
 
 	virtual Status       msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP);
-	Status               helloDataAdd(Type _type, const char* _name, const char* _alias);
+	Status               helloDataSet(Type _type, const char* _name, const char* _alias);
 	Endpoint2::Status    helloSend(Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
-
+	Endpoint2::Status    helloExchange(int secs, int usecs);     // send Hello Msg and await Ack - if OK, the endpoint has adopted the 
 private:
 	Endpoint2::Status    init(void);
 };

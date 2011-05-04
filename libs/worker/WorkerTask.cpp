@@ -213,6 +213,7 @@ namespace ss
             if( subTask )
             {
                 // Copy the error if necessary
+                LM_W(("Seting error for task %lu: '%s' from subtask" , task_id , subTask->error.getMessage().c_str() ));
                 error.set( &subTask->error );
                 
                 delete subTask;
@@ -616,6 +617,7 @@ namespace ss
 	
 	void WorkerTask::kill()
 	{
+        LM_W(("Kill task &l" , task_id ));
         error.set("Killed by user");
         check();
         
@@ -652,6 +654,8 @@ namespace ss
     
     void WorkerTask::setError(std::string _error_message)
     {
+        LM_W(("Seting error for task %lu: %s" , task_id , _error_message.c_str() ));
+        
         // Set the error of the operation
         error.set( _error_message );
         

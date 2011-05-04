@@ -86,7 +86,8 @@ namespace ss {
                 if( t->status == WorkerTask::completed )
                 {
                     // Remove the tasks from the task manager
-                    delete task.extractFromMap( task_id );
+                    // Not removing temporary for testing....
+                    // delete task.extractFromMap( task_id );
                 }
                 else
                     LM_X(1,("WorkerTaskManager received a notification about a finished task but it is not"));
@@ -115,12 +116,15 @@ namespace ss {
         LM_W(("Kill task received for task_id %l", task_id));
         
 		// Create the task
-		WorkerTask *t = task.extractFromMap( task_id );
+        // Not removing temporary for testing....
+		WorkerTask *t = task.findInMap( task_id );
 
 		if( t )
 		{
 			t->kill();
-			delete t;
+            
+            // Not removing temporary for testing....
+			//delete task.extractFromMap(task_id);
 		}
 	}
 	

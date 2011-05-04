@@ -73,6 +73,9 @@ namespace ss {
 		// List of subtasks
         au::map<size_t,WorkerSubTask> subTasks;
         
+		// Error management
+		au::Error error;
+        
 	public:
 		
 		typedef enum
@@ -112,9 +115,6 @@ namespace ss {
 		
 		// Common information for this task
 		ProcessAssistantSharedFileCollection *reduceInformation;
-		
-		// Error management
-		au::Error error;
 		
 		// Debuggin string
 		std::string getStatus();

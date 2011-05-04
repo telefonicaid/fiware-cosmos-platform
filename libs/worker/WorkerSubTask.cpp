@@ -42,16 +42,22 @@ namespace ss
         
 	}
     
-    WorkerSubTask::~WorkerSubTask()
+    void WorkerSubTask::releaseResources()
     {
         if( buffer )
         {
             engine::MemoryManager::shared()->destroyBuffer(buffer);
             buffer = NULL;
         }
-
+        
         // Remove this item from all the cannels
         engine::Engine::remove( this ); 
+    }
+        
+    
+    WorkerSubTask::~WorkerSubTask()
+    {
+        releaseResources();
         
     };		
     

@@ -221,6 +221,9 @@ namespace ss
                 if( subTask->error.isActivated() )
                     setError( subTask->error.getMessage() );
 
+                // Release resources
+                subTask->releaseResources();
+                
                 // Not delite until the end of the task ( new policy )
                 // delete subTasks.extractFromMap(sub_task_id);
             }

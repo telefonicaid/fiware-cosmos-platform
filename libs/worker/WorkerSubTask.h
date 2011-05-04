@@ -96,6 +96,10 @@ namespace ss
         // Init function to start asking thinks to the engine
         void run();
 
+        // Release resources
+        void releaseResources();
+        
+        
     protected:
         
         void addMemoryRequest( size_t size );

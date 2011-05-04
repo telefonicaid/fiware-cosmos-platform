@@ -276,13 +276,25 @@ namespace ss {
 		
 		parserOutReduce->init();
 		
-		
+		size_t cumulated_size = 0;
+        size_t total_size = 0;
+		for (uint32 hg = 0 ; hg < num_hash_groups ; hg++)
+        {
+            int real_hg = operationSubTask->hg_begin + hg;
+            total_size += operationSubTask->task->reduceInformation->info_hg[real_hg].size;
+        }
+        
 		for (uint32 hg = 0 ; hg < num_hash_groups ; hg++)
 		{
             
             // Update the progress of this report
-            double p = (double) hg / (double) num_hash_groups;
+            //double p = (double) hg / (double) num_hash_groups;
+            double p = (double) cumulated_size / (double) total_size;
             reportProgress(p);
+            
+            int real_hg = operationSubTask->hg_begin + hg;
+            cumulated_size += operationSubTask->task->reduceInformation->info_hg[real_hg].size;
+            
 			
 			// Counte the number of key-values I will have in this round
 			size_t num_kvs = 0;

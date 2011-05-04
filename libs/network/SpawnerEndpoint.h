@@ -37,7 +37,6 @@ public:
 		const char*      _name,
 		const char*      _alias,
 		Host*            _host,
-		unsigned short   _port  = 0,
 		int              _rFd   = -1,
 		int              _wFd   = -1
 	);

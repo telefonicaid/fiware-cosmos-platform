@@ -41,7 +41,6 @@ public:
 private:
 	ss::Network2*  networkP;
 	void           processesStart(ProcessVector* procVec);
-	void           spawnersConnect(ProcessVector* procVec, bool force = false);
 	void           localProcessesKill(void);
 	int            procVecTreat(Endpoint2* ep);
 	void           spawnerForward(Message::MessageCode code, void* dataP = NULL, int dataLen = 0);

@@ -381,6 +381,7 @@ Endpoint2::Status Endpoint2::partSend(void* dataP, int dataLen, const char* what
 		tot += nb;
 	}
 
+	LM_WRITES(name, what, dataP, dataLen, LmfByte);
 	return OK;
 }
 
@@ -500,7 +501,7 @@ Endpoint2::Status Endpoint2::send
 *
 * partRead - 
 */
-Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP)
+Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, const char* what)
 {
 	ssize_t  tot = 0;
 	Status   s;
@@ -531,13 +532,15 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP)
 		tot += nb;
 	}
 
-	if (bufLenP)
-	{
-		*bufLenP = tot;
-		LM_M(("Set *bufLenP to %d", *bufLenP));
-	}
+	if (bufLenP == NULL)
+		LM_X(1, ("Got called with NULL buffer length pointer. This is a programmer's bug and must be fixed. Right now."));
+
+	*bufLenP = tot;
+	LM_M(("Set *bufLenP to %d", *bufLenP));
 
 	LM_M(("Read %d bytes of data", tot));
+	LM_READS(name, what, buf, tot, LmfByte);
+
 	return OK;
 }
 
@@ -547,10 +550,11 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP)
 *
 * receive - 
 */
-Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, int* dataLenP, Packet* packetP)
+Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, long* dataLenP, Packet* packetP)
 {
 	Status s;
 	long   bufLen;
+	long   totalBytesReadExceptHeader = 0;
 
 	if ((type == Listener) || (type == WebListener))
 		LM_X(1, ("Listener endpoint - should never get here ..."));
@@ -558,7 +562,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, in
 	*dataPP = NULL;
 
 	LM_M(("Calling partRead for header"));
-	s = partRead(headerP, sizeof(Message::Header), &bufLen);
+	s = partRead(headerP, sizeof(Message::Header), &bufLen, "Header");
 	if (s != OK)
 		LM_RE(s, ("partRead::Header(%s): %s", name, status(s)));
 
@@ -568,20 +572,21 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, in
 		*dataPP = calloc(1, headerP->dataLen);
 
 		LM_M(("Calling partRead for data"));
-		s = partRead(*dataPP, headerP->dataLen, &bufLen);
+		s = partRead(*dataPP, headerP->dataLen, &bufLen, "Binary Data");
 		if (s != OK)
 		{
 			free(*dataPP);
 			LM_RE(s, ("partRead::Data(%s): %s", name, status(s)));
 		}
 		LM_M(("Read %d bytes of data", bufLen));
+		totalBytesReadExceptHeader += bufLen;
 	}
 
 	if (headerP->gbufLen != 0)
 	{
 		char* dataP = (char*) calloc(1, headerP->gbufLen + 1);
 
-		s = partRead(dataP, headerP->gbufLen, &bufLen);
+		s = partRead(dataP, headerP->gbufLen, &bufLen, "Google Protocol Buffer");
 		if (s != OK)
 		{
 			free(dataP);
@@ -596,6 +601,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, in
 			LM_X(1, ("Error parsing Google Protocol Buffer of %d bytes because a message %s is not initialized!",
 					 headerP->gbufLen, ss::Message::messageCode(headerP->code)));
 		free(dataP);
+		totalBytesReadExceptHeader += bufLen;
 	}
 
 	if (headerP->kvDataLen != 0)
@@ -611,13 +617,18 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, in
 		char*  kvBuf  = packetP->buffer->getData();
 		long   nb     = 0;
 
-		s = partRead(kvBuf, headerP->kvDataLen, &nb);
+		s = partRead(kvBuf, headerP->kvDataLen, &nb, "Key-Value Data");
 		if (s != OK)
 			LM_RE(s, ("partRead::kvData(%s): %s", kvName, status(s)));
 		LM_M(("Read %d bytes of KV data", nb));
 
 		packetP->buffer->setSize(nb);
+		totalBytesReadExceptHeader += bufLen;
 	}
+
+	if (dataLenP == NULL)
+		LM_X(1, ("Got called with NULL buffer length pointer. This is a programmer's bug and must be fixed. Right now."));
+	*dataLenP = totalBytesReadExceptHeader;
 
 	return OK;
 }
@@ -743,7 +754,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 {
 	Message::Header      header;
 	void*                dataP    = NULL;
-	int                  dataLen  = 0;
+	long                 dataLen  = 0;
 	Packet               packet(Message::Unknown);
 	Endpoint2::Status    s;
 
@@ -802,7 +813,7 @@ const char* Endpoint2::typeName(Type type)
 	case WebWorker:      return "WebWorker";
 	}
 
-	return "Unknown Endpoint Type";
+	return "Unknown";
 }
 
 
@@ -899,7 +910,7 @@ Endpoint2::Status Endpoint2::hello(int secs, int usecs)
 	Message::HelloData   h;
 	Message::Header      header;
 	void*                dataP = &header;
-	int                  dataLen;
+	long                 dataLen;
 	Endpoint2::Status    s;
 	Packet               packet(Message::Hello);
 
@@ -953,6 +964,8 @@ Endpoint2::Status Endpoint2::die(int secs, int usecs)
 		LM_RE(ReadError, ("Expected to read 0 bytes, meaning 'Connection Closed', but read() returned -1: %s", strerror(errno)));
 	else if (nb != 0)
 		LM_RE(KillError, ("Endpoint not dead, even though a Die message was sent!"));
+
+	LM_TODO(("This endpoint must be removed from EndpointManager, right?"));
 
 	return OK;
 }

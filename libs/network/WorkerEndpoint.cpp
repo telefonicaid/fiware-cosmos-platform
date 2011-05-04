@@ -38,7 +38,6 @@ WorkerEndpoint::WorkerEndpoint
 	const char*       _name,
 	const char*       _alias,
 	Host*             _host,
-	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
 ) : Endpoint2(_epMgr, Worker, _id, _name, _alias, _host, WORKER_PORT, _rFd, _wFd)

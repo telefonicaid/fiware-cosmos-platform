@@ -12,15 +12,16 @@
 * CREATION DATE            Apr 12 2011
 *
 */
-#include <stdio.h>              // NULL
-#include <netinet/in.h>         // sockaddr_in
+#include <stdio.h>                 // NULL
+#include <netinet/in.h>            // sockaddr_in
 
-#include "logMsg.h"             // LM_X
+#include "logMsg.h"                // LM_X
 
-#include "Message.h"            // Message::Code, Message::Type
-#include "Host.h"               // Host
-#include "Process.h"            // PtWorker, PtController
-#include "JobQueue.h"           // JobQueue
+#include "Message.h"               // Message::Code, Message::Type
+#include "Host.h"                  // Host
+#include "Process.h"               // PtWorker, PtController
+#include "NetworkInterface.h"      // PacketSenderInterface
+#include "JobQueue.h"              // JobQueue
 
 
 
@@ -206,8 +207,8 @@ public:
 	Status               connect(void);
 	Status               msgAwait(int secs, int usecs);
 
-	Status               partRead(void* vbuf, long bufLen, long* bufLenP = NULL);
-	Status               receive(Message::Header* headerP, void** dataPP, int* dataLenP, Packet* packetP);
+	Status               partRead(void* vbuf, long bufLen, long* bufLenP, const char* what);
+	Status               receive(Message::Header* headerP, void** dataPP, long* dataLenP, Packet* packetP);
 
 	Status               okToSend(void);
 	Status               partSend(void* dataP, int dataLen, const char* what);

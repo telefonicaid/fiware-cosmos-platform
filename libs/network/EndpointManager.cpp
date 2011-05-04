@@ -75,6 +75,14 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 
 
 	//
+	// Nulling the callback vector
+	//
+	for (unsigned int ix = 0; ix < sizeof(callback) / sizeof(callback[0]); ix++)
+		callback[ix].func = NULL;
+
+
+
+	//
 	// Create the endpoint vector
 	//
 	endpoints = 100;
@@ -256,6 +264,8 @@ void EndpointManager::initController(void)
 */
 void EndpointManager::initSpawner(void)
 {
+	LM_M(("Initializing Spawner"));
+
 	me->portSet(SPAWNER_PORT);
 	me->aliasSet("Spawner");
 
@@ -264,7 +274,9 @@ void EndpointManager::initSpawner(void)
 
 	if ((procVec = platformProcessesGet()) == NULL)
 	{
+		LM_M(("Calling setupAwait"));
 		setupAwait();
+		LM_M(("Calling platformProcessesSave"));
 		platformProcessesSave(procVec);
 		// platformProcessesStart(procVec);
 		LM_M(("***** Now this spawner should start processes - that can be done after this call in apps/samsponSpawner2"));
@@ -372,6 +384,7 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 			continue;
 
 		endpoint[ix] = ep;
+		LM_M(("Added endpoint %d: %s@%s", ix, ep->nameGet(), ep->hostname()));
 
 		if ((ep->type == Endpoint2::Controller) || (ep->type == Endpoint2::Worker) || (ep->type == Endpoint2::Delilah))
 		{
@@ -406,7 +419,7 @@ Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, const char* name, 
 	switch (type)
 	{
 	case Endpoint2::Listener:
-		ep = new ListenerEndpoint(this, id, name, alias, host, port, rFd, wFd);
+		ep = new ListenerEndpoint(this, name, alias, host, port, rFd, wFd);
 		break;
 
 	case Endpoint2::Unhelloed:
@@ -414,11 +427,15 @@ Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, const char* name, 
 		break;
 
 	case Endpoint2::Worker:
-		ep = new WorkerEndpoint(this, id, name, alias, host, port, rFd, wFd);
+		ep = new WorkerEndpoint(this, id, name, alias, host, rFd, wFd);
 		break;
 
 	case Endpoint2::Controller:
-		ep = new ControllerEndpoint(this, id, name, alias, host, port, rFd, wFd);
+		ep = new ControllerEndpoint(this, name, alias, host, rFd, wFd);
+		break;
+
+	case Endpoint2::Spawner:
+		ep = new SpawnerEndpoint(this, id, name, alias, host, rFd, wFd);
 		break;
 
 	default:
@@ -568,34 +585,6 @@ Endpoint2* EndpointManager::lookup(const char* alias)
 
 /* ****************************************************************************
 *
-* list
-*/
-void EndpointManager::list(const char* why, bool forced)
-{
-	bool savedVerbose = lmVerbose;
-
-	if (forced)
-		lmVerbose = true;
-
-	for (unsigned int ix = 0; ix < endpoints; ix++)
-	{
-		Endpoint2* ep;
-
-		if (endpoint[ix] == NULL)
-			continue;
-
-		ep = endpoint[ix];
-		LM_V(("%c %02d: %-20s %-20s %-20s", (ep->rFd == -1)? '-' : '+', ix, ep->aliasGet(), ep->nameGet(), ep->hostname()));
-	}
-
-	if (forced)
-		lmVerbose = savedVerbose;
-}
-
-
-
-/* ****************************************************************************
-*
 * setupAwait - 
 */
 Endpoint2::Status EndpointManager::setupAwait(void)
@@ -605,7 +594,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 	if (listener == NULL)
 		LM_RE(Endpoint2::Error, ("Cannot await the setup to arrive if I have no Listener ..."));
 
-	LM_M(("Awaiting samsonSetup/Spawner to connect and forward the Process Vector"));
+	LM_M(("Awaiting samsonSetup to connect and pass the Process Vector"));
 	while (1)
 	{
 		UnhelloedEndpoint* ep;
@@ -635,10 +624,10 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		
 		// Is the newly connected peer a 'samsonSetup' ?
 		LM_M(("Checking Endpoint type of the other side"));
-		if ((ep->type != Endpoint2::Setup) && (ep->type != Endpoint2::Spawner))
+		if (ep->type != Endpoint2::Setup)
 		{
-			LM_E(("The incoming connection was from a '%s' (only Setup and Spawner allowed)", ep->typeName()));
-			delete ep;
+			LM_E(("The incoming connection was from a '%s' (only Setup allowed)", ep->typeName()));
+			remove(ep);
 			continue;
 		}
 		LM_M(("Endpoint type: %s", ep->typeName()));
@@ -649,7 +638,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		if ((s = ep->msgAwait(5, 0)) != 0)
 		{
 			LM_E(("msgAwait(ProcessVector): %s", ep->status(s)));
-			delete ep;
+			remove(ep);
 			continue;
 		}
 		LM_M(("Something to read, hopefully a Process Vector ..."));
@@ -657,17 +646,17 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		// Reading the message (supposed ProcessVector)
 		Message::Header  header;
 		void*            dataP   = NULL;
-		int              dataLen = 0;
+		long             dataLen = 0;
 		Packet           packet(Message::Unknown);
 
 		LM_M(("Receiving the message"));
 		if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != 0)
 		{
 			LM_E(("Endpoint2::receive error"));
-			delete ep;
+			remove(ep);
 			continue;
 		}
-
+		LM_M(("read a message of %d bytes", dataLen));
 
 		// All OK ?
 		if ((header.code != Message::ProcessVector) || (header.type != Message::Msg))
@@ -675,10 +664,12 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 			LM_E(("Message read not a ProcessVector Msg (%s %s)", messageCode(header.code), messageType(header.type)));
 			if (dataP != NULL)
 				free(dataP);
-			delete ep;
+			remove(ep);
 			continue;
 		}
-		LM_M(("All OK - it was a ProcessVector Msg"));
+		ProcessVector* tmp = (ProcessVector*) dataP;
+		LM_M(("All OK - it was a Process Vector Message, %d processes, %d total size", tmp->processes, tmp->processVecSize));
+		tmp = NULL;  // Will not be used anymore ...
 
 		// Copying 
 		this->procVec = (ProcessVector*) malloc(dataLen);
@@ -687,37 +678,27 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 
 		memcpy(this->procVec, dataP, dataLen);
 		free(dataP);
+		LM_M(("procVec: %d processes, %d total size", procVec->processes, procVec->processVecSize));
 
 
 		LM_M(("Acknowledging the Process Vector"));
 		if ((s = ep->ack(header.code)) != Endpoint2::OK)
 			LM_E(("Error acking Process Vector: %s", ep->status(s)));
 
+		LM_M(("procVec: %d processes, %d total size", procVec->processes, procVec->processVecSize));
 		LM_M(("Await samsonSetup to close connection"));
-		if (ep->type == Endpoint2::Setup)
-		{
-			if ((s = ep->msgAwait(2, 0)) != Endpoint2::OK)
-				LM_W(("All OK, except that samsonSetup didn't close connection in time. msgAwait(): %s", ep->status(s)));
-			else if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != Endpoint2::ConnectionClosed)
-				LM_W(("All OK, except that samsonSetup didn't close connection when it was supposed to. receive(): %s", ep->status(s)));
-			else
-				LM_M(("Everything's just perfect"));
 
-			LM_M(("I now have the process vector and I can start my processes and also send the process vector to the other spawners"));
-			delete ep;
-			return Endpoint2::OK;
-		}
+		if ((s = ep->msgAwait(2, 0)) != Endpoint2::OK)
+			LM_W(("All OK, except that samsonSetup didn't close connection in time. msgAwait(): %s", ep->status(s)));
+		else if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != Endpoint2::ConnectionClosed)
+			LM_W(("All OK, except that samsonSetup didn't close connection when it was supposed to. receive(): %s", ep->status(s)));
+		else
+			LM_M(("Everything's just perfect"));
 
-
-		//
-		// So, the message came from another samsonSpawner ...
-		//
-		LM_M(("Creating spawner endpoint from the 'unhelloed' + the Hello data received from the remote spawner"));
-		SpawnerEndpoint* spawner = new SpawnerEndpoint(ep);
-		if (add(spawner) == NULL)
-			LM_W(("error adding spawner"));
-
-		delete ep;
+		LM_M(("I now have the process vector and I can start my processes - will be done in SamsonSpawner"));
+		show("Before removing samsonSetup");
+		remove(ep);
+		show("After removing samsonSetup");
 		return Endpoint2::OK;
 	}
 }
@@ -741,7 +722,11 @@ void EndpointManager::run(bool oneShot)
 		
 	while (1)
 	{
+		if (callback[Periodic].func != NULL)
+			callback[Periodic].func(NULL, callback[Periodic].userParam);
+
 		// Call cleanup function that removes all endpoints marked as 'ScheduledForRemoval' 
+		// Don't forget to use a semaphore for endpoint vector and jobs vector
 
 		// Populate rFds for select
 		do
@@ -773,6 +758,8 @@ void EndpointManager::run(bool oneShot)
 			LM_X(1, ("select: %s", strerror(errno)));
 		else if (fds == 0)
 		{
+			if (callback[Timeout].func != NULL)
+				callback[Timeout].func(NULL, callback[Timeout].userParam);
 			show("timeout");
 		}
 		else
@@ -829,6 +816,38 @@ int EndpointManager::endpointCount(Endpoint2::Type epType)
 
 		if (endpoint[ix]->type == epType)
 			++noOf;
+	}
+
+	return noOf;
+}
+
+
+
+/* ****************************************************************************
+*
+* endpointCapacity - 
+*/
+int EndpointManager::endpointCapacity(void)
+{
+	return endpoints;
+}
+
+
+
+/* ****************************************************************************
+*
+* endpointCount - 
+*/
+int EndpointManager::endpointCount(void)
+{
+	int noOf = 0;
+
+	for (unsigned int ix = 0; ix < endpoints; ix++)
+    {
+        if (endpoint[ix] == NULL)
+            continue;
+
+		++noOf;
 	}
 
 	return noOf;
@@ -912,10 +931,10 @@ void EndpointManager::show(const char* why, bool forced)
 		lmVerbose = true;
 
 	LM_V((""));
-	LM_V(("-------------------- Endpoint list (%s) ---------------", why));
+	LM_V(("-------------------- Endpoint list (%s) ------------------------------", why));
 	LM_V((""));
-	LM_V(("ix  %-12s id  %-20s Port", "Type", "Name"));
-	LM_V(("-------------------------------------------------------"));
+	LM_V(("ix  %-12s id  %-20s %-20s Port  rFd", "Type", "Name", "Host"));
+	LM_V(("----------------------------------------------------------------------"));
 
 	for (unsigned int ix = 0; ix < endpoints; ix++)
 	{
@@ -925,9 +944,9 @@ void EndpointManager::show(const char* why, bool forced)
 		if (ep == NULL)
 			continue;
 
-		LM_V(("%02d: %-12s %02d  %-20s %d", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->port));
+		LM_V(("%02d: %-12s %02d  %-20s %-20s %d  %d", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname(), ep->port, ep->rFd));
 	}
-	LM_V(("-------------------------------------------------------"));
+	LM_V(("----------------------------------------------------------------------"));
 
 	if (forced)
 		lmVerbose = verbose;
@@ -943,6 +962,7 @@ int EndpointManager::procVecSet(ProcessVector* _procVec)
 {
 	int size;
 
+	LM_M(("Setting Process Vector"));
 	if ((_procVec->processes <= 0) || (_procVec->processes > 100))
 		LM_RE(1, ("Bad number of processes in process vector: %d", _procVec->processes));
 
@@ -981,6 +1001,24 @@ void EndpointManager::tmoSet(int secs, int usecs)
 {
 	tmoSecs   = secs;
 	tmoUSecs  = usecs;
+}
+
+
+
+/* ****************************************************************************
+*
+* callbackSet - 
+*/
+void EndpointManager::callbackSet(CallbackId id, EpMgrCallback func, void* userParam)
+{
+	if ((unsigned int) id >= (sizeof(callback) / sizeof(callback[0])))
+		LM_X(1, ("CallbackId too high (%d), max is %d - this bug must be fixed NOW!", id, sizeof(callback) / sizeof(callback[0])));
+
+	if (callback[id].func != NULL)
+		LM_W(("Overwriting previous callback %d - is this really what you want?", id));
+
+	callback[id].func      = func;
+	callback[id].userParam = userParam;
 }
 
 }

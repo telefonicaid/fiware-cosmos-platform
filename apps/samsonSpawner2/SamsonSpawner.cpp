@@ -65,8 +65,7 @@ static void timeDiff(struct timeval* from, struct timeval* to, struct timeval* d
 SamsonSpawner::SamsonSpawner()
 {
 	EndpointManager* epMgr = new EndpointManager(Endpoint2::Spawner);
-
-	networkP = new Network2(epMgr);
+	networkP               = new Network2(epMgr);
 
 	networkP->setDataReceiver(this);
 	// networkP->setEndpointUpdateReceiver(this);
@@ -113,8 +112,6 @@ void SamsonSpawner::init()
 	restartInProgress    = false;
 
 	processesStart(networkP->epMgr->procVecGet());
-	spawnersConnect(networkP->epMgr->procVecGet());
-
 	processListShow("INIT", true);
 	networkP->endpointListShow("INIT", true);
 }
@@ -155,17 +152,9 @@ int SamsonSpawner::receive(int fromId, int nb, Message::Header* headerP, void* d
 	case Message::Reset:
 		if (headerP->type == Message::Msg)
 		{
-			LM_V(("Got a Reset message from '%s'", ep->nameGet()));
+			LM_W(("Got a Reset message from '%s%s'", ep->nameGet(), ep->hostname()));
 			unlink(SAMSON_PLATFORM_PROCESSES);
 
-			if (ep->typeGet() == Endpoint2::Setup) 
-			{
-				LM_T(LmtReset, ("Got RESET from samsonSetup - forwarding RESET to all spawners"));
-				spawnerForward(Message::Reset);
-			}
-			else
-				LM_T(LmtReset, ("Got RESET from '%s' - NOT forwarding RESET to all spawners", ep->nameGet()));
-			
 			LM_T(LmtReset, ("killing local processes"));
 			restartInProgress    = true;
 			localProcessesKill();
@@ -323,100 +312,6 @@ void SamsonSpawner::processesStart(ProcessVector* procVec)
 
 /* ****************************************************************************
 *
-* spawnersConnect
-*
-* Disconnect from spawners that run in hosts not in 'procVec' and connect to added spawners
-* But, for now, just connect to the spawners.
-*/
-void SamsonSpawner::spawnersConnect(ProcessVector* procVec, bool force)
-{
-	Host*              hostP;
-	int                ix;
-	Process*           processP;
-	Endpoint2*         ep;
-	Endpoint2::Status  s;
-	int                procVecSize;
-
-	for (ix = 0; ix < procVec->processes; ix++)
-	{
-		processP = &procVec->processV[ix];		
-		hostP    = networkP->epMgr->hostMgr->lookup(processP->host);
-
-		if (hostP != NULL)
-		{
-			Endpoint2* ep;
-
-			ep = networkP->epMgr->lookup(Endpoint2::Spawner, hostP->name);
-			
-			if ((ep != NULL) && (ep->stateGet() == Endpoint2::Ready))
-			{
-				LM_T(LmtProcessVector, ("Not connecting to spawner in '%s' - nor sending it the ProcessVector", hostP->name));
-				continue;
-			}
-		}
-
-		if (hostP == networkP->epMgr->hostMgr->localhostP)
-		{
-			LM_T(LmtProcessVector, ("ProcessVector: not connecting to myself ... (%s)", hostP->name));
-			continue;
-		}
-		else if (hostP == NULL)
-		{
-			LM_T(LmtProcessVector, ("Inserting host for process %d ('%s')", ix, processP->host));
-			hostP = networkP->epMgr->hostMgr->insert(processP->host, NULL);
-			if (hostP == NULL)
-				LM_X(1, ("error inserting host '%s'", processP->host));
-
-			LM_T(LmtProcessVector, ("Inserted host for process %d ('%s')", ix, hostP->name));
-		}
-
-		LM_T(LmtProcessVector, ("ProcessVector: current host is '%s'", hostP->name));
-		LM_T(LmtProcessVector, ("ProcessVector: localhost    is '%s'", networkP->epMgr->hostMgr->localhostP->name));
-
-		//
-		// Only connect to spawners whose host names comes before localhost alphabetically
-		//
-		if ((strcmp(hostP->name, networkP->epMgr->hostMgr->localhostP->name) > 0) && (force == false))
-		{
-			LM_T(LmtProcessVector, ("Not connecting to '%s' (I am '%s')", hostP->name, networkP->epMgr->hostMgr->localhostP->name));
-			continue;
-		}
-
-		if ((ep = networkP->epMgr->lookup(Endpoint2::Spawner, hostP->name)) != NULL)
-		{
-			Host* controllerHostP;
-
-			controllerHostP = networkP->epMgr->hostMgr->lookup(procVec->processV[0].host);
-
-			if (controllerHostP == networkP->epMgr->hostMgr->localhostP)
-			{
-				LM_T(LmtProcessVector, ("Already connected to spawner in '%s' - sending it the process vector", hostP->name));
-
-				procVecSize = sizeof(ProcessVector) + procVec->processes * sizeof(Process);
-				s = ep->send(Message::Msg, Message::ProcessVector, procVec, procVecSize);
-				if (s != 0)
-					LM_E(("Error sending ProcessVector message to spawner in '%s': %s", ep->nameGet(), ep->status(s)));
-			}
-			else
-				LM_T(LmtProcessVector, ("Already connected to spawner in '%s' - NOT sending it the process vector", hostP->name));
-
-			continue;
-		}
-
-		Endpoint2* ep;
-		
-		ep = networkP->epMgr->add(Endpoint2::Spawner, 0, "Spawner", "Spawner", hostP, SPAWNER_PORT, -1, -1);
-		LM_T(LmtProcessVector, ("ProcessVector: connecting to spawner in '%s'", hostP->name));
-		ep->connect();
-		if (ep->rFdGet() == -1)
-			LM_E(("iomConnect('%s', %d): %s", hostP->name, SPAWNER_PORT, strerror(errno)));
-	}
-}
-
-
-
-/* ****************************************************************************
-*
 * localProcessesKill - 
 */
 void SamsonSpawner::localProcessesKill(void)
@@ -559,32 +454,9 @@ int SamsonSpawner::procVecTreat(Endpoint2* ep)
 	restartInProgress = false;
 	processesStart(procVec);
 
-
-
-	//
-	// The spawner that gets the message from 'samsonSetup' connects to all spawners
-	//
-	if (ep->typeGet() == Endpoint2::Setup) 
-		spawnersConnect(procVec, true);
-	else
-		spawnersConnect(procVec, false);
-
 	return 0;
 }
 
-
-
-/* ****************************************************************************
-*
-* spawnerForward - 
-*/
-void SamsonSpawner::spawnerForward(Message::MessageCode code, void* dataP, int dataLen)
-{
-	int s;
-
-	s = networkP->epMgr->multiSend(Endpoint2::Spawner, code, dataP, dataLen);
-	LM_M(("Sent '%s' Msg to %d spawners", Message::messageCode(code), s));
-}
 
 
 /* ****************************************************************************

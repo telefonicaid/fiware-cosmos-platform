@@ -238,12 +238,14 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	if (name == NULL)
 	{
 		LM_W(("NULL host name for IP '%s'", ip));
-		name = "nohostname";
+		name = ip;
 	}
 
 	if ((hostP = lookup(name)) != NULL)
+	{
+		LM_D(("host '%s' already in host list", name));
 		return hostP;
-
+	}
 
 	struct hostent* heP;
 

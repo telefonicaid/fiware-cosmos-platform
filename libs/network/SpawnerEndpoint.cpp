@@ -39,7 +39,6 @@ SpawnerEndpoint::SpawnerEndpoint
 	const char*       _name,
 	const char*       _alias,
 	Host*             _host,
-	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
 ) : Endpoint2(_epMgr, Spawner, _id, _name, _alias, _host, SPAWNER_PORT, _rFd, _wFd)
@@ -76,6 +75,7 @@ SpawnerEndpoint::~SpawnerEndpoint() // : ~Endpoint2()
 */
 Endpoint2::Status SpawnerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 {
+	LM_M(("IN"));
 	switch (headerP->code)
 	{
 	default:

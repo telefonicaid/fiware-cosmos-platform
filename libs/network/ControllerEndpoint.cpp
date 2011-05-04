@@ -34,14 +34,12 @@ namespace ss
 ControllerEndpoint::ControllerEndpoint
 (
 	EndpointManager*  _epMgr,
-	int               _id,
 	const char*       _name,
 	const char*       _alias,
 	Host*             _host,
-	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
-) : Endpoint2(_epMgr, Controller, _id, _name, _alias, _host, CONTROLLER_PORT, _rFd, _wFd)
+) : Endpoint2(_epMgr, Controller, 0, _name, _alias, _host, CONTROLLER_PORT, _rFd, _wFd)
 {
 }
 

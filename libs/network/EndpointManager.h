@@ -22,6 +22,7 @@ namespace ss
 {
 
 
+
 /* ****************************************************************************
 *
 * Classes
@@ -33,10 +34,31 @@ class WebListenerEndpoint;
 
 /* ****************************************************************************
 *
+* EpMgrCallback - the type for a callback function
+*/
+typedef void (*EpMgrCallback)(void* x, void* userParam);
+
+
+
+/* ****************************************************************************
+*
 * EndpointManager - 
 */
 class EndpointManager
 {
+public:
+	enum CallbackId
+	{
+		Periodic = 0,
+		Timeout
+	};
+
+	struct Callback
+	{
+		EpMgrCallback    func;
+		void*            userParam;
+	};
+
 private:
 	Endpoint2**               endpoint;
 	unsigned int              endpoints;
@@ -45,6 +67,7 @@ private:
 	int                       tmoSecs;
 	int                       tmoUSecs;
 	ProcessVector*            procVec;
+	struct Callback           callback[Timeout];
 
 public:
 	HostMgr*                  hostMgr;
@@ -71,19 +94,21 @@ public:
 
 	Endpoint2*         add(Endpoint2* ep);
 	Endpoint2*         add(Endpoint2::Type type, int id, const char* name, const char* alias, Host* host, unsigned short port, int rFd = -1, int wFd = -1);
-
 	void               remove(Endpoint2* ep);
 	Endpoint2*         get(unsigned int index);
 	Endpoint2*         get(unsigned int index, int* rFdP);
 	Endpoint2*         lookup(Endpoint2::Type type, const char* ip);
 	Endpoint2*         lookup(Endpoint2::Type type, int id, int* ixP);
 	Endpoint2*         lookup(const char* alias);
-	void               list(const char* why, bool forced = false);
-	int                endpointCount(Endpoint2::Type type);
 	void               show(const char* why, bool forced = false);
+
+	int                endpointCount(Endpoint2::Type type);
+	int                endpointCount();
+	int                endpointCapacity();
     
 	void               tmoSet(int secs, int usecs);  // Set timeout for select loop
 	void               run(bool oneShot);            // Main run loop - loops forever, unless 'oneShot' is true ...
+	void               callbackSet(CallbackId id, EpMgrCallback func, void* userParam);
 
 	void               setPacketReceiver(PacketReceiverInterface* receiver);
 	void               setDataReceiver(DataReceiverInterface* receiver);

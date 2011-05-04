@@ -191,7 +191,7 @@ Endpoint2::Status UnhelloedEndpoint::helloSend(Message::MessageType type)
 Endpoint2::Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 {
 	Message::Header       header;
-	int                   dataLen = 0;
+	long                  dataLen = 0;
 	void*                 dataP   = NULL;
 	Message::HelloData*   helloP;
 	Packet                packet(Message::Unknown);

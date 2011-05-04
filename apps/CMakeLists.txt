@@ -9,5 +9,6 @@ ADD_SUBDIRECTORY(samsonSpawner)
 ADD_SUBDIRECTORY(samsonSpawner2)
 ADD_SUBDIRECTORY(samsonKiller)
 ADD_SUBDIRECTORY(samsonSetup)
+ADD_SUBDIRECTORY(samsonSetup2)
 #ADD_SUBDIRECTORY(samsonSupervisor)
 

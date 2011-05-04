@@ -45,14 +45,13 @@ static void ip2string(int ip, char* ipString, int ipStringLen)
 ListenerEndpoint::ListenerEndpoint
 (
 	EndpointManager*  _epMgr,
-	int               _id,
 	const char*       _name,
 	const char*       _alias,
 	Host*             _host,
 	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
-) : Endpoint2(_epMgr, Listener, _id, _name, _alias, _host, _port, _rFd, _wFd)
+) : Endpoint2(_epMgr, Listener, 0, _name, _alias, _host, _port, _rFd, _wFd)
 {
 	if (init() != Endpoint2::OK)
 		LM_X(1, ("Error setting up listen socket for endpoint '%s'", nameGet()));

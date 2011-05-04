@@ -963,7 +963,6 @@ size_t Network::_send(PacketSenderInterface* packetSender, int endpointId, Packe
 	}
 	else if (( ep->state != Endpoint::Connected ) && (ep->state != Endpoint::Threaded))
 	{
-
 		if (ep->useSenderThread == false)
 		{
 			// LM_X(1, ("cannot send to an unconnected peer '%s' if not using sender threads, sorry ...", ep->name.c_str()));
@@ -2356,7 +2355,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	//
 	// Worker Id within limits ?
 	//
-    if (hello->type == Endpoint::Worker)
+	if (hello->type == Endpoint::Worker)
 	{
 		if (hello->workerId >= Workers)
 		{

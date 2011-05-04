@@ -281,7 +281,8 @@ namespace ss {
 		{
             
             // Update the progress of this report
-            progress = (double) hg / (double) num_hash_groups;
+            double p = (double) hg / (double) num_hash_groups;
+            reportProgress(p);
 			
 			// Counte the number of key-values I will have in this round
 			size_t num_kvs = 0;
@@ -539,10 +540,10 @@ namespace ss {
 		
 		
 		for (uint32 hg = 0 ; hg < num_hash_groups ; hg++)
-		{
-            
+		{            
             // Update the progress of this report
-            progress = (double) hg / (double) num_hash_groups;
+            double p = (double) hg / (double) num_hash_groups;
+            reportProgress(p);
 			
 			// Counte the number of key-values I will have in this round
 			size_t num_kvs = 0;

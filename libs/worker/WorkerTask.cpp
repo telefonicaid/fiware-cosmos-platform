@@ -214,8 +214,9 @@ namespace ss
             {
                 // Copy the error if necessary
                 if( subTask->error.isActivated() )
-                    LM_W(("Seting error for task %lu: '%s' from subtask" , task_id , subTask->error.getMessage().c_str() ));
-                error.set( &subTask->error );
+                {
+                    setError( subTask->error.getMessage() );
+                }
                 
                 delete subTask;
             }
@@ -234,7 +235,7 @@ namespace ss
 	{
 		
 		/**
-		 Evoluction of the status
+		 Evolution of the status
 		 
 		 pending_definition,			// Pending to receive message from the controller
 		 running,                       // Running operation
@@ -348,7 +349,13 @@ namespace ss
 				output << "Finish";
 				break;
 			case completed:
+            {
 				output << "Completed";
+                if ( error.isActivated() )
+                {
+                    output << " with error: " << error.getMessage() << " ";
+                }
+            }
 				break;
 			case local_content_finished:
 				output << "Local content finish";
@@ -357,10 +364,14 @@ namespace ss
 				output << "All content finish";
 				break;
 		}
-		output << " Workers " << num_finished_workers << "/" << num_workers;
-		output << " DiskOperations " << num_disk_operations;
-		output << " BufferPreproces " << num_process_items;
-                
+
+        if ( status == running )
+        {
+            output << " Workers " << num_finished_workers << "/" << num_workers;
+            output << " DiskOperations " << num_disk_operations;
+            output << " BufferPreproces " << num_process_items;
+        }
+        
         output << " ]";
         
         
@@ -556,7 +567,7 @@ namespace ss
 		network::WorkerTaskConfirmation *confirmation = p->message->mutable_worker_task_confirmation();
 
 		// Copy all the information from the prepared message
-		confirmation->CopyFrom(*complete_message);
+		confirmation->CopyFrom( *complete_message );
 		
 		if( error.isActivated() )
 		{
@@ -659,12 +670,13 @@ namespace ss
         
         // Set the error of the operation
         error.set( _error_message );
+
+        // Set the flag of completed to cancel this task automatically
+        status = completed;
         
         // Send the confirmation to the controller
         sendCompleteTaskMessageToController();
         
-        // Set the flag of completed to cancel this task automatically
-        status = completed;
     }
     
 #pragma Notifications

@@ -8,6 +8,8 @@
 #include <time.h>
 #include <sys/time.h>
 
+#include "au/Descriptors.h"                         // au::Descriptors
+
 #include "engine/ProcessManager.h"                  // engine::Process
 #include "engine/Engine.h"							// engine::Engine
 #include "engine/EngineElement.h"					// engine::EngineElement
@@ -282,17 +284,27 @@ namespace engine
         std::ostringstream process_manager_status;
         
         process_manager_status << "\n\t\tRunning: ";
-        for ( std::set<ProcessItem*>::iterator i = running_items.begin () ; i != running_items.end() ; i++ )
-            process_manager_status << "[" << (*i)->getStatus() << "] ";
+        {
+            au::Descriptors descriptors;
+            for ( std::set<ProcessItem*>::iterator i = running_items.begin () ; i != running_items.end() ; i++ )
+                descriptors.add( (*i)->getStatus() );
+            process_manager_status << descriptors.str();
+        }
         
         process_manager_status << "\n\t\tHalted: ";
-        for ( std::set<ProcessItem*>::iterator i = halted_items.begin () ; i != halted_items.end() ; i++ )
-            process_manager_status << "[" << (*i)->getStatus() << "] ";
+        {
+            au::Descriptors descriptors;
+            for ( std::set<ProcessItem*>::iterator i = halted_items.begin () ; i != halted_items.end() ; i++ )
+                descriptors.add( (*i)->getStatus() );
+        }
         
         process_manager_status << "\n\t\tQueued: ";
-        for ( std::set<ProcessItem*>::iterator i = items.begin () ; i != items.end() ; i++ )
-            process_manager_status << "[" << (*i)->getStatus() << "] ";
-                
+        {
+            au::Descriptors descriptors;
+            for ( std::set<ProcessItem*>::iterator i = items.begin () ; i != items.end() ; i++ )
+                descriptors.add( (*i)->getStatus() );
+            process_manager_status << descriptors.str();
+        }
         pthread_mutex_unlock(&mutex);
         
         return process_manager_status.str();

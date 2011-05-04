@@ -404,7 +404,7 @@ char* Endpoint::aliasGet(void)
 */
 void Endpoint::aliasUpdate(const char* alias)
 {
-	LM_W(("Updating alias to '%s'", alias));
+	LM_T(LmtEntry,("Updating alias to '%s'", alias));
 
 	this->alias = strdup(alias);
 }

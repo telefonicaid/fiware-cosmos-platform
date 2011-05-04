@@ -85,8 +85,7 @@ namespace ss {
 			local_content_finished,		// Output content is completed ( a message is send to the other workers to notify ) 
 			all_content_finish,			// The content from all the workers is received ( file are starting to be saved )
 			finish,						// All the output files are generated ( not saved ). Controller is notified about this to continue scripts
-			completed					// Output content is saved on disk ( task can be removed from task manager )
-			
+			completed,					// Output content is saved on disk ( task can be removed from task manager )
 		} WorkerTaskStatus;
 		
         

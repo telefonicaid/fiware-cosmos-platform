@@ -114,7 +114,7 @@ namespace engine
             {
                 if( fread(ids, length * sizeof(int) , 1, file) == 1 )
                 {
-                    LM_M(("Removing previous memory segments"));
+                    LM_T(LmtMemory ,("Removing previous memory segments"));
                     removeSharedMemorySegments(ids, length);
                 }
                 fclose(file);
@@ -128,7 +128,7 @@ namespace engine
         
         shm_ids = (int*) malloc( sizeof(int) * shared_memory_num_buffers );
         
-        LM_M(("Creating shared memory buffers"));
+        LM_T(LmtMemory ,("Creating shared memory buffers"));
         
         for (int i = 0 ; i < shared_memory_num_buffers ; i++ )
         {
@@ -170,7 +170,7 @@ namespace engine
     
     void SharedMemoryManager::removeSharedMemorySegments( int * ids , int length )
     {
-        LM_M(("Releasing %d shared memory buffers", length ));
+        LM_T(LmtMemory, ("Releasing %d shared memory buffers", length ));
         
         for ( int i = 0 ; i < length ; i++)
         {

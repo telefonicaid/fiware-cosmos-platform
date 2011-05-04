@@ -108,6 +108,9 @@ namespace ss {
         // Number of pending disk operations
         int num_disk_operations;
         
+        // Number of pending sub-tasks
+        int num_subtasks;
+        
 		// Message from and to the controller
 		network::WorkerTask workerTask;                             // Copy of the message received from the controller
 		network::WorkerTaskConfirmation *complete_message;			// Message prepared to be send to the controller ( complete task : all saved )

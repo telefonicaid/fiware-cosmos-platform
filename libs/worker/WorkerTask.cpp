@@ -38,7 +38,8 @@ namespace ss
         // Init counter of pending things
         num_process_items = 0;
         num_disk_operations = 0;
-		
+		num_subtasks = 0;
+        
 		complete_message = NULL;
         
         
@@ -158,6 +159,8 @@ namespace ss
 		subTask->sub_task_id = subTaskId++;
         
 		subTasks.insertInMap(subTask->sub_task_id , subTask);
+        num_subtasks++;
+        
         subTask->run();   // Start the subtask querying a memory request / read operation / process / etc
 	}
     
@@ -207,18 +210,19 @@ namespace ss
         else if( notification->isName(notification_sub_task_finished) )
         {
             size_t sub_task_id = notification->environment.getSizeT("sub_task_id", 0);
-            
-            WorkerSubTask *subTask = subTasks.extractFromMap( sub_task_id );
+            WorkerSubTask *subTask = subTasks.findInMap( sub_task_id );
+
             
             if( subTask )
             {
+                num_subtasks--;
+                
                 // Copy the error if necessary
                 if( subTask->error.isActivated() )
-                {
                     setError( subTask->error.getMessage() );
-                }
-                
-                delete subTask;
+
+                // Not delite until the end of the task ( new policy )
+                // delete subTasks.extractFromMap(sub_task_id);
             }
             else
             {
@@ -248,7 +252,7 @@ namespace ss
 		if ( status == running )
 		{
 			// If no more tasks, then set to finish and send a message to the rest of workers
-			if( subTasks.size() == 0 )
+			if( num_subtasks == 0 )
             {				
                 // Send a close message to all the workers
                 sendCloseMessages();
@@ -365,11 +369,14 @@ namespace ss
 				break;
 		}
 
+        if( status != completed )
+            output << " Workers " << num_finished_workers << "/" << num_workers;
+        
         if ( status == running )
         {
-            output << " Workers " << num_finished_workers << "/" << num_workers;
             output << " DiskOperations " << num_disk_operations;
             output << " BufferPreproces " << num_process_items;
+            output << " PendingSubTasks " << num_subtasks;
         }
         
         output << " ]";
@@ -676,7 +683,9 @@ namespace ss
         
         // Send the confirmation to the controller
         sendCompleteTaskMessageToController();
-        
+
+        // Check everything
+        check();
     }
     
 #pragma Notifications

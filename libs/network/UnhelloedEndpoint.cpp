@@ -201,7 +201,7 @@ Endpoint2::Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 	if ((s = helloSend(Message::Msg)) != 0)
 	{
 		free(dataP);
-		LM_RE(s, ("helloSend(%s@%s): %s", helloP->alias, hostname(), status(s)));
+		LM_RE(s, ("helloSend(%s@%s): %s", alias, hostname(), status(s)));
 	}
 	LM_M(("Hello sent successfully"));
 

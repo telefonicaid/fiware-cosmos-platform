@@ -168,7 +168,7 @@ namespace ss
         if( notification->isName(notification_disk_operation_request_response) )
         {
             if( !notification->containsObject() )
-                LM_X(1,("Error since WorkerTasks receive a notification_disk_operation_request_response without an object"));
+                LM_X(1,("Error since WorkerTasks receive a notification_disk_operation_request_response without an object '%s'",notification->getDescription().c_str() ));
             else
             {
                 

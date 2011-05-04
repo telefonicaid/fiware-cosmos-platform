@@ -380,6 +380,7 @@ namespace ss {
 			// Add a remove opertion to the engine
             engine::DiskOperation * operation =  engine::DiskOperation::newRemoveOperation(  SamsonSetup::dataFile(*f) );
             engine::Notification *notification = new engine::Notification( notification_disk_operation_request , operation );
+            notification->environment.set("target","no-where");
 			engine::Engine::add( notification );
 		}
 		

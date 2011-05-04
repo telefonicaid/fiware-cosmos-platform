@@ -178,7 +178,8 @@ namespace ss
         {
             // Read a message from the process
             ss::network::MessageProcessPlatform * message;
-            int c = au::readGPB( pipeFdPair1[0] , &message, 10 );
+            // No timeout since "SAMSON code" is executed on the other side ( Observed long delays in high-load scenario )
+            int c = au::readGPB( pipeFdPair1[0] , &message, -1 );
             
             if ( c != 0)
             {

@@ -213,7 +213,8 @@ namespace ss
             if( subTask )
             {
                 // Copy the error if necessary
-                LM_W(("Seting error for task %lu: '%s' from subtask" , task_id , subTask->error.getMessage().c_str() ));
+                if( subTask->error.isActivated() )
+                    LM_W(("Seting error for task %lu: '%s' from subtask" , task_id , subTask->error.getMessage().c_str() ));
                 error.set( &subTask->error );
                 
                 delete subTask;

@@ -1,0 +1,15 @@
+If ntp is not available in the distribution:
+
+aptitude install ntp
+
+Installation also launches daemon ntpd, which keeps host synchronized with the server with small time adjusts.
+It can also be launched and stopped from:
+/etc/init.d/ntp
+
+To configure the ntp server, in:
+/etc/ntp.conf
+
+set server to:
+server ntp-server.hi.inet
+
+

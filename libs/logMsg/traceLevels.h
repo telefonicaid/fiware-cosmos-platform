@@ -23,42 +23,42 @@ typedef enum TraceLevels
 	LmtSpawnerListShow,
 	LmtProcessListShow,
 
-	LmtInit,
+	LmtInit            = 30,
 	LmtConfigFile,
 	LmtDie,
 	LmtHello,
 	LmtTimeout,
 	LmtMsgTreat,
 
-	LmtWorker,
+	LmtWorker          = 40,
 	LmtWorkers,
 	
-	LmtEndpoint,
+	LmtEndpoint        = 50,
 	LmtEndpoints,
 	LmtEndpointUpdate,
 	LmtEndpointSlots,
 	LmtTemporalEndpoint,
 
-	LmtSpawnerList,
+	LmtSpawnerList       = 60,
 	LmtProcessList,
 	LmtStarterList,
 	LmtProcessVector,
 
-	LmtStarter,
+	LmtStarter          = 70,
 	LmtSpawner,
 	LmtProcess,
 
-	LmtSpawnerConnect,
+	LmtSpawnerConnect    = 80,
 	LmtProcessConnect,
 	LmtProcessStart,
 	LmtProcessKill,
 
-	LmtEndpointLookup,
+	LmtEndpointLookup       = 90,
 	LmtStarterLookup,
 	LmtProcessLookup,
 	LmtSpawnerLookup,
 
-	LmtOpen,
+	LmtOpen               = 100,
 	LmtConnect,
 	LmtAccept,
 	LmtRead,
@@ -66,7 +66,7 @@ typedef enum TraceLevels
 	LmtSelect,
 	LmtReconnect,
 
-	LmtFds,
+	LmtFds                  = 110,
 	LmtNetworkReady,
 	LmtAlarm,
 	LmtSenderThread,
@@ -74,21 +74,21 @@ typedef enum TraceLevels
 	LmtMsgLoopBack,
 	LmtControllerConnect,
 
-	LmtNetworkInterface,
+	LmtNetworkInterface          = 120,
 	LmtDelilah,
 	LmtLogServer,
 	LmtSpawn,
 
-	LmtProcessListTab,
+	LmtProcessListTab            = 130,
 	LmtQtTimer,
 
-	LmtCheck,
+	LmtCheck                     = 140,
 	LmtFile,
 	LmtTask,
 	LmtJob,
 	LmtSend,
 
-	LmtPopupMenu,
+	LmtPopupMenu                = 150,
 	LmtQueue,
 	LmtSource,
 	LmtResult,
@@ -97,21 +97,23 @@ typedef enum TraceLevels
 	LmtSourceMgr,
 	LmtResultMgr,
 
-	LmtMouseEvent,
+	LmtMouseEvent             = 160,
 	LmtUser,
 
-	LmtSceneItemChain,
+	LmtSceneItemChain         = 170,
 	LmtMove,
 	LmtWait,
 
-	LmtEngine=200,					// SamsonEngine
+	LmtFree                   = 180,
+
+	LmtEngine                 = 200, // SamsonEngine
 	LmtEngineNotification,
-	LmtDisk,                        // disk library	
-	LmtMemory,                      // memory library	
+	LmtDisk,                         // disk library	
+	LmtMemory,                       // memory library	
 	LmtProcessManager,
 
-	LmtModuleManager,               // Module Manager component
-	LmtOperations,                  // Operations organization (map & reduce level)
+	LmtModuleManager,                // Module Manager component
+	LmtOperations,                   // Operations organization (map & reduce level)
 	LmtReset,
 
 	LmtIsolated,

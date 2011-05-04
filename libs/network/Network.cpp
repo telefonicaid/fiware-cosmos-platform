@@ -55,6 +55,13 @@
 
 /* ****************************************************************************
 *
+* NO_SENDER_THREADS - define to avoid using sender threads
+*/
+//#define NO_SENDER_THREADS 1
+
+
+/* ****************************************************************************
+*
 * Predecided indices in the endpoint vector
 *
 * FIRST_WORKER - the index where the workers start
@@ -437,7 +444,7 @@ Endpoint* Network::controllerConnect(const char* controllerName)
     
     while( endpoint[CONTROLLER]->rFd == -1 )
     {
-        LM_M(("Trying to connect to controller %s:%d",(const char*) endpoint[CONTROLLER]->ip , (unsigned short) endpoint[CONTROLLER]->port  ));
+		LM_T(LmtProcessConnect, ("Trying to connect to controller %s:%d",(const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port));
         endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
 
         if( endpoint[CONTROLLER]->rFd == -1 )
@@ -448,7 +455,7 @@ Endpoint* Network::controllerConnect(const char* controllerName)
                 break;
         }
         else
-            LM_M(("Connected to controller %s:%d",(const char*) endpoint[CONTROLLER]->ip , (unsigned short) endpoint[CONTROLLER]->port  ));
+            LM_T(LmtProcessConnect, ("Connected to controller %s:%d",(const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port));
         
     }
     
@@ -854,7 +861,7 @@ static void* senderThread(void* vP)
 			{
 				if (job.packetP != NULL)
 				{
-					LM_M(("Destroying packet %p", job.packetP));
+					LM_T(LmtFree, ("Destroying packet %p", job.packetP));
 					delete job.packetP;
 					job.packetP = NULL;
 				}
@@ -911,7 +918,7 @@ size_t Network::send(PacketSenderInterface* packetSender, int endpointId, Packet
 {
 	writeSem.lock();
         
-	size_t r = _send( packetSender , endpointId , packetP );
+	size_t r = _send(packetSender, endpointId, packetP);
         
 	writeSem.unlock();
         
@@ -1459,7 +1466,7 @@ Endpoint* Network::endpointAdd
 {
 	Host* hostP;
 
-	LM_M(("%s: adding endpoint '%s' of type '%s' for fd %d %d (alias: '%s')", why, name, endpoint[ME]->typeName(type), rFd, wFd, alias));
+	LM_T(LmtEndpoint, ("%s: adding endpoint '%s' of type '%s' for fd %d %d (alias: '%s')", why, name, endpoint[ME]->typeName(type), rFd, wFd, alias));
 
 	hostP = hostMgr->lookup(ip.c_str());
 	if (hostP == NULL)
@@ -2486,8 +2493,11 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	{
 		if ((endpoint[ME]->type == Endpoint::Delilah) || (endpoint[ME]->type == Endpoint::Worker))
 		{
-			LM_M(("NOT Setting useSenderThread for worker '%s@%s'", ep->name.c_str(), ep->ip));
-			// ep->useSenderThread = true;
+#ifdef NO_SENDER_THREADS
+			LM_W(("NOT Setting useSenderThread for worker '%s@%s'", ep->name.c_str(), ep->ip));
+#else		
+			ep->useSenderThread = true;
+#endif
 		}
 	}
 
@@ -3069,7 +3079,7 @@ void Network::msgTreat(void* vP)
                 engine::MemoryManager::shared()->destroyBuffer(packet->buffer);
                 packet->buffer = NULL;
             }
-			LM_M(("Destroying packet %p", packet));
+			LM_T(LmtFree, ("Destroying packet %p", packet));
 			delete packet;	
 		}
 		break;
@@ -3120,15 +3130,12 @@ void Network::workersConnect(void)
 		if (endpoint[ME]->type == Endpoint::Worker)
 		{
 			if (strcmp(endpoint[ME]->aliasGet(), epP->aliasGet()) >= 0)
-			{
-				// LM_M(("NOT trying to connect to '%s@%s'", epP->aliasGet(), epP->ip));
 				continue;
-			}
 		}
 
-		LM_M(("Trying to connect to '%s@%s' because state is %s", epP->aliasGet(), epP->ip , epP->stateName()  ));
+		LM_T(LmtProcessConnect, ("Trying to connect to '%s@%s' because state is %s", epP->aliasGet(), epP->ip , epP->stateName()  ));
 		if ((workerFd = iomConnect(epP->ip, epP->port)) == -1)
-			LM_M(("worker %d: %s (host %s, port %d) not there - new retry later ...", ix, epP->name.c_str(), epP->ip, epP->port));
+			LM_W(("worker %d: %s (host %s, port %d) not there - new retry later ...", ix, epP->name.c_str(), epP->ip, epP->port));
 		else
 		{
 			epP->rFd   = workerFd;
@@ -3316,7 +3323,6 @@ void Network::run(void)
 				LM_T(LmtSelect, ("incoming message from my listener - I will accept ..."));
 				--fds;
 				fd = iomAccept(endpoint[LISTENER]->rFd, &sin, hostName, sizeof(hostName), ip, sizeof(ip));
-				LM_M(("iomAccept returned fd %d", fd));
 				if (fd == -1)
 				{
 					LM_P(("iomAccept(%d)", endpoint[LISTENER]->rFd));
@@ -3602,15 +3608,11 @@ void Network::delilahSend(PacketSenderInterface* packetSender, Packet* packetP)
 		if (endpoint[ix] == NULL)
 			continue;
 
-        //LM_M(("Testing %d %s", ix , endpoint[ix]->typeName() ));
-
 		ep = endpoint[ix];
         
 		if (ep->type != Endpoint::Delilah)
 			continue;
 
-        //LM_M(("Sending message to a delilah %d", ix ));
-        
 		sz = send(packetSender, ix, new Packet(packetP));
 		if (sz != 0)
 			LM_E(("Error sending a packet to %s@%s", ep->name.c_str(), ep->ip));

@@ -88,8 +88,8 @@ UnhelloedEndpoint::~UnhelloedEndpoint() // : ~Endpoint2()
 */
 Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 {
-	Message::HelloData* helloP;
-	Endpoint2::Status   s;
+	Message::HelloData*  helloP;
+	Endpoint2::Status    s;
 
 	switch (headerP->code)
 	{

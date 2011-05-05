@@ -15,6 +15,7 @@
 #include "Process.h"            // Process
 
 
+
 namespace ss
 {
 
@@ -24,27 +25,28 @@ namespace ss
 *
 * SamsonSpawner - 
 */
-class SamsonSpawner : public ss::DataReceiverInterface, public ss::TimeoutReceiverInterface
+class SamsonSpawner : public DataReceiverInterface
 {
 public:
 	SamsonSpawner();
 	~SamsonSpawner();
 
-	void  init();
-	void  run(void);
-
-	int   receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
-	//int   endpointUpdate(ss::Endpoint* ep, ss::Endpoint2::UpdateReason reason, const char* reasonText, void* info = NULL);
-	int   timeoutFunction(void);
-	void  init(ss::ProcessVector* procVec);
-
+	int               receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
+	void              init();
+	void              init(ss::ProcessVector* pv);
+	void              run(void);
+	int               timeoutFunction(void);
+	
 private:
-	ss::Network2*  networkP;
-	void           processesStart(ProcessVector* procVec);
-	void           localProcessesKill(void);
-	int            procVecTreat(Endpoint2* ep);
-	void           spawnerForward(Message::MessageCode code, void* dataP = NULL, int dataLen = 0);
-	void           spawn(Process* process);
+	ss::Network2*      networkP;
+	bool               restartInProgress;
+
+	void               reset(Endpoint2* ep);
+	Endpoint2::Status  processVector(Endpoint2* ep, ProcessVector* procVec);
+	void               spawn(Process* process);
+
+	void               processesStart(ProcessVector* procVec);
+	void               localProcessesKill(void);
 };
 
 }

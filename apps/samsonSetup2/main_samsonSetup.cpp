@@ -79,6 +79,49 @@ int               startTime;
 
 /* ****************************************************************************
 *
+* plist - 
+*/
+static void plist(void)
+{
+	ss::Endpoint2::Status s;
+
+	if ((s = samsonSetup->processList()) != ss::Endpoint2::OK)
+		LM_X(1, ("Error sending Process List Message to spawners"));
+
+	LM_M(("Got the list - I'm done"));
+	exit(0);
+}
+
+
+
+/* ****************************************************************************
+*
+* resetAndStart - 
+*/
+static void resetAndStart(void)
+{
+	ss::Endpoint2::Status s;
+
+	if ((s = samsonSetup->reset()) != ss::Endpoint2::OK)
+		LM_X(1, ("Error sending RESET to all spawners: %s", ((ss::Endpoint2*) NULL)->status(s)));
+
+	if (reset)
+	{
+		LM_M(("Resetted platform - I'm done"));
+		exit(0);
+	}
+
+	if ((s = samsonSetup->procVecSend()) != ss::Endpoint2::OK)
+		LM_X(1, ("Error sending Process Vector to all spawners: %s", ((ss::Endpoint2*) NULL)->status(s)));
+
+	LM_M(("Started platform - I'm done"));
+	exit(0);
+}
+
+
+
+/* ****************************************************************************
+*
 * helloCheck - 
 */
 void helloCheck(void* callbackData, void* userParam)
@@ -112,12 +155,18 @@ void helloCheck(void* callbackData, void* userParam)
 			LM_W(("Endpoint %02d is Unhelloed - could it be a spawner-to-be ... ?", ix));
 	}
 
+	samsonSetup->networkP->epMgr->show("helloCheck");
+
 	if (unhelloed == 0)
 	{
 		if (helloed != samsonSetup->spawners)
-			LM_W(("Helloed: %d, Spawners: %d - what has happened?", helloed, samsonSetup->spawners));
+			LM_X(1, ("Helloed: %d, Spawners: %d - what has happened?", helloed, samsonSetup->spawners));
+
+		LM_M(("All Helloes interchanged - READY TO ROLL!"));
+		if (pList)
+			plist();
 		else
-			LM_M(("All Helloes interchanged - READY TO ROLL!"));
+			resetAndStart();		
 	}
 	else
 	{
@@ -135,8 +184,6 @@ void helloCheck(void* callbackData, void* userParam)
 */
 int main(int argC, const char *argV[])
 {
-	ss::Endpoint2::Status  s;
-
 	memset(controllerHost, 0, sizeof(controllerHost));
 
 	paConfig("prefix",                        (void*) "SSP_");
@@ -169,24 +216,6 @@ int main(int argC, const char *argV[])
 	samsonSetup->networkP->epMgr->show("Before calling run");
 	LM_M(("Calling run"));
 	samsonSetup->run();
-
-
-	if (pList)
-	{
-		if ((s = samsonSetup->processList()) != ss::Endpoint2::OK)
-			LM_X(1, ("Error sending Process List Message to spawners"));
-
-		return 0;
-	}
-
-	if (samsonSetup->reset() != ss::Endpoint2::OK)
-	   LM_X(1, ("Error sending RESET to all spawners"));
-
-	if (reset)
-	   return 0;
-
-	if (samsonSetup->procVecSend() != ss::Endpoint2::OK)
-		LM_X(1, ("Error sending Process Vector to all spawners"));
 
 	return 0;
 }

@@ -17,6 +17,7 @@
 #include "traceLevels.h"          // Lmt*
 
 #include "ports.h"                // SPAWNER_PORT
+#include "samsonDirectories.h"    // SAMSON_PLATFORM_PROCESSES
 #include "EndpointManager.h"      // EndpointManager
 #include "UnhelloedEndpoint.h"    // UnhelloedEndpoint
 #include "SpawnerEndpoint.h"      // Own interface
@@ -30,7 +31,7 @@ namespace ss
 
 /* ****************************************************************************
 *
-* SpawnerEndpoint - 
+* SpawnerEndpoint Constructor
 */
 SpawnerEndpoint::SpawnerEndpoint
 (
@@ -49,9 +50,9 @@ SpawnerEndpoint::SpawnerEndpoint
 
 /* ****************************************************************************
 *
-* Constructor - 
+* SpawnerEndpoint Constructor - 
 */
-	SpawnerEndpoint::SpawnerEndpoint(UnhelloedEndpoint* ep) : Endpoint2(ep->epMgrGet(), Spawner, ep->idGet(), ep->nameGet(), ep->aliasGet(), ep->hostGet(), SPAWNER_PORT, ep->rFdGet(), ep->wFdGet())
+SpawnerEndpoint::SpawnerEndpoint(UnhelloedEndpoint* ep) : Endpoint2(ep->epMgrGet(), Spawner, ep->idGet(), ep->nameGet(), ep->aliasGet(), ep->hostGet(), SPAWNER_PORT, ep->rFdGet(), ep->wFdGet())
 {
 	LM_M(("Created a Spawner Endpoint from an Unhelloed Endpoint"));
 	// Fix id ?
@@ -75,15 +76,12 @@ SpawnerEndpoint::~SpawnerEndpoint() // : ~Endpoint2()
 */
 Endpoint2::Status SpawnerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 {
-	LM_M(("IN"));
-	switch (headerP->code)
-	{
-	default:
-		LM_X(1, ("No messages treated - got a '%s'", messageCode(headerP->code)));
-		return Error;
-	}
+	if (epMgr->dataReceiver == NULL)
+		LM_X(1, ("No data receiver"));
 
-	return OK;
+	return (Endpoint2::Status) epMgr->dataReceiver->receive(epMgr->ixGet(this), dataLen, headerP, dataP);
 }
+
+
 
 }

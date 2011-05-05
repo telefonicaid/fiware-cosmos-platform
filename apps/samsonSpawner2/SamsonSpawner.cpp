@@ -34,14 +34,6 @@ namespace ss
 
 /* ****************************************************************************
 *
-* Global variables
-*/
-static bool  restartInProgress = false;
-
-
-
-/* ****************************************************************************
-*
 * timeDiff - 
 */
 static void timeDiff(struct timeval* from, struct timeval* to, struct timeval* diff)
@@ -66,6 +58,7 @@ SamsonSpawner::SamsonSpawner()
 {
 	EndpointManager* epMgr = new EndpointManager(Endpoint2::Spawner);
 	networkP               = new Network2(epMgr);
+	restartInProgress      = false;
 
 	networkP->setDataReceiver(this);
 	// networkP->setEndpointUpdateReceiver(this);
@@ -84,17 +77,6 @@ SamsonSpawner::~SamsonSpawner()
 		delete networkP;
 
 	processListDelete();
-}
-
-
-
-/* ****************************************************************************
-*
-* run - 
-*/
-void SamsonSpawner::run(void)
-{
-	networkP->run();
 }
 
 
@@ -120,11 +102,22 @@ void SamsonSpawner::init()
 
 /* ****************************************************************************
 *
-* init - 
+* run - 
 */
-void SamsonSpawner::init(ProcessVector* procVec)
+void SamsonSpawner::run(void)
 {
-	LM_X(1, ("Don't want this method to be called!  (I think ...)"));
+	networkP->run();
+}
+
+
+
+/* ****************************************************************************
+*
+* SamsonSpawner::init - 
+*/
+void SamsonSpawner::init(ss::ProcessVector* pv)
+{
+	LM_W(("Got initialized with a process vector ..."));
 }
 
 
@@ -132,79 +125,52 @@ void SamsonSpawner::init(ProcessVector* procVec)
 /* ****************************************************************************
 *
 * SamsonSpawner::receive - 
-*
-* This should be moved to SpawnerEndpoint
 */
-int SamsonSpawner::receive(int fromId, int nb, Message::Header* headerP, void* dataP)
+int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP)
 {
-	int             s;
-	Endpoint2*      ep      = networkP->epMgr->get(fromId);
-
-	Process*        process = (Process*)       dataP;
-	ProcessVector*  procVec = (ProcessVector*) dataP;
-
+	Process*        process  = (Process*)       dataP;
+	ProcessVector*  procVec  = (ProcessVector*) dataP;
+	ss::Endpoint2*  ep       = networkP->epMgr->indexedGet((unsigned int) fromId);
 
 	if (ep == NULL)
-		LM_X(1, ("Received a message for a NULL endpoint ..."));
+		LM_X(1, ("Got a message from endpoint %d, but endpoint manager has no endpoint at that index ..."));
 
+	LM_M(("IN"));
 	switch (headerP->code)
 	{
 	case Message::Reset:
-		if (headerP->type == Message::Msg)
-		{
-			LM_W(("Got a Reset message from '%s%s'", ep->nameGet(), ep->hostname()));
-			unlink(SAMSON_PLATFORM_PROCESSES);
+		if (headerP->type == Message::Ack)
+			LM_X(1, ("Spawner cannot receive Ack for Reset"));
+		reset(ep);
+		break;
 
-			LM_T(LmtReset, ("killing local processes"));
-			restartInProgress    = true;
-			localProcessesKill();
-			restartInProgress    = false;
-			LM_T(LmtReset, ("Sending ack to RESET message to %s@%s", ep->nameGet(), ep->hostname()));
-			ep->send(Message::Ack, Message::Reset);
-			processListShow("Got RESET", true);
-			networkP->endpointListShow("Got RESET", true);
-		}
+#if 0
+	case Message::ProcessList:
+		if (headerP->type == Message::Ack)
+			LM_X(1, ("Spawner cannot receive Ack for ProcessList"));
+		processList();
+		break;
+#endif
+
+	case Message::ProcessVector:
+		if (headerP->type == Message::Ack)
+			LM_X(1, ("Spawner cannot receive Ack for ProcessVector"));
+		processVector(ep, procVec);
 		break;
 
 	case Message::ProcessSpawn:
+		if (headerP->type == Message::Ack)
+			LM_X(1, ("Spawner cannot receive Ack for ProcessSpawn"));
 		spawn(process);
 		break;
 
-	case Message::ProcessVector:
-		if (headerP->type == Message::Msg)
-		{
-			networkP->epMgr->procVecSet(procVec);
-			s = procVecTreat(ep);
-			LM_T(LmtProcessVector, ("Sending ProcessVector ack to '%s' in '%s'", ep->nameGet(), ep->hostname()));
-			ep->send((s == 0)? Message::Ack : Message::Nak, headerP->code);
-		}
-		else if (headerP->type == Message::Ack)
-			LM_T(LmtProcessVector, ("Received a ProcessVector Ack from '%s'", ep->nameGet()));
-		else if (headerP->type == Message::Nak)
-			LM_T(LmtProcessVector, ("Received a ProcessVector Nak from '%s'", ep->nameGet()));
-		else
-			LM_X(1, ("Bad message type in ProcessVector message (%d)", headerP->type));
-		break;
-
 	default:
-		LM_X(1, ("Don't know how to treat '%s' message", Message::messageCode(headerP->code)));
+		LM_X(1, ("No messages treated - got a '%s'", messageCode(headerP->code)));
+		return 1;
 	}
 
 	return 0;
 }
-
-
-#if 0
-/* ****************************************************************************
-*
-* endpointUpdate - 
-*/
-int SamsonSpawner::endpointUpdate(Endpoint* ep, Endpoint::UpdateReason reason, const char* reasonText, void* info)
-{
-	LM_M(("Endpoint '%s' updated as '%s', reason %d: %s", ep->nameGet(), reasonText, reason, info));
-	return 0;
-}
-#endif
 
 
 
@@ -277,184 +243,46 @@ int SamsonSpawner::timeoutFunction(void)
 
 /* ****************************************************************************
 *
-* processesStart - 
+* reset - 
 */
-void SamsonSpawner::processesStart(ProcessVector* procVec)
+void SamsonSpawner::reset(Endpoint2* ep)
 {
-	Process*  processP;
-	int       ix;
-	Host*     hostP;
+	LM_W(("Got a Reset message from '%s%s'", ep->nameGet(), ep->hostname()));
+	unlink(SAMSON_PLATFORM_PROCESSES);
 
-	for (ix = 0; ix < procVec->processes; ix++)
-	{
-		processP = &procVec->processV[ix];
-
-		hostP = networkP->epMgr->hostMgr->lookup(processP->host);
-		if (hostP != networkP->epMgr->hostMgr->localhostP)
-			continue;
-
-		LM_T(LmtProcess, ("Spawning process '%s'", processP->name));
-
-		processP->verbose = lmVerbose;
-		processP->debug   = lmDebug;
-		processP->reads   = lmReads;
-		processP->writes  = lmWrites;
-		processP->pid     = 0;
-		// processP->traceLevels ...
-
-		Process* pP;
-		pP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, 0, NULL);
-		spawn(pP);
-	}
-}
-
-
-
-/* ****************************************************************************
-*
-* localProcessesKill - 
-*/
-void SamsonSpawner::localProcessesKill(void)
-{
-	int               s;
-#if 0
-	bool              oldRestartInProgress;
-	Endpoint2*        ep;
-	Endpoint2::Status status;
-
-	oldRestartInProgress = restartInProgress;
+	LM_T(LmtReset, ("killing local processes"));
 	restartInProgress    = true;
+	localProcessesKill();
+	restartInProgress    = false;
 
-
-	networkP->epMgr->show("Killing Local Processes", true);
-
-	//
-	// Connecting to and sending 'Die' to worker
-	//
-	LM_T(LmtInit, ("Connecting to and sending 'Die' to worker in localhost"));
-	status = Endpoint2::OK;
-	if ((ep = networkP->epMgr->lookup(Endpoint2::Worker, "localhost")) == NULL)
-	{
-		LM_T(LmtInit, ("Not connected to worker - creating endpoint"));
-		ep = networkP->epMgr->add(Endpoint2::Worker, 0, "Worker", "Worker", networkP->epMgr->hostMgr->localhostP, WORKER_PORT);
-	}
-	else
-		LM_T(LmtInit, ("Found worker endpoint"));
-
-	if (ep->stateGet() != Endpoint2::Ready)
-	{
-		LM_T(LmtInit, ("Worker not READY - connecting"));
-		if (ep->connect() == Endpoint2::OK)
-		{
-			LM_T(LmtInit, ("connect OK - sending Hello"));
-			status = ep->hello(0, 50000);
-		}
-		else
-			LM_T(LmtInit, ("connect failed: %s", strerror(errno)));
-	}
-	else
-		LM_T(LmtInit, ("worker was READY"));
-
-	if ((status == Endpoint2::OK) && (ep->stateGet() ==  Endpoint2::Ready))
-	{
-		LM_V(("Sending Die to controller"));
-		status = ep->die(0, 200000);
-	}
-	else
-		status = Endpoint2::Error;
-
-	if (status != Endpoint2::OK)
-	{
-		usleep(200000);
-		s = system("killall samsonWorker > /dev/null 2>&1");
-		if (s != 0)
-			LM_E((" system(\"killall samsonWorker\") returned %d (strerror: %s)", s, strerror(errno)));
-
-		usleep(200000);
-		s = system("killall -9 samsonWorker > /dev/null 2>&1");
-		if (s != 0)
-			LM_E((" system(\"killall -9 samsonWorker\") returned %d (strerror: %s)", s, strerror(errno)));
-	}
-
-
-
-	//
-	// Connecting to and sending 'Die' to controller
-	//
-	status = Endpoint2::OK;
-	if ((ep = networkP->epMgr->controller) == NULL)
-		ep = networkP->epMgr->add(Endpoint2::Controller, 0, "Controller", "Controller to Die", networkP->epMgr->hostMgr->localhostP, CONTROLLER_PORT);
-
-	if (ep->stateGet() != Endpoint2::Ready)
-	{
-		if (ep->connect() == Endpoint2::OK)
-			status = ep->hello(0, 200000);
-	}
-
-	if ((status == Endpoint2::OK) && (ep->stateGet() == Endpoint2::Ready))
-	{
-		LM_V(("Sending Die to controller"));
-		status = ep->die(0, 200000);
-	}
-	else
-		status = Endpoint2::Error;
-
-	if (status != Endpoint2::OK)
-	{
-		usleep(200000);
-		s = system("killall samsonController > /dev/null 2>&1");
-		if (s != 0)
-			LM_E((" system(\"killall samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
-
-		usleep(200000);
-		s = system("killall -9 samsonController > /dev/null 2>&1");
-		if (s != 0)
-			LM_E((" system(\"killall -9 samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
-	}
-
-	// Await the processes in the timeout function
-	timeoutFunction();
-	timeoutFunction();
-
-	restartInProgress = oldRestartInProgress;
-#else
-	s = system("killall samsonWorker > /dev/null 2>&1");
-	if (s != 0)
-		LM_E((" system(\"killall samsonWorker\") returned %d (strerror: %s)", s, strerror(errno)));
-	usleep(200000);
-	s = system("killall -9 samsonWorker > /dev/null 2>&1");
-	if (s != 0)
-		LM_E((" system(\"killall -9 samsonWorker\") returned %d (strerror: %s)", s, strerror(errno)));
-
-
-	s = system("killall samsonController > /dev/null 2>&1");
-	if (s != 0)
-		LM_E((" system(\"killall samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
-	usleep(200000);
-	s = system("killall -9 samsonController > /dev/null 2>&1");
-	if (s != 0)
-		LM_E((" system(\"killall -9 samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
-#endif
+	LM_T(LmtReset, ("Sending ack to RESET message to %s@%s", ep->nameGet(), ep->hostname()));
+	ep->send(Message::Ack, Message::Reset);
+	networkP->epMgr->show("Got RESET", true);
 }
 
 
 
 /* ****************************************************************************
 *
-* procVecTreat - 
+* processVector - 
 */
-int SamsonSpawner::procVecTreat(Endpoint2* ep)
+Endpoint2::Status SamsonSpawner::processVector(Endpoint2* ep, ProcessVector* procVec)
 {
-	ProcessVector* procVec = networkP->epMgr->procVecGet();
+	networkP->epMgr->procVecSet(procVec);
 
-	LM_M(("Received a procVec with %d processes from %s@%s", procVec->processes, ep->nameGet(), ep->hostname()));
 
+	LM_M(("Got Process Vector with %d processes from %s@%s", procVec->processes, ep->nameGet(), ep->hostname()));
+
+#if 0
+	// Supposedly, a RESET was sent before ...
 	restartInProgress = true;
 	localProcessesKill();
 	restartInProgress = false;
+#endif
+
 	processesStart(procVec);
 
-	return 0;
+	return ep->send(Message::Ack, Message::ProcessVector);
 }
 
 
@@ -490,7 +318,6 @@ void SamsonSpawner::spawn(Process* process)
 #if 1
 	LM_W(("Turning on VERBOSE and ALL TRACE LEVELS for process '%s'", process->name));
 	process->verbose = true;
-	strcpy(process->traceLevels, "0-255");
 #endif
 
 	if (process->verbose == true)   argV[argC++] = (char*) "-v";
@@ -500,6 +327,7 @@ void SamsonSpawner::spawn(Process* process)
 	if (process->toDo    == true)   argV[argC++] = (char*) "-toDo";
 
 
+	// Inheriting the trace levels from Spawner process
 	char traceLevels[512];
 	memset(traceLevels, 0, sizeof(traceLevels));
 	lmTraceGet(traceLevels, sizeof(traceLevels), process->traceLevels);
@@ -513,7 +341,7 @@ void SamsonSpawner::spawn(Process* process)
 
 	LM_T(LmtSpawn, ("Spawning process '%s'", argV[0]));
 	for (int ix = 0; ix < argC; ix++)
-	   LM_T(LmtSpawn, ("  argV[%d]: '%s'", ix, argV[ix]));
+		LM_T(LmtSpawn, ("  argV[%d]: '%s'", ix, argV[ix]));
 
 	pid = fork();
 	if (pid == 0)
@@ -521,12 +349,7 @@ void SamsonSpawner::spawn(Process* process)
 		int ix;
 		int s;
 
-		if (logFd != -1)
-		{
-			close(logFd);
-			logFd = -1;
-		}
-
+		LM_TODO(("Use close-on-exec!"));
 		s = execvp(argV[0], argV);
 		if (s == -1)
 			LM_E(("Back from EXEC: %s", strerror(errno)));
@@ -541,6 +364,66 @@ void SamsonSpawner::spawn(Process* process)
 	}
 
 	process->pid = pid;
+}
+
+
+
+/* ****************************************************************************
+*
+* processesStart - 
+*/
+void SamsonSpawner::processesStart(ProcessVector* procVec)
+{
+	Process*  processP;
+	int       ix;
+	Host*     hostP;
+
+	for (ix = 0; ix < procVec->processes; ix++)
+	{
+		processP = &procVec->processV[ix];
+
+		hostP = networkP->epMgr->hostMgr->lookup(processP->host);
+		if (hostP != networkP->epMgr->hostMgr->localhostP)
+			continue;
+
+		LM_T(LmtProcess, ("Spawning process '%s'", processP->name));
+
+		processP->verbose = lmVerbose;
+		processP->debug   = lmDebug;
+		processP->reads   = lmReads;
+		processP->writes  = lmWrites;
+		processP->pid     = 0;
+
+		spawn(processP);
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* localProcessesKill - 
+*/
+void SamsonSpawner::localProcessesKill(void)
+{
+	int s;
+
+	s = system("killall samsonWorker > /dev/null 2>&1");
+	if (s != 0)
+		LM_E((" system(\"killall samsonWorker\") returned %d (strerror: %s)", s, strerror(errno)));
+	usleep(200000);
+	s = system("killall -9 samsonWorker > /dev/null 2>&1");
+	if (s != 0)
+		LM_E((" system(\"killall -9 samsonWorker\") returned %d (strerror: %s)", s, strerror(errno)));
+
+
+	s = system("killall samsonController > /dev/null 2>&1");
+	if (s != 0)
+		LM_E((" system(\"killall samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
+	usleep(200000);
+	s = system("killall -9 samsonController > /dev/null 2>&1");
+	if (s != 0)
+		LM_E((" system(\"killall -9 samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
 }
 
 }

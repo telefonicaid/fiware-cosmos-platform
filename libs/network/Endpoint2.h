@@ -41,6 +41,7 @@ class ListenerEndpoint;
 class UnhelloedEndpoint;
 class WebListenerEndpoint;
 class WebWorkerEndpoint;
+class SpawnerEndpoint;
 
 
 
@@ -55,6 +56,7 @@ class Endpoint2
 	friend class UnhelloedEndpoint;
 	friend class WebListenerEndpoint;
 	friend class WebWorkerEndpoint;
+	friend class SpawnerEndpoint;
 
 public:
 	typedef enum UpdateReason
@@ -148,6 +150,7 @@ public:
 
 	~Endpoint2();
 	const char*          status(Status s);
+	const char*          stateName(void);
 
 private:
 	EndpointManager*     epMgr;
@@ -230,6 +233,9 @@ public:
 
 	Status               hello(int secs, int usecs = 0);     // send hello and await ack, with timeout
 	Status               die(int secs, int usecs = 0);       // send 'die' to endpoint, and await death, with timeout
+
+	Status               helloDataSet(Type _type, const char* _name, const char* _alias);
+	Endpoint2::Status    helloSend(Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
 
 private:
 	Status               listenerPrepare(void);

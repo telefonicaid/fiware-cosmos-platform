@@ -151,7 +151,21 @@ Endpoint2::Status SamsonSetup::connect(void)
 */
 Endpoint2::Status SamsonSetup::reset(void)
 {
-	return Endpoint2::Error;
+	Endpoint2*         ep;
+	Endpoint2::Status  s;
+
+	for (int ix = 0; ix < spawners; ix++)
+	{
+		ep = networkP->epMgr->lookup(Endpoint2::Spawner, ix);
+		if (ep == NULL)
+			LM_X(1, ("Cannot find Spawner %d", ix));
+
+		LM_M(("Sending RESET to endpoint %s@%s", ep->nameGet(), ep->hostname()));
+		if ((s = ep->send(Message::Msg, Message::Reset)) != Endpoint2::OK)
+			LM_RE(s, ("send: %s", ep->status(s)));
+	}
+
+	return Endpoint2::OK;
 }
 
 
@@ -173,7 +187,21 @@ Endpoint2::Status SamsonSetup::processList(void)
 */
 Endpoint2::Status SamsonSetup::procVecSend()
 {
-	return Endpoint2::Error;
+	Endpoint2*         ep;
+	Endpoint2::Status  s;
+
+	for (int ix = 0; ix < spawners; ix++)
+	{
+		ep = networkP->epMgr->lookup(Endpoint2::Spawner, ix);
+		if (ep == NULL)
+			LM_X(1, ("Cannot find Spawner %d", ix));
+
+		LM_M(("Sending Process Vector to endpoint %s@%s", ep->nameGet(), ep->hostname()));
+		if ((s = ep->send(Message::Msg, Message::Reset, networkP->epMgr->procVecGet(), networkP->epMgr->procVecGet()->processVecSize)) != Endpoint2::OK)
+			LM_RE(s, ("send: %s", ep->status(s)));
+	}
+
+	return Endpoint2::OK;
 }
 
 

@@ -72,7 +72,7 @@ private:
 
 public:
 	HostMgr*                  hostMgr;
-	
+
 	Endpoint2*                me;
 	Endpoint2*                controller;
 	ListenerEndpoint*         listener;
@@ -102,6 +102,8 @@ public:
 	Endpoint2*         lookup(Endpoint2::Type type, const char* ip);
 	Endpoint2*         lookup(Endpoint2::Type type, int id, int* ixP = NULL);
 	Endpoint2*         lookup(const char* alias);
+	int                ixGet(Endpoint2* ep);
+	Endpoint2*         indexedGet(unsigned int ix);
 	void               show(const char* why, bool forced = false);
 
 	int                endpointCount(Endpoint2::Type type);

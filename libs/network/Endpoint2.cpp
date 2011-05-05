@@ -299,6 +299,25 @@ Endpoint2::State Endpoint2::stateGet(void)
 
 /* ****************************************************************************
 *
+* stateName - 
+*/
+const char* Endpoint2::stateName(void)
+{
+	switch (state)
+	{
+	case Unused:                    return "Unused";
+	case Ready:                     return "Ready";
+	case Disconnected:              return "Disconnected";
+	case ScheduledForRemoval:       return "ScheduledForRemoval";
+	}
+
+	return "Unknown";
+}
+
+
+
+/* ****************************************************************************
+*
 * rFdGet - 
 */
 int Endpoint2::rFdGet(void)
@@ -757,6 +776,9 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	long                 dataLen  = 0;
 	Packet               packet(Message::Unknown);
 	Endpoint2::Status    s;
+	Message::HelloData*  helloP;
+
+	LM_M(("Treating a message from %s@%s", name, host->name));
 
 	if (type == Listener)
 		return msgTreat2();
@@ -775,6 +797,25 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 
 	switch (header.code)
 	{
+	case Message::Hello:
+		helloP = (Message::HelloData*) dataP;
+		s = helloDataSet((Type) helloP->type, helloP->name, helloP->alias);
+		if (s != OK)
+		{
+			stateSet(ScheduledForRemoval);
+			LM_RE(s, ("Bad hello data"));
+		}
+
+		if (header.type == Message::Msg)
+		{
+			if ((s = helloSend(Message::Ack)) != OK)
+			{
+				stateSet(ScheduledForRemoval);
+				LM_RE(s, ("helloSend error"));
+			}
+		}
+		break;
+
 	default:
 		LM_M(("Cannot treat '%s' '%s' (code %d), passing it to msgTreat2", messageCode(header.code), messageType(header.type), header.code));
 		s = msgTreat2(&header, dataP, dataLen, &packet);
@@ -979,6 +1020,55 @@ Endpoint2::Status Endpoint2::die(int secs, int usecs)
 bool Endpoint2::threaded(void)
 {
 	return useSenderThread;
+}
+
+
+
+/* ****************************************************************************
+*
+* helloDataSet - 
+*/
+Endpoint2::Status Endpoint2::helloDataSet(Type _type, const char* _name, const char* _alias)
+{
+	if (type != Unhelloed)
+	{
+		if (type != _type)
+			LM_W(("Got a Hello from %s@%s, saying he's of '%s' type, when endpoint says '%s'", name, hostname(), typeName(_type), typeName()));
+	}
+
+	type = _type;
+	nameSet(_name);
+	aliasSet(_alias);
+
+	LM_M(("Set type to %d, name to '%s' and alias to '%s'", _type, _name, _alias));
+
+	state = Ready;
+	return OK;
+}
+
+
+
+/* ****************************************************************************
+*
+* helloSend - 
+*/
+Endpoint2::Status Endpoint2::helloSend(Message::MessageType type)
+{
+	Message::HelloData hello;
+
+	memset(&hello, 0, sizeof(hello));
+
+	strncpy(hello.name,   epMgr->me->nameGet(),    sizeof(hello.name));
+	strncpy(hello.ip,     epMgr->me->hostname(),   sizeof(hello.ip));
+	strncpy(hello.alias,  epMgr->me->aliasGet(),   sizeof(hello.alias));
+
+	hello.type     = epMgr->me->typeGet();
+	hello.coreNo   = 0;
+	hello.workerId = 0;
+
+	LM_T(LmtWrite, ("sending hello %s to '%s' (my name: '%s', my type: '%s')", messageType(type), name, hello.name, epMgr->me->typeName()));
+
+	return send(type, Message::Hello, &hello, sizeof(hello));
 }
 
 }

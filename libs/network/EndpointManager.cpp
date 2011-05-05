@@ -601,6 +601,36 @@ Endpoint2* EndpointManager::lookup(const char* alias)
 
 /* ****************************************************************************
 *
+* ixGet - 
+*/
+int EndpointManager::ixGet(Endpoint2* ep)
+{
+	for (unsigned int ix = 0; ix < endpoints; ix++)
+	{
+		if (endpoint[ix] == ep)
+			return ix;
+	}
+	return -1;
+}
+
+
+
+/* ****************************************************************************
+*
+* indexedGet - 
+*/
+Endpoint2* EndpointManager::indexedGet(unsigned int ix)
+{
+	if (ix >= endpoints)
+		return NULL;
+
+	return endpoint[ix];
+}
+
+
+
+/* ****************************************************************************
+*
 * setupAwait - 
 */
 Endpoint2::Status EndpointManager::setupAwait(void)
@@ -732,6 +762,7 @@ void EndpointManager::run(bool oneShot)
 	int              max;
 	struct timeval   tv;
 	int              fds;
+	int              eps;
 
 	while (1)
 	{
@@ -747,7 +778,7 @@ void EndpointManager::run(bool oneShot)
 			FD_ZERO(&rFds);
 			ix   = 0;
 			max  = 0;
-
+			eps  = 0;
 			for (unsigned int ix = 0; ix < endpoints; ix++)
 			{
 				ep = endpoint[ix];
@@ -761,6 +792,7 @@ void EndpointManager::run(bool oneShot)
 				if (ep->rFd == -1)
 					continue;
 
+				eps += 1;
 				max = MAX(max, ep->rFd);
 				FD_SET(ep->rFd, &rFds);
 			}
@@ -771,6 +803,7 @@ void EndpointManager::run(bool oneShot)
 			if (max == 0)
 				LM_X(1, ("No fds to listen to ..."));
 
+			LM_M(("Performing a select over %d read fds, timeout: %d.%06d", eps, tv.tv_sec, tv.tv_usec));
 			fds = select(max + 1,  &rFds, NULL, NULL, &tv);
 		} while ((fds == -1) && (errno == EINTR));
 
@@ -784,6 +817,20 @@ void EndpointManager::run(bool oneShot)
 		}
 		else
 		{
+			for (unsigned int ix = 0; ix < endpoints; ix++)
+			{
+				if (endpoint[ix] == NULL)
+					continue;
+
+				if (endpoint[ix]->rFd == -1)
+					continue;
+
+                if (endpoint[ix]->threaded() == true)
+                    continue;
+				
+				if (FD_ISSET(endpoint[ix]->rFd, &rFds))
+					endpoint[ix]->msgTreat();
+			}
 			ep = NULL;
 			if ((listener != NULL) && (FD_ISSET(listener->rFd, &rFds)))
 				listener->msgTreat();
@@ -953,7 +1000,7 @@ void EndpointManager::show(const char* why, bool forced)
 	LM_V((""));
 	LM_V(("-------------------- Endpoint list (%s) ------------------------------", why));
 	LM_V((""));
-	LM_V(("ix  %-12s id  %-20s %-20s Port  rFd", "Type", "Name", "Host"));
+	LM_V(("ix  %-12s id  %-20s %-20s %-20s Port  rFd", "Type", "Name", "Host", "State"));
 	LM_V(("----------------------------------------------------------------------"));
 
 	for (unsigned int ix = 0; ix < endpoints; ix++)
@@ -964,7 +1011,7 @@ void EndpointManager::show(const char* why, bool forced)
 		if (ep == NULL)
 			continue;
 
-		LM_V(("%02d: %-12s %02d  %-20s %-20s %d  %d", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname(), ep->port, ep->rFd));
+		LM_V(("%02d: %-12s %02d  %-20s %-20s %-20s %d  %d", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname(), ep->stateName(), ep->port, ep->rFd));
 	}
 	LM_V(("----------------------------------------------------------------------"));
 

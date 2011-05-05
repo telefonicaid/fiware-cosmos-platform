@@ -970,4 +970,15 @@ Endpoint2::Status Endpoint2::die(int secs, int usecs)
 	return OK;
 }
 
+
+
+/* ****************************************************************************
+*
+* - 
+*/
+bool Endpoint2::threaded(void)
+{
+	return useSenderThread;
+}
+
 }

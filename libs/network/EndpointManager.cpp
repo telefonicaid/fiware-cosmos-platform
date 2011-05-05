@@ -133,6 +133,7 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 	case Endpoint2::Spawner:       initSpawner();                break;
 	case Endpoint2::Delilah:       initDelilah(controllerIp);    break;
 	case Endpoint2::Supervisor:    initSupervisor();             break;
+	case Endpoint2::Setup:         initSetup();                  break;
 
     default:
 		LM_X(1, ("The endpoint type '%s' cannot have an Endpoint Manager", Endpoint2::typeName(type)));
@@ -337,6 +338,19 @@ void EndpointManager::initSupervisor(void)
 
 /* ****************************************************************************
 *
+* initSetup - 
+*/
+void EndpointManager::initSetup(void)
+{
+	me->aliasSet("Setup");
+
+	LM_W(("Nothing done here, not sure if anything is needed ..."));
+}
+
+
+
+/* ****************************************************************************
+*
 * Destructor
 */
 EndpointManager::~EndpointManager()
@@ -399,6 +413,8 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 				return NULL;
 			}
 		}
+
+		show("Added an Endpoint");
 		return ep;
 	}
 
@@ -518,14 +534,14 @@ Endpoint2* EndpointManager::get(unsigned int index, int* rFdP)
 *
 * lookup - 
 */
-Endpoint2* EndpointManager::lookup(Endpoint2::Type type, int id, int* ixP)
+Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int id, int* ixP)
 {
 	for (unsigned int ix = 0; ix < endpoints; ix++)
-    {
-        if (endpoint[ix] == NULL)
-            continue;
+	{
+		if (endpoint[ix] == NULL)
+			continue;
 
-		if ((endpoint[ix]->type == true) && (endpoint[ix]->id == id))
+		if ((endpoint[ix]->type == typ) && (endpoint[ix]->id == id))
 		{
 			if (ixP != NULL)
 				*ixP = ix;
@@ -544,7 +560,7 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type type, int id, int* ixP)
 Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, const char* host)
 {
 	for (unsigned int ix = 0; ix < endpoints; ix++)
-    {
+	{
         if (endpoint[ix] == NULL)
             continue;
 
@@ -717,9 +733,6 @@ void EndpointManager::run(bool oneShot)
 	struct timeval   tv;
 	int              fds;
 
-	if ((listener == NULL) && (webListener == NULL))
-		LM_X(1, ("No listeners ..."));
-		
 	while (1)
 	{
 		if (callback[Periodic].func != NULL)
@@ -741,7 +754,11 @@ void EndpointManager::run(bool oneShot)
 
 				if (ep == NULL)
 					continue;
-				if ((ep->type != Endpoint2::Listener) && (ep->type != Endpoint2::WebListener) && (ep->type != Endpoint2::Unhelloed))
+
+				if (ep->threaded() == true)
+					continue;
+
+				if (ep->rFd == -1)
 					continue;
 
 				max = MAX(max, ep->rFd);
@@ -751,6 +768,9 @@ void EndpointManager::run(bool oneShot)
 			tv.tv_sec  = tmoSecs;
 			tv.tv_usec = tmoUSecs;
 			
+			if (max == 0)
+				LM_X(1, ("No fds to listen to ..."));
+
 			fds = select(max + 1,  &rFds, NULL, NULL, &tv);
 		} while ((fds == -1) && (errno == EINTR));
 
@@ -1012,7 +1032,7 @@ void EndpointManager::tmoSet(int secs, int usecs)
 void EndpointManager::callbackSet(CallbackId id, EpMgrCallback func, void* userParam)
 {
 	if ((unsigned int) id >= (sizeof(callback) / sizeof(callback[0])))
-		LM_X(1, ("CallbackId too high (%d), max is %d - this bug must be fixed NOW!", id, sizeof(callback) / sizeof(callback[0])));
+		LM_X(1, ("Callback ID too high (%d), max is %d - this bug must be fixed NOW!", id, sizeof(callback) / sizeof(callback[0])));
 
 	if (callback[id].func != NULL)
 		LM_W(("Overwriting previous callback %d - is this really what you want?", id));

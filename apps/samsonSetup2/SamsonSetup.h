@@ -36,10 +36,7 @@ public:
 	void                run();
 
 	Network2*           networkP;
-
-private:
 	int                 spawners;
-	ProcessVector*      procVec;
 };
 
 }

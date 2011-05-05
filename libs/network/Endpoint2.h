@@ -202,7 +202,7 @@ public:
 	int                  rFdGet(void);
 	int                  wFdGet(void);
 
-
+	bool                 threaded();
 
 	Status               connect(void);
 	Status               msgAwait(int secs, int usecs);

@@ -85,9 +85,12 @@ void helloCheck(void* callbackData, void* userParam)
 {
 	int unhelloed = 0;
 	int now;
+	int helloed = 0;
 
 	callbackData  = NULL;
 	userParam     = NULL;
+
+	LM_M(("IN"));
 
 	for (int ix = 0; ix < samsonSetup->networkP->epMgr->endpointCapacity(); ix++)
 	{
@@ -101,6 +104,8 @@ void helloCheck(void* callbackData, void* userParam)
 		{
 			if (ep->stateGet() != ss::Endpoint2::Ready)
 				++unhelloed;
+			else
+				++helloed;
 		}			
 
 		if (ep->typeGet() == ss::Endpoint2::Unhelloed)
@@ -108,7 +113,12 @@ void helloCheck(void* callbackData, void* userParam)
 	}
 
 	if (unhelloed == 0)
-		LM_M(("unhelloed == 0 - READY TO ROLL!"));
+	{
+		if (helloed != samsonSetup->spawners)
+			LM_W(("Helloed: %d, Spawners: %d - what has happened?", helloed, samsonSetup->spawners));
+		else
+			LM_M(("All Helloes interchanged - READY TO ROLL!"));
+	}
 	else
 	{
 		now = time(NULL);
@@ -143,9 +153,12 @@ int main(int argC, const char *argV[])
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
 	
+	if ((int) ips[0] != workers)
+		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (int) ips[0]));
+
 	samsonSetup = new ss::SamsonSetup();
 	samsonSetup->procVecCreate(controllerHost, workers, ips);
-	
+
 	startTime = time(NULL);
 	if (samsonSetup->connect() != ss::Endpoint2::OK)
 		LM_X(1, ("Error connecting to all spawners"));
@@ -153,6 +166,8 @@ int main(int argC, const char *argV[])
 	samsonSetup->networkP->epMgr->callbackSet(ss::EndpointManager::Timeout,  helloCheck, NULL);
 	samsonSetup->networkP->epMgr->callbackSet(ss::EndpointManager::Periodic, helloCheck, NULL);
 
+	samsonSetup->networkP->epMgr->show("Before calling run");
+	LM_M(("Calling run"));
 	samsonSetup->run();
 
 

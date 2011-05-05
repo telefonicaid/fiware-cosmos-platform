@@ -50,7 +50,8 @@ public:
 	enum CallbackId
 	{
 		Periodic = 0,
-		Timeout
+		Timeout,
+		CallbackIds
 	};
 
 	struct Callback
@@ -67,7 +68,7 @@ private:
 	int                       tmoSecs;
 	int                       tmoUSecs;
 	ProcessVector*            procVec;
-	struct Callback           callback[Timeout];
+	struct Callback           callback[CallbackIds];
 
 public:
 	HostMgr*                  hostMgr;
@@ -87,6 +88,7 @@ public:
 	void               initSpawner();
 	void               initDelilah(const char* controllerIp);
 	void               initSupervisor();
+	void               initSetup();
 
 	int                procVecSet(ProcessVector* _procVec);
 	ProcessVector*     procVecGet(void);
@@ -98,7 +100,7 @@ public:
 	Endpoint2*         get(unsigned int index);
 	Endpoint2*         get(unsigned int index, int* rFdP);
 	Endpoint2*         lookup(Endpoint2::Type type, const char* ip);
-	Endpoint2*         lookup(Endpoint2::Type type, int id, int* ixP);
+	Endpoint2*         lookup(Endpoint2::Type type, int id, int* ixP = NULL);
 	Endpoint2*         lookup(const char* alias);
 	void               show(const char* why, bool forced = false);
 

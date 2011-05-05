@@ -16,7 +16,6 @@
 #include <istream>
 #include <cstdlib>
 #include <iostream>
-#include <curses.h>
 #include <deque>
 
 #include "au/Lock.h"             /* Lock                            */

@@ -265,7 +265,7 @@ namespace ss
 
 		if( commandLine.get_num_arguments() == 0)
 		{
-			clear();
+		   //clear();
 			return 0;	// Zero means no pending operation to check
 		}
 		else

@@ -200,8 +200,8 @@ int main(int argC, const char *argV[])
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
 	
-	if ((int) ips[0] != workers)
-		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (int) ips[0]));
+	if ((long) ips[0] != workers)
+		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (long) ips[0]));
 
 	samsonSetup = new ss::SamsonSetup();
 	samsonSetup->procVecCreate(controllerHost, workers, ips);

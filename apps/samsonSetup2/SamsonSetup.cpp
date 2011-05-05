@@ -43,8 +43,8 @@ void SamsonSetup::procVecCreate(const char* controllerHost, int workers, const c
 	Endpoint2*     ep;
 	int            spawnerId = 0;
 
-	if ((int) ips[0] != workers)
-		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (int) ips[0]));
+	if ((long) ips[0] != workers)
+		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (long) ips[0]));
 
 	LM_M(("-----------------------------------------------------------------------------------------------"));
 	LM_M(("Creating a Process Vector of %d workers and a controller (in %s)", workers, controllerHost));

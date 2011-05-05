@@ -988,8 +988,17 @@ namespace ss
                     case network::ControllerTask_ControllerTaskStatus_ControllerTaskRunning:
                         txt << "Running";
                         
-                        double running_progress  = (double) task.running_info().size() / (double) task.total_info().size();
-                        double processed_completed = (double) task.processed_info().size() / (double) task.total_info().size();
+                        double running_progress;
+                        if( task.total_info().size() == 0 )
+                            running_progress = 0;
+                        else
+                            running_progress  =  (double) task.running_info().size() / (double) task.total_info().size();
+                        
+                        double processed_completed;
+                        if( task.processed_info().size() == 0)
+                            processed_completed = 0;
+                        else
+                            processed_completed = (double) task.processed_info().size() / (double) task.total_info().size();
                         
                         txt << " Progress: ";
                         txt << au::Format::string( task.processed_info().size() );

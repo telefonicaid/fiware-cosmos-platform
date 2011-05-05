@@ -118,7 +118,7 @@ namespace ss
     }
     
     void WorkerSubTask::run()
-    {
+    {        
 
         // Spetial case for any kind of error
         if ( (status != finished) && error.isActivated() )

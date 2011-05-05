@@ -30,4 +30,13 @@ namespace au {
         if( otherError->isActivated() )
             set( otherError->getMessage() );
     }
+    
+    std::string Error::str()
+    {
+        if( !error )
+            return "No error";
+        else
+            return "Error:" + message;
+    }
+
 }

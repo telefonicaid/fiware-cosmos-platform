@@ -215,6 +215,9 @@ namespace ss
             
             if( subTask )
             {
+                
+                LM_W(("Subtask finished %lu ( %s )" , task_id , subTask->error.str().c_str() ));
+
                 num_subtasks--;
                 
                 // Copy the error if necessary

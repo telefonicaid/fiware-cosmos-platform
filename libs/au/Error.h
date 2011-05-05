@@ -24,6 +24,8 @@ namespace au
 		
         void set( Error *otherError );
         
+        std::string str(); 
+        
 	};
 	
 }

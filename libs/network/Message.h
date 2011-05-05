@@ -76,6 +76,7 @@ typedef enum MessageCode
 	Reset                           = CODE('R', 's', 't', ' '),
 	ProcessVectorGet                = CODE('P', 'V', 'G', ' '),
     Trace                           = CODE('T', 'r', 'a', ' '),
+	ProcessList                     = CODE('P', 'r', 'L', ' '),
     Unknown                         = CODE('U', 'n', 'k', ' ')
 } MessageCode;
 

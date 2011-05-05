@@ -635,7 +635,13 @@ Endpoint2* EndpointManager::indexedGet(unsigned int ix)
 */
 Endpoint2::Status EndpointManager::setupAwait(void)
 {
-	Endpoint2::Status s;
+	Endpoint2::Status  s;
+	Message::Header    header;
+	void*              dataP   = NULL;
+	long               dataLen = 0;
+	Packet             packet(Message::Unknown);
+
+	LM_TODO(("Instead of all this, perhaps I can just start the spawner and treat the messages in SamsonSpawner::receive ... ?"));
 
 	if (listener == NULL)
 		LM_RE(Endpoint2::Error, ("Cannot await the setup to arrive if I have no Listener ..."));
@@ -678,46 +684,74 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		}
 		LM_M(("Endpoint type: %s", ep->typeName()));
 
-		// Hello exchanged, now the endpoint will send a ProcessVector message
-		// Awaiting the message to arrive 
-		LM_M(("Awaiting ProcessVector message to arrive from '%s@%s'", ep->nameGet(), ep->hostname()));
-		if ((s = ep->msgAwait(5, 0)) != 0)
-		{
-			LM_E(("msgAwait(ProcessVector): %s", ep->status(s)));
-			remove(ep);
-			continue;
-		}
-		LM_M(("Something to read, hopefully a Process Vector ..."));
 
-		// Reading the message (supposed ProcessVector)
-		Message::Header  header;
-		void*            dataP   = NULL;
-		long             dataLen = 0;
-		Packet           packet(Message::Unknown);
-
-		LM_M(("Receiving the message"));
-		if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != 0)
+		// Reading the message (supposedly a ProcessVector)
+		while (1)
 		{
-			LM_E(("Endpoint2::receive error"));
-			remove(ep);
-			continue;
-		}
-		LM_M(("read a message of %d bytes", dataLen));
+			// Hello exchanged, now the endpoint will send a ProcessVector message
+			// Awaiting the message to arrive 
+			LM_M(("Awaiting ProcessVector message to arrive from '%s@%s'", ep->nameGet(), ep->hostname()));
+			if ((s = ep->msgAwait(5, 0)) != 0)
+			{
+				LM_E(("msgAwait(ProcessVector): %s", ep->status(s)));
+				remove(ep);
+				continue;
+			}
+			LM_M(("Something to read, hopefully a Process Vector ..."));
 
-		// All OK ?
-		if ((header.code != Message::ProcessVector) || (header.type != Message::Msg))
-		{
-			LM_E(("Message read not a ProcessVector Msg (%s %s)", messageCode(header.code), messageType(header.type)));
-			if (dataP != NULL)
-				free(dataP);
-			remove(ep);
-			continue;
+			LM_M(("Receiving the message"));
+			if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != 0)
+			{
+				LM_E(("Endpoint2::receive error"));
+				remove(ep);
+				ep = NULL;
+				break;
+			}
+			LM_M(("read a message of %d bytes", dataLen));
+
+			// All OK ?
+			if (header.type != Message::Msg)
+			{
+				LM_W(("Read an unexpected '%s' Ack - throwing it away!",  messageCode(header.code)));
+				if (dataP != NULL)
+                    free(dataP);
+				remove(ep);
+				ep = NULL;
+				break;
+			}
+			else if (header.code == Message::ProcessVector)
+			{
+				LM_M(("Just what I wanted - a ProcessVector!"));
+				break;
+			}
+			else if (header.code == Message::Reset)
+			{
+				LM_M(("Got a reset, that's OK but I don't need to do anything, I have nothing started ... Let's just keep reading ..."));
+				LM_M(("Do I need to ack the RESET ?"));
+			}
+			else if (header.code == Message::ProcessList)
+			{
+				LM_M(("Got a ProcessList, that's OK, but I have nothing ... Let's Ack with NO DATA and continue to wait for a Process Vector ..."));
+				ep->ack(Message::ProcessList);
+			}
+			else
+			{
+				LM_E(("Unexpected Message (%s %s)", messageCode(header.code), messageType(header.type)));
+				if (dataP != NULL)
+					free(dataP);
+				remove(ep);
+				continue;
+			}
 		}
+
+		if (ep == NULL)
+			continue;
+
 		ProcessVector* tmp = (ProcessVector*) dataP;
 		LM_M(("All OK - it was a Process Vector Message, %d processes, %d total size", tmp->processes, tmp->processVecSize));
 		tmp = NULL;  // Will not be used anymore ...
 
-		// Copying 
+		// Copying the process vector
 		this->procVec = (ProcessVector*) malloc(dataLen);
 		if (this->procVec == NULL)
 			LM_X(1, ("Error allocating %d bytes for the Process Vector", dataLen));

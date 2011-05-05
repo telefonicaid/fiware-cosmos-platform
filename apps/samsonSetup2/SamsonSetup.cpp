@@ -115,6 +115,8 @@ void SamsonSetup::procVecCreate(const char* controllerHost, int workers, const c
 		LM_M(("---------------------------------------------------------------"));
 	}
 
+	LM_M(("Setting Endpoint Manager process vector"));
+	networkP->epMgr->procVecSet(pv);
 	spawners = spawnerId;
 }
 

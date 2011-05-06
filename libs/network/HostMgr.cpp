@@ -427,7 +427,7 @@ Host* HostMgr::lookup(const char* name)
 	if (name == NULL)
 		LM_RE(NULL, ("Cannot lookup a NULL hostname!"));
 
-	LM_M(("Looking up host '%s'", name));
+	//LM_M(("Looking up host '%s'", name));
 
 	for (ix = 0; ix < size; ix++)
 	{

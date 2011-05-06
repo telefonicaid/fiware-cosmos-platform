@@ -46,9 +46,6 @@ void SamsonSetup::procVecCreate(const char* controllerHost, int workers, const c
 	if ((long) ips[0] != workers)
 		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (long) ips[0]));
 
-	LM_M(("-----------------------------------------------------------------------------------------------"));
-	LM_M(("Creating a Process Vector of %d workers and a controller (in %s)", workers, controllerHost));
-
 	pv = (ProcessVector*) calloc(1, size);
 	if (pv == NULL)
 		LM_X(1, ("error allocating %d bytes for process vector", size));
@@ -81,7 +78,7 @@ void SamsonSetup::procVecCreate(const char* controllerHost, int workers, const c
 		hostP = networkP->epMgr->hostMgr->lookup(p->host);
 		if (hostP == NULL)
 		{
-			LM_M(("Controller host '%s' not found in host manager - adding it", p->host));
+			LM_W(("The host '%s' not found in host manager - adding it", p->host));
 			hostP = networkP->epMgr->hostMgr->insert(p->host, NULL);
 			if (hostP == NULL)
 				LM_X(1, ("error adding host '%s'", p->host));
@@ -97,26 +94,20 @@ void SamsonSetup::procVecCreate(const char* controllerHost, int workers, const c
 		p->writes    = false;
 		p->hidden    = false;
 		p->toDo      = false;
-
-		LM_M(("Created Process for %s@%s", p->alias, hostP->name));
+		p->id        = ix - 1; // gives an id of -1 for controller, but that's OK
 
 		if (networkP->epMgr->lookup(Endpoint2::Spawner, hostP->name) == NULL)
 		{
-			if ((ep = networkP->epMgr->add(Endpoint2::Spawner, spawnerId, "Spawner", "Spawner", hostP, SPAWNER_PORT)) != NULL)
-				LM_M(("Created Spawner %d Endpoint for host %s", spawnerId, hostP->name));
-			else
+			if ((ep = networkP->epMgr->add(Endpoint2::Spawner, spawnerId, "Spawner", "Spawner", hostP, SPAWNER_PORT)) == NULL)
 				LM_X(1, ("Error creating Spawner Endpoint for host %s", hostP->name));
 
 			++spawnerId;
 		}
 		else
-			LM_M(("Spawner endpoint for %s already created", hostP->name));
-
-		LM_M(("---------------------------------------------------------------"));
+			LM_W(("Spawner endpoint for %s already created", hostP->name));
 	}
 
-	LM_M(("Setting Endpoint Manager process vector"));
-	networkP->epMgr->procVecSet(pv);
+	networkP->epMgr->procVecSet(pv, false);
 	spawners = spawnerId;
 }
 
@@ -137,7 +128,6 @@ Endpoint2::Status SamsonSetup::connect(void)
 		if (ep == NULL)
 			LM_X(1, ("Cannot find Spawner %d", ix));
 
-		LM_M(("Connecting to endpoint %s@%s", ep->nameGet(), ep->hostname()));
 		if ((s = ep->connect()) != Endpoint2::OK)
 			LM_RE(s, ("Error connecting to %s %d in %s: %s", ep->nameGet(), ep->idGet(), ep->hostname(), ep->status(s)));
 	}
@@ -162,7 +152,6 @@ Endpoint2::Status SamsonSetup::reset(void)
 		if (ep == NULL)
 			LM_X(1, ("Cannot find Spawner %d", ix));
 
-		LM_M(("Sending RESET to endpoint %s@%s", ep->nameGet(), ep->hostname()));
 		if ((s = ep->send(Message::Msg, Message::Reset)) != Endpoint2::OK)
 			LM_RE(s, ("send: %s", ep->status(s)));
 	}
@@ -187,7 +176,7 @@ Endpoint2::Status SamsonSetup::processList(void)
 *
 * procVecSend - 
 */
-Endpoint2::Status SamsonSetup::procVecSend()
+Endpoint2::Status SamsonSetup::procVecSend(void)
 {
 	Endpoint2*         ep;
 	Endpoint2::Status  s;
@@ -198,8 +187,7 @@ Endpoint2::Status SamsonSetup::procVecSend()
 		if (ep == NULL)
 			LM_X(1, ("Cannot find Spawner %d", ix));
 
-		LM_M(("Sending Process Vector to endpoint %s@%s", ep->nameGet(), ep->hostname()));
-		if ((s = ep->send(Message::Msg, Message::Reset, networkP->epMgr->procVecGet(), networkP->epMgr->procVecGet()->processVecSize)) != Endpoint2::OK)
+		if ((s = ep->send(Message::Msg, Message::ProcessVector, networkP->epMgr->procVecGet(), networkP->epMgr->procVecGet()->processVecSize)) != Endpoint2::OK)
 			LM_RE(s, ("send: %s", ep->status(s)));
 	}
 

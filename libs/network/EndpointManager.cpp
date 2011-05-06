@@ -71,7 +71,7 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 	workers     = 0;
 	controller  = NULL;
 	listener    = NULL;
-
+	procVec     = NULL;
 
 
 	//
@@ -265,8 +265,6 @@ void EndpointManager::initController(void)
 */
 void EndpointManager::initSpawner(void)
 {
-	LM_M(("Initializing Spawner"));
-
 	me->portSet(SPAWNER_PORT);
 	me->aliasSet("Spawner");
 
@@ -275,12 +273,10 @@ void EndpointManager::initSpawner(void)
 
 	if ((procVec = platformProcessesGet()) == NULL)
 	{
-		LM_M(("Calling setupAwait"));
 		setupAwait();
-		LM_M(("Calling platformProcessesSave"));
+		
+		LM_M(("************* SAVING Process Vector"));
 		platformProcessesSave(procVec);
-		// platformProcessesStart(procVec);
-		LM_M(("***** Now this spawner should start processes - that can be done after this call in apps/samsponSpawner2"));
 	}
 }
 
@@ -375,7 +371,6 @@ static void* endpointRunInThread(void* vP)
 {
 	Endpoint2* ep = (Endpoint2*) vP;
 
-	LM_M(("Calling run for endpoint %s@%s", ep->nameGet(), ep->hostGet()->name));
 	ep->run();
 
 	ep->stateSet(Endpoint2::ScheduledForRemoval);
@@ -398,7 +393,7 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 			continue;
 
 		endpoint[ix] = ep;
-		LM_M(("Added endpoint %d: %s@%s", ix, ep->nameGet(), ep->hostname()));
+		LM_M(("Added endpoint %d. type:%s, id:%d, name:%s, host:%s", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname()));
 
 		if ((ep->type == Endpoint2::Controller) || (ep->type == Endpoint2::Worker) || (ep->type == Endpoint2::Delilah))
 		{
@@ -654,35 +649,28 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		LM_M(("Await FOREVER for an incoming connection"));
 		if (listener->msgAwait(-1, -1) != 0)
 			LM_X(1, ("Endpoint2::msgAwait error"));
-		LM_M(("Detected an incoming connection"));
 
-		LM_M(("Accepting the incoming connection"));
 		if ((ep = listener->accept()) == NULL)
 		{
 			LM_E(("error accepting an incoming connection"));
 			continue;
 		}
-		LM_M(("Accepted the incoming connection, fds: %d, %d", ep->rFdGet(), ep->wFdGet()));
 
-		LM_M(("Exchanging helloes"));
 		if ((s = ep->helloExchange(5, 0)) != Endpoint2::OK)
 		{
 			LM_E(("Hello Exchange error: %s", ep->status(s)));
 			delete ep;
 			continue;
 		}
-		LM_M(("Helloes exchanged"));
 
 		
 		// Is the newly connected peer a 'samsonSetup' ?
-		LM_M(("Checking Endpoint type of the other side"));
 		if (ep->type != Endpoint2::Setup)
 		{
 			LM_E(("The incoming connection was from a '%s' (only Setup allowed)", ep->typeName()));
 			remove(ep);
 			continue;
 		}
-		LM_M(("Endpoint type: %s", ep->typeName()));
 
 
 		// Reading the message (supposedly a ProcessVector)
@@ -690,16 +678,13 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		{
 			// Hello exchanged, now the endpoint will send a ProcessVector message
 			// Awaiting the message to arrive 
-			LM_M(("Awaiting ProcessVector message to arrive from '%s@%s'", ep->nameGet(), ep->hostname()));
 			if ((s = ep->msgAwait(5, 0)) != 0)
 			{
 				LM_E(("msgAwait(ProcessVector): %s", ep->status(s)));
 				remove(ep);
 				continue;
 			}
-			LM_M(("Something to read, hopefully a Process Vector ..."));
 
-			LM_M(("Receiving the message"));
 			if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != 0)
 			{
 				LM_E(("Endpoint2::receive error"));
@@ -707,12 +692,11 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 				ep = NULL;
 				break;
 			}
-			LM_M(("read a message of %d bytes", dataLen));
 
 			// All OK ?
 			if (header.type != Message::Msg)
 			{
-				LM_W(("Read an unexpected '%s' Ack - throwing it away!",  messageCode(header.code)));
+				LM_W(("Read an unexpected '%s' Ack from '%s@%s' - throwing it away!",  messageCode(header.code), ep->nameGet(), ep->hostname()));
 				if (dataP != NULL)
                     free(dataP);
 				remove(ep);
@@ -720,18 +704,12 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 				break;
 			}
 			else if (header.code == Message::ProcessVector)
-			{
-				LM_M(("Just what I wanted - a ProcessVector!"));
 				break;
-			}
 			else if (header.code == Message::Reset)
-			{
-				LM_M(("Got a reset, that's OK but I don't need to do anything, I have nothing started ... Let's just keep reading ..."));
-				LM_M(("Do I need to ack the RESET ?"));
-			}
+				LM_W(("Got a reset, and that's OK but I don't need to do anything, I have nothing started ... Let's just keep reading ..."));
 			else if (header.code == Message::ProcessList)
 			{
-				LM_M(("Got a ProcessList, that's OK, but I have nothing ... Let's Ack with NO DATA and continue to wait for a Process Vector ..."));
+				LM_M(("Got a ProcessList, and that's OK, but I have nothing ... Let's Ack with NO DATA and continue to wait for a Process Vector ..."));
 				ep->ack(Message::ProcessList);
 			}
 			else
@@ -747,10 +725,6 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		if (ep == NULL)
 			continue;
 
-		ProcessVector* tmp = (ProcessVector*) dataP;
-		LM_M(("All OK - it was a Process Vector Message, %d processes, %d total size", tmp->processes, tmp->processVecSize));
-		tmp = NULL;  // Will not be used anymore ...
-
 		// Copying the process vector
 		this->procVec = (ProcessVector*) malloc(dataLen);
 		if (this->procVec == NULL)
@@ -758,24 +732,15 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 
 		memcpy(this->procVec, dataP, dataLen);
 		free(dataP);
-		LM_M(("procVec: %d processes, %d total size", procVec->processes, procVec->processVecSize));
 
-
-		LM_M(("Acknowledging the Process Vector"));
 		if ((s = ep->ack(header.code)) != Endpoint2::OK)
 			LM_E(("Error acking Process Vector: %s", ep->status(s)));
-
-		LM_M(("procVec: %d processes, %d total size", procVec->processes, procVec->processVecSize));
-		LM_M(("Await samsonSetup to close connection"));
 
 		if ((s = ep->msgAwait(2, 0)) != Endpoint2::OK)
 			LM_W(("All OK, except that samsonSetup didn't close connection in time. msgAwait(): %s", ep->status(s)));
 		else if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != Endpoint2::ConnectionClosed)
 			LM_W(("All OK, except that samsonSetup didn't close connection when it was supposed to. receive(): %s", ep->status(s)));
-		else
-			LM_M(("Everything's just perfect"));
 
-		LM_M(("I now have the process vector and I can start my processes - will be done in SamsonSpawner"));
 		show("Before removing samsonSetup");
 		remove(ep);
 		show("After removing samsonSetup");
@@ -837,7 +802,6 @@ void EndpointManager::run(bool oneShot)
 			if (max == 0)
 				LM_X(1, ("No fds to listen to ..."));
 
-			LM_M(("Performing a select over %d read fds, timeout: %d.%06d", eps, tv.tv_sec, tv.tv_usec));
 			fds = select(max + 1,  &rFds, NULL, NULL, &tv);
 		} while ((fds == -1) && (errno == EINTR));
 
@@ -1059,11 +1023,10 @@ void EndpointManager::show(const char* why, bool forced)
 *
 * procVecSet - 
 */
-int EndpointManager::procVecSet(ProcessVector* _procVec)
+int EndpointManager::procVecSet(ProcessVector* _procVec, bool save)
 {
 	int size;
 
-	LM_M(("Setting Process Vector"));
 	if ((_procVec->processes <= 0) || (_procVec->processes > 100))
 		LM_RE(1, ("Bad number of processes in process vector: %d", _procVec->processes));
 
@@ -1074,9 +1037,13 @@ int EndpointManager::procVecSet(ProcessVector* _procVec)
 	procVec = (ProcessVector*) malloc(size);
 	memcpy(procVec, _procVec, size);
 
-	platformProcessesSave(procVec);
-	LM_W(("sleeping for a second after  saving Process Vector to file system"));
-	sleep(1);
+	if (save == true)
+	{
+		LM_M(("************* SAVING Process Vector"));
+		platformProcessesSave(procVec);
+		LM_W(("sleeping for a second after  saving Process Vector to file system"));
+		sleep(1);
+	}
 
 	return 0;
 }

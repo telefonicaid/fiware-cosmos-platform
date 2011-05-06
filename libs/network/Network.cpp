@@ -439,25 +439,24 @@ Endpoint* Network::controllerConnect(const char* controllerName)
 
 	LM_T(LmtControllerConnect, ("connecting to controller in %s, port %d", endpoint[CONTROLLER]->ip, endpoint[CONTROLLER]->port));
 
-    int controller_connections_tries = 0;
-    endpoint[CONTROLLER]->rFd = -1;
+	int controller_connection_tries = 0;
+	endpoint[CONTROLLER]->rFd = -1;
     
-    while( endpoint[CONTROLLER]->rFd == -1 )
+	while (endpoint[CONTROLLER]->rFd == -1)
     {
 		LM_T(LmtProcessConnect, ("Trying to connect to controller %s:%d",(const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port));
-        endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
+		endpoint[CONTROLLER]->rFd = iomConnect((const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port);
 
-        if( endpoint[CONTROLLER]->rFd == -1 )
-        {
-            LM_W(("Not possible to connect to controller, trial %d/%d",controller_connections_tries,10));
-            sleep(1);
-            if( controller_connections_tries++ == 10)
-                break;
-        }
-        else
-            LM_T(LmtProcessConnect, ("Connected to controller %s:%d",(const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port));
-        
-    }
+		if (endpoint[CONTROLLER]->rFd == -1)
+		{
+			LM_W(("Unable to connect to controller@%s, try %d of %d",  endpoint[CONTROLLER]->ip, controller_connection_tries, 10));
+			sleep(1);
+			if (controller_connection_tries++ >= 10)
+				break;
+		}
+		else
+			LM_T(LmtProcessConnect, ("Connected to controller %s:%d",(const char*) endpoint[CONTROLLER]->ip, (unsigned short) endpoint[CONTROLLER]->port));
+	}
     
 	if (endpoint[CONTROLLER]->rFd == -1)
 	{

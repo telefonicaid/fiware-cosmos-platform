@@ -71,8 +71,8 @@ Endpoint2::Endpoint2
 	if (_name != NULL)
 		name  = strdup(_name);
 	else
-		name  = strdup("endpoint");
-
+		name  = strdup(typeName());
+	
 	if (_alias != NULL)
 		alias = strdup(_alias);
 	else
@@ -377,9 +377,9 @@ Endpoint2::Status Endpoint2::okToSend(void)
 
 /* ****************************************************************************
 *
-* partSend - 
+* partWrite - 
 */
-Endpoint2::Status Endpoint2::partSend(void* dataP, int dataLen, const char* what)
+Endpoint2::Status Endpoint2::partWrite(void* dataP, int dataLen, const char* what)
 {
 	int    nb;
 	int    tot  = 0;
@@ -434,7 +434,10 @@ Endpoint2::Status Endpoint2::send
 	Message::Header  header;
 
 	if (code == Message::Die)
-		LM_W(("%s sending a Die to %s", epMgr->me->name, name));
+		LM_W(("Sending a Die '%s' to %s@%s", messageType(type), nameGet(), hostname()));
+	else
+		LM_M(("Sending a '%s' '%s' to %s@%s", messageCode(code), messageType(type), nameGet(), hostname()));
+		
 
 
 	//
@@ -460,9 +463,9 @@ Endpoint2::Status Endpoint2::send
 	//
 	// Sending header
 	//
-	s = partSend(&header, sizeof(header), "header");
+	s = partWrite(&header, sizeof(header), "header");
 	if (s != OK)
-		LM_RE(s, ("partSend:header(%s): %s", name, status(s)));
+		LM_RE(s, ("partWrite:header(%s): %s", name, status(s)));
 
 
 	
@@ -471,9 +474,9 @@ Endpoint2::Status Endpoint2::send
 	//
 	if ((dataLen != 0) && (data != NULL))
 	{
-		s = partSend(data, dataLen, "msg data");
+		s = partWrite(data, dataLen, "msg data");
 		if (s != OK)
-			LM_RE(s, ("partSend:data(%s): %s", name, status(s)));
+			LM_RE(s, ("partWrite:data(%s): %s", name, status(s)));
 	}
 
 
@@ -492,17 +495,17 @@ Endpoint2::Status Endpoint2::send
 		if (packetP->message->SerializeToArray(outputVec, header.gbufLen) == false)
 			LM_X(1, ("SerializeToArray failed"));
 
-		s = partSend(outputVec, packetP->message->ByteSize(), "Google Protocol Buffer");
+		s = partWrite(outputVec, packetP->message->ByteSize(), "Google Protocol Buffer");
 		free(outputVec);
 		if (s != packetP->message->ByteSize())
-			LM_RE(s, ("partSend:GoogleProtocolBuffer(): %s", status(s)));
+			LM_RE(s, ("partWrite:GoogleProtocolBuffer(): %s", status(s)));
 	}
 
 	if (packetP && (packetP->buffer != 0))
 	{
-		s = partSend(packetP->buffer->getData(), packetP->buffer->getSize(), "KV data");
+		s = partWrite(packetP->buffer->getData(), packetP->buffer->getSize(), "KV data");
 		if (s != OK)
-			LM_RE(s, ("partSend returned %d and not the expected %d", s, packetP->buffer->getSize()));
+			LM_RE(s, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
 	}
 
 	if (packetP != NULL)
@@ -526,7 +529,6 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, co
 	Status   s;
 	char*    buf = (char*) vbuf;
 
-	LM_M(("Reading %d bytes of data", bufLen));
 	while (tot < bufLen)
 	{
 		ssize_t nb;
@@ -535,9 +537,7 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, co
 		if (s != OK)
 			LM_RE(s, ("msgAwait(%s): %s", name, status(s)));
 
-		LM_M(("Reading from fd %d", rFd));
 		nb = read(rFd, (void*) &buf[tot] , bufLen - tot);
-		LM_M(("read returned %d", nb));
 		if (nb == -1)
 		{
 			if (errno == EBADF)
@@ -555,9 +555,6 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, co
 		LM_X(1, ("Got called with NULL buffer length pointer. This is a programmer's bug and must be fixed. Right now."));
 
 	*bufLenP = tot;
-	LM_M(("Set *bufLenP to %d", *bufLenP));
-
-	LM_M(("Read %d bytes of data", tot));
 	LM_READS(name, what, buf, tot, LmfByte);
 
 	return OK;
@@ -580,24 +577,22 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 
 	*dataPP = NULL;
 
-	LM_M(("Calling partRead for header"));
 	s = partRead(headerP, sizeof(Message::Header), &bufLen, "Header");
 	if (s != OK)
 		LM_RE(s, ("partRead::Header(%s): %s", name, status(s)));
 
-	LM_M(("Read header of %d bytes (next is %d bytes of data)", bufLen, headerP->dataLen));
+	LM_M(("Read '%s' '%s' header of %d bytes from '%s@%s'", messageCode(headerP->code), messageType(headerP->type), bufLen, nameGet(), hostname()));
 	if (headerP->dataLen != 0)
 	{
 		*dataPP = calloc(1, headerP->dataLen);
 
-		LM_M(("Calling partRead for data"));
 		s = partRead(*dataPP, headerP->dataLen, &bufLen, "Binary Data");
 		if (s != OK)
 		{
 			free(*dataPP);
 			LM_RE(s, ("partRead::Data(%s): %s", name, status(s)));
 		}
-		LM_M(("Read %d bytes of data", bufLen));
+		LM_M(("Read %d bytes of RAW DATA from '%s@%s'", bufLen, nameGet(), hostname()));
 		totalBytesReadExceptHeader += bufLen;
 	}
 
@@ -613,7 +608,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 				free(*dataPP);
 			LM_RE(s, ("partRead::GoogleProtocolBuffer(%s): %s", name, status(s)));
 		}
-		LM_M(("Read %d bytes of google data", bufLen));
+		LM_M(("Read %d bytes of GOOGLE DATA from '%s@%s'", bufLen, nameGet(), hostname()));
 
 		packetP->message->ParseFromArray(dataP, headerP->gbufLen);
 		if (packetP->message->IsInitialized() == false)
@@ -639,7 +634,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 		s = partRead(kvBuf, headerP->kvDataLen, &nb, "Key-Value Data");
 		if (s != OK)
 			LM_RE(s, ("partRead::kvData(%s): %s", kvName, status(s)));
-		LM_M(("Read %d bytes of KV data", nb));
+		LM_M(("Read %d bytes of KV DATA from '%s@%s'", nb, nameGet(), hostname()));
 
 		packetP->buffer->setSize(nb);
 		totalBytesReadExceptHeader += bufLen;
@@ -1040,7 +1035,7 @@ Endpoint2::Status Endpoint2::helloDataSet(Type _type, const char* _name, const c
 	nameSet(_name);
 	aliasSet(_alias);
 
-	LM_M(("Set type to %d, name to '%s' and alias to '%s'", _type, _name, _alias));
+	LM_M(("Set type to %d (%s), name to '%s' and alias to '%s' AND state to Ready", type, typeName(type), name, alias));
 
 	state = Ready;
 	return OK;

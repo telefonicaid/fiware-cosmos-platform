@@ -90,7 +90,7 @@ public:
 	void               initSupervisor();
 	void               initSetup();
 
-	int                procVecSet(ProcessVector* _procVec);
+	int                procVecSet(ProcessVector* _procVec, bool save = true);
 	ProcessVector*     procVecGet(void);
 	Endpoint2::Status  setupAwait(void);
 

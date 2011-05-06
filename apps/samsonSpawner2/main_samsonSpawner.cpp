@@ -101,7 +101,7 @@ int main(int argC, const char *argV[])
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC/FILE[LINE] FUNC: TEXT");
-	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
+	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT (FUNC)");
 	paConfig("log to file",                   (void*) true);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);

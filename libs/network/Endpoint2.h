@@ -210,11 +210,9 @@ public:
 	Status               connect(void);
 	Status               msgAwait(int secs, int usecs);
 
-	Status               partRead(void* vbuf, long bufLen, long* bufLenP, const char* what);
 	Status               receive(Message::Header* headerP, void** dataPP, long* dataLenP, Packet* packetP);
 
 	Status               okToSend(void);
-	Status               partSend(void* dataP, int dataLen, const char* what);
 	Status               send(Message::MessageType typ, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
 	Status               ack(Message::MessageCode code, void* data = NULL, int dataLen = 0);
 	size_t               send(PacketSenderInterface* psi, Message::MessageCode code, Packet* packetP);
@@ -238,7 +236,8 @@ public:
 	Endpoint2::Status    helloSend(Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
 
 private:
-	Status               listenerPrepare(void);
+	Status               partRead(void* vbuf, long bufLen, long* bufLenP, const char* what);
+	Status               partWrite(void* dataP, int dataLen, const char* what);
 };
 
 }

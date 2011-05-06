@@ -17,22 +17,6 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Trace levels
 
-#if 0
-#include "samsonDirectories.h"  // SAMSON_IMAGES
-#include "samsonConfig.h"       // SAMSON_MAX_HOSTS
-#include "Process.h"            // Process, ProcessVector
-#include "Host.h"               // Host
-#include "HostMgr.h"            // HostMgr
-#include "ports.h"              // WORKER_PORT
-#include "Endpoint.h"           // ss::Endpoint
-#include "Message.h"            // ss::Message
-#include "iomConnect.h"         // iomConnect
-#include "iomMsgSend.h"         // iomMsgSend
-#include "iomMsgAwait.h"        // iomMsgAwait
-#include "iomMsgRead.h"         // iomMsgRead
-#include "platformProcesses.h"  // ss::platformProcessesGet, ss::platformProcessesSave
-#include "Process.h"            // Process
-#endif
 #include "Endpoint2.h"          // Endpoint2
 #include "SamsonSetup.h"        // SamsonSetup
 
@@ -56,11 +40,11 @@ bool           pList;
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",   controllerHost,  "CONTROLLER", PaString,  PaOpt,  PaND,   PaNL,  PaNL,  "Controller host"               },
+	{ "-controller",   controllerHost,  "CONTROLLER", PaString,  PaReq,  PaND,   PaNL,  PaNL,  "Controller host"               },
+	{ "-workers",     &workers,         "WORKERS",    PaInt,     PaReq,     0,     0,   100,   "number of workers"             },
+	{ "-ips",          ips,             "IP_LIST",    PaSList,   PaReq,  PaND,   PaNL,  PaNL,  "list of worker IPs"            },
 	{ "-reset",       &reset,           "RESET",      PaBool,    PaOpt,  false, false,  true,  "reset platform"                },
 	{ "-plist",       &pList,           "P_LIST",     PaBool,    PaOpt,  false, false,  true,  "process list of platform"      },
-	{ "-ips",          ips,             "IP_LIST",    PaSList,   PaOpt,  PaND,   PaNL,  PaNL,  "list of worker IPs"            },
-	{ "-workers",     &workers,         "WORKERS",    PaInt,     PaOpt,     0,     0,   100,   "number of workers"             },
 
 	PA_END_OF_ARGS
 };
@@ -122,9 +106,9 @@ static void resetAndStart(void)
 
 /* ****************************************************************************
 *
-* helloCheck - 
+* readyCheck - 
 */
-void helloCheck(void* callbackData, void* userParam)
+void readyCheck(void* callbackData, void* userParam)
 {
 	int unhelloed = 0;
 	int now;
@@ -132,8 +116,6 @@ void helloCheck(void* callbackData, void* userParam)
 
 	callbackData  = NULL;
 	userParam     = NULL;
-
-	LM_M(("IN"));
 
 	for (int ix = 0; ix < samsonSetup->networkP->epMgr->endpointCapacity(); ix++)
 	{
@@ -155,7 +137,7 @@ void helloCheck(void* callbackData, void* userParam)
 			LM_W(("Endpoint %02d is Unhelloed - could it be a spawner-to-be ... ?", ix));
 	}
 
-	samsonSetup->networkP->epMgr->show("helloCheck");
+	samsonSetup->networkP->epMgr->show("readyCheck");
 
 	if (unhelloed == 0)
 	{
@@ -190,7 +172,7 @@ int main(int argC, const char *argV[])
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
-	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
+	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT (FUNC)");
 	paConfig("log to file",                   (void*) true);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
@@ -210,11 +192,10 @@ int main(int argC, const char *argV[])
 	if (samsonSetup->connect() != ss::Endpoint2::OK)
 		LM_X(1, ("Error connecting to all spawners"));
 
-	samsonSetup->networkP->epMgr->callbackSet(ss::EndpointManager::Timeout,  helloCheck, NULL);
-	samsonSetup->networkP->epMgr->callbackSet(ss::EndpointManager::Periodic, helloCheck, NULL);
+	samsonSetup->networkP->epMgr->callbackSet(ss::EndpointManager::Timeout,  readyCheck, NULL);
+	samsonSetup->networkP->epMgr->callbackSet(ss::EndpointManager::Periodic, readyCheck, NULL);
 
 	samsonSetup->networkP->epMgr->show("Before calling run");
-	LM_M(("Calling run"));
 	samsonSetup->run();
 
 	return 0;

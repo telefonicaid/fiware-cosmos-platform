@@ -86,6 +86,7 @@ typedef struct Process
 #ifndef __LP64__
 	int                 padding[6];            // To make this struct the same size in 32 and 64 bit machines
 #endif
+	int                 id;
 } Process;
 
 

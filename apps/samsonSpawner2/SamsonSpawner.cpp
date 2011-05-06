@@ -296,6 +296,7 @@ void SamsonSpawner::spawn(Process* process)
 	pid_t  pid;
 	char*  argV[50];
 	int    argC = 0;
+	char   idString[16];
 
 	LM_T(LmtProcessList, ("spawning process '%s' (incoming pid: %d)", process->name, process->pid));
 
@@ -303,10 +304,9 @@ void SamsonSpawner::spawn(Process* process)
 	{
 		argV[argC++] = (char*) "samsonWorker";
 
-		argV[argC++] = (char*) "-alias";
-		argV[argC++] = process->alias;
-		argV[argC++] = (char*) "-controller";
-		argV[argC++] = (char*) process->controllerHost;
+		snprintf(idString, sizeof(idString), "%d", process->id);
+		argV[argC++] = (char*) "-id";
+		argV[argC++] = idString;
 	}
 	else if (process->type == PtController)
 	{

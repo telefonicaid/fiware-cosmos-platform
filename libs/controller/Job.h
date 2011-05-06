@@ -163,8 +163,8 @@ namespace ss {
 		void run();
 
 		// Call back received when a task is finished and completed
-		void notifyCurrentTaskFinish( bool _error, std::string _error_message );		
-		
+		void notifyCurrentTaskFinish( );		
+		void notifyCurrentTaskReportedError( std::string error_message );
 		
 		size_t getId();	
 		JobStatus status()

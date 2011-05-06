@@ -42,6 +42,7 @@ namespace ss {
 		JobManager(SamsonController * _controller) : taskManager( this ) 
 		{
 			controller = _controller;
+            taskManager.controller = _controller;
 			
 		}
 		

@@ -25,72 +25,190 @@
 #include <errno.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <algorithm>
 
 namespace ss {
 	
-	typedef struct {
-		const char *name;				/* User printable name of the function. */
-		const char *doc;				/* Documentation for this function.  */
-	} COMMAND;
-	
-	
-	char * dupstr (const char *s);
 	char * command_generator (const char * text, int state);
 	char ** readline_completion ( const char* text, int start,int end );	
-	
 
+	
+    int common_chars( const char* c1 , const char* c2);
+    char * strdup_common(const char* c , int len );
+
+    
 	class AutoCompletionOptions
 	{
-		std::vector<std::string> options;
-		size_t index;	// Current index of search
-		
+		std::vector<std::string> options;           // Vector of possible options
+		        
 	public:
 		
 		void clearOptions()
 		{
 			options.clear();
-			index = 0;
 		}
 		
 		void addOption( std::string v )
 		{
 			options.push_back( v );
 		}
-		
-		void clearSearch()
-		{
-			//std::cout << "clear earch\n";
-			index = 0;
-		}
-		
-		char *next( const char *text )
-		{
-			//std::cout << "next: " << text << " \n";
-			
-			size_t len = strlen(text);
-			
-			while ( index < options.size() )
-			{
-				const char *name = options[index].c_str();
-				
-				index++;
+        
+        
+        void addMainCommands()
+        {
+            addOption("ls");
+            addOption("mv");
+            addOption("add");
+            addOption("operations");
+            addOption("datas");
+            addOption("jobs");
+            addOption("workers");
+            addOption("upload");
+            addOption("download");
+            addOption("load");
+            addOption("clear");
+            addOption("help");
+            addOption("set");
+            addOption("unset");
+            addOption("info");
+            addOption("info_full");
+            addOption("info_net");
+            addOption("info_cores");
+            addOption("info_task_manager");
+            addOption("info_disk_manager");
+            addOption("info_process_manager");
+            addOption("info_memory_manager");
+            addOption("info_load_data_manager");
+            addOption("info_engine");
+        }
+        
+        void addOperations()
+        {
+            info_lock.lock();
+            
+            if( ol )
+                for (int i = 0 ; i < ol->operation_size()  ; i++)
+                    addOption( ol->operation(i).name() );
+            
+            info_lock.unlock();
+        }
+        
+        void addQueueOptions( network::KVFormat *format )
+        {
+                        
+            // add available queues...
+            info_lock.lock();
+            
+            if( ql )
+                for (int i = 0 ; i < ql->queue_size()  ; i++)
+                {
+                    
+                    const network::Queue &queue = ql->queue(i).queue();
+                    
+                    //std::cout << "Considering " << queue.name() << "\n";
+                    
+                    if( !format )
+                        addOption( queue.name() );
+                    else
+                    {
+                        //std::cout << "Checkling formats "  << queue.format().keyformat() << " " << queue.format().valueformat()<<   "\n";
+                        if( ( queue.format().keyformat() == format->keyformat() ) )
+                            if ( queue.format().valueformat() == format->valueformat() )
+                            {
+                                addOption( ql->queue(i).queue().name() );
+                                //std::cout << "added\n";
+                            }
+                        
+                    }
+                }
+            
+            info_lock.unlock();
+            
+        }        
+        
+        
+        void addQueueForOperation( std::string mainCommand , int argument_pos )
+        {
+            network::KVFormat *format = NULL;
 
-				//std::cout << "consideting: " << name << " .... ";
-				
-				if (strncmp (name, text, len) == 0)
-				{
-					//std::cout << "added\n";
-					return (dupstr((char*)name));
-				}
-				else
-				{
-					//std::cout << "discarted\n";
-				}
-			}
-			
-			//std::cout << "No more options\n";
-			return NULL;
-		}
+            // If it is a particular operation... lock for the rigth queue
+            info_lock.lock();
+            
+            if( ol )
+                for (int i = 0 ; i < ol->operation_size() ; i++)
+                    if( ol->operation(i).name() == mainCommand )
+                    {
+                        //std::cout << "op found " << ol->operation(i).input_size() << "/" << ol->operation(i).output_size() <<  " ("<< argument_pos << ")\n";
+                        
+                        if( argument_pos < ol->operation(i).input_size() )
+                        {
+                            format = new network::KVFormat();
+                            format->CopyFrom( ol->operation(i).input(argument_pos) );
+                        }
+                        else
+                        {
+                            argument_pos -= ol->operation(i).input_size();
+                            if( argument_pos < ol->operation(i).output_size() )
+                            {
+                                format = new network::KVFormat();
+                                format->CopyFrom( ol->operation(i).output(argument_pos) );
+                            }
+                        }
+                        break; // No more for...
+                    }
+            
+            info_lock.unlock();
+            
+            addQueueOptions(format);
+            
+            if( format )
+                delete format;
+        }
+        
+        
+        /*
+         Function to get the real options
+         */
+        
+        char** get( const char* text )
+        {
+            std::vector<std::string> real_options;      // Vector of final real options
+            
+			size_t len = strlen(text);
+            
+            for ( size_t i = 0 ; i < options.size() ; i++)
+				if ( strncmp ( options[i].c_str() , text, len) == 0 )
+                    real_options.push_back( options[i] );                    
+
+            // If no option... return NULL
+            if ( real_options.size() == 0 )
+                return (char**) NULL;
+
+            
+            // Create the vector of possible solution ( first = "the replacement", last  = NULL )
+            char **matches = (char**) malloc( sizeof(char*) * ( real_options.size() + 1 + 1 ) );
+            matches[ real_options.size()+1 ] = NULL; // The last should be a NULL
+
+            // let's compute the replacement as the min_common_legth copy of the the options
+            int min_common_length = real_options[0].length();
+            for ( size_t i = 1 ; i < real_options.size() ; i++)
+                min_common_length = std::min( min_common_length , common_chars( real_options[0].c_str()  , real_options[i].c_str() ) );
+
+            matches[0] = strdup_common( real_options[0].c_str() , min_common_length );
+
+
+            // Rest of options
+            for ( size_t i = 0 ; i < real_options.size() ; i++)
+            {
+                // Rememeber the first is for the "replacement"
+                matches[i+1] = strdup( real_options[i].c_str()  );
+            }
+            
+            
+            return matches;
+        }
+        
+     
 	};
 
 	

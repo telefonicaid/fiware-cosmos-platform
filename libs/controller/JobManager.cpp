@@ -6,7 +6,7 @@
 #include "ControllerTask.h"		// ss::ControllerTask
 
 namespace ss {
-
+    
 	void JobManager::addJob(int fromId, const network::Command &command , size_t sender_id )
 	{
 		
@@ -32,23 +32,23 @@ namespace ss {
 		
 		// Insert in the map of jobs
 		job.insertInMap( job_id , j );
-
+        
 		// Run the job until a task is scheduled or error/finish
 		j->run();
 		
 	}
-
+    
     JobManager::~JobManager()
     {
         // Remove pending jobs objects
         job.clearMap();
     }
-
+    
     
 	// Kill a particular job
 	void JobManager::kill( size_t job_id )
 	{
-
+        
 		Job* j = job.findInMap( job_id );
 		if( j )
 			j->kill();
@@ -58,15 +58,19 @@ namespace ss {
 	
 	void JobManager::notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage  )
 	{
-
+        
 		// Get the task
 		size_t task_id			= confirmationMessage->task_id();	// Get the task_id
 		ControllerTask *task	= taskManager.getTask( task_id );	// Get the task it refers to		
-		
+        
+		if( ! task )
+            LM_W(("Received a confirmation from a worker %d for a non-existing task  %lu. Ignoring...", worker_id , task_id));
+        
 		Job* job = NULL;
 		if( task )
 			job = task->job;
-		
+        
+        
 		// Add of Remove files independently of the type of message
 		if( task && job )
 		{
@@ -79,7 +83,7 @@ namespace ss {
 				std::string command = ControllerDataManager::getAddFileCommand(file.worker() , file.name(),  info.size() , info.kvs() , qfile.queue() );
 				DataManagerCommandResponse response = controller->data.runOperation( job->getId() , command );
 				
-
+                
 			}
 			
 			for (int f = 0 ; f < confirmationMessage->remove_file_size() ; f++)
@@ -94,159 +98,93 @@ namespace ss {
 			}
 			
 		}
-		
-		switch ( confirmationMessage->type() ) 
-		{
-				
-			case network::WorkerTaskConfirmation::finish:
-			{
-				if( task && job )
-				{
-					if(!job->isCurrentTask(task))	// we can only receive finish reports from the current task
-						LM_X(1,("Internal error"));
-								
-					task->notifyWorkerFinished( );		
-					if ( task->finish )
-						job->notifyCurrentTaskFinish(task->error, task->error_message);
-				}
+        
+        task->notify( worker_id , confirmationMessage );
 
-			}
-				break;
-			case network::WorkerTaskConfirmation::error:
-			{
-				if( task && job )
-				{
-					if(!job->isCurrentTask(task))	// we can only receive finish reports from the current task
-						LM_X(1,("Internal error"));
+        // Review the task manager to see if it is necessary to run new tasks
+        taskManager.reviewTasks();
 
-					//job->setError("Worker", confirmationMessage->error_message());
-					task->notifyWorkerFinished( );		
-					
-					if ( task->finish )
-					{
-						std::ostringstream str_error;
-						str_error << "[W:" << worker_id << "] ";
-						str_error << confirmationMessage->error_message();
-						job->notifyCurrentTaskFinish(true, str_error.str() );
-					}
-						
-					
-				}
-				
-			}
-				break;
-			case network::WorkerTaskConfirmation::complete:
-			{
-				if( task && job )
-				{
-				
-					if( task )	
-						task->notifyWorkerComplete( );		
-
-					// Verify if we are only waiting for writing
-					if( job->status() == Job::saving )
-						job->run();
-				}
-				
-			}
-				break;
-			case network::WorkerTaskConfirmation::update:
-			{
-                if (task)
-                {
-                    task->update( confirmationMessage );
-                }
-				// Nothing in particular here
-			}
-				break;
-				
-		}
-		
-		// Review the task manager to see if it is necessary to run new tasks
-		taskManager.reviewTasks();
-		
-	}
-	
-	void JobManager::fill(network::JobList *jl , std::string command)
-	{
-		
-		std::map<size_t,Job*>::iterator iter;
-		for( iter = job.begin() ; iter != job.end() ; iter++)
-		{
-			Job *job = iter->second;
-			
-			network::Job *j = jl->add_job();
-			
-			job->fill( j );
-		}
-		
-	}
-	
-	
-	void JobManager::fill( network::ControllerStatus * status )
-	{
-
-	
-		status->set_job_manager_status( _getStatus() );
+    }
+    
+    
+    void JobManager::fill(network::JobList *jl , std::string command)
+    {
+        
+        std::map<size_t,Job*>::iterator iter;
+        for( iter = job.begin() ; iter != job.end() ; iter++)
+        {
+            Job *job = iter->second;
+            
+            network::Job *j = jl->add_job();
+            
+            job->fill( j );
+        }
+        
+    }
+    
+    
+    void JobManager::fill( network::ControllerStatus * status )
+    {
+        
+        
+        status->set_job_manager_status( _getStatus() );
         taskManager.fill( status->mutable_task_manager_status() );
-		
-	}
-	
-	std::string JobManager::_getStatus()
-	{
-		std::ostringstream output;	
-		std::map<size_t ,Job*>::iterator iter;
-		
-		for (iter = job.begin() ; iter !=job.end() ; iter++)
-			output << "[" << iter->second->getStatus() << "]";
-		return output.str();
-		
-	}
+        
+    }
+    
+    std::string JobManager::_getStatus()
+    {
+        std::ostringstream output;	
+        std::map<size_t ,Job*>::iterator iter;
+        
+        for (iter = job.begin() ; iter !=job.end() ; iter++)
+            output << "[" << iter->second->getStatus() << "]";
+        return output.str();
+        
+    }
+    
+    void JobManager::removeAllFinishJobs()
+    {
+        
+        Job *job = _getNextFinishJob();
+        while( job )
+        {
+            _removeJob(job);
+            job = _getNextFinishJob();
+        }
+        
+    }
+    
+    Job* JobManager::_getNextFinishJob()
+    {
+        
+        std::map<size_t,Job*>::iterator iter;
+        for( iter = job.begin() ; iter != job.end() ; iter++)
+        {
+            Job *job = iter->second;
+            if( ( job->status() == Job::error ) || ( job->status() == Job::finish ) )
+                return job;
+        }
+        
+        return NULL;
+    }	
+    
+    void JobManager::_removeJob( Job *j )
+    {		
+        if( ( j->status() != Job::error ) && ( j->status() != Job::finish ) )
+            LM_X(1,("Internal error"));
+        
+        // Remove all tasks associated to this job ( all of them are suppoused to be completed)
+        j->removeTasks();
+        
+        // Remove from the map of jobs
+        j = job.extractFromMap( j->getId() );
+        
+        // Delete the job object itself
+        delete j;
+        
+    }
 
-	
-	Job* JobManager::_getNextFinishJob()
-	{
-		
-		std::map<size_t,Job*>::iterator iter;
-		for( iter = job.begin() ; iter != job.end() ; iter++)
-		{
-			Job *job = iter->second;
-			if( ( job->status() == Job::error ) || ( job->status() == Job::finish ) )
-				return job;
-		}
-		
-		return NULL;
-	}	
-	
-	void JobManager::removeAllFinishJobs()
-	{
 
-		Job *job = _getNextFinishJob();
-		while( job )
-		{
-			_removeJob(job);
-			job = _getNextFinishJob();
-		}
-		
-	}
-	
-	
-	void JobManager::_removeJob( Job *j )
-	{		
-		if( ( j->status() != Job::error ) && ( j->status() != Job::finish ) )
-			LM_X(1,("Internal error"));
-		
-		// Remove all tasks associated to this job ( all of them are suppoused to be completed)
-		j->removeTasks();
-		
-		// Remove from the map of jobs
-		j = job.extractFromMap( j->getId() );
-		
-		// Delete the job object itself
-		delete j;
-		
-	}
-	
-	
-	
+
 }

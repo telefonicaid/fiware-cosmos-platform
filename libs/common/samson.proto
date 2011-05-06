@@ -119,18 +119,20 @@ message Trace
 
 message ControllerTask
 {
-	enum ControllerTaskStatus
+	enum ControllerTaskState
 	{
-		ControllerTaskError	 = 1;
+		ControllerTaskInit	 = 1;
+		ControllerTaskRunning 	 = 4;
 		ControllerTaskFinish     = 2;
 		ControllerTaskCompleted  = 3;
-		ControllerTaskRunning 	 = 4;
 	}
 
-	required ControllerTaskStatus status=1;
+	required ControllerTaskState state = 1;
 
 	required int64 job_id = 2;
 	required int64 task_id = 3;
+
+	optional Error error = 10;			// Optional error only activated if state = completed
 
         optional KVInfo total_info=4;                  // Total amount of information to be processed
         optional KVInfo running_info=5;                // Total amount that started to run at some point ( accumulated )
@@ -249,6 +251,16 @@ message WorkerTask
 message WorkerTaskKill
 {
 	required uint64 task_id = 1;  // Id of the task that is killed
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Message to remove a particular task
+//
+
+message WorkerTaskRemove
+{
+	required uint64 task_id = 1;  // Id of the task that is being clear
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -545,6 +557,7 @@ message Message
 	optional WorkerTaskConfirmation worker_task_confirmation  = 106;  // Work task confirmation message
 
 	optional WorkerTaskKill         worker_task_kill          = 202;  // Work task killed from controller
+	optional WorkerTaskRemove       worker_task_remove        = 203;  // Work task removed from controller ( clear jobs )
 
 	optional WorkerDataExchange  	data                      = 107;  // Exchange of data packets between nodes     
 	optional WorkerDataExchangeClose data_close		  = 108;  // Message to finish data transmission between workers

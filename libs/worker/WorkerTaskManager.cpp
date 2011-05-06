@@ -77,7 +77,7 @@ namespace ss {
         {
             // Find the task to be removed
             
-		   LM_M(("Received a finish task for task_id %lu with notification %s", task_id , notification->getDescription().c_str() ));
+		   //LM_M(("Received a finish task for task_id %lu with notification %s", task_id , notification->getDescription().c_str() ));
             
             WorkerTask *t = task.findInMap( task_id );
             
@@ -128,6 +128,21 @@ namespace ss {
 		}
 	}
 	
+    void WorkerTaskManager::removeTask( size_t task_id )
+    {
+		WorkerTask *t = task.extractFromMap( task_id );
+
+        if( t )
+        {
+            if( t->status != WorkerTask::completed )
+                LM_W(("Removing a task that is not completed ( task_id = %lu ). This shoul be an error", task_id));
+
+            delete t;
+            
+        }
+        else
+            LM_W(("Trying to remove a non-existing task with id %lu", task_id));
+    }
 	
 	void WorkerTaskManager::addBuffer( size_t task_id , network::WorkerDataExchange& workerDataExchange , engine::Buffer* buffer  )
 	{

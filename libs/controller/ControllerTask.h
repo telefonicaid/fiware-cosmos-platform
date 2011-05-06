@@ -15,11 +15,13 @@
 #include "Job.h"							// ss::Job
 #include "coding.h"                         // KVInfo
 #include "samson.pb.h"                      // network::
+#include "au/Error.h"                       // au::Error
 
 namespace ss {
 	
 	class SamsonController;
 	class ControllerDataManager;
+    class ControllerTaskManager;
 
 	/**
 	 Task at the controller
@@ -29,10 +31,14 @@ namespace ss {
 	class ControllerTask
 	{
 		friend class ControllerDataManager;
+        friend class ControllerTaskManager;
 		friend class JobManager;
+		friend class Job;
 
 		ControllerTaskInfo *info;			// Information for this task ( extracted from DataManager )
 		
+        ControllerTaskManager *taskManager; // Pointer to the taskManager
+        
 		Job *job;							// Pointer to the job we belong
 		size_t id;							// Id of the task ( shared by all the workers )
 
@@ -43,11 +49,8 @@ namespace ss {
 		int generator;						// Spetial flag to be removed from here ;)
 		
 		// Error management
-		bool error;
-		std::string error_message;
+        au::Error error;
 
-		friend class ControllerTaskManager;
-		friend class Job;
         
         // Information about progress
         KVInfo total_info;                  // Total amount of information to be processed
@@ -56,43 +59,49 @@ namespace ss {
         
 	public:
 		
-		bool running;					// Flag to indicate that the task is running
-		bool finish;					// Flag to indicate that the task is finished ( by all workers )
-		bool complete;					// Flag to indicate that the task is completed ( by all workers )
+        enum ControllerTaskState
+        {
+            init,
+            running,
+            finished,
+            completed        // Complete process with or without error
+        };
+
+    private:
+        
+        ControllerTaskState state;
+        
+    public:
 		
 		ControllerTask( size_t _id , Job *_job, ControllerTaskInfo *_info , int _total_workers );
 		~ControllerTask();
-		
-        void update( network::WorkerTaskConfirmation* confirmationMessage );
+
+		// Controller task
+        void startTask();
+        void notify( int worker_id , network::WorkerTaskConfirmation *confirmation);
         
+        // Getting information
 		size_t getId();
 		size_t getJobId();
-		
-		void notifyWorkerFinished();
-		void notifyWorkerComplete();
-		
-		void fillInfo( network::WorkerTask *t , int workerIdentifier );		
-		
-        void fill( network::ControllerTask* task );
-        
+        ControllerTaskState getState();
 		std::string getStatus();
-		
-		int getNumUsedOutputs()
-		{
-			if( !running || finish || complete )
-				return 0;
-			
-			return getNumOutputs();
-			
-		}
-		
-		int getNumOutputs()
-		{
-			if( info ) 
-				return info->outputs.size();
-			
-			return 0;
-		}
+		int getNumUsedOutputs();
+		int getNumOutputs();
+		void fillInfo( network::WorkerTask *t , int workerIdentifier );		
+        
+        // Send message to all workers to remove this task
+        void sendRemoveMessageToWorkers();
+        
+    private:
+        
+        // Send messages
+        void fill( network::ControllerTask* task );
+
+        // Send a message to controller
+        void sendWorkerTasks( );
+        void sendWorkerTask( int workerIdentifier );
+
+
 		
 		
 	};

@@ -332,7 +332,7 @@ namespace ss {
 		{
 			ControllerTask *task = jobManager->taskManager.getTask( *iter );
 
-			if( !task->complete )
+			if( task->getState() == ControllerTask::completed )
 				return false;
 		}
 		return true;
@@ -353,13 +353,16 @@ namespace ss {
 		return id;
 	}
 	
-	void Job::notifyCurrentTaskFinish( bool _error, std::string _error_message )
+	void Job::notifyCurrentTaskFinish(  )
 	{
-		if( _error )
-			setError( "task at workers" ,  _error_message );
-		else
-			run();	// Continue execution
+        run();	// Continue execution
 	}
+    
+    void Job::notifyCurrentTaskReportedError( std::string _error_message )
+    {
+        setError( "task at workers" ,  _error_message );
+        run();
+    }
 	
 	void Job::sentConfirmationToDelilah( )
 	{

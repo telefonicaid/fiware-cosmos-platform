@@ -65,11 +65,12 @@ namespace ss {
         au::Cronometer *worker_status_cronometer;           // Cronometer to count the last update from workers
 		int num_workers;
 				
-		friend class ControllerTaskManager;
 		friend class Job;
 		friend class JobManager;
 		friend class ControllerDataManager;
 		friend class Monitor;
+		friend class ControllerTaskManager;
+		friend class ControllerTask;
 
 	public:
 		

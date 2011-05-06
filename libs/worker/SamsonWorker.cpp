@@ -178,7 +178,20 @@ namespace ss {
 			taskManager.killTask( packet->message->worker_task_kill() );
 			return;
 		}
+
+		if (msgCode == Message::WorkerTaskRemove)
+		{
+            
+            size_t task_id = packet->message->worker_task_remove().task_id();
+			// A packet with a particular command is received (controller expect to send a confirmation message)
+			LM_T(LmtTask, ("Got a WorkerTaskRemove message with task id %lu", task_id));
+			
+			// add task to the task manager
+			taskManager.removeTask( task_id  );
+			return;
+		}
 		
+        
 		// List of local file ( remove unnecessary files )
 		if (msgCode == Message::CommandResponse)
 		{

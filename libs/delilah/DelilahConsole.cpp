@@ -23,225 +23,86 @@
 
 namespace ss
 {	
-	// Information about all queues and operations	
 	
-	
-	AutoCompletionOptions completion_options;
-	
-	char * dupstr (const char *s)
-	{
-		char *r;
-		
-		r = (char*)malloc (strlen (s) + 1);
-		strcpy (r, s);
-		return (r);
-	}
-	
-	
-	void addMainCommandOptions()
-	{
-		completion_options.clearOptions();
-		
-		completion_options.addOption("ls");
-		completion_options.addOption("mv");
-		completion_options.addOption("add");
-		completion_options.addOption("operations");
-		completion_options.addOption("datas");
-		completion_options.addOption("jobs");
-		completion_options.addOption("workers");
-		completion_options.addOption("upload");
-		completion_options.addOption("download");
-		completion_options.addOption("load");
-		completion_options.addOption("clear");
-		completion_options.addOption("help");
-		completion_options.addOption("set");
-		completion_options.addOption("unset");
-        completion_options.addOption("info");
-        completion_options.addOption("info_full");
-        completion_options.addOption("info_net");
-        completion_options.addOption("info_cores");
-        completion_options.addOption("info_task_manager");
-        completion_options.addOption("info_disk_manager");
-        completion_options.addOption("info_process_manager");
-        completion_options.addOption("info_memory_manager");
-        completion_options.addOption("info_load_data_manager");
-        completion_options.addOption("info_engine");
-
+    int common_chars( const char* c1 , const char* c2)
+    {
+        int l = std::min( strlen(c1), strlen(c2));
         
-		// add available operations...
-		info_lock.lock();
-		
-		if( ol )
-			for (int i = 0 ; i < ol->operation_size()  ; i++)
-				completion_options.addOption( ol->operation(i).name() );
-		
-		info_lock.unlock();
-		
-	}
+        for ( int i = 0 ; i < l ; i++)
+            if( c1[i] != c2[i] )
+                return i;
+        
+        return l;
+        
+    }
+    
+    char * strdup_common(const char* c , int len )
+    {
+        char *d = (char*) malloc( len +1 );
+        memcpy(d, c, len);
+        d[len] = '\0';
+        
+        return d;
+    }
 	
 	
-	void addQueueOptions( network::KVFormat *format )
+	char ** readline_completion ( const char* text , int start , int end )
 	{
+		//std::cerr << "Readline completion with \"" << text << "\" S=" << start << " E=" << end <<" \n";
+        
+        AutoCompletionOptions op;
 		
-		completion_options.clearOptions();
-		
-		// add available queues...
-		info_lock.lock();
-				
-		if( ql )
-			for (int i = 0 ; i < ql->queue_size()  ; i++)
-			{
-				
-				const network::Queue &queue = ql->queue(i).queue();
-				
-				//std::cout << "Considering " << queue.name() << "\n";
-				
-				if( !format )
-					completion_options.addOption( queue.name() );
-				else
-				{
-					//std::cout << "Checkling formats "  << queue.format().keyformat() << " " << queue.format().valueformat()<<   "\n";
-					if( ( queue.format().keyformat() == format->keyformat() ) )
-						if ( queue.format().valueformat() == format->valueformat() )
-						{
-							completion_options.addOption( ql->queue(i).queue().name() );
-							//std::cout << "added\n";
-						}
-					
-				}
-			}
-		
-		info_lock.unlock();
-		
-	}
-	
-	
-	/* Generator function for command completion.  STATE lets us know whether
-	 to start from scratch; without any state (i.e. STATE == 0), then we
-	 start at the top of the list. */
-	
-	char * command_generator (const char * text, int state)
-	{
-		//std::cout << "Command generator with \"" << text << "\" and state=" << state << "\n";
-
-#if 0
-		static int list_index;
-		static int operation_index;
-		char *name;
-		
-		/* If this is a new word to complete, initialize now.  This includes
-		 saving the length of TEXT for efficiency, and initializing the index
-		 variable to 0. */
-		if (!state)
-		{
-			list_index = 0;
-			operation_index = 0;
-		}
-		
-		int len = strlen (text);
-
-		
-		/* Return the next name which partially matches from the command list. */
-		while ((name = (char*)commands[list_index]))
-		{
-			list_index++;
-			if (strncmp (name, text, len) == 0)
-				return (dupstr(name));
-		}
-		
-		/* If no names matched, then return NULL. */
-		return ((char *)NULL);
-#endif
-		
-		if( !state )
-			completion_options.clearSearch();
-		
-		return completion_options.next(text);
-		
-	}	
-	
-	char ** readline_completion ( const char* text, int start,int end )
-	{
-		//std::cout << "Readline completion with \"" << text << "\" S=" << start << " E=" << end <<" \n";
-		
-		char **matches;
-		
-		matches = (char **)NULL;
-		
-		
-		if (start == 0)
-		{
-			addMainCommandOptions();
-			//std::cout << "Completion for first command \n";
-		}
-		else
-		{
+        if( start == 0)
+        {
+            // Add the main commands since it is the begining of the line
+            op.addMainCommands();
+            
+            // Add all the operations
+            op.addOperations();
+        }
+        else
+        {
+            // Parse the current introduced line to know how to auto-complete...
+            
 			au::CommandLine cmdLine;
-			cmdLine.parse(rl_line_buffer);
+			cmdLine.parse( rl_line_buffer );
 			std::string mainCommand = cmdLine.get_argument(0);
-
+            
 			//std::cout << "Completion for " << mainCommand << " \n";
 			
 			if( ( mainCommand == "clear" ) || ( mainCommand == "rm" ) || ( mainCommand == "cp" ) || ( mainCommand == "mv" ) )
-				addQueueOptions( NULL );
+            {
+                // Add all the queues
+                op.addQueueOptions( NULL );
+            }
 			else
 			{
-				
-				network::KVFormat *format = NULL;
+				// Get the argument position depending of the number of arguments written in the command line
 				int argument_pos = cmdLine.get_num_arguments() - 1;
 				if ( ( argument_pos > 0 )  && (rl_line_buffer[strlen(rl_line_buffer)-1]!=' '))
 					argument_pos--;	// Still in this parameter
 				
-				//std::cout << "Argument " << argument_pos << " \n";
+                op.addQueueForOperation( mainCommand , argument_pos );
+            }
+            
+	    }
+        
+        char ** matches = op.get(text);
 
-				
-				// If it is a particular operation... lock for the rigth queue
-				info_lock.lock();
-				
-				
-				if( ol )
-					for (int i = 0 ; i < ol->operation_size() ; i++)
-						if( ol->operation(i).name() == mainCommand )
-						{
-							//std::cout << "op found " << ol->operation(i).input_size() << "/" << ol->operation(i).output_size() <<  " ("<< argument_pos << ")\n";
-							
-							if( argument_pos < ol->operation(i).input_size() )
-							{
-								format = new network::KVFormat();
-								format->CopyFrom( ol->operation(i).input(argument_pos) );
-							}
-							else
-							{
-								argument_pos -= ol->operation(i).input_size();
-								if( argument_pos < ol->operation(i).output_size() )
-								{
-									format = new network::KVFormat();
-									format->CopyFrom( ol->operation(i).output(argument_pos) );
-								}
-							}
-							break; // No more for...
-						}
-				
-				info_lock.unlock();
-
-				
-				// Use format if any
-				if( format )
-				{
-					//std::cout << "Format found " << format->keyformat() << " " << format->valueformat() << "\n";
-					addQueueOptions(format);
-					delete format;
-				}
-				else
-					completion_options.clearOptions();
-
-				
-				
-			}
-		}
-		
-		matches = rl_completion_matches (text, command_generator);
-		return (matches);
+        /*
+        if( matches )
+        {
+            int pos = 0;
+            while( matches[pos] != NULL)
+            {
+                std::cerr << "Options " << matches[pos] << "\n";
+                pos++;
+            }
+        }
+         */
+        
+        return matches;
+        
 	}	
 	
 	void DelilahConsole::evalCommand( std::string command )
@@ -723,29 +584,7 @@ namespace ss
 					showDatas( packet->message->command_response().data_list() );
 				
 				if( packet->message->command_response().has_operation_list() )
-				{
-					// Check if it is a -all command
-					au::CommandLine cmdLine;
-					cmdLine.set_flag_boolean("all");
-					cmdLine.parse(packet->message->command_response().command() );
-					
-					if( cmdLine.get_flag_bool("all") )
-					{
-						info_lock.lock();
-						
-						if( ol )
-							delete ol;
-						ol = new network::OperationList();
-						ol->CopyFrom( packet->message->command_response().operation_list() );
-						
-						info_lock.unlock();
-						
-					}
-					else
-					{
-						showOperations( packet->message->command_response().operation_list() );
-					}					
-				}
+                    showOperations( packet->message->command_response().operation_list() );
 				
 				if( packet->message->command_response().has_job_list() )
 					showJobs( packet->message->command_response().job_list() );
@@ -909,8 +748,8 @@ namespace ss
 			const network::Job job = jl.job(i);
 			
 			txt << setiosflags(std::ios::right);
-			txt << std::setw(10) << jl.job(i).id();
-			txt << " ";
+			//txt << std::setw(10) << jl.job(i).id();
+			//txt << " ";
 			txt << std::setw(10) << jl.job(i).status();
 			txt << " ";
 			txt << jl.job(i).main_command();
@@ -975,17 +814,17 @@ namespace ss
                 
                 txt << "\t\t" << "[" << task.task_id() << " / Job: " << task.job_id() << " ] ";
  
-                switch (task.status()) {
-                    case network::ControllerTask_ControllerTaskStatus_ControllerTaskError:
-                        txt << "ERROR";
+                switch (task.state()) {
+                    case network::ControllerTask_ControllerTaskState_ControllerTaskInit:
+                        txt << "Init";
                         break;
-                    case network::ControllerTask_ControllerTaskStatus_ControllerTaskCompleted:
+                    case network::ControllerTask_ControllerTaskState_ControllerTaskCompleted:
                         txt << "Completed";
                         break;
-                    case network::ControllerTask_ControllerTaskStatus_ControllerTaskFinish:
+                    case network::ControllerTask_ControllerTaskState_ControllerTaskFinish:
                         txt << "Finished";
                         break;
-                    case network::ControllerTask_ControllerTaskStatus_ControllerTaskRunning:
+                    case network::ControllerTask_ControllerTaskState_ControllerTaskRunning:
                         txt << "Running";
                         
                         double running_progress;
@@ -1009,6 +848,9 @@ namespace ss
                         break;
                         
                 }
+                
+                if( task.has_error() )
+                    txt << "Error: (" << task.error().message() <<  ")";
                    
                 txt << "\n";
                 

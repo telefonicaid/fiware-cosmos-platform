@@ -41,14 +41,14 @@ namespace au
         
         GPBHeader header;
         int nb = read( fd , &header , sizeof(header) );
-        
-        if( !header.check() )
-            return 8;
-        
+
         if( nb == 0)
             return 7;
         
         if( nb < 0)
+            return 8;
+
+        if( !header.check() )
             return 8;
         
         // If not received the rigth size, return NULL

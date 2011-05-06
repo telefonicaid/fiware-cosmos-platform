@@ -15,7 +15,8 @@ namespace ss {
 	class JobManager;
 	class ControllerTask;
 	class ControllerTaskInfo;
-	
+	class SamsonController;
+    
 	/**
 	 Manager of running tasks at controller
 	 */
@@ -28,9 +29,15 @@ namespace ss {
 
 		JobManager *jobManager;
 		
+        SamsonController *controller;
+
+        friend class ControllerTask;
+        friend class JobManager;
+        
 	public:
 		
-		ControllerTaskManager( JobManager * _jobManager);
+        
+		ControllerTaskManager( JobManager * _jobManager );
 
         ~ControllerTaskManager();
         
@@ -66,15 +73,11 @@ namespace ss {
 		
 		std::string getStatus();
 
-		
-        void fill( network::ControllerTaskManagerStatus * status );
+		/**
+         Fill information in a message  to report status
+         */
         
-	private:
-
-		// Send a message to a worker with a particular task
-		void sendWorkerTasks( ControllerTask *task );
-		void sendWorkerTask( int  workerIdentifier , ControllerTask *task );
-		
+        void fill( network::ControllerTaskManagerStatus * status );
 		
 		
 	};

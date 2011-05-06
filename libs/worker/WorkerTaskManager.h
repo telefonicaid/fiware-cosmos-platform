@@ -43,6 +43,9 @@ namespace ss {
 		// Kill a task
 		void killTask( const network::WorkerTaskKill &task_kill );
 		
+        // Remove a task ( from controller )
+        void removeTask( size_t task_id );
+        
 		// Add a buffer from other workers ( associated to a particular task and output queue)
 		void addBuffer( size_t task_id , network::WorkerDataExchange& workerDataExchange , engine::Buffer* buffer );
 				

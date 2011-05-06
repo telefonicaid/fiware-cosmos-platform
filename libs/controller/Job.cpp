@@ -332,7 +332,7 @@ namespace ss {
 		{
 			ControllerTask *task = jobManager->taskManager.getTask( *iter );
 
-			if( task->getState() == ControllerTask::completed )
+			if( task->getState() != ControllerTask::completed )
 				return false;
 		}
 		return true;

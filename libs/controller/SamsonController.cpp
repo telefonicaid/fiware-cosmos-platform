@@ -122,6 +122,7 @@ namespace ss {
 		
 		switch (msgCode)
 		{
+                
 			case Message::WorkerTaskConfirmation:
 			{
 				network::WorkerTaskConfirmation c = packet->message->worker_task_confirmation();

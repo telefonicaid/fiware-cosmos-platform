@@ -99,8 +99,9 @@ namespace ss {
 			
 		}
         
+        // Notify this message to the task
         task->notify( worker_id , confirmationMessage );
-
+        
         // Review the task manager to see if it is necessary to run new tasks
         taskManager.reviewTasks();
 

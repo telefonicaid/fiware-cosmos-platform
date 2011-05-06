@@ -66,6 +66,7 @@ namespace ss {
             addOption("upload");
             addOption("download");
             addOption("load");
+            addOption("load_clear");
             addOption("clear");
             addOption("help");
             addOption("set");

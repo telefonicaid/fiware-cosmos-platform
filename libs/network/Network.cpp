@@ -2487,6 +2487,9 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	else
 		LM_T(LmtEndpointSlots, ("NOT changing %s (%s@%s) from slot %d to slot %d", hello->alias, hello->name, hello->ip, oldSlot, newSlot));
 
+	helloInfoCopy(ep, hello);
+	ep->helloReceived = true;
+
 	if ((ep->type == Endpoint::Worker) || (ep->type == Endpoint::Delilah))
 	{
 		if ((endpoint[ME]->type == Endpoint::Delilah) || (endpoint[ME]->type == Endpoint::Worker))
@@ -2498,10 +2501,8 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 #endif
 		}
 	}
-
-	helloInfoCopy(ep, hello);
-	ep->helloReceived = true;
-
+    
+    
 	if (headerP->type == Message::Msg)
 		helloSend(ep, Message::Ack);
 

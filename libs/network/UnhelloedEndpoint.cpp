@@ -206,7 +206,7 @@ Endpoint2::Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 	LM_M(("Hello sent successfully"));
 
 	LM_M(("Awaiting reply"));
-	if ((s = msgAwait(secs, usecs)) != 0)
+	if ((s = msgAwait(secs, usecs, "Hello Ack")) != 0)
 		LM_RE(s, ("Endpoint2::msgAwait(expecting Hello): %s", status(s)));
 	LM_M(("Reply seems on its way in"));
 

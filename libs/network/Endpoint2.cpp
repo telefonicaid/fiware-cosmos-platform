@@ -8,6 +8,12 @@
 *
 * CREATION DATE            Apr 12 2011
 *
+*
+* ToDo
+*   - remove 'alias' and 'name' completely
+*   - create method 'name()' to return ("%s%d@%s", typeName(), id, hostname())
+*     AND if id == -1, ("%s%@%s", typeName(), hostname())
+*
 */
 #include <sys/types.h>          // types needed by socket include files
 #include <stdlib.h>             // free
@@ -533,26 +539,26 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, co
 	{
 		ssize_t nb;
 
-		s = msgAwait(0, 500000);
+		s = msgAwait(0, 500000, what);
 		if (s != OK)
-			LM_RE(s, ("msgAwait(%s): %s", name, status(s)));
+			LM_RE(s, ("msgAwait(%s): %s, expecting '%s' from %s@%s", name, status(s), what, name, hostname()));
 
 		nb = read(rFd, (void*) &buf[tot] , bufLen - tot);
 		if (nb == -1)
 		{
 			if (errno == EBADF)
-				LM_RE(ConnectionClosed, ("read(%s): %s (treating as Connection Closed)", name, strerror(errno)));
+				LM_RE(ConnectionClosed, ("read(%s): %s (treating as Connection Closed), expecting '%s' from %s@%s", name, strerror(errno), what, name, hostname()));
 
-			LM_RE(ConnectionClosed, ("read(%s): %s", name, strerror(errno)));
+			LM_RE(ConnectionClosed, ("read(%s): %s, expecting '%s' from %s@%s", name, strerror(errno), what, name, hostname()));
 		}
 		else if (nb == 0)
-			LM_RE(ConnectionClosed, ("Connection closed by '%s'", name));
+			LM_RE(ConnectionClosed, ("Connection closed by '%s', expecting '%s' from %s@%s", name, what, name, hostname()));
 
 		tot += nb;
 	}
 
 	if (bufLenP == NULL)
-		LM_X(1, ("Got called with NULL buffer length pointer. This is a programmer's bug and must be fixed. Right now."));
+		LM_X(1, ("Got called with NULL buffer length pointer. This is a programmer's bug and must be fixed. Right now. (Expecting '%s' from %s@%s)", what, name, hostname()));
 
 	*bufLenP = tot;
 	LM_READS(name, what, buf, tot, LmfByte);
@@ -579,7 +585,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 
 	s = partRead(headerP, sizeof(Message::Header), &bufLen, "Header");
 	if (s != OK)
-		LM_RE(s, ("partRead::Header(%s): %s", name, status(s)));
+		LM_RE(s, ("partRead: %s, expecting 'Header' from '%s@%s'", status(s), name, hostname()));
 
 	LM_M(("Read '%s' '%s' header of %d bytes from '%s@%s'", messageCode(headerP->code), messageType(headerP->type), bufLen, nameGet(), hostname()));
 	if (headerP->dataLen != 0)
@@ -590,7 +596,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 		if (s != OK)
 		{
 			free(*dataPP);
-			LM_RE(s, ("partRead::Data(%s): %s", name, status(s)));
+			LM_RE(s, ("partRead: %s, expecting '%d RAW DATA bytes' from '%s@%s'", status(s), headerP->dataLen,  name, hostname()));
 		}
 		LM_M(("Read %d bytes of RAW DATA from '%s@%s'", bufLen, nameGet(), hostname()));
 		totalBytesReadExceptHeader += bufLen;
@@ -606,7 +612,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 			free(dataP);
 			if (*dataPP != NULL)
 				free(*dataPP);
-			LM_RE(s, ("partRead::GoogleProtocolBuffer(%s): %s", name, status(s)));
+			LM_RE(s, ("partRead: %s, expecting '%d bytes of Google Protocol Buffer data' from '%s@%s'", status(s), headerP->gbufLen, name, hostname()));
 		}
 		LM_M(("Read %d bytes of GOOGLE DATA from '%s@%s'", bufLen, nameGet(), hostname()));
 
@@ -633,7 +639,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 
 		s = partRead(kvBuf, headerP->kvDataLen, &nb, "Key-Value Data");
 		if (s != OK)
-			LM_RE(s, ("partRead::kvData(%s): %s", kvName, status(s)));
+			LM_RE(s, ("partRead: %s, expecting '%d bytes of KV DATA (%s)' from '%s@%s'", status(s), headerP->kvDataLen, kvName, name, hostname()));
 		LM_M(("Read %d bytes of KV DATA from '%s@%s'", nb, nameGet(), hostname()));
 
 		packetP->buffer->setSize(nb);
@@ -641,7 +647,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 	}
 
 	if (dataLenP == NULL)
-		LM_X(1, ("Got called with NULL buffer length pointer. This is a programmer's bug and must be fixed. Right now."));
+		LM_X(1, ("Got called with NULL buffer length pointer. This is a programmer's bug and must be fixed. Right now. Come on, do it!"));
 	*dataLenP = totalBytesReadExceptHeader;
 
 	return OK;
@@ -720,7 +726,7 @@ Endpoint2::Status Endpoint2::connect(void)
 *
 * msgAwait - 
 */
-Endpoint2::Status Endpoint2::msgAwait(int secs, int usecs)
+Endpoint2::Status Endpoint2::msgAwait(int secs, int usecs, const char* what)
 {
 	struct timeval  tv;
 	struct timeval* tvP;
@@ -745,15 +751,15 @@ Endpoint2::Status Endpoint2::msgAwait(int secs, int usecs)
 	} while ((fds == -1) && (errno == EINTR));
 
 	if (fds == -1)
-		LM_RP(SelectError, ("select"));
+		LM_RP(SelectError, ("select error awaiting '%s' from '%s@%s", what, name, hostname()));
 	else if (fds == 0)
-		LM_RE(Timeout, ("timeout"));
+		LM_RE(Timeout, ("timeout awaiting '%s' from '%s@%s'", what, name, hostname()));
 	else if ((fds > 0) && (!FD_ISSET(rFd, &rFds)))
-		LM_RE(Error, ("some other fd has a read pending - this is impossible !"));
+		LM_RE(Error, ("some other fd has a read pending - this is impossible ! (awaiting '%s' from '%s@%s')", what, name, hostname()));
 	else if ((fds > 0) && (FD_ISSET(rFd, &rFds)))
 		return OK;
 
-	LM_X(1, ("Other very strange error"));
+	LM_X(1, ("Very strange error awaiting '%s' from '%s@%s'", what, name, hostname()));
 
 	return Error;
 }
@@ -874,32 +880,32 @@ const char* Endpoint2::status(Status s)
 	switch (s)
 	{
 	case OK:                   return "OK";
-	case NotImplemented:       return "NotImplemented";
+	case NotImplemented:       return "Not Implemented";
 
-	case NullAlias:            return "NullAlias";
-	case BadAlias:             return "BadAlias";
-	case NullHost:             return "NullHost";
-	case BadHost:              return "BadHost";
-	case NullPort:             return "NullPort";
+	case NullAlias:            return "Null Alias";
+	case BadAlias:             return "Bad Alias";
+	case NullHost:             return "Null Host";
+	case BadHost:              return "Bad Host";
+	case NullPort:             return "Null Port";
 	case Duplicated:           return "Duplicated";
-	case KillError:            return "KillError";
-	case NotHello:             return "NotHello";
-	case NotAck:               return "NotAck";
-	case NotMsg:               return "NotMsg";
+	case KillError:            return "Kill Error";
+	case NotHello:             return "Not Hello";
+	case NotAck:               return "Not an Ack";
+	case NotMsg:               return "Not a Msg";
 
 	case Error:                return "Error";
-	case ConnectError:         return "ConnectError";
-	case AcceptError:          return "AcceptError";
-	case NotListener:          return "NotListener";
-	case SelectError:          return "SelectError";
-	case SocketError:          return "SocketError";
-	case GetHostByNameError:   return "GetHostByNameError";
-	case BindError:            return "BindError";
-	case ListenError:          return "ListenError";
-	case ReadError:            return "ReadError";
-	case WriteError:           return "WriteError";
+	case ConnectError:         return "Connect Error";
+	case AcceptError:          return "Accept Error";
+	case NotListener:          return "Not a Listener";
+	case SelectError:          return "Select Error";
+	case SocketError:          return "Socket Error";
+	case GetHostByNameError:   return "Get Host By Name Error";
+	case BindError:            return "Bin dError";
+	case ListenError:          return "Listen Error";
+	case ReadError:            return "Read Error";
+	case WriteError:           return "Write Error";
 	case Timeout:              return "Timeout";
-	case ConnectionClosed:     return "ConnectionClosed";
+	case ConnectionClosed:     return "Connection Closed";
 	}
 
 	return "Unknown Status";
@@ -962,7 +968,7 @@ Endpoint2::Status Endpoint2::hello(int secs, int usecs)
 	if ((s = send(Message::Msg, Message::Hello, &h, sizeof(h))) != OK)
 		LM_RE(s, ("send(Hello Msg): %s", status(s)));
 
-	if ((s = msgAwait(secs, usecs)) != OK)
+	if ((s = msgAwait(secs, usecs, "Hello header")) != OK)
 		LM_RE(s, ("msgAwait: %s", status(s)));
 
 	dataLen = sizeof(h);
@@ -992,7 +998,7 @@ Endpoint2::Status Endpoint2::die(int secs, int usecs)
 	if ((s = send(Message::Msg, Message::Die)) != OK)
 		LM_RE(s, ("send(Die Msg): %s", status(s)));
 
-	if ((s = msgAwait(secs, usecs)) != OK)
+	if ((s = msgAwait(secs, usecs, "Connection Closed")) != OK)
 		LM_RE(s, ("msgAwait: %s", status(s)));
 
 	nb = read(rFd, &c, 1);

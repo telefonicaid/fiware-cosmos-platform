@@ -114,7 +114,7 @@ void HostMgr::localIps(void)
 	if (gethostname(hostName, sizeof(hostName)) == -1)
 		LM_X(1, ("gethostname: %s", strerror(errno)));
 
-	localhostP = insert(hostName, "127.0.0.1");
+	localhostP = insert(hostName, "127.0.0.1"); // , "127.0.0.1" ...
 
 	memset(domainedName, 0, sizeof(domainedName));
 	if (getdomainname(domain, sizeof(domain)) == -1)
@@ -168,7 +168,7 @@ Host* HostMgr::insert(Host* hostP)
 		if (hostV[ix] == NULL)
 		{
 			hostV[ix] = hostP;
-			// list("Host Added");
+			list("Host Added");
 			return hostV[ix];
 		}
 	}
@@ -283,7 +283,7 @@ Host* HostMgr::insert(const char* name, const char* ip)
 		}
 	}
 
-
+	// Already present ?
 	if ((ip != NULL) && (ip[0] != 0) && ((hostP = lookup(ip)) != NULL))
 		return hostP;
 
@@ -304,8 +304,21 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	{
 		if (onlyDigitsAndDots(name) == false)
 		{
+			LM_M(("Adding name without dots as an alias: '%s'", name));
 			*dotP = 0;
+			LM_M(("Adding name without dots as an alias: '%s'", name));
 			aliasAdd(hostP, name);
+		}
+	}
+
+	if ((dotP = (char*) strstr(ip, ".")) != NULL)
+	{
+		if (onlyDigitsAndDots(ip) == false)
+		{
+			LM_M(("Adding name without dots as an alias: '%s'", ip));
+			*dotP = 0;
+			LM_M(("Adding name without dots as an alias: '%s'", ip));
+			aliasAdd(hostP, ip);
 		}
 	}
 
@@ -320,8 +333,31 @@ Host* HostMgr::insert(const char* name, const char* ip)
 */
 void HostMgr::aliasAdd(Host* host, const char* alias)
 {
-	if (lookup(alias) != NULL)
+	Host* hp;
+
+	if (host == NULL)
+		LM_RVE(("Host is NULL"));
+	if (alias == NULL)
+		LM_RVE(("Alias is NULL (host: '%s')", host->name));
+
+	if ((hp = lookup(alias)) != NULL)
+	{
+		if (hp != host)
+			LM_X(1, ("Trying to add alias '%s' for host '%s', but the host '%s' already responds to it ...", alias, host->name, hp->name));
 		return;
+	}
+
+	for (unsigned int ix = 0; ix < sizeof(alias) / sizeof(alias[0]); ix++)
+	{
+		if (host->alias[ix] == NULL)
+			continue;
+
+		if (strcmp(host->alias[ix], alias) == 0)
+		{
+			LM_W(("alias '%s' already present for host '%s'", alias, host->name));
+			return;
+		}
+	}
 
 	for (unsigned int ix = 0; ix < sizeof(alias) / sizeof(alias[0]); ix++)
 	{
@@ -386,19 +422,12 @@ bool HostMgr::remove(const char* name)
 */
 Host* HostMgr::lookup(const char* name)
 {
-	unsigned int  ix;
-	char*         nameNoDot = NULL;
-	char*         dotP;
+	unsigned int ix;
 
 	if (name == NULL)
-		return NULL;
+		LM_RE(NULL, ("Cannot lookup a NULL hostname!"));
 
-	if ((dotP = (char*) strstr(name, ".")) != NULL)
-	{
-		nameNoDot = strdup(name);
-		dotP      = (char*) strstr(nameNoDot, ".");
-		*dotP     = 0;
-	}
+	LM_M(("Looking up host '%s'", name));
 
 	for (ix = 0; ix < size; ix++)
 	{
@@ -406,32 +435,10 @@ Host* HostMgr::lookup(const char* name)
 			continue;
 
 		if ((hostV[ix]->name != NULL) && (strcmp(hostV[ix]->name, name) == 0))
-		{
-			if (nameNoDot != NULL)
-				free(nameNoDot);
 			return hostV[ix];
-		}
-
-		if ((nameNoDot != NULL) && (hostV[ix]->name != NULL) && (strcmp(hostV[ix]->name, nameNoDot) == 0))
-		{
-			if (nameNoDot != NULL)
-				free(nameNoDot);
-			return hostV[ix];
-		}
 
 		if ((hostV[ix]->ip != NULL) && (strcmp(hostV[ix]->ip, name) == 0))
-		{
-			if (nameNoDot != NULL)
-				free(nameNoDot);
 			return hostV[ix];
-		}
-
-		if ((nameNoDot != NULL) && (hostV[ix]->ip != NULL) && (strcmp(hostV[ix]->ip, nameNoDot) == 0))
-		{
-			if (nameNoDot != NULL)
-				free(nameNoDot);
-			return hostV[ix];
-		}
 
 		for (unsigned int aIx = 0; aIx < sizeof(hostV[ix]->alias) / sizeof(hostV[ix]->alias[0]); aIx++)
 		{
@@ -439,24 +446,33 @@ Host* HostMgr::lookup(const char* name)
 				continue;
 
 			if (strcmp(hostV[ix]->alias[aIx], name) == 0)
-			{
-				if (nameNoDot != NULL)
-					free(nameNoDot);
 				return hostV[ix];
-			}
-
-			if ((nameNoDot != NULL) && (strcmp(hostV[ix]->alias[aIx], nameNoDot) == 0))
-			{
-				if (nameNoDot != NULL)
-					free(nameNoDot);
-				return hostV[ix];
-			}
 		}
 	}
+	
+	if (strstr(name, ".") != NULL)
+	{
+		char* newName;
+		char* dot;
+		Host* h = NULL;
 
-	if (nameNoDot != NULL)
-		free(nameNoDot);
+		if (onlyDigitsAndDots(name) == true)
+			return NULL;
 
+		LM_W(("Host '%s' was not found and has a dot in it - possible domain name poking us - lets remove it and try again ...", name));
+		newName = strdup(name);
+		dot     = strstr(newName, ".");
+		if (dot != NULL)  // I'm a bit paranoid, sorry.
+		{
+			*dot = 0;
+			LM_M(("Recursive call, using hostname '%s' instead of '%s'", newName, name));
+			h = lookup(newName);
+		}
+
+		free(newName);
+		return h;
+	}
+	
 	return NULL;
 }
 

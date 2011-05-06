@@ -44,12 +44,14 @@ static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, 
 {
 	for (int ix = 0; ix < procVec->processes; ix++)
 	{
-		Process* p = &procVec->processV[ix];
+		Process* p           = &procVec->processV[ix];
+		Host*    otherHost;
 
 		if (p->type != (ProcessType) type)
 			continue;
 
-		if (hostMgr->match(host, p->host) == false)
+		otherHost = hostMgr->lookup(p->host);
+		if (otherHost != host)
 			continue;
 
 		if (ixP != NULL)
@@ -159,17 +161,23 @@ void EndpointManager::initWorker(void)
 	if ((procVec = platformProcessesGet()) == NULL)
 		LM_X(1, ("Error retrieving vector of platform processes"));
 
+	LM_M(("Got %d processes in procVec", procVec->processes));
+	for (int ix = 0; ix < procVec->processes; ix++)
+		LM_M(("Process %d: type %d, host %s", ix, procVec->processV[ix].type, procVec->processV[ix].host));
+
+	LM_M(("me->host: %s", me->host->name));
+
 	if ((self = platformProcessLookup(hostMgr, procVec, Endpoint2::Worker, me->host, &ix)) == NULL)
 		LM_X(1, ("Cannot find myself in platform processes vector."));
 	
 	me->aliasSet(self->alias);        // This method could check the alias for validity ('WorkerXX', 'Controller', ...)
-	me->idSet(ix);
+	me->idSet(self->id);
 	me->portSet(WORKER_PORT);
 
 
 
 	//
-	// Opening listener to accept incoming  connections
+	// Opening listener to accept incoming connections
 	//
 	listener = (ListenerEndpoint*) add(Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
 	if (listener == NULL)
@@ -536,11 +544,14 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int id, int* ixP)
 		if (endpoint[ix] == NULL)
 			continue;
 
-		if ((endpoint[ix]->type == typ) && (endpoint[ix]->id == id))
+		if (endpoint[ix]->type == typ)
 		{
-			if (ixP != NULL)
-				*ixP = ix;
-			return endpoint[ix];
+			if ((id == -1) || (endpoint[ix]->id == id))
+			{
+				if (ixP != NULL)
+					*ixP = ix;
+				return endpoint[ix];
+			}
 		}
 	}
 	return NULL;
@@ -647,7 +658,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		UnhelloedEndpoint* ep;
 
 		LM_M(("Await FOREVER for an incoming connection"));
-		if (listener->msgAwait(-1, -1) != 0)
+		if (listener->msgAwait(-1, -1, "Incoming Connection") != 0)
 			LM_X(1, ("Endpoint2::msgAwait error"));
 
 		if ((ep = listener->accept()) == NULL)
@@ -678,7 +689,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		{
 			// Hello exchanged, now the endpoint will send a ProcessVector message
 			// Awaiting the message to arrive 
-			if ((s = ep->msgAwait(5, 0)) != 0)
+			if ((s = ep->msgAwait(5, 0, "ProcessVector Message")) != 0)
 			{
 				LM_E(("msgAwait(ProcessVector): %s", ep->status(s)));
 				remove(ep);
@@ -736,7 +747,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		if ((s = ep->ack(header.code)) != Endpoint2::OK)
 			LM_E(("Error acking Process Vector: %s", ep->status(s)));
 
-		if ((s = ep->msgAwait(2, 0)) != Endpoint2::OK)
+		if ((s = ep->msgAwait(2, 0, "Connection Closed")) != Endpoint2::OK)
 			LM_W(("All OK, except that samsonSetup didn't close connection in time. msgAwait(): %s", ep->status(s)));
 		else if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != Endpoint2::ConnectionClosed)
 			LM_W(("All OK, except that samsonSetup didn't close connection when it was supposed to. receive(): %s", ep->status(s)));

@@ -1,4 +1,5 @@
 ADD_SUBDIRECTORY(samsonWorker)
+ADD_SUBDIRECTORY(samsonWorker2)
 ADD_SUBDIRECTORY(samsonController)
 ADD_SUBDIRECTORY(delilah)
 ADD_SUBDIRECTORY(samsonLocal)

@@ -34,7 +34,6 @@ namespace ss
 Network2::Network2(EndpointManager* _epMgr)
 {
 	epMgr          = _epMgr;
-	iAmReady       = false;
 	packetReceiver = NULL;
 	dataReceiver   = NULL;
 
@@ -119,7 +118,15 @@ void Network2::setDataReceiver(DataReceiverInterface* receiver)
 */
 bool Network2::ready(void)
 {
-	return iAmReady;
+	Endpoint2* controller;
+
+	if ((controller = epMgr->lookup(Endpoint2::Controller)) == NULL)
+		return false;
+
+	if (controller->stateGet() == Endpoint2::Ready)
+		return true;
+
+	return false;
 }
 
 

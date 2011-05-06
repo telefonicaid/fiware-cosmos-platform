@@ -208,7 +208,7 @@ public:
 	bool                 threaded();
 
 	Status               connect(void);
-	Status               msgAwait(int secs, int usecs);
+	Status               msgAwait(int secs, int usecs, const char* what);
 
 	Status               receive(Message::Header* headerP, void** dataPP, long* dataLenP, Packet* packetP);
 

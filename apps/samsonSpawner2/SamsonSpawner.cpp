@@ -7,23 +7,23 @@
 * CREATION DATE            Apr 29 2011
 *
 */
-#include <sys/time.h>           // gettimeofday
-#include <sys/types.h>          // pid_t
-#include <sys/wait.h>           // waitpid
+#include <sys/time.h>              // gettimeofday
+#include <sys/types.h>             // pid_t
+#include <sys/wait.h>              // waitpid
 
-#include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // Trace levels
+#include "logMsg.h"                // LM_*
+#include "traceLevels.h"           // Trace levels
 
-#include "NetworkInterface.h"   // DataReceiverInterface, ...
-#include "Process.h"            // Process
-#include "platformProcesses.h"  // platformProcessesSave
-#include "ports.h"              // Samson platform ports
-#include "processList.h"        // processListInit, Add, Remove and Lookup
-#include "samsonDirectories.h"  // SAMSON_PLATFORM_PROCESSES
-#include "Network2.h"           // Network2
+#include "NetworkInterface.h"      // DataReceiverInterface, ...
+#include "Process.h"               // Process
+#include "platformProcesses.h"     // platformProcessesSave
+#include "ports.h"                 // Samson platform ports
+#include "processList.h"           // processListInit, Add, Remove and Lookup
+#include "samsonDirectories.h"     // SAMSON_PLATFORM_PROCESSES
+#include "Network2.h"              // Network2
 
-#include "globals.h"            // Global variables for Spawner
-#include "SamsonSpawner.h"      // Own interface
+#include "globals.h"               // Global variables for Spawner
+#include "SamsonSpawner.h"         // Own interface
 
 
 
@@ -61,8 +61,6 @@ SamsonSpawner::SamsonSpawner()
 	restartInProgress      = false;
 
 	networkP->setDataReceiver(this);
-	// networkP->setEndpointUpdateReceiver(this);
-	// networkP->setTimeoutReceiver(this, 1, 0); // Timeout every second
 }
 
 
@@ -87,6 +85,7 @@ SamsonSpawner::~SamsonSpawner()
 */
 void SamsonSpawner::init()
 {
+	LM_M(("IN"));
 	processListInit(101);
 
 	restartInProgress    = true;
@@ -296,22 +295,13 @@ void SamsonSpawner::spawn(Process* process)
 	pid_t  pid;
 	char*  argV[50];
 	int    argC = 0;
-	char   idString[16];
 
 	LM_T(LmtProcessList, ("spawning process '%s' (incoming pid: %d)", process->name, process->pid));
 
 	if (process->type == PtWorker)
-	{
-		argV[argC++] = (char*) "samsonWorker";
-
-		snprintf(idString, sizeof(idString), "%d", process->id);
-		argV[argC++] = (char*) "-id";
-		argV[argC++] = idString;
-	}
+		argV[argC++] = (char*) "samsonWorker2";
 	else if (process->type == PtController)
-	{
 		argV[argC++] = (char*) "samsonController";
-	}
 	else
 		LM_X(1, ("Will only start workers and controllers - bad process type %d", process->type));
 
@@ -377,14 +367,21 @@ void SamsonSpawner::processesStart(ProcessVector* procVec)
 	Process*  processP;
 	int       ix;
 	Host*     hostP;
+	int       startedProcesses = 0;
 
+	LM_M(("Starting my processes"));
 	for (ix = 0; ix < procVec->processes; ix++)
 	{
 		processP = &procVec->processV[ix];
 
+		LM_M(("Looking up Host '%s'", processP->host));
 		hostP = networkP->epMgr->hostMgr->lookup(processP->host);
+		LM_M(("Comparing to MY Host '%s'", networkP->epMgr->hostMgr->localhostP->name));
 		if (hostP != networkP->epMgr->hostMgr->localhostP)
+		{
+			LM_M(("Host '%s' is not ME (%s) - NOT starting process %d", processP->host, networkP->epMgr->hostMgr->localhostP->name, ix));
 			continue;
+		}
 
 		LM_T(LmtProcess, ("Spawning process '%s'", processP->name));
 
@@ -395,7 +392,11 @@ void SamsonSpawner::processesStart(ProcessVector* procVec)
 		processP->pid     = 0;
 
 		spawn(processP);
+		++startedProcesses;
 	}
+
+	if (startedProcesses == 0)
+		LM_X(1, ("No processes for me (%s) in the Process Vector - am I not in the cluster ?", networkP->epMgr->hostMgr->localhostP->name));
 }
 
 

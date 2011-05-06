@@ -29,9 +29,6 @@ namespace ss
 */
 class Network2 : public NetworkInterface
 {
-private:
-	bool              iAmReady;
-
 public:
 	EndpointManager*  epMgr;
 	

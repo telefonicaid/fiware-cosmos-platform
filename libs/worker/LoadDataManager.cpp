@@ -13,9 +13,10 @@ namespace ss
 {
 #pragma mark DataManagerItem
 	
-	LoadDataManagerItem::LoadDataManagerItem( size_t _id , int _fromIdentifier , LoadDataManager *_dataManager )
+	LoadDataManagerItem::LoadDataManagerItem( size_t _id , size_t _load_id, int _fromIdentifier , LoadDataManager *_dataManager )
 	{
 		id = _id;
+        load_id = _load_id;
 		fromIdentifier = _fromIdentifier;
 		dataManager = _dataManager;
 	}
@@ -25,7 +26,7 @@ namespace ss
 #pragma mark UploadItem
 	
 	UploadItem::UploadItem(size_t id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadDataFile &_upload_data_file ,size_t _sender_id, engine::Buffer * _buffer ) 
-		: LoadDataManagerItem( id,  _fromIdentifier , dataManager)
+		: LoadDataManagerItem( id, _upload_data_file.load_id()  ,_fromIdentifier , dataManager)
 	{
 		upload_data_file = new network::UploadDataFile();
 		upload_data_file->CopyFrom( _upload_data_file );	// Copy the message
@@ -33,9 +34,19 @@ namespace ss
 
 		buffer = _buffer;			// Point to the buffer
 		
-		fileName = newFileName();	// New file name for this upload
 		size = buffer->getSize();	// Used size inside buffer
-		
+
+		// Select a name for the uploaded file
+        
+        int worker_id = dataManager->worker->network->getWorkerId();    // Get the worker id information
+        
+#ifdef __LP64__
+        fileName = au::Format::string( "worker_%d_job_%lu_id_%lu.txt", worker_id, load_id, id);
+#else
+        fileName = au::Format::string( "worker_%d_job_%d_id_%d.txt", worker_id, load_id, id);
+#endif
+
+        
 	}
 
 	UploadItem::~UploadItem()
@@ -85,13 +96,20 @@ namespace ss
 		NetworkInterface *network = dataManager->worker->network;
 		network->send( dataManager->worker , fromIdentifier  , p);
 	}
-	
-	
+
+    
+    // Function to get the run-time status of this object
+    std::string UploadItem::getStatus( )
+    {
+        std::ostringstream output;
+        output << "<Up:" << au::Format::string(size,"B") << ">";
+        return output.str();
+    }	
 	
 #pragma mark DownloadItem
 	
 	DownloadItem::DownloadItem(size_t id, int _fromIdentifier, LoadDataManager *dataManager, const network::DownloadDataFile &_download_data_file ,size_t _sender_id) 
-		: LoadDataManagerItem( id, _fromIdentifier , dataManager )
+		: LoadDataManagerItem( id, _download_data_file.load_id() , _fromIdentifier , dataManager )
 	{
 		download_data_file = new network::DownloadDataFile();
 		download_data_file->CopyFrom( _download_data_file );	// Copy the message
@@ -178,7 +196,7 @@ namespace ss
 		// Get the size of the upload buffer....
 		upload_size += buffer->getSize();
 		
-		UploadItem *item = new UploadItem( id++, fromIdentifier , this , uploadData , sender_id , buffer );
+		UploadItem *item = new UploadItem( id++ , fromIdentifier , this , uploadData , sender_id , buffer );
 		uploadItem.insertInMap( item->id , item );
 		
 		item->submitToFileManager();

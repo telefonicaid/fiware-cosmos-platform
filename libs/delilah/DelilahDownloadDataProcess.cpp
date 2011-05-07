@@ -108,8 +108,12 @@ namespace ss {
 			{
 				Packet *p = new Packet( Message::DownloadDataFile);
 				p->message->set_delilah_id( id );
+
 				ss::network::DownloadDataFile *download_data_file = p->message->mutable_download_data_file();
 
+                // Set the load id ( at controller )
+                download_data_file->set_load_id( download_data_init_response->load_id() );
+                
                 // Order in witch the files will be downloaded
                 download_data_file->set_file_id( i );
                 

@@ -463,7 +463,7 @@ message DownloadDataInitResponse
 message DownloadDataFile
 {
         required uint64 file_id=2;      // Id of the file ( multiple files for the same process)
-
+        required uint64 load_id=3;      // Id of the operation ( at the controller )
 	required File file=4;
 }
 

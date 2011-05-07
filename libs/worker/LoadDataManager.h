@@ -22,12 +22,14 @@ namespace ss {
 	public:
 
 		size_t id;								// Identifier inside LoadDataManager
-		
+
+        size_t load_id;                         // Identifier at the controller ( only in upload at the moment )
+        
 		int fromIdentifier;						// Dalilah identifier to send responses		
-		engine::Buffer *buffer;							// Buffer allocated for this task		
+		engine::Buffer *buffer;					// Buffer allocated for this task		
 		LoadDataManager *dataManager;			// Pointer to the data manager		
 		
-		LoadDataManagerItem( size_t _id, int _fromIdentifier , LoadDataManager *dataManager );		
+		LoadDataManagerItem( size_t _id, size_t _load_id, int _fromIdentifier , LoadDataManager *dataManager );		
 		virtual ~LoadDataManagerItem(){}
 		virtual std::string getStatus( )=0;
 
@@ -44,28 +46,15 @@ namespace ss {
 		
 		std::string fileName;						// Filename of the new upload
 		size_t size;								// Size of the uploaded file
-		
-		
+				
 		UploadItem( size_t _id, int _fromIdentifier , LoadDataManager *dataManager, const network::UploadDataFile &_uploadDataFile , size_t sender_id,  engine::Buffer * buffer );
 		~UploadItem();
 		
 		void submitToFileManager();
 		void sendResponse( bool error , std::string error_message );
 		
-		std::string newFileName()
-		{
-			std::ostringstream fileName;
-			fileName << "file_updaload_" << upload_data_file->load_id() << "_" << rand()%10000 << rand()%10000 << rand()%10000 << "." << upload_data_file->file_ext();
-			return fileName.str();
-		}
-		
 		// Function to get the run-time status of this object
-		std::string getStatus( )
-		{
-			std::ostringstream output;
-			output << "<Up:" << au::Format::string(size,"B") << ">";
-			return output.str();
-		}
+		std::string getStatus( );
 		
 	};	
 	

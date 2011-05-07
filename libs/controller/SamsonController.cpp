@@ -125,6 +125,7 @@ namespace ss {
                 
 			case Message::WorkerTaskConfirmation:
 			{
+                // Message from a worker
 				network::WorkerTaskConfirmation c = packet->message->worker_task_confirmation();
 				int workerId = network->getWorkerFromIdentifier(fromId);			
 				jobManager.notifyWorkerConfirmation(workerId, &c );

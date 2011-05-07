@@ -603,8 +603,6 @@ namespace ss
 
 	std::string WorkerTask::newFileName( )
 	{
-		//fileName << worker_id << "_" << task_id << "_" << rand()%10000 << rand()%10000 << rand()%10000 << rand()%10000;
-        
 		// Get the worker id
 		int worker_id = taskManager->worker->network->getWorkerId();
         

@@ -8,49 +8,24 @@
 namespace engine
 {
 	
+#pragma mark DiskStatisticsItem
+    
 	DiskStatisticsItem::DiskStatisticsItem()
 	{
-		pos = 0;
-		length =0 ;
 	}	
-
-	
 	
 	void DiskStatisticsItem::add( size_t _size , size_t _mili_seconds )
 	{
-		size[pos] = _size;
-		time[pos] = _mili_seconds;
-		
-		// Move to the next position
-		pos = (pos+1)%STATISTICS_BUFFER_SIZE;
-		if( length < STATISTICS_BUFFER_SIZE)
-			length++;		
+        // Compute the rate of the transactions
+        rate.push( _size );
+        
 	}
 	
 	std::string DiskStatisticsItem::getStatus()
 	{
-		size_t total_size=0;
-		size_t total_time=0;
-		
-		for (int i = 0 ; i < length ; i++)
-		{
-			total_time += time[i];
-			total_size += size[i];
-		}
-		
-		size_t rate;
-		
-		if( total_time > 0)
-			rate = (size_t)(((double)total_size / (double)total_time )*1000.0);
-		else
-			rate = 0;
-		
+        
 		std::ostringstream output;
-		output << "[" << au::Format::string( total_size ,"B" );
-		output << " at ";
-		output << au::Format::string( rate ,"Bps" );;
-		output << "]";
-		
+        output << rate.str();
 		return output.str();
 	}
 	
@@ -81,17 +56,19 @@ namespace engine
 			{
 			}
 				break;
+                
 		}
+        // Add the toal
+        item_total.add( size, micro_seconds );
 		
-		item_total.add( size, micro_seconds);
 	}
 	
 	std::string DiskStatistics::getStatus()
 	{
 		std::ostringstream output;
-		output << item_total.getStatus();
-		output << "( R:" << item_read.getStatus();
-		output << " W:" << item_write.getStatus() << " )";
+		output << "\nTotal: " << item_total.getStatus();
+        output << "\nRead:  " << item_read.getStatus();
+        output << "\nWrite: " << item_write.getStatus();
 		return	 output.str();
 	}
 	

@@ -17,6 +17,7 @@ set.h
 ListMap.h
 varint.h
 Cronometer.h
+Rate.h
 )
 
 SET (SOURCES
@@ -30,6 +31,7 @@ LockDebugger.cpp
 Stopper.cpp
 Token.cpp
 Cronometer.cpp
+Rate.cpp
 )
 
 

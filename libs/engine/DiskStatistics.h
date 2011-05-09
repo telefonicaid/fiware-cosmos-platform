@@ -4,6 +4,8 @@
 #include <sys/time.h>
 #include <string>				// std::string
 
+#include "au/Rate.h"            // au::Rate
+
 #include "engine/DiskOperation.h"		// engine::DiskOperationType
 
 #define STATISTICS_BUFFER_SIZE 100
@@ -14,23 +16,16 @@ namespace engine {
 	
 	class DiskStatisticsItem
 	{
+        // All the information about the rate
+        au::Rate rate;
 
 	public:
 
-		// Buffer of samples
-		
-		size_t size[ STATISTICS_BUFFER_SIZE ];
-		size_t time[ STATISTICS_BUFFER_SIZE ];
-		
-		int pos;		// Position writing information
-		int length;		// Number of samples
-		
 		DiskStatisticsItem();
 		
 		void add( size_t _size , size_t _mili_seconds );
 
 		std::string getStatus();
-		
 		
 	};	
 
@@ -42,7 +37,7 @@ namespace engine {
 		DiskStatisticsItem item_read;
 		DiskStatisticsItem item_write;
 		DiskStatisticsItem item_total;
-		
+        
 		void add( DiskOperation::DiskOperationType type, size_t size , size_t micro_seconds );
 
 		void add( DiskOperation *operation );

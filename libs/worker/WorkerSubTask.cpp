@@ -343,7 +343,7 @@ namespace ss
 		int num_process = SamsonSetup::shared()->num_processes;
 		
 		// Maximum size per hash-group
-		size_t max_size_per_group = reduceInformation->total_size / num_process;
+		size_t max_size_per_group = reduceInformation->total_size / ( 4 * num_process );
 		
 		// Another limit for memory reasons
 		size_t max_size_per_group2 = (SamsonSetup::shared()->memory/4) - reduceInformation->total_num_input_files*KVFILE_NUM_HASHGROUPS*sizeof(KVInfo) - sizeof(KVHeader);

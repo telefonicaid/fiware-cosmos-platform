@@ -36,7 +36,7 @@ namespace ss
 	void Queue::addFile( int worker, std::string _fileName , KVInfo info )
 	{
 		
-		//LM_M(("Pushing file into queue queue %s", _name.c_str()));
+		LM_M(("Pushing file %s into queue queue %s. Now num files is %lu", _fileName.c_str(), _name.c_str() , files.size() ));
 		
 		// Update global info
 		_info.append( info );
@@ -47,6 +47,9 @@ namespace ss
 		
 		// Thread save version of the number of files
 		_num_files++;
+
+		LM_M(("Pushing file %s into queue queue %s. Now num files is %lu", _fileName.c_str(), _name.c_str() , files.size() ));
+
 	}
 
 	bool Queue::removeFile( int worker, std::string _fileName , KVInfo info )

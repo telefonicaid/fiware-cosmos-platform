@@ -4,6 +4,7 @@
 
 
 #include "au/ListMap.h"     // au::ListMap
+#include <string>           // std::string
 
 namespace engine {
     

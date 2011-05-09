@@ -10,7 +10,7 @@ MemoryRequest.h
 ProcessManager.h
 ProcessItem.h
 ReadFile.h
-ReadfileManager.h
+ReadFileManager.h
 DiskManager.h
 DiskOperation.h
 DiskStatistics.h
@@ -27,7 +27,7 @@ MemoryRequest.cpp
 ProcessManager.cpp
 ProcessItem.cpp
 ReadFile.cpp
-ReadfileManager.cpp
+ReadFileManager.cpp
 DiskManager.cpp
 DiskOperation.cpp
 DiskStatistics.cpp

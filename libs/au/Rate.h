@@ -13,6 +13,7 @@
 #define _H_AU_RATE
 
 #include <cstring>
+#include <string>    // std::String
 #include <time.h>
 #include <list>
 

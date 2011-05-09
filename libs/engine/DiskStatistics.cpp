@@ -66,9 +66,9 @@ namespace engine
 	std::string DiskStatistics::getStatus()
 	{
 		std::ostringstream output;
-		output << "\nTotal: " << item_total.getStatus();
-        output << "\nRead:  " << item_read.getStatus();
-        output << "\nWrite: " << item_write.getStatus();
+		output << "\n\tTotal: " << item_total.getStatus();
+        output << "\n\tRead:  " << item_read.getStatus();
+        output << "\n\tWrite: " << item_write.getStatus();
 		return	 output.str();
 	}
 	

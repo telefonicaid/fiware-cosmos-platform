@@ -132,8 +132,22 @@ namespace engine {
 		void run();			
 		
 	private:
+        
 		bool setDevice( );
 
+        friend class DiskOperationGroup;
+        
+        size_t id;
+        void setId( size_t _id)
+        {
+            id = _id;
+        }
+        
+        size_t getId()
+        {
+            return id;
+        }
+        
 		
 	};
 	

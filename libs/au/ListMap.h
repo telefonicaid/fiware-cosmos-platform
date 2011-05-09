@@ -30,8 +30,10 @@ namespace au {
 		
 		// Iterator definition
 		typename std::map<K, V* >::iterator iter;
-		
-		
+
+        
+		// Insert elements
+        
 		V* insertAtFront( K& key , V* value)
 		{
 			V* tmp =  extractFromMap( key );
@@ -53,7 +55,53 @@ namespace au {
 			
 			return tmp;
 		}
+        
+        // Get reference to the limit elements
+        
+		V* getFromBack( )
+		{
+			
+			if( keys.size() == 0)
+				return NULL;
+			
+			// Get the key from the back position
+			K key = keys.back();
+			
+			typename std::map<K, V* >::iterator iter = map.find(key);
+			
+			if( iter == map.end() )
+				return NULL;
+			else
+			{
+				V* v = iter->second;
+				return v;
+			}
+			
+		}				
+        
+		V* getFromFront( )
+		{
+			if( keys.size() == 0)
+				return NULL;
+			
+			
+			// Get the key from the back position
+			K key = keys.front();
+			
+			typename std::map<K, V* >::iterator iter = map.find(key);
+			
+			if( iter == map.end() )
+				return NULL;
+			else
+			{
+				V* v = iter->second;
+				return v;
+			}
+			
+		}		
 		
+        // Extract elements
+        
 		V* extractFromBack( )
 		{
 			

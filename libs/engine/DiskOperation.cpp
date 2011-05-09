@@ -3,6 +3,7 @@
 #include "traceLevels.h"                // LmtDisk
 #include "engine/Engine.h"				// engine::Engine
 #include "engine/DiskManager.h"         // engine::DiskManager
+#include "engine/ReadFile.h"            // engine::ReadFile
 
 namespace engine {
 	
@@ -12,12 +13,6 @@ namespace engine {
 		
 		DiskOperation *diskOperation = (DiskOperation*) _diskOperation;
 		diskOperation->run();
-
-		// If write operation, destroy the buffer ( only in write and append operations )
-        diskOperation->destroyBuffer();
-		
-		// Notify to the engine
-		diskOperation->diskManager->finishDiskOperation( diskOperation );
 		
 		return NULL;
 	}
@@ -292,11 +287,26 @@ namespace engine {
         
 		if( type == DiskOperation::read )
 		{
-			// Create a new one
-			//FileAccess *file = new FileAccess( o->fileName , o->mode );
-			//result = file->read(o->read_buffer, o->offset , o->size);
+
+			// Get the Read file from the Manager
+            ReadFile *rf = diskManager->fileManager.getReadFile( fileName );
+            
+            LM_T( LmtDisk , ("DiskManager: Opening file %s to read", fileName.c_str() ));
 			
-			
+			if( !rf->isValid() )
+				setError( "Internal error: Not valid read file" );
+			else
+			{
+                if( rf->seek( offset ) )
+                    setError( au::Format::string("Error while seeking data from file %s" , fileName.c_str()));
+
+                
+                if( rf->read(read_buffer, size ) )
+                    setError( au::Format::string("Error while reading data from file %s" , fileName.c_str()));
+                
+			}
+            
+			/*
 			LM_T( LmtDisk , ("DiskManager: Opening file %s to read", fileName.c_str() ));
 			
 			FILE *file = fopen(fileName.c_str() , "r" );
@@ -325,6 +335,7 @@ namespace engine {
 				
 				fclose(file);
 			}
+             */
 		}
 		
 		if( type == DiskOperation::remove)
@@ -337,7 +348,14 @@ namespace engine {
 			if( c != 0 )
 				setError("Error while removing file");
 		}
+        
+        
+		// If write operation, destroy the buffer ( only in write and append operations )
+        destroyBuffer();
 		
+		// Notify to the engine
+		diskManager->finishDiskOperation( this );
+        
 	}	
 	
 	void DiskOperation::destroyBuffer()

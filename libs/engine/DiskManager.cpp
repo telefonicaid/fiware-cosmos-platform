@@ -72,7 +72,10 @@ namespace engine
         // Get the objecy ( not leave in the vector since it would be automatically deleted by engine )
         DiskOperation *diskOperation = (DiskOperation*) notification->extractObject();
         
-        diskOperation->environment.copyFrom( &notification->environment );    // Copy all the environment variables for the notification comming back
+        // Copy all the environment variables for the notification comming back
+        diskOperation->environment.copyFrom( &notification->environment );    
+        
+        // add the operation to the queue
         add( diskOperation );
     }
     
@@ -92,7 +95,10 @@ namespace engine
 	
 	void DiskManager::finishDiskOperation( DiskOperation *operation )
 	{
+        // Callback received from background process
+        
 		pthread_mutex_lock(&mutex);
+        
 		running_operations.erase( operation );
 		diskStatistics.add( operation );
 		
@@ -155,11 +161,11 @@ namespace engine
 		// ----------------------------------------------------------------------------
 		std::ostringstream disk_manager_status;
         
-		disk_manager_status << "\n\t\tRunning: ";
+		disk_manager_status << "\n\tRunning: ";
 		for ( std::set<DiskOperation*>::iterator i = running_operations.begin() ; i != running_operations.end() ; i++)
 			disk_manager_status << "[" << (*i)->getDescription() << "] ";
 		
-		disk_manager_status << "\n\t\tQueued: ";
+		disk_manager_status << "\n\tQueued: ";
         {
             au::Descriptors descriptors;
             
@@ -185,7 +191,7 @@ namespace engine
             
         }
         
-		disk_manager_status << "\n\t\tStatistics: ";
+		disk_manager_status << "\n\tStatistics: ";
 		disk_manager_status << diskStatistics.getStatus();
 		
 		pthread_mutex_unlock(&mutex);

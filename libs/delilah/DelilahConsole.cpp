@@ -902,16 +902,16 @@ namespace ss
             }
             
             if( ( command == "info_full" ) || (command == "info_load_data_manager" ) )
-                txt << "\tLoad Data Manager: " << worker_status.load_data_manager_status() << "\n";
+                txt << "** Load Data Manager: " << worker_status.load_data_manager_status() << "\n";
             
             if( ( command == "info_full" ) || (command == "info_process_manager" ) )
-                txt << "\tProcess Manager:   " << worker_status.process_manager_status() << "\n";
+                txt << "** Process Manager:   " << worker_status.process_manager_status() << "\n";
             
             if( ( command == "info_full" ) || (command == "info_task_manager" ) )
-                txt << "\tTask Manager:      " << worker_status.task_manager_status() << "\n";
+                txt << "** Task Manager:      " << worker_status.task_manager_status() << "\n";
             
             if( ( command == "info_full" ) || (command == "info_disk_manager" ) )
-                txt << "\tDisk Manager:      " << worker_status.disk_manager_status() << "\n";
+                txt << "** Disk Manager:      " << worker_status.disk_manager_status() << "\n";
             if( ( command == "info_full" ) || (command == "info_engine" ) )
                 txt << "\tEngine:      " << worker_status.engine_status() << "\n";
             

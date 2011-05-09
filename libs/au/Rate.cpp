@@ -6,6 +6,7 @@ namespace au {
 
     RateItem::RateItem( int _max_time )
     {
+        total_size = 0;
         max_time = _max_time;
     }
 

@@ -14,7 +14,7 @@ namespace engine
 	{
 	}	
 	
-	void DiskStatisticsItem::add( size_t _size , size_t _mili_seconds )
+	void DiskStatisticsItem::add( size_t _size )
 	{
         // Compute the rate of the transactions
         rate.push( _size );
@@ -43,13 +43,13 @@ namespace engine
 		switch (type) {
 			case DiskOperation::read:
 			{
-				item_read.add( size, micro_seconds);
+				item_read.add( size );
 			}
 				break;
 			case DiskOperation::append:
 			case DiskOperation::write:
 			{
-				item_write.add( size, micro_seconds);
+				item_write.add( size );
 			}
 				break;
 			case DiskOperation::remove:
@@ -59,7 +59,7 @@ namespace engine
                 
 		}
         // Add the toal
-        item_total.add( size, micro_seconds );
+        item_total.add( size );
 		
 	}
 	

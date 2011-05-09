@@ -23,7 +23,7 @@ namespace engine {
 
 		DiskStatisticsItem();
 		
-		void add( size_t _size , size_t _mili_seconds );
+		void add( size_t _size );
 
 		std::string getStatus();
 		

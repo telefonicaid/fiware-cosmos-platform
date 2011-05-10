@@ -8,7 +8,7 @@ namespace engine {
     ReadFileManager::ReadFileManager()
     {
         // Default number of open files
-        max_open_files = 10;
+        max_open_files = 100;
     }
     
     ReadFile *ReadFileManager::getReadFile( std::string fileName )

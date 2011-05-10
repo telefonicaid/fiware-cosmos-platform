@@ -147,11 +147,20 @@ namespace engine
     int DiskManager::getNumOperations()
     {
         if ( diskManager )
-            return  diskManager->pending_operations.size() + diskManager->pending_operations.size();
+            return  diskManager->_getNumOperations();
         else
             return 0;
     }
     
+    int DiskManager::_getNumOperations()
+    {
+		pthread_mutex_lock(&mutex);
+        size_t num_operations = pending_operations.size() + diskManager->running_operations.size();
+		pthread_mutex_unlock(&mutex);
+        
+        return num_operations;
+        
+    }
     
     
     std::string DiskManager::_str()

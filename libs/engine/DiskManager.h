@@ -76,6 +76,7 @@ namespace engine
         
 		void finishDiskOperation( DiskOperation *diskOperation );	// Notification that a disk operation has finished        
         
+        int _getNumOperations();                  // get the number of pending operations ( shown at information screen);
         
     };
 

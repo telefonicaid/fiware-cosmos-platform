@@ -74,20 +74,18 @@ int logFd = -1;
 void *run_DelilahConsole(void* d)
 {
 	ss::DelilahConsole* delilahConsole = (ss::DelilahConsole*) d;
-
 	delilahConsole->run();
+
+    // When finishing this thread, exit que engine to finish the app
+    engine::Engine::quit();         // Quit the engine
+
+    
 	return NULL;
 }
 
 
-void atExitAssert()
-{
-    assert(false);
-}
-
 int main(int argC, const char *argV[])
 {
-	atexit(atExitAssert );
     
 	paConfig("prefix",                        (void*) "SSW_");
 	paConfig("usage and exit on any warning", (void*) true);
@@ -154,57 +152,31 @@ int main(int argC, const char *argV[])
 	// Run the network center in background
 	center.runInBackground();
 
-
+    // Set the command file name
+    delilahConsole.setCommandfileName( commandFileName );
+    
+    // Run delilah console in background
+    pthread_t t;
+    pthread_create(&t, 0, run_DelilahConsole, &delilahConsole);
+    
 	// Run the samson engine
-	engine::Engine::runInBackground();
-	
-	if ( strcmp( commandFileName,"") != 0 )
-	{
-		FILE *f = fopen( commandFileName , "r" );
-		if( !f )
-		{
-			LM_E(("Error opening commands file %s", commandFileName));
-			exit(0);
-		}
-		
-		char line[1024];
-
-		//LM_M(("Processing commands file %s", commandFileName ));
-		while( fgets(line, sizeof(line), f) )
-		{
-			// Remove the last return of a string
-			while( ( strlen( line ) > 0 ) && ( line[ strlen(line)-1] == '\n') > 0 )
-				line[ strlen(line)-1]= '\0';
-			
-			//LM_M(("Processing line: %s", line ));
-			size_t id = delilahConsole.runAsyncCommand( line );
-			
-			if( id != 0)
-			{
-				//LM_M(("Waiting until delilah-component %ul finish", id ));
-				// Wait until this operation is finished
-				while (delilahConsole.isActive( id ) )
-					sleep(1);
-			}
-		}
-		
-		fclose(f);
-		
-				
-		LM_M(("samsonLocal exit correctly"));
-		
-		exit(0);
-	}
-	
+	engine::Engine::run();
+    
 	// Run delilah client in foreground
-	delilahConsole.run();	
+	//delilahConsole.run();	
 		
     // Destroying workwers
     for ( size_t i = 0 ; i < _workers.size() ; i++)
         delete _workers[i];
     _workers.clear();
     
-	LM_M(("samsonLocal exit correctly"));
+    
+    LM_M(("Destroying Memory manager"));
+    engine::MemoryManager::destroy();
+    
+	LM_M(("Destroying engine"));
+    engine::Engine::destroy();
+    
 }
 
 

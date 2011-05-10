@@ -19,9 +19,10 @@ namespace engine {
     public:
         
         ReadFileManager();
+        ~ReadFileManager();
         
         ReadFile *getReadFile( std::string fileName );
-
+        
     };
 
 }

@@ -11,6 +11,12 @@ namespace engine {
         max_open_files = 100;
     }
     
+    ReadFileManager::~ReadFileManager()
+    {
+        read_files.clearListMap();
+    }
+
+    
     ReadFile *ReadFileManager::getReadFile( std::string fileName )
     {
         ReadFile *f = read_files.extractFromMap( fileName );
@@ -43,5 +49,7 @@ namespace engine {
         
         return f;
     }
+    
+
     
 }

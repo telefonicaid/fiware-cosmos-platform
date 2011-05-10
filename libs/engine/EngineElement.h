@@ -31,6 +31,9 @@ namespace engine
 		EngineElement();
 		EngineElement( int seconds );
 
+        // Virtual destructor necessary to destory children-classes correctly
+        virtual ~EngineElement(){};
+        
 		// Reschedule action once executed
 		void Reschedule();
 		

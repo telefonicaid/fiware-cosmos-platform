@@ -269,6 +269,9 @@ namespace ss {
 				}
                 else
 				{
+                    
+                    // Task info is not used any more in the case of a script
+                    delete task_info;
 					
 					// Add comment to data manager to log that a script is initiated
 					jobManager->controller->data.addComment(id, std::string("SCRIPT IN:") + command );

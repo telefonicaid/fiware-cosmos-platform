@@ -66,11 +66,11 @@ namespace au
 		// Do something to force quit?
 	}
 	
-	void Console::run()
+	void Console::runConsole()
 	{
 		quit_console = false;
 		
-		while (!quit_console)
+		while ( !quit_console )
 		{
 			fflush(stdout);
 			fflush(stderr);

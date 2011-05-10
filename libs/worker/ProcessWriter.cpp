@@ -61,7 +61,9 @@ namespace ss {
 	{
 		// Free the map of the shared memory
 		engine::SharedMemoryManager::shared()->freeSharedMemory( item );		
-		
+
+		// Note: It is not necessary to delete item since it has been done inside "freeSharedMemory"
+        
 		// Free minibuffer used to serialize key-value here!!
 		free( miniBuffer );
 	}
@@ -197,6 +199,8 @@ namespace ss {
         else
             workerTaskItem->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER );
 		
+        if( item )
+            delete item;
         
 		// Clear the buffer
 		*size = 0;

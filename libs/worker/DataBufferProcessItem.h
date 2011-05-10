@@ -19,7 +19,8 @@ namespace ss {
 		engine::Buffer *buffer;				// Resulting new buffer
 		
 		DataBufferProcessItem( QueueuBufferVector * _bv );
-		
+		~DataBufferProcessItem();
+        
 		void run();
 	};
 	

@@ -38,20 +38,7 @@ namespace engine
 	}
 	
     
-    void destroy_engine()
-    {
-        LM_M(("Engine terminating..."));
-        
-        if( engine )
-        {
-            engine->_quit();   // Quit if still not quited
-            delete engine;
-        }
-        engine = NULL;
-        
-        LM_M(("Engine terminated"));
-    }
-	
+
 	Engine::Engine()
 	{
 		flag_quit = false;					       // By default, this flag is false
@@ -69,13 +56,14 @@ namespace engine
 	Engine::~Engine()
 	{
         
-		//LM_M(("Destroying Samson Engine"));
+		LM_M(("Engine: Destructor"));
+        
+        // clear the pending elements to be executed
+        elements.clearList();
         
 		pthread_mutex_destroy(&elements_mutex);			// Mutex to protect elements
 		pthread_cond_destroy(&elements_cond) ;			// Conditional to block the thread while waiting the next event
         
-        // clear the pending elements to be executed
-        elements.clearList();
         
 	}
 	
@@ -88,13 +76,8 @@ namespace engine
 
 		engine = new Engine();
 	
-        // At exit destroy
-        //atexit( destroy_engine  );
-
 	}
-    
-    // ------------------------------------------------------------------------------------------------------------------------------
-    
+
     void Engine::run()
     {
         if (!engine)
@@ -102,6 +85,32 @@ namespace engine
         
         engine->_run();
     }
+    
+    void Engine::quit()
+    {
+        if (!engine)
+            LM_X(1, ("Please init engine before quiting"));
+
+        engine->_quit();
+        
+    }
+    
+    
+    void Engine::destroy()
+    {
+        if ( engine )
+        {
+            engine->_quit();   // Quit
+            
+            delete engine;
+            engine = NULL;
+        }
+        else
+            LM_W(("Trying to destroy Engine, but it is not initialized"));
+    }
+    
+    // ------------------------------------------------------------------------------------------------------------------------------
+    
     
     void Engine::runInBackground()
     {
@@ -348,26 +357,20 @@ namespace engine
 		pthread_mutex_unlock(&elements_mutex);
         
 		// If we are calling quit from another thread, we will wait until the main thead is finished
-		if( pthread_self() != t )
-		{
-            LM_M(("Engine: Killing main thread"));
-            int r = pthread_kill(t, SIGKILL);
-            if( r )
-                LM_W(("Not possible to kill main thread of Engine"));
-            
+        if( pthread_self() != t_check )
+        {
+
+            LM_M(("Engine: Waiting main thread to finish..,"));
             int r2 = pthread_join( t,NULL);
             if( r2 )
                 LM_W(("Error while canceling main thread of Engine"));
-		}
-        
-        
-		if( pthread_self() != t_check )
-        {
-            LM_M(("Engine: Killing secondary thread for checking"));
-            int r = pthread_kill(t_check, SIGKILL);
-            if( r )
-                LM_W(("Not possible to kill check-thread of Engine"));
+        }
+
+		if( pthread_self() == t_check )
+            LM_X(1, ("Internal error"));
             
+        {
+            LM_M(("Engine: Waiting check thread to finish"));
             int r2 = pthread_join( t_check ,NULL);
             if( r2 )
                 LM_W(("Error while canceling check-thread of Engine"));

@@ -110,6 +110,48 @@ namespace ss
 		runAsyncCommand( command );
 	}
 	
+    void DelilahConsole::run()
+    {
+        // If command-file is provided
+        if ( commandFileName.length() > 0 )
+        {
+            FILE *f = fopen( commandFileName.c_str() , "r" );
+            if( !f )
+            {
+                LM_E(("Error opening commands file %s", commandFileName.c_str()));
+                exit(0);
+            }
+            
+            char line[1024];
+            
+            //LM_M(("Processing commands file %s", commandFileName ));
+            while( fgets(line, sizeof(line), f) )
+            {
+                // Remove the last return of a string
+                while( ( strlen( line ) > 0 ) && ( line[ strlen(line)-1] == '\n') > 0 )
+                    line[ strlen(line)-1]= '\0';
+                
+                //LM_M(("Processing line: %s", line ));
+                size_t id = runAsyncCommand( line );
+                
+                if( id != 0)
+                {
+                    //LM_M(("Waiting until delilah-component %ul finish", id ));
+                    // Wait until this operation is finished
+                    while ( isActive( id ) )
+                        sleep(1);
+                }
+            }
+            
+            fclose(f);
+            
+            return;
+        }
+        else
+            runConsole();
+    }
+    
+    
 	size_t DelilahConsole::runAsyncCommand( std::string command )
 	{
 		

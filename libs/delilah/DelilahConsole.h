@@ -220,8 +220,11 @@ namespace ss {
 	class DelilahConsole : public au::Console, public Delilah
 	{
 		
+        std::string commandFileName;
+        
 	public:
 		
+        
 		DelilahConsole( NetworkInterface *network) : Delilah( network , true )
 		{
 			/* completion function for readline library */
@@ -247,6 +250,15 @@ namespace ss {
 			return  "Delilah";
 		}
 		
+        // Main run command
+        void run();
+        
+        // Set the command-file
+        void setCommandfileName( std::string _commandFileName)
+        {
+            commandFileName = _commandFileName;
+        }
+                
 		// Eval a command from the command line
 		virtual void evalCommand( std::string command );
 

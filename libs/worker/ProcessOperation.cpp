@@ -97,9 +97,16 @@ namespace ss {
 	{
 		// Run the generator over the ProcessWriter to emit all key-values
 		OperationInstance *operationInstance = (OperationInstance*) operation->getInstance();
-		operationInstance->environment = &environment;
-		operationInstance->tracer = this;
-		operationInstance->operationController = this;
+        
+        if( !operationInstance )
+        {
+            setUserError("Error getting an instance of this operation");
+            exit(1);
+        }
+
+        operationInstance->environment = &environment;
+        operationInstance->tracer = this;
+        operationInstance->operationController = this;
 		
 		return operationInstance;
 	}
@@ -205,6 +212,9 @@ namespace ss {
 		
 		free(inputStructs);
 		parserOut->finish();
+        
+        delete parserOut;
+        
 		delete[] reduce_file;
 		
 	}		
@@ -372,6 +382,9 @@ namespace ss {
 		
 		free(inputStructs);
 		parserOutReduce->finish();
+        
+        delete parserOutReduce;
+        
 		delete[] reduce_file;
 		
 
@@ -479,6 +492,11 @@ namespace ss {
 		
 		free(inputStructs);
 		map->finish();
+        
+        
+        // Delete the map operation
+        delete map;
+        
 		delete[] reduce_file;
 		
 	}
@@ -633,6 +651,10 @@ namespace ss {
 		
 		free(inputStructs);
 		reduce->finish();
+        
+        // Delete the operation 
+        delete reduce;
+        
 		delete[] reduce_file;
 		
 	}		

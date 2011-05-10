@@ -24,6 +24,8 @@ namespace ss
 			free( _kv );
 		if( kv ) 
 			free ( kv );
+        
+        free( valueSize );
 	}
 	
 	// For each hash group, prepare the vector

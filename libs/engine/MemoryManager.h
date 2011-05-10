@@ -69,6 +69,7 @@ namespace engine {
 	public:
 
         static void init( size_t _memory );
+        static void destroy( );
 
         static size_t getMemory();
         static size_t getUsedMemory();

@@ -32,6 +32,11 @@ namespace ss {
 		statusStream << "Prewrite " << au::Format::string( bv->getTotalSize() ,"Bytes" ) ;
 		operation_name = statusStream.str();
 	}
+    
+    DataBufferProcessItem::~DataBufferProcessItem()
+    {
+        delete bv;
+    }
 	
 	void DataBufferProcessItem::run()
 	{

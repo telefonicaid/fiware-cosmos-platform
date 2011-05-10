@@ -63,7 +63,7 @@ namespace au {
         
 	public:
 
-		void run();
+		void runConsole();
 		
 	};
 	

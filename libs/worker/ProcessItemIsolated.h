@@ -73,7 +73,12 @@ namespace ss {
 
 		// Internal function to be executed by a separate process or thread
 		void runBackgroundProcessRun();
+
 		
+        // Process a message from the background process
+        // Return true if it necessary to finish
+        bool processProcessPlatformMessage( ss::network::MessageProcessPlatform * message );
+
 	};
 
 	

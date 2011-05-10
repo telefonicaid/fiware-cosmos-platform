@@ -42,6 +42,13 @@ namespace ss
         {
             // Run the generator over the ProcessWriter to emit all key-values
             Parser *parser = (Parser*) operation->getInstance();
+            
+            if( !parser )
+            {
+                setUserError("Error getting an instance of this operation");
+                return;
+            }
+            
             parser->environment = &environment;
             parser->tracer = this;
             parser->operationController = this;
@@ -51,6 +58,9 @@ namespace ss
             parser->init();
             parser->run( data , size ,  writer );
             parser->finish();
+            
+            // Detele the created instance
+            delete parser;
         }
 
 		/*

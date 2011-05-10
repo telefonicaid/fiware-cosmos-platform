@@ -170,7 +170,171 @@ namespace ss
 		LM_T( LmtIsolated , ("Isolated process %s: finish and children process killed ",getStatus().c_str()));
         
 	}
+    
+    bool ProcessItemIsolated::processProcessPlatformMessage( ss::network::MessageProcessPlatform * message )
+    {
+        
+        // Eval if the process has been canceled by ProcessManager, if so, it should return assap
+        
+        if( isProcessItemCanceled() )
+        {
+            error.set( "ProcessItem canceled" );
+            
+            // Send an kill message and finish
+            ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
+            response->set_code( ss::network::MessagePlatformProcess_Code_code_kill );
+            au::writeGPB(pipeFdPair2[1], response);
+            delete response;
+            
+            // Finish since it has been canceled
+            return true;
+        }
+        
+        
+        
+        // Process message
+        
+        switch (  message->code()  )
+        {
+            case ss::network::MessageProcessPlatform_Code_code_operation:
+            {
+                int operation  = message->operation();
+                
+                LM_T( LmtIsolated , ("Isolated process %s: Message to run operation  %d ",getStatus().c_str() , operation ));
+                
+                runCode( operation );
+                
+                // Send the continue
+                ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
+                response->set_code( ss::network::MessagePlatformProcess_Code_code_ok );
+                au::writeGPB(pipeFdPair2[1], response);
+                delete response;
+                
+                // Not finish the process
+                return false;
+            }
+                break;
+                
+            case ss::network::MessageProcessPlatform_Code_code_trace:
+            {
+                
+                /**
+                 Send the trace to all delilahs
+                 */
+                
+                Packet * p = new Packet( Message::Trace );
+                p->message->mutable_trace()->CopyFrom( message->trace() );
+                engine::Engine::add( new engine::Notification( notification_samson_worker_send_trace , p ) );
+                //LM_M(("Notifying a trace to the engine"));
+                
+                // Old trace system, tracing here... to be removed
+                /*
+                 if (lmOk(message->trace().type(), message->trace().tlev() ) == LmsOk)
+                 {
+                 std::string _text = message->trace().text();
+                 std::string file = message->trace().file();
+                 std::string fname = message->trace().fname();
+                 std::string stre = message->trace().stre();
+                 
+                 LM_T( LmtIsolated , ("Isolated process %s: Message with trace %s ",getStatus().c_str() , _text.c_str() ));
+                 
+                 lmOut(
+                 (char*)_text.c_str(),   
+                 (char) message->trace().type() , 
+                 file.c_str(), 
+                 message->trace().lineno() , 
+                 fname.c_str(), 
+                 message->trace().tlev() , 
+                 stre.c_str() 
+                 );
+                 }
+                 */
+                
+                
+                // Send the continue
+                ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
+                response->set_code( ss::network::MessagePlatformProcess_Code_code_ok );
+                au::writeGPB(pipeFdPair2[1], response);
+                delete response;
+                
+                // Not finish the process
+                return false;
+                
+            }
+                break;
+                
+            case ss::network::MessageProcessPlatform_Code_code_progress:
+            {
+                LM_T( LmtIsolated , ("Isolated process %s: Message reporting progress %f ",getStatus().c_str() , message->progress() ));
+                
+                // set the progress
+                progress = message->progress();
+                                
+                // Send the continue
+                ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
+                response->set_code( ss::network::MessagePlatformProcess_Code_code_ok );
+                au::writeGPB(pipeFdPair2[1], response);
+                delete response;                    
+                
+                // Not finish the process
+                return false;
 
+            }
+                break;
+                
+                
+            case ss::network::MessageProcessPlatform_Code_code_user_error:
+            {
+                LM_T( LmtIsolated , ("Isolated process %s: Message reporting user error  ",getStatus().c_str() ));
+                
+                // Set the error
+                if( message->has_error() )
+                    error.set( message->error() );
+                else
+                    error.set( "Undefied user-defined error" );
+                
+                // Send an ok back, and return
+                ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
+                response->set_code( ss::network::MessagePlatformProcess_Code_code_ok );
+                au::writeGPB(pipeFdPair2[1], response);
+                delete response;
+
+                // It has to finish since the background process has notifyied the error
+                return true;
+                
+            }
+                break;
+                
+            case ss::network::MessageProcessPlatform_Code_code_begin:
+            {
+                LM_X(1,("Received another code begin in an Isolated process"));
+                return false; // Never got here...
+            }
+                break;
+                
+            case ss::network::MessageProcessPlatform_Code_code_end:
+            {
+                LM_T( LmtIsolated , ("Isolated process %s: Message reporting finish process  ",getStatus().c_str() ));
+                
+                // Send an ok back, and return
+                
+                ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
+                response->set_code( ss::network::MessagePlatformProcess_Code_code_ok );
+                au::writeGPB(pipeFdPair2[1], response);
+                delete response;
+                
+                // It has to finish since it has received the last message from the background process
+                return true;
+                
+            }
+                break;
+        }
+        
+        LM_X(1, ("Internal error"));
+        return false;
+    }
+
+    
     void ProcessItemIsolated::runExchangeMessages()
     {
         
@@ -188,6 +352,8 @@ namespace ss
                 return;     // Problem with this read
             }
             
+            if( !message )
+                LM_X(1, ("Internal error"));
 
             if( message->code() != ss::network::MessageProcessPlatform_Code_code_begin )
             {
@@ -244,176 +410,19 @@ namespace ss
 				error.set(errorText);
                 return;
             }
-
-            // Process message
             
-            switch (  message->code()  )
+            if( !message )
+                LM_X(1, ("Internal error"));
+
+            if( processProcessPlatformMessage(message) )
             {
-                case ss::network::MessageProcessPlatform_Code_code_operation:
-                {
-                    
-                    
-                    int operation  = message->operation();
-                    
-                    LM_T( LmtIsolated , ("Isolated process %s: Message to run operation  %d ",getStatus().c_str() , operation ));
-                    
-                    runCode( operation );
-                    
-                    // Eval if the process has been canceled by ProcessManager, if so, it shoudl return assap
-                    if( isProcessItemCanceled() )
-                    {
-                        error.set( "ProcessItem canceled" );
-                        
-                        // Send an kill message and finish
-                        ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
-                        response->set_code( ss::network::MessagePlatformProcess_Code_code_kill );
-                        au::writeGPB(pipeFdPair2[1], response);
-                        delete response;
-                        return;
-                    }
-                    
-                    // Send the continue
-                    ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
-                    response->set_code( ss::network::MessagePlatformProcess_Code_code_ok );
-                    au::writeGPB(pipeFdPair2[1], response);
-                    delete response;
-                    
-                }
-                    break;
-                
-                case ss::network::MessageProcessPlatform_Code_code_trace:
-                {
-                    
-                    /**
-                     Send the trace to all delilahs
-                     */
-                    
-
-                    Packet * p = new Packet( Message::Trace );
-                    p->message->mutable_trace()->CopyFrom( message->trace() );
-                    engine::Engine::add( new engine::Notification( notification_samson_worker_send_trace , p ) );
-                    //LM_M(("Notifying a trace to the engine"));
-                    
-                    // Old trace system, tracing here... to be removed
-                    /*
-                    if (lmOk(message->trace().type(), message->trace().tlev() ) == LmsOk)
-                    {
-                        std::string _text = message->trace().text();
-                        std::string file = message->trace().file();
-                        std::string fname = message->trace().fname();
-                        std::string stre = message->trace().stre();
-
-                        LM_T( LmtIsolated , ("Isolated process %s: Message with trace %s ",getStatus().c_str() , _text.c_str() ));
-                        
-                        lmOut(
-                                (char*)_text.c_str(),   
-                                (char) message->trace().type() , 
-                                file.c_str(), 
-                                message->trace().lineno() , 
-                                fname.c_str(), 
-                                message->trace().tlev() , 
-                                stre.c_str() 
-                              );
-                    }
-                    */
-                    
-                    
-                    
-                    // Eval if the process has been canceled by ProcessManager, if so, it shoudl return assap
-                    if( isProcessItemCanceled() )
-                    {
-                        error.set( "ProcessItem canceled" );
-                        
-                        // Send an kill message and finish
-                        ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
-                        response->set_code( ss::network::MessagePlatformProcess_Code_code_kill );
-                        au::writeGPB(pipeFdPair2[1], response);
-                        delete response;
-                        return;
-                    }
-                    
-                    // Send the continue
-                    ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
-                    response->set_code( ss::network::MessagePlatformProcess_Code_code_ok );
-                    au::writeGPB(pipeFdPair2[1], response);
-                    delete response;
-                    
-                }
-                    break;
-                    
-                case ss::network::MessageProcessPlatform_Code_code_progress:
-                {
-                    LM_T( LmtIsolated , ("Isolated process %s: Message reporting progress %f ",getStatus().c_str() , message->progress() ));
-
-                    // set the progress
-                    progress = message->progress();
-                    
-                    // Eval if the process has been canceled by ProcessManager, if so, it shoudl return assap
-                    if( isProcessItemCanceled() )
-                    {
-                        error.set( "ProcessItem canceled" );
-                        
-                        // Send an kill message and finish
-                        ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
-                        response->set_code( ss::network::MessagePlatformProcess_Code_code_kill );
-                        au::writeGPB(pipeFdPair2[1], response);
-                        delete response;
-                        return;
-                    }
-                    
-                    // Send the continue
-                    ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
-                    response->set_code( ss::network::MessagePlatformProcess_Code_code_ok );
-                    au::writeGPB(pipeFdPair2[1], response);
-                    delete response;                    
-                }
-                    break;
-                    
-                    
-                case ss::network::MessageProcessPlatform_Code_code_user_error:
-                {
-                    LM_T( LmtIsolated , ("Isolated process %s: Message reporting user error  ",getStatus().c_str() ));
-                    
-                    // Set the error
-                    if( message->has_error() )
-                        error.set( message->error() );
-                    else
-                        error.set( "Undefied user-defined error" );
-                    
-                    // Send an ok back, and return
-                    ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
-                    response->set_code( ss::network::MessagePlatformProcess_Code_code_ok );
-                    au::writeGPB(pipeFdPair2[1], response);
-                    delete response;
-                    
-                    return;
-                    
-                }
-                    break;
-                    
-                case ss::network::MessageProcessPlatform_Code_code_begin:
-                {
-                    LM_W(("Received another code begin in an Isolated process"));
-                    return;
-                }
-                    break;
-                    
-                case ss::network::MessageProcessPlatform_Code_code_end:
-                {
-                    LM_T( LmtIsolated , ("Isolated process %s: Message reporting finish process  ",getStatus().c_str() ));
-
-                    // Send an ok back, and return
-                    
-                    ss::network::MessagePlatformProcess * response = new ss::network::MessagePlatformProcess();
-                    response->set_code( ss::network::MessagePlatformProcess_Code_code_ok );
-                    au::writeGPB(pipeFdPair2[1], response);
-                    delete response;
-                    
-                    return;
-                    
-                }
-                    break;
+                delete message;
+                return;
             }
+            
+            // Just remove the message and come back to receive a new message from the background process
+            delete message;
+            
         }
 
     }

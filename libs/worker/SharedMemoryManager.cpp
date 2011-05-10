@@ -220,7 +220,7 @@ namespace engine
 	{
         
 		// Create a new shared memory area
-		SharedMemoryItem* _info = new SharedMemoryItem(i);
+		SharedMemoryItem* _info = new SharedMemoryItem( i );
 		_info->shmid = shm_ids[i];
         
 		// Attach to local-space memory
@@ -228,7 +228,7 @@ namespace engine
 		if( _info->data == (char*)-1 )
 		{
 			perror("shmat: shmat failed"); 
-			LM_X(1, ("Error with shared memory while attaching to local memory (shared memory id %d )\n",i));
+			LM_X(1, ("Error with shared memory while attaching to local memory ( shared memory id %d )\n",i));
 		}
 		
 		_info->size = shared_memory_size_per_buffer;

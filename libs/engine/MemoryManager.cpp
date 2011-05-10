@@ -26,7 +26,17 @@ namespace engine
     MemoryManager* memoryManager = NULL;
     
     
-    void destroy_memory_manager()
+    
+    void MemoryManager::init( size_t _memory )
+    {
+        if ( memoryManager )
+            LM_X(1, ("Please, init Memory manager only once"));
+        
+        memoryManager =  new MemoryManager( _memory );
+                
+    }
+
+    void MemoryManager::destroy( )
     {
         LM_M(("MemoryManager terminating"));
         
@@ -37,17 +47,6 @@ namespace engine
         }
     }
     
-    void MemoryManager::init( size_t _memory )
-    {
-        if ( memoryManager )
-            LM_X(1, ("Please, init Memory manager only once"));
-        
-        memoryManager =  new MemoryManager( _memory );
-        
-        //atexit( destroy_memory_manager );
-        
-    }
-
     MemoryManager* MemoryManager::shared()
     {
         if (!memoryManager )

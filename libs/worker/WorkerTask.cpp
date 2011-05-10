@@ -499,6 +499,7 @@ namespace ss
             addProcessItem(tmp);
         }
         
+        // Not remove, since they have been transfered to DataBufferProcessItem
 		queueBufferVectors.clear();
 	}	
 	

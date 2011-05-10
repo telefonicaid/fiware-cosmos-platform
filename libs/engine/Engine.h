@@ -6,9 +6,9 @@
 #include <pthread.h>
 #include <list>
 #include <string>
-#include <iostream>                 // std::cout
-#include <set>                      // std::set
-#include "au/list.h"                // au::list
+#include <iostream>                         // std::cout
+#include <set>                              // std::set
+#include "au/list.h"                        // au::list
 #include "au/Cronometer.h"                  // au::Cronometer
 #include "engine/EngineNotification.h"      // engine::EngineNotification
 
@@ -64,6 +64,8 @@ namespace engine
 		 Singleton management
 		 */
 		static void init();
+		static void quit();
+		static void destroy();
 
 		/*
 		 Main run methonds

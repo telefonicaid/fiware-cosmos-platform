@@ -13,6 +13,8 @@ namespace engine
         std::string fileName;   // Filename
         FILE *file;             // File pointer to access this file
         
+        size_t offset;          // Offset positiong while reading the file
+        
     public:
         
         ReadFile( std::string _fileName );

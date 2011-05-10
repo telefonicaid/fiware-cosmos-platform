@@ -34,6 +34,9 @@ namespace engine
     
     void DiskManager::init( int _num_disk_operations )
     {
+        // Now it is only possible to run with 1
+        _num_disk_operations = 1;
+        
         if( diskManager )
             LM_X(1,("Please, init diskManager only once"));
         

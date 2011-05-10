@@ -9,33 +9,27 @@ namespace engine {
     {
         fileName = _fileName;
         file = fopen( fileName.c_str() , "r" );
+        offset = 0;
     }
     
-    int ReadFile::seek( size_t offset )
+    int ReadFile::seek( size_t _offset )
     {
         if( !file )
             return 1;
-        
-        // Get the current offset
-        off_t current_offset = ftell( file );
-        if( current_offset == -1 )
-        {
-            LM_W(("ftell failed for file %s" , fileName.c_str() ));
-            fclose( file );
-            file = NULL;
-            
-            return 2;
-        }
 
-        // get a warning to be aware of this seeks if it is too large
-        if( abs( (size_t)current_offset - offset ) > 100000  ) 
-            LM_W(("Seeking file %s from %lu to %lu" , fileName.c_str() , current_offset , offset));
-           
+        if ( offset == _offset )
+            return 0;   // Correct... just do not move
+
+        // Get a warning to be aware of this seeks if it is too large
+        if( llabs( _offset - offset ) > 100000  ) 
+            LM_W(("Seeking file %s from %lu to %lu" , fileName.c_str() , offset , _offset));
+        
+        // Set the current offset
+        offset = _offset;
         
         if( fseek(file, offset, SEEK_SET) != 0 )
         {
-            fclose( file );
-            file = NULL;
+            close();
             return 3;
         }
         
@@ -50,7 +44,10 @@ namespace engine {
             return 0;
         
         if ( fread( read_buffer, size, 1, file ) == 1 )
+        {
+            offset += size; // Move the offser according to the read bytes
             return 0;
+        }
         else 
             return 1;   // Error at reading
         
@@ -67,6 +64,7 @@ namespace engine {
         {
             fclose( file );
             file = NULL;
+            offset = 0;
         }
     }
     

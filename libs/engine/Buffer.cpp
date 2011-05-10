@@ -24,7 +24,14 @@ namespace engine {
 		_name = name;
 		
 		if( max_size > 0)
+		{
 			_data = (char *) malloc(max_size);
+			if( !_data )
+			{
+			   fprintf(stderr,"Error allocating memory for %lu bytes", max_size);
+			   exit(1);
+			}
+		}
 		else
 			_data = NULL;
 		

@@ -511,6 +511,9 @@ namespace ss
 		// Compute the required size for this operation
 		fileSize = au::Format::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );	
 		
+        info.append( fileSize , 1 );    // Accumulated total input data
+        
+        
 		description = "Parser"; // Parser
 	}
 	

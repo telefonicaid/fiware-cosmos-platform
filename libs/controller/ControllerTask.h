@@ -53,9 +53,9 @@ namespace ss {
 
         
         // Information about progress
-        KVInfo total_info;                  // Total amount of information to be processed
-        KVInfo running_info;                // Total amount that started to run at some point ( accumulated )
-        KVInfo processed_info;              // Total amount that has been processed
+        FullKVInfo total_info;                  // Total amount of information to be processed
+        FullKVInfo running_info;                // Total amount that started to run at some point ( accumulated )
+        FullKVInfo processed_info;              // Total amount that has been processed
         
 	public:
 		

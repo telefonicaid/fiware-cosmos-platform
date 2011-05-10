@@ -32,4 +32,11 @@ namespace ss {
         to->set_kvs(from->kvs);
         to->set_size(from->size);
     }
+    
+    void copy( FullKVInfo * from , network::KVInfo* to)
+    {
+        to->set_kvs(from->kvs);
+        to->set_size(from->size);
+    }
+    
 }

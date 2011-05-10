@@ -39,7 +39,7 @@ namespace ss {
             for ( size_t i = 0 ; i < info->input_queues.size() ; i++)
             {
                 network::FullQueue * q = info->input_queues[i]; 
-                total_info.append( q->queue().info().size() , q->queue().info().kvs() );
+                total_info.append( (size_t)q->queue().info().size() , (size_t)q->queue().info().kvs() );
             }
         }
 		
@@ -56,10 +56,10 @@ namespace ss {
         // Update the internal status of this task
         
         if( confirmationMessage->has_progressprocessed() )
-            processed_info.append( confirmationMessage->progressprocessed().size() , confirmationMessage->progressprocessed().kvs() );
+            processed_info.append( (size_t)confirmationMessage->progressprocessed().size() , (size_t)confirmationMessage->progressprocessed().kvs() );
         
         if( confirmationMessage->has_progressrunning() )
-            running_info.append( confirmationMessage->progressrunning().size() , confirmationMessage->progressrunning().kvs() );
+            running_info.append( (size_t)confirmationMessage->progressrunning().size() , (size_t)confirmationMessage->progressrunning().kvs() );
         
         // Internal check for integrity
         if( state == running )

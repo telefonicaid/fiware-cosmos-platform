@@ -170,7 +170,7 @@ namespace engine {
 	
 	void Buffer::setSize( size_t size )
 	{
-		if (( size >= 0) && (size <= _max_size))
+		if ( size <= _max_size )
 			_size = size;
 	}
 	

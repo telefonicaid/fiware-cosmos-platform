@@ -68,7 +68,10 @@ namespace au
         nb = read( fd , data , header.size );
         
         if( nb != header.size )
+        {
+            free( data );
             return 5;
+        }
         
         *t = new T();
         bool parse = (*t)->ParseFromArray( data , header.size );

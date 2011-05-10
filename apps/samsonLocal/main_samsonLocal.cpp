@@ -120,7 +120,7 @@ int main(int argC, const char *argV[])
     
 	ss::ModulesManager::init();		// Init the modules manager
 
-	engine::SharedMemoryManager::init( ss::SamsonSetup::shared()->num_processes * 2 , ss::SamsonSetup::shared()->shared_memory_size_per_buffer );
+	engine::SharedMemoryManager::init( ss::SamsonSetup::shared()->num_processes , ss::SamsonSetup::shared()->shared_memory_size_per_buffer );
 	engine::DiskManager::init( 1 );
 	engine::ProcessManager::init( ss::SamsonSetup::shared()->num_processes );
 	engine::MemoryManager::init(  ss::SamsonSetup::shared()->memory );    

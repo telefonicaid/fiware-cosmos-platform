@@ -199,8 +199,7 @@ namespace ss {
         else
             workerTaskItem->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER );
 		
-        if( item )
-            delete item;
+		// Note: It is not necessary to delete item since it has been done inside "freeSharedMemory"
         
 		// Clear the buffer
 		*size = 0;

@@ -53,10 +53,10 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 if (CMAKE_BUILD_TYPE STREQUAL RELEASE)
 
 if (APPLE)
-#   include(${PROJECT_SOURCE_DIR}/CPackConfigBUNDLE.cmake)
-   include(${PROJECT_SOURCE_DIR}/CPackConfigTGZ.cmake)
+#   include(${PROJECT_SOURCE_DIR}/packaging/CPackConfigBUNDLE.cmake)
+   include(${PROJECT_SOURCE_DIR}/packaging/CPackConfigTGZ.cmake)
 else (APPLE)
-   include(${PROJECT_SOURCE_DIR}/CPackConfigRPM.cmake)
+   include(${PROJECT_SOURCE_DIR}/packaging/CPackConfigRPM.cmake)
 endif (APPLE)
 
 include(CPack)

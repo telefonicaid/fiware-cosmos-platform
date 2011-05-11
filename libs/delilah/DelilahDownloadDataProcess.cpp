@@ -101,6 +101,12 @@ namespace ss {
 
 			status = downloading_files_from_workers;
 			
+            if( num_files_to_download == 0)
+            {
+                // no file, go to the next step
+                status = waiting_file_downloads_confirmations;
+            }
+            
 			// Request for all the files
             size_t offset = 0;
             

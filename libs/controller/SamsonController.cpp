@@ -254,6 +254,7 @@ namespace ss {
 					Packet *p = new Packet(Message::UploadDataInitResponse);
 					network::UploadDataInitResponse * upload_data_init_response = p->message->mutable_upload_data_init_response();
 					upload_data_init_response->mutable_query()->CopyFrom( packet->message->upload_data_init() );
+					upload_data_init_response->set_load_id( task_id );
 
 					// Set the error
 					upload_data_init_response->mutable_error()->set_message("Queue does not exist");

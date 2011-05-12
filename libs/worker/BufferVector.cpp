@@ -1,9 +1,10 @@
 
 #include "engine/Buffer.h"					// ss::Buffer
 #include "engine/MemoryManager.h"			// ss::MemoryManager
-#include "BufferVector.h"			// Own interface
-#include "engine/Engine.h"			 // ss::Engine
-#include "SamsonSetup.h"    // ss::SamsonSetup
+#include "BufferVector.h"                   // Own interface
+#include "engine/Engine.h"                  // ss::Engine
+#include "SamsonSetup.h"                    // ss::SamsonSetup
+#include "MemoryTags.h"                     // MemoryOutputDisk
 
 namespace ss {
 
@@ -129,7 +130,7 @@ namespace ss {
 			file_size += (*iter)->getSize();
         
         // Crearte the buffer
-        engine::Buffer *b = engine::MemoryManager::shared()->newBuffer( "Creating txt file from buffers" , file_size , engine::Buffer::output );
+        engine::Buffer *b = engine::MemoryManager::shared()->newBuffer( "Creating txt file from buffers" , file_size , MemoryOutputDisk );
         
         for (  au::list<engine::Buffer>::iterator iter = buffers.begin() ; iter != buffers.end() ; iter++)
             b->write( (*iter)->getData(), (*iter)->getSize() );
@@ -181,7 +182,7 @@ namespace ss {
         size_t file_size = KVFILE_TOTAL_HEADER_SIZE + global_size;	
         
         // Crearte the buffer
-        engine::Buffer *b = engine::MemoryManager::shared()->newBuffer( "Creating file from network buffers" , file_size , engine::Buffer::output );
+        engine::Buffer *b = engine::MemoryManager::shared()->newBuffer( "Creating file from network buffers" , file_size , MemoryOutputDisk );
         
         // Global header of the file with magic number and format
         KVHeader fileHeader;

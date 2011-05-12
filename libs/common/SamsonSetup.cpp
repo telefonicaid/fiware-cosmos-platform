@@ -31,8 +31,8 @@
 
 #define SETUP_DEFAULT_load_buffer_size							67108864	// 64 Mb
 
-#define SETUP_num_paralell_outputs						"num_paralell_outputs"
-#define SETUP_DEFAULT_num_paralell_outputs				2
+#define SETUP_num_paralell_outputs                              "num_paralell_outputs"
+#define SETUP_DEFAULT_num_paralell_outputs                      2
 
 #define SETUP_timeout_secs_isolatedProcess						"timeout_secs_isolatedProcess"
 #define SETUP_DEFAULT_timeout_secs_isolatedProcess				300
@@ -181,8 +181,6 @@ namespace ss
 		// Default value for other fields
 		load_buffer_size = SETUP_DEFAULT_load_buffer_size;
 		
-		
-		
 		// Derived parameters
 		num_paralell_outputs = getInt( items, SETUP_num_paralell_outputs , SETUP_DEFAULT_num_paralell_outputs );
 		
@@ -219,7 +217,7 @@ namespace ss
 		int max_num_paralell_outputs =  ( memory - num_processes*shared_memory_size_per_buffer ) / (2*max_file_size);
 		if( num_paralell_outputs > max_num_paralell_outputs )
 		{
-			LM_X(1,("Num of maximum paralell outputs is too high to the memory setup. Review num_paralell_outputs in setup.txt file. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (2*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size ));
+			LM_X(1,("Num of maximum paralell outputs is too high to the current memory setup. Review num_paralell_outputs in setup.txt file. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (2*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size ));
 			return false;
 		}
 

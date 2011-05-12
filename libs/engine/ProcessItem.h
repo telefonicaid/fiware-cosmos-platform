@@ -8,6 +8,8 @@
 #include "au/Stopper.h"                // au::Stopper
 #include "au/Environment.h"            // au::Environment
 
+#include "au/Token.h"                  // au::Token
+
 #include "engine/EngineNotification.h"  // engine::EngineNotification
 
 
@@ -50,6 +52,7 @@ namespace engine {
         // Internal state of the process
 		ProcessItemStatus  state;
 		
+        
         // Pointer to the process manager to notify 'halt' 'finish' and so...
         ProcessManager* processManager;
 

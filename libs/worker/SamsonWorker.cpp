@@ -24,6 +24,7 @@
 #include "engine/ProcessManager.h"             // engine::ProcessManager
 #include "SharedMemoryManager.h"        // engine::SharedMemoryManager
 
+#include "MemoryTags.h"                 // MemoryInput , MemoryOutputNetwork ,...
 
 #define notification_worker_update_files    "notification_worker_update_files"
 
@@ -108,7 +109,36 @@ namespace ss {
         ws->set_engine_status( engine::Engine::str() );
 
         // Memory manager
-        ws->set_memory_status( engine::MemoryManager::str() );
+        std::ostringstream memory_status;
+
+        memory_status << "\n";
+        engine::MemoryManager *mm = engine::MemoryManager::shared();
+        
+            size_t memory = mm->getMemory();
+            memory_status << "\t Total memory: " << au::Format::string( memory ) << "\n";
+
+        {
+            size_t size = mm->getUsedMemoryByTag( MemoryInput );
+            memory_status << "\t\t Input memory    " << au::Format::string( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
+        }
+
+        {
+            size_t size = mm->getUsedMemoryByTag( MemoryOutputDisk );
+            memory_status << "\t\t Output disk     " << au::Format::string( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
+        }
+
+        {
+            size_t size = mm->getUsedMemoryByTag( MemoryOutputNetwork );
+            memory_status << "\t\t Output network  " << au::Format::string( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
+        }
+
+        {
+            size_t size = mm->getUsedMemoryByTag( MemoryAccumulated );
+            memory_status << "\t\t Accumulated     " << au::Format::string( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
+        }
+        
+        
+        ws->set_memory_status( memory_status.str() );
 
         // Process manager
         ws->set_process_manager_status( engine::ProcessManager::str() );
@@ -130,8 +160,8 @@ namespace ss {
         
         // Numerical information for better presentation
         
-        ws->set_total_memory( engine::MemoryManager::getMemory());
-        ws->set_used_memory( engine::MemoryManager::getUsedMemory());
+        ws->set_total_memory( engine::MemoryManager::shared()->getMemory() );
+        ws->set_used_memory( engine::MemoryManager::shared()->getUsedMemory());
         
         ws->set_total_cores(engine::ProcessManager::getNumCores());
         ws->set_used_cores(engine::ProcessManager::getNumUsedCores());

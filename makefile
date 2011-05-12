@@ -100,3 +100,18 @@ coverage: debug
 
 cm:
 	echo $(for i in `ipcs -m | grep $USER | awk '{print $2}'`; do ipcrm -m $i; done)
+
+
+s: sync_ss9
+
+sync_ss9:
+	rsync -r libs              samson@samson09:/home/samson/samson_sync
+	rsync -r apps              samson@samson09:/home/samson/samson_sync
+	rsync -r scripts           samson@samson09:/home/samson/samson_sync
+	rsync -r packaging 	   samson@samson09:/home/samson/samson_sync
+	rsync makefile             samson@samson09:/home/samson/samson_sync
+	rsync CMakeLists.txt       samson@samson09:/home/samson/samson_sync
+
+rsl: sync_ss9
+	ssh samson@samson09 make release -C /home/samson/samson_sync
+	ssh samson@samson09 /home/samson/samson_sync/BUILD_RELEASE/apps/samsonLocal

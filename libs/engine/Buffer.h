@@ -28,13 +28,8 @@ namespace engine {
 
 	public:
 		
-		typedef enum
-		{
-			input,
-			output
-		} BufferType;
-
-        int tag;
+        // Tag identifying the type of buffer ( for better control )
+        int tag;        
         
 	private:
 		
@@ -55,18 +50,12 @@ namespace engine {
 		 */
 		
 		size_t _offset;
-		
-		/**
-		 Type of buffer. Used in the memory manager to monitori how much memory is used for input and for output
-		 */
-		
-		BufferType _type;
-		
+				
 	private:
 		
 		// Private constructor/destructors since it can be only access by MemoryManager
 		
-		Buffer( std::string name ,   size_t max_size, BufferType type );
+		Buffer( std::string name ,   size_t max_size, int _tag );
 		~Buffer();
 		
 		void free();
@@ -141,10 +130,10 @@ namespace engine {
 		size_t removeLastUnfinishedLine( char * buffer );
 
 		
-		// Get the type to be used in the MemoryManager
-		BufferType getType();
-
     public:
+        
+        
+        // Public identifiers to be removed
         
         int worker;     // Identifier of the worker
         int hg_set;     // Identifier of ther hash_group-set

@@ -9,6 +9,7 @@
 #include "samson.pb.h"						// network::...
 #include "DelilahClient.h"					// ss::DelilahClient
 #include "SamsonSetup.h"					// ss::SamsonSetup
+#include "MemoryTags.h"                     // ss::MemoryInput , ss::MemoryOutput...
 
 namespace ss
 {
@@ -128,14 +129,14 @@ namespace ss
 				return;
 			
 			// Wait if memory is not released
-			while( ( engine::MemoryManager::shared()->getMemoryUsageOutput() > 1.0 ) || ( num_threads >= max_num_threads ) )
+			while( ( engine::MemoryManager::shared()->getMemoryUsageByTag( MemoryOutputNetwork ) > 1.0 ) || ( num_threads >= max_num_threads ) )
             {
                 // Bloques for memory of thread puposes
 				sleep(1);
             }
 			
 			// Create a buffer
-            engine::Buffer *b = engine::MemoryManager::shared()->newBuffer( "Loading buffer" , ss::SamsonSetup::shared()->load_buffer_size , engine::Buffer::output );
+            engine::Buffer *b = engine::MemoryManager::shared()->newBuffer( "Loading buffer" , ss::SamsonSetup::shared()->load_buffer_size , MemoryOutputNetwork );
 			
 			// Fill the buffer with the contents from the file
 			fileSet.fill( b );
@@ -463,7 +464,7 @@ namespace ss
         
         // Memory and process
         output << "\n\tParalel processes: " << num_threads << " / " << max_num_threads;
-        output << "\n\tOutput memory usage " << au::Format::percentage_string( engine::MemoryManager::shared()->getMemoryUsageOutput() );
+        output << "\n\tOutput memory usage " << au::Format::percentage_string( engine::MemoryManager::shared()->getMemoryUsageByTag( MemoryOutputNetwork  ) );
         output << " of " << au::Format::string( engine::MemoryManager::shared()->getMemory() , "B" );
         
         // Status of the file source

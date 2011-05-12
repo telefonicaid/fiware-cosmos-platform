@@ -12,6 +12,7 @@ SET (HEADERS
 	Process.h
 	samsonConfig.h
 	coding.h
+	MemoryTags.h
 )
 
 SET (SOURCES

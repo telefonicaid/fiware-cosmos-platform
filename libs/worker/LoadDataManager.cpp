@@ -9,6 +9,8 @@
 #include "engine/Engine.h"                 // ss::Engine
 #include "engine/DiskManager.h"            // Notifications
 
+#include "MemoryTags.h"                 // MemoryOuputNetwork
+
 namespace ss
 {
 #pragma mark DataManagerItem
@@ -127,7 +129,7 @@ namespace ss
 		std::string fileName = download_data_file->file().name();
 		size_t size = au::Format::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );
 
-		buffer = engine::MemoryManager::shared()->newBuffer( "Buffer for downloading data" , size , engine::Buffer::output );
+		buffer = engine::MemoryManager::shared()->newBuffer( "Buffer for downloading data" , size , MemoryOutputNetwork );
 		buffer->setSize( size );
 
         engine::DiskOperation *operation = engine::DiskOperation::newReadOperation( buffer->getData() ,  SamsonSetup::dataFile(fileName) , 0 , size );

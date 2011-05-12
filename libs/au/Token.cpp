@@ -4,6 +4,7 @@
 #include "LockDebugger.h"		// LockDebugger
 #include "logMsg.h"					 // LM_M()
 
+#define DEBUG_AU_TOKEN
 
 namespace au
 {

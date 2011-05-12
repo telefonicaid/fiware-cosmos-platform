@@ -17,6 +17,8 @@
 #include "LockDebugger.h"        /* Own interface                            */
 
 #include "logMsg.h"					 // LM_M()
+#include <assert.h>
+
 
 /* ****************************************************************************
 *
@@ -73,12 +75,15 @@ namespace au {
 		// We do not autoblock
 		if (locksVector->find( new_lock ) !=  locksVector->end() )
 		{
+            assert( false );
 			LM_X(1,("Autolock detected"));
+            
 		}
 
 		// We are not blocked
 		if ( _cross_blocking(new_lock) )
 		{
+            assert( false );
 			LM_X(1,("Cross lock detected"));
 		}
 		

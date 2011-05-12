@@ -1,13 +1,15 @@
 
 
-#include "ProcessCompact.h"// Own interface
-#include "ModulesManager.h"// ss::ModulesManager
-#include "WorkerTask.h"// ss::WorkerTask
-#include "WorkerSubTask.h"// ss::OrganizerSubTask
-#include "Packet.h"// ss::Packet
-#include <algorithm>// std::sort
-#include "WorkerTaskManager.h"// ss::TaskManager
-#include "SamsonWorker.h"// ss::SamsonWorker
+#include "ProcessCompact.h"     // Own interface
+#include "ModulesManager.h"     // ss::ModulesManager
+#include "WorkerTask.h"         // ss::WorkerTask
+#include "WorkerSubTask.h"      // ss::OrganizerSubTask
+#include "Packet.h"             // ss::Packet
+#include <algorithm>            // std::sort
+#include "WorkerTaskManager.h"  // ss::TaskManager
+#include "SamsonWorker.h"       // ss::SamsonWorker
+
+#include "MemoryTags.h"         // MemoryOutputDisk
 
 namespace ss
 {
@@ -76,7 +78,7 @@ namespace ss
       }
 	  
 	  // create the output buffer with the rigth size
-	  engine::Buffer *outputBuffer = engine::MemoryManager::shared()->newBuffer( "Compact output buffer", outputBufferSize , engine::Buffer::output );
+	  engine::Buffer *outputBuffer = engine::MemoryManager::shared()->newBuffer( "Compact output buffer", outputBufferSize , MemoryOutputDisk );
 	  
 	  // Output header and KVInfo vector
 	  KVHeader *outputHeader = (KVHeader*) outputBuffer->getData();

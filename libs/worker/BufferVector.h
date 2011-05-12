@@ -27,6 +27,7 @@
 #include "engine/Buffer.h"					// ss::Buffer
 #include "engine/MemoryManager.h"			// ss::MemoryManager
 #include <set>						// std::set
+#include "MemoryTags.h"     // MemoryAccumulated
 
 namespace ss {
     
@@ -104,6 +105,8 @@ namespace ss {
         // Function to add a particular buffer to the queue
         void addBuffer( network::WorkerDataExchange& workerDataExchange, engine::Buffer *b )
         {
+            // Change the tag of the buffer
+            b->tag = MemoryAccumulated;
             
             if ( !txt )
             {

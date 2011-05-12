@@ -19,12 +19,19 @@ namespace au
 		Stopper();
 		~Stopper();
 		
-		void stop();
+        
+        // One step stop operation
 		void stop( int max_seconds );
+
+        // Two steps stop to protect operation before stop
+        void stop_begin();
+        void stop_finish( int max_seconds );    // Time in seconds
 		
+        // Wake up operations
 		void wakeUpAll();
 		void wakeUp();
 		
+        
 	};
 	
 }

@@ -15,8 +15,6 @@
 
 #include "au/StopLock.h"            /* StopLock                                 */
 
-//#define DEBUG_SS_THREADS
-
 namespace au {
 
 class Lock 

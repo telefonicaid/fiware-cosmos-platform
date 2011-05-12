@@ -51,7 +51,7 @@ namespace ss {
             // Copy the buffer ( if any )
             if( p->buffer )
             {
-                buffer = engine::MemoryManager::shared()->newBuffer("", p->buffer->getSize(), p->buffer->getType() );
+                buffer = engine::MemoryManager::shared()->newBuffer("", p->buffer->getSize(), p->buffer->tag );
                 memcpy(buffer->getData(), p->buffer->getData(), p->buffer->getSize() );
                 buffer->setSize( p->buffer->getSize() );
             }

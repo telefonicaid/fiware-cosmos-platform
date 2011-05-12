@@ -115,16 +115,22 @@ namespace engine
     void ProcessManager::finishProcessItem( ProcessItem *item )
     {
         pthread_mutex_lock(&mutex);
-        
         running_items.erase(item);
-        _checkBackgroundProcesses();
-        
         pthread_mutex_unlock(&mutex);
+
+        // Send to me a notification to review background processes
+        {
+        Notification * notification = new Notification( notification_process_manager_check_background_process );
+        Engine::add( notification );
+        }
+        
         
         // Notify this using the notification
+        {
         Notification * notification = new Notification( notification_process_request_response , item );
         notification->environment.copyFrom( &item->environment );
         Engine::add( notification );
+        }
         
     }
     
@@ -135,9 +141,13 @@ namespace engine
         running_items.erase(item);
         halted_items.insert(item);
         
-        _checkBackgroundProcesses();
-        
         pthread_mutex_unlock(&mutex);
+
+        {
+            Notification * notification = new Notification( notification_process_manager_check_background_process );
+            Engine::add( notification );
+        }
+        
         
         
     }   

@@ -83,14 +83,15 @@ namespace engine
 	
 	void ProcessItem::halt()
 	{
+		stopper.stop_begin();
+        
 		state = halted;
-		
+        
 		// Notify the ProcessManager about this
-		
 		processManager->haltProcessItem(this);
 		
 		// Stop this thread in the stopper loop
-		stopper.stop();
+		stopper.stop_finish( 0 );
 		
 		state = running;
 	}

@@ -36,6 +36,7 @@
 #include "EndpointManager.h"    // EndpointManager
 #include "Endpoint2.h"          // Own interface
 
+#include "MemoryTags.h"         // MemoryOutputDisk
 
 namespace ss
 {
@@ -632,7 +633,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 		sprintf(kvName, "%s:%d", name, bIx);
 		++bIx;
 
-		packetP->buffer = engine::MemoryManager::shared()->newBuffer(kvName, headerP->kvDataLen, engine::Buffer::output);
+		packetP->buffer = engine::MemoryManager::shared()->newBuffer(kvName, headerP->kvDataLen, ss::MemoryOutputDisk  );
 
 		char*  kvBuf  = packetP->buffer->getData();
 		long   nb     = 0;

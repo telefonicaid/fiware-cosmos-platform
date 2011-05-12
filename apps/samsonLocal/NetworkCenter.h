@@ -152,7 +152,7 @@ namespace ss {
 					}
 				}
 				else
-					stopper.stop();
+					stopper.stop(0);
 			}
 		}
 		

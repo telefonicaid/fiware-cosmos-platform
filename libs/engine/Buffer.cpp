@@ -14,12 +14,12 @@
 
 namespace engine {
 
-	Buffer::Buffer( std::string name ,   size_t max_size ,BufferType type )
+	Buffer::Buffer( std::string name ,   size_t max_size , int _tag )
 	{
 		_max_size = max_size;
 		_offset = 0;
 		
-		_type = type;
+		tag = _tag;
 		
 		_name = name;
 		
@@ -192,10 +192,6 @@ namespace engine {
 		return SimpleBuffer( _data + offset , _max_size - offset );
 	}
 	
-	Buffer::BufferType Buffer::getType()
-	{
-		return _type;
-	}
 
 	
 }

@@ -15,7 +15,7 @@
 #include "au/gpb.h"                     // au::readGPB & au::writeGPB
 #include "Packet.h"                     // ss::Packet
 #include "SamsonWorker.h"               // notification_samson_worker_send_trace
-
+#include "MemoryTags.h"                 // MemoryInput , MemoryOutputNetwork, ...
 
 namespace ss
 {
@@ -620,8 +620,15 @@ namespace ss
             if( shm_id != -1 )
                 item = engine::SharedMemoryManager::shared()->getSharedMemory( shm_id );
         }
+
+		bool available_memory = true;
         
-		bool available_memory = engine::MemoryManager::shared()->availableMemoryOutput();
+        engine::MemoryManager *mm = engine::MemoryManager::shared();
+        double memory_output_network    = mm->getMemoryUsageByTag( MemoryOutputNetwork );
+        double memory_output_disk       = mm->getMemoryUsageByTag( MemoryOutputDisk );
+       
+        if( (memory_output_network + memory_output_disk ) > 0.5 )
+            available_memory = false;
         
         // Return true only if output memory is available and there is a shared memory buffer for me
         return  ( available_memory && item );

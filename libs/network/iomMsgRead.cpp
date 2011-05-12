@@ -20,9 +20,9 @@
 #include "Packet.h"             // Packet
 #include "engine/Buffer.h"             // Buffer
 #include "engine/MemoryManager.h"      // MemoryManager
-#include "iomMsgRead.h"         // Own interface
-#include "logMsg.h" // Logs
-
+#include "iomMsgRead.h"                 // Own interface
+#include "logMsg.h"                     // Logs
+#include "MemoryTags.h"                 // MemoryOutputDisk
 
 
 /* ****************************************************************************
@@ -217,7 +217,7 @@ int iomMsgRead
 
 		// By default all the input packets are for writing locally, so they are unknown.
 		// Note that at the "receive" function, they can be switched to input
-		packetP->buffer = engine::MemoryManager::shared()->newBuffer(name, headerP->kvDataLen, engine::Buffer::output );
+		packetP->buffer = engine::MemoryManager::shared()->newBuffer(name, headerP->kvDataLen, ss::MemoryOutputDisk );
 
 		int    size   = headerP->kvDataLen;
 		char*  kvBuf  = packetP->buffer->getData();

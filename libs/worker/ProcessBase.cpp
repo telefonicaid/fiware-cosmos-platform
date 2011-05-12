@@ -10,8 +10,10 @@
 #include "SamsonWorker.h"			// ss::SamsonWorker
 #include "SharedMemoryItem.h"       // ss::SharedMemoryItem
 #include "logMsg.h"                 // LM_X
+#include "MemoryTags.h"             // MemoryOutputNetwork
 
 namespace ss {
+    
 	
 #pragma mark ProcessItemKVGenerator
 	
@@ -109,7 +111,7 @@ namespace ss {
 		 Otherwise we halt notifying this to the ProcessManager
 		 */
 		
-		if( engine::MemoryManager::shared()->getMemoryUsageOutput() >= 1.0)
+        while( !isReady() )
 			halt();
 		
 #pragma mark ---		
@@ -150,7 +152,7 @@ namespace ss {
 				
 				if( _channel->info.size > 0)
 				{
-                    engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "ProcessWriter", KVFILE_TOTAL_HEADER_SIZE + _channel->info.size , engine::Buffer::output );
+                    engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "ProcessWriter", KVFILE_TOTAL_HEADER_SIZE + _channel->info.size , MemoryOutputNetwork );
 					if( !buffer )
 						LM_X(1,("Internal error: Missing buffer in ProcessBase"));
 					
@@ -222,7 +224,7 @@ namespace ss {
 		 Otherwise we halt notifying this to the ProcessManager
 		 */
 		
-		if( engine::MemoryManager::shared()->getMemoryUsageOutput() >= 1.0)
+        while( !isReady() )
 			halt();
 		
 #pragma mark ---		
@@ -241,7 +243,7 @@ namespace ss {
 			
 			//size_t task_id = task->workerTask.task_id();
 			
-			engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "ProcessTXTWriter", *size , engine::Buffer::output );
+			engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "ProcessTXTWriter", *size , MemoryOutputNetwork );
 			if( !buffer )
 				LM_X(1,("Internal error"));
 

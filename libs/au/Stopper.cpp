@@ -18,24 +18,47 @@ namespace au
 		pthread_cond_destroy(&_condition);
 	}
 	
-	void Stopper::stop(  )
-	{
-		
+    void Stopper::stop_begin()
+    {
 		// LOCK the mutex
 		int ans = pthread_mutex_lock(&_lock);
 		if ( ans )
 			LM_X(1,("pthread_mutex_lock return an error"));
-
-		// This unlock the mutex and froze the process in the condition
-		pthread_cond_wait(&_condition, &_lock);
+        
+        
+    }
+    
+    void Stopper::stop_finish( int max_seconds)
+    {
+        if( max_seconds < 0 )
+            max_seconds = 0;
+        
+        if( max_seconds == 0)
+        {
+            // This unlock the mutex and froze the process in the condition
+            pthread_cond_wait(&_condition, &_lock);
+        }
+        else
+        {
+            struct timeval tv;
+            struct timespec ts;
+            gettimeofday(&tv, NULL);
+            ts.tv_sec = tv.tv_sec + max_seconds;
+            ts.tv_nsec = 0;
+            
+            
+            // This unlock the mutex and froze the process in the condition
+            pthread_cond_timedwait(&_condition, &_lock , &ts);
+        }
 		
 		// UNLOCK the mutex
-		ans = pthread_mutex_unlock(&_lock);
+		int ans = pthread_mutex_unlock(&_lock);
 		if( ans )
 			LM_X(1,("pthread_mutex_unlock return an error"));
-		
-	}
-
+        
+    }
+   
+    
 	void Stopper::stop( int max_seconds  )
 	{
 		
@@ -45,15 +68,26 @@ namespace au
 		if ( ans )
 			LM_X(1,("pthread_mutex_lock return an error"));
 
-        struct timeval tv;
-        struct timespec ts;
-        gettimeofday(&tv, NULL);
-        ts.tv_sec = tv.tv_sec + max_seconds;
-        ts.tv_nsec = 0;
-		
-		
-		// This unlock the mutex and froze the process in the condition
-		pthread_cond_timedwait(&_condition, &_lock , &ts);
+        if( max_seconds < 0 )
+            max_seconds = 0;
+        
+        if( max_seconds == 0)
+        {
+            // This unlock the mutex and froze the process in the condition
+            pthread_cond_wait(&_condition, &_lock);
+        }
+        else
+        {
+            struct timeval tv;
+            struct timespec ts;
+            gettimeofday(&tv, NULL);
+            ts.tv_sec = tv.tv_sec + max_seconds;
+            ts.tv_nsec = 0;
+            
+            
+            // This unlock the mutex and froze the process in the condition
+            pthread_cond_timedwait(&_condition, &_lock , &ts);
+        }
 		
 		// UNLOCK the mutex
 		ans = pthread_mutex_unlock(&_lock);

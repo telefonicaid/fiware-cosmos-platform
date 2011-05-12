@@ -34,6 +34,7 @@
 *
 * PA_END_OF_ARGS - the last of the arguments in the option vector
 */
+#define PA_REST PafUnchanged, " ", 0, 0, false, false, false, false, 0
 #define PA_END_OF_ARGS { "", NULL, "NADA", PaLastArg, PaReq, 0, 0, 0, "" }
 
 

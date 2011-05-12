@@ -7,7 +7,7 @@ SET (SOURCES
     logMsg.cpp
 )
 
-# Inclue directories
+# Include directories
 # -----------------------------------------------------------------
 
 

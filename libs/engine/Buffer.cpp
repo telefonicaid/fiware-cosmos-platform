@@ -28,7 +28,11 @@ namespace engine {
 			_data = (char *) malloc(max_size);
 			if( !_data )
 			{
+#ifdef __LP64__
 			   fprintf(stderr,"Error allocating memory for %lu bytes", max_size);
+#else
+			   fprintf(stderr,"Error allocating memory for %d bytes", max_size);
+#endif
 			   exit(1);
 			}
 		}

@@ -29,7 +29,7 @@ class QsiBlock;
 */
 typedef struct QsiCallback
 {
-	QsiBlock*    siP;
+	QsiBlock*    qbP;
 	QsiFunction  func;
 	void*        param;
 	bool         persistent;

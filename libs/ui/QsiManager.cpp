@@ -210,6 +210,12 @@ void QsiManager::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		else
 			LM_M(("Left Mouse Press on BACKGROUND"));
 	}
+	else if (buttons == Qt::MidButton)
+	{
+		point       = mouseEvent->buttonDownScenePos(Qt::MidButton);
+		gItemP      = itemAt(point);
+		activeItem  = lookup(gItemP);
+	}
 }
 
 
@@ -230,7 +236,7 @@ void QsiManager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		return;
 	}
 
-	if (buttons == (Qt::LeftButton))
+	if (buttons == (Qt::MidButton))
 	{
 		if (activeItem->getMovable() == true)
 		{
@@ -248,15 +254,15 @@ void QsiManager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 *
 * QsiManager::add - 
 */
-void QsiManager::add(QsiBlock* siP)
+void QsiManager::add(QsiBlock* qbP)
 {
 	for (int ix = 0; ix < itemMax; ix++)
 	{
 		if (item[ix] != NULL)
 			continue;
 
-		LM_M(("Adding QsiBlock %02d '%s' (%p %p)", ix, siP->name, siP->gItemP, siP->proxy));
-		item[ix] = siP;
+		LM_M(("Adding QsiBlock %02d '%s' (%p %p)", ix, qbP->name, qbP->gItemP, qbP->proxy));
+		item[ix] = qbP;
 		++items;
 		return;
 	}
@@ -268,7 +274,7 @@ void QsiManager::add(QsiBlock* siP)
 	for (int ix = itemMax - 5; ix < itemMax; ix++)
 	   item[ix] = NULL;
 	
-	add(siP);
+	add(qbP);
 }
 
 
@@ -303,7 +309,7 @@ void QsiManager::remove(QsiBlock* itemP)
 *
 * QsiManager::siConnect - 
 */
-void QsiManager::siConnect(QsiBlock* siP, QsiFunction func, void* param, bool persistent)
+void QsiManager::siConnect(QsiBlock* qbP, QsiFunction func, void* param, bool persistent)
 {
 	for (int ix = 0; ix < itemCallbackMax; ix++)
     {
@@ -312,12 +318,12 @@ void QsiManager::siConnect(QsiBlock* siP, QsiFunction func, void* param, bool pe
 
 		itemCallback[ix] = (QsiCallback*) malloc(sizeof(QsiCallback));		
 
-		itemCallback[ix]->siP        = siP;
+		itemCallback[ix]->qbP        = qbP;
 		itemCallback[ix]->func       = func;
 		itemCallback[ix]->param      = param;
 		itemCallback[ix]->persistent = persistent;
 
-		LM_M(("Added callback for '%s'", siP->name));
+		LM_M(("Added callback for '%s'", qbP->name));
 		return;
 	}
 
@@ -329,7 +335,7 @@ void QsiManager::siConnect(QsiBlock* siP, QsiFunction func, void* param, bool pe
 	for (int ix = itemCallbackMax - 5; ix < itemCallbackMax; ix++)
 	   itemCallback[ix] = NULL;
 
-	siConnect(siP, func, param, persistent);
+	siConnect(qbP, func, param, persistent);
 }
 
 
@@ -338,14 +344,14 @@ void QsiManager::siConnect(QsiBlock* siP, QsiFunction func, void* param, bool pe
 *
 * QsiManager::siDisconnect - 
 */
-void QsiManager::siDisconnect(QsiBlock* siP)
+void QsiManager::siDisconnect(QsiBlock* qbP)
 {
-	if (siP == NULL)
+	if (qbP == NULL)
 		LM_RVE(("Cannot disconnect a NULL item"));
 	
 	for (int ix = 0; ix < itemCallbackMax; ix++)
 	{
-		if (itemCallback[ix]->siP != siP)
+		if (itemCallback[ix]->qbP != qbP)
 			continue;
 
 		free(itemCallback[ix]);
@@ -358,7 +364,7 @@ void QsiManager::siDisconnect(QsiBlock* siP)
 		return;
 	}
 
-	LM_E(("Callback for item '%s' not found ...", siP->name));
+	LM_E(("Callback for item '%s' not found ...", qbP->name));
 }
 
 
@@ -367,17 +373,17 @@ void QsiManager::siDisconnect(QsiBlock* siP)
 *
 * itemCallbackLookup - 
 */
-QsiCallback* QsiManager::itemCallbackLookup(QsiBlock* siP)
+QsiCallback* QsiManager::itemCallbackLookup(QsiBlock* qbP)
 {
 	for (int ix = 0; ix < itemCallbackMax; ix++)
 	{
 		if (itemCallback[ix] == NULL)
 			continue;
 
-		if (itemCallback[ix]->siP != siP)
+		if (itemCallback[ix]->qbP != qbP)
 			continue;
 
-		LM_D(("Comparing %p with %p (%s)", itemCallback[ix]->siP, siP, siP->name));
+		LM_D(("Comparing %p with %p (%s)", itemCallback[ix]->qbP, qbP, qbP->name));
 		return itemCallback[ix];
 	}
 

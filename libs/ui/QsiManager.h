@@ -91,12 +91,11 @@ private:
 	int           itemCallbackMax;
 	int           itemCallbacks;
 
-	QsiCallback*  itemCallbackLookup(QsiBlock* siP);
+	QsiCallback*  itemCallbackLookup(QsiBlock* qbP);
 
 public:
-	void          siConnect(QsiBlock* siP, QsiFunction func, void* param, bool persistent = false);
-	void          siDisconnect(QsiBlock* siP);
-
+	void          siConnect(QsiBlock* qbP, QsiFunction func, void* param, bool persistent = false);
+	void          siDisconnect(QsiBlock* qbP);
 
 
 

@@ -26,7 +26,7 @@ class QsiBlock;
 *
 * QsiFunction - 
 */
-typedef void (*QsiFunction)(QsiBlock* siP, void* param);
+typedef void (*QsiFunction)(QsiBlock* qbP, void* param);
 
 }
 

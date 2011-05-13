@@ -73,13 +73,14 @@ public:
 	QGraphicsItem*         gItemP;
 	QtWidget               w;
 	QGraphicsProxyWidget*  proxy;
-	QsiBlock*             groupPrev;
-	QsiBlock*             groupNext;
+	QsiBlock*              groupPrev;
+	QsiBlock*              groupNext;
 	QFont                  font;
 	QPixmap*               pixmap;
 
 private:
 	bool                   movable;
+	bool                   expanded;
 
 public:
 	QsiBlock(QsiManager* _manager, QsiBlockType type, const char* name, const char* txt, int _x, int _y, int width = -1, int height = -1);
@@ -92,11 +93,13 @@ public:
 	void         move(int _x, int _y);
 	void         move(void);
 
-	bool         isVisible(void);
 	void         hide(void);
 	void         show(void);
+	bool         isVisible(void);
+
 	void         expand(void);
 	void         compress(void);
+	bool         isExpanded(void);
 
 	void         setSize(int width, int height);
 	void         scale(int width, int height);
@@ -125,6 +128,7 @@ public:
 	void         align(Alignment how, QsiBlock* s2, int padding);
 
 	const char*  getText(void);
+	void         setText(const char* txt);
 
 	void         setFont(QFont font);
 	void         setColor(int r, int g, int b, int a = 255);

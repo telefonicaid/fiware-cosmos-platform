@@ -37,6 +37,8 @@ QsiBlock::QsiBlock(QsiManager* _manager, QsiBlockType _type, const char* name, c
 	gItemP    = NULL;
 
 	movable   = false;
+	expanded  = true;
+
 	groupPrev = NULL;
 	groupNext = NULL;
 
@@ -266,6 +268,8 @@ void QsiBlock::expand(void)
 		si->show();
 		si = si->groupNext;
 	}
+
+	expanded = true;
 }
 
 
@@ -288,6 +292,19 @@ void QsiBlock::compress(void)
 		si->hide();
 		si = si->groupNext;
 	}
+
+	expanded = false;
+}
+
+
+
+/* ****************************************************************************
+*
+* isExpanded - 
+*/
+bool QsiBlock::isExpanded(void)
+{
+	return expanded;
 }
 
 
@@ -492,12 +509,12 @@ void QsiBlock::geometryGet(int* xP, int* yP, int* widthP, int* heightP, bool for
 */
 QsiBlock* QsiBlock::groupLeader(void)
 {
-	QsiBlock* siP = this;
+	QsiBlock* qbP = this;
 
-	while (siP->groupPrev != NULL)
-		siP = siP->groupPrev;
+	while (qbP->groupPrev != NULL)
+		qbP = qbP->groupPrev;
 
-	return siP;	  
+	return qbP;	  
 }
 
 
@@ -621,6 +638,22 @@ const char* QsiBlock::getText(void)
 
 	LM_W(("Scene item of type '%s' cannot give away text ...", typeName()));
 	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* setText - 
+*/
+void QsiBlock::setText(const char* txt)
+{
+	if (type != SimpleText)
+		LM_RVE(("Scene item of type '%s' cannot have its text set ...", typeName()));
+
+	QGraphicsSimpleTextItem*  textItem = (QGraphicsSimpleTextItem*) gItemP;
+
+	textItem->setText(txt);
 }
 
 

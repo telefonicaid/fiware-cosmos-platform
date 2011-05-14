@@ -10,10 +10,14 @@
 #include <QFont>
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Lmt*
 
-#include "QsiManager.h"         // QsiManager
+#include "QsiAlignment.h"       // QsiAlignment
 #include "QsiBase.h"            // QsiBase
+#include "QsiBox.h"             // QsiBox
+#include "QsiManager.h"         // QsiManager
 #include "QsiBlock.h"           // Own interface
+
 
 
 namespace Qsi
@@ -25,22 +29,34 @@ namespace Qsi
 *
 * QsiBlock::QsiBlock - 
 */
-QsiBlock::QsiBlock(QsiManager* _manager, QsiBlockType _type, const char* name, const char* txt, int _x, int _y, int width, int height) : QsiBase(name, _x, _y)
+QsiBlock::QsiBlock
+(
+	QsiManager*  manager,
+	QsiBox*      owner,
+	QsiType      type,
+	const char*  name,
+	const char*  txt,
+	int          x,
+	int          y,
+	int          width,
+	int          height
+) : QsiBase(owner, type, name, x, y, width, height)
 {
 	char path[256];
 
-	manager   = _manager;
-	type      = _type;
+	this->manager   = manager;
 	
 	w.vP      = NULL;
 	proxy     = NULL;  // Should use gItem for the proxy ...
 	gItemP    = NULL;
 
 	movable   = false;
+	boxMove   = false;
 	expanded  = true;
 
-	groupPrev = NULL;
-	groupNext = NULL;
+	// As we haven't been moved yet ...
+	// this->x = 0;
+	// this->y = 0;
 
 	for (int ix = 0; ix < 10; ix++)
 	{
@@ -54,11 +70,7 @@ QsiBlock::QsiBlock(QsiManager* _manager, QsiBlockType _type, const char* name, c
 	switch (type)
 	{
 	case Line:
-		gItemP = manager->addLine(_x, _y, width, height);
-		manager->add(this);
-		setPos(_x, _y);
-		// move();
-		return;
+		gItemP = manager->addLine(x, y, width, height);
 		break;
 
 	case SimpleText:
@@ -94,11 +106,15 @@ QsiBlock::QsiBlock(QsiManager* _manager, QsiBlockType _type, const char* name, c
 		w.lineEdit = new QLineEdit();
 		proxy      = manager->addWidget(w.lineEdit);
 		break;
+
+	case Box:
+		LM_X(1, ("Cannot create a Box ..."));
 	}
 
-	manager->add(this);
-	setPos(manager->x, manager->y);
-	move();
+	if (width == -1)
+		LM_T(LmtCreate, ("Created %s '%s' at { %d, %d } (0x%x, 0x%x)", typeName(), name, x, y, proxy, gItemP));
+	else
+		LM_T(LmtCreate, ("Created %s '%s' at { %d, %d } %d x %d (0x%x, 0x%x)", typeName(), name, x, y, width, height, proxy, gItemP));
 }
 
 
@@ -109,7 +125,12 @@ QsiBlock::QsiBlock(QsiManager* _manager, QsiBlockType _type, const char* name, c
 */
 QsiBlock::~QsiBlock()
 {
-	delete gItemP;
+	if (gItemP)
+		delete gItemP;
+	if (proxy)
+		delete proxy;
+	if (w.vP)
+		delete w.lineEdit;
 }
 
 
@@ -134,8 +155,7 @@ void QsiBlock::scale(int width, int height)
 		delete gItemP;
 
 	gItemP = manager->addPixmap(*w.pixmap);
-	setPos(manager->x, manager->y);
-    move();
+	LM_TODO(("Move this pixmap back to its position"));
 }
 
 
@@ -154,27 +174,8 @@ void QsiBlock::scale(int percentage)
 	if (type != Image)
 		LM_RVE(("Will only scale pixmaps"));
 
-	geometryGet(&x, &y, &w, &h, true);
+	geometry(&x, &y, &w, &h);
 	scale(w * percentage / 100, h * percentage / 100);
-}
-
-
-
-/* ****************************************************************************
-*
-* QsiBlock::setPos - 
-*/
-void QsiBlock::setPos(int x, int y)
-{
-	xpos = x;
-	ypos = y;
-
-	LM_M(("Set position { %d, %d } for '%s'", xpos, ypos, name));
-
-	if (gItemP)
-		gItemP->setPos(xpos, ypos);
-	if (proxy)
-		proxy->setPos(xpos, ypos);
 }
 
 
@@ -186,25 +187,23 @@ void QsiBlock::setPos(int x, int y)
 void QsiBlock::setSize(int width, int height)
 {
 	if (type == Button)
-	{
 		w.button->setFixedSize(width, height);
-	}
 	else
-	{
 		LM_W(("QsiBlock::setSize not implemented for Scene Items of type '%s'", typeName()));
-	}
 }
 
 
 
 /* ****************************************************************************
 *
-* QsiBlock::move - 
+* QsiBlock::moveRelative - relative positioning
 */
-void QsiBlock::move(void)
+void QsiBlock::moveRelative(int x, int y)
 {
-	xpos += x;
-	ypos += y;
+	this->x += x;
+	this->y += y;
+
+	LM_T(LmtMove, ("Moving %s '%s' to relative position { %d, %d }", typeName(), name, this->x, this->y));
 
 	if (gItemP)
 		gItemP->moveBy(x, y);
@@ -216,14 +215,28 @@ void QsiBlock::move(void)
 
 /* ****************************************************************************
 *
-* move - 
+* moveAbsolute - absolute positioning
 */
-void QsiBlock::move(int _x, int _y)
+void QsiBlock::moveAbsolute(int x, int y)
 {
-	x = _x;
-	y =_y;
+	LM_T(LmtAbsMove, ("Moving %s '%s' to absolute position { %d, %d }", typeName(), name, x, y));
 
-	move();
+	if (gItemP)
+		gItemP->setPos(x, y);
+	if (proxy)
+		proxy->setPos(x, y);
+}
+
+
+
+
+/* ****************************************************************************
+*
+* align - 
+*/
+void QsiBlock::align(Alignment::Type type, QsiBase* master, int margin)
+{
+	owner->align(master, type, this, margin);
 }
 
 
@@ -241,58 +254,12 @@ void QsiBlock::hide(void)
 
 /* ****************************************************************************
 *
-* QsiBlock::show - 
+* QsiBlock::hideOthers - 
 */
-void QsiBlock::show(void)
+void QsiBlock::hideOthers(void)
 {
+	owner->hide();
 	gItemP->setVisible(true);
-}
-
-
-
-/* ****************************************************************************
-*
-* expand - 
-*/
-void QsiBlock::expand(void)
-{
-	QsiBlock* leader = groupLeader();
-	QsiBlock* si;
-
-	if (leader != this)
-		LM_RVE(("Sorry, only group leaders can be EXPANDED"));
-
-	si = groupNext;
-	while (si != NULL)
-	{
-		si->show();
-		si = si->groupNext;
-	}
-
-	expanded = true;
-}
-
-
-
-/* ****************************************************************************
-*
-* compress - 
-*/
-void QsiBlock::compress(void)
-{
-	QsiBlock* leader = groupLeader();
-	QsiBlock* si;
-
-	if (leader != this)
-		LM_RVE(("Sorry, only group leaders can be COMPRESSED"));
-
-	si = groupNext;
-	while (si != NULL)
-	{
-		si->hide();
-		si = si->groupNext;
-	}
-
 	expanded = false;
 }
 
@@ -300,11 +267,23 @@ void QsiBlock::compress(void)
 
 /* ****************************************************************************
 *
-* isExpanded - 
+* QsiBlock::showOthers - 
 */
-bool QsiBlock::isExpanded(void)
+void QsiBlock::showOthers(void)
 {
-	return expanded;
+	owner->show();
+	expanded = true;
+}
+
+
+
+/* ****************************************************************************
+*
+* QsiBlock::show - 
+*/
+void QsiBlock::show(void)
+{
+	gItemP->setVisible(true);
 }
 
 
@@ -359,118 +338,22 @@ void QsiBlock::menuClear()
 
 /* ****************************************************************************
 *
-* typeName - 
+* geometry - 
 */
-const char* QsiBlock::typeName(void)
-{
-	switch (type)
-	{
-	case SimpleText:       return "SimpleText";
-	case Line:             return "Line";
-	case Image:            return "Image";
-	case Label:            return "Label";
-	case Button:           return "Button";
-	case Input:            return "Input";
-	}
-
-	return "Unknown Type";
-}
-
-
-
-/* ****************************************************************************
-*
-* setFont - 
-*/
-void QsiBlock::setFont(QFont* fontP)
-{
-	font = *fontP;
-	LM_W(("Re-add text to manager"));
-	LM_W(("Sorry, not implemented"));
-}
-
-
-
-/* ****************************************************************************
-*
-* setFontSize - 
-*/
-void QsiBlock::setFontSize(int size)
-{
-	size = 10;
-	LM_W(("Sorry, not implemented"));
-}
-
-
-
-/* ****************************************************************************
-*
-* setFontColor - 
-*/
-void QsiBlock::setFontColor(int color)
-{
-	color = 0;
-	LM_W(("Sorry, not implemented"));
-}
-
-
-
-/* ****************************************************************************
-*
-* groupGeometryGet - 
-*
-* QsiBlock::groupGeometryGet
-*/
-void QsiBlock::groupGeometryGet(int* xP, int* yP, int* widthP, int* heightP)
-{
-	QsiBlock*  si     = groupLeader();
-	int         xMin   = 0x7FFFFFFF;
-	int         yMin   = 0x7FFFFFFF;
-	int         xMax   = 0;
-	int         yMax   = 0;
-
-	while (si != NULL)
-	{
-		int x;
-		int y;
-		int width;
-		int height;
-
-		if (si->isVisible())
-		{
-			si->geometryGet(&x, &y, &width, &height, true);
-			if (x < xMin)
-				xMin = x;
-			if (y < yMin)
-				yMin = y;
-			if ((x + width) > xMax)
-				xMax = x + width;
-			if ((y + height) > yMax)
-				yMax = y + height;
-
-			LM_M(("Current group gemetry: { %d, %d } xMax: %d, yMax: %d", xMin, yMin, xMax, yMax));
-		}
-		si = si->groupNext;
-	}
-
-	*xP      = xMin;
-	*yP      = yMin;
-	*widthP  = (xMax - xMin);
-	*heightP = (yMax - yMin);
-}
-
-
-
-/* ****************************************************************************
-*
-* geometryGet - 
-*/
-void QsiBlock::geometryGet(int* xP, int* yP, int* widthP, int* heightP, bool force)
+void QsiBlock::geometry(int* xP, int* yP, int* widthP, int* heightP)
 {
 	QRectF rect;
 
-	if ((inGroup() == TRUE) && (force == FALSE))
-		return groupGeometryGet(xP, yP, widthP, heightP);
+	if (isVisible() == false)
+	{
+		*xP       = 0;
+		*yP       = 0;
+		*widthP   = 0;
+		*heightP  = 0;
+
+		LM_T(LmtGeometry, ("  Invisible %s '%s' geometry: { %d, %d } %d x %d", typeName(), name, *xP, *yP, *widthP, *heightP));
+		return;
+	}
 
 	switch (type)
 	{
@@ -485,6 +368,9 @@ void QsiBlock::geometryGet(int* xP, int* yP, int* widthP, int* heightP, bool for
 	case Button:
 		rect = proxy->boundingRect();
 		break;
+
+	case Box:
+		LM_X(1, ("Cannot be a Box!"));
 	}
 
 	qreal rx;
@@ -493,44 +379,12 @@ void QsiBlock::geometryGet(int* xP, int* yP, int* widthP, int* heightP, bool for
 	qreal rheight;
 
 	rect.getRect(&rx, &ry, &rwidth, &rheight);
-	*xP       = xpos;
-	*yP       = ypos;
+	*xP       = x;
+	*yP       = y;
 	*widthP   = rwidth;
 	*heightP  = rheight;
 
-	LM_M(("Geometry for '%s': { %d, %d } %dx%d", name, xpos, ypos, *widthP, *heightP));
-}
-
-
-
-/* ****************************************************************************
-*
-* groupLeader - 
-*/
-QsiBlock* QsiBlock::groupLeader(void)
-{
-	QsiBlock* qbP = this;
-
-	while (qbP->groupPrev != NULL)
-		qbP = qbP->groupPrev;
-
-	return qbP;	  
-}
-
-
-
-/* ****************************************************************************
-*
-* inGroup - 
-*/
-bool QsiBlock::inGroup(void)
-{
-	QsiBlock* leader = groupLeader();
-
-	if ((leader == this) && (groupNext == NULL))
-		return FALSE;
-
-	return TRUE;
+	LM_T(LmtGeometry, ("  Visible %s '%s' geometry: { %d, %d } %d x %d (getRect returned { %d, %d })", typeName(), name, *xP, *yP, *widthP, *heightP, rx, ry));
 }
 
 
@@ -539,9 +393,9 @@ bool QsiBlock::inGroup(void)
 *
 * setMovable - 
 */
-void QsiBlock::setMovable(bool _movable)
+void QsiBlock::setMovable(bool movable)
 {
-	movable = _movable;
+	this->movable = movable;
 }
 
 
@@ -559,53 +413,33 @@ bool QsiBlock::getMovable(void)
 
 /* ****************************************************************************
 *
-* align - align scene item to another (s2) 
+* setBoxMove - 
 */
-void QsiBlock::align(Alignment how, QsiBlock* s2, int padding)
+void QsiBlock::setBoxMove(bool boxMove)
 {
-	int x1;
-	int y1;
-	int w1;
-	int h1;
-	int x2;
-	int y2;
-	int w2;
-	int h2;
-	int xNew;
-	int yNew;
+	this->boxMove = boxMove;
+}
 
-	geometryGet(&x1, &y1, &w1, &h1);
-	s2->geometryGet(&x2, &y2, &w2, &h2);
 
-	LM_M(("Geometry for    '%s': { %d, %d } %dx%d", name,     x1, y1, w1, h1));
-	LM_M(("Geometry for s2 '%s': { %d, %d } %dx%d", s2->name, x2, y2, w2, h2));
 
-	if (how == Under)
-	{
-		xNew = x2;
-		yNew = y2 + h2 + padding;
-	}
-	else if (how == Over)
-	{
-		xNew = x2;
-		yNew = y2 - (h1 + padding);
-	}
-	else if (how == ToLeft)
-	{
-		xNew = x2 - padding - w1;
-		yNew = y2;
-	}
-	else if (how == ToRight)
-	{
-		xNew = x2 + w2 + padding;
-		yNew = y2;
-	}
-	else
-		LM_RVE(("unrecognized Alignment form"));
+/* ****************************************************************************
+*
+* getBoxMove - 
+*/
+bool QsiBlock::getBoxMove(void)
+{
+	return boxMove;
+}
 
-	int dx = xNew - x1;
-	int dy = yNew - y1;
-	manager->groupMove(this, dx, dy);
+
+
+/* ****************************************************************************
+*
+* isExpanded - 
+*/
+bool QsiBlock::isExpanded(void)
+{
+	return expanded;
 }
 
 
@@ -618,11 +452,11 @@ bool QsiBlock::isVisible(void)
 {
 	if (gItemP != NULL)
 		return gItemP->isVisible();
-	else if (proxy == NULL)
+	else if (proxy != NULL)
 		return proxy->isVisible();
 
-	LM_E(("Both gItemP and proxy NULL - this can't be!"));
-	return NULL;
+	LM_E(("QsiBlock '%s': Both gItemP and proxy NULL - this can't be!", name));
+	return false;
 }
 
 

@@ -19,6 +19,7 @@
 
 #include "QsiFunction.h"        // QsiFunction
 #include "QsiBase.h"            // QsiBase
+#include "QsiAlignment.h"       // QsiAlignment
 
 
 
@@ -31,25 +32,18 @@ class QsiManager;
 
 
 
-typedef union QtWidget
+/* ****************************************************************************
+*
+* ProxiedWidget - 
+*/
+typedef union ProxiedWidget
 {
 	void*         vP;
 	QPushButton*  button;
 	QLabel*       label;
 	QLineEdit*    lineEdit;
 	QPixmap*      pixmap;
-} QtWidget;
-
-
-typedef enum QsiBlockType
-{
-	SimpleText,
-	Image,
-	Label,
-	Button,
-	Input,
-	Line
-} QsiBlockType;
+} ProxiedWidget;
 
 
 
@@ -60,50 +54,32 @@ typedef enum QsiBlockType
 class QsiBlock : public QsiBase
 {
 public:
-	typedef enum Alignment
-	{
-		Over,
-		Under,
-		ToLeft,
-		ToRight
-	} Alignment;
-
-	QsiManager*            manager;
-	QsiBlockType           type;
+	QsiManager*            manager;  // Hope this will not be necessary ...
 	QGraphicsItem*         gItemP;
-	QtWidget               w;
+	ProxiedWidget          w;
 	QGraphicsProxyWidget*  proxy;
-	QsiBlock*              groupPrev;
-	QsiBlock*              groupNext;
 	QFont                  font;
 	QPixmap*               pixmap;
 
 private:
 	bool                   movable;
+	bool                   boxMove;
 	bool                   expanded;
 
 public:
-	QsiBlock(QsiManager* _manager, QsiBlockType type, const char* name, const char* txt, int _x, int _y, int width = -1, int height = -1);
+	QsiBlock(QsiManager* manager, QsiBox* owner, QsiType type, const char* name, const char* txt, int x, int y, int width = -1, int height = -1);
 	~QsiBlock();
 
-	const char*  typeName(void);
-
-	void         setPos(int x, int y);
-	void         setGroupPos(int x, int y);
-	void         move(int _x, int _y);
-	void         move(void);
-
+	void         geometry(int* xP, int* yP, int* widthP, int* heightP);
+	void         moveRelative(int x, int y);
+	void         moveAbsolute(int x, int y);
+	void         align(Alignment::Type type, QsiBase* master, int margin);
 	void         hide(void);
+	void         hideOthers();
 	void         show(void);
+	void         showOthers();
 	bool         isVisible(void);
-
-	void         expand(void);
-	void         compress(void);
 	bool         isExpanded(void);
-
-	void         setSize(int width, int height);
-	void         scale(int width, int height);
-	void         scale(int percentage);
 
 	bool         menu;
 	void         menuAdd(const char* title, QsiFunction func, void* param);
@@ -113,19 +89,15 @@ public:
 	QsiFunction  menuFunc[10];
 	void*        menuParam[10];
 
-	void         setFont(QFont* font);
-	void         setFontSize(int size);
-	void         setFontColor(int color);
-
-	void         setMovable(bool _movable);
+	void         setMovable(bool movable);
 	bool         getMovable(void);
 
-	void         geometryGet(int* xP, int* yP, int* widthP, int* heightP, bool force = false);
-	void         groupGeometryGet(int* xP, int* yP, int* widthP, int* heightP);
+	void         setBoxMove(bool boxMove);
+	bool         getBoxMove(void);
 
-	QsiBlock*    groupLeader(void);	
-	bool         inGroup(void);
-	void         align(Alignment how, QsiBlock* s2, int padding);
+	void         setSize(int width, int height);
+	void         scale(int width, int height);
+	void         scale(int percentage);
 
 	const char*  getText(void);
 	void         setText(const char* txt);

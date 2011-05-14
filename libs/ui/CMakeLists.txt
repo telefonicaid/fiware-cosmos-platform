@@ -4,8 +4,10 @@ INCLUDE(${QT_USE_FILE})
 SET (HEADERS
 	QsiBase.h
 	QsiBlock.h
+	QsiBox.h
 	QsiCallback.h
 	QsiFunction.h
+	QsiAlignment.h
 )
 
 
@@ -15,6 +17,7 @@ SET (HEADERS_MOC
 
 SET (SOURCES
 	QsiBlock.cpp
+	QsiBox.cpp
 	QsiManager.cpp
 )
 

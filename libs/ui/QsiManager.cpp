@@ -13,10 +13,12 @@
 #include <QMenu>
 
 #include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Lmt*
 
 #include "QsiFunction.h"        // QsiFunction
 #include "QsiCallback.h"        // QsiCallback
 #include "QsiBlock.h"           // QsiBlock
+#include "QsiBox.h"             // QsiBox
 #include "QsiManager.h"         // Own interface
 
 
@@ -61,7 +63,7 @@ QsiManager::QsiManager(QVBoxLayout* layout, const char* homeDir, const char* bac
 	char          bgPath[256];
 
 	snprintf(bgPath, sizeof(bgPath), "%s/%s", homeDir, background);
-	LM_M(("Setting background to '%s'", bgPath));
+	LM_T(LmtImage, ("Setting background to '%s'", bgPath));
 	if (access(bgPath, R_OK) != 0)
 	{
 		LM_W(("background file '%s' is missing", bgPath));
@@ -78,7 +80,7 @@ QsiManager::QsiManager(QVBoxLayout* layout, const char* homeDir, const char* bac
 
 		pixmapSize = bg->size();
 
-		LM_M(("Setting background size to %dx%d", pixmapSize.width(), pixmapSize.height()));
+		LM_T(LmtImage, ("Setting background size to %d x %d", pixmapSize.width(), pixmapSize.height()));
 		setSceneRect(QRectF(0, 0, pixmapSize.width(), pixmapSize.height()));
 
 		view->setSceneRect(0, 0, width, height);
@@ -96,7 +98,7 @@ QsiManager::QsiManager(QVBoxLayout* layout, const char* homeDir, const char* bac
 	itemCallbackMax = 10;
 	itemCallback    = (QsiCallback**) calloc(itemCallbackMax, sizeof(QsiCallback*));
 	
-
+	box = new QsiBox(this, NULL, "topbox", 0, 0);
 	x = 0;
 	y = 0;
 }
@@ -135,14 +137,14 @@ void QsiManager::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEve
 		{
 			QMenu menu(activeItem->name);
 
-			LM_M(("Menu for '%s'", activeItem->name));
+			LM_T(LmtMenu, ("Menu for '%s'", activeItem->name));
 			for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
 			{
 
 				if (activeItem->menuTitle[ix] == NULL)
 					continue;
 
-				LM_M(("Menu item %d for '%s': %s", ix, activeItem->name, activeItem->menuTitle[ix]));
+				LM_T(LmtMenu, ("Menu item %d for '%s': %s", ix, activeItem->name, activeItem->menuTitle[ix]));
 				if (menuAction[ix] != NULL)
 					delete menuAction[ix];
 
@@ -172,10 +174,10 @@ void QsiManager::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEve
 			menu.exec(screenPos);
 		}
 		else
-			LM_M(("No associated menu for '%s'", activeItem->name));
+			LM_W(("No associated menu for '%s'", activeItem->name));
 	}
 	else
-		LM_M(("Menu for BACKGROUND"));
+		LM_T(LmtMenu, ("Menu for BACKGROUND"));
 
 }
 
@@ -190,6 +192,8 @@ void QsiManager::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 	QPointF             point;
 	QGraphicsItem*      gItemP;
 
+	LM_T(LmtMousePress, ("Some Mouse button pressed"));
+
 	if (buttons == Qt::LeftButton)
 	{
 		point       = mouseEvent->buttonDownScenePos(Qt::LeftButton);
@@ -198,24 +202,34 @@ void QsiManager::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		
 		if (activeItem != NULL)
 		{
-			LM_M(("Left Mouse Press on '%s' - looking up callback", activeItem->name));
+			LM_T(LmtMousePress, ("Left Mouse Press on '%s' - looking up callback", activeItem->name));
 
 			QsiCallback* cb = itemCallbackLookup(activeItem);
 			if (cb != NULL)
 			{
-				LM_M(("Found callback (%p) for '%s', function at %p", cb, activeItem->name, cb->func));
+				LM_T(LmtMenu, ("Found menu callback (%p) for '%s', function at %p", cb, activeItem->name, cb->func));
 				cb->func(activeItem, cb->param);
 			}
 		}
 		else
-			LM_M(("Left Mouse Press on BACKGROUND"));
+			LM_T(LmtMousePress, ("Left Mouse Press on BACKGROUND"));
 	}
 	else if (buttons == Qt::MidButton)
 	{
 		point       = mouseEvent->buttonDownScenePos(Qt::MidButton);
 		gItemP      = itemAt(point);
 		activeItem  = lookup(gItemP);
+
+		if (activeItem != NULL)
+			LM_T(LmtMousePress, ("Mid Mouse Press on %s '%s'", activeItem->typeName(), activeItem->name));
+		else
+			LM_T(LmtMousePress, ("Mid Mouse Press on BACKGROUND"));
 	}
+	else if (buttons == Qt::RightButton)
+	{
+		LM_T(LmtMousePress, ("Right Mouse Press"));
+	}
+
 }
 
 
@@ -240,66 +254,16 @@ void QsiManager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 	{
 		if (activeItem->getMovable() == true)
 		{
-			if ((activeItem->groupNext == NULL) && (activeItem->groupPrev == NULL))
-				activeItem->move(point.x() - lastPoint.x(), point.y() - lastPoint.y());
+			LM_T(LmtMove, ("moving %s '%s'", activeItem->typeName(), activeItem->name));
+
+			if (activeItem->getBoxMove() == true)
+			{
+				LM_T(LmtMove, ("%s '%s' has the property 'BOX MOVE' set  - move entire '%s' box", activeItem->typeName(), activeItem->name, activeItem->getOwner()->name));
+				activeItem->getOwner()->moveRelative(point.x() - lastPoint.x(), point.y() - lastPoint.y());
+			}
 			else
-				groupMove(activeItem, point.x() - lastPoint.x(), point.y() - lastPoint.y());
+				activeItem->moveRelative(point.x() - lastPoint.x(), point.y() - lastPoint.y());
 		}
-	}
-}
-
-
-
-/* ****************************************************************************
-*
-* QsiManager::add - 
-*/
-void QsiManager::add(QsiBlock* qbP)
-{
-	for (int ix = 0; ix < itemMax; ix++)
-	{
-		if (item[ix] != NULL)
-			continue;
-
-		LM_M(("Adding QsiBlock %02d '%s' (%p %p)", ix, qbP->name, qbP->gItemP, qbP->proxy));
-		item[ix] = qbP;
-		++items;
-		return;
-	}
-
-	itemMax += 5;	
-	LM_W(("REALLOC to %d items", itemMax));	
-	item     = (QsiBlock**) realloc(item, itemMax * sizeof(QsiBlock*));
-
-	for (int ix = itemMax - 5; ix < itemMax; ix++)
-	   item[ix] = NULL;
-	
-	add(qbP);
-}
-
-
-
-/* ****************************************************************************
-*
-* QsiManager::remove - 
-*/
-void QsiManager::remove(QsiBlock* itemP)
-{
-	for (int ix = 0; ix < itemMax; ix++)
-	{
-		if (item[ix] != itemP)
-			continue;
-
-		if (item[ix]->groupNext != NULL)
-			item[ix]->groupNext->groupPrev = item[ix]->groupPrev;
-		if (item[ix]->groupPrev != NULL)
-            item[ix]->groupPrev->groupNext = item[ix]->groupNext;
-
-
-		item[ix] = NULL;
-		--items;
-		delete itemP;
-		return;
 	}
 }
 
@@ -323,7 +287,7 @@ void QsiManager::siConnect(QsiBlock* qbP, QsiFunction func, void* param, bool pe
 		itemCallback[ix]->param      = param;
 		itemCallback[ix]->persistent = persistent;
 
-		LM_M(("Added callback for '%s'", qbP->name));
+		LM_T(LmtMouse, ("Added callback for '%s'", qbP->name));
 		return;
 	}
 
@@ -398,83 +362,9 @@ QsiCallback* QsiManager::itemCallbackLookup(QsiBlock* qbP)
 */
 QsiBlock* QsiManager::lookup(QGraphicsItem* gItemP)
 {
-	LM_M(("Looking up scene item with QGraphicsItem %p", gItemP));
-	for (int ix = 0; ix < itemMax; ix++)
-	{
-		if (item[ix] == NULL)
-			continue;
+	LM_D(("lookup QsiBlock with gItem %p", gItemP));
 
-		LM_D(("Comparing '%s' (gItemP at %p AND proxy at %p) with the pressed item (%p)",
-			  item[ix]->name, item[ix]->gItemP, item[ix]->proxy, gItemP));
-
-		if (gItemP == item[ix]->gItemP)
-		{
-			LM_M(("Found gItem '%s' (%p %p)!", item[ix]->name, gItemP, item[ix]->gItemP));
-			return item[ix];
-		}
-		if (gItemP == item[ix]->proxy)
-		{
-			LM_M(("Found proxy '%s'! (%p %p %p)", item[ix]->name, gItemP, item[ix]->proxy, item[ix]->w));
-			return item[ix];
-		}
-	}
-
-	return NULL;
-}
-
-
-
-/* ****************************************************************************
-*
-* QsiManager::textAdd - 
-*/
-QsiBlock* QsiManager::textAdd(const char* name, const char* txt, int _x, int _y)
-{
-	return new QsiBlock(this, Qsi::SimpleText, name, txt, _x, _y);
-}
-
-
-
-/* ****************************************************************************
-*
-* QsiManager::lineAdd - 
-*/
-QsiBlock* QsiManager::lineAdd(const char* name, int _x, int _y, int x2, int y2)
-{
-	return new QsiBlock(this, Qsi::Line, name, name, _x, _y, x2, y2);
-}
-
-
-
-/* ****************************************************************************
-*
-* buttonAdd - 
-*/
-QsiBlock* QsiManager::buttonAdd(const char* name, const char* txt, int _x, int _y, int width, int height)
-{
-	return new QsiBlock(this, Qsi::Button, name, txt, _x, _y, width, height);
-}
-
-
-
-/* ****************************************************************************
-*
-* inputAdd - 
-*/
-QsiBlock* QsiManager::inputAdd(const char* name, const char* txt, int _x, int _y, int width, int height)
-{
-	return new QsiBlock(this, Qsi::Input, name, txt, _x, _y, width, height);
-}
-
-
-
-/* ****************************************************************************
-*
-* imageAdd - 
-*/
-QsiBlock* QsiManager::imageAdd(const char* name, const char* path, int _x, int _y, int width, int height)
-{
-	return new QsiBlock(this, Qsi::Image, name, path, _x, _y, width, height);
+	return box->lookup(gItemP);
 }
 
 
@@ -485,7 +375,7 @@ QsiBlock* QsiManager::imageAdd(const char* name, const char* path, int _x, int _
 */
 void QsiManager::menuActionFunc0(void)
 {
-	LM_M(("In 'menuActionFunc0': calling menu action '%s'", activeItem->menuTitle[0]));
+	LM_T(LmtMenu, ("In 'menuActionFunc0': calling menu action '%s'", activeItem->menuTitle[0]));
 
 	activeItem->menuFunc[0](activeItem, activeItem->menuParam[0]);
 }
@@ -498,7 +388,7 @@ void QsiManager::menuActionFunc0(void)
 */
 void QsiManager::menuActionFunc1()
 {
-	LM_M(("In 'menuActionFunc1': calling menu action '%s'", activeItem->menuTitle[1]));
+	LM_T(LmtMenu, ("In 'menuActionFunc1': calling menu action '%s'", activeItem->menuTitle[1]));
 
 	activeItem->menuFunc[1](activeItem, activeItem->menuParam[1]);
 }
@@ -511,7 +401,7 @@ void QsiManager::menuActionFunc1()
 */
 void QsiManager::menuActionFunc2()
 {
-	LM_M(("In 'menuActionFunc2': calling menu action '%s'", activeItem->menuTitle[2]));
+	LM_T(LmtMenu, ("In 'menuActionFunc2': calling menu action '%s'", activeItem->menuTitle[2]));
 
 	activeItem->menuFunc[2](activeItem, activeItem->menuParam[2]);
 }
@@ -524,7 +414,7 @@ void QsiManager::menuActionFunc2()
 */
 void QsiManager::menuActionFunc3()
 {
-	LM_M(("In 'menuActionFunc3': calling menu action '%s'", activeItem->menuTitle[3]));
+	LM_T(LmtMenu, ("In 'menuActionFunc3': calling menu action '%s'", activeItem->menuTitle[3]));
 }
 
 
@@ -535,7 +425,7 @@ void QsiManager::menuActionFunc3()
 */
 void QsiManager::menuActionFunc4()
 {
-	LM_M(("In 'menuActionFunc4': calling menu action '%s'", activeItem->menuTitle[4]));
+	LM_T(LmtMenu, ("In 'menuActionFunc4': calling menu action '%s'", activeItem->menuTitle[4]));
 }
 
 
@@ -546,7 +436,7 @@ void QsiManager::menuActionFunc4()
 */
 void QsiManager::menuActionFunc5()
 {
-	LM_M(("In 'menuActionFunc5': calling menu action '%s'", activeItem->menuTitle[5]));
+	LM_T(LmtMenu, ("In 'menuActionFunc5': calling menu action '%s'", activeItem->menuTitle[5]));
 }
 
 
@@ -557,7 +447,7 @@ void QsiManager::menuActionFunc5()
 */
 void QsiManager::menuActionFunc6()
 {
-	LM_M(("In 'menuActionFunc6': calling menu action '%s'", activeItem->menuTitle[6]));
+	LM_T(LmtMenu, ("In 'menuActionFunc6': calling menu action '%s'", activeItem->menuTitle[6]));
 }
 
 
@@ -568,7 +458,7 @@ void QsiManager::menuActionFunc6()
 */
 void QsiManager::menuActionFunc7()
 {
-	LM_M(("In 'menuActionFunc7': calling menu action '%s'", activeItem->menuTitle[7]));
+	LM_T(LmtMenu, ("In 'menuActionFunc7': calling menu action '%s'", activeItem->menuTitle[7]));
 }
 
 
@@ -579,7 +469,7 @@ void QsiManager::menuActionFunc7()
 */
 void QsiManager::menuActionFunc8()
 {
-	LM_M(("In 'menuActionFunc8': calling menu action '%s'", activeItem->menuTitle[8]));
+	LM_T(LmtMenu, ("In 'menuActionFunc8': calling menu action '%s'", activeItem->menuTitle[8]));
 }
 
 
@@ -590,59 +480,7 @@ void QsiManager::menuActionFunc8()
 */
 void QsiManager::menuActionFunc9()
 {
-	LM_M(("In 'menuActionFunc9': calling menu action '%s'", activeItem->menuTitle[9]));
-}
-
-
-
-/* ****************************************************************************
-*
-* group - 
-*
-* si1 - pointer to QsiBlock that is already in a group (or not)
-* si2 - pointer to QsiBlock that is NOT in a group
-*/
-void QsiManager::group(QsiBlock* si1, QsiBlock* si2)
-{
-	QsiBlock* last = si1;
-
-	if ((si2->groupNext != NULL) || (si2->groupPrev != NULL))
-		LM_RVE(("Cannot add '%s' to the group of '%s' - '%s' seems to belong to a group already", si2->name, si1->name, si2->name));
-
-	while (last->groupNext != NULL)
-		last = last->groupNext;
-
-	last->groupNext = si2;
-	si2->groupPrev  = last;
-}
-
-
-
-/* ****************************************************************************
-*
-* groupMove - 
-*/
-void QsiManager::groupMove(QsiBlock* si, int x, int y)
-{
-	// 1. find first item of group
-	// 2. move all of them
-
-	while (si->groupPrev != NULL)
-		si = si->groupPrev;
-
-	while (si != NULL)
-	{
-		if (si->getMovable() == false)
-		{
-			si->setMovable(true);
-			si->move(x, y);
-			si->setMovable(false);
-		}
-		else
-			si->move(x, y);
-
-		si = si->groupNext;
-	}
+	LM_T(LmtMenu, ("In 'menuActionFunc9': calling menu action '%s'", activeItem->menuTitle[9]));
 }
 
 }

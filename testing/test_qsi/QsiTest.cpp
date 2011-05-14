@@ -13,8 +13,11 @@
 
 #include "logMsg.h"             // LM_*
 #include "parseArgs.h"          // parseArgs
+#include "../../libs/ui/traceLevels.h"
 
+#include "QsiAlignment.h"       // Qsi::Alignment
 #include "QsiManager.h"         // QsiManager
+#include "QsiBox.h"             // QsiBox
 #include "QsiBlock.h"           // QsiBlock
 
 
@@ -58,6 +61,7 @@ QDesktopWidget*   desktop                  = NULL;
 
 Qsi::QsiManager*  qsiManager = NULL;
 
+Qsi::QsiBox*      inputBox;
 Qsi::QsiBlock*    inputP;
 Qsi::QsiBlock*    inputOkButton;
 
@@ -75,10 +79,10 @@ Qsi::QsiBlock*    colorButton;
 Qsi::QsiBlock*    boldButton;
 Qsi::QsiBlock*    italicButton;
 
-Qsi::QsiBlock*    alignUnderButton;
-Qsi::QsiBlock*    alignOverButton;
-Qsi::QsiBlock*    alignToLeftButton;
-Qsi::QsiBlock*    alignToRightButton;
+Qsi::QsiBlock*    alignSouthButton;
+Qsi::QsiBlock*    alignNorthButton;
+Qsi::QsiBlock*    alignWestButton;
+Qsi::QsiBlock*    alignEastButton;
 
 
 
@@ -88,15 +92,13 @@ Qsi::QsiBlock*    alignToRightButton;
 */
 void textClicked(Qsi::QsiBlock* qbP, void* param)
 {
-	LM_M(("Text '%s' Clicked. Param: %p", qbP->name, param));
+	LM_T(LmtMouse, ("Text '%s' Clicked. Param: %p", qbP->name, param));
+	if (qbP->isExpanded())
+		qbP->hideOthers();
+	else
+		qbP->showOthers();
 
-	if ((qbP == user1) || (qbP == user2))
-	{
-		if (qbP->isExpanded())
-			qbP->compress();
-		else
-			qbP->expand();
-	}
+	LM_W(("Expand/Compress doesn't exist anymore ..."));
 }
 
 
@@ -118,7 +120,7 @@ void buttonClicked(Qsi::QsiBlock* qbP, void* param)
 
 	button = qbP->w.button;
 
-	LM_M(("Button '%s' Clicked. Param at %p", qbP->name, param));
+	LM_T(LmtMouse, ("Button '%s' Clicked. Param at %p", qbP->name, param));
 
 	if (qbP == textButton)
 	{
@@ -131,11 +133,11 @@ void buttonClicked(Qsi::QsiBlock* qbP, void* param)
 			user1->setText("Ken Zangelin");
 	}
 	else if (qbP == moveButton)
-		qbP->manager->groupMove(user1, 20, 0);
+		user1->moveRelative(20, 0);
 	else if (qbP == expandButton)
-		user1->expand();
+		LM_W(("Expand doesn't exist anymore"));
 	else if (qbP == compressButton)
-		user1->compress();
+		LM_W(("Compress doesn't exist anymore"));
 	else if (qbP == colorButton)
 	{
 		user1->setColor(r, g, b, a);
@@ -156,16 +158,16 @@ void buttonClicked(Qsi::QsiBlock* qbP, void* param)
 		italic = (italic == true)? false : true;
 		user1->setItalic(italic);
 	}
-	else if (qbP == alignUnderButton)
-		user2->align(Qsi::QsiBlock::Under, user1, 20);
-	else if (qbP == alignOverButton)
-		user2->align(Qsi::QsiBlock::Over, user1, 20);
-	else if (qbP == alignToLeftButton)
-		user2->align(Qsi::QsiBlock::ToLeft, user1, 20);
-	else if (qbP == alignToRightButton)
-		user2->align(Qsi::QsiBlock::ToRight, user1, 20);
+	else if (qbP == alignSouthButton)
+		user2->getOwner()->align(Qsi::Alignment::South, user1->getOwner(), 20);
+	else if (qbP == alignNorthButton)
+		user2->getOwner()->align(Qsi::Alignment::North, user1->getOwner(), 20);
+	else if (qbP == alignWestButton)
+		user2->getOwner()->align(Qsi::Alignment::West, user1->getOwner(), 20);
+	else if (qbP == alignEastButton)
+		user2->getOwner()->align(Qsi::Alignment::East, user1->getOwner(), 20);
 	else if (qbP == inputOkButton)
-		LM_M(("Input Test: '%s'", inputP->getText()));
+		LM_T(LmtInput, ("Input Test: '%s'", inputP->getText()));
 	else
 		LM_W(("No button found"));
 }
@@ -174,19 +176,19 @@ void buttonClicked(Qsi::QsiBlock* qbP, void* param)
 
 void userEdit(Qsi::QsiBlock* qbP, void* param)
 {
-	LM_M(("Edit user '%s', param: %p", qbP->name, param));
+	LM_W(("Edit user '%s', param: %p - Not Implemented", qbP->name, param));
 }
 
 
 
 void userRemove(Qsi::QsiBlock* qbP, void* param)
 {
-	LM_M(("NOT YET Removing user '%s', param: %p", qbP->name, param));
+	LM_W(("Removing user '%s', param: %p Not Implemented", qbP->name, param));
 }
 
 void userColor(Qsi::QsiBlock* qbP, void* param)
 {
-	LM_M(("NOT YET Changing color for user '%s', param: %p", qbP->name, param));
+	LM_W(("Changing color for user '%s', param: %p - Not Implemented", qbP->name, param));
 }
 
 
@@ -194,11 +196,7 @@ void userColor(Qsi::QsiBlock* qbP, void* param)
 static void qsiSetup(QWidget* mainWindow)
 {
 	QVBoxLayout*    layout = new QVBoxLayout();
-	Qsi::QsiBlock*  item;
-	// Qsi::QsiBlock*  line;
 	Qsi::QsiBlock*  numberImageP;
-	int             x;
-	int             y;
 	unsigned int    ix;
 	const char*     props1[] =
 	{
@@ -226,24 +224,27 @@ static void qsiSetup(QWidget* mainWindow)
 	qsiManager = new Qsi::QsiManager(layout, "./TestImages", "Background.png", 1920, 1080);
 
 
+	Qsi::QsiBox*   mainBox   = qsiManager->box;
+	Qsi::QsiBox*   userBox1  = (Qsi::QsiBox*) mainBox->boxAdd("userBox1", 200, 90);
+	Qsi::QsiBox*   userBox2  = (Qsi::QsiBox*) mainBox->boxAdd("userBox2", 500, 190);
 
 	//
 	// User 1
 	//
-	x       = 200;
-	y       = 90;
-	user1   = qsiManager->textAdd("User1", "Ken Zangelin", x, y);
+	user1   = (Qsi::QsiBlock*) userBox1->textAdd("User1", "Ken Zangelin", 0, 0);
 	user1->setBold(true);
 	user1->setMovable(true);
+	user1->setBoxMove(true);
 
 	for (ix = 0; ix < sizeof(props1) / sizeof(props1[0]); ix++)
-	{
-		item = qsiManager->textAdd(props1[ix], props1[ix],   x + 10, y + (ix + 1) * 20 + 5);
-		qsiManager->group(user1, item);
-	}
+		userBox1->textAdd(props1[ix], props1[ix],   10, (ix + 1) * 20 + 5);
 
-	// line = qsiManager->lineAdd("delimiter1", x, y + (ix + 1) * 20 + 15, x + 200, y + (ix + 1) * 20 + 5);
-	// qsiManager->group(user1, line);
+#if 0
+	int x,y,w,h;
+	userBox1->geometry(&x,&y,&w,&h);
+	LM_M(("Geometry for %s: { %d, %d } %d x %d", userBox1->name, x,y,w,h));
+	userBox1->lineAdd("delimiter1", 0, y, w, y);
+#endif
 
 	user1->menuAdd("Edit User",    userEdit,   user1);
 	user1->menuAdd("Remove User",  userRemove, user1);
@@ -252,24 +253,22 @@ static void qsiSetup(QWidget* mainWindow)
 	qsiManager->siConnect(user1, textClicked, NULL);
 
 
-
 	//
 	// User 2
 	//
-	x       = 500;
-	y       = 190;
-	user2   = qsiManager->textAdd("User2",       "Alex Zangelin Calvo",   500, 190);
+	user2 = (Qsi::QsiBlock*) userBox2->textAdd("User2", "Alex Zangelin Calvo", 0, 0);
 	user2->setBold(true);
 	user2->setMovable(true);
+	user2->setBoxMove(true);
 
 	for (ix = 0; ix < sizeof(props2) / sizeof(props2[0]); ix++)
-	{
-		item = qsiManager->textAdd(props2[ix], props2[ix],   x + 10, y + (ix + 1) * 20 + 5);
-		qsiManager->group(user2, item);
-	}
+		userBox2->textAdd(props2[ix], props2[ix],   10, (ix + 1) * 20 + 5);
 
-	// line = qsiManager->lineAdd("delimiter2", x, y + (ix + 1) * 20 + 5, x + 200, y + (ix + 1) * 20 + 5);
-	// qsiManager->group(user2, line);
+#if 0
+	userBox2->geometry(&x,&y,&w,&h);
+	LM_M(("Geometry for %s: { %d, %d } %d x %d", userBox2->name, x,y,w,h));
+	userBox2->lineAdd("delimiter2", 0, y, w, y);
+#endif
 
 	user2->menuAdd("Edit User",    userEdit,   user2);
 	user2->menuAdd("Remove User",  userRemove, user2);
@@ -282,40 +281,70 @@ static void qsiSetup(QWidget* mainWindow)
 	//
 	// Buttons
 	//
-	textButton         = qsiManager->buttonAdd("TextButton",     "Change Text",          10,  10, 150, 25);
-	moveButton         = qsiManager->buttonAdd("MoveButton",     "Move User Group",      10,  40, 150, 25);
-	expandButton       = qsiManager->buttonAdd("ExpandButton",   "Expand User Group",    10,  70, 150, 25);
-	compressButton     = qsiManager->buttonAdd("CompressButton", "Compress User Group",  10, 100, 150, 25);
-	fontButton         = qsiManager->buttonAdd("FontButton",     "Font",                 10, 130, 150, 25);
-	colorButton        = qsiManager->buttonAdd("ColorButton",    "Color",                10, 160, 150, 25);
-	boldButton         = qsiManager->buttonAdd("BoldButton",     "Bold",                 10, 190, 150, 25);
-	italicButton       = qsiManager->buttonAdd("ItalicButton",   "Italic",               10, 220, 150, 25);
+	Qsi::QsiBox* buttonBox = (Qsi::QsiBox*) mainBox->boxAdd("buttonBox", 10, 10);
 
-	alignUnderButton   = qsiManager->buttonAdd("AlignUnder",     "Align Under",          10, 270, 150, 25);
-	alignOverButton    = qsiManager->buttonAdd("AlignOver",      "Align Over",           10, 300, 150, 25);
-	alignToLeftButton  = qsiManager->buttonAdd("AlignToLeft",    "Align To Left",        10, 330, 150, 25);
-	alignToRightButton = qsiManager->buttonAdd("AlignToRight",   "Align To Right",       10, 360, 150, 25);
+	textButton         = (Qsi::QsiBlock*) buttonBox->buttonAdd("TextButton",     "Change Text",          0,  10, 150, 25);
+	moveButton         = (Qsi::QsiBlock*) buttonBox->buttonAdd("MoveButton",     "Move User Group",      0,  40, 150, 25);
+	expandButton       = (Qsi::QsiBlock*) buttonBox->buttonAdd("ExpandButton",   "Expand User Group",    0,  70, 150, 25);
+	compressButton     = (Qsi::QsiBlock*) buttonBox->buttonAdd("CompressButton", "Compress User Group",  0, 100, 150, 25);
+	fontButton         = (Qsi::QsiBlock*) buttonBox->buttonAdd("FontButton",     "Font",                 0, 130, 150, 25);
+	colorButton        = (Qsi::QsiBlock*) buttonBox->buttonAdd("ColorButton",    "Color",                0, 160, 150, 25);
+	boldButton         = (Qsi::QsiBlock*) buttonBox->buttonAdd("BoldButton",     "Bold",                 0, 190, 150, 25);
+	italicButton       = (Qsi::QsiBlock*) buttonBox->buttonAdd("ItalicButton",   "Italic",               0, 220, 150, 25);
 
-	inputP             = qsiManager->inputAdd("Input1",          "Input1",              10, 650, 200, 50);
-	inputOkButton      = qsiManager->buttonAdd("Input1OK",       "OK",                  10, 650,  50, 25);
+	alignSouthButton   = (Qsi::QsiBlock*) buttonBox->buttonAdd("AlignSouth",     "Align South",          0, 270, 150, 25);
+	alignNorthButton   = (Qsi::QsiBlock*) buttonBox->buttonAdd("AlignNorth",     "Align North",          0, 300, 150, 25);
+	alignWestButton    = (Qsi::QsiBlock*) buttonBox->buttonAdd("AlignWest",      "Align To West",        0, 330, 150, 25);
+	alignEastButton    = (Qsi::QsiBlock*) buttonBox->buttonAdd("AlignEast",      "Align To East",        0, 360, 150, 25);
+
+	textButton->setMovable(true);
+	textButton->setBoxMove(true);
+
+	
+	//
+	// Input
+	//
+	Qsi::QsiBox* inputBox = (Qsi::QsiBox*) mainBox->boxAdd("inputBox", 10, 650);
+
+	inputP             = (Qsi::QsiBlock*) inputBox->inputAdd("Input1",          "Input1",              0, 0, 200, 50);
+	inputOkButton      = (Qsi::QsiBlock*) inputBox->buttonAdd("Input1OK",       "OK",                  0, 0,  50, 25);
 
 	inputP->setMovable(true);
+	inputP->setBoxMove(true);
+
 	inputOkButton->setMovable(true);
+	inputOkButton->setBoxMove(true);
+	inputOkButton->align(Qsi::Alignment::East, inputP, 20);
 
-	inputOkButton->align(Qsi::QsiBlock::ToRight, inputP, 20);
-	qsiManager->group(inputP, inputOkButton);
 
-	tableImageP      = qsiManager->imageAdd("Table",  "Tables/images/Table.png", 700, 150, -1, -1);
-	numberImageP     = qsiManager->imageAdd("Number", "Tables/images/seven.png", 750, 190, 20, 20);
 
-	qsiManager->group(tableImageP, numberImageP);
+	//
+	// Small table
+	//
+	Qsi::QsiBox* smallTableBox = (Qsi::QsiBox*) mainBox->boxAdd("smallTableBox", 700, 150);
+
+	tableImageP      = (Qsi::QsiBlock*) smallTableBox->imageAdd("Table",  "Table.png", 0, 0, -1, -1);
+	numberImageP     = (Qsi::QsiBlock*) smallTableBox->imageAdd("Number", "seven.png", 50, 40, 20, 20);
+
+	numberImageP->align(Qsi::Alignment::Center, tableImageP, 0);
+	numberImageP->moveRelative(0, -15);
 	tableImageP->setMovable(true);
+	tableImageP->setBoxMove(true);
 
-	bigTableImageP   = qsiManager->imageAdd("Big Table",  "Tables/images/Table.png", 600, 400, 300, 300);
+
+	//
+	// Big table
+	//
+	bigTableImageP   = (Qsi::QsiBlock*) mainBox->imageAdd("Big Table",  "Table.png", 600, 400, 300, 300);
 
 	tableImageP->setMovable(true);
 	bigTableImageP->setMovable(true);
 
+
+
+	//
+	// Connect callbacks for buttons
+	//
 	qsiManager->siConnect(textButton,         buttonClicked, user1);
 	qsiManager->siConnect(moveButton,         buttonClicked, NULL);
 	qsiManager->siConnect(expandButton,       buttonClicked, NULL);
@@ -324,25 +353,11 @@ static void qsiSetup(QWidget* mainWindow)
 	qsiManager->siConnect(fontButton,         buttonClicked, NULL);
 	qsiManager->siConnect(boldButton,         buttonClicked, NULL);
 	qsiManager->siConnect(italicButton,       buttonClicked, NULL);
-	qsiManager->siConnect(alignUnderButton,   buttonClicked, NULL);
-	qsiManager->siConnect(alignOverButton,    buttonClicked, NULL);
-	qsiManager->siConnect(alignToLeftButton,  buttonClicked, NULL);
-	qsiManager->siConnect(alignToRightButton, buttonClicked, NULL);
+	qsiManager->siConnect(alignSouthButton,   buttonClicked, NULL);
+	qsiManager->siConnect(alignNorthButton,   buttonClicked, NULL);
+	qsiManager->siConnect(alignWestButton,    buttonClicked, NULL);
+	qsiManager->siConnect(alignEastButton,    buttonClicked, NULL);
 	qsiManager->siConnect(inputOkButton,      buttonClicked, NULL);
-
-	qsiManager->group(textButton, moveButton);
-	qsiManager->group(textButton, expandButton);
-	qsiManager->group(textButton, compressButton);
-	qsiManager->group(textButton, colorButton);
-	qsiManager->group(textButton, fontButton);
-	qsiManager->group(textButton, boldButton);
-	qsiManager->group(textButton, italicButton);
-	qsiManager->group(textButton, alignUnderButton);
-	qsiManager->group(textButton, alignOverButton);
-	qsiManager->group(textButton, alignToLeftButton);
-	qsiManager->group(textButton, alignToRightButton);
-
-	textButton->setMovable(true);
 }
 
 

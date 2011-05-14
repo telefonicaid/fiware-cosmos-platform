@@ -108,29 +108,8 @@ public:
 	~QsiManager();
 
 	char*      Home;
-
+	QsiBox*    box;
 	void       init(void);
-	void       show(const char* why);
-
-
-
-//
-// Specific Qsi Item Implementatins
-//
-	QsiBlock* textAdd(const char*   name, const char* txt,  int _x, int _y);
-	QsiBlock* lineAdd(const char*   name,                   int _x, int _y, int _x2, int _y2);
-	QsiBlock* buttonAdd(const char* name, const char* txt,  int _x, int _y, int width = -1, int height = -1);
-	QsiBlock* inputAdd(const char*  name, const char* txt,  int _x, int _y, int width = -1, int height = -1);
-	QsiBlock* imageAdd(const char*  name, const char* path, int _x, int _y, int width = -1, int height = -1);  // Path from 'Home'
-
-
-
-//
-// Group stuff (will be changed)
-//
-	void       group(QsiBlock* si1, QsiBlock* si2);
-	void       groupMove(QsiBlock* si, int x, int y);
-
 
 
 //

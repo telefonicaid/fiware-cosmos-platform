@@ -50,8 +50,8 @@ QsiBlock::QsiBlock
 	proxy     = NULL;  // Should use gItem for the proxy ...
 	gItemP    = NULL;
 
-	movable   = false;
-	boxMove   = false;
+	movable   = true;
+	boxMove   = true;
 	expanded  = true;
 
 	// As we haven't been moved yet ...
@@ -70,7 +70,7 @@ QsiBlock::QsiBlock
 	switch (type)
 	{
 	case Line:
-		gItemP = manager->addLine(x, y, width, height);
+		gItemP = manager->addLine(0, 0, width, height);
 		break;
 
 	case SimpleText:
@@ -115,6 +115,14 @@ QsiBlock::QsiBlock
 		LM_T(LmtCreate, ("Created %s '%s' at { %d, %d } (0x%x, 0x%x)", typeName(), name, x, y, proxy, gItemP));
 	else
 		LM_T(LmtCreate, ("Created %s '%s' at { %d, %d } %d x %d (0x%x, 0x%x)", typeName(), name, x, y, width, height, proxy, gItemP));
+
+	//
+	// Setting initial posistion to Absolute 0, 0
+	//
+	if (proxy != NULL)
+		proxy->setPos(0, 0);
+	else if (gItemP != NULL)
+		gItemP->setPos(0, 0);
 }
 
 
@@ -200,10 +208,11 @@ void QsiBlock::setSize(int width, int height)
 */
 void QsiBlock::moveRelative(int x, int y)
 {
+	LM_T(LmtMove, ("Moving %s '%s' %d pixels in X-axis and %d pixels in Y-axis. Old pos: { %d, %d }, New pos: { %d, %d }",
+				   typeName(), name, x, y, this->x, this->y, this->x + x, this->y + y));
+
 	this->x += x;
 	this->y += y;
-
-	LM_T(LmtMove, ("Moving %s '%s' to relative position { %d, %d }", typeName(), name, this->x, this->y));
 
 	if (gItemP)
 		gItemP->moveBy(x, y);
@@ -340,19 +349,19 @@ void QsiBlock::menuClear()
 *
 * geometry - 
 */
-void QsiBlock::geometry(int* xP, int* yP, int* widthP, int* heightP)
+int QsiBlock::geometry(int* xP, int* yP, int* widthP, int* heightP)
 {
 	QRectF rect;
 
 	if (isVisible() == false)
 	{
-		*xP       = 0;
-		*yP       = 0;
+		*xP       = x;  // was '0' and all almost worked
+		*yP       = y;  // was '0' and all almost worked
 		*widthP   = 0;
 		*heightP  = 0;
 
 		LM_T(LmtGeometry, ("  Invisible %s '%s' geometry: { %d, %d } %d x %d", typeName(), name, *xP, *yP, *widthP, *heightP));
-		return;
+		return -1;
 	}
 
 	switch (type)
@@ -384,7 +393,9 @@ void QsiBlock::geometry(int* xP, int* yP, int* widthP, int* heightP)
 	*widthP   = rwidth;
 	*heightP  = rheight;
 
-	LM_T(LmtGeometry, ("  Visible %s '%s' geometry: { %d, %d } %d x %d (getRect returned { %d, %d })", typeName(), name, *xP, *yP, *widthP, *heightP, rx, ry));
+	LM_T(LmtGeometry, ("  Visible %s '%s' geometry: { %d, %d } %d x %d", typeName(), name, *xP, *yP, *widthP, *heightP));
+
+	return 0;
 }
 
 

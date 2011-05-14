@@ -22,7 +22,10 @@
 #define LmtGeometry           156
 #define LmtInput              157
 #define LmtAlign              158
-#define LmtMousePress         159
-#define LmtBlockLookup        160
+#define LmtAlignVector        159
+#define LmtAlignList          160
+#define LmtSizeChange         161
+#define LmtMousePress         162
+#define LmtBlockLookup        163
 
 #endif

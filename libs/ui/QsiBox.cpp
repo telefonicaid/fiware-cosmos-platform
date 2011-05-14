@@ -11,6 +11,8 @@
 #include "traceLevels.h"        // Lmt*
 
 #include "QsiAlignment.h"       // QsiAlignment
+#include "QsiFunction.h"        // QsiFunction
+#include "QsiManager.h"         // QsiManager
 #include "QsiBase.h"            // QsiBase
 #include "QsiBlock.h"           // QsiBlock
 #include "QsiBox.h"             // Own interface
@@ -55,6 +57,9 @@ QsiBox::QsiBox(QsiManager* manager, QsiBox* owner, const char* name, int x, int 
 
 	this->manager = manager;
 	type          = Box;
+
+	this->x = xInitial;
+	this->y = yInitial;
 }
 
 
@@ -80,11 +85,10 @@ void QsiBox::moveAbsolute(int x, int y)
 		qsiVec[ix]->moveRelative(qsiVec[ix]->x, qsiVec[ix]->y);
 	}
 	
-	LM_TODO(("Implement BORDER amd move it"));
+	LM_TODO(("Implement BORDER and move it"));
 
-	LM_TODO(("Should make sure 'this' really has changed its geometry before calling owner's sizeChange"));
-	if (owner != NULL)
-		owner->sizeChange(this);
+	LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
+	sizeChange(this);
 }
 
 
@@ -106,11 +110,10 @@ void QsiBox::moveRelative(int x, int y)
 	this->x += x;
 	this->y += y;
 
-	LM_TODO(("Implement BORDER amd move it"));
+	LM_TODO(("Implement BORDER and move it"));
 
-	LM_TODO(("Should make sure 'this' really has changed its geometry before calling owner's sizeChange"));
-	if (owner != NULL)
-		owner->sizeChange(this);
+	LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
+	sizeChange(this);
 }
 
 
@@ -119,10 +122,10 @@ void QsiBox::moveRelative(int x, int y)
 *
 * geometry - 
 */
-void QsiBox::geometry(int* xP, int* yP, int* widthP, int* heightP)
+int QsiBox::geometry(int* xP, int* yP, int* widthP, int* heightP)
 {
-	int xMax = 0;
-	int yMax = 0;
+	int xMax = -500000;
+	int yMax = -500000;
 	int xMin = 0x7FFFFFFF;
 	int yMin = 0x7FFFFFFF;
 
@@ -139,6 +142,9 @@ void QsiBox::geometry(int* xP, int* yP, int* widthP, int* heightP)
 		if (qsiVec[ix] == NULL)
 			continue;
 
+		if (qsiVec[ix]->isVisible() == false)
+			continue;
+
 		qsiVec[ix]->geometry(&qx, &qy, &qw, &qh);
 		LM_T(LmtGeometry, ("Geometry for %s '%s': { %d, %d } %d x %d", qsiVec[ix]->typeName(), qsiVec[ix]->name, qx, qy, qw, qh));
 		xMax = MAX(xMax, qx + qw);
@@ -146,8 +152,14 @@ void QsiBox::geometry(int* xP, int* yP, int* widthP, int* heightP)
 		xMin = MIN(xMin, qx);
 		yMin = MIN(yMin, qy);
 
-		LM_T(LmtGeometry, ("xMin = %d, xMax = %d", xMin, xMax));
-		LM_T(LmtGeometry, ("yMin = %d, yMax = %d", yMin, yMax));
+		LM_T(LmtGeometry, ("xMin = %d, xMax = %d     yMin = %d, yMax = %d         dx = %d, dy = %d", xMin, xMax, yMin, yMax, xMax - xMin, yMax - yMin));
+	}
+
+	if ((xMin == 0x7FFFFFFF) || (yMin == 0x7FFFFFFF) || (xMax == -500000) || (yMax == -500000))
+	{
+		*widthP  = 0;
+		*heightP = 0;
+		LM_RE(-1, ("No geometry found"));
 	}
 
 	*widthP  = xMax - xMin;
@@ -158,6 +170,8 @@ void QsiBox::geometry(int* xP, int* yP, int* widthP, int* heightP)
 	LM_T(LmtGeometry, (""));
 	LM_T(LmtGeometry, ("----------------------------------"));
 	LM_T(LmtGeometry, (""));
+
+	return 0;
 }
 
 
@@ -176,9 +190,8 @@ void QsiBox::hide(void)
 		qsiVec[ix]->hide();
 	}
 
-	LM_TODO(("Should make sure 'this' really has changed its geometry before calling owner's sizeChange"));
-	if (owner != NULL)
-		owner->sizeChange(this);
+	LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
+	sizeChange(this);
 }
 
 
@@ -197,25 +210,24 @@ void QsiBox::show(void)
 		qsiVec[ix]->show();
 	}
 
-	LM_TODO(("Should make sure 'this' really has changed its geometry before calling owner's sizeChange"));
-	if (owner != NULL)
-		owner->sizeChange(this);
+	LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
+	sizeChange(this);
 }
 
 
 
 /* ****************************************************************************
 *
-* absMove - initial positioning of newly created QSI
+* initialMove - initial positioning of newly created QSI
 */
-void QsiBox::absMove(QsiBase* qbP, int dx, int dy)
+void QsiBox::initialMove(QsiBase* qbP)
 {
 	int ax, ay;
-
+	
 	absPos(&ax, &ay);
 
 	qbP->moveAbsolute(ax, ay);
-	qbP->moveRelative(dx, dy);
+	qbP->moveRelative(qbP->xInitial, qbP->yInitial);
 }
 
 
@@ -234,11 +246,10 @@ void QsiBox::add(QsiBase* qbP)
 		qsiVec[ix] = qbP;
 
 		if (qbP->type != Box)
-			absMove(qbP, qbP->x, qbP->y);
+			initialMove(qbP);
 
-		LM_TODO(("Should make sure 'this' really has changed its geometry before calling owner's sizeChange"));
-		if (owner != NULL)
-			owner->sizeChange(this);
+		LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
+		sizeChange(this);
 
 		return;
 	}
@@ -267,9 +278,8 @@ void QsiBox::remove(QsiBase* qsi)
 		delete qsi;
 		qsiVec[ix] = NULL;
 
-		LM_TODO(("Should make sure 'this' really has changed its geometry before calling owner's sizeChange"));
-		if (owner != NULL)
-			owner->sizeChange(this);
+		LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
+		sizeChange(this);
 
 		return;
 	}
@@ -293,10 +303,16 @@ Alignment* QsiBox::alignLookup(QsiBase* master, QsiBase* slave)
 			continue;
 
 		if ((alignVec[ix]->master == master) && (alignVec[ix]->slave == slave))
+		{
+			LM_T(LmtAlignVector, ("Found master '%s' and slave '%s' in alignment vector", master->name, slave->name));
 			return alignVec[ix];
+		}
 
 		if ((alignVec[ix]->master == slave) && (alignVec[ix]->slave == master))
+		{
+			LM_T(LmtAlignVector, ("Found master '%s' (as slave) and slave '%s' (as master) in alignment vector", master->name, slave->name));
 			return alignVec[ix];
+		}
 	}
 
 	return NULL;
@@ -310,7 +326,7 @@ Alignment* QsiBox::alignLookup(QsiBase* master, QsiBase* slave)
 */
 void QsiBox::align(Alignment::Type type, QsiBase* master, int margin)
 {
-	align(master, type, this, margin);
+	owner->align(master, type, this, margin);
 }
 
 
@@ -341,12 +357,13 @@ void QsiBox::align(QsiBase* master, Alignment::Type type, QsiBase* slave, int ma
 
 			alignVec[ix] = (Alignment*) calloc(1, sizeof(Alignment));
 			alignP       = alignVec[ix];
+
 			break;
 		}
 
 		if (alignP == NULL)
 		{
-			LM_W(("REALLOC Alignment Vector"));
+			LM_T(LmtAlignVector, ("Reallocating Alignment Vector, adding %d slots", ALIGNS));
 			alignVec = (Alignment**) realloc(alignVec, (alignVecSize + ALIGNS) * sizeof(Alignment*));
 			for (int ix = alignVecSize; ix < alignVecSize + ALIGNS; ix++)
 				alignVec[ix] = NULL;
@@ -354,16 +371,83 @@ void QsiBox::align(QsiBase* master, Alignment::Type type, QsiBase* slave, int ma
 			alignVecSize = alignVecSize + ALIGNS;
 			
 			align(master, type, slave, margin);
+			return;
 		}
 	}
+	else
+		LM_T(LmtAlignVector, ("%s and %s were already aligned - changing their alignment", master->name, slave->name));
 
-	
 	alignP->type   = type;
 	alignP->master = master;
 	alignP->slave  = slave;
 	alignP->margin = margin;
 	
+	alignShow("Added Alignment");
 	realign(master, type, slave, margin);
+}
+
+
+
+/* ****************************************************************************
+*
+* unalign - 
+*/
+void QsiBox::unalign(QsiBase* master)
+{
+	owner->unalign(master, this);
+}
+
+
+
+/* ****************************************************************************
+*
+* unalign - 
+*/
+void QsiBox::unalign(QsiBase* master, QsiBase* slave)
+{
+	int unaligns = 0;
+
+	for (int ix = 0; ix < alignVecSize; ix++)
+	{
+		if (alignVec[ix] == NULL)
+			continue;
+
+		if (((alignVec[ix]->master == master) && (alignVec[ix]->slave == slave)) || ((alignVec[ix]->master == slave) && (alignVec[ix]->slave == master)))
+		{
+			LM_T(LmtAlign, ("Unaligning master '%s' and slave '%s'", master->name, slave->name));
+
+			free(alignVec[ix]);
+			alignVec[ix] = NULL;
+			++unaligns;
+		}
+	}
+
+	if (unaligns == 0)
+		LM_W(("Cannot unalign '%s' fron '%s' - not found", master->name, slave->name));
+}
+
+
+
+/* ****************************************************************************
+*
+* alignShow - 
+*/
+void QsiBox::alignShow(const char* why)
+{
+	LM_T(LmtAlignList, (""));
+	LM_T(LmtAlignList, ("------------------------ %s: Alignment List (%s) ------------------------", name, why));
+	LM_T(LmtAlignList, (""));
+	LM_T(LmtAlignList, ("No  %-20s %-20s %-20s  Margin", "Master", "Slave", "Type"));
+	LM_T(LmtAlignList, ("--------------------------------------------------------------------------------"));
+	for (int ix = 0; ix < alignVecSize; ix++)
+	{
+		if (alignVec[ix] == NULL)
+			continue;
+
+		LM_T(LmtAlignList, ("%02d  %-20s %-20s %-20s  %d", ix, alignVec[ix]->master->name, alignVec[ix]->slave->name, Alignment::name(alignVec[ix]->type), alignVec[ix]->margin));
+	}
+	LM_T(LmtAlignList, ("--------------------------------------------------------------------------------"));
+	LM_T(LmtAlignList, (""));
 }
 
 
@@ -376,13 +460,11 @@ void QsiBox::realign(QsiBase* master, Alignment::Type type, QsiBase* slave, int 
 {
 	int mx, my, mw, mh;
 	int sx, sy, sw, sh;
-	int ax, ay;
 	int dx, dy;
 
 	LM_T(LmtAlign, ("Aligning %s slave '%s' to %s master '%s'. Alignment type: %s, margin: %d", slave->typeName(), slave->name, master->typeName(), master->name, Alignment::name(type), margin));
 	master->geometry(&mx, &my, &mw, &mh);
 	slave->geometry(&sx, &sy, &sw, &sh);
-	absPos(&ax, &ay);
 
 	LM_T(LmtAlign, ("Master geometry: { %d, %d } %d x %d", mx, my, mw, mh));
 	LM_T(LmtAlign, ("Slave  geometry: { %d, %d } %d x %d", sx, sy, sw, sh));
@@ -416,9 +498,8 @@ void QsiBox::realign(QsiBase* master, Alignment::Type type, QsiBase* slave, int 
 	LM_T(LmtAlign, ("Move slave '%s' %d pixels in X-axis and %d pixels in Y-axis", slave->name, dx, dy));
 	slave->moveRelative(dx, dy);
 
-	LM_TODO(("Should make sure 'this' really has changed its geometry before calling owner's sizeChange"));
-	if (owner != NULL)
-		owner->sizeChange(this);
+	LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
+	sizeChange(this);
 }
 
 
@@ -467,15 +548,23 @@ void QsiBox::absPos(int* xP, int* yP)
 *
 * sizeChange - 
 */
-void QsiBox::sizeChange(QsiBase* qsi)
+void QsiBox::sizeChange(QsiBase* qbP)
 {
+	LM_T(LmtSizeChange, ("Size changed for %s '%s'", qbP->typeName(), qbP->name));
+
+	alignShow("Size Change");
 	for (int ix = 0; ix < alignVecSize; ix++)
 	{
 		if (alignVec[ix] == NULL)
 			continue;
 
-		if (alignVec[ix]->master == qsi)
+		if (alignVec[ix]->master == qbP)
+		{
+			LM_T(LmtSizeChange, ("realigning slave %s '%s' to master '%s'", alignVec[ix]->slave->typeName(), alignVec[ix]->slave->name, alignVec[ix]->master->name));
 			realign(alignVec[ix]->master, alignVec[ix]->type, alignVec[ix]->slave, alignVec[ix]->margin);
+		}
+		else
+			LM_T(LmtSizeChange, ("NOT realigning slave %s '%s' to master '%s'", alignVec[ix]->slave->typeName(), alignVec[ix]->slave->name, alignVec[ix]->master->name));
 	}	
 
 	LM_TODO(("Should make sure 'this' really has changed its geometry before calling owner's sizeChange"));
@@ -531,11 +620,15 @@ QsiBase* QsiBox::lineAdd(const char* name, int x, int y, int x2, int y2)
 *
 * buttonAdd - 
 */
-QsiBase* QsiBox::buttonAdd(const char* name, const char* txt, int x, int y, int width, int height)
+QsiBase* QsiBox::buttonAdd(const char* name, const char* txt, int x, int y, int width, int height, QsiFunction func, void* param)
 {
 	QsiBlock* qbP = new QsiBlock(manager, this, Qsi::Button, name, txt, x, y, width, height);
 
 	add(qbP);
+
+	if (func != NULL)
+		manager->siConnect(qbP, func, param);
+
 	return qbP;
 }
 
@@ -559,11 +652,15 @@ QsiBase* QsiBox::inputAdd(const char* name, const char* txt, int x, int y, int w
 *
 * imageAdd - 
 */
-QsiBase* QsiBox::imageAdd(const char* name, const char* path, int x, int y, int width, int height)
+QsiBase* QsiBox::imageAdd(const char* name, const char* path, int x, int y, int width, int height, QsiFunction func, void* param)
 {
 	QsiBlock* qbP = new QsiBlock(manager, this, Qsi::Image, name, path, x, y, width, height);
 
 	add(qbP);
+
+	if (func != NULL)
+		manager->siConnect(qbP, func, param);
+
 	return qbP;
 }
 

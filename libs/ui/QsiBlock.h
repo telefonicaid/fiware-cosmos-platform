@@ -70,7 +70,7 @@ public:
 	QsiBlock(QsiManager* manager, QsiBox* owner, QsiType type, const char* name, const char* txt, int x, int y, int width = -1, int height = -1);
 	~QsiBlock();
 
-	void         geometry(int* xP, int* yP, int* widthP, int* heightP);
+	int          geometry(int* xP, int* yP, int* widthP, int* heightP);
 	void         moveRelative(int x, int y);
 	void         moveAbsolute(int x, int y);
 	void         align(Alignment::Type type, QsiBase* master, int margin);

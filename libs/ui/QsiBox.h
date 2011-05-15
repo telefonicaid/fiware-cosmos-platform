@@ -65,7 +65,7 @@ public:
 	void        realign(void);                                                               // after removol, realing all upwards
 	void        alignFix(QsiBase* qbP);                                                      // Mend alignments at removal of an item
 	Alignment*  alignLookup(QsiBase* master, QsiBase* slave);                                // wont have mor than alignment between two qsis
-	void        alignShow(const char* why);                                                  // Show list of alignment vector
+	void        alignShow(const char* why, bool force = false);                              // Show list of alignment vector
 	
 	void        sizeChange(QsiBase* qsi);                                                    // callback - a child has changed its size
 

@@ -113,6 +113,9 @@ Qsi::QsiBlock*    alignCenterButton;
 Qsi::QsiBlock*    alignNoneButton;
 
 
+Qsi::QsiBox*      qBox[10];
+Qsi::QsiBlock*    qBoxTitle[10];
+
 
 void userEdit(Qsi::QsiBlock* qbP, void* param)
 {
@@ -125,6 +128,8 @@ void userRemove(Qsi::QsiBlock* qbP, void* param)
 {
 	LM_W(("Removing user '%s', param: %p Not Implemented", qbP->name, param));
 }
+
+
 
 void userColor(Qsi::QsiBlock* qbP, void* param)
 {
@@ -140,6 +145,40 @@ void userColor(Qsi::QsiBlock* qbP, void* param)
 	g = (g + 15) % 256;
 	b = (b + 20) % 256;
 	a = (a + 10) % 256;
+}
+
+
+
+void colorChange(Qsi::QsiBlock* qbP, void* col)
+{
+	char* color = (char*) col;
+
+	if (strcmp(color, "Red") == 0)
+		qbP->setColor(0xFF, 0, 0, 0xFF);
+	else if (strcmp(color, "Green") == 0)
+		qbP->setColor(0, 0xFF, 0, 0xFF);
+	else if (strcmp(color, "Blue") == 0)
+		qbP->setColor(0, 0, 0xFF, 0xFF);
+	else
+		qbP->setColor(0, 0, 0, 0xFF);
+}
+
+
+
+void remove(Qsi::QsiBlock* qbP, void* x)
+{
+	Qsi::QsiBox* box = qbP->getOwner();
+
+	box->remove(qbP);
+}
+
+
+
+void alignmentList(Qsi::QsiBlock* qbP, void* x)
+{
+	Qsi::QsiBox*  box   = (Qsi::QsiBox*) x;
+
+	box->alignShow("From Menu", true);
 }
 
 
@@ -220,6 +259,28 @@ void buttonClicked(Qsi::QsiBlock* qbP, void* param)
 
 
 
+void compress(Qsi::QsiBlock* qbP, void* vP)
+{
+	for (int ix = 0; ix < 10; ix++)
+		qBoxTitle[ix]->hideOthers();
+
+	qbP = NULL;
+	vP  = NULL;
+}
+
+
+
+void expand(Qsi::QsiBlock* qbP, void* vP)
+{
+	for (int ix = 0; ix < 10; ix++)
+		qBoxTitle[ix]->showOthers();
+
+	qbP = NULL;
+	vP  = NULL;
+}
+
+
+
 /* ****************************************************************************
 *
 * qsiSetup - 
@@ -239,29 +300,64 @@ static void qsiSetup(QWidget* mainWindow)
 
 
 	
+	qsiManager->menuAdd("Compress All",   compress, NULL);
+	qsiManager->menuAdd("Expand All",     expand,   NULL);
+
 	//
 	// Test with 10 aligned boxes
 	//
-	Qsi::QsiBox* qBox[10];
 	for (int ix = 0; ix < 10; ix++)
 	{
 		char            boxName[16];
 		char            txt[32];
-		Qsi::QsiBlock*  qbP;
+		Qsi::QsiBlock*  qb1P;
+		Qsi::QsiBlock*  qb2P;
+		Qsi::QsiBlock*  qb3P;
+		Qsi::QsiBlock*  qb4P;
 
 		snprintf(boxName, sizeof(boxName), "QBox %d", ix);
 		qBox[ix] = (Qsi::QsiBox*) mainBox->boxAdd(boxName, 1100, 100 + ix * 70);
 
-		snprintf(boxName, sizeof(boxName), "QBox %d kvs", ix);
-		qbP = (Qsi::QsiBlock*) qBox[ix]->textAdd(boxName, boxName, 0, 0);
-		qbP->setBold(true);
-		qsiManager->siConnect(qbP, textClicked, NULL);
+		qBoxTitle[ix] = (Qsi::QsiBlock*) qBox[ix]->textAdd(boxName, boxName, 0, 0);
+		qBoxTitle[ix]->setBold(true);
+		qsiManager->siConnect(qBoxTitle[ix], textClicked, NULL);
+		qBoxTitle[ix]->menuAdd("Alignment List", alignmentList, qBox[ix]);
 
 		snprintf(txt,     sizeof(txt),     "%d KVs", 19 + ix * 17);
-		qBox[ix]->textAdd(txt, txt, 10, 20);
-
+		qb1P = (Qsi::QsiBlock*) qBox[ix]->textAdd(txt, txt, 10, 20);
+		qb1P->menuAdd("Remove", remove, qb1P); 
+		qb1P->menuAdd("Red",   colorChange, (void*) "Red");
+		qb1P->menuAdd("Green", colorChange, (void*) "Green");
+		qb1P->menuAdd("Blue",  colorChange, (void*) "Blue");
+		qb1P->menuAdd("Black", colorChange, (void*) "Black");
+		qb1P->align(Qsi::Alignment::South, qBoxTitle[ix], 10);
+		
 		snprintf(txt,     sizeof(txt),     "%d Mbytes", 37 + ix * 13);
-		qBox[ix]->textAdd(txt, txt, 10, 35);
+		qb2P = (Qsi::QsiBlock*) qBox[ix]->textAdd(txt, txt, 10, 35);
+		qb2P->menuAdd("Remove", remove, qb2P); 
+		qb2P->menuAdd("Red",   colorChange, (void*) "Red");
+		qb2P->menuAdd("Green", colorChange, (void*) "Green");
+		qb2P->menuAdd("Blue",  colorChange, (void*) "Blue");
+		qb2P->menuAdd("Black", colorChange, (void*) "Black");
+		qb2P->align(Qsi::Alignment::South, qb1P, 5);
+
+		snprintf(txt,     sizeof(txt),     "%d Mbps", 7 + ix * 3);
+		qb3P = (Qsi::QsiBlock*) qBox[ix]->textAdd(txt, txt, 10, 50);
+		qb3P->menuAdd("Remove", remove, qb3P); 
+		qb3P->menuAdd("Red",   colorChange, (void*) "Red");
+		qb3P->menuAdd("Green", colorChange, (void*) "Green");
+		qb3P->menuAdd("Blue",  colorChange, (void*) "Blue");
+		qb3P->menuAdd("Black", colorChange, (void*) "Black");
+		qb3P->align(Qsi::Alignment::South, qb2P, 5);
+
+		snprintf(txt,     sizeof(txt),     "%d seconds", 137 + ix * 13);
+		qb4P = (Qsi::QsiBlock*) qBox[ix]->textAdd(txt, txt, 10, 65);
+		qb4P->menuAdd("Remove", remove, qb4P); 
+		qb4P->menuAdd("Red",   colorChange, (void*) "Red");
+		qb4P->menuAdd("Green", colorChange, (void*) "Green");
+		qb4P->menuAdd("Blue",  colorChange, (void*) "Blue");
+		qb4P->menuAdd("Black", colorChange, (void*) "Black");
+		qb4P->align(Qsi::Alignment::South, qb3P, 5);
 
 		if (ix > 0)
 			qBox[ix]->align(Qsi::Alignment::South, qBox[ix - 1], 10);

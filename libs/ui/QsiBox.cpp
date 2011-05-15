@@ -148,6 +148,7 @@ int QsiBox::geometry(int* xP, int* yP, int* widthP, int* heightP)
 			continue;
 		}
 
+		LM_M(("Checking whether '%s' is visible", qsiVec[ix]->name));
 		if (qsiVec[ix]->isVisible() == false)
 		{
 			LM_T(LmtGeometry, ("%02d: %s '%s' is NOT visible", ix, qsiVec[ix]->typeName(), qsiVec[ix]->name));
@@ -537,22 +538,42 @@ void QsiBox::unalign(QsiBase* master, QsiBase* slave)
 *
 * alignShow - 
 */
-void QsiBox::alignShow(const char* why)
+void QsiBox::alignShow(const char* why, bool force)
 {
-	LM_T(LmtAlignList, (""));
-	LM_T(LmtAlignList, ("------------------------ %s: Alignment List (%s) ------------------------", name, why));
-	LM_T(LmtAlignList, (""));
-	LM_T(LmtAlignList, ("No  %-30s %-30s %-20s  Margin", "Master", "Slave", "Type"));
-	LM_T(LmtAlignList, ("--------------------------------------------------------------------------------"));
-	for (int ix = 0; ix < alignVecSize; ix++)
+	if (force == true)
 	{
-		if (alignVec[ix] == NULL)
-			continue;
+		LM_F((""));
+		LM_F(("------------------------ %s: Alignment List (%s) ------------------------", name, why));
+		LM_F((""));
+		LM_F(("No  %-30s %-30s %-20s  Margin", "Master", "Slave", "Type"));
+		LM_F(("----------------------------------------------------------------------------------------------------"));
+		for (int ix = 0; ix < alignVecSize; ix++)
+		{
+			if (alignVec[ix] == NULL)
+				continue;
 
-		LM_T(LmtAlignList, ("%02d  %-30s %-30s %-20s  %d", ix, alignVec[ix]->master->name, alignVec[ix]->slave->name, Alignment::name(alignVec[ix]->type), alignVec[ix]->margin));
+			LM_F(("%02d  %-30s %-30s %-20s  %d", ix, alignVec[ix]->master->name, alignVec[ix]->slave->name, Alignment::name(alignVec[ix]->type), alignVec[ix]->margin));
+		}
+		LM_F(("----------------------------------------------------------------------------------------------------"));
+		LM_F((""));
 	}
-	LM_T(LmtAlignList, ("--------------------------------------------------------------------------------"));
-	LM_T(LmtAlignList, (""));
+	else
+	{
+		LM_T(LmtAlignList, (""));
+		LM_T(LmtAlignList, ("------------------------ %s: Alignment List (%s) ------------------------", name, why));
+		LM_T(LmtAlignList, (""));
+		LM_T(LmtAlignList, ("No  %-30s %-30s %-20s  Margin", "Master", "Slave", "Type"));
+		LM_T(LmtAlignList, ("----------------------------------------------------------------------------------------------------"));
+		for (int ix = 0; ix < alignVecSize; ix++)
+		{
+			if (alignVec[ix] == NULL)
+				continue;
+
+			LM_T(LmtAlignList, ("%02d  %-30s %-30s %-20s  %d", ix, alignVec[ix]->master->name, alignVec[ix]->slave->name, Alignment::name(alignVec[ix]->type), alignVec[ix]->margin));
+		}
+		LM_T(LmtAlignList, ("----------------------------------------------------------------------------------------------------"));
+		LM_T(LmtAlignList, (""));
+	}
 }
 
 

@@ -135,6 +135,16 @@ public slots:
 	void       menuActionFunc7();
 	void       menuActionFunc8();
 	void       menuActionFunc9();
+
+//
+// Menu for background
+//
+public:
+	void         menuAdd(const char* title, QsiFunction func, void* param);
+	void         menuClear(void);
+	char*        menuTitle[QSI_MENU_ACTIONS];
+	QsiFunction  menuFunc[QSI_MENU_ACTIONS];
+	void*        menuParam[QSI_MENU_ACTIONS];
 };
 
 }

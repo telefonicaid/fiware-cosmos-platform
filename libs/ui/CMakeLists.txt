@@ -16,6 +16,7 @@ SET (HEADERS_MOC
 )
 
 SET (SOURCES
+	QsiBase.cpp
 	QsiBlock.cpp
 	QsiBox.cpp
 	QsiManager.cpp

@@ -277,21 +277,104 @@ void QsiBox::add(QsiBase* qbP)
 *
 * remove - 
 */
-void QsiBox::remove(QsiBase* qsi)
+void QsiBox::remove(QsiBase* qbP)
 {
+	LM_T(LmtRemove, ("Removing %s '%s'", qbP->typeName(), qbP->name));
+
 	for (int ix = 0; ix < qsiVecSize; ix++)
 	{
-		if (qsiVec[ix] != qsi)
+		LM_T(LmtRemove, ("ix == %d", ix));
+		if (qsiVec[ix] != qbP)
 			continue;
 
-		delete qsi;
+		LM_T(LmtRemove, ("deleting  %s '%s'", qbP->typeName(), qbP->name));
+		alignFix(qbP);
+
+		if (qbP->type == Box)
+			delete (QsiBox*) qbP;
+		else
+			delete (QsiBlock*) qbP;
+
 		qsiVec[ix] = NULL;
 
 		LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
-		sizeChange(this);
+		owner->sizeChange(owner);
 
 		return;
 	}
+}
+
+
+
+/* ****************************************************************************
+*
+* alignFix - 
+*/
+void QsiBox::alignFix(QsiBase* qbP)
+{
+	QsiBase*         newMaster = NULL;
+	Alignment::Type  type;
+	int              margin;
+
+	alignShow("Before removal");
+	LM_T(LmtAlign, ("Fixing alignment at removing %s '%s'", qbP->typeName(), qbP->name));
+
+
+
+	//
+	// 1. What item is the item to be removed aligned to?
+	//    I need this to inherit items that are aligned to the item to remove
+	//
+	for (int ix = 0; ix < alignVecSize; ix++)
+	{
+		if (alignVec[ix] == NULL)
+			continue;
+		if (alignVec[ix]->slave == qbP)
+		{
+			newMaster = alignVec[ix]->master;
+			type      = alignVec[ix]->type;
+			margin    = alignVec[ix]->margin;
+
+			unalign(alignVec[ix]->master, alignVec[ix]->slave);
+			break;
+		}
+	}
+
+
+
+	//
+	// 2. lookup all items aligned to 'qbP' and change them so they're aligned to 'newMaster' instead
+	//    if 'newMaster' is NULL, just remove the alignment.
+	//    Likewise for alignments where 'qbP' is slave, just remove ...
+	//
+	for (int ix = 0; ix < alignVecSize; ix++)
+	{
+		if (alignVec[ix] == NULL)
+			continue;
+
+		if (alignVec[ix]->master == qbP)
+		{
+			if (newMaster != NULL)
+			{
+				LM_W(("%s '%s' is aligned to item-to-be-removed (%s '%s') - aligning him to inheriting master '%s'",
+					  alignVec[ix]->slave->typeName(), alignVec[ix]->slave->name, alignVec[ix]->master->typeName(), qbP->name, newMaster->name));
+
+				alignVec[ix]->slave->align(type, newMaster, margin);
+				sizeChange(alignVec[ix]->slave);
+			}
+
+			LM_T(LmtAlignVector, ("Removing master-alignment for to-be-removed %s '%s'", qbP->typeName(), qbP->name));
+			unalign(ix);
+		}
+		else if (alignVec[ix]->slave == qbP)
+		{
+			LM_T(LmtAlignVector, ("Removing slave-alignment for to-be-removed %s '%s'", qbP->typeName(), qbP->name));
+			unalign(ix);
+		}
+	}
+
+	alignShow("After removal");
+	
 }
 
 
@@ -401,6 +484,18 @@ void QsiBox::align(QsiBase* master, Alignment::Type type, QsiBase* slave, int ma
 *
 * unalign - 
 */
+void QsiBox::unalign(int ix)
+{
+	free(alignVec[ix]);
+	alignVec[ix] = NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* unalign - 
+*/
 void QsiBox::unalign(QsiBase* master)
 {
 	owner->unalign(master, this);
@@ -424,9 +519,7 @@ void QsiBox::unalign(QsiBase* master, QsiBase* slave)
 		if (((alignVec[ix]->master == master) && (alignVec[ix]->slave == slave)) || ((alignVec[ix]->master == slave) && (alignVec[ix]->slave == master)))
 		{
 			LM_T(LmtAlign, ("Unaligning master '%s' and slave '%s'", master->name, slave->name));
-
-			free(alignVec[ix]);
-			alignVec[ix] = NULL;
+			unalign(ix);
 			++unaligns;
 		}
 	}
@@ -446,14 +539,14 @@ void QsiBox::alignShow(const char* why)
 	LM_T(LmtAlignList, (""));
 	LM_T(LmtAlignList, ("------------------------ %s: Alignment List (%s) ------------------------", name, why));
 	LM_T(LmtAlignList, (""));
-	LM_T(LmtAlignList, ("No  %-20s %-20s %-20s  Margin", "Master", "Slave", "Type"));
+	LM_T(LmtAlignList, ("No  %-30s %-30s %-20s  Margin", "Master", "Slave", "Type"));
 	LM_T(LmtAlignList, ("--------------------------------------------------------------------------------"));
 	for (int ix = 0; ix < alignVecSize; ix++)
 	{
 		if (alignVec[ix] == NULL)
 			continue;
 
-		LM_T(LmtAlignList, ("%02d  %-20s %-20s %-20s  %d", ix, alignVec[ix]->master->name, alignVec[ix]->slave->name, Alignment::name(alignVec[ix]->type), alignVec[ix]->margin));
+		LM_T(LmtAlignList, ("%02d  %-30s %-30s %-20s  %d", ix, alignVec[ix]->master->name, alignVec[ix]->slave->name, Alignment::name(alignVec[ix]->type), alignVec[ix]->margin));
 	}
 	LM_T(LmtAlignList, ("--------------------------------------------------------------------------------"));
 	LM_T(LmtAlignList, (""));

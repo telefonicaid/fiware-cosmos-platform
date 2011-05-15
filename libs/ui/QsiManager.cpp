@@ -101,6 +101,14 @@ QsiManager::QsiManager(QVBoxLayout* layout, const char* homeDir, const char* bac
 	box = new QsiBox(this, NULL, "topbox", 0, 0);
 	x = 0;
 	y = 0;
+
+
+	for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
+	{
+		menuTitle[ix]  = NULL;
+		menuFunc[ix]   = NULL;
+		menuParam[ix]  = NULL;
+	}	
 }
 
 
@@ -140,7 +148,6 @@ void QsiManager::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEve
 			LM_T(LmtMenu, ("Menu for '%s'", activeItem->name));
 			for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
 			{
-
 				if (activeItem->menuTitle[ix] == NULL)
 					continue;
 
@@ -171,15 +178,53 @@ void QsiManager::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEve
 				else if (ix == 9)
 					connect(menuAction[ix], SIGNAL(triggered()), this, SLOT(menuActionFunc9()));
 			}
+
 			menu.exec(screenPos);
 		}
 		else
 			LM_W(("No associated menu for '%s'", activeItem->name));
 	}
 	else
+	{
+		QMenu menu("background");
 		LM_T(LmtMenu, ("Menu for BACKGROUND"));
+		for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
+		{
+			if (menuTitle[ix] == NULL)
+				continue;
 
+			LM_T(LmtMenu, ("Menu item %d for '%s': %s", ix, "BACKGROUND", menuTitle[ix]));
+			if (menuAction[ix] != NULL)
+				delete menuAction[ix];
+
+			menuAction[ix] = new QAction(menuTitle[ix], this);
+			menu.addAction(menuAction[ix]);
+			if (ix == 0)
+				connect(menuAction[ix], SIGNAL(triggered()), this, SLOT(menuActionFunc0()));
+			else if (ix == 1)
+				connect(menuAction[ix], SIGNAL(triggered()), this, SLOT(menuActionFunc1()));
+			else if (ix == 2)
+				connect(menuAction[ix], SIGNAL(triggered()), this, SLOT(menuActionFunc2()));
+			else if (ix == 3)
+				connect(menuAction[ix], SIGNAL(triggered()), this, SLOT(menuActionFunc3()));
+			else if (ix == 4)
+				connect(menuAction[ix], SIGNAL(triggered()), this, SLOT(menuActionFunc4()));
+			else if (ix == 5)
+				connect(menuAction[ix], SIGNAL(triggered()), this, SLOT(menuActionFunc5()));
+			else if (ix == 6)
+				connect(menuAction[ix], SIGNAL(triggered()), this, SLOT(menuActionFunc6()));
+			else if (ix == 7)
+				connect(menuAction[ix], SIGNAL(triggered()), this, SLOT(menuActionFunc7()));
+			else if (ix == 8)
+				connect(menuAction[ix], SIGNAL(triggered()), this, SLOT(menuActionFunc8()));
+			else if (ix == 9)
+				connect(menuAction[ix], SIGNAL(triggered()), this, SLOT(menuActionFunc9()));
+		}
+
+		menu.exec(screenPos);
+	}		
 }
+
 
 
 /* ****************************************************************************
@@ -375,9 +420,13 @@ QsiBlock* QsiManager::lookup(QGraphicsItem* gItemP)
 */
 void QsiManager::menuActionFunc0(void)
 {
-	LM_T(LmtMenu, ("In 'menuActionFunc0': calling menu action '%s'", activeItem->menuTitle[0]));
-
-	activeItem->menuFunc[0](activeItem, activeItem->menuParam[0]);
+	if (activeItem)
+	{
+		LM_T(LmtMenu, ("In 'menuActionFunc0': calling menu action '%s'", activeItem->menuTitle[0]));
+		activeItem->menuFunc[0](activeItem, activeItem->menuParam[0]);
+	}
+	else
+		menuFunc[0](NULL, menuParam[0]);
 }
 
 
@@ -388,9 +437,13 @@ void QsiManager::menuActionFunc0(void)
 */
 void QsiManager::menuActionFunc1()
 {
-	LM_T(LmtMenu, ("In 'menuActionFunc1': calling menu action '%s'", activeItem->menuTitle[1]));
-
-	activeItem->menuFunc[1](activeItem, activeItem->menuParam[1]);
+	if (activeItem)
+	{
+		LM_T(LmtMenu, ("In 'menuActionFunc1': calling menu action '%s'", activeItem->menuTitle[1]));
+		activeItem->menuFunc[1](activeItem, activeItem->menuParam[1]);
+	}
+	else
+		menuFunc[1](NULL, menuParam[1]);
 }
 
 
@@ -401,9 +454,13 @@ void QsiManager::menuActionFunc1()
 */
 void QsiManager::menuActionFunc2()
 {
-	LM_T(LmtMenu, ("In 'menuActionFunc2': calling menu action '%s'", activeItem->menuTitle[2]));
-
-	activeItem->menuFunc[2](activeItem, activeItem->menuParam[2]);
+	if (activeItem)
+	{
+		LM_T(LmtMenu, ("In 'menuActionFunc2': calling menu action '%s'", activeItem->menuTitle[2]));
+		activeItem->menuFunc[2](activeItem, activeItem->menuParam[2]);
+	}
+	else
+		menuFunc[2](NULL, menuParam[2]);
 }
 
 
@@ -414,7 +471,13 @@ void QsiManager::menuActionFunc2()
 */
 void QsiManager::menuActionFunc3()
 {
-	LM_T(LmtMenu, ("In 'menuActionFunc3': calling menu action '%s'", activeItem->menuTitle[3]));
+	if (activeItem)
+	{
+		LM_T(LmtMenu, ("In 'menuActionFunc3': calling menu action '%s'", activeItem->menuTitle[3]));
+		activeItem->menuFunc[3](activeItem, activeItem->menuParam[3]);
+	}
+	else
+		menuFunc[3](NULL, menuParam[3]);
 }
 
 
@@ -425,7 +488,13 @@ void QsiManager::menuActionFunc3()
 */
 void QsiManager::menuActionFunc4()
 {
-	LM_T(LmtMenu, ("In 'menuActionFunc4': calling menu action '%s'", activeItem->menuTitle[4]));
+	if (activeItem)
+	{
+		LM_T(LmtMenu, ("In 'menuActionFunc4': calling menu action '%s'", activeItem->menuTitle[4]));
+		activeItem->menuFunc[4](activeItem, activeItem->menuParam[4]);
+	}
+	else
+		menuFunc[4](NULL, menuParam[4]);
 }
 
 
@@ -436,7 +505,13 @@ void QsiManager::menuActionFunc4()
 */
 void QsiManager::menuActionFunc5()
 {
-	LM_T(LmtMenu, ("In 'menuActionFunc5': calling menu action '%s'", activeItem->menuTitle[5]));
+	if (activeItem)
+	{
+		LM_T(LmtMenu, ("In 'menuActionFunc5': calling menu action '%s'", activeItem->menuTitle[5]));
+		activeItem->menuFunc[5](activeItem, activeItem->menuParam[5]);
+	}
+	else
+		menuFunc[5](NULL, menuParam[5]);
 }
 
 
@@ -447,7 +522,13 @@ void QsiManager::menuActionFunc5()
 */
 void QsiManager::menuActionFunc6()
 {
-	LM_T(LmtMenu, ("In 'menuActionFunc6': calling menu action '%s'", activeItem->menuTitle[6]));
+	if (activeItem)
+	{
+		LM_T(LmtMenu, ("In 'menuActionFunc6': calling menu action '%s'", activeItem->menuTitle[6]));
+		activeItem->menuFunc[6](activeItem, activeItem->menuParam[6]);
+	}
+	else
+		menuFunc[6](NULL, menuParam[6]);
 }
 
 
@@ -458,7 +539,13 @@ void QsiManager::menuActionFunc6()
 */
 void QsiManager::menuActionFunc7()
 {
-	LM_T(LmtMenu, ("In 'menuActionFunc7': calling menu action '%s'", activeItem->menuTitle[7]));
+	if (activeItem)
+	{
+		LM_T(LmtMenu, ("In 'menuActionFunc7': calling menu action '%s'", activeItem->menuTitle[7]));
+		activeItem->menuFunc[7](activeItem, activeItem->menuParam[7]);
+	}
+	else
+		menuFunc[7](NULL, menuParam[7]);
 }
 
 
@@ -469,7 +556,13 @@ void QsiManager::menuActionFunc7()
 */
 void QsiManager::menuActionFunc8()
 {
-	LM_T(LmtMenu, ("In 'menuActionFunc8': calling menu action '%s'", activeItem->menuTitle[8]));
+	if (activeItem)
+	{
+		LM_T(LmtMenu, ("In 'menuActionFunc8': calling menu action '%s'", activeItem->menuTitle[8]));
+		activeItem->menuFunc[8](activeItem, activeItem->menuParam[8]);
+	}
+	else
+		menuFunc[8](NULL, menuParam[8]);
 }
 
 
@@ -480,7 +573,55 @@ void QsiManager::menuActionFunc8()
 */
 void QsiManager::menuActionFunc9()
 {
-	LM_T(LmtMenu, ("In 'menuActionFunc9': calling menu action '%s'", activeItem->menuTitle[9]));
+	if (activeItem)
+	{
+		LM_T(LmtMenu, ("In 'menuActionFunc9': calling menu action '%s'", activeItem->menuTitle[9]));
+		activeItem->menuFunc[9](activeItem, activeItem->menuParam[9]);
+	}
+	else
+		menuFunc[9](NULL, menuParam[9]);
+}
+
+
+
+/* ****************************************************************************
+*
+* menuAdd - 
+*/
+void QsiManager::menuAdd(const char* title, QsiFunction func, void* param)
+{
+	for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
+	{
+		if (menuFunc[ix] != NULL)
+			continue;
+
+		menuTitle[ix]  = strdup(title);
+		menuFunc[ix]   = func;
+		menuParam[ix]  = param;
+		return;
+	}
+
+	LM_W(("Maximum %d menu entries", QSI_MENU_ACTIONS));
+}
+
+
+
+/* ****************************************************************************
+*
+* QsiManager::menuClear - 
+*/
+void QsiManager::menuClear(void)
+{
+	for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
+	{
+		if (menuFunc[ix] == NULL)
+			continue;
+		
+		free(menuTitle[ix]);
+		menuTitle[ix]  = NULL;
+		menuFunc[ix]   = NULL;
+		menuParam[ix]  = NULL;
+	}
 }
 
 }

@@ -10,9 +10,10 @@
 * CREATION DATE            May 09 2011
 *
 */
-#include <stdlib.h>         // free
 
 #include <QObject>
+
+#include "QsiAlignment.h"       // Alignment
 
 
 
@@ -65,52 +66,24 @@ private:
 public:
 	char* name;        // all QsiBlocks and QsiBoxes have a name, mostly for debugging purposes
 	
-	QsiBase(QsiBox* _owner, QsiType _type, const char* _name, int _x, int _y, int _width = -1, int _height = -1)
-	{
-		owner    = _owner;
-		type     = _type;
-		name     = strdup(_name);
-		xInitial = _x;
-		yInitial = _y;
-		x        = 0;
-		y        = 0;
-		width    = _width;
-		height   = _height;
-	};
 
-	~QsiBase()
-	{
-		if (name)
-			free(name);
-	};
+	QsiBase(QsiBox* _owner, QsiType _type, const char* _name, int _x, int _y, int _width = -1, int _height = -1);
+	~QsiBase();
 
-	virtual void  moveRelative(int x, int y)                             = 0;
-	virtual void  moveAbsolute(int x, int y)                             = 0;
-	virtual int   geometry(int* xP, int* yP, int* widthP, int* heightP)  = 0;
-	virtual void  hide(void)                                             = 0;
-	virtual void  show(void)                                             = 0;
-	virtual bool  isVisible(void)                                        = 0;
+	virtual void  moveRelative(int x, int y)                                = 0;
+	virtual void  moveAbsolute(int x, int y)                                = 0;
 
-	QsiBox* getOwner(void)
-	{
-		return owner;
-	}
+	virtual int   geometry(int* xP, int* yP, int* widthP, int* heightP)     = 0;
+	int           xGet(void);
+	int           yGet(void);
 
-	const char*   typeName(void)
-	{
-		switch (type)
-		{
-		case Box:              return "Box";
-		case SimpleText:       return "SimpleText";
-		case Line:             return "Line";
-		case Image:            return "Image";
-		case Label:            return "Label";
-		case Button:           return "Button";
-		case Input:            return "Input";
-		}
+	virtual void  hide(void)                                                = 0;
+	virtual void  show(void)                                                = 0;
+	virtual bool  isVisible(void)                                           = 0;
+	virtual void  align(Alignment::Type type, QsiBase* master, int margin)  = 0;
 
-		return "Unknown Type";
-	}
+	QsiBox*       getOwner(void);
+	const char*   typeName(void);
 };
 
 }

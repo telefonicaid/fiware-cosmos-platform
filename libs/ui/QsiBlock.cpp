@@ -58,7 +58,7 @@ QsiBlock::QsiBlock
 	// this->x = 0;
 	// this->y = 0;
 
-	for (int ix = 0; ix < 10; ix++)
+	for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
 	{
 		menuTitle[ix]  = NULL;
 		menuFunc[ix]   = NULL;
@@ -133,14 +133,26 @@ QsiBlock::QsiBlock
 */
 QsiBlock::~QsiBlock()
 {
-	if (gItemP)
-		delete gItemP;
-	if (proxy)
-		delete proxy;
-	if (w.vP)
-		delete w.lineEdit;
-}
+	LM_T(LmtRemove, ("Destroying %s '%s'", typeName(), name));
 
+	if (gItemP)
+	{
+		LM_T(LmtRemove, ("Deleting gItemP"));
+		delete gItemP;
+	}
+
+	if (proxy)
+	{
+		LM_T(LmtRemove, ("Deleting proxy"));
+		delete proxy;
+	}
+
+	if (w.vP)
+	{
+		LM_T(LmtRemove, ("Deleting proxied widget"));
+		delete w.lineEdit;
+	}
+}
 
 
 /* ****************************************************************************
@@ -312,7 +324,7 @@ void QsiBlock::menuAdd(const char* title, QsiFunction func, void* param)
 {
 	menu = true;
 
-	for (int ix = 0; ix < 10; ix++)
+	for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
 	{
 		if (menuFunc[ix] != NULL)
 			continue;
@@ -320,10 +332,10 @@ void QsiBlock::menuAdd(const char* title, QsiFunction func, void* param)
 		menuTitle[ix]  = strdup(title);
 		menuFunc[ix]   = func;
 		menuParam[ix]  = param;
-		break;
+		return;
 	}
 
-	LM_W(("Maximum 10 menu entries"));
+	LM_W(("Maximum %d menu entries", QSI_MENU_ACTIONS));
 }
 
 
@@ -332,11 +344,11 @@ void QsiBlock::menuAdd(const char* title, QsiFunction func, void* param)
 *
 * QsiBlock::menuClear - 
 */
-void QsiBlock::menuClear()
+void QsiBlock::menuClear(void)
 {
 	menu = false;
 
-	for (int ix = 0; ix < 10; ix++)
+	for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
 	{
 		if (menuFunc[ix] == NULL)
 			continue;
@@ -346,8 +358,6 @@ void QsiBlock::menuClear()
 		menuFunc[ix]   = NULL;
 		menuParam[ix]  = NULL;
 	}
-
-	LM_W(("Maximum 10 menu entries"));
 }
 
 

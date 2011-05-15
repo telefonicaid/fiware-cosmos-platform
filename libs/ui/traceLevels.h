@@ -28,5 +28,6 @@
 #define LmtMousePress         162
 #define LmtBlockLookup        163
 #define LmtHide               164
+#define LmtRemove             165
 
 #endif

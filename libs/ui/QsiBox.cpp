@@ -360,7 +360,7 @@ void QsiBox::alignFix(QsiBase* qbP)
 					  alignVec[ix]->slave->typeName(), alignVec[ix]->slave->name, alignVec[ix]->master->typeName(), qbP->name, newMaster->name));
 
 				alignVec[ix]->slave->align(type, newMaster, margin);
-				sizeChange(alignVec[ix]->slave);
+				// sizeChange(alignVec[ix]->slave);
 			}
 
 			LM_T(LmtAlignVector, ("Removing master-alignment for to-be-removed %s '%s'", qbP->typeName(), qbP->name));
@@ -374,7 +374,8 @@ void QsiBox::alignFix(QsiBase* qbP)
 	}
 
 	alignShow("After removal");
-	
+	realign();
+	alignShow("After realignment");
 }
 
 
@@ -486,6 +487,8 @@ void QsiBox::align(QsiBase* master, Alignment::Type type, QsiBase* slave, int ma
 */
 void QsiBox::unalign(int ix)
 {
+	// sizeChange(alignVec[ix]->master);
+	// sizeChange(alignVec[ix]->slave);
 	free(alignVec[ix]);
 	alignVec[ix] = NULL;
 }
@@ -525,7 +528,7 @@ void QsiBox::unalign(QsiBase* master, QsiBase* slave)
 	}
 
 	if (unaligns == 0)
-		LM_W(("Cannot unalign '%s' fron '%s' - not found", master->name, slave->name));
+		LM_W(("Cannot unalign '%s' from '%s' - not found", master->name, slave->name));
 }
 
 
@@ -550,6 +553,27 @@ void QsiBox::alignShow(const char* why)
 	}
 	LM_T(LmtAlignList, ("--------------------------------------------------------------------------------"));
 	LM_T(LmtAlignList, (""));
+}
+
+
+
+/* ****************************************************************************
+*
+* realign - 
+*/
+void QsiBox::realign(void)
+{
+	for (int ix = 0; ix < alignVecSize; ix++)
+	{
+		if (alignVec[ix] == NULL)
+			continue;
+
+		LM_M(("Realigning slave '%s' to '%s'", alignVec[ix]->slave->name, alignVec[ix]->master->name));
+		align(alignVec[ix]->master, alignVec[ix]->type, alignVec[ix]->slave, alignVec[ix]->margin);
+	}
+
+	if (owner != NULL)
+		owner->realign();
 }
 
 

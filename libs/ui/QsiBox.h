@@ -62,6 +62,7 @@ public:
 	void        unalign(QsiBase* master);                                                    // unalign this Box from another Box
 	void        unalign(QsiBase* master, QsiBase* slave);                                    // remove alignment
 	void        realign(QsiBase* master, Alignment::Type type, QsiBase* slave, int margin);  // absolute move part of alignment
+	void        realign(void);                                                               // after removol, realing all upwards
 	void        alignFix(QsiBase* qbP);                                                      // Mend alignments at removal of an item
 	Alignment*  alignLookup(QsiBase* master, QsiBase* slave);                                // wont have mor than alignment between two qsis
 	void        alignShow(const char* why);                                                  // Show list of alignment vector

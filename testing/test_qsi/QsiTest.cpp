@@ -449,18 +449,18 @@ static void qsiSetup(QWidget* mainWindow)
 	Qsi::QsiBlock*  numberImageP;
 	Qsi::QsiBox*    smallTableBox = (Qsi::QsiBox*) mainBox->boxAdd("smallTableBox", 700, 150);
 
-	tableImageP      = (Qsi::QsiBlock*) smallTableBox->imageAdd("Table",  "Table.png", 0, 0, -1, -1);
+	tableImageP      = (Qsi::QsiBlock*) smallTableBox->imageAdd("Table",  "Database.png", 0, 0, -1, -1);
 	numberImageP     = (Qsi::QsiBlock*) smallTableBox->imageAdd("Number", "seven.png", 50, 40, 20, 20);
 
 	numberImageP->align(Qsi::Alignment::Center, tableImageP, 0);
-	numberImageP->moveRelative(0, -15);
+	numberImageP->moveRelative(0, -45);
 
 
 
 	//
 	// Big table
 	//
-	bigTableImageP = (Qsi::QsiBlock*) mainBox->imageAdd("Big Table",  "Table.png", 600, 400, 300, 300, buttonClicked, NULL);
+	bigTableImageP = (Qsi::QsiBlock*) mainBox->imageAdd("Big Table",  "Database.png", 600, 400, 300, 300, buttonClicked, NULL);
 	bigTableImageP->setBoxMove(false);
 }
 

@@ -99,6 +99,9 @@ void QsiBox::moveAbsolute(int x, int y)
 */
 void QsiBox::moveRelative(int x, int y)
 {
+	if (owner == NULL)
+		LM_RVE(("Not moving Toplevel Box!"));
+
 	for (int ix = 0; ix < qsiVecSize; ix++)
 	{
 		if (qsiVec[ix] == NULL)
@@ -140,10 +143,16 @@ int QsiBox::geometry(int* xP, int* yP, int* widthP, int* heightP)
 		int qx, qy, qw, qh;
 		
 		if (qsiVec[ix] == NULL)
+		{
+			LM_T(LmtGeometry, ("%02d: NULL", ix));
 			continue;
+		}
 
 		if (qsiVec[ix]->isVisible() == false)
+		{
+			LM_T(LmtGeometry, ("%02d: %s '%s' is NOT visible", ix, qsiVec[ix]->typeName(), qsiVec[ix]->name));
 			continue;
+		}
 
 		qsiVec[ix]->geometry(&qx, &qy, &qw, &qh);
 		LM_T(LmtGeometry, ("Geometry for %s '%s': { %d, %d } %d x %d", qsiVec[ix]->typeName(), qsiVec[ix]->name, qx, qy, qw, qh));

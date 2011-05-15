@@ -256,6 +256,7 @@ void QsiBlock::align(Alignment::Type type, QsiBase* master, int margin)
 */
 void QsiBlock::hide(void)
 {
+	LM_T(LmtHide, ("Hiding %s '%s'", typeName(), name));
 	gItemP->setVisible(false);
 }
 
@@ -267,8 +268,12 @@ void QsiBlock::hide(void)
 */
 void QsiBlock::hideOthers(void)
 {
+	LM_T(LmtHide, ("%s '%s' hiding others", typeName(), name));
 	owner->hide();
-	gItemP->setVisible(true);
+
+	LM_T(LmtHide, ("%s '%s' showing itself", typeName(), name));
+	show();
+	owner->sizeChange(this);
 	expanded = false;
 }
 
@@ -280,6 +285,7 @@ void QsiBlock::hideOthers(void)
 */
 void QsiBlock::showOthers(void)
 {
+	LM_T(LmtHide, ("%s '%s' showing others", typeName(), name));
 	owner->show();
 	expanded = true;
 }
@@ -292,6 +298,7 @@ void QsiBlock::showOthers(void)
 */
 void QsiBlock::show(void)
 {
+	LM_T(LmtHide, ("Showing %s '%s'", typeName(), name));
 	gItemP->setVisible(true);
 }
 

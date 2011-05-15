@@ -30,6 +30,7 @@ typedef struct Alignment
 {
 	typedef enum Type
 	{
+		Unaligned,
 		North,
 		South,
 		East,
@@ -53,14 +54,30 @@ typedef struct Alignment
 	{
 		switch (type)
 		{
-		case North:   return "North";
-		case South:   return "South";
-		case East:    return "East";
-		case West:    return "West";
-		case Center:  return "Center";
+		case North:      return "North";
+		case South:      return "South";
+		case East:       return "East";
+		case West:       return "West";
+		case Center:     return "Center";
+		case Unaligned:  return "Unaligned";
 		}
 
 		return "Undefined alignment";
+	}
+
+	static Type invert(Type type)
+	{
+		switch (type)
+		{
+		case North:      return South;
+		case South:      return North;
+		case East:       return West;
+		case West:       return East;
+		case Center:     return Center;
+		case Unaligned:  return Unaligned;
+		}
+
+		return Unaligned;
 	}
 } Alignment;
 

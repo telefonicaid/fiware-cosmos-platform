@@ -333,6 +333,7 @@ static void qsiSetup(QWidget* mainWindow)
 	// Big table
 	//
 	bigTableImageP = (Qsi::QsiBlock*) mainBox->imageAdd("Big Table",  "Table.png", 600, 400, 300, 300, buttonClicked, NULL);
+	bigTableImageP->setBoxMove(false);
 }
 
 

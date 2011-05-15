@@ -27,5 +27,6 @@
 #define LmtSizeChange         161
 #define LmtMousePress         162
 #define LmtBlockLookup        163
+#define LmtHide               164
 
 #endif

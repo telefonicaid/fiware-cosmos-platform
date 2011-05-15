@@ -237,6 +237,37 @@ static void qsiSetup(QWidget* mainWindow)
 	Qsi::QsiBox*   userBox1  = (Qsi::QsiBox*) mainBox->boxAdd("userBox1", 500, 200);
 	Qsi::QsiBox*   userBox2  = (Qsi::QsiBox*) mainBox->boxAdd("userBox2", 200,  20);
 
+
+	
+	//
+	// Test with 10 aligned boxes
+	//
+	Qsi::QsiBox* qBox[10];
+	for (int ix = 0; ix < 10; ix++)
+	{
+		char            boxName[16];
+		char            txt[32];
+		Qsi::QsiBlock*  qbP;
+
+		snprintf(boxName, sizeof(boxName), "QBox %d", ix);
+		qBox[ix] = (Qsi::QsiBox*) mainBox->boxAdd(boxName, 1100, 100 + ix * 70);
+
+		snprintf(boxName, sizeof(boxName), "QBox %d kvs", ix);
+		qbP = (Qsi::QsiBlock*) qBox[ix]->textAdd(boxName, boxName, 0, 0);
+		qbP->setBold(true);
+		qsiManager->siConnect(qbP, textClicked, NULL);
+
+		snprintf(txt,     sizeof(txt),     "%d KVs", 19 + ix * 17);
+		qBox[ix]->textAdd(txt, txt, 10, 20);
+
+		snprintf(txt,     sizeof(txt),     "%d Mbytes", 37 + ix * 13);
+		qBox[ix]->textAdd(txt, txt, 10, 35);
+
+		if (ix > 0)
+			qBox[ix]->align(Qsi::Alignment::South, qBox[ix - 1], 10);
+	}
+
+	
 	//
 	// User 1
 	//
@@ -257,6 +288,7 @@ static void qsiSetup(QWidget* mainWindow)
 	user1->menuAdd("Color Change", userColor,  user1);
 
 	qsiManager->siConnect(user1, textClicked, NULL);
+
 
 
 	//

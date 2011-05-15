@@ -386,9 +386,9 @@ void QsiBox::align(QsiBase* master, Alignment::Type type, QsiBase* slave, int ma
 	else
 		LM_T(LmtAlignVector, ("%s and %s were already aligned - changing their alignment", master->name, slave->name));
 
-	alignP->type   = type;
 	alignP->master = master;
 	alignP->slave  = slave;
+	alignP->type   = type;
 	alignP->margin = margin;
 	
 	alignShow("Added Alignment");

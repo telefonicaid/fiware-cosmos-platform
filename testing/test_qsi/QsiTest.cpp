@@ -183,6 +183,24 @@ void alignmentList(Qsi::QsiBlock* qbP, void* x)
 
 
 
+void qsiList(Qsi::QsiBlock* qbP, void* x)
+{
+	Qsi::QsiBox*  box   = (Qsi::QsiBox*) x;
+
+	box->qsiShow("From Menu", true);
+}
+
+
+
+void qsiAllList(Qsi::QsiBlock* qbP, void* x)
+{
+	Qsi::QsiBox*  box   = (Qsi::QsiBox*) x;
+
+	box->qsiRecursiveShow("From Menu", true);
+}
+
+
+
 /* ****************************************************************************
 *
 * textClicked - 
@@ -295,12 +313,14 @@ static void qsiSetup(QWidget* mainWindow)
 	qsiManager = new Qsi::QsiManager(layout, "./TestImages", "Background.png", 1920, 1080);
 
 	Qsi::QsiBox*   mainBox   = qsiManager->box;
+	Qsi::QsiBox*   qMainBox  = (Qsi::QsiBox*) mainBox->boxAdd("qMainBox", 1100, 100);
 	Qsi::QsiBox*   userBox1  = (Qsi::QsiBox*) mainBox->boxAdd("userBox1", 500, 200);
 	Qsi::QsiBox*   userBox2  = (Qsi::QsiBox*) mainBox->boxAdd("userBox2", 200,  20);
 
 
-	
 	qsiManager->menuAdd("Alignment List", alignmentList, mainBox);
+	qsiManager->menuAdd("Qsi List",       qsiList,       mainBox);
+	qsiManager->menuAdd("All Qsis",       qsiAllList,    mainBox);
 	qsiManager->menuAdd("Compress All",   compress,      NULL);
 	qsiManager->menuAdd("Expand All",     expand,        NULL);
 
@@ -317,7 +337,7 @@ static void qsiSetup(QWidget* mainWindow)
 		Qsi::QsiBlock*  qb4P;
 
 		snprintf(boxName, sizeof(boxName), "QBox %d", ix);
-		qBox[ix] = (Qsi::QsiBox*) mainBox->boxAdd(boxName, 1100, 100 + ix * 70);
+		qBox[ix] = (Qsi::QsiBox*) qMainBox->boxAdd(boxName, 0, ix * 70);
 
 		qBoxTitle[ix] = (Qsi::QsiBlock*) qBox[ix]->textAdd(boxName, boxName, 0, 0);
 		qBoxTitle[ix]->setBold(true);
@@ -364,6 +384,8 @@ static void qsiSetup(QWidget* mainWindow)
 			qBox[ix]->align(Qsi::Alignment::South, qBox[ix - 1], 10);
 	}
 
+	LM_M(("Setting frame for qMainBox"));
+	qMainBox->setFrame("QBoxes", 10);
 	
 	//
 	// User 1

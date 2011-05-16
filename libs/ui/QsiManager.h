@@ -117,6 +117,7 @@ public:
 //
 private:
 	void       mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent);
+	void       mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
 	void       mouseMoveEvent(QGraphicsSceneMouseEvent*  mouseEvent);
 
 

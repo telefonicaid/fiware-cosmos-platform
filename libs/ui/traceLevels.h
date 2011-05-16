@@ -29,5 +29,6 @@
 #define LmtBlockLookup        163
 #define LmtHide               164
 #define LmtRemove             165
+#define LmtQsiList            166
 
 #endif

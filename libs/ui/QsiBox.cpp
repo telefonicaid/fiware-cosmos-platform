@@ -15,6 +15,7 @@
 #include "QsiManager.h"         // QsiManager
 #include "QsiBase.h"            // QsiBase
 #include "QsiBlock.h"           // QsiBlock
+#include "QsiFrame.h"           // Qsi::Frame
 #include "QsiBox.h"             // Own interface
 
 
@@ -60,6 +61,30 @@ QsiBox::QsiBox(QsiManager* manager, QsiBox* owner, const char* name, int x, int 
 
 	this->x = xInitial;
 	this->y = yInitial;
+
+	frame = NULL;
+}
+
+
+/* ****************************************************************************
+*
+* setFrame - 
+*/
+void QsiBox::setFrame(const char* fname, int padding)
+{
+	if (fname == NULL)
+	{
+		LM_W(("deleting frame"));
+
+		if (frame != NULL)
+			delete frame;
+		frame = NULL;
+	}
+	else
+	{
+		LM_M(("Creating Frame"));
+		frame = new Frame(this, fname, padding);
+	}
 }
 
 
@@ -89,6 +114,9 @@ void QsiBox::moveAbsolute(int x, int y)
 
 	LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
 	sizeChange(this);
+
+	if (frame != NULL)
+		LM_TODO(("Move the Frame too ..."));
 }
 
 
@@ -117,6 +145,9 @@ void QsiBox::moveRelative(int x, int y)
 
 	LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
 	sizeChange(this);
+
+	if (frame != NULL)
+		LM_TODO(("Move the Frame too ..."));
 }
 
 
@@ -858,8 +889,9 @@ QsiBlock* QsiBox::lookup(QGraphicsItem* gItemP)
 				return qbP;
 			}
 
-			LM_T(LmtBlockLookup, ("Comparing pressed gItem '%p' to %s '%s' proxy '%p'", gItemP, qbP->typeName(), qbP->name, qbP->proxy));
-			if (((long) gItemP) == (((long) qbP->proxy) + 8))
+			LM_M(("Comparing pressed gItem '%p' to %s '%s' proxy '%p'", gItemP, qbP->typeName(), qbP->name, qbP->proxy));
+			if (gItemP == ((QGraphicsItem*) qbP->proxy))
+//			if (((long) gItemP) == (((long) qbP->proxy + 16)))
 			{
 				LM_T(LmtBlockLookup, ("Found proxy %s '%s' in box '%s'", qbP->typeName(), qbP->name, name));
 				return qbP;
@@ -870,5 +902,78 @@ QsiBlock* QsiBox::lookup(QGraphicsItem* gItemP)
 	return NULL;
 }
 
+
+
+/* ****************************************************************************
+*
+* qsiShow - 
+*/
+void QsiBox::qsiShow(const char* why, bool force)
+{
+	if (force == true)
+	{
+		LM_F((""));
+		LM_F(("------------------------ %s: Box Content (%s) ------------------------", name, why));
+		LM_F((""));
+		LM_F(("No  %-20s %-20s %-5s %-5s  %-20s", "Name", "Type", "x", "y", "QGraphicsItem"));
+		LM_F(("----------------------------------------------------------------------------------------------------"));
+		for (int ix = 0; ix < qsiVecSize; ix++)
+		{
+			if (qsiVec[ix] == NULL)
+				continue;
+
+			QsiBlock* block = (QsiBlock*) qsiVec[ix];
+			if (qsiVec[ix]->type == Box)
+				LM_F(("%02d  %-20s %-20s %-5d %-5d", ix, qsiVec[ix]->name, qsiVec[ix]->typeName(), qsiVec[ix]->xGet(), qsiVec[ix]->yGet()));
+			else
+				LM_F(("%02d  %-20s %-20s %-5d %-5d  %p", ix, qsiVec[ix]->name, qsiVec[ix]->typeName(), qsiVec[ix]->xGet(), qsiVec[ix]->yGet(), (block->proxy != NULL)? block->proxy : block->gItemP));
+		}
+		LM_F(("----------------------------------------------------------------------------------------------------"));
+		LM_F((""));
+	}
+	else
+	{
+		LM_T(LmtQsiList, (""));
+		LM_T(LmtQsiList, ("------------------------ %s: Box Content (%s) ------------------------", name, why));
+		LM_T(LmtQsiList, (""));
+		LM_T(LmtQsiList, ("No  %-20s %-20s %-5d %-5d  %-20s", "Name", "Type", "x", "y", "QGraphicsItem"));
+		LM_T(LmtQsiList, ("----------------------------------------------------------------------------------------------------"));
+		for (int ix = 0; ix < qsiVecSize; ix++)
+		{
+			if (qsiVec[ix] == NULL)
+				continue;
+
+            QsiBlock* block = (QsiBlock*) qsiVec[ix];
+            if (qsiVec[ix]->type == Box)
+				LM_T(LmtQsiList, ("%02d  %-20s %-20s %-5d %-5d", ix, qsiVec[ix]->name, qsiVec[ix]->typeName(), qsiVec[ix]->xGet(), qsiVec[ix]->yGet()));
+			else
+				LM_T(LmtQsiList, ("%02d  %-20s %-20s %-5d %-5d  %p", ix, qsiVec[ix]->name, qsiVec[ix]->typeName(), qsiVec[ix]->xGet(), qsiVec[ix]->yGet(), (block->proxy != NULL)? block->proxy : block->gItemP));
+		}
+		LM_T(LmtQsiList, ("----------------------------------------------------------------------------------------------------"));
+		LM_T(LmtQsiList, (""));
+	}
 }
 
+
+/* ****************************************************************************
+*
+* qsiRecursiveShow - 
+*/
+void QsiBox::qsiRecursiveShow(const char* why, bool force)
+{
+	qsiShow(why, force);
+
+	for (int ix = 0; ix < qsiVecSize; ix++)
+	{
+		if (qsiVec[ix] == NULL)
+			continue;
+
+		if (qsiVec[ix]->type == Box)
+		{
+			QsiBox* box = (QsiBox*) qsiVec[ix];
+			box->qsiRecursiveShow(why, force);
+		}
+	}
+}
+
+}

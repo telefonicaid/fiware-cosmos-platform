@@ -32,7 +32,10 @@ namespace Qsi
 *
 * Global variables
 */
-QsiBlock* activeItem = NULL; 
+static QsiBlock*          activeItem    = NULL; 
+static Qt::MouseButtons   pendingButton = Qt::NoButton;
+static QPointF            pressPoint;
+static bool               moved         = false;
 
 
 
@@ -233,21 +236,81 @@ void QsiManager::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEve
 */
 void QsiManager::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
-	Qt::MouseButtons    buttons = mouseEvent->buttons();
-	QPointF             point;
 	QGraphicsItem*      gItemP;
 
 	LM_T(LmtMousePress, ("Some Mouse button pressed"));
 
-	if (buttons == Qt::LeftButton)
+	pendingButton = mouseEvent->buttons();
+	moved         = false;
+
+	if (pendingButton == Qt::LeftButton)
+	{
+		pressPoint  = mouseEvent->buttonDownScenePos(Qt::LeftButton);
+		gItemP      = itemAt(pressPoint);
+		activeItem  = lookup(gItemP);
+
+		if (activeItem != NULL)
+			LM_T(LmtMousePress, ("Left Mouse Press on '%s' - looking up callback", activeItem->name));
+		else
+			LM_T(LmtMousePress, ("Left Mouse Press on BACKGROUND (gItemP: %p)", gItemP));
+	}
+	else if (pendingButton == Qt::MidButton)
+	{
+		pressPoint  = mouseEvent->buttonDownScenePos(Qt::MidButton);
+		gItemP      = itemAt(pressPoint);
+		activeItem  = lookup(gItemP);
+
+		if (activeItem != NULL)
+			LM_T(LmtMousePress, ("Mid Mouse Press on %s '%s'", activeItem->typeName(), activeItem->name));
+		else
+			LM_T(LmtMousePress, ("Mid Mouse Press on BACKGROUND (gItemP: %p)", gItemP));
+	}
+	else if (pendingButton == Qt::RightButton)
+	{
+		pressPoint  = mouseEvent->buttonDownScenePos(Qt::LeftButton);
+		gItemP      = itemAt(pressPoint);
+		activeItem  = lookup(gItemP);
+
+		if (activeItem != NULL)
+			LM_T(LmtMousePress, ("Right Mouse Press on '%s' - looking up callback", activeItem->name));
+		else
+			LM_T(LmtMousePress, ("Right Mouse Press on BACKGROUND (gItemP: %p)", gItemP));
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* QsiManager::mouseReleaseEvent - 
+*/
+void QsiManager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
+{
+	Qt::MouseButtons    buttons = mouseEvent->buttons();
+	QPointF             point;
+	QGraphicsItem*      gItemP;
+	QsiBlock*           released;
+
+	LM_T(LmtMousePress, ("Some Mouse button released"));
+
+	if (moved == true)
+	{
+		LM_W(("No button-release action taken - a move has been performed"));
+		pendingButton = Qt::NoButton;
+		return;
+	}
+
+	if (pendingButton == Qt::LeftButton)
 	{
 		point       = mouseEvent->buttonDownScenePos(Qt::LeftButton);
 		gItemP      = itemAt(point);
-		activeItem  = lookup(gItemP);
+		released    = lookup(gItemP);
 		
-		if (activeItem != NULL)
+		LM_M(("released: %p, activeItem: %p", released, activeItem));
+
+		if ((released == activeItem) && (activeItem != NULL))
 		{
-			LM_T(LmtMousePress, ("Left Mouse Press on '%s' - looking up callback", activeItem->name));
+			LM_T(LmtMousePress, ("Left Mouse Press & Release on '%s' - looking up callback", activeItem->name));
 
 			QsiCallback* cb = itemCallbackLookup(activeItem);
 			if (cb != NULL)
@@ -259,7 +322,7 @@ void QsiManager::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		else
 			LM_T(LmtMousePress, ("Left Mouse Press on BACKGROUND"));
 	}
-	else if (buttons == Qt::MidButton)
+	else if (pendingButton == Qt::MidButton)
 	{
 		point       = mouseEvent->buttonDownScenePos(Qt::MidButton);
 		gItemP      = itemAt(point);
@@ -270,11 +333,19 @@ void QsiManager::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		else
 			LM_T(LmtMousePress, ("Mid Mouse Press on BACKGROUND"));
 	}
-	else if (buttons == Qt::RightButton)
+	else if (pendingButton == Qt::RightButton)
 	{
-		LM_T(LmtMousePress, ("Right Mouse Press"));
+		point       = mouseEvent->buttonDownScenePos(Qt::MidButton);
+		gItemP      = itemAt(point);
+		activeItem  = lookup(gItemP);
+
+		if (activeItem != NULL)
+			LM_T(LmtMousePress, ("right Mouse Press on %s '%s'", activeItem->typeName(), activeItem->name));
+		else
+			LM_T(LmtMousePress, ("Right Mouse Press on BACKGROUND"));
 	}
 
+	pendingButton = Qt::NoButton;
 }
 
 
@@ -295,12 +366,17 @@ void QsiManager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		return;
 	}
 
-	if (buttons == (Qt::MidButton))
+	if (pendingButton == (Qt::LeftButton))
 	{
 		if (activeItem->getMovable() == true)
 		{
 			LM_T(LmtMove, ("moving %s '%s'", activeItem->typeName(), activeItem->name));
 
+			// Don't be so sensitive to movements - at least 10 pixels ...
+			if ((abs(pressPoint.x() - point.x()) < 10) && (abs(pressPoint.y() - point.y()) < 10))
+				return;
+
+			moved = true;
 			if (activeItem->getBoxMove() == true)
 			{
 				LM_T(LmtMove, ("%s '%s' has the property 'BOX MOVE' set  - move entire '%s' box", activeItem->typeName(), activeItem->name, activeItem->getOwner()->name));

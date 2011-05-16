@@ -8,6 +8,7 @@ SET (HEADERS
 	QsiCallback.h
 	QsiFunction.h
 	QsiAlignment.h
+	QsiFrame.h
 )
 
 
@@ -20,6 +21,7 @@ SET (SOURCES
 	QsiBlock.cpp
 	QsiBox.cpp
 	QsiManager.cpp
+	QsiFrame.cpp
 )
 
 

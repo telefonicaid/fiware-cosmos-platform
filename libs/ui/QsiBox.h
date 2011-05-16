@@ -13,6 +13,8 @@
 #include "QsiBase.h"            // QsiBase
 #include "QsiFunction.h"        // QsiFunction
 #include "QsiAlignment.h"       // QsiAlignment
+#include "QsiFrame.h"           // Qsi::Frame
+
 
 
 class QGraphicsItem;
@@ -44,6 +46,8 @@ private:
 
 public:
 	QsiBox(QsiManager* manager, QsiBox* owner, const char* name, int x, int y);
+
+	QsiManager* managerGet(void) { return manager; };
 
 	void        moveRelative(int x, int y);                                                  // move all qsis in qsiVec
 	void        moveAbsolute(int x, int y);                                                  // move all qsis in qsiVec
@@ -77,8 +81,13 @@ public:
 	QsiBase*    buttonAdd(const char* name, const char* txt,  int x, int y, int width = -1, int height = -1, QsiFunction func = NULL, void* param = NULL);
 	QsiBase*    inputAdd(const char*  name, const char* txt,  int x, int y, int width = -1, int height = -1);
 	QsiBase*    imageAdd(const char*  name, const char* path, int x, int y, int width = -1, int height = -1, QsiFunction func = NULL, void* param = NULL);
+	void        qsiShow(const char* why, bool force = false);
+	void        qsiRecursiveShow(const char* why, bool force = false);
 
 	bool        isVisible(void) { return true; }
+
+	void        setFrame(const char* fname, int padding);
+	Frame*      frame;
 };
 
 }

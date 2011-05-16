@@ -855,7 +855,7 @@ QsiBlock* QsiBox::lookup(QGraphicsItem* gItemP)
 			}
 
 			LM_T(LmtBlockLookup, ("Comparing pressed gItem '%p' to %s '%s' proxy '%p'", gItemP, qbP->typeName(), qbP->name, qbP->proxy));
-			if (((int) gItemP) == (((int) qbP->proxy) + 8))
+			if (((long) gItemP) == (((long) qbP->proxy) + 8))
 			{
 				LM_T(LmtBlockLookup, ("Found proxy %s '%s' in box '%s'", qbP->typeName(), qbP->name, name));
 				return qbP;

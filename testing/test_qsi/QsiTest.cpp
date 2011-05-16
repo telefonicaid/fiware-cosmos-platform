@@ -300,8 +300,9 @@ static void qsiSetup(QWidget* mainWindow)
 
 
 	
-	qsiManager->menuAdd("Compress All",   compress, NULL);
-	qsiManager->menuAdd("Expand All",     expand,   NULL);
+	qsiManager->menuAdd("Alignment List", alignmentList, mainBox);
+	qsiManager->menuAdd("Compress All",   compress,      NULL);
+	qsiManager->menuAdd("Expand All",     expand,        NULL);
 
 	//
 	// Test with 10 aligned boxes

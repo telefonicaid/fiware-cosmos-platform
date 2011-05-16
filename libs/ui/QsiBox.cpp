@@ -288,6 +288,8 @@ void QsiBox::remove(QsiBase* qbP)
 		if (qsiVec[ix] != qbP)
 			continue;
 
+		qbP->hide();
+
 		LM_T(LmtRemove, ("deleting  %s '%s'", qbP->typeName(), qbP->name));
 		alignFix(qbP);
 

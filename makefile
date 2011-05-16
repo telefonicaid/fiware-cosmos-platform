@@ -13,6 +13,13 @@ release:
 	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE
 	make -C BUILD_RELEASE 
 
+install_samson: release
+	sudo make -C BUILD_RELEASE install
+
+install: install_samson
+	make -C modules
+
+
 test: ctest itest
 
 
@@ -29,8 +36,6 @@ test_local_processes:
 package: release
 	make -C BUILD_RELEASE package 
 
-install: release
-	sudo make -C BUILD_RELEASE install
 
 di:	debuginstall
 

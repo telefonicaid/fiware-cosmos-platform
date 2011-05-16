@@ -126,7 +126,6 @@ parser parse_users_O2UK
 parserOut select_cdrs
 {
 	in system.UInt cdr.CDR
-	out txt txt
 
 	helpLine "Export cdrs in txt format"
 }

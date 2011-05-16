@@ -1,35 +1,28 @@
+SET( MODULE_NAME terasort )
+
 cmake_minimum_required(VERSION 2.6)
 
 SET (SOURCES
-    Module.h
-    Module.cpp
-)
-
-SET (OPERATION_HEADERS
+    ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 )
 
 # Install headers to be used by other modules
 
-SET (HEADERS
+FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
+
+SET (OPERATION_HEADERS
+operations/parse_id_id.h
+operations/parser_uint_void.h
 )
 
-set (CMAKE_CXX_FLAGS "-O2")
+include_directories("${PROJECT_SOURCE_DIR}")
 
-#Generate 'Module.cpp' and 'Module.h' from ''Module''
-add_custom_command (
-  OUTPUT           ${CMAKE_CURRENT_SOURCE_DIR}/Module.h
-  OUTPUT	   ${CMAKE_CURRENT_SOURCE_DIR}/Module.cpp
-  COMMAND          samsonModuleParser ${CMAKE_CURRENT_SOURCE_DIR}/module
-  MAIN_DEPENDENCY  module
-)
+MESSAGE( "----------------------------------------------------------------------------")
+MESSAGE( "Creating module ${MODULE_NAME}" )
+MESSAGE( "----------------------------------------------------------------------------")
+ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES}   )
 
-include_directories("${PROJECT_SOURCE_DIR}",  "../../trunk/libs/logMsg")
+INSTALL(TARGETS ${MODULE_NAME} DESTINATION /opt/samson/modules)
+INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
-ADD_LIBRARY(terasort MODULE ${SOURCES} ${HEADERS} ${OPERATION_HEADERS})
-
-INSTALL(TARGETS terasort DESTINATION /opt/samson/modules)
-INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/terasort)
-
-ENABLE_TESTING()
-ADD_SUBDIRECTORY(testing)     # Test module and ctest stuff
 

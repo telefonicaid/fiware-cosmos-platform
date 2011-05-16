@@ -1,27 +1,28 @@
+SET( MODULE_NAME test )
 
-PROJECT(SamsonTest)
 cmake_minimum_required(VERSION 2.6)
 
 SET (SOURCES
-    Module.h
-    Module.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 )
 
-SET (HEADERS
+# Install headers to be used by other modules
+
+FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
+
+SET (OPERATION_HEADERS
+operations/parse_id_id.h
+operations/parser_uint_void.h
 )
-
-
-#Generate 'Module.cpp' and 'Module.h' from ''Module''
-add_custom_command (
-  OUTPUT           ${CMAKE_CURRENT_SOURCE_DIR}/Module.h
-  OUTPUT	   ${CMAKE_CURRENT_SOURCE_DIR}/Module.cpp
-  COMMAND          samsonModuleParser ${CMAKE_CURRENT_SOURCE_DIR}/module
-  MAIN_DEPENDENCY  module
-)
-
 
 include_directories("${PROJECT_SOURCE_DIR}")
-ADD_LIBRARY(module_test MODULE ${SOURCES} ${HEADERS})
 
-ENABLE_TESTING()
-ADD_TEST(test_1 ${PROJECT_SOURCE_DIR}/test_1 )
+MESSAGE( "----------------------------------------------------------------------------")
+MESSAGE( "Creating module ${MODULE_NAME}" )
+MESSAGE( "----------------------------------------------------------------------------")
+ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES}   )
+
+INSTALL(TARGETS ${MODULE_NAME} DESTINATION /opt/samson/modules)
+INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
+
+

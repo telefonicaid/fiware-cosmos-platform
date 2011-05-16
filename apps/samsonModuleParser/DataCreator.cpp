@@ -12,27 +12,14 @@
 
 namespace ss {
 
-	DataCreator::DataCreator( std::string _moduleFileName  )
+	DataCreator::DataCreator( std::string _moduleFileName ,  std::string outputDirectory   )
 	{
-
-		size_t pos = _moduleFileName.find_last_of( "/" );
-
-		if( pos == string::npos )
-		{
-			directory = "";
-			moduleFileName = _moduleFileName;
-		}
-		else
-		{
-			directory = _moduleFileName.substr( 0 , pos+1 );
-			moduleFileName = _moduleFileName.substr( pos+1 , _moduleFileName.size() - (pos+1 ) );
-		}
+        moduleFileName = _moduleFileName;
 		
-		outputFileName = "Module";
+		outputFileName = outputDirectory + "/Module";
 		
 		std::cout << "Input module file " << moduleFileName << std::endl;
 		std::cout << "Output module file " << outputFileName << std::endl;
-		std::cout << "Base direcotry " << directory << std::endl;
 		
 		module = NULL;
 		
@@ -47,7 +34,7 @@ namespace ss {
 		
 		
 		ifstream input;
-		std::string fileName = directory + moduleFileName;
+		std::string fileName = moduleFileName;
 		input.open( fileName.c_str() );
 		
 		if( !input.is_open() )
@@ -162,7 +149,7 @@ namespace ss {
 		
 #pragma mark MODULE .h file
 		
-		std::string data_file_name = directory + outputFileName + ".h";
+		std::string data_file_name =  outputFileName + ".h";
 		std::cout << "Creating file " << data_file_name << "\n";
 		
 		std::ofstream output( data_file_name.c_str() );
@@ -245,7 +232,7 @@ namespace ss {
 	{
 		
 		// Print .cpp file for module definition
-		std::string output_filename_cpp = directory + outputFileName + ".cpp";
+		std::string output_filename_cpp =  outputFileName + ".cpp";
 		std::cout << "Creating file " << output_filename_cpp << "\n";
 		
 		std::ofstream output( output_filename_cpp.c_str() );
@@ -426,11 +413,11 @@ namespace ss {
 	{
 		// Generate the data files 
 		for (size_t i = 0 ; i < datas.size() ; i++)
-			datas[i].printFiles(directory);
+			datas[i].printFiles("");
 
 		// Generate the operation files 
 		for (size_t i = 0 ; i < operations.size() ; i++)
-			operations[i].printFile(directory);
+			operations[i].printFile("");
 		
 		
 		// Print the header file

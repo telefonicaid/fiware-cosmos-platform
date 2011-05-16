@@ -29,8 +29,6 @@ namespace ss {
 	{
 	 public:
 
-		// Directory of the moduleFile to create the rest of elements
-		std::string directory;	
 		
 		// Name of the module
 		std::string moduleFileName;
@@ -52,7 +50,7 @@ namespace ss {
 		 Constructor: name of the file to parse
 		 */
 		
-		DataCreator( std::string moduleFileName );
+		DataCreator( std::string moduleFileName , std::string outputDirectory );
 		
 		/**
 		 Read the content of the file into a string

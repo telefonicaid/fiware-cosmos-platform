@@ -1,12 +1,23 @@
 
+
 all:
-	mkdir build;cd build;cmake ..;cd ..
+	make compile
+	sudo make install
+
+compile: prepare
 	make -C build
-	make test -C build
+
+prepare:
+	mkdir build;cd build;samsonModuleParser ../module .
+	mkdir build;cd build;cmake ..;cd ..
+
+
+install:
+	make -C build install
+
 
 reset:
 	rm -Rf build
-	rm -f Module.*
 
 clean:
 	make clean -C build

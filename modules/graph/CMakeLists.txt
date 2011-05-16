@@ -1,52 +1,28 @@
+SET( MODULE_NAME graph )
+
 cmake_minimum_required(VERSION 2.6)
 
 SET (SOURCES
-    Module.h
-    Module.cpp
-)
-
-SET (OPERATION_HEADERS
-operations/add_extern_mark_to_graph.h
-operations/compute_graph.h
-operations/fake_graph.h
-operations/filter_graph.h
-operations/filter_graph_map.h
-operations/filter_graph_reduce.h
-operations/get_graph_from_links.h
-operations/parse_graph.h
-operations/parse_links.h
-operations/select_graph.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 )
 
 # Install headers to be used by other modules
 
-SET (HEADERS
-samson/modules/graph/Link.h
-samson/modules/graph/Link_base.h
-samson/modules/graph/Node.h
-samson/modules/graph/Node_base.h
-samson/modules/graph/VectorNode.h
-samson/modules/graph/VectorNode_base.h
-)
+FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
 
-#Generate 'Module.cpp' and 'Module.h' from ''Module''
-add_custom_command (
-  OUTPUT           ${CMAKE_CURRENT_SOURCE_DIR}/Module.h
-  OUTPUT	   ${CMAKE_CURRENT_SOURCE_DIR}/Module.cpp
-  COMMAND          samsonModuleParser ${CMAKE_CURRENT_SOURCE_DIR}/module
-  MAIN_DEPENDENCY  module
+SET (OPERATION_HEADERS
+operations/parse_id_id.h
+operations/parser_uint_void.h
 )
 
 include_directories("${PROJECT_SOURCE_DIR}")
 
-ADD_LIBRARY(graph MODULE ${SOURCES} ${HEADERS} ${OPERATION_HEADERS})
+MESSAGE( "----------------------------------------------------------------------------")
+MESSAGE( "Creating module ${MODULE_NAME}" )
+MESSAGE( "----------------------------------------------------------------------------")
+ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES}   )
 
-INSTALL(TARGETS graph DESTINATION /opt/samson/modules)
-INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/graph)
-
-
-
-
-
+INSTALL(TARGETS ${MODULE_NAME} DESTINATION /opt/samson/modules)
+INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
 

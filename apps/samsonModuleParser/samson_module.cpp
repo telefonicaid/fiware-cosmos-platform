@@ -15,21 +15,23 @@
 #include "DataCreator.h"
 #include "parseArgs.h"          // parseArgs
 #include "paUsage.h"            // paUsage
+#include <sys/stat.h>           // stat()
 
-
-
-char name[100];
-/* ****************************************************************************
- *
- * parse arguments
- */
-
-PaArgument paArgs[] =
+int  tsCompare ( struct  timespec  time1, struct  timespec  time2)
 {
-	{ " ",            name,        "NAME",        PaString,  PaOpt,  PaND,   PaNL,   PaNL,  "name of prcess to kill"         },
-	PA_END_OF_ARGS
-};
-
+    
+    if (time1.tv_sec < time2.tv_sec)
+        return (-1) ;				/* Less than. */
+    else if (time1.tv_sec > time2.tv_sec)
+        return (1) ;				/* Greater than. */
+    else if (time1.tv_nsec < time2.tv_nsec)
+        return (-1) ;				/* Less than. */
+    else if (time1.tv_nsec > time2.tv_nsec)
+        return (1) ;				/* Greater than. */
+    else
+        return (0) ;				/* Equal. */
+    
+}
 
 /** 
  Main function to parse everything 
@@ -38,12 +40,8 @@ PaArgument paArgs[] =
 int main( int argC , const char *argV[])
 {
 	
-	// Init the lm library
-	paParse(paArgs, argC, (char**) argV, 1, false);
 	
 
-	fprintf(stderr,"SAMSON Module tool  (v %s)\n", SAMSON_MODULE_PARSER_VERSION);
-	fprintf(stderr, "========================================================\n");
 
 	//Help parameter in the comman line
 	au::CommandLine cmdLine;
@@ -60,17 +58,53 @@ int main( int argC , const char *argV[])
 	}
 	
 	
-	if( cmdLine.get_num_arguments() < 2 )
+	if( cmdLine.get_num_arguments() < 3 )
 	{
-		fprintf(stderr, "Usage: %s module_file \n" , argV[0]);
+		fprintf(stderr, "Usage: %s module_file output_directory \n" , argV[0]);
 		fprintf(stderr, "Type -help for more help\n\n");
 		exit(1);
 	}
 	
 	std::string moduleFileName = cmdLine.get_argument(1);
+    std::string outputDirectory = cmdLine.get_argument(2);
 
+    
+    // Check it time-stamp is greater to not do anything..
+    struct stat stat_module , stat_output1, stat_output2 ;
+    
+    if ( stat( moduleFileName.c_str() , &stat_module ) != 0)
+    {
+        std::cerr << "Error opening module file";
+        exit(0);
+    }
+    
+    std::string output1_filename = outputDirectory + "/Module.cpp";
+    std::string output2_filename = outputDirectory + "/Module.h";
+    
+    int res_stat1 = stat( output1_filename.c_str() , &stat_output1);
+    int res_stat2 = stat( output2_filename.c_str() , &stat_output2);
+
+    
+    if( ( res_stat1 == 0) && ( res_stat2 == 0) )
+    {
+        
+        if( tsCompare( stat_module.st_mtimespec , stat_output1.st_mtimespec ) < 0 )
+            if( tsCompare( stat_module.st_mtimespec , stat_output2.st_mtimespec ) < 0 )
+            {
+                std::cerr << "Not creating Modules.cpp and Modules.h since module is input file is older than the new one\n";
+                return 0;
+            }
+    }
+    else
+    {
+        std::cerr << "Not possible to open " << output1_filename << " or " << output2_filename << " so, outputs will be generated again\n";
+    }
+    
+	fprintf(stderr,"SAMSON Module tool  (v %s)\n", SAMSON_MODULE_PARSER_VERSION);
+	fprintf(stderr, "========================================================\n");
+    
 	 
-	ss::DataCreator module_creator( moduleFileName  );		// A data creator object to generate the code
+	ss::DataCreator module_creator( moduleFileName, outputDirectory  );		// A data creator object to generate the code
 	module_creator.print();
 	
 	return 0;

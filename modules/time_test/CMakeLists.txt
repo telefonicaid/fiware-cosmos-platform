@@ -1,33 +1,28 @@
+SET( MODULE_NAME time_test )
+
 cmake_minimum_required(VERSION 2.6)
 
 SET (SOURCES
-    Module.h
-    Module.cpp
-)
-
-SET (OPERATION_HEADERS
+    ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 )
 
 # Install headers to be used by other modules
 
-SET (HEADERS
+FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
+
+SET (OPERATION_HEADERS
+operations/parse_id_id.h
+operations/parser_uint_void.h
 )
 
-#Generate 'Module.cpp' and 'Module.h' from ''Module''
-add_custom_command (
-  OUTPUT           ${CMAKE_CURRENT_SOURCE_DIR}/Module.h
-  OUTPUT	   ${CMAKE_CURRENT_SOURCE_DIR}/Module.cpp
-  COMMAND          samsonModuleParser ${CMAKE_CURRENT_SOURCE_DIR}/module
-  MAIN_DEPENDENCY  module
-)
+include_directories("${PROJECT_SOURCE_DIR}")
 
-include_directories("${PROJECT_SOURCE_DIR}",  "../../trunk/libs/logMsg")
+MESSAGE( "----------------------------------------------------------------------------")
+MESSAGE( "Creating module ${MODULE_NAME}" )
+MESSAGE( "----------------------------------------------------------------------------")
+ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES}   )
 
-ADD_LIBRARY(time_test MODULE ${SOURCES} ${HEADERS} ${OPERATION_HEADERS})
+INSTALL(TARGETS ${MODULE_NAME} DESTINATION /opt/samson/modules)
+INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
-INSTALL(TARGETS time_test DESTINATION /opt/samson/modules)
-INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/time_test)
-
-ENABLE_TESTING()
-ADD_SUBDIRECTORY(testing)     # Test module and ctest stuff
 

@@ -1,7 +1,7 @@
 SET (FILES
     samsonProcessesSupervise
-	samsonValgrindSupervise
-	samsonRun
+    samsonValgrindSupervise
+    samsonRun
 )
 
 # Instalation header files

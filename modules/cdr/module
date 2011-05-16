@@ -1,0 +1,183 @@
+Module cdr
+{
+
+	title	"CDR  module"
+	author 	"Andreu Urruela (andreu@tid.es)"
+	version "0.1"
+	
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+data Date
+{
+     system.UInt8 year;
+     system.UInt8 month;
+     system.UInt8 day;
+     system.UInt days_2000;
+     system.UInt8 week_day; 
+}
+
+data Time
+{
+     system.UInt8 hour;
+     system.UInt8 minute;
+     system.UInt8 seconds;
+}
+
+data CDR
+{
+     system.UInt node;
+     cdr.Date date;
+     cdr.Time time;
+     system.UInt duration;
+}
+
+
+data User
+{
+     system.UInt id;
+     system.UInt titularId;
+     system.UInt8 type;
+     cdr.Date activationDate;
+     system.UInt8 activationCode;
+     system.UInt8 age;
+     system.UInt8 province;
+     system.UInt8 sex;
+     cdr.Date churnDate;
+     system.UInt8 churnCode;
+}
+
+
+# -------------------------------------------------
+# Operations with cdrs
+# -------------------------------------------------
+
+generator fake_cdrs
+{
+	out	system.UInt cdr.CDR
+
+	helpLine "Generate a random set of cdrs from a group of 1000 users. 20% of the CDRs are duplicated"
+
+	help
+	{
+		"Generate a random set of cdrs from a group of 1000 users. 20% of the CDRs are duplicated"
+	}
+}
+
+generator fake_users
+{
+        out     system.UInt cdr.User
+
+        help
+        {
+                "Generate a random set of users"
+        }
+}
+
+
+
+reduce remove_duplicated_cdrs
+{
+	in 	system.UInt cdr.CDR
+	out	system.UInt cdr.CDR	
+
+	helpLine "Remove duplicatated cdrs. Input and output are in the same format"
+
+	help
+	{
+		"Remove duplicatated cdrs. Input and output are in the same format"
+	}
+	
+}
+
+map spread_cdrs_to_links
+{
+	in	system.UInt cdr.CDR
+	out 	system.UInt system.UInt
+
+	helpLine "Spread each CDR producing two key-values at the output per CDR. A-B and B-A"
+
+	help
+	{
+		"Spread cdrs at the input in the sense that emit two key-values at the output for each cdr."
+		"For every CDR (A-B) two key-values are emitted A,B and B,A"
+		"This operation is tippically concatenated with sna_compute_graph to generate the graph from cdrs."
+	}	
+}
+
+map spread_cdrs_to_links2
+{
+	in	system.UInt cdr.CDR
+	out 	system.UInt2 system.Void
+
+	helpLine "Spread each CDR producing two key-values at the output per CDR. A-B and B-A"
+
+}
+
+#reduce combine_graphs3
+#{
+#        in      system.UInt graph.Node
+#        in      system.UInt graph.Node
+#        in      system.UInt graph.Node
+#        out     system.UInt graph.Node
+#
+#        help
+#        {
+#                "Prototype of the combine graph function."
+#                "Rigth now, it takes three graph as inputs and compute the final weigth of each link as the mean of initial weigths."
+#                "It is suppoused to be refactored when more information is avilable"
+#        }
+#}
+
+
+parser parse_cdrs
+{
+	out system.UInt cdr.CDR	
+	
+	helpLine "Parse CDRs in txt format producing a single key-value at the output per each valid CDR (output: system.UInt cdr.CDR)"
+
+	help
+	{
+		"parse txt-file of CDRS in  different formats."
+		"This is a generic parse for different formats. Please, specify with the -format <format>"
+		"It can also be selected with the environment variable 'cdr.CDRs_source'"
+		"Suported formats:"
+		"TME:       --> 1|689644587|685015313|01/09/08 18:52:44|123|2|2"
+		"O2UKsmsc:  --> exact format to be defined "
+		"O2UKp2p:   --> exact format to be defined "
+		"O2UKmms:   --> exact format to be defined "
+	}
+}
+
+parser parse_users
+{
+        out     system.UInt cdr.User
+
+        help
+        {
+		"parse of Users information"
+                "parse the content of a file with information about users. Commontly the name of this file is ALFA_CARACT.TXT."
+		"Example: 687562010|910000000001|1|07/04/06|2|49|28|2||"
+        }
+}
+
+parser parse_users_O2UK
+{
+        out     system.UInt cdr.User
+
+        help
+        {
+		"parse of Users information from O2UK. From the moment, we have buil the O2UK user information as the users that appear both as calling and called in the log files"
+		"Example: 44687562010"
+        }
+}
+
+parserOut select_cdrs
+{
+	in system.UInt cdr.CDR
+
+	helpLine "Export cdrs in txt format"
+}

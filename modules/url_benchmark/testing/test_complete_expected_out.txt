@@ -1,0 +1,4 @@
+cat_0: [ServerName_0|path_to_somewhere_0(2), ServerName_0|path_to_somewhere_6(2), ServerName_4|path_to_somewhere_2(2),  ]
+cat_1: [ServerName_1|path_to_somewhere_3(2), ServerName_1|path_to_somewhere_9(2), ServerName_5|path_to_somewhere_1(2),  ]
+cat_2: [ServerName_2|path_to_somewhere_2(2), ServerName_2|path_to_somewhere_6(2), ServerName_6|path_to_somewhere_4(2),  ]
+cat_3: [ServerName_3|path_to_somewhere_5(2), ServerName_3|path_to_somewhere_9(2), ServerName_7|path_to_somewhere_1(2),  ]

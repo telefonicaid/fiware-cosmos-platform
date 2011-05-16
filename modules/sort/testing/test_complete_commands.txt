@@ -1,0 +1,5 @@
+remove_all
+add data.txt -txt
+upload in.txt data.txt
+sort.sort data.txt out.txt -create
+download out.txt out.txt

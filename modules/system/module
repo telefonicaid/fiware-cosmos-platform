@@ -1,0 +1,58 @@
+Module system
+{
+	title	"System default elements"
+	author	"Andreu Urruela"
+	version "0.1"
+}
+
+# System defaults ( to be implemented in the rigth file )
+data UInt {}
+data String {}
+data Void {}
+data Int32 {}
+data Int16 {}
+data Int8 {}
+data UInt64 {}
+data UInt32 {}
+data UInt16 {}
+data UInt8 {}
+data Double {}
+data Float {}
+
+# Very simple implementation for time
+# Only provides conversion from (getTimeFromCalendar, just mktime) and to (getCalendarFromTime, just gmtime_r) struct tm expanded format
+# For conversions to string, use asctime_r()
+data Time {}
+
+data Vector_UInt
+{
+  vector system.UInt values;	
+}
+
+data UInt2
+{
+	system.UInt value_1;
+	system.UInt value_2;
+}
+
+parser parse_id_id
+{
+	out system.UInt2 system.Void
+
+        help
+        {
+                "Generic parser to get a system.UInt-system.UInt file set form a txt file with this format: number|number"
+                "This is used for instace to get into SAMSON results from SQL operations"
+        }
+}
+
+# Basic parsers
+
+parser parser_uint_void
+{
+	out system.UInt system.Void
+
+	helpLine "Parse txt files with an unsigned integer per line"
+
+}
+

@@ -1,0 +1,181 @@
+Module txt
+{
+	title	"Basic txt manipulation"
+	author	"Andreu Urruela"
+	version "0.1"
+}
+
+data Collocation
+{
+	system.String w1;
+	system.String w2;
+}
+
+data PairInts
+{
+	system.UInt i1;
+	system.UInt i2;
+}
+
+
+data CountData
+{
+	system.String word;
+	system.UInt count;
+}
+
+data Stripe
+{
+	vector txt.CountData colList;
+}
+
+
+parser parser_words
+{
+	out system.String system.UInt
+
+	helpLine "Parse a txt files emiting words at the output (value is always one)"
+}
+
+parser parser_collocations_pairs
+{
+	out txt.Collocation system.UInt
+
+	helpLine "Parse a txt file emiting collocations at the output (value is always one)"
+}
+
+parser parser_collocations_stripes
+{
+	out system.String txt.Stripe
+
+	helpLine "Parse a txt file emiting words as key with a vector of collocations at the output"
+}
+
+script demo
+{
+
+	code
+	"
+		add txt.input -txt -f					# Create incomming txt queue
+		add txt.input_bin system.String system.UInt -f		# Create incomming queue in binary format
+
+		add txt.words system.String system.UInt -f		# Create accumulated set for the words
+
+		clear txt.input txt.input_bin txt.words 		# Clean everything to begin...
+
+		# Set the automatic operation for this queue	
+		remove_operation -tag txt.demo
+		set_operation 'txt.parser_words txt.input txt.input_bin -clear_inputs' 'queue txt.input 0 0' -tag txt.demo		
+		set_operation 'txt.word_count_accumulate txt.input_bin txt.words txt.words -clear_inputs' 'queue txt.input_bin 0 0' -tag txt.demo
+	"
+}
+
+script words
+{
+	in txt txt 
+	out txt txt
+
+	helpLine "Complete classical example of counting words"
+
+	code
+	"
+		txt.parser_words $1 $1.words -create -clear
+		txt.word_count $1.words $1.words.accumulated -create -clear
+		txt.export_words $1.words.accumulated $2 -create -clear
+		rm $1.words $1.words.accumulated
+	"
+
+}
+
+reduce word_count
+{
+	in system.String system.UInt
+	out system.String system.UInt
+
+	helpLine "Classical example to count the words. It basically acumulates the number of times a word appear in a txt file"
+}
+
+reduce collocation_count
+{
+	in txt.Collocation system.UInt
+	out txt.Collocation system.UInt
+
+	helpLine "Classical example to count words collocations. It basically acumulates the number of times a collocation appears in a txt file"
+}
+
+reduce collocation_count_stripes
+{
+	in system.String txt.Stripe
+	out system.String txt.Stripe
+
+	helpLine "Classical example to count words collocations by stripes. It basically acumulates the number of times a collocation appears in a txt file"
+}
+
+reduce word_count_accumulate
+{
+	in system.String system.UInt	# Incomming data
+	in system.String system.UInt	# State
+	out system.String system.UInt	# Future State
+
+	helpLine "Accumulation function of work count."
+}
+
+parserOut export_words
+{
+	in system.String system.UInt
+
+	helpLine "Export words and counter"	
+}
+
+parserOut export_collocations
+{
+	in txt.Collocation system.UInt
+
+	helpLine "Export collocations and counter"	
+}
+
+parserOut export_collocations_stripes
+{
+	in system.String txt.Stripe
+
+	helpLine "Export collocations and counter with stripe strategy"	
+}
+
+
+#
+# TESTING
+#
+
+script test_1
+{
+	in txt txt 
+	out txt txt
+
+	helpLine "Complete classical example of counting words"
+
+	code
+	"
+		txt.parser_words $1 $1.words -create -clear
+		txt.word_count $1.words $1.words.accumulated -create -clear
+		txt.export_words $1.words.accumulated $2 -create -clear
+		rm $1.words $1.words.accumulated
+	"
+
+}
+
+script test_2
+{
+	in txt txt 
+	out txt txt
+
+	helpLine "example for cumputing collocations"
+
+	code
+	"
+		txt.parser_collocations_stripes $1 $1.coll -create -clear
+		txt.collocation_count_stripes $1.coll $1.coll.accumulated -create -clear
+		txt.export_collocations_stripes $1.coll.accumulated $2 -create -clear
+		rm $1.coll $1.coll.accumulated
+	"
+
+}

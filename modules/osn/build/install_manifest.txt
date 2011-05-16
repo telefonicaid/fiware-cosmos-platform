@@ -1,1 +1,0 @@
-/opt/samson/modules/libosn.so

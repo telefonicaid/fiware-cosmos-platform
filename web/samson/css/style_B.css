@@ -1,0 +1,232 @@
+@font-face {
+	font-family: "Frutiger";
+	src: url('../fonts/FrutigerLTStd-Light.otf');
+}
+
+.FL { float:left; }
+.FR { float:right; }
+
+html {
+	background-color: #fff;
+	background:-moz-linear-gradient(
+	rgba(17, 28, 63, 1) 0%,
+	rgba(82, 156, 216, 1) 70%,
+	rgba(255, 255, 255, 1) 100%);
+	background:-webkit-gradient(linear,70% 0%,70% 100%,
+	color-stop(0, rgba(17, 28, 63, 1)),
+	color-stop(0.7, rgba(82, 156, 216, 1)),
+	color-stop(1, rgba(255, 255, 255, 1)));
+}
+
+body {
+	font-family: Frutiger;
+	color: #515151;
+}
+
+#header {
+	height: 125px;
+	display: block;
+	overflow: hidden;
+	margin: 0 20px;
+}
+	h1 {
+		font-size: 43px;
+		color: #fff;
+		padding: 40px 0 0 10px;
+		float: left;
+		font-weight: normal;
+	}
+		h1 span {
+			color: #88CCFF;
+		}
+	#header #inputs {
+		float: right;
+		margin: 35px 20px 0 0;
+	}
+		#header label {
+			float: right;
+			width: 200px;
+			text-align: right;
+			color: #fff;
+			font-size: 18px;
+			float: left;
+			clear: left;
+			margin: 3px 5px 0 0;
+		}
+		#header input {
+			border: 0;
+			background: #fff;
+			float: left;
+			font-size: 18px;
+			line-height: 26px;
+			height: 26px;
+			margin-bottom: 5px;
+			padding: 0 5px;
+			width: 80px;
+			font-weight: normal;
+		}
+	
+#content {
+	display: block;
+	overflow: hidden;
+	background: #fff;
+	display: block;
+	overflow: hidden;
+	margin: 0 20px;
+	padding: 110px 10px 10px 10px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	position: relative;
+	min-width: 900px;
+}
+	.combo {
+		border: 1px solid #34393A;
+		-webkit-border-radius: 5px;
+		-moz-border-radius: 5px;
+		background:-moz-linear-gradient(
+		rgba(244, 244, 244, 1) 0%,
+		rgba(204, 204, 204, 1) 75%,
+		rgba(204, 204, 204, 1) 100%);
+		background:-webkit-gradient(linear,0 75%,75% 100%,
+		color-stop(0, rgba(244, 244, 244, 1)),
+		color-stop(0.75, rgba(204, 204, 204, 1)),
+		color-stop(1, rgba(204, 204, 204, 1)));
+		padding: 8px;
+		width: 200px;
+		position: absolute;
+		top: 10px;
+		-moz-box-shadow: 0px 0px 4px #555; /* FF3.5+ */
+  		-webkit-box-shadow: 0px 0px 4px #555; /* Saf3.0+, Chrome */
+		box-shadow: 0px 0px 4px #555; /* Opera 10.5, IE 9 */
+	}
+		.combo .title {
+			font-size: 25px;
+			height: 50px; 
+			line-height: 50px;
+			padding-left: 55px;
+			cursor: pointer;
+		}
+		.combo.servers .title {
+			background: url(../images/icon-servers.png) no-repeat left center;
+		}
+			.combo .title span {
+				background: url(../images/combo-closed.png) no-repeat right center;
+				padding-right: 20px;
+			}
+			.combo .title span.opened {
+				background: url(../images/combo-opened.png) no-repeat right center;
+			}
+		.combo ul {
+			display: none;
+		}
+			.combo li {
+				border: 1px solid #34393A;
+				-webkit-border-radius: 5px;
+				-moz-border-radius: 5px;
+				clear: left;
+				margin-top: 8px;
+				background-color: #fff;
+				display: block;
+				overflow: hidden;
+			}
+				.combo li a {
+					color: #2680CA;
+					text-decoration: none;
+					float: left;
+					padding: 7px 10px 5px 10px;
+					width: 100%;
+				}
+	.box {
+		border: 1px solid #34393A;
+		-webkit-border-radius: 5px;
+		-moz-border-radius: 5px;
+		background:-moz-linear-gradient(
+		rgba(244, 244, 244, 1) 0%,
+		rgba(204, 204, 204, 1) 75%,
+		rgba(204, 204, 204, 1) 100%);
+		background:-webkit-gradient(linear,0 75%,75% 100%,
+		color-stop(0, rgba(244, 244, 244, 1)),
+		color-stop(0.75, rgba(204, 204, 204, 1)),
+		color-stop(1, rgba(204, 204, 204, 1)));
+		padding: 8px;
+		margin-bottom: 30px;
+		width: 47%;
+		-moz-box-shadow: 0px 0px 4px #555; /* FF3.5+ */
+		-webkit-box-shadow: 0px 0px 4px #555; /* Saf3.0+, Chrome */
+		box-shadow: 0px 0px 4px #555; /* Opera 10.5, IE 9 */
+	}
+		.box h2 {
+			font-size: 25px;
+			height: 50px; 
+			line-height: 50px;
+			padding-left: 55px;
+			font-weight: normal;
+		}
+		.box.queues h2 {
+			background: url(../images/icon-queues.png) no-repeat left center;
+		}
+		.box.system h2 {
+			background: url(../images/icon-system.png) no-repeat left center;
+		}
+		.box .tabs {
+			float: right;
+			font-size: 13px;
+			margin-right: 25px;
+		}
+			.box .tabs li {
+				float: left;
+				border: 1px solid #34393A;
+				border-bottom: 1px solid #ccc;
+				-webkit-border-radius: 10px 10px 0 0;
+				-moz-border-radius: 10px 10px 0 0;
+				background:#fff;
+				padding: 8px 8px 8px 8px;
+				margin:0 5px 5px 0;
+			}
+			.box .tabs li.opened {
+				float: left;
+				border: 1px solid #34393A;
+				-webkit-border-radius: 10px;
+				-moz-border-radius: 10px;
+				background:#fff;
+			}
+				.box .tabs li span {
+					color: #515151;
+					background: url(../images/combo-closed.png) no-repeat right center;
+					padding-right: 15px;
+					padding: 8px 15px 8px 8px;
+					margin: -8px 0 -8px -8px;
+					cursor: pointer;
+					float: left;
+				}
+				.box .tabs li.opened span {
+					background: url(../images/combo-opened.png) no-repeat right center;
+				}
+					.box .tabs li ul {
+						clear: both;
+						padding-top: 8px;
+						float: left;
+						display: none;
+					}
+						.box .tabs li li {
+							background-color: #419EDA;
+							-webkit-border-radius: 5px;
+							-moz-border-radius: 5px;
+							padding: 2px 6px 2px 2px;
+							border: none;
+							float: none;
+						}
+							.box .tabs li li label {
+								color: #fff;
+							}
+		.box .content {
+			min-height: 200px;
+			background-color: #fff;
+			border: 1px solid #ccc;
+			margin-top: 5px;
+		}
+		.box .content.content-tab {
+			margin-top: 33px;
+			min-height: 173px;
+		}
+		

@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Samson Monitoring Page</title>
+	
+	<!-- CSS : implied media="all" -->
+	<link rel="stylesheet" href="css/reset.css">
+	<link rel="stylesheet" href="css/style.css"> 
+	
+	<script src="js/jquery-1.4.2.min.js"></script>
+	<script src="js/samson.js"></script>
+    
+    <!-- FLOT -->
+    <script language="javascript" type="text/javascript" src="flot/jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="flot/jquery.flot.js"></script>
+    
+    <script language="javascript" type="text/javascript" src="monitoring.js"></script>
+
+</head>
+<body>
+	<div id="header">
+		<h1>Samson <span class="opened">Monitoring</span></h1>
+		<div id="inputs">
+        	<form name="params_info" id="params_info">
+                 <label for="datasize">Datasize</label>
+                 <input type="text" id="datasize" />
+                 <label for="cores">Cores</label>
+                 <input type="text" id="cores" />       	
+            </form>
+		</div>
+	</div>
+	
+	<div id="content">
+		<div class="combo servers">
+			<div class="title"><span>Servers</span></div>
+			<ul>
+				<li><a href="#">Server 1</a></li>
+				<li><a href="#">Server 2</a></li>
+			</ul>
+		</div>
+	
+		<div class="box queues FL">
+			<h2>Process</h2>
+			<div style="overflow:auto" class="content" id="lists_system">
+				
+			</div>
+		</div>
+		
+		<div class="box system FR">
+			<h2>System</h2>
+			<ul class="tabs">
+				<li><span>Parameter</span>
+					<ul class="sub-tabs">
+                        <form name="params_system" id="params_system">
+                        	
+                        </form>
+					</ul>
+				</li>
+                <li><span>Type</span>
+                	<ul class="sub-tabs">
+                        <form name="type_system">
+                            <li><label for="lines" onClick="selectTypeSystem(0);">Lines</label></li>
+                            <li><label for="bars" onClick="selectTypeSystem(1);">Bars</label></li>
+                        </form>
+					</ul>				
+				</li>
+				<li><span>Time</span>
+                	<ul class="sub-tabs">
+                        <form name="time_system">
+                            <li><label for="minuts" onClick="selectTimeSystem(0);">1 min.</label></li>
+                            <li><label for="hours" onClick="selectTimeSystem(1);">1 h.</label></li>
+                            <li><label for="days" onClick="selectTimeSystem(2);">1 d.</label></li>
+                        </form>
+					</ul>
+				</li>
+			</ul>
+			<div class="content content-tab">
+                <div id="y_axis_system"></div>
+                <div id="plot_system"></div>
+			</div>
+		</div>
+		
+		<div class="box queues FL">
+			<h2>Queues</h2>
+			<div style="overflow:auto" class="content" id="lists_queues">
+				
+			</div>
+		</div>
+		
+		<div class="box system FR">
+			<h2>Inspector</h2>
+			<ul class="tabs">
+				<li><span>Queues</span>
+					<ul class="sub-tabs">
+                    	<form name="labels_queues" id="select_queues">
+                        </form>
+					</ul>
+				</li>
+				<li><span>Parameter</span>
+					<ul class="sub-tabs">
+                    	<form name="params_queues" id="params_queues">
+                        </form>
+					</ul>
+				</li>
+                <li><span>Type</span>
+                	<ul class="sub-tabs">
+                        <form name="type_queues">
+                            <li><label for="lines" onClick="selectTypeQueues(0);">Lines</label></li>
+                            <li><label for="bars" onClick="selectTypeQueues(1);">Bars</label></li>
+                        </form>
+					</ul>				
+				</li>
+				<li><span>Time</span>
+                	<ul class="sub-tabs">
+                        <form name="time_queues">
+                            <li><label for="minuts" onClick="selectTimeQueues(0);">1 min.</label></li>
+                            <li><label for="hours" onClick="selectTimeQueues(1);">1 h.</label></li>
+                            <li><label for="days" onClick="selectTimeQueues(2);">1 d.</label></li>
+                        </form>
+					</ul>
+				</li>
+			</ul>
+			<div class="content content-tab">
+                <div id="y_axis_queues"></div>
+            	<div id="plot_queues"></div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

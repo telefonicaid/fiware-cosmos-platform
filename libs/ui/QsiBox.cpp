@@ -314,8 +314,8 @@ void QsiBox::remove(QsiBase* qbP)
 void QsiBox::alignFix(QsiBase* qbP)
 {
 	QsiBase*         newMaster = NULL;
-	Alignment::Type  type;
-	int              margin;
+	Alignment::Type  type      = Alignment::Unaligned;
+	int              margin    = 9;
 
 	alignShow("Before removal");
 	LM_T(LmtAlign, ("Fixing alignment at removing %s '%s'", qbP->typeName(), qbP->name));
@@ -607,7 +607,7 @@ void QsiBox::realign(QsiBase* master, Alignment::Type type, QsiBase* slave, int 
 {
 	int mx, my, mw, mh;
 	int sx, sy, sw, sh;
-	int dx, dy;
+	int dx = 0, dy = 0;
 
 	LM_T(LmtAlign, ("Aligning %s slave '%s' to %s master '%s'. Alignment type: %s, margin: %d", slave->typeName(), slave->name, master->typeName(), master->name, Alignment::name(type), margin));
 	master->geometry(&mx, &my, &mw, &mh);
@@ -641,6 +641,8 @@ void QsiBox::realign(QsiBase* master, Alignment::Type type, QsiBase* slave, int 
 		dx = mx - sx + (mw - sw) / 2;
 		dy = my - sy + (mh - sh) / 2;
 	}
+	else
+		LM_X(1, ("unknown alignment type %d", type));
 
 	LM_T(LmtAlign, ("Move slave '%s' %d pixels in X-axis and %d pixels in Y-axis", slave->name, dx, dy));
 	slave->moveRelative(dx, dy);

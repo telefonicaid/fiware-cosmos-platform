@@ -62,9 +62,15 @@ private:
 	QGraphicsView*  view;
 
 public:
+	QGraphicsItem*  sceneLayer0;   // Connection lines will be placed between these two layers
+	QGraphicsItem*  sceneLayer1;   // Connection lines will be placed between these two layers
+
 	int             x;
 	int             y;
-
+	int             totalWidth;
+	int             totalHeight;
+    int             winWidth;
+	int             winHeight;
 
 public:
 	void       add(Block*);
@@ -103,7 +109,7 @@ public:
 // Constructors
 //
 public:
-	Manager(QVBoxLayout* layout, const char* homeDir, const char* background, int width, int height);
+	Manager(QVBoxLayout* layout, const char* homeDir, const char* background, int width, int height, int _winWidth, int _winHeight);
 	Manager(QObject* parent = 0) { LM_X(1, ("Empty constructor called")); parent = NULL; };
 	~Manager();
 

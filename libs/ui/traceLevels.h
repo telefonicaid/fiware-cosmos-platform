@@ -32,5 +32,6 @@
 #define LmtQsiList            166
 #define LmtFrame              167
 #define LmtExpandList         168
+#define LmtPopup              169
 
 #endif

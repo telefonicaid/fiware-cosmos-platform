@@ -7,6 +7,7 @@
 * CREATION DATE            May 09 2011
 *
 */
+#include <QApplication>
 #include <QVBoxLayout>
 #include <QGraphicsView>
 #include <QGraphicsSceneMouseEvent>
@@ -43,9 +44,16 @@ static bool               moved         = false;
 *
 * Manager - 
 */
-Manager::Manager(QVBoxLayout* layout, const char* homeDir, const char* background, int width, int height)
+Manager::Manager(QVBoxLayout* layout, const char* homeDir, const char* background, int _width, int _height, int _winWidth, int _winHeight)
 {
-	view = new QGraphicsView(this);
+	QSize size;
+
+	totalWidth   = _width;
+	totalHeight  = _height;
+	winWidth     = _winWidth;
+	winHeight    = _winHeight;
+
+	view         = new QGraphicsView(this);
 
 
 	Home = strdup(homeDir);
@@ -70,23 +78,27 @@ Manager::Manager(QVBoxLayout* layout, const char* homeDir, const char* backgroun
 	if (access(bgPath, R_OK) != 0)
 	{
 		LM_W(("background file '%s' is missing", bgPath));
-		setSceneRect(QRectF(0, 0, width, height));
-		view->setSceneRect(0, 0, width, height);
-		view->setMaximumSize(width * 2, height * 2);
+		setSceneRect(QRectF(0, 0, totalWidth, totalHeight));
+		view->setSceneRect(0, 0, totalWidth, totalHeight);
+		view->setMaximumSize(totalWidth * 2, totalHeight * 2);
 
+		sceneLayer0 = NULL;
+		sceneLayer1 = NULL;
 	}
 	else
 	{
 		bg = new QPixmap(bgPath);
 
-		addPixmap(*bg);
+		sceneLayer0 = addPixmap(*bg);
+		sceneLayer1 = addPixmap(*bg);
+		sceneLayer1->setOpacity(0);
 
 		pixmapSize = bg->size();
 
 		LM_T(LmtImage, ("Setting background size to %d x %d", pixmapSize.width(), pixmapSize.height()));
 		setSceneRect(QRectF(0, 0, pixmapSize.width(), pixmapSize.height()));
 
-		view->setSceneRect(0, 0, width, height);
+		view->setSceneRect(0, 0, totalWidth, totalHeight);
 		view->setMaximumSize(pixmapSize.width(), pixmapSize.height());
 	}
 

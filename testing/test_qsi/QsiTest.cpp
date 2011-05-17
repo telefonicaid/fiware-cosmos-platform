@@ -20,6 +20,7 @@
 #include "QsiBox.h"             // Qsi::Box
 #include "QsiBlock.h"           // Qsi::Block
 #include "QsiExpandList.h"      // Qsi::ExpandList
+#include "QsiPopup.h"           // Qsi::Popup
 
 
 
@@ -287,10 +288,12 @@ static void compress(Qsi::Block* qbP, void* vP)
 */
 static void expand(Qsi::Block* qbP, void* vP)
 {
+	new Qsi::Popup(qsiManager, "Just Testing", "This is just a test of a Popup");
+#if 0
 	userBox1->expand();
 	userBox2->expand();
 	elist->expand();
-
+#endif
 	qbP = NULL;
 	vP  = NULL;
 }
@@ -349,7 +352,7 @@ static void qsiSetup(QWidget* mainWindow)
 
 	mainWindow->setLayout(layout);
 
-	qsiManager = new Qsi::Manager(layout, "./TestImages", "Background.png", 1920, 1080);
+	qsiManager = new Qsi::Manager(layout, "./TestImages", "Background.png", 1920, 1080, MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT);
 	mainBox    = qsiManager->box;
 	
 

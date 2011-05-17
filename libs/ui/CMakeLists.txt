@@ -9,6 +9,7 @@ SET (HEADERS
 	QsiFunction.h
 	QsiAlignment.h
 	QsiFrame.h
+	QsiExpandList.h
 )
 
 
@@ -22,6 +23,7 @@ SET (SOURCES
 	QsiBox.cpp
 	QsiManager.cpp
 	QsiFrame.cpp
+	QsiExpandList.cpp
 )
 
 

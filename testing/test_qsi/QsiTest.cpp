@@ -19,6 +19,7 @@
 #include "QsiManager.h"         // QsiManager
 #include "QsiBox.h"             // QsiBox
 #include "QsiBlock.h"           // QsiBlock
+#include "QsiExpandList.h"      // Qsi::ExpandList
 
 
 
@@ -298,6 +299,15 @@ void expand(Qsi::QsiBlock* qbP, void* vP)
 }
 
 
+void elistCallback(Qsi::QsiBlock* qbP, void* vP)
+{
+	LM_M(("IN"));
+
+	qbP = NULL;
+	vP  = NULL;
+}
+
+
 
 /* ****************************************************************************
 *
@@ -317,6 +327,10 @@ static void qsiSetup(QWidget* mainWindow)
 	Qsi::QsiBox*   userBox1  = (Qsi::QsiBox*) mainBox->boxAdd("userBox1", 500, 200);
 	Qsi::QsiBox*   userBox2  = (Qsi::QsiBox*) mainBox->boxAdd("userBox2", 200,  20);
 
+	Qsi::ExpandList* elist = new Qsi::ExpandList(qsiManager, mainBox, "ExpandList", 0, 250, 10, 10);
+	elist->addMember("Expansion 1");
+	elist->addMember("Expansion 2");
+	elist->addMember("Expansion 3");
 
 	qsiManager->menuAdd("Alignment List", alignmentList, mainBox);
 	qsiManager->menuAdd("Qsi List",       qsiList,       mainBox);

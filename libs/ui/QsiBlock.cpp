@@ -109,6 +109,9 @@ QsiBlock::QsiBlock
 
 	case Box:
 		LM_X(1, ("Cannot create a Box ..."));
+
+	case ExpandListItem:
+		LM_X(1, ("Please use Qsi::ExpandList"));
 	}
 
 	if (width == -1)
@@ -398,6 +401,9 @@ int QsiBlock::geometry(int* xP, int* yP, int* widthP, int* heightP)
 
 	case Box:
 		LM_X(1, ("Cannot be a Box!"));
+
+	case ExpandListItem:
+		LM_X(1, ("Cannot be an ExpandList:!"));
 	}
 
 	qreal rx;

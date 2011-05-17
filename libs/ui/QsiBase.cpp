@@ -83,6 +83,7 @@ const char* QsiBase::typeName(void)
 	case Label:            return "Label";
 	case Button:           return "Button";
 	case Input:            return "Input";
+	case ExpandListItem:   return "ExpandList";
 	}
 
 	return "Unknown Type";
@@ -103,11 +104,44 @@ int QsiBase::xGet(void)
 
 /* ****************************************************************************
 *
+* xSet - 
+*/
+void QsiBase::xSet(int _x)
+{
+	x = _x;
+}
+
+
+
+/* ****************************************************************************
+*
 * yGet - 
 */
 int QsiBase::yGet(void)
 {
 	return y;
+}
+
+
+
+/* ****************************************************************************
+*
+* ySet - 
+*/
+void QsiBase::ySet(int _y)
+{
+	y = _y;
+}
+
+
+
+/* ****************************************************************************
+*
+* typeSet - 
+*/
+void QsiBase::typeSet(QsiType _type)
+{
+	type = _type;
 }
 
 }

@@ -279,6 +279,9 @@ void QsiBox::initialMove(QsiBase* qbP)
 */
 void QsiBox::add(QsiBase* qbP)
 {
+	if (qbP->type == ExpandListItem)
+		LM_M(("*** Adding ExpandListItem"));
+
 	for (int ix = 0; ix < qsiVecSize; ix++)
 	{
 		if (qsiVec[ix] != NULL)
@@ -286,7 +289,7 @@ void QsiBox::add(QsiBase* qbP)
 
 		qsiVec[ix] = qbP;
 
-		if (qbP->type != Box)
+		if ((qbP->type != Box) && (qbP->type != ExpandListItem))
 			initialMove(qbP);
 
 		LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
@@ -867,7 +870,7 @@ QsiBlock* QsiBox::lookup(QGraphicsItem* gItemP)
 		if (qsiVec[ix] == NULL)
 			continue;
 
-		if (qsiVec[ix]->type == Box)
+		if ((qsiVec[ix]->type == Box) || (qsiVec[ix]->type == ExpandListItem))
 		{
 			QsiBox* boxP = (QsiBox*) qsiVec[ix];
 

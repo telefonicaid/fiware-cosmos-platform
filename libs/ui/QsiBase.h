@@ -38,7 +38,8 @@ typedef enum QsiType
 	Label,
 	Button,
 	Input,
-	Line
+	Line,
+	ExpandListItem
 } QsiType;
 
 
@@ -53,18 +54,18 @@ class QsiBase
 	friend class QsiBox;
 
 private:
-	QsiBox*  owner;    // the Box this qsi belongs to - used for callback on size changes (only?)
-	QsiType  type;     // the type of this QSI
-	int      xInitial; // Initial X-position
-	int      yInitial; // Initial Y-position
-	int      x;        // x offset within the QsiBox
-	int      y;        // y offset within the QsiBox
-	int      width;    // width  of a QsiBlock or total width  of all components in a QsiBox
-	int      height;   // height of a QsiBlock or total height of all components in a QsiBox
-	bool     visible;
+	QsiBox*    owner;    // the Box this qsi belongs to - used for callback on size changes (only?)
+	QsiType    type;     // the type of this QSI
+	int        xInitial; // Initial X-position
+	int        yInitial; // Initial Y-position
+	int        x;        // x offset within the QsiBox
+	int        y;        // y offset within the QsiBox
+	int        width;    // width  of a QsiBlock or total width  of all components in a QsiBox
+	int        height;   // height of a QsiBlock or total height of all components in a QsiBox
+	bool       visible;
 
 public:
-	char* name;        // all QsiBlocks and QsiBoxes have a name, mostly for debugging purposes
+	char*      name;     // all QsiBlocks and QsiBoxes have a name, mostly for debugging purposes
 	
 
 	QsiBase(QsiBox* _owner, QsiType _type, const char* _name, int _x, int _y, int _width = -1, int _height = -1);
@@ -75,7 +76,9 @@ public:
 
 	virtual int   geometry(int* xP, int* yP, int* widthP, int* heightP)     = 0;
 	int           xGet(void);
+	void          xSet(int _x);
 	int           yGet(void);
+	void          ySet(int _y);
 
 	virtual void  hide(void)                                                = 0;
 	virtual void  show(void)                                                = 0;
@@ -84,6 +87,7 @@ public:
 
 	QsiBox*       getOwner(void);
 	const char*   typeName(void);
+	void          typeSet(QsiType _type);
 };
 
 }

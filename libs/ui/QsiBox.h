@@ -34,6 +34,8 @@ class QsiManager;
 */
 class QsiBox : public QsiBase
 {
+	friend class ExpandList;
+
 private:
 	QsiManager*  manager;
 	QsiBase**    qsiVec;
@@ -73,7 +75,7 @@ public:
 	
 	void        sizeChange(QsiBase* qsi);                                                    // callback - a child has changed its size
 
-	QsiBlock*   lookup(QGraphicsItem* gItemP);
+	virtual QsiBlock*   lookup(QGraphicsItem* gItemP);
 
 	QsiBase*    boxAdd(const char*    name,                   int x, int y);
 	QsiBase*    textAdd(const char*   name, const char* txt,  int x, int y);

@@ -394,7 +394,7 @@ void QsiManager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 *
 * QsiManager::siConnect - 
 */
-void QsiManager::siConnect(QsiBlock* qbP, QsiFunction func, void* param, bool persistent)
+void QsiManager::siConnect(QsiBlock* qbP, QsiFunction func, const void* param, bool persistent)
 {
 	for (int ix = 0; ix < itemCallbackMax; ix++)
     {
@@ -405,7 +405,7 @@ void QsiManager::siConnect(QsiBlock* qbP, QsiFunction func, void* param, bool pe
 
 		itemCallback[ix]->qbP        = qbP;
 		itemCallback[ix]->func       = func;
-		itemCallback[ix]->param      = param;
+		itemCallback[ix]->param      = (void*) param;
 		itemCallback[ix]->persistent = persistent;
 
 		LM_T(LmtMouse, ("Added callback for '%s'", qbP->name));

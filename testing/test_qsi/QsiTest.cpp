@@ -301,10 +301,9 @@ void expand(Qsi::QsiBlock* qbP, void* vP)
 
 void elistCallback(Qsi::QsiBlock* qbP, void* vP)
 {
-	LM_M(("IN"));
+	char* txt = (char*) vP;
 
-	qbP = NULL;
-	vP  = NULL;
+	LM_M(("ExpandList item '%s' pressed: '%s'", qbP->name, txt));
 }
 
 
@@ -317,7 +316,7 @@ static void qsiSetup(QWidget* mainWindow)
 {
 	QVBoxLayout*  layout = new QVBoxLayout();
 	int           x,y,w,h;
-
+	
 	mainWindow->setLayout(layout);
 
 	qsiManager = new Qsi::QsiManager(layout, "./TestImages", "Background.png", 1920, 1080);
@@ -327,16 +326,41 @@ static void qsiSetup(QWidget* mainWindow)
 	Qsi::QsiBox*   userBox1  = (Qsi::QsiBox*) mainBox->boxAdd("userBox1", 500, 200);
 	Qsi::QsiBox*   userBox2  = (Qsi::QsiBox*) mainBox->boxAdd("userBox2", 200,  20);
 
-	Qsi::ExpandList* elist = new Qsi::ExpandList(qsiManager, mainBox, "ExpandList", 0, 250, 10, 10);
-	elist->addMember("Expansion 1");
-	elist->addMember("Expansion 2");
-	elist->addMember("Expansion 3");
+
+
+	//
+	// Qsi::ExpandList test
+	//
+	const char* menuItem[] =
+	{
+		"Remove All",
+		"Add item",
+		"Red",
+		"Green",
+		"Gray",
+		NULL
+	};
+	const char* subMenuItem[] =
+	{
+		"Remove",
+		"Red",
+		"Green",
+		"Gray",
+		NULL
+	};
+	Qsi::ExpandList* elist = new Qsi::ExpandList(qsiManager, mainBox, "ExpandList", 0, 250, 10, 10, elistCallback);
+	elist->addMember("Expansion 1", elistCallback, "1", subMenuItem);
+	elist->addMember("Expansion 2", elistCallback, "2", subMenuItem);
+	elist->addMember("Expansion 3", elistCallback, "3", subMenuItem);
+	elist->menu(elistCallback, menuItem);
 
 	qsiManager->menuAdd("Alignment List", alignmentList, mainBox);
 	qsiManager->menuAdd("Qsi List",       qsiList,       mainBox);
 	qsiManager->menuAdd("All Qsis",       qsiAllList,    mainBox);
 	qsiManager->menuAdd("Compress All",   compress,      NULL);
 	qsiManager->menuAdd("Expand All",     expand,        NULL);
+
+
 
 	//
 	// Test with 10 aligned boxes

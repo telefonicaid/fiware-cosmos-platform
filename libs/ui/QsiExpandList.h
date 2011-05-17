@@ -48,15 +48,15 @@ private:
 	int        memberSpace;
 
 public:
-	ExpandList(QsiManager* manager, QsiBox* owner, const char* _title, int x, int y, int _xmargin = 10, int _ymargin = 10, bool _frame = false);
+	ExpandList(QsiManager* manager, QsiBox* owner, const char* _title, int x, int y, int _xmargin = 10, int _ymargin = 10, QsiFunction onClick = NULL, bool _frame = false);
 
-	QsiBase*  addMember(const char* string);
-	QsiBase*  addMember(QsiBase* _member);
-	void      expand(void);
-	void      compress(void);
-	void      exCoOnButtonPress(bool _autoExCo);
-	void      titleSet(const char* _title);
-	void      menu(QsiFunction callback, char* mVec[]);
+	QsiBase*   addMember(const char* string, QsiFunction callback = NULL, const void* dataP = NULL, const char* mVec[] = NULL);
+	QsiBase*   addMember(QsiBase* _member,   QsiFunction callback = NULL, const void* dataP = NULL, const char* mVec[] = NULL);
+	void       expand(void);
+	void       compress(void);
+	void       exCoOnButtonPress(bool _autoExCo);
+	void       titleSet(const char* _title);
+	void       menu(QsiFunction callback, const char* mVec[]);
 };
 
 }

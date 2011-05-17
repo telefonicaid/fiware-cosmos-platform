@@ -82,7 +82,7 @@ void QsiBox::setFrame(const char* fname, int padding)
 	}
 	else
 	{
-		LM_M(("Creating Frame"));
+		LM_T(LmtFrame, ("Creating Frame"));
 		frame = new Frame(this, fname, padding);
 	}
 }
@@ -179,7 +179,7 @@ int QsiBox::geometry(int* xP, int* yP, int* widthP, int* heightP)
 			continue;
 		}
 
-		LM_M(("Checking whether '%s' is visible", qsiVec[ix]->name));
+		LM_T(LmtGeometry, ("Checking whether '%s' is visible", qsiVec[ix]->name));
 		if (qsiVec[ix]->isVisible() == false)
 		{
 			LM_T(LmtGeometry, ("%02d: %s '%s' is NOT visible", ix, qsiVec[ix]->typeName(), qsiVec[ix]->name));
@@ -280,7 +280,7 @@ void QsiBox::initialMove(QsiBase* qbP)
 void QsiBox::add(QsiBase* qbP)
 {
 	if (qbP->type == ExpandListItem)
-		LM_M(("*** Adding ExpandListItem"));
+		LM_T(LmtExpandList, ("Adding ExpandListItem"));
 
 	for (int ix = 0; ix < qsiVecSize; ix++)
 	{
@@ -625,7 +625,7 @@ void QsiBox::realign(void)
 		if (alignVec[ix] == NULL)
 			continue;
 
-		LM_M(("Realigning slave '%s' to '%s'", alignVec[ix]->slave->name, alignVec[ix]->master->name));
+		LM_W(("Realigning slave '%s' to '%s'", alignVec[ix]->slave->name, alignVec[ix]->master->name));
 		align(alignVec[ix]->master, alignVec[ix]->type, alignVec[ix]->slave, alignVec[ix]->margin);
 	}
 
@@ -865,6 +865,7 @@ QsiBlock* QsiBox::lookup(QGraphicsItem* gItemP)
 		return NULL;
 	}
 
+	LM_T(LmtBlockLookup, ("Entered Box '%s'", name));
 	for (int ix = 0; ix < qsiVecSize; ix++)
 	{
 		if (qsiVec[ix] == NULL)
@@ -892,9 +893,10 @@ QsiBlock* QsiBox::lookup(QGraphicsItem* gItemP)
 				return qbP;
 			}
 
-			LM_M(("Comparing pressed gItem '%p' to %s '%s' proxy '%p'", gItemP, qbP->typeName(), qbP->name, qbP->proxy));
+			LM_T(LmtBlockLookup, ("Comparing pressed gItem '%p' to %s '%s' proxy '%p'", gItemP, qbP->typeName(), qbP->name, qbP->proxy));
 			if (gItemP == ((QGraphicsItem*) qbP->proxy))
-//			if (((long) gItemP) == (((long) qbP->proxy + 16)))
+//			if (((long) gItemP) == (((long) qbP->proxy + 16))) // For 64 bit machines
+//			if (((long) gItemP) == (((long) qbP->proxy + 8)))  // For 32 bit machines
 			{
 				LM_T(LmtBlockLookup, ("Found proxy %s '%s' in box '%s'", qbP->typeName(), qbP->name, name));
 				return qbP;

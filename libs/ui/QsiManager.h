@@ -94,7 +94,7 @@ private:
 	QsiCallback*  itemCallbackLookup(QsiBlock* qbP);
 
 public:
-	void          siConnect(QsiBlock* qbP, QsiFunction func, void* param, bool persistent = false);
+	void          siConnect(QsiBlock* qbP, QsiFunction func, const void* param, bool persistent = false);
 	void          siDisconnect(QsiBlock* qbP);
 
 

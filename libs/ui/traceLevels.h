@@ -30,5 +30,7 @@
 #define LmtHide               164
 #define LmtRemove             165
 #define LmtQsiList            166
+#define LmtFrame              167
+#define LmtExpandList         168
 
 #endif

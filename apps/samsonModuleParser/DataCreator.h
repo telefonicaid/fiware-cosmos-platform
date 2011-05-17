@@ -33,6 +33,9 @@ namespace ss {
 		// Name of the module
 		std::string moduleFileName;
 
+        // Output directory for .h files
+        std::string outputDirectory;
+        
 		// Name of the output (.h / .cpp)
 		std::string outputFileName;
 		
@@ -50,7 +53,7 @@ namespace ss {
 		 Constructor: name of the file to parse
 		 */
 		
-		DataCreator( std::string moduleFileName , std::string outputDirectory );
+		DataCreator( std::string moduleFileName , std::string outputDirectory , std::string outputFileName );
 		
 		/**
 		 Read the content of the file into a string

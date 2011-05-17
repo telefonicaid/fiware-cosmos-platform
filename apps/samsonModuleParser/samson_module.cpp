@@ -58,15 +58,16 @@ int main( int argC , const char *argV[])
 	}
 	
 	
-	if( cmdLine.get_num_arguments() < 3 )
+	if( cmdLine.get_num_arguments() < 4 )
 	{
-		fprintf(stderr, "Usage: %s module_file output_directory \n" , argV[0]);
+		fprintf(stderr, "Usage: %s module_file output_directory output_file_name \n" , argV[0]);
 		fprintf(stderr, "Type -help for more help\n\n");
 		exit(1);
 	}
 	
 	std::string moduleFileName = cmdLine.get_argument(1);
     std::string outputDirectory = cmdLine.get_argument(2);
+    std::string outputFilename = cmdLine.get_argument(3);
 
     
     // Check it time-stamp is greater to not do anything..
@@ -78,8 +79,8 @@ int main( int argC , const char *argV[])
         exit(0);
     }
     
-    std::string output1_filename = outputDirectory + "/Module.cpp";
-    std::string output2_filename = outputDirectory + "/Module.h";
+    std::string output1_filename = outputFilename + ".cpp";
+    std::string output2_filename = outputFilename + ".h";
     
     int res_stat1 = stat( output1_filename.c_str() , &stat_output1);
     int res_stat2 = stat( output2_filename.c_str() , &stat_output2);
@@ -104,7 +105,7 @@ int main( int argC , const char *argV[])
 	fprintf(stderr, "========================================================\n");
     
 	 
-	ss::DataCreator module_creator( moduleFileName, outputDirectory  );		// A data creator object to generate the code
+	ss::DataCreator module_creator( moduleFileName, outputDirectory , outputFilename  );		// A data creator object to generate the code
 	module_creator.print();
 	
 	return 0;

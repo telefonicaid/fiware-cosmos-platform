@@ -77,6 +77,7 @@ reset:
 	sudo rm -f libs/data/data.pb.*
 	sudo rm -Rf /usr/local/include/samson
 	sudo rm -f testing/module_test/Module.*
+	make reset -C modules
 
 module:
 	make -C build/apps/samsonModuleParser

@@ -12,11 +12,12 @@
 
 namespace ss {
 
-	DataCreator::DataCreator( std::string _moduleFileName ,  std::string outputDirectory   )
+	DataCreator::DataCreator( std::string _moduleFileName ,  std::string _outputDirectory , std::string _outputFileName  )
 	{
         moduleFileName = _moduleFileName;
 		
-		outputFileName = outputDirectory + "/Module";
+        outputDirectory = _outputDirectory;
+		outputFileName = _outputFileName;
 		
 		std::cout << "Input module file " << moduleFileName << std::endl;
 		std::cout << "Output module file " << outputFileName << std::endl;
@@ -413,11 +414,11 @@ namespace ss {
 	{
 		// Generate the data files 
 		for (size_t i = 0 ; i < datas.size() ; i++)
-			datas[i].printFiles("");
+			datas[i].printFiles( outputDirectory + "/" );
 
 		// Generate the operation files 
 		for (size_t i = 0 ; i < operations.size() ; i++)
-			operations[i].printFile("");
+			operations[i].printFile(outputDirectory + "/");
 		
 		
 		// Print the header file

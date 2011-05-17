@@ -8,6 +8,7 @@
 * DESCRIPTION			   Parser of module file to create .h .cpp files
 *
 * SVN: $Id$
+* SVN: $Rev$
 */
 
 

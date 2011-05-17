@@ -10,12 +10,13 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
 
-#include "QsiAlignment.h"       // QsiAlignment
-#include "QsiFunction.h"        // QsiFunction
-#include "QsiManager.h"         // QsiManager
-#include "QsiBase.h"            // QsiBase
-#include "QsiBlock.h"           // QsiBlock
-#include "QsiFrame.h"           // Qsi::Frame
+#include "QsiAlignment.h"       // Alignment
+#include "QsiFunction.h"        // Function
+#include "QsiManager.h"         // Manager
+#include "QsiBase.h"            // Base
+#include "QsiBlock.h"           // Block
+#include "QsiFrame.h"           // Frame
+#include "QsiExpandList.h"      // ExpandList
 #include "QsiBox.h"             // Own interface
 
 
@@ -46,23 +47,29 @@ namespace Qsi
 
 /* ****************************************************************************
 *
-* QsiBox::QsiBox - 
+* Box::Box - 
 */
-QsiBox::QsiBox(QsiManager* manager, QsiBox* owner, const char* name, int x, int y) : QsiBase(owner, Box, name, x, y, -1, -1)
+Box::Box(Manager* manager, Box* owner, const char* name, int x, int y) : Base(owner, BoxItem, name, x, y, -1, -1)
 {
 	qsiVecSize    = QSIS;
-	qsiVec        = (QsiBase**) calloc(qsiVecSize, sizeof(QsiBase*));
+	qsiVec        = (Base**) calloc(qsiVecSize, sizeof(Base*));
 
 	alignVecSize  = ALIGNS;
 	alignVec      = (Alignment**) calloc(alignVecSize, sizeof(Alignment*)); 
 
 	this->manager = manager;
-	type          = Box;
+	type          = BoxItem;
 
 	this->x = xInitial;
 	this->y = yInitial;
 
-	frame = NULL;
+	frame     = NULL;
+	lastAdded = NULL;
+	isBox     = true;
+
+	firstLine = (Block*) lineAdd("firstLine", 0, 0, 10, 0);
+	firstLine->setColor(0xFF, 0xFF, 0xFF, 0);
+
 }
 
 
@@ -70,9 +77,9 @@ QsiBox::QsiBox(QsiManager* manager, QsiBox* owner, const char* name, int x, int 
 *
 * setFrame - 
 */
-void QsiBox::setFrame(const char* fname, int padding)
+void Box::setFrame(int padding)
 {
-	if (fname == NULL)
+	if (padding == -19)
 	{
 		LM_W(("deleting frame"));
 
@@ -83,7 +90,11 @@ void QsiBox::setFrame(const char* fname, int padding)
 	else
 	{
 		LM_T(LmtFrame, ("Creating Frame"));
-		frame = new Frame(this, fname, padding);
+		frame = new Frame(this, padding);
+
+		int x, y;
+		absPos(&x, &y);
+		frame->moveAbsolute(x - padding - 10, y - padding + 8);
 	}
 }
 
@@ -93,7 +104,7 @@ void QsiBox::setFrame(const char* fname, int padding)
 *
 * moveAbsolute - absolute move of all qsis inside this container
 */
-void QsiBox::moveAbsolute(int x, int y)
+void Box::moveAbsolute(int x, int y)
 {
 	this->x = x;
 	this->y = y;
@@ -110,6 +121,9 @@ void QsiBox::moveAbsolute(int x, int y)
 		qsiVec[ix]->moveRelative(qsiVec[ix]->x, qsiVec[ix]->y);
 	}
 	
+	if (frame)
+		frame->moveAbsolute(x, y);
+
 	LM_TODO(("Implement BORDER and move it"));
 
 	LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
@@ -125,7 +139,7 @@ void QsiBox::moveAbsolute(int x, int y)
 *
 * moveRelative - relative move of all qsis inside this container
 */
-void QsiBox::moveRelative(int x, int y)
+void Box::moveRelative(int x, int y)
 {
 	if (owner == NULL)
 		LM_RVE(("Not moving Toplevel Box!"));
@@ -141,7 +155,8 @@ void QsiBox::moveRelative(int x, int y)
 	this->x += x;
 	this->y += y;
 
-	LM_TODO(("Implement BORDER and move it"));
+	if (frame)
+		frame->moveRelative(x, y);
 
 	LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
 	sizeChange(this);
@@ -156,7 +171,7 @@ void QsiBox::moveRelative(int x, int y)
 *
 * geometry - 
 */
-int QsiBox::geometry(int* xP, int* yP, int* widthP, int* heightP)
+int Box::geometry(int* xP, int* yP, int* widthP, int* heightP)
 {
 	int xMax = -500000;
 	int yMax = -500000;
@@ -221,7 +236,7 @@ int QsiBox::geometry(int* xP, int* yP, int* widthP, int* heightP)
 *
 * hide - 
 */
-void QsiBox::hide(void)
+void Box::hide(void)
 {
 	for (int ix = 0; ix < qsiVecSize; ix++)
 	{
@@ -230,6 +245,9 @@ void QsiBox::hide(void)
 
 		qsiVec[ix]->hide();
 	}
+
+	if (frame)
+		frame->hide();
 
 	LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
 	sizeChange(this);
@@ -241,7 +259,7 @@ void QsiBox::hide(void)
 *
 * show - 
 */
-void QsiBox::show(void)
+void Box::show(void)
 {
 	for (int ix = 0; ix < qsiVecSize; ix++)
 	{
@@ -250,6 +268,9 @@ void QsiBox::show(void)
 
 		qsiVec[ix]->show();
 	}
+
+	if (frame)
+		frame->show();
 
 	LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
 	sizeChange(this);
@@ -261,7 +282,7 @@ void QsiBox::show(void)
 *
 * initialMove - initial positioning of newly created QSI
 */
-void QsiBox::initialMove(QsiBase* qbP)
+void Box::initialMove(Base* qbP)
 {
 	int ax, ay;
 	
@@ -277,7 +298,7 @@ void QsiBox::initialMove(QsiBase* qbP)
 *
 * add - 
 */
-void QsiBox::add(QsiBase* qbP)
+void Box::add(Base* qbP)
 {
 	if (qbP->type == ExpandListItem)
 		LM_T(LmtExpandList, ("Adding ExpandListItem"));
@@ -289,16 +310,17 @@ void QsiBox::add(QsiBase* qbP)
 
 		qsiVec[ix] = qbP;
 
-		if ((qbP->type != Box) && (qbP->type != ExpandListItem))
+		if ((qbP->type != BoxItem) && (qbP->type != ExpandListItem))
 			initialMove(qbP);
 
 		LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
 		sizeChange(this);
 
+		lastAdded = qbP;
 		return;
 	}
 
-	qsiVec = (QsiBase**) realloc(qsiVec, (qsiVecSize + QSIS) * sizeof(QsiBase*));
+	qsiVec = (Base**) realloc(qsiVec, (qsiVecSize + QSIS) * sizeof(Base*));
     for (int ix = qsiVecSize; ix < qsiVecSize + QSIS; ix++)
 		qsiVec[ix] = NULL;
 
@@ -312,7 +334,7 @@ void QsiBox::add(QsiBase* qbP)
 *
 * remove - 
 */
-void QsiBox::remove(QsiBase* qbP)
+void Box::remove(Base* qbP)
 {
 	LM_T(LmtRemove, ("Removing %s '%s'", qbP->typeName(), qbP->name));
 
@@ -327,10 +349,12 @@ void QsiBox::remove(QsiBase* qbP)
 		LM_T(LmtRemove, ("deleting  %s '%s'", qbP->typeName(), qbP->name));
 		alignFix(qbP);
 
-		if (qbP->type == Box)
-			delete (QsiBox*) qbP;
+		if (qbP->type == BoxItem)
+			delete (Box*) qbP;
+		else if (qbP->type == ExpandListItem)
+			delete (ExpandList*) qbP;
 		else
-			delete (QsiBlock*) qbP;
+			delete (Block*) qbP;
 
 		qsiVec[ix] = NULL;
 
@@ -347,9 +371,9 @@ void QsiBox::remove(QsiBase* qbP)
 *
 * alignFix - 
 */
-void QsiBox::alignFix(QsiBase* qbP)
+void Box::alignFix(Base* qbP)
 {
-	QsiBase*         newMaster = NULL;
+	Base*            newMaster = NULL;
 	Alignment::Type  type      = Alignment::Unaligned;
 	int              margin    = 9;
 
@@ -425,7 +449,7 @@ void QsiBox::alignFix(QsiBase* qbP)
 * Accepting either master-slave or slave-master.
 * Thus, mutual alignment is not allowed.
 */
-Alignment* QsiBox::alignLookup(QsiBase* master, QsiBase* slave)
+Alignment* Box::alignLookup(Base* master, Base* slave)
 {
 	for (int ix = 0; ix < alignVecSize; ix++)
 	{
@@ -454,7 +478,7 @@ Alignment* QsiBox::alignLookup(QsiBase* master, QsiBase* slave)
 *
 * align - 
 */
-void QsiBox::align(Alignment::Type type, QsiBase* master, int margin)
+void Box::align(Alignment::Type type, Base* master, int margin)
 {
 	owner->align(master, type, this, margin);
 }
@@ -465,15 +489,16 @@ void QsiBox::align(Alignment::Type type, QsiBase* master, int margin)
 *
 * align - 
 */
-void QsiBox::align(QsiBase* master, Alignment::Type type, QsiBase* slave, int margin)
+void Box::align(Base* master, Alignment::Type type, Base* slave, int margin)
 {
 	if (master->getOwner() != slave->getOwner())
 		LM_RVE(("%s %s(owner:%s) and %s %s(owner:%s) cannot be aligned. They don't have the same owner",
 				master->typeName(), master->name, master->getOwner()->name, slave->typeName(), slave->name, slave->getOwner()->name));
-
+#if 0
 	if (master->type != slave->type)
 		LM_RVE(("%s %s(owner:%s) and %s %s(owner:%s) cannot be aligned. They aren't of the same type",
 				master->typeName(), master->name, master->getOwner()->name, slave->typeName(), slave->name, slave->getOwner()->name));
+#endif
 
 	Alignment* alignP = alignLookup(master, slave);
 	
@@ -522,7 +547,7 @@ void QsiBox::align(QsiBase* master, Alignment::Type type, QsiBase* slave, int ma
 *
 * unalign - 
 */
-void QsiBox::unalign(int ix)
+void Box::unalign(int ix)
 {
 	// sizeChange(alignVec[ix]->master);
 	// sizeChange(alignVec[ix]->slave);
@@ -536,7 +561,7 @@ void QsiBox::unalign(int ix)
 *
 * unalign - 
 */
-void QsiBox::unalign(QsiBase* master)
+void Box::unalign(Base* master)
 {
 	owner->unalign(master, this);
 }
@@ -547,7 +572,7 @@ void QsiBox::unalign(QsiBase* master)
 *
 * unalign - 
 */
-void QsiBox::unalign(QsiBase* master, QsiBase* slave)
+void Box::unalign(Base* master, Base* slave)
 {
 	int unaligns = 0;
 
@@ -574,7 +599,7 @@ void QsiBox::unalign(QsiBase* master, QsiBase* slave)
 *
 * alignShow - 
 */
-void QsiBox::alignShow(const char* why, bool force)
+void Box::alignShow(const char* why, bool force)
 {
 	if (force == true)
 	{
@@ -618,7 +643,7 @@ void QsiBox::alignShow(const char* why, bool force)
 *
 * realign - 
 */
-void QsiBox::realign(void)
+void Box::realign(void)
 {
 	for (int ix = 0; ix < alignVecSize; ix++)
 	{
@@ -639,7 +664,7 @@ void QsiBox::realign(void)
 *
 * realign - 
 */
-void QsiBox::realign(QsiBase* master, Alignment::Type type, QsiBase* slave, int margin)
+void Box::realign(Base* master, Alignment::Type type, Base* slave, int margin)
 {
 	int mx, my, mw, mh;
 	int sx, sy, sw, sh;
@@ -693,7 +718,7 @@ void QsiBox::realign(QsiBase* master, Alignment::Type type, QsiBase* slave, int 
 *
 * xAbs - 
 */
-int QsiBox::xAbs(void)
+int Box::xAbs(void)
 {
 	if (owner == NULL)
 		return x;
@@ -707,7 +732,7 @@ int QsiBox::xAbs(void)
 *
 * yAbs - 
 */
-int QsiBox::yAbs(void)
+int Box::yAbs(void)
 {
 	if (owner == NULL)
 		return y;
@@ -721,7 +746,7 @@ int QsiBox::yAbs(void)
 *
 * absPos - 
 */
-void QsiBox::absPos(int* xP, int* yP)
+void Box::absPos(int* xP, int* yP)
 {
 	*xP = xAbs();
 	*yP = yAbs();
@@ -733,7 +758,7 @@ void QsiBox::absPos(int* xP, int* yP)
 *
 * sizeChange - 
 */
-void QsiBox::sizeChange(QsiBase* qbP)
+void Box::sizeChange(Base* qbP)
 {
 	LM_T(LmtSizeChange, ("Size changed for %s '%s'", qbP->typeName(), qbP->name));
 
@@ -763,9 +788,9 @@ void QsiBox::sizeChange(QsiBase* qbP)
 *
 * boxAdd - 
 */
-QsiBase* QsiBox::boxAdd(const char* name, int x, int y)
+Base* Box::boxAdd(const char* name, int x, int y)
 {
-	QsiBox* box = new QsiBox(manager, this, name, x, y);
+	Box* box = new Box(manager, this, name, x, y);
 
 	add(box);
 	return box;
@@ -777,9 +802,9 @@ QsiBase* QsiBox::boxAdd(const char* name, int x, int y)
 *
 * textAdd - 
 */
-QsiBase* QsiBox::textAdd(const char* name, const char* txt, int x, int y)
+Base* Box::textAdd(const char* name, const char* txt, int x, int y)
 {
-	QsiBlock* qbP = new QsiBlock(manager, this, Qsi::SimpleText, name, txt, x, y);
+	Block* qbP = new Block(manager, this, SimpleText, name, txt, x, y);
 
 	add(qbP);
 	return qbP;
@@ -791,9 +816,9 @@ QsiBase* QsiBox::textAdd(const char* name, const char* txt, int x, int y)
 *
 * lineAdd - 
 */
-QsiBase* QsiBox::lineAdd(const char* name, int x, int y, int x2, int y2)
+Base* Box::lineAdd(const char* name, int x, int y, int x2, int y2)
 {
-	QsiBlock* qbP = new QsiBlock(manager, this, Qsi::Line, name, NULL, x, y, x2, y2);
+	Block* qbP = new Block(manager, this, Line, name, NULL, x, y, x2, y2);
 
 	add(qbP);
 	return qbP;
@@ -805,9 +830,9 @@ QsiBase* QsiBox::lineAdd(const char* name, int x, int y, int x2, int y2)
 *
 * buttonAdd - 
 */
-QsiBase* QsiBox::buttonAdd(const char* name, const char* txt, int x, int y, int width, int height, QsiFunction func, void* param)
+Base* Box::buttonAdd(const char* name, const char* txt, int x, int y, int width, int height, Function func, void* param)
 {
-	QsiBlock* qbP = new QsiBlock(manager, this, Qsi::Button, name, txt, x, y, width, height);
+	Block* qbP = new Block(manager, this, Button, name, txt, x, y, width, height);
 
 	add(qbP);
 
@@ -823,9 +848,9 @@ QsiBase* QsiBox::buttonAdd(const char* name, const char* txt, int x, int y, int 
 *
 * inputAdd - 
 */
-QsiBase* QsiBox::inputAdd(const char* name, const char* txt, int x, int y, int width, int height)
+Base* Box::inputAdd(const char* name, const char* txt, int x, int y, int width, int height)
 {
-	QsiBlock* qbP = new QsiBlock(manager, this, Qsi::Input, name, txt, x, y, width, height);
+	Block* qbP = new Block(manager, this, Input, name, txt, x, y, width, height);
 
 	add(qbP);
 	return qbP;
@@ -837,9 +862,9 @@ QsiBase* QsiBox::inputAdd(const char* name, const char* txt, int x, int y, int w
 *
 * imageAdd - 
 */
-QsiBase* QsiBox::imageAdd(const char* name, const char* path, int x, int y, int width, int height, QsiFunction func, void* param)
+Base* Box::imageAdd(const char* name, const char* path, int x, int y, int width, int height, Function func, void* param)
 {
-	QsiBlock* qbP = new QsiBlock(manager, this, Qsi::Image, name, path, x, y, width, height);
+	Block* qbP = new Block(manager, this, Image, name, path, x, y, width, height);
 
 	add(qbP);
 
@@ -855,9 +880,9 @@ QsiBase* QsiBox::imageAdd(const char* name, const char* path, int x, int y, int 
 *
 * lookup - 
 */
-QsiBlock* QsiBox::lookup(QGraphicsItem* gItemP)
+Block* Box::lookup(QGraphicsItem* gItemP)
 {
-	QsiBlock* block;
+	Block* block;
 
 	if (gItemP == NULL)
 	{
@@ -871,9 +896,9 @@ QsiBlock* QsiBox::lookup(QGraphicsItem* gItemP)
 		if (qsiVec[ix] == NULL)
 			continue;
 
-		if ((qsiVec[ix]->type == Box) || (qsiVec[ix]->type == ExpandListItem))
+		if ((qsiVec[ix]->type == BoxItem) || (qsiVec[ix]->type == ExpandListItem))
 		{
-			QsiBox* boxP = (QsiBox*) qsiVec[ix];
+			Box* boxP = (Box*) qsiVec[ix];
 
 			LM_T(LmtBlockLookup, ("Entering Box '%s' to lookup %p", boxP->name, gItemP));
 			block = boxP->lookup(gItemP);
@@ -882,9 +907,9 @@ QsiBlock* QsiBox::lookup(QGraphicsItem* gItemP)
 		}
 		else
 		{
-			QsiBlock* qbP;
+			Block* qbP;
 
-			qbP = (QsiBlock*) qsiVec[ix];
+			qbP = (Block*) qsiVec[ix];
 
 			LM_T(LmtBlockLookup, ("Comparing pressed gItem '%p' to %s '%s' gItem '%p'", gItemP, qbP->typeName(), qbP->name, qbP->gItemP));
 			if (qbP->gItemP == gItemP)
@@ -913,7 +938,7 @@ QsiBlock* QsiBox::lookup(QGraphicsItem* gItemP)
 *
 * qsiShow - 
 */
-void QsiBox::qsiShow(const char* why, bool force)
+void Box::qsiShow(const char* why, bool force)
 {
 	if (force == true)
 	{
@@ -927,8 +952,8 @@ void QsiBox::qsiShow(const char* why, bool force)
 			if (qsiVec[ix] == NULL)
 				continue;
 
-			QsiBlock* block = (QsiBlock*) qsiVec[ix];
-			if (qsiVec[ix]->type == Box)
+			Block* block = (Block*) qsiVec[ix];
+			if (qsiVec[ix]->type == BoxItem)
 				LM_F(("%02d  %-20s %-20s %-5d %-5d", ix, qsiVec[ix]->name, qsiVec[ix]->typeName(), qsiVec[ix]->xGet(), qsiVec[ix]->yGet()));
 			else
 				LM_F(("%02d  %-20s %-20s %-5d %-5d  %p", ix, qsiVec[ix]->name, qsiVec[ix]->typeName(), qsiVec[ix]->xGet(), qsiVec[ix]->yGet(), (block->proxy != NULL)? block->proxy : block->gItemP));
@@ -948,8 +973,8 @@ void QsiBox::qsiShow(const char* why, bool force)
 			if (qsiVec[ix] == NULL)
 				continue;
 
-            QsiBlock* block = (QsiBlock*) qsiVec[ix];
-            if (qsiVec[ix]->type == Box)
+            Block* block = (Block*) qsiVec[ix];
+            if (qsiVec[ix]->type == BoxItem)
 				LM_T(LmtQsiList, ("%02d  %-20s %-20s %-5d %-5d", ix, qsiVec[ix]->name, qsiVec[ix]->typeName(), qsiVec[ix]->xGet(), qsiVec[ix]->yGet()));
 			else
 				LM_T(LmtQsiList, ("%02d  %-20s %-20s %-5d %-5d  %p", ix, qsiVec[ix]->name, qsiVec[ix]->typeName(), qsiVec[ix]->xGet(), qsiVec[ix]->yGet(), (block->proxy != NULL)? block->proxy : block->gItemP));
@@ -964,7 +989,7 @@ void QsiBox::qsiShow(const char* why, bool force)
 *
 * qsiRecursiveShow - 
 */
-void QsiBox::qsiRecursiveShow(const char* why, bool force)
+void Box::qsiRecursiveShow(const char* why, bool force)
 {
 	qsiShow(why, force);
 
@@ -973,12 +998,23 @@ void QsiBox::qsiRecursiveShow(const char* why, bool force)
 		if (qsiVec[ix] == NULL)
 			continue;
 
-		if (qsiVec[ix]->type == Box)
+		if (qsiVec[ix]->isBox == true)
 		{
-			QsiBox* box = (QsiBox*) qsiVec[ix];
+			Box* box = (Box*) qsiVec[ix];
 			box->qsiRecursiveShow(why, force);
 		}
 	}
+}
+
+
+
+/* ****************************************************************************
+*
+* lastAddedGet - 
+*/
+Base* Box::lastAddedGet(void)
+{
+	return lastAdded;
 }
 
 }

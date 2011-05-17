@@ -12,10 +12,10 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
 
-#include "QsiAlignment.h"       // QsiAlignment
-#include "QsiBase.h"            // QsiBase
-#include "QsiBox.h"             // QsiBox
-#include "QsiManager.h"         // QsiManager
+#include "QsiAlignment.h"       // Alignment
+#include "QsiBase.h"            // Base
+#include "QsiBox.h"             // Box
+#include "QsiManager.h"         // Manager
 #include "QsiBlock.h"           // Own interface
 
 
@@ -27,20 +27,20 @@ namespace Qsi
 
 /* ****************************************************************************
 *
-* QsiBlock::QsiBlock - 
+* Block::Block - 
 */
-QsiBlock::QsiBlock
+Block::Block
 (
-	QsiManager*  manager,
-	QsiBox*      owner,
-	QsiType      type,
+	Manager*     manager,
+	Box*         owner,
+	Type         type,
 	const char*  name,
 	const char*  txt,
 	int          x,
 	int          y,
 	int          width,
 	int          height
-) : QsiBase(owner, type, name, x, y, width, height)
+) : Base(owner, type, name, x, y, width, height)
 {
 	char path[256];
 
@@ -107,11 +107,11 @@ QsiBlock::QsiBlock
 		proxy      = manager->addWidget(w.lineEdit);
 		break;
 
-	case Box:
+	case BoxItem:
 		LM_X(1, ("Cannot create a Box ..."));
 
 	case ExpandListItem:
-		LM_X(1, ("Please use Qsi::ExpandList"));
+		LM_X(1, ("Please use ExpandList"));
 	}
 
 	if (width == -1)
@@ -132,9 +132,9 @@ QsiBlock::QsiBlock
 
 /* ****************************************************************************
 *
-* QsiBlock::~QsiBlock - 
+* Block::~Block - 
 */
-QsiBlock::~QsiBlock()
+Block::~Block()
 {
 	LM_T(LmtRemove, ("Destroying %s '%s'", typeName(), name));
 
@@ -163,7 +163,7 @@ QsiBlock::~QsiBlock()
 *
 * scale - 
 */
-void QsiBlock::scale(int width, int height)
+void Block::scale(int width, int height)
 {
 	QPixmap  pmap;
 
@@ -188,7 +188,7 @@ void QsiBlock::scale(int width, int height)
 *
 * scale - 
 */
-void QsiBlock::scale(int percentage)
+void Block::scale(int percentage)
 {
 	int      x;
 	int      y;
@@ -208,21 +208,21 @@ void QsiBlock::scale(int percentage)
 *
 * - 
 */
-void QsiBlock::setSize(int width, int height)
+void Block::setSize(int width, int height)
 {
 	if (type == Button)
 		w.button->setFixedSize(width, height);
 	else
-		LM_W(("QsiBlock::setSize not implemented for Scene Items of type '%s'", typeName()));
+		LM_W(("Block::setSize not implemented for Scene Items of type '%s'", typeName()));
 }
 
 
 
 /* ****************************************************************************
 *
-* QsiBlock::moveRelative - relative positioning
+* moveRelative - relative positioning
 */
-void QsiBlock::moveRelative(int x, int y)
+void Block::moveRelative(int x, int y)
 {
 	LM_T(LmtMove, ("Moving %s '%s' %d pixels in X-axis and %d pixels in Y-axis. Old pos: { %d, %d }, New pos: { %d, %d }",
 				   typeName(), name, x, y, this->x, this->y, this->x + x, this->y + y));
@@ -242,7 +242,7 @@ void QsiBlock::moveRelative(int x, int y)
 *
 * moveAbsolute - absolute positioning
 */
-void QsiBlock::moveAbsolute(int x, int y)
+void Block::moveAbsolute(int x, int y)
 {
 	LM_T(LmtAbsMove, ("Moving %s '%s' to absolute position { %d, %d }", typeName(), name, x, y));
 
@@ -259,7 +259,7 @@ void QsiBlock::moveAbsolute(int x, int y)
 *
 * align - 
 */
-void QsiBlock::align(Alignment::Type type, QsiBase* master, int margin)
+void Block::align(Alignment::Type type, Base* master, int margin)
 {
 	owner->align(master, type, this, margin);
 }
@@ -268,9 +268,9 @@ void QsiBlock::align(Alignment::Type type, QsiBase* master, int margin)
 
 /* ****************************************************************************
 *
-* QsiBlock::hide - 
+* hide - 
 */
-void QsiBlock::hide(void)
+void Block::hide(void)
 {
 	LM_T(LmtHide, ("Hiding %s '%s'", typeName(), name));
 	gItemP->setVisible(false);
@@ -280,9 +280,9 @@ void QsiBlock::hide(void)
 
 /* ****************************************************************************
 *
-* QsiBlock::hideOthers - 
+* hideOthers - 
 */
-void QsiBlock::hideOthers(void)
+void Block::hideOthers(void)
 {
 	LM_T(LmtHide, ("%s '%s' hiding others", typeName(), name));
 	owner->hide();
@@ -297,9 +297,9 @@ void QsiBlock::hideOthers(void)
 
 /* ****************************************************************************
 *
-* QsiBlock::showOthers - 
+* showOthers - 
 */
-void QsiBlock::showOthers(void)
+void Block::showOthers(void)
 {
 	LM_T(LmtHide, ("%s '%s' showing others", typeName(), name));
 	owner->show();
@@ -310,9 +310,9 @@ void QsiBlock::showOthers(void)
 
 /* ****************************************************************************
 *
-* QsiBlock::show - 
+* show - 
 */
-void QsiBlock::show(void)
+void Block::show(void)
 {
 	LM_T(LmtHide, ("Showing %s '%s'", typeName(), name));
 	gItemP->setVisible(true);
@@ -322,9 +322,9 @@ void QsiBlock::show(void)
 
 /* ****************************************************************************
 *
-* QsiBlock::menuAdd - 
+* menuAdd - 
 */
-void QsiBlock::menuAdd(const char* title, QsiFunction func, void* param)
+void Block::menuAdd(const char* title, Function func, void* param)
 {
 	menu = true;
 
@@ -346,9 +346,9 @@ void QsiBlock::menuAdd(const char* title, QsiFunction func, void* param)
 
 /* ****************************************************************************
 *
-* QsiBlock::menuClear - 
+* menuClear - 
 */
-void QsiBlock::menuClear(void)
+void Block::menuClear(void)
 {
 	menu = false;
 
@@ -370,7 +370,7 @@ void QsiBlock::menuClear(void)
 *
 * geometry - 
 */
-int QsiBlock::geometry(int* xP, int* yP, int* widthP, int* heightP)
+int Block::geometry(int* xP, int* yP, int* widthP, int* heightP)
 {
 	QRectF rect;
 
@@ -399,7 +399,7 @@ int QsiBlock::geometry(int* xP, int* yP, int* widthP, int* heightP)
 		rect = proxy->boundingRect();
 		break;
 
-	case Box:
+	case BoxItem:
 		LM_X(1, ("Cannot be a Box!"));
 
 	case ExpandListItem:
@@ -428,9 +428,10 @@ int QsiBlock::geometry(int* xP, int* yP, int* widthP, int* heightP)
 *
 * setMovable - 
 */
-void QsiBlock::setMovable(bool movable)
+void Block::setMovable(bool movable)
 {
 	this->movable = movable;
+	LM_T(LmtMove, ("%s '%s' set to %sMOVABLE", typeName(), name, (this->movable == true)? "" : "NOT "));
 }
 
 
@@ -439,7 +440,7 @@ void QsiBlock::setMovable(bool movable)
 *
 * getMovable - 
 */
-bool QsiBlock::getMovable(void)
+bool Block::getMovable(void)
 {
 	return movable;
 }
@@ -450,7 +451,7 @@ bool QsiBlock::getMovable(void)
 *
 * setBoxMove - 
 */
-void QsiBlock::setBoxMove(bool boxMove)
+void Block::setBoxMove(bool boxMove)
 {
 	this->boxMove = boxMove;
 }
@@ -461,7 +462,7 @@ void QsiBlock::setBoxMove(bool boxMove)
 *
 * getBoxMove - 
 */
-bool QsiBlock::getBoxMove(void)
+bool Block::getBoxMove(void)
 {
 	return boxMove;
 }
@@ -472,7 +473,7 @@ bool QsiBlock::getBoxMove(void)
 *
 * isExpanded - 
 */
-bool QsiBlock::isExpanded(void)
+bool Block::isExpanded(void)
 {
 	return expanded;
 }
@@ -483,14 +484,14 @@ bool QsiBlock::isExpanded(void)
 *
 * isVisible - 
 */
-bool QsiBlock::isVisible(void)
+bool Block::isVisible(void)
 {
 	if (gItemP != NULL)
 		return gItemP->isVisible();
 	else if (proxy != NULL)
 		return proxy->isVisible();
 
-	LM_E(("QsiBlock '%s': Both gItemP and proxy NULL - this can't be!", name));
+	LM_E(("Block '%s': Both gItemP and proxy NULL - this can't be!", name));
 	return false;
 }
 
@@ -500,7 +501,7 @@ bool QsiBlock::isVisible(void)
 *
 * getText - 
 */
-const char* QsiBlock::getText(void)
+const char* Block::getText(void)
 {
 	if (type == Input)
 		return w.lineEdit->text().toStdString().c_str();
@@ -515,7 +516,7 @@ const char* QsiBlock::getText(void)
 *
 * setText - 
 */
-void QsiBlock::setText(const char* txt)
+void Block::setText(const char* txt)
 {
 	if (type != SimpleText)
 		LM_RVE(("Scene item of type '%s' cannot have its text set ...", typeName()));
@@ -531,7 +532,7 @@ void QsiBlock::setText(const char* txt)
 *
 * setBold - 
 */
-void QsiBlock::setBold(bool onOff)
+void Block::setBold(bool onOff)
 {
 	if (type != SimpleText)
 		LM_RVE(("Scene item of type '%s' cannot change to Bold font ...", typeName()));
@@ -549,7 +550,7 @@ void QsiBlock::setBold(bool onOff)
 *
 * setItalic - 
 */
-void QsiBlock::setItalic(bool onOff)
+void Block::setItalic(bool onOff)
 {
 	if (type != SimpleText)
 		LM_RVE(("Scene item of type '%s' cannot change to Italic font ...", typeName()));
@@ -567,14 +568,20 @@ void QsiBlock::setItalic(bool onOff)
 *
 * setColor - 
 */
-void QsiBlock::setColor(int r, int g, int b, int a)
+void Block::setColor(int r, int g, int b, int a)
 {
-	if (type != SimpleText)
+	if (type == SimpleText)
+	{
+		QGraphicsSimpleTextItem*  textItem = (QGraphicsSimpleTextItem*) gItemP;
+		textItem->setBrush(QBrush(QColor(r, g, b, a)));
+	}
+	else if (type == Line)
+	{
+		QGraphicsLineItem* line = (QGraphicsLineItem*) gItemP;
+		line->setPen(QColor(r, g, b, a));
+	}
+	else
         LM_RVE(("Scene item of type '%s' cannot change Color ...", typeName()));
-
-	QGraphicsSimpleTextItem*  textItem = (QGraphicsSimpleTextItem*) gItemP;
-
-	textItem->setBrush(QBrush(QColor(r, g, b, a)));
 }
 
 
@@ -583,7 +590,7 @@ void QsiBlock::setColor(int r, int g, int b, int a)
 *
 * setFont - 
 */
-void QsiBlock::setFont(QFont font)
+void Block::setFont(QFont font)
 {
 	if (type != SimpleText)
 		LM_RVE(("Scene item of type '%s' cannot change Font ...", typeName()));

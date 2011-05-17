@@ -20,9 +20,9 @@
 
 #include "logMsg.h"             // LM_X
 
-#include "QsiFunction.h"        // QsiFunction
-#include "QsiCallback.h"        // QsiCallback
-#include "QsiBlock.h"           // QsiBlock
+#include "QsiFunction.h"        // Function
+#include "QsiCallback.h"        // Callback
+#include "QsiBlock.h"           // Block
 
 
 
@@ -52,50 +52,50 @@ typedef enum Status
 
 /* ****************************************************************************
 *
-* QsiManager - 
+* Manager - 
 */
-class QsiManager : public QGraphicsScene
+class Manager : public QGraphicsScene
 {
 	Q_OBJECT
 
 private:
-	QGraphicsView*   view;
+	QGraphicsView*  view;
 
 public:
-	int              x;
-	int              y;
+	int             x;
+	int             y;
 
 
 public:
-	void          add(QsiBlock*);
-	void          remove(QsiBlock* itemP);
-	QsiBlock*     lookup(QGraphicsItem* itemP);
-	QsiBlock*     get(int ix);
-	int           count();
+	void       add(Block*);
+	void       remove(Block* itemP);
+	Block*     lookup(QGraphicsItem* itemP);
+	Block*     get(int ix);
+	int        count();
 
 
 
 //
-// QsiBlock list
+// Block list
 //
 private:
-	QsiBlock**    item;
-	int           itemMax;
-	int           items;
+	Block**    item;
+	int        itemMax;
+	int        items;
 
 
 //
 // Qsi Item Callbacks
 //
-	QsiCallback** itemCallback;
-	int           itemCallbackMax;
-	int           itemCallbacks;
+	Callback** itemCallback;
+	int        itemCallbackMax;
+	int        itemCallbacks;
 
-	QsiCallback*  itemCallbackLookup(QsiBlock* qbP);
+	Callback*  itemCallbackLookup(Block* qbP);
 
 public:
-	void          siConnect(QsiBlock* qbP, QsiFunction func, const void* param, bool persistent = false);
-	void          siDisconnect(QsiBlock* qbP);
+	void       siConnect(Block* qbP, Function func, const void* param, bool persistent = false);
+	void       siDisconnect(Block* qbP);
 
 
 
@@ -103,13 +103,13 @@ public:
 // Constructors
 //
 public:
-	QsiManager(QVBoxLayout* layout, const char* homeDir, const char* background, int width, int height);
-	QsiManager(QObject* parent = 0) { LM_X(1, ("Empty constructor called")); parent = NULL; };
-	~QsiManager();
+	Manager(QVBoxLayout* layout, const char* homeDir, const char* background, int width, int height);
+	Manager(QObject* parent = 0) { LM_X(1, ("Empty constructor called")); parent = NULL; };
+	~Manager();
 
-	char*      Home;
-	QsiBox*    box;
-	void       init(void);
+	char*    Home;
+	Box*     box;
+	void     init(void);
 
 
 //
@@ -141,10 +141,10 @@ public slots:
 // Menu for background
 //
 public:
-	void         menuAdd(const char* title, QsiFunction func, void* param);
+	void         menuAdd(const char* title, Function func, void* param);
 	void         menuClear(void);
 	char*        menuTitle[QSI_MENU_ACTIONS];
-	QsiFunction  menuFunc[QSI_MENU_ACTIONS];
+	Function     menuFunc[QSI_MENU_ACTIONS];
 	void*        menuParam[QSI_MENU_ACTIONS];
 };
 

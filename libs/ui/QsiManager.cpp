@@ -15,10 +15,10 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
 
-#include "QsiFunction.h"        // QsiFunction
-#include "QsiCallback.h"        // QsiCallback
-#include "QsiBlock.h"           // QsiBlock
-#include "QsiBox.h"             // QsiBox
+#include "QsiFunction.h"        // Function
+#include "QsiCallback.h"        // Callback
+#include "QsiBlock.h"           // Block
+#include "QsiBox.h"             // Box
 #include "QsiManager.h"         // Own interface
 
 
@@ -32,7 +32,7 @@ namespace Qsi
 *
 * Global variables
 */
-static QsiBlock*          activeItem    = NULL; 
+static Block*             activeItem    = NULL; 
 static Qt::MouseButtons   pendingButton = Qt::NoButton;
 static QPointF            pressPoint;
 static bool               moved         = false;
@@ -41,9 +41,9 @@ static bool               moved         = false;
 
 /* ****************************************************************************
 *
-* QsiManager::QsiManager - 
+* Manager - 
 */
-QsiManager::QsiManager(QVBoxLayout* layout, const char* homeDir, const char* background, int width, int height)
+Manager::Manager(QVBoxLayout* layout, const char* homeDir, const char* background, int width, int height)
 {
 	view = new QGraphicsView(this);
 
@@ -95,13 +95,13 @@ QsiManager::QsiManager(QVBoxLayout* layout, const char* homeDir, const char* bac
 
 	items           = 0;
 	itemMax         = 20;
-	item            = (QsiBlock**) calloc(itemMax, sizeof(QsiBlock*));
+	item            = (Block**) calloc(itemMax, sizeof(Block*));
 
 	itemCallbacks   = 0;
 	itemCallbackMax = 10;
-	itemCallback    = (QsiCallback**) calloc(itemCallbackMax, sizeof(QsiCallback*));
+	itemCallback    = (Callback**) calloc(itemCallbackMax, sizeof(Callback*));
 	
-	box = new QsiBox(this, NULL, "topbox", 0, 0);
+	box = new Box(this, NULL, "topbox", 0, 0);
 	x = 0;
 	y = 0;
 
@@ -118,9 +118,9 @@ QsiManager::QsiManager(QVBoxLayout* layout, const char* homeDir, const char* bac
 
 /* ****************************************************************************
 *
-* QsiManager::~QsiManager - 
+* ~Manager - 
 */
-QsiManager::~QsiManager()
+Manager::~Manager()
 {
 }
 
@@ -128,9 +128,9 @@ QsiManager::~QsiManager()
 
 /* ****************************************************************************
 *
-* QsiManager::contextMenuEvent - 
+* contextMenuEvent - 
 */
-void QsiManager::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEvent)
+void Manager::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEvent)
 {
 	QPointF             scenePos;
 	QPoint              screenPos;
@@ -232,9 +232,9 @@ void QsiManager::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEve
 
 /* ****************************************************************************
 *
-* QsiManager::mousePressEvent - 
+* mousePressEvent - 
 */
-void QsiManager::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
+void Manager::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
 	QGraphicsItem*      gItemP;
 
@@ -282,14 +282,14 @@ void QsiManager::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 /* ****************************************************************************
 *
-* QsiManager::mouseReleaseEvent - 
+* mouseReleaseEvent - 
 */
-void QsiManager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
+void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
 	Qt::MouseButtons    buttons = mouseEvent->buttons();
 	QPointF             point;
 	QGraphicsItem*      gItemP;
-	QsiBlock*           released;
+	Block*              released;
 
 	LM_T(LmtMousePress, ("Some Mouse button released"));
 
@@ -306,13 +306,13 @@ void QsiManager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		gItemP      = itemAt(point);
 		released    = lookup(gItemP);
 		
-		LM_M(("released: %p, activeItem: %p", released, activeItem));
+		LM_T(LmtMousePress, ("released: %p, activeItem: %p", released, activeItem));
 
 		if ((released == activeItem) && (activeItem != NULL))
 		{
 			LM_T(LmtMousePress, ("Left Mouse Press & Release on '%s' - looking up callback", activeItem->name));
 
-			QsiCallback* cb = itemCallbackLookup(activeItem);
+			Callback* cb = itemCallbackLookup(activeItem);
 			if (cb != NULL)
 			{
 				LM_T(LmtMenu, ("Found menu callback (%p) for '%s', function at %p", cb, activeItem->name, cb->func));
@@ -352,9 +352,9 @@ void QsiManager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 /* ****************************************************************************
 *
-* QsiManager::mouseMoveEvent - 
+* mouseMoveEvent - 
 */
-void QsiManager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
+void Manager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
 	Qt::MouseButtons    buttons    = mouseEvent->buttons();
 	QPointF             lastPoint  = mouseEvent->lastScenePos();
@@ -385,6 +385,8 @@ void QsiManager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			else
 				activeItem->moveRelative(point.x() - lastPoint.x(), point.y() - lastPoint.y());
 		}
+		else
+			LM_T(LmtMove, ("Sorry, %s '%s' is set to non-movable", activeItem->typeName(), activeItem->name));
 	}
 }
 
@@ -392,16 +394,16 @@ void QsiManager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 /* ****************************************************************************
 *
-* QsiManager::siConnect - 
+* siConnect - 
 */
-void QsiManager::siConnect(QsiBlock* qbP, QsiFunction func, const void* param, bool persistent)
+void Manager::siConnect(Block* qbP, Function func, const void* param, bool persistent)
 {
 	for (int ix = 0; ix < itemCallbackMax; ix++)
     {
 		if (itemCallback[ix] != NULL)
             continue;
 
-		itemCallback[ix] = (QsiCallback*) malloc(sizeof(QsiCallback));		
+		itemCallback[ix] = (Callback*) malloc(sizeof(Callback));		
 
 		itemCallback[ix]->qbP        = qbP;
 		itemCallback[ix]->func       = func;
@@ -415,7 +417,7 @@ void QsiManager::siConnect(QsiBlock* qbP, QsiFunction func, const void* param, b
 	itemCallbackMax += 5;
 	
     LM_W(("REALLOC to %d items", itemCallbackMax));
-	itemCallback = (QsiCallback**) realloc(itemCallback, itemCallbackMax * sizeof(QsiCallback*));
+	itemCallback = (Callback**) realloc(itemCallback, itemCallbackMax * sizeof(Callback*));
 	
 	for (int ix = itemCallbackMax - 5; ix < itemCallbackMax; ix++)
 	   itemCallback[ix] = NULL;
@@ -427,9 +429,9 @@ void QsiManager::siConnect(QsiBlock* qbP, QsiFunction func, const void* param, b
 
 /* ****************************************************************************
 *
-* QsiManager::siDisconnect - 
+* siDisconnect - 
 */
-void QsiManager::siDisconnect(QsiBlock* qbP)
+void Manager::siDisconnect(Block* qbP)
 {
 	if (qbP == NULL)
 		LM_RVE(("Cannot disconnect a NULL item"));
@@ -458,7 +460,7 @@ void QsiManager::siDisconnect(QsiBlock* qbP)
 *
 * itemCallbackLookup - 
 */
-QsiCallback* QsiManager::itemCallbackLookup(QsiBlock* qbP)
+Callback* Manager::itemCallbackLookup(Block* qbP)
 {
 	for (int ix = 0; ix < itemCallbackMax; ix++)
 	{
@@ -481,9 +483,9 @@ QsiCallback* QsiManager::itemCallbackLookup(QsiBlock* qbP)
 *
 * lookup - 
 */
-QsiBlock* QsiManager::lookup(QGraphicsItem* gItemP)
+Block* Manager::lookup(QGraphicsItem* gItemP)
 {
-	LM_D(("lookup QsiBlock with gItem %p", gItemP));
+	LM_D(("lookup Block with gItem %p", gItemP));
 
 	return box->lookup(gItemP);
 }
@@ -494,7 +496,7 @@ QsiBlock* QsiManager::lookup(QGraphicsItem* gItemP)
 *
 * menuActionFunc0 - 
 */
-void QsiManager::menuActionFunc0(void)
+void Manager::menuActionFunc0(void)
 {
 	if (activeItem)
 	{
@@ -511,7 +513,7 @@ void QsiManager::menuActionFunc0(void)
 *
 * menuActionFunc1 - 
 */
-void QsiManager::menuActionFunc1()
+void Manager::menuActionFunc1()
 {
 	if (activeItem)
 	{
@@ -528,7 +530,7 @@ void QsiManager::menuActionFunc1()
 *
 * menuActionFunc2 - 
 */
-void QsiManager::menuActionFunc2()
+void Manager::menuActionFunc2()
 {
 	if (activeItem)
 	{
@@ -545,7 +547,7 @@ void QsiManager::menuActionFunc2()
 *
 * menuActionFunc3 - 
 */
-void QsiManager::menuActionFunc3()
+void Manager::menuActionFunc3()
 {
 	if (activeItem)
 	{
@@ -562,7 +564,7 @@ void QsiManager::menuActionFunc3()
 *
 * menuActionFunc4 - 
 */
-void QsiManager::menuActionFunc4()
+void Manager::menuActionFunc4()
 {
 	if (activeItem)
 	{
@@ -579,7 +581,7 @@ void QsiManager::menuActionFunc4()
 *
 * menuActionFunc5 - 
 */
-void QsiManager::menuActionFunc5()
+void Manager::menuActionFunc5()
 {
 	if (activeItem)
 	{
@@ -596,7 +598,7 @@ void QsiManager::menuActionFunc5()
 *
 * menuActionFunc6 - 
 */
-void QsiManager::menuActionFunc6()
+void Manager::menuActionFunc6()
 {
 	if (activeItem)
 	{
@@ -613,7 +615,7 @@ void QsiManager::menuActionFunc6()
 *
 * menuActionFunc7 - 
 */
-void QsiManager::menuActionFunc7()
+void Manager::menuActionFunc7()
 {
 	if (activeItem)
 	{
@@ -630,7 +632,7 @@ void QsiManager::menuActionFunc7()
 *
 * menuActionFunc8 - 
 */
-void QsiManager::menuActionFunc8()
+void Manager::menuActionFunc8()
 {
 	if (activeItem)
 	{
@@ -647,7 +649,7 @@ void QsiManager::menuActionFunc8()
 *
 * menuActionFunc9 - 
 */
-void QsiManager::menuActionFunc9()
+void Manager::menuActionFunc9()
 {
 	if (activeItem)
 	{
@@ -664,7 +666,7 @@ void QsiManager::menuActionFunc9()
 *
 * menuAdd - 
 */
-void QsiManager::menuAdd(const char* title, QsiFunction func, void* param)
+void Manager::menuAdd(const char* title, Function func, void* param)
 {
 	for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
 	{
@@ -684,9 +686,9 @@ void QsiManager::menuAdd(const char* title, QsiFunction func, void* param)
 
 /* ****************************************************************************
 *
-* QsiManager::menuClear - 
+* menuClear - 
 */
-void QsiManager::menuClear(void)
+void Manager::menuClear(void)
 {
 	for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
 	{

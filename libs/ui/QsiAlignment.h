@@ -18,7 +18,7 @@ namespace Qsi
 
 
 
-class QsiBase;
+class Base;
 
 
 
@@ -45,10 +45,10 @@ typedef struct Alignment
 #endif
 	} Type;
 
-	Type       type;
-	QsiBase*   master;
-	QsiBase*   slave;
-	int        margin;
+	Type    type;
+	Base*   master;
+	Base*   slave;
+	int     margin;
 
 	static const char* name(Type type)
 	{

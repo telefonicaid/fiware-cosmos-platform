@@ -26,13 +26,13 @@ namespace Qsi
 *
 * forward declarations
 */
-class QsiBox;
+class Box;
 
 
 
-typedef enum QsiType
+typedef enum Type
 {
-	Box,
+	BoxItem,
 	SimpleText,
 	Image,
 	Label,
@@ -40,36 +40,37 @@ typedef enum QsiType
 	Input,
 	Line,
 	ExpandListItem
-} QsiType;
+} Type;
 
 
 
 /* ****************************************************************************
 *
-* QsiBase - 
+* Base - 
 */
-class QsiBase
+class Base
 {
-	friend class QsiBlock;
-	friend class QsiBox;
+	friend class Block;
+	friend class Box;
 
 private:
-	QsiBox*    owner;    // the Box this qsi belongs to - used for callback on size changes (only?)
-	QsiType    type;     // the type of this QSI
+	Box*       owner;    // the Box this qsi belongs to - used for callback on size changes (only?)
+	Type       type;     // the type of this QSI
+	bool       isBox;    // Is it a Box ot not ...
 	int        xInitial; // Initial X-position
 	int        yInitial; // Initial Y-position
-	int        x;        // x offset within the QsiBox
-	int        y;        // y offset within the QsiBox
-	int        width;    // width  of a QsiBlock or total width  of all components in a QsiBox
-	int        height;   // height of a QsiBlock or total height of all components in a QsiBox
+	int        x;        // x offset within the Box
+	int        y;        // y offset within the Box
+	int        width;    // width  of a Block or total width  of all components in a Box
+	int        height;   // height of a Block or total height of all components in a Box
 	bool       visible;
 
 public:
-	char*      name;     // all QsiBlocks and QsiBoxes have a name, mostly for debugging purposes
+	char*      name;     // all Blocks and Boxes have a name, mostly for debugging purposes
 	
 
-	QsiBase(QsiBox* _owner, QsiType _type, const char* _name, int _x, int _y, int _width = -1, int _height = -1);
-	~QsiBase();
+	Base(Box* _owner, Type _type, const char* _name, int _x, int _y, int _width = -1, int _height = -1);
+	~Base();
 
 	virtual void  moveRelative(int x, int y)                                = 0;
 	virtual void  moveAbsolute(int x, int y)                                = 0;
@@ -83,11 +84,11 @@ public:
 	virtual void  hide(void)                                                = 0;
 	virtual void  show(void)                                                = 0;
 	virtual bool  isVisible(void)                                           = 0;
-	virtual void  align(Alignment::Type type, QsiBase* master, int margin)  = 0;
+	virtual void  align(Alignment::Type type, Base* master, int margin)     = 0;
 
-	QsiBox*       getOwner(void);
+	Box*          getOwner(void);
 	const char*   typeName(void);
-	void          typeSet(QsiType _type);
+	void          typeSet(Type _type);
 };
 
 }

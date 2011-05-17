@@ -10,10 +10,10 @@
 * CREATION DATE            May 13 2011
 *
 */
-#include "QsiBase.h"            // QsiBase
-#include "QsiFunction.h"        // QsiFunction
-#include "QsiAlignment.h"       // QsiAlignment
-#include "QsiFrame.h"           // Qsi::Frame
+#include "QsiBase.h"            // Base
+#include "QsiFunction.h"        // Function
+#include "QsiAlignment.h"       // Alignment
+#include "QsiFrame.h"           // Frame
 
 
 
@@ -26,70 +26,77 @@ namespace Qsi
 
 
 
-class QsiBlock;
-class QsiManager;
+class Block;
+class Manager;
 /* ****************************************************************************
 *
-* QsiBox - 
+* Box - 
 */
-class QsiBox : public QsiBase
+class Box : public Base
 {
 	friend class ExpandList;
 
 private:
-	QsiManager*  manager;
-	QsiBase**    qsiVec;
+	Manager*     manager;
+	Block*       firstLine;
+
+	Base**       qsiVec;
 	int          qsiVecSize;
+
 	Alignment**  alignVec;
 	int          alignVecSize;
 
+	Base*        lastAdded;
+	
 	int          xAbs(void);
 	int          yAbs(void);
 
 public:
-	QsiBox(QsiManager* manager, QsiBox* owner, const char* name, int x, int y);
+	Box(Manager* manager, Box* owner, const char* name, int x, int y);
 
-	QsiManager* managerGet(void) { return manager; };
-
+	Manager*    managerGet(void) { return manager; };
 	void        moveRelative(int x, int y);                                                  // move all qsis in qsiVec
 	void        moveAbsolute(int x, int y);                                                  // move all qsis in qsiVec
 	int         geometry(int* xP, int* yP, int* widthP, int* heightP);                       // return geometry of this Box
 	void        hide(void);                                                                  // make all aligned qsis move
 	void        show(void);                                                                  // make all aligned qsis move
 
-	void        initialMove(Qsi::QsiBase* qbP);                                              // move child to absolute position + relative box position
+	void        initialMove(Base* qbP);                                                      // move child to absolute position + relative box position
 	void        absPos(int* xP, int* yP);                                                    // get absolute position - recursively
-	void        add(QsiBase* qsi);                                                           // add a qsi (Box or Block)
-	void        remove(QsiBase* qsi);                                                        // remove a qsi (Box or Block)
+	void        add(Base* qsi);                                                              // add a qsi (Box or Block)
+	Base*       lastAddedGet(void);
 
-	void        align(Alignment::Type type, QsiBase* master, int margin);                    // align this Box to another Box
-	void        align(QsiBase* master, Alignment::Type type, QsiBase* slave, int margin);    // align qsis
+	void        remove(Base* qsi);                                                           // remove a qsi (Box or Block)
+
+	void        align(Alignment::Type type, Base* master, int margin);                       // align this Box to another Box
+	void        align(Base* master, Alignment::Type type, Base* slave, int margin);          // align qsis
 	void        unalign(int ix);                                                             // remove an identified alignment
-	void        unalign(QsiBase* master);                                                    // unalign this Box from another Box
-	void        unalign(QsiBase* master, QsiBase* slave);                                    // remove alignment
-	void        realign(QsiBase* master, Alignment::Type type, QsiBase* slave, int margin);  // absolute move part of alignment
+	void        unalign(Base* master);                                                       // unalign this Box from another Box
+	void        unalign(Base* master, Base* slave);                                          // remove alignment
+	void        realign(Base* master, Alignment::Type type, Base* slave, int margin);        // absolute move part of alignment
 	void        realign(void);                                                               // after removol, realing all upwards
-	void        alignFix(QsiBase* qbP);                                                      // Mend alignments at removal of an item
-	Alignment*  alignLookup(QsiBase* master, QsiBase* slave);                                // wont have mor than alignment between two qsis
+	void        alignFix(Base* qbP);                                                         // Mend alignments at removal of an item
+	Alignment*  alignLookup(Base* master, Base* slave);                                      // wont have mor than alignment between two qsis
 	void        alignShow(const char* why, bool force = false);                              // Show list of alignment vector
 	
-	void        sizeChange(QsiBase* qsi);                                                    // callback - a child has changed its size
+	void        sizeChange(Base* qsi);                                                       // callback - a child has changed its size
 
-	virtual QsiBlock*   lookup(QGraphicsItem* gItemP);
+	virtual Block*   lookup(QGraphicsItem* gItemP);
 
-	QsiBase*    boxAdd(const char*    name,                   int x, int y);
-	QsiBase*    textAdd(const char*   name, const char* txt,  int x, int y);
-	QsiBase*    lineAdd(const char*   name,                   int x, int y, int x2, int y2);
-	QsiBase*    buttonAdd(const char* name, const char* txt,  int x, int y, int width = -1, int height = -1, QsiFunction func = NULL, void* param = NULL);
-	QsiBase*    inputAdd(const char*  name, const char* txt,  int x, int y, int width = -1, int height = -1);
-	QsiBase*    imageAdd(const char*  name, const char* path, int x, int y, int width = -1, int height = -1, QsiFunction func = NULL, void* param = NULL);
-	void        qsiShow(const char* why, bool force = false);
-	void        qsiRecursiveShow(const char* why, bool force = false);
+	Base*    boxAdd(const char*    name,                   int x, int y);
+	Base*    textAdd(const char*   name, const char* txt,  int x, int y);
+	Base*    lineAdd(const char*   name,                   int x, int y, int x2, int y2);
+	Base*    buttonAdd(const char* name, const char* txt,  int x, int y, int width = -1, int height = -1, Function func = NULL, void* param = NULL);
+	Base*    inputAdd(const char*  name, const char* txt,  int x, int y, int width = -1, int height = -1);
+	Base*    imageAdd(const char*  name, const char* path, int x, int y, int width = -1, int height = -1, Function func = NULL, void* param = NULL);
 
-	bool        isVisible(void) { return true; }
+	void     qsiShow(const char* why, bool force = false);
+	void     qsiRecursiveShow(const char* why, bool force = false);
 
-	void        setFrame(const char* fname, int padding);
-	Frame*      frame;
+	bool     isVisible(void) { return true; }
+
+	virtual void  setFrame(int padding);
+	Frame*        frame;
 };
 
 }

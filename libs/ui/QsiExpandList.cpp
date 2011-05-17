@@ -12,10 +12,10 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
 
-#include "QsiManager.h"         // QsiManager
-#include "QsiBase.h"            // QsiBase
-#include "QsiBox.h"             // QsiBox
-#include "QsiBlock.h"           // QsiBlock
+#include "QsiManager.h"         // Manager
+#include "QsiBase.h"            // Base
+#include "QsiBox.h"             // Box
+#include "QsiBlock.h"           // Block
 #include "QsiExpandList.h"      // Own interface
 
 
@@ -29,7 +29,7 @@ namespace Qsi
 *
 * titleClicked - 
 */
-static void titleClicked(Qsi::QsiBlock* qbP, void* param)
+static void titleClicked(Block* qbP, void* param)
 {
 	LM_T(LmtMouse, ("Text '%s' Clicked. Param: %p", qbP->name, param));
 	if (qbP->isExpanded())
@@ -38,7 +38,7 @@ static void titleClicked(Qsi::QsiBlock* qbP, void* param)
 		qbP->showOthers();
 
 	if (param != NULL)
-		((QsiFunction) param)(qbP, (void*) "title");
+		((Function) param)(qbP, (void*) "title");
 }
 
 
@@ -47,14 +47,14 @@ static void titleClicked(Qsi::QsiBlock* qbP, void* param)
 *
 * ExpandList - 
 */
-ExpandList::ExpandList(QsiManager* manager, QsiBox* owner, const char* _title, int x, int y, int _xmargin, int _ymargin, QsiFunction onClick, bool _frame) : QsiBox(manager, owner, _title, x, y)
+ExpandList::ExpandList(Manager* manager, Box* owner, const char* _title, int x, int y, int _xmargin, int _ymargin, Function onClick, bool _frame) : Box(manager, owner, _title, x, y)
 {
 	this->typeSet(ExpandListItem);
 
 	xmargin     = _xmargin;
 	ymargin     = _ymargin;
-	title       = (QsiBlock*) textAdd("title",    _title, x, y);
-	memberBox   = (QsiBox*)   boxAdd("memberBox", x + xmargin, y + ymargin);
+	title       = (Block*) textAdd("title",    _title, 0, 0);
+	memberBox   = (Box*)   boxAdd("memberBox", xmargin, ymargin);
 	memberSpace = 15;
 
 	title->setBold(true);
@@ -68,14 +68,20 @@ ExpandList::ExpandList(QsiManager* manager, QsiBox* owner, const char* _title, i
 *
 * addMember - 
 */
-QsiBase* ExpandList::addMember(const char* string, QsiFunction callback, const void* dataP, const char* mVec[])
+Base* ExpandList::addMember(const char* string, Function callback, const void* dataP, const char* mVec[])
 {
-	QsiBlock* sMember;
-	int       gx, gy, gwidth, gheight;
+	Block*  lastMember;
+	Block*  sMember;
+	int     gx, gy, gwidth, gheight;
+
+	lastMember = (Block*) memberBox->lastAddedGet();
 
 	memberBox->geometry(&gx, &gy, &gwidth, &gheight);
-
-	sMember = (QsiBlock*) memberBox->textAdd(string, string, 0, gheight + memberSpace);
+	sMember = (Block*) memberBox->textAdd(string, string, 0, gheight + memberSpace);
+	if (lastMember != NULL)
+		sMember->align(Alignment::South, lastMember, memberSpace);
+	else
+		sMember->align(Alignment::South, firstLine, memberSpace);
 
 	if (callback != NULL)
 		manager->siConnect(sMember, callback, dataP);
@@ -86,6 +92,7 @@ QsiBase* ExpandList::addMember(const char* string, QsiFunction callback, const v
 			sMember->menuAdd(mVec[ix], callback, (void*) mVec[ix]);
 	}
 
+	((Block*) sMember)->setMovable(false);
 	return sMember;
 }
 
@@ -95,7 +102,7 @@ QsiBase* ExpandList::addMember(const char* string, QsiFunction callback, const v
 *
 * addMember - 
 */
-QsiBase* ExpandList::addMember(QsiBase* _member, QsiFunction callback, const void* dataP, const char* mVec[])
+Base* ExpandList::addMember(Base* _member, Function callback, const void* dataP, const char* mVec[])
 {
 	int gx, gy, gwidth, gheight;
 
@@ -103,16 +110,17 @@ QsiBase* ExpandList::addMember(QsiBase* _member, QsiFunction callback, const voi
 	_member->xSet(0);
 	_member->ySet(gheight + memberSpace);
 	add(_member);
-
+	
 	if (callback != NULL)
-		manager->siConnect((QsiBlock*) _member, callback, dataP);
+		manager->siConnect((Block*) _member, callback, dataP);
 
 	if (mVec != NULL)
 	{
 		for (int ix = 0; mVec[ix] != NULL; ix++)
-			((QsiBlock*) _member)->menuAdd(mVec[ix], callback, (void*) mVec[ix]);
+			((Block*) _member)->menuAdd(mVec[ix], callback, (void*) mVec[ix]);
 	}
 
+	((Block*) _member)->setMovable(false);
 	return _member;
 }
 
@@ -168,12 +176,35 @@ void ExpandList::titleSet(const char* _title)
 *
 * menu - 
 */
-void ExpandList::menu(QsiFunction callback, const char* mVec[])
+void ExpandList::menu(Function callback, const char* mVec[])
 {
 	for (int ix = 0; mVec[ix] != NULL; ix++)
 	{
-		LM_M(("mVec[%d]: '%s'", ix, mVec[ix]));
+		LM_T(LmtMenu, ("mVec[%d]: '%s'", ix, mVec[ix]));
 		title->menuAdd(mVec[ix], callback, (void*) mVec[ix]);
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* setFrame - 
+*/
+void ExpandList::setFrame(int padding)
+{
+	if (padding == -19)
+	{
+		LM_W(("deleting frame"));
+
+		if (memberBox->frame != NULL)
+			delete memberBox->frame;
+		memberBox->frame = NULL;
+	}
+	else
+	{
+		LM_T(LmtFrame, ("Creating Frame for memberBox"));
+		memberBox->setFrame(padding);
 	}
 }
 

@@ -19,7 +19,7 @@
 */
 class QGraphicsLineItem;
 class QGraphicsSimpleTextItem;
-class QsiBox;
+class Box;
 
 
 
@@ -35,22 +35,24 @@ namespace Qsi
 class Frame
 {
 private:
-	char*           title;
-	int             padding;
-	QsiBox*         box;
+	int          padding;
+	Box*         box;
 
 public:
-	Frame(QsiBox* _box, const char* _title, int padding);
+	Frame(Box* _box, int padding);
 	~Frame();
 
 	void paint(void);
+	void moveRelative(int x, int y);
+	void moveAbsolute(int x, int y);
+	void hide(void);
+	void show(void);
 
 private:
 	QGraphicsLineItem*        north;
 	QGraphicsLineItem*        west;
 	QGraphicsLineItem*        south;
 	QGraphicsLineItem*        east;
-	QGraphicsSimpleTextItem*  titleItem;
 };
 
 }

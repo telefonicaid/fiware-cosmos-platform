@@ -23,9 +23,9 @@ namespace Qsi
 
 /* ****************************************************************************
 *
-* QsiBase - 
+* Base - 
 */
-QsiBase::QsiBase(QsiBox* _owner, QsiType _type, const char* _name, int _x, int _y, int _width, int _height)
+Base::Base(Box* _owner, Type _type, const char* _name, int _x, int _y, int _width, int _height)
 {
 	owner    = _owner;
 	type     = _type;
@@ -36,23 +36,25 @@ QsiBase::QsiBase(QsiBox* _owner, QsiType _type, const char* _name, int _x, int _
 	y        = 0;
 	width    = _width;
 	height   = _height;
+
+	isBox    = false;
 }
 
 
 
 /* ****************************************************************************
 *
-* ~QsiBase - 
+* ~Base - 
 */
-QsiBase::~QsiBase()
+Base::~Base()
 {
 	if (name)
 	{
-		LM_T(LmtRemove, ("destroying QsiBase '%s'", name));
+		LM_T(LmtRemove, ("destroying Base '%s'", name));
 		free(name);
 	}
 	else
-		LM_T(LmtRemove, ("destroying a nameless QsiBase object"));
+		LM_T(LmtRemove, ("destroying a nameless Base object"));
 }
 
 
@@ -61,7 +63,7 @@ QsiBase::~QsiBase()
 *
 * getOwner - 
 */
-QsiBox* QsiBase::getOwner(void)
+Box* Base::getOwner(void)
 {
 	return owner;
 }
@@ -72,11 +74,11 @@ QsiBox* QsiBase::getOwner(void)
 *
 * typeName - 
 */
-const char* QsiBase::typeName(void)
+const char* Base::typeName(void)
 {
 	switch (type)
 	{
-	case Box:              return "Box";
+	case BoxItem:          return "Box";
 	case SimpleText:       return "SimpleText";
 	case Line:             return "Line";
 	case Image:            return "Image";
@@ -95,7 +97,7 @@ const char* QsiBase::typeName(void)
 *
 * xGet - 
 */
-int QsiBase::xGet(void)
+int Base::xGet(void)
 {
 	return x;
 }
@@ -106,7 +108,7 @@ int QsiBase::xGet(void)
 *
 * xSet - 
 */
-void QsiBase::xSet(int _x)
+void Base::xSet(int _x)
 {
 	x = _x;
 }
@@ -117,7 +119,7 @@ void QsiBase::xSet(int _x)
 *
 * yGet - 
 */
-int QsiBase::yGet(void)
+int Base::yGet(void)
 {
 	return y;
 }
@@ -128,7 +130,7 @@ int QsiBase::yGet(void)
 *
 * ySet - 
 */
-void QsiBase::ySet(int _y)
+void Base::ySet(int _y)
 {
 	y = _y;
 }
@@ -139,7 +141,7 @@ void QsiBase::ySet(int _y)
 *
 * typeSet - 
 */
-void QsiBase::typeSet(QsiType _type)
+void Base::typeSet(Type _type)
 {
 	type = _type;
 }

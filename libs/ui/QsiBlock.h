@@ -17,9 +17,9 @@
 #include <QLineEdit>
 #include <QFont>
 
-#include "QsiFunction.h"        // QsiFunction
-#include "QsiBase.h"            // QsiBase
-#include "QsiAlignment.h"       // QsiAlignment
+#include "QsiFunction.h"        // Function
+#include "QsiAlignment.h"       // Alignment
+#include "QsiBase.h"            // Base
 
 
 
@@ -28,7 +28,7 @@ namespace Qsi
 
 
 
-class QsiManager;
+class Manager;
 
 
 
@@ -49,12 +49,12 @@ typedef union ProxiedWidget
 
 /* ****************************************************************************
 *
-* QsiBlock - 
+* Block - 
 */
-class QsiBlock : public QsiBase
+class Block : public Base
 {
 public:
-	QsiManager*            manager;  // Hope this will not be necessary ...
+	Manager*               manager;  // Hope this will not be necessary ...
 	QGraphicsItem*         gItemP;
 	ProxiedWidget          w;
 	QGraphicsProxyWidget*  proxy;
@@ -67,13 +67,13 @@ private:
 	bool                   expanded;
 
 public:
-	QsiBlock(QsiManager* manager, QsiBox* owner, QsiType type, const char* name, const char* txt, int x, int y, int width = -1, int height = -1);
-	~QsiBlock();
+	Block(Manager* manager, Box* owner, Type type, const char* name, const char* txt, int x, int y, int width = -1, int height = -1);
+	~Block();
 
 	int          geometry(int* xP, int* yP, int* widthP, int* heightP);
 	void         moveRelative(int x, int y);
 	void         moveAbsolute(int x, int y);
-	void         align(Alignment::Type type, QsiBase* master, int margin);
+	void         align(Alignment::Type type, Base* master, int margin);
 	void         hide(void);
 	void         hideOthers();
 	void         show(void);
@@ -82,11 +82,11 @@ public:
 	bool         isExpanded(void);
 
 	bool         menu;
-	void         menuAdd(const char* title, QsiFunction func, void* param);
+	void         menuAdd(const char* title, Function func, void* param);
 	void         menuClear(void);
 
 	char*        menuTitle[10];
-	QsiFunction  menuFunc[10];
+	Function     menuFunc[10];
 	void*        menuParam[10];
 
 	void         setMovable(bool movable);

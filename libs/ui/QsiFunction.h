@@ -18,15 +18,15 @@ namespace Qsi
 
 
 
-class QsiBlock;
+class Block;
 
 
 
 /* ****************************************************************************
 *
-* QsiFunction - 
+* Function - 
 */
-typedef void (*QsiFunction)(QsiBlock* qbP, void* param);
+typedef void (*Function)(Block* qbP, void* param);
 
 }
 

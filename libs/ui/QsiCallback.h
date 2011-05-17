@@ -19,21 +19,21 @@ namespace Qsi
 
 
 
-class QsiBlock;
+class Block;
 
 
 
 /* ****************************************************************************
 *
-* QsiCallback
+* Callback
 */
-typedef struct QsiCallback
+typedef struct Callback
 {
-	QsiBlock*    qbP;
-	QsiFunction  func;
-	void*        param;
-	bool         persistent;
-} QsiCallback;
+	Block*    qbP;
+	Function  func;
+	void*     param;
+	bool      persistent;
+} Callback;
 
 }
 

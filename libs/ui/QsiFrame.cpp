@@ -7,8 +7,11 @@
 * CREATION DATE            May 16 2011
 *
 */
-#include "QsiBox.h"             // QsiBox
-#include "QsiManager.h"         // QsiManager
+#include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Lmt*
+
+#include "QsiBox.h"             // Box
+#include "QsiManager.h"         // Manager
 #include "QsiFrame.h"           // Own interface
 
 
@@ -21,19 +24,16 @@ namespace Qsi
 *
 * Frame - 
 */
-Frame::Frame(QsiBox* _box, const char* _title, int _padding)
+Frame::Frame(Box* _box, int _padding)
 {
 	box        = _box;
-	title      = strdup(_title);
 	padding    = _padding;
 
 	north      = NULL;
 	west       = NULL;
 	south      = NULL;
 	east       = NULL;
-	titleItem  = NULL;
 
-	LM_M(("Calling paint method"));
 	paint();
 }
 
@@ -49,14 +49,11 @@ Frame::~Frame()
 	if (south)      delete south;
 	if (east)       delete east;
 	if (west)       delete west;
-	if (titleItem)  delete titleItem;
-	if (title)      free(title);
 
 	north = NULL;
 	south = NULL;
 	east  = NULL;
 	west  = NULL;
-	title = NULL;
 }
 
 
@@ -67,21 +64,48 @@ Frame::~Frame()
 */
 void Frame::paint(void)
 {
-	int x, y, width, height;
+	int bx, by, bwidth, bheight;
 
-	box->geometry(&x, &y, &width, &height);
+	box->geometry(&bx, &by, &bwidth, &bheight);
+	LM_T(LmtFrame, ("Got geometry of box '%s': { %d, %d } %dx%d", box->name, bx, by, bwidth, bheight));
 
-	LM_M(("Got geometry of box '%s': { %d, %d } %dx%d", title, x, y, width, height));
-
-	if (north == NULL)      north     = box->managerGet()->addLine(x - padding,         y - padding,          x + width + padding, y - padding);
-	if (south == NULL)      south     = box->managerGet()->addLine(x - padding,         y + height + padding, x + width + padding, y + height + padding);
-	if (east  == NULL)      east      = box->managerGet()->addLine(x + width + padding, y - padding,          x + width + padding, y + height + padding);
-	if (west  == NULL)      west      = box->managerGet()->addLine(x - padding,         y - padding,          x - padding,         y + height + padding);
-	if (titleItem == NULL)
-	{
-		titleItem = box->managerGet()->addSimpleText(title);
-		titleItem->setPos(x - padding + 10, y - padding - 15);
-	}
+	if (north == NULL)      north  = box->managerGet()->addLine(bx - padding,          by,                     bx + bwidth + padding, by);
+	if (south == NULL)      south  = box->managerGet()->addLine(bx - padding,          by + bheight + padding, bx + bwidth + padding, by + bheight + padding);
+	if (east  == NULL)      east   = box->managerGet()->addLine(bx + bwidth + padding, by,                     bx + bwidth + padding, by + bheight + padding);
+	if (west  == NULL)      west   = box->managerGet()->addLine(bx - padding,          by,                     bx - padding,          by + bheight + padding);
 }
 
+
+
+void Frame::moveRelative(int x, int y)
+{
+	north->moveBy(x, y);
+	south->moveBy(x, y);
+	west->moveBy(x, y);
+	east->moveBy(x, y);
+}
+
+void Frame::moveAbsolute(int x, int y)
+{
+	north->setPos(x, y);
+	south->setPos(x, y);
+	west->setPos(x, y);
+	east->setPos(x, y);
+}
+
+void Frame::hide(void)
+{
+	north->setVisible(false);
+	south->setVisible(false);
+	west->setVisible(false);
+	east->setVisible(false);
+}
+
+void Frame::show(void)
+{
+	north->setVisible(true);
+	south->setVisible(true);
+	west->setVisible(true);
+	east->setVisible(true);
+}
 }

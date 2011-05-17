@@ -2,7 +2,7 @@
  *
  * FILE                     samson_module.h
  *
- * DESCRIPTION				Parser of module file to create .h .cpp files
+ * DESCRIPTION		    Parser of module file to create .h .cpp files
  *
  * ***************************************************************************/
 

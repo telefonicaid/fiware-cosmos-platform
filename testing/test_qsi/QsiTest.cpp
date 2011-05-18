@@ -116,6 +116,8 @@ static Qsi::Block*       alignEastButton;
 static Qsi::Block*       alignCenterButton;
 static Qsi::Block*       alignNoneButton;
 
+static Qsi::Block*       rectangle;
+
 
 
 /* ****************************************************************************
@@ -219,6 +221,8 @@ static void buttonClicked(Qsi::Block* qbP, void* param)
 
 	LM_T(LmtMouse, ("Button '%s' Clicked. Param at %p", qbP->name, param));
 
+	if (qbP == rectangle)
+		delete qbP;
 	if (qbP == textButton)
 	{
 		++counter;
@@ -452,7 +456,7 @@ static void qsiSetup(QWidget* mainWindow)
 	alignCenterButton  = (Qsi::Block*) buttonBox->buttonAdd("AlignCenter",    "Align Center",         0, 320, 150, 25, buttonClicked, NULL);
 	alignNoneButton    = (Qsi::Block*) buttonBox->buttonAdd("CompressButton", "Unalign",              0, 350, 150, 25, buttonClicked, NULL);
 
-
+	textButton->boxMoveSet(true);
 	
 	//
 	// Input
@@ -477,14 +481,21 @@ static void qsiSetup(QWidget* mainWindow)
 
 	numberImageP->align(Qsi::Alignment::Center, tableImageP, 0);
 	numberImageP->moveRelative(0, -45);
-
+	tableImageP->boxMoveSet(true);
+	numberImageP->boxMoveSet(true);
 
 
 	//
 	// Big table
 	//
 	bigTableImageP = (Qsi::Block*) mainBox->imageAdd("Big Table",  "Database.png", 600, 400, 300, 300, buttonClicked, NULL);
-	bigTableImageP->setBoxMove(false);
+
+
+
+	//
+	// Rectangle
+	//
+	rectangle = (Qsi::Block*) mainBox->rectangleAdd("Rectangle", 400, 400, 300, 200, QColor(0xFF, 0xFF, 0xFF, 0x80), QColor(0, 0, 0, 0xFF), 3, buttonClicked, NULL);
 }
 
 

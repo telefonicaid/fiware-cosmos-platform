@@ -78,13 +78,14 @@ const char* Base::typeName(void)
 {
 	switch (type)
 	{
-	case BoxItem:          return "Box";
 	case SimpleText:       return "SimpleText";
 	case Line:             return "Line";
 	case Image:            return "Image";
 	case Label:            return "Label";
 	case Button:           return "Button";
 	case Input:            return "Input";
+	case Rectangle:        return "Rectangle";
+	case BoxItem:          return "Box";
 	case ExpandListItem:   return "ExpandList";
 	}
 

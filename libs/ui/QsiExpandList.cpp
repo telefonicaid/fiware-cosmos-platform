@@ -60,6 +60,7 @@ ExpandList::ExpandList(Manager* manager, Box* owner, const char* _title, int x, 
 	title->setBold(true);
 	manager->siConnect(title, titleClicked, (void*) onClick);
 	owner->add(this);
+	title->boxMoveSet(true);
 }
 
 

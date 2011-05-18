@@ -37,21 +37,6 @@ static void ok(Block* qbP, void* param)
 
 /* ****************************************************************************
 *
-* ~Popup - 
-*/
-Popup::~Popup()
-{
-	manager->ungrab(win);
-	delete background;
-	delete win;
-	delete titleItem;
-	delete messageItem;
-}
-
-
-
-/* ****************************************************************************
-*
 * Popup - 
 */
 Popup::Popup(Manager* _manager, const char* title, const char* message)
@@ -99,6 +84,21 @@ Popup::Popup(Manager* _manager, const char* title, const char* message)
 	titleItem->setZValue(0.7);
 	messageItem->setZValue(0.7);
 	manager->grab(win, ok, this);
+}
+
+
+
+/* ****************************************************************************
+*
+* ~Popup - 
+*/
+Popup::~Popup()
+{
+	manager->ungrab(win);
+	delete background;
+	delete win;
+	delete titleItem;
+	delete messageItem;
 }
 
 }

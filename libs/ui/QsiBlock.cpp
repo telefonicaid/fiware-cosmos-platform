@@ -51,8 +51,8 @@ Block::Block
 	gItemP    = NULL;
 
 	movable   = true;
-	boxMove   = true;
 	expanded  = true;
+	boxMove   = false;
 
 	// As we haven't been moved yet ...
 	// this->x = 0;
@@ -105,6 +105,10 @@ Block::Block
 	case Input:
 		w.lineEdit = new QLineEdit();
 		proxy      = manager->addWidget(w.lineEdit);
+		break;
+
+	case Rectangle:
+		gItemP = manager->addRect(0, 0, width, height);
 		break;
 
 	case BoxItem:
@@ -390,6 +394,7 @@ int Block::geometry(int* xP, int* yP, int* widthP, int* heightP)
 	case Image:
 	case SimpleText:
 	case Line:
+	case Rectangle:
 		rect = gItemP->boundingRect();
 		break;
 
@@ -449,9 +454,9 @@ bool Block::getMovable(void)
 
 /* ****************************************************************************
 *
-* setBoxMove - 
+* boxMoveSet - 
 */
-void Block::setBoxMove(bool boxMove)
+void Block::boxMoveSet(bool boxMove)
 {
 	this->boxMove = boxMove;
 }
@@ -460,9 +465,9 @@ void Block::setBoxMove(bool boxMove)
 
 /* ****************************************************************************
 *
-* getBoxMove - 
+* boxMoveGet - 
 */
-bool Block::getBoxMove(void)
+bool Block::boxMoveGet(void)
 {
 	return boxMove;
 }
@@ -581,7 +586,7 @@ void Block::setColor(int r, int g, int b, int a)
 		line->setPen(QColor(r, g, b, a));
 	}
 	else
-        LM_RVE(("Scene item of type '%s' cannot change Color ...", typeName()));
+		LM_RVE(("Scene item of type '%s' cannot change Color ...", typeName()));
 }
 
 

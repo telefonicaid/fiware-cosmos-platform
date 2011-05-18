@@ -422,7 +422,7 @@ void Manager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 				return;
 
 			moved = true;
-			if (activeItem->getBoxMove() == true)
+			if (activeItem->boxMoveGet() == true)
 			{
 				LM_T(LmtMove, ("%s '%s' has the property 'BOX MOVE' set  - move entire '%s' box", activeItem->typeName(), activeItem->name, activeItem->getOwner()->name));
 				activeItem->getOwner()->moveRelative(point.x() - lastPoint.x(), point.y() - lastPoint.y());

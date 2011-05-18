@@ -92,8 +92,8 @@ public:
 	void         setMovable(bool movable);
 	bool         getMovable(void);
 
-	void         setBoxMove(bool boxMove);
-	bool         getBoxMove(void);
+	bool         boxMoveGet(void);
+	void         boxMoveSet(bool boxMove);
 
 	void         setSize(int width, int height);
 	void         scale(int width, int height);

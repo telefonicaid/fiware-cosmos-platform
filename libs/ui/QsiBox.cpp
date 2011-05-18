@@ -878,6 +878,31 @@ Base* Box::imageAdd(const char* name, const char* path, int x, int y, int width,
 
 /* ****************************************************************************
 *
+* rectangleAdd - 
+*/
+Base* Box::rectangleAdd(const char*  name, int x, int y, int width, int height, QColor bg, QColor fg, int borderWidth, Function func, void* param)
+{
+	QGraphicsRectItem*  rect;
+	Block*              qbP   = new Block(manager, this, Rectangle, name, NULL, x, y, width, height);
+	QPen                pen(QBrush(fg), borderWidth);
+	QBrush              brush(bg);
+
+	if (func != NULL)
+		manager->siConnect(qbP, func, param);
+
+	rect = (QGraphicsRectItem*) qbP->gItemP;
+	rect->setPen(pen);
+	rect->setBrush(brush);
+
+	add(qbP);
+
+	return qbP;
+}
+
+
+
+/* ****************************************************************************
+*
 * lookup - 
 */
 Block* Box::lookup(QGraphicsItem* gItemP)

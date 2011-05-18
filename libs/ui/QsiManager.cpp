@@ -54,9 +54,8 @@ Manager::Manager(QVBoxLayout* layout, const char* homeDir, const char* backgroun
 	winHeight    = _winHeight;
 
 	view         = new QGraphicsView(this);
-
-
-	Home = strdup(homeDir);
+	modal        = NULL;
+	Home         = strdup(homeDir);
 
 	//
 	// Menu callbacks

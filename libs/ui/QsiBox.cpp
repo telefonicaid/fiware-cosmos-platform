@@ -334,7 +334,7 @@ void Box::add(Base* qbP)
 *
 * remove - 
 */
-void Box::remove(Base* qbP)
+void Box::remove(Base* qbP, bool destroy)
 {
 	LM_T(LmtRemove, ("Removing %s '%s'", qbP->typeName(), qbP->name));
 
@@ -349,17 +349,21 @@ void Box::remove(Base* qbP)
 		LM_T(LmtRemove, ("deleting  %s '%s'", qbP->typeName(), qbP->name));
 		alignFix(qbP);
 
-		if (qbP->type == BoxItem)
-			delete (Box*) qbP;
-		else if (qbP->type == ExpandListItem)
-			delete (ExpandList*) qbP;
-		else
-			delete (Block*) qbP;
+		if (destroy == true)
+		{
+			if (qbP->type == BoxItem)
+				delete (Box*) qbP;
+			else if (qbP->type == ExpandListItem)
+				delete (ExpandList*) qbP;
+			else
+				delete (Block*) qbP;
+		}
 
 		qsiVec[ix] = NULL;
 
 		LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
-		owner->sizeChange(owner);
+		if (owner != NULL)
+			owner->sizeChange(owner);
 
 		return;
 	}
@@ -938,6 +942,8 @@ Block* Box::lookup(QGraphicsItem* gItemP)
 			Block* qbP;
 
 			qbP = (Block*) qsiVec[ix];
+
+			LM_T(LmtBlockLookup, ("Comparing pressed qsi '%p' ...", qbP));
 
 			LM_T(LmtBlockLookup, ("Comparing pressed gItem '%p' to %s '%s' gItem '%p'", gItemP, qbP->typeName(), qbP->name, qbP->gItemP));
 			if (qbP->gItemP == gItemP)

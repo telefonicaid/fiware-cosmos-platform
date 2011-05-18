@@ -39,8 +39,10 @@ class Box : public Base
 	friend class ExpandList;
 	friend class Dialog;
 
-private:
+public:
 	Manager*     manager;
+
+private:
 	Block*       firstLine;
 
 	Base**       qsiVec;
@@ -69,7 +71,7 @@ public:
 	void        add(Base* qsi);                                                              // add a qsi (Box or Block)
 	Base*       lastAddedGet(void);
 
-	void        remove(Base* qsi);                                                           // remove a qsi (Box or Block)
+	void        remove(Base* qsi, bool destroy = true);                                      // remove a qsi (Box or Block)
 
 	void        align(Alignment::Type type, Base* master, int margin);                       // align this Box to another Box
 	void        align(Base* master, Alignment::Type type, Base* slave, int margin);          // align qsis

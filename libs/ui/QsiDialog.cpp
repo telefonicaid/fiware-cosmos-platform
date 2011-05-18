@@ -27,6 +27,8 @@ static void ok(Block* qbP, void* param)
 {
 	Dialog* dialog = (Dialog*) param;
 
+	dialog->manager->box->remove(dialog, false);
+	
 	delete dialog;
 }
 
@@ -81,7 +83,6 @@ Dialog::Dialog(Manager* _manager, const char* _title, bool modal) : Box(_manager
 	shadow->gItemP->setZValue(0.6);
 	win->gItemP->setZValue(0.65);
 	title->gItemP->setZValue(0.7);
-
 }
 
 

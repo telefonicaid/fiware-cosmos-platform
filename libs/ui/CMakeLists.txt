@@ -11,6 +11,7 @@ SET (HEADERS
 	QsiFrame.h
 	QsiExpandList.h
 	QsiPopup.h
+	QsiDialog.h
 )
 
 
@@ -26,6 +27,7 @@ SET (SOURCES
 	QsiFrame.cpp
 	QsiExpandList.cpp
 	QsiPopup.cpp
+	QsiDialog.cpp
 )
 
 

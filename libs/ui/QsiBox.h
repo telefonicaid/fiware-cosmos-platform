@@ -37,6 +37,7 @@ class Manager;
 class Box : public Base
 {
 	friend class ExpandList;
+	friend class Dialog;
 
 private:
 	Manager*     manager;

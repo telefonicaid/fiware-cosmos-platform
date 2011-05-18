@@ -21,6 +21,7 @@
 #include "QsiBlock.h"           // Qsi::Block
 #include "QsiExpandList.h"      // Qsi::ExpandList
 #include "QsiPopup.h"           // Qsi::Popup
+#include "QsiDialog.h"          // Qsi::Dialog
 
 
 
@@ -317,6 +318,32 @@ static void popup(Qsi::Block* qbP, void* vP)
 
 /* ****************************************************************************
 *
+* dialog - 
+*/
+static void dialog(Qsi::Block* qbP, void* vP)
+{
+	new Qsi::Dialog(qsiManager, "Testing MODAL Dialog", true);
+	qbP = NULL;
+	vP  = NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* dialog2 - 
+*/
+static void dialog2(Qsi::Block* qbP, void* vP)
+{
+	new Qsi::Dialog(qsiManager, "Testing Non-MODAL Dialog", false);
+	qbP = NULL;
+	vP  = NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * elistCallback - 
 */
 static void elistCallback(Qsi::Block* qbP, void* vP)
@@ -401,12 +428,15 @@ static void qsiSetup(QWidget* mainWindow)
 
 	elist->menu(elistCallback, menuItem);
 
-	qsiManager->menuAdd("Alignment List", alignmentList, mainBox);
-	qsiManager->menuAdd("Qsi List",       qsiList,       mainBox);
-	qsiManager->menuAdd("All Qsis",       qsiAllList,    mainBox);
-	qsiManager->menuAdd("Compress All",   compress,      NULL);
-	qsiManager->menuAdd("Expand All",     expand,        NULL);
-	qsiManager->menuAdd("Popup Test",     popup,         NULL);
+	qsiManager->menuAdd("Alignment List",   alignmentList, mainBox);
+	qsiManager->menuAdd("Qsi List",         qsiList,       mainBox);
+	qsiManager->menuAdd("All Qsis",         qsiAllList,    mainBox);
+	qsiManager->menuAdd("Compress All",     compress,      NULL);
+	qsiManager->menuAdd("Expand All",       expand,        NULL);
+	qsiManager->menuAdd("Popup Test",       popup,         NULL);
+	qsiManager->menuAdd("Modal Dialog",     dialog,        NULL);
+	qsiManager->menuAdd("Non-modal Dialog", dialog2,       NULL);
+
 	elist->setFrame(10);
 
 

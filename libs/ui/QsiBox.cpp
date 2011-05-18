@@ -491,6 +491,9 @@ void Box::align(Alignment::Type type, Base* master, int margin)
 */
 void Box::align(Base* master, Alignment::Type type, Base* slave, int margin)
 {
+	if (master == NULL)
+		master = firstLine;
+
 	if (master->getOwner() != slave->getOwner())
 		LM_RVE(("%s %s(owner:%s) and %s %s(owner:%s) cannot be aligned. They don't have the same owner",
 				master->typeName(), master->name, master->getOwner()->name, slave->typeName(), slave->name, slave->getOwner()->name));

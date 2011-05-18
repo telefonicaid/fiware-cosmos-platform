@@ -10,7 +10,9 @@
 * CREATION DATE            May 17 2011
 *
 */
-#include "QsiBox.h"             // Box
+#include <QGraphicsRectItem>
+
+#include "QsiManager.h"         // Manager
 
 
 
@@ -34,9 +36,16 @@ class Manager;
 class Popup
 {
 private:
+	QGraphicsPixmapItem*      background;
+	QGraphicsSimpleTextItem*  titleItem;
+	QGraphicsSimpleTextItem*  messageItem;
 
 public:
 	Popup(Manager* manager, const char* _title, const char* message);
+	~Popup();
+
+	QGraphicsRectItem*  win;
+	Manager*            manager;
 };
 
 }

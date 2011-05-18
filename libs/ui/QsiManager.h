@@ -60,6 +60,9 @@ class Manager : public QGraphicsScene
 
 private:
 	QGraphicsView*  view;
+	Function        modalFunc;
+	QGraphicsItem*  modal;
+	void*           modalParam;
 
 public:
 	QGraphicsItem*  sceneLayer0;   // Connection lines will be placed between these two layers
@@ -73,6 +76,9 @@ public:
 	int             winHeight;
 
 public:
+	void       grab(QGraphicsItem* itemP, Function func, void* param);
+	void       ungrab(QGraphicsItem* itemP);
+
 	void       add(Block*);
 	void       remove(Block* itemP);
 	Block*     lookup(QGraphicsItem* itemP);

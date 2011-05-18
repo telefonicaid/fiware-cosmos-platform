@@ -288,12 +288,23 @@ static void compress(Qsi::Block* qbP, void* vP)
 */
 static void expand(Qsi::Block* qbP, void* vP)
 {
-	new Qsi::Popup(qsiManager, "Just Testing", "This is just a test of a Popup");
-#if 0
 	userBox1->expand();
 	userBox2->expand();
 	elist->expand();
-#endif
+
+	qbP = NULL;
+	vP  = NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* popup - 
+*/
+static void popup(Qsi::Block* qbP, void* vP)
+{
+	new Qsi::Popup(qsiManager, "Just Testing", "This is just a test of a Popup");
 	qbP = NULL;
 	vP  = NULL;
 }
@@ -391,6 +402,7 @@ static void qsiSetup(QWidget* mainWindow)
 	qsiManager->menuAdd("All Qsis",       qsiAllList,    mainBox);
 	qsiManager->menuAdd("Compress All",   compress,      NULL);
 	qsiManager->menuAdd("Expand All",     expand,        NULL);
+	qsiManager->menuAdd("Popup Test",     popup,         NULL);
 	elist->setFrame(10);
 
 

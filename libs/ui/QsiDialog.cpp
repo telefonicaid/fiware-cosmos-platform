@@ -72,10 +72,16 @@ Dialog::Dialog(Manager* _manager, const char* _title, bool modal) : Box(_manager
 	
 	if (modal)
 		manager->grab(win->gItemP, ok, this);
+	else
+	{
+		manager->box->add(this);
+		manager->siConnect(win, ok, this);
+	}
 
 	shadow->gItemP->setZValue(0.6);
 	win->gItemP->setZValue(0.65);
 	title->gItemP->setZValue(0.7);
+
 }
 
 

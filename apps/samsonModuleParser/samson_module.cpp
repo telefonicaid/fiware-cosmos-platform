@@ -17,6 +17,18 @@
 #include "paUsage.h"            // paUsage
 #include <sys/stat.h>           // stat()
 
+
+
+#ifdef __gnu_linux__
+int tsCompare(time_t time1, time_t time2)
+{
+	if (time1 < time2)         return -1; /* Less than     */
+	else if (time1 > time2)    return  1; /* Greater than  */
+	else                       return  0; /* Equal         */
+}
+
+#else
+
 int  tsCompare ( struct  timespec  time1, struct  timespec  time2)
 {
     
@@ -32,6 +44,7 @@ int  tsCompare ( struct  timespec  time1, struct  timespec  time2)
         return (0) ;				/* Equal. */
     
 }
+#endif
 
 /** 
  Main function to parse everything 
@@ -88,13 +101,21 @@ int main( int argC , const char *argV[])
     
     if( ( res_stat1 == 0) && ( res_stat2 == 0) )
     {
-        
+#ifdef __gnu_linux__
+		if (tsCompare(stat_module.st_mtime, stat_output1.st_mtime) < 0)
+			if(tsCompare(stat_module.st_mtime, stat_output2.st_mtime) < 0)
+            {
+                std::cerr << "Not creating Modules.cpp and Modules.h since the module input file is older than the new one\n";
+                return 0;
+            }
+#else        
         if( tsCompare( stat_module.st_mtimespec , stat_output1.st_mtimespec ) < 0 )
             if( tsCompare( stat_module.st_mtimespec , stat_output2.st_mtimespec ) < 0 )
             {
-                std::cerr << "Not creating Modules.cpp and Modules.h since module is input file is older than the new one\n";
+                std::cerr << "Not creating Modules.cpp and Modules.h since the module input file is older than the new one\n";
                 return 0;
             }
+#endif
     }
     else
     {

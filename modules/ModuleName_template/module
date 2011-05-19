@@ -1,7 +1,7 @@
-Module ModuleName
+Module ModuleName_template
 {
 
-	title	"ModuleName  module"
+	title	"ModuleName_template  module"
 	author 	"Andreu Urruela (andreu@tid.es)"
 	version "0.1"
 	
@@ -22,7 +22,7 @@ data Data1
 data Data2
 {
      system.UInt id;
-     ModuleName.Data1 data_cplex;
+     ModuleName_template.Data1 data_cplex;
 }
 
 
@@ -30,15 +30,15 @@ data Data2
 # Operations with data
 # -------------------------------------------------
 
-generator fake_ModuleName
+generator fake_ModuleName_template
 {
-	out	system.UInt ModuleName.Data1
+	out	system.UInt ModuleName_template.Data1
 
-	helpLine "Generate a random set of key-values of type (system.UInt ModuleName.Data1). Number of key-values can be read from environment"
+	helpLine "Generate a random set of key-values of type (system.UInt ModuleName_template.Data1). Number of key-values can be read from environment"
 
 	help
 	{
-		"Generate a random set of key-values of type (system.UInt ModuleName.Data1)." 
+		"Generate a random set of key-values of type (system.UInt ModuleName_template.Data1)." 
 		"Number of key-values can be read from environment"
 		"Help can be made as complete as needed"
 	}
@@ -46,7 +46,7 @@ generator fake_ModuleName
 
 parser parse_example
 {
-        out	system.UInt ModuleName.Data1
+        out	system.UInt ModuleName_template.Data1
         
         helpLine "key-values can also be generated from a text dataset from uploaded data files."
         
@@ -59,8 +59,8 @@ parser parse_example
 
 map map_example
 {
-	in	system.UInt ModuleName.Data1
-	out system.UInt ModuleName.Data2
+	in	system.UInt ModuleName_template.Data1
+	out system.UInt ModuleName_template.Data2
 
 	helpLine "Example of map operation"
 
@@ -73,7 +73,7 @@ map map_example
 
 reduce reduce_example
 {
-	in 	system.UInt ModuleName.Data2
+	in 	system.UInt ModuleName_template.Data2
 	in	system.UInt system.UInt	
 	out	system.UInt system.UInt	
 
@@ -116,10 +116,10 @@ script script_example
 	code
 	"
 		clear $3	# Clear the output queue
-		ModuleName.parse_example $1 $1.kv -create -clear         #parse text input (already uploaded)
-		ModuleName.map_example $1.kv $1.kv_mapped -create -clear #map key-values
-		ModuleName.reduce_example $1.kv_mapped $2 $3.reduced -create -clear    #reduce key-values
-		ModuleName.parserOut_example $3.reduced $3 -create -clear    #reduce key-values
+		ModuleName_template.parse_example $1 $1.kv -create -clear         #parse text input (already uploaded)
+		ModuleName_template.map_example $1.kv $1.kv_mapped -create -clear #map key-values
+		ModuleName_template.reduce_example $1.kv_mapped $2 $3.reduced -create -clear    #reduce key-values
+		ModuleName_template.parserOut_example $3.reduced $3 -create -clear    #reduce key-values
 	"
 }
 

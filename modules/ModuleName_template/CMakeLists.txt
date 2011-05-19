@@ -1,4 +1,4 @@
-SET( MODULE_NAME template )
+SET( MODULE_NAME ModuleName_template )
 
 cmake_minimum_required(VERSION 2.6)
 

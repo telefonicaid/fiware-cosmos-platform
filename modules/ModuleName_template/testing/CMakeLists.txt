@@ -6,7 +6,7 @@ add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND cp -f ${PROJECT_SOUR
 add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND cp -f ${PROJECT_SOURCE_DIR}/testing/test_complete_expected_out.txt ${PROJECT_BINARY_DIR}/testing )
 add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND cp -rf /opt/samson/etc ${PROJECT_BINARY_DIR}/testing )
 add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND mkdir -p ${PROJECT_BINARY_DIR}/testing/modules )
-add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND cp -rf ${PROJECT_BINARY_DIR}/lib<ModuleName>.so ${PROJECT_BINARY_DIR}/../../system/build/libsystem.so ${PROJECT_BINARY_DIR}/testing/modules )
+add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND cp -rf ${PROJECT_BINARY_DIR}/libModuleName_template.so ${PROJECT_BINARY_DIR}/../../system/build/libsystem.so ${PROJECT_BINARY_DIR}/testing/modules )
 
 # Add the tests
 # --------------------------------------------------

@@ -10,7 +10,8 @@
 * CREATION DATE            May 17 2011
 *
 */
-#include "QsiBox.h"             // Box
+#include "QsiBox.h"                  // Box
+#include "QsiInputReturnFunction.h"  // InputReturnFunction
 
 
 
@@ -31,7 +32,6 @@ class Block;
 *
 * InputLine - 
 */
-typedef void (*InputReturnFunction)(const char* nameV[], const char* inputV[]);
 class InputLine : public Box
 {
 public:
@@ -56,6 +56,8 @@ public:
 		InputReturnFunction    onClick = NULL
 	);
 	~InputLine();
+
+	void setZValue(float z);
 };
 
 }

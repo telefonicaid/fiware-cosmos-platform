@@ -41,10 +41,9 @@ class Box : public Base
 
 public:
 	Manager*     manager;
-
-private:
 	Block*       firstLine;
 
+private:
 	Base**       qsiVec;
 	int          qsiVecSize;
 

@@ -106,6 +106,8 @@ public:
 	void         setColor(int r, int g, int b, int a = 255);
 	void         setBold(bool onoff);
 	void         setItalic(bool onoff);
+
+	void         setZValue(float z);
 };
 
 }

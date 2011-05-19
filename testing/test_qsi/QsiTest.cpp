@@ -23,6 +23,7 @@
 #include "QsiPopup.h"           // Qsi::Popup
 #include "QsiDialog.h"          // Qsi::Dialog
 #include "QsiInputLine.h"       // Qsi::InputLine
+#include "QsiInputDialog.h"     // Qsi::InputDialog
 
 
 
@@ -344,6 +345,65 @@ static void dialog2(Qsi::Block* qbP, void* vP)
 
 
 
+char** inputDialogOutput;
+/* ****************************************************************************
+*
+* inputDialogGo - 
+*/
+void inputDialogGo(char* texts[], char* results[])
+{
+	LM_M(("Got a user:"));
+	for (int ix = 0; texts[ix] != NULL; ix++)
+	{
+		LM_M(("%-30s: %s", texts[ix], results[ix]));
+		free(texts[ix]);
+		free(results[ix]);
+	}
+
+	free(inputDialogOutput);
+}
+
+
+
+/* ****************************************************************************
+*
+* inputDialog - 
+*/
+static void inputDialog(Qsi::Block* qbP, void* vP)
+{
+	LM_M(("Testing InputDialog"));
+
+	const char* texts[] = 
+	{
+		"User Name",
+		"First Name",
+		"Last Name",
+		"Street Address",
+		"Town Address",
+		"Phone",
+		"Cell Phone",
+		NULL
+	};
+	
+	inputDialogOutput = (char**) calloc(sizeof(texts) / sizeof(texts[0]), sizeof(char*));
+
+	new Qsi::InputDialog
+	(
+		qsiManager,
+		"Testing MODAL Dialog",
+		(char**) texts,
+		inputDialogOutput,
+		"Create User",
+		false,
+		inputDialogGo
+	);
+
+	qbP = NULL;
+	vP  = NULL;
+}
+
+
+
 /* ****************************************************************************
 *
 * elistCallback - 
@@ -390,7 +450,7 @@ static void userCallback(Qsi::Block* qbP, void* vP)
 *
 * inputLineFunc - 
 */
-static void inputLineFunc(const char* nameV[], const char* inputV[])
+static void inputLineFunc(char** nameV, char** inputV)
 {
 	LM_M(("Got input from inputLine:"));
 	for (int ix = 0; nameV[ix] != NULL; ix++)
@@ -451,6 +511,7 @@ static void qsiSetup(QWidget* mainWindow)
 	qsiManager->menuAdd("Popup Test",       popup,         NULL);
 	qsiManager->menuAdd("Modal Dialog",     dialog,        NULL);
 	qsiManager->menuAdd("Non-modal Dialog", dialog2,       NULL);
+	qsiManager->menuAdd("Input Dialog",     inputDialog,   NULL);
 
 	elist->setFrame(10);
 

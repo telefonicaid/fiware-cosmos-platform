@@ -17,6 +17,20 @@
 
 
 
+/* ****************************************************************************
+*
+* MAX - 
+*/
+#ifndef MAX
+#define MAX(a, b)    (((a) > (b))? (a) : (b))
+#endif
+
+#ifndef MIN
+#define MIN(a, b)    (((a) < (b))? (a) : (b))
+#endif
+
+
+
 namespace Qsi
 {
 
@@ -57,10 +71,10 @@ class Base
 
 public:
 	Box*       owner;    // the Box this qsi belongs to - used for callback on size changes (only?)
-
-private:
 	Type       type;     // the type of this QSI
 	bool       isBox;    // Is it a Box ot not ...
+
+private:
 	int        xInitial; // Initial X-position
 	int        yInitial; // Initial Y-position
 	int        x;        // x offset within the Box

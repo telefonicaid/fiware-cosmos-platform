@@ -338,6 +338,12 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		{
 			LM_T(LmtMousePress, ("Left Mouse Press & Release on '%s' - looking up callback", activeItem->name));
 
+			if (released->type == Input)
+			{
+				LM_T(LmtFocus, ("%s '%s' takes focus", released->typeName(), released->name));
+				released->w.lineEdit->setFocus();
+			}
+
 			Callback* cb = itemCallbackLookup(activeItem);
 			if (cb != NULL)
 			{

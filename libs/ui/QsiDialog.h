@@ -37,8 +37,10 @@ class Dialog : public Box
 {
 private:
 	QGraphicsPixmapItem*  background;
-	Box*                  winBox;
 	Block*                shadow;
+
+public:
+	Box*                  winBox;
 	Block*                win;
 	Block*                title;
 

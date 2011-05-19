@@ -24,13 +24,13 @@ namespace Qsi
 */
 static void buttonCallback(Block* button, void* vP)
 {
-	InputLine*   inputLine = (InputLine*) vP;
-	const char*  titleV[2] = 
+	InputLine*  inputLine = (InputLine*) vP;
+	char*       titleV[2] = 
 	{
 		strdup(inputLine->title->getText()),
 		NULL
 	};
-	const char*  resultV[2] = 
+	char* resultV[2] = 
 	{
 		strdup(inputLine->input->getText()),
 		NULL
@@ -63,18 +63,24 @@ InputLine::InputLine
 {
 	title   = (Block*) textAdd("InputLineTitle",    _title,      0, 0);
 	input   = (Block*) inputAdd("InputLineInput",   _initInput,  0, 0);
-	button  = (Block*) buttonAdd("InputLineButton", _buttonText, 0, 0, -1, -1, buttonCallback, this);
+	button  = NULL;
 
 	input->align(Alignment::East, title, inputMargin);
-	button->align(Alignment::East, input, buttonMargin);
-
 	callback = onClick;
 
 	owner->add(this);
 
 	title->boxMoveSet(true);
 	input->boxMoveSet(true);
-	button->boxMoveSet(true);
+
+	if (_buttonText != NULL)
+	{
+		button  = (Block*) buttonAdd("InputLineButton", _buttonText, 0, 0, -1, -1, buttonCallback, this);
+
+		button->align(Alignment::East, input, buttonMargin);
+
+		button->boxMoveSet(true);
+	}
 }
 
 
@@ -88,7 +94,24 @@ InputLine::~InputLine()
 	owner->remove(this, false);
 	delete title;
 	delete input;
-	delete button;
+
+	if (button)
+		delete button;
+}
+
+
+
+/* ****************************************************************************
+*
+* setZValue - 
+*/
+void InputLine::setZValue(float z)
+{
+	title->setZValue(z);
+	input->setZValue(z);
+
+	if (button)
+		button->setZValue(z);
 }
 
 }

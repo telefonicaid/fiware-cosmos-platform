@@ -618,4 +618,20 @@ void Block::setFont(QFont font)
 	textItem->setFont(font);
 }
 
+
+
+/* ****************************************************************************
+*
+* setZValue - 
+*/
+void Block::setZValue(float z)
+{
+	LM_M(("Setting Z-value of %s '%s' to %02f", typeName(), name, z));
+
+	if (gItemP)
+		gItemP->setZValue(z);
+	if (proxy)
+		proxy->setZValue(z);
+}
+
 }

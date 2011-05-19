@@ -38,15 +38,6 @@ namespace Qsi
 
 /* ****************************************************************************
 *
-* MAX - 
-*/
-#define MAX(a, b)    (((a) > (b))? (a) : (b))
-#define MIN(a, b)    (((a) < (b))? (a) : (b))
-
-
-
-/* ****************************************************************************
-*
 * Box::Box - 
 */
 Box::Box(Manager* manager, Box* owner, const char* name, int x, int y) : Base(owner, BoxItem, name, x, y, -1, -1)

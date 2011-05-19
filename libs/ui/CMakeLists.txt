@@ -13,6 +13,7 @@ SET (HEADERS
 	QsiPopup.h
 	QsiDialog.h
 	QsiInputLine.h
+	QsiInputDialog.h
 )
 
 
@@ -30,6 +31,7 @@ SET (SOURCES
 	QsiPopup.cpp
 	QsiDialog.cpp
 	QsiInputLine.cpp
+	QsiInputDialog.cpp
 )
 
 

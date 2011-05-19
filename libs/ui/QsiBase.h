@@ -107,6 +107,8 @@ public:
 	Box*          getOwner(void);
 	const char*   typeName(void);
 	void          typeSet(Type _type);
+
+	bool          isAncestor(Box* qbP);
 };
 
 }

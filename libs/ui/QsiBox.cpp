@@ -160,6 +160,34 @@ void Box::moveRelative(int x, int y)
 
 /* ****************************************************************************
 *
+* width - 
+*/
+int Box::width(void)
+{
+	int bx, by, bw, bh;
+
+	geometry(&bx, &by, &bw, &bh);
+	return bw;
+}
+
+
+
+/* ****************************************************************************
+*
+* height - 
+*/
+int Box::height(void)
+{
+	int bx, by, bw, bh;
+
+	geometry(&bx, &by, &bw, &bh);
+	return bh;
+}
+
+
+
+/* ****************************************************************************
+*
 * geometry - 
 */
 int Box::geometry(int* xP, int* yP, int* widthP, int* heightP)
@@ -234,6 +262,8 @@ void Box::hide(void)
 		if (qsiVec[ix] == NULL)
 			continue;
 
+		LM_M(("Hiding %p (ix: %d/%d)", qsiVec[ix], ix, qsiVecSize));
+		LM_M(("Hiding %s '%s'", qsiVec[ix]->typeName(), qsiVec[ix]->name));
 		qsiVec[ix]->hide();
 	}
 
@@ -335,7 +365,8 @@ void Box::remove(Base* qbP, bool destroy)
 		if (qsiVec[ix] != qbP)
 			continue;
 
-		qbP->hide();
+		//LM_T(LmtRemove, ("Hiding %s '%s'", qbP->typeName(), qbP->name));
+		//qbP->hide();
 
 		LM_T(LmtRemove, ("deleting  %s '%s'", qbP->typeName(), qbP->name));
 		alignFix(qbP);

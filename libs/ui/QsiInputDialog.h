@@ -39,6 +39,7 @@ class InputDialog : public Dialog
 public:
 	Block*               doneButton;
 	InputLine**          input;
+	int                  inputs;
 	char**               output;
 	InputReturnFunction  callback;
 

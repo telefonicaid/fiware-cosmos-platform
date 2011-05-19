@@ -147,4 +147,20 @@ void Base::typeSet(Type _type)
 	type = _type;
 }
 
+
+
+/* ****************************************************************************
+*
+* isAncestor - 
+*/
+bool Base::isAncestor(Box* qbP)
+{
+	if (owner == NULL)
+		return false;
+	if (qbP == owner)
+		return true;
+
+	return isAncestor(owner);
+}
+
 }

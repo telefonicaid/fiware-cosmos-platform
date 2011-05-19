@@ -52,6 +52,14 @@ typedef enum Status
 
 /* ****************************************************************************
 *
+* Classes
+*/
+class Box;
+
+
+
+/* ****************************************************************************
+*
 * Manager - 
 */
 class Manager : public QGraphicsScene
@@ -60,8 +68,8 @@ class Manager : public QGraphicsScene
 
 private:
 	QGraphicsView*  view;
-	Function        modalFunc;
-	QGraphicsItem*  modal;
+	ModalFunction   modalFunc;
+	Box*            modal;
 	void*           modalParam;
 
 public:
@@ -76,8 +84,8 @@ public:
 	int             winHeight;
 
 public:
-	void       grab(QGraphicsItem* itemP, Function func, void* param);
-	void       ungrab(QGraphicsItem* itemP);
+	void       grab(Base* base, ModalFunction func, void* param);
+	void       ungrab(Box* box);
 
 	void       add(Block*);
 	void       remove(Block* itemP);

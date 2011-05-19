@@ -7,6 +7,9 @@
 * CREATION DATE            May 19 2011
 *
 */
+#include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Lmt*
+
 #include "QsiBlock.h"           // Block
 #include "QsiDialog.h"          // Dialog
 #include "QsiInputLine.h"       // InputLine
@@ -25,24 +28,31 @@ namespace Qsi
 */
 static void pressed(Block* wbP, void* vP)
 {
-	int inputs = 0;
 	InputDialog* idialog = (InputDialog*) vP;
 
 	if (idialog->callback)
 	{
-		for (int ix = 0; idialog->input[ix] != NULL; ix++)
-			++inputs;
+		char** texts   = (char**) calloc(idialog->inputs + 1, sizeof(char*));
+		char** results = (char**) calloc(idialog->inputs + 1, sizeof(char*));
 
-		char** texts   = (char**) calloc(inputs, sizeof(char*));
-		char** results = (char**) calloc(inputs, sizeof(char*));
+		LM_T(LmtInputDialog, ("We have %d inputs", idialog->inputs));
 
-		for (int ix = 0; ix < inputs; ix++)
+		for (int ix = 0; ix < idialog->inputs; ix++)
 		{
-			texts[ix]   = strdup(idialog->input[ix]->title->getText());
+			texts[ix] = strdup(idialog->input[ix]->title->getText());
 			results[ix] = strdup(idialog->input[ix]->input->getText());
+
+			LM_T(LmtInputDialog, ("%02d: %s: %s", ix, texts[ix], results[ix]));
 		}
 
-		idialog->callback(texts, results);
+		if (idialog->callback != NULL)
+		{
+			LM_T(LmtInputDialog, ("Calling callback at %p", idialog->callback));
+			idialog->callback(texts, results);
+		}
+		else
+			LM_T(LmtInputDialog, ("NULL callback ..."));
+
 		delete idialog;
 	}
 }
@@ -57,18 +67,19 @@ InputDialog::InputDialog(Manager* _manager, const char* _title, char* inputTitle
 Dialog(_manager, _title, modal)
 {
 	int ix;
-	int inputs = 0;
 	int tx, ty, tw, th;
 	int wMax = 0;
 
 	output = _output;
 	
+	inputs = 0;
     for (ix = 0; inputTitle[ix] != NULL; ix++)
 		++inputs;
 	input = (InputLine**) calloc(inputs, sizeof(InputLine*));
 
 	for (ix = 0; inputTitle[ix] != NULL; ix++)
 	{
+		LM_T(LmtInputDialog, ("Creating InputLine %d", ix));
 		input[ix] = new InputLine(winBox, inputTitle[ix], (const char*) NULL, (const char*) NULL, 20, 20);
 		input[ix]->setZValue(0.71);
 
@@ -76,11 +87,11 @@ Dialog(_manager, _title, modal)
 		wMax = MAX(wMax, tw);
 	}
 	
-	LM_M(("Moving all titles and inputs to be aligned in X"));
+	LM_T(LmtInputDialog, ("Moving all titles and inputs to be aligned in X"));
 	int bx, by;
 
 	absPos(&bx, &by);
-	LM_M(("Absolute position for '%s %s' is { %d, %d }", typeName(), name, bx, by));
+	LM_T(LmtInputDialog, ("Absolute position for '%s %s' is { %d, %d }", typeName(), name, bx, by));
     for (ix = 0; inputTitle[ix] != NULL; ix++)
 	{
 		QPointF point;
@@ -94,11 +105,21 @@ Dialog(_manager, _title, modal)
 		
 		input[ix]->input->moveAbsolute(gx + wMax + 30, gy);
 	}
-
-	doneButton = (Block*) winBox->buttonAdd("InputDialogButton", buttonText, 0, 0, -1, -1, pressed, this);
-	doneButton->align(Alignment::South, input[ix - 1], 30);
 	
+	int buttonHeight = 50;
+	doneButton = (Block*) winBox->buttonAdd("InputDialogButton", buttonText, 
+											borderWidth,
+											winBox->height() - shadowY - buttonHeight - 2 * borderWidth,
+											winBox->width() - 2 * borderWidth - shadowX,
+											buttonHeight,
+											pressed, this);
+	doneButton->setZValue(0.71);
+
+	LM_T(LmtInputDialog, ("doneButton width: %d, text: '%s'", winBox->width(), buttonText));
 	callback = _callback;
+
+	LM_M(("Showing QsiInputDialog::winBox"));
+	winBox->qsiShow("QsiInputDialog Made", true);
 }
 
 
@@ -109,9 +130,19 @@ Dialog(_manager, _title, modal)
 */
 InputDialog::~InputDialog()
 {
-	for (int ix = 0; input[ix] != NULL; ix++)
+	LM_M(("deleting %d inputs", inputs));
+	for (int ix = 0; ix < inputs; ix++)
+	{
+		LM_M(("deleting input %d", ix));
 		delete input[ix];
-	delete doneButton;
+		input[ix] = NULL;
+	}
+
+	if (doneButton)
+	{
+		delete doneButton;
+		doneButton = NULL;
+	}
 }
 
 }

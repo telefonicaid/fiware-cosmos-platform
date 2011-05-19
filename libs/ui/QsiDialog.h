@@ -43,6 +43,9 @@ public:
 	Box*                  winBox;
 	Block*                win;
 	Block*                title;
+	int                   borderWidth;
+	int                   shadowX;
+	int                   shadowY;
 
 public:
 	Dialog(Manager* _manager, const char* _title, bool modal);

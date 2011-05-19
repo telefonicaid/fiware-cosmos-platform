@@ -61,7 +61,11 @@ public:
 	Manager*    managerGet(void) { return manager; };
 	void        moveRelative(int x, int y);                                                  // move all qsis in qsiVec
 	void        moveAbsolute(int x, int y);                                                  // move all qsis in qsiVec
+
 	int         geometry(int* xP, int* yP, int* widthP, int* heightP);                       // return geometry of this Box
+	int         width(void);
+	int         height(void);
+
 	void        hide(void);                                                                  // make all aligned qsis move
 	void        show(void);                                                                  // make all aligned qsis move
 
@@ -102,6 +106,7 @@ public:
 
 	virtual void  setFrame(int padding);
 	Frame*        frame;
+
 };
 
 }

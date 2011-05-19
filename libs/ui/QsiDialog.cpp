@@ -36,6 +36,21 @@ static void ok(Block* qbP, void* param)
 
 /* ****************************************************************************
 *
+* modalOk - 
+*/
+static void modalOk(Box* qbP, void* param)
+{
+	Dialog* dialog = (Dialog*) param;
+
+	dialog->manager->box->remove(dialog, false);
+	
+	delete dialog;
+}
+
+
+
+/* ****************************************************************************
+*
 * Constructor - 
 */
 Dialog::Dialog(Manager* _manager, const char* _title, bool modal) : Box(_manager, NULL, _title, 0, 0)
@@ -44,6 +59,10 @@ Dialog::Dialog(Manager* _manager, const char* _title, bool modal) : Box(_manager
 	int wy;
 	int wwidth;
 	int wheight;
+
+	borderWidth  = 3;
+	shadowX      = 10;
+	shadowY      = 10;
 
 	if (modal)
 	{
@@ -63,17 +82,17 @@ Dialog::Dialog(Manager* _manager, const char* _title, bool modal) : Box(_manager
 
 	winBox = (Box*) boxAdd("dialogWinBox", wx, wy);
 	
-	shadow = (Block*) winBox->rectangleAdd("Shadow",   10, 10, wwidth, wheight, QColor(0x00, 0x00, 0x00, 0xFF), QColor(0x00, 0x00, 0x00, 0xFF), 0);
-	win    = (Block*) winBox->rectangleAdd("DialogWin", 0,  0, wwidth, wheight, QColor(0xD0, 0xD0, 0xFF, 0xFF), QColor(0x00, 0x00, 0x20, 0xFF), 3);
+	shadow = (Block*) winBox->rectangleAdd("Shadow",   shadowX, shadowY, wwidth, wheight, QColor(0x00, 0x00, 0x00, 0xFF), QColor(0x00, 0x00, 0x00, 0xFF), 0);
+	win    = (Block*) winBox->rectangleAdd("DialogWin", 0,  0, wwidth, wheight, QColor(0xD0, 0xD0, 0xFF, 0xFF), QColor(0x00, 0x00, 0x20, 0xFF), borderWidth);
 	title  = (Block*) winBox->textAdd("DialogTitle", _title, 0, 0);
 
 	int tx, ty, tw, th;
 	title->geometry(&tx, &ty, &tw, &th);
 	
 	title->moveRelative((wwidth - tw) / 2, th + 5);
-	
+
 	if (modal)
-		manager->grab(win->gItemP, ok, this);
+		manager->grab(winBox, modalOk, this);
 	else
 	{
 		manager->box->add(this);
@@ -83,6 +102,8 @@ Dialog::Dialog(Manager* _manager, const char* _title, bool modal) : Box(_manager
 	shadow->gItemP->setZValue(0.6);
 	win->gItemP->setZValue(0.65);
 	title->gItemP->setZValue(0.7);
+
+	manager->box->add(this);
 }
 
 
@@ -93,15 +114,25 @@ Dialog::Dialog(Manager* _manager, const char* _title, bool modal) : Box(_manager
 */
 Dialog::~Dialog()
 {
+	manager->box->remove(this, false);
+
 	if (background != NULL)
 	{
-		manager->ungrab(win->gItemP);
+		manager->ungrab(winBox);
 		delete background;
 	}
 
-	delete shadow;
-	delete win;
-	delete title;
+	if (shadow)
+		delete shadow;
+	shadow = NULL;
+
+	if (title)
+		delete title;
+	title = NULL;
+
+	if (win)
+		delete win;
+	win = NULL;
 }
 
 }

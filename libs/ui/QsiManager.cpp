@@ -16,7 +16,7 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
 
-#include "QsiFunction.h"        // Function
+#include "QsiFunction.h"        // Function, ModalFunction
 #include "QsiCallback.h"        // Callback
 #include "QsiBlock.h"           // Block
 #include "QsiBox.h"             // Box
@@ -325,18 +325,21 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		
 		LM_T(LmtMousePress, ("released: %p, activeItem: %p", released, activeItem));
 
-		if (modal != NULL)
-		{
-			LM_T(LmtModal, ("Modal is on for item %p", modal));
-			if (gItemP == modal)
-				modalFunc(released, modalParam);
-
-			return;
-		}
-
 		if ((released == activeItem) && (activeItem != NULL))
 		{
 			LM_T(LmtMousePress, ("Left Mouse Press & Release on '%s' - looking up callback", activeItem->name));
+
+			if (modal != NULL)
+			{
+				if (!released->isAncestor(modal))
+				{
+					LM_T(LmtModal, ("Modal is on for box %s", modal->name));
+					return;
+				}
+
+				LM_T(LmtModal, ("Modal is on for box %s but that's an ancestor of mine ...", modal->name));
+				modalFunc(modal, modalParam);
+			}
 
 			if (released->type == Input)
 			{
@@ -360,15 +363,6 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		gItemP      = itemAt(point);
 		released    = lookup(gItemP);
 
-		if (modal != NULL)
-		{
-			LM_T(LmtModal, ("Modal is on for item %p", modal));
-			if (gItemP == modal)
-				modalFunc(released, modalParam);
-
-			return;
-		}
-
 		if (released != NULL)
 			LM_T(LmtMousePress, ("Mid Mouse Press on %s '%s'", released->typeName(), released->name));
 		else
@@ -379,15 +373,6 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		point       = mouseEvent->buttonDownScenePos(Qt::MidButton);
 		gItemP      = itemAt(point);
 		released    = lookup(gItemP);
-
-		if (modal != NULL)
-		{
-			LM_T(LmtModal, ("Modal is on for item %p", modal));
-			if (gItemP == modal)
-				modalFunc(released, modalParam);
-
-			return;
-		}
 
 		if (released != NULL)
 			LM_T(LmtMousePress, ("Right Mouse Press on %s '%s'", released->typeName(), released->name));
@@ -758,9 +743,9 @@ void Manager::menuClear(void)
 *
 * grab - 
 */
-void Manager::grab(QGraphicsItem* itemP, Function func, void* param)
+void Manager::grab(Base* base, ModalFunction func, void* param)
 {
-	if (itemP == NULL)
+	if (base == NULL)
 		LM_E(("Cannot grab with a NULL pointer!"));
 	else if (modal == NULL)
 	{
@@ -768,14 +753,19 @@ void Manager::grab(QGraphicsItem* itemP, Function func, void* param)
 			LM_E(("Cannot pass a NULL function pointer to grab!"));
 		else
 		{
-			LM_T(LmtModal, ("Setting modal to %p", itemP));
-			modal      = itemP;
+			if (base->isBox == true)
+				modal = (Box*) base;
+			else
+				modal = base->owner;
+
+			LM_T(LmtModal, ("Set modal to %p", modal));
+
 			modalFunc  = func;
 			modalParam = param;
 		}
 	}
 	else
-		LM_W(("Can't set %p as modal, modal is already set to %p", itemP, modal));
+		LM_W(("Can't set %p as modal, modal is already set to %p", base, modal));
 }
 
 
@@ -784,20 +774,23 @@ void Manager::grab(QGraphicsItem* itemP, Function func, void* param)
 *
 * ungrab - 
 */
-void Manager::ungrab(QGraphicsItem* itemP)
+void Manager::ungrab(Box* box)
 {
-	if (itemP == NULL)
+	if (box == NULL)
 		LM_E(("Cannot ungrab with a NULL pointer!"));
 	else if (modal == NULL)
-		LM_W(("Not in modal mode (try to ungrab %p)", itemP));
-	else if (itemP != modal)
-		LM_E(("Cannot ungrab with distinct object: (modal: %p) vs (itemP: %p)", itemP, modal));
-	else
+		LM_W(("Not in modal mode (try to ungrab %p)", box));
+	else 
 	{
-		LM_T(LmtModal, ("ungrabbed using %p", modal));
-		modal      = NULL;
-		modalFunc  = NULL;
-		modalParam = NULL;
+		if (box != modal)
+			LM_E(("Cannot ungrab with distinct object: (modal: %p) vs (wanted: %p)", modal, box));
+		else
+		{
+			LM_T(LmtModal, ("ungrabbed using %p", modal));
+			modal      = NULL;
+			modalFunc  = NULL;
+			modalParam = NULL;
+		}
 	}
 }
 

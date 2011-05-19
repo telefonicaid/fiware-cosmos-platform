@@ -7,6 +7,9 @@
 * CREATION DATE            May 17 2011
 *
 */
+#include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Lmt*
+
 #include "QsiBox.h"             // Box
 #include "QsiBlock.h"           // Block
 #include "QsiInputLine.h"       // Own interface
@@ -91,12 +94,17 @@ InputLine::InputLine
 */
 InputLine::~InputLine()
 {
+	LM_M(("In destructor"));
+
 	owner->remove(this, false);
 	delete title;
 	delete input;
 
+	LM_M(("Deleting button?"));
 	if (button)
 		delete button;
+
+	LM_M(("From destructor"));
 }
 
 

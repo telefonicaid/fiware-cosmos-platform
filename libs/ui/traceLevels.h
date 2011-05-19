@@ -35,5 +35,6 @@
 #define LmtPopup              169
 #define LmtModal              170
 #define LmtFocus              171
+#define LmtInputDialog        172
 
 #endif

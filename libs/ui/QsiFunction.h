@@ -19,6 +19,7 @@ namespace Qsi
 
 
 class Block;
+class Box;
 
 
 
@@ -27,6 +28,7 @@ class Block;
 * Function - 
 */
 typedef void (*Function)(Block* qbP, void* param);
+typedef void (*ModalFunction)(Box* boxP, void* param);
 
 }
 

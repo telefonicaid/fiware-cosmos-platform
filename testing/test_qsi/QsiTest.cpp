@@ -20,7 +20,6 @@
 #include "QsiBox.h"             // Qsi::Box
 #include "QsiBlock.h"           // Qsi::Block
 #include "QsiExpandList.h"      // Qsi::ExpandList
-#include "QsiPopup.h"           // Qsi::Popup
 #include "QsiDialog.h"          // Qsi::Dialog
 #include "QsiInputLine.h"       // Qsi::InputLine
 #include "QsiInputDialog.h"     // Qsi::InputDialog
@@ -308,19 +307,6 @@ static void expand(Qsi::Block* qbP, void* vP)
 
 /* ****************************************************************************
 *
-* popup - 
-*/
-static void popup(Qsi::Block* qbP, void* vP)
-{
-	new Qsi::Popup(qsiManager, "Just Testing", "This is just a test of a Popup");
-	qbP = NULL;
-	vP  = NULL;
-}
-
-
-
-/* ****************************************************************************
-*
 * dialog - 
 */
 static void dialog(Qsi::Block* qbP, void* vP)
@@ -390,11 +376,11 @@ static void inputDialog(Qsi::Block* qbP, void* vP)
 	new Qsi::InputDialog
 	(
 		qsiManager,
-		"Testing MODAL Dialog",
+		"Create New User",
 		(char**) texts,
 		inputDialogOutput,
 		"Create User",
-		false,
+		false,             // MODAL
 		inputDialogGo
 	);
 
@@ -508,7 +494,6 @@ static void qsiSetup(QWidget* mainWindow)
 	qsiManager->menuAdd("All Qsis",         qsiAllList,    mainBox);
 	qsiManager->menuAdd("Compress All",     compress,      NULL);
 	qsiManager->menuAdd("Expand All",       expand,        NULL);
-	qsiManager->menuAdd("Popup Test",       popup,         NULL);
 	qsiManager->menuAdd("Modal Dialog",     dialog,        NULL);
 	qsiManager->menuAdd("Non-modal Dialog", dialog2,       NULL);
 	qsiManager->menuAdd("Input Dialog",     inputDialog,   NULL);

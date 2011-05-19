@@ -1,7 +1,7 @@
-Module <ModuleName>
+Module ModuleName
 {
 
-	title	"<ModuleName>  module"
+	title	"ModuleName  module"
 	author 	"Andreu Urruela (andreu@tid.es)"
 	version "0.1"
 	
@@ -13,16 +13,16 @@ Module <ModuleName>
 
 data Data1
 {
-     system.UInt8 year;
-     system.UInt8 month;
-     system.UInt8 day;
-     system.UInt8 week_day;
+     system.String data_string;
+     system.UInt8 data_char;
+     system.UInt data_ulong;
+     system.Double data_long;
 }
 
 data Data2
 {
-     system.UInt node;
-     <ModuleName>.Data1 date;
+     system.UInt id;
+     ModuleName.Data1 data_cplex;
 }
 
 
@@ -30,110 +30,80 @@ data Data2
 # Operations with data
 # -------------------------------------------------
 
-generator fake_<ModuleName>
+generator fake_ModuleName
 {
-	out	system.UInt <ModuleName>.Data1
+	out	system.UInt ModuleName.Data1
 
-	helpLine "Generate a random set of cdrs from a group of 1000 users. 20% of the CDRs are duplicated"
+	helpLine "Generate a random set of key-values of type (system.UInt ModuleName.Data1). Number of key-values can be read from environment"
 
 	help
 	{
-		"Generate a random set of cdrs from a group of 1000 users. 20% of the CDRs are duplicated"
+		"Generate a random set of key-values of type (system.UInt ModuleName.Data1)." 
+		"Number of key-values can be read from environment"
+		"Help can be made as complete as needed"
 	}
 }
 
-reduce remove_duplicated_cdrs
+parser parse_example
 {
-	in 	system.UInt cdr.CDR
-	out	system.UInt cdr.CDR	
-
-	helpLine "Remove duplicatated cdrs. Input and output are in the same format"
-
-	help
-	{
-		"Remove duplicatated cdrs. Input and output are in the same format"
-	}
-	
+        out	system.UInt ModuleName.Data1
+        
+        helpLine "key-values can also be generated from a text dataset from uploaded data files."
+        
+        help
+        {
+        	"key-values can also be generated from a text dataset from uploaded data files."
+        	"Help can be made as complete as needed"
+        }
 }
 
-map spread_cdrs_to_links
+map map_example
 {
-	in	system.UInt cdr.CDR
-	out 	system.UInt system.UInt
+	in	system.UInt ModuleName.Data1
+	out system.UInt ModuleName.Data2
 
-	helpLine "Spread each CDR producing two key-values at the output per CDR. A-B and B-A"
+	helpLine "Example of map operation"
 
 	help
 	{
-		"Spread cdrs at the input in the sense that emit two key-values at the output for each cdr."
-		"For every CDR (A-B) two key-values are emitted A,B and B,A"
-		"This operation is tippically concatenated with sna_compute_graph to generate the graph from cdrs."
+		"Example of map operation"
+		"Help can be made as complete as needed"
 	}	
 }
 
-map spread_cdrs_to_links2
+reduce reduce_example
 {
-	in	system.UInt cdr.CDR
-	out 	system.UInt2 system.Void
+	in 	system.UInt ModuleName.Data2
+	in	system.UInt system.UInt	
+	out	system.UInt system.UInt	
 
-	helpLine "Spread each CDR producing two key-values at the output per CDR. A-B and B-A"
-
-}
-
-
-parser parse_cdrs
-{
-	out system.UInt cdr.CDR	
-	
-	helpLine "Parse CDRs in txt format producing a single key-value at the output per each valid CDR (output: system.UInt cdr.CDR)"
+	helpLine "Example of reduce operation. In this case, we have 2 input datasets"
 
 	help
 	{
-		"parse txt-file of CDRS in  different formats."
-		"This is a generic parse for different formats. Please, specify with the -format <format>"
-		"It can also be selected with the environment variable 'CDRs_source'"
-		"Suported formats:"
-		"TME:       --> 1|689644587|685015313|01/09/08 18:52:44|123|2|2"
-		"O2UKsmsc:  --> exact format to be defined "
-		"O2UKp2p:   --> exact format to be defined "
-		"O2UKmms:   --> exact format to be defined "
+		"Example of reduce operation"
+	}
+	
+}
+
+parserOut parserOut_example
+{
+	in	system.UInt system.UInt
+
+	helpLine "Example of parserOut operation."
+	
+	help
+	{
+		"Example of parserOut operation."
+		"Transforms input dataset to a text dataset, that can be downloaded to the file system".
 	}
 }
 
-parser parse_users
+script script_example
 {
-        out     system.UInt cdr.User
-
-        help
-        {
-		"parse of Users information"
-                "parse the content of a file with information about users. Commontly the name of this file is ALFA_CARACT.TXT."
-		"Example: 687562010|910000000001|1|07/04/06|2|49|28|2||"
-        }
-}
-
-parser parse_users_O2UK
-{
-        out     system.UInt cdr.User
-
-        help
-        {
-		"parse of Users information from O2UK. From the moment, we have buil the O2UK user information as the users that appear both as calling and called in the log files"
-		"Example: 44687562010"
-        }
-}
-
-parserOut select_cdrs
-{
-	in system.UInt cdr.CDR
-
-	helpLine "Export cdrs in txt format"
-}
-
-script ScriptEx1
-{
-	in 	system.UInt <ModuleName>.Ex1
-	out 	system.UInt <ModuleName>.Ex1
+	in 	txt txt
+	in  system.UInt system.UInt	
+	out txt txt
 
 	helpLine "Script example"
 
@@ -146,10 +116,10 @@ script ScriptEx1
 	code
 	"
 		clear $3	# Clear the output queue
-		<ModuleName>.parse_ex1 $1 $1.kv -create -clear         #parse text input (already uploaded)
-		<ModuleName>.map_ex1 $1.kv $1.kv_mapped -create -clear #map key-values
-		<ModuleName>.red_ex1 $1.kv_mapped $2 -create -clear    #reduce key-values
-
+		ModuleName.parse_example $1 $1.kv -create -clear         #parse text input (already uploaded)
+		ModuleName.map_example $1.kv $1.kv_mapped -create -clear #map key-values
+		ModuleName.reduce_example $1.kv_mapped $2 $3.reduced -create -clear    #reduce key-values
+		ModuleName.parserOut_example $3.reduced $3 -create -clear    #reduce key-values
 	"
 }
 

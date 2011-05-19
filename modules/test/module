@@ -28,7 +28,6 @@ map map
 parserOut export_ints
 {
 	in test.Integer test.Integer
-	out txt txt
 	
 	helpLine "Export to txt file to be able to work with it"
 }

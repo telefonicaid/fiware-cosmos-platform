@@ -32,3 +32,20 @@ reset:
 	make reset -C sort
 	make reset -C terasort
 	make reset -C time_test
+
+eclipse:
+	make eclipse -C system
+	make eclipse -C txt
+	make eclipse -C example
+	make eclipse -C tienda
+	make eclipse -C cdr
+	make eclipse -C graph
+	make eclipse -C sna
+	make eclipse -C sna_light
+	make eclipse -C osn
+	make eclipse -C template
+	make eclipse -C url
+	make eclipse -C url_benchmark
+	make eclipse -C sort
+	make eclipse -C terasort
+	make eclipse -C time_test

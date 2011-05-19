@@ -64,6 +64,9 @@ clean:
 xcode:	
 	./scripts/prepareXcode
 
+eclipse:	
+	./scripts/prepareEclipse
+
 uninstall:
 	sudo rm -f /usr/local/bin/samson* 
 	sudo rm -Rf /usr/local/include/samson

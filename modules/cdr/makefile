@@ -1,5 +1,3 @@
-
-
 all:
 	make compile
 	sudo make install
@@ -23,3 +21,6 @@ clean:
 	make clean -C build
 clear:
 	make clean -C build
+
+eclipse:
+	../../scripts/prepareModulesEclipse

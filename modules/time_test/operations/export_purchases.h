@@ -28,7 +28,7 @@ namespace time_test{
 
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
-			char *wdays[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+			const char *wdays[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 			ss::system::UInt8 day;
 			ss::system::UInt total_amount;
 

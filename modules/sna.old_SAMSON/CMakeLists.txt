@@ -39,3 +39,7 @@ INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/sna)
 
 
 
+
+ENABLE_TESTING()
+ADD_SUBDIRECTORY(testing)     # Test module and ctest stuff
+

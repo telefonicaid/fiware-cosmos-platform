@@ -27,3 +27,7 @@ INSTALL(TARGETS ${MODULE_NAME} DESTINATION /opt/samson/modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
 
+
+ENABLE_TESTING()
+ADD_SUBDIRECTORY(testing)     # Test module and ctest stuff
+

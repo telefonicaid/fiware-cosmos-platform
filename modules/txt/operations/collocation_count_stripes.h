@@ -34,6 +34,7 @@ public:
 
 		if( inputs[0].num_kvs == 0 )
 		{
+			//OLM_T(LMT_User06, ("Empty partition of kvs"));
 			return;
 		}
 
@@ -44,29 +45,40 @@ public:
 		{
 			valueIn.parse(inputs[0].kvs[i]->value);
 
-			OLM_T(LMT_User01, ("Treating '%s' with %d collocations", key.value.c_str(), valueIn.colList_length));
+			//OLM_T(LMT_User06, ("Treating '%s' with %d collocations", key.value.c_str(), valueIn.colList_length));
 
 
 			//valueOut.colListSetLength(valueOut.colList_length + valueIn.colList_length);
-			OLM_T(LMT_User01, ("Checks %d collocs in valueOutTmp (size:%d)", valueIn.colList_length, valueOutTmp.size()));
-			for (size_t j = 0; (j < valueIn.colList_length); j++)
+			//OLM_T(LMT_User06, ("Checks %d collocs in valueOutTmp (size:%d)", valueIn.colList_length, valueOutTmp.size()));
+			for (int j = 0; (j < valueIn.colList_length); j++)
 			{
-				OLM_T(LMT_User01, ("Checks valueOutTmp for '%s' [%d]", valueIn.colList[j].word.value.c_str(), j));
+				if (valueIn.colList[j].count == 0)
+				{
+					continue;
+				}
+
+				//OLM_T(LMT_User06, ("Checks valueOutTmp for '%s' [%d]", valueIn.colList[j].word.value.c_str(), j));
 				bool encontrado = false;
 				for (size_t k = 0; (!encontrado && (k < valueOutTmp.size())); k++)
 				{
-					if (valueIn.colList[j].word.value.compare(valueOutTmp[k].word.value) == 0)
+					int ret;
+					if ((ret = valueIn.colList[j].word.value.compare(valueOutTmp[k].word.value)) == 0)
 					{
-						OLM_T(LMT_User01, ("Increment count"));
+						//OLM_T(LMT_User06, ("Increment count"));
 						valueOutTmp[k].count += valueIn.colList[j].count;
 						encontrado = true;
+					}
+					else if (ret < 0)
+					{
+						//OLM_T(LMT_User06, ("(ret(%d) = %s.compare(%s)) < 0)\n", ret, valueIn.colList[j].word.value.c_str(), valueOutTmp[k].word.value.c_str()));
+						break;
 					}
 				}
 				if (!encontrado)
 				{
-					OLM_T(LMT_User01, ("Adds '%s' to valueOutTmp", valueIn.colList[j].word.value.c_str()));
+					//OLM_T(LMT_User06, ("Adds '%s' to valueOutTmp", valueIn.colList[j].word.value.c_str()));
 					valueOutTmp.push_back(valueIn.colList[j]);
-					OLM_T(LMT_User01, ("New size: %d", valueOutTmp.size()));
+					//OLM_T(LMT_User06, ("New size: %d", valueOutTmp.size()));
 				}
 			}
 		}
@@ -78,7 +90,7 @@ public:
 				valueOut.colListAdd()->copyFrom(&(valueOutTmp[k]));
 			}
 		}
-		OLM_T(LMT_User01, ("Emit last key: '%s' with %d collocs (%d tmp)", key.value.c_str(), valueOut.colList_length, valueOutTmp.size()));
+		OLM_T(LMT_User06, ("Emit last key: '%s' with %d collocs (%d tmp)", key.value.c_str(), valueOut.colList_length, valueOutTmp.size()));
 		writer->emit( 0, &key , &valueOut );
 	}
 };

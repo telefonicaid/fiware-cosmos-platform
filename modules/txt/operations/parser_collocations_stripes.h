@@ -43,13 +43,13 @@ public:
 		std::string word;
 		std::vector<std::string>entorno;
 
-		OLM_T(LMT_User01, ("Process data: '%s'", data));
+		//OLM_T(LMT_User06, ("Process data: '%s'", data));
 
 		while (data[pos_begin] != '\0')
 		{
 			if (data[pos_begin] == '\266')
 			{
-				OLM_T(LMT_User01,("Filter parragraf at %d", pos_begin));
+				OLM_T(LMT_User06,("Filter parragraf at %d", pos_begin));
 				data[pos_begin] = '\n';
 			}
 			pos_begin++;
@@ -58,7 +58,7 @@ public:
 		while (data[pos_begin] != '\0')
 		{
 			entorno.clear();
-			OLM_T(LMT_User01, ("Process at %d line: '%s'", pos_begin, data+pos_begin));
+			//OLM_T(LMT_User06, ("Process at %d line: '%s'", pos_begin, data+pos_begin));
 			while (true)
 			{
 				while((data[pos_begin]!='\0') && ((data[pos_begin]==' ') || (data[pos_begin]=='\r') || (data[pos_begin]=='\n')))
@@ -67,7 +67,7 @@ public:
 				}
 				if ((data[pos_begin] == '\n') || (data[pos_begin] == '\0'))
 				{
-					OLM_T(LMT_User01, ("Breaks after blanks at pos_begin:%d", pos_begin));
+					//OLM_T(LMT_User06, ("Breaks after blanks at pos_begin:%d", pos_begin));
 					break;
 				}
 
@@ -104,7 +104,7 @@ public:
 						{
 							pos_begin = pos_end+1;
 						}
-						OLM_T(LMT_User01, ("Breaks after word at pos_begin:%d", pos_begin));
+						//OLM_T(LMT_User06, ("Breaks after word at pos_begin:%d", pos_begin));
 						break;
 					}
 				}
@@ -120,22 +120,21 @@ public:
 				pos_begin = pos_end+1;
 			}
 
-			int pos = 0;
 			std::vector<std::string>::iterator iter1 = entorno.begin();
 			while (iter1 < entorno.end())
 			{
 				//value.clear();
 				key = *iter1;
 
-				const char *cad1 = key.value.c_str();
-				OLM_T(LMT_User01, ("Works with '%s'", cad1));
+				//const char *cad1 = key.value.c_str();
+				//OLM_T(LMT_User06, ("Works with '%s'", cad1));
 
 				ss::txt::CountData item;
 				std::string vacio = "__UNK__";
 				item.word = vacio;
 				item.count = 0;
 				value.colListSetLength (2*tam_ventana);
-				size_t i;
+				int i;
 				for (i = 0; (i < (2*tam_ventana)); i++)
 				{
 					value.colList[i].copyFrom(&item);
@@ -147,32 +146,32 @@ public:
 				{
 					item.word = *iter2;
 					item.count = 1;
-					OLM_T(LMT_User01,("Add bw '%s' en [%d]", item.word.value.c_str(), i));
+					//OLM_T(LMT_User06,("Add bw '%s' en [%d]", item.word.value.c_str(), i));
 					value.colList[i].copyFrom(&item);
 				}
-				OLM_T(LMT_User01, ("Now let's look forward"));
+				//OLM_T(LMT_User06, ("Now let's look forward"));
 
 				iter2 = iter1+1;
-				for (size_t j = 0; ((j < tam_ventana) && (iter2 < entorno.end())); j++, i++, iter2++)
+				for (int j = 0; ((j < tam_ventana) && (iter2 < entorno.end())); j++, i++, iter2++)
 				{
 					item.word = *iter2;
 					item.count = 1;
-					OLM_T(LMT_User01,("Add fw '%s' en [%d]", item.word.value.c_str(), i));
+					//OLM_T(LMT_User06,("Add fw '%s' en [%d]", item.word.value.c_str(), i));
 					value.colList[i].copyFrom(&item);
 				}
 
 
-				OLM_T(LMT_User01, ("Emit '%s'", cad1));
+				//OLM_T(LMT_User06, ("Emit '%s'", cad1));
 				writer->emit(0, &key, &value);
 				iter1++;
 			}
 			if ((data[pos_begin] != '\0') && ((data[pos_begin] != '\n') || (data[pos_begin+1] != '\0')))
 			{
-				OLM_T(LMT_User01, ("Finished with line at data[%d]:'%c'", pos_begin, data[pos_begin]));
+				OLM_T(LMT_User06, ("Finished with line at data[%d]:'%c'", pos_begin, data[pos_begin]));
 			}
 			else
 			{
-				OLM_T(LMT_User01, ("Finished with data at data[%d]:'%c'", pos_begin, data[pos_begin]));
+				OLM_T(LMT_User06, ("Finished with data at data[%d]:'%c'", pos_begin, data[pos_begin]));
 				return;
 			}
 		}

@@ -10,7 +10,7 @@ if [ -n "${CONTROLLER_IP:+x}" ]; then
                 if ! ps -C samsonSpawner > /dev/null
                 then
                         echo "Launching samsonSpawner" >> test_1_complete_stdout
-                        samsonSpawner  >> test_1_complete_stdout &
+                        samsonSpawner  >> test_1_complete_stdout 
                 else
                         echo "samsonSpawner already running" >> test_1_complete_stdout
                 fi

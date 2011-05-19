@@ -89,14 +89,13 @@ namespace txt{
 				pos_begin = pos_end+1;
 			}
 
-			int pos = 0;
 			std::vector<std::string>::iterator iter1 = entorno.begin();
 			while (iter1 < entorno.end())
 			{
 				std::vector<std::string>::iterator iter2 = iter1+1;
 				key.w1 = *iter1;
 				key2.w2 = *iter1;
-				for (size_t i = 0; ((i < tam_ventana) && (iter2 < entorno.end())); i++, iter2++)
+				for (int i = 0; ((i < tam_ventana) && (iter2 < entorno.end())); i++, iter2++)
 				{
 					key.w2 = *iter2;
 					key2.w1 = *iter2;

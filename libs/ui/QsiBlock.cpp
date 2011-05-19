@@ -142,22 +142,25 @@ Block::~Block()
 {
 	LM_T(LmtRemove, ("Destroying %s '%s'", typeName(), name));
 
+	if (w.vP)
+	{
+		LM_T(LmtRemove, ("Deleting proxied widget"));
+		// delete w.lineEdit;
+		w.vP = NULL;
+	}
+
 	if (gItemP)
 	{
 		LM_T(LmtRemove, ("Deleting gItemP"));
 		delete gItemP;
+		gItemP = NULL;
 	}
 
 	if (proxy)
 	{
 		LM_T(LmtRemove, ("Deleting proxy"));
 		delete proxy;
-	}
-
-	if (w.vP)
-	{
-		LM_T(LmtRemove, ("Deleting proxied widget"));
-		delete w.lineEdit;
+		proxy = NULL;
 	}
 }
 
@@ -277,7 +280,10 @@ void Block::align(Alignment::Type type, Base* master, int margin)
 void Block::hide(void)
 {
 	LM_T(LmtHide, ("Hiding %s '%s'", typeName(), name));
-	gItemP->setVisible(false);
+	if (gItemP != NULL)
+		gItemP->setVisible(false);
+	else if (proxy != NULL)
+		proxy->setVisible(false);
 }
 
 
@@ -319,7 +325,10 @@ void Block::showOthers(void)
 void Block::show(void)
 {
 	LM_T(LmtHide, ("Showing %s '%s'", typeName(), name));
-	gItemP->setVisible(true);
+	if (gItemP)
+		gItemP->setVisible(true);
+	else if (proxy)
+		proxy->setVisible(true);
 }
 
 
@@ -510,6 +519,11 @@ const char* Block::getText(void)
 {
 	if (type == Input)
 		return w.lineEdit->text().toStdString().c_str();
+	else if (type == SimpleText)
+	{
+		QGraphicsSimpleTextItem*  textItem = (QGraphicsSimpleTextItem*) gItemP;
+		return textItem->text().toStdString().c_str();
+	}		
 
 	LM_W(("Scene item of type '%s' cannot give away text ...", typeName()));
 	return NULL;

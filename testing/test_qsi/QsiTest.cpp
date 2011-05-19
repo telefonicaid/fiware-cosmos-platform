@@ -22,6 +22,7 @@
 #include "QsiExpandList.h"      // Qsi::ExpandList
 #include "QsiPopup.h"           // Qsi::Popup
 #include "QsiDialog.h"          // Qsi::Dialog
+#include "QsiInputLine.h"       // Qsi::InputLine
 
 
 
@@ -118,6 +119,7 @@ static Qsi::Block*       alignCenterButton;
 static Qsi::Block*       alignNoneButton;
 
 static Qsi::Block*       rectangle;
+static Qsi::InputLine*   inputLine;
 
 
 
@@ -386,6 +388,19 @@ static void userCallback(Qsi::Block* qbP, void* vP)
 
 /* ****************************************************************************
 *
+* inputLineFunc - 
+*/
+static void inputLineFunc(const char* nameV[], const char* inputV[])
+{
+	LM_M(("Got input from inputLine:"));
+	for (int ix = 0; nameV[ix] != NULL; ix++)
+		LM_M(("%s: %s", nameV[ix], inputV[ix]));
+}
+
+
+
+/* ****************************************************************************
+*
 * qsiSetup - 
 */
 static void qsiSetup(QWidget* mainWindow)
@@ -526,6 +541,12 @@ static void qsiSetup(QWidget* mainWindow)
 	// Rectangle
 	//
 	rectangle = (Qsi::Block*) mainBox->rectangleAdd("Rectangle", 400, 400, 300, 200, QColor(0xFF, 0xFF, 0xFF, 0x80), QColor(0, 0, 0, 0xFF), 3, buttonClicked, NULL);
+
+
+	//
+	// InputLine
+	//
+	inputLine = new Qsi::InputLine(mainBox, "Input Test", "", "OK", 400, 300, 10, 10, inputLineFunc);
 }
 
 

@@ -55,8 +55,10 @@ class Base
 	friend class Block;
 	friend class Box;
 
-private:
+public:
 	Box*       owner;    // the Box this qsi belongs to - used for callback on size changes (only?)
+
+private:
 	Type       type;     // the type of this QSI
 	bool       isBox;    // Is it a Box ot not ...
 	int        xInitial; // Initial X-position

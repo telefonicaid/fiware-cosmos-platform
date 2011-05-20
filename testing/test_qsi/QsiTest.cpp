@@ -95,9 +95,6 @@ static Qsi::Manager*     qsiManager = NULL;
 
 static Qsi::Box*         mainBox;
 
-static Qsi::Block*       inputP;
-static Qsi::Block*       inputOkButton;
-
 static Qsi::Block*       tableImageP;
 static Qsi::Block*       bigTableImageP;
 
@@ -264,8 +261,6 @@ static void buttonClicked(Qsi::Block* qbP, void* param)
 		userBox2->align(Qsi::Alignment::Center, user1->getOwner(), 20);
 	else if (qbP == alignNoneButton)
 		userBox2->unalign(user1->getOwner());
-	else if (qbP == inputOkButton)
-		LM_T(LmtInput, ("Input Test: '%s'", inputP->getText()));
 	else
 		LM_W(("No button found"));
 }
@@ -311,21 +306,16 @@ static void expand(Qsi::Block* qbP, void* vP)
 */
 static void dialog(Qsi::Block* qbP, void* vP)
 {
-	new Qsi::Dialog(qsiManager, "Testing MODAL Dialog", true);
-	qbP = NULL;
-	vP  = NULL;
-}
+	bool         modal = false;
+	char*        m     = (char*) vP;
+	const char*  title;
 
+	if (strcmp(m, "modal") == 0)
+		modal = true;
 
+	title = (modal == false)? "Testing Non-MODAL Dialog" : "Testing MODAL Dialog"; 
 
-/* ****************************************************************************
-*
-* dialog2 - 
-*/
-static void dialog2(Qsi::Block* qbP, void* vP)
-{
-	new Qsi::Dialog(qsiManager, "Testing Non-MODAL Dialog", false);
-	qbP = NULL;
+	new Qsi::Dialog(qsiManager, title, modal);
 	vP  = NULL;
 }
 
@@ -357,7 +347,8 @@ void inputDialogGo(char* texts[], char* results[])
 */
 static void inputDialog(Qsi::Block* qbP, void* vP)
 {
-	LM_M(("Testing InputDialog"));
+	bool   modal = false;
+	char*  m     = (char*) vP;
 
 	const char* texts[] = 
 	{
@@ -373,6 +364,9 @@ static void inputDialog(Qsi::Block* qbP, void* vP)
 	
 	inputDialogOutput = (char**) calloc(sizeof(texts) / sizeof(texts[0]), sizeof(char*));
 
+	if (strcmp(m, "modal") == 0)
+		modal = true;
+
 	new Qsi::InputDialog
 	(
 		qsiManager,
@@ -380,7 +374,7 @@ static void inputDialog(Qsi::Block* qbP, void* vP)
 		(char**) texts,
 		inputDialogOutput,
 		"Create User",
-		false,             // MODAL
+		modal,
 		inputDialogGo
 	);
 
@@ -489,14 +483,15 @@ static void qsiSetup(QWidget* mainWindow)
 
 	elist->menu(elistCallback, menuItem);
 
-	qsiManager->menuAdd("Alignment List",   alignmentList, mainBox);
-	qsiManager->menuAdd("Qsi List",         qsiList,       mainBox);
-	qsiManager->menuAdd("All Qsis",         qsiAllList,    mainBox);
-	qsiManager->menuAdd("Compress All",     compress,      NULL);
-	qsiManager->menuAdd("Expand All",       expand,        NULL);
-	qsiManager->menuAdd("Modal Dialog",     dialog,        NULL);
-	qsiManager->menuAdd("Non-modal Dialog", dialog2,       NULL);
-	qsiManager->menuAdd("Input Dialog",     inputDialog,   NULL);
+	qsiManager->menuAdd("Alignment List",          alignmentList, mainBox);
+	qsiManager->menuAdd("Qsi List",                qsiList,       mainBox);
+	qsiManager->menuAdd("All Qsis",                qsiAllList,    mainBox);
+	qsiManager->menuAdd("Compress All",            compress,      NULL);
+	qsiManager->menuAdd("Expand All",              expand,        NULL);
+	qsiManager->menuAdd("Modal Dialog",            dialog,        (void*) "modal");
+	qsiManager->menuAdd("Non-modal Dialog",        dialog,        (void*) "non-modal");
+	qsiManager->menuAdd("Modal Input Dialog",      inputDialog,   (void*) "modal");
+	qsiManager->menuAdd("Non-modal Input Dialog",  inputDialog,   (void*) "non-modal");
 
 	elist->setFrame(10);
 
@@ -549,18 +544,6 @@ static void qsiSetup(QWidget* mainWindow)
 
 	textButton->boxMoveSet(true);
 	
-	//
-	// Input
-	//
-	Qsi::Box* inputBox = (Qsi::Box*) mainBox->boxAdd("inputBox", 10, 650);
-
-	inputP             = (Qsi::Block*) inputBox->inputAdd("Input1",          "Input1",              0, 0, 200, 50);
-	inputOkButton      = (Qsi::Block*) inputBox->buttonAdd("Input1OK",       "OK",                  0, 0,  50, 25);
-
-	inputOkButton->align(Qsi::Alignment::East, inputP, 20);
-
-
-
 	//
 	// Small table
 	//

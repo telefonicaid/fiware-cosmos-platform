@@ -16,7 +16,7 @@
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
 
-#include "QsiFunction.h"        // Function, ModalFunction
+#include "QsiFunction.h"        // Function
 #include "QsiCallback.h"        // Callback
 #include "QsiBlock.h"           // Block
 #include "QsiBox.h"             // Box
@@ -323,7 +323,7 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		gItemP      = itemAt(point);
 		released    = lookup(gItemP);
 		
-		LM_T(LmtMousePress, ("released: %p, activeItem: %p", released, activeItem));
+		LM_T(LmtPress, ("Left Mouse Button released: %p, activeItem: %p", released, activeItem));
 
 		if ((released == activeItem) && (activeItem != NULL))
 		{
@@ -337,8 +337,7 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 					return;
 				}
 
-				LM_T(LmtModal, ("Modal is on for box %s but that's an ancestor of mine ...", modal->name));
-				modalFunc(modal, modalParam);
+				LM_T(LmtModal, ("Press & Release on %s '%s' - modal is on for box %s but that's an ancestor of mine ...", released->typeName(), released->name, modal->name));
 			}
 
 			if (released->type == Input)
@@ -355,7 +354,7 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			}
 		}
 		else
-			LM_T(LmtMousePress, ("Left Mouse Press on BACKGROUND"));
+		   LM_T(LmtMousePress, ("Left Mouse Press on BACKGROUND (gItemP: %p)", gItemP));
 	}
 	else if (pendingButton == Qt::MidButton)
 	{
@@ -363,10 +362,12 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		gItemP      = itemAt(point);
 		released    = lookup(gItemP);
 
+		LM_T(LmtPress, ("Mid Mouse Button released: %p, activeItem: %p", released, activeItem));
+
 		if (released != NULL)
 			LM_T(LmtMousePress, ("Mid Mouse Press on %s '%s'", released->typeName(), released->name));
 		else
-			LM_T(LmtMousePress, ("Mid Mouse Press on BACKGROUND"));
+			LM_T(LmtMousePress, ("Mid Mouse Press on BACKGROUND (gItemP: %p)", gItemP));
 	}
 	else if (pendingButton == Qt::RightButton)
 	{
@@ -374,10 +375,12 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		gItemP      = itemAt(point);
 		released    = lookup(gItemP);
 
+		LM_T(LmtPress, ("Right Mouse Button released: %p, activeItem: %p", released, activeItem));
+
 		if (released != NULL)
 			LM_T(LmtMousePress, ("Right Mouse Press on %s '%s'", released->typeName(), released->name));
 		else
-			LM_T(LmtMousePress, ("Right Mouse Press on BACKGROUND"));
+		   LM_T(LmtMousePress, ("Right Mouse Press on BACKGROUND (gItemP: %p)", gItemP));
 	}
 
 	pendingButton = Qt::NoButton;
@@ -743,26 +746,18 @@ void Manager::menuClear(void)
 *
 * grab - 
 */
-void Manager::grab(Base* base, ModalFunction func, void* param)
+void Manager::grab(Base* base)
 {
 	if (base == NULL)
 		LM_E(("Cannot grab with a NULL pointer!"));
 	else if (modal == NULL)
 	{
-		if (func == NULL)
-			LM_E(("Cannot pass a NULL function pointer to grab!"));
+		if (base->isBox == true)
+			modal = (Box*) base;
 		else
-		{
-			if (base->isBox == true)
-				modal = (Box*) base;
-			else
-				modal = base->owner;
-
-			LM_T(LmtModal, ("Set modal to %p", modal));
-
-			modalFunc  = func;
-			modalParam = param;
-		}
+			modal = base->owner;
+		
+		LM_T(LmtModal, ("Set modal to %p", modal));
 	}
 	else
 		LM_W(("Can't set %p as modal, modal is already set to %p", base, modal));
@@ -788,8 +783,6 @@ void Manager::ungrab(Box* box)
 		{
 			LM_T(LmtModal, ("ungrabbed using %p", modal));
 			modal      = NULL;
-			modalFunc  = NULL;
-			modalParam = NULL;
 		}
 	}
 }

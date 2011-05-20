@@ -17,6 +17,8 @@
 #include "QsiBlock.h"           // Block
 #include "QsiFrame.h"           // Frame
 #include "QsiExpandList.h"      // ExpandList
+#include "QsiDialog.h"          // Dialog
+#include "QsiInputDialog.h"     // InputDialog
 #include "QsiBox.h"             // Own interface
 
 
@@ -377,6 +379,10 @@ void Box::remove(Base* qbP, bool destroy)
 				delete (Box*) qbP;
 			else if (qbP->type == ExpandListItem)
 				delete (ExpandList*) qbP;
+			else if (qbP->type == InputDialogItem)
+				delete (InputDialog*) qbP;
+			else if (qbP->type == DialogItem)
+				delete (Dialog*) qbP;
 			else
 				delete (Block*) qbP;
 		}
@@ -950,14 +956,18 @@ Block* Box::lookup(QGraphicsItem* gItemP)
 		if (qsiVec[ix] == NULL)
 			continue;
 
-		if ((qsiVec[ix]->type == BoxItem) || (qsiVec[ix]->type == ExpandListItem))
+		// if (qsiVec[ix]->type == BoxItem) || (qsiVec[ix]->type == ExpandListItem))
+		if (qsiVec[ix]->isBox == true)
 		{
 			Box* boxP = (Box*) qsiVec[ix];
 
-			LM_T(LmtBlockLookup, ("Entering Box '%s' to lookup %p", boxP->name, gItemP));
+			LM_T(LmtBoxLookup, ("Entering Box '%s' to lookup %p (recursive call)", boxP->name, gItemP));
 			block = boxP->lookup(gItemP);
 			if (block != NULL)
+			{
+				LM_T(LmtFound, ("Found %s '%s' in box '%s'", block->typeName(), block->name, block->owner->name));
 				return block;
+			}
 		}
 		else
 		{
@@ -970,7 +980,7 @@ Block* Box::lookup(QGraphicsItem* gItemP)
 			LM_T(LmtBlockLookup, ("Comparing pressed gItem '%p' to %s '%s' gItem '%p'", gItemP, qbP->typeName(), qbP->name, qbP->gItemP));
 			if (qbP->gItemP == gItemP)
 			{
-				LM_T(LmtBlockLookup, ("Found gItem %s '%s' in box '%s'", qbP->typeName(), qbP->name, name));
+				LM_T(LmtFound, ("Found gItem %s '%s' in box '%s'", qbP->typeName(), qbP->name, name));
 				return qbP;
 			}
 
@@ -979,7 +989,7 @@ Block* Box::lookup(QGraphicsItem* gItemP)
 //			if (((long) gItemP) == (((long) qbP->proxy + 16))) // For 64 bit machines
 //			if (((long) gItemP) == (((long) qbP->proxy + 8)))  // For 32 bit machines
 			{
-				LM_T(LmtBlockLookup, ("Found proxy %s '%s' in box '%s'", qbP->typeName(), qbP->name, name));
+				LM_T(LmtFound, ("Found proxy %s '%s' in box '%s'", qbP->typeName(), qbP->name, name));
 				return qbP;
 			}
 		}

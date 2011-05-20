@@ -48,7 +48,7 @@ public:
 	int                   shadowY;
 
 public:
-	Dialog(Manager* _manager, const char* _title, bool modal);
+	Dialog(Manager* _manager, const char* _title, bool modal, bool final = true);
 	~Dialog();
 };
 

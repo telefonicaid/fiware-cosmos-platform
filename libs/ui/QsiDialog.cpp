@@ -36,29 +36,16 @@ static void ok(Block* qbP, void* param)
 
 /* ****************************************************************************
 *
-* modalOk - 
-*/
-static void modalOk(Box* qbP, void* param)
-{
-	Dialog* dialog = (Dialog*) param;
-
-	dialog->manager->box->remove(dialog, false);
-	
-	delete dialog;
-}
-
-
-
-/* ****************************************************************************
-*
 * Constructor - 
 */
-Dialog::Dialog(Manager* _manager, const char* _title, bool modal) : Box(_manager, NULL, _title, 0, 0)
+Dialog::Dialog(Manager* _manager, const char* _title, bool modal, bool final) : Box(_manager, NULL, _title, 0, 0)
 {
 	int wx;
 	int wy;
 	int wwidth;
 	int wheight;
+
+	this->typeSet(DialogItem);
 
 	borderWidth  = 3;
 	shadowX      = 10;
@@ -91,12 +78,13 @@ Dialog::Dialog(Manager* _manager, const char* _title, bool modal) : Box(_manager
 	
 	title->moveRelative((wwidth - tw) / 2, th + 5);
 
-	if (modal)
-		manager->grab(winBox, modalOk, this);
-	else
+	if (final)
 	{
 		manager->box->add(this);
 		manager->siConnect(win, ok, this);
+
+		if (modal)
+			manager->grab(winBox);
 	}
 
 	shadow->gItemP->setZValue(0.6);

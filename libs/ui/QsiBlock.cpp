@@ -73,6 +73,10 @@ Block::Block
 		gItemP = manager->addLine(0, 0, width, height);
 		break;
 
+	case Rectangle:
+		gItemP = manager->addRect(0, 0, width, height);
+		break;
+
 	case SimpleText:
 		gItemP = manager->addSimpleText(txt);
 		break;
@@ -107,15 +111,12 @@ Block::Block
 		proxy      = manager->addWidget(w.lineEdit);
 		break;
 
-	case Rectangle:
-		gItemP = manager->addRect(0, 0, width, height);
-		break;
-
 	case BoxItem:
-		LM_X(1, ("Cannot create a Box ..."));
-
 	case ExpandListItem:
-		LM_X(1, ("Please use ExpandList"));
+	case InputLineItem:
+	case DialogItem:
+	case InputDialogItem:
+		LM_X(1, ("Cannot create a '%s' - not a Qsi::Block", typeName(type)));
 	}
 
 	if (width == -1)
@@ -414,10 +415,11 @@ int Block::geometry(int* xP, int* yP, int* widthP, int* heightP)
 		break;
 
 	case BoxItem:
-		LM_X(1, ("Cannot be a Box!"));
-
 	case ExpandListItem:
-		LM_X(1, ("Cannot be an ExpandList:!"));
+	case InputLineItem:
+	case DialogItem:
+	case InputDialogItem:
+		LM_X(1, ("Cannot get here - not a block! (type: '%s')", typeName(type)));
 	}
 
 	qreal rx;

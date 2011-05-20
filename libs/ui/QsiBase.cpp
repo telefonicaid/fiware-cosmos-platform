@@ -74,9 +74,9 @@ Box* Base::getOwner(void)
 *
 * typeName - 
 */
-const char* Base::typeName(void)
+const char* Base::typeName(Type typ)
 {
-	switch (type)
+	switch (typ)
 	{
 	case SimpleText:       return "SimpleText";
 	case Line:             return "Line";
@@ -85,11 +85,26 @@ const char* Base::typeName(void)
 	case Button:           return "Button";
 	case Input:            return "Input";
 	case Rectangle:        return "Rectangle";
+
 	case BoxItem:          return "Box";
 	case ExpandListItem:   return "ExpandList";
+	case InputLineItem:    return "InputLine";
+	case DialogItem:       return "Dialog";
+	case InputDialogItem:  return "InputDialog";
 	}
 
 	return "Unknown Type";
+}
+
+
+
+/* ****************************************************************************
+*
+* typeName - 
+*/
+const char* Base::typeName(void)
+{
+	return typeName(type);
 }
 
 

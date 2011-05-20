@@ -13,6 +13,10 @@
 
 
 
+#define LmtBlockLookup        100
+#define LmtBoxLookup          101
+#define LmtFound              102
+
 #define LmtImage              150
 #define LmtMenu               151
 #define LmtMouse              152
@@ -26,13 +30,13 @@
 #define LmtAlignList          160
 #define LmtSizeChange         161
 #define LmtMousePress         162
-#define LmtBlockLookup        163
+#define LmtPress              163  /**/
 #define LmtHide               164
 #define LmtRemove             165
 #define LmtQsiList            166
 #define LmtFrame              167
 #define LmtExpandList         168
-#define LmtPopup              169
+#define LmtVacant             169
 #define LmtModal              170
 #define LmtFocus              171
 #define LmtInputDialog        172

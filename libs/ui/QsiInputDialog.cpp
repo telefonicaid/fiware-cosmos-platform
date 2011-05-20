@@ -24,11 +24,13 @@ namespace Qsi
 
 /* ****************************************************************************
 *
-* pressed - 
+* donePressed - 
 */
-static void pressed(Block* wbP, void* vP)
+static void donePressed(Block* wbP, void* vP)
 {
 	InputDialog* idialog = (InputDialog*) vP;
+
+	LM_M(("****************** DONE PRESSED !!!"));
 
 	if (idialog->callback)
 	{
@@ -53,8 +55,27 @@ static void pressed(Block* wbP, void* vP)
 		else
 			LM_T(LmtInputDialog, ("NULL callback ..."));
 
+		idialog->manager->ungrab(idialog->winBox);
+		idialog->manager->box->remove(idialog, false);
 		delete idialog;
 	}
+}
+
+
+
+/* ****************************************************************************
+*
+* cancel - 
+*/
+static void cancel(Block* qbP, void* param)
+{
+	InputDialog* idialog = (InputDialog*) param;
+
+	LM_M(("****************** WINBOX PRESSED - CANCEL !!!"));
+
+	idialog->manager->ungrab(idialog->winBox);
+	idialog->manager->box->remove(idialog, false);
+	delete idialog;
 }
 
 
@@ -64,11 +85,13 @@ static void pressed(Block* wbP, void* vP)
 * InputDialog Constructor - 
 */
 InputDialog::InputDialog(Manager* _manager, const char* _title, char* inputTitle[], char** _output, const char* buttonText, bool modal, InputReturnFunction _callback) :
-Dialog(_manager, _title, modal)
+Dialog(_manager, _title, modal, false)
 {
 	int ix;
 	int tx, ty, tw, th;
 	int wMax = 0;
+
+	this->typeSet(InputDialogItem);
 
 	output = _output;
 	
@@ -112,7 +135,7 @@ Dialog(_manager, _title, modal)
 											winBox->height() - shadowY - buttonHeight - 2 * borderWidth,
 											winBox->width() - 2 * borderWidth - shadowX,
 											buttonHeight,
-											pressed, this);
+											donePressed, this);
 	doneButton->setZValue(0.71);
 
 	LM_T(LmtInputDialog, ("doneButton width: %d, text: '%s'", winBox->width(), buttonText));
@@ -120,6 +143,14 @@ Dialog(_manager, _title, modal)
 
 	LM_M(("Showing QsiInputDialog::winBox"));
 	winBox->qsiShow("QsiInputDialog Made", true);
+
+	//
+	// Connecting dialog window background to CANCEL, using the 'cancel' function
+	//
+	manager->siConnect(win, cancel, this);
+
+	if (modal)
+		manager->grab(winBox);
 }
 
 

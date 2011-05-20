@@ -55,7 +55,10 @@ typedef enum Type
 	Rectangle,
 
 	BoxItem,
-	ExpandListItem
+	ExpandListItem,
+	InputLineItem,
+	DialogItem,
+	InputDialogItem
 } Type;
 
 
@@ -106,6 +109,7 @@ public:
 
 	Box*          getOwner(void);
 	const char*   typeName(void);
+	const char*   typeName(Type type);
 	void          typeSet(Type _type);
 
 	bool          isAncestor(Box* qbP);

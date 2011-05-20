@@ -64,6 +64,8 @@ InputLine::InputLine
 	InputReturnFunction    onClick
 ) : Box(owner->manager, owner, _title, x, y)
 {
+	this->typeSet(InputLineItem);
+
 	title   = (Block*) textAdd("InputLineTitle",    _title,      0, 0);
 	input   = (Block*) inputAdd("InputLineInput",   _initInput,  0, 0);
 	button  = NULL;

@@ -30,7 +30,7 @@ static void donePressed(Block* wbP, void* vP)
 {
 	InputDialog* idialog = (InputDialog*) vP;
 
-	LM_M(("****************** DONE PRESSED !!!"));
+	LM_T(LmtInputDialog, ("****************** DONE PRESSED !!!"));
 
 	if (idialog->callback)
 	{
@@ -71,7 +71,13 @@ static void cancel(Block* qbP, void* param)
 {
 	InputDialog* idialog = (InputDialog*) param;
 
-	LM_M(("****************** WINBOX PRESSED - CANCEL !!!"));
+	LM_T(LmtInputDialog, ("****************** WINBOX %p PRESSED - CANCEL !!!", idialog));
+
+	if (idialog == NULL)
+	{
+		LM_W(("NULL InputDialog - what the fuck happened ?!!!"));
+		return;
+	}
 
 	idialog->manager->ungrab(idialog->winBox);
 	idialog->manager->box->remove(idialog, false);
@@ -127,6 +133,9 @@ Dialog(_manager, _title, modal, false)
 		gy = point.y();
 		
 		input[ix]->input->moveAbsolute(gx + wMax + 30, gy);
+
+		input[ix]->title->setMovable(false);
+		input[ix]->input->setMovable(false);
 	}
 	
 	int buttonHeight = 50;
@@ -137,11 +146,11 @@ Dialog(_manager, _title, modal, false)
 											buttonHeight,
 											donePressed, this);
 	doneButton->setZValue(0.71);
+	doneButton->setMovable(false);
 
 	LM_T(LmtInputDialog, ("doneButton width: %d, text: '%s'", winBox->width(), buttonText));
 	callback = _callback;
 
-	LM_M(("Showing QsiInputDialog::winBox"));
 	winBox->qsiShow("QsiInputDialog Made", true);
 
 	//
@@ -161,10 +170,10 @@ Dialog(_manager, _title, modal, false)
 */
 InputDialog::~InputDialog()
 {
-	LM_M(("deleting %d inputs", inputs));
+	LM_T(LmtDelete, ("deleting %d inputs", inputs));
 	for (int ix = 0; ix < inputs; ix++)
 	{
-		LM_M(("deleting input %d", ix));
+		LM_T(LmtDelete, ("deleting input %d", ix));
 		delete input[ix];
 		input[ix] = NULL;
 	}

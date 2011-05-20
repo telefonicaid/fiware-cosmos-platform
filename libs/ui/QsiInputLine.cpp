@@ -64,6 +64,9 @@ InputLine::InputLine
 	InputReturnFunction    onClick
 ) : Box(owner->manager, owner, _title, x, y)
 {
+	int tx, ty, tw, th;
+	int ix, iy, iw, ih;
+
 	this->typeSet(InputLineItem);
 
 	title   = (Block*) textAdd("InputLineTitle",    _title,      0, 0);
@@ -72,6 +75,11 @@ InputLine::InputLine
 
 	input->align(Alignment::East, title, inputMargin);
 	callback = onClick;
+
+	title->geometry(&tx, &ty, &tw, &th);
+	input->geometry(&ix, &iy, &iw, &ih);
+
+	title->moveRelative(0, (ih - th) / 2);
 
 	owner->add(this);
 
@@ -82,8 +90,8 @@ InputLine::InputLine
 	{
 		button  = (Block*) buttonAdd("InputLineButton", _buttonText, 0, 0, -1, -1, buttonCallback, this);
 
+		LM_T(LmtInputLine, ("Aligning InputLineButton to 'input' with margin %d", buttonMargin));
 		button->align(Alignment::East, input, buttonMargin);
-
 		button->boxMoveSet(true);
 	}
 }
@@ -96,17 +104,17 @@ InputLine::InputLine
 */
 InputLine::~InputLine()
 {
-	LM_M(("In destructor"));
+	LM_T(LmtDelete, ("In destructor"));
 
 	owner->remove(this, false);
 	delete title;
 	delete input;
 
-	LM_M(("Deleting button?"));
+	LM_T(LmtDelete, ("Deleting button?"));
 	if (button)
 		delete button;
 
-	LM_M(("From destructor"));
+	LM_T(LmtDelete, ("From destructor"));
 }
 
 

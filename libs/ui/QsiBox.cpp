@@ -53,16 +53,15 @@ Box::Box(Manager* manager, Box* owner, const char* name, int x, int y) : Base(ow
 	this->manager = manager;
 	type          = BoxItem;
 
-	this->x = xInitial;
-	this->y = yInitial;
+	this->x       = xInitial;
+	this->y       = yInitial;
 
-	frame     = NULL;
-	lastAdded = NULL;
-	isBox     = true;
+	frame         = NULL;
+	lastAdded     = NULL;
+	isBox         = true;
 
 	firstLine = (Block*) lineAdd("firstLine", 0, 0, 10, 0);
 	firstLine->setColor(0xFF, 0xFF, 0xFF, 0);
-
 }
 
 
@@ -134,8 +133,10 @@ void Box::moveAbsolute(int x, int y)
 */
 void Box::moveRelative(int x, int y)
 {
-	if (owner == NULL)
-		LM_RVE(("Not moving Toplevel Box!"));
+	int itemsMoved = 0;
+
+//	if (owner == NULL)
+//		LM_RVE(("Not moving Toplevel Box '%s'!", name));
 
 	for (int ix = 0; ix < qsiVecSize; ix++)
 	{
@@ -143,19 +144,18 @@ void Box::moveRelative(int x, int y)
 			continue;
 
 		qsiVec[ix]->moveRelative(x, y);
+		++itemsMoved;
 	}
 	
 	this->x += x;
 	this->y += y;
+	LM_T(LmtRelMove, ("Set x,y to { %d, %d } - moved %d items", x,y, itemsMoved));
 
 	if (frame)
 		frame->moveRelative(x, y);
 
 	LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
 	sizeChange(this);
-
-	if (frame != NULL)
-		LM_TODO(("Move the Frame too ..."));
 }
 
 
@@ -264,8 +264,8 @@ void Box::hide(void)
 		if (qsiVec[ix] == NULL)
 			continue;
 
-		LM_M(("Hiding %p (ix: %d/%d)", qsiVec[ix], ix, qsiVecSize));
-		LM_M(("Hiding %s '%s'", qsiVec[ix]->typeName(), qsiVec[ix]->name));
+		LM_T(LmtHide, ("Hiding %p (ix: %d/%d)", qsiVec[ix], ix, qsiVecSize));
+		LM_T(LmtHide, ("Hiding %s '%s'", qsiVec[ix]->typeName(), qsiVec[ix]->name));
 		qsiVec[ix]->hide();
 	}
 
@@ -311,8 +311,11 @@ void Box::initialMove(Base* qbP)
 	
 	absPos(&ax, &ay);
 
+	LM_T(LmtMove, ("----- INITIAL POSITIONING of newly created QSI -----"));
+	LM_T(LmtMove, ("------ FIRST - move ABSOLUTE to Box-origo { %d, %d } and then, RELATIVE move x:%d, y:%d", ax, ay, qbP->xInitial, qbP->yInitial));
 	qbP->moveAbsolute(ax, ay);
 	qbP->moveRelative(qbP->xInitial, qbP->yInitial);
+	LM_T(LmtMove, ("----- INITIAL POSITIONING of newly created QSI DONE -----"));
 }
 
 
@@ -333,8 +336,10 @@ void Box::add(Base* qbP)
 
 		qsiVec[ix] = qbP;
 
-		if ((qbP->type != BoxItem) && (qbP->type != ExpandListItem))
+		if (qbP->isBox == false)
 			initialMove(qbP);
+		else
+			LM_W(("Boxes get no initialMove (%s) ...", qbP->name));
 
 		LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
 		sizeChange(this);

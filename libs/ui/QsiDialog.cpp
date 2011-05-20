@@ -68,10 +68,14 @@ Dialog::Dialog(Manager* _manager, const char* _title, bool modal, bool final) : 
 	wheight = manager->winHeight / 2;
 
 	winBox = (Box*) boxAdd("dialogWinBox", wx, wy);
-	
+
 	shadow = (Block*) winBox->rectangleAdd("Shadow",   shadowX, shadowY, wwidth, wheight, QColor(0x00, 0x00, 0x00, 0xFF), QColor(0x00, 0x00, 0x00, 0xFF), 0);
 	win    = (Block*) winBox->rectangleAdd("DialogWin", 0,  0, wwidth, wheight, QColor(0xD0, 0xD0, 0xFF, 0xFF), QColor(0x00, 0x00, 0x20, 0xFF), borderWidth);
 	title  = (Block*) winBox->textAdd("DialogTitle", _title, 0, 0);
+
+	win->setMovable(false);
+	title->setMovable(false);
+	shadow->setMovable(false);
 
 	int tx, ty, tw, th;
 	title->geometry(&tx, &ty, &tw, &th);

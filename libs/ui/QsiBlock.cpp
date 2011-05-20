@@ -125,12 +125,15 @@ Block::Block
 		LM_T(LmtCreate, ("Created %s '%s' at { %d, %d } %d x %d (0x%x, 0x%x)", typeName(), name, x, y, width, height, proxy, gItemP));
 
 	//
-	// Setting initial posistion to Absolute 0, 0
+	// Setting initial position to Absolute 0, 0
 	//
+	LM_T(LmtMove, ("Setting initial position for %s '%s' to Absolute 0, 0", typeName(), name));
 	if (proxy != NULL)
 		proxy->setPos(0, 0);
 	else if (gItemP != NULL)
 		gItemP->setPos(0, 0);
+	else
+		LM_W(("No initial positioning possible - both proxy and gItemP are NULL !"));
 }
 
 
@@ -232,16 +235,18 @@ void Block::setSize(int width, int height)
 */
 void Block::moveRelative(int x, int y)
 {
-	LM_T(LmtMove, ("Moving %s '%s' %d pixels in X-axis and %d pixels in Y-axis. Old pos: { %d, %d }, New pos: { %d, %d }",
-				   typeName(), name, x, y, this->x, this->y, this->x + x, this->y + y));
+	LM_T(LmtRelMove, ("Moving %s '%s' %d pixels in X-axis and %d pixels in Y-axis. Old pos: { %d, %d }, New pos: { %d, %d }",
+					  typeName(), name, x, y, this->x, this->y, this->x + x, this->y + y));
 
 	this->x += x;
 	this->y += y;
 
 	if (gItemP)
 		gItemP->moveBy(x, y);
-	if (proxy)
+	else if (proxy)
 		proxy->moveBy(x, y);
+	else
+		LM_W(("No movement - both gItemP and proxy are NULL"));
 }
 
 
@@ -256,8 +261,10 @@ void Block::moveAbsolute(int x, int y)
 
 	if (gItemP)
 		gItemP->setPos(x, y);
-	if (proxy)
+	else if (proxy)
 		proxy->setPos(x, y);
+	else
+		LM_W(("No movement - both gItemP and proxy are NULL"));
 }
 
 
@@ -628,7 +635,7 @@ void Block::setFont(QFont font)
 */
 void Block::setZValue(float z)
 {
-	LM_M(("Setting Z-value of %s '%s' to %02f", typeName(), name, z));
+	LM_T(LmtZ, ("Setting Z-value of %s '%s' to %02f", typeName(), name, z));
 
 	if (gItemP)
 		gItemP->setZValue(z);

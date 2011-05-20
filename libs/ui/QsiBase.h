@@ -77,11 +77,12 @@ public:
 	Type       type;     // the type of this QSI
 	bool       isBox;    // Is it a Box ot not ...
 
-private:
 	int        xInitial; // Initial X-position
 	int        yInitial; // Initial Y-position
 	int        x;        // x offset within the Box
 	int        y;        // y offset within the Box
+
+private:
 	int        width;    // width  of a Block or total width  of all components in a Box
 	int        height;   // height of a Block or total height of all components in a Box
 	bool       visible;

@@ -17,28 +17,36 @@
 #define LmtBoxLookup          101
 #define LmtFound              102
 
-#define LmtImage              150
-#define LmtMenu               151
-#define LmtMouse              152
-#define LmtAbsMove            153
-#define LmtMove               154
-#define LmtCreate             155
-#define LmtGeometry           156
-#define LmtInput              157
-#define LmtAlign              158
-#define LmtAlignVector        159
-#define LmtAlignList          160
-#define LmtSizeChange         161
-#define LmtMousePress         162
-#define LmtPress              163  /**/
-#define LmtHide               164
-#define LmtRemove             165
-#define LmtQsiList            166
-#define LmtFrame              167
-#define LmtExpandList         168
-#define LmtVacant             169
-#define LmtModal              170
-#define LmtFocus              171
-#define LmtInputDialog        172
+#define LmtInput              110
+#define LmtImage              111
+#define LmtMenu               112
+#define LmtFrame              113
+#define LmtExpandList         114
+#define LmtInputDialog        115
+#define LmtInputLine          116
+
+#define LmtMove               150
+#define LmtAbsMove            151
+#define LmtRelMove            152
+
+#define LmtMouse              160
+#define LmtMousePress         161
+#define LmtPress              162  /**/
+#define LmtFocus              163
+
+#define LmtCreate             170
+#define LmtGeometry           171
+#define LmtAlign              172
+#define LmtAlignVector        173
+#define LmtAlignList          174
+#define LmtSizeChange         175
+
+#define LmtHide               181
+#define LmtRemove             182
+
+#define LmtDelete             191
+#define LmtQsiList            192
+#define LmtModal              193
+#define LmtZ                  194
 
 #endif

@@ -943,6 +943,27 @@ Base* Box::rectangleAdd(const char*  name, int x, int y, int width, int height, 
 
 /* ****************************************************************************
 *
+* comboAdd - 
+*/
+Base* Box::comboAdd(const char*  name, const char** option, int x, int y, int width, int height, Function func, void* param)
+{
+	Block* qbP = new Block(manager, this, Combo, name, NULL, x, y, width, height);
+
+	add(qbP);
+
+	if (func != NULL)
+		manager->siConnect(qbP, func, param);
+
+	for (int ix = 0; option[ix] != NULL; ix++)
+		qbP->w.combo->addItem(option[ix]);
+
+	return qbP;
+}
+
+
+
+/* ****************************************************************************
+*
 * lookup - 
 */
 Block* Box::lookup(QGraphicsItem* gItemP)

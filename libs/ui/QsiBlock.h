@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QFont>
+#include <QComboBox>
 
 #include "QsiFunction.h"        // Function
 #include "QsiAlignment.h"       // Alignment
@@ -39,10 +40,11 @@ class Manager;
 typedef union ProxiedWidget
 {
 	void*         vP;
-	QPushButton*  button;
-	QLabel*       label;
-	QLineEdit*    lineEdit;
 	QPixmap*      pixmap;
+
+	QPushButton*  button;
+	QLineEdit*    lineEdit;
+	QComboBox*    combo;
 } ProxiedWidget;
 
 

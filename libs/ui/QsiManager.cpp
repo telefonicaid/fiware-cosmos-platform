@@ -346,10 +346,17 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 				released->w.lineEdit->setFocus();
 			}
 
+			if (released->type == Combo)
+			{
+				LM_T(LmtFocus, ("%s '%s' takes focus", released->typeName(), released->name));
+				released->w.combo->setFocus();
+				released->w.combo->showPopup();
+			}
+
 			Callback* cb = itemCallbackLookup(activeItem);
 			if (cb != NULL)
 			{
-				LM_T(LmtMenu, ("Found menu callback (%p) for '%s', function at %p", cb, activeItem->name, cb->func));
+				LM_T(LmtMenu, ("Found callback (%p) for '%s', function at %p", cb, activeItem->name, cb->func));
 				cb->func(activeItem, cb->param);
 			}
 		}

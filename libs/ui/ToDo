@@ -32,57 +32,6 @@ o Connections between QsiBase that moves with the objects they're tied to.
 
 -------------------------------------------------------------------------------
 
-o Make QsiBox hava a thin frame around the entire box and a name for it :
+o QComboBox
 
-
-     /-- Box Name ---------------------\
-     |                                 |
-     |                                 |
-     |   Widget 1                      |
-     |                                 |
-     |   Widget 2                      |
-     |                                 |
-     |   Widget 3                      |
-     |                                 |
-     |   Widget 4                      |
-     |                                 |
-     \---------------------------------/
-    
-    Rounded edges is optional
-    User can pick color for the Box Background
-    By default I use Black with 80% transparency
-
--------------------------------------------------------------------------------
-
-o QsiPopup
-  - Primary user of the 'QsiBox Frame' 
-  - Will use a Box from { 0, 0 } to { MaxWidth, MaxHeight }
-      with 'QsiBox Frame' Black and 50% transparency
-  - Will be centrered in the window (QsiManager knows this)
-  - Many types of popups and many of them returning values for
-    Input boxes.
-
--------------------------------------------------------------------------------
-
-o Remove prefix ...
-  Qsi::QsiBase  to become Qsi::Base
-  Qsi::QsiBlock to become Qsi::Block
-  Qsi::QsiBox   to become Qsi::Box
-  etc.
-
--------------------------------------------------------------------------------
-
-o Create classes for all different QsiBlock Types:
-  - Qsi::Line
-  - Qsi::Input
-  - Qsi::Button
-
-  Create intermediate class Qsi::Proxy to be inherited by 
-  - Qsi::Input
-  - Qsi::Button
-  - etc.
-
-  Operator '==' to be overloaded (for those 8 bytes ...)
-
--------------------------------------------------------------------------------
-
+o 

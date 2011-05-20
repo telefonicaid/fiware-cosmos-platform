@@ -117,6 +117,7 @@ static Qsi::Block*       alignNoneButton;
 
 static Qsi::Block*       rectangle;
 static Qsi::InputLine*   inputLine;
+static 	Qsi::Block*      combo;
 
 
 
@@ -441,6 +442,20 @@ static void inputLineFunc(char** nameV, char** inputV)
 
 /* ****************************************************************************
 *
+* comboCallback - 
+*/
+static void comboCallback(Qsi::Block* qbP, void* vP)
+{
+	LM_M(("IN"));
+
+	qbP = NULL;
+	vP  = NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * qsiSetup - 
 */
 static void qsiSetup(QWidget* mainWindow)
@@ -576,6 +591,24 @@ static void qsiSetup(QWidget* mainWindow)
 	// InputLine
 	//
 	inputLine = new Qsi::InputLine(mainBox, "Input Test", "", "OK", 400, 300, 10, 10, inputLineFunc);
+
+
+	//
+	// Combo
+	//
+	const char* option[] =
+	{
+		"Red",
+		"Green",
+		"Blue",
+		"Yellow",
+		"Magenta",
+		"Cyan",
+		"Black",
+		NULL
+	};
+
+	combo = (Qsi::Block*) mainBox->comboAdd("Combo", option, 400, 700, -1, -1, comboCallback, NULL);
 }
 
 

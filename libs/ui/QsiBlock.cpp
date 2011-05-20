@@ -8,6 +8,7 @@
 *
 */
 #include <QFont>
+#include <QComboBox>
 
 #include "logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
@@ -92,11 +93,6 @@ Block::Block
 			scale(width, height);
 		break;
 
-	case Label:
-		w.label = new QLabel();
-		proxy   = manager->addWidget(w.label);
-		w.label->setText(txt);
-		break;
 
 	case Button:
 		w.button = new QPushButton();
@@ -109,6 +105,11 @@ Block::Block
 	case Input:
 		w.lineEdit = new QLineEdit();
 		proxy      = manager->addWidget(w.lineEdit);
+		break;
+
+	case Combo:
+		w.combo = new QComboBox();
+		proxy   = manager->addWidget(w.combo);
 		break;
 
 	case BoxItem:
@@ -416,8 +417,8 @@ int Block::geometry(int* xP, int* yP, int* widthP, int* heightP)
 		break;
 
 	case Input:
-	case Label:
 	case Button:
+	case Combo:
 		rect = proxy->boundingRect();
 		break;
 

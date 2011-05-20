@@ -46,13 +46,14 @@ class Box;
 
 typedef enum Type
 {
-	SimpleText,
-	Image,
-	Label,
-	Button,
-	Input,
 	Line,
 	Rectangle,
+	SimpleText,
+	Image,
+
+	Button,
+	Input,
+	Combo,
 
 	BoxItem,
 	ExpandListItem,

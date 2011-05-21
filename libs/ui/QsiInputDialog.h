@@ -41,9 +41,21 @@ public:
 	InputLine**          input;
 	int                  inputs;
 	char**               output;
+	Block*               combo;
 	InputReturnFunction  callback;
 
-	InputDialog(Manager* _manager, const char* _title, char* _inputTitle[], char** _output, const char* buttonText, bool modal, InputReturnFunction _callback);
+	InputDialog
+	(
+		Manager*     _manager,
+		const char*  _title,
+		char*        _inputTitle[],
+		char**       _output,
+		const char*  buttonText,
+		const char** comboContent,
+		bool         modal,
+		InputReturnFunction _callback
+	);
+
 	~InputDialog();
 };
 

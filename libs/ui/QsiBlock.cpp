@@ -105,6 +105,7 @@ Block::Block
 	case Input:
 		w.lineEdit = new QLineEdit();
 		proxy      = manager->addWidget(w.lineEdit);
+		w.lineEdit->setText(txt);
 		break;
 
 	case Combo:

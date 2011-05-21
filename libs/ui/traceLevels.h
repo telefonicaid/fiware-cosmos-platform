@@ -24,6 +24,7 @@
 #define LmtExpandList         114
 #define LmtInputDialog        115
 #define LmtInputLine          116
+#define LmtCombo              117
 
 #define LmtMove               150
 #define LmtAbsMove            151

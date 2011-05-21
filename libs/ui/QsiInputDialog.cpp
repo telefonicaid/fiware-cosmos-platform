@@ -29,23 +29,42 @@ namespace Qsi
 static void donePressed(Block* wbP, void* vP)
 {
 	InputDialog* idialog = (InputDialog*) vP;
+	int          ix;
 
 	LM_T(LmtInputDialog, ("****************** DONE PRESSED !!!"));
 
 	if (idialog->callback)
 	{
-		char** texts   = (char**) calloc(idialog->inputs + 1, sizeof(char*));
-		char** results = (char**) calloc(idialog->inputs + 1, sizeof(char*));
+		char** texts   = (char**) calloc(idialog->inputs + 2, sizeof(char*));
+		char** results = (char**) calloc(idialog->inputs + 2, sizeof(char*));
 
 		LM_T(LmtInputDialog, ("We have %d inputs", idialog->inputs));
 
-		for (int ix = 0; ix < idialog->inputs; ix++)
+		for (ix = 0; ix < idialog->inputs; ix++)
 		{
 			texts[ix] = strdup(idialog->input[ix]->title->getText());
 			results[ix] = strdup(idialog->input[ix]->input->getText());
 
 			LM_T(LmtInputDialog, ("%02d: %s: %s", ix, texts[ix], results[ix]));
 		}
+
+		LM_T(LmtInputDialog, ("Combo ..."));
+		texts[ix] = strdup("User Type");
+		if (idialog->combo != NULL)
+		{
+			QString content = idialog->combo->w.combo->currentText();
+
+			if (content != "")
+				results[ix] = strdup(content.toStdString().c_str());
+			else
+				results[ix] = NULL;
+		}
+		else
+			results[ix] = NULL;
+		LM_T(LmtInputDialog, ("Combo Result: '%s'", results[ix]));
+
+		texts[ix + 1]   = NULL;
+		results[ix + 1] = NULL;
 
 		if (idialog->callback != NULL)
 		{
@@ -85,13 +104,47 @@ static void cancel(Block* qbP, void* param)
 }
 
 
+#if 0
+/* ****************************************************************************
+*
+* lineCreator - 
+*
+*   I will need a 'TextCombo' Box first ...
+*
+*   InputLine | TEXT | Default Value | button text (optional)
+*   Combo     | TEXT | Value1 | Value2 | Value3 ...
+*
+*   Line      | WIDTH
+*   Rectangle | WIDTH | HEIGHT | FG Color | BG color
+*   Image     | PATH
+*   Button    | button text
+*   Input     | TEXT | Default Value
+*
+*/
+Base* lineCreator(char* info)
+{
+	char* objName;
+	char* 
+}
+#endif
+
+
 
 /* ****************************************************************************
 *
 * InputDialog Constructor - 
 */
-InputDialog::InputDialog(Manager* _manager, const char* _title, char* inputTitle[], char** _output, const char* buttonText, bool modal, InputReturnFunction _callback) :
-Dialog(_manager, _title, modal, false)
+InputDialog::InputDialog
+(
+	Manager*             _manager,
+	const char*          _title,
+	char*                inputTitle[],
+	char**               _output,
+	const char*          buttonText,
+	const char**         comboContent,
+	bool                 modal,
+	InputReturnFunction  _callback
+) : Dialog(_manager, _title, modal, false)
 {
 	int ix;
 	int tx, ty, tw, th;
@@ -99,19 +152,37 @@ Dialog(_manager, _title, modal, false)
 
 	this->typeSet(InputDialogItem);
 
-	output = _output;
-	
+	output   = _output;
+	callback = NULL;
+
 	inputs = 0;
     for (ix = 0; inputTitle[ix] != NULL; ix++)
 		++inputs;
 	input = (InputLine**) calloc(inputs, sizeof(InputLine*));
 
+	LM_T(LmtInputLine, ("Creating %d InputLines", inputs));
 	for (ix = 0; inputTitle[ix] != NULL; ix++)
 	{
-		LM_T(LmtInputDialog, ("Creating InputLine %d", ix));
-		input[ix] = new InputLine(winBox, inputTitle[ix], (const char*) NULL, (const char*) NULL, 20, 20);
-		input[ix]->setZValue(0.71);
+		char* txt;
+		char* value;
 
+		LM_T(LmtInputLine, ("inputTitle[%d]: '%s'", ix, inputTitle[ix]));
+		txt   = inputTitle[ix];
+		value = strstr(inputTitle[ix], "|");
+		if (value != NULL)
+		{
+			*value = 0;
+			value++;
+			if (*value == 0)
+				value = NULL;
+
+			LM_T(LmtInputLine, ("Found '|': txt: '%s', value: '%s'", txt, value));
+		}
+
+		LM_T(LmtInputDialog, ("Creating InputLine %d", ix));
+		input[ix] = new InputLine(winBox, txt, value, (const char*) NULL, 20, 20);
+		input[ix]->setZValue(0.71);
+		
 		input[ix]->title->geometry(&tx, &ty, &tw, &th);
 		wMax = MAX(wMax, tw);
 	}
@@ -126,7 +197,7 @@ Dialog(_manager, _title, modal, false)
 		QPointF point;
 		int gx, gy;
 		
-		input[ix]->title->moveRelative(20, 40 + ix * (th + 10));
+		input[ix]->title->moveRelative(20, 60 + ix * (th + 10));
 		
 		point = input[ix]->title->gItemP->pos();
 		gx = point.x();
@@ -138,6 +209,17 @@ Dialog(_manager, _title, modal, false)
 		input[ix]->input->setMovable(false);
 	}
 	
+	if (comboContent != NULL)
+	{
+		LM_T(LmtCombo, ("Adding combo box"));
+		combo = (Block*) winBox->comboAdd("userTypeCombo", comboContent, wMax + 70, 40);
+		combo->setZValue(0.72);
+		LM_T(LmtCombo, ("Combo box added"));
+	}
+	else
+		combo = NULL;
+	
+
 	int buttonHeight = 50;
 	doneButton = (Block*) winBox->buttonAdd("InputDialogButton", buttonText, 
 											borderWidth,
@@ -182,6 +264,12 @@ InputDialog::~InputDialog()
 	{
 		delete doneButton;
 		doneButton = NULL;
+	}
+
+	if (combo != NULL)
+	{
+		delete combo;
+		combo = NULL;
 	}
 }
 

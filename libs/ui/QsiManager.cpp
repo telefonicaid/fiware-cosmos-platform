@@ -266,6 +266,20 @@ void Manager::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		gItemP      = itemAt(pressPoint);
 		activeItem  = lookup(gItemP);
 
+		if (gItemP == sceneLayer0)
+			LM_T(LmtMousePress, ("PRESS ON sceneLayer0"));
+		else if (gItemP == sceneLayer1)
+			LM_T(LmtMousePress, ("PRESS ON sceneLayer1"));
+		else if (activeItem != NULL)
+			LM_T(LmtMousePress, ("PRESS ON %s '%s'", activeItem->typeName(), activeItem->name));
+		else
+		{
+			LM_T(LmtMousePress, ("PRESS ON Unidentified Graphics Item %p - giving it focus", gItemP));
+			gItemP->setFocus();
+			QGraphicsScene::mousePressEvent(mouseEvent);
+			return;
+		}
+
 		if (activeItem != NULL)
 			LM_T(LmtMousePress, ("Left Mouse Press on '%s' - looking up callback", activeItem->name));
 		else
@@ -308,6 +322,8 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 	QGraphicsItem*      gItemP;
 	Block*              released;
 
+	update(0, 0, totalWidth, totalHeight);
+
 	LM_T(LmtMousePress, ("Some Mouse button released"));
 
 	if (moved == true)
@@ -325,6 +341,20 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		
 		LM_T(LmtPress, ("Left Mouse Button released: %p, activeItem: %p", released, activeItem));
 
+		if (gItemP == sceneLayer0)
+			LM_T(LmtMousePress, ("PRESS ON sceneLayer0"));
+		else if (gItemP == sceneLayer1)
+			LM_T(LmtMousePress, ("PRESS ON sceneLayer1"));
+		else if (activeItem != NULL)
+			LM_T(LmtMousePress, ("PRESS ON %s '%s'", activeItem->typeName(), activeItem->name));
+		else
+		{
+			LM_T(LmtMousePress, ("PRESS ON Unidentified Graphics Item %p - giving it focus", gItemP));
+			gItemP->setFocus();
+			QGraphicsScene::mouseReleaseEvent(mouseEvent);
+			return;
+		}
+
 		if ((released == activeItem) && (activeItem != NULL))
 		{
 			LM_T(LmtMousePress, ("Left Mouse Press & Release on '%s' - looking up callback", activeItem->name));
@@ -337,7 +367,8 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 					return;
 				}
 
-				LM_T(LmtModal, ("Press & Release on %s '%s' - modal is on for box %s but that's an ancestor of mine ...", released->typeName(), released->name, modal->name));
+				LM_T(LmtModal, ("Press & Release on %s '%s' - modal is on for box %s but that's an ancestor of mine ...",
+								released->typeName(), released->name, modal->name));
 			}
 
 			if (released->type == Input)

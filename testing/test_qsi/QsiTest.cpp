@@ -368,6 +368,14 @@ static void inputDialog(Qsi::Block* qbP, void* vP)
 	if (strcmp(m, "modal") == 0)
 		modal = true;
 
+	const char* comboContent[] = 
+	{
+		(char*) "Normal User",
+		(char*) "Owner",
+		(char*) "Expert User",
+		(char*) "No User"
+	};
+
 	new Qsi::InputDialog
 	(
 		qsiManager,
@@ -375,6 +383,7 @@ static void inputDialog(Qsi::Block* qbP, void* vP)
 		(char**) texts,
 		inputDialogOutput,
 		"Create User",
+		comboContent,
 		modal,
 		inputDialogGo
 	);

@@ -40,7 +40,8 @@
 #define LmtAlign              172
 #define LmtAlignVector        173
 #define LmtAlignList          174
-#define LmtSizeChange         175
+#define LmtBoxAlign           175
+#define LmtSizeChange         176
 
 #define LmtHide               181
 #define LmtRemove             182

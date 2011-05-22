@@ -58,6 +58,7 @@ Box::Box(Manager* manager, Box* owner, const char* name, int x, int y) : Base(ow
 
 	frame         = NULL;
 	lastAdded     = NULL;
+	lastBox       = NULL;
 	isBox         = true;
 
 	firstLine = (Block*) lineAdd("firstLine", 0, 0, 10, 0);
@@ -828,12 +829,29 @@ void Box::sizeChange(Base* qbP)
 *
 * boxAdd - 
 */
-Base* Box::boxAdd(const char* name, int x, int y)
+Base* Box::boxAdd(const char* boxName, int x, int y)
 {
-	Box* box = new Box(manager, this, name, x, y);
+	Box* newbox = new Box(manager, this, boxName, x, y);
 
-	add(box);
-	return box;
+	add(newbox);
+
+	if (y == -1)
+	{
+		if (lastBox != NULL)
+		{
+			LM_T(LmtBoxAlign, ("Aligning Box '%s' to '%s', South and with 20 as margin", boxName, lastBox->name));
+			align(newbox, Alignment::South, lastBox, 20);
+		}
+		else
+		{
+			LM_T(LmtBoxAlign, ("First Box '%s' in box '%s' - moving it 51 to south", boxName, name));
+			newbox->moveRelative(0, 51);
+		}
+	}
+
+	lastBox = newbox;
+
+	return lastBox;
 }
 
 

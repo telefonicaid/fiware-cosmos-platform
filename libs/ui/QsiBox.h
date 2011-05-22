@@ -42,6 +42,7 @@ class Box : public Base
 public:
 	Manager*     manager;
 	Block*       firstLine;
+	Box*         lastBox;
 
 private:
 	Base**       qsiVec;

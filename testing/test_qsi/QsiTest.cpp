@@ -117,7 +117,7 @@ static Qsi::Block*       alignNoneButton;
 
 static Qsi::Block*       rectangle;
 static Qsi::InputLine*   inputLine;
-static 	Qsi::Block*      combo;
+static Qsi::Block*       combo;
 
 
 

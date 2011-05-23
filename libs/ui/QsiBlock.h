@@ -110,6 +110,7 @@ public:
 	void         setItalic(bool onoff);
 
 	void         setZValue(float z);
+	float        getZValue(void);
 };
 
 }

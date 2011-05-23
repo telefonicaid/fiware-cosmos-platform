@@ -645,4 +645,25 @@ void Block::setZValue(float z)
 		proxy->setZValue(z);
 }
 
+
+
+/* ****************************************************************************
+*
+* getZValue - 
+*/
+float Block::getZValue(void)
+{
+	float z;
+
+	if (gItemP)
+		z = gItemP->zValue();
+	else if (proxy)
+		z = proxy->zValue();
+	else 
+		z = -1;
+
+	LM_T(LmtZ, ("Got Z-value of %s '%s': %02f", typeName(), name, z));
+	return z;
+}
+
 }

@@ -373,16 +373,39 @@ EndpointManager::~EndpointManager()
 
 /* ****************************************************************************
 *
-* endpointRunInThread - 
+* readerThread - 
 */
-static void* endpointRunInThread(void* vP)
+static void* readerThread(void* vP)
 {
 	Endpoint2* ep = (Endpoint2*) vP;
 
+	LM_M(("reader thread for endpoint %s@%s is running", ep->nameGet(), ep->hostGet()->name));
 	ep->run();
 
 	ep->stateSet(Endpoint2::ScheduledForRemoval);
 	LM_W(("Endpoint '%s@%s' is back from Endpoint2::run", ep->nameGet(), ep->hostGet()->name));
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* writerThread - 
+*/
+static void* writerThread(void* vP)
+{
+	Endpoint2* ep  = (Endpoint2*) vP;
+	int        wFd = ep->wFdGet();
+
+	LM_M(("writer thread for endpoint %s@%s is running (wFd: %d))", ep->nameGet(), ep->hostGet()->name, wFd));
+	while (1)
+	{
+		// Await message from father,
+		// read the message, and ...
+		// forward the message to 'wFd'
+	}
 
 	return NULL;
 }
@@ -403,19 +426,31 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 		endpoint[ix] = ep;
 		LM_M(("Added endpoint %d. type:%s, id:%d, name:%s, host:%s", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname()));
 
-		if ((ep->type == Endpoint2::Controller) || (ep->type == Endpoint2::Worker) || (ep->type == Endpoint2::Delilah))
+		if ((ep->host != hostMgr->localhostP) && (ep->type != me->type))
 		{
-			int        s;
-			pthread_t  tid;
-
-			LM_M(("Creating thread for endpoint %s@%s", ep->name, ep->host->name));
-			if ((s = pthread_create(&tid, NULL, endpointRunInThread, ep)) != 0)
+			if ((ep->type == Endpoint2::Controller) || (ep->type == Endpoint2::Worker) || (ep->type == Endpoint2::Delilah))
 			{
-				LM_E(("pthread_create returned %d for %s@%s", s, ep->name, ep->host->name));
-				remove(ep);
-				return NULL;
+				int        s;
+				pthread_t  tid;
+
+				if ((s = pthread_create(&tid, NULL, readerThread, ep)) != 0)
+				{
+					LM_E(("pthread_create returned %d for %s@%s", s, ep->name, ep->host->name));
+					remove(ep);
+					return NULL;
+				}
+
+				LM_M(("Creating writer thread for endpoint %s@%s", ep->name, ep->host->name));
+				if ((s = pthread_create(&tid, NULL, writerThread, ep)) != 0)
+				{
+					LM_E(("pthread_create returned %d for %s@%s", s, ep->name, ep->host->name));
+					remove(ep);
+					return NULL;
+				}
 			}
 		}
+		else
+			LM_M(("Not creating threads for %s in host %s", ep->typeName(), hostMgr->localhostP->name));
 
 		show("Added an Endpoint");
 		return ep;

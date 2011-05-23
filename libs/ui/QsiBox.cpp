@@ -1055,7 +1055,7 @@ void Box::qsiShow(const char* why, bool force)
 		LM_F((""));
 		LM_F(("------------------------ %s: Box Content (%s) ------------------------", name, why));
 		LM_F((""));
-		LM_F(("No  %-20s %-20s %-5s %-5s  %-20s", "Name", "Type", "x", "y", "QGraphicsItem"));
+		LM_F(("No  %-20s %-20s %-5s %-5s  Z       %-20s", "Name", "Type", "x", "y", "QGraphicsItem"));
 		LM_F(("----------------------------------------------------------------------------------------------------"));
 		for (int ix = 0; ix < qsiVecSize; ix++)
 		{
@@ -1064,9 +1064,16 @@ void Box::qsiShow(const char* why, bool force)
 
 			Block* block = (Block*) qsiVec[ix];
 			if (qsiVec[ix]->type == BoxItem)
-				LM_F(("%02d  %-20s %-20s %-5d %-5d", ix, qsiVec[ix]->name, qsiVec[ix]->typeName(), qsiVec[ix]->xGet(), qsiVec[ix]->yGet()));
+				LM_F(("%02d  %-20s %-20s %-5d %-5d  -", ix, qsiVec[ix]->name, qsiVec[ix]->typeName(), qsiVec[ix]->xGet(), qsiVec[ix]->yGet()));
 			else
-				LM_F(("%02d  %-20s %-20s %-5d %-5d  %p", ix, qsiVec[ix]->name, qsiVec[ix]->typeName(), qsiVec[ix]->xGet(), qsiVec[ix]->yGet(), (block->proxy != NULL)? block->proxy : block->gItemP));
+			   LM_F(("%02d  %-20s %-20s %-5d %-5d  %.4f  %p",
+					 ix,
+					 qsiVec[ix]->name,
+					 qsiVec[ix]->typeName(),
+					 qsiVec[ix]->xGet(),
+					 qsiVec[ix]->yGet(),
+					 ((Block*) qsiVec[ix])->getZValue(),
+					 (block->proxy != NULL)? block->proxy : block->gItemP));
 		}
 		LM_F(("----------------------------------------------------------------------------------------------------"));
 		LM_F((""));

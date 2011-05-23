@@ -247,6 +247,7 @@ void Manager::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEvent)
 
 
 
+static float oldZ = -1;
 /* ****************************************************************************
 *
 * mousePressEvent - 
@@ -266,12 +267,25 @@ void Manager::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		gItemP      = itemAt(pressPoint);
 		activeItem  = lookup(gItemP);
 
+		if (activeItem)
+		{
+			oldZ = activeItem->getZValue();
+			activeItem->setZValue(0.99);
+		}
+		else
+			oldZ = -1;
+
 		if (gItemP == sceneLayer0)
 			LM_T(LmtMousePress, ("PRESS ON sceneLayer0"));
 		else if (gItemP == sceneLayer1)
 			LM_T(LmtMousePress, ("PRESS ON sceneLayer1"));
 		else if (activeItem != NULL)
+		{
+			if (activeItem->w.vP != NULL)
+				QGraphicsScene::mousePressEvent(mouseEvent);
+
 			LM_T(LmtMousePress, ("PRESS ON %s '%s'", activeItem->typeName(), activeItem->name));
+		}
 		else
 		{
 			LM_T(LmtMousePress, ("PRESS ON Unidentified Graphics Item %p - giving it focus", gItemP));
@@ -339,6 +353,10 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		gItemP      = itemAt(point);
 		released    = lookup(gItemP);
 		
+		if (oldZ != -1)
+			activeItem->setZValue(oldZ);
+		oldZ = -1;
+
 		LM_T(LmtPress, ("Left Mouse Button released: %p, activeItem: %p", released, activeItem));
 
 		if (gItemP == sceneLayer0)
@@ -346,7 +364,11 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		else if (gItemP == sceneLayer1)
 			LM_T(LmtMousePress, ("PRESS ON sceneLayer1"));
 		else if (activeItem != NULL)
+		{
+			if (activeItem->w.vP != NULL)
+				QGraphicsScene::mousePressEvent(mouseEvent);
 			LM_T(LmtMousePress, ("PRESS ON %s '%s'", activeItem->typeName(), activeItem->name));
+		}
 		else
 		{
 			LM_T(LmtMousePress, ("PRESS ON Unidentified Graphics Item %p - giving it focus", gItemP));

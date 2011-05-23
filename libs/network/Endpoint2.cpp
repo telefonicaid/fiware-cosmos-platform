@@ -788,8 +788,8 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		return msgTreat2();
 	if (type == WebWorker)
 		return msgTreat2();
-	
-	LM_M(("Reading a message from '%s' '%s@%s', type '%s'", name, alias, host->name, typeName()));
+
+	LM_M(("Reading a message from '%s@%s'", name, host->name));
 	s = receive(&header, &dataP, &dataLen, &packet);
 	if (s != 0)
 		LM_RE(s, ("receive error '%s'", status(s)));
@@ -935,9 +935,10 @@ size_t Endpoint2::send(PacketSenderInterface* psi, Message::MessageCode code, Pa
 *
 * run - 
 */
-void Endpoint2::run()
+void Endpoint2::run(void)
 {
-	LM_M(("Endpoint '%s@%s' is running", name, host->name));
+	LM_M(("Endpoint '%s@%s' reader thread is running", name, host->name));
+
 	while (1)
 		msgTreat();
 }

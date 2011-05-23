@@ -214,11 +214,15 @@ namespace ss
 			return false;
 		}
 		
-		int max_num_paralell_outputs =  ( memory - num_processes*shared_memory_size_per_buffer ) / (2*max_file_size);
+		int max_num_paralell_outputs =  ssize_t( ssize_t(memory) - ssize_t(num_processes*shared_memory_size_per_buffer) ) / ssize_t(2*max_file_size);
 		if( num_paralell_outputs > max_num_paralell_outputs )
 		{
-			LM_X(1,("Num of maximum paralell outputs is too high to the current memory setup. Review num_paralell_outputs in setup.txt file. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (2*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size ));
+			LM_W(("Num of maximum paralell outputs is too high to the current memory setup. Review num_paralell_outputs in setup.txt file. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (2*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size ));
 			return false;
+		}
+		else
+		{
+			LM_W(("Num of maximum paralell outputs is OK. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (2*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size ));
 		}
 
 		

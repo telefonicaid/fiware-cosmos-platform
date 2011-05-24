@@ -7,18 +7,20 @@
 * CREATION DATE            Dec 14 2010
 *
 */
-#include <stdio.h>              // printf, ...
-#include <sys/stat.h>           // struct stat
-#include <unistd.h>             // stat
-#include <fcntl.h>              // open, O_RDWR, O_CREAT, O_TRUNC, ...
-#include <stdlib.h>             // free
+#include <stdio.h>                 // printf, ...
+#include <sys/stat.h>              // struct stat
+#include <unistd.h>                // stat
+#include <fcntl.h>                 // open, O_RDWR, O_CREAT, O_TRUNC, ...
+#include <stdlib.h>                // free
 
-#include "parseArgs.h"          // parseArgs
-#include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // Trace levels
+#include "parseArgs.h"             // parseArgs
+#include "logMsg.h"                // LM_*
+#include "traceLevels.h"           // Trace levels
 
-#include "Endpoint2.h"          // Endpoint2
-#include "SamsonSetup.h"        // SamsonSetup
+#include "engine/MemoryManager.h"  // ss::MemoryManager
+#include "SamsonSetup.h"           // ss::SamsonSetup
+#include "Endpoint2.h"             // Endpoint2
+#include "SamsonStarter.h"         // SamsonStarter
 
 
 
@@ -55,9 +57,9 @@ PaArgument paArgs[] =
 *
 * Global variables
 */
-int               logFd        = -1;
-ss::SamsonSetup*  samsonSetup  = NULL;
-int               startTime;
+int            logFd        = -1;
+SamsonStarter*   samsonStarter  = NULL;
+int            startTime;
 
 
 
@@ -69,7 +71,7 @@ static void plist(void)
 {
 	ss::Endpoint2::Status s;
 
-	if ((s = samsonSetup->processList()) != ss::Endpoint2::OK)
+	if ((s = samsonStarter->processList()) != ss::Endpoint2::OK)
 		LM_X(1, ("Error sending Process List Message to spawners"));
 
 	LM_M(("Got the list - I'm done"));
@@ -86,7 +88,7 @@ static void resetAndStart(void)
 {
 	ss::Endpoint2::Status s;
 
-	if ((s = samsonSetup->reset()) != ss::Endpoint2::OK)
+	if ((s = samsonStarter->reset()) != ss::Endpoint2::OK)
 		LM_X(1, ("Error sending RESET to all spawners: %s", ((ss::Endpoint2*) NULL)->status(s)));
 
 	if (reset)
@@ -95,7 +97,7 @@ static void resetAndStart(void)
 		exit(0);
 	}
 
-	if ((s = samsonSetup->procVecSend()) != ss::Endpoint2::OK)
+	if ((s = samsonStarter->procVecSend()) != ss::Endpoint2::OK)
 		LM_X(1, ("Error sending Process Vector to all spawners: %s", ((ss::Endpoint2*) NULL)->status(s)));
 
 	LM_M(("Started platform - I'm done"));
@@ -117,11 +119,11 @@ void readyCheck(void* callbackData, void* userParam)
 	callbackData  = NULL;
 	userParam     = NULL;
 
-	for (int ix = 0; ix < samsonSetup->networkP->epMgr->endpointCapacity(); ix++)
+	for (int ix = 0; ix < samsonStarter->networkP->epMgr->endpointCapacity(); ix++)
 	{
 		ss::Endpoint2* ep;
 
-		ep = samsonSetup->networkP->epMgr->get(ix);
+		ep = samsonStarter->networkP->epMgr->get(ix);
 		if (ep == NULL)
 			continue;   // Could do break here, really ...
 
@@ -131,18 +133,21 @@ void readyCheck(void* callbackData, void* userParam)
 				++unhelloed;
 			else
 				++helloed;
+
+			LM_M(("Spawner endpoint in '%s'. helloed: %d, unhelloed: %d", ep->hostGet()->name, helloed, unhelloed));
 		}			
 
 		if (ep->typeGet() == ss::Endpoint2::Unhelloed)
 			LM_W(("Endpoint %02d is Unhelloed - could it be a spawner-to-be ... ?", ix));
 	}
 
-	samsonSetup->networkP->epMgr->show("readyCheck");
+	samsonStarter->networkP->epMgr->show("readyCheck");
 
+	LM_M(("helloed: %d, unhelloed: %d", helloed, unhelloed));
 	if (unhelloed == 0)
 	{
-		if (helloed != samsonSetup->spawners)
-			LM_X(1, ("Helloed: %d, Spawners: %d - what has happened?", helloed, samsonSetup->spawners));
+		if (helloed != samsonStarter->spawners)
+			LM_X(1, ("Helloed: %d, Spawners: %d - what has happened?", helloed, samsonStarter->spawners));
 
 		LM_M(("All Helloes interchanged - READY TO ROLL!"));
 		if (pList)
@@ -185,18 +190,22 @@ int main(int argC, const char *argV[])
 	if ((long) ips[0] != workers)
 		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (long) ips[0]));
 
-	samsonSetup = new ss::SamsonSetup();
-	samsonSetup->procVecCreate(controllerHost, workers, ips);
+	engine::MemoryManager::init(ss::SamsonSetup::shared()->memory);
+
+	samsonStarter = new SamsonStarter();
+	samsonStarter->procVecCreate(controllerHost, workers, ips);
 
 	startTime = time(NULL);
-	if (samsonSetup->connect() != ss::Endpoint2::OK)
+	if (samsonStarter->connect() != ss::Endpoint2::OK)
 		LM_X(1, ("Error connecting to all spawners"));
 
-	samsonSetup->networkP->epMgr->callbackSet(ss::EndpointManager::Timeout,  readyCheck, NULL);
-	samsonSetup->networkP->epMgr->callbackSet(ss::EndpointManager::Periodic, readyCheck, NULL);
+	LM_M(("Connected to all spawners"));
 
-	samsonSetup->networkP->epMgr->show("Before calling run");
-	samsonSetup->run();
+	samsonStarter->networkP->epMgr->callbackSet(ss::EndpointManager::Timeout,  readyCheck, NULL);
+	samsonStarter->networkP->epMgr->callbackSet(ss::EndpointManager::Periodic, readyCheck, NULL);
+
+	samsonStarter->networkP->epMgr->show("Before calling run");
+	samsonStarter->run();
 
 	return 0;
 }

@@ -155,32 +155,6 @@ Endpoint2::Status UnhelloedEndpoint::helloDataSet(Type _type, const char* _name,
 
 /* ****************************************************************************
 *
-* helloSend - 
-*/
-void UnhelloedEndpoint::helloSend(Message::MessageType type)
-{
-	Message::HelloData hello;
-
-	memset(&hello, 0, sizeof(hello));
-
-	strncpy(hello.name,   epMgr->me->nameGet(),    sizeof(hello.name));
-	strncpy(hello.ip,     epMgr->me->hostname(),   sizeof(hello.ip));
-	strncpy(hello.alias,  epMgr->me->aliasGet(),   sizeof(hello.alias));
-
-	hello.type     = epMgr->me->typeGet();
-	hello.coreNo   = 0;
-	hello.workerId = 0;
-
-	LM_T(LmtWrite, ("sending hello %s to '%s' (my name: '%s', my type: '%s')", messageType(type), name, hello.name, epMgr->me->typeName()));
-
-	Packet* packetP = new Packet(type, Message::Hello, &hello, sizeof(hello));
-	send(NULL, packetP);
-}
-
-
-
-/* ****************************************************************************
-*
 * helloExchange - 
 */
 Endpoint2::Status UnhelloedEndpoint::helloExchange(int secs, int usecs)

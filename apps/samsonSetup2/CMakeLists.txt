@@ -1,10 +1,10 @@
 SET (SOURCES
     main_samsonSetup.cpp
-	SamsonSetup.cpp
+	SamsonStarter.cpp
 )
 
 SET (HEADERS
-	SamsonSetup.h
+	SamsonStarter.h
 )
 
 SET (LIBS

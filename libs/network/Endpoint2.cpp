@@ -45,6 +45,25 @@ namespace ss
 
 /* ****************************************************************************
 *
+* readerThread - 
+*/
+static void* readerThread(void* vP)
+{
+	Endpoint2* ep = (Endpoint2*) vP;
+
+	LM_M(("reader thread for endpoint %s@%s is running", ep->nameGet(), ep->hostGet()->name));
+	ep->run();
+
+	ep->stateSet(Endpoint2::ScheduledForRemoval);
+	LM_W(("Endpoint '%s@%s' is back from Endpoint2::run", ep->nameGet(), ep->hostGet()->name));
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * writerThread - 
 */
 static void* writerThread(void* vP)
@@ -477,14 +496,23 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 			psi->notificationSent(0, true);
 	}
 	else
-		jobQ->push(psi, packetP);
+	{
+		if (useSenderThread == true)
+			jobQ->push(psi, packetP);
+		else
+		{
+			realsend(packetP->msgType, packetP->msgCode, packetP->dataP, packetP->dataLen, packetP);
+			if (psi)
+				psi->notificationSent(0, true);
+		}
+	}
 }
 
 
 
 /* ****************************************************************************
 *
-* send - 
+* realsend - 
 */
 Endpoint2::Status Endpoint2::realsend
 (
@@ -517,7 +545,7 @@ Endpoint2::Status Endpoint2::realsend
 	if ((dataLen != 0) && (data != NULL))
 		header.dataLen = dataLen;
 
-	if ((packetP != NULL) && (packetP->message->ByteSize() != 0))
+	if ((packetP != NULL) && (packetP->message != NULL) && (packetP->message->ByteSize() != 0))
 		header.gbufLen = packetP->message->ByteSize();
 
 	if (packetP && (packetP->buffer != 0))
@@ -549,7 +577,7 @@ Endpoint2::Status Endpoint2::realsend
 	//
 	// Sending Google Protocol Buffer
 	//
-	if ((packetP != NULL) && (packetP->message->ByteSize() != 0))
+	if ((packetP != NULL) && (packetP->message != NULL) && (packetP->message->ByteSize() != 0))
 	{
 		char* outputVec;
 
@@ -873,17 +901,28 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		if (header.type == Message::Msg)
 			helloSend(Message::Ack);
 
-		if (useSenderThread == true)
+		if ((epMgr->me->type == Spawner) || (epMgr->me->type == Setup))
 		{
-			pthread_t tid;
-			int       ps;
+			LM_M(("I'm a Spawner or Setup - I don't use sender/reader threads!"));
+			return OK;
+		}
 
-			LM_M(("Creating writer thread for endpoint %s@%s", name, host->name));
-			if ((ps = pthread_create(&tid, NULL, writerThread, this)) != 0)
-			{
-				LM_E(("pthread_create returned %d for %s@%s", ps, name, host->name));
-				return PThreadError;
-			}
+		useSenderThread = true;
+
+		pthread_t tid;
+		int       ps;
+
+		LM_M(("Creating writer thread for endpoint %s@%s", name, host->name));
+		if ((ps = pthread_create(&tid, NULL, writerThread, this)) != 0)
+		{
+			LM_E(("Creating writer thread: pthread_create returned %d for %s@%s", ps, name, host->name));
+			return PThreadError;
+		}
+
+		if ((ps = pthread_create(&tid, NULL, readerThread, this)) != 0)
+		{
+			LM_E(("Creating reader thread: pthread_create returned %d for %s@%s", ps, name, host->name));
+			return PThreadError;
 		}
 		break;
 
@@ -1069,7 +1108,7 @@ Endpoint2::Status Endpoint2::helloDataSet(Type _type, const char* _name, const c
 void Endpoint2::helloSend(Message::MessageType type)
 {
 	Message::HelloData  hello;
-	Packet*             packetP;
+
 	memset(&hello, 0, sizeof(hello));
 
 	strncpy(hello.name,   epMgr->me->nameGet(),    sizeof(hello.name));
@@ -1080,10 +1119,11 @@ void Endpoint2::helloSend(Message::MessageType type)
 	hello.coreNo   = 0;
 	hello.workerId = 0;
 
-	LM_T(LmtWrite, ("sending hello %s to '%s' (my name: '%s', my type: '%s')", messageType(type), name, hello.name, epMgr->me->typeName()));
+	LM_M(("sending hello %s to '%s' (my name: '%s', my type: '%s')", messageType(type), name, hello.name, epMgr->me->typeName()));
 
-	packetP = new Packet(type, Message::Hello, &hello, sizeof(hello));
-	send(NULL, packetP);
+	Status s;
+	if ((s = realsend(type, Message::Hello, &hello, sizeof(hello))) != OK)
+		LM_E(("Error sending Hello to %s@%s: %s", typeName(), name, status(s)));
 }
 
 }

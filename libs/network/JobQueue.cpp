@@ -52,6 +52,8 @@ JobQueue::Job* JobQueue::pop(void)
     if (head == NULL) // List is empty
 		return NULL;
 
+	LM_M(("Popping a job from queue"));
+
 	while (last->next != NULL)
 	{
 		prev = last;
@@ -111,6 +113,8 @@ JobQueue::Job* JobQueue::pop(void)
 void JobQueue::push(Job* jobP)
 {
 	Job* last = head;
+
+	LM_M(("Pushing a job to queue"));
 
 	if (head == NULL) // List is empty
 	{

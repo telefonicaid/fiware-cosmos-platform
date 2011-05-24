@@ -278,7 +278,6 @@ void EndpointManager::initSpawner(void)
 
 	listener = (ListenerEndpoint*) add(Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
 
-
 	if ((procVec = platformProcessesGet()) == NULL)
 	{
 		setupAwait();
@@ -373,25 +372,6 @@ EndpointManager::~EndpointManager()
 
 /* ****************************************************************************
 *
-* readerThread - 
-*/
-static void* readerThread(void* vP)
-{
-	Endpoint2* ep = (Endpoint2*) vP;
-
-	LM_M(("reader thread for endpoint %s@%s is running", ep->nameGet(), ep->hostGet()->name));
-	ep->run();
-
-	ep->stateSet(Endpoint2::ScheduledForRemoval);
-	LM_W(("Endpoint '%s@%s' is back from Endpoint2::run", ep->nameGet(), ep->hostGet()->name));
-
-	return NULL;
-}
-
-
-
-/* ****************************************************************************
-*
 * add - 
 */
 Endpoint2* EndpointManager::add(Endpoint2* ep)
@@ -403,30 +383,6 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 
 		endpoint[ix] = ep;
 		LM_M(("Added endpoint %d. type:%s, id:%d, name:%s, host:%s", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname()));
-
-		if ((ep->host != hostMgr->localhostP) && (ep->type != me->type))
-		{
-			if ((ep->type == Endpoint2::Controller) ||
-				(ep->type == Endpoint2::Worker)     ||
-				(ep->type == Endpoint2::Delilah)    ||
-				(ep->type == Endpoint2::Spawner)    ||
-				(ep->type == Endpoint2::Setup)      ||
-				(ep->type == Endpoint2::Supervisor))
-			{
-				int        s;
-				pthread_t  tid;
-
-				ep->useSenderThread = true;
-				if ((s = pthread_create(&tid, NULL, readerThread, ep)) != 0)
-				{
-					LM_E(("pthread_create returned %d for %s@%s", s, ep->name, ep->host->name));
-					remove(ep);
-					return NULL;
-				}
-			}
-		}
-		else
-			LM_M(("Not creating threads for %s in host %s", ep->typeName(), hostMgr->localhostP->name));
 
 		show("Added an Endpoint");
 		return ep;
@@ -701,11 +657,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 			// Hello exchanged, now the endpoint will send a ProcessVector message
 			// Awaiting the message to arrive 
 			if ((s = ep->msgAwait(5, 0, "ProcessVector Message")) != 0)
-			{
-				LM_E(("msgAwait(ProcessVector): %s", ep->status(s)));
-				remove(ep);
-				continue;
-			}
+			   LM_X(1, ("msgAwait(ProcessVector): %s", ep->status(s)));
 
 			if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != 0)
 			{
@@ -964,7 +916,7 @@ int EndpointManager::multiSend(PacketSenderInterface* psi, Endpoint2::Type typ, 
 
 	for (unsigned int ix = 0; ix < endpoints; ix++)
 	{
-		if (endpoint[ix] != NULL)
+		if (endpoint[ix] == NULL)
 			continue;
 
 		if (endpoint[ix]->type != typ)
@@ -990,7 +942,7 @@ int EndpointManager::multiSend(Endpoint2::Type typ, Message::MessageCode code, v
 
 	for (unsigned int ix = 0; ix < endpoints; ix++)
 	{
-		if (endpoint[ix] != NULL)
+		if (endpoint[ix] == NULL)
 			continue;
 
 		if (endpoint[ix]->type != typ)

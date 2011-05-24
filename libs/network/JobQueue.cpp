@@ -72,7 +72,11 @@ JobQueue::Job* JobQueue::pop(void)
 	//
 	jobs -= 1;
 
-	totalSize  -= jobP->packetP->message->ByteSize();
+	if (jobP->packetP->message != NULL)
+		totalSize  -= jobP->packetP->message->ByteSize();
+
+	if (jobP->packetP->dataP != NULL)
+		totalSize  -= jobP->packetP->dataLen;
 
 	if (jobP->packetP->buffer != NULL)
 		totalSize -= jobP->packetP->buffer->getSize();
@@ -130,7 +134,11 @@ void JobQueue::push(Job* jobP)
 	//
 	jobs += 1;
 
-	totalSize  += jobP->packetP->message->ByteSize();
+	if (jobP->packetP->message != NULL)
+		totalSize  += jobP->packetP->message->ByteSize();
+
+	if (jobP->packetP->dataP != NULL)
+		totalSize  += jobP->packetP->dataLen;
 
 	if (jobP->packetP->buffer != NULL)
 		totalSize += jobP->packetP->buffer->getSize();

@@ -64,7 +64,7 @@ public:
 	void    run(void);
 	void    quit(void);
 	void    delilahSend(PacketSenderInterface*, Packet*);
-	size_t  _send(PacketSenderInterface*, int, Packet*);
+	void    _send(PacketSenderInterface*, int, Packet*);
 	size_t  send(PacketSenderInterface*, int, Packet*);
 };
 

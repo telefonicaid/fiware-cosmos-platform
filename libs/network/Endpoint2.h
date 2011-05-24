@@ -103,7 +103,8 @@ public:
 		ReadError,
 		WriteError,
 		Timeout,
-		ConnectionClosed
+		ConnectionClosed,
+		PThreadError
 	} Status;
 
 	typedef enum State
@@ -152,6 +153,8 @@ public:
 	const char*          status(Status s);
 	const char*          stateName(void);
 
+	JobQueue*            jobQ;
+
 private:
 	EndpointManager*     epMgr;
 
@@ -166,7 +169,6 @@ private:
 	State                state;
 	struct sockaddr_in   sockin;
 	bool                 useSenderThread;  // Worker/Delilah
-	JobQueue*            jobQ;
 
 
 	// Statistics
@@ -213,9 +215,10 @@ public:
 	Status               receive(Message::Header* headerP, void** dataPP, long* dataLenP, Packet* packetP);
 
 	Status               okToSend(void);
+	void                 send(PacketSenderInterface* psi, Packet* packetP);
 	Status               send(Message::MessageType typ, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
-	Status               ack(Message::MessageCode code, void* data = NULL, int dataLen = 0);
-	size_t               send(PacketSenderInterface* psi, Message::MessageCode code, Packet* packetP);
+	void                 ack(Message::MessageCode code, void* data = NULL, int dataLen = 0);
+
 	virtual void         run(void);
 	Status               msgTreat(void);
 

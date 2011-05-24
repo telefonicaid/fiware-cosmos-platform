@@ -72,16 +72,10 @@ JobQueue::Job* JobQueue::pop(void)
 	//
 	jobs -= 1;
 
-	if (jobP->dataP != NULL)
-		totalSize  -= jobP->dataLen + sizeof(Message::Header);
+	totalSize  -= jobP->packetP->message->ByteSize();
 
-	if (jobP->packetP != NULL)
-	{
-		totalSize  -= jobP->packetP->message->ByteSize();
-
-		if (jobP->packetP->buffer != NULL)
-			totalSize -= jobP->packetP->buffer->getSize();
-	}
+	if (jobP->packetP->buffer != NULL)
+		totalSize -= jobP->packetP->buffer->getSize();
 
 
 	//
@@ -136,16 +130,10 @@ void JobQueue::push(Job* jobP)
 	//
 	jobs += 1;
 
-	if (jobP->dataP != NULL)
-		totalSize  += jobP->dataLen + sizeof(Message::Header);
+	totalSize  += jobP->packetP->message->ByteSize();
 
-	if (jobP->packetP != NULL)
-	{
-		totalSize  += jobP->packetP->message->ByteSize();
-
-		if (jobP->packetP->buffer != NULL)
-			totalSize += jobP->packetP->buffer->getSize();
-	}
+	if (jobP->packetP->buffer != NULL)
+		totalSize += jobP->packetP->buffer->getSize();
 }
 
 
@@ -154,18 +142,14 @@ void JobQueue::push(Job* jobP)
 *
 * JobQueue::push - 
 */
-void JobQueue::push(Endpoint2* ep, Message::MessageCode code, Message::MessageType type, void* dataP, int dataLen, Packet* packetP)
+void JobQueue::push(PacketSenderInterface*  psi, Packet* packetP)
 {
 	Job* jobP = (Job*) malloc(sizeof(Job));
 
 	if (jobP == NULL)
 		LM_X(1, ("error allocating a Job (%d bytes): %s", sizeof(Job), strerror(errno)));
 
-	jobP->ep       = ep;
-	jobP->msgCode  = code;
-	jobP->msgType  = type;
-	jobP->dataP    = dataP;
-	jobP->dataLen  = dataLen;
+	jobP->psi      = psi;
 	jobP->packetP  = packetP;
 
 	push(jobP);

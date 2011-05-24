@@ -45,6 +45,39 @@ namespace ss
 
 /* ****************************************************************************
 *
+* writerThread - 
+*/
+static void* writerThread(void* vP)
+{
+	Endpoint2* ep = (Endpoint2*) vP;
+
+	LM_M(("writer thread for endpoint %s@%s is running (REAL wFd: %d))", ep->nameGet(), ep->hostGet()->name, ep->wFdGet()));
+
+	while (1)
+	{
+		JobQueue::Job* job;
+
+		while (1)
+		{
+			job = ep->jobQ->pop();
+			if (job != NULL)
+				break;
+			sleep(1);
+		}
+
+		ep->send(job->packetP->msgType, job->packetP->msgCode, job->packetP->dataP, job->packetP->dataLen, job->packetP);
+		delete job->packetP;
+		if (job->psi != NULL)
+			job->psi->notificationSent(0, true);
+	}
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * Endpoint2::Endpoint2 - Constructor
 */
 Endpoint2::Endpoint2
@@ -89,13 +122,15 @@ Endpoint2::Endpoint2
 	msgsOut       = 0;
 	msgsInErrors  = 0;
 	msgsOutErrors = 0;
+
+	jobQ = new JobQueue();
 }
 
 
 
 /* ****************************************************************************
 *
-* Endpoint2::
+* Endpoint2::~Endpoint2 - 
 */
 Endpoint2::~Endpoint2()
 {
@@ -363,20 +398,21 @@ Endpoint2::Status Endpoint2::okToSend(void)
 		timeVal.tv_usec = 1000000;
 
 		FD_ZERO(&wFds);
-		FD_SET(rFd, &wFds);
+		FD_SET(wFd, &wFds);
 	
+		LM_M(("Hanging on a select(write) on fd %d", wFd));
 		do
 		{
-			fds = select(rFd + 1, NULL, &wFds, NULL, &timeVal);
+			fds = select(wFd + 1, NULL, &wFds, NULL, &timeVal);
 		} while ((fds == -1) && (errno == EINTR));
 
-		if ((fds == 1) && (FD_ISSET(rFd, &wFds)))
+		if ((fds == 1) && (FD_ISSET(wFd, &wFds)))
 			return OK;
 
 		LM_W(("Problems to send to %s@%s (%d/%d secs)", name, host->name, tryh, tries));
 	}
 
-	LM_X(1, ("cannot write to '%s' - fd %d", name, rFd));
+	LM_X(1, ("cannot write to '%s' - fd %d", name, wFd));
 	return Timeout;
 }
 
@@ -417,9 +453,31 @@ Endpoint2::Status Endpoint2::partWrite(void* dataP, int dataLen, const char* wha
 *
 * ack - 
 */
-Endpoint2::Status Endpoint2::ack(Message::MessageCode code, void* data, int dataLen)
+void Endpoint2::ack(Message::MessageCode code, void* data, int dataLen)
 {
-	return send(Message::Ack, code, data, dataLen);
+	Packet* packet = new Packet(Message::Ack, code, data, dataLen);
+	send(NULL, packet);
+}
+
+
+
+/* ****************************************************************************
+*
+* send - 
+*/
+void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
+{
+	if ((host == epMgr->me->host) && (type == epMgr->me->typeGet()))
+	{
+		LM_M(("Looping back a packet meant for myself (and calling psi->notificationSent ...)"));
+		if (epMgr->packetReceiver == NULL)
+			LM_X(1, ("Np packetReceiver - no real use to contiune, this is a SW bug!"));
+		epMgr->packetReceiver->_receive(packetP);
+		if (psi)
+			psi->notificationSent(0, true);
+	}
+	else
+		jobQ->push(psi, packetP);
 }
 
 
@@ -734,18 +792,18 @@ Endpoint2::Status Endpoint2::msgAwait(int secs, int usecs, const char* what)
 	int             fds;
 	fd_set          rFds;
 
-	if (secs == -1)
-		tvP = NULL;
-	else
-	{
-		tv.tv_sec  = secs;
-		tv.tv_usec = usecs;
-
-		tvP        = &tv;
-	}
-
 	do
 	{
+		if (secs == -1)
+			tvP = NULL;
+		else
+		{
+			tv.tv_sec  = secs;
+			tv.tv_usec = usecs;
+
+			tvP        = &tv;
+		}
+
 		FD_ZERO(&rFds);
 		FD_SET(rFd, &rFds);
 		fds = select(rFd + 1, &rFds, NULL, NULL, tvP);
@@ -790,6 +848,10 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		return msgTreat2();
 
 	LM_M(("Reading a message from '%s@%s'", name, host->name));
+	s = msgAwait(-1, -1, "Incoming message");
+	if (s != OK)
+		LM_E(("msgAwait: %s - what do I do ... ?", status(s)));
+
 	s = receive(&header, &dataP, &dataLen, &packet);
 	if (s != 0)
 		LM_RE(s, ("receive error '%s'", status(s)));
@@ -814,6 +876,19 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 			{
 				stateSet(ScheduledForRemoval);
 				LM_RE(s, ("helloSend error"));
+			}
+		}
+
+		if (useSenderThread == true)
+		{
+			pthread_t tid;
+			int       ps;
+
+			LM_M(("Creating writer thread for endpoint %s@%s", name, host->name));
+			if ((ps = pthread_create(&tid, NULL, writerThread, this)) != 0)
+			{
+				LM_E(("pthread_create returned %d for %s@%s", ps, name, host->name));
+				return PThreadError;
 			}
 		}
 		break;
@@ -907,26 +982,10 @@ const char* Endpoint2::status(Status s)
 	case WriteError:           return "Write Error";
 	case Timeout:              return "Timeout";
 	case ConnectionClosed:     return "Connection Closed";
+	case PThreadError:         return "Thread Error";
 	}
 
 	return "Unknown Status";
-}
-
-
-
-/* ****************************************************************************
-*
-* send - 
-*/
-size_t Endpoint2::send(PacketSenderInterface* psi, Message::MessageCode code, Packet* packetP)
-{
-	// semTake(jobQueueSem);
-	// jobEnqueue(pi, code, packetP);
-	// semGive(jobQueueSem);
-	//
-	// The thread will notice the packet at next run-timeout
-	//
-	return 0;
 }
 
 
@@ -947,16 +1006,16 @@ void Endpoint2::run(void)
 
 /* ****************************************************************************
 *
-* hello - send hello and await ack, with timeout
+* hello - send hello message
 */
 Endpoint2::Status Endpoint2::hello(int secs, int usecs)
 {
 	Message::HelloData   h;
 	Message::Header      header;
-	void*                dataP = &header;
-	long                 dataLen;
+	void*                dataP   = &header;
+	long                 dataLen = sizeof(h);
 	Endpoint2::Status    s;
-	Packet               packet(Message::Hello);
+	Packet*              packet = new Packet(Message::Msg, Message::Hello, &h, dataLen);
 
 	strncpy(h.name,  epMgr->me->nameGet(),  sizeof(h.name)  - 1);
 	strncpy(h.ip,    epMgr->me->hostname(), sizeof(h.ip)    - 1);
@@ -967,20 +1026,20 @@ Endpoint2::Status Endpoint2::hello(int secs, int usecs)
 	h.coreNo    = -1;     // no longer used?
 	h.workerId  = -1;     // no longer used?
 
-	if ((s = send(Message::Msg, Message::Hello, &h, sizeof(h))) != OK)
-		LM_RE(s, ("send(Hello Msg): %s", status(s)));
+	send(NULL, packet);
 
 	if ((s = msgAwait(secs, usecs, "Hello header")) != OK)
 		LM_RE(s, ("msgAwait: %s", status(s)));
 
-	dataLen = sizeof(h);
-	if ((s = receive(&header, &dataP, &dataLen, &packet)) != OK)
+	if ((s = receive(&header, &dataP, &dataLen, packet)) != OK)
 		LM_RE(s, ("receive: %s", status(s)));
 
 	if (header.code != Message::Hello)
-		LM_RE(NotHello, ("Wanted an ack for a hello, got a '%s' for '%s'", Message::messageType(header.type), Message::messageCode(header.code)));
+		LM_RE(NotHello, ("Wanted an ack for a hello, got a '%s' for '%s'",
+						 Message::messageType(header.type), Message::messageCode(header.code)));
 	if (header.type != Message::Ack)
-		LM_RE(NotAck, ("Wanted an ack for a hello, got a '%s' for '%s'",   Message::messageType(header.type), Message::messageCode(header.code)));
+		LM_RE(NotAck, ("Wanted an ack for a hello, got a '%s' for '%s'",
+					   Message::messageType(header.type), Message::messageCode(header.code)));
 
 	return OK;
 }

@@ -392,28 +392,6 @@ static void* readerThread(void* vP)
 
 /* ****************************************************************************
 *
-* writerThread - 
-*/
-static void* writerThread(void* vP)
-{
-	Endpoint2* ep  = (Endpoint2*) vP;
-	int        wFd = ep->wFdGet();
-
-	LM_M(("writer thread for endpoint %s@%s is running (wFd: %d))", ep->nameGet(), ep->hostGet()->name, wFd));
-	while (1)
-	{
-		// Await message from father,
-		// read the message, and ...
-		// forward the message to 'wFd'
-	}
-
-	return NULL;
-}
-
-
-
-/* ****************************************************************************
-*
 * add - 
 */
 Endpoint2* EndpointManager::add(Endpoint2* ep)
@@ -434,14 +412,6 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 				pthread_t  tid;
 
 				if ((s = pthread_create(&tid, NULL, readerThread, ep)) != 0)
-				{
-					LM_E(("pthread_create returned %d for %s@%s", s, ep->name, ep->host->name));
-					remove(ep);
-					return NULL;
-				}
-
-				LM_M(("Creating writer thread for endpoint %s@%s", ep->name, ep->host->name));
-				if ((s = pthread_create(&tid, NULL, writerThread, ep)) != 0)
 				{
 					LM_E(("pthread_create returned %d for %s@%s", s, ep->name, ep->host->name));
 					remove(ep);
@@ -778,9 +748,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 
 		memcpy(this->procVec, dataP, dataLen);
 		free(dataP);
-
-		if ((s = ep->ack(header.code)) != Endpoint2::OK)
-			LM_E(("Error acking Process Vector: %s", ep->status(s)));
+		ep->ack(header.code);
 
 		if ((s = ep->msgAwait(2, 0, "Connection Closed")) != Endpoint2::OK)
 			LM_W(("All OK, except that samsonSetup didn't close connection in time. msgAwait(): %s", ep->status(s)));
@@ -970,12 +938,12 @@ int EndpointManager::endpointCount(void)
 *
 * send - 
 */
-size_t EndpointManager::send(PacketSenderInterface* psi, int endpointIx, Packet* packetP)
+void EndpointManager::send(PacketSenderInterface* psi, int endpointIx, Packet* packetP)
 {
 	if (endpoint[endpointIx] == NULL)
-		LM_RE(1, ("Cannot send to endpoint %d - NULL", endpointIx));
+		LM_RVE(("Cannot send to endpoint %d - NULL", endpointIx));
 
-	return endpoint[endpointIx]->send(psi, packetP->msgCode, packetP);
+	endpoint[endpointIx]->send(psi, packetP);
 }
 
 

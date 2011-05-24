@@ -117,7 +117,7 @@ public:
 	void               setPacketReceiver(PacketReceiverInterface* receiver);
 	void               setDataReceiver(DataReceiverInterface* receiver);
 
-	size_t             send(PacketSenderInterface* psi,      int endpointIx,       Packet* packetP);
+	void               send(PacketSenderInterface* psi, int endpointIx, Packet* packetP);
 	int                multiSend(PacketSenderInterface* psi, Endpoint2::Type type, Packet* packetP);
 	int                multiSend(Endpoint2::Type typ, Message::MessageCode code, void* dataP = NULL, int dataLen = 0);
 };

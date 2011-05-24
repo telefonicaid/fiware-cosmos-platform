@@ -30,7 +30,6 @@ namespace ss
 * Forward declarations - or just to avoid an include ...
 */
 class Packet;
-class Endpoint2;
 
 
 
@@ -43,13 +42,9 @@ class JobQueue
 public:
 	typedef struct Job
 	{
-		struct Job*           next;
-		Endpoint2*            ep;
-		Message::MessageCode  msgCode;
-		Message::MessageType  msgType;
-		void*                 dataP;
-		int                   dataLen;
-		Packet*               packetP;
+		struct Job*             next;
+		PacketSenderInterface*  psi;
+		Packet*                 packetP;
 	} Job;
 
 
@@ -62,8 +57,8 @@ private:
 public:
 	JobQueue();
 
-	Job*       pop(void);   // flush the Job too ?  Or just take it out of the list ... ?
-	void       push(Endpoint2* ep, Message::MessageCode code, Message::MessageType type, void* dataP, int dataLen, Packet* packetP);
+	Job*       pop(void);
+	void       push(PacketSenderInterface* psi, Packet* packetP);
 	void       info(int* jobsP, long long* totalSizeP);
 
 private:

@@ -492,6 +492,35 @@ void Manager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 
 /* ****************************************************************************
 *
+* wheelEvent - 
+*/
+void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
+{
+	QPointF          point    = event->scenePos();
+	int              dy       = (event->delta() > 0)? 5 : -5;
+	QGraphicsItem*   gItemP   = itemAt(point);
+	Base*            qbP      = lookup(gItemP);
+	Box*             box;
+
+	LM_M(("Mouse wheel dy == %d", dy));
+
+	if ((qbP == NULL) || (((Block*) qbP)->w.vP != NULL))
+	{
+		LM_M(("NULL Qsi pointer"));
+		QGraphicsScene::wheelEvent(event);
+		return;
+	}
+	
+	box = qbP->owner;
+
+	if (box->scrollable == true)
+		box->scroll(dy);
+}
+
+
+
+/* ****************************************************************************
+*
 * siConnect - 
 */
 void Manager::siConnect(Block* qbP, Function func, const void* param, bool persistent)

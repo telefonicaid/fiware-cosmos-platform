@@ -115,6 +115,10 @@ static Qsi::Block*       alignEastButton;
 static Qsi::Block*       alignCenterButton;
 static Qsi::Block*       alignNoneButton;
 
+static Qsi::Block*       scrollUpButton;
+static Qsi::Block*       scrollDownButton;
+static Qsi::Box*         scrollBox;
+
 static Qsi::Block*       rectangle;
 static Qsi::InputLine*   inputLine;
 static Qsi::Block*       combo;
@@ -262,6 +266,10 @@ static void buttonClicked(Qsi::Block* qbP, void* param)
 		userBox2->align(Qsi::Alignment::Center, user1->getOwner(), 20);
 	else if (qbP == alignNoneButton)
 		userBox2->unalign(user1->getOwner());
+	else if (qbP == scrollUpButton)
+		scrollBox->scroll(10);
+	else if (qbP == scrollDownButton)
+		scrollBox->scroll(-10);
 	else
 		LM_W(("No button found"));
 }
@@ -566,6 +574,9 @@ static void qsiSetup(QWidget* mainWindow)
 	alignCenterButton  = (Qsi::Block*) buttonBox->buttonAdd("AlignCenter",    "Align Center",         0, 320, 150, 25, buttonClicked, NULL);
 	alignNoneButton    = (Qsi::Block*) buttonBox->buttonAdd("CompressButton", "Unalign",              0, 350, 150, 25, buttonClicked, NULL);
 
+	scrollUpButton     =  (Qsi::Block*) buttonBox->buttonAdd("ScrollUp",      "Scroll Up",            0, 390, 150, 25, buttonClicked, NULL);
+	scrollDownButton   =  (Qsi::Block*) buttonBox->buttonAdd("ScrollDown",    "Scroll Down",          0, 420, 150, 25, buttonClicked, NULL);
+
 	textButton->boxMoveSet(true);
 	
 	//
@@ -618,6 +629,18 @@ static void qsiSetup(QWidget* mainWindow)
 	};
 
 	combo = (Qsi::Block*) mainBox->comboAdd("Combo", option, 400, 700, -1, -1, comboCallback, NULL);
+
+	scrollBox = (Qsi::Box*) mainBox->boxAdd("ScrollBox", 1000, 30);
+
+	for (int ix = 0; ix < 50; ix++)
+	{
+		char txt[32];
+
+		sprintf(txt, "Line %d", ix);
+		scrollBox->textAdd(txt, txt, 0, ix * 20);
+	}
+
+	scrollBox->setScrollable(true);
 }
 
 

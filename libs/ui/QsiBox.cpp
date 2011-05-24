@@ -63,6 +63,8 @@ Box::Box(Manager* manager, Box* owner, const char* name, int x, int y) : Base(ow
 
 	firstLine = (Block*) lineAdd("firstLine", 0, 0, 10, 0);
 	firstLine->setColor(0xFF, 0xFF, 0xFF, 0);
+
+	scrollable = false;
 }
 
 
@@ -1132,6 +1134,31 @@ void Box::qsiRecursiveShow(const char* why, bool force)
 Base* Box::lastAddedGet(void)
 {
 	return lastAdded;
+}
+
+
+
+/* ****************************************************************************
+*
+* setScrollable - 
+*/
+void Box::setScrollable(bool _scrollable)
+{
+	scrollable = _scrollable;
+}
+
+
+
+/* ****************************************************************************
+*
+* scroll - 
+*/
+void Box::scroll(int dy)
+{
+	if (scrollable == false)
+		return;
+	
+	moveRelative(0, dy);
 }
 
 }

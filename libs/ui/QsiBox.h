@@ -111,6 +111,9 @@ public:
 	virtual void  setFrame(int padding);
 	Frame*        frame;
 
+	bool  scrollable;
+	void  setScrollable(bool _scrollable);
+	void  scroll(int dy);
 };
 
 }

@@ -17,6 +17,7 @@
 #include <QAction>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QGraphicsSceneWheelEvent>
 
 #include "logMsg.h"             // LM_X
 
@@ -137,7 +138,7 @@ private:
 	void       mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent);
 	void       mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
 	void       mouseMoveEvent(QGraphicsSceneMouseEvent*  mouseEvent);
-
+	void       wheelEvent(QGraphicsSceneWheelEvent* event);
 
 public:
 	QAction*   menuAction[QSI_MENU_ACTIONS];

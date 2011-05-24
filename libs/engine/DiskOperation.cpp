@@ -349,9 +349,10 @@ namespace engine {
 				setError("Error while removing file");
 		}
         
-        
+
 		// If write operation, destroy the buffer ( only in write and append operations )
-        destroyBuffer();
+        if( environment.get( destroy_buffer_after_write , "yes") == "yes" )
+            destroyBuffer();
 		
 		// Notify to the engine
 		diskManager->finishDiskOperation( this );

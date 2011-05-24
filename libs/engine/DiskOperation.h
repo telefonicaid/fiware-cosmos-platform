@@ -43,6 +43,8 @@
 #include "engine/Buffer.h"              // engine::Buffer
 #include "engine/EngineNotification.h"  // engine::EngineNotification
 
+#define destroy_buffer_after_write    "destroy_buffer_after_write"
+
 namespace engine {
 	
     class DiskManager;

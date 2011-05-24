@@ -97,6 +97,7 @@ namespace ss
 
 		controllerDirectory = workingDirectory + "/controller";
 		dataDirectory		= workingDirectory + "/data";
+        blocksDirectory     = workingDirectory + "/blocks";
 		modulesDirectory	= workingDirectory + "/modules";
 		setupDirectory		= workingDirectory + "/etc";
 		setupFile			= setupDirectory   + "/setup.txt";
@@ -106,6 +107,7 @@ namespace ss
 		createDirectory( workingDirectory );
 		createDirectory( controllerDirectory );
 		createDirectory( dataDirectory );
+		createDirectory( blocksDirectory );
         createDirectory( modulesDirectory );        
 		createDirectory( setupDirectory );			
 		createDirectory( configDirectory );			

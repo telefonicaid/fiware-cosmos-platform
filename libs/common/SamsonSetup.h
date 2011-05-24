@@ -30,6 +30,7 @@ namespace ss {
 		std::string baseDirectory;
 		std::string controllerDirectory;
 		std::string dataDirectory;
+		std::string blocksDirectory;
 		std::string modulesDirectory;
 		std::string setupDirectory;
 		std::string setupFile;

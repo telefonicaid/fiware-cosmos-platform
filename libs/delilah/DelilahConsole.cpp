@@ -20,6 +20,7 @@
 #include <sys/stat.h>					// stat(.)
 #include <dirent.h>						// DIR directory header	
 #include "au/CommandLine.h"				// au::CommandLine
+#include "samson/stream/BlockManager.h"     // ss::stream::BlockManager
 
 namespace ss
 {	
@@ -255,7 +256,107 @@ namespace ss
 			Console::quitConsole();	// Quit the console
 			return 0;
 		}
+
 		
+        if ( mainCommand == "e" )
+        {
+            // Experimental
+            
+            if( commandLine.get_num_arguments() == 1)
+                return 0;
+            
+            if( commandLine.get_argument(1) == "show" )
+                writeOnConsole( stream::BlockManager::shared()->str() );
+
+            if( commandLine.get_argument(1) == "set" )
+            {
+                if ( commandLine.get_num_arguments() < 4 )
+                {
+                    writeOnConsole("Not enougth parameters. e set (id) (priority)");
+                    return 0;
+                }
+                
+                int id = atoi( commandLine.get_argument(2).c_str() );
+                int priority = atoi( commandLine.get_argument(3).c_str() );
+                
+                stream::Block*b = stream::BlockManager::shared()->getBlock(id);
+                if( b )
+                {
+                    b->setPriority(priority);
+                    writeOnConsole( au::Format::string("Seting priority %d to id %d", priority , id ) );
+                }
+                else
+                {
+                    writeOnConsole( au::Format::string("Block %d not found", id ) );
+                }
+                
+            }
+            
+            if( commandLine.get_argument(1) == "retain" )
+            {
+                if ( commandLine.get_num_arguments() < 4 )
+                {
+                    writeOnConsole("Not enougth parameters. e retain (id) (task_id) ");
+                    return 0;
+                }
+                
+                int id = atoi( commandLine.get_argument(2).c_str() );
+                int task_id = atoi( commandLine.get_argument(3).c_str() );
+                
+                stream::Block*b = stream::BlockManager::shared()->getBlock(id);
+                if( b )
+                {
+                    stream::BlockManager::shared()->retain( b , task_id );
+                    writeOnConsole( au::Format::string("Retained %d by task %d", id , task_id ) );
+                }
+                else
+                {
+                    writeOnConsole( au::Format::string("Block %d not found", id ) );
+                }
+                
+            }
+
+            if( commandLine.get_argument(1) == "release" )
+            {
+                if ( commandLine.get_num_arguments() < 4 )
+                {
+                    writeOnConsole("Not enougth parameters. e release (id) (task_id) ");
+                    return 0;
+                }
+                
+                int id = atoi( commandLine.get_argument(2).c_str() );
+                int task_id = atoi( commandLine.get_argument(3).c_str() );
+                
+                stream::Block*b = stream::BlockManager::shared()->getBlock(id);
+                if( b )
+                {
+                    stream::BlockManager::shared()->release( b , task_id );
+                    writeOnConsole( au::Format::string("Released %d by task %d", id , task_id ) );
+                }
+                else
+                {
+                    writeOnConsole( au::Format::string("Block %d not found", id ) );
+                }
+                
+            }
+            
+            if( commandLine.get_argument(1) == "add" )
+            {
+                                
+                engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("example", 100000000, 0 );
+                buffer->setSize( buffer->getMaxSize() );    // Full the buffer with crap content ;)
+                stream::Block *block = new stream::Block( buffer , rand()%10 );
+
+                // Change priority
+                int new_priority = rand()%10;
+                writeOnConsole( au::Format::string("Setting priority to  %d", new_priority ) );
+                block->setPriority(new_priority);
+
+            }
+            
+            return 0;
+        }
+        
 		if ( mainCommand == "set")
 		{
 			if ( commandLine.get_num_arguments() == 1)

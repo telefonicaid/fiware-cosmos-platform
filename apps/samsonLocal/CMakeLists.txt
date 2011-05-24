@@ -22,6 +22,7 @@ samsonModule
 samsonDataLib
 samsonNetwork
 samsonCommon
+samsonStream
 au
 lm
 pa

@@ -137,6 +137,11 @@ namespace ss {
             memory_status << "\t\t Accumulated     " << au::Format::string( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
         }
         
+        {
+            size_t size = mm->getUsedMemoryByTag( MemoryBlocks );
+            memory_status << "\t\t Blocks          " << au::Format::string( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
+        }
+        
         
         ws->set_memory_status( memory_status.str() );
 

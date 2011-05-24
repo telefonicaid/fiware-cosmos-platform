@@ -17,7 +17,8 @@ SET (STATIC_LIBS
      curses
      readline
      samsonNetwork
-     samsonCommon	 
+     samsonCommon	
+     samsonStream 
      ${COMMON_SAMSON_LIBS}
 )
 

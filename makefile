@@ -13,10 +13,10 @@ release:
 	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE
 	make -C BUILD_RELEASE 
 
-install_samson: release
+install: release
 	sudo make -C BUILD_RELEASE install
 
-install: install_samson
+install_samson: install
 	make -C modules
 
 

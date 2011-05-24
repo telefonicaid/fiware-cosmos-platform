@@ -35,6 +35,8 @@
 #include "engine/DiskManager.h"            // engine::DiskManager
 #include "engine/ProcessManager.h"         // engine::ProcessManager
 
+#include "samson/stream/BlockManager.h"     // ss::stream::BlockManager
+
 
 /* ****************************************************************************
  *
@@ -125,6 +127,9 @@ int main(int argC, const char *argV[])
 	engine::ProcessManager::init( ss::SamsonSetup::shared()->num_processes );
 	engine::MemoryManager::init(  ss::SamsonSetup::shared()->memory );    
 	
+    // Block Manager
+    ss::stream::BlockManager::init();
+    
 	// Google protocol buffer deallocation
 	atexit(	google::protobuf::ShutdownProtobufLibrary );
 	
@@ -169,6 +174,10 @@ int main(int argC, const char *argV[])
     for ( size_t i = 0 ; i < _workers.size() ; i++)
         delete _workers[i];
     _workers.clear();
+    
+
+    LM_M(("Destroying BlockManager"));
+    ss::stream::BlockManager::destroy();
     
     
     LM_M(("Destroying Memory manager"));

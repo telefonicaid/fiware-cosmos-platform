@@ -7,11 +7,12 @@ ADD_SUBDIRECTORY(engine)
 ADD_SUBDIRECTORY(data)
 
 # SAMSON Common libraries
-ADD_SUBDIRECTORY(samson)
-
 ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(network)
 ADD_SUBDIRECTORY(module)
+
+ADD_SUBDIRECTORY(samson)
+
 
 # SAMSON Components
 ADD_SUBDIRECTORY(controller)

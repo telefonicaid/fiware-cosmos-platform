@@ -7,18 +7,18 @@ SET (HEADERS
 
 SET (STATIC_LIBS
      delilahLib
-     engine
      pa
      lm
-     au
      protobuf
      pthread
      dl
      curses
      readline
      samsonNetwork
-     samsonCommon	
      samsonStream 
+     engine
+     au
+     samsonCommon	
      ${COMMON_SAMSON_LIBS}
 )
 

@@ -190,6 +190,7 @@ int main(int argC, const char *argV[])
 	if ((long) ips[0] != workers)
 		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (long) ips[0]));
 
+	ss::SamsonSetup::load();
 	engine::MemoryManager::init(ss::SamsonSetup::shared()->memory);
 
 	samsonStarter = new SamsonStarter();

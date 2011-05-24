@@ -398,9 +398,11 @@ void SamsonSpawner::processesStart(ProcessVector* procVec)
 	}
 
 	if (startedProcesses == 0)
+	{
+		networkP->epMgr->hostMgr->list("ZERO processes for me");
 		LM_X(1, ("No processes for me (%s) in the Process Vector - am I not in the cluster ?", networkP->epMgr->hostMgr->localhostP->name));
+	}
 }
-
 
 
 /* ****************************************************************************

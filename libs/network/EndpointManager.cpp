@@ -70,10 +70,17 @@ static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, 
 */
 EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 {
-	workers     = 0;
-	controller  = NULL;
-	listener    = NULL;
-	procVec     = NULL;
+	workers          = 0;
+	endpoints        = 0;
+	endpoint         = NULL;
+	me               = NULL;
+	controller       = NULL;
+	listener         = NULL;
+	webListener      = NULL;
+	packetReceiver   = NULL;
+	dataReceiver     = NULL;
+	procVec          = NULL;
+	hostMgr          = NULL;
 
 
 	//

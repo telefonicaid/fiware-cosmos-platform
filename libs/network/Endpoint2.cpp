@@ -65,7 +65,7 @@ static void* writerThread(void* vP)
 			sleep(1);
 		}
 
-		ep->send(job->packetP->msgType, job->packetP->msgCode, job->packetP->dataP, job->packetP->dataLen, job->packetP);
+		ep->realsend(job->packetP->msgType, job->packetP->msgCode, job->packetP->dataP, job->packetP->dataLen, job->packetP);
 		delete job->packetP;
 		if (job->psi != NULL)
 			job->psi->notificationSent(0, true);
@@ -486,7 +486,7 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 *
 * send - 
 */
-Endpoint2::Status Endpoint2::send
+Endpoint2::Status Endpoint2::realsend
 (
 	Message::MessageType  type,
 	Message::MessageCode  code,
@@ -846,7 +846,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		return msgTreat2();
 	if (type == WebWorker)
 		return msgTreat2();
-
+	
 	LM_M(("Reading a message from '%s@%s'", name, host->name));
 	s = msgAwait(-1, -1, "Incoming message");
 	if (s != OK)
@@ -871,13 +871,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		}
 
 		if (header.type == Message::Msg)
-		{
-			if ((s = helloSend(Message::Ack)) != OK)
-			{
-				stateSet(ScheduledForRemoval);
-				LM_RE(s, ("helloSend error"));
-			}
-		}
+			helloSend(Message::Ack);
 
 		if (useSenderThread == true)
 		{
@@ -1006,48 +1000,6 @@ void Endpoint2::run(void)
 
 /* ****************************************************************************
 *
-* hello - send hello message
-*/
-Endpoint2::Status Endpoint2::hello(int secs, int usecs)
-{
-	Message::HelloData   h;
-	Message::Header      header;
-	void*                dataP   = &header;
-	long                 dataLen = sizeof(h);
-	Endpoint2::Status    s;
-	Packet*              packet = new Packet(Message::Msg, Message::Hello, &h, dataLen);
-
-	strncpy(h.name,  epMgr->me->nameGet(),  sizeof(h.name)  - 1);
-	strncpy(h.ip,    epMgr->me->hostname(), sizeof(h.ip)    - 1);
-	strncpy(h.alias, epMgr->me->aliasGet(), sizeof(h.alias) - 1);
-
-	h.type      = epMgr->me->typeGet();
-	h.workers   = -1;     // no longer used?
-	h.coreNo    = -1;     // no longer used?
-	h.workerId  = -1;     // no longer used?
-
-	send(NULL, packet);
-
-	if ((s = msgAwait(secs, usecs, "Hello header")) != OK)
-		LM_RE(s, ("msgAwait: %s", status(s)));
-
-	if ((s = receive(&header, &dataP, &dataLen, packet)) != OK)
-		LM_RE(s, ("receive: %s", status(s)));
-
-	if (header.code != Message::Hello)
-		LM_RE(NotHello, ("Wanted an ack for a hello, got a '%s' for '%s'",
-						 Message::messageType(header.type), Message::messageCode(header.code)));
-	if (header.type != Message::Ack)
-		LM_RE(NotAck, ("Wanted an ack for a hello, got a '%s' for '%s'",
-					   Message::messageType(header.type), Message::messageCode(header.code)));
-
-	return OK;
-}
-
-
-
-/* ****************************************************************************
-*
 * die - send die to endpoint and await death, with timeout
 */
 Endpoint2::Status Endpoint2::die(int secs, int usecs)
@@ -1055,9 +1007,9 @@ Endpoint2::Status Endpoint2::die(int secs, int usecs)
 	char    c;
 	int     nb;
 	Status  s;
+	Packet* packetP = new Packet(Message::Msg, Message::Die);
 
-	if ((s = send(Message::Msg, Message::Die)) != OK)
-		LM_RE(s, ("send(Die Msg): %s", status(s)));
+	send(NULL, packetP);
 
 	if ((s = msgAwait(secs, usecs, "Connection Closed")) != OK)
 		LM_RE(s, ("msgAwait: %s", status(s)));
@@ -1114,10 +1066,10 @@ Endpoint2::Status Endpoint2::helloDataSet(Type _type, const char* _name, const c
 *
 * helloSend - 
 */
-Endpoint2::Status Endpoint2::helloSend(Message::MessageType type)
+void Endpoint2::helloSend(Message::MessageType type)
 {
-	Message::HelloData hello;
-
+	Message::HelloData  hello;
+	Packet*             packetP;
 	memset(&hello, 0, sizeof(hello));
 
 	strncpy(hello.name,   epMgr->me->nameGet(),    sizeof(hello.name));
@@ -1130,7 +1082,8 @@ Endpoint2::Status Endpoint2::helloSend(Message::MessageType type)
 
 	LM_T(LmtWrite, ("sending hello %s to '%s' (my name: '%s', my type: '%s')", messageType(type), name, hello.name, epMgr->me->typeName()));
 
-	return send(type, Message::Hello, &hello, sizeof(hello));
+	packetP = new Packet(type, Message::Hello, &hello, sizeof(hello));
+	send(NULL, packetP);
 }
 
 }

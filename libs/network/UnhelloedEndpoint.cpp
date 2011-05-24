@@ -103,13 +103,7 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 		}
 
 		if (headerP->type == Message::Msg)
-		{
-			if ((s = helloSend(Message::Ack)) != OK)
-			{
-				stateSet(ScheduledForRemoval);
-				LM_RE(s, ("helloSend error"));
-			}
-		}
+			helloSend(Message::Ack);
 		epMgr->add(this);
 		break;
 
@@ -163,7 +157,7 @@ Endpoint2::Status UnhelloedEndpoint::helloDataSet(Type _type, const char* _name,
 *
 * helloSend - 
 */
-Endpoint2::Status UnhelloedEndpoint::helloSend(Message::MessageType type)
+void UnhelloedEndpoint::helloSend(Message::MessageType type)
 {
 	Message::HelloData hello;
 
@@ -179,7 +173,8 @@ Endpoint2::Status UnhelloedEndpoint::helloSend(Message::MessageType type)
 
 	LM_T(LmtWrite, ("sending hello %s to '%s' (my name: '%s', my type: '%s')", messageType(type), name, hello.name, epMgr->me->typeName()));
 
-	return send(type, Message::Hello, &hello, sizeof(hello));
+	Packet* packetP = new Packet(type, Message::Hello, &hello, sizeof(hello));
+	send(NULL, packetP);
 }
 
 
@@ -198,12 +193,7 @@ Endpoint2::Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 	Endpoint2::Status     s;
 
 	LM_M(("Sending Hello Msg to %s@%s", name, hostname()));
-	if ((s = helloSend(Message::Msg)) != 0)
-	{
-		free(dataP);
-		LM_RE(s, ("helloSend(%s@%s): %s", alias, hostname(), status(s)));
-	}
-	LM_M(("Hello sent successfully"));
+	helloSend(Message::Msg);
 
 	LM_M(("Awaiting reply"));
 	if ((s = msgAwait(secs, usecs, "Hello Ack")) != 0)

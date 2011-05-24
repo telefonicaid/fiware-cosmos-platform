@@ -216,7 +216,6 @@ public:
 
 	Status               okToSend(void);
 	void                 send(PacketSenderInterface* psi, Packet* packetP);
-	Status               send(Message::MessageType typ, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
 	void                 ack(Message::MessageCode code, void* data = NULL, int dataLen = 0);
 
 	virtual void         run(void);
@@ -232,11 +231,12 @@ public:
 	   LM_X(1, ("NOT IMPLEMENTED")); return NotImplemented;
 	};
 
-	Status               hello(int secs, int usecs = 0);     // send hello and await ack, with timeout
 	Status               die(int secs, int usecs = 0);       // send 'die' to endpoint, and await death, with timeout
 
 	Status               helloDataSet(Type _type, const char* _name, const char* _alias);
-	Endpoint2::Status    helloSend(Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
+	void                 helloSend(Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
+
+	Status               realsend(Message::MessageType typ, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
 
 private:
 	Status               partRead(void* vbuf, long bufLen, long* bufLenP, const char* what);

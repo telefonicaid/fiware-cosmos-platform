@@ -42,7 +42,7 @@ private:
 	bool               restartInProgress;
 
 	void               reset(Endpoint2* ep);
-	Endpoint2::Status  processVector(Endpoint2* ep, ProcessVector* procVec);
+	void               processVector(Endpoint2* ep, ProcessVector* procVec);
 	void               spawn(Process* process);
 
 	void               processesStart(ProcessVector* procVec);

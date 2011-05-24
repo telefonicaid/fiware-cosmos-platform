@@ -15,6 +15,7 @@
 #include "traceLevels.h"           // Trace levels
 
 #include "NetworkInterface.h"      // DataReceiverInterface, ...
+#include "Packet.h"                // Packet
 #include "Process.h"               // Process
 #include "platformProcesses.h"     // platformProcessesSave
 #include "ports.h"                 // Samson platform ports
@@ -255,7 +256,8 @@ void SamsonSpawner::reset(Endpoint2* ep)
 	restartInProgress    = false;
 
 	LM_T(LmtReset, ("Sending ack to RESET message to %s@%s", ep->nameGet(), ep->hostname()));
-	ep->send(Message::Ack, Message::Reset);
+	Packet* packetP = new Packet(Message::Ack, Message::Reset);
+	ep->send(NULL, packetP);
 	networkP->epMgr->show("Got RESET", true);
 }
 
@@ -265,10 +267,9 @@ void SamsonSpawner::reset(Endpoint2* ep)
 *
 * processVector - 
 */
-Endpoint2::Status SamsonSpawner::processVector(Endpoint2* ep, ProcessVector* procVec)
+void SamsonSpawner::processVector(Endpoint2* ep, ProcessVector* procVec)
 {
 	networkP->epMgr->procVecSet(procVec);
-
 
 	LM_M(("Got Process Vector with %d processes from %s@%s", procVec->processes, ep->nameGet(), ep->hostname()));
 
@@ -281,7 +282,8 @@ Endpoint2::Status SamsonSpawner::processVector(Endpoint2* ep, ProcessVector* pro
 
 	processesStart(procVec);
 
-	return ep->send(Message::Ack, Message::ProcessVector);
+	Packet* packetP = new Packet(Message::Ack, Message::ProcessVector);
+	ep->send(NULL, packetP);
 }
 
 

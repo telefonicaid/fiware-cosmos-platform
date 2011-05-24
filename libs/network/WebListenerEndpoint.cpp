@@ -163,8 +163,7 @@ void WebListenerEndpoint::msgTreat(void)
 	if (ep == NULL)
 		LM_RVE(("Endpoint2::accept returned NULL"));
 
-	if (ep->helloSend(Message::Msg) != OK)
-		LM_RVE(("Hello Send error"));
+	ep->helloSend(Message::Msg);
 }
 
 }

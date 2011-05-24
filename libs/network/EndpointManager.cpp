@@ -406,11 +406,17 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 
 		if ((ep->host != hostMgr->localhostP) && (ep->type != me->type))
 		{
-			if ((ep->type == Endpoint2::Controller) || (ep->type == Endpoint2::Worker) || (ep->type == Endpoint2::Delilah))
+			if ((ep->type == Endpoint2::Controller) ||
+				(ep->type == Endpoint2::Worker)     ||
+				(ep->type == Endpoint2::Delilah)    ||
+				(ep->type == Endpoint2::Spawner)    ||
+				(ep->type == Endpoint2::Setup)      ||
+				(ep->type == Endpoint2::Supervisor))
 			{
 				int        s;
 				pthread_t  tid;
 
+				ep->useSenderThread = true;
 				if ((s = pthread_create(&tid, NULL, readerThread, ep)) != 0)
 				{
 					LM_E(("pthread_create returned %d for %s@%s", s, ep->name, ep->host->name));
@@ -979,7 +985,8 @@ int EndpointManager::multiSend(PacketSenderInterface* psi, Endpoint2::Type typ, 
 */
 int EndpointManager::multiSend(Endpoint2::Type typ, Message::MessageCode code, void* dataP, int dataLen)
 {
-	int sends = 0;
+	int     sends = 0;
+	Packet* packetP;
 
 	for (unsigned int ix = 0; ix < endpoints; ix++)
 	{
@@ -989,7 +996,8 @@ int EndpointManager::multiSend(Endpoint2::Type typ, Message::MessageCode code, v
 		if (endpoint[ix]->type != typ)
 			continue;
 
-		endpoint[ix]->send(Message::Msg, code, dataP, dataLen);
+		packetP = new Packet(Message::Msg, code, dataP, dataLen);
+		endpoint[ix]->send(NULL, packetP);
 		++sends;
 	}
 

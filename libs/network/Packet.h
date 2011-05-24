@@ -36,7 +36,7 @@ namespace ss
 		network::Message*     message;  // Message with necessary fields (codified using Google Protocol Buffers)
 		engine::Buffer*       buffer;   // Data for key-values
 		
-		Packet(Message::MessageType type, Message::MessageCode code, void* _dataP, int _dataLen)
+		Packet(Message::MessageType type, Message::MessageCode code, void* _dataP = NULL, int _dataLen = 0)
 		{
 			msgType  = type;
 			msgCode  = code;

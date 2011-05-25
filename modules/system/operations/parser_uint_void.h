@@ -7,8 +7,7 @@
 #define _H_SAMSON_system_parser_uint_void
 
 
-#include <samson/Operation.h>
-#include <samson/Operation.h>
+#include <samson/module/Operation.h>
 #include <samson/modules/system/SimpleParser.h>
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/Void.h>

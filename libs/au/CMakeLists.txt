@@ -38,7 +38,7 @@ Rate.cpp
 # Include directories
 # -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
-include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
+
 
 
 # Library declaration

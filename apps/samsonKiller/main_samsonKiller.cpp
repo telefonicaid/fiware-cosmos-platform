@@ -7,14 +7,14 @@
 * CREATION DATE            Feb 25 2011
 *
 */
-#include "parseArgs.h"          // parseArgs
-#include "paUsage.h"            // paUsage
-#include "traceLevels.h"        // Trace levels
+#include "parseArgs/parseArgs.h"          // parseArgs
+#include "parseArgs/paUsage.h"            // paUsage
+#include "logMsg/traceLevels.h"        // Trace levels
 
-#include "Endpoint.h"           // Endpoint
-#include "ports.h"              // SPAWNER_PORT, CONTROLLER_PORT, WORKER_PORT
-#include "iomConnect.h"         // iomConnect
-#include "iomMsgSend.h"         // iomMsgSend
+#include "samson/network/Endpoint.h"           // Endpoint
+#include "samson/common/ports.h"              // SPAWNER_PORT, CONTROLLER_PORT, WORKER_PORT
+#include "samson/network/iomConnect.h"         // iomConnect
+#include "samson/network/iomMsgSend.h"         // iomMsgSend
 
 
 
@@ -61,8 +61,8 @@ static void sysKill(const char* name)
 */
 static int killProcess(const char* name, unsigned short port)
 {
-	ss::Endpoint  ep;
-	ss::Endpoint  me;
+	samson::Endpoint  ep;
+	samson::Endpoint  me;
 	int           s;
 
 	ep.name = name;
@@ -70,7 +70,7 @@ static int killProcess(const char* name, unsigned short port)
 
 	me.name = "samsonKiller";
 	
-	if ((ep.wFd == -1) || ((s = iomMsgSend(&ep, &me, ss::Message::Die, ss::Message::Msg)) != 0))
+	if ((ep.wFd == -1) || ((s = iomMsgSend(&ep, &me, samson::Message::Die, samson::Message::Msg)) != 0))
 		sysKill(name);
 	else
 	{

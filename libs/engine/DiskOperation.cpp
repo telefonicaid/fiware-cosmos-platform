@@ -1,6 +1,6 @@
 #include "engine/DiskOperation.h"		// Own interface
-#include "logMsg.h"                     // LM_T
-#include "traceLevels.h"                // LmtDisk
+#include "logMsg/logMsg.h"                     // LM_T
+#include "logMsg/traceLevels.h"                // LmtDisk
 #include "engine/Engine.h"				// engine::Engine
 #include "engine/DiskManager.h"         // engine::DiskManager
 #include "engine/ReadFile.h"            // engine::ReadFile

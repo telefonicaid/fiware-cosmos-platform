@@ -7,19 +7,19 @@
 * CREATION DATE            Dec 14 2010
 *
 */
-#include "parseArgs.h"             // parseArgs
-#include "logMsg.h"                // LM_*
-#include "traceLevels.h"           // Trace levels
+#include "parseArgs/parseArgs.h"             // parseArgs
+#include "logMsg/logMsg.h"                // LM_*
+#include "logMsg/traceLevels.h"           // Trace levels
 
-#include "Network2.h"              // Network2
-#include "Endpoint2.h"             // Endpoint2
-#include "EndpointManager.h"       // EndpointManager
+#include "samson/network/Network2.h"              // Network2
+#include "samson/network/Endpoint2.h"             // Endpoint2
+#include "samson/network/EndpointManager.h"       // EndpointManager
 
-#include "SamsonWorker.h"          // ss::SamsonWorker
-#include "SamsonSetup.h"           // ss::SamsonSetup
-#include "engine/MemoryManager.h"  // ss::MemoryManager
-#include "engine/Engine.h"         // ss::Engine
-#include "SharedMemoryManager.h"   // ss::SharedMemoryManager
+#include "samson/worker/SamsonWorker.h"          // samson::SamsonWorker
+#include "samson/common/SamsonSetup.h"           // samson::SamsonSetup
+#include "engine/MemoryManager.h"  // samson::MemoryManager
+#include "engine/Engine.h"         // samson::Engine
+#include "samson/worker/SharedMemoryManager.h"   // samson::SharedMemoryManager
 
 #include "engine/DiskManager.h"    // engine::DiskManager
 #include "engine/ProcessManager.h" // engine::ProcessManager
@@ -58,7 +58,7 @@ PaArgument paArgs[] =
 * logFd - file descriptor for log file used in all libraries
 */
 int               logFd  = -1;
-ss::SamsonWorker* worker = NULL;
+samson::SamsonWorker* worker = NULL;
 
 
 
@@ -103,20 +103,20 @@ int main(int argC, const char *argV[])
 
 	logFd = lmFirstDiskFileDescriptor();
 
-	ss::SamsonSetup::load(workingDir);  // Load setup and create default directories
+	samson::SamsonSetup::load(workingDir);  // Load setup and create default directories
     
-	engine::SharedMemoryManager::init(ss::SamsonSetup::shared()->num_processes , ss::SamsonSetup::shared()->shared_memory_size_per_buffer);
+	engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->num_processes , samson::SamsonSetup::shared()->shared_memory_size_per_buffer);
 	engine::Engine::init();
-	ss::ModulesManager::init();
+	samson::ModulesManager::init();
 	engine::DiskManager::init(1);
-	engine::ProcessManager::init(ss::SamsonSetup::shared()->num_processes);
-	engine::MemoryManager::init(ss::SamsonSetup::shared()->memory);
+	engine::ProcessManager::init(samson::SamsonSetup::shared()->num_processes);
+	engine::MemoryManager::init(samson::SamsonSetup::shared()->memory);
 
     
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
-	ss::EndpointManager* epMgr     = new ss::EndpointManager(ss::Endpoint2::Worker);
-	ss::Network2*        networkP  = new ss::Network2(epMgr);
+	samson::EndpointManager* epMgr     = new samson::EndpointManager(samson::Endpoint2::Worker);
+	samson::Network2*        networkP  = new samson::Network2(epMgr);
 
 
 	LM_T(LmtInit, ("Waiting for network connection ..."));
@@ -130,7 +130,7 @@ int main(int argC, const char *argV[])
 	// Instance of SamsonWorker object (network contains at least the number of wokers)
 	// -----------------------------------------------------------------------------------
 	
-	worker = new ss::SamsonWorker(networkP);
+	worker = new samson::SamsonWorker(networkP);
 
 	// Run the main engine
 	engine::Engine::run();

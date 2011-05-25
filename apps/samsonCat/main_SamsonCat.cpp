@@ -1,13 +1,13 @@
 
 #include <iostream>
 #include "au/CommandLine.h"			// au::CommandLine
-#include "coding.h"					// ss::FormatHeader
-#include "samson/KVFormat.h"		// ss::KVFormat
-#include "ModulesManager.h"			// ss::ModulesManager
+#include "samson/common/coding.h"					// samson::FormatHeader
+#include "samson/module/KVFormat.h"		// samson::KVFormat
+#include "samson/module/ModulesManager.h"			// samson::ModulesManager
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "SamsonSetup.h"			// ss::SamsonSetup
+#include "samson/common/SamsonSetup.h"			// samson::SamsonSetup
 
 int logFd = -1;
 
@@ -23,7 +23,7 @@ int main(int argc, const char *argv[])
 	cmdLine.set_flag_string("working",SAMSON_DEFAULT_WORKING_DIRECTORY);
 	cmdLine.parse(argc , argv);
 
-	ss::SamsonSetup::load( cmdLine.get_flag_string("working") );
+	samson::SamsonSetup::load( cmdLine.get_flag_string("working") );
 	
 	bool debug = cmdLine.get_flag_bool("debug");
 	int limit = cmdLine.get_flag_int("limit");
@@ -44,12 +44,12 @@ int main(int argc, const char *argv[])
 		exit(0);
 	}
 	
-	ss::KVHeader header;
+	samson::KVHeader header;
 	int          nb;
-	nb = fread(&header, 1, sizeof(ss::KVHeader), file);
+	nb = fread(&header, 1, sizeof(samson::KVHeader), file);
 
-	if (nb != sizeof(ss::KVHeader))
-		printf("WARNING: read only %d bytes (wanted to read %ld)\n", nb, (long int) sizeof(ss::KVHeader));
+	if (nb != sizeof(samson::KVHeader))
+		printf("WARNING: read only %d bytes (wanted to read %ld)\n", nb, (long int) sizeof(samson::KVHeader));
 
 		
 
@@ -65,13 +65,13 @@ int main(int argc, const char *argv[])
 	stat( fileName.c_str() , &filestatus );
 	
 	
-	size_t expected_size =   (size_t)( sizeof(ss::KVHeader) + (sizeof(ss::KVInfo)*KVFILE_NUM_HASHGROUPS) + header.info.size ) ;
+	size_t expected_size =   (size_t)( sizeof(samson::KVHeader) + (sizeof(samson::KVInfo)*KVFILE_NUM_HASHGROUPS) + header.info.size ) ;
 	if( (size_t)filestatus.st_size != expected_size)
 	{
 		std::cerr << "Worng file length\n";
 		std::cerr << "Expected:";
-		std::cerr << " Header: " << sizeof(ss::KVHeader);
-		std::cerr << " + Info: " << (sizeof(ss::KVInfo)*KVFILE_NUM_HASHGROUPS);
+		std::cerr << " Header: " << sizeof(samson::KVHeader);
+		std::cerr << " + Info: " << (sizeof(samson::KVInfo)*KVFILE_NUM_HASHGROUPS);
 		std::cerr << " + Data: " <<  header.info.size;
 		std::cerr << " = " << expected_size << "\n";
 		std::cerr << "File size: " << filestatus.st_size << " bytes\n";
@@ -86,14 +86,14 @@ int main(int argc, const char *argv[])
 	
 	
 	
-	ss::KVFormat format = header.getFormat(); 
+	samson::KVFormat format = header.getFormat(); 
 	if( cmdLine.get_flag_bool("header") )
 		std::cout << "Format: " << format.str() << "\n";
 
-	ss::ModulesManager modulesManager;
+	samson::ModulesManager modulesManager;
 
-	ss::Data *keyData = modulesManager.getData(format.keyFormat);
-	ss::Data *valueData = modulesManager.getData(format.valueFormat);
+	samson::Data *keyData = modulesManager.getData(format.keyFormat);
+	samson::Data *valueData = modulesManager.getData(format.valueFormat);
 	
 	if(!keyData )
 	{
@@ -107,8 +107,8 @@ int main(int argc, const char *argv[])
 		exit(0);
 	}
 	
-	ss::KVInfo*  info = (ss::KVInfo*) malloc(  sizeof(ss::KVInfo)*(KVFILE_NUM_HASHGROUPS));
-	int          total_size =  sizeof(ss::KVInfo) * (KVFILE_NUM_HASHGROUPS);
+	samson::KVInfo*  info = (samson::KVInfo*) malloc(  sizeof(samson::KVInfo)*(KVFILE_NUM_HASHGROUPS));
+	int          total_size =  sizeof(samson::KVInfo) * (KVFILE_NUM_HASHGROUPS);
 	nb = fread(info, 1, total_size, file);
 	if (nb != total_size)
 		printf("WARNING: read only %d bytes (wanted to read %d)\n", nb, total_size);
@@ -147,8 +147,8 @@ int main(int argc, const char *argv[])
 		exit(0);
 	
 	
-	ss::DataInstance *key = keyData->getInstance();
-	ss::DataInstance *value = valueData->getInstance();
+	samson::DataInstance *key = keyData->getInstance();
+	samson::DataInstance *value = valueData->getInstance();
 	
 	for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ;i++)
 	{

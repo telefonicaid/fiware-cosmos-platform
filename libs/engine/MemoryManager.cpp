@@ -8,8 +8,8 @@
 *
 */
 
-#include "logMsg.h"                   // LM_*
-#include "engine/Buffer.h"		              // ss::Buffer
+#include "logMsg/logMsg.h"                   // LM_*
+#include "engine/Buffer.h"		              // samson::Buffer
 #include <sstream>		              // std::stringstream
 
 #include "engine/MemoryManager.h"	          // Own interface

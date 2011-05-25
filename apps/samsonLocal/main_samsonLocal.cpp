@@ -1,26 +1,26 @@
-#include "parseArgs.h"          // parseArgs
+#include "parseArgs/parseArgs.h"          // parseArgs
 
 #include <vector>				// std::vector
 #include <sstream>				// std::ostringstream
 
-#include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // Trace Levels
-#include "traces.h"				// Traces stuff: samsonInitTrace(.) , ...
+#include "logMsg/logMsg.h"             // LM_*
+#include "logMsg/traceLevels.h"        // Trace Levels
+#include "samson/common/traces.h"				// Traces stuff: samsonInitTrace(.) , ...
 
-#include "Endpoint.h"			// ss::EndPoint
+#include "samson/network/Endpoint.h"			// samson::EndPoint
 #include "FakeEndpoint.h"
 #include "NetworkFake.h"
 #include "NetworkCenter.h"
-#include "NetworkInterface.h"
+#include "samson/network/NetworkInterface.h"
 
-#include "DelilahConsole.h"		// ss:DelilahConsole
-#include "SamsonWorker.h"		// ss::SamsonWorker
-#include "SamsonController.h"	// ss:: SasonController
-#include "SamsonSetup.h"		// ss::SamsonSetup
+#include "samson/delilah/DelilahConsole.h"		// ss:DelilahConsole
+#include "samson/worker/SamsonWorker.h"		// samson::SamsonWorker
+#include "samson/controller/SamsonController.h"	// samson:: SasonController
+#include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
 
-#include "ModulesManager.h"		// ss::ModulesManager
-#include "samson/Operation.h"	// ss::Operation
-#include "SamsonSetup.h"		// ss::SamsonSetup
+#include "samson/module/ModulesManager.h"		// samson::ModulesManager
+#include "samson/module/Operation.h"	// samson::Operation
+#include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
 
 #include <string.h>                 // strcmp
 #include <signal.h>                 // signal(.)
@@ -28,14 +28,14 @@
 #include "engine/Engine.h"                 // engine::Engine
 #include "engine/EngineElement.h"          // engine::EngineElement
 
-#include "ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
+#include "samson/worker/ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
 
-#include "SharedMemoryManager.h"    // ss::SharedMemoryManager
+#include "samson/worker/SharedMemoryManager.h"    // samson::SharedMemoryManager
 
 #include "engine/DiskManager.h"            // engine::DiskManager
 #include "engine/ProcessManager.h"         // engine::ProcessManager
 
-#include "samson/stream/BlockManager.h"     // ss::stream::BlockManager
+#include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
 
 
 /* ****************************************************************************
@@ -75,7 +75,7 @@ int logFd = -1;
 
 void *run_DelilahConsole(void* d)
 {
-	ss::DelilahConsole* delilahConsole = (ss::DelilahConsole*) d;
+	samson::DelilahConsole* delilahConsole = (samson::DelilahConsole*) d;
 	delilahConsole->run();
 
     // When finishing this thread, exit que engine to finish the app
@@ -109,47 +109,47 @@ int main(int argC, const char *argV[])
     if( thread_mode )
     {
         LM_M(("samsonLocal started in thread mode"));
-        ss::ProcessItemIsolated::isolated_process_as_tread = true;
+        samson::ProcessItemIsolated::isolated_process_as_tread = true;
     }
     
     LM_M(("samsonLocal: Seting working directory as %s", workingDir ));
-	ss::SamsonSetup::load( workingDir );		// Load setup and create default directories
+	samson::SamsonSetup::load( workingDir );		// Load setup and create default directories
 
 	engine::Engine::init();
     
     // Add this element to test how Engine crash for exesive task time
     // engine::Engine::add( new engine::EngineElementSleepTest() );
     
-	ss::ModulesManager::init();		// Init the modules manager
+	samson::ModulesManager::init();		// Init the modules manager
 
-	engine::SharedMemoryManager::init( ss::SamsonSetup::shared()->num_processes , ss::SamsonSetup::shared()->shared_memory_size_per_buffer );
+	engine::SharedMemoryManager::init( samson::SamsonSetup::shared()->num_processes , samson::SamsonSetup::shared()->shared_memory_size_per_buffer );
 	engine::DiskManager::init( 1 );
-	engine::ProcessManager::init( ss::SamsonSetup::shared()->num_processes );
-	engine::MemoryManager::init(  ss::SamsonSetup::shared()->memory );    
+	engine::ProcessManager::init( samson::SamsonSetup::shared()->num_processes );
+	engine::MemoryManager::init(  samson::SamsonSetup::shared()->memory );    
 	
     // Block Manager
-    ss::stream::BlockManager::init();
+    samson::stream::BlockManager::init();
     
 	// Google protocol buffer deallocation
 	atexit(	google::protobuf::ShutdownProtobufLibrary );
 	
-	LM_M(("samsonLocal started with memory=%s and #processors=%d", au::Format::string( ss::SamsonSetup::shared()->memory, "B").c_str() , ss::SamsonSetup::shared()->num_processes ));
+	LM_M(("samsonLocal started with memory=%s and #processors=%d", au::Format::string( samson::SamsonSetup::shared()->memory, "B").c_str() , samson::SamsonSetup::shared()->num_processes ));
 	
 	// Fake network element with N workers
-	ss::NetworkFakeCenter center(workers);		
+	samson::NetworkFakeCenter center(workers);		
 	
 	// Create one controller, one dalilah and N workers
-	ss::SamsonController controller( center.getNetwork(-1) );
+	samson::SamsonController controller( center.getNetwork(-1) );
 	
-	ss::DelilahConsole delilahConsole( center.getNetwork(-2) );
+	samson::DelilahConsole delilahConsole( center.getNetwork(-2) );
 	
 	LM_T(LmtInit, ("SamsonLocal start"));
 	LM_D(("Starting samson demo (logFd == %d)", ::logFd));
 
-	std::vector< ss::SamsonWorker* > _workers;
+	std::vector< samson::SamsonWorker* > _workers;
 	for (int i = 0 ; i < workers ; i ++ )
 	{
-		ss::SamsonWorker *w = new ss::SamsonWorker( center.getNetwork(i) );
+		samson::SamsonWorker *w = new samson::SamsonWorker( center.getNetwork(i) );
 		_workers.push_back(w);
 	}
 
@@ -177,7 +177,7 @@ int main(int argC, const char *argV[])
     
 
     LM_M(("Destroying BlockManager"));
-    ss::stream::BlockManager::destroy();
+    samson::stream::BlockManager::destroy();
     
     
     LM_M(("Destroying Memory manager"));

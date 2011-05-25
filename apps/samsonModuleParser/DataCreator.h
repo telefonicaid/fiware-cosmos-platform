@@ -19,7 +19,7 @@
 #include "OperationContainer.h"	// OperationContainer
 
 
-namespace ss {
+namespace samson {
 
 	class ModuleContainer;
 	class OperationContainer;

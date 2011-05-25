@@ -52,7 +52,7 @@ SET (SOURCES
 
 # Inclue directories
 # -----------------------------------------------------------------
-include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
+include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Library declaration
 # -----------------------------------------------------------------

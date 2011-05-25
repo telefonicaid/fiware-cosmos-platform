@@ -1,12 +1,12 @@
 #ifndef _H_BLOCK_MANAGER
 #define _H_BLOCK_MANAGER
 
-#include "Block.h"                      // ss::stream::Block
+#include "Block.h"                      // samson::stream::Block
 #include "au/set.h"                     // au::set
 #include "engine/EngineNotification.h"  // engien::EngineListener
 
 
-namespace ss {
+namespace samson {
     namespace stream {
         
         /**

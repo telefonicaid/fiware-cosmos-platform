@@ -9,14 +9,14 @@
 */
 #include <signal.h>                // kill, SIGINT, ...
 
-#include "parseArgs.h"             // parseArgs
-#include "paConfig.h"              // paConfigCleanup
-#include "logMsg.h"                // LM_*
-#include "traceLevels.h"           // Trace levels
+#include "parseArgs/parseArgs.h"             // parseArgs
+#include "parseArgs/paConfig.h"              // paConfigCleanup
+#include "logMsg/logMsg.h"                // LM_*
+#include "logMsg/traceLevels.h"           // Trace levels
 
-#include "SamsonSetup.h"           // ss::SamsonSetup
-#include "engine/MemoryManager.h"  // ss::MemoryManager
-#include "daemonize.h"             // daemonize
+#include "samson/common/SamsonSetup.h"           // samson::SamsonSetup
+#include "engine/MemoryManager.h"  // samson::MemoryManager
+#include "samson/common/daemonize.h"             // daemonize
 #include "SamsonSpawner.h"         // SamsonSpawner
 
 
@@ -52,7 +52,7 @@ PaArgument paArgs[] =
 * Global variables
 */
 int                     logFd             = -1;
-ss::SamsonSpawner*      spawnerP          = NULL;
+samson::SamsonSpawner*      spawnerP          = NULL;
 
 
 
@@ -116,10 +116,10 @@ int main(int argC, const char *argV[])
 
 	atexit(exitFunction);
 	
-	ss::SamsonSetup::load(workingDir);
-	engine::MemoryManager::init(ss::SamsonSetup::shared()->memory);
+	samson::SamsonSetup::load(workingDir);
+	engine::MemoryManager::init(samson::SamsonSetup::shared()->memory);
 
-	spawnerP = new ss::SamsonSpawner();
+	spawnerP = new samson::SamsonSpawner();
 	spawnerP->init();
 	spawnerP->run();
 

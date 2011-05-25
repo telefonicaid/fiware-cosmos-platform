@@ -10,7 +10,7 @@
 #include <samson/modules/system/UInt2_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace system{
 
 

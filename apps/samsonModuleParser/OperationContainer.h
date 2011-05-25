@@ -17,12 +17,12 @@
 #include <string>
 #include <vector>
 
-#include <samson/KVFormat.h>
+#include <samson/module/KVFormat.h>
 #include "DataType.h"
 
 
 
-namespace ss
+namespace samson
 {
 	class DataCreator;
 	class AUTockenizer;
@@ -124,25 +124,25 @@ namespace ss
 		std::string parentClass()
 		{
 			if( type == "generator")
-				return "ss::Generator";
+				return "samson::Generator";
 			
 			if( type == "map")
-				return "ss::Map";
+				return "samson::Map";
 			
 			if( type == "reduce")
-				return "ss::Reduce";
+				return "samson::Reduce";
 
 			if( type == "script")
-				return "ss::Script";
+				return "samson::Script";
 
 			if( type == "parser")
-				return "ss::Parser";
+				return "samson::Parser";
 			
 			if( type == "parserOut")
-				return "ss::ParserOut";
+				return "samson::ParserOut";
 
 			if( type == "parserOutReduce")
-				return "ss::ParserOutReduce";
+				return "samson::ParserOutReduce";
 			
             
 			fprintf(stderr, "Error: Unknown type of operation in the operation section (%s)\n" , type.c_str());
@@ -182,13 +182,13 @@ namespace ss
 			file << "\n";
 			file << "\n";
 			
-			file << "#include <samson/samson.h>\n";
+			file << "#include <samson/module/samson.h>\n";
 			
 			file << "\n";
 			file << "\n";
 			
 			// Name space
-			file << "namespace ss{\n";
+			file << "namespace samson{\n";
 			file << "namespace " << module << "{\n";
 			
 			file << "\n";
@@ -208,11 +208,11 @@ namespace ss
 			{
 				
 				if( (type == "map") || (type == "reduce") )
-					file << "\t\tvoid run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )\n\t\t{\n\t\t}\n";
+					file << "\t\tvoid run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )\n\t\t{\n\t\t}\n";
 				if( type == "generator" )
-					file << "\t\tvoid run( ss::KVWriter *writer )\n\t\t{\n\t\t}\n";
+					file << "\t\tvoid run( samson::KVWriter *writer )\n\t\t{\n\t\t}\n";
 				if( type == "parser" )
-					file << "\t\tvoid run( char *data , size_t length , ss::KVWriter *writer )\n\t\t{\n\t\t}\n";
+					file << "\t\tvoid run( char *data , size_t length , samson::KVWriter *writer )\n\t\t{\n\t\t}\n";
 				if( ( type == "parserOut" ) || ( type == "parserOutReduce" ) )
 					file << "\t\tvoid run(KVSetStruct* inputs , TXTWriter *writer )\n\t\t{\n\t\t}\n";
 
@@ -228,7 +228,7 @@ namespace ss
 			file << "\n";
 			
 			// End of namspace
-			file << "} // end of namespace ss\n";
+			file << "} // end of namespace samson\n";
 			file << "} // end of namespace " << module << "\n";
 			
 			file << "\n";

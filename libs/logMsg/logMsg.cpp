@@ -48,7 +48,7 @@
 #include <sys/time.h>           /* gettimeofday                              */
 #include <time.h>               /* time, localtime_r, .                      */
 
-#include "logMsg.h"             /* Own interface                             */
+#include "logMsg/logMsg.h"             /* Own interface                             */
 
 extern "C" pid_t gettid(void);
 

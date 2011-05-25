@@ -19,7 +19,7 @@
 #include <QPushButton>
 #include <QGraphicsSceneWheelEvent>
 
-#include "logMsg.h"             // LM_X
+#include "logMsg/logMsg.h"             // LM_X
 
 #include "QsiFunction.h"        // Function
 #include "QsiCallback.h"        // Callback

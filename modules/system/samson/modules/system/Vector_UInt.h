@@ -10,7 +10,7 @@
 #include <samson/modules/system/Vector_UInt_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace system{
 
 

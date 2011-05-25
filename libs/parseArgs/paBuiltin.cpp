@@ -2,8 +2,8 @@
 
 #include "baStd.h"              /* BA standard header file                  */
 
-#include "paConfig.h"           /* config variables                          */
-#include "parseArgs.h"          /* PaArgument                                */
+#include "parseArgs/paConfig.h"           /* config variables                          */
+#include "parseArgs/parseArgs.h"          /* PaArgument                                */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paEnvVals.h"          /* paEnvName                                 */

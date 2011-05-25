@@ -11,7 +11,7 @@
 #include <QDesktopWidget>
 #include <QWidget>
 
-#include "logMsg.h"             // LM_*
+#include "logMsg/logMsg.h"             // LM_*
 #include "parseArgs.h"          // parseArgs
 #include "../../libs/ui/traceLevels.h"
 

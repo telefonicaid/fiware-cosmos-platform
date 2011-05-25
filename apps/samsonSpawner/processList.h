@@ -12,7 +12,7 @@
 */
 #include <sys/time.h>           // struct timeval
 
-#include "Process.h"            // ss::Process
+#include "samson/common/Process.h"            // samson::Process
 
 
 
@@ -28,7 +28,7 @@ extern void processListInit(unsigned int pMax);
 *
 * processTypeName - 
 */
-extern const char* processTypeName(ss::Process* processP);
+extern const char* processTypeName(samson::Process* processP);
 
 
 
@@ -36,7 +36,7 @@ extern const char* processTypeName(ss::Process* processP);
 *
 * processAdd - 
 */
-extern ss::Process* processAdd(ss::Process* process);
+extern samson::Process* processAdd(samson::Process* process);
 
 
 
@@ -44,9 +44,9 @@ extern ss::Process* processAdd(ss::Process* process);
 *
 * processAdd - 
 */
-extern ss::Process* processAdd
+extern samson::Process* processAdd
 (
-	ss::ProcessType  type,
+	samson::ProcessType  type,
 	const char*      name,
 	const char*      alias,
 	const char*      controllerHost,
@@ -60,7 +60,7 @@ extern ss::Process* processAdd
 *
 * processRemove - 
 */
-extern void processRemove(ss::Process* processP);
+extern void processRemove(samson::Process* processP);
 
 
 
@@ -68,8 +68,8 @@ extern void processRemove(ss::Process* processP);
 *
 * processLookup - 
 */
-extern ss::Process* processLookup(pid_t pid);
-extern ss::Process* processLookup(const char* alias);
+extern samson::Process* processLookup(pid_t pid);
+extern samson::Process* processLookup(const char* alias);
 
 
 
@@ -85,7 +85,7 @@ extern unsigned int processMaxGet(void);
 *
 * processListGet - 
 */
-extern ss::Process** processListGet(void);
+extern samson::Process** processListGet(void);
 
 
 
@@ -101,7 +101,7 @@ extern void processListShow(const char* why, bool forcedOn = false);
 *
 * processSpawn - 
 */
-extern void processSpawn(ss::Process* processP);
+extern void processSpawn(samson::Process* processP);
 
 
 

@@ -10,17 +10,17 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace system{
 
 
-	class UInt2_base : public ss::DataInstance{
+	class UInt2_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt value_1;
-	::ss::system::UInt value_2;
+	::samson::system::UInt value_1;
+	::samson::system::UInt value_2;
 
-	UInt2_base() : ss::DataInstance(){
+	UInt2_base() : samson::DataInstance(){
 	}
 
 	~UInt2_base() {
@@ -42,8 +42,8 @@ namespace system{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -53,11 +53,11 @@ namespace system{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing value_1
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing value_2
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -88,7 +88,7 @@ namespace system{
 
 	}; //class UInt2_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace system
 
 #endif

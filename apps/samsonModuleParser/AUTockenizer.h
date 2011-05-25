@@ -13,7 +13,7 @@
 #include <vector>		// std::vector
 #include <string>		// std::string
 
-namespace ss {
+namespace samson {
 	
 	/**
 	 General tokenizer element

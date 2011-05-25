@@ -13,11 +13,11 @@
  */
 
 #include "engine/MemoryManager.h"
-#include "coding.h"
+#include "samson/common/coding.h"
 #include "engine/DiskOperation.h"       // engine::DiskOperation
 #include "engine/EngineNotification.h"  // engien::EngineListener
 
-namespace ss {
+namespace samson {
     namespace stream
     {
         

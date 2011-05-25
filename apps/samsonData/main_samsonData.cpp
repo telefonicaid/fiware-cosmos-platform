@@ -3,8 +3,8 @@
 #include <fstream>			// std::ifstream
 #include <cstring>			// size_t
 
-#include "data.pb.h"		// data::Command
-#include "DataManager.h"	// ss::LogFile
+#include "samson/data/data.pb.h"		// data::Command
+#include "samson/data/DataManager.h"	// samson::LogFile
 
 
 
@@ -12,25 +12,25 @@
 
 
 
-std::string stringForAction( ss::data::Command_Action action )
+std::string stringForAction( samson::data::Command_Action action )
 {
 	switch (action) {
-		case ss::data::Command_Action_Begin:
+		case samson::data::Command_Action_Begin:
 			return "[Begin     ]";
 			break;
-		case ss::data::Command_Action_Operation:
+		case samson::data::Command_Action_Operation:
 			return "[Operation ]";
 			break;
-		case ss::data::Command_Action_Finish:
+		case samson::data::Command_Action_Finish:
 			return "[Finish    ]";
 			break;
-		case ss::data::Command_Action_Cancel:
+		case samson::data::Command_Action_Cancel:
 			return "[Cancel    ]";
 			break;
-		case ss::data::Command_Action_Comment:
+		case samson::data::Command_Action_Comment:
 			return "[Comment   ]";
 			break;	
-		case ss::data::Command_Action_Session:
+		case samson::data::Command_Action_Session:
 			return "[Session   ]";
 			break;	
 	}
@@ -41,15 +41,15 @@ std::string stringForAction( ss::data::Command_Action action )
 
 bool processFile( std::string fileName )
 {
-	ss::LogFile file(fileName);
+	samson::LogFile file(fileName);
 	if( !file.openToRead( ) )
 		return false;
 	
-	ss::data::Command command;
+	samson::data::Command command;
 	while( file.read( command ) )
 	{
 		size_t task_id = command.task_id();
-		ss::data::Command_Action action = command.action();
+		samson::data::Command_Action action = command.action();
 		std::string txt = command.command();
 
 		// Time in a particular format
@@ -62,7 +62,7 @@ bool processFile( std::string fileName )
 		
 		strftime (buffer_time,100,"%d/%m/%Y (%X)",&timeinfo);
 		
-		if( action == ss::data::Command_Action_Session)
+		if( action == samson::data::Command_Action_Session)
 			std::cout << "*** " << stringForAction( action ) << " " << txt << std::endl;
 		else
 			std::cout << "<" << buffer_time << ">" << " [" << task_id  << "] " << stringForAction( action ) << " " << txt << std::endl;

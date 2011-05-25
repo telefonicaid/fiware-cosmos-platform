@@ -4,7 +4,7 @@
 #include <stdio.h>             /* sprintf */
 #include <string>				// std::string
 #include <sys/time.h>           // struct timeval
-#include "logMsg.h"             // LM_W
+#include "logMsg/logMsg.h"             // LM_W
 
 namespace au {
 

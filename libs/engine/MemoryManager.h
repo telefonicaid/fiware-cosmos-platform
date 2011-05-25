@@ -20,7 +20,7 @@
 #include <list>						// std::list
 #include <iostream>					// std::cout
 
-#include "engine/Buffer.h"					// ss::Buffer
+#include "engine/Buffer.h"					// samson::Buffer
 #include "au/Token.h"					// au::Token
 #include "au/Stopper.h"				// au::Stopper
 #include "au/map.h"					// au::map

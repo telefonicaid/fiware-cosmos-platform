@@ -11,24 +11,24 @@
 #include <sys/types.h>             // pid_t
 #include <sys/wait.h>              // waitpid
 
-#include "logMsg.h"                // LM_*
-#include "traceLevels.h"           // Trace levels
+#include "logMsg/logMsg.h"                // LM_*
+#include "logMsg/traceLevels.h"           // Trace levels
 
-#include "NetworkInterface.h"      // DataReceiverInterface, ...
-#include "Packet.h"                // Packet
-#include "Process.h"               // Process
-#include "platformProcesses.h"     // platformProcessesSave
-#include "ports.h"                 // Samson platform ports
+#include "samson/network/NetworkInterface.h"      // DataReceiverInterface, ...
+#include "samson/network/Packet.h"                // Packet
+#include "samson/common/Process.h"               // Process
+#include "samson/common/platformProcesses.h"     // platformProcessesSave
+#include "samson/common/ports.h"                 // Samson platform ports
 #include "processList.h"           // processListInit, Add, Remove and Lookup
-#include "samsonDirectories.h"     // SAMSON_PLATFORM_PROCESSES
-#include "Network2.h"              // Network2
+#include "samson/common/samsonDirectories.h"     // SAMSON_PLATFORM_PROCESSES
+#include "samson/network/Network2.h"              // Network2
 
 #include "globals.h"               // Global variables for Spawner
 #include "SamsonSpawner.h"         // Own interface
 
 
 
-namespace ss
+namespace samson
 {
 
 
@@ -115,7 +115,7 @@ void SamsonSpawner::run(void)
 *
 * SamsonSpawner::init - 
 */
-void SamsonSpawner::init(ss::ProcessVector* pv)
+void SamsonSpawner::init(samson::ProcessVector* pv)
 {
 	LM_W(("Got initialized with a process vector ..."));
 }
@@ -126,11 +126,11 @@ void SamsonSpawner::init(ss::ProcessVector* pv)
 *
 * SamsonSpawner::receive - 
 */
-int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP)
+int SamsonSpawner::receive(int fromId, int nb, samson::Message::Header* headerP, void* dataP)
 {
 	Process*        process  = (Process*)       dataP;
 	ProcessVector*  procVec  = (ProcessVector*) dataP;
-	ss::Endpoint2*  ep       = networkP->epMgr->indexedGet((unsigned int) fromId);
+	samson::Endpoint2*  ep       = networkP->epMgr->indexedGet((unsigned int) fromId);
 
 	if (ep == NULL)
 		LM_X(1, ("Got a message from endpoint %d, but endpoint manager has no endpoint at that index ..."));

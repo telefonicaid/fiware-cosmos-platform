@@ -2,9 +2,9 @@
 #include <stdlib.h>             /* strtol, atoi                              */
 
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg.h"             /* lmVerbose, lmDebug, ...                   */
+#include "logMsg/logMsg.h"             /* lmVerbose, lmDebug, ...                   */
 
-#include "parseArgs.h"          /* progName                                  */
+#include "parseArgs/parseArgs.h"          /* progName                                  */
 #include "paWarning.h"          /* paWarningAdd                              */
 #include "paGetVal.h"           /* Own interface                             */
 

@@ -18,12 +18,12 @@
 #include <vector>
 #include <set>
 
-#include <samson/KVFormat.h>
+#include <samson/module/KVFormat.h>
 #include "DataType.h"
 #include <sys/stat.h>			// mkdir(.)
 #include <fstream>
 
-namespace ss
+namespace samson
 {
 	class DataCreator;
 	class AUTockenizer;
@@ -105,13 +105,13 @@ namespace ss
 			file << "\n";
 			file << "\n";
 			
-			file << "namespace ss{\n";
+			file << "namespace samson{\n";
 			file << "namespace " << module << "{\n";
 			
 			file << "\n";
 			file << "\n";
 
-			file << "\tclass " << name << "_base : public ss::DataInstance{\n\n";
+			file << "\tclass " << name << "_base : public samson::DataInstance{\n\n";
 			
 			file << "\tpublic:\n";
 			
@@ -121,7 +121,7 @@ namespace ss
 			file << "\n";
 			
 			// Constructor
-			file << "\t"<<name<<"_base() : ss::DataInstance(){\n";
+			file << "\t"<<name<<"_base() : samson::DataInstance(){\n";
 			for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
 				file << (*field).getInitialization("\t\t");
 			file << "\t}\n\n";
@@ -218,7 +218,7 @@ namespace ss
 
 			// End of namspace
 			
-			file << "} // end of namespace ss\n";
+			file << "} // end of namespace samson\n";
 			file << "} // end of namespace " << module << "\n";
 
 			file << "\n";
@@ -283,7 +283,7 @@ namespace ss
 			file << "\n";
 
 			// Name space
-			file << "namespace ss{\n";
+			file << "namespace samson{\n";
 			file << "namespace " << module << "{\n";
 
 			file << "\n";
@@ -297,7 +297,7 @@ namespace ss
 			file << "\n";
 			
 			// End of namspace
-			file << "} // end of namespace ss\n";
+			file << "} // end of namespace samson\n";
 			file << "} // end of namespace " << module << "\n";
 			
 			file << "\n";

@@ -13,24 +13,24 @@
 #include <fcntl.h>              // open, O_RDWR, O_CREAT, O_TRUNC, ...
 #include <stdlib.h>             // free
 
-#include "parseArgs.h"          // parseArgs
-#include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // Trace levels
+#include "parseArgs/parseArgs.h"          // parseArgs
+#include "logMsg/logMsg.h"             // LM_*
+#include "logMsg/traceLevels.h"        // Trace levels
 
-#include "samsonDirectories.h"  // SAMSON_IMAGES
-#include "samsonConfig.h"       // SAMSON_MAX_HOSTS
-#include "Process.h"            // Process, ProcessVector
-#include "Host.h"               // Host
-#include "HostMgr.h"            // HostMgr
-#include "ports.h"              // WORKER_PORT
-#include "Endpoint.h"           // ss::Endpoint
-#include "Message.h"            // ss::Message
-#include "iomConnect.h"         // iomConnect
-#include "iomMsgSend.h"         // iomMsgSend
-#include "iomMsgAwait.h"        // iomMsgAwait
-#include "iomMsgRead.h"         // iomMsgRead
-#include "platformProcesses.h"  // ss::platformProcessesGet, ss::platformProcessesSave
-#include "Process.h"            // Process
+#include "samson/common/samsonDirectories.h"  // SAMSON_IMAGES
+#include "samson/common/samsonConfig.h"       // SAMSON_MAX_HOSTS
+#include "samson/common/Process.h"            // Process, ProcessVector
+#include "samson/network/Host.h"               // Host
+#include "samson/network/HostMgr.h"            // HostMgr
+#include "samson/common/ports.h"              // WORKER_PORT
+#include "samson/network/Endpoint.h"           // samson::Endpoint
+#include "samson/network/Message.h"            // samson::Message
+#include "samson/network/iomConnect.h"         // iomConnect
+#include "samson/network/iomMsgSend.h"         // iomMsgSend
+#include "samson/network/iomMsgAwait.h"        // iomMsgAwait
+#include "samson/network/iomMsgRead.h"         // iomMsgRead
+#include "samson/common/platformProcesses.h"  // samson::platformProcessesGet, samson::platformProcessesSave
+#include "samson/common/Process.h"            // Process
 
 
 
@@ -77,8 +77,8 @@ const char*         EtcDirPath             = SAMSON_ETC;
 const char*         PlatformProcessesPath  = SAMSON_PLATFORM_PROCESSES;
 const char*         ppFile                 = PlatformProcessesPath;
 char*               spawnerIp              = NULL;
-ss::ProcessVector*  procVec                = NULL;
-ss::HostMgr*        hostMgr                = NULL;
+samson::ProcessVector*  procVec                = NULL;
+samson::HostMgr*        hostMgr                = NULL;
 
 
 
@@ -168,13 +168,13 @@ static int platformFileCreate(int workers, char* ip[])
 	//
 	// Initializing variables for the worker vector
 	//
-	size     = sizeof(ss::ProcessVector) + (1 + workers) * sizeof(ss::Process);
-	procVec  = (ss::ProcessVector*) malloc(size);
+	size     = sizeof(samson::ProcessVector) + (1 + workers) * sizeof(samson::Process);
+	procVec  = (samson::ProcessVector*) malloc(size);
 
 	memset(procVec, 0, size);
 
 	procVec->processes      = workers + 1;
-	procVec->processVecSize = sizeof(ss::ProcessVector) + procVec->processes * sizeof(ss::Process);
+	procVec->processVecSize = sizeof(samson::ProcessVector) + procVec->processes * sizeof(samson::Process);
 
 
 
@@ -192,7 +192,7 @@ static int platformFileCreate(int workers, char* ip[])
 	strncpy(procVec->processV[0].alias,  "Controller",        sizeof(procVec->processV[0].alias));
 
 	procVec->processV[0].port = CONTROLLER_PORT;
-	procVec->processV[0].type = ss::PtController;
+	procVec->processV[0].type = samson::PtController;
 
 	// 2. Workers
 	for (int ix = 1; ix < (long) ip[0] + 1; ix++)
@@ -209,14 +209,14 @@ static int platformFileCreate(int workers, char* ip[])
 		snprintf(procVec->processV[ix].alias, sizeof(procVec->processV[ix].alias), "Worker%02d", ix - 1);
 
 		procVec->processV[ix].port = WORKER_PORT;
-		procVec->processV[ix].type = ss::PtWorker;
+		procVec->processV[ix].type = samson::PtWorker;
 	}
 
 
 	//
 	// Saving the file to disk
 	//
-	ss::platformProcessesSave(procVec);
+	samson::platformProcessesSave(procVec);
 
 	return 0;
 }
@@ -252,16 +252,16 @@ static int spawnerConnect(const char* host, int* errP)
 *
 * hello - 
 */
-static int hello(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
+static int hello(samson::Endpoint* me, samson::Endpoint* spawner, int* errP)
 {
 	int                             s;
-	ss::Message::Header             header;
-	ss::Message::MessageCode        msgCode;
-	ss::Message::MessageType        msgType;
+	samson::Message::Header             header;
+	samson::Message::MessageCode        msgCode;
+	samson::Message::MessageType        msgType;
 	char                            data[1];
 	void*                           dataP   = data;
 	int                             dataLen = sizeof(data);
-	ss::Message::HelloData          hello;
+	samson::Message::HelloData          hello;
 	Host*                           hostP;
 
 	hostP = hostMgr->lookup("localhost");
@@ -311,9 +311,9 @@ static int hello(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 	strncpy(hello.ip,      hostP->name,    sizeof(hello.ip));
 	strncpy(hello.alias,  "samsonSetup",   sizeof(hello.alias));
 
-	hello.type = ss::Endpoint::Setup;
+	hello.type = samson::Endpoint::Setup;
 
-	s = iomMsgSend(spawner, me, ss::Message::Hello, ss::Message::Ack, &hello, sizeof(hello));
+	s = iomMsgSend(spawner, me, samson::Message::Hello, samson::Message::Ack, &hello, sizeof(hello));
 	if (s != 0)
 	{
 		printf("Samson Platform Setup Error.\n"
@@ -334,20 +334,20 @@ static int hello(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 *
 * procVecSend - 
 */
-static int procVecSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
+static int procVecSend(samson::Endpoint* me, samson::Endpoint* spawner, int* errP)
 {
 	int                         s;
-	ss::Message::Header         header;
-	ss::Message::MessageCode    msgCode;
-	ss::Message::MessageType    msgType;
-	int                         procVecSize = sizeof(ss::ProcessVector) + procVec->processes * sizeof(ss::Process);
+	samson::Message::Header         header;
+	samson::Message::MessageCode    msgCode;
+	samson::Message::MessageType    msgType;
+	int                         procVecSize = sizeof(samson::ProcessVector) + procVec->processes * sizeof(samson::Process);
 	char                        data[1];
 	void*                       dataP       = data;
 	int                         dataLen     = sizeof(data);
 
 	*errP = 0;
 
-	s = iomMsgSend(spawner, me, ss::Message::ProcessVector, ss::Message::Msg, procVec, procVecSize);
+	s = iomMsgSend(spawner, me, samson::Message::ProcessVector, samson::Message::Msg, procVec, procVecSize);
 	if (s != 0)
 	{
 		printf("Samson Platform Setup Error.\n"
@@ -396,11 +396,11 @@ static int procVecSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 		return -1;
 	}
 
-	if ((msgCode != ss::Message::ProcessVector) || (msgType != ss::Message::Ack))
+	if ((msgCode != samson::Message::ProcessVector) || (msgType != samson::Message::Ack))
 	{
-		if (msgCode != ss::Message::ProcessVector)
+		if (msgCode != samson::Message::ProcessVector)
 			LM_E(("Bad message code: %d", msgCode));
-		if (msgType != ss::Message::Ack)
+		if (msgType != samson::Message::Ack)
 			LM_E(("Bad message type: %d", msgType));
 
 		printf("Samson Platform Setup Error.\n"
@@ -424,8 +424,8 @@ static int procVecSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 static int distribute(const char* host)
 {
 	int                         fd;
-	ss::Endpoint                me;
-	ss::Endpoint                spawner;
+	samson::Endpoint                me;
+	samson::Endpoint                spawner;
 	int                         err      = 0;
 
 	if ((fd = spawnerConnect(host, &err)) == -1)
@@ -452,19 +452,19 @@ static int distribute(const char* host)
 *
 * resetSend - 
 */
-static int resetSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
+static int resetSend(samson::Endpoint* me, samson::Endpoint* spawner, int* errP)
 {
 	int                         s;
-	ss::Message::Header         header;
-	ss::Message::MessageCode    msgCode;
-	ss::Message::MessageType    msgType;
+	samson::Message::Header         header;
+	samson::Message::MessageCode    msgCode;
+	samson::Message::MessageType    msgType;
    	char                        data[1];
 	void*                       dataP       = data;
 	int                         dataLen     = sizeof(data);
 
 	*errP = 0;
 
-	s = iomMsgSend(spawner, me, ss::Message::Reset, ss::Message::Msg);
+	s = iomMsgSend(spawner, me, samson::Message::Reset, samson::Message::Msg);
 	if (s != 0)
 	{
 		printf("Samson Platform Setup Error.\n"
@@ -513,11 +513,11 @@ static int resetSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 		return -1;
 	}
 
-	if ((msgCode != ss::Message::Reset) || (msgType != ss::Message::Ack))
+	if ((msgCode != samson::Message::Reset) || (msgType != samson::Message::Ack))
 	{
-		if (msgCode != ss::Message::Reset)
+		if (msgCode != samson::Message::Reset)
 			LM_E(("Bad message code: %d", msgCode));
-		if (msgType != ss::Message::Ack)
+		if (msgType != samson::Message::Ack)
 			LM_E(("Bad message type: %d", msgType));
 
 		printf("Samson Platform Setup Error.\n"
@@ -541,8 +541,8 @@ static int resetSend(ss::Endpoint* me, ss::Endpoint* spawner, int* errP)
 static int resetPlatform(const char* host)
 {
 	int                         fd;
-	ss::Endpoint                me;
-	ss::Endpoint                spawner;
+	samson::Endpoint                me;
+	samson::Endpoint                spawner;
 	int                         err      = 0;
 
 	if ((fd = spawnerConnect(host, &err)) == -1)
@@ -598,13 +598,13 @@ int main(int argC, const char *argV[])
 	{
 		int procVecSize;
 
-		procVec = ss::platformProcessesGet(&procVecSize);
+		procVec = samson::platformProcessesGet(&procVecSize);
 
 		printf("Samson platform contains %d processes:\n\n", procVec->processes);
 		printf("  Name               Alias              Host         Controller\n");
 		for (int ix = 0; ix < procVec->processes; ix++)
 		{
-			ss::Process* p =  &procVec->processV[ix];
+			samson::Process* p =  &procVec->processV[ix];
 
 			printf("  %-18s %-18s %-12s %s\n", p->name, p->alias, p->host, p->controllerHost);
 		}
@@ -617,7 +617,7 @@ int main(int argC, const char *argV[])
 	//
 	// Host Manager 
 	//
-	hostMgr = new ss::HostMgr(SAMSON_MAX_HOSTS);
+	hostMgr = new samson::HostMgr(SAMSON_MAX_HOSTS);
 
 
 	if (reset)

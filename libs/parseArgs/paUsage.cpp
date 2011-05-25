@@ -2,19 +2,19 @@
 #include <unistd.h>             /* getpid                                    */
 
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg.h"             /* lmVerbose, lmDebug, ...                   */
+#include "logMsg/logMsg.h"             /* lmVerbose, lmDebug, ...                   */
 
-#include "parseArgs.h"          /* PaArgument                                */
+#include "parseArgs/parseArgs.h"          /* PaArgument                                */
 #include "paPrivate.h"          /* PaTypeUnion, paBuiltins, ...              */
 #include "paTraceLevels.h"      /* LmtPaApVals, LmtPaUsage, ...              */
 #include "paFrom.h"             /* paFrom, paFromName                        */
-#include "paConfig.h"           /* paHelpFile, paHelpText                    */
+#include "parseArgs/paConfig.h"           /* paHelpFile, paHelpText                    */
 #include "paFullName.h"         /* paFullName                                */
 #include "paBuiltin.h"          /* paBuiltin, paBuiltinNoOf                  */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paEnvVals.h"          /* paEnvName                                 */
 #include "paParse.h"            /* progNameV                                 */
-#include "paUsage.h"            /* Own interface                             */
+#include "parseArgs/paUsage.h"            /* Own interface                             */
 
 
 

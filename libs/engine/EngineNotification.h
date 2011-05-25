@@ -6,11 +6,11 @@
 #include <functional>
 #include <cstring>
 
-#include "au/Environment.h"             // ss::Environment
+#include "au/Environment.h"             // samson::Environment
 #include "au/map.h"                     // au::map
 #include "au/Format.h"                  // au::Format
 
-#include "traceLevels.h"                // LmtEngine
+#include "logMsg/traceLevels.h"                // LmtEngine
 
 namespace engine
 {

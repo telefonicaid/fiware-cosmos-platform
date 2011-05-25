@@ -7,11 +7,11 @@
  * ***************************************************************************/
 
 
-#include "logMsg.h"					// LM_M()
+#include "logMsg/logMsg.h"					// LM_M()
 #include "AUTockenizer.h"			// Own interface
 #include <sstream>					// std::ostringstream
 
-namespace ss
+namespace samson
 {
 	
 	AUTockenizer::AUTockenizer( std::string txt )

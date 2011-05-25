@@ -9,7 +9,7 @@
 #include <samson/modules/system/FixedLengthDataInstance.h>
 
 
-namespace ss{
+namespace samson{
 namespace system{
 
 

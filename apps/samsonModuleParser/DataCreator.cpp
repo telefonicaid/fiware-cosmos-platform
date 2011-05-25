@@ -10,7 +10,7 @@
 
 
 
-namespace ss {
+namespace samson {
 
 	DataCreator::DataCreator( std::string _moduleFileName ,  std::string _outputDirectory , std::string _outputFileName  )
 	{
@@ -173,7 +173,7 @@ namespace ss {
 		
 #pragma mark INCLUDES			
 		
-		output << "\n#include <samson/samsonModuleHeader.h>\n";
+		output << "\n#include <samson/module/samsonModuleHeader.h>\n";
 		
 		// Include all data files	
 		for (size_t i = 0 ; i < datas.size() ; i++)
@@ -187,13 +187,13 @@ namespace ss {
 		
 #pragma mark NAMESPACE
 		
-		output << "namespace ss{\n";
+		output << "namespace samson{\n";
 		output << "namespace " << module->name << "{\n";
 
 #pragma mark MODULE
 		
 		output << "\n// Module definition\n\n";	  
-		output << "\tclass "<< module->getClassName() << " : public ss::Module\n";
+		output << "\tclass "<< module->getClassName() << " : public samson::Module\n";
 
 		output << "\t{\n";
 		output << "\tpublic:\n";
@@ -218,7 +218,7 @@ namespace ss {
 #pragma mark END NAMESPACE
 		
 		output << "} // end of namespace " << module->name << "\n";
-		output << "} // end of namespace ss\n\n" ;
+		output << "} // end of namespace samson\n\n" ;
 
 		output << "\n\n";
 		
@@ -266,7 +266,7 @@ namespace ss {
 		output << "\n\n";
 		
 		output << "extern \"C\" {" << std::endl;
-		output << "\tss::Module * moduleCreator( )" << std::endl;
+		output << "\tsamson::Module * moduleCreator( )" << std::endl;
 		output << "\t{" << std::endl;
 		output << "\t\treturn new " << module->getFullClassName() << "();" << std::endl;
 		output << "\t}" << std::endl;
@@ -277,7 +277,7 @@ namespace ss {
 		output << "}\n\n" << std::endl;
 		
 		
-		output << "namespace ss{\n";
+		output << "namespace samson{\n";
 		output << "namespace "<< module->name <<"{\n";
 
 		
@@ -297,7 +297,7 @@ namespace ss {
 		output << "\n\n";
 		
 		output << "\t" << module->getClassName() << "::" << module->getClassName() << "()";
-		output << " : ss::Module(\"" << module->name << "\",\"" << module->version << "\",\"" << module->author << "\")\n";
+		output << " : samson::Module(\"" << module->name << "\",\"" << module->version << "\",\"" << module->author << "\")\n";
 		output << "\t{";
 		
 		output << "\n";
@@ -325,30 +325,30 @@ namespace ss {
 			output << "\t\t{\n";
 			
 			if( op.type == "script")
-				output << "\t\t\tss::Operation * operation = new ss::Operation( \"" << op.module << "." << op.name << "\" , ss::Operation::"<< op.type <<");"<<std::endl;
+				output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<");"<<std::endl;
 			else if( ( op.type == "reduce") || ( op.type == "parserOutReduce" ) )
-				output << "\t\t\tss::Operation * operation = new ss::Operation( \"" << op.module << "." << op.name << "\" , ss::Operation::"<< op.type <<" , au::factory<"<< op.name <<">, " << op.getCompareFunctionName() <<  ", " << op.getCompareByKeyFunctionName() <<  " );"<<std::endl;
+				output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<" , au::factory<"<< op.name <<">, " << op.getCompareFunctionName() <<  ", " << op.getCompareByKeyFunctionName() <<  " );"<<std::endl;
 			else
-				output << "\t\t\tss::Operation * operation = new ss::Operation( \"" << op.module << "." << op.name << "\" , ss::Operation::"<< op.type <<" , au::factory<"<< op.name <<"> );"<<std::endl;
+				output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<" , au::factory<"<< op.name <<"> );"<<std::endl;
 
 			// Automatic adding input and output of the parser and parserOut
 			
 			if( op.type == "parser")
-				output << "\t\t\toperation->inputFormats.push_back( ss::KVFormat::format(\"txt\" ,\"txt\") );"<<std::endl;
+				output << "\t\t\toperation->inputFormats.push_back( samson::KVFormat::format(\"txt\" ,\"txt\") );"<<std::endl;
 
 			if( op.type == "parserOut")
-				output << "\t\t\toperation->outputFormats.push_back( ss::KVFormat::format(\"txt\" ,\"txt\") );"<<std::endl;
+				output << "\t\t\toperation->outputFormats.push_back( samson::KVFormat::format(\"txt\" ,\"txt\") );"<<std::endl;
             
 			if( op.type == "parserOutReduce")
-				output << "\t\t\toperation->outputFormats.push_back( ss::KVFormat::format(\"txt\" ,\"txt\") );"<<std::endl;
+				output << "\t\t\toperation->outputFormats.push_back( samson::KVFormat::format(\"txt\" ,\"txt\") );"<<std::endl;
 			
             
 			
 			for (size_t i = 0 ; i < op.inputs.size() ; i++)
-				output << "\t\t\toperation->inputFormats.push_back( ss::KVFormat::format(\""<< op.inputs[i].keyFormat <<"\" ,\"" << op.inputs[i].valueFormat << "\") );"<<std::endl;
+				output << "\t\t\toperation->inputFormats.push_back( samson::KVFormat::format(\""<< op.inputs[i].keyFormat <<"\" ,\"" << op.inputs[i].valueFormat << "\") );"<<std::endl;
 			
 			for (size_t i = 0 ; i < op.outputs.size() ; i++)
-				output << "\t\t\toperation->outputFormats.push_back( ss::KVFormat::format(\""<< op.outputs[i].keyFormat <<"\" ,\"" << op.outputs[i].valueFormat << "\") );"<<std::endl;
+				output << "\t\t\toperation->outputFormats.push_back( samson::KVFormat::format(\""<< op.outputs[i].keyFormat <<"\" ,\"" << op.outputs[i].valueFormat << "\") );"<<std::endl;
 			
 			
 			// Help
@@ -401,7 +401,7 @@ namespace ss {
 		
 		output << "\n";
 
-		output << "} // end of namespace ss\n";
+		output << "} // end of namespace samson\n";
 		output << "} // end of namespace " << module->name <<"\n";;
 		
 		

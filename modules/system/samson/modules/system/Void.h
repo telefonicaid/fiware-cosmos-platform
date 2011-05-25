@@ -7,15 +7,15 @@
 #define _H_SAMSON_system_Void
 
 
-namespace ss{
+namespace samson{
 namespace system{
 
 
-	class Void : public ss::DataInstance{
+	class Void : public samson::DataInstance{
 		
 		
 	public:
-		Void() : ss::DataInstance(){
+		Void() : samson::DataInstance(){
 		}
 		
 		~Void() {

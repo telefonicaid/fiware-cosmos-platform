@@ -10,13 +10,13 @@
 * CREATION DATE            Apr 29 2011
 *
 */
-#include "NetworkInterface.h"   // DataReceiverInterface
-#include "Network2.h"           // Network2
-#include "Process.h"            // Process
+#include "samson/network/NetworkInterface.h"   // DataReceiverInterface
+#include "samson/network/Network2.h"           // Network2
+#include "samson/common/Process.h"            // Process
 
 
 
-namespace ss
+namespace samson
 {
 
 
@@ -31,14 +31,14 @@ public:
 	SamsonSpawner();
 	~SamsonSpawner();
 
-	int               receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
+	int               receive(int fromId, int nb, samson::Message::Header* headerP, void* dataP);
 	void              init();
-	void              init(ss::ProcessVector* pv);
+	void              init(samson::ProcessVector* pv);
 	void              run(void);
 	int               timeoutFunction(void);
 	
 private:
-	ss::Network2*      networkP;
+	samson::Network2*      networkP;
 	bool               restartInProgress;
 
 	void               reset(Endpoint2* ep);

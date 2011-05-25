@@ -10,7 +10,7 @@
 */
 #include <stdio.h>              /* FILE                                      */
 
-#include "parseArgs.h"          /* PaArgument                                */
+#include "parseArgs/parseArgs.h"          /* PaArgument                                */
 
 
 

@@ -1,8 +1,8 @@
 #include <unistd.h>             // gethostname
 
 #include "parseArgs.h"          // parseArgs
-#include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // Trace levels
+#include "logMsg/logMsg.h"             // LM_*
+#include "logMsg/traceLevels.h"        // Trace levels
 
 #include "Host.h"               // Host
 #include "HostMgr.h"            // Network
@@ -35,7 +35,7 @@ PaArgument paArgs[] =
 */
 int main(int argC, char* argV[])
 {
-	ss::HostMgr*  hostMgr = new ss::HostMgr(HOSTS);
+	samson::HostMgr*  hostMgr = new samson::HostMgr(HOSTS);
 	Host*         hostP;
 	Host*         localhostP;
 	char          hostname[128];
@@ -52,7 +52,7 @@ int main(int argC, char* argV[])
 	//
 	// Creating the list
 	//
-	hostMgr = new ss::HostMgr(HOSTS);
+	hostMgr = new samson::HostMgr(HOSTS);
 	if (hostMgr == NULL)
 		LM_X(1, ("Error creating the Host Manager"));
 

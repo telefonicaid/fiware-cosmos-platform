@@ -21,12 +21,12 @@
 #include <stdlib.h>             /* exit                                      */
 
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg.h"             /* lmVerbose, lmDebug, ...                   */
+#include "logMsg/logMsg.h"             /* lmVerbose, lmDebug, ...                   */
 
 #include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
 #include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
-#include "paUsage.h"            /* paUsage, paExtendedUsage, paHelp          */
-#include "paConfig.h"           /* paConfigActions                           */
+#include "parseArgs/paUsage.h"            /* paUsage, paExtendedUsage, paHelp          */
+#include "parseArgs/paConfig.h"           /* paConfigActions                           */
 #include "paFullName.h"         /* paFullName                                */
 #include "paBuiltin.h"          /* paBuiltin, paBuiltinNoOf                  */
 #include "paEnvVals.h"          /* paEnvVals                                 */
@@ -39,7 +39,7 @@
 #include "paLogSetup.h"         /* paLogSetup                                */
 #include "paIxLookup.h"         /* paIxLookup                                */
 #include "paOptions.h"          /* paOptionsNoOf                             */
-#include "parseArgs.h"          /* Own interface                             */
+#include "parseArgs/parseArgs.h"          /* Own interface                             */
 
 
 

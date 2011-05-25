@@ -17,13 +17,13 @@
 #include <string>
 #include <vector>
 
-#include <samson/KVFormat.h>
+#include <samson/module/KVFormat.h>
 #include "DataType.h"
 
-#include "logMsg.h"					 // LM_M()
+#include "logMsg/logMsg.h"					 // LM_M()
 
 
-namespace ss
+namespace samson
 {
 	class DataCreator;
 	class AUTockenizer;

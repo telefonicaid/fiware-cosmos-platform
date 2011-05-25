@@ -1,0 +1,81 @@
+#ifndef SAMSON_WORKER_H
+#define SAMSON_WORKER_H
+
+/* ****************************************************************************
+*
+* FILE                     SamsonWorker.h
+*
+* DESCRIPTION			   Main class for the worker element
+*
+*/
+
+#include <iostream>				// std::cout
+
+#include "logMsg/logMsg.h"				// 
+#include "samson/common/traces.h"				// Trace levels
+#include "samson/common/Macros.h"				// exit(.)
+#include "samson/network/Network.h"			// NetworkInterface
+#include "samson/common/samsonDirectories.h"  // SAMSON_WORKER_DEFAULT_PORT
+#include "samson/network/workerStatus.h"		// WorkerStatus
+#include "samson/module/ModulesManager.h"		// samson::ModulesManager
+#include "WorkerTaskManager.h"	// samson::WorkerTaskManager
+#include "LoadDataManager.h"	// samson::LoadDataManager
+#include "samson/common/samson.pb.h"			// samson::network::
+#include "engine/EngineElement.h"               // samson::EngineElement
+#include "samson/stream/QueuesManager.h"        // samson::stream::QueuesManager
+
+#define notification_samson_worker_send_status_update "notification_samson_worker_send_status_update"
+#define notification_samson_worker_send_trace "notification_samson_worker_send_trace"
+
+namespace samson {
+	
+	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface, public engine::NotificationListener
+	{
+		
+		// Initial time stamp 
+		struct timeval init_time;
+        
+	public: 
+		
+		SamsonWorker(NetworkInterface* network);
+
+	public:
+
+		NetworkInterface*    network;           // Network interface to send packets
+		
+		WorkerTaskManager    taskManager;       // Task manager
+		LoadDataManager      loadDataManager;   // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
+		
+        stream::QueuesManager   queuesManager;  // Manager of all the stream-processing queues in the system
+        
+	public:
+
+		// PacketReceiverInterface
+		void receive( Packet* packet );
+		
+		// Send information about the state of this worker to the controller
+		void sendWorkerStatus();
+		
+		// Nothing function to avoid warning
+		void touch(){};	
+		
+		// Process list of files ( to remove unnecessary files )
+		void processListOfFiles( const network::QueueList& ql);
+		
+        // Notification from the engine about finished tasks
+        void notify( engine::Notification* notification );
+        bool acceptNotification( engine::Notification* notification );
+        
+	private:
+		
+		virtual void notificationSent(size_t id, bool success) {}
+
+		
+		// Sent an "ls" to get the list of files ( to remove the rest )
+		void sendFilesMessage();
+        
+	};
+	
+}
+
+#endif

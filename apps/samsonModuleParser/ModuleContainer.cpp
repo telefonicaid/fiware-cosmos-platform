@@ -14,7 +14,7 @@
 #include <map>
 #include "AUTockenizer.h"			// AUTockenizer
 
-namespace ss {
+namespace samson {
 	
 	
 	ModuleContainer::ModuleContainer( std::string _name )
@@ -52,7 +52,7 @@ namespace ss {
 	{
 		
 		std::ostringstream o;
-		o << "ss::";
+		o << "samson::";
 		
 		std::vector<std::string> tockens = tockenizeWithDots( name.c_str() );	
 		for (size_t i = 0 ; i < tockens.size() ; i++)

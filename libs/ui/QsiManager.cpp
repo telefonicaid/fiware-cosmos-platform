@@ -13,7 +13,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QMenu>
 
-#include "logMsg.h"             // LM_*
+#include "logMsg/logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
 
 #include "QsiFunction.h"        // Function

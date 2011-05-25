@@ -3,7 +3,7 @@
 
 
 
-namespace ss {
+namespace samson {
 
 	NetworkFake::NetworkFake( int _worker_id , NetworkFakeCenter *_center )	// -1 controller -2 dalila
 	{
@@ -57,7 +57,7 @@ namespace ss {
 	// Send a packet (return a unique id to inform the notifier later)
 	size_t NetworkFake::send(PacketSenderInterface* sender, int endpointId, Packet* packetP)
 	{
-        ss::Message::MessageCode code = packetP->msgCode;
+        samson::Message::MessageCode code = packetP->msgCode;
         
 		// Add packet in the list of the center
         center->addPacket( new NetworkFakeCenterPacket(code, packetP , getMyidentifier(), endpointId, sender) );

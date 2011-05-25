@@ -8,9 +8,9 @@
 * $Log: paArgs.c,v $
 *
 */
-#include "logMsg.h"             /* lmVerbose, lmDebug, ...                   */
+#include "logMsg/logMsg.h"             /* lmVerbose, lmDebug, ...                   */
 
-#include "parseArgs.h"          /* Own interface                             */
+#include "parseArgs/parseArgs.h"          /* Own interface                             */
 #include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
 #include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */

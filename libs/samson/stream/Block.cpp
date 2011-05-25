@@ -1,15 +1,15 @@
 
 #include "Block.h"                      // Own interface
 #include "BlockManager.h"               // BlockManager
-#include "SamsonSetup.h"                // ss::SamsonSetup
+#include "samson/common/SamsonSetup.h"                // samson::SamsonSetup
 #include "engine/DiskOperation.h"       // engine::DiskOperation
 #include "engine/DiskManager.h"        // notification_disk_operation_request_response
 #include "engine/Engine.h"              // engine::Engine
-#include "logMsg.h"                     // LM_W
+#include "logMsg/logMsg.h"                     // LM_W
 #include "engine/MemoryManager.h"       // engine::MemoryManager
-#include "MemoryTags.h"                 // MemoryBlocks
+#include "samson/common/MemoryTags.h"                 // MemoryBlocks
 
-namespace ss {
+namespace samson {
     namespace stream
     {
 

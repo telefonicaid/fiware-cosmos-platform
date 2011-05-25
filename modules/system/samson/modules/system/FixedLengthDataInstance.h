@@ -2,10 +2,10 @@
 #define SAMSON_FIXED_LENGTH_DATA_INSTANCE_H
 #include <string>                /* std::string                              */
 #include <sstream>               /* std::ostringstream   */
-#include <samson/var_int.h>
-#include <samson/DataInstance.h>
+#include <samson/module/var_int.h>
+#include <samson/module/DataInstance.h>
 
-namespace ss {
+namespace samson {
   
   namespace system {
     

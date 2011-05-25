@@ -8,7 +8,7 @@
 * AUTHOR                Ken Zangelin
 *
 */
-#include "parseArgs.h"          /* Own interface                             */
+#include "parseArgs/parseArgs.h"          /* Own interface                             */
 
 
 

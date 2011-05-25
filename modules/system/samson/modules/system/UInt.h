@@ -7,7 +7,7 @@
 #define _H_SAMSON_system_UInt
 
 
-namespace ss{
+namespace samson{
 namespace system{
 
 

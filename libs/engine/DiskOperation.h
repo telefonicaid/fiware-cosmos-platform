@@ -38,7 +38,7 @@
 #include "au/Lock.h"			// au::Lock
 #include "au/StopLock.h"		// au::StopLock
 #include "au/Format.h"			// au::Format
-#include "au/Error.h"			// ss::Error
+#include "au/Error.h"			// samson::Error
 
 #include "engine/Buffer.h"              // engine::Buffer
 #include "engine/EngineNotification.h"  // engine::EngineNotification

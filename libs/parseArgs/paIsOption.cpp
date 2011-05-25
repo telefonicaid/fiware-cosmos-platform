@@ -1,9 +1,9 @@
 #include <string.h>             /* strncmp                                   */
 
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg.h"             /* LM_T                                      */
+#include "logMsg/logMsg.h"             /* LM_T                                      */
 
-#include "parseArgs.h"          /* PaArgument, ...                           */
+#include "parseArgs/parseArgs.h"          /* PaArgument, ...                           */
 #include "paTraceLevels.h"      /* LmtXXX                                    */
 #include "paBuiltin.h"          /* paBuiltin, paBuiltinNoOf                  */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */

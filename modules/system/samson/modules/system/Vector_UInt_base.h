@@ -10,18 +10,18 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace system{
 
 
-	class Vector_UInt_base : public ss::DataInstance{
+	class Vector_UInt_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt *values;
+	::samson::system::UInt *values;
 	int values_length;
 	int values_max_length;
 
-	Vector_UInt_base() : ss::DataInstance(){
+	Vector_UInt_base() : samson::DataInstance(){
 		values_length=0;
 		values_max_length=0;
 		values = NULL;
@@ -36,7 +36,7 @@ namespace system{
 		int offset=0;
 		{ //Parsing vector values
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	valuesSetLength( _length );
 			for (int i = 0 ; i < (int)values_length ; i++){
 				offset += values[i].parse(data+offset);
@@ -48,7 +48,7 @@ namespace system{
 	int serialize(char *data){
 		int offset=0;
 		{ //Serialization vector values
-			offset += ss::staticVarIntSerialize( data+offset , values_length );
+			offset += samson::staticVarIntSerialize( data+offset , values_length );
 			for (int i = 0 ; i < (int)values_length ; i++){
 				offset += values[i].serialize(data+offset);
 			}
@@ -60,10 +60,10 @@ namespace system{
 		int offset=0;
 		{ //Getting size of vector values
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::system::UInt _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::system::UInt _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::system::UInt::size(data+offset);
+				offset += ::samson::system::UInt::size(data+offset);
 			}
 		}
 		return offset;
@@ -78,13 +78,13 @@ namespace system{
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // Comparing vector values
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing values[i]
-					int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
@@ -101,11 +101,11 @@ namespace system{
 
 	void valuesSetLength(int _length){
 		if( _length > values_max_length){ 
-			::ss::system::UInt *_previous = values;
+			::samson::system::UInt *_previous = values;
 			int previous_length = values_length;
 			if(values_max_length == 0) values_max_length = _length;
 			while(values_max_length < _length) values_max_length *= 2;
-			values = new ::ss::system::UInt[values_max_length ];
+			values = new ::samson::system::UInt[values_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					values[i].copyFrom( &_previous[i] );
@@ -115,7 +115,7 @@ namespace system{
 		values_length=_length;
 	}
 
-	::ss::system::UInt* valuesAdd(){
+	::samson::system::UInt* valuesAdd(){
 		valuesSetLength( values_length + 1 );
 		return &values[values_length-1];
 	}
@@ -143,7 +143,7 @@ namespace system{
 
 	}; //class Vector_UInt_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace system
 
 #endif

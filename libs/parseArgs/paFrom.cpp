@@ -13,9 +13,9 @@
 #include <stdlib.h>             /* strtol, ...                               */
 
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg.h"             /* LM_ENTRY, LM_EXIT, ...                    */
+#include "logMsg/logMsg.h"             /* LM_ENTRY, LM_EXIT, ...                    */
 
-#include "parseArgs.h"          /* PaArgument                                */
+#include "parseArgs/parseArgs.h"          /* PaArgument                                */
 #include "paPrivate.h"          /* PafDefault, ...                           */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paEnvVals.h"          /* paEnvName                                 */

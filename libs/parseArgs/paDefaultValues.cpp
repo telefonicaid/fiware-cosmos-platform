@@ -12,9 +12,9 @@
 #include <string.h>             /* strncmp, strspn, ...                      */
 
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg.h"             /* LM_ENTRY, LM_EXIT, ...                    */
+#include "logMsg/logMsg.h"             /* LM_ENTRY, LM_EXIT, ...                    */
 
-#include "parseArgs.h"          /* PaArgument                                */
+#include "parseArgs/parseArgs.h"          /* PaArgument                                */
 #include "paPrivate.h"          /* paBuiltin                                 */
 #include "paTraceLevels.h"      /* LmtPaDefVal, LmtPaLimits, ...             */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */

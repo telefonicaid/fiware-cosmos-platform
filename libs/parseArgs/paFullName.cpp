@@ -1,6 +1,6 @@
 #include <stdio.h>              /* sprintf                                   */
 
-#include "parseArgs.h"          /* PaArgument                                */
+#include "parseArgs/parseArgs.h"          /* PaArgument                                */
 #include "paFullName.h"         /* Own interface                             */
 
 

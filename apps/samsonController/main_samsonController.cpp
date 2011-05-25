@@ -11,14 +11,14 @@
 #include <fcntl.h>              // open, O_RDONLY, ...
 #include <sys/stat.h>           // struct stat
 
-#include "parseArgs.h"          // parseArgs
+#include "parseArgs/parseArgs.h"          // parseArgs
 
-#include "ports.h"              // CONTROLLER_PORT
-#include "samsonDirectories.h"  // SAMSON_PLATFORM_PROCESSES
-#include "SamsonController.h"	// ss::SamsonController
-#include "SamsonSetup.h"		// ss::SamsonSetup
-#include "platformProcesses.h"  // ss::platformProcessesGet, ss::platformProcessesSave
-#include "engine/MemoryManager.h"		// ss::MemoryManager
+#include "samson/common/ports.h"              // CONTROLLER_PORT
+#include "samson/common/samsonDirectories.h"  // SAMSON_PLATFORM_PROCESSES
+#include "samson/controller/SamsonController.h"	// samson::SamsonController
+#include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
+#include "samson/common/platformProcesses.h"  // samson::platformProcessesGet, samson::platformProcessesSave
+#include "engine/MemoryManager.h"		// samson::MemoryManager
 #include "engine/Engine.h"				// engine::Engine
 #include "au/LockDebugger.h"    // au::LockDebugger
 
@@ -52,8 +52,8 @@ PaArgument paArgs[] =
 * global variables
 */
 int                 logFd      = -1;
-ss::ProcessVector*  processVec = NULL;
-ss::Network*        networkP   = NULL;
+samson::ProcessVector*  processVec = NULL;
+samson::Network*        networkP   = NULL;
 
 
 
@@ -107,7 +107,7 @@ int main(int argC, const char* argV[])
 	atexit(exitFunction);
 	atexit(google::protobuf::ShutdownProtobufLibrary);
 
-	processVec = ss::platformProcessesGet(&processVecSize);
+	processVec = samson::platformProcessesGet(&processVecSize);
 	if (processVec == NULL)
 		LM_X(1, ("Error retreiving info about the platform processes - can't function without it!"));
 
@@ -115,26 +115,26 @@ int main(int argC, const char* argV[])
 
 	// Init singlentons
 	au::LockDebugger::shared();         // Lock usage debugging (necessary here where there is only one thread)
-	ss::SamsonSetup::load(workingDir);  // Load setup and create all directories
+	samson::SamsonSetup::load(workingDir);  // Load setup and create all directories
 	engine::Engine::init();					// Init the SamsonEngine
-	ss::ModulesManager::init();			// Init the modules manager
+	samson::ModulesManager::init();			// Init the modules manager
 	// Goyo. Groping in the dark (blind sticks for an easier translation)
-	engine::MemoryManager::init(  ss::SamsonSetup::shared()->memory );
+	engine::MemoryManager::init(  samson::SamsonSetup::shared()->memory );
 	// Goyo. End of groping in the dark
 
 	// Instance of network object and initialization
 	// ---------------------------------------------
-	networkP = new ss::Network(ss::Endpoint::Controller, "Controller", CONTROLLER_PORT, endpoints, processVec->processes - 1);
+	networkP = new samson::Network(samson::Endpoint::Controller, "Controller", CONTROLLER_PORT, endpoints, processVec->processes - 1);
 
 	networkP->initAsSamsonController();
-	networkP->procVecSet(processVec, processVecSize, ss::platformProcessesSave);
+	networkP->procVecSet(processVec, processVecSize, samson::platformProcessesSave);
 	networkP->runInBackground();
 	
 	
 	// Instance of the Samson Controller
 	// ---------------------------------
 	
-	ss::SamsonController  controller(networkP);
+	samson::SamsonController  controller(networkP);
 
 
 	// Run the engine function

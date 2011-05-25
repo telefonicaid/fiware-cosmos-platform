@@ -18,7 +18,7 @@
 
 using namespace std;
 
-namespace ss {
+namespace samson {
 
 	// Basic operations with "." separated names
 	std::vector<std::string> tockenizeWithDots( std::string myString );

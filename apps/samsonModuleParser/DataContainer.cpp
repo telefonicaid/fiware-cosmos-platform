@@ -13,9 +13,9 @@
 #include <cstdio>
 #include <map>
 #include "AUTockenizer.h"	// AUTockenizer
-#include "logMsg.h"					 // LM_M()
+#include "logMsg/logMsg.h"					 // LM_M()
 
-namespace ss {
+namespace samson {
 
 	
 	

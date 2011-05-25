@@ -9,7 +9,7 @@
 
 #include <samson/modules/system/FixedLengthDataInstance.h>
 
-namespace ss{
+namespace samson{
 namespace system{
 
 
@@ -24,7 +24,7 @@ namespace system{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace system
 
 #endif

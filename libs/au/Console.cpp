@@ -1,6 +1,6 @@
 
 #include "au/Console.h"		// Own interface
-#include "logMsg.h"         // LM_M
+#include "logMsg/logMsg.h"         // LM_M
 
 
 namespace au

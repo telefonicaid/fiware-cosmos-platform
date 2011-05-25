@@ -5,7 +5,7 @@
 #include <list>         // std::list
 #include <vector>       // std::vector
 #include <set>          // std::set
-#include "logMsg.h"		// LM_M()
+#include "logMsg/logMsg.h"		// LM_M()
 
 namespace au {
 

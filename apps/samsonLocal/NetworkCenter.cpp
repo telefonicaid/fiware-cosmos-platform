@@ -2,7 +2,7 @@
 
 #include "NetworkCenter.h"	// Own interface
 
-namespace ss
+namespace samson
 {
 	void* runNetworkFakeCenter(void*p)
 	{

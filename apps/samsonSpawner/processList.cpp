@@ -12,9 +12,9 @@
 #include <unistd.h>             // fork & exec
 #include <sys/types.h>          // pid_t
 
-#include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // Trace Levels
-#include "Process.h"            // ss::Process
+#include "logMsg/logMsg.h"             // LM_*
+#include "logMsg/traceLevels.h"        // Trace Levels
+#include "samson/common/Process.h"            // samson::Process
 #include "processList.h"        // Own interface
 #include <stdlib.h>             // free()
 
@@ -24,7 +24,7 @@
 *
 * static global vars
 */
-static ss::Process**  processV    = NULL;
+static samson::Process**  processV    = NULL;
 static unsigned int   processMax  = 0;
 
 
@@ -36,7 +36,7 @@ static unsigned int   processMax  = 0;
 void processListInit(unsigned int pMax)
 {
 	processMax = pMax;
-	processV   = (ss::Process**) calloc(processMax, sizeof(ss::Process*));
+	processV   = (samson::Process**) calloc(processMax, sizeof(samson::Process*));
 }
 
 
@@ -45,12 +45,12 @@ void processListInit(unsigned int pMax)
 *
 * processTypeName - 
 */
-const char* processTypeName(ss::Process* processP)
+const char* processTypeName(samson::Process* processP)
 {
 	switch (processP->type)
 	{
-	case ss::PtWorker:       return "WorkerStarter";
-	case ss::PtController:   return "ControllerStarter";
+	case samson::PtWorker:       return "WorkerStarter";
+	case samson::PtController:   return "ControllerStarter";
 	}
 
 	return "Unknown Process Type";
@@ -62,9 +62,9 @@ const char* processTypeName(ss::Process* processP)
 *
 * processAdd - 
 */
-ss::Process* processAdd(ss::Process* processP)
+samson::Process* processAdd(samson::Process* processP)
 {
-	ss::Process*  pP;
+	samson::Process*  pP;
 	unsigned int  ix;
 
 	if (processMax == 0)
@@ -104,9 +104,9 @@ ss::Process* processAdd(ss::Process* processP)
 *
 * processAdd - 
 */
-ss::Process* processAdd
+samson::Process* processAdd
 (
-	ss::ProcessType  type,
+	samson::ProcessType  type,
 	const char*      name,
 	const char*      alias,
 	const char*      controllerHost,
@@ -114,12 +114,12 @@ ss::Process* processAdd
 	struct timeval*  now
 )
 {
-	ss::Process*   processP;
+	samson::Process*   processP;
 	struct timeval tv;
  
-	if (type == ss::PtWorker)
+	if (type == samson::PtWorker)
 		LM_T(LmtProcess, ("Adding a Worker process"));
-	else if (type == ss::PtController)
+	else if (type == samson::PtController)
 		LM_T(LmtProcess, ("Adding a Controller process"));
 	else
 		LM_X(1, ("Bad process type"));
@@ -136,7 +136,7 @@ ss::Process* processAdd
 	if (alias == NULL)
 		LM_X(1, ("NULL alias for process - find bug, fix it, and recompile!"));
 
-	processP = (ss::Process*) calloc(1, sizeof(ss::Process));
+	processP = (samson::Process*) calloc(1, sizeof(samson::Process));
 	if (processP == NULL)
 		LM_X(1, ("calloc: %s", strerror(errno)));
 
@@ -167,7 +167,7 @@ ss::Process* processAdd
 *
 * processLookup - 
 */
-ss::Process* processLookup(pid_t pid)
+samson::Process* processLookup(pid_t pid)
 {
 	for (unsigned int ix = 0; ix < processMax; ix++)
 	{
@@ -198,7 +198,7 @@ unsigned int processMaxGet(void)
 *
 * processListGet - 
 */
-ss::Process** processListGet(void)
+samson::Process** processListGet(void)
 {
 	return processV;
 }
@@ -248,7 +248,7 @@ void processListShow(const char* why, bool forcedOn)
 *
 * processRemove - 
 */
-void processRemove(ss::Process* processP)
+void processRemove(samson::Process* processP)
 {
 	LM_T(LmtProcessList, ("Removing process '%s'", processP->name));
 
@@ -270,7 +270,7 @@ void processRemove(ss::Process* processP)
 *
 * processSpawn - 
 */
-void processSpawn(ss::Process* processP)
+void processSpawn(samson::Process* processP)
 {
 	pid_t  pid;
 	char*  argV[50];
@@ -278,7 +278,7 @@ void processSpawn(ss::Process* processP)
 
 	LM_T(LmtProcessList, ("spawning process '%s' (incoming pid: %d)", processP->name, processP->pid));
 
-	if (processP->type == ss::PtWorker)
+	if (processP->type == samson::PtWorker)
 	{
 		argV[argC++] = (char*) "samsonWorker";
 
@@ -287,7 +287,7 @@ void processSpawn(ss::Process* processP)
 		argV[argC++] = (char*) "-controller";
 		argV[argC++] = (char*) processP->controllerHost;
 	}
-	else if (processP->type == ss::PtController)
+	else if (processP->type == samson::PtController)
 	{
 		argV[argC++] = (char*) "samsonController";
 	}

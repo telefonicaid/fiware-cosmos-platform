@@ -1,10 +1,10 @@
 
 
 #include "Queue.h"      // Own interface
-#include "Block.h"      // ss::stream::Block
+#include "Block.h"      // samson::stream::Block
 #include <sstream>      // 
 
-namespace ss {
+namespace samson {
     namespace stream
     {
         

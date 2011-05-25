@@ -13,9 +13,9 @@
 #include <stdlib.h>             /* atoi                                      */
 
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg.h"             /* lmVerbose, lmDebug, ...                   */
+#include "logMsg/logMsg.h"             /* lmVerbose, lmDebug, ...                   */
 
-#include "parseArgs.h"          /* PaArgument                                */
+#include "parseArgs/parseArgs.h"          /* PaArgument                                */
 #include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
 #include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
@@ -23,8 +23,8 @@
 #include "paIsOption.h"         /* paIsOption                                */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paFullName.h"         /* paFullName                                */
-#include "paUsage.h"            /* paUsage, paExtendedUsage                  */
-#include "paConfig.h"           /* paMsgsToStdout, paMsgsToStderr            */
+#include "parseArgs/paUsage.h"            /* paUsage, paExtendedUsage                  */
+#include "parseArgs/paConfig.h"           /* paMsgsToStdout, paMsgsToStderr            */
 #include "paBuiltin.h"          /* paUsageVar, paEUsageVar, paHelpVar        */
 #include "paOptionsParse.h"     /* Own interface                             */
 

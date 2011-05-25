@@ -1,15 +1,15 @@
 #include <stdlib.h>             /* getenv                                    */
 
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg.h"             /* lmVerbose, lmDebug, ...                   */
+#include "logMsg/logMsg.h"             /* lmVerbose, lmDebug, ...                   */
 
 #include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
 #include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
-#include "parseArgs.h"          /* PaArgument                                */
+#include "parseArgs/parseArgs.h"          /* PaArgument                                */
 #include "paBuiltin.h"          /* paBuiltin, paBuiltinNoOf                  */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
-#include "paConfig.h"           /* paConfigActions                           */
+#include "parseArgs/paConfig.h"           /* paConfigActions                           */
 #include "paEnvVals.h"          /* Own interface                             */
 
 

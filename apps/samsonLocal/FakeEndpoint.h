@@ -4,14 +4,14 @@
 #include <vector>				// std::vector
 #include <sstream>				// std::ostringstream
 
-#include "Delilah.h"			// ss:Delilah
-#include "SamsonWorker.h"		// ss::SamsonWorker
-#include "SamsonController.h"	// ss:: SasonController
-#include "Endpoint.h"			// ss::EndPoint
+#include "samson/delilah/Delilah.h"			// ss:Delilah
+#include "samson/worker/SamsonWorker.h"		// samson::SamsonWorker
+#include "samson/controller/SamsonController.h"	// samson:: SasonController
+#include "samson/network/Endpoint.h"			// samson::EndPoint
 
 
 
-namespace ss {
+namespace samson {
 	
 	// Coordinator of the fake network simulation
 	

@@ -7,9 +7,9 @@
 * CREATION DATE            May 04 2011
 *
 */
-#include "Network2.h"           // Network2
-#include "Process.h"            // Process, ProcessVector
-#include "ports.h"              // CONTROLLER_PORT, WORKER_PORT
+#include "samson/network/Network2.h"           // Network2
+#include "samson/common/Process.h"            // Process, ProcessVector
+#include "samson/common/ports.h"              // CONTROLLER_PORT, WORKER_PORT
 #include "SamsonStarter.h"      // Own interface
 
 
@@ -20,9 +20,9 @@
 */
 SamsonStarter::SamsonStarter()
 {
-	ss::EndpointManager* epMgr = new ss::EndpointManager(ss::Endpoint2::Setup);
+	samson::EndpointManager* epMgr = new samson::EndpointManager(samson::Endpoint2::Setup);
 
-	networkP = new ss::Network2(epMgr);
+	networkP = new samson::Network2(epMgr);
 }
 
 
@@ -33,17 +33,17 @@ SamsonStarter::SamsonStarter()
 */
 void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const char* ips[])
 {
-   int                size = sizeof(ss::ProcessVector) + workers * sizeof(ss::Process) + sizeof(ss::Process);
+   int                size = sizeof(samson::ProcessVector) + workers * sizeof(samson::Process) + sizeof(samson::Process);
 	Host*              hostP;
-	ss::ProcessVector* pv;
-	ss::Process*       p;
-	ss::Endpoint2*     ep;
+	samson::ProcessVector* pv;
+	samson::Process*       p;
+	samson::Endpoint2*     ep;
 	int                spawnerId = 0;
 
 	if ((long) ips[0] != workers)
 		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (long) ips[0]));
 
-	pv = (ss::ProcessVector*) calloc(1, size);
+	pv = (samson::ProcessVector*) calloc(1, size);
 	if (pv == NULL)
 		LM_X(1, ("error allocating %d bytes for process vector", size));
 	pv->processes      = workers + 1;
@@ -60,7 +60,7 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 			snprintf(p->host,        sizeof(p->host),   "%s", controllerHost);
 
 			p->port = CONTROLLER_PORT;
-			p->type = ss::PtController;
+			p->type = samson::PtController;
 		}
 		else // Worker
 		{
@@ -69,7 +69,7 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 			snprintf(p->host,        sizeof(p->host),   "%s", ips[ix]);
 
 			p->port = CONTROLLER_PORT;
-			p->type = ss::PtWorker;
+			p->type = samson::PtWorker;
 		}
 
 		hostP = networkP->epMgr->hostMgr->lookup(p->host);
@@ -84,7 +84,7 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 		snprintf(p->host, sizeof(p->host), "%s", hostP->name);
 		snprintf(p->traceLevels, sizeof(p->traceLevels), "0");
 
-		p->state     = ss::Endpoint2::Unused;
+		p->state     = samson::Endpoint2::Unused;
 		p->verbose   = false;
 		p->debug     = false;
 		p->reads     = false;
@@ -93,9 +93,9 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 		p->toDo      = false;
 		p->id        = ix - 1; // gives an id of -1 for controller, but that's OK
 
-		if (networkP->epMgr->lookup(ss::Endpoint2::Spawner, hostP->name) == NULL)
+		if (networkP->epMgr->lookup(samson::Endpoint2::Spawner, hostP->name) == NULL)
 		{
-			if ((ep = networkP->epMgr->add(ss::Endpoint2::Spawner, spawnerId, "Spawner", "Spawner", hostP, SPAWNER_PORT)) == NULL)
+			if ((ep = networkP->epMgr->add(samson::Endpoint2::Spawner, spawnerId, "Spawner", "Spawner", hostP, SPAWNER_PORT)) == NULL)
 				LM_X(1, ("Error creating Spawner Endpoint for host %s", hostP->name));
 
 			++spawnerId;
@@ -114,23 +114,23 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 *
 * connect - 
 */
-ss::Endpoint2::Status SamsonStarter::connect(void)
+samson::Endpoint2::Status SamsonStarter::connect(void)
 {
-	ss::Endpoint2*        ep;
-	ss::Endpoint2::Status s;
+	samson::Endpoint2*        ep;
+	samson::Endpoint2::Status s;
 
 	for (int ix = 0; ix < spawners; ix++)
 	{
-		ep = networkP->epMgr->lookup(ss::Endpoint2::Spawner, ix);
+		ep = networkP->epMgr->lookup(samson::Endpoint2::Spawner, ix);
 		if (ep == NULL)
 			LM_X(1, ("Cannot find Spawner %d", ix));
 
 		LM_M(("Connecting to Spawner in %s", ep->hostGet()->name));
-		if ((s = ep->connect()) != ss::Endpoint2::OK)
+		if ((s = ep->connect()) != samson::Endpoint2::OK)
 			LM_RE(s, ("Error connecting to %s %d in %s: %s", ep->nameGet(), ep->idGet(), ep->hostname(), ep->status(s)));
 	}
 
-	return ss::Endpoint2::OK;
+	return samson::Endpoint2::OK;
 }
 
 
@@ -139,16 +139,16 @@ ss::Endpoint2::Status SamsonStarter::connect(void)
 *
 * reset - 
 */
-ss::Endpoint2::Status SamsonStarter::reset(void)
+samson::Endpoint2::Status SamsonStarter::reset(void)
 {
 	int msgs;
 
-    msgs = networkP->epMgr->multiSend(ss::Endpoint2::Spawner, ss::Message::Reset);
+    msgs = networkP->epMgr->multiSend(samson::Endpoint2::Spawner, samson::Message::Reset);
 
 	if (msgs != spawners)
 		LM_W(("Sent Reset to %d spawners, should be %d ...", msgs, spawners));
 
-	return ss::Endpoint2::OK;
+	return samson::Endpoint2::OK;
 }
 
 
@@ -157,9 +157,9 @@ ss::Endpoint2::Status SamsonStarter::reset(void)
 *
 * processList - 
 */
-ss::Endpoint2::Status SamsonStarter::processList(void)
+samson::Endpoint2::Status SamsonStarter::processList(void)
 {
-	return ss::Endpoint2::Error;
+	return samson::Endpoint2::Error;
 }
 
 
@@ -168,19 +168,19 @@ ss::Endpoint2::Status SamsonStarter::processList(void)
 *
 * procVecSend - 
 */
-ss::Endpoint2::Status SamsonStarter::procVecSend(void)
+samson::Endpoint2::Status SamsonStarter::procVecSend(void)
 {
 	int msgs;
 
-	msgs = networkP->epMgr->multiSend(ss::Endpoint2::Spawner,
-									  ss::Message::ProcessVector,
+	msgs = networkP->epMgr->multiSend(samson::Endpoint2::Spawner,
+									  samson::Message::ProcessVector,
 									  networkP->epMgr->procVecGet(),
 									  networkP->epMgr->procVecGet()->processVecSize);
 
 	if (msgs != spawners)
 		LM_W(("Sent ProcessVector to %d spawners, should be %d ...", msgs, spawners));
 
-	return ss::Endpoint2::OK;
+	return samson::Endpoint2::OK;
 }
 
 

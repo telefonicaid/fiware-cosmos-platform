@@ -13,14 +13,14 @@
 #include <map>
 #include "AUTockenizer.h"					// AUTockenizer
 
-namespace ss {
+namespace samson {
 
 	std::string OperationContainer::getCompareFunctionForData( std::string data )
 	{
 		std::vector<std::string> data_names = tockenizeWithDots( data );
 		
 		std::ostringstream output;
-		output << "::ss::";
+		output << "::samson::";
 		for (size_t i = 0 ; i < data_names.size() ;i++)
 			output << data_names[i] << "::";
 		output << "compare";

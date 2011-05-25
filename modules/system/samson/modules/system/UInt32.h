@@ -9,7 +9,7 @@
 
 
 
-namespace ss{
+namespace samson{
 namespace system{
 
 	class UInt32 : public FixedLengthDataInstance<unsigned int>

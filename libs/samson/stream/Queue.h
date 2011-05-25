@@ -15,7 +15,7 @@
 #include <string>       // std::string
 #include <list>          // std::list
 
-namespace ss {
+namespace samson {
     namespace stream
     {
         class Block;

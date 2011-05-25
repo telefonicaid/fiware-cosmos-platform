@@ -1,12 +1,12 @@
 
 #include "BlockManager.h"       // Own interface
-#include "DiskManager.h"        // notification_disk_operation_request_response
-#include "Engine.h"             // engine::Engine
+#include "engine/DiskManager.h"        // notification_disk_operation_request_response
+#include "engine/Engine.h"             // engine::Engine
 
 #define BLOCK_MANAGEMENT_MAX_WRITE_OPERATIONS   3
 #define BLOCK_MANAGEMENT_MAX_READ_OPERATIONS   3
 
-namespace ss {
+namespace samson {
     namespace stream {
 
 

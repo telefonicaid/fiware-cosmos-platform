@@ -10,7 +10,7 @@
 #include <QFont>
 #include <QComboBox>
 
-#include "logMsg.h"             // LM_*
+#include "logMsg/logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
 
 #include "QsiAlignment.h"       // Alignment

@@ -1,8 +1,8 @@
-#include "parseArgs.h"          // parseArgs
-#include "DelilahConsole.h"		// ss::DelilahConsole
-#include "SamsonSetup.h"		// ss::SamsonSetup
+#include "parseArgs/parseArgs.h"          // parseArgs
+#include "samson/delilah/DelilahConsole.h"		// samson::DelilahConsole
+#include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
 #include "au/Format.h"				// au::Format
-#include "engine/MemoryManager.h"      // ss::MemoryManager
+#include "engine/MemoryManager.h"      // samson::MemoryManager
 #include "engine/Engine.h"				// engine::Engine
 
 
@@ -62,22 +62,22 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 	
-	ss::SamsonSetup::load();			// Load the main setup file
+	samson::SamsonSetup::load();			// Load the main setup file
 	
 	// Setup parameters from command line ( this is delilah so memory and load buffer size are configurable from command line )
-	ss::SamsonSetup::shared()->memory			= (size_t) memory_gb * (size_t) (1024*1024*1024);
-	ss::SamsonSetup::shared()->load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
+	samson::SamsonSetup::shared()->memory			= (size_t) memory_gb * (size_t) (1024*1024*1024);
+	samson::SamsonSetup::shared()->load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
 
 	engine::Engine::init();
 	// Goyo. Groping in the dark (blind sticks for an easier translation)
-	engine::MemoryManager::init(  ss::SamsonSetup::shared()->memory );
+	engine::MemoryManager::init(  samson::SamsonSetup::shared()->memory );
 	// Goyo. End of groping in the dark
 
 	
 	std::cout << "Waiting for network connection ...";
 	
 	// Init the network element for delilah
-	ss::Network  network(ss::Endpoint::Delilah, "delilah", 0, endpoints, workers);
+	samson::Network  network(samson::Endpoint::Delilah, "delilah", 0, endpoints, workers);
 	
 	network.init(controller);
 	network.runInBackground();
@@ -88,7 +88,7 @@ int main(int argC, const char *argV[])
 	std::cout << "OK\n";
 
 	// Create a DelilahControler once network is ready
-	ss::DelilahConsole delilahConsole( &network );
+	samson::DelilahConsole delilahConsole( &network );
 	
 	
 	engine::Engine::runInBackground();

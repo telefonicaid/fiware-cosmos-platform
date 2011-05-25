@@ -4,7 +4,7 @@
 
 
 
-#include "logMsg.h"				// LM_X
+#include "logMsg/logMsg.h"				// LM_X
 #include <time.h>
 #include <sys/time.h>
 

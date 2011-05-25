@@ -6,16 +6,16 @@
 #include <list>					// std::list
 #include <iostream>				// std::cout
 
-#include "Delilah.h"			// ss:Delilah
-#include "SamsonWorker.h"		// ss::SamsonWorker
-#include "SamsonController.h"	// ss:: SasonController
-#include "FakeEndpoint.h"		// ss::EndPoint
+#include "samson/delilah/Delilah.h"			// ss:Delilah
+#include "samson/worker/SamsonWorker.h"		// samson::SamsonWorker
+#include "samson/controller/SamsonController.h"	// samson:: SasonController
+#include "FakeEndpoint.h"		// samson::EndPoint
 #include "NetworkFake.h"        // NetworkFake
-#include "Packet.h"				// ss::Packet
+#include "samson/network/Packet.h"				// samson::Packet
 #include "au/Token.h"				// au::Token
 #include "au/Stopper.h"			// au::Stopper
 
-namespace ss {
+namespace samson {
 	
 	
 	class NetworkFakeCenterPacket

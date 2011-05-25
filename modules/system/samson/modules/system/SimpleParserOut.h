@@ -10,7 +10,7 @@
 #include <samson/Operation.h>
 #include <samson/modules/system/UInt.h> 
 
-namespace ss{
+namespace samson{
 namespace system{
 
         template <class Key,class Value>

@@ -2,7 +2,7 @@
 
 #include "au/Token.h"				// Own interface
 #include "LockDebugger.h"		// LockDebugger
-#include "logMsg.h"					 // LM_M()
+#include "logMsg/logMsg.h"					 // LM_M()
 
 #define DEBUG_AU_TOKEN
 

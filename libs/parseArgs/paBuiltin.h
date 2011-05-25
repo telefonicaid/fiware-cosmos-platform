@@ -8,7 +8,7 @@
 * AUTHOR                Ken Zangelin
 *
 */
-#include "parseArgs.h"         /* PaArgument                                 */
+#include "parseArgs/parseArgs.h"         /* PaArgument                                 */
 
 
 

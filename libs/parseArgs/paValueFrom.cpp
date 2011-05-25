@@ -10,7 +10,7 @@
 */
 #include <string.h>             /* strcmp                                    */
 
-#include "parseArgs.h"          /* PaFrom, PaArgument                        */
+#include "parseArgs/parseArgs.h"          /* PaFrom, PaArgument                        */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paEnvVals.h"          /* paEnvName                                 */
 #include "paValueFrom.h"        /* Own interface                             */

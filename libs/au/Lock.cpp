@@ -10,7 +10,7 @@
 #include <sys/time.h>            // struct timeval
 #include <pthread.h>             // pthread_mutex_init, ...
 
-#include "logMsg.h"              // LM_*
+#include "logMsg/logMsg.h"              // LM_*
 #include "StopLock.h"            // StopLock
 #include "au/Lock.h"                // Own interface
 #include "LockDebugger.h"		// au:;:LockDebugger

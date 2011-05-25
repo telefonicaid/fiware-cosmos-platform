@@ -8,8 +8,8 @@
 * AUTHOR                Ken Zangelin
 *
 */
-#include "logMsg.h"             /* LM_W                                      */
-#include "parseArgs.h"          /* PaSeverity, PaWarning                     */
+#include "logMsg/logMsg.h"             /* LM_W                                      */
+#include "parseArgs/parseArgs.h"          /* PaSeverity, PaWarning                     */
 
 
 

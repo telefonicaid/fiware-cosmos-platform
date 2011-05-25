@@ -7,14 +7,14 @@
  * ***************************************************************************/
 
 
-#include <samson/samsonVersion.h>   /* SAMSON_VERSION                             */
+#include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                             */
 #include "samson_module.h"			/* Own interface                              */
-#include <samson/Data.h>            /* DataInstance                               */
+#include <samson/module/Data.h>            /* DataInstance                               */
 #include "au/CommandLine.h"			/* AUCommandLine                              */
 #include "DataContainer.h"
 #include "DataCreator.h"
-#include "parseArgs.h"          // parseArgs
-#include "paUsage.h"            // paUsage
+#include "parseArgs/parseArgs.h"          // parseArgs
+#include "parseArgs/paUsage.h"            // paUsage
 #include <sys/stat.h>           // stat()
 
 
@@ -126,7 +126,7 @@ int main( int argC , const char *argV[])
 	fprintf(stderr, "========================================================\n");
     
 	 
-	ss::DataCreator module_creator( moduleFileName, outputDirectory , outputFilename  );		// A data creator object to generate the code
+	samson::DataCreator module_creator( moduleFileName, outputDirectory , outputFilename  );		// A data creator object to generate the code
 	module_creator.print();
 	
 	return 0;

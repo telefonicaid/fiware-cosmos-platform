@@ -12,24 +12,24 @@
 #include <sys/wait.h>           // waitpid
 #include <signal.h>             // kill, SIGINT, ...
 
-#include "parseArgs.h"          // parseArgs
-#include "paConfig.h"           // paConfigCleanup
-#include "logMsg.h"             // LM_*
-#include "traceLevels.h"        // Trace levels
+#include "parseArgs/parseArgs.h"          // parseArgs
+#include "parseArgs/paConfig.h"           // paConfigCleanup
+#include "logMsg/logMsg.h"             // LM_*
+#include "logMsg/traceLevels.h"        // Trace levels
 
-#include "NetworkInterface.h"   // DataReceiverInterface
-#include "Network.h"            // Network
-#include "iomMsgSend.h"         // iomMsgSend
-#include "iomMsgRead.h"         // iomMsgRead
-#include "iomMsgAwait.h"        // iomMsgAwait
-#include "Process.h"            // Process
-#include "platformProcesses.h"  // platformProcessesSave
-#include "iomMsgSend.h"         // iomMsgSend
-#include "iomConnect.h"         // iomConnect
-#include "ports.h"              // LOG_SERVER_PORT
-#include "daemonize.h"          // daemonize
+#include "samson/network/NetworkInterface.h"   // DataReceiverInterface
+#include "samson/network/Network.h"            // Network
+#include "samson/network/iomMsgSend.h"         // iomMsgSend
+#include "samson/network/iomMsgRead.h"         // iomMsgRead
+#include "samson/network/iomMsgAwait.h"        // iomMsgAwait
+#include "samson/common/Process.h"            // Process
+#include "samson/common/platformProcesses.h"  // platformProcessesSave
+#include "samson/network/iomMsgSend.h"         // iomMsgSend
+#include "samson/network/iomConnect.h"         // iomConnect
+#include "samson/common/ports.h"              // LOG_SERVER_PORT
+#include "samson/common/daemonize.h"          // daemonize
 #include "processList.h"        // processListInit, Add, Remove and Lookup
-#include "samsonDirectories.h"  // SAMSON_PLATFORM_PROCESSES
+#include "samson/common/samsonDirectories.h"  // SAMSON_PLATFORM_PROCESSES
 
 
 /* ****************************************************************************
@@ -59,18 +59,18 @@ PaArgument paArgs[] =
 *
 * SamsonSpawner - 
 */
-class SamsonSpawner : public ss::DataReceiverInterface, public ss::TimeoutReceiverInterface, public ss::EndpointUpdateReceiverInterface
+class SamsonSpawner : public samson::DataReceiverInterface, public samson::TimeoutReceiverInterface, public samson::EndpointUpdateReceiverInterface
 {
 public:
-	SamsonSpawner(ss::Network* nwP) { networkP = nwP; }
+	SamsonSpawner(samson::Network* nwP) { networkP = nwP; }
 
-	virtual int  receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP);
-	virtual void init(ss::ProcessVector* procVec);
-	virtual int  endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info = NULL);
+	virtual int  receive(int fromId, int nb, samson::Message::Header* headerP, void* dataP);
+	virtual void init(samson::ProcessVector* procVec);
+	virtual int  endpointUpdate(samson::Endpoint* ep, samson::Endpoint::UpdateReason reason, const char* reasonText, void* info = NULL);
 	virtual int  timeoutFunction(void);
 
 private:
-	ss::Network*    networkP;
+	samson::Network*    networkP;
 };
 
 
@@ -80,8 +80,8 @@ private:
 * Global variables
 */
 int                 logFd             = -1;
-ss::Network*        networkP          = NULL;
-ss::ProcessVector*  procVec           = NULL;   // Should use Network's procVec, not a local copy ... 
+samson::Network*        networkP          = NULL;
+samson::ProcessVector*  procVec           = NULL;   // Should use Network's procVec, not a local copy ... 
 SamsonSpawner*      spawnerP          = NULL;
 static bool         restartInProgress = false;
 
@@ -109,16 +109,16 @@ static void timeDiff(struct timeval* from, struct timeval* to, struct timeval* d
 *
 * endpointUpdate - 
 */
-int SamsonSpawner::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason reason, const char* reasonText, void* info)
+int SamsonSpawner::endpointUpdate(samson::Endpoint* ep, samson::Endpoint::UpdateReason reason, const char* reasonText, void* info)
 {
 	int                   s;
 	int                   procVecSize;
-	ss::Message::Header*  headerP      = (ss::Message::Header*) info;
+	samson::Message::Header*  headerP      = (samson::Message::Header*) info;
 	Host*                 controllerHostP;
 	Host*                 localhostP;
 
 
-	if ((reason == ss::Endpoint::HelloReceived) && (ep->type == ss::Endpoint::Spawner))
+	if ((reason == samson::Endpoint::HelloReceived) && (ep->type == samson::Endpoint::Spawner))
 	{
 		if (procVec == NULL)
 			return 0;
@@ -136,13 +136,13 @@ int SamsonSpawner::endpointUpdate(ss::Endpoint* ep, ss::Endpoint::UpdateReason r
 		}
 
 		LM_T(LmtProcessVector, ("ProcessVector: got Hello Msg/Ack from %s@%s", ep->name.c_str(), ep->ip));
-		if (headerP->type == ss::Message::Msg)
+		if (headerP->type == samson::Message::Msg)
 		{
 			LM_T(LmtProcessVector, ("ProcessVector: got Hello Msg from %s@%s", ep->name.c_str(), ep->ip));
-			procVecSize = sizeof(ss::ProcessVector) + procVec->processes * sizeof(ss::Process);
+			procVecSize = sizeof(samson::ProcessVector) + procVec->processes * sizeof(samson::Process);
 
 			LM_T(LmtProcessVector, ("Sending ProcessVector to spawner in '%s' (%d processes)", ep->ip, procVec->processes));
-			s = iomMsgSend(ep, networkP->endpoint[0], ss::Message::ProcessVector, ss::Message::Msg, procVec, procVecSize);
+			s = iomMsgSend(ep, networkP->endpoint[0], samson::Message::ProcessVector, samson::Message::Msg, procVec, procVecSize);
 			if (s != 0)
 				LM_E(("iomMsgSend(%s, ProcessVector)", ep->ip));
 		}
@@ -161,7 +161,7 @@ int SamsonSpawner::timeoutFunction(void)
 {
 	pid_t         pid;
 	int           status;
-	ss::Process*  processP;
+	samson::Process*  processP;
 
 	processListShow("periodic");
 
@@ -187,7 +187,7 @@ int SamsonSpawner::timeoutFunction(void)
 	}
 
 
-	ss::Process*    newProcessP;
+	samson::Process*    newProcessP;
 	struct timeval  now;
 	struct timeval  diff;
 	
@@ -224,9 +224,9 @@ int SamsonSpawner::timeoutFunction(void)
 *
 * processesStart - 
 */
-static void processesStart(ss::ProcessVector* procVec)
+static void processesStart(samson::ProcessVector* procVec)
 {
-	ss::Process*  processP;
+	samson::Process*  processP;
 	int           ix;
 	Host*         localhostP;
 	Host*         hostP;
@@ -250,7 +250,7 @@ static void processesStart(ss::ProcessVector* procVec)
 		processP->pid     = 0;
 		// processP->traceLevels ...
 
-		ss::Process* pP;
+		samson::Process* pP;
 		pP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, 0, NULL);
 		processSpawn(pP);
 	}
@@ -265,13 +265,13 @@ static void processesStart(ss::ProcessVector* procVec)
 * Disconnect from spawners that run in hosts not in 'procVec' and connect to added spawners
 * But, for now, just connect to the spawners.
 */
-void spawnersConnect(ss::ProcessVector* procVec, bool force = false)
+void spawnersConnect(samson::ProcessVector* procVec, bool force = false)
 {
 	Host*          localhostP;
 	Host*          hostP;
 	int            ix;
-	ss::Process*   processP;
-	ss::Endpoint*  ep;
+	samson::Process*   processP;
+	samson::Endpoint*  ep;
 	int            s;
 	int            procVecSize;
 
@@ -289,11 +289,11 @@ void spawnersConnect(ss::ProcessVector* procVec, bool force = false)
 #if 1
 		if (hostP != NULL)
 		{
-			ss::Endpoint* ep;
+			samson::Endpoint* ep;
 
-			ep = networkP->endpointLookup(ss::Endpoint::Spawner, hostP->name);
+			ep = networkP->endpointLookup(samson::Endpoint::Spawner, hostP->name);
 			
-			if ((ep != NULL) && (ep->state == ss::Endpoint::Connected))
+			if ((ep != NULL) && (ep->state == samson::Endpoint::Connected))
 			{
 				LM_T(LmtProcessVector, ("Not connecting to spawner in '%s' - nor sending it the ProcessVector", hostP->name));
 				continue;
@@ -328,7 +328,7 @@ void spawnersConnect(ss::ProcessVector* procVec, bool force = false)
 			continue;
 		}
 
-		if ((ep = networkP->endpointLookup(ss::Endpoint::Spawner, hostP)) != NULL)
+		if ((ep = networkP->endpointLookup(samson::Endpoint::Spawner, hostP)) != NULL)
 		{
 			Host* controllerHostP;
 
@@ -338,8 +338,8 @@ void spawnersConnect(ss::ProcessVector* procVec, bool force = false)
 			{
 				LM_T(LmtProcessVector, ("Already connected to spawner in '%s' - sending it the process vector", hostP->name));
 
-				procVecSize = sizeof(ss::ProcessVector) + procVec->processes * sizeof(ss::Process);
-				s = iomMsgSend(ep, networkP->endpoint[0], ss::Message::ProcessVector, ss::Message::Msg, procVec, procVecSize);
+				procVecSize = sizeof(samson::ProcessVector) + procVec->processes * sizeof(samson::Process);
+				s = iomMsgSend(ep, networkP->endpoint[0], samson::Message::ProcessVector, samson::Message::Msg, procVec, procVecSize);
 				if (s != 0)
 					LM_E(("Error sending ProcessVector message to spawner in '%s'", ep->name.c_str()));
 			}
@@ -354,7 +354,7 @@ void spawnersConnect(ss::ProcessVector* procVec, bool force = false)
 		if (fd == -1)
 			LM_E(("iomConnect('%s', %d): %s", hostP->name, SPAWNER_PORT, strerror(errno)));
 		else
-			networkP->endpointAdd("New Spawner", fd, fd, "Spawner", "Spawner", procVec->processes - 1, ss::Endpoint::Spawner, hostP->name, SPAWNER_PORT);
+			networkP->endpointAdd("New Spawner", fd, fd, "Spawner", "Spawner", procVec->processes - 1, samson::Endpoint::Spawner, hostP->name, SPAWNER_PORT);
 	}
 }
 
@@ -365,14 +365,14 @@ void spawnersConnect(ss::ProcessVector* procVec, bool force = false)
 *
 * hello - 
 */
-static int hello(ss::Endpoint* me, ss::Endpoint* ep, int* errP)
+static int hello(samson::Endpoint* me, samson::Endpoint* ep, int* errP)
 {
 	int                             s;
-	ss::Message::Header             header;
-	ss::Message::MessageCode        msgCode;
-	ss::Message::MessageType        msgType;
-	ss::Message::HelloData          helloIn;
-	ss::Message::HelloData          helloOut;
+	samson::Message::Header             header;
+	samson::Message::MessageCode        msgCode;
+	samson::Message::MessageType        msgType;
+	samson::Message::HelloData          helloIn;
+	samson::Message::HelloData          helloOut;
 	void*                           dataP     = (void*) &helloIn;
 	int                             dataLen   = sizeof(helloIn);
 	Host*                           localhost = networkP->hostMgr->lookup("localhost");
@@ -406,9 +406,9 @@ static int hello(ss::Endpoint* me, ss::Endpoint* ep, int* errP)
 	strncpy(helloOut.ip,     hostname,        sizeof(helloOut.ip));
 	strncpy(helloOut.alias,  "samsonSetup",   sizeof(helloOut.alias));
 
-	helloOut.type = ss::Endpoint::Spawner;
+	helloOut.type = samson::Endpoint::Spawner;
 
-	s = iomMsgSend(ep, me, ss::Message::Hello, ss::Message::Ack, &helloOut, sizeof(helloOut));
+	s = iomMsgSend(ep, me, samson::Message::Hello, samson::Message::Ack, &helloOut, sizeof(helloOut));
 	if (s != 0)
 		LM_RE(-1, ("error sending Hello ack to '%s'", ep->name.c_str()));
 
@@ -421,12 +421,12 @@ static int hello(ss::Endpoint* me, ss::Endpoint* ep, int* errP)
 *
 * dieSend - 
 */
-static int dieSend(ss::Endpoint* me, ss::Endpoint* ep)
+static int dieSend(samson::Endpoint* me, samson::Endpoint* ep)
 {
 	int s;
 
 	LM_T(LmtDie, ("Sending Die message to endpoint '%s'", ep->name.c_str()));
-	s = iomMsgSend(ep, me, ss::Message::Die, ss::Message::Msg);
+	s = iomMsgSend(ep, me, samson::Message::Die, samson::Message::Msg);
 	if (s != 0)
 		LM_RE(1, ("error sending Die to endpoint '%s'", ep->name.c_str()));
 
@@ -443,7 +443,7 @@ static void localProcessesKill(void)
 {
 	int            fd;
 	int            err = 0;
-	ss::Endpoint   me;
+	samson::Endpoint   me;
 	int            s;
 	bool           oldRestartInProgress;
 
@@ -456,12 +456,12 @@ static void localProcessesKill(void)
 	fd = iomConnect("localhost", WORKER_PORT);
 	if (fd != -1)
 	{
-		ss::Endpoint   ep;
+		samson::Endpoint   ep;
 
 		ep.rFd   = fd;
 		ep.wFd   = fd;
 		ep.name  = "samsonWorkerToDie";
-		ep.type  = ss::Endpoint::Worker;
+		ep.type  = samson::Endpoint::Worker;
 		ep.ip    = strdup("localhost");
 
 		hello(networkP->endpoint[0], &ep, &err);
@@ -492,12 +492,12 @@ static void localProcessesKill(void)
 	fd = iomConnect("localhost", CONTROLLER_PORT);
 	if (fd != -1)
 	{
-		ss::Endpoint   ep;
+		samson::Endpoint   ep;
 
 		ep.rFd   = fd;
 		ep.wFd   = fd;
 		ep.name  = "samsonControllerToDie";
-		ep.type  = ss::Endpoint::Controller;
+		ep.type  = samson::Endpoint::Controller;
 		ep.ip    = strdup("localhost");
 	
 		hello(networkP->endpoint[0], &ep, &err);
@@ -531,7 +531,7 @@ static void localProcessesKill(void)
 *
 * processVector - 
 */
-static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
+static int processVector(samson::Endpoint* ep, samson::ProcessVector* pVec)
 {
 	int           procVecSize;
 	int           error = 0;
@@ -544,8 +544,8 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 	if (procVec != NULL)
 	   free(procVec);
 
-	procVecSize = sizeof(ss::ProcessVector) + pVec->processes * sizeof(ss::Process);
-	procVec     = (ss::ProcessVector*) malloc(procVecSize);
+	procVecSize = sizeof(samson::ProcessVector) + pVec->processes * sizeof(samson::Process);
+	procVec     = (samson::ProcessVector*) malloc(procVecSize);
 	if (procVec == NULL)
 		LM_X(1, ("error allocating space for proc vector (%d bytes): %s", procVecSize, strerror(errno)));
 
@@ -568,7 +568,7 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 	//
 	// The spawner that gets the message from 'samsonSetup' connects to all spawners
 	//
-	if (ep->type == ss::Endpoint::Setup) 
+	if (ep->type == samson::Endpoint::Setup) 
 		spawnersConnect(procVec, true);
 	else
 		spawnersConnect(procVec, false);
@@ -582,7 +582,7 @@ static int processVector(ss::Endpoint* ep, ss::ProcessVector* pVec)
 *
 * SamsonSpawner::init - 
 */
-void SamsonSpawner::init(ss::ProcessVector* procVec)
+void SamsonSpawner::init(samson::ProcessVector* procVec)
 {
 	restartInProgress    = true;
 	localProcessesKill();
@@ -604,7 +604,7 @@ void SamsonSpawner::init(ss::ProcessVector* procVec)
 *
 * spawnerForward - 
 */
-void spawnerForward(ss::Message::MessageCode code)
+void spawnerForward(samson::Message::MessageCode code)
 {
 	int    s;
 	Host*  localHostP = networkP->hostMgr->lookup("localhost");
@@ -618,7 +618,7 @@ void spawnerForward(ss::Message::MessageCode code)
 		if (networkP->endpoint[ix] == NULL)
 			continue;
 
-		if (networkP->endpoint[ix]->type != ss::Endpoint::Spawner)
+		if (networkP->endpoint[ix]->type != samson::Endpoint::Spawner)
 			continue;
 
 		hostP = networkP->hostMgr->lookup(networkP->endpoint[ix]->ip);
@@ -628,7 +628,7 @@ void spawnerForward(ss::Message::MessageCode code)
 			LM_W(("How come I'm connected to myself ?"));
 		else
 		{
-			s = iomMsgSend(networkP->endpoint[ix], networkP->endpoint[0], code, ss::Message::Msg);
+			s = iomMsgSend(networkP->endpoint[ix], networkP->endpoint[0], code, samson::Message::Msg);
 			if (s != 0)
 				LM_E(("error forwarding '%s' to spawner in '%s'", messageCode(code)));
 		}
@@ -640,13 +640,13 @@ void spawnerForward(ss::Message::MessageCode code)
 *
 * SamsonSpawner::receive - 
 */
-int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, void* dataP)
+int SamsonSpawner::receive(int fromId, int nb, samson::Message::Header* headerP, void* dataP)
 {
 	int                 s;
-	ss::Endpoint*       ep      = networkP->endpoint[fromId];
+	samson::Endpoint*       ep      = networkP->endpoint[fromId];
 
-	ss::Process*        process = (ss::Process*)       dataP;
-	ss::ProcessVector*  procVec = (ss::ProcessVector*) dataP;
+	samson::Process*        process = (samson::Process*)       dataP;
+	samson::ProcessVector*  procVec = (samson::ProcessVector*) dataP;
 
 
 	if (ep == NULL)
@@ -654,13 +654,13 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 
 	switch (headerP->code)
 	{
-	case ss::Message::Reset:
-		if (headerP->type == ss::Message::Msg)
+	case samson::Message::Reset:
+		if (headerP->type == samson::Message::Msg)
 		{
 			LM_V(("Got a Reset message from '%s'", ep->name.c_str()));
 			unlink(SAMSON_PLATFORM_PROCESSES);
 
-			if (ep->type == ss::Endpoint::Setup) 
+			if (ep->type == samson::Endpoint::Setup) 
 			{
 				LM_T(LmtReset, ("Got RESET from samsonSetup - forwarding RESET to all spawners"));
 				spawnerForward(headerP->code);
@@ -673,19 +673,19 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 			localProcessesKill();
 			restartInProgress    = false;
 			LM_T(LmtReset, ("Sending ack to RESET message to %s@%s", ep->name.c_str(), ep->ip));
-			iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
+			iomMsgSend(ep, networkP->endpoint[0], headerP->code, samson::Message::Ack);
 
 			processListShow("Got RESET", true);
 			networkP->endpointListShow("Got RESET", true);
 		}
 		break;
 
-	case ss::Message::ProcessSpawn:
+	case samson::Message::ProcessSpawn:
 		processSpawn(process);
 		break;
 
-	case ss::Message::ProcessVector:
-		if (headerP->type == ss::Message::Msg)
+	case samson::Message::ProcessVector:
+		if (headerP->type == samson::Message::Msg)
 		{
 			LM_V(("Got a ProcessVector message"));
 			if ((procVec->processes <= 0) || (procVec->processes > 10))
@@ -700,22 +700,22 @@ int SamsonSpawner::receive(int fromId, int nb, ss::Message::Header* headerP, voi
 			LM_T(LmtProcessVector, ("Sending ProcessVector ack to '%s' in '%s'", ep->name.c_str(), ep->ip));
 			if (s == 0)
 			{
-				iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Ack);
+				iomMsgSend(ep, networkP->endpoint[0], headerP->code, samson::Message::Ack);
 				platformProcessesSave(procVec);
 			}
 			else
-				iomMsgSend(ep, networkP->endpoint[0], headerP->code, ss::Message::Nak);
+				iomMsgSend(ep, networkP->endpoint[0], headerP->code, samson::Message::Nak);
 		}
-		else if (headerP->type == ss::Message::Ack)
+		else if (headerP->type == samson::Message::Ack)
 			LM_T(LmtProcessVector, ("Received a ProcessVector Ack from '%s'", ep->name.c_str()));
-		else if (headerP->type == ss::Message::Nak)
+		else if (headerP->type == samson::Message::Nak)
 			LM_T(LmtProcessVector, ("Received a ProcessVector Nak from '%s'", ep->name.c_str()));
 		else
 			LM_X(1, ("Bad message type in ProcessVector message (%d)", headerP->type));
 		break;
 
 	default:
-		LM_X(1, ("Don't know how to treat '%s' message", ss::Message::messageCode(headerP->code)));
+		LM_X(1, ("Don't know how to treat '%s' message", samson::Message::messageCode(headerP->code)));
 	}
 
 	return 0;
@@ -795,7 +795,7 @@ int main(int argC, const char *argV[])
 
 	processListInit(101);
 
-	networkP = new ss::Network(ss::Endpoint::Spawner, "Spawner", SPAWNER_PORT, 80, 0);
+	networkP = new samson::Network(samson::Endpoint::Spawner, "Spawner", SPAWNER_PORT, 80, 0);
 	
 	spawnerP = new SamsonSpawner(networkP);
 

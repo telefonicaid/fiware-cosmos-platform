@@ -4,16 +4,16 @@
 #include <pwd.h>                /* getpw                                     */
 
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg.h"             /* lmVerbose, lmDebug, ...                   */
+#include "logMsg/logMsg.h"             /* lmVerbose, lmDebug, ...                   */
 
 #include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
 #include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
-#include "parseArgs.h"          /* PaArgument                                */
+#include "parseArgs/parseArgs.h"          /* PaArgument                                */
 #include "paBuiltin.h"          /* paBuiltinNoOf, ...                        */
 #include "paWarning.h"          /* paWarningAdd                              */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paEnvVals.h"          /* paEnvName                                 */
-#include "paConfig.h"           /* paConfigActions                           */
+#include "parseArgs/paConfig.h"           /* paConfigActions                           */
 
 
 

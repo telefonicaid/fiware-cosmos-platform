@@ -7,7 +7,7 @@
 * CREATION DATE            May 13 2011
 *
 */
-#include "logMsg.h"             // LM_*
+#include "logMsg/logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
 
 #include "QsiAlignment.h"       // Alignment
@@ -1220,7 +1220,7 @@ ScrollArea* Box::scrollAreaLookup(Box* sbox, int* ixP)
 */
 ScrollArea* Box::scrollAreaSet(Box* sbox, int sx, int sy, int sw, int sh, bool on)
 {
-	int         ix;
+	int         ix=0;
 	ScrollArea* saP = scrollAreaLookup(sbox, &ix);
 
 	if (on == false)

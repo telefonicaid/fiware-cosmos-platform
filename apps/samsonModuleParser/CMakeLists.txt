@@ -32,10 +32,6 @@ ${COMMON_SAMSON_LIBS}
 # Include directories
 # ------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
-include_directories("${PROJECT_SOURCE_DIR}/libs/module")
-include_directories("${PROJECT_SOURCE_DIR}/libs/common")
-include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
-include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 
 
 # SAMSON Executable

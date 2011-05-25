@@ -4,8 +4,8 @@
 
 #include <sstream>			// std::ostringstream 
 #include <string>
-#include "logMsg.h"			// Lmt
-#include "traceLevels.h"	// LmtEngine
+#include "logMsg/logMsg.h"			// Lmt
+#include "logMsg/traceLevels.h"	// LmtEngine
 #include "au/Format.h"         // au::Format
 
 namespace engine

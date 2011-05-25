@@ -1,8 +1,8 @@
 
 
 #include "engine/MemoryRequest.h"		// Own interface
-#include "engine/Buffer.h"				// ss::Buffer
-#include "logMsg.h"				// LM_X
+#include "engine/Buffer.h"				// samson::Buffer
+#include "logMsg/logMsg.h"				// LM_X
 
 namespace engine
 {

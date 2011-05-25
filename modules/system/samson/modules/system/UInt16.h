@@ -9,7 +9,7 @@
 
 
 
-namespace ss{
+namespace samson{
 namespace system{
 
 

@@ -7,7 +7,7 @@
 * CREATION DATE            May 17 2011
 *
 */
-#include "logMsg.h"             // LM_*
+#include "logMsg/logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
 
 #include "QsiBox.h"             // Box

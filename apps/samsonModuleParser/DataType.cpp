@@ -8,9 +8,9 @@
 #include <string.h>         // strcpy, strtok
 #include "DataType.h"		// Own interface
 #include <unistd.h>         // exit(.)
-#include "logMsg.h"			// LM_M()
+#include "logMsg/logMsg.h"			// LM_M()
 
-namespace ss
+namespace samson
 {
 	
 	DataType::DataType( std::string _full_type , std::string _name , bool _vector  )
@@ -47,7 +47,7 @@ namespace ss
 		ostringstream o;
 		
 		std::vector<std::string> tockens = tockenizeWithDots( fullType );
-		o << "::ss::";
+		o << "::samson::";
 		for (size_t i = 0 ; i <= tockens.size()-2 ; i++)
 			o << tockens[i] << "::";
 		o << tockens[tockens.size()-1];	// Last element
@@ -191,7 +191,7 @@ namespace ss
 			
 			o << pre_line << "{ //Parsing vector "<<name<<"\n";
 			o << pre_line << "\tsize_t _length;\n";
-			o << pre_line << "\toffset += ss::staticVarIntParse( data+offset , &_length );\n";
+			o << pre_line << "\toffset += samson::staticVarIntParse( data+offset , &_length );\n";
 			o << pre_line << " \t"<<name<<"SetLength( _length );\n";	
 			o << pre_line << "\tfor (int i = 0 ; i < (int)"<<name<<"_length ; i++){\n";
 			o << pre_line << "\t\t" << getParseCommandIndividual( name + "[i]" ) << "\n";
@@ -224,7 +224,7 @@ namespace ss
 		if( vector )
 		{			
 			o << pre_line << "{ //Serialization vector "<<name<<"\n";
-			o << pre_line << "\toffset += ss::staticVarIntSerialize( data+offset , "<< name <<"_length );\n";
+			o << pre_line << "\toffset += samson::staticVarIntSerialize( data+offset , "<< name <<"_length );\n";
 			o << pre_line << "\tfor (int i = 0 ; i < (int)"<<name<<"_length ; i++){\n";
 			o << pre_line << "\t\t" << getSerializationCommandIndividual( name + "[i]" ) << "\n";
 			o << pre_line << "\t}\n";
@@ -254,7 +254,7 @@ namespace ss
 		{			
 			o << pre_line << "{ //Getting size of vector "<<name<<"\n";
 			o << pre_line << "\tsize_t _length;\n";
-			o << pre_line << "\toffset += ss::staticVarIntParse( data+offset , &_length );\n";
+			o << pre_line << "\toffset += samson::staticVarIntParse( data+offset , &_length );\n";
 			
 			o << pre_line << "\t" << classNameForType() << " _tmp;\n";
 			o << pre_line << "\tfor (int i = 0 ; i < (int)_length ; i++){\n";
@@ -326,8 +326,8 @@ namespace ss
 			o << pre_line << "{ // Comparing vector " << name << "\n";
 			
 			o << pre_line << "\tsize_t _length1,_length2;\n";
-			o << pre_line << "\t*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );\n";
-			o << pre_line << "\t*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );\n";
+			o << pre_line << "\t*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );\n";
+			o << pre_line << "\t*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );\n";
 			
 			o << pre_line << "\tif( _length1 < _length2 ) return -1;\n";
 			o << pre_line << "\tif( _length1 > _length2 ) return 1;\n";

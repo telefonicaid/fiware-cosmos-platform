@@ -12,14 +12,14 @@
 #include <stdlib.h>             /* free, ...                                  */
 #include <string.h>             /* strdup, ...                                */
 
-#include "logMsg.h"             /* lmTraceSet                                */
+#include "logMsg/logMsg.h"             /* lmTraceSet                                */
 
 #include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
 #include "paTraceLevels.h"      /* LmtPaDefaultValues, ...                   */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paBuiltin.h"          /* paBuiltinRemove                           */
 #include "paLog.h"              /* log macros to debug paConfig              */
-#include "paConfig.h"           /* Own interface                             */
+#include "parseArgs/paConfig.h"           /* Own interface                             */
 
 
 

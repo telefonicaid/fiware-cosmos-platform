@@ -9,7 +9,7 @@
 */
 #include <QGraphicsSimpleTextItem>
 
-#include "logMsg.h"             // LM_*
+#include "logMsg/logMsg.h"             // LM_*
 #include "traceLevels.h"        // Lmt*
 
 #include "QsiManager.h"         // Manager

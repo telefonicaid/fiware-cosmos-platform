@@ -1,11 +1,11 @@
 #include <stdio.h>              /* stderr, stdout, ...                       */
 
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg.h"             /* lmVerbose, lmDebug, ...                   */
+#include "logMsg/logMsg.h"             /* lmVerbose, lmDebug, ...                   */
 
 #include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
 #include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
-#include "paConfig.h"           /* paConfigActions                           */
+#include "parseArgs/paConfig.h"           /* paConfigActions                           */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paLogSetup.h"         /* Own interface                             */
 #include <cstdlib>				/* C++ free(.)								 */

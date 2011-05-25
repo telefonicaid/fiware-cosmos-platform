@@ -10,7 +10,7 @@
 */
 #include "baStd.h"              /* bool, ...                            */
 
-#include "parseArgs.h"          /* Where we have the ext decl of paConfig    */
+#include "parseArgs/parseArgs.h"          /* Where we have the ext decl of paConfig    */
 
 
 

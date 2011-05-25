@@ -641,6 +641,7 @@ static void qsiSetup(QWidget* mainWindow)
 	}
 
 	scrollBox->setScrollable(true);
+	mainBox->scrollAreaSet(scrollBox, 1000, 30, 200, 2000, true);
 }
 
 

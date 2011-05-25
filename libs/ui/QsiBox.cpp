@@ -30,11 +30,13 @@ namespace Qsi
 
 /* ****************************************************************************
 *
-* QSIS   - initial amount and also increment amount for no of qsis in qsiVec
-* ALIGN - initial amount and also increment amount for no of aligns in alignVec
+* QSIS    - initial amount and also increment amount for no of qsis in qsiVec
+* ALIGN   - initial amount and also increment amount for no of aligns in alignVec
+* SCROLLS - initial amount and also increment amount for no of scrolls in scrollVec
 */
-#define QSIS    5
-#define ALIGNS  3
+#define QSIS     5
+#define ALIGNS   3
+#define SCROLLS  5
 
 
 
@@ -49,6 +51,9 @@ Box::Box(Manager* manager, Box* owner, const char* name, int x, int y) : Base(ow
 
 	alignVecSize  = ALIGNS;
 	alignVec      = (Alignment**) calloc(alignVecSize, sizeof(Alignment*)); 
+
+	scrollVecSize = SCROLLS;
+	scrollVec     = (ScrollArea**) calloc(scrollVecSize, sizeof(ScrollArea*));
 
 	this->manager = manager;
 	type          = BoxItem;
@@ -1159,6 +1164,100 @@ void Box::scroll(int dy)
 		return;
 	
 	moveRelative(0, dy);
+}
+
+
+
+/* ****************************************************************************
+*
+* scrollAreaLookup - 
+*/
+ScrollArea* Box::scrollAreaLookup(int px, int py)
+{
+	LM_M(("Looking up scroll area for { %d, %d }", px, py));
+
+	for (int ix = 0; ix < scrollVecSize; ix++)
+	{
+		if (scrollVec[ix] == NULL)
+			continue;
+
+		if ((px >= scrollVec[ix]->x) && (px <= scrollVec[ix]->x + scrollVec[ix]->w) && (py >= scrollVec[ix]->y) && (py <= scrollVec[ix]->y + scrollVec[ix]->h))
+			return scrollVec[ix];
+	}
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* scrollAreaLookup - 
+*/
+ScrollArea* Box::scrollAreaLookup(Box* sbox, int* ixP)
+{
+	for (int ix = 0; ix < scrollVecSize; ix++)
+	{
+		if (scrollVec[ix] == NULL)
+			continue;
+
+		if (scrollVec[ix]->box == sbox)
+		{
+			*ixP = ix;
+			return scrollVec[ix];
+		}
+	}
+
+	return NULL;
+}
+
+
+
+
+/* ****************************************************************************
+*
+* scrollAreaSet - 
+*/
+ScrollArea* Box::scrollAreaSet(Box* sbox, int sx, int sy, int sw, int sh, bool on)
+{
+	int         ix;
+	ScrollArea* saP = scrollAreaLookup(sbox, &ix);
+
+	if (on == false)
+	{
+		if (saP == NULL)
+			LM_RE(NULL, ("Scroll Area for '%s' at { %d, %d } %dx%d cannot be removed - not found", sbox->name, sx, sy, sw, sh));
+
+		free(scrollVec[ix]);
+		scrollVec[ix] = NULL;
+		return NULL;
+	}
+
+	if (saP == NULL)
+	{
+		for (ix = 0; ix < scrollVecSize; ix++)
+		{
+			if (scrollVec[ix] == NULL)
+			{
+				scrollVec[ix] = (ScrollArea*) calloc(1, sizeof(ScrollArea));
+				saP           = scrollVec[ix];
+				break;
+			}
+		}
+
+		if (saP == NULL)
+			LM_RE(NULL, ("Scroll Area vector full - sorry ..."));
+	}
+	else
+		LM_W(("Overriding scroll area for %s", sbox->name));
+
+	saP->box = sbox;
+	saP->x   = sx;
+	saP->y   = sy;
+	saP->w   = sw;
+	saP->h   = sh;
+
+	return saP;
 }
 
 }

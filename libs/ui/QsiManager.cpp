@@ -497,12 +497,20 @@ void Manager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 {
 	QPointF          point    = event->scenePos();
-	int              dy       = (event->delta() > 0)? 5 : -5;
+	int              dy       = (event->delta() > 0)? 10 : -10;
 	QGraphicsItem*   gItemP   = itemAt(point);
 	Base*            qbP      = lookup(gItemP);
-	Box*             box;
+	Box*             xbox;
 
 	LM_M(("Mouse wheel dy == %d", dy));
+
+	ScrollArea* saP;
+	saP = box->scrollAreaLookup(point.x(), point.y());
+	if (saP != NULL)
+	{
+		LM_M(("Found scroll area"));
+		saP->box->scroll(dy);
+	}
 
 	if ((qbP == NULL) || (((Block*) qbP)->w.vP != NULL))
 	{
@@ -511,10 +519,13 @@ void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 		return;
 	}
 	
-	box = qbP->owner;
+	xbox = qbP->owner;
 
-	if (box->scrollable == true)
-		box->scroll(dy);
+	if (xbox->scrollable == true)
+	{
+		LM_M(("box is scrollable"));
+		xbox->scroll(dy);
+	}
 }
 
 

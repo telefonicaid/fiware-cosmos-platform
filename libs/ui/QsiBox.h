@@ -28,6 +28,21 @@ namespace Qsi
 
 
 
+/* ****************************************************************************
+*
+* ScrollArea - 
+*/
+typedef struct ScrollArea
+{
+	Box*  box;
+	int   x;
+	int   y;
+	int   w;
+	int   h;	
+} ScrollArea;
+
+
+
 class Block;
 class Manager;
 /* ****************************************************************************
@@ -114,6 +129,15 @@ public:
 	bool  scrollable;
 	void  setScrollable(bool _scrollable);
 	void  scroll(int dy);
+
+private:
+	ScrollArea** scrollVec;
+	int          scrollVecSize;
+	ScrollArea*  scrollAreaLookup(Box* sbox, int* ixP);
+
+public:
+	ScrollArea*  scrollAreaSet(Box* box, int x, int y, int w, int h, bool on);
+	ScrollArea*  scrollAreaLookup(int px, int py);
 };
 
 }

@@ -44,7 +44,7 @@ public:
 	~ListenerEndpoint();
 
 	UnhelloedEndpoint*  accept(void);
-	// Endpoint2::Status   msgTreat2(void);
+	Endpoint2::Status   msgTreat2(void);
 
 private:
 	Endpoint2::Status   init(void);

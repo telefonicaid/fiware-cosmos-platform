@@ -12,7 +12,7 @@
 #include <unistd.h>             // close
 #include <fcntl.h>              // F_SETFD
 
-#include "samson/network/EndpointManager.h"    // EndpointManager
+#include "EndpointManager.h"    // EndpointManager
 #include "UnhelloedEndpoint.h"  // UnhelloedEndpoint
 #include "ListenerEndpoint.h"   // Own interface
 
@@ -149,12 +149,12 @@ UnhelloedEndpoint* ListenerEndpoint::accept(void)
 }
 
 
-#if 0
+
 /* ****************************************************************************
 *
 * msgTreat - 
 */
-Endpoint2::Status ListenerEndpoint::msgTreat(void)
+Endpoint2::Status ListenerEndpoint::msgTreat2(void)
 {
 	UnhelloedEndpoint* ep;
 
@@ -162,10 +162,10 @@ Endpoint2::Status ListenerEndpoint::msgTreat(void)
 
 	ep = accept();
 	if (ep == NULL)
-		LM_RVE(("Endpoint2::accept returned NULL"));
+		LM_RE(AcceptError, ("Endpoint2::accept returned NULL"));
 
 	ep->helloSend(Message::Msg);
 	return Endpoint2::OK;
 }
-#endif
+
 }

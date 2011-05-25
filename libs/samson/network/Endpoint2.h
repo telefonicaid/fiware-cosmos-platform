@@ -223,12 +223,12 @@ public:
 
 	virtual Status       msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 	{
-	   LM_X(1, ("NOT IMPLEMENTED")); return NotImplemented;
+		LM_X(1, ("msgTreat2 NOT IMPLEMENTED for %s %d", typeName(), name)); return NotImplemented;
 	};
 
 	virtual Status       msgTreat2(void)
 	{
-	   LM_X(1, ("NOT IMPLEMENTED")); return NotImplemented;
+		LM_X(1, ("msgTreat2(void) NOT IMPLEMENTED for %s %s", typeName(), name)); return NotImplemented;
 	};
 
 	Status               die(int secs, int usecs = 0);       // send 'die' to endpoint, and await death, with timeout

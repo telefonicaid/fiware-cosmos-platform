@@ -7,18 +7,18 @@
 * CREATION DATE            Apr 08 2011
 *
 */
-#include <sys/select.h>         // select
+#include <sys/select.h>
 
-#include "logMsg/logMsg.h"             // LM_*
-#include "logMsg/traceLevels.h"        // Trace Levels
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"
 
-#include "samson/network/NetworkInterface.h"	// ss:NetworkInterface
-#include "Host.h"               // Host
-#include "HostMgr.h"            // HostMgr
-#include "samson/network/Endpoint2.h"          // Endpoint2
-#include "samson/network/EndpointManager.h"    // EndpointManager
-#include "samson/network/Packet.h"             // google::
-#include "samson/network/Network2.h"           // Own interface
+#include "NetworkInterface.h"
+#include "Host.h"
+#include "HostMgr.h"
+#include "Endpoint2.h"
+#include "EndpointManager.h"
+#include "Packet.h"
+#include "Network2.h"
 
 
 
@@ -36,8 +36,6 @@ Network2::Network2(EndpointManager* _epMgr)
 	epMgr          = _epMgr;
 	packetReceiver = NULL;
 	dataReceiver   = NULL;
-
-	epMgr->tmoSet(2, 0);
 }
 
 

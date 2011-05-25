@@ -61,6 +61,7 @@ ControllerEndpoint::~ControllerEndpoint() // : ~Endpoint2()
 */
 Endpoint2::Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 {
+	LM_M(("In ControllerEndpoint::msgTreat2"));
 	switch (headerP->code)
 	{
 	default:
@@ -69,6 +70,18 @@ Endpoint2::Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* 
 	}
 
 	return OK;
+}
+
+
+
+/* ****************************************************************************
+*
+* msgTreat2 - 
+*/
+Endpoint2::Status ControllerEndpoint::msgTreat2(void)
+{
+	LM_X(1, ("Nothing done here - frankly, I thought ListenerEndpoint::msgTreat2 would be called ..."));
+	return Error;
 }
 
 }

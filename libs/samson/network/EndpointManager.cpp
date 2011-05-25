@@ -7,25 +7,26 @@
 * CREATION DATE            Apr 06 2011
 *
 */
-#include <pthread.h>              // pthread_t
+#include <pthread.h>
 
-#include "logMsg/logMsg.h"               // LM_*
-#include "logMsg/traceLevels.h"          // Lmt*
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"
 
-#include "samson/network/NetworkInterface.h"     // ss:NetworkInterface 
-#include "samson/common/ports.h"                // All ports for the samson system
-#include "samson/network/Packet.h"               // Packet
-#include "samson/common/Process.h"              // Process, ProcessVector
-#include "samson/common/platformProcesses.h"    // platformProcessesGet
-#include "Host.h"                 // Host
-#include "samson/network/Endpoint2.h"            // Endpoint2
-#include "ListenerEndpoint.h"     // ListenerEndpoint
-#include "WebListenerEndpoint.h"  // WebListenerEndpoint
-#include "UnhelloedEndpoint.h"    // UnhelloedEndpoint
-#include "WorkerEndpoint.h"       // WorkerEndpoint
-#include "ControllerEndpoint.h"   // ControllerEndpoint
-#include "SpawnerEndpoint.h"      // SpawnerEndpoint
-#include "samson/network/EndpointManager.h"      // Own interface
+#include "samson/common/ports.h"
+#include "samson/common/Process.h"
+#include "samson/common/platformProcesses.h"
+
+#include "NetworkInterface.h"
+#include "Packet.h"
+#include "Endpoint2.h"
+#include "Host.h"
+#include "ListenerEndpoint.h"
+#include "WebListenerEndpoint.h"
+#include "UnhelloedEndpoint.h"
+#include "WorkerEndpoint.h"
+#include "ControllerEndpoint.h"
+#include "SpawnerEndpoint.h"
+#include "EndpointManager.h"
 
 
 
@@ -70,17 +71,26 @@ static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, 
 */
 EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 {
+	LM_M(("In EndpointManager::EndpointManager"));
+
+	tmoSecs          = 2;
+	tmoUSecs         = 0;
+
+	procVec          = NULL;
+	hostMgr          = NULL;
+
 	workers          = 0;
 	endpoints        = 0;
+
 	endpoint         = NULL;
 	me               = NULL;
 	controller       = NULL;
 	listener         = NULL;
 	webListener      = NULL;
+
 	packetReceiver   = NULL;
 	dataReceiver     = NULL;
-	procVec          = NULL;
-	hostMgr          = NULL;
+
 
 
 	//
@@ -153,6 +163,93 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 
 /* ****************************************************************************
 *
+* controllerConnect - 
+*/
+void EndpointManager::controllerConnect(void)
+{
+	Process*   p;
+	Host*      hostP;
+	Endpoint2* ep;
+
+	p = &procVec->processV[0];
+	if (p->type != PtController)
+		LM_X(1, ("First process in process vector has to be the controller!"));
+
+	hostP = hostMgr->lookup(p->host);
+	if (hostP == NULL)
+		hostP = hostMgr->insert(p->host, NULL);
+
+	ep = add(Endpoint2::Controller, 0, p->name, p->alias, hostP, p->port, -1, -1);
+	ep->connect();
+}
+
+
+
+/* ****************************************************************************
+*
+* workersAdd - 
+*/
+void EndpointManager::workersAdd(void)
+{
+	for (int ix = 1; ix < procVec->processes; ix++)
+	{
+		Process*    p;
+		Host*       hostP;
+		Endpoint2*  ep;
+
+		p = &procVec->processV[ix];
+		if (p->type != PtWorker)
+			LM_X(1, ("Process %d in process vector has to be a worker - corrupt platform processes file!", ix));
+
+		hostP = hostMgr->lookup(p->host);
+		if (hostP == NULL)
+			hostP = hostMgr->insert(p->host, NULL);
+
+		if ((me->type == Endpoint2::Worker) && (hostP == me->host))
+		{
+			LM_M(("Worker's not adding itself ..."));
+			continue;
+		}
+
+		ep = add(Endpoint2::Worker, ix, p->name, p->alias, hostP, p->port, -1, -1);
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* workersConnect - 
+*/
+void EndpointManager::workersConnect(void)
+{
+	Endpoint2* ep;
+
+	for (unsigned int ix = 1; ix < endpoints; ix++)
+	{
+		ep = endpoint[ix];
+
+		if (ep == NULL)
+			continue;
+
+		if (ep->type != Endpoint2::Worker)
+			continue;
+
+		if (ep->state == Endpoint2::Ready)
+			continue;
+
+		if (ep->idGet() < me->idGet())
+		{
+			LM_M(("Connecting to worker in '%s'", ep->host->name));
+			ep->connect();  // Connect, but don't add to endpoint vector
+		}
+	}
+}
+
+
+
+/* ****************************************************************************
+*
 * initWorker - 
 *
 * This method should probably be moved to apps/worker
@@ -191,45 +288,9 @@ void EndpointManager::initWorker(void)
 		LM_X(1, ("error creating listener endpoint - no use to continue ..."));
 
 
-
-	//
-	// Connect to Controller
-	//
-	Process*   p;
-	Host*      hostP;
-	Endpoint2* ep;
-
-	p = &procVec->processV[0];
-	if (p->type != PtController)
-		LM_X(1, ("First process in process vector has to be the controller!"));
-
-	hostP = hostMgr->lookup(p->host);
-	if (hostP == NULL)
-		hostP = hostMgr->insert(p->host, NULL);
-
-	ep = add(Endpoint2::Controller, 0, p->name, p->alias, hostP, p->port, -1, -1);
-	ep->connect();
-
-
-
-	for (int ix = 1; ix < procVec->processes; ix++)
-	{
-		Process*    p;
-		Host*       hostP;
-		Endpoint2*  ep;
-
-		p = &procVec->processV[ix];
-		if (p->type != PtWorker)
-			LM_X(1, ("Process %d in process vector has to be a worker - corrupt platform processes file!", ix));
-
-		hostP = hostMgr->lookup(p->host);
-		if (hostP == NULL)
-			hostP = hostMgr->insert(p->host, NULL);
-
-		ep = add(Endpoint2::Worker, ix, p->name, p->alias, hostP, p->port, -1, -1);
-		if (ep->idGet() < me->idGet())
-			ep->connect();  // Connect, but don't add to endpoint vector
-	}
+	controllerConnect();
+	workersAdd();
+	workersConnect();
 }
 
 
@@ -257,7 +318,6 @@ void EndpointManager::initController(void)
 	me->portSet(CONTROLLER_PORT);
 
 
-
 	//
 	// Opening listeners to accept incoming connections
 	//
@@ -268,6 +328,9 @@ void EndpointManager::initController(void)
 		LM_X(1, ("error creating listener endpoint - no use to continue ..."));
 	if (webListener == NULL)
 		LM_W(("error creating web listener endpoint!"));
+
+	LM_M(("Adding workers from process vector to endpoint vector"));
+	workersAdd();
 }
 
 
@@ -429,6 +492,10 @@ Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, const char* name, 
 
 	case Endpoint2::Spawner:
 		ep = new SpawnerEndpoint(this, id, name, alias, host, rFd, wFd);
+		break;
+
+	case Endpoint2::WebListener:
+		ep = new WebListenerEndpoint(this, id, name, alias, host, port, rFd, wFd);
 		break;
 
 	default:
@@ -728,6 +795,26 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 }
 
 
+
+/* ****************************************************************************
+*
+* timeout - 
+*/
+void EndpointManager::timeout(void)
+{
+	static int tmoNo = 0;
+
+	LM_M(("In timeout %d - any controller/workers to connect to?", tmoNo));
+	if ((controller == NULL) || controller->state != Endpoint2::Ready)
+		controllerConnect();
+	workersConnect();
+	show("timeout");
+
+	++tmoNo;
+}
+
+
+
 /* ****************************************************************************
 *
 * run - 
@@ -788,9 +875,9 @@ void EndpointManager::run(bool oneShot)
 			LM_X(1, ("select: %s", strerror(errno)));
 		else if (fds == 0)
 		{
+			timeout();
 			if (callback[Timeout].func != NULL)
 				callback[Timeout].func(NULL, callback[Timeout].userParam);
-			show("timeout");
 		}
 		else
 		{

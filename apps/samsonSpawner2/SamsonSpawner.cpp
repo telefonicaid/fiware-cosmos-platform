@@ -303,14 +303,18 @@ void SamsonSpawner::spawn(Process* process)
 	if (process->type == PtWorker)
 		argV[argC++] = (char*) "samsonWorker2";
 	else if (process->type == PtController)
-		argV[argC++] = (char*) "samsonController";
+		argV[argC++] = (char*) "samsonController2";
 	else
 		LM_X(1, ("Will only start workers and controllers - bad process type %d", process->type));
 
-#if 1
-	LM_W(("Turning on VERBOSE and ALL TRACE LEVELS for process '%s'", process->name));
-	process->verbose = true;
-#endif
+	if (getenv("SAMSON_DEBUG") != NULL)
+	   process->debug = true;
+	if (getenv("SAMSON_VERBOSE") != NULL)
+	   process->verbose = true;
+	if (getenv("SAMSON_READS") != NULL)
+	   process->reads = true;
+	if (getenv("SAMSON_WRITES") != NULL)
+	   process->writes = true;
 
 	if (process->verbose == true)   argV[argC++] = (char*) "-v";
 	if (process->debug   == true)   argV[argC++] = (char*) "-d";
@@ -422,13 +426,13 @@ void SamsonSpawner::localProcessesKill(void)
 		LM_E((" system(\"killall -9 samsonWorker\") returned %d (strerror: %s)", s, strerror(errno)));
 
 
-	s = system("killall samsonController > /dev/null 2>&1");
+	s = system("killall samsonController2 > /dev/null 2>&1");
 	if (s != 0)
-		LM_E((" system(\"killall samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
+		LM_E((" system(\"killall samsonController2\") returned %d (strerror: %s)", s, strerror(errno)));
 	usleep(200000);
-	s = system("killall -9 samsonController > /dev/null 2>&1");
+	s = system("killall -9 samsonController2 > /dev/null 2>&1");
 	if (s != 0)
-		LM_E((" system(\"killall -9 samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
+		LM_E((" system(\"killall -9 samsonController2\") returned %d (strerror: %s)", s, strerror(errno)));
 }
 
 }

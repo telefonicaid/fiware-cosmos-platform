@@ -94,6 +94,11 @@ public:
 	ProcessVector*     procVecGet(void);
 	Endpoint2::Status  setupAwait(void);
 
+	void               timeout(void);
+	void               workersAdd(void);
+	void               workersConnect(void);
+	void               controllerConnect(void);
+
 	Endpoint2*         add(Endpoint2* ep);
 	Endpoint2*         add(Endpoint2::Type type, int id, const char* name, const char* alias, Host* host, unsigned short port, int rFd = -1, int wFd = -1);
 	void               remove(Endpoint2* ep);

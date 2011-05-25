@@ -1,6 +1,7 @@
 ADD_SUBDIRECTORY(samsonWorker)
 ADD_SUBDIRECTORY(samsonWorker2)
 ADD_SUBDIRECTORY(samsonController)
+ADD_SUBDIRECTORY(samsonController2)
 ADD_SUBDIRECTORY(delilah)
 ADD_SUBDIRECTORY(samsonLocal)
 ADD_SUBDIRECTORY(samsonModuleParser)

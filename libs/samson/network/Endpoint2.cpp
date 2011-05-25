@@ -869,11 +869,20 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	LM_M(("Treating a message from %s@%s", name, host->name));
 
 	if (type == Listener)
+	{
+		LM_M(("Something to read for Listener - calling msgTreat2"));
 		return msgTreat2();
+	}
 	if (type == WebListener)
+	{
+		LM_M(("Something to read for WebListener - calling msgTreat2"));
 		return msgTreat2();
+	}
 	if (type == WebWorker)
+	{
+		LM_M(("Something to read for WebWorker - calling msgTreat2"));
 		return msgTreat2();
+	}
 	
 	LM_M(("Reading a message from '%s@%s'", name, host->name));
 	s = msgAwait(-1, -1, "Incoming message");

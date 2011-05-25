@@ -13,14 +13,14 @@
 #include <fcntl.h>                 // open, O_RDWR, O_CREAT, O_TRUNC, ...
 #include <stdlib.h>                // free
 
-#include "parseArgs/parseArgs.h"             // parseArgs
-#include "logMsg/logMsg.h"                // LM_*
-#include "logMsg/traceLevels.h"           // Trace levels
+#include "parseArgs/parseArgs.h"
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"
 
-#include "engine/MemoryManager.h"  // samson::MemoryManager
-#include "samson/common/SamsonSetup.h"           // samson::SamsonSetup
-#include "samson/network/Endpoint2.h"             // Endpoint2
-#include "SamsonStarter.h"         // SamsonStarter
+#include "engine/MemoryManager.h"
+#include "samson/common/SamsonSetup.h"
+#include "samson/network/Endpoint2.h"
+#include "SamsonStarter.h"
 
 
 
@@ -57,9 +57,9 @@ PaArgument paArgs[] =
 *
 * Global variables
 */
-int            logFd        = -1;
+int              logFd        = -1;
 SamsonStarter*   samsonStarter  = NULL;
-int            startTime;
+int              startTime;
 
 
 

@@ -154,15 +154,18 @@ UnhelloedEndpoint* ListenerEndpoint::accept(void)
 *
 * msgTreat - 
 */
-void ListenerEndpoint::msgTreat(void)
+Endpoint2::Status ListenerEndpoint::msgTreat(void)
 {
 	UnhelloedEndpoint* ep;
+
+	LM_M(("In ListenerEndpoint::msgTreat - accepting incoming connection"));
 
 	ep = accept();
 	if (ep == NULL)
 		LM_RVE(("Endpoint2::accept returned NULL"));
 
 	ep->helloSend(Message::Msg);
+	return Endpoint2::OK;
 }
 
 }

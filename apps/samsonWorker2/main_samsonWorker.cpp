@@ -7,22 +7,22 @@
 * CREATION DATE            Dec 14 2010
 *
 */
-#include "parseArgs/parseArgs.h"             // parseArgs
-#include "logMsg/logMsg.h"                // LM_*
-#include "logMsg/traceLevels.h"           // Trace levels
+#include "parseArgs/parseArgs.h"
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"
 
-#include "samson/network/Network2.h"              // Network2
-#include "samson/network/Endpoint2.h"             // Endpoint2
-#include "samson/network/EndpointManager.h"       // EndpointManager
+#include "engine/MemoryManager.h"
+#include "engine/Engine.h"
+#include "engine/DiskManager.h"
+#include "engine/ProcessManager.h"
 
-#include "samson/worker/SamsonWorker.h"          // samson::SamsonWorker
-#include "samson/common/SamsonSetup.h"           // samson::SamsonSetup
-#include "engine/MemoryManager.h"  // samson::MemoryManager
-#include "engine/Engine.h"         // samson::Engine
-#include "samson/worker/SharedMemoryManager.h"   // samson::SharedMemoryManager
-
-#include "engine/DiskManager.h"    // engine::DiskManager
-#include "engine/ProcessManager.h" // engine::ProcessManager
+#include "samson/network/Network2.h"
+#include "samson/network/Endpoint2.h"
+#include "samson/network/EndpointManager.h"
+#include "samson/worker/SamsonWorker.h"
+#include "samson/common/SamsonSetup.h"
+#include "samson/worker/SharedMemoryManager.h"
+#include "samson/stream/BlockManager.h"
 
 
 
@@ -57,7 +57,7 @@ PaArgument paArgs[] =
 *
 * logFd - file descriptor for log file used in all libraries
 */
-int               logFd  = -1;
+int                   logFd  = -1;
 samson::SamsonWorker* worker = NULL;
 
 
@@ -107,10 +107,11 @@ int main(int argC, const char *argV[])
     
 	engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->num_processes , samson::SamsonSetup::shared()->shared_memory_size_per_buffer);
 	engine::Engine::init();
-	samson::ModulesManager::init();
 	engine::DiskManager::init(1);
 	engine::ProcessManager::init(samson::SamsonSetup::shared()->num_processes);
 	engine::MemoryManager::init(samson::SamsonSetup::shared()->memory);
+	samson::ModulesManager::init();
+    samson::stream::BlockManager::init();
 
     
 	// Instance of network object and initialization

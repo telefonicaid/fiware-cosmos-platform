@@ -15,7 +15,7 @@
 
 
 #include "au/map.h"     // au::map
-
+#include <string>
 
 namespace samson {
     namespace stream

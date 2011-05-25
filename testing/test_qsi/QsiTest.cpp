@@ -118,6 +118,7 @@ static Qsi::Block*       alignNoneButton;
 static Qsi::Block*       scrollUpButton;
 static Qsi::Block*       scrollDownButton;
 static Qsi::Box*         scrollBox;
+static Qsi::Box*         verticalBox;
 
 static Qsi::Block*       rectangle;
 static Qsi::InputLine*   inputLine;
@@ -630,6 +631,10 @@ static void qsiSetup(QWidget* mainWindow)
 
 	combo = (Qsi::Block*) mainBox->comboAdd("Combo", option, 400, 700, -1, -1, comboCallback, NULL);
 
+
+	//
+	// ScrollBox
+	//
 	scrollBox = (Qsi::Box*) mainBox->boxAdd("ScrollBox", 1000, 30);
 
 	for (int ix = 0; ix < 50; ix++)
@@ -643,6 +648,23 @@ static void qsiSetup(QWidget* mainWindow)
 	// scrollBox->setScrollable(true);   NOT necessary
 	LM_M(("Creating scroll area for scrollBox: { %d, %d } %dx%d", 1000, 30, 200, 500));
 	mainBox->scrollAreaSet(scrollBox, 1000, 100, 200, 300, true);
+
+
+	//
+	// VerticalBox
+	//
+	Qsi::Block* b;
+
+	verticalBox = (Qsi::Box*) mainBox->boxAdd("VerticalBox", 1300, 30);
+	verticalBox->setVertical(true);
+
+	b = (Qsi::Block*) verticalBox->textAdd("Line1", "Line1", 0, 0);
+	b->boxMoveSet(true);
+
+	verticalBox->textAdd("Line2", "Line2", 0, 0);
+	verticalBox->textAdd("Line3", "Line3", 0, 0);
+	verticalBox->textAdd("Line4", "Line4", 0, 0);
+	verticalBox->textAdd("Line5", "Line5", 0, 0);
 }
 
 

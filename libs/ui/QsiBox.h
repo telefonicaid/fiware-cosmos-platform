@@ -58,6 +58,7 @@ public:
 	Manager*     manager;
 	Block*       firstLine;
 	Box*         lastBox;
+	bool         vertical;
 
 private:
 	Base**       qsiVec;
@@ -73,6 +74,7 @@ private:
 
 public:
 	Box(Manager* manager, Box* owner, const char* name, int x, int y);
+	void setVertical(bool _vertical);
 
 	Manager*    managerGet(void) { return manager; };
 	void        moveRelative(int x, int y);                                                  // move all qsis in qsiVec
@@ -88,6 +90,7 @@ public:
 	void        initialMove(Base* qbP);                                                      // move child to absolute position + relative box position
 	void        absPos(int* xP, int* yP);                                                    // get absolute position - recursively
 	void        add(Base* qsi);                                                              // add a qsi (Box or Block)
+	void        addVertically(Base* qsi);                                                    // add a qsi (Box or Block)
 	Base*       lastAddedGet(void);
 
 	void        remove(Base* qsi, bool destroy = true);                                      // remove a qsi (Box or Block)

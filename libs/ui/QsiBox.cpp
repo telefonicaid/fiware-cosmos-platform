@@ -57,6 +57,7 @@ Box::Box(Manager* manager, Box* owner, const char* name, int x, int y) : Base(ow
 
 	this->manager = manager;
 	type          = BoxItem;
+	vertical      = false;
 
 	this->x       = xInitial;
 	this->y       = yInitial;
@@ -71,6 +72,18 @@ Box::Box(Manager* manager, Box* owner, const char* name, int x, int y) : Base(ow
 
 	scrollable = false;
 }
+
+
+
+/* ****************************************************************************
+*
+* setVertical - 
+*/
+void Box::setVertical(bool _vertical)
+{
+	vertical = _vertical;
+}
+
 
 
 /* ****************************************************************************
@@ -330,12 +343,69 @@ void Box::initialMove(Base* qbP)
 
 /* ****************************************************************************
 *
+* addVertically - 
+*/
+void Box::addVertically(Base* qbP)
+{
+	Base* lowest = firstLine;
+	int   lx, ly, lw, lh;
+
+	lowest->geometry(&lx, &ly, &lw, &lh);
+
+	for (int ix = 0; ix < qsiVecSize; ix++)
+	{
+		int   qx, qy, qw, qh;
+
+		if (qsiVec[ix] == NULL)
+            continue;
+
+		qsiVec[ix]->geometry(&qx, &qy, &qw, &qh);
+		LM_M(("Geometry for '%s': { %d, %d } %dx%d", qsiVec[ix]->name, qx, qy, qw, qh));
+		if (qy + qh > ly + lh)
+		{
+			lowest = qsiVec[ix];
+			ly = qy;
+			lh = qh;
+		}
+	}
+
+	LM_M(("Lowest Base in Box '%s': %s. Y=%d, Height=%d", name, lowest->name, ly, lh));
+
+again:
+	for (int ix = 0; ix < qsiVecSize; ix++)
+	{
+		if (qsiVec[ix] != NULL)
+			continue;
+
+		qsiVec[ix] = qbP;
+		LM_M(("Aligning '%s' South of '%s'", qbP->name, lowest->name));
+		initialMove(qbP);
+		align(lowest, Alignment::South, qbP, 20);
+		return;
+	}
+
+	qsiVec = (Base**) realloc(qsiVec, (qsiVecSize + QSIS) * sizeof(Base*));
+    for (int ix = qsiVecSize; ix < qsiVecSize + QSIS; ix++)
+		qsiVec[ix] = NULL;
+
+	qsiVecSize = qsiVecSize + QSIS;
+
+	goto again;
+}
+
+
+
+/* ****************************************************************************
+*
 * add - 
 */
 void Box::add(Base* qbP)
 {
-	if (qbP->type == ExpandListItem)
-		LM_T(LmtExpandList, ("Adding ExpandListItem"));
+	if (vertical)
+	{
+		addVertically(qbP);
+		return;
+	}
 
 	for (int ix = 0; ix < qsiVecSize; ix++)
 	{
@@ -451,7 +521,7 @@ void Box::alignFix(Base* qbP)
 	//
 	// 2. lookup all items aligned to 'qbP' and change them so they're aligned to 'newMaster' instead
 	//    if 'newMaster' is NULL, just remove the alignment.
-	//    Likewise for alignments where 'qbP' is slave, just remove ...
+	//    Likewise for alignments where 'qbP' is slave, just remove the alignment ...
 	//
 	for (int ix = 0; ix < alignVecSize; ix++)
 	{
@@ -542,11 +612,6 @@ void Box::align(Base* master, Alignment::Type type, Base* slave, int margin)
 	if (master->getOwner() != slave->getOwner())
 		LM_RVE(("%s %s(owner:%s) and %s %s(owner:%s) cannot be aligned. They don't have the same owner",
 				master->typeName(), master->name, master->getOwner()->name, slave->typeName(), slave->name, slave->getOwner()->name));
-#if 0
-	if (master->type != slave->type)
-		LM_RVE(("%s %s(owner:%s) and %s %s(owner:%s) cannot be aligned. They aren't of the same type",
-				master->typeName(), master->name, master->getOwner()->name, slave->typeName(), slave->name, slave->getOwner()->name));
-#endif
 
 	Alignment* alignP = alignLookup(master, slave);
 	

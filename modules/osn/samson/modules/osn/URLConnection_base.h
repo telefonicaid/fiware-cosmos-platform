@@ -16,23 +16,23 @@
 #include <samson/modules/system/UInt8.h>
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
-	class URLConnection_base : public ss::DataInstance{
+	class URLConnection_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt64 msisdn;
-	::ss::osn::URL url;
-	::ss::osn::Date date;
-	::ss::osn::Time time;
-	::ss::system::UInt16 status;
-	::ss::system::String MIMEcontent;
-	::ss::system::String userAgent;
-	::ss::system::UInt8 method;
+	::samson::system::UInt64 msisdn;
+	::samson::osn::URL url;
+	::samson::osn::Date date;
+	::samson::osn::Time time;
+	::samson::system::UInt16 status;
+	::samson::system::String MIMEcontent;
+	::samson::system::String userAgent;
+	::samson::system::UInt8 method;
 
-	URLConnection_base() : ss::DataInstance(){
+	URLConnection_base() : samson::DataInstance(){
 	}
 
 	~URLConnection_base() {
@@ -66,14 +66,14 @@ namespace osn{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt64::size(data+offset);
-		offset += ::ss::osn::URL::size(data+offset);
-		offset += ::ss::osn::Date::size(data+offset);
-		offset += ::ss::osn::Time::size(data+offset);
-		offset += ::ss::system::UInt16::size(data+offset);
-		offset += ::ss::system::String::size(data+offset);
-		offset += ::ss::system::String::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
+		offset += ::samson::system::UInt64::size(data+offset);
+		offset += ::samson::osn::URL::size(data+offset);
+		offset += ::samson::osn::Date::size(data+offset);
+		offset += ::samson::osn::Time::size(data+offset);
+		offset += ::samson::system::UInt16::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
 		return offset;
 	}
 
@@ -83,35 +83,35 @@ namespace osn{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing msisdn
-			int tmp = ::ss::system::UInt64::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt64::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing url
-			int tmp = ::ss::osn::URL::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::osn::URL::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing date
-			int tmp = ::ss::osn::Date::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::osn::Date::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing time
-			int tmp = ::ss::osn::Time::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::osn::Time::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing status
-			int tmp = ::ss::system::UInt16::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt16::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing MIMEcontent
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing userAgent
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing method
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -166,7 +166,7 @@ namespace osn{
 
 	}; //class URLConnection_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

@@ -7,7 +7,7 @@
 #define _H_SAMSON_graph_map_select_node_to_compute_distance
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 #define DEBUG_FILES
 #ifdef DEBUG_FILES
@@ -17,24 +17,24 @@
 #undef DEBUG_FILES
 
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
-	class map_select_node_to_compute_distance : public ss::Map
+	class map_select_node_to_compute_distance : public samson::Map
 	{
 
-	  ss::system::UInt key;
-	  ss::graph::Node value_in;
-	  ss::graph::NodeDist value_out;
+	  samson::system::UInt key;
+	  samson::graph::Node value_in;
+	  samson::graph::NodeDist value_out;
 
-	  ss::system::UInt o_key;
-	  ss::system::UInt o_value;
+	  samson::system::UInt o_key;
+	  samson::system::UInt o_value;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 		    int first_node = environment->getInt("graph.first_node", 0);
 
@@ -86,7 +86,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

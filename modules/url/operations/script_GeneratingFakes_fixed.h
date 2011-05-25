@@ -7,14 +7,14 @@
 #define _H_SAMSON_url_script_GeneratingFakes_fixed
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class script_GeneratingFakes_fixed : public ss::Script
+	class script_GeneratingFakes_fixed : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

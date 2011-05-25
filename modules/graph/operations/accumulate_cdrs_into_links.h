@@ -7,14 +7,14 @@
 #define _H_SAMSON_graph_accumulate_cdrs_into_links
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
-	class accumulate_cdrs_into_links : public ss::Script
+	class accumulate_cdrs_into_links : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

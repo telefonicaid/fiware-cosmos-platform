@@ -11,17 +11,17 @@
 #include <samson/modules/system/String.h>
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
-	class CountF_base : public ss::DataInstance{
+	class CountF_base : public samson::DataInstance{
 
 	public:
-	::ss::system::Float count;
-	::ss::system::String element;
+	::samson::system::Float count;
+	::samson::system::String element;
 
-	CountF_base() : ss::DataInstance(){
+	CountF_base() : samson::DataInstance(){
 	}
 
 	~CountF_base() {
@@ -43,8 +43,8 @@ namespace osn{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::Float::size(data+offset);
-		offset += ::ss::system::String::size(data+offset);
+		offset += ::samson::system::Float::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
 		return offset;
 	}
 
@@ -54,11 +54,11 @@ namespace osn{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing count
-			int tmp = ::ss::system::Float::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::Float::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing element
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -89,7 +89,7 @@ namespace osn{
 
 	}; //class CountF_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

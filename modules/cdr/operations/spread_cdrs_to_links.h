@@ -7,22 +7,22 @@
 #define _H_SAMSON_cdr_sna_spread_cdrs_to_links
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace cdr{
 
 
-	class spread_cdrs_to_links : public ss::Map
+	class spread_cdrs_to_links : public samson::Map
 	{
-		ss::system::UInt number;
-		ss::cdr::CDR cdr;
-		ss::system::UInt destination;
+		samson::system::UInt number;
+		samson::cdr::CDR cdr;
+		samson::system::UInt destination;
 		
 	public:
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			
 			//Simple emit the input node_id - cdr pairs	
@@ -41,7 +41,7 @@ namespace cdr{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace cdr
 
 #endif

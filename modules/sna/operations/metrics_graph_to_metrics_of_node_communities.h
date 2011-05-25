@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_metrics_graph_to_metrics_of_node_communities
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class metrics_graph_to_metrics_of_node_communities : public ss::Script
+	class metrics_graph_to_metrics_of_node_communities : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

@@ -7,24 +7,25 @@
 #define _H_SAMSON_system_parser_uint_void
 
 
-#include <samson/module/Operation.h>
+#include <samson/module/samson.h>
+
 #include <samson/modules/system/SimpleParser.h>
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/Void.h>
 
 
-namespace ss{
+namespace samson{
 namespace system{
 
 
-        class parser_uint_void : public ss::system::SimpleParser
+        class parser_uint_void : public samson::system::SimpleParser
 	{
-	  ss::system::UInt key;
-	  ss::system::Void value;
+	  samson::system::UInt key;
+	  samson::system::Void value;
 
 	public:
 
-	  void parseLine( char *data , ss::KVWriter *writer )
+	  void parseLine( char *data , samson::KVWriter *writer )
 	  {
 	    key.value = atoll(data);
 	    writer->emit( 0 , &key, &value);
@@ -35,7 +36,7 @@ namespace system{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace system
 
 #endif

@@ -7,16 +7,16 @@
 #define _H_SAMSON_sna_calculate_links_temporal_weighting
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
 
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class calculate_links_temporal_weighting : public ss::Reduce
+	class calculate_links_temporal_weighting : public samson::Reduce
 	{
 		int min_weighted_link_weight;
 
@@ -27,10 +27,10 @@ namespace sna{
 		}
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			ss::sna::Link_Edges link_key;
-			ss::sna::Link link_value;
+			samson::sna::Link_Edges link_key;
+			samson::sna::Link link_value;
 
 #define NUM_INPUTS 6 // In MACRO, the number of inputs was received as an argument, But as there was also an assert(num_inputs == 6), we can assume this
 
@@ -43,8 +43,8 @@ namespace sna{
 			uint w_out = 0;
 
 			//Outputs
-			ss::system::UInt id;
-			ss::sna::Link link_out;
+			samson::system::UInt id;
+			samson::sna::Link link_out;
 
 			for (int i=0 ; i < NUM_INPUTS; i++) {
 				w[i] = 0;
@@ -138,7 +138,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

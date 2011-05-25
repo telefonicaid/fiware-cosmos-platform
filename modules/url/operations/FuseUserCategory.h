@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_FuseUserCategory
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /*******************************************************************
 reduce FuseUserCategory
@@ -20,20 +20,20 @@ reduce FuseUserCategory
 }
 ********************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class FuseUserCategory : public ss::Reduce
+	class FuseUserCategory : public samson::Reduce
 	{
-		ss::system::UInt userId;
+		samson::system::UInt userId;
 		CategoryVector categories;
 		CategoryVector categories_out;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			if (inputs[0].num_kvs == 0)
 			{
@@ -91,7 +91,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

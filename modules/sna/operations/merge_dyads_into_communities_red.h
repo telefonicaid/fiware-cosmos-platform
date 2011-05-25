@@ -7,20 +7,20 @@
 #define _H_SAMSON_sna_merge_dyads_into_communities_red
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss
+namespace samson
 {
 namespace sna
 {
 
-class merge_dyads_into_communities_red: public ss::Reduce
+class merge_dyads_into_communities_red: public samson::Reduce
 {
 
 public:
 
-	void run(ss::KVSetStruct* inputs, ss::KVWriter *writer)
+	void run(samson::KVSetStruct* inputs, samson::KVWriter *writer)
 	{
 		//output
 		Clique clique_id;
@@ -43,7 +43,7 @@ public:
 
 };
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

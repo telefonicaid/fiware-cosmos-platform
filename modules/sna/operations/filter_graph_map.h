@@ -26,15 +26,15 @@ map filter_graph_map
 }
  ******************************************************************************************/
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-class filter_graph_map : public ss::Map
+class filter_graph_map : public samson::Map
 {
 	int max_connections;
 	int max_strong_connections;
@@ -58,14 +58,14 @@ public:
 		}
 	}
 
-	void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
 		//Used in the map to emit "kill" messages...
-		ss::system::UInt killNode_id;
+		samson::system::UInt killNode_id;
 		Node killNode;
 
 		//Inputs
-		ss::system::UInt  node_id;
+		samson::system::UInt  node_id;
 		Node node;
 
 		// Already in init()
@@ -141,7 +141,7 @@ public:
 };
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

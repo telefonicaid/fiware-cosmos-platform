@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_light_metrics_graph_to_metrics_of_reach_nodes
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class metrics_graph_to_metrics_of_reach_nodes : public ss::Script
+	class metrics_graph_to_metrics_of_reach_nodes : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

@@ -12,19 +12,19 @@
 #include <samson/modules/system/UInt8.h>
 
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class URL_base : public ss::DataInstance{
+	class URL_base : public samson::DataInstance{
 
 	public:
-	::ss::system::String server;
-	::ss::system::UInt8 type;
-	::ss::system::String path;
-	::ss::system::UInt user;
+	::samson::system::String server;
+	::samson::system::UInt8 type;
+	::samson::system::String path;
+	::samson::system::UInt user;
 
-	URL_base() : ss::DataInstance(){
+	URL_base() : samson::DataInstance(){
 	}
 
 	~URL_base() {
@@ -50,10 +50,10 @@ namespace url{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::String::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
-		offset += ::ss::system::String::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -63,19 +63,19 @@ namespace url{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing server
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing type
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing path
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing user
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -114,7 +114,7 @@ namespace url{
 
 	}; //class URL_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

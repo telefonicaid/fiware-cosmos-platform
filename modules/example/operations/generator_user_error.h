@@ -7,20 +7,19 @@
 #define _H_SAMSON_example_generator_user_error
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 
-namespace ss{
+namespace samson{
 namespace example{
 
 
-	class generator_user_error : public ss::Generator
+	class generator_user_error : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 		  // Recover the number of samples from the environment variables                                                                                                                                  
 		  size_t num_samples = environment->getSizeT( "example.samples" ,  0 );
@@ -43,7 +42,7 @@ namespace example{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace example
 
 #endif

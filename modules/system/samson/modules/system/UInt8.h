@@ -79,7 +79,7 @@ namespace system{
 
 	
 	
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace system
 
 #endif

@@ -7,19 +7,19 @@
 #define _H_SAMSON_graph_export_graph_distances
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h>
 #include "samson/modules/graph/Node.h"
 #include <iostream>
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
-	class export_graph_distances : public ss::ParserOut
+	class export_graph_distances : public samson::ParserOut
 	{
-		ss::system::UInt key;
-		ss::graph::NodeDist value;
+		samson::system::UInt key;
+		samson::graph::NodeDist value;
 
 		std::ostringstream output;
 		
@@ -49,7 +49,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

@@ -10,19 +10,19 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class TimeSeries_base : public ss::DataInstance{
+	class TimeSeries_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt linkedId;
-	::ss::system::UInt *weights;
+	::samson::system::UInt linkedId;
+	::samson::system::UInt *weights;
 	int weights_length;
 	int weights_max_length;
 
-	TimeSeries_base() : ss::DataInstance(){
+	TimeSeries_base() : samson::DataInstance(){
 		weights_length=0;
 		weights_max_length=0;
 		weights = NULL;
@@ -38,7 +38,7 @@ namespace sna_light{
 		offset += linkedId.parse(data+offset);
 		{ //Parsing vector weights
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	weightsSetLength( _length );
 			for (int i = 0 ; i < (int)weights_length ; i++){
 				offset += weights[i].parse(data+offset);
@@ -51,7 +51,7 @@ namespace sna_light{
 		int offset=0;
 		offset += linkedId.serialize(data+offset);
 		{ //Serialization vector weights
-			offset += ss::staticVarIntSerialize( data+offset , weights_length );
+			offset += samson::staticVarIntSerialize( data+offset , weights_length );
 			for (int i = 0 ; i < (int)weights_length ; i++){
 				offset += weights[i].serialize(data+offset);
 			}
@@ -61,13 +61,13 @@ namespace sna_light{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		{ //Getting size of vector weights
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::system::UInt _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::system::UInt _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::system::UInt::size(data+offset);
+				offset += ::samson::system::UInt::size(data+offset);
 			}
 		}
 		return offset;
@@ -79,18 +79,18 @@ namespace sna_light{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing linkedId
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // Comparing vector weights
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing weights[i]
-					int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
@@ -107,11 +107,11 @@ namespace sna_light{
 
 	void weightsSetLength(int _length){
 		if( _length > weights_max_length){ 
-			::ss::system::UInt *_previous = weights;
+			::samson::system::UInt *_previous = weights;
 			int previous_length = weights_length;
 			if(weights_max_length == 0) weights_max_length = _length;
 			while(weights_max_length < _length) weights_max_length *= 2;
-			weights = new ::ss::system::UInt[weights_max_length ];
+			weights = new ::samson::system::UInt[weights_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					weights[i].copyFrom( &_previous[i] );
@@ -121,7 +121,7 @@ namespace sna_light{
 		weights_length=_length;
 	}
 
-	::ss::system::UInt* weightsAdd(){
+	::samson::system::UInt* weightsAdd(){
 		weightsSetLength( weights_length + 1 );
 		return &weights[weights_length-1];
 	}
@@ -153,7 +153,7 @@ namespace sna_light{
 
 	}; //class TimeSeries_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

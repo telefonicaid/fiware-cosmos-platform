@@ -7,25 +7,25 @@
 #define _H_SAMSON_tienda_test_generator
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace tienda{
 
 
-	class test_generator : public ss::Generator
+	class test_generator : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
                         size_t num_samples = environment->getInt( "tienda.samples", 10000);
 
-                        ss::system::UInt id;
-                        ss::tienda::Operation operation;
+                        samson::system::UInt id;
+                        samson::tienda::Operation operation;
 
                         for (size_t i = 0; (i < num_samples); i++)
                         {
@@ -42,7 +42,7 @@ namespace tienda{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace tienda
 
 #endif

@@ -7,27 +7,27 @@
 #define _H_SAMSON_sna_parse_cliques_as_cliques_groups
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 #include "sna_parsing_macros.h"
 
 
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class parse_cliques_as_cliques_groups : public ss::Parser
+	class parse_cliques_as_cliques_groups : public samson::Parser
 	{
 
 	public:
 
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
-			ss::system::UInt cliqueId;
-			ss::system::UInt nodeId;
+			samson::system::UInt cliqueId;
+			samson::system::UInt nodeId;
 
 			size_t offset = 0;
 			size_t line_begin = 0;
@@ -66,7 +66,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

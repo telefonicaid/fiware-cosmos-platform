@@ -10,18 +10,18 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace tienda{
 
 
-	class Operation_base : public ss::DataInstance{
+	class Operation_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt user;
-	::ss::system::UInt product;
-	::ss::system::UInt operation;
+	::samson::system::UInt user;
+	::samson::system::UInt product;
+	::samson::system::UInt operation;
 
-	Operation_base() : ss::DataInstance(){
+	Operation_base() : samson::DataInstance(){
 	}
 
 	~Operation_base() {
@@ -45,9 +45,9 @@ namespace tienda{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -57,15 +57,15 @@ namespace tienda{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing user
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing product
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing operation
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -100,7 +100,7 @@ namespace tienda{
 
 	}; //class Operation_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace tienda
 
 #endif

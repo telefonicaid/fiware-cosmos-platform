@@ -7,24 +7,24 @@
 #define _H_SAMSON_sna_filter_graph_reduce
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+
+namespace samson{
 namespace sna{
 
 
-class filter_graph_reduce : public ss::Reduce
+class filter_graph_reduce : public samson::Reduce
 {
 
 public:
 
 
-	void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
 		Node node;
-		ss::system::UInt node_id;
+		samson::system::UInt node_id;
 		std::vector <size_t> removedElement;
 
 		//OLM_T(LMT_User01, ("Starts filter_graph_reduce::run()"));
@@ -125,7 +125,7 @@ public:
 };
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

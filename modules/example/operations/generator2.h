@@ -7,25 +7,25 @@
 #define _H_SAMSON_example_generator2
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 #include <samson/modules/system/UInt.h>
 
-namespace ss{
+namespace samson{
 namespace example{
 
 
-	class generator2 : public ss::Generator
+	class generator2 : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 			
-			ss::system::UInt a;
-			ss::system::UInt b;
+			samson::system::UInt a;
+			samson::system::UInt b;
 			
 			for (int i = 0 ; i < 1000000 ; i++)
 			{
@@ -43,7 +43,7 @@ namespace example{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace example
 
 #endif

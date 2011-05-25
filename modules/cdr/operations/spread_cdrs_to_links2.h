@@ -7,30 +7,30 @@
 #define _H_SAMSON_cdr_spread_cdrs_to_links2
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/cdr/CDR.h>
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/UInt2.h>
 #include <samson/modules/system/Void.h>
 
 
-namespace ss{
+namespace samson{
 namespace cdr{
 
 
-	class spread_cdrs_to_links2 : public ss::Map
+	class spread_cdrs_to_links2 : public samson::Map
 	{
-	  ss::system::UInt key; 
-	  ss::cdr::CDR value; 
+	  samson::system::UInt key; 
+	  samson::cdr::CDR value; 
 
 
-	  ss::system::UInt2 o_key; 
-	  ss::system::Void o_value; 
+	  samson::system::UInt2 o_key; 
+	  samson::system::Void o_value; 
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
 		  for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
@@ -49,7 +49,7 @@ namespace cdr{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace cdr
 
 #endif

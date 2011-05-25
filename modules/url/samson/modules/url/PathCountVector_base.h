@@ -11,19 +11,19 @@
 #include <samson/modules/url/PathCount.h>
 
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class PathCountVector_base : public ss::DataInstance{
+	class PathCountVector_base : public samson::DataInstance{
 
 	public:
-	::ss::url::PathCount *pathsCount;
+	::samson::url::PathCount *pathsCount;
 	int pathsCount_length;
 	int pathsCount_max_length;
-	::ss::system::UInt countRef;
+	::samson::system::UInt countRef;
 
-	PathCountVector_base() : ss::DataInstance(){
+	PathCountVector_base() : samson::DataInstance(){
 		pathsCount_length=0;
 		pathsCount_max_length=0;
 		pathsCount = NULL;
@@ -38,7 +38,7 @@ namespace url{
 		int offset=0;
 		{ //Parsing vector pathsCount
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	pathsCountSetLength( _length );
 			for (int i = 0 ; i < (int)pathsCount_length ; i++){
 				offset += pathsCount[i].parse(data+offset);
@@ -51,7 +51,7 @@ namespace url{
 	int serialize(char *data){
 		int offset=0;
 		{ //Serialization vector pathsCount
-			offset += ss::staticVarIntSerialize( data+offset , pathsCount_length );
+			offset += samson::staticVarIntSerialize( data+offset , pathsCount_length );
 			for (int i = 0 ; i < (int)pathsCount_length ; i++){
 				offset += pathsCount[i].serialize(data+offset);
 			}
@@ -64,13 +64,13 @@ namespace url{
 		int offset=0;
 		{ //Getting size of vector pathsCount
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::url::PathCount _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::url::PathCount _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::url::PathCount::size(data+offset);
+				offset += ::samson::url::PathCount::size(data+offset);
 			}
 		}
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -83,19 +83,19 @@ namespace url{
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // Comparing vector pathsCount
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing pathsCount[i]
-					int tmp = ::ss::url::PathCount::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::url::PathCount::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
 		}
 		{ // comparing countRef
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -110,11 +110,11 @@ namespace url{
 
 	void pathsCountSetLength(int _length){
 		if( _length > pathsCount_max_length){ 
-			::ss::url::PathCount *_previous = pathsCount;
+			::samson::url::PathCount *_previous = pathsCount;
 			int previous_length = pathsCount_length;
 			if(pathsCount_max_length == 0) pathsCount_max_length = _length;
 			while(pathsCount_max_length < _length) pathsCount_max_length *= 2;
-			pathsCount = new ::ss::url::PathCount[pathsCount_max_length ];
+			pathsCount = new ::samson::url::PathCount[pathsCount_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					pathsCount[i].copyFrom( &_previous[i] );
@@ -124,7 +124,7 @@ namespace url{
 		pathsCount_length=_length;
 	}
 
-	::ss::url::PathCount* pathsCountAdd(){
+	::samson::url::PathCount* pathsCountAdd(){
 		pathsCountSetLength( pathsCount_length + 1 );
 		return &pathsCount[pathsCount_length-1];
 	}
@@ -156,7 +156,7 @@ namespace url{
 
 	}; //class PathCountVector_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

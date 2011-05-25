@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_metric_nodes_in_communities_out
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class metric_nodes_in_communities_out : public ss::ParserOut
+	class metric_nodes_in_communities_out : public samson::ParserOut
 	{
 
 	public:
@@ -28,7 +28,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

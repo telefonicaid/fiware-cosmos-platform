@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_graph_temporal_weighting
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class graph_temporal_weighting : public ss::Script
+	class graph_temporal_weighting : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

@@ -7,7 +7,7 @@
 #define _H_SAMSON_cdr_sna_parse_cdrs
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 #define DEBUG_FILES
 #ifdef DEBUG_FILES
@@ -16,7 +16,7 @@
 #endif /* de DEBUG_FILES */
 #undef DEBUG_FILES
 
-namespace ss{
+namespace samson{
 namespace cdr{
 
 
@@ -166,7 +166,7 @@ int secsFrom2000_01_01(Date date, Time time)
         duration_secs += SECS_PER_DAY * duration_days;
 }
 	
-	bool getCDRFromLine_TME( char *line, ss::system::UInt* node, ss::cdr::CDR * cdr )
+	bool getCDRFromLine_TME( char *line, samson::system::UInt* node, samson::cdr::CDR * cdr )
 	{
 		//LINE --> "1|689644587|685015313|01/09/08 18:52:44|123|2|2"	
 		//Note: multihtread save implementation
@@ -204,7 +204,7 @@ int secsFrom2000_01_01(Date date, Time time)
 		return true;
 	}
 	
-bool getCDRFromLine_O2UK_p2p( char *line, ss::system::UInt* node, ss::cdr::CDR * cdr)
+bool getCDRFromLine_O2UK_p2p( char *line, samson::system::UInt* node, samson::cdr::CDR * cdr)
 {
         //LINE --> "1|689644587|685015313|01/09/08 18:52:44|123|2|2"
         //Note: multihtread save implementation
@@ -291,8 +291,8 @@ bool getCDRFromLine_O2UK_p2p( char *line, ss::system::UInt* node, ss::cdr::CDR *
 
         char *pDateSubmit = field[SUBMIT_DATE_FIELD - 1];
         char *pDateDone = field[DONE_DATE_FIELD - 1];
-        ss::cdr::Date dateDone;
-        ss::cdr::Time timeDone;
+        samson::cdr::Date dateDone;
+        samson::cdr::Time timeDone;
 
         if (!parseDate_O2UK(pDateSubmit, &(cdr->date), &(cdr->time)))
         {
@@ -393,7 +393,7 @@ bool getCDRFromLine_O2UK_p2p( char *line, ss::system::UInt* node, ss::cdr::CDR *
         return true;
 }
 
-bool getCDRFromLine_O2UK_smsc( char *line, ss::system::UInt* node, ss::cdr::CDR * cdr)
+bool getCDRFromLine_O2UK_smsc( char *line, samson::system::UInt* node, samson::cdr::CDR * cdr)
 {
         //LINE --> "1|689644587|685015313|01/09/08 18:52:44|123|2|2"
         //Note: multihtread save implementation
@@ -480,8 +480,8 @@ bool getCDRFromLine_O2UK_smsc( char *line, ss::system::UInt* node, ss::cdr::CDR 
 
         char *pDateSubmit = field[SUBMIT_DATE_FIELD - 1];
         char *pDateDone = field[DONE_DATE_FIELD - 1];
-        ss::cdr::Date dateDone;
-        ss::cdr::Time timeDone;
+        samson::cdr::Date dateDone;
+        samson::cdr::Time timeDone;
 
         if (!parseDate_O2UK(pDateSubmit, &(cdr->date), &(cdr->time)))
         {
@@ -581,7 +581,7 @@ bool getCDRFromLine_O2UK_smsc( char *line, ss::system::UInt* node, ss::cdr::CDR 
 
         return true;
 }
-bool getCDRFromLine_O2UK_mms( char *line, ss::system::UInt* node, ss::cdr::CDR * cdr)
+bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cdr::CDR * cdr)
 {
         //LINE --> "1|689644587|685015313|01/09/08 18:52:44|123|2|2"
         //Note: multihtread save implementation
@@ -679,8 +679,8 @@ bool getCDRFromLine_O2UK_mms( char *line, ss::system::UInt* node, ss::cdr::CDR *
 #ifdef DATES_KNOWN
         char *pDateSubmit = field[SUBMIT_DATE_FIELD - 1];
         char *pDateDone = field[DONE_DATE_FIELD - 1];
-        ss::cdr::Date dateDone;
-        ss::cdr::Time timeDone;
+        samson::cdr::Date dateDone;
+        samson::cdr::Time timeDone;
 
         if (!parseDate_O2UK(pDateSubmit, &(cdr->date), &(cdr->time)))
         {
@@ -784,15 +784,15 @@ bool getCDRFromLine_O2UK_mms( char *line, ss::system::UInt* node, ss::cdr::CDR *
 }
 
 	
-	class parse_cdrs : public ss::Parser
+	class parse_cdrs : public samson::Parser
 	{
 
 	public:
 
-		ss::system::UInt node;	// Main telephone number
-		ss::cdr::CDR cdr;		// All information related with this
+		samson::system::UInt node;	// Main telephone number
+		samson::cdr::CDR cdr;		// All information related with this
 		
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 			
 			size_t line_begin = 0;
@@ -905,7 +905,7 @@ bool getCDRFromLine_O2UK_mms( char *line, ss::system::UInt* node, ss::cdr::CDR *
 		}
 	};
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace cdr
 
 #endif

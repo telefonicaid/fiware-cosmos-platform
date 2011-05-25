@@ -10,18 +10,18 @@
 #include <samson/modules/system/UInt8.h>
 
 
-namespace ss{
+namespace samson{
 namespace cdr{
 
 
-	class Time_base : public ss::DataInstance{
+	class Time_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt8 hour;
-	::ss::system::UInt8 minute;
-	::ss::system::UInt8 seconds;
+	::samson::system::UInt8 hour;
+	::samson::system::UInt8 minute;
+	::samson::system::UInt8 seconds;
 
-	Time_base() : ss::DataInstance(){
+	Time_base() : samson::DataInstance(){
 	}
 
 	~Time_base() {
@@ -45,9 +45,9 @@ namespace cdr{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt8::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
 		return offset;
 	}
 
@@ -57,15 +57,15 @@ namespace cdr{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing hour
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing minute
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing seconds
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -100,7 +100,7 @@ namespace cdr{
 
 	}; //class Time_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace cdr
 
 #endif

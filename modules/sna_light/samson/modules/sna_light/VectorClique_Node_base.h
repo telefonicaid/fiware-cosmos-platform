@@ -10,18 +10,18 @@
 #include <samson/modules/sna_light/Clique_Node.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class VectorClique_Node_base : public ss::DataInstance{
+	class VectorClique_Node_base : public samson::DataInstance{
 
 	public:
-	::ss::sna_light::Clique_Node *items;
+	::samson::sna_light::Clique_Node *items;
 	int items_length;
 	int items_max_length;
 
-	VectorClique_Node_base() : ss::DataInstance(){
+	VectorClique_Node_base() : samson::DataInstance(){
 		items_length=0;
 		items_max_length=0;
 		items = NULL;
@@ -36,7 +36,7 @@ namespace sna_light{
 		int offset=0;
 		{ //Parsing vector items
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	itemsSetLength( _length );
 			for (int i = 0 ; i < (int)items_length ; i++){
 				offset += items[i].parse(data+offset);
@@ -48,7 +48,7 @@ namespace sna_light{
 	int serialize(char *data){
 		int offset=0;
 		{ //Serialization vector items
-			offset += ss::staticVarIntSerialize( data+offset , items_length );
+			offset += samson::staticVarIntSerialize( data+offset , items_length );
 			for (int i = 0 ; i < (int)items_length ; i++){
 				offset += items[i].serialize(data+offset);
 			}
@@ -60,10 +60,10 @@ namespace sna_light{
 		int offset=0;
 		{ //Getting size of vector items
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::sna_light::Clique_Node _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::sna_light::Clique_Node _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::sna_light::Clique_Node::size(data+offset);
+				offset += ::samson::sna_light::Clique_Node::size(data+offset);
 			}
 		}
 		return offset;
@@ -78,13 +78,13 @@ namespace sna_light{
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // Comparing vector items
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing items[i]
-					int tmp = ::ss::sna_light::Clique_Node::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::sna_light::Clique_Node::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
@@ -101,11 +101,11 @@ namespace sna_light{
 
 	void itemsSetLength(int _length){
 		if( _length > items_max_length){ 
-			::ss::sna_light::Clique_Node *_previous = items;
+			::samson::sna_light::Clique_Node *_previous = items;
 			int previous_length = items_length;
 			if(items_max_length == 0) items_max_length = _length;
 			while(items_max_length < _length) items_max_length *= 2;
-			items = new ::ss::sna_light::Clique_Node[items_max_length ];
+			items = new ::samson::sna_light::Clique_Node[items_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					items[i].copyFrom( &_previous[i] );
@@ -115,7 +115,7 @@ namespace sna_light{
 		items_length=_length;
 	}
 
-	::ss::sna_light::Clique_Node* itemsAdd(){
+	::samson::sna_light::Clique_Node* itemsAdd(){
 		itemsSetLength( items_length + 1 );
 		return &items[items_length-1];
 	}
@@ -143,7 +143,7 @@ namespace sna_light{
 
 	}; //class VectorClique_Node_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

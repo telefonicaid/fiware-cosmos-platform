@@ -7,23 +7,23 @@
 #define _H_SAMSON_sna_convert_dyads_to_comm
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class convert_dyads_to_comm : public ss::Map
+	class convert_dyads_to_comm : public samson::Map
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			  //input
-			  ss::system::UInt id_link;
+			  samson::system::UInt id_link;
 			  Link link;
 
 			  //output
@@ -53,7 +53,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

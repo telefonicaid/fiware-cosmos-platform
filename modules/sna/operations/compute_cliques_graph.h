@@ -7,20 +7,20 @@
 #define _H_SAMSON_sna_compute_cliques_graph
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class compute_cliques_graph : public ss::Reduce
+	class compute_cliques_graph : public samson::Reduce
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			Clique clique;
 			Clique_Node node_clique;
@@ -50,7 +50,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

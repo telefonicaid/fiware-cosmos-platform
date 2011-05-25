@@ -6,21 +6,21 @@
 #ifndef _H_SAMSON_graph_fake_graph
 #define _H_SAMSON_graph_fake_graph
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h>
 #include "samson/modules/graph/Node.h"
 
 #define LENGTH(v) sizeof(v)/sizeof(v[0])
 
-namespace ss{
+namespace samson{
 namespace graph{
 
-	class fake_graph : public ss::Generator
+	class fake_graph : public samson::Generator
 	{
 
 	public:
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 
 			int num_example = environment->getInt( "graph.fake_graph" ,  1 );
@@ -171,7 +171,7 @@ namespace graph{
 		}
 		
 		
-		void generateNodes(int *nodes_s , int length , ss::KVWriter *writer  )
+		void generateNodes(int *nodes_s , int length , samson::KVWriter *writer  )
 		{
 			int node;
 			bool extern_node;
@@ -229,10 +229,10 @@ namespace graph{
 			}
 		}
 		
-		void generateNode( int id , bool extern_node,  int* links, double* weight, int num , ss::KVWriter *writer )
+		void generateNode( int id , bool extern_node,  int* links, double* weight, int num , samson::KVWriter *writer )
 		{
-			ss::system::UInt node_id;
-			ss::graph::Node node;
+			samson::system::UInt node_id;
+			samson::graph::Node node;
 			
 			node_id.value	= id; 
 			node.id			= id;
@@ -261,7 +261,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

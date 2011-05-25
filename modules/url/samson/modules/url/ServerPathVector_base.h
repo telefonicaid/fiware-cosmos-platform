@@ -11,19 +11,19 @@
 #include <samson/modules/url/ServerPathCount.h>
 
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class ServerPathVector_base : public ss::DataInstance{
+	class ServerPathVector_base : public samson::DataInstance{
 
 	public:
-	::ss::url::ServerPathCount *serverPath;
+	::samson::url::ServerPathCount *serverPath;
 	int serverPath_length;
 	int serverPath_max_length;
-	::ss::system::UInt countRef;
+	::samson::system::UInt countRef;
 
-	ServerPathVector_base() : ss::DataInstance(){
+	ServerPathVector_base() : samson::DataInstance(){
 		serverPath_length=0;
 		serverPath_max_length=0;
 		serverPath = NULL;
@@ -38,7 +38,7 @@ namespace url{
 		int offset=0;
 		{ //Parsing vector serverPath
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	serverPathSetLength( _length );
 			for (int i = 0 ; i < (int)serverPath_length ; i++){
 				offset += serverPath[i].parse(data+offset);
@@ -51,7 +51,7 @@ namespace url{
 	int serialize(char *data){
 		int offset=0;
 		{ //Serialization vector serverPath
-			offset += ss::staticVarIntSerialize( data+offset , serverPath_length );
+			offset += samson::staticVarIntSerialize( data+offset , serverPath_length );
 			for (int i = 0 ; i < (int)serverPath_length ; i++){
 				offset += serverPath[i].serialize(data+offset);
 			}
@@ -64,13 +64,13 @@ namespace url{
 		int offset=0;
 		{ //Getting size of vector serverPath
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::url::ServerPathCount _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::url::ServerPathCount _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::url::ServerPathCount::size(data+offset);
+				offset += ::samson::url::ServerPathCount::size(data+offset);
 			}
 		}
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -83,19 +83,19 @@ namespace url{
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // Comparing vector serverPath
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing serverPath[i]
-					int tmp = ::ss::url::ServerPathCount::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::url::ServerPathCount::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
 		}
 		{ // comparing countRef
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -110,11 +110,11 @@ namespace url{
 
 	void serverPathSetLength(int _length){
 		if( _length > serverPath_max_length){ 
-			::ss::url::ServerPathCount *_previous = serverPath;
+			::samson::url::ServerPathCount *_previous = serverPath;
 			int previous_length = serverPath_length;
 			if(serverPath_max_length == 0) serverPath_max_length = _length;
 			while(serverPath_max_length < _length) serverPath_max_length *= 2;
-			serverPath = new ::ss::url::ServerPathCount[serverPath_max_length ];
+			serverPath = new ::samson::url::ServerPathCount[serverPath_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					serverPath[i].copyFrom( &_previous[i] );
@@ -124,7 +124,7 @@ namespace url{
 		serverPath_length=_length;
 	}
 
-	::ss::url::ServerPathCount* serverPathAdd(){
+	::samson::url::ServerPathCount* serverPathAdd(){
 		serverPathSetLength( serverPath_length + 1 );
 		return &serverPath[serverPath_length-1];
 	}
@@ -156,7 +156,7 @@ namespace url{
 
 	}; //class ServerPathVector_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

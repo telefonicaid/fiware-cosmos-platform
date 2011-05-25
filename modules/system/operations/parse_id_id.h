@@ -7,20 +7,20 @@
 #define _H_SAMSON_system_parse_id_id
 
 
-#include <samson/module/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace system{
 
 
-	class parse_id_id : public ss::Parser
+	class parse_id_id : public samson::Parser
 	{
 
 	public:
 
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 		}
 

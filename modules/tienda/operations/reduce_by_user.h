@@ -7,27 +7,27 @@
 #define _H_SAMSON_tienda_reduce_by_user
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace tienda{
 
 
-	class reduce_by_user : public ss::Reduce
+	class reduce_by_user : public samson::Reduce
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
                         // Variables used to read content from the input
-                        ss::system::UInt input_key;
-                        ss::system::UInt input_value;
+                        samson::system::UInt input_key;
+                        samson::system::UInt input_value;
 
                         // Variables used to store content for the output
-                        ss::tienda::VectorProducts output_values;
+                        samson::tienda::VectorProducts output_values;
 
                         for (size_t i = 0; (i < inputs[0].num_kvs); i++)
                         {
@@ -48,7 +48,7 @@ namespace tienda{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace tienda
 
 #endif

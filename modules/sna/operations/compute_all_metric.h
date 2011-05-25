@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_compute_all_metric
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class compute_all_metric : public ss::Script
+	class compute_all_metric : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

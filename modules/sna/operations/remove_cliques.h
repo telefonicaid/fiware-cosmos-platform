@@ -7,23 +7,23 @@
 #define _H_SAMSON_sna_remove_cliques
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+
+namespace samson{
 namespace sna{
 
 
-	class remove_cliques : public ss::Reduce
+	class remove_cliques : public samson::Reduce
 	{
 		Clique clique ;
-		ss::system::Void void_data ;
+		samson::system::Void void_data ;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			// we tolerate multiple entries at the input
 			if( inputs[0].num_kvs < 0)
@@ -44,7 +44,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

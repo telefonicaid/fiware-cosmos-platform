@@ -7,23 +7,23 @@
 #define _H_SAMSON_url_DecodeServerHits
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 
-namespace ss{
+
+namespace samson{
 namespace url{
 
 
-	class DecodeServerHits : public ss::Reduce
+	class DecodeServerHits : public samson::Reduce
 	{
-		ss::system::UInt serverId;
-		ss::system::String serverStr;
+		samson::system::UInt serverId;
+		samson::system::String serverStr;
 		PathCountVector paths;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
 			if (inputs[1].num_kvs == 0)
@@ -51,7 +51,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

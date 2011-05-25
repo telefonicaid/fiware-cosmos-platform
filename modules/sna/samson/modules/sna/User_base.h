@@ -12,25 +12,25 @@
 #include <samson/modules/system/UInt8.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class User_base : public ss::DataInstance{
+	class User_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt id;
-	::ss::system::UInt titularId;
-	::ss::system::UInt8 type;
-	::ss::cdr::Date activationDate;
-	::ss::system::UInt8 activationCode;
-	::ss::system::UInt8 age;
-	::ss::system::UInt8 province;
-	::ss::system::UInt8 sex;
-	::ss::cdr::Date churnDate;
-	::ss::system::UInt8 churnCode;
+	::samson::system::UInt id;
+	::samson::system::UInt titularId;
+	::samson::system::UInt8 type;
+	::samson::cdr::Date activationDate;
+	::samson::system::UInt8 activationCode;
+	::samson::system::UInt8 age;
+	::samson::system::UInt8 province;
+	::samson::system::UInt8 sex;
+	::samson::cdr::Date churnDate;
+	::samson::system::UInt8 churnCode;
 
-	User_base() : ss::DataInstance(){
+	User_base() : samson::DataInstance(){
 	}
 
 	~User_base() {
@@ -68,16 +68,16 @@ namespace sna{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
-		offset += ::ss::cdr::Date::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
-		offset += ::ss::cdr::Date::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
+		offset += ::samson::cdr::Date::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
+		offset += ::samson::cdr::Date::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
 		return offset;
 	}
 
@@ -87,43 +87,43 @@ namespace sna{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing id
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing titularId
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing type
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing activationDate
-			int tmp = ::ss::cdr::Date::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::cdr::Date::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing activationCode
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing age
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing province
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing sex
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing churnDate
-			int tmp = ::ss::cdr::Date::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::cdr::Date::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing churnCode
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -186,7 +186,7 @@ namespace sna{
 
 	}; //class User_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

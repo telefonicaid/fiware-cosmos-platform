@@ -7,26 +7,26 @@
 #define _H_SAMSON_sna_select_key_in_cliques_graph
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+
+namespace samson{
 namespace sna{
 
 
-	class select_key_in_cliques_graph : public ss::Map
+	class select_key_in_cliques_graph : public samson::Map
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
 
 			Clique clique;
-			ss::system::Void void_data;
+			samson::system::Void void_data;
 
 			for (int i = 0 ; i < inputs[0].num_kvs ;i++)
 			{
@@ -39,7 +39,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

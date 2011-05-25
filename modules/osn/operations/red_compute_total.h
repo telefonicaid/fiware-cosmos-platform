@@ -7,7 +7,7 @@
 #define _H_SAMSON_osn_red_compute_total
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #define DEBUG_FILES
 #ifdef DEBUG_FILES
 #include <iostream>
@@ -16,22 +16,22 @@
 
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
-	class red_compute_total : public ss::Reduce
+	class red_compute_total : public samson::Reduce
 	{
-                ss::system::UInt key_in;
-                ss::osn::Count count;
-		ss::system::UInt total_out;
-                ss::system::Void void_out;
+                samson::system::UInt key_in;
+                samson::osn::Count count;
+		samson::system::UInt total_out;
+                samson::system::Void void_out;
 
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 #define DEBUG_FILES
 #ifdef DEBUG_FILES
@@ -59,7 +59,7 @@ namespace osn{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

@@ -18,7 +18,7 @@ namespace system{
 		 Time  Data Instance 
 		 */
 		
-		class Time : public ss::DataInstance{
+		class Time : public samson::DataInstance{
 
 			inline int tmcomp(register const struct tm * const atmp,
 					  register const struct tm * const btmp)
@@ -38,18 +38,18 @@ namespace system{
 			
 			time_t value;
 
-			Time() : ss::DataInstance(){
+			Time() : samson::DataInstance(){
 			}
 
 			~Time() {
 			}
 			
 			int parse(char *data){
-				return ss::staticVarIntParse( data , (size_t *)&value);
+				return samson::staticVarIntParse( data , (size_t *)&value);
 			}
 			
 			int serialize(char *data){
-				return ss::staticVarIntSerialize( data , value);
+				return samson::staticVarIntSerialize( data , value);
 			}
 			
 			int hash(int max_num_partitions){
@@ -59,7 +59,7 @@ namespace system{
 	
 			static int size(char *data){
 				time_t _value;
-				return ss::staticVarIntParse( data , (size_t *)&_value);
+				return samson::staticVarIntParse( data , (size_t *)&_value);
 			}
 
 			int toInt()
@@ -71,8 +71,8 @@ namespace system{
 				{ // comparing b
 					size_t _value1;
 					size_t _value2;
-					*offset1 += ss::staticVarIntParse(data1 + (*offset1), &_value1);
-					*offset2 += ss::staticVarIntParse(data2 + (*offset2), &_value2);
+					*offset1 += samson::staticVarIntParse(data1 + (*offset1), &_value1);
+					*offset2 += samson::staticVarIntParse(data2 + (*offset2), &_value2);
 					if( _value1 < _value2 ) return -1;
 					if( _value1 > _value2 ) return  1;
 					return 0;
@@ -395,7 +395,7 @@ namespace system{
 		}; 	
 	
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace system
 
 #endif

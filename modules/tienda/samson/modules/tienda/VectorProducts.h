@@ -10,7 +10,7 @@
 #include <samson/modules/tienda/VectorProducts_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace tienda{
 
 
@@ -19,7 +19,7 @@ namespace tienda{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace tienda
 
 #endif

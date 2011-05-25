@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_study_set_of_nodes
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class study_set_of_nodes : public ss::ParserOut
+	class study_set_of_nodes : public samson::ParserOut
 	{
 
 	public:
@@ -28,7 +28,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

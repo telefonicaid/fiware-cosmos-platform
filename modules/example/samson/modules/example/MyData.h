@@ -10,7 +10,7 @@
 #include <samson/modules/example/MyData_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace example{
 
 
@@ -19,7 +19,7 @@ namespace example{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace example
 
 #endif

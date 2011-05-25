@@ -7,20 +7,20 @@
 #define _H_SAMSON_sna_cross_cliques_nodes
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class cross_cliques_nodes : public ss::Reduce
+	class cross_cliques_nodes : public samson::Reduce
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			Node node;
 			Clique clique;
@@ -51,7 +51,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

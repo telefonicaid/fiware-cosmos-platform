@@ -7,22 +7,23 @@
 #define _H_SAMSON_example_reduce
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
+
 #include <samson/modules/system/UInt.h>
 #include <iostream>
 
-namespace ss{
+namespace samson{
 namespace example{
 
 
-	class reduce : public ss::Reduce
+	class reduce : public samson::Reduce
 	{
-	  ss::system::UInt a,b;
+	  samson::system::UInt a,b;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
 			a.parse( inputs[0].kvs[0]->key );
@@ -45,7 +46,7 @@ namespace example{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace example
 
 #endif

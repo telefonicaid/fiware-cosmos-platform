@@ -7,22 +7,22 @@
 #define _H_SAMSON_cdr_sna_fake_cdrs
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace cdr{
 
 
-	class fake_cdrs : public ss::Generator
+	class fake_cdrs : public samson::Generator
 	{
-		ss::system::UInt id;
-		ss::cdr::CDR cdr;
+		samson::system::UInt id;
+		samson::cdr::CDR cdr;
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 			int num_nodes			= environment->getInt( "cdr.fake.users" ,  1000 );
 			int num_links_per_node	= environment->getInt( "cdr.fake.nodes_per_link" ,  30 );
@@ -67,7 +67,7 @@ namespace cdr{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace cdr
 
 #endif

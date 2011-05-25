@@ -10,7 +10,7 @@
 #include <samson/modules/url/CategoryVector_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
@@ -29,7 +29,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

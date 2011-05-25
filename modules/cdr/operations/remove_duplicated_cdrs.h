@@ -7,27 +7,27 @@
 #define _H_SAMSON_cdr_sna_remove_duplicated_cdrs
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace cdr{
 
 
-	class remove_duplicated_cdrs : public ss::Reduce
+	class remove_duplicated_cdrs : public samson::Reduce
 	{
 
-		ss::system::UInt node;
-		ss::cdr::CDR cdr1;
-		ss::cdr::CDR cdr2;
+		samson::system::UInt node;
+		samson::cdr::CDR cdr1;
+		samson::cdr::CDR cdr2;
 		
-		ss::cdr::CDR *current_CDR;
-		ss::cdr::CDR *previous_CDR;	
+		samson::cdr::CDR *current_CDR;
+		samson::cdr::CDR *previous_CDR;	
 		
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			
 			if( inputs[0].num_kvs == 0)
@@ -54,7 +54,7 @@ namespace cdr{
 					writer->emit( 0 , &node, current_CDR);
 				
 				//Exchange of pointers
-				ss::cdr::CDR *tmp = current_CDR;
+				samson::cdr::CDR *tmp = current_CDR;
 				current_CDR = previous_CDR;
 				previous_CDR = tmp;
 			}			
@@ -64,7 +64,7 @@ namespace cdr{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace cdr
 
 #endif

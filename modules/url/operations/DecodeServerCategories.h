@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_DecodeServerCategories
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /*********************************************************
 reduce DecodeServerCategories
@@ -21,19 +21,19 @@ reduce DecodeServerCategories
 }
 **********************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class DecodeServerCategories : public ss::Reduce
+	class DecodeServerCategories : public samson::Reduce
 	{
 
 	public:
-		ss::system::String serverStr;
+		samson::system::String serverStr;
 		CategoryVector categories;
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			if (inputs[1].num_kvs == 0)
 			{
@@ -42,7 +42,7 @@ namespace url{
 
 			if (inputs[0].num_kvs != 1)
 			{
-				ss::system::UInt serverId;
+				samson::system::UInt serverId;
 				serverId.parse(inputs[1].kvs[0]->key);
 				OLM_E(("We should have one and only one occurrence of servers in decoding server list. inputs[0].num_kvs: %d", inputs[0].num_kvs));
 			}
@@ -57,7 +57,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

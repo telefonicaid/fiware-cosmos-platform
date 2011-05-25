@@ -6,16 +6,16 @@
 #define _H_SAMSON_url_parse_urls
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/SimpleParser.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/Void.h>
 
-namespace ss{
+namespace samson{
 namespace url{
   
 
-    class parse_urls : public ss::system::SimpleParser
+    class parse_urls : public samson::system::SimpleParser
    {
 
 	  typedef enum
@@ -26,8 +26,8 @@ namespace url{
 
         // Output server name or full url depending on parameter url.output="server" (default) url.output="url"
 
-	ss::system::String key;            // Output key
-	ss::system::Void void_value;      // Empty output for value
+	samson::system::String key;            // Output key
+	samson::system::Void void_value;      // Empty output for value
 
 	OutputParameter outputParameter;  // Type of output
 
@@ -45,7 +45,7 @@ namespace url{
 
 	}
 
-    void parseLine( char * _line , ss::KVWriter *writer )
+    void parseLine( char * _line , samson::KVWriter *writer )
 	{
 	  std::string line = _line;
 
@@ -108,7 +108,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

@@ -10,23 +10,23 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class Metric_base : public ss::DataInstance{
+	class Metric_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt id;
-	::ss::system::UInt links_count;
-	::ss::system::UInt strong_links_count;
-	::ss::system::UInt strong_links_sum;
-	::ss::system::UInt weak_links_count;
-	::ss::system::UInt weak_links_sum;
-	::ss::system::UInt strong_links_comp_count;
-	::ss::system::UInt weak_links_comp_count;
+	::samson::system::UInt id;
+	::samson::system::UInt links_count;
+	::samson::system::UInt strong_links_count;
+	::samson::system::UInt strong_links_sum;
+	::samson::system::UInt weak_links_count;
+	::samson::system::UInt weak_links_sum;
+	::samson::system::UInt strong_links_comp_count;
+	::samson::system::UInt weak_links_comp_count;
 
-	Metric_base() : ss::DataInstance(){
+	Metric_base() : samson::DataInstance(){
 	}
 
 	~Metric_base() {
@@ -60,14 +60,14 @@ namespace sna{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -77,35 +77,35 @@ namespace sna{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing id
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing links_count
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing strong_links_count
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing strong_links_sum
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing weak_links_count
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing weak_links_sum
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing strong_links_comp_count
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing weak_links_comp_count
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -160,7 +160,7 @@ namespace sna{
 
 	}; //class Metric_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

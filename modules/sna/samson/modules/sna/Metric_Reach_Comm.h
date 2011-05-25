@@ -10,7 +10,7 @@
 #include <samson/modules/sna/Metric_Reach_Comm_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
@@ -19,7 +19,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

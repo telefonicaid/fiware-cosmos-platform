@@ -7,15 +7,15 @@
 #define _H_SAMSON_sna_light_acg_red_cdrs_to_nodes
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class acg_red_cdrs_to_nodes : public ss::Reduce
+	class acg_red_cdrs_to_nodes : public samson::Reduce
 	{
 		int num_cdrs_for_strong;
 
@@ -28,12 +28,12 @@ namespace sna_light{
 		}
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			ss::sna_light::Node node;
+			samson::sna_light::Node node;
 
 			//Just compact information...
-			ss::system::UInt mobile; // Current destination mobile we are currently counting
+			samson::system::UInt mobile; // Current destination mobile we are currently counting
 			int counter;		// Number of times we have this number
 
 			int counter_dir0;
@@ -43,9 +43,9 @@ namespace sna_light{
 			if (inputs[0].num_kvs == 0)
 				return;
 
-			ss::system::UInt node_id;	// Reference node
-			ss::sna_light::CDR cdr;		
-			ss::system::UInt destination;	// Destination of the cdr
+			samson::system::UInt node_id;	// Reference node
+			samson::sna_light::CDR cdr;		
+			samson::system::UInt destination;	// Destination of the cdr
 
 			// Already in init()
 			//num_cdrs_for_strong = environment->getInt(SNA_PARAMETER_CDRS_TO_BE_STRONG_CONNECTION, SNA_PARAMETER_CDRS_TO_BE_STRONG_CONNECTION_DEFAULT);
@@ -95,9 +95,9 @@ namespace sna_light{
 					}
 				} else {
 					//Save the previous one
-					ss::sna_light::Link *link = node.linksAdd();
+					samson::sna_light::Link *link = node.linksAdd();
 					link->id.value = mobile.value;
-					// This ss::sna_light::Link::double_2_intScaled() function (previuosly sna_light_double2int()) hidens a 1000 multiplication
+					// This samson::sna_light::Link::double_2_intScaled() function (previuosly sna_light_double2int()) hidens a 1000 multiplication
 					link->weight.value = float((double)counter / (double)num_cdrs_for_strong  );
 					link->dir.value = float((double)counter_dir0 / (double)counter );
 
@@ -117,13 +117,13 @@ namespace sna_light{
 			}
 
 			//Add the last one...
-			ss::sna_light::Link *link = node.linksAdd();
+			samson::sna_light::Link *link = node.linksAdd();
 			link->id.value = mobile.value;
 			link->weight.value = float( (double)counter / (double)num_cdrs_for_strong  );
 			link->dir.value    = float( (double)counter_dir0 / (double)counter );
 
 			//By default all nodes belong to Telefonica
-			node.flags.value = ss::sna_light::Node::NODE_FLAG_NONE;
+			node.flags.value = samson::sna_light::Node::NODE_FLAG_NONE;
 
 			//OLM_T(LMT_User01, ("node_id:%ld, Emits node_id:%ld, node.id:%ld", node_id.value, node_id.value, node.id.value));
 			//Emit the complete node information
@@ -132,7 +132,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

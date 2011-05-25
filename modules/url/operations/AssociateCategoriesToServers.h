@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_AssociateCategoriesToServers
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /**********************************************************************
 reduce AssociateCategoriesToServers
@@ -21,14 +21,14 @@ reduce AssociateCategoriesToServers
 }
 ***********************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class AssociateCategoriesToServers : public ss::Reduce
+	class AssociateCategoriesToServers : public samson::Reduce
 	{
-		ss::system::UInt serverIdRef;
-		ss::system::UInt serverId;
+		samson::system::UInt serverIdRef;
+		samson::system::UInt serverId;
 		ServerCountVector servers;
 		CategoryVector categories;
 		CategoryVector categories_out;
@@ -37,7 +37,7 @@ namespace url{
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 				if (inputs[0].num_kvs == 0)
 				{
@@ -112,7 +112,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

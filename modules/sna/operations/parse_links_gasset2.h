@@ -7,31 +7,31 @@
 #define _H_SAMSON_sna_parse_links_gasset2
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 #include "sna_parsing_macros.h"
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-class parse_links_gasset2 : public ss::Parser
+class parse_links_gasset2 : public samson::Parser
 {
 
 public:
 
 
-	void run( char *data , size_t length , ss::KVWriter *writer )
+	void run( char *data , size_t length , samson::KVWriter *writer )
 	{
 
 		//Key Value to emit at the output
 
 		//MRData_Link_Edges key_link ;
-		ss::system::UInt       key_id ;
+		samson::system::UInt       key_id ;
 		Link       value_link ;
 
-		ss::system::UInt node_a;
-		ss::system::UInt node_b;
+		samson::system::UInt node_a;
+		samson::system::UInt node_b;
 		double link_strength;
 		double link_dir;
 
@@ -130,7 +130,7 @@ public:
 };
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

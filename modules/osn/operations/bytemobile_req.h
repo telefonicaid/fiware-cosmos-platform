@@ -7,14 +7,14 @@
 #define _H_SAMSON_osn_bytemobile_req
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
-	class bytemobile_req : public ss::Script
+	class bytemobile_req : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace osn{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

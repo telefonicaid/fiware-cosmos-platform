@@ -7,23 +7,23 @@
 #define _H_SAMSON_sna_spread_cliques_per_node
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 
-namespace ss{
+
+namespace samson{
 namespace sna{
 
 
-	class spread_cliques_per_node : public ss::Map
+	class spread_cliques_per_node : public samson::Map
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			Clique clique;
-			ss::system::UInt nodeId;
+			samson::system::UInt nodeId;
 
 			if ( inputs[0].num_kvs == 0)
 				return;
@@ -44,7 +44,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

@@ -7,27 +7,27 @@
 #define _H_SAMSON_osn_map_urls_by_hour
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <string>
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
-	class map_urls_by_hour : public ss::Map
+	class map_urls_by_hour : public samson::Map
 	{
-		ss::system::UInt64 msisdn;
-		ss::osn::URLConnection  connect;
-		ss::system::String key_out;
-		ss::system::UInt value_out;
+		samson::system::UInt64 msisdn;
+		samson::osn::URLConnection  connect;
+		samson::system::String key_out;
+		samson::system::UInt value_out;
 #define MAX_STR_LEN 1024
 			char conv[MAX_STR_LEN];
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			if (inputs[0].num_kvs == 0)
 			{
@@ -49,8 +49,8 @@ namespace osn{
 
 
 			}
-                        ss::system::UInt key_total;
-                        ss::system::UInt val_total;
+                        samson::system::UInt key_total;
+                        samson::system::UInt val_total;
                         key_total.value = 1;
                         val_total.value = inputs[0].num_kvs;
                         writer->emit(1, &key_total, &val_total);
@@ -59,7 +59,7 @@ namespace osn{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

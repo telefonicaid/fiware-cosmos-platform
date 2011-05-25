@@ -7,17 +7,17 @@
 #define _H_SAMSON_sna_replace_callee_phone
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+
+namespace samson{
 namespace sna{
 
 
-	class replace_callee_phone : public ss::Reduce
+	class replace_callee_phone : public samson::Reduce
 	{
-		ss::system::UInt calleeNumber, key ;
+		samson::system::UInt calleeNumber, key ;
 		int users, repetitions ;
 		CDR cdr ;
 		User user ;
@@ -25,11 +25,11 @@ namespace sna{
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
 
-			ss::system::UInt destination;
+			samson::system::UInt destination;
 
 			  users=0;
 			  repetitions=0;
@@ -78,7 +78,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

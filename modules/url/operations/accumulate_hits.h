@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_accumulate_hits
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/Void.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/Vector_UInt.h>
@@ -15,20 +15,20 @@
 
 #define ACCUMUATION_BUFFER_SIZE      12
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class accumulate_hits : public ss::Reduce
+	class accumulate_hits : public samson::Reduce
 	{
 
-	  ss::system::String      key_server;
-	  ss::system::Vector_UInt value_times;
+	  samson::system::String      key_server;
+	  samson::system::Vector_UInt value_times;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
 		    if( inputs[0].num_kvs == 0 )
@@ -108,7 +108,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

@@ -7,24 +7,24 @@
 #define _H_SAMSON_sna_spread_nodes_to_strong_connections
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class spread_nodes_to_strong_connections : public ss::Map
+	class spread_nodes_to_strong_connections : public samson::Map
 	{
-		ss::system::UInt node_id;	// key 	
+		samson::system::UInt node_id;	// key 	
 		Node node;		// value
 		Node reducedNode;	//Node with soft contacts (not necessary in the cliques)
 		
 	public:
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			
 			//OLM_T(LMT_User06, ("spread_nodes_to_strong_connections, Enters inputs[0].num_kvs:%lu\n", inputs[0].num_kvs));
@@ -76,7 +76,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

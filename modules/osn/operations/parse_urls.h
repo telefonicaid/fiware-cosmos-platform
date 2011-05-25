@@ -7,7 +7,7 @@
 #define _H_SAMSON_osn_parse_urls
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 #define DEBUG_FILES
 #ifdef DEBUG_FILES
@@ -17,7 +17,7 @@
 #undef DEBUG_FILES
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
@@ -229,7 +229,7 @@ int secsFrom2000_01_01(Date date, Time time)
 	}
 
 
-	bool getURLConnectionFromLine( char *line, ss::system::UInt64 *msisdn, ss::osn::URLConnection *URLConnection)
+	bool getURLConnectionFromLine( char *line, samson::system::UInt64 *msisdn, samson::osn::URLConnection *URLConnection)
 	{
 		//LINE --> "msisdn URL DateTime status MIME agent method"
 		//Separator is a tab character
@@ -491,14 +491,14 @@ fs.close();
 		return true;
 	}
 
-	class parse_urls : public ss::Parser
+	class parse_urls : public samson::Parser
 	{
 
 	public:
-		ss::system::UInt64 msisdn;               //Unique identifier of a MSISDN over time
-		ss::osn::URLConnection URLConnection;    //All the information in the log file. Could be optimized for specific applications
+		samson::system::UInt64 msisdn;               //Unique identifier of a MSISDN over time
+		samson::osn::URLConnection URLConnection;    //All the information in the log file. Could be optimized for specific applications
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 			char *pData;
 			char *pDataBegin;
@@ -578,7 +578,7 @@ fs.close();
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_get_cliques_graph
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class get_cliques_graph : public ss::Script
+	class get_cliques_graph : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

@@ -7,23 +7,23 @@
 #define _H_SAMSON_sna_get_dyads
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class get_dyads : public ss::Reduce
+	class get_dyads : public samson::Reduce
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			Link nodeToCompare ;
-			ss::system::UInt nodeId ;
+			samson::system::UInt nodeId ;
 			Node node ;
 			Clique clique ;
 			bool found ;
@@ -38,7 +38,7 @@ namespace sna{
 					nodeToCompare.copyFrom(&node.links[j]);
 					//Don't check links twice.. it would generate the same dyad twice. Do it in one direction only
 					//Check also that it is a strong contact
-					if((node.id > nodeToCompare.id)&&(ss::sna::Link::intScaled_2_double(nodeToCompare.weight.value) >= 1) )
+					if((node.id > nodeToCompare.id)&&(samson::sna::Link::intScaled_2_double(nodeToCompare.weight.value) >= 1) )
 					{
 						//Is the node to compare in any community?
 						found = false;
@@ -65,7 +65,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

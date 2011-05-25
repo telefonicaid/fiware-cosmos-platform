@@ -7,21 +7,21 @@
 #define _H_SAMSON_sna_red_links_add_3graph
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+
+namespace samson{
 namespace sna{
 
 
-class red_links_add_3graph : public ss::Reduce
+class red_links_add_3graph : public samson::Reduce
 {
 
 public:
 
 
-	void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
 
 
@@ -38,7 +38,7 @@ public:
 		double d_out;
 
 		//Outputs
-		ss::system::UInt id;
+		samson::system::UInt id;
 		Link link_out;
 
 
@@ -89,7 +89,7 @@ public:
 };
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

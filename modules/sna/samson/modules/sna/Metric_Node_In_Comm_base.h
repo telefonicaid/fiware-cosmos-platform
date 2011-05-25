@@ -11,23 +11,23 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class Metric_Node_In_Comm_base : public ss::DataInstance{
+	class Metric_Node_In_Comm_base : public samson::DataInstance{
 
 	public:
-	::ss::sna::Clique comm;
-	::ss::sna::Clique orphan;
-	::ss::system::UInt id_comm;
-	::ss::system::UInt node_id;
-	::ss::system::UInt absolute_weights;
-	::ss::system::UInt realtive_weights;
-	::ss::system::UInt absolute_neighbours;
-	::ss::system::UInt relative_neighbours;
+	::samson::sna::Clique comm;
+	::samson::sna::Clique orphan;
+	::samson::system::UInt id_comm;
+	::samson::system::UInt node_id;
+	::samson::system::UInt absolute_weights;
+	::samson::system::UInt realtive_weights;
+	::samson::system::UInt absolute_neighbours;
+	::samson::system::UInt relative_neighbours;
 
-	Metric_Node_In_Comm_base() : ss::DataInstance(){
+	Metric_Node_In_Comm_base() : samson::DataInstance(){
 	}
 
 	~Metric_Node_In_Comm_base() {
@@ -61,14 +61,14 @@ namespace sna{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::sna::Clique::size(data+offset);
-		offset += ::ss::sna::Clique::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::sna::Clique::size(data+offset);
+		offset += ::samson::sna::Clique::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -78,35 +78,35 @@ namespace sna{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing comm
-			int tmp = ::ss::sna::Clique::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::sna::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing orphan
-			int tmp = ::ss::sna::Clique::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::sna::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing id_comm
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing node_id
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing absolute_weights
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing realtive_weights
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing absolute_neighbours
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing relative_neighbours
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -161,7 +161,7 @@ namespace sna{
 
 	}; //class Metric_Node_In_Comm_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

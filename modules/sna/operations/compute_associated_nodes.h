@@ -7,16 +7,16 @@
 #define _H_SAMSON_sna_compute_associated_nodes
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
 
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class compute_associated_nodes : public ss::Reduce
+	class compute_associated_nodes : public samson::Reduce
 	{
 
 	public:
@@ -27,12 +27,12 @@ namespace sna{
 			threshold_to_add_associated = environment->getDouble (SNA_PARAMETER_THRESHOLD_TO_ADD_ASSOCIATED_NODES, SNA_PARAMETER_THRESHOLD_TO_ADD_ASSOCIATED_NODES_DEFAULT);
 		}
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			ss::sna::Clique clique;
-			ss::sna::Vector_Node nodes;
+			samson::sna::Clique clique;
+			samson::sna::Vector_Node nodes;
 
-			ss::sna::Clique associated_nodes;
+			samson::sna::Clique associated_nodes;
 
 			if( inputs[0].num_kvs <= 0)
 				return;
@@ -54,7 +54,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

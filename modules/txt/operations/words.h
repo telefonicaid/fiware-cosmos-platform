@@ -7,14 +7,14 @@
 #define _H_SAMSON_system_words
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace system{
 
 
-	class words : public ss::Script
+	class words : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace system{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace system
 
 #endif

@@ -7,7 +7,7 @@
 #define _H_SAMSON_osn_red_compute_sites_visited
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/Void.h>
 
 #define DEBUG_FILES
@@ -18,21 +18,21 @@
 
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
-	class red_compute_sites_visited : public ss::Reduce
+	class red_compute_sites_visited : public samson::Reduce
 	{
-		ss::system::String url;
-		ss::system::UInt count_in;
-		ss::system::UInt key_out;
-		ss::osn::Count count_out;
+		samson::system::String url;
+		samson::system::UInt count_in;
+		samson::system::UInt key_out;
+		samson::osn::Count count_out;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			ss:system::UInt total;
 
@@ -70,7 +70,7 @@ namespace osn{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

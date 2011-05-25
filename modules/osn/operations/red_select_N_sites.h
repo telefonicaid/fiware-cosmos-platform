@@ -7,7 +7,7 @@
 #define _H_SAMSON_osn_red_select_N_sites
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #define DEBUG_FILES
 #ifdef DEBUG_FILES
 #include <iostream>
@@ -16,20 +16,20 @@
 
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
-	class red_select_N_sites : public ss::Reduce
+	class red_select_N_sites : public samson::Reduce
 	{
-		ss::system::UInt key_in;
-		ss::osn::Count count;
-		ss::system::Void value_out;
+		samson::system::UInt key_in;
+		samson::osn::Count count;
+		samson::system::Void value_out;
 
 
 	public:
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			int num_sites = environment->getInt ("osn.num_sites", 10);
 			std::string total_visits_str = environment->get ("osn.total_count", "1");
@@ -77,7 +77,7 @@ namespace osn{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

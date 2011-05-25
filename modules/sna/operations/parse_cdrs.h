@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_parse_cdrs
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 #include "sna_parsing_macros.h"
 #include "sna_environment_parameters.h"
 #include <samson/modules/system/Time.h>
 #include <samson/modules/system/UInt.h>
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
@@ -80,19 +80,19 @@ size_t get_cdrs_get_number(char *line, int *pos, int *pos_field)
 */
 
 
-class parse_cdrs : public ss::Parser
+class parse_cdrs : public samson::Parser
 {
 
-	//typedef bool (getCDRFunction)( char*line, ss::system::UInt *node, CDR* info);
+	//typedef bool (getCDRFunction)( char*line, samson::system::UInt *node, CDR* info);
 	//getCDRFunction *_getCDRFunction ;
 
-	bool (parse_cdrs ::*_getCDRFunction)( char*line, ss::system::UInt *node, CDR* info);
+	bool (parse_cdrs ::*_getCDRFunction)( char*line, samson::system::UInt *node, CDR* info);
 
 	struct tm timeExpanded;
 
 public:
 
-	bool getCDRFromLine_TME( char *line, ss::system::UInt*node, CDR* cdr )
+	bool getCDRFromLine_TME( char *line, samson::system::UInt*node, CDR* cdr )
 	{
 		//LINE --> "1|689644587|685015313|01/09/08 18:52:44|123|2|2"
 		//Note: multihtread save implementation
@@ -139,7 +139,7 @@ public:
 	}
 
 
-	bool getCDRFromLine_TEMM_VOZ( char *line, ss::system::UInt*node, CDR* cdr )
+	bool getCDRFromLine_TEMM_VOZ( char *line, samson::system::UInt*node, CDR* cdr )
 	{
 		//HEADER --> "CELL_START|PHONE1|CELL_FINISH|PHONE2|DIR|DATE|TIME|DURATION"
 		//LINE   --> "33F43052167D16|2221435146|33F43052167D16|0442221472843|2|04/01/2010|17:21:07|22"
@@ -235,7 +235,7 @@ public:
 		return true;
 	}
 
-	bool getCDRFromLine_TEMM_VOZ_15fields( char *line, ss::system::UInt*node, CDR* cdr )
+	bool getCDRFromLine_TEMM_VOZ_15fields( char *line, samson::system::UInt*node, CDR* cdr )
 	{
 		//HEADER --> "CELL_START|PHONE1|CELL_FINISH|PHONE2|DIR|DATE|TIME|DURATION"
 		//LINE   --> "33F43052167D16|2221435146|33F43052167D16|0442221472843|2|04/01/2010|17:21:07|22"
@@ -341,7 +341,7 @@ public:
 	}
 
 
-	bool getCDRFromLine_TEMM_SMS( char *line, ss::system::UInt*node, CDR* cdr )
+	bool getCDRFromLine_TEMM_SMS( char *line, samson::system::UInt*node, CDR* cdr )
 	{
 		//HEADER --> "PHONE1|PHONE2|DIR|Date|Time"
 		//LINE --> "6862360363|9371302781|2|01/08/2009|17:52:05"
@@ -407,7 +407,7 @@ public:
 		return true;
 	}
 
-	bool getCDRFromLine_TEMM_MMS( char *line, ss::system::UInt*node, CDR* cdr )
+	bool getCDRFromLine_TEMM_MMS( char *line, samson::system::UInt*node, CDR* cdr )
 	{
 		//HEADER --> "PHONE1|PHONE2|DIR|Date|Time"
 		//LINE   --> "525523749235|5541871842|1|01/08/2009|00:30:02"
@@ -474,7 +474,7 @@ public:
 	}
 
 
-	bool getCDRFromLine_MX( char *line, ss::system::UInt*node, CDR* cdr )
+	bool getCDRFromLine_MX( char *line, samson::system::UInt*node, CDR* cdr )
 	{
 		//LINE   --> "1|689644587|685015313|01/09/08 18:52:44|123|2|2"
 		//Note: multihtread save implementation
@@ -522,7 +522,7 @@ public:
 	}
 
 
-	bool getCDRFromLine_JAJAH( char *line, ss::system::UInt*node, CDR* cdr )
+	bool getCDRFromLine_JAJAH( char *line, samson::system::UInt*node, CDR* cdr )
 	{
 		//HEADER --> "CALL ID|MemberA_ID|MemberA_Phone|MemberB_Phone|Date&Time|Duration|Type"
 		//LINE --> "173731833|182385|390817917344|393333303646|2010-01-01 00:00:00|0|SMS\n"
@@ -575,7 +575,7 @@ public:
 		return true;
 	}
 
-	bool getCDRFromLine_TASA( char *line, ss::system::UInt*node, CDR* cdr )
+	bool getCDRFromLine_TASA( char *line, samson::system::UInt*node, CDR* cdr )
 	{
 		//LINE --> "1|689644587|685015313|01/09/08 18:52:44|123|2|2"
 		//Note: multihtread save implementation
@@ -658,10 +658,10 @@ public:
 	}
 
 
-	void parseLines( char *line, ss::KVWriter *writer )
+	void parseLines( char *line, samson::KVWriter *writer )
 	{
 		//MRDatas to emit
-		ss::system::UInt number;
+		samson::system::UInt number;
 		CDR cdr;
 
 
@@ -700,10 +700,10 @@ public:
 	}
 
 
-	void run( char *data , size_t length , ss::KVWriter *writer )
+	void run( char *data , size_t length , samson::KVWriter *writer )
 	{
 		//Datas to emit
-		ss::system::UInt number;
+		samson::system::UInt number;
 		CDR cdr;
 
 		//ss:cdr::Date previous_date;    //Date of the last CDR
@@ -756,7 +756,7 @@ public:
 };
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

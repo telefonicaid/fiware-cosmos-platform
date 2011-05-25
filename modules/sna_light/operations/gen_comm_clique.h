@@ -7,20 +7,20 @@
 #define _H_SAMSON_sna_light_gen_comm_clique
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class gen_comm_clique : public ss::Map
+	class gen_comm_clique : public samson::Map
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 		}
 
@@ -28,7 +28,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

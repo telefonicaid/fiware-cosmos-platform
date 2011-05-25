@@ -11,19 +11,19 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class Node_Reach_base : public ss::DataInstance{
+	class Node_Reach_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt node_id;
-	::ss::system::UInt node_reached;
-	::ss::system::UInt weight;
-	::ss::system::Int8 flags;
+	::samson::system::UInt node_id;
+	::samson::system::UInt node_reached;
+	::samson::system::UInt weight;
+	::samson::system::Int8 flags;
 
-	Node_Reach_base() : ss::DataInstance(){
+	Node_Reach_base() : samson::DataInstance(){
 	}
 
 	~Node_Reach_base() {
@@ -49,10 +49,10 @@ namespace sna{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::Int8::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::Int8::size(data+offset);
 		return offset;
 	}
 
@@ -62,19 +62,19 @@ namespace sna{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node_id
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing node_reached
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing weight
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing flags
-			int tmp = ::ss::system::Int8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::Int8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -113,7 +113,7 @@ namespace sna{
 
 	}; //class Node_Reach_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

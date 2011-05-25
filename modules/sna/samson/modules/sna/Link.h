@@ -10,7 +10,7 @@
 #include <samson/modules/sna/Link_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
@@ -42,7 +42,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

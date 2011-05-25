@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_DecodeServerForCategories
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /************************************************************************
 reduce DecodeServerForCategories
@@ -20,23 +20,23 @@ reduce DecodeServerForCategories
 }
 *************************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class DecodeServerForCategories : public ss::Reduce
+	class DecodeServerForCategories : public samson::Reduce
 	{
 
-		ss::system::UInt serverId;
+		samson::system::UInt serverId;
 		CategoryPath catPath;
-		ss::system::UInt catId;
-		ss::system::String serverStr;
+		samson::system::UInt catId;
+		samson::system::String serverStr;
 		ServerStrPath serverStrPath;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			if (inputs[0].num_kvs != 1)
 			{
@@ -63,7 +63,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

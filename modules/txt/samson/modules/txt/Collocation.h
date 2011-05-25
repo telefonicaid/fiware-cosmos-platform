@@ -10,7 +10,7 @@
 #include <samson/modules/txt/Collocation_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace txt{
 
 
@@ -19,7 +19,7 @@ namespace txt{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace txt
 
 #endif

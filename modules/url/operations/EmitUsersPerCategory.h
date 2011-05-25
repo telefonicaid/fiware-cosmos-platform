@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_EmitUsersPerCategory
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /***************************************************************
 map EmitUsersPerCategory
@@ -20,20 +20,20 @@ map EmitUsersPerCategory
 }
 **************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class EmitUsersPerCategory : public ss::Map
+	class EmitUsersPerCategory : public samson::Map
 	{
-		ss::system::UInt userId;
-		ss::system::UInt catId;
+		samson::system::UInt userId;
+		samson::system::UInt catId;
 		CategoryVector categories;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			if (inputs[0].num_kvs == 0)
 			{
@@ -63,7 +63,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

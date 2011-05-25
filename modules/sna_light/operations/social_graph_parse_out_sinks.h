@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_light_social_graph_parse_out_sinks
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class social_graph_parse_out_sinks : public ss::ParserOut
+	class social_graph_parse_out_sinks : public samson::ParserOut
 	{
 
 	public:
@@ -28,7 +28,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

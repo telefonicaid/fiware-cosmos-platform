@@ -7,20 +7,20 @@
 #define _H_SAMSON_cdr_select_cdrs
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 #include <samson/modules/system/UInt.h>
 #include "samson/modules/cdr/CDR.h"
 #include <iostream>
 
-namespace ss{
+namespace samson{
 namespace cdr{
 
 
-	class select_cdrs : public ss::ParserOut
+	class select_cdrs : public samson::ParserOut
 	{
-		ss::system::UInt key;
-		ss::cdr::CDR value;
+		samson::system::UInt key;
+		samson::cdr::CDR value;
 #define MAX_STR_LEN 1024
 			char output[MAX_STR_LEN];
 		
@@ -47,7 +47,7 @@ namespace cdr{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace cdr
 
 #endif

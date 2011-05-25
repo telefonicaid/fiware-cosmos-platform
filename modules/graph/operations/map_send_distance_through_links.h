@@ -7,7 +7,7 @@
 #define _H_SAMSON_graph_map_send_distance_through_links
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 #define DEBUG_FILES
 #ifdef DEBUG_FILES
@@ -17,23 +17,23 @@
 #undef DEBUG_FILES
 
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
-	class map_send_distance_through_links : public ss::Map
+	class map_send_distance_through_links : public samson::Map
 	{
 
-	  ss::system::UInt key;
-	  ss::graph::NodeDist value;
+	  samson::system::UInt key;
+	  samson::graph::NodeDist value;
 
-	  ss::system::UInt o_key;
-	  ss::system::UInt o_value;
+	  samson::system::UInt o_key;
+	  samson::system::UInt o_value;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
 #ifdef DEBUG_FILES
@@ -93,7 +93,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

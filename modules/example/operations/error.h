@@ -7,24 +7,24 @@
 #define _H_SAMSON_example_error
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h>
 
-namespace ss{
+namespace samson{
 namespace example{
 
 
-	class error : public ss::Map
+	class error : public samson::Map
 	{
 
-	  ss::system::UInt key;
-	  ss::system::UInt value;
+	  samson::system::UInt key;
+	  samson::system::UInt value;
 
 	public:
 
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 		    for (int i = 0 ; i < inputs[0].num_kvs ; i++)
 		    {
@@ -46,7 +46,7 @@ namespace example{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace example
 
 #endif

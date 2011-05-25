@@ -11,19 +11,19 @@
 #include <samson/modules/url/ServerCount.h>
 
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class ServerCountVector_base : public ss::DataInstance{
+	class ServerCountVector_base : public samson::DataInstance{
 
 	public:
-	::ss::url::ServerCount *serversCount;
+	::samson::url::ServerCount *serversCount;
 	int serversCount_length;
 	int serversCount_max_length;
-	::ss::system::UInt countRef;
+	::samson::system::UInt countRef;
 
-	ServerCountVector_base() : ss::DataInstance(){
+	ServerCountVector_base() : samson::DataInstance(){
 		serversCount_length=0;
 		serversCount_max_length=0;
 		serversCount = NULL;
@@ -38,7 +38,7 @@ namespace url{
 		int offset=0;
 		{ //Parsing vector serversCount
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	serversCountSetLength( _length );
 			for (int i = 0 ; i < (int)serversCount_length ; i++){
 				offset += serversCount[i].parse(data+offset);
@@ -51,7 +51,7 @@ namespace url{
 	int serialize(char *data){
 		int offset=0;
 		{ //Serialization vector serversCount
-			offset += ss::staticVarIntSerialize( data+offset , serversCount_length );
+			offset += samson::staticVarIntSerialize( data+offset , serversCount_length );
 			for (int i = 0 ; i < (int)serversCount_length ; i++){
 				offset += serversCount[i].serialize(data+offset);
 			}
@@ -64,13 +64,13 @@ namespace url{
 		int offset=0;
 		{ //Getting size of vector serversCount
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::url::ServerCount _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::url::ServerCount _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::url::ServerCount::size(data+offset);
+				offset += ::samson::url::ServerCount::size(data+offset);
 			}
 		}
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -83,19 +83,19 @@ namespace url{
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // Comparing vector serversCount
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing serversCount[i]
-					int tmp = ::ss::url::ServerCount::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::url::ServerCount::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
 		}
 		{ // comparing countRef
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -110,11 +110,11 @@ namespace url{
 
 	void serversCountSetLength(int _length){
 		if( _length > serversCount_max_length){ 
-			::ss::url::ServerCount *_previous = serversCount;
+			::samson::url::ServerCount *_previous = serversCount;
 			int previous_length = serversCount_length;
 			if(serversCount_max_length == 0) serversCount_max_length = _length;
 			while(serversCount_max_length < _length) serversCount_max_length *= 2;
-			serversCount = new ::ss::url::ServerCount[serversCount_max_length ];
+			serversCount = new ::samson::url::ServerCount[serversCount_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					serversCount[i].copyFrom( &_previous[i] );
@@ -124,7 +124,7 @@ namespace url{
 		serversCount_length=_length;
 	}
 
-	::ss::url::ServerCount* serversCountAdd(){
+	::samson::url::ServerCount* serversCountAdd(){
 		serversCountSetLength( serversCount_length + 1 );
 		return &serversCount[serversCount_length-1];
 	}
@@ -156,7 +156,7 @@ namespace url{
 
 	}; //class ServerCountVector_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

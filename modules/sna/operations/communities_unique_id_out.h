@@ -7,7 +7,7 @@
 #define _H_SAMSON_sna_communities_unique_id_out
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <set>
 #include <iostream>
 #include "sna_environment_parameters.h"
@@ -15,11 +15,11 @@
 
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class communities_unique_id_out : public ss::ParserOut
+	class communities_unique_id_out : public samson::ParserOut
 	{
 
 	std::string sep;
@@ -126,7 +126,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

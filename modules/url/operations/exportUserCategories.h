@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_exportUserCategories
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /*******************************************************************************
 parserOut exportUserCategories
@@ -20,13 +20,13 @@ parserOut exportUserCategories
 }
 *******************************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class exportUserCategories : public ss::ParserOut
+	class exportUserCategories : public samson::ParserOut
 	{
-		ss::system::UInt userId;
+		samson::system::UInt userId;
 		CategoryVector categories;
 
 	public:
@@ -71,7 +71,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

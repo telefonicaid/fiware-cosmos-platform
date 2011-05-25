@@ -8,43 +8,43 @@
 
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "CliquesSolver.h"							// CliquesSolver
-#include <samson/modules/system/UInt.h>				// ss::system::UInt
-#include <samson/modules/system/Void.h>				// ss::system::Void
-#include <samson/modules/sna/Node.h>				// ss::sna::Node
-#include <samson/modules/sna/Vector_Node.h>		// ss::sna::Vector_Node
-#include "samson/modules/sna/Vector_Clique.h"		// ss::sna::Vector_Clique
-#include <samson/Log.h>
+#include <samson/modules/system/UInt.h>				// samson::system::UInt
+#include <samson/modules/system/Void.h>				// samson::system::Void
+#include <samson/modules/sna/Node.h>				// samson::sna::Node
+#include <samson/modules/sna/Vector_Node.h>		// samson::sna::Vector_Node
+#include "samson/modules/sna/Vector_Clique.h"		// samson::sna::Vector_Clique
 
 
 
 
-namespace ss{
+
+namespace samson{
 namespace sna{
 
 
-	class compute_cliques_from_spread_graph : public ss::Reduce
+	class compute_cliques_from_spread_graph : public samson::Reduce
 	{
 
 		CliquesSolver cliquesSolver ;
-		ss::system::UInt node_id ;
+		samson::system::UInt node_id ;
 		
-		ss::sna::Node node ;
-		ss::sna::Vector_Node neighbours ;
-		ss::sna::Vector_Clique cliques ;
+		samson::sna::Node node ;
+		samson::sna::Vector_Node neighbours ;
+		samson::sna::Vector_Clique cliques ;
 		
-		ss::system::Void void_data ;
+		samson::system::Void void_data ;
 		
 		
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			
 			// Get the nodeId of the node we are processing (key value)
-			ss::system::UInt node_id;		 
+			samson::system::UInt node_id;		 
 			node_id.parse( inputs[0].kvs[0]->key );  
 			
 			//OLM_T(LMT_User06, ("compute_cliques_from_spread_graph, Enters key:%lu, inputs[0].num_kvs:%lu\n", node_id.value, inputs[0].num_kvs));
@@ -132,7 +132,7 @@ namespace sna{
 				{
 					//OLM_T(LMT_User06, ("node_id:%ld, Emits clique because node.id(%ld) < first_element(%ld)", node_id.value, node.id.value, first_element));
 
-					ss::sna::Clique clique;
+					samson::sna::Clique clique;
 					clique.nodesSetLength( cliquesSolver.solutions[i].num_nodes+1 );
 					
 					//Add the key-node
@@ -164,7 +164,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

@@ -7,26 +7,26 @@
 #define _H_SAMSON_url_getServersFromUser
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 
 
 
-namespace ss{
+
+namespace samson{
 namespace url{
 
 
-	class getServersFromUser : public ss::Reduce
+	class getServersFromUser : public samson::Reduce
 	{
-		ss::system::UInt user;
-		ss::system::UInt serverId;
+		samson::system::UInt user;
+		samson::system::UInt serverId;
 
 		ServerCount serverCount;
 
 
 	public:
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
 			bool first = true;
@@ -86,7 +86,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

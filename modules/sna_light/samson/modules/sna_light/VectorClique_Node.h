@@ -10,7 +10,7 @@
 #include <samson/modules/sna_light/VectorClique_Node_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
@@ -19,7 +19,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_parse_links_gasset_to_nodes
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class parse_links_gasset_to_nodes : public ss::Script
+	class parse_links_gasset_to_nodes : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

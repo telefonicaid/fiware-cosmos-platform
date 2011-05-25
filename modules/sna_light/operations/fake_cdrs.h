@@ -7,22 +7,22 @@
 #define _H_SAMSON_sna_light_fake_cdrs
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class fake_cdrs : public ss::Generator
+	class fake_cdrs : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
-			  ss::system::UInt id;
+			  samson::system::UInt id;
 			  CDR cdr;
 			  int num_nodes = 1000;
 			  int num_links_per_node = 30;
@@ -67,7 +67,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

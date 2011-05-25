@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_exportHitsPerCategoryWithStrings
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /*************************************************************
 parserOut exportHitsPerCategoryWithStrings
@@ -19,13 +19,13 @@ parserOut exportHitsPerCategoryWithStrings
 }
 **************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class exportHitsPerCategoryWithStrings : public ss::ParserOut
+	class exportHitsPerCategoryWithStrings : public samson::ParserOut
 	{
-		ss::system::UInt catId;
+		samson::system::UInt catId;
 		ServerStrPathVector paths;
 
 
@@ -72,7 +72,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

@@ -7,22 +7,22 @@
 #define _H_SAMSON_sna_generate_comm_unique_id
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class generate_comm_unique_id : public ss::Map
+	class generate_comm_unique_id : public samson::Map
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			  ss::system::UInt id;
+			  samson::system::UInt id;
 			  Clique clique;
 			  Clique orphan;
 			  Community output;
@@ -51,7 +51,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

@@ -7,16 +7,16 @@
 #define _H_SAMSON_url_exportUInt_ServerPath
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class exportUInt_ServerPath : public ss::ParserOut
+	class exportUInt_ServerPath : public samson::ParserOut
 	{
-		ss::system::UInt key;
+		samson::system::UInt key;
 		ServerPath val;
 
 	public:
@@ -46,7 +46,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

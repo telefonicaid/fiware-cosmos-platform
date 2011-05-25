@@ -3,20 +3,20 @@
 #define _H_SAMSON_SIMPLE_PARSER
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 namespace samson{
 namespace system{
 
 
-	class SimpleParser : public ss::Parser
+        class SimpleParser : public samson::Parser
 	{
 
 	public:
 
-		virtual void parseLine( char * line , ss::KVWriter *writer )=0;
+		virtual void parseLine( char * line , samson::KVWriter *writer )=0;
 		
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 			
 			size_t line_begin = 0;
@@ -46,6 +46,6 @@ namespace system{
 	};
 
 } // end of namespace system
-} // end of namespace ss
+} // end of namespace samson
 
 #endif

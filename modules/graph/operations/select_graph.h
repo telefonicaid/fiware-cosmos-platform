@@ -7,19 +7,19 @@
 #define _H_SAMSON_graph_select_nodes
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h>
 #include "samson/modules/graph/Node.h"
 #include <iostream>
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
-	class select_graph : public ss::ParserOut
+	class select_graph : public samson::ParserOut
 	{
-		ss::system::UInt key;
-		ss::graph::Node value;
+		samson::system::UInt key;
+		samson::graph::Node value;
 
 		std::ostringstream output;
 		
@@ -44,7 +44,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

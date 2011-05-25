@@ -7,7 +7,7 @@
 #define _H_SAMSON_sna_export_cliques
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/SimpleParserOut.h>
 #include <samson/modules/system/Void.h>
 #include "samson/modules/sna/Clique.h"
@@ -22,11 +22,11 @@ parserOut export_cliques
 }
 ***********************************************************/
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-class export_cliques : public ss::ParserOut
+class export_cliques : public samson::ParserOut
 {
 	Clique clique;
 	std::ostringstream output;
@@ -54,7 +54,7 @@ public:
 };
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

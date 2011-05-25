@@ -11,17 +11,17 @@
 #include <samson/modules/system/Float.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class Clique_Link_base : public ss::DataInstance{
+	class Clique_Link_base : public samson::DataInstance{
 
 	public:
-	::ss::sna::Clique clique;
-	::ss::system::Float weight;
+	::samson::sna::Clique clique;
+	::samson::system::Float weight;
 
-	Clique_Link_base() : ss::DataInstance(){
+	Clique_Link_base() : samson::DataInstance(){
 	}
 
 	~Clique_Link_base() {
@@ -43,8 +43,8 @@ namespace sna{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::sna::Clique::size(data+offset);
-		offset += ::ss::system::Float::size(data+offset);
+		offset += ::samson::sna::Clique::size(data+offset);
+		offset += ::samson::system::Float::size(data+offset);
 		return offset;
 	}
 
@@ -54,11 +54,11 @@ namespace sna{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing clique
-			int tmp = ::ss::sna::Clique::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::sna::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing weight
-			int tmp = ::ss::system::Float::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::Float::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -89,7 +89,7 @@ namespace sna{
 
 	}; //class Clique_Link_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

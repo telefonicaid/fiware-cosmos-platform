@@ -10,18 +10,18 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace tienda{
 
 
-	class VectorProducts_base : public ss::DataInstance{
+	class VectorProducts_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt *products;
+	::samson::system::UInt *products;
 	int products_length;
 	int products_max_length;
 
-	VectorProducts_base() : ss::DataInstance(){
+	VectorProducts_base() : samson::DataInstance(){
 		products_length=0;
 		products_max_length=0;
 		products = NULL;
@@ -36,7 +36,7 @@ namespace tienda{
 		int offset=0;
 		{ //Parsing vector products
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	productsSetLength( _length );
 			for (int i = 0 ; i < (int)products_length ; i++){
 				offset += products[i].parse(data+offset);
@@ -48,7 +48,7 @@ namespace tienda{
 	int serialize(char *data){
 		int offset=0;
 		{ //Serialization vector products
-			offset += ss::staticVarIntSerialize( data+offset , products_length );
+			offset += samson::staticVarIntSerialize( data+offset , products_length );
 			for (int i = 0 ; i < (int)products_length ; i++){
 				offset += products[i].serialize(data+offset);
 			}
@@ -60,10 +60,10 @@ namespace tienda{
 		int offset=0;
 		{ //Getting size of vector products
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::system::UInt _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::system::UInt _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::system::UInt::size(data+offset);
+				offset += ::samson::system::UInt::size(data+offset);
 			}
 		}
 		return offset;
@@ -78,13 +78,13 @@ namespace tienda{
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // Comparing vector products
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing products[i]
-					int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
@@ -101,11 +101,11 @@ namespace tienda{
 
 	void productsSetLength(int _length){
 		if( _length > products_max_length){ 
-			::ss::system::UInt *_previous = products;
+			::samson::system::UInt *_previous = products;
 			int previous_length = products_length;
 			if(products_max_length == 0) products_max_length = _length;
 			while(products_max_length < _length) products_max_length *= 2;
-			products = new ::ss::system::UInt[products_max_length ];
+			products = new ::samson::system::UInt[products_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					products[i].copyFrom( &_previous[i] );
@@ -115,7 +115,7 @@ namespace tienda{
 		products_length=_length;
 	}
 
-	::ss::system::UInt* productsAdd(){
+	::samson::system::UInt* productsAdd(){
 		productsSetLength( products_length + 1 );
 		return &products[products_length-1];
 	}
@@ -143,7 +143,7 @@ namespace tienda{
 
 	}; //class VectorProducts_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace tienda
 
 #endif

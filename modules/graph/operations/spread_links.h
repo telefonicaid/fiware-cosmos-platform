@@ -7,28 +7,28 @@
 #define _H_SAMSON_graph_spread_links
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt2.h>
 #include <samson/modules/system/UInt.h>
 #include "samson/modules/graph/Link.h"
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
-	class spread_links : public ss::Map
+	class spread_links : public samson::Map
 	{
 
-	  ss::system::UInt2 key;
-	  ss::system::UInt value;
+	  samson::system::UInt2 key;
+	  samson::system::UInt value;
 
-	  ss::system::UInt o_key;
-	  ss::graph::Link o_value;
+	  samson::system::UInt o_key;
+	  samson::graph::Link o_value;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 		    int num_links_to_be_strong = environment->getInt( "sna.links_to_be_strong" ,  4 );
 
@@ -56,7 +56,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

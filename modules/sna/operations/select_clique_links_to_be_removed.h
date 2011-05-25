@@ -7,16 +7,16 @@
 #define _H_SAMSON_sna_select_clique_links_to_be_removed
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 #include "sna_environment_parameters.h"
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class select_clique_links_to_be_removed : public ss::Reduce
+	class select_clique_links_to_be_removed : public samson::Reduce
 	{
 		Clique clique ;
 		Clique_Node node_clique ;
@@ -30,7 +30,7 @@ namespace sna{
 																				SNA_PARAMETER_COMMUNITY_MAX_COMMUNITY_LINK_DEFAULT);
 		}
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			if (inputs[0].num_kvs <= max_community_links)
 			{
@@ -82,7 +82,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

@@ -7,7 +7,7 @@
 #define _H_SAMSON_osn_map_url_user
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <string>
 #define DEBUG_FILES
 #ifdef DEBUG_FILES
@@ -17,21 +17,21 @@
 
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
-	class map_url_user : public ss::Map
+	class map_url_user : public samson::Map
 	{
-		ss::system::UInt64 msisdn;
-		ss::osn::URLConnection  connect;
-		ss::system::String key_out;
-		ss::system::UInt value_out;
+		samson::system::UInt64 msisdn;
+		samson::osn::URLConnection  connect;
+		samson::system::String key_out;
+		samson::system::UInt value_out;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			std::string user_agent = environment->get("osn.user_agent_query", "iphone");
 			std::string locDoc = environment->get("osn.locDoc_query", "search.yahoo.com");
@@ -87,8 +87,8 @@ namespace osn{
 				}
 
 			}
-                        ss::system::UInt key_total;
-                        ss::system::UInt val_total;
+                        samson::system::UInt key_total;
+                        samson::system::UInt val_total;
                         key_total.value = 1;
                         val_total.value = inputs[0].num_kvs;
                         writer->emit(1, &key_total, &val_total);
@@ -97,7 +97,7 @@ namespace osn{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

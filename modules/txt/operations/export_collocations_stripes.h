@@ -7,17 +7,17 @@
 #define _H_SAMSON_txt_export_collocations_stripes
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace txt{
 
 
-	class export_collocations_stripes : public ss::ParserOut
+	class export_collocations_stripes : public samson::ParserOut
 	{
-		ss::system::String key;
-		ss::txt::Stripe value;
+		samson::system::String key;
+		samson::txt::Stripe value;
 #define MAX_STR_LEN 1024
 			char output[MAX_STR_LEN];
 
@@ -47,7 +47,7 @@ namespace txt{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace txt
 
 #endif

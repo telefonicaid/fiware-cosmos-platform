@@ -7,25 +7,25 @@
 #define _H_SAMSON_sna_combine_associated_nodes_with_communities
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class combine_associated_nodes_with_communities : public ss::Map
+	class combine_associated_nodes_with_communities : public samson::Map
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			ss::sna::Clique clique1;
-			ss::sna::Clique clique2;
-			ss::sna::Clique clique;
-			ss::system::Void void_data;
+			samson::sna::Clique clique1;
+			samson::sna::Clique clique2;
+			samson::sna::Clique clique;
+			samson::system::Void void_data;
 
 			std::vector<uint> nodes;
 
@@ -63,7 +63,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

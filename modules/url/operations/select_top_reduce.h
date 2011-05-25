@@ -7,19 +7,19 @@
 #define _H_SAMSON_url_select_top_reduce
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/url/ServerHits.h>
 #include "ServerHitsAccumulator.h"
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class select_top_reduce : public ss::ParserOutReduce
+	class select_top_reduce : public samson::ParserOutReduce
 	{
 	  ServerHitsAccumulator serverHitsAccumulator;
 
-	  ss::url::ServerHits serverHits;
+	  samson::url::ServerHits serverHits;
 #define MAX_STR_LEN 2048
 		  char line[MAX_STR_LEN];
 
@@ -57,7 +57,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

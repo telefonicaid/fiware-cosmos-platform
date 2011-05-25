@@ -7,24 +7,24 @@
 #define _H_SAMSON_url_fakeServers
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/UInt.h>
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class fakeServers : public ss::Generator
+	class fakeServers : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
-		  ss::system::String server;
-		    ss::system::UInt id; 
+		  samson::system::String server;
+		    samson::system::UInt id; 
 
                    // Recover the number of servers from the environment
                    size_t num_servers = environment->getSizeT( "url.num_servers" ,  1000000 );
@@ -49,7 +49,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

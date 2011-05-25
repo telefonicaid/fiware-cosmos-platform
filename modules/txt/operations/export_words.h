@@ -7,20 +7,20 @@
 #define _H_SAMSON_txt_export_words
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "samson/modules/system/SimpleParserOut.h"
 
-namespace ss{
+namespace samson{
 namespace txt{
 
 
-	class export_words : public ss::system::SimpleParserOut<ss::system::String,ss::system::UInt>
+	class export_words : public samson::system::SimpleParserOut<samson::system::String,samson::system::UInt>
 	{
 
 	};
 
 
 } // end of namespace system
-} // end of namespace ss
+} // end of namespace samson
 
 #endif

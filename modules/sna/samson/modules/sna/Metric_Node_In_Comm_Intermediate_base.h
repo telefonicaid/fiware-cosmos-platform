@@ -11,19 +11,19 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class Metric_Node_In_Comm_Intermediate_base : public ss::DataInstance{
+	class Metric_Node_In_Comm_Intermediate_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt node_id;
-	::ss::sna::Clique comm_id;
-	::ss::system::UInt sum_weights_node;
-	::ss::system::UInt count_links_node;
+	::samson::system::UInt node_id;
+	::samson::sna::Clique comm_id;
+	::samson::system::UInt sum_weights_node;
+	::samson::system::UInt count_links_node;
 
-	Metric_Node_In_Comm_Intermediate_base() : ss::DataInstance(){
+	Metric_Node_In_Comm_Intermediate_base() : samson::DataInstance(){
 	}
 
 	~Metric_Node_In_Comm_Intermediate_base() {
@@ -49,10 +49,10 @@ namespace sna{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::sna::Clique::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::sna::Clique::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -62,19 +62,19 @@ namespace sna{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node_id
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing comm_id
-			int tmp = ::ss::sna::Clique::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::sna::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing sum_weights_node
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing count_links_node
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -113,7 +113,7 @@ namespace sna{
 
 	}; //class Metric_Node_In_Comm_Intermediate_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

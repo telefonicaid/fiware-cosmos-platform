@@ -6,28 +6,28 @@
 #ifndef _H_SAMSON_graph_filter_graph_map
 #define _H_SAMSON_graph_filter_graph_map
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h>
 #include "samson/modules/graph/Node.h"
 #include <assert.h>
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
-	class filter_graph_map : public ss::Map
+	class filter_graph_map : public samson::Map
 	{
 
-		ss::system::UInt killNode_id;
-		ss::graph::Node killNode;
+		samson::system::UInt killNode_id;
+		samson::graph::Node killNode;
 		
 		//Inputs
-		ss::system::UInt  node_id;
-		ss::graph::Node node;
+		samson::system::UInt  node_id;
+		samson::graph::Node node;
 		
 	public:
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			int max_strong_connections	= environment->getInt( "graph.max_strong_connections" ,  50 );
 			int max_connections			= environment->getInt( "graph.max_connections" ,  400 );
@@ -70,7 +70,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

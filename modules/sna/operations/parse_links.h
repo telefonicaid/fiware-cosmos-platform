@@ -7,16 +7,16 @@
 #define _H_SAMSON_sna_parse_links
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
 #include "sna_parsing_macros.h"
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class parse_links : public ss::Parser
+	class parse_links : public samson::Parser
 	{
 		bool no_duplicate ;
 		bool parse_dir ;
@@ -31,16 +31,16 @@ namespace sna{
 			parse_dir = environment->getInt(SNA_FLAG_PARSE_DIR, SNA_FLAG_PARSE_DIR_DEFAULT);
 		}
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 			//Key Value to emit at the output
 
 			//MRData_Link_Edges key_link ;
-			ss::system::UInt       number ;
+			samson::system::UInt       number ;
 			Link       link ;
 
-			ss::system::UInt node_a;
-			ss::system::UInt node_b;
+			samson::system::UInt node_a;
+			samson::system::UInt node_b;
 			double link_strength;
 			double dir;
 
@@ -171,7 +171,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

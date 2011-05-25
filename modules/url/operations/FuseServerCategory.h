@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_FuseServerCategory
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /*****************************************************************
 reduce FuseServerCategory
@@ -21,22 +21,22 @@ reduce FuseServerCategory
 }
 *******************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class FuseServerCategory : public ss::Reduce
+	class FuseServerCategory : public samson::Reduce
 	{
-		ss::system::UInt serverIdRef;
+		samson::system::UInt serverIdRef;
 		CategoryVector categoriesRef;
-		ss::system::UInt serverId;
+		samson::system::UInt serverId;
 		CategoryVector categories;
 		CategoryVector categories_out;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			bool ref_emitted = false;
 
@@ -130,7 +130,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

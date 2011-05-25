@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_getUsersFromServer
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /************************************************************
 reduce getUsersFromServer
@@ -20,21 +20,21 @@ reduce getUsersFromServer
 }
 **************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class getUsersFromServer : public ss::Reduce
+	class getUsersFromServer : public samson::Reduce
 	{
 
 	public:
-		ss::system::UInt userId;
-		ss::system::UInt serverId;
+		samson::system::UInt userId;
+		samson::system::UInt serverId;
 
 		UserCount userCount;
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			bool first = true;
 			size_t userIdPrev = 0;
@@ -76,7 +76,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

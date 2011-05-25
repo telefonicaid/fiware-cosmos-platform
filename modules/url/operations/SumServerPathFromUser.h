@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_SumServerPathFromUser
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /***********************************************************
 reduce SumServerPathFromUser
@@ -20,20 +20,20 @@ reduce SumServerPathFromUser
 }
 ***********************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class SumServerPathFromUser : public ss::Reduce
+	class SumServerPathFromUser : public samson::Reduce
 	{
-		ss::system::UInt userId;
+		samson::system::UInt userId;
 		ServerPathCount serverPath;
 		ServerPathCount serverPathPrev;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			bool first = true;
 			size_t n_items = 0;
@@ -93,7 +93,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

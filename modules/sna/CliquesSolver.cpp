@@ -8,7 +8,7 @@
  */
 
 
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 #include "CliquesSolver.h"
 
 #define DEBUG_FILES

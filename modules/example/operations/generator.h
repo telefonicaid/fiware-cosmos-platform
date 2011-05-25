@@ -7,8 +7,8 @@
 #define _H_SAMSON_example_generator
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 #include <samson/modules/system/UInt.h>
 #include <iostream>
 #include <sstream>
@@ -20,15 +20,15 @@
  */
 
 
-namespace ss{
+namespace samson{
 namespace example{
 
-	class generator : public ss::Generator
+	class generator : public samson::Generator
 	{
 
 	public:
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 
 		  // Recover the number of samples from the environment variables
@@ -46,8 +46,8 @@ namespace example{
 		  OLM_W(("Example of a Warning message..."));
 
 
-		  ss::system::UInt a;
-		  ss::system::UInt b;
+		  samson::system::UInt a;
+		  samson::system::UInt b;
 				
 
 			for (size_t i = 0 ; i < num_samples ; i++)
@@ -71,7 +71,7 @@ namespace example{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace example
 
 #endif

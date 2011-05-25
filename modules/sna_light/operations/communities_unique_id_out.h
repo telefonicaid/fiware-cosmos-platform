@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_light_communities_unique_id_out
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class communities_unique_id_out : public ss::ParserOut
+	class communities_unique_id_out : public samson::ParserOut
 	{
 
 	public:
@@ -28,7 +28,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

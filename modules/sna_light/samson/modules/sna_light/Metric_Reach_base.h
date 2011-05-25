@@ -10,18 +10,18 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class Metric_Reach_base : public ss::DataInstance{
+	class Metric_Reach_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt reach_two_step;
-	::ss::system::UInt reach_two_step_competitors;
-	::ss::system::UInt reach_two_step_tef;
+	::samson::system::UInt reach_two_step;
+	::samson::system::UInt reach_two_step_competitors;
+	::samson::system::UInt reach_two_step_tef;
 
-	Metric_Reach_base() : ss::DataInstance(){
+	Metric_Reach_base() : samson::DataInstance(){
 	}
 
 	~Metric_Reach_base() {
@@ -45,9 +45,9 @@ namespace sna_light{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -57,15 +57,15 @@ namespace sna_light{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing reach_two_step
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing reach_two_step_competitors
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing reach_two_step_tef
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -100,7 +100,7 @@ namespace sna_light{
 
 	}; //class Metric_Reach_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

@@ -7,22 +7,22 @@
 #define _H_SAMSON_sna_fake_users
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class fake_users : public ss::Generator
+	class fake_users : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
-			ss::system::UInt id;
+			samson::system::UInt id;
 			User user;
 			int num_nodes = 1000;
 
@@ -42,7 +42,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

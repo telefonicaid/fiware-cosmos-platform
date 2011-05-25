@@ -12,7 +12,7 @@
 
 #define GRAPH_FLAG_EXTERN	1
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 	class Node : public Node_base
@@ -63,7 +63,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

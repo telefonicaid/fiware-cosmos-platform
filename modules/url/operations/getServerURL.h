@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_getServerURL
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /*
 
@@ -22,17 +22,17 @@ map getServerURL
 
 */
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class getServerURL : public ss::Map
+	class getServerURL : public samson::Map
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			  URL url;
 			  UserPath userPath;
@@ -57,7 +57,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

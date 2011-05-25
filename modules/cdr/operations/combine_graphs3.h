@@ -7,20 +7,20 @@
 #define _H_SAMSON_cdr_combine_graphs3
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace cdr{
 
 
-	class combine_graphs3 : public ss::Reduce
+	class combine_graphs3 : public samson::Reduce
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 		}
 
@@ -28,7 +28,7 @@ namespace cdr{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace cdr
 
 #endif

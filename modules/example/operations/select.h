@@ -7,19 +7,20 @@
 #define _H_SAMSON_example_select
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
+
 #include <samson/modules/system/UInt.h> 
 
-namespace ss{
+namespace samson{
 namespace example{
 
 
-	class select : public ss::ParserOut
+	class select : public samson::ParserOut
 	{
 
 		std::ostringstream output;
-		ss::system::UInt key;
-		ss::system::UInt value;
+		samson::system::UInt key;
+		samson::system::UInt value;
 
 		std::string separator;
 		
@@ -51,7 +52,7 @@ namespace example{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace example
 
 #endif

@@ -7,19 +7,19 @@
 #define _H_SAMSON_sna_search_node_in_graph
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 #include "sna_environment_parameters.h"
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class search_node_in_graph : public ss::Map
+	class search_node_in_graph : public samson::Map
 	{
 		Node node ;
-		ss::system::UInt nodeId, searchId ;
+		samson::system::UInt nodeId, searchId ;
 
 	public:
 
@@ -39,7 +39,7 @@ namespace sna{
 			}
 		}
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
 			for (int i = 0; i < inputs[0].num_kvs; i++)
@@ -57,7 +57,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

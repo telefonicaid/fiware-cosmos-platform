@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_compute_new_cliques
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class compute_new_cliques : public ss::Reduce
+	class compute_new_cliques : public samson::Reduce
 	{
 		CliquesSolver cliquesSolver ;
 
@@ -26,7 +26,7 @@ namespace sna{
 			cliquesSolver.min_nodes_in_solution = 1;	//All solution as individual cliques
 		}
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			Clique reduce_input_clique ;
 			Vector_Clique_Node reduce_input_nodes_clique ;
@@ -153,7 +153,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

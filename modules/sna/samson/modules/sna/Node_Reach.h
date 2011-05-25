@@ -10,7 +10,7 @@
 #include <samson/modules/sna/Node_Reach_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
@@ -18,13 +18,13 @@ namespace sna{
 	{
 	public:
 		bool isExtern(){
-		  return (flags.value & ss::sna::Node::NODE_FLAG_EXTERN);
+		  return (flags.value & samson::sna::Node::NODE_FLAG_EXTERN);
 		}
 
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

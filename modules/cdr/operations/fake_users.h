@@ -7,25 +7,25 @@
 #define _H_SAMSON_cdr_fake_users
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 #include <samson/modules/system/UInt.h>
 #include "samson/modules/cdr/User.h"
 
-namespace ss{
+namespace samson{
 namespace cdr{
 
 
-	class fake_users : public ss::Generator
+	class fake_users : public samson::Generator
 	{
 
-		ss::system::UInt id;
-		ss::cdr::User user;
+		samson::system::UInt id;
+		samson::cdr::User user;
 		
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 			// We can set the number of users to generate with environment variable cdr.fake.users
 			int num_nodes = environment->getInt( "cdr.fake.users" ,  1000 );
@@ -45,7 +45,7 @@ namespace cdr{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace cdr
 
 #endif

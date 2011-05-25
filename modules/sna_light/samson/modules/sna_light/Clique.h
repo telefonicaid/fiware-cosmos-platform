@@ -10,7 +10,7 @@
 #include <samson/modules/sna_light/Clique_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
@@ -194,7 +194,7 @@ namespace sna_light{
 		}
 
 #ifdef nodesAdd
-		void nodesAdd(ss::system::UInt _value){
+		void nodesAdd(samson::system::UInt _value){
 			nodesSetLength( nodes_length + 1 );
 			nodes[nodes_length-1] = _value;
 		}
@@ -203,7 +203,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

@@ -10,17 +10,17 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class Metric_Cluster_base : public ss::DataInstance{
+	class Metric_Cluster_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt node_id;
-	::ss::system::UInt cluster_coef;
+	::samson::system::UInt node_id;
+	::samson::system::UInt cluster_coef;
 
-	Metric_Cluster_base() : ss::DataInstance(){
+	Metric_Cluster_base() : samson::DataInstance(){
 	}
 
 	~Metric_Cluster_base() {
@@ -42,8 +42,8 @@ namespace sna{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -53,11 +53,11 @@ namespace sna{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node_id
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing cluster_coef
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -88,7 +88,7 @@ namespace sna{
 
 	}; //class Metric_Cluster_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

@@ -5,28 +5,28 @@
 #ifndef _H_SAMSON_cdr_parse_users_O2UK
 #define _H_SAMSON_cdr_parse_users_O2UK
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
-namespace ss
+namespace samson
 {
 namespace cdr
 {
 
-class parse_users_O2UK: public ss::Parser
+class parse_users_O2UK: public samson::Parser
 {
-	bool getUserFromLine_O2UK(char *line, ss::system::UInt* node,
-			ss::cdr::User *user)
+	bool getUserFromLine_O2UK(char *line, samson::system::UInt* node,
+			samson::cdr::User *user)
 	{
 		*node = (size_t) atoll(line);
 		user->id = (size_t) atoll(line);
 	}
 
 public:
-	ss::system::UInt node; // Main telephone number
-	ss::cdr::User user; // All information related with this
+	samson::system::UInt node; // Main telephone number
+	samson::cdr::User user; // All information related with this
 
 
-	void run(char *data, size_t length, ss::KVWriter *writer)
+	void run(char *data, size_t length, samson::KVWriter *writer)
 	{
 		size_t line_begin = 0;
 		size_t offset = 0;
@@ -86,7 +86,7 @@ public:
 
 };
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace cdr
 
 #endif

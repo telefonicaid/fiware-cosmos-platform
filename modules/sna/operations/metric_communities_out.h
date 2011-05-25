@@ -7,16 +7,16 @@
 #define _H_SAMSON_sna_metric_communities_out
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <iostream>
 #include "sna_environment_parameters.h"
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class metric_communities_out : public ss::ParserOut
+	class metric_communities_out : public samson::ParserOut
 	{
 		std::string sep;
 		std::ostringstream output;
@@ -114,7 +114,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

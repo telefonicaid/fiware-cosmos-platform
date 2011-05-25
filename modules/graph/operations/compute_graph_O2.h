@@ -7,14 +7,14 @@
 #define _H_SAMSON_graph_compute_graph_O2
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
-	class compute_graph_O2 : public ss::Script
+	class compute_graph_O2 : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

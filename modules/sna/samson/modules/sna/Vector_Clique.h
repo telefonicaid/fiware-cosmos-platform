@@ -10,7 +10,7 @@
 #include <samson/modules/sna/Vector_Clique_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
@@ -30,7 +30,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

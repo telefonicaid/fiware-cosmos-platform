@@ -12,19 +12,19 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace cdr{
 
 
-	class CDR_base : public ss::DataInstance{
+	class CDR_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt node;
-	::ss::cdr::Date date;
-	::ss::cdr::Time time;
-	::ss::system::UInt duration;
+	::samson::system::UInt node;
+	::samson::cdr::Date date;
+	::samson::cdr::Time time;
+	::samson::system::UInt duration;
 
-	CDR_base() : ss::DataInstance(){
+	CDR_base() : samson::DataInstance(){
 	}
 
 	~CDR_base() {
@@ -50,10 +50,10 @@ namespace cdr{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::cdr::Date::size(data+offset);
-		offset += ::ss::cdr::Time::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::cdr::Date::size(data+offset);
+		offset += ::samson::cdr::Time::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -63,19 +63,19 @@ namespace cdr{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing date
-			int tmp = ::ss::cdr::Date::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::cdr::Date::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing time
-			int tmp = ::ss::cdr::Time::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::cdr::Time::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing duration
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -114,7 +114,7 @@ namespace cdr{
 
 	}; //class CDR_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace cdr
 
 #endif

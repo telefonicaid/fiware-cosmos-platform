@@ -7,16 +7,16 @@
 #define _H_SAMSON_sna_nodes_info
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "AUIntStatistics.h"
 
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class nodes_info : public ss::ParserOut
+	class nodes_info : public samson::ParserOut
 	{
 
 		Node node ;
@@ -96,7 +96,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

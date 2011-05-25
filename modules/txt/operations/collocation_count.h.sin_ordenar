@@ -7,7 +7,7 @@
 #define _H_SAMSON_txt_collocation_count
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "logMsg.h"             // LM_*
 #include <iostream>
 #include <fstream>
@@ -15,21 +15,21 @@
 
 
 
-namespace ss{
+namespace samson{
 namespace txt{
 
 
-	class collocation_count : public ss::Reduce
+	class collocation_count : public samson::Reduce
 	{
 
 	public:
 
-		ss::txt::Collocation key;
-		ss::txt::Collocation keyPrev;
-		ss::system::UInt count;
-		ss::system::UInt total;
+		samson::txt::Collocation key;
+		samson::txt::Collocation keyPrev;
+		samson::system::UInt count;
+		samson::system::UInt total;
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
 
@@ -90,7 +90,7 @@ namespace txt{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace txt
 
 #endif

@@ -7,20 +7,20 @@
 #define _H_SAMSON_example_generator_error
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace example{
 
 
-	class generator_error : public ss::Generator
+	class generator_error : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 
 		  int a = 0 ;
@@ -32,7 +32,7 @@ namespace example{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace example
 
 #endif

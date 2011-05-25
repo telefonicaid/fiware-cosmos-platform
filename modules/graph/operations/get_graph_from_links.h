@@ -7,26 +7,26 @@
 #define _H_SAMSON_sna_get_graph_from_links
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h>
 #include "samson/modules/graph/Node.h"
 #include "samson/modules/graph/Link.h"
 #include <iostream>
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
-	class get_graph_from_links : public ss::Reduce
+	class get_graph_from_links : public samson::Reduce
 	{
 
 				
 	public:
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-		   ss::system::UInt node_id;			// Id of the node ( emitted as key at the output )
-		   ss::graph::Node node;				// Node we are emiting at the output
+		   samson::system::UInt node_id;			// Id of the node ( emitted as key at the output )
+		   samson::graph::Node node;				// Node we are emiting at the output
 
 			if (inputs[0].num_kvs == 0)
 				return;
@@ -38,7 +38,7 @@ namespace graph{
 			node.linksSetLength( inputs[0].num_kvs );
 			for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 			{
-			   ss::graph::Link l;
+			   samson::graph::Link l;
 			   l.parse( inputs[0].kvs[i]->value );
 			   node.links[i].copyFrom( &l );
 			}
@@ -63,7 +63,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

@@ -12,21 +12,21 @@
 #include <samson/modules/system/UInt8.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class CDR_base : public ss::DataInstance{
+	class CDR_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt node;
-	::ss::system::Time time;
-	::ss::system::UInt duration;
-	::ss::system::UInt8 type;
-	::ss::system::UInt8 week_day;
-	::ss::system::UInt8 dir;
+	::samson::system::UInt node;
+	::samson::system::Time time;
+	::samson::system::UInt duration;
+	::samson::system::UInt8 type;
+	::samson::system::UInt8 week_day;
+	::samson::system::UInt8 dir;
 
-	CDR_base() : ss::DataInstance(){
+	CDR_base() : samson::DataInstance(){
 	}
 
 	~CDR_base() {
@@ -56,12 +56,12 @@ namespace sna{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::Time::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
-		offset += ::ss::system::UInt8::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::Time::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
+		offset += ::samson::system::UInt8::size(data+offset);
 		return offset;
 	}
 
@@ -71,27 +71,27 @@ namespace sna{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing time
-			int tmp = ::ss::system::Time::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::Time::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing duration
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing type
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing week_day
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing dir
-			int tmp = ::ss::system::UInt8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -138,7 +138,7 @@ namespace sna{
 
 	}; //class CDR_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

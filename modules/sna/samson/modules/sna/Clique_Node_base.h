@@ -11,19 +11,19 @@
 #include <samson/modules/sna/Clique_Link.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class Clique_Node_base : public ss::DataInstance{
+	class Clique_Node_base : public samson::DataInstance{
 
 	public:
-	::ss::sna::Clique clique;
-	::ss::sna::Clique_Link *links;
+	::samson::sna::Clique clique;
+	::samson::sna::Clique_Link *links;
 	int links_length;
 	int links_max_length;
 
-	Clique_Node_base() : ss::DataInstance(){
+	Clique_Node_base() : samson::DataInstance(){
 		links_length=0;
 		links_max_length=0;
 		links = NULL;
@@ -39,7 +39,7 @@ namespace sna{
 		offset += clique.parse(data+offset);
 		{ //Parsing vector links
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	linksSetLength( _length );
 			for (int i = 0 ; i < (int)links_length ; i++){
 				offset += links[i].parse(data+offset);
@@ -52,7 +52,7 @@ namespace sna{
 		int offset=0;
 		offset += clique.serialize(data+offset);
 		{ //Serialization vector links
-			offset += ss::staticVarIntSerialize( data+offset , links_length );
+			offset += samson::staticVarIntSerialize( data+offset , links_length );
 			for (int i = 0 ; i < (int)links_length ; i++){
 				offset += links[i].serialize(data+offset);
 			}
@@ -62,13 +62,13 @@ namespace sna{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::sna::Clique::size(data+offset);
+		offset += ::samson::sna::Clique::size(data+offset);
 		{ //Getting size of vector links
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::sna::Clique_Link _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::sna::Clique_Link _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::sna::Clique_Link::size(data+offset);
+				offset += ::samson::sna::Clique_Link::size(data+offset);
 			}
 		}
 		return offset;
@@ -80,18 +80,18 @@ namespace sna{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing clique
-			int tmp = ::ss::sna::Clique::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::sna::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // Comparing vector links
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing links[i]
-					int tmp = ::ss::sna::Clique_Link::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::sna::Clique_Link::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
@@ -108,11 +108,11 @@ namespace sna{
 
 	void linksSetLength(int _length){
 		if( _length > links_max_length){ 
-			::ss::sna::Clique_Link *_previous = links;
+			::samson::sna::Clique_Link *_previous = links;
 			int previous_length = links_length;
 			if(links_max_length == 0) links_max_length = _length;
 			while(links_max_length < _length) links_max_length *= 2;
-			links = new ::ss::sna::Clique_Link[links_max_length ];
+			links = new ::samson::sna::Clique_Link[links_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					links[i].copyFrom( &_previous[i] );
@@ -122,7 +122,7 @@ namespace sna{
 		links_length=_length;
 	}
 
-	::ss::sna::Clique_Link* linksAdd(){
+	::samson::sna::Clique_Link* linksAdd(){
 		linksSetLength( links_length + 1 );
 		return &links[links_length-1];
 	}
@@ -154,7 +154,7 @@ namespace sna{
 
 	}; //class Clique_Node_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

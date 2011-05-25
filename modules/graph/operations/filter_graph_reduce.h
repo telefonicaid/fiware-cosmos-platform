@@ -7,24 +7,24 @@
 #define _H_SAMSON_graph_filter_graph_reduce
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h>
 #include <vector>
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
-	class filter_graph_reduce : public ss::Reduce
+	class filter_graph_reduce : public samson::Reduce
 	{
 
-		ss::system::UInt node_id;
-		ss::graph::Node node;
+		samson::system::UInt node_id;
+		samson::graph::Node node;
 		std::vector<size_t>removedElement;
 		
 	public:
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			assert( inputs[0].num_kvs > 0 );
 			
@@ -37,7 +37,7 @@ namespace graph{
 			//Vector to hold all ids to be removed
 			removedElement.clear();
 			
-			ss::graph::Node tmp_node;
+			samson::graph::Node tmp_node;
 			for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 			{
 				tmp_node.parse(inputs[0].kvs[i]->value);
@@ -97,7 +97,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

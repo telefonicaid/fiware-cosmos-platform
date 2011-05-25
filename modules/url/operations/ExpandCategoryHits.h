@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_ExpandCategoryHits
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /*********************************************************************
 map ExpandCategoryHits
@@ -19,21 +19,21 @@ map ExpandCategoryHits
 }
 **********************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class ExpandCategoryHits : public ss::Map
+	class ExpandCategoryHits : public samson::Map
 	{
 
 	public:
 
-		ss::system::UInt catId;
-		ss::system::UInt serverId;
+		samson::system::UInt catId;
+		samson::system::UInt serverId;
 		CategoryPath catPath;
 		ServerPathVector paths;
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
 
@@ -53,7 +53,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

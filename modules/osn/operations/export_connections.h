@@ -7,17 +7,17 @@
 #define _H_SAMSON_osn_export_connections
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
-	class export_connections : public ss::ParserOut
+	class export_connections : public samson::ParserOut
 	{
-		ss::system::String key;
-		ss::osn::URLConnection connect;
+		samson::system::String key;
+		samson::osn::URLConnection connect;
 #define MAX_STR_LEN 1024
 			char output[MAX_STR_LEN];
 
@@ -39,7 +39,7 @@ namespace osn{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

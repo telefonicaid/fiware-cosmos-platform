@@ -10,17 +10,17 @@
 #include <samson/modules/sna_light/Clique.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class Clique2_base : public ss::DataInstance{
+	class Clique2_base : public samson::DataInstance{
 
 	public:
-	::ss::sna_light::Clique clique_1;
-	::ss::sna_light::Clique clique_2;
+	::samson::sna_light::Clique clique_1;
+	::samson::sna_light::Clique clique_2;
 
-	Clique2_base() : ss::DataInstance(){
+	Clique2_base() : samson::DataInstance(){
 	}
 
 	~Clique2_base() {
@@ -42,8 +42,8 @@ namespace sna_light{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::sna_light::Clique::size(data+offset);
-		offset += ::ss::sna_light::Clique::size(data+offset);
+		offset += ::samson::sna_light::Clique::size(data+offset);
+		offset += ::samson::sna_light::Clique::size(data+offset);
 		return offset;
 	}
 
@@ -53,11 +53,11 @@ namespace sna_light{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing clique_1
-			int tmp = ::ss::sna_light::Clique::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::sna_light::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing clique_2
-			int tmp = ::ss::sna_light::Clique::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::sna_light::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -88,7 +88,7 @@ namespace sna_light{
 
 	}; //class Clique2_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

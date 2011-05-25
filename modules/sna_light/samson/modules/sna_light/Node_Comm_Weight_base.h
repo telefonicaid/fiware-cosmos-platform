@@ -10,22 +10,22 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class Node_Comm_Weight_base : public ss::DataInstance{
+	class Node_Comm_Weight_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt node_id;
-	::ss::system::UInt count_links;
-	::ss::system::UInt count_extern_links;
-	::ss::system::UInt weight_all_members;
-	::ss::system::UInt weight_extern_members;
-	::ss::system::UInt count_comm_extern_nodes;
-	::ss::system::UInt count_competitor_nodes;
+	::samson::system::UInt node_id;
+	::samson::system::UInt count_links;
+	::samson::system::UInt count_extern_links;
+	::samson::system::UInt weight_all_members;
+	::samson::system::UInt weight_extern_members;
+	::samson::system::UInt count_comm_extern_nodes;
+	::samson::system::UInt count_competitor_nodes;
 
-	Node_Comm_Weight_base() : ss::DataInstance(){
+	Node_Comm_Weight_base() : samson::DataInstance(){
 	}
 
 	~Node_Comm_Weight_base() {
@@ -57,13 +57,13 @@ namespace sna_light{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -73,31 +73,31 @@ namespace sna_light{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node_id
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing count_links
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing count_extern_links
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing weight_all_members
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing weight_extern_members
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing count_comm_extern_nodes
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing count_competitor_nodes
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -148,7 +148,7 @@ namespace sna_light{
 
 	}; //class Node_Comm_Weight_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

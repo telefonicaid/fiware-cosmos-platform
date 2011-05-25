@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_light_parse_cliques
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class parse_cliques : public ss::Script
+	class parse_cliques : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

@@ -7,15 +7,15 @@
 #define _H_SAMSON_sna_get_possible_cliques_links
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class get_possible_cliques_links : public ss::Reduce
+	class get_possible_cliques_links : public samson::Reduce
 	{
 
 	public:
@@ -28,10 +28,10 @@ namespace sna{
 		}
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			Clique cliques[1000] ;
-			ss::system::UInt nodeId ;
+			samson::system::UInt nodeId ;
 
 			if ( inputs[0].num_kvs < 2)	//If there is no cross between two cliques with this node... nothing to do
 				return;
@@ -81,7 +81,7 @@ namespace sna{
 							// Emit for all the nodes in the combination
 							for (uint n = 0 ;  n < nodes_to_send.size() ; n++)
 							{
-								ss::system::UInt nodeId;
+								samson::system::UInt nodeId;
 								nodeId.value = nodes_to_send[n];
 
 								writer->emit(0, &nodeId, &clique_link );
@@ -96,7 +96,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

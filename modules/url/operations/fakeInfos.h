@@ -7,23 +7,23 @@
 #define _H_SAMSON_url_fakeInfos
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+
+namespace samson{
 namespace url{
 
 
-	class fakeInfos : public ss::Generator
+	class fakeInfos : public samson::Generator
 	{
 
 	public:
-		ss::system::UInt id;
+		samson::system::UInt id;
 
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 			OLM_M(("Starts run for Generator fakeInfos"));
 
@@ -77,7 +77,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

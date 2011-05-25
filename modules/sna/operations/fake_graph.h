@@ -7,15 +7,15 @@
 #define _H_SAMSON_sna_fake_graph
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class fake_graph : public ss::Generator
+	class fake_graph : public samson::Generator
 	{
 		int num_example;
 
@@ -26,7 +26,7 @@ namespace sna{
 		  num_example = environment->getInt(SNA_PARAMETER_NUM_EXAMPLE_FAKE_GENERATOR, SNA_PARAMETER_NUM_EXAMPLE_FAKE_GENERATOR_DEFAULT);
 		}
 
-		void generateNodes(int *nodes_s , int length, ss::KVWriter *writer )
+		void generateNodes(int *nodes_s , int length, samson::KVWriter *writer )
 		{
 		  int node;
 		  bool extern_node;
@@ -74,16 +74,16 @@ namespace sna{
 		      {
 		        //Soft link
 		        links[pos] = -nodes_s[i];
-		        weights[pos] = ss::sna::Link::double_2_intScaled(0.5);
-		        dirs[pos] = ss::sna::Link::double_2_intScaled(0.5);
+		        weights[pos] = samson::sna::Link::double_2_intScaled(0.5);
+		        dirs[pos] = samson::sna::Link::double_2_intScaled(0.5);
 		        pos++;
 		      }
 		      else
 		      {
 		        //Strong link
 		        links[pos] = nodes_s[i];
-		        weights[pos] = ss::sna::Link::double_2_intScaled(1.0);
-		        dirs[pos] = ss::sna::Link::double_2_intScaled(0.5);
+		        weights[pos] = samson::sna::Link::double_2_intScaled(1.0);
+		        dirs[pos] = samson::sna::Link::double_2_intScaled(0.5);
 		        pos++;
 		      }
 		    }
@@ -91,7 +91,7 @@ namespace sna{
 		  }
 		}
 
-		void generateNode( int id , bool extern_node,  int* links, int* weight, int* dir, int num, ss::KVWriter *writer)
+		void generateNode( int id , bool extern_node,  int* links, int* weight, int* dir, int num, samson::KVWriter *writer)
 		{
 		  ss:system::UInt node_id;
 		  Node node;
@@ -116,7 +116,7 @@ namespace sna{
 
 		}
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 			  switch (num_example) {
 			    case 1:
@@ -268,7 +268,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

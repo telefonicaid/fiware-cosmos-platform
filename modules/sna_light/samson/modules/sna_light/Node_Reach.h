@@ -10,7 +10,7 @@
 #include <samson/modules/sna_light/Node_Reach_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
@@ -18,13 +18,13 @@ namespace sna_light{
 	{
 	public:
 		bool isExtern(){
-		  return (flags.value & ss::sna_light::Node::NODE_FLAG_EXTERN);
+		  return (flags.value & samson::sna_light::Node::NODE_FLAG_EXTERN);
 		}
 
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

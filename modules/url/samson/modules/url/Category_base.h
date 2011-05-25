@@ -10,19 +10,19 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class Category_base : public ss::DataInstance{
+	class Category_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt weight;
-	::ss::system::UInt confidence;
-	::ss::system::UInt countServer;
-	::ss::system::UInt countUser;
+	::samson::system::UInt weight;
+	::samson::system::UInt confidence;
+	::samson::system::UInt countServer;
+	::samson::system::UInt countUser;
 
-	Category_base() : ss::DataInstance(){
+	Category_base() : samson::DataInstance(){
 	}
 
 	~Category_base() {
@@ -48,10 +48,10 @@ namespace url{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -61,19 +61,19 @@ namespace url{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing weight
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing confidence
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing countServer
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing countUser
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -112,7 +112,7 @@ namespace url{
 
 	}; //class Category_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

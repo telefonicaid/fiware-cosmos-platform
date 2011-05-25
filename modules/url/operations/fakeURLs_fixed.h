@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_fakeURLs_fixed
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include "samson/modules/url/URL.h"
 #include <samson/modules/system/Void.h>
 
@@ -16,20 +16,20 @@
         helpLine "Generate url.num_users_per_user URLs for url.num_users fixed, for testing"
 */
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class fakeURLs_fixed : public ss::Generator
+	class fakeURLs_fixed : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 			URL url;
-			ss::system::Void v;
+			samson::system::Void v;
 
 			// Recover the number of users in this demo
 			size_t num_users  = environment->getSizeT( "url.num_users" ,  1000000 );
@@ -73,7 +73,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

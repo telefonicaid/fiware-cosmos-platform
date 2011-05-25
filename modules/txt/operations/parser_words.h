@@ -7,21 +7,21 @@
 #define _H_SAMSON_txt_parser_words
 
 
-#include <samson/Operation.h>
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/SimpleParser.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/UInt.h>
 #include <iostream>
 
-namespace ss{
+namespace samson{
 namespace txt{
 
 
-	class parser_words : public ss::system::SimpleParser
+	class parser_words : public samson::system::SimpleParser
 	{
-		ss::system::String key;
-		ss::system::UInt value;
+		samson::system::String key;
+		samson::system::UInt value;
 
 	public:
 
@@ -31,7 +31,7 @@ namespace txt{
 			
 		}
 		
-		void parseLine( char *data , ss::KVWriter *writer )
+		void parseLine( char *data , samson::KVWriter *writer )
 		{
 			
 
@@ -74,7 +74,7 @@ namespace txt{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace system
 
 #endif

@@ -7,7 +7,7 @@
 #define _H_SAMSON_txt_collocation_count_stripes
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/UInt.h>
 #include "samson/modules/txt/CountData.h"
@@ -15,22 +15,22 @@
 #include <string>
 #include <vector>
 
-namespace ss{
+namespace samson{
 namespace txt{
 
-class collocation_count_stripes : public ss::Reduce
+class collocation_count_stripes : public samson::Reduce
 {
-	ss::system::String key;
-	ss::system::String keyPrev;
-	ss::txt::Stripe valueIn;
+	samson::system::String key;
+	samson::system::String keyPrev;
+	samson::txt::Stripe valueIn;
 
 public:
 
 
-	void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		std::vector<ss::txt::CountData>valueOutTmp;
-		ss::txt::Stripe valueOut;
+		std::vector<samson::txt::CountData>valueOutTmp;
+		samson::txt::Stripe valueOut;
 
 		if( inputs[0].num_kvs == 0 )
 		{
@@ -96,7 +96,7 @@ public:
 };
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace txt
 
 #endif

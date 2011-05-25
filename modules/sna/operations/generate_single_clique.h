@@ -7,15 +7,15 @@
 #define _H_SAMSON_sna_generate_single_clique
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class generate_single_clique : public ss::Generator
+	class generate_single_clique : public samson::Generator
 	{
 
 	public:
@@ -44,13 +44,13 @@ namespace sna{
 		}
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 			Clique clique;
 			for (int i = 0 ; i < (int) nodes.size() ; i++)
 				clique.nodesAdd()->value = nodes[i];
 
-			ss::system::Void void_data;
+			samson::system::Void void_data;
 
 			writer->emit(0, &clique , &void_data );
 		}
@@ -59,7 +59,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

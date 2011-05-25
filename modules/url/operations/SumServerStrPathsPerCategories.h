@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_SumServerStrPathsPerCategories
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /*************************************************************************************
 reduce SumServerStrPathsPerCategories
@@ -19,15 +19,15 @@ reduce SumServerStrPathsPerCategories
 }
 **************************************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class SumServerStrPathsPerCategories : public ss::Reduce
+	class SumServerStrPathsPerCategories : public samson::Reduce
 	{
 
-		ss::system::String serverStr;
-		ss::system::UInt catId;
+		samson::system::String serverStr;
+		samson::system::UInt catId;
 		ServerStrPath serverStrPath;
 		ServerStrPath serverStrPathPrev;
 
@@ -35,7 +35,7 @@ namespace url{
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			catId.parse(inputs[0].kvs[0]->key);
 
@@ -68,7 +68,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

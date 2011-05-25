@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_light_mx_mms_cdrs_to_graph
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class mx_mms_cdrs_to_graph : public ss::Script
+	class mx_mms_cdrs_to_graph : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

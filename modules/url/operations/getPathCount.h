@@ -7,35 +7,35 @@
 #define _H_SAMSON_url_getPathCount
 
 #include <algorithm>
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 
 
 
 
-namespace ss{
+
+namespace samson{
 namespace url{
 
 
-	class getPathCount : public ss::Reduce
+	class getPathCount : public samson::Reduce
 	{
 
 	public:
 
-		ss::system::UInt serverId;
-		ss::system::String pathStr;
+		samson::system::UInt serverId;
+		samson::system::String pathStr;
 
 		PathCount pathCount;
 		std::vector <PathCount> pathStdVector;
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
 
 
 			bool first = true;
-			ss::system::String pathStrPrev;
+			samson::system::String pathStrPrev;
 			int count = 0;
 
 			size_t num_hits = environment->getSizeT("url.num_hits", 3);
@@ -92,7 +92,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

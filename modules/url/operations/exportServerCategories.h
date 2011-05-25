@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_exportServerCategories
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /***********************************************************************
 parserOut exportServerCategories
@@ -20,16 +20,16 @@ parserOut exportServerCategories
 }
 ***********************************************************************/
 
-namespace ss
+namespace samson
 {
 namespace url
 {
 
-class exportServerCategories: public ss::ParserOut
+class exportServerCategories: public samson::ParserOut
 {
 
 	public:
-		ss::system::String serverStr;
+		samson::system::String serverStr;
 		CategoryVector categories;
 
 
@@ -77,7 +77,7 @@ class exportServerCategories: public ss::ParserOut
 
 	};
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

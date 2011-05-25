@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_select_top_map
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/Vector_UInt.h>
@@ -15,25 +15,25 @@
 
 #include "ServerHitsAccumulator.h"
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class select_top_map : public ss::Map
+	class select_top_map : public samson::Map
 	{
 
-	  ss::system::String key_server;
-	  ss::system::Vector_UInt value_times;
+	  samson::system::String key_server;
+	  samson::system::Vector_UInt value_times;
 
-	  ss::system::UInt key_output;
-	  ss::url::ServerHits value_serverHits;
+	  samson::system::UInt key_output;
+	  samson::url::ServerHits value_serverHits;
 
 	  ServerHitsAccumulator serverHitsAccumulator;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 		  size_t num_top_urls = environment->getSizeT( "url.num_top_urls" ,  10 );
 
@@ -73,7 +73,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

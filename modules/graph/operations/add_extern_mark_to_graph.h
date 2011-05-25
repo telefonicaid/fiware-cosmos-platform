@@ -7,23 +7,23 @@
 #define _H_SAMSON_graph_add_extern_mark_to_graph
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 #include <samson/modules/system/UInt.h>
 #include "samson/modules/graph/Node.h"
 
-namespace ss{
+namespace samson{
 namespace graph{
 
-	class add_extern_mark_to_graph : public ss::Reduce
+	class add_extern_mark_to_graph : public samson::Reduce
 	{
 
-		ss::system::UInt id;
-		ss::graph::Node node;
+		samson::system::UInt id;
+		samson::graph::Node node;
 		
 	public:
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			
 			if( inputs[0].num_kvs == 1 )
@@ -44,7 +44,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

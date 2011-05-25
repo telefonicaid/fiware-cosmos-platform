@@ -14,18 +14,18 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace txt{
 
 
-	class parser_collocations_pairs : public ss::Parser
+	class parser_collocations_pairs : public samson::Parser
 	{
-		ss::txt::Collocation key;
-		ss::txt::Collocation key2;
-		ss::system::UInt value;
+		samson::txt::Collocation key;
+		samson::txt::Collocation key2;
+		samson::system::UInt value;
 		int tam_ventana;
 
 	public:
@@ -40,7 +40,7 @@ namespace txt{
 			tam_ventana = environment->getInt( "txt.tam_ventana" , 3 );
 		}
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 			size_t pos_begin=0;
 			size_t pos_end;
@@ -110,7 +110,7 @@ namespace txt{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace txt
 
 #endif

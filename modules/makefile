@@ -26,7 +26,6 @@ reset:
 	make reset -C sna
 	make reset -C sna_light 
 	make reset -C osn 
-	make reset -C template
 	make reset -C url 
 	make reset -C url_benchmark 
 	make reset -C sort
@@ -43,7 +42,6 @@ eclipse:
 	make eclipse -C sna
 	make eclipse -C sna_light
 	make eclipse -C osn
-	make eclipse -C template
 	make eclipse -C url
 	make eclipse -C url_benchmark
 	make eclipse -C sort

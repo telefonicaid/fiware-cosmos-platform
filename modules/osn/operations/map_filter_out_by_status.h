@@ -7,7 +7,7 @@
 #define _H_SAMSON_osn_map_filter_out_by_status
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <string>
 #define DEBUG_FILES
 #ifdef DEBUG_FILES
@@ -17,22 +17,22 @@
 
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
-	class map_filter_out_by_status : public ss::Map
+	class map_filter_out_by_status : public samson::Map
 	{
-		ss::system::String key;
-		ss::osn::URLConnection  connect;
-		ss::system::UInt value_out;
+		samson::system::String key;
+		samson::osn::URLConnection  connect;
+		samson::system::UInt value_out;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			ss::system::UInt16 status;
+			samson::system::UInt16 status;
 			status.value = environment->getInt("osn.status_query", 200);
 
 #define DEBUG_FILES
@@ -81,8 +81,8 @@ namespace osn{
 				}
 
 			}
-			ss::system::UInt key_total;
-			ss::system::UInt val_total;
+			samson::system::UInt key_total;
+			samson::system::UInt val_total;
 			key_total.value = 1;
 			val_total.value = inputs[0].num_kvs;
 			writer->emit(1, &key_total, &val_total);
@@ -90,7 +90,7 @@ namespace osn{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

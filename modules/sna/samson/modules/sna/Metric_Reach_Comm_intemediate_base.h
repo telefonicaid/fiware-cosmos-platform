@@ -10,18 +10,18 @@
 #include <samson/modules/sna/Clique.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class Metric_Reach_Comm_intemediate_base : public ss::DataInstance{
+	class Metric_Reach_Comm_intemediate_base : public samson::DataInstance{
 
 	public:
-	::ss::sna::Clique comm;
-	::ss::sna::Clique reach_nodes;
-	::ss::sna::Clique reach_nodes_competitors;
+	::samson::sna::Clique comm;
+	::samson::sna::Clique reach_nodes;
+	::samson::sna::Clique reach_nodes_competitors;
 
-	Metric_Reach_Comm_intemediate_base() : ss::DataInstance(){
+	Metric_Reach_Comm_intemediate_base() : samson::DataInstance(){
 	}
 
 	~Metric_Reach_Comm_intemediate_base() {
@@ -45,9 +45,9 @@ namespace sna{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::sna::Clique::size(data+offset);
-		offset += ::ss::sna::Clique::size(data+offset);
-		offset += ::ss::sna::Clique::size(data+offset);
+		offset += ::samson::sna::Clique::size(data+offset);
+		offset += ::samson::sna::Clique::size(data+offset);
+		offset += ::samson::sna::Clique::size(data+offset);
 		return offset;
 	}
 
@@ -57,15 +57,15 @@ namespace sna{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing comm
-			int tmp = ::ss::sna::Clique::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::sna::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing reach_nodes
-			int tmp = ::ss::sna::Clique::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::sna::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing reach_nodes_competitors
-			int tmp = ::ss::sna::Clique::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::sna::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -100,7 +100,7 @@ namespace sna{
 
 	}; //class Metric_Reach_Comm_intemediate_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

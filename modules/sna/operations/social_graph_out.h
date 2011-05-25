@@ -7,17 +7,17 @@
 #define _H_SAMSON_sna_social_graph_out
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
 #include <iostream>
 #include <sstream>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class social_graph_out : public ss::ParserOut
+	class social_graph_out : public samson::ParserOut
 	{
 		bool duplicates ;
 		bool extern_mark ;
@@ -68,11 +68,11 @@ namespace sna{
 
 				        if(extern_mark)
 				        {
-				        	snprintf(output, MAX_STR_LEN, "%lu%s%lu%s%.2f%s%.2f%s%lu\n", node_data.id.value, sep, node_data.links[j].id.value, sep, ss::sna::Link::intScaled_2_double(node_data.links[j].weight.value), sep, ss::sna::Link::intScaled_2_double(node_data.links[j].dir.value), sep, (node_data.isExtern()?(long unsigned int)0:(long unsigned int)1));
+				        	snprintf(output, MAX_STR_LEN, "%lu%s%lu%s%.2f%s%.2f%s%lu\n", node_data.id.value, sep, node_data.links[j].id.value, sep, samson::sna::Link::intScaled_2_double(node_data.links[j].weight.value), sep, samson::sna::Link::intScaled_2_double(node_data.links[j].dir.value), sep, (node_data.isExtern()?(long unsigned int)0:(long unsigned int)1));
 				        }
 				        else
 				        {
-				        	snprintf(output, MAX_STR_LEN, "%lu%s%lu%s%.2f%s%.2f\n", node_data.id.value, sep, node_data.links[j].id.value, sep, ss::sna::Link::intScaled_2_double(node_data.links[j].weight.value), sep, ss::sna::Link::intScaled_2_double(node_data.links[j].dir.value));
+				        	snprintf(output, MAX_STR_LEN, "%lu%s%lu%s%.2f%s%.2f\n", node_data.id.value, sep, node_data.links[j].id.value, sep, samson::sna::Link::intScaled_2_double(node_data.links[j].weight.value), sep, samson::sna::Link::intScaled_2_double(node_data.links[j].dir.value));
 				        }
 					    writer->emit(output);
 
@@ -110,7 +110,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

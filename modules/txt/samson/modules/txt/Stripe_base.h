@@ -10,18 +10,18 @@
 #include <samson/modules/txt/CountData.h>
 
 
-namespace ss{
+namespace samson{
 namespace txt{
 
 
-	class Stripe_base : public ss::DataInstance{
+	class Stripe_base : public samson::DataInstance{
 
 	public:
-	::ss::txt::CountData *colList;
+	::samson::txt::CountData *colList;
 	int colList_length;
 	int colList_max_length;
 
-	Stripe_base() : ss::DataInstance(){
+	Stripe_base() : samson::DataInstance(){
 		colList_length=0;
 		colList_max_length=0;
 		colList = NULL;
@@ -36,7 +36,7 @@ namespace txt{
 		int offset=0;
 		{ //Parsing vector colList
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	colListSetLength( _length );
 			for (int i = 0 ; i < (int)colList_length ; i++){
 				offset += colList[i].parse(data+offset);
@@ -48,7 +48,7 @@ namespace txt{
 	int serialize(char *data){
 		int offset=0;
 		{ //Serialization vector colList
-			offset += ss::staticVarIntSerialize( data+offset , colList_length );
+			offset += samson::staticVarIntSerialize( data+offset , colList_length );
 			for (int i = 0 ; i < (int)colList_length ; i++){
 				offset += colList[i].serialize(data+offset);
 			}
@@ -60,10 +60,10 @@ namespace txt{
 		int offset=0;
 		{ //Getting size of vector colList
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::txt::CountData _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::txt::CountData _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::txt::CountData::size(data+offset);
+				offset += ::samson::txt::CountData::size(data+offset);
 			}
 		}
 		return offset;
@@ -78,13 +78,13 @@ namespace txt{
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // Comparing vector colList
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing colList[i]
-					int tmp = ::ss::txt::CountData::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::txt::CountData::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
@@ -101,11 +101,11 @@ namespace txt{
 
 	void colListSetLength(int _length){
 		if( _length > colList_max_length){ 
-			::ss::txt::CountData *_previous = colList;
+			::samson::txt::CountData *_previous = colList;
 			int previous_length = colList_length;
 			if(colList_max_length == 0) colList_max_length = _length;
 			while(colList_max_length < _length) colList_max_length *= 2;
-			colList = new ::ss::txt::CountData[colList_max_length ];
+			colList = new ::samson::txt::CountData[colList_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					colList[i].copyFrom( &_previous[i] );
@@ -115,7 +115,7 @@ namespace txt{
 		colList_length=_length;
 	}
 
-	::ss::txt::CountData* colListAdd(){
+	::samson::txt::CountData* colListAdd(){
 		colListSetLength( colList_length + 1 );
 		return &colList[colList_length-1];
 	}
@@ -143,7 +143,7 @@ namespace txt{
 
 	}; //class Stripe_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace txt
 
 #endif

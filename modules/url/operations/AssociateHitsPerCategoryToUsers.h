@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_AssociateHitsPerCategoryToUsers
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /*****************************************************************
 reduce AssociateHitsPerCategoryToUsers
@@ -21,21 +21,21 @@ reduce AssociateHitsPerCategoryToUsers
 }
 *******************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class AssociateHitsPerCategoryToUsers : public ss::Reduce
+	class AssociateHitsPerCategoryToUsers : public samson::Reduce
 	{
-		ss::system::UInt catIdRef;
-		ss::system::UInt userId;
+		samson::system::UInt catIdRef;
+		samson::system::UInt userId;
 		ServerPathVector pathsRef;
 
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			if (inputs[0].num_kvs != 1)
 			{
@@ -72,7 +72,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

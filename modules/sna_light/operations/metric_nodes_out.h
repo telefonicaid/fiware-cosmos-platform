@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_light_metric_nodes_out
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class metric_nodes_out : public ss::ParserOut
+	class metric_nodes_out : public samson::ParserOut
 	{
 
 	public:
@@ -28,7 +28,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

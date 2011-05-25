@@ -10,17 +10,17 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class UserCount_base : public ss::DataInstance{
+	class UserCount_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt user;
-	::ss::system::UInt count;
+	::samson::system::UInt user;
+	::samson::system::UInt count;
 
-	UserCount_base() : ss::DataInstance(){
+	UserCount_base() : samson::DataInstance(){
 	}
 
 	~UserCount_base() {
@@ -42,8 +42,8 @@ namespace url{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -53,11 +53,11 @@ namespace url{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing user
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing count
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -88,7 +88,7 @@ namespace url{
 
 	}; //class UserCount_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_exportURL_Void
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /************************************************************
 parserOut exportURL_Void
@@ -20,11 +20,11 @@ parserOut exportURL_Void
 }
 *************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class exportURL_Void : public ss::ParserOut
+	class exportURL_Void : public samson::ParserOut
 	{
 		URL url;
 
@@ -59,7 +59,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

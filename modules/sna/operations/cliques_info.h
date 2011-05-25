@@ -7,17 +7,17 @@
 #define _H_SAMSON_sna_cliques_info
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "AUIntStatistics.h"
 #include <iostream>
 #include <sstream>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class cliques_info : public ss::ParserOut
+	class cliques_info : public samson::ParserOut
 	{
 		AUIntStatistics total;
 		AUIntStatistics sizeClique;
@@ -29,7 +29,7 @@ namespace sna{
 
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
-			ss::sna::Clique clique;
+			samson::sna::Clique clique;
 
 
 			for (int i  =0 ;  i< inputs[0].num_kvs ; i++)
@@ -67,7 +67,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

@@ -7,20 +7,20 @@
 #define _H_SAMSON_example_generator_time_error
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace example{
 
 
-	class generator_time_error : public ss::Generator
+	class generator_time_error : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 		  // Timeout should cancel this job
 		  while( true )
@@ -31,7 +31,7 @@ namespace example{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace example
 
 #endif

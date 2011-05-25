@@ -11,19 +11,19 @@
 #include <samson/modules/url/ServerStrPath.h>
 
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class ServerStrPathVector_base : public ss::DataInstance{
+	class ServerStrPathVector_base : public samson::DataInstance{
 
 	public:
-	::ss::url::ServerStrPath *serverStrPath;
+	::samson::url::ServerStrPath *serverStrPath;
 	int serverStrPath_length;
 	int serverStrPath_max_length;
-	::ss::system::UInt countRef;
+	::samson::system::UInt countRef;
 
-	ServerStrPathVector_base() : ss::DataInstance(){
+	ServerStrPathVector_base() : samson::DataInstance(){
 		serverStrPath_length=0;
 		serverStrPath_max_length=0;
 		serverStrPath = NULL;
@@ -38,7 +38,7 @@ namespace url{
 		int offset=0;
 		{ //Parsing vector serverStrPath
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	serverStrPathSetLength( _length );
 			for (int i = 0 ; i < (int)serverStrPath_length ; i++){
 				offset += serverStrPath[i].parse(data+offset);
@@ -51,7 +51,7 @@ namespace url{
 	int serialize(char *data){
 		int offset=0;
 		{ //Serialization vector serverStrPath
-			offset += ss::staticVarIntSerialize( data+offset , serverStrPath_length );
+			offset += samson::staticVarIntSerialize( data+offset , serverStrPath_length );
 			for (int i = 0 ; i < (int)serverStrPath_length ; i++){
 				offset += serverStrPath[i].serialize(data+offset);
 			}
@@ -64,13 +64,13 @@ namespace url{
 		int offset=0;
 		{ //Getting size of vector serverStrPath
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::url::ServerStrPath _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::url::ServerStrPath _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::url::ServerStrPath::size(data+offset);
+				offset += ::samson::url::ServerStrPath::size(data+offset);
 			}
 		}
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		return offset;
 	}
 
@@ -83,19 +83,19 @@ namespace url{
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // Comparing vector serverStrPath
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing serverStrPath[i]
-					int tmp = ::ss::url::ServerStrPath::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::url::ServerStrPath::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
 		}
 		{ // comparing countRef
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -110,11 +110,11 @@ namespace url{
 
 	void serverStrPathSetLength(int _length){
 		if( _length > serverStrPath_max_length){ 
-			::ss::url::ServerStrPath *_previous = serverStrPath;
+			::samson::url::ServerStrPath *_previous = serverStrPath;
 			int previous_length = serverStrPath_length;
 			if(serverStrPath_max_length == 0) serverStrPath_max_length = _length;
 			while(serverStrPath_max_length < _length) serverStrPath_max_length *= 2;
-			serverStrPath = new ::ss::url::ServerStrPath[serverStrPath_max_length ];
+			serverStrPath = new ::samson::url::ServerStrPath[serverStrPath_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					serverStrPath[i].copyFrom( &_previous[i] );
@@ -124,7 +124,7 @@ namespace url{
 		serverStrPath_length=_length;
 	}
 
-	::ss::url::ServerStrPath* serverStrPathAdd(){
+	::samson::url::ServerStrPath* serverStrPathAdd(){
 		serverStrPathSetLength( serverStrPath_length + 1 );
 		return &serverStrPath[serverStrPath_length-1];
 	}
@@ -156,7 +156,7 @@ namespace url{
 
 	}; //class ServerStrPathVector_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

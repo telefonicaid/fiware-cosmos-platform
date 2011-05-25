@@ -7,18 +7,18 @@
 #define _H_SAMSON_txt_export_collocations
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <iostream>
 
 
-namespace ss{
+namespace samson{
 namespace txt{
 
 
-	class export_collocations : public ss::ParserOut
+	class export_collocations : public samson::ParserOut
 	{
-		ss::txt::Collocation key;
-		ss::system::UInt value;
+		samson::txt::Collocation key;
+		samson::system::UInt value;
 #define MAX_STR_LEN 1024
 			char output[MAX_STR_LEN];
 
@@ -42,7 +42,7 @@ namespace txt{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace txt
 
 #endif

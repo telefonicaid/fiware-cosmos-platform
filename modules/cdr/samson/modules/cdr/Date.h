@@ -12,7 +12,7 @@
 #include <iomanip>
 
 
-namespace ss{
+namespace samson{
 namespace cdr{
 
 
@@ -80,7 +80,7 @@ namespace cdr{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace cdr
 
 #endif

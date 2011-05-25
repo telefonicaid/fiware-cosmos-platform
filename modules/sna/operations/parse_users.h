@@ -7,16 +7,16 @@
 #define _H_SAMSON_sna_parse_users
 
 
-#include <samson/Operation.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 #include "sna_parsing_macros.h"
 #include "sna_environment_parameters.h"
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
-bool getUserFromLine_TME ( char*linea, ss::system::UInt*node, User* user)
+bool getUserFromLine_TME ( char*linea, samson::system::UInt*node, User* user)
 {
 	SNA_PARSER_INIT( linea )
 	SNA_PARSER_NEXT_FIELD
@@ -39,7 +39,7 @@ bool getUserFromLine_TME ( char*linea, ss::system::UInt*node, User* user)
 	return true;
 }
 
-bool getUserFromLine_JAJAH_interm ( char*linea, ss::system::UInt*node, User* user)
+bool getUserFromLine_JAJAH_interm ( char*linea, samson::system::UInt*node, User* user)
 {
 	SNA_PARSER_INIT( linea )
 	SNA_PARSER_NEXT_FIELD
@@ -70,7 +70,7 @@ bool getUserFromLine_JAJAH_interm ( char*linea, ss::system::UInt*node, User* use
 
 
 
-bool getUserFromLine_JAJAH ( char*linea, ss::system::UInt*node, User* user)
+bool getUserFromLine_JAJAH ( char*linea, samson::system::UInt*node, User* user)
 {
 	SNA_PARSER_INIT( linea )
 	SNA_PARSER_NEXT_FIELD
@@ -98,7 +98,7 @@ bool getUserFromLine_JAJAH ( char*linea, ss::system::UInt*node, User* user)
 
 
 
-bool getUserFromLine_TEMM ( char*linea, ss::system::UInt*node, User* user)
+bool getUserFromLine_TEMM ( char*linea, samson::system::UInt*node, User* user)
 {
 	SNA_PARSER_INIT( linea )
 	SNA_PARSER_NEXT_FIELD
@@ -126,9 +126,9 @@ bool getUserFromLine_TEMM ( char*linea, ss::system::UInt*node, User* user)
 
 
 
-	class parse_users : public ss::Parser
+	class parse_users : public samson::Parser
 	{
-		typedef bool (*getUserFunction)( char*line, ss::system::UInt *node, User* user);
+		typedef bool (*getUserFunction)( char*line, samson::system::UInt *node, User* user);
 		getUserFunction _getUserFunction ;
 
 	public:
@@ -152,10 +152,10 @@ bool getUserFromLine_TEMM ( char*linea, ss::system::UInt*node, User* user)
 		}
 
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 			//Datas to emit
-			ss::system::UInt node;
+			samson::system::UInt node;
 			User user;
 
 			size_t offset = 0;
@@ -194,7 +194,7 @@ bool getUserFromLine_TEMM ( char*linea, ss::system::UInt*node, User* user)
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

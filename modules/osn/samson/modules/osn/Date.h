@@ -10,7 +10,7 @@
 #include <samson/modules/osn/Date_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
@@ -19,7 +19,7 @@ namespace osn{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

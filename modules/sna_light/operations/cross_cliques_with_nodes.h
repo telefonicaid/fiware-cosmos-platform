@@ -7,14 +7,14 @@
 #define _H_SAMSON_sna_light_cross_cliques_with_nodes
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class cross_cliques_with_nodes : public ss::Script
+	class cross_cliques_with_nodes : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

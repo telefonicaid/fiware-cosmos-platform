@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_fuseServerUserPath
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /**************************************************************
 reduce fuseServerUserPath
@@ -22,17 +22,17 @@ reduce fuseServerUserPath
 }
 ***************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class fuseServerUserPath : public ss::Reduce
+	class fuseServerUserPath : public samson::Reduce
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 		    if ((inputs[1].num_kvs == 0) && (inputs[0].num_kvs == 0))
 		    {
@@ -42,7 +42,7 @@ namespace url{
 
 		    if ( inputs[0].num_kvs == 0)
 		    {
-		      ss::system::String s;
+		      samson::system::String s;
 		      s.parse( inputs[1].kvs[0]->key );
 		      OLM_D(("'%s' has no hits",s.value.c_str()));
 		      return;
@@ -50,7 +50,7 @@ namespace url{
 
 		    if ( inputs[1].num_kvs == 0)
 		    {
-		      ss::system::String s;
+		      samson::system::String s;
 		      s.parse( inputs[0].kvs[0]->key );
 		      OLM_E(("Input '%s' not included in server encoding table",s.value.c_str()));
 		      return;
@@ -58,12 +58,12 @@ namespace url{
 
 		    if ( inputs[1].num_kvs != 1)
 		    {
-		      ss::system::String s;
+		      samson::system::String s;
 		      s.parse( inputs[1].kvs[0]->key );
 		      OLM_E(("Input '%s' with multiple entries in server encoding table: inputs[1].num_kvs:%d",s.value.c_str(), inputs[1].num_kvs));
 		    }
 
-		  ss::system::UInt server;
+		  samson::system::UInt server;
 
 
 		  server.parse(inputs[1].kvs[0]->value);
@@ -90,7 +90,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

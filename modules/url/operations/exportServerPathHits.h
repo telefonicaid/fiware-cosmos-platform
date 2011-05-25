@@ -7,17 +7,17 @@
 #define _H_SAMSON_url_exportServerPathHits
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+
+namespace samson{
 namespace url{
 
 
-	class exportServerPathHits : public ss::ParserOut
+	class exportServerPathHits : public samson::ParserOut
 	{
-		ss::system::String serverStr;
+		samson::system::String serverStr;
 		PathCountVector paths;
 
 	public:
@@ -68,7 +68,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

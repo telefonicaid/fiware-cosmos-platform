@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_getServerPathFromUser
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /***************************************************************
 reduce getServerPathFromUser
@@ -20,13 +20,13 @@ reduce getServerPathFromUser
 }
 ****************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class getServerPathFromUser : public ss::Reduce
+	class getServerPathFromUser : public samson::Reduce
 	{
-		ss::system::UInt userId;
+		samson::system::UInt userId;
 
 		ServerPath serverPath;
 		ServerPath serverPathPrev;
@@ -35,7 +35,7 @@ namespace url{
 
 	public:
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			bool first = true;
 			size_t n_items = 0;
@@ -91,7 +91,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

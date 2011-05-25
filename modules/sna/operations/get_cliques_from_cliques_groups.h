@@ -7,25 +7,25 @@
 #define _H_SAMSON_sna_get_cliques_from_cliques_groups
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class get_cliques_from_cliques_groups : public ss::Reduce
+	class get_cliques_from_cliques_groups : public samson::Reduce
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			ss::system::UInt cliqueId ;
-			ss::system::UInt nodeId ;
+			samson::system::UInt cliqueId ;
+			samson::system::UInt nodeId ;
 			Clique clique ;
-			ss::system::Void void_data ;
+			samson::system::Void void_data ;
 
 			clique.nodesSetLength(inputs[0].num_kvs);
 			for (int i = 0 ; i < inputs[0].num_kvs ; i++)
@@ -41,7 +41,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

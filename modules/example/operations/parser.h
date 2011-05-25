@@ -7,22 +7,22 @@
 #define _H_SAMSON_example_parser
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <iostream>
 
-namespace ss{
+namespace samson{
 namespace example{
 
 
-	class parser : public ss::Parser
+	class parser : public samson::Parser
 	{
 
 	public:
 
-	  ss::system::UInt a;
-	  ss::system::UInt b;
+	  samson::system::UInt a;
+	  samson::system::UInt b;
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 		  b = rand();
 
@@ -54,7 +54,7 @@ namespace example{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace example
 
 #endif

@@ -7,26 +7,26 @@
 #define _H_SAMSON_txt_word_count
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 #include "samson/modules/system/String.h"
 #include "samson/modules/system/UInt.h"
 
-namespace ss{
+namespace samson{
 namespace txt{
 
 
-	class word_count : public ss::Reduce
+	class word_count : public samson::Reduce
 	{
 
 	public:
 		
-		ss::system::String word;
-		ss::system::UInt count;
-		ss::system::UInt total;
+		samson::system::String word;
+		samson::system::UInt count;
+		samson::system::UInt total;
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			
 			if( inputs[0].num_kvs == 0 )
@@ -49,7 +49,7 @@ namespace txt{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace system
 
 #endif

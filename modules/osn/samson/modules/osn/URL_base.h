@@ -10,21 +10,21 @@
 #include <samson/modules/system/String.h>
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
-	class URL_base : public ss::DataInstance{
+	class URL_base : public samson::DataInstance{
 
 	public:
-	::ss::system::String completeURL;
-	::ss::system::String url_host;
-	::ss::system::String url_dir;
-	::ss::system::String url_page;
-	::ss::system::String url_query;
-	::ss::system::String url_locDoc;
+	::samson::system::String completeURL;
+	::samson::system::String url_host;
+	::samson::system::String url_dir;
+	::samson::system::String url_page;
+	::samson::system::String url_query;
+	::samson::system::String url_locDoc;
 
-	URL_base() : ss::DataInstance(){
+	URL_base() : samson::DataInstance(){
 	}
 
 	~URL_base() {
@@ -54,12 +54,12 @@ namespace osn{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::String::size(data+offset);
-		offset += ::ss::system::String::size(data+offset);
-		offset += ::ss::system::String::size(data+offset);
-		offset += ::ss::system::String::size(data+offset);
-		offset += ::ss::system::String::size(data+offset);
-		offset += ::ss::system::String::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
 		return offset;
 	}
 
@@ -69,27 +69,27 @@ namespace osn{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing completeURL
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing url_host
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing url_dir
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing url_page
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing url_query
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing url_locDoc
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -136,7 +136,7 @@ namespace osn{
 
 	}; //class URL_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

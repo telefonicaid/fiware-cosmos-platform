@@ -7,19 +7,19 @@
 #define _H_SAMSON_tienda_export_to_txt
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace tienda{
 
 
-	class export_to_txt : public ss::ParserOut
+	class export_to_txt : public samson::ParserOut
 	{
 
                 std::ostringstream output;
-                ss::system::UInt key;
-                ss::tienda::VectorProducts value;
+                samson::system::UInt key;
+                samson::tienda::VectorProducts value;
 
 
 	public:
@@ -51,7 +51,7 @@ namespace tienda{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace tienda
 
 #endif

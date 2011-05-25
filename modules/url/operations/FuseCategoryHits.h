@@ -7,8 +7,8 @@
 #define _H_SAMSON_url_FuseCategoryHits
 
 
-#include <samson/samson.h>
-#include <samson/Log.h>
+#include <samson/module/samson.h>
+
 
 /******************************************************************
 reduce FuseCategoryHits
@@ -20,13 +20,13 @@ reduce FuseCategoryHits
 	helpLine "Update the list of hits per category"
 }
 *******************************************************************/
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class FuseCategoryHits : public ss::Reduce
+	class FuseCategoryHits : public samson::Reduce
 	{
-		ss::system::UInt catId;
+		samson::system::UInt catId;
 		ServerPathVector pathsRef;
 		ServerPathVector paths;
 
@@ -35,7 +35,7 @@ namespace url{
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			size_t num_hits = environment->getSizeT("url.num_hits", 3);
 
@@ -113,7 +113,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

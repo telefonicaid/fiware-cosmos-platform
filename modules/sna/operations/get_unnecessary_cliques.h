@@ -7,26 +7,26 @@
 #define _H_SAMSON_sna_get_unnecessary_cliques
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class get_unnecessary_cliques : public ss::Reduce
+	class get_unnecessary_cliques : public samson::Reduce
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 #define MAX_COMMUNITIES_PER_NODE	10000
 
-			ss::system::UInt nodeId ;
+			samson::system::UInt nodeId ;
 			Clique cliques[MAX_COMMUNITIES_PER_NODE] ;
-			ss::system::Void void_data ;
+			samson::system::Void void_data ;
 
 			if( inputs[0].num_kvs > MAX_COMMUNITIES_PER_NODE)
 			{
@@ -83,7 +83,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

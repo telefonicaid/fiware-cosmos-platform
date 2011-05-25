@@ -12,20 +12,20 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class Node_base : public ss::DataInstance{
+	class Node_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt id;
-	::ss::sna_light::Link *links;
+	::samson::system::UInt id;
+	::samson::sna_light::Link *links;
 	int links_length;
 	int links_max_length;
-	::ss::system::Int8 flags;
+	::samson::system::Int8 flags;
 
-	Node_base() : ss::DataInstance(){
+	Node_base() : samson::DataInstance(){
 		links_length=0;
 		links_max_length=0;
 		links = NULL;
@@ -41,7 +41,7 @@ namespace sna_light{
 		offset += id.parse(data+offset);
 		{ //Parsing vector links
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	linksSetLength( _length );
 			for (int i = 0 ; i < (int)links_length ; i++){
 				offset += links[i].parse(data+offset);
@@ -55,7 +55,7 @@ namespace sna_light{
 		int offset=0;
 		offset += id.serialize(data+offset);
 		{ //Serialization vector links
-			offset += ss::staticVarIntSerialize( data+offset , links_length );
+			offset += samson::staticVarIntSerialize( data+offset , links_length );
 			for (int i = 0 ; i < (int)links_length ; i++){
 				offset += links[i].serialize(data+offset);
 			}
@@ -66,16 +66,16 @@ namespace sna_light{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
 		{ //Getting size of vector links
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::sna_light::Link _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::sna_light::Link _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::sna_light::Link::size(data+offset);
+				offset += ::samson::sna_light::Link::size(data+offset);
 			}
 		}
-		offset += ::ss::system::Int8::size(data+offset);
+		offset += ::samson::system::Int8::size(data+offset);
 		return offset;
 	}
 
@@ -85,24 +85,24 @@ namespace sna_light{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing id
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // Comparing vector links
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing links[i]
-					int tmp = ::ss::sna_light::Link::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::sna_light::Link::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
 		}
 		{ // comparing flags
-			int tmp = ::ss::system::Int8::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::Int8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -117,11 +117,11 @@ namespace sna_light{
 
 	void linksSetLength(int _length){
 		if( _length > links_max_length){ 
-			::ss::sna_light::Link *_previous = links;
+			::samson::sna_light::Link *_previous = links;
 			int previous_length = links_length;
 			if(links_max_length == 0) links_max_length = _length;
 			while(links_max_length < _length) links_max_length *= 2;
-			links = new ::ss::sna_light::Link[links_max_length ];
+			links = new ::samson::sna_light::Link[links_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					links[i].copyFrom( &_previous[i] );
@@ -131,7 +131,7 @@ namespace sna_light{
 		links_length=_length;
 	}
 
-	::ss::sna_light::Link* linksAdd(){
+	::samson::sna_light::Link* linksAdd(){
 		linksSetLength( links_length + 1 );
 		return &links[links_length-1];
 	}
@@ -167,7 +167,7 @@ namespace sna_light{
 
 	}; //class Node_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

@@ -10,7 +10,7 @@
 #include <samson/modules/graph/Link_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
@@ -34,7 +34,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

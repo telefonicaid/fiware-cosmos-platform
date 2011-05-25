@@ -7,7 +7,7 @@
 #define _H_SAMSON_graph_parse_links
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 #define DEBUG_FILES
 #ifdef DEBUG_FILES
@@ -18,10 +18,10 @@
 
 
 
-namespace ss{
+namespace samson{
 namespace graph{
 
-bool getLinkFromLine(char *line, ss::system::UInt* node, ss::graph::Link *link)
+bool getLinkFromLine(char *line, samson::system::UInt* node, samson::graph::Link *link)
 {
 	char *pLine;
 	char *pSep;
@@ -72,16 +72,16 @@ bool getLinkFromLine(char *line, ss::system::UInt* node, ss::graph::Link *link)
 
 }
 
-	class parse_links : public ss::Parser
+	class parse_links : public samson::Parser
 	{
 
 	public:
 
-		ss::system::UInt node;
-		ss::graph::Link link;
+		samson::system::UInt node;
+		samson::graph::Link link;
 
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 			size_t line_begin = 0;
 			size_t offset = 0;
@@ -123,7 +123,7 @@ bool getLinkFromLine(char *line, ss::system::UInt* node, ss::graph::Link *link)
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

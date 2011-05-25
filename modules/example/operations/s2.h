@@ -7,14 +7,14 @@
 #define _H_SAMSON_example_s2
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace example{
 
 
-	class s2 : public ss::Script
+	class s2 : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace example{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace example
 
 #endif

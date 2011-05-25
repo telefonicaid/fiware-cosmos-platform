@@ -7,25 +7,25 @@
 #define _H_SAMSON_tienda_map_by_user
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace tienda{
 
 
-	class map_by_user : public ss::Map
+	class map_by_user : public samson::Map
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-                        ss::system::UInt input_key;
-                        ss::tienda::Operation input_value;
-                        ss::system::UInt output_value;
-                        ss::system::UInt output_key;
+                        samson::system::UInt input_key;
+                        samson::tienda::Operation input_value;
+                        samson::system::UInt output_value;
+                        samson::system::UInt output_key;
 
                         for (size_t i = 0; (i < inputs[0].num_kvs); i++)
                         {
@@ -46,7 +46,7 @@ namespace tienda{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace tienda
 
 #endif

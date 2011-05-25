@@ -7,26 +7,26 @@
 #define _H_SAMSON_sna_light_acg_map_dup_cdrs
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna_light{
 
 
-	class acg_map_dup_cdrs : public ss::Map
+	class acg_map_dup_cdrs : public samson::Map
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			ss::system::UInt phone;
-			ss::sna_light::CDR cdr;
+			samson::system::UInt phone;
+			samson::sna_light::CDR cdr;
 
-			ss::system::UInt phone_rev;
-			ss::sna_light::CDR cdr_rev;
+			samson::system::UInt phone_rev;
+			samson::sna_light::CDR cdr_rev;
 
 			for (int i=0  ; i< inputs[0].num_kvs ;++i)
 			{
@@ -46,7 +46,7 @@ namespace sna_light{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna_light
 
 #endif

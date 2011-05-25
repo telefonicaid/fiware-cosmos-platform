@@ -7,11 +7,11 @@
 #define _H_SAMSON_sna_social_graph_parse_out_sinks
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
 #include <iostream>
 #include <sstream>
-#include <samson/Log.h>
+
 
 /****************************************************************
 parserOut social_graph_out
@@ -28,11 +28,11 @@ parserOut social_graph_out
   }
 }
 ********************************************************************/
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class social_graph_parse_out_sinks : public ss::ParserOut
+	class social_graph_parse_out_sinks : public samson::ParserOut
 	{
 		int max_connections ;
 		int max_strong_connections ;
@@ -78,7 +78,7 @@ namespace sna{
 
 			  if (inputs[0].num_kvs > 0)
 			  {
-				  ss::system::UInt key;
+				  samson::system::UInt key;
 				  key.parse(inputs[0].kvs[0]->value);
 
 				  //OLM_T(LMT_User01, ("phone:%ld, Starts social_graph_parse_out_sinks::run() with inputs[0].num_kvs:%d", key.value, inputs[0].num_kvs));
@@ -127,7 +127,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

@@ -10,18 +10,18 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class Clique_base : public ss::DataInstance{
+	class Clique_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt *nodes;
+	::samson::system::UInt *nodes;
 	int nodes_length;
 	int nodes_max_length;
 
-	Clique_base() : ss::DataInstance(){
+	Clique_base() : samson::DataInstance(){
 		nodes_length=0;
 		nodes_max_length=0;
 		nodes = NULL;
@@ -36,7 +36,7 @@ namespace sna{
 		int offset=0;
 		{ //Parsing vector nodes
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	nodesSetLength( _length );
 			for (int i = 0 ; i < (int)nodes_length ; i++){
 				offset += nodes[i].parse(data+offset);
@@ -48,7 +48,7 @@ namespace sna{
 	int serialize(char *data){
 		int offset=0;
 		{ //Serialization vector nodes
-			offset += ss::staticVarIntSerialize( data+offset , nodes_length );
+			offset += samson::staticVarIntSerialize( data+offset , nodes_length );
 			for (int i = 0 ; i < (int)nodes_length ; i++){
 				offset += nodes[i].serialize(data+offset);
 			}
@@ -60,10 +60,10 @@ namespace sna{
 		int offset=0;
 		{ //Getting size of vector nodes
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::system::UInt _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::system::UInt _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::system::UInt::size(data+offset);
+				offset += ::samson::system::UInt::size(data+offset);
 			}
 		}
 		return offset;
@@ -78,13 +78,13 @@ namespace sna{
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // Comparing vector nodes
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing nodes[i]
-					int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
@@ -101,11 +101,11 @@ namespace sna{
 
 	void nodesSetLength(int _length){
 		if( _length > nodes_max_length){ 
-			::ss::system::UInt *_previous = nodes;
+			::samson::system::UInt *_previous = nodes;
 			int previous_length = nodes_length;
 			if(nodes_max_length == 0) nodes_max_length = _length;
 			while(nodes_max_length < _length) nodes_max_length *= 2;
-			nodes = new ::ss::system::UInt[nodes_max_length ];
+			nodes = new ::samson::system::UInt[nodes_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					nodes[i].copyFrom( &_previous[i] );
@@ -115,7 +115,7 @@ namespace sna{
 		nodes_length=_length;
 	}
 
-	::ss::system::UInt* nodesAdd(){
+	::samson::system::UInt* nodesAdd(){
 		nodesSetLength( nodes_length + 1 );
 		return &nodes[nodes_length-1];
 	}
@@ -143,7 +143,7 @@ namespace sna{
 
 	}; //class Clique_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

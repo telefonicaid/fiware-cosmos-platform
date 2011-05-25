@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_exportUInt_ServerCountVector
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /***********************************************************
 parserOut exportUInt_ServerCountVector
@@ -19,13 +19,13 @@ parserOut exportUInt_ServerCountVector
 }
 ************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class exportUInt_ServerCountVector : public ss::ParserOut
+	class exportUInt_ServerCountVector : public samson::ParserOut
 	{
-		ss::system::UInt key;
+		samson::system::UInt key;
 		ServerCountVector val;
 
 	public:
@@ -72,7 +72,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

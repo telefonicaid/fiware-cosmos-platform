@@ -7,18 +7,18 @@
 #define _H_SAMSON_osn_export_total
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
 
-namespace ss{
+namespace samson{
 namespace osn{
 
 
-	class export_total : public ss::ParserOut
+	class export_total : public samson::ParserOut
 	{
-		ss::system::UInt total;
-		ss::system::Void value;
+		samson::system::UInt total;
+		samson::system::Void value;
 #define MAX_STR_LEN 1024
 			char output[MAX_STR_LEN];
 
@@ -41,7 +41,7 @@ namespace osn{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace osn
 
 #endif

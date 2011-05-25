@@ -11,18 +11,18 @@
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class Community_base : public ss::DataInstance{
+	class Community_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt id_comm;
-	::ss::sna::Clique nodes;
-	::ss::sna::Clique orphan;
+	::samson::system::UInt id_comm;
+	::samson::sna::Clique nodes;
+	::samson::sna::Clique orphan;
 
-	Community_base() : ss::DataInstance(){
+	Community_base() : samson::DataInstance(){
 	}
 
 	~Community_base() {
@@ -46,9 +46,9 @@ namespace sna{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::sna::Clique::size(data+offset);
-		offset += ::ss::sna::Clique::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::sna::Clique::size(data+offset);
+		offset += ::samson::sna::Clique::size(data+offset);
 		return offset;
 	}
 
@@ -58,15 +58,15 @@ namespace sna{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing id_comm
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing nodes
-			int tmp = ::ss::sna::Clique::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::sna::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing orphan
-			int tmp = ::ss::sna::Clique::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::sna::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -101,7 +101,7 @@ namespace sna{
 
 	}; //class Community_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

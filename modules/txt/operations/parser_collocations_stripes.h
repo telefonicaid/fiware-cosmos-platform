@@ -7,7 +7,7 @@
 #define _H_SAMSON_txt_parser_collocations_stripes
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/UInt.h>
 #include "samson/modules/txt/CountData.h"
@@ -17,14 +17,14 @@
 
 
 
-namespace ss{
+namespace samson{
 namespace txt{
 
 
-class parser_collocations_stripes : public ss::Parser
+class parser_collocations_stripes : public samson::Parser
 {
-	ss::system::String key;
-	ss::txt::Stripe value;
+	samson::system::String key;
+	samson::txt::Stripe value;
 	int tam_ventana;
 
 public:
@@ -35,7 +35,7 @@ public:
 		tam_ventana = environment->getInt( "txt.tam_ventana" , 3 );
 	}
 
-	void run( char *data , size_t length , ss::KVWriter *writer )
+	void run( char *data , size_t length , samson::KVWriter *writer )
 	{
 		size_t pos_begin=0;
 		size_t pos_end;
@@ -129,7 +129,7 @@ public:
 				//const char *cad1 = key.value.c_str();
 				//OLM_T(LMT_User06, ("Works with '%s'", cad1));
 
-				ss::txt::CountData item;
+				samson::txt::CountData item;
 				std::string vacio = "__UNK__";
 				item.word = vacio;
 				item.count = 0;
@@ -180,7 +180,7 @@ public:
 };
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace txt
 
 #endif

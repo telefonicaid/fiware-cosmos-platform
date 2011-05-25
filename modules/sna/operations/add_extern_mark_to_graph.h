@@ -7,23 +7,23 @@
 #define _H_SAMSON_sna_add_extern_mark_to_graph
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class add_extern_mark_to_graph : public ss::Reduce
+	class add_extern_mark_to_graph : public samson::Reduce
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			ss::system::UInt id;
-			ss::sna::Node node;
+			samson::system::UInt id;
+			samson::sna::Node node;
 
 			if( inputs[0].num_kvs > 1)
 			{
@@ -41,7 +41,7 @@ namespace sna{
 
 				if( inputs[1].num_kvs == 0) // If we do not have this element, it is considered extern
 				{
-					node.flags.value = node.flags.value | ss::sna::Node::NODE_FLAG_EXTERN; //Activate the extern flag
+					node.flags.value = node.flags.value | samson::sna::Node::NODE_FLAG_EXTERN; //Activate the extern flag
 				}
 				writer->emit(0, &id, &node);
 			}
@@ -49,7 +49,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

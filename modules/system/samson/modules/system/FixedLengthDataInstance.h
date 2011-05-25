@@ -10,13 +10,13 @@ namespace samson {
   namespace system {
     
     template <typename T>
-      class FixedLengthDataInstance : public ss::DataInstance
+      class FixedLengthDataInstance : public samson::DataInstance
       {
       public:
 	T value;
 	
       public:
-      FixedLengthDataInstance() : ss::DataInstance(){
+      FixedLengthDataInstance() : samson::DataInstance(){
 	}
 	
 	~FixedLengthDataInstance() {

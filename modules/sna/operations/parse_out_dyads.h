@@ -7,16 +7,16 @@
 #define _H_SAMSON_sna_parse_out_dyads
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
 
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class parse_out_dyads : public ss::ParserOut
+	class parse_out_dyads : public samson::ParserOut
 	{
 		char* sep ;
 
@@ -37,7 +37,7 @@ namespace sna{
 
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
-			  ss::system::UInt uint_key;
+			  samson::system::UInt uint_key;
 			  Link link_value;
 
 			  int total = 0;
@@ -70,7 +70,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

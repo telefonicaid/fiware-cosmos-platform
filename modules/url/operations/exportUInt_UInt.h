@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_exportUInt_UInt
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /**********************************************************
 parserOut exportUInt_UInt
@@ -19,14 +19,14 @@ parserOut exportUInt_UInt
 }
 **********************************************************/
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class exportUInt_UInt : public ss::ParserOut
+	class exportUInt_UInt : public samson::ParserOut
 	{
-		ss::system::UInt key;
-		ss::system::UInt val;
+		samson::system::UInt key;
+		samson::system::UInt val;
 #ifdef MAX_STR_LEN
 #undef MAX_STR_LEN
 #endif
@@ -56,7 +56,7 @@ namespace url{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

@@ -7,15 +7,15 @@
 #define _H_SAMSON_sna_get_clique_links
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
 
 
-namespace ss{
+namespace samson{
 namespace sna{
 
 
-	class get_clique_links : public ss::Reduce
+	class get_clique_links : public samson::Reduce
 	{
 
 	public:
@@ -42,7 +42,7 @@ namespace sna{
 
 		}
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			Clique2 clique_pair ;
 			Vector_Node nodes ;
@@ -95,7 +95,7 @@ namespace sna{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sna
 
 #endif

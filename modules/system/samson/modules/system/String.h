@@ -19,13 +19,13 @@ namespace samson{
 namespace system{
 
 
-	class String : public ss::DataInstance{
+	class String : public samson::DataInstance{
 		
 	public:
 
 		std::string value;
 		
-		String() : ss::DataInstance(){
+		String() : samson::DataInstance(){
 
 		}
 		
@@ -145,7 +145,7 @@ namespace system{
 	}; 	
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace system
 
 #endif

@@ -7,14 +7,14 @@
 #define _H_SAMSON_SimpleParserOut
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h> 
 
 namespace samson{
 namespace system{
 
         template <class Key,class Value>
-	class SimpleParserOut : public ss::ParserOut
+	class SimpleParserOut : public samson::ParserOut
 	{
 
 		std::ostringstream output;
@@ -50,6 +50,6 @@ namespace system{
 
 
 } // end of namespace system
-} // end of namespace ss
+} // end of namespace samson
 
 #endif

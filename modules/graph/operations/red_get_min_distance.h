@@ -7,7 +7,7 @@
 #define _H_SAMSON_graph_red_get_min_distance
 
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #define DEBUG_FILES
 #ifdef DEBUG_FILES
 #include <iostream>
@@ -16,20 +16,20 @@
 #undef DEBUG_FILES
 
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
-	class red_get_min_distance : public ss::Reduce
+	class red_get_min_distance : public samson::Reduce
 	{
 
-		ss::system::UInt node_id;
-		ss::graph::NodeDist node_list;
-		ss::system::UInt distance;
+		samson::system::UInt node_id;
+		samson::graph::NodeDist node_list;
+		samson::system::UInt distance;
 		
 	public:
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 #ifdef DEBUG_FILES
                 {
@@ -72,7 +72,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

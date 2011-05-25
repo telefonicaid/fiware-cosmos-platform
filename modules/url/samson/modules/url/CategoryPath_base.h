@@ -12,18 +12,18 @@
 #include <samson/modules/url/Category.h>
 
 
-namespace ss{
+namespace samson{
 namespace url{
 
 
-	class CategoryPath_base : public ss::DataInstance{
+	class CategoryPath_base : public samson::DataInstance{
 
 	public:
-	::ss::system::UInt category;
-	::ss::url::Category category_info;
-	::ss::system::String path;
+	::samson::system::UInt category;
+	::samson::url::Category category_info;
+	::samson::system::String path;
 
-	CategoryPath_base() : ss::DataInstance(){
+	CategoryPath_base() : samson::DataInstance(){
 	}
 
 	~CategoryPath_base() {
@@ -47,9 +47,9 @@ namespace url{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::UInt::size(data+offset);
-		offset += ::ss::url::Category::size(data+offset);
-		offset += ::ss::system::String::size(data+offset);
+		offset += ::samson::system::UInt::size(data+offset);
+		offset += ::samson::url::Category::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
 		return offset;
 	}
 
@@ -59,15 +59,15 @@ namespace url{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing category
-			int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing category_info
-			int tmp = ::ss::url::Category::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::url::Category::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing path
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -102,7 +102,7 @@ namespace url{
 
 	}; //class CategoryPath_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url
 
 #endif

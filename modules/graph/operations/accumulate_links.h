@@ -8,25 +8,25 @@
 
 #include <iostream>
 
-#include <samson/Operation.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/UInt2.h>
 #include <samson/modules/system/Void.h>
 
 
-namespace ss{
+namespace samson{
 namespace graph{
 
 
-	class accumulate_links : public ss::Reduce
+	class accumulate_links : public samson::Reduce
 	{
 
 	public:
 
-	  ss::system::UInt2 key;
-	  ss::system::UInt value;
+	  samson::system::UInt2 key;
+	  samson::system::UInt value;
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 		  //std::cout << "Process " << inputs[0].num_kvs << " & " << inputs[1].num_kvs << "\n";
 
@@ -56,7 +56,7 @@ namespace graph{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace graph
 
 #endif

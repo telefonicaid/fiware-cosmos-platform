@@ -535,6 +535,16 @@ message MessagePlatformProcess
 
 // ////////////////////////////////////////////////////////////////////////////
 //
+// Message to push a Block into a particular queue
+//
+
+message PushBlock
+{
+	required string queue	 = 1;	// Name of the queue to push the packet
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
 // General message
 //
 message Message
@@ -579,6 +589,8 @@ message Message
 	optional DownloadDataFinish		download_data_finish		= 121;
 	optional DownloadDataFinishResponse	download_data_finish_response	= 122;
 
+
+	optional PushBlock			push_block			= 123;	// Push a block into a queue ( stream processing )
 
 	optional WorkerStatus worker_status = 170;			// Worker status update
 

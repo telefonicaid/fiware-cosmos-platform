@@ -163,6 +163,9 @@ const ::google::protobuf::Descriptor* MessagePlatformProcess_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   MessagePlatformProcess_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* MessagePlatformProcess_Code_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* PushBlock_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  PushBlock_reflection_ = NULL;
 const ::google::protobuf::Descriptor* Message_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Message_reflection_ = NULL;
@@ -1012,8 +1015,23 @@ void protobuf_AssignDesc_samson_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(MessagePlatformProcess));
   MessagePlatformProcess_Code_descriptor_ = MessagePlatformProcess_descriptor_->enum_type(0);
-  Message_descriptor_ = file->message_type(48);
-  static const int Message_offsets_[23] = {
+  PushBlock_descriptor_ = file->message_type(48);
+  static const int PushBlock_offsets_[1] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PushBlock, queue_),
+  };
+  PushBlock_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      PushBlock_descriptor_,
+      PushBlock::default_instance_,
+      PushBlock_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PushBlock, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PushBlock, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(PushBlock));
+  Message_descriptor_ = file->message_type(49);
+  static const int Message_offsets_[24] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Message, command_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Message, command_response_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Message, worker_task_),
@@ -1034,6 +1052,7 @@ void protobuf_AssignDesc_samson_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Message, download_data_file_response_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Message, download_data_finish_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Message, download_data_finish_response_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Message, push_block_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Message, worker_status_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Message, trace_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Message, delilah_id_),
@@ -1159,6 +1178,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     MessagePlatformProcess_descriptor_, &MessagePlatformProcess::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    PushBlock_descriptor_, &PushBlock::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     Message_descriptor_, &Message::default_instance());
 }
 
@@ -1261,6 +1282,8 @@ void protobuf_ShutdownFile_samson_2eproto() {
   delete MessageProcessPlatform_reflection_;
   delete MessagePlatformProcess::default_instance_;
   delete MessagePlatformProcess_reflection_;
+  delete PushBlock::default_instance_;
+  delete PushBlock_reflection_;
   delete Message::default_instance_;
   delete Message_reflection_;
 }
@@ -1420,44 +1443,46 @@ void protobuf_AddDesc_samson_2eproto() {
     "r\020\005\022\021\n\rcode_progress\020\006\"w\n\026MessagePlatfor"
     "mProcess\0229\n\004code\030\001 \002(\0162+.samson.network."
     "MessagePlatformProcess.Code\"\"\n\004Code\022\013\n\007c"
-    "ode_ok\020\001\022\r\n\tcode_kill\020\002\"\275\013\n\007Message\022(\n\007c"
-    "ommand\030g \001(\0132\027.samson.network.Command\0229\n"
-    "\020command_response\030h \001(\0132\037.samson.network"
-    ".CommandResponse\022/\n\013worker_task\030i \001(\0132\032."
-    "samson.network.WorkerTask\022H\n\030worker_task"
-    "_confirmation\030j \001(\0132&.samson.network.Wor"
-    "kerTaskConfirmation\0229\n\020worker_task_kill\030"
-    "\312\001 \001(\0132\036.samson.network.WorkerTaskKill\022="
-    "\n\022worker_task_remove\030\313\001 \001(\0132 .samson.net"
-    "work.WorkerTaskRemove\0220\n\004data\030k \001(\0132\".sa"
-    "mson.network.WorkerDataExchange\022;\n\ndata_"
-    "close\030l \001(\0132\'.samson.network.WorkerDataE"
-    "xchangeClose\0228\n\020upload_data_init\030o \001(\0132\036"
-    ".samson.network.UploadDataInit\022I\n\031upload"
-    "_data_init_response\030p \001(\0132&.samson.netwo"
-    "rk.UploadDataInitResponse\0228\n\020upload_data"
-    "_file\030q \001(\0132\036.samson.network.UploadDataF"
-    "ile\022I\n\031upload_data_file_response\030r \001(\0132&"
-    ".samson.network.UploadDataFileResponse\022<"
-    "\n\022upload_data_finish\030s \001(\0132 .samson.netw"
-    "ork.UploadDataFinish\022M\n\033upload_data_fini"
-    "sh_response\030t \001(\0132(.samson.network.Uploa"
-    "dDataFinishResponse\022<\n\022download_data_ini"
-    "t\030u \001(\0132 .samson.network.DownloadDataIni"
-    "t\022M\n\033download_data_init_response\030v \001(\0132("
-    ".samson.network.DownloadDataInitResponse"
-    "\022<\n\022download_data_file\030w \001(\0132 .samson.ne"
-    "twork.DownloadDataFile\022M\n\033download_data_"
-    "file_response\030x \001(\0132(.samson.network.Dow"
-    "nloadDataFileResponse\022@\n\024download_data_f"
-    "inish\030y \001(\0132\".samson.network.DownloadDat"
-    "aFinish\022Q\n\035download_data_finish_response"
-    "\030z \001(\0132*.samson.network.DownloadDataFini"
-    "shResponse\0224\n\rworker_status\030\252\001 \001(\0132\034.sam"
-    "son.network.WorkerStatus\022%\n\005trace\030\253\001 \001(\013"
-    "2\025.samson.network.Trace\022\023\n\ndelilah_id\030\254\002"
-    " \001(\004\"1\n\006Sender\022\n\n\006Worker\020W\022\016\n\nController"
-    "\020C\022\013\n\007Delilah\020D", 7415);
+    "ode_ok\020\001\022\r\n\tcode_kill\020\002\"\032\n\tPushBlock\022\r\n\005"
+    "queue\030\001 \002(\t\"\354\013\n\007Message\022(\n\007command\030g \001(\013"
+    "2\027.samson.network.Command\0229\n\020command_res"
+    "ponse\030h \001(\0132\037.samson.network.CommandResp"
+    "onse\022/\n\013worker_task\030i \001(\0132\032.samson.netwo"
+    "rk.WorkerTask\022H\n\030worker_task_confirmatio"
+    "n\030j \001(\0132&.samson.network.WorkerTaskConfi"
+    "rmation\0229\n\020worker_task_kill\030\312\001 \001(\0132\036.sam"
+    "son.network.WorkerTaskKill\022=\n\022worker_tas"
+    "k_remove\030\313\001 \001(\0132 .samson.network.WorkerT"
+    "askRemove\0220\n\004data\030k \001(\0132\".samson.network"
+    ".WorkerDataExchange\022;\n\ndata_close\030l \001(\0132"
+    "\'.samson.network.WorkerDataExchangeClose"
+    "\0228\n\020upload_data_init\030o \001(\0132\036.samson.netw"
+    "ork.UploadDataInit\022I\n\031upload_data_init_r"
+    "esponse\030p \001(\0132&.samson.network.UploadDat"
+    "aInitResponse\0228\n\020upload_data_file\030q \001(\0132"
+    "\036.samson.network.UploadDataFile\022I\n\031uploa"
+    "d_data_file_response\030r \001(\0132&.samson.netw"
+    "ork.UploadDataFileResponse\022<\n\022upload_dat"
+    "a_finish\030s \001(\0132 .samson.network.UploadDa"
+    "taFinish\022M\n\033upload_data_finish_response\030"
+    "t \001(\0132(.samson.network.UploadDataFinishR"
+    "esponse\022<\n\022download_data_init\030u \001(\0132 .sa"
+    "mson.network.DownloadDataInit\022M\n\033downloa"
+    "d_data_init_response\030v \001(\0132(.samson.netw"
+    "ork.DownloadDataInitResponse\022<\n\022download"
+    "_data_file\030w \001(\0132 .samson.network.Downlo"
+    "adDataFile\022M\n\033download_data_file_respons"
+    "e\030x \001(\0132(.samson.network.DownloadDataFil"
+    "eResponse\022@\n\024download_data_finish\030y \001(\0132"
+    "\".samson.network.DownloadDataFinish\022Q\n\035d"
+    "ownload_data_finish_response\030z \001(\0132*.sam"
+    "son.network.DownloadDataFinishResponse\022-"
+    "\n\npush_block\030{ \001(\0132\031.samson.network.Push"
+    "Block\0224\n\rworker_status\030\252\001 \001(\0132\034.samson.n"
+    "etwork.WorkerStatus\022%\n\005trace\030\253\001 \001(\0132\025.sa"
+    "mson.network.Trace\022\023\n\ndelilah_id\030\254\002 \001(\004\""
+    "1\n\006Sender\022\n\n\006Worker\020W\022\016\n\nController\020C\022\013\n"
+    "\007Delilah\020D", 7490);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "samson.proto", &protobuf_RegisterTypes);
   EnvironmentVariable::default_instance_ = new EnvironmentVariable();
@@ -1508,6 +1533,7 @@ void protobuf_AddDesc_samson_2eproto() {
   DownloadDataFinishResponse::default_instance_ = new DownloadDataFinishResponse();
   MessageProcessPlatform::default_instance_ = new MessageProcessPlatform();
   MessagePlatformProcess::default_instance_ = new MessagePlatformProcess();
+  PushBlock::default_instance_ = new PushBlock();
   Message::default_instance_ = new Message();
   EnvironmentVariable::default_instance_->InitAsDefaultInstance();
   Environment::default_instance_->InitAsDefaultInstance();
@@ -1557,6 +1583,7 @@ void protobuf_AddDesc_samson_2eproto() {
   DownloadDataFinishResponse::default_instance_->InitAsDefaultInstance();
   MessageProcessPlatform::default_instance_->InitAsDefaultInstance();
   MessagePlatformProcess::default_instance_->InitAsDefaultInstance();
+  PushBlock::default_instance_->InitAsDefaultInstance();
   Message::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_samson_2eproto);
 }
@@ -17233,6 +17260,232 @@ void MessagePlatformProcess::Swap(MessagePlatformProcess* other) {
 
 // ===================================================================
 
+const ::std::string PushBlock::_default_queue_;
+#ifndef _MSC_VER
+const int PushBlock::kQueueFieldNumber;
+#endif  // !_MSC_VER
+
+PushBlock::PushBlock()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void PushBlock::InitAsDefaultInstance() {
+}
+
+PushBlock::PushBlock(const PushBlock& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void PushBlock::SharedCtor() {
+  _cached_size_ = 0;
+  queue_ = const_cast< ::std::string*>(&_default_queue_);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+PushBlock::~PushBlock() {
+  SharedDtor();
+}
+
+void PushBlock::SharedDtor() {
+  if (queue_ != &_default_queue_) {
+    delete queue_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void PushBlock::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* PushBlock::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return PushBlock_descriptor_;
+}
+
+const PushBlock& PushBlock::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_samson_2eproto();  return *default_instance_;
+}
+
+PushBlock* PushBlock::default_instance_ = NULL;
+
+PushBlock* PushBlock::New() const {
+  return new PushBlock;
+}
+
+void PushBlock::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (_has_bit(0)) {
+      if (queue_ != &_default_queue_) {
+        queue_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool PushBlock::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // required string queue = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_queue()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->queue().data(), this->queue().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void PushBlock::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // required string queue = 1;
+  if (_has_bit(0)) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->queue().data(), this->queue().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->queue(), output);
+  }
+  
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* PushBlock::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // required string queue = 1;
+  if (_has_bit(0)) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->queue().data(), this->queue().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->queue(), target);
+  }
+  
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int PushBlock::ByteSize() const {
+  int total_size = 0;
+  
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required string queue = 1;
+    if (has_queue()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->queue());
+    }
+    
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void PushBlock::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const PushBlock* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const PushBlock*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void PushBlock::MergeFrom(const PushBlock& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from._has_bit(0)) {
+      set_queue(from.queue());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void PushBlock::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void PushBlock::CopyFrom(const PushBlock& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool PushBlock::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+  
+  return true;
+}
+
+void PushBlock::Swap(PushBlock* other) {
+  if (other != this) {
+    std::swap(queue_, other->queue_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata PushBlock::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = PushBlock_descriptor_;
+  metadata.reflection = PushBlock_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
 const ::google::protobuf::EnumDescriptor* Message_Sender_descriptor() {
   protobuf_AssignDescriptorsOnce();
   return Message_Sender_descriptor_;
@@ -17277,6 +17530,7 @@ const int Message::kDownloadDataFileFieldNumber;
 const int Message::kDownloadDataFileResponseFieldNumber;
 const int Message::kDownloadDataFinishFieldNumber;
 const int Message::kDownloadDataFinishResponseFieldNumber;
+const int Message::kPushBlockFieldNumber;
 const int Message::kWorkerStatusFieldNumber;
 const int Message::kTraceFieldNumber;
 const int Message::kDelilahIdFieldNumber;
@@ -17308,6 +17562,7 @@ void Message::InitAsDefaultInstance() {
   download_data_file_response_ = const_cast< ::samson::network::DownloadDataFileResponse*>(&::samson::network::DownloadDataFileResponse::default_instance());
   download_data_finish_ = const_cast< ::samson::network::DownloadDataFinish*>(&::samson::network::DownloadDataFinish::default_instance());
   download_data_finish_response_ = const_cast< ::samson::network::DownloadDataFinishResponse*>(&::samson::network::DownloadDataFinishResponse::default_instance());
+  push_block_ = const_cast< ::samson::network::PushBlock*>(&::samson::network::PushBlock::default_instance());
   worker_status_ = const_cast< ::samson::network::WorkerStatus*>(&::samson::network::WorkerStatus::default_instance());
   trace_ = const_cast< ::samson::network::Trace*>(&::samson::network::Trace::default_instance());
 }
@@ -17340,6 +17595,7 @@ void Message::SharedCtor() {
   download_data_file_response_ = NULL;
   download_data_finish_ = NULL;
   download_data_finish_response_ = NULL;
+  push_block_ = NULL;
   worker_status_ = NULL;
   trace_ = NULL;
   delilah_id_ = GOOGLE_ULONGLONG(0);
@@ -17372,6 +17628,7 @@ void Message::SharedDtor() {
     delete download_data_file_response_;
     delete download_data_finish_;
     delete download_data_finish_response_;
+    delete push_block_;
     delete worker_status_;
     delete trace_;
   }
@@ -17464,9 +17721,12 @@ void Message::Clear() {
       if (download_data_finish_response_ != NULL) download_data_finish_response_->::samson::network::DownloadDataFinishResponse::Clear();
     }
     if (_has_bit(20)) {
-      if (worker_status_ != NULL) worker_status_->::samson::network::WorkerStatus::Clear();
+      if (push_block_ != NULL) push_block_->::samson::network::PushBlock::Clear();
     }
     if (_has_bit(21)) {
+      if (worker_status_ != NULL) worker_status_->::samson::network::WorkerStatus::Clear();
+    }
+    if (_has_bit(22)) {
       if (trace_ != NULL) trace_->::samson::network::Trace::Clear();
     }
     delilah_id_ = GOOGLE_ULONGLONG(0);
@@ -17728,6 +17988,20 @@ bool Message::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(986)) goto parse_push_block;
+        break;
+      }
+      
+      // optional .samson.network.PushBlock push_block = 123;
+      case 123: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_push_block:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_push_block()));
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectTag(1362)) goto parse_worker_status;
         break;
       }
@@ -17796,7 +18070,7 @@ bool Message::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  input, &delilah_id_)));
-          _set_bit(22);
+          _set_bit(23);
         } else {
           goto handle_uninterpreted;
         }
@@ -17930,14 +18204,20 @@ void Message::SerializeWithCachedSizes(
       122, this->download_data_finish_response(), output);
   }
   
-  // optional .samson.network.WorkerStatus worker_status = 170;
+  // optional .samson.network.PushBlock push_block = 123;
   if (_has_bit(20)) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      123, this->push_block(), output);
+  }
+  
+  // optional .samson.network.WorkerStatus worker_status = 170;
+  if (_has_bit(21)) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       170, this->worker_status(), output);
   }
   
   // optional .samson.network.Trace trace = 171;
-  if (_has_bit(21)) {
+  if (_has_bit(22)) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       171, this->trace(), output);
   }
@@ -17955,7 +18235,7 @@ void Message::SerializeWithCachedSizes(
   }
   
   // optional uint64 delilah_id = 300;
-  if (_has_bit(22)) {
+  if (_has_bit(23)) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(300, this->delilah_id(), output);
   }
   
@@ -18093,15 +18373,22 @@ void Message::SerializeWithCachedSizes(
         122, this->download_data_finish_response(), target);
   }
   
-  // optional .samson.network.WorkerStatus worker_status = 170;
+  // optional .samson.network.PushBlock push_block = 123;
   if (_has_bit(20)) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        123, this->push_block(), target);
+  }
+  
+  // optional .samson.network.WorkerStatus worker_status = 170;
+  if (_has_bit(21)) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         170, this->worker_status(), target);
   }
   
   // optional .samson.network.Trace trace = 171;
-  if (_has_bit(21)) {
+  if (_has_bit(22)) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         171, this->trace(), target);
@@ -18122,7 +18409,7 @@ void Message::SerializeWithCachedSizes(
   }
   
   // optional uint64 delilah_id = 300;
-  if (_has_bit(22)) {
+  if (_has_bit(23)) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(300, this->delilah_id(), target);
   }
   
@@ -18281,6 +18568,13 @@ int Message::ByteSize() const {
           this->download_data_finish_response());
     }
     
+    // optional .samson.network.PushBlock push_block = 123;
+    if (has_push_block()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->push_block());
+    }
+    
     // optional .samson.network.WorkerStatus worker_status = 170;
     if (has_worker_status()) {
       total_size += 2 +
@@ -18394,12 +18688,15 @@ void Message::MergeFrom(const Message& from) {
       mutable_download_data_finish_response()->::samson::network::DownloadDataFinishResponse::MergeFrom(from.download_data_finish_response());
     }
     if (from._has_bit(20)) {
-      mutable_worker_status()->::samson::network::WorkerStatus::MergeFrom(from.worker_status());
+      mutable_push_block()->::samson::network::PushBlock::MergeFrom(from.push_block());
     }
     if (from._has_bit(21)) {
-      mutable_trace()->::samson::network::Trace::MergeFrom(from.trace());
+      mutable_worker_status()->::samson::network::WorkerStatus::MergeFrom(from.worker_status());
     }
     if (from._has_bit(22)) {
+      mutable_trace()->::samson::network::Trace::MergeFrom(from.trace());
+    }
+    if (from._has_bit(23)) {
       set_delilah_id(from.delilah_id());
     }
   }
@@ -18480,6 +18777,9 @@ bool Message::IsInitialized() const {
   if (has_download_data_finish_response()) {
     if (!this->download_data_finish_response().IsInitialized()) return false;
   }
+  if (has_push_block()) {
+    if (!this->push_block().IsInitialized()) return false;
+  }
   if (has_trace()) {
     if (!this->trace().IsInitialized()) return false;
   }
@@ -18508,6 +18808,7 @@ void Message::Swap(Message* other) {
     std::swap(download_data_file_response_, other->download_data_file_response_);
     std::swap(download_data_finish_, other->download_data_finish_);
     std::swap(download_data_finish_response_, other->download_data_finish_response_);
+    std::swap(push_block_, other->push_block_);
     std::swap(worker_status_, other->worker_status_);
     std::swap(trace_, other->trace_);
     std::swap(delilah_id_, other->delilah_id_);

@@ -1,13 +1,4 @@
 
-SET (SOURCES
-	Delilah.cpp
-	DelilahConsole.cpp
-	DelilahComponent.cpp
-	DelilahDownloadDataProcess.cpp
-	DelilahUploadDataProcess.cpp
-	TXTFileSet.cpp
-)
-	
 SET (HEADERS
 	Delilah.h
 	DelilahConsole.h
@@ -15,8 +6,20 @@ SET (HEADERS
 	DelilahComponent.h
 	DelilahDownloadDataProcess.h
 	DelilahUploadDataProcess.h
+	PushComponent.h
 	TXTFileSet.h
 )
+
+SET (SOURCES
+	Delilah.cpp
+	DelilahConsole.cpp
+	DelilahComponent.cpp
+	DelilahDownloadDataProcess.cpp
+	DelilahUploadDataProcess.cpp
+	PushComponent.cpp
+	TXTFileSet.cpp
+)
+	
 	
 # Include directories
 # -----------------------------------------------------------------

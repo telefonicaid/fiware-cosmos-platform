@@ -92,6 +92,8 @@ namespace samson {
 		// Add particular process that will take input parameters
 		size_t addUploadData( std::vector<std::string> fileNames , std::string queue , bool compresion, int _max_num_threads);
 		size_t addDownloadProcess( std::string queue , std::string fileName , bool show_on_screen );
+        size_t addPushData( std::vector<std::string> fileNames , std::string queue );
+
 		size_t sendCommand( std::string command );
 		
 		

@@ -57,7 +57,7 @@ namespace samson {
         public:
 
             // Constructor with automatic add to the BlockManager
-            Block( engine::Buffer *buffer , int _priority );
+            Block( engine::Buffer *buffer );
             ~Block();
             
             // Set and Get priority

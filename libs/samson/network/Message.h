@@ -78,6 +78,7 @@ typedef enum MessageCode
 	ProcessVectorGet                = CODE('P', 'V', 'G', ' '),
     Trace                           = CODE('T', 'r', 'a', ' '),
 	ProcessList                     = CODE('P', 'r', 'L', ' '),
+    PushBlock                       = CODE('P', 'B', 'l', ' '),
     Unknown                         = CODE('U', 'n', 'k', ' ')
 } MessageCode;
 

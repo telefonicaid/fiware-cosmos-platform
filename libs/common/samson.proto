@@ -532,6 +532,16 @@ message MessagePlatformProcess
 
 }
 
+// ////////////////////////////////////////////////////////////////////////////
+//
+// General message
+//
+
+message PushBlock
+{
+	required string queue = 1;	// Name of que queue to push the block
+}
+
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -579,6 +589,7 @@ message Message
 	optional DownloadDataFinish		download_data_finish		= 121;
 	optional DownloadDataFinishResponse	download_data_finish_response	= 122;
 
+	optional PushBlock			push_block			= 123;
 
 	optional WorkerStatus worker_status = 170;			// Worker status update
 

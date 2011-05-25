@@ -20,8 +20,8 @@ namespace samson {
 		{
 			command,
 			load,
-			updater
-            
+			updater,
+            push
 		}DelilaComponentType;
 		
 		DelilaComponentType type;

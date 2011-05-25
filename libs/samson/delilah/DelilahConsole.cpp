@@ -345,7 +345,7 @@ namespace samson
                                 
                 engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("example", 100000000, 0 );
                 buffer->setSize( buffer->getMaxSize() );    // Full the buffer with crap content ;)
-                stream::Block *block = new stream::Block( buffer , rand()%10 );
+                stream::Block *block = new stream::Block( buffer );
 
                 // Change priority
                 int new_priority = rand()%10;
@@ -613,6 +613,93 @@ namespace samson
 			return id;
 		}
 		
+        
+        // Push data to a queue
+        
+        if( mainCommand == "push" )
+		{
+			if( commandLine.get_num_arguments() < 3 )
+			{
+				writeErrorOnConsole("Usage: push file <file2> .... <fileN> queue");
+				return 0;
+			}
+			
+			std::vector<std::string> fileNames;
+			for (int i = 1 ; i < (commandLine.get_num_arguments()-1) ; i++)
+			{
+				std::string fileName = commandLine.get_argument(i);
+				
+				struct stat buf;
+				stat( fileName.c_str() , &buf );
+				
+				if( S_ISREG(buf.st_mode) )
+				{
+					if( trace_on )
+					{
+                        
+						std::ostringstream message;
+						message << "Including regular file " << fileName;
+						writeOnConsole( message.str() );
+					}
+					
+					fileNames.push_back( fileName );
+				}
+				else if ( S_ISDIR(buf.st_mode) )
+				{
+					if( trace_on )
+					{
+						std::ostringstream message;
+						message << "Including directory " << fileName;
+						writeOnConsole( message.str() );
+					}
+					
+					{
+						// first off, we need to create a pointer to a directory
+						DIR *pdir = opendir (fileName.c_str()); // "." will refer to the current directory
+						struct dirent *pent = NULL;
+						if (pdir != NULL) // if pdir wasn't initialised correctly
+						{
+							while ((pent = readdir (pdir))) // while there is still something in the directory to list
+								if (pent != NULL)
+								{
+									std::ostringstream localFileName;
+									localFileName << fileName << "/" << pent->d_name;
+                                    
+									struct stat buf2;
+									stat( localFileName.str().c_str() , &buf2 );
+									
+									if( S_ISREG(buf2.st_mode) )
+										fileNames.push_back( localFileName.str() );
+									
+								}
+							// finally, let's close the directory
+							closedir (pdir);						
+						}
+					}
+				} 
+				else
+				{
+					if( trace_on )
+					{
+						std::ostringstream message;
+						message << "Skipping " << fileName;
+						writeOnConsole( message.str() );
+					}
+				}
+			}
+			
+			std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
+            
+			size_t id = addPushData(fileNames, queue );
+			
+			std::ostringstream o;
+			o << "[ " << id << " ] Push data process started with " << fileNames.size() << " files";
+			writeWarningOnConsole(o.str());
+			return id;
+		}
+		
+        
+        
 		// Normal command send to the controller
 		size_t id = sendCommand(command);
 		return id;

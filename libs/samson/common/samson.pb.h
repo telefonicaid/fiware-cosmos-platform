@@ -81,6 +81,7 @@ class DownloadDataFinish;
 class DownloadDataFinishResponse;
 class MessageProcessPlatform;
 class MessagePlatformProcess;
+class PushBlock;
 class Message;
 
 enum ControllerTask_ControllerTaskState {
@@ -5729,6 +5730,99 @@ class MessagePlatformProcess : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class PushBlock : public ::google::protobuf::Message {
+ public:
+  PushBlock();
+  virtual ~PushBlock();
+  
+  PushBlock(const PushBlock& from);
+  
+  inline PushBlock& operator=(const PushBlock& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const PushBlock& default_instance();
+  
+  void Swap(PushBlock* other);
+  
+  // implements Message ----------------------------------------------
+  
+  PushBlock* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const PushBlock& from);
+  void MergeFrom(const PushBlock& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // required string queue = 1;
+  inline bool has_queue() const;
+  inline void clear_queue();
+  static const int kQueueFieldNumber = 1;
+  inline const ::std::string& queue() const;
+  inline void set_queue(const ::std::string& value);
+  inline void set_queue(const char* value);
+  inline void set_queue(const char* value, size_t size);
+  inline ::std::string* mutable_queue();
+  
+  // @@protoc_insertion_point(class_scope:samson.network.PushBlock)
+ private:
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  mutable int _cached_size_;
+  
+  ::std::string* queue_;
+  static const ::std::string _default_queue_;
+  friend void  protobuf_AddDesc_samson_2eproto();
+  friend void protobuf_AssignDesc_samson_2eproto();
+  friend void protobuf_ShutdownFile_samson_2eproto();
+  
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  
+  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
+  inline bool _has_bit(int index) const {
+    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
+  }
+  inline void _set_bit(int index) {
+    _has_bits_[index / 32] |= (1u << (index % 32));
+  }
+  inline void _clear_bit(int index) {
+    _has_bits_[index / 32] &= ~(1u << (index % 32));
+  }
+  
+  void InitAsDefaultInstance();
+  static PushBlock* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class Message : public ::google::protobuf::Message {
  public:
   Message();
@@ -5948,6 +6042,13 @@ class Message : public ::google::protobuf::Message {
   inline const ::samson::network::DownloadDataFinishResponse& download_data_finish_response() const;
   inline ::samson::network::DownloadDataFinishResponse* mutable_download_data_finish_response();
   
+  // optional .samson.network.PushBlock push_block = 123;
+  inline bool has_push_block() const;
+  inline void clear_push_block();
+  static const int kPushBlockFieldNumber = 123;
+  inline const ::samson::network::PushBlock& push_block() const;
+  inline ::samson::network::PushBlock* mutable_push_block();
+  
   // optional .samson.network.WorkerStatus worker_status = 170;
   inline bool has_worker_status() const;
   inline void clear_worker_status();
@@ -5994,6 +6095,7 @@ class Message : public ::google::protobuf::Message {
   ::samson::network::DownloadDataFileResponse* download_data_file_response_;
   ::samson::network::DownloadDataFinish* download_data_finish_;
   ::samson::network::DownloadDataFinishResponse* download_data_finish_response_;
+  ::samson::network::PushBlock* push_block_;
   ::samson::network::WorkerStatus* worker_status_;
   ::samson::network::Trace* trace_;
   ::google::protobuf::uint64 delilah_id_;
@@ -6001,7 +6103,7 @@ class Message : public ::google::protobuf::Message {
   friend void protobuf_AssignDesc_samson_2eproto();
   friend void protobuf_ShutdownFile_samson_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(23 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(24 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -10119,6 +10221,52 @@ inline void MessagePlatformProcess::set_code(::samson::network::MessagePlatformP
 
 // -------------------------------------------------------------------
 
+// PushBlock
+
+// required string queue = 1;
+inline bool PushBlock::has_queue() const {
+  return _has_bit(0);
+}
+inline void PushBlock::clear_queue() {
+  if (queue_ != &_default_queue_) {
+    queue_->clear();
+  }
+  _clear_bit(0);
+}
+inline const ::std::string& PushBlock::queue() const {
+  return *queue_;
+}
+inline void PushBlock::set_queue(const ::std::string& value) {
+  _set_bit(0);
+  if (queue_ == &_default_queue_) {
+    queue_ = new ::std::string;
+  }
+  queue_->assign(value);
+}
+inline void PushBlock::set_queue(const char* value) {
+  _set_bit(0);
+  if (queue_ == &_default_queue_) {
+    queue_ = new ::std::string;
+  }
+  queue_->assign(value);
+}
+inline void PushBlock::set_queue(const char* value, size_t size) {
+  _set_bit(0);
+  if (queue_ == &_default_queue_) {
+    queue_ = new ::std::string;
+  }
+  queue_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* PushBlock::mutable_queue() {
+  _set_bit(0);
+  if (queue_ == &_default_queue_) {
+    queue_ = new ::std::string;
+  }
+  return queue_;
+}
+
+// -------------------------------------------------------------------
+
 // Message
 
 // optional .samson.network.Command command = 103;
@@ -10461,53 +10609,70 @@ inline ::samson::network::DownloadDataFinishResponse* Message::mutable_download_
   return download_data_finish_response_;
 }
 
+// optional .samson.network.PushBlock push_block = 123;
+inline bool Message::has_push_block() const {
+  return _has_bit(20);
+}
+inline void Message::clear_push_block() {
+  if (push_block_ != NULL) push_block_->::samson::network::PushBlock::Clear();
+  _clear_bit(20);
+}
+inline const ::samson::network::PushBlock& Message::push_block() const {
+  return push_block_ != NULL ? *push_block_ : *default_instance_->push_block_;
+}
+inline ::samson::network::PushBlock* Message::mutable_push_block() {
+  _set_bit(20);
+  if (push_block_ == NULL) push_block_ = new ::samson::network::PushBlock;
+  return push_block_;
+}
+
 // optional .samson.network.WorkerStatus worker_status = 170;
 inline bool Message::has_worker_status() const {
-  return _has_bit(20);
+  return _has_bit(21);
 }
 inline void Message::clear_worker_status() {
   if (worker_status_ != NULL) worker_status_->::samson::network::WorkerStatus::Clear();
-  _clear_bit(20);
+  _clear_bit(21);
 }
 inline const ::samson::network::WorkerStatus& Message::worker_status() const {
   return worker_status_ != NULL ? *worker_status_ : *default_instance_->worker_status_;
 }
 inline ::samson::network::WorkerStatus* Message::mutable_worker_status() {
-  _set_bit(20);
+  _set_bit(21);
   if (worker_status_ == NULL) worker_status_ = new ::samson::network::WorkerStatus;
   return worker_status_;
 }
 
 // optional .samson.network.Trace trace = 171;
 inline bool Message::has_trace() const {
-  return _has_bit(21);
+  return _has_bit(22);
 }
 inline void Message::clear_trace() {
   if (trace_ != NULL) trace_->::samson::network::Trace::Clear();
-  _clear_bit(21);
+  _clear_bit(22);
 }
 inline const ::samson::network::Trace& Message::trace() const {
   return trace_ != NULL ? *trace_ : *default_instance_->trace_;
 }
 inline ::samson::network::Trace* Message::mutable_trace() {
-  _set_bit(21);
+  _set_bit(22);
   if (trace_ == NULL) trace_ = new ::samson::network::Trace;
   return trace_;
 }
 
 // optional uint64 delilah_id = 300;
 inline bool Message::has_delilah_id() const {
-  return _has_bit(22);
+  return _has_bit(23);
 }
 inline void Message::clear_delilah_id() {
   delilah_id_ = GOOGLE_ULONGLONG(0);
-  _clear_bit(22);
+  _clear_bit(23);
 }
 inline ::google::protobuf::uint64 Message::delilah_id() const {
   return delilah_id_;
 }
 inline void Message::set_delilah_id(::google::protobuf::uint64 value) {
-  _set_bit(22);
+  _set_bit(23);
   delilah_id_ = value;
 }
 

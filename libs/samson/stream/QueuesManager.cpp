@@ -14,15 +14,6 @@ namespace samson {
         QueuesManager::QueuesManager()
         {
             
-            // to test everything
-            
-            engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("example", 100000000, 0 );
-            buffer->setSize( buffer->getMaxSize() );    // Full the buffer with crap content ;)
-            Block *block = new Block( buffer , 0 );
-
-            // Add an example of a block
-            addBlock( "tmp" , block );
-            
         }
         
         std::string QueuesManager::getStatus()

@@ -173,7 +173,7 @@ namespace samson {
 		
 #pragma mark INCLUDES			
 		
-		output << "\n#include <samson/module/samsonModuleHeader.h>\n";
+		output << "\n#include <samson/module/samson.h>\n";
 		
 		// Include all data files	
 		for (size_t i = 0 ; i < datas.size() ; i++)

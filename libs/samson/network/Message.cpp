@@ -68,6 +68,7 @@ char* messageCode(MessageCode code)
 	case ProcessVectorGet:                 return (char*) "ProcessVectorGet";
 	case Trace:                            return (char*) "Trace";
 	case ProcessList:                      return (char*) "ProcessList";
+    case PushBlock:                        return (char*) "PushBlock";
 	case Unknown:                          return (char*) "Unknown";
 	}
 

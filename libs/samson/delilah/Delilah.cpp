@@ -13,6 +13,7 @@
 #include "DelilahUploadDataProcess.h"	// samson::DelilahLoadDataProcess
 #include "DelilahDownloadDataProcess.h"	// samson::DelilahLoadDataProcess
 #include "samson/common/EnvironmentOperations.h"
+#include "PushComponent.h"          // samson::PushComponent
 
 #include "au/Cronometer.h"      // au::Cronometer
 #define notification_delilah_automatic_update "notification_delilah_automatic_update"
@@ -249,6 +250,21 @@ namespace samson {
 		
 		return tmp_id;
 	}
+    
+	/* ****************************************************************************
+     *
+     * pushData - 
+     */
+	size_t Delilah::addPushData( std::vector<std::string> fileNames , std::string queue )
+	{
+		PushComponent * d = new PushComponent( fileNames , queue );
+		size_t tmp_id = addComponent(d);	
+
+		d->run();
+        
+		return tmp_id;
+	}
+    
 	
 	
 	size_t Delilah::addComponent( DelilahComponent* component )

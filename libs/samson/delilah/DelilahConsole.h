@@ -64,6 +64,7 @@ namespace samson {
             addOption("jobs");
             addOption("workers");
             addOption("upload");
+            addOption("push");
             addOption("download");
             addOption("load");
             addOption("load_clear");

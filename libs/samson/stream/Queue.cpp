@@ -31,7 +31,9 @@ namespace samson {
                 size_on_disk += (*b)->getSizeOnDisk();
             }
             
-            output << "[ Queue " << name << " S: " << au::Format::string( size ) << " M: " << au::Format::percentage_string(size_on_memory, size) << " D: " << au::Format::percentage_string(size_on_disk, size) << " ]";
+            output << "[ Queue " << name << " : " << blocks.size() << " blocks with " << au::Format::string( size, "Bytes" );
+            output << " " << au::Format::percentage_string(size_on_memory, size) << " on memory";
+            output << " & " << au::Format::percentage_string(size_on_disk, size) << " on disk ]";
             
             return output.str();
         }

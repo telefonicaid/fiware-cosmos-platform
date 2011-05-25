@@ -59,14 +59,14 @@ namespace samson {
         }
      
         
-        Block::Block( engine::Buffer *_buffer , int _priority )
+        Block::Block( engine::Buffer *_buffer )
         {
             // Buffer of data
             buffer = _buffer;  
             buffer->tag = MemoryBlocks;     // Set the tag to MemoryBlock to controll the memory used by this system
             
-            // Priority
-            priority = _priority;
+            // DEfault priority
+            priority = 0;
             
             // Get the size of the packet
             size = buffer->getSize();

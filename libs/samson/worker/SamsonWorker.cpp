@@ -26,6 +26,8 @@
 
 #include "samson/common/MemoryTags.h"                 // MemoryInput , MemoryOutputNetwork ,...
 
+#include "samson/stream/Block.h"            // samson::stream::Block
+
 #define notification_worker_update_files    "notification_worker_update_files"
 
 namespace samson {
@@ -191,6 +193,32 @@ namespace samson {
 		int fromId = packet->fromId;
 		Message::MessageCode msgCode = packet->msgCode;
 		
+        if( msgCode == Message::PushBlock )
+        {
+            if( !packet->message->has_push_block()  )
+            {
+                if ( packet->buffer )
+                    engine::MemoryManager::shared()->destroyBuffer( packet->buffer );
+                LM_W(("Internal error. Received a push block message without the push_object included"));
+                return;
+            }
+
+            if ( !packet->buffer )
+            {
+                LM_W(("Internal error. Received a push block message without a buffer of data"));
+                return;
+            }
+            
+            // Push the packet to a particular stream-queue
+            std::string queue = packet->message->push_block().queue();
+            
+            // Create the new block with the buffer
+            stream::Block *block = new stream::Block( packet->buffer );
+            
+            queuesManager.addBlock(queue, block);
+            
+        }
+        
 		if (msgCode == Message::WorkerTask)
 		{
 			// A packet with a particular command is received (controller expect to send a confirmation message)

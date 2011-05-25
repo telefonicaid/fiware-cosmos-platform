@@ -33,6 +33,7 @@ namespace samson {
             QueuesManager();
             std::string getStatus();
 
+            // Add a block to a particular queue ( ususally from the network interface )
             void addBlock( std::string queue , Block *b);
             
         };

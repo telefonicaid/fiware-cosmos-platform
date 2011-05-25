@@ -4,9 +4,9 @@
 #include <math.h>
 #include <sstream>                 // std::ostringstream
 
-#include "samson/module/KVSetStruct.h"    // KVSetStruct
-#include "samson/module/KVWriter.h"       // KVWriter
-#include "samson/module/KVFormat.h"       // KVFormat
+#include <samson/module/KVSetStruct.h>    // KVSetStruct
+#include <samson/module/KVWriter.h>       // KVWriter
+#include <samson/module/KVFormat.h>       // KVFormat
 
 #include <map>							// std::map
 

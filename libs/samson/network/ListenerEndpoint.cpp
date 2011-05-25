@@ -149,7 +149,7 @@ UnhelloedEndpoint* ListenerEndpoint::accept(void)
 }
 
 
-
+#if 0
 /* ****************************************************************************
 *
 * msgTreat - 
@@ -167,5 +167,5 @@ Endpoint2::Status ListenerEndpoint::msgTreat(void)
 	ep->helloSend(Message::Msg);
 	return Endpoint2::OK;
 }
-
+#endif
 }

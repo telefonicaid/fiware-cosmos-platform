@@ -19,8 +19,6 @@
 #include <QPushButton>
 #include <QGraphicsSceneWheelEvent>
 
-#include "logMsg/logMsg.h"             // LM_X
-
 #include "QsiFunction.h"        // Function
 #include "QsiCallback.h"        // Callback
 #include "QsiBlock.h"           // Block
@@ -123,7 +121,7 @@ public:
 //
 public:
 	Manager(QVBoxLayout* layout, const char* homeDir, const char* background, int width, int height, int _winWidth, int _winHeight);
-	Manager(QObject* parent = 0) { LM_X(1, ("Empty constructor called")); parent = NULL; };
+	Manager(QObject* parent = 0);
 	~Manager();
 
 	char*    Home;

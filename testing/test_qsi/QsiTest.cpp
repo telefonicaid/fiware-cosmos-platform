@@ -11,7 +11,7 @@
 #include <QDesktopWidget>
 #include <QWidget>
 
-#include "logMsg/logMsg.h"             // LM_*
+#include "logMsg.h"             // LM_*
 #include "parseArgs.h"          // parseArgs
 #include "../../libs/ui/traceLevels.h"
 
@@ -640,8 +640,9 @@ static void qsiSetup(QWidget* mainWindow)
 		scrollBox->textAdd(txt, txt, 0, ix * 20);
 	}
 
-	scrollBox->setScrollable(true);
-	mainBox->scrollAreaSet(scrollBox, 1000, 30, 200, 2000, true);
+	// scrollBox->setScrollable(true);   NOT necessary
+	LM_M(("Creating scroll area for scrollBox: { %d, %d } %dx%d", 1000, 30, 200, 500));
+	mainBox->scrollAreaSet(scrollBox, 1000, 100, 200, 300, true);
 }
 
 

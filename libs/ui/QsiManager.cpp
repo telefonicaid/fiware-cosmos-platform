@@ -129,6 +129,18 @@ Manager::Manager(QVBoxLayout* layout, const char* homeDir, const char* backgroun
 
 /* ****************************************************************************
 *
+* - 
+*/
+Manager::Manager(QObject* parent)
+{
+	parent = NULL; 
+	LM_X(1, ("Empty constructor called"));
+}
+
+
+
+/* ****************************************************************************
+*
 * ~Manager - 
 */
 Manager::~Manager()
@@ -502,13 +514,31 @@ void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 	Base*            qbP      = lookup(gItemP);
 	Box*             xbox;
 
-	LM_M(("Mouse wheel dy == %d", dy));
+	LM_M(("Mouse wheel dy == %d, point is { %d, %d }", dy, (int) point.x(), (int) point.y()));
 
 	ScrollArea* saP;
 	saP = box->scrollAreaLookup(point.x(), point.y());
 	if (saP != NULL)
 	{
+		int x, y, w, h;
+
 		LM_M(("Found scroll area"));
+		saP->box->geometry(&x, &y, &w, &h);
+		if (dy < 0)
+		{
+			if (y <= 0)
+				LM_RVE(("scrolling up but y == 0"));
+			if ((y + dy) < 0)
+				dy = -y;
+		}
+		else
+		{
+			if (y >= saP->h)
+				LM_RVE(("scrolling down but y >= scroll box height"));
+			if ((y + dy) > saP->h)
+				dy = saP->h - y;
+		}
+
 		saP->box->scroll(dy);
 	}
 
@@ -521,11 +551,14 @@ void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 	
 	xbox = qbP->owner;
 
+#if 0
 	if (xbox->scrollable == true)
 	{
 		LM_M(("box is scrollable"));
 		xbox->scroll(dy);
 	}
+#endif
+	LM_M(("From"));
 }
 
 

@@ -1228,6 +1228,8 @@ ScrollArea* Box::scrollAreaSet(Box* sbox, int sx, int sy, int sw, int sh, bool o
 		if (saP == NULL)
 			LM_RE(NULL, ("Scroll Area for '%s' at { %d, %d } %dx%d cannot be removed - not found", sbox->name, sx, sy, sw, sh));
 
+		scrollVec[ix]->box->scrollable = false; // A box can have onlt ONE scroll area ...
+
 		free(scrollVec[ix]);
 		scrollVec[ix] = NULL;
 		return NULL;
@@ -1250,6 +1252,8 @@ ScrollArea* Box::scrollAreaSet(Box* sbox, int sx, int sy, int sw, int sh, bool o
 	}
 	else
 		LM_W(("Overriding scroll area for %s", sbox->name));
+
+	sbox->scrollable = true;
 
 	saP->box = sbox;
 	saP->x   = sx;

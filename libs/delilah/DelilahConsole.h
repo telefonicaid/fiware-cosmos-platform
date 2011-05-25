@@ -80,6 +80,7 @@ namespace ss {
             addOption("info_process_manager");
             addOption("info_memory_manager");
             addOption("info_load_data_manager");
+            addOption("info_queues");
             addOption("info_engine");
         }
         

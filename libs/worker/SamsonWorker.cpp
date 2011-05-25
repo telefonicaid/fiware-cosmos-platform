@@ -163,6 +163,10 @@ namespace ss {
         // Set up time information
         ws->set_up_time(au::Format::ellapsedSeconds(&init_time));
         
+        // Set information about queues
+        ws->set_queues_status( queuesManager.getStatus() );
+        
+        
         // Numerical information for better presentation
         
         ws->set_total_memory( engine::MemoryManager::shared()->getMemory() );

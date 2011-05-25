@@ -20,7 +20,6 @@
 namespace ss {
     namespace stream
     {
-
         
         /**
          Main class to hold a block on memory
@@ -113,13 +112,40 @@ namespace ss {
             
             bool isContentOnMemory()
             {
-                return ( (state == on_memory) || ( state == writing ));
+                return (  (state == ready ) || (state == on_memory) || ( state == writing ));
+            }
+            
+            bool isContentOnDisk()
+            {
+                return (  (state == ready ) || (state == on_disk) || ( state == reading ));
             }
             
             bool isLocked()
             {
                 return (lock_counter > 0);
             }
+            
+            size_t getSize()
+            {
+                return size;
+            }
+            
+            size_t getSizeOnMemory()
+            {
+                if( isContentOnMemory() )
+                    return size;
+                else
+                    return 0;
+            }
+            
+            size_t getSizeOnDisk()
+            {
+                if( isContentOnDisk() )
+                    return size;
+                else
+                    return 0;
+            }
+            
             
         };
             

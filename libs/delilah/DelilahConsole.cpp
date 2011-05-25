@@ -1045,6 +1045,9 @@ namespace ss
             
             if( ( command == "info_full" ) || (command == "info_load_data_manager" ) )
                 txt << "** Load Data Manager: " << worker_status.load_data_manager_status() << "\n";
+
+            if( ( command == "info_full" ) || (command == "info_queues" ) )
+                txt << "** Queues: " << worker_status.queues_status() << "\n";
             
             if( ( command == "info_full" ) || (command == "info_process_manager" ) )
                 txt << "** Process Manager:   " << worker_status.process_manager_status() << "\n";

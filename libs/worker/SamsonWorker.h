@@ -22,7 +22,8 @@
 #include "DataBuffer.h"			// ss::DataBuffer
 #include "LoadDataManager.h"	// ss::LoadDataManager
 #include "samson.pb.h"			// ss::network::
-#include "engine/EngineElement.h"		// ss::EngineElement
+#include "engine/EngineElement.h"               // ss::EngineElement
+#include "samson/stream/QueuesManager.h"        // ss::stream::QueuesManager
 
 #define notification_samson_worker_send_status_update "notification_samson_worker_send_status_update"
 #define notification_samson_worker_send_trace "notification_samson_worker_send_trace"
@@ -46,6 +47,8 @@ namespace ss {
 		WorkerTaskManager    taskManager;       // Task manager
 		LoadDataManager      loadDataManager;   // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
 		
+        stream::QueuesManager   queuesManager;  // Manager of all the stream-processing queues in the system
+        
 	public:
 
 		// PacketReceiverInterface

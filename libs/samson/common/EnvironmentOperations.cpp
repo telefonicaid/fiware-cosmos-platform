@@ -1,6 +1,9 @@
 
 #include "samson/common/EnvironmentOperations.h"			// Own definition of this methods
 
+#include <iostream>
+#include <iomanip>
+
 
 namespace samson {
 
@@ -37,6 +40,31 @@ namespace samson {
     {
         to->set_kvs(from->kvs);
         to->set_size(from->size);
+    }
+    
+    
+    std::string getStatus( network::StreamQueue *queue )
+    {
+        std::ostringstream txt;
+        
+        txt << std::setw(30) << queue->name();
+        txt << " (" << queue->format().keyformat() << " " << queue->format().valueformat() << ") ";
+        txt << " --> " << queue->operation() << " --> ";
+        
+        for (int j = 0 ;  j < queue->output_size() ; j++)
+        {
+            txt << " [ ";
+            for (int k = 0 ; k < queue->output(j).queue_size() ; k++ )
+            {
+                txt << queue->output(j).queue(k);
+                if( k != (queue->output(j).queue_size()-1) )
+                    txt << ",";
+            }
+            txt << " ] ";
+        }
+        
+        
+        return txt.str();
     }
     
 }

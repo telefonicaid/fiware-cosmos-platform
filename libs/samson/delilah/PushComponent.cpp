@@ -102,7 +102,7 @@ namespace samson
             Packet* packet = new Packet( Message::PushBlock );
             packet->buffer = buffer;    // Set the buffer of data
             network::PushBlock* pb =  packet->message->mutable_push_block();
-            pb->set_queue( queue );
+            pb->add_queue( queue );
             
             delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), packet);
             worker++;

@@ -69,6 +69,7 @@ char* messageCode(MessageCode code)
 	case Trace:                            return (char*) "Trace";
 	case ProcessList:                      return (char*) "ProcessList";
     case PushBlock:                        return (char*) "PushBlock";
+    case PushBlockResponse:                return (char*) "PushBlockResponse";
 	case Unknown:                          return (char*) "Unknown";
 	}
 

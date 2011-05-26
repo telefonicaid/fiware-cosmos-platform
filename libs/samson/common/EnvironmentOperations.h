@@ -17,6 +17,8 @@ namespace samson {
     
     void copy( FullKVInfo * from , network::KVInfo* to);
  
+ 
+    std::string getStatus( network::StreamQueue *queue );
     
 }
 

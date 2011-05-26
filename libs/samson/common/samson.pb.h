@@ -38,6 +38,8 @@ class Environment;
 class KVInfo;
 class File;
 class Queue;
+class StreamQueueOutput;
+class StreamQueue;
 class FullQueue;
 class QueueFile;
 class KVFormat;
@@ -701,6 +703,230 @@ class Queue : public ::google::protobuf::Message {
   
   void InitAsDefaultInstance();
   static Queue* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class StreamQueueOutput : public ::google::protobuf::Message {
+ public:
+  StreamQueueOutput();
+  virtual ~StreamQueueOutput();
+  
+  StreamQueueOutput(const StreamQueueOutput& from);
+  
+  inline StreamQueueOutput& operator=(const StreamQueueOutput& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const StreamQueueOutput& default_instance();
+  
+  void Swap(StreamQueueOutput* other);
+  
+  // implements Message ----------------------------------------------
+  
+  StreamQueueOutput* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const StreamQueueOutput& from);
+  void MergeFrom(const StreamQueueOutput& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // repeated string queue = 1;
+  inline int queue_size() const;
+  inline void clear_queue();
+  static const int kQueueFieldNumber = 1;
+  inline const ::std::string& queue(int index) const;
+  inline ::std::string* mutable_queue(int index);
+  inline void set_queue(int index, const ::std::string& value);
+  inline void set_queue(int index, const char* value);
+  inline void set_queue(int index, const char* value, size_t size);
+  inline ::std::string* add_queue();
+  inline void add_queue(const ::std::string& value);
+  inline void add_queue(const char* value);
+  inline void add_queue(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& queue() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_queue();
+  
+  // @@protoc_insertion_point(class_scope:samson.network.StreamQueueOutput)
+ private:
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  mutable int _cached_size_;
+  
+  ::google::protobuf::RepeatedPtrField< ::std::string> queue_;
+  friend void  protobuf_AddDesc_samson_2eproto();
+  friend void protobuf_AssignDesc_samson_2eproto();
+  friend void protobuf_ShutdownFile_samson_2eproto();
+  
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  
+  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
+  inline bool _has_bit(int index) const {
+    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
+  }
+  inline void _set_bit(int index) {
+    _has_bits_[index / 32] |= (1u << (index % 32));
+  }
+  inline void _clear_bit(int index) {
+    _has_bits_[index / 32] &= ~(1u << (index % 32));
+  }
+  
+  void InitAsDefaultInstance();
+  static StreamQueueOutput* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class StreamQueue : public ::google::protobuf::Message {
+ public:
+  StreamQueue();
+  virtual ~StreamQueue();
+  
+  StreamQueue(const StreamQueue& from);
+  
+  inline StreamQueue& operator=(const StreamQueue& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const StreamQueue& default_instance();
+  
+  void Swap(StreamQueue* other);
+  
+  // implements Message ----------------------------------------------
+  
+  StreamQueue* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const StreamQueue& from);
+  void MergeFrom(const StreamQueue& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // required string name = 1;
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  
+  // required .samson.network.KVFormat format = 2;
+  inline bool has_format() const;
+  inline void clear_format();
+  static const int kFormatFieldNumber = 2;
+  inline const ::samson::network::KVFormat& format() const;
+  inline ::samson::network::KVFormat* mutable_format();
+  
+  // optional string operation = 3;
+  inline bool has_operation() const;
+  inline void clear_operation();
+  static const int kOperationFieldNumber = 3;
+  inline const ::std::string& operation() const;
+  inline void set_operation(const ::std::string& value);
+  inline void set_operation(const char* value);
+  inline void set_operation(const char* value, size_t size);
+  inline ::std::string* mutable_operation();
+  
+  // repeated .samson.network.StreamQueueOutput output = 4;
+  inline int output_size() const;
+  inline void clear_output();
+  static const int kOutputFieldNumber = 4;
+  inline const ::samson::network::StreamQueueOutput& output(int index) const;
+  inline ::samson::network::StreamQueueOutput* mutable_output(int index);
+  inline ::samson::network::StreamQueueOutput* add_output();
+  inline const ::google::protobuf::RepeatedPtrField< ::samson::network::StreamQueueOutput >&
+      output() const;
+  inline ::google::protobuf::RepeatedPtrField< ::samson::network::StreamQueueOutput >*
+      mutable_output();
+  
+  // @@protoc_insertion_point(class_scope:samson.network.StreamQueue)
+ private:
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  mutable int _cached_size_;
+  
+  ::std::string* name_;
+  static const ::std::string _default_name_;
+  ::samson::network::KVFormat* format_;
+  ::std::string* operation_;
+  static const ::std::string _default_operation_;
+  ::google::protobuf::RepeatedPtrField< ::samson::network::StreamQueueOutput > output_;
+  friend void  protobuf_AddDesc_samson_2eproto();
+  friend void protobuf_AssignDesc_samson_2eproto();
+  friend void protobuf_ShutdownFile_samson_2eproto();
+  
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  
+  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
+  inline bool _has_bit(int index) const {
+    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
+  }
+  inline void _set_bit(int index) {
+    _has_bits_[index / 32] |= (1u << (index % 32));
+  }
+  inline void _clear_bit(int index) {
+    _has_bits_[index / 32] &= ~(1u << (index % 32));
+  }
+  
+  void InitAsDefaultInstance();
+  static StreamQueue* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -2665,6 +2891,18 @@ class QueueList : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_load_id();
   
+  // repeated .samson.network.StreamQueue stream_queue = 4;
+  inline int stream_queue_size() const;
+  inline void clear_stream_queue();
+  static const int kStreamQueueFieldNumber = 4;
+  inline const ::samson::network::StreamQueue& stream_queue(int index) const;
+  inline ::samson::network::StreamQueue* mutable_stream_queue(int index);
+  inline ::samson::network::StreamQueue* add_stream_queue();
+  inline const ::google::protobuf::RepeatedPtrField< ::samson::network::StreamQueue >&
+      stream_queue() const;
+  inline ::google::protobuf::RepeatedPtrField< ::samson::network::StreamQueue >*
+      mutable_stream_queue();
+  
   // @@protoc_insertion_point(class_scope:samson.network.QueueList)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -2673,11 +2911,12 @@ class QueueList : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::samson::network::FullQueue > queue_;
   ::google::protobuf::RepeatedPtrField< ::samson::network::ActiveTask > tasks_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > load_id_;
+  ::google::protobuf::RepeatedPtrField< ::samson::network::StreamQueue > stream_queue_;
   friend void  protobuf_AddDesc_samson_2eproto();
   friend void protobuf_AssignDesc_samson_2eproto();
   friend void protobuf_ShutdownFile_samson_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -5784,23 +6023,28 @@ class PushBlock : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // required string queue = 1;
-  inline bool has_queue() const;
+  // repeated string queue = 1;
+  inline int queue_size() const;
   inline void clear_queue();
   static const int kQueueFieldNumber = 1;
-  inline const ::std::string& queue() const;
-  inline void set_queue(const ::std::string& value);
-  inline void set_queue(const char* value);
-  inline void set_queue(const char* value, size_t size);
-  inline ::std::string* mutable_queue();
+  inline const ::std::string& queue(int index) const;
+  inline ::std::string* mutable_queue(int index);
+  inline void set_queue(int index, const ::std::string& value);
+  inline void set_queue(int index, const char* value);
+  inline void set_queue(int index, const char* value, size_t size);
+  inline ::std::string* add_queue();
+  inline void add_queue(const ::std::string& value);
+  inline void add_queue(const char* value);
+  inline void add_queue(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& queue() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_queue();
   
   // @@protoc_insertion_point(class_scope:samson.network.PushBlock)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
-  ::std::string* queue_;
-  static const ::std::string _default_queue_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> queue_;
   friend void  protobuf_AddDesc_samson_2eproto();
   friend void protobuf_AssignDesc_samson_2eproto();
   friend void protobuf_ShutdownFile_samson_2eproto();
@@ -6432,6 +6676,184 @@ inline ::samson::network::KVInfo* Queue::mutable_info() {
   _set_bit(2);
   if (info_ == NULL) info_ = new ::samson::network::KVInfo;
   return info_;
+}
+
+// -------------------------------------------------------------------
+
+// StreamQueueOutput
+
+// repeated string queue = 1;
+inline int StreamQueueOutput::queue_size() const {
+  return queue_.size();
+}
+inline void StreamQueueOutput::clear_queue() {
+  queue_.Clear();
+}
+inline const ::std::string& StreamQueueOutput::queue(int index) const {
+  return queue_.Get(index);
+}
+inline ::std::string* StreamQueueOutput::mutable_queue(int index) {
+  return queue_.Mutable(index);
+}
+inline void StreamQueueOutput::set_queue(int index, const ::std::string& value) {
+  queue_.Mutable(index)->assign(value);
+}
+inline void StreamQueueOutput::set_queue(int index, const char* value) {
+  queue_.Mutable(index)->assign(value);
+}
+inline void StreamQueueOutput::set_queue(int index, const char* value, size_t size) {
+  queue_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* StreamQueueOutput::add_queue() {
+  return queue_.Add();
+}
+inline void StreamQueueOutput::add_queue(const ::std::string& value) {
+  queue_.Add()->assign(value);
+}
+inline void StreamQueueOutput::add_queue(const char* value) {
+  queue_.Add()->assign(value);
+}
+inline void StreamQueueOutput::add_queue(const char* value, size_t size) {
+  queue_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+StreamQueueOutput::queue() const {
+  return queue_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+StreamQueueOutput::mutable_queue() {
+  return &queue_;
+}
+
+// -------------------------------------------------------------------
+
+// StreamQueue
+
+// required string name = 1;
+inline bool StreamQueue::has_name() const {
+  return _has_bit(0);
+}
+inline void StreamQueue::clear_name() {
+  if (name_ != &_default_name_) {
+    name_->clear();
+  }
+  _clear_bit(0);
+}
+inline const ::std::string& StreamQueue::name() const {
+  return *name_;
+}
+inline void StreamQueue::set_name(const ::std::string& value) {
+  _set_bit(0);
+  if (name_ == &_default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void StreamQueue::set_name(const char* value) {
+  _set_bit(0);
+  if (name_ == &_default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void StreamQueue::set_name(const char* value, size_t size) {
+  _set_bit(0);
+  if (name_ == &_default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* StreamQueue::mutable_name() {
+  _set_bit(0);
+  if (name_ == &_default_name_) {
+    name_ = new ::std::string;
+  }
+  return name_;
+}
+
+// required .samson.network.KVFormat format = 2;
+inline bool StreamQueue::has_format() const {
+  return _has_bit(1);
+}
+inline void StreamQueue::clear_format() {
+  if (format_ != NULL) format_->::samson::network::KVFormat::Clear();
+  _clear_bit(1);
+}
+inline const ::samson::network::KVFormat& StreamQueue::format() const {
+  return format_ != NULL ? *format_ : *default_instance_->format_;
+}
+inline ::samson::network::KVFormat* StreamQueue::mutable_format() {
+  _set_bit(1);
+  if (format_ == NULL) format_ = new ::samson::network::KVFormat;
+  return format_;
+}
+
+// optional string operation = 3;
+inline bool StreamQueue::has_operation() const {
+  return _has_bit(2);
+}
+inline void StreamQueue::clear_operation() {
+  if (operation_ != &_default_operation_) {
+    operation_->clear();
+  }
+  _clear_bit(2);
+}
+inline const ::std::string& StreamQueue::operation() const {
+  return *operation_;
+}
+inline void StreamQueue::set_operation(const ::std::string& value) {
+  _set_bit(2);
+  if (operation_ == &_default_operation_) {
+    operation_ = new ::std::string;
+  }
+  operation_->assign(value);
+}
+inline void StreamQueue::set_operation(const char* value) {
+  _set_bit(2);
+  if (operation_ == &_default_operation_) {
+    operation_ = new ::std::string;
+  }
+  operation_->assign(value);
+}
+inline void StreamQueue::set_operation(const char* value, size_t size) {
+  _set_bit(2);
+  if (operation_ == &_default_operation_) {
+    operation_ = new ::std::string;
+  }
+  operation_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* StreamQueue::mutable_operation() {
+  _set_bit(2);
+  if (operation_ == &_default_operation_) {
+    operation_ = new ::std::string;
+  }
+  return operation_;
+}
+
+// repeated .samson.network.StreamQueueOutput output = 4;
+inline int StreamQueue::output_size() const {
+  return output_.size();
+}
+inline void StreamQueue::clear_output() {
+  output_.Clear();
+}
+inline const ::samson::network::StreamQueueOutput& StreamQueue::output(int index) const {
+  return output_.Get(index);
+}
+inline ::samson::network::StreamQueueOutput* StreamQueue::mutable_output(int index) {
+  return output_.Mutable(index);
+}
+inline ::samson::network::StreamQueueOutput* StreamQueue::add_output() {
+  return output_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::samson::network::StreamQueueOutput >&
+StreamQueue::output() const {
+  return output_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::samson::network::StreamQueueOutput >*
+StreamQueue::mutable_output() {
+  return &output_;
 }
 
 // -------------------------------------------------------------------
@@ -8368,6 +8790,31 @@ QueueList::mutable_load_id() {
   return &load_id_;
 }
 
+// repeated .samson.network.StreamQueue stream_queue = 4;
+inline int QueueList::stream_queue_size() const {
+  return stream_queue_.size();
+}
+inline void QueueList::clear_stream_queue() {
+  stream_queue_.Clear();
+}
+inline const ::samson::network::StreamQueue& QueueList::stream_queue(int index) const {
+  return stream_queue_.Get(index);
+}
+inline ::samson::network::StreamQueue* QueueList::mutable_stream_queue(int index) {
+  return stream_queue_.Mutable(index);
+}
+inline ::samson::network::StreamQueue* QueueList::add_stream_queue() {
+  return stream_queue_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::samson::network::StreamQueue >&
+QueueList::stream_queue() const {
+  return stream_queue_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::samson::network::StreamQueue >*
+QueueList::mutable_stream_queue() {
+  return &stream_queue_;
+}
+
 // -------------------------------------------------------------------
 
 // DataList
@@ -10223,46 +10670,48 @@ inline void MessagePlatformProcess::set_code(::samson::network::MessagePlatformP
 
 // PushBlock
 
-// required string queue = 1;
-inline bool PushBlock::has_queue() const {
-  return _has_bit(0);
+// repeated string queue = 1;
+inline int PushBlock::queue_size() const {
+  return queue_.size();
 }
 inline void PushBlock::clear_queue() {
-  if (queue_ != &_default_queue_) {
-    queue_->clear();
-  }
-  _clear_bit(0);
+  queue_.Clear();
 }
-inline const ::std::string& PushBlock::queue() const {
-  return *queue_;
+inline const ::std::string& PushBlock::queue(int index) const {
+  return queue_.Get(index);
 }
-inline void PushBlock::set_queue(const ::std::string& value) {
-  _set_bit(0);
-  if (queue_ == &_default_queue_) {
-    queue_ = new ::std::string;
-  }
-  queue_->assign(value);
+inline ::std::string* PushBlock::mutable_queue(int index) {
+  return queue_.Mutable(index);
 }
-inline void PushBlock::set_queue(const char* value) {
-  _set_bit(0);
-  if (queue_ == &_default_queue_) {
-    queue_ = new ::std::string;
-  }
-  queue_->assign(value);
+inline void PushBlock::set_queue(int index, const ::std::string& value) {
+  queue_.Mutable(index)->assign(value);
 }
-inline void PushBlock::set_queue(const char* value, size_t size) {
-  _set_bit(0);
-  if (queue_ == &_default_queue_) {
-    queue_ = new ::std::string;
-  }
-  queue_->assign(reinterpret_cast<const char*>(value), size);
+inline void PushBlock::set_queue(int index, const char* value) {
+  queue_.Mutable(index)->assign(value);
 }
-inline ::std::string* PushBlock::mutable_queue() {
-  _set_bit(0);
-  if (queue_ == &_default_queue_) {
-    queue_ = new ::std::string;
-  }
+inline void PushBlock::set_queue(int index, const char* value, size_t size) {
+  queue_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* PushBlock::add_queue() {
+  return queue_.Add();
+}
+inline void PushBlock::add_queue(const ::std::string& value) {
+  queue_.Add()->assign(value);
+}
+inline void PushBlock::add_queue(const char* value) {
+  queue_.Add()->assign(value);
+}
+inline void PushBlock::add_queue(const char* value, size_t size) {
+  queue_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+PushBlock::queue() const {
   return queue_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+PushBlock::mutable_queue() {
+  return &queue_;
 }
 
 // -------------------------------------------------------------------

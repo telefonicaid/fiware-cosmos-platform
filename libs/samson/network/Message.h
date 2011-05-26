@@ -79,6 +79,7 @@ typedef enum MessageCode
     Trace                           = CODE('T', 'r', 'a', ' '),
 	ProcessList                     = CODE('P', 'r', 'L', ' '),
     PushBlock                       = CODE('P', 'B', 'l', ' '),
+    PushBlockResponse               = CODE('P', 'B', 'r', ' '),
     Unknown                         = CODE('U', 'n', 'k', ' ')
 } MessageCode;
 

@@ -32,6 +32,24 @@ namespace samson {
 
         void QueuesManager::addBlock( std::string queue_name , Block *b)
         {
+            // Get or create the queue
+            Queue *queue = getQueue( queue_name );
+            
+            // Add the block to the queue
+            queue->add( b );
+            
+        }
+     
+        void QueuesManager::setInfo( network::StreamQueue &stream_queue )
+        {
+            // Get or create the queue
+            Queue *queue = getQueue( stream_queue.name() );
+            queue->setStreamQueue( stream_queue );
+            
+        }
+        
+        Queue* QueuesManager::getQueue( std::string queue_name )
+        {
             Queue *queue = queues.findInMap( queue_name );
             if (! queue )
             {
@@ -39,11 +57,11 @@ namespace samson {
                 queues.insertInMap( queue->name, queue );
             }
             
-            // Add the block to the queue
-            queue->add( b );
+            return queue;
             
         }
-        
+
+
         
     }
 

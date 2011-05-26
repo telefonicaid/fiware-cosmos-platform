@@ -28,6 +28,14 @@ namespace samson {
 		return true;
 	}
 	
+    
+    
+    void copy( KVFormat *from , network::KVFormat *to )
+    {
+        to->set_keyformat ( from->keyFormat );
+        to->set_valueformat( from->valueFormat );
+    }
+
 
 	
 }

@@ -44,6 +44,13 @@ namespace samson {
 				
 		void setFromString( std::string key_value )
 		{
+            if ( key_value == "txt" )
+            {
+                init( "txt", "txt" );
+                return;
+            }
+            
+            
 			size_t pos = key_value.find_last_of('-');
 			if( pos == std::string::npos )
 			{
@@ -87,6 +94,16 @@ namespace samson {
 		{
 			return keyFormat + "-" + valueFormat;
 		}		
+
+		static KVFormat format( std::string string_format )
+		{
+            KVFormat tmp;
+            tmp.setFromString( string_format );
+            
+            return tmp;
+            
+            
+		}
 		
 		static KVFormat format( std::string key_format , std::string value_format )
 		{

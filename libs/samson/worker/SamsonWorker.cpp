@@ -27,6 +27,8 @@
 #include "samson/common/MemoryTags.h"                 // MemoryInput , MemoryOutputNetwork ,...
 
 #include "samson/stream/Block.h"            // samson::stream::Block
+#include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
+
 
 #define notification_worker_update_files    "notification_worker_update_files"
 
@@ -209,13 +211,33 @@ namespace samson {
                 return;
             }
             
-            // Push the packet to a particular stream-queue
-            std::string queue = packet->message->push_block().queue();
             
             // Create the new block with the buffer
             stream::Block *block = new stream::Block( packet->buffer );
             
-            queuesManager.addBlock(queue, block);
+            // Push the packet to a particular stream-queue
+            for ( int i = 0 ; i < packet->message->push_block().queue_size() ; i++)
+            {
+                std::string queue = packet->message->push_block().queue(i);
+                queuesManager.addBlock(queue, block);
+            }
+
+            // Release the block ( it should be reteained by all the queues where it has been added )
+            stream::BlockManager::shared()->release( block );
+   
+            
+            // Send a message back if delilah_id is > 0
+            if( packet->message->delilah_id() > 0)
+            {
+                Packet *p = new Packet( Message::PushBlockResponse );
+                network::PushBlockResponse *pbr = p->message->mutable_push_block_response();
+                pbr->mutable_request()->CopyFrom( packet->message->push_block() );
+                
+                p->message()->set_delilah_id( packet->message->delilah_id()  );
+                
+                network->send(this, packet->fromId , packet );
+                
+            }
             
         }
         
@@ -365,6 +387,16 @@ namespace samson {
 	
 	void SamsonWorker::processListOfFiles( const ::samson::network::QueueList& ql)
 	{
+        
+        // Update information about how to process queue
+        for ( int i = 0 ; i < ql.stream_queue_size() ; i++ )
+        {
+            network::StreamQueue q = ql.stream_queue(i);
+            queuesManager.setInfo( q );
+        }
+        
+        
+        
         
 		// Generate list of local files ( to not remove them )
 		std::set<std::string> files;

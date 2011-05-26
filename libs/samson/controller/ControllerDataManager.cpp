@@ -19,6 +19,8 @@
 
 namespace samson {
 	
+
+    
 	ControllerDataManager::ControllerDataManager( ) : DataManager( getLogFileName() )
 	{
 		info_kvs.clear();
@@ -211,6 +213,135 @@ namespace samson {
 			return response;
 		}
 
+        if( commandLine.get_argument(0) == "add_queue" )
+		{
+			
+			
+			if( commandLine.get_num_arguments() < 4 )
+			{
+				response.output = "Usage: add_queue name format operation outputs1 outputs2 output3. Where format = { txt , key_format-value_format } and outputs1 = { stream_queue_name , q1,q2,q3 } ";
+				response.error = true;
+				return response;
+			}
+            
+			std::string name            = commandLine.get_argument( 1 );
+            std::string format_string   = commandLine.get_argument( 2 );
+			std::string operation       = commandLine.get_argument( 3 );
+
+            KVFormat format = KVFormat::format( format_string );
+			
+            
+            if( !ModulesManager::shared()->checkData( format.keyFormat ) )
+            {
+                response.output = "Unsupported data format " + format.keyFormat;
+                response.error = true;
+                return response;
+            }
+            
+            if( !ModulesManager::shared()->checkData( format.valueFormat ) )
+            {
+                std::ostringstream output;
+                output << "Unsupported data format " + format.valueFormat;
+                response.output = output.str();
+                response.error = true;
+                return response;
+            }
+
+            // Check it the queue already exists
+            network::StreamQueue *_queue = stream_queues.findInMap( name );
+			
+			// Check if queue exist
+			if( _queue != NULL )
+			{
+                std::ostringstream output;
+                output << "Queue " + name + " already exist";
+                response.output = output.str();
+                response.error = true;
+                return response;
+			}			
+            
+            // Check the operation
+            
+            Operation* op = ModulesManager::shared()->getOperation(operation);
+            
+            if( !op )
+            {
+                std::ostringstream output;
+                output << "Unsupported operation " + operation;
+                response.output = output.str();
+                response.error = true;
+                return response;
+            }
+
+            
+            switch ( op->getType() ) {
+                case Operation::parser:
+                    
+                    // Check with the number of outputs
+                    if( commandLine.get_num_arguments() < ( 4 + op->getNumOutputs() ) )
+                    {
+                        std::ostringstream output;
+                        output << "Not enought outputs for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
+                        response.output = output.str();
+                        response.error = true;
+                        return response;
+                        
+                    }
+                    
+                    break;
+                    
+                case Operation::script:
+                {
+                    std::ostringstream output;
+                    output << "Script operations cannot be used to process stream queues. Only parsers, maps and spetial reducers";
+                    response.output = output.str();
+                    response.error = true;
+                    return response;
+                    
+                }
+                    
+                    break;
+                    
+                default:
+                {
+                    std::ostringstream output;
+                    output << "Operation type is currently not supported... comming soon!";
+                    response.output = output.str();
+                    response.error = true;
+                    return response;
+                    
+                }
+                    break;
+            }
+            
+            
+            // Create the new queue
+			
+            network::StreamQueue *tmp = new network::StreamQueue();
+            tmp->set_name(name);
+            copy( &format , tmp->mutable_format() );
+            tmp->set_operation( operation );
+            
+            for (int i = 0 ; i < op->getNumOutputs() ; i++ )
+            {
+                network::StreamQueueOutput * output = tmp->add_output();
+
+                // Get comma separated elements
+                std::vector<std::string> queues = au::split( commandLine.get_argument( 4 + i) , ',' );
+
+                for ( size_t j = 0 ; j < queues.size() ; j++ )
+                    output->add_queue( queues[j] );
+                
+            }
+            
+            // Insert the queue in the global list of stream-queues
+			stream_queues.insertInMap( name , tmp );
+            
+            
+			response.output = "OK";
+			return response;
+		}
+
 		
 		if( commandLine.get_argument(0) == "remove_operation" )
 		{
@@ -301,7 +432,11 @@ namespace samson {
 		{
 			// remove completelly queues
 			queues.clearMap();
-			
+            
+            // remove completelly stream_queues
+            stream_queues.clearMap();
+
+			// Clear the total counter of data
 			info_kvs.clear();
 			info_txt.clear();
 			
@@ -743,22 +878,21 @@ namespace samson {
 		std::string end = cmdLine.get_flag_string("end");
 		
 		lock.lock();
-		
-		std::map< std::string , Queue*>::iterator i;
-		for (i = queues.begin() ; i!= queues.end() ;i++)
-		{
-			Queue *queue = i->second;
-			
-			if( filterName( i->first , begin, end) )
-			{                
+
+		// List of data-sets
+        {
+            std::map< std::string , Queue*>::iterator i;
+            for (i = queues.begin() ; i!= queues.end() ;i++)
+            {
+                Queue *queue = i->second;
                 
-				network::FullQueue *fq = ql->add_queue();
-			
-                queue->fill( fq );
-				
-			}
-			
-		}
+                if( filterName( i->first , begin, end) )
+                {                
+                    network::FullQueue *fq = ql->add_queue();
+                    queue->fill( fq );
+                }
+            }
+        }
 
 		// List of active tasks ( list of files that should not be removed )
 		std::map< size_t , ActiveTask*>::iterator t;
@@ -769,9 +903,25 @@ namespace samson {
 				at->add_filename( *f );
 		}
 		
+		// List of stream queues
+        {
+            std::map< std::string , network::StreamQueue*>::iterator i;
+            for (i = stream_queues.begin() ; i!= stream_queues.end() ;i++)
+            {
+                network::StreamQueue *queue = i->second;
+                
+                if( filterName( i->first , begin, end) )
+                {                
+                    network::StreamQueue *fq = ql->add_stream_queue();
+                    fq->CopyFrom(*queue);
+                }
+            }
+        }
 		
 		lock.unlock();		
 	}
+    
+    
 	
 	void ControllerDataManager::fill( network::DownloadDataInitResponse* response , std::string queue )
 	{

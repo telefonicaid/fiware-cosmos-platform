@@ -16,6 +16,7 @@
 
 #include "au/map.h"     // au::map
 #include <string>
+#include "samson/common/samson.pb.h"        // network::...
 
 namespace samson {
     namespace stream
@@ -36,6 +37,14 @@ namespace samson {
             // Add a block to a particular queue ( ususally from the network interface )
             void addBlock( std::string queue , Block *b);
             
+            
+            // set info ( from controller )
+            void setInfo( network::StreamQueue &queue );
+            
+            
+        private:
+            
+            Queue* getQueue( std::string name );
         };
     }
 }

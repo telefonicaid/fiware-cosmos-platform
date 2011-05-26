@@ -137,6 +137,12 @@ namespace au {
 		bool getBoolValue( std::string value );
 
 	};
+    
+    
+    std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
+    
+    std::vector<std::string> split(const std::string &s, char delim);  
+    
 
 }
 

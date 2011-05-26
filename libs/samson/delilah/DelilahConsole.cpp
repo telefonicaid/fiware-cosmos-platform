@@ -914,6 +914,15 @@ namespace samson
 			txt << std::endl;
 		}
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+        
+		for (int i = 0 ; i < ql.stream_queue_size() ; i++)
+		{
+			network::StreamQueue queue = ql.stream_queue(i);
+            txt << getStatus( &queue );
+			txt << std::endl;
+		}
+
+		txt << "------------------------------------------------------------------------------------------------" << std::endl;
 		
 		txt << std::endl;
 		

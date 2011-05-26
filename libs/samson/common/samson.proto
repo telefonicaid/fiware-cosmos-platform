@@ -38,6 +38,23 @@ message Queue
 	optional KVInfo info 		 = 3;
 }
 
+// StreamQueue: All the information related with a particular queue
+
+message StreamQueueOutput
+{
+	repeated string queue = 1;	// List of queue names to "send" blocks of data
+}
+
+message StreamQueue
+{
+	required string name		= 1;	// Name of the stream queue
+	required KVFormat format	= 2;	// Format of this queue
+	optional string operation	= 3;	// Name of the operation to process this queue ( parser , map , reduce with 2 inputs )
+
+	repeated StreamQueueOutput output = 4;	// Outputs to send the packets
+
+}
+
 message FullQueue
 {
 	required Queue queue	=1;		// Queue basic info
@@ -194,6 +211,9 @@ message QueueList
 	repeated FullQueue queue = 1;     // List of queues with its files
 	repeated ActiveTask tasks = 2;    // List of active tasks ( files associated with this tasks can not be removed at workers )
 	repeated uint64 load_id = 3;	  // Ids of active load operations ( not remove incomming files )
+
+	repeated StreamQueue stream_queue = 4;     // List of strema queues
+
 }
 
 message DataList
@@ -540,7 +560,7 @@ message MessagePlatformProcess
 
 message PushBlock
 {
-	required string queue	 = 1;	// Name of the queue to push the packet
+	repeated string queue	 = 1;	// List of queues where to push this block
 }
 
 // ////////////////////////////////////////////////////////////////////////////

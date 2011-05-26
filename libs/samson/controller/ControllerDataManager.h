@@ -46,6 +46,9 @@ namespace samson {
 		au::map< std::string , Queue> queues;						// List of ALL KeyValue queues
 		au::map< size_t , ActiveTask > tasks;						// List of active tasks ( information about the files that should not be deleted )
 		
+        
+        // List of stream - queues contained in the system
+        au::map< std::string , network::StreamQueue > stream_queues;    
 
 		AutomaticOperationManager automatic_operations_manager;		// Manager of automatic operations
 		
@@ -67,7 +70,7 @@ namespace samson {
 		
 		static std::string getLogFileName( );
 
-		void fill( network::QueueList *ql , std::string command);
+		void fill( network::QueueList *ql , std::string command );
 		void fill( network::AutomaticOperationList *aol , std::string command);
 		void fill( network::DownloadDataInitResponse* response , std::string queue );
 		

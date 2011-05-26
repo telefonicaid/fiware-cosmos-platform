@@ -149,7 +149,7 @@ int Network2::controllerGetIdentifier(void)
 
 	epMgr->lookup(Endpoint2::Controller, 0, &ix);
 
-	LM_M(("returning ix %d", ix));
+	LM_T(LmtIdIx, ("returning ix %d", ix));
 	return ix;
 }
 
@@ -165,7 +165,7 @@ int Network2::workerGetIdentifier(int id)
 
 	epMgr->lookup(Endpoint2::Worker, id, &ix);
 
-	LM_M(("returning ix %d", ix));
+	LM_T(LmtIdIx, ("returning ix %d", ix));
 	return ix;
 }
 
@@ -185,7 +185,7 @@ int Network2::getMyidentifier(void)
 
 	epMgr->lookup(epMgr->me->typeGet(), epMgr->me->idGet(), &ix);
 
-	LM_M(("returning ix %d", ix));
+	LM_T(LmtIdIx, ("returning ix %d", ix));
 	return ix;
 }
 
@@ -199,7 +199,7 @@ int Network2::getNumWorkers(void)
 {
 	int noOfWorkers = epMgr->endpointCount(Endpoint2::Worker);
 
-	LM_M(("returning %d workers", noOfWorkers));
+	LM_T(LmtIdIx, ("returning %d workers", noOfWorkers));
 	return noOfWorkers;
 }
 
@@ -220,7 +220,7 @@ int Network2::getWorkerFromIdentifier(int endpointIx)
 		return -1;
 
 	id = ep->idGet();
-	LM_M(("returning worker id %d for endpointIx %d", id, endpointIx));
+	LM_T(LmtIdIx, ("returning worker id %d for endpointIx %d", id, endpointIx));
 
 	return id;
 }
@@ -244,7 +244,7 @@ void Network2::quit(void)
 */
 size_t Network2::send(PacketSenderInterface* psi, int id, samson::Packet* packetP)
 {
-	LM_M(("Sending a packet (%s) to endpoint %d (psi at %p, packet at %p)", messageCode(packetP->msgCode), id, psi, packetP));
+	LM_T(LmtSend, ("Sending a packet (%s) to endpoint %d (psi at %p, packet at %p)", messageCode(packetP->msgCode), id, psi, packetP));
 	epMgr->show("sending a packet", true);
 	_send(psi, id, packetP);
 	return 0;

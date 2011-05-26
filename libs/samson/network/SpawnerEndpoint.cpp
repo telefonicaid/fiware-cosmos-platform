@@ -54,7 +54,7 @@ SpawnerEndpoint::SpawnerEndpoint
 */
 SpawnerEndpoint::SpawnerEndpoint(UnhelloedEndpoint* ep) : Endpoint2(ep->epMgrGet(), Spawner, ep->idGet(), ep->nameGet(), ep->aliasGet(), ep->hostGet(), SPAWNER_PORT, ep->rFdGet(), ep->wFdGet())
 {
-	LM_M(("Created a Spawner Endpoint from an Unhelloed Endpoint"));
+	LM_T(LmtUnhelloed, ("Created a Spawner Endpoint from an Unhelloed Endpoint"));
 	// Fix id ?
 }
 

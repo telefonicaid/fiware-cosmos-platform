@@ -71,8 +71,6 @@ static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, 
 */
 EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 {
-	LM_M(("In EndpointManager::EndpointManager"));
-
 	tmoSecs          = 2;
 	tmoUSecs         = 0;
 
@@ -205,7 +203,7 @@ void EndpointManager::workersAdd(void)
 
 		if ((me->type == Endpoint2::Worker) && (hostP == me->host))
 		{
-			LM_M(("Worker's not adding itself ..."));
+			LM_T(LmtInit, ("Worker's not adding itself ..."));
 			continue;
 		}
 
@@ -242,7 +240,7 @@ void EndpointManager::workersConnect(void)
 		{
 			if (ep->idGet() < me->idGet())
 			{
-				LM_M(("Connecting to worker in '%s'", ep->host->name));
+				LM_T(LmtConnect, ("Connecting to worker in '%s'", ep->host->name));
 				ep->connect();  // Connect, but don't add to endpoint vector
 			}
 		}
@@ -269,11 +267,9 @@ void EndpointManager::initWorker(void)
 	if ((procVec = platformProcessesGet()) == NULL)
 		LM_X(1, ("Error retrieving vector of platform processes"));
 
-	LM_M(("Got %d processes in procVec", procVec->processes));
+	LM_T(LmtProcessVector, ("Got %d processes in procVec", procVec->processes));
 	for (int ix = 0; ix < procVec->processes; ix++)
-		LM_M(("Process %d: type %d, host %s", ix, procVec->processV[ix].type, procVec->processV[ix].host));
-
-	LM_M(("me->host: %s", me->host->name));
+		LM_T(LmtProcessVector, ("Process %d: type %d, host %s", ix, procVec->processV[ix].type, procVec->processV[ix].host));
 
 	if ((self = platformProcessLookup(hostMgr, procVec, Endpoint2::Worker, me->host, &ix)) == NULL)
 		LM_X(1, ("Cannot find myself in platform processes vector."));
@@ -333,7 +329,6 @@ void EndpointManager::initController(void)
 	if (webListener == NULL)
 		LM_W(("error creating web listener endpoint!"));
 
-	LM_M(("Adding workers from process vector to endpoint vector"));
 	workersAdd();
 }
 
@@ -356,7 +351,7 @@ void EndpointManager::initSpawner(void)
 	{
 		setupAwait();
 		
-		LM_M(("************* SAVING Process Vector"));
+		LM_T(LmtProcessVector, ("************* SAVING Process Vector"));
 		platformProcessesSave(procVec);
 	}
 }
@@ -456,7 +451,7 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 			continue;
 
 		endpoint[ix] = ep;
-		LM_M(("Added endpoint %d. type:%s, id:%d, name:%s, host:%s", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname()));
+		LM_T(LmtEndpointAdd, ("Added endpoint %d. type:%s, id:%d, name:%s, host:%s", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname()));
 
 		show("Added an Endpoint");
 		return ep;
@@ -738,12 +733,12 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 	if (listener == NULL)
 		LM_RE(Endpoint2::Error, ("Cannot await the setup to arrive if I have no Listener ..."));
 
-	LM_M(("Awaiting samsonSetup to connect and pass the Process Vector"));
+	LM_T(LmtSetup, ("Awaiting samsonSetup to connect and pass the Process Vector"));
 	while (1)
 	{
 		UnhelloedEndpoint* ep;
 
-		LM_M(("Await FOREVER for an incoming connection"));
+		LM_T(LmtSetup, ("Await FOREVER for an incoming connection"));
 		if (listener->msgAwait(-1, -1, "Incoming Connection") != 0)
 			LM_X(1, ("Endpoint2::msgAwait error"));
 
@@ -802,7 +797,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 				LM_W(("Got a reset, and that's OK but I don't need to do anything, I have nothing started ... Let's just keep reading ..."));
 			else if (header.code == Message::ProcessList)
 			{
-				LM_M(("Got a ProcessList, and that's OK, but I have nothing ... Let's Ack with NO DATA and continue to wait for a Process Vector ..."));
+				LM_T(LmtSetup, ("Got a ProcessList, and that's OK, but I have nothing ... Let's Ack with NO DATA and continue to wait for a Process Vector ..."));
 				ep->ack(Message::ProcessList);
 			}
 			else
@@ -856,7 +851,7 @@ void EndpointManager::timeout(void)
 	if (me->type == Endpoint2::Worker || me->type == Endpoint2::Delilah)
 	{
 		show("timeout");
-		LM_M(("In timeout %d - any controller/workers to connect to?", tmoNo));
+		LM_T(LmtTimeout, ("In timeout %d - any controller/workers to connect to?", tmoNo));
 		if (controller == NULL)
 			LM_X(1, ("controller == NULL"));
 
@@ -910,7 +905,6 @@ void EndpointManager::run(bool oneShot)
 		// Call cleanup function that removes all endpoints marked as 'ScheduledForRemoval' 
 		// Don't forget to use a semaphore for endpoint vector and jobs vector
 
-		LM_M(("Populate rFds for select (endpoints == %d)", endpoints));
 		do
 		{
 			FD_ZERO(&rFds);
@@ -930,7 +924,6 @@ void EndpointManager::run(bool oneShot)
 				if (ep->rFd == -1)
 					continue;
 
-				LM_M(("Adding %s@%s to select rFd list", ep->typeName(), ep->host->name));
 				eps += 1;
 				max = MAX(max, ep->rFd);
 				FD_SET(ep->rFd, &rFds);
@@ -944,8 +937,6 @@ void EndpointManager::run(bool oneShot)
 
 			fds = select(max + 1,  &rFds, NULL, NULL, &tv);
 		} while ((fds == -1) && (errno == EINTR));
-
-		LM_M(("select returned %d", fds));
 
 		if (fds == -1)
 			LM_X(1, ("select: %s", strerror(errno)));
@@ -970,16 +961,16 @@ void EndpointManager::run(bool oneShot)
 				
 				if (FD_ISSET(endpoint[ix]->rFd, &rFds))
 				{
-					LM_M(("Calling %s->msgTreat()", endpoint[ix]->typeName()));
+					LM_T(LmtMsgTreat, ("Calling %s->msgTreat()", endpoint[ix]->typeName()));
 					endpoint[ix]->msgTreat();
-					LM_M(("Back from %s->msgTreat()", endpoint[ix]->typeName()));
+					LM_T(LmtMsgTreat, ("Back from %s->msgTreat()", endpoint[ix]->typeName()));
 				}
 			}
 		}
 
 		if (oneShot)
 		{
-			LM_M(("one-shot - I return"));
+			LM_W(("one-shot - I return"));
 			return;
 		}
 	}
@@ -1184,7 +1175,7 @@ int EndpointManager::procVecSet(ProcessVector* _procVec, bool save)
 
 	if (save == true)
 	{
-		LM_M(("************* SAVING Process Vector"));
+		LM_T(LmtProcessVector, ("************* SAVING Process Vector"));
 		platformProcessesSave(procVec);
 		LM_W(("sleeping for a second after  saving Process Vector to file system"));
 		sleep(1);

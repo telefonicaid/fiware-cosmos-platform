@@ -29,6 +29,7 @@ typedef enum TraceLevels
 	LmtHello,
 	LmtTimeout,
 	LmtMsgTreat,
+	LmtHost,
 
 	LmtWorker          = 40,
 	LmtWorkers,
@@ -37,7 +38,10 @@ typedef enum TraceLevels
 	LmtEndpoints,
 	LmtEndpointUpdate,
 	LmtEndpointSlots,
+	LmtEndpointAdd,
 	LmtTemporalEndpoint,
+	LmtIdIx,
+	LmtUnhelloed,
 
 	LmtSpawnerList       = 60,
 	LmtProcessList,
@@ -47,6 +51,7 @@ typedef enum TraceLevels
 	LmtStarter          = 70,
 	LmtSpawner,
 	LmtProcess,
+	LmtSetup,
 
 	LmtSpawnerConnect    = 80,
 	LmtProcessConnect,
@@ -73,6 +78,7 @@ typedef enum TraceLevels
 	LmtThreadedMsgTreat,
 	LmtMsgLoopBack,
 	LmtControllerConnect,
+	LmtPacketReceive,
 
 	LmtNetworkInterface          = 120,
 	LmtDelilah,
@@ -87,6 +93,7 @@ typedef enum TraceLevels
 	LmtTask,
 	LmtJob,
 	LmtSend,
+	LmtReceive,                 
 
 	LmtPopupMenu                = 150,
 	LmtQueue,

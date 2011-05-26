@@ -31,6 +31,7 @@ char* traceLevelName(TraceLevels level)
 	case LmtHello:                       return (char*) "Hello message interchange";
 	case LmtTimeout:                     return (char*) "Timeout in Network select loop";
 	case LmtMsgTreat:                    return (char*) "Message Treating";
+	case LmtHost:                        return (char*) "Host";
 
 	case LmtWorker:                      return (char*) "Worker";
 	case LmtWorkers:                     return (char*) "Worker List";
@@ -39,8 +40,11 @@ char* traceLevelName(TraceLevels level)
 	case LmtEndpoints:                   return (char*) "Endpoints";
 	case LmtEndpointUpdate:              return (char*) "Updating an Endpoint";
 	case LmtEndpointSlots:               return (char*) "Endpoint Slots";
+	case LmtEndpointAdd:                 return (char*) "Endpoint Add";
 	case LmtTemporalEndpoint:            return (char*) "Temporal Endpoints";
-			
+	case LmtIdIx:                        return (char*) "Endpoint Id/Ix";
+	case LmtUnhelloed:                   return (char*) "Unhelloed Endpoint";
+
 	case LmtSpawnerList:                 return (char*) "Spawner List (Supervisor only)";
 	case LmtProcessList:                 return (char*) "Process List (Supervisor only)";
 	case LmtStarterList:                 return (char*) "Starter List (Supervisor only)";
@@ -48,6 +52,7 @@ char* traceLevelName(TraceLevels level)
 	case LmtStarter:                     return (char*) "Starters (Supervisor only)";
 	case LmtSpawner:                     return (char*) "Spawners (Supervisor only)";
 	case LmtProcess:                     return (char*) "Processes (Supervisor only)";
+	case LmtSetup:                       return (char*) "Setup";
 
 	case LmtSpawnerConnect:              return (char*) "Connecting to Spawner";
 	case LmtProcessConnect:              return (char*) "Connecting to Process";
@@ -76,6 +81,7 @@ char* traceLevelName(TraceLevels level)
 	case LmtThreadedMsgTreat:            return (char*) "Threaded Msg Treat function";
 	case LmtMsgLoopBack:                 return (char*) "Network loops back messages for same machine";
 	case LmtControllerConnect:           return (char*) "Connection to controller";
+	case LmtPacketReceive:               return (char*) "Packet Receive";
 
 	case LmtNetworkInterface:            return (char*) "Network Interface";
 	case LmtDelilah:                     return (char*) "Delilah";
@@ -91,6 +97,7 @@ char* traceLevelName(TraceLevels level)
 	case LmtTask:                        return (char*) "Task";
 	case LmtJob:                         return (char*) "Job";
 	case LmtSend:                        return (char*) "Send Callback";
+	case LmtReceive:                     return (char*) "Msg Receive";
 
 	case LmtPopupMenu:                   return (char*) "Popup Menu";
 	case LmtQueue:                       return (char*) "Queue";

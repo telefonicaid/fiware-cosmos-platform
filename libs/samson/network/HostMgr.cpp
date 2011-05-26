@@ -304,9 +304,9 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	{
 		if (onlyDigitsAndDots(name) == false)
 		{
-			LM_M(("Adding name without dots as an alias: '%s'", name));
+			LM_T(LmtHost, ("Adding name without dots as an alias: '%s'", name));
 			*dotP = 0;
-			LM_M(("Adding name without dots as an alias: '%s'", name));
+			LM_T(LmtHost, ("Adding name without dots as an alias: '%s'", name));
 			aliasAdd(hostP, name);
 		}
 	}
@@ -315,9 +315,9 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	{
 		if (onlyDigitsAndDots(ip) == false)
 		{
-			LM_M(("Adding name without dots as an alias: '%s'", ip));
+			LM_T(LmtHost, ("Adding name without dots as an alias: '%s'", ip));
 			*dotP = 0;
-			LM_M(("Adding name without dots as an alias: '%s'", ip));
+			LM_T(LmtHost, ("Adding name without dots as an alias: '%s'", ip));
 			aliasAdd(hostP, ip);
 		}
 	}
@@ -427,8 +427,6 @@ Host* HostMgr::lookup(const char* name)
 	if (name == NULL)
 		LM_RE(NULL, ("Cannot lookup a NULL hostname!"));
 
-	//LM_M(("Looking up host '%s'", name));
-
 	for (ix = 0; ix < size; ix++)
 	{
 		if (hostV[ix] == NULL)
@@ -465,7 +463,7 @@ Host* HostMgr::lookup(const char* name)
 		if (dot != NULL)  // I'm a bit paranoid, sorry.
 		{
 			*dot = 0;
-			LM_M(("Recursive call, using hostname '%s' instead of '%s'", newName, name));
+			LM_T(LmtHost, ("Recursive call, using hostname '%s' instead of '%s'", newName, name));
 			h = lookup(newName);
 		}
 

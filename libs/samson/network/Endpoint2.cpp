@@ -51,7 +51,7 @@ static void* readerThread(void* vP)
 {
 	Endpoint2* ep = (Endpoint2*) vP;
 
-	LM_M(("reader thread for endpoint %s@%s is running", ep->nameGet(), ep->hostGet()->name));
+	LM_T(LmtSenderThread, ("reader thread for endpoint %s@%s is running", ep->nameGet(), ep->hostGet()->name));
 	ep->run();
 
 	ep->stateSet(Endpoint2::ScheduledForRemoval);
@@ -70,7 +70,7 @@ static void* writerThread(void* vP)
 {
 	Endpoint2* ep = (Endpoint2*) vP;
 
-	LM_M(("writer thread for endpoint %s@%s is running (REAL wFd: %d))", ep->nameGet(), ep->hostGet()->name, ep->wFdGet()));
+	LM_T(LmtSenderThread, ("writer thread for endpoint %s@%s is running (REAL wFd: %d))", ep->nameGet(), ep->hostGet()->name, ep->wFdGet()));
 
 	while (1)
 	{
@@ -416,7 +416,6 @@ Endpoint2::Status Endpoint2::okToSend(void)
 		FD_ZERO(&wFds);
 		FD_SET(wFd, &wFds);
 	
-		LM_M(("Hanging on a select(write) on fd %d", wFd));
 		do
 		{
 			fds = select(wFd + 1, NULL, &wFds, NULL, &timeVal);
@@ -485,7 +484,7 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 {
 	if ((host == epMgr->me->host) && (type == epMgr->me->typeGet()))
 	{
-		LM_M(("Looping back a packet meant for myself (and calling psi->notificationSent ...)"));
+		LM_T(LmtMsgLoopBack, ("Looping back a packet meant for myself (and calling psi->notificationSent ...)"));
 		if (epMgr->packetReceiver == NULL)
 			LM_X(1, ("Np packetReceiver - no real use to contiune, this is a SW bug!"));
 		epMgr->packetReceiver->_receive(packetP);
@@ -534,7 +533,7 @@ Endpoint2::Status Endpoint2::realsend
 	if (code == Message::Die)
 		LM_W(("Sending a Die '%s' to %s@%s", messageType(type), nameGet(), hostname()));
 	else
-		LM_M(("Sending a '%s' '%s' to %s@%s", messageCode(code), messageType(type), nameGet(), hostname()));
+		LM_T(LmtSend, ("Sending a '%s' '%s' to %s@%s", messageCode(code), messageType(type), nameGet(), hostname()));
 		
 
 
@@ -682,7 +681,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 		LM_RE(s, ("partRead: %s, expecting 'Header' from '%s@%s'", status(s), name, hostname()));
 	}
 
-	LM_M(("Read '%s' '%s' header of %d bytes from '%s@%s'", messageCode(headerP->code), messageType(headerP->type), bufLen, nameGet(), hostname()));
+	LM_T(LmtReceive, ("Read '%s' '%s' header of %d bytes from '%s@%s'", messageCode(headerP->code), messageType(headerP->type), bufLen, nameGet(), hostname()));
 	if (headerP->dataLen != 0)
 	{
 		*dataPP = calloc(1, headerP->dataLen);
@@ -694,7 +693,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 			free(*dataPP);
 			LM_RE(s, ("partRead: %s, expecting '%d RAW DATA bytes' from '%s@%s'", status(s), headerP->dataLen,  name, hostname()));
 		}
-		LM_M(("Read %d bytes of RAW DATA from '%s@%s'", bufLen, nameGet(), hostname()));
+		LM_T(LmtReceive, ("Read %d bytes of RAW DATA from '%s@%s'", bufLen, nameGet(), hostname()));
 		totalBytesReadExceptHeader += bufLen;
 	}
 
@@ -711,7 +710,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 				free(*dataPP);
 			LM_RE(s, ("partRead: %s, expecting '%d bytes of Google Protocol Buffer data' from '%s@%s'", status(s), headerP->gbufLen, name, hostname()));
 		}
-		LM_M(("Read %d bytes of GOOGLE DATA from '%s@%s'", bufLen, nameGet(), hostname()));
+		LM_T(LmtReceive, ("Read %d bytes of GOOGLE DATA from '%s@%s'", bufLen, nameGet(), hostname()));
 
 		packetP->message->ParseFromArray(dataP, headerP->gbufLen);
 		if (packetP->message->IsInitialized() == false)
@@ -740,7 +739,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 			close();
 			LM_RE(s, ("partRead: %s, expecting '%d bytes of KV DATA (%s)' from '%s@%s'", status(s), headerP->kvDataLen, kvName, name, hostname()));
 		}
-		LM_M(("Read %d bytes of KV DATA from '%s@%s'", nb, nameGet(), hostname()));
+		LM_T(LmtReceive, ("Read %d bytes of KV DATA from '%s@%s'", nb, nameGet(), hostname()));
 
 		packetP->buffer->setSize(nb);
 		totalBytesReadExceptHeader += bufLen;
@@ -877,25 +876,25 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	Endpoint2::Status    s;
 	Message::HelloData*  helloP;
 
-	LM_M(("Treating a message from %s@%s", name, host->name));
+	LM_T(LmtMsgTreat, ("Treating a message from %s@%s", name, host->name));
 
 	if (type == Listener)
 	{
-		LM_M(("Something to read for Listener - calling msgTreat2"));
+		LM_T(LmtMsgTreat, ("Something to read for Listener - calling msgTreat2"));
 		return msgTreat2();
 	}
 	if (type == WebListener)
 	{
-		LM_M(("Something to read for WebListener - calling msgTreat2"));
+		LM_T(LmtMsgTreat, ("Something to read for WebListener - calling msgTreat2"));
 		return msgTreat2();
 	}
 	if (type == WebWorker)
 	{
-		LM_M(("Something to read for WebWorker - calling msgTreat2"));
+		LM_T(LmtMsgTreat, ("Something to read for WebWorker - calling msgTreat2"));
 		return msgTreat2();
 	}
 	
-	LM_M(("Reading a message from '%s@%s'", name, host->name));
+	LM_T(LmtMsgTreat, ("Reading a message from '%s@%s'", name, host->name));
 	s = msgAwait(-1, -1, "Incoming message");
 	if (s != OK)
 		LM_E(("msgAwait: %s - what do I do ... ?", status(s)));
@@ -911,7 +910,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	{
 	case Message::Hello:
 		helloP = (Message::HelloData*) dataP;
-		LM_M(("Got a Hello %s from %s@%s", messageType(header.type), typeName(), host->name));
+		LM_T(LmtHello, ("Got a Hello %s from %s@%s", messageType(header.type), typeName(), host->name));
 		s = helloDataSet((Type) helloP->type, helloP->name, helloP->alias);
 		if (s != OK)
 		{
@@ -921,13 +920,13 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 
 		if (header.type == Message::Msg)
 		{
-			LM_M(("Sending Hello ACK to fd %d", wFd));
+			LM_T(LmtHello, ("Sending Hello ACK to fd %d", wFd));
 			helloSend(Message::Ack);
 		}
 
 		if ((epMgr->me->type == Spawner) || (epMgr->me->type == Setup) || (epMgr->me->type == Controller))
 		{
-			LM_M(("I'm a Spawner/Controller/Setup - I don't use sender/reader threads!"));
+			LM_T(LmtSenderThread, ("I'm a Spawner/Controller/Setup - I don't use sender/reader threads!"));
 			return OK;
 		}
 
@@ -938,7 +937,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 			pthread_t tid;
 			int       ps;
 
-			LM_M(("Creating writer and reader threads for endpoint %s@%s", name, host->name));
+			LM_T(LmtSenderThread, ("Creating writer and reader threads for endpoint %s@%s", name, host->name));
 			if ((ps = pthread_create(&tid, NULL, writerThread, this)) != 0)
 			{
 				LM_E(("Creating writer thread: pthread_create returned %d for %s@%s", ps, name, host->name));
@@ -954,7 +953,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		break;
 
 	default:
-		LM_M(("Cannot treat '%s' '%s' (code %d), passing it to msgTreat2", messageCode(header.code), messageType(header.type), header.code));
+		LM_T(LmtMsgTreat, ("Cannot treat '%s' '%s' (code %d), passing it to msgTreat2", messageCode(header.code), messageType(header.type), header.code));
 		s = msgTreat2(&header, dataP, dataLen, &packet);
 		if (s != OK)
 			LM_RE(s, ("msgTreat2: %s", s));
@@ -1056,7 +1055,7 @@ const char* Endpoint2::status(Status s)
 */
 void Endpoint2::run(void)
 {
-	LM_M(("Endpoint '%s@%s' reader thread is running", name, host->name));
+	LM_T(LmtSenderThread, ("Endpoint '%s@%s' reader thread is running", name, host->name));
 
 	while (1)
 		msgTreat();
@@ -1121,8 +1120,6 @@ Endpoint2::Status Endpoint2::helloDataSet(Type _type, const char* _name, const c
 	nameSet(_name);
 	aliasSet(_alias);
 
-	LM_M(("Set type to %d (%s), name to '%s' and alias to '%s' AND state to Ready", type, typeName(type), name, alias));
-
 	state = Ready;
 	return OK;
 }
@@ -1147,7 +1144,7 @@ void Endpoint2::helloSend(Message::MessageType type)
 	hello.coreNo   = 0;
 	hello.workerId = 0;
 
-	LM_M(("sending hello %s to '%s' (my name: '%s', my type: '%s')", messageType(type), name, hello.name, epMgr->me->typeName()));
+	LM_T(LmtHello, ("sending hello %s to '%s' (my name: '%s', my type: '%s')", messageType(type), name, hello.name, epMgr->me->typeName()));
 
 	Status s;
 	if ((s = realsend(type, Message::Hello, &hello, sizeof(hello))) != OK)

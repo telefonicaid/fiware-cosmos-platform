@@ -73,7 +73,7 @@ Endpoint2::Status WorkerEndpoint::msgTreat2(Message::Header* headerP, void* data
 			packet          = new Packet(headerP->code);
 			packet->fromId  = epMgr->ixGet(this);
 
-			LM_M(("Calling packetReceiver(packet->fromId: %d)", packet->fromId));
+			LM_T(LmtPacketReceive, ("Calling packetReceiver(packet->fromId: %d)", packet->fromId));
 			epMgr->packetReceiver->_receive(packet);
 		}
 		break;

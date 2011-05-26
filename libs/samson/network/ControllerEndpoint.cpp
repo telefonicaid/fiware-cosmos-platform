@@ -61,7 +61,6 @@ ControllerEndpoint::~ControllerEndpoint() // : ~Endpoint2()
 */
 Endpoint2::Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 {
-	LM_M(("In ControllerEndpoint::msgTreat2"));
 	switch (headerP->code)
 	{
 	default:

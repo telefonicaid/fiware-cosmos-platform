@@ -119,9 +119,6 @@ int iomMsgSend
 	samson::Packet*                 packetP
 )
 {
-
-   //LM_M(("START iomMsgSend to fd %d", to->wFd));
-
 	samson::Message::Header  header;
 	int                  s;
 	struct timeval       start;
@@ -213,8 +210,6 @@ int iomMsgSend
 	int bytesSent = sizeof(header) + header.dataLen + header.gbufLen + header.kvDataLen;
 	to->msgsOut  += 1;
 	to->bytesOut += bytesSent;
-
-	//LM_M(("FINISH iomMsgSend to fd %d", to->wFd));
 
 	if (bytesSent > 100)
 	{

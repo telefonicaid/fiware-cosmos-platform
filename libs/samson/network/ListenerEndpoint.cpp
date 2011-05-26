@@ -159,8 +159,6 @@ Endpoint2::Status ListenerEndpoint::msgTreat2(void)
 {
 	UnhelloedEndpoint* ep;
 
-	LM_M(("In ListenerEndpoint::msgTreat - accepting incoming connection"));
-
 	ep = accept();
 	if (ep == NULL)
 		LM_RE(AcceptError, ("Endpoint2::accept returned NULL"));

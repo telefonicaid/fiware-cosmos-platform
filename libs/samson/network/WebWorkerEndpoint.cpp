@@ -96,7 +96,6 @@ void WebWorkerEndpoint::msgTreat(void)
 */
 void WebWorkerEndpoint::run()
 {
-	LM_M(("Endpoint '%s@%s' is running", name, host->name));
 	msgTreat();
 }
 

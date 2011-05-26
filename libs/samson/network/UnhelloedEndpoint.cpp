@@ -95,7 +95,7 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 	switch (headerP->code)
 	{
 	case Message::Hello:
-		LM_M(("Read a Hello message"));
+		LM_T(LmtUnhelloed, ("Read a Hello message"));
 		helloP = (Message::HelloData*) dataP;
 		s = helloDataSet((Type) helloP->type, helloP->name, helloP->alias);
 		if (s != OK)
@@ -108,7 +108,7 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 			helloSend(Message::Ack);
 
 		state = Ready;
-		LM_M(("Time to update corresponding Worker endpoint and remove myself ..."));
+		LM_T(LmtUnhelloed, ("Time to update corresponding Worker endpoint and remove myself ..."));
 		ep = epMgr->lookup(type, host);
 		if (ep == NULL)
 			LM_W(("No endpoint found for type '%s' and host '%s' - is this normal?", typeName(), host->name));
@@ -183,26 +183,26 @@ Endpoint2::Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 	Packet                packet(Message::Unknown);
 	Endpoint2::Status     s;
 
-	LM_M(("Sending Hello Msg to %s@%s", name, hostname()));
+	LM_T(LmtUnhelloed, ("Sending Hello Msg to %s@%s", name, hostname()));
 	helloSend(Message::Msg);
 
-	LM_M(("Awaiting reply"));
+	LM_T(LmtUnhelloed, ("Awaiting reply"));
 	if ((s = msgAwait(secs, usecs, "Hello Ack")) != 0)
 		LM_RE(s, ("Endpoint2::msgAwait(expecting Hello): %s", status(s)));
-	LM_M(("Reply seems on its way in"));
+	LM_T(LmtUnhelloed, ("Reply seems on its way in"));
 
-	LM_M(("Reading reply"));
+	LM_T(LmtUnhelloed, ("Reading reply"));
 	if ((s = receive(&header, &dataP, &dataLen, &packet)) != OK)
 		LM_RE(s, ("Endpoint2::receive(expecting Hello): %s", status(s)));
 
-	LM_M(("Checking validity of reply (code: 0x%x)", header.code));
+	LM_T(LmtUnhelloed, ("Checking validity of reply (code: 0x%x)", header.code));
 	if ((header.code != Message::Hello) || (header.type != Message::Ack))
 	{
 		free(dataP);
 		LM_RE(Error, ("Message read not a Hello Msg (%s %s)", messageCode(header.code), messageType(header.type)));
 	}
 
-    LM_M(("Adapting the KNOWN endpoints characteristics"));
+    LM_T(LmtUnhelloed, ("Adapting the KNOWN endpoints characteristics"));
 	helloP = (Message::HelloData*) dataP;
 	if ((s = helloDataSet((Endpoint2::Type) helloP->type, helloP->name, helloP->alias)) != OK)
 	{
@@ -211,7 +211,7 @@ Endpoint2::Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 	}
 
 	free(dataP);
-	LM_M(("Successful Hello interchange"));
+	LM_T(LmtUnhelloed, ("Successful Hello interchange"));
 	
 	return OK;
 }

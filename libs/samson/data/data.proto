@@ -1,4 +1,4 @@
-package ss.data;
+package samson.data;
 
 message Command
 {

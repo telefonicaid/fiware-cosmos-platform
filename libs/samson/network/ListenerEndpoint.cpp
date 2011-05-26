@@ -101,18 +101,19 @@ Endpoint2::Status ListenerEndpoint::init(void)
 	
 	if (bind(rFd, (struct sockaddr*) &sock, sizeof(struct sockaddr_in)) == -1)
 	{
-		close(rFd);
+		::close(rFd);
 		rFd = -1;
 		LM_RP(BindError, ("bind to port %d: %s", port, strerror(errno)));
 	}
 
 	if (listen(rFd, 10) == -1)
 	{
-		close(rFd);
+		::close(rFd);
 		rFd = -1;
 		LM_RP(ListenError, ("listen to port %d", port));
 	}
 
+	state = Endpoint2::Ready;
 	return OK;
 }
 
@@ -165,6 +166,7 @@ Endpoint2::Status ListenerEndpoint::msgTreat2(void)
 		LM_RE(AcceptError, ("Endpoint2::accept returned NULL"));
 
 	ep->helloSend(Message::Msg);
+	ep->state = Ready;
 	return Endpoint2::OK;
 }
 

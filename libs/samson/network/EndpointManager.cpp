@@ -169,7 +169,6 @@ void EndpointManager::controllerConnect(void)
 {
 	Process*   p;
 	Host*      hostP;
-	Endpoint2* ep;
 
 	p = &procVec->processV[0];
 	if (p->type != PtController)
@@ -179,8 +178,7 @@ void EndpointManager::controllerConnect(void)
 	if (hostP == NULL)
 		hostP = hostMgr->insert(p->host, NULL);
 
-	ep = add(Endpoint2::Controller, 0, p->name, p->alias, hostP, p->port, -1, -1);
-	ep->connect();
+	controller = add(Endpoint2::Controller, 0, p->name, p->alias, hostP, p->port, -1, -1);
 }
 
 
@@ -238,14 +236,20 @@ void EndpointManager::workersConnect(void)
 		if (ep->state == Endpoint2::Ready)
 			continue;
 
-		if (ep->idGet() < me->idGet())
+		LM_TODO(("Should probably check for 'connection in progress' also - not only 'Endpoint2::Ready'"));
+
+		if (me->type == Endpoint2::Worker)
 		{
-			LM_M(("Connecting to worker in '%s'", ep->host->name));
-			ep->connect();  // Connect, but don't add to endpoint vector
+			if (ep->idGet() < me->idGet())
+			{
+				LM_M(("Connecting to worker in '%s'", ep->host->name));
+				ep->connect();  // Connect, but don't add to endpoint vector
+			}
 		}
+		else
+			ep->connect();
 	}
 }
-
 
 
 /* ****************************************************************************
@@ -578,8 +582,20 @@ Endpoint2* EndpointManager::get(unsigned int index, int* rFdP)
 *
 * lookup - 
 */
-Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int id, int* ixP)
+Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int _id, int* ixP)
 {
+	LM_T(LmtEndpointLookup, ("Looking for a %s with id %d", Endpoint2::typeName(typ), _id));
+
+	show("lookup", true);
+
+	if ((typ == me->type) && (_id == me->id))
+	{
+		LM_T(LmtEndpointLookup, ("Found myself!"));
+		if (ixP != NULL)
+			*ixP = -9;
+		return me;
+	}
+
 	for (unsigned int ix = 0; ix < endpoints; ix++)
 	{
 		if (endpoint[ix] == NULL)
@@ -587,7 +603,7 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int id, int* ixP)
 
 		if (endpoint[ix]->type == typ)
 		{
-			if ((id == -1) || (endpoint[ix]->id == id))
+			if ((_id == -1) || (endpoint[ix]->id == _id))
 			{
 				if (ixP != NULL)
 					*ixP = ix;
@@ -595,6 +611,12 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int id, int* ixP)
 			}
 		}
 	}
+
+	LM_W(("No %s endpoint with id %d found", Endpoint2::typeName(typ), _id));
+
+	if (ixP != NULL)
+		*ixP = -3;
+
 	return NULL;
 }
 
@@ -615,6 +637,29 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, const char* host)
 			continue;
 
 		if (hostMgr->match(endpoint[ix]->hostGet(), host) == true)
+			return endpoint[ix];
+	}
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* lookup - 
+*/
+Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, Host* host)
+{
+	for (unsigned int ix = 0; ix < endpoints; ix++)
+	{
+        if (endpoint[ix] == NULL)
+            continue;
+
+		if (endpoint[ix]->type != typ)
+			continue;
+
+		if (host == endpoint[ix]->hostGet())
 			return endpoint[ix];
 	}
 
@@ -804,11 +849,39 @@ void EndpointManager::timeout(void)
 {
 	static int tmoNo = 0;
 
-	LM_M(("In timeout %d - any controller/workers to connect to?", tmoNo));
-	if ((controller == NULL) || controller->state != Endpoint2::Ready)
-		controllerConnect();
-	workersConnect();
-	show("timeout");
+
+	//
+	// Worker and Delilah connecting to Controller and Workers 
+	//
+	if (me->type == Endpoint2::Worker || me->type == Endpoint2::Delilah)
+	{
+		show("timeout");
+		LM_M(("In timeout %d - any controller/workers to connect to?", tmoNo));
+		if (controller == NULL)
+			LM_X(1, ("controller == NULL"));
+
+		if (controller->state != Endpoint2::Ready)
+			controller->connect();
+
+		workersConnect();
+		show("timeout");
+	}
+
+	//
+	// Removing endpoints that are Scheduled For Removal
+	//
+	for (unsigned int ix = 0; ix < endpoints; ix++)
+	{
+		if (endpoint[ix] == NULL)
+			continue;
+
+		if (endpoint[ix]->state != Endpoint2::ScheduledForRemoval)
+			continue;
+
+		delete endpoint[ix];
+		endpoint[ix] = NULL;
+		show("Removed a removal-scheduled endpoint", true);
+	}
 
 	++tmoNo;
 }
@@ -837,7 +910,7 @@ void EndpointManager::run(bool oneShot)
 		// Call cleanup function that removes all endpoints marked as 'ScheduledForRemoval' 
 		// Don't forget to use a semaphore for endpoint vector and jobs vector
 
-		// Populate rFds for select
+		LM_M(("Populate rFds for select (endpoints == %d)", endpoints));
 		do
 		{
 			FD_ZERO(&rFds);
@@ -857,6 +930,7 @@ void EndpointManager::run(bool oneShot)
 				if (ep->rFd == -1)
 					continue;
 
+				LM_M(("Adding %s@%s to select rFd list", ep->typeName(), ep->host->name));
 				eps += 1;
 				max = MAX(max, ep->rFd);
 				FD_SET(ep->rFd, &rFds);
@@ -870,6 +944,8 @@ void EndpointManager::run(bool oneShot)
 
 			fds = select(max + 1,  &rFds, NULL, NULL, &tv);
 		} while ((fds == -1) && (errno == EINTR));
+
+		LM_M(("select returned %d", fds));
 
 		if (fds == -1)
 			LM_X(1, ("select: %s", strerror(errno)));
@@ -893,18 +969,19 @@ void EndpointManager::run(bool oneShot)
                     continue;
 				
 				if (FD_ISSET(endpoint[ix]->rFd, &rFds))
+				{
+					LM_M(("Calling %s->msgTreat()", endpoint[ix]->typeName()));
 					endpoint[ix]->msgTreat();
+					LM_M(("Back from %s->msgTreat()", endpoint[ix]->typeName()));
+				}
 			}
-			ep = NULL;
-			if ((listener != NULL) && (FD_ISSET(listener->rFd, &rFds)))
-				listener->msgTreat();
-
-			if ((webListener != NULL) && (FD_ISSET(webListener->rFd, &rFds)))
-				webListener->msgTreat();
 		}
 
 		if (oneShot)
+		{
+			LM_M(("one-shot - I return"));
 			return;
+		}
 	}
 }
 

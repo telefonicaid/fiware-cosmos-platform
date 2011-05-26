@@ -90,10 +90,12 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 {
 	Message::HelloData*  helloP;
 	Endpoint2::Status    s;
+	Endpoint2*           ep;
 
 	switch (headerP->code)
 	{
 	case Message::Hello:
+		LM_M(("Read a Hello message"));
 		helloP = (Message::HelloData*) dataP;
 		s = helloDataSet((Type) helloP->type, helloP->name, helloP->alias);
 		if (s != OK)
@@ -104,7 +106,22 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 
 		if (headerP->type == Message::Msg)
 			helloSend(Message::Ack);
-		epMgr->add(this);
+
+		state = Ready;
+		LM_M(("Time to update corresponding Worker endpoint and remove myself ..."));
+		ep = epMgr->lookup(type, host);
+		if (ep == NULL)
+			LM_W(("No endpoint found for type '%s' and host '%s' - is this normal?", typeName(), host->name));
+		else
+		{
+			ep->rFd   = rFd;
+			ep->wFd   = wFd;
+			ep->state = Ready;
+
+			state = ScheduledForRemoval;
+			rFd   = -1;
+			wFd   = -1;
+		}
 		break;
 
 	default:

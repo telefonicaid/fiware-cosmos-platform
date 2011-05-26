@@ -33,6 +33,7 @@ int            workers;
 const char*    ips[100];
 bool           reset;
 bool           pList;
+bool           local;
 
 
 
@@ -42,9 +43,10 @@ bool           pList;
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",   controllerHost,  "CONTROLLER", PaString,  PaReq,  PaND,   PaNL,  PaNL,  "Controller host"               },
-	{ "-workers",     &workers,         "WORKERS",    PaInt,     PaReq,     0,     0,   100,   "number of workers"             },
-	{ "-ips",          ips,             "IP_LIST",    PaSList,   PaReq,  PaND,   PaNL,  PaNL,  "list of worker IPs"            },
+	{ "-controller",   controllerHost,  "CONTROLLER", PaString,  PaOpt,  PaND,   PaNL,  PaNL,  "Controller host"               },
+	{ "-workers",     &workers,         "WORKERS",    PaInt,     PaOpt,     0,     0,   100,   "number of workers"             },
+	{ "-ips",          ips,             "IP_LIST",    PaSList,   PaOpt,  PaND,   PaNL,  PaNL,  "list of worker IPs"            },
+	{ "-local",       &local,           "LOCAL",      PaBool,    PaOpt,  false, false,  true,  "'cluster' only in localhost"   },
 	{ "-reset",       &reset,           "RESET",      PaBool,    PaOpt,  false, false,  true,  "reset platform"                },
 	{ "-plist",       &pList,           "P_LIST",     PaBool,    PaOpt,  false, false,  true,  "process list of platform"      },
 
@@ -186,6 +188,14 @@ int main(int argC, const char *argV[])
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
+	if (local == true)
+	{
+		sprintf(controllerHost, "localhost");
+		ips[0]  = (char*) 1;
+		ips[1]  = "localhost";
+		ips[2]  = NULL;
+		workers = 1;
+	}
 	
 	if ((long) ips[0] != workers)
 		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (long) ips[0]));

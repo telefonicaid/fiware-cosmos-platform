@@ -60,7 +60,8 @@ JobQueue::Job* JobQueue::pop(void)
 		last = last->next;
 	}
 	
-	prev->next = NULL;
+	if (prev != NULL)
+		prev->next = NULL;
 
 	if (prev == head) // List contained only ONE item
 		head = NULL;
@@ -74,8 +75,21 @@ JobQueue::Job* JobQueue::pop(void)
 	//
 	jobs -= 1;
 
+	LM_TODO(("I get a SIGABRT here - fix this!"));
+#if 0
+
+	//
+	// output in gdb:
+	//   samsonWorker2: Popping a job from queue
+	//   pure virtual method called
+	//   terminate called without an active exception
+	//
+	//   Program received signal SIGABRT, Aborted.
+	//
+
 	if (jobP->packetP->message != NULL)
 		totalSize  -= jobP->packetP->message->ByteSize();
+#endif
 
 	if (jobP->packetP->dataP != NULL)
 		totalSize  -= jobP->packetP->dataLen;

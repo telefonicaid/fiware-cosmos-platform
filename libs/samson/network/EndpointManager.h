@@ -10,11 +10,11 @@
 * CREATION DATE            Apr 06 2011
 *
 */
-#include "samson/network/NetworkInterface.h"	// NetworkInterface 
-#include "Host.h"               // Host
-#include "HostMgr.h"            // HostMgr
-#include "samson/common/Process.h"            // ProcessVector
-#include "samson/network/Endpoint2.h"          // Endpoint2
+#include "samson/common/Process.h"
+#include "NetworkInterface.h"
+#include "Host.h"
+#include "HostMgr.h"
+#include "Endpoint2.h"
 
 
 
@@ -105,6 +105,7 @@ public:
 	Endpoint2*         get(unsigned int index);
 	Endpoint2*         get(unsigned int index, int* rFdP);
 	Endpoint2*         lookup(Endpoint2::Type type, const char* ip);
+	Endpoint2*         lookup(Endpoint2::Type type, Host* host);
 	Endpoint2*         lookup(Endpoint2::Type type, int id = -1, int* ixP = NULL);
 	Endpoint2*         lookup(const char* alias);
 	int                ixGet(Endpoint2* ep);

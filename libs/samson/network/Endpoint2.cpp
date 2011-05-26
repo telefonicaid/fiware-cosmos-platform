@@ -153,10 +153,7 @@ Endpoint2::Endpoint2
 */
 Endpoint2::~Endpoint2()
 {
-	if (rFd != -1)
-		close(rFd);
-	if ((wFd != rFd) && (wFd != -1))
-		close(wFd);
+	close();
 
 	if (name != NULL)
 		free(name);
@@ -501,9 +498,17 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 			jobQ->push(psi, packetP);
 		else
 		{
-			realsend(packetP->msgType, packetP->msgCode, packetP->dataP, packetP->dataLen, packetP);
-			if (psi)
-				psi->notificationSent(0, true);
+			if (state != Ready)
+			{
+				LM_E(("Cannot send '%s' packet to %s@%s - endpoint is in state '%s' - throwing away the packet", messageCode(packetP->msgCode), typeName(), host->name, stateName()));
+				delete packetP;
+			}
+			else
+			{
+				realsend(packetP->msgType, packetP->msgCode, packetP->dataP, packetP->dataLen, packetP);
+				if (psi)
+					psi->notificationSent(0, true);
+			}
 		}
 	}
 }
@@ -590,7 +595,7 @@ Endpoint2::Status Endpoint2::realsend
 
 		s = partWrite(outputVec, packetP->message->ByteSize(), "Google Protocol Buffer");
 		free(outputVec);
-		if (s != packetP->message->ByteSize())
+		if (s != OK)
 			LM_RE(s, ("partWrite:GoogleProtocolBuffer(): %s", status(s)));
 	}
 
@@ -672,7 +677,10 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 
 	s = partRead(headerP, sizeof(Message::Header), &bufLen, "Header");
 	if (s != OK)
+	{
+		close();
 		LM_RE(s, ("partRead: %s, expecting 'Header' from '%s@%s'", status(s), name, hostname()));
+	}
 
 	LM_M(("Read '%s' '%s' header of %d bytes from '%s@%s'", messageCode(headerP->code), messageType(headerP->type), bufLen, nameGet(), hostname()));
 	if (headerP->dataLen != 0)
@@ -682,6 +690,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 		s = partRead(*dataPP, headerP->dataLen, &bufLen, "Binary Data");
 		if (s != OK)
 		{
+			close();
 			free(*dataPP);
 			LM_RE(s, ("partRead: %s, expecting '%d RAW DATA bytes' from '%s@%s'", status(s), headerP->dataLen,  name, hostname()));
 		}
@@ -696,6 +705,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 		s = partRead(dataP, headerP->gbufLen, &bufLen, "Google Protocol Buffer");
 		if (s != OK)
 		{
+			close();
 			free(dataP);
 			if (*dataPP != NULL)
 				free(*dataPP);
@@ -726,7 +736,10 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 
 		s = partRead(kvBuf, headerP->kvDataLen, &nb, "Key-Value Data");
 		if (s != OK)
+		{
+			close();
 			LM_RE(s, ("partRead: %s, expecting '%d bytes of KV DATA (%s)' from '%s@%s'", status(s), headerP->kvDataLen, kvName, name, hostname()));
+		}
 		LM_M(("Read %d bytes of KV DATA from '%s@%s'", nb, nameGet(), hostname()));
 
 		packetP->buffer->setSize(nb);
@@ -777,9 +790,7 @@ Endpoint2::Status Endpoint2::connect(void)
 		usleep(50000);
 		if (::connect(wFd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 		{
-			close(rFd);
-			rFd = -1;
-			wFd = -1;
+			close();
 			LM_RE(ConnectError, ("Cannot connect to %s, port %d", host->name, port));
 		}
 	}
@@ -900,6 +911,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	{
 	case Message::Hello:
 		helloP = (Message::HelloData*) dataP;
+		LM_M(("Got a Hello %s from %s@%s", messageType(header.type), typeName(), host->name));
 		s = helloDataSet((Type) helloP->type, helloP->name, helloP->alias);
 		if (s != OK)
 		{
@@ -908,30 +920,36 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		}
 
 		if (header.type == Message::Msg)
-			helloSend(Message::Ack);
-
-		if ((epMgr->me->type == Spawner) || (epMgr->me->type == Setup))
 		{
-			LM_M(("I'm a Spawner or Setup - I don't use sender/reader threads!"));
+			LM_M(("Sending Hello ACK to fd %d", wFd));
+			helloSend(Message::Ack);
+		}
+
+		if ((epMgr->me->type == Spawner) || (epMgr->me->type == Setup) || (epMgr->me->type == Controller))
+		{
+			LM_M(("I'm a Spawner/Controller/Setup - I don't use sender/reader threads!"));
 			return OK;
 		}
 
-		useSenderThread = true;
-
-		pthread_t tid;
-		int       ps;
-
-		LM_M(("Creating writer thread for endpoint %s@%s", name, host->name));
-		if ((ps = pthread_create(&tid, NULL, writerThread, this)) != 0)
+		if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((type == Worker) || (type == Delilah)))
 		{
-			LM_E(("Creating writer thread: pthread_create returned %d for %s@%s", ps, name, host->name));
-			return PThreadError;
-		}
+			useSenderThread = true;
 
-		if ((ps = pthread_create(&tid, NULL, readerThread, this)) != 0)
-		{
-			LM_E(("Creating reader thread: pthread_create returned %d for %s@%s", ps, name, host->name));
-			return PThreadError;
+			pthread_t tid;
+			int       ps;
+
+			LM_M(("Creating writer and reader threads for endpoint %s@%s", name, host->name));
+			if ((ps = pthread_create(&tid, NULL, writerThread, this)) != 0)
+			{
+				LM_E(("Creating writer thread: pthread_create returned %d for %s@%s", ps, name, host->name));
+				return PThreadError;
+			}
+
+			if ((ps = pthread_create(&tid, NULL, readerThread, this)) != 0)
+			{
+				LM_E(("Creating reader thread: pthread_create returned %d for %s@%s", ps, name, host->name));
+				return PThreadError;
+			}
 		}
 		break;
 
@@ -1069,6 +1087,7 @@ Endpoint2::Status Endpoint2::die(int secs, int usecs)
 		LM_RE(KillError, ("Endpoint not dead, even though a Die message was sent!"));
 
 	LM_TODO(("This endpoint must be removed from EndpointManager, right?"));
+	close();
 
 	return OK;
 }
@@ -1133,6 +1152,25 @@ void Endpoint2::helloSend(Message::MessageType type)
 	Status s;
 	if ((s = realsend(type, Message::Hello, &hello, sizeof(hello))) != OK)
 		LM_E(("Error sending Hello to %s@%s: %s", typeName(), name, status(s)));
+}
+
+
+
+/* ****************************************************************************
+*
+* close - 
+*/
+void Endpoint2::close(void)
+{
+	state = Disconnected;
+
+	if (rFd != -1)
+		::close(rFd);
+	if ((wFd != rFd) && (wFd != -1))
+		::close(wFd);
+
+	rFd  = -1;
+	wFd  = -1;
 }
 
 }

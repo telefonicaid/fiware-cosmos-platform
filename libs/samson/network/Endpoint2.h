@@ -57,6 +57,7 @@ class Endpoint2
 	friend class WebListenerEndpoint;
 	friend class WebWorkerEndpoint;
 	friend class SpawnerEndpoint;
+	friend class WorkerEndpoint;
 
 public:
 	typedef enum UpdateReason
@@ -241,6 +242,7 @@ public:
 private:
 	Status               partRead(void* vbuf, long bufLen, long* bufLenP, const char* what);
 	Status               partWrite(void* dataP, int dataLen, const char* what);
+	void                 close(void);
 };
 
 }

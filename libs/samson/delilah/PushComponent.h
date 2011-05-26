@@ -40,6 +40,8 @@ namespace samson {
 		size_t processedSize;			// total size processed locally ( compressed and squeduled to the network )
 		size_t uploadedSize;			// Total size of uploaded files
 
+        bool finish_process;            // Flag to indicate that we have process all input data
+        
         au::Cronometer cronometer;
         
 		// Worker to send the next packet
@@ -68,7 +70,6 @@ namespace samson {
 		
         
         // Notifications
-        
         void notify( engine::Notification* notification );
         bool acceptNotification( engine::Notification* notification );
 

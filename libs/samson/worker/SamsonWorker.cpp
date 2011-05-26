@@ -233,12 +233,12 @@ namespace samson {
                 network::PushBlockResponse *pbr = p->message->mutable_push_block_response();
                 pbr->mutable_request()->CopyFrom( packet->message->push_block() );
                 
-                p->message()->set_delilah_id( packet->message->delilah_id()  );
+                p->message->set_delilah_id( packet->message->delilah_id()  );
                 
-                network->send(this, packet->fromId , packet );
+                network->send(this, packet->fromId , p );
                 
             }
-            
+            return;
         }
         
 		if (msgCode == Message::WorkerTask)

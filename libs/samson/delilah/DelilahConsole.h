@@ -271,9 +271,13 @@ namespace samson {
 		// --------------------------------------------------------
 		
 		// Confirmation that a loading process has finished
-		virtual void uploadDataConfirmation( DelilahUploadDataProcess *process);
-		virtual void downloadDataConfirmation( DelilahDownloadDataProcess *process );
+		void uploadDataConfirmation( DelilahUploadDataProcess *process);
+		void downloadDataConfirmation( DelilahDownloadDataProcess *process );
 		
+        // confirmation that a push operation has finished
+		void pushConfirmation( PushComponent *process );
+
+        
 		// Function to process messages from network elements not handled by Delila class
 		int _receive(int fromId, Message::MessageCode msgCode, Packet* packet);		
 

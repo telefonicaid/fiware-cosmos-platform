@@ -34,6 +34,7 @@ namespace samson {
 	class DelilahComponent;
 	class DelilahUploadDataProcess;
 	class DelilahDownloadDataProcess;
+    class PushComponent;
 
 	extern au::Lock info_lock;						// Lock to protect the information provided here
     
@@ -109,6 +110,9 @@ namespace samson {
 		// Function to be implemented by sub-classes to process packets ( not handled by this class )
 		virtual int _receive(int fromId, Message::MessageCode msgCode, Packet* packet)=0;
 
+		// A load data process has finished
+		virtual void pushConfirmation( PushComponent *process ){};
+        
 		// A load data process has finished
 		virtual void uploadDataConfirmation( DelilahUploadDataProcess *process ){};
 

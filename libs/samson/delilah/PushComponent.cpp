@@ -30,6 +30,9 @@ namespace samson
 			totalSize += au::Format::sizeOfFile( fileNames[i] );
         
         
+        // Set this to false ( true will be the end of processing data )
+        finish_process = false;
+        
         // Add myself as a receiver for notifications
         engine::Engine::add( notification_memory_request_response , this );
         
@@ -47,6 +50,8 @@ namespace samson
 		{
 			error.set("Not data to upload.");
             component_finished = true;
+            finish_process = true;
+            delilah->pushConfirmation(this);
 		}
         else
         {
@@ -79,6 +84,20 @@ namespace samson
     void PushComponent::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
     {
         // At the moment we do not receive anything
+        if( packet->msgCode != Message::PushBlockResponse )
+            LM_X(1, ("Received an unexpected packet in a push block operation"));
+        
+        uploadedSize += packet->message->push_block_response().request().size();
+        
+        if( finish_process )
+        {
+            if( totalSize == uploadedSize )
+            {
+                // Set this flag to indicate that the process has finished
+                finish_process = true;
+                delilah->pushConfirmation(this);
+            }
+        }
     }
 
     
@@ -101,8 +120,11 @@ namespace samson
             
             Packet* packet = new Packet( Message::PushBlock );
             packet->buffer = buffer;    // Set the buffer of data
+            packet->message->set_delilah_id( id );
+
             network::PushBlock* pb =  packet->message->mutable_push_block();
             pb->add_queue( queue );
+            pb->set_size( buffer->getSize() );
             
             delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), packet);
             worker++;
@@ -113,7 +135,7 @@ namespace samson
             if( !fileSet.isFinish() )
                 requestMemoryBuffer();  // Request the next element
             else
-                component_finished = true;  // Mark as finished
+                finish_process = true;  // Mark as finished
             
         }
         

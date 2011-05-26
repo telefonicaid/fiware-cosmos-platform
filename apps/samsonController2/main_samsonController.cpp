@@ -21,7 +21,7 @@
 #include "samson/network/Endpoint2.h"
 #include "samson/network/EndpointManager.h"
 #include "samson/controller/SamsonController.h"
-#include "samsonDirectories.h"
+#include "samson/common/samsonDirectories.h"
 
 
 

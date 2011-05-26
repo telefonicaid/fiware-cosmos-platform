@@ -14,8 +14,10 @@
 #include "DelilahDownloadDataProcess.h"	// samson::DelilahLoadDataProcess
 #include "samson/common/EnvironmentOperations.h"
 #include "PushComponent.h"          // samson::PushComponent
-
 #include "au/Cronometer.h"      // au::Cronometer
+
+#include "PushComponent.h"   // PushDataComponent
+
 #define notification_delilah_automatic_update "notification_delilah_automatic_update"
 
 

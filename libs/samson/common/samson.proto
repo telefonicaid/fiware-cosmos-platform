@@ -561,6 +561,13 @@ message MessagePlatformProcess
 message PushBlock
 {
 	repeated string queue	 = 1;	// List of queues where to push this block
+	optional uint64 size	 = 2;	// size of the block we are uploading 
+}
+
+message PushBlockResponse
+{
+	repeated string queue		= 1;	// List of queues where to push this block
+	required PushBlock request 	= 2;	// Original request
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -611,6 +618,7 @@ message Message
 
 
 	optional PushBlock			push_block			= 123;	// Push a block into a queue ( stream processing )
+	optional PushBlockResponse		push_block_response		= 124;	// Response from a block push
 
 	optional WorkerStatus worker_status = 170;			// Worker status update
 

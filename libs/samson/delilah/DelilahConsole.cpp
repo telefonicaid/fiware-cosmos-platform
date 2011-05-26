@@ -21,6 +21,7 @@
 #include <dirent.h>						// DIR directory header	
 #include "au/CommandLine.h"				// au::CommandLine
 #include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
+#include "PushComponent.h"  
 
 namespace samson
 {	
@@ -864,6 +865,25 @@ namespace samson
 			writeWarningOnConsole(o.str());
 		}
 	};
+    
+    void DelilahConsole::pushConfirmation( PushComponent *process )
+    {
+		if( process->error.isActivated() )
+		{
+			std::ostringstream o;
+			o << "[ " << process->id << " ] Push data process finished with error ( " << process->getStatus() << " )\n";
+			o << "\tERROR: " << process->error.getMessage();
+			writeErrorOnConsole(o.str());
+		}
+		else
+		{
+			std::ostringstream o;
+			o << "[ " << process->id << " ] Download data process finished correctly ( " << process->getStatus() << " )";
+			writeWarningOnConsole(o.str());
+		}
+        
+    }
+
 	
 	
 	

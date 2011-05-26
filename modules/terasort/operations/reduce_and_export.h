@@ -7,14 +7,14 @@
 #define _H_SAMSON_terasort_reduce_and_export
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace terasort{
 
 
-	class reduce_and_export : public ss::ParserOutReduce
+	class reduce_and_export : public samson::ParserOutReduce
 	{
 		Record value;
 #define MAX_STR_LEN 2048
@@ -39,7 +39,7 @@ namespace terasort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace terasort
 
 #endif

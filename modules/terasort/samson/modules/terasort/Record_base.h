@@ -10,18 +10,18 @@
 #include <samson/modules/system/String.h>
 
 
-namespace ss{
+namespace samson{
 namespace terasort{
 
 
-	class Record_base : public ss::DataInstance{
+	class Record_base : public samson::DataInstance{
 
 	public:
-	::ss::system::String keyf;
-	::ss::system::String num_rec;
-	::ss::system::String valf;
+	::samson::system::String keyf;
+	::samson::system::String num_rec;
+	::samson::system::String valf;
 
-	Record_base() : ss::DataInstance(){
+	Record_base() : samson::DataInstance(){
 	}
 
 	~Record_base() {
@@ -45,9 +45,9 @@ namespace terasort{
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::ss::system::String::size(data+offset);
-		offset += ::ss::system::String::size(data+offset);
-		offset += ::ss::system::String::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
+		offset += ::samson::system::String::size(data+offset);
 		return offset;
 	}
 
@@ -57,15 +57,15 @@ namespace terasort{
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing keyf
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing num_rec
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		{ // comparing valf
-			int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}
 		return 0; //If everything is equal
@@ -100,7 +100,7 @@ namespace terasort{
 
 	}; //class Record_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace terasort
 
 #endif

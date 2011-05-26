@@ -7,25 +7,25 @@
 #define _H_SAMSON_sort_parse_file_common_key
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sort{
 
 
-	class parse_file_common_key : public ss::Parser
+	class parse_file_common_key : public samson::Parser
 	{
 
 	public:
 
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 			//Datas to emit
-			ss::system::UInt8 key;
-			ss::system::UInt val;
-			ss::system::Void dummy;
+			samson::system::UInt8 key;
+			samson::system::UInt val;
+			samson::system::Void dummy;
 
 			size_t offset = 0;
 			size_t line_begin = 0;
@@ -55,7 +55,7 @@ namespace sort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sort
 
 #endif

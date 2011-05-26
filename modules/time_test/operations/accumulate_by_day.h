@@ -7,27 +7,27 @@
 #define _H_SAMSON_time_test_accumulate_by_day
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/UInt8.h>
 
 
 
-namespace ss{
+namespace samson{
 namespace time_test{
 
 
-	class accumulate_by_day : public ss::Reduce
+	class accumulate_by_day : public samson::Reduce
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			ss::system::UInt8 day;
-			ss::system::UInt amount;
-			ss::system::UInt accum;
+			samson::system::UInt8 day;
+			samson::system::UInt amount;
+			samson::system::UInt accum;
 
 			day.parse(inputs[0].kvs[0]->key);
 			accum.value = 0;
@@ -45,7 +45,7 @@ namespace time_test{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace time_test
 
 #endif

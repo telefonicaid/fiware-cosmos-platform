@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_benchmark_fake_visits_fixed
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /*********************************************************
 generator fake_visits_fixed
@@ -18,17 +18,17 @@ generator fake_visits_fixed
 }
 **********************************************************/
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
-	class fake_visits_fixed : public ss::Generator
+	class fake_visits_fixed : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 			// Recover the number of users in this demo
 			size_t num_users  = environment->getSizeT( "url_benchmark.num_users" ,  1000000 );
@@ -43,8 +43,8 @@ namespace url_benchmark{
 			size_t num_servers = environment->getSizeT( "url_benchmark.num_servers" ,  1000000 );
 
 
-			ss::system::UInt userId;
-			ss::system::String url;
+			samson::system::UInt userId;
+			samson::system::String url;
 
 			for (size_t u = 0 ; u < num_users ; u++ )
 			{
@@ -74,7 +74,7 @@ namespace url_benchmark{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

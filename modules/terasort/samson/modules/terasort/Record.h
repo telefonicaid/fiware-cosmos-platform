@@ -10,7 +10,7 @@
 #include <samson/modules/terasort/Record_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace terasort{
 
 
@@ -38,7 +38,7 @@ namespace terasort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace terasort
 
 #endif

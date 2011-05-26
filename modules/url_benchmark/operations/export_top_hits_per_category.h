@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_benchmark_export_top_hits_per_category
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /************************************************
 parserOut export_top_hits_per_category
@@ -18,13 +18,13 @@ parserOut export_top_hits_per_category
 }
 ************************************************/
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
-	class export_top_hits_per_category : public ss::ParserOut
+	class export_top_hits_per_category : public samson::ParserOut
 	{
-		ss::system::UInt categ;
+		samson::system::UInt categ;
 		TopHits hits;
 
 #ifdef MAX_STR_LEN
@@ -70,7 +70,7 @@ namespace url_benchmark{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

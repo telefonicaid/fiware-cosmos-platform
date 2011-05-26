@@ -7,7 +7,7 @@
 #define _H_SAMSON_sort_random_sequence_generator
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/UInt8.h>
 #include <samson/modules/system/Void.h>
@@ -21,23 +21,23 @@ generator random_sequence_generator
 }
 ***************************************************************************/
 
-namespace ss{
+namespace samson{
 namespace sort{
 
 
-	class random_sequence_generator : public ss::Generator
+	class random_sequence_generator : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
             size_t num_samples = environment->getSizeT( "test.number_of_samples", 1000000000);
 
-            ss::system::UInt val1;
-            ss::system::UInt val2;
-            ss::system::Void dummy;
+            samson::system::UInt val1;
+            samson::system::UInt val2;
+            samson::system::Void dummy;
 
             for (size_t i = 0; (i < num_samples); i++)
             {
@@ -52,7 +52,7 @@ namespace sort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sort
 
 #endif

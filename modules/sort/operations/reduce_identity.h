@@ -7,22 +7,22 @@
 #define _H_SAMSON_sort_reduce_identity
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sort{
 
 
-	class reduce_identity : public ss::Reduce
+	class reduce_identity : public samson::Reduce
 	{
-		ss::system::UInt val;
-		ss::system::Void dummy;
+		samson::system::UInt val;
+		samson::system::Void dummy;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			//OLM_T(LMT_User01, ("reduce_identity: inputs[0].num_kvs:%lu", inputs[0].num_kvs));
 			for (int i = 0; (i < inputs[0].num_kvs); ++i)
@@ -36,7 +36,7 @@ namespace sort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sort
 
 #endif

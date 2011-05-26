@@ -7,20 +7,20 @@
 #define _H_SAMSON_terasort_parse_file
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace terasort{
 
 
-	class parse_file : public ss::Parser
+	class parse_file : public samson::Parser
 	{
 
 	public:
 
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 			//Datas to emit
 			Partition key;
@@ -68,7 +68,7 @@ namespace terasort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace terasort
 
 #endif

@@ -7,16 +7,16 @@
 #define _H_SAMSON_time_test_fake_purchases
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/Time.h>
 #include <samson/modules/system/UInt.h>
 
 
-namespace ss{
+namespace samson{
 namespace time_test{
 
 
-	class fake_purchases : public ss::Generator
+	class fake_purchases : public samson::Generator
 	{
 
 	public:
@@ -24,11 +24,11 @@ namespace time_test{
 #define MAX_STR_LEN 1024
                 char output[MAX_STR_LEN];
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
-			ss::system::Time tm;
+			samson::system::Time tm;
 			struct tm timep;
-			ss::system::UInt amount;
+			samson::system::UInt amount;
 
 			size_t num_samples = environment->getInt( "time_test.num_samples", 1000000);
 			OLM_T(LMT_User06, ("fake_purchases() for time_test.num_samples:%lu\n", num_samples));
@@ -71,7 +71,7 @@ namespace time_test{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace time_test
 
 #endif

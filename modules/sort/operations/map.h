@@ -7,25 +7,25 @@
 #define _H_SAMSON_sort_map
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt64.h>
 #include <samson/modules/sort/Code.h>
 
-namespace ss{
+namespace samson{
 namespace sort{
 
 
-	class map : public ss::Parser
+	class map : public samson::Parser
 	{
 
 	public:
 
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 		  //Datas to emit
-		  ss::sort::Code key;
-		  ss::system::UInt64 value;
+		  samson::sort::Code key;
+		  samson::system::UInt64 value;
 
 		  //OLM_M(("Parsing %lu bytes", length  ));  
 
@@ -51,7 +51,7 @@ namespace sort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sort
 
 #endif

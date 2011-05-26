@@ -7,26 +7,26 @@
 #define _H_SAMSON_sort_random_sequence_generator_common_key
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sort{
 
 
-	class random_sequence_generator_common_key : public ss::Generator
+	class random_sequence_generator_common_key : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
             size_t num_samples = environment->getSizeT( "test.number_of_samples", 1000000000);
 
-            ss::system::UInt val;
-            ss::system::UInt8 key;
-            ss::system::Void dummy;
+            samson::system::UInt val;
+            samson::system::UInt8 key;
+            samson::system::Void dummy;
 
             key.value = 1;
 
@@ -42,7 +42,7 @@ namespace sort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sort
 
 #endif

@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_benchmark_parse_visits
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /*****************************************************************
 parser parse_visits
@@ -18,20 +18,20 @@ parser parse_visits
 }
 *******************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
-	class parse_visits : public ss::Parser
+	class parse_visits : public samson::Parser
 	{
 
 	public:
 
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
-			ss::system::String serverName;
-			ss::system::String path;
+			samson::system::String serverName;
+			samson::system::String path;
 
 			size_t offset = 0;
 			size_t line_begin = 0;
@@ -103,7 +103,7 @@ namespace url_benchmark{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

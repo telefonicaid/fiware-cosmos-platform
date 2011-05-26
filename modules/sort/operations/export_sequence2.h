@@ -7,14 +7,14 @@
 #define _H_SAMSON_sort_export_sequence2
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sort{
 
 
-	class export_sequence2 : public ss::ParserOutReduce
+	class export_sequence2 : public samson::ParserOutReduce
 	{
 
 	public:
@@ -28,7 +28,7 @@ namespace sort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sort
 
 #endif

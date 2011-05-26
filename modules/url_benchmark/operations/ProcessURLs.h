@@ -7,14 +7,14 @@
 #define _H_SAMSON_url_benchmark_ProcessURLs
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
-	class ProcessURLs : public ss::Script
+	class ProcessURLs : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace url_benchmark{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

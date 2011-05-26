@@ -7,18 +7,18 @@
 #define _H_SAMSON_time_test_map_by_day
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/Time.h>
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/UInt8.h>
 
 
 
-namespace ss{
+namespace samson{
 namespace time_test{
 
 
-	class map_by_day : public ss::Map
+	class map_by_day : public samson::Map
 	{
 
 #define MAX_STR_LEN 1024
@@ -27,12 +27,12 @@ namespace time_test{
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			ss::system::Time tm;
+			samson::system::Time tm;
 			struct tm timeCalendar;
-			ss::system::UInt amount;
-			ss::system::UInt8 day;
+			samson::system::UInt amount;
+			samson::system::UInt8 day;
 
 			//OLM_T(LMT_User06, ("inputs[0].num_kvs:%lu\n", inputs[0].num_kvs));
 			for (size_t i = 0; (i < inputs[0].num_kvs); i++)
@@ -60,7 +60,7 @@ namespace time_test{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace time_test
 
 #endif

@@ -7,14 +7,14 @@
 #define _H_SAMSON_sort_reduce
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sort{
 
 
-	class reduce : public ss::ParserOutReduce
+	class reduce : public samson::ParserOutReduce
 	{
 
 
@@ -27,7 +27,7 @@ namespace sort{
 #define MAX_STR_LEN 2048
 		  char line[MAX_STR_LEN];
 		  
-		  ss::system::UInt64 value;
+		  samson::system::UInt64 value;
 
 	public:
 
@@ -47,7 +47,7 @@ namespace sort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sort
 
 #endif

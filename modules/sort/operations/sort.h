@@ -7,14 +7,14 @@
 #define _H_SAMSON_sort_sort
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sort{
 
 
-	class sort : public ss::Script
+	class sort : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace sort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sort
 
 #endif

@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_benchmark_map_visits
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /****************************************************************
 map map_visits
@@ -17,22 +17,22 @@ map map_visits
 }
 *****************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
-	class map_visits : public ss::Map
+	class map_visits : public samson::Map
 	{
 
-            ss::system::UInt user;
-            ss::system::String url;
-            ss::system::String serverName;
-            ss::system::String path;
+            samson::system::UInt user;
+            samson::system::String url;
+            samson::system::String serverName;
+            samson::system::String path;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
             bool found;
@@ -84,7 +84,7 @@ namespace url_benchmark{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

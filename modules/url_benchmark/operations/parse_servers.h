@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_benchmark_parse_servers
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /***************************************************
 parser parse_servers
@@ -18,20 +18,20 @@ parser parse_servers
 }
 ***************************************************/
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
-	class parse_servers : public ss::Parser
+	class parse_servers : public samson::Parser
 	{
 
 	public:
 
 
-		void run( char *data , size_t length , ss::KVWriter *writer )
+		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
-			ss::system::String serverName;
-			ss::system::UInt categ;
+			samson::system::String serverName;
+			samson::system::UInt categ;
 
 			//OLM_M(("Parsing length:%d", length));
 
@@ -90,7 +90,7 @@ namespace url_benchmark{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

@@ -7,16 +7,16 @@
 #define _H_SAMSON_sort_export_sequence
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sort{
 
 
-	class export_sequence : public ss::ParserOut
+	class export_sequence : public samson::ParserOut
 	{
-		ss::system::UInt number;
+		samson::system::UInt number;
 
 #ifdef MAX_STR_LEN
 #undef MAX_STR_LEN
@@ -50,7 +50,7 @@ namespace sort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sort
 
 #endif

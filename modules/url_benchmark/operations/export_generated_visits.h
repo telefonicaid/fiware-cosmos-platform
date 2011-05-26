@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_benchmark_export_generated_visits
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /****************************************************************
 parserOut export_generated_visits
@@ -19,14 +19,14 @@ parserOut export_generated_visits
 }
 *****************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
-	class export_generated_visits : public ss::ParserOut
+	class export_generated_visits : public samson::ParserOut
 	{
-		ss::system::UInt user;
-		ss::system::String url;
+		samson::system::UInt user;
+		samson::system::String url;
 
 #ifdef MAX_STR_LEN
 #undef MAX_STR_LEN
@@ -56,7 +56,7 @@ namespace url_benchmark{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

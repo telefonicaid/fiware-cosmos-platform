@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_benchmark_fake_servers
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /***********************************************************
 generator fake_servers
@@ -18,20 +18,20 @@ generator fake_servers
 }
 ************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
-	class fake_servers : public ss::Generator
+	class fake_servers : public samson::Generator
 	{
 
 	public:
 
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
-			ss::system::String server;
-			ss::system::UInt categ;
+			samson::system::String server;
+			samson::system::UInt categ;
 
 			// Recover the number of servers from the environment
 			size_t num_servers = environment->getSizeT( "url_benchmark.num_servers" ,  1000000 );
@@ -53,7 +53,7 @@ namespace url_benchmark{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

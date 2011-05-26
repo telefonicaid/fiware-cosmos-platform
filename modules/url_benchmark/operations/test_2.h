@@ -7,14 +7,14 @@
 #define _H_SAMSON_url_benchmark_test_2
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
-	class test_2 : public ss::Script
+	class test_2 : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace url_benchmark{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

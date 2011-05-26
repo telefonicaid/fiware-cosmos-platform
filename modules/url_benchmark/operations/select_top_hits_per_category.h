@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_benchmark_select_top_hits_per_category
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /***************************************************************
 reduce select_top_hits_per_category
@@ -19,17 +19,17 @@ reduce select_top_hits_per_category
 }
 ****************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
-class select_top_hits_per_category : public ss::Reduce
+class select_top_hits_per_category : public samson::Reduce
 {
 
 public:
 
 
-	void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
 
 		if ( inputs[0].num_kvs == 0)
@@ -39,7 +39,7 @@ public:
 
 		size_t num_hits = environment->getInt("url_benchmark.num_hits", 10);
 
-		ss::system::UInt categ;
+		samson::system::UInt categ;
 		URLHit url_hit;
 		TopHits hits;
 
@@ -58,7 +58,7 @@ public:
 };
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

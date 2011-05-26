@@ -7,17 +7,17 @@
 #define _H_SAMSON_sort_export_sequence_common_key
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sort{
 
 
-	class export_sequence_common_key : public ss::ParserOut
+	class export_sequence_common_key : public samson::ParserOut
 	{
-		ss::system::UInt8 key;
-		ss::system::UInt number;
+		samson::system::UInt8 key;
+		samson::system::UInt number;
 
 #ifdef MAX_STR_LEN
 #undef MAX_STR_LEN
@@ -45,7 +45,7 @@ namespace sort{
             {
 
                     number.parse( inputs[0].kvs[i]->value );
-                    //ss::system::UInt8 key0;
+                    //samson::system::UInt8 key0;
                     //key0.parse(inputs[0].kvs[0]->key);
                     //key.parse(inputs[0].kvs[i]->key);
                     //OLM_T(LMT_User01, ("key:%d (key[0]:%d, i:%ld, val:%ld", key.value, key0.value, i, number.value));
@@ -60,7 +60,7 @@ namespace sort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sort
 
 #endif

@@ -7,23 +7,23 @@
 #define _H_SAMSON_sort_reduce_identity_common_key
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sort{
 
 
-	class reduce_identity_common_key : public ss::Reduce
+	class reduce_identity_common_key : public samson::Reduce
 	{
-		ss::system::UInt8 key;
-		ss::system::UInt val;
-		ss::system::Void dummy;
+		samson::system::UInt8 key;
+		samson::system::UInt val;
+		samson::system::Void dummy;
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			if (inputs[0].num_kvs == 0)
 			{
@@ -43,7 +43,7 @@ namespace sort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sort
 
 #endif

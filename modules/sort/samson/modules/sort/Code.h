@@ -9,12 +9,12 @@
 #include <samson/modules/system/UInt8.h>
 #include <limits>
 
-namespace ss{
+namespace samson{
     namespace sort{
         
         
-      class Code : public ss::system::UInt8
-	  //        class Code : public ss::DataInstance
+      class Code : public samson::system::UInt8
+	  //        class Code : public samson::DataInstance
 	{
 
             
@@ -88,7 +88,7 @@ namespace ss{
         }; 	
         
         
-    } // end of namespace ss
+    } // end of namespace samson
 } // end of namespace system
 
 #endif

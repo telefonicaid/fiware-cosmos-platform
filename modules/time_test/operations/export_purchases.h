@@ -7,17 +7,17 @@
 #define _H_SAMSON_time_test_export_purchases
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/UInt8.h>
 
 
 
-namespace ss{
+namespace samson{
 namespace time_test{
 
 
-	class export_purchases : public ss::ParserOut
+	class export_purchases : public samson::ParserOut
 	{
 
 #define MAX_STR_LEN 1024
@@ -29,8 +29,8 @@ namespace time_test{
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
 			const char *wdays[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-			ss::system::UInt8 day;
-			ss::system::UInt total_amount;
+			samson::system::UInt8 day;
+			samson::system::UInt total_amount;
 
 			for (size_t i = 0; (i < inputs[0].num_kvs); i++)
 			{
@@ -47,7 +47,7 @@ namespace time_test{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace time_test
 
 #endif

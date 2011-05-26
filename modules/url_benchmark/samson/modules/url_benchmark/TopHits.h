@@ -10,7 +10,7 @@
 #include <samson/modules/url_benchmark/TopHits_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
@@ -19,7 +19,7 @@ namespace url_benchmark{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

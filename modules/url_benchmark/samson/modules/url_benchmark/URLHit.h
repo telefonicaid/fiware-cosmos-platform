@@ -10,7 +10,7 @@
 #include <samson/modules/url_benchmark/URLHit_base.h>
 
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
@@ -19,11 +19,11 @@ namespace url_benchmark{
 	public:
 		inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 			{ // comparing count
-				int tmp = ::ss::system::UInt::compare(data1,data2,offset1 , offset2);
+				int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 				if( tmp != 0) return -tmp;
 			}
 			{ // comparing URL
-				int tmp = ::ss::system::String::compare(data1,data2,offset1 , offset2);
+				int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 				if( tmp != 0) return tmp;
 			}
 			return 0; //If everything is equal
@@ -38,7 +38,7 @@ namespace url_benchmark{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

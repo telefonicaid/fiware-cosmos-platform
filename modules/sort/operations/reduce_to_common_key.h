@@ -7,22 +7,22 @@
 #define _H_SAMSON_sort_reduce_to_common_key
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace sort{
 
 
-	class reduce_to_common_key : public ss::Reduce
+	class reduce_to_common_key : public samson::Reduce
 	{
-		ss::system::UInt val;
-		ss::system::Void dummy;
-		ss::system::UInt8 key;
+		samson::system::UInt val;
+		samson::system::Void dummy;
+		samson::system::UInt8 key;
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			//OLM_T(LMT_User01, ("reduce_to_common_key: inputs[0].num_kvs:%lu", inputs[0].num_kvs));
 			key.value = 1;
@@ -37,7 +37,7 @@ namespace sort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace sort
 
 #endif

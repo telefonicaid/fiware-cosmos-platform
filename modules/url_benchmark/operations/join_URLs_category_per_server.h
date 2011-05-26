@@ -7,7 +7,7 @@
 #define _H_SAMSON_url_benchmark_join_URLs_category_per_server
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 /***************************************************************************
 reduce join_URLs_category_per_server
@@ -20,17 +20,17 @@ reduce join_URLs_category_per_server
 }
 *****************************************************************************/
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
-	class join_URLs_category_per_server : public ss::Reduce
+	class join_URLs_category_per_server : public samson::Reduce
 	{
 
 	public:
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			if ((inputs[1].num_kvs == 0) && (inputs[0].num_kvs == 0))
 			{
@@ -40,7 +40,7 @@ namespace url_benchmark{
 
 			if ( inputs[0].num_kvs == 0)
 			{
-				ss::system::String s;
+				samson::system::String s;
 				s.parse( inputs[1].kvs[0]->key );
 				OLM_D(("'%s' has no hits",s.value.c_str()));
 				return;
@@ -48,7 +48,7 @@ namespace url_benchmark{
 
 			if ( inputs[1].num_kvs == 0)
 			{
-				ss::system::String s;
+				samson::system::String s;
 				s.parse( inputs[0].kvs[0]->key );
 				OLM_E(("Input '%s' not included in server encoding table",s.value.c_str()));
 				return;
@@ -56,15 +56,15 @@ namespace url_benchmark{
 
 			if ( inputs[1].num_kvs != 1)
 			{
-				ss::system::String s;
+				samson::system::String s;
 				s.parse( inputs[1].kvs[0]->key );
 				OLM_E(("Input '%s' with multiple entries in server encoding table: inputs[1].num_kvs:%d",s.value.c_str(), inputs[1].num_kvs));
 			}
 
-			ss::system::String serverName;
-			ss::system::String path;
-			ss::system::String pathPrev;
-			ss::system::UInt categ;
+			samson::system::String serverName;
+			samson::system::String path;
+			samson::system::String pathPrev;
+			samson::system::UInt categ;
 			URLHit url_hit;
 
 			serverName.parse(inputs[1].kvs[0]->key);
@@ -106,7 +106,7 @@ namespace url_benchmark{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

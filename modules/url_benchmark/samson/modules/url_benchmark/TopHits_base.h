@@ -10,18 +10,18 @@
 #include <samson/modules/url_benchmark/URLHit.h>
 
 
-namespace ss{
+namespace samson{
 namespace url_benchmark{
 
 
-	class TopHits_base : public ss::DataInstance{
+	class TopHits_base : public samson::DataInstance{
 
 	public:
-	::ss::url_benchmark::URLHit *hit;
+	::samson::url_benchmark::URLHit *hit;
 	int hit_length;
 	int hit_max_length;
 
-	TopHits_base() : ss::DataInstance(){
+	TopHits_base() : samson::DataInstance(){
 		hit_length=0;
 		hit_max_length=0;
 		hit = NULL;
@@ -36,7 +36,7 @@ namespace url_benchmark{
 		int offset=0;
 		{ //Parsing vector hit
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
+			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	hitSetLength( _length );
 			for (int i = 0 ; i < (int)hit_length ; i++){
 				offset += hit[i].parse(data+offset);
@@ -48,7 +48,7 @@ namespace url_benchmark{
 	int serialize(char *data){
 		int offset=0;
 		{ //Serialization vector hit
-			offset += ss::staticVarIntSerialize( data+offset , hit_length );
+			offset += samson::staticVarIntSerialize( data+offset , hit_length );
 			for (int i = 0 ; i < (int)hit_length ; i++){
 				offset += hit[i].serialize(data+offset);
 			}
@@ -60,10 +60,10 @@ namespace url_benchmark{
 		int offset=0;
 		{ //Getting size of vector hit
 			size_t _length;
-			offset += ss::staticVarIntParse( data+offset , &_length );
-			::ss::url_benchmark::URLHit _tmp;
+			offset += samson::staticVarIntParse( data+offset , &_length );
+			::samson::url_benchmark::URLHit _tmp;
 			for (int i = 0 ; i < (int)_length ; i++){
-				offset += ::ss::url_benchmark::URLHit::size(data+offset);
+				offset += ::samson::url_benchmark::URLHit::size(data+offset);
 			}
 		}
 		return offset;
@@ -78,13 +78,13 @@ namespace url_benchmark{
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // Comparing vector hit
 			size_t _length1,_length2;
-			*offset1 += ss::staticVarIntParse( data1+(*offset1) , &_length1 );
-			*offset2 += ss::staticVarIntParse( data2+(*offset2) , &_length2 );
+			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
+			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
 			for (int i = 0 ; i < (int)_length1 ; i++){
 				{ // comparing hit[i]
-					int tmp = ::ss::url_benchmark::URLHit::compare(data1,data2,offset1 , offset2);
+					int tmp = ::samson::url_benchmark::URLHit::compare(data1,data2,offset1 , offset2);
 					if( tmp != 0) return tmp;
 				}
 			}
@@ -101,11 +101,11 @@ namespace url_benchmark{
 
 	void hitSetLength(int _length){
 		if( _length > hit_max_length){ 
-			::ss::url_benchmark::URLHit *_previous = hit;
+			::samson::url_benchmark::URLHit *_previous = hit;
 			int previous_length = hit_length;
 			if(hit_max_length == 0) hit_max_length = _length;
 			while(hit_max_length < _length) hit_max_length *= 2;
-			hit = new ::ss::url_benchmark::URLHit[hit_max_length ];
+			hit = new ::samson::url_benchmark::URLHit[hit_max_length ];
 			if( _previous ){
 				for (int i = 0 ; i < previous_length ; i++)
 					hit[i].copyFrom( &_previous[i] );
@@ -115,7 +115,7 @@ namespace url_benchmark{
 		hit_length=_length;
 	}
 
-	::ss::url_benchmark::URLHit* hitAdd(){
+	::samson::url_benchmark::URLHit* hitAdd(){
 		hitSetLength( hit_length + 1 );
 		return &hit[hit_length-1];
 	}
@@ -143,7 +143,7 @@ namespace url_benchmark{
 
 	}; //class TopHits_base
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace url_benchmark
 
 #endif

@@ -10,11 +10,11 @@
 #include <samson/modules/system/UInt8.h>
 
 
-namespace ss{
+namespace samson{
 namespace terasort{
 
 
-	class Partition : public ss::system::UInt8
+	class Partition : public samson::system::UInt8
 	{
 		typedef unsigned char uchar;
 
@@ -38,7 +38,7 @@ namespace terasort{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace terasort
 
 #endif

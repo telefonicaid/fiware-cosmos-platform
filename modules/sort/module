@@ -100,11 +100,11 @@ script ScriptSortDataFromTxt
 	helpLine "Sequence to sort data, from uploaded text file, to textual data-set ready for download"
 	
 	code
-	"
+	{
 	sort.parse_file_by_buckets  $1 common -create -clear
 	sort.reduce_identity_common_key common sorted -clear -create
 	sort.export_sequence_common_key sorted $2  -clear -create
-	"
+	}
 }
 
 script ScriptSortDataFromGenerator
@@ -114,13 +114,13 @@ script ScriptSortDataFromGenerator
 	helpLine "Sequence to sort data, from generated random, to textual data-set ready for download"
 	
 	code
-	"
+	{
 	set test.number_of_samples              100000000
 	sort.random_sequence_generator numbers -create -clear
 	sort.reduce_to_common_key numbers common -clear -create
 	sort.reduce_identity_common_key common sorted -clear -create
 	sort.export_sequence_common_key sorted $2  -clear -create
-	"
+	}
 }
 
 # ---------------------------------------------------------------------------
@@ -150,9 +150,9 @@ script sort
 	out txt txt
 
 	code
-	"
+	{
 		sort.map $1 $1_tmp -create
 		sort.reduce $1_tmp $2 -create
 		rm $1_tmp
-	"
+	}
 }

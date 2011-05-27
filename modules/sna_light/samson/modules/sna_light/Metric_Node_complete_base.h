@@ -43,143 +43,299 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += id.parse(data+offset);
-		offset += links_count.parse(data+offset);
-		offset += strong_links_count.parse(data+offset);
-		offset += strong_links_sum.parse(data+offset);
-		offset += weak_links_count.parse(data+offset);
-		offset += weak_links_sum.parse(data+offset);
-		offset += strong_links_comp_count.parse(data+offset);
-		offset += weak_links_comp_count.parse(data+offset);
-		offset += count_comm.parse(data+offset);
-		offset += count_comm_as_strong.parse(data+offset);
-		offset += count_comm_as_weak.parse(data+offset);
-		offset += average_size_comm.parse(data+offset);
-		offset += average_size_comm_regular.parse(data+offset);
-		offset += average_size_comm_orphan.parse(data+offset);
-		offset += reach_two_step.parse(data+offset);
-		offset += reach_two_step_competitors.parse(data+offset);
-		offset += coef_cluster.parse(data+offset);
+		{ //Parsing id
+			offset += id.parse(data+offset);
+		}
+
+		{ //Parsing links_count
+			offset += links_count.parse(data+offset);
+		}
+
+		{ //Parsing strong_links_count
+			offset += strong_links_count.parse(data+offset);
+		}
+
+		{ //Parsing strong_links_sum
+			offset += strong_links_sum.parse(data+offset);
+		}
+
+		{ //Parsing weak_links_count
+			offset += weak_links_count.parse(data+offset);
+		}
+
+		{ //Parsing weak_links_sum
+			offset += weak_links_sum.parse(data+offset);
+		}
+
+		{ //Parsing strong_links_comp_count
+			offset += strong_links_comp_count.parse(data+offset);
+		}
+
+		{ //Parsing weak_links_comp_count
+			offset += weak_links_comp_count.parse(data+offset);
+		}
+
+		{ //Parsing count_comm
+			offset += count_comm.parse(data+offset);
+		}
+
+		{ //Parsing count_comm_as_strong
+			offset += count_comm_as_strong.parse(data+offset);
+		}
+
+		{ //Parsing count_comm_as_weak
+			offset += count_comm_as_weak.parse(data+offset);
+		}
+
+		{ //Parsing average_size_comm
+			offset += average_size_comm.parse(data+offset);
+		}
+
+		{ //Parsing average_size_comm_regular
+			offset += average_size_comm_regular.parse(data+offset);
+		}
+
+		{ //Parsing average_size_comm_orphan
+			offset += average_size_comm_orphan.parse(data+offset);
+		}
+
+		{ //Parsing reach_two_step
+			offset += reach_two_step.parse(data+offset);
+		}
+
+		{ //Parsing reach_two_step_competitors
+			offset += reach_two_step_competitors.parse(data+offset);
+		}
+
+		{ //Parsing coef_cluster
+			offset += coef_cluster.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += id.serialize(data+offset);
-		offset += links_count.serialize(data+offset);
-		offset += strong_links_count.serialize(data+offset);
-		offset += strong_links_sum.serialize(data+offset);
-		offset += weak_links_count.serialize(data+offset);
-		offset += weak_links_sum.serialize(data+offset);
-		offset += strong_links_comp_count.serialize(data+offset);
-		offset += weak_links_comp_count.serialize(data+offset);
-		offset += count_comm.serialize(data+offset);
-		offset += count_comm_as_strong.serialize(data+offset);
-		offset += count_comm_as_weak.serialize(data+offset);
-		offset += average_size_comm.serialize(data+offset);
-		offset += average_size_comm_regular.serialize(data+offset);
-		offset += average_size_comm_orphan.serialize(data+offset);
-		offset += reach_two_step.serialize(data+offset);
-		offset += reach_two_step_competitors.serialize(data+offset);
-		offset += coef_cluster.serialize(data+offset);
+		{ //Serializing id
+			offset += id.serialize(data+offset);
+		}
+
+		{ //Serializing links_count
+			offset += links_count.serialize(data+offset);
+		}
+
+		{ //Serializing strong_links_count
+			offset += strong_links_count.serialize(data+offset);
+		}
+
+		{ //Serializing strong_links_sum
+			offset += strong_links_sum.serialize(data+offset);
+		}
+
+		{ //Serializing weak_links_count
+			offset += weak_links_count.serialize(data+offset);
+		}
+
+		{ //Serializing weak_links_sum
+			offset += weak_links_sum.serialize(data+offset);
+		}
+
+		{ //Serializing strong_links_comp_count
+			offset += strong_links_comp_count.serialize(data+offset);
+		}
+
+		{ //Serializing weak_links_comp_count
+			offset += weak_links_comp_count.serialize(data+offset);
+		}
+
+		{ //Serializing count_comm
+			offset += count_comm.serialize(data+offset);
+		}
+
+		{ //Serializing count_comm_as_strong
+			offset += count_comm_as_strong.serialize(data+offset);
+		}
+
+		{ //Serializing count_comm_as_weak
+			offset += count_comm_as_weak.serialize(data+offset);
+		}
+
+		{ //Serializing average_size_comm
+			offset += average_size_comm.serialize(data+offset);
+		}
+
+		{ //Serializing average_size_comm_regular
+			offset += average_size_comm_regular.serialize(data+offset);
+		}
+
+		{ //Serializing average_size_comm_orphan
+			offset += average_size_comm_orphan.serialize(data+offset);
+		}
+
+		{ //Serializing reach_two_step
+			offset += reach_two_step.serialize(data+offset);
+		}
+
+		{ //Serializing reach_two_step_competitors
+			offset += reach_two_step_competitors.serialize(data+offset);
+		}
+
+		{ //Serializing coef_cluster
+			offset += coef_cluster.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing id
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing links_count
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing strong_links_count
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing strong_links_sum
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing weak_links_count
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing weak_links_sum
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing strong_links_comp_count
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing weak_links_comp_count
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_comm
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_comm_as_strong
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_comm_as_weak
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing average_size_comm
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing average_size_comm_regular
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing average_size_comm_orphan
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing reach_two_step
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing reach_two_step_competitors
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing coef_cluster
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return id.hash(max_num_partitions);
+		{ //Partitioning id
+			return id.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing id
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  id compared 
 		{ // comparing links_count
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  links_count compared 
 		{ // comparing strong_links_count
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  strong_links_count compared 
 		{ // comparing strong_links_sum
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  strong_links_sum compared 
 		{ // comparing weak_links_count
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  weak_links_count compared 
 		{ // comparing weak_links_sum
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  weak_links_sum compared 
 		{ // comparing strong_links_comp_count
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  strong_links_comp_count compared 
 		{ // comparing weak_links_comp_count
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  weak_links_comp_count compared 
 		{ // comparing count_comm
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_comm compared 
 		{ // comparing count_comm_as_strong
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_comm_as_strong compared 
 		{ // comparing count_comm_as_weak
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_comm_as_weak compared 
 		{ // comparing average_size_comm
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  average_size_comm compared 
 		{ // comparing average_size_comm_regular
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  average_size_comm_regular compared 
 		{ // comparing average_size_comm_orphan
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  average_size_comm_orphan compared 
 		{ // comparing reach_two_step
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  reach_two_step compared 
 		{ // comparing reach_two_step_competitors
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  reach_two_step_competitors compared 
 		{ // comparing coef_cluster
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  coef_cluster compared 
 		return 0; //If everything is equal
 	}
 
@@ -190,77 +346,180 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	void copyFrom( Metric_Node_complete_base *other ){
-		id.copyFrom(&other->id);
-		links_count.copyFrom(&other->links_count);
-		strong_links_count.copyFrom(&other->strong_links_count);
-		strong_links_sum.copyFrom(&other->strong_links_sum);
-		weak_links_count.copyFrom(&other->weak_links_count);
-		weak_links_sum.copyFrom(&other->weak_links_sum);
-		strong_links_comp_count.copyFrom(&other->strong_links_comp_count);
-		weak_links_comp_count.copyFrom(&other->weak_links_comp_count);
-		count_comm.copyFrom(&other->count_comm);
-		count_comm_as_strong.copyFrom(&other->count_comm_as_strong);
-		count_comm_as_weak.copyFrom(&other->count_comm_as_weak);
-		average_size_comm.copyFrom(&other->average_size_comm);
-		average_size_comm_regular.copyFrom(&other->average_size_comm_regular);
-		average_size_comm_orphan.copyFrom(&other->average_size_comm_orphan);
-		reach_two_step.copyFrom(&other->reach_two_step);
-		reach_two_step_competitors.copyFrom(&other->reach_two_step_competitors);
-		coef_cluster.copyFrom(&other->coef_cluster);
+		{ //Copying id
+			id.copyFrom(&other->id);
+		}
+
+		{ //Copying links_count
+			links_count.copyFrom(&other->links_count);
+		}
+
+		{ //Copying strong_links_count
+			strong_links_count.copyFrom(&other->strong_links_count);
+		}
+
+		{ //Copying strong_links_sum
+			strong_links_sum.copyFrom(&other->strong_links_sum);
+		}
+
+		{ //Copying weak_links_count
+			weak_links_count.copyFrom(&other->weak_links_count);
+		}
+
+		{ //Copying weak_links_sum
+			weak_links_sum.copyFrom(&other->weak_links_sum);
+		}
+
+		{ //Copying strong_links_comp_count
+			strong_links_comp_count.copyFrom(&other->strong_links_comp_count);
+		}
+
+		{ //Copying weak_links_comp_count
+			weak_links_comp_count.copyFrom(&other->weak_links_comp_count);
+		}
+
+		{ //Copying count_comm
+			count_comm.copyFrom(&other->count_comm);
+		}
+
+		{ //Copying count_comm_as_strong
+			count_comm_as_strong.copyFrom(&other->count_comm_as_strong);
+		}
+
+		{ //Copying count_comm_as_weak
+			count_comm_as_weak.copyFrom(&other->count_comm_as_weak);
+		}
+
+		{ //Copying average_size_comm
+			average_size_comm.copyFrom(&other->average_size_comm);
+		}
+
+		{ //Copying average_size_comm_regular
+			average_size_comm_regular.copyFrom(&other->average_size_comm_regular);
+		}
+
+		{ //Copying average_size_comm_orphan
+			average_size_comm_orphan.copyFrom(&other->average_size_comm_orphan);
+		}
+
+		{ //Copying reach_two_step
+			reach_two_step.copyFrom(&other->reach_two_step);
+		}
+
+		{ //Copying reach_two_step_competitors
+			reach_two_step_competitors.copyFrom(&other->reach_two_step_competitors);
+		}
+
+		{ //Copying coef_cluster
+			coef_cluster.copyFrom(&other->coef_cluster);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << id.str();
+				{ //Texting id
+			o << id.str();
+		}
 
 		o<<" ";
-		o << links_count.str();
+				{ //Texting links_count
+			o << links_count.str();
+		}
 
 		o<<" ";
-		o << strong_links_count.str();
+				{ //Texting strong_links_count
+			o << strong_links_count.str();
+		}
 
 		o<<" ";
-		o << strong_links_sum.str();
+				{ //Texting strong_links_sum
+			o << strong_links_sum.str();
+		}
 
 		o<<" ";
-		o << weak_links_count.str();
+				{ //Texting weak_links_count
+			o << weak_links_count.str();
+		}
 
 		o<<" ";
-		o << weak_links_sum.str();
+				{ //Texting weak_links_sum
+			o << weak_links_sum.str();
+		}
 
 		o<<" ";
-		o << strong_links_comp_count.str();
+				{ //Texting strong_links_comp_count
+			o << strong_links_comp_count.str();
+		}
 
 		o<<" ";
-		o << weak_links_comp_count.str();
+				{ //Texting weak_links_comp_count
+			o << weak_links_comp_count.str();
+		}
 
 		o<<" ";
-		o << count_comm.str();
+				{ //Texting count_comm
+			o << count_comm.str();
+		}
 
 		o<<" ";
-		o << count_comm_as_strong.str();
+				{ //Texting count_comm_as_strong
+			o << count_comm_as_strong.str();
+		}
 
 		o<<" ";
-		o << count_comm_as_weak.str();
+				{ //Texting count_comm_as_weak
+			o << count_comm_as_weak.str();
+		}
 
 		o<<" ";
-		o << average_size_comm.str();
+				{ //Texting average_size_comm
+			o << average_size_comm.str();
+		}
 
 		o<<" ";
-		o << average_size_comm_regular.str();
+				{ //Texting average_size_comm_regular
+			o << average_size_comm_regular.str();
+		}
 
 		o<<" ";
-		o << average_size_comm_orphan.str();
+				{ //Texting average_size_comm_orphan
+			o << average_size_comm_orphan.str();
+		}
 
 		o<<" ";
-		o << reach_two_step.str();
+				{ //Texting reach_two_step
+			o << reach_two_step.str();
+		}
 
 		o<<" ";
-		o << reach_two_step_competitors.str();
+				{ //Texting reach_two_step_competitors
+			o << reach_two_step_competitors.str();
+		}
 
 		o<<" ";
-		o << coef_cluster.str();
+				{ //Texting coef_cluster
+			o << coef_cluster.str();
+		}
 
 		o<<" ";
 		return o.str();

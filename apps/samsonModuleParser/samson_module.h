@@ -12,6 +12,6 @@
 
 
 
-#define SAMSON_MODULE_PARSER_VERSION	"0.2"
+#define SAMSON_MODULE_PARSER_VERSION	"0.3"
 
 #endif

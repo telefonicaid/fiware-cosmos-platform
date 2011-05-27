@@ -38,10 +38,13 @@ namespace txt{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	colListSetLength( _length );
-			for (int i = 0 ; i < (int)colList_length ; i++){
+			for (int i = 0 ; i < (int)colList_length ; i++)
+			{ //Parsing colList
 				offset += colList[i].parse(data+offset);
 			}
+
 		}
+
 		return offset;
 	}
 
@@ -49,10 +52,13 @@ namespace txt{
 		int offset=0;
 		{ //Serialization vector colList
 			offset += samson::staticVarIntSerialize( data+offset , colList_length );
-			for (int i = 0 ; i < (int)colList_length ; i++){
+			for (int i = 0 ; i < (int)colList_length ; i++)
+			{ //Serializing colList
 				offset += colList[i].serialize(data+offset);
 			}
+
 		}
+
 		return offset;
 	}
 
@@ -62,17 +68,24 @@ namespace txt{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 			::samson::txt::CountData _tmp;
-			for (int i = 0 ; i < (int)_length ; i++){
+			for (int i = 0 ; i < (int)_length ; i++)
+			{ //Sizing colList
 				offset += ::samson::txt::CountData::size(data+offset);
 			}
+
 		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		if( colList_length > 0 ){
-		return colList[0].hash(max_num_partitions);
-		} else return 0;
+		if( colList_length > 0 )
+			{ //Partitioning colList
+				return colList[0].hash(max_num_partitions);
+			}
+
+		else return 0;
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
@@ -82,13 +95,12 @@ namespace txt{
 			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
-			for (int i = 0 ; i < (int)_length1 ; i++){
-				{ // comparing colList[i]
-					int tmp = ::samson::txt::CountData::compare(data1,data2,offset1 , offset2);
-					if( tmp != 0) return tmp;
-				}
-			}
-		}
+			for (int i = 0 ; i < (int)_length1 ; i++)
+			{ // comparing colList[i]
+				int tmp = ::samson::txt::CountData::compare(data1,data2,offset1 , offset2);
+				if( tmp != 0) return tmp;
+			}   //  colList[i] compared 
+		}   // vector colList compared 
 		return 0; //If everything is equal
 	}
 
@@ -98,6 +110,8 @@ namespace txt{
 		size_t offset_2=0;
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
+
+
 
 	void colListSetLength(int _length){
 		if( _length > colList_max_length){ 
@@ -121,22 +135,26 @@ namespace txt{
 	}
 
 	void copyFrom( Stripe_base *other ){
-			{ // CopyFrom field colList
-				colListSetLength( other->colList_length);
-				for (int i = 0 ; i < colList_length ; i++){
-					colList[i].copyFrom(&other->colList[i]);
-				}
+		{ // CopyFrom field colList
+			colListSetLength( other->colList_length);
+			for (int i = 0 ; i < colList_length ; i++)
+			{ //Copying colList
+				colList[i].copyFrom(&other->colList[i]);
 			}
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
 		{// toString of vector colList
-			for(int i = 0 ; i < colList_length ; i++){
+			for(int i = 0 ; i < colList_length ; i++)
+			{ //Texting colList
 				o << colList[i].str();
-				 o << " ";
 			}
+				 o << " ";
 		}
+
 		o<<" ";
 		return o.str();
 	}

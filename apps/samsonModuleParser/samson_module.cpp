@@ -6,7 +6,6 @@
  *
  * ***************************************************************************/
 
-
 #include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                             */
 #include "samson_module.h"			/* Own interface                              */
 #include <samson/module/Data.h>            /* DataInstance                               */
@@ -52,20 +51,17 @@ int  tsCompare ( struct  timespec  time1, struct  timespec  time2)
 
 int main( int argC , const char *argV[])
 {
-	
-	
-
-
 	//Help parameter in the comman line
 	au::CommandLine cmdLine;
 	cmdLine.set_flag_boolean("help");		// Get this help
 	cmdLine.parse(argC , argV);
+
 	
 	if ( cmdLine.get_flag_bool("help") )
 	{
-		fprintf(stderr, "This tool is used to generate/update a .h & .cpp files with the definition of a new module for the samson platform.\n");
+		fprintf(stderr, "samsonModuleParser: This tool is used to generate/update a .h & .cpp files with the definition of a new module for the samson platform.\n");
 		fprintf(stderr, "A samson-module can contain new data types for your keys and values, maps, reducers and generators.");
-		fprintf(stderr, "Sintax of this txt-file is really simple.\n");
+		fprintf(stderr, "Syntax of this txt-file is really simple.\n");
 		fprintf(stderr, "\n\nMore help coming soon (andreu@tid.es)\n");
 		return 0;
 	}
@@ -88,7 +84,7 @@ int main( int argC , const char *argV[])
     
     if ( stat( moduleFileName.c_str() , &stat_module ) != 0)
     {
-        std::cerr << "Error opening module file";
+        std::cerr << "samsonModuleParser: Error opening module file";
         exit(0);
     }
     
@@ -105,21 +101,21 @@ int main( int argC , const char *argV[])
 		if (tsCompare(stat_module.st_mtime, stat_output1.st_mtime) < 0)
 			if(tsCompare(stat_module.st_mtime, stat_output2.st_mtime) < 0)
             {
-                std::cerr << "Not creating Modules.cpp and Modules.h since the module input file is older than the new one\n";
+                std::cerr << "samsonModuleParser: Not creating Modules.cpp and Modules.h since the module input file is older than the new one\n";
                 return 0;
             }
 #else        
         if( tsCompare( stat_module.st_mtimespec , stat_output1.st_mtimespec ) < 0 )
             if( tsCompare( stat_module.st_mtimespec , stat_output2.st_mtimespec ) < 0 )
             {
-                std::cerr << "Not creating Modules.cpp and Modules.h since the module input file is older than the new one\n";
+                std::cerr << "samsonModuleParser: Not creating Modules.cpp and Modules.h since the module input file is older than the new one\n";
                 return 0;
             }
 #endif
     }
     else
     {
-        std::cerr << "Not possible to open " << output1_filename << " or " << output2_filename << " so, outputs will be generated again\n";
+        std::cerr << "samsonModuleParser: Not possible to open " << output1_filename << " or " << output2_filename << " so, outputs will be generated again\n";
     }
     
 	fprintf(stderr,"SAMSON Module tool  (v %s)\n", SAMSON_MODULE_PARSER_VERSION);

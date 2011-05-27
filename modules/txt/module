@@ -55,7 +55,7 @@ script demo
 {
 
 	code
-	"
+	{
 		add txt.input -txt -f					# Create incomming txt queue
 		add txt.input_bin system.String system.UInt -f		# Create incomming queue in binary format
 
@@ -67,7 +67,7 @@ script demo
 		remove_operation -tag txt.demo
 		set_operation 'txt.parser_words txt.input txt.input_bin -clear_inputs' 'queue txt.input 0 0' -tag txt.demo		
 		set_operation 'txt.word_count_accumulate txt.input_bin txt.words txt.words -clear_inputs' 'queue txt.input_bin 0 0' -tag txt.demo
-	"
+	}
 }
 
 script words
@@ -78,12 +78,12 @@ script words
 	helpLine "Complete classical example of counting words"
 
 	code
-	"
+	{
 		txt.parser_words $1 $1.words -create -clear
 		txt.word_count $1.words $1.words.accumulated -create -clear
 		txt.export_words $1.words.accumulated $2 -create -clear
 		rm $1.words $1.words.accumulated
-	"
+	}
 
 }
 
@@ -154,12 +154,12 @@ script test_1
 	helpLine "Complete classical example of counting words"
 
 	code
-	"
+	{
 		txt.parser_words $1 $1.words -create -clear
 		txt.word_count $1.words $1.words.accumulated -create -clear
 		txt.export_words $1.words.accumulated $2 -create -clear
 		rm $1.words $1.words.accumulated
-	"
+	}
 
 }
 
@@ -171,11 +171,11 @@ script test_2
 	helpLine "example for cumputing collocations"
 
 	code
-	"
+	{
 		txt.parser_collocations_stripes $1 $1.coll -create -clear
 		txt.collocation_count_stripes $1.coll $1.coll.accumulated -create -clear
 		txt.export_collocations_stripes $1.coll.accumulated $2 -create -clear
 		rm $1.coll $1.coll.accumulated
-	"
+	}
 
 }

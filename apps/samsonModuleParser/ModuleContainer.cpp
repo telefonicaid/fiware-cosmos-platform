@@ -69,7 +69,10 @@ namespace samson {
 	std::vector<std::string> ModuleContainer::tockenizeWithDots( std::string myString )
 	{
 		if( myString.length() > 1000 )
-			LM_X(1,("Error tokenizing a string with more than 1000 characters"));
+		{
+			fprintf(stderr, "samsonModuleParser: Error tokenizing a string with more than 1000 characters");
+			exit (1);
+		}
 		
 		char tmp[1000];
 		strcpy(tmp, myString.c_str() );
@@ -89,10 +92,13 @@ namespace samson {
 		
 		while( pos < end )
 		{
-			if( module_creator->isSpecial( pos ) )
-				LM_X(1,("Error parsing module definition"));
+			if( module_creator->isSpecial(pos))
+			{
+				fprintf(stderr, "samsonModuleParser: Error parsing module definition at line:%d\n", module_creator->items[pos].line);
+				exit (1);
+			}
 
-			std::string mainCommand = module_creator->itemAtPos( pos++ );
+			std::string mainCommand = module_creator->itemAtPos(pos++).str;
 			
 			if( mainCommand == "title" )
 				title = module_creator->getLiteral(&pos);
@@ -102,18 +108,19 @@ namespace samson {
 				version = module_creator->getLiteral(&pos);
 			else if( mainCommand == "include" )
 			{
-				std::string fileName = module_creator->itemAtPos(pos++);
+				std::string fileName = module_creator->itemAtPos(pos++).str;
 				includes.push_back( fileName );
 			}
 			else if( mainCommand == "set" )
 			{
-				std::string setName		= module_creator->itemAtPos(pos++);
-				std::string setValue	= module_creator->itemAtPos(pos++);
+				std::string setName		= module_creator->itemAtPos(pos++).str;
+				std::string setValue	= module_creator->itemAtPos(pos++).str;
 				sets.insert( std::pair<std::string,std::string>( setName , setValue) );
 			}
 			else if( mainCommand == "help" )
 			{
 				int begin,end;
+
 				module_creator->getScopeLimits(&pos, &begin,&end);
 				while( begin < end)
 					help.push_back( module_creator->getLiteral(&begin) );
@@ -121,7 +128,7 @@ namespace samson {
 			}
 			else
 			{
-				fprintf(stderr, "Error: Unknown command inside module section (%s)\n", mainCommand.c_str());
+				fprintf(stderr, "samsonModuleParser: Error: Unknown command inside module section (%s), at line:%d\n", mainCommand.c_str(), module_creator->items[pos].line);
 				exit(1);
 			}
 			
@@ -129,7 +136,10 @@ namespace samson {
 		}
 		
 		if( pos != (end+1))
-			LM_X(1,("Error parsing module definition. Invalid number of items in the definition"));
+		{
+			fprintf(stderr, "samsonModuleParser: Error parsing module definition. Invalid number of items in the definition at line:%d\n", module_creator->items[pos].line);
+			exit (1);
+		}
 		
 	}
 }

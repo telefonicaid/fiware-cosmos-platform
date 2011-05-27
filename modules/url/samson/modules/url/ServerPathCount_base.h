@@ -31,52 +31,91 @@ namespace url{
 
 	int parse(char *data){
 		int offset=0;
-		offset += server.parse(data+offset);
-		offset += path.parse(data+offset);
-		offset += count.parse(data+offset);
-		offset += weight.parse(data+offset);
+		{ //Parsing server
+			offset += server.parse(data+offset);
+		}
+
+		{ //Parsing path
+			offset += path.parse(data+offset);
+		}
+
+		{ //Parsing count
+			offset += count.parse(data+offset);
+		}
+
+		{ //Parsing weight
+			offset += weight.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += server.serialize(data+offset);
-		offset += path.serialize(data+offset);
-		offset += count.serialize(data+offset);
-		offset += weight.serialize(data+offset);
+		{ //Serializing server
+			offset += server.serialize(data+offset);
+		}
+
+		{ //Serializing path
+			offset += path.serialize(data+offset);
+		}
+
+		{ //Serializing count
+			offset += count.serialize(data+offset);
+		}
+
+		{ //Serializing weight
+			offset += weight.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing server
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing path
+			offset += ::samson::system::String::size(data+offset);
+		}
+
+		{ //Sizing count
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing weight
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return server.hash(max_num_partitions);
+		{ //Partitioning server
+			return server.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing server
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  server compared 
 		{ // comparing path
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  path compared 
 		{ // comparing count
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count compared 
 		{ // comparing weight
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  weight compared 
 		return 0; //If everything is equal
 	}
 
@@ -87,25 +126,50 @@ namespace url{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
 	void copyFrom( ServerPathCount_base *other ){
-		server.copyFrom(&other->server);
-		path.copyFrom(&other->path);
-		count.copyFrom(&other->count);
-		weight.copyFrom(&other->weight);
+		{ //Copying server
+			server.copyFrom(&other->server);
+		}
+
+		{ //Copying path
+			path.copyFrom(&other->path);
+		}
+
+		{ //Copying count
+			count.copyFrom(&other->count);
+		}
+
+		{ //Copying weight
+			weight.copyFrom(&other->weight);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << server.str();
+				{ //Texting server
+			o << server.str();
+		}
 
 		o<<" ";
-		o << path.str();
+				{ //Texting path
+			o << path.str();
+		}
 
 		o<<" ";
-		o << count.str();
+				{ //Texting count
+			o << count.str();
+		}
 
 		o<<" ";
-		o << weight.str();
+				{ //Texting weight
+			o << weight.str();
+		}
 
 		o<<" ";
 		return o.str();

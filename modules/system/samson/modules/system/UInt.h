@@ -15,7 +15,7 @@ namespace system{
 		 UInt  Data Instance 
 		 */
 		
-		class UInt : public samson::DataInstance{
+		class UInt : public samson::DataInstance {
 			
 		public:
 			

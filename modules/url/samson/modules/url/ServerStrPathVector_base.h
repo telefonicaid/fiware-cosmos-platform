@@ -40,11 +40,17 @@ namespace url{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	serverStrPathSetLength( _length );
-			for (int i = 0 ; i < (int)serverStrPath_length ; i++){
+			for (int i = 0 ; i < (int)serverStrPath_length ; i++)
+			{ //Parsing serverStrPath
 				offset += serverStrPath[i].parse(data+offset);
 			}
+
 		}
-		offset += countRef.parse(data+offset);
+
+		{ //Parsing countRef
+			offset += countRef.parse(data+offset);
+		}
+
 		return offset;
 	}
 
@@ -52,11 +58,17 @@ namespace url{
 		int offset=0;
 		{ //Serialization vector serverStrPath
 			offset += samson::staticVarIntSerialize( data+offset , serverStrPath_length );
-			for (int i = 0 ; i < (int)serverStrPath_length ; i++){
+			for (int i = 0 ; i < (int)serverStrPath_length ; i++)
+			{ //Serializing serverStrPath
 				offset += serverStrPath[i].serialize(data+offset);
 			}
+
 		}
-		offset += countRef.serialize(data+offset);
+
+		{ //Serializing countRef
+			offset += countRef.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
@@ -66,18 +78,28 @@ namespace url{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 			::samson::url::ServerStrPath _tmp;
-			for (int i = 0 ; i < (int)_length ; i++){
+			for (int i = 0 ; i < (int)_length ; i++)
+			{ //Sizing serverStrPath
 				offset += ::samson::url::ServerStrPath::size(data+offset);
 			}
+
 		}
-		offset += ::samson::system::UInt::size(data+offset);
+
+		{ //Sizing countRef
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		if( serverStrPath_length > 0 ){
-		return serverStrPath[0].hash(max_num_partitions);
-		} else return 0;
+		if( serverStrPath_length > 0 )
+			{ //Partitioning serverStrPath
+				return serverStrPath[0].hash(max_num_partitions);
+			}
+
+		else return 0;
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
@@ -87,17 +109,16 @@ namespace url{
 			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
-			for (int i = 0 ; i < (int)_length1 ; i++){
-				{ // comparing serverStrPath[i]
-					int tmp = ::samson::url::ServerStrPath::compare(data1,data2,offset1 , offset2);
-					if( tmp != 0) return tmp;
-				}
-			}
-		}
+			for (int i = 0 ; i < (int)_length1 ; i++)
+			{ // comparing serverStrPath[i]
+				int tmp = ::samson::url::ServerStrPath::compare(data1,data2,offset1 , offset2);
+				if( tmp != 0) return tmp;
+			}   //  serverStrPath[i] compared 
+		}   // vector serverStrPath compared 
 		{ // comparing countRef
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  countRef compared 
 		return 0; //If everything is equal
 	}
 
@@ -107,6 +128,9 @@ namespace url{
 		size_t offset_2=0;
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
+
+
+
 
 	void serverStrPathSetLength(int _length){
 		if( _length > serverStrPath_max_length){ 
@@ -130,25 +154,34 @@ namespace url{
 	}
 
 	void copyFrom( ServerStrPathVector_base *other ){
-			{ // CopyFrom field serverStrPath
-				serverStrPathSetLength( other->serverStrPath_length);
-				for (int i = 0 ; i < serverStrPath_length ; i++){
-					serverStrPath[i].copyFrom(&other->serverStrPath[i]);
-				}
+		{ // CopyFrom field serverStrPath
+			serverStrPathSetLength( other->serverStrPath_length);
+			for (int i = 0 ; i < serverStrPath_length ; i++)
+			{ //Copying serverStrPath
+				serverStrPath[i].copyFrom(&other->serverStrPath[i]);
 			}
-		countRef.copyFrom(&other->countRef);
+		}
+
+		{ //Copying countRef
+			countRef.copyFrom(&other->countRef);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
 		{// toString of vector serverStrPath
-			for(int i = 0 ; i < serverStrPath_length ; i++){
+			for(int i = 0 ; i < serverStrPath_length ; i++)
+			{ //Texting serverStrPath
 				o << serverStrPath[i].str();
-				 o << " ";
 			}
+				 o << " ";
 		}
+
 		o<<" ";
-		o << countRef.str();
+				{ //Texting countRef
+			o << countRef.str();
+		}
 
 		o<<" ";
 		return o.str();

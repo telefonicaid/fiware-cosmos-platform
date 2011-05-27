@@ -73,7 +73,7 @@ script test_1
 	helpLine "Test script"
 	
 	code
-	"
+	{
 		rm -f test_data_operations test_data_op_user  test_data_VectorProducts test_data_VectorProducts 
 		clear $1
 		tienda.test_generator_fixed test_data_operations -clear -create
@@ -81,5 +81,5 @@ script test_1
 		tienda.reduce_by_user test_data_user_op test_data_VectorProducts -clear -create
 		tienda.export_to_txt test_data_VectorProducts $1 -clear -create
 		#rm -f test_data_operations test_data_op_user  test_data_VectorProducts test_data_VectorProducts
-	"
+	}
 }

@@ -34,80 +34,155 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += id.parse(data+offset);
-		offset += links_count.parse(data+offset);
-		offset += strong_links_count.parse(data+offset);
-		offset += strong_links_sum.parse(data+offset);
-		offset += weak_links_count.parse(data+offset);
-		offset += weak_links_sum.parse(data+offset);
-		offset += strong_links_comp_count.parse(data+offset);
-		offset += weak_links_comp_count.parse(data+offset);
+		{ //Parsing id
+			offset += id.parse(data+offset);
+		}
+
+		{ //Parsing links_count
+			offset += links_count.parse(data+offset);
+		}
+
+		{ //Parsing strong_links_count
+			offset += strong_links_count.parse(data+offset);
+		}
+
+		{ //Parsing strong_links_sum
+			offset += strong_links_sum.parse(data+offset);
+		}
+
+		{ //Parsing weak_links_count
+			offset += weak_links_count.parse(data+offset);
+		}
+
+		{ //Parsing weak_links_sum
+			offset += weak_links_sum.parse(data+offset);
+		}
+
+		{ //Parsing strong_links_comp_count
+			offset += strong_links_comp_count.parse(data+offset);
+		}
+
+		{ //Parsing weak_links_comp_count
+			offset += weak_links_comp_count.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += id.serialize(data+offset);
-		offset += links_count.serialize(data+offset);
-		offset += strong_links_count.serialize(data+offset);
-		offset += strong_links_sum.serialize(data+offset);
-		offset += weak_links_count.serialize(data+offset);
-		offset += weak_links_sum.serialize(data+offset);
-		offset += strong_links_comp_count.serialize(data+offset);
-		offset += weak_links_comp_count.serialize(data+offset);
+		{ //Serializing id
+			offset += id.serialize(data+offset);
+		}
+
+		{ //Serializing links_count
+			offset += links_count.serialize(data+offset);
+		}
+
+		{ //Serializing strong_links_count
+			offset += strong_links_count.serialize(data+offset);
+		}
+
+		{ //Serializing strong_links_sum
+			offset += strong_links_sum.serialize(data+offset);
+		}
+
+		{ //Serializing weak_links_count
+			offset += weak_links_count.serialize(data+offset);
+		}
+
+		{ //Serializing weak_links_sum
+			offset += weak_links_sum.serialize(data+offset);
+		}
+
+		{ //Serializing strong_links_comp_count
+			offset += strong_links_comp_count.serialize(data+offset);
+		}
+
+		{ //Serializing weak_links_comp_count
+			offset += weak_links_comp_count.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing id
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing links_count
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing strong_links_count
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing strong_links_sum
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing weak_links_count
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing weak_links_sum
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing strong_links_comp_count
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing weak_links_comp_count
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return id.hash(max_num_partitions);
+		{ //Partitioning id
+			return id.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing id
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  id compared 
 		{ // comparing links_count
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  links_count compared 
 		{ // comparing strong_links_count
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  strong_links_count compared 
 		{ // comparing strong_links_sum
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  strong_links_sum compared 
 		{ // comparing weak_links_count
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  weak_links_count compared 
 		{ // comparing weak_links_sum
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  weak_links_sum compared 
 		{ // comparing strong_links_comp_count
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  strong_links_comp_count compared 
 		{ // comparing weak_links_comp_count
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  weak_links_comp_count compared 
 		return 0; //If everything is equal
 	}
 
@@ -118,41 +193,90 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
+
+
+
+
 	void copyFrom( Metric_base *other ){
-		id.copyFrom(&other->id);
-		links_count.copyFrom(&other->links_count);
-		strong_links_count.copyFrom(&other->strong_links_count);
-		strong_links_sum.copyFrom(&other->strong_links_sum);
-		weak_links_count.copyFrom(&other->weak_links_count);
-		weak_links_sum.copyFrom(&other->weak_links_sum);
-		strong_links_comp_count.copyFrom(&other->strong_links_comp_count);
-		weak_links_comp_count.copyFrom(&other->weak_links_comp_count);
+		{ //Copying id
+			id.copyFrom(&other->id);
+		}
+
+		{ //Copying links_count
+			links_count.copyFrom(&other->links_count);
+		}
+
+		{ //Copying strong_links_count
+			strong_links_count.copyFrom(&other->strong_links_count);
+		}
+
+		{ //Copying strong_links_sum
+			strong_links_sum.copyFrom(&other->strong_links_sum);
+		}
+
+		{ //Copying weak_links_count
+			weak_links_count.copyFrom(&other->weak_links_count);
+		}
+
+		{ //Copying weak_links_sum
+			weak_links_sum.copyFrom(&other->weak_links_sum);
+		}
+
+		{ //Copying strong_links_comp_count
+			strong_links_comp_count.copyFrom(&other->strong_links_comp_count);
+		}
+
+		{ //Copying weak_links_comp_count
+			weak_links_comp_count.copyFrom(&other->weak_links_comp_count);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << id.str();
+				{ //Texting id
+			o << id.str();
+		}
 
 		o<<" ";
-		o << links_count.str();
+				{ //Texting links_count
+			o << links_count.str();
+		}
 
 		o<<" ";
-		o << strong_links_count.str();
+				{ //Texting strong_links_count
+			o << strong_links_count.str();
+		}
 
 		o<<" ";
-		o << strong_links_sum.str();
+				{ //Texting strong_links_sum
+			o << strong_links_sum.str();
+		}
 
 		o<<" ";
-		o << weak_links_count.str();
+				{ //Texting weak_links_count
+			o << weak_links_count.str();
+		}
 
 		o<<" ";
-		o << weak_links_sum.str();
+				{ //Texting weak_links_sum
+			o << weak_links_sum.str();
+		}
 
 		o<<" ";
-		o << strong_links_comp_count.str();
+				{ //Texting strong_links_comp_count
+			o << strong_links_comp_count.str();
+		}
 
 		o<<" ";
-		o << weak_links_comp_count.str();
+				{ //Texting weak_links_comp_count
+			o << weak_links_comp_count.str();
+		}
 
 		o<<" ";
 		return o.str();

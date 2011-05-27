@@ -31,52 +31,91 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += node_id.parse(data+offset);
-		offset += comm_id.parse(data+offset);
-		offset += count_links.parse(data+offset);
-		offset += density.parse(data+offset);
+		{ //Parsing node_id
+			offset += node_id.parse(data+offset);
+		}
+
+		{ //Parsing comm_id
+			offset += comm_id.parse(data+offset);
+		}
+
+		{ //Parsing count_links
+			offset += count_links.parse(data+offset);
+		}
+
+		{ //Parsing density
+			offset += density.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += node_id.serialize(data+offset);
-		offset += comm_id.serialize(data+offset);
-		offset += count_links.serialize(data+offset);
-		offset += density.serialize(data+offset);
+		{ //Serializing node_id
+			offset += node_id.serialize(data+offset);
+		}
+
+		{ //Serializing comm_id
+			offset += comm_id.serialize(data+offset);
+		}
+
+		{ //Serializing count_links
+			offset += count_links.serialize(data+offset);
+		}
+
+		{ //Serializing density
+			offset += density.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::sna_light::Clique::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing node_id
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing comm_id
+			offset += ::samson::sna_light::Clique::size(data+offset);
+		}
+
+		{ //Sizing count_links
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing density
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return node_id.hash(max_num_partitions);
+		{ //Partitioning node_id
+			return node_id.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node_id
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  node_id compared 
 		{ // comparing comm_id
 			int tmp = ::samson::sna_light::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  comm_id compared 
 		{ // comparing count_links
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_links compared 
 		{ // comparing density
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  density compared 
 		return 0; //If everything is equal
 	}
 
@@ -87,25 +126,50 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
 	void copyFrom( Metric_Cluster_Intermediate_base *other ){
-		node_id.copyFrom(&other->node_id);
-		comm_id.copyFrom(&other->comm_id);
-		count_links.copyFrom(&other->count_links);
-		density.copyFrom(&other->density);
+		{ //Copying node_id
+			node_id.copyFrom(&other->node_id);
+		}
+
+		{ //Copying comm_id
+			comm_id.copyFrom(&other->comm_id);
+		}
+
+		{ //Copying count_links
+			count_links.copyFrom(&other->count_links);
+		}
+
+		{ //Copying density
+			density.copyFrom(&other->density);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << node_id.str();
+				{ //Texting node_id
+			o << node_id.str();
+		}
 
 		o<<" ";
-		o << comm_id.str();
+				{ //Texting comm_id
+			o << comm_id.str();
+		}
 
 		o<<" ";
-		o << count_links.str();
+				{ //Texting count_links
+			o << count_links.str();
+		}
 
 		o<<" ";
-		o << density.str();
+				{ //Texting density
+			o << density.str();
+		}
 
 		o<<" ";
 		return o.str();

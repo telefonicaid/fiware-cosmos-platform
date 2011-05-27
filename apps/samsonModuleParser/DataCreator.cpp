@@ -40,7 +40,7 @@ namespace samson {
 		
 		if( !input.is_open() )
 		{
-			std::cerr << "It was not possible to open the file " << fileName << "\n";
+			std::cerr << "samsonModuleParser: It was not possible to open the file " << fileName << "\n";
 			exit(0);
 			return;
 		}
@@ -66,19 +66,26 @@ namespace samson {
 		
 		AUTockenizer *t = new AUTockenizer(content);
 		
-		// Parse contents of the items creating elemntes datas, formats, operations, etc...
+		// Parse contents of the items creating elements, datas, formats, operations, etc...
 		int pos = 0;
 		while ( pos < (int)t->items.size() )
 		{
 			if( t->isSpecial(pos) )
-				LM_X(1,("Error parsing data-type since we found an spetial character instead of a name"));
+			{
 
-			std::string command = t->itemAtPos(pos++);
+				fprintf(stderr, "samsonModuleParser: Error parsing data-type since we found an special character instead of a name: str:'%s', line:%d\n", t->items[pos].str.c_str(), t->items[pos].line);
+				exit (1);
+			}
+
+			std::string command = t->itemAtPos(pos++).str;
 			
 			if( t->isSpecial(pos) )
-				LM_X(1,("Error parsing data-type since we found an spetial character instead of a name"));
+			{
+				fprintf(stderr, "samsonModuleParser: Error parsing data-type since we found an special character instead of a name: str:'%s', line:%d\n", t->items[pos].str.c_str(), t->items[pos].line);
+				exit (1);
+			}
 			
-			std::string name = t->itemAtPos(pos++);
+			std::string name = t->itemAtPos(pos++).str;
 			
 			int position_start,position_finish;
 			t->getScopeLimits(&pos, &position_start, &position_finish);
@@ -87,8 +94,8 @@ namespace samson {
 			{
 				if( module )
 				{
-					fprintf(stderr, "Error: Duplicated module section\n");
-					exit(0);
+					fprintf(stderr, "samsonModuleParser: Error: Duplicated module section at line:%d\n", t->items[pos].line);
+					exit(1);
 				}
 				
 				module = new ModuleContainer( name );
@@ -100,8 +107,8 @@ namespace samson {
 			{
 				if( !module)
 				{
-					fprintf(stderr, "Error: Module section should be the first one in the definition file\n");
-					exit(0);
+					fprintf(stderr, "samsonModuleParser: Error: Module section should be the first one in the definition file, but we have found \"data\". Error at line:%d\n", t->items[pos].line);
+					exit(1);
 				}
 				
 				std::cout << "Processing Data " << name << " in module " << module->name << std::endl;
@@ -124,8 +131,8 @@ namespace samson {
 				
 				if( !module)
 				{
-					fprintf(stderr, "Error: Module section should be the first one in the definition file\n");
-					exit(0);
+					fprintf(stderr, "samsonModuleParser: Error: Module section should be the first one in the definition file, error at line:%d\n", t->items[pos].line);
+					exit(1);
 				}
 				
 				std::cout << "Processing " << command << " operation " << name << std::endl;
@@ -135,7 +142,7 @@ namespace samson {
 			}
 			else
 			{
-				fprintf(stderr, "Unknown command %s\n", command.c_str() );
+				fprintf(stderr, "samsonModuleParser: Unknown command '%s' at line:%d\n", command.c_str(), t->items[pos].line );
 				exit(1);
 			}
 		}
@@ -282,7 +289,7 @@ namespace samson {
 
 		
 		output << "\n\n";
-		output << "// Comparisson function for reduce operations\n";
+		output << "// Comparison function for reduce operations\n";
 		
 		for ( vector <OperationContainer>::iterator iter = operations.begin() ; iter < operations.end() ; iter++)
 		{
@@ -345,10 +352,10 @@ namespace samson {
             
 			
 			for (size_t i = 0 ; i < op.inputs.size() ; i++)
-				output << "\t\t\toperation->inputFormats.push_back( samson::KVFormat::format(\""<< op.inputs[i].keyFormat <<"\" ,\"" << op.inputs[i].valueFormat << "\") );"<<std::endl;
+				output << "\t\t\toperation->inputFormats.push_back( samson::KVFormat::format(\""<< op.inputs[i].key_values.keyFormat <<"\" ,\"" << op.inputs[i].key_values.valueFormat << "\") );"<<std::endl;
 			
 			for (size_t i = 0 ; i < op.outputs.size() ; i++)
-				output << "\t\t\toperation->outputFormats.push_back( samson::KVFormat::format(\""<< op.outputs[i].keyFormat <<"\" ,\"" << op.outputs[i].valueFormat << "\") );"<<std::endl;
+				output << "\t\t\toperation->outputFormats.push_back( samson::KVFormat::format(\""<< op.outputs[i].key_values.keyFormat <<"\" ,\"" << op.outputs[i].key_values.valueFormat << "\") );"<<std::endl;
 			
 			
 			// Help

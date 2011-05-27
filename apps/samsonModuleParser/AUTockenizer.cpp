@@ -7,7 +7,8 @@
  * ***************************************************************************/
 
 
-#include "logMsg/logMsg.h"					// LM_M()
+#include <stdio.h>
+#include <stdlib.h>					// exit()
 #include "AUTockenizer.h"			// Own interface
 #include <sstream>					// std::ostringstream
 
@@ -16,34 +17,38 @@ namespace samson
 	
 	AUTockenizer::AUTockenizer( std::string txt )
 	{
+		reference_pos = 0;
 		// First tokenize everything
-		std::vector<std::string> previous_items = tockenize(txt);
+		std::vector<AUToken> previous_items = tockenize(txt);
 		
 		// Remove spaces and returns.
 		// Spaces between " " are not removed
-		items = removeSpacesAndReturns( removeComments(previous_items) );
+		//items = removeSpacesAndReturns( removeComments(previous_items) );
+		items = removeSpacesAndCommentsAndReturns( previous_items );
 	}
 	
-	std::vector<std::string> AUTockenizer::removeSpacesAndReturns( std::vector<std::string> items )
+
+
+	std::vector<AUToken> AUTockenizer::removeSpacesAndReturns( std::vector<AUToken> items )
 	{
-		std::vector<std::string> new_items;
+		std::vector<AUToken> new_items;
 		
 		bool literal = false;
 		
-		std::vector<std::string>::iterator iter;
+		std::vector<AUToken>::iterator iter;
 		
 		for ( iter = items.begin() ; iter < items.end() ; iter++)
 		{
 			if( literal )
 			{
-				if ( *iter == "\"" )
+				if ( (*iter).str == "\"" )
 					literal = false;
 				new_items.push_back( *iter );
 				
 			}
 			else
 			{
-				if ( *iter == "\"" )
+				if ( (*iter).str == "\"" )
 				{
 					literal = true;
 					new_items.push_back( *iter );
@@ -51,7 +56,7 @@ namespace samson
 				else
 				{
 					// Outside literals, we do not have "returns" "spaces" "tabs" "\r"
-					if( !isOneOf(*iter, " \t\r\n") )
+					if( !isOneOf((*iter).str, " \t\r\n") )
 						new_items.push_back( *iter );
 					
 				}
@@ -65,23 +70,23 @@ namespace samson
 	
 	/** 
 	 Function to remove comments from tockens
-	 Bascially removes every tocken between # and end_of_line
+	 Basically removes every tocken between # and end_of_line
 	 */
 	
 	
-	std::vector<std::string> AUTockenizer::removeComments( std::vector<std::string> items )
+	std::vector<AUToken> AUTockenizer::removeComments( std::vector<AUToken> items )
 	{
-		std::vector<std::string> new_items;
+		std::vector<AUToken> new_items;
 		
 		bool removing = false;
 		
-		std::vector<std::string>::iterator iter;
+		std::vector<AUToken>::iterator iter;
 		
 		for ( iter = items.begin() ; iter < items.end() ; iter++)
 		{
 			if( removing )
 			{
-				if ( *iter == "\n" )
+				if ( (*iter).str == "\n" )
 				{
 					removing = false;
 					new_items.push_back( *iter );	//Keep the return
@@ -89,7 +94,7 @@ namespace samson
 			}
 			else
 			{
-				if ( *iter == "#" )
+				if ( (*iter).str == "#" )
 					removing = true;
 				else
 					new_items.push_back( *iter );
@@ -100,17 +105,74 @@ namespace samson
 		
 	}
 	
+	std::vector<AUToken> AUTockenizer::removeSpacesAndCommentsAndReturns( std::vector<AUToken> items )
+	{
+		std::vector<AUToken> new_items;
+
+		bool literal = false;
+		bool removing = false;
+
+		std::vector<AUToken>::iterator iter;
+
+		for ( iter = items.begin() ; iter < items.end() ; iter++)
+		{
+			if( literal )
+			{
+				if ( (*iter).str == "\"" )
+				{
+					literal = false;
+				}
+				if ( (*iter).str == "\n" )
+				{
+					fprintf(stdout, "samsonModuleParser: Warning, line break inside literal at line:%d\n", (*iter).line);
+				}
+				new_items.push_back( *iter );
+			}
+			else if (removing)
+			{
+				if ((*iter).str == "\n")
+				{
+					removing = false;
+				}
+			}
+			else
+			{
+				if ( (*iter).str == "\"" )
+				{
+					literal = true;
+					new_items.push_back( *iter );
+				}
+				else if ( (*iter).str == "#" )
+				{
+					removing = true;
+				}
+				else
+				{
+					// Outside literals, we do not have "returns" "spaces" "tabs" "\r"
+					if( !isOneOf((*iter).str, " \t\r\n") )
+						new_items.push_back( *iter );
+				}
+			}
+		}
+
+		return new_items;
+
+	}
+
+
 	/**
 	 
 	 Functions to tockenize the input string
 	 
 	 */
 	
-	std::vector<std::string> AUTockenizer::tockenize( std::string txt)
+	std::vector<AUToken> AUTockenizer::tockenize( std::string txt)
 	{
-		std::string tockens = " #\r\t\r\n{};\"";//All possible delimiters
+		std::string tockens = " #\r\t\n{};\"";//All possible delimiters
+		int nline = 1;
 		
-		std::vector<std::string> items;
+		std::vector<AUToken> items;
+		AUToken item;
 		
 		// Simple parser
 		size_t pos = 0;
@@ -119,12 +181,21 @@ namespace samson
 			if ( isOneOf( txt[i] , tockens ) )
 			{
 				if ( i > pos )
-					items.push_back(txt.substr(pos, i - pos ));
+				{
+					item.str = txt.substr(pos, i - pos );
+					item.line = nline;
+					items.push_back(item);
+				}
 				
 				//Emit the literal with one letter if that is the case
-				std::ostringstream o;
-				o << txt[i];
-				items.push_back( o.str() );
+				item.str = txt[i];
+				item.line = nline;
+				items.push_back( item );
+
+				if (txt[i] == '\n')
+				{
+					nline++;
+				}
 				
 				pos = i+1;
 			}
@@ -165,42 +236,46 @@ namespace samson
 	}
 	
 	/**
-	 Auxiuliar function to get the "i-th" input item
+	 Auxiliar function to get the "i-th" input item
 	 */
 	
-	std::string AUTockenizer::itemAtPos( unsigned int pos )
+	AUToken AUTockenizer::itemAtPos( unsigned int pos )
 	{
 		if( ( pos < 0 )  || ( pos >= items.size() ) )
-			LM_X(1,("Error accessing a wrong position inside the AUTockenizer element"));
-		
+		{
+			fprintf(stderr,"samsonModuleParser: Error accessing a wrong position(%d) inside the AUTockenizer element (items.size():%d) (coming from reference:'%s', line:%d)\n", pos, int(items.size()), items[reference_pos].str.c_str(), items[reference_pos].line);
+			exit (1);
+		}
+
+		//fprintf(stdout, "returning items[%d].str:'%s'\n", pos, items[pos].str.c_str());
 		return items[pos];
 	}
 	
 	
 	bool AUTockenizer::isSpecial( int pos )
 	{
-		std::string tmp = itemAtPos(pos);
+		std::string tmp = itemAtPos(pos).str;
 		return isOneOf(tmp, "{};");
 	}
 	
 	bool AUTockenizer::isOpenSet( int pos )
 	{
-		return( itemAtPos(pos) == "{" );
+		return( itemAtPos(pos).str == "{" );
 	}
 	
 	bool AUTockenizer::isCloseSet( int pos )
 	{
-		return( itemAtPos(pos) == "}" );
+		return( itemAtPos(pos).str == "}" );
 	}
 	
 	bool AUTockenizer::isSemiColom( int pos )
 	{
-		return( itemAtPos(pos) == ";" );
+		return( itemAtPos(pos).str == ";" );
 	}
 	
 	bool AUTockenizer::isOpenCloseLiteral( int pos )
 	{
-		return( itemAtPos(pos) == "\"" );
+		return( itemAtPos(pos).str == "\"" );
 	}
 	
 	int AUTockenizer::searchSetFinishStartingAt( int pos )
@@ -209,8 +284,10 @@ namespace samson
 		
 		if( !isOpenSet(pos) )
 		{
-			LM_X(1,("Error in format while parsign the document"));
+			fprintf(stderr, "samsonModuleParser: Error in format while parsing the document at line:%d\n", itemAtPos(pos).line);
+			exit(1);
 		}
+		reference_pos = pos;
 		pos++;
 		while( number_intern_sets > 0 )
 		{
@@ -227,6 +304,8 @@ namespace samson
 	
 	int AUTockenizer::searchCloseLiteral( int pos )
 	{
+		reference_pos = pos;
+
 		pos++;
 		while( !isOpenCloseLiteral(pos) )
 			pos++;
@@ -239,13 +318,15 @@ namespace samson
 		std::ostringstream o;
 		for (int i = (pos+1) ; i < pos2 ; i++)
 		{
-			o << itemAtPos(i);
+			o << itemAtPos(i).str;
 		}
 		return o.str();
 	}
 	
 	std::string AUTockenizer::getLiteral( int* pos )
 	{
+		reference_pos = *pos;
+
 		if( isOpenCloseLiteral(*pos) )
 		{
 			int pos_start = *pos;
@@ -257,23 +338,38 @@ namespace samson
 		{
 			int pos_item = *pos;
 			*pos = *pos + 1;
-			return itemAtPos(pos_item);
+			return itemAtPos(pos_item).str;
 		}
 	}
 	
+	std::string AUTockenizer::getBlock( int* pos )
+	{
+		int begin;
+		int end;
+
+		reference_pos = *pos;
+
+		getScopeLimits(pos, &begin, &end);
+
+		return getLiteralInternal(begin, end);
+	}
 	
 	void AUTockenizer::getScopeLimits( int* pos , int*begin, int*end )
-	{		
+	{
+		reference_pos = *pos;
 		if( !isOpenSet(*pos) )
-			LM_X(1,("Error geting the limits in scope of a {  } while parsing the document"));
-				 
-				 *begin = *pos + 1;
-				 
-				 int tmp	= searchSetFinishStartingAt( *pos ) ;
-				 
-				 *end = tmp - 1;
-				 *pos = tmp + 1;
-				 
+		{
+			fprintf(stderr,"samsonModuleParser: Error getting the limits in scope of a {  } while parsing the document, from reference:'%s' line:%d\n", items[reference_pos].str.c_str(), items[reference_pos].line);
+			exit(1);
+		}
+
+		*begin = *pos + 1;
+
+		int tmp	= searchSetFinishStartingAt( *pos ) ;
+
+		*end = tmp - 1;
+		*pos = tmp + 1;
+
 	}
 				 
 }

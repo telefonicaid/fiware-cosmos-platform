@@ -33,73 +33,139 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += node_id.parse(data+offset);
-		offset += count_comm.parse(data+offset);
-		offset += count_comm_as_strong.parse(data+offset);
-		offset += count_comm_as_weak.parse(data+offset);
-		offset += average_size_comm.parse(data+offset);
-		offset += average_size_comm_regular.parse(data+offset);
-		offset += average_size_comm_orphan.parse(data+offset);
+		{ //Parsing node_id
+			offset += node_id.parse(data+offset);
+		}
+
+		{ //Parsing count_comm
+			offset += count_comm.parse(data+offset);
+		}
+
+		{ //Parsing count_comm_as_strong
+			offset += count_comm_as_strong.parse(data+offset);
+		}
+
+		{ //Parsing count_comm_as_weak
+			offset += count_comm_as_weak.parse(data+offset);
+		}
+
+		{ //Parsing average_size_comm
+			offset += average_size_comm.parse(data+offset);
+		}
+
+		{ //Parsing average_size_comm_regular
+			offset += average_size_comm_regular.parse(data+offset);
+		}
+
+		{ //Parsing average_size_comm_orphan
+			offset += average_size_comm_orphan.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += node_id.serialize(data+offset);
-		offset += count_comm.serialize(data+offset);
-		offset += count_comm_as_strong.serialize(data+offset);
-		offset += count_comm_as_weak.serialize(data+offset);
-		offset += average_size_comm.serialize(data+offset);
-		offset += average_size_comm_regular.serialize(data+offset);
-		offset += average_size_comm_orphan.serialize(data+offset);
+		{ //Serializing node_id
+			offset += node_id.serialize(data+offset);
+		}
+
+		{ //Serializing count_comm
+			offset += count_comm.serialize(data+offset);
+		}
+
+		{ //Serializing count_comm_as_strong
+			offset += count_comm_as_strong.serialize(data+offset);
+		}
+
+		{ //Serializing count_comm_as_weak
+			offset += count_comm_as_weak.serialize(data+offset);
+		}
+
+		{ //Serializing average_size_comm
+			offset += average_size_comm.serialize(data+offset);
+		}
+
+		{ //Serializing average_size_comm_regular
+			offset += average_size_comm_regular.serialize(data+offset);
+		}
+
+		{ //Serializing average_size_comm_orphan
+			offset += average_size_comm_orphan.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing node_id
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_comm
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_comm_as_strong
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_comm_as_weak
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing average_size_comm
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing average_size_comm_regular
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing average_size_comm_orphan
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return node_id.hash(max_num_partitions);
+		{ //Partitioning node_id
+			return node_id.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node_id
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  node_id compared 
 		{ // comparing count_comm
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_comm compared 
 		{ // comparing count_comm_as_strong
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_comm_as_strong compared 
 		{ // comparing count_comm_as_weak
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_comm_as_weak compared 
 		{ // comparing average_size_comm
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  average_size_comm compared 
 		{ // comparing average_size_comm_regular
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  average_size_comm_regular compared 
 		{ // comparing average_size_comm_orphan
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  average_size_comm_orphan compared 
 		return 0; //If everything is equal
 	}
 
@@ -110,37 +176,80 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
+
+
+
 	void copyFrom( Metric_Node_Communities_base *other ){
-		node_id.copyFrom(&other->node_id);
-		count_comm.copyFrom(&other->count_comm);
-		count_comm_as_strong.copyFrom(&other->count_comm_as_strong);
-		count_comm_as_weak.copyFrom(&other->count_comm_as_weak);
-		average_size_comm.copyFrom(&other->average_size_comm);
-		average_size_comm_regular.copyFrom(&other->average_size_comm_regular);
-		average_size_comm_orphan.copyFrom(&other->average_size_comm_orphan);
+		{ //Copying node_id
+			node_id.copyFrom(&other->node_id);
+		}
+
+		{ //Copying count_comm
+			count_comm.copyFrom(&other->count_comm);
+		}
+
+		{ //Copying count_comm_as_strong
+			count_comm_as_strong.copyFrom(&other->count_comm_as_strong);
+		}
+
+		{ //Copying count_comm_as_weak
+			count_comm_as_weak.copyFrom(&other->count_comm_as_weak);
+		}
+
+		{ //Copying average_size_comm
+			average_size_comm.copyFrom(&other->average_size_comm);
+		}
+
+		{ //Copying average_size_comm_regular
+			average_size_comm_regular.copyFrom(&other->average_size_comm_regular);
+		}
+
+		{ //Copying average_size_comm_orphan
+			average_size_comm_orphan.copyFrom(&other->average_size_comm_orphan);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << node_id.str();
+				{ //Texting node_id
+			o << node_id.str();
+		}
 
 		o<<" ";
-		o << count_comm.str();
+				{ //Texting count_comm
+			o << count_comm.str();
+		}
 
 		o<<" ";
-		o << count_comm_as_strong.str();
+				{ //Texting count_comm_as_strong
+			o << count_comm_as_strong.str();
+		}
 
 		o<<" ";
-		o << count_comm_as_weak.str();
+				{ //Texting count_comm_as_weak
+			o << count_comm_as_weak.str();
+		}
 
 		o<<" ";
-		o << average_size_comm.str();
+				{ //Texting average_size_comm
+			o << average_size_comm.str();
+		}
 
 		o<<" ";
-		o << average_size_comm_regular.str();
+				{ //Texting average_size_comm_regular
+			o << average_size_comm_regular.str();
+		}
 
 		o<<" ";
-		o << average_size_comm_orphan.str();
+				{ //Texting average_size_comm_orphan
+			o << average_size_comm_orphan.str();
+		}
 
 		o<<" ";
 		return o.str();

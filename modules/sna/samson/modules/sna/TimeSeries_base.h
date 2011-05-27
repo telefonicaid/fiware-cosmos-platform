@@ -35,66 +35,86 @@ namespace sna{
 
 	int parse(char *data){
 		int offset=0;
-		offset += linkedId.parse(data+offset);
+		{ //Parsing linkedId
+			offset += linkedId.parse(data+offset);
+		}
+
 		{ //Parsing vector weights
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	weightsSetLength( _length );
-			for (int i = 0 ; i < (int)weights_length ; i++){
+			for (int i = 0 ; i < (int)weights_length ; i++)
+			{ //Parsing weights
 				offset += weights[i].parse(data+offset);
 			}
+
 		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += linkedId.serialize(data+offset);
+		{ //Serializing linkedId
+			offset += linkedId.serialize(data+offset);
+		}
+
 		{ //Serialization vector weights
 			offset += samson::staticVarIntSerialize( data+offset , weights_length );
-			for (int i = 0 ; i < (int)weights_length ; i++){
+			for (int i = 0 ; i < (int)weights_length ; i++)
+			{ //Serializing weights
 				offset += weights[i].serialize(data+offset);
 			}
+
 		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing linkedId
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		{ //Getting size of vector weights
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 			::samson::system::UInt _tmp;
-			for (int i = 0 ; i < (int)_length ; i++){
+			for (int i = 0 ; i < (int)_length ; i++)
+			{ //Sizing weights
 				offset += ::samson::system::UInt::size(data+offset);
 			}
+
 		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return linkedId.hash(max_num_partitions);
+		{ //Partitioning linkedId
+			return linkedId.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing linkedId
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  linkedId compared 
 		{ // Comparing vector weights
 			size_t _length1,_length2;
 			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
 			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
-			for (int i = 0 ; i < (int)_length1 ; i++){
-				{ // comparing weights[i]
-					int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
-					if( tmp != 0) return tmp;
-				}
-			}
-		}
+			for (int i = 0 ; i < (int)_length1 ; i++)
+			{ // comparing weights[i]
+				int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
+				if( tmp != 0) return tmp;
+			}   //  weights[i] compared 
+		}   // vector weights compared 
 		return 0; //If everything is equal
 	}
 
@@ -104,6 +124,9 @@ namespace sna{
 		size_t offset_2=0;
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
+
+
+
 
 	void weightsSetLength(int _length){
 		if( _length > weights_max_length){ 
@@ -127,26 +150,35 @@ namespace sna{
 	}
 
 	void copyFrom( TimeSeries_base *other ){
-		linkedId.copyFrom(&other->linkedId);
-			{ // CopyFrom field weights
-				weightsSetLength( other->weights_length);
-				for (int i = 0 ; i < weights_length ; i++){
-					weights[i].copyFrom(&other->weights[i]);
-				}
+		{ //Copying linkedId
+			linkedId.copyFrom(&other->linkedId);
+		}
+
+		{ // CopyFrom field weights
+			weightsSetLength( other->weights_length);
+			for (int i = 0 ; i < weights_length ; i++)
+			{ //Copying weights
+				weights[i].copyFrom(&other->weights[i]);
 			}
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << linkedId.str();
+				{ //Texting linkedId
+			o << linkedId.str();
+		}
 
 		o<<" ";
 		{// toString of vector weights
-			for(int i = 0 ; i < weights_length ; i++){
+			for(int i = 0 ; i < weights_length ; i++)
+			{ //Texting weights
 				o << weights[i].str();
-				 o << " ";
 			}
+				 o << " ";
 		}
+
 		o<<" ";
 		return o.str();
 	}

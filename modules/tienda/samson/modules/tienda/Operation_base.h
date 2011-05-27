@@ -29,45 +29,75 @@ namespace tienda{
 
 	int parse(char *data){
 		int offset=0;
-		offset += user.parse(data+offset);
-		offset += product.parse(data+offset);
-		offset += operation.parse(data+offset);
+		{ //Parsing user
+			offset += user.parse(data+offset);
+		}
+
+		{ //Parsing product
+			offset += product.parse(data+offset);
+		}
+
+		{ //Parsing operation
+			offset += operation.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += user.serialize(data+offset);
-		offset += product.serialize(data+offset);
-		offset += operation.serialize(data+offset);
+		{ //Serializing user
+			offset += user.serialize(data+offset);
+		}
+
+		{ //Serializing product
+			offset += product.serialize(data+offset);
+		}
+
+		{ //Serializing operation
+			offset += operation.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing user
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing product
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing operation
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return user.hash(max_num_partitions);
+		{ //Partitioning user
+			return user.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing user
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  user compared 
 		{ // comparing product
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  product compared 
 		{ // comparing operation
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  operation compared 
 		return 0; //If everything is equal
 	}
 
@@ -78,21 +108,40 @@ namespace tienda{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
 	void copyFrom( Operation_base *other ){
-		user.copyFrom(&other->user);
-		product.copyFrom(&other->product);
-		operation.copyFrom(&other->operation);
+		{ //Copying user
+			user.copyFrom(&other->user);
+		}
+
+		{ //Copying product
+			product.copyFrom(&other->product);
+		}
+
+		{ //Copying operation
+			operation.copyFrom(&other->operation);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << user.str();
+				{ //Texting user
+			o << user.str();
+		}
 
 		o<<" ";
-		o << product.str();
+				{ //Texting product
+			o << product.str();
+		}
 
 		o<<" ";
-		o << operation.str();
+				{ //Texting operation
+			o << operation.str();
+		}
 
 		o<<" ";
 		return o.str();

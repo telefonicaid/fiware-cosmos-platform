@@ -50,7 +50,7 @@ script compute_graph
 	}
 
 	code
-	"
+	{
 		clear $3	 # There is no sense to accumulate two graphs on the same output
 
 		cdr.spread_cdrs_to_links $1 $1.spread -create -clear	 		# Get all the connections between cdrs in both directions
@@ -65,7 +65,7 @@ script compute_graph
 		rm $1.graph -f
 		rm $3.previous -f
 		rm $3.previous.spread -f
-	"
+	}
 }
 
 
@@ -86,7 +86,7 @@ script compute_graph_O2
 	}
 
 	code
-	"
+	{
 		set cdr.CDRs_source O2UKp2p
 		cdr.parse_cdrs $1 $1.cdrs -create -clear 		# Parse the txt format into keys-value for CDRs
 		cdr.parse_users_O2UK $2 $2.users -create -clear
@@ -104,7 +104,7 @@ script compute_graph_O2
 		rm $1.graph -f
 		rm $3.previous -f
 		rm $3.previous.spread -f
-	"
+	}
 }
 
 
@@ -117,12 +117,12 @@ script compute_graph_from_links
 	helpLine "Complete process to compute a graph from a set of ordered links (A-B and not B-A)"
 
 	code
-	"
+	{
 	graph.spread_links $1 $1.tmp -clear -create
 	graph.get_graph_from_links $1.tmp $1.tmp2 -create -clear
 	graph.filter_graph $1.tmp2 $2
 	rm $1.tmp $1.tmp2 -f
-	"
+	}
 }
 
 reduce get_graph_from_links
@@ -193,11 +193,11 @@ script filter_graph
 	helpLine "*Remove nodes with more than graph.max_strong_connections strong connections or more than graph.max_connections connections" 
 
 	code
-	"
+	{
 		graph.filter_graph_map $1 $1.spread -create -clear
 		graph.filter_graph_reduce $1.spread $2 -create -clear
 		rm $1.spread -f
-	"
+	}
 }
 
 parserOut select_graph
@@ -251,12 +251,12 @@ script parse_graph
 	}
 
 	code
-	"
+	{
 		rm $1_link -f
 		parse_links $1 $1_links				 # parse links emiting two outputs per line
 		get_graph_from_links2 $1_links $2	 # collapse all links into a graph
 		rm $1_link -f
-	"
+	}
 
 }
 
@@ -275,7 +275,7 @@ script accumulate_cdrs_into_links
 	out system.UInt2 system.UInt
 
 	code
-	"
+	{
 	# Transform cdrs into links
 	cdr.spread_cdrs_to_links2 $1 $1.tmp -create -clear -clear_inputs
 	
@@ -285,7 +285,7 @@ script accumulate_cdrs_into_links
 	# Remove temporal
 	rm $1.tmp
 
-	"
+	}
 }
 
 map map_select_node_to_compute_distance
@@ -337,7 +337,7 @@ script compute_breadthfirst_algorithm
 	}
 
 	code
-	"
+	{
 		clear $2
 
 		graph.parse_links $1 $1.parsed -clear -create # Input file with links in the format 'node1|node2|weight'
@@ -374,9 +374,5 @@ script compute_breadthfirst_algorithm
 		rm $1.nodesDist	-f
 		rm $1.nodesDist.next -f
 		rm $1.distances -f
-	"
-
-
-
-
+	}
 }

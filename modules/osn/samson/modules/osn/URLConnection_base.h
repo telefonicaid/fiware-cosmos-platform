@@ -40,80 +40,155 @@ namespace osn{
 
 	int parse(char *data){
 		int offset=0;
-		offset += msisdn.parse(data+offset);
-		offset += url.parse(data+offset);
-		offset += date.parse(data+offset);
-		offset += time.parse(data+offset);
-		offset += status.parse(data+offset);
-		offset += MIMEcontent.parse(data+offset);
-		offset += userAgent.parse(data+offset);
-		offset += method.parse(data+offset);
+		{ //Parsing msisdn
+			offset += msisdn.parse(data+offset);
+		}
+
+		{ //Parsing url
+			offset += url.parse(data+offset);
+		}
+
+		{ //Parsing date
+			offset += date.parse(data+offset);
+		}
+
+		{ //Parsing time
+			offset += time.parse(data+offset);
+		}
+
+		{ //Parsing status
+			offset += status.parse(data+offset);
+		}
+
+		{ //Parsing MIMEcontent
+			offset += MIMEcontent.parse(data+offset);
+		}
+
+		{ //Parsing userAgent
+			offset += userAgent.parse(data+offset);
+		}
+
+		{ //Parsing method
+			offset += method.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += msisdn.serialize(data+offset);
-		offset += url.serialize(data+offset);
-		offset += date.serialize(data+offset);
-		offset += time.serialize(data+offset);
-		offset += status.serialize(data+offset);
-		offset += MIMEcontent.serialize(data+offset);
-		offset += userAgent.serialize(data+offset);
-		offset += method.serialize(data+offset);
+		{ //Serializing msisdn
+			offset += msisdn.serialize(data+offset);
+		}
+
+		{ //Serializing url
+			offset += url.serialize(data+offset);
+		}
+
+		{ //Serializing date
+			offset += date.serialize(data+offset);
+		}
+
+		{ //Serializing time
+			offset += time.serialize(data+offset);
+		}
+
+		{ //Serializing status
+			offset += status.serialize(data+offset);
+		}
+
+		{ //Serializing MIMEcontent
+			offset += MIMEcontent.serialize(data+offset);
+		}
+
+		{ //Serializing userAgent
+			offset += userAgent.serialize(data+offset);
+		}
+
+		{ //Serializing method
+			offset += method.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt64::size(data+offset);
-		offset += ::samson::osn::URL::size(data+offset);
-		offset += ::samson::osn::Date::size(data+offset);
-		offset += ::samson::osn::Time::size(data+offset);
-		offset += ::samson::system::UInt16::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
-		offset += ::samson::system::UInt8::size(data+offset);
+		{ //Sizing msisdn
+			offset += ::samson::system::UInt64::size(data+offset);
+		}
+
+		{ //Sizing url
+			offset += ::samson::osn::URL::size(data+offset);
+		}
+
+		{ //Sizing date
+			offset += ::samson::osn::Date::size(data+offset);
+		}
+
+		{ //Sizing time
+			offset += ::samson::osn::Time::size(data+offset);
+		}
+
+		{ //Sizing status
+			offset += ::samson::system::UInt16::size(data+offset);
+		}
+
+		{ //Sizing MIMEcontent
+			offset += ::samson::system::String::size(data+offset);
+		}
+
+		{ //Sizing userAgent
+			offset += ::samson::system::String::size(data+offset);
+		}
+
+		{ //Sizing method
+			offset += ::samson::system::UInt8::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return msisdn.hash(max_num_partitions);
+		{ //Partitioning msisdn
+			return msisdn.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing msisdn
 			int tmp = ::samson::system::UInt64::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  msisdn compared 
 		{ // comparing url
 			int tmp = ::samson::osn::URL::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  url compared 
 		{ // comparing date
 			int tmp = ::samson::osn::Date::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  date compared 
 		{ // comparing time
 			int tmp = ::samson::osn::Time::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  time compared 
 		{ // comparing status
 			int tmp = ::samson::system::UInt16::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  status compared 
 		{ // comparing MIMEcontent
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  MIMEcontent compared 
 		{ // comparing userAgent
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  userAgent compared 
 		{ // comparing method
 			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  method compared 
 		return 0; //If everything is equal
 	}
 
@@ -124,41 +199,90 @@ namespace osn{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
+
+
+
+
 	void copyFrom( URLConnection_base *other ){
-		msisdn.copyFrom(&other->msisdn);
-		url.copyFrom(&other->url);
-		date.copyFrom(&other->date);
-		time.copyFrom(&other->time);
-		status.copyFrom(&other->status);
-		MIMEcontent.copyFrom(&other->MIMEcontent);
-		userAgent.copyFrom(&other->userAgent);
-		method.copyFrom(&other->method);
+		{ //Copying msisdn
+			msisdn.copyFrom(&other->msisdn);
+		}
+
+		{ //Copying url
+			url.copyFrom(&other->url);
+		}
+
+		{ //Copying date
+			date.copyFrom(&other->date);
+		}
+
+		{ //Copying time
+			time.copyFrom(&other->time);
+		}
+
+		{ //Copying status
+			status.copyFrom(&other->status);
+		}
+
+		{ //Copying MIMEcontent
+			MIMEcontent.copyFrom(&other->MIMEcontent);
+		}
+
+		{ //Copying userAgent
+			userAgent.copyFrom(&other->userAgent);
+		}
+
+		{ //Copying method
+			method.copyFrom(&other->method);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << msisdn.str();
+				{ //Texting msisdn
+			o << msisdn.str();
+		}
 
 		o<<" ";
-		o << url.str();
+				{ //Texting url
+			o << url.str();
+		}
 
 		o<<" ";
-		o << date.str();
+				{ //Texting date
+			o << date.str();
+		}
 
 		o<<" ";
-		o << time.str();
+				{ //Texting time
+			o << time.str();
+		}
 
 		o<<" ";
-		o << status.str();
+				{ //Texting status
+			o << status.str();
+		}
 
 		o<<" ";
-		o << MIMEcontent.str();
+				{ //Texting MIMEcontent
+			o << MIMEcontent.str();
+		}
 
 		o<<" ";
-		o << userAgent.str();
+				{ //Texting userAgent
+			o << userAgent.str();
+		}
 
 		o<<" ";
-		o << method.str();
+				{ //Texting method
+			o << method.str();
+		}
 
 		o<<" ";
 		return o.str();

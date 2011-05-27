@@ -162,7 +162,7 @@ script script_GeneratingFakes
 	}
 	
 	code
-	"
+	{
 	url.fakeURLs $1 -create -clear
 	url.fakeServers $2 $3 -create -clear
 	url.fakeInfos $4 -create -clear
@@ -173,7 +173,7 @@ script script_GeneratingFakes
 	#download urls.txt urls.txt
 	#download servers.txt servers.txt
 	#download categories.txt categories.txt
-	"
+	}
 }
 
 script script_GeneratingFakes_fixed
@@ -196,7 +196,7 @@ script script_GeneratingFakes_fixed
 	}
 	
 	code
-	"
+	{
 	url.fakeURLs_fixed $1 -create -clear
 	url.fakeServers $2 $3 -create -clear
 	url.fakeInfos $4 -create -clear
@@ -207,7 +207,7 @@ script script_GeneratingFakes_fixed
 	#download urls.txt urls.txt
 	#download servers.txt servers.txt
 	#download categories.txt categories.txt
-	"
+	}
 }
 
 
@@ -329,14 +329,14 @@ script script_PrepareBasicData
 	}
 	
 	code
-	"
+	{
 	url.getServerURL $1 $1.ServStr_UserPath -create -clear
 	#url.fuseServer $1.ServStr_UserPath $2 $3 $4 $5 $6 -create -clear
 	url.fuseServerUser $1.ServStr_UserPath $2 $3 $4  -create -clear
 	url.fuseServerUserPath $1.ServStr_UserPath $2  $5 $6 -create -clear
 	
 	rm $1.ServStr_UserPath -f
-	"
+	}
 }
 
 
@@ -415,7 +415,7 @@ script script_ServerCategoriesDistribution
 	}
 	
 	code
-	"
+	{
 	url.getServersFromUser $1 $1.Serv_CatVector -create -clear
 	url.AssociateCategoriesToServers $3 $1.Serv_CatVector $3.new -clear -create
 	# Not sure I am using -clear input properly
@@ -430,7 +430,7 @@ script script_ServerCategoriesDistribution
 	rm $1.Serv_CatVector -f
 	#rm $3.new -f
 	rm $1.ServStr_CatVector -f
-	"
+	}
 }
 
 #
@@ -488,14 +488,14 @@ script script_TopHits
 	}
 	
 	code
-	"
+	{
 	url.getPathCount $1 $1.Serv_PathCountVector -clear -create
 	url.DecodeServerHits $2 $1.Serv_PathCountVector $3 -clear -create
 	
 	url.exportServerPathHits $3 $4 -create -clear
 	#download serverStr_path_hits.txt serverStr_path_hits.txt
 	rm $1.Serv_PathCountVector -f
-	"
+	}
 }
 
 #
@@ -546,7 +546,7 @@ script script_UserCategoriesDistribution
 	helpLine "According to the user visits and the list or reference sites, assign categories weight to every user"
 	
 	code
-	"
+	{
 	url.getUsersFromServer $1 $1.Serv_UserCountVector -create -clear
 	url.AssociateCategoriesToUsers $2 $1.Serv_UserCountVector $1.User_CategoryVector -clear -create
 	url.FuseUserCategory $1.User_CategoryVector $3 -create -clear
@@ -555,7 +555,7 @@ script script_UserCategoriesDistribution
 	#download listUserCategories.txt listUserCategories.txt
 	#rm $1.Serv_UserCountVector -f
 	#rm $1.User_CategoryVector -f
-	"
+	}
 }
 
 
@@ -607,7 +607,7 @@ script script_HitsPerCategory
 	
 	helpLine "Detects the more relevant URLs for every category"
 	code
-	"
+	{
 	url.AssociateCategoriesToServerPaths $1 $2 $2.Cat_ServPathCount -create -clear
 	url.SumServerPathsPerCategory $2.Cat_ServPathCount $2.Cat_ServPathVector -create -clear
 	
@@ -635,7 +635,7 @@ script script_HitsPerCategory
 	rm $2.Serv_CatPath -f
 	rm $2.Cat_ServStrPath -f
 	rm $2.Cat_ServStrPathVector -f
-	"	
+	}	
 }
 
 # In order to export it with server strings:
@@ -740,7 +740,7 @@ script script_HitsRecommendation
 	
 	helpLine "With the previous information of relevant URLs and user preferences by category, recommends the most visited sites to every user"
 	code
-	"
+	{
 	url.EmitUsersPerCategory $1  $1.Cat_User -create -clear
 	url.AssociateHitsPerCategoryToUsers $2 $1.Cat_User $1.User_serverPathCount -create -clear
 	url.SumServerPathFromUser $1.User_serverPathCount $1.User_ServPathVector_suitable -create -clear
@@ -753,7 +753,7 @@ script script_HitsRecommendation
 	rm $1.User_serverPathCount -f
 	rm $1.User_ServPathVector_suitable -f
 	rm $1.User_ServPathVector_visited -f
-	"
+	}
 }
 
 #
@@ -769,7 +769,7 @@ script test_1
 	
 	
 	code
-	"
+	{
 	set url.num_users               10
 	set url.num_servers             10
 	set url.num_paths_per_server    10
@@ -789,7 +789,7 @@ script test_1
 	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear
 	url.script_ServerCategoriesDistribution user_server serversRev categories $1 -create -clear
 	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath 
-	"
+	}
 }
 
 script test_2
@@ -801,7 +801,7 @@ script test_2
 	
 	
 	code
-	"
+	{
 	set url.num_users               10
 	set url.num_servers             10
 	set url.num_paths_per_server    10
@@ -820,7 +820,7 @@ script test_2
 	url.script_TopHits server_path serversRev serverStr_path_hits $1  -create
 	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits
 	rm -f categories.txt
-	"
+	}
 }
 
 script test_3
@@ -832,7 +832,7 @@ script test_3
 	
 	
 	code
-	"
+	{
 	set url.num_users               10
 	set url.num_servers             10
 	set url.num_paths_per_server    10
@@ -855,7 +855,7 @@ script test_3
 	rm -f categories.txt
 	rm -f serverStr_path_hits.txt
 	rm -f listUserCategories.txt
-	"
+	}
 }
 
 script test_4
@@ -867,7 +867,7 @@ script test_4
 	
 	
 	code
-	"
+	{
 	set url.num_users               10
 	set url.num_servers             10
 	set url.num_paths_per_server    10
@@ -892,7 +892,7 @@ script test_4
 	rm -f serverStr_path_hits.txt
 	rm -f listUserCategories.txt
 	rm -f cat_serverPathVector_ref.txt
-	"
+	}
 }
 
 script test_5
@@ -904,7 +904,7 @@ script test_5
 	
 	
 	code
-	"
+	{
 	set url.num_users               100000
 	set url.num_servers             1000
 	set url.num_paths_per_server    100
@@ -929,7 +929,7 @@ script test_5
 	rm -f serverStr_path_hits.txt
 	rm -f listUserCategories.txt
 	rm -f cat_serverPathVector_ref.txt
-	"
+	}
 }
 
 
@@ -961,11 +961,11 @@ script add_urls
 	in  system.String system.Vector_UInt
 
 	code
-	"
+	{
 		url.parse_urls $1 $1_tmp -create
 		url.accumulate_hits $1_tmp $2 $2 -clear_inputs
 		rm $1_tmp
-	"	
+	}	
 }
 
 # Select the top servers per hits
@@ -976,11 +976,11 @@ script select_top
 	out txt txt
 
 	code
-	"
+	{
 	url.select_top_map $1 $1_tmp -create	
 	url.select_top_reduce $1_tmp $2
 	rm $1_tmp	
-	"
+	}
 }
 
 map select_top_map

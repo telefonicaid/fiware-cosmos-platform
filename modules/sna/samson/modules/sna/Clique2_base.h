@@ -28,38 +28,59 @@ namespace sna{
 
 	int parse(char *data){
 		int offset=0;
-		offset += clique_1.parse(data+offset);
-		offset += clique_2.parse(data+offset);
+		{ //Parsing clique_1
+			offset += clique_1.parse(data+offset);
+		}
+
+		{ //Parsing clique_2
+			offset += clique_2.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += clique_1.serialize(data+offset);
-		offset += clique_2.serialize(data+offset);
+		{ //Serializing clique_1
+			offset += clique_1.serialize(data+offset);
+		}
+
+		{ //Serializing clique_2
+			offset += clique_2.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::sna::Clique::size(data+offset);
-		offset += ::samson::sna::Clique::size(data+offset);
+		{ //Sizing clique_1
+			offset += ::samson::sna::Clique::size(data+offset);
+		}
+
+		{ //Sizing clique_2
+			offset += ::samson::sna::Clique::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return clique_1.hash(max_num_partitions);
+		{ //Partitioning clique_1
+			return clique_1.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing clique_1
 			int tmp = ::samson::sna::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  clique_1 compared 
 		{ // comparing clique_2
 			int tmp = ::samson::sna::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  clique_2 compared 
 		return 0; //If everything is equal
 	}
 
@@ -70,17 +91,30 @@ namespace sna{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
 	void copyFrom( Clique2_base *other ){
-		clique_1.copyFrom(&other->clique_1);
-		clique_2.copyFrom(&other->clique_2);
+		{ //Copying clique_1
+			clique_1.copyFrom(&other->clique_1);
+		}
+
+		{ //Copying clique_2
+			clique_2.copyFrom(&other->clique_2);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << clique_1.str();
+				{ //Texting clique_1
+			o << clique_1.str();
+		}
 
 		o<<" ";
-		o << clique_2.str();
+				{ //Texting clique_2
+			o << clique_2.str();
+		}
 
 		o<<" ";
 		return o.str();

@@ -31,52 +31,91 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += node_id.parse(data+offset);
-		offset += comm_id.parse(data+offset);
-		offset += sum_weights_node.parse(data+offset);
-		offset += count_links_node.parse(data+offset);
+		{ //Parsing node_id
+			offset += node_id.parse(data+offset);
+		}
+
+		{ //Parsing comm_id
+			offset += comm_id.parse(data+offset);
+		}
+
+		{ //Parsing sum_weights_node
+			offset += sum_weights_node.parse(data+offset);
+		}
+
+		{ //Parsing count_links_node
+			offset += count_links_node.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += node_id.serialize(data+offset);
-		offset += comm_id.serialize(data+offset);
-		offset += sum_weights_node.serialize(data+offset);
-		offset += count_links_node.serialize(data+offset);
+		{ //Serializing node_id
+			offset += node_id.serialize(data+offset);
+		}
+
+		{ //Serializing comm_id
+			offset += comm_id.serialize(data+offset);
+		}
+
+		{ //Serializing sum_weights_node
+			offset += sum_weights_node.serialize(data+offset);
+		}
+
+		{ //Serializing count_links_node
+			offset += count_links_node.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::sna_light::Clique::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing node_id
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing comm_id
+			offset += ::samson::sna_light::Clique::size(data+offset);
+		}
+
+		{ //Sizing sum_weights_node
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_links_node
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return node_id.hash(max_num_partitions);
+		{ //Partitioning node_id
+			return node_id.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node_id
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  node_id compared 
 		{ // comparing comm_id
 			int tmp = ::samson::sna_light::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  comm_id compared 
 		{ // comparing sum_weights_node
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  sum_weights_node compared 
 		{ // comparing count_links_node
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_links_node compared 
 		return 0; //If everything is equal
 	}
 
@@ -87,25 +126,50 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
 	void copyFrom( Metric_Node_In_Comm_Intermediate_base *other ){
-		node_id.copyFrom(&other->node_id);
-		comm_id.copyFrom(&other->comm_id);
-		sum_weights_node.copyFrom(&other->sum_weights_node);
-		count_links_node.copyFrom(&other->count_links_node);
+		{ //Copying node_id
+			node_id.copyFrom(&other->node_id);
+		}
+
+		{ //Copying comm_id
+			comm_id.copyFrom(&other->comm_id);
+		}
+
+		{ //Copying sum_weights_node
+			sum_weights_node.copyFrom(&other->sum_weights_node);
+		}
+
+		{ //Copying count_links_node
+			count_links_node.copyFrom(&other->count_links_node);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << node_id.str();
+				{ //Texting node_id
+			o << node_id.str();
+		}
 
 		o<<" ";
-		o << comm_id.str();
+				{ //Texting comm_id
+			o << comm_id.str();
+		}
 
 		o<<" ";
-		o << sum_weights_node.str();
+				{ //Texting sum_weights_node
+			o << sum_weights_node.str();
+		}
 
 		o<<" ";
-		o << count_links_node.str();
+				{ //Texting count_links_node
+			o << count_links_node.str();
+		}
 
 		o<<" ";
 		return o.str();

@@ -33,73 +33,139 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += node_id.parse(data+offset);
-		offset += count_links.parse(data+offset);
-		offset += count_extern_links.parse(data+offset);
-		offset += weight_all_members.parse(data+offset);
-		offset += weight_extern_members.parse(data+offset);
-		offset += count_comm_extern_nodes.parse(data+offset);
-		offset += count_competitor_nodes.parse(data+offset);
+		{ //Parsing node_id
+			offset += node_id.parse(data+offset);
+		}
+
+		{ //Parsing count_links
+			offset += count_links.parse(data+offset);
+		}
+
+		{ //Parsing count_extern_links
+			offset += count_extern_links.parse(data+offset);
+		}
+
+		{ //Parsing weight_all_members
+			offset += weight_all_members.parse(data+offset);
+		}
+
+		{ //Parsing weight_extern_members
+			offset += weight_extern_members.parse(data+offset);
+		}
+
+		{ //Parsing count_comm_extern_nodes
+			offset += count_comm_extern_nodes.parse(data+offset);
+		}
+
+		{ //Parsing count_competitor_nodes
+			offset += count_competitor_nodes.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += node_id.serialize(data+offset);
-		offset += count_links.serialize(data+offset);
-		offset += count_extern_links.serialize(data+offset);
-		offset += weight_all_members.serialize(data+offset);
-		offset += weight_extern_members.serialize(data+offset);
-		offset += count_comm_extern_nodes.serialize(data+offset);
-		offset += count_competitor_nodes.serialize(data+offset);
+		{ //Serializing node_id
+			offset += node_id.serialize(data+offset);
+		}
+
+		{ //Serializing count_links
+			offset += count_links.serialize(data+offset);
+		}
+
+		{ //Serializing count_extern_links
+			offset += count_extern_links.serialize(data+offset);
+		}
+
+		{ //Serializing weight_all_members
+			offset += weight_all_members.serialize(data+offset);
+		}
+
+		{ //Serializing weight_extern_members
+			offset += weight_extern_members.serialize(data+offset);
+		}
+
+		{ //Serializing count_comm_extern_nodes
+			offset += count_comm_extern_nodes.serialize(data+offset);
+		}
+
+		{ //Serializing count_competitor_nodes
+			offset += count_competitor_nodes.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing node_id
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_links
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_extern_links
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing weight_all_members
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing weight_extern_members
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_comm_extern_nodes
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_competitor_nodes
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return node_id.hash(max_num_partitions);
+		{ //Partitioning node_id
+			return node_id.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node_id
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  node_id compared 
 		{ // comparing count_links
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_links compared 
 		{ // comparing count_extern_links
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_extern_links compared 
 		{ // comparing weight_all_members
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  weight_all_members compared 
 		{ // comparing weight_extern_members
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  weight_extern_members compared 
 		{ // comparing count_comm_extern_nodes
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_comm_extern_nodes compared 
 		{ // comparing count_competitor_nodes
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_competitor_nodes compared 
 		return 0; //If everything is equal
 	}
 
@@ -110,37 +176,80 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
+
+
+
 	void copyFrom( Node_Comm_Weight_base *other ){
-		node_id.copyFrom(&other->node_id);
-		count_links.copyFrom(&other->count_links);
-		count_extern_links.copyFrom(&other->count_extern_links);
-		weight_all_members.copyFrom(&other->weight_all_members);
-		weight_extern_members.copyFrom(&other->weight_extern_members);
-		count_comm_extern_nodes.copyFrom(&other->count_comm_extern_nodes);
-		count_competitor_nodes.copyFrom(&other->count_competitor_nodes);
+		{ //Copying node_id
+			node_id.copyFrom(&other->node_id);
+		}
+
+		{ //Copying count_links
+			count_links.copyFrom(&other->count_links);
+		}
+
+		{ //Copying count_extern_links
+			count_extern_links.copyFrom(&other->count_extern_links);
+		}
+
+		{ //Copying weight_all_members
+			weight_all_members.copyFrom(&other->weight_all_members);
+		}
+
+		{ //Copying weight_extern_members
+			weight_extern_members.copyFrom(&other->weight_extern_members);
+		}
+
+		{ //Copying count_comm_extern_nodes
+			count_comm_extern_nodes.copyFrom(&other->count_comm_extern_nodes);
+		}
+
+		{ //Copying count_competitor_nodes
+			count_competitor_nodes.copyFrom(&other->count_competitor_nodes);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << node_id.str();
+				{ //Texting node_id
+			o << node_id.str();
+		}
 
 		o<<" ";
-		o << count_links.str();
+				{ //Texting count_links
+			o << count_links.str();
+		}
 
 		o<<" ";
-		o << count_extern_links.str();
+				{ //Texting count_extern_links
+			o << count_extern_links.str();
+		}
 
 		o<<" ";
-		o << weight_all_members.str();
+				{ //Texting weight_all_members
+			o << weight_all_members.str();
+		}
 
 		o<<" ";
-		o << weight_extern_members.str();
+				{ //Texting weight_extern_members
+			o << weight_extern_members.str();
+		}
 
 		o<<" ";
-		o << count_comm_extern_nodes.str();
+				{ //Texting count_comm_extern_nodes
+			o << count_comm_extern_nodes.str();
+		}
 
 		o<<" ";
-		o << count_competitor_nodes.str();
+				{ //Texting count_competitor_nodes
+			o << count_competitor_nodes.str();
+		}
 
 		o<<" ";
 		return o.str();

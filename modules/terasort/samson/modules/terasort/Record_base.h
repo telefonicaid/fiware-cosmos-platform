@@ -29,45 +29,75 @@ namespace terasort{
 
 	int parse(char *data){
 		int offset=0;
-		offset += keyf.parse(data+offset);
-		offset += num_rec.parse(data+offset);
-		offset += valf.parse(data+offset);
+		{ //Parsing keyf
+			offset += keyf.parse(data+offset);
+		}
+
+		{ //Parsing num_rec
+			offset += num_rec.parse(data+offset);
+		}
+
+		{ //Parsing valf
+			offset += valf.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += keyf.serialize(data+offset);
-		offset += num_rec.serialize(data+offset);
-		offset += valf.serialize(data+offset);
+		{ //Serializing keyf
+			offset += keyf.serialize(data+offset);
+		}
+
+		{ //Serializing num_rec
+			offset += num_rec.serialize(data+offset);
+		}
+
+		{ //Serializing valf
+			offset += valf.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::String::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
+		{ //Sizing keyf
+			offset += ::samson::system::String::size(data+offset);
+		}
+
+		{ //Sizing num_rec
+			offset += ::samson::system::String::size(data+offset);
+		}
+
+		{ //Sizing valf
+			offset += ::samson::system::String::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return keyf.hash(max_num_partitions);
+		{ //Partitioning keyf
+			return keyf.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing keyf
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  keyf compared 
 		{ // comparing num_rec
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  num_rec compared 
 		{ // comparing valf
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  valf compared 
 		return 0; //If everything is equal
 	}
 
@@ -78,21 +108,40 @@ namespace terasort{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
 	void copyFrom( Record_base *other ){
-		keyf.copyFrom(&other->keyf);
-		num_rec.copyFrom(&other->num_rec);
-		valf.copyFrom(&other->valf);
+		{ //Copying keyf
+			keyf.copyFrom(&other->keyf);
+		}
+
+		{ //Copying num_rec
+			num_rec.copyFrom(&other->num_rec);
+		}
+
+		{ //Copying valf
+			valf.copyFrom(&other->valf);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << keyf.str();
+				{ //Texting keyf
+			o << keyf.str();
+		}
 
 		o<<" ";
-		o << num_rec.str();
+				{ //Texting num_rec
+			o << num_rec.str();
+		}
 
 		o<<" ";
-		o << valf.str();
+				{ //Texting valf
+			o << valf.str();
+		}
 
 		o<<" ";
 		return o.str();

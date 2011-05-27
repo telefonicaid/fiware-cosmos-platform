@@ -28,38 +28,59 @@ namespace example{
 
 	int parse(char *data){
 		int offset=0;
-		offset += a.parse(data+offset);
-		offset += b.parse(data+offset);
+		{ //Parsing a
+			offset += a.parse(data+offset);
+		}
+
+		{ //Parsing b
+			offset += b.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += a.serialize(data+offset);
-		offset += b.serialize(data+offset);
+		{ //Serializing a
+			offset += a.serialize(data+offset);
+		}
+
+		{ //Serializing b
+			offset += b.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing a
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing b
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return a.hash(max_num_partitions);
+		{ //Partitioning a
+			return a.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing a
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  a compared 
 		{ // comparing b
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  b compared 
 		return 0; //If everything is equal
 	}
 
@@ -70,17 +91,30 @@ namespace example{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
 	void copyFrom( MyData_base *other ){
-		a.copyFrom(&other->a);
-		b.copyFrom(&other->b);
+		{ //Copying a
+			a.copyFrom(&other->a);
+		}
+
+		{ //Copying b
+			b.copyFrom(&other->b);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << a.str();
+				{ //Texting a
+			o << a.str();
+		}
 
 		o<<" ";
-		o << b.str();
+				{ //Texting b
+			o << b.str();
+		}
 
 		o<<" ";
 		return o.str();

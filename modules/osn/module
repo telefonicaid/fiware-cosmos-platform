@@ -308,7 +308,7 @@ script Bytemobile_req_1
 	}
 
 	code
-	"
+	{
 		clear $2
 		clear $3
 		
@@ -321,7 +321,7 @@ script Bytemobile_req_1
 		osn.red_select_N_sites $1.p.m.red $1.p.m.red.sort -clear -create
 		osn.export_N_sites $1.p.m.red.sort $3 -clear -create
 		#download $1.p.m.red.sort.txt $3
-	"
+	}
 }
 
 script Bytemobile_req_2
@@ -338,7 +338,7 @@ script Bytemobile_req_2
 	}
 
 	code
-	"
+	{
 		clear $2
 		clear $3
 		
@@ -353,7 +353,7 @@ script Bytemobile_req_2
 		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create
 		#osn.export_total $1.p.m.red.total $3 -clear -create
 		#download $1.p.m.red.total.txt $3
-	"
+	}
 }
 
 script Bytemobile_req_3
@@ -370,7 +370,7 @@ script Bytemobile_req_3
 	}
 
 	code
-	"
+	{
 		clear $2
 		clear $3
 		
@@ -385,7 +385,7 @@ script Bytemobile_req_3
 		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create
 		#osn.export_total $1.p.m.red.total $3 -clear -create
 		#download $1.p.m.red.total.txt $3
-	"
+	}
 }
 
 script Bytemobile_req_4
@@ -402,11 +402,11 @@ script Bytemobile_req_4
 	}
 
 	code
-	"
+	{
 		clear $2
 		clear $3
 		
-	"
+	}
 }
 
 script Bytemobile_req_5
@@ -423,7 +423,7 @@ script Bytemobile_req_5
 	}
 
 	code
-	"
+	{
 		clear $2
 		clear $3
 		
@@ -438,7 +438,7 @@ script Bytemobile_req_5
 		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create
 		#osn.export_total $1.p.m.red.total $3 -clear -create
 		#download $1.p.m.red.total.txt $3
-	"
+	}
 }
 
 script Bytemobile_req_6
@@ -455,7 +455,7 @@ script Bytemobile_req_6
 	}
 
 	code
-	"
+	{
 		clear $2
 		clear $3
 		
@@ -470,7 +470,7 @@ script Bytemobile_req_6
 		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create
 		#osn.export_total $1.p.m.red.total $3 -clear -create
 		#download $1.p.m.red.total.txt $3
-	"
+	}
 }
 
 script Bytemobile_req_7
@@ -487,7 +487,7 @@ script Bytemobile_req_7
 	}
 
 	code
-	"
+	{
 		clear $2
 		clear $3
 		
@@ -504,5 +504,5 @@ script Bytemobile_req_7
 		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create
 		#osn.export_total $1.p.m.red.total $3 -clear -create
 		#download $1.p.m.red.total.txt $3
-	"
+	}
 }

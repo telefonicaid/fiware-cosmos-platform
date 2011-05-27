@@ -29,38 +29,59 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += clique.parse(data+offset);
-		offset += weight.parse(data+offset);
+		{ //Parsing clique
+			offset += clique.parse(data+offset);
+		}
+
+		{ //Parsing weight
+			offset += weight.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += clique.serialize(data+offset);
-		offset += weight.serialize(data+offset);
+		{ //Serializing clique
+			offset += clique.serialize(data+offset);
+		}
+
+		{ //Serializing weight
+			offset += weight.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::sna_light::Clique::size(data+offset);
-		offset += ::samson::system::Float::size(data+offset);
+		{ //Sizing clique
+			offset += ::samson::sna_light::Clique::size(data+offset);
+		}
+
+		{ //Sizing weight
+			offset += ::samson::system::Float::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return clique.hash(max_num_partitions);
+		{ //Partitioning clique
+			return clique.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing clique
 			int tmp = ::samson::sna_light::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  clique compared 
 		{ // comparing weight
 			int tmp = ::samson::system::Float::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  weight compared 
 		return 0; //If everything is equal
 	}
 
@@ -71,17 +92,30 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
 	void copyFrom( Clique_Link_base *other ){
-		clique.copyFrom(&other->clique);
-		weight.copyFrom(&other->weight);
+		{ //Copying clique
+			clique.copyFrom(&other->clique);
+		}
+
+		{ //Copying weight
+			weight.copyFrom(&other->weight);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << clique.str();
+				{ //Texting clique
+			o << clique.str();
+		}
 
 		o<<" ";
-		o << weight.str();
+				{ //Texting weight
+			o << weight.str();
+		}
 
 		o<<" ";
 		return o.str();

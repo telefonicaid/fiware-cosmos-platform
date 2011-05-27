@@ -40,11 +40,17 @@ namespace url{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	usersCountSetLength( _length );
-			for (int i = 0 ; i < (int)usersCount_length ; i++){
+			for (int i = 0 ; i < (int)usersCount_length ; i++)
+			{ //Parsing usersCount
 				offset += usersCount[i].parse(data+offset);
 			}
+
 		}
-		offset += countRef.parse(data+offset);
+
+		{ //Parsing countRef
+			offset += countRef.parse(data+offset);
+		}
+
 		return offset;
 	}
 
@@ -52,11 +58,17 @@ namespace url{
 		int offset=0;
 		{ //Serialization vector usersCount
 			offset += samson::staticVarIntSerialize( data+offset , usersCount_length );
-			for (int i = 0 ; i < (int)usersCount_length ; i++){
+			for (int i = 0 ; i < (int)usersCount_length ; i++)
+			{ //Serializing usersCount
 				offset += usersCount[i].serialize(data+offset);
 			}
+
 		}
-		offset += countRef.serialize(data+offset);
+
+		{ //Serializing countRef
+			offset += countRef.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
@@ -66,18 +78,28 @@ namespace url{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 			::samson::url::UserCount _tmp;
-			for (int i = 0 ; i < (int)_length ; i++){
+			for (int i = 0 ; i < (int)_length ; i++)
+			{ //Sizing usersCount
 				offset += ::samson::url::UserCount::size(data+offset);
 			}
+
 		}
-		offset += ::samson::system::UInt::size(data+offset);
+
+		{ //Sizing countRef
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		if( usersCount_length > 0 ){
-		return usersCount[0].hash(max_num_partitions);
-		} else return 0;
+		if( usersCount_length > 0 )
+			{ //Partitioning usersCount
+				return usersCount[0].hash(max_num_partitions);
+			}
+
+		else return 0;
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
@@ -87,17 +109,16 @@ namespace url{
 			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
-			for (int i = 0 ; i < (int)_length1 ; i++){
-				{ // comparing usersCount[i]
-					int tmp = ::samson::url::UserCount::compare(data1,data2,offset1 , offset2);
-					if( tmp != 0) return tmp;
-				}
-			}
-		}
+			for (int i = 0 ; i < (int)_length1 ; i++)
+			{ // comparing usersCount[i]
+				int tmp = ::samson::url::UserCount::compare(data1,data2,offset1 , offset2);
+				if( tmp != 0) return tmp;
+			}   //  usersCount[i] compared 
+		}   // vector usersCount compared 
 		{ // comparing countRef
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  countRef compared 
 		return 0; //If everything is equal
 	}
 
@@ -107,6 +128,9 @@ namespace url{
 		size_t offset_2=0;
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
+
+
+
 
 	void usersCountSetLength(int _length){
 		if( _length > usersCount_max_length){ 
@@ -130,25 +154,34 @@ namespace url{
 	}
 
 	void copyFrom( UserCountVector_base *other ){
-			{ // CopyFrom field usersCount
-				usersCountSetLength( other->usersCount_length);
-				for (int i = 0 ; i < usersCount_length ; i++){
-					usersCount[i].copyFrom(&other->usersCount[i]);
-				}
+		{ // CopyFrom field usersCount
+			usersCountSetLength( other->usersCount_length);
+			for (int i = 0 ; i < usersCount_length ; i++)
+			{ //Copying usersCount
+				usersCount[i].copyFrom(&other->usersCount[i]);
 			}
-		countRef.copyFrom(&other->countRef);
+		}
+
+		{ //Copying countRef
+			countRef.copyFrom(&other->countRef);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
 		{// toString of vector usersCount
-			for(int i = 0 ; i < usersCount_length ; i++){
+			for(int i = 0 ; i < usersCount_length ; i++)
+			{ //Texting usersCount
 				o << usersCount[i].str();
-				 o << " ";
 			}
+				 o << " ";
 		}
+
 		o<<" ";
-		o << countRef.str();
+				{ //Texting countRef
+			o << countRef.str();
+		}
 
 		o<<" ";
 		return o.str();

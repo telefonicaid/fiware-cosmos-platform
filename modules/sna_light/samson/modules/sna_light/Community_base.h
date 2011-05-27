@@ -30,45 +30,75 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += id_comm.parse(data+offset);
-		offset += nodes.parse(data+offset);
-		offset += orphan.parse(data+offset);
+		{ //Parsing id_comm
+			offset += id_comm.parse(data+offset);
+		}
+
+		{ //Parsing nodes
+			offset += nodes.parse(data+offset);
+		}
+
+		{ //Parsing orphan
+			offset += orphan.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += id_comm.serialize(data+offset);
-		offset += nodes.serialize(data+offset);
-		offset += orphan.serialize(data+offset);
+		{ //Serializing id_comm
+			offset += id_comm.serialize(data+offset);
+		}
+
+		{ //Serializing nodes
+			offset += nodes.serialize(data+offset);
+		}
+
+		{ //Serializing orphan
+			offset += orphan.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::sna_light::Clique::size(data+offset);
-		offset += ::samson::sna_light::Clique::size(data+offset);
+		{ //Sizing id_comm
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing nodes
+			offset += ::samson::sna_light::Clique::size(data+offset);
+		}
+
+		{ //Sizing orphan
+			offset += ::samson::sna_light::Clique::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return id_comm.hash(max_num_partitions);
+		{ //Partitioning id_comm
+			return id_comm.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing id_comm
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  id_comm compared 
 		{ // comparing nodes
 			int tmp = ::samson::sna_light::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  nodes compared 
 		{ // comparing orphan
 			int tmp = ::samson::sna_light::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  orphan compared 
 		return 0; //If everything is equal
 	}
 
@@ -79,21 +109,40 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
 	void copyFrom( Community_base *other ){
-		id_comm.copyFrom(&other->id_comm);
-		nodes.copyFrom(&other->nodes);
-		orphan.copyFrom(&other->orphan);
+		{ //Copying id_comm
+			id_comm.copyFrom(&other->id_comm);
+		}
+
+		{ //Copying nodes
+			nodes.copyFrom(&other->nodes);
+		}
+
+		{ //Copying orphan
+			orphan.copyFrom(&other->orphan);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << id_comm.str();
+				{ //Texting id_comm
+			o << id_comm.str();
+		}
 
 		o<<" ";
-		o << nodes.str();
+				{ //Texting nodes
+			o << nodes.str();
+		}
 
 		o<<" ";
-		o << orphan.str();
+				{ //Texting orphan
+			o << orphan.str();
+		}
 
 		o<<" ";
 		return o.str();

@@ -29,38 +29,59 @@ namespace url_benchmark{
 
 	int parse(char *data){
 		int offset=0;
-		offset += count.parse(data+offset);
-		offset += URL.parse(data+offset);
+		{ //Parsing count
+			offset += count.parse(data+offset);
+		}
+
+		{ //Parsing URL
+			offset += URL.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += count.serialize(data+offset);
-		offset += URL.serialize(data+offset);
+		{ //Serializing count
+			offset += count.serialize(data+offset);
+		}
+
+		{ //Serializing URL
+			offset += URL.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
+		{ //Sizing count
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing URL
+			offset += ::samson::system::String::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return count.hash(max_num_partitions);
+		{ //Partitioning count
+			return count.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing count
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count compared 
 		{ // comparing URL
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  URL compared 
 		return 0; //If everything is equal
 	}
 
@@ -71,17 +92,30 @@ namespace url_benchmark{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
 	void copyFrom( URLHit_base *other ){
-		count.copyFrom(&other->count);
-		URL.copyFrom(&other->URL);
+		{ //Copying count
+			count.copyFrom(&other->count);
+		}
+
+		{ //Copying URL
+			URL.copyFrom(&other->URL);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << count.str();
+				{ //Texting count
+			o << count.str();
+		}
 
 		o<<" ";
-		o << URL.str();
+				{ //Texting URL
+			o << URL.str();
+		}
 
 		o<<" ";
 		return o.str();

@@ -31,45 +31,75 @@ namespace url{
 
 	int parse(char *data){
 		int offset=0;
-		offset += category.parse(data+offset);
-		offset += category_info.parse(data+offset);
-		offset += path.parse(data+offset);
+		{ //Parsing category
+			offset += category.parse(data+offset);
+		}
+
+		{ //Parsing category_info
+			offset += category_info.parse(data+offset);
+		}
+
+		{ //Parsing path
+			offset += path.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += category.serialize(data+offset);
-		offset += category_info.serialize(data+offset);
-		offset += path.serialize(data+offset);
+		{ //Serializing category
+			offset += category.serialize(data+offset);
+		}
+
+		{ //Serializing category_info
+			offset += category_info.serialize(data+offset);
+		}
+
+		{ //Serializing path
+			offset += path.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::url::Category::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
+		{ //Sizing category
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing category_info
+			offset += ::samson::url::Category::size(data+offset);
+		}
+
+		{ //Sizing path
+			offset += ::samson::system::String::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return category.hash(max_num_partitions);
+		{ //Partitioning category
+			return category.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing category
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  category compared 
 		{ // comparing category_info
 			int tmp = ::samson::url::Category::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  category_info compared 
 		{ // comparing path
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  path compared 
 		return 0; //If everything is equal
 	}
 
@@ -80,21 +110,40 @@ namespace url{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
 	void copyFrom( CategoryPath_base *other ){
-		category.copyFrom(&other->category);
-		category_info.copyFrom(&other->category_info);
-		path.copyFrom(&other->path);
+		{ //Copying category
+			category.copyFrom(&other->category);
+		}
+
+		{ //Copying category_info
+			category_info.copyFrom(&other->category_info);
+		}
+
+		{ //Copying path
+			path.copyFrom(&other->path);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << category.str();
+				{ //Texting category
+			o << category.str();
+		}
 
 		o<<" ";
-		o << category_info.str();
+				{ //Texting category_info
+			o << category_info.str();
+		}
 
 		o<<" ";
-		o << path.str();
+				{ //Texting path
+			o << path.str();
+		}
 
 		o<<" ";
 		return o.str();

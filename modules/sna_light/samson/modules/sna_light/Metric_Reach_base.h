@@ -29,45 +29,75 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += reach_two_step.parse(data+offset);
-		offset += reach_two_step_competitors.parse(data+offset);
-		offset += reach_two_step_tef.parse(data+offset);
+		{ //Parsing reach_two_step
+			offset += reach_two_step.parse(data+offset);
+		}
+
+		{ //Parsing reach_two_step_competitors
+			offset += reach_two_step_competitors.parse(data+offset);
+		}
+
+		{ //Parsing reach_two_step_tef
+			offset += reach_two_step_tef.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += reach_two_step.serialize(data+offset);
-		offset += reach_two_step_competitors.serialize(data+offset);
-		offset += reach_two_step_tef.serialize(data+offset);
+		{ //Serializing reach_two_step
+			offset += reach_two_step.serialize(data+offset);
+		}
+
+		{ //Serializing reach_two_step_competitors
+			offset += reach_two_step_competitors.serialize(data+offset);
+		}
+
+		{ //Serializing reach_two_step_tef
+			offset += reach_two_step_tef.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing reach_two_step
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing reach_two_step_competitors
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing reach_two_step_tef
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return reach_two_step.hash(max_num_partitions);
+		{ //Partitioning reach_two_step
+			return reach_two_step.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing reach_two_step
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  reach_two_step compared 
 		{ // comparing reach_two_step_competitors
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  reach_two_step_competitors compared 
 		{ // comparing reach_two_step_tef
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  reach_two_step_tef compared 
 		return 0; //If everything is equal
 	}
 
@@ -78,21 +108,40 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
 	void copyFrom( Metric_Reach_base *other ){
-		reach_two_step.copyFrom(&other->reach_two_step);
-		reach_two_step_competitors.copyFrom(&other->reach_two_step_competitors);
-		reach_two_step_tef.copyFrom(&other->reach_two_step_tef);
+		{ //Copying reach_two_step
+			reach_two_step.copyFrom(&other->reach_two_step);
+		}
+
+		{ //Copying reach_two_step_competitors
+			reach_two_step_competitors.copyFrom(&other->reach_two_step_competitors);
+		}
+
+		{ //Copying reach_two_step_tef
+			reach_two_step_tef.copyFrom(&other->reach_two_step_tef);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << reach_two_step.str();
+				{ //Texting reach_two_step
+			o << reach_two_step.str();
+		}
 
 		o<<" ";
-		o << reach_two_step_competitors.str();
+				{ //Texting reach_two_step_competitors
+			o << reach_two_step_competitors.str();
+		}
 
 		o<<" ";
-		o << reach_two_step_tef.str();
+				{ //Texting reach_two_step_tef
+			o << reach_two_step_tef.str();
+		}
 
 		o<<" ";
 		return o.str();

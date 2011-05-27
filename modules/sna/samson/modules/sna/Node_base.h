@@ -38,73 +38,102 @@ namespace sna{
 
 	int parse(char *data){
 		int offset=0;
-		offset += id.parse(data+offset);
+		{ //Parsing id
+			offset += id.parse(data+offset);
+		}
+
 		{ //Parsing vector links
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	linksSetLength( _length );
-			for (int i = 0 ; i < (int)links_length ; i++){
+			for (int i = 0 ; i < (int)links_length ; i++)
+			{ //Parsing links
 				offset += links[i].parse(data+offset);
 			}
+
 		}
-		offset += flags.parse(data+offset);
+
+		{ //Parsing flags
+			offset += flags.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += id.serialize(data+offset);
+		{ //Serializing id
+			offset += id.serialize(data+offset);
+		}
+
 		{ //Serialization vector links
 			offset += samson::staticVarIntSerialize( data+offset , links_length );
-			for (int i = 0 ; i < (int)links_length ; i++){
+			for (int i = 0 ; i < (int)links_length ; i++)
+			{ //Serializing links
 				offset += links[i].serialize(data+offset);
 			}
+
 		}
-		offset += flags.serialize(data+offset);
+
+		{ //Serializing flags
+			offset += flags.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing id
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		{ //Getting size of vector links
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 			::samson::sna::Link _tmp;
-			for (int i = 0 ; i < (int)_length ; i++){
+			for (int i = 0 ; i < (int)_length ; i++)
+			{ //Sizing links
 				offset += ::samson::sna::Link::size(data+offset);
 			}
+
 		}
-		offset += ::samson::system::Int8::size(data+offset);
+
+		{ //Sizing flags
+			offset += ::samson::system::Int8::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return id.hash(max_num_partitions);
+		{ //Partitioning id
+			return id.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing id
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  id compared 
 		{ // Comparing vector links
 			size_t _length1,_length2;
 			*offset1 += samson::staticVarIntParse( data1+(*offset1) , &_length1 );
 			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
-			for (int i = 0 ; i < (int)_length1 ; i++){
-				{ // comparing links[i]
-					int tmp = ::samson::sna::Link::compare(data1,data2,offset1 , offset2);
-					if( tmp != 0) return tmp;
-				}
-			}
-		}
+			for (int i = 0 ; i < (int)_length1 ; i++)
+			{ // comparing links[i]
+				int tmp = ::samson::sna::Link::compare(data1,data2,offset1 , offset2);
+				if( tmp != 0) return tmp;
+			}   //  links[i] compared 
+		}   // vector links compared 
 		{ // comparing flags
 			int tmp = ::samson::system::Int8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  flags compared 
 		return 0; //If everything is equal
 	}
 
@@ -114,6 +143,10 @@ namespace sna{
 		size_t offset_2=0;
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
+
+
+
+
 
 	void linksSetLength(int _length){
 		if( _length > links_max_length){ 
@@ -137,29 +170,43 @@ namespace sna{
 	}
 
 	void copyFrom( Node_base *other ){
-		id.copyFrom(&other->id);
-			{ // CopyFrom field links
-				linksSetLength( other->links_length);
-				for (int i = 0 ; i < links_length ; i++){
-					links[i].copyFrom(&other->links[i]);
-				}
+		{ //Copying id
+			id.copyFrom(&other->id);
+		}
+
+		{ // CopyFrom field links
+			linksSetLength( other->links_length);
+			for (int i = 0 ; i < links_length ; i++)
+			{ //Copying links
+				links[i].copyFrom(&other->links[i]);
 			}
-		flags.copyFrom(&other->flags);
+		}
+
+		{ //Copying flags
+			flags.copyFrom(&other->flags);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << id.str();
+				{ //Texting id
+			o << id.str();
+		}
 
 		o<<" ";
 		{// toString of vector links
-			for(int i = 0 ; i < links_length ; i++){
+			for(int i = 0 ; i < links_length ; i++)
+			{ //Texting links
 				o << links[i].str();
-				 o << " ";
 			}
+				 o << " ";
 		}
+
 		o<<" ";
-		o << flags.str();
+				{ //Texting flags
+			o << flags.str();
+		}
 
 		o<<" ";
 		return o.str();

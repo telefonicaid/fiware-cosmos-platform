@@ -38,94 +38,187 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += id.parse(data+offset);
-		offset += titularId.parse(data+offset);
-		offset += type.parse(data+offset);
-		offset += activationDate.parse(data+offset);
-		offset += activationCode.parse(data+offset);
-		offset += age.parse(data+offset);
-		offset += province.parse(data+offset);
-		offset += sex.parse(data+offset);
-		offset += churnDate.parse(data+offset);
-		offset += churnCode.parse(data+offset);
+		{ //Parsing id
+			offset += id.parse(data+offset);
+		}
+
+		{ //Parsing titularId
+			offset += titularId.parse(data+offset);
+		}
+
+		{ //Parsing type
+			offset += type.parse(data+offset);
+		}
+
+		{ //Parsing activationDate
+			offset += activationDate.parse(data+offset);
+		}
+
+		{ //Parsing activationCode
+			offset += activationCode.parse(data+offset);
+		}
+
+		{ //Parsing age
+			offset += age.parse(data+offset);
+		}
+
+		{ //Parsing province
+			offset += province.parse(data+offset);
+		}
+
+		{ //Parsing sex
+			offset += sex.parse(data+offset);
+		}
+
+		{ //Parsing churnDate
+			offset += churnDate.parse(data+offset);
+		}
+
+		{ //Parsing churnCode
+			offset += churnCode.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += id.serialize(data+offset);
-		offset += titularId.serialize(data+offset);
-		offset += type.serialize(data+offset);
-		offset += activationDate.serialize(data+offset);
-		offset += activationCode.serialize(data+offset);
-		offset += age.serialize(data+offset);
-		offset += province.serialize(data+offset);
-		offset += sex.serialize(data+offset);
-		offset += churnDate.serialize(data+offset);
-		offset += churnCode.serialize(data+offset);
+		{ //Serializing id
+			offset += id.serialize(data+offset);
+		}
+
+		{ //Serializing titularId
+			offset += titularId.serialize(data+offset);
+		}
+
+		{ //Serializing type
+			offset += type.serialize(data+offset);
+		}
+
+		{ //Serializing activationDate
+			offset += activationDate.serialize(data+offset);
+		}
+
+		{ //Serializing activationCode
+			offset += activationCode.serialize(data+offset);
+		}
+
+		{ //Serializing age
+			offset += age.serialize(data+offset);
+		}
+
+		{ //Serializing province
+			offset += province.serialize(data+offset);
+		}
+
+		{ //Serializing sex
+			offset += sex.serialize(data+offset);
+		}
+
+		{ //Serializing churnDate
+			offset += churnDate.serialize(data+offset);
+		}
+
+		{ //Serializing churnCode
+			offset += churnCode.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt8::size(data+offset);
-		offset += ::samson::cdr::Date::size(data+offset);
-		offset += ::samson::system::UInt8::size(data+offset);
-		offset += ::samson::system::UInt8::size(data+offset);
-		offset += ::samson::system::UInt8::size(data+offset);
-		offset += ::samson::system::UInt8::size(data+offset);
-		offset += ::samson::cdr::Date::size(data+offset);
-		offset += ::samson::system::UInt8::size(data+offset);
+		{ //Sizing id
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing titularId
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing type
+			offset += ::samson::system::UInt8::size(data+offset);
+		}
+
+		{ //Sizing activationDate
+			offset += ::samson::cdr::Date::size(data+offset);
+		}
+
+		{ //Sizing activationCode
+			offset += ::samson::system::UInt8::size(data+offset);
+		}
+
+		{ //Sizing age
+			offset += ::samson::system::UInt8::size(data+offset);
+		}
+
+		{ //Sizing province
+			offset += ::samson::system::UInt8::size(data+offset);
+		}
+
+		{ //Sizing sex
+			offset += ::samson::system::UInt8::size(data+offset);
+		}
+
+		{ //Sizing churnDate
+			offset += ::samson::cdr::Date::size(data+offset);
+		}
+
+		{ //Sizing churnCode
+			offset += ::samson::system::UInt8::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return id.hash(max_num_partitions);
+		{ //Partitioning id
+			return id.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing id
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  id compared 
 		{ // comparing titularId
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  titularId compared 
 		{ // comparing type
 			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  type compared 
 		{ // comparing activationDate
 			int tmp = ::samson::cdr::Date::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  activationDate compared 
 		{ // comparing activationCode
 			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  activationCode compared 
 		{ // comparing age
 			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  age compared 
 		{ // comparing province
 			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  province compared 
 		{ // comparing sex
 			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  sex compared 
 		{ // comparing churnDate
 			int tmp = ::samson::cdr::Date::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  churnDate compared 
 		{ // comparing churnCode
 			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  churnCode compared 
 		return 0; //If everything is equal
 	}
 
@@ -136,49 +229,110 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
+
+
+
+
+
+
 	void copyFrom( User_base *other ){
-		id.copyFrom(&other->id);
-		titularId.copyFrom(&other->titularId);
-		type.copyFrom(&other->type);
-		activationDate.copyFrom(&other->activationDate);
-		activationCode.copyFrom(&other->activationCode);
-		age.copyFrom(&other->age);
-		province.copyFrom(&other->province);
-		sex.copyFrom(&other->sex);
-		churnDate.copyFrom(&other->churnDate);
-		churnCode.copyFrom(&other->churnCode);
+		{ //Copying id
+			id.copyFrom(&other->id);
+		}
+
+		{ //Copying titularId
+			titularId.copyFrom(&other->titularId);
+		}
+
+		{ //Copying type
+			type.copyFrom(&other->type);
+		}
+
+		{ //Copying activationDate
+			activationDate.copyFrom(&other->activationDate);
+		}
+
+		{ //Copying activationCode
+			activationCode.copyFrom(&other->activationCode);
+		}
+
+		{ //Copying age
+			age.copyFrom(&other->age);
+		}
+
+		{ //Copying province
+			province.copyFrom(&other->province);
+		}
+
+		{ //Copying sex
+			sex.copyFrom(&other->sex);
+		}
+
+		{ //Copying churnDate
+			churnDate.copyFrom(&other->churnDate);
+		}
+
+		{ //Copying churnCode
+			churnCode.copyFrom(&other->churnCode);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << id.str();
+				{ //Texting id
+			o << id.str();
+		}
 
 		o<<" ";
-		o << titularId.str();
+				{ //Texting titularId
+			o << titularId.str();
+		}
 
 		o<<" ";
-		o << type.str();
+				{ //Texting type
+			o << type.str();
+		}
 
 		o<<" ";
-		o << activationDate.str();
+				{ //Texting activationDate
+			o << activationDate.str();
+		}
 
 		o<<" ";
-		o << activationCode.str();
+				{ //Texting activationCode
+			o << activationCode.str();
+		}
 
 		o<<" ";
-		o << age.str();
+				{ //Texting age
+			o << age.str();
+		}
 
 		o<<" ";
-		o << province.str();
+				{ //Texting province
+			o << province.str();
+		}
 
 		o<<" ";
-		o << sex.str();
+				{ //Texting sex
+			o << sex.str();
+		}
 
 		o<<" ";
-		o << churnDate.str();
+				{ //Texting churnDate
+			o << churnDate.str();
+		}
 
 		o<<" ";
-		o << churnCode.str();
+				{ //Texting churnCode
+			o << churnCode.str();
+		}
 
 		o<<" ";
 		return o.str();

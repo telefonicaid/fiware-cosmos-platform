@@ -28,38 +28,59 @@ namespace txt{
 
 	int parse(char *data){
 		int offset=0;
-		offset += i1.parse(data+offset);
-		offset += i2.parse(data+offset);
+		{ //Parsing i1
+			offset += i1.parse(data+offset);
+		}
+
+		{ //Parsing i2
+			offset += i2.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += i1.serialize(data+offset);
-		offset += i2.serialize(data+offset);
+		{ //Serializing i1
+			offset += i1.serialize(data+offset);
+		}
+
+		{ //Serializing i2
+			offset += i2.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing i1
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing i2
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return i1.hash(max_num_partitions);
+		{ //Partitioning i1
+			return i1.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing i1
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  i1 compared 
 		{ // comparing i2
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  i2 compared 
 		return 0; //If everything is equal
 	}
 
@@ -70,17 +91,30 @@ namespace txt{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
 	void copyFrom( PairInts_base *other ){
-		i1.copyFrom(&other->i1);
-		i2.copyFrom(&other->i2);
+		{ //Copying i1
+			i1.copyFrom(&other->i1);
+		}
+
+		{ //Copying i2
+			i2.copyFrom(&other->i2);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << i1.str();
+				{ //Texting i1
+			o << i1.str();
+		}
 
 		o<<" ";
-		o << i2.str();
+				{ //Texting i2
+			o << i2.str();
+		}
 
 		o<<" ";
 		return o.str();

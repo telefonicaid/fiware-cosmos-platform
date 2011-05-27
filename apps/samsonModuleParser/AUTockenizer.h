@@ -14,6 +14,20 @@
 #include <string>		// std::string
 
 namespace samson {
+
+
+	class AUToken
+	{
+
+	public:
+		std::string str;
+		int line;
+
+		AUToken( ) { }
+
+		AUToken( std::string txt, int nline) {str = txt; line = nline;}
+
+	};
 	
 	/**
 	 General tokenizer element
@@ -23,26 +37,30 @@ namespace samson {
 	{
 		
 	public:
-		std::vector<std::string> items;			// Parsed elements from the text
+		std::vector<AUToken> items;			// Parsed elements from the text
+		int reference_pos;
 
 		
 		AUTockenizer( std::string txt );
 		
-		static std::vector<std::string> removeSpacesAndReturns( std::vector<std::string> items );		
+		static std::vector<AUToken> removeSpacesAndReturns( std::vector<AUToken> items );
+
+		static std::vector<AUToken> removeSpacesAndCommentsAndReturns( std::vector<AUToken> items );
+
 		/** 
 		 Function to remove comments from tockens
 		 Bascially removes every tocken between # and end_of_line
 		 */
 		
-		static std::vector<std::string> removeComments( std::vector<std::string> items );
+		static std::vector<AUToken> removeComments( std::vector<AUToken> items );
 		
-		static std::vector<std::string> tockenize( std::string txt);		
+		static std::vector<AUToken> tockenize( std::string txt);
 		
 		static bool isOneOf( char c , std::string s );
 		
 		static bool isOneOf( std::string c_string , std::string s );
 		
-		std::string itemAtPos( unsigned int pos );
+		AUToken itemAtPos( unsigned int pos );
 		
 		bool isSpecial( int pos );
 		
@@ -62,6 +80,8 @@ namespace samson {
 		
 		std::string getLiteral( int* pos );
 		
+		std::string getBlock( int* pos );
+
 		void getScopeLimits( int* pos , int*begin, int*end );
 		
 	};

@@ -28,38 +28,59 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += node_id.parse(data+offset);
-		offset += cluster_coef.parse(data+offset);
+		{ //Parsing node_id
+			offset += node_id.parse(data+offset);
+		}
+
+		{ //Parsing cluster_coef
+			offset += cluster_coef.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += node_id.serialize(data+offset);
-		offset += cluster_coef.serialize(data+offset);
+		{ //Serializing node_id
+			offset += node_id.serialize(data+offset);
+		}
+
+		{ //Serializing cluster_coef
+			offset += cluster_coef.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing node_id
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing cluster_coef
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return node_id.hash(max_num_partitions);
+		{ //Partitioning node_id
+			return node_id.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node_id
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  node_id compared 
 		{ // comparing cluster_coef
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  cluster_coef compared 
 		return 0; //If everything is equal
 	}
 
@@ -70,17 +91,30 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
 	void copyFrom( Metric_Cluster_base *other ){
-		node_id.copyFrom(&other->node_id);
-		cluster_coef.copyFrom(&other->cluster_coef);
+		{ //Copying node_id
+			node_id.copyFrom(&other->node_id);
+		}
+
+		{ //Copying cluster_coef
+			cluster_coef.copyFrom(&other->cluster_coef);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << node_id.str();
+				{ //Texting node_id
+			o << node_id.str();
+		}
 
 		o<<" ";
-		o << cluster_coef.str();
+				{ //Texting cluster_coef
+			o << cluster_coef.str();
+		}
 
 		o<<" ";
 		return o.str();

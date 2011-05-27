@@ -32,52 +32,91 @@ namespace cdr{
 
 	int parse(char *data){
 		int offset=0;
-		offset += node.parse(data+offset);
-		offset += date.parse(data+offset);
-		offset += time.parse(data+offset);
-		offset += duration.parse(data+offset);
+		{ //Parsing node
+			offset += node.parse(data+offset);
+		}
+
+		{ //Parsing date
+			offset += date.parse(data+offset);
+		}
+
+		{ //Parsing time
+			offset += time.parse(data+offset);
+		}
+
+		{ //Parsing duration
+			offset += duration.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += node.serialize(data+offset);
-		offset += date.serialize(data+offset);
-		offset += time.serialize(data+offset);
-		offset += duration.serialize(data+offset);
+		{ //Serializing node
+			offset += node.serialize(data+offset);
+		}
+
+		{ //Serializing date
+			offset += date.serialize(data+offset);
+		}
+
+		{ //Serializing time
+			offset += time.serialize(data+offset);
+		}
+
+		{ //Serializing duration
+			offset += duration.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::cdr::Date::size(data+offset);
-		offset += ::samson::cdr::Time::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing node
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing date
+			offset += ::samson::cdr::Date::size(data+offset);
+		}
+
+		{ //Sizing time
+			offset += ::samson::cdr::Time::size(data+offset);
+		}
+
+		{ //Sizing duration
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return node.hash(max_num_partitions);
+		{ //Partitioning node
+			return node.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  node compared 
 		{ // comparing date
 			int tmp = ::samson::cdr::Date::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  date compared 
 		{ // comparing time
 			int tmp = ::samson::cdr::Time::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  time compared 
 		{ // comparing duration
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  duration compared 
 		return 0; //If everything is equal
 	}
 
@@ -88,25 +127,50 @@ namespace cdr{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
 	void copyFrom( CDR_base *other ){
-		node.copyFrom(&other->node);
-		date.copyFrom(&other->date);
-		time.copyFrom(&other->time);
-		duration.copyFrom(&other->duration);
+		{ //Copying node
+			node.copyFrom(&other->node);
+		}
+
+		{ //Copying date
+			date.copyFrom(&other->date);
+		}
+
+		{ //Copying time
+			time.copyFrom(&other->time);
+		}
+
+		{ //Copying duration
+			duration.copyFrom(&other->duration);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << node.str();
+				{ //Texting node
+			o << node.str();
+		}
 
 		o<<" ";
-		o << date.str();
+				{ //Texting date
+			o << date.str();
+		}
 
 		o<<" ";
-		o << time.str();
+				{ //Texting time
+			o << time.str();
+		}
 
 		o<<" ";
-		o << duration.str();
+				{ //Texting duration
+			o << duration.str();
+		}
 
 		o<<" ";
 		return o.str();

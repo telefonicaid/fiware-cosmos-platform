@@ -32,66 +32,123 @@ namespace osn{
 
 	int parse(char *data){
 		int offset=0;
-		offset += completeURL.parse(data+offset);
-		offset += url_host.parse(data+offset);
-		offset += url_dir.parse(data+offset);
-		offset += url_page.parse(data+offset);
-		offset += url_query.parse(data+offset);
-		offset += url_locDoc.parse(data+offset);
+		{ //Parsing completeURL
+			offset += completeURL.parse(data+offset);
+		}
+
+		{ //Parsing url_host
+			offset += url_host.parse(data+offset);
+		}
+
+		{ //Parsing url_dir
+			offset += url_dir.parse(data+offset);
+		}
+
+		{ //Parsing url_page
+			offset += url_page.parse(data+offset);
+		}
+
+		{ //Parsing url_query
+			offset += url_query.parse(data+offset);
+		}
+
+		{ //Parsing url_locDoc
+			offset += url_locDoc.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += completeURL.serialize(data+offset);
-		offset += url_host.serialize(data+offset);
-		offset += url_dir.serialize(data+offset);
-		offset += url_page.serialize(data+offset);
-		offset += url_query.serialize(data+offset);
-		offset += url_locDoc.serialize(data+offset);
+		{ //Serializing completeURL
+			offset += completeURL.serialize(data+offset);
+		}
+
+		{ //Serializing url_host
+			offset += url_host.serialize(data+offset);
+		}
+
+		{ //Serializing url_dir
+			offset += url_dir.serialize(data+offset);
+		}
+
+		{ //Serializing url_page
+			offset += url_page.serialize(data+offset);
+		}
+
+		{ //Serializing url_query
+			offset += url_query.serialize(data+offset);
+		}
+
+		{ //Serializing url_locDoc
+			offset += url_locDoc.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::String::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
+		{ //Sizing completeURL
+			offset += ::samson::system::String::size(data+offset);
+		}
+
+		{ //Sizing url_host
+			offset += ::samson::system::String::size(data+offset);
+		}
+
+		{ //Sizing url_dir
+			offset += ::samson::system::String::size(data+offset);
+		}
+
+		{ //Sizing url_page
+			offset += ::samson::system::String::size(data+offset);
+		}
+
+		{ //Sizing url_query
+			offset += ::samson::system::String::size(data+offset);
+		}
+
+		{ //Sizing url_locDoc
+			offset += ::samson::system::String::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return completeURL.hash(max_num_partitions);
+		{ //Partitioning completeURL
+			return completeURL.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing completeURL
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  completeURL compared 
 		{ // comparing url_host
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  url_host compared 
 		{ // comparing url_dir
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  url_dir compared 
 		{ // comparing url_page
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  url_page compared 
 		{ // comparing url_query
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  url_query compared 
 		{ // comparing url_locDoc
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  url_locDoc compared 
 		return 0; //If everything is equal
 	}
 
@@ -102,33 +159,70 @@ namespace osn{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
+
+
 	void copyFrom( URL_base *other ){
-		completeURL.copyFrom(&other->completeURL);
-		url_host.copyFrom(&other->url_host);
-		url_dir.copyFrom(&other->url_dir);
-		url_page.copyFrom(&other->url_page);
-		url_query.copyFrom(&other->url_query);
-		url_locDoc.copyFrom(&other->url_locDoc);
+		{ //Copying completeURL
+			completeURL.copyFrom(&other->completeURL);
+		}
+
+		{ //Copying url_host
+			url_host.copyFrom(&other->url_host);
+		}
+
+		{ //Copying url_dir
+			url_dir.copyFrom(&other->url_dir);
+		}
+
+		{ //Copying url_page
+			url_page.copyFrom(&other->url_page);
+		}
+
+		{ //Copying url_query
+			url_query.copyFrom(&other->url_query);
+		}
+
+		{ //Copying url_locDoc
+			url_locDoc.copyFrom(&other->url_locDoc);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << completeURL.str();
+				{ //Texting completeURL
+			o << completeURL.str();
+		}
 
 		o<<" ";
-		o << url_host.str();
+				{ //Texting url_host
+			o << url_host.str();
+		}
 
 		o<<" ";
-		o << url_dir.str();
+				{ //Texting url_dir
+			o << url_dir.str();
+		}
 
 		o<<" ";
-		o << url_page.str();
+				{ //Texting url_page
+			o << url_page.str();
+		}
 
 		o<<" ";
-		o << url_query.str();
+				{ //Texting url_query
+			o << url_query.str();
+		}
 
 		o<<" ";
-		o << url_locDoc.str();
+				{ //Texting url_locDoc
+			o << url_locDoc.str();
+		}
 
 		o<<" ";
 		return o.str();

@@ -8,6 +8,8 @@
 * DESCRIPTION				Information about a module (module definition)
 *
 */
+
+#include <stdio.h>
 #include <unistd.h>             /* _exit, ...                              */
 #include <string.h>             /* strtok, strcpy, ...                     */
 #include <cstdio>
@@ -19,9 +21,6 @@
 
 #include <samson/module/KVFormat.h>
 #include "DataType.h"
-
-#include "logMsg/logMsg.h"					 // LM_M()
-
 
 namespace samson
 {

@@ -35,80 +35,155 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += comm.parse(data+offset);
-		offset += orphan.parse(data+offset);
-		offset += id_comm.parse(data+offset);
-		offset += node_id.parse(data+offset);
-		offset += absolute_weights.parse(data+offset);
-		offset += realtive_weights.parse(data+offset);
-		offset += absolute_neighbours.parse(data+offset);
-		offset += relative_neighbours.parse(data+offset);
+		{ //Parsing comm
+			offset += comm.parse(data+offset);
+		}
+
+		{ //Parsing orphan
+			offset += orphan.parse(data+offset);
+		}
+
+		{ //Parsing id_comm
+			offset += id_comm.parse(data+offset);
+		}
+
+		{ //Parsing node_id
+			offset += node_id.parse(data+offset);
+		}
+
+		{ //Parsing absolute_weights
+			offset += absolute_weights.parse(data+offset);
+		}
+
+		{ //Parsing realtive_weights
+			offset += realtive_weights.parse(data+offset);
+		}
+
+		{ //Parsing absolute_neighbours
+			offset += absolute_neighbours.parse(data+offset);
+		}
+
+		{ //Parsing relative_neighbours
+			offset += relative_neighbours.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += comm.serialize(data+offset);
-		offset += orphan.serialize(data+offset);
-		offset += id_comm.serialize(data+offset);
-		offset += node_id.serialize(data+offset);
-		offset += absolute_weights.serialize(data+offset);
-		offset += realtive_weights.serialize(data+offset);
-		offset += absolute_neighbours.serialize(data+offset);
-		offset += relative_neighbours.serialize(data+offset);
+		{ //Serializing comm
+			offset += comm.serialize(data+offset);
+		}
+
+		{ //Serializing orphan
+			offset += orphan.serialize(data+offset);
+		}
+
+		{ //Serializing id_comm
+			offset += id_comm.serialize(data+offset);
+		}
+
+		{ //Serializing node_id
+			offset += node_id.serialize(data+offset);
+		}
+
+		{ //Serializing absolute_weights
+			offset += absolute_weights.serialize(data+offset);
+		}
+
+		{ //Serializing realtive_weights
+			offset += realtive_weights.serialize(data+offset);
+		}
+
+		{ //Serializing absolute_neighbours
+			offset += absolute_neighbours.serialize(data+offset);
+		}
+
+		{ //Serializing relative_neighbours
+			offset += relative_neighbours.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::sna_light::Clique::size(data+offset);
-		offset += ::samson::sna_light::Clique::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing comm
+			offset += ::samson::sna_light::Clique::size(data+offset);
+		}
+
+		{ //Sizing orphan
+			offset += ::samson::sna_light::Clique::size(data+offset);
+		}
+
+		{ //Sizing id_comm
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing node_id
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing absolute_weights
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing realtive_weights
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing absolute_neighbours
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing relative_neighbours
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return comm.hash(max_num_partitions);
+		{ //Partitioning comm
+			return comm.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing comm
 			int tmp = ::samson::sna_light::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  comm compared 
 		{ // comparing orphan
 			int tmp = ::samson::sna_light::Clique::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  orphan compared 
 		{ // comparing id_comm
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  id_comm compared 
 		{ // comparing node_id
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  node_id compared 
 		{ // comparing absolute_weights
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  absolute_weights compared 
 		{ // comparing realtive_weights
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  realtive_weights compared 
 		{ // comparing absolute_neighbours
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  absolute_neighbours compared 
 		{ // comparing relative_neighbours
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  relative_neighbours compared 
 		return 0; //If everything is equal
 	}
 
@@ -119,41 +194,90 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
+
+
+
+
 	void copyFrom( Metric_Node_In_Comm_base *other ){
-		comm.copyFrom(&other->comm);
-		orphan.copyFrom(&other->orphan);
-		id_comm.copyFrom(&other->id_comm);
-		node_id.copyFrom(&other->node_id);
-		absolute_weights.copyFrom(&other->absolute_weights);
-		realtive_weights.copyFrom(&other->realtive_weights);
-		absolute_neighbours.copyFrom(&other->absolute_neighbours);
-		relative_neighbours.copyFrom(&other->relative_neighbours);
+		{ //Copying comm
+			comm.copyFrom(&other->comm);
+		}
+
+		{ //Copying orphan
+			orphan.copyFrom(&other->orphan);
+		}
+
+		{ //Copying id_comm
+			id_comm.copyFrom(&other->id_comm);
+		}
+
+		{ //Copying node_id
+			node_id.copyFrom(&other->node_id);
+		}
+
+		{ //Copying absolute_weights
+			absolute_weights.copyFrom(&other->absolute_weights);
+		}
+
+		{ //Copying realtive_weights
+			realtive_weights.copyFrom(&other->realtive_weights);
+		}
+
+		{ //Copying absolute_neighbours
+			absolute_neighbours.copyFrom(&other->absolute_neighbours);
+		}
+
+		{ //Copying relative_neighbours
+			relative_neighbours.copyFrom(&other->relative_neighbours);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << comm.str();
+				{ //Texting comm
+			o << comm.str();
+		}
 
 		o<<" ";
-		o << orphan.str();
+				{ //Texting orphan
+			o << orphan.str();
+		}
 
 		o<<" ";
-		o << id_comm.str();
+				{ //Texting id_comm
+			o << id_comm.str();
+		}
 
 		o<<" ";
-		o << node_id.str();
+				{ //Texting node_id
+			o << node_id.str();
+		}
 
 		o<<" ";
-		o << absolute_weights.str();
+				{ //Texting absolute_weights
+			o << absolute_weights.str();
+		}
 
 		o<<" ";
-		o << realtive_weights.str();
+				{ //Texting realtive_weights
+			o << realtive_weights.str();
+		}
 
 		o<<" ";
-		o << absolute_neighbours.str();
+				{ //Texting absolute_neighbours
+			o << absolute_neighbours.str();
+		}
 
 		o<<" ";
-		o << relative_neighbours.str();
+				{ //Texting relative_neighbours
+			o << relative_neighbours.str();
+		}
 
 		o<<" ";
 		return o.str();

@@ -30,52 +30,91 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += node.parse(data+offset);
-		offset += duration.parse(data+offset);
-		offset += type.parse(data+offset);
-		offset += dir.parse(data+offset);
+		{ //Parsing node
+			offset += node.parse(data+offset);
+		}
+
+		{ //Parsing duration
+			offset += duration.parse(data+offset);
+		}
+
+		{ //Parsing type
+			offset += type.parse(data+offset);
+		}
+
+		{ //Parsing dir
+			offset += dir.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += node.serialize(data+offset);
-		offset += duration.serialize(data+offset);
-		offset += type.serialize(data+offset);
-		offset += dir.serialize(data+offset);
+		{ //Serializing node
+			offset += node.serialize(data+offset);
+		}
+
+		{ //Serializing duration
+			offset += duration.serialize(data+offset);
+		}
+
+		{ //Serializing type
+			offset += type.serialize(data+offset);
+		}
+
+		{ //Serializing dir
+			offset += dir.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing node
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing duration
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing type
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing dir
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return node.hash(max_num_partitions);
+		{ //Partitioning node
+			return node.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  node compared 
 		{ // comparing duration
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  duration compared 
 		{ // comparing type
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  type compared 
 		{ // comparing dir
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  dir compared 
 		return 0; //If everything is equal
 	}
 
@@ -86,25 +125,50 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
 	void copyFrom( CDR_base *other ){
-		node.copyFrom(&other->node);
-		duration.copyFrom(&other->duration);
-		type.copyFrom(&other->type);
-		dir.copyFrom(&other->dir);
+		{ //Copying node
+			node.copyFrom(&other->node);
+		}
+
+		{ //Copying duration
+			duration.copyFrom(&other->duration);
+		}
+
+		{ //Copying type
+			type.copyFrom(&other->type);
+		}
+
+		{ //Copying dir
+			dir.copyFrom(&other->dir);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << node.str();
+				{ //Texting node
+			o << node.str();
+		}
 
 		o<<" ";
-		o << duration.str();
+				{ //Texting duration
+			o << duration.str();
+		}
 
 		o<<" ";
-		o << type.str();
+				{ //Texting type
+			o << type.str();
+		}
 
 		o<<" ";
-		o << dir.str();
+				{ //Texting dir
+			o << dir.str();
+		}
 
 		o<<" ";
 		return o.str();

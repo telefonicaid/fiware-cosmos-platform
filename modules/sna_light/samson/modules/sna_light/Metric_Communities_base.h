@@ -50,192 +50,411 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += id_comm.parse(data+offset);
-		offset += count_nodes.parse(data+offset);
-		offset += count_nodes_strong.parse(data+offset);
-		offset += count_nodes_associated.parse(data+offset);
-		offset += count_nodes_competitor.parse(data+offset);
-		offset += count_nodes_telefonica.parse(data+offset);
-		offset += percent_nodes_competitor.parse(data+offset);
-		offset += percent_nodes_strong.parse(data+offset);
-		offset += percent_nodes_associated.parse(data+offset);
-		offset += percent_nodes_telefonica.parse(data+offset);
-		offset += count_regular_existing_links.parse(data+offset);
-		offset += count_regular_possible_links.parse(data+offset);
-		offset += count_all_existing_links.parse(data+offset);
-		offset += count_all_possible_links.parse(data+offset);
-		offset += density_regular_members.parse(data+offset);
-		offset += density_all_members.parse(data+offset);
-		offset += cohesion_regular_members.parse(data+offset);
-		offset += cohesion_all_members.parse(data+offset);
-		offset += value_total.parse(data+offset);
-		offset += value_per_node.parse(data+offset);
-		offset += value_per_edge.parse(data+offset);
-		offset += reach_one_step.parse(data+offset);
-		offset += reach_one_step_competitors.parse(data+offset);
-		offset += reach_comm_on_step.parse(data+offset);
+		{ //Parsing id_comm
+			offset += id_comm.parse(data+offset);
+		}
+
+		{ //Parsing count_nodes
+			offset += count_nodes.parse(data+offset);
+		}
+
+		{ //Parsing count_nodes_strong
+			offset += count_nodes_strong.parse(data+offset);
+		}
+
+		{ //Parsing count_nodes_associated
+			offset += count_nodes_associated.parse(data+offset);
+		}
+
+		{ //Parsing count_nodes_competitor
+			offset += count_nodes_competitor.parse(data+offset);
+		}
+
+		{ //Parsing count_nodes_telefonica
+			offset += count_nodes_telefonica.parse(data+offset);
+		}
+
+		{ //Parsing percent_nodes_competitor
+			offset += percent_nodes_competitor.parse(data+offset);
+		}
+
+		{ //Parsing percent_nodes_strong
+			offset += percent_nodes_strong.parse(data+offset);
+		}
+
+		{ //Parsing percent_nodes_associated
+			offset += percent_nodes_associated.parse(data+offset);
+		}
+
+		{ //Parsing percent_nodes_telefonica
+			offset += percent_nodes_telefonica.parse(data+offset);
+		}
+
+		{ //Parsing count_regular_existing_links
+			offset += count_regular_existing_links.parse(data+offset);
+		}
+
+		{ //Parsing count_regular_possible_links
+			offset += count_regular_possible_links.parse(data+offset);
+		}
+
+		{ //Parsing count_all_existing_links
+			offset += count_all_existing_links.parse(data+offset);
+		}
+
+		{ //Parsing count_all_possible_links
+			offset += count_all_possible_links.parse(data+offset);
+		}
+
+		{ //Parsing density_regular_members
+			offset += density_regular_members.parse(data+offset);
+		}
+
+		{ //Parsing density_all_members
+			offset += density_all_members.parse(data+offset);
+		}
+
+		{ //Parsing cohesion_regular_members
+			offset += cohesion_regular_members.parse(data+offset);
+		}
+
+		{ //Parsing cohesion_all_members
+			offset += cohesion_all_members.parse(data+offset);
+		}
+
+		{ //Parsing value_total
+			offset += value_total.parse(data+offset);
+		}
+
+		{ //Parsing value_per_node
+			offset += value_per_node.parse(data+offset);
+		}
+
+		{ //Parsing value_per_edge
+			offset += value_per_edge.parse(data+offset);
+		}
+
+		{ //Parsing reach_one_step
+			offset += reach_one_step.parse(data+offset);
+		}
+
+		{ //Parsing reach_one_step_competitors
+			offset += reach_one_step_competitors.parse(data+offset);
+		}
+
+		{ //Parsing reach_comm_on_step
+			offset += reach_comm_on_step.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += id_comm.serialize(data+offset);
-		offset += count_nodes.serialize(data+offset);
-		offset += count_nodes_strong.serialize(data+offset);
-		offset += count_nodes_associated.serialize(data+offset);
-		offset += count_nodes_competitor.serialize(data+offset);
-		offset += count_nodes_telefonica.serialize(data+offset);
-		offset += percent_nodes_competitor.serialize(data+offset);
-		offset += percent_nodes_strong.serialize(data+offset);
-		offset += percent_nodes_associated.serialize(data+offset);
-		offset += percent_nodes_telefonica.serialize(data+offset);
-		offset += count_regular_existing_links.serialize(data+offset);
-		offset += count_regular_possible_links.serialize(data+offset);
-		offset += count_all_existing_links.serialize(data+offset);
-		offset += count_all_possible_links.serialize(data+offset);
-		offset += density_regular_members.serialize(data+offset);
-		offset += density_all_members.serialize(data+offset);
-		offset += cohesion_regular_members.serialize(data+offset);
-		offset += cohesion_all_members.serialize(data+offset);
-		offset += value_total.serialize(data+offset);
-		offset += value_per_node.serialize(data+offset);
-		offset += value_per_edge.serialize(data+offset);
-		offset += reach_one_step.serialize(data+offset);
-		offset += reach_one_step_competitors.serialize(data+offset);
-		offset += reach_comm_on_step.serialize(data+offset);
+		{ //Serializing id_comm
+			offset += id_comm.serialize(data+offset);
+		}
+
+		{ //Serializing count_nodes
+			offset += count_nodes.serialize(data+offset);
+		}
+
+		{ //Serializing count_nodes_strong
+			offset += count_nodes_strong.serialize(data+offset);
+		}
+
+		{ //Serializing count_nodes_associated
+			offset += count_nodes_associated.serialize(data+offset);
+		}
+
+		{ //Serializing count_nodes_competitor
+			offset += count_nodes_competitor.serialize(data+offset);
+		}
+
+		{ //Serializing count_nodes_telefonica
+			offset += count_nodes_telefonica.serialize(data+offset);
+		}
+
+		{ //Serializing percent_nodes_competitor
+			offset += percent_nodes_competitor.serialize(data+offset);
+		}
+
+		{ //Serializing percent_nodes_strong
+			offset += percent_nodes_strong.serialize(data+offset);
+		}
+
+		{ //Serializing percent_nodes_associated
+			offset += percent_nodes_associated.serialize(data+offset);
+		}
+
+		{ //Serializing percent_nodes_telefonica
+			offset += percent_nodes_telefonica.serialize(data+offset);
+		}
+
+		{ //Serializing count_regular_existing_links
+			offset += count_regular_existing_links.serialize(data+offset);
+		}
+
+		{ //Serializing count_regular_possible_links
+			offset += count_regular_possible_links.serialize(data+offset);
+		}
+
+		{ //Serializing count_all_existing_links
+			offset += count_all_existing_links.serialize(data+offset);
+		}
+
+		{ //Serializing count_all_possible_links
+			offset += count_all_possible_links.serialize(data+offset);
+		}
+
+		{ //Serializing density_regular_members
+			offset += density_regular_members.serialize(data+offset);
+		}
+
+		{ //Serializing density_all_members
+			offset += density_all_members.serialize(data+offset);
+		}
+
+		{ //Serializing cohesion_regular_members
+			offset += cohesion_regular_members.serialize(data+offset);
+		}
+
+		{ //Serializing cohesion_all_members
+			offset += cohesion_all_members.serialize(data+offset);
+		}
+
+		{ //Serializing value_total
+			offset += value_total.serialize(data+offset);
+		}
+
+		{ //Serializing value_per_node
+			offset += value_per_node.serialize(data+offset);
+		}
+
+		{ //Serializing value_per_edge
+			offset += value_per_edge.serialize(data+offset);
+		}
+
+		{ //Serializing reach_one_step
+			offset += reach_one_step.serialize(data+offset);
+		}
+
+		{ //Serializing reach_one_step_competitors
+			offset += reach_one_step_competitors.serialize(data+offset);
+		}
+
+		{ //Serializing reach_comm_on_step
+			offset += reach_comm_on_step.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing id_comm
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_nodes
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_nodes_strong
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_nodes_associated
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_nodes_competitor
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_nodes_telefonica
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing percent_nodes_competitor
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing percent_nodes_strong
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing percent_nodes_associated
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing percent_nodes_telefonica
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_regular_existing_links
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_regular_possible_links
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_all_existing_links
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing count_all_possible_links
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing density_regular_members
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing density_all_members
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing cohesion_regular_members
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing cohesion_all_members
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing value_total
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing value_per_node
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing value_per_edge
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing reach_one_step
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing reach_one_step_competitors
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing reach_comm_on_step
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return id_comm.hash(max_num_partitions);
+		{ //Partitioning id_comm
+			return id_comm.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing id_comm
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  id_comm compared 
 		{ // comparing count_nodes
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_nodes compared 
 		{ // comparing count_nodes_strong
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_nodes_strong compared 
 		{ // comparing count_nodes_associated
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_nodes_associated compared 
 		{ // comparing count_nodes_competitor
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_nodes_competitor compared 
 		{ // comparing count_nodes_telefonica
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_nodes_telefonica compared 
 		{ // comparing percent_nodes_competitor
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  percent_nodes_competitor compared 
 		{ // comparing percent_nodes_strong
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  percent_nodes_strong compared 
 		{ // comparing percent_nodes_associated
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  percent_nodes_associated compared 
 		{ // comparing percent_nodes_telefonica
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  percent_nodes_telefonica compared 
 		{ // comparing count_regular_existing_links
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_regular_existing_links compared 
 		{ // comparing count_regular_possible_links
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_regular_possible_links compared 
 		{ // comparing count_all_existing_links
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_all_existing_links compared 
 		{ // comparing count_all_possible_links
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count_all_possible_links compared 
 		{ // comparing density_regular_members
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  density_regular_members compared 
 		{ // comparing density_all_members
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  density_all_members compared 
 		{ // comparing cohesion_regular_members
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  cohesion_regular_members compared 
 		{ // comparing cohesion_all_members
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  cohesion_all_members compared 
 		{ // comparing value_total
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  value_total compared 
 		{ // comparing value_per_node
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  value_per_node compared 
 		{ // comparing value_per_edge
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  value_per_edge compared 
 		{ // comparing reach_one_step
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  reach_one_step compared 
 		{ // comparing reach_one_step_competitors
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  reach_one_step_competitors compared 
 		{ // comparing reach_comm_on_step
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  reach_comm_on_step compared 
 		return 0; //If everything is equal
 	}
 
@@ -246,105 +465,250 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	void copyFrom( Metric_Communities_base *other ){
-		id_comm.copyFrom(&other->id_comm);
-		count_nodes.copyFrom(&other->count_nodes);
-		count_nodes_strong.copyFrom(&other->count_nodes_strong);
-		count_nodes_associated.copyFrom(&other->count_nodes_associated);
-		count_nodes_competitor.copyFrom(&other->count_nodes_competitor);
-		count_nodes_telefonica.copyFrom(&other->count_nodes_telefonica);
-		percent_nodes_competitor.copyFrom(&other->percent_nodes_competitor);
-		percent_nodes_strong.copyFrom(&other->percent_nodes_strong);
-		percent_nodes_associated.copyFrom(&other->percent_nodes_associated);
-		percent_nodes_telefonica.copyFrom(&other->percent_nodes_telefonica);
-		count_regular_existing_links.copyFrom(&other->count_regular_existing_links);
-		count_regular_possible_links.copyFrom(&other->count_regular_possible_links);
-		count_all_existing_links.copyFrom(&other->count_all_existing_links);
-		count_all_possible_links.copyFrom(&other->count_all_possible_links);
-		density_regular_members.copyFrom(&other->density_regular_members);
-		density_all_members.copyFrom(&other->density_all_members);
-		cohesion_regular_members.copyFrom(&other->cohesion_regular_members);
-		cohesion_all_members.copyFrom(&other->cohesion_all_members);
-		value_total.copyFrom(&other->value_total);
-		value_per_node.copyFrom(&other->value_per_node);
-		value_per_edge.copyFrom(&other->value_per_edge);
-		reach_one_step.copyFrom(&other->reach_one_step);
-		reach_one_step_competitors.copyFrom(&other->reach_one_step_competitors);
-		reach_comm_on_step.copyFrom(&other->reach_comm_on_step);
+		{ //Copying id_comm
+			id_comm.copyFrom(&other->id_comm);
+		}
+
+		{ //Copying count_nodes
+			count_nodes.copyFrom(&other->count_nodes);
+		}
+
+		{ //Copying count_nodes_strong
+			count_nodes_strong.copyFrom(&other->count_nodes_strong);
+		}
+
+		{ //Copying count_nodes_associated
+			count_nodes_associated.copyFrom(&other->count_nodes_associated);
+		}
+
+		{ //Copying count_nodes_competitor
+			count_nodes_competitor.copyFrom(&other->count_nodes_competitor);
+		}
+
+		{ //Copying count_nodes_telefonica
+			count_nodes_telefonica.copyFrom(&other->count_nodes_telefonica);
+		}
+
+		{ //Copying percent_nodes_competitor
+			percent_nodes_competitor.copyFrom(&other->percent_nodes_competitor);
+		}
+
+		{ //Copying percent_nodes_strong
+			percent_nodes_strong.copyFrom(&other->percent_nodes_strong);
+		}
+
+		{ //Copying percent_nodes_associated
+			percent_nodes_associated.copyFrom(&other->percent_nodes_associated);
+		}
+
+		{ //Copying percent_nodes_telefonica
+			percent_nodes_telefonica.copyFrom(&other->percent_nodes_telefonica);
+		}
+
+		{ //Copying count_regular_existing_links
+			count_regular_existing_links.copyFrom(&other->count_regular_existing_links);
+		}
+
+		{ //Copying count_regular_possible_links
+			count_regular_possible_links.copyFrom(&other->count_regular_possible_links);
+		}
+
+		{ //Copying count_all_existing_links
+			count_all_existing_links.copyFrom(&other->count_all_existing_links);
+		}
+
+		{ //Copying count_all_possible_links
+			count_all_possible_links.copyFrom(&other->count_all_possible_links);
+		}
+
+		{ //Copying density_regular_members
+			density_regular_members.copyFrom(&other->density_regular_members);
+		}
+
+		{ //Copying density_all_members
+			density_all_members.copyFrom(&other->density_all_members);
+		}
+
+		{ //Copying cohesion_regular_members
+			cohesion_regular_members.copyFrom(&other->cohesion_regular_members);
+		}
+
+		{ //Copying cohesion_all_members
+			cohesion_all_members.copyFrom(&other->cohesion_all_members);
+		}
+
+		{ //Copying value_total
+			value_total.copyFrom(&other->value_total);
+		}
+
+		{ //Copying value_per_node
+			value_per_node.copyFrom(&other->value_per_node);
+		}
+
+		{ //Copying value_per_edge
+			value_per_edge.copyFrom(&other->value_per_edge);
+		}
+
+		{ //Copying reach_one_step
+			reach_one_step.copyFrom(&other->reach_one_step);
+		}
+
+		{ //Copying reach_one_step_competitors
+			reach_one_step_competitors.copyFrom(&other->reach_one_step_competitors);
+		}
+
+		{ //Copying reach_comm_on_step
+			reach_comm_on_step.copyFrom(&other->reach_comm_on_step);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << id_comm.str();
+				{ //Texting id_comm
+			o << id_comm.str();
+		}
 
 		o<<" ";
-		o << count_nodes.str();
+				{ //Texting count_nodes
+			o << count_nodes.str();
+		}
 
 		o<<" ";
-		o << count_nodes_strong.str();
+				{ //Texting count_nodes_strong
+			o << count_nodes_strong.str();
+		}
 
 		o<<" ";
-		o << count_nodes_associated.str();
+				{ //Texting count_nodes_associated
+			o << count_nodes_associated.str();
+		}
 
 		o<<" ";
-		o << count_nodes_competitor.str();
+				{ //Texting count_nodes_competitor
+			o << count_nodes_competitor.str();
+		}
 
 		o<<" ";
-		o << count_nodes_telefonica.str();
+				{ //Texting count_nodes_telefonica
+			o << count_nodes_telefonica.str();
+		}
 
 		o<<" ";
-		o << percent_nodes_competitor.str();
+				{ //Texting percent_nodes_competitor
+			o << percent_nodes_competitor.str();
+		}
 
 		o<<" ";
-		o << percent_nodes_strong.str();
+				{ //Texting percent_nodes_strong
+			o << percent_nodes_strong.str();
+		}
 
 		o<<" ";
-		o << percent_nodes_associated.str();
+				{ //Texting percent_nodes_associated
+			o << percent_nodes_associated.str();
+		}
 
 		o<<" ";
-		o << percent_nodes_telefonica.str();
+				{ //Texting percent_nodes_telefonica
+			o << percent_nodes_telefonica.str();
+		}
 
 		o<<" ";
-		o << count_regular_existing_links.str();
+				{ //Texting count_regular_existing_links
+			o << count_regular_existing_links.str();
+		}
 
 		o<<" ";
-		o << count_regular_possible_links.str();
+				{ //Texting count_regular_possible_links
+			o << count_regular_possible_links.str();
+		}
 
 		o<<" ";
-		o << count_all_existing_links.str();
+				{ //Texting count_all_existing_links
+			o << count_all_existing_links.str();
+		}
 
 		o<<" ";
-		o << count_all_possible_links.str();
+				{ //Texting count_all_possible_links
+			o << count_all_possible_links.str();
+		}
 
 		o<<" ";
-		o << density_regular_members.str();
+				{ //Texting density_regular_members
+			o << density_regular_members.str();
+		}
 
 		o<<" ";
-		o << density_all_members.str();
+				{ //Texting density_all_members
+			o << density_all_members.str();
+		}
 
 		o<<" ";
-		o << cohesion_regular_members.str();
+				{ //Texting cohesion_regular_members
+			o << cohesion_regular_members.str();
+		}
 
 		o<<" ";
-		o << cohesion_all_members.str();
+				{ //Texting cohesion_all_members
+			o << cohesion_all_members.str();
+		}
 
 		o<<" ";
-		o << value_total.str();
+				{ //Texting value_total
+			o << value_total.str();
+		}
 
 		o<<" ";
-		o << value_per_node.str();
+				{ //Texting value_per_node
+			o << value_per_node.str();
+		}
 
 		o<<" ";
-		o << value_per_edge.str();
+				{ //Texting value_per_edge
+			o << value_per_edge.str();
+		}
 
 		o<<" ";
-		o << reach_one_step.str();
+				{ //Texting reach_one_step
+			o << reach_one_step.str();
+		}
 
 		o<<" ";
-		o << reach_one_step_competitors.str();
+				{ //Texting reach_one_step_competitors
+			o << reach_one_step_competitors.str();
+		}
 
 		o<<" ";
-		o << reach_comm_on_step.str();
+				{ //Texting reach_comm_on_step
+			o << reach_comm_on_step.str();
+		}
 
 		o<<" ";
 		return o.str();

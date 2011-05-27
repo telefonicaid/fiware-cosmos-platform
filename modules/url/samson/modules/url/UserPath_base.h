@@ -29,38 +29,59 @@ namespace url{
 
 	int parse(char *data){
 		int offset=0;
-		offset += user.parse(data+offset);
-		offset += path.parse(data+offset);
+		{ //Parsing user
+			offset += user.parse(data+offset);
+		}
+
+		{ //Parsing path
+			offset += path.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += user.serialize(data+offset);
-		offset += path.serialize(data+offset);
+		{ //Serializing user
+			offset += user.serialize(data+offset);
+		}
+
+		{ //Serializing path
+			offset += path.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
+		{ //Sizing user
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing path
+			offset += ::samson::system::String::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return user.hash(max_num_partitions);
+		{ //Partitioning user
+			return user.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing user
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  user compared 
 		{ // comparing path
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  path compared 
 		return 0; //If everything is equal
 	}
 
@@ -71,17 +92,30 @@ namespace url{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
 	void copyFrom( UserPath_base *other ){
-		user.copyFrom(&other->user);
-		path.copyFrom(&other->path);
+		{ //Copying user
+			user.copyFrom(&other->user);
+		}
+
+		{ //Copying path
+			path.copyFrom(&other->path);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << user.str();
+				{ //Texting user
+			o << user.str();
+		}
 
 		o<<" ";
-		o << path.str();
+				{ //Texting path
+			o << path.str();
+		}
 
 		o<<" ";
 		return o.str();

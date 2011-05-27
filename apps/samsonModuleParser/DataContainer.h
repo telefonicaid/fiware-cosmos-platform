@@ -33,9 +33,10 @@ namespace samson
 		
 	 public:
 	  
-		std::string module;					// Module where this data is included ( ejemple sna )
-		std::string name;					// Name of the element inside the module (ejemple CDR)
+		std::string module;					// Module where this data is included ( example sna )
+		std::string name;					// Name of the element inside the module (example CDR)
 		std::vector <DataType> items;		// Data items it includes
+		bool any_optional;					// To signal when at least there is one optional field
 
 		std::set<std::string> includes;		// List of includes necessary for the system
 			
@@ -43,11 +44,17 @@ namespace samson
 		{
 			module = _module;
 			name = _name; 
+			any_optional = false;
 		}
 		
-		void addItem( DataType item )
+		void addItem( DataType item)
 		{
 			items.push_back( item );
+
+			if (item.optional)
+			{
+				any_optional = true;
+			}
 			
 			includes.insert( item.getInclude() );
 			
@@ -62,6 +69,7 @@ namespace samson
 		
 		void printBaseFile(std::string directory)
 		{
+			size_t valMask;
 			
 			if( items.size() == 0)
 			{
@@ -115,14 +123,57 @@ namespace samson
 			
 			file << "\tpublic:\n";
 			
+			//Fields to control optional serializing
+			if (any_optional)
+			{
+				int nOptFields = 0;
+				for (vector <DataType>::iterator field =items.begin() ; field != items.end() ; field++)
+				{
+					if ((*field).optional)
+					{
+						nOptFields++;
+					}
+				}
+
+				valMask = 0;
+
+				if (nOptFields <= 8)
+				{
+					DataType optFilledField(UINT8, NAME_FILLEDOPTIONALFIELDS, false, false, valMask, 0);
+					items.insert(items.begin(), optFilledField);
+				}
+				else if (nOptFields <= 16)
+				{
+					DataType optFilledField(UINT16, NAME_FILLEDOPTIONALFIELDS, false, false, valMask, 0);
+					items.insert(items.begin(), optFilledField);
+				}
+				else if (nOptFields <= 32)
+				{
+					DataType optFilledField(UINT32, NAME_FILLEDOPTIONALFIELDS, false, false, valMask, 0);
+					items.insert(items.begin(), optFilledField);
+				}
+				else if (nOptFields <= 64)
+				{
+					DataType optFilledField(UINT64, NAME_FILLEDOPTIONALFIELDS, false, false, valMask, 0);
+					items.insert(items.begin(), optFilledField);
+				}
+				else
+				{
+					fprintf(stderr, "Optional fields (nOptFields:%d) for more than %lu fields, not yet supported\n", nOptFields, 8*sizeof(size_t));
+					exit(1);
+				}
+			}
+
+
 			//Field definition
 			for (vector <DataType>::iterator field =items.begin() ; field != items.end() ; field++)
 				file << (*field).getDeclaration("\t");
 			file << "\n";
-			
+
 			// Constructor
 			file << "\t"<<name<<"_base() : samson::DataInstance(){\n";
-			for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
+
+			for (vector <DataType>::iterator field = items.begin(); field != items.end() ; field++)
 				file << (*field).getInitialization("\t\t");
 			file << "\t}\n\n";
 			
@@ -136,7 +187,9 @@ namespace samson
 			file << "\tint parse(char *data){\n" ;
 			file << "\t\tint offset=0;\n";
 			for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
+			{
 				file << (*field).getParseCommand("\t\t");
+			}
 			file << "\t\treturn offset;\n";
 			file << "\t}\n\n";
 			
@@ -145,15 +198,27 @@ namespace samson
 			file << "\tint serialize(char *data){\n";
 			file << "\t\tint offset=0;\n";
 			for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
+			{
 				file << (*field).getSerializeCommand("\t\t");
+			}
 			file << "\t\treturn offset;\n";
 			file << "\t}\n\n";
 			
 			//Size
 			file << "\tstatic inline int size(char *data){\n";
 			file << "\t\tint offset=0;\n";
-			for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
-				file << (*field).getSizeCommand("\t\t");
+			for ( vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
+			{
+				if ((any_optional) && ((*field).valMask == 0))
+				{
+					file << "\t\t" << (*field).classNameForType() << " local" << NAME_FILLEDOPTIONALFIELDS << ";\n";
+					file << (*field).getParseCommandIndividual("\t\t", string("local")+string(NAME_FILLEDOPTIONALFIELDS)) << "\n";
+				}
+				else
+				{
+					file << (*field).getSizeCommand("\t\t");
+				}
+			}
 			file << "\t\treturn offset;\n";
 			file << "\t}\n\n";
 			
@@ -161,15 +226,33 @@ namespace samson
 			if( items.size() > 0 ) 
 			{
 				file << "\tint hash(int max_num_partitions){\n";
-				//Only get partition with the fist field
-				file << (*items.begin()).getPartitionCommand("\t\t");
+				//Only get partition with the first field
+				vector <DataType>::iterator field = items.begin();
+				if (any_optional)
+				{
+					field++;
+				}
+				file << (*field).getPartitionCommand("\t\t");
 				file << "\t}\n\n";
 			}
 			
 			//Comparison
 			file << "\tinline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){\n";
+
 			for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
-				file << (*field).getCompareCommand("\t\t");
+			{
+				if ((any_optional) && ((*field).valMask == 0))
+				{
+					file << "\t\t" << (*field).classNameForType() << " local" << NAME_FILLEDOPTIONALFIELDS << "1;\n";
+					file << "\t\t" << (*field).getParseCommandForCompare(string("local")+string(NAME_FILLEDOPTIONALFIELDS)+string("1"), "1") << "\n";
+					file << "\t\t" << (*field).classNameForType() << " local" << NAME_FILLEDOPTIONALFIELDS << "2;\n";
+					file << "\t\t" << (*field).getParseCommandForCompare(string("local")+string(NAME_FILLEDOPTIONALFIELDS)+string("2"), "2") << "\n";
+				}
+				else
+				{
+					file << (*field).getCompareCommand("\t\t");
+				}
+			}
 			file << "\t\treturn 0; //If everything is equal\n";
 			file << "\t}\n\n";
 			
@@ -181,6 +264,15 @@ namespace samson
 			file <<"\t\treturn compare( data1 , data2 , &offset_1 , &offset_2 );\n";
 			file <<"\t}\n\n";
 			
+			//Optional functions
+			for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
+			{
+				file << (*field).getSetAssignedFunction("\t");
+				file << (*field).getGetAssignedFunction("\t");
+				file << "\n";
+			}
+			file << "\n";
+
 			
 			//Vector functions
 			for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)

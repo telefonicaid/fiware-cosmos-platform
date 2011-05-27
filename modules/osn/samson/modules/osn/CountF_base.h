@@ -29,38 +29,59 @@ namespace osn{
 
 	int parse(char *data){
 		int offset=0;
-		offset += count.parse(data+offset);
-		offset += element.parse(data+offset);
+		{ //Parsing count
+			offset += count.parse(data+offset);
+		}
+
+		{ //Parsing element
+			offset += element.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += count.serialize(data+offset);
-		offset += element.serialize(data+offset);
+		{ //Serializing count
+			offset += count.serialize(data+offset);
+		}
+
+		{ //Serializing element
+			offset += element.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::Float::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
+		{ //Sizing count
+			offset += ::samson::system::Float::size(data+offset);
+		}
+
+		{ //Sizing element
+			offset += ::samson::system::String::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return count.hash(max_num_partitions);
+		{ //Partitioning count
+			return count.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing count
 			int tmp = ::samson::system::Float::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  count compared 
 		{ // comparing element
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  element compared 
 		return 0; //If everything is equal
 	}
 
@@ -71,17 +92,30 @@ namespace osn{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
 	void copyFrom( CountF_base *other ){
-		count.copyFrom(&other->count);
-		element.copyFrom(&other->element);
+		{ //Copying count
+			count.copyFrom(&other->count);
+		}
+
+		{ //Copying element
+			element.copyFrom(&other->element);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << count.str();
+				{ //Texting count
+			o << count.str();
+		}
 
 		o<<" ";
-		o << element.str();
+				{ //Texting element
+			o << element.str();
+		}
 
 		o<<" ";
 		return o.str();

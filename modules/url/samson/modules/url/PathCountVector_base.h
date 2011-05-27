@@ -40,11 +40,17 @@ namespace url{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	pathsCountSetLength( _length );
-			for (int i = 0 ; i < (int)pathsCount_length ; i++){
+			for (int i = 0 ; i < (int)pathsCount_length ; i++)
+			{ //Parsing pathsCount
 				offset += pathsCount[i].parse(data+offset);
 			}
+
 		}
-		offset += countRef.parse(data+offset);
+
+		{ //Parsing countRef
+			offset += countRef.parse(data+offset);
+		}
+
 		return offset;
 	}
 
@@ -52,11 +58,17 @@ namespace url{
 		int offset=0;
 		{ //Serialization vector pathsCount
 			offset += samson::staticVarIntSerialize( data+offset , pathsCount_length );
-			for (int i = 0 ; i < (int)pathsCount_length ; i++){
+			for (int i = 0 ; i < (int)pathsCount_length ; i++)
+			{ //Serializing pathsCount
 				offset += pathsCount[i].serialize(data+offset);
 			}
+
 		}
-		offset += countRef.serialize(data+offset);
+
+		{ //Serializing countRef
+			offset += countRef.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
@@ -66,18 +78,28 @@ namespace url{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 			::samson::url::PathCount _tmp;
-			for (int i = 0 ; i < (int)_length ; i++){
+			for (int i = 0 ; i < (int)_length ; i++)
+			{ //Sizing pathsCount
 				offset += ::samson::url::PathCount::size(data+offset);
 			}
+
 		}
-		offset += ::samson::system::UInt::size(data+offset);
+
+		{ //Sizing countRef
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		if( pathsCount_length > 0 ){
-		return pathsCount[0].hash(max_num_partitions);
-		} else return 0;
+		if( pathsCount_length > 0 )
+			{ //Partitioning pathsCount
+				return pathsCount[0].hash(max_num_partitions);
+			}
+
+		else return 0;
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
@@ -87,17 +109,16 @@ namespace url{
 			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
-			for (int i = 0 ; i < (int)_length1 ; i++){
-				{ // comparing pathsCount[i]
-					int tmp = ::samson::url::PathCount::compare(data1,data2,offset1 , offset2);
-					if( tmp != 0) return tmp;
-				}
-			}
-		}
+			for (int i = 0 ; i < (int)_length1 ; i++)
+			{ // comparing pathsCount[i]
+				int tmp = ::samson::url::PathCount::compare(data1,data2,offset1 , offset2);
+				if( tmp != 0) return tmp;
+			}   //  pathsCount[i] compared 
+		}   // vector pathsCount compared 
 		{ // comparing countRef
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  countRef compared 
 		return 0; //If everything is equal
 	}
 
@@ -107,6 +128,9 @@ namespace url{
 		size_t offset_2=0;
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
+
+
+
 
 	void pathsCountSetLength(int _length){
 		if( _length > pathsCount_max_length){ 
@@ -130,25 +154,34 @@ namespace url{
 	}
 
 	void copyFrom( PathCountVector_base *other ){
-			{ // CopyFrom field pathsCount
-				pathsCountSetLength( other->pathsCount_length);
-				for (int i = 0 ; i < pathsCount_length ; i++){
-					pathsCount[i].copyFrom(&other->pathsCount[i]);
-				}
+		{ // CopyFrom field pathsCount
+			pathsCountSetLength( other->pathsCount_length);
+			for (int i = 0 ; i < pathsCount_length ; i++)
+			{ //Copying pathsCount
+				pathsCount[i].copyFrom(&other->pathsCount[i]);
 			}
-		countRef.copyFrom(&other->countRef);
+		}
+
+		{ //Copying countRef
+			countRef.copyFrom(&other->countRef);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
 		{// toString of vector pathsCount
-			for(int i = 0 ; i < pathsCount_length ; i++){
+			for(int i = 0 ; i < pathsCount_length ; i++)
+			{ //Texting pathsCount
 				o << pathsCount[i].str();
-				 o << " ";
 			}
+				 o << " ";
 		}
+
 		o<<" ";
-		o << countRef.str();
+				{ //Texting countRef
+			o << countRef.str();
+		}
 
 		o<<" ";
 		return o.str();

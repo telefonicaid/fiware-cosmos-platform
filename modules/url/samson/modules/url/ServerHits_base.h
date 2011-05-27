@@ -29,38 +29,59 @@ namespace url{
 
 	int parse(char *data){
 		int offset=0;
-		offset += server.parse(data+offset);
-		offset += hits.parse(data+offset);
+		{ //Parsing server
+			offset += server.parse(data+offset);
+		}
+
+		{ //Parsing hits
+			offset += hits.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += server.serialize(data+offset);
-		offset += hits.serialize(data+offset);
+		{ //Serializing server
+			offset += server.serialize(data+offset);
+		}
+
+		{ //Serializing hits
+			offset += hits.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::String::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing server
+			offset += ::samson::system::String::size(data+offset);
+		}
+
+		{ //Sizing hits
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return server.hash(max_num_partitions);
+		{ //Partitioning server
+			return server.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing server
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  server compared 
 		{ // comparing hits
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  hits compared 
 		return 0; //If everything is equal
 	}
 
@@ -71,17 +92,30 @@ namespace url{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
 	void copyFrom( ServerHits_base *other ){
-		server.copyFrom(&other->server);
-		hits.copyFrom(&other->hits);
+		{ //Copying server
+			server.copyFrom(&other->server);
+		}
+
+		{ //Copying hits
+			hits.copyFrom(&other->hits);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << server.str();
+				{ //Texting server
+			o << server.str();
+		}
 
 		o<<" ";
-		o << hits.str();
+				{ //Texting hits
+			o << hits.str();
+		}
 
 		o<<" ";
 		return o.str();

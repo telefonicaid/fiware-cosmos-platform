@@ -28,38 +28,59 @@ namespace txt{
 
 	int parse(char *data){
 		int offset=0;
-		offset += w1.parse(data+offset);
-		offset += w2.parse(data+offset);
+		{ //Parsing w1
+			offset += w1.parse(data+offset);
+		}
+
+		{ //Parsing w2
+			offset += w2.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += w1.serialize(data+offset);
-		offset += w2.serialize(data+offset);
+		{ //Serializing w1
+			offset += w1.serialize(data+offset);
+		}
+
+		{ //Serializing w2
+			offset += w2.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::String::size(data+offset);
-		offset += ::samson::system::String::size(data+offset);
+		{ //Sizing w1
+			offset += ::samson::system::String::size(data+offset);
+		}
+
+		{ //Sizing w2
+			offset += ::samson::system::String::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return w1.hash(max_num_partitions);
+		{ //Partitioning w1
+			return w1.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing w1
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  w1 compared 
 		{ // comparing w2
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  w2 compared 
 		return 0; //If everything is equal
 	}
 
@@ -70,17 +91,30 @@ namespace txt{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
 	void copyFrom( Collocation_base *other ){
-		w1.copyFrom(&other->w1);
-		w2.copyFrom(&other->w2);
+		{ //Copying w1
+			w1.copyFrom(&other->w1);
+		}
+
+		{ //Copying w2
+			w2.copyFrom(&other->w2);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << w1.str();
+				{ //Texting w1
+			o << w1.str();
+		}
 
 		o<<" ";
-		o << w2.str();
+				{ //Texting w2
+			o << w2.str();
+		}
 
 		o<<" ";
 		return o.str();

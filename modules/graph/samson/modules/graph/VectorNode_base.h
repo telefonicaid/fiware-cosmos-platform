@@ -38,10 +38,13 @@ namespace graph{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	itemsSetLength( _length );
-			for (int i = 0 ; i < (int)items_length ; i++){
+			for (int i = 0 ; i < (int)items_length ; i++)
+			{ //Parsing items
 				offset += items[i].parse(data+offset);
 			}
+
 		}
+
 		return offset;
 	}
 
@@ -49,10 +52,13 @@ namespace graph{
 		int offset=0;
 		{ //Serialization vector items
 			offset += samson::staticVarIntSerialize( data+offset , items_length );
-			for (int i = 0 ; i < (int)items_length ; i++){
+			for (int i = 0 ; i < (int)items_length ; i++)
+			{ //Serializing items
 				offset += items[i].serialize(data+offset);
 			}
+
 		}
+
 		return offset;
 	}
 
@@ -62,17 +68,24 @@ namespace graph{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 			::samson::graph::Node _tmp;
-			for (int i = 0 ; i < (int)_length ; i++){
+			for (int i = 0 ; i < (int)_length ; i++)
+			{ //Sizing items
 				offset += ::samson::graph::Node::size(data+offset);
 			}
+
 		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		if( items_length > 0 ){
-		return items[0].hash(max_num_partitions);
-		} else return 0;
+		if( items_length > 0 )
+			{ //Partitioning items
+				return items[0].hash(max_num_partitions);
+			}
+
+		else return 0;
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
@@ -82,13 +95,12 @@ namespace graph{
 			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
-			for (int i = 0 ; i < (int)_length1 ; i++){
-				{ // comparing items[i]
-					int tmp = ::samson::graph::Node::compare(data1,data2,offset1 , offset2);
-					if( tmp != 0) return tmp;
-				}
-			}
-		}
+			for (int i = 0 ; i < (int)_length1 ; i++)
+			{ // comparing items[i]
+				int tmp = ::samson::graph::Node::compare(data1,data2,offset1 , offset2);
+				if( tmp != 0) return tmp;
+			}   //  items[i] compared 
+		}   // vector items compared 
 		return 0; //If everything is equal
 	}
 
@@ -98,6 +110,8 @@ namespace graph{
 		size_t offset_2=0;
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
+
+
 
 	void itemsSetLength(int _length){
 		if( _length > items_max_length){ 
@@ -121,22 +135,26 @@ namespace graph{
 	}
 
 	void copyFrom( VectorNode_base *other ){
-			{ // CopyFrom field items
-				itemsSetLength( other->items_length);
-				for (int i = 0 ; i < items_length ; i++){
-					items[i].copyFrom(&other->items[i]);
-				}
+		{ // CopyFrom field items
+			itemsSetLength( other->items_length);
+			for (int i = 0 ; i < items_length ; i++)
+			{ //Copying items
+				items[i].copyFrom(&other->items[i]);
 			}
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
 		{// toString of vector items
-			for(int i = 0 ; i < items_length ; i++){
+			for(int i = 0 ; i < items_length ; i++)
+			{ //Texting items
 				o << items[i].str();
-				 o << " ";
 			}
+				 o << " ";
 		}
+
 		o<<" ";
 		return o.str();
 	}

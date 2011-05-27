@@ -7,87 +7,126 @@
  *
  * ***************************************************************************/
 
-
+#include <stdio.h>
+#include <stdlib.h>					// exit()
 #include "DataContainer.h"
 #include "DataCreator.h"
 #include <cstdio>
 #include <map>
 #include "AUTockenizer.h"	// AUTockenizer
-#include "logMsg/logMsg.h"					 // LM_M()
 
-namespace samson {
+namespace samson
+{
 
-	
-	
-	bool DataContainer::parse( AUTockenizer *module_creator ,  int begin , int end )
+
+
+bool DataContainer::parse( AUTockenizer *module_creator ,  int begin , int end )
+{
+
+	int pos = begin;
+	bool optionalData = false;
+	bool firstFieldInData = true;
+	size_t valMask = 1;
+
+	while( pos < end )
 	{
-
-		int pos = begin;
-		
-		while( pos < end )
+		if( module_creator->isSpecial( pos ) )
 		{
-			if( module_creator->isSpecial( pos ) )
-				LM_X(1,("Error parsing data-type definition"));
-			
-			std::string mainCommand = module_creator->itemAtPos( pos++ );
-		
-			if( mainCommand == "vector" )
+			fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+			exit (1);
+		}
+
+		std::string mainCommand = module_creator->itemAtPos(pos++).str;
+
+		optionalData = false;
+		if (mainCommand == "optional")
+		{
+			if (firstFieldInData)
 			{
-				//Vector fiels
-				
-				
-				if( module_creator->isSpecial( pos ) )
-					LM_X(1,("Error parsing data-type definition"));
-
-				std::string _full_type = module_creator->itemAtPos( pos++ );
-				
-				if( module_creator->isSpecial( pos ) )
-					LM_X(1,("Error parsing data-type definition"));
-
-				std::string _name = module_creator->itemAtPos( pos++ );
-				
-				if( !module_creator->isSemiColom( pos ) )
-					LM_X(1,("Error parsing data-type definition"));
-
-				pos++;
-				
-				
-				DataType data_type( _full_type , _name , true);
-				addItem( data_type );
-				
+				fprintf(stderr, "samsonModuleParser: Error, no optional field allowed if first in data structure (line:%d).\a\a\a\n", module_creator->items[pos].line);
+				exit (1);
 			}
 			else
 			{
-				//Normal fiels
-				std::string  _full_type = mainCommand;
-
-				if( module_creator->isSpecial( pos ) )
-					LM_X(1,("Error parsing data-type definition."));
-
-				std::string _name = module_creator->itemAtPos( pos++ );
-
-				if( !module_creator->isSemiColom( pos ) )
-				{
-					fprintf(stderr, "Error parsing document at Data %s (%s %s) \n", name.c_str() ,  _full_type.c_str() , _name.c_str());
-					exit(1);
-				}
-				pos++;
-				
-				DataType data_type( _full_type , _name , false);
-				addItem( data_type );
-				
+				optionalData = true;
 			}
-			
+			mainCommand = module_creator->itemAtPos(pos++).str;
 		}
-		
-		if( pos != (end+1))
-			LM_X(1,("Error parsing data-type definition. Number of items is not correct at the end of parsing"));
 
-									  
+		if( mainCommand == "vector" )
+		{
+			//Vector fields
+
+
+			if( module_creator->isSpecial(pos) )
+			{
+				fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+				exit (1);
+			}
+
+			std::string _full_type = module_creator->itemAtPos(pos++).str;
+
+			if( module_creator->isSpecial( pos ) )
+			{
+				fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+				exit (1);
+			}
+
+			std::string _name = module_creator->itemAtPos(pos++).str;
+
+			if( !module_creator->isSemiColom( pos ) )
+			{
+				fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+				exit (1);
+			}
+
+			pos++;
+
+
+			DataType data_type( _full_type , _name , true, optionalData, valMask, module_creator->items[pos].line);
+			addItem( data_type);
+		}
+		else
+		{
+			//Normal fields
+			std::string  _full_type = mainCommand;
+
+			if( module_creator->isSpecial( pos ) )
+			{
+				fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+				exit (1);
+			}
+
+			std::string _name = module_creator->itemAtPos(pos++).str;
+
+			if( !module_creator->isSemiColom( pos ) )
+			{
+				fprintf(stderr, "samsonModuleParser: Error parsing document at Data %s (%s %s), line:%d\n", name.c_str() ,  _full_type.c_str() , _name.c_str(), module_creator->items[pos].line);
+				exit(1);
+			}
+			pos++;
+
+			DataType data_type( _full_type , _name , false, optionalData, valMask, module_creator->items[pos].line);
+			addItem( data_type);
+		}
+		firstFieldInData = false;
+		if (optionalData)
+		{
+			valMask <<= 1;
+		}
+	}
+
+	if( pos != (end+1))
+	{
+		fprintf(stderr, "samsonModuleParser: Error parsing data-type definition. Number of items is not correct at the end of parsing, ends at line:%d", module_creator->items[pos].line);
+		exit (1);
+	}
+
+
 
 	//How to parse an element like this
 	return true;
 
-	}
+}
 }
 

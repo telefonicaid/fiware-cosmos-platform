@@ -1,5 +1,5 @@
-mkdir -p eclipse_proj
-cd eclipse_proj 2> /dev/null
+mkdir -p libs_eclipse_proj
+cd libs_eclipse_proj 2> /dev/null
 if [ "$?" != 0 ]
 then
 	echo "You need be on trunk to build"
@@ -7,5 +7,16 @@ then
 fi
 
 export PATH=/usr/local/bin:$PATH
-cmake .. -DCMAKE_BUILD_TYPE=DEBUG -G "Eclipse CDT4 - Unix Makefiles"
+cmake ../libs -DCMAKE_BUILD_TYPE=DEBUG -G "Eclipse CDT4 - Unix Makefiles"
 
+cd ..
+mkdir -p apps_eclipse_proj
+cd apps_eclipse_proj 2> /dev/null
+if [ "$?" != 0 ]
+then
+	echo "You need be on trunk to build"
+	exit 1
+fi
+
+export PATH=/usr/local/bin:$PATH
+cmake ../apps -DCMAKE_BUILD_TYPE=DEBUG -G "Eclipse CDT4 - Unix Makefiles"

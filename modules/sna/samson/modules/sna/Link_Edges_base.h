@@ -28,38 +28,59 @@ namespace sna{
 
 	int parse(char *data){
 		int offset=0;
-		offset += phoneA.parse(data+offset);
-		offset += phoneB.parse(data+offset);
+		{ //Parsing phoneA
+			offset += phoneA.parse(data+offset);
+		}
+
+		{ //Parsing phoneB
+			offset += phoneB.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += phoneA.serialize(data+offset);
-		offset += phoneB.serialize(data+offset);
+		{ //Serializing phoneA
+			offset += phoneA.serialize(data+offset);
+		}
+
+		{ //Serializing phoneB
+			offset += phoneB.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing phoneA
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing phoneB
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return phoneA.hash(max_num_partitions);
+		{ //Partitioning phoneA
+			return phoneA.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing phoneA
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  phoneA compared 
 		{ // comparing phoneB
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  phoneB compared 
 		return 0; //If everything is equal
 	}
 
@@ -70,17 +91,30 @@ namespace sna{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
 	void copyFrom( Link_Edges_base *other ){
-		phoneA.copyFrom(&other->phoneA);
-		phoneB.copyFrom(&other->phoneB);
+		{ //Copying phoneA
+			phoneA.copyFrom(&other->phoneA);
+		}
+
+		{ //Copying phoneB
+			phoneB.copyFrom(&other->phoneB);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << phoneA.str();
+				{ //Texting phoneA
+			o << phoneA.str();
+		}
 
 		o<<" ";
-		o << phoneB.str();
+				{ //Texting phoneB
+			o << phoneB.str();
+		}
 
 		o<<" ";
 		return o.str();

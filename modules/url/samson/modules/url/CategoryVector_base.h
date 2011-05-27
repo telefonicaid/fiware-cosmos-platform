@@ -40,11 +40,17 @@ namespace url{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	categorySetLength( _length );
-			for (int i = 0 ; i < (int)category_length ; i++){
+			for (int i = 0 ; i < (int)category_length ; i++)
+			{ //Parsing category
 				offset += category[i].parse(data+offset);
 			}
+
 		}
-		offset += fixed.parse(data+offset);
+
+		{ //Parsing fixed
+			offset += fixed.parse(data+offset);
+		}
+
 		return offset;
 	}
 
@@ -52,11 +58,17 @@ namespace url{
 		int offset=0;
 		{ //Serialization vector category
 			offset += samson::staticVarIntSerialize( data+offset , category_length );
-			for (int i = 0 ; i < (int)category_length ; i++){
+			for (int i = 0 ; i < (int)category_length ; i++)
+			{ //Serializing category
 				offset += category[i].serialize(data+offset);
 			}
+
 		}
-		offset += fixed.serialize(data+offset);
+
+		{ //Serializing fixed
+			offset += fixed.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
@@ -66,18 +78,28 @@ namespace url{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 			::samson::url::Category _tmp;
-			for (int i = 0 ; i < (int)_length ; i++){
+			for (int i = 0 ; i < (int)_length ; i++)
+			{ //Sizing category
 				offset += ::samson::url::Category::size(data+offset);
 			}
+
 		}
-		offset += ::samson::system::UInt8::size(data+offset);
+
+		{ //Sizing fixed
+			offset += ::samson::system::UInt8::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		if( category_length > 0 ){
-		return category[0].hash(max_num_partitions);
-		} else return 0;
+		if( category_length > 0 )
+			{ //Partitioning category
+				return category[0].hash(max_num_partitions);
+			}
+
+		else return 0;
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
@@ -87,17 +109,16 @@ namespace url{
 			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
-			for (int i = 0 ; i < (int)_length1 ; i++){
-				{ // comparing category[i]
-					int tmp = ::samson::url::Category::compare(data1,data2,offset1 , offset2);
-					if( tmp != 0) return tmp;
-				}
-			}
-		}
+			for (int i = 0 ; i < (int)_length1 ; i++)
+			{ // comparing category[i]
+				int tmp = ::samson::url::Category::compare(data1,data2,offset1 , offset2);
+				if( tmp != 0) return tmp;
+			}   //  category[i] compared 
+		}   // vector category compared 
 		{ // comparing fixed
 			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  fixed compared 
 		return 0; //If everything is equal
 	}
 
@@ -107,6 +128,9 @@ namespace url{
 		size_t offset_2=0;
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
+
+
+
 
 	void categorySetLength(int _length){
 		if( _length > category_max_length){ 
@@ -130,25 +154,34 @@ namespace url{
 	}
 
 	void copyFrom( CategoryVector_base *other ){
-			{ // CopyFrom field category
-				categorySetLength( other->category_length);
-				for (int i = 0 ; i < category_length ; i++){
-					category[i].copyFrom(&other->category[i]);
-				}
+		{ // CopyFrom field category
+			categorySetLength( other->category_length);
+			for (int i = 0 ; i < category_length ; i++)
+			{ //Copying category
+				category[i].copyFrom(&other->category[i]);
 			}
-		fixed.copyFrom(&other->fixed);
+		}
+
+		{ //Copying fixed
+			fixed.copyFrom(&other->fixed);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
 		{// toString of vector category
-			for(int i = 0 ; i < category_length ; i++){
+			for(int i = 0 ; i < category_length ; i++)
+			{ //Texting category
 				o << category[i].str();
-				 o << " ";
 			}
+				 o << " ";
 		}
+
 		o<<" ";
-		o << fixed.str();
+				{ //Texting fixed
+			o << fixed.str();
+		}
 
 		o<<" ";
 		return o.str();

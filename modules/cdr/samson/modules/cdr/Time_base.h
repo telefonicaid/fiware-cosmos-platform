@@ -29,45 +29,75 @@ namespace cdr{
 
 	int parse(char *data){
 		int offset=0;
-		offset += hour.parse(data+offset);
-		offset += minute.parse(data+offset);
-		offset += seconds.parse(data+offset);
+		{ //Parsing hour
+			offset += hour.parse(data+offset);
+		}
+
+		{ //Parsing minute
+			offset += minute.parse(data+offset);
+		}
+
+		{ //Parsing seconds
+			offset += seconds.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += hour.serialize(data+offset);
-		offset += minute.serialize(data+offset);
-		offset += seconds.serialize(data+offset);
+		{ //Serializing hour
+			offset += hour.serialize(data+offset);
+		}
+
+		{ //Serializing minute
+			offset += minute.serialize(data+offset);
+		}
+
+		{ //Serializing seconds
+			offset += seconds.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt8::size(data+offset);
-		offset += ::samson::system::UInt8::size(data+offset);
-		offset += ::samson::system::UInt8::size(data+offset);
+		{ //Sizing hour
+			offset += ::samson::system::UInt8::size(data+offset);
+		}
+
+		{ //Sizing minute
+			offset += ::samson::system::UInt8::size(data+offset);
+		}
+
+		{ //Sizing seconds
+			offset += ::samson::system::UInt8::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return hour.hash(max_num_partitions);
+		{ //Partitioning hour
+			return hour.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing hour
 			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  hour compared 
 		{ // comparing minute
 			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  minute compared 
 		{ // comparing seconds
 			int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  seconds compared 
 		return 0; //If everything is equal
 	}
 
@@ -78,21 +108,40 @@ namespace cdr{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
 	void copyFrom( Time_base *other ){
-		hour.copyFrom(&other->hour);
-		minute.copyFrom(&other->minute);
-		seconds.copyFrom(&other->seconds);
+		{ //Copying hour
+			hour.copyFrom(&other->hour);
+		}
+
+		{ //Copying minute
+			minute.copyFrom(&other->minute);
+		}
+
+		{ //Copying seconds
+			seconds.copyFrom(&other->seconds);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << hour.str();
+				{ //Texting hour
+			o << hour.str();
+		}
 
 		o<<" ";
-		o << minute.str();
+				{ //Texting minute
+			o << minute.str();
+		}
 
 		o<<" ";
-		o << seconds.str();
+				{ //Texting seconds
+			o << seconds.str();
+		}
 
 		o<<" ";
 		return o.str();

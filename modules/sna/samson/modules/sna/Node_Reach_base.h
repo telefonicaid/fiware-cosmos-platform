@@ -31,52 +31,91 @@ namespace sna{
 
 	int parse(char *data){
 		int offset=0;
-		offset += node_id.parse(data+offset);
-		offset += node_reached.parse(data+offset);
-		offset += weight.parse(data+offset);
-		offset += flags.parse(data+offset);
+		{ //Parsing node_id
+			offset += node_id.parse(data+offset);
+		}
+
+		{ //Parsing node_reached
+			offset += node_reached.parse(data+offset);
+		}
+
+		{ //Parsing weight
+			offset += weight.parse(data+offset);
+		}
+
+		{ //Parsing flags
+			offset += flags.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += node_id.serialize(data+offset);
-		offset += node_reached.serialize(data+offset);
-		offset += weight.serialize(data+offset);
-		offset += flags.serialize(data+offset);
+		{ //Serializing node_id
+			offset += node_id.serialize(data+offset);
+		}
+
+		{ //Serializing node_reached
+			offset += node_reached.serialize(data+offset);
+		}
+
+		{ //Serializing weight
+			offset += weight.serialize(data+offset);
+		}
+
+		{ //Serializing flags
+			offset += flags.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::Int8::size(data+offset);
+		{ //Sizing node_id
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing node_reached
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing weight
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing flags
+			offset += ::samson::system::Int8::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return node_id.hash(max_num_partitions);
+		{ //Partitioning node_id
+			return node_id.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing node_id
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  node_id compared 
 		{ // comparing node_reached
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  node_reached compared 
 		{ // comparing weight
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  weight compared 
 		{ // comparing flags
 			int tmp = ::samson::system::Int8::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  flags compared 
 		return 0; //If everything is equal
 	}
 
@@ -87,25 +126,50 @@ namespace sna{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
+
 	void copyFrom( Node_Reach_base *other ){
-		node_id.copyFrom(&other->node_id);
-		node_reached.copyFrom(&other->node_reached);
-		weight.copyFrom(&other->weight);
-		flags.copyFrom(&other->flags);
+		{ //Copying node_id
+			node_id.copyFrom(&other->node_id);
+		}
+
+		{ //Copying node_reached
+			node_reached.copyFrom(&other->node_reached);
+		}
+
+		{ //Copying weight
+			weight.copyFrom(&other->weight);
+		}
+
+		{ //Copying flags
+			flags.copyFrom(&other->flags);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << node_id.str();
+				{ //Texting node_id
+			o << node_id.str();
+		}
 
 		o<<" ";
-		o << node_reached.str();
+				{ //Texting node_reached
+			o << node_reached.str();
+		}
 
 		o<<" ";
-		o << weight.str();
+				{ //Texting weight
+			o << weight.str();
+		}
 
 		o<<" ";
-		o << flags.str();
+				{ //Texting flags
+			o << flags.str();
+		}
 
 		o<<" ";
 		return o.str();

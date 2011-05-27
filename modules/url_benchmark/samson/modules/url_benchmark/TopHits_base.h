@@ -38,10 +38,13 @@ namespace url_benchmark{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 		 	hitSetLength( _length );
-			for (int i = 0 ; i < (int)hit_length ; i++){
+			for (int i = 0 ; i < (int)hit_length ; i++)
+			{ //Parsing hit
 				offset += hit[i].parse(data+offset);
 			}
+
 		}
+
 		return offset;
 	}
 
@@ -49,10 +52,13 @@ namespace url_benchmark{
 		int offset=0;
 		{ //Serialization vector hit
 			offset += samson::staticVarIntSerialize( data+offset , hit_length );
-			for (int i = 0 ; i < (int)hit_length ; i++){
+			for (int i = 0 ; i < (int)hit_length ; i++)
+			{ //Serializing hit
 				offset += hit[i].serialize(data+offset);
 			}
+
 		}
+
 		return offset;
 	}
 
@@ -62,17 +68,24 @@ namespace url_benchmark{
 			size_t _length;
 			offset += samson::staticVarIntParse( data+offset , &_length );
 			::samson::url_benchmark::URLHit _tmp;
-			for (int i = 0 ; i < (int)_length ; i++){
+			for (int i = 0 ; i < (int)_length ; i++)
+			{ //Sizing hit
 				offset += ::samson::url_benchmark::URLHit::size(data+offset);
 			}
+
 		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		if( hit_length > 0 ){
-		return hit[0].hash(max_num_partitions);
-		} else return 0;
+		if( hit_length > 0 )
+			{ //Partitioning hit
+				return hit[0].hash(max_num_partitions);
+			}
+
+		else return 0;
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
@@ -82,13 +95,12 @@ namespace url_benchmark{
 			*offset2 += samson::staticVarIntParse( data2+(*offset2) , &_length2 );
 			if( _length1 < _length2 ) return -1;
 			if( _length1 > _length2 ) return 1;
-			for (int i = 0 ; i < (int)_length1 ; i++){
-				{ // comparing hit[i]
-					int tmp = ::samson::url_benchmark::URLHit::compare(data1,data2,offset1 , offset2);
-					if( tmp != 0) return tmp;
-				}
-			}
-		}
+			for (int i = 0 ; i < (int)_length1 ; i++)
+			{ // comparing hit[i]
+				int tmp = ::samson::url_benchmark::URLHit::compare(data1,data2,offset1 , offset2);
+				if( tmp != 0) return tmp;
+			}   //  hit[i] compared 
+		}   // vector hit compared 
 		return 0; //If everything is equal
 	}
 
@@ -98,6 +110,8 @@ namespace url_benchmark{
 		size_t offset_2=0;
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
+
+
 
 	void hitSetLength(int _length){
 		if( _length > hit_max_length){ 
@@ -121,22 +135,26 @@ namespace url_benchmark{
 	}
 
 	void copyFrom( TopHits_base *other ){
-			{ // CopyFrom field hit
-				hitSetLength( other->hit_length);
-				for (int i = 0 ; i < hit_length ; i++){
-					hit[i].copyFrom(&other->hit[i]);
-				}
+		{ // CopyFrom field hit
+			hitSetLength( other->hit_length);
+			for (int i = 0 ; i < hit_length ; i++)
+			{ //Copying hit
+				hit[i].copyFrom(&other->hit[i]);
 			}
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
 		{// toString of vector hit
-			for(int i = 0 ; i < hit_length ; i++){
+			for(int i = 0 ; i < hit_length ; i++)
+			{ //Texting hit
 				o << hit[i].str();
-				 o << " ";
 			}
+				 o << " ";
 		}
+
 		o<<" ";
 		return o.str();
 	}

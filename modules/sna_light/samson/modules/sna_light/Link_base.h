@@ -30,45 +30,75 @@ namespace sna_light{
 
 	int parse(char *data){
 		int offset=0;
-		offset += id.parse(data+offset);
-		offset += weight.parse(data+offset);
-		offset += dir.parse(data+offset);
+		{ //Parsing id
+			offset += id.parse(data+offset);
+		}
+
+		{ //Parsing weight
+			offset += weight.parse(data+offset);
+		}
+
+		{ //Parsing dir
+			offset += dir.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += id.serialize(data+offset);
-		offset += weight.serialize(data+offset);
-		offset += dir.serialize(data+offset);
+		{ //Serializing id
+			offset += id.serialize(data+offset);
+		}
+
+		{ //Serializing weight
+			offset += weight.serialize(data+offset);
+		}
+
+		{ //Serializing dir
+			offset += dir.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::Float::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing id
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing weight
+			offset += ::samson::system::Float::size(data+offset);
+		}
+
+		{ //Sizing dir
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return id.hash(max_num_partitions);
+		{ //Partitioning id
+			return id.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing id
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  id compared 
 		{ // comparing weight
 			int tmp = ::samson::system::Float::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  weight compared 
 		{ // comparing dir
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  dir compared 
 		return 0; //If everything is equal
 	}
 
@@ -79,21 +109,40 @@ namespace sna_light{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
+
 	void copyFrom( Link_base *other ){
-		id.copyFrom(&other->id);
-		weight.copyFrom(&other->weight);
-		dir.copyFrom(&other->dir);
+		{ //Copying id
+			id.copyFrom(&other->id);
+		}
+
+		{ //Copying weight
+			weight.copyFrom(&other->weight);
+		}
+
+		{ //Copying dir
+			dir.copyFrom(&other->dir);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << id.str();
+				{ //Texting id
+			o << id.str();
+		}
 
 		o<<" ";
-		o << weight.str();
+				{ //Texting weight
+			o << weight.str();
+		}
 
 		o<<" ";
-		o << dir.str();
+				{ //Texting dir
+			o << dir.str();
+		}
 
 		o<<" ";
 		return o.str();

@@ -28,38 +28,59 @@ namespace system{
 
 	int parse(char *data){
 		int offset=0;
-		offset += value_1.parse(data+offset);
-		offset += value_2.parse(data+offset);
+		{ //Parsing value_1
+			offset += value_1.parse(data+offset);
+		}
+
+		{ //Parsing value_2
+			offset += value_2.parse(data+offset);
+		}
+
 		return offset;
 	}
 
 	int serialize(char *data){
 		int offset=0;
-		offset += value_1.serialize(data+offset);
-		offset += value_2.serialize(data+offset);
+		{ //Serializing value_1
+			offset += value_1.serialize(data+offset);
+		}
+
+		{ //Serializing value_2
+			offset += value_2.serialize(data+offset);
+		}
+
 		return offset;
 	}
 
 	static inline int size(char *data){
 		int offset=0;
-		offset += ::samson::system::UInt::size(data+offset);
-		offset += ::samson::system::UInt::size(data+offset);
+		{ //Sizing value_1
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		{ //Sizing value_2
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
 		return offset;
 	}
 
 	int hash(int max_num_partitions){
-		return value_1.hash(max_num_partitions);
+		{ //Partitioning value_1
+			return value_1.hash(max_num_partitions);
+		}
+
 	}
 
 	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
 		{ // comparing value_1
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  value_1 compared 
 		{ // comparing value_2
 			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
-		}
+		}   //  value_2 compared 
 		return 0; //If everything is equal
 	}
 
@@ -70,17 +91,30 @@ namespace system{
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+
+
+
 	void copyFrom( UInt2_base *other ){
-		value_1.copyFrom(&other->value_1);
-		value_2.copyFrom(&other->value_2);
+		{ //Copying value_1
+			value_1.copyFrom(&other->value_1);
+		}
+
+		{ //Copying value_2
+			value_2.copyFrom(&other->value_2);
+		}
+
 	};
 
 	std::string str(){
 		std::ostringstream o;
-		o << value_1.str();
+				{ //Texting value_1
+			o << value_1.str();
+		}
 
 		o<<" ";
-		o << value_2.str();
+				{ //Texting value_2
+			o << value_2.str();
+		}
 
 		o<<" ";
 		return o.str();

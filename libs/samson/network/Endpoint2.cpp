@@ -26,17 +26,19 @@
 #include <unistd.h>             // close
 #include <fcntl.h>              // fcntl, F_SETFD
 
-#include "logMsg/logMsg.h"             // LM_*
-#include "logMsg/traceLevels.h"        // Trace Levels
-
-#include "samson/common/ports.h"              // WORKER_PORT, ...
-#include "samson/network/Packet.h"             // Packet
-#include "HostMgr.h"            // HostMgr
-#include "samson/network/Message.h"            // Message::Code, Message::Type
-#include "samson/network/EndpointManager.h"    // EndpointManager
-#include "samson/network/Endpoint2.h"          // Own interface
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"
 
 #include "samson/common/MemoryTags.h"         // MemoryOutputDisk
+#include "samson/common/ports.h"              // WORKER_PORT, ...
+
+#include "Packet.h"
+#include "HostMgr.h"
+#include "Message.h"
+#include "EndpointManager.h"
+#include "Endpoint2.h"
+
+
 
 namespace samson
 {
@@ -112,18 +114,19 @@ Endpoint2::Endpoint2
 	int               _wFd
 )
 {
-	epMgr            = _epMgr;
-	type             = _type;
-	id               = _id;
-	host             = _host;
-	rFd              = _rFd;
-	wFd              = _wFd;
-	port             = _port;
-	state            = Unused;
-	useSenderThread  = false;
+	epMgr               = _epMgr;
+	type                = _type;
+	id                  = _id;
+	host                = _host;
+	rFd                 = _rFd;
+	wFd                 = _wFd;
+	port                = _port;
+	state               = Unused;
+	useSenderThread     = false;
+	idInEndpointVector  = -8;    // -8 meaning 'undefined' ...
 
-	name             = NULL;
-	alias            = NULL;
+	name                = NULL;
+	alias               = NULL;
 	
 	memset(&sockin, 0, sizeof(sockin));
 
@@ -475,6 +478,9 @@ void Endpoint2::ack(Message::MessageCode code, void* data, int dataLen)
 }
 
 
+static void badFromId(int fromId)
+{
+}
 
 /* ****************************************************************************
 *
@@ -482,11 +488,20 @@ void Endpoint2::ack(Message::MessageCode code, void* data, int dataLen)
 */
 void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 {
+	if ((packetP->fromId < 0) || (unsigned int) packetP->fromId >= epMgr->endpoints)
+	{
+		if (packetP->fromId != -9)
+		{
+			badFromId(packetP->fromId);
+			LM_X(1, ("Bad fromId (%d) in packet"));
+		}
+	}
+
 	if ((host == epMgr->me->host) && (type == epMgr->me->typeGet()))
 	{
 		LM_T(LmtMsgLoopBack, ("Looping back a packet meant for myself (and calling psi->notificationSent ...)"));
 		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("Np packetReceiver - no real use to contiune, this is a SW bug!"));
+			LM_X(1, ("No packetReceiver - no real use to contiune, this is a SW bug!"));
 		epMgr->packetReceiver->_receive(packetP);
 		if (psi)
 			psi->notificationSent(0, true);
@@ -512,7 +527,9 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 	}
 }
 
-
+static void badMsgType(Message::MessageType type)
+{
+}
 
 /* ****************************************************************************
 *
@@ -529,6 +546,16 @@ Endpoint2::Status Endpoint2::realsend
 {
 	Status           s;
 	Message::Header  header;
+
+	//
+	// Sanity check
+	//
+	if ((type != Message::Msg) && (type != Message::Evt) && (type != Message::Ack) && (type != Message::Nak))
+	{
+		badMsgType(type);
+		// LM_RE(BadMsgType, ("Bad message type: 0x%x", type));
+		LM_X(1, ("Bad message type: 0x%x", type));
+	}
 
 	if (code == Message::Die)
 		LM_W(("Sending a Die '%s' to %s@%s", messageType(type), nameGet(), hostname()));
@@ -872,7 +899,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	Message::Header      header;
 	void*                dataP    = NULL;
 	long                 dataLen  = 0;
-	Packet               packet(Message::Unknown);
+	Packet*              packetP = new Packet(Message::Unknown);
 	Endpoint2::Status    s;
 	Message::HelloData*  helloP;
 
@@ -899,12 +926,16 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	if (s != OK)
 		LM_E(("msgAwait: %s - what do I do ... ?", status(s)));
 
-	s = receive(&header, &dataP, &dataLen, &packet);
+	s = receive(&header, &dataP, &dataLen, packetP);
 	if (s != 0)
 		LM_RE(s, ("receive error '%s'", status(s)));
 
+	packetP->msgCode = header.code;
+	packetP->msgType = header.type;
+	packetP->fromId  = idInEndpointVector;
+
 	if (type == Unhelloed)
-		return msgTreat2(&header, dataP, dataLen, &packet);
+		return msgTreat2(&header, dataP, dataLen, packetP);
 
 	switch (header.code)
 	{
@@ -927,6 +958,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		if ((epMgr->me->type == Spawner) || (epMgr->me->type == Setup) || (epMgr->me->type == Controller))
 		{
 			LM_T(LmtSenderThread, ("I'm a Spawner/Controller/Setup - I don't use sender/reader threads!"));
+			delete packetP;
 			return OK;
 		}
 
@@ -941,12 +973,14 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 			if ((ps = pthread_create(&tid, NULL, writerThread, this)) != 0)
 			{
 				LM_E(("Creating writer thread: pthread_create returned %d for %s@%s", ps, name, host->name));
+				delete packetP;
 				return PThreadError;
 			}
 
 			if ((ps = pthread_create(&tid, NULL, readerThread, this)) != 0)
 			{
 				LM_E(("Creating reader thread: pthread_create returned %d for %s@%s", ps, name, host->name));
+				delete packetP;
 				return PThreadError;
 			}
 		}
@@ -954,12 +988,17 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 
 	default:
 		LM_T(LmtMsgTreat, ("Cannot treat '%s' '%s' (code %d), passing it to msgTreat2", messageCode(header.code), messageType(header.type), header.code));
-		s = msgTreat2(&header, dataP, dataLen, &packet);
+		s = msgTreat2(&header, dataP, dataLen, packetP);
 		if (s != OK)
+		{
+			delete packetP;
 			LM_RE(s, ("msgTreat2: %s", s));
+		}
+		return OK; // To avoid to delete packetP ...
 		break;
 	}
 
+	delete packetP;
 	return OK;
 }
 
@@ -1019,6 +1058,7 @@ const char* Endpoint2::status(Status s)
 
 	case NullAlias:            return "Null Alias";
 	case BadAlias:             return "Bad Alias";
+	case BadMsgType:           return "BadMsgType";
 	case NullHost:             return "Null Host";
 	case BadHost:              return "Bad Host";
 	case NullPort:             return "Null Port";

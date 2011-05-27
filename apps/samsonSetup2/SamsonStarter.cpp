@@ -7,10 +7,10 @@
 * CREATION DATE            May 04 2011
 *
 */
-#include "samson/network/Network2.h"           // Network2
+#include "samson/network/Network2.h"          // Network2
 #include "samson/common/Process.h"            // Process, ProcessVector
 #include "samson/common/ports.h"              // CONTROLLER_PORT, WORKER_PORT
-#include "SamsonStarter.h"      // Own interface
+#include "SamsonStarter.h"                    // Own interface
 
 
 
@@ -33,12 +33,12 @@ SamsonStarter::SamsonStarter()
 */
 void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const char* ips[])
 {
-   int                size = sizeof(samson::ProcessVector) + workers * sizeof(samson::Process) + sizeof(samson::Process);
-	Host*              hostP;
+	int                    size = sizeof(samson::ProcessVector) + workers * sizeof(samson::Process) + sizeof(samson::Process);
+	Host*                  hostP;
 	samson::ProcessVector* pv;
 	samson::Process*       p;
 	samson::Endpoint2*     ep;
-	int                spawnerId = 0;
+	int                    spawnerId = 0;
 
 	if ((long) ips[0] != workers)
 		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (long) ips[0]));
@@ -125,7 +125,7 @@ samson::Endpoint2::Status SamsonStarter::connect(void)
 		if (ep == NULL)
 			LM_X(1, ("Cannot find Spawner %d", ix));
 
-		LM_M(("Connecting to Spawner in %s", ep->hostGet()->name));
+		LM_T(LmtConnect, ("Connecting to Spawner in %s", ep->hostGet()->name));
 		if ((s = ep->connect()) != samson::Endpoint2::OK)
 			LM_RE(s, ("Error connecting to %s %d in %s: %s", ep->nameGet(), ep->idGet(), ep->hostname(), ep->status(s)));
 	}

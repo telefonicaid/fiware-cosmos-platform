@@ -147,7 +147,7 @@ int Network2::controllerGetIdentifier(void)
 {
 	int ix;
 
-	epMgr->lookup(Endpoint2::Controller, 0, &ix);
+	epMgr->lookup(Endpoint2::Controller, -1, &ix);
 
 	LM_T(LmtIdIx, ("returning ix %d", ix));
 	return ix;
@@ -222,7 +222,7 @@ int Network2::getWorkerFromIdentifier(int endpointIx)
 	id = ep->idGet();
 	LM_T(LmtIdIx, ("returning worker id %d for endpointIx %d", id, endpointIx));
 
-	return id;
+	return id - 1;
 }
 
 
@@ -246,6 +246,10 @@ size_t Network2::send(PacketSenderInterface* psi, int id, samson::Packet* packet
 {
 	LM_T(LmtSend, ("Sending a packet (%s) to endpoint %d (psi at %p, packet at %p)", messageCode(packetP->msgCode), id, psi, packetP));
 	epMgr->show("sending a packet", true);
+
+	if ((id < 0) || ((unsigned int) id > epMgr->endpoints))
+		LM_X(1, ("Bad id %d", id));
+
 	_send(psi, id, packetP);
 	return 0;
 }

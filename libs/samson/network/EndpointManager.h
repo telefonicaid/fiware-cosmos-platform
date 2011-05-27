@@ -46,6 +46,9 @@ typedef void (*EpMgrCallback)(void* x, void* userParam);
 */
 class EndpointManager
 {
+	friend class Network2;
+	friend class Endpoint2;
+
 public:
 	enum CallbackId
 	{

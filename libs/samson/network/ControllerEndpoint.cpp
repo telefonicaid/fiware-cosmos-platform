@@ -63,6 +63,13 @@ Endpoint2::Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* 
 {
 	switch (headerP->code)
 	{
+	case Message::CommandResponse:
+		if (epMgr->packetReceiver == NULL)
+			LM_X(1, ("No packetReceiver - no real use to contiune, this is a SW bug!"));
+
+		epMgr->packetReceiver->_receive(packetP);		
+		break;
+
 	default:
 		LM_X(1, ("No messages treated - got a '%s'", messageCode(headerP->code)));
 		return Error;

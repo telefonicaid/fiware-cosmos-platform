@@ -12,16 +12,16 @@
 * CREATION DATE            Apr 12 2011
 *
 */
-#include <stdio.h>                 // NULL
-#include <netinet/in.h>            // sockaddr_in
+#include <stdio.h>                  // NULL
+#include <netinet/in.h>             // sockaddr_in
 
-#include "logMsg/logMsg.h"                // LM_X
+#include "logMsg/logMsg.h"          // LM_X
 
-#include "samson/network/Message.h"               // Message::Code, Message::Type
-#include "Host.h"                  // Host
-#include "samson/common/Process.h"               // PtWorker, PtController
-#include "samson/network/NetworkInterface.h"      // PacketSenderInterface
-#include "JobQueue.h"              // JobQueue
+#include "samson/common/Process.h"  // PtWorker, PtController
+#include "Message.h"                // Message::Code, Message::Type
+#include "Host.h"                   // Host
+#include "NetworkInterface.h"       // PacketSenderInterface
+#include "JobQueue.h"               // JobQueue
 
 
 
@@ -58,6 +58,7 @@ class Endpoint2
 	friend class WebWorkerEndpoint;
 	friend class SpawnerEndpoint;
 	friend class WorkerEndpoint;
+	friend class ControllerEndpoint;
 
 public:
 	typedef enum UpdateReason
@@ -83,6 +84,7 @@ public:
 
 		NullAlias,
 		BadAlias,
+		BadMsgType,
 		NullHost,
 		BadHost,
 		NullPort,
@@ -158,7 +160,7 @@ public:
 
 private:
 	EndpointManager*     epMgr;
-
+	int                  idInEndpointVector;
 	Type                 type;
 	int                  id;
 	Host*                host;

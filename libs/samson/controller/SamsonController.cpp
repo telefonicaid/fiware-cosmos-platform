@@ -97,8 +97,6 @@ namespace samson {
         
     }
 
-    
-
 	/* ****************************************************************************
 	*
 	* receive - 
@@ -337,7 +335,7 @@ namespace samson {
 			case Message::Command:
 			{
 				
-				// Spetial commands to get information
+				// Special commands to get information
 				std::string command = packet->message->command().command();
 
 				au::CommandLine cmdLine;
@@ -521,7 +519,7 @@ namespace samson {
 			}
 			break;
 		default:
-			LM_X(1, ("msg code '%s' not treated ...", messageCode(msgCode)));
+			LM_W(("msg code '%s' (%d) not treated ...", messageCode(msgCode), msgCode));
 			break;
 		}
 

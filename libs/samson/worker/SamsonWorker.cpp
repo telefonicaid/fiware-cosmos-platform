@@ -105,7 +105,7 @@ namespace samson {
 	 */
 	void SamsonWorker::sendWorkerStatus(void)
 	{
-		Packet*                  p  = new Packet( Message::WorkerStatus );
+		Packet*                  p  = new Packet(Message::WorkerStatus);
 		network::WorkerStatus*   ws = p->message->mutable_worker_status();
 		
 		// Fill to all data related with task manager
@@ -186,7 +186,7 @@ namespace samson {
 
         ws->set_disk_pending_operations(engine::DiskManager::getNumOperations());
 
-        // Send the message    
+		// Send the message
 		network->send(this, network->controllerGetIdentifier(), p);
         
 	}

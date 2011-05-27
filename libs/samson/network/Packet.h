@@ -8,14 +8,17 @@
 * DESCRIPTION				Definition of the packet to be exchanged in the samson-ecosystem
 *
 */
-#include "samson/common/samson.pb.h"            // google protocol buffers
-#include "engine/MemoryManager.h" // MemoryManager
-#include "samson/network/Endpoint.h"             // Endpoint
-#include "easyzlib.h"             // zlib utility library
 #include "logMsg/logMsg.h"               // LM_TODO()
-#include "samson/network/Message.h"              // samson::MessageType 
-#include "engine/Engine.h"        // engine::Engine
-#include "engine/Buffer.h"        // engine::Buffer
+
+#include "samson/common/samson.pb.h"     // google protocol buffers
+#include "engine/MemoryManager.h"        // MemoryManager
+#include "engine/Engine.h"               // engine::Engine
+#include "engine/Buffer.h"               // engine::Buffer
+#include "Endpoint.h"                    // Endpoint
+#include "easyzlib.h"                    // zlib utility library
+#include "Message.h"                     // samson::MessageType 
+
+
 
 namespace samson
 {
@@ -44,21 +47,26 @@ namespace samson
 			dataLen  = _dataLen;
 			buffer   = NULL;
 			message  = NULL;
+			fromId   = -9;
 		};
 
 		Packet(Message::MessageCode _msgCode)
 		{
 			msgCode = _msgCode;
+			msgType = Message::Evt;
 			buffer  = NULL;
 			dataLen = 0;
 			dataP   = NULL;
 			message = new network::Message();
+			fromId   = -9;
 		};
 
 		Packet(Packet* p)
 		{
 			// Copy the message type
 			msgCode = p->msgCode;
+			msgType = p->msgType;
+			fromId  = p->fromId;
 			dataLen = 0;
 			dataP   = NULL;
 

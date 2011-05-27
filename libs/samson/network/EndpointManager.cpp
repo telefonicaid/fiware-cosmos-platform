@@ -135,7 +135,7 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 	me = new Endpoint2(this, type, -1, NULL, NULL, host); // id == -1, port == 0 ...
 	if (me == NULL)
 		LM_X(1, ("error allocating 'me' endpoint: %s", strerror(errno)));
-
+	me->idInEndpointVector = -9;
 
 
 	//
@@ -451,6 +451,7 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 			continue;
 
 		endpoint[ix] = ep;
+		ep->idInEndpointVector = ix;
 		LM_T(LmtEndpointAdd, ("Added endpoint %d. type:%s, id:%d, name:%s, host:%s", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname()));
 
 		show("Added an Endpoint");
@@ -1060,6 +1061,9 @@ int EndpointManager::endpointCount(void)
 */
 void EndpointManager::send(PacketSenderInterface* psi, int endpointIx, Packet* packetP)
 {
+	if ((endpointIx < 0) || ((unsigned int) endpointIx >= endpoints))
+		LM_X(1, ("Bad endpointIx: %d", endpointIx));
+
 	if (endpoint[endpointIx] == NULL)
 		LM_RVE(("Cannot send to endpoint %d - NULL", endpointIx));
 

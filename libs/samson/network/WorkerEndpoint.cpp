@@ -63,19 +63,14 @@ WorkerEndpoint::~WorkerEndpoint() // : ~Endpoint2()
 */
 Endpoint2::Status WorkerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 {
-	Packet* packet;
-
 	switch (headerP->code)
 	{
 	case Message::WorkerStatus:
-		if (epMgr->packetReceiver)
-		{
-			packet          = new Packet(headerP->code);
-			packet->fromId  = epMgr->ixGet(this);
+	case Message::Command:
+		if (epMgr->packetReceiver == NULL)
+			LM_X(1, ("No packetReceiver - no real use to contiune, this is a SW bug!"));
 
-			LM_T(LmtPacketReceive, ("Calling packetReceiver(packet->fromId: %d)", packet->fromId));
-			epMgr->packetReceiver->_receive(packet);
-		}
+		epMgr->packetReceiver->_receive(packetP);
 		break;
 
 	default:

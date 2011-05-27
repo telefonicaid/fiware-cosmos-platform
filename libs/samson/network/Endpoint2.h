@@ -113,7 +113,8 @@ public:
 	typedef enum State
 	{
 		Unused,
-		Ready,
+		Connected,
+		Ready,        // Hello interchanged
 		Disconnected,
 		ScheduledForRemoval
 	} State;

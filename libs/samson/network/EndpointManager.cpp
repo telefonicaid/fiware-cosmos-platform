@@ -176,7 +176,7 @@ void EndpointManager::controllerConnect(void)
 	if (hostP == NULL)
 		hostP = hostMgr->insert(p->host, NULL);
 
-	controller = add(Endpoint2::Controller, 0, p->name, p->alias, hostP, p->port, -1, -1);
+	controller = add(Endpoint2::Controller, p->id, p->name, p->alias, hostP, p->port, -1, -1);
 }
 
 
@@ -207,7 +207,7 @@ void EndpointManager::workersAdd(void)
 			continue;
 		}
 
-		ep = add(Endpoint2::Worker, ix, p->name, p->alias, hostP, p->port, -1, -1);
+		ep = add(Endpoint2::Worker, p->id, p->name, p->alias, hostP, p->port, -1, -1);
 	}
 }
 
@@ -238,16 +238,22 @@ void EndpointManager::workersConnect(void)
 
 		if (me->type == Endpoint2::Worker)
 		{
-			if (ep->idGet() < me->idGet())
+			if (me->idGet() > ep->idGet())
 			{
-				LM_T(LmtConnect, ("Connecting to worker in '%s'", ep->host->name));
+				LM_T(LmtConnect, ("Connecting to %s %d in '%s' (my id: %d)", ep->typeName(), ep->idGet(), ep->host->name, me->idGet()));
 				ep->connect();  // Connect, but don't add to endpoint vector
 			}
+			else
+				LM_T(LmtConnect, ("NOT connecting to %s %d in '%s' (my id: %d)", ep->typeName(), ep->idGet(), ep->host->name, me->idGet()));
 		}
 		else
+		{
+			LM_T(LmtConnect, ("Connecting to %s %d in %s", ep->typeName(), ep->idGet(), ep->host->name));
 			ep->connect();
+		}
 	}
 }
+
 
 
 /* ****************************************************************************
@@ -582,7 +588,7 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int _id, int* ixP)
 {
 	LM_T(LmtEndpointLookup, ("Looking for a %s with id %d", Endpoint2::typeName(typ), _id));
 
-	show("lookup", true);
+	show("lookup");
 
 	if ((typ == me->type) && (_id == me->id))
 	{
@@ -863,6 +869,8 @@ void EndpointManager::timeout(void)
 		show("timeout");
 	}
 
+
+
 	//
 	// Removing endpoints that are Scheduled For Removal
 	//
@@ -908,12 +916,17 @@ void EndpointManager::run(bool oneShot)
 
 		do
 		{
+			char fdsString[512];
+
 			FD_ZERO(&rFds);
 			ix   = 0;
 			max  = 0;
 			eps  = 0;
+			memset(fdsString, 0, sizeof(fdsString));
 			for (unsigned int ix = 0; ix < endpoints; ix++)
 			{
+				char fdsSubString[16];
+
 				ep = endpoint[ix];
 
 				if (ep == NULL)
@@ -922,12 +935,25 @@ void EndpointManager::run(bool oneShot)
 				if (ep->threaded() == true)
 					continue;
 
+				if (((ep->state == Endpoint2::Ready) || (ep->state == Endpoint2::Connected)) && (ep->rFd == -1))
+					LM_X(1, ("Endpoint %s %d is in state %s but its rFd is -1 ...", ep->typeName(), ep->idGet(), ep->stateName()));
+
 				if (ep->rFd == -1)
 					continue;
 
 				eps += 1;
 				max = MAX(max, ep->rFd);
 				FD_SET(ep->rFd, &rFds);
+
+				
+				snprintf(fdsSubString, sizeof(fdsSubString), "%d", ep->rFd);
+				if (fdsString[0] == 0)
+					strcpy(fdsString, fdsSubString);
+				else
+				{
+					strcat(fdsString, ", ");
+					strcat(fdsString, fdsSubString);
+				}
 			}
 
 			tv.tv_sec  = tmoSecs;
@@ -936,6 +962,7 @@ void EndpointManager::run(bool oneShot)
 			if (max == 0)
 				LM_X(1, ("No fds to listen to ..."));
 
+			LM_T(LmtSelect, ("Hanging on a select over fd list { %s }", fdsString));
 			fds = select(max + 1,  &rFds, NULL, NULL, &tv);
 		} while ((fds == -1) && (errno == EINTR));
 
@@ -957,8 +984,8 @@ void EndpointManager::run(bool oneShot)
 				if (endpoint[ix]->rFd == -1)
 					continue;
 
-                if (endpoint[ix]->threaded() == true)
-                    continue;
+				if (endpoint[ix]->threaded() == true)
+					continue;
 				
 				if (FD_ISSET(endpoint[ix]->rFd, &rFds))
 				{

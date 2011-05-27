@@ -367,6 +367,7 @@ const char* Endpoint2::stateName(void)
 	switch (state)
 	{
 	case Unused:                    return "Unused";
+	case Connected:                 return "Connected";
 	case Ready:                     return "Ready";
 	case Disconnected:              return "Disconnected";
 	case ScheduledForRemoval:       return "ScheduledForRemoval";
@@ -840,6 +841,7 @@ Endpoint2::Status Endpoint2::connect(void)
 #endif
 
 	LM_T(LmtConnect, ("connected to '%s', port %d on fd %d", host->name, port, wFd));
+	state = Connected;
 
 	return OK;
 }
@@ -1098,7 +1100,17 @@ void Endpoint2::run(void)
 	LM_T(LmtSenderThread, ("Endpoint '%s@%s' reader thread is running", name, host->name));
 
 	while (1)
-		msgTreat();
+	{
+		Status s;
+
+		s = msgTreat();
+		if (s == ConnectionClosed)
+		{
+			useSenderThread = false;
+			LM_W(("*************** Endpoint %s%d@%s closed connection - leaving thread", typeName(), id, host->name));
+			return;
+		}
+	}
 }
 
 

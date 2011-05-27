@@ -3,6 +3,7 @@
 #define _H_SAMSON_QUEUE_TASK_MANAGER
 
 #include "au/list.h"        // au::list
+#include <string>           // std::string
 
 namespace samson {
     namespace stream {

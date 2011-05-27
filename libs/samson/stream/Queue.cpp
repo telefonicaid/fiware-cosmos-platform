@@ -2,11 +2,14 @@
 #include <sstream>       
 
 #include "Queue.h"          // Own interface
+#include "QueuesManager.h"  // samson::stream::QueuesManager
 #include "Block.h"          // samson::stream::Block
 #include "BlockManager.h"   // samson::stream::BlockManager
     
 #include "samson/common/EnvironmentOperations.h"    // getStatus()
+#include "samson/module/ModulesManager.h"           
 
+#include "QueueTask.h"
 
 namespace samson {
     namespace stream
@@ -23,6 +26,35 @@ namespace samson {
             // Insert in the back of the list
             blocks.push_back( block );
         }
+        
+        void Queue::scheduleNewTasksIfNecessary()
+        {
+            if( !streamQueue )
+                return;     // No information about how to process data
+            
+            Operation* op = samson::ModulesManager::shared()->getOperation( streamQueue->operation() );
+            
+            switch (op->getType()) {
+                case Operation::parser:
+                    
+                    if ( blocks.size() > 0 )
+                    {
+                        ParserQueueTask *tmp = new ParserQueueTask( streamQueue->operation() ); 
+                        while( blocks.size() > 0 )
+                            tmp->add( blocks.extractFront() );
+                        // Schedule tmp task into QueueTaskManager
+                        qm->queueTaskManager.add( tmp );
+                        
+                    }
+                    
+                    break;
+                default:
+                    // No processing at the moment
+                    break;
+            }
+            
+        }
+
         
         
 

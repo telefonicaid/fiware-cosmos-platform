@@ -23,7 +23,7 @@
 #include "samson/common/SamsonSetup.h"
 #include "samson/worker/SharedMemoryManager.h"
 #include "samson/stream/BlockManager.h"
-
+#include "samson/module/ModulesManager.h"
 
 
 /* ****************************************************************************

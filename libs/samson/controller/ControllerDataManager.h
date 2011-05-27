@@ -11,7 +11,6 @@
 #include "samson/common/samson.pb.h"			// samson::network::...
 #include "MonitorParameter.h"	// samson::MonitorBlock
 #include "samson/common/coding.h"				// KVInfo
-#include "AutomaticOperationManager.h"	// samson::AutomaticOperationManager
 
 namespace samson {
 	
@@ -21,7 +20,6 @@ namespace samson {
 	class DataManagerCommandResponse;
 	class SamsonController;
 	class ControllerTaskInfo;
-	class QueueAutomaticOperation;
 	
 	class ActiveTask
 	{
@@ -50,7 +48,6 @@ namespace samson {
         // List of stream - queues contained in the system
         au::map< std::string , network::StreamQueue > stream_queues;    
 
-		AutomaticOperationManager automatic_operations_manager;		// Manager of automatic operations
 		
 	public:
 
@@ -71,7 +68,6 @@ namespace samson {
 		static std::string getLogFileName( );
 
 		void fill( network::QueueList *ql , std::string command );
-		void fill( network::AutomaticOperationList *aol , std::string command);
 		void fill( network::DownloadDataInitResponse* response , std::string queue );
 		
 		void retreveInfoForTask( size_t job_id , ControllerTaskInfo *info , bool clear_inputs );		
@@ -99,17 +95,9 @@ namespace samson {
 		{
 			return info_txt;
 		}
-		
-		
-		void getQueuesMonitorInfo( std::vector<QueueMonitorInfo> &queues_names );
 
-		
-		
-		// Automatic operation API to get list of pending jobs and set as finished
-		
-		std::vector<AOInfo> getNextAutomaticOperations();
-		void finishAutomaticOperation( size_t id ,bool error , std::string error_message );
-		
+		void getQueuesMonitorInfo( std::vector<QueueMonitorInfo> &queues_names );
+				
 	private:
 
 		

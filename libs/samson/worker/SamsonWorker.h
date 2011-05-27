@@ -16,13 +16,13 @@
 #include "samson/common/Macros.h"				// exit(.)
 #include "samson/network/Network.h"			// NetworkInterface
 #include "samson/common/samsonDirectories.h"  // SAMSON_WORKER_DEFAULT_PORT
-#include "samson/network/workerStatus.h"		// WorkerStatus
-#include "samson/module/ModulesManager.h"		// samson::ModulesManager
 #include "WorkerTaskManager.h"	// samson::WorkerTaskManager
 #include "LoadDataManager.h"	// samson::LoadDataManager
 #include "samson/common/samson.pb.h"			// samson::network::
 #include "engine/EngineElement.h"               // samson::EngineElement
+
 #include "samson/stream/QueuesManager.h"        // samson::stream::QueuesManager
+#include "samson/stream/QueueTaskManager.h"     // samson::stream::QueueTaskManager
 
 #define notification_samson_worker_send_status_update "notification_samson_worker_send_status_update"
 #define notification_samson_worker_send_trace "notification_samson_worker_send_trace"
@@ -41,12 +41,12 @@ namespace samson {
 
 	public:
 
-		NetworkInterface*    network;           // Network interface to send packets
+		NetworkInterface*    network;                   // Network interface to send packets
 		
-		WorkerTaskManager    taskManager;       // Task manager
-		LoadDataManager      loadDataManager;   // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
+		WorkerTaskManager    taskManager;               // Task manager
+		LoadDataManager      loadDataManager;           // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
 		
-        stream::QueuesManager   queuesManager;  // Manager of all the stream-processing queues in the system
+        stream::QueuesManager   queuesManager;          // Manager of all the stream-processing queues in the system
         
 	public:
 

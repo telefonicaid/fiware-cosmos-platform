@@ -30,6 +30,8 @@
 #include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
 
 
+#include "samson/module/ModulesManager.h"   // samson::ModulesManager
+
 #define notification_worker_update_files    "notification_worker_update_files"
 
 namespace samson {
@@ -170,6 +172,9 @@ namespace samson {
         // Set information about queues
         ws->set_queues_status( queuesManager.getStatus() );
         
+        // Set information about queue operations
+        // ws->set_queues_tasks_status( queueTaskManager.getStatus() );
+        // Note: Since queueTaskManager is now inside queueManager, it is not visible here any more
         
         // Numerical information for better presentation
         

@@ -1,7 +1,5 @@
 
 SET (HEADERS
-    AutomaticOperation.h
-	AutomaticOperationManager.h
 	ControllerDataManager.h
 	ControllerTask.h
 	ControllerTaskInfo.h
@@ -17,8 +15,6 @@ SET (HEADERS
 )
 
 SET (SOURCES
-    AutomaticOperation.cpp
-    AutomaticOperationManager.cpp
     ControllerDataManager.cpp
     ControllerTask.cpp
     ControllerTaskInfo.cpp

@@ -21,7 +21,7 @@
 
 #include "engine/DiskManager.h"    // engine::DiskManager
 #include "engine/ProcessManager.h" // engine::ProcessManager
-
+#include "samson/module/ModulesManager.h"
 
 /* ****************************************************************************
 *

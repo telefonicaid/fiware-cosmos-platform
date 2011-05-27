@@ -17,6 +17,7 @@
 #include "au/map.h"     // au::map
 #include <string>
 #include "samson/common/samson.pb.h"        // network::...
+#include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager
 
 namespace samson {
     namespace stream
@@ -28,7 +29,11 @@ namespace samson {
         class QueuesManager 
         {
             au::map< std::string , Queue > queues;  // Map with the current queues
-     
+            
+            QueueTaskManager queueTaskManager;      // Manager of the tasks associated with the queues
+            
+            friend class Queue;
+            
         public:
             
             QueuesManager();

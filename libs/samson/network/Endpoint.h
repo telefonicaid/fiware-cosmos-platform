@@ -13,7 +13,6 @@
 #include <netinet/in.h>         // sockaddr_in
 
 #include "samson/network/Message.h"            // MessageCode, MessageType
-#include "samson/network/workerStatus.h"       // CoreWorkerState, WorkerStatusData
 
 
 
@@ -156,7 +155,6 @@ public:
 	int                          writes;
 
 	int                          workerId;         // Worker
-	Message::WorkerStatusData*   status;           // Worker
 	PacketSenderInterface*       packetSender;     // Worker
 	bool                         useSenderThread;  // Worker
 	bool                         sender;           // Worker
@@ -168,7 +166,6 @@ public:
 	time_t                       startTime;        // CoreWorker
 	int                          restarts;         // CoreWorker
 	int                          jobsDone;         // CoreWorker
-	Message::CoreWorkerState     coreWorkerState;  // CoreWorker
 
 	const char*     stateName(void);
 	const char*     typeName(void);

@@ -11,7 +11,6 @@ SET (HEADERS
 	iomMsgSend.h
 	iomMsgRead.h
 	iomMsgAwait.h
-	workerStatus.h
 	Alarm.h
 	Misc.h
 	easyzlib.h
@@ -44,7 +43,6 @@ SET (SOURCES
 	iomMsgSend.cpp
 	iomMsgRead.cpp
 	iomMsgAwait.cpp
-	workerStatus.cpp
 	Alarm.cpp
 	Misc.cpp
 	easyzlib.c

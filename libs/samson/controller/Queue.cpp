@@ -1,7 +1,6 @@
 
 #include "Queue.h"		// Own interface
 #include "QueueFile.h"	
-#include "AutomaticOperation.h"
 #include "logMsg/logMsg.h"		// LM_M
 
 namespace samson

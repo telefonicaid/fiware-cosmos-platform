@@ -21,10 +21,15 @@ namespace samson {
             
             std::ostringstream output;
             
+            output << "\nQueues:\n";
             au::map< std::string , Queue >::iterator q;
             for ( q = queues.begin() ; q != queues.end() ; q++)
                 output << "\n" << q->second->getStatus();
+
             
+            output << "\nQueues Tasks:\n";
+            output << queueTaskManager.getStatus();
+           
             return output.str();
             
         }
@@ -37,6 +42,9 @@ namespace samson {
             
             // Add the block to the queue
             queue->add( b );
+            
+            // First rudimentary system to thrigger queue-processing
+            queue->scheduleNewTasksIfNecessary();
             
         }
      
@@ -53,7 +61,7 @@ namespace samson {
             Queue *queue = queues.findInMap( queue_name );
             if (! queue )
             {
-                queue = new Queue( queue_name );
+                queue = new Queue( queue_name , this );
                 queues.insertInMap( queue->name, queue );
             }
             

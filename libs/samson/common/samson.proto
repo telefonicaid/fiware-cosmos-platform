@@ -97,13 +97,6 @@ message JobItem
 	required int32 num_lines=3; 	// Total lines in the script
 }
 
-message AutomaticOperation
-{
-	required uint64 id=3;		// Id of the automatic operation
-	required string command=1;	// Main command to run
-	required string thrigger=2;	// Information about when thrigger this operation
-}
-
 message Job
 {
 	required uint64 id = 1;		// Id of the job
@@ -187,6 +180,7 @@ message WorkerStatus
 	optional string shared_memory_status=22;			// Information about shared memory
 	optional string engine_status=24;				// Informaiion about the engine
 	optional string queues_status=25;				// Information about the Queues
+	optional string queues_tasks_status=26;				// Information about queue tasks
 
 	// Numerical values for quick system evaluation
 
@@ -229,11 +223,6 @@ message OperationList
 message JobList
 {
 	repeated Job job = 1;
-}
-
-message AutomaticOperationList
-{
-	repeated AutomaticOperation automatic_operation = 1;
 }
 
 message SamsonStatus
@@ -352,7 +341,6 @@ message CommandResponse
 	optional OperationList operation_list		         = 101;
 	optional DataList      data_list	  	         = 102;
 	optional QueueList     queue_list		         = 103;
-	optional AutomaticOperationList automatic_operation_list = 107;
 
 	// System wide status information
 	optional SamsonStatus samson_status 	      		 = 104;

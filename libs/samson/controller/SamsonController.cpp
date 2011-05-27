@@ -4,7 +4,6 @@
 #include "logMsg/traceLevels.h"            // Trace Levels
 
 #include "samson/network/Message.h"                // Message::WorkerStatus, ...
-#include "samson/network/workerStatus.h"           // Message::WorkerStatusData
 #include "samson/common/Macros.h"                 // EXIT, ...
 #include "samson/network/Packet.h"                 // samson::Packet
 #include "samson/network/Network.h"                // NetworkInterface
@@ -57,19 +56,11 @@ namespace samson {
 		// Description for the PacketReceiver
 		packetReceiverDescription = "samsonController";
 		
-        
+        // Add as a listener to notifications    
         engine::Engine::add( notification_monitorization, this );
-        engine::Engine::add( notification_check_automatic_operations, this );
-
 
         {
             engine::Notification *notification = new engine::Notification( notification_monitorization );
-            notification->environment.set("target", "SamsonController" );
-            engine::Engine::add( notification , 5  );
-        }
-
-        {
-            engine::Notification * notification = new engine::Notification( notification_check_automatic_operations );
             notification->environment.set("target", "SamsonController" );
             engine::Engine::add( notification , 5  );
         }
@@ -91,8 +82,6 @@ namespace samson {
     {
         if( notification->isName(notification_monitorization) )
             monitor.takeSamples();
-        else if( notification->isName( notification_check_automatic_operations ) )
-            checkAutomaticOperations();
         else
             LM_X(1,("Unexpected notification channel at SamsonController"));
         
@@ -377,23 +366,7 @@ namespace samson {
 					network->send(this, fromId,  p2);
 					
 					return;
-				}
-
-				if( cmdLine.isArgumentValue( 0 , "automatic_operations" , "ao" ) )
-				{
-					// Send a message with the list of queues
-					
-					Packet *p2 = new Packet(Message::CommandResponse);
-					network::CommandResponse *response = p2->message->mutable_command_response();
-                    response->set_finish_command(true);
-					response->set_command( command );
-					p2->message->set_delilah_id( packet->message->delilah_id() );
-					data.fill( response->mutable_automatic_operation_list() , command );
-					network->send(this, fromId, p2);
-					
-					return;
-				}
-				
+				}				
 				
 				if( cmdLine.isArgumentValue( 0 , "d" , "datas" ) )
 				{
@@ -622,24 +595,7 @@ namespace samson {
 	}
 
 	
-	void SamsonController::checkAutomaticOperations()
-	{
-			
-		// Get a list of automatic operations
-		// Get the next automatic operation
-		std::vector<AOInfo> info = data.getNextAutomaticOperations();
-		
-		for ( size_t i = 0 ; i < info.size() ; i++ )
-		{
-			std::cout << "Running automatic operation: " << info[i].command  << " id " << info[i].id <<  " \n";
-			
-			network::Command *command = new network::Command();
-			command->set_command( info[i].command );
-			jobManager.addJob(-1, *command, info[i].id );
-			delete command;
-		}
-				 
-	}
+
 
 	
 }

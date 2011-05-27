@@ -2,15 +2,14 @@
 #include "logMsg/traceLevels.h"          // Trace Levels
 
 #include "samson/network/iomMsgSend.h"           // iomMsgSend
-#include "au/CommandLine.h"          // au::CommandLine
+#include "au/CommandLine.h"                     // au::CommandLine
 #include "samson/worker/SamsonWorker.h"         // SamsonWorker
-#include "WorkerTaskManager.h"    // Own interface
-#include "samson/network/Packet.h"               // samson::Packet
-
-#include "WorkerTask.h"           // samson::WorkerTask
+#include "WorkerTaskManager.h"                  // Own interface
+#include "samson/network/Packet.h"              // samson::Packet
+#include "WorkerTask.h"                         // samson::WorkerTask
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
-#include "engine/DiskOperation.h"			// samson::DiskOperation
-
+#include "engine/DiskOperation.h"               // samson::DiskOperation
+#include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
 namespace samson {
 	

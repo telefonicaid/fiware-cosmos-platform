@@ -14,7 +14,6 @@
 #include "QueueFile.h"						// samson::QueueFile
 #include "samson/common/samsonDirectories.h"				// SAMSON_CONTROLLER_DIRECTORY
 #include "samson/common/MessagesOperations.h"				// evalHelpFilter(.)
-#include "AutomaticOperation.h"				// samson::AutomaticOperation
 #include "samson/common/SamsonSetup.h"					// samson::SamsonSetup
 
 namespace samson {
@@ -29,7 +28,7 @@ namespace samson {
 	
 	ControllerDataManager::~ControllerDataManager()
 	{
-		// Clear all queues and automatic operations
+		// Clear all queues
 		_clear();
 	}
 	
@@ -100,7 +99,6 @@ namespace samson {
 		info_txt.clear();
 		
 		queues.clearMap();
-		automatic_operations_manager.clear();
 		tasks.clearMap();
 		
 	}
@@ -343,90 +341,7 @@ namespace samson {
 		}
 
 		
-		if( commandLine.get_argument(0) == "remove_operation" )
-		{
-			if( commandLine.get_flag_string("tag") != "" )
-			{
-				automatic_operations_manager.removeAllWithTag( commandLine.get_flag_string("tag") );
-				
-				response.output = "OK";
-				return response;
-			}
-			
-			if( commandLine.get_num_arguments() < 2 )
-			{
-				response.output = "Usage: remove_operation id";
-				response.error = true;
-				return response;
-			}
-			
-			size_t id = strtoll( commandLine.get_argument(1).c_str()  , (char **)NULL, 10);
-			automatic_operations_manager.remove(id);
-			
-			response.output = "OK";
-			return response;
-			
-		}
-			
-		
-		if( commandLine.get_argument(0) == "set_operation" )
-		{
-			if( commandLine.get_num_arguments() < 2 )
-			{
-				response.output = "Usage: set_operation command [ \"queue queue_name [min_size] [min_kvs]\" ] ... [-timeout t]";
-				response.error = true;
-				return response;
-			}
-			
-			// Create the automatic operation with the command given at the command line
-			std::string command	= commandLine.get_argument(1);
-			AutomaticOperation *automatic_operation = new AutomaticOperation( command );
-			
-			for (int i = 2 ; i < commandLine.get_num_arguments() ; i++)
-			{
-				au::CommandLine _cmdLine;
-				_cmdLine.set_flag_uint64("size",0);
-				_cmdLine.set_flag_uint64("kvs",0);
-				_cmdLine.parse( commandLine.get_argument(i) ); 
-				
-				if( ( _cmdLine.get_num_arguments() < 2) || (_cmdLine.get_argument(0) != "queue" ) )
-				{
-					response.output = "Usage: set_operation command [ \"thrigger queue1 [min_size] [min_kvs]\" ] ... [-timeout t]";
-					response.error = true;
-					return response;
-				}
-				
-				std::string queue_name = _cmdLine.get_argument(1);
-				Queue *queue =  queues.findInMap( queue_name );
-				
-				if( !queue )
-				{
-					std::ostringstream output;
-					output << "Queue " + queue_name + " does not exist";
-					response.output = output.str();
-					response.error = true;
-					return response;				
-				}
-				
-				size_t min_size = _cmdLine.get_flag_uint64("size");
-				size_t min_kvs	= _cmdLine.get_flag_uint64("kvs");
-				
-				AOQueueThrigger *queue_thrigger = new AOQueueThrigger( queue , min_size , min_kvs );
-				automatic_operation->add( (AOThrigger*)queue_thrigger );
-			}
 
-			// Set tag
-			std::string tag =  commandLine.get_flag_string("tag");
-			if( tag != "")
-				automatic_operation->addTag( tag );
-			
-			// Add the automatic operation to the manager
-			automatic_operations_manager.add( automatic_operation );
-			
-			response.output = "OK";
-			return response;
-		}		
-		
 
 		if( commandLine.isArgumentValue(0, "remove_all" , "remove_all" ) )
 		{
@@ -860,12 +775,6 @@ namespace samson {
 		
 	}		
 
-	void ControllerDataManager::fill( network::AutomaticOperationList *aol , std::string command)
-	{
-		lock.lock();
-		automatic_operations_manager.fill( aol, command);
-		lock.unlock();
-	}
 	
 	void ControllerDataManager::fill( network::QueueList *ql , std::string command)
 	{
@@ -1035,23 +944,6 @@ namespace samson {
 		
 	}
 	
-	// Automatic operation API to get list of pending jobs and set as finished
-	
-	std::vector<AOInfo> ControllerDataManager::getNextAutomaticOperations()
-	{
-		lock.lock();
-		std::vector<AOInfo> tmp = automatic_operations_manager.getNextAutomaticOperations();
-		lock.unlock();
-		
-		return tmp;
-	}
-	
-	void ControllerDataManager::finishAutomaticOperation( size_t id ,bool error , std::string error_message )
-	{
-		lock.lock();
-		automatic_operations_manager.finishAutomaticOperation( id , error , error_message );
-		lock.unlock();
-	}
 	
 #pragma mark Monitorization
 	

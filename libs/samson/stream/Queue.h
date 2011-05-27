@@ -13,7 +13,7 @@
 
 #include <ostream>      // std::ostream
 #include <string>       // std::string
-#include <list>          // std::list
+#include "au/list.h"      // au::list
 
 #include "samson/common/samson.pb.h"    // network::
 
@@ -21,23 +21,26 @@ namespace samson {
     namespace stream
     {
         class Block;
+        class QueuesManager;
         
         class Queue 
         {
+            QueuesManager * qm;
 
             friend class QueuesManager;
             
-            std::string name;               // Name of the queue
-            std::list< Block* > blocks;      // Blocks currently in the input queue
+            std::string name;                   // Name of the queue
+            au::list< Block > blocks;         // Blocks currently in the input queue
             
             // Information about how to process this queue ( from controller )
             network::StreamQueue *streamQueue;
             
         public:
             
-            Queue( std::string _name )
+            Queue( std::string _name , QueuesManager * _qm )
             {
                 name = _name;
+                qm = _qm;
                 streamQueue = NULL; // By default it is not assigned
             }
             
@@ -59,6 +62,8 @@ namespace samson {
             
             void add( Block *block );
 
+            // Create new tasks if necessary
+            void scheduleNewTasksIfNecessary();
             
             std::string getStatus();
             

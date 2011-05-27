@@ -306,7 +306,6 @@ namespace samson {
 		// --------------------------------------------------------
 		
 		void showQueues( const network::QueueList ql );
-		void showAutomaticOperations( const network::AutomaticOperationList aol);
 		void showDatas( const network::DataList ql);
 		void showOperations( const network::OperationList ql);
 		void showJobs( const network::JobList ql);

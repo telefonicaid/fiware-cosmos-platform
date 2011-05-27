@@ -16,8 +16,6 @@ namespace samson {
 	
 	class QueueFile;
 	class Queue;
-	class AutomaticOperation;
-
     
 	/**
 	 Information contained in the controller about a queue

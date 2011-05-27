@@ -17,6 +17,8 @@
 #include "engine/DiskOperation.h"       // engine::DiskOperation
 #include "engine/EngineNotification.h"  // engien::EngineListener
 
+#include <set>
+
 namespace samson {
     namespace stream
     {
@@ -149,6 +151,10 @@ namespace samson {
             
         };
             
+        
+        // Auxiliar functions
+        size_t getSize( std::set<Block*> &blocks );
+        
     }
 }
 

@@ -45,7 +45,6 @@
 #include "samson/network/iomMsgSend.h"         // iomMsgSend
 #include "samson/network/iomMsgRead.h"         // iomMsgRead
 #include "samson/network/iomMsgAwait.h"        // iomMsgAwait
-#include "samson/network/workerStatus.h"       // workerStatus, WorkerStatusData
 #include "Host.h"               // Host
 #include "HostMgr.h"            // HostMgr
 #include "samson/network/Network.h"            // Own interface

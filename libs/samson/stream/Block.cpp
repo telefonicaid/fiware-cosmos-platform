@@ -268,6 +268,18 @@ namespace samson {
             return false;
         }
 
+        size_t getSize( std::set<Block*> &blocks )
+        {
+            size_t total = 0;
+            
+            std::set<Block*>::iterator i;
+            for ( i = blocks.begin() ; i != blocks.end () ; i++ )
+                total += (*i)->getSize();
+            
+            return total;
+        }
+        
+        
         
 
     }

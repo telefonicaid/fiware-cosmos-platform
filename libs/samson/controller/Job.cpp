@@ -373,39 +373,31 @@ namespace samson {
 		if( ( _status != finish) && ( _status != error ) )
 			LM_X(1,("Unexpected status when sending confirmation to delilah"));
 		
-		if( fromIdentifier == -1)
-		{
-			jobManager->controller->data.finishAutomaticOperation( sender_id , error , error_message );
-			//std::cout << "Finish internal job with id " << id << "\n";
-		}
-		else
-		{
-			// Send a packet to delilah
-			
-			Packet *p2 = new Packet( Message::CommandResponse );
-			
-			network::CommandResponse *response = p2->message->mutable_command_response();
-			response->set_command(mainCommand);
-
-			if( _status == error )
-			{
-				response->set_error_message( error_message );
-				response->set_error_job_id( id );
-			}
-			else 
-			{
-				response->set_finish_job_id( id );
-			}
-
-			// Inform about ellapsed time
-			time_t time_finish = time(NULL);
-			response->set_ellapsed_seconds( difftime( time_finish, time_init ) );
-										  
-			// global sender id of delilah
-			p2->message->set_delilah_id( sender_id );
-			
-			jobManager->controller->network->send(jobManager->controller, fromIdentifier, p2);
-		}
+        // Send a packet to delilah
+        
+        Packet *p2 = new Packet( Message::CommandResponse );
+        
+        network::CommandResponse *response = p2->message->mutable_command_response();
+        response->set_command(mainCommand);
+        
+        if( _status == error )
+        {
+            response->set_error_message( error_message );
+            response->set_error_job_id( id );
+        }
+        else 
+        {
+            response->set_finish_job_id( id );
+        }
+        
+        // Inform about ellapsed time
+        time_t time_finish = time(NULL);
+        response->set_ellapsed_seconds( difftime( time_finish, time_init ) );
+        
+        // global sender id of delilah
+        p2->message->set_delilah_id( sender_id );
+        
+        jobManager->controller->network->send(jobManager->controller, fromIdentifier, p2);
 	}
 	
 	void Job::setError( std::string agent ,  std::string txt )

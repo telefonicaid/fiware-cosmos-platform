@@ -4,7 +4,7 @@
 #include "Block.h"                      // samson::stream::Block
 #include "au/set.h"                     // au::set
 #include "engine/EngineNotification.h"  // engien::EngineListener
-
+#include <vector>
 
 namespace samson {
     namespace stream {
@@ -107,25 +107,27 @@ namespace samson {
                 
             }            
             
-            bool lock( Block** blocks , int num_blocks )
+            static bool lock( std::set<Block*> &blocks  )
             {
-                for (int i = 0 ; i < num_blocks ; i++ )
-                    if ( !blocks[i]->isContentOnMemory() ) 
+                std::set<Block*>::iterator i;
+                for (i = blocks.begin() ; i != blocks.end() ; i++ )
+                    if ( !(*i)->isContentOnMemory() ) 
                         return false;
                 
-                for (int i = 0 ; i < num_blocks ; i++)
-                    blocks[i]->lock_counter++;
+                for (i = blocks.begin() ; i != blocks.end() ; i++ )
+                    (*i)->lock_counter++;
                 return true;   
             }
-
-            void unlock( Block** blocks, int num_blocks )
+            
+            static void unlock( std::set<Block*> &blocks  )
             {
-                for (int i = 0 ; i < num_blocks ; i++)
+                std::set<Block*>::iterator i;
+                for (i = blocks.begin() ; i != blocks.end() ; i++ )
                 {
-                    blocks[i]->lock_counter--;
-                    if( blocks[i]->lock_counter < 0 )
+                    (*i)->lock_counter--;
+                    if( (*i)->lock_counter < 0 )
                         LM_X(1,("Internal error, Lock counter cannot be negative"));
-                        
+                    
                 }
             }
             

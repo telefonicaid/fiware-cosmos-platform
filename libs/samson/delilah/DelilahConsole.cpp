@@ -807,10 +807,7 @@ namespace samson
 					}
 					
 				}
-				
-				if( packet->message->command_response().has_automatic_operation_list() )
-					showAutomaticOperations( packet->message->command_response().automatic_operation_list() );
-				
+								
 				if( packet->message->command_response().has_data_list() )
 					showDatas( packet->message->command_response().data_list() );
 				
@@ -883,35 +880,6 @@ namespace samson
 		}
         
     }
-
-	
-	
-	
-	void DelilahConsole::showAutomaticOperations( const network::AutomaticOperationList aol)
-	{
-		std::ostringstream txt;
-		
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << "Automatic Operations" << std::endl;
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		for (int i = 0 ; i < aol.automatic_operation_size() ; i++)
-		{
-			network::AutomaticOperation ao = aol.automatic_operation(i);
-
-			txt << std::setw(10) << ao.id();
-			txt << " ";
-			txt << std::setw(20) << ao.thrigger();
-			txt << " ";
-			txt << ao.command();
-			txt << std::endl;
-		}
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		
-		txt << std::endl;
-		
-		writeOnConsole( txt.str() );		
-	}
-	
 	
 	void DelilahConsole::showQueues( const network::QueueList ql)
 	{
@@ -1163,7 +1131,10 @@ namespace samson
                 txt << "** Load Data Manager: " << worker_status.load_data_manager_status() << "\n";
 
             if( ( command == "info_full" ) || (command == "info_queues" ) )
+            {
                 txt << "** Queues: " << worker_status.queues_status() << "\n";
+                txt << "** QueuesTasks: " << worker_status.queues_tasks_status() << "\n";
+            }
             
             if( ( command == "info_full" ) || (command == "info_process_manager" ) )
                 txt << "** Process Manager:   " << worker_status.process_manager_status() << "\n";

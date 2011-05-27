@@ -37,7 +37,6 @@ void Endpoint::init(void)
 	this->state            = Unconnected;
 	this->workers          = 0;
 	this->type             = Unknown;
-	this->status           = NULL;
 	this->sender           = false;
 	this->useSenderThread  = false;
 	this->jobQueueHead     = NULL;

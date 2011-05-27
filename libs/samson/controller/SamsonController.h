@@ -21,8 +21,6 @@
 #include "samson/module/ModulesManager.h"             // samson::ModulesManager
 #include "ControllerTaskManager.h"      // samson::ControllerTaskManager
 #include "samson/common/samson.pb.h"                  // network::...
-#include "samson/network/workerStatus.h"               // Message::WorkerStatusData
-#include "samson/network/Message.h"                    // Message::WorkerStatus, ...
 #include "JobManager.h"                 // samson::JobManager
 #include "Monitor.h"                    // samson::Monitor
 #include "ControllerLoadManager.h"		// samson::ControllerLoadManager
@@ -31,7 +29,6 @@
 #include "au/Cronometer.h"              // au::Cronometer
 
 #define notification_monitorization                 "notification_monitorization"
-#define notification_check_automatic_operations     "notification_check_automatic_operations"
 
 namespace samson {
 	
@@ -97,21 +94,8 @@ namespace samson {
         void notify( engine::Notification* notification );
         bool acceptNotification( engine::Notification* notification );
 
-
-        
-    private:
-        
-        // Function to check if it is necessary to run any automatic-operation
-		void checkAutomaticOperations();
-
-        
 		
 	};
-	
-
-	
-	
-	
 	
 	
 }

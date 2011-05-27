@@ -130,7 +130,7 @@ namespace samson {
 
 		// Basic information about this job
 		time_t time_init;					// Init time of this job ( to monitor the operation )
-		int fromIdentifier;					// Identifier of the delailah that ordered this job ( -1 if automatic operation )
+		int fromIdentifier;					// Identifier of the delailah that ordered this job
 		int sender_id;						// Identifier at the sender side (the same delilah could send multiple jobs)
 		
 		std::string error_line;				// One line message for the error ( used in the cancel message of the data log)

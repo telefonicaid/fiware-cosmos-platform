@@ -98,6 +98,7 @@ public:
 	Endpoint2::Status  setupAwait(void);
 
 	void               timeout(void);
+	void               periodic(void);
 	void               workersAdd(void);
 	void               workersConnect(void);
 	void               controllerConnect(void);

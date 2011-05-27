@@ -53,9 +53,9 @@ static void timeDiff(struct timeval* from, struct timeval* to, struct timeval* d
 
 /* ****************************************************************************
 *
-* timeout - 
+* periodic - 
 */
-static void timeout(void* nada, void* vP)
+static void periodic(void* nada, void* vP)
 {
 	SamsonSpawner* spawnerP = (SamsonSpawner*) vP;
 	
@@ -76,7 +76,7 @@ SamsonSpawner::SamsonSpawner()
 	restartInProgress      = false;
 
 	networkP->setDataReceiver(this);
-	epMgr->callbackSet(samson::EndpointManager::Timeout, timeout, this);
+	epMgr->callbackSet(samson::EndpointManager::Periodic, periodic, this);
 	networkP->tmoSet(1, 500000);
 }
 

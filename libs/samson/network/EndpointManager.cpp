@@ -845,20 +845,20 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 
 /* ****************************************************************************
 *
-* timeout - 
+* periodic - 
 */
-void EndpointManager::timeout(void)
+void EndpointManager::periodic(void)
 {
-	static int tmoNo = 0;
+	static int periodicNo = 0;
 
-
+	LM_M(("In periodic method"));
 	//
 	// Worker and Delilah connecting to Controller and Workers 
 	//
 	if (me->type == Endpoint2::Worker || me->type == Endpoint2::Delilah)
 	{
-		show("timeout");
-		LM_T(LmtTimeout, ("In timeout %d - any controller/workers to connect to?", tmoNo));
+		show("periodic");
+		LM_T(LmtTimeout, ("In periodic %d - any controller/workers to connect to?", periodicNo));
 		if (controller == NULL)
 			LM_X(1, ("controller == NULL"));
 
@@ -866,7 +866,7 @@ void EndpointManager::timeout(void)
 			controller->connect();
 
 		workersConnect();
-		show("timeout");
+		show("periodic");
 	}
 
 
@@ -890,7 +890,22 @@ void EndpointManager::timeout(void)
 		show("Removed a removal-scheduled endpoint", true);
 	}
 
-	++tmoNo;
+	if (callback[Periodic].func != NULL)
+		callback[Periodic].func(NULL, callback[Periodic].userParam);
+
+	++periodicNo;
+}
+
+
+
+/* ****************************************************************************
+*
+* timeout - 
+*/
+void EndpointManager::timeout(void)
+{
+	if (callback[Timeout].func != NULL)
+		callback[Timeout].func(NULL, callback[Timeout].userParam);
 }
 
 
@@ -909,11 +924,12 @@ void EndpointManager::run(bool oneShot)
 	int              fds;
 	int              eps;
 
+	LM_M(("Timeout used: %d, %d", tmoSecs, tmoUSecs));
+
 	while (1)
 	{
-		if (callback[Periodic].func != NULL)
-			callback[Periodic].func(NULL, callback[Periodic].userParam);
-
+		periodic();
+		
 		// Call cleanup function that removes all endpoints marked as 'ScheduledForRemoval' 
 		// Don't forget to use a semaphore for endpoint vector and jobs vector
 
@@ -972,11 +988,7 @@ void EndpointManager::run(bool oneShot)
 		if (fds == -1)
 			LM_X(1, ("select: %s", strerror(errno)));
 		else if (fds == 0)
-		{
 			timeout();
-			if (callback[Timeout].func != NULL)
-				callback[Timeout].func(NULL, callback[Timeout].userParam);
-		}
 		else
 		{
 			for (unsigned int ix = 0; ix < endpoints; ix++)

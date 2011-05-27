@@ -93,7 +93,6 @@ samson::Process* processAdd(samson::Process* processP)
 
 	processV[ix] = processP;
 	LM_T(LmtProcess, ("Added process '%s' type '%s' with pid %d", processP->name, processTypeName(processP), processP->pid));
-	processListShow("Process added");
 
 	return processP;
 }
@@ -222,11 +221,12 @@ void processListShow(const char* why, bool forcedOn)
 			continue;
 
 		if (forcedOn)
-			LM_F(("  process %02d: %-20s %-20s  pid %d",
+			LM_F(("  process %02d: %-20s %-20s  pid %d (%p)",
 				  ix,
 				  processV[ix]->name,
 				  processV[ix]->alias,
-				  processV[ix]->pid));
+				  processV[ix]->pid,
+				  processV[ix]));
 		else
 			LM_T(LmtProcessListShow, ("  process %02d: %-20s %-20s  pid %d",
 									  ix,

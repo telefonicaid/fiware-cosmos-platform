@@ -7,24 +7,24 @@
 * CREATION DATE            Apr 29 2011
 *
 */
-#include <sys/time.h>              // gettimeofday
-#include <sys/types.h>             // pid_t
-#include <sys/wait.h>              // waitpid
+#include <sys/time.h>                         // gettimeofday
+#include <sys/types.h>                        // pid_t
+#include <sys/wait.h>                         // waitpid
 
-#include "logMsg/logMsg.h"                // LM_*
-#include "logMsg/traceLevels.h"           // Trace levels
+#include "logMsg/logMsg.h"                    // LM_*
+#include "logMsg/traceLevels.h"               // Trace levels
 
-#include "samson/network/NetworkInterface.h"      // DataReceiverInterface, ...
-#include "samson/network/Packet.h"                // Packet
-#include "samson/common/Process.h"               // Process
-#include "samson/common/platformProcesses.h"     // platformProcessesSave
-#include "samson/common/ports.h"                 // Samson platform ports
-#include "processList.h"           // processListInit, Add, Remove and Lookup
-#include "samson/common/samsonDirectories.h"     // SAMSON_PLATFORM_PROCESSES
-#include "samson/network/Network2.h"              // Network2
+#include "samson/common/Process.h"            // Process
+#include "samson/common/platformProcesses.h"  // platformProcessesSave
+#include "samson/common/ports.h"              // Samson platform ports
+#include "samson/common/samsonDirectories.h"  // SAMSON_PLATFORM_PROCESSES
+#include "samson/network/NetworkInterface.h"  // DataReceiverInterface, ...
+#include "samson/network/Packet.h"            // Packet
+#include "samson/network/Network2.h"          // Network2
 
-#include "globals.h"               // Global variables for Spawner
-#include "SamsonSpawner.h"         // Own interface
+#include "processList.h"                      // processListInit, Add, Remove and Lookup
+#include "globals.h"                          // Global variables for Spawner
+#include "SamsonSpawner.h"                    // Own interface
 
 
 
@@ -53,6 +53,20 @@ static void timeDiff(struct timeval* from, struct timeval* to, struct timeval* d
 
 /* ****************************************************************************
 *
+* timeout - 
+*/
+static void timeout(void* nada, void* vP)
+{
+	SamsonSpawner* spawnerP = (SamsonSpawner*) vP;
+	
+	spawnerP->timeoutFunction();
+	nada = NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * SamsonSpawner -
 */
 SamsonSpawner::SamsonSpawner()
@@ -62,6 +76,8 @@ SamsonSpawner::SamsonSpawner()
 	restartInProgress      = false;
 
 	networkP->setDataReceiver(this);
+	epMgr->callbackSet(samson::EndpointManager::Timeout, timeout, this);
+	networkP->tmoSet(1, 500000);
 }
 
 
@@ -161,6 +177,7 @@ int SamsonSpawner::receive(int fromId, int nb, samson::Message::Header* headerP,
 	case Message::ProcessSpawn:
 		if (headerP->type == Message::Ack)
 			LM_X(1, ("Spawner cannot receive Ack for ProcessSpawn"));
+		LM_W(("Spawning a process without adding it to process vector ..."));
 		spawn(process);
 		break;
 
@@ -184,15 +201,19 @@ int SamsonSpawner::timeoutFunction(void)
 	int           status;
 	Process*  processP;
 
+	LM_M(("Checking dead children ..."));
 	processListShow("periodic");
 
 	pid = waitpid(-1, &status, WNOHANG);
 	if (pid == 0)
 	{
-		LM_T(LmtWait, ("Children running, no one has exited since last sweep"));
+		// LM_T(LmtWait, ("Children running, no one has exited since last sweep"));
+		LM_M(("Children running, no one has exited since last sweep"));
 		return 0;
 	}
 
+	LM_M(("caught death of process %d", pid));
+	processListShow("child died", true);
 	if (pid == -1)
 	{
 		if (errno != ECHILD)
@@ -359,7 +380,9 @@ void SamsonSpawner::spawn(Process* process)
 		LM_X(1, ("Back from EXEC !!!"));
 	}
 
+	LM_M(("Set pid to %d for process '%s' (@ %p)", pid, argV[0], process));
 	process->pid = pid;
+	processListShow("Process Spawned", true);
 }
 
 
@@ -397,7 +420,11 @@ void SamsonSpawner::processesStart(ProcessVector* procVec)
 		processP->writes  = lmWrites;
 		processP->pid     = 0;
 
-		spawn(processP);
+		struct timeval  now;
+		if (gettimeofday(&now, NULL) != 0)
+			LM_X(1, ("gettimeofday failed (fatal error): %s", strerror(errno)));
+		Process* pP = processAdd(processP->type, processP->name, processP->alias, processP->controllerHost, 0, &now);
+		spawn(pP);
 		++startedProcesses;
 	}
 

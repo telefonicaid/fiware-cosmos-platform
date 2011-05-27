@@ -874,6 +874,8 @@ void EndpointManager::timeout(void)
 	//
 	// Removing endpoints that are Scheduled For Removal
 	//
+	LM_M(("Removing endpoints that are Scheduled For Removal"));
+	show("Removing removal-scheduled endpoint?", true);
 	for (unsigned int ix = 0; ix < endpoints; ix++)
 	{
 		if (endpoint[ix] == NULL)
@@ -882,6 +884,7 @@ void EndpointManager::timeout(void)
 		if (endpoint[ix]->state != Endpoint2::ScheduledForRemoval)
 			continue;
 
+		LM_M(("deleting endpoint %d that is Scheduled For Removal", ix));
 		delete endpoint[ix];
 		endpoint[ix] = NULL;
 		show("Removed a removal-scheduled endpoint", true);

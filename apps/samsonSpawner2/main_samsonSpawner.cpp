@@ -120,7 +120,7 @@ int main(int argC, const char *argV[])
 	engine::MemoryManager::init(samson::SamsonSetup::shared()->memory);
 
 	spawnerP = new samson::SamsonSpawner();
-	spawnerP->init();
+	spawnerP->init();	
 	spawnerP->run();
 
 	return 0;

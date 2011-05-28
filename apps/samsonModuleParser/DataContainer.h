@@ -159,7 +159,11 @@ namespace samson
 				}
 				else
 				{
+#ifdef __LP64__
 					fprintf(stderr, "Optional fields (nOptFields:%d) for more than %lu fields, not yet supported\n", nOptFields, 8*sizeof(size_t));
+#else
+					fprintf(stderr, "Optional fields (nOptFields:%d) for more than %d fields, not yet supported\n", nOptFields, 8*sizeof(size_t));
+#endif
 					exit(1);
 				}
 			}

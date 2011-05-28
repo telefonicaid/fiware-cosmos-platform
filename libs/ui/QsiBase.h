@@ -82,6 +82,7 @@ public:
 	int        yInitial; // Initial Y-position
 	int        x;        // x offset within the Box
 	int        y;        // y offset within the Box
+	int        initialMoves;
 
 private:
 	int        width;    // width  of a Block or total width  of all components in a Box

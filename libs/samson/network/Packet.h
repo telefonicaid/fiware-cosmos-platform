@@ -46,7 +46,7 @@ namespace samson
 			dataP    = _dataP;
 			dataLen  = _dataLen;
 			buffer   = NULL;
-			message  = NULL;
+			message  = new network::Message();
 			fromId   = -9;
 		};
 

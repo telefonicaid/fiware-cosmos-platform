@@ -38,7 +38,8 @@ typedef struct ScrollArea
 	int   x;
 	int   y;
 	int   w;
-	int   h;	
+	int   h;
+	int   dy;
 } ScrollArea;
 
 
@@ -139,7 +140,7 @@ private:
 	ScrollArea*  scrollAreaLookup(Box* sbox, int* ixP);
 
 public:
-	ScrollArea*  scrollAreaSet(Box* box, int x, int y, int w, int h, bool on);
+	ScrollArea*  scrollAreaSet(Box* box, int x, int y, int w, int h, int dy, bool on);
 	ScrollArea*  scrollAreaLookup(int px, int py);
 };
 

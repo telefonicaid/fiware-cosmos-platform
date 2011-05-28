@@ -404,7 +404,7 @@ int Block::geometry(int* xP, int* yP, int* widthP, int* heightP)
 		*widthP   = 0;
 		*heightP  = 0;
 
-		LM_T(LmtGeometry, ("  Invisible %s '%s' geometry: { %d, %d } %d x %d", typeName(), name, *xP, *yP, *widthP, *heightP));
+		LM_T(LmtGeometry2, ("  Invisible %s '%s' geometry: { %d, %d } %d x %d", typeName(), name, *xP, *yP, *widthP, *heightP));
 		return -1;
 	}
 
@@ -442,7 +442,7 @@ int Block::geometry(int* xP, int* yP, int* widthP, int* heightP)
 	*widthP   = rwidth;
 	*heightP  = rheight;
 
-	LM_T(LmtGeometry, ("  Visible %s '%s' geometry: { %d, %d } %d x %d", typeName(), name, *xP, *yP, *widthP, *heightP));
+	LM_T(LmtGeometry2, ("XX: (%s '%s') geometry: { %d, %d } %d x %d", typeName(), name, *xP, *yP, *widthP, *heightP));
 
 	return 0;
 }

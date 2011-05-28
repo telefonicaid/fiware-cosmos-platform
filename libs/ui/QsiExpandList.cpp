@@ -9,8 +9,8 @@
 */
 #include <QGraphicsSimpleTextItem>
 
-#include "logMsg/logMsg.h"             // LM_*
-#include "traceLevels.h"        // Lmt*
+#include "logMsg/logMsg.h"
+#include "traceLevels.h"
 
 #include "QsiManager.h"         // Manager
 #include "QsiBase.h"            // Base

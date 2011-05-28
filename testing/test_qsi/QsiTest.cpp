@@ -647,7 +647,7 @@ static void qsiSetup(QWidget* mainWindow)
 
 	// scrollBox->setScrollable(true);   NOT necessary
 	LM_M(("Creating scroll area for scrollBox: { %d, %d } %dx%d", 1000, 30, 200, 500));
-	mainBox->scrollAreaSet(scrollBox, 1000, 100, 200, 300, true);
+	mainBox->scrollAreaSet(scrollBox, 1000, 100, 200, 300, 10, true);
 
 
 	//

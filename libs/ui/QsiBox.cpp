@@ -68,6 +68,7 @@ Box::Box(Manager* manager, Box* owner, const char* name, int x, int y) : Base(ow
 	isBox         = true;
 
 	firstLine = (Block*) lineAdd("firstLine", 0, 0, 10, 0);
+	initialMove(firstLine);
 	firstLine->setColor(0xFF, 0xFF, 0xFF, 0);
 
 	scrollable = false;
@@ -219,6 +220,8 @@ int Box::geometry(int* xP, int* yP, int* widthP, int* heightP)
 	int yMax = -500000;
 	int xMin = 0x7FFFFFFF;
 	int yMin = 0x7FFFFFFF;
+	int Width  = 0;
+	int Height = 0;
 
 	*xP = x;
 	*yP = y;
@@ -232,25 +235,27 @@ int Box::geometry(int* xP, int* yP, int* widthP, int* heightP)
 		
 		if (qsiVec[ix] == NULL)
 		{
-			LM_T(LmtGeometry, ("%02d: NULL", ix));
+			LM_T(LmtGeometry, ("%02d: (%s '%s') NULL", ix, typeName(), name));
 			continue;
 		}
 
-		LM_T(LmtGeometry, ("Checking whether '%s' is visible", qsiVec[ix]->name));
 		if (qsiVec[ix]->isVisible() == false)
 		{
-			LM_T(LmtGeometry, ("%02d: %s '%s' is NOT visible", ix, qsiVec[ix]->typeName(), qsiVec[ix]->name));
+			LM_T(LmtGeometry, ("%02d: (%s '%s') %s '%s' NOT visible", ix, typeName(), name, qsiVec[ix]->typeName(), qsiVec[ix]->name));
 			continue;
 		}
-
+		
 		qsiVec[ix]->geometry(&qx, &qy, &qw, &qh);
-		LM_T(LmtGeometry, ("Geometry for %s '%s': { %d, %d } %d x %d", qsiVec[ix]->typeName(), qsiVec[ix]->name, qx, qy, qw, qh));
+		LM_T(LmtGeometry, ("%02d: (%s '%s') Geometry for %s '%s': { %d, %d } %d x %d", ix, typeName(), name, qsiVec[ix]->typeName(), qsiVec[ix]->name, qx, qy, qw, qh));
 		xMax = MAX(xMax, qx + qw);
 		yMax = MAX(yMax, qy + qh);
 		xMin = MIN(xMin, qx);
 		yMin = MIN(yMin, qy);
 
-		LM_T(LmtGeometry, ("xMin = %d, xMax = %d     yMin = %d, yMax = %d         dx = %d, dy = %d", xMin, xMax, yMin, yMax, xMax - xMin, yMax - yMin));
+		Width = MAX(Width, qw);
+		Height += qh + 20; // 20 used as padding ...
+
+		LM_T(LmtGeometry, ("%02d: (%s '%s') xMin = %d, xMax = %d, yMin = %d, yMax = %d, dx = %d, dy = %d", ix, typeName(), name, xMin, xMax, yMin, yMax, xMax - xMin, yMax - yMin));
 	}
 
 	if ((xMin == 0x7FFFFFFF) || (yMin == 0x7FFFFFFF) || (xMax == -500000) || (yMax == -500000))
@@ -264,10 +269,13 @@ int Box::geometry(int* xP, int* yP, int* widthP, int* heightP)
 	*heightP = yMax - yMin;
 
 	LM_T(LmtGeometry, (""));
-	LM_T(LmtGeometry, ("Box '%s' geometry: { %d, %d } %d x %d", name, *xP, *yP, *widthP, *heightP));
+	LM_T(LmtGeometry, ("%s '%s' geometry: { %d, %d } %d x %d (Width x Height: %dx%d)", typeName(), name, *xP, *yP, *widthP, *heightP, Width, Height));
 	LM_T(LmtGeometry, (""));
 	LM_T(LmtGeometry, ("----------------------------------"));
 	LM_T(LmtGeometry, (""));
+
+	*widthP  = Width;
+	*heightP = Height;
 
 	return 0;
 }
@@ -330,13 +338,18 @@ void Box::initialMove(Base* qbP)
 {
 	int ax, ay;
 	
+	++initialMoves;
+
 	absPos(&ax, &ay);
 
-	LM_T(LmtMove, ("----- INITIAL POSITIONING of newly created QSI -----"));
-	LM_T(LmtMove, ("------ FIRST - move ABSOLUTE to Box-origo { %d, %d } and then, RELATIVE move x:%d, y:%d", ax, ay, qbP->xInitial, qbP->yInitial));
+	LM_T(LmtInitialMove, (""));
+	LM_T(LmtInitialMove, ("------------------------------------"));
+	LM_T(LmtInitialMove, ("INITIAL POSITIONING %d of newly created QSI (%s '%s:%s') -----", qbP->initialMoves, qbP->typeName(), qbP->owner->name, qbP->name));
+	LM_T(LmtInitialMove, ("------ FIRST - move ABSOLUTE to Box-origo { %d, %d } and then, RELATIVE move x:%d, y:%d", ax, ay, qbP->xInitial, qbP->yInitial));
 	qbP->moveAbsolute(ax, ay);
 	qbP->moveRelative(qbP->xInitial, qbP->yInitial);
-	LM_T(LmtMove, ("----- INITIAL POSITIONING of newly created QSI DONE -----"));
+	LM_T(LmtInitialMove, ("------------------------------------"));
+	LM_T(LmtInitialMove, (""));
 }
 
 
@@ -360,7 +373,7 @@ void Box::addVertically(Base* qbP)
             continue;
 
 		qsiVec[ix]->geometry(&qx, &qy, &qw, &qh);
-		LM_M(("Geometry for '%s': { %d, %d } %dx%d", qsiVec[ix]->name, qx, qy, qw, qh));
+		LM_T(LmtVerticalBox, ("Geometry for '%s': { %d, %d } %dx%d", qsiVec[ix]->name, qx, qy, qw, qh));
 		if (qy + qh > ly + lh)
 		{
 			lowest = qsiVec[ix];
@@ -369,7 +382,7 @@ void Box::addVertically(Base* qbP)
 		}
 	}
 
-	LM_M(("Lowest Base in Box '%s': %s. Y=%d, Height=%d", name, lowest->name, ly, lh));
+	LM_T(LmtVerticalBox, ("Lowest Base in Box '%s': %s. Y=%d, Height=%d", name, lowest->name, ly, lh));
 
 again:
 	for (int ix = 0; ix < qsiVecSize; ix++)
@@ -378,8 +391,8 @@ again:
 			continue;
 
 		qsiVec[ix] = qbP;
-		LM_M(("Aligning '%s' South of '%s'", qbP->name, lowest->name));
-		initialMove(qbP);
+		LM_T(LmtVerticalBox, ("Aligning '%s' South of '%s'", qbP->name, lowest->name));
+		// initialMove(qbP);
 		align(lowest, Alignment::South, qbP, 20);
 		return;
 	}
@@ -403,6 +416,7 @@ void Box::add(Base* qbP)
 {
 	if (vertical)
 	{
+		LM_T(LmtVerticalBox, ("Adding %s '%s' vertically", qbP->typeName(), qbP->name));
 		addVertically(qbP);
 		return;
 	}
@@ -417,7 +431,10 @@ void Box::add(Base* qbP)
 		if (qbP->isBox == false)
 			initialMove(qbP);
 		else
-			LM_W(("Boxes get no initialMove (%s) ...", qbP->name));
+		{
+			LM_W(("Boxes GET initialMove (%s) ...", qbP->name));
+			//initialMove(qbP);
+		}
 
 		LM_TODO(("Should make sure 'this' really has changed its geometry before calling sizeChange"));
 		sizeChange(this);
@@ -787,8 +804,8 @@ void Box::realign(Base* master, Alignment::Type type, Base* slave, int margin)
 	master->geometry(&mx, &my, &mw, &mh);
 	slave->geometry(&sx, &sy, &sw, &sh);
 
-	LM_T(LmtAlign, ("Master geometry: { %d, %d } %d x %d", mx, my, mw, mh));
-	LM_T(LmtAlign, ("Slave  geometry: { %d, %d } %d x %d", sx, sy, sw, sh));
+	LM_T(LmtAlign, ("Master (%s %s) geometry: { %d, %d } %d x %d", master->typeName(), master->name, mx, my, mw, mh));
+	LM_T(LmtAlign, ("Slave  (%s %s) geometry: { %d, %d } %d x %d", slave->typeName(),  slave->name,  sx, sy, sw, sh));
 
 	if (type == Alignment::South)
 	{
@@ -932,9 +949,9 @@ Base* Box::boxAdd(const char* boxName, int x, int y)
 *
 * textAdd - 
 */
-Base* Box::textAdd(const char* name, const char* txt, int x, int y)
+Base* Box::textAdd(const char* _name, const char* _txt, int _x, int _y)
 {
-	Block* qbP = new Block(manager, this, SimpleText, name, txt, x, y);
+	Block* qbP = new Block(manager, this, SimpleText, _name, _txt, _x, _y);
 
 	add(qbP);
 	return qbP;
@@ -1239,8 +1256,6 @@ void Box::scroll(int dy)
 */
 ScrollArea* Box::scrollAreaLookup(int px, int py)
 {
-	LM_M(("Looking up scroll area for { %d, %d }", px, py));
-
 	for (int ix = 0; ix < scrollVecSize; ix++)
 	{
 		if (scrollVec[ix] == NULL)
@@ -1283,7 +1298,7 @@ ScrollArea* Box::scrollAreaLookup(Box* sbox, int* ixP)
 *
 * scrollAreaSet - 
 */
-ScrollArea* Box::scrollAreaSet(Box* sbox, int sx, int sy, int sw, int sh, bool on)
+ScrollArea* Box::scrollAreaSet(Box* sbox, int sx, int sy, int sw, int sh, int dy, bool on)
 {
 	int         ix=0;
 	ScrollArea* saP = scrollAreaLookup(sbox, &ix);
@@ -1325,6 +1340,7 @@ ScrollArea* Box::scrollAreaSet(Box* sbox, int sx, int sy, int sw, int sh, bool o
 	saP->y   = sy;
 	saP->w   = sw;
 	saP->h   = sh;
+	saP->dy  = dy;
 
 	return saP;
 }

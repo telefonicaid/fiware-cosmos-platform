@@ -25,10 +25,12 @@
 #define LmtInputDialog        115
 #define LmtInputLine          116
 #define LmtCombo              117
+#define LmtVerticalBox        118
 
 #define LmtMove               150
 #define LmtAbsMove            151
 #define LmtRelMove            152
+#define LmtInitialMove        153
 
 #define LmtMouse              160
 #define LmtMousePress         161
@@ -37,11 +39,12 @@
 
 #define LmtCreate             170
 #define LmtGeometry           171
-#define LmtAlign              172
-#define LmtAlignVector        173
-#define LmtAlignList          174
-#define LmtBoxAlign           175
-#define LmtSizeChange         176
+#define LmtGeometry2          172
+#define LmtAlign              173
+#define LmtAlignVector        174
+#define LmtAlignList          175
+#define LmtBoxAlign           176
+#define LmtSizeChange         177
 
 #define LmtHide               181
 #define LmtRemove             182
@@ -50,5 +53,6 @@
 #define LmtQsiList            192
 #define LmtModal              193
 #define LmtZ                  194
+#define LmtScrollArea         195
 
 #endif

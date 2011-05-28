@@ -38,6 +38,7 @@ Base::Base(Box* _owner, Type _type, const char* _name, int _x, int _y, int _widt
 	height   = _height;
 
 	isBox    = false;
+	initialMoves = 0;
 }
 
 

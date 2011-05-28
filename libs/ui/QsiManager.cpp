@@ -57,6 +57,10 @@ Manager::Manager(QVBoxLayout* layout, const char* homeDir, const char* backgroun
 	modal        = NULL;
 	Home         = strdup(homeDir);
 
+    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+
+
 	//
 	// Menu callbacks
 	//
@@ -79,7 +83,7 @@ Manager::Manager(QVBoxLayout* layout, const char* homeDir, const char* backgroun
 		LM_W(("background file '%s' is missing", bgPath));
 		setSceneRect(QRectF(0, 0, totalWidth, totalHeight));
 		view->setSceneRect(0, 0, totalWidth, totalHeight);
-		view->setMaximumSize(totalWidth * 2, totalHeight * 2);
+		view->setMaximumSize(totalWidth, totalHeight);
 
 		sceneLayer0 = NULL;
 		sceneLayer1 = NULL;
@@ -95,10 +99,11 @@ Manager::Manager(QVBoxLayout* layout, const char* homeDir, const char* backgroun
 		pixmapSize = bg->size();
 
 		LM_T(LmtImage, ("Setting background size to %d x %d", pixmapSize.width(), pixmapSize.height()));
-		setSceneRect(QRectF(0, 0, pixmapSize.width(), pixmapSize.height()));
-
+		// setSceneRect(QRectF(0, 0, pixmapSize.width(), pixmapSize.height()));
+		setSceneRect(QRectF(0, 0, totalWidth, totalHeight));
 		view->setSceneRect(0, 0, totalWidth, totalHeight);
-		view->setMaximumSize(pixmapSize.width(), pixmapSize.height());
+		view->setMaximumSize(totalWidth, totalHeight);
+		// view->setMaximumSize(pixmapSize.width(), pixmapSize.height());
 	}
 
 	
@@ -509,12 +514,12 @@ void Manager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 {
 	QPointF          point    = event->scenePos();
-	int              dy       = (event->delta() > 0)? 10 : -10;
+	int              dy       = (event->delta() > 0)? 1 : -1;
 	QGraphicsItem*   gItemP   = itemAt(point);
 	Base*            qbP      = lookup(gItemP);
 	Box*             xbox;
 
-	LM_M(("Mouse wheel dy == %d, point is { %d, %d }", dy, (int) point.x(), (int) point.y()));
+	LM_T(LmtMouse, ("Mouse wheel dy == %d, point is { %d, %d }", dy, (int) point.x(), (int) point.y()));
 
 	ScrollArea* saP;
 	saP = box->scrollAreaLookup(point.x(), point.y());
@@ -522,8 +527,11 @@ void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 	{
 		int x, y, w, h;
 
-		LM_M(("Found scroll area"));
+		event->accept();
+
+		LM_T(LmtScrollArea, ("Found scroll area"));
 		saP->box->geometry(&x, &y, &w, &h);
+		dy = dy * saP->dy;
 		if (dy < 0)
 		{
 			if (y <= 0)
@@ -544,21 +552,11 @@ void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 
 	if ((qbP == NULL) || (((Block*) qbP)->w.vP != NULL))
 	{
-		LM_M(("NULL Qsi pointer"));
 		QGraphicsScene::wheelEvent(event);
 		return;
 	}
 	
 	xbox = qbP->owner;
-
-#if 0
-	if (xbox->scrollable == true)
-	{
-		LM_M(("box is scrollable"));
-		xbox->scroll(dy);
-	}
-#endif
-	LM_M(("From"));
 }
 
 

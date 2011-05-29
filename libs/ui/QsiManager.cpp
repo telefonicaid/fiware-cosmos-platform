@@ -284,6 +284,7 @@ void Manager::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		gItemP      = itemAt(pressPoint);
 		activeItem  = lookup(gItemP);
 
+		LM_M(("Left Mouse Button pressed at { %d, %d }", pressPoint.x(), pressPoint.y()));
 		if (activeItem)
 		{
 			oldZ = activeItem->getZValue();
@@ -383,7 +384,7 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 		else if (activeItem != NULL)
 		{
 			if (activeItem->w.vP != NULL)
-				QGraphicsScene::mousePressEvent(mouseEvent);
+				QGraphicsScene::mouseReleaseEvent(mouseEvent);
 			LM_T(LmtMousePress, ("PRESS ON %s '%s'", activeItem->typeName(), activeItem->name));
 		}
 		else
@@ -511,6 +512,16 @@ void Manager::mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent)
 *
 * wheelEvent - 
 */
+void Manager::wheelEvent(QWheelEvent* event)
+{
+	LM_M(("Got a wheel event"));
+	event->accept();
+}
+
+/* ****************************************************************************
+*
+* wheelEvent - 
+*/
 void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 {
 	QPointF          point    = event->scenePos();
@@ -519,6 +530,7 @@ void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 	Base*            qbP      = lookup(gItemP);
 	Box*             xbox;
 
+	event->accept();
 	LM_T(LmtMouse, ("Mouse wheel dy == %d, point is { %d, %d }", dy, (int) point.x(), (int) point.y()));
 
 	ScrollArea* saP;
@@ -526,8 +538,6 @@ void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 	if (saP != NULL)
 	{
 		int x, y, w, h;
-
-		event->accept();
 
 		LM_T(LmtScrollArea, ("Found scroll area"));
 		saP->box->geometry(&x, &y, &w, &h);

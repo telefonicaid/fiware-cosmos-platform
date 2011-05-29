@@ -18,6 +18,7 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QGraphicsSceneWheelEvent>
+#include <QWheelEvent>
 
 #include "QsiFunction.h"        // Function
 #include "QsiCallback.h"        // Callback
@@ -137,6 +138,7 @@ private:
 	void       mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
 	void       mouseMoveEvent(QGraphicsSceneMouseEvent*  mouseEvent);
 	void       wheelEvent(QGraphicsSceneWheelEvent* event);
+	void       wheelEvent(QWheelEvent* event);
 
 public:
 	QAction*   menuAction[QSI_MENU_ACTIONS];

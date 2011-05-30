@@ -37,7 +37,7 @@ namespace samson {
             
             switch (op->getType()) {
                 case Operation::parser:
-                    
+                    /*
                     if ( blocks.size() > 0 )
                     {
                         ParserQueueTask *tmp = new ParserQueueTask( streamQueue ); 
@@ -47,6 +47,7 @@ namespace samson {
                         qm->queueTaskManager.add( tmp );
                         
                     }
+                     */
                     
                     break;
                 default:

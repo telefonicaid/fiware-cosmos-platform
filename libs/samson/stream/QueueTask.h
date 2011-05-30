@@ -56,7 +56,7 @@ namespace samson {
             
         };
     
-        
+/*        
         // Parser QueueTask
         
         class ParserQueueTask : public QueueTask , public StreamProcessBase
@@ -82,10 +82,11 @@ namespace samson {
             }
             
         };
+ */   
         
         
     }
-    
+ 
 }
 
 #endif

@@ -18,6 +18,9 @@
 #include "samson/common/samson.pb.h"    // network::
 
 namespace samson {
+    
+    class NetworkInterface;
+    
     namespace stream
     {
         class Block;
@@ -32,10 +35,11 @@ namespace samson {
             std::string name;                   // Name of the queue
             au::list< Block > blocks;         // Blocks currently in the input queue
             
+        public:
+            
             // Information about how to process this queue ( from controller )
             network::StreamQueue *streamQueue;
             
-        public:
             
             Queue( std::string _name , QueuesManager * _qm )
             {
@@ -66,6 +70,8 @@ namespace samson {
             void scheduleNewTasksIfNecessary();
             
             std::string getStatus();
+          
+            ::samson::NetworkInterface *getNetwork();
             
         };
         

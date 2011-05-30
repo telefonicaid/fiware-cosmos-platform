@@ -8,8 +8,9 @@
     
 #include "samson/common/EnvironmentOperations.h"    // getStatus()
 #include "samson/module/ModulesManager.h"           
-
 #include "QueueTask.h"
+#include "samson/network/NetworkInterface.h"
+#include "samson/worker/SamsonWorker.h"
 
 namespace samson {
     namespace stream
@@ -39,7 +40,7 @@ namespace samson {
                     
                     if ( blocks.size() > 0 )
                     {
-                        ParserQueueTask *tmp = new ParserQueueTask( streamQueue->operation() ); 
+                        ParserQueueTask *tmp = new ParserQueueTask( streamQueue ); 
                         while( blocks.size() > 0 )
                             tmp->add( blocks.extractFront() );
                         // Schedule tmp task into QueueTaskManager
@@ -90,6 +91,12 @@ namespace samson {
             
             return output.str();
         }
+        
+        ::samson::NetworkInterface* Queue::getNetwork()
+        {
+            return qm->worker->network;
+        }
+
         
         
     }

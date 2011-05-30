@@ -7,13 +7,14 @@
 #include "Block.h"          // samson::stream::Block
 
 #include "engine/MemoryManager.h"
+#include "samson/worker/SamsonWorker.h"
 
 namespace samson {
     namespace stream{
     
-        QueuesManager::QueuesManager()
+        QueuesManager::QueuesManager(::samson::SamsonWorker* _worker)
         {
-            
+            worker = _worker;
         }
         
         std::string QueuesManager::getStatus()

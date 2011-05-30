@@ -6,6 +6,8 @@
 #include <set>
 #include <sstream>
 #include "Block.h"  
+#include "engine/ProcessItem.h"
+#include "samson/worker/StreamProcessBase.h"
 
 namespace samson {
     namespace stream {
@@ -19,11 +21,20 @@ namespace samson {
 
         protected:
             
-            friend class QueueTaskManager;  // Manager 
-            std::set< Block* > blocks;  // List of blocks involved in the operation ( retained by this operation )
-            size_t id;                  // Id of the operation
+            friend class QueueTaskManager;      // Manager 
+            std::set< Block* > blocks;          // List of blocks involved in the operation ( retained by this operation )
+            size_t id;                          // Id of the operation
+
             
         public:
+            
+            QueueTask(  )
+            {
+            }
+            
+            ~QueueTask()
+            {
+            }
             
             void add( Block * b );
             
@@ -48,26 +59,27 @@ namespace samson {
         
         // Parser QueueTask
         
-        class ParserQueueTask : public QueueTask
+        class ParserQueueTask : public QueueTask , public StreamProcessBase
         {
-            std::string parser;
-            
             
         public:
             
-            ParserQueueTask( std::string _parser )
+            ParserQueueTask( network::StreamQueue * streamQueue  ) : StreamProcessBase( key_value , streamQueue )
             {
-                parser = _parser;
             }
             
             virtual std::string getStatus()
             {
                 std::ostringstream output;
                 output << "[" << id << "] ";
-                output << "Parser " << parser << " processing " << blocks.size() << " blocks with " << au::Format::string( getSize( blocks ) );
+                output << "Parser " << streamQueue->operation() << " processing " << blocks.size() << " blocks with " << au::Format::string( getSize( blocks ) );
                 return output.str();
             }
             
+            void generateKeyValues( KVWriter *writer )
+            {
+                LM_M(("Running parser over %d blocks" , (int)blocks.size() ));
+            }
             
         };
         

@@ -40,7 +40,7 @@ namespace samson {
 	 *
 	 * Constructor
 	 */
-	SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , loadDataManager(this)
+	SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , loadDataManager(this) , queuesManager(this)
 	{
         // Get initial time
 		gettimeofday(&init_time, NULL);

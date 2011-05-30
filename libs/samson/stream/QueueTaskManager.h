@@ -12,9 +12,10 @@ namespace samson {
         
         class QueueTaskManager
         {
-            au::list< QueueTask > queueTasks;
             size_t id;                              // Id of the current task
-                        
+
+            au::list< QueueTask > queueTasks;       // List of pending task to be executed
+            
         public:
             
             void add( QueueTask* task );

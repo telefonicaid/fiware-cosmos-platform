@@ -20,6 +20,9 @@
 #include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager
 
 namespace samson {
+    
+    class SamsonWorker;
+    
     namespace stream
     {
         
@@ -34,9 +37,11 @@ namespace samson {
             
             friend class Queue;
             
+            ::samson::SamsonWorker* worker;       // Pointer to the controller to send messages
+            
         public:
             
-            QueuesManager();
+            QueuesManager( ::samson::SamsonWorker* worker );
             std::string getStatus();
 
             // Add a block to a particular queue ( ususally from the network interface )

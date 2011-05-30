@@ -128,6 +128,92 @@ static Qsi::Block*       combo;
 
 /* ****************************************************************************
 *
+* remove - 
+*/
+static void remove(Qsi::Block* qbP, void* x)
+{
+	Qsi::Box* box = qbP->getOwner();
+
+	box->remove(qbP);
+}
+
+
+
+/* ****************************************************************************
+*
+* qlist variables
+*/
+#define QLIST_EXP_LISTS          10
+#define QLIST_EXP_LIST_MEMBERS   6
+
+static Qsi::Block*       qlistRec;
+static Qsi::Block*       qlistTitle;
+static Qsi::Box*         qlistBox;
+static Qsi::ExpandList*  qlistExpList[QLIST_EXP_LISTS];
+
+
+
+/* ****************************************************************************
+*
+* qlistCallback - 
+*/
+static void qlistCallback(Qsi::Block* qbP, void* vP)
+{
+	char* txt = (char*) vP;
+
+	LM_M(("QList item '%s' pressed: '%s'", qbP->name, txt));
+
+	if (strcmp(txt, "Remove") == 0)
+		remove(qbP, vP);
+}
+
+
+
+/* ****************************************************************************
+*
+* qlistCreate - 
+*/
+static void qlistCreate(void)
+{
+	qlistRec    = (Qsi::Block*) mainBox->rectangleAdd("QListRec", 1400, 0, 400, 100, QColor(0x80, 0x90, 0x80, 0xFF), QColor(0, 0, 0, 0xFF), 3, qlistCallback, NULL);
+	qlistTitle  = (Qsi::Block*) mainBox->textAdd("Queue X", "Queue X",      0, 0);
+	
+	qlistTitle->align(Qsi::Alignment::Center, qlistRec, 0);
+
+	qlistRec->setZValue(0.80);
+	qlistTitle->setZValue(0.81);
+	
+	qlistBox = (Qsi::Box*) mainBox->boxAdd("QList Scroll Box", 1400, 100);
+	qlistBox->setVertical(true);
+	mainBox->scrollAreaSet(qlistBox, 1400, -2000, 400, 4000, 20, true);
+
+	for (int eix = 0; eix < QLIST_EXP_LISTS; eix++)
+	{
+		char        name[32];
+		const char* subMenuItem[] =
+		{
+			"Remove",
+			"Move",
+			"Red",
+			"Green",
+			"Gray",
+			NULL
+		};
+
+		sprintf(name, "Expand List %02d", eix);
+		qlistExpList[eix] = new Qsi::ExpandList(qsiManager, qlistBox, name, 0, 0, 0, 0, qlistCallback);
+		for (int mix = 0; mix < QLIST_EXP_LIST_MEMBERS; mix++)
+		{
+			sprintf(name, "Item %02d-%02d", eix, mix);
+			qlistExpList[eix]->addMember(name, qlistCallback, name, subMenuItem);
+		}
+	}
+}
+
+
+
+/* ****************************************************************************
+*
 * fieldEdit - 
 */
 static void fieldEdit(Qsi::Block* qbP, void* param)
@@ -155,19 +241,6 @@ static void userColor(Qsi::Block* qbP, void* param)
 	g = (g + 15) % 256;
 	b = (b + 20) % 256;
 	a = (a + 10) % 256;
-}
-
-
-
-/* ****************************************************************************
-*
-* remove - 
-*/
-static void remove(Qsi::Block* qbP, void* x)
-{
-	Qsi::Box* box = qbP->getOwner();
-
-	box->remove(qbP);
 }
 
 
@@ -665,6 +738,8 @@ static void qsiSetup(QWidget* mainWindow)
 	verticalBox->textAdd("Line3", "Line3", 0, 0);
 	verticalBox->textAdd("Line4", "Line4", 0, 0);
 	verticalBox->textAdd("Line5", "Line5", 0, 0);
+
+	qlistCreate();
 }
 
 

@@ -53,6 +53,9 @@
 #define LmtQsiList            192
 #define LmtModal              193
 #define LmtZ                  194
-#define LmtScrollArea         195
+#define LmtScroll             195
+#define LmtScrollArea         196
+
+#define LmtRealloc            197
 
 #endif

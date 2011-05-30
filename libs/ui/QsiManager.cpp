@@ -528,10 +528,9 @@ void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 	int              dy       = (event->delta() > 0)? 1 : -1;
 	QGraphicsItem*   gItemP   = itemAt(point);
 	Base*            qbP      = lookup(gItemP);
-	Box*             xbox;
 
 	event->accept();
-	LM_T(LmtMouse, ("Mouse wheel dy == %d, point is { %d, %d }", dy, (int) point.x(), (int) point.y()));
+	LM_T(LmtScroll, ("Mouse wheel dy == %d, point is { %d, %d }", dy, (int) point.x(), (int) point.y()));
 
 	ScrollArea* saP;
 	saP = box->scrollAreaLookup(point.x(), point.y());
@@ -544,9 +543,9 @@ void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 		dy = dy * saP->dy;
 		if (dy < 0)
 		{
-			if (y <= 0)
-				LM_RVE(("scrolling up but y == 0"));
-			if ((y + dy) < 0)
+			if (y <= saP->y)
+				LM_RVE(("scrolling up but y == %d (scroll area top)", saP->y));
+			if ((y + dy) < saP->y)
 				dy = -y;
 		}
 		else
@@ -560,13 +559,12 @@ void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 		saP->box->scroll(dy);
 	}
 
-	if ((qbP == NULL) || (((Block*) qbP)->w.vP != NULL))
+	// if ((qbP == NULL) || (((Block*) qbP)->w.vP != NULL))
+	if ((qbP != NULL) && ((Block*) qbP)->w.vP != NULL)
 	{
 		QGraphicsScene::wheelEvent(event);
 		return;
 	}
-	
-	xbox = qbP->owner;
 }
 
 
@@ -595,7 +593,7 @@ void Manager::siConnect(Block* qbP, Function func, const void* param, bool persi
 
 	itemCallbackMax += 5;
 	
-    LM_W(("REALLOC to %d items", itemCallbackMax));
+	LM_T(LmtRealloc, ("REALLOC to %d items", itemCallbackMax));
 	itemCallback = (Callback**) realloc(itemCallback, itemCallbackMax * sizeof(Callback*));
 	
 	for (int ix = itemCallbackMax - 5; ix < itemCallbackMax; ix++)

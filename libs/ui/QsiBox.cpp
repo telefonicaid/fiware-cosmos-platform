@@ -262,7 +262,8 @@ int Box::geometry(int* xP, int* yP, int* widthP, int* heightP)
 	{
 		*widthP  = 0;
 		*heightP = 0;
-		LM_RE(-1, ("No geometry found"));
+		// LM_RE(-1, ("No geometry found"));
+		return -1;
 	}
 
 	*widthP  = xMax - xMin;
@@ -432,7 +433,7 @@ void Box::add(Base* qbP)
 			initialMove(qbP);
 		else
 		{
-			LM_W(("Boxes GET initialMove (%s) ...", qbP->name));
+			LM_T(LmtInitialMove, ("Boxes do NOT get initialMove (%s) ...", qbP->name));
 			//initialMove(qbP);
 		}
 
@@ -1261,6 +1262,7 @@ ScrollArea* Box::scrollAreaLookup(int px, int py)
 		if (scrollVec[ix] == NULL)
 			continue;
 
+		LM_T(LmtScrollArea, ("Comparing point { %d, %d } to scrollVec %d: { %d, %d } %dx%d", px, py, ix, scrollVec[ix]->x, scrollVec[ix]->y, scrollVec[ix]->w, scrollVec[ix]->h));
 		if ((px >= scrollVec[ix]->x) && (px <= scrollVec[ix]->x + scrollVec[ix]->w) && (py >= scrollVec[ix]->y) && (py <= scrollVec[ix]->y + scrollVec[ix]->h))
 			return scrollVec[ix];
 	}
@@ -1298,7 +1300,7 @@ ScrollArea* Box::scrollAreaLookup(Box* sbox, int* ixP)
 *
 * scrollAreaSet - 
 */
-ScrollArea* Box::scrollAreaSet(Box* sbox, int sx, int sy, int sw, int sh, int dy, bool on)
+ScrollArea* Box::scrollAreaSet(Box* sbox, int sx, int sy, int sw, int sh, int step, bool on)
 {
 	int         ix=0;
 	ScrollArea* saP = scrollAreaLookup(sbox, &ix);
@@ -1308,7 +1310,7 @@ ScrollArea* Box::scrollAreaSet(Box* sbox, int sx, int sy, int sw, int sh, int dy
 		if (saP == NULL)
 			LM_RE(NULL, ("Scroll Area for '%s' at { %d, %d } %dx%d cannot be removed - not found", sbox->name, sx, sy, sw, sh));
 
-		scrollVec[ix]->box->scrollable = false; // A box can have onlt ONE scroll area ...
+		scrollVec[ix]->box->scrollable = false; // A box can have only ONE scroll area ...
 
 		free(scrollVec[ix]);
 		scrollVec[ix] = NULL;
@@ -1340,8 +1342,9 @@ ScrollArea* Box::scrollAreaSet(Box* sbox, int sx, int sy, int sw, int sh, int dy
 	saP->y   = sy;
 	saP->w   = sw;
 	saP->h   = sh;
-	saP->dy  = dy;
+	saP->dy  = step;
 
+	LM_T(LmtScrollArea, ("Set scrollArea %d for box %s: { %d, %d } %dx%d - step: %d", ix, sbox->name, sx, sy, sw, sh, step));
 	return saP;
 }
 

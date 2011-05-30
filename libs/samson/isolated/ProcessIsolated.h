@@ -16,6 +16,10 @@
 
 namespace samson {
     
+    
+    class ProcessWriter;
+    class ProcessTXTWriter;
+    
     /**
      
      ProcessIsolated is an isolated process that share 
@@ -26,6 +30,17 @@ namespace samson {
     class ProcessIsolated : public ProcessItemIsolated
     {
         
+    public:
+        
+        typedef enum
+		{
+			key_value,      // Emit key-values to multiple outputs / multiple workers
+			txt             // Emit txt content using the entire buffer
+		} ProcessBaseType;
+		
+		
+		ProcessBaseType type;
+
     public:
         
         int shm_id;// Shared memory area used in this operation
@@ -42,63 +57,54 @@ namespace samson {
         
     public:
         
-        ProcessIsolated( int _num_outputs , int _num_workers )
-        {
-            num_outputs = _num_outputs;
-            num_workers = _num_workers;
-            
-            // By default we have no asignation of shared memory
-            shm_id = -1;
-            item = NULL;
-        }
+        ProcessIsolated( ProcessBaseType _type , int _num_outputs , int _num_workers );
+        ~ProcessIsolated();
+
+        // Chage the type of usage
+		void setProcessBaseMode(ProcessBaseType _type)
+		{
+			type = _type;
+		}
         
-        ~ProcessIsolated()
-        {
-            if( shm_id != -1 )
-                engine::SharedMemoryManager::shared()->releaseSharedMemoryArea( shm_id );
-            
-            if ( item )
-                engine::SharedMemoryManager::shared()->freeSharedMemory( item );
-        }
         
         // Function to specify if we are ready to be executed of continued from a halt
-        bool isReady()
-        {
-            if( shm_id == -1 )
-            {
-                // Try to get a shared memory buffer to produce output
-                shm_id = engine::SharedMemoryManager::shared()->retainSharedMemoryArea();
-                if( shm_id != -1 )
-                    item = engine::SharedMemoryManager::shared()->getSharedMemory( shm_id );
-            }
-            
-            bool available_memory = true;
-            
-            engine::MemoryManager *mm = engine::MemoryManager::shared();
-            double memory_output_network    = mm->getMemoryUsageByTag( MemoryOutputNetwork );
-            double memory_output_disk       = mm->getMemoryUsageByTag( MemoryOutputDisk );
-            
-            if( (memory_output_network + memory_output_disk ) > 0.5 )
-                available_memory = false;
-            
-            // Return true only if output memory is available and there is a shared memory buffer for me
-            return  ( available_memory && item );
-        }        
+        bool isReady();
         
         // Get the writers to emit key-values
-        ProcessWriter* getWriter()
-        {
-            if( ! writer )
-                writer = new ProcessWriter( this );
-            return writer;
-        }
+        ProcessWriter* getWriter();
         
-        ProcessTXTWriter* getTXTWriter()
-        {
-            if( ! txtWriter )
-                txtWriter = new ProcessTXTWriter( this );
-            return txtWriter;
-        }        
+        ProcessTXTWriter* getTXTWriter();      
+        
+		// Flush the buffer ( front process ) in key-value and txt mode
+		void flushBuffer( bool finish );
+		void flushKVBuffer( bool finish );
+		void flushTXTBuffer( bool finish );
+		
+		// Function executed at this process side when a code is sent from the background process
+		void runCode( int c )
+		{
+			switch (c) {
+				case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:
+					flushBuffer(false);	// Flush the generated buffer with new key-values
+					return;
+                    break;
+				case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH:
+					flushBuffer(true);	// Flush the generated buffer with new key-values
+                    return;
+                    break;
+				default:
+					error.set("System error: Unknown code in the isolated process communication");
+					break;
+			}
+			
+			return;
+		}
+
+        // Pure virtual methods to process output buffers of data
+        virtual void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )=0;
+        virtual void processOutputTXTBuffer( engine::Buffer *buffer , bool finish )=0;
+        
+        
         
     };
     

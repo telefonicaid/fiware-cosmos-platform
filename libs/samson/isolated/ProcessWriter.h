@@ -46,10 +46,14 @@ namespace samson {
 		uint32 num_nodes;	// Total number of nodes ( to fit inside the shared memory block)
 		
 		uint32 new_node;	// Identifier of the next free block
-		
-	public:
-		
+	
+ 	private:
+        
+		friend class ProcessIsolated;
 		ProcessWriter( ProcessIsolated * _workerTaskItem  );
+    
+    public:
+        
 		~ProcessWriter();
 		
 		/**
@@ -63,8 +67,7 @@ namespace samson {
 		void clear();
 
 		// Function used to flush the content of the buffer ( it sends a code to the "parent" process to emit througt network )
-		void flushBuffer(bool finish);
-
+		void flushBuffer( bool finish );
 		
 	};
 	
@@ -80,13 +83,17 @@ namespace samson {
 		size_t max_size;
 		
 		engine::SharedMemoryItem *item;
-		
+
+	private:
+        
+		friend class ProcessIsolated;
 		ProcessTXTWriter( ProcessIsolated * _workerTaskItem  );
 
-		
+    public:
+ 		
 		void emit( const char * _data , size_t _size);
 
-		void flushBuffer(bool finish);
+		void flushBuffer( bool finish );
 		
 	};
 

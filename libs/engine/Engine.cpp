@@ -286,7 +286,7 @@ namespace engine
 
                 time_t t = cronometer.diffTimeInSeconds();
 
-                LM_M(("Task %s spent %d seconds.", running_element->getDescription().c_str() , (int)t ));
+                //LM_M(("Task %s spent %d seconds.", running_element->getDescription().c_str() , (int)t ));
                 
                 if( t > 60 )
                     LM_W(("Task %s spent %d seconds. This should not be more than 60", running_element->getDescription().c_str() , (int)t ));

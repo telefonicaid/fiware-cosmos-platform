@@ -42,15 +42,6 @@ namespace samson
 
 	public:
 		
-		typedef enum
-		{
-			key_value,
-			txt
-		} ProcessBaseType;
-		
-		
-		ProcessBaseType type;
-		
 
 		size_t task_id;                         
         int worker;                             // Information about the my worker id
@@ -69,11 +60,6 @@ namespace samson
 		~ProcessBase();
 		
 		
-		void setProcessBaseMode(ProcessBaseType _type)
-		{
-			type = _type;
-		}
-		
 		// Function to be implemented ( running on a different process )
 		void runIsolated();
 		void runIsolatedKV();
@@ -86,31 +72,12 @@ namespace samson
 		virtual void generateTXT( TXTWriter *writer ){};
 		
 		
-		// Flush the buffer ( front process ) in key-value and txt mode
-		void flushBuffer( bool finish );
-		void flushKVBuffer( bool finish );
-		void flushTXTBuffer( bool finish );
-		
-		// Function executed at this process side when a code is sent from the background process
-		void runCode( int c )
-		{
-			switch (c) {
-				case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:
-					flushBuffer(false);	// Flush the generated buffer with new key-values
-					return;
-                    break;
-				case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH:
-					flushBuffer(true);	// Flush the generated buffer with new key-values
-                    return;
-                    break;
-				default:
-					error.set("System error: Unknown code in the isolated process communication");
-					break;
-			}
-			
-			return;
-		}
 
+        // Function to process the output of the operations
+        void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish );
+        void processOutputTXTBuffer( engine::Buffer *buffer , bool finish );
+        
+        
 		
 	};
 }

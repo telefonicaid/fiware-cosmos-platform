@@ -8,7 +8,7 @@
 #include "samson/common/EnvironmentOperations.h"	// copyEnviroment
 #include "WorkerTask.h"				// samson::WorkerTask
 #include "samson/worker/SamsonWorker.h"			// samson::SamsonWorker
-#include "SharedMemoryItem.h"       // samson::SharedMemoryItem
+#include "samson/isolated/SharedMemoryItem.h"       // samson::SharedMemoryItem
 #include "logMsg/logMsg.h"                 // LM_X
 #include "samson/common/MemoryTags.h"             // MemoryOutputNetwork
 
@@ -17,15 +17,13 @@ namespace samson {
 	
 #pragma mark ProcessItemKVGenerator
 	
-	ProcessBase::ProcessBase( WorkerTask *task , ProcessBaseType _type )
+	ProcessBase::ProcessBase( WorkerTask *task , ProcessBaseType _type ) 
+        : ProcessIsolated( task->workerTask.output_queue_size() , task->workerTask.servers() )
 	{
 		// Pointer to the task in task manager
 		//task = _task;
 		type = _type;
 		
-		num_outputs = task->workerTask.output_queue_size();
-		num_servers = task->workerTask.servers();
-
 		// copy the message received from the controller
 		workerTask = new network::WorkerTask();
 		workerTask->CopyFrom( task->workerTask );
@@ -39,7 +37,6 @@ namespace samson {
 									
 		copyEnviroment( task->workerTask.environment() , &environment ); 
 		
-		item = NULL; // Initialized at init function
 		
 		workerTaskManager = task->taskManager;
         worker = task->taskManager->worker->network->getWorkerId();    // Get the worker id information
@@ -132,7 +129,7 @@ namespace samson {
 		OutputChannel *channel = (OutputChannel*) buffer;
 		
 		// Buffer starts next
-		NodeBuffer* node = (NodeBuffer*) ( buffer + sizeof(OutputChannel) * num_outputs * num_servers );
+		NodeBuffer* node = (NodeBuffer*) ( buffer + sizeof(OutputChannel) * num_outputs * num_workers );
 		//size_t num_nodes = ( size - (sizeof(OutputChannel)* num_outputs* num_servers )) / sizeof( NodeBuffer );
 		
 #pragma mark ---
@@ -146,9 +143,9 @@ namespace samson {
 			network::Queue output_queue = workerTask->output_queue( o ).queue();
 			
 			
-			for (int s = 0 ; s < num_servers ; s++)
+			for (int s = 0 ; s < num_workers ; s++)
 			{				
-				OutputChannel * _channel = &channel[ o * num_servers + s ];	
+				OutputChannel * _channel = &channel[ o * num_workers + s ];	
 				
 				if( _channel->info.size > 0)
 				{

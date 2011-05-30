@@ -21,7 +21,7 @@
 #include "samson/network/EndpointManager.h"
 #include "samson/worker/SamsonWorker.h"
 #include "samson/common/SamsonSetup.h"
-#include "samson/worker/SharedMemoryManager.h"
+#include "samson/isolated/SharedMemoryManager.h"
 #include "samson/stream/BlockManager.h"
 #include "samson/module/ModulesManager.h"
 

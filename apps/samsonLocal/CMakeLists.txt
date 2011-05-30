@@ -14,15 +14,16 @@ SET (HEADERS
 )
 
 SET( STATIC_LIBS
-samsonWorkerLib
-samsonControllerLib
-delilahLib
-engine
-samsonModule
-samsonDataLib
-samsonNetwork
-samsonCommon
-samsonStream
+     samsonWorkerLib
+     samsonControllerLib
+     delilahLib
+     engine
+	samsonModule
+	samsonDataLib
+	samsonNetwork
+	samsonCommon
+	samsonStream
+	samsonIsolated
 au
 lm
 pa

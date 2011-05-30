@@ -17,7 +17,7 @@
 #include "engine/MemoryManager.h"  // samson::MemoryManager
 #include "samson/network/Endpoint.h"              // samson::Endpoint
 #include "engine/Engine.h"         // samson::Engine
-#include "samson/worker/SharedMemoryManager.h"   // samson::SharedMemoryManager
+#include "samson/isolated/SharedMemoryManager.h"   // samson::SharedMemoryManager
 
 #include "engine/DiskManager.h"    // engine::DiskManager
 #include "engine/ProcessManager.h" // engine::ProcessManager

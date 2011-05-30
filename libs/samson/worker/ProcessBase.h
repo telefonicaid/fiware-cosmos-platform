@@ -10,16 +10,16 @@
 #include "samson/common/coding.h"				// samson::ProcessAssistantSharedFile
 #include "au/Lock.h"				// au::Lock
 #include "engine/ProcessItem.h"		// samson::ProcessItem
-#include "ProcessItemIsolated.h"	// ss:ProcessItemIsolated
+#include "samson/isolated/ProcessItemIsolated.h"	// ss:ProcessItemIsolated
 #include "samson/network/NetworkInterface.h"		// samson::NetworkInterface
-#include "ProcessWriter.h"			// samson::ProcessWriter
+#include "samson/isolated/ProcessWriter.h"			// samson::ProcessWriter
 #include "samson/common/samson.pb.h"                      // samson::network::...
 #include "samson/module/OperationController.h"     // samson::OperationController
 #include "engine/Engine.h"                         // samson::Engine
-#include "samson/worker/SharedMemoryManager.h"            // samson::SharedMemoryManager
+#include "samson/isolated/SharedMemoryManager.h"            // samson::SharedMemoryManager
+#include "samson/common/MemoryTags.h"                       // MemoryOutputNetwork
+#include "samson/isolated/ProcessIsolated.h"                // samson::ProcessIsolated
 
-#define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER          1
-#define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH	2
 
 namespace samson
 {
@@ -27,14 +27,17 @@ namespace samson
 	class WorkerTask;
 	class WorkerTaskManager;
 	class SharedMemoryItem;
+    class ProcessWriter;
+    class ProcessTXTWriter;
     
+ 
 	/**
 	 A particular process that runs in as isolated mode generating key-values
 	 A shared memory area is used to exchange data between the background process and the foreground thread
 	 When necessary, a code is sent between both to flush content of this shared memory segment
 	 */
 	
-	class ProcessBase : public ProcessItemIsolated
+	class ProcessBase : public ProcessIsolated
 	{
 
 	public:
@@ -48,11 +51,6 @@ namespace samson
 		
 		ProcessBaseType type;
 		
-		// Elements defining this task
-		//WorkerTask *task;
-		
-		int num_outputs;						// Number of outputs
-		int num_servers;						// Number of workers in the cluster
 
 		size_t task_id;                         
         int worker;                             // Information about the my worker id

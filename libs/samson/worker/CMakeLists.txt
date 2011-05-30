@@ -12,11 +12,7 @@ SET (HEADERS
 	ProcessCompact.h
 	ProcessOperation.h
 	ProcessParser.h
-	ProcessWriter.h
 	KVInputVector.h
-	ProcessItemIsolated.h
-	SharedMemoryManager.h
-	SharedMemoryItem.h
 )
 
 SET (SOURCES
@@ -32,11 +28,7 @@ SET (SOURCES
 	ProcessCompact.cpp
 	ProcessOperation.cpp
 	ProcessParser.cpp
-	ProcessWriter.cpp
 	KVInputVector.cpp
-	ProcessItemIsolated.cpp
-	SharedMemoryManager.cpp
-	SharedMemoryItem.cpp
 )
 
 

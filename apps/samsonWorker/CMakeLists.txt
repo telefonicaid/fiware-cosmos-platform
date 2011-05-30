@@ -12,6 +12,7 @@ SET (LIBS
     samsonModule
     samsonCommon
     samsonStream
+    samsonIsolated
     engine
     au
     pa

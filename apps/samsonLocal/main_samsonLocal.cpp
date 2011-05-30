@@ -28,9 +28,9 @@
 #include "engine/Engine.h"                 // engine::Engine
 #include "engine/EngineElement.h"          // engine::EngineElement
 
-#include "samson/worker/ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
+#include "samson/isolated/ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
 
-#include "samson/worker/SharedMemoryManager.h"    // samson::SharedMemoryManager
+#include "samson/isolated/SharedMemoryManager.h"    // samson::SharedMemoryManager
 
 #include "engine/DiskManager.h"            // engine::DiskManager
 #include "engine/ProcessManager.h"         // engine::ProcessManager

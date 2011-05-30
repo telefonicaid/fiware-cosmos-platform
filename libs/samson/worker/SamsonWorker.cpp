@@ -22,7 +22,7 @@
 #include "engine/DiskOperation.h"				// samson::DiskOperation
 #include "engine/DiskManager.h"                // Notifications
 #include "engine/ProcessManager.h"             // engine::ProcessManager
-#include "samson/worker/SharedMemoryManager.h"        // engine::SharedMemoryManager
+#include "samson/isolated/SharedMemoryManager.h"        // engine::SharedMemoryManager
 
 #include "samson/common/MemoryTags.h"                 // MemoryInput , MemoryOutputNetwork ,...
 

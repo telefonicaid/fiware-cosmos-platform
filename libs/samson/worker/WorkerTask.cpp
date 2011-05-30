@@ -44,10 +44,9 @@ namespace samson
         
         
         // Add as a listener for notification_sub_task_finished
-        engine::Engine::add( notification_sub_task_finished, this );
-        
-        engine::Engine::add( notification_process_request_response, this );
-        engine::Engine::add( notification_disk_operation_request_response, this );
+        listen( notification_sub_task_finished );
+        listen( notification_process_request_response);
+        listen( notification_disk_operation_request_response );
 	}
 	
 	WorkerTask::~WorkerTask()
@@ -69,8 +68,6 @@ namespace samson
         outputFiles.clearMap(); 
         outputRemoveFiles.clearMap();
         
-        // Remove myself as a listener
-        engine::Engine::remove( this );
 	}
 	
 	

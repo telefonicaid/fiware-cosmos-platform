@@ -25,17 +25,7 @@ namespace engine
         virtual ~Object(){};      // Force virtual destrutor for correct release of memory at the end of the notification
     };
     
-    
-    /** 
-     Function to use when creating a map with const char* type for keys
-     */
-    
-    struct strCompare : public std::binary_function<const char*, const char*, bool> {
-    public:
-        bool operator() (const char* str1, const char* str2) const
-        { return std::strcmp(str1, str2) < 0; }
-    };
-    
+        
     /**
      Main class for Notifications
      */
@@ -86,7 +76,12 @@ namespace engine
     
     class NotificationListener
     {
+        // Set of notifications we are currently listening
+        std::set< const char* , au::strCompare > notification_names;
+        
     public:
+        
+        ~NotificationListener();
         
         virtual void notify( Notification* notification ) =0 ;
         virtual bool acceptNotification( Notification* notification )
@@ -94,6 +89,10 @@ namespace engine
             // Function to filter what notifications I should receive
             return true;
         }
+
+        // Start listening a particular notification
+        void listen( const char* notification_name );
+        
         
     };
     
@@ -146,7 +145,7 @@ namespace engine
     class EngineNotificationSystem
     {
         // Map of deliveries per channel
-        std::map< const char* , NotificationListenerSet* , strCompare > listenersSets;
+        au::map< const char* , NotificationListenerSet , au::strCompare > listenersSets;
         
     public:
         
@@ -154,11 +153,7 @@ namespace engine
         {
             
             // Destroy all the Enginedelivery elements ( delete is called for each one )
-            
-            std::map< const char* , NotificationListenerSet* , strCompare >::iterator iter;
-			for (iter = listenersSets.begin() ; iter != listenersSets.end() ; iter++)
-				delete iter->second;
-            listenersSets.clear();
+            listenersSets.clearMap(); 
             
         }
         
@@ -170,17 +165,6 @@ namespace engine
         void remove( const char* name , NotificationListener* listener )
         {
             get(name)->remove( listener );
-        }
-
-        // Remove this listener from all
-        void remove( NotificationListener* listener )
-        {
-            LM_T(LmtEngineNotification , ("Engine removing general listener %p", listener ));
-            
-            std::map< const char* , NotificationListenerSet* , strCompare >::iterator d;
-            
-            for( d = listenersSets.begin() ; d != listenersSets.end() ; d++ )
-                d->second->remove( listener );
         }
         
         void notify( Notification* notification )
@@ -194,19 +178,13 @@ namespace engine
         NotificationListenerSet* get( const char* name )
         {
             NotificationListenerSet* delivery;
-            
-            std::map< const char* , NotificationListenerSet* , strCompare >::iterator d;
-            d = listenersSets.find( name );
-            
-            if( d == listenersSets.end() )
-                delivery = NULL;
-            else
-                delivery = d->second;
+
+            delivery = listenersSets.findInMap( name );
             
             if( !delivery )
             {
                 delivery = new NotificationListenerSet(name);
-                listenersSets.insert( std::pair< const char* , NotificationListenerSet*>(name, delivery) );
+                listenersSets.insertInMap( name, delivery );
             }
             return delivery;
         }

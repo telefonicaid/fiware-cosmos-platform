@@ -10,19 +10,18 @@
 
 namespace au {
 
-         /**
-	 Class to use map structures of <typedef,class*> with addittional function for easy manitpulation
+    /**
+        Class to use map structures of <typedef,class*> with addittional function for easy manitpulation
 	 */
-	
-	template <typename K,class V>
+
+    template <typename K, typename V, typename _Compare = std::less<K> >
 	class map : public std::map<K,V*>
 	{
-		
 	public:
-
+        
 		// Iterator definition
 		typename std::map<K, V* >::iterator iter;
-
+        
 		
 		// Insert a pair of elements ( easy method )
 		// If a previous element was inserted with the same key, it is automatically deleted
@@ -53,7 +52,7 @@ namespace au {
 		/**
 		 Function to easily get value for a key creating if necessary
 		 */
-
+        
 		V* findOrCreate( K& key )
 		{
 			typename std::map<K, V* >::iterator iter = find(key);
@@ -68,7 +67,7 @@ namespace au {
 			return iter->second;
 			
 		}
-
+        
 		/** 
 		 Function to remove a particular entry if exist
 		 Return if it really existed
@@ -102,11 +101,11 @@ namespace au {
 			}
 			
 		}		
-	
+        
 		void clearMap()
 		{
 			typename std::map<K, V* >::iterator iter;
-
+            
 			for (iter = std::map<K,V*>::begin() ; iter != std::map<K,V*>::end() ; iter++)
 			{
 				delete iter->second;
@@ -114,8 +113,8 @@ namespace au {
 			std::map<K, V* >::clear();
 		}
 		
+		
 	};
-
 	
 	/**
 	 Class to use map structures of <typedef,typedef> with addittional function for easy manitpulation
@@ -200,8 +199,21 @@ namespace au {
 		
 	};
 	
+    
+    // Spetial map with const char* as key
+    
+    struct strCompare : public std::binary_function<const char*, const char*, bool> {
+    public:
+        bool operator() (const char* str1, const char* str2) const
+        { return std::strcmp(str1, str2) < 0; }
+    };
 
-		
+    
+
+    
+
+    
+    
   
 }
 

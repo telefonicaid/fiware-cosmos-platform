@@ -51,7 +51,7 @@ namespace samson {
         trace_on =  false;
         
         // Default component to update local list of queues and operations
-        engine::Engine::add( notification_delilah_automatic_update , this );
+        listen( notification_delilah_automatic_update );
         
         // Emit a periodic notification
         engine::Engine::add( new engine::Notification( notification_delilah_automatic_update ) , 2 );

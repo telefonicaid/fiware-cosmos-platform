@@ -18,7 +18,7 @@ namespace samson {
 		worker = _worker;
 
         // Add as a listener for notification_task_finished notifications
-        engine::Engine::add( notification_task_finished , this );
+        listen( notification_task_finished );
 
 	}
     

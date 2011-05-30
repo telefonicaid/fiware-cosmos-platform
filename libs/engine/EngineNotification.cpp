@@ -1,7 +1,7 @@
 
 
 #include "engine/EngineNotification.h"  // Own interface
-
+#include "Engine/Engine.h"              // engine::Engine
 
 namespace engine {
     
@@ -56,5 +56,30 @@ namespace engine {
         return ( object != NULL );
     }
     
+    
+    #pragma mark NotificationListener
+    
+    void NotificationListener::listen( const char* notification_name )
+    {
+        if( notification_names.find(notification_name) == notification_names.end() )
+        {
+            // Att this listener for a particular notification channel
+            Engine::add( notification_name , this );
+
+            // Add to the list of active notifications
+            notification_names.insert( notification_name );
+        }
+    }
+
+    NotificationListener::~NotificationListener()
+    {
+        std::set< const char* , au::strCompare >::iterator iter;
+        for ( iter = notification_names.begin() ; iter != notification_names.end() ; iter++)
+        {
+            const char *notification_name = *iter;
+            Engine::remove(notification_name, this);
+        }
+    }
+
     
 }

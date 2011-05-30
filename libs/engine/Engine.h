@@ -82,9 +82,11 @@ namespace engine
         static void add( Notification*  notification , int seconds ); // Repeated notification
 
         // Add and remove listeners
+    private:
+        friend class NotificationListener;
         static void add( const char* name , NotificationListener*listener);
-        static void remove( NotificationListener* listener );
-
+        static void remove( const char* name , NotificationListener* listener );
+    public:
         // Debug string
         static std::string str();
         

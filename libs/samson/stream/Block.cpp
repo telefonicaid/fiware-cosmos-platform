@@ -84,14 +84,12 @@ namespace samson {
             BlockManager::shared()->add(this);   
 
             // Add this object as a listener of notification_disk_operation_request_response
-            engine::Engine::add( notification_disk_operation_request_response , this );
+            listen( notification_disk_operation_request_response );
             
         }
 
         Block::~Block()
         {
-            // Add this object as a listener of notification_disk_operation_request_response
-            engine::Engine::remove( this );
             
             // Destroy buffer if still in memory
             if( buffer )

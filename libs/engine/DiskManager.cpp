@@ -55,7 +55,7 @@ namespace engine
         num_disk_operations = _num_disk_operations;
         
 		// Add the diskManager as a listener for disk operations
-        Engine::add( notification_disk_operation_request , this );
+        listen( notification_disk_operation_request );
         
     }
     

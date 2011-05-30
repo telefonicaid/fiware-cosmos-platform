@@ -57,7 +57,7 @@ namespace samson {
 		packetReceiverDescription = "samsonController";
 		
         // Add as a listener to notifications    
-        engine::Engine::add( notification_monitorization, this );
+        listen( notification_monitorization );
 
         {
             engine::Notification *notification = new engine::Notification( notification_monitorization );

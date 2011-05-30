@@ -54,13 +54,13 @@ namespace samson {
 		srand((unsigned int) time(NULL));
         
         // Add SamsonWorker as listener of the update files
-        engine::Engine::add(notification_worker_update_files, this);
+        listen(notification_worker_update_files );
         
         // Add samsonWorker as listere to send an update of the satatus
-        engine::Engine::add(notification_samson_worker_send_status_update, this);
+        listen(notification_samson_worker_send_status_update );
         
         // Add samsonWorker as lister to send traces to delilahs
-        engine::Engine::add(notification_samson_worker_send_trace, this);
+        listen(notification_samson_worker_send_trace );
         
         
         // Notification of the files

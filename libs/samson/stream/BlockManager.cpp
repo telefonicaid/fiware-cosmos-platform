@@ -17,7 +17,7 @@ namespace samson {
             id = 0;
             
             // Add this object as a listener of notification_disk_operation_request_response
-            engine::Engine::add( notification_disk_operation_request_response , this );
+            listen( notification_disk_operation_request_response );
 
             num_writing_operations=0;     // Number of writing operations ( low priority blocks )
             num_reading_operations=0;     // Number of reading operations ( high priority blocks )

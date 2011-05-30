@@ -36,9 +36,9 @@ namespace samson
         buffer = NULL;                      // By default we have no memory
         
         // Add to receive notification about memory , read operations and process items
-        engine::Engine::add( notification_memory_request_response , this ); 
-        engine::Engine::add( notification_disk_operation_request_response , this ); 
-        engine::Engine::add( notification_process_request_response , this ); 
+        listen( notification_memory_request_response  ); 
+        listen( notification_disk_operation_request_response  ); 
+        listen( notification_process_request_response  ); 
         
 	}
     
@@ -50,9 +50,7 @@ namespace samson
             buffer = NULL;
         }
         
-        // Remove this item from all the cannels
-        engine::Engine::remove( this ); 
-    }
+     }
         
     
     WorkerSubTask::~WorkerSubTask()

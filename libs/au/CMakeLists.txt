@@ -18,6 +18,7 @@ ListMap.h
 varint.h
 Cronometer.h
 Rate.h
+Object.h
 )
 
 SET (SOURCES
@@ -32,6 +33,7 @@ Stopper.cpp
 Token.cpp
 Cronometer.cpp
 Rate.cpp
+Object.cpp
 )
 
 

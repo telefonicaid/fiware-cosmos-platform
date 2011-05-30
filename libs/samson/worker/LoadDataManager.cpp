@@ -182,13 +182,12 @@ namespace samson
         id = 1;
         
         // Add this object as a listener of notification_disk_operation_request_response
-        engine::Engine::add( notification_disk_operation_request_response , this );
+        listen( notification_disk_operation_request_response );
 	}
 	
 
     LoadDataManager::~LoadDataManager()
     {
-        engine::Engine::remove( this );
     }
     
 	void LoadDataManager::addUploadItem( int fromIdentifier, const network::UploadDataFile &uploadData ,size_t sender_id, engine::Buffer * buffer )

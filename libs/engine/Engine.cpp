@@ -185,10 +185,10 @@ namespace engine
             LM_W(("Not adding a listener since engine is not initialized"));
     }
 
-    void Engine::remove( NotificationListener* listener )
+    void Engine::remove( const char* name ,NotificationListener* listener )
     {
         if( engine )
-            engine->notificationSystem.remove( listener );
+            engine->notificationSystem.remove( name , listener );
         else
             LM_W(("Not removing a listener since engine is not initialized"));
         

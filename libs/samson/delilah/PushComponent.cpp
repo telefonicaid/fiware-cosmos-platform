@@ -34,7 +34,7 @@ namespace samson
         finish_process = false;
         
         // Add myself as a receiver for notifications
-        engine::Engine::add( notification_memory_request_response , this );
+        listen( notification_memory_request_response );
         
 		
 	}	
@@ -64,7 +64,6 @@ namespace samson
 	
 	PushComponent::~PushComponent()
 	{
-        engine::Engine::remove( this );
 	}
 	
     

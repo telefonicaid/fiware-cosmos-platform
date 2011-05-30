@@ -52,8 +52,8 @@ namespace engine
         num_processes = _num_processes;  
         
 		// Add the processManager as a listener for process request
-        Engine::add( notification_process_request , this );
-        Engine::add( notification_process_manager_check_background_process , this );
+        listen( notification_process_request );
+        listen( notification_process_manager_check_background_process );
         
     }
     

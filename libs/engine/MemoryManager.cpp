@@ -65,7 +65,7 @@ namespace engine
         memory = _memory;
         
 		// Add the MemoryManager as a listner for the memory_request channel
-        Engine::add( notification_memory_request, this );
+        listen( notification_memory_request );
 	
     }
 	

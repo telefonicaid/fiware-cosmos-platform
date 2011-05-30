@@ -100,6 +100,7 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 		s = helloDataSet((Type) helloP->type, helloP->name, helloP->alias);
 		if (s != OK)
 		{
+			LM_E(("helloDataSet error - setting endpoint in ScheduledForRemoval state"));
 			stateSet(ScheduledForRemoval);
 			LM_RE(s, ("Bad hello data"));
 		}
@@ -108,24 +109,42 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 			helloSend(Message::Ack);
 
 		state = Ready;
-		LM_T(LmtUnhelloed, ("Time to update corresponding Worker endpoint and remove myself ..."));
-		ep = epMgr->lookup(type, host);
-		if (ep == NULL)
-			LM_W(("No endpoint found for type '%s' and host '%s' - is this normal?", typeName(), host->name));
-		else
+		if ((samson::Endpoint2::Type) helloP->type == Delilah)
 		{
+			LM_M(("Changing to a Delilah Endpoint - setting endpoint in ScheduledForRemoval state"));
+			state = ScheduledForRemoval;
+			ep = epMgr->add((samson::Endpoint2::Type) helloP->type, id, name, alias, host, port, rFd, wFd);
+			ep->state = Ready;
+			LM_M(("Anything more, turning into a Delilah Endpoint ... ?"));
+		}
+		else if ((samson::Endpoint2::Type) helloP->type == Worker)
+		{
+			LM_T(LmtUnhelloed, ("Time to update corresponding Worker endpoint and remove myself ..."));
+			ep = epMgr->lookup((samson::Endpoint2::Type) helloP->type, host);
+
+			if (ep == NULL)
+				LM_X(1, ("No endpoint found for type '%s' and host '%s' - should be a worker", typeName(), host->name));
+
+			LM_M(("Converting to %s endpoint '%s%d@%s'", ep->typeName(), ep->typeName(), ep->id, ep->host->name));
 			ep->rFd   = rFd;
 			ep->wFd   = wFd;
 			ep->state = Ready;
-
+			
+			// Unhelloed to be removed but without closing any file descriptors
 			state = ScheduledForRemoval;
 			rFd   = -1;
 			wFd   = -1;
 		}
+		else if ((samson::Endpoint2::Type) helloP->type == Controller)
+			LM_W(("Anything to be done here (Hello from Controller)?"));
+		else
+			LM_X(1, ("What?"));
+
 		break;
 
 	default:
 		LM_E(("I only treat Hello messages - got a '%s', removing endpoint", messageCode(headerP->code)));
+		LM_E(("Setting endpoint in state ScheduledForRemoval"));
 		stateSet(ScheduledForRemoval);
 		return Error;
 	}

@@ -58,7 +58,7 @@ namespace samson
 			dataLen = 0;
 			dataP   = NULL;
 			message = new network::Message();
-			fromId   = -9;
+			fromId  = -9;
 		};
 
 		Packet(Packet* p)

@@ -173,11 +173,7 @@ int Network2::workerGetIdentifier(int id)
 
 /* ****************************************************************************
 *
-* getMyidentifier - 
-*
-* NOTE
-*  epMgr->me is not in endpoint vector so this will not work.
-*  Need to know why this info is necessary ...
+* getMyidentifier -
 */
 int Network2::getMyidentifier(void)
 {
@@ -220,9 +216,9 @@ int Network2::getWorkerFromIdentifier(int endpointIx)
 		return -1;
 
 	id = ep->idGet();
-	LM_T(LmtIdIx, ("returning worker id %d for endpointIx %d", id, endpointIx));
 
-	return id - 1;
+	LM_T(LmtIdIx, ("returning worker id %d for endpointIx %d", id, endpointIx));
+	return id;
 }
 
 
@@ -245,7 +241,7 @@ void Network2::quit(void)
 size_t Network2::send(PacketSenderInterface* psi, int id, samson::Packet* packetP)
 {
 	LM_T(LmtSend, ("Sending a packet (%s) to endpoint %d (psi at %p, packet at %p)", messageCode(packetP->msgCode), id, psi, packetP));
-	epMgr->show("sending a packet", true);
+	epMgr->show("sending a packet");
 
 	if ((id < 0) || ((unsigned int) id > epMgr->endpoints))
 		LM_X(1, ("Bad id %d", id));

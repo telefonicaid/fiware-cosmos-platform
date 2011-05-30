@@ -26,6 +26,7 @@
 #include "WorkerEndpoint.h"
 #include "ControllerEndpoint.h"
 #include "SpawnerEndpoint.h"
+#include "DelilahEndpoint.h"
 #include "EndpointManager.h"
 
 
@@ -135,7 +136,8 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 	me = new Endpoint2(this, type, -1, NULL, NULL, host); // id == -1, port == 0 ...
 	if (me == NULL)
 		LM_X(1, ("error allocating 'me' endpoint: %s", strerror(errno)));
-	me->idInEndpointVector = -9;
+	me->idInEndpointVector = 0;
+
 
 
 	//
@@ -201,13 +203,15 @@ void EndpointManager::workersAdd(void)
 		if (hostP == NULL)
 			hostP = hostMgr->insert(p->host, NULL);
 
+		ep = add(Endpoint2::Worker, p->id, p->name, p->alias, hostP, p->port, -1, -1);
+
 		if ((me->type == Endpoint2::Worker) && (hostP == me->host))
 		{
-			LM_T(LmtInit, ("Worker's not adding itself ..."));
-			continue;
+			ep->state = Endpoint2::Loopback;
+			delete me;
+			me = ep;
+			LM_M(("Set ME to point to Worker %d", ep->idGet()));
 		}
-
-		ep = add(Endpoint2::Worker, p->id, p->name, p->alias, hostP, p->port, -1, -1);
 	}
 }
 
@@ -234,21 +238,30 @@ void EndpointManager::workersConnect(void)
 		if (ep->state == Endpoint2::Ready)
 			continue;
 
+		if (ep->state == Endpoint2::Connected)
+			continue;
+
+		if (ep->id == -1)
+			continue;
+
 		LM_TODO(("Should probably check for 'connection in progress' also - not only 'Endpoint2::Ready'"));
 
 		if (me->type == Endpoint2::Worker)
 		{
 			if (me->idGet() > ep->idGet())
 			{
-				LM_T(LmtConnect, ("Connecting to %s %d in '%s' (my id: %d)", ep->typeName(), ep->idGet(), ep->host->name, me->idGet()));
+				//LM_T(LmtConnect, ("Connecting to %s %d in '%s' (my id: %d)", ep->typeName(), ep->idGet(), ep->host->name, me->idGet()));
+				LM_M(("Connecting to (ix %d) %s %d in '%s' (my id: %d)", ix, ep->typeName(), ep->idGet(), ep->host->name, me->idGet()));
 				ep->connect();  // Connect, but don't add to endpoint vector
+				show("Connected", true);
 			}
 			else
 				LM_T(LmtConnect, ("NOT connecting to %s %d in '%s' (my id: %d)", ep->typeName(), ep->idGet(), ep->host->name, me->idGet()));
 		}
 		else
 		{
-			LM_T(LmtConnect, ("Connecting to %s %d in %s", ep->typeName(), ep->idGet(), ep->host->name));
+			// LM_T(LmtConnect, ("Connecting to %s %d in %s", ep->typeName(), ep->idGet(), ep->host->name));
+			LM_M(("Connecting to %s %d in %s", ep->typeName(), ep->idGet(), ep->host->name));
 			ep->connect();
 		}
 	}
@@ -267,7 +280,7 @@ void EndpointManager::initWorker(void)
 	//
 	// Process Vector
 	//
-	int       ix=0;
+	int       ix   = 0;
 	Process*  self = NULL;
 
 	if ((procVec = platformProcessesGet()) == NULL)
@@ -279,12 +292,13 @@ void EndpointManager::initWorker(void)
 
 	if ((self = platformProcessLookup(hostMgr, procVec, Endpoint2::Worker, me->host, &ix)) == NULL)
 		LM_X(1, ("Cannot find myself in platform processes vector."));
-	
-	me->aliasSet(self->alias);        // This method could check the alias for validity ('WorkerXX', 'Controller', ...)
-	me->idSet(self->id);
+
+	controllerConnect();
+	workersAdd();
+	workersConnect();
+
 	me->portSet(WORKER_PORT);
-
-
+	LM_M(("ME: %s %d @ %s (ix: %d) port: %d", me->typeName(), me->idGet(), me->host->name, ixGet(me), me->portGet()));
 
 	//
 	// Opening listener to accept incoming connections
@@ -292,11 +306,6 @@ void EndpointManager::initWorker(void)
 	listener = (ListenerEndpoint*) add(Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
 	if (listener == NULL)
 		LM_X(1, ("error creating listener endpoint - no use to continue ..."));
-
-
-	controllerConnect();
-	workersAdd();
-	workersConnect();
 }
 
 
@@ -390,13 +399,6 @@ void EndpointManager::initDelilah(const char* controllerIp)
 
 	controller = add(Endpoint2::Controller, 0, "Controller", "Controller", hostP, CONTROLLER_PORT, -1, -1);
 	controller->connect();
-
-
-
-	//
-	// Delilahs need to ask the Controller for the platform process list
-	//
-	LM_X(1, ("Delilah init needs to be implemented"));
 }
 
 
@@ -460,7 +462,7 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 		ep->idInEndpointVector = ix;
 		LM_T(LmtEndpointAdd, ("Added endpoint %d. type:%s, id:%d, name:%s, host:%s", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname()));
 
-		show("Added an Endpoint");
+		show("Added an Endpoint", true);
 		return ep;
 	}
 
@@ -498,6 +500,10 @@ Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, const char* name, 
 
 	case Endpoint2::Spawner:
 		ep = new SpawnerEndpoint(this, id, name, alias, host, rFd, wFd);
+		break;
+
+	case Endpoint2::Delilah:
+		ep = new DelilahEndpoint(this, id, name, alias, host, rFd, wFd);
 		break;
 
 	case Endpoint2::WebListener:
@@ -544,7 +550,10 @@ void EndpointManager::remove(Endpoint2* ep)
 Endpoint2* EndpointManager::get(unsigned int index)
 {
 	if (index >= endpoints)
+	{
+		LM_W(("index %d >= endpoints %d", index, endpoints));
 		return NULL;
+	}
 
 	return endpoint[index];
 }
@@ -593,8 +602,11 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int _id, int* ixP)
 	if ((typ == me->type) && (_id == me->id))
 	{
 		LM_T(LmtEndpointLookup, ("Found myself!"));
+		if (me->type != Endpoint2::Worker)
+			LM_X(1, ("Only Worker type should find itself ... (id == %d)", _id));
+
 		if (ixP != NULL)
-			*ixP = -9;
+			*ixP = me->idGet();
 		return me;
 	}
 
@@ -836,7 +848,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 
 		show("Before removing samsonSetup");
 		remove(ep);
-		show("After removing samsonSetup");
+		show("After removing samsonSetup", true);
 		return Endpoint2::OK;
 	}
 }
@@ -851,7 +863,6 @@ void EndpointManager::periodic(void)
 {
 	static int periodicNo = 0;
 
-	LM_M(("In periodic method"));
 	//
 	// Worker and Delilah connecting to Controller and Workers 
 	//
@@ -874,8 +885,6 @@ void EndpointManager::periodic(void)
 	//
 	// Removing endpoints that are Scheduled For Removal
 	//
-	LM_M(("Removing endpoints that are Scheduled For Removal"));
-	show("Removing removal-scheduled endpoint?", true);
 	for (unsigned int ix = 0; ix < endpoints; ix++)
 	{
 		if (endpoint[ix] == NULL)
@@ -884,7 +893,6 @@ void EndpointManager::periodic(void)
 		if (endpoint[ix]->state != Endpoint2::ScheduledForRemoval)
 			continue;
 
-		LM_M(("deleting endpoint %d that is Scheduled For Removal", ix));
 		delete endpoint[ix];
 		endpoint[ix] = NULL;
 		show("Removed a removal-scheduled endpoint", true);
@@ -923,8 +931,6 @@ void EndpointManager::run(bool oneShot)
 	struct timeval   tv;
 	int              fds;
 	int              eps;
-
-	LM_M(("Timeout used: %d, %d", tmoSecs, tmoUSecs));
 
 	while (1)
 	{
@@ -1109,6 +1115,7 @@ void EndpointManager::send(PacketSenderInterface* psi, int endpointIx, Packet* p
 	if (endpoint[endpointIx] == NULL)
 		LM_RVE(("Cannot send to endpoint %d - NULL", endpointIx));
 
+	packetP->fromId = endpointIx;
 	endpoint[endpointIx]->send(psi, packetP);
 }
 
@@ -1157,6 +1164,7 @@ int EndpointManager::multiSend(Endpoint2::Type typ, Message::MessageCode code, v
 			continue;
 
 		packetP = new Packet(Message::Msg, code, dataP, dataLen);
+		packetP->fromId = ix;
 		endpoint[ix]->send(NULL, packetP);
 		++sends;
 	}

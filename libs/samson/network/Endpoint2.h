@@ -59,6 +59,7 @@ class Endpoint2
 	friend class SpawnerEndpoint;
 	friend class WorkerEndpoint;
 	friend class ControllerEndpoint;
+	friend class DelilahEndpoint;
 
 public:
 	typedef enum UpdateReason
@@ -113,22 +114,23 @@ public:
 	typedef enum State
 	{
 		Unused,
+		Loopback,
 		Connected,
 		Ready,        // Hello interchanged
 		Disconnected,
 		ScheduledForRemoval
 	} State;
 
-	typedef enum Type  // Move this enum to common/Process, called ProcessType
+	typedef enum Type  // Move this enum to common/Process, call it ProcessType
 	{
 		Unhelloed    = 0,
 		Worker       = 1, // Must be the same value as libs/common/Process.h:PtWorker
 		Controller   = 2, // Must be the same value as libs/common/Process.h:PtController
 		Spawner,
-		Supervisor,
 		Delilah,
-		Killer,
 		Setup,
+		Supervisor,
+		Killer,
 		Listener,
 		Sender,
 		CoreWorker,

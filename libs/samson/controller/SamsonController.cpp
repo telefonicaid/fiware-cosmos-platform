@@ -124,7 +124,7 @@ namespace samson {
 			{
 				int workerId = network->getWorkerFromIdentifier(fromId);			
 
-				// Copy all the information here to be access when requesting that info
+				// Copy all the information here to be accessed when requesting that info
 				if (workerId != -1)
 				{
 					worker_status[workerId]->CopyFrom( packet->message->worker_status() );

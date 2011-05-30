@@ -367,6 +367,7 @@ const char* Endpoint2::stateName(void)
 	switch (state)
 	{
 	case Unused:                    return "Unused";
+	case Loopback:                  return "Loopback";
 	case Connected:                 return "Connected";
 	case Ready:                     return "Ready";
 	case Disconnected:              return "Disconnected";
@@ -475,13 +476,11 @@ Endpoint2::Status Endpoint2::partWrite(void* dataP, int dataLen, const char* wha
 void Endpoint2::ack(Message::MessageCode code, void* data, int dataLen)
 {
 	Packet* packet = new Packet(Message::Ack, code, data, dataLen);
+	packet->fromId = idInEndpointVector;
 	send(NULL, packet);
 }
 
 
-static void badFromId(int fromId)
-{
-}
 
 /* ****************************************************************************
 *
@@ -489,17 +488,13 @@ static void badFromId(int fromId)
 */
 void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 {
-	if ((packetP->fromId < 0) || (unsigned int) packetP->fromId >= epMgr->endpoints)
-	{
-		if (packetP->fromId != -9)
-		{
-			badFromId(packetP->fromId);
-			LM_X(1, ("Bad fromId (%d) in packet"));
-		}
-	}
+	packetP->fromId = idInEndpointVector;
 
 	if ((host == epMgr->me->host) && (type == epMgr->me->typeGet()))
 	{
+		if (state != Loopback)
+			LM_X(1, ("Something went wrong - should be in loopback state ..."));
+
 		LM_T(LmtMsgLoopBack, ("Looping back a packet meant for myself (and calling psi->notificationSent ...)"));
 		if (epMgr->packetReceiver == NULL)
 			LM_X(1, ("No packetReceiver - no real use to contiune, this is a SW bug!"));
@@ -513,7 +508,7 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 			jobQ->push(psi, packetP);
 		else
 		{
-			if (state != Ready)
+			if ((state != Ready) && (state != Connected))
 			{
 				LM_E(("Cannot send '%s' packet to %s@%s - endpoint is in state '%s' - throwing away the packet", messageCode(packetP->msgCode), typeName(), host->name, stateName()));
 				delete packetP;
@@ -901,7 +896,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	Message::Header      header;
 	void*                dataP    = NULL;
 	long                 dataLen  = 0;
-	Packet*              packetP = new Packet(Message::Unknown);
+	Packet*              packetP;
 	Endpoint2::Status    s;
 	Message::HelloData*  helloP;
 
@@ -928,6 +923,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	if (s != OK)
 		LM_E(("msgAwait: %s - what do I do ... ?", status(s)));
 
+	packetP = new Packet(Message::Unknown);
 	s = receive(&header, &dataP, &dataLen, packetP);
 	if (s != 0)
 		LM_RE(s, ("receive error '%s'", status(s)));
@@ -947,6 +943,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		s = helloDataSet((Type) helloP->type, helloP->name, helloP->alias);
 		if (s != OK)
 		{
+			LM_W(("Bad hello data - setting endpoint in ScheduledForRemoval"));
 			stateSet(ScheduledForRemoval);
 			LM_RE(s, ("Bad hello data"));
 		}
@@ -986,6 +983,8 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 				return PThreadError;
 			}
 		}
+
+		epMgr->show("Received Hello", true);
 		break;
 
 	default:
@@ -1126,6 +1125,7 @@ Endpoint2::Status Endpoint2::die(int secs, int usecs)
 	Status  s;
 	Packet* packetP = new Packet(Message::Msg, Message::Die);
 
+	packetP->fromId = idInEndpointVector;
 	send(NULL, packetP);
 
 	if ((s = msgAwait(secs, usecs, "Connection Closed")) != OK)

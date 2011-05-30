@@ -134,7 +134,7 @@ UnhelloedEndpoint* ListenerEndpoint::accept(void)
 
 	memset((char*) &sin, 0, len);
 
-	LM_M(("Accepting incoming connection"));
+	LM_T(LmtAccept, ("Accepting incoming connection"));
 	if ((fd = ::accept(rFd, (struct sockaddr*) &sin, &len)) == -1)
 		LM_RP(NULL, ("accept"));
 
@@ -144,7 +144,7 @@ UnhelloedEndpoint* ListenerEndpoint::accept(void)
 	if (hostP == NULL)
 		hostP = epMgr->hostMgr->insert(NULL, hostName);
 
-	LM_M(("Creating new Unhelloed Endpoint"));
+	LM_T(LmtAccept, ("Creating new Unhelloed Endpoint"));
 	ep = new UnhelloedEndpoint(epMgr, hostP, 0, fd, fd);
 	epMgr->add(ep);
 
@@ -161,12 +161,12 @@ Endpoint2::Status ListenerEndpoint::msgTreat2(void)
 {
 	UnhelloedEndpoint* ep;
 
-	LM_M(("Accepting an incoming connection"));
+	LM_T(LmtAccept, ("Accepting an incoming connection"));
 	ep = accept();
 	if (ep == NULL)
 		LM_RE(AcceptError, ("Endpoint2::accept returned NULL"));
 
-	LM_M(("Sending hello"));
+	LM_T(LmtHello, ("Sending hello"));
 	ep->helloSend(Message::Msg);
 	ep->state = Ready;
 	return Endpoint2::OK;

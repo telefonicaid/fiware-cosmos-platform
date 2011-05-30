@@ -26,6 +26,7 @@
 #include "samson/module/ModulesManager.h"
 
 
+
 /* ****************************************************************************
 *
 * Option variables

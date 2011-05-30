@@ -1,5 +1,5 @@
-#ifndef NETWORK_H
-#define NETWORK_H
+#ifndef NETWORK2_H
+#define NETWORK2_H
 
 /* ****************************************************************************
 *

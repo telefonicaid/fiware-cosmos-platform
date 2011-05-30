@@ -102,7 +102,6 @@ SamsonSpawner::~SamsonSpawner()
 */
 void SamsonSpawner::init()
 {
-	LM_M(("IN"));
 	processListInit(101);
 
 	restartInProgress    = true;
@@ -151,7 +150,6 @@ int SamsonSpawner::receive(int fromId, int nb, samson::Message::Header* headerP,
 	if (ep == NULL)
 		LM_X(1, ("Got a message from endpoint %d, but endpoint manager has no endpoint at that index ..."));
 
-	LM_M(("IN"));
 	switch (headerP->code)
 	{
 	case Message::Reset:
@@ -201,18 +199,16 @@ int SamsonSpawner::timeoutFunction(void)
 	int           status;
 	Process*  processP;
 
-	LM_M(("Checking dead children ..."));
 	processListShow("periodic");
 
 	pid = waitpid(-1, &status, WNOHANG);
 	if (pid == 0)
 	{
-		// LM_T(LmtWait, ("Children running, no one has exited since last sweep"));
-		LM_M(("Children running, no one has exited since last sweep"));
+		LM_T(LmtWait, ("Children running, no one has exited since last sweep"));
 		return 0;
 	}
 
-	LM_M(("caught death of process %d", pid));
+	LM_W(("caught death of process %d", pid));
 	processListShow("child died", true);
 	if (pid == -1)
 	{
@@ -292,7 +288,7 @@ void SamsonSpawner::processVector(Endpoint2* ep, ProcessVector* procVec)
 {
 	networkP->epMgr->procVecSet(procVec);
 
-	LM_M(("Got Process Vector with %d processes from %s@%s", procVec->processes, ep->nameGet(), ep->hostname()));
+	LM_T(LmtProcessVector, ("Got Process Vector with %d processes from %s@%s", procVec->processes, ep->nameGet(), ep->hostname()));
 
 #if 0
 	// Supposedly, a RESET was sent before ...
@@ -329,13 +325,13 @@ void SamsonSpawner::spawn(Process* process)
 		LM_X(1, ("Will only start workers and controllers - bad process type %d", process->type));
 
 	if (getenv("SAMSON_DEBUG") != NULL)
-	   process->debug = true;
+		process->debug = true;
 	if (getenv("SAMSON_VERBOSE") != NULL)
-	   process->verbose = true;
+		process->verbose = true;
 	if (getenv("SAMSON_READS") != NULL)
-	   process->reads = true;
+		process->reads = true;
 	if (getenv("SAMSON_WRITES") != NULL)
-	   process->writes = true;
+		process->writes = true;
 
 	if (process->verbose == true)   argV[argC++] = (char*) "-v";
 	if (process->debug   == true)   argV[argC++] = (char*) "-d";
@@ -380,7 +376,6 @@ void SamsonSpawner::spawn(Process* process)
 		LM_X(1, ("Back from EXEC !!!"));
 	}
 
-	LM_M(("Set pid to %d for process '%s' (@ %p)", pid, argV[0], process));
 	process->pid = pid;
 	processListShow("Process Spawned", true);
 }
@@ -398,17 +393,14 @@ void SamsonSpawner::processesStart(ProcessVector* procVec)
 	Host*     hostP;
 	int       startedProcesses = 0;
 
-	LM_M(("Starting my processes"));
 	for (ix = 0; ix < procVec->processes; ix++)
 	{
 		processP = &procVec->processV[ix];
 
-		LM_M(("Looking up Host '%s'", processP->host));
 		hostP = networkP->epMgr->hostMgr->lookup(processP->host);
-		LM_M(("Comparing to MY Host '%s'", networkP->epMgr->hostMgr->localhostP->name));
 		if (hostP != networkP->epMgr->hostMgr->localhostP)
 		{
-			LM_M(("Host '%s' is not ME (%s) - NOT starting process %d", processP->host, networkP->epMgr->hostMgr->localhostP->name, ix));
+			LM_W(("Host '%s' is not ME (%s) - NOT starting process %d", processP->host, networkP->epMgr->hostMgr->localhostP->name, ix));
 			continue;
 		}
 

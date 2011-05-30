@@ -1,7 +1,7 @@
 
 
 #include "engine/EngineNotification.h"  // Own interface
-#include "Engine/Engine.h"              // engine::Engine
+#include "engine/Engine.h"              // engine::Engine
 
 namespace engine {
     

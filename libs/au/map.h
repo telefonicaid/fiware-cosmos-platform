@@ -5,6 +5,8 @@
 #include <list>		// std::list
 #include <vector>	// std::vector
 #include <set>		// std::set
+#include <string.h>
+#include <iostream>
 
 #include "logMsg/logMsg.h"					 // LM_M()
 
@@ -205,7 +207,7 @@ namespace au {
     struct strCompare : public std::binary_function<const char*, const char*, bool> {
     public:
         bool operator() (const char* str1, const char* str2) const
-        { return std::strcmp(str1, str2) < 0; }
+        { return strcmp(str1, str2) < 0; }
     };
 
     

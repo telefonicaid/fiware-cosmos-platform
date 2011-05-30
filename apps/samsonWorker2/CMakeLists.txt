@@ -8,11 +8,11 @@ SET (HEADERS
 
 SET (LIBS
     samsonWorkerLib
+    samsonIsolated
     samsonNetwork
     samsonModule
     samsonCommon
     samsonStream
-    samsonIsolated
     engine
     au
     pa

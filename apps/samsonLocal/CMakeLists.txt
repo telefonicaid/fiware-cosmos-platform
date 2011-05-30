@@ -20,10 +20,11 @@ SET( STATIC_LIBS
      engine
 	samsonModule
 	samsonDataLib
-	samsonNetwork
-	samsonCommon
 	samsonStream
 	samsonIsolated
+
+	samsonNetwork
+	samsonCommon
 au
 lm
 pa

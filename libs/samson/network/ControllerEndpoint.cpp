@@ -61,18 +61,26 @@ ControllerEndpoint::~ControllerEndpoint() // : ~Endpoint2()
 */
 Endpoint2::Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 {
+	ProcessVector* pVec;
+
+	LM_T(LmtMsgTreat, ("Treating %s %s from %s%d@%s", messageCode(headerP->code), messageType(headerP->type), typeName(), id, host->name));
 	switch (headerP->code)
 	{
-	case Message::CommandResponse:
-		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("No packetReceiver - no real use to contiune, this is a SW bug!"));
-
-		epMgr->packetReceiver->_receive(packetP);		
+	case Message::ProcessVector:
+		pVec = (ProcessVector*) dataP;
+		LM_T(LmtProcessVector, ("Setting ProcessVector (%d processes, size: %d)", pVec->processes, pVec->processVecSize));
+		epMgr->procVecSet(pVec, false);
+		epMgr->workersAdd();
+		epMgr->workersConnect();
+		epMgr->show("Delilah connected to Workers");
 		break;
 
 	default:
-		LM_X(1, ("No messages treated - got a '%s'", messageCode(headerP->code)));
-		return Error;
+		if (epMgr->packetReceiver == NULL)
+			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s%d@%s", messageCode(headerP->code), messageType(headerP->type), typeName(), id, host->name));
+
+		epMgr->packetReceiver->_receive(packetP);
+		break;
 	}
 
 	return OK;

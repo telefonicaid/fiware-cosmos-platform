@@ -174,8 +174,9 @@ private:
 	int                  wFd;
 	State                state;
 	struct sockaddr_in   sockin;
-	bool                 useSenderThread;  // Worker/Delilah
-
+	bool                 threaded;  // Worker/Delilah
+	pthread_t            readerId;
+	pthread_t            writerId;
 
 	// Statistics
 	int                  msgsIn;
@@ -213,7 +214,7 @@ public:
 	int                  rFdGet(void);
 	int                  wFdGet(void);
 
-	bool                 threaded();
+	bool                 isThreaded();
 
 	Status               connect(void);
 	Status               msgAwait(int secs, int usecs, const char* what);

@@ -7,6 +7,7 @@
 * CREATION DATE            Apr 06 2011
 *
 */
+#include <signal.h>
 #include <pthread.h>
 
 #include "logMsg/logMsg.h"
@@ -210,7 +211,7 @@ void EndpointManager::workersAdd(void)
 			ep->state = Endpoint2::Loopback;
 			delete me;
 			me = ep;
-			LM_M(("Set ME to point to Worker %d", ep->idGet()));
+			LM_T(LmtMe, ("Set ME to point to Worker %d", ep->idGet()));
 		}
 	}
 }
@@ -250,8 +251,7 @@ void EndpointManager::workersConnect(void)
 		{
 			if (me->idGet() > ep->idGet())
 			{
-				//LM_T(LmtConnect, ("Connecting to %s %d in '%s' (my id: %d)", ep->typeName(), ep->idGet(), ep->host->name, me->idGet()));
-				LM_M(("Connecting to (ix %d) %s %d in '%s' (my id: %d)", ix, ep->typeName(), ep->idGet(), ep->host->name, me->idGet()));
+				LM_T(LmtConnect, ("Connecting to %s %d in '%s' (my id: %d)", ep->typeName(), ep->idGet(), ep->host->name, me->idGet()));
 				ep->connect();  // Connect, but don't add to endpoint vector
 				show("Connected", true);
 			}
@@ -260,8 +260,7 @@ void EndpointManager::workersConnect(void)
 		}
 		else
 		{
-			// LM_T(LmtConnect, ("Connecting to %s %d in %s", ep->typeName(), ep->idGet(), ep->host->name));
-			LM_M(("Connecting to %s %d in %s", ep->typeName(), ep->idGet(), ep->host->name));
+			LM_T(LmtConnect, ("Connecting to %s %d in %s", ep->typeName(), ep->idGet(), ep->host->name));
 			ep->connect();
 		}
 	}
@@ -298,7 +297,7 @@ void EndpointManager::initWorker(void)
 	workersConnect();
 
 	me->portSet(WORKER_PORT);
-	LM_M(("ME: %s %d @ %s (ix: %d) port: %d", me->typeName(), me->idGet(), me->host->name, ixGet(me), me->portGet()));
+	LM_T(LmtMe, ("ME: %s %d @ %s (ix: %d) port: %d", me->typeName(), me->idGet(), me->host->name, ixGet(me), me->portGet()));
 
 	//
 	// Opening listener to accept incoming connections
@@ -873,7 +872,7 @@ void EndpointManager::periodic(void)
 		if (controller == NULL)
 			LM_X(1, ("controller == NULL"));
 
-		if (controller->state != Endpoint2::Ready)
+		if ((controller->state != Endpoint2::Ready) && (controller->state != Endpoint2::Connected))
 			controller->connect();
 
 		workersConnect();
@@ -893,8 +892,24 @@ void EndpointManager::periodic(void)
 		if (endpoint[ix]->state != Endpoint2::ScheduledForRemoval)
 			continue;
 
-		delete endpoint[ix];
-		endpoint[ix] = NULL;
+		if (endpoint[ix]->threaded == true)
+		{
+			LM_T(LmtThreads, ("Killing writer thread 0x%x for %s%d@%s", endpoint[ix]->writerId, endpoint[ix]->typeName(), endpoint[ix]->id, endpoint[ix]->host->name));
+			pthread_cancel(endpoint[ix]->writerId);
+		}
+
+		endpoint[ix]->threaded = false;
+		endpoint[ix]->state    = Endpoint2::Disconnected;
+
+		if (endpoint[ix]->type == Endpoint2::Worker)
+			;
+		else if (endpoint[ix]->type == Endpoint2::Controller)
+			;
+		else
+		{
+			delete endpoint[ix];
+			endpoint[ix] = NULL;
+		}
 		show("Removed a removal-scheduled endpoint", true);
 	}
 
@@ -931,6 +946,7 @@ void EndpointManager::run(bool oneShot)
 	struct timeval   tv;
 	int              fds;
 	int              eps;
+	int              firstTimeForNoFdsToListenTo = true;
 
 	while (1)
 	{
@@ -957,7 +973,7 @@ void EndpointManager::run(bool oneShot)
 				if (ep == NULL)
 					continue;
 
-				if (ep->threaded() == true)
+				if (ep->isThreaded() == true)
 					continue;
 
 				if (((ep->state == Endpoint2::Ready) || (ep->state == Endpoint2::Connected)) && (ep->rFd == -1))
@@ -981,11 +997,20 @@ void EndpointManager::run(bool oneShot)
 				}
 			}
 
+			if (max == 0)
+			{
+				if (firstTimeForNoFdsToListenTo == true)
+					LM_W(("No fds to listen to ..."));
+				firstTimeForNoFdsToListenTo = false;
+				sleep(2);
+				fds = 0;
+				break;
+			}
+
+			firstTimeForNoFdsToListenTo = true;
+
 			tv.tv_sec  = tmoSecs;
 			tv.tv_usec = tmoUSecs;
-			
-			if (max == 0)
-				LM_X(1, ("No fds to listen to ..."));
 
 			LM_T(LmtSelect, ("Hanging on a select over fd list { %s }", fdsString));
 			fds = select(max + 1,  &rFds, NULL, NULL, &tv);
@@ -1005,7 +1030,7 @@ void EndpointManager::run(bool oneShot)
 				if (endpoint[ix]->rFd == -1)
 					continue;
 
-				if (endpoint[ix]->threaded() == true)
+				if (endpoint[ix]->isThreaded() == true)
 					continue;
 				
 				if (FD_ISSET(endpoint[ix]->rFd, &rFds))
@@ -1013,6 +1038,8 @@ void EndpointManager::run(bool oneShot)
 					LM_T(LmtMsgTreat, ("Calling %s->msgTreat()", endpoint[ix]->typeName()));
 					endpoint[ix]->msgTreat();
 					LM_T(LmtMsgTreat, ("Back from %s->msgTreat()", endpoint[ix]->typeName()));
+					break;
+					// FD_CLR instead of break?
 				}
 			}
 		}
@@ -1199,7 +1226,8 @@ void EndpointManager::show(const char* why, bool forced)
 		if (ep == NULL)
 			continue;
 
-		LM_V(("%02d: %-12s %02d  %-20s %-20s %-20s %d  %d", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname(), ep->stateName(), ep->port, ep->rFd));
+		LM_V(("%02d: %-12s %02d  %-20s %-20s %-20s %04d  %02d %s", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname(), ep->stateName(), ep->port, ep->rFd,
+			  (ep->isThreaded() == true)? "(threaded)" : "(not threaded)" ));
 	}
 	LM_V(("----------------------------------------------------------------------"));
 

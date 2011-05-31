@@ -32,6 +32,7 @@ namespace samson
 */
 JobQueue::JobQueue(void)
 {
+	LM_T(LmtJob, ("Creating jobQueue"));
 	head      = NULL;
 	jobs      = 0;
 	totalSize = 0;
@@ -48,6 +49,8 @@ JobQueue::Job* JobQueue::pop(void)
 	Job* last  = head;
 	Job* prev  = NULL;
 	Job* jobP;
+
+	LM_T(LmtJob, ("Trying to pop a Job (last: %p)", last));
 
     if (head == NULL) // List is empty
 		return NULL;
@@ -91,6 +94,12 @@ JobQueue::Job* JobQueue::pop(void)
 		totalSize  -= jobP->packetP->message->ByteSize();
 #endif
 
+	if (jobP->packetP == NULL)
+	{
+		LM_W(("NULL packet pointer"));
+		return last;
+	}
+
 	if (jobP->packetP->dataP != NULL)
 		totalSize  -= jobP->packetP->dataLen;
 
@@ -115,6 +124,7 @@ JobQueue::Job* JobQueue::pop(void)
 			LM_X(1, ("job list empty but totalSize == %d ...", totalSize));
 	}
 
+	LM_T(LmtJob, ("Popping Job %p", last));
 	return last;
 }
 
@@ -127,6 +137,8 @@ JobQueue::Job* JobQueue::pop(void)
 void JobQueue::push(Job* jobP)
 {
 	Job* last = head;
+
+	LM_T(LmtJob, ("Pushing a Job"));
 
 	LM_T(LmtJob, ("Pushing a job to queue"));
 
@@ -151,6 +163,12 @@ void JobQueue::push(Job* jobP)
 	// Statistics
 	//
 	jobs += 1;
+
+	if (jobP->packetP == NULL)
+	{
+		LM_W(("NULL packet pointer"));
+		return;
+	}
 
 	if (jobP->packetP->message != NULL)
 		totalSize  += jobP->packetP->message->ByteSize();

@@ -74,6 +74,7 @@ typedef enum TraceLevels
 	LmtFds                  = 110,
 	LmtNetworkReady,
 	LmtAlarm,
+	LmtThreads,
 	LmtSenderThread,
 	LmtThreadedMsgTreat,
 	LmtMsgLoopBack,
@@ -122,6 +123,7 @@ typedef enum TraceLevels
 	LmtModuleManager,                // Module Manager component
 	LmtOperations,                   // Operations organization (map & reduce level)
 	LmtReset,
+	LmtMe,
 
 	LmtIsolated,
 	

@@ -70,8 +70,11 @@ Endpoint2::Status DelilahEndpoint::msgTreat2(Message::Header* headerP, void* dat
 		break;
 
 	default:
-		LM_X(1, ("Sorry, no message treat implemented for '%s' '%s'", messageCode(headerP->code), messageType(headerP->type)));
-		return Error;
+		if (epMgr->packetReceiver == NULL)
+			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s%d@%s", messageCode(headerP->code), messageType(headerP->type), typeName(), id, host->name));
+
+		epMgr->packetReceiver->_receive(packetP);
+		return OK;
 	}
 
 	return OK;

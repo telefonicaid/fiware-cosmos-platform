@@ -49,11 +49,11 @@ namespace samson
 *
 * readerThread - 
 */
-static void* readerThread(void* vP)
+void* readerThread(void* vP)
 {
 	Endpoint2* ep = (Endpoint2*) vP;
 
-	LM_T(LmtSenderThread, ("reader thread for endpoint %s@%s is running", ep->nameGet(), ep->hostGet()->name));
+	LM_T(LmtThreads, ("reader thread for endpoint %s@%s is running", ep->nameGet(), ep->hostGet()->name));
 	ep->run();
 
 	ep->stateSet(Endpoint2::ScheduledForRemoval);
@@ -68,12 +68,11 @@ static void* readerThread(void* vP)
 *
 * writerThread - 
 */
-static void* writerThread(void* vP)
+void* writerThread(void* vP)
 {
 	Endpoint2* ep = (Endpoint2*) vP;
 
-	LM_T(LmtSenderThread, ("writer thread for endpoint %s@%s is running (REAL wFd: %d))", ep->nameGet(), ep->hostGet()->name, ep->wFdGet()));
-
+	LM_T(LmtThreads, ("writer thread for endpoint %s@%s is running (REAL wFd: %d))", ep->nameGet(), ep->hostGet()->name, ep->wFdGet()));
 	while (1)
 	{
 		JobQueue::Job* job;
@@ -122,7 +121,10 @@ Endpoint2::Endpoint2
 	wFd                 = _wFd;
 	port                = _port;
 	state               = Unused;
-	useSenderThread     = false;
+	threaded            = false;
+	readerId            = -1;
+	writerId            = -1;
+
 	idInEndpointVector  = -8;    // -8 meaning 'undefined' ...
 
 	name                = NULL;
@@ -145,7 +147,13 @@ Endpoint2::Endpoint2
 	msgsInErrors  = 0;
 	msgsOutErrors = 0;
 
-	jobQ = new JobQueue();
+	jobQ          = NULL;
+
+	if (epMgr->me != NULL)
+	{
+		if (((type == Delilah) || (type == Worker)) && ((epMgr->me->type == Delilah) || (epMgr->me->type == Worker)))
+			jobQ = new JobQueue();
+	}
 }
 
 
@@ -497,14 +505,15 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 
 		LM_T(LmtMsgLoopBack, ("Looping back a packet meant for myself (and calling psi->notificationSent ...)"));
 		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("No packetReceiver - no real use to contiune, this is a SW bug!"));
+			LM_X(1, ("No packetReceiver (SW bug) - got a message/ack from %s%d@%s", typeName(), id, host->name));
+
 		epMgr->packetReceiver->_receive(packetP);
 		if (psi)
 			psi->notificationSent(0, true);
 	}
 	else
 	{
-		if (useSenderThread == true)
+		if (threaded == true)
 			jobQ->push(psi, packetP);
 		else
 		{
@@ -791,8 +800,6 @@ Endpoint2::Status Endpoint2::connect(void)
 	if (port == 0)
 		LM_RE(NullPort, ("Cannot connect to '%s@%s' - port is ZERO", name, host->name));
 
-	LM_T(LmtConnect, ("Trying to connect to %s at %s:%d", name, host->name, port));
-
 	if ((hp = gethostbyname(host->name)) == NULL)
 		LM_RE(GetHostByNameError, ("gethostbyname(%s): %s", host->name, strerror(errno)));
 
@@ -807,9 +814,11 @@ Endpoint2::Status Endpoint2::connect(void)
 	peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
 	peer.sin_port        = htons(port);
 
+	LM_T(LmtConnect, ("Connecting to %s at %s:%d", name, host->name, port));
 	if (::connect(wFd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 	{
 		usleep(50000);
+		LM_W(("connect: %s", strerror(errno)));
 		if (::connect(wFd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 		{
 			close();
@@ -900,25 +909,13 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	Endpoint2::Status    s;
 	Message::HelloData*  helloP;
 
-	LM_T(LmtMsgTreat, ("Treating a message from %s@%s", name, host->name));
-
-	if (type == Listener)
+	if ((type == Listener) || (type == WebListener) || (type == WebWorker))
 	{
-		LM_T(LmtMsgTreat, ("Something to read for Listener - calling msgTreat2"));
-		return msgTreat2();
-	}
-	if (type == WebListener)
-	{
-		LM_T(LmtMsgTreat, ("Something to read for WebListener - calling msgTreat2"));
-		return msgTreat2();
-	}
-	if (type == WebWorker)
-	{
-		LM_T(LmtMsgTreat, ("Something to read for WebWorker - calling msgTreat2"));
+		LM_T(LmtMsgTreat, ("Something to read for %s%d@%s - calling msgTreat2", typeName(), name, host->name));
 		return msgTreat2();
 	}
 	
-	LM_T(LmtMsgTreat, ("Reading a message from '%s@%s'", name, host->name));
+	LM_T(LmtMsgTreat, ("Reading incoming message from '%s@%s'", name, host->name));
 	s = msgAwait(-1, -1, "Incoming message");
 	if (s != OK)
 		LM_E(("msgAwait: %s - what do I do ... ?", status(s)));
@@ -926,7 +923,19 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	packetP = new Packet(Message::Unknown);
 	s = receive(&header, &dataP, &dataLen, packetP);
 	if (s != 0)
-		LM_RE(s, ("receive error '%s'", status(s)));
+	{
+		delete packetP;
+
+		if (s == ConnectionClosed)
+		{
+			state = ScheduledForRemoval;
+			epMgr->show("ConnectionClosed", true);
+			return s;
+		}
+
+		LM_TODO(("I should probably remove the endpoint also if error is NOT Connection Closed"));
+		LM_RE(s, ("receive(%s%d@%s): '%s'", typeName(), name, host->name, status(s)));
+	}
 
 	packetP->msgCode = header.code;
 	packetP->msgType = header.type;
@@ -956,32 +965,34 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 
 		if ((epMgr->me->type == Spawner) || (epMgr->me->type == Setup) || (epMgr->me->type == Controller))
 		{
-			LM_T(LmtSenderThread, ("I'm a Spawner/Controller/Setup - I don't use sender/reader threads!"));
+			LM_T(LmtThreads, ("I'm a Spawner/Controller/Setup - I don't use sender/reader threads!"));
 			delete packetP;
 			return OK;
 		}
 
+		LM_T(LmtHello, ("Received Hello from %s%d@%s", typeName(), id, host->name));
 		if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((type == Worker) || (type == Delilah)))
 		{
-			useSenderThread = true;
+			int  ps;
 
-			pthread_t tid;
-			int       ps;
+			threaded = true;
 
-			LM_T(LmtSenderThread, ("Creating writer and reader threads for endpoint %s@%s", name, host->name));
-			if ((ps = pthread_create(&tid, NULL, writerThread, this)) != 0)
+			LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s@%s", name, host->name));
+			if ((ps = pthread_create(&writerId, NULL, writerThread, this)) != 0)
 			{
 				LM_E(("Creating writer thread: pthread_create returned %d for %s@%s", ps, name, host->name));
 				delete packetP;
 				return PThreadError;
 			}
+			LM_T(LmtThreads, ("Created Writer Thread with id 0x%x", writerId));
 
-			if ((ps = pthread_create(&tid, NULL, readerThread, this)) != 0)
+			if ((ps = pthread_create(&readerId, NULL, readerThread, this)) != 0)
 			{
 				LM_E(("Creating reader thread: pthread_create returned %d for %s@%s", ps, name, host->name));
 				delete packetP;
 				return PThreadError;
 			}
+			LM_T(LmtThreads, ("Created Reader Thread with id 0x%x", readerId));
 		}
 
 		epMgr->show("Received Hello", true);
@@ -993,7 +1004,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		if (s != OK)
 		{
 			delete packetP;
-			LM_RE(s, ("msgTreat2: %s", s));
+			LM_RE(s, ("msgTreat2: %s", status(s)));
 		}
 		return OK; // To avoid to delete packetP ...
 		break;
@@ -1096,16 +1107,17 @@ const char* Endpoint2::status(Status s)
 */
 void Endpoint2::run(void)
 {
-	LM_T(LmtSenderThread, ("Endpoint '%s@%s' reader thread is running", name, host->name));
+	LM_T(LmtThreads, ("Endpoint '%s@%s' reader thread is running", name, host->name));
 
 	while (1)
 	{
 		Status s;
 
+		LM_T(LmtThreads, ("Reader Thread for '%s%d@%s' awaiting a packet", name, id, host->name));
 		s = msgTreat();
 		if (s == ConnectionClosed)
 		{
-			useSenderThread = false;
+			// threaded = false;
 			LM_W(("*************** Endpoint %s%d@%s closed connection - leaving thread", typeName(), id, host->name));
 			return;
 		}
@@ -1149,9 +1161,9 @@ Endpoint2::Status Endpoint2::die(int secs, int usecs)
 *
 * - 
 */
-bool Endpoint2::threaded(void)
+bool Endpoint2::isThreaded(void)
 {
-	return useSenderThread;
+	return threaded;
 }
 
 

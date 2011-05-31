@@ -90,7 +90,7 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 {
 	Message::HelloData*  helloP;
 	Endpoint2::Status    s;
-	Endpoint2*           ep;
+	Endpoint2*           ep = NULL;
 
 	switch (headerP->code)
 	{
@@ -108,14 +108,19 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 		if (headerP->type == Message::Msg)
 			helloSend(Message::Ack);
 
+		LM_T(LmtHello, ("UnhelloedEndpoint received Hello from %s%d@%s", typeName(), id, host->name));
+
 		state = Ready;
 		if ((samson::Endpoint2::Type) helloP->type == Delilah)
 		{
-			LM_M(("Changing to a Delilah Endpoint - setting endpoint in ScheduledForRemoval state"));
-			state = ScheduledForRemoval;
 			ep = epMgr->add((samson::Endpoint2::Type) helloP->type, id, name, alias, host, port, rFd, wFd);
 			ep->state = Ready;
-			LM_M(("Anything more, turning into a Delilah Endpoint ... ?"));
+
+			state = ScheduledForRemoval;
+			nameSet("ConvertedToDelilah");
+			rFd   = -1;
+			wFd   = -1;
+			epMgr->show("Changed Unhelloed to Delilah, The Unhelloed marked with ScheduledForRemoval", true);
 		}
 		else if ((samson::Endpoint2::Type) helloP->type == Worker)
 		{
@@ -125,12 +130,12 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 			if (ep == NULL)
 				LM_X(1, ("No endpoint found for type '%s' and host '%s' - should be a worker", typeName(), host->name));
 
-			LM_M(("Converting to %s endpoint '%s%d@%s'", ep->typeName(), ep->typeName(), ep->id, ep->host->name));
 			ep->rFd   = rFd;
 			ep->wFd   = wFd;
 			ep->state = Ready;
 			
 			// Unhelloed to be removed but without closing any file descriptors
+			nameSet("ConvertedToWorker");
 			state = ScheduledForRemoval;
 			rFd   = -1;
 			wFd   = -1;
@@ -139,6 +144,40 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 			LM_W(("Anything to be done here (Hello from Controller)?"));
 		else
 			LM_X(1, ("What?"));
+
+
+
+		//
+		// Creating threads, if necessary
+		//
+		if (ep)
+		{
+			extern void* readerThread(void* vP);
+			extern void* writerThread(void* vP);
+			if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((ep->type == Worker) || (ep->type == Delilah)))
+			{
+				int ps;
+
+				ep->threaded = true;
+
+				LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s@%s", name, host->name));
+				if ((ps = pthread_create(&ep->writerId, NULL, writerThread, ep)) != 0)
+				{
+					LM_E(("Creating writer thread: pthread_create returned %d for %s@%s", ps, name, host->name));
+					delete packetP;
+					return PThreadError;
+				}
+
+				if ((ps = pthread_create(&ep->readerId, NULL, readerThread, ep)) != 0)
+				{
+					LM_E(("Creating reader thread: pthread_create returned %d for %s@%s", ps, name, host->name));
+					delete packetP;
+					return PThreadError;
+				}
+				LM_T(LmtThreads, ("Done creating threads (reader: 0x%x and writer: 0x%x)", ep->readerId, ep->writerId));
+			}
+		}
+		epMgr->show("Unhelloed Received Hello", true);
 
 		break;
 

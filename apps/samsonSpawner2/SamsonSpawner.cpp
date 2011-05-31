@@ -208,7 +208,6 @@ int SamsonSpawner::timeoutFunction(void)
 		return 0;
 	}
 
-	LM_W(("caught death of process %d", pid));
 	processListShow("child died", true);
 	if (pid == -1)
 	{
@@ -225,6 +224,31 @@ int SamsonSpawner::timeoutFunction(void)
 	}
 
 
+	//
+	// Show all possible ionfo on death cause
+	//
+	LM_W(("caught death of process %d", pid));
+	if (WIFEXITED(status))
+		LM_W(("Supervised process '%s' died with exit code %d", processP->name, WEXITSTATUS(status)));
+	else if (WIFSIGNALED(status))
+		LM_W(("Supervised process '%s' died on signal %d", processP->name, WTERMSIG(status)));
+
+	if (WCOREDUMP(status))
+		LM_W(("Supervised process '%s' produced a core dump", processP->name));
+	if (WIFSTOPPED(status))
+		LM_W(("Supervised process '%s' stopped on signal %d", processP->name, WSTOPSIG(status)));
+
+	if (WIFCONTINUED(status))
+	{
+		LM_W(("Supervised process '%s' continues", processP->name));
+		return 0;
+	}
+
+
+
+	//
+	// Restart process
+	//
 	Process*    newProcessP;
 	struct timeval  now;
 	struct timeval  diff;
@@ -253,6 +277,7 @@ int SamsonSpawner::timeoutFunction(void)
 	}
 
 	processRemove(processP);
+
 	return 0;
 }
 

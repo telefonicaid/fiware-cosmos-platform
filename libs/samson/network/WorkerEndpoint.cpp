@@ -65,17 +65,12 @@ Endpoint2::Status WorkerEndpoint::msgTreat2(Message::Header* headerP, void* data
 {
 	switch (headerP->code)
 	{
-	case Message::WorkerStatus:
-	case Message::Command:
+	default:
 		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("No packetReceiver - no real use to contiune, this is a SW bug!"));
+			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s%d@%s", messageCode(headerP->code), messageType(headerP->type), typeName(), id, host->name));
 
 		epMgr->packetReceiver->_receive(packetP);
 		break;
-
-	default:
-		LM_X(1, ("Sorry, no message treat implemented for '%s' '%s'", messageCode(headerP->code), messageType(headerP->type)));
-		return Error;
 	}
 
 	return OK;

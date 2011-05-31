@@ -23,6 +23,8 @@ namespace samson
     
     ProcessIsolated::~ProcessIsolated()
     {
+        //LM_M(("Destroying ProcessIsolated"));
+        
         if( shm_id != -1 )
             engine::SharedMemoryManager::shared()->releaseSharedMemoryArea( shm_id );
         
@@ -55,9 +57,20 @@ namespace samson
         
         if( (memory_output_network + memory_output_disk ) > 0.5 )
             available_memory = false;
+
+        if( !available_memory )
+        {
+            //LM_M(("ProcessItem not ready since there is not output memory "));
+            return false;
+        }
         
-        // Return true only if output memory is available and there is a shared memory buffer for me
-        return  ( available_memory && item );
+        if ( !item )
+        {
+            //LM_M(("ProcessItem not ready since there is not shared memory"));
+            return false;
+        }
+
+        return true;
     }        
     
     // Get the writers to emit key-values

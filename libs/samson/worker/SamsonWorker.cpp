@@ -62,6 +62,8 @@ namespace samson {
         // Add samsonWorker as lister to send traces to delilahs
         listen(notification_samson_worker_send_trace );
         
+        // add to listen messages to send a packet to a worker
+        listen( notification_send_to_worker );
         
         // Notification of the files
         {
@@ -350,6 +352,26 @@ namespace samson {
             sendFilesMessage();
         else if ( notification->isName(notification_samson_worker_send_status_update))
 			sendWorkerStatus();
+        else if ( notification->isName(notification_send_to_worker) )
+        {
+            Packet *packet = (Packet *)notification->extractObject();
+            if( packet )
+            {
+                // No packet could mean that other samsonWorker ( in samsonLocal mode has send the packet )
+                
+                int outputWorker = notification->environment.getInt("outputWorker", -1);
+                if ( ( outputWorker < 0 ) || (outputWorker >= network->getNumWorkers() ) )
+                {
+                    LM_W(("Notification to send a packet to a worker without outputWorker. Deleting packet..."));
+                    delete packet;
+                    return;
+                }
+                
+                // Send packet to the indicated worker
+                network->send(NULL, network->workerGetIdentifier( outputWorker ) , packet);
+            }
+            
+        }
         else if ( notification->isName(notification_samson_worker_send_trace))
         {
             if ( !notification->containsObject() )
@@ -372,6 +394,9 @@ namespace samson {
     {
         // Spetial case: Accept always
         if( notification->isName(notification_samson_worker_send_trace) )
+            return true;
+        
+        if( notification->isName( notification_send_to_worker ) )
             return true;
         
         // Only accept notifications for my worker. This is only necessary when testing samsonLocal with multiple workers

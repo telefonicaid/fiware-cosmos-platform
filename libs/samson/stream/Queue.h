@@ -14,8 +14,11 @@
 #include <ostream>      // std::ostream
 #include <string>       // std::string
 #include "au/list.h"      // au::list
-
+#include "au/cronometer.h"              // au::cronometer
 #include "samson/common/samson.pb.h"    // network::
+#include "engine/EngineNotification.h"        // engine::NotificationListener
+
+#define notification_review_task_for_queue "notification_review_task_for_queue"
 
 namespace samson {
     
@@ -26,27 +29,23 @@ namespace samson {
         class Block;
         class QueuesManager;
         
-        class Queue 
+        class Queue : engine::NotificationListener
         {
             QueuesManager * qm;
 
             friend class QueuesManager;
             
-            std::string name;                   // Name of the queue
-            au::list< Block > blocks;         // Blocks currently in the input queue
+            std::string name;               // Name of the queue
+            au::list< Block > blocks;       // Blocks currently in the input queue
+            
+            au::Cronometer cronometer;      // Time since the last command execution
             
         public:
             
             // Information about how to process this queue ( from controller )
             network::StreamQueue *streamQueue;
             
-            
-            Queue( std::string _name , QueuesManager * _qm )
-            {
-                name = _name;
-                qm = _qm;
-                streamQueue = NULL; // By default it is not assigned
-            }
+            Queue( std::string _name , QueuesManager * _qm );
             
             ~Queue()
             {
@@ -72,6 +71,15 @@ namespace samson {
             std::string getStatus();
           
             ::samson::NetworkInterface *getNetwork();
+            
+            size_t getSize();
+            
+            // Notifications    
+            void notify( engine::Notification* notification );
+            bool acceptNotification( engine::Notification* notification )
+            {
+                return true;
+            }
             
         };
         

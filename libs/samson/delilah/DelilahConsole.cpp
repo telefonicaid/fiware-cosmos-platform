@@ -1132,8 +1132,8 @@ namespace samson
 
             if( ( command == "info_full" ) || (command == "info_queues" ) )
             {
-                txt << "** Queues: " << worker_status.queues_status() << "\n";
-                txt << "** QueuesTasks: " << worker_status.queues_tasks_status() << "\n";
+                txt << "** Queues info:\n" << worker_status.queues_status() << "\n";
+                //txt << "** QueuesTasks: " << worker_status.queues_tasks_status() << "\n";
             }
             
             if( ( command == "info_full" ) || (command == "info_process_manager" ) )

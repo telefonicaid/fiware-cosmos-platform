@@ -153,12 +153,12 @@ namespace engine
 	{
 		LM_T( LmtMemory , ("Checking memory requests Pending requests %u" , memoryRequests.size() ));
 		
-        double memory_input_usage = getMemoryUsageByTag( 0 );
         
 		token.retain();
 		
 		while( true )
 		{
+            double memory_input_usage = _getMemoryUsageByTag( 0 );
 
 			MemoryRequest *r = NULL;
 				
@@ -229,12 +229,8 @@ namespace engine
     
     int MemoryManager::getNumBuffersByTag( int tag )
     {
-        size_t num = 0;
         token.retain();
-        std::set<Buffer*>::iterator i;
-        for ( i = buffers.begin() ; i != buffers.end() ; i++)
-            if( (*i)->tag == tag)
-                num++;
+        size_t num = _getNumBuffersByTag(tag);
         token.release();
         
         return num;
@@ -243,21 +239,47 @@ namespace engine
 
     size_t MemoryManager::getUsedMemoryByTag( int tag )
     {
-        size_t total = 0;
         token.retain();
-        std::set<Buffer*>::iterator i;
-        for ( i = buffers.begin() ; i != buffers.end() ; i++)
-            if( (*i)->tag == tag)
-                total+= (*i)->getMaxSize();
+        size_t total = _getUsedMemoryByTag(tag);
         token.release();
         
         return total;
         
     }
-
-    size_t MemoryManager::getMemoryUsageByTag( int tag )
+    
+    double MemoryManager::getMemoryUsageByTag( int tag )
     {
         return (double) getUsedMemoryByTag(tag) / (double) memory;
+    }
+
+    
+    int MemoryManager::_getNumBuffersByTag( int tag )
+    {
+        size_t num = 0;
+        std::set<Buffer*>::iterator i;
+        for ( i = buffers.begin() ; i != buffers.end() ; i++)
+            if( (*i)->tag == tag)
+                num++;
+        
+        return num;
+        
+    }
+    
+    size_t MemoryManager::_getUsedMemoryByTag( int tag )
+    {
+        size_t total = 0;
+        std::set<Buffer*>::iterator i;
+        for ( i = buffers.begin() ; i != buffers.end() ; i++)
+            if( (*i)->tag == tag)
+                total+= (*i)->getMaxSize();
+        return total;
+        
+    }
+    
+    
+    double MemoryManager::_getMemoryUsageByTag( int tag )
+    {
+        return (double) _getUsedMemoryByTag(tag) / (double) memory;
     }
    
 

@@ -702,8 +702,8 @@ namespace samson {
 		}
 		
 	};
-	
-	
+    
+    
 	
 }
 

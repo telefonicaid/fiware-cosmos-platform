@@ -6,6 +6,8 @@ SET (HEADERS
     QueuesManager.h
     QueueTask.h
     QueueTaskManager.h
+    StreamProcessBase.h
+    ParserQueueTask.h
 )
 
 SET (SOURCES
@@ -15,6 +17,8 @@ SET (SOURCES
     QueuesManager.cpp
     QueueTask.cpp
     QueueTaskManager.cpp    
+    StreamProcessBase.cpp
+    ParserQueueTask.cpp
 )
 
 

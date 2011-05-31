@@ -133,8 +133,15 @@ namespace engine {
         
 		int getNumBuffersByTag( int tag );
         size_t getUsedMemoryByTag( int tag );
-        size_t getMemoryUsageByTag( int tag );
+        double getMemoryUsageByTag( int tag );
+
+    private:
 		
+		int _getNumBuffersByTag( int tag );
+        size_t _getUsedMemoryByTag( int tag );
+        double _getMemoryUsageByTag( int tag );
+
+        
 	public:
 		
 		// Function for the main thread of memory

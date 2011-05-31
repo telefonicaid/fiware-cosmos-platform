@@ -26,6 +26,7 @@
 
 #define notification_samson_worker_send_status_update "notification_samson_worker_send_status_update"
 #define notification_samson_worker_send_trace "notification_samson_worker_send_trace"
+#define notification_send_to_worker "notification_send_to_worker"
 
 namespace samson {
 	

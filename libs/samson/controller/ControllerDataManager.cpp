@@ -20,8 +20,11 @@ namespace samson {
 	
 
     
-	ControllerDataManager::ControllerDataManager( ) : DataManager( getLogFileName() )
+	ControllerDataManager::ControllerDataManager( SamsonController * _controller ) : DataManager( getLogFileName() )
 	{
+        // Pointer to the contorller
+        controller = _controller;
+        
 		info_kvs.clear();
 		info_txt.clear();
 	}
@@ -273,7 +276,23 @@ namespace samson {
 
             
             switch ( op->getType() ) {
+                    
                 case Operation::parser:
+                    
+                    // Check with the number of outputs
+                    if( commandLine.get_num_arguments() < ( 4 + op->getNumOutputs() ) )
+                    {
+                        std::ostringstream output;
+                        output << "Not enought outputs for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
+                        response.output = output.str();
+                        response.error = true;
+                        return response;
+                        
+                    }
+                    
+                    break;
+
+                case Operation::map:
                     
                     // Check with the number of outputs
                     if( commandLine.get_num_arguments() < ( 4 + op->getNumOutputs() ) )
@@ -316,6 +335,7 @@ namespace samson {
             // Create the new queue
 			
             network::StreamQueue *tmp = new network::StreamQueue();
+            tmp->set_num_workers( controller->network->getNumWorkers() );
             tmp->set_name(name);
             copy( &format , tmp->mutable_format() );
             tmp->set_operation( operation );

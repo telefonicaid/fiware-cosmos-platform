@@ -58,7 +58,7 @@ namespace samson {
     public:
         
         ProcessIsolated( ProcessBaseType _type , int _num_outputs , int _num_workers );
-        ~ProcessIsolated();
+        virtual ~ProcessIsolated();
 
         // Chage the type of usage
 		void setProcessBaseMode(ProcessBaseType _type)
@@ -83,6 +83,8 @@ namespace samson {
 		// Function executed at this process side when a code is sent from the background process
 		void runCode( int c )
 		{
+            //LM_M(("Isoalted process Running code %d",c));
+            
 			switch (c) {
 				case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:
 					flushBuffer(false);	// Flush the generated buffer with new key-values

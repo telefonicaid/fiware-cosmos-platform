@@ -13,7 +13,6 @@ SET (HEADERS
 	ProcessOperation.h
 	ProcessParser.h
 	KVInputVector.h
-	StreamProcessBase.h
 )
 
 SET (SOURCES
@@ -30,7 +29,6 @@ SET (SOURCES
 	ProcessOperation.cpp
 	ProcessParser.cpp
 	KVInputVector.cpp
-	StreamProcessBase.cpp
 )
 
 

@@ -7,7 +7,7 @@
 #include <sstream>
 #include "Block.h"  
 #include "engine/ProcessItem.h"
-#include "samson/worker/StreamProcessBase.h"
+#include "samson/stream/StreamProcessBase.h"        // parent class 
 
 namespace samson {
     namespace stream {
@@ -32,7 +32,7 @@ namespace samson {
             {
             }
             
-            ~QueueTask()
+            virtual ~QueueTask()
             {
             }
             
@@ -54,35 +54,11 @@ namespace samson {
                 return au::Format::string("No task description for task %lu", id );
             }
             
+            // Function to return the process to be executed
+            virtual StreamProcessBase* getStreamProcess()=0;
+
         };
-    
-/*        
-        // Parser QueueTask
-        
-        class ParserQueueTask : public QueueTask , public StreamProcessBase
-        {
-            
-        public:
-            
-            ParserQueueTask( network::StreamQueue * streamQueue  ) : StreamProcessBase( key_value , streamQueue )
-            {
-            }
-            
-            virtual std::string getStatus()
-            {
-                std::ostringstream output;
-                output << "[" << id << "] ";
-                output << "Parser " << streamQueue->operation() << " processing " << blocks.size() << " blocks with " << au::Format::string( getSize( blocks ) );
-                return output.str();
-            }
-            
-            void generateKeyValues( KVWriter *writer )
-            {
-                LM_M(("Running parser over %d blocks" , (int)blocks.size() ));
-            }
-            
-        };
- */   
+ 
         
         
     }

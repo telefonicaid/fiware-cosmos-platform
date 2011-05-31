@@ -48,10 +48,11 @@ namespace samson {
         // List of stream - queues contained in the system
         au::map< std::string , network::StreamQueue > stream_queues;    
 
+        SamsonController *controller;
 		
 	public:
 
-		ControllerDataManager( );
+		ControllerDataManager( SamsonController *controller );
 		~ControllerDataManager();
 		
 		/**

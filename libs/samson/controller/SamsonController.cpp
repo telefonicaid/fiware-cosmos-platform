@@ -27,7 +27,7 @@ namespace samson {
 	* SamsonController::SamsonController
 	*/
 		
-	SamsonController::SamsonController( NetworkInterface*  network ) : data(), jobManager(this) , monitor(this)
+	SamsonController::SamsonController( NetworkInterface*  network ) : data(this), jobManager(this) , monitor(this)
 	{
         
         // Get initial time

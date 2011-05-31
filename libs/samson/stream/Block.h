@@ -16,12 +16,14 @@
 #include "samson/common/coding.h"
 #include "engine/DiskOperation.h"       // engine::DiskOperation
 #include "engine/EngineNotification.h"  // engien::EngineListener
+#include "samson/module/KVSetStruct.h"	// samson::KVSetStruct
 
 #include <set>
 
 namespace samson {
     namespace stream
     {
+        
         
         /**
          Main class to hold a block on memory
@@ -132,6 +134,14 @@ namespace samson {
                 return size;
             }
             
+            char *getData()
+            {
+                if( ! isContentOnMemory() )
+                    LM_X(1,("Not possible to get data for a block that is not in memory"));
+                return buffer->getData();
+            }
+            
+            
             size_t getSizeOnMemory()
             {
                 if( isContentOnMemory() )
@@ -147,6 +157,8 @@ namespace samson {
                 else
                     return 0;
             }
+            
+            KVSetStruct* getKVSetStruct();
             
             
         };

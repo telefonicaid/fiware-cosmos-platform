@@ -16,14 +16,14 @@ namespace samson
 		
 	public:
 		
-		KV *kv;// Dynamic Vector of KV elements
-		KV ** _kv;// Dynamic Vector with pointers to kv
+		KV *kv;         // Dynamic Vector of KV elements
+		KV ** _kv;      // Dynamic Vector with pointers to kv
 		
 		size_t max_num_kvs;// Allocation size
 		size_t num_kvs;// Real number of kvs in the vectors
 		
-		DataSizeFunction keySize; // Function to get the size of a particular value of the key ( common to all inputs )
-		DataSizeFunction *valueSize; // Function to get the size of a partiuclar value of the value ( different for each input )
+		DataSizeFunction keySize;       // Function to get the size of a particular value of the key ( common to all inputs )
+		DataSizeFunction *valueSize;    // Function to get the size of a partiuclar value of the value ( different for each input )
 		
 		OperationInputCompareFunction compare; // Unique funciton to compare two key-values ( for any input )
 		
@@ -35,8 +35,6 @@ namespace samson
 		void prepareInput( size_t _max_num_kvs );
 		
 		void addKVs( ProcessSharedFile& file );
-		
-		
 		
 		// global sort function key - input - value used in reduce operations
 		void sort();

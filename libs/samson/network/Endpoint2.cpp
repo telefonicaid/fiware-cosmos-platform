@@ -122,8 +122,9 @@ Endpoint2::Endpoint2
 	port                = _port;
 	state               = Unused;
 	threaded            = false;
-	readerId            = -1;
-	writerId            = -1;
+	// Andreu note : There is no valid way to initialize a pthread_t to a "null" value. You can associate it with a boolean flag if you want
+	//readerId            = -1;
+	//writerId            = -1;
 
 	idInEndpointVector  = -8;    // -8 meaning 'undefined' ...
 

@@ -127,7 +127,7 @@ namespace samson
         void addOutput( DataSet output_dataset )
         {
             
-            printf("Adding output %s ( %s ) ", name.c_str() , type.c_str() );
+            printf("Adding output %s ( %s )\n", name.c_str() , type.c_str() );
             
             if( ( type == "parserOut" ) || ( type == "parserOutReduce" ) )
             {
@@ -155,7 +155,7 @@ namespace samson
                     exit(1);
                 }
             
-            if (type == "reduce")
+            if ((type == "reduce") || (type == "parserOutreduce"))
             {
             	std::string prevKeyFormat = inputs[0].key_values.keyFormat;
 
@@ -163,7 +163,7 @@ namespace samson
     			{
     				if (prevKeyFormat != inputs[i].key_values.keyFormat)
     				{
-    					fprintf(stderr, "samsonModuleParser: Error in operation '%s' (reduce type). keyFormat must agree for all inputs ('%s' != '%s')\n", name.c_str(), prevKeyFormat.c_str(), inputs[i].key_values.keyFormat.c_str());
+    					fprintf(stderr, "samsonModuleParser: Error in operation '%s' ('%s' type). keyFormat must agree for all inputs ('%s' != '%s')\n", name.c_str(), type.c_str(), prevKeyFormat.c_str(), inputs[i].key_values.keyFormat.c_str());
     					exit(1);
     				}
     			}
@@ -174,7 +174,7 @@ namespace samson
 				{
 					if (prevKeyCompareFunction != inputs[i].compareKeyFunction)
 					{
-						fprintf(stderr, "samsonModuleParser: Error in operation '%s' (reduce type). compareKeyFunction must agree for all inputs ('%s' != '%s')\n", name.c_str(), prevKeyCompareFunction.c_str(), inputs[i].compareKeyFunction.c_str());
+						fprintf(stderr, "samsonModuleParser: Error in operation '%s' ('%s' type). compareKeyFunction must agree for all inputs ('%s' != '%s')\n", name.c_str(), type.c_str(), prevKeyCompareFunction.c_str(), inputs[i].compareKeyFunction.c_str());
 						exit(1);
 					}
 				}

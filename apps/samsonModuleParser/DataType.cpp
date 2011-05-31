@@ -241,6 +241,20 @@ namespace samson
 		return o.str();
 	}	
 	
+	string DataType::getUnassignedOptionals(string pre_line)
+	{
+		ostringstream o;
+
+		if (valMask == 0) //artificially inserted NAME_FILLEDOPTIONALFIELDS field
+		{
+			o << pre_line << name << " = 0;\n";
+			return o.str();
+		}
+
+		return o.str();
+	}
+
+
 	string DataType::getParseCommandIndividual( string pre_line, string _name )
 	{
 		ostringstream o;

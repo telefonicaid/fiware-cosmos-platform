@@ -78,9 +78,13 @@ namespace samson {
 		
 		std::string getLiteralInternal( int pos , int pos2);
 		
+		std::string getLiteralInternalwithBlanks( int pos , int pos2);
+
 		std::string getLiteral( int* pos );
 		
 		std::string getBlock( int* pos );
+
+		std::string getBlockwithBlanks( int* pos );
 
 		void getScopeLimits( int* pos , int*begin, int*end );
 		

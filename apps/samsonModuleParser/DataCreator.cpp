@@ -378,7 +378,7 @@ namespace samson {
 				{
 					if( op.code[i] != '\t')
 					{
-						if( op.code[i] == '\n' )
+						if( (op.code[i] == '\n' ) || (op.code[i] == ';'))
 						{
 							if( command.str().length()>0)
 								output << "\t\t\toperation->code.push_back(\"" << command.str() <<  "\");\n";

@@ -60,7 +60,7 @@ namespace samson {
 			if( mainCommand == "file" )
 				file = module_creator->getLiteral(&pos);
 			else if( mainCommand == "code" )
-				code = module_creator->getBlock(&pos);
+				code = module_creator->getBlockwithBlanks(&pos);
 			else if( mainCommand == "helpLine" )
 			{
 				helpLine = module_creator->getLiteral(&pos);
@@ -129,9 +129,9 @@ namespace samson {
 
 				if (optional_compareKeyFunction.compare(0,strlen(COMPAREKEYFUNCTION),COMPAREKEYFUNCTION) == 0)
 				{
-					if (type != "reduce")
+					if ((type != "reduce") && (type != "parserOutReduce"))
 					{
-						fprintf(stderr, "samsonModuleParser: Error, compareKeyFunction available only on inputs to reduce operations, not to type:'%s'. Error at name:'%s', line:%d\n", type.c_str(), name.c_str(), module_creator->items[pos-1].line);
+						fprintf(stderr, "samsonModuleParser: Error, compareKeyFunction available only on inputs to reduce or parserOutReduce operations, not to type:'%s'. Error at name:'%s', line:%d\n", type.c_str(), name.c_str(), module_creator->items[pos-1].line);
 						exit (1);
 					}
 					size_t pos_equal = optional_compareKeyFunction.find("=");
@@ -150,9 +150,9 @@ namespace samson {
 				
 				if (optional_compareValueFunction.compare(0,strlen(COMPAREVALUEFUNCTION),COMPAREVALUEFUNCTION) == 0)
 				{
-					if (type != "reduce")
+					if ((type != "reduce") && (type != "parserOutReduce"))
 					{
-						fprintf(stderr, "samsonModuleParser: Error, compareValueFunction available only on inputs to reduce operations, not to type:'%s'. Error at name:'%s', line:%d\n", type.c_str(), name.c_str(), module_creator->items[pos-1].line);
+						fprintf(stderr, "samsonModuleParser: Error, compareValueFunction available only on inputs to reduce or parserOutReduce operations, not to type:'%s'. Error at name:'%s', line:%d\n", type.c_str(), name.c_str(), module_creator->items[pos-1].line);
 						exit (1);
 					}
 					size_t pos_equal = optional_compareValueFunction.find("=");

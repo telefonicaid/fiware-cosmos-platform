@@ -187,6 +187,15 @@ namespace samson
 				file << (*field).getDestruction("\t\t");
 			file << "\t}\n\n";
 			
+			if (any_optional)
+			{
+				file << "\tvoid unassignAllOptionals(){\n";
+				for (vector <DataType>::iterator field = items.begin(); field != items.end() ; field++)
+					file << (*field).getUnassignedOptionals("\t\t");
+				file << "\t}\n\n";
+
+			}
+
 			//Parse
 			file << "\tint parse(char *data){\n" ;
 			file << "\t\tint offset=0;\n";

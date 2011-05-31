@@ -51,7 +51,7 @@ int  tsCompare ( struct  timespec  time1, struct  timespec  time2)
 
 int main( int argC , const char *argV[])
 {
-	//Help parameter in the comman line
+	//Help parameter in the command line
 	au::CommandLine cmdLine;
 	cmdLine.set_flag_boolean("help");		// Get this help
 	cmdLine.parse(argC , argV);

@@ -185,12 +185,14 @@ namespace samson
 					item.str = txt.substr(pos, i - pos );
 					item.line = nline;
 					items.push_back(item);
+					//fprintf(stdout, "item:'%s', line:%d, pos:%lu\n", item.str.c_str(), item.line, i);
 				}
 				
 				//Emit the literal with one letter if that is the case
 				item.str = txt[i];
 				item.line = nline;
 				items.push_back( item );
+				//fprintf(stdout, "item:'%s', line:%d, pos:%lu\n", item.str.c_str(), item.line, i);
 
 				if (txt[i] == '\n')
 				{
@@ -323,6 +325,39 @@ namespace samson
 		return o.str();
 	}
 	
+	std::string AUTockenizer::getLiteralInternalwithBlanks( int pos , int pos2)
+	{
+		std::ostringstream o;
+		bool sepFound = false;
+
+		for (int i = pos ; i <= pos2 ; i++)
+		{
+			if (itemAtPos(i).str == ";")
+			{
+				o << "\n";
+				sepFound = true;
+				//fprintf(stderr, "Find sepFound with '%s'(pos:%d)\n", itemAtPos(i).str.c_str(), i);
+			}
+			else
+			{
+				o << itemAtPos(i).str << " ";
+				if ((itemAtPos(i).str != " ") && (itemAtPos(i).str != "\t") && (itemAtPos(i).str != "\n"))
+				{
+					sepFound = false;
+					//fprintf(stderr, "Deleting sepFound with '%s'(pos:%d)\n", itemAtPos(i).str.c_str(), i);
+				}
+			}
+		}
+
+		if (sepFound == false)
+		{
+			fprintf(stderr, "samsonModuleParser: Error, expected ';' in the lines of a block. Reference line:%d\n", items[reference_pos].line);
+			//fprintf(stderr, "samsonModuleParser: Error, expected ';' in the lines of a block. Reference line:%d, between pos_begin:%d, pos_end:%d\n", items[reference_pos].line, pos, pos2);
+			exit(1);
+		}
+		return o.str();
+	}
+
 	std::string AUTockenizer::getLiteral( int* pos )
 	{
 		reference_pos = *pos;
@@ -354,12 +389,25 @@ namespace samson
 		return getLiteralInternal(begin, end);
 	}
 	
+	std::string AUTockenizer::getBlockwithBlanks( int* pos )
+	{
+		int begin;
+		int end;
+
+		reference_pos = *pos;
+
+		getScopeLimits(pos, &begin, &end);
+
+		return getLiteralInternalwithBlanks(begin, end);
+	}
+
 	void AUTockenizer::getScopeLimits( int* pos , int*begin, int*end )
 	{
 		reference_pos = *pos;
 		if( !isOpenSet(*pos) )
 		{
 			fprintf(stderr,"samsonModuleParser: Error getting the limits in scope of a {  } while parsing the document, from reference:'%s' line:%d\n", items[reference_pos].str.c_str(), items[reference_pos].line);
+			fprintf(stderr,"\t\tgetScopeLimits called from non OpenSet position:'%s'\n", itemAtPos(*pos).str.c_str());
 			exit(1);
 		}
 
@@ -368,6 +416,7 @@ namespace samson
 		int tmp	= searchSetFinishStartingAt( *pos ) ;
 
 		*end = tmp - 1;
+		//*end = tmp;
 		*pos = tmp + 1;
 
 	}

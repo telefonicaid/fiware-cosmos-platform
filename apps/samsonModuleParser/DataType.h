@@ -72,6 +72,9 @@ namespace samson {
 		
 		string getDestruction(string pre_line);
 		
+		/* Clearing optional fileds */
+		string getUnassignedOptionals(string pre_line);
+
 		string getParseCommandIndividual( string pre_line, string _name );
 		string getParseCommandForCompare( string _name, string indice );
 		string getParseCommandVector( string pre_line, string _name );

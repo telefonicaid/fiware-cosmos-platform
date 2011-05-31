@@ -952,8 +952,8 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		s = helloDataSet((Type) helloP->type, helloP->name, helloP->alias);
 		if (s != OK)
 		{
-			LM_W(("Bad hello data - setting endpoint in ScheduledForRemoval"));
-			stateSet(ScheduledForRemoval);
+			LM_W(("Bad hello data"));
+			stateSet(Disconnected);
 			LM_RE(s, ("Bad hello data"));
 		}
 
@@ -1223,7 +1223,8 @@ void Endpoint2::helloSend(Message::MessageType type)
 */
 void Endpoint2::close(void)
 {
-	state = Disconnected;
+	if (state != ScheduledForRemoval)
+		state = Disconnected;
 
 	if (rFd != -1)
 		::close(rFd);

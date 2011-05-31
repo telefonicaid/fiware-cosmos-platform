@@ -899,17 +899,17 @@ void EndpointManager::periodic(void)
 		}
 
 		endpoint[ix]->threaded = false;
-		endpoint[ix]->state    = Endpoint2::Disconnected;
 
 		if (endpoint[ix]->type == Endpoint2::Worker)
-			;
+			endpoint[ix]->state = Endpoint2::Disconnected;
 		else if (endpoint[ix]->type == Endpoint2::Controller)
-			;
+			endpoint[ix]->state = Endpoint2::Disconnected;
 		else
 		{
 			delete endpoint[ix];
 			endpoint[ix] = NULL;
 		}
+
 		show("Removed a removal-scheduled endpoint", true);
 	}
 

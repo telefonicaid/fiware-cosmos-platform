@@ -98,6 +98,7 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 		LM_T(LmtUnhelloed, ("Read a Hello message"));
 		helloP = (Message::HelloData*) dataP;
 		s = helloDataSet((Type) helloP->type, helloP->name, helloP->alias);
+		type = Unhelloed;
 		if (s != OK)
 		{
 			LM_E(("helloDataSet error - setting endpoint in ScheduledForRemoval state"));

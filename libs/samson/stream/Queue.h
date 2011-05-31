@@ -14,7 +14,7 @@
 #include <ostream>      // std::ostream
 #include <string>       // std::string
 #include "au/list.h"      // au::list
-#include "au/cronometer.h"              // au::cronometer
+#include "au/Cronometer.h"              // au::cronometer
 #include "samson/common/samson.pb.h"    // network::
 #include "engine/EngineNotification.h"        // engine::NotificationListener
 

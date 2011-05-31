@@ -40,8 +40,8 @@ namespace samson {
 	  
 	  T _value1,_value2;
 	  
-	  _value1 = *((T*)data1);
-	  _value2 = *((T*)data2);
+	  _value1 = *((T*)(data1+*offset1));
+	  _value2 = *((T*)(data2+*offset2));
 	  
 	  *offset1 += sizeof(T);
 	  *offset2 += sizeof(T);

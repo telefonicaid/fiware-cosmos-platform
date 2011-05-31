@@ -71,8 +71,8 @@ namespace system{
 		
 		inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 )
 		{
-			char *data1_orig = data1;
-			char *data2_orig = data2;
+			char *data1_orig = data1+*offset1;
+			char *data2_orig = data2+*offset2;
 			int pos1 = 0;
 
 #ifdef DEBUG_FILES
@@ -104,10 +104,10 @@ namespace system{
 			}
 #endif /* de DEBUG_FILES */
 #undef DEBUG_FILES
-			if( pos1 < pos2 )
-				return -1;
-			else if( pos1 > pos2 )
-				return 1;
+			//if( pos1 < pos2 )
+				//return -1;
+			//else if( pos1 > pos2 )
+				//return 1;
 			
 			// Same length
 			

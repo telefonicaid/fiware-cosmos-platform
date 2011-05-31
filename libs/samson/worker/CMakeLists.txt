@@ -12,7 +12,6 @@ SET (HEADERS
 	ProcessCompact.h
 	ProcessOperation.h
 	ProcessParser.h
-	KVInputVector.h
 )
 
 SET (SOURCES
@@ -28,7 +27,6 @@ SET (SOURCES
 	ProcessCompact.cpp
 	ProcessOperation.cpp
 	ProcessParser.cpp
-	KVInputVector.cpp
 )
 
 

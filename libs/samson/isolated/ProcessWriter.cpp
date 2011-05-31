@@ -68,6 +68,9 @@ namespace samson {
 	
 	void ProcessWriter::emit( int output , DataInstance *key , DataInstance *value )
 	{
+        
+        LM_M(("PW emit: %s %s", key->str().c_str()  , value->str().c_str() ));
+        
 		// Serialize to the minibuffer
 		
 		size_t key_size		= key->serialize( miniBuffer );

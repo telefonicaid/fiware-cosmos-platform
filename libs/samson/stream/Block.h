@@ -158,9 +158,6 @@ namespace samson {
                     return 0;
             }
             
-            KVSetStruct* getKVSetStruct();
-            
-            
         };
             
         

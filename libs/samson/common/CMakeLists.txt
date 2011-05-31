@@ -13,6 +13,7 @@ SET (HEADERS
 	samsonConfig.h
 	coding.h
 	MemoryTags.h
+	KVInputVector.h
 )
 
 SET (SOURCES
@@ -24,6 +25,7 @@ SET (SOURCES
 	EnvironmentOperations.cpp
 	platformProcesses.cpp
 	coding.cpp
+	KVInputVector.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''

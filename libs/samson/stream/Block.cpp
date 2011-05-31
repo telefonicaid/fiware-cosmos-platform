@@ -266,14 +266,6 @@ namespace samson {
             return false;
         }
 
-        KVSetStruct* Block::getKVSetStruct()
-        {
-            KVSetStruct *kvSetStruct = (KVSetStruct*) malloc( sizeof( KVSetStruct ) );
-            
-            
-            
-            return kvSetStruct;
-        }
 
         
         size_t getSize( std::set<Block*> &blocks )

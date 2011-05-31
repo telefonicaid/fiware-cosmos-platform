@@ -29,6 +29,7 @@ namespace samson
 		
 		int num_inputs;// Number of input channels ( 1 in maps and parseOut , N in reduce operations )
 		
+		KVInputVector( Operation* operation );
 		KVInputVector( int _num_inputs );
 		~KVInputVector();
 		
@@ -36,6 +37,8 @@ namespace samson
 		
 		void addKVs( ProcessSharedFile& file );
 		
+		void addKVs(int input , KVInfo info , char *data );
+        
 		// global sort function key - input - value used in reduce operations
 		void sort();
 		

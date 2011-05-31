@@ -3,6 +3,7 @@
 #include "ParserQueueTask.h"        // Own interface
 
 #include "samson/module/ModulesManager.h"      // samson::module::ModulesManager
+#include "samson/common/KVInputVector.h"        // samson::KVInputVector
 
 namespace samson {
     namespace stream {
@@ -63,6 +64,8 @@ namespace samson {
                 return;
             }
             
+            KVInputVector inputVector( operation );
+            
             // Run the generator over the ProcessWriter to emit all key-values
             Map *map = (Map*) operation->getInstance();
             
@@ -76,19 +79,53 @@ namespace samson {
             map->tracer = this;
             map->operationController = this;
             
-            
             map->init();
             
             std::set< Block* >::iterator b;
             for ( b = blocks.begin() ; b != blocks.end() ; b++)
             {
-                KVSetStruct* inputStructs = (*b)->getKVSetStruct();
+                
+                Block* block = (*b);
+                
+                KVHeader *header = (KVHeader *)block->getData();
+                
+                if( !header->check() )
+                {
+                    LM_W(("Not valid header maping a block"));
+                    return;
+                }
+                
+                KVInfo* info = (KVInfo*) ( block->getData() + sizeof(KVHeader) );
+                
+                LM_M(("Stream Mapping a block of size %s with %s kvs in %s ", 
+                        au::Format::string( (*b)->getSize() ).c_str() ,  
+                        au::Format::string(header->info.kvs).c_str()  ,
+                        au::Format::string(header->info.size,"Bytes").c_str()  
+                      ));
+                
+                char *data = block->getData() + KVFILE_TOTAL_HEADER_SIZE;
+                
+                for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
+                {
+                    if( info[hg].size > 0 )
+                    {
+                        LM_M(("Stream Mapping a block of size %s hasg group %d %s ", au::Format::string( (*b)->getSize() ).c_str() , hg , info[hg].str().c_str() ));
+                        
+                        inputVector.prepareInput( info[hg].kvs );
+                        inputVector.addKVs( 0 , info[hg] , data );
 
-                LM_M(("Stream Mapping a block of size %s", au::Format::string( (*b)->getSize() ).c_str() ));
-                
-                //map->run( inputStructs , writer );
-                
-                delete inputStructs;
+                        KVSetStruct inputStruct;
+                        inputStruct.num_kvs = inputVector.num_kvs;
+                        inputStruct.kvs = inputVector._kv;
+                        
+                        map->run( &inputStruct , writer );
+
+                        // Update the data pointer    
+                        data +=  info[hg].size;
+                        
+                    }
+                }
+                 
                 
             }
             

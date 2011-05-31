@@ -7,7 +7,7 @@
 #include <algorithm>					// std::sort
 #include "WorkerTaskManager.h"			// samson::TaskManager
 #include "samson/worker/SamsonWorker.h"				// samson::SamsonWorker
-#include "KVInputVector.h"				// samson::KVInputVector	
+#include "samson/common/KVInputVector.h"				// samson::KVInputVector	
 
 namespace samson {
 	

@@ -22,9 +22,10 @@ namespace example{
 	  samson::system::UInt a;
 	  samson::system::UInt b;
 
+
 		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
-		  b = rand();
+
 
 		  size_t pos = 0;
 		  int char_counter = 0;
@@ -33,7 +34,8 @@ namespace example{
 		    if ( data[pos] == '\n')
 		    {
 			  a = char_counter;
-			  writer->emit( 0 , &b , &a );
+			  b = rand()%100;
+			  writer->emit( 0 , &a , &b );
 			  char_counter=0;
 		    }
 		    else
@@ -45,7 +47,9 @@ namespace example{
 		  if ( char_counter > 0)
 		    {
 			  a = char_counter;
-			  writer->emit( 0 , &b , &a );
+			  b = rand()%100;
+			  writer->emit( 0 , &a , &b );
+
 		    }
 
 		}

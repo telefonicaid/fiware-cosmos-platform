@@ -875,7 +875,7 @@ namespace samson
 		else
 		{
 			std::ostringstream o;
-			o << "[ " << process->id << " ] Download data process finished correctly ( " << process->getStatus() << " )";
+			o << "[ " << process->id << " ] Push data process finished correctly ( " << process->getStatus() << " )";
 			writeWarningOnConsole(o.str());
 		}
         

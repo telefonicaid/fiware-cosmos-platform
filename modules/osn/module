@@ -309,18 +309,18 @@ script Bytemobile_req_1
 
 	code
 	{
-		clear $2
-		clear $3
+		clear $2;
+		clear $3;
 		
-		osn.parse_urls $1 $1.parse -clear -create
-		osn.map_urls_to_kv_to_compute_sites_visited $1.parse $1.p.map $1.total -clear -create
-		osn.red_compute_total_and_set $1.total -clear -create
-		osn.red_compute_sites_visited $1.p.map $1.p.m.red -clear -create
-		osn.export_report $1.p.m.red $2 -clear -create
-		#download $1.p.m.red.txt $2
-		osn.red_select_N_sites $1.p.m.red $1.p.m.red.sort -clear -create
-		osn.export_N_sites $1.p.m.red.sort $3 -clear -create
-		#download $1.p.m.red.sort.txt $3
+		osn.parse_urls $1 $1.parse -clear -create;
+		osn.map_urls_to_kv_to_compute_sites_visited $1.parse $1.p.map $1.total -clear -create;
+		osn.red_compute_total_and_set $1.total -clear -create;
+		osn.red_compute_sites_visited $1.p.map $1.p.m.red -clear -create;
+		osn.export_report $1.p.m.red $2 -clear -create;
+		#download $1.p.m.red.txt $2;
+		osn.red_select_N_sites $1.p.m.red $1.p.m.red.sort -clear -create;
+		osn.export_N_sites $1.p.m.red.sort $3 -clear -create;
+		#download $1.p.m.red.sort.txt $3;
 	}
 }
 
@@ -339,20 +339,20 @@ script Bytemobile_req_2
 
 	code
 	{
-		clear $2
-		clear $3
+		clear $2;
+		clear $3;
 		
-		osn.parse_urls $1 $1.parse -clear -create
-		set osn.user_agent_query iphone
-		set osn.domain_query search.yahoo.com
-		osn.map_site_user $1.parse $1.p.map $1.total -clear -create
-		osn.red_compute_total_and_set $1.total -clear -create
-		osn.red_compute_sites_visited $1.p.map $1.p.m.red -clear -create
-		osn.export_report $1.p.m.red $2 -clear -create
-		#download $1.p.m.red.txt $2
-		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create
-		#osn.export_total $1.p.m.red.total $3 -clear -create
-		#download $1.p.m.red.total.txt $3
+		osn.parse_urls $1 $1.parse -clear -create;
+		set osn.user_agent_query iphone;
+		set osn.domain_query search.yahoo.com;
+		osn.map_site_user $1.parse $1.p.map $1.total -clear -create;
+		osn.red_compute_total_and_set $1.total -clear -create;
+		osn.red_compute_sites_visited $1.p.map $1.p.m.red -clear -create;
+		osn.export_report $1.p.m.red $2 -clear -create;
+		#download $1.p.m.red.txt $2;
+		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create;
+		#osn.export_total $1.p.m.red.total $3 -clear -create;
+		#download $1.p.m.red.total.txt $3;
 	}
 }
 
@@ -371,20 +371,20 @@ script Bytemobile_req_3
 
 	code
 	{
-		clear $2
-		clear $3
+		clear $2;
+		clear $3;
 		
-		osn.parse_urls $1 $1.parse -clear -create
-		set osn.user_agent_query iphone
-		set osn.domain_query www.google.
-		osn.map_site_user $1.parse $1.p.map $1.total -clear -create
-		osn.red_compute_total_and_set $1.total -clear -create
-		osn.red_compute_sites_visited $1.p.map $1.p.m.red -clear -create
-		osn.export_report $1.p.m.red $2 -clear -create
-		#download $1.p.m.red.txt $2
-		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create
-		#osn.export_total $1.p.m.red.total $3 -clear -create
-		#download $1.p.m.red.total.txt $3
+		osn.parse_urls $1 $1.parse -clear -create;
+		set osn.user_agent_query iphone;
+		set osn.domain_query www.google.;
+		osn.map_site_user $1.parse $1.p.map $1.total -clear -create;
+		osn.red_compute_total_and_set $1.total -clear -create;
+		osn.red_compute_sites_visited $1.p.map $1.p.m.red -clear -create;
+		osn.export_report $1.p.m.red $2 -clear -create;
+		#download $1.p.m.red.txt $2;
+		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create;
+		#osn.export_total $1.p.m.red.total $3 -clear -create;
+		#download $1.p.m.red.total.txt $3;
 	}
 }
 
@@ -403,8 +403,8 @@ script Bytemobile_req_4
 
 	code
 	{
-		clear $2
-		clear $3
+		clear $2;
+		clear $3;
 		
 	}
 }
@@ -424,20 +424,20 @@ script Bytemobile_req_5
 
 	code
 	{
-		clear $2
-		clear $3
+		clear $2;
+		clear $3;
 		
-		osn.parse_urls $1 $1.parse -clear -create
-		set osn.user_agent_query iphone
-		set osn.locDoc_query www.o2.co.uk/iphonestart
-		osn.map_url_user $1.parse $1.p.map $1.total -clear -create
-		osn.red_compute_total_and_set $1.total -clear -create
-		osn.red_compute_sites_visited $1.p.map $1.p.m.red -clear -create
-		osn.export_report $1.p.m.red $2 -clear -create
-		#download $1.p.m.red.txt $2
-		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create
-		#osn.export_total $1.p.m.red.total $3 -clear -create
-		#download $1.p.m.red.total.txt $3
+		osn.parse_urls $1 $1.parse -clear -create;
+		set osn.user_agent_query iphone;
+		set osn.locDoc_query www.o2.co.uk/iphonestart;
+		osn.map_url_user $1.parse $1.p.map $1.total -clear -create;
+		osn.red_compute_total_and_set $1.total -clear -create;
+		osn.red_compute_sites_visited $1.p.map $1.p.m.red -clear -create;
+		osn.export_report $1.p.m.red $2 -clear -create;
+		#download $1.p.m.red.txt $2;
+		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create;
+		#osn.export_total $1.p.m.red.total $3 -clear -create;
+		#download $1.p.m.red.total.txt $3;
 	}
 }
 
@@ -456,20 +456,20 @@ script Bytemobile_req_6
 
 	code
 	{
-		clear $2
-		clear $3
+		clear $2;
+		clear $3;
 		
-		osn.parse_urls $1 $1.parse -clear -create
-		set osn.user_agent_query iphone
-		set osn.locDoc_query o2.co.uk
-		osn.map_url_user $1.parse $1.p.map $1.total -clear -create
-		osn.red_compute_total_and_set $1.total -clear -create
-		osn.red_compute_sites_visited $1.p.map $1.p.m.red -clear -create
-		osn.export_report $1.p.m.red $2 -clear -create
-		#download $1.p.m.red.txt $2
-		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create
-		#osn.export_total $1.p.m.red.total $3 -clear -create
-		#download $1.p.m.red.total.txt $3
+		osn.parse_urls $1 $1.parse -clear -create;
+		set osn.user_agent_query iphone;
+		set osn.locDoc_query o2.co.uk;
+		osn.map_url_user $1.parse $1.p.map $1.total -clear -create;
+		osn.red_compute_total_and_set $1.total -clear -create;
+		osn.red_compute_sites_visited $1.p.map $1.p.m.red -clear -create;
+		osn.export_report $1.p.m.red $2 -clear -create;
+		#download $1.p.m.red.txt $2;
+		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create;
+		#osn.export_total $1.p.m.red.total $3 -clear -create;
+		#download $1.p.m.red.total.txt $3;
 	}
 }
 
@@ -488,21 +488,21 @@ script Bytemobile_req_7
 
 	code
 	{
-		clear $2
-		clear $3
+		clear $2;
+		clear $3;
 		
-		osn.parse_urls $1 $1.parse -clear -create
-		set osn.user_agent_query iphone
-		set osn.locDoc_query o2.co.uk
-		osn.map_applications $1.parse $1.p.agentmap $1.p.map $1.total -clear -create
-		osn.red_compute_total_and_set $1.total -clear -create
-		osn.red_compute_sites_visited $1.p.map $1.p.m.red -clear -create
-		osn.export_report $1.p.m.red $2 -clear -create
-		osn.red_compute_sites_visited $1.p.agentmap $1.p.am.red -clear -create
-		osn.export_report $1.p.am.red $1.p.am.red.txt -clear -create
-		#download $1.p.m.red.txt $2
-		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create
-		#osn.export_total $1.p.m.red.total $3 -clear -create
-		#download $1.p.m.red.total.txt $3
+		osn.parse_urls $1 $1.parse -clear -create;
+		set osn.user_agent_query iphone;
+		set osn.locDoc_query o2.co.uk;
+		osn.map_applications $1.parse $1.p.agentmap $1.p.map $1.total -clear -create;
+		osn.red_compute_total_and_set $1.total -clear -create;
+		osn.red_compute_sites_visited $1.p.map $1.p.m.red -clear -create;
+		osn.export_report $1.p.m.red $2 -clear -create;
+		osn.red_compute_sites_visited $1.p.agentmap $1.p.am.red -clear -create;
+		osn.export_report $1.p.am.red $1.p.am.red.txt -clear -create;
+		#download $1.p.m.red.txt $2;
+		osn.red_compute_total_elements $1.p.m.red $1.p.m.red.total -clear -create;
+		#osn.export_total $1.p.m.red.total $3 -clear -create;
+		#download $1.p.m.red.total.txt $3;
 	}
 }

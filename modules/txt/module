@@ -56,17 +56,12 @@ script demo
 
 	code
 	{
-		add txt.input -txt -f					# Create incomming txt queue
-		add txt.input_bin system.String system.UInt -f		# Create incomming queue in binary format
+		add txt.input -txt -f;					# Create incomming txt queue
+		add txt.input_bin system.String system.UInt -f;		# Create incomming queue in binary format
 
-		add txt.words system.String system.UInt -f		# Create accumulated set for the words
+		add txt.words system.String system.UInt -f;		# Create accumulated set for the words
 
-		clear txt.input txt.input_bin txt.words 		# Clean everything to begin...
-
-		# Set the automatic operation for this queue	
-		remove_operation -tag txt.demo
-		set_operation 'txt.parser_words txt.input txt.input_bin -clear_inputs' 'queue txt.input 0 0' -tag txt.demo		
-		set_operation 'txt.word_count_accumulate txt.input_bin txt.words txt.words -clear_inputs' 'queue txt.input_bin 0 0' -tag txt.demo
+		clear txt.input txt.input_bin txt.words; 		# Clean everything to begin...
 	}
 }
 
@@ -79,10 +74,10 @@ script words
 
 	code
 	{
-		txt.parser_words $1 $1.words -create -clear
-		txt.word_count $1.words $1.words.accumulated -create -clear
-		txt.export_words $1.words.accumulated $2 -create -clear
-		rm $1.words $1.words.accumulated
+		txt.parser_words $1 $1.words -create -clear;
+		txt.word_count $1.words $1.words.accumulated -create -clear;
+		txt.export_words $1.words.accumulated $2 -create -clear;
+		rm $1.words $1.words.accumulated;
 	}
 
 }
@@ -155,10 +150,10 @@ script test_1
 
 	code
 	{
-		txt.parser_words $1 $1.words -create -clear
-		txt.word_count $1.words $1.words.accumulated -create -clear
-		txt.export_words $1.words.accumulated $2 -create -clear
-		rm $1.words $1.words.accumulated
+		txt.parser_words $1 $1.words -create -clear;
+		txt.word_count $1.words $1.words.accumulated -create -clear;
+		txt.export_words $1.words.accumulated $2 -create -clear;
+		rm $1.words $1.words.accumulated;
 	}
 
 }
@@ -172,10 +167,10 @@ script test_2
 
 	code
 	{
-		txt.parser_collocations_stripes $1 $1.coll -create -clear
-		txt.collocation_count_stripes $1.coll $1.coll.accumulated -create -clear
-		txt.export_collocations_stripes $1.coll.accumulated $2 -create -clear
-		rm $1.coll $1.coll.accumulated
+		txt.parser_collocations_stripes $1 $1.coll -create -clear;
+		txt.collocation_count_stripes $1.coll $1.coll.accumulated -create -clear;
+		txt.export_collocations_stripes $1.coll.accumulated $2 -create -clear;
+		rm $1.coll $1.coll.accumulated;
 	}
 
 }

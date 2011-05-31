@@ -74,11 +74,11 @@ script test
 
 	code
 	{
-		example.generator test.samples -create
-		example.map test.samples test.samples2 -create
-		example.reduce test.samples2 test.samples3 -create
-		example.select test.samples3 test.samples.txt -create
-		example.parser test.samples.txt test.samples4 -create
+		example.generator test.samples -create;
+		example.map test.samples test.samples2 -create;
+		example.reduce test.samples2 test.samples3 -create;
+		example.select test.samples3 test.samples.txt -create;
+		example.parser test.samples.txt test.samples4 -create;
 	}
 	
 }
@@ -105,9 +105,9 @@ script script
 
 	code
 	{
-		add pepe system.UInt system.UInt
-		add andreu system.UInt system.UInt
-		example.generator andreu
+		add pepe system.UInt system.UInt;
+		add andreu system.UInt system.UInt;
+		example.generator andreu;
 	}
 }
 
@@ -115,8 +115,7 @@ script s2
 {
 	code
 	{
-		_example.script A B
-
+		_example.script A B;
 	}
 }
 

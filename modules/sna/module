@@ -395,10 +395,10 @@ script compute_cliques
 
 	code
 	{
-		sna.spread_nodes_to_strong_connections $1 $1.spread -create -clear
-		sna.compute_cliques_from_spread_graph $1.spread $2 -clear	
-		sna.export_cliques $2 $2.txt -clear -create					
-		#rm $1.spread -f
+		sna.spread_nodes_to_strong_connections $1 $1.spread -create -clear;
+		sna.compute_cliques_from_spread_graph $1.spread $2 -clear;
+		sna.export_cliques $2 $2.txt -clear -create;
+		#rm $1.spread -f;
 	}
 
 	helpLine "Compute cliques from a graph"		
@@ -455,41 +455,41 @@ script graph_to_communities
 
 	code
 	{
-		rm $1_cliques -f
-		rm $1_cliques_graph -f
+		rm $1_cliques -f;
+		rm $1_cliques_graph -f;
 
-		rm $1_com1 -f
-		rm $1_com1_graph -f
-		rm $1_com2 -f
-		rm $1_com3 -f
+		rm $1_com1 -f;
+		rm $1_com1_graph -f;
+		rm $1_com2 -f;
+		rm $1_com3 -f;
 
-		rm $1_dyads -f
-		rm $1_com3_dyads -f
+		rm $1_dyads -f;
+		rm $1_com3_dyads -f;
 
-		sna.compute_cliques $1 $1_cliques -create -clear
+		sna.compute_cliques $1 $1_cliques -create -clear;
 
-		sna.get_cliques_graph $1_cliques $1 $1_cliques_graph -create -clear
-		sna.compute_cliques_of_cliques $1_cliques_graph $1_com1 -create -clear
+		sna.get_cliques_graph $1_cliques $1 $1_cliques_graph -create -clear;
+		sna.compute_cliques_of_cliques $1_cliques_graph $1_com1 -create -clear;
 
-		sna.get_communities_graph $1_com1 $1 $1_com1_graph -create -clear
-		sna.compute_cliques_of_cliques $1_com1_graph $1_com2 -create -clear
+		sna.get_communities_graph $1_com1 $1 $1_com1_graph -create -clear;
+		sna.compute_cliques_of_cliques $1_com1_graph $1_com2 -create -clear;
 
-		sna.add_associated_nodes $1_com2 $1 $1_com3 -create -clear
+		sna.add_associated_nodes $1_com2 $1 $1_com3 -create -clear;
 
-		sna.calculate_dyads $1_com3 $1 $1_dyads -create -clear
-		sna.merge_dyads_into_communities $1_dyads $1_com3 $1_com3_dyads -create -clear
+		sna.calculate_dyads $1_com3 $1 $1_dyads -create -clear;
+		sna.merge_dyads_into_communities $1_dyads $1_com3 $1_com3_dyads -create -clear;
 
-		sna.generate_comm_unique_id $1_com3_dyads $2 -create -clear
-		sna.communities_unique_id_out $2 $3 -create -clear
+		sna.generate_comm_unique_id $1_com3_dyads $2 -create -clear;
+		sna.communities_unique_id_out $2 $3 -create -clear;
 
-		rm $1_cliques -f
-		rm $1_cliques_graph -f
-		rm $1_com1 -f
-		rm $1_com1_graph -f
-		rm $1_com2 -f
-		rm $1_com3 -f
-		rm $1_dyads -f
-		rm $1_com3_dyads -f
+		rm $1_cliques -f;
+		rm $1_cliques_graph -f;
+		rm $1_com1 -f;
+		rm $1_com1_graph -f;
+		rm $1_com2 -f;
+		rm $1_com3 -f;
+		rm $1_dyads -f;
+		rm $1_com3_dyads -f;
 	}
 }
 
@@ -510,10 +510,10 @@ script parse_graph
 
 	code
 	{
-	rm $1_link -f
-	sna.parse_links $1 $1_links -create -clear		# Parse links emiting two outputs per line
-	sna.get_graph_from_links2 $1_links $2 -create -clear # collapse all links into a graph
-	rm $1_link -f
+	rm $1_link -f;
+	sna.parse_links $1 $1_links -create -clear;	# Parse links emiting two outputs per line
+	sna.get_graph_from_links2 $1_links $2 -create -clear; # collapse all links into a graph
+	rm $1_link -f;
 	}
 
 }
@@ -531,31 +531,31 @@ script mx_calls_cdrs_to_graph
 
 	code
 	{
-	rm $1_cdrs_bin -f
-	rm $1_cdrs_bin_ini -f
-	rm $1_cdrs_bin_dup -f
-	rm $1_cdrs_bin_fin -f
-	rm $2_pre -f
-	rm $2_wkill -f
-	rm $2_sinks_txt -f
+	rm $1_cdrs_bin -f;
+	rm $1_cdrs_bin_ini -f;
+	rm $1_cdrs_bin_dup -f;
+	rm $1_cdrs_bin_fin -f;
+	rm $2_pre -f;
+	rm $2_wkill -f;
+	rm $2_sinks_txt -f;
 
-	set sna.cdr_format TEMM_VOZ
-	set sna.num_cdrs_for_strong_connection 2
-	set sna.max_connections_per_node 8
-	set sna.max_strong_connections_per_node 6
+	set sna.cdr_format TEMM_VOZ;
+	set sna.num_cdrs_for_strong_connection 2;
+	set sna.max_connections_per_node 8;
+	set sna.max_strong_connections_per_node 6;
 
-	sna.parse_cdrs $1 $1_cdrs_bin_ini -clear -create
-	sna.acg_map_dup_cdrs $1_cdrs_bin_ini $1_cdrs_bin_dup -clear -create
-	sna.remove_duplicates $1_cdrs_bin_dup $1_cdrs_bin_fin -clear -create
-	sna.acg_red_cdrs_to_nodes $1_cdrs_bin_fin $2_pre -clear -create
-	sna.filter_graph_map $2_pre $2_wkill -clear -create
-	sna.filter_graph_reduce $2_wkill $2 -clear -create
-	rm $1_cdrs_bin -f
-	rm $1_cdrs_bin_ini -f
-	rm $1_cdrs_bin_dup -f
-	rm $1_cdrs_bin_fin -f
-	rm $2_pre -f
-	rm $2_wkill -f
+	sna.parse_cdrs $1 $1_cdrs_bin_ini -clear -create;
+	sna.acg_map_dup_cdrs $1_cdrs_bin_ini $1_cdrs_bin_dup -clear -create;
+	sna.remove_duplicates $1_cdrs_bin_dup $1_cdrs_bin_fin -clear -create;
+	sna.acg_red_cdrs_to_nodes $1_cdrs_bin_fin $2_pre -clear -create;
+	sna.filter_graph_map $2_pre $2_wkill -clear -create;
+	sna.filter_graph_reduce $2_wkill $2 -clear -create;
+	rm $1_cdrs_bin -f;
+	rm $1_cdrs_bin_ini -f;
+	rm $1_cdrs_bin_dup -f;
+	rm $1_cdrs_bin_fin -f;
+	rm $2_pre -f;
+	rm $2_wkill -f;
 	}
 
 }
@@ -575,34 +575,33 @@ script mx_sms_cdrs_to_graph
 
 	code
 	{
-	rm $1_cdrs_bin -f
-	rm $1_cdrs_bin_ini -f
-	rm $1_cdrs_bin_dup -f
-	rm $1_cdrs_bin_fin -f
+	rm $1_cdrs_bin -f;
+	rm $1_cdrs_bin_ini -f;
+	rm $1_cdrs_bin_dup -f;
+	rm $1_cdrs_bin_fin -f;
 
-	rm $2_pre -f
-	rm $2_wkill -f
-	rm $2_sinks_txt -f
+	rm $2_pre -f;
+	rm $2_wkill -f;
+	rm $2_sinks_txt -f;
 
-	sna.parse_cdrs $1 $1_cdrs_bin_ini -format TEMM_SMS
-	acg_map_dup_cdrs $1_cdrs_bin_ini $1_cdrs_bin_dup
-	remove_duplicates $1_cdrs_bin_dup $1_cdrs_bin_fin
-	acg_red_cdrs_to_nodes $1_cdrs_bin_fin $2_pre
+	sna.parse_cdrs $1 $1_cdrs_bin_ini -format TEMM_SMS;
+	acg_map_dup_cdrs $1_cdrs_bin_ini $1_cdrs_bin_dup;
+	remove_duplicates $1_cdrs_bin_dup $1_cdrs_bin_fin;
+	acg_red_cdrs_to_nodes $1_cdrs_bin_fin $2_pre;
 
-	sna.filter_graph_map $2_pre $2_wkill
-	sna.filter_graph_reduce $2_wkill $2
+	sna.filter_graph_map $2_pre $2_wkill;
+	sna.filter_graph_reduce $2_wkill $2;
 
 
-	sna.social_graph_parse_out_sinks $2_pre $2_sinks_txt
+	sna.social_graph_parse_out_sinks $2_pre $2_sinks_txt;
 
-	rm $1_cdrs_bin -f
-	rm $1_cdrs_bin_ini -f
-	rm $1_cdrs_bin_dup -f
-	rm $1_cdrs_bin_fin -f
+	rm $1_cdrs_bin -f;
+	rm $1_cdrs_bin_ini -f;
+	rm $1_cdrs_bin_dup -f;
+	rm $1_cdrs_bin_fin -f;
 
-	rm $2_pre -f
-	rm $2_wkill -f
-
+	rm $2_pre -f;
+	rm $2_wkill -f;
 	}
 
 }
@@ -622,32 +621,31 @@ script mx_mms_cdrs_to_graph
 
 	code
 	{
-	rm $1_cdrs_bin -f
-	rm $1_cdrs_bin_ini -f
-	rm $1_cdrs_bin_dup -f
-	rm $1_cdrs_bin_fin -f
-	rm $2_pre -f
-	rm $2_wkill -f
-	rm $2_sinks_txt -f
+	rm $1_cdrs_bin -f;
+	rm $1_cdrs_bin_ini -f;
+	rm $1_cdrs_bin_dup -f;
+	rm $1_cdrs_bin_fin -f;
+	rm $2_pre -f;
+	rm $2_wkill -f;
+	rm $2_sinks_txt -f;
 
-	sna.parse_cdrs $1 $1_cdrs_bin_ini -format TEMM_MMS
-	acg_map_dup_cdrs $1_cdrs_bin_ini $1_cdrs_bin_dup
-	remove_duplicates $1_cdrs_bin_dup $1_cdrs_bin_fin
-	acg_red_cdrs_to_nodes $1_cdrs_bin_fin $2_pre
+	sna.parse_cdrs $1 $1_cdrs_bin_ini -format TEMM_MMS;
+	acg_map_dup_cdrs $1_cdrs_bin_ini $1_cdrs_bin_dup;
+	remove_duplicates $1_cdrs_bin_dup $1_cdrs_bin_fin;
+	acg_red_cdrs_to_nodes $1_cdrs_bin_fin $2_pre;
 
-	sna.filter_graph_map $2_pre $2_wkill
-	sna.filter_graph_reduce $2_wkill $2
+	sna.filter_graph_map $2_pre $2_wkill;
+	sna.filter_graph_reduce $2_wkill $2;
 
-	sna.social_graph_parse_out_sinks $2_pre $2_sinks_txt
+	sna.social_graph_parse_out_sinks $2_pre $2_sinks_txt;
 
-	rm $1_cdrs_bin -f
-	rm $1_cdrs_bin_ini -f
-	rm $1_cdrs_bin_dup -f
-	rm $1_cdrs_bin_fin -f
+	rm $1_cdrs_bin -f;
+	rm $1_cdrs_bin_ini -f;
+	rm $1_cdrs_bin_dup -f;
+	rm $1_cdrs_bin_fin -f;
 
-	rm $2_pre -f
-	rm $2_wkill -f
-
+	rm $2_pre -f;
+	rm $2_wkill -f;
 	}
 
 }
@@ -670,10 +668,10 @@ script parse_cliques
 
 	code
 	{
-	rm $1_binary -f			 # Remove temporal files used in this process
-	sna.parse_cliques_as_cliques_groups $1 $1_binary	# Parse txt file
-	sna.get_cliques_from_cliques_groups $1_binary $2	# collapse all the cliques into a Clique-Void set
-	rm $1_binary -f
+	rm $1_binary -f;			 # Remove temporal files used in this process
+	sna.parse_cliques_as_cliques_groups $1 $1_binary;	# Parse txt file
+	sna.get_cliques_from_cliques_groups $1_binary $2;	# collapse all the cliques into a Clique-Void set
+	rm $1_binary -f;
 	}
 
 }
@@ -695,10 +693,10 @@ script parse_cliques2
 
 	code
 	{
-	rm $1_binary -f			 # Remove temporal files used in this process
-	sna.parse_cliques_as_cliques_groups $1 $1_binary	# Parse txt file
-	sna.get_cliques_from_cliques_groups2 $1_binary $2	 # collapse all the cliques into a Clique-Void set
-	rm $1_binary -f
+	rm $1_binary -f;			 # Remove temporal files used in this process
+	sna.parse_cliques_as_cliques_groups $1 $1_binary;	# Parse txt file
+	sna.get_cliques_from_cliques_groups2 $1_binary $2;	 # collapse all the cliques into a Clique-Void set
+	rm $1_binary -f;
 	}
 
 }
@@ -718,10 +716,10 @@ script filter_graph
 
 	code
 	{
-	rm $1_spread -f	 # Remove tmp files
-	sna.filter_graph_map $1 $1_spread
-	sna.filter_graph_reduce $1_spread $2
-	rm $1_spread -f
+	rm $1_spread -f;	 # Remove tmp files
+	sna.filter_graph_map $1 $1_spread;
+	sna.filter_graph_reduce $1_spread $2;
+	rm $1_spread -f;
 	}
 }
 
@@ -748,30 +746,30 @@ script get_cliques_graph
 
 	code
 	{
-	rm $1_spread_per_node -f
-	rm $1_links_previous -f
-	rm $1_links_previous_nodes -f
-	rm $1_links -f
-	rm $1_links_to_be_removed -f
-	rm $1_links_ready -f
+	rm $1_spread_per_node -f;
+	rm $1_links_previous -f;
+	rm $1_links_previous_nodes -f;
+	rm $1_links -f;
+	rm $1_links_to_be_removed -f;
+	rm $1_links_ready -f;
 
-	sna.spread_cliques_per_node $1 $1_spread_per_node				 # Spread cliques to all components (nodeIds)
-	sna.get_possible_cliques_links $1_spread_per_node $1_links_previous			 # Create all possible links (sharing at least one node)
-	sna.get_clique_links_with_nodes $1_links_previous $2 $1_links_previous_nodes		# Combine with the graph to spread necessary information
+	sna.spread_cliques_per_node $1 $1_spread_per_node;				 # Spread cliques to all components (nodeIds)
+	sna.get_possible_cliques_links $1_spread_per_node $1_links_previous;			 # Create all possible links (sharing at least one node)
+	sna.get_clique_links_with_nodes $1_links_previous $2 $1_links_previous_nodes;		# Combine with the graph to spread necessary information
 
-	sna.get_clique_links $1_links_previous_nodes $1_links				 # Eval the links to see if they are real
+	sna.get_clique_links $1_links_previous_nodes $1_links;				 # Eval the links to see if they are real
 
-	sna.select_clique_links_to_be_removed $1_links $1_links_to_be_removed		 # Remove links between cliques (rank 10)
-	remove_full $1_links $1_links_to_be_removed $1_links_ready
+	sna.select_clique_links_to_be_removed $1_links $1_links_to_be_removed;		 # Remove links between cliques (rank 10)
+	remove_full $1_links $1_links_to_be_removed $1_links_ready;
 
-	sna.compute_cliques_graph $1 $1_links_ready $3				# Get graph of cliques
+	sna.compute_cliques_graph $1 $1_links_ready $3;				# Get graph of cliques
 
-	rm $1_spread_per_node -f
-	rm $1_links_previous -f
-	rm $1_links_previous_nodes -f
-	rm $1_links -f
-	rm $1_links_to_be_removed -f
-	rm $1_links_ready -f
+	rm $1_spread_per_node -f;
+	rm $1_links_previous -f;
+	rm $1_links_previous_nodes -f;
+	rm $1_links -f;
+	rm $1_links_to_be_removed -f;
+	rm $1_links_ready -f;
 	}
 }
 
@@ -790,30 +788,30 @@ script get_communities_graph
 
 	code
 	{
-	rm $1_spread_per_node -f
-	rm $1_links_previous -f
-	rm $1_links_previous_nodes -f
-	rm $1_links -f
-	rm $1_links_to_be_removed -f
-	rm $1_links_ready -f
+	rm $1_spread_per_node -f;
+	rm $1_links_previous -f;
+	rm $1_links_previous_nodes -f;
+	rm $1_links -f;
+	rm $1_links_to_be_removed -f;
+	rm $1_links_ready -f;
 
-	sna.spread_cliques_per_node $1 $1_spread_per_node				 # Spread cliques to all components (nodeIds)
-	sna.get_possible_cliques_links $1_spread_per_node $1_links_previous -communities	# Create all possible links (sharing at least one node)
-	sna.get_clique_links_with_nodes $1_links_previous $2 $1_links_previous_nodes		# Combine with the graph to spread necessary information
+	sna.spread_cliques_per_node $1 $1_spread_per_node;				 # Spread cliques to all components (nodeIds)
+	sna.get_possible_cliques_links $1_spread_per_node $1_links_previous -communities;	# Create all possible links (sharing at least one node)
+	sna.get_clique_links_with_nodes $1_links_previous $2 $1_links_previous_nodes;		# Combine with the graph to spread necessary information
 
-	sna.get_clique_links $1_links_previous_nodes $1_links -communities		# Eval the links to see if they are strong enougth
+	sna.get_clique_links $1_links_previous_nodes $1_links -communities;		# Eval the links to see if they are strong enougth
 
-	sna.select_clique_links_to_be_removed $1_links $1_links_to_be_removed		 # Remove links between cliques (rank 10)
-	remove_full $1_links $1_links_to_be_removed $1_links_ready
+	sna.select_clique_links_to_be_removed $1_links $1_links_to_be_removed;		 # Remove links between cliques (rank 10)
+	remove_full $1_links $1_links_to_be_removed $1_links_ready;
 
-	sna.compute_cliques_graph $1 $1_links_ready $3				# Get graph of cliques
+	sna.compute_cliques_graph $1 $1_links_ready $3;				# Get graph of cliques
 
-	rm $1_spread_per_node -f
-	rm $1_links_previous -f
-	rm $1_links_previous_nodes -f
-	rm $1_links -f
-	rm $1_links_to_be_removed -f
-	rm $1_links_ready -f
+	rm $1_spread_per_node -f;
+	rm $1_links_previous -f;
+	rm $1_links_previous_nodes -f;
+	rm $1_links -f;
+	rm $1_links_to_be_removed -f;
+	rm $1_links_ready -f;
 	}
 
 
@@ -834,25 +832,25 @@ script compute_cliques_of_cliques
 
 	code
 	{
-	rm $1_spread -f
-	rm $2_previous_full_communities -f
-	rm $2_previous -f
-	rm $2_previous_spread -f
-	rm $2_to_be_removed -f
+	rm $1_spread -f;
+	rm $2_previous_full_communities -f;
+	rm $2_previous -f;
+	rm $2_previous_spread -f;
+	rm $2_to_be_removed -f;
 
-	sna.spread_cliques_graph	$1 $1_spread					# Compute communities
-	sna.compute_new_cliques $1_spread $2_previous_full_communities
+	sna.spread_cliques_graph	$1 $1_spread;					# Compute communities
+	sna.compute_new_cliques $1_spread $2_previous_full_communities;
 
-	sna.select_key_in_cliques_graph $2_previous_full_communities $2_previous		# Select the key.. the communities
-	sna.spread_cliques_per_node $2_previous $2_previous_spread			# Compute the communities that should be removed
-	sna.get_unnecessary_cliques	$2_previous_spread $2_to_be_removed		# Compute the communities that should be removed
-	sna.remove_cliques $2_previous $2_to_be_removed $2			# Remove the communities that should be removed
+	sna.select_key_in_cliques_graph $2_previous_full_communities $2_previous;		# Select the key.. the communities
+	sna.spread_cliques_per_node $2_previous $2_previous_spread;			# Compute the communities that should be removed
+	sna.get_unnecessary_cliques	$2_previous_spread $2_to_be_removed;		# Compute the communities that should be removed
+	sna.remove_cliques $2_previous $2_to_be_removed $2;			# Remove the communities that should be removed
 
-	rm $1_spread -f
-	rm $2_previous_full_communities -f
-	rm $2_previous -f
-	rm $2_previous_spread -f
-	rm $2_to_be_removed -f
+	rm $1_spread -f;
+	rm $2_previous_full_communities -f;
+	rm $2_previous -f;
+	rm $2_previous_spread -f;
+	rm $2_to_be_removed -f;
 	}
 
 }
@@ -867,16 +865,16 @@ script remove_unnecessary_cliques
 
 	code
 	{
-	rm $1_void -f
-	rm $1_spread -f
-	rm $1_to_be_removed -f
-	remove_values $1 $1_void		# Compute the communities that should be removed
-	sna.spread_cliques_per_node $1_void $1_spread			 # Compute the communities that should be removed
-	sna.get_unnecessary_cliques	$1_spread $1_to_be_removed		 # Compute the communities that should be removed
-	sna.remove_cliques_with_associated $1 $1_to_be_removed $2			 # Remove the communities that should be removed
-	rm $1_void -f
-	rm $1_spread -f
-	rm $1_to_be_removed -f
+	rm $1_void -f;
+	rm $1_spread -f;
+	rm $1_to_be_removed -f;
+	remove_values $1 $1_void;		# Compute the communities that should be removed
+	sna.spread_cliques_per_node $1_void $1_spread;			 # Compute the communities that should be removed
+	sna.get_unnecessary_cliques	$1_spread $1_to_be_removed;		 # Compute the communities that should be removed
+	sna.remove_cliques_with_associated $1 $1_to_be_removed $2;			 # Remove the communities that should be removed
+	rm $1_void -f;
+	rm $1_spread -f;
+	rm $1_to_be_removed -f;
 	}
 
 	help
@@ -895,9 +893,9 @@ script calculate_dyads
 
 	code
 	{
-	sna.spread_communities_to_links $1 $1_spread_links
-	sna.get_dyads $2 $1_spread_links $3
-	rm $1_spread_links
+	sna.spread_communities_to_links $1 $1_spread_links;
+	sna.get_dyads $2 $1_spread_links $3;
+	rm $1_spread_links;
 	}
 
 	help
@@ -917,15 +915,15 @@ script extract_dyads
 
 	code
 	{
-	rm $1_spread_links -f
-	rm $1_dyads -f
+	rm $1_spread_links -f;
+	rm $1_dyads -f;
 
-	sna.spread_communities_to_links $1 $1_spread_links
-	sna.get_dyads $2 $1_spread_links $1_dyads
-	sna.parse_out_dyads $1_dyads $3
+	sna.spread_communities_to_links $1 $1_spread_links;
+	sna.get_dyads $2 $1_spread_links $1_dyads;
+	sna.parse_out_dyads $1_dyads $3;
 
-	rm $1_spread_links -f
-	rm $1_dyads -f
+	rm $1_spread_links -f;
+	rm $1_dyads -f;
 	}
 
 	help
@@ -957,12 +955,12 @@ script merge_dyads_into_communities
 
 	code
 	{
-	rm $1_comm_format -f
+	rm $1_comm_format -f;
 
-	sna.convert_dyads_to_comm $1 $1_comm_format
-	sna.merge_dyads_into_communities_red $2 $1_comm_format $3
+	sna.convert_dyads_to_comm $1 $1_comm_format;
+	sna.merge_dyads_into_communities_red $2 $1_comm_format $3;
 
-	rm $1_comm_format -f
+	rm $1_comm_format -f;
 	}
 
 	help
@@ -1012,16 +1010,16 @@ script add_associated_nodes
 
 	code
 	{
-	rm $1_with_nodes -f
-	#rm $3b -f
+	rm $1_with_nodes -f;
+	#rm $3b -f;
 
-	sna.cross_cliques_with_nodes $1 $2 $1_with_nodes		# Combine with the graph, so we have all the nodes of every clique
-	sna.compute_associated_nodes $1_with_nodes $3		 # Add associted nodes
+	sna.cross_cliques_with_nodes $1 $2 $1_with_nodes;		# Combine with the graph, so we have all the nodes of every clique
+	sna.compute_associated_nodes $1_with_nodes $3;		 # Add associted nodes
 
-	update sna.combine_associated_nodes_with_communities $3		 # Combine associated with nominal elemnets (to be revised for full compatibility)
-	update sna.remove_unnecessary_cliques $3			# Remove unnecessary cliques
+	update sna.combine_associated_nodes_with_communities $3;		 # Combine associated with nominal elemnets (to be revised for full compatibility)
+	update sna.remove_unnecessary_cliques $3;			# Remove unnecessary cliques
 
-	rm $1_with_nodes -f
+	rm $1_with_nodes -f;
 	}
 
 	help
@@ -1068,15 +1066,15 @@ script metrics_graph_to_metrics_of_reach_nodes
 
 	code
 	{
-	rm $1_assoc -f
-	rm $1_with_flags -f
+	rm $1_assoc -f;
+	rm $1_with_flags -f;
 
-	sna.metrics_generate_reach_nodes $1 $1_assoc
-	sna.metrics_add_flags_reached_nodes $1_assoc $1 $1_with_flags
-	sna.metrics_calculate_metrics_reach_nodes $1_with_flags $2
+	sna.metrics_generate_reach_nodes $1 $1_assoc;
+	sna.metrics_add_flags_reached_nodes $1_assoc $1 $1_with_flags;
+	sna.metrics_calculate_metrics_reach_nodes $1_with_flags $2;
 
-	rm $1_assoc -f
-	rm $1_with_flags -f
+	rm $1_assoc -f;
+	rm $1_with_flags -f;
 	}
 
 
@@ -1131,15 +1129,15 @@ script metrics_graph_to_metrics_of_nodes
 
 	code
 	{
-	rm $1_assoc -f
-	rm $1_with_flags -f
+	rm $1_assoc -f;
+	rm $1_with_flags -f;
 
-	sna.metrics_generate_contact_nodes $1 $1_assoc
-	sna.metrics_add_flags_reached_nodes $1_assoc $1 $1_with_flags
-	sna.metrics_calculate_node_metrics $1_with_flags $2
+	sna.metrics_generate_contact_nodes $1 $1_assoc;
+	sna.metrics_add_flags_reached_nodes $1_assoc $1 $1_with_flags;
+	sna.metrics_calculate_node_metrics $1_with_flags $2;
 
-	rm $1_assoc -f
-	rm $1_with_flags -f
+	rm $1_assoc -f;
+	rm $1_with_flags -f;
 	}
 
 
@@ -1230,15 +1228,15 @@ script metrics_graph_to_metrics_of_communities
 
 	code
 	{
-	rm $1_assoc -f
-	rm $1_with_weight -f
+	rm $1_assoc -f;
+	rm $1_with_weight -f;
 
-	sna.metrics_spread_communities_nodes $1 $1_assoc
-	sna.metrics_add_weight_to_node_comm $1_assoc $2 $1_with_weight
-	sna.metrics_calculate_community_metrics $1_with_weight $3
+	sna.metrics_spread_communities_nodes $1 $1_assoc;
+	sna.metrics_add_weight_to_node_comm $1_assoc $2 $1_with_weight;
+	sna.metrics_calculate_community_metrics $1_with_weight $3;
 
-	rm $1_assoc -f
-	rm $1_with_weight -f
+	rm $1_assoc -f;
+	rm $1_with_weight -f;
 	}
 }
 
@@ -1270,12 +1268,12 @@ script metrics_graph_to_metrics_of_node_communities
 
 	code
 	{
-	rm $1_assoc -f
+	rm $1_assoc -f;
 
-	sna.metrics_spread_communities_nodes $1 $1_assoc
-	sna.metrics_calculate_node_communities_metrics $1_assoc $2 $3
+	sna.metrics_spread_communities_nodes $1 $1_assoc;
+	sna.metrics_calculate_node_communities_metrics $1_assoc $2 $3;
 
-	rm $1_assoc -f
+	rm $1_assoc -f;
 
 	}
 }
@@ -1381,19 +1379,19 @@ script metrics_graph_to_metrics_of_node_cluster
 
 	code
 	{
-	rm $1_spread_cluster -f
-	rm $1_nodes_cluster -f
-	rm $1_links_cluster -f
+	rm $1_spread_cluster -f;
+	rm $1_nodes_cluster -f;
+	rm $1_links_cluster -f;
 
-	sna.metrics_spread_communities $1 $1_spread_cluster
-	sna.metrics_spread_communities_nodes_cluster $1_spread_cluster $1_nodes_cluster
-	sna.metrics_count_links_comm_cluster $1_nodes_cluster $1 $1_links_cluster
-	update sna.metrics_calculate_density_metric_cluster $1_links_cluster
-	sna.metrics_calculate_cluster $1_spread_cluster $1_links_cluster $2
+	sna.metrics_spread_communities $1 $1_spread_cluster;
+	sna.metrics_spread_communities_nodes_cluster $1_spread_cluster $1_nodes_cluster;
+	sna.metrics_count_links_comm_cluster $1_nodes_cluster $1 $1_links_cluster;
+	update sna.metrics_calculate_density_metric_cluster $1_links_cluster;
+	sna.metrics_calculate_cluster $1_spread_cluster $1_links_cluster $2;
 
-	rm $1_spread_cluster -f
-	rm $1_nodes_cluster -f
-	rm $1_links_cluster -f
+	rm $1_spread_cluster -f;
+	rm $1_nodes_cluster -f;
+	rm $1_links_cluster -f;
 
 	}
 }
@@ -1487,19 +1485,18 @@ script metrics_graph_to_metrics_of_node_in_communities
 
 	code
 	{
-	rm $2_void -f
-	rm $2_spread -f
-	rm $2_join -f
+	rm $2_void -f;
+	rm $2_spread -f;
+	rm $2_join -f;
 
-	remove_values $2 $2_void
-	sna.spread_cliques_per_node $2_void $2_spread
-	sna.metrics_join_node_for_node_in_comm $2_spread $1 $2_join
-	sna.metrics_calculate_node_in_comm $2_join $3
+	remove_values $2 $2_void;
+	sna.spread_cliques_per_node $2_void $2_spread;
+	sna.metrics_join_node_for_node_in_comm $2_spread $1 $2_join;
+	sna.metrics_calculate_node_in_comm $2_join $3;
 
-	rm $2_void -f
-	rm $2_spread -f
-	rm $2_join -f
-
+	rm $2_void -f;
+	rm $2_spread -f;
+	rm $2_join -f;
 	}
 }
 
@@ -1542,29 +1539,29 @@ script metrics_graph_to_metrics_of_reach_comm
 
 	code
 	{
-	rm $2_void -f
-	rm $2_spread -f
-	rm $2_with_nodes -f
-	rm $2_metric_temp -f
-	rm $2_clique -f
-	rm $2_adj -f
-	rm $2_vector_clique -f
+	rm $2_void -f;
+	rm $2_spread -f;
+	rm $2_with_nodes -f;
+	rm $2_metric_temp -f;
+	rm $2_clique -f;
+	rm $2_adj -f;
+	rm $2_vector_clique -f;
 
-	remove_values $2 $2_void
-	sna.spread_cliques_per_node $2_void $2_spread
-	sna.metrics_join_communities_with_nodes $2_spread $1 $2_with_nodes
-	sna.metrics_calculate_reach_one_node $2_with_nodes $2_metric_temp $2_clique
-	sna.metrics_spread_adjacent_nodes $2_clique $2_adj
-	sna.metrics_join_adjacent_nodes $2_spread $2_adj $2_vector_clique
-	sna.metrics_calculate_reach_one_comm $2_vector_clique $2_metric_temp $3
+	remove_values $2 $2_void;
+	sna.spread_cliques_per_node $2_void $2_spread;
+	sna.metrics_join_communities_with_nodes $2_spread $1 $2_with_nodes;
+	sna.metrics_calculate_reach_one_node $2_with_nodes $2_metric_temp $2_clique;
+	sna.metrics_spread_adjacent_nodes $2_clique $2_adj;
+	sna.metrics_join_adjacent_nodes $2_spread $2_adj $2_vector_clique;
+	sna.metrics_calculate_reach_one_comm $2_vector_clique $2_metric_temp $3;
 
-	rm $2_void -f
-	rm $2_spread -f
-	rm $2_with_nodes -f
-	rm $2_metric_temp -f
-	rm $2_clique -f
-	rm $2_adj -f
-	rm $2_vector_clique -f
+	rm $2_void -f;
+	rm $2_spread -f;
+	rm $2_with_nodes -f;
+	rm $2_metric_temp -f;
+	rm $2_clique -f;
+	rm $2_adj -f;
+	rm $2_vector_clique -f;
 
 	}
 }
@@ -1681,63 +1678,63 @@ script compute_all_metric
 	code
 	{
 	# Remove tmp files
-	rm $3_node_metrics_txt -f
-	rm $3_community_metrics_txt -f
-	rm $3_com_member_metrics_txt -f
+	rm $3_node_metrics_txt -f;
+	rm $3_community_metrics_txt -f;
+	rm $3_com_member_metrics_txt -f;
 
-	rm $2_gen -f
+	rm $2_gen -f;
 
-	rm $1_metric_nodes -f
-	rm $1_metric_node-comm -f
-	rm $1_metric_reach_nodes -f
-	rm $1_metric_cluster -f
-	rm $1_metric_node_comp -f
+	rm $1_metric_nodes -f;
+	rm $1_metric_node-comm -f;
+	rm $1_metric_reach_nodes -f;
+	rm $1_metric_cluster -f;
+	rm $1_metric_node_comp -f;
 
-	rm $1_metric_comm -f
-	rm $1_metric_comm_reach -f
-	rm $1_metric_comm_completed -f
-	rm $1_metric_comm_id -f
+	rm $1_metric_comm -f;
+	rm $1_metric_comm_reach -f;
+	rm $1_metric_comm_completed -f;
+	rm $1_metric_comm_id -f;
 
-	rm $1_metric_comm_members_id -f
-	rm $1_metric_comm_members -f
+	rm $1_metric_comm_members_id -f;
+	rm $1_metric_comm_members -f;
 
-	sna.gen_comm_clique $2 $2_gen
+	sna.gen_comm_clique $2 $2_gen;
 
-	sna.metrics_graph_to_metrics_of_nodes $1 $1_metric_nodes
-	sna.metrics_graph_to_metrics_of_node_communities $2_gen $1 $1_metric_node-comm
-	sna.metrics_graph_to_metrics_of_reach_nodes $1 $1_metric_reach_nodes
-	sna.metrics_graph_to_metrics_of_node_cluster $1 $1_metric_cluster
+	sna.metrics_graph_to_metrics_of_nodes $1 $1_metric_nodes;
+	sna.metrics_graph_to_metrics_of_node_communities $2_gen $1 $1_metric_node-comm;
+	sna.metrics_graph_to_metrics_of_reach_nodes $1 $1_metric_reach_nodes;
+	sna.metrics_graph_to_metrics_of_node_cluster $1 $1_metric_cluster;
 
-	sna.metrics_aggrate_node_metrics $1_metric_nodes $1_metric_node-comm $1_metric_reach_nodes $1_metric_cluster $1_metric_node_comp
+	sna.metrics_aggrate_node_metrics $1_metric_nodes $1_metric_node-comm $1_metric_reach_nodes $1_metric_cluster $1_metric_node_comp;
 
-	rm $1_metric_nodes -f
-	rm $1_metric_node-comm -f
-	rm $1_metric_reach_nodes -f
-	rm $1_metric_cluster -f
+	rm $1_metric_nodes -f;
+	rm $1_metric_node-comm -f;
+	rm $1_metric_reach_nodes -f;
+	rm $1_metric_cluster -f;
 
-	sna.metric_nodes_out $1_metric_node_comp $3_node_metrics_txt
+	sna.metric_nodes_out $1_metric_node_comp $3_node_metrics_txt;
 
-	sna.metrics_graph_to_metrics_of_communities $2_gen $1 $1_metric_comm
-	sna.metrics_graph_to_metrics_of_reach_comm $1 $2_gen $1_metric_comm_reach
-	sna.metrics_aggrate_comm_reach_metrics $1_metric_comm $1_metric_comm_reach $1_metric_comm_completed
-	sna.metrics_add_id_community_metrics $1_metric_comm_completed $2 $1_metric_comm_id
-	sna.metric_communities_out $1_metric_comm_id $3_community_metrics_txt
+	sna.metrics_graph_to_metrics_of_communities $2_gen $1 $1_metric_comm;
+	sna.metrics_graph_to_metrics_of_reach_comm $1 $2_gen $1_metric_comm_reach;
+	sna.metrics_aggrate_comm_reach_metrics $1_metric_comm $1_metric_comm_reach $1_metric_comm_completed;
+	sna.metrics_add_id_community_metrics $1_metric_comm_completed $2 $1_metric_comm_id;
+	sna.metric_communities_out $1_metric_comm_id $3_community_metrics_txt;
 
-	rm $1_metric_comm_reach -f
-	rm $1_metric_comm_completed -f
+	rm $1_metric_comm_reach -f;
+	rm $1_metric_comm_completed -f;
 
-	sna.metrics_graph_to_metrics_of_node_in_communities $1 $2_gen $1_metric_comm_members
-	sna.metrics_add_id_node_in_community_metrics $1_metric_comm_members $2 $1_metric_comm_members_id
-	sna.metric_nodes_in_communities_out $1_metric_comm_members_id $3_com_member_metrics_txt
+	sna.metrics_graph_to_metrics_of_node_in_communities $1 $2_gen $1_metric_comm_members;
+	sna.metrics_add_id_node_in_community_metrics $1_metric_comm_members $2 $1_metric_comm_members_id;
+	sna.metric_nodes_in_communities_out $1_metric_comm_members_id $3_com_member_metrics_txt;
 
-	rm $1_metric_node_comp -f
-	rm $1_metric_comm_completed -f
-	rm $1_metric_comm_id -f
-	rm $1_metric_comm_members_id -f
-	rm $1_metric_comm_members -f
-	rm $1_metric_comm -f
+	rm $1_metric_node_comp -f;
+	rm $1_metric_comm_completed -f;
+	rm $1_metric_comm_id -f;
+	rm $1_metric_comm_members_id -f;
+	rm $1_metric_comm_members -f;
+	rm $1_metric_comm -f;
 
-	rm $2_gen -f
+	rm $2_gen -f;
 	
 	}
 }
@@ -2210,10 +2207,10 @@ script cross_cliques_with_nodes
 
 	code
 	{
-	rm $1_spread_per_node -f
-	sna.spread_cliques_per_node $1 $1_spread_per_node		 # Spread cliques to all components (nodeId)
-	sna.cross_cliques_nodes $1_spread_per_node $2 $3			# Combine with the grapg
-	rm $1_spread_per_node -f
+	rm $1_spread_per_node -f;
+	sna.spread_cliques_per_node $1 $1_spread_per_node;		 # Spread cliques to all components (nodeId)
+	sna.cross_cliques_nodes $1_spread_per_node $2 $3;			# Combine with the grapg
+	rm $1_spread_per_node -f;
 	}
 
 	help
@@ -2475,22 +2472,22 @@ script add_3graphs
 
 	code
 	{
-		rm $1_links -f
-		rm $2_links -f
-		rm $3_links -f
-		rm $4_links -f
+		rm $1_links -f;
+		rm $2_links -f;
+		rm $3_links -f;
+		rm $4_links -f;
 
-		sna.nodes_to_links $1 $1_links
-		sna.nodes_to_links $2 $2_links
-		sna.nodes_to_links $3 $3_links
+		sna.nodes_to_links $1 $1_links;
+		sna.nodes_to_links $2 $2_links;
+		sna.nodes_to_links $3 $3_links;
 
-		sna.red_links_add_3graph $1_links $2_links $3_links $4_links
-		sna.get_graph_from_links2 $4_links $4
+		sna.red_links_add_3graph $1_links $2_links $3_links $4_links;
+		sna.get_graph_from_links2 $4_links $4;
 
-		rm $1_links -f
-		rm $2_links -f
-		rm $3_links -f
-		rm $4_links -f
+		rm $1_links -f;
+		rm $2_links -f;
+		rm $3_links -f;
+		rm $4_links -f;
 	}
 
 }
@@ -2521,54 +2518,54 @@ script graph_temporal_weighting
 
 	code
 	{
-		rm $1_links -f
-		rm $2_links -f
-		rm $3_links -f
-		rm $4_links -f
-		rm $5_links -f
-		rm $6_links -f			
-		rm $7_bin -f
-		rm $8_links -f
-		rm $9_links -f
-		rm $9_pre -f
-		rm $9_wsubs -f
-		rm $9_wkill -f
+		rm $1_links -f;
+		rm $2_links -f;
+		rm $3_links -f;
+		rm $4_links -f;
+		rm $5_links -f;
+		rm $6_links -f;
+		rm $7_bin -f;
+		rm $8_links -f;
+		rm $9_links -f;
+		rm $9_pre -f;
+		rm $9_wsubs -f;
+		rm $9_wkill -f;
 		
-		sna.nodes_to_links $1 $1_links
-		sna.nodes_to_links $2 $2_links
-		sna.nodes_to_links $3 $3_links
-		sna.nodes_to_links $4 $4_links
-		sna.nodes_to_links $5 $5_links
-		sna.nodes_to_links $6 $6_links
+		sna.nodes_to_links $1 $1_links;
+		sna.nodes_to_links $2 $2_links;
+		sna.nodes_to_links $3 $3_links;
+		sna.nodes_to_links $4 $4_links;
+		sna.nodes_to_links $5 $5_links;
+		sna.nodes_to_links $6 $6_links;
 
-		sna.calculate_links_temporal_weighting $1_links $2_links $3_links $4_links $5_links $6_links $9_links $8_links
+		sna.calculate_links_temporal_weighting $1_links $2_links $3_links $4_links $5_links $6_links $9_links $8_links;
 
-		rm $1_links -f
-		rm $2_links -f
-		rm $3_links -f
-		rm $4_links -f
-		rm $5_links -f
-		rm $6_links -f
+		rm $1_links -f;
+		rm $2_links -f;
+		rm $3_links -f;
+		rm $4_links -f;
+		rm $5_links -f;
+		rm $6_links -f;
 
-		sna.get_graph_from_links2	$8_links $8
-		sna.get_graph_from_links2	$9_links $9_pre
+		sna.get_graph_from_links2	$8_links $8;
+		sna.get_graph_from_links2	$9_links $9_pre;
 
-		sna.parse_users $7 $7_bin -format TEMM
-		sna.add_extern_mark_to_graph $9_pre $7_bin $9_wsubs
+		sna.parse_users $7 $7_bin -format TEMM;
+		sna.add_extern_mark_to_graph $9_pre $7_bin $9_wsubs;
 
-		sna.social_graph_parse_out_sinks $9_wsubs $9_sinks_txt
+		sna.social_graph_parse_out_sinks $9_wsubs $9_sinks_txt;
 
-		sna.filter_graph_map $9_wsubs $9_wkill
-		sna.filter_graph_reduce $9_wkill $9
+		sna.filter_graph_map $9_wsubs $9_wkill;
+		sna.filter_graph_reduce $9_wkill $9;
 
-		rm $7_bin -f
-		rm $8_links -f
-		rm $9_links -f
-		rm $9_pre -f
-		rm $9_wsubs -f
-		rm $9_wkill -f
+		rm $7_bin -f;
+		rm $8_links -f;
+		rm $9_links -f;
+		rm $9_pre -f;
+		rm $9_wsubs -f;
+		rm $9_wkill -f;
 
-		sna.social_graph_out $9 $9_graph_txt
+		sna.social_graph_out $9 $9_graph_txt;
 	}
 
 
@@ -2605,10 +2602,10 @@ script parse_links_gasset_to_nodes
 
 	code
 	{
-		rm $1_links -f
-		sna.parse_links_gasset2 $1 $1_links	 # Parse links emiting two outputs per line
-		sna.get_graph_from_links2 $1_links $2	 # collapse all links into a graph
-		rm $1_links -f
+		rm $1_links -f;
+		sna.parse_links_gasset2 $1 $1_links;	 # Parse links emiting two outputs per line
+		sna.get_graph_from_links2 $1_links $2;	 # collapse all links into a graph
+		rm $1_links -f;
 	}
 
 }

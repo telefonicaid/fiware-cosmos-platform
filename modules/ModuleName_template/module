@@ -114,12 +114,12 @@ script script_example
 	}
 
 	code
-	"
-		clear $3	# Clear the output queue
-		ModuleName_template.parse_example $1 $1.kv -create -clear         #parse text input (already uploaded)
-		ModuleName_template.map_example $1.kv $1.kv_mapped -create -clear #map key-values
-		ModuleName_template.reduce_example $1.kv_mapped $2 $3.reduced -create -clear    #reduce key-values
-		ModuleName_template.parserOut_example $3.reduced $3 -create -clear    #reduce key-values
-	"
+	{
+		clear $3;	# Clear the output queue
+		ModuleName_template.parse_example $1 $1.kv -create -clear;         #parse text input (already uploaded)
+		ModuleName_template.map_example $1.kv $1.kv_mapped -create -clear; #map key-values
+		ModuleName_template.reduce_example $1.kv_mapped $2 $3.reduced -create -clear;    #reduce key-values
+		ModuleName_template.parserOut_example $3.reduced $3 -create -clear;    #reduce key-values
+	}
 }
 

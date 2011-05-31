@@ -163,16 +163,16 @@ script script_GeneratingFakes
 	
 	code
 	{
-	url.fakeURLs $1 -create -clear
-	url.fakeServers $2 $3 -create -clear
-	url.fakeInfos $4 -create -clear
+	url.fakeURLs $1 -create -clear;
+	url.fakeServers $2 $3 -create -clear;
+	url.fakeInfos $4 -create -clear;
 
-	url.exportURL_Void $1 $1.txt -clear -create
-	url.exportString_UInt $2 $2.txt -clear -create
-	url.exportUInt_CategoryVector $4 $4.txt -clear -create
-	#download urls.txt urls.txt
-	#download servers.txt servers.txt
-	#download categories.txt categories.txt
+	url.exportURL_Void $1 $1.txt -clear -create;
+	url.exportString_UInt $2 $2.txt -clear -create;
+	url.exportUInt_CategoryVector $4 $4.txt -clear -create;
+	#download urls.txt urls.txt;
+	#download servers.txt servers.txt;
+	#download categories.txt categories.txt;
 	}
 }
 
@@ -197,16 +197,16 @@ script script_GeneratingFakes_fixed
 	
 	code
 	{
-	url.fakeURLs_fixed $1 -create -clear
-	url.fakeServers $2 $3 -create -clear
-	url.fakeInfos $4 -create -clear
+	url.fakeURLs_fixed $1 -create -clear;
+	url.fakeServers $2 $3 -create -clear;
+	url.fakeInfos $4 -create -clear;
 
-	url.exportURL_Void $1 $1.txt -clear -create
-	url.exportString_UInt $2 $2.txt -clear -create
-	url.exportUInt_CategoryVector $4 $4.txt -clear -create
-	#download urls.txt urls.txt
-	#download servers.txt servers.txt
-	#download categories.txt categories.txt
+	url.exportURL_Void $1 $1.txt -clear -create;
+	url.exportString_UInt $2 $2.txt -clear -create;
+	url.exportUInt_CategoryVector $4 $4.txt -clear -create;
+	#download urls.txt urls.txt;
+	#download servers.txt servers.txt;
+	#download categories.txt categories.txt;
 	}
 }
 
@@ -330,12 +330,12 @@ script script_PrepareBasicData
 	
 	code
 	{
-	url.getServerURL $1 $1.ServStr_UserPath -create -clear
-	#url.fuseServer $1.ServStr_UserPath $2 $3 $4 $5 $6 -create -clear
-	url.fuseServerUser $1.ServStr_UserPath $2 $3 $4  -create -clear
-	url.fuseServerUserPath $1.ServStr_UserPath $2  $5 $6 -create -clear
+	url.getServerURL $1 $1.ServStr_UserPath -create -clear;
+	#url.fuseServer $1.ServStr_UserPath $2 $3 $4 $5 $6 -create -clear;
+	url.fuseServerUser $1.ServStr_UserPath $2 $3 $4  -create -clear;
+	url.fuseServerUserPath $1.ServStr_UserPath $2  $5 $6 -create -clear;
 	
-	rm $1.ServStr_UserPath -f
+	rm $1.ServStr_UserPath -f;
 	}
 }
 
@@ -416,20 +416,20 @@ script script_ServerCategoriesDistribution
 	
 	code
 	{
-	url.getServersFromUser $1 $1.Serv_CatVector -create -clear
-	url.AssociateCategoriesToServers $3 $1.Serv_CatVector $3.new -clear -create
-	# Not sure I am using -clear input properly
-	#url.FuseServerCategory $3 $3.new $3 -create -clear -clear_input
-	url.FuseServerCategory $3 $3.new $3.update -create -clear
-	rm $3
-	mv $3.update $3
-	url.DecodeServerCategories $2 $3 $1.ServStr_CatVector -clear -create
+	url.getServersFromUser $1 $1.Serv_CatVector -create -clear;
+	url.AssociateCategoriesToServers $3 $1.Serv_CatVector $3.new -clear -create;
+	# Not sure I am using -clear input properly;
+	#url.FuseServerCategory $3 $3.new $3 -create -clear -clear_input;
+	url.FuseServerCategory $3 $3.new $3.update -create -clear;
+	rm $3;
+	mv $3.update $3;
+	url.DecodeServerCategories $2 $3 $1.ServStr_CatVector -clear -create;
 	
-	url.exportServerCategories $1.ServStr_CatVector $4 -create -clear
-	#download categories_new.txt categories_new.txt
-	rm $1.Serv_CatVector -f
-	#rm $3.new -f
-	rm $1.ServStr_CatVector -f
+	url.exportServerCategories $1.ServStr_CatVector $4 -create -clear;
+	#download categories_new.txt categories_new.txt;
+	rm $1.Serv_CatVector -f;
+	#rm $3.new -f;
+	rm $1.ServStr_CatVector -f;
 	}
 }
 
@@ -489,12 +489,12 @@ script script_TopHits
 	
 	code
 	{
-	url.getPathCount $1 $1.Serv_PathCountVector -clear -create
-	url.DecodeServerHits $2 $1.Serv_PathCountVector $3 -clear -create
+	url.getPathCount $1 $1.Serv_PathCountVector -clear -create;
+	url.DecodeServerHits $2 $1.Serv_PathCountVector $3 -clear -create;
 	
-	url.exportServerPathHits $3 $4 -create -clear
-	#download serverStr_path_hits.txt serverStr_path_hits.txt
-	rm $1.Serv_PathCountVector -f
+	url.exportServerPathHits $3 $4 -create -clear;
+	#download serverStr_path_hits.txt serverStr_path_hits.txt;
+	rm $1.Serv_PathCountVector -f;
 	}
 }
 
@@ -547,14 +547,14 @@ script script_UserCategoriesDistribution
 	
 	code
 	{
-	url.getUsersFromServer $1 $1.Serv_UserCountVector -create -clear
-	url.AssociateCategoriesToUsers $2 $1.Serv_UserCountVector $1.User_CategoryVector -clear -create
-	url.FuseUserCategory $1.User_CategoryVector $3 -create -clear
+	url.getUsersFromServer $1 $1.Serv_UserCountVector -create -clear;
+	url.AssociateCategoriesToUsers $2 $1.Serv_UserCountVector $1.User_CategoryVector -clear -create;
+	url.FuseUserCategory $1.User_CategoryVector $3 -create -clear;
 	
-	url.exportUserCategories $3 $4 -create -clear
-	#download listUserCategories.txt listUserCategories.txt
-	#rm $1.Serv_UserCountVector -f
-	#rm $1.User_CategoryVector -f
+	url.exportUserCategories $3 $4 -create -clear;
+	#download listUserCategories.txt listUserCategories.txt;
+	#rm $1.Serv_UserCountVector -f;
+	#rm $1.User_CategoryVector -f;
 	}
 }
 
@@ -608,33 +608,33 @@ script script_HitsPerCategory
 	helpLine "Detects the more relevant URLs for every category"
 	code
 	{
-	url.AssociateCategoriesToServerPaths $1 $2 $2.Cat_ServPathCount -create -clear
-	url.SumServerPathsPerCategory $2.Cat_ServPathCount $2.Cat_ServPathVector -create -clear
+	url.AssociateCategoriesToServerPaths $1 $2 $2.Cat_ServPathCount -create -clear;
+	url.SumServerPathsPerCategory $2.Cat_ServPathCount $2.Cat_ServPathVector -create -clear;
 	
 	# Maybe we don't have yet a distribution. (but it doesn't work, we have to add it before calling the script
 	# At least, being an input parameter.
-	add -f $4 system.UInt url.ServerPathVector
+	add -f $4 system.UInt url.ServerPathVector;
 	# Not sure I am using -clear input properly
-	#url.FuseCategoryHits $4 $2.Cat_ServPathVector $4 -clear -create -clear_input
-	url.FuseCategoryHits $4 $2.Cat_ServPathVector $4.update -clear -create -clear_input
-	rm $4
-	mv $4.update $4
+	#url.FuseCategoryHits $4 $2.Cat_ServPathVector $4 -clear -create -clear_input;
+	url.FuseCategoryHits $4 $2.Cat_ServPathVector $4.update -clear -create -clear_input;
+	rm $4;
+	mv $4.update $4;
 	
-	url.exportHitsPerCategory $4 $5 -create -clear
+	url.exportHitsPerCategory $4 $5 -create -clear;
 	#download cat_serverPathVector_ref.txt cat_serverPathVector_ref.txt
 	
 	# If you want to have server as String
-	url.ExpandCategoryHits $2.Cat_ServPathVector $2.Serv_CatPath -create -clear
-	url.DecodeServerForCategories $3  $2.Serv_CatPath $2.Cat_ServStrPath -create -clear
-	url.SumServerStrPathsPerCategories $2.Cat_ServStrPath $2.Cat_ServStrPathVector -create -clear
+	url.ExpandCategoryHits $2.Cat_ServPathVector $2.Serv_CatPath -create -clear;
+	url.DecodeServerForCategories $3  $2.Serv_CatPath $2.Cat_ServStrPath -create -clear;
+	url.SumServerStrPathsPerCategories $2.Cat_ServStrPath $2.Cat_ServStrPathVector -create -clear;
 
-	url.exportHitsPerCategoryWithStrings $2.Cat_ServStrPathVector $2.Cat_ServStrPathVector.txt -create -clear
+	url.exportHitsPerCategoryWithStrings $2.Cat_ServStrPathVector $2.Cat_ServStrPathVector.txt -create -clear;
 	#download cat_serverStrPathVector.txt cat_serverStrPathVector.txt
-	rm $2.Cat_ServPathCount -f
-	rm $2.Cat_ServPathVector -f
-	rm $2.Serv_CatPath -f
-	rm $2.Cat_ServStrPath -f
-	rm $2.Cat_ServStrPathVector -f
+	rm $2.Cat_ServPathCount -f;
+	rm $2.Cat_ServPathVector -f;
+	rm $2.Serv_CatPath -f;
+	rm $2.Cat_ServStrPath -f;
+	rm $2.Cat_ServStrPathVector -f;
 	}	
 }
 
@@ -741,18 +741,18 @@ script script_HitsRecommendation
 	helpLine "With the previous information of relevant URLs and user preferences by category, recommends the most visited sites to every user"
 	code
 	{
-	url.EmitUsersPerCategory $1  $1.Cat_User -create -clear
-	url.AssociateHitsPerCategoryToUsers $2 $1.Cat_User $1.User_serverPathCount -create -clear
-	url.SumServerPathFromUser $1.User_serverPathCount $1.User_ServPathVector_suitable -create -clear
-	url.getServerPathFromUser $3 $1.User_ServPathVector_visited -create -clear
-	url.ClearVisitedURLs $1.User_ServPathVector_suitable $1.User_ServPathVector_visited $4 -create -clear
+	url.EmitUsersPerCategory $1  $1.Cat_User -create -clear;
+	url.AssociateHitsPerCategoryToUsers $2 $1.Cat_User $1.User_serverPathCount -create -clear;
+	url.SumServerPathFromUser $1.User_serverPathCount $1.User_ServPathVector_suitable -create -clear;
+	url.getServerPathFromUser $3 $1.User_ServPathVector_visited -create -clear;
+	url.ClearVisitedURLs $1.User_ServPathVector_suitable $1.User_ServPathVector_visited $4 -create -clear;
 
-	url.exportHitsRecommendationPerUser $4 $5 -create -clear
+	url.exportHitsRecommendationPerUser $4 $5 -create -clear;
 	#download user_serverPathVector_recommended.txt user_serverPathVector_recommended.txt
-	rm $1.Cat_User -f
-	rm $1.User_serverPathCount -f
-	rm $1.User_ServPathVector_suitable -f
-	rm $1.User_ServPathVector_visited -f
+	rm $1.Cat_User -f;
+	rm $1.User_serverPathCount -f;
+	rm $1.User_ServPathVector_suitable -f;
+	rm $1.User_ServPathVector_visited -f;
 	}
 }
 
@@ -770,25 +770,25 @@ script test_1
 	
 	code
 	{
-	set url.num_users               10
-	set url.num_servers             10
-	set url.num_paths_per_server    10
-	set url.num_urls_per_user       2
-	set url.num_servers_ref         5
-	set url.num_categories          4
-	set url.num_hits                3
-	set url.fixed_categories        1
+	set url.num_users               10;
+	set url.num_servers             10;
+	set url.num_paths_per_server    10;
+	set url.num_urls_per_user       2;
+	set url.num_servers_ref         5;
+	set url.num_categories          4;
+	set url.num_hits                3;
+	set url.fixed_categories        1;
 	
-	url.fakeURLs_fixed urls -create -clear
-	url.fakeServers servers serversRev -create -clear
-	url.fakeInfos categories -create -clear
-	url.exportURL_Void urls urls.txt -clear -create
-	url.exportString_UInt servers servers.txt -clear -create
-	url.exportUInt_CategoryVector categories categories.txt -clear -create
+	url.fakeURLs_fixed urls -create -clear;
+	url.fakeServers servers serversRev -create -clear;
+	url.fakeInfos categories -create -clear;
+	url.exportURL_Void urls urls.txt -clear -create;
+	url.exportString_UInt servers servers.txt -clear -create;
+	url.exportUInt_CategoryVector categories categories.txt -clear -create;
 	
-	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear
-	url.script_ServerCategoriesDistribution user_server serversRev categories $1 -create -clear
-	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath 
+	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear;
+	url.script_ServerCategoriesDistribution user_server serversRev categories $1 -create -clear;
+	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath ;
 	}
 }
 
@@ -802,24 +802,24 @@ script test_2
 	
 	code
 	{
-	set url.num_users               10
-	set url.num_servers             10
-	set url.num_paths_per_server    10
-	set url.num_urls_per_user       2
-	set url.num_servers_ref         5
-	set url.num_categories          4
-	set url.num_hits                3
-	set url.fixed_categories        1
+	set url.num_users               10;
+	set url.num_servers             10;
+	set url.num_paths_per_server    10;
+	set url.num_urls_per_user       2;
+	set url.num_servers_ref         5;
+	set url.num_categories          4;
+	set url.num_hits                3;
+	set url.fixed_categories        1;
 	
-	url.fakeURLs_fixed urls -create -clear
-	url.fakeServers servers serversRev -create -clear
-	url.fakeInfos categories -create -clear
+	url.fakeURLs_fixed urls -create -clear;
+	url.fakeServers servers serversRev -create -clear;
+	url.fakeInfos categories -create -clear;
 	
-	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear
-	url.script_ServerCategoriesDistribution user_server serversRev categories categories.txt -create -clear
-	url.script_TopHits server_path serversRev serverStr_path_hits $1  -create
-	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits
-	rm -f categories.txt
+	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear;
+	url.script_ServerCategoriesDistribution user_server serversRev categories categories.txt -create -clear;
+	url.script_TopHits server_path serversRev serverStr_path_hits $1  -create;
+	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits;
+	rm -f categories.txt;
 	}
 }
 
@@ -833,28 +833,28 @@ script test_3
 	
 	code
 	{
-	set url.num_users               10
-	set url.num_servers             10
-	set url.num_paths_per_server    10
-	set url.num_urls_per_user       2
-	set url.num_servers_ref         5
-	set url.num_categories          4
-	set url.num_hits                3
-	set url.fixed_categories        1
+	set url.num_users               10;
+	set url.num_servers             10;
+	set url.num_paths_per_server    10;
+	set url.num_urls_per_user       2;
+	set url.num_servers_ref         5;
+	set url.num_categories          4;
+	set url.num_hits                3;
+	set url.fixed_categories        1;
 	
-	url.fakeURLs_fixed urls -create -clear
-	url.fakeServers servers serversRev -create -clear
-	url.fakeInfos categories -create -clear
+	url.fakeURLs_fixed urls -create -clear;
+	url.fakeServers servers serversRev -create -clear;
+	url.fakeInfos categories -create -clear;
 	
-	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear
-	url.script_ServerCategoriesDistribution user_server serversRev categories categories.txt -create -clear
-	url.script_TopHits server_path serversRev serverStr_path_hits serverStr_path_hits.txt -create
-	url.script_UserCategoriesDistribution server_user categories listUserCategories listUserCategories.txt -create -clear
-	url.script_HitsPerCategory categories server_path serversRev cat_serverPathVector_ref $1 -create -clear
-	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits	
-	rm -f categories.txt
-	rm -f serverStr_path_hits.txt
-	rm -f listUserCategories.txt
+	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear;
+	url.script_ServerCategoriesDistribution user_server serversRev categories categories.txt -create -clear;
+	url.script_TopHits server_path serversRev serverStr_path_hits serverStr_path_hits.txt -create;
+	url.script_UserCategoriesDistribution server_user categories listUserCategories listUserCategories.txt -create -clear;
+	url.script_HitsPerCategory categories server_path serversRev cat_serverPathVector_ref $1 -create -clear;
+	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits	;
+	rm -f categories.txt;
+	rm -f serverStr_path_hits.txt;
+	rm -f listUserCategories.txt;
 	}
 }
 
@@ -868,30 +868,30 @@ script test_4
 	
 	code
 	{
-	set url.num_users               10
-	set url.num_servers             10
-	set url.num_paths_per_server    10
-	set url.num_urls_per_user       2
-	set url.num_servers_ref         5
-	set url.num_categories          4
-	set url.num_hits                3
-	set url.fixed_categories        1
+	set url.num_users               10;
+	set url.num_servers             10;
+	set url.num_paths_per_server    10;
+	set url.num_urls_per_user       2;
+	set url.num_servers_ref         5;
+	set url.num_categories          4;
+	set url.num_hits                3;
+	set url.fixed_categories        1;
 	
-	url.fakeURLs_fixed urls -create -clear
-	url.fakeServers servers serversRev -create -clear
-	url.fakeInfos categories -create -clear
+	url.fakeURLs_fixed urls -create -clear;
+	url.fakeServers servers serversRev -create -clear;
+	url.fakeInfos categories -create -clear;
 	
-	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear
-	url.script_ServerCategoriesDistribution user_server serversRev categories categories.txt -create -clear
-	url.script_TopHits server_path serversRev serverStr_path_hits serverStr_path_hits.txt -create
-	url.script_UserCategoriesDistribution server_user categories listUserCategories listUserCategories.txt -create -clear
-	url.script_HitsPerCategory categories server_path serversRev cat_serverPathVector_ref cat_serverPathVector_ref.txt -create -clear
-	url.script_HitsRecommendation listUserCategories cat_serverPathVector_ref user_serverPath user_serverPathVector_recommended  $1 -create -clear
-	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits	
-	rm -f categories.txt
-	rm -f serverStr_path_hits.txt
-	rm -f listUserCategories.txt
-	rm -f cat_serverPathVector_ref.txt
+	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear;
+	url.script_ServerCategoriesDistribution user_server serversRev categories categories.txt -create -clear;
+	url.script_TopHits server_path serversRev serverStr_path_hits serverStr_path_hits.txt -create;
+	url.script_UserCategoriesDistribution server_user categories listUserCategories listUserCategories.txt -create -clear;
+	url.script_HitsPerCategory categories server_path serversRev cat_serverPathVector_ref cat_serverPathVector_ref.txt -create -clear;
+	url.script_HitsRecommendation listUserCategories cat_serverPathVector_ref user_serverPath user_serverPathVector_recommended  $1 -create -clear;
+	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits	;
+	rm -f categories.txt;
+	rm -f serverStr_path_hits.txt;
+	rm -f listUserCategories.txt;
+	rm -f cat_serverPathVector_ref.txt;
 	}
 }
 
@@ -905,30 +905,30 @@ script test_5
 	
 	code
 	{
-	set url.num_users               100000
-	set url.num_servers             1000
-	set url.num_paths_per_server    100
-	set url.num_urls_per_user       100
-	set url.num_servers_ref         20
-	set url.num_categories          10
-	set url.num_hits                5
-	set url.fixed_categories        1
+	set url.num_users               100000;
+	set url.num_servers             1000;
+	set url.num_paths_per_server    100;
+	set url.num_urls_per_user       100;
+	set url.num_servers_ref         20;
+	set url.num_categories          10;
+	set url.num_hits                5;
+	set url.fixed_categories        1;
 	
-	url.fakeURLs_fixed urls -create -clear
-	url.fakeServers servers serversRev -create -clear
-	url.fakeInfos categories -create -clear
+	url.fakeURLs_fixed urls -create -clear;
+	url.fakeServers servers serversRev -create -clear;
+	url.fakeInfos categories -create -clear;
 	
-	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear
-	url.script_ServerCategoriesDistribution user_server serversRev categories categories.txt -create -clear
-	url.script_TopHits server_path serversRev serverStr_path_hits serverStr_path_hits.txt -create
-	url.script_UserCategoriesDistribution server_user categories listUserCategories listUserCategories.txt -create -clear
-	url.script_HitsPerCategory categories server_path serversRev cat_serverPathVector_ref cat_serverPathVector_ref.txt -create -clear
-	url.script_HitsRecommendation listUserCategories cat_serverPathVector_ref user_serverPath user_serverPathVector_recommended  $1 -create -clear
-	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits	
-	rm -f categories.txt
-	rm -f serverStr_path_hits.txt
-	rm -f listUserCategories.txt
-	rm -f cat_serverPathVector_ref.txt
+	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear;
+	url.script_ServerCategoriesDistribution user_server serversRev categories categories.txt -create -clear;
+	url.script_TopHits server_path serversRev serverStr_path_hits serverStr_path_hits.txt -create;
+	url.script_UserCategoriesDistribution server_user categories listUserCategories listUserCategories.txt -create -clear;
+	url.script_HitsPerCategory categories server_path serversRev cat_serverPathVector_ref cat_serverPathVector_ref.txt -create -clear;
+	url.script_HitsRecommendation listUserCategories cat_serverPathVector_ref user_serverPath user_serverPathVector_recommended  $1 -create -clear;
+	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits	;
+	rm -f categories.txt;
+	rm -f serverStr_path_hits.txt;
+	rm -f listUserCategories.txt;
+	rm -f cat_serverPathVector_ref.txt;
 	}
 }
 
@@ -962,9 +962,9 @@ script add_urls
 
 	code
 	{
-		url.parse_urls $1 $1_tmp -create
-		url.accumulate_hits $1_tmp $2 $2 -clear_inputs
-		rm $1_tmp
+		url.parse_urls $1 $1_tmp -create;
+		url.accumulate_hits $1_tmp $2 $2 -clear_inputs;
+		rm $1_tmp;
 	}	
 }
 
@@ -977,9 +977,9 @@ script select_top
 
 	code
 	{
-	url.select_top_map $1 $1_tmp -create	
-	url.select_top_reduce $1_tmp $2
-	rm $1_tmp	
+	url.select_top_map $1 $1_tmp -create	;
+	url.select_top_reduce $1_tmp $2;
+	rm $1_tmp	;
 	}
 }
 

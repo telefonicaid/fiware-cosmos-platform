@@ -601,7 +601,7 @@ int Network::helloSend(Endpoint* ep, Message::MessageType type)
 	hello.workers  = endpoint[ME]->workers;
 	hello.port     = endpoint[ME]->port;
 	hello.coreNo   = endpoint[ME]->coreNo;
-	hello.workerId = endpoint[ME]->workerId;
+	hello.id       = endpoint[ME]->workerId;
 
 	LM_T(LmtWrite, ("sending hello %s to '%s' (name: '%s', type: '%s')", messageType(type), ep->name.c_str(), hello.name, endpoint[ME]->typeName()));
 
@@ -2283,7 +2283,7 @@ static void helloInfoCopy(Endpoint* ep, Message::HelloData* hello)
 	ep->workers   = hello->workers;
 	ep->port      = hello->port;
 	ep->coreNo    = hello->coreNo;
-	ep->workerId  = hello->workerId;
+	ep->workerId  = hello->id;
 
 	ep->ipSet(hello->ip);
 	ep->aliasSet(hello->alias);
@@ -2355,12 +2355,12 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	//
 	if (hello->type == Endpoint::Worker)
 	{
-		if (hello->workerId >= Workers)
+		if (hello->id >= Workers)
 		{
 			if (headerP->type == Message::Msg)
 				helloSend(ep, Message::Ack);
 
-			LM_W(("Got Hello from worker with workerID %d (I only accept %d workers) - rejecting it with a 'Die' message", hello->workerId, Workers));
+			LM_W(("Got Hello from worker with workerID %d (I only accept %d workers) - rejecting it with a 'Die' message", hello->id, Workers));
 			iomMsgSend(ep, endpoint[0], Message::Die, Message::Evt);  // Die message before closing fd just to reject second Supervisor
 			endpointRemove(ep, "alias not within limits");
 			return;
@@ -2437,7 +2437,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	LM_T(LmtHello, ("Current endpoint '%s@%s' is of type '%s'", ep->name.c_str(), ep->ip, ep->typeName()));
 
 	if (hello->type == Endpoint::Worker)
-		LM_T(LmtHello, ("Got a Hello from Worker %s@%s '%s' with workerId %d", hello->name, hello->ip, hello->alias, hello->workerId));
+		LM_T(LmtHello, ("Got a Hello from Worker %s@%s '%s' with workerId %d", hello->name, hello->ip, hello->alias, hello->id));
 	else
 		LM_T(LmtHello, ("Got a Hello from %s@%s '%s'", hello->name, hello->ip, hello->alias));
 
@@ -2450,7 +2450,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	else if (hello->type == Endpoint::Supervisor)        newSlot = SUPERVISOR;
 	else if (hello->type == Endpoint::Setup)             newSlot = SETUP;
 	else if (hello->type == Endpoint::Spawner)           newSlot = FIRST_SPAWNER;
-	else if (hello->type == Endpoint::Worker)            newSlot = FIRST_WORKER + hello->workerId;
+	else if (hello->type == Endpoint::Worker)            newSlot = FIRST_WORKER + hello->id;
 	else if (hello->type == Endpoint::Delilah)           newSlot = FIRST_SPAWNER;
 	else
 		LM_X(1, ("Unexpected type '%s'", endpoint[ME]->typeName((samson::Endpoint::Type) hello->type)));

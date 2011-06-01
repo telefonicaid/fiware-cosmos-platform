@@ -104,14 +104,13 @@ public:
 	void               controllerConnect(void);
 
 	Endpoint2*         add(Endpoint2* ep);
-	Endpoint2*         add(Endpoint2::Type type, int id, const char* name, const char* alias, Host* host, unsigned short port, int rFd = -1, int wFd = -1);
+	Endpoint2*         add(Endpoint2::Type type, int id, Host* host, unsigned short port, int rFd = -1, int wFd = -1);
 	void               remove(Endpoint2* ep);
 	Endpoint2*         get(unsigned int index);
 	Endpoint2*         get(unsigned int index, int* rFdP);
 	Endpoint2*         lookup(Endpoint2::Type type, const char* ip);
 	Endpoint2*         lookup(Endpoint2::Type type, Host* host);
 	Endpoint2*         lookup(Endpoint2::Type type, int id = -1, int* ixP = NULL);
-	Endpoint2*         lookup(const char* alias);
 	int                ixGet(Endpoint2* ep);
 	Endpoint2*         indexedGet(unsigned int ix);
 	void               show(const char* why, bool forced = false);

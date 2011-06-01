@@ -30,13 +30,11 @@ WebWorkerEndpoint::WebWorkerEndpoint
 (
 	EndpointManager*  _epMgr,
 	int               _id,
-	const char*       _name,
-	const char*       _alias,
 	Host*             _host,
 	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
-) : Endpoint2(_epMgr, WebWorker, _id, _name, _alias, _host, _port, _rFd, _wFd)
+) : Endpoint2(_epMgr, WebWorker, _id, _host, _port, _rFd, _wFd)
 {
 }
 

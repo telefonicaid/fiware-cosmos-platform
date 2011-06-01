@@ -9,16 +9,16 @@
 * CREATION DATE            May 02 2011
 *
 */
-#include <unistd.h>               // close
-#include <fcntl.h>                // F_SETFD
-#include <pthread.h>              // pthread_t
+#include <unistd.h>                      // close
+#include <fcntl.h>                       // F_SETFD
+#include <pthread.h>                     // pthread_t
 
 #include "logMsg/logMsg.h"               // LM_*
 #include "logMsg/traceLevels.h"          // Lmt*
 
-#include "samson/common/ports.h"                // CONTROLLER_PORT
-#include "samson/network/EndpointManager.h"      // EndpointManager
-#include "ControllerEndpoint.h"   // Own interface
+#include "samson/common/ports.h"         // CONTROLLER_PORT
+#include "EndpointManager.h"
+#include "ControllerEndpoint.h"
 
 
 
@@ -34,12 +34,10 @@ namespace samson
 ControllerEndpoint::ControllerEndpoint
 (
 	EndpointManager*  _epMgr,
-	const char*       _name,
-	const char*       _alias,
 	Host*             _host,
 	int               _rFd,
 	int               _wFd
-) : Endpoint2(_epMgr, Controller, 0, _name, _alias, _host, CONTROLLER_PORT, _rFd, _wFd)
+) : Endpoint2(_epMgr, Controller, 0, _host, CONTROLLER_PORT, _rFd, _wFd)
 {
 }
 
@@ -63,7 +61,7 @@ Endpoint2::Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* 
 {
 	ProcessVector* pVec;
 
-	LM_T(LmtMsgTreat, ("Treating %s %s from %s%d@%s", messageCode(headerP->code), messageType(headerP->type), typeName(), id, host->name));
+	LM_T(LmtMsgTreat, ("Treating %s %s from %s", messageCode(headerP->code), messageType(headerP->type), name()));
 	switch (headerP->code)
 	{
 	case Message::ProcessVector:
@@ -77,7 +75,7 @@ Endpoint2::Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* 
 
 	default:
 		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s%d@%s", messageCode(headerP->code), messageType(headerP->type), typeName(), id, host->name));
+			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(headerP->code), messageType(headerP->type), name()));
 
 		epMgr->packetReceiver->_receive(packetP);
 		break;

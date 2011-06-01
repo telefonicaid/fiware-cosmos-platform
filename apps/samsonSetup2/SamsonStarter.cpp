@@ -95,7 +95,7 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 
 		if (networkP->epMgr->lookup(samson::Endpoint2::Spawner, hostP->name) == NULL)
 		{
-			if ((ep = networkP->epMgr->add(samson::Endpoint2::Spawner, spawnerId, "Spawner", "Spawner", hostP, SPAWNER_PORT)) == NULL)
+			if ((ep = networkP->epMgr->add(samson::Endpoint2::Spawner, spawnerId, hostP, SPAWNER_PORT)) == NULL)
 				LM_X(1, ("Error creating Spawner Endpoint for host %s", hostP->name));
 
 			++spawnerId;
@@ -127,7 +127,7 @@ samson::Endpoint2::Status SamsonStarter::connect(void)
 
 		LM_T(LmtConnect, ("Connecting to Spawner in %s", ep->hostGet()->name));
 		if ((s = ep->connect()) != samson::Endpoint2::OK)
-			LM_RE(s, ("Error connecting to %s %d in %s: %s", ep->nameGet(), ep->idGet(), ep->hostname(), ep->status(s)));
+			LM_RE(s, ("Error connecting to %s: %s", ep->name(), ep->status(s)));
 	}
 
 	return samson::Endpoint2::OK;

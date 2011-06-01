@@ -289,7 +289,7 @@ int SamsonSpawner::timeoutFunction(void)
 */
 void SamsonSpawner::reset(Endpoint2* ep)
 {
-	LM_W(("Got a Reset message from '%s%s'", ep->nameGet(), ep->hostname()));
+	LM_W(("Got a Reset message from '%s'", ep->name()));
 	unlink(SAMSON_PLATFORM_PROCESSES);
 
 	LM_T(LmtReset, ("killing local processes"));
@@ -297,7 +297,7 @@ void SamsonSpawner::reset(Endpoint2* ep)
 	localProcessesKill();
 	restartInProgress    = false;
 
-	LM_T(LmtReset, ("Sending ack to RESET message to %s@%s", ep->nameGet(), ep->hostname()));
+	LM_T(LmtReset, ("Sending ack to RESET message to %s", ep->name()));
 	Packet* packetP = new Packet(Message::Ack, Message::Reset);
 	ep->send(NULL, packetP);
 	networkP->epMgr->show("Got RESET", true);
@@ -313,7 +313,7 @@ void SamsonSpawner::processVector(Endpoint2* ep, ProcessVector* procVec)
 {
 	networkP->epMgr->procVecSet(procVec);
 
-	LM_T(LmtProcessVector, ("Got Process Vector with %d processes from %s@%s", procVec->processes, ep->nameGet(), ep->hostname()));
+	LM_T(LmtProcessVector, ("Got Process Vector with %d processes from %s", procVec->processes, ep->name()));
 
 #if 0
 	// Supposedly, a RESET was sent before ...

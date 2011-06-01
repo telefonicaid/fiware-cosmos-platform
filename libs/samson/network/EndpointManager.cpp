@@ -128,13 +128,12 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 	//
 	// Create the endpoint 'me'
 	//
-	//  Who sets name and alias?
 	//    Controller:  when ProcessVector is read from file
 	//    Worker:      when ProcessVector is read from file
 	//    Spawner:     NOWHERE !!!
 	//    Delilah:     NOWHERE !!!
 	//
-	me = new Endpoint2(this, type, -1, NULL, NULL, host); // id == -1, port == 0 ...
+	me = new Endpoint2(this, type, -1, host); // id == -1, port == 0 ...
 	if (me == NULL)
 		LM_X(1, ("error allocating 'me' endpoint: %s", strerror(errno)));
 	me->idInEndpointVector = 0;
@@ -179,7 +178,7 @@ void EndpointManager::controllerConnect(void)
 	if (hostP == NULL)
 		hostP = hostMgr->insert(p->host, NULL);
 
-	controller = add(Endpoint2::Controller, p->id, p->name, p->alias, hostP, p->port, -1, -1);
+	controller = add(Endpoint2::Controller, p->id, hostP, p->port, -1, -1);
 }
 
 
@@ -204,7 +203,7 @@ void EndpointManager::workersAdd(void)
 		if (hostP == NULL)
 			hostP = hostMgr->insert(p->host, NULL);
 
-		ep = add(Endpoint2::Worker, p->id, p->name, p->alias, hostP, p->port, -1, -1);
+		ep = add(Endpoint2::Worker, p->id, hostP, p->port, -1, -1);
 
 		if ((me->type == Endpoint2::Worker) && (hostP == me->host))
 		{
@@ -261,6 +260,7 @@ void EndpointManager::workersConnect(void)
 		else
 		{
 			LM_T(LmtConnect, ("Connecting to %s %d in %s", ep->typeName(), ep->idGet(), ep->host->name));
+			LM_M(("Connecting to %s %d in %s", ep->typeName(), ep->idGet(), ep->host->name));
 			ep->connect();
 		}
 	}
@@ -297,12 +297,12 @@ void EndpointManager::initWorker(void)
 	workersConnect();
 
 	me->portSet(WORKER_PORT);
-	LM_T(LmtMe, ("ME: %s %d @ %s (ix: %d) port: %d", me->typeName(), me->idGet(), me->host->name, ixGet(me), me->portGet()));
+	LM_T(LmtMe, ("ME: %s (ix: %d) port: %d", me->name(), ixGet(me), me->portGet()));
 
 	//
 	// Opening listener to accept incoming connections
 	//
-	listener = (ListenerEndpoint*) add(Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
+	listener = (ListenerEndpoint*) add(Endpoint2::Listener, 0, me->hostGet(), me->portGet(), -1, -1);
 	if (listener == NULL)
 		LM_X(1, ("error creating listener endpoint - no use to continue ..."));
 }
@@ -328,15 +328,14 @@ void EndpointManager::initController(void)
 	if ((self = platformProcessLookup(hostMgr, procVec, Endpoint2::Controller, me->host)) == NULL)
 		LM_X(1, ("Cannot find myself in platform processes vector."));
 	
-	me->aliasSet(self->alias);        // This method could check the alias for validity ('WorkerXX', 'Controller', ...)
 	me->portSet(CONTROLLER_PORT);
 
 
 	//
 	// Opening listeners to accept incoming connections
 	//
-	listener    = (ListenerEndpoint*)    add(Endpoint2::Listener,    0, "ME", "Listener",     me->hostGet(), me->portGet(),    -1, -1);
-	webListener = (WebListenerEndpoint*) add(Endpoint2::WebListener, 0, "ME", "Web Listener", me->hostGet(), WEB_SERVICE_PORT, -1, -1);
+	listener    = (ListenerEndpoint*)    add(Endpoint2::Listener,    0, me->hostGet(), me->portGet(),    -1, -1);
+	webListener = (WebListenerEndpoint*) add(Endpoint2::WebListener, 0, me->hostGet(), WEB_SERVICE_PORT, -1, -1);
 
 	if (listener == NULL)
 		LM_X(1, ("error creating listener endpoint - no use to continue ..."));
@@ -357,9 +356,8 @@ void EndpointManager::initController(void)
 void EndpointManager::initSpawner(void)
 {
 	me->portSet(SPAWNER_PORT);
-	me->aliasSet("Spawner");
 
-	listener = (ListenerEndpoint*) add(Endpoint2::Listener, 0, "ME", "Listener", me->hostGet(), me->portGet(), -1, -1);
+	listener = (ListenerEndpoint*) add(Endpoint2::Listener, 0, me->hostGet(), me->portGet(), -1, -1);
 
 	if ((procVec = platformProcessesGet()) == NULL)
 	{
@@ -381,13 +379,6 @@ void EndpointManager::initSpawner(void)
 void EndpointManager::initDelilah(const char* controllerIp)
 {
 	//
-	// alias
-	//
-	me->aliasSet("Delilah");
-
-
-
-	//
 	// Connect to controller
 	//
 	Host* hostP;
@@ -396,7 +387,7 @@ void EndpointManager::initDelilah(const char* controllerIp)
 	if (hostP == NULL)
 		hostP = hostMgr->insert(controllerIp, NULL);
 
-	controller = add(Endpoint2::Controller, 0, "Controller", "Controller", hostP, CONTROLLER_PORT, -1, -1);
+	controller = add(Endpoint2::Controller, 0, hostP, CONTROLLER_PORT, -1, -1);
 	controller->connect();
 }
 
@@ -408,8 +399,6 @@ void EndpointManager::initDelilah(const char* controllerIp)
 */
 void EndpointManager::initSupervisor(void)
 {
-	me->aliasSet("Supervisor");
-
 	LM_X(1, ("Supervisor init needs to be implemented"));
 }
 
@@ -421,8 +410,6 @@ void EndpointManager::initSupervisor(void)
 */
 void EndpointManager::initSetup(void)
 {
-	me->aliasSet("Setup");
-
 	LM_W(("Nothing done here, not sure if anything is needed ..."));
 }
 
@@ -459,7 +446,7 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 
 		endpoint[ix] = ep;
 		ep->idInEndpointVector = ix;
-		LM_T(LmtEndpointAdd, ("Added endpoint %d. type:%s, id:%d, name:%s, host:%s", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname()));
+		LM_T(LmtEndpointAdd, ("Added endpoint %d. type:%s, id:%d, host:%s", ix, ep->typeName(), ep->idGet(), ep->hostname()));
 
 		show("Added an Endpoint", true);
 		return ep;
@@ -475,14 +462,14 @@ Endpoint2* EndpointManager::add(Endpoint2* ep)
 *
 * add - 
 */
-Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, const char* name, const char* alias, Host* host, unsigned short port, int rFd, int wFd)
+Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, Host* host, unsigned short port, int rFd, int wFd)
 {
 	Endpoint2* ep = NULL;
 
 	switch (type)
 	{
 	case Endpoint2::Listener:
-		ep = new ListenerEndpoint(this, name, alias, host, port, rFd, wFd);
+		ep = new ListenerEndpoint(this, host, port, rFd, wFd);
 		break;
 
 	case Endpoint2::Unhelloed:
@@ -490,23 +477,23 @@ Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, const char* name, 
 		break;
 
 	case Endpoint2::Worker:
-		ep = new WorkerEndpoint(this, id, name, alias, host, rFd, wFd);
+		ep = new WorkerEndpoint(this, id, host, rFd, wFd);
 		break;
 
 	case Endpoint2::Controller:
-		ep = new ControllerEndpoint(this, name, alias, host, rFd, wFd);
+		ep = new ControllerEndpoint(this, host, rFd, wFd);
 		break;
 
 	case Endpoint2::Spawner:
-		ep = new SpawnerEndpoint(this, id, name, alias, host, rFd, wFd);
+		ep = new SpawnerEndpoint(this, id, host, rFd, wFd);
 		break;
 
 	case Endpoint2::Delilah:
-		ep = new DelilahEndpoint(this, id, name, alias, host, rFd, wFd);
+		ep = new DelilahEndpoint(this, id, host, rFd, wFd);
 		break;
 
 	case Endpoint2::WebListener:
-		ep = new WebListenerEndpoint(this, id, name, alias, host, port, rFd, wFd);
+		ep = new WebListenerEndpoint(this, id, host, port, rFd, wFd);
 		break;
 
 	default:
@@ -683,29 +670,6 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, Host* host)
 
 /* ****************************************************************************
 *
-* lookup
-*/
-Endpoint2* EndpointManager::lookup(const char* alias)
-{
-	if ((alias == NULL) || (alias[0] == 0))
-		LM_RE(NULL, ("NULL or empty alias"));
-
-	for (unsigned int ix = 0; ix < endpoints; ix++)
-	{
-		if (endpoint[ix] == NULL)
-			continue;
-
-		if (strcmp(endpoint[ix]->aliasGet(), alias) == 0)
-			return endpoint[ix];
-	}
-		
-	return NULL;
-}
-
-
-
-/* ****************************************************************************
-*
 * ixGet - 
 */
 int EndpointManager::ixGet(Endpoint2* ep)
@@ -802,7 +766,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 			// All OK ?
 			if (header.type != Message::Msg)
 			{
-				LM_W(("Read an unexpected '%s' Ack from '%s@%s' - throwing it away!",  messageCode(header.code), ep->nameGet(), ep->hostname()));
+				LM_W(("Read an unexpected '%s' Ack from '%s' - throwing it away!",  messageCode(header.code), ep->name()));
 				if (dataP != NULL)
                     free(dataP);
 				remove(ep);
@@ -867,13 +831,18 @@ void EndpointManager::periodic(void)
 	//
 	if (me->type == Endpoint2::Worker || me->type == Endpoint2::Delilah)
 	{
+		LM_M(("periodic - reconnecting to worker/controller?"));
+
 		show("periodic");
 		LM_T(LmtTimeout, ("In periodic %d - any controller/workers to connect to?", periodicNo));
 		if (controller == NULL)
 			LM_X(1, ("controller == NULL"));
 
 		if ((controller->state != Endpoint2::Ready) && (controller->state != Endpoint2::Connected))
+		{
+			LM_M(("Connecting to controller"));
 			controller->connect();
+		}
 
 		workersConnect();
 		show("periodic");
@@ -894,7 +863,7 @@ void EndpointManager::periodic(void)
 
 		if (endpoint[ix]->threaded == true)
 		{
-			LM_T(LmtThreads, ("Killing writer thread 0x%x for %s%d@%s", endpoint[ix]->writerId, endpoint[ix]->typeName(), endpoint[ix]->id, endpoint[ix]->host->name));
+			LM_T(LmtThreads, ("Killing writer thread 0x%x for %s", endpoint[ix]->writerId, endpoint[ix]->name()));
 			pthread_cancel(endpoint[ix]->writerId);
 		}
 
@@ -977,7 +946,7 @@ void EndpointManager::run(bool oneShot)
 					continue;
 
 				if (((ep->state == Endpoint2::Ready) || (ep->state == Endpoint2::Connected)) && (ep->rFd == -1))
-					LM_X(1, ("Endpoint %s %d is in state %s but its rFd is -1 ...", ep->typeName(), ep->idGet(), ep->stateName()));
+					LM_X(1, ("Endpoint %s is in state %s but its rFd is -1 ...", ep->name(), ep->stateName()));
 
 				if (ep->rFd == -1)
 					continue;
@@ -1215,7 +1184,7 @@ void EndpointManager::show(const char* why, bool forced)
 	LM_V((""));
 	LM_V(("-------------------- Endpoint list (%s) ------------------------------", why));
 	LM_V((""));
-	LM_V(("ix  %-12s id  %-20s %-20s %-20s Port  rFd", "Type", "Name", "Host", "State"));
+	LM_V(("ix  %-12s id  %-20s %-20s Port  rFd", "Type", "Host", "State"));
 	LM_V(("----------------------------------------------------------------------"));
 
 	for (unsigned int ix = 0; ix < endpoints; ix++)
@@ -1226,8 +1195,8 @@ void EndpointManager::show(const char* why, bool forced)
 		if (ep == NULL)
 			continue;
 
-		LM_V(("%02d: %-12s %02d  %-20s %-20s %-20s %04d  %02d %s", ix, ep->typeName(), ep->idGet(), ep->nameGet(), ep->hostname(), ep->stateName(), ep->port, ep->rFd,
-			  (ep->isThreaded() == true)? "(threaded)" : "(not threaded)" ));
+		LM_V(("%02d: %-12s %02d  %-20s %-20s %04d  %02d %s", ix, ep->typeName(), ep->idGet(), ep->hostname(), ep->stateName(), ep->port, ep->rFd,
+			  (ep->isThreaded() == true)? "(threaded)" : (ep->state == Endpoint2::Loopback)? "(myself)" : "(not threaded)"));
 	}
 	LM_V(("----------------------------------------------------------------------"));
 

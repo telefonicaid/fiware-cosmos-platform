@@ -46,16 +46,14 @@ WebListenerEndpoint::WebListenerEndpoint
 (
 	EndpointManager*  _epMgr,
 	int               _id,
-	const char*       _name,
-	const char*       _alias,
 	Host*             _host,
 	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
-) : Endpoint2(_epMgr, WebListener, _id, _name, _alias, _host, _port, _rFd, _wFd)
+) : Endpoint2(_epMgr, WebListener, _id, _host, _port, _rFd, _wFd)
 {
 	if (init() != Endpoint2::OK)
-		LM_X(1, ("Error setting up listen socket for endpoint '%s'", nameGet()));
+		LM_X(1, ("Error setting up listen socket for endpoint '%s'", name()));
 }
 
 

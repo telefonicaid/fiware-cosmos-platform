@@ -45,16 +45,14 @@ static void ip2string(int ip, char* ipString, int ipStringLen)
 ListenerEndpoint::ListenerEndpoint
 (
 	EndpointManager*  _epMgr,
-	const char*       _name,
-	const char*       _alias,
 	Host*             _host,
 	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
-) : Endpoint2(_epMgr, Listener, 0, _name, _alias, _host, _port, _rFd, _wFd)
+) : Endpoint2(_epMgr, Listener, 0, _host, _port, _rFd, _wFd)
 {
 	if (init() != Endpoint2::OK)
-		LM_X(1, ("Error setting up listen socket for endpoint '%s'", nameGet()));
+		LM_X(1, ("Error setting up listen socket for endpoint '%s'", name()));
 }
 
 
@@ -135,6 +133,7 @@ UnhelloedEndpoint* ListenerEndpoint::accept(void)
 	memset((char*) &sin, 0, len);
 
 	LM_T(LmtAccept, ("Accepting incoming connection"));
+	LM_M(("Accepting incoming connection"));
 	if ((fd = ::accept(rFd, (struct sockaddr*) &sin, &len)) == -1)
 		LM_RP(NULL, ("accept"));
 
@@ -146,6 +145,7 @@ UnhelloedEndpoint* ListenerEndpoint::accept(void)
 
 	LM_T(LmtAccept, ("Creating new Unhelloed Endpoint"));
 	ep = new UnhelloedEndpoint(epMgr, hostP, 0, fd, fd);
+	ep->state = Connected;
 	epMgr->add(ep);
 
 	return ep;
@@ -167,6 +167,7 @@ Endpoint2::Status ListenerEndpoint::msgTreat2(void)
 		LM_RE(AcceptError, ("Endpoint2::accept returned NULL"));
 
 	LM_T(LmtHello, ("Sending hello"));
+	LM_M(("Sending hello to %s", ep->name()));
 	ep->helloSend(Message::Msg);
 	ep->state = Ready;
 	return Endpoint2::OK;

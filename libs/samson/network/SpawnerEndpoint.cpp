@@ -37,12 +37,10 @@ SpawnerEndpoint::SpawnerEndpoint
 (
 	EndpointManager*  _epMgr,
 	int               _id,
-	const char*       _name,
-	const char*       _alias,
 	Host*             _host,
 	int               _rFd,
 	int               _wFd
-) : Endpoint2(_epMgr, Spawner, _id, _name, _alias, _host, SPAWNER_PORT, _rFd, _wFd)
+) : Endpoint2(_epMgr, Spawner, _id, _host, SPAWNER_PORT, _rFd, _wFd)
 {
 }
 
@@ -52,7 +50,7 @@ SpawnerEndpoint::SpawnerEndpoint
 *
 * SpawnerEndpoint Constructor - 
 */
-SpawnerEndpoint::SpawnerEndpoint(UnhelloedEndpoint* ep) : Endpoint2(ep->epMgrGet(), Spawner, ep->idGet(), ep->nameGet(), ep->aliasGet(), ep->hostGet(), SPAWNER_PORT, ep->rFdGet(), ep->wFdGet())
+SpawnerEndpoint::SpawnerEndpoint(UnhelloedEndpoint* ep) : Endpoint2(ep->epMgrGet(), Spawner, ep->idGet(), ep->hostGet(), SPAWNER_PORT, ep->rFdGet(), ep->wFdGet())
 {
 	LM_T(LmtUnhelloed, ("Created a Spawner Endpoint from an Unhelloed Endpoint"));
 	// Fix id ?
@@ -81,7 +79,5 @@ Endpoint2::Status SpawnerEndpoint::msgTreat2(Message::Header* headerP, void* dat
 
 	return (Endpoint2::Status) epMgr->dataReceiver->receive(epMgr->ixGet(this), dataLen, headerP, dataP);
 }
-
-
 
 }

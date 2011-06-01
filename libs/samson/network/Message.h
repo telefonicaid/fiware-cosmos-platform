@@ -125,10 +125,10 @@ typedef struct HelloData
 	char                ip[32];
 	char                alias[32];
 	int                 type;
+	int                 id;
 	int                 workers;
 	int                 port;
 	int                 coreNo;
-	int                 workerId;
 } HelloData;
 
 

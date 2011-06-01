@@ -36,12 +36,10 @@ DelilahEndpoint::DelilahEndpoint
 (
 	EndpointManager*  _epMgr,
 	int               _id,
-	const char*       _name,
-	const char*       _alias,
 	Host*             _host,
 	int               _rFd,
 	int               _wFd
-) : Endpoint2(_epMgr, Delilah, _id, _name, _alias, _host, 0, _rFd, _wFd)
+) : Endpoint2(_epMgr, Delilah, _id, _host, 0, _rFd, _wFd)
 {
 }
 
@@ -71,7 +69,7 @@ Endpoint2::Status DelilahEndpoint::msgTreat2(Message::Header* headerP, void* dat
 
 	default:
 		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s%d@%s", messageCode(headerP->code), messageType(headerP->type), typeName(), id, host->name));
+			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(headerP->code), messageType(headerP->type), name()));
 
 		epMgr->packetReceiver->_receive(packetP);
 		return OK;

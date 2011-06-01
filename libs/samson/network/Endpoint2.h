@@ -83,8 +83,6 @@ public:
 		OK,
 		NotImplemented,
 
-		NullAlias,
-		BadAlias,
 		BadMsgType,
 		NullHost,
 		BadHost,
@@ -147,8 +145,6 @@ public:
 		EndpointManager* _epMgr,
 		Type             _type,
 		int              _id,
-		const char*      _name,
-		const char*      _alias,
 		Host*            _host,
 		unsigned short   _port  = 0,
 		int              _rFd   = -1,
@@ -156,6 +152,10 @@ public:
 	);
 
 	~Endpoint2();
+
+	const char*          name(void);
+	void                 nameSet(Type _type, int id, Host* host);
+
 	const char*          status(Status s);
 	const char*          stateName(void);
 
@@ -163,12 +163,11 @@ public:
 
 private:
 	EndpointManager*     epMgr;
+	char*                nameidhost;
 	int                  idInEndpointVector;
 	Type                 type;
 	int                  id;
 	Host*                host;
-	char*                name;
-	char*                alias;
 	unsigned short       port;
 	int                  rFd;
 	int                  wFd;
@@ -202,12 +201,6 @@ public:
 	void                 portSet(unsigned short _port);
 	unsigned short       portGet(void);
 
-	void                 nameSet(const char* name);
-	const char*          nameGet(void);
-
-	void                 aliasSet(const char* alias);
-	const char*          aliasGet(void);
-
 	State                stateGet(void);
 	void                 stateSet(State _state);
 
@@ -230,17 +223,17 @@ public:
 
 	virtual Status       msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 	{
-		LM_X(1, ("msgTreat2 NOT IMPLEMENTED for %s %d", typeName(), name)); return NotImplemented;
+		LM_X(1, ("msgTreat2 NOT IMPLEMENTED for %s", typeName())); return NotImplemented;
 	};
 
 	virtual Status       msgTreat2(void)
 	{
-		LM_X(1, ("msgTreat2(void) NOT IMPLEMENTED for %s %s", typeName(), name)); return NotImplemented;
+		LM_X(1, ("msgTreat2(void) NOT IMPLEMENTED for %s", typeName())); return NotImplemented;
 	};
 
 	Status               die(int secs, int usecs = 0);       // send 'die' to endpoint, and await death, with timeout
 
-	Status               helloDataSet(Type _type, const char* _name, const char* _alias);
+	Status               helloDataSet(Type _type, int _id);
 	void                 helloSend(Message::MessageType type);   // send Hello Msg/Ack/Nak to endpoint
 
 	Status               realsend(Message::MessageType typ, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);

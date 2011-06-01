@@ -10,9 +10,6 @@
 *
 *
 * ToDo
-*   - remove 'alias' and 'name' completely
-*   - create method 'name()' to return ("%s%d@%s", typeName(), id, hostname())
-*     AND if id == -1, ("%s%@%s", typeName(), hostname())
 *
 */
 #include <sys/types.h>          // types needed by socket include files
@@ -53,11 +50,11 @@ void* readerThread(void* vP)
 {
 	Endpoint2* ep = (Endpoint2*) vP;
 
-	LM_T(LmtThreads, ("reader thread for endpoint %s@%s is running", ep->nameGet(), ep->hostGet()->name));
+	LM_T(LmtThreads, ("reader thread for endpoint %s is running", ep->name()));
 	ep->run();
 
 	ep->stateSet(Endpoint2::ScheduledForRemoval);
-	LM_W(("Endpoint '%s@%s' is back from Endpoint2::run", ep->nameGet(), ep->hostGet()->name));
+	LM_W(("Endpoint %s is back from Endpoint2::run", ep->name()));
 
 	return NULL;
 }
@@ -72,7 +69,7 @@ void* writerThread(void* vP)
 {
 	Endpoint2* ep = (Endpoint2*) vP;
 
-	LM_T(LmtThreads, ("writer thread for endpoint %s@%s is running (REAL wFd: %d))", ep->nameGet(), ep->hostGet()->name, ep->wFdGet()));
+	LM_T(LmtThreads, ("writer thread for endpoint %s is running (REAL wFd: %d))", ep->wFdGet()));
 	while (1)
 	{
 		JobQueue::Job* job;
@@ -105,8 +102,6 @@ Endpoint2::Endpoint2
 	EndpointManager*  _epMgr,
 	Type              _type,
 	int               _id,
-	const char*       _name,
-	const char*       _alias,
 	Host*             _host,
 	unsigned short    _port,
 	int               _rFd,
@@ -122,27 +117,14 @@ Endpoint2::Endpoint2
 	port                = _port;
 	state               = Unused;
 	threaded            = false;
-	// Andreu note : There is no valid way to initialize a pthread_t to a "null" value. You can associate it with a boolean flag if you want
-	//readerId            = -1;
-	//writerId            = -1;
 
 	idInEndpointVector  = -8;    // -8 meaning 'undefined' ...
 
-	name                = NULL;
-	alias               = NULL;
-	
+	nameidhost          = NULL;
+	nameSet(type, id, host);
+
 	memset(&sockin, 0, sizeof(sockin));
 
-	if (_name != NULL)
-		name  = strdup(_name);
-	else
-		name  = strdup(typeName());
-	
-	if (_alias != NULL)
-		alias = strdup(_alias);
-	else
-		alias = strdup("endpoint");
-	
 	msgsIn        = 0;
 	msgsOut       = 0;
 	msgsInErrors  = 0;
@@ -167,11 +149,42 @@ Endpoint2::~Endpoint2()
 {
 	close();
 
-	if (name != NULL)
-		free(name);
+	if (nameidhost != NULL)
+		free(nameidhost);
 
-	if (alias != NULL)
-		free(alias);
+	nameidhost = NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* name - 
+*/
+const char* Endpoint2::name(void)
+{
+	return nameidhost;
+}
+
+
+
+/* ****************************************************************************
+*
+* nameSet - 
+*/
+void Endpoint2::nameSet(Type _type, int id, Host* host)
+{
+	char myname[128];
+
+	if (nameidhost != NULL)
+		free(nameidhost);
+	
+	if ((type == Worker) || (type == Delilah))
+		snprintf(myname, sizeof(myname), "%s%02d@%s", typeName(), id, host->name);
+	else
+		snprintf(myname, sizeof(myname), "%s@%s", typeName(), host->name);
+
+	nameidhost = strdup(myname);
 }
 
 
@@ -291,62 +304,6 @@ unsigned short Endpoint2::portGet(void)
 
 /* ****************************************************************************
 *
-* nameSet - 
-*/
-void Endpoint2::nameSet(const char* _name)
-{
-	if (name != NULL)
-		free(name);
-
-	name = strdup(_name);
-}
-
-
-
-/* ****************************************************************************
-*
-* nameGet - 
-*/
-const char* Endpoint2::nameGet(void)
-{
-	if (name == NULL)
-		return "NULL name";
-
-	return name;
-}
-
-
-
-/* ****************************************************************************
-*
-* aliasSet - 
-*/
-void Endpoint2::aliasSet(const char* _alias)
-{
-	if (alias != NULL)
-		free(alias);
-
-	alias = strdup(_alias);
-}
-
-
-
-/* ****************************************************************************
-*
-* aliasGet - 
-*/
-const char* Endpoint2::aliasGet(void)
-{
-	if (alias == NULL)
-		return "NULL alias";
-
-	return alias;
-}
-
-
-
-/* ****************************************************************************
-*
 * stateSet - 
 */
 void Endpoint2::stateSet(State _state)
@@ -438,10 +395,10 @@ Endpoint2::Status Endpoint2::okToSend(void)
 		if ((fds == 1) && (FD_ISSET(wFd, &wFds)))
 			return OK;
 
-		LM_W(("Problems to send to %s@%s (%d/%d secs)", name, host->name, tryh, tries));
+		LM_W(("Problems to send to %s (%d/%d secs)", name(), tryh, tries));
 	}
 
-	LM_X(1, ("cannot write to '%s' - fd %d", name, wFd));
+	LM_X(1, ("cannot write to '%s' - fd %d", name(), wFd));
 	return Timeout;
 }
 
@@ -461,18 +418,18 @@ Endpoint2::Status Endpoint2::partWrite(void* dataP, int dataLen, const char* wha
 	while (tot < dataLen)
 	{
 		if ((s = okToSend()) != OK)
-			LM_RE(s, ("Cannot write to '%s' (fd %d) (returning -2 as if it was a 'connection closed' ...)", name, wFd));
-		
+			LM_RE(s, ("Cannot write to '%s' (fd %d) (returning -2 as if it was a 'connection closed' ...)", name(), wFd));
+
 		nb = write(wFd, &data[tot], dataLen - tot);
 		if (nb == -1)
-			LM_RE(WriteError, ("error writing to '%s': %s", name, strerror(errno)));
+			LM_RE(WriteError, ("error writing to '%s': %s", name(), strerror(errno)));
 		else if (nb == 0)
-			LM_RE(WriteError, ("part-write written ZERO bytes to '%s' (total: %d)", name, tot));
+			LM_RE(WriteError, ("part-write written ZERO bytes to '%s' (total: %d)", name(), tot));
 
 		tot += nb;
 	}
 
-	LM_WRITES(name, what, dataP, dataLen, LmfByte);
+	LM_WRITES(name(), what, dataP, dataLen, LmfByte);
 	return OK;
 }
 
@@ -506,7 +463,7 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 
 		LM_T(LmtMsgLoopBack, ("Looping back a packet meant for myself (and calling psi->notificationSent ...)"));
 		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("No packetReceiver (SW bug) - got a message/ack from %s%d@%s", typeName(), id, host->name));
+			LM_X(1, ("No packetReceiver (SW bug) - got a message/ack from %s", name()));
 
 		epMgr->packetReceiver->_receive(packetP);
 		if (psi)
@@ -520,7 +477,7 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 		{
 			if ((state != Ready) && (state != Connected))
 			{
-				LM_E(("Cannot send '%s' packet to %s@%s - endpoint is in state '%s' - throwing away the packet", messageCode(packetP->msgCode), typeName(), host->name, stateName()));
+				LM_E(("Cannot send '%s' packet to %s - endpoint is in state '%s' - throwing away the packet", messageCode(packetP->msgCode), name(), stateName()));
 				delete packetP;
 			}
 			else
@@ -564,9 +521,9 @@ Endpoint2::Status Endpoint2::realsend
 	}
 
 	if (code == Message::Die)
-		LM_W(("Sending a Die '%s' to %s@%s", messageType(type), nameGet(), hostname()));
+		LM_W(("Sending a Die '%s' to %s", messageType(type), name()));
 	else
-		LM_T(LmtSend, ("Sending a '%s' '%s' to %s@%s", messageCode(code), messageType(type), nameGet(), hostname()));
+		LM_T(LmtSend, ("Sending a '%s' '%s' to %s", messageCode(code), messageType(type), name()));
 		
 
 
@@ -595,7 +552,7 @@ Endpoint2::Status Endpoint2::realsend
 	//
 	s = partWrite(&header, sizeof(header), "header");
 	if (s != OK)
-		LM_RE(s, ("partWrite:header(%s): %s", name, status(s)));
+		LM_RE(s, ("partWrite:header(%s): %s", name(), status(s)));
 
 
 	
@@ -606,7 +563,7 @@ Endpoint2::Status Endpoint2::realsend
 	{
 		s = partWrite(data, dataLen, "msg data");
 		if (s != OK)
-			LM_RE(s, ("partWrite:data(%s): %s", name, status(s)));
+			LM_RE(s, ("partWrite:data(%s): %s", name(), status(s)));
 	}
 
 
@@ -665,27 +622,27 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, co
 
 		s = msgAwait(0, 500000, what);
 		if (s != OK)
-			LM_RE(s, ("msgAwait(%s): %s, expecting '%s' from %s@%s", name, status(s), what, name, hostname()));
+			LM_RE(s, ("msgAwait: %s, expecting '%s' from %s", status(s), what, name()));
 
 		nb = read(rFd, (void*) &buf[tot] , bufLen - tot);
 		if (nb == -1)
 		{
 			if (errno == EBADF)
-				LM_RE(ConnectionClosed, ("read(%s): %s (treating as Connection Closed), expecting '%s' from %s@%s", name, strerror(errno), what, name, hostname()));
+				LM_RE(ConnectionClosed, ("read: %s (treating as Connection Closed), expecting '%s' from %s", strerror(errno), what, name()));
 
-			LM_RE(ConnectionClosed, ("read(%s): %s, expecting '%s' from %s@%s", name, strerror(errno), what, name, hostname()));
+			LM_RE(ConnectionClosed, ("read: %s, expecting '%s' from %s", strerror(errno), what, name()));
 		}
 		else if (nb == 0)
-			LM_RE(ConnectionClosed, ("Connection closed by '%s', expecting '%s' from %s@%s", name, what, name, hostname()));
+			LM_RE(ConnectionClosed, ("Connection closed, expecting '%s' from %s", what, name()));
 
 		tot += nb;
 	}
 
 	if (bufLenP == NULL)
-		LM_X(1, ("Got called with NULL buffer length pointer. This is a programmer's bug and must be fixed. Right now. (Expecting '%s' from %s@%s)", what, name, hostname()));
+		LM_X(1, ("Got called with NULL buffer length pointer. This is a programmer's bug and must be fixed. Right now. (Expecting '%s' from %s)", what, name()));
 
 	*bufLenP = tot;
-	LM_READS(name, what, buf, tot, LmfByte);
+	LM_READS(name(), what, buf, tot, LmfByte);
 
 	return OK;
 }
@@ -711,10 +668,10 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 	if (s != OK)
 	{
 		close();
-		LM_RE(s, ("partRead: %s, expecting 'Header' from '%s@%s'", status(s), name, hostname()));
+		LM_RE(s, ("partRead: %s, expecting 'Header' from %s", status(s), name()));
 	}
 
-	LM_T(LmtReceive, ("Read '%s' '%s' header of %d bytes from '%s@%s'", messageCode(headerP->code), messageType(headerP->type), bufLen, nameGet(), hostname()));
+	LM_T(LmtReceive, ("Read '%s' '%s' header of %d bytes from %s", messageCode(headerP->code), messageType(headerP->type), bufLen, name()));
 	if (headerP->dataLen != 0)
 	{
 		*dataPP = calloc(1, headerP->dataLen);
@@ -724,9 +681,9 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 		{
 			close();
 			free(*dataPP);
-			LM_RE(s, ("partRead: %s, expecting '%d RAW DATA bytes' from '%s@%s'", status(s), headerP->dataLen,  name, hostname()));
+			LM_RE(s, ("partRead: %s, expecting '%d RAW DATA bytes' from '%s'", status(s), headerP->dataLen,  name()));
 		}
-		LM_T(LmtReceive, ("Read %d bytes of RAW DATA from '%s@%s'", bufLen, nameGet(), hostname()));
+		LM_T(LmtReceive, ("Read %d bytes of RAW DATA from %s", bufLen, name()));
 		totalBytesReadExceptHeader += bufLen;
 	}
 
@@ -741,9 +698,9 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 			free(dataP);
 			if (*dataPP != NULL)
 				free(*dataPP);
-			LM_RE(s, ("partRead: %s, expecting '%d bytes of Google Protocol Buffer data' from '%s@%s'", status(s), headerP->gbufLen, name, hostname()));
+			LM_RE(s, ("partRead: %s, expecting '%d bytes of Google Protocol Buffer data' from '%s'", status(s), headerP->gbufLen, name()));
 		}
-		LM_T(LmtReceive, ("Read %d bytes of GOOGLE DATA from '%s@%s'", bufLen, nameGet(), hostname()));
+		LM_T(LmtReceive, ("Read %d bytes of GOOGLE DATA from '%s'", bufLen, name()));
 
 		packetP->message->ParseFromArray(dataP, headerP->gbufLen);
 		if (packetP->message->IsInitialized() == false)
@@ -758,7 +715,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 		char         kvName[128];
 		static int   bIx = 0;
 
-		sprintf(kvName, "%s:%d", name, bIx);
+		sprintf(kvName, "%s:%d", name(), bIx);
 		++bIx;
 
 		packetP->buffer = engine::MemoryManager::shared()->newBuffer(kvName, headerP->kvDataLen, samson::MemoryOutputDisk  );
@@ -770,9 +727,9 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 		if (s != OK)
 		{
 			close();
-			LM_RE(s, ("partRead: %s, expecting '%d bytes of KV DATA (%s)' from '%s@%s'", status(s), headerP->kvDataLen, kvName, name, hostname()));
+			LM_RE(s, ("partRead: %s, expecting '%d bytes of KV DATA (%s)' from '%s'", status(s), headerP->kvDataLen, kvName, name()));
 		}
-		LM_T(LmtReceive, ("Read %d bytes of KV DATA from '%s@%s'", nb, nameGet(), hostname()));
+		LM_T(LmtReceive, ("Read %d bytes of KV DATA from '%s'", nb, name()));
 
 		packetP->buffer->setSize(nb);
 		totalBytesReadExceptHeader += bufLen;
@@ -797,9 +754,9 @@ Endpoint2::Status Endpoint2::connect(void)
 	struct sockaddr_in  peer;
 
 	if (host == NULL)
-		LM_RE(NullHost, ("Cannot connect to endpoint '%s' with NULL host!", name));
+		LM_RE(NullHost, ("Cannot connect to endpoint '%s' with NULL host!", name()));
 	if (port == 0)
-		LM_RE(NullPort, ("Cannot connect to '%s@%s' - port is ZERO", name, host->name));
+		LM_RE(NullPort, ("Cannot connect to '%s' - port is ZERO", name()));
 
 	if ((hp = gethostbyname(host->name)) == NULL)
 		LM_RE(GetHostByNameError, ("gethostbyname(%s): %s", host->name, strerror(errno)));
@@ -815,7 +772,7 @@ Endpoint2::Status Endpoint2::connect(void)
 	peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
 	peer.sin_port        = htons(port);
 
-	LM_T(LmtConnect, ("Connecting to %s at %s:%d", name, host->name, port));
+	LM_T(LmtConnect, ("Connecting to %s at %s:%d", name(), host->name, port));
 	if (::connect(wFd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 	{
 		usleep(50000);
@@ -882,15 +839,15 @@ Endpoint2::Status Endpoint2::msgAwait(int secs, int usecs, const char* what)
 	} while ((fds == -1) && (errno == EINTR));
 
 	if (fds == -1)
-		LM_RP(SelectError, ("select error awaiting '%s' from '%s@%s", what, name, hostname()));
+		LM_RP(SelectError, ("select error awaiting '%s' from '%s", what, name()));
 	else if (fds == 0)
-		LM_RE(Timeout, ("timeout awaiting '%s' from '%s@%s'", what, name, hostname()));
+		LM_RE(Timeout, ("timeout awaiting '%s' from '%s'", what, name()));
 	else if ((fds > 0) && (!FD_ISSET(rFd, &rFds)))
-		LM_RE(Error, ("some other fd has a read pending - this is impossible ! (awaiting '%s' from '%s@%s')", what, name, hostname()));
+		LM_RE(Error, ("some other fd has a read pending - this is impossible ! (awaiting '%s' from '%s')", what, name()));
 	else if ((fds > 0) && (FD_ISSET(rFd, &rFds)))
 		return OK;
 
-	LM_X(1, ("Very strange error awaiting '%s' from '%s@%s'", what, name, hostname()));
+	LM_X(1, ("Very strange error awaiting '%s' from '%s'", what, name()));
 
 	return Error;
 }
@@ -912,11 +869,11 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 
 	if ((type == Listener) || (type == WebListener) || (type == WebWorker))
 	{
-		LM_T(LmtMsgTreat, ("Something to read for %s%d@%s - calling msgTreat2", typeName(), name, host->name));
+		LM_T(LmtMsgTreat, ("Something to read for %s - calling msgTreat2", name()));
 		return msgTreat2();
 	}
 	
-	LM_T(LmtMsgTreat, ("Reading incoming message from '%s@%s'", name, host->name));
+	LM_T(LmtMsgTreat, ("Reading incoming message from '%s'", name()));
 	s = msgAwait(-1, -1, "Incoming message");
 	if (s != OK)
 		LM_E(("msgAwait: %s - what do I do ... ?", status(s)));
@@ -935,7 +892,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		}
 
 		LM_TODO(("I should probably remove the endpoint also if error is NOT Connection Closed"));
-		LM_RE(s, ("receive(%s%d@%s): '%s'", typeName(), name, host->name, status(s)));
+		LM_RE(s, ("receive(%s): '%s'", name(), status(s)));
 	}
 
 	packetP->msgCode = header.code;
@@ -949,14 +906,8 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 	{
 	case Message::Hello:
 		helloP = (Message::HelloData*) dataP;
-		LM_T(LmtHello, ("Got a Hello %s from %s@%s", messageType(header.type), typeName(), host->name));
-		s = helloDataSet((Type) helloP->type, helloP->name, helloP->alias);
-		if (s != OK)
-		{
-			LM_W(("Bad hello data"));
-			stateSet(Disconnected);
-			LM_RE(s, ("Bad hello data"));
-		}
+		LM_T(LmtHello, ("Got a Hello %s from %s", messageType(header.type), name()));
+		helloDataSet((Type) helloP->type, helloP->id);
 
 		if (header.type == Message::Msg)
 		{
@@ -971,17 +922,17 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 			return OK;
 		}
 
-		LM_T(LmtHello, ("Received Hello from %s%d@%s", typeName(), id, host->name));
+		LM_T(LmtHello, ("Received Hello from %s", name()));
 		if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((type == Worker) || (type == Delilah)))
 		{
 			int  ps;
 
 			threaded = true;
 
-			LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s@%s", name, host->name));
+			LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s", name()));
 			if ((ps = pthread_create(&writerId, NULL, writerThread, this)) != 0)
 			{
-				LM_E(("Creating writer thread: pthread_create returned %d for %s@%s", ps, name, host->name));
+				LM_E(("Creating writer thread: pthread_create returned %d for %s", ps, name()));
 				delete packetP;
 				return PThreadError;
 			}
@@ -989,7 +940,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 
 			if ((ps = pthread_create(&readerId, NULL, readerThread, this)) != 0)
 			{
-				LM_E(("Creating reader thread: pthread_create returned %d for %s@%s", ps, name, host->name));
+				LM_E(("Creating reader thread: pthread_create returned %d for %s", ps, name()));
 				delete packetP;
 				return PThreadError;
 			}
@@ -1069,8 +1020,6 @@ const char* Endpoint2::status(Status s)
 	case OK:                   return "OK";
 	case NotImplemented:       return "Not Implemented";
 
-	case NullAlias:            return "Null Alias";
-	case BadAlias:             return "Bad Alias";
 	case BadMsgType:           return "BadMsgType";
 	case NullHost:             return "Null Host";
 	case BadHost:              return "Bad Host";
@@ -1108,18 +1057,18 @@ const char* Endpoint2::status(Status s)
 */
 void Endpoint2::run(void)
 {
-	LM_T(LmtThreads, ("Endpoint '%s@%s' reader thread is running", name, host->name));
+	LM_T(LmtThreads, ("Endpoint '%s' reader thread is running", name()));
 
 	while (1)
 	{
 		Status s;
 
-		LM_T(LmtThreads, ("Reader Thread for '%s%d@%s' awaiting a packet", name, id, host->name));
+		LM_T(LmtThreads, ("Reader Thread for '%s' awaiting a packet", name()));
 		s = msgTreat();
 		if (s == ConnectionClosed)
 		{
-			// threaded = false;
-			LM_W(("*************** Endpoint %s%d@%s closed connection - leaving thread", typeName(), id, host->name));
+			threaded = false;
+			LM_W(("*************** Endpoint %s closed connection - leaving thread", name()));
 			return;
 		}
 	}
@@ -1173,19 +1122,19 @@ bool Endpoint2::isThreaded(void)
 *
 * helloDataSet - 
 */
-Endpoint2::Status Endpoint2::helloDataSet(Type _type, const char* _name, const char* _alias)
+Endpoint2::Status Endpoint2::helloDataSet(Type _type, int _id)
 {
 	if (type != Unhelloed)
 	{
 		if (type != _type)
-			LM_W(("Got a Hello from %s@%s, saying he's of '%s' type, when endpoint says '%s'", name, hostname(), typeName(_type), typeName()));
+			LM_W(("Got a Hello from %s, saying he's of '%s' type, when endpoint says '%s'", name(), typeName(_type), typeName()));
 	}
 
-	type = _type;
-	nameSet(_name);
-	aliasSet(_alias);
-
+	type  = _type;
+	id    = _id;
 	state = Ready;
+
+	nameSet(type, id, host);
 	return OK;
 }
 
@@ -1201,19 +1150,17 @@ void Endpoint2::helloSend(Message::MessageType type)
 
 	memset(&hello, 0, sizeof(hello));
 
-	strncpy(hello.name,   epMgr->me->nameGet(),    sizeof(hello.name));
-	strncpy(hello.ip,     epMgr->me->hostname(),   sizeof(hello.ip));
-	strncpy(hello.alias,  epMgr->me->aliasGet(),   sizeof(hello.alias));
+	strncpy(hello.ip, epMgr->me->hostname(), sizeof(hello.ip));
 
 	hello.type     = epMgr->me->typeGet();
 	hello.coreNo   = 0;
-	hello.workerId = 0;
+	hello.id       = epMgr->me->id;
 
-	LM_T(LmtHello, ("sending hello %s to '%s' (my name: '%s', my type: '%s')", messageType(type), name, hello.name, epMgr->me->typeName()));
+	LM_T(LmtHello, ("sending hello %s to '%s' (my type: '%s', id: %d)", messageType(type), name(), epMgr->me->typeName(), epMgr->me->id));
 
 	Status s;
 	if ((s = realsend(type, Message::Hello, &hello, sizeof(hello))) != OK)
-		LM_E(("Error sending Hello to %s@%s: %s", typeName(), name, status(s)));
+		LM_E(("Error sending Hello to %s: %s", name(), status(s)));
 }
 
 

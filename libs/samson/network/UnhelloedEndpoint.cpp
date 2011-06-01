@@ -29,34 +29,6 @@ namespace samson
 
 /* ****************************************************************************
 *
-* processLookup - 
-*/
-static Process* processLookup(ProcessVector* procVec, const char* alias)
-{
-	if (procVec == NULL)
-		LM_RE(NULL, ("NULL process vector"));
-
-	if (alias == NULL)
-		LM_RE(NULL, ("NULL alias"));
-
-	if (alias[0] == 0)
-		LM_RE(NULL, ("EMPTY alias"));
-
-	for (int ix = 0; ix < procVec->processes; ix++)
-	{
-		Process* p = &procVec->processV[ix];
-
-		if (strcmp(p->alias, alias) == 0)
-			return p;
-	}
-
-	return NULL;
-}
-
-
-
-/* ****************************************************************************
-*
 * UnhelloedEndpoint - 
 */
 UnhelloedEndpoint::UnhelloedEndpoint
@@ -66,7 +38,7 @@ UnhelloedEndpoint::UnhelloedEndpoint
 	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
-) : Endpoint2(_epMgr, Unhelloed, -1, "unhelloed", "unhelloed", _host, _port, _rFd, _wFd)
+) : Endpoint2(_epMgr, Unhelloed, -1, _host, _port, _rFd, _wFd)
 {
 }
 
@@ -97,7 +69,7 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 	case Message::Hello:
 		LM_T(LmtUnhelloed, ("Read a Hello message"));
 		helloP = (Message::HelloData*) dataP;
-		s = helloDataSet((Type) helloP->type, helloP->name, helloP->alias);
+		s = helloDataSet((Type) helloP->type, helloP->id);
 		type = Unhelloed;
 		if (s != OK)
 		{
@@ -109,16 +81,15 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 		if (headerP->type == Message::Msg)
 			helloSend(Message::Ack);
 
-		LM_T(LmtHello, ("UnhelloedEndpoint received Hello from %s%d@%s", typeName(), id, host->name));
+		LM_T(LmtHello, ("UnhelloedEndpoint received Hello from %s", name()));
 
 		state = Ready;
 		if ((samson::Endpoint2::Type) helloP->type == Delilah)
 		{
-			ep = epMgr->add((samson::Endpoint2::Type) helloP->type, id, name, alias, host, port, rFd, wFd);
+			ep = epMgr->add((samson::Endpoint2::Type) helloP->type, id, host, port, rFd, wFd);
 			ep->state = Ready;
 
 			state = ScheduledForRemoval;
-			nameSet("ConvertedToDelilah");
 			rFd   = -1;
 			wFd   = -1;
 			epMgr->show("Changed Unhelloed to Delilah, The Unhelloed marked with ScheduledForRemoval", true);
@@ -136,7 +107,6 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 			ep->state = Ready;
 			
 			// Unhelloed to be removed but without closing any file descriptors
-			nameSet("ConvertedToWorker");
 			state = ScheduledForRemoval;
 			rFd   = -1;
 			wFd   = -1;
@@ -161,17 +131,17 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 
 				ep->threaded = true;
 
-				LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s@%s", name, host->name));
+				LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s", name()));
 				if ((ps = pthread_create(&ep->writerId, NULL, writerThread, ep)) != 0)
 				{
-					LM_E(("Creating writer thread: pthread_create returned %d for %s@%s", ps, name, host->name));
+					LM_E(("Creating writer thread: pthread_create returned %d for %s", ps, name()));
 					delete packetP;
 					return PThreadError;
 				}
 
 				if ((ps = pthread_create(&ep->readerId, NULL, readerThread, ep)) != 0)
 				{
-					LM_E(("Creating reader thread: pthread_create returned %d for %s@%s", ps, name, host->name));
+					LM_E(("Creating reader thread: pthread_create returned %d for %s", ps, name()));
 					delete packetP;
 					return PThreadError;
 				}
@@ -198,31 +168,19 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 *
 * helloDataSet - 
 */
-Endpoint2::Status UnhelloedEndpoint::helloDataSet(Type _type, const char* _name, const char* _alias)
+Endpoint2::Status UnhelloedEndpoint::helloDataSet(Type _type, int _id)
 {
-	Process*  proc;
-
-	if (_alias == NULL)
-		LM_RE(NullAlias, ("NULL alias"));
-
-	// If we have the process vector, check that alias is consistent
-	if (epMgr->procVecGet() != NULL)
+	if (epMgr->lookup(_type, _id) != NULL)
 	{
-		if ((proc = processLookup(epMgr->procVecGet(), _alias)) != NULL)
-		{
-			LM_TODO(("Host could become a class and do its own matching"));
-			if (epMgr->hostMgr->match(host, proc->host) == false)  
-				LM_RE(BadHost, ("The host for alias '%s' must be '%s'. This endpoints host ('%s') is incorrect",
-								_alias, hostname(), proc->host));
-		}
+		if ((_type != Worker) && (_type != Controller))
+			LM_RE(Duplicated, ("Duplicated process: %s%d", typeName(_type), _id));
 	}
 
-	if (epMgr->lookup(_type, _alias) != NULL)
-		LM_RE(Duplicated, ("Duplicated process"));
-
 	type = _type;
-	nameSet(_name);
-	aliasSet(_alias);
+	id   = _id;
+
+	nameSet(_type, id, host);
+	LM_TODO(("Any state-change needed here ?"));
 
 	return OK;
 }
@@ -242,7 +200,7 @@ Endpoint2::Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 	Packet                packet(Message::Unknown);
 	Endpoint2::Status     s;
 
-	LM_T(LmtUnhelloed, ("Sending Hello Msg to %s@%s", name, hostname()));
+	LM_T(LmtUnhelloed, ("Sending Hello Msg to %s", name()));
 	helloSend(Message::Msg);
 
 	LM_T(LmtUnhelloed, ("Awaiting reply"));
@@ -263,7 +221,7 @@ Endpoint2::Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 
     LM_T(LmtUnhelloed, ("Adapting the KNOWN endpoints characteristics"));
 	helloP = (Message::HelloData*) dataP;
-	if ((s = helloDataSet((Endpoint2::Type) helloP->type, helloP->name, helloP->alias)) != OK)
+	if ((s = helloDataSet((Endpoint2::Type) helloP->type, helloP->id)) != OK)
 	{
 		free(dataP);
 		LM_RE(s, ("helloDataSet(): %s", status(s)));

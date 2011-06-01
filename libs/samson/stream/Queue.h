@@ -28,6 +28,28 @@ namespace samson {
     {
         class Block;
         class QueuesManager;
+
+        class QueueChannel
+        {
+            // Blocks currently in the input queue
+            au::list< Block > blocks;       
+            
+        public:
+            
+            void add( Block *b );
+            
+            Block* extract( );
+
+            size_t getSize();
+            
+            int getNumBlocks()
+            {
+                return blocks.size();
+            }
+            
+            std::string getStatus();
+            
+        };
         
         class Queue : engine::NotificationListener
         {
@@ -36,9 +58,9 @@ namespace samson {
             friend class QueuesManager;
             
             std::string name;               // Name of the queue
-            au::list< Block > blocks;       // Blocks currently in the input queue
-            
             au::Cronometer cronometer;      // Time since the last command execution
+            
+            au::map<int , QueueChannel> channels;
             
         public:
             
@@ -63,7 +85,7 @@ namespace samson {
                 }
             }
             
-            void add( Block *block );
+            void add( int channel , Block *block );
 
             // Create new tasks if necessary
             void scheduleNewTasksIfNecessary();
@@ -72,7 +94,6 @@ namespace samson {
           
             ::samson::NetworkInterface *getNetwork();
             
-            size_t getSize();
             
             // Notifications    
             void notify( engine::Notification* notification );

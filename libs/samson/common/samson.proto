@@ -547,15 +547,20 @@ message MessagePlatformProcess
 // Message to push a Block into a particular queue
 //
 
+message QueueChannel
+{
+	required string queue = 1;	// Name of the queue
+	required uint32 channel = 2;	// Channel inside the queue
+}
+
 message PushBlock
 {
-	repeated string queue	 = 1;	// List of queues where to push this block
-	optional uint64 size	 = 2;	// size of the block we are uploading 
+	repeated QueueChannel target =1;	// Target QueueuChannels to push this block
+	optional uint64 size	 = 2;		// size of the block we are uploading 
 }
 
 message PushBlockResponse
 {
-	repeated string queue		= 1;	// List of queues where to push this block
 	required PushBlock request 	= 2;	// Original request
 }
 

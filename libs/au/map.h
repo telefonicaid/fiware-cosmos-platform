@@ -57,17 +57,13 @@ namespace au {
         
 		V* findOrCreate( K& key )
 		{
-			typename std::map<K, V* >::iterator iter = find(key);
-			
-			if( iter == std::map<K,V*>::end() )
-			{
-				// Create and insert for this key
-				V* value = new V();
-				insert( std::pair<K,V*>( key, value) );
-				return value;
-			}
-			return iter->second;
-			
+            V* tmp = findInMap(key);
+            if( !tmp )
+            {
+                tmp = new V();
+                insertInMap(key, tmp);
+            }
+            return tmp;			
 		}
         
 		/** 

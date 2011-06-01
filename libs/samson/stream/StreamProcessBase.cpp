@@ -69,7 +69,9 @@ namespace samson {
             for ( int i = 0 ; i < streamQueue->output(output).queue_size() ; i++)
             {
                 std::string queue_name = streamQueue->output(output).queue(i);
-                pb->add_queue( queue_name );
+                network::QueueChannel *target = pb->add_target();
+                target->set_queue( queue_name );
+                target->set_channel(0);
             }
             
             // Send the packet using the "notification_send_to_worker"

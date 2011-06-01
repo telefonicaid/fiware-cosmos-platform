@@ -223,10 +223,11 @@ namespace samson {
             stream::Block *block = new stream::Block( packet->buffer );
             
             // Push the packet to a particular stream-queue
-            for ( int i = 0 ; i < packet->message->push_block().queue_size() ; i++)
+            for ( int i = 0 ; i < packet->message->push_block().target_size() ; i++)
             {
-                std::string queue = packet->message->push_block().queue(i);
-                queuesManager.addBlock(queue, block);
+                std::string queue = packet->message->push_block().target(i).queue();
+                int _channel = (int)packet->message->push_block().target(i).channel();
+                queuesManager.addBlock(queue, _channel , block  );
             }
 
             // Release the block ( it should be reteained by all the queues where it has been added )

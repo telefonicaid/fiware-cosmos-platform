@@ -45,7 +45,7 @@ namespace samson {
             std::string getStatus();
 
             // Add a block to a particular queue ( ususally from the network interface )
-            void addBlock( std::string queue , Block *b);
+            void addBlock( std::string queue , int channel , Block *b);
             
             
             // set info ( from controller )

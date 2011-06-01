@@ -122,7 +122,12 @@ namespace samson
             packet->message->set_delilah_id( id );
 
             network::PushBlock* pb =  packet->message->mutable_push_block();
-            pb->add_queue( queue );
+
+            // Unique target
+            network::QueueChannel *target = pb->add_target();
+            target->set_queue( queue );
+            target->set_channel( 0 );
+            
             pb->set_size( buffer->getSize() );
             
             delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), packet);

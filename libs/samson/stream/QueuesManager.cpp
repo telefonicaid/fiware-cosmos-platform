@@ -41,13 +41,13 @@ namespace samson {
         }
 
 
-        void QueuesManager::addBlock( std::string queue_name , Block *b)
+        void QueuesManager::addBlock( std::string queue_name , int channel ,  Block *b )
         {
             // Get or create the queue
             Queue *queue = getQueue( queue_name );
             
             // Add the block to the queue
-            queue->add( b );
+            queue->add( channel , b );
             
             // First rudimentary system to thrigger queue-processing
             queue->scheduleNewTasksIfNecessary();

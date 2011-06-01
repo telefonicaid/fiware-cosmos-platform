@@ -18,6 +18,53 @@ namespace samson {
     namespace stream
     {
         
+        void QueueChannel::add( Block *block )
+        {
+            // Retain the block to be an owner of the block
+            stream::BlockManager::shared()->retain( block );
+            
+            
+            // Insert in the back of the list
+            blocks.push_back( block );
+        }
+
+        Block* QueueChannel::extract( )
+        {
+            return blocks.extractFront();
+        }
+        
+        size_t QueueChannel::getSize()
+        {
+            size_t total = 0;
+            for (  au::list< Block >::iterator i = blocks.begin() ; i!= blocks.end() ; i++)
+                total += (*i)->getSize();
+            return total;
+        }
+        
+        std::string QueueChannel::getStatus()
+        {
+            size_t size=0;
+            size_t size_on_memory=0;
+            size_t size_on_disk=0;
+            
+            std::ostringstream output;
+            std::list<Block*>::iterator b;
+            
+            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
+            {
+                size += (*b)->getSize();
+                size_on_memory += (*b)->getSizeOnMemory();
+                size_on_disk += (*b)->getSizeOnDisk();
+            }
+            
+            output << "[ " << blocks.size() << " blocks with " << au::Format::string( size, "Bytes" );
+            output << " " << au::Format::percentage_string(size_on_memory, size) << " on memory";
+            output << " & " << au::Format::percentage_string(size_on_disk, size) << " on disk ] ";
+
+            return output.str();
+        }
+        
+#pragma Queue
         
         Queue::Queue( std::string _name , QueuesManager * _qm ) 
         {
@@ -30,17 +77,10 @@ namespace samson {
         
         // Add a block to a particular queue
         
-        void Queue::add( Block *block )
+        void Queue::add( int _channel , Block *block )
         {
-            
-            // Retain the block to be an owner of the block
-            stream::BlockManager::shared()->retain( block );
-            
-            if ( blocks.size() == 0)
-                cronometer.reset();
-            
-            // Insert in the back of the list
-            blocks.push_back( block );
+            QueueChannel * channel = channels.findOrCreate( _channel );
+            channel->add( block );
         }
         
         void Queue::scheduleNewTasksIfNecessary()
@@ -48,11 +88,15 @@ namespace samson {
             if( !streamQueue )
                 return;     // No information about how to process data
             
-            if( blocks.size() == 0)
-                return;     // Nothing to process
+            int input_channel = 0 ;
             
-            size_t total_size = getSize();
-            int total_time = cronometer.diffTimeInSeconds();
+            QueueChannel*channel = channels.findOrCreate( input_channel );
+            
+            size_t total_size   = channel->getSize();
+            int total_time      = cronometer.diffTimeInSeconds();
+
+            if( total_size == 0 )
+                return;
             
             if( ( total_size < 1000000) && (total_time < 3) )
             {
@@ -67,10 +111,13 @@ namespace samson {
                     
                     {
                         ParserQueueTask *tmp = new ParserQueueTask( streamQueue ); 
-                        while( blocks.size() > 0 )
-                            tmp->add( blocks.extractFront() );
+                        while( channel->getNumBlocks() > 0 )
+                            tmp->add( channel->extract() );
                         // Schedule tmp task into QueueTaskManager
                         qm->queueTaskManager.add( tmp );
+                        
+                        // reset the cronometer for the next operation
+                        cronometer.reset();
                         
                     }
                     break;
@@ -78,10 +125,13 @@ namespace samson {
                 case Operation::map:
                     {
                         MapQueueTask *tmp = new MapQueueTask( streamQueue ); 
-                        while( blocks.size() > 0 )
-                            tmp->add( blocks.extractFront() );
+                        while( channel->getNumBlocks() > 0 )
+                            tmp->add( channel->extract() );
                         // Schedule tmp task into QueueTaskManager
                         qm->queueTaskManager.add( tmp );
+                        
+                        // reset the cronometer for the next operation
+                        cronometer.reset();
                         
                     }
                     break;
@@ -111,27 +161,15 @@ namespace samson {
             
             std::ostringstream output;
             
-            // Get information about size on memory / on disk
+            output << "\tQueue " << name << ":\n";
             
-            size_t size=0;
-            size_t size_on_memory=0;
-            size_t size_on_disk=0;
-            
-            std::list<Block*>::iterator b;
-            
-            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
-            {
-                size += (*b)->getSize();
-                size_on_memory += (*b)->getSizeOnMemory();
-                size_on_disk += (*b)->getSizeOnDisk();
-            }
-            
-            output << "[ Queue " << name << " : " << blocks.size() << " blocks with " << au::Format::string( size, "Bytes" );
-            output << " " << au::Format::percentage_string(size_on_memory, size) << " on memory";
-            output << " & " << au::Format::percentage_string(size_on_disk, size) << " on disk ] ";
+            // Information about channels
+            au::map<int , QueueChannel>::iterator c;
+            for ( c = channels.begin() ; c != channels.end() ; c++)
+                output << "\t\tChannel " << c->first << " : " << c->second->getStatus() << "\n";
             
             if( streamQueue )
-                output << " ( Process with " << streamQueue->operation() << " ) ";
+                output << "\t\t\t --> Process with " << streamQueue->operation() << "\n";
             
             return output.str();
         }
@@ -141,13 +179,6 @@ namespace samson {
             return qm->worker->network;
         }
 
-        size_t Queue::getSize()
-        {
-            size_t total = 0;
-            for (  au::list< Block >::iterator i = blocks.begin() ; i!= blocks.end() ; i++)
-                total += (*i)->getSize();
-            return total;
-        }
         
         
     }

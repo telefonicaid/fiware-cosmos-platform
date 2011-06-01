@@ -1,6 +1,23 @@
 SET (HEADERS
-	Host.h
+	Message.h
+	Network.h
+	NetworkInterface.h
+	Packet.h
+	Endpoint.h
+	iomInit.h
+	iomServerOpen.h
+	iomConnect.h
+	iomAccept.h
+	iomMsgSend.h
+	iomMsgRead.h
+	iomMsgAwait.h
+	Alarm.h
+	Misc.h
+	easyzlib.h
 	HostMgr.h
+	Host.h
+	PacketReceivedNotification.h
+
 	Network2.h
 	JobQueue.h
 	EndpointManager.h
@@ -16,7 +33,23 @@ SET (HEADERS
 )
 
 SET (SOURCES
+	Message.cpp
+	Network.cpp
+	NetworkInterface.cpp
+	Endpoint.cpp
+	iomInit.cpp
+	iomServerOpen.cpp
+	iomConnect.cpp
+	iomAccept.cpp
+	iomMsgSend.cpp
+	iomMsgRead.cpp
+	iomMsgAwait.cpp
+	Alarm.cpp
+	Misc.cpp
+	easyzlib.c
 	HostMgr.cpp
+	PacketReceivedNotification.cpp
+
 	Network2.cpp
 	JobQueue.cpp
 	EndpointManager.cpp

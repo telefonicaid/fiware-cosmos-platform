@@ -3,7 +3,7 @@
 * FILE                     Message.cpp - message definitions for all Samson IPC
 *
 */
-#include "Message.h"            // Own interface
+#include "samson/network/Message.h"            // Own interface
 
 
 

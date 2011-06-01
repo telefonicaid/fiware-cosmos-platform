@@ -10,17 +10,20 @@
 */
 #include "logMsg/logMsg.h"               // LM_TODO()
 
+#include "samson/common/samson.pb.h"     // google protocol buffers
 #include "engine/MemoryManager.h"        // MemoryManager
 #include "engine/Engine.h"               // engine::Engine
 #include "engine/Buffer.h"               // engine::Buffer
-#include "samson.pb.h"                   // google protocol buffers
+#include "Endpoint.h"                    // Endpoint
+#include "easyzlib.h"                    // zlib utility library
 #include "Message.h"                     // samson::MessageType 
-#include "ComponentId.h"
 
 
 
 namespace samson
 {
+	class Endpoint;
+
 	/** 
 	 Unique packet type sent over the network between controller, samson and delilah
 	 */
@@ -28,44 +31,44 @@ namespace samson
 	class Packet : public engine::Object
 	{
 	public:
-		ComponentId           component;  // Identifier of the sender of this packet
-		Message::MessageType  msgType;    // Message type (sent in the header of the network interface)
-		Message::MessageCode  msgCode;    // Message code (sent in the header of the network interface)
-		void*                 dataP;      // Raw data, mostly used for signaling
-		int                   dataLen;    // Length of raw data
-		network::Message*     message;    // Message with necessary fields (codified using Google Protocol Buffers)
-		engine::Buffer*       buffer;     // Data for key-values
+		int                   fromId;   // Identifier of the sender of this packet
+		Message::MessageType  msgType;  // Message type (sent in the header of the network interface)
+		Message::MessageCode  msgCode;  // Message code (sent in the header of the network interface)
+		void*                 dataP;    // Raw data, mostly used for signaling
+		int                   dataLen;  // Length of raw data
+		network::Message*     message;  // Message with necessary fields (codified using Google Protocol Buffers)
+		engine::Buffer*       buffer;   // Data for key-values
 		
-		Packet(ComponentId _component, Message::MessageType type, Message::MessageCode code, void* _dataP = NULL, int _dataLen = 0)
+		Packet(Message::MessageType type, Message::MessageCode code, void* _dataP = NULL, int _dataLen = 0)
 		{
-			component = _component;
-			msgType   = type;
-			msgCode   = code;
-			dataP     = _dataP;
-			dataLen   = _dataLen;
-			buffer    = NULL;
-			message   = new network::Message();
+			msgType  = type;
+			msgCode  = code;
+			dataP    = _dataP;
+			dataLen  = _dataLen;
+			buffer   = NULL;
+			message  = new network::Message();
+			fromId   = -9;
 		};
 
-		Packet(ComponentId _component, Message::MessageCode _msgCode)
+		Packet(Message::MessageCode _msgCode)
 		{
-			component = _component;
-			msgCode   = _msgCode;
-			msgType   = Message::Evt;
-			buffer    = NULL;
-			dataLen   = 0;
-			dataP     = NULL;
-			message   = new network::Message();
+			msgCode = _msgCode;
+			msgType = Message::Evt;
+			buffer  = NULL;
+			dataLen = 0;
+			dataP   = NULL;
+			message = new network::Message();
+			fromId  = -9;
 		};
 
 		Packet(Packet* p)
 		{
 			// Copy the message type
-			component = p->component;
-			msgCode   = p->msgCode;
-			msgType   = p->msgType;
-			dataLen   = 0;
-			dataP     = NULL;
+			msgCode = p->msgCode;
+			msgType = p->msgType;
+			fromId  = p->fromId;
+			dataLen = 0;
+			dataP   = NULL;
 
 			// Copy the buffer (if any)
 			if (p->buffer)

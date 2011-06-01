@@ -2,26 +2,20 @@
 #include <iostream>                 // std::cerr
 #include <signal.h>                 // kill(.)
 #include <stdlib.h>                 // exit()
-#include <sys/types.h>      
-#include <sys/wait.h>               // waitpid()
-
 #include "logMsg/logMsg.h"                 // LM_*
 #include "logMsg/traceLevels.h"            // LmtIsolated, etc. 
-
-#include "au/gpb.h"                     // au::readGPB & au::writeGPB
-
-#include "engine/MemoryManager.h"			// samson::MemoryManager
-
-#include "samson/common/SamsonSetup.h"                // Goyo: ss:SamsonSetup
-#include "samson/common/MemoryTags.h"                 // MemoryInput , MemoryOutputNetwork, ...
-#include "samson/common/Packet.h"                     // samson::Packet
 #include "samson/network/iomMsgAwait.h"            // iomMsgAwait
-#include "samson/worker/SamsonWorker.h"               // notification_samson_worker_send_trace
-#include "SharedMemoryManager.h"    
+#include "samson/common/SamsonSetup.h"                // Goyo: ss:SamsonSetup
+#include <sys/types.h>      
+#include <sys/wait.h>               // waitpid()
+#include "samson/isolated/ProcessItemIsolated.h"    // Own interface
+#include "engine/MemoryManager.h"			// samson::MemoryManager
 #include "SharedMemoryItem.h"           // engine::SharedMemoryItem
-#include "ProcessItemIsolated.h"    // Own interface
-
-
+#include "samson/isolated/SharedMemoryManager.h"    
+#include "au/gpb.h"                     // au::readGPB & au::writeGPB
+#include "samson/network/Packet.h"                     // samson::Packet
+#include "samson/worker/SamsonWorker.h"               // notification_samson_worker_send_trace
+#include "samson/common/MemoryTags.h"                 // MemoryInput , MemoryOutputNetwork, ...
 
 namespace samson
 {

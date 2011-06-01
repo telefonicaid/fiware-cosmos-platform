@@ -1,14 +1,13 @@
 #ifndef _H_SAMSON_STATUS
 #define _H_SAMSON_STATUS
 
-namesapace samson
+namespace samson
 {
   typedef enum Status
   {
     OK,
-    Error,
-    
-  }
+    Error    
+  } Status;
 
   const char* status( Status s )
   {

@@ -15,6 +15,12 @@ SET (HEADERS
 	coding.h
 	MemoryTags.h
 	KVInputVector.h
+	Packet.h
+	Message.h
+	NetworkInterface.h
+	PacketReceivedNotification.h
+	ComponentId.h
+	ComponentInfo.h
 )
 
 SET (SOURCES
@@ -27,6 +33,10 @@ SET (SOURCES
 	platformProcesses.cpp
 	coding.cpp
 	KVInputVector.cpp
+	Packet.cpp
+	Message.cpp
+	NetworkInterface.cpp
+	PacketReceivedNotification.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''

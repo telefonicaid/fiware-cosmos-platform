@@ -1,9 +1,11 @@
-
-#include "samson/network/NetworkInterface.h"	// Own interface
-#include "samson/network/Packet.h"				// samson::Packet
 #include "engine/Engine.h"				// samson::Engine
 #include "engine/EngineElement.h"		// samson::EngineElement
 #include "PacketReceivedNotification.h"	// samson::PacketReceivedNotification
+#include "Packet.h"				        // samson::Packet
+#include "NetworkInterface.h"	        // Own interface
+
+
+
 namespace samson
 {
 
@@ -33,19 +35,17 @@ void NetworkInterface::runInBackground(void)
 }
 	
 
-	/* ****************************************************************************
-	 *
-	 * send - send a packet (return a unique id to inform the notifier later)
-	 */
-	
-	void PacketReceiverInterface::_receive( Packet* packet )
-	{
-		LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet type %s",messageCode(packet->msgCode)));
+/* ****************************************************************************
+ *
+ * _receive - 
+ */
+void PacketReceiverInterface::_receive( Packet* packet )
+{
+	LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet type %s",messageCode(packet->msgCode)));
 		
-		// Using the engine to call the packet receiver asynchronously in a unique thread form
-		engine::Engine::add( new PacketReceivedNotification( this , packet ) );
-		//receive( packet );
-	}
-	
+	// Using the engine to call the packet receiver asynchronously in a unique thread form
+	engine::Engine::add( new PacketReceivedNotification( this , packet ) );
+	//receive( packet );
+}
 
 }

@@ -224,7 +224,7 @@ namespace samson
 		}
 		else
 		{
-			LM_W(("Num of maximum paralell outputs is OK. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (2*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size ));
+			///LM_W(("Num of maximum paralell outputs is OK. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (2*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size ));
 		}
 
 		

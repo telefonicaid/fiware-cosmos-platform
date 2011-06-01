@@ -335,12 +335,12 @@ namespace samson
             // Read a message from the process
             samson::network::MessageProcessPlatform * message;
             // No timeout since "SAMSON code" is executed on the other side ( Observed long delays in high-load scenario )
-            int c = au::readGPB( pipeFdPair1[0] , &message, -1 );
+            au::Status c = au::readGPB( pipeFdPair1[0] , &message, -1 );
             
-            if ( c != 0)
+            if ( c != au::OK )
             {
-                LM_T( LmtIsolated , ("Isolated process %s: Problems reading the 'begin' message [error code %d] ",getStatus().c_str() , c));
-                error.set("Problems starting background process");
+                LM_T( LmtIsolated , ("Isolated process %s: Problems reading the 'begin' message [error code '%s'] ",getStatus().c_str() , au::status(c)));
+                error.set( au::Format::string( "Problems starting background process '%s'", au::status(c)) );
                 return;     // Problem with this read
             }
             
@@ -390,16 +390,14 @@ namespace samson
             
             // Read a message from the process
             samson::network::MessageProcessPlatform * message;
-            int c = au::readGPB( pipeFdPair1[0] , &message, timeout_setup );
+            au::Status c = au::readGPB( pipeFdPair1[0] , &message, timeout_setup );
             
-            if( c != 0 )
+            if( c != au::OK )
             {
                 // Not possible to read the message for any reason
-				LM_T(LmtIsolated, ("Isolated process %s: Not possible to read a message with error_code %d", getStatus().c_str() , c ));
+				LM_T(LmtIsolated, ("Isolated process %s: Not possible to read a message with error_code' %s'", getStatus().c_str() , au::status(c) ));
                 
-				char errorText[256];
-                snprintf(errorText, sizeof(errorText), "Operation has crashed - [ Error code %d ]", c);
-				error.set(errorText);
+				error.set( au::Format::string( "Operation has crashed - [ Error code %s ]", au::status(c) ) );
                 return;
             }
             
@@ -427,12 +425,12 @@ namespace samson
         //LM_M(("Background process: Sending a message to process"));
         
         // Write the message
-		int write_ans = au::writeGPB(pipeFdPair1[1], message );
+        au::Status write_ans = au::writeGPB(pipeFdPair1[1], message );
         
         // If problems during write, abort
-        if( write_ans!= 0 )
+        if( write_ans!= au::OK )
         {                
-            LM_T(LmtIsolated,("Error sending message from process to platform write-error %d", write_ans));
+            LM_T(LmtIsolated,("Error sending message from process to platform write-error %s",  au::status( write_ans) ));
             if( isolated_process_as_tread )
                 return;
             else
@@ -443,14 +441,14 @@ namespace samson
         samson::network::MessagePlatformProcess *response;
 
         // Read the answer from the platform
-        int read_ans = au::readGPB(pipeFdPair2[0], &response, -1);
+        au::Status read_ans = au::readGPB(pipeFdPair2[0], &response, -1);
 
         // If problems during read, die
-        if( read_ans!=0)
+        if( read_ans != au::OK)
         {
-            LM_W(("Background process did not receive an answer from message with code %d to the platform. Error code %d", 
-                    message->code(), read_ans));
-            LM_T(LmtIsolated,("Error sending message from process to platform read-error %d", read_ans));
+            LM_W(("Background process did not receive an answer from message with code %d to the platform. Error code '%s'", 
+                  message->code(), au::status(read_ans) ));
+            LM_T(LmtIsolated,("Error sending message from process to platform read-error '%s'", au::status(read_ans) ));
             if( isolated_process_as_tread )
                 return;
             else

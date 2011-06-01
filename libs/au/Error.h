@@ -1,5 +1,5 @@
-#ifndef _H_AU_STATUS
-#define _H_AU_STATUS
+#ifndef _H_AU_ERROR
+#define _H_AU_ERROR
 
 #include <set>
 #include <sstream>		// std::ostringstream

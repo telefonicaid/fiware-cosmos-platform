@@ -1,4 +1,5 @@
 SET (HEADERS
+status.h
 Descriptors.h
 gpb.h
 Environment.h

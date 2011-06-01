@@ -1,9 +1,60 @@
 #ifndef _H_AU_GPB
 #define _H_AU_GPB
 
+#include <sys/time.h>           // struct timeval
+#include <sys/types.h>          // fd_set
+#include <sys/select.h>         // select, ...
+
+#include "logMsg/logMsg.h"             // LM_*
+#include "logMsg/traceLevels.h"        // Trace Levels
+
+#include "samson/network/Endpoint.h"           // Endpoint
+#include "samson/network/iomMsgAwait.h"        // Own interface
+
+#include <assert.h>
+
+
+#include "au/status.h"  // au::Status
 
 namespace au
 {
+    
+    Status iomMsgAwait( int fd, int secs )
+    {
+        struct timeval  tv;
+        struct timeval* tvP;
+        int             fds;
+        fd_set          rFds;
+        
+        if (secs == -1)
+            tvP = NULL;
+        else
+        {
+            tv.tv_sec  = secs;
+            tv.tv_usec = 0;
+            
+            tvP        = &tv;
+        }
+        
+        do
+        {
+            FD_ZERO(&rFds);
+            FD_SET(fd, &rFds);
+            fds = select(fd + 1, &rFds, NULL, NULL, tvP);
+        } while ((fds == -1) && (errno == EINTR));
+        
+        if (fds == -1)
+            LM_RP( Select , ("iomMsgAwait: select"));
+        else if (fds == 0)
+            LM_RE( Timeout , ("iomMsgAwait: timeout"));
+        else if ((fds > 0) && (!FD_ISSET(fd, &rFds)))
+            LM_X(1, ("iomMsgAwait: some other fd has a read pending - this is impossible !"));
+        else if ((fds > 0) && (FD_ISSET(fd, &rFds)))
+            return OK;
+        
+        LM_X(1, ("iomMsgAwait: Other very strange error"));
+        return Error;
+    }    
     
     
     struct GPBHeader
@@ -29,31 +80,36 @@ namespace au
     // Read a google protocol buffer message    
     
     template <class T>
-    int readGPB( int fd , T** t , int time_out )
+    au::Status readGPB( int fd , T** t , int time_out )
     {
         
         //LM_M(("Reading a GPB message from fd %d ", fd ));
         
-        int iom = iomMsgAwait( fd , time_out, 0);// Wait until this is ready
+        Status iom = iomMsgAwait( fd , time_out );// Wait until this is ready
         
-        if (iom != 1)
-            return 1;   // Error in the isolated process
+        if (iom != OK)
+        {
+            if( iom == Timeout)
+                return GPB_Timeout;   // Timeout
+            else
+                return iom;
+        }
         
         GPBHeader header;
         int nb = read( fd , &header , sizeof(header) );
 
         if( nb == 0)
-            return 7;
+            return GPB_ClosedPipe;
         
         if( nb < 0)
-            return 8;
+            return GPB_ReadError;
 
         if( !header.check() )
-            return 8;
+            return GPB_CorruptedHeader;
         
         // If not received the rigth size, return NULL
         if (nb != sizeof(header))
-            return 2;   // Error reading the size
+            return GPB_WrongReadSize;   // Error reading the size
         
         //LM_M(("Reading a GPB message from fd %d (size %d)", fd , (int) size ));
         
@@ -70,7 +126,7 @@ namespace au
         if( nb != header.size )
         {
             free( data );
-            return 5;
+            return GPB_ReadError;
         }
         
         *t = new T();
@@ -82,22 +138,22 @@ namespace au
         {
             LM_W(("Error parsing a GPB message of %d bytes", header.size));
             delete (*t);
-            return 4; // Error parsing the document
+            return GPB_ReadErrorParsing; // Error parsing the document
         }
         
-        return 0;   // Correct
+        return OK;   // Correct
         
     }
     
     // Write a google protocol buffer message    
     
     template <class T>
-    int writeGPB( int fd , T* t  )
+    Status writeGPB( int fd , T* t  )
     {
         //LM_M(  ("Writing a GPB message to fd %d ( Size: %d )", fd , (int) t->ByteSize() ));
         
         if( !t->IsInitialized()  )
-            return 9;
+            return GPB_NotInitializedMessage;
         
         GPBHeader header;
         header.init(  t->ByteSize() );
@@ -115,7 +171,7 @@ namespace au
         if( !serialize )
         {
             free( data );
-            return 4;
+            return GPB_WriteErrorSerializing;
         }
         
         // If not received the rigth size, return NULL
@@ -123,7 +179,7 @@ namespace au
         if (nw != sizeof(header))
         {
             free( data );
-            return 2;
+            return GPB_WriteError;
         }
         
         // If not received the rigth size, return NULL
@@ -131,12 +187,12 @@ namespace au
         if (nw != header.size)
         {
             free( data );
-            return 5;
+            return GPB_WriteError;
         }
 
         free( data );
         
-        return 0;
+        return OK;
     } 
     
 }

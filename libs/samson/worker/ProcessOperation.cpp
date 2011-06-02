@@ -169,7 +169,7 @@ namespace samson {
 		KVSetStruct* inputStructs = (KVSetStruct*) malloc( sizeof(KVSetStruct) * num_inputs );
 		
 		// Ini the operation
-		parserOut->init();
+		parserOut->init(writer);
 		
 		// form operations with the hash-groups
 		for (uint32 hg = 0 ; hg < num_hash_groups ; hg++ )
@@ -211,7 +211,7 @@ namespace samson {
 
 		
 		free(inputStructs);
-		parserOut->finish();
+		parserOut->finish(writer);
         
         delete parserOut;
         
@@ -284,7 +284,7 @@ namespace samson {
 		
 		//std::cout << "Reduce everything ready...\n";
 		
-		parserOutReduce->init();
+		parserOutReduce->init(writer);
 		
 		size_t cumulated_size = 0;
         size_t total_size = 0;
@@ -381,7 +381,8 @@ namespace samson {
 		}
 		
 		free(inputStructs);
-		parserOutReduce->finish();
+
+		parserOutReduce->finish(writer);
         
         delete parserOutReduce;
         
@@ -450,7 +451,7 @@ namespace samson {
 		
 		KVSetStruct* inputStructs = (KVSetStruct*) malloc( sizeof(KVSetStruct) * num_inputs );
 		
-		map->init();
+		map->init(writer);
 		
 		
 		for (uint32 hg = 0 ; hg < num_hash_groups ; hg++)
@@ -491,7 +492,7 @@ namespace samson {
 		}
 		
 		free(inputStructs);
-		map->finish();
+		map->finish(writer);
         
         
         // Delete the map operation
@@ -566,7 +567,7 @@ namespace samson {
 		
 		//std::cout << "Reduce everything ready...\n";
 		
-		reduce->init();
+		reduce->init(writer);
 		
 		
 		for (uint32 hg = 0 ; hg < num_hash_groups ; hg++)
@@ -650,7 +651,7 @@ namespace samson {
 		}
 		
 		free(inputStructs);
-		reduce->finish();
+		reduce->finish(writer);
         
         // Delete the operation 
         delete reduce;

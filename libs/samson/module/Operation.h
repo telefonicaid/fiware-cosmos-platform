@@ -217,7 +217,7 @@ namespace samson {
 				case generator:         return "generator"; break;
 				case script:            return "script";	break;
 				case system:            return "system";	break;
-				case unknown:           return "unkown";	break;
+				case unknown:           return "unknown";	break;
 			}
 			return "?";
 		}
@@ -334,8 +334,12 @@ namespace samson {
 		 \param writer element to deliver output value pairs \n
 		 */
 		
+		virtual void init(KVWriter *writer){};      //Called once before running any operation
+
 		virtual void run( KVWriter *writer )=0;
 		
+		virtual void finish(KVWriter *writer){};	//Called once after all operations are executed
+
 	};
 	
 	/**
@@ -354,8 +358,13 @@ namespace samson {
 		/**
 		 Main function to overload by the operation
 		 */
+
+		virtual void init(KVWriter *writer){};      //Called once before running any operation
+
 		virtual void run(KVSetStruct* inputs , KVWriter *writer )=0;
 		
+		virtual void finish(KVWriter *writer){};	//Called once after all operations are executed
+
 	};
 	
 
@@ -375,7 +384,12 @@ namespace samson {
 		/**
 		 Main function to overload by the operation
 		 */
+
+		virtual void init(TXTWriter *writer){};      //Called once before running any operation
+
 		virtual void run(KVSetStruct* inputs , TXTWriter *writer )=0;
+
+		virtual void finish(TXTWriter *writer){};	//Called once after all operations are executed
 
 	};
 
@@ -395,7 +409,12 @@ namespace samson {
 		/**
 		 Main function to overload by the operation
 		 */
+
+		virtual void init(TXTWriter *writer){};      //Called once before running any operation
+
 		virtual void run(KVSetStruct* inputs , TXTWriter *writer )=0;
+
+		virtual void finish(TXTWriter *writer){};	//Called once after all operations are executed
         
 	};
 	
@@ -418,8 +437,13 @@ namespace samson {
 		/**
 		 Main function to overload by the map
 		 */
+
+		virtual void init(KVWriter *writer){};      //Called once before running any operation
+
 		virtual void run(KVSetStruct* inputs, samson::KVWriter *writer) = 0;
 		
+		virtual void finish(KVWriter *writer){};	//Called once after all operations are executed
+
 	};
 	
 	
@@ -449,7 +473,12 @@ namespace samson {
 	class Parser : public OperationInstance
 	{
 	public:
+
+		virtual void init(KVWriter *writer){};      //Called once before running any operation
+
 		virtual void run( char *data , size_t length , samson::KVWriter *writer )=0;
+
+		virtual void finish(KVWriter *writer){};	//Called once after all operations are executed
 	};
 	
 }

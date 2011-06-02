@@ -236,8 +236,6 @@ namespace samson
 			engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "ProcessTXTWriter", *size , MemoryOutputNetwork );
 			if( !buffer )
 				LM_X(1,("Internal error"));
-            
-            
 			
 			// copy the entire buffer to here
 			memcpy(buffer->getData(), data, *size);

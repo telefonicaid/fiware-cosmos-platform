@@ -196,9 +196,13 @@ namespace samson {
 	{
 		// Send code to be understoo
         if ( finish ) 
+        {
             workerTaskItem->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH );
+        }
         else
+        {
             workerTaskItem->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER );
+        }
 		
 		// Note: It is not necessary to delete item since it has been done inside "freeSharedMemory"
         
@@ -208,12 +212,15 @@ namespace samson {
 	
 	void ProcessTXTWriter::emit( const char * _data , size_t _size)
 	{
-		
 		if( *size + _size  > max_size )
+		{
 			flushBuffer(false);
+		}
 		
 		memcpy(data+ (*size), _data, _size);
 		*size += _size;
 	}
+
+
 	
 }

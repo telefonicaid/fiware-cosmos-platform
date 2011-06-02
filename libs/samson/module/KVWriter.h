@@ -3,8 +3,6 @@
 
 #include <samson/module/DataInstance.h>        /* DataInstance                             */
 
-
-
 namespace samson {
 
 	class KVWriter

@@ -55,9 +55,9 @@ namespace samson
             
 
             // Non compressed fiels
-            parser->init();
+            parser->init(writer);
             parser->run( data , size ,  writer );
-            parser->finish();
+            parser->finish(writer);
             
             // Detele the created instance
             delete parser;

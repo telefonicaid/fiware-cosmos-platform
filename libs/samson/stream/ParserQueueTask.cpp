@@ -29,7 +29,7 @@ namespace samson {
             parser->operationController = this;
             
 
-            parser->init();
+            parser->init(writer);
             
             std::set< Block* >::iterator b;
             for ( b = blocks.begin() ; b != blocks.end() ; b++)
@@ -43,7 +43,7 @@ namespace samson {
 
             }
             
-            parser->finish();
+            parser->finish(writer);
             
             // Detele the created instance
             delete parser;
@@ -79,7 +79,7 @@ namespace samson {
             map->tracer = this;
             map->operationController = this;
             
-            map->init();
+            map->init(writer);
             
             std::set< Block* >::iterator b;
             for ( b = blocks.begin() ; b != blocks.end() ; b++)
@@ -129,7 +129,7 @@ namespace samson {
                 
             }
             
-            map->finish();
+            map->finish(writer);
             
             // Detele the created instance
             delete map;

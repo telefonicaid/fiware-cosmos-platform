@@ -43,11 +43,13 @@ namespace samson {
                     
                     // Generate the key-values
                     generateKeyValues( getWriter() );
+                    LM_M(("StreamProcessBase::runIsolated calls getWriter()->flushBuffer(true);\n"));
                     getWriter()->flushBuffer(true);
                     break;
                 case txt:
                     // Generate TXT content using the entire buffer
                     generateTXT( getTXTWriter() );
+                    LM_M(("StreamProcessBase::runIsolated calls getTXTWriter()->flushBuffer(true);\n"));
                     getTXTWriter()->flushBuffer(true);
                     break;
             }

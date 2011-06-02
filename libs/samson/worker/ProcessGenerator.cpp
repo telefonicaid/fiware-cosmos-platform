@@ -33,9 +33,9 @@ namespace samson {
 		generator->tracer = this;						// To be able to send traces
 		generator->operationController = this;
 
-		generator->init();
+		generator->init(writer);
 		generator->run( writer );
-		generator->finish();
+		generator->finish(writer);
 		
 		delete generator;
 		

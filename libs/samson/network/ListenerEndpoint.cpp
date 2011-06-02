@@ -11,6 +11,8 @@
 */
 #include <unistd.h>             // close
 #include <fcntl.h>              // F_SETFD
+#include <sys/socket.h>
+#include <netdb.h>
 
 #include "EndpointManager.h"    // EndpointManager
 #include "UnhelloedEndpoint.h"  // UnhelloedEndpoint
@@ -117,6 +119,38 @@ Endpoint2::Status ListenerEndpoint::init(void)
 
 
 
+static void newWayCheck(struct sockaddr_in sin, int len)
+{
+	int   s;
+	char  hostname[128];
+	char  servicename[128];
+	int   flags;
+
+	// 1. Get name with domain
+	flags = 0;
+	memset(hostname,    0, sizeof(hostname));
+	memset(servicename, 0, sizeof(servicename));
+	s = getnameinfo((const struct sockaddr*) &sin, len, hostname, sizeof(hostname), servicename, sizeof(servicename), flags);
+	LM_M(("Name: '%s', Service: '%s'", hostname, servicename));
+
+	// 2. Get name without domain
+	flags = NI_NOFQDN;
+	memset(hostname,    0, sizeof(hostname));
+	memset(servicename, 0, sizeof(servicename));
+	s = getnameinfo((const struct sockaddr*) &sin, len, hostname, sizeof(hostname), servicename, sizeof(servicename), flags);
+	LM_M(("Name: '%s', Service: '%s'", hostname, servicename));
+
+	// 3. Numeric form of the hostname
+	flags = NI_NUMERICHOST;
+	memset(hostname,    0, sizeof(hostname));
+	memset(servicename, 0, sizeof(servicename));
+	s = getnameinfo((const struct sockaddr*) &sin, len, hostname, sizeof(hostname), servicename, sizeof(servicename), flags);
+	LM_M(("Name: '%s', Service: '%s'", hostname, servicename));
+
+}
+
+
+
 /* ****************************************************************************
 *
 * accept - 
@@ -135,6 +169,8 @@ UnhelloedEndpoint* ListenerEndpoint::accept(void)
 	LM_T(LmtAccept, ("Accepting incoming connection"));
 	if ((fd = ::accept(rFd, (struct sockaddr*) &sin, &len)) == -1)
 		LM_RP(NULL, ("accept"));
+
+	newWayCheck(sin, len);
 
 	ip2string(sin.sin_addr.s_addr, hostName, hostNameLen);
 

@@ -120,7 +120,7 @@ void HostMgr::localIps(void)
 	if (getdomainname(domain, sizeof(domain)) == -1)
 		LM_X(1, ("getdomainname: %s", strerror(errno)));
 
-	LM_TODO(("Would gethostname ever returned the 'domained' name ?"));
+	LM_TODO(("Would gethostname ever return the 'domained' name ?"));
 
 	if (domainedName[0] != 0)
 	{
@@ -221,6 +221,39 @@ static bool onlyDigitsAndDots(const char* string)
 
 
 
+static void newCheck(const char* name, const char* ip)
+{
+	int               s;
+	char*             node = (char*) name;
+    struct addrinfo*  result;
+    struct addrinfo*  res;
+
+	if (node == NULL)
+		node = (char*) ip;
+
+	s = getaddrinfo(node, NULL, NULL, &result);
+	if (s == 0)
+	{
+		for (res = result; res != NULL; res = res->ai_next)
+		{   
+			char hostname[NI_MAXHOST] = "";
+			
+			s = getnameinfo(res->ai_addr, res->ai_addrlen, hostname, NI_MAXHOST, NULL, 0, 0); 
+			if (s != 0)
+			{
+				LM_E(("error in getnameinfo: %s", gai_strerror(s)));
+				continue;
+			}
+			if (hostname[0] != 0)
+				LM_M(("hostname: %s", hostname));
+		}
+	}
+
+	freeaddrinfo(result);
+}
+
+
+
 /* ****************************************************************************
 *
 * HostMgr::insert - 
@@ -234,6 +267,8 @@ Host* HostMgr::insert(const char* name, const char* ip)
 
 	if ((name == NULL) && (ip == NULL))
 		LM_X(1, ("name AND ip NULL - cannot add a ghost host ..."));
+
+	newCheck(name, ip);
 
 	if (name == NULL)
 	{

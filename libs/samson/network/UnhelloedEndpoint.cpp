@@ -67,9 +67,10 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 	switch (headerP->code)
 	{
 	case Message::Hello:
-		LM_T(LmtUnhelloed, ("Read a Hello message"));
 		helloP = (Message::HelloData*) dataP;
 		s = helloDataSet((Type) helloP->type, helloP->id);
+		LM_T(LmtUnhelloed, ("Got a Hello %s from %s", messageType(headerP->type), name()));
+		
 		type = Unhelloed;
 		if (s != OK)
 		{
@@ -93,7 +94,22 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 			rFd   = -1;
 			wFd   = -1;
 			epMgr->show("Changed Unhelloed to Delilah, The Unhelloed marked with ScheduledForRemoval", true);
+
+			if (epMgr->me->type == Controller)
+			{
+				Packet* p = new Packet(Message::Id);
+				++epMgr->delilahId;
+				LM_T(LmtDelilahId, ("sending delilahId %d to %s", epMgr->delilahId, name()));
+				ep->id = epMgr->delilahId;
+				ep->nameSet(ep->type, ep->id, ep->host);
+
+				p->dataP   = &epMgr->delilahId;
+				p->dataLen = sizeof(epMgr->delilahId);
+				p->msgType = Message::Evt;
+				ep->send(NULL, p);
+			}
 		}
+			
 		else if ((samson::Endpoint2::Type) helloP->type == Worker)
 		{
 			LM_T(LmtUnhelloed, ("Time to update corresponding Worker endpoint and remove myself ..."));

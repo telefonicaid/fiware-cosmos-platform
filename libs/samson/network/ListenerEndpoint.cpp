@@ -133,7 +133,6 @@ UnhelloedEndpoint* ListenerEndpoint::accept(void)
 	memset((char*) &sin, 0, len);
 
 	LM_T(LmtAccept, ("Accepting incoming connection"));
-	LM_M(("Accepting incoming connection"));
 	if ((fd = ::accept(rFd, (struct sockaddr*) &sin, &len)) == -1)
 		LM_RP(NULL, ("accept"));
 
@@ -166,8 +165,7 @@ Endpoint2::Status ListenerEndpoint::msgTreat2(void)
 	if (ep == NULL)
 		LM_RE(AcceptError, ("Endpoint2::accept returned NULL"));
 
-	LM_T(LmtHello, ("Sending hello"));
-	LM_M(("Sending hello to %s", ep->name()));
+	LM_T(LmtHello, ("Sending hello to %s", ep->name()));
 	ep->helloSend(Message::Msg);
 	ep->state = Ready;
 	return Endpoint2::OK;

@@ -2489,7 +2489,7 @@ void Network::helloReceived(Endpoint* ep, Message::HelloData* hello, Message::He
 	helloInfoCopy(ep, hello);
 	ep->helloReceived = true;
 
-	LM_M(("Hello received: %s %s", ep->typeName() , endpoint[ME]->typeName() ));;
+	LM_T(LmtHello, ("Hello received: %s %s", ep->typeName() , endpoint[ME]->typeName() ));;
 
 	if ((ep->type == Endpoint::Worker) || (ep->type == Endpoint::Delilah))
 	{

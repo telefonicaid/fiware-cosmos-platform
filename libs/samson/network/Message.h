@@ -80,6 +80,7 @@ typedef enum MessageCode
 	ProcessList                     = CODE('P', 'r', 'L', ' '),
     PushBlock                       = CODE('P', 'B', 'l', ' '),
     PushBlockResponse               = CODE('P', 'B', 'r', ' '),
+	Id                              = CODE('I', 'd', ' ', ' '),
     Unknown                         = CODE('U', 'n', 'k', ' ')
 } MessageCode;
 

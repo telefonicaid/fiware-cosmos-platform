@@ -83,6 +83,7 @@ typedef enum TraceLevels
 
 	LmtNetworkInterface          = 120,
 	LmtDelilah,
+	LmtDelilahId,
 	LmtLogServer,
 	LmtSpawn,
 

@@ -46,26 +46,27 @@ public:
 	void  setPacketReceiver(PacketReceiverInterface* receiver);
 	void  setDataReceiver(DataReceiverInterface* receiver);
 
-	PacketReceiverInterface*           packetReceiver;
-	DataReceiverInterface*             dataReceiver;
+	PacketReceiverInterface*   packetReceiver;
+	DataReceiverInterface*     dataReceiver;
 
 
 
 	//
 	// NetworkInterface stuff
 	//
-	bool    ready(void);
-	void    initAsSamsonController(void);
-	int     controllerGetIdentifier(void);
-	int     workerGetIdentifier(int);
-	int     getMyidentifier(void);
-	int     getNumWorkers(void);
-	int     getWorkerFromIdentifier(int);
-	void    run(void);
-	void    quit(void);
-	void    delilahSend(PacketSenderInterface*, Packet*);
-	void    _send(PacketSenderInterface*, int, Packet*);
-	size_t  send(PacketSenderInterface*, int, Packet*);
+	bool         ready(void);
+	void         initAsSamsonController(void);
+	int          controllerGetIdentifier(void);
+	int          workerGetIdentifier(int);
+	int          getMyidentifier(void);
+	int          getNumWorkers(void);
+	int          getWorkerFromIdentifier(int);
+	void         run(void);
+	void         quit(void);
+	void         delilahSend(PacketSenderInterface*, Packet*);
+	void         _send(PacketSenderInterface*, int, Packet*);
+	size_t       send(PacketSenderInterface*, int, Packet*);
+	std::string  getState(std::string selector = NULL);
 };
 
 }

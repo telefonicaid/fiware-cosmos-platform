@@ -73,6 +73,16 @@ Endpoint2::Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* 
 		epMgr->show("Delilah connected to Workers");
 		break;
 
+	case Message::Id:
+		if (epMgr->me->type == Delilah)
+		{
+			epMgr->me->id = *((int*) dataP);
+			LM_T(LmtDelilahId, ("Delilah got ID %d from controller", epMgr->me->id));
+		}
+		else
+			LM_X(1, ("Got an ID from Controller - SW bug!"));
+		break;
+
 	default:
 		if (epMgr->packetReceiver == NULL)
 			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(headerP->code), messageType(headerP->type), name()));

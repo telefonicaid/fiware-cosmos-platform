@@ -127,6 +127,8 @@ Endpoint2::Endpoint2
 
 	msgsIn        = 0;
 	msgsOut       = 0;
+	bytesIn       = 0;
+	bytesOut      = 0;
 	msgsInErrors  = 0;
 	msgsOutErrors = 0;
 
@@ -430,6 +432,8 @@ Endpoint2::Status Endpoint2::partWrite(void* dataP, int dataLen, const char* wha
 	}
 
 	LM_WRITES(name(), what, dataP, dataLen, LmfByte);
+
+	bytesOut += tot;
 	return OK;
 }
 
@@ -601,6 +605,7 @@ Endpoint2::Status Endpoint2::realsend
 	   delete packetP;
 	}
 	
+	msgsOut += 1;
 	return OK;
 }
 
@@ -644,6 +649,7 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, co
 	*bufLenP = tot;
 	LM_READS(name(), what, buf, tot, LmfByte);
 
+	bytesIn += tot;
 	return OK;
 }
 
@@ -739,6 +745,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 		LM_X(1, ("Got called with NULL buffer length pointer. This is a programmer's bug and must be fixed. Right now. Come on, do it!"));
 	*dataLenP = totalBytesReadExceptHeader;
 
+	msgsIn += 1;
 	return OK;
 }
 
@@ -1144,9 +1151,11 @@ Endpoint2::Status Endpoint2::helloDataSet(Type _type, int _id)
 *
 * helloSend - 
 */
-void Endpoint2::helloSend(Message::MessageType type)
+void Endpoint2::helloSend(Message::MessageType msgType)
 {
 	Message::HelloData  hello;
+
+	LM_T(LmtHello, ("Sending Hello to %s", name()));
 
 	memset(&hello, 0, sizeof(hello));
 
@@ -1156,10 +1165,10 @@ void Endpoint2::helloSend(Message::MessageType type)
 	hello.coreNo   = 0;
 	hello.id       = epMgr->me->id;
 
-	LM_T(LmtHello, ("sending hello %s to '%s' (my type: '%s', id: %d)", messageType(type), name(), epMgr->me->typeName(), epMgr->me->id));
+	LM_T(LmtHello, ("sending hello %s to '%s' (my type: '%s', id: %d)", messageType(msgType), name(), epMgr->me->typeName(), epMgr->me->id));
 
 	Status s;
-	if ((s = realsend(type, Message::Hello, &hello, sizeof(hello))) != OK)
+	if ((s = realsend(msgType, Message::Hello, &hello, sizeof(hello))) != OK)
 		LM_E(("Error sending Hello to %s: %s", name(), status(s)));
 }
 
@@ -1173,6 +1182,9 @@ void Endpoint2::close(void)
 {
 	if (state != ScheduledForRemoval)
 		state = Disconnected;
+
+	if (type == Unhelloed)
+		state = ScheduledForRemoval;
 
 	if (rFd != -1)
 		::close(rFd);

@@ -81,6 +81,7 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 
 	workers          = 0;
 	endpoints        = 0;
+	delilahId        = 0;
 
 	endpoint         = NULL;
 	me               = NULL;
@@ -90,6 +91,8 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 
 	packetReceiver   = NULL;
 	dataReceiver     = NULL;
+
+	LM_T(LmtDelilah, ("Set delilahId to %d", delilahId));
 
 
 
@@ -260,7 +263,6 @@ void EndpointManager::workersConnect(void)
 		else
 		{
 			LM_T(LmtConnect, ("Connecting to %s %d in %s", ep->typeName(), ep->idGet(), ep->host->name));
-			LM_M(("Connecting to %s %d in %s", ep->typeName(), ep->idGet(), ep->host->name));
 			ep->connect();
 		}
 	}
@@ -831,7 +833,7 @@ void EndpointManager::periodic(void)
 	//
 	if (me->type == Endpoint2::Worker || me->type == Endpoint2::Delilah)
 	{
-		LM_M(("periodic - reconnecting to worker/controller?"));
+		LM_T(LmtReconnect, ("periodic - reconnecting to worker/controller?"));
 
 		show("periodic");
 		LM_T(LmtTimeout, ("In periodic %d - any controller/workers to connect to?", periodicNo));
@@ -840,7 +842,7 @@ void EndpointManager::periodic(void)
 
 		if ((controller->state != Endpoint2::Ready) && (controller->state != Endpoint2::Connected))
 		{
-			LM_M(("Connecting to controller"));
+			LM_T(LmtReconnect, ("Connecting to controller"));
 			controller->connect();
 		}
 

@@ -48,6 +48,7 @@ class EndpointManager
 {
 	friend class Network2;
 	friend class Endpoint2;
+	friend class UnhelloedEndpoint;
 
 public:
 	enum CallbackId
@@ -67,7 +68,7 @@ private:
 	Endpoint2**               endpoint;
 	unsigned int              endpoints;
 	unsigned int              workers;
-
+	int                       delilahId;
 	int                       tmoSecs;
 	int                       tmoUSecs;
 	ProcessVector*            procVec;

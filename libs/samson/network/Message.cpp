@@ -70,6 +70,7 @@ char* messageCode(MessageCode code)
 	case ProcessList:                      return (char*) "ProcessList";
     case PushBlock:                        return (char*) "PushBlock";
     case PushBlockResponse:                return (char*) "PushBlockResponse";
+	case Id:                               return (char*) "Id";
 	case Unknown:                          return (char*) "Unknown";
 	}
 

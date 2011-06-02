@@ -177,13 +177,15 @@ private:
 	pthread_t            readerId;
 	pthread_t            writerId;
 
+public:
 	// Statistics
 	int                  msgsIn;
 	int                  msgsOut;
+	int                  bytesIn;
+	int                  bytesOut;
 	int                  msgsInErrors;
 	int                  msgsOutErrors;
 
-public:
 	EndpointManager*     epMgrGet();
 
 	static const char*   typeName(Type type);

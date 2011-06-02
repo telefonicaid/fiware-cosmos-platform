@@ -407,6 +407,40 @@ void SamsonSpawner::spawn(Process* process)
 
 
 
+void SamsonSpawner::processesTest(ProcessVector* procVec)
+{
+	Process* p0 = &procVec->processV[0];
+
+	LM_T(LmtStructPadding, ("sizeof(Process):           %d", sizeof(Process)));
+
+	LM_T(LmtStructPadding, ("Offset for type:           %d", (long) (&p0->type) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for id:             %d", (long) (&p0->id) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for name:           %d", (long) (p0->name) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for alias:          %d", (long) (p0->alias) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for host:           %d", (long) (p0->host) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for port:           %d", (long) (&p0->port) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for pad01:          %d", (long) (&p0->pad01) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for state:          %d", (long) (&p0->state) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for pad02:          %d", (long) (&p0->pad02) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for verbose:        %d", (long) (&p0->verbose) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for debug:          %d", (long) (&p0->debug) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for reads:          %d", (long) (&p0->reads) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for writes:         %d", (long) (&p0->writes) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for hidden:         %d", (long) (&p0->hidden) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for toDo:           %d", (long) (&p0->toDo) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for traceLevels:    %d", (long) (p0->traceLevels) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for sendsLogs:      %d", (long) (&p0->sendsLogs) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for workers:        %d", (long) (&p0->workers) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for controllerHost: %d", (long) (p0->controllerHost) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for endpoint:       %d", (long) (&p0->endpoint) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for starterP:       %d", (long) (&p0->starterP) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for spawnerP:       %d", (long) (&p0->spawnerP) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for pid:            %d", (long) (&p0->pid) - (long) p0));
+	LM_T(LmtStructPadding, ("Offset for startTime:      %d", (long) (&p0->startTime) - (long) p0));
+}
+
+
+
 /* ****************************************************************************
 *
 * processesStart - 
@@ -417,6 +451,10 @@ void SamsonSpawner::processesStart(ProcessVector* procVec)
 	int       ix;
 	Host*     hostP;
 	int       startedProcesses = 0;
+
+	networkP->epMgr->hostMgr->list("trying to start my processes");
+	processListShow("trying to start my processes", true);
+	processesTest(procVec);
 
 	for (ix = 0; ix < procVec->processes; ix++)
 	{

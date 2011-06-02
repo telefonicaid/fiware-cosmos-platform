@@ -58,35 +58,37 @@ typedef enum ProcessType
 */
 typedef struct Process
 {
-	char                 name[32];
-	char                 alias[32];
-	char                 host[32];
-	unsigned short       port;
-	int                  state;
-	bool                 verbose;
-	bool                 debug;
-	bool                 reads;
-	bool                 writes;
-	bool                 hidden;
-	bool                 toDo;
-	char                 traceLevels[256];
-	bool                 sendsLogs;
-	int                  workers;
+	samson::ProcessType      type;
+	int                      id;
+	char                     name[32];
+	char                     alias[32];
+	char                     host[32];
+	unsigned short           port;
+	unsigned short           pad01;
+	int                      state;
+	int                      pad02;
+	bool                     verbose;
+	bool                     debug;
+	bool                     reads;
+	bool                     writes;
+	bool                     hidden;
+	bool                     toDo;
+	char                     traceLevels[256];
+	bool                     sendsLogs;
+	int                      workers;
+	char                     controllerHost[32];  // For Supervisor and Spawner
+	
 
-	char                 controllerHost[32];  // For Supervisor and Spawner
+	struct timeval           startTime;           // For Spawner
+	pid_t                    pid;                 // For Spawner
 
-	pid_t                pid;                 // For Spawner
-	struct timeval       startTime;           // For Spawner
-
-	samson::ProcessType      type;                // For Spawner and ...
 	samson::Endpoint*        endpoint;            // For ...
-	Starter*             starterP;            // For Supervisor only
+	Starter*                 starterP;            // For Supervisor only
 	struct samson::Process*  spawnerP;            // For Supervisor only
 
 #ifndef __LP64__
-	int                 padding[6];            // To make this struct the same size in 32 and 64 bit machines
+	int                      pad03[6];            // three pointers - to make this struct the same size in 32 and 64 bit machines
 #endif
-	int                 id;
 } Process;
 
 

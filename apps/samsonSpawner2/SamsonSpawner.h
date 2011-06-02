@@ -46,6 +46,7 @@ private:
 	void               spawn(Process* process);
 
 	void               processesStart(ProcessVector* procVec);
+	void               processesTest(ProcessVector* procVec);
 	void               localProcessesKill(void);
 };
 

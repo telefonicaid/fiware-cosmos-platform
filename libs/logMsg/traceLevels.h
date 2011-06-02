@@ -125,7 +125,7 @@ typedef enum TraceLevels
 	LmtOperations,                   // Operations organization (map & reduce level)
 	LmtReset,
 	LmtMe,
-
+	LmtStructPadding,
 	LmtIsolated,
 	
 	LmtUser01 = 250,

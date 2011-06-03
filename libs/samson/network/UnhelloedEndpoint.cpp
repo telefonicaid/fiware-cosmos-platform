@@ -38,7 +38,7 @@ UnhelloedEndpoint::UnhelloedEndpoint
 	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
-) : Endpoint2(_epMgr, Unhelloed, -1, _host, _port, _rFd, _wFd)
+) : Endpoint2(_epMgr, Unhelloed, 0, _host, _port, _rFd, _wFd)
 {
 }
 
@@ -188,7 +188,7 @@ Endpoint2::Status UnhelloedEndpoint::helloDataSet(Type _type, int _id)
 {
 	if (epMgr->lookup(_type, _id) != NULL)
 	{
-		if ((_type != Worker) && (_type != Controller))
+		if ((_type != Worker) && (_type != Controller) && (_type != Delilah))
 			LM_RE(Duplicated, ("Duplicated process: %s%d", typeName(_type), _id));
 	}
 

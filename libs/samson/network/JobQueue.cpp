@@ -57,7 +57,7 @@ JobQueue::Job* JobQueue::pop(void)
 
 	LM_T(LmtJob, ("Popping a job from queue"));
 
-	while (last->next != NULL)
+	while (last != NULL)
 	{
 		prev = last;
 		last = last->next;

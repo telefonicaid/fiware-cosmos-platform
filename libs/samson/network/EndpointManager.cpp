@@ -136,7 +136,7 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 	//    Spawner:     NOWHERE !!!
 	//    Delilah:     NOWHERE !!!
 	//
-	me = new Endpoint2(this, type, -1, host); // id == -1, port == 0 ...
+	me = new Endpoint2(this, type, 0, host); // id == 0, port == 0 ...
 	if (me == NULL)
 		LM_X(1, ("error allocating 'me' endpoint: %s", strerror(errno)));
 	me->idInEndpointVector = 0;
@@ -181,7 +181,8 @@ void EndpointManager::controllerConnect(void)
 	if (hostP == NULL)
 		hostP = hostMgr->insert(p->host, NULL);
 
-	controller = add(Endpoint2::Controller, p->id, hostP, p->port, -1, -1);
+	LM_TODO(("Here I use '0' as id instead of p->id ..."));
+	controller = add(Endpoint2::Controller, 0, hostP, p->port, -1, -1);
 }
 
 
@@ -294,12 +295,13 @@ void EndpointManager::initWorker(void)
 	if ((self = platformProcessLookup(hostMgr, procVec, Endpoint2::Worker, me->host, &ix)) == NULL)
 		LM_X(1, ("Cannot find myself in platform processes vector."));
 
+	me->portSet(WORKER_PORT);
+	me->idSet(self->id);
+	LM_T(LmtMe, ("ME: %s (ix: %d) id:%d, port: %d", me->name(), ixGet(me), me->idGet(), me->portGet()));
+
 	controllerConnect();
 	workersAdd();
 	workersConnect();
-
-	me->portSet(WORKER_PORT);
-	LM_T(LmtMe, ("ME: %s (ix: %d) port: %d", me->name(), ixGet(me), me->portGet()));
 
 	//
 	// Opening listener to accept incoming connections
@@ -577,6 +579,9 @@ Endpoint2* EndpointManager::get(unsigned int index, int* rFdP)
 
 
 
+static void badLookup(void)
+{
+}
 /* ****************************************************************************
 *
 * lookup - 
@@ -587,6 +592,7 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int _id, int* ixP)
 
 	show("lookup");
 
+#if 0
 	if ((typ == me->type) && (_id == me->id))
 	{
 		LM_T(LmtEndpointLookup, ("Found myself!"));
@@ -594,9 +600,13 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int _id, int* ixP)
 			LM_X(1, ("Only Worker type should find itself ... (id == %d)", _id));
 
 		if (ixP != NULL)
-			*ixP = me->idGet();
+		{
+			*ixP = -93; // Was: me->idGet(), but I don't see how that makes sense ...
+			badLookup();
+		}
 		return me;
 	}
+#endif
 
 	for (unsigned int ix = 0; ix < endpoints; ix++)
 	{
@@ -605,7 +615,7 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int _id, int* ixP)
 
 		if (endpoint[ix]->type == typ)
 		{
-			if ((_id == -1) || (endpoint[ix]->id == _id))
+			if (endpoint[ix]->id == _id)
 			{
 				if (ixP != NULL)
 					*ixP = ix;
@@ -617,7 +627,10 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int _id, int* ixP)
 	LM_W(("No %s endpoint with id %d found", Endpoint2::typeName(typ), _id));
 
 	if (ixP != NULL)
-		*ixP = -3;
+	{
+		*ixP = -94;
+		badLookup();
+	}
 
 	return NULL;
 }
@@ -1198,7 +1211,7 @@ void EndpointManager::show(const char* why, bool forced)
 			continue;
 
 		LM_V(("%02d: %-12s %02d  %-20s %-20s %04d  %02d %s", ix, ep->typeName(), ep->idGet(), ep->hostname(), ep->stateName(), ep->port, ep->rFd,
-			  (ep->isThreaded() == true)? "(threaded)" : (ep->state == Endpoint2::Loopback)? "(myself)" : "(not threaded)"));
+			  (ep->isThreaded() == true)? "(threaded)" : (ep->state == Endpoint2::Loopback)? "(myself)" : ""));
 	}
 	LM_V(("----------------------------------------------------------------------"));
 

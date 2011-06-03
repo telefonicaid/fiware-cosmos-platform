@@ -69,7 +69,7 @@ void* writerThread(void* vP)
 {
 	Endpoint2* ep = (Endpoint2*) vP;
 
-	LM_T(LmtThreads, ("writer thread for endpoint %s is running (REAL wFd: %d))", ep->wFdGet()));
+	LM_T(LmtThreads, ("writer thread for endpoint %s is running (REAL wFd: %d))", ep->name(), ep->wFdGet()));
 	while (1)
 	{
 		JobQueue::Job* job;
@@ -117,12 +117,11 @@ Endpoint2::Endpoint2
 	port                = _port;
 	state               = Unused;
 	threaded            = false;
-
+	nameidhost          = NULL;
+	jobQ                = NULL;
 	idInEndpointVector  = -8;    // -8 meaning 'undefined' ...
 
-	nameidhost          = NULL;
 	nameSet(type, id, host);
-
 	memset(&sockin, 0, sizeof(sockin));
 
 	msgsIn        = 0;
@@ -132,7 +131,6 @@ Endpoint2::Endpoint2
 	msgsInErrors  = 0;
 	msgsOutErrors = 0;
 
-	jobQ          = NULL;
 
 	if (epMgr->me != NULL)
 	{
@@ -494,10 +492,11 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 	}
 }
 
+
+
 static void badMsgType(Message::MessageType type)
 {
 }
-
 /* ****************************************************************************
 *
 * realsend - 

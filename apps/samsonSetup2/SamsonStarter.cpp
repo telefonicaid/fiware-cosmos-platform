@@ -7,9 +7,9 @@
 * CREATION DATE            May 04 2011
 *
 */
-#include "samson/network/Network2.h"          // Network2
 #include "samson/common/Process.h"            // Process, ProcessVector
 #include "samson/common/ports.h"              // CONTROLLER_PORT, WORKER_PORT
+#include "samson/network/Network2.h"          // Network2
 #include "SamsonStarter.h"                    // Own interface
 
 
@@ -49,6 +49,7 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 	pv->processes      = workers + 1;
 	pv->processVecSize = size;
 
+	LM_M(("Process Vector of %d processes:", pv->processes));
 	for (int ix = 0; ix < pv->processes; ix++)
 	{
 		p = &pv->processV[ix];
@@ -91,7 +92,7 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 		p->writes    = false;
 		p->hidden    = false;
 		p->toDo      = false;
-		p->id        = ix - 1; // gives an id of -1 for controller, but that's OK
+		p->id        = (ix == 0)? 0 : ix - 1;
 
 		if (networkP->epMgr->lookup(samson::Endpoint2::Spawner, hostP->name) == NULL)
 		{
@@ -102,6 +103,8 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 		}
 		else
 			LM_W(("Spawner endpoint for %s already created", hostP->name));
+
+		LM_M(("  Process %02d: %s%d@%s", ix, samson::Endpoint2::typeName((samson::Endpoint2::Type) p->type), p->id, p->host));
 	}
 
 	networkP->epMgr->procVecSet(pv, false);
@@ -170,12 +173,13 @@ samson::Endpoint2::Status SamsonStarter::processList(void)
 */
 samson::Endpoint2::Status SamsonStarter::procVecSend(void)
 {
-	int msgs;
+	int                    msgs;
+	samson::ProcessVector* procVec = networkP->epMgr->procVecGet();
 
 	msgs = networkP->epMgr->multiSend(samson::Endpoint2::Spawner,
 									  samson::Message::ProcessVector,
-									  networkP->epMgr->procVecGet(),
-									  networkP->epMgr->procVecGet()->processVecSize);
+									  procVec,
+									  procVec->processVecSize);
 
 	if (msgs != spawners)
 		LM_W(("Sent ProcessVector to %d spawners, should be %d ...", msgs, spawners));

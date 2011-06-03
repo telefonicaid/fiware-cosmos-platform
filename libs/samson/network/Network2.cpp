@@ -147,7 +147,7 @@ int Network2::controllerGetIdentifier(void)
 {
 	int ix;
 
-	epMgr->lookup(Endpoint2::Controller, -1, &ix);
+	epMgr->lookup(Endpoint2::Controller, 0, &ix);
 
 	LM_T(LmtIdIx, ("returning ix %d", ix));
 	return ix;

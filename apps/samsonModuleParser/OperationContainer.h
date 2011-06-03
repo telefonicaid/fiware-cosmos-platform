@@ -279,13 +279,29 @@ namespace samson
 			{
 				
 				if( (type == "map") || (type == "reduce") )
-					file << "\t\tvoid run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )\n\t\t{\n\t\t}\n";
+				{
+					file << "\t\tvoid init(samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid finish(samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+				}
 				if( type == "generator" )
-					file << "\t\tvoid run( samson::KVWriter *writer )\n\t\t{\n\t\t}\n";
+				{
+					file << "\t\tvoid init( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid run( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid finish( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+				}
 				if( type == "parser" )
-					file << "\t\tvoid run( char *data , size_t length , samson::KVWriter *writer )\n\t\t{\n\t\t}\n";
+				{
+					file << "\t\tvoid init( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid run( char *data , size_t length , samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid finish( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+				}
 				if( ( type == "parserOut" ) || ( type == "parserOutReduce" ) )
-					file << "\t\tvoid run(KVSetStruct* inputs , TXTWriter *writer )\n\t\t{\n\t\t}\n";
+				{
+					file << "\t\tvoid init(TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid run(KVSetStruct* inputs , TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid finish(TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
+				}
 
 			}
 			

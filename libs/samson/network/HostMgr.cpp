@@ -42,7 +42,7 @@ HostMgr::HostMgr(unsigned int size)
 		LM_X(1, ("error allocating room for %d delilah hosts", size));
 
 	localIps();
-	// list("init");
+	list("localhost inserted");
 }
 
 

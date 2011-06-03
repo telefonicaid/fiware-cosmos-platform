@@ -21,7 +21,7 @@ namespace sna{
 
 
 	public:
-		void init()
+		void init(samson::KVWriter *writer)
 		{
 			cliquesSolver.min_nodes_in_solution = 1;	//All solution as individual cliques
 		}

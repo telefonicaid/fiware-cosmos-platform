@@ -35,6 +35,12 @@ helpLine: Accumulates expense by company, and prints it
 #define MAX_STR_LEN 2048
     char line[MAX_STR_LEN];
 
+    		void init( TXTWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class red_acumCompany : public samson::ParserOutReduce: init()\n"));
+			writer->emit("Hello, world!\n");
+		}
+
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
 			User user;
@@ -95,6 +101,12 @@ helpLine: Accumulates expense by company, and prints it
 			OLM_T( LMT_User06, ("For user:%lu, finally companyId:%lu expense:%lu\n", user.id.value, prevCompanyId, acumExpense ));
 			snprintf( line , MAX_STR_LEN, "companyId:%lu expense:%lu\n", prevCompanyId, acumExpense );
 			writer->emit( line );
+		}
+
+    		void finish(TXTWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class red_acumCompany : public samson::ParserOutReduce: finish()\n"));
+			writer->emit("That's all, folks\n");
 		}
 	};
 

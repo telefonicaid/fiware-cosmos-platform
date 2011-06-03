@@ -30,6 +30,11 @@ output: system.UInt test_compareFunctions.User
 helpLine: Generates user information userId-surname-company-age-expense
 #endif // de INFO_COMMENT
 
+    		void init (samson::KVWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class gen_users : public samson::Generator: init()\n"));
+		}
+
 		void run( samson::KVWriter *writer )
 		{
 			User user;
@@ -48,6 +53,11 @@ helpLine: Generates user information userId-surname-company-age-expense
 				}
 				writer->emit( 0, &user.id , &user );
 			}
+		}
+
+    		void finish(samson::KVWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class gen_users : public samson::Generator: finish()\n"));
 		}
 
 

@@ -36,6 +36,12 @@ helpLine: For every company, prints expenses by age
 #define MAX_STR_LEN 2048
     char line[MAX_STR_LEN];
 
+    		void init( TXTWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class red_expense_by_companyAge : public samson::ParserOutReduce: init()\n"));
+			writer->emit("Hello, world!\n");
+		}
+
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
 			system::UInt companyId;
@@ -108,6 +114,12 @@ helpLine: For every company, prints expenses by age
 			}
 			snprintf( line , MAX_STR_LEN, "companyId:%lu, ageGroup:%d, expense:%lu\n", companyId.value, prevAgeGroup, acumExpense );
 			writer->emit( line );
+		}
+
+    		void finish(TXTWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class red_expense_by_companyAge : public samson::ParserOutReduce: finish()\n"));
+			writer->emit("That's all, folks\n");
 		}
 	};
 

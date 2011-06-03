@@ -35,6 +35,12 @@ helpLine: For every company, prints consumers alphabetically
 #define MAX_STR_LEN 2048
     char line[MAX_STR_LEN];
 
+    		void init( TXTWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class red_alphabetically_by_company : public samson::ParserOutReduce: init()\n"));
+			writer->emit("Hello, world!\n");
+		}
+
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
 			system::UInt companyId;
@@ -62,6 +68,12 @@ helpLine: For every company, prints consumers alphabetically
 				snprintf( line , MAX_STR_LEN, "companyId:%lu, user:'%s', expense:%lu\n", companyId.value, user.surname.value.c_str(), expense );
 				writer->emit( line );
 			}
+		}
+
+    		void finish(TXTWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class red_alphabetically_by_company : public samson::ParserOutReduce: finish()\n"));
+			writer->emit("That's all, folks\n");
 		}
 	};
 

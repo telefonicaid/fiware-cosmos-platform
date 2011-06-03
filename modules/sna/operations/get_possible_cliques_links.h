@@ -22,7 +22,7 @@ namespace sna{
 
 		bool fusing_communities ;
 
-		void init()
+		void init(samson::KVWriter *writer)
 		{
 			fusing_communities = environment->getInt(SNA_FLAG_FUSING_COMMUNITIES, 0);
 		}

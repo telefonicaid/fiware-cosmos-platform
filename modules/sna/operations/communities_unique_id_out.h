@@ -27,7 +27,7 @@ namespace sna{
 			char output[MAX_STR_LEN];
 
 	public:
-		void init(){
+		void init(samson::KVWriter *writer){
 		  sep = environment->get(SNA_PARAMETER_COMMUNITIES_SEP, SNA_PARAMETER_COMMUNITIES_SEP_DEFAULT);
 		}
 

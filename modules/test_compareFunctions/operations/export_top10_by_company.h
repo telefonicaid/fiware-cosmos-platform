@@ -35,6 +35,12 @@ helpLine: For every company, prints top10 expesense consumers
 #define MAX_STR_LEN 2048
     char line[MAX_STR_LEN];
 
+    		void init( TXTWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class export_top10_by_company : public samson::ParserOut: init()\n"));
+			writer->emit("Hello, world!\n");
+		}
+
 
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
@@ -67,7 +73,11 @@ helpLine: For every company, prints top10 expesense consumers
 			}
 		}
 
-
+    		void finish(TXTWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class export_top10_by_company : public samson::ParserOut: finish()\n"));
+			writer->emit("That's all, folks\n");
+		}
 	};
 
 

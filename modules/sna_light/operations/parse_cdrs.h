@@ -621,7 +621,7 @@ public:
 
 
 
-	void init()
+	void init(samson::KVWriter *writer)
 	{
 		std::string format = environment->get( SNA_PARAMETER_CDR_FORMAT, SNA_PARAMETER_CDR_FORMAT_DEFAULT);
 

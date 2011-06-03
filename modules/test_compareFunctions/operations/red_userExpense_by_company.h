@@ -32,6 +32,11 @@ output: test_compareFunctions.User system.Void
 helpLine: Accumulates expense by user, and emits by user and userId
 #endif // de INFO_COMMENT
 
+    		void init(samson::KVWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class red_userExpense_by_company : public samson::Reduce: init()\n"));
+		}
+
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			system::UInt userId;
@@ -72,6 +77,11 @@ helpLine: Accumulates expense by user, and emits by user and userId
 
 			writer->emit (0, &user.companyId, &user);
 			writer->emit (1, &user, &v);
+		}
+
+    		void finish(samson::KVWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class red_userExpense_by_company : public samson::Reduce: finish()\n"));
 		}
 	};
 

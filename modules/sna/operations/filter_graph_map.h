@@ -41,7 +41,7 @@ class filter_graph_map : public samson::Map
 
 public:
 
-	void init()
+	void init(samson::KVWriter *writer)
 	{
 		OLM_M(("filter_graph_map::init()"));
 		// Here we filter elements with more than X connections

@@ -21,7 +21,7 @@ namespace sna{
 
 	public:
 
-		void init()
+		void init(samson::KVWriter *writer)
 		{
 		  num_example = environment->getInt(SNA_PARAMETER_NUM_EXAMPLE_FAKE_GENERATOR, SNA_PARAMETER_NUM_EXAMPLE_FAKE_GENERATOR_DEFAULT);
 		}

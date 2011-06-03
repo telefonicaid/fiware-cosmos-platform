@@ -34,6 +34,12 @@ input: system.UInt test_compareFunctions.User
 #define MAX_STR_LEN 2048
     char line[MAX_STR_LEN];
 
+    		void init(TXTWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class export_users : public samson::ParserOut: init()\n"));
+			writer->emit("Hello, world!\n");
+		}
+
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
 			User user;
@@ -63,6 +69,12 @@ input: system.UInt test_compareFunctions.User
 				snprintf( line , MAX_STR_LEN, "user:%lu, surname:'%s', companyId:%lu, age:%d, expense:%lu\n", user.id.value, user.surname.value.c_str(), user.companyId.value, age, expense );
 				writer->emit( line );
 			}
+		}
+
+    		void finish(TXTWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class export_users : public samson::ParserOut: finish()\n"));
+			writer->emit("That's all, folks\n");
 		}
 
 

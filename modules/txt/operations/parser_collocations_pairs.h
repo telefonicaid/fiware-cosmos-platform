@@ -35,7 +35,7 @@ namespace txt{
 			value.value = 1; // the counter  is always 1
 		}
 
-		void init()
+		void init(samson::KVWriter *writer)
 		{
 			tam_ventana = environment->getInt( "txt.tam_ventana" , 3 );
 		}

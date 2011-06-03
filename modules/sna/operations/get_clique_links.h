@@ -27,7 +27,7 @@ namespace sna{
 		bool fusing_communities;
 
 
-		void init(){
+		void init(samson::KVWriter *writer){
 			threshold_to_fuse_cliques = environment->getDouble(SNA_PARAMETER_THRESHOLD_TO_FUSE_CLIQUES, SNA_PARAMETER_THRESHOLD_TO_FUSE_CLIQUES_DEFAULT);
 
 			penalization_missing_link = environment->getDouble(SNA_PARAMETER_CLIQUES_PENALIZATION_MISSION_LINK, SNA_PARAMETER_CLIQUES_PENALIZATION_MISSION_LINK_DEFAULT);

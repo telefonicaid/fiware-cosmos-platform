@@ -24,7 +24,7 @@ namespace sna{
 
 	public:
 
-		void init()
+		void init(samson::KVWriter *writer)
 		{
 			max_community_links = environment->getInt(SNA_PARAMETER_COMMUNITY_MAX_COMMUNITY_LINK,
 																				SNA_PARAMETER_COMMUNITY_MAX_COMMUNITY_LINK_DEFAULT);

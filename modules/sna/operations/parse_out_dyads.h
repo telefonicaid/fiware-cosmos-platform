@@ -29,7 +29,7 @@ namespace sna{
 
 	public:
 
-		void init(){
+		void init(samson::KVWriter *writer){
 		  const char * def = "|";
 
 		  sep = strdup(environment->get("sna.separator", def).c_str());

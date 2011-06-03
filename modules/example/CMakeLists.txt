@@ -11,6 +11,7 @@ SET (SOURCES
 FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
 
 SET (OPERATION_HEADERS
+operations/error.h
 operations/parse_id_id.h
 operations/parser_uint_void.h
 )

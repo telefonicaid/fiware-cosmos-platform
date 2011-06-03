@@ -24,7 +24,7 @@ namespace sna{
 
 	public:
 
-		void init()
+		void init(samson::KVWriter *writer)
 		{
 			no_duplicate = environment->getInt(SNA_FLAG_NO_DUPLICATE, SNA_FLAG_NO_DUPLICATE_DEFAULT);
 

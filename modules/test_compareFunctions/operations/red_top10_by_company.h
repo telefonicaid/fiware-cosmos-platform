@@ -36,6 +36,12 @@ helpLine: For every company, selects top10 expesense consumers
 #define MAX_STR_LEN 2048
     char line[MAX_STR_LEN];
 
+    		void init( TXTWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class red_top10_by_company : public samson::Reduce: init()\n"));
+			writer->emit("Hello, world!\n");
+		}
+
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 			system::UInt companyId;
@@ -56,6 +62,11 @@ helpLine: For every company, selects top10 expesense consumers
 
 				writer->emit(0, &companyId, &user);
 			}
+		}
+
+    		void finish(samson::KVWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class red_top10_by_company : public samson::Reduce: finish()\n"));
 		}
 	};
 

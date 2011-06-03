@@ -22,7 +22,7 @@ namespace sna{
 
 	public:
 
-		void init()
+		void init(samson::KVWriter *writer)
 		{
 
 		  selecting_customer_nodes = false;

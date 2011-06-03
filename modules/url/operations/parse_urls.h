@@ -34,7 +34,7 @@ namespace url{
 	public:
 
 
-	void init()
+	void init(samson::KVWriter *writer)
 	{
 	  std::string output  = environment->get( "url.output" , "server" );
 

@@ -8,7 +8,7 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/system/UInt.h>
+#include "samson/modules/system/UInt.h"
 
 namespace samson{
 namespace example{

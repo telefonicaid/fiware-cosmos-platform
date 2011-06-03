@@ -23,7 +23,7 @@ namespace sna{
 
 	public:
 
-		void init()
+		void init(samson::KVWriter *writer)
 		{
 			std::string nodeIdStr = environment->get(SNA_PARAMETER_NODEIDSTR, SNA_PARAMETER_NODEIDSTR_DEFAULT);
 

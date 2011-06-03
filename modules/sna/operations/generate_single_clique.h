@@ -21,7 +21,7 @@ namespace sna{
 	public:
 		std::vector<uint> nodes ;
 
-		void init()
+		void init(samson::KVWriter *writer)
 		{
 			std::string nodes_param = environment->get(SNA_PARAMETER_GENERATE_SINGLE_CLIQUE_NODES, SNA_PARAMETER_GENERATE_SINGLE_CLIQUE_NODES_DEFAULT);
 

@@ -28,6 +28,11 @@ output: system.UInt system.UInt
 helpLine: Generates call information userId-duration
 #endif // de INFO_COMMENT
 
+    		void init( samson::KVWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class gen_calls : public samson::Generator: init()\n"));
+		}
+
 		void run( samson::KVWriter *writer )
 		{
 			samson::system::UInt userId;
@@ -44,6 +49,11 @@ helpLine: Generates call information userId-duration
 
 				writer->emit( 0, &userId , &callDuration );
 			}
+		}
+
+    		void finish(KVWriter *writer)
+		{
+			OLM_T(LMT_User06, ("class gen_calls : public samson::Generator: finish()\n"));
 		}
 
 

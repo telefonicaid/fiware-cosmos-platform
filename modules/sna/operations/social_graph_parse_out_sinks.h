@@ -43,7 +43,7 @@ namespace sna{
 
 	public:
 
-		void init( ){
+		void init(samson::KVWriter *writer ){
 
 		  const char * def = "|";
 

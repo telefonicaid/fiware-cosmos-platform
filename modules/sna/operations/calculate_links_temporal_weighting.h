@@ -21,7 +21,7 @@ namespace sna{
 		int min_weighted_link_weight;
 
 	public:
-		void init()
+		void init(samson::KVWriter *writer)
 		{
 			min_weighted_link_weight = environment->getInt(SNA_PARAMETER_MIN_WEIGHTED_LINK_WEIGH, SNA_PARAMETER_MIN_WEIGHTED_LINK_WEIGH_DEFAULT);
 		}

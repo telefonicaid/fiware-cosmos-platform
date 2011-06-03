@@ -30,7 +30,7 @@ class parser_collocations_stripes : public samson::Parser
 public:
 
 
-	void init()
+	void init(samson::KVWriter *writer)
 	{
 		tam_ventana = environment->getInt( "txt.tam_ventana" , 3 );
 	}

@@ -20,7 +20,7 @@ namespace sna_light{
 		int num_cdrs_for_strong;
 
 	public:
-		void init ()
+		void init (samson::KVWriter *writer)
 		{
 			OLM_E(("acg_red_cdrs_to_nodes::init()"));
 

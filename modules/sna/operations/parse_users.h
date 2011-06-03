@@ -133,7 +133,7 @@ bool getUserFromLine_TEMM ( char*linea, samson::system::UInt*node, User* user)
 
 	public:
 
-		void init()
+		void init(samson::KVWriter *writer)
 		{
 			std::string format = environment->get( "sna.format_users", "TME");
 

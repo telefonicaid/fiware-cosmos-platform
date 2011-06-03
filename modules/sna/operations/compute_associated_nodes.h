@@ -23,7 +23,7 @@ namespace sna{
 
 		double threshold_to_add_associated;
 
-		void init(){
+		void init(samson::KVWriter *writer){
 			threshold_to_add_associated = environment->getDouble (SNA_PARAMETER_THRESHOLD_TO_ADD_ASSOCIATED_NODES, SNA_PARAMETER_THRESHOLD_TO_ADD_ASSOCIATED_NODES_DEFAULT);
 		}
 

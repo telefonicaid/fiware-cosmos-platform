@@ -26,7 +26,7 @@ namespace example{
 		
 	public:
 
-		void init()
+		void init(TXTWriter *writer)
 		{
 			separator = environment->get( "example.separator" , " " );
 		}

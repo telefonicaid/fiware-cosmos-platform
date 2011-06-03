@@ -631,13 +631,21 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, co
 		nb = read(rFd, (void*) &buf[tot] , bufLen - tot);
 		if (nb == -1)
 		{
+			if ((type == Controller) && (epMgr->me->type == Delilah))
+				LM_X(1, ("Controller Dies - I cannot continue. Sorry ..."));
+
 			if (errno == EBADF)
 				LM_RE(ConnectionClosed, ("read: %s (treating as Connection Closed), expecting '%s' from %s", strerror(errno), what, name()));
 
 			LM_RE(ConnectionClosed, ("read: %s, expecting '%s' from %s", strerror(errno), what, name()));
 		}
 		else if (nb == 0)
+		{
+			if ((type == Controller) && (epMgr->me->type == Delilah))
+				LM_X(1, ("Controller Dies - I cannot continue. Sorry ..."));
+
 			LM_RE(ConnectionClosed, ("Connection closed, expecting '%s' from %s", what, name()));
+		}
 
 		tot += nb;
 	}

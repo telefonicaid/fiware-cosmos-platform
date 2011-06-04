@@ -29,7 +29,7 @@ namespace Qsi
 *
 * titleClicked - 
 */
-static void titleClicked(Block* qbP, void* param)
+static void titleClicked(Block* qbP, void* param, const char* nada)
 {
 	LM_T(LmtMouse, ("Text '%s' Clicked. Param: %p", qbP->name, param));
 	if (qbP->isExpanded())
@@ -39,6 +39,8 @@ static void titleClicked(Block* qbP, void* param)
 
 	if (param != NULL)
 		((Function) param)(qbP, (void*) "title");
+
+	nada = NULL;
 }
 
 
@@ -47,7 +49,7 @@ static void titleClicked(Block* qbP, void* param)
 *
 * ExpandList - 
 */
-ExpandList::ExpandList(Manager* manager, Box* owner, const char* _title, int x, int y, int _xmargin, int _ymargin, Function onClick, bool _frame) : Box(manager, owner, _title, x, y)
+ExpandList::ExpandList(Manager* manager, Box* owner, const char* _title, int x, int y, int _xmargin, int _ymargin, MenuFunction onClick, bool _frame) : Box(manager, owner, _title, x, y)
 {
 	this->typeSet(ExpandListItem);
 
@@ -69,7 +71,7 @@ ExpandList::ExpandList(Manager* manager, Box* owner, const char* _title, int x, 
 *
 * addMember - 
 */
-Base* ExpandList::addMember(const char* string, Function callback, const void* dataP, const char* mVec[])
+Base* ExpandList::addMember(const char* string, MenuFunction callback, const void* dataP, const char* mVec[])
 {
 	Block*  lastMember;
 	Block*  sMember;
@@ -103,7 +105,7 @@ Base* ExpandList::addMember(const char* string, Function callback, const void* d
 *
 * addMember - 
 */
-Base* ExpandList::addMember(Base* _member, Function callback, const void* dataP, const char* mVec[])
+Base* ExpandList::addMember(Base* _member, MenuFunction callback, const void* dataP, const char* mVec[])
 {
 	int gx, gy, gwidth, gheight;
 
@@ -177,7 +179,7 @@ void ExpandList::titleSet(const char* _title)
 *
 * menu - 
 */
-void ExpandList::menu(Function callback, const char* mVec[])
+void ExpandList::menu(MenuFunction callback, const char* mVec[])
 {
 	for (int ix = 0; mVec[ix] != NULL; ix++)
 	{

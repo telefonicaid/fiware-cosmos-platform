@@ -25,7 +25,7 @@ namespace Qsi
 *
 * buttonCallback - 
 */
-static void buttonCallback(Block* button, void* vP)
+static void buttonCallback(Block* button, void* vP, const char* nada)
 {
 	InputLine*  inputLine = (InputLine*) vP;
 	char*       titleV[2] = 
@@ -43,6 +43,7 @@ static void buttonCallback(Block* button, void* vP)
 		inputLine->callback(titleV, resultV);
 
 	delete inputLine;
+	nada = NULL;
 }
 
 

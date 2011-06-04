@@ -26,7 +26,7 @@ namespace Qsi
 *
 * donePressed - 
 */
-static void donePressed(Block* wbP, void* vP)
+static void donePressed(Block* wbP, void* vP, const char* nada)
 {
 	InputDialog* idialog = (InputDialog*) vP;
 	int          ix;
@@ -78,6 +78,8 @@ static void donePressed(Block* wbP, void* vP)
 		idialog->manager->box->remove(idialog, false);
 		delete idialog;
 	}
+
+	nada = NULL;
 }
 
 
@@ -86,7 +88,7 @@ static void donePressed(Block* wbP, void* vP)
 *
 * cancel - 
 */
-static void cancel(Block* qbP, void* param)
+static void cancel(Block* qbP, void* param, const char* nada)
 {
 	InputDialog* idialog = (InputDialog*) param;
 
@@ -101,6 +103,7 @@ static void cancel(Block* qbP, void* param)
 	idialog->manager->ungrab(idialog->winBox);
 	idialog->manager->box->remove(idialog, false);
 	delete idialog;
+	nada = NULL;
 }
 
 

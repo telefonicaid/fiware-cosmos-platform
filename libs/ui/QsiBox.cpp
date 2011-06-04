@@ -978,7 +978,7 @@ Base* Box::lineAdd(const char* name, int x, int y, int x2, int y2)
 *
 * buttonAdd - 
 */
-Base* Box::buttonAdd(const char* name, const char* txt, int x, int y, int width, int height, Function func, void* param)
+Base* Box::buttonAdd(const char* name, const char* txt, int x, int y, int width, int height, MenuFunction func, void* param)
 {
 	Block* qbP = new Block(manager, this, Button, name, txt, x, y, width, height);
 
@@ -1010,7 +1010,7 @@ Base* Box::inputAdd(const char* name, const char* txt, int x, int y, int width, 
 *
 * imageAdd - 
 */
-Base* Box::imageAdd(const char* name, const char* path, int x, int y, int width, int height, Function func, void* param)
+Base* Box::imageAdd(const char* name, const char* path, int x, int y, int width, int height, MenuFunction func, void* param)
 {
 	Block* qbP = new Block(manager, this, Image, name, path, x, y, width, height);
 
@@ -1028,7 +1028,7 @@ Base* Box::imageAdd(const char* name, const char* path, int x, int y, int width,
 *
 * rectangleAdd - 
 */
-Base* Box::rectangleAdd(const char*  name, int x, int y, int width, int height, QColor bg, QColor fg, int borderWidth, Function func, void* param)
+Base* Box::rectangleAdd(const char*  name, int x, int y, int width, int height, QColor bg, QColor fg, int borderWidth, MenuFunction func, void* param)
 {
 	QGraphicsRectItem*  rect;
 	Block*              qbP   = new Block(manager, this, Rectangle, name, NULL, x, y, width, height);
@@ -1053,7 +1053,7 @@ Base* Box::rectangleAdd(const char*  name, int x, int y, int width, int height, 
 *
 * comboAdd - 
 */
-Base* Box::comboAdd(const char*  name, const char** option, int x, int y, int width, int height, Function func, void* param)
+Base* Box::comboAdd(const char*  name, const char** option, int x, int y, int width, int height, MenuFunction func, void* param)
 {
 	Block* qbP = new Block(manager, this, Combo, name, NULL, x, y, width, height);
 

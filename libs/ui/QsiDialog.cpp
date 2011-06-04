@@ -23,13 +23,14 @@ namespace Qsi
 *
 * ok - 
 */
-static void ok(Block* qbP, void* param)
+static void ok(Block* qbP, void* param, const char* nada)
 {
 	Dialog* dialog = (Dialog*) param;
 
 	dialog->manager->box->remove(dialog, false);
 	
 	delete dialog;
+	nada = NULL;
 }
 
 

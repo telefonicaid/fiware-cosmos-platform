@@ -112,7 +112,7 @@ private:
 	Callback*  itemCallbackLookup(Block* qbP);
 
 public:
-	void       siConnect(Block* qbP, Function func, const void* param, bool persistent = false);
+	void       siConnect(Block* qbP, MenuFunction func, const void* param, bool persistent = false);
 	void       siDisconnect(Block* qbP);
 
 
@@ -145,26 +145,26 @@ public:
 
 public slots:
 	void       contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEvent);
-	void       menuActionFunc0();
-	void       menuActionFunc1();
-	void       menuActionFunc2();
-	void       menuActionFunc3();
-	void       menuActionFunc4();
-	void       menuActionFunc5();
-	void       menuActionFunc6();
-	void       menuActionFunc7();
-	void       menuActionFunc8();
-	void       menuActionFunc9();
+	void       menuActionFunc0(void);
+	void       menuActionFunc1(void);
+	void       menuActionFunc2(void);
+	void       menuActionFunc3(void);
+	void       menuActionFunc4(void);
+	void       menuActionFunc5(void);
+	void       menuActionFunc6(void);
+	void       menuActionFunc7(void);
+	void       menuActionFunc8(void);
+	void       menuActionFunc9(void);
 
 //
 // Menu for background
 //
 public:
-	void         menuAdd(const char* title, Function func, void* param);
-	void         menuClear(void);
-	char*        menuTitle[QSI_MENU_ACTIONS];
-	Function     menuFunc[QSI_MENU_ACTIONS];
-	void*        menuParam[QSI_MENU_ACTIONS];
+	void           menuAdd(const char* title, MenuFunction func, void* param);
+	void           menuClear(void);
+	char*          menuTitle[QSI_MENU_ACTIONS];
+	MenuFunction   menuFunc[QSI_MENU_ACTIONS];
+	void*          menuParam[QSI_MENU_ACTIONS];
 };
 
 }

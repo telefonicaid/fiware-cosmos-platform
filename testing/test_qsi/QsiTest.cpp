@@ -157,7 +157,7 @@ static Qsi::ExpandList*  qlistExpList[QLIST_EXP_LISTS];
 *
 * qlistCallback - 
 */
-static void qlistCallback(Qsi::Block* qbP, void* vP)
+static void qlistCallback(Qsi::Block* qbP, void* vP, const char* nada)
 {
 	char* txt = (char*) vP;
 
@@ -165,6 +165,8 @@ static void qlistCallback(Qsi::Block* qbP, void* vP)
 
 	if (strcmp(txt, "Remove") == 0)
 		remove(qbP, vP);
+
+	nada = NULL;
 }
 
 
@@ -249,11 +251,13 @@ static void userColor(Qsi::Block* qbP, void* param)
 *
 * alignmentList - 
 */
-static void alignmentList(Qsi::Block* qbP, void* x)
+static void alignmentList(Qsi::Block* qbP, void* x, const char* nada)
 {
 	Qsi::Box*  box   = (Qsi::Box*) x;
 
 	box->alignShow("From Menu", true);
+
+	nada = NULL;
 }
 
 
@@ -262,11 +266,13 @@ static void alignmentList(Qsi::Block* qbP, void* x)
 *
 * qsiList - 
 */
-static void qsiList(Qsi::Block* qbP, void* x)
+static void qsiList(Qsi::Block* qbP, void* x, const char* nada)
 {
 	Qsi::Box*  box   = (Qsi::Box*) x;
 
 	box->qsiShow("From Menu", true);
+
+	nada = NULL;
 }
 
 
@@ -275,11 +281,13 @@ static void qsiList(Qsi::Block* qbP, void* x)
 *
 * qsiAllList - 
 */
-static void qsiAllList(Qsi::Block* qbP, void* x)
+static void qsiAllList(Qsi::Block* qbP, void* x, const char* nada)
 {
 	Qsi::Box*  box   = (Qsi::Box*) x;
 
 	box->qsiRecursiveShow("From Menu", true);
+
+	nada = NULL;
 }
 
 
@@ -288,7 +296,7 @@ static void qsiAllList(Qsi::Block* qbP, void* x)
 *
 * buttonClicked - 
 */
-static void buttonClicked(Qsi::Block* qbP, void* param)
+static void buttonClicked(Qsi::Block* qbP, void* param, const char* nada)
 {
 	QPushButton*    button;
 	static bool     bold    = true;
@@ -346,6 +354,8 @@ static void buttonClicked(Qsi::Block* qbP, void* param)
 		scrollBox->scroll(-10);
 	else
 		LM_W(("No button found"));
+
+	nada = NULL;
 }
 
 
@@ -354,15 +364,15 @@ static void buttonClicked(Qsi::Block* qbP, void* param)
 *
 * compress - 
 */
-static void compress(Qsi::Block* qbP, void* vP)
+static void compress(Qsi::Block* qbP, void* vP, const char* nada)
 {
 	userBox1->compress();
 	userBox2->compress();
 	elist->compress();
 
-
-	qbP = NULL;
-	vP  = NULL;
+	qbP  = NULL;
+	vP   = NULL;
+	nada = NULL;
 }
 
 
@@ -371,14 +381,15 @@ static void compress(Qsi::Block* qbP, void* vP)
 *
 * expand - 
 */
-static void expand(Qsi::Block* qbP, void* vP)
+static void expand(Qsi::Block* qbP, void* vP, const char* nada)
 {
 	userBox1->expand();
 	userBox2->expand();
 	elist->expand();
 
-	qbP = NULL;
-	vP  = NULL;
+	qbP  = NULL;
+	vP   = NULL;
+	nada = NULL;
 }
 
 
@@ -387,7 +398,7 @@ static void expand(Qsi::Block* qbP, void* vP)
 *
 * dialog - 
 */
-static void dialog(Qsi::Block* qbP, void* vP)
+static void dialog(Qsi::Block* qbP, void* vP, const char* nada)
 {
 	bool         modal = false;
 	char*        m     = (char*) vP;
@@ -399,7 +410,8 @@ static void dialog(Qsi::Block* qbP, void* vP)
 	title = (modal == false)? "Testing Non-MODAL Dialog" : "Testing MODAL Dialog"; 
 
 	new Qsi::Dialog(qsiManager, title, modal);
-	vP  = NULL;
+	vP   = NULL;
+	nada = NULL;
 }
 
 
@@ -428,7 +440,7 @@ void inputDialogGo(char* texts[], char* results[])
 *
 * inputDialog - 
 */
-static void inputDialog(Qsi::Block* qbP, void* vP)
+static void inputDialog(Qsi::Block* qbP, void* vP, const char* nada)
 {
 	bool   modal = false;
 	char*  m     = (char*) vP;
@@ -470,8 +482,9 @@ static void inputDialog(Qsi::Block* qbP, void* vP)
 		inputDialogGo
 	);
 
-	qbP = NULL;
-	vP  = NULL;
+	qbP  = NULL;
+	vP   = NULL;
+	nada = NULL;
 }
 
 
@@ -480,7 +493,7 @@ static void inputDialog(Qsi::Block* qbP, void* vP)
 *
 * elistCallback - 
 */
-static void elistCallback(Qsi::Block* qbP, void* vP)
+static void elistCallback(Qsi::Block* qbP, void* vP, const char* nada)
 {
 	char* txt = (char*) vP;
 
@@ -494,6 +507,8 @@ static void elistCallback(Qsi::Block* qbP, void* vP)
 		qbP->setColor(0x80, 0x80, 0x80);
 	else if (strcmp(txt, "Remove") == 0)
 		remove(qbP, vP);
+
+	nada = NULL;
 }
 
 
@@ -502,7 +517,7 @@ static void elistCallback(Qsi::Block* qbP, void* vP)
 *
 * userCallback - 
 */
-static void userCallback(Qsi::Block* qbP, void* vP)
+static void userCallback(Qsi::Block* qbP, void* vP, const char* nada)
 {
 	char* txt = (char*) vP;
 
@@ -514,6 +529,8 @@ static void userCallback(Qsi::Block* qbP, void* vP)
 		remove(qbP, vP);
 	else if (strcmp(txt, "Color Change") == 0)
 		userColor(qbP, vP);
+
+	nada = NULL;
 }
 
 
@@ -535,12 +552,13 @@ static void inputLineFunc(char** nameV, char** inputV)
 *
 * comboCallback - 
 */
-static void comboCallback(Qsi::Block* qbP, void* vP)
+static void comboCallback(Qsi::Block* qbP, void* vP, const char* nada)
 {
 	LM_M(("IN"));
 
-	qbP = NULL;
-	vP  = NULL;
+	qbP  = NULL;
+	vP   = NULL;
+	nada = NULL;
 }
 
 

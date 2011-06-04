@@ -178,11 +178,14 @@ void Manager::contextMenuEvent(QGraphicsSceneContextMenuEvent* contextMenuEvent)
 
 	if (activeItem != NULL)
 	{
+		LM_T(LmtMenu, ("Menu for '%s'", activeItem->name));
+		if (activeItem->popupMenuFunc != NULL)
+			activeItem->popupMenuFunc(activeItem);
+
 		if (activeItem->menu)
 		{
 			QMenu menu(activeItem->name);
 
-			LM_T(LmtMenu, ("Menu for '%s'", activeItem->name));
 			for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
 			{
 				if (activeItem->menuTitle[ix] == NULL)
@@ -428,7 +431,7 @@ void Manager::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 			if (cb != NULL)
 			{
 				LM_T(LmtMenu, ("Found callback (%p) for '%s', function at %p", cb, activeItem->name, cb->func));
-				cb->func(activeItem, cb->param);
+				cb->func(activeItem, cb->param, "NADA");
 			}
 		}
 		else
@@ -573,7 +576,7 @@ void Manager::wheelEvent(QGraphicsSceneWheelEvent* event)
 *
 * siConnect - 
 */
-void Manager::siConnect(Block* qbP, Function func, const void* param, bool persistent)
+void Manager::siConnect(Block* qbP, MenuFunction func, const void* param, bool persistent)
 {
 	for (int ix = 0; ix < itemCallbackMax; ix++)
     {
@@ -678,10 +681,10 @@ void Manager::menuActionFunc0(void)
 	if (activeItem)
 	{
 		LM_T(LmtMenu, ("In 'menuActionFunc0': calling menu action '%s'", activeItem->menuTitle[0]));
-		activeItem->menuFunc[0](activeItem, activeItem->menuParam[0]);
+		activeItem->menuFunc[0](activeItem, activeItem->menuParam[0], activeItem->menuTitle[0]);
 	}
 	else
-		menuFunc[0](NULL, menuParam[0]);
+		menuFunc[0](NULL, menuParam[0], "background");
 }
 
 
@@ -690,15 +693,15 @@ void Manager::menuActionFunc0(void)
 *
 * menuActionFunc1 - 
 */
-void Manager::menuActionFunc1()
+void Manager::menuActionFunc1(void)
 {
 	if (activeItem)
 	{
 		LM_T(LmtMenu, ("In 'menuActionFunc1': calling menu action '%s'", activeItem->menuTitle[1]));
-		activeItem->menuFunc[1](activeItem, activeItem->menuParam[1]);
+		activeItem->menuFunc[1](activeItem, activeItem->menuParam[1], activeItem->menuTitle[1]);
 	}
 	else
-		menuFunc[1](NULL, menuParam[1]);
+		menuFunc[1](NULL, menuParam[1], "background");
 }
 
 
@@ -707,15 +710,15 @@ void Manager::menuActionFunc1()
 *
 * menuActionFunc2 - 
 */
-void Manager::menuActionFunc2()
+void Manager::menuActionFunc2(void)
 {
 	if (activeItem)
 	{
 		LM_T(LmtMenu, ("In 'menuActionFunc2': calling menu action '%s'", activeItem->menuTitle[2]));
-		activeItem->menuFunc[2](activeItem, activeItem->menuParam[2]);
+		activeItem->menuFunc[2](activeItem, activeItem->menuParam[2], activeItem->menuTitle[2]);
 	}
 	else
-		menuFunc[2](NULL, menuParam[2]);
+		menuFunc[2](NULL, menuParam[2], "background");
 }
 
 
@@ -724,15 +727,15 @@ void Manager::menuActionFunc2()
 *
 * menuActionFunc3 - 
 */
-void Manager::menuActionFunc3()
+void Manager::menuActionFunc3(void)
 {
 	if (activeItem)
 	{
 		LM_T(LmtMenu, ("In 'menuActionFunc3': calling menu action '%s'", activeItem->menuTitle[3]));
-		activeItem->menuFunc[3](activeItem, activeItem->menuParam[3]);
+		activeItem->menuFunc[3](activeItem, activeItem->menuParam[3], activeItem->menuTitle[3]);
 	}
 	else
-		menuFunc[3](NULL, menuParam[3]);
+		menuFunc[3](NULL, menuParam[3], "background");
 }
 
 
@@ -741,15 +744,15 @@ void Manager::menuActionFunc3()
 *
 * menuActionFunc4 - 
 */
-void Manager::menuActionFunc4()
+void Manager::menuActionFunc4(void)
 {
 	if (activeItem)
 	{
 		LM_T(LmtMenu, ("In 'menuActionFunc4': calling menu action '%s'", activeItem->menuTitle[4]));
-		activeItem->menuFunc[4](activeItem, activeItem->menuParam[4]);
+		activeItem->menuFunc[4](activeItem, activeItem->menuParam[4], activeItem->menuTitle[4]);
 	}
 	else
-		menuFunc[4](NULL, menuParam[4]);
+		menuFunc[4](NULL, menuParam[4], "background");
 }
 
 
@@ -758,15 +761,15 @@ void Manager::menuActionFunc4()
 *
 * menuActionFunc5 - 
 */
-void Manager::menuActionFunc5()
+void Manager::menuActionFunc5(void)
 {
 	if (activeItem)
 	{
 		LM_T(LmtMenu, ("In 'menuActionFunc5': calling menu action '%s'", activeItem->menuTitle[5]));
-		activeItem->menuFunc[5](activeItem, activeItem->menuParam[5]);
+		activeItem->menuFunc[5](activeItem, activeItem->menuParam[5], activeItem->menuTitle[5]);
 	}
 	else
-		menuFunc[5](NULL, menuParam[5]);
+		menuFunc[5](NULL, menuParam[5], "background");
 }
 
 
@@ -775,15 +778,15 @@ void Manager::menuActionFunc5()
 *
 * menuActionFunc6 - 
 */
-void Manager::menuActionFunc6()
+void Manager::menuActionFunc6(void)
 {
 	if (activeItem)
 	{
 		LM_T(LmtMenu, ("In 'menuActionFunc6': calling menu action '%s'", activeItem->menuTitle[6]));
-		activeItem->menuFunc[6](activeItem, activeItem->menuParam[6]);
+		activeItem->menuFunc[6](activeItem, activeItem->menuParam[6], activeItem->menuTitle[6]);
 	}
 	else
-		menuFunc[6](NULL, menuParam[6]);
+		menuFunc[6](NULL, menuParam[6], "background");
 }
 
 
@@ -792,15 +795,15 @@ void Manager::menuActionFunc6()
 *
 * menuActionFunc7 - 
 */
-void Manager::menuActionFunc7()
+void Manager::menuActionFunc7(void)
 {
 	if (activeItem)
 	{
 		LM_T(LmtMenu, ("In 'menuActionFunc7': calling menu action '%s'", activeItem->menuTitle[7]));
-		activeItem->menuFunc[7](activeItem, activeItem->menuParam[7]);
+		activeItem->menuFunc[7](activeItem, activeItem->menuParam[7], activeItem->menuTitle[7]);
 	}
 	else
-		menuFunc[7](NULL, menuParam[7]);
+		menuFunc[7](NULL, menuParam[7], "background");
 }
 
 
@@ -809,15 +812,15 @@ void Manager::menuActionFunc7()
 *
 * menuActionFunc8 - 
 */
-void Manager::menuActionFunc8()
+void Manager::menuActionFunc8(void)
 {
 	if (activeItem)
 	{
 		LM_T(LmtMenu, ("In 'menuActionFunc8': calling menu action '%s'", activeItem->menuTitle[8]));
-		activeItem->menuFunc[8](activeItem, activeItem->menuParam[8]);
+		activeItem->menuFunc[8](activeItem, activeItem->menuParam[8], activeItem->menuTitle[8]);
 	}
 	else
-		menuFunc[8](NULL, menuParam[8]);
+		menuFunc[8](NULL, menuParam[8], "background");
 }
 
 
@@ -826,15 +829,15 @@ void Manager::menuActionFunc8()
 *
 * menuActionFunc9 - 
 */
-void Manager::menuActionFunc9()
+void Manager::menuActionFunc9(void)
 {
 	if (activeItem)
 	{
 		LM_T(LmtMenu, ("In 'menuActionFunc9': calling menu action '%s'", activeItem->menuTitle[9]));
-		activeItem->menuFunc[9](activeItem, activeItem->menuParam[9]);
+		activeItem->menuFunc[9](activeItem, activeItem->menuParam[9], activeItem->menuTitle[9]);
 	}
 	else
-		menuFunc[9](NULL, menuParam[9]);
+		menuFunc[9](NULL, menuParam[9], "background");
 }
 
 
@@ -843,7 +846,7 @@ void Manager::menuActionFunc9()
 *
 * menuAdd - 
 */
-void Manager::menuAdd(const char* title, Function func, void* param)
+void Manager::menuAdd(const char* title, MenuFunction func, void* param)
 {
 	for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
 	{

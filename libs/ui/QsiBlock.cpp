@@ -136,6 +136,12 @@ Block::Block
 		gItemP->setPos(0, 0);
 	else
 		LM_W(("No initial positioning possible - both proxy and gItemP are NULL !"));
+
+
+	//
+	// Function to call when a popup menu is requested (to fill in the vectors menuTitle, menuFunc and menuParam)
+	//
+	popupMenuFunc = NULL;
 }
 
 
@@ -345,9 +351,30 @@ void Block::show(void)
 
 /* ****************************************************************************
 *
+* menuClear - 
+*/
+void Block::menuClear(void)
+{
+	for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
+	{
+		if (menuTitle[ix] != NULL)
+			free(menuTitle[ix]);
+
+		menuFunc[ix]  = NULL;
+		menuParam[ix] = NULL;
+		menuTitle[ix] = NULL;
+	}
+
+	menu = false;
+}
+
+
+
+/* ****************************************************************************
+*
 * menuAdd - 
 */
-void Block::menuAdd(const char* title, Function func, void* param)
+void Block::menuAdd(const char* title, MenuFunction func, void* param)
 {
 	menu = true;
 
@@ -369,22 +396,11 @@ void Block::menuAdd(const char* title, Function func, void* param)
 
 /* ****************************************************************************
 *
-* menuClear - 
+* menuFirstParamSet - 
 */
-void Block::menuClear(void)
+void Block::menuFirstParamSet(void* vP)
 {
-	menu = false;
-
-	for (int ix = 0; ix < QSI_MENU_ACTIONS; ix++)
-	{
-		if (menuFunc[ix] == NULL)
-			continue;
-		
-		free(menuTitle[ix]);
-		menuTitle[ix]  = NULL;
-		menuFunc[ix]   = NULL;
-		menuParam[ix]  = NULL;
-	}
+	menuFirstParam = vP;
 }
 
 
@@ -664,6 +680,16 @@ float Block::getZValue(void)
 
 	LM_T(LmtZ, ("Got Z-value of %s '%s': %02f", typeName(), name, z));
 	return z;
+}
+
+
+/* ****************************************************************************
+*
+* popupMenuSet - 
+*/
+void Block::popupMenuSet(PopupMenuCreator pmc)
+{
+	popupMenuFunc = pmc;
 }
 
 }

@@ -51,6 +51,14 @@ typedef union ProxiedWidget
 
 /* ****************************************************************************
 *
+* PopupMenuCreator - 
+*/
+typedef void (*PopupMenuCreator)(Block* blockP);
+
+
+
+/* ****************************************************************************
+*
 * Block - 
 */
 class Block : public Base
@@ -62,6 +70,8 @@ public:
 	QGraphicsProxyWidget*  proxy;
 	QFont                  font;
 	QPixmap*               pixmap;
+	void                   popupMenuSet(PopupMenuCreator pmc);
+	PopupMenuCreator       popupMenuFunc;
 
 private:
 	bool                   movable;
@@ -84,11 +94,13 @@ public:
 	bool         isExpanded(void);
 
 	bool         menu;
-	void         menuAdd(const char* title, Function func, void* param);
+	void         menuFirstParamSet(void*);
+	void*        menuFirstParam;
+	void         menuAdd(const char* title, MenuFunction func, void* param);
 	void         menuClear(void);
 
 	char*        menuTitle[10];
-	Function     menuFunc[10];
+	MenuFunction menuFunc[10];
 	void*        menuParam[10];
 
 	void         setMovable(bool movable);

@@ -29,10 +29,10 @@ class Block;
 */
 typedef struct Callback
 {
-	Block*    qbP;
-	Function  func;
-	void*     param;
-	bool      persistent;
+	Block*        qbP;
+	MenuFunction  func;
+	void*         param;
+	bool          persistent;
 } Callback;
 
 }

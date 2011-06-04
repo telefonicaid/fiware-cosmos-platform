@@ -48,15 +48,15 @@ private:
 	int        memberSpace;
 
 public:
-	ExpandList(Manager* manager, Box* owner, const char* _title, int x, int y, int _xmargin = 10, int _ymargin = 10, Function onClick = NULL, bool _frame = false);
+	ExpandList(Manager* manager, Box* owner, const char* _title, int x, int y, int _xmargin = 10, int _ymargin = 10, MenuFunction onClick = NULL, bool _frame = false);
 
-	Base*   addMember(const char* string, Function callback = NULL, const void* dataP = NULL, const char* mVec[] = NULL);
-	Base*   addMember(Base* _member,   Function callback = NULL, const void* dataP = NULL, const char* mVec[] = NULL);
+	Base*   addMember(const char* string, MenuFunction callback = NULL, const void* dataP = NULL, const char* mVec[] = NULL);
+	Base*   addMember(Base* _member,   MenuFunction callback = NULL, const void* dataP = NULL, const char* mVec[] = NULL);
 	void    expand(void);
 	void    compress(void);
 	void    exCoOnButtonPress(bool _autoExCo);
 	void    titleSet(const char* _title);
-	void    menu(Function callback, const char* mVec[]);
+	void    menu(MenuFunction callback, const char* mVec[]);
 	Block*  titleGet(void) { return title; };
 	void    setFrame(int padding);
 };

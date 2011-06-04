@@ -28,6 +28,7 @@ class Box;
 * Function - 
 */
 typedef void (*Function)(Block* qbP, void* param);
+typedef void (*MenuFunction)(Block* qbP, void* param, const char* selection);
 typedef void (*ModalFunction)(Box* boxP, void* param);
 
 }

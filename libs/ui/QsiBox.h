@@ -13,7 +13,7 @@
 #include <QColor>
 
 #include "QsiBase.h"            // Base
-#include "QsiFunction.h"        // Function
+#include "QsiFunction.h"        // MenuFunction
 #include "QsiAlignment.h"       // Alignment
 #include "QsiFrame.h"           // Frame
 
@@ -114,13 +114,13 @@ public:
 	Base*    boxAdd(const char*    name,                      int x, int y);
 
 	Base*    lineAdd(const char*   name,                      int x, int y, int x2, int y2);
-	Base*    rectangleAdd(const char*  name,                  int x, int y, int width,      int height, QColor bg, QColor fg, int borderWidth, Function func = NULL, void* param = NULL);
+	Base*    rectangleAdd(const char*  name,                  int x, int y, int width,      int height, QColor bg, QColor fg, int borderWidth, MenuFunction func = NULL, void* param = NULL);
 	Base*    textAdd(const char*   name, const char* txt,     int x, int y);
 
 	Base*    inputAdd(const char*  name, const char* txt,     int x, int y, int width = -1, int height = -1);
-	Base*    buttonAdd(const char* name, const char* txt,     int x, int y, int width = -1, int height = -1,                                   Function func = NULL, void* param = NULL);
-	Base*    imageAdd(const char*  name, const char* path,    int x, int y, int width = -1, int height = -1,                                   Function func = NULL, void* param = NULL);
-	Base*    comboAdd(const char*  name, const char** option, int x, int y, int width = -1, int height = -1,                                   Function func = NULL, void* param = NULL);
+	Base*    buttonAdd(const char* name, const char* txt,     int x, int y, int width = -1, int height = -1,                                   MenuFunction func = NULL, void* param = NULL);
+	Base*    imageAdd(const char*  name, const char* path,    int x, int y, int width = -1, int height = -1,                                   MenuFunction func = NULL, void* param = NULL);
+	Base*    comboAdd(const char*  name, const char** option, int x, int y, int width = -1, int height = -1,                                   MenuFunction func = NULL, void* param = NULL);
 
 	void     qsiShow(const char* why, bool force = false);
 	void     qsiRecursiveShow(const char* why, bool force = false);

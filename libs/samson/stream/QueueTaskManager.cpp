@@ -6,22 +6,29 @@
 
 #include "engine/ProcessManager.h"  // notification_process_request
 
+#include "QueuesManager.h"   // QueueManager
+
 namespace samson {
     namespace stream {
         
-        QueueTaskManager::QueueTaskManager()
+        QueueTaskManager::QueueTaskManager( QueuesManager* _qm )
         {
             id = 1;
             // Ready to receive notifications
             listen( notification_process_request_response );    
+            
+            qm = _qm;
         }
         
+        size_t QueueTaskManager::getNewId()
+        {
+            return id++;
+        }
         
         // Insert a queue in the system
         
         void QueueTaskManager::add( QueueTask* task )
         {
-            task->id = id++;    // Set the id of this task
             queueTasks.push_back( task );
             
             // Check if it is necessary to run a task
@@ -64,6 +71,7 @@ namespace samson {
                 if( task->lock() )
                 {
                     QueueTask * _task = queueTasks.extractFront();
+                    
                     if( task != _task )
                         LM_X(1, ("Internal error. Forbident concurrent access to Queue Tasks"));
 
@@ -74,6 +82,7 @@ namespace samson {
                     engine::Notification *notification = new engine::Notification( notification_process_request , _task->getStreamProcess() );
                     notification->environment.set("target", "QueueTaskManager");
                     notification->environment.setSizeT("id", _task->id );
+                    notification->environment.set("queue", _task->queue_name );
                     engine::Engine::add( notification );
                 }
                 
@@ -86,7 +95,9 @@ namespace samson {
             if ( notification->isName(notification_process_request_response) )
             {
                 size_t _id = notification->environment.getSizeT("id", 0);
-
+                std::string queue_name = notification->environment.get("queue","--");
+                
+                
                 // Extract the object to not be automatically removed
                 notification->extractObject();
                 
@@ -94,16 +105,20 @@ namespace samson {
                 
                 if( _task )
                 {
-                    LM_M(("StreamTask with id %lu finished", _id));
+                    //LM_M(("StreamTask with id %lu finished", _id));
                     _task->unlock();
                     _task->release();
                     
-                    LM_M(("Destroying task"));
+                    //LM_M(("Destroying task"));
                     delete _task;
                     
                 }
                 else
                     LM_W(("Notification of a finish item at QueueTaskManager, but task %lu not found in the running task list " , _id));
+                
+                // Notify that this stream task is finished
+                qm->notifyFinishTask(queue_name, id);
+                
             }
         }
         

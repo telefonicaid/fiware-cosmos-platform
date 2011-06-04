@@ -60,29 +60,23 @@ namespace samson {
             void retain( Block* b , size_t task_id )
             {
                 b->tasks.insert( task_id );
+
+                // Reconsider the position of this block in the global list
                 reorder( b );
                 
-                _review();
-                
-                retain( b );
             }
 
             // Release by a particular task ( it changes the preference in the list of blocks )
             void release( Block* b, size_t task_id )
             {
                 b->tasks.erase( task_id );
-                b->retain_counter--;
-                
-                
-                if( b->retain_counter == 0)
-                {
-                    blocks.remove( b );
-                    delete b;
-                }
-                else
-                    reorder( b );
 
-                _review();
+                // Reconsider the position of this block in the global list
+                reorder( b );
+
+                // Review if the block should be removed
+                reviewBlock( b );
+
             }
             
             void retain( Block* b )
@@ -93,42 +87,42 @@ namespace samson {
             void release( Block* b )
             {
                 b->retain_counter--;
+
+                // Review if the block should be removed
+                reviewBlock( b );
                 
-                if ( b->tasks.size() != 0 )
-                    LM_X(1, ("Internal error. It is not possible to have a non-retained block that is associated to a task"));
-                
-                // If no retained by anyone, remove
-                if( b->retain_counter == 0)
+                // Review pending tasks to be scheduled
+                _review();
+            }      
+            
+            void reviewBlock( Block *b )
+            {
+                // If no retained by anyone, remove...
+                if( !b->isRetained() )
                 {
+                    if( b->isContentOnMemory() )
+                        memory -= b->size;
+                    
                     blocks.remove( b );
                     delete b;
-                    _review();
                 }
                 
-            }            
+            }
             
-            static bool lock( std::set<Block*> &blocks  )
+            
+            static bool lock( Block *block  )
             {
-                std::set<Block*>::iterator i;
-                for (i = blocks.begin() ; i != blocks.end() ; i++ )
-                    if ( !(*i)->isContentOnMemory() ) 
-                        return false;
-                
-                for (i = blocks.begin() ; i != blocks.end() ; i++ )
-                    (*i)->lock_counter++;
+                if( ! block->isContentOnMemory() )
+                    LM_X(1, ("Internal error loking blocks of memory"));
+                block->lock_counter++;
                 return true;   
             }
             
-            static void unlock( std::set<Block*> &blocks  )
+            static void unlock( Block *block   )
             {
-                std::set<Block*>::iterator i;
-                for (i = blocks.begin() ; i != blocks.end() ; i++ )
-                {
-                    (*i)->lock_counter--;
-                    if( (*i)->lock_counter < 0 )
-                        LM_X(1,("Internal error, Lock counter cannot be negative"));
-                    
-                }
+                block->lock_counter--;
+                if( block->lock_counter < 0 )
+                    LM_X(1,("Internal error, Lock counter cannot be negative"));
             }
             
             

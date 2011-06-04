@@ -2,12 +2,16 @@
 #define _H_SAMSON_QUEUE_TASK
 
 #include <set>              // std::set
-#include "au/Format.h"      // au::Format
 #include <set>
 #include <sstream>
-#include "Block.h"  
-#include "engine/ProcessItem.h"
+
+#include "au/Format.h"                              // au::Format
+
+#include "engine/ProcessItem.h"                     // engine::ProcessItem
+
 #include "samson/stream/StreamProcessBase.h"        // parent class 
+#include "samson/stream/Block.h"                    // samson::Stream::Block
+#include "samson/stream/BlockMatrix.h"              // samson::stream::BlockMatrix
 
 namespace samson {
     namespace stream {
@@ -18,25 +22,24 @@ namespace samson {
         
         class QueueTask
         {
-
-        protected:
-            
-            friend class QueueTaskManager;      // Manager 
-            std::set< Block* > blocks;          // List of blocks involved in the operation ( retained by this operation )
-            size_t id;                          // Id of the operation
-
             
         public:
             
-            QueueTask(  )
+            size_t id;                          // Id of the operation
+            std::string queue_name;             // Name of the queue to work on
+            
+            BlockMatrix matrix;                 // Matrix of blocks involved in this operation
+            
+            QueueTask( size_t _id , std::string _queue_name )
             {
+                id = _id;
+                queue_name = _queue_name;
             }
             
             virtual ~QueueTask()
             {
             }
             
-            void add( Block * b );
             
             // Funciton to check if all the blocks are in memory
             bool ready();

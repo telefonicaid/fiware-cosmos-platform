@@ -218,9 +218,11 @@ namespace samson {
                 return;
             }
             
+            // Get the flag of txt buffer
+            bool txt = packet->message->push_block().txt();
             
             // Create the new block with the buffer
-            stream::Block *block = new stream::Block( packet->buffer );
+            stream::Block *block = new stream::Block( packet->buffer , txt );
             
             // Push the packet to a particular stream-queue
             for ( int i = 0 ; i < packet->message->push_block().target_size() ; i++)

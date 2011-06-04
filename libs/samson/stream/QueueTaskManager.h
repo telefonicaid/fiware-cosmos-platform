@@ -13,6 +13,7 @@ namespace samson {
     namespace stream {
         
         class QueueTask;
+        class QueuesManager;
         
         class QueueTaskManager : public ::engine::NotificationListener
         {
@@ -21,9 +22,13 @@ namespace samson {
             au::list< QueueTask > queueTasks;           // List of pending task to be executed
             au::map< size_t , QueueTask > runningTasks; // Map of running tasks
             
+            QueuesManager* qm;
+            
         public:
             
-            QueueTaskManager();
+            QueueTaskManager( QueuesManager* qm );
+            
+            size_t getNewId();
             
             void add( QueueTask* task );
             

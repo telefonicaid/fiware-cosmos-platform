@@ -346,7 +346,7 @@ namespace samson
                                 
                 engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("example", 100000000, 0 );
                 buffer->setSize( buffer->getMaxSize() );    // Full the buffer with crap content ;)
-                stream::Block *block = new stream::Block( buffer );
+                stream::Block *block = new stream::Block( buffer , true );
 
                 // Change priority
                 int new_priority = rand()%10;

@@ -2,6 +2,7 @@
 SET (HEADERS
     Block.h
     BlockManager.h
+    BlockMatrix.h
     Queue.h
     QueuesManager.h
     QueueTask.h
@@ -14,6 +15,7 @@ SET (SOURCES
     Block.cpp
     BlockManager.cpp
     Queue.cpp
+    BlockMatrix.cpp
     QueuesManager.cpp
     QueueTask.cpp
     QueueTaskManager.cpp    

@@ -18,6 +18,8 @@
 #include <string>
 #include "samson/common/samson.pb.h"        // network::...
 #include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager
+#include "engine/EngineNotification.h"            // engine::NotificationListener
+
 
 namespace samson {
     
@@ -29,7 +31,7 @@ namespace samson {
         class Queue;
         class Block;
         
-        class QueuesManager 
+        class QueuesManager
         {
             au::map< std::string , Queue > queues;  // Map with the current queues
             
@@ -47,10 +49,11 @@ namespace samson {
             // Add a block to a particular queue ( ususally from the network interface )
             void addBlock( std::string queue , int channel , Block *b);
             
-            
             // set info ( from controller )
             void setInfo( network::StreamQueue &queue );
-            
+
+            // Notify finish task
+            void notifyFinishTask( std::string queue , size_t task );
             
         private:
             

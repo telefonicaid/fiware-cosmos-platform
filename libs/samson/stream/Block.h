@@ -38,7 +38,11 @@ namespace samson {
             engine::Buffer *buffer;     // Buffer of data if is on memory
             
             size_t size;                // Size of the buffer
+            KVHeader*header;            // always on memory copy of the header
 
+            size_t task_id;             // Id of the task that generated this block
+            int order;                  // Order in witch blocks were generated
+            
             int lock_counter;           // Counter to indicate that we are currenltly using this block for processing ( should not be removed from memory )
             
             size_t id;                  // Identifier of the block ( in this node )
@@ -61,7 +65,7 @@ namespace samson {
         public:
 
             // Constructor with automatic add to the BlockManager
-            Block( engine::Buffer *buffer );
+            Block( engine::Buffer *buffer , bool txt );
             ~Block();
             
             // Set and Get priority
@@ -157,6 +161,29 @@ namespace samson {
                 else
                     return 0;
             }
+
+            bool isRetained()
+            {
+                if( ( tasks.size() == 0 ) && (retain_counter == 0) )
+                    return false;
+                return true;
+            }
+            
+            bool isNecessaryForHashGroups( int _hg_begin , int _hg_end )
+            {
+                if( !header )
+                    LM_X(1,("Internal error managing blocks"));
+                
+                if( _hg_end <= (int)header->hg_begin )
+                    return false;
+                
+                if( _hg_begin >= (int)header->hg_end )
+                    return false;
+                
+                return true;
+                
+            }
+            
             
         };
             

@@ -18,28 +18,24 @@ namespace samson
             
         public:
             
-            ParserQueueTask( network::StreamQueue * streamQueue  ) : StreamProcessBase( key_value , streamQueue )
+            ParserQueueTask( size_t id , std::string queue_name , network::StreamQueue * streamQueue  ) : stream::QueueTask(id,  queue_name), StreamProcessBase( key_value , streamQueue )
             {
                 operation_name = "stream:" + streamQueue->operation();
             }
             
             ~ParserQueueTask()
             {
-                LM_M(("Destroying ParserQueueTask"));
             }
+
+            // Get the required blocks to process
+            void getBlocks( BlockMatrix *matrix );
             
             // Function to generate output key-values
             void generateKeyValues( KVWriter *writer );
-            
-            
-            virtual std::string getStatus()
-            {
-                std::ostringstream output;
-                output << "[" << id << "] ";
-                output << "Parser " << streamQueue->operation() << " processing " << blocks.size() << " blocks with " << au::Format::string( getSize( blocks ) );
-                return output.str();
-            }
-            
+
+            // Get a string with the status of this task
+            virtual std::string getStatus();
+
             
             StreamProcessBase* getStreamProcess()
             {
@@ -56,27 +52,24 @@ namespace samson
             
         public:
             
-            MapQueueTask( network::StreamQueue * streamQueue  ) : StreamProcessBase( key_value , streamQueue )
+            MapQueueTask( size_t id , std::string queue_name , network::StreamQueue * streamQueue  ) : stream::QueueTask(id , queue_name), StreamProcessBase( key_value , streamQueue )
             {
                 operation_name = "stream:" + streamQueue->operation();
             }
             
             ~MapQueueTask()
             {
-                LM_M(("Destroying ParserQueueTask"));
             }
+            
+            // Get the required blocks to process
+            void getBlocks( BlockMatrix *matrix );
             
             // Function to generate output key-values
             void generateKeyValues( KVWriter *writer );
             
+            // Get a string with the status of this task
+            virtual std::string getStatus();
             
-            virtual std::string getStatus()
-            {
-                std::ostringstream output;
-                output << "[" << id << "] ";
-                output << "Map " << streamQueue->operation() << " processing " << blocks.size() << " blocks with " << au::Format::string( getSize( blocks ) );
-                return output.str();
-            }
             
             
             StreamProcessBase* getStreamProcess()
@@ -85,6 +78,45 @@ namespace samson
             }
             
         };
+
+        // Parser QueueTask ( at the same time is the ProcessItem in the engine library to be executed )
+        
+        class ReduceQueueTask : public stream::QueueTask , public StreamProcessBase
+        {
+            int hg_begin;
+            int hg_end;
+            
+        public:
+            
+            ReduceQueueTask( size_t id , std::string queue_name , network::StreamQueue * streamQueue  ) : stream::QueueTask(id , queue_name) , StreamProcessBase( key_value , streamQueue )
+            {
+                operation_name = "stream:" + streamQueue->operation();
+                hg_begin = -1;
+                hg_end = -1;
+            }
+            
+            ~ReduceQueueTask()
+            {
+            }
+            
+            void setHashGroups( int _hg_begin , int _hg_end )
+            {
+                hg_begin = _hg_begin;
+                hg_end = _hg_end;
+            }
+                        
+            // Function to generate output key-values
+            void generateKeyValues( KVWriter *writer );
+            
+            // Get a string with the status of this task
+            virtual std::string getStatus();
+            
+            StreamProcessBase* getStreamProcess()
+            {
+                return this;
+            }
+            
+        };        
         
         
         

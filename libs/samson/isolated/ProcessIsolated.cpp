@@ -195,6 +195,10 @@ namespace samson
 						LM_X(1,("Internal error"));
                     
                     
+                    // Set the hash-group limits of the header
+                    header->setHashGroups( info );
+                    
+                    // Process the output buffer
                     processOutputBuffer(buffer, o, s, finish);
                     
 					

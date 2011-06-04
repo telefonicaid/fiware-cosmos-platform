@@ -218,35 +218,16 @@ namespace samson {
 		{
 			
 			
-			if( commandLine.get_num_arguments() < 4 )
+			if( commandLine.get_num_arguments() < 3 )
 			{
-				response.output = "Usage: add_queue name format operation outputs1 outputs2 output3. Where format = { txt , key_format-value_format } and outputs1 = { stream_queue_name , q1,q2,q3 } ";
+				response.output = "Usage: add_queue name operation outputs1 outputs2 output3. Where format = { txt , key_format-value_format } and outputs1 = { stream_queue_name , q1,q2,q3 } ";
 				response.error = true;
 				return response;
 			}
             
 			std::string name            = commandLine.get_argument( 1 );
-            std::string format_string   = commandLine.get_argument( 2 );
-			std::string operation       = commandLine.get_argument( 3 );
+			std::string operation       = commandLine.get_argument( 2 );
 
-            KVFormat format = KVFormat::format( format_string );
-			
-            
-            if( !ModulesManager::shared()->checkData( format.keyFormat ) )
-            {
-                response.output = "Unsupported data format " + format.keyFormat;
-                response.error = true;
-                return response;
-            }
-            
-            if( !ModulesManager::shared()->checkData( format.valueFormat ) )
-            {
-                std::ostringstream output;
-                output << "Unsupported data format " + format.valueFormat;
-                response.output = output.str();
-                response.error = true;
-                return response;
-            }
 
             // Check it the queue already exists
             network::StreamQueue *_queue = stream_queues.findInMap( name );
@@ -280,7 +261,7 @@ namespace samson {
                 case Operation::parser:
                     
                     // Check with the number of outputs
-                    if( commandLine.get_num_arguments() < ( 4 + op->getNumOutputs() ) )
+                    if( commandLine.get_num_arguments() < ( 3 + op->getNumOutputs() ) )
                     {
                         std::ostringstream output;
                         output << "Not enought outputs for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
@@ -295,7 +276,22 @@ namespace samson {
                 case Operation::map:
                     
                     // Check with the number of outputs
-                    if( commandLine.get_num_arguments() < ( 4 + op->getNumOutputs() ) )
+                    if( commandLine.get_num_arguments() < ( 3 + op->getNumOutputs() ) )
+                    {
+                        std::ostringstream output;
+                        output << "Not enought outputs for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
+                        response.output = output.str();
+                        response.error = true;
+                        return response;
+                        
+                    }
+                    
+                    break;
+
+                case Operation::reduce:
+                    
+                    // Check with the number of outputs
+                    if( commandLine.get_num_arguments() < ( 3 + op->getNumOutputs() ) )
                     {
                         std::ostringstream output;
                         output << "Not enought outputs for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
@@ -337,7 +333,6 @@ namespace samson {
             network::StreamQueue *tmp = new network::StreamQueue();
             tmp->set_num_workers( controller->network->getNumWorkers() );
             tmp->set_name(name);
-            copy( &format , tmp->mutable_format() );
             tmp->set_operation( operation );
             
             for (int i = 0 ; i < op->getNumOutputs() ; i++ )
@@ -345,10 +340,27 @@ namespace samson {
                 network::StreamQueueOutput * output = tmp->add_output();
 
                 // Get comma separated elements
-                std::vector<std::string> queues = au::split( commandLine.get_argument( 4 + i) , ',' );
+                std::vector<std::string> queues = au::split( commandLine.get_argument( 3 + i) , ',' );
 
                 for ( size_t j = 0 ; j < queues.size() ; j++ )
-                    output->add_queue( queues[j] );
+                {
+                    std::vector<std::string> queue_channel = au::split( queues[j] , ':' );
+                    if( queue_channel.size() == 1 ) 
+                    {
+                        network::QueueChannel *qc = output->add_target();
+                        qc->set_queue(queue_channel[0]);
+                        qc->set_channel(0);
+                    } 
+                    else if( queue_channel.size() == 2 )
+                    {
+                        network::QueueChannel *qc = output->add_target();
+                        qc->set_queue(queue_channel[0]);
+                        qc->set_channel( atoi( queue_channel[1].c_str() ) );
+                    }
+                    else
+                        LM_W(("Error considering queue-channel %s", queues[j].c_str()));
+                    
+                }
                 
             }
             

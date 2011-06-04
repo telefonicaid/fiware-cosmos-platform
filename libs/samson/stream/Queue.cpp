@@ -5,7 +5,9 @@
 #include "QueuesManager.h"  // samson::stream::QueuesManager
 #include "Block.h"          // samson::stream::Block
 #include "BlockManager.h"   // samson::stream::BlockManager
-    
+
+#include "engine/ProcessManager.h"      // engine::ProcessManager
+
 #include "samson/common/EnvironmentOperations.h"    // getStatus()
 #include "samson/module/ModulesManager.h"           
 #include "QueueTask.h"
@@ -17,52 +19,7 @@
 namespace samson {
     namespace stream
     {
-        
-        void QueueChannel::add( Block *block )
-        {
-            // Retain the block to be an owner of the block
-            stream::BlockManager::shared()->retain( block );
-            
-            
-            // Insert in the back of the list
-            blocks.push_back( block );
-        }
-
-        Block* QueueChannel::extract( )
-        {
-            return blocks.extractFront();
-        }
-        
-        size_t QueueChannel::getSize()
-        {
-            size_t total = 0;
-            for (  au::list< Block >::iterator i = blocks.begin() ; i!= blocks.end() ; i++)
-                total += (*i)->getSize();
-            return total;
-        }
-        
-        std::string QueueChannel::getStatus()
-        {
-            size_t size=0;
-            size_t size_on_memory=0;
-            size_t size_on_disk=0;
-            
-            std::ostringstream output;
-            std::list<Block*>::iterator b;
-            
-            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
-            {
-                size += (*b)->getSize();
-                size_on_memory += (*b)->getSizeOnMemory();
-                size_on_disk += (*b)->getSizeOnDisk();
-            }
-            
-            output << "[ " << blocks.size() << " blocks with " << au::Format::string( size, "Bytes" );
-            output << " " << au::Format::percentage_string(size_on_memory, size) << " on memory";
-            output << " & " << au::Format::percentage_string(size_on_disk, size) << " on disk ] ";
-
-            return output.str();
-        }
+                
         
 #pragma Queue
         
@@ -71,36 +28,35 @@ namespace samson {
             name = _name;
             qm = _qm;
             streamQueue = NULL; // By default it is not assigned
-            
+                        
             listen( notification_review_task_for_queue );
         }
         
-        // Add a block to a particular queue
-        
-        void Queue::add( int _channel , Block *block )
+        void Queue::add( int channel , Block *block )
         {
-            QueueChannel * channel = channels.findOrCreate( _channel );
-            channel->add( block );
+            // Retain the block for being in a queue
+            stream::BlockManager::shared()->retain( block );
+            
+            // Add to the matrix of blocks
+            matrix.add( channel , block );
         }
         
         void Queue::scheduleNewTasksIfNecessary()
         {
             if( !streamQueue )
                 return;     // No information about how to process data
-            
-            int input_channel = 0 ;
-            
-            QueueChannel*channel = channels.findOrCreate( input_channel );
-            
-            size_t total_size   = channel->getSize();
-            int total_time      = cronometer.diffTimeInSeconds();
 
-            if( total_size == 0 )
-                return;
-            
-            if( ( total_size < 1000000) && (total_time < 3) )
+            if( matrix.isEmpty() )
             {
-                LM_M(("Not run parser for size-time reasons size=%s time=%s", au::Format::string(total_size).c_str() , au::Format::time_string( total_time).c_str()  ));
+                //LM_M(("Not run operation since no data" ));
+                return;
+            }
+                
+                        
+            int total_time      = cronometer.diffTimeInSeconds();
+            if( total_time < 3 )
+            {
+                //LM_M(("Not run operation since time  is time=%s", au::Format::time_string( total_time).c_str()  ));
                 return;
             }
             
@@ -110,31 +66,130 @@ namespace samson {
                 case Operation::parser:
                     
                     {
-                        ParserQueueTask *tmp = new ParserQueueTask( streamQueue ); 
-                        while( channel->getNumBlocks() > 0 )
-                            tmp->add( channel->extract() );
-                        // Schedule tmp task into QueueTaskManager
-                        qm->queueTaskManager.add( tmp );
+                        
+                        // Clear all the packets accumulated outputside the main channel
+                        // TODO:  matrix.clearBlocksOutputsideChannel( 0 );
+                        
+                        while( !matrix.isEmpty() )
+                        {
+                            LM_M(("Creating a new parser operation over %s" , matrix.str().c_str() ));
+                            
+                            ParserQueueTask *tmp = new ParserQueueTask( qm->queueTaskManager.getNewId() , name ,   streamQueue ); 
+                            tmp->getBlocks( &matrix );
+
+                            // Reatin blocs by the task and release the one form the queue
+                            tmp->retain();
+                            
+                            // Release the elements since there are not in the queue any more
+                            tmp->matrix.release();  
+                            
+                            // add the id of this task in the list of running tasks
+                            running_tasks.insert( tmp->id );
+                           
+                            // Schedule tmp task into QueueTaskManager
+                            qm->queueTaskManager.add( tmp );
+                            
+                        }
                         
                         // reset the cronometer for the next operation
                         cronometer.reset();
-                        
+                            
                     }
                     break;
                     
                 case Operation::map:
                     {
-                        MapQueueTask *tmp = new MapQueueTask( streamQueue ); 
-                        while( channel->getNumBlocks() > 0 )
-                            tmp->add( channel->extract() );
-                        // Schedule tmp task into QueueTaskManager
-                        qm->queueTaskManager.add( tmp );
+                        // Clear all the packets accumulated outputside the main channel
+                        // TODO:  matrix.clearBlocksOutputsideChannel( 0 );
+                        
+                        while( !matrix.isEmpty() )
+                        {
+                            //LM_M(("Scheduling a new map operation"));
+                            
+                            MapQueueTask *tmp = new MapQueueTask( qm->queueTaskManager.getNewId() , name , streamQueue ); 
+                            
+                            // Extract the necessary blocks
+                            tmp->getBlocks( &matrix );
+                            
+                            // Reatin blocs by the task and release the one form the queue
+                            tmp->retain();
+
+                            // Release the elements since there are not in the queue any more
+                            tmp->matrix.release();  
+                            
+                            // add the id of this task in the list of running tasks
+                            running_tasks.insert( tmp->id );
+                            
+                            // Schedule tmp task into QueueTaskManager
+                            qm->queueTaskManager.add( tmp );
+                            
+                        }
                         
                         // reset the cronometer for the next operation
                         cronometer.reset();
                         
                     }
                     break;
+
+                case Operation::reduce:
+                {
+                    
+                    if( running_tasks.size() > 0 )
+                        return;
+                    
+                    int num_inputs = op->getNumInputs();
+                    LM_M(("Processing reduce with %d inputs" ,  num_inputs ));
+
+                    BlockMatrix _matrix;               // Matrix of blocks to process income data
+                    BlockMatrix _matrix_status;        // Matrix of blocs to process status
+
+                    // Extract the blocks from inputs necessary until a maximum size of 1G
+                    matrix.extract( &_matrix , 0 , num_inputs-1 , 1000000000 );
+
+                    // Extract blocks of the status ( without limit of size )
+                    matrix.extract( &_matrix_status , num_inputs-1, num_inputs-1 );
+                    
+                    // Create all the task for this reduce based on the blocks in the state
+                    int num_tasks = 20;
+                    int hash_groups_per_task = (KVFILE_NUM_HASHGROUPS/num_tasks);
+                    for (int i = 0 ; i < num_tasks ; i++)
+                    {
+                        int hg_begin = hash_groups_per_task *( i );
+                        int hg_end   = hash_groups_per_task *( i+1 );
+                        
+                        if( i == (num_tasks-1) )
+                            hg_end = KVFILE_NUM_HASHGROUPS;
+                        
+                        // Create the reduce operation
+                        ReduceQueueTask *tmp = new ReduceQueueTask( qm->queueTaskManager.getNewId() ,name ,  streamQueue ); 
+                        tmp->setHashGroups( hg_begin , hg_end );
+                        
+                        // add input blocks to the task that fits 
+                        tmp->matrix.copyFrom( &_matrix , hg_begin , hg_end );
+                        
+                        // add the id of this task in the list of running tasks
+                        running_tasks.insert( tmp->id );
+
+                        // Reatin blocks with the task id
+                        tmp->retain();
+                        
+                        // Schedule tmp task into QueueTaskManager
+                        qm->queueTaskManager.add( tmp );
+                    
+                        
+                        
+                    }
+                    
+                    LM_M(("Reduce processing %s"  , _matrix.str().c_str() ));
+                    
+                    
+                    // Release the packets used in the process
+                    _matrix.release();
+                    
+                    
+                }
+                    break;
+                    
                     
                     
                 default:
@@ -161,15 +216,35 @@ namespace samson {
             
             std::ostringstream output;
             
-            output << "\tQueue " << name << ":\n";
+            output << "\tQueue " << name << ": ";
             
-            // Information about channels
-            au::map<int , QueueChannel>::iterator c;
-            for ( c = channels.begin() ; c != channels.end() ; c++)
-                output << "\t\tChannel " << c->first << " : " << c->second->getStatus() << "\n";
+            if( running_tasks.size() > 0)
+                output << "( " << running_tasks.size() << " pending operations )";
+            
+            output << matrix.str();
             
             if( streamQueue )
-                output << "\t\t\t --> Process with " << streamQueue->operation() << "\n";
+            {
+                output << "\n\t\t\t --> Process with " << streamQueue->operation() << " to " ;
+                
+                for (int i = 0 ; i < streamQueue->output_size() ; i++)
+                {
+                    for (int j=0; j < streamQueue->output(i).target_size() ; j++)
+                    {
+                        output << streamQueue->output(i).target(j).queue() << ":" << streamQueue->output(i).target(j).channel();
+                        if( j != (streamQueue->output(i).target_size() - 1) )
+                        {
+                            output << ",";
+                        }
+                    }
+                    
+                    output << " ";
+                }
+                
+                output << "\n";
+            }
+            else
+                output << "\n\t\t\t --> [ No information about how to process ] ";
             
             return output.str();
         }
@@ -177,6 +252,11 @@ namespace samson {
         ::samson::NetworkInterface* Queue::getNetwork()
         {
             return qm->worker->network;
+        }
+
+        void Queue::notifyFinishTask( size_t task_id )
+        {
+            running_tasks.erase( task_id );
         }
 
         

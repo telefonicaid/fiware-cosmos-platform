@@ -22,7 +22,7 @@ namespace samson {
             
             if( b.tasks.size() > 0 )
             {
-                out << "<";
+                out << " Tasks: <";
                 std::set<size_t>::iterator i;
                 for ( i=b.tasks.begin() ; i != b.tasks.end() ; )
                 {
@@ -31,10 +31,14 @@ namespace samson {
                     if( i != b.tasks.end() )
                         out << ",";
                 }
-                out << ">";
+                out << "> ";
             }
             
-            out <<  " (" << b.priority << ")";
+            if( b.retain_counter > 0 )
+                out << " Retain " << b.retain_counter << " ";
+            
+            if( b.priority != 0)
+                out <<  " Priority (" << b.priority << ")";
             
             switch (b.state) {
                 case Block::on_memory:
@@ -59,7 +63,7 @@ namespace samson {
         }
      
         
-        Block::Block( engine::Buffer *_buffer )
+        Block::Block( engine::Buffer *_buffer , bool txt )
         {
             // Buffer of data
             buffer = _buffer;  
@@ -85,6 +89,19 @@ namespace samson {
 
             // Add this object as a listener of notification_disk_operation_request_response
             listen( notification_disk_operation_request_response );
+            
+
+            if( !txt )
+            {
+                header = (KVHeader*) malloc( sizeof( KVHeader ) );
+                memcpy(header, buffer->getData(), sizeof(KVHeader));
+            }
+            else
+                header = NULL;
+
+            // By default no task & order ( push from delilah )
+            task_id = 0;             
+            order=0;
             
         }
 

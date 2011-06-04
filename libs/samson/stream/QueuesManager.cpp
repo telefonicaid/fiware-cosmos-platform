@@ -15,7 +15,7 @@
 namespace samson {
     namespace stream{
     
-        QueuesManager::QueuesManager(::samson::SamsonWorker* _worker)
+        QueuesManager::QueuesManager(::samson::SamsonWorker* _worker) : queueTaskManager( this )
         {
             worker = _worker;
             
@@ -75,6 +75,12 @@ namespace samson {
             
         }
 
+        void QueuesManager::notifyFinishTask( std::string queue , size_t task )
+        {
+            getQueue( queue )->notifyFinishTask( task );
+        }
+
+        
 
         
     }

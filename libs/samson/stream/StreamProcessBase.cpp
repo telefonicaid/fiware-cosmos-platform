@@ -43,13 +43,11 @@ namespace samson {
                     
                     // Generate the key-values
                     generateKeyValues( getWriter() );
-                    LM_M(("StreamProcessBase::runIsolated calls getWriter()->flushBuffer(true);\n"));
                     getWriter()->flushBuffer(true);
                     break;
                 case txt:
                     // Generate TXT content using the entire buffer
                     generateTXT( getTXTWriter() );
-                    LM_M(("StreamProcessBase::runIsolated calls getTXTWriter()->flushBuffer(true);\n"));
                     getTXTWriter()->flushBuffer(true);
                     break;
             }
@@ -60,20 +58,23 @@ namespace samson {
         void StreamProcessBase::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
         {
             
-            LM_M(("Processing an output buffer of stream operation buffer_size=%s output=%d outputWorker=%d " , au::Format::string(buffer->getSize()).c_str() , output , outputWorker ));
+            //LM_M(("Processing an output buffer of stream operation buffer_size=%s output=%d outputWorker=%d " , au::Format::string(buffer->getSize()).c_str() , output , outputWorker ));
             
             Packet* packet = new Packet( Message::PushBlock );
             packet->buffer = buffer;    // Set the buffer of data
             packet->message->set_delilah_id( 0 );
+            
             network::PushBlock* pb =  packet->message->mutable_push_block();
             pb->set_size( buffer->getSize() );
+            pb->set_txt(false); // To review when txt buffers are sended to a queue produced by a parserOut operation
             
-            for ( int i = 0 ; i < streamQueue->output(output).queue_size() ; i++)
+            for ( int i = 0 ; i < streamQueue->output(output).target_size() ; i++)
             {
-                std::string queue_name = streamQueue->output(output).queue(i);
+                std::string queue_name = streamQueue->output(output).target(i).queue();
+                int channel = streamQueue->output(output).target(i).channel();
                 network::QueueChannel *target = pb->add_target();
                 target->set_queue( queue_name );
-                target->set_channel(0);
+                target->set_channel(channel);
             }
             
             // Send the packet using the "notification_send_to_worker"

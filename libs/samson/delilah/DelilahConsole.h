@@ -83,6 +83,7 @@ namespace samson {
             addOption("info_load_data_manager");
             addOption("info_queues");
             addOption("info_engine");
+            addOption("add_queue");
         }
         
         void addOperations()

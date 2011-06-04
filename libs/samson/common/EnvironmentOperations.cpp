@@ -50,7 +50,6 @@ namespace samson {
         txt << std::setw(15) << queue->name();
         
         std::ostringstream format_string;
-        format_string << "( " << queue->format().keyformat() << "-" << queue->format().valueformat() << " )";
         
         txt << " ";
         std::string _format_string = format_string.str();
@@ -60,10 +59,10 @@ namespace samson {
         for (int j = 0 ;  j < queue->output_size() ; j++)
         {
             txt << " [ ";
-            for (int k = 0 ; k < queue->output(j).queue_size() ; k++ )
+            for (int k = 0 ; k < queue->output(j).target_size() ; k++ )
             {
-                txt << queue->output(j).queue(k);
-                if( k != (queue->output(j).queue_size()-1) )
+                txt << queue->output(j).target(k).queue() << ":" << queue->output(j).target(k).channel() ;
+                if( k != (queue->output(j).target_size()-1) )
                     txt << ",";
             }
             txt << " ] ";

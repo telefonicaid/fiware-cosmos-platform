@@ -11,12 +11,19 @@
  *
  */
 
+
 #include <ostream>      // std::ostream
 #include <string>       // std::string
+
 #include "au/list.h"      // au::list
 #include "au/Cronometer.h"              // au::cronometer
+
+#include "samson/common/coding.h"           // FullKVInfo
+
 #include "samson/common/samson.pb.h"    // network::
 #include "engine/EngineNotification.h"        // engine::NotificationListener
+
+#include "samson/stream/BlockMatrix.h"      // samson::Stream::BlockMatrix
 
 #define notification_review_task_for_queue "notification_review_task_for_queue"
 
@@ -28,28 +35,6 @@ namespace samson {
     {
         class Block;
         class QueuesManager;
-
-        class QueueChannel
-        {
-            // Blocks currently in the input queue
-            au::list< Block > blocks;       
-            
-        public:
-            
-            void add( Block *b );
-            
-            Block* extract( );
-
-            size_t getSize();
-            
-            int getNumBlocks()
-            {
-                return blocks.size();
-            }
-            
-            std::string getStatus();
-            
-        };
         
         class Queue : engine::NotificationListener
         {
@@ -60,7 +45,12 @@ namespace samson {
             std::string name;               // Name of the queue
             au::Cronometer cronometer;      // Time since the last command execution
             
-            au::map<int , QueueChannel> channels;
+            BlockMatrix matrix;             // Matrix of blocks ( one list per input channel )
+            
+
+            
+            std::set<size_t> running_tasks;     // Tasks currently running 
+            
             
         public:
             
@@ -73,6 +63,7 @@ namespace samson {
             {
                 if( streamQueue )
                     delete streamQueue;
+                
             }
             
             void setStreamQueue( network::StreamQueue& _streamQueue )
@@ -86,6 +77,7 @@ namespace samson {
             }
             
             void add( int channel , Block *block );
+        
 
             // Create new tasks if necessary
             void scheduleNewTasksIfNecessary();
@@ -101,6 +93,8 @@ namespace samson {
             {
                 return true;
             }
+            
+            void notifyFinishTask( size_t task_id );
             
         };
         

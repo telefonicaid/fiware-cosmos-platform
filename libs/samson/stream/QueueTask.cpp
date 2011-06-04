@@ -5,44 +5,36 @@
 
 namespace samson {
     namespace stream{
-
-        void QueueTask::add( Block * b )
-        {
-            blocks.insert( b );
-        }
-
         
         bool QueueTask::ready()
         {
-            std::set<Block*>::iterator i;
-            for ( i = blocks.begin() ; i != blocks.end() ; i++)
-                if( !(*i)->isContentOnMemory() )
-                    return false;
-            return true;
+            return matrix.isContentOnMemory();
         }
         
         void QueueTask::retain()
         {
-            std::set<Block*>::iterator i;
-            for ( i = blocks.begin() ; i != blocks.end() ; i++)
-                BlockManager::shared()->retain(*i, id );
+            matrix.retain(id);
         }
         
         void QueueTask::release()
         {
-            std::set<Block*>::iterator i;
-            for ( i = blocks.begin() ; i != blocks.end() ; i++)
-                BlockManager::shared()->release(*i, id );
+            matrix.release(id);
         }
 
         bool QueueTask::lock()
         {
-            return BlockManager::lock( blocks );
+            if( matrix.isContentOnMemory() )
+            {
+                matrix.lock();
+                return true;
+            }
+            else
+                return false;
         }
         
         void QueueTask::unlock()
         {
-            BlockManager::unlock( blocks );
+            matrix.unlock();
         }
         
         

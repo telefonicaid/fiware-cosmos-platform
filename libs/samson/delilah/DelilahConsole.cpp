@@ -25,6 +25,12 @@
 
 namespace samson
 {	
+	static void consoleFix(void)
+	{
+		printf("\n");
+		rl_deprep_terminal();
+	}
+
 	int common_chars( const char* c1 , const char* c2)
     {
         int l = std::min( strlen(c1), strlen(c2));
@@ -106,14 +112,16 @@ namespace samson
         
 	}	
 	
-	void DelilahConsole::evalCommand( std::string command )
+	void DelilahConsole::evalCommand(std::string command)
 	{
-		runAsyncCommand( command );
+		runAsyncCommand(command);
 	}
 	
     void DelilahConsole::run()
     {
-		atexit(rl_callback_handler_remove);
+		LM_M(("atexit(consoleFix)"));
+		atexit(consoleFix);
+		// rl_prep_terminal(0);
 
         // If command-file is provided
         if ( commandFileName.length() > 0 )
@@ -1178,13 +1186,8 @@ namespace samson
                                           au::Format::string(disk_pending_operations).c_str() );
                 
                 txt << au::Format::progress_bar( per_disk , 50 );
-                
-                
-                txt << "\n";                    
+				txt << "\n";                    
             }
-            
-
-            
         }
         
         txt << "================================================================================================" << std::endl;
@@ -1196,13 +1199,5 @@ namespace samson
         
         // Unlock the common information lock    
         info_lock.unlock();
-
     }
-    
-
-    
-    
-    
-    
-	
 }

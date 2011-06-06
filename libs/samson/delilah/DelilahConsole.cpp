@@ -25,8 +25,7 @@
 
 namespace samson
 {	
-	
-    int common_chars( const char* c1 , const char* c2)
+	int common_chars( const char* c1 , const char* c2)
     {
         int l = std::min( strlen(c1), strlen(c2));
         
@@ -38,7 +37,7 @@ namespace samson
         
     }
     
-    char * strdup_common(const char* c , int len )
+    char* strdup_common(const char* c, int len)
     {
         char *d = (char*) malloc( len +1 );
         memcpy(d, c, len);
@@ -48,7 +47,7 @@ namespace samson
     }
 	
 	
-	char ** readline_completion ( const char* text , int start , int end )
+	char** readline_completion(const char* text, int start, int end)
 	{
 		//std::cerr << "Readline completion with \"" << text << "\" S=" << start << " E=" << end <<" \n";
         
@@ -114,6 +113,8 @@ namespace samson
 	
     void DelilahConsole::run()
     {
+		atexit(rl_callback_handler_remove);
+
         // If command-file is provided
         if ( commandFileName.length() > 0 )
         {
@@ -252,7 +253,7 @@ namespace samson
 			return 0;
 		}
 		
-		if ( commandLine.isArgumentValue(0,"quit","") )
+		if ( commandLine.isArgumentValue(0, "quit", "") )
 		{
 			Console::quitConsole();	// Quit the console
 			return 0;

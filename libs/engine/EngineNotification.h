@@ -139,6 +139,11 @@ namespace engine
             
         }
         
+        int getNumListeners()
+        {
+            return listeners.size();
+        }
+        
     };
 
 
@@ -159,17 +164,23 @@ namespace engine
         
         void add( const char* name , NotificationListener* listener )
         {
+            LM_T(LmtEngineNotification, ("Add listener %p to %s", listener , name ));
             get(name)->add( listener );
         }
         
         void remove( const char* name , NotificationListener* listener )
         {
+            LM_T(LmtEngineNotification, ("Remove listener %p to %s", listener , name ));
             get(name)->remove( listener );
         }
         
         void notify( Notification* notification )
         {
-            get( notification->getName() )->notify( notification );
+            NotificationListenerSet *set = get( notification->getName() );
+
+            LM_T(LmtEngineNotification, ("Notifying %s ( Current set of listeners %d ) ", notification->getDescription().c_str() , set->getNumListeners() ));
+            
+            set->notify( notification );
         }
         
         

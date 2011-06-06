@@ -98,7 +98,7 @@ namespace samson {
                     break;
                     
             }
-            output << " ]";
+            output << "]";
             
         }
         

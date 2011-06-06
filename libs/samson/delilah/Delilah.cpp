@@ -3,6 +3,8 @@
 #include "logMsg/logMsg.h"             // lmInit, LM_*
 
 #include "samson/common/Macros.h"             // EXIT, ...
+#include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
+
 #include "samson/network/Message.h"            // Message::MessageCode, ...
 #include "samson/network/Packet.h"				// samson::Packet
 #include "samson/network/Network.h"			// NetworkInterface
@@ -42,6 +44,7 @@ namespace samson {
         
         network = _network;		// Keep a pointer to our network interface element
         network->setPacketReceiver(this);
+        network->setNodeName("Delilah");
 		
         id = 2;	// we start with process 2 because 0 is no process & 1 is global_update messages
 		
@@ -54,7 +57,8 @@ namespace samson {
         listen( notification_delilah_automatic_update );
         
         // Emit a periodic notification
-        engine::Engine::add( new engine::Notification( notification_delilah_automatic_update ) , 2 );
+        int delilah_automatic_update_period = samson::SamsonSetup::shared()->getInt( "delilah.automatic_update_period" , 2 );
+        engine::Engine::add( new engine::Notification( notification_delilah_automatic_update ) , delilah_automatic_update_period );
 
     }
     
@@ -82,7 +86,7 @@ namespace samson {
 				c->set_command( "ls -global_update" );
 				p->message->set_delilah_id( 1 );    // Spetial id for global update
 				//copyEnviroment( &environment , c->mutable_environment() );
-				network->send(this, network->controllerGetIdentifier(), p);
+				network->sendToController( p );
             }
             
             {
@@ -92,7 +96,7 @@ namespace samson {
 				c->set_command( "o -global_update" );
 				p->message->set_delilah_id( 1 );    // Spetial id for global update
 				//copyEnviroment( &environment , c->mutable_environment() );
-				network->send(this, network->controllerGetIdentifier(), p);
+				network->sendToController( p );
             }	
             
             {
@@ -102,7 +106,7 @@ namespace samson {
                 c->set_command( "w -global_update" );
                 p->message->set_delilah_id( 1 );    // Spetial id for global update
                 //copyEnviroment( &environment , c->mutable_environment() );
-                network->send(this, network->controllerGetIdentifier(), p);
+                network->sendToController( p );
             }	
             
         }
@@ -129,6 +133,8 @@ namespace samson {
      */
     void Delilah::receive( Packet* packet )
     {
+        LM_T(LmtNodeMessages, ("Delilah received %s" , packet->str().c_str()));
+        
         int fromId = packet->fromId;
         Message::MessageCode msgCode = packet->msgCode;
         

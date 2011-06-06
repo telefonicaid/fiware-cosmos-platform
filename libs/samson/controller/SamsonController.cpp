@@ -27,8 +27,12 @@ namespace samson {
 	* SamsonController::SamsonController
 	*/
 		
-	SamsonController::SamsonController( NetworkInterface*  network ) : NetworkNode("SamsonController", network), data(this), jobManager(this) , monitor(this)
+	SamsonController::SamsonController( NetworkInterface*  _network ) : data(this), jobManager(this) , monitor(this)
 	{
+        // keep a pointer to the network interface
+        network = _network;
+        
+        network->setNodeName("SamsonController");
         
         // Get initial time
 		gettimeofday(&init_time, NULL);
@@ -179,7 +183,7 @@ namespace samson {
 					p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 					
 					// Send the message back to delilah
-					send( fromId, p);
+					network->send( fromId, p);
 					
 				}
 				else
@@ -202,7 +206,7 @@ namespace samson {
 					p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 					
 					// Send the message back to delilah
-					send( fromId, p);
+					network->send( fromId, p);
 				}
 				
 			}
@@ -252,7 +256,7 @@ namespace samson {
 					p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 					
 					// Send the message back to delilah
-					send( fromId, p );
+					network->send( fromId, p );
 					
 					
 				}
@@ -272,7 +276,7 @@ namespace samson {
 					p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 					
 					// Send the message back to delilah
-					send( fromId, p);
+					network->send( fromId, p);
 				}
 				
 			}
@@ -330,7 +334,7 @@ namespace samson {
 				
 				p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 				
-				network->send(this, fromId, p);
+				network->send( fromId, p);
 			}
 			break;
 				
@@ -363,7 +367,7 @@ namespace samson {
 					// Complement with information about active upload-download operations
 					loadManager.fill( ql );
 					
-					network->send(this, fromId,  p2);
+					network->send( fromId,  p2);
 					
 					return;
 				}				
@@ -378,7 +382,7 @@ namespace samson {
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					ModulesManager::shared()->fill( response->mutable_data_list() , command );
-					network->send(this, fromId, p2);
+					network->send(fromId, p2);
 					
 					return;
 				}
@@ -393,7 +397,7 @@ namespace samson {
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					ModulesManager::shared()->fill( response->mutable_operation_list() , command );
-					network->send(this, fromId, p2);
+					network->send( fromId, p2);
 					
 					return;
 				}
@@ -408,7 +412,7 @@ namespace samson {
 					response->set_command( command );
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					jobManager.fill( response->mutable_job_list() , command );
-					network->send(this, fromId, p2);
+					network->send( fromId, p2);
 					
 					return;
 				}
@@ -430,7 +434,7 @@ namespace samson {
 						response->set_command( command );
                         response->set_finish_command(true);
 						p2->message->set_delilah_id( packet->message->delilah_id() );
-						network->send(this, fromId, p2);
+						network->send( fromId, p2);
 						 
 
 					}
@@ -462,7 +466,7 @@ namespace samson {
 					
 					fill( samsonStatus->mutable_controller_status() );
 					
-					network->send(this, fromId, p2);
+					network->send( fromId, p2);
 					
 					return;
 				}
@@ -478,7 +482,7 @@ namespace samson {
                     response->set_command( command );
                     response->set_finish_command(true);
                     p2->message->set_delilah_id( packet->message->delilah_id() );
-                    network->send(this, fromId, p2);
+                    network->send( fromId, p2);
                     
                     return;
 				}
@@ -498,7 +502,7 @@ namespace samson {
 
                         wt->set_task_id(0); // Special case for reload operation
                         
-						network->send(this,  network->workerGetIdentifier(i) ,  p);
+						network->send(  network->workerGetIdentifier(i) ,  p);
 					}
 
                     Packet *p2 = new Packet(Message::CommandResponse);
@@ -506,7 +510,7 @@ namespace samson {
                     response->set_command( command );
                     response->set_finish_command(true);
                     p2->message->set_delilah_id( packet->message->delilah_id() );
-                    network->send(this, fromId, p2);
+                    network->send( fromId, p2);
 					
 					
 					return;

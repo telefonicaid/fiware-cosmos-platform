@@ -21,7 +21,7 @@ namespace samson {
 			response->set_command(command.command());
 			response->set_new_job_id( job_id );
 			p2->message->set_delilah_id( sender_id );
-			controller->network->send(controller, fromId, p2);
+			controller->network->send( fromId, p2 );
 		}
 		
 		// Create the job itself

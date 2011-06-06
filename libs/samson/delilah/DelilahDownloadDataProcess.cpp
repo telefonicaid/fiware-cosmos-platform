@@ -64,7 +64,7 @@ namespace samson {
 		p->message->set_delilah_id( id );
 		samson::network::DownloadDataInit *download_data_init = p->message->mutable_download_data_init();
 		download_data_init->set_queue( queue );	// Set the queue we want to download
-		delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), p);
+		delilah->network->sendToController( p );
 		
 		// Init the thread to process data in background
 		pthread_create(&t, 0, runDelilahDownloadDataProcessThread, this);
@@ -129,7 +129,7 @@ namespace samson {
 				// Send to the rigth worker
 				int worker = download_data_init_response->queue().file(i).worker();
                 
-				delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker) , p);
+				delilah->network->sendToWorker( worker , p);
                 
                 offset_per_file.push_back( offset );
                 offset += download_data_init_response->queue().file(i).info().size();

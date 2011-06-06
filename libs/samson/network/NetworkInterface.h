@@ -138,7 +138,19 @@ public:
 class  NetworkInterface
 {
     
+    const char* node_name;              // Name of this node for debugging ( set with setNodeName )
+    
 public:
+    
+    void setNodeName(const char* _node_name)
+    {
+        node_name = _node_name;
+    }
+    
+    NetworkInterface()
+    {
+        node_name = "Unknown node";
+    }
     
 	virtual ~NetworkInterface() {};
 			
@@ -186,13 +198,22 @@ public:
 	// Run the "run" method in a background thread and returns control of the current thread
 	void runInBackground();
 		
-	// Send a packet (return a unique id to inform the notifier later)
-	virtual size_t send(PacketSenderInterface* sender, int endpointId, Packet* packetP )=0;
-		
 	virtual bool isConnected(unsigned int identifier) { return true; };
     virtual void delilahSend(PacketSenderInterface* packetSender, Packet* packetP)=0;
+
+    // New API to send packets
     
-	
+    void send( int endpoint,  Packet *p );
+    
+    void sendToWorker( int workerId , Packet *p);
+    
+    void sendToController( Packet *p );
+
+private:
+    
+ 	// Send a packet (return a unique id to inform the notifier later)
+	virtual size_t send(PacketSenderInterface* sender, int endpointId, Packet* packetP )=0;
+   
 	
 };
 

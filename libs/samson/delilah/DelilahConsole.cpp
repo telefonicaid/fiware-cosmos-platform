@@ -119,7 +119,7 @@ namespace samson
 	
     void DelilahConsole::run()
     {
-		LM_M(("atexit(consoleFix)"));
+		//LM_M(("atexit(consoleFix)"));
 		atexit(consoleFix);
 		// rl_prep_terminal(0);
 

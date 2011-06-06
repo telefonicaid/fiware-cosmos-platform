@@ -299,7 +299,7 @@ namespace samson {
             while( ( info[hg_begin].kvs == 0 ) && hg_begin<(KVFILE_NUM_HASHGROUPS-1) )
                 hg_begin++;
             while( ( info[hg_end].kvs == 0 ) && hg_end>0 )
-                hg_begin--;
+                hg_end--;
 
             // Spetial case where no content is present
             if( ( hg_begin == KVFILE_NUM_HASHGROUPS ) && (hg_end == 0) )

@@ -397,7 +397,7 @@ namespace samson {
         // global sender id of delilah
         p2->message->set_delilah_id( sender_id );
         
-        jobManager->controller->network->send(jobManager->controller, fromIdentifier, p2);
+        jobManager->controller->network->send( fromIdentifier, p2);
 	}
 	
 	void Job::setError( std::string agent ,  std::string txt )
@@ -489,8 +489,8 @@ namespace samson {
 			{
 				Packet *p = new Packet( Message::WorkerTaskKill );
 				p->message->mutable_worker_task_kill()->set_task_id( *t );
-				NetworkInterface *network = jobManager->controller->network;
-				network->send(jobManager->controller, network->workerGetIdentifier(i), p);
+
+				jobManager->controller->network->sendToWorker(i, p);
 				
 			}
 

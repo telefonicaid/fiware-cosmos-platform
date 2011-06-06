@@ -37,8 +37,11 @@ namespace samson {
 	 Main class for Samson Controller
 	 */
 	
-	class SamsonController : public NetworkNode, public PacketReceiverInterface , public PacketSenderInterface , public engine::NotificationListener
+	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface , public engine::NotificationListener
 	{
+        // Network interface used by this element
+        NetworkInterface*  network;
+        
 		// Initial time stamp 
 		struct timeval init_time;
 		

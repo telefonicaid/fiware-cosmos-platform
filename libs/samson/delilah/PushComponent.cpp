@@ -131,7 +131,7 @@ namespace samson
             
             pb->set_size( buffer->getSize() );
             
-            delilah->network->send(delilah, delilah->network->workerGetIdentifier(worker), packet);
+            delilah->network->sendToWorker( worker, packet);
             worker++;
             if( worker == num_workers )
                 worker = 0;

@@ -252,10 +252,6 @@ namespace samson {
             return output.str();
         }
         
-        ::samson::NetworkInterface* Queue::getNetwork()
-        {
-            return qm->worker->network;
-        }
 
         void Queue::notifyFinishTask( size_t task_id )
         {

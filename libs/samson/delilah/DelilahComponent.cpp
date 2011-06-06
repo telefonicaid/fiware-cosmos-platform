@@ -130,7 +130,7 @@ namespace samson {
         }
         
 		copyEnviroment( &e , c->mutable_environment() );
-		delilah->network->send(delilah, delilah->network->controllerGetIdentifier() , p);
+		delilah->network->sendToController( p );
 		
 	}		
 	

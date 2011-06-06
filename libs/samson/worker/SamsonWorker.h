@@ -34,7 +34,7 @@ namespace samson {
 	
     
     
-	class SamsonWorker : public NetworkNode , public PacketReceiverInterface, public PacketSenderInterface, public engine::NotificationListener
+	class SamsonWorker :  public PacketReceiverInterface, public PacketSenderInterface, public engine::NotificationListener
 	{
 		
 		// Initial time stamp 
@@ -43,10 +43,11 @@ namespace samson {
 	public: 
 		
 		SamsonWorker(NetworkInterface* network);
-
+        
         
 	public:
 
+        NetworkInterface *network;
 		
 		WorkerTaskManager    taskManager;               // Task manager
 		LoadDataManager      loadDataManager;           // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )

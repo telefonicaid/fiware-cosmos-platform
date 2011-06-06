@@ -79,6 +79,7 @@ namespace samson {
 	
     void ProcessBase::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
     {
+        
         network::Queue output_queue = workerTask->output_queue( output ).queue();
         
         // Create packet for this output
@@ -94,7 +95,7 @@ namespace samson {
         dataMessage->set_hg_set( hg_set );
         dataMessage->set_finish( finish );
         
-        network->send(NULL, network->workerGetIdentifier( outputWorker ) , p);
+        network->sendToWorker( outputWorker , p);
         
     }
 
@@ -117,7 +118,7 @@ namespace samson {
         dataMessage->set_hg_set( hg_set );
         dataMessage->set_finish( finish );
         
-        network->send(NULL, network->getMyidentifier() , p);
+        network->send( network->getMyidentifier() , p);
         
     }
 

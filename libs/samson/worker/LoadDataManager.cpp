@@ -96,7 +96,7 @@ namespace samson
 
 		// Send the message to delilah
 		NetworkInterface *network = dataManager->worker->network;
-		network->send( dataManager->worker , fromIdentifier  , p);
+		network->send( fromIdentifier  , p);
 	}
 
     
@@ -168,7 +168,7 @@ namespace samson
 		// Send the message
 		
 		NetworkInterface *network = dataManager->worker->network;
-		network->send( dataManager->worker , fromIdentifier  , p);
+		network->send( fromIdentifier  , p);
 	}	
 	
 #pragma mark LoadDataManager

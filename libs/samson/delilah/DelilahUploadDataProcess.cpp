@@ -99,7 +99,7 @@ namespace samson
 		p->message->set_delilah_id( id );
 		samson::network::UploadDataInit *upload_data_init = p->message->mutable_upload_data_init();
 		upload_data_init->set_queue( queue );
-		delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), p);
+		delilah->network->sendToController( p );
 		
 		
 		// Set the number of workers
@@ -240,7 +240,7 @@ namespace samson
 			pd->delilah->showTrace( message.str() );
 		}
 		
-		pd->delilah->network->send(pd->delilah, pd->delilah->network->workerGetIdentifier(pd->worker), pd->p);
+		pd->delilah->network->sendToWorker( pd->worker, pd->p);
 		
 		// Free allocated input parameter
 		free( p );
@@ -340,7 +340,7 @@ namespace samson
 
 					// Set the final files used in this upload ( usign information from the initial message )
 					
-					delilah->network->send(delilah, delilah->network->controllerGetIdentifier(), p);
+					delilah->network->sendToController( p );
 				}
 
 			

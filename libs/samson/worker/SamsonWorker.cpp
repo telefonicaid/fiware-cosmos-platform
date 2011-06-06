@@ -6,6 +6,8 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include "samson/common/SamsonSetup.h"                  // samson::SamsonSetup
+
 #include "samson/network/Message.h"                    // Message
 #include "samson/common/Macros.h"                     // EXIT, ...
 #include "samson/network/Packet.h"                     // samson::Packet
@@ -40,8 +42,11 @@ namespace samson {
 	 *
 	 * Constructor
 	 */
-	SamsonWorker::SamsonWorker( NetworkInterface* network ) : NetworkNode( "SamsonWorker" , network) ,  taskManager(this) , loadDataManager(this) , queuesManager(this)
+	SamsonWorker::SamsonWorker( NetworkInterface* _network ) :  taskManager(this) , loadDataManager(this) , queuesManager(this)
 	{
+        network = _network;
+        network->setNodeName("SamsonWorker");
+        
         // Get initial time
 		gettimeofday(&init_time, NULL);
         
@@ -64,22 +69,24 @@ namespace samson {
         
         // add to listen messages to send a packet to a worker
         listen( notification_send_to_worker );
-
-         
+        
+        
         // Notification of the files
         {
-        engine::Notification *notification = new engine::Notification(notification_worker_update_files);
-        notification->environment.set("target", "SamsonWorker");
-        notification->environment.setInt("worker", network->getWorkerId() );
-        engine::Engine::add( notification, 5 );
+            int worker_update_files_period = samson::SamsonSetup::shared()->getInt("worker.update_files_period" , 5 );
+            engine::Notification *notification = new engine::Notification(notification_worker_update_files);
+            notification->environment.set("target", "SamsonWorker");
+            notification->environment.setInt("worker", network->getWorkerId() );
+            engine::Engine::add( notification, worker_update_files_period );
         }
         
         // Notification to update state
         {
-        engine::Notification *notification = new engine::Notification(notification_samson_worker_send_status_update);
-        notification->environment.set("target", "SamsonWorker");
-        notification->environment.setInt("worker", network->getWorkerId() );
-        engine::Engine::add( notification, 3 );
+            int worker_update_files_period = samson::SamsonSetup::shared()->getInt("worker.update_status_period" , 3 );
+            engine::Notification *notification = new engine::Notification(notification_samson_worker_send_status_update);
+            notification->environment.set("target", "SamsonWorker");
+            notification->environment.setInt("worker", network->getWorkerId() );
+            engine::Engine::add( notification, worker_update_files_period );
         }
         
         
@@ -98,7 +105,7 @@ namespace samson {
 		c->set_command( "ls" );
 		p->message->set_delilah_id( 0 ); // At the moment no sence at the controller
 		//copyEnviroment( &environment , c->mutable_environment() );
-		send( network->controllerGetIdentifier(), p );
+		network->sendToController( p );
 	}
 	
 	
@@ -190,7 +197,7 @@ namespace samson {
         ws->set_disk_pending_operations(engine::DiskManager::getNumOperations());
 
 		// Send the message
-		send( network->controllerGetIdentifier(), p );
+		network->sendToController( p );
         
 	}
 	
@@ -254,7 +261,7 @@ namespace samson {
                 
                 p->message->set_delilah_id( packet->message->delilah_id()  );
                 
-                send( packet->fromId , p );
+                network->send( packet->fromId , p );
                 
             }
             return;
@@ -380,7 +387,7 @@ namespace samson {
                 }
                 
                 // Send packet to the indicated worker
-                send( network->workerGetIdentifier( outputWorker ) , packet);
+                network->sendToWorker( outputWorker , packet);
             }
             
         }
@@ -388,7 +395,7 @@ namespace samson {
         {
             if ( !notification->containsObject() )
             {
-                LM_W(("SamsonWorker: Send trace without an object"));
+                //LM_W(("SamsonWorker: Send trace without an object"));
                 return;
             }
             else

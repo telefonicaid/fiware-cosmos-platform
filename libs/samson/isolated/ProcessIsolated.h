@@ -81,26 +81,7 @@ namespace samson {
 		void flushTXTBuffer( bool finish );
 		
 		// Function executed at this process side when a code is sent from the background process
-		void runCode( int c )
-		{
-            //LM_M(("Isoalted process Running code %d",c));
-            
-			switch (c) {
-				case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:
-					flushBuffer(false);	// Flush the generated buffer with new key-values
-					return;
-                    break;
-				case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH:
-					flushBuffer(true);	// Flush the generated buffer with new key-values
-                    return;
-                    break;
-				default:
-					error.set("System error: Unknown code in the isolated process communication");
-					break;
-			}
-			
-			return;
-		}
+		void runCode( int c );
 
         // Pure virtual methods to process output buffers of data
         virtual void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )=0;

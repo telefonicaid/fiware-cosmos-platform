@@ -7,13 +7,15 @@
 #include <stdlib.h>         // atoll
 #include <sys/stat.h>		// mkdir
 
+#include "au/Environment.h" // au::Environment
+
 #define SAMSON_CONTROLLER_DEFAULT_PORT		1234
 #define SAMSON_WORKER_DEFAULT_PORT			1235
 #define SAMSON_DEFAULT_WORKING_DIRECTORY	"/opt/samson"
 
 namespace samson {
 	
-	class SamsonSetup
+	class SamsonSetup : public au::Environment
 	{
 		
 		SamsonSetup( );
@@ -64,14 +66,11 @@ namespace samson {
 		
 	private:
 		
-		static size_t getUInt64(std::map<std::string,std::string> &items, std::string name , size_t defaultValue );
-		static int getInt(std::map<std::string,std::string> &items, std::string name , int defaultValue );
-		
 		// Check if everything is ok. Exit if not
 		bool check();
 
 		// Common function to init variables
-		void init( std::map<std::string,std::string> &items );
+		void init();
 		
 	};
 

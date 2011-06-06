@@ -83,9 +83,6 @@ namespace samson {
             void scheduleNewTasksIfNecessary();
             
             std::string getStatus();
-          
-            ::samson::NetworkInterface *getNetwork();
-            
             
             // Notifications    
             void notify( engine::Notification* notification );

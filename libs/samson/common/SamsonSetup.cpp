@@ -85,9 +85,7 @@ namespace samson
 
 	SamsonSetup::SamsonSetup( )
 	{
-		std::map<std::string,std::string> items;
-		init( items );
-		
+		init(  );
 	}
 	
 	SamsonSetup::SamsonSetup( std::string workingDirectory )
@@ -113,7 +111,6 @@ namespace samson
 		createDirectory( configDirectory );			
 		
 		// Load values from file ( if exist )
-		std::map<std::string,std::string> items;
 		
 		FILE *file = fopen( setupFile.c_str()  ,"r");
 		if (!file)
@@ -141,50 +138,41 @@ namespace samson
 				{
 					std::string name = c.get_argument(0);
 					std::string value =  c.get_argument(1);
-					
-					std::map<std::string,std::string>::iterator i = items.find( name );
-					if( i!= items.end() )
-						items.erase( i );
-					items.insert( std::pair<std::string , std::string>( name ,value ) );
-					
-				}
 
+					set( name , value );
+				}
 			}
 		
 			fclose(file);
 		}
 		
-		init( items );
+		init( );
 		
 	}
 	
-	void SamsonSetup::init( std::map<std::string,std::string> &items )
+	void SamsonSetup::init( )
 	{
 		
 		// General setup
-		num_processes	= getInt( items, SETUP_num_processes , SETUP_DEFAULT_num_processes );
+		num_processes	= getInt( SETUP_num_processes , SETUP_DEFAULT_num_processes );
 		
 		// Disk management
-		num_io_threads_per_device = getInt( items, SETUP_num_io_threads_per_device , SETUP_DEFAULT_num_io_threads_per_device );
-		max_file_size = getUInt64( items, SETUP_max_file_size, SETUP_DEFAULT_max_file_size);
+		num_io_threads_per_device = getInt( SETUP_num_io_threads_per_device , SETUP_DEFAULT_num_io_threads_per_device );
+		max_file_size = getSizeT( SETUP_max_file_size, SETUP_DEFAULT_max_file_size);
 		
 		//  Memory - System
-		memory
-		   = getUInt64(
-		   items, 
-		   SETUP_memory ,
-		   SETUP_DEFAULT_memory);
+		memory = getSizeT( SETUP_memory , SETUP_DEFAULT_memory);
 
-		shared_memory_size_per_buffer	= getUInt64( items, SETUP_shared_memory_size_per_buffer , SETUP_DEFAULT_shared_memory_size_per_buffer );
+		shared_memory_size_per_buffer	= getSizeT( SETUP_shared_memory_size_per_buffer , SETUP_DEFAULT_shared_memory_size_per_buffer );
 		
 		// IsolatedProcess timeout
-		timeout_secs_isolatedProcess	= getInt( items, SETUP_timeout_secs_isolatedProcess , SETUP_DEFAULT_timeout_secs_isolatedProcess );
+		timeout_secs_isolatedProcess	= getInt( SETUP_timeout_secs_isolatedProcess , SETUP_DEFAULT_timeout_secs_isolatedProcess );
 		
 		// Default value for other fields
 		load_buffer_size = SETUP_DEFAULT_load_buffer_size;
 		
 		// Derived parameters
-		num_paralell_outputs = getInt( items, SETUP_num_paralell_outputs , SETUP_DEFAULT_num_paralell_outputs );
+		num_paralell_outputs = getInt( SETUP_num_paralell_outputs , SETUP_DEFAULT_num_paralell_outputs );
 		
 		if( !check() )
 		{
@@ -244,26 +232,5 @@ namespace samson
     {
         return samsonSetup->dataDirectory + "/" + filename;
     }
-
-    
-	
-	size_t SamsonSetup::getUInt64(std::map<std::string,std::string> &items, std::string name , size_t defaultValue )
-	{
-		std::map<std::string,std::string>::iterator i =  items.find( name );
-		if( i == items.end() )
-			return defaultValue;
-		else
-			return atoll(i->second.c_str());
-		
-	}
-	
-	int SamsonSetup::getInt(std::map<std::string,std::string> &items, std::string name , int defaultValue )
-	{
-		std::map<std::string,std::string>::iterator i =  items.find( name );
-		if( i == items.end() )
-			return defaultValue;
-		else
-			return atoi(i->second.c_str());
-	}	
 	
 }

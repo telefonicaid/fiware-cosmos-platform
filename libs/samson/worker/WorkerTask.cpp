@@ -514,13 +514,12 @@ namespace samson
 			Packet *p = new Packet( Message::WorkerDataExchangeClose );
 			network::WorkerDataExchangeClose *dataMessage =  p->message->mutable_data_close();
 			dataMessage->set_task_id(task_id);
-			network->send(taskManager->worker, network->workerGetIdentifier(s) , p);
+			network->send( network->workerGetIdentifier(s) , p);
 		}
 	}	
 
 	void WorkerTask::sendUpdateMessageToController( FullKVInfo running_info , FullKVInfo processed_info )
 	{
-		NetworkInterface *network = taskManager->worker->network;
 		
 		Packet *p = new Packet( Message::WorkerTaskConfirmation );
 
@@ -538,7 +537,7 @@ namespace samson
         running->set_size( running_info.size );
         running->set_kvs( running_info.kvs );
         
-		taskManager->worker->send( network->controllerGetIdentifier(), p);	
+		taskManager->worker->network->sendToController( p );	
     }	
 	
     
@@ -565,7 +564,7 @@ namespace samson
 		else
 			finish_message->set_type( network::WorkerTaskConfirmation::finish );
         
-		taskManager->worker->send(  network->controllerGetIdentifier(), p);
+		taskManager->worker->network->send(  network->controllerGetIdentifier(), p);
 		
 	}	
 	
@@ -591,7 +590,7 @@ namespace samson
 			confirmation->set_type( network::WorkerTaskConfirmation::complete );
 		}
 		
-		taskManager->worker->send( network->controllerGetIdentifier(), p);
+		taskManager->worker->network->send( network->controllerGetIdentifier(), p);
 	}
 	
 		

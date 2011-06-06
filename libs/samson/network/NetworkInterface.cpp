@@ -20,6 +20,26 @@ void* run_network_interface_background_thread(void *p)
 }
 	
 
+    void NetworkInterface::send( int endpoint,  Packet *p )
+    {
+        LM_T(LmtNodeMessages, ("%s sends %s" , node_name , p->str().c_str()));
+        send(NULL, endpoint, p);
+    }
+    
+    void NetworkInterface::sendToWorker( int workerId , Packet *p)
+    {
+        int endPoint = workerGetIdentifier(workerId);
+        send( endPoint , p );
+    }
+    
+    void NetworkInterface::sendToController( Packet *p)
+    {
+        int endPoint = controllerGetIdentifier();
+        send( endPoint , p );
+    }
+    
+    
+    
 
 /* ****************************************************************************
 *
@@ -48,4 +68,5 @@ void NetworkInterface::runInBackground(void)
 	}
 	
 
+    
 }

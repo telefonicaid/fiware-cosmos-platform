@@ -93,6 +93,28 @@ namespace samson
             txtWriter = new ProcessTXTWriter( this );
         return txtWriter;
     }  
+
+    void ProcessIsolated::runCode( int c )
+    {
+        //LM_M(("Isolated process Running code %d",c));
+        
+        switch (c) {
+            case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:
+                flushBuffer(false);	// Flush the generated buffer with new key-values
+                return;
+                break;
+            case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH:
+                flushBuffer(true);	// Flush the generated buffer with new key-values
+                return;
+                break;
+            default:
+                error.set("System error: Unknown code in the isolated process communication");
+                break;
+        }
+        
+        //LM_M(("Finish Isolated process Running code %d",c));
+    }
+    
     
 	void ProcessIsolated::flushBuffer( bool finish )
 	{
@@ -115,8 +137,10 @@ namespace samson
 		 Otherwise we halt notifying this to the ProcessManager
 		 */
 		
+        
         while( !isReady() )
 			halt();
+
 		
 #pragma mark ---		
 		
@@ -146,13 +170,14 @@ namespace samson
 		for (int o = 0 ; o < num_outputs ; o++)
 		{
 			
-			
 			for (int s = 0 ; s < num_workers ; s++)
 			{				
+                
 				OutputChannel * _channel = &channel[ o * num_workers + s ];	
 				
 				if( _channel->info.size > 0)
 				{
+                    
                     engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "ProcessWriter", KVFILE_TOTAL_HEADER_SIZE + _channel->info.size , MemoryOutputNetwork );
 					if( !buffer )
 						LM_X(1,("Internal error: Missing buffer in ProcessBase"));
@@ -172,6 +197,7 @@ namespace samson
 					
 					for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
 					{
+                        
 						HashGroupOutput * _hgOutput	= &_channel->hg[i];							// Current hash-group output
 						
 						// Set gloal info
@@ -190,13 +216,14 @@ namespace samson
 							node_id = node[node_id].next;
 						}
 					}
-					
+                    					
 					if( buffer->getSize() != buffer->getMaxSize() )
 						LM_X(1,("Internal error"));
-                    
+
                     
                     // Set the hash-group limits of the header
                     header->setHashGroups( info );
+
                     
                     // Process the output buffer
                     processOutputBuffer(buffer, o, s, finish);

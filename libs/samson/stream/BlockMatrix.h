@@ -43,6 +43,8 @@ namespace samson {
             // Blocks currently in the input queue
             au::list< Block > blocks;
             
+            FullKVInfo accumulated_info;
+            
         public:
             
             void add( Block *b );

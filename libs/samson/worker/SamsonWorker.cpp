@@ -40,15 +40,15 @@ namespace samson {
 	 *
 	 * Constructor
 	 */
-	SamsonWorker::SamsonWorker( NetworkInterface* network ) :  taskManager(this) , loadDataManager(this) , queuesManager(this)
+	SamsonWorker::SamsonWorker( NetworkInterface* network ) : NetworkNode( "SamsonWorker" , network) ,  taskManager(this) , loadDataManager(this) , queuesManager(this)
 	{
         // Get initial time
 		gettimeofday(&init_time, NULL);
         
 		// Description for the PacketReceiver
 		packetReceiverDescription = "samsonWorker";
-		
-		this->network = network;
+
+		// Set me as the packet receiver interface
 		network->setPacketReceiver(this);
 		
 		srand((unsigned int) time(NULL));
@@ -64,7 +64,8 @@ namespace samson {
         
         // add to listen messages to send a packet to a worker
         listen( notification_send_to_worker );
-        
+
+         
         // Notification of the files
         {
         engine::Notification *notification = new engine::Notification(notification_worker_update_files);
@@ -97,7 +98,7 @@ namespace samson {
 		c->set_command( "ls" );
 		p->message->set_delilah_id( 0 ); // At the moment no sence at the controller
 		//copyEnviroment( &environment , c->mutable_environment() );
-		network->send(this, network->controllerGetIdentifier(), p);
+		send( network->controllerGetIdentifier(), p );
 	}
 	
 	
@@ -189,7 +190,7 @@ namespace samson {
         ws->set_disk_pending_operations(engine::DiskManager::getNumOperations());
 
 		// Send the message
-		network->send(this, network->controllerGetIdentifier(), p);
+		send( network->controllerGetIdentifier(), p );
         
 	}
 	
@@ -199,6 +200,9 @@ namespace samson {
 	 */
 	void SamsonWorker::receive( Packet* packet )
 	{
+        
+        LM_T(LmtNodeMessages, ("SamsonWorker received %s" , packet->str().c_str()));
+        
 		int fromId = packet->fromId;
 		Message::MessageCode msgCode = packet->msgCode;
 		
@@ -220,6 +224,11 @@ namespace samson {
             
             // Get the flag of txt buffer
             bool txt = packet->message->push_block().txt();
+
+            if ( txt )
+                LM_M(("Received a block of txt"));
+            else
+                LM_M(("Received a block of kv"));
             
             // Create the new block with the buffer
             stream::Block *block = new stream::Block( packet->buffer , txt );
@@ -245,7 +254,7 @@ namespace samson {
                 
                 p->message->set_delilah_id( packet->message->delilah_id()  );
                 
-                network->send(this, packet->fromId , p );
+                send( packet->fromId , p );
                 
             }
             return;
@@ -371,7 +380,7 @@ namespace samson {
                 }
                 
                 // Send packet to the indicated worker
-                network->send(NULL, network->workerGetIdentifier( outputWorker ) , packet);
+                send( network->workerGetIdentifier( outputWorker ) , packet);
             }
             
         }
@@ -518,7 +527,9 @@ namespace samson {
 			}
 		}
 		closedir(dp);
-		
+        
+        
+        
 		// Remove the selected files
 		for ( std::set< std::string >::iterator f = remove_files.begin() ; f != remove_files.end() ; f++)
 		{
@@ -531,5 +542,7 @@ namespace samson {
 		
 		
 	}
+    
+
 	
 }

@@ -117,7 +117,7 @@ namespace samson {
                     LM_W(("Notification of a finish item at QueueTaskManager, but task %lu not found in the running task list " , _id));
                 
                 // Notify that this stream task is finished
-                qm->notifyFinishTask(queue_name, id);
+                qm->notifyFinishTask(queue_name, _id);
                 
             }
         }

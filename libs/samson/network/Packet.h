@@ -17,7 +17,7 @@
 #include "Endpoint.h"                    // Endpoint
 #include "easyzlib.h"                    // zlib utility library
 #include "Message.h"                     // samson::MessageType 
-
+#include "samson/common/EnvironmentOperations.h"        // str( network::Message* )
 
 
 namespace samson
@@ -91,6 +91,20 @@ namespace samson
 			// Note: Not remove buffer since it can be used outside the scope of this packet
 			delete message;
 		}
+        
+        
+        // Debug string
+        std::string str()
+        {
+            std::ostringstream output;
+            output << "Packet " << messageCode( msgCode ) << " " << strMessage( message );
+            if ( buffer )
+                output << "[ Buffer " << au::Format::string(  buffer->getSize() ) << "/" << au::Format::string(  buffer->getMaxSize() ) << " ]" ;
+            else
+                output << "[ No buffer ]";
+            return output.str();
+        }
+        
 	};
 }
 

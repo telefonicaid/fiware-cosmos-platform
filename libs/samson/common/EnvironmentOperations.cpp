@@ -72,4 +72,39 @@ namespace samson {
         return txt.str();
     }
     
+    // Get a debug string for generic messages
+    std::string strMessage( network::Message *message )
+    {
+        std::ostringstream output;
+        
+        if( message->has_command() )
+            output << "[ Command: " << message->command().command() << " ]";
+        
+        if ( message->has_worker_task_confirmation() )
+        {
+            output << "[ WTC: ";
+            switch (message->worker_task_confirmation().type()) {
+                case network::WorkerTaskConfirmation_WorkerTaskConfirmationType_finish:
+                    output << "Finish";
+                    break;
+                case network::WorkerTaskConfirmation_WorkerTaskConfirmationType_complete:
+                    output << "Complete";
+                    break;
+                case network::WorkerTaskConfirmation_WorkerTaskConfirmationType_error:
+                    output << "Error";
+                    break;
+                case network::WorkerTaskConfirmation_WorkerTaskConfirmationType_update:
+                    output << "Update";
+                    break;
+                    
+            }
+            output << " ]";
+            
+        }
+        
+        
+        return output.str();
+    }
+    
+    
 }

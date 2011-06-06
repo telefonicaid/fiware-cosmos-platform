@@ -27,13 +27,13 @@ namespace samson {
 	* SamsonController::SamsonController
 	*/
 		
-	SamsonController::SamsonController( NetworkInterface*  network ) : data(this), jobManager(this) , monitor(this)
+	SamsonController::SamsonController( NetworkInterface*  network ) : NetworkNode("SamsonController", network), data(this), jobManager(this) , monitor(this)
 	{
         
         // Get initial time
 		gettimeofday(&init_time, NULL);
 
-		this->network = network;
+        // set me as the receiver of the network interface
 		network->setPacketReceiver(this);
 
 		// Init session of data
@@ -103,6 +103,8 @@ namespace samson {
 	*/
 	void SamsonController::receive( Packet* packet )
 	{
+        LM_T(LmtNodeMessages, ("SamsonController received %s" , packet->str().c_str()));
+        
 		int fromId = packet->fromId;
 		Message::MessageCode msgCode = packet->msgCode;
 		
@@ -177,7 +179,7 @@ namespace samson {
 					p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 					
 					// Send the message back to delilah
-					network->send(this, fromId, p);
+					send( fromId, p);
 					
 				}
 				else
@@ -200,7 +202,7 @@ namespace samson {
 					p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 					
 					// Send the message back to delilah
-					network->send(this, fromId, p);
+					send( fromId, p);
 				}
 				
 			}
@@ -250,7 +252,7 @@ namespace samson {
 					p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 					
 					// Send the message back to delilah
-					network->send(this, fromId, p);
+					send( fromId, p );
 					
 					
 				}
@@ -270,7 +272,7 @@ namespace samson {
 					p->message->set_delilah_id( packet->message->delilah_id() );	// Get the same id
 					
 					// Send the message back to delilah
-					network->send(this, fromId, p);
+					send( fromId, p);
 				}
 				
 			}

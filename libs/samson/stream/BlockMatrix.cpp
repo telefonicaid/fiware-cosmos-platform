@@ -28,6 +28,11 @@ namespace samson {
         {
             // Insert in the back of the list
             blocks.push_back( block );
+            
+            if( block->header )
+                accumulated_info.append( block->header->info );
+            else
+                accumulated_info.append( block->getSize() , 1 );
         }
         
         Block* BlockList::extract( )
@@ -66,7 +71,7 @@ namespace samson {
             
             output << "[ " << blocks.size() << " blocks with " << au::Format::string( size, "Bytes" );
             output << " " << au::Format::percentage_string(size_on_memory, size) << " on memory";
-            output << " & " << au::Format::percentage_string(size_on_disk, size) << " on disk ] ";
+            output << " & " << au::Format::percentage_string(size_on_disk, size) << " on disk ][Accumulatd " << accumulated_info.str() << "] ";
             
             return output.str();
         }

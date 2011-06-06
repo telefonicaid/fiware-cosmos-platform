@@ -20,6 +20,9 @@ namespace samson {
  
     std::string getStatus( network::StreamQueue *queue );
     
+    // Get a debug string for generic messages
+    std::string strMessage( network::Message *message );
+    
 }
 
 #endif

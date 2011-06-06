@@ -161,7 +161,7 @@ namespace samson
 		
 		// Make sure the parsing is OK!
 		if( offset != info.size )
-			LM_X(1,("Error adding key-values to a KVInputVector"));
+			LM_X(1,("Error adding key-values to a KVInputVector (%s)" , info.str().c_str() ));
         
     }
     

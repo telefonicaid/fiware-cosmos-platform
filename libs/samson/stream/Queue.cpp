@@ -154,6 +154,9 @@ namespace samson {
                     int hash_groups_per_task = (KVFILE_NUM_HASHGROUPS/num_tasks);
                     for (int i = 0 ; i < num_tasks ; i++)
                     {
+                        if( i!= 0)
+                            break;  // Produce only one for testing
+                        
                         int hg_begin = hash_groups_per_task *( i );
                         int hg_end   = hash_groups_per_task *( i+1 );
                         

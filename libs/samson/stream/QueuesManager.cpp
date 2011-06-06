@@ -77,6 +77,8 @@ namespace samson {
 
         void QueuesManager::notifyFinishTask( std::string queue , size_t task )
         {
+            
+            LM_M(("Notifying finish task %s %lu", queue.c_str() , task));
             getQueue( queue )->notifyFinishTask( task );
         }
 

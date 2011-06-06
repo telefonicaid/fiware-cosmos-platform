@@ -269,6 +269,8 @@ namespace samson {
             
             size_t prepare( int hg )
             {
+                LM_M(("Preparing hash-group %d",hg));
+                
                 for ( size_t i = 0 ; i < blockReaders.size() ; i++)
                     blockReaders[i].prepare(hg);
                 
@@ -282,6 +284,8 @@ namespace samson {
                 for ( size_t i = 0 ; i < blockReaders.size() ; i++)
                     inputVector.addKVs(blockReaders[i].channel, blockReaders[i].info[hg], blockReaders[i].data );
                 
+                LM_M(("Finish Preparing hash-group %d with %lu key-values",hg, num_kvs));
+                
                 return num_kvs;
             }
             
@@ -290,6 +294,8 @@ namespace samson {
         
         void ReduceQueueTask::generateKeyValues( KVWriter *writer )
         {
+            LM_M(("Reducing from %d - %d" , hg_begin , hg_end ));
+            
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamQueue->operation() );
             
@@ -301,7 +307,9 @@ namespace samson {
             reduce->operationController = this;
             
             reduce->init( writer );
-            
+
+            /*
+             
             // Get the block reader list to prepare inputs for operation
             BlockReaderList blockReaderList( operation );
 
@@ -314,27 +322,32 @@ namespace samson {
                     blockReaderList.insert( *b , i );
             }
             
-            LM_M(("Reducing from %d - %d" , hg_begin , hg_end ));
+             */
+             
+            
+
+            /*
             for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
             {
                 if( ( hg >= hg_begin ) && (hg < hg_end) )
                 {
-                    /*
                     
                     // Prepare all the inputs for this hash.group
                     size_t num_kvs = blockReaderList.prepare(hg);
                     if( num_kvs > 0 )
                         LM_M(("Running reuce over %lu kvs for hg [ %d in ( %d - %d ) ]", num_kvs , hg , hg_begin , hg_end ));
-                     */
+                    
                 }
             }
-            LM_M(("Finish Reducing from %d - %d" , hg_begin , hg_end ));
+             */
             
             
             reduce->finish( writer  );
             
             // Detele the created instance
             delete reduce;            
+            
+            LM_M(("Finish Reducing from %d - %d" , hg_begin , hg_end ));
             
         }          
 

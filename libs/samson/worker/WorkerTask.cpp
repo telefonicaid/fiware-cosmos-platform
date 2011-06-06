@@ -538,7 +538,7 @@ namespace samson
         running->set_size( running_info.size );
         running->set_kvs( running_info.kvs );
         
-		network->send( NULL, network->controllerGetIdentifier(), p);	
+		taskManager->worker->send( network->controllerGetIdentifier(), p);	
     }	
 	
     
@@ -565,7 +565,7 @@ namespace samson
 		else
 			finish_message->set_type( network::WorkerTaskConfirmation::finish );
         
-		network->send( NULL, network->controllerGetIdentifier(), p);
+		taskManager->worker->send(  network->controllerGetIdentifier(), p);
 		
 	}	
 	
@@ -591,7 +591,7 @@ namespace samson
 			confirmation->set_type( network::WorkerTaskConfirmation::complete );
 		}
 		
-		network->send( NULL, network->controllerGetIdentifier(), p);
+		taskManager->worker->send( network->controllerGetIdentifier(), p);
 	}
 	
 		

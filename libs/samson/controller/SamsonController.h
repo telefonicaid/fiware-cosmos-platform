@@ -27,6 +27,7 @@
 #include "engine/EngineElement.h"				// samson::EngineElement
 #include "engine/EngineNotification.h"         // samson::EngineNotificationListener
 #include "au/Cronometer.h"              // au::Cronometer
+#include "samson/network/NetworkNode.h" // samson::NetworkNode
 
 #define notification_monitorization                 "notification_monitorization"
 
@@ -36,14 +37,11 @@ namespace samson {
 	 Main class for Samson Controller
 	 */
 	
-	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface , public engine::NotificationListener
+	class SamsonController : public NetworkNode, public PacketReceiverInterface , public PacketSenderInterface , public engine::NotificationListener
 	{
 		// Initial time stamp 
 		struct timeval init_time;
 		
-		// Network interface
-		NetworkInterface*     network;						
-
 		// Data manager for the controller
 		ControllerDataManager data;							
 		
@@ -93,7 +91,6 @@ namespace samson {
         // Notifications
         void notify( engine::Notification* notification );
         bool acceptNotification( engine::Notification* notification );
-
 		
 	};
 	

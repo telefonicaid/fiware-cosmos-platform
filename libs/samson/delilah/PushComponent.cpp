@@ -122,6 +122,7 @@ namespace samson
             packet->message->set_delilah_id( id );
 
             network::PushBlock* pb =  packet->message->mutable_push_block();
+            pb->set_txt(true);  // This is always txt blocks
 
             // Unique target
             network::QueueChannel *target = pb->add_target();

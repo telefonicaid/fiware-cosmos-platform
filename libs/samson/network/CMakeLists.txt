@@ -30,6 +30,8 @@ SET (HEADERS
 	ControllerEndpoint.h
 	SpawnerEndpoint.h
 	DelilahEndpoint.h
+
+	NetworkNode.h
 )
 
 SET (SOURCES

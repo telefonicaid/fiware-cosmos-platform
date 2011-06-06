@@ -32,6 +32,7 @@ namespace samson {
         class Block :  public engine::NotificationListener
         {
             
+            friend class BlockList;     // List of blocks
             friend class BlockManager;  // Friend class to create Blocks
             int priority;               // Priority of the block ( to be reordered )
             

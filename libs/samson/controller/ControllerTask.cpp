@@ -297,8 +297,7 @@ namespace samson {
             network::WorkerTaskRemove *t = p2->message->mutable_worker_task_remove();
             t->set_task_id( id );
             
-            NetworkInterface *network = taskManager->controller->network;
-            network->send( NULL ,  network->workerGetIdentifier(i) ,  p2);
+            taskManager->controller->send( taskManager->controller->network->workerGetIdentifier(i) ,  p2);
             
         }
         
@@ -324,8 +323,7 @@ namespace samson {
         // special flag used in generators
         t->set_generator( generator == workerIdentifier );	
         
-        NetworkInterface *network = taskManager->controller->network;
-        network->send( NULL ,  network->workerGetIdentifier(workerIdentifier) ,  p2);
+        taskManager->controller->send(  taskManager->controller->network->workerGetIdentifier(workerIdentifier) ,  p2);
     }
     
     

@@ -128,6 +128,8 @@ typedef enum TraceLevels
 	LmtStructPadding,
 	LmtIsolated,
 	
+    LmtNodeMessages          = 220, 
+    
 	LmtUser01 = 250,
 	LmtUser02 = 251,
 	LmtUser03 = 252,

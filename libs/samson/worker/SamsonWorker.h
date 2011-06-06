@@ -21,6 +21,8 @@
 #include "samson/common/samson.pb.h"			// samson::network::
 #include "engine/EngineElement.h"               // samson::EngineElement
 
+#include "samson/network/NetworkNode.h"     // samson::NetworkNode
+
 #include "samson/stream/QueuesManager.h"        // samson::stream::QueuesManager
 #include "samson/stream/QueueTaskManager.h"     // samson::stream::QueueTaskManager
 
@@ -30,7 +32,9 @@
 
 namespace samson {
 	
-	class SamsonWorker : public PacketReceiverInterface, public PacketSenderInterface, public engine::NotificationListener
+    
+    
+	class SamsonWorker : public NetworkNode , public PacketReceiverInterface, public PacketSenderInterface, public engine::NotificationListener
 	{
 		
 		// Initial time stamp 
@@ -40,9 +44,9 @@ namespace samson {
 		
 		SamsonWorker(NetworkInterface* network);
 
+        
 	public:
 
-		NetworkInterface*    network;                   // Network interface to send packets
 		
 		WorkerTaskManager    taskManager;               // Task manager
 		LoadDataManager      loadDataManager;           // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
@@ -66,11 +70,11 @@ namespace samson {
         // Notification from the engine about finished tasks
         void notify( engine::Notification* notification );
         bool acceptNotification( engine::Notification* notification );
+
         
 	private:
 		
 		virtual void notificationSent(size_t id, bool success) {}
-
 		
 		// Sent an "ls" to get the list of files ( to remove the rest )
 		void sendFilesMessage();

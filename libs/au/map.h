@@ -17,7 +17,7 @@ namespace au {
 	 */
 
     template <typename K, typename V, typename _Compare = std::less<K> >
-	class map : public std::map<K,V*>
+	class map : public std::map<K,V*,_Compare>
 	{
 	public:
         
@@ -43,9 +43,9 @@ namespace au {
 		
 		V* findInMap( K& key ) 
 		{
-			typename std::map<K, V* >::iterator iter = find(key);
+			typename std::map<K, V*,_Compare >::iterator iter = find(key);
 			
-			if( iter == std::map<K,V*>::end() )
+			if( iter == std::map<K,V*,_Compare>::end() )
 				return NULL;
 			return iter->second;
 		}
@@ -73,28 +73,28 @@ namespace au {
 		
 		bool removeInMap( K key ) 
 		{
-			typename std::map<K, V* >::iterator iter = std::map<K,V*>::find(key);
+			typename std::map<K, V*,_Compare >::iterator iter = std::map<K,V*,_Compare>::find(key);
 			
-			if( iter == std::map<K,V*>::end() )
+			if( iter == std::map<K,V*,_Compare>::end() )
 				return false;
 			else
 			{
 				delete iter->second;
-				std::map<K,V*>::erase( iter );
+				std::map<K,V*,_Compare>::erase( iter );
 				return true;
 			}
 		}
 		
 		V* extractFromMap(  K key )
 		{
-			typename std::map<K, V* >::iterator iter = std::map<K,V*>::find(key);
+			typename std::map<K, V*,_Compare >::iterator iter = std::map<K,V*,_Compare>::find(key);
 			
-			if( iter == std::map<K,V*>::end() )
+			if( iter == std::map<K,V*,_Compare>::end() )
 				return NULL;
 			else
 			{
 				V* v = iter->second;
-				std::map<K,V*>::erase(iter);
+				std::map<K,V*,_Compare>::erase(iter);
 				return v;
 			}
 			
@@ -102,13 +102,13 @@ namespace au {
         
 		void clearMap()
 		{
-			typename std::map<K, V* >::iterator iter;
+			typename std::map<K, V*,_Compare >::iterator iter;
             
-			for (iter = std::map<K,V*>::begin() ; iter != std::map<K,V*>::end() ; iter++)
+			for (iter = std::map<K,V*,_Compare>::begin() ; iter != std::map<K,V*,_Compare>::end() ; iter++)
 			{
 				delete iter->second;
 			}
-			std::map<K, V* >::clear();
+			std::map<K, V* ,_Compare>::clear();
 		}
 		
 		

@@ -17,12 +17,28 @@ data Call
      system.UInt duration;
 }
 
+data Company
+{
+	system.UInt id;
+	system.String name;
+	optional test_compareFunctions.Address address;
+}
+
+data Address
+{
+	system.String street;
+	system.UInt number;
+	system.String city;
+	system.UInt ZIP;
+}
+
 data User
 {
      system.UInt id;
      system.String surname;
-     system.UInt companyId;
+     optional test_compareFunctions.Address address;
      optional system.UInt8 age;
+     system.UInt companyId;
      optional system.UInt expense;
 }
 
@@ -45,10 +61,23 @@ generator gen_users
 	helpLine "Generates user information userId-surname-company-age-expense"
 }
 
+generator gen_companys
+{
+	out	system.UInt test_compareFunctions.Company
+
+	helpLine "Generates company information id-name-address"
+}
+
 parserOut export_users
 {
 	in system.UInt test_compareFunctions.User
 }
+
+parserOut print_select
+{
+	in system.UInt test_compareFunctions.User
+}
+
 
 reduce red_userExpense_by_company
 {

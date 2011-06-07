@@ -10,6 +10,7 @@
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/UInt8.h>
+#include <samson/modules/test_compareFunctions/Address.h>
 
 
 namespace samson{
@@ -22,8 +23,9 @@ namespace test_compareFunctions{
 	::samson::system::UInt8 __filledOptFields__;
 	::samson::system::UInt id;
 	::samson::system::String surname;
-	::samson::system::UInt companyId;
+	::samson::test_compareFunctions::Address address;
 	::samson::system::UInt8 age;
+	::samson::system::UInt companyId;
 	::samson::system::UInt expense;
 
 	User_base() : samson::DataInstance(){
@@ -51,16 +53,21 @@ namespace test_compareFunctions{
 			offset += surname.parse(data+offset);
 		}
 
-		{ //Parsing companyId
-			offset += companyId.parse(data+offset);
+		if (__filledOptFields__.value & 0x1)
+		{ //Parsing address
+			offset += address.parse(data+offset);
 		}
 
-		if (__filledOptFields__.value & 0x1)
+		if (__filledOptFields__.value & 0x2)
 		{ //Parsing age
 			offset += age.parse(data+offset);
 		}
 
-		if (__filledOptFields__.value & 0x2)
+		{ //Parsing companyId
+			offset += companyId.parse(data+offset);
+		}
+
+		if (__filledOptFields__.value & 0x4)
 		{ //Parsing expense
 			offset += expense.parse(data+offset);
 		}
@@ -82,16 +89,21 @@ namespace test_compareFunctions{
 			offset += surname.serialize(data+offset);
 		}
 
-		{ //Serializing companyId
-			offset += companyId.serialize(data+offset);
+		if (__filledOptFields__.value & 0x1)
+		{ //Serializing address
+			offset += address.serialize(data+offset);
 		}
 
-		if (__filledOptFields__.value & 0x1)
+		if (__filledOptFields__.value & 0x2)
 		{ //Serializing age
 			offset += age.serialize(data+offset);
 		}
 
-		if (__filledOptFields__.value & 0x2)
+		{ //Serializing companyId
+			offset += companyId.serialize(data+offset);
+		}
+
+		if (__filledOptFields__.value & 0x4)
 		{ //Serializing expense
 			offset += expense.serialize(data+offset);
 		}
@@ -114,16 +126,21 @@ namespace test_compareFunctions{
 			offset += ::samson::system::String::size(data+offset);
 		}
 
-		{ //Sizing companyId
-			offset += ::samson::system::UInt::size(data+offset);
+		if (local__filledOptFields__.value & 0x1)
+		{ //Sizing address
+			offset += ::samson::test_compareFunctions::Address::size(data+offset);
 		}
 
-		if (local__filledOptFields__.value & 0x1)
+		if (local__filledOptFields__.value & 0x2)
 		{ //Sizing age
 			offset += ::samson::system::UInt8::size(data+offset);
 		}
 
-		if (local__filledOptFields__.value & 0x2)
+		{ //Sizing companyId
+			offset += ::samson::system::UInt::size(data+offset);
+		}
+
+		if (local__filledOptFields__.value & 0x4)
 		{ //Sizing expense
 			offset += ::samson::system::UInt::size(data+offset);
 		}
@@ -151,11 +168,7 @@ namespace test_compareFunctions{
 			int tmp = ::samson::system::String::compare(data1,data2,offset1 , offset2);
 			if( tmp != 0) return tmp;
 		}   //  surname compared 
-		{ // comparing companyId
-			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
-			if( tmp != 0) return tmp;
-		}   //  companyId compared 
-		{ // comparing age
+		{ // comparing address
 			if (((local__filledOptFields__1.value & 0x1) != 0) && ((local__filledOptFields__2.value & 0x1) == 0))
 			{
 				return 1;
@@ -166,11 +179,11 @@ namespace test_compareFunctions{
 			}
 			else if ((local__filledOptFields__1.value & 0x1) && (local__filledOptFields__2.value & 0x1))
 			{
-				int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
+				int tmp = ::samson::test_compareFunctions::Address::compare(data1,data2,offset1 , offset2);
 				if( tmp != 0) return tmp;
 			}
-		}   //  age compared 
-		{ // comparing expense
+		}   //  address compared 
+		{ // comparing age
 			if (((local__filledOptFields__1.value & 0x2) != 0) && ((local__filledOptFields__2.value & 0x2) == 0))
 			{
 				return 1;
@@ -180,6 +193,25 @@ namespace test_compareFunctions{
 				return -1;
 			}
 			else if ((local__filledOptFields__1.value & 0x2) && (local__filledOptFields__2.value & 0x2))
+			{
+				int tmp = ::samson::system::UInt8::compare(data1,data2,offset1 , offset2);
+				if( tmp != 0) return tmp;
+			}
+		}   //  age compared 
+		{ // comparing companyId
+			int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
+			if( tmp != 0) return tmp;
+		}   //  companyId compared 
+		{ // comparing expense
+			if (((local__filledOptFields__1.value & 0x4) != 0) && ((local__filledOptFields__2.value & 0x4) == 0))
+			{
+				return 1;
+			}
+			else if (((local__filledOptFields__1.value & 0x4) == 0) && ((local__filledOptFields__2.value & 0x4) != 0))
+			{
+				return -1;
+			}
+			else if ((local__filledOptFields__1.value & 0x4) && (local__filledOptFields__2.value & 0x4))
 			{
 				int tmp = ::samson::system::UInt::compare(data1,data2,offset1 , offset2);
 				if( tmp != 0) return tmp;
@@ -198,8 +230,7 @@ namespace test_compareFunctions{
 
 
 
-
-	void age_SetAssigned(bool _assign)
+	void address_SetAssigned(bool _assign)
 	{
 		if (_assign)
 		{
@@ -210,12 +241,12 @@ namespace test_compareFunctions{
 			__filledOptFields__.value &= ~0x1;
 		}
 	}
-	bool age_GetAssigned(void)
+	bool address_GetAssigned(void)
 	{
 		return (__filledOptFields__.value & 0x1);
 	}
 
-	void expense_SetAssigned(bool _assign)
+	void age_SetAssigned(bool _assign)
 	{
 		if (_assign)
 		{
@@ -226,11 +257,223 @@ namespace test_compareFunctions{
 			__filledOptFields__.value &= ~0x2;
 		}
 	}
-	bool expense_GetAssigned(void)
+	bool age_GetAssigned(void)
 	{
 		return (__filledOptFields__.value & 0x2);
 	}
 
+
+	void expense_SetAssigned(bool _assign)
+	{
+		if (_assign)
+		{
+			__filledOptFields__.value |= 0x4;
+		}
+		else
+		{
+			__filledOptFields__.value &= ~0x4;
+		}
+	}
+	bool expense_GetAssigned(void)
+	{
+		return (__filledOptFields__.value & 0x4);
+	}
+
+
+	static int *getDataPath(const std::string &dataPathString){
+		const char *dataPathCharP = dataPathString.c_str();
+		int nlevels = 1;
+		int *dataPathIntP;
+
+		const char *p_sep = dataPathCharP;
+		while ((p_sep = strchr(p_sep, '.')) != NULL)
+		{
+			nlevels++;
+			p_sep++;
+		}
+
+		if ((dataPathIntP = (int *)malloc((nlevels + 1)*sizeof(int))) == NULL)
+		{
+			return ((int *)NULL);
+		}
+
+		int retError = getDataPath(dataPathCharP, dataPathIntP);
+
+		if (retError)
+		{
+			free(dataPathIntP);
+			dataPathIntP = NULL;
+		}
+
+		return  (dataPathIntP);
+	}
+
+	static int getDataPath(const char * dataPathCharP, int *dataPathIntP){
+		if (strcmp(dataPathCharP, "User") == 0)
+		{
+			*dataPathIntP = -1;
+			return (0);
+		}
+
+		if (strncmp(dataPathCharP, "User.", strlen("User.")) == 0)
+		{
+			return (getDataPath(dataPathCharP+strlen("User."), dataPathIntP));
+		}
+		{ //Scanning id, terminal and non-terminal
+			if (strcmp(dataPathCharP, "id") == 0)
+			{
+				*dataPathIntP = 0;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+			if (strncmp(dataPathCharP, "id.", strlen("id.")) == 0)
+			{
+				*dataPathIntP = 0;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+		}
+		{ //Scanning surname, terminal and non-terminal
+			if (strcmp(dataPathCharP, "surname") == 0)
+			{
+				*dataPathIntP = 1;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+			if (strncmp(dataPathCharP, "surname.", strlen("surname.")) == 0)
+			{
+				*dataPathIntP = 1;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+		}
+		{ //Scanning address, terminal and non-terminal
+			if (strcmp(dataPathCharP, "address") == 0)
+			{
+				*dataPathIntP = 2;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+			if (strncmp(dataPathCharP, "address.", strlen("address.")) == 0)
+			{
+				*dataPathIntP = 2;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+		}
+		{ //Scanning age, terminal and non-terminal
+			if (strcmp(dataPathCharP, "age") == 0)
+			{
+				*dataPathIntP = 3;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+			if (strncmp(dataPathCharP, "age.", strlen("age.")) == 0)
+			{
+				*dataPathIntP = 3;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+		}
+		{ //Scanning companyId, terminal and non-terminal
+			if (strcmp(dataPathCharP, "companyId") == 0)
+			{
+				*dataPathIntP = 4;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+			if (strncmp(dataPathCharP, "companyId.", strlen("companyId.")) == 0)
+			{
+				*dataPathIntP = 4;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+		}
+		{ //Scanning expense, terminal and non-terminal
+			if (strcmp(dataPathCharP, "expense") == 0)
+			{
+				*dataPathIntP = 5;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+			if (strncmp(dataPathCharP, "expense.", strlen("expense.")) == 0)
+			{
+				*dataPathIntP = 5;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+		}
+		return -1;
+	}
+
+	static std::string getType(const int *dataPathIntP){
+		switch(*dataPathIntP)
+		{
+			case -1:
+				return ("User");
+				break;
+			case 0:
+				return(system::UInt::getType(dataPathIntP+1));
+				break;
+			case 1:
+				return(system::String::getType(dataPathIntP+1));
+				break;
+			case 2:
+				return(test_compareFunctions::Address::getType(dataPathIntP+1));
+				break;
+			case 3:
+				return(system::UInt8::getType(dataPathIntP+1));
+				break;
+			case 4:
+				return(system::UInt::getType(dataPathIntP+1));
+				break;
+			case 5:
+				return(system::UInt::getType(dataPathIntP+1));
+				break;
+			default:
+				return ("_Unknown_");
+				break;
+		};
+	}
+
+	DataInstance * getInstance(const int *dataPathIntP){
+		switch(*dataPathIntP)
+		{
+			case -1:
+				return(this);
+				break;
+			case 0:
+				return(id.getInstance(dataPathIntP+1));
+				break;
+			case 1:
+				return(surname.getInstance(dataPathIntP+1));
+				break;
+			case 2:
+				if (__filledOptFields__.value & 0x1)
+					return(address.getInstance(dataPathIntP+1));
+				else
+					return (NULL);
+				break;
+			case 3:
+				if (__filledOptFields__.value & 0x2)
+					return(age.getInstance(dataPathIntP+1));
+				else
+					return (NULL);
+				break;
+			case 4:
+				return(companyId.getInstance(dataPathIntP+1));
+				break;
+			case 5:
+				if (__filledOptFields__.value & 0x4)
+					return(expense.getInstance(dataPathIntP+1));
+				else
+					return (NULL);
+				break;
+			default:
+				return (NULL);
+				break;
+		};
+	}
 
 	void copyFrom( User_base *other ){
 		{ //Copying __filledOptFields__
@@ -245,16 +488,21 @@ namespace test_compareFunctions{
 			surname.copyFrom(&other->surname);
 		}
 
-		{ //Copying companyId
-			companyId.copyFrom(&other->companyId);
+		if (__filledOptFields__.value & 0x1)
+		{ //Copying address
+			address.copyFrom(&other->address);
 		}
 
-		if (__filledOptFields__.value & 0x1)
+		if (__filledOptFields__.value & 0x2)
 		{ //Copying age
 			age.copyFrom(&other->age);
 		}
 
-		if (__filledOptFields__.value & 0x2)
+		{ //Copying companyId
+			companyId.copyFrom(&other->companyId);
+		}
+
+		if (__filledOptFields__.value & 0x4)
 		{ //Copying expense
 			expense.copyFrom(&other->expense);
 		}
@@ -278,18 +526,24 @@ namespace test_compareFunctions{
 		}
 
 		o<<" ";
-				{ //Texting companyId
-			o << companyId.str();
+		if (__filledOptFields__.value & 0x1)
+				{ //Texting address
+			o << address.str();
 		}
 
 		o<<" ";
-		if (__filledOptFields__.value & 0x1)
+		if (__filledOptFields__.value & 0x2)
 				{ //Texting age
 			o << age.str();
 		}
 
 		o<<" ";
-		if (__filledOptFields__.value & 0x2)
+				{ //Texting companyId
+			o << companyId.str();
+		}
+
+		o<<" ";
+		if (__filledOptFields__.value & 0x4)
 				{ //Texting expense
 			o << expense.str();
 		}

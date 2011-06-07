@@ -134,6 +134,92 @@ namespace system{
 		return &values[values_length-1];
 	}
 
+	static int *getDataPath(const std::string &dataPathString){
+		const char *dataPathCharP = dataPathString.c_str();
+		int nlevels = 1;
+		int *dataPathIntP;
+
+		const char *p_sep = dataPathCharP;
+		while ((p_sep = strchr(p_sep, '.')) != NULL)
+		{
+			nlevels++;
+			p_sep++;
+		}
+
+		if ((dataPathIntP = (int *)malloc((nlevels + 1)*sizeof(int))) == NULL)
+		{
+			return ((int *)NULL);
+		}
+
+		int retError = getDataPath(dataPathCharP, dataPathIntP);
+
+		if (retError)
+		{
+			free(dataPathIntP);
+			dataPathIntP = NULL;
+		}
+
+		return  (dataPathIntP);
+	}
+
+	static int getDataPath(const char * dataPathCharP, int *dataPathIntP){
+		if (strcmp(dataPathCharP, "Vector_UInt") == 0)
+		{
+			*dataPathIntP = -1;
+			return (0);
+		}
+
+		if (strncmp(dataPathCharP, "Vector_UInt.", strlen("Vector_UInt.")) == 0)
+		{
+			return (getDataPath(dataPathCharP+strlen("Vector_UInt."), dataPathIntP));
+		}
+		{ //Scanning values, terminal and non-terminal
+			if (strcmp(dataPathCharP, "values") == 0)
+			{
+				*dataPathIntP = 0;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+			if (strncmp(dataPathCharP, "values.", strlen("values.")) == 0)
+			{
+				*dataPathIntP = 0;
+				*(dataPathIntP+1) = -1;
+				return (0);
+			}
+		}
+		return -1;
+	}
+
+	static std::string getType(const int *dataPathIntP){
+		switch(*dataPathIntP)
+		{
+			case -1:
+				return ("Vector_UInt");
+				break;
+			case 0:
+				return(system::UInt::getType(dataPathIntP+1));
+				break;
+			default:
+				return ("_Unknown_");
+				break;
+		};
+	}
+
+	DataInstance * getInstance(const int *dataPathIntP){
+		switch(*dataPathIntP)
+		{
+			case -1:
+				return(this);
+				break;
+			case 0:
+				return((*values).getInstance(dataPathIntP+1));
+				break;
+			default:
+				return (NULL);
+				break;
+		};
+	}
+
 	void copyFrom( Vector_UInt_base *other ){
 		{ // CopyFrom field values
 			valuesSetLength( other->values_length);

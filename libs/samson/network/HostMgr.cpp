@@ -335,25 +335,31 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	if (alias != NULL)
 		aliasAdd(hostP, alias);
 
-	if ((dotP = (char*) strstr(name, ".")) != NULL)
+	if (name != NULL)
 	{
-		if (onlyDigitsAndDots(name) == false)
+		if ((dotP = (char*) strstr(name, ".")) != NULL)
 		{
-			LM_T(LmtHost, ("Adding name without dots as an alias: '%s'", name));
-			*dotP = 0;
-			LM_T(LmtHost, ("Adding name without dots as an alias: '%s'", name));
-			aliasAdd(hostP, name);
+			if (onlyDigitsAndDots(name) == false)
+			{
+				LM_T(LmtHost, ("Adding name without dots as an alias: '%s'", name));
+				*dotP = 0;
+				LM_T(LmtHost, ("Adding name without dots as an alias: '%s'", name));
+				aliasAdd(hostP, name);
+			}
 		}
 	}
 
-	if ((dotP = (char*) strstr(ip, ".")) != NULL)
+	if (ip != NULL)
 	{
-		if (onlyDigitsAndDots(ip) == false)
+		if ((dotP = (char*) strstr(ip, ".")) != NULL)
 		{
-			LM_T(LmtHost, ("Adding name without dots as an alias: '%s'", ip));
-			*dotP = 0;
-			LM_T(LmtHost, ("Adding name without dots as an alias: '%s'", ip));
-			aliasAdd(hostP, ip);
+			if (onlyDigitsAndDots(ip) == false)
+			{
+				LM_T(LmtHost, ("Adding name without dots as an alias: '%s'", ip));
+				*dotP = 0;
+				LM_T(LmtHost, ("Adding name without dots as an alias: '%s'", ip));
+				aliasAdd(hostP, ip);
+			}
 		}
 	}
 

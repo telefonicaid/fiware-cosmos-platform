@@ -627,6 +627,77 @@ namespace samson
 		
 	}
 	
+	// getDataPath Command
+
+	string DataType::getGetDataPath(string pre_line, int index)
+	{
+		ostringstream o;
+
+		o << pre_line << "{ //Scanning "<<name<<", terminal and non-terminal\n";
+		o << pre_line << "\tif (strcmp(dataPathCharP, \"" << name << "\") == 0)\n";
+		o << pre_line << "\t{\n";
+		o << pre_line << "\t\t*dataPathIntP = " << index << ";\n";
+		o << pre_line << "\t\t*(dataPathIntP+1) = -1;\n";
+		o << pre_line << "\t\treturn (0);\n";
+		o << pre_line << "\t}\n";
+		o << pre_line << "\tif (strncmp(dataPathCharP, \"" << name << ".\", strlen(\"" << name << ".\")) == 0)\n";
+		o << pre_line << "\t{\n";
+		o << pre_line << "\t\t*dataPathIntP = " << index << ";\n";
+		o << pre_line << "\t\t*(dataPathIntP+1) = -1;\n";
+		o << pre_line << "\t\treturn (0);\n";
+		o << pre_line << "\t}\n";
+		o << pre_line << "}\n";
+
+		return o.str();
+	}
+
+	// getGetType Command
+
+	string DataType::getGetType(string pre_line, int index)
+	{
+		ostringstream o;
+
+		o << pre_line << "case " << index <<":\n";
+		o << pre_line << "\treturn(" << module << "::" << type << "::getType(dataPathIntP+1));\n";
+		o << pre_line << "\tbreak;\n";
+
+		return o.str();
+	}
+
+	string DataType::getGetInstance(string pre_line, int index)
+	{
+		ostringstream o;
+
+		o << pre_line << "case " << index <<":\n";
+		if (optional)
+		{
+					o << pre_line << "\tif (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
+					if( vector )
+					{
+						o << pre_line << "\t\treturn((*" << name << ").getInstance(dataPathIntP+1));\n";
+					}
+					else
+					{
+						o << pre_line << "\t\treturn(" << name << ".getInstance(dataPathIntP+1));\n";
+					}
+					o << pre_line << "\telse\n";
+					o << pre_line << "\t\treturn (NULL);\n";
+		}
+		else
+		{
+			if( vector )
+			{
+				o << pre_line << "\treturn((*" << name << ").getInstance(dataPathIntP+1));\n";
+			}
+			else
+			{
+				o << pre_line << "\treturn(" << name << ".getInstance(dataPathIntP+1));\n";
+			}
+		}
+		o << pre_line << "\tbreak;\n";
+
+		return o.str();
+	}
 	
 	// CopyFrom Command
 	

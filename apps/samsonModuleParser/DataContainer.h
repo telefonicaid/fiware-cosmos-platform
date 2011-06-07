@@ -304,6 +304,87 @@ namespace samson
 				}
 			}
 			
+			//Functions to translate and access data instances from name string.
+			// External API from string to int*
+			// This piece of code is the same for every data type
+			file << "\tstatic int *getDataPath(const std::string &dataPathString){\n";
+			file << "\t\tconst char *dataPathCharP = dataPathString.c_str();\n";
+			file << "\t\tint nlevels = 1;\n";
+			file << "\t\tint *dataPathIntP;\n\n";
+			file << "\t\tconst char *p_sep = dataPathCharP;\n";
+			file << "\t\twhile ((p_sep = strchr(p_sep, '.')) != NULL)\n\t\t{\n";
+			file << "\t\t\tnlevels++;\n";
+			file << "\t\t\tp_sep++;\n\t\t}\n\n";
+			file << "\t\tif ((dataPathIntP = (int *)malloc((nlevels + 1)*sizeof(int))) == NULL)\n\t\t{\n";
+			file << "\t\t\treturn ((int *)NULL);\n\t\t}\n\n";
+			file << "\t\tint retError = getDataPath(dataPathCharP, dataPathIntP);\n\n";
+			file << "\t\tif (retError)\n\t\t{\n";
+			file << "\t\t\tfree(dataPathIntP);\n";
+			file << "\t\t\tdataPathIntP = NULL;\n\t\t}\n\n";
+			file << "\t\treturn  (dataPathIntP);\n";
+			file << "\t}\n\n";
+
+			// Internal API from char* to int*
+			file << "\tstatic int getDataPath(const char * dataPathCharP, int *dataPathIntP){\n";
+			file << "\t\tif (strcmp(dataPathCharP, \"" << name << "\") == 0)\n\t\t{\n";
+			file << "\t\t\t*dataPathIntP = -1;\n";
+			file << "\t\t\treturn (0);\n\t\t}\n\n";
+			file << "\t\tif (strncmp(dataPathCharP, \"" << name << ".\", strlen(\"" << name << ".\")) == 0)\n\t\t{\n";
+			file << "\t\t\treturn (getDataPath(dataPathCharP+strlen(\"" << name << ".\"), dataPathIntP));\n\t\t}\n";
+			int index = 0;
+			for (vector <DataType>::iterator field = items.begin(); field != items.end() ; field++)
+			{
+				if ((*field).name != NAME_FILLEDOPTIONALFIELDS)
+				{
+					file << (*field).getGetDataPath("\t\t", index);
+					index++;
+				}
+			}
+			file << "\t\treturn -1;\n";
+			file << "\t}\n\n";
+
+			// API to get the data type from the int* path
+			file << "\tstatic std::string getType(const int *dataPathIntP){\n";
+			file << "\t\tswitch(*dataPathIntP)\n\t\t{\n";
+			file << "\t\t\tcase -1:\n";
+			file << "\t\t\t\treturn (\"" << name << "\");\n";
+			file << "\t\t\t\tbreak;\n";
+			index = 0;
+			for (vector <DataType>::iterator field = items.begin(); field != items.end() ; field++)
+			{
+				if ((*field).name != NAME_FILLEDOPTIONALFIELDS)
+				{
+					file << (*field).getGetType("\t\t\t", index);
+					index++;
+				}
+			}
+			file << "\t\t\tdefault:\n";
+			file << "\t\t\t\treturn (" << "\"_Unknown_\"" << ");\n";
+			file << "\t\t\t\tbreak;\n";
+			file << "\t\t};\n";
+			file << "\t}\n\n";
+
+			// API to get an instance from the int* path
+			file << "\tDataInstance * getInstance(const int *dataPathIntP){\n";
+			file << "\t\tswitch(*dataPathIntP)\n\t\t{\n";
+			file << "\t\t\tcase -1:\n";
+			file << "\t\t\t\treturn(this);\n";
+			file << "\t\t\t\tbreak;\n";
+			index = 0;
+			for (vector <DataType>::iterator field = items.begin(); field != items.end() ; field++)
+			{
+				if ((*field).name != NAME_FILLEDOPTIONALFIELDS)
+				{
+					file << (*field).getGetInstance("\t\t\t", index);
+					index++;
+				}
+			}
+			file << "\t\t\tdefault:\n";
+			file << "\t\t\t\treturn (NULL);\n";
+			file << "\t\t\t\tbreak;\n";
+			file << "\t\t};\n";
+			file << "\t}\n\n";
+
 			//Copy from
 			file << "\tvoid copyFrom( "<< name << "_base *other ){\n";
 			

@@ -746,7 +746,7 @@ Status EndpointManager::setupAwait(void)
 			continue;
 		}
 
-		if ((s = ep->helloExchange(5, 0)) != OK)
+		if ((s = ep->helloExchange(60, 0)) != OK)
 		{
 			LM_E(("Hello Exchange error: %s", status(s)));
 			delete ep;
@@ -768,7 +768,7 @@ Status EndpointManager::setupAwait(void)
 		{
 			// Hello exchanged, now the endpoint will send a ProcessVector message
 			// Awaiting the message to arrive 
-			if ((s = ep->msgAwait(5, 0, "ProcessVector Message")) != 0)
+			if ((s = ep->msgAwait(60, 0, "ProcessVector Message")) != 0)
 			   LM_X(1, ("msgAwait(ProcessVector): %s", status(s)));
 
 			if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != 0)
@@ -820,7 +820,7 @@ Status EndpointManager::setupAwait(void)
 		free(dataP);
 		ep->ack(header.code);
 
-		if ((s = ep->msgAwait(2, 0, "Connection Closed")) != OK)
+		if ((s = ep->msgAwait(10, 0, "Connection Closed")) != OK)
 			LM_W(("All OK, except that samsonSetup didn't close connection in time. msgAwait(): %s", status(s)));
 		else if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != ConnectionClosed)
 			LM_W(("All OK, except that samsonSetup didn't close connection when it was supposed to. receive(): %s", status(s)));

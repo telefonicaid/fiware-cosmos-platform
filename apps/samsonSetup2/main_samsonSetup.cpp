@@ -161,8 +161,8 @@ void readyCheck(void* callbackData, void* userParam)
 	else
 	{
 		now = time(NULL);
-		if ((now - startTime) > 5)
-			LM_X(1, ("five seconds elapsed since connecting to spawners and still not all of them have helloed - I die"));
+		if ((now - startTime) > 60)
+			LM_X(1, ("A minute elapsed since connecting to spawners and still not all of them have helloed - I die"));
 	}
 }
 

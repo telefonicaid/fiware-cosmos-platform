@@ -882,7 +882,7 @@ Status Endpoint2::msgAwait(int secs, int usecs, const char* what)
 	if (fds == -1)
 		LM_RP(SelectError, ("select error awaiting '%s' from '%s", what, name()));
 	else if (fds == 0)
-		LM_RE(Timeout, ("timeout awaiting '%s' from '%s'", what, name()));
+		LM_RE(Timeout, ("timeout awaiting '%s' from '%s' (%d.%06d seconds)", what, name(), secs, usecs));
 	else if ((fds > 0) && (!FD_ISSET(rFd, &rFds)))
 		LM_RE(Error, ("some other fd has a read pending - this is impossible ! (awaiting '%s' from '%s')", what, name()));
 	else if ((fds > 0) && (FD_ISSET(rFd, &rFds)))

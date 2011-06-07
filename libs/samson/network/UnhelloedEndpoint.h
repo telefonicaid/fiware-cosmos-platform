@@ -12,6 +12,7 @@
 * CREATION DATE            Apr 27 2011
 *
 */
+#include "samson/common/status.h"
 #include "samson/network/Endpoint2.h"          // Endpoint2
 
 
@@ -40,9 +41,10 @@ public:
 
 	virtual Status       msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP);
 	Status               helloDataSet(Type _type, int _id);
-	Endpoint2::Status    helloExchange(int secs, int usecs);     // send Hello Msg and await Ack - if OK, the endpoint has adopted the 
+	Status               helloExchange(int secs, int usecs);     // send Hello Msg and await Ack - if OK, the endpoint has adopted the 
+
 private:
-	Endpoint2::Status    init(void);
+	Status               init(void);
 };
 
 }

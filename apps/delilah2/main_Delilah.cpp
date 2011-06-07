@@ -182,5 +182,4 @@ int main(int argC, const char *argV[])
 	}    
     
 	delilahConsole.run();
-	
 }

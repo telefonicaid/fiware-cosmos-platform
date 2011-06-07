@@ -7,6 +7,7 @@
 * CREATION DATE            May 04 2011
 *
 */
+#include "samson/common/status.h"
 #include "samson/common/Process.h"            // Process, ProcessVector
 #include "samson/common/ports.h"              // CONTROLLER_PORT, WORKER_PORT
 #include "samson/network/Network2.h"          // Network2
@@ -117,10 +118,10 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 *
 * connect - 
 */
-samson::Endpoint2::Status SamsonStarter::connect(void)
+samson::Status SamsonStarter::connect(void)
 {
 	samson::Endpoint2*        ep;
-	samson::Endpoint2::Status s;
+	samson::Status s;
 
 	for (int ix = 0; ix < spawners; ix++)
 	{
@@ -129,11 +130,11 @@ samson::Endpoint2::Status SamsonStarter::connect(void)
 			LM_X(1, ("Cannot find Spawner %d", ix));
 
 		LM_T(LmtConnect, ("Connecting to Spawner in %s", ep->hostGet()->name));
-		if ((s = ep->connect()) != samson::Endpoint2::OK)
-			LM_RE(s, ("Error connecting to %s: %s", ep->name(), ep->status(s)));
+		if ((s = ep->connect()) != samson::OK)
+			LM_RE(s, ("Error connecting to %s: %s", ep->name(), samson::status(s)));
 	}
 
-	return samson::Endpoint2::OK;
+	return samson::OK;
 }
 
 
@@ -142,7 +143,7 @@ samson::Endpoint2::Status SamsonStarter::connect(void)
 *
 * reset - 
 */
-samson::Endpoint2::Status SamsonStarter::reset(void)
+samson::Status SamsonStarter::reset(void)
 {
 	int msgs;
 
@@ -151,7 +152,7 @@ samson::Endpoint2::Status SamsonStarter::reset(void)
 	if (msgs != spawners)
 		LM_W(("Sent Reset to %d spawners, should be %d ...", msgs, spawners));
 
-	return samson::Endpoint2::OK;
+	return samson::OK;
 }
 
 
@@ -160,9 +161,9 @@ samson::Endpoint2::Status SamsonStarter::reset(void)
 *
 * processList - 
 */
-samson::Endpoint2::Status SamsonStarter::processList(void)
+samson::Status SamsonStarter::processList(void)
 {
-	return samson::Endpoint2::Error;
+	return samson::Error;
 }
 
 
@@ -171,7 +172,7 @@ samson::Endpoint2::Status SamsonStarter::processList(void)
 *
 * procVecSend - 
 */
-samson::Endpoint2::Status SamsonStarter::procVecSend(void)
+samson::Status SamsonStarter::procVecSend(void)
 {
 	int                    msgs;
 	samson::ProcessVector* procVec = networkP->epMgr->procVecGet();
@@ -184,7 +185,7 @@ samson::Endpoint2::Status SamsonStarter::procVecSend(void)
 	if (msgs != spawners)
 		LM_W(("Sent ProcessVector to %d spawners, should be %d ...", msgs, spawners));
 
-	return samson::Endpoint2::OK;
+	return samson::OK;
 }
 
 

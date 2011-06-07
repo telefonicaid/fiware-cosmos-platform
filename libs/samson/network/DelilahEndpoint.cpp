@@ -16,6 +16,7 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
+#include "samson/common/status.h"
 #include "samson/common/ports.h"
 #include "Packet.h"
 #include "EndpointManager.h"
@@ -59,7 +60,7 @@ DelilahEndpoint::~DelilahEndpoint() // : ~Endpoint2()
 *
 * msgTreat2 - 
 */
-Endpoint2::Status DelilahEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
+Status DelilahEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 {
 	switch (headerP->code)
 	{

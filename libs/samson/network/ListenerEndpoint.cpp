@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
+#include "samson/common/status.h"
 #include "EndpointManager.h"    // EndpointManager
 #include "UnhelloedEndpoint.h"  // UnhelloedEndpoint
 #include "ListenerEndpoint.h"   // Own interface
@@ -53,7 +54,7 @@ ListenerEndpoint::ListenerEndpoint
 	int               _wFd
 ) : Endpoint2(_epMgr, Listener, 0, _host, _port, _rFd, _wFd)
 {
-	if (init() != Endpoint2::OK)
+	if (init() != OK)
 		LM_X(1, ("Error setting up listen socket for endpoint '%s'", name()));
 }
 
@@ -73,7 +74,7 @@ ListenerEndpoint::~ListenerEndpoint() // : ~Endpoint2()
 *
 * init - 
 */
-Endpoint2::Status ListenerEndpoint::init(void)
+Status ListenerEndpoint::init(void)
 {
 	int                 reuse = 1;
 	struct sockaddr_in  sock;
@@ -192,7 +193,7 @@ UnhelloedEndpoint* ListenerEndpoint::accept(void)
 *
 * msgTreat - 
 */
-Endpoint2::Status ListenerEndpoint::msgTreat2(void)
+Status ListenerEndpoint::msgTreat2(void)
 {
 	UnhelloedEndpoint* ep;
 
@@ -204,7 +205,7 @@ Endpoint2::Status ListenerEndpoint::msgTreat2(void)
 	LM_T(LmtHello, ("Sending hello to %s", ep->name()));
 	ep->helloSend(Message::Msg);
 	ep->state = Ready;
-	return Endpoint2::OK;
+	return OK;
 }
 
 }

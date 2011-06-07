@@ -17,11 +17,13 @@
 
 #include "logMsg/logMsg.h"          // LM_X
 
+#include "au/Token.h"
+#include "au/list.h"
+#include "samson/common/status.h"
 #include "samson/common/Process.h"  // PtWorker, PtController
 #include "Message.h"                // Message::Code, Message::Type
 #include "Host.h"                   // Host
 #include "NetworkInterface.h"       // PacketSenderInterface
-#include "JobQueue.h"               // JobQueue
 
 
 
@@ -62,53 +64,6 @@ class Endpoint2
 	friend class DelilahEndpoint;
 
 public:
-	typedef enum UpdateReason
-	{
-		ControllerAdded,
-		ControllerDisconnected,
-		ControllerReconnected,
-		ControllerRemoved,
-		SupervisorAdded,
-		EndpointRemoved,
-		HelloReceived,
-		WorkerAdded,
-		WorkerDisconnected,
-		WorkerRemoved,
-		SelectToBeCalled,
-		ProcessVectorReceived
-	} UpdateReason;
-
-	typedef enum Status
-	{
-		OK,
-		NotImplemented,
-
-		BadMsgType,
-		NullHost,
-		BadHost,
-		NullPort,
-		Duplicated,
-		KillError,
-		NotHello,
-		NotAck,
-		NotMsg,
-
-		Error,
-		ConnectError,
-		AcceptError,
-		NotListener,
-		SelectError,
-		SocketError,
-		GetHostByNameError,
-		BindError,
-		ListenError,
-		ReadError,
-		WriteError,
-		Timeout,
-		ConnectionClosed,
-		PThreadError
-	} Status;
-
 	typedef enum State
 	{
 		Unused,
@@ -155,11 +110,10 @@ public:
 
 	const char*          name(void);
 	void                 nameSet(Type _type, int id, Host* host);
-
-	const char*          status(Status s);
 	const char*          stateName(void);
 
-	JobQueue*            jobQ;
+	au::Token            jobQueueSem;
+	au::list<Packet>     jobQueue;
 
 private:
 	EndpointManager*     epMgr;

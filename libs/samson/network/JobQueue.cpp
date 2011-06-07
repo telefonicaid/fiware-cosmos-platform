@@ -13,15 +13,15 @@
 * The other 'local' side of the thread will be unaware about whether the peer is
 * up or not, all messages meant for that peer will just be sent to the sender thread.
 */
-#include "logMsg/logMsg.h"             // LM_*
-#include "logMsg/traceLevels.h"        // Lmt*
+#include "logMsg.h"             // LM_*
+#include "traceLevels.h"        // Lmt*
 
-#include "samson/network/Packet.h"             // Packet
+#include "Packet.h"             // Packet
 #include "JobQueue.h"           // Own interface
 
 
 
-namespace samson
+namespace ss
 {
 
 
@@ -32,7 +32,6 @@ namespace samson
 */
 JobQueue::JobQueue(void)
 {
-	LM_T(LmtJob, ("Creating jobQueue"));
 	head      = NULL;
 	jobs      = 0;
 	totalSize = 0;
@@ -50,21 +49,18 @@ JobQueue::Job* JobQueue::pop(void)
 	Job* prev  = NULL;
 	Job* jobP;
 
-	LM_T(LmtJob, ("Trying to pop a Job (last: %p)", last));
-
     if (head == NULL) // List is empty
 		return NULL;
 
-	LM_T(LmtJob, ("Popping a job from queue"));
+	LM_M(("Popping a job from queue"));
 
-	while (last != NULL)
+	while (last->next != NULL)
 	{
 		prev = last;
 		last = last->next;
 	}
 	
-	if (prev != NULL)
-		prev->next = NULL;
+	prev->next = NULL;
 
 	if (prev == head) // List contained only ONE item
 		head = NULL;
@@ -78,27 +74,8 @@ JobQueue::Job* JobQueue::pop(void)
 	//
 	jobs -= 1;
 
-	LM_TODO(("I get a SIGABRT here - fix this!"));
-#if 0
-
-	//
-	// output in gdb:
-	//   samsonWorker2: Popping a job from queue
-	//   pure virtual method called
-	//   terminate called without an active exception
-	//
-	//   Program received signal SIGABRT, Aborted.
-	//
-
 	if (jobP->packetP->message != NULL)
 		totalSize  -= jobP->packetP->message->ByteSize();
-#endif
-
-	if (jobP->packetP == NULL)
-	{
-		LM_W(("NULL packet pointer"));
-		return last;
-	}
 
 	if (jobP->packetP->dataP != NULL)
 		totalSize  -= jobP->packetP->dataLen;
@@ -124,7 +101,6 @@ JobQueue::Job* JobQueue::pop(void)
 			LM_X(1, ("job list empty but totalSize == %d ...", totalSize));
 	}
 
-	LM_T(LmtJob, ("Popping Job %p", last));
 	return last;
 }
 
@@ -138,9 +114,7 @@ void JobQueue::push(Job* jobP)
 {
 	Job* last = head;
 
-	LM_T(LmtJob, ("Pushing a Job"));
-
-	LM_T(LmtJob, ("Pushing a job to queue"));
+	LM_M(("Pushing a job to queue"));
 
 	if (head == NULL) // List is empty
 	{
@@ -163,12 +137,6 @@ void JobQueue::push(Job* jobP)
 	// Statistics
 	//
 	jobs += 1;
-
-	if (jobP->packetP == NULL)
-	{
-		LM_W(("NULL packet pointer"));
-		return;
-	}
 
 	if (jobP->packetP->message != NULL)
 		totalSize  += jobP->packetP->message->ByteSize();

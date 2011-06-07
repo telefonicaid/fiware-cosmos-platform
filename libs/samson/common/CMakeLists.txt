@@ -27,6 +27,7 @@ SET (SOURCES
 	platformProcesses.cpp
 	coding.cpp
 	KVInputVector.cpp
+	status.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''

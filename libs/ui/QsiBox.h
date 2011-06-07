@@ -75,6 +75,8 @@ private:
 
 public:
 	Box(Manager* manager, Box* owner, const char* name, int x, int y);
+	~Box();
+
 	void setVertical(bool _vertical);
 
 	Manager*    managerGet(void) { return manager; };

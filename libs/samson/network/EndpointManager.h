@@ -10,6 +10,7 @@
 * CREATION DATE            Apr 06 2011
 *
 */
+#include "samson/common/status.h"
 #include "samson/common/Process.h"
 #include "NetworkInterface.h"
 #include "Host.h"
@@ -96,7 +97,7 @@ public:
 
 	int                procVecSet(ProcessVector* _procVec, bool save = true);
 	ProcessVector*     procVecGet(void);
-	Endpoint2::Status  setupAwait(void);
+	Status             setupAwait(void);
 
 	void               timeout(void);
 	void               periodic(void);

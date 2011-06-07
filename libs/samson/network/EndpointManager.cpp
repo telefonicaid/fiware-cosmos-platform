@@ -13,6 +13,7 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
+#include "samson/common/status.h"
 #include "samson/common/ports.h"
 #include "samson/common/Process.h"
 #include "samson/common/platformProcesses.h"
@@ -717,9 +718,9 @@ Endpoint2* EndpointManager::indexedGet(unsigned int ix)
 *
 * setupAwait - 
 */
-Endpoint2::Status EndpointManager::setupAwait(void)
+Status EndpointManager::setupAwait(void)
 {
-	Endpoint2::Status  s;
+	Status             s;
 	Message::Header    header;
 	void*              dataP   = NULL;
 	long               dataLen = 0;
@@ -728,7 +729,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 	LM_TODO(("Instead of all this, perhaps I can just start the spawner and treat the messages in SamsonSpawner::receive ... ?"));
 
 	if (listener == NULL)
-		LM_RE(Endpoint2::Error, ("Cannot await the setup to arrive if I have no Listener ..."));
+		LM_RE(Error, ("Cannot await the setup to arrive if I have no Listener ..."));
 
 	LM_T(LmtSetup, ("Awaiting samsonSetup to connect and pass the Process Vector"));
 	while (1)
@@ -745,9 +746,9 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 			continue;
 		}
 
-		if ((s = ep->helloExchange(5, 0)) != Endpoint2::OK)
+		if ((s = ep->helloExchange(5, 0)) != OK)
 		{
-			LM_E(("Hello Exchange error: %s", ep->status(s)));
+			LM_E(("Hello Exchange error: %s", status(s)));
 			delete ep;
 			continue;
 		}
@@ -768,7 +769,7 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 			// Hello exchanged, now the endpoint will send a ProcessVector message
 			// Awaiting the message to arrive 
 			if ((s = ep->msgAwait(5, 0, "ProcessVector Message")) != 0)
-			   LM_X(1, ("msgAwait(ProcessVector): %s", ep->status(s)));
+			   LM_X(1, ("msgAwait(ProcessVector): %s", status(s)));
 
 			if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != 0)
 			{
@@ -819,15 +820,15 @@ Endpoint2::Status EndpointManager::setupAwait(void)
 		free(dataP);
 		ep->ack(header.code);
 
-		if ((s = ep->msgAwait(2, 0, "Connection Closed")) != Endpoint2::OK)
-			LM_W(("All OK, except that samsonSetup didn't close connection in time. msgAwait(): %s", ep->status(s)));
-		else if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != Endpoint2::ConnectionClosed)
-			LM_W(("All OK, except that samsonSetup didn't close connection when it was supposed to. receive(): %s", ep->status(s)));
+		if ((s = ep->msgAwait(2, 0, "Connection Closed")) != OK)
+			LM_W(("All OK, except that samsonSetup didn't close connection in time. msgAwait(): %s", status(s)));
+		else if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != ConnectionClosed)
+			LM_W(("All OK, except that samsonSetup didn't close connection when it was supposed to. receive(): %s", status(s)));
 
 		show("Before removing samsonSetup");
 		remove(ep);
 		show("After removing samsonSetup", true);
-		return Endpoint2::OK;
+		return OK;
 	}
 }
 

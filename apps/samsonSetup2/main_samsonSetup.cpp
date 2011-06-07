@@ -18,6 +18,7 @@
 #include "logMsg/traceLevels.h"
 
 #include "engine/MemoryManager.h"
+#include "samson/common/status.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/network/Endpoint2.h"
 #include "SamsonStarter.h"
@@ -71,9 +72,9 @@ int              startTime;
 */
 static void plist(void)
 {
-	samson::Endpoint2::Status s;
+	samson::Status s;
 
-	if ((s = samsonStarter->processList()) != samson::Endpoint2::OK)
+	if ((s = samsonStarter->processList()) != samson::OK)
 		LM_X(1, ("Error sending Process List Message to spawners"));
 
 	LM_M(("Got the list - I'm done"));
@@ -88,10 +89,10 @@ static void plist(void)
 */
 static void resetAndStart(void)
 {
-	samson::Endpoint2::Status s;
+	samson::Status s;
 
-	if ((s = samsonStarter->reset()) != samson::Endpoint2::OK)
-		LM_X(1, ("Error sending RESET to all spawners: %s", ((samson::Endpoint2*) NULL)->status(s)));
+	if ((s = samsonStarter->reset()) != samson::OK)
+	   LM_X(1, ("Error sending RESET to all spawners: %s", status(s)));
 
 	if (reset)
 	{
@@ -99,8 +100,8 @@ static void resetAndStart(void)
 		exit(0);
 	}
 
-	if ((s = samsonStarter->procVecSend()) != samson::Endpoint2::OK)
-		LM_X(1, ("Error sending Process Vector to all spawners: %s", ((samson::Endpoint2*) NULL)->status(s)));
+	if ((s = samsonStarter->procVecSend()) != samson::OK)
+		LM_X(1, ("Error sending Process Vector to all spawners: %s", status(s)));
 
 	LM_M(("Started platform - I'm done"));
 	exit(0);
@@ -207,7 +208,7 @@ int main(int argC, const char *argV[])
 	samsonStarter->procVecCreate(controllerHost, workers, ips);
 
 	startTime = time(NULL);
-	if (samsonStarter->connect() != samson::Endpoint2::OK)
+	if (samsonStarter->connect() != samson::OK)
 		LM_X(1, ("Error connecting to all spawners"));
 
 	LM_M(("Connected to all spawners"));

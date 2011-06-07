@@ -87,10 +87,10 @@ char* messageType(MessageType type)
 {
 	switch (type)
 	{
-	case Msg:           return (char*) "Msg";
-	case Evt:           return (char*) "Evt";
-	case Ack:           return (char*) "Ack";
-	case Nak:           return (char*) "Nak";
+	case Msg:           return (char*) "Message";
+	case Evt:           return (char*) "Event";
+	case Ack:           return (char*) "Acknowledge";
+	case Nak:           return (char*) "Neg Acknowledge";
 	}
 
 	return (char*) "Unknown";

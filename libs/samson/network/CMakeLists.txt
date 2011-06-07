@@ -19,7 +19,6 @@ SET (HEADERS
 	PacketReceivedNotification.h
 
 	Network2.h
-	JobQueue.h
 	EndpointManager.h
 	Endpoint2.h
 	ListenerEndpoint.h
@@ -53,7 +52,6 @@ SET (SOURCES
 	PacketReceivedNotification.cpp
 
 	Network2.cpp
-	JobQueue.cpp
 	EndpointManager.cpp
 	Endpoint2.cpp
 	ListenerEndpoint.cpp

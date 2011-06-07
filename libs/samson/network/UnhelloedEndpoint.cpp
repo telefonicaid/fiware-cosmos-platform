@@ -9,16 +9,17 @@
 * CREATION DATE            Apr 27 2011
 *
 */
-#include <unistd.h>             // close
-#include <fcntl.h>              // F_SETFD
-#include <pthread.h>            // pthread_t
+#include <unistd.h>                    // close
+#include <fcntl.h>                     // F_SETFD
+#include <pthread.h>                   // pthread_t
 
 #include "logMsg/logMsg.h"             // LM_*
 #include "logMsg/traceLevels.h"        // Lmt*
 
-#include "samson/network/Packet.h"             // Packet
-#include "samson/network/EndpointManager.h"    // EndpointManager
-#include "UnhelloedEndpoint.h"  // Own interface
+#include "samson/common/status.h"
+#include "Packet.h"                    // Packet
+#include "EndpointManager.h"           // EndpointManager
+#include "UnhelloedEndpoint.h"         // Own interface
 
 
 
@@ -58,10 +59,10 @@ UnhelloedEndpoint::~UnhelloedEndpoint() // : ~Endpoint2()
 *
 * msgTreat2 - 
 */
-Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
+Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 {
 	Message::HelloData*  helloP;
-	Endpoint2::Status    s;
+	Status               s;
 	Endpoint2*           ep = NULL;
 
 	switch (headerP->code)
@@ -184,7 +185,7 @@ Endpoint2::Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* d
 *
 * helloDataSet - 
 */
-Endpoint2::Status UnhelloedEndpoint::helloDataSet(Type _type, int _id)
+Status UnhelloedEndpoint::helloDataSet(Type _type, int _id)
 {
 	if (epMgr->lookup(_type, _id) != NULL)
 	{
@@ -207,14 +208,14 @@ Endpoint2::Status UnhelloedEndpoint::helloDataSet(Type _type, int _id)
 *
 * helloExchange - 
 */
-Endpoint2::Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
+Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 {
 	Message::Header       header;
 	long                  dataLen = 0;
 	void*                 dataP   = NULL;
 	Message::HelloData*   helloP;
 	Packet                packet(Message::Unknown);
-	Endpoint2::Status     s;
+	Status                s;
 
 	LM_T(LmtUnhelloed, ("Sending Hello Msg to %s", name()));
 	helloSend(Message::Msg);

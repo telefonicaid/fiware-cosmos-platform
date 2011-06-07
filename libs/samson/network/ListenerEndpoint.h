@@ -12,7 +12,8 @@
 * CREATION DATE            Apr 27 2011
 *
 */
-#include "samson/network/Endpoint2.h"          // Endpoint2
+#include "samson/common/status.h"
+#include "Endpoint2.h"          // Endpoint2
 
 
 
@@ -42,10 +43,10 @@ public:
 	~ListenerEndpoint();
 
 	UnhelloedEndpoint*  accept(void);
-	Endpoint2::Status   msgTreat2(void);
+	Status              msgTreat2(void);
 
 private:
-	Endpoint2::Status   init(void);
+	Status              init(void);
 };
 
 }

@@ -16,6 +16,7 @@
 #include "logMsg/logMsg.h"               // LM_*
 #include "logMsg/traceLevels.h"          // Lmt*
 
+#include "samson/common/status.h"
 #include "samson/common/ports.h"         // CONTROLLER_PORT
 #include "EndpointManager.h"
 #include "ControllerEndpoint.h"
@@ -57,7 +58,7 @@ ControllerEndpoint::~ControllerEndpoint() // : ~Endpoint2()
 *
 * msgTreat2 - 
 */
-Endpoint2::Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
+Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 {
 	ProcessVector* pVec;
 
@@ -100,7 +101,7 @@ Endpoint2::Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* 
 *
 * msgTreat2 - 
 */
-Endpoint2::Status ControllerEndpoint::msgTreat2(void)
+Status ControllerEndpoint::msgTreat2(void)
 {
 	LM_X(1, ("Nothing done here - frankly, I thought ListenerEndpoint::msgTreat2 would be called ..."));
 	return Error;

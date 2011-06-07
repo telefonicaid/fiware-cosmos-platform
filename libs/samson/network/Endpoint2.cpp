@@ -26,6 +26,9 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
+#include "au/Token.h"
+#include "au/list.h"
+#include "samson/common/status.h"
 #include "samson/common/MemoryTags.h"         // MemoryOutputDisk
 #include "samson/common/ports.h"              // WORKER_PORT, ...
 
@@ -72,20 +75,15 @@ void* writerThread(void* vP)
 	LM_T(LmtThreads, ("writer thread for endpoint %s is running (REAL wFd: %d))", ep->name(), ep->wFdGet()));
 	while (1)
 	{
-		JobQueue::Job* job;
+		Packet* packetP;
 
-		while (1)
-		{
-			job = ep->jobQ->pop();
-			if (job != NULL)
-				break;
-			sleep(1);
-		}
-
-		ep->realsend(job->packetP->msgType, job->packetP->msgCode, job->packetP->dataP, job->packetP->dataLen, job->packetP);
-		delete job->packetP;
-		if (job->psi != NULL)
-			job->psi->notificationSent(0, true);
+		ep->jobQueueSem.retain();
+		packetP = ep->jobQueue.extractFront();
+		ep->jobQueueSem.release();
+		if (packetP != NULL)
+			ep->realsend(packetP->msgType, packetP->msgCode, packetP->dataP, packetP->dataLen, packetP);
+		else
+			usleep(100000);
 	}
 
 	return NULL;
@@ -118,7 +116,6 @@ Endpoint2::Endpoint2
 	state               = Unused;
 	threaded            = false;
 	nameidhost          = NULL;
-	jobQ                = NULL;
 	idInEndpointVector  = -8;    // -8 meaning 'undefined' ...
 
 	nameSet(type, id, host);
@@ -130,13 +127,6 @@ Endpoint2::Endpoint2
 	bytesOut      = 0;
 	msgsInErrors  = 0;
 	msgsOutErrors = 0;
-
-
-	if (epMgr->me != NULL)
-	{
-		if (((type == Delilah) || (type == Worker)) && ((epMgr->me->type == Delilah) || (epMgr->me->type == Worker)))
-			jobQ = new JobQueue();
-	}
 }
 
 
@@ -371,18 +361,18 @@ int Endpoint2::wFdGet(void)
 *
 * okToSend - 
 */
-Endpoint2::Status Endpoint2::okToSend(void)
+Status Endpoint2::okToSend(void)
 {
 	int             fds;
 	fd_set          wFds;
 	struct timeval  timeVal;
 	int             tryh;
-	int             tries = 300;
+	int             tries = 30;
 
 	for (tryh = 0; tryh < tries; tryh++)
 	{
 		timeVal.tv_sec  = 0;
-		timeVal.tv_usec = 100000;
+		timeVal.tv_usec = 1000000;
 
 		FD_ZERO(&wFds);
 		FD_SET(wFd, &wFds);
@@ -408,7 +398,7 @@ Endpoint2::Status Endpoint2::okToSend(void)
 *
 * partWrite - 
 */
-Endpoint2::Status Endpoint2::partWrite(void* dataP, int dataLen, const char* what)
+Status Endpoint2::partWrite(void* dataP, int dataLen, const char* what)
 {
 	int    nb;
 	int    tot  = 0;
@@ -460,6 +450,8 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 
 	if ((host == epMgr->me->host) && (type == epMgr->me->typeGet()))
 	{
+		LM_M(("Loopbacking a %s %s", Message::messageCode(packetP->msgCode), Message::messageType(packetP->msgType)));
+
 		if (state != Loopback)
 			LM_X(1, ("Something went wrong - should be in loopback state ..."));
 
@@ -474,7 +466,11 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 	else
 	{
 		if (threaded == true)
-			jobQ->push(psi, packetP);
+		{
+			jobQueueSem.retain();
+			jobQueue.push_back(packetP);
+			jobQueueSem.release();
+		}
 		else
 		{
 			if ((state != Ready) && (state != Connected))
@@ -501,7 +497,7 @@ static void badMsgType(Message::MessageType type)
 *
 * realsend - 
 */
-Endpoint2::Status Endpoint2::realsend
+Status Endpoint2::realsend
 (
 	Message::MessageType  type,
 	Message::MessageCode  code,
@@ -555,9 +551,15 @@ Endpoint2::Status Endpoint2::realsend
 	//
 	s = partWrite(&header, sizeof(header), "header");
 	if (s != OK)
+	{
+		if (packetP != NULL)
+			delete packetP;
+		if (packetP->buffer != NULL)
+			engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
 		LM_RE(s, ("partWrite:header(%s): %s", name(), status(s)));
+	}
 
-
+	LM_T(LmtMsg, ("Sent a '%s' %s to %s", messageCode(header.code), messageType(header.type), name()));
 	
 	//
 	// Sending raw data
@@ -566,7 +568,13 @@ Endpoint2::Status Endpoint2::realsend
 	{
 		s = partWrite(data, dataLen, "msg data");
 		if (s != OK)
+		{
+			if (packetP != NULL)
+				delete packetP;
+			if (packetP->buffer != NULL)
+				engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
 			LM_RE(s, ("partWrite:data(%s): %s", name(), status(s)));
+		}
 	}
 
 
@@ -588,20 +596,33 @@ Endpoint2::Status Endpoint2::realsend
 		s = partWrite(outputVec, packetP->message->ByteSize(), "Google Protocol Buffer");
 		free(outputVec);
 		if (s != OK)
+		{
+			if (packetP != NULL)
+				delete packetP;
+			if (packetP->buffer != NULL)
+				engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
 			LM_RE(s, ("partWrite:GoogleProtocolBuffer(): %s", status(s)));
+		}
 	}
 
 	if (packetP && (packetP->buffer != 0))
 	{
 		s = partWrite(packetP->buffer->getData(), packetP->buffer->getSize(), "KV data");
 		if (s != OK)
+		{
+			if (packetP != NULL)
+				delete packetP;
+			if (packetP->buffer != NULL)
+				engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
 			LM_RE(s, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
+		}
 	}
 
 	if (packetP != NULL)
 	{
-	   engine::MemoryManager::shared()->destroyBuffer( packetP->buffer );
-	   delete packetP;
+		if (packetP->buffer != NULL)
+			engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
+		delete packetP;
 	}
 	
 	msgsOut += 1;
@@ -614,7 +635,7 @@ Endpoint2::Status Endpoint2::realsend
 *
 * partRead - 
 */
-Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, const char* what)
+Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, const char* what)
 {
 	ssize_t  tot = 0;
 	Status   s;
@@ -666,7 +687,7 @@ Endpoint2::Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, co
 *
 * receive - 
 */
-Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, long* dataLenP, Packet* packetP)
+Status Endpoint2::receive(Message::Header* headerP, void** dataPP, long* dataLenP, Packet* packetP)
 {
 	Status s;
 	long   bufLen;
@@ -681,10 +702,11 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 	if (s != OK)
 	{
 		close();
-		LM_RE(s, ("partRead: %s, expecting 'Header' from %s", status(s), name()));
+		return s;
 	}
 
-	LM_T(LmtReceive, ("Read '%s' '%s' header of %d bytes from %s", messageCode(headerP->code), messageType(headerP->type), bufLen, name()));
+	LM_T(LmtMsg, ("Read a '%s' %s from %s", messageCode(headerP->code), messageType(headerP->type), name()));
+
 	if (headerP->dataLen != 0)
 	{
 		*dataPP = calloc(1, headerP->dataLen);
@@ -694,7 +716,8 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 		{
 			close();
 			free(*dataPP);
-			LM_RE(s, ("partRead: %s, expecting '%d RAW DATA bytes' from '%s'", status(s), headerP->dataLen,  name()));
+
+			return s;
 		}
 		LM_T(LmtReceive, ("Read %d bytes of RAW DATA from %s", bufLen, name()));
 		totalBytesReadExceptHeader += bufLen;
@@ -711,7 +734,8 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 			free(dataP);
 			if (*dataPP != NULL)
 				free(*dataPP);
-			LM_RE(s, ("partRead: %s, expecting '%d bytes of Google Protocol Buffer data' from '%s'", status(s), headerP->gbufLen, name()));
+
+			return s;
 		}
 		LM_T(LmtReceive, ("Read %d bytes of GOOGLE DATA from '%s'", bufLen, name()));
 
@@ -740,7 +764,10 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 		if (s != OK)
 		{
 			close();
-			LM_RE(s, ("partRead: %s, expecting '%d bytes of KV DATA (%s)' from '%s'", status(s), headerP->kvDataLen, kvName, name()));
+			if (*dataPP != NULL)
+				free(*dataPP);
+
+			return s;
 		}
 		LM_T(LmtReceive, ("Read %d bytes of KV DATA from '%s'", nb, name()));
 
@@ -762,7 +789,7 @@ Endpoint2::Status Endpoint2::receive(Message::Header* headerP, void** dataPP, lo
 *
 * connect - 
 */
-Endpoint2::Status Endpoint2::connect(void)
+Status Endpoint2::connect(void)
 {
 	struct hostent*     hp;
 	struct sockaddr_in  peer;
@@ -828,7 +855,7 @@ Endpoint2::Status Endpoint2::connect(void)
 *
 * msgAwait - 
 */
-Endpoint2::Status Endpoint2::msgAwait(int secs, int usecs, const char* what)
+Status Endpoint2::msgAwait(int secs, int usecs, const char* what)
 {
 	struct timeval  tv;
 	struct timeval* tvP;
@@ -872,13 +899,13 @@ Endpoint2::Status Endpoint2::msgAwait(int secs, int usecs, const char* what)
 *
 * msgTreat - 
 */
-Endpoint2::Status Endpoint2::msgTreat(void)
+Status Endpoint2::msgTreat(void)
 {
 	Message::Header      header;
 	void*                dataP    = NULL;
 	long                 dataLen  = 0;
 	Packet*              packetP;
-	Endpoint2::Status    s;
+	Status               s;
 	Message::HelloData*  helloP;
 
 	if ((type == Listener) || (type == WebListener) || (type == WebWorker))
@@ -965,7 +992,7 @@ Endpoint2::Status Endpoint2::msgTreat(void)
 		break;
 
 	default:
-		LM_T(LmtMsgTreat, ("Cannot treat '%s' '%s' (code %d), passing it to msgTreat2", messageCode(header.code), messageType(header.type), header.code));
+		LM_T(LmtMsgTreat, ("Don't know how to treat '%s' %s (code %d), passing it to msgTreat2", messageCode(header.code), messageType(header.type), header.code));
 		s = msgTreat2(&header, dataP, dataLen, packetP);
 		if (s != OK)
 		{
@@ -1023,48 +1050,6 @@ const char* Endpoint2::typeName(void)
 
 
 
-/* *******************************************************************************
-*
-* status - 
-*/
-const char* Endpoint2::status(Status s)
-{
-	switch (s)
-	{
-	case OK:                   return "OK";
-	case NotImplemented:       return "Not Implemented";
-
-	case BadMsgType:           return "BadMsgType";
-	case NullHost:             return "Null Host";
-	case BadHost:              return "Bad Host";
-	case NullPort:             return "Null Port";
-	case Duplicated:           return "Duplicated";
-	case KillError:            return "Kill Error";
-	case NotHello:             return "Not Hello";
-	case NotAck:               return "Not an Ack";
-	case NotMsg:               return "Not a Msg";
-
-	case Error:                return "Error";
-	case ConnectError:         return "Connect Error";
-	case AcceptError:          return "Accept Error";
-	case NotListener:          return "Not a Listener";
-	case SelectError:          return "Select Error";
-	case SocketError:          return "Socket Error";
-	case GetHostByNameError:   return "Get Host By Name Error";
-	case BindError:            return "Bin dError";
-	case ListenError:          return "Listen Error";
-	case ReadError:            return "Read Error";
-	case WriteError:           return "Write Error";
-	case Timeout:              return "Timeout";
-	case ConnectionClosed:     return "Connection Closed";
-	case PThreadError:         return "Thread Error";
-	}
-
-	return "Unknown Status";
-}
-
-
-
 /* ****************************************************************************
 *
 * run - 
@@ -1094,7 +1079,7 @@ void Endpoint2::run(void)
 *
 * die - send die to endpoint and await death, with timeout
 */
-Endpoint2::Status Endpoint2::die(int secs, int usecs)
+Status Endpoint2::die(int secs, int usecs)
 {
 	char    c;
 	int     nb;
@@ -1136,7 +1121,7 @@ bool Endpoint2::isThreaded(void)
 *
 * helloDataSet - 
 */
-Endpoint2::Status Endpoint2::helloDataSet(Type _type, int _id)
+Status Endpoint2::helloDataSet(Type _type, int _id)
 {
 	if (type != Unhelloed)
 	{

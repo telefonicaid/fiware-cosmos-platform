@@ -69,6 +69,18 @@ ExpandList::ExpandList(Manager* manager, Box* owner, const char* _title, int x, 
 
 /* ****************************************************************************
 *
+* ExpandList destructor - 
+*/
+ExpandList::~ExpandList()
+{
+	delete title;
+	delete memberBox;
+}
+
+
+
+/* ****************************************************************************
+*
 * addMember - 
 */
 Base* ExpandList::addMember(const char* string, MenuFunction callback, const void* dataP, const char* mVec[])

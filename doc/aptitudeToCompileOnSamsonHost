@@ -7,3 +7,4 @@ sudo aptitude install libqt4-dev
 sudo aptitude install libncurses5-dev
 sudo aptitude install libreadline-dev
 sudo aptitude install libcppunit-dev
+sudo aptitude install libprotobuf-dev

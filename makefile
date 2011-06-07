@@ -1,7 +1,7 @@
 debug:
 	mkdir BUILD_DEBUG || true
 	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG
-	make -C BUILD_DEBUG 
+	make -j 7 -C BUILD_DEBUG 
 
 debug_coverage:
 	mkdir BUILD_DEBUG_COVERAGE || true
@@ -11,7 +11,7 @@ debug_coverage:
 release:
 	mkdir BUILD_RELEASE || true
 	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE
-	make -C BUILD_RELEASE 
+	make -C BUILD_RELEASE -j 7
 
 install: release
 	sudo make -C BUILD_RELEASE install

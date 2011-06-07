@@ -12,9 +12,10 @@
 #include <unistd.h>             // close
 #include <fcntl.h>              // F_SETFD
 
+#include "samson/common/status.h"
 #include "samson/network/EndpointManager.h"    // EndpointManager
-#include "UnhelloedEndpoint.h"  // UnhelloedEndpoint
-#include "WebListenerEndpoint.h"   // Own interface
+#include "UnhelloedEndpoint.h"                 // UnhelloedEndpoint
+#include "WebListenerEndpoint.h"               // Own interface
 
 
 
@@ -52,7 +53,7 @@ WebListenerEndpoint::WebListenerEndpoint
 	int               _wFd
 ) : Endpoint2(_epMgr, WebListener, _id, _host, _port, _rFd, _wFd)
 {
-	if (init() != Endpoint2::OK)
+	if (init() != OK)
 		LM_X(1, ("Error setting up listen socket for endpoint '%s'", name()));
 }
 
@@ -72,7 +73,7 @@ WebListenerEndpoint::~WebListenerEndpoint() // : ~Endpoint2()
 *
 * init - 
 */
-Endpoint2::Status WebListenerEndpoint::init(void)
+Status WebListenerEndpoint::init(void)
 {
 	int                 reuse = 1;
 	struct sockaddr_in  sock;

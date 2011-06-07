@@ -78,6 +78,35 @@ Box::Box(Manager* manager, Box* owner, const char* name, int x, int y) : Base(ow
 
 /* ****************************************************************************
 *
+* Box destructor - 
+*/
+Box::~Box()
+{
+#if 0
+	for (int ix = 0; ix < qsiVecSize; ix++)
+	{
+		if (qsiVec[ix] == NULL)
+			continue;
+
+		if (qsiVec[ix]->isBox)
+			delete (Box*) qsiVec[ix];
+		else
+			delete (Block*) qsiVec[ix];
+		qsiVec[ix] = NULL;
+	}
+
+	LM_TODO(("Free also alignVec"));
+	LM_TODO(("Free also scrollVec"));
+
+	free(qsiVec);
+	qsiVec = NULL;
+#endif
+}
+
+
+
+/* ****************************************************************************
+*
 * setVertical - 
 */
 void Box::setVertical(bool _vertical)

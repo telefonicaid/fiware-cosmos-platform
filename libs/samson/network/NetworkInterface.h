@@ -190,31 +190,26 @@ public:
 	virtual void quit()=0;					
 
 	// Handy function to get my workerID
-	int getWorkerId()
+	int getWorkerId(void)
 	{
 		return getWorkerFromIdentifier(getMyidentifier());
 	}
 		
-	// Run the "run" method in a background thread and returns control of the current thread
+	// Run the "run" method in a background thread and return control to the current thread
 	void runInBackground();
 		
 	virtual bool isConnected(unsigned int identifier) { return true; };
     virtual void delilahSend(PacketSenderInterface* packetSender, Packet* packetP)=0;
 
-    // New API to send packets
-    
-    void send( int endpoint,  Packet *p );
-    
-    void sendToWorker( int workerId , Packet *p);
-    
-    void sendToController( Packet *p );
+    // New API to send packets    
+    void send(int endpoint, Packet* p);
+    void sendToWorker(int workerId, Packet* p);
+    void sendToController(Packet* p);
 
 private:
     
  	// Send a packet (return a unique id to inform the notifier later)
 	virtual size_t send(PacketSenderInterface* sender, int endpointId, Packet* packetP )=0;
-   
-	
 };
 
 }

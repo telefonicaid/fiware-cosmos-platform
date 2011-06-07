@@ -18,6 +18,8 @@
 */
 typedef enum TraceLevels
 {
+	LmtMsg              = 19,
+
 	LmtEndpointListShow = 20,
 	LmtStarterListShow,
 	LmtSpawnerListShow,

@@ -16,11 +16,12 @@
 #include "logMsg/logMsg.h"               // LM_*
 #include "logMsg/traceLevels.h"          // Lmt*
 
-#include "samson/common/ports.h"                // SPAWNER_PORT
-#include "samson/common/samsonDirectories.h"    // SAMSON_PLATFORM_PROCESSES
+#include "samson/common/status.h"
+#include "samson/common/ports.h"                 // SPAWNER_PORT
+#include "samson/common/samsonDirectories.h"     // SAMSON_PLATFORM_PROCESSES
 #include "samson/network/EndpointManager.h"      // EndpointManager
-#include "UnhelloedEndpoint.h"    // UnhelloedEndpoint
-#include "SpawnerEndpoint.h"      // Own interface
+#include "UnhelloedEndpoint.h"                   // UnhelloedEndpoint
+#include "SpawnerEndpoint.h"                     // Own interface
 
 
 
@@ -72,12 +73,12 @@ SpawnerEndpoint::~SpawnerEndpoint() // : ~Endpoint2()
 *
 * msgTreat2 - 
 */
-Endpoint2::Status SpawnerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
+Status SpawnerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
 {
 	if (epMgr->dataReceiver == NULL)
 		LM_X(1, ("No data receiver"));
 
-	return (Endpoint2::Status) epMgr->dataReceiver->receive(epMgr->ixGet(this), dataLen, headerP, dataP);
+	return (Status) epMgr->dataReceiver->receive(epMgr->ixGet(this), dataLen, headerP, dataP);
 }
 
 }

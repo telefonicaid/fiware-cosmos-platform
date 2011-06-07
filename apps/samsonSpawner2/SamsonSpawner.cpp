@@ -349,15 +349,7 @@ void SamsonSpawner::spawn(Process* process)
 	else
 		LM_X(1, ("Will only start workers and controllers - bad process type %d", process->type));
 
-	if (getenv("SAMSON_DEBUG") != NULL)
-		process->debug = true;
-	if (getenv("SAMSON_VERBOSE") != NULL)
-		process->verbose = true;
-	if (getenv("SAMSON_READS") != NULL)
-		process->reads = true;
-	if (getenv("SAMSON_WRITES") != NULL)
-		process->writes = true;
-
+#if 0
 	if (process->verbose == true)   argV[argC++] = (char*) "-v";
 	if (process->debug   == true)   argV[argC++] = (char*) "-d";
 	if (process->reads   == true)   argV[argC++] = (char*) "-r";
@@ -374,6 +366,7 @@ void SamsonSpawner::spawn(Process* process)
 		argV[argC++] = (char*) "-t";
 		argV[argC++] = traceLevels;
 	}
+#endif
 
 	argV[argC] = NULL;
 

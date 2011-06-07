@@ -49,6 +49,7 @@ private:
 
 public:
 	ExpandList(Manager* manager, Box* owner, const char* _title, int x, int y, int _xmargin = 10, int _ymargin = 10, MenuFunction onClick = NULL, bool _frame = false);
+	~ExpandList();
 
 	Base*   addMember(const char* string, MenuFunction callback = NULL, const void* dataP = NULL, const char* mVec[] = NULL);
 	Base*   addMember(Base* _member,   MenuFunction callback = NULL, const void* dataP = NULL, const char* mVec[] = NULL);

@@ -10,6 +10,7 @@
 * CREATION DATE            May 04 2011
 *
 */
+#include "samson/common/status.h"
 #include "samson/network/Network2.h"           // Network2
 
 
@@ -25,13 +26,13 @@ public:
 	~SamsonStarter();
 
 	void                    procVecCreate(const char* controllerHost, int workers, const char* ip[]);
-	samson::Endpoint2::Status   connect(void);
-	samson::Endpoint2::Status   reset(void);               // Send a RESET to spawners
-	samson::Endpoint2::Status   processList(void);
-	samson::Endpoint2::Status   procVecSend();
+	samson::Status          connect(void);
+	samson::Status          reset(void);               // Send a RESET to spawners
+	samson::Status          processList(void);
+	samson::Status          procVecSend();
 	void                    run();
 
-	samson::Network2*           networkP;
+	samson::Network2*       networkP;
 	int                     spawners;
 };
 

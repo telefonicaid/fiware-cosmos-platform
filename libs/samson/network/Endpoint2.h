@@ -53,7 +53,9 @@ class SpawnerEndpoint;
 */
 class Endpoint2
 {
+	friend class Network2;
 	friend class EndpointManager;
+
 	friend class ListenerEndpoint;
 	friend class UnhelloedEndpoint;
 	friend class WebListenerEndpoint;

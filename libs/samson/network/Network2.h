@@ -65,6 +65,7 @@ public:
 	void         _send(PacketSenderInterface*, int, Packet*);
 	size_t       send(PacketSenderInterface*, int, Packet*);
 	std::string  getState(std::string selector = NULL);
+	bool         isConnected(unsigned int identifier);
 };
 
 }

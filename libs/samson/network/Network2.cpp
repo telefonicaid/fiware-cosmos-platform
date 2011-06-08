@@ -320,4 +320,28 @@ std::string Network2::getState(std::string selector)
 	return std::string(partString) + output;
 }
 
+
+
+/* ****************************************************************************
+*
+* isConnected - 
+*/
+bool Network2::isConnected(unsigned int identifier)
+{
+	if (identifier >= epMgr->endpoints)
+		return false;
+
+	if (epMgr->endpoint[identifier] == NULL)
+		return false;
+
+	if (epMgr->endpoint[identifier]->state == Endpoint2::Connected)
+		return true;
+	if (epMgr->endpoint[identifier]->state == Endpoint2::Loopback)
+		return true;
+	if (epMgr->endpoint[identifier]->state == Endpoint2::Ready)
+		return true;
+
+	return false;
+}
+
 }

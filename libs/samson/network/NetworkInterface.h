@@ -93,10 +93,10 @@ public:
 	
 	// Method to receive a packet
 	// It is responsability of this callback to delete the received packet with "delete packet"
-	virtual void receive( Packet* packet ) = 0;
+	virtual void receive(Packet* packet) = 0;
 
 	// Convenient way to run the receive methods using Engine
-	void _receive( Packet* packet );
+	void _receive(Packet* packet);
 	
 	// Notify that a worker has died 
 	virtual void notifyWorkerDied(int worker)
@@ -133,13 +133,12 @@ public:
 
 /* ****************************************************************************
 *
-* NetworkInterface - interface of the interconnection element ( Network and NetworkSimulator )
+* NetworkInterface - interface of the interconnection element (Network and NetworkSimulator)
 */
 class  NetworkInterface
 {
-    
-    const char* node_name;              // Name of this node for debugging ( set with setNodeName )
-    
+	const char* node_name;              // Name of this node for debugging (set with setNodeName)
+
 public:
     
     void setNodeName(const char* _node_name)
@@ -157,14 +156,17 @@ public:
 	// Inform about everything ready to start
 	virtual bool ready() = 0;
 			
-	// Init functions of the network element
+	// Init functions of the network element - not used in Network2
 	virtual void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL) {};
 	virtual void initAsSamsonController(void) = 0;
 
 	// Set the receiver element (this should be notified about the package)
-	virtual void setPacketReceiver( PacketReceiverInterface* receiver) = 0;
+	virtual void setPacketReceiver(PacketReceiverInterface* receiver) = 0;
+
+	// These two aren't used in Network2
 	virtual void setDataReceiver(DataReceiverInterface* receiver)       { LM_X(1, ("Please implement setDataReceiverInterface")); };
 	virtual void setReadyReceiver(ReadyReceiverInterface* receiver)     { LM_X(1, ("Please implement setReadyReceiverInterface")); };
+
 
 	// Get identifiers of known elements
 	virtual int controllerGetIdentifier()  = 0;		// Get the identifier of the controller
@@ -187,7 +189,7 @@ public:
 	virtual void run() = 0;
 			
 	// Suspend the network interface, close everything and return the "run" call
-	virtual void quit()=0;					
+	virtual void quit(void) = 0;					
 
 	// Handy function to get my workerID
 	int getWorkerId(void)
@@ -199,7 +201,7 @@ public:
 	void runInBackground();
 		
 	virtual bool isConnected(unsigned int identifier) { return true; };
-    virtual void delilahSend(PacketSenderInterface* packetSender, Packet* packetP)=0;
+    virtual void delilahSend(PacketSenderInterface* packetSender, Packet* packetP) = 0;
 
     // New API to send packets    
     void send(int endpoint, Packet* p);
@@ -209,7 +211,7 @@ public:
 private:
     
  	// Send a packet (return a unique id to inform the notifier later)
-	virtual size_t send(PacketSenderInterface* sender, int endpointId, Packet* packetP )=0;
+	virtual size_t send(PacketSenderInterface* sender, int endpointId, Packet* packetP) = 0;
 };
 
 }

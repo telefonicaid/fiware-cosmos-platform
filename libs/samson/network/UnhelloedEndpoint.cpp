@@ -99,6 +99,7 @@ Status UnhelloedEndpoint::msgTreat2(Packet* packetP)
 			if (epMgr->me->type == Controller)
 			{
 				Packet* p = new Packet(Message::Id);
+
 				++epMgr->delilahId;
 				LM_T(LmtDelilahId, ("sending delilahId %d to %s", epMgr->delilahId, name()));
 				ep->id = epMgr->delilahId;
@@ -107,7 +108,7 @@ Status UnhelloedEndpoint::msgTreat2(Packet* packetP)
 				p->dataP   = &epMgr->delilahId;
 				p->dataLen = sizeof(epMgr->delilahId);
 				p->msgType = Message::Evt;
-				ep->send(NULL, p);
+				ep->send(p);
 			}
 		}
 			

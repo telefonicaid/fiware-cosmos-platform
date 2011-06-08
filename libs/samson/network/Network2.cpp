@@ -227,13 +227,13 @@ void Network2::quit(void)
 */
 size_t Network2::send(PacketSenderInterface* psi, int id, samson::Packet* packetP)
 {
-	LM_T(LmtSend, ("Sending a packet (%s) to endpoint %d (psi at %p, packet at %p)", messageCode(packetP->msgCode), id, psi, packetP));
+	LM_T(LmtSend, ("Sending a packet (%s) to endpoint %d (packet at %p)", messageCode(packetP->msgCode), id, packetP));
 	epMgr->show("sending a packet");
 
 	if ((id < 0) || ((unsigned int) id > epMgr->endpoints))
 		LM_X(1, ("Bad id %d", id));
 
-	_send(psi, id, packetP);
+	_send(NULL, id, packetP);
 	return 0;
 }
 
@@ -245,7 +245,7 @@ size_t Network2::send(PacketSenderInterface* psi, int id, samson::Packet* packet
 */
 void Network2::_send(PacketSenderInterface* psi, int id, samson::Packet* packetP)
 {
-	epMgr->send(psi, id, packetP);
+	epMgr->send(id, packetP);
 }
 
 
@@ -256,7 +256,7 @@ void Network2::_send(PacketSenderInterface* psi, int id, samson::Packet* packetP
 */
 void Network2::delilahSend(PacketSenderInterface* psi, Packet* packetP)
 {
-	epMgr->multiSend(psi, Endpoint2::Delilah, packetP);
+	epMgr->multiSend(Endpoint2::Delilah, packetP);
 }
 
 

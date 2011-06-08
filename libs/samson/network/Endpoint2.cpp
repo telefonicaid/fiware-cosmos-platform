@@ -437,7 +437,7 @@ void Endpoint2::ack(Message::MessageCode code, void* data, int dataLen)
 {
 	Packet* packet = new Packet(Message::Ack, code, data, dataLen);
 	packet->fromId = idInEndpointVector;
-	send(NULL, packet);
+	send(packet);
 }
 
 
@@ -446,7 +446,7 @@ void Endpoint2::ack(Message::MessageCode code, void* data, int dataLen)
 *
 * send - 
 */
-void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
+void Endpoint2::send(Packet* packetP)
 {
 	packetP->fromId = idInEndpointVector;
 
@@ -457,13 +457,11 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 		if (state != Loopback)
 			LM_X(1, ("Something went wrong - should be in loopback state ..."));
 
-		LM_T(LmtMsgLoopBack, ("Looping back a packet meant for myself (and calling psi->notificationSent ...)"));
+		LM_T(LmtMsgLoopBack, ("Looping back a packet meant for myself"));
 		if (epMgr->packetReceiver == NULL)
 			LM_X(1, ("No packetReceiver (SW bug) - got a message/ack from %s", name()));
 
 		epMgr->packetReceiver->_receive(packetP);
-		if (psi)
-			psi->notificationSent(0, true);
 	}
 	else
 	{
@@ -483,11 +481,7 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 				delete packetP;
 			}
 			else
-			{
 				realsend(packetP->msgType, packetP->msgCode, packetP->dataP, packetP->dataLen, packetP);
-				if (psi)
-					psi->notificationSent(0, true);
-			}
 		}
 	}
 }
@@ -1092,7 +1086,7 @@ Status Endpoint2::die(int secs, int usecs)
 	Packet* packetP = new Packet(Message::Msg, Message::Die);
 
 	packetP->fromId = idInEndpointVector;
-	send(NULL, packetP);
+	send(packetP);
 
 	if ((s = msgAwait(secs, usecs, "Connection Closed")) != OK)
 		LM_RE(s, ("msgAwait: %s", status(s)));

@@ -1107,7 +1107,7 @@ int EndpointManager::endpointCount(void)
 *
 * send - 
 */
-void EndpointManager::send(PacketSenderInterface* psi, int endpointIx, Packet* packetP)
+void EndpointManager::send(int endpointIx, Packet* packetP)
 {
 	if ((endpointIx < 0) || ((unsigned int) endpointIx >= endpoints))
 		LM_X(1, ("Bad endpointIx: %d", endpointIx));
@@ -1116,7 +1116,7 @@ void EndpointManager::send(PacketSenderInterface* psi, int endpointIx, Packet* p
 		LM_RVE(("Cannot send to endpoint %d - NULL", endpointIx));
 
 	packetP->fromId = endpointIx;
-	endpoint[endpointIx]->send(psi, packetP);
+	endpoint[endpointIx]->send(packetP);
 }
 
 
@@ -1125,7 +1125,7 @@ void EndpointManager::send(PacketSenderInterface* psi, int endpointIx, Packet* p
 *
 * multiSend - 
 */
-int EndpointManager::multiSend(PacketSenderInterface* psi, Endpoint2::Type typ, Packet* packetP)
+int EndpointManager::multiSend(Endpoint2::Type typ, Packet* packetP)
 {
 	int sends = 0;
 
@@ -1137,7 +1137,7 @@ int EndpointManager::multiSend(PacketSenderInterface* psi, Endpoint2::Type typ, 
 		if (endpoint[ix]->type != typ)
 			continue;
 
-		send(psi, ix, packetP); // Probably need to 'new' packetP so it wont be deleted before used by all ...
+		send(ix, packetP); // Probably need to 'new' packetP so it wont be deleted before used by all ...
 		++sends;
 	}
 
@@ -1165,7 +1165,7 @@ int EndpointManager::multiSend(Endpoint2::Type typ, Message::MessageCode code, v
 
 		packetP = new Packet(Message::Msg, code, dataP, dataLen);
 		packetP->fromId = ix;
-		endpoint[ix]->send(NULL, packetP);
+		endpoint[ix]->send(packetP);
 		++sends;
 	}
 

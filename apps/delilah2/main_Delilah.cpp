@@ -131,10 +131,10 @@ int main(int argC, const char *argV[])
 	//
 	// First, give controller some time for the interchange of Hello messages
 	//
-	Delilah*         delilah  = new Delilah(networkP);
-	samson::Packet*  p        = new samson::Packet(samson::Message::Msg, samson::Message::ProcessVector);
+	samson::Packet*  packetP  = new samson::Packet(samson::Message::Msg, samson::Message::ProcessVector);
 
-	epMgr->controller->send(delilah, p);
+	LM_TODO(("I should probably go through NetworkInterface here ..."));
+	epMgr->controller->send(packetP);
 
 	// Create a DelilahControler once network is ready
 	samson::DelilahConsole delilahConsole(networkP);

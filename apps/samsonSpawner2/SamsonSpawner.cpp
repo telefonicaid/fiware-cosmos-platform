@@ -296,7 +296,7 @@ void SamsonSpawner::reset(Endpoint2* ep)
 
 	LM_T(LmtReset, ("Sending ack to RESET message to %s", ep->name()));
 	Packet* packetP = new Packet(Message::Ack, Message::Reset);
-	ep->send(NULL, packetP);
+	ep->send(packetP);
 	networkP->epMgr->show("Got RESET", true);
 }
 
@@ -322,7 +322,7 @@ void SamsonSpawner::processVector(Endpoint2* ep, ProcessVector* procVec)
 	processesStart(procVec);
 
 	Packet* packetP = new Packet(Message::Ack, Message::ProcessVector);
-	ep->send(NULL, packetP);
+	ep->send(packetP);
 }
 
 

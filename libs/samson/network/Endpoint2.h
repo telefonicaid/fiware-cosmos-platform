@@ -171,7 +171,7 @@ public:
 	Status               receive(Message::Header* headerP, void** dataPP, long* dataLenP, Packet* packetP);
 
 	Status               okToSend(void);
-	void                 send(PacketSenderInterface* psi, Packet* packetP);
+	void                 send(Packet* packetP);
 	void                 ack(Message::MessageCode code, void* data = NULL, int dataLen = 0);
 
 	virtual void         run(void);

@@ -58,7 +58,7 @@ namespace engine
     
 #pragma mark ------------------------------------------------------------------------
 	
-	MemoryManager::MemoryManager( size_t _memory )
+	MemoryManager::MemoryManager( size_t _memory ) : token("Memory Manager")
 	{
 		
 		// Total available memory

@@ -53,7 +53,7 @@ namespace engine
     }
     
     
-	SharedMemoryManager::SharedMemoryManager( int _shared_memory_num_buffers , size_t _shared_memory_size_per_buffer)
+	SharedMemoryManager::SharedMemoryManager( int _shared_memory_num_buffers , size_t _shared_memory_size_per_buffer) : token("SharedMemoryManager")
 	{
 		
         // Default values ( no shared memories )

@@ -54,6 +54,10 @@ namespace samson
 
   public:
 
+    ControllerLoadManager() : token( "ControllerLoadManager" )
+    {
+    }
+      
     void addUpload( size_t task_id )
     {
 		token.retain();

@@ -9,7 +9,8 @@ namespace au
 
 	class Token
 	{
-	  
+        const char * name;
+        
 		bool taken;						// Flag to indicate if the token is taken
 
 		pthread_mutex_t _lock;			// Mutex to protect this tocken
@@ -17,7 +18,7 @@ namespace au
 	  
 	 public:
 	  
-		Token();
+		Token( const char * name );
 		~Token();
 	  
 		void retain();

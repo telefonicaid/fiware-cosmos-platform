@@ -98,7 +98,7 @@ void* writerThread(void* vP)
 *
 * Endpoint2::Endpoint2 - Constructor
 */
-Endpoint2::Endpoint2
+    Endpoint2::Endpoint2 
 (
 	EndpointManager*  _epMgr,
 	Type              _type,
@@ -107,7 +107,7 @@ Endpoint2::Endpoint2
 	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
-)
+) : jobQueueSem( "jobQueueSem" )
 {
 	epMgr               = _epMgr;
 	type                = _type;

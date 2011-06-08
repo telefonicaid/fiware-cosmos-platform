@@ -182,7 +182,7 @@ namespace engine
         if( engine )
             engine->notificationSystem.add( name , listener );
         else
-            LM_W(("Not adding a listener since engine is not initialized"));
+            LM_W(("Not adding a listener to '%s' since engine is not initialized" , name ));
     }
 
     void Engine::remove( const char* name ,NotificationListener* listener )

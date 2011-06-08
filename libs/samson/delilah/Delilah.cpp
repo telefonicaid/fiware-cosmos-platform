@@ -35,7 +35,7 @@ namespace samson {
      *
      * Delilah::Delilah
      */
-    Delilah::Delilah( NetworkInterface* _network , bool automatic_update )
+    Delilah::Delilah( NetworkInterface* _network , bool automatic_update ) : token("Delilah")
     {
 		
         // Description for the PacketReceiver

@@ -8,8 +8,11 @@
 
 namespace au
 {
-	Token::Token()
+	Token::Token( const char * _name )
 	{
+        // Take the name for debuggin
+        name = _name;
+        
 		taken = false;
 		pthread_mutex_init(&_lock, 0);
 		pthread_cond_init(&_condition, NULL);
@@ -29,7 +32,7 @@ namespace au
 		// LOCK the mutex
 		int ans = pthread_mutex_lock(&_lock);
 		if( ans )
-			LM_X(1,("pthread_mutex_lock return an error"));
+			LM_X(1,("Token %s: pthread_mutex_lock return an error",name));
 
 		
 		while( true )
@@ -41,7 +44,7 @@ namespace au
 				// UNLOCK the mutex
 				int ans = pthread_mutex_unlock(&_lock);
 				if( ans )
-					LM_X(1,("pthread_mutex_unlock return an error"));
+					LM_X(1,("Token %s: pthread_mutex_unlock return an error",name));
 				
 				return;// Now we have the tocken
 			}
@@ -62,22 +65,22 @@ namespace au
 		// LOCK the mutex
 		int ans = pthread_mutex_lock(&_lock);
 		if( ans )
-			LM_X(1,("pthread_mutex_lock return an error"));
+			LM_X(1,("token %s: pthread_mutex_lock return an error",name));
 		
 		if( !taken )
-			LM_X(1,("Internal error of the au::token library since we are releasing a token that was never taken"));
+			LM_X(1,("token %s: Internal error of the au::token library since we are releasing a token that was never taken",name));
 
 		taken = false;
 		
 		// Wake up one of the sleeping elements
 		ans = pthread_cond_signal(&_condition);
 		if( ans ) 
-			LM_X(1,("pthread_cond_signal return an error"));
+			LM_X(1,("token %s: pthread_cond_signal return an error",name));
 		
 		// UNLOCK the mutex
 		ans = pthread_mutex_unlock(&_lock);
 		if( ans ) 
-			LM_X(1,("pthread_mutex_unlock return an error"));
+			LM_X(1,("token %s: pthread_mutex_unlock return an error",name));
 		
 	}
 }

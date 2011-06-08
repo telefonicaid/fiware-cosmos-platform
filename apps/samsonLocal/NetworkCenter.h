@@ -66,7 +66,7 @@ namespace samson {
 		
 		int num_workers;
 		
-		NetworkFakeCenter( int _num_workers )
+		NetworkFakeCenter( int _num_workers ) : token("NetworkFakeCenter")
 		{
 			num_workers = _num_workers;
 			

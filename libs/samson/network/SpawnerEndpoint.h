@@ -40,7 +40,7 @@ public:
 	);
 	~SpawnerEndpoint();
 
-	Status    msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP);
+	Status    msgTreat2(Packet* packetP);
 };
 
 }

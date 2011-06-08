@@ -20,6 +20,7 @@
 #include "samson/common/ports.h"                 // SPAWNER_PORT
 #include "samson/common/samsonDirectories.h"     // SAMSON_PLATFORM_PROCESSES
 #include "samson/network/EndpointManager.h"      // EndpointManager
+#include "Packet.h"
 #include "UnhelloedEndpoint.h"                   // UnhelloedEndpoint
 #include "SpawnerEndpoint.h"                     // Own interface
 
@@ -73,12 +74,19 @@ SpawnerEndpoint::~SpawnerEndpoint() // : ~Endpoint2()
 *
 * msgTreat2 - 
 */
-Status SpawnerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
+Status SpawnerEndpoint::msgTreat2(Packet* packetP)
 {
-	if (epMgr->dataReceiver == NULL)
-		LM_X(1, ("No data receiver"));
+	switch (packetP->msgCode)
+	{
+	default:
+		if (epMgr->packetReceiver == NULL)
+			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(packetP->msgCode), messageType(packetP->msgType), name()));
 
-	return (Status) epMgr->dataReceiver->receive(epMgr->ixGet(this), dataLen, headerP, dataP);
+		epMgr->packetReceiver->_receive(packetP);
+		break;
+	}
+
+	return OK;
 }
 
 }

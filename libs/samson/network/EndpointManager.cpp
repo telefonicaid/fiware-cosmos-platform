@@ -91,7 +91,6 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 	webListener      = NULL;
 
 	packetReceiver   = NULL;
-	dataReceiver     = NULL;
 
 	LM_T(LmtDelilah, ("Set delilahId to %d", delilahId));
 
@@ -1046,17 +1045,6 @@ void EndpointManager::run(bool oneShot)
 void EndpointManager::setPacketReceiver(PacketReceiverInterface* receiver)
 {
 	packetReceiver = receiver;
-}
-
-
-
-/* ****************************************************************************
-*
-* setDataReceiver - 
-*/
-void EndpointManager::setDataReceiver(DataReceiverInterface* receiver)
-{
-	dataReceiver = receiver;
 }
 
 

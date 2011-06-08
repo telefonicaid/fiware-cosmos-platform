@@ -14,13 +14,13 @@
 #include "logMsg/logMsg.h"                    // LM_*
 #include "logMsg/traceLevels.h"               // Trace levels
 
-#include "samson/common/Process.h"            // Process
+#include "samson/common/Process.h"
 #include "samson/common/platformProcesses.h"  // platformProcessesSave
 #include "samson/common/ports.h"              // Samson platform ports
 #include "samson/common/samsonDirectories.h"  // SAMSON_PLATFORM_PROCESSES
-#include "samson/network/NetworkInterface.h"  // DataReceiverInterface, ...
-#include "samson/network/Packet.h"            // Packet
-#include "samson/network/Network2.h"          // Network2
+#include "samson/network/NetworkInterface.h"
+#include "samson/network/Packet.h"
+#include "samson/network/Network2.h"
 
 #include "processList.h"                      // processListInit, Add, Remove and Lookup
 #include "globals.h"                          // Global variables for Spawner
@@ -75,9 +75,9 @@ SamsonSpawner::SamsonSpawner()
 	networkP               = new Network2(epMgr);
 	restartInProgress      = false;
 
-	networkP->setDataReceiver(this);
+	networkP->setPacketReceiver(this);
 	epMgr->callbackSet(samson::EndpointManager::Periodic, periodic, this);
-	networkP->tmoSet(1, 500000);
+	networkP->tmoSet(0, 500000);
 }
 
 
@@ -141,50 +141,47 @@ void SamsonSpawner::init(samson::ProcessVector* pv)
 *
 * SamsonSpawner::receive - 
 */
-int SamsonSpawner::receive(int fromId, int nb, samson::Message::Header* headerP, void* dataP)
+void SamsonSpawner::receive(Packet* packetP)
 {
-	Process*        process  = (Process*)       dataP;
-	ProcessVector*  procVec  = (ProcessVector*) dataP;
-	samson::Endpoint2*  ep       = networkP->epMgr->indexedGet((unsigned int) fromId);
+	Process*            process  = (Process*)       packetP->dataP;
+	ProcessVector*      procVec  = (ProcessVector*) packetP->dataP;
+	samson::Endpoint2*  ep       = networkP->epMgr->indexedGet((unsigned int) packetP->fromId);
 
 	if (ep == NULL)
-		LM_X(1, ("Got a message from endpoint %d, but endpoint manager has no endpoint at that index ..."));
+		LM_X(1, ("Got a message from endpoint %d, but endpoint manager has no endpoint at that index ...", packetP->fromId));
 
-	switch (headerP->code)
+	switch (packetP->msgCode)
 	{
 	case Message::Reset:
-		if (headerP->type == Message::Ack)
+		if (packetP->msgType == Message::Ack)
 			LM_X(1, ("Spawner cannot receive Ack for Reset"));
 		reset(ep);
 		break;
 
 #if 0
 	case Message::ProcessList:
-		if (headerP->type == Message::Ack)
+		if (packetP->msgType == Message::Ack)
 			LM_X(1, ("Spawner cannot receive Ack for ProcessList"));
 		processList();
 		break;
 #endif
 
 	case Message::ProcessVector:
-		if (headerP->type == Message::Ack)
+		if (packetP->msgType == Message::Ack)
 			LM_X(1, ("Spawner cannot receive Ack for ProcessVector"));
 		processVector(ep, procVec);
 		break;
 
 	case Message::ProcessSpawn:
-		if (headerP->type == Message::Ack)
+		if (packetP->msgType == Message::Ack)
 			LM_X(1, ("Spawner cannot receive Ack for ProcessSpawn"));
 		LM_W(("Spawning a process without adding it to process vector ..."));
 		spawn(process);
 		break;
 
 	default:
-		LM_X(1, ("No messages treated - got a '%s'", messageCode(headerP->code)));
-		return 1;
+		LM_X(1, ("No messages treated - got a '%s' from %s", messageCode(packetP->msgCode), ep->name()));
 	}
-
-	return 0;
 }
 
 

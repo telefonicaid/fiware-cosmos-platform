@@ -177,7 +177,7 @@ public:
 	virtual void         run(void);
 	Status               msgTreat(void);
 
-	virtual Status       msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
+	virtual Status       msgTreat2(Packet* packetP)
 	{
 		LM_X(1, ("msgTreat2 NOT IMPLEMENTED for %s", typeName())); return NotImplemented;
 	};

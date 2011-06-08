@@ -39,7 +39,7 @@ public:
 	);
 	~UnhelloedEndpoint();
 
-	virtual Status       msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP);
+	virtual Status       msgTreat2(Packet* packetP);
 	Status               helloDataSet(Type _type, int _id);
 	Status               helloExchange(int secs, int usecs);     // send Hello Msg and await Ack - if OK, the endpoint has adopted the 
 

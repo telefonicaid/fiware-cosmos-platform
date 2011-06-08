@@ -44,10 +44,8 @@ public:
 	// Callbacks
 	//
 	void  setPacketReceiver(PacketReceiverInterface* receiver);
-	void  setDataReceiver(DataReceiverInterface* receiver);
 
 	PacketReceiverInterface*   packetReceiver;
-	DataReceiverInterface*     dataReceiver;
 
 
 

@@ -83,7 +83,6 @@ public:
 	ListenerEndpoint*         listener;
 	WebListenerEndpoint*      webListener;
 	PacketReceiverInterface*  packetReceiver;
-	DataReceiverInterface*    dataReceiver;
 
 	EndpointManager(Endpoint2::Type _type, const char* controllerIp = NULL);
 	~EndpointManager();
@@ -126,7 +125,6 @@ public:
 	void               callbackSet(CallbackId id, EpMgrCallback func, void* userParam);
 
 	void               setPacketReceiver(PacketReceiverInterface* receiver);
-	void               setDataReceiver(DataReceiverInterface* receiver);
 
 	void               send(PacketSenderInterface* psi, int endpointIx, Packet* packetP);
 	int                multiSend(PacketSenderInterface* psi, Endpoint2::Type type, Packet* packetP);

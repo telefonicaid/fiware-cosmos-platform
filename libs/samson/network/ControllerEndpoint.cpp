@@ -18,6 +18,7 @@
 
 #include "samson/common/status.h"
 #include "samson/common/ports.h"         // CONTROLLER_PORT
+#include "Packet.h"
 #include "EndpointManager.h"
 #include "ControllerEndpoint.h"
 
@@ -58,15 +59,15 @@ ControllerEndpoint::~ControllerEndpoint() // : ~Endpoint2()
 *
 * msgTreat2 - 
 */
-Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
+Status ControllerEndpoint::msgTreat2(Packet* packetP)
 {
 	ProcessVector* pVec;
 
-	LM_T(LmtMsgTreat, ("Treating %s %s from %s", messageCode(headerP->code), messageType(headerP->type), name()));
-	switch (headerP->code)
+	LM_T(LmtMsgTreat, ("Treating %s %s from %s", messageCode(packetP->msgCode), messageType(packetP->msgType), name()));
+	switch (packetP->msgCode)
 	{
 	case Message::ProcessVector:
-		pVec = (ProcessVector*) dataP;
+		pVec = (ProcessVector*) packetP->dataP;
 		LM_T(LmtProcessVector, ("Setting ProcessVector (%d processes, size: %d)", pVec->processes, pVec->processVecSize));
 		epMgr->procVecSet(pVec, false);
 		epMgr->workersAdd();
@@ -77,7 +78,7 @@ Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int 
 	case Message::Id:
 		if (epMgr->me->type == Delilah)
 		{
-			epMgr->me->id = *((int*) dataP);
+			epMgr->me->id = *((int*) packetP->dataP);
 			LM_T(LmtDelilahId, ("Delilah got ID %d from controller", epMgr->me->id));
 		}
 		else
@@ -86,7 +87,7 @@ Status ControllerEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int 
 
 	default:
 		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(headerP->code), messageType(headerP->type), name()));
+			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(packetP->msgCode), messageType(packetP->msgType), name()));
 
 		epMgr->packetReceiver->_receive(packetP);
 		break;

@@ -59,18 +59,18 @@ UnhelloedEndpoint::~UnhelloedEndpoint() // : ~Endpoint2()
 *
 * msgTreat2 - 
 */
-Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
+Status UnhelloedEndpoint::msgTreat2(Packet* packetP)
 {
 	Message::HelloData*  helloP;
 	Status               s;
 	Endpoint2*           ep = NULL;
 
-	switch (headerP->code)
+	switch (packetP->msgCode)
 	{
 	case Message::Hello:
-		helloP = (Message::HelloData*) dataP;
+		helloP = (Message::HelloData*) packetP->dataP;
 		s = helloDataSet((Type) helloP->type, helloP->id);
-		LM_T(LmtUnhelloed, ("Got a Hello %s from %s", messageType(headerP->type), name()));
+		LM_T(LmtUnhelloed, ("Got a Hello %s from %s", messageType(packetP->msgType), name()));
 		
 		type = Unhelloed;
 		if (s != OK)
@@ -80,7 +80,7 @@ Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int d
 			LM_RE(s, ("Bad hello data"));
 		}
 
-		if (headerP->type == Message::Msg)
+		if (packetP->msgType == Message::Msg)
 			helloSend(Message::Ack);
 
 		LM_T(LmtHello, ("UnhelloedEndpoint received Hello from %s", name()));
@@ -170,7 +170,7 @@ Status UnhelloedEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int d
 		break;
 
 	default:
-		LM_E(("I only treat Hello messages - got a '%s', removing endpoint", messageCode(headerP->code)));
+		LM_E(("I only treat Hello messages - got a '%s', removing endpoint", messageCode(packetP->msgCode)));
 		LM_E(("Setting endpoint in state ScheduledForRemoval"));
 		stateSet(ScheduledForRemoval);
 		return Error;

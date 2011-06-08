@@ -77,7 +77,9 @@ void* writerThread(void* vP)
 	{
 		Packet* packetP;
 
+		LM_T(LmtSem, ("Calling semTake(jobQueueSem)"));
 		ep->jobQueueSem.retain();
+		LM_T(LmtSem, ("After semTake(jobQueueSem)"));
 		packetP = ep->jobQueue.extractFront();
 		ep->jobQueueSem.release();
 		if (packetP != NULL)
@@ -467,7 +469,9 @@ void Endpoint2::send(PacketSenderInterface* psi, Packet* packetP)
 	{
 		if (threaded == true)
 		{
+			LM_T(LmtSem, ("After semTake(jobQueueSem)"));
 			jobQueueSem.retain();
+			LM_T(LmtSem, ("After semTake(jobQueueSem)"));
 			jobQueue.push_back(packetP);
 			jobQueueSem.release();
 		}
@@ -939,9 +943,10 @@ Status Endpoint2::msgTreat(void)
 	packetP->msgCode = header.code;
 	packetP->msgType = header.type;
 	packetP->fromId  = idInEndpointVector;
-
+	packetP->dataLen = dataLen;
+	packetP->dataP   = dataP;
 	if (type == Unhelloed)
-		return msgTreat2(&header, dataP, dataLen, packetP);
+		return msgTreat2(packetP);
 
 	switch (header.code)
 	{
@@ -993,7 +998,7 @@ Status Endpoint2::msgTreat(void)
 
 	default:
 		LM_T(LmtMsgTreat, ("Don't know how to treat '%s' %s (code %d), passing it to msgTreat2", messageCode(header.code), messageType(header.type), header.code));
-		s = msgTreat2(&header, dataP, dataLen, packetP);
+		s = msgTreat2(packetP);
 		if (s != OK)
 		{
 			delete packetP;

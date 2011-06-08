@@ -60,17 +60,17 @@ DelilahEndpoint::~DelilahEndpoint() // : ~Endpoint2()
 *
 * msgTreat2 - 
 */
-Status DelilahEndpoint::msgTreat2(Message::Header* headerP, void* dataP, int dataLen, Packet* packetP)
+Status DelilahEndpoint::msgTreat2(Packet* packetP)
 {
-	switch (headerP->code)
+	switch (packetP->msgCode)
 	{
 	case Message::ProcessVector:
-		ack(headerP->code, epMgr->procVecGet(), epMgr->procVecGet()->processVecSize);
+		ack(packetP->msgCode, epMgr->procVecGet(), epMgr->procVecGet()->processVecSize);
 		break;
 
 	default:
 		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(headerP->code), messageType(headerP->type), name()));
+			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(packetP->msgCode), messageType(packetP->msgType), name()));
 
 		epMgr->packetReceiver->_receive(packetP);
 		return OK;

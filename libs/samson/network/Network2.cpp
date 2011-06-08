@@ -35,7 +35,6 @@ Network2::Network2(EndpointManager* _epMgr)
 {
 	epMgr          = _epMgr;
 	packetReceiver = NULL;
-	dataReceiver   = NULL;
 }
 
 
@@ -89,23 +88,11 @@ void Network2::run(void)
 
 /* ****************************************************************************
 *
-* setPacketReceiver - 
+* setPacketReceiver - set the element to be notified when packages arrive
 */
 void Network2::setPacketReceiver(PacketReceiverInterface* receiver)
 {
 	epMgr->setPacketReceiver(receiver);
-}
-
-
-
-
-/* ****************************************************************************
-*
-* setDataReceiver - set the element to be notified when packages arrive
-*/
-void Network2::setDataReceiver(DataReceiverInterface* receiver)
-{
-	epMgr->setDataReceiver(receiver);
 }
 
 

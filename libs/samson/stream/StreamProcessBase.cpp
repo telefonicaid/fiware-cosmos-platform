@@ -22,6 +22,9 @@ namespace samson {
             // Get the task_id
             task_id = 0;
             
+            // Set the order of the task
+            task_order = 0;
+            
             // Copy environemnt
             //copyEnviroment( task->workerTask.environment() , &environment ); 
             
@@ -67,6 +70,10 @@ namespace samson {
             network::PushBlock* pb =  packet->message->mutable_push_block();
             pb->set_size( buffer->getSize() );
             pb->set_txt(false); // To review when txt buffers are sended to a queue produced by a parserOut operation
+            
+            pb->set_worker( 0 );                    // Information about the worker
+            pb->set_task_id( task_id );             // Task id
+            pb->set_task_order( task_order++ );     // Order inside the task
             
             for ( int i = 0 ; i < streamQueue->output(output).target_size() ; i++)
             {

@@ -40,9 +40,6 @@ namespace samson {
             
             size_t size;                // Size of the buffer
             KVHeader*header;            // always on memory copy of the header
-
-            size_t task_id;             // Id of the task that generated this block
-            int order;                  // Order in witch blocks were generated
             
             int lock_counter;           // Counter to indicate that we are currenltly using this block for processing ( should not be removed from memory )
             
@@ -65,6 +62,10 @@ namespace samson {
             
         public:
 
+            int worker;
+            size_t task_id;
+            size_t task_order;
+            
             // Constructor with automatic add to the BlockManager
             Block( engine::Buffer *buffer , bool txt );
             ~Block();

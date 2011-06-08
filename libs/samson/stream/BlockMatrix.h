@@ -73,6 +73,10 @@ namespace samson {
             FullKVInfo getInfo();
             size_t getNumBlocks();
             
+        private:
+            
+            au::list< Block >::iterator _find_pos( Block *b );
+            
             
         };
         

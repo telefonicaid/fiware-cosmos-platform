@@ -242,6 +242,14 @@ namespace samson {
             // Create the new block with the buffer
             stream::Block *block = new stream::Block( packet->buffer , txt );
             
+            // Information about the block
+            if( packet->message->push_block().has_worker() )
+                block->worker = packet->message->push_block().worker();
+            if( packet->message->push_block().has_task_id() )
+                block->task_id = packet->message->push_block().task_id();
+            if( packet->message->push_block().has_task_order() )
+                block->task_order = packet->message->push_block().task_order();
+            
             // Push the packet to a particular stream-queue
             for ( int i = 0 ; i < packet->message->push_block().target_size() ; i++)
             {

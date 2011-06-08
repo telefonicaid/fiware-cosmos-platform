@@ -99,9 +99,11 @@ namespace samson {
             else
                 header = NULL;
 
-            // By default no task & order ( push from delilah )
+            // By default worker (-1) , no task & no order ( push from delilah )
+            
+            worker = -1;
             task_id = 0;             
-            order=0;
+            task_order = 0;
             
         }
 

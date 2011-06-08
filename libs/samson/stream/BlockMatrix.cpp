@@ -27,7 +27,8 @@ namespace samson {
         void BlockList::add( Block *block )
         {
             // Insert in the back of the list
-            blocks.push_back( block );
+            // blocks.push_back( block ); // Old push back mechanism
+            blocks.insert( _find_pos(block ) , block );
             
             if( block->header )
                 accumulated_info.append( block->header->info );
@@ -159,6 +160,22 @@ namespace samson {
         {
             return blocks.size();
         }
+        
+        au::list< Block >::iterator BlockList::_find_pos( Block *b )
+        {
+            for (au::list< Block >::iterator i = blocks.begin() ; i != blocks.end() ; i++)
+            {
+                if( (*i)->task_id < b->task_id )
+                    return i;
+                
+                if( (*i)->task_id == b->task_id )
+                    if( (*i)->task_order < b->task_order )
+                        return i;
+            }
+            
+            return blocks.end();
+        }
+
 
         
 #pragma mark BlockMatrix

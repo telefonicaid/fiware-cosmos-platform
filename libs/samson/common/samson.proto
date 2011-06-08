@@ -553,9 +553,13 @@ message MessagePlatformProcess
 
 message PushBlock
 {
-	repeated QueueChannel target =1;	// Target QueueuChannels to push this block
-	optional uint64 size	 = 2;		// size of the block we are uploading 
-	required bool txt =3;	   		// Special flag for txt buffers ( no header )
+	repeated QueueChannel target	= 1;	// Target QueueuChannels to push this block
+	optional uint64 size	     	= 2;	// size of the block we are uploading 
+	required bool txt 		= 3;	// Special flag for txt buffers ( no header )
+
+	optional int32 worker		= 4;	// Id of the worker that generated this block
+	optional uint64 task_id		= 5;	// Id of the task that generate the 
+	optional uint64 task_order	= 6;	// Order of the generated block
 }
 
 message PushBlockResponse

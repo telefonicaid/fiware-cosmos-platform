@@ -81,6 +81,7 @@ typedef enum MessageCode
     PushBlock                       = CODE('P', 'B', 'l', ' '),
     PushBlockResponse               = CODE('P', 'B', 'r', ' '),
 	Id                              = CODE('I', 'd', ' ', ' '),
+	Ping                            = CODE('P', 'i', 'n', ' '),
     Unknown                         = CODE('U', 'n', 'k', ' ')
 } MessageCode;
 

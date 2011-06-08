@@ -208,38 +208,26 @@ samson::Process** processListGet(void)
 *
 * processListShow - 
 */
-void processListShow(const char* why, bool forcedOn)
+void processListShow(const char* why, bool forced)
 {
-	if (forcedOn)
-		LM_F(("---------- Process List: %s ----------", why));
-	else
-		LM_T(LmtProcessListShow, ("---------- Process List: %s ----------", why));
+	int tLevel = LmtProcessList1;
+	
+	if (forced)
+		tLevel = LmtProcessList2;
 
 	for (unsigned int ix = 0; ix < processMax; ix++)
 	{
 		if (processV[ix] == NULL)
 			continue;
 
-		if (forcedOn)
-			LM_F(("  process %02d: %-20s %-20s  pid %d (%p)",
-				  ix,
-				  processV[ix]->name,
-				  processV[ix]->alias,
-				  processV[ix]->pid,
-				  processV[ix]));
-		else
-			LM_T(LmtProcessListShow, ("  process %02d: %-20s %-20s  pid %d",
-									  ix,
-									  processV[ix]->name,
-									  processV[ix]->alias,
-									  processV[ix]->pid));
-
+		LM_T(tLevel, ("  process %02d: %-20s %-20s  pid %d",
+					  ix,
+					  processV[ix]->name,
+					  processV[ix]->alias,
+					  processV[ix]->pid));
 	}
 
-	if (forcedOn)
-		LM_F(("------------------------------------"));
-	else
-		LM_T(LmtProcessListShow, ("------------------------------------"));
+	LM_T(tLevel, ("------------------------------------"));
 }
 
 

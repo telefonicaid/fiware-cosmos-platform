@@ -37,7 +37,7 @@ public:
 	bool    match(Host* host, const char* ip);
 	void    aliasAdd(Host* host, const char* alias);
 	void    ipSet(Host* host, const char* alias);
-	void    list(const char* why);
+	void    list(const char* why, bool forced = false);
 	Host*   localhostP;
 
 private:

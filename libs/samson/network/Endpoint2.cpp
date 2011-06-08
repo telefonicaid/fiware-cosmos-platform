@@ -53,11 +53,11 @@ void* readerThread(void* vP)
 {
 	Endpoint2* ep = (Endpoint2*) vP;
 
-	LM_T(LmtThreads, ("reader thread for endpoint %s is running", ep->name()));
+	LM_T(LmtThreads, ("Reader thread 0x%x for endpoint %s is running", pthread_self(), ep->name()));
 	ep->run();
 
 	ep->stateSet(Endpoint2::ScheduledForRemoval);
-	LM_W(("Endpoint %s is back from Endpoint2::run", ep->name()));
+	LM_W(("Endpoint %s is back from Endpoint2::run (thread 0x%x)", ep->name(), pthread_self()));
 
 	return NULL;
 }
@@ -72,7 +72,8 @@ void* writerThread(void* vP)
 {
 	Endpoint2* ep = (Endpoint2*) vP;
 
-	LM_T(LmtThreads, ("writer thread for endpoint %s is running (REAL wFd: %d))", ep->name(), ep->wFdGet()));
+	LM_T(LmtThreads, ("Writer thread 0x%x for endpoint %s is running (REAL wFd: %d))", pthread_self(), ep->name(), ep->wFdGet()));
+
 	while (1)
 	{
 		Packet* packetP;
@@ -414,7 +415,7 @@ Status Endpoint2::partWrite(void* dataP, int dataLen, const char* what)
 
 		nb = write(wFd, &data[tot], dataLen - tot);
 		if (nb == -1)
-			LM_RE(WriteError, ("error writing to '%s': %s", name(), strerror(errno)));
+			LM_RE(WriteError, ("error writing to '%s' (fd: %d): %s", name(), wFd, strerror(errno)));
 		else if (nb == 0)
 			LM_RE(WriteError, ("part-write written ZERO bytes to '%s' (total: %d)", name(), tot));
 
@@ -452,20 +453,22 @@ void Endpoint2::send(Packet* packetP)
 
 	if ((host == epMgr->me->host) && (type == epMgr->me->typeGet()))
 	{
-		LM_M(("Loopbacking a %s %s", Message::messageCode(packetP->msgCode), Message::messageType(packetP->msgType)));
+		LM_T(LmtMsg, ("Loopback: %s %s", Message::messageCode(packetP->msgCode), Message::messageType(packetP->msgType)));
 
 		if (state != Loopback)
 			LM_X(1, ("Something went wrong - should be in loopback state ..."));
 
-		LM_T(LmtMsgLoopBack, ("Looping back a packet meant for myself"));
 		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("No packetReceiver (SW bug) - got a message/ack from %s", name()));
-
-		epMgr->packetReceiver->_receive(packetP);
+		{
+			// LM_X(1, ("No packetReceiver (SW bug) - got a message/ack from %s", name()));
+			LM_W(("%s %s from %s: no packet receiver, throwing away the packet",  Message::messageCode(packetP->msgCode), Message::messageType(packetP->msgType), name()));
+		}
+		else
+			epMgr->packetReceiver->_receive(packetP);
 	}
 	else
 	{
-		if (threaded == true)
+		if ((threaded == true) || (type == Worker))
 		{
 			LM_T(LmtSem, ("After semTake(jobQueueSem)"));
 			jobQueueSem.retain();
@@ -476,10 +479,7 @@ void Endpoint2::send(Packet* packetP)
 		else
 		{
 			if ((state != Ready) && (state != Connected))
-			{
 				LM_E(("Cannot send '%s' packet to %s - endpoint is in state '%s' - throwing away the packet", messageCode(packetP->msgCode), name(), stateName()));
-				delete packetP;
-			}
 			else
 				realsend(packetP->msgType, packetP->msgCode, packetP->dataP, packetP->dataLen, packetP);
 		}
@@ -497,8 +497,8 @@ static void badMsgType(Message::MessageType type)
 */
 Status Endpoint2::realsend
 (
-	Message::MessageType  type,
-	Message::MessageCode  code,
+	Message::MessageType  msgType,
+	Message::MessageCode  msgCode,
 	void*                 data,
 	int                   dataLen,
 	Packet*               packetP
@@ -510,17 +510,17 @@ Status Endpoint2::realsend
 	//
 	// Sanity check
 	//
-	if ((type != Message::Msg) && (type != Message::Evt) && (type != Message::Ack) && (type != Message::Nak))
+	if ((msgType != Message::Msg) && (msgType != Message::Evt) && (msgType != Message::Ack) && (msgType != Message::Nak))
 	{
-		badMsgType(type);
-		// LM_RE(BadMsgType, ("Bad message type: 0x%x", type));
-		LM_X(1, ("Bad message type: 0x%x", type));
+		badMsgType(msgType);
+		// LM_RE(BadMsgType, ("Bad message type: 0x%x", msgType));
+		LM_X(1, ("Bad message type: 0x%x", msgType));
 	}
 
-	if (code == Message::Die)
-		LM_W(("Sending a Die '%s' to %s", messageType(type), name()));
+	if (msgCode == Message::Die)
+		LM_W(("Sending a Die '%s' to %s", messageType(msgType), name()));
 	else
-		LM_T(LmtSend, ("Sending a '%s' '%s' to %s", messageCode(code), messageType(type), name()));
+		LM_T(LmtSend, ("Sending a '%s' '%s' to %s", messageCode(msgCode), messageType(msgType), name()));
 		
 
 
@@ -529,8 +529,8 @@ Status Endpoint2::realsend
 	//
 	memset(&header, 0, sizeof(header));
 
-	header.code        = code;
-	header.type        = type;
+	header.code        = msgCode;
+	header.type        = msgType;
 	header.magic       = 0xFEEDC0DE;
 
 	if ((dataLen != 0) && (data != NULL))
@@ -557,8 +557,10 @@ Status Endpoint2::realsend
 		LM_RE(s, ("partWrite:header(%s): %s", name(), status(s)));
 	}
 
-	LM_T(LmtMsg, ("Sent a '%s' %s to %s", messageCode(header.code), messageType(header.type), name()));
-	
+	LM_T(LmtMsg, ("Sent a '%s' (0x%x, 0x%x) %s to %s (thread 0x%x)", messageCode(header.code), header.code, msgCode, messageType(header.type), name(), pthread_self()));
+
+
+
 	//
 	// Sending raw data
 	//
@@ -567,10 +569,12 @@ Status Endpoint2::realsend
 		s = partWrite(data, dataLen, "msg data");
 		if (s != OK)
 		{
+#if 0
 			if (packetP != NULL)
 				delete packetP;
 			if (packetP->buffer != NULL)
 				engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
+#endif
 			LM_RE(s, ("partWrite:data(%s): %s", name(), status(s)));
 		}
 	}
@@ -595,10 +599,12 @@ Status Endpoint2::realsend
 		free(outputVec);
 		if (s != OK)
 		{
+#if 0
 			if (packetP != NULL)
 				delete packetP;
 			if (packetP->buffer != NULL)
 				engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
+#endif
 			LM_RE(s, ("partWrite:GoogleProtocolBuffer(): %s", status(s)));
 		}
 	}
@@ -608,10 +614,12 @@ Status Endpoint2::realsend
 		s = partWrite(packetP->buffer->getData(), packetP->buffer->getSize(), "KV data");
 		if (s != OK)
 		{
+#if 0
 			if (packetP != NULL)
 				delete packetP;
 			if (packetP->buffer != NULL)
 				engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
+#endif
 			LM_RE(s, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
 		}
 	}
@@ -990,6 +998,17 @@ Status Endpoint2::msgTreat(void)
 		epMgr->show("Received Hello", true);
 		break;
 
+	case Message::Ping:
+		if (header.type == Message::Msg)
+		{
+			LM_F(("Got a ping from %s - responding", name()));
+			ack(Message::Ping, packetP->dataP, packetP->dataLen);
+		}
+		else
+			LM_F(("Got a ping ACK from %s", name()));
+			
+		break;
+
 	default:
 		LM_T(LmtMsgTreat, ("Don't know how to treat '%s' %s (code %d), passing it to msgTreat2", messageCode(header.code), messageType(header.type), header.code));
 		s = msgTreat2(packetP);
@@ -1145,6 +1164,7 @@ Status Endpoint2::helloDataSet(Type _type, int _id)
 void Endpoint2::helloSend(Message::MessageType msgType)
 {
 	Message::HelloData  hello;
+	Status              s;
 
 	LM_T(LmtHello, ("Sending Hello to %s", name()));
 
@@ -1158,7 +1178,6 @@ void Endpoint2::helloSend(Message::MessageType msgType)
 
 	LM_T(LmtHello, ("sending hello %s to '%s' (my type: '%s', id: %d)", messageType(msgType), name(), epMgr->me->typeName(), epMgr->me->id));
 
-	Status s;
 	if ((s = realsend(msgType, Message::Hello, &hello, sizeof(hello))) != OK)
 		LM_E(("Error sending Hello to %s: %s", name(), status(s)));
 }

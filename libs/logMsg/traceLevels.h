@@ -18,12 +18,20 @@
 */
 typedef enum TraceLevels
 {
-	LmtMsg              = 19,
+	LmtMsg              = 15,
+	LmtEndpointList1    = 16,
+	LmtEndpointList2    = 17,
+	LmtHostList1        = 18,
+	LmtHostList2        = 19,
+	LmtProcessList1     = 20,
+	LmtProcessList2     = 21,
 
-	LmtEndpointListShow = 20,
-	LmtStarterListShow,
+	LmtStarterListShow  = 20,
 	LmtSpawnerListShow,
-	LmtProcessListShow,
+	LmtSpawnerList,
+	LmtProcessList,
+	LmtStarterList,
+	LmtProcessVector,
 
 	LmtInit            = 30,
 	LmtConfigFile,
@@ -45,11 +53,6 @@ typedef enum TraceLevels
 	LmtIdIx,
 	LmtUnhelloed,
 
-	LmtSpawnerList       = 60,
-	LmtProcessList,
-	LmtStarterList,
-	LmtProcessVector,
-
 	LmtStarter          = 70,
 	LmtSpawner,
 	LmtProcess,
@@ -59,6 +62,8 @@ typedef enum TraceLevels
 	LmtProcessConnect,
 	LmtProcessStart,
 	LmtProcessKill,
+	LmtGetnameinfo,
+	LmtLoopback,
 
 	LmtEndpointLookup       = 90,
 	LmtStarterLookup,

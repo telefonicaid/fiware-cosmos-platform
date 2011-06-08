@@ -132,22 +132,21 @@ static void newWayCheck(struct sockaddr_in sin, int len)
 	memset(hostname,    0, sizeof(hostname));
 	memset(servicename, 0, sizeof(servicename));
 	s = getnameinfo((const struct sockaddr*) &sin, len, hostname, sizeof(hostname), servicename, sizeof(servicename), flags);
-	LM_M(("Name: '%s', Service: '%s'", hostname, servicename));
+	LM_T(LmtGetnameinfo, ("Name: '%s', Service: '%s'", hostname, servicename));
 
 	// 2. Get name without domain
 	flags = NI_NOFQDN;
 	memset(hostname,    0, sizeof(hostname));
 	memset(servicename, 0, sizeof(servicename));
 	s = getnameinfo((const struct sockaddr*) &sin, len, hostname, sizeof(hostname), servicename, sizeof(servicename), flags);
-	LM_M(("Name: '%s', Service: '%s'", hostname, servicename));
+	LM_T(LmtGetnameinfo, ("Name: '%s', Service: '%s'", hostname, servicename));
 
 	// 3. Numeric form of the hostname
 	flags = NI_NUMERICHOST;
 	memset(hostname,    0, sizeof(hostname));
 	memset(servicename, 0, sizeof(servicename));
 	s = getnameinfo((const struct sockaddr*) &sin, len, hostname, sizeof(hostname), servicename, sizeof(servicename), flags);
-	LM_M(("Name: '%s', Service: '%s'", hostname, servicename));
-
+	LM_T(LmtGetnameinfo, ("Name: '%s', Service: '%s'", hostname, servicename));
 }
 
 

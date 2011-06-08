@@ -721,9 +721,9 @@ Status EndpointManager::setupAwait(void)
 {
 	Status             s;
 	Message::Header    header;
-	void*              dataP   = NULL;
-	long               dataLen = 0;
-	Packet             packet(Message::Unknown);
+	void*              dataP    = NULL;
+	long               dataLen  = 0;
+	Packet*            packetP  = new Packet(Message::Unknown);
 
 	LM_TODO(("Instead of all this, perhaps I can just start the spawner and treat the messages in SamsonSpawner::receive ... ?"));
 
@@ -770,7 +770,7 @@ Status EndpointManager::setupAwait(void)
 			if ((s = ep->msgAwait(60, 0, "ProcessVector Message")) != 0)
 			   LM_X(1, ("msgAwait(ProcessVector): %s", status(s)));
 
-			if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != 0)
+			if ((s = ep->receive(&header, &dataP, &dataLen, packetP)) != 0)
 			{
 				LM_E(("Endpoint2::receive error"));
 				remove(ep);
@@ -821,13 +821,30 @@ Status EndpointManager::setupAwait(void)
 
 		if ((s = ep->msgAwait(10, 0, "Connection Closed")) != OK)
 			LM_W(("All OK, except that samsonSetup didn't close connection in time. msgAwait(): %s", status(s)));
-		else if ((s = ep->receive(&header, &dataP, &dataLen, &packet)) != ConnectionClosed)
+		else if ((s = ep->receive(&header, &dataP, &dataLen, packetP)) != ConnectionClosed)
 			LM_W(("All OK, except that samsonSetup didn't close connection when it was supposed to. receive(): %s", status(s)));
 
 		show("Before removing samsonSetup");
 		remove(ep);
 		show("After removing samsonSetup", true);
 		return OK;
+	}
+}
+
+
+// ----------------------------------------------------------------------------
+//
+// Temporary test - send ping to all workers
+//
+void EndpointManager::pingTest(void)
+{
+	char*    pingstring = strdup("0123456789");
+	Packet*  p          = new Packet(Message::Msg, Message::Ping, pingstring, strlen(pingstring) + 1);
+
+	if ((me->type == Endpoint2::Worker) && (me->id == 0))
+	{
+		LM_F(("Pinging all workers"));
+		multiSend(Endpoint2::Worker, p);
 	}
 }
 
@@ -1180,16 +1197,16 @@ int EndpointManager::multiSend(Endpoint2::Type typ, Message::MessageCode code, v
 */
 void EndpointManager::show(const char* why, bool forced)
 {
-	bool verbose = lmVerbose;
+	int tLevel = LmtHostList2;
 
 	if (forced)
-		lmVerbose = true;
+		tLevel = LmtHostList1;
 
-	LM_V((""));
-	LM_V(("-------------------- Endpoint list (%s) ------------------------------", why));
-	LM_V((""));
-	LM_V(("ix  %-12s id  %-20s %-20s Port  rFd", "Type", "Host", "State"));
-	LM_V(("----------------------------------------------------------------------"));
+	LM_T(tLevel, (""));
+	LM_T(tLevel, ("-------------------- Endpoint list (%s) ------------------------------", why));
+	LM_T(tLevel, (""));
+	LM_T(tLevel, ("ix  %-12s id  %-20s %-20s Port  rFd", "Type", "Host", "State"));
+	LM_T(tLevel, ("----------------------------------------------------------------------"));
 
 	for (unsigned int ix = 0; ix < endpoints; ix++)
 	{
@@ -1199,13 +1216,10 @@ void EndpointManager::show(const char* why, bool forced)
 		if (ep == NULL)
 			continue;
 
-		LM_V(("%02d: %-12s %02d  %-20s %-20s %04d  %02d %s", ix, ep->typeName(), ep->idGet(), ep->hostname(), ep->stateName(), ep->port, ep->rFd,
+		LM_T(tLevel, ("%02d: %-12s %02d  %-20s %-20s %04d  %02d %s", ix, ep->typeName(), ep->idGet(), ep->hostname(), ep->stateName(), ep->port, ep->rFd,
 			  (ep->isThreaded() == true)? "(threaded)" : (ep->state == Endpoint2::Loopback)? "(myself)" : ""));
 	}
-	LM_V(("----------------------------------------------------------------------"));
-
-	if (forced)
-		lmVerbose = verbose;
+	LM_T(tLevel, ("----------------------------------------------------------------------"));
 }
 
 

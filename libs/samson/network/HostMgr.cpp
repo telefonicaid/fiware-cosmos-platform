@@ -42,7 +42,7 @@ HostMgr::HostMgr(unsigned int size)
 		LM_X(1, ("error allocating room for %d delilah hosts", size));
 
 	localIps();
-	list("localhost inserted");
+	list("localhost inserted", true);
 }
 
 
@@ -168,7 +168,7 @@ Host* HostMgr::insert(Host* hostP)
 		if (hostV[ix] == NULL)
 		{
 			hostV[ix] = hostP;
-			list("Host Added");
+			list("Host Added", true);
 			return hostV[ix];
 		}
 	}
@@ -244,8 +244,6 @@ static void newCheck(const char* name, const char* ip)
 				LM_E(("error in getnameinfo: %s", gai_strerror(s)));
 				continue;
 			}
-			if (hostname[0] != 0)
-				LM_M(("hostname: %s", hostname));
 		}
 	}
 
@@ -553,11 +551,15 @@ bool HostMgr::match(Host* host, const char* ip)
 *
 * list - list the hosts in the list
 */
-void HostMgr::list(const char* why)
+void HostMgr::list(const char* why, bool forced)
 {
-	unsigned int ix;
+	unsigned int  ix;
+	int           tLevel = LmtHostList1;
 
-	LM_F(("------------ Host List: %s ------------", why));
+	if (forced)
+	   tLevel = LmtHostList2;
+
+	LM_T(tLevel, ("------------ Host List: %s ------------", why));
 	for (ix = 0; ix < size; ix++)
     {
 		char  line[512];
@@ -580,9 +582,9 @@ void HostMgr::list(const char* why)
 			strncat(line, part, sizeof(line) - 1);
 		}
 
-		LM_F((line));
+		LM_T(tLevel, (line));
 	}
-	LM_F(("---------------------------------------------------"));
+	LM_T(tLevel, ("---------------------------------------------------"));
 }
 
 

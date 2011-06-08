@@ -212,10 +212,10 @@ Status UnhelloedEndpoint::helloDataSet(Type _type, int _id)
 Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 {
 	Message::Header       header;
-	long                  dataLen = 0;
-	void*                 dataP   = NULL;
+	long                  dataLen  = 0;
+	void*                 dataP    = NULL;
+	Packet*               packetP  = new Packet(Message::Unknown);
 	Message::HelloData*   helloP;
-	Packet                packet(Message::Unknown);
 	Status                s;
 
 	LM_T(LmtUnhelloed, ("Sending Hello Msg to %s", name()));
@@ -227,7 +227,7 @@ Status UnhelloedEndpoint::helloExchange(int secs, int usecs)
 	LM_T(LmtUnhelloed, ("Reply seems on its way in"));
 
 	LM_T(LmtUnhelloed, ("Reading reply"));
-	if ((s = receive(&header, &dataP, &dataLen, &packet)) != OK)
+	if ((s = receive(&header, &dataP, &dataLen, packetP)) != OK)
 		LM_RE(s, ("Endpoint2::receive(expecting Hello): %s", status(s)));
 
 	LM_T(LmtUnhelloed, ("Checking validity of reply (code: 0x%x)", header.code));

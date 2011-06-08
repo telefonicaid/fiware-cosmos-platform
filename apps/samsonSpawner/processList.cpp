@@ -70,7 +70,7 @@ samson::Process* processAdd(samson::Process* processP)
 	if (processMax == 0)
 	   LM_X(1, ("processMax == 0 - processListInit not called !"));
 
-	LM_T(LmtProcessList, ("Adding process '%s' of type '%s'. pid: %d", processP->name, processTypeName(processP), processP->pid));
+	LM_T(LmtProcessList1, ("Adding process '%s' of type '%s'. pid: %d", processP->name, processTypeName(processP), processP->pid));
 
 	if ((processP->pid != 0) && ((pP = processLookup(processP->pid)) != NULL))
 	{
@@ -214,7 +214,7 @@ void processListShow(const char* why, bool forcedOn)
 	if (forcedOn)
 		LM_F(("---------- Process List: %s ----------", why));
 	else
-		LM_T(LmtProcessListShow, ("---------- Process List: %s ----------", why));
+		LM_T(LmtProcessList1, ("---------- Process List: %s ----------", why));
 
 	for (unsigned int ix = 0; ix < processMax; ix++)
 	{
@@ -228,7 +228,7 @@ void processListShow(const char* why, bool forcedOn)
 				  processV[ix]->alias,
 				  processV[ix]->pid));
 		else
-			LM_T(LmtProcessListShow, ("  process %02d: %-20s %-20s  pid %d",
+			LM_T(LmtProcessList1, ("  process %02d: %-20s %-20s  pid %d",
 									  ix,
 									  processV[ix]->name,
 									  processV[ix]->alias,
@@ -239,7 +239,7 @@ void processListShow(const char* why, bool forcedOn)
 	if (forcedOn)
 		LM_F(("------------------------------------"));
 	else
-		LM_T(LmtProcessListShow, ("------------------------------------"));
+		LM_T(LmtProcessList1, ("------------------------------------"));
 }
 
 

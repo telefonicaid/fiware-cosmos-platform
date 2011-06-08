@@ -71,6 +71,7 @@ char* messageCode(MessageCode code)
     case PushBlock:                        return (char*) "PushBlock";
     case PushBlockResponse:                return (char*) "PushBlockResponse";
 	case Id:                               return (char*) "Id";
+	case Ping:                             return (char*) "Ping";
 	case Unknown:                          return (char*) "Unknown";
 	}
 

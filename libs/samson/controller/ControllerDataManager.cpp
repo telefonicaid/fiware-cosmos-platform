@@ -289,18 +289,36 @@ namespace samson {
                     break;
 
                 case Operation::reduce:
+                {
+                    if( op->getNumInputs() != 2 )
+                    {
+                        response.output = au::Format::string("Only reduce operations with 2 inputs are supported at the moment. ( In the furure, reducers with 3 or more will be supported");
+                        response.error = true;
+                        return response;
+                    }
+                    
+                    KVFormat a = op->getInputFormats()[op->getNumInputs() - 1];
+                    KVFormat b = op->getOutputFormats()[ op->getNumOutputs() - 1 ];
+
+                    if( !a.isEqual(b)  )
+                    {
+                        response.output = au::Format::string("Last input and output should be the same data type to qualify as stream-reduce");
+                        response.error = true;
+                        return response;                        
+                    }
+                    
                     
                     // Check with the number of outputs
-                    if( commandLine.get_num_arguments() < ( 3 + op->getNumOutputs() ) )
+                    if( commandLine.get_num_arguments() < ( 3 + op->getNumOutputs() - 1 ) )
                     {
                         std::ostringstream output;
-                        output << "Not enought outputs for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
+                        output << "Not enought outputs specified for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
                         response.output = output.str();
                         response.error = true;
                         return response;
                         
                     }
-                    
+                }
                     break;
                     
                 case Operation::script:
@@ -334,34 +352,49 @@ namespace samson {
             tmp->set_num_workers( controller->network->getNumWorkers() );
             tmp->set_name(name);
             tmp->set_operation( operation );
+
+            int num_outputs = op->getNumOutputs();
             
-            for (int i = 0 ; i < op->getNumOutputs() ; i++ )
+            for (int i = 0 ; i < num_outputs ; i++ )
             {
                 network::StreamQueueOutput * output = tmp->add_output();
 
-                // Get comma separated elements
-                std::vector<std::string> queues = au::split( commandLine.get_argument( 3 + i) , ',' );
-
-                for ( size_t j = 0 ; j < queues.size() ; j++ )
+                
+                // In the reduce operations, there is no ouput for the last output ( state )
+                if( (  op->getType() == Operation::reduce )   && ( i == (num_outputs-1) ) )
                 {
-                    std::vector<std::string> queue_channel = au::split( queues[j] , ':' );
-                    if( queue_channel.size() == 1 ) 
-                    {
-                        network::QueueChannel *qc = output->add_target();
-                        qc->set_queue(queue_channel[0]);
-                        qc->set_channel(0);
-                    } 
-                    else if( queue_channel.size() == 2 )
-                    {
-                        network::QueueChannel *qc = output->add_target();
-                        qc->set_queue(queue_channel[0]);
-                        qc->set_channel( atoi( queue_channel[1].c_str() ) );
-                    }
-                    else
-                        LM_W(("Error considering queue-channel %s", queues[j].c_str()));
+                    // Special case sinse this is the auto-loop for stream-reduce 
+                    network::QueueChannel *qc = output->add_target();
+                    qc->set_queue( name );  // My queue
+                    qc->set_channel( op->getNumInputs() - 1 );  // State channel
                     
                 }
-                
+                else
+                {
+                    
+                    // Get comma separated elements
+                    std::vector<std::string> queues = au::split( commandLine.get_argument( 3 + i) , ',' );
+
+                    for ( size_t j = 0 ; j < queues.size() ; j++ )
+                    {
+                        std::vector<std::string> queue_channel = au::split( queues[j] , ':' );
+                        if( queue_channel.size() == 1 ) 
+                        {
+                            network::QueueChannel *qc = output->add_target();
+                            qc->set_queue(queue_channel[0]);
+                            qc->set_channel(0);
+                        } 
+                        else if( queue_channel.size() == 2 )
+                        {
+                            network::QueueChannel *qc = output->add_target();
+                            qc->set_queue(queue_channel[0]);
+                            qc->set_channel( atoi( queue_channel[1].c_str() ) );
+                        }
+                        else
+                            LM_W(("Error considering queue-channel %s", queues[j].c_str()));
+                        
+                    }
+                }                
             }
             
             // Insert the queue in the global list of stream-queues

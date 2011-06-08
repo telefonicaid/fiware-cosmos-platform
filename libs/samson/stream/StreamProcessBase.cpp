@@ -75,7 +75,10 @@ namespace samson {
                 network::QueueChannel *target = pb->add_target();
                 target->set_queue( queue_name );
                 target->set_channel(channel);
+                
+                //LM_M(("Sending a block to queue %s:%d" ,  queue_name.c_str() , channel ));
             }
+            
             
             // Send the packet using the "notification_send_to_worker"
             engine::Notification *notification = new engine::Notification( notification_send_to_worker , packet );

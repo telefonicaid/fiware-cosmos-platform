@@ -232,10 +232,12 @@ namespace samson {
             // Get the flag of txt buffer
             bool txt = packet->message->push_block().txt();
 
+            /*
             if ( txt )
                 LM_M(("Received a block of txt"));
             else
                 LM_M(("Received a block of kv"));
+            */
             
             // Create the new block with the buffer
             stream::Block *block = new stream::Block( packet->buffer , txt );

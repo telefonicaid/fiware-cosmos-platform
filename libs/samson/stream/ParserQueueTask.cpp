@@ -36,7 +36,7 @@ namespace samson {
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamQueue->operation() );
             
-            LM_M(("Stream Parsing begin" ));
+            //LM_M(("Stream Parsing begin" ));
 
             // Get the list of blocks to process
             int channel = 0;
@@ -67,7 +67,7 @@ namespace samson {
                 char *data = (*b)->getData();
                 size_t size = (*b)->getSize();
                 
-                LM_M(("Stream Parsing a block of size %s", au::Format::string(size).c_str() ));
+                //LM_M(("Stream Parsing a block of size %s", au::Format::string(size).c_str() ));
                 
                 parser->run( data , size ,  writer );
 
@@ -78,7 +78,7 @@ namespace samson {
             // Detele the created instance
             delete parser;
 
-            LM_M(("Stream Parsing finish" ));
+            //LM_M(("Stream Parsing finish" ));
             
         }
         
@@ -229,20 +229,30 @@ namespace samson {
             
             BlockReader( Block* block , int _channel )
             {
-                info = (KVInfo *)block->getData() + sizeof( KVHeader );
+                info = (KVInfo *) ( block->getData() + sizeof( KVHeader ) );
                 data = block->getData() + KVFILE_TOTAL_HEADER_SIZE;
                 
                 current_hg = 0;
                 channel = _channel;
+/*                
+                LM_M(("New block reader"));
+                for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
+                    if( info[i].kvs > 0 )
+                        LM_M(("Information for hash-group %d -> %s" , i , info[i].str().c_str() ));
+ */
+                
             }
             
             void prepare ( int hg )
             {
+                //LM_M(("Preparing block for hash-group %d", hg ));
+                
                 if( hg < current_hg )
                     LM_X(1, ("Invalid use of BlockReader"));
                 
                 while( current_hg < hg )
                 {
+                    //LM_M(("Skiping %lu bytes hg:%d->%d", info[current_hg].size , current_hg , hg));
                     data += info[current_hg].size;
                     current_hg++;
                 }
@@ -252,10 +262,11 @@ namespace samson {
         
         class BlockReaderList
         {
-            KVInputVector inputVector;
             std::vector<BlockReader> blockReaders;
             
         public:
+
+            KVInputVector inputVector;
             
             BlockReaderList( Operation*operation ) : inputVector( operation )
             {
@@ -269,7 +280,7 @@ namespace samson {
             
             size_t prepare( int hg )
             {
-                LM_M(("Preparing hash-group %d",hg));
+                //LM_M(("Preparing hash-group %d",hg));
                 
                 for ( size_t i = 0 ; i < blockReaders.size() ; i++)
                     blockReaders[i].prepare(hg);
@@ -278,13 +289,16 @@ namespace samson {
                 for ( size_t i = 0 ; i < blockReaders.size() ; i++)
                     num_kvs += blockReaders[i].info[hg].kvs;
 
-                inputVector.prepareInput( num_kvs );
+                if ( num_kvs > 0 )
+                {
+                    inputVector.prepareInput( num_kvs );
+                    
+                    // Get data
+                    for ( size_t i = 0 ; i < blockReaders.size() ; i++)
+                        inputVector.addKVs( blockReaders[i].channel, blockReaders[i].info[hg],  blockReaders[i].data );
+                }
                 
-                // Get data
-                for ( size_t i = 0 ; i < blockReaders.size() ; i++)
-                    inputVector.addKVs(blockReaders[i].channel, blockReaders[i].info[hg], blockReaders[i].data );
-                
-                LM_M(("Finish Preparing hash-group %d with %lu key-values",hg, num_kvs));
+                    //LM_M(("Finish Preparing hash-group %d with %lu key-values",hg, num_kvs));
                 
                 return num_kvs;
             }
@@ -294,7 +308,7 @@ namespace samson {
         
         void ReduceQueueTask::generateKeyValues( KVWriter *writer )
         {
-            LM_M(("Reducing from %d - %d" , hg_begin , hg_end ));
+            //LM_M(("Reducing from %d - %d" , hg_begin , hg_end ));
             
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamQueue->operation() );
@@ -308,7 +322,6 @@ namespace samson {
             
             reduce->init( writer );
 
-            /*
              
             // Get the block reader list to prepare inputs for operation
             BlockReaderList blockReaderList( operation );
@@ -317,16 +330,25 @@ namespace samson {
             for (int i = 0 ; i < operation->getNumInputs() ; i++)
             {
                 BlockList* list = matrix.channels.findInMap( i );
-                std::list< Block* >::iterator b;
-                for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++)
-                    blockReaderList.insert( *b , i );
+
+                if( list )
+                {
+                    std::list< Block* >::iterator b;
+                    for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++)
+                        blockReaderList.insert( *b , i );
+                }
             }
             
-             */
-             
-            
+            // structure used to input reduce operations    
+            int num_inputs = operation->getNumInputs();
+            KVSetStruct* inputStructs = (KVSetStruct*) malloc( sizeof(KVSetStruct) * num_inputs );
 
-            /*
+            // compare functions necessary for sorting and grouping key-values
+            KVInputVector &inputs = blockReaderList.inputVector;
+            inputs.compare = operation->getInputCompareFunction();
+            OperationInputCompareFunction compareKey = operation->getInputCompareByKeyFunction();
+            
+            
             for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
             {
                 if( ( hg >= hg_begin ) && (hg < hg_end) )
@@ -334,12 +356,66 @@ namespace samson {
                     
                     // Prepare all the inputs for this hash.group
                     size_t num_kvs = blockReaderList.prepare(hg);
+                    
                     if( num_kvs > 0 )
-                        LM_M(("Running reuce over %lu kvs for hg [ %d in ( %d - %d ) ]", num_kvs , hg , hg_begin , hg_end ));
+                    {
+                        
+                        // Sorting 
+                        inputs.sort();
+                        
+                        //LM_M(("Running reduce over %lu kvs for hg [ %d in ( %d - %d ) ]", num_kvs , hg , hg_begin , hg_end ));
+                        
+                        // Run a reduce for each "key"
+                        //std::cout << "Hash group with " << num_kvs << " kvs inputs sorted\n";
+                        
+                        // Process all the key-values in order
+                        size_t pos_begin = 0;	// Position where the next group of key-values begin
+                        size_t pos_end	 = 1;	// Position where the next group of key-values finish
+                        
+                        //std::cout << "Hash group with " << num_kvs << " kvs processing\n";
+                        
+                        /*
+                         if( num_kvs > 0 )
+                         std::cout << "Reduce Hash group with " << num_kvs << " kvs\n";
+                         */
+                        
+                        while( pos_begin < num_kvs )
+                        {
+                            //std::cout << "PB: " << pos_begin << " PE: " << pos_end << "\n";
+                            // Identify the number of key-values with the same key
+                            while( ( pos_end < num_kvs ) && ( compareKey( inputs._kv[pos_begin] , inputs._kv[pos_end] ) == 0) )
+                                pos_end++;
+                            
+                            size_t pos_pointer = pos_begin;
+                            for (int i = 0 ; i < num_inputs ;i++)
+                            {
+                                if( (pos_pointer == pos_end) || ( inputs._kv[pos_pointer]->input != i) )
+                                    inputStructs[i].num_kvs = 0;
+                                else
+                                {
+                                    inputStructs[i].kvs = &inputs._kv[pos_pointer];
+                                    inputStructs[i].num_kvs = 0;
+                                    while( ( pos_pointer < pos_end ) && ( inputs._kv[pos_pointer]->input == i) )
+                                    {
+                                        inputStructs[i].num_kvs++;
+                                        pos_pointer++;
+                                    }
+                                }
+                            }
+                            
+                            reduce->run(inputStructs, writer);
+                            
+                            // Go to the next position
+                            pos_begin = pos_end;
+                            pos_end = pos_begin + 1;
+                            
+                            
+                        }                        
+                        
+                    }
                     
                 }
             }
-             */
             
             
             reduce->finish( writer  );
@@ -347,7 +423,9 @@ namespace samson {
             // Detele the created instance
             delete reduce;            
             
-            LM_M(("Finish Reducing from %d - %d" , hg_begin , hg_end ));
+            free( inputStructs ) ;
+            
+            //LM_M(("Finish Reducing from %d - %d" , hg_begin , hg_end ));
             
         }          
 

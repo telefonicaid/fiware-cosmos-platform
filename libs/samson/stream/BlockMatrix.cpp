@@ -47,11 +47,6 @@ namespace samson {
                 total += (*i)->getSize();
             return total;
         }
-
-        int BlockList::getNumBlocks()
-        {
-            return blocks.size();
-        }
         
         std::string BlockList::str()
         {
@@ -67,11 +62,20 @@ namespace samson {
                 size += (*b)->getSize();
                 size_on_memory += (*b)->getSizeOnMemory();
                 size_on_disk += (*b)->getSizeOnDisk();
+                
+                output << (*b)->str();
             }
             
-            output << "[ " << blocks.size() << " blocks with " << au::Format::string( size, "Bytes" );
-            output << " " << au::Format::percentage_string(size_on_memory, size) << " on memory";
-            output << " & " << au::Format::percentage_string(size_on_disk, size) << " on disk ][Accumulatd " << accumulated_info.str() << "] ";
+            if( blocks.size() == 0 )
+                output << "[ No content ]";
+            else
+            {
+                output << "[ " << blocks.size() << " blocks with " << au::Format::string( size, "Bytes" );
+                output << " " << au::Format::percentage_string(size_on_memory, size) << " on memory";
+                output << " & " << au::Format::percentage_string(size_on_disk, size) << " on disk ]";
+            }
+            
+            output << "[ Accumulatd " << accumulated_info.str() << " ]";
             
             return output.str();
         }
@@ -80,6 +84,8 @@ namespace samson {
         {
             return (blocks.size()==0);
         }
+        
+        
         
         bool BlockList::isContentOnMemory()
         {
@@ -138,6 +144,21 @@ namespace samson {
                 BlockManager::shared()->unlock( *b );
         }
         
+        // Get information
+        FullKVInfo BlockList::getInfo()
+        {
+            FullKVInfo info;
+            std::list<Block*>::iterator b;
+            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
+                info.append( ( *b )->getInfo() );
+            return info;
+            
+        }
+        
+        size_t BlockList::getNumBlocks()
+        {
+            return blocks.size();
+        }
 
         
 #pragma mark BlockMatrix
@@ -167,6 +188,21 @@ namespace samson {
                     return false;
             return true;
         }
+        
+        bool BlockMatrix::isEmpty( int channel_begin , int channel_end )
+        {
+            
+            au::map<int,BlockList>::iterator i;
+            for ( i =  channels.begin() ; i!= channels.end() ; i++)
+            {
+                if( ( i->first >= channel_begin ) && ( i->first < channel_end ) )
+                    if( !i->second->isEmpty() )
+                        return false;
+            }
+            
+            return true;
+        }
+        
 
         bool BlockMatrix::isContentOnMemory()
         {
@@ -226,13 +262,13 @@ namespace samson {
             std::ostringstream output;
             
             if( channels.size() == 0)
-                output << " [ No data ] ";
+                output << "[ No data ]";
             else
             {
                 
                 au::map<int , BlockList>::iterator i;
                 for (i = channels.begin() ; i != channels.end() ; i++ )
-                    output << "[ " << i->first << " : " << i->second->str() << " ]"; 
+                    output << "Channel " << i->first << " : " << i->second->str() << "\n"; 
             }
             
             return output.str();
@@ -291,6 +327,37 @@ namespace samson {
                 }
             }
         }
+        
+        
+        FullKVInfo BlockMatrix::getInfo()
+        {
+            FullKVInfo info;
+            info.clear();
+            
+            au::map<int , BlockList>::iterator c;
+            for ( c = channels.begin() ; c!= channels.end() ; c++ )
+            {
+                BlockList *list = c->second;
+                info.append( list->getInfo() );
+            }
+            
+            return info;
+        }
+
+        size_t BlockMatrix::getNumBlocks()
+        {
+            int num = 0;
+            
+            au::map<int , BlockList>::iterator c;
+            for ( c = channels.begin() ; c!= channels.end() ; c++ )
+            {
+                BlockList *list = c->second;
+                num +=  list->getNumBlocks();
+            }
+            
+            return num;
+        }
+
 
         
 

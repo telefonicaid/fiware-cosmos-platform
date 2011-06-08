@@ -185,6 +185,20 @@ namespace samson {
                 
             }
             
+            // Get information
+            KVInfo getInfo();
+            
+            
+            std::string str()
+            {
+                std::ostringstream output;
+                output << "[";
+                if( header )
+                    output << header->hg_begin << "-" << header->hg_end;
+                output << "]";
+                return output.str();
+            }
+            
             
         };
             

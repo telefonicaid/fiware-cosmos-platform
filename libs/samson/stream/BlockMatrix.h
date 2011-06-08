@@ -52,7 +52,6 @@ namespace samson {
             
             // Get information
             size_t getSize();
-            int getNumBlocks();            
             
             // String describing the stats of this
             std::string str();
@@ -69,6 +68,11 @@ namespace samson {
             void unlock();
             
             bool isContentOnMemory();
+            
+            // Get information
+            FullKVInfo getInfo();
+            size_t getNumBlocks();
+            
             
         };
         
@@ -90,6 +94,9 @@ namespace samson {
             Block *extractFromChannel( int channel );
                         
             bool isEmpty();
+
+            bool isEmpty( int channel_begin , int channel_end );
+            
             
             // Some information
             std::string str();
@@ -117,7 +124,10 @@ namespace samson {
             
             // Copy all the blocks from another matrix
             void copyFrom( BlockMatrix* _matrix , int hg_begin , int hg_end );
-            
+          
+            // Get information
+            FullKVInfo getInfo();
+            size_t getNumBlocks();
         };
         
     }

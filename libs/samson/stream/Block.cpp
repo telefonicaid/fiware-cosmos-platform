@@ -283,7 +283,13 @@ namespace samson {
             return false;
         }
 
-
+        KVInfo Block::getInfo()
+        {
+            if( header )
+                return header->info;
+            else
+                return KVInfo( 0 , size );
+        }
         
         size_t getSize( std::set<Block*> &blocks )
         {

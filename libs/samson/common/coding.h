@@ -294,7 +294,7 @@ namespace samson {
                 
             // Key-value 
             hg_begin = 0;
-            hg_end = KVFILE_NUM_HASHGROUPS;
+            hg_end = KVFILE_NUM_HASHGROUPS-1;   // Search for the first element without presence
             
             while( ( info[hg_begin].kvs == 0 ) && hg_begin<(KVFILE_NUM_HASHGROUPS-1) )
                 hg_begin++;

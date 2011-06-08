@@ -32,7 +32,6 @@ namespace samson {
 	
 	void WorkerTaskManager::addTask(const network::WorkerTask &worker_task )
 	{
-		LM_M(("Adding a task: '%s'", worker_task.operation().c_str()));
 
 		// Look at the operation to 
 		Operation *op = ModulesManager::shared()->getOperation( worker_task.operation() );
@@ -53,12 +52,9 @@ namespace samson {
 			WorkerTask *t = task.findInMap( task_id );
 			if( !t )
 			{
-				LM_M(("Inserting a TASK in map"));
 				t = new WorkerTask( this );
 				task.insertInMap( task_id , t );
 			}
-			else
-				LM_M(("NOT Inserting a TASK in map"));
 
 			// Setup the operation with all the information comming from controller
 			t->setupAndRun( op->getType() , worker_task );

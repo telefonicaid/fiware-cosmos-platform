@@ -84,7 +84,7 @@ namespace samson {
         
         // Create packet for this output
         
-		LM_M(("Creating packet Message::WorkerDataExchange"));
+		//LM_M(("Creating packet Message::WorkerDataExchange"));
         Packet *p = new Packet( Message::WorkerDataExchange );
         p->buffer = buffer;
         network::WorkerDataExchange *dataMessage =  p->message->mutable_data();

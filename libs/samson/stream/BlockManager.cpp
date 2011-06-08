@@ -3,6 +3,8 @@
 #include "engine/DiskManager.h"        // notification_disk_operation_request_response
 #include "engine/Engine.h"             // engine::Engine
 
+#include "samson/common/SamsonSetup.h"      // samson::SamsonSetup
+
 #define BLOCK_MANAGEMENT_MAX_WRITE_OPERATIONS   3
 #define BLOCK_MANAGEMENT_MAX_READ_OPERATIONS   3
 
@@ -24,7 +26,7 @@ namespace samson {
         
             memory = 0;
             
-            max_memory = 300000000; //300Mb for this demo
+            max_memory = SamsonSetup::shared()->memory; //Use all the memory for stream processing
         }
         
         void BlockManager::init()

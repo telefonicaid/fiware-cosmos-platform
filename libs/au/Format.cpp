@@ -194,6 +194,38 @@ namespace au
         return  output.str();
     }
     
+    void find_and_replace( std::string &source, const std::string find, std::string replace ) {
+        size_t pos = 0;
+        
+        //LM_M(("Finding string of %d bytes at position %lu of a string with length %lu" , find.length() , pos , source.length() ));
+        pos = source.find( find , pos );
+        //LM_M(("Position found %lu bytes" , find.length() ));
+        
+        while(pos != std::string::npos )
+        {
+            source.replace( pos, find.length(), replace );
+
+            // Go forward in the input string
+            pos += replace.length();
+
+            //LM_M(("Finding string of %d bytes at position %lu of a string with length %lu" , find.length() , pos , source.length() ));
+            pos = source.find( find , pos );
+            //LM_M(("Position found %lu bytes" , find.length() ));
+            
+            
+        }
+    }
+    
+    
+    std::string Format::indent( std::string txt )
+    {
+        
+        find_and_replace( txt , "\n" , "\n\t" );
+        // Insert the first tab
+        txt.insert(0, "\t");
+        return txt;
+        
+    }
     
     
 	

@@ -21,7 +21,7 @@ namespace samson {
             
             // add a generic periodic notification to check tasks for stream queues
             engine::Notification *notification = new engine::Notification( notification_review_task_for_queue );
-            engine::Engine::add( notification , 3 );
+            engine::Engine::add( notification , 1 );
             
         }
         
@@ -30,10 +30,13 @@ namespace samson {
             
             std::ostringstream output;
             
-            output << "\tQueues:\n";
+            output << "Queues:\n";
+            
             au::map< std::string , Queue >::iterator q;
             for ( q = queues.begin() ; q != queues.end() ; q++)
-                output << "\t\t" << q->second->getStatus() <<"\n";
+                output <<  au::Format::indent( q->second->getStatus()  ) << "\n";
+
+            // Queue task Manager status
             output << queueTaskManager.getStatus();
            
             return output.str();

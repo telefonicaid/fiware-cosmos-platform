@@ -34,6 +34,8 @@ namespace au {
         
         static std::string progress_bar( double p , int len );
         static std::string double_progress_bar( double p1 , double p2 , char c1 ,char c2 , char c3, int len );
+    
+        static std::string indent( std::string txt );
         
 	};
     

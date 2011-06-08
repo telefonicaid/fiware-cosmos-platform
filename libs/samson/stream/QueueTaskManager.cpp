@@ -39,18 +39,18 @@ namespace samson {
         {
             std::ostringstream output;
 
-            output << "\tPending tasks:\n";
+            output << "Pending tasks:\n";
             au::list< QueueTask >::iterator i;
             for ( i = queueTasks.begin() ; i!= queueTasks.end() ; i++ )
-                output << "\t\t" << (*i)->getStatus() << "\n";
+                output <<  au::Format::indent( (*i)->getStatus() ) << "\n";
 
             {
-                output << "\tRunning tasks:\n";
+                output << "Running tasks:\n";
                 au::map< size_t, QueueTask >::iterator i;
                 for ( i = runningTasks.begin() ; i!= runningTasks.end() ; i++ )
                 {
                     QueueTask*tmp = i->second;
-                    output << "\t\t" << tmp->getStatus() << "\n";
+                    output << au::Format::indent( tmp->getStatus() ) << "\n";
                 }
             }
             

@@ -1,7 +1,7 @@
 debug:
 	mkdir BUILD_DEBUG || true
 	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG
-	make -j 7 -C BUILD_DEBUG 
+	make -j 4 -C BUILD_DEBUG 
 
 debug_coverage:
 	mkdir BUILD_DEBUG_COVERAGE || true

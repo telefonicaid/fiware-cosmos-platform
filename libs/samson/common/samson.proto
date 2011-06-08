@@ -56,8 +56,7 @@ message StreamQueue
 	required string name		= 1;	// Name of the stream queue
 	required string operation	= 3;	// Name of the operation to process this queue ( parser , map , reduce with 2 inputs )
 	required uint32 num_workers	= 4;	// Number of workers involved in this operation
-
-	repeated StreamQueueOutput output = 5;	// Outputs to send the packets
+	repeated StreamQueueOutput output = 6;	// Outputs to send the packets
 
 }
 

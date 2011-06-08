@@ -90,6 +90,15 @@ reduce word_count
 	helpLine "Classical example to count the words. It basically acumulates the number of times a word appear in a txt file"
 }
 
+reduce word_count2
+{
+	in system.String system.UInt
+	in system.String system.UInt
+	out system.String system.UInt
+
+	helpLine "Reduce operation for stream processing of work_count"
+}
+
 reduce collocation_count
 {
 	in txt.Collocation system.UInt

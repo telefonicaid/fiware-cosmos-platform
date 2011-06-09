@@ -245,9 +245,9 @@ static void newCheck(const char* name, const char* ip)
 				continue;
 			}
 		}
-	}
 
-	freeaddrinfo(result);
+		freeaddrinfo(result);
+	}
 }
 
 

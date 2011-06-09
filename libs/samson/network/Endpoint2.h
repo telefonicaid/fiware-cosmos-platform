@@ -130,10 +130,11 @@ private:
 	State                state;
 	struct sockaddr_in   sockin;
 	bool                 threaded;  // Worker/Delilah
+
+public:
 	pthread_t            readerId;
 	pthread_t            writerId;
 
-public:
 	// Statistics
 	int                  msgsIn;
 	int                  msgsOut;

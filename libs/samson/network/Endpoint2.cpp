@@ -57,8 +57,8 @@ void* readerThread(void* vP)
 	ep->run();
 
 	ep->stateSet(Endpoint2::ScheduledForRemoval);
-	LM_W(("Endpoint %s is back from Endpoint2::run (thread 0x%x)", ep->name(), pthread_self()));
-
+	LM_T(LmtThreads, ("Endpoint %s is back from Endpoint2::run. Leaving reader thread 0x%x", ep->name(), pthread_self()));
+	ep->readerId = 0;
 	return NULL;
 }
 
@@ -84,7 +84,19 @@ void* writerThread(void* vP)
 		packetP = ep->jobQueue.extractFront();
 		ep->jobQueueSem.release();
 		if (packetP != NULL)
-			ep->realsend(packetP->msgType, packetP->msgCode, packetP->dataP, packetP->dataLen, packetP);
+		{
+			Status s;
+
+			s = ep->realsend(packetP->msgType, packetP->msgCode, packetP->dataP, packetP->dataLen, packetP);
+			if (s != OK)
+			{
+				LM_E(("realsend(%s): %s", ep->name(), status(s)));
+				LM_T(LmtThreads, ("Leaving writer thread 0x%x (%s) because of send error", ep->writerId, ep->name()));
+				ep->stateSet(Endpoint2::ScheduledForRemoval);
+				ep->writerId = 0;
+				return NULL;
+			}
+		}
 		else
 			usleep(100000);
 	}
@@ -107,7 +119,7 @@ void* writerThread(void* vP)
 	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
-) : jobQueueSem( "jobQueueSem" )
+) : jobQueueSem("jobQueueSem")
 {
 	epMgr               = _epMgr;
 	type                = _type;
@@ -120,6 +132,8 @@ void* writerThread(void* vP)
 	threaded            = false;
 	nameidhost          = NULL;
 	idInEndpointVector  = -8;    // -8 meaning 'undefined' ...
+	readerId            = 0;
+	writerId            = 0;
 
 	nameSet(type, id, host);
 	memset(&sockin, 0, sizeof(sockin));
@@ -468,7 +482,7 @@ void Endpoint2::send(Packet* packetP)
 	}
 	else
 	{
-		if ((threaded == true) || (type == Worker))
+		if (threaded == true)
 		{
 			LM_T(LmtSem, ("After semTake(jobQueueSem)"));
 			jobQueueSem.retain();
@@ -971,7 +985,7 @@ Status Endpoint2::msgTreat(void)
 		}
 
 		LM_T(LmtHello, ("Received Hello from %s", name()));
-		if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((type == Worker) || (type == Delilah)))
+		if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((type == Worker) || (type == Delilah) || (type == Controller)))
 		{
 			int  ps;
 
@@ -1084,8 +1098,7 @@ void Endpoint2::run(void)
 		s = msgTreat();
 		if (s == ConnectionClosed)
 		{
-			threaded = false;
-			LM_W(("*************** Endpoint %s closed connection - leaving thread", name()));
+			LM_W(("Endpoint %s closed connection", name()));
 			return;
 		}
 	}

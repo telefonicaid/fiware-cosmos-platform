@@ -893,11 +893,28 @@ void EndpointManager::periodic(void)
 		if (endpoint[ix]->state != Endpoint2::ScheduledForRemoval)
 			continue;
 
-		if (endpoint[ix]->threaded == true)
+		LM_T(LmtThreads, ("readerId: 0x%x", endpoint[ix]->readerId));
+		LM_T(LmtThreads, ("writerId: 0x%x", endpoint[ix]->writerId));
+		LM_T(LmtThreads, ("threaded: %s",   (endpoint[ix]->threaded == true)? "TRUE" : "FALSE"));
+
+		if (endpoint[ix]->writerId != 0)
 		{
 			LM_T(LmtThreads, ("Killing writer thread 0x%x for %s", endpoint[ix]->writerId, endpoint[ix]->name()));
 			pthread_cancel(endpoint[ix]->writerId);
+			endpoint[ix]->writerId = 0;
 		}
+		else
+			LM_T(LmtThreads, ("NOT killing writer thread for %s", endpoint[ix]->name()));
+
+		if (endpoint[ix]->readerId != 0)
+		{
+			LM_T(LmtThreads, ("Killing reader thread 0x%x for %s", endpoint[ix]->readerId, endpoint[ix]->name()));
+			pthread_cancel(endpoint[ix]->readerId);
+			endpoint[ix]->readerId = 0;
+		}
+		else
+			LM_T(LmtThreads, ("NOT killing reader thread for %s", endpoint[ix]->name()));
+
 
 		endpoint[ix]->threaded = false;
 

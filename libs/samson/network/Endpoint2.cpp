@@ -78,9 +78,7 @@ void* writerThread(void* vP)
 	{
 		Packet* packetP;
 
-		LM_T(LmtSem, ("Calling semTake(jobQueueSem)"));
 		ep->jobQueueSem.retain();
-		LM_T(LmtSem, ("After semTake(jobQueueSem)"));
 		packetP = ep->jobQueue.extractFront();
 		ep->jobQueueSem.release();
 		if (packetP != NULL)
@@ -98,7 +96,7 @@ void* writerThread(void* vP)
 			}
 		}
 		else
-			usleep(100000);
+			usleep(10000);
 	}
 
 	return NULL;
@@ -160,6 +158,47 @@ Endpoint2::~Endpoint2()
 		free(nameidhost);
 
 	nameidhost = NULL;
+}
+
+
+
+/* *******************************************************************************
+*
+* typeName - 
+*/
+const char* Endpoint2::typeName(Type type)
+{
+	switch (type)
+	{
+	case Unhelloed:      return "Unhelloed";
+	case Worker:         return "Worker";
+	case Controller:     return "Controller";
+	case Spawner:        return "Spawner";
+	case Supervisor:     return "Supervisor";
+	case Delilah:        return "Delilah";
+	case Killer:         return "Killer";
+	case Setup:          return "Setup";
+	case Listener:       return "Listener";
+	case Sender:         return "Sender";
+	case CoreWorker:     return "CoreWorker";
+	case ThreadReader:   return "ThreadReader";
+	case ThreadSender:   return "ThreadSender";
+	case WebListener:    return "WebListener";
+	case WebWorker:      return "WebWorker";
+	}
+
+	return "Unknown";
+}
+
+
+
+/* *******************************************************************************
+*
+* typeName - 
+*/
+const char* Endpoint2::typeName(void)
+{
+	return typeName(type);
 }
 
 
@@ -484,9 +523,7 @@ void Endpoint2::send(Packet* packetP)
 	{
 		if (threaded == true)
 		{
-			LM_T(LmtSem, ("After semTake(jobQueueSem)"));
 			jobQueueSem.retain();
-			LM_T(LmtSem, ("After semTake(jobQueueSem)"));
 			jobQueue.push_back(packetP);
 			jobQueueSem.release();
 		}
@@ -502,9 +539,6 @@ void Endpoint2::send(Packet* packetP)
 
 
 
-static void badMsgType(Message::MessageType type)
-{
-}
 /* ****************************************************************************
 *
 * realsend - 
@@ -525,11 +559,7 @@ Status Endpoint2::realsend
 	// Sanity check
 	//
 	if ((msgType != Message::Msg) && (msgType != Message::Evt) && (msgType != Message::Ack) && (msgType != Message::Nak))
-	{
-		badMsgType(msgType);
-		// LM_RE(BadMsgType, ("Bad message type: 0x%x", msgType));
 		LM_X(1, ("Bad message type: 0x%x", msgType));
-	}
 
 	if (msgCode == Message::Die)
 		LM_W(("Sending a Die '%s' to %s", messageType(msgType), name()));
@@ -1041,47 +1071,6 @@ Status Endpoint2::msgTreat(void)
 
 
 
-/* *******************************************************************************
-*
-* typeName - 
-*/
-const char* Endpoint2::typeName(Type type)
-{
-	switch (type)
-	{
-	case Unhelloed:      return "Unhelloed";
-	case Worker:         return "Worker";
-	case Controller:     return "Controller";
-	case Spawner:        return "Spawner";
-	case Supervisor:     return "Supervisor";
-	case Delilah:        return "Delilah";
-	case Killer:         return "Killer";
-	case Setup:          return "Setup";
-	case Listener:       return "Listener";
-	case Sender:         return "Sender";
-	case CoreWorker:     return "CoreWorker";
-	case ThreadReader:   return "ThreadReader";
-	case ThreadSender:   return "ThreadSender";
-	case WebListener:    return "WebListener";
-	case WebWorker:      return "WebWorker";
-	}
-
-	return "Unknown";
-}
-
-
-
-/* *******************************************************************************
-*
-* typeName - 
-*/
-const char* Endpoint2::typeName(void)
-{
-	return typeName(type);
-}
-
-
-
 /* ****************************************************************************
 *
 * run - 
@@ -1216,6 +1205,57 @@ void Endpoint2::close(void)
 
 	rFd  = -1;
 	wFd  = -1;
+}
+
+
+
+/* ****************************************************************************
+*
+* statusString - 
+*/
+const char* Endpoint2::statusString(char* buf, int bufLen, int ix)
+{
+	char       jq[32];
+	char       fd[16];
+	char       conSign;
+
+	if (threaded == true)
+		snprintf(jq, sizeof(jq), "(qjobs: %d)", (int) jobQueue.size());
+	else
+		jq[0] = 0;
+
+
+	if (rFdGet() == -1)
+		fd[0] = 0;
+	else
+		snprintf(fd, sizeof(fd), "%02d", rFdGet());
+	
+
+	if ((state == Connected || state == Ready || state == Loopback) && (rFd >= 0))
+		conSign = '+';
+	else
+		conSign = '-';
+	
+
+
+
+	snprintf(buf, bufLen, "%c%c%02d: %-12s %02d  %-20s %-20s %04d  %-2s (in: %03d/%s, out: %03d/%s) %s\n",
+			 conSign,
+			 (threaded == true)? 's' : ' ',
+			 ix,
+			 typeName(),
+			 idGet(),
+			 hostname(),
+			 stateName(),
+			 port,
+			 fd,
+			 msgsIn,
+			 au::Format::string(bytesIn, "B").c_str(),
+			 msgsOut,
+			 au::Format::string(bytesOut, "B").c_str(),
+			 jq);
+
+	return buf;
 }
 
 }

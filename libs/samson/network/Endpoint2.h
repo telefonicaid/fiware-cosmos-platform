@@ -169,6 +169,7 @@ public:
 	bool                 isThreaded();
 
 	Status               connect(void);
+	const char*          statusString(char* buf, int bufLen, int ix);
 	Status               msgAwait(int secs, int usecs, const char* what);
 
 	Status               receive(Message::Header* headerP, void** dataPP, long* dataLenP, Packet* packetP);

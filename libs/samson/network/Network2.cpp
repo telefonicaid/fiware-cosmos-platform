@@ -280,7 +280,6 @@ std::string Network2::getState(std::string selector)
 {
 	std::string  output;
 	char         partString[256];
-	char         conSign;
 	Endpoint2*   ep;
 	int          eps = 0;
 
@@ -292,28 +291,8 @@ std::string Network2::getState(std::string selector)
 		if (ep == NULL)
 			continue;
 
-		if ((ep->stateGet() == Endpoint2::Connected || ep->stateGet() == Endpoint2::Ready) && (ep->rFdGet() >= 0))
-		{
-			++eps;
-			conSign = '+';
-		}
-		else
-			conSign = '-';
-
-		snprintf(partString, sizeof(partString), "%c%c%02d: %-35s %-20s %04d fd: %02d  (in: %03d/%s, out: %03d/%s)\n",
-				 conSign,
-				 (ep->isThreaded() == true)? 's' : '-',
-				 ix,
-				 ep->name(),
-				 ep->stateName(),
-				 ep->portGet(),
-				 ep->rFdGet(),
-				 ep->msgsIn,
-				 au::Format::string(ep->bytesIn, "B").c_str(),
-				 ep->msgsOut,
-				 au::Format::string(ep->bytesOut, "B").c_str());
-
-		output += partString;
+		output += ep->statusString(partString, sizeof(partString), ix);
+		++eps;
 	}
 
 	snprintf(partString, sizeof(partString), "Connected to %d endpoints:\n", eps);

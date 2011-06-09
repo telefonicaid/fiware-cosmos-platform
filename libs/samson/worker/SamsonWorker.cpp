@@ -207,8 +207,7 @@ namespace samson {
 	 */
 	void SamsonWorker::receive( Packet* packet )
 	{
-        
-        LM_T(LmtNodeMessages, ("SamsonWorker received %s" , packet->str().c_str()));
+		LM_T(LmtNodeMessages, ("SamsonWorker received %s from endpoint %d" , packet->str().c_str(), packet->fromId));
         
 		int fromId = packet->fromId;
 		Message::MessageCode msgCode = packet->msgCode;

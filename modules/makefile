@@ -1,5 +1,3 @@
-
-
 all:
 	make -C system
 	make -C txt

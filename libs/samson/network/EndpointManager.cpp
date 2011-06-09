@@ -916,7 +916,7 @@ void EndpointManager::periodic(void)
 			LM_T(LmtThreads, ("NOT killing reader thread for %s", endpoint[ix]->name()));
 
 
-		endpoint[ix]->threaded = false;
+		// endpoint[ix]->threaded = false;
 
 		if (endpoint[ix]->type == Endpoint2::Worker)
 			endpoint[ix]->state = Endpoint2::Disconnected;
@@ -1214,27 +1214,27 @@ int EndpointManager::multiSend(Endpoint2::Type typ, Message::MessageCode code, v
 */
 void EndpointManager::show(const char* why, bool forced)
 {
-	int tLevel = LmtHostList2;
+	int tLevel = LmtEndpointList2;
 
 	if (forced)
-		tLevel = LmtHostList1;
+		tLevel = LmtEndpointList1;
 
 	LM_T(tLevel, (""));
 	LM_T(tLevel, ("-------------------- Endpoint list (%s) ------------------------------", why));
 	LM_T(tLevel, (""));
-	LM_T(tLevel, ("ix  %-12s id  %-20s %-20s Port  rFd", "Type", "Host", "State"));
+	LM_T(tLevel, ("  ix  %-12s id  %-20s %-20s Port  rFd", "Type", "Host", "State"));
 	LM_T(tLevel, ("----------------------------------------------------------------------"));
 
 	for (unsigned int ix = 0; ix < endpoints; ix++)
 	{
 		Endpoint2* ep;
+		char       buf[256];
 
 		ep = endpoint[ix];
 		if (ep == NULL)
 			continue;
 
-		LM_T(tLevel, ("%02d: %-12s %02d  %-20s %-20s %04d  %02d %s", ix, ep->typeName(), ep->idGet(), ep->hostname(), ep->stateName(), ep->port, ep->rFd,
-			  (ep->isThreaded() == true)? "(threaded)" : (ep->state == Endpoint2::Loopback)? "(myself)" : ""));
+		LM_T(tLevel, ("%s", ep->statusString(buf, sizeof(buf), ix)));
 	}
 	LM_T(tLevel, ("----------------------------------------------------------------------"));
 }

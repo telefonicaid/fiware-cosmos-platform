@@ -33,6 +33,11 @@ namespace samson {
             return hash(num_partitions);                                // Default implementation
         };
         
+        virtual int *getDataPath(const std::string &dataPathString) = 0; // Function to select fields
+        virtual std::string getTypeFromPath(const std::string &dataPathString) = 0;
+        virtual std::string getTypeFromPath(const int *dataPathIntP) = 0;
+        virtual DataInstance * getDataInstanceFromPath(const int *dataPathIntP) = 0;
+
 		virtual std::string  str()= 0;									// Function  to get a debug-like string with the content
 		virtual ~DataInstance(){}                                       // Virtual destructor necessary since delete is called from parent class
 	};

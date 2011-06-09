@@ -307,7 +307,12 @@ namespace samson
 			//Functions to translate and access data instances from name string.
 			// External API from string to int*
 			// This piece of code is the same for every data type
-			file << "\tstatic int *getDataPath(const std::string &dataPathString){\n";
+
+			file << "\tint *getDataPath(const std::string &dataPathString){\n";
+			file << "\t\treturn(getDataPathStatic(dataPathString));\n\t}\n";
+
+
+			file << "\tstatic int *getDataPathStatic(const std::string &dataPathString){\n";
 			file << "\t\tconst char *dataPathCharP = dataPathString.c_str();\n";
 			file << "\t\tint nlevels = 1;\n";
 			file << "\t\tint *dataPathIntP;\n\n";
@@ -343,11 +348,43 @@ namespace samson
 			file << "\t\treturn -1;\n";
 			file << "\t}\n\n";
 
+			//Functions to translate and access data instances from name string.
+			// External API from string to int*
+			// This piece of code is the same for every data type
+			file << "\tstd::string getTypeFromPath(const std::string &dataPathString){\n";
+			file << "\t\tconst char *dataPathCharP = dataPathString.c_str();\n";
+			file << "\t\treturn(getTypeFromPathStatic(dataPathCharP));\n\n";
+			file << "\t}\n\n";
+
+			// Internal API from char* to int*
+			file << "\tstatic std::string getTypeFromPathStatic(const char * dataPathCharP){\n";
+			file << "\t\tif (strcmp(dataPathCharP, \"" << name << "\") == 0)\n\t\t{\n";
+			file << "\t\t\treturn (\"" << module << "." << name << "\");\n\t\t}\n\n";
+			file << "\t\tif (strncmp(dataPathCharP, \"" << name << ".\", strlen(\"" << name << ".\")) == 0)\n\t\t{\n";
+			file << "\t\t\treturn (getTypeFromPathStatic(dataPathCharP+strlen(\"" << name << ".\")));\n\t\t}\n";
+			index = 0;
+			for (vector <DataType>::iterator field = items.begin(); field != items.end() ; field++)
+			{
+				if ((*field).name != NAME_FILLEDOPTIONALFIELDS)
+				{
+					file << (*field).getGetTypeFromStr("\t\t", index);
+					index++;
+				}
+			}
+			file << "\t\treturn(" << "\"_ERROR_\"" << ");\n";
+			file << "\t}\n\n";
+
+
+
+
+			file << "\tstd::string getTypeFromPath(const int *dataPathIntP){\n";
+			file << "\t\treturn(getTypeFromPathStatic(dataPathIntP));\n\t}\n";
+
 			// API to get the data type from the int* path
-			file << "\tstatic std::string getType(const int *dataPathIntP){\n";
+			file << "\tstatic std::string getTypeFromPathStatic(const int *dataPathIntP){\n";
 			file << "\t\tswitch(*dataPathIntP)\n\t\t{\n";
 			file << "\t\t\tcase -1:\n";
-			file << "\t\t\t\treturn (\"" << name << "\");\n";
+			file << "\t\t\t\treturn (\"" << module << "." << name << "\");\n";
 			file << "\t\t\t\tbreak;\n";
 			index = 0;
 			for (vector <DataType>::iterator field = items.begin(); field != items.end() ; field++)
@@ -359,13 +396,13 @@ namespace samson
 				}
 			}
 			file << "\t\t\tdefault:\n";
-			file << "\t\t\t\treturn (" << "\"_Unknown_\"" << ");\n";
+			file << "\t\t\t\treturn (" << "\"_ERROR_\"" << ");\n";
 			file << "\t\t\t\tbreak;\n";
 			file << "\t\t};\n";
 			file << "\t}\n\n";
 
 			// API to get an instance from the int* path
-			file << "\tDataInstance * getInstance(const int *dataPathIntP){\n";
+			file << "\tDataInstance * getDataInstanceFromPath(const int *dataPathIntP){\n";
 			file << "\t\tswitch(*dataPathIntP)\n\t\t{\n";
 			file << "\t\t\tcase -1:\n";
 			file << "\t\t\t\treturn(this);\n";

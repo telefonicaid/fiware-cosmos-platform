@@ -643,11 +643,27 @@ namespace samson
 		o << pre_line << "\tif (strncmp(dataPathCharP, \"" << name << ".\", strlen(\"" << name << ".\")) == 0)\n";
 		o << pre_line << "\t{\n";
 		o << pre_line << "\t\t*dataPathIntP = " << index << ";\n";
-		o << pre_line << "\t\t*(dataPathIntP+1) = -1;\n";
-		o << pre_line << "\t\treturn (0);\n";
+		o << pre_line << "\t\treturn (" << module << "::" << type << "::getDataPath(dataPathCharP+strlen(\"" << name << ".\"),dataPathIntP+1));\n";
 		o << pre_line << "\t}\n";
 		o << pre_line << "}\n";
 
+		return o.str();
+	}
+
+	string DataType::getGetTypeFromStr(string pre_line, int index)
+	{
+		ostringstream o;
+
+		o << pre_line << "{ //Scanning "<<name<<", terminal and non-terminal\n";
+		o << pre_line << "\tif (strcmp(dataPathCharP, \"" << name << "\") == 0)\n";
+		o << pre_line << "\t{\n";
+		o << pre_line << "\treturn(\"" << module << "." << type << "\");\n";
+		o << pre_line << "\t}\n";
+		o << pre_line << "\tif (strncmp(dataPathCharP, \"" << name << ".\", strlen(\"" << name << ".\")) == 0)\n";
+		o << pre_line << "\t{\n";
+		o << pre_line << "\treturn(" << module << "::" << type << "::getTypeFromPathStatic(dataPathCharP+strlen(\"" << name << ".\")));\n";
+		o << pre_line << "\t}\n";
+		o << pre_line << "}\n";
 		return o.str();
 	}
 
@@ -658,7 +674,7 @@ namespace samson
 		ostringstream o;
 
 		o << pre_line << "case " << index <<":\n";
-		o << pre_line << "\treturn(" << module << "::" << type << "::getType(dataPathIntP+1));\n";
+		o << pre_line << "\treturn(" << module << "::" << type << "::getTypeFromPathStatic(dataPathIntP+1));\n";
 		o << pre_line << "\tbreak;\n";
 
 		return o.str();
@@ -674,11 +690,11 @@ namespace samson
 					o << pre_line << "\tif (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
 					if( vector )
 					{
-						o << pre_line << "\t\treturn((*" << name << ").getInstance(dataPathIntP+1));\n";
+						o << pre_line << "\t\treturn((*" << name << ").getDataInstanceFromPath(dataPathIntP+1));\n";
 					}
 					else
 					{
-						o << pre_line << "\t\treturn(" << name << ".getInstance(dataPathIntP+1));\n";
+						o << pre_line << "\t\treturn(" << name << ".getDataInstanceFromPath(dataPathIntP+1));\n";
 					}
 					o << pre_line << "\telse\n";
 					o << pre_line << "\t\treturn (NULL);\n";
@@ -687,11 +703,11 @@ namespace samson
 		{
 			if( vector )
 			{
-				o << pre_line << "\treturn((*" << name << ").getInstance(dataPathIntP+1));\n";
+				o << pre_line << "\treturn((*" << name << ").getDataInstanceFromPath(dataPathIntP+1));\n";
 			}
 			else
 			{
-				o << pre_line << "\treturn(" << name << ".getInstance(dataPathIntP+1));\n";
+				o << pre_line << "\treturn(" << name << ".getDataInstanceFromPath(dataPathIntP+1));\n";
 			}
 		}
 		o << pre_line << "\tbreak;\n";

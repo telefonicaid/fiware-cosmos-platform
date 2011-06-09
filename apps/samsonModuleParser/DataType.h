@@ -103,6 +103,7 @@ namespace samson {
 
 		string getGetDataPath(string pre_line, int index);
 		string getGetType(string pre_line, int index);
+		string getGetTypeFromStr(string pre_line, int index);
 		string getGetInstance(string pre_line, int index);
 
 		string getToStringCommandIndividual(string pre_line, string _name);

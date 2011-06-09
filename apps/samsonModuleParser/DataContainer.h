@@ -331,6 +331,9 @@ namespace samson
 
 			// Internal API from char* to int*
 			file << "\tstatic int getDataPath(const char * dataPathCharP, int *dataPathIntP){\n";
+			file << "\t\tif (*dataPathCharP == 0)\n\t\t{\n";
+			file << "\t\t\t*dataPathIntP = -1;\n";
+			file << "\t\t\treturn (0);\n\t\t}\n\n";
 			file << "\t\tif (strcmp(dataPathCharP, \"" << name << "\") == 0)\n\t\t{\n";
 			file << "\t\t\t*dataPathIntP = -1;\n";
 			file << "\t\t\treturn (0);\n\t\t}\n\n";
@@ -358,6 +361,8 @@ namespace samson
 
 			// Internal API from char* to int*
 			file << "\tstatic std::string getTypeFromPathStatic(const char * dataPathCharP){\n";
+			file << "\t\tif (*dataPathCharP == 0)\n\t\t{\n";
+			file << "\t\t\treturn (\"" << module << "." << name << "\");\n\t\t}\n\n";
 			file << "\t\tif (strcmp(dataPathCharP, \"" << name << "\") == 0)\n\t\t{\n";
 			file << "\t\t\treturn (\"" << module << "." << name << "\");\n\t\t}\n\n";
 			file << "\t\tif (strncmp(dataPathCharP, \"" << name << ".\", strlen(\"" << name << ".\")) == 0)\n\t\t{\n";

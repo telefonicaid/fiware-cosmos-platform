@@ -72,7 +72,7 @@ namespace system{
 			return ( value >= o.value);
 		}			
 		
-                static int *getDataPath(const std::string &dataPathString){
+                int *getDataPath(const std::string &dataPathString){
                         const char *dataPathCharP = dataPathString.c_str();
                         int nlevels = 1;
                         int *dataPathIntP;
@@ -107,51 +107,44 @@ namespace system{
                                 return (0);
                         }
 
-                        if (strncmp(dataPathCharP, "UInt8.value", strlen("UInt8.value")) != 0)
-                        {
-                                *dataPathIntP = 0;
-                                *(dataPathIntP+1) = -1;
-                                return (0);
-                        }
                         return -1;
                 }
-                static std::string getType(const int *dataPathIntP){
+
+                std::string getTypeFromPath(const std::string &dataPathString){
+                        const char *dataPathCharP = dataPathString.c_str();
+                        return(getTypeFromPathStatic(dataPathCharP));
+                }
+
+                static std::string getTypeFromPathStatic(const char * dataPathCharP){
+                        if (strcmp(dataPathCharP, "UInt8") == 0)
+                        {
+                                return ("system.UInt8");
+                        }
+                        return("_ERROR_");
+                }
+
+                std::string getTypeFromPath(const int *dataPathIntP){
+                        return(getTypeFromPathStatic(dataPathIntP));
+                }
+
+                static std::string getTypeFromPathStatic(const int *dataPathIntP){
                         switch(*dataPathIntP)
                         {
                                 case -1:
-                                        return ("UInt8");
-                                        break;
-                                case 0:
-                                        if ((*dataPathIntP+1) == -1)
-                                        {
-                                                return ("unsigned char");
-                                        }
-                                        else
-                                        {
-                                                return ("_Unkwown_");
-                                        }
+                                        return ("system.UInt8");
                                         break;
                                 default:
-                                        return ("_Unknown_");
+                                        return ("_ERROR_");
                                         break;
                         };
                 }
 
-                DataInstance * getInstance(const int *dataPathIntP){
+                DataInstance * getDataInstanceFromPath(const int *dataPathIntP){
                         switch(*dataPathIntP)
                         {
                                 case -1:
                                         return (this);
                                         break;
-                                case 0:
-                                        if ((*dataPathIntP+1) == -1)
-                                        {
-                                                return ((DataInstance *)&value);
-                                        }
-                                        else
-                                        {
-                                                return (NULL);
-                                        }
                                 default:
                                         return (NULL);
                                         break;

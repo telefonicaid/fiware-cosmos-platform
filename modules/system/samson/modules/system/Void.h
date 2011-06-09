@@ -54,7 +54,7 @@ namespace system{
 			return 0;
 		}
 
-                static int *getDataPath(const std::string &dataPathString){
+                int *getDataPath(const std::string &dataPathString){
                         const char *dataPathCharP = dataPathString.c_str();
                         int nlevels = 1;
                         int *dataPathIntP;
@@ -91,19 +91,37 @@ namespace system{
 
                         return -1;
                 }
-                static std::string getType(const int *dataPathIntP){
+
+                std::string getTypeFromPath(const std::string &dataPathString){
+                        const char *dataPathCharP = dataPathString.c_str();
+                        return(getTypeFromPathStatic(dataPathCharP));
+                }
+
+                static std::string getTypeFromPathStatic(const char * dataPathCharP){
+                        if (strcmp(dataPathCharP, "Void") == 0)
+                        {
+                                return ("system.Void");
+                        }
+                        return("_ERROR_");
+                }
+
+                std::string getTypeFromPath(const int *dataPathIntP){
+                        return(getTypeFromPathStatic(dataPathIntP));
+                }
+
+                static std::string getTypeFromPathStatic(const int *dataPathIntP){
                         switch(*dataPathIntP)
                         {
                                 case -1:
-                                        return ("Void");
+                                        return ("system.Void");
                                         break;
                                 default:
-                                        return ("_Unknown_");
+                                        return ("_ERROR_");
                                         break;
                         };
                 }
 
-                DataInstance * getInstance(const int *dataPathIntP){
+                DataInstance * getDataInstanceFromPath(const int *dataPathIntP){
                         switch(*dataPathIntP)
                         {
                                 case -1:

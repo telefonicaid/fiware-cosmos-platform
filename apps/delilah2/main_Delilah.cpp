@@ -21,7 +21,7 @@ char			 commandFileName[1024];
 
 
 
-#define LOC "localhost:1234"
+#define LOC "localhost"
 /* ****************************************************************************
 *
 * parse arguments

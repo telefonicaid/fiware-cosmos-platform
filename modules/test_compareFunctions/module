@@ -79,6 +79,13 @@ parserOut print_select
 }
 
 
+map map_select
+{
+	in system.UInt test_compareFunctions.User
+	out system.UInt system.UInt
+}
+
+
 reduce red_userExpense_by_company
 {
 	in system.UInt system.UInt

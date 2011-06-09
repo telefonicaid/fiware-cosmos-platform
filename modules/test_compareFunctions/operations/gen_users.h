@@ -43,14 +43,26 @@ helpLine: Generates user information userId-surname-company-age-expense
 				user.unassignAllOptionals();
 				user.id.value = i;
 				std::ostringstream o;
-				o << i;
+				o << "User_" << i;
 				user.surname.value = o.str();
-				user.companyId.value = i%5;
+				if (i%4)
+				{
+					o.str("");
+					o << "Street_" << i%10;
+					user.address.street.value = o.str();
+					user.address.number.value = i%100;
+					o.str("");
+					o << "City_" << i%10;
+					user.address.city.value = o.str();
+					user.address.ZIP.value = 8000 + i%50;
+					user.address_SetAssigned(true);
+				}
 				if (i%7)
 				{
 					user.age.value = i%100;
 					user.age_SetAssigned(true);
 				}
+				user.companyId.value = i%5;
 				writer->emit( 0, &user.id , &user );
 			}
 		}

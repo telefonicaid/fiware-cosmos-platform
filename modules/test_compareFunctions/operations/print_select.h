@@ -43,16 +43,22 @@ input: system.UInt test_compareFunctions.User
 			OLM_T(LMT_User06,("print_select::init()"));
 			selectedFieldStr = environment->get("selectedFieldStr", "User.surname");
 			OLM_T(LMT_User06,("print_select::init() selectedFieldStr:'%s'\n", selectedFieldStr.c_str()));
-			selectedFieldIntP = User::getDataPath(selectedFieldStr);
-			OLM_T(LMT_User06,("print_select::init() selectedFieldIntP:\n"));
-			int i = 0;
-			while (selectedFieldIntP[i] != -1)
+			selectedFieldIntP = User::getDataPathStatic(selectedFieldStr);
+			if (selectedFieldIntP == NULL)
 			{
-				OLM_T(LMT_User06,("%d, ", selectedFieldIntP[i]));
-				i++;
+				OLM_E(("print_select::init(): Error getting path for selectedFieldStr:'%s'\n", selectedFieldStr.c_str()));
 			}
-			OLM_T(LMT_User06,("%d\n", selectedFieldIntP[i]));
-
+			else
+			{
+				OLM_T(LMT_User06,("print_select::init() selectedFieldIntP:"));
+				int i = 0;
+				while (selectedFieldIntP[i] != -1)
+				{
+					OLM_T(LMT_User06,("%d, ", selectedFieldIntP[i]));
+					i++;
+				}
+				OLM_T(LMT_User06,("%d\n", selectedFieldIntP[i]));
+			}
 		}
 
 		void run(KVSetStruct* inputs , TXTWriter *writer )
@@ -60,18 +66,24 @@ input: system.UInt test_compareFunctions.User
 			User user;
 			DataInstance *dataInstance;
 
+			if (selectedFieldIntP == NULL)
+			{
+				OLM_E(("print_select::run(): Error, no path available for selectedFieldStr:'%s'\n", selectedFieldStr.c_str()));
+				return;
+			}
+
 			for (size_t i = 0; (i < inputs[0].num_kvs); i++)
 			{
 				user.parse(inputs[0].kvs[i]->value);
-				dataInstance = user.getInstance(selectedFieldIntP);
+				dataInstance = user.getDataInstanceFromPath(selectedFieldIntP);
 				if (dataInstance != NULL)
 				{
-					snprintf( line , MAX_STR_LEN, "selectedField:'%s', val:'%s'\n", selectedFieldStr.c_str(), dataInstance->str().c_str());
+					snprintf( line , MAX_STR_LEN, "selectedField:'%s', type:'%s', val:'%s'\n", selectedFieldStr.c_str(), User::getTypeFromPathStatic(selectedFieldIntP).c_str(), dataInstance->str().c_str());
 					writer->emit( line );
 				}
 				else
 				{
-					snprintf( line , MAX_STR_LEN, "selectedField:'%s', val:'%s'\n", selectedFieldStr.c_str(), "empty");
+					snprintf( line , MAX_STR_LEN, "selectedField:'%s', type:'%s', val:'%s'\n", selectedFieldStr.c_str(), User::getTypeFromPathStatic(selectedFieldIntP).c_str(), "empty");
 					writer->emit( line );
 				}
 			}
@@ -80,7 +92,7 @@ input: system.UInt test_compareFunctions.User
 
 		void finish(TXTWriter *writer )
 		{
-			OLM_E(("print_select::finish()"));
+			OLM_T(LMT_User06, ("print_select::finish()"));
 			free(selectedFieldIntP);
 		}
 

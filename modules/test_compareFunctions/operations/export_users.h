@@ -33,6 +33,7 @@ input: system.UInt test_compareFunctions.User
 // Max line to be output
 #define MAX_STR_LEN 2048
     char line[MAX_STR_LEN];
+    char address_line[MAX_STR_LEN];
 
     		void init(TXTWriter *writer)
 		{
@@ -66,7 +67,16 @@ input: system.UInt test_compareFunctions.User
 				{
 					expense = 0;
 				}
-				snprintf( line , MAX_STR_LEN, "user:%lu, surname:'%s', companyId:%lu, age:%d, expense:%lu\n", user.id.value, user.surname.value.c_str(), user.companyId.value, age, expense );
+
+				if (user.address_GetAssigned())
+				{
+					snprintf(address_line, MAX_STR_LEN, "%s, %lu, %lu-%s", user.address.street.value.c_str(), user.address.number.value, user.address.ZIP.value, user.address.city.value.c_str());
+				}
+				else
+				{
+					strcpy(address_line, "________");
+				}
+				snprintf( line , MAX_STR_LEN, "user:%lu, surname:'%s', addr:'%s', companyId:%lu, age:%d, expense:%lu\n", user.id.value, user.surname.value.c_str(), address_line, user.companyId.value, age, expense );
 				writer->emit( line );
 			}
 		}

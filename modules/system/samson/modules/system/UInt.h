@@ -111,6 +111,17 @@ namespace system{
 			}
 
 			static int getDataPath(const char * dataPathCharP, int *dataPathIntP){
+#define DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                std::string filename = "/tmp/debug_UInt.log";
+                std::ofstream fs(filename.c_str(), std::ios::app);
+                fs << "Calling getDataPath with dataPathCharP: '" << dataPathCharP << "'" << std::endl;
+                fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
 				if (*dataPathCharP == 0)
 				{
 					*dataPathIntP = -1;
@@ -174,6 +185,17 @@ namespace system{
 				switch(*dataPathIntP)
 				{
 					case -1:
+#define DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                std::string filename = "/tmp/debug_UInt.log";
+                std::ofstream fs(filename.c_str(), std::ios::app);
+                fs << "In  getTypeFromPathStatic found: '" << "system.UInt" << "'" << std::endl;
+                fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
 						return ("system.UInt");
 						break;
 					default:
@@ -183,6 +205,17 @@ namespace system{
 			}
 
 			DataInstance * getDataInstanceFromPath(const int *dataPathIntP){
+#define DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                std::string filename = "/tmp/debug_UInt.log";
+                std::ofstream fs(filename.c_str(), std::ios::app);
+                fs << "Calling getDataInstanceFromPath with *dataPathIntP:" << *dataPathIntP << std::endl;
+                fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
 				switch(*dataPathIntP)
 				{
 					case -1:

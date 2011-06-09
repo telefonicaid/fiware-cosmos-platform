@@ -7,6 +7,14 @@
 #define _H_SAMSON_system_UInt
 
 
+#define DEBUG_FILES
+#ifdef DEBUG_FILES
+#include <iostream>
+#include <fstream>
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
+
 namespace samson{
 namespace system{
 
@@ -71,6 +79,10 @@ namespace system{
 			}
 
 			int *getDataPath(const std::string &dataPathString){
+				return(getDataPathStatic(dataPathString));
+			}
+
+			static int *getDataPathStatic(const std::string &dataPathString){
 				const char *dataPathCharP = dataPathString.c_str();
 				int nlevels = 1;
 				int *dataPathIntP;
@@ -99,6 +111,12 @@ namespace system{
 			}
 
 			static int getDataPath(const char * dataPathCharP, int *dataPathIntP){
+				if (*dataPathCharP == 0)
+				{
+					*dataPathIntP = -1;
+					return (0);
+				}
+
 				if (strcmp(dataPathCharP, "UInt") == 0)
 				{
 					*dataPathIntP = -1;
@@ -110,10 +128,37 @@ namespace system{
 
                 std::string getTypeFromPath(const std::string &dataPathString){
                         const char *dataPathCharP = dataPathString.c_str();
+#define DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                std::string filename = "/tmp/debug_UInt.log";
+                std::ofstream fs(filename.c_str(), std::ios::app);
+                fs << "Calling getTypeFromPath with dataPathString: '" << dataPathString << "'" << std::endl;
+                fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
                         return(getTypeFromPathStatic(dataPathCharP));
                 }
 
                 static std::string getTypeFromPathStatic(const char * dataPathCharP){
+#define DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                std::string filename = "/tmp/debug_UInt.log";
+                std::ofstream fs(filename.c_str(), std::ios::app);
+                fs << "Calling getTypeFromPathStatic with dataPathCharP: '" << dataPathCharP << "'" << std::endl;
+                fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
+                        if (*dataPathCharP == 0)
+                        {
+                                return ("system.UInt");
+                        }
+
                         if (strcmp(dataPathCharP, "UInt") == 0)
                         {
                                 return ("system.UInt");

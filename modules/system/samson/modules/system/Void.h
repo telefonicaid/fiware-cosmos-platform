@@ -55,6 +55,10 @@ namespace system{
 		}
 
                 int *getDataPath(const std::string &dataPathString){
+                        return(getDataPathStatic(dataPathString));
+                }
+
+                static int *getDataPathStatic(const std::string &dataPathString){
                         const char *dataPathCharP = dataPathString.c_str();
                         int nlevels = 1;
                         int *dataPathIntP;
@@ -83,6 +87,12 @@ namespace system{
                 }
 
                 static int getDataPath(const char * dataPathCharP, int *dataPathIntP){
+                        if (*dataPathCharP == 0)
+                        {
+                                *dataPathIntP = -1;
+                                return (0);
+                        }
+
                         if (strcmp(dataPathCharP, "Void") == 0)
                         {
                                 *dataPathIntP = -1;
@@ -98,6 +108,11 @@ namespace system{
                 }
 
                 static std::string getTypeFromPathStatic(const char * dataPathCharP){
+                        if (*dataPathCharP == 0)
+                        {
+                                return ("system.Void");
+                        }
+
                         if (strcmp(dataPathCharP, "Void") == 0)
                         {
                                 return ("system.Void");

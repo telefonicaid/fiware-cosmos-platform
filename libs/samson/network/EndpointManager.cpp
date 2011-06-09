@@ -991,14 +991,14 @@ void EndpointManager::run(bool oneShot)
 				if (ep == NULL)
 					continue;
 
-				if (ep->isThreaded() == true)
+				if (ep->rFd == -1)
+					continue;
+
+				if ((ep->isThreaded() == true) && (ep->state == Endpoint2::Ready))
 					continue;
 
 				if (((ep->state == Endpoint2::Ready) || (ep->state == Endpoint2::Connected)) && (ep->rFd == -1))
 					LM_X(1, ("Endpoint %s is in state %s but its rFd is -1 ...", ep->name(), ep->stateName()));
-
-				if (ep->rFd == -1)
-					continue;
 
 				eps += 1;
 				max = MAX(max, ep->rFd);
@@ -1048,7 +1048,7 @@ void EndpointManager::run(bool oneShot)
 				if (endpoint[ix]->rFd == -1)
 					continue;
 
-				if (endpoint[ix]->isThreaded() == true)
+				if ((endpoint[ix]->isThreaded() == true) && (endpoint[ix]->state == Endpoint2::Ready))
 					continue;
 				
 				if (FD_ISSET(endpoint[ix]->rFd, &rFds))

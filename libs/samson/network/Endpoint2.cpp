@@ -72,7 +72,7 @@ void* writerThread(void* vP)
 {
 	Endpoint2* ep = (Endpoint2*) vP;
 
-	LM_T(LmtThreads, ("Writer thread 0x%x for endpoint %s is running (REAL wFd: %d))", pthread_self(), ep->name(), ep->wFdGet()));
+	LM_T(LmtThreads, ("Writer thread(%s) 0x%x is running (REAL wFd: %d))    Endpoint at %p", ep->name(), pthread_self(), ep->wFdGet(), ep));
 
 	while (1)
 	{
@@ -81,22 +81,24 @@ void* writerThread(void* vP)
 		ep->jobQueueSem.retain();
 		packetP = ep->jobQueue.extractFront();
 		ep->jobQueueSem.release();
+		LM_T(LmtThreads, ("Writer thread(%s) packetP: %p, jobs remaining: %d, my thread id: 0x%x", ep->name(), packetP, ep->jobQueue.size(), pthread_self()));
 		if (packetP != NULL)
 		{
 			Status s;
 
+			LM_T(LmtThreads, ("Writer thread(%s) Got a job from job queue - forwarding", ep->name()));
 			s = ep->realsend(packetP->msgType, packetP->msgCode, packetP->dataP, packetP->dataLen, packetP);
 			if (s != OK)
 			{
 				LM_E(("realsend(%s): %s", ep->name(), status(s)));
-				LM_T(LmtThreads, ("Leaving writer thread 0x%x (%s) because of send error", ep->writerId, ep->name()));
+				LM_T(LmtThreads, ("Leaving writer thread(%s) 0x%x because of send error", ep->name(), ep->writerId));
 				ep->stateSet(Endpoint2::ScheduledForRemoval);
 				ep->writerId = 0;
 				return NULL;
 			}
 		}
 		else
-			usleep(10000);
+			usleep(50000);
 	}
 
 	return NULL;
@@ -1014,7 +1016,7 @@ Status Endpoint2::msgTreat(void)
 			return OK;
 		}
 
-		LM_T(LmtHello, ("Received Hello from %s", name()));
+		LM_T(LmtHello, ("Received Hello from %s (%d jobs pending)", name(), jobQueue.size()));
 		if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((type == Worker) || (type == Delilah) || (type == Controller)))
 		{
 			int  ps;
@@ -1037,6 +1039,8 @@ Status Endpoint2::msgTreat(void)
 				return PThreadError;
 			}
 			LM_T(LmtThreads, ("Created Reader Thread with id 0x%x", readerId));
+
+			
 		}
 
 		epMgr->show("Received Hello", true);

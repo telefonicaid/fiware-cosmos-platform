@@ -1,13 +1,20 @@
 #ifndef SAMSON_MODULES_MANAGER_H
 #define SAMSON_MODULES_MANAGER_H
 
-#include "au/Lock.h"                /* Lock                            */
 #include <map>					/* std::map */
 #include <string>				/* std::string */
+
+
+#include "au/Lock.h"                /* Lock                            */
+#include "au/Error.h"                /* Lock                            */
+#include "au/CommandLine.h"			/* AUCommandLine                            */
+
 #include "samson/common/samson.pb.h"			// samson::network::...
-#include "samson/module/KVFormat.h"	// samson::KVFormat
-#include "samson/module/Module.h"		// samson::Module
 #include "samson/common/coding.h"				// ss:KVInfo
+
+#include "samson/module/KVFormat.h"     // samson::KVFormat
+#include "samson/module/Module.h"		// samson::Module
+#include "samson/module/Factory.h"      // au::Factory
 
 namespace samson {
 
@@ -27,7 +34,7 @@ namespace samson {
 		
 		static void init();
 		static ModulesManager* shared();
-		
+		        
 	private:
 		
 		// Add Modules funcitons

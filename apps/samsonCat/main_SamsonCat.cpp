@@ -147,8 +147,8 @@ int main(int argc, const char *argv[])
 		exit(0);
 	
 	
-	samson::DataInstance *key = keyData->getInstance();
-	samson::DataInstance *value = valueData->getInstance();
+	samson::DataInstance *key = (samson::DataInstance *)keyData->getInstance();
+	samson::DataInstance *value = (samson::DataInstance *)valueData->getInstance();
 	
 	for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ;i++)
 	{

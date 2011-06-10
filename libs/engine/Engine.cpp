@@ -325,12 +325,12 @@ namespace engine
 				ts.tv_sec = tv.tv_sec + _sleeping_seconds;
 				ts.tv_nsec = 0;
 				
-				//LM_M(("Sleeping %d seconds",  seconds ));
+				//LM_M(("Sleeping %d seconds",  _sleeping_seconds ));
 				
 				pthread_cond_timedwait(&elements_cond, &elements_mutex , &ts );
 				pthread_mutex_unlock(&elements_mutex);
 				
-				//LM_M(("Waking up after sleeping %d seconds",  seconds ));
+				//LM_M(("Waking up after (theoretically ) sleeping %d seconds",  _sleeping_seconds ));
 				
 			}
 		}

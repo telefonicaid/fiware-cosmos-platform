@@ -35,11 +35,10 @@ namespace samson {
 
 		// Look at the operation to 
 		Operation *op = ModulesManager::shared()->getOperation( worker_task.operation() );
-		
+        
 		if( !op )
 		{
-			LM_TODO(("Notify the controller than this task has an error"));
-			LM_E(("Error in TASK"));
+            LM_M(("Operation %s not found at worker. Ignoring task" , worker_task.operation().c_str() ));
 			return;
 		}
 		else
@@ -50,11 +49,16 @@ namespace samson {
 			
 			// Create the task
 			WorkerTask *t = task.findInMap( task_id );
+
 			if( !t )
 			{
 				t = new WorkerTask( this );
 				task.insertInMap( task_id , t );
 			}
+            else
+            {
+                LM_M(("Task %lu: The task has been previously defined by a quick-worker "));
+            }
 
 			// Setup the operation with all the information comming from controller
 			t->setupAndRun( op->getType() , worker_task );
@@ -160,12 +164,14 @@ namespace samson {
 	void WorkerTaskManager::finishWorker( int worker_from , size_t task_id )
 	{
 		WorkerTask *t = task.findInMap( task_id );
-		if( t )
+		if( !t )
         {
-			t->finishWorker( worker_from );
+            LM_W(("Finish worker message received for a non-existing task %lu. This is possibly a quick-worker", task_id ));
+            t = new WorkerTask( this );
         }
-        else
-		   LM_E(("Finish worker message received for a non-existing task %lu", task_id ));
+        
+        t->finishWorker( worker_from );
+        
 
 	}
 

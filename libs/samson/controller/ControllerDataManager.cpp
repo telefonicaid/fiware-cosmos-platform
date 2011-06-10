@@ -5,7 +5,11 @@
 #include "au/CommandLine.h"					// au::CommandLine
 #include "samson/module/KVFormat.h"				// samson::KVFormat
 #include "Queue.h"				// samson::Queue
+
 #include "au/map.h"							// au::insertInMap
+#include "au/Format.h"                      // au::Format
+
+
 #include "samson/data/DataManager.h"					// samson::DataManagerCommandResponse
 #include "samson/controller/SamsonController.h"				// samson::SamsonController
 #include "samson/common/coding.h"						// samson::KVInfo
@@ -112,9 +116,9 @@ namespace samson {
 		DataManagerCommandResponse response;
 		
 		au::CommandLine  commandLine;
-		commandLine.set_flag_boolean("f");		// Force boolean flag to avoid error when creating queue
-		commandLine.set_flag_boolean("txt");	// when adding txt data sets
-		commandLine.set_flag_string("tag","");	// when removing automatic operation
+		commandLine.set_flag_boolean("f");          // Force boolean flag to avoid error when creating queue
+		commandLine.set_flag_boolean("txt");        // when adding txt data sets
+		commandLine.set_flag_string("tag","");      // when removing automatic operation
 		
 		commandLine.parse( command );
 		
@@ -907,6 +911,144 @@ namespace samson {
 		
 		lock.unlock();
 	}
+    
+    
+#pragma mark
+    
+    
+    std::string getRoot( std::string& path )
+    {
+        size_t pos = path.find( "." , 0 );
+        
+        if( pos == std::string::npos )
+            return path;
+        
+        return path.substr( 0 , pos );
+    }
+
+    std::string getRest( std::string& path )
+    {
+        size_t pos = path.find( "." , 0 );
+        
+        if( pos == std::string::npos )
+            return "";
+        
+        return path.substr( pos+1 , path.length() );
+    }
+    
+    // Take a select stament and complete with -key_format XXX -value_format XXX acording to the input queue 
+    
+    void ControllerDataManager::completeSelect( std::string& command , au::Error& error )
+    {
+        // this retains the locker
+        au::Locker locker( &lock );
+        
+        // Fill inputs and outputs of a select operation
+        // Format of the command select path_to_key path_to_value from to
+        au::CommandLine cmdLine;
+        cmdLine.set_flag_boolean("create");
+        cmdLine.parse( command );
+        
+        if ( cmdLine.get_num_arguments() < 4 )
+        {
+            error.set("Not enougth parameters for the select sentence. Usage: select fromQueue toQueue key_path value_path");
+            return;
+        }
+
+        std::string path_key    = cmdLine.get_argument(3);
+        std::string path_value  = cmdLine.get_argument(4);
+        
+        std::string fromQueue   = cmdLine.get_argument(1);
+        std::string toQueue   = cmdLine.get_argument(1);
+
+        Queue *q = queues.findInMap( fromQueue );
+        
+        if( !q )
+        {
+            error.set( au::Format::string("Select: Unkwown queue %s" , fromQueue.c_str() ) );
+            return;
+        }
+        
+
+        // Take the format of the input queue
+        KVFormat format = q->format();
+
+        command.append(au::Format::string(" -input_key_format %s " , format.keyFormat.c_str() ) );
+        command.append(au::Format::string(" -input_value_format %s " , format.valueFormat.c_str() ) );
+        
+
+        Data *key_data = ModulesManager::shared()->getData( format.keyFormat );
+        Data *value_data = ModulesManager::shared()->getData( format.keyFormat );
+       
+        if( !key_data || ! value_data )
+        {
+            error.set( "Internal error related with current key-value of existing queue" );
+            return;
+        }
+            
+        DataInstance *key_data_instance = (DataInstance *)key_data->getInstance();
+        DataInstance *value_data_instance = (DataInstance *)value_data->getInstance();
+
+        
+        if( !key_data_instance || ! value_data_instance )
+        {
+            error.set( "Internal error related with current key-value of existing queue" );
+            return;
+        }
+
+        LM_M(("Data instance for key: %s" , key_data_instance->getTypeFromPath("").c_str() ));
+        LM_M(("Data instance for value: %s" , value_data_instance->getTypeFromPath("").c_str() ));
+        
+        std::string output_key_format; 
+        std::string output_value_format; 
+
+
+        // Get the data for the output key
+        if( getRoot( path_key ) == "key" )
+            output_key_format = key_data_instance->getTypeFromPath( getRest( path_key ) );
+        else if( getRoot( path_key ) == "value" )
+            output_key_format = value_data_instance->getTypeFromPath( getRest( path_key ) );
+        else
+        {
+            delete key_data_instance;
+            delete value_data_instance;
+            error.set( au::Format::string( "Path %s not valid. Should start with 'value' or 'key' " , path_key.c_str() ) );
+            return;
+        }
+        
+        // Get the data type for the output value
+        if( getRoot( path_value ) == "key" )
+            output_value_format = key_data_instance->getTypeFromPath( getRest( path_value ) );
+        else if( getRoot( path_value ) == "value" )
+            output_value_format = value_data_instance->getTypeFromPath( getRest( path_value ) );
+        else
+        {
+            delete key_data_instance;
+            delete value_data_instance;
+            error.set( au::Format::string( "Path %s not valid. Should start with 'value' or 'key' " , path_key.c_str() ) );
+            return;
+        }
+        
+        
+        // This is the input format
+        LM_M(("Output formats: %s %s" , output_key_format.c_str() , output_value_format.c_str() ));
+        
+        command.append(au::Format::string(" -output_key_format %s " , output_key_format.c_str() ) );
+        command.append(au::Format::string(" -output_value_format %s " , output_value_format.c_str() ) );
+        
+        command.append( " -select_complete "  );
+        
+        delete key_data_instance;
+        delete value_data_instance;
+
+        
+        //selectOperation->error.set("No continue at the moment...");
+        
+        
+    }
+
+    
+#pragma mark
 	
 	void ControllerDataManager::retreveInfoForTask( size_t job_id , ControllerTaskInfo *info , bool clear_inputs )		
 	{

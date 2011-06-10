@@ -15,13 +15,14 @@
 #include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                           */
 #include "samson/common/samsonDirectories.h"		/* SAMSON_MODULES_DIRECTORY                 */
 #include <samson/module/Module.h>
-#include "au/CommandLine.h"			/* AUCommandLine                            */
 #include "samson/module/ModulesManager.h"			/* Own interface                            */
 #include <samson/module/Data.h>			/* samson::system::UInt ... */
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"			// Lmt...
 #include "samson/common/MessagesOperations.h"		// evalHelpFilter(.)
 #include "samson/common/SamsonSetup.h"			// samson::SamsonSetup
+
+#include "select.h"
 
 namespace samson
 {
@@ -62,7 +63,7 @@ namespace samson
 	{
         LM_T(LmtModuleManager,("Destroying ModulesManager"));
 	}
-	
+    
 	void free_ModulesManager(void)
 	{
 		if( modulesManager )
@@ -136,6 +137,9 @@ namespace samson
 		// Add modules again
 		addModules();
 		
+        // Add the select operation
+        add( new SelectOperation() );
+        
 		/*
 		 Spetial operation to be moved to a proper file
 		 */

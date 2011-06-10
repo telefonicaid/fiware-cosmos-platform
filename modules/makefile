@@ -13,6 +13,7 @@ all:
 #	make -C sort
 #	make -C terasort
 #	make -C time_test
+	make -C test_compareFunctions
 
 reset:
 	make reset -C system 
@@ -29,6 +30,7 @@ reset:
 	make reset -C sort
 	make reset -C terasort
 	make reset -C time_test
+	make reset -C test_compareFunctions
 
 eclipse:
 	make eclipse -C system

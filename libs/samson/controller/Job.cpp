@@ -120,6 +120,51 @@ namespace samson {
 	bool Job::_processCommand( std::string command )
 	{
 		
+
+        // If the command is a select, change it!!!
+        
+        // ------------------------------------------------------------------------------------------------
+        au::CommandLine selectCommandLine;
+        selectCommandLine.set_flag_boolean("select_complete");
+        selectCommandLine.set_flag_boolean("create");
+        selectCommandLine.parse( command );
+        if( ( selectCommandLine.get_argument(0) == "select" ) && !selectCommandLine.get_flag_bool("select_complete") )
+        {
+            au::Error select_error;
+            jobManager->controller->data.completeSelect( command , select_error);
+            
+            if( select_error.isActivated() )
+            {
+                setError("Select",  select_error.getMessage() );
+                return false;
+            }
+            LM_M(("Complete select command: %s", command.c_str()));
+            
+            if( selectCommandLine.get_flag_bool("create") )
+            {
+                command.append(" -ncreate ");
+
+                au::CommandLine cmdLine;
+                cmdLine.set_flag_string("output_key_format", "no-format");
+                cmdLine.set_flag_string("output_value_format", "no-format");
+                cmdLine.parse(command);
+                
+                std::string add_command = au::Format::string("add %s %s %s", 
+                            selectCommandLine.get_argument(2).c_str() ,  
+                            cmdLine.get_flag_string("output_key_format").c_str() , 
+                            cmdLine.get_flag_string("output_value_format").c_str()
+                                    );
+
+                LM_M(("Command to add output queue: %s" , add_command.c_str()));
+                DataManagerCommandResponse response = jobManager->controller->data.runOperation( id,  add_command  );
+
+                
+            }
+        }
+        // ------------------------------------------------------------------------------------------------
+
+        
+        
 		// Log into data a comment to show this
 		jobManager->controller->data.addComment(id, std::string("PROCESS: ") + command );
 		
@@ -169,11 +214,10 @@ namespace samson {
 				return true;
 				
 			}
-			
-			
+
 			// Get the operation to run
 			Operation *operation = ModulesManager::shared()->getOperation( c );
-			
+
 			if( operation )
 			{
 				
@@ -243,10 +287,9 @@ namespace samson {
 					return true;
 				}
 				
-				ControllerTaskInfo *task_info = new ControllerTaskInfo( this, operation , &commandLine );
+				ControllerTaskInfo *task_info = new ControllerTaskInfo( this, operation , command , &commandLine );
 				
 				jobManager->controller->data.retreveInfoForTask( id , task_info , commandLine.get_flag_bool("clear_inputs" ) );
-																
 																
 				if( task_info->error )
 				{

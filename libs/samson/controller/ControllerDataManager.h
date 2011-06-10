@@ -2,12 +2,14 @@
 #define _H_CONTROLLER_DATA_MANAGER
 
 #include "au/Lock.h"				// au::Lock
+#include "au/Format.h"				// au::Format
+#include "au/map.h"				// au::map
+#include "au/Error.h"
+
 #include <sstream>				// std::ostringstream
 #include "samson/module/KVFormat.h"	// samson:: KVFormat
-#include "au/Format.h"				// au::Format
 #include <map>					// std::map
 #include "samson/data/DataManager.h"		// samson::DataManager
-#include "au/map.h"				// au::map
 #include "samson/common/samson.pb.h"			// samson::network::...
 #include "MonitorParameter.h"	// samson::MonitorBlock
 #include "samson/common/coding.h"				// KVInfo
@@ -20,6 +22,7 @@ namespace samson {
 	class DataManagerCommandResponse;
 	class SamsonController;
 	class ControllerTaskInfo;
+    class SelectOperation;
 	
 	class ActiveTask
 	{
@@ -73,6 +76,8 @@ namespace samson {
 		
 		void retreveInfoForTask( size_t job_id , ControllerTaskInfo *info , bool clear_inputs );		
 		
+        void completeSelect( std::string& command , au::Error& error );
+        
 		static std::string getAddFileCommand(int worker , std::string fileName , size_t size , size_t kvs , std::string queue )
 		{
 			std::ostringstream command;

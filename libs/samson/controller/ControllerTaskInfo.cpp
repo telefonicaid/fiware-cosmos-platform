@@ -7,9 +7,10 @@
 namespace samson {
 
 	
-	ControllerTaskInfo::ControllerTaskInfo( Job *_job , Operation *_operation  , au::CommandLine *cmdLine )
+	ControllerTaskInfo::ControllerTaskInfo( Job *_job , Operation *_operation  , std::string _command , au::CommandLine *cmdLine )
 	{
 		job = _job;
+        command  = _command;
 		operation = _operation;
 		error = false;
 		

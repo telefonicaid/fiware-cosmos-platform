@@ -70,7 +70,6 @@ namespace samson {
 	};
 	
 	typedef void* (*CreationFunction)();
-	
 
 	class Operation
 	{
@@ -105,13 +104,13 @@ namespace samson {
 
 		// Code in lines (scripts)
 		std::vector<std::string> code;			//!< Code for scripts
-		
 
 		// Auxiliar stuff
 		std::string _helpMessage;				//!< Help message shown on screen
 		std::string _helpLine;					//!< Help in a line
-		bool top;								//!< Flag to indicate that this is a top operation and should be listed in the help
-		bool dynamic_input_formats;				//!< Flag to indicate that the format of the inputs will be fixed by real input data-sets
+        
+		bool top;								//!< MACRO legacy parameter
+		bool dynamic_input_formats;				//!< MACRO legacy parameter
 		
 
 		/**
@@ -184,10 +183,10 @@ namespace samson {
 		{
 			return _name;
 		}
-		
-		void * getInstance()
+		       
+		void * getInstance(  )
 		{
-			return _creationFunction();
+			return _creationFunction( );
 		}
 		
 		
@@ -304,10 +303,6 @@ namespace samson {
 		{
 			return _inputCompareByKeyFunction;
 		}
-		
-		
-		
-		
 		
 	};
 	

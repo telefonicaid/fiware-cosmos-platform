@@ -22,10 +22,12 @@ SET (HEADERS_INSTALL
 
 SET (HEADERS
 	ModulesManager.h
+	select.h
 )
 
 SET (SOURCES
     ModulesManager.cpp
+    select.cpp
 )
 
 # Inclue directories

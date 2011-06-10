@@ -57,6 +57,9 @@ namespace samson {
         FullKVInfo running_info;                // Total amount that started to run at some point ( accumulated )
         FullKVInfo processed_info;              // Total amount that has been processed
         
+        // Particular environment for this task ) ( Currently only used to inform workers about the original command )
+        Environment environment;
+        
 	public:
 		
         enum ControllerTaskState

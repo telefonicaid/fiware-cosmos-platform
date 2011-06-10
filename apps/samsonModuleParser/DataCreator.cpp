@@ -312,7 +312,7 @@ namespace samson {
 		for ( vector <DataContainer>::iterator iter = datas.begin() ; iter < datas.end() ; iter++)
 		{
 			output << "\t\tadd( new Data(\""<< iter->module << "." << iter->name <<"\" ,";
-			output << "getDataIntace<"<< iter->mainClassName()<<">, ";
+			output << "au::factory<"<< iter->mainClassName()<<">, ";
 			output << iter->mainClassName() << "::size )";
 			output << ");\n";
 		}

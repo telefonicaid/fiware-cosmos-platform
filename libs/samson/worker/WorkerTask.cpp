@@ -252,6 +252,9 @@ namespace samson
 		 completed                      // Output content is saved on disk ( task can be removed from task manager )
 		 */
 		
+        if( status == pending_definition) 
+            return; // Nothing to do until the task is defined
+        
 		if ( status == running )
 		{
 			// If no more tasks, then set to finish and send a message to the rest of workers

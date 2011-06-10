@@ -41,6 +41,9 @@ namespace samson {
                 network::FullQueue * q = info->input_queues[i]; 
                 total_info.append( (size_t)q->queue().info().size() , (size_t)q->queue().info().kvs() );
             }
+            
+            environment.set("command" , _info->command );
+            
         }
 		
 	}
@@ -190,9 +193,8 @@ namespace samson {
         }
         
         
-        // Set environment variables
+        // Set environment variables of the job
         Environment *env = &info->job->environment;
-        
         network::Environment *e = t->mutable_environment();	
         std::map<std::string,std::string>::iterator iter;
         for ( iter = env->environment.begin() ; iter != env->environment.end() ; iter++)
@@ -202,6 +204,16 @@ namespace samson {
             ev->set_name( iter->first );
             ev->set_value( iter->second );
         }
+
+        // Set local environments of this task
+        for ( iter = environment.environment.begin() ; iter != environment.environment.end() ; iter++)
+        {
+            network::EnvironmentVariable *ev = e->add_variable();			
+            
+            ev->set_name( iter->first );
+            ev->set_value( iter->second );
+        }
+
         
     }
     

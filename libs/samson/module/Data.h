@@ -15,14 +15,14 @@
 namespace samson {
 	
 	// Static functions necessary for a Data
-	typedef DataInstance* (*DataCreationFunction)();
+	typedef void* (*DataCreationFunction)();
 
 	// Function used to get the size of data from the stream of bytes
 	typedef int(* DataSizeFunction)(char *data);
 	
 	// Templatd function to create an instance of DataInstance
 	template <class T>
-	DataInstance* getDataIntace()
+	void* getDataIntace()
 	{
 		return new T();
 	}
@@ -62,7 +62,7 @@ namespace samson {
 			return _name;
 		}
 		
-		DataInstance * getInstance()
+		void * getInstance()
 		{
 			return _creationFunction();
 		}

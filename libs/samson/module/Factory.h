@@ -73,7 +73,7 @@ namespace au
 			if( iter != creationFunctions.end() )
 			{
 				factoryFunction function = iter->second;
-				return function();
+				return function( );
 			}
 			else
 				return NULL;
@@ -136,7 +136,7 @@ namespace au
 			
 		}
 		
-		void* create( std::string type , std::string name)
+		void* create( std::string type , std::string name )
 		{
 			//Get the factory
 			std::map< std::string , Factory >::iterator iter = factories.find( type );
@@ -144,7 +144,7 @@ namespace au
 			if( iter == factories.end() )
 				return NULL;
 			
-			return iter->second.create(name);
+			return iter->second.create(name );
 		}
 		
 		

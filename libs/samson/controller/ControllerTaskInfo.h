@@ -16,10 +16,11 @@ namespace samson {
 		
 	public:
 		
-		ControllerTaskInfo( Job *job , Operation *operation  , au::CommandLine *cmdLine );
-
+		ControllerTaskInfo( Job *job , Operation *operation  , std::string command, au::CommandLine *cmdLine );
 		~ControllerTaskInfo();
-		
+
+        std::string command;
+        
 		Job *job;	// Pointer to a job ( used to retrieve environment variables )
 		
 		void setError( std::string _error_message);

@@ -437,12 +437,25 @@ namespace samson {
 		{
 			Data *keyData	= ModulesManager::shared()->getData( inputFormats[i].keyFormat );
 			Data *valueData	= ModulesManager::shared()->getData( inputFormats[i].valueFormat );
-			
+
+			if(  !keyData && !valueData )
+            {
+                au::CommandLine cmdLine;
+                cmdLine.set_flag_string("input_key_format", "no_format");
+                cmdLine.set_flag_string("input_value_format", "no_format");
+                cmdLine.parse( environment.get("command","no_command") );
+
+                keyData	= ModulesManager::shared()->getData( cmdLine.get_flag_string("input_key_format") );
+                valueData	= ModulesManager::shared()->getData( cmdLine.get_flag_string("input_value_format") );
+            }
+                
+                        
+            
 			if( !keyData )
-				LM_X(1,("Internal error:"));
+				LM_X(1,("Internal error: Not valid data type '%s'" , inputFormats[i].keyFormat.c_str() ));
 
 			if( !valueData )
-				LM_X(1,("Internal error:"));
+				LM_X(1,("Internal error: Not valid data type '%s'" , inputFormats[i].valueFormat.c_str() ));
 
 			
 			inputs.keySize = keyData->getSizeFunction();		// Common to all inputs
@@ -486,7 +499,8 @@ namespace samson {
 			inputStructs[0].kvs = &inputs._kv[0];
 			inputStructs[0].num_kvs = inputs.num_kvs;
 			
-			map->run(inputStructs, writer);
+            if ( inputStructs[0].num_kvs > 0 )
+                map->run(inputStructs, writer);
 			
 			
 		}

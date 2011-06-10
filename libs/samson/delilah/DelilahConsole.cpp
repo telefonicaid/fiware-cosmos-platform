@@ -28,6 +28,7 @@ namespace samson
 	static void consoleFix(void)
 	{
 		printf("\n");
+		write_history(NULL);
 		rl_deprep_terminal();
 	}
 

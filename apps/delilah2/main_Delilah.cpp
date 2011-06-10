@@ -102,13 +102,13 @@ int main(int argC, const char *argV[])
 	samson::SamsonSetup::shared()->memory			= (size_t) memory_gb * (size_t) (1024*1024*1024);
 	samson::SamsonSetup::shared()->load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
 
+	std::cout << "Waiting for network connection ...";
+
 	engine::Engine::init();
 	// Goyo. Groping in the dark (blind sticks for an easier translation)
 	engine::MemoryManager::init(  samson::SamsonSetup::shared()->memory );
 	// Goyo. End of groping in the dark
 
-	
-	std::cout << "Waiting for network connection ...";
 	
 	// Initialize the network element for delilah
 	samson::EndpointManager* epMgr     = new samson::EndpointManager(samson::Endpoint2::Delilah, controller);
@@ -121,10 +121,10 @@ int main(int argC, const char *argV[])
 	//
 	// What until the network is ready
 	//
-	std::cout << "Awaiting network ready";
+	std::cout << "\nAwaiting network ready ...";
 	while (!networkP->ready())
-		usleep(100000);
-	std::cout << "OK\n";
+		usleep(10000);
+	std::cout << "\nNetwork OK\n";
 
 	//
 	// Ask the Controller for the platform process list

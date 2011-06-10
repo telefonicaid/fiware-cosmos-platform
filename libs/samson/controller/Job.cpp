@@ -160,6 +160,8 @@ namespace samson {
 
                 
             }
+            
+            
         }
         // ------------------------------------------------------------------------------------------------
 
@@ -288,7 +290,6 @@ namespace samson {
 				}
 				
 				ControllerTaskInfo *task_info = new ControllerTaskInfo( this, operation , command , &commandLine );
-				
 				jobManager->controller->data.retreveInfoForTask( id , task_info , commandLine.get_flag_bool("clear_inputs" ) );
 																
 				if( task_info->error )

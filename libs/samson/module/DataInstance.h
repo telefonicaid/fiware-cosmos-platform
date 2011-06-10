@@ -41,6 +41,30 @@ namespace samson {
 		virtual std::string  str()= 0;									// Function  to get a debug-like string with the content
 		virtual ~DataInstance(){}                                       // Virtual destructor necessary since delete is called from parent class
 	};
+    
+    class KVFormatDataInstances
+    {
+        
+    public:
+        
+        DataInstance *key;
+        DataInstance *value;
+        
+        KVFormatDataInstances( DataInstance *_key , DataInstance *_value )
+        {
+            key = _key;
+            value = _value;
+        }
+        
+        void destroy()
+        {
+            if( key ) 
+                delete key;
+            if( value ) 
+                delete value;
+        }
+        
+    };
 	
 } // ss namespace
 

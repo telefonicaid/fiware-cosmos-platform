@@ -10,6 +10,8 @@
 
 #include <map>							// std::map
 
+#include <samson/module/DataInstance.h>		// samson::Environment
+
 #include <samson/module/Environment.h>		// samson::Environment
 #include <samson/module/Tracer.h>              // samson::Tracer
 #include <samson/module/OperationController.h>	// samson::OperationController
@@ -20,6 +22,7 @@ namespace samson {
 	// Function used to "sort" when data type is used as key ( only in reduce operations )
 	typedef int(* OperationInputCompareFunction)(KV *kv1 , KV*kv2);		
 	
+    
 	/**
 	 
 	 \class samson::Operation
@@ -35,16 +38,24 @@ namespace samson {
 		
 	public:
 		
-		Environment *environment;			// Environment variables
-		Tracer *tracer;					// To send traces for debugging
+		Environment *environment;                   // Environment variables
+		Tracer *tracer;                             // To send traces for debugging
 		OperationController *operationController;	// Element to interact for operation stuff ( report progress at the moment )
 		
+        // Instances of the data types used for input and output
+        std::vector< KVFormatDataInstances > inputData;
+        std::vector< KVFormatDataInstances > outputData;
+        
 		OperationInstance()
 		{
 		}
 
 		virtual ~OperationInstance()
 		{
+            for ( size_t i = 0 ; i  < inputData.size() ; i++ )
+                inputData[i].destroy();
+            for ( size_t i = 0 ; i  < outputData.size() ; i++ )
+                outputData[i].destroy();
 		}
 
 		/** 

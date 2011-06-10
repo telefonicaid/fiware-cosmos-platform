@@ -397,9 +397,38 @@ namespace samson {
 		
 		// Get an instance of the operation and setup correctly
 		Map *map = (Map*) getOperationInstance();
+
 		
+        //------------------------------------------------------------------------------------------------
+        // If specified on command line, input and output dataInstances are created for the map operation
+        //------------------------------------------------------------------------------------------------
+        
 		std::vector<KVFormat> inputFormats =  operation->getInputFormats();
-		
+		std::vector<KVFormat> outputFormats =  operation->getOutputFormats();
+
+
+		// Parse command to see if input and output formats are available...
+        au::CommandLine cmdLine;
+        cmdLine.set_flag_string("input_key_format", "no_value");
+        cmdLine.set_flag_string("input_value_format", "no_value");
+        cmdLine.set_flag_string("output_key_format", "no_value");
+        cmdLine.set_flag_string("output_value_format", "no_value");
+        cmdLine.parse( environment.get( "command" ,  "no-command" ) );
+        
+        Data *input_key_data    = ModulesManager::shared()->getData( cmdLine.get_flag_string("input_key_format")  );
+        Data *input_value_data  = ModulesManager::shared()->getData( cmdLine.get_flag_string("input_value_format")  );
+        Data *output_key_data   = ModulesManager::shared()->getData( cmdLine.get_flag_string("output_key_format")  );
+        Data *output_value_data = ModulesManager::shared()->getData( cmdLine.get_flag_string("output_value_format")  );
+        
+        if( input_key_data && input_value_data )
+            map->inputData.push_back( KVFormatDataInstances( (DataInstance*) input_key_data->getInstance()  , (DataInstance*) input_value_data->getInstance() ) );
+            
+        if( output_key_data && output_value_data )
+            map->outputData.push_back( KVFormatDataInstances( (DataInstance*) output_key_data->getInstance()  , (DataInstance*) output_value_data->getInstance() ) );
+
+        //------------------------------------------------------------------------------------------------
+        
+        
 		int num_inputs		= operationSubTask->task->workerTask.input_queue_size();
 		int num_input_files = 0;
 		for (int i = 0 ; i < num_inputs ; i++)

@@ -433,12 +433,12 @@ Status Endpoint2::okToSend(void)
 	fd_set          wFds;
 	struct timeval  timeVal;
 	int             tryh;
-	int             tries = 30;
+	int             tries = 300;
 
 	for (tryh = 0; tryh < tries; tryh++)
 	{
 		timeVal.tv_sec  = 0;
-		timeVal.tv_usec = 1000000;
+		timeVal.tv_usec = 100000;
 
 		FD_ZERO(&wFds);
 		FD_SET(wFd, &wFds);

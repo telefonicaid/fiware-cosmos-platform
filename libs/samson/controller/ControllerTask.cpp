@@ -42,7 +42,9 @@ namespace samson {
                 total_info.append( (size_t)q->queue().info().size() , (size_t)q->queue().info().kvs() );
             }
             
-            environment.set("command" , _info->command );
+            // Copy environemtn variables from _info
+            environment.copyFrom( &_info->environment );
+            //environment.set("command" , _info->command );
             
         }
 		

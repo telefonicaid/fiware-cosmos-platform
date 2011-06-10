@@ -915,27 +915,6 @@ namespace samson {
     
 #pragma mark
     
-    
-    std::string getRoot( std::string& path )
-    {
-        size_t pos = path.find( "." , 0 );
-        
-        if( pos == std::string::npos )
-            return path;
-        
-        return path.substr( 0 , pos );
-    }
-
-    std::string getRest( std::string& path )
-    {
-        size_t pos = path.find( "." , 0 );
-        
-        if( pos == std::string::npos )
-            return "";
-        
-        return path.substr( pos+1 , path.length() );
-    }
-    
     // Take a select stament and complete with -key_format XXX -value_format XXX acording to the input queue 
     
     void ControllerDataManager::completeSelect( std::string& command , au::Error& error )
@@ -1004,10 +983,10 @@ namespace samson {
 
 
         // Get the data for the output key
-        if( getRoot( path_key ) == "key" )
-            output_key_format = key_data_instance->getTypeFromPath( getRest( path_key ) );
-        else if( getRoot( path_key ) == "value" )
-            output_key_format = value_data_instance->getTypeFromPath( getRest( path_key ) );
+        if( au::Format::getRoot( path_key ) == "key" )
+            output_key_format = key_data_instance->getTypeFromPath( au::Format::getRest( path_key ) );
+        else if( au::Format::getRoot( path_key ) == "value" )
+            output_key_format = value_data_instance->getTypeFromPath( au::Format::getRest( path_key ) );
         else
         {
             delete key_data_instance;
@@ -1017,10 +996,10 @@ namespace samson {
         }
         
         // Get the data type for the output value
-        if( getRoot( path_value ) == "key" )
-            output_value_format = key_data_instance->getTypeFromPath( getRest( path_value ) );
-        else if( getRoot( path_value ) == "value" )
-            output_value_format = value_data_instance->getTypeFromPath( getRest( path_value ) );
+        if( au::Format::getRoot( path_value ) == "key" )
+            output_value_format = key_data_instance->getTypeFromPath( au::Format::getRest( path_value ) );
+        else if( au::Format::getRoot( path_value ) == "value" )
+            output_value_format = value_data_instance->getTypeFromPath( au::Format::getRest( path_value ) );
         else
         {
             delete key_data_instance;

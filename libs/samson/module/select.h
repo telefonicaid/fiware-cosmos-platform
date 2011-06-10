@@ -15,10 +15,25 @@ namespace samson
     
     class select : public samson::Map
     {
+        DataInstance* key_data_instance;
+        DataInstance* value_data_instance;
+        
+        // How to obtain the output key
+        int* output_key_path;
+        DataInstance *output_key_data_instance;
+
+        // How to obtain the output value
+        int* output_value_path;
+        DataInstance *output_value_data_instance;
         
     public:
         
-        void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer );        
+		void init(KVWriter *writer);
+        
+	    void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer );       
+        
+		void finish(KVWriter *writer);
+        
     };
     
     

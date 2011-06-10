@@ -37,6 +37,11 @@ namespace au {
     
         static std::string indent( std::string txt );
         
+        
+        static std::string getRoot( std::string& path );
+        static std::string getRest( std::string& path );
+        
+        
 	};
     
 }

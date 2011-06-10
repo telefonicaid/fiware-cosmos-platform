@@ -228,5 +228,25 @@ namespace au
     }
     
     
+    std::string Format::getRoot( std::string& path )
+    {
+        size_t pos = path.find( "." , 0 );
+        
+        if( pos == std::string::npos )
+            return path;
+        
+        return path.substr( 0 , pos );
+    }
+    
+    std::string Format::getRest( std::string& path )
+    {
+        size_t pos = path.find( "." , 0 );
+        
+        if( pos == std::string::npos )
+            return "";
+        
+        return path.substr( pos+1 , path.length() );
+    }    
+    
 	
 }

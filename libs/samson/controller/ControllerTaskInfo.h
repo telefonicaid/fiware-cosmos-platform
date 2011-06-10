@@ -6,6 +6,9 @@
 #include <vector>
 #include "samson/common/samson.pb.h"
 #include "au/CommandLine.h"			// au::CommandLine
+#include "samson/module/Environment.h"				// samson::Environment
+
+
 namespace samson {
 
 	class Operation;
@@ -19,7 +22,7 @@ namespace samson {
 		ControllerTaskInfo( Job *job , Operation *operation  , std::string command, au::CommandLine *cmdLine );
 		~ControllerTaskInfo();
 
-        std::string command;
+        Environment environment;
         
 		Job *job;	// Pointer to a job ( used to retrieve environment variables )
 		

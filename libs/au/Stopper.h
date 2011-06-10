@@ -11,8 +11,8 @@ namespace au
 	{
 		int num_threads_stopped;		// Counter of elements stopped here
 		
-		pthread_mutex_t _lock;			// Mutex to protect this tocken
-		pthread_cond_t _condition;		// Condition to block threads that did not get the tocken
+		pthread_mutex_t _lock;			// Mutex to protect this token
+		pthread_cond_t _condition;		// Condition to block threads that did not get the token
 		
 	public:
 		

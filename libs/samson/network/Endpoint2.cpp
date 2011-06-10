@@ -27,6 +27,7 @@
 #include "logMsg/traceLevels.h"
 
 #include "au/Token.h"
+#include "au/Stopper.h"
 #include "au/list.h"
 #include "samson/common/status.h"
 #include "samson/common/MemoryTags.h"         // MemoryOutputDisk
@@ -78,9 +79,9 @@ void* writerThread(void* vP)
 	{
 		Packet* packetP;
 
-		ep->jobQueueSem.retain();
+		ep->jobQueueSem->retain();
 		packetP = ep->jobQueue.extractFront();
-		ep->jobQueueSem.release();
+		ep->jobQueueSem->release();
 		LM_T(LmtThreads, ("Writer thread(%s) packetP: %p, jobs remaining: %d, my thread id: 0x%x", ep->name(), packetP, ep->jobQueue.size(), pthread_self()));
 		if (packetP != NULL)
 		{
@@ -98,7 +99,7 @@ void* writerThread(void* vP)
 			}
 		}
 		else
-			usleep(50000);
+			ep->jobQueueStopper->stop(-1);  // wait forever
 	}
 
 	return NULL;
@@ -119,7 +120,7 @@ void* writerThread(void* vP)
 	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
-) : jobQueueSem("jobQueueSem")
+)
 {
 	epMgr               = _epMgr;
 	type                = _type;
@@ -134,6 +135,8 @@ void* writerThread(void* vP)
 	idInEndpointVector  = -8;    // -8 meaning 'undefined' ...
 	readerId            = 0;
 	writerId            = 0;
+	jobQueueSem         = NULL;
+	jobQueueStopper     = NULL;
 
 	nameSet(type, id, host);
 	memset(&sockin, 0, sizeof(sockin));
@@ -158,6 +161,11 @@ Endpoint2::~Endpoint2()
 
 	if (nameidhost != NULL)
 		free(nameidhost);
+
+	if (jobQueueSem != NULL)
+		delete jobQueueSem;
+	if (jobQueueStopper != NULL)
+		delete jobQueueStopper;
 
 	nameidhost = NULL;
 }
@@ -525,9 +533,18 @@ void Endpoint2::send(Packet* packetP)
 	{
 		if (threaded == true)
 		{
-			jobQueueSem.retain();
-			jobQueue.push_back(packetP);
-			jobQueueSem.release();
+			if ((state != Ready) && (packetP->disposable == true))
+			{
+				LM_W(("Throwing away disposable packet meant for %s", name()));
+				delete packetP;
+			}
+			else
+			{
+				jobQueueSem->retain();
+				jobQueue.push_back(packetP);
+				jobQueueSem->release();
+				jobQueueStopper->wakeUp();
+			}
 		}
 		else
 		{
@@ -1004,10 +1021,7 @@ Status Endpoint2::msgTreat(void)
 		helloDataSet((Type) helloP->type, helloP->id);
 
 		if (header.type == Message::Msg)
-		{
-			LM_T(LmtHello, ("Sending Hello ACK to fd %d", wFd));
 			helloSend(Message::Ack);
-		}
 
 		if ((epMgr->me->type == Spawner) || (epMgr->me->type == Setup) || (epMgr->me->type == Controller))
 		{
@@ -1020,10 +1034,16 @@ Status Endpoint2::msgTreat(void)
 		if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((type == Worker) || (type == Delilah) || (type == Controller)))
 		{
 			int  ps;
+			char semName[128];
 
-			threaded = true;
+			threaded    = true;
+			snprintf(semName, sizeof(semName), "jobQueue-%s", name());
 
-			LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s", name()));
+			jobQueueSem     = new au::Token(semName);
+			jobQueueStopper = new au::Stopper();
+
+			LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s (plus jobQueueSem and jobQueueStopper)", name()));
+
 			if ((ps = pthread_create(&writerId, NULL, writerThread, this)) != 0)
 			{
 				LM_E(("Creating writer thread: pthread_create returned %d for %s", ps, name()));

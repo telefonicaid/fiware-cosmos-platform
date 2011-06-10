@@ -13,9 +13,9 @@
 #include "logMsg/logMsg.h"             // LM_*
 #include "logMsg/traceLevels.h"        // LmtNetworkInterface, ...
 
-#include "samson/network/Message.h"            // samson::Message::MessageCode
-#include "samson/network/Endpoint.h"           // samson::Endpoint::Type
-#include "au/Lock.h"				// au::Lock
+#include "samson/network/Message.h"    // samson::Message::MessageCode
+#include "samson/network/Endpoint.h"   // samson::Endpoint::Type
+#include "au/Lock.h"                   // au::Lock
 
 
 
@@ -155,10 +155,10 @@ public:
     }
     
 	virtual ~NetworkInterface() {};
-			
+
 	// Inform about everything ready to start
 	virtual bool ready() = 0;
-			
+
 	// Init functions of the network element - not used in Network2
 	virtual void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL) {};
 	virtual void initAsSamsonController(void) = 0;
@@ -172,11 +172,11 @@ public:
 
 
 	// Get identifiers of known elements
-	virtual int controllerGetIdentifier()  = 0;		// Get the identifier of the controller
-	virtual int workerGetIdentifier(int i) = 0;		// Get the identifier of the i-th worker
-	virtual int getMyidentifier()          = 0;		// Get my identifier
-	virtual int getNumWorkers()            = 0;		// Get the number of workers
-	virtual int getNumEndpoints() { return 0; }     // Get the number of endpoints
+	virtual int controllerGetIdentifier()  = 0;    // Get the identifier of the controller
+	virtual int workerGetIdentifier(int i) = 0;    // Get the identifier of the i-th worker
+	virtual int getMyidentifier()          = 0;    // Get my identifier
+	virtual int getNumWorkers()            = 0;    // Get the number of workers
+	virtual int getNumEndpoints() { return 0; }    // Get the number of endpoints
 
 	virtual void jobInfo(int endpointId, int* messages, long long* dataLen)
 	{
@@ -186,7 +186,7 @@ public:
 
 	// Get information about network state
 	virtual std::string getState(std::string selector) { return std::string("No network state available"); }
-		
+
 	// Get the "worker cardinal" from the idenfitier
 	// This method should return a value between 0 and (num_workers - 1) or -1 if the identifier provided is not related to any worker
 	virtual int getWorkerFromIdentifier(int identifier) = 0;
@@ -194,30 +194,30 @@ public:
 	// Main run loop control to the network interface
 	// this call is a blocking call. It only returns if "quit" is called from another thread
 	virtual void run() = 0;
-			
+
 	// Suspend the network interface, close everything and return the "run" call
-	virtual void quit(void) = 0;					
+	virtual void quit(void) = 0;
 
 	// Handy function to get my workerID
 	int getWorkerId(void)
 	{
 		return getWorkerFromIdentifier(getMyidentifier());
 	}
-		
+
 	// Run the "run" method in a background thread and return control to the current thread
 	void runInBackground();
-		
-	virtual bool isConnected(unsigned int identifier) { return true; };
-    virtual void delilahSend(PacketSenderInterface* packetSender, Packet* packetP) = 0;
 
-    // New API to send packets    
-    void send(int endpoint, Packet* p);
-    void sendToWorker(int workerId, Packet* p);
-    void sendToController(Packet* p);
+	virtual bool isConnected(unsigned int identifier) { return true; };
+	virtual void delilahSend(PacketSenderInterface* packetSender, Packet* packetP) = 0;
+
+	// New API to send packets    
+	void send(int endpoint, Packet* p);
+	void sendToWorker(int workerId, Packet* p);
+	void sendToController(Packet* p);
 
 private:
-    
- 	// Send a packet (return a unique id to inform the notifier later)
+
+	// Send a packet (return a unique id to inform the notifier later)
 	virtual size_t send(PacketSenderInterface* sender, int endpointId, Packet* packetP) = 0;
 };
 

@@ -796,7 +796,7 @@ namespace samson
 				{
 					std::ostringstream message;
 					message << "Job scheduled [" << packet->message->command_response().new_job_id() << "] ";
-					message << " (" << packet->message->command_response().command() << " )";
+					message << " ( " << packet->message->command_response().command() << ")";
 					writeWarningOnConsole( message.str() );
 					return 0;
 				}
@@ -804,9 +804,9 @@ namespace samson
 				if( packet->message->command_response().has_finish_job_id() )
 				{
 					std::ostringstream message;
-					message << "Job finished [" << packet->message->command_response().finish_job_id() << "] ";
-					message << " [ "<< au::Format::time_string( packet->message->command_response().ellapsed_seconds() ) << " ] ";
-					message << " ( " << packet->message->command_response().command() << " )";
+					message << "Job finished  [" << packet->message->command_response().finish_job_id() << "] ";
+					message << " ( " << packet->message->command_response().command() << ")";
+					message << " ["<< au::Format::time_string( packet->message->command_response().ellapsed_seconds() ) << "] ";
 					writeWarningOnConsole( message.str() );
 					return 0;
 				}

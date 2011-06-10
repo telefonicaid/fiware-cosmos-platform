@@ -18,6 +18,7 @@
 #include "logMsg/logMsg.h"          // LM_X
 
 #include "au/Token.h"
+#include "au/Stopper.h"
 #include "au/list.h"
 #include "samson/common/status.h"
 #include "samson/common/Process.h"  // PtWorker, PtController
@@ -114,7 +115,8 @@ public:
 	void                 nameSet(Type _type, int id, Host* host);
 	const char*          stateName(void);
 
-	au::Token            jobQueueSem;
+	au::Token*           jobQueueSem;
+	au::Stopper*         jobQueueStopper;
 	au::list<Packet>     jobQueue;
 
 private:

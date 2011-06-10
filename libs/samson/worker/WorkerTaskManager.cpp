@@ -46,7 +46,8 @@ namespace samson {
 		
 			// Id of this operations
 			size_t task_id = worker_task.task_id();
-			
+			LM_M(("Adding task %d", task_id));
+
 			// Create the task
 			WorkerTask *t = task.findInMap( task_id );
 
@@ -56,15 +57,11 @@ namespace samson {
 				task.insertInMap( task_id , t );
 			}
             else
-            {
-                LM_M(("Task %lu: The task has been previously defined by a quick-worker "));
-            }
+				LM_M(("Task %lu: The task has been previously defined by a quick-worker", task_id));
 
 			// Setup the operation with all the information comming from controller
 			t->setupAndRun( op->getType() , worker_task );
-			
 		}
-		
 	}
 	
     // Notification from the engine about finished tasks
@@ -72,7 +69,7 @@ namespace samson {
     {
         if( !notification->isName(notification_task_finished) )
         {
-            LM_W(("WorkerTaskManager received a non correct notification"));
+            LM_W(("WorkerTaskManager received an incorrect notification"));
             return;
         }
         
@@ -138,6 +135,8 @@ namespace samson {
     {
 		WorkerTask *t = task.extractFromMap( task_id );
 
+		LM_M(("Removing task %d", task_id));
+
         if( t )
         {
             if( t->status != WorkerTask::completed )
@@ -168,11 +167,10 @@ namespace samson {
         {
             LM_W(("Finish worker message received for a non-existing task %lu. This is possibly a quick-worker", task_id ));
             t = new WorkerTask( this );
-        }
-        
-        t->finishWorker( worker_from );
-        
+			task.insertInMap( task_id , t );
+		}        
 
+        t->finishWorker( worker_from );
 	}
 
 	void WorkerTaskManager::fill(network::WorkerStatus*  ws)

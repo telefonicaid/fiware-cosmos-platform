@@ -102,6 +102,10 @@ namespace samson {
 	{        
 		Packet*           p = new Packet(Message::Command);
 		network::Command* c = p->message->mutable_command();
+
+		// This message is not critical - to be thrown away if worker not connected
+		p->disposable = true;
+
 		c->set_command( "ls" );
 		p->message->set_delilah_id( 0 ); // At the moment no sence at the controller
 		//copyEnviroment( &environment , c->mutable_environment() );
@@ -118,6 +122,9 @@ namespace samson {
 		Packet*                  p  = new Packet(Message::WorkerStatus);
 		network::WorkerStatus*   ws = p->message->mutable_worker_status();
 		
+		// This message is not critical - to be thrown away if worker not connected
+		p->disposable = true;
+
 		// Fill to all data related with task manager
 		taskManager.fill(ws);
 		

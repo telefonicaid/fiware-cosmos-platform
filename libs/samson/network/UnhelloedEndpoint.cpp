@@ -111,7 +111,6 @@ Status UnhelloedEndpoint::msgTreat2(Packet* packetP)
 				ep->send(p);
 			}
 		}
-			
 		else if ((samson::Endpoint2::Type) helloP->type == Worker)
 		{
 			LM_T(LmtUnhelloed, ("Time to update corresponding Worker endpoint and remove myself ..."));
@@ -143,13 +142,18 @@ Status UnhelloedEndpoint::msgTreat2(Packet* packetP)
 		{
 			extern void* readerThread(void* vP);
 			extern void* writerThread(void* vP);
-			if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((ep->type == Worker) || (ep->type == Delilah)))
+			if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((ep->type == Worker) || (ep->type == Delilah) || (ep->type == Controller)))
 			{
-				int ps;
+				int  ps;
+				char semName[128];
 
-				ep->threaded = true;
+				snprintf(semName, sizeof(semName), "jobQueue-%s", ep->name());
+				ep->jobQueueSem      = new au::Token(semName);
+				ep->jobQueueStopper  = new au::Stopper();
+				ep->threaded         = true;
 
-				LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s", name()));
+				LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s (plus jobQueueSem and jobQueueStopper)", name()));
+
 				if ((ps = pthread_create(&ep->writerId, NULL, writerThread, ep)) != 0)
 				{
 					LM_E(("Creating writer thread: pthread_create returned %d for %s", ps, name()));

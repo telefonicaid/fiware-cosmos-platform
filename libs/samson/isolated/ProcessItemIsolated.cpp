@@ -64,6 +64,7 @@ namespace samson
 			return;
 		}
 		
+		LM_M( ("Isolated process %s: pipes created. pipeFdPair1[0]:%d, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, pipeFdPair2[1]:%d\n",getStatus().c_str(), pipeFdPair1[0], pipeFdPair1[1], pipeFdPair2[0], pipeFdPair2[1]));
 		LM_T( LmtIsolated , ("Isolated process %s: pipes created ",getStatus().c_str()));
 		
 		// Create the other process to run the other side
@@ -98,12 +99,12 @@ namespace samson
         if( isolated_process_as_tread )
         {
             sleep(1);  
-            LM_T( LmtIsolated , ("Isolated process %s: Closing unused side of the pipe (thread mode) ",getStatus().c_str()));
+            LM_T( LmtIsolated , ("Isolated process %s: Closing unused side of the pipe (thread mode) pipeFdPair1[1]:%d, pipeFdPair2[0]:%d ",getStatus().c_str(), pipeFdPair1[1], pipeFdPair2[0]));
             close(pipeFdPair1[1]);
             close(pipeFdPair2[0]);
         }
 		
-		LM_T( LmtIsolated , ("Isolated process %s: Closing the rest of fds of the pipe ",getStatus().c_str()));
+		LM_T( LmtIsolated , ("Isolated process %s: Closing the rest of fds of the pipe pipeFdPair1[0]:%d, pipeFdPair2[1]:%d ",getStatus().c_str(), pipeFdPair1[0], pipeFdPair2[1]));
 		close(pipeFdPair1[0]);
 		close(pipeFdPair2[1]);
 		
@@ -358,7 +359,7 @@ namespace samson
             // Close the unnecessary pipes
             if( !isolated_process_as_tread )
             {
-                LM_T( LmtIsolated , ("Isolated process %s: Closing secondary fds of pipes ",getStatus().c_str()));
+                LM_T( LmtIsolated , ("Isolated process %s: Closing secondary fds of pipes, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d ",getStatus().c_str(), pipeFdPair1[1], pipeFdPair2[0]));
                 close(pipeFdPair1[1]);
                 close(pipeFdPair2[0]);
             }
@@ -558,10 +559,17 @@ namespace samson
 
             close(pipeFdPair1[0]);
             close(pipeFdPair2[1]);
+
+		//Trazas Goyo
+		LM_M(("Child closing pipe descriptors not used. pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n", pipeFdPair1[0], pipeFdPair2[1]));
             
             for ( int i = 3 ;  i < 1024 ; i++ )
-                if( ( i != pipeFdPair1[1] ) && ( i!= pipeFdPair2[0] ) && ( i!= logFd ) )
+                if( ( i != pipeFdPair1[1] ) && ( i!= pipeFdPair2[0] ) && ( i!= logFd ) ) {
+			//Trazas Goyo
+			LM_M(("Child closing descriptors but pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, logFd:%d. fd:%d\n", pipeFdPair1[1], pipeFdPair2[0], logFd, i));
+
                     close( i );
+		}
         }
 
         
@@ -577,7 +585,7 @@ namespace samson
         
  		runIsolated();
         
-        //LM_M(("Finishing runIsolated"));
+        LM_M(("Finishing runIsolated"));
         
         // Send the "end" message
         {
@@ -592,6 +600,8 @@ namespace samson
         {
             close(pipeFdPair1[1]);
             close(pipeFdPair2[0]);
+		//Trazas Goyo
+		LM_M(("Child closing used pipe descriptors because finished. pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
         }
         
         //LM_M(("Finishing runBackgroundProcessRun..."));

@@ -99,7 +99,11 @@ namespace au
         int nb = read( fd , &header , sizeof(header) );
 
         if( nb == 0)
+	{
+	    //Trazas Goyo
+	    LM_E(("readGPB(): Error reading header from fd:%d\n", fd));
             return GPB_ClosedPipe;
+	}
         
         if( nb < 0)
             return GPB_ReadError;

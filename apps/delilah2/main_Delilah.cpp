@@ -14,7 +14,7 @@
 
 
 #include "samson/delilah/DelilahConsole.h"
-#include "samson/Delilah/DelilahMonitorization.h"
+#include "samson/delilah/DelilahMonitorization.h"
 
 
 

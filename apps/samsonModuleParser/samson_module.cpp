@@ -54,8 +54,8 @@ int main( int argC , const char *argV[])
 	//Help parameter in the command line
 	au::CommandLine cmdLine;
 	cmdLine.set_flag_boolean("help");		// Get this help
+	cmdLine.set_flag_boolean("v");          // verbose mode
 	cmdLine.parse(argC , argV);
-
 	
 	if ( cmdLine.get_flag_bool("help") )
 	{
@@ -94,6 +94,7 @@ int main( int argC , const char *argV[])
     int res_stat1 = stat( output1_filename.c_str() , &stat_output1);
     int res_stat2 = stat( output2_filename.c_str() , &stat_output2);
 
+    bool verbose = cmdLine.get_flag_bool("v");
     
     if( ( res_stat1 == 0) && ( res_stat2 == 0) )
     {
@@ -115,14 +116,18 @@ int main( int argC , const char *argV[])
     }
     else
     {
-        std::cerr << "samsonModuleParser: Not possible to open " << output1_filename << " or " << output2_filename << " so, outputs will be generated again\n";
+        if( verbose )
+            std::cerr << "samsonModuleParser: Not possible to open " << output1_filename << " or " << output2_filename << " so, outputs will be generated again\n";
     }
     
-	fprintf(stderr,"SAMSON Module tool  (v %s)\n", SAMSON_MODULE_PARSER_VERSION);
-	fprintf(stderr, "========================================================\n");
+    if( verbose )
+    {
     
-	 
-	samson::DataCreator module_creator( moduleFileName, outputDirectory , outputFilename  );		// A data creator object to generate the code
+        fprintf( stderr, "SAMSON Module Parser tool for samson %s \n", SAMSON_VERSION );
+        fprintf( stderr, "=====================================================================\n" );
+    }
+    
+	samson::DataCreator module_creator( moduleFileName, outputDirectory , outputFilename , verbose  );		// A data creator object to generate the code
 	module_creator.print();
 	
 	return 0;

@@ -12,15 +12,20 @@
 
 namespace samson {
 
-	DataCreator::DataCreator( std::string _moduleFileName ,  std::string _outputDirectory , std::string _outputFileName  )
+	DataCreator::DataCreator( std::string _moduleFileName ,  std::string _outputDirectory , std::string _outputFileName , bool _verbose  )
 	{
         moduleFileName = _moduleFileName;
 		
         outputDirectory = _outputDirectory;
 		outputFileName = _outputFileName;
-		
-		std::cout << "Input module file " << moduleFileName << std::endl;
-		std::cout << "Output module file " << outputFileName << std::endl;
+
+		verbose = _verbose;
+
+        if( verbose )
+        {
+            std::cout << "Input module file " << moduleFileName << std::endl;
+            std::cout << "Output module file " << outputFileName << std::endl;
+        }
 		
 		module = NULL;
 		
@@ -111,9 +116,10 @@ namespace samson {
 					exit(1);
 				}
 				
-				std::cout << "Processing Data " << name << " in module " << module->name << std::endl;
+                if( verbose )
+                    std::cout << "Processing Data " << name << " in module " << module->name << std::endl;
 				
-				DataContainer data_container( module->name , name );
+				DataContainer data_container( module->name , name , verbose );
 				data_container.parse( t, position_start , position_finish );
 				datas.push_back( data_container );
 				
@@ -136,7 +142,7 @@ namespace samson {
 				}
 				
 				std::cout << "Processing " << command << " operation " << name << std::endl;
-				OperationContainer operation_container( module->name , command, name );
+				OperationContainer operation_container( module->name , command, name , verbose );
 				operation_container.parse( t, position_start , position_finish );
 				operations.push_back( operation_container );
 			}
@@ -158,7 +164,9 @@ namespace samson {
 #pragma mark MODULE .h file
 		
 		std::string data_file_name =  outputFileName + ".h";
-		std::cout << "Creating file " << data_file_name << "\n";
+
+        if( verbose )
+            std::cout << "Creating file " << data_file_name << "\n";
 		
 		std::ofstream output( data_file_name.c_str() );
 		
@@ -241,7 +249,9 @@ namespace samson {
 		
 		// Print .cpp file for module definition
 		std::string output_filename_cpp =  outputFileName + ".cpp";
-		std::cout << "Creating file " << output_filename_cpp << "\n";
+        
+        if( verbose )
+            std::cout << "Creating file " << output_filename_cpp << "\n";
 		
 		std::ofstream output( output_filename_cpp.c_str() );
 		

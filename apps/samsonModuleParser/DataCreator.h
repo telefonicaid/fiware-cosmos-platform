@@ -27,8 +27,8 @@ namespace samson {
 	
 	class DataCreator
 	{
+        
 	 public:
-
 		
 		// Name of the module
 		std::string moduleFileName;
@@ -49,11 +49,13 @@ namespace samson {
 		vector <DataContainer> datas;
 		vector <OperationContainer> operations;
 
+        bool verbose;
+        
 		/* 
 		 Constructor: name of the file to parse
 		 */
 		
-		DataCreator( std::string moduleFileName , std::string outputDirectory , std::string outputFileName );
+		DataCreator( std::string moduleFileName , std::string outputDirectory , std::string outputFileName , bool _verbose );
 		
 		/**
 		 Read the content of the file into a string

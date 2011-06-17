@@ -38,13 +38,17 @@ namespace samson
 		std::vector <DataType> items;		// Data items it includes
 		bool any_optional;					// To signal when at least there is one optional field
 
+        bool verbose;
+        
 		std::set<std::string> includes;		// List of includes necessary for the system
 			
-		DataContainer( std::string _module, std::string _name )
+		DataContainer( std::string _module, std::string _name , bool  _verbose)
 		{
 			module = _module;
 			name = _name; 
 			any_optional = false;
+            
+            verbose = _verbose;    // No verbose by default
 		}
 		
 		void addItem( DataType item)
@@ -73,12 +77,13 @@ namespace samson
 			
 			if( items.size() == 0)
 			{
-				std::cout << "File " << name << "_base.h not created since there are no internal fields.\n";
+                if( verbose ) 
+                    std::cout << "File " << name << "_base.h not created since there are no internal fields.\n";
 				return ;
 			}
 
-			
-			std::cout << "Creating file " << name << "_base.h\n";
+			if( verbose ) 
+                std::cout << "Creating file " << name << "_base.h\n";
 			
 			// Prepare the files and directories
 			std::ostringstream fileName;
@@ -491,11 +496,16 @@ namespace samson
 			if( _file.is_open() )
 			{
 				_file.close();
-				std::cout << "File " << name << ".h is not generated because it already exist\n";
+                
+                if( verbose ) 
+                    std::cout << "File " << name << ".h is not generated because it already exist\n";
 				return;
 			}
 			else
-				std::cout << "Creating file " << name << ".h\n";
+            {
+                if( verbose ) 
+                    std::cout << "Creating file " << name << ".h\n";
+            }
 
 			
 			std::ofstream file( fileName.str().c_str() );

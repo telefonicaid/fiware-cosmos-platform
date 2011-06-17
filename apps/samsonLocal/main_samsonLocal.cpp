@@ -13,10 +13,13 @@
 #include "NetworkCenter.h"
 #include "samson/network/NetworkInterface.h"
 
-#include "samson/delilah/DelilahConsole.h"		// ss:DelilahConsole
 #include "samson/worker/SamsonWorker.h"		// samson::SamsonWorker
 #include "samson/controller/SamsonController.h"	// samson:: SasonController
 #include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
+
+#include "samson/delilah/DelilahConsole.h"              // ss:DelilahConsole
+#include "samson/delilah/DelilahMonitorization.h"		// ss:DelilahMonitorization
+
 
 #include "samson/module/ModulesManager.h"		// samson::ModulesManager
 #include "samson/module/Operation.h"	// samson::Operation
@@ -45,6 +48,7 @@
 char             controller[80];
 int              workers;
 bool             noLog;
+bool             monitorization;
 char			 workingDir[1024]; 	
 char			 commandFileName[1024];
 bool             thread_mode;
@@ -59,6 +63,7 @@ PaArgument paArgs[] =
 {
 	{ "-controller",  controller,       "CONTROLLER",  PaString,  PaOpt,   S01,   PaNL,   PaNL,  "controller IP:port"  },
 	{ "-workers",     &workers,         "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
+	{ "-monitorization", &monitorization,"MONITORIZATION",      PaBool,    PaOpt,    false,  false,   true,  "monitorization mode" },
 	{ "-nolog",       &noLog,           "NO_LOG",      PaBool,    PaOpt,    false,  false,   true,  "no logging"          },
 	{ "-thread_mode", &thread_mode,     "THREAD_MODE", PaBool,    PaOpt,    false,  false,   true,  "thread_mode"          },
 	{ "-working",     workingDir,       "WORKING",     PaString,  PaOpt,  _i SAMSON_DEFAULT_WORKING_DIRECTORY,   PaNL,   PaNL,  "Working directory"     },
@@ -141,7 +146,13 @@ int main(int argC, const char *argV[])
 	// Create one controller, one dalilah and N workers
 	samson::SamsonController controller( center.getNetwork(-1) );
 	
-	samson::DelilahConsole delilahConsole( center.getNetwork(-2) );
+	samson::DelilahConsole* delilahConsole = NULL;
+    samson::DelilahMonitorization * delilahMonitorization = NULL;
+    
+    if( !monitorization )
+        delilahConsole = new samson::DelilahConsole( center.getNetwork(-2) );
+    else
+        delilahMonitorization = new samson::DelilahMonitorization( center.getNetwork(-2) );
 	
 	LM_T(LmtInit, ("SamsonLocal start"));
 	LM_D(("Starting samson demo (logFd == %d)", ::logFd));
@@ -152,23 +163,28 @@ int main(int argC, const char *argV[])
 		samson::SamsonWorker *w = new samson::SamsonWorker( center.getNetwork(i) );
 		_workers.push_back(w);
 	}
-
 	
 	// Run the network center in background
 	center.runInBackground();
 
     // Set the command file name
-    delilahConsole.setCommandfileName( commandFileName );
+    if( delilahConsole )
+    {
+        delilahConsole->setCommandfileName( commandFileName );
     
-    // Run delilah console in background
-    pthread_t t;
-    pthread_create(&t, 0, run_DelilahConsole, &delilahConsole);
+        // Run delilah console in background
+        pthread_t t;
+        pthread_create(&t, 0, run_DelilahConsole, delilahConsole);
+    }
+    
+    if( delilahMonitorization )
+    {
+        delilahMonitorization->runInBackground();
+    }
     
 	// Run the samson engine
 	engine::Engine::run();
     
-	// Run delilah client in foreground
-	//delilahConsole.run();	
 		
     // Destroying workwers
     for ( size_t i = 0 ; i < _workers.size() ; i++)

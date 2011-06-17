@@ -95,7 +95,9 @@ namespace samson
 		bool dynamic_input_formats;
 		bool destructor;
 		
-		OperationContainer( std::string _module , std::string _type, std::string _name  )
+        bool verbose;
+        
+		OperationContainer( std::string _module , std::string _type, std::string _name  , bool _verbose )
 		{
 			module = _module;
 			type = _type;
@@ -105,6 +107,8 @@ namespace samson
 			top =  false;
 			dynamic_input_formats = false;
 			destructor = false;
+            
+            verbose = _verbose;
 		}
 		
         void addInput( DataSet input_dataset )
@@ -225,11 +229,13 @@ namespace samson
 			if( _file.is_open() )
 			{
 				_file.close();
-				std::cout << "File " << name << ".h is not generated because it already exist\n";
+                if( verbose )
+                    std::cout << "File " << name << ".h is not generated because it already exist\n";
 				return;
 			}
 
-			std::cout << "Creating file " << name << ".h" << std::endl;
+            if( verbose )
+                std::cout << "Creating file " << name << ".h" << std::endl;
 			
 			std::ofstream file( fileName.str().c_str() );
 			

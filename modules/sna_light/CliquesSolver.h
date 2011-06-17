@@ -18,7 +18,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <samson/Log.h>
+#include <samson/module/Log.h>
 
 
 

@@ -2,17 +2,17 @@ all:
 	make -C system
 	make -C txt
 	make -C example
-#	make -C tienda
-#	make -C cdr
-#	make -C graph
-#	make -C sna
-#	make -C sna_light
-#	make -C osn
-#	make -C url
-#	make -C url_benchmark
-#	make -C sort
-#	make -C terasort
-#	make -C time_test
+	make -C tienda
+	make -C cdr
+	make -C graph
+	make -C sna
+	make -C sna_light
+	make -C osn
+	make -C url
+	make -C url_benchmark
+	make -C sort
+	make -C terasort
+	make -C time_test
 	make -C test_compareFunctions
 
 reset:

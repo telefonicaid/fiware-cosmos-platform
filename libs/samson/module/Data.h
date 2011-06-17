@@ -1,6 +1,7 @@
 #ifndef SAMSON_DATA_H
 #define SAMSON_DATA_H
 
+
 #include <math.h>						/*                                          */
 #include <stdlib.h>						/* malloc                                   */
 #include <string.h>						/* memcpy                                   */

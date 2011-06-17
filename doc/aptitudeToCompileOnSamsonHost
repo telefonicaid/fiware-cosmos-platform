@@ -1,3 +1,4 @@
+sudo apt-get install aptitude
 sudo aptitude install emacs23-nox
 sudo aptitude install gcc
 sudo aptitude install g++

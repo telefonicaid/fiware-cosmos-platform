@@ -18,7 +18,7 @@ namespace au
 	std::string Format::percentage_string( double p )
 	{
 		char line[2000];
-		sprintf(line, "%04.1f%%",p*100);
+		sprintf(line, "%05.1f%%",p*100);
 		return std::string(line);
 		
 	}

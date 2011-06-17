@@ -60,21 +60,38 @@ namespace samson {
                 printw("-");
         }
 
-        void printLine( int r , const char* left_line ,const char* rigth_line )
+        void printLine( int r , std::string left_line ,std::string rigth_line )
         {
             move( r , 0 );
-            printw("%s",left_line);
+            printw("%s",left_line.c_str());
             
-            move( r , cols-1 - strlen( rigth_line ) );
-            printw("%s",rigth_line);
+            move( r , cols-1 - strlen( rigth_line.c_str() ) );
+            printw("%s",rigth_line.c_str());
         }
         
         void clear()
         {
-            current_row = 3;
+            std::string white_line;
+            for (int i = 0 ; i < cols ; i++)
+                white_line.append(" ");
+            
+            for (int i = 0 ; i < rows ; i++)
+            {
+                move( i , 0 );
+                printw(  white_line.c_str() );
+            }
+
+                
+            current_row = 0;
+
+        }
+
+        void printLine(  std::string left_line ,std::string rigth_line  )
+        {
+            printLine( current_row++ , left_line, rigth_line );
         }
         
-        void printLine( const char* line )
+        void printLine( std::string line )
         {
             printLine( current_row++ , line, "" );
         }
@@ -97,10 +114,8 @@ namespace samson {
 	{
 		   
         DelilahMonitorizationType  type;
-        int ch;
         
 	public:
-		
         
 		DelilahMonitorization( NetworkInterface *network ) : Delilah( network , true )
 		{
@@ -116,9 +131,6 @@ namespace samson {
         
         // Main run command to start the show
         void run();
-
-		// Get chars thread
-        void getCommands();
         
 		// Notifications from delilah
 		void uploadDataConfirmation( DelilahUploadDataProcess *process ){};
@@ -148,8 +160,8 @@ namespace samson {
         
     private:
 
-        void printMemory();
         void printGeneral();
+        void printMemory();
         
         
 	};

@@ -36,70 +36,23 @@ namespace samson
     {                     
         endwin();
     }  
-    
-    void* runDelilahMonitorizationInBackground(void*p)
-    {
-        DelilahMonitorization*dm = (DelilahMonitorization*) p;
-        dm->run();
-        
-        return NULL;
-    }
-    
-    void* runDelilahMonitorizationGetCommandsInBackground(void*p)
-    {
-        DelilahMonitorization*dm = (DelilahMonitorization*) p;
-        dm->getCommands();
-        
-        return NULL;
-    }
 
-    void DelilahMonitorization::runInBackground()
-    {
-        atexit(ncurses_atexit);
-        
-        LM_M(("Delilah monitorization run in background"));
-        
-        srand(time(NULL));
-        
-        
-        initscr();  /* Start curses mode   */
-        
-        keypad(stdscr, TRUE);		/* We get F1, F2 etc..              */
-        noecho();                   /* Don't echo() while we do getch   */
-        raw();                    /* Line buffering disabled          */
-        
-        
-        pthread_t t;
-        pthread_create(&t, NULL, runDelilahMonitorizationInBackground, this);
-        
-        pthread_t t2;
-        pthread_create(&t2, NULL, runDelilahMonitorizationGetCommandsInBackground, this);
-        
-    }
-
-    void DelilahMonitorization::getCommands()
-    {
-        
-        while( true )
-        {
-            ch = getch();
-            
-
-            switch (ch) {
-                case 'q': exit(0);       break;
-                case 'm': type=memory;   break;
-                case 'g': type=general;   break;
-            }
-        }
-    }
-	
-    
     void DelilahMonitorization::run()
     {
 
         LM_M(("Delilah monitorization"));
         
-                
+        atexit(ncurses_atexit);
+        
+        srand(time(NULL));
+        
+        initscr();  /* Start curses mode   */
+        
+        keypad(stdscr, TRUE);		/* We get F1, F2 etc..              */
+        //noecho();                   /* Don't echo() while we do getch   */
+        //raw();                    /* Line buffering disabled          */
+
+        
         while( true )
         {
             setRowsAndCols();
@@ -107,9 +60,9 @@ namespace samson
             clear();
             
             // au::Format::string("Version %s " , SAMSON_VERSION ).c_str()
-            printLine( 0 );            
-            printLine( 1 , " SAMSON MONITORIZATION PANEL", au::Format::string("Version %s", SAMSON_VERSION ).c_str()  );
-            printLine( 2 );            
+            printLine( );            
+            printLine( " SAMSON MONITORIZATION PANEL", au::Format::string("Version %s", SAMSON_VERSION ).c_str()  );
+            printLine( );            
 
 
             switch (type) {
@@ -123,8 +76,8 @@ namespace samson
             }
             
             
-            printLine(rows-3);          
-            printLine(rows-2 , "Type h (help) , g (general) , m (memory) , ...","");
+            //printLine(rows-3);          
+            //printLine(rows-2 , "Type h (help) , g (general) , m (memory) , ...","");
             move( rows-1 , 0 );
             printw(" > ");
             
@@ -139,8 +92,54 @@ namespace samson
 
     void DelilahMonitorization::printGeneral()
     {
-        clear();
-        printLine("General...");
+        
+        if( !samsonStatus )
+        {
+            printLine("Waiting for the information message...");
+            return;
+        }
+        
+        for (int i = 0 ; i < samsonStatus->worker_status_size() ; i++)
+        {
+            const network::WorkerStatus worker_status = samsonStatus->worker_status(i);
+            
+            int used_cores = worker_status.used_cores();
+            int total_cores = worker_status.total_cores();
+            double per_cores = (total_cores==0)?0:((double) used_cores / (double) total_cores);
+            
+            size_t used_memory = worker_status.used_memory();
+            size_t total_memory = worker_status.total_memory();
+            double per_memory = (total_memory==0)?0:((double) used_memory / (double) total_memory);
+            int disk_pending_operations = worker_status.disk_pending_operations();
+            double per_disk = (total_memory==0)?0:((double) disk_pending_operations / (double) 40);
+
+            printLine( au::Format::string("Worker %03d", i) );
+            
+
+            printLine( au::Format::string("\tCores  [ %s ] %s / %s : %s" , 
+                                      au::Format::percentage_string(per_cores).c_str() , 
+                                      au::Format::string(used_cores).c_str() , 
+                                      au::Format::string(total_cores).c_str(),      
+                                      au::Format::progress_bar( per_cores , cols - 50 ).c_str()
+                      ));
+            
+            printLine( au::Format::string("\tMemory [ %s ] %s / %s : %s" , 
+                                      au::Format::percentage_string(per_memory).c_str() , 
+                                      au::Format::string(used_memory).c_str() , 
+                                      au::Format::string(total_memory).c_str(),     
+                                      au::Format::progress_bar( per_memory , cols - 50 ).c_str()
+                      ));
+                        
+            // Disk operations
+            
+            printLine( au::Format::string("\tDisk                      %s : %s" , 
+                                        au::Format::string(disk_pending_operations).c_str() ,
+                                        au::Format::progress_bar( per_disk , cols - 50 ).c_str() ));
+
+            printLine("");
+            
+        }        
+        
         
     }
  

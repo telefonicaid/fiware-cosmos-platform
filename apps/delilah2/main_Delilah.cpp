@@ -1,12 +1,21 @@
 #include "parseArgs/parseArgs.h"
-#include "samson/delilah/DelilahConsole.h"
-#include "samson/common/SamsonSetup.h"
+
 #include "au/Format.h"
+
+
 #include "engine/MemoryManager.h"
 #include "engine/Engine.h"
+
+#include "samson/common/SamsonSetup.h"
+
 #include "samson/network/Network2.h"
 #include "samson/network/EndpointManager.h"
 #include "samson/network/Packet.h"
+
+
+#include "samson/delilah/DelilahConsole.h"
+#include "samson/Delilah/DelilahMonitorization.h"
+
 
 
 
@@ -18,7 +27,7 @@ char             controller[80];
 int				 memory_gb;
 int				 load_buffer_size_mb;
 char			 commandFileName[1024];
-
+bool             monitorization;
 
 
 #define LOC "localhost"
@@ -32,6 +41,7 @@ PaArgument paArgs[] =
 	{ "-memory",           &memory_gb,           "MEMORY",           PaInt,    PaOpt,      1,    1,  100, "memory in GBytes"           },
 	{ "-load_buffer_size", &load_buffer_size_mb, "LOAD_BUFFER_SIZE", PaInt,    PaOpt,     64,   64, 2048, "load buffer size in Mbytes" },
 	{ "-f",                 commandFileName,     "FILE_NAME",        PaString, PaOpt,  _i "", PaNL, PaNL, "File with commands to run"  },
+	{ "-monitorization",    &monitorization,        "MONITORIZAITON",      PaBool,    PaOpt,  false, false,  true,  "Run monitorization tool"   },
 
 	PA_END_OF_ARGS
 };
@@ -134,17 +144,27 @@ int main(int argC, const char *argV[])
 	samson::Packet*  packetP  = new samson::Packet(samson::Message::Msg, samson::Message::ProcessVector);
 
 	LM_TODO(("I should probably go through NetworkInterface here ..."));
-	epMgr->controller->send(packetP);
+	epMgr->controller->send( packetP );
 
 	// Create a DelilahControler once network is ready
-	samson::DelilahConsole delilahConsole(networkP);
+	samson::DelilahConsole* delilahConsole = NULL;
+    samson::DelilahMonitorization* delilahMonitorization = NULL;
 	
+    if( !monitorization )
+        delilahConsole = new samson::DelilahConsole(networkP);
+    else
+        delilahMonitorization = new samson::DelilahMonitorization(networkP);
 	
 	engine::Engine::runInBackground();
 	
+    // Special mode for file-based commands
+    // ----------------------------------------------------------------
     
 	if ( strcmp( commandFileName,"") != 0 )
 	{
+        if( !delilahConsole )
+            LM_X(1, ("It is not valid to run monitorization with commands"));
+        
 		FILE *f = fopen( commandFileName , "r" );
 		if( !f )
 		{
@@ -162,13 +182,13 @@ int main(int argC, const char *argV[])
 				line[ strlen(line)-1]= '\0';
 			
 			//LM_M(("Processing line: %s", line ));
-			size_t id = delilahConsole.runAsyncCommand( line );
+			size_t id = delilahConsole->runAsyncCommand( line );
 			
 			if( id != 0)
 			{
 				//LM_M(("Waiting until delilah-component %ul finish", id ));
 				// Wait until this operation is finished
-				while (delilahConsole.isActive( id ) )
+				while (delilahConsole->isActive( id ) )
 					sleep(1);
 			}
 		}
@@ -181,5 +201,11 @@ int main(int argC, const char *argV[])
 		exit(0);
 	}    
     
-	delilahConsole.run();
+    if( delilahConsole )
+        delilahConsole->run();
+    
+    if( delilahMonitorization )
+        delilahMonitorization->run();
+    
+    
 }

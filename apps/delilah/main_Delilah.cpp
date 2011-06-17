@@ -18,7 +18,6 @@ int				 load_buffer_size_mb;
 char			 commandFileName[1024];
 
 
-
 #define LOC "localhost:1234"
 /* ****************************************************************************
 *
@@ -31,7 +30,7 @@ PaArgument paArgs[] =
 	{ "-workers",			&workers,				"WORKERS",     PaInt,     PaOpt,      1,      1,    100,  "number of workers"   },
 	{ "-memory",			&memory_gb,				"MEMORY",     PaInt,     PaOpt,      1,      1,    100,  "memory in GBytes"   },
 	{ "-load_buffer_size",  &load_buffer_size_mb,   "LOAD_BUFFER_SIZE",     PaInt,     PaOpt,      64,      64,    2048,  "load buffer size in Mbytes"   },
-	{ "-f",           commandFileName,  "FILE_NAME",   PaString,  PaOpt,  _i "",   PaNL,   PaNL,  "File with commands to run"     },
+	{ "-f",                 commandFileName,        "FILE_NAME",   PaString,  PaOpt,  _i "",   PaNL,   PaNL,  "File with commands to run"     },
 
 	PA_END_OF_ARGS
 };

@@ -10,6 +10,8 @@
 */
 
 
-#define SAMSON_VERSION				"0.1.3"
+#define SAMSON_VERSION				"0.6"
+
+#define TEST "$revid"
 
 #endif

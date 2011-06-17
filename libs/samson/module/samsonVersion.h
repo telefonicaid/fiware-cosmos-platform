@@ -12,6 +12,7 @@
 
 #define SAMSON_VERSION				"0.6"
 
+
 #define TEST $Rev$
 
 #endif

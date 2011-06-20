@@ -139,13 +139,13 @@ namespace samson
                                         au::Format::string(disk_pending_operations).c_str() ,
                                         au::Format::progress_bar( per_disk , cols - 50 ).c_str() ));
 
-            printLine( au::Format::string("\t                  Read %s  " , 
+            printLine( au::Format::string("\t                  Read    %s: %s  " , 
                                           au::Format::string(read_rate,"B").c_str() ,
-                                          au::Format::progress_bar( read_rate / 200*(1024*1024) , cols - 50 ).c_str() ));
+                                          au::Format::progress_bar( (double)read_rate /(double) (200*(1024*1024)) , cols - 50 ).c_str() ));
 
-            printLine( au::Format::string("\t                  Write %s  " , 
+            printLine( au::Format::string("\t                  Write   %s: %s  " , 
                                           au::Format::string(write_rate,"B").c_str() ,
-                                          au::Format::progress_bar( write_rate / 200*(1024*1024) , cols - 50 ).c_str() ));
+                                          au::Format::progress_bar( (double)write_rate /(double) (200*(1024*1024)) , cols - 50 ).c_str() ));
 
             printLine("");
             

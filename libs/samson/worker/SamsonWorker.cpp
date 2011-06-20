@@ -414,12 +414,12 @@ namespace samson {
         {
             if ( !notification->containsObject() )
             {
-                //LM_W(("SamsonWorker: Send trace without an object"));
+                LM_W(("SamsonWorker: Send trace without an object"));
                 return;
             }
             else
             {
-                //LM_M(("SamsonWorking sending a trace to all delilahs..."));
+                LM_M(("SamsonWorking sending a trace to all delilahs..."));
                 Packet *p = (Packet*) notification->extractObject();
                 network->delilahSend( this , p );
             }

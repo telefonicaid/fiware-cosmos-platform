@@ -71,6 +71,7 @@ namespace au {
 
     size_t Rate::getLastMinuteRate()
     {
+        last_minute.review();
         return last_minute.getRate();
     }
     

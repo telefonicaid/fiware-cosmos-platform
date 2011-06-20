@@ -340,9 +340,9 @@ void SamsonSpawner::spawn(Process* process)
 	LM_T(LmtProcessList, ("spawning process '%s' (incoming pid: %d)", process->name, process->pid));
 
 	if (process->type == PtWorker)
-		argV[argC++] = (char*) "samsonWorker2";
+		argV[argC++] = (char*) "samsonWorker";
 	else if (process->type == PtController)
-		argV[argC++] = (char*) "samsonController2";
+		argV[argC++] = (char*) "samsonController";
 	else
 		LM_X(1, ("Will only start workers and controllers - bad process type %d", process->type));
 
@@ -498,13 +498,13 @@ void SamsonSpawner::localProcessesKill(void)
 		LM_E((" system(\"killall -9 samsonWorker\") returned %d (strerror: %s)", s, strerror(errno)));
 
 
-	s = system("killall samsonController2 > /dev/null 2>&1");
+	s = system("killall samsonController > /dev/null 2>&1");
 	if (s != 0)
-		LM_E((" system(\"killall samsonController2\") returned %d (strerror: %s)", s, strerror(errno)));
+		LM_E((" system(\"killall samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
 	usleep(200000);
-	s = system("killall -9 samsonController2 > /dev/null 2>&1");
+	s = system("killall -9 samsonController > /dev/null 2>&1");
 	if (s != 0)
-		LM_E((" system(\"killall -9 samsonController2\") returned %d (strerror: %s)", s, strerror(errno)));
+		LM_E((" system(\"killall -9 samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
 }
 
 }

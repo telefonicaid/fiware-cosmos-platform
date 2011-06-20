@@ -60,8 +60,9 @@ package: release
 
 di:	debuginstall
 
-debuginstall: debug install_modules
+debuginstall: debug
 	sudo make -C BUILD_DEBUG install
+	make -C modules
 
 distribute: install
 	./scripts/samsonDistribute

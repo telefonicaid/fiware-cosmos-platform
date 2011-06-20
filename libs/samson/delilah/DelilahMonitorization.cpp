@@ -61,7 +61,21 @@ namespace samson
             
             // au::Format::string("Version %s " , SAMSON_VERSION ).c_str()
             printLine( );            
-            printLine( " SAMSON MONITORIZATION PANEL", au::Format::string("Version %s", SAMSON_VERSION ).c_str()  );
+            
+
+            if ( samsonStatus )
+            {
+                
+                std::ostringstream txt;
+                txt << "( Controller Uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )";
+                txt << " ( Updated: " << cronometer_samsonStatus.str() <<  " )";
+                
+                printLine( " SAMSON MONITORIZATION PANEL", txt.str().c_str()  );
+                
+            }
+            else
+                printLine( " SAMSON MONITORIZATION PANEL", "Waiting info..."  );
+            
             printLine( );            
 
 
@@ -74,6 +88,9 @@ namespace samson
                     printMemory();
                     break;
             }
+
+            printLine();
+            printLine( "" , au::Format::string("Version %s", SAMSON_VERSION ).c_str()  );
             
             
             //printLine(rows-3);          
@@ -95,7 +112,6 @@ namespace samson
         
         if( !samsonStatus )
         {
-            printLine("Waiting for the information message...");
             return;
         }
         
@@ -116,7 +132,17 @@ namespace samson
             size_t read_rate = worker_status.disk_read_rate();
             size_t write_rate = worker_status.disk_write_rate();
             
-            printLine( au::Format::string("Worker %03d", i) );
+            
+            
+            std::stringstream txt;
+            txt << " [ Process: " << au::Format::percentage_string(per_cores).c_str();
+            txt << " Memory: " << au::Format::percentage_string(per_memory);
+            txt << " Disk: " << disk_pending_operations;
+            txt << "  ( uptime: " << au::Format::time_string( worker_status.up_time() ) << " )";
+            txt << " ( updated: " << au::Format::time_string( cronometer_samsonStatus.diffTimeInSeconds() + worker_status.update_time() ) << " ) ]";
+
+            printLine( au::Format::string("Worker %03d %s", i , txt.str().c_str()) );
+            
             
 
             printLine( au::Format::string("\tCores  [ %s ] %s / %s : %s" , 

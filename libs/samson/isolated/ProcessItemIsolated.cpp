@@ -64,7 +64,7 @@ namespace samson
 			return;
 		}
 		
-		LM_M( ("Isolated process %s: pipes created. pipeFdPair1[0]:%d, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, pipeFdPair2[1]:%d\n",getStatus().c_str(), pipeFdPair1[0], pipeFdPair1[1], pipeFdPair2[0], pipeFdPair2[1]));
+		//LM_M( ("Isolated process %s: pipes created. pipeFdPair1[0]:%d, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, pipeFdPair2[1]:%d\n",getStatus().c_str(), pipeFdPair1[0], pipeFdPair1[1], pipeFdPair2[0], pipeFdPair2[1]));
 		LM_T( LmtIsolated , ("Isolated process %s: pipes created ",getStatus().c_str()));
 		
 		// Create the other process to run the other side
@@ -587,7 +587,7 @@ namespace samson
         
  		runIsolated();
         
-        LM_M(("Finishing runIsolated"));
+        //LM_M(("Finishing runIsolated"));
         
         // Send the "end" message
         {

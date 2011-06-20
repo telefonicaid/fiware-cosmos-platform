@@ -14,9 +14,12 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
+#include "engine/MemoryManager.h"
+#include "engine/Engine.h"
+
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/samsonDirectories.h"
-#include "engine/MemoryManager.h"
+
 #include "samson/common/daemonize.h"
 #include "SamsonSpawner.h"
 
@@ -67,7 +70,7 @@ void sigHandler(int sigNo)
 {
 	if (reset == true)
 	{
-		LM_W(("Not dying by this signal %d as I initiated it myself ...", sigNo));
+	   //LM_W(("Not dying by this signal %d as I initiated it myself ...", sigNo));
 		reset = false;
 		return;
 	}
@@ -136,6 +139,7 @@ int main(int argC, const char *argV[])
 	atexit(exitFunction);
 	
 	samson::SamsonSetup::load(workingDir);
+	engine::Engine::init();
 	engine::MemoryManager::init(samson::SamsonSetup::shared()->memory);
 
 	spawnerP = new samson::SamsonSpawner();

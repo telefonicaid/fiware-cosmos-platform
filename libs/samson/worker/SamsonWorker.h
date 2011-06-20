@@ -14,7 +14,6 @@
 #include "logMsg/logMsg.h"				// 
 #include "samson/common/traces.h"				// Trace levels
 #include "samson/common/Macros.h"				// exit(.)
-#include "samson/network/Network.h"			// NetworkInterface
 #include "samson/common/samsonDirectories.h"  // SAMSON_WORKER_DEFAULT_PORT
 #include "WorkerTaskManager.h"	// samson::WorkerTaskManager
 #include "LoadDataManager.h"	// samson::LoadDataManager
@@ -32,7 +31,7 @@
 
 namespace samson {
 	
-    
+    class NetworkInterface;
     
 	class SamsonWorker :  public PacketReceiverInterface, public PacketSenderInterface, public engine::NotificationListener
 	{

@@ -13,6 +13,7 @@
 #include "PacketReceivedNotification.h" // samson::PacketReceivedNotification
 #include "NetworkInterface.h"           // Own interface
 
+#include "engine/DiskStatistics.h"      // engine::DiskStatistics
 
 
 namespace samson
@@ -31,7 +32,30 @@ void* run_network_interface_background_thread(void* p)
 }
 	
 
+    /* ****************************************************************************
+     *
+     * NetworkInterface - 
+     */
 
+    NetworkInterface::NetworkInterface()
+    {
+        node_name = "Unknown node";
+        statistics = new engine::DiskStatistics(); 
+    }
+
+    /* ****************************************************************************
+     *
+     * ~NetworkInterface - 
+     */
+    
+    
+    NetworkInterface::~NetworkInterface()
+    {
+        delete statistics;
+    }
+    
+    
+    
 /* ****************************************************************************
 *
 * send - 

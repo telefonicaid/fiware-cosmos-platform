@@ -31,14 +31,14 @@ namespace engine
 	
 
 #pragma mark DiskStatistics
-	
+/*	
 	void DiskStatistics::add( DiskOperation *operation )
 	{
-		add( operation->getType() , operation->getSize() , operation->getOperationTime() );
+		add( operation->getType() , operation->getSize() );
 	}
+*/	
 	
-	
-	void DiskStatistics::add( DiskOperation::DiskOperationType type, size_t size , size_t micro_seconds )
+	void DiskStatistics::add( DiskOperation::DiskOperationType type, size_t size )
 	{
 		switch (type) {
 			case DiskOperation::read:

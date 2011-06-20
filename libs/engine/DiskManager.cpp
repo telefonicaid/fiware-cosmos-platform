@@ -111,7 +111,7 @@ namespace engine
 		pthread_mutex_lock(&mutex);
         
 		running_operations.erase( operation );
-		diskStatistics.add( operation );
+		diskStatistics.add( operation->getType() , operation->getSize() );
 		
 		pthread_mutex_unlock(&mutex);
 		

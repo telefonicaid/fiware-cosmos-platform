@@ -127,6 +127,8 @@ namespace samson
             size_t read_rate = worker_status.disk_read_rate();
             size_t write_rate = worker_status.disk_write_rate();
             
+            size_t network_read_rate = worker_status.network_read_rate();
+            size_t network_write_rate = worker_status.network_write_rate();
             
             
             std::stringstream txt;
@@ -169,6 +171,17 @@ namespace samson
                                           au::Format::string(write_rate,"B").c_str() ,
                                           au::Format::progress_bar( (double)write_rate /(double) (200*(1024*1024)) , cols - 50 ).c_str() ));
 
+            
+            printLine( au::Format::string("\tNetork                 " )); 
+            
+            printLine( au::Format::string("\t                  Read    %s: %s  " , 
+                                          au::Format::string(network_read_rate,"B").c_str() ,
+                                          au::Format::progress_bar( (double)network_read_rate /(double) (200*(1024*1024)) , cols - 50 ).c_str() ));
+            
+            printLine( au::Format::string("\t                  Write   %s: %s  " , 
+                                          au::Format::string(network_write_rate,"B").c_str() ,
+                                          au::Format::progress_bar( (double)network_write_rate /(double) (200*(1024*1024)) , cols - 50 ).c_str() ));
+            
             
         }        
         

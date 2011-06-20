@@ -200,6 +200,9 @@ message WorkerStatus
 	optional uint64 disk_read_rate=30;
 	optional uint64 disk_write_rate=31;
 
+	optional uint64 network_read_rate=32;
+	optional uint64 network_write_rate=33;
+
 }
 
 message ActiveTask

@@ -2,9 +2,9 @@
 #define _H_DISK_STATISTICS
 
 #include <sys/time.h>
-#include <string>				// std::string
+#include <string>                       // std::string
 
-#include "au/Rate.h"            // au::Rate
+#include "au/Rate.h"                    // au::Rate
 
 #include "engine/DiskOperation.h"		// engine::DiskOperationType
 
@@ -43,9 +43,9 @@ namespace engine {
 		DiskStatisticsItem item_write;
 		DiskStatisticsItem item_total;
         
-		void add( DiskOperation::DiskOperationType type, size_t size , size_t micro_seconds );
+		void add( DiskOperation::DiskOperationType type, size_t size );
 
-		void add( DiskOperation *operation );
+		//void add( DiskOperation *operation );
 		
 		std::string getStatus();
 		

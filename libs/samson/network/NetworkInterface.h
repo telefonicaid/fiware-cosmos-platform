@@ -13,14 +13,19 @@
 #include "logMsg/logMsg.h"             // LM_*
 #include "logMsg/traceLevels.h"        // LmtNetworkInterface, ...
 
-#include "samson/network/Message.h"    // samson::Message::MessageCode
-#include "samson/network/Endpoint.h"   // samson::Endpoint::Type
 #include "au/Lock.h"                   // au::Lock
 
+//#include "engine/DiskStatistics.h"      // engine::DiskStatistics
 
+#include "samson/network/Message.h"    // samson::Message::MessageCode
+#include "samson/network/Endpoint.h"   // samson::Endpoint::Type
+
+namespace engine
+{
+    class DiskStatistics;
+}
 
 namespace samson {
-
 
 
 /* ****************************************************************************
@@ -133,7 +138,7 @@ public:
 };
 	
 
-
+    
 /* ****************************************************************************
 *
 * NetworkInterface - interface of the interconnection element (Network and NetworkSimulator)
@@ -141,20 +146,19 @@ public:
 class  NetworkInterface
 {
 	const char* node_name;              // Name of this node for debugging (set with setNodeName)
-
+    
 public:
+
+    engine::DiskStatistics *statistics;          // Statistics
+    
     
     void setNodeName(const char* _node_name)
     {
         node_name = _node_name;
     }
     
-    NetworkInterface()
-    {
-        node_name = "Unknown node";
-    }
-    
-	virtual ~NetworkInterface() {};
+    NetworkInterface();
+	virtual ~NetworkInterface();
 
 	// Inform about everything ready to start
 	virtual bool ready() = 0;

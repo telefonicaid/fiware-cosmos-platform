@@ -34,6 +34,8 @@
 
 #include "samson/module/ModulesManager.h"   // samson::ModulesManager
 
+#include "samson/network/NetworkInterface.h"    // samson::NetworkInterface
+
 #define notification_worker_update_files    "notification_worker_update_files"
 
 namespace samson {
@@ -206,6 +208,9 @@ namespace samson {
         ws->set_disk_read_rate( engine::DiskManager::shared()->getReadRate() );
         ws->set_disk_write_rate( engine::DiskManager::shared()->getWriteRate() );
 
+        ws->set_network_read_rate( network->statistics->item_read.getLastMinuteRate() );
+        ws->set_network_write_rate( network->statistics->item_write.getLastMinuteRate() );
+        
 		// Send the message
 		network->sendToController( p );
         

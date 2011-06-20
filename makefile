@@ -19,7 +19,7 @@ clean:
 release:
 	mkdir BUILD_RELEASE || true
 	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE
-	make -C BUILD_RELEASE -j 7
+	make -C BUILD_RELEASE #-j 7
 
 # ------------------------------------------------
 # DEBUG Version

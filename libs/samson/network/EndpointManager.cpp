@@ -1154,30 +1154,29 @@ void EndpointManager::send(int endpointIx, Packet* packetP)
 }
 
 
-
 /* ****************************************************************************
-*
-* multiSend - 
-*/
+ *
+ * multiSend - 
+ */
 int EndpointManager::multiSend(Endpoint2::Type typ, Packet* packetP)
 {
-	int sends = 0;
+   int sends = 0;
 
-	for (unsigned int ix = 0; ix < endpoints; ix++)
-	{
-		if (endpoint[ix] == NULL)
-			continue;
+   for (unsigned int ix = 0; ix < endpoints; ix++)
+   {
+	  if (endpoint[ix] == NULL)
+		 continue;
 
-		if (endpoint[ix]->type != typ)
-			continue;
+	  if (endpoint[ix]->type != typ)
+		 continue;
 
-		send(ix, new Packet( packetP ) ); // Probably need to 'new' packetP so it wont be deleted before used by all ...
-		++sends;
-	}
+	  send(ix, new Packet( packetP ) ); // Probably need to 'new' packetP so it wont be deleted before used by all ...
+	  ++sends;
+   }
 
-    delete packetP;
+   delete packetP;
     
-	return sends;
+   return sends;
 }
 
 

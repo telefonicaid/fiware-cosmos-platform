@@ -124,7 +124,9 @@ int main(int argC, const char *argV[])
 				LM_X(1, ("Sorry, unable to remove '%s'", SAMSON_PLATFORM_PROCESSES));
 		}
 
-		system("killall samsonSpawner");
+		int sys_res = system("killall samsonSpawner");
+		if( sys_res != 0 )
+		   LM_W(("system call with killall failed"));
 		usleep(200000);
 	}
 

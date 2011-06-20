@@ -34,6 +34,7 @@ namespace samson
 Network2::Network2(EndpointManager* _epMgr)
 {
 	epMgr          = _epMgr;
+    epMgr->networkInterface = this;
 	packetReceiver = NULL;
 }
 

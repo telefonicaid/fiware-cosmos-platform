@@ -29,6 +29,9 @@
 #include "au/Token.h"
 #include "au/Stopper.h"
 #include "au/list.h"
+
+#include "engine/DiskStatistics.h"          // samson::DiskStatistics
+
 #include "samson/common/status.h"
 #include "samson/common/MemoryTags.h"         // MemoryOutputDisk
 #include "samson/common/ports.h"              // WORKER_PORT, ...
@@ -490,6 +493,8 @@ Status Endpoint2::partWrite(void* dataP, int dataLen, const char* what)
 
 	LM_WRITES(name(), what, dataP, dataLen, LmfByte);
 
+    epMgr->networkInterface->statistics->item_write.add( tot );
+    
 	bytesOut += tot;
 	return OK;
 }
@@ -697,6 +702,7 @@ Status Endpoint2::realsend
 		delete packetP;
 	}
 	
+    
 	msgsOut += 1;
 	return OK;
 }
@@ -749,6 +755,8 @@ Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, const char* w
 	*bufLenP = tot;
 	LM_READS(name(), what, buf, tot, LmfByte);
 
+    epMgr->networkInterface->statistics->item_read.add( tot );
+    
 	bytesIn += tot;
 	return OK;
 }

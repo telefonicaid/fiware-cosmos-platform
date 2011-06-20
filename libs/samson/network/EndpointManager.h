@@ -30,7 +30,7 @@ namespace samson
 */
 class ListenerEndpoint;
 class WebListenerEndpoint;
-
+class NetworkInterface;
 
 
 /* ****************************************************************************
@@ -83,6 +83,8 @@ public:
 	ListenerEndpoint*         listener;
 	WebListenerEndpoint*      webListener;
 	PacketReceiverInterface*  packetReceiver;
+    
+    NetworkInterface* networkInterface;
 
 	EndpointManager(Endpoint2::Type _type, const char* controllerIp = NULL);
 	~EndpointManager();

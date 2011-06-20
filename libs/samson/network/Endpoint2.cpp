@@ -433,7 +433,7 @@ Status Endpoint2::okToSend(void)
 	fd_set          wFds;
 	struct timeval  timeVal;
 	int             tryh;
-	int             tries = 300;
+	int             tries = 3000;
 
 	for (tryh = 0; tryh < tries; tryh++)
 	{
@@ -451,10 +451,13 @@ Status Endpoint2::okToSend(void)
 		if ((fds == 1) && (FD_ISSET(wFd, &wFds)))
 			return OK;
 
-		LM_W(("Problems to send to %s (%d/%d secs)", name(), tryh, tries));
+        if( fds == -1 )
+            LM_RE(Error, ("Select: %s", strerror(errno)));
+        
+        if( tryh%10 == 0 )
+            LM_W(("Problems to send to %s (%d/%d secs)", name(), tryh/10, tries/10));
 	}
 
-	LM_X(1, ("cannot write to '%s' - fd %d", name(), wFd));
 	return Timeout;
 }
 

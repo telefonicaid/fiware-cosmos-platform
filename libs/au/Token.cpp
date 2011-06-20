@@ -16,12 +16,12 @@ namespace au
 		taken = false;
 		pthread_mutex_init(&_lock, 0);
 		pthread_cond_init(&_condition, NULL);
-		LM_M(("Created token '%s' (%p)", name, this));
+		//LM_M(("Created token '%s' (%p)", name, this));
 	}
 	
 	Token::~Token()
 	{
-		LM_M(("Destroying token '%s' (%p)", name, this));
+		//LM_M(("Destroying token '%s' (%p)", name, this));
 		pthread_mutex_destroy(&_lock);
 		pthread_cond_destroy(&_condition);
 	}

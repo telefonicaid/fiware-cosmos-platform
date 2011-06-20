@@ -46,7 +46,7 @@ namespace samson {
 		
 			// Id of this operations
 			size_t task_id = worker_task.task_id();
-			LM_M(("Adding task %d", task_id));
+			//LM_M(("Adding task %d", task_id));
 
 			// Create the task
 			WorkerTask *t = task.findInMap( task_id );

@@ -1171,10 +1171,12 @@ int EndpointManager::multiSend(Endpoint2::Type typ, Packet* packetP)
 		if (endpoint[ix]->type != typ)
 			continue;
 
-		send(ix, packetP); // Probably need to 'new' packetP so it wont be deleted before used by all ...
+		send(ix, new Packet( packetP ) ); // Probably need to 'new' packetP so it wont be deleted before used by all ...
 		++sends;
 	}
 
+    delete packetP;
+    
 	return sends;
 }
 

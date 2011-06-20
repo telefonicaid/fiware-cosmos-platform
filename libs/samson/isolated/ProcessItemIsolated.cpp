@@ -553,25 +553,27 @@ namespace samson
         LM_T(LmtIsolated,("Running runBackgroundProcessRun..."));
 
 		// Close the other side of the pipes ( if it is in thread-mode, we cannot close)
-
+        
         if( !isolated_process_as_tread )
         {
-
+            
             close(pipeFdPair1[0]);
             close(pipeFdPair2[1]);
-
-		//Trazas Goyo
-		LM_M(("Child closing pipe descriptors not used. pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n", pipeFdPair1[0], pipeFdPair2[1]));
+            
+            //Trazas Goyo
+            //LM_M(("Child closing pipe descriptors not used. pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n", pipeFdPair1[0], pipeFdPair2[1]));
             
             for ( int i = 3 ;  i < 1024 ; i++ )
-                if( ( i != pipeFdPair1[1] ) && ( i!= pipeFdPair2[0] ) && ( i!= logFd ) ) {
-			//Trazas Goyo
-			LM_M(("Child closing descriptors but pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, logFd:%d. fd:%d\n", pipeFdPair1[1], pipeFdPair2[0], logFd, i));
-
+                if( ( i != pipeFdPair1[1] ) && ( i!= pipeFdPair2[0] ) && ( i!= logFd ) ) 
+                {
+                    
+                    //Trazas Goyo
+                    //LM_M(("Child closing descriptors but pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, logFd:%d. fd:%d\n", pipeFdPair1[1], pipeFdPair2[0], logFd, i));
+                    
                     close( i );
-		}
+                }
         }
-
+        
         
         // Send the "begin" message
         {
@@ -600,13 +602,14 @@ namespace samson
         {
             close(pipeFdPair1[1]);
             close(pipeFdPair2[0]);
-		//Trazas Goyo
-		LM_M(("Child closing used pipe descriptors because finished. pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
+            
+            //Trazas Goyo
+            //LM_M(("Child closing used pipe descriptors because finished. pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
         }
         
         //LM_M(("Finishing runBackgroundProcessRun..."));
         
-            
+        
 	}	
 	
 	

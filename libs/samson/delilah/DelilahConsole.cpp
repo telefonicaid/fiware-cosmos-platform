@@ -772,18 +772,23 @@ namespace samson
                 
                 //writeOnConsole( au::Format::string("Trace: %s", _text.c_str() ) );
                 if( trace_on )
-                if (lmOk(packet->message->trace().type(), packet->message->trace().tlev() ) == LmsOk)
                 {
-                                        
-                    lmOut(
-                          (char*)_text.c_str(),   
-                          (char) packet->message->trace().type() , 
-                          file.c_str(), 
-                          packet->message->trace().lineno() , 
-                          fname.c_str(), 
-                          packet->message->trace().tlev() , 
-                          stre.c_str() 
-                          );
+                    if (lmOk(packet->message->trace().type(), packet->message->trace().tlev() ) == LmsOk)
+                    {
+                                            
+                        lmOut(
+                              (char*)_text.c_str(),   
+                              (char) packet->message->trace().type() , 
+                              file.c_str(), 
+                              packet->message->trace().lineno() , 
+                              fname.c_str(), 
+                              packet->message->trace().tlev() , 
+                              stre.c_str() 
+                              );
+                    }
+                    
+                    //std::cerr << "TRACE: " << file << " ( " << fname << " ): " << _text << "\n";  
+                    //return 0;    
                 }
                 
             }

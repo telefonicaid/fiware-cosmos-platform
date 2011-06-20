@@ -29,8 +29,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Executable declaration
 # ------------------------------------------------------------
-ADD_EXECUTABLE(delilah2 ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(delilah2 ${STATIC_LIBS} )
+ADD_EXECUTABLE(delilah ${SOURCES} ${HEADERS} )
+TARGET_LINK_LIBRARIES(delilah ${STATIC_LIBS} )
 
-INSTALL(TARGETS               delilah2
+INSTALL(TARGETS               delilah
         RUNTIME DESTINATION   bin)

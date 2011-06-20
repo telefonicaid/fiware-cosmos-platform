@@ -26,8 +26,8 @@ link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
 link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
 
 # SAMSON Executable
-ADD_EXECUTABLE(samsonSetup2 ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(samsonSetup2 ${LIBS})
+ADD_EXECUTABLE(samsonSetup ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(samsonSetup ${LIBS})
 
-INSTALL(TARGETS               samsonSetup2
+INSTALL(TARGETS               samsonSetup
         RUNTIME DESTINATION   bin)

@@ -9,15 +9,16 @@
 */
 #include <signal.h>                // kill, SIGINT, ...
 
-#include "parseArgs/parseArgs.h"             // parseArgs
-#include "parseArgs/paConfig.h"              // paConfigCleanup
-#include "logMsg/logMsg.h"                // LM_*
-#include "logMsg/traceLevels.h"           // Trace levels
+#include "parseArgs/parseArgs.h"
+#include "parseArgs/paConfig.h"
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"
 
-#include "samson/common/SamsonSetup.h"           // samson::SamsonSetup
-#include "engine/MemoryManager.h"  // samson::MemoryManager
-#include "samson/common/daemonize.h"             // daemonize
-#include "SamsonSpawner.h"         // SamsonSpawner
+#include "samson/common/SamsonSetup.h"
+#include "samson/common/samsonDirectories.h"
+#include "engine/MemoryManager.h"
+#include "samson/common/daemonize.h"
+#include "SamsonSpawner.h"
 
 
 
@@ -27,6 +28,7 @@
 */
 bool  fg;
 bool  noRestarts;
+bool  reset;
 char  workingDir[1024];
 
 
@@ -40,6 +42,7 @@ PaArgument paArgs[] =
 {
 	{ "-fg",      &fg,          "FOREGROUND",   PaBool,    PaOpt,  false,    false,   true,  "don't start as daemon"   },
 	{ "-nr",      &noRestarts,  "NO_RESTARTS",  PaBool,    PaOpt,  false,    false,   true,  "don't restart processes" },
+	{ "-reset",   &reset,       "RESET",        PaBool,    PaOpt,  false,    false,   true,  "reset"                   },
 	{ "-working",  workingDir,  "WORKING",      PaString,  PaOpt,  DEF_WD,   PaNL,    PaNL,  "working directory"       },
 
 	PA_END_OF_ARGS
@@ -51,8 +54,8 @@ PaArgument paArgs[] =
 *
 * Global variables
 */
-int                     logFd             = -1;
-samson::SamsonSpawner*      spawnerP          = NULL;
+int                     logFd    = -1;
+samson::SamsonSpawner*  spawnerP = NULL;
 
 
 
@@ -62,13 +65,14 @@ samson::SamsonSpawner*      spawnerP          = NULL;
 */
 void sigHandler(int sigNo)
 {
-	printf("Caught signal %d\n", sigNo);
-
-	if (sigNo == SIGINT)
+	if (reset == true)
 	{
-		printf("Got SIGINT\n");
+		LM_W(("Not dying by this signal %d as I initiated it myself ...", sigNo));
+		reset = false;
+		return;
 	}
 
+	LM_W(("Caught signal %d\n", sigNo));
 	exit(1);
 }
 
@@ -95,7 +99,8 @@ void exitFunction(void)
 */
 int main(int argC, const char *argV[])
 {
-	signal(SIGINT, sigHandler);
+	signal(SIGINT,  sigHandler);
+	signal(SIGTERM, sigHandler);
 
 	paConfig("prefix",                        (void*) "SSS_");
 	paConfig("usage and exit on any warning", (void*) true);
@@ -110,6 +115,18 @@ int main(int argC, const char *argV[])
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
+
+	if (reset == true)
+	{
+		if (access(SAMSON_PLATFORM_PROCESSES, R_OK) == 0)
+		{
+			if (unlink(SAMSON_PLATFORM_PROCESSES) != 0)
+				LM_X(1, ("Sorry, unable to remove '%s'", SAMSON_PLATFORM_PROCESSES));
+		}
+
+		system("killall samsonSpawner");
+		usleep(200000);
+	}
 
 	if (fg == false)
 		daemonize();

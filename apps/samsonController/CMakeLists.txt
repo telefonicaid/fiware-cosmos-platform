@@ -42,9 +42,9 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/coding")
 # Executable declaration
 # ------------------------------------------------------------
 
-ADD_EXECUTABLE(samsonController2 ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(samsonController2 ${LIBS})
+ADD_EXECUTABLE(samsonController ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(samsonController ${LIBS})
 
 
-INSTALL(TARGETS               samsonController2
+INSTALL(TARGETS               samsonController
         RUNTIME DESTINATION   bin)

@@ -28,8 +28,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 
 # SAMSON Executable
-ADD_EXECUTABLE(samsonWorker2 ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(samsonWorker2 ${LIBS})
+ADD_EXECUTABLE(samsonWorker ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(samsonWorker ${LIBS})
 
-INSTALL(TARGETS               samsonWorker2
+INSTALL(TARGETS               samsonWorker
         RUNTIME DESTINATION   bin)

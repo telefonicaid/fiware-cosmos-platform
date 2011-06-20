@@ -169,14 +169,9 @@ namespace samson {
         
 		// Log into data a comment to show this
 		jobManager->controller->data.addComment(id, std::string("PROCESS: ") + command );
-		
+
+		// Simple commandLine to get the "main command"
 		au::CommandLine commandLine;
-		commandLine.set_flag_boolean("create");	/// Flag to create outputs as needed
-		commandLine.set_flag_boolean("ncreate");	/// Flag to anulate the effect of -c
-		commandLine.set_flag_boolean("clear");	/// Flag to clear outputs before emiting key-values
-		commandLine.set_flag_boolean("nclear");	/// Flag to anulate the effect of -clear
-		commandLine.set_flag_boolean("clear_inputs");	/// Flag to clear inputs after emiting key-values
-		
 		commandLine.parse(command);
 		
 		// Direct controller commands
@@ -223,12 +218,7 @@ namespace samson {
 			if( operation )
 			{
 				
-				if( commandLine.get_num_arguments() < (int)(1 + operation->getNumInputs() + operation->getNumOutputs() ) )
-				{
-					setError("JobManager","Not enougth parameters");
-					return false;
-				}
-
+/*
 				
 				// Spetial case if -c flag is activated and -nc is not pressent (it is like a script)
 				if( commandLine.get_flag_bool("create") && (!commandLine.get_flag_bool("ncreate")) )
@@ -288,13 +278,21 @@ namespace samson {
 					
 					return true;
 				}
-				
-				ControllerTaskInfo *task_info = new ControllerTaskInfo( this, operation , command , &commandLine );
-				jobManager->controller->data.retreveInfoForTask( id , task_info , commandLine.get_flag_bool("clear_inputs" ) );
+*/				
+				ControllerTaskInfo *task_info = new ControllerTaskInfo( this, command  );
+                
+                if( task_info->error.isActivated() )
+                {
+					setError("Data Manager", task_info->error.getMessage() );	// There was an error with input/output parameters
+					delete task_info;
+					return false;
+                }
+                
+				jobManager->controller->data.retreveInfoForTask( id , task_info );
 																
-				if( task_info->error )
+				if( task_info->error.isActivated() )
 				{
-					setError("Data Manager",task_info->error_message);	// There was an error with input/output parameters
+					setError("Data Manager",task_info->error.getMessage() );	// There was an error with input/output parameters
 					delete task_info;
 					return false;
 				}

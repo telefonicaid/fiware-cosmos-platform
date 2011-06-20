@@ -74,7 +74,7 @@ namespace samson {
 		void fill( network::QueueList *ql , std::string command );
 		void fill( network::DownloadDataInitResponse* response , std::string queue );
 		
-		void retreveInfoForTask( size_t job_id , ControllerTaskInfo *info , bool clear_inputs );		
+		void retreveInfoForTask( size_t job_id , ControllerTaskInfo *info );		
 		
         void completeSelect( std::string& command , au::Error& error );
         
@@ -107,7 +107,7 @@ namespace samson {
 	private:
 
 		
-		void _retreveInfoForTask( ControllerTaskInfo *info );		
+		void _retreveInfoForTask( size_t job_id , ControllerTaskInfo *info );		
 		
 		virtual void _clear();
 		virtual DataManagerCommandResponse _run( size_t task, std::string command );

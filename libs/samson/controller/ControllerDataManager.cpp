@@ -1029,26 +1029,16 @@ namespace samson {
     
 #pragma mark
 	
-	void ControllerDataManager::retreveInfoForTask( size_t job_id , ControllerTaskInfo *info , bool clear_inputs )		
+	void ControllerDataManager::retreveInfoForTask( size_t job_id , ControllerTaskInfo *info  )		
 	{
 		lock.lock();
-		_retreveInfoForTask( info );
-
-		if( clear_inputs )
-		{
-			std::ostringstream command;
-			command << "clear ";
-			for (size_t i = 0 ; i < info->inputs.size() ; i++ )
-				command << info->inputs[i] << " ";
-
-			DataManagerCommandResponse ans =  _runOperation( job_id , command.str() );
-		}
+		_retreveInfoForTask( job_id, info );
 		
 		lock.unlock();
 		
 	}
 	
-	void ControllerDataManager::_retreveInfoForTask( ControllerTaskInfo *info )		
+	void ControllerDataManager::_retreveInfoForTask( size_t job_id , ControllerTaskInfo *info )		
 	{
 		std::ostringstream error_message;
 		
@@ -1066,7 +1056,7 @@ namespace samson {
 				if( !queue_format.isEqual( parameter_format ) )
 				{
 					error_message << "Wrong format for queue " << queue_name << " (" << queue_format.str() << " vs " << parameter_format.str() << ")";
-					info->setError( error_message.str() );
+					info->error.set( error_message.str() );
 					return; 
 				}
 				
@@ -1081,7 +1071,7 @@ namespace samson {
 			else
 			{
 				error_message << "Unknown queue " << info->inputs[i];
-				info->setError( error_message.str() );
+				info->error.set( error_message.str() );
 				return; 
 			}
 		}
@@ -1091,7 +1081,7 @@ namespace samson {
 			if( (int)info->outputs.size() > SamsonSetup::shared()->num_paralell_outputs )
 			{
 				error_message << "Operation with too many outputs ( " << info->outputs.size() << " ). The limit in this SAMSON cluster is " << SamsonSetup::shared()->num_paralell_outputs;
-				info->setError( error_message.str() );
+				info->error.set( error_message.str() );
 				return; 
 			}
 		
@@ -1101,15 +1091,34 @@ namespace samson {
 			std::string queue_name = info->outputs[i];
 			
 			Queue *q = queues.findInMap( queue_name );
+            KVFormat parameter_format = info->operation->getOutputFormat(i);
+            
+            
+            if( !q && info->flag_create )
+            {
+                // Create the queue on demand
+                std::ostringstream command;
+                command << "add " << queue_name << " " << parameter_format.keyFormat << " " << parameter_format.valueFormat;
+                DataManagerCommandResponse ans =  _runOperation( job_id , command.str() );
+                
+                // Find again
+                q = queues.findInMap( queue_name );
+
+                if( !q )
+                {
+                    info->error.set( au::Format::string("Queue %s not found even after trying to add for the -create flag" , queue_name.c_str() ) );
+                    return; 
+                }
+            }
+            
 			if( q )
 			{
 				KVFormat queue_format = q->format();
-				KVFormat parameter_format = info->operation->getOutputFormat(i);
 				
 				if( !queue_format.isEqual( parameter_format ) )
 				{
 					error_message << "Wrong format for queue " << queue_name << " (" << queue_format.str() << " vs " << parameter_format.str() << ")";
-					info->setError( error_message.str() );
+					info->error.set( error_message.str() );
 					return; 
 				}
 
@@ -1122,11 +1131,23 @@ namespace samson {
 			else
 			{
 				error_message << "Unknown queue " << info->outputs[i];
-				info->setError( error_message.str() );
+				info->error.set( error_message.str() );
 				return; 
 			}
 		}
-		
+        
+        // Crear outputs if necessary
+        if( info->flag_clear )
+		{
+			std::ostringstream command;
+			command << "clear ";
+			for (size_t i = 0 ; i < info->outputs.size() ; i++ )
+				command << info->outputs[i] << " ";
+            
+			DataManagerCommandResponse ans =  _runOperation( job_id , command.str() );
+		}
+
+        
 		
 	}
 	

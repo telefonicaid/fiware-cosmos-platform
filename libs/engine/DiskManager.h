@@ -30,9 +30,6 @@ namespace engine
 	class DiskOperation;
 	class Notification;
     
-  
-    
-    
     class DiskManager : public NotificationListener
     {
         
@@ -52,13 +49,10 @@ namespace engine
 
         DiskManager( int _num_disk_operations );
         
-        std::string _str();
-        
     public:
 
         static void init( int _num_disk_operations );
-        static std::string str();
-        static int getNumOperations();                  // get the number of pending operations ( shown at information screen);
+        static DiskManager* shared();
         
         ~DiskManager();
 
@@ -72,11 +66,17 @@ namespace engine
         void quit();
         
 
+    public:
+        
+        int getNumOperations();                  // get the number of pending operations ( shown at information screen);
+        size_t getReadRate();                  
+        size_t getWriteRate();                 
+        std::string str();
+        
     private:
         
 		void finishDiskOperation( DiskOperation *diskOperation );	// Notification that a disk operation has finished        
         
-        int _getNumOperations();                  // get the number of pending operations ( shown at information screen);
         
     };
 

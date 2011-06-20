@@ -45,6 +45,14 @@ namespace engine
         diskManager = new DiskManager (_num_disk_operations );
     }
     
+    
+    DiskManager* DiskManager::shared()
+    {
+        if (!diskManager)
+            LM_X(1, ("Please init DiskManager before using it"));
+        return diskManager;
+    }
+    
 #pragma mark DiskManager
     
     DiskManager::DiskManager( int _num_disk_operations )
@@ -136,23 +144,7 @@ namespace engine
 		
 	}
 
-    std::string DiskManager::str()
-    {
-        if ( diskManager )
-            return  diskManager->_str();
-        else
-            return "DiskManager not initialized";
-    }
-    
     int DiskManager::getNumOperations()
-    {
-        if ( diskManager )
-            return  diskManager->_getNumOperations();
-        else
-            return 0;
-    }
-    
-    int DiskManager::_getNumOperations()
     {
 		pthread_mutex_lock(&mutex);
         size_t num_operations = pending_operations.size() + diskManager->running_operations.size();
@@ -161,9 +153,31 @@ namespace engine
         return num_operations;
         
     }
+
+    
+    size_t DiskManager::getReadRate()
+    {
+		pthread_mutex_lock(&mutex);
+        size_t rate = diskStatistics.item_read.getLastMinuteRate();
+		pthread_mutex_unlock(&mutex);
+        
+        return rate;
+    }
+    
+    size_t DiskManager::getWriteRate()
+    {
+		pthread_mutex_lock(&mutex);
+        size_t rate = diskStatistics.item_write.getLastMinuteRate();
+		pthread_mutex_unlock(&mutex);
+        
+        return rate;
+    }
+
     
     
-    std::string DiskManager::_str()
+    
+    
+    std::string DiskManager::str()
 	{
 		
 		pthread_mutex_lock(&mutex);

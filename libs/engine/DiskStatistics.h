@@ -26,6 +26,11 @@ namespace engine {
 		void add( size_t _size );
 
 		std::string getStatus();
+        
+        size_t getLastMinuteRate()
+        {
+            return rate.getLastMinuteRate();
+        }
 		
 	};	
 

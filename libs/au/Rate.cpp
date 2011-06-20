@@ -69,4 +69,10 @@ namespace au {
                  au::Format::string( last_hour.getTotalSize() , "B" ).c_str() );
     }
 
+    size_t Rate::getLastMinuteRate()
+    {
+        return last_minute.getRate();
+    }
+    
+    
 }

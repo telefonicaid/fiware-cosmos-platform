@@ -172,7 +172,7 @@ namespace samson {
         ws->set_process_manager_status( engine::ProcessManager::str() );
 
         // Disk manager
-        ws->set_disk_manager_status( engine::DiskManager::str() );
+        ws->set_disk_manager_status( engine::DiskManager::shared()->str() );
         
 		// Load data manager
 		loadDataManager.fill( ws );
@@ -201,7 +201,10 @@ namespace samson {
         ws->set_total_cores(engine::ProcessManager::getNumCores());
         ws->set_used_cores(engine::ProcessManager::getNumUsedCores());
 
-        ws->set_disk_pending_operations(engine::DiskManager::getNumOperations());
+        ws->set_disk_pending_operations(engine::DiskManager::shared()->getNumOperations());
+        
+        ws->set_disk_read_rate( engine::DiskManager::shared()->getReadRate() );
+        ws->set_disk_write_rate( engine::DiskManager::shared()->getWriteRate() );
 
 		// Send the message
 		network->sendToController( p );

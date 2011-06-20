@@ -113,6 +113,9 @@ namespace samson
             int disk_pending_operations = worker_status.disk_pending_operations();
             double per_disk = (total_memory==0)?0:((double) disk_pending_operations / (double) 40);
 
+            size_t read_rate = worker_status.disk_read_rate();
+            size_t write_rate = worker_status.disk_write_rate();
+            
             printLine( au::Format::string("Worker %03d", i) );
             
 
@@ -135,6 +138,14 @@ namespace samson
             printLine( au::Format::string("\tDisk                      %s : %s" , 
                                         au::Format::string(disk_pending_operations).c_str() ,
                                         au::Format::progress_bar( per_disk , cols - 50 ).c_str() ));
+
+            printLine( au::Format::string("\t                  Read %s  " , 
+                                          au::Format::string(read_rate,"B").c_str() ,
+                                          au::Format::progress_bar( read_rate / 200*(1024*1024) , cols - 50 ).c_str() ));
+
+            printLine( au::Format::string("\t                  Write %s  " , 
+                                          au::Format::string(write_rate,"B").c_str() ,
+                                          au::Format::progress_bar( write_rate / 200*(1024*1024) , cols - 50 ).c_str() ));
 
             printLine("");
             

@@ -72,6 +72,8 @@ namespace au
         // Set the maximum time
         void setMaxTime( int _max_time );
         
+        size_t getLastMinuteRate();
+        
         
     };
     

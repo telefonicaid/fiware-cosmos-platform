@@ -217,6 +217,7 @@ namespace samson
                 
                 Packet * p = new Packet( Message::Trace );
                 p->message->mutable_trace()->CopyFrom( message->trace() );
+                p->message->set_delilah_id( 0xFFFFFFFFFFFFFFFF );
                 engine::Engine::add( new engine::Notification( notification_samson_worker_send_trace , p ) );
                 //LM_M(("Notifying a trace to the engine"));
                 

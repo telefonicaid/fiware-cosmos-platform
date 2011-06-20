@@ -62,6 +62,9 @@ namespace samson {
 
         void printLine( int r , std::string left_line ,std::string rigth_line )
         {
+		   if( r >= rows )
+			  return;
+
             move( r , 0 );
             printw("%s",left_line.c_str());
             
@@ -88,16 +91,25 @@ namespace samson {
 
         void printLine(  std::string left_line ,std::string rigth_line  )
         {
+		   if( current_row >= (rows-3) )
+			  return;
+
             printLine( current_row++ , left_line, rigth_line );
         }
         
         void printLine( std::string line )
         {
+		   if( current_row >= (rows-3) )
+			  return;
+
             printLine( current_row++ , line, "" );
         }
         
         void printLine()
         {
+		   if( current_row >= (rows-3) )
+			  return;
+
             printLine( current_row++ );
         }
         

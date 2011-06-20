@@ -78,7 +78,6 @@ namespace samson
             
             printLine( );            
 
-
             switch (type) {
                 case general:
                     printGeneral();
@@ -89,14 +88,10 @@ namespace samson
                     break;
             }
 
-            printLine();
-            printLine( "" , au::Format::string("Version %s", SAMSON_VERSION ).c_str()  );
             
-            
-            //printLine(rows-3);          
-            //printLine(rows-2 , "Type h (help) , g (general) , m (memory) , ...","");
+            printLine(rows-2);          
+            printLine(rows-1 , "" , au::Format::string("Version %s", SAMSON_VERSION ).c_str());
             move( rows-1 , 0 );
-            printw(" > ");
             
             refresh();/* Print it on to the real screen */
             
@@ -141,8 +136,9 @@ namespace samson
             txt << "  ( uptime: " << au::Format::time_string( worker_status.up_time() ) << " )";
             txt << " ( updated: " << au::Format::time_string( cronometer_samsonStatus.diffTimeInSeconds() + worker_status.update_time() ) << " ) ]";
 
-            printLine( au::Format::string("Worker %03d %s", i , txt.str().c_str()) );
-            
+            printLine("");
+            printLine( au::Format::string("Worker %03d %s", i , txt.str().c_str()) );           
+            printLine("");
             
 
             printLine( au::Format::string("\tCores  [ %s ] %s / %s : %s" , 
@@ -173,7 +169,6 @@ namespace samson
                                           au::Format::string(write_rate,"B").c_str() ,
                                           au::Format::progress_bar( (double)write_rate /(double) (200*(1024*1024)) , cols - 50 ).c_str() ));
 
-            printLine("");
             
         }        
         

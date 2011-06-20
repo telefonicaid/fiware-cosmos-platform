@@ -1462,10 +1462,10 @@ LmStatus lmFdRegister(int fd, const char* format, const char* timeFormat, const 
 	struct tm tmP;
 
 	PROGNAME_CHECK();
-
+/*
 	if (initDone == true)
 		return LmsInitAlreadyDone;
-
+*/
 	if (fdNoOf == 0)
 	{
 		int i;

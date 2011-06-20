@@ -23,6 +23,9 @@
 #include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
 #include "PushComponent.h"  
 
+#define DEF1             "TYPE:EXEC/FUNC: TEXT"
+
+
 namespace samson
 {	
 	static void consoleFix(void)
@@ -773,7 +776,11 @@ namespace samson
                 //writeOnConsole( au::Format::string("Trace: %s", _text.c_str() ) );
                 if( trace_on )
                 {
-                    if (lmOk(packet->message->trace().type(), packet->message->trace().tlev() ) == LmsOk)
+				   
+				   lmFdRegister(1, DEF1, "DEF", "stdout", NULL);
+
+ 
+				   //if (lmOk(packet->message->trace().type(), packet->message->trace().tlev() ) == LmsOk)
                     {
                                             
                         lmOut(
@@ -788,6 +795,9 @@ namespace samson
                     }
                     
                     //std::cerr << "TRACE: " << file << " ( " << fname << " ): " << _text << "\n";  
+
+					lmFdUnregister(1);
+
                     //return 0;    
                 }
                 

@@ -80,7 +80,6 @@ bool getLinkFromLine(char *line, samson::system::UInt* node, samson::graph::Link
 		samson::system::UInt node;
 		samson::graph::Link link;
 
-
 		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 			size_t line_begin = 0;
@@ -104,6 +103,14 @@ bool getLinkFromLine(char *line, samson::system::UInt* node, samson::graph::Link
 					if (getLinkFromLine(data+line_begin, &node, &link))
 					{
 						writer->emit(0, &node, &link);
+
+						// Emit the link in the other direction
+						size_t tmp = link.id.value;
+						link.id.value = node.value;
+						node.value = tmp;
+						writer->emit(0, &node, &link);
+
+
 					}
 					line_begin = offset+1;
 				}
@@ -115,6 +122,11 @@ bool getLinkFromLine(char *line, samson::system::UInt* node, samson::graph::Link
 				if (getLinkFromLine(data+line_begin, &node, &link))
 				{
 					writer->emit(0, &node, &link);
+						// Emit the link in the other direction
+						size_t tmp = link.id.value;
+						link.id.value = node.value;
+						node.value = tmp;
+						writer->emit(0, &node, &link);
 				}
 			}
 		}

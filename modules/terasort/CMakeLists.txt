@@ -1,4 +1,4 @@
-SET( MODULE_NAME sna )
+SET( MODULE_NAME terasort )
 
 cmake_minimum_required(VERSION 2.6)
 

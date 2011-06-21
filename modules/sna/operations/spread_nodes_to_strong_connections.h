@@ -11,6 +11,8 @@
 
 #include <samson/modules/system/UInt.h>
 
+#include <samson/modules/graph/Node.h>
+
 
 namespace samson{
 namespace sna{
@@ -19,8 +21,8 @@ namespace sna{
 	class spread_nodes_to_strong_connections : public samson::Map
 	{
 		samson::system::UInt node_id;	// key 	
-		Node node;		// value
-		Node reducedNode;	//Node with soft contacts (not necessary in the cliques)
+		graph::Node node;		// value
+		graph::Node reducedNode;	//Node with soft contacts (not necessary in the cliques)
 		
 	public:
 

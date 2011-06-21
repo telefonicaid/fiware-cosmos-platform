@@ -6,6 +6,7 @@
 #ifndef _H_SAMSON_sna_Vector_Node
 #define _H_SAMSON_sna_Vector_Node
 
+#include <samson/modules/graph/Node.h>
 
 #include <samson/modules/sna/Vector_Node_base.h>
 #include <algorithm>
@@ -19,7 +20,7 @@ namespace sna{
 	{
 
 	public:
-		Node *nodeWithId( uint id)
+	        graph::Node *nodeWithId( uint id)
 		{
 			for (int n = 0 ;  n < items_length ; n++)
 				if( items[n].id == id)
@@ -36,8 +37,8 @@ namespace sna{
 			for (int i = 0 ; i < items_length ; i++)
 				for (int j = i+1 ; j < items_length ; j++)
 				{
-					Node *node1 = &items[i];
-					Node *node2 = &items[j];
+				        graph::Node *node1 = &items[i];
+					graph::Node *node2 = &items[j];
 					double weight  = node1->weightOfLinkWithId( node2->id.value );
 
 

@@ -143,7 +143,7 @@ namespace samson {
         size_t sender_id = packet->message->delilah_id();
         DelilahComponent *component = components.findInMap( sender_id );
         
-		LM_M(("Received with sender_id %lu (component %p)", sender_id , component));
+		//LM_M(("Received with sender_id %lu (component %p)", sender_id , component));
         
         if ( component )
             component->receive( fromId, msgCode, packet );

@@ -12,7 +12,9 @@
 #include "CliquesSolver.h"							// CliquesSolver
 #include <samson/modules/system/UInt.h>				// samson::system::UInt
 #include <samson/modules/system/Void.h>				// samson::system::Void
-#include <samson/modules/sna/Node.h>				// samson::sna::Node
+
+#include <samson/modules/graph/Node.h>				// samson::graph::Node
+
 #include <samson/modules/sna/Vector_Node.h>		// samson::sna::Vector_Node
 #include "samson/modules/sna/Vector_Clique.h"		// samson::sna::Vector_Clique
 
@@ -30,7 +32,7 @@ namespace sna{
 		CliquesSolver cliquesSolver ;
 		samson::system::UInt node_id ;
 		
-		samson::sna::Node node ;
+		samson::graph::Node node ;
 		samson::sna::Vector_Node neighbours ;
 		samson::sna::Vector_Clique cliques ;
 		

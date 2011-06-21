@@ -13,7 +13,6 @@
 namespace samson{
 namespace graph{
 
-
 	class Link : public Link_base
 	{
 		
@@ -27,9 +26,19 @@ namespace graph{
 		void setWeight( double value )
 		{
 			weight.value =  (int)(value*1000.0);
-
 		}
-		
+
+		// Old functions....
+
+                static int double_2_intScaled( double value )
+                {
+		  return  (int) (value*1000.0);
+                }
+
+                static double intScaled_2_double ( int value )
+                {
+		  return (double)value / 1000.0;
+                }	
 		
 	};
 

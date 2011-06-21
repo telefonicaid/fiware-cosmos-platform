@@ -6,7 +6,7 @@ all:
 	make -C cdr
 	make -C graph
 	make -C sna
-	make -C sna_light
+#	make -C sna_light
 	make -C osn
 	make -C url
 	make -C url_benchmark

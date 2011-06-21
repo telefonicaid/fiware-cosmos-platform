@@ -127,7 +127,7 @@ script compute_graph_from_links
 
 reduce get_graph_from_links
 {
-	in		system.UInt graph.Link
+	in	 system.UInt graph.Link
 	out	 system.UInt graph.Node
 
 	helpLine "Get a graph from a set of links. It basically an accumulator function"
@@ -211,7 +211,7 @@ parser parse_links
 {
 	out	 system.UInt graph.Link
 
-	helpLine "Still not implemented"
+	helpLine "Parse a graph from txt files. Input format is expected to be links in the format 925513947|657056810|0.25"
 
 	help
 	{
@@ -245,17 +245,15 @@ script parse_graph
 
 	help
 	{
-		"Transform a txt-based file with a graph into a macro-binary graph with key-value [system.UInt graph.Node]"
-		"The input graph is suppoused to be a list of connections between nodes"
-		"A B for each line where A < B"
+		"Transform a txt-based file with a graph into a binary graph with key-value [system.UInt graph.Node]"
+		"The input graph is suppoused to be a list of connections between nodes. See graph.parse_links for more info"
 	}
 
 	code
 	{
-		rm $1_link -f;
-		parse_links $1 $1_links;				 # parse links emiting two outputs per line
-		get_graph_from_links2 $1_links $2;	 # collapse all links into a graph
-		rm $1_link -f;
+		graph.parse_links $1 $1_links -create -clear;		# parse links emiting two outputs per line
+		graph.get_graph_from_links $1_links $2 -create -clear;	# collapse all links into a graph
+		rm $1_links -f;
 	}
 
 }

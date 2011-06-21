@@ -114,7 +114,7 @@ void* writerThread(void* vP)
 *
 * Endpoint2::Endpoint2 - Constructor
 */
-    Endpoint2::Endpoint2 
+Endpoint2::Endpoint2 
 (
 	EndpointManager*  _epMgr,
 	Type              _type,
@@ -493,8 +493,11 @@ Status Endpoint2::partWrite(void* dataP, int dataLen, const char* what)
 
 	LM_WRITES(name(), what, dataP, dataLen, LmfByte);
 
-    epMgr->networkInterface->statistics->item_write.add( tot );
-    
+	if (epMgr->networkInterface != NULL)
+		epMgr->networkInterface->statistics->item_write.add( tot );
+	else
+		LM_W(("No WRITE statistics as networkInterface is NULL"));
+
 	bytesOut += tot;
 	return OK;
 }
@@ -755,7 +758,10 @@ Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, const char* w
 	*bufLenP = tot;
 	LM_READS(name(), what, buf, tot, LmfByte);
 
-    epMgr->networkInterface->statistics->item_read.add( tot );
+	if (epMgr->networkInterface != NULL)
+		epMgr->networkInterface->statistics->item_read.add( tot );
+	else
+		LM_W(("No READ statistics as networkInterface is NULL"));
     
 	bytesIn += tot;
 	return OK;

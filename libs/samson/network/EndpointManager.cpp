@@ -77,6 +77,7 @@ EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
 	tmoSecs          = 2;
 	tmoUSecs         = 0;
 
+	networkInterface = NULL;
 	procVec          = NULL;
 	hostMgr          = NULL;
 

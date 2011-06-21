@@ -45,11 +45,13 @@ namespace samson
         atexit(ncurses_atexit);
         
         srand(time(NULL));
-        
-        initscr();  /* Start curses mode   */
+
+        WINDOW *w = initscr(); /* Start curses mode   */
+        cbreak();
+        nodelay(w, TRUE);        
         
         keypad(stdscr, TRUE);		/* We get F1, F2 etc..              */
-        //noecho();                   /* Don't echo() while we do getch   */
+        noecho();                   /* Don't echo() while we do getch   */
         //raw();                    /* Line buffering disabled          */
 
         
@@ -83,8 +85,8 @@ namespace samson
                     printGeneral();
                     break;
                     
-                case memory:
-                    printMemory();
+                case task:
+                    printTask();
                     break;
             }
 
@@ -96,7 +98,22 @@ namespace samson
             refresh();/* Print it on to the real screen */
             
             usleep( 10000 );
+
             
+            int ch = getch();
+            if( ch != ERR )
+            {
+                // Do something
+                if( ch == 'q' )
+                    exit(0);
+                
+                if( ch == 'g' )
+                    type = general;
+                
+                if( ch == 't' )
+                    type = task;
+                
+            }
         }
         
 
@@ -189,59 +206,80 @@ namespace samson
     }
  
     
-    void DelilahMonitorization::printMemory()
+    void DelilahMonitorization::printTask()
     {
-        clear();
-        printLine("");
-        printLine("Memory information");
-        printLine();
-        printLine("");
-        
+
+        if ( !samsonStatus )
+            return;
         
         info_lock.lock();
         
-        if ( !samsonStatus )
-        {
-            // If samsonStatus is not received, show a message informing about this
-            printLine("\tWorker status still not received from SAMSON platform");
-            return;
-        }
+        printLine("");
+        printLine("Tasks");
+        printLine("");
+
         
-        for (int i = 0 ; i < samsonStatus->worker_status_size() ; i++)
+        for ( int i = 0 ; i < samsonStatus->controller_status().task_manager_status().task_size() ; i++)
         {
-            const network::WorkerStatus worker_status = samsonStatus->worker_status(i);
+            const network::ControllerTask &task =  samsonStatus->controller_status().task_manager_status().task(i);
             
-            int used_cores = worker_status.used_cores();
-            int total_cores = worker_status.total_cores();
-            double per_cores = (total_cores==0)?0:((double) used_cores / (double) total_cores);
-            size_t used_memory = worker_status.used_memory();
-            size_t total_memory = worker_status.total_memory();
-            double per_memory = (total_memory==0)?0:((double) used_memory / (double) total_memory);
-            int disk_pending_operations = worker_status.disk_pending_operations();
-            //double per_disk = (total_memory==0)?0:((double) disk_pending_operations / (double) 40);
+            std::stringstream txt;
             
-            std::ostringstream txt;
+            txt << "\t" << "[" << task.task_id() << " / Job: " << task.job_id() << " ] ";
             
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
-            txt << "Worker " << i;
-            txt << "  Process: " << au::Format::percentage_string(per_cores).c_str();
-            txt << " Memory: " << au::Format::percentage_string(per_memory);
-            txt << " Disk: " << disk_pending_operations;
-            txt << "  ( uptime: " << au::Format::time_string( worker_status.up_time() ) << " )";
-            txt << " ( updated: " << au::Format::time_string( cronometer_samsonStatus.diffTimeInSeconds() + worker_status.update_time() ) << " )" << std::endl;
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
+            switch (task.state()) {
+                case network::ControllerTask_ControllerTaskState_ControllerTaskInit:
+                    txt << "Init";
+                    break;
+                case network::ControllerTask_ControllerTaskState_ControllerTaskCompleted:
+                    txt << "Completed";
+                    break;
+                case network::ControllerTask_ControllerTaskState_ControllerTaskFinish:
+                    txt << "Finished";
+                    break;
+                case network::ControllerTask_ControllerTaskState_ControllerTaskRunning:
+                    txt << "Running " << task.task_description() ;
+                    break;
+                    
+            }
             
-            
-            txt << "\tMemory Manager: " << worker_status.memory_status() << "\n";
-            txt << "\tShared Memory Manager:    " << worker_status.shared_memory_status() << "\n";
-            
+            if( task.has_error() )
+                txt << "  --> Error: ( " << task.error().message() <<  " )";
+
             printLine( txt.str().c_str() );
             
+            
+            if( task.state() == network::ControllerTask_ControllerTaskState_ControllerTaskRunning )
+            {
+                
+                double running_progress;
+                if( task.total_info().size() == 0 )
+                    running_progress = 0;
+                else
+                    running_progress  =  (double) task.running_info().size() / (double) task.total_info().size();
+                
+                double processed_completed;
+                if( task.processed_info().size() == 0)
+                    processed_completed = 0;
+                else
+                    processed_completed = (double) task.processed_info().size() / (double) task.total_info().size();
+                
+                std::stringstream txt;
+                txt << "\t\tProgress : ";
+                txt << au::Format::string( task.processed_info().size() );
+                txt << " / " << au::Format::string( task.running_info().size() );
+                txt << "/" << au::Format::string( task.total_info().size() ) << " ";
+                txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', ' ' ,  60);
+                
+                printLine( txt.str().c_str() );
+                
+            }
+            
         }
-        
         
         // Unlock the common information lock    
         info_lock.unlock();
+        
     }
     
 }

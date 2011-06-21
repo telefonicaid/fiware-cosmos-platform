@@ -36,7 +36,7 @@ namespace samson {
     typedef enum 
     {
         general,
-        memory
+        task
     } DelilahMonitorizationType;
 
     
@@ -173,7 +173,7 @@ namespace samson {
     private:
 
         void printGeneral();
-        void printMemory();
+        void printTask();
         
         
 	};

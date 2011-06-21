@@ -225,30 +225,30 @@ namespace samson
             
             std::stringstream txt;
             
-            txt << "\t" << "[" << task.task_id() << " / Job: " << task.job_id() << " ] ";
+            txt << "\t" << au::Format::string( "[ %04lu / Job: %04lu ] " , task.task_id() , task.job_id() );
             
             switch (task.state()) {
                 case network::ControllerTask_ControllerTaskState_ControllerTaskInit:
-                    txt << "Init";
+                    txt << "Init        " << task.task_description();
                     break;
                 case network::ControllerTask_ControllerTaskState_ControllerTaskCompleted:
-                    txt << "Completed";
+                    txt << "Completed   " << task.task_description();
                     break;
                 case network::ControllerTask_ControllerTaskState_ControllerTaskFinish:
-                    txt << "Finished";
+                    txt << "Finished    " << task.task_description();
                     break;
                 case network::ControllerTask_ControllerTaskState_ControllerTaskRunning:
-                    txt << "Running " << task.task_description() ;
+                    txt << "Running     " << task.task_description() ;
                     break;
-                    
             }
-            
-            if( task.has_error() )
-                txt << "  --> Error: ( " << task.error().message() <<  " )";
-
+ 
             printLine( txt.str().c_str() );
             
-            
+            if( task.has_error() )
+            {
+                printLine( au::Format::string( "  --> Error: ( %s )" ,  task.error().message().c_str() ) );
+            }
+           
             if( task.state() == network::ControllerTask_ControllerTaskState_ControllerTaskRunning )
             {
                 

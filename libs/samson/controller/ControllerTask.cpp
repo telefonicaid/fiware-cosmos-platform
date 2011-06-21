@@ -279,6 +279,7 @@ namespace samson {
         // set job & task id
         task->set_job_id( job->getId() );
         task->set_task_id( id );
+        task->set_task_description( info->operation_name );
         
         // KVInfo for total running and process
         copy( &total_info , task->mutable_total_info() );

@@ -1127,7 +1127,7 @@ namespace samson
                         else
                             processed_completed = (double) task.processed_info().size() / (double) task.total_info().size();
                         
-                        txt << "\n\t\tProgress: ";
+                        txt << "\n\t\tProgress: " << task.task_description() << " : ";
                         txt << au::Format::string( task.processed_info().size() );
                         txt << " / " << au::Format::string( task.running_info().size() );
                         txt << "/" << au::Format::string( task.total_info().size() ) << " ";

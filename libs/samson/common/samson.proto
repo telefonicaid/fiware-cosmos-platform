@@ -147,6 +147,8 @@ message ControllerTask
 	required int64 job_id = 2;
 	required int64 task_id = 3;
 
+	required string task_description = 11;		// Information about the task running
+
 	optional Error error = 10;			// Optional error only activated if state = completed
 
         optional KVInfo total_info=4;                  // Total amount of information to be processed

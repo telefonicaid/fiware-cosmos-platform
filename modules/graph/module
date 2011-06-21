@@ -226,7 +226,7 @@ generator fake_graph
 {
 	out system.UInt graph.Node
 
-	helpLine	"Generate some fake graphs to play with"
+	helpLine "Generate some fake graphs to play with"
 
 	help
 	{

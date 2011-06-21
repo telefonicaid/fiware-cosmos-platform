@@ -172,7 +172,7 @@ namespace samson {
 				total_size += info[hg].size;
             
             if (total_size != header->info.size)
-                LM_X(1, ("total_size (%d) != header->info.size (%d)", total_size, header->info.size));
+                LM_X(1, ("total_size (%lu) != header->info.size (%lu)", total_size, header->info.size));
             
             global_size += total_size;
             global_info.append( header->info );

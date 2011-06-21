@@ -16,7 +16,11 @@ graph.parse_graph graph.txt graph -create
 
 		  --> Transform a txt dat-set into a binary graph file
 
-sna.compute_cliques graph cliques -create
+graph.filter_graph graph graph_filtered
+
+	    --> Filter the graph to remove node with lots of contacts
+
+sna.compute_cliques graph_filtered cliques -create
 
 		    --> Compute cliques from the graph
 

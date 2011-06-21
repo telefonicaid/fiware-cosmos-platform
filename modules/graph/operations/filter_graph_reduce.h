@@ -26,7 +26,8 @@ namespace graph{
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			assert( inputs[0].num_kvs > 0 );
+			if( inputs[0].num_kvs <= 0 )
+			   tracer->setUserError("No key-values at the input");
 			
 			//Get the key to discover the node of study	
 			node_id.parse(inputs[0].kvs[0]->key);	
@@ -42,7 +43,7 @@ namespace graph{
 			{
 				tmp_node.parse(inputs[0].kvs[i]->value);
 				
-				if ( tmp_node.id == node_id.value )
+				if ( tmp_node.id.value == node_id.value )
 				{
 					if( found )
 					{
@@ -52,17 +53,26 @@ namespace graph{
 						setErrorMessage( o.str() );
 						return;
 						 */
-						assert(false);
+
+					   tracer->setUserError("Error since we found ourself twice");
 					}
 					
 					found = true;
 					node.parse(inputs[0].kvs[i]->value);	//reparse to get all information again
-					assert( node.links_length > 0 );
+
+					if( node.links_length <= 0 )
+					{
+					   
+					   OLM_E(("Error in node %lu. Found ourselves with %lu contacts ( number of kvs for me %lu)" , tmp_node.id.value , tmp_node.links_length , inputs[0].num_kvs ));
+					   tracer->setUserError("Error with auto-loop nodes");
+					}
 				}
 				else
 				{
 					//Kill node...
-					assert( tmp_node.links_length == 0 );
+					if( tmp_node.links_length != 0 )
+					   tracer->setUserError("Error tmp_node.links_length != 0");
+
 					removedElement.push_back( tmp_node.id.value );
 				}
 			}

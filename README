@@ -2,6 +2,9 @@
 Quick tutorial on samson
 ----------------------------------------------------
 
+Preparing your local machine for running samson
+Install cmake, qt4-qmake, libqt4-core libqt4-dev, libreadline-dev, protobuf-c-compiler, libprotobuf-dev
+
 * Kill everything
   --> make sure no samsonWorker, samsonController is working
 

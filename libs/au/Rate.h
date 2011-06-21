@@ -59,7 +59,7 @@ namespace au
                 
     public:
         
-        Rate() : last_minute(60) , last_hour(3600)
+        Rate() : last_minute(20) , last_hour(3600)
         {
         }
         

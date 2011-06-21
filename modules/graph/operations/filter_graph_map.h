@@ -39,11 +39,16 @@ namespace graph{
 				//Parsing key and value
 				node_id.parse( inputs[0].kvs[i]->key );
 				node.parse( inputs[0].kvs[i]->value );
+
+				if( node.links_length == 0)
+				{
+				   OLM_E(("Node with 0 contacts ( %lu )" , node_id.value )); 
+				}
 				
 				
-				assert( node_id.value == node.id.value );	//Graph correctly formed
-				assert( node_id.value > 0 );
-				
+				if( node_id.value != node.id.value )
+				   tracer->setUserError("Graph not correctly formed. key and value are not related");
+
 				if (
 					(  node.numberOfLinksWithWeightEqualOrHigher( 1.0 ) > max_strong_connections ) ||
 					(  node.numberOfLinksWithWeightEqualOrHigher( 0.0 ) > max_connections )
@@ -55,7 +60,13 @@ namespace graph{
 					for (int j = 0 ; j < node.links_length ; j++)
 					{
 						killNode_id.value = node.links[j].id.value;		//This is the target node to be removed in
-						writer->emit( 0 , &killNode_id, &killNode );
+
+						if( killNode_id.value == node.id.value )
+						{
+						   OLM_W(("Node %lu is connected to itself... not sending a kill my-self message" , node.id.value ));
+						}
+						else
+						   writer->emit( 0 , &killNode_id, &killNode );
 					}
 				}
 				else

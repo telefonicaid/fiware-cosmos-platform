@@ -36,12 +36,20 @@ namespace graph{
 			node_id.value = node.id.value;
 
 			node.linksSetLength( inputs[0].num_kvs );
+
+			int pos = 0;
 			for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 			{
 			   samson::graph::Link l;
 			   l.parse( inputs[0].kvs[i]->value );
-			   node.links[i].copyFrom( &l );
+
+			   if( l.id.value != node_id.value ) // We avoid connecting to ourselfs
+				  node.links[pos++].copyFrom( &l );
 			}
+
+			node.linksSetLength( pos ); // Final length
+
+/*
 			if ((node.links_length == 1) && (node_id.value == node.links[0].id.value))
 			{
 				//With this structure, from links we are only able to build nodes with outgoing links.
@@ -49,13 +57,15 @@ namespace graph{
 				//To complete the dirty trick, we set the number of links to 0
 				node.links_length = 0;
 			}
-			
+*/			
+
 			//By default all nodes belong to Telefonica
 			node.flags = 0;					// No flag activated
 			node.flags.value &= ~GRAPH_FLAG_EXTERN;		// Unset the extern flag ( no really necessary since we have all flags unset by default )
 			
 			//Emit the complete node information
-			writer->emit( 0, &node_id, &node);			
+			if( pos > 0 ) // We do not emit nodes with no contacts ( possible if linked only to me ;) )
+			   writer->emit( 0, &node_id, &node);			
 
 		}
 

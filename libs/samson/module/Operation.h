@@ -165,7 +165,27 @@ namespace samson {
 			_helpLine = "";
 			_helpMessage = "Help coming soon\n";
 		}
-		
+        
+		Operation( Operation *op )
+        {
+			_type                           = op->_type;
+			_creationFunction               = op->_creationFunction;
+			_inputCompareFunction           = op->_inputCompareFunction;
+			_inputCompareByKeyFunction      = op->_inputCompareByKeyFunction;
+            
+			top               = op->top;
+			_name             = op->_name;
+			_helpLine         = op->_helpLine;
+			_helpMessage      = op->_helpMessage;
+            
+            // Copy the input formats
+            inputFormats.insert( inputFormats.begin() , op->inputFormats.begin() , op->inputFormats.end() );
+            outputFormats.insert( outputFormats.begin() , op->outputFormats.begin() , op->outputFormats.end() );
+            
+            // copy the code
+            code.insert( code.begin() , op->code.begin() , op->code.end() );
+        }
+        
 		virtual ~Operation()
 		{
 		}

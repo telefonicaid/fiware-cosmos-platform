@@ -76,6 +76,7 @@ namespace samson {
             addOption("info_full");
             addOption("info_net");
             addOption("info_cores");
+            addOption("info_modules");
             addOption("info_task_manager");
             addOption("info_disk_manager");
             addOption("info_process_manager");

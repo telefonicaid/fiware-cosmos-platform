@@ -536,6 +536,9 @@ namespace samson {
 		{
 			jobManager.fill( status );
             status->set_network_status(network->getState(""));
+            
+            ModulesManager::shared()->fill( status );
+            
             // Set up time information
             status->set_up_time(au::Format::ellapsedSeconds(&init_time));
 

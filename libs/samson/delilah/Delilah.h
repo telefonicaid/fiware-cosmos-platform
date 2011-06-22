@@ -26,6 +26,10 @@
 #include "engine/EngineNotification.h" // engine::NotificationListener
 #include "au/Cronometer.h"      // au::Cronometer
 
+namespace  engine {
+    class Buffer;
+}
+
 namespace samson {
 	
     
@@ -95,7 +99,7 @@ namespace samson {
 		size_t addDownloadProcess( std::string queue , std::string fileName , bool show_on_screen );
         size_t addPushData( std::vector<std::string> fileNames , std::string queue );
 
-		size_t sendCommand( std::string command );
+		size_t sendCommand( std::string command , engine::Buffer *buffer );
 		
 		
 		// Check a particular if

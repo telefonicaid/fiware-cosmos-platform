@@ -6,6 +6,10 @@
 #include "samson/network/Message.h"		// Message::MessageCode 
 #include "samson/network/Packet.h"			// samson::Packet
 
+namespace engine {
+    class Buffer;
+}
+
 namespace samson {
 
 	
@@ -48,10 +52,11 @@ namespace samson {
 	class CommandDelilahComponent : public DelilahComponent
 	{
 		std::string command;
-		
+		engine::Buffer *buffer;
+        
 	public:
 		
-		CommandDelilahComponent(std::string _command);
+		CommandDelilahComponent( std::string _command , engine::Buffer *buffer );
 		
 		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 

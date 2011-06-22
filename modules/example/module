@@ -2,7 +2,7 @@ Module example
 {
 	title	"Example module to play with samson"
 	author	"Andreu Urruela"
-	version "0.1"
+	version "0.5"
 }
 
 data MyData

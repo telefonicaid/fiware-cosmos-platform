@@ -8,6 +8,7 @@
 #include "au/Lock.h"                /* Lock                            */
 #include "au/Error.h"                /* Lock                            */
 #include "au/CommandLine.h"			/* AUCommandLine                            */
+#include "au/map.h"                 // au::map
 
 #include "samson/common/samson.pb.h"			// samson::network::...
 #include "samson/common/coding.h"				// ss:KVInfo
@@ -26,7 +27,9 @@ namespace samson {
 	{
 		
 		au::Lock lock;			//!< General lock for modules access
-		
+
+        au::map< std::string  , Module > modules;  // Individual modules ( just for listing )
+        
 	public:
 
 		ModulesManager();		//!< Private constructor to implement singleton
@@ -51,7 +54,12 @@ namespace samson {
 		// Fill Information for network messages
 		void fill( network::OperationList *ol , std::string command  );
 		void fill( network::DataList *dl, std::string command  );
-		
+	
+		// Fill status information	
+		void fill( network::WorkerStatus* ws);
+        void fill( network::ControllerStatus *cs );        
+        std::string getStatus();
+        
 	};
 	
 	

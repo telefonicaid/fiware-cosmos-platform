@@ -726,7 +726,20 @@ Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, const char* w
 	{
 		ssize_t nb;
 
-		s = msgAwait(0, 500000, what);
+        // Andreu: This produced an error when system was heavily loaded ( select in msgAwait return timeout )
+        int try_msgAwait = 0;
+        do
+        {
+            s = msgAwait(0, 500000, what);
+            if( s!= OK )
+            {
+                LM_W(("msgAwait: %s, expecting '%s' from %s (%d/%d)", status(s), what, name() , try_msgAwait , 1000 ));
+                usleep(500000);
+                if( try_msgAwait++ == 1000 )
+                    break;
+            }
+        } while ( s!= OK );
+        
 		if (s != OK)
 			LM_RE(s, ("msgAwait: %s, expecting '%s' from %s", status(s), what, name()));
 

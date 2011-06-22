@@ -57,7 +57,17 @@ namespace samson {
 			
 			_helpMessage = "Help coming soon";
 		}
+
+		Data( Data *d )
+		{
+			_name = d->_name;
+			_creationFunction = d->_creationFunction;
+			_sizeFunction = d->_sizeFunction;
+			
+			_helpMessage = d->_helpMessage;
+		}
 		
+        
 		std::string getName()
 		{
 			return _name;

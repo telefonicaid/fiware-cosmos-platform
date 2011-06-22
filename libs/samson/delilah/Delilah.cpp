@@ -2,6 +2,12 @@
 
 #include "logMsg/logMsg.h"             // lmInit, LM_*
 
+#include "au/CommandLine.h"		// CommandLine
+#include "au/Cronometer.h"      // au::Cronometer
+
+#include "engine/Buffer.h"      // engine::Buffer
+
+
 #include "samson/common/Macros.h"             // EXIT, ...
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
 
@@ -9,14 +15,13 @@
 #include "samson/network/Packet.h"				// samson::Packet
 #include "samson/network/Network.h"			// NetworkInterface
 #include "samson/network/Endpoint.h"			// Endpoint
-#include "au/CommandLine.h"		// CommandLine
+
 #include "samson/delilah/Delilah.h"			// Own interfce
 #include "samson/network/Packet.h"				// samson::Packet
 #include "DelilahUploadDataProcess.h"	// samson::DelilahLoadDataProcess
 #include "DelilahDownloadDataProcess.h"	// samson::DelilahLoadDataProcess
 #include "samson/common/EnvironmentOperations.h"
 #include "PushComponent.h"          // samson::PushComponent
-#include "au/Cronometer.h"      // au::Cronometer
 
 #include "PushComponent.h"   // PushDataComponent
 
@@ -381,11 +386,11 @@ namespace samson {
 		return output.str();    
     }
     
-	size_t Delilah::sendCommand(  std::string command )
+    size_t Delilah::sendCommand( std::string command , engine::Buffer *buffer )
 	{
 		
 		// Add a components for the reception
-		CommandDelilahComponent *c = new CommandDelilahComponent( command );
+		CommandDelilahComponent *c = new CommandDelilahComponent( command , buffer );
         
 		// Get the id of this operation
 		size_t tmp_id = addComponent( c );

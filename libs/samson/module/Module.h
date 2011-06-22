@@ -151,15 +151,16 @@ namespace samson
          Mode operation between modulues
          */
         
-		void moveFrom( Module *m )
+		void copyFrom( Module *m )
 		{
-			datas.insert( m->datas.begin() ,  m->datas.end() );
-			operations.insert( m->operations.begin() , m->operations.end());
+            std::map<std::string, Operation*>::iterator o;
+            std::map<std::string, Data*>::iterator d;
+            
+            for ( o = m->operations.begin() ; o != m->operations.end() ; o++ )
+                operations.insert( std::pair<std::string, Operation*> ( o->first , new Operation( o->second )  )  );
 
-			// We clear here since otherwise will be deleted twice at the destructor
-            // Note that we are not removing objects
-			m->datas.clear();
-			m->operations.clear();
+            for ( d = m->datas.begin() ; d != m->datas.end() ; d++ )
+                datas.insert( std::pair<std::string, Data*> ( d->first , new Data( d->second )  )  );
 			
 		}
 		

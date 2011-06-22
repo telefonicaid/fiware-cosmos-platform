@@ -133,6 +133,9 @@ namespace samson {
 		// Fill information related with file manager and disk manager
         ws->set_engine_status( engine::Engine::str() );
 
+        // Modules manager
+        ModulesManager::shared()->fill( ws );
+        
         // Memory manager
         std::ostringstream memory_status;
 

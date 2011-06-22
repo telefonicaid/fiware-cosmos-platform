@@ -129,8 +129,8 @@ namespace samson
 		
 		lock.lock();
 		
-		// Clear this module itself (operations and datas)
-		clearModule();
+		clearModule();  		// Clear this module itself (operations and datas)
+        modules.clearMap();     // Remove all modules stored here
 		
 		LM_T(LmtModuleManager,("Adding modules again..."));
 		
@@ -158,57 +158,67 @@ namespace samson
 	{
 		
 		void *hndl = dlopen(path.c_str(), RTLD_NOW);
-		if(hndl == NULL){
-			//logError( "KVWriter " + path );
+		if(hndl == NULL)
+        {
+            LM_W(("Not possible to dlopen for file %s", path.c_str() ));
 			return;
 		}
+        
 		void *mkr = dlsym(hndl, "moduleCreator");		
-		void *getVersionPointer = dlsym(hndl, "getSamsonVersion");
-		
-		if( mkr && getVersionPointer )
-		{
-			moduleFactory f = (moduleFactory)mkr;
-			getVersionFunction fv = (getVersionFunction)getVersionPointer;
-			
-			Module *module = f();
-			std::string platform_version  = fv();
-			
-			if ( !module )
-			{
-				LM_E(( "Not possible to load module at path %s (not container found)" , path.c_str()));
-				dlclose(hndl);
-				return;
-			}
-			
-			if( platform_version == SAMSON_VERSION )
-			{
-				//SSLogger::log( SSLogger::message, "Loaded module at path" + path );
-				module->hndl = hndl;
-				addModule( module );
-			}
-			else
-			{
-				//SSLogger::log( SSLogger::warning, "Not possible to load module at path" + path + " (wrong API version)" );
-				dlclose(hndl);
-				delete module;
-				
-			}
-		}
-		else
-		{
+		if(mkr == NULL)
+        {
+            LM_W(("Not possible to dlsym for file %s", path.c_str() ));
 			dlclose(hndl);
-			//SSLogger::log( SSLogger::warning, "Not possible to link module at path" + path );
+			return;
+		}
+        
+		void *getVersionPointer = dlsym(hndl, "getSamsonVersion");
+		if(getVersionPointer == NULL)
+        {
+            LM_W(("Not possible to dlsym for file %s", path.c_str() ));
+			dlclose(hndl);
+			return;
 		}
 		
-		
+        moduleFactory f = (moduleFactory)mkr;
+        getVersionFunction fv = (getVersionFunction)getVersionPointer;
+        
+        Module *module = f();
+        std::string platform_version  = fv();
+        
+        if ( !module )
+        {
+            LM_E(( "Not possible to load module at path %s (not container found)" , path.c_str()));
+            dlclose(hndl);
+            return;
+        }
+        
+        if( platform_version == SAMSON_VERSION )
+        {
+            //SSLogger::log( SSLogger::message, "Loaded module at path" + path );
+            module->hndl = hndl;
+            addModule( module );
+            
+            // Insert in the map of modules for listing
+            LM_M(("Adding module %s version %s from %s with %d operations and %d data-types" , module->name.c_str() , module->version.c_str(), path.c_str() , module->operations.size() ,  module->datas.size() ));
+            modules.insertInMap(path, module);
+        }
+        else
+        {
+            LM_W(("Not loading file %s since its using a different API version %s vs %s" , path.c_str() , platform_version.c_str() , SAMSON_VERSION ));
+            delete module;
+        }
+
+        // Close dynamic link
+        dlclose(hndl);
+        
 		
 	}
 
 	void ModulesManager::addModule(  Module *container )
 	{
 		// Copy all the opertion to this top-level module
-		moveFrom( container	);
-		delete container;
+		copyFrom( container	);
 	}
 	
 	void ModulesManager::fill( network::OperationList *ol , std::string command  )
@@ -285,5 +295,38 @@ namespace samson
 		lock.unlock();		
 	}
 	
+    
+    // Fill status information	
+    void ModulesManager::fill( network::WorkerStatus* ws)
+    {
+        ws->set_modules_manager_status(getStatus());
+    }
+    void ModulesManager::fill( network::ControllerStatus *cs )
+    {
+        cs->set_modules_manager_status(getStatus());
+    }
+    
+    std::string ModulesManager::getStatus()
+    {
+        std::ostringstream output;
+        
+        output.setf(std::ios::left);
+        
+        au::map< std::string  , Module >::iterator m; 
+        for ( m =  modules.begin(); m != modules.end() ; m++)
+        {
+            Module *module = m->second;
+            if( module )
+            {
+                output << std::setw(10) << module->version;
+                output << " " << std::setw(30) << module->name << " " << module->author << "\n";
+            }
+            else
+                output << "Not valid module " << m->first << "\n";
+        }
+        
+        return output.str();
+    }
+    
 	
 }

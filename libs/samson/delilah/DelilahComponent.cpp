@@ -1,10 +1,17 @@
 
 
-#include "DelilahComponent.h"		// Own interface
-#include "samson/network/Packet.h"					// samson::Packet
-#include "samson/delilah/Delilah.h"				// samson::Delilah
-#include "samson/common/EnvironmentOperations.h"	// copyEnviroment()
+
 #include "au/CommandLine.h"            // samson::CommandLine
+
+#include "engine/Buffer.h"            // engine::Buffer
+
+
+#include "samson/common/EnvironmentOperations.h"	// copyEnviroment()
+
+#include "samson/network/Packet.h"					// samson::Packet
+
+#include "samson/delilah/Delilah.h"				// samson::Delilah
+#include "DelilahComponent.h"                   // Own interface
 
 
 namespace samson {
@@ -67,9 +74,10 @@ namespace samson {
 	
 #pragma mark ----
 	
-	CommandDelilahComponent::CommandDelilahComponent(std::string _command) : DelilahComponent( DelilahComponent::command )
+	CommandDelilahComponent::CommandDelilahComponent(std::string _command , engine::Buffer * _buffer) : DelilahComponent( DelilahComponent::command )
 	{
 		command = _command;
+        buffer = _buffer;
 	}
 	
 	void CommandDelilahComponent::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
@@ -130,6 +138,10 @@ namespace samson {
         }
         
 		copyEnviroment( &e , c->mutable_environment() );
+        
+        // Set the buffer data ( if any )
+        p->buffer = buffer;
+        
 		delilah->network->sendToController( p );
 		
 	}		

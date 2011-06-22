@@ -268,30 +268,24 @@ namespace samson
                         output << " info_cores          Similar to info, with graphical representation for Worker status\n";
                         output << "                     Usage: info_cores\n";
                         output << "\n";
+                        output << " info_modules        Show current modules used in all the nodes \n";
+                        output << "\n";
                         output << " info_disk_manager   Information about disk operations (read and write) for every Worker\n";
-                        output << "                     Usage: info_disk_manager\n";
                         output << "\n";
                         output << " info_engine         Information about the task scheduling in Engines\n";
-                        output << "                     Usage: info_engine\n";
                         output << "\n";
                         output << " info_full           A very detailed information for every Worker\n";
-                        output << "                     Usage: info_full\n";
                         output << "\n";
                         output << " info_load_data_manager      Similar to info, with information of uploads and downloads per Worker\n";
-                        output << "                     Usage: info_load_data_manager\n";
                         output << "\n";
                         output << " info_memory_manager Similar to info, with detailed information of the memory assigned to every Worker\n";
-                        output << "                     Usage: info_memory_manager\n";
                         output << "\n";
                         output << " info_net            Detailed information about the network traffic between nodes in the cluster\n";
-                        output << "                     Usage: info_net\n";
                         output << "\n";
                         output << " info_process_manager        For every Worker, it shows the list of operations in every possible state (Running, Halting, Queued)\n";
-                        output << "                     Usage: info_process_manager\n";
                         output << "\n";
                         output << " info_task_manager   For the Controller, it gives information about the jobs completed and running, and the tasks in the case of scripts\n;";
                         output << "                     For every Worker, for every task, it shows the component process and their state\n";
-                        output << "                     Usage: info_task_manager\n";
                         output << "\n";
                         output << "---------------------------------------------------------------------\n";
 			output << "\n";
@@ -747,12 +741,10 @@ namespace samson
 			writeWarningOnConsole(o.str());
 			return id;
 		}
-		
         
         
 		// Normal command send to the controller
-		size_t id = sendCommand(command);
-		return id;
+		return sendCommand( command , NULL );
 
 		//std::ostringstream o;
 		//o << "Sent command to controller (id="<<id<<") : " << command;
@@ -1091,6 +1083,10 @@ namespace samson
         txt << " ( updated: " << cronometer_samsonStatus.str() <<  " )" <<  std::endl;
         txt << "------------------------------------------------------------------------------------------------" << std::endl;
         
+        
+        if( (command == "info_modules" ) )
+            txt << "** Modules:\n" << samsonStatus->controller_status().modules_manager_status() << "\n";
+        
         if( ( command == "info_full" ) || ( command == "info_task_manager" ))
         {
             txt << "\tJobManager: " << samsonStatus->controller_status().job_manager_status() << std::endl;
@@ -1187,6 +1183,9 @@ namespace samson
                 txt << "\tMemory Manager:    " << worker_status.memory_status() << "\n";
                 txt << "\tShared Memory Manager:    " << worker_status.shared_memory_status() << "\n";
             }
+
+            if( (command == "info_modules" ) )
+                txt << "** Modules:\n" << worker_status.modules_manager_status() << "\n";
             
             if( ( command == "info_full" ) || (command == "info_load_data_manager" ) )
                 txt << "** Load Data Manager: " << worker_status.load_data_manager_status() << "\n";

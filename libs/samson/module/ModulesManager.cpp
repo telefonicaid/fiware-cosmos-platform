@@ -130,6 +130,16 @@ namespace samson
 		lock.lock();
 		
 		clearModule();  		// Clear this module itself (operations and datas)
+        
+        // Close handlers for all open modules
+        au::map< std::string  , Module >::iterator m; 
+        for ( m =  modules.begin(); m != modules.end() ; m++)
+        {
+            Module *module = m->second;
+            dlclose( module->hndl);
+        }
+
+        
         modules.clearMap();     // Remove all modules stored here
 		
 		LM_T(LmtModuleManager,("Adding modules again..."));
@@ -207,10 +217,11 @@ namespace samson
         {
             LM_W(("Not loading file %s since its using a different API version %s vs %s" , path.c_str() , platform_version.c_str() , SAMSON_VERSION ));
             delete module;
+            
+            // Close dynamic link
+            dlclose(hndl);
         }
 
-        // Close dynamic link
-        dlclose(hndl);
         
 		
 	}

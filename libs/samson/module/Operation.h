@@ -174,6 +174,8 @@ namespace samson {
 			_inputCompareByKeyFunction      = op->_inputCompareByKeyFunction;
             
 			top               = op->top;
+            dynamic_input_formats= op->dynamic_input_formats;
+            
 			_name             = op->_name;
 			_helpLine         = op->_helpLine;
 			_helpMessage      = op->_helpMessage;

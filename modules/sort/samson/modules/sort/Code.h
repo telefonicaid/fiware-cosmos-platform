@@ -6,14 +6,16 @@
 #ifndef _H_SAMSON_system_String
 #define _H_SAMSON_system_String
 
-#include <samson/modules/system/UInt8.h>
+#include <samson/modules/system/UInt16.h>
 #include <limits>
+
+#define NUM_PARTITIONS 65536
 
 namespace samson{
     namespace sort{
         
         
-      class Code : public samson::system::UInt8
+      class Code : public samson::system::UInt16
 	  //        class Code : public samson::DataInstance
 	{
 
@@ -27,14 +29,14 @@ namespace samson{
             // Function to get a value depending on the range of size_t    
             int set( size_t _value )
             {
-                size_t threshold = std::numeric_limits<std::size_t>::max()/256;
+                size_t threshold = std::numeric_limits<std::size_t>::max()/NUM_PARTITIONS;
                 value = _value/threshold;
             }
             
             // Particular behavious for sorting                                                                                                                                             
             int partition( int num_partitions )
             {
-                return ( num_partitions * value / 256 );
+                return ( num_partitions * value / NUM_PARTITIONS );
             }
             
 	    /*

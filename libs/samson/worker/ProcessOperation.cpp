@@ -303,13 +303,14 @@ namespace samson {
 		for (uint32 hg = 0 ; hg < num_hash_groups ; hg++)
 		{
             
-            // Update the progress of this report
-            //double p = (double) hg / (double) num_hash_groups;
-            double p = (double) cumulated_size / (double) total_size;
-            reportProgress(p,"R");
             
             int real_hg = operationSubTask->hg_begin + hg;
-            cumulated_size += operationSubTask->task->reduceInformation->info_hg[real_hg].size;
+            size_t size_hg = operationSubTask->task->reduceInformation->info_hg[real_hg].size;
+            cumulated_size += size_hg;
+
+            // Update the progress of this report
+            double p = (double) cumulated_size / (double) total_size;
+            reportProgress( p , au::Format::string("R %d/%d %s %f",hg,num_hash_groups, au::Format::string(size_hg).c_str() , p) );
             
 			
 			// Counte the number of key-values I will have in this round
@@ -374,6 +375,7 @@ namespace samson {
 					}
 				}
 				
+                reportProgress( p , au::Format::string("RO %d/%d %s %f",hg,num_hash_groups, au::Format::string(size_hg).c_str() , p) );
 				parserOutReduce->run(inputStructs, writer);
 				
 				// Go to the next position

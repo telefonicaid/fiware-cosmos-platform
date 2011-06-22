@@ -10,6 +10,9 @@
 * CREATION DATE            Apr 06 2011
 *
 */
+
+#include "au/Token.h"                       // au::Token
+
 #include "samson/common/status.h"
 #include "samson/common/Process.h"
 #include "NetworkInterface.h"
@@ -51,6 +54,8 @@ class EndpointManager
 	friend class Endpoint2;
 	friend class UnhelloedEndpoint;
 
+    au::Token token;       // Token  to protect the vector of endpoints from multi-thread access
+    
 public:
 	enum CallbackId
 	{

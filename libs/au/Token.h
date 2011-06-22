@@ -26,5 +26,24 @@ namespace au
 	  
 	};
 	
+    // Class to hold the lock during the life-span
+    class TokenTaker
+    {
+        Token* token;
+    public:
+        
+        TokenTaker( Token* _token )
+        {
+            token = _token;
+            token->retain();
+        }
+        
+        ~TokenTaker()
+        {
+            token->release();
+        }
+    };
+    
+    
 }
 #endif

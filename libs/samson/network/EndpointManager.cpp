@@ -72,7 +72,7 @@ static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, 
 *
 * Constructor
 */
-EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp)
+    EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp) : token("EndpointManager")
 {
 	tmoSecs          = 2;
 	tmoUSecs         = 0;
@@ -519,6 +519,8 @@ Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, Host* host, unsign
 */
 void EndpointManager::remove(Endpoint2* ep)
 {
+    au::TokenTaker tokenTaker( &token );   // Mutex to protect the vector
+    
 	if (ep == NULL)
 		LM_RVE(("cannot remove NULL endpoint"));
 
@@ -1144,6 +1146,8 @@ int EndpointManager::endpointCount(void)
 */
 void EndpointManager::send(int endpointIx, Packet* packetP)
 {
+    au::TokenTaker tokenTaker( &token );   // Mutex to protect the vector
+    
 	if ((endpointIx < 0) || ((unsigned int) endpointIx >= endpoints))
 		LM_X(1, ("Bad endpointIx: %d", endpointIx));
 

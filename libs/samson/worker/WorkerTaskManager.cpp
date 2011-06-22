@@ -15,7 +15,7 @@ namespace samson {
 	
 	WorkerTaskManager::WorkerTaskManager(SamsonWorker* _worker)
 	{
-		LM_M(("Created WorkerTaskManager"));
+		//LM_M(("Created WorkerTaskManager"));
 		worker = _worker;
 
         // Add as a listener for notification_task_finished notifications

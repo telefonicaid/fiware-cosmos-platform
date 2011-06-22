@@ -55,6 +55,7 @@ namespace samson {
 
 		// Function used inside the runIsolated to send progress to the main process
 		void reportProgress( double p );
+		void reportProgress( double p , std::string status );
 		
 		// Set the error and finish the task
 		void setUserError( std::string message ); 

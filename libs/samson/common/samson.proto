@@ -542,6 +542,7 @@ message MessageProcessPlatform
     optional int32 operation	   = 2;  // Indicator of the operation
     optional Trace trace	  = 3;	// Optional trace 
     optional double progress	  = 4;	// Optional progress report
+    optional string progress_status = 6;   // Optinal string describing the internal status of this task
     optional string error	  = 5;	// Error reported by user
 
 }

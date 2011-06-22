@@ -57,12 +57,14 @@ namespace engine
 		}
 		
 		o << ":" << priority;
-		if ( sub_status.length() > 0)
-			o << "," << sub_status;
-		
+
 		o << std::string(":") << operation_name;
+        
+		if ( sub_status.length() > 0)
+			o << ":" << sub_status ;
+		
 		if ( (p> 0) && (p < 100))
-			o << "(" << p << "%)";
+			o << " (" << p << "%)";
 		return o.str();
 		
 	}

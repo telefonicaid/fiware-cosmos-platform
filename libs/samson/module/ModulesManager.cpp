@@ -210,7 +210,7 @@ namespace samson
             addModule( module );
             
             // Insert in the map of modules for listing
-            LM_M(("Adding module %s version %s from %s with %d operations and %d data-types" , module->name.c_str() , module->version.c_str(), path.c_str() , module->operations.size() ,  module->datas.size() ));
+            //LM_M(("Adding module %s version %s from %s with %d operations and %d data-types" , module->name.c_str() , module->version.c_str(), path.c_str() , module->operations.size() ,  module->datas.size() ));
             modules.insertInMap(path, module);
         }
         else

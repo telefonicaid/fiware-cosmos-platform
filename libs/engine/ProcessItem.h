@@ -67,6 +67,7 @@ namespace engine {
 
 		// Information about the status of this process
 		std::string operation_name;			// Name of the operation
+        
 		double progress;					// Progress of the operation ( if internally reported somehow )
 		std::string sub_status;				// Letter describing internal status
 		

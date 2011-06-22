@@ -268,8 +268,9 @@ namespace samson
             {
                 LM_T( LmtIsolated , ("Isolated process %s: Message reporting progress %f ",getStatus().c_str() , message->progress() ));
                 
-                // set the progress
+                // set the progress and the progress status
                 progress = message->progress();
+                sub_status = message->progress_status();
                                 
                 // Send the continue
                 samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
@@ -546,8 +547,7 @@ namespace samson
         LM_T(LmtIsolated,("Background process: Report progress %f", p ));
         
         samson::network::MessageProcessPlatform *message = new samson::network::MessageProcessPlatform();
-        message->set_code( samson::network::MessageProcessPlatform_Code_code_progress );
-        
+        message->set_code( samson::network::MessageProcessPlatform_Code_code_progress );        
         message->set_progress(p);
         
         sendMessageProcessPlatform( message );
@@ -555,6 +555,22 @@ namespace samson
         delete message; 
 	}
 
+	void ProcessItemIsolated::reportProgress( double p , std::string status )
+	{
+        
+        LM_T(LmtIsolated,("Background process: Report progress %f", p ));
+        
+        samson::network::MessageProcessPlatform *message = new samson::network::MessageProcessPlatform();
+        message->set_code( samson::network::MessageProcessPlatform_Code_code_progress );        
+        message->set_progress(p);
+        message->set_progress_status( status );
+        
+        sendMessageProcessPlatform( message );
+        
+        delete message; 
+	}
+    
+    
 	
 	void ProcessItemIsolated::runBackgroundProcessRun()
 	{

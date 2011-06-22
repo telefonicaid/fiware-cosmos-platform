@@ -221,6 +221,7 @@ namespace samson {
 
 	void ProcessOperation::runParserOutReduce(TXTWriter *writer )
 	{
+        reportProgress(0,"I");
 		
 		// Run the generator over the ProcessWriter to emit all key-values
 		ParserOutReduce *parserOutReduce = (ParserOutReduce*) getOperationInstance();
@@ -238,6 +239,7 @@ namespace samson {
 		if( num_inputs != (int) inputFormats.size() )
 			LM_X(1,("Internal error:"));
         
+        reportProgress(0,"I2");
 		
 		// Complete structure to prepare inputs
 		KVInputVector inputs(num_inputs);
@@ -248,6 +250,8 @@ namespace samson {
 		for (int i = 0 ; i < num_input_files ; i++ )
 			offset += reduce_file[i].set( data + offset );
 		
+        reportProgress(0,"I3");
+        
 		// Get the number of hash groups and make sure all the files have the same number
 		uint32 num_hash_groups = reduce_file[0].header->getNumHashGroups();
 		for (uint32 i = 0 ; i < (uint32)num_input_files ; i++ )
@@ -294,13 +298,15 @@ namespace samson {
             total_size += operationSubTask->task->reduceInformation->info_hg[real_hg].size;
         }
         
+        reportProgress(0,"I4");
+        
 		for (uint32 hg = 0 ; hg < num_hash_groups ; hg++)
 		{
             
             // Update the progress of this report
             //double p = (double) hg / (double) num_hash_groups;
             double p = (double) cumulated_size / (double) total_size;
-            reportProgress(p);
+            reportProgress(p,"R");
             
             int real_hg = operationSubTask->hg_begin + hg;
             cumulated_size += operationSubTask->task->reduceInformation->info_hg[real_hg].size;
@@ -548,6 +554,8 @@ namespace samson {
 	void ProcessOperation::runReduce( KVWriter *writer )
 	{
 		
+        reportProgress(0 , "Init" );        
+        
 		// Run the generator over the ProcessWriter to emit all key-values
 		Reduce *reduce = (Reduce*) getOperationInstance();
 
@@ -617,7 +625,8 @@ namespace samson {
 		{            
             // Update the progress of this report
             double p = (double) hg / (double) num_hash_groups;
-            reportProgress(p);
+            LM_M(("Reduce reporting progress %f",p));
+            reportProgress(p,"Running");
 			
 			// Counte the number of key-values I will have in this round
 			size_t num_kvs = 0;

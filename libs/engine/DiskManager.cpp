@@ -193,6 +193,10 @@ namespace engine
 			disk_manager_status << "[" << (*i)->getDescription() << "] ";
 		
 		disk_manager_status << "\n\tQueued: ";
+        
+		for ( std::list<DiskOperation*>::iterator i = pending_operations.begin() ; i != pending_operations.end() ; i++)
+			disk_manager_status << "[" << (*i)->getShortDescription() << "] ";
+        
         {
             au::Descriptors descriptors;
             

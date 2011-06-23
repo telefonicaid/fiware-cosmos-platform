@@ -183,13 +183,13 @@ namespace engine {
 		
 		switch (type) {
 			case write:
-				o << "W";
+				o << "W:" << au::Format::string( size );
 				break;
 			case append:
-				o << "A";
+				o << "A:" << au::Format::string( size );
 				break;
 			case read:
-				o << "R";
+				o << "R:" << au::Format::string( size );
 				break;
 			case remove:
 				o << "X";

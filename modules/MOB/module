@@ -11,32 +11,6 @@ Module MOB
 # datas
 # ---------------------------------------------------------------------------
 
-# Data type to store the fields
-# from CDRs that are necessary for
-# Mobility.
-
-data Cdr
-{
-   system.UInt64 phone;
-   system.UInt cellId;
-   system.UInt btsId;
-   system.UInt lacId;
-   system.UInt stateId;
-   system.Time timeDate;
-   system.UInt absDay;
-   system.UInt mobScope;
-}
-
-# Data type to store cell
-# information from the cell catalogue.
-data Cell
-{
-   system.UInt cellId;
-   system.UInt btsId;
-   system.UInt lacId;
-   system.UInt stateId;
-}
-
 # Generic data type to store
 # a phone number and a location
 # (either cell, BTS, LAC or state).
@@ -175,7 +149,7 @@ data Levels
 
 parser parse_cdrs
 {
-   out system.UInt64 MOB.Cdr
+   out system.UInt64 cdr.mobCdr
 
    #extern mobGetCdrInfo _mobGetCdrInfo;
    #extern MRData_Uint64 phone;
@@ -216,7 +190,7 @@ parser parse_clients
 
 parser parse_cell_catalogue
 {
-   out system.UInt MOB.Cell
+   out system.UInt cdr.Cell
 
    #extern mobGetCellInfo _mobGetCellInfo;
    #extern MRData_UInt cellId;
@@ -277,59 +251,6 @@ parserOut parse_out_month
 # ------------------------------------------------------------
 
 
-map convert_cdrs
-{
-  in  system.UInt MOB.GSTCdr
-  out system.UInt64 MOB.Cdr  
-  
-  helpLine "Convert CDRs from Gasset format to Mob format."
-
-  help
-  {
-    "Convert CDRs from Gasset format to Mob format."
-  }
-}
-
-reduce convert_cdrs_three
-{
-  in system.UInt MOB.GSTCdr
-  in system.UInt MOB.GSTCdr
-  in system.UInt MOB.GSTCdr
-  out system.UInt64 MOB.Cdr
-  
-  helpLine "Convert three sources of CDRs from Gasset format to Mob format."
-  
-  help
-  {
-	"Convert three sources of CDRs from Gasset format to Mob format."
-  }
-}
-
-map convert_cell
-{
-  in  system.UInt MOB.GSTCell
-  out system.UInt MOB.Cell 
-  
-  helpLine "Convert Cells from Gasset format to Mob format."
-
-  help
-  {
-    "Convert Cells from Gasset format to Mob format."
-  }
-}
-
-map convert_client
-{
-  in  system.UInt MOB.GSTUser
-  out system.UInt64 system.Void 
-  
-  helpLine "Convert Clients from Gasset format to Mob format."
-
-  help
-  {
-    "Convert Clients from Gasset format to Mob format."
-  }
-}
 
 
 # Removes location information and keeps
@@ -400,8 +321,8 @@ map map_place_cell
 reduce reduce_cdrs_clients
 {
    in system.UInt64 system.Void
-   in system.UInt64 MOB.Cdr
-   out system.UInt MOB.Cdr
+   in system.UInt64 cdr.mobCdr
+   out system.UInt cdr.mobCdr
    out system.Time system.Void
 
    #extern MRData_MOB.Cdr cdr;
@@ -420,9 +341,9 @@ reduce reduce_cdrs_clients
 # cell information (rest of the fields/levels).
 reduce reduce_add_cell_info
 {
-   in system.UInt MOB.Cdr
-   in system.UInt MOB.Cell
-   out system.UInt64 MOB.Cdr # CDR's
+   in system.UInt cdr.mobCdr
+   in system.UInt cdr.Cell
+   out system.UInt64 cdr.mobCdr # CDR's
    out MOB.PhoneLoc system.Void # Mobility degree - cell level
    out MOB.PhoneLoc system.Void # Mobility degree - bts level
    out MOB.PhoneLoc system.Void # Mobility degree - lac level
@@ -499,7 +420,7 @@ reduce reduce_compute_reference_location
 
 reduce reduce_compute_mobility_degree
 {
-   in system.UInt64 MOB.Cdr
+   in system.UInt64 cdr.mobCdr
    in system.UInt64 MOB.LocCounter
    in system.UInt64 MOB.LocCounter
    in system.UInt64 MOB.LocCounter
@@ -655,7 +576,7 @@ reduce reduce_results
 reduce reduce_set_consistency
 {
    in system.UInt MOB.Place
-   in system.UInt MOB.Cell
+   in system.UInt cdr.Cell
    out system.UInt64 MOB.Place
 
    #extern MRData_MOB.Cell cell;
@@ -1145,10 +1066,10 @@ script script_mobility
 script script_generate_workdata_QA
 {
    in system.UInt64 system.Void    # clients
-   in system.UInt64 MOB.Cdr # cdrs
-   in system.UInt MOB.Cell  # cells
+   in system.UInt64 cdr.mobCdr # cdrs
+   in system.UInt cdr.Cell  # cells
    out Date system.Void     # month
-   out system.UInt64 MOB.Cdr # CDR's
+   out system.UInt64 cdr.mobCdr # CDR's
    out MOB.PhoneLoc system.Void # Mobility degree - cell level
    out MOB.PhoneLoc system.Void # Mobility degree - bts level
    out MOB.PhoneLoc system.Void # Mobility degree - lac level
@@ -1207,7 +1128,7 @@ script script_generate_workdata_QA
 script script_mobility_degree_QA
 {
 
-   in system.UInt64 MOB.Cdr
+   in system.UInt64 dr.mobCdr
    in MOB.PhoneLoc system.Void # Mobility degree - cell level
    in MOB.PhoneLoc system.Void # Mobility degree - bts level
    in MOB.PhoneLoc system.Void # Mobility degree - lac level
@@ -1293,7 +1214,7 @@ script script_mobility_degree_QA
 script script_location_QA
 {
    in txt txt  # Type of location ("home" or "work")
-   in system.UInt MOB.Cell  # cells  
+   in system.UInt cdr.Cell  # cells  
    out system.Void system.Void
 
    top

@@ -2,8 +2,8 @@ Module cdr
 {
 
 	title	"CDR  module"
-	author 	"Andreu Urruela (andreu@tid.es)"
-	version "0.1"
+	author 	"Andreu Urruela (andreu@tid.es), Miguel Santos (masp20@tid.es) for the GASSET data"
+	version "1.0.0"
 	
 }
 
@@ -41,13 +41,50 @@ data User
      system.UInt id;
      system.UInt titularId;
      system.UInt8 type;
-     cdr.Date activationDate;
+     system.Time activationDate;
      system.UInt8 activationCode;
      system.UInt8 age;
      system.UInt8 province;
      system.UInt8 sex;
-     cdr.Date churnDate;
+     system.Time churnDate;
      system.UInt8 churnCode;
+}
+
+data gstCdr
+{
+     system.UInt phone;
+     system.Time timeDate;
+     system.UInt duration;
+     system.UInt type;  # 0=voice; 1=sms; 2=mms;
+     system.UInt dir;
+     system.UInt cellId;
+     system.UInt mobScope;
+}
+
+# Data type to store cell
+# information from the cell catalogue.
+data Cell
+{
+     system.UInt cellId;
+     system.UInt btsId;
+     system.UInt lacId;
+     system.UInt stateId;
+    
+}
+
+# Data type to store the fields
+# from CDRs that are necessary for
+# Mobility.
+data mobCdr
+{
+   system.UInt64 phone;
+   system.UInt cellId;
+   system.UInt btsId;
+   system.UInt lacId;
+   system.UInt stateId;
+   system.Time timeDate;
+   system.UInt absDay;
+   system.UInt mobScope;
 }
 
 
@@ -152,6 +189,73 @@ parser parse_cdrs
 	}
 }
 
+parser parse_gst_cdrs
+{
+  out system.UInt cdr.gstCdr
+
+  helpLine "Parse txt-file of Gasset CDRS in  different formats."
+
+  help
+  {
+    "Parse txt-file of CDRS in  different formats."
+    "This is a generic parse for different formats. Please, specify with the -format <format>"
+    "Use the -old_date to swich the format to old CDRs dates (01/01/2010)"
+    "Suported formats:"
+    "TEMM:   --> 33F43061B47A63|6691159047|33F43061B47A63|0446691557000|2|20100101|01:57:39|4|NOROAMI"
+  }
+}
+
+# Parse CDR files. Get only
+# fields necessary fo Mobility.
+parser parse_mob_cdrs
+{
+   out system.UInt64 cdr.mobCdr
+
+   #extern mobGetCdrInfo _mobGetCdrInfo;
+   #extern MRData_Uint64 phone;
+   #extern MRData_MOB.Cdr cdr;
+
+   helpLine "Parse CDR files to obtain the mobility imformation associated to each phone."
+
+   help
+   {
+      "Parse CDR files to obtain the mobility imformation associated to each phone."
+   }
+
+}
+
+map convert_cdrs_gst2mob
+{
+  in  system.UInt cdr.gstCdr
+  out system.UInt64 cdr.mobCdr  
+  
+  helpLine "Convert CDRs from Gasset format to Mob format."
+
+  help
+  {
+    "Convert CDRs from Gasset format to Mob format."
+  }
+}
+
+reduce convert_cdrs_gst2mob_three
+{
+  in system.UInt cdr.gstCdr
+  in system.UInt cdr.gstCdr
+  in system.UInt cdr.gstCdr
+  out system.UInt64 cdr.mobCdr
+  
+  helpLine "Convert three sources of CDRs from Gasset format to Mob format."
+  
+  help
+  {
+	"Convert three sources of CDRs from Gasset format to Mob format."
+  }
+}
+
+
+
+
+
 parser parse_users
 {
         out     system.UInt cdr.User
@@ -174,6 +278,60 @@ parser parse_users_O2UK
 		"Example: 44687562010"
         }
 }
+
+# Parse cell catalogue
+parser parse_cell_catalogue
+{
+   out system.UInt cdr.Cell
+
+   helpLine "Parse the cell catalogue."
+
+   help
+   {
+      "Parse the cell catalogue."
+   }
+}
+
+#map convert_cell
+#{
+#  in  system.UInt MOB.GSTCell
+#  out system.UInt MOB.Cell 
+#  
+#  helpLine "Convert Cells from Gasset format to Mob format."
+#
+#  help
+#  {
+#    "Convert Cells from Gasset format to Mob format."
+#  }
+#}
+
+# Parse client sample
+parser parse_clients
+{
+   out system.UInt cdr.User
+
+   helpLine "Parse the clients sample."
+
+   help
+   {
+      "Parse the clients sample."
+   }
+}
+
+#map convert_client
+#{
+#  in  system.UInt MOB.GSTUser
+#  out system.UInt64 system.Void 
+#  
+#  helpLine "Convert Clients from Gasset format to Mob format."
+#
+#  help
+#  {
+#    "Convert Clients from Gasset format to Mob format."
+#  }
+#}
+
+
 
 parserOut select_cdrs
 {

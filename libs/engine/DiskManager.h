@@ -77,6 +77,8 @@ namespace engine
         
 		void finishDiskOperation( DiskOperation *diskOperation );	// Notification that a disk operation has finished        
         
+        au::list<DiskOperation>::iterator _find_pos( DiskOperation *diskOperation );
+        
         
     };
 

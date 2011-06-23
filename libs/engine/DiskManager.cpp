@@ -97,7 +97,8 @@ namespace engine
         operation->diskManager = this;
         
 		pthread_mutex_lock(&mutex);
-		pending_operations.push_back( operation );
+		//pending_operations.push_back( operation );
+        pending_operations.insert( _find_pos(operation), operation );
 		pthread_mutex_unlock(&mutex);
         
 		// Check if we can start this operation
@@ -226,6 +227,18 @@ namespace engine
 		
 	}	
 
+    
+    au::list<DiskOperation>::iterator DiskManager::_find_pos( DiskOperation *diskOperation )
+    {
+        for (au::list<DiskOperation>::iterator i = pending_operations.begin() ; i != pending_operations.end() ; i++)
+        {
+            if( diskOperation->compare(*i) )
+                return i;
+        }
+        return pending_operations.end();
+    }
+    
+    
     void DiskManager::quit()
     {
 		pending_operations.clearList();		// Remove pending operations ( will never be notified )

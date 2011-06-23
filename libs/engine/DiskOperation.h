@@ -150,6 +150,10 @@ namespace engine {
             return id;
         }
         
+    public:
+        
+        bool compare( DiskOperation *operation );
+        
 		
 	};
 	

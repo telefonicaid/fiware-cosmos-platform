@@ -6,6 +6,7 @@
 #ifndef _H_SAMSON_system_UInt64
 #define _H_SAMSON_system_UInt64
 
+#include <samson/modules/system/FixedLengthDataInstance.h>
 
 
 namespace samson{

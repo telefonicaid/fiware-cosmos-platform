@@ -144,11 +144,14 @@ namespace engine
         au::map< const char* , NotificationListenerSet , au::strCompare > listenersSets;
         
     public:
+
+	EngineNotificationSystem()
+        {
+            listener_id = 1;            
+	}
         
         ~EngineNotificationSystem()
         {
-            
-            listener_id = 1;
             
             // Destroy all the Enginedelivery elements ( delete is called for each one )
             listenersSets.clearMap(); 
@@ -158,6 +161,9 @@ namespace engine
         {
             LM_T(LmtEngineNotification, ("Add listener %p", listener ));
             listener->listener_id = listener_id++;
+
+	    //LM_M(("Given listener %lu to %p", listener->listener_id , listener));
+
             
             listeners.insertInMap( listener->listener_id , listener );
         }

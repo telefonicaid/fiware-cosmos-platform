@@ -1,5 +1,5 @@
 localMachine=$(uname -n)
-if  [ "$localMachine" != "samson06" ]
+if  [ "$localMachine" != "samson02" ]
 then
 	echo "Will only distribute from 'samson06'  or 'torkel'" 
 	exit 1
@@ -19,7 +19,7 @@ fi
 #for mach in samson01 samson02 samson03 samson04 samson05 samson06 samson07 samson08
 #for mach in samson01 samson02 samson03 samson04 samson05
 #for mach in samson01 samson02 samson03
-for mach in samson05  samson07
+for mach in samson01 samson03 samson04
 
 do
 	echo Installing samson in $mach

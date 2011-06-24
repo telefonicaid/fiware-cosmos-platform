@@ -3,6 +3,9 @@
 #include "engine/EngineNotification.h"  // Own interface
 #include "engine/Engine.h"              // engine::Engine
 
+#undef NDEBUG
+#include <assert.h>
+
 namespace engine {
     
     
@@ -86,6 +89,12 @@ namespace engine {
     {
         // Add myself as a listener ( giving to me a unique identifier )
         Engine::add( this );
+
+	if( listener_id == 0)
+	  {
+	    assert(false);
+	    LM_X(1,("Wrong notification listener id"));
+	  }
     }
     
     void NotificationListener::listen( const char* notification_name )

@@ -32,7 +32,20 @@ namespace engine {
     
     std::string Notification::getDescription()
     {
-      return au::Format::string("[ Notification %s %s ]" , name,  environment.getEnvironmentDescription().c_str() );
+        std::ostringstream output;
+        
+        output << "[ Notification " << name << " ";
+        
+        output << "Listener: (";
+        
+        std::set<size_t>::iterator iterator_listener_id; 
+        for ( iterator_listener_id = listener_id.begin() ; iterator_listener_id != listener_id.end() ; iterator_listener_id++)
+            output  << *iterator_listener_id << " ";
+        output << ") ";
+        
+        output << environment.getEnvironmentDescription().c_str() << " ]";
+        
+        return output.str();
     }    
     
   std::string Notification::getShortDescription()

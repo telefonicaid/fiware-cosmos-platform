@@ -11,16 +11,22 @@
 #include "engine/DiskOperation.h"               // samson::DiskOperation
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
+#define notification_samson_worker_remove_old_tasks "notification_samson_worker_remove_old_tasks"
+
 namespace samson {
 	
 	WorkerTaskManager::WorkerTaskManager(SamsonWorker* _worker)
 	{
 		//LM_M(("Created WorkerTaskManager"));
 		worker = _worker;
+        
+        // Listener to remove all taks
+        listen( notification_samson_worker_remove_old_tasks );
 
-        // Add as a listener for notification_task_finished notifications
-        listen( notification_task_finished );
-
+        // Run this notification every 5 second
+        engine::Notification* notification =  new engine::Notification( notification_samson_worker_remove_old_tasks );
+        engine::Engine::add( notification , 5 );
+        
 	}
     
     WorkerTaskManager::~WorkerTaskManager()
@@ -67,87 +73,58 @@ namespace samson {
     // Notification from the engine about finished tasks
     void WorkerTaskManager::notify( engine::Notification* notification )
     {
-        if( !notification->isName(notification_task_finished) )
+        
+        if( notification->isName(notification_samson_worker_remove_old_tasks) )
         {
-            LM_W(("WorkerTaskManager received an incorrect notification"));
+            std::set<size_t> ids;
+            au::map<size_t,WorkerTask>::iterator t;
+            for ( t = task.begin() ; t != task.end() ; t++ )
+                if( t->second->canBeRemoved() )
+                    ids.insert ( t->first );
+
+            for ( std::set<size_t>::iterator t = ids.begin(); t != ids.end() ; t++)
+            {
+                WorkerTask *_task = task.extractFromMap( *t );
+                if( _task )
+                {
+                    delete _task;
+                }
+                else
+                    LM_W(("Error deleting an old task..."));
+            }
+            
             return;
         }
         
-        // Generic parameters of the message
-        size_t task_id = notification->environment.getSizeT("task_id", 0);
         
-        if( notification->isName( notification_task_finished ) )
-        {
-            // Find the task to be removed
-            
-		   //LM_M(("Received a finish task for task_id %lu with notification %s", task_id , notification->getDescription().c_str() ));
-            
-            WorkerTask *t = task.findInMap( task_id );
-            
-            if( t )
-            {
-                if( t->status == WorkerTask::completed )
-                {
-                    // Remove the tasks from the task manager
-                    // Not removing temporary for testing....
-                    // delete task.extractFromMap( task_id );
-                }
-                else
-                    LM_X(1,("WorkerTaskManager received a notification about a finished task but it is not"));
-            }
-        }
-        else
-            LM_W(("Unexpected notification at WorkerTaskManager %s", notification->getDescription().c_str() ));
+        LM_W(("WorkerTaskManager received an incorrect notification"));
         
     }
-    
-    bool WorkerTaskManager::acceptNotification( engine::Notification* notification )
-    {
-        // Only accept notifications for my worker. This is only necessary when testing samsonLocal with multiple workers
-        if( notification->environment.getInt("worker", -1) != worker->network->getWorkerId() )
-            return false;
         
-        return true;
-        
-    }    
-    
 	void WorkerTaskManager::killTask( const network::WorkerTaskKill &task_kill )
 	{
         
         size_t task_id = task_kill.task_id();
         
-        LM_W(("Kill task received for task_id %l", task_id));
+        //LM_W(("Kill task received for task_id %lu", task_id));
         
 		// Create the task
         // Not removing temporary for testing....
 		WorkerTask *t = task.findInMap( task_id );
 
 		if( t )
-		{
-			t->kill();
-            
-            // Not removing temporary for testing....
-			//delete task.extractFromMap(task_id);
-		}
+			t->kill( "Kill message received from controller" );
+        else
+        {
+            LM_W(("Task %lu not killed since it is not present in this worker" , task_id));
+        }
+        
+        
+        //LM_W(("Killed task for task_id %lu completed", task_id));
+        
+        
 	}
 	
-    void WorkerTaskManager::removeTask( size_t task_id )
-    {
-		WorkerTask *t = task.extractFromMap( task_id );
-
-		LM_M(("Removing task %d", task_id));
-
-        if( t )
-        {
-            if( t->status != WorkerTask::completed )
-                LM_W(("Removing a task that is not completed ( task_id = %lu ). This shoul be an error", task_id));
-
-            delete t;
-            
-        }
-        else
-            LM_W(("Trying to remove a non-existing task with id %lu", task_id));
-    }
 	
 	void WorkerTaskManager::addBuffer( size_t task_id , network::WorkerDataExchange& workerDataExchange , engine::Buffer* buffer  )
 	{

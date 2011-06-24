@@ -20,6 +20,16 @@ namespace engine {
         object = _object;
     }
     
+    Notification::Notification( const char* _name , Object * _object , size_t _listener_id )
+    {
+        name = _name;
+        object = _object;
+     
+        // Insert this as the first listener to receive this notification
+        listener_id.insert( _listener_id );
+    }
+    
+    
     std::string Notification::getDescription()
     {
       return au::Format::string("[ Notification %s %s ]" , name,  environment.getEnvironmentDescription().c_str() );
@@ -58,6 +68,12 @@ namespace engine {
     
     
     #pragma mark NotificationListener
+    
+    NotificationListener::NotificationListener()
+    {
+        // Add myself as a listener ( giving to me a unique identifier )
+        Engine::add( this );
+    }
     
     void NotificationListener::listen( const char* notification_name )
     {

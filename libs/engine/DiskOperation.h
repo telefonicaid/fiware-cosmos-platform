@@ -74,7 +74,10 @@ namespace engine {
 		size_t offset;						// Offset inside the file ( only for read operations )
 		dev_t st_dev;						// Device where this file is stored
 		
+        size_t listenerId;                  // Id of the listener to notify when operation is completed
+        
 		friend class DiskManagerNotification;
+        friend class DiskManager;
 	
 		pthread_t t;						// Background thread to run the operation
 				
@@ -93,12 +96,12 @@ namespace engine {
 		
 		// Constructors used to create Disk Operations ( to be submitted to Engine )
 		
-		static DiskOperation* newReadOperation( char *data , std::string fileName , size_t offset , size_t size  );
-		static DiskOperation* newWriteOperation( Buffer* buffer ,  std::string fileName  );
-		static DiskOperation* newAppendOperation( Buffer* buffer ,  std::string fileName  );
-		static DiskOperation* newRemoveOperation( std::string fileName );
+		static DiskOperation* newReadOperation( char *data , std::string fileName , size_t offset , size_t size , size_t _listenerId  );
+		static DiskOperation* newWriteOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId  );
+		static DiskOperation* newAppendOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId  );
+		static DiskOperation* newRemoveOperation( std::string fileName, size_t _listenerId );
 		
-		static DiskOperation * newReadOperation( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer simpleBuffer );
+		static DiskOperation * newReadOperation( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer simpleBuffer , size_t _listenerId );
 		
 		
 		static std::string directoryPath( std::string path );

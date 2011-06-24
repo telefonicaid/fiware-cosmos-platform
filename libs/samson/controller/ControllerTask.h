@@ -92,9 +92,6 @@ namespace samson {
 		int getNumOutputs();
 		void fillInfo( network::WorkerTask *t , int workerIdentifier );		
         
-        // Send message to all workers to remove this task
-        void sendRemoveMessageToWorkers();
-        
     private:
         
         // Send messages

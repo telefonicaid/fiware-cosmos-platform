@@ -121,4 +121,22 @@ namespace au
 		pthread_mutex_unlock(&_lock);
 	}	
 	
+    void Stopper::lock()
+    {
+		int ans;
+		ans = pthread_mutex_lock(&_lock);
+		if ( ans )
+			LM_X(1,("pthread_mutex_lock return an error"));
+        
+    }
+    void Stopper::unlock()
+    {
+		int ans;
+		ans = pthread_mutex_unlock(&_lock);
+		if ( ans )
+			LM_X(1,("pthread_mutex_unlock return an error"));
+        
+    }
+   
+    
 }

@@ -19,7 +19,6 @@
 
 #include "engine/ReadFileManager.h"        // engine::ReadFileManager
 
-#define notification_disk_operation_request             "notification_disk_operation_request"
 #define notification_disk_operation_request_response    "notification_disk_operation_request_response"
 
 namespace engine
@@ -30,7 +29,7 @@ namespace engine
 	class DiskOperation;
 	class Notification;
     
-    class DiskManager : public NotificationListener
+    class DiskManager 
     {
         
         friend class DiskOperation;
@@ -56,11 +55,12 @@ namespace engine
         
         ~DiskManager();
 
-        // Receive notifications from the Engine
-        void notify( Notification* notification );
-        
 		void add( DiskOperation *operation );				// Add a disk operation to be executed in the background
-		void checkDiskOperations();			// Check if we can run more disk operations
+		void cancel( DiskOperation *operation );			// Add a disk operation to be executed in the background
+        
+    private:
+        
+		void checkDiskOperations();                         // Check if we can run more disk operations
         
         // Remove pending operations and wait for the running ones
         void quit();

@@ -100,6 +100,8 @@ message JobItem
 	required string command=1;	// Command of this item
 	required int32 line=2;		// Current line inside the script
 	required int32 num_lines=3; 	// Total lines in the script
+	
+	optional ControllerTask controller_task = 4;	// Optional information about the progress of this task ( if it is really a task )
 }
 
 message Job
@@ -281,15 +283,6 @@ message WorkerTaskKill
 	required uint64 task_id = 1;  // Id of the task that is killed
 }
 
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Message to remove a particular task
-//
-
-message WorkerTaskRemove
-{
-	required uint64 task_id = 1;  // Id of the task that is being clear
-}
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -606,7 +599,6 @@ message Message
 	optional WorkerTaskConfirmation worker_task_confirmation  = 106;  // Work task confirmation message
 
 	optional WorkerTaskKill         worker_task_kill          = 202;  // Work task killed from controller
-	optional WorkerTaskRemove       worker_task_remove        = 203;  // Work task removed from controller ( clear jobs )
 
 	optional WorkerDataExchange  	data                      = 107;  // Exchange of data packets between nodes     
 	optional WorkerDataExchangeClose data_close		  = 108;  // Message to finish data transmission between workers

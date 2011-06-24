@@ -4,18 +4,23 @@
 #include <cstring>                  // size_t
 #include <vector>                   // std::vector
 #include <string>                   // std::string
-#include "engine/EngineNotification.h"     // samson::EngineNotificationListener
+
 #include "au/Error.h"                  // au::Error
+
+#include "engine/EngineNotification.h"     // samson::EngineNotificationListener
 #include "engine/Buffer.h"                 // engine::Buffer
 #include "engine/MemoryRequest.h"
 #include "engine/DiskOperation.h"
 #include "engine/ProcessItem.h"
-#include "samson/common/coding.h"                         // KVInfo
 
+#include "engine/EngineOperationsContainer.h"       // engine::OperationsContainer
+
+#include "samson/common/coding.h"                         // KVInfo
 
 namespace samson
 {
-	
+	class DiskOperation;
+    class ProcessItem;
 	class WorkerTask;
 	class ProcessAssistantSharedFile;
 	
@@ -34,19 +39,18 @@ namespace samson
 	 ------------------------------------------------------------------------------------------------
 	 */
 	
-	class WorkerSubTask : public engine::NotificationListener
+	class WorkerSubTask : public engine::NotificationListener , public engine::OperationsContainer
 	{
 
 		int num_read_operations;            // Read operations
 		int num_read_operations_confirmed;  // Read operations confirmed by DiskManager
-
         
         int num_processes;                  // Number of Engine ProcessItems to run
         int num_processes_confirmed;        // Number of Engine ProcessItem executed
         
 	public:
 
-        engine::Buffer *buffer;                     // Buffer memory obtained from Memory Manager
+        engine::Buffer *buffer;             // Buffer memory obtained from Memory Manager
         
         // Error management
         au::Error error;

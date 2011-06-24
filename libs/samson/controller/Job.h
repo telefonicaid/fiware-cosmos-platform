@@ -185,7 +185,7 @@ namespace samson {
 			return error_line;
 		}
 		
-		void fill( network::Job *job);
+		void fill( network::Job *job );
 		
 		std::string getStatus();
 		

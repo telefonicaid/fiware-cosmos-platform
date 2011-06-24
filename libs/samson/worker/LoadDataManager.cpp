@@ -8,6 +8,7 @@
 #include "engine/DiskOperation.h"			// samson::DiskOperation
 #include "engine/Engine.h"                 // samson::Engine
 #include "engine/DiskManager.h"            // Notifications
+#include "engine/EngineNotification.h"      // engine::NotificationListener
 
 #include "samson/common/MemoryTags.h"                 // MemoryOuputNetwork
 
@@ -60,14 +61,11 @@ namespace samson
 	void UploadItem::submitToFileManager()
 	{
 		// Add to the file manager to be stored on disk
-        engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( buffer , SamsonSetup::dataFile( fileName ) );
-
-		// Submit to the engine
-        engine::Notification *notification = new engine::Notification( notification_disk_operation_request , operation );
-        notification->environment.set("target", "LoadDataManager");
-        notification->environment.setSizeT("id", id);
-        notification->environment.setInt("worker", dataManager->worker->network->getWorkerId());
-        engine::Engine::add( notification);
+        engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( buffer , SamsonSetup::dataFile( fileName ) , dataManager->getListenerId() );
+        operation->environment.setSizeT("id", id);
+        
+        
+        engine::DiskManager::shared()->add( operation );
 	}
 
 	void UploadItem::sendResponse( bool error , std::string error_message )
@@ -132,17 +130,12 @@ namespace samson
 		buffer = engine::MemoryManager::shared()->newBuffer( "Buffer for downloading data" , size , MemoryOutputNetwork );
 		buffer->setSize( size );
 
-        engine::DiskOperation *operation = engine::DiskOperation::newReadOperation( buffer->getData() ,  SamsonSetup::dataFile(fileName) , 0 , size );
+        engine::DiskOperation *operation 
+            = engine::DiskOperation::newReadOperation( buffer->getData() ,  SamsonSetup::dataFile(fileName) , 0 , size , dataManager->getListenerId() );
+
+        operation->environment.setSizeT("id", id);
+        engine::DiskManager::shared()->add( operation );
         
-		// Submit the operation to the engine
-        engine::Notification *notification = new engine::Notification( notification_disk_operation_request , operation );
-        
-        notification->environment.set("target", "LoadDataManager");
-        notification->environment.setSizeT("id", id);
-        notification->environment.setInt("worker", dataManager->worker->network->getWorkerId());
-        
-        // add something here to identify as yours
-        engine::Engine::add( notification);
 	}
 	
 
@@ -181,8 +174,6 @@ namespace samson
         // Initial value for the id of the laod operations
         id = 1;
         
-        // Add this object as a listener of notification_disk_operation_request_response
-        listen( notification_disk_operation_request_response );
 	}
 	
 
@@ -247,7 +238,7 @@ namespace samson
         
         engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
         
-        size_t _id = notification->environment.getSizeT("id", 0);
+        size_t _id = operation->environment.getSizeT("id", 0);
         
         if( _id == 0)
             LM_W(("LoadDataManger received a notification_disk_operation_request_response without id field"));

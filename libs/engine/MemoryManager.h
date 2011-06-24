@@ -20,23 +20,23 @@
 #include <list>						// std::list
 #include <iostream>					// std::cout
 
-#include "engine/Buffer.h"					// samson::Buffer
-#include "au/Token.h"					// au::Token
-#include "au/Stopper.h"				// au::Stopper
-#include "au/map.h"					// au::map
-#include "au/list.h"					// au::list
-#include "au/Format.h"					// au::Format
+#include "engine/Buffer.h"                  // samson::Buffer
+#include "au/Token.h"                       // au::Token
+#include "au/Stopper.h"                     // au::Stopper
+#include "au/map.h"                         // au::map
+#include "au/list.h"                        // au::list
+#include "au/Format.h"                      // au::Format
 
 
 #include "engine/EngineNotification.h"          // engine:EngineNotificationListener
 
-#define notification_memory_request             "notification_memory_request"
 #define notification_memory_request_response    "notification_memory_request_response"
 
 namespace engine {
 
 
     class MemoryRequest;
+    class NotificationListener;
     
 	/**
 	 
@@ -46,14 +46,13 @@ namespace engine {
 	 
 	 */
 	
-	class MemoryManager : public NotificationListener
+	class MemoryManager 
 	{
 		
 		au::Token token;							// Token to protect this instance and memoryRequests
 													// It is necessary to protect since network thread can access directly here
 
 		size_t memory;								// Total available memory
-		
 				
 		// List of memory requests
 		au::list <MemoryRequest> memoryRequests;	// Only used for inputs ( tag == 0)
@@ -96,8 +95,10 @@ namespace engine {
         
     public:
         
-        void notify( Notification* notification );
+        void add( MemoryRequest *request );
 
+        void cancel( MemoryRequest *request );
+        
     private:
         
         void checkMemoryRequests();         // Check the pending memory requests

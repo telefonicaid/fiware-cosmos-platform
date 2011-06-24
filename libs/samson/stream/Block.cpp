@@ -87,10 +87,6 @@ namespace samson {
             // Add automatically to the Block Manager
             BlockManager::shared()->add(this);   
 
-            // Add this object as a listener of notification_disk_operation_request_response
-            listen( notification_disk_operation_request_response );
-            
-
             if( !txt )
             {
                 header = (KVHeader*) malloc( sizeof( KVHeader ) );
@@ -161,7 +157,7 @@ namespace samson {
             if( !buffer )
                 LM_X(1,("Not possible to get write operation over a block that it is not in memory"));
             
-            return engine::DiskOperation::newWriteOperation( buffer ,  getFileName()  );
+            return engine::DiskOperation::newWriteOperation( buffer ,  getFileName() , getListenerId()  );
         }
 
         ::engine::DiskOperation* Block::getReadOperation()
@@ -169,7 +165,7 @@ namespace samson {
             if( !buffer )
                 LM_X(1,("Not possible to get a read operation over a block that has not a buffer  in memory"));
             
-            return engine::DiskOperation::newReadOperation( getFileName(), 0, size, buffer->getSimpleBuffer() );
+            return engine::DiskOperation::newReadOperation( getFileName(), 0, size, buffer->getSimpleBuffer() , getListenerId() );
         }
         
         std::string Block::getFileName()
@@ -192,13 +188,8 @@ namespace samson {
             
             engine::DiskOperation *diskOperation = getWriteOperation();
             diskOperation->environment.set(destroy_buffer_after_write, "no" );
-            
-            engine::Notification *notification = new engine::Notification( notification_disk_operation_request ,diskOperation );
-            notification->environment.set("target", "Block");
-            notification->environment.setSizeT("id", id);
-            notification->environment.set("type","write");
-            
-            engine::Engine::add( notification );
+
+            engine::DiskManager::shared()->add( diskOperation );
         }
 
         void Block::read()
@@ -221,13 +212,8 @@ namespace samson {
             buffer = engine::MemoryManager::shared()->newBuffer("block", size, 0 ); 
             
             state = reading;
-            
-            engine::Notification *notification = new engine::Notification( notification_disk_operation_request , getReadOperation() );
-            notification->environment.set("target", "Block");
-            notification->environment.setSizeT("id", id);
-            notification->environment.set("type","read");
-            
-            engine::Engine::add( notification );
+
+            engine::DiskManager::shared()->add( getReadOperation() );
             
         }
                 
@@ -276,14 +262,6 @@ namespace samson {
             
         }
         
-        bool Block::acceptNotification( engine::Notification* notification )
-        {
-            if( notification->isName( notification_disk_operation_request_response ) )
-                if( notification->environment.get("target", "") == "Block"  )
-                    if( notification->environment.getSizeT("id", 0) == id  )
-                        return true;
-            return false;
-        }
 
         KVInfo Block::getInfo()
         {

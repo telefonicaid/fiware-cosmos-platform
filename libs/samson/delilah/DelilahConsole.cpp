@@ -1039,12 +1039,73 @@ namespace samson
 			{
 				txt << std::setw(10 + item*2) << " ";
 				
-				txt << "[";
-				txt << au::Format::int_string( job.item(item).line() , 4);
-				txt << "/";
-				txt << au::Format::int_string( job.item(item).num_lines() , 4) ;
-				txt << "] ";
-				txt << job.item(item).command();
+                if( job.item(item).has_controller_task() )
+                {
+                    
+                    const network::ControllerTask &task =  job.item(item).controller_task();
+                    
+                    txt << "[ Task " << task.task_id() << " ] ";
+                    
+                    switch (task.state()) {
+                        case network::ControllerTask_ControllerTaskState_ControllerTaskInit:
+                            txt << "Init";
+                            break;
+                        case network::ControllerTask_ControllerTaskState_ControllerTaskCompleted:
+                            txt << "Completed";
+                            break;
+                        case network::ControllerTask_ControllerTaskState_ControllerTaskFinish:
+                            txt << "Finished";
+                            break;
+                        case network::ControllerTask_ControllerTaskState_ControllerTaskRunning:
+                            txt << "Running";
+                            
+                            double running_progress;
+                            if( task.total_info().size() == 0 )
+                                running_progress = 0;
+                            else
+                                running_progress  =  (double) task.running_info().size() / (double) task.total_info().size();
+                            
+                            double processed_completed;
+                            if( task.processed_info().size() == 0)
+                                processed_completed = 0;
+                            else
+                                processed_completed = (double) task.processed_info().size() / (double) task.total_info().size();
+                            
+                            txt << " " << task.task_description();
+                            
+                            txt << "\n" << std::setw(10 + item*2) << " ";
+                            
+                            txt << "\tProgress: ";
+                            txt << au::Format::string( task.processed_info().size() );
+                            txt << " / " << au::Format::string( task.running_info().size() );
+                            txt << "/" << au::Format::string( task.total_info().size() ) << " ";
+                            txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', ' ' ,  60);
+                            break;
+                            
+                    }
+                    
+                    if( task.has_error() )
+                        txt << "Error: (" << task.error().message() <<  ")";
+                    
+                    txt << "\n";                    
+                    // Current task running
+                    txt << "XXX";
+                    
+                    
+                }
+                else
+                {
+                
+                    /*
+                    txt << "[";
+                    txt << au::Format::int_string( job.item(item).line() , 4);
+                    txt << "/";
+                    txt << au::Format::int_string( job.item(item).num_lines() , 4) ;
+                    txt << "] ";
+                    */
+                     
+                    txt << job.item(item).command();
+                }
 				
 				txt << "\n";
 				//txt << au::Format::int_string( jl.job(i).progress()*100 , 2) << "%";

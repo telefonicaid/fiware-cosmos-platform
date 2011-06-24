@@ -67,7 +67,7 @@ namespace samson {
         }
         
         
-        void clear();
+        void clearBufferVector();
         
     private:
         

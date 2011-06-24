@@ -39,7 +39,7 @@ namespace au {
          Return value: The inptu value, if it was in the set, NULL otherwise
         */
         
-        V* extractFromMap( V* v )
+        V* extractFromSet( V* v )
         {
             typename std::set<V*>::iterator iter = std::set<V*>::find(v);
             

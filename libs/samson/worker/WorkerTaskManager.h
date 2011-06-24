@@ -18,9 +18,7 @@ namespace samson {
 	class DataBufferItem;
 	class WorkerTask;
 	class NetworkInterface;
-	
-    #define notification_task_finished  "notification_task_finished"
-    
+	    
 	class WorkerTaskManager : public engine::NotificationListener 		// Receive notifications from the process manager
 	{
 		
@@ -43,8 +41,6 @@ namespace samson {
 		// Kill a task
 		void killTask( const network::WorkerTaskKill &task_kill );
 		
-        // Remove a task ( from controller )
-        void removeTask( size_t task_id );
         
 		// Add a buffer from other workers ( associated to a particular task and output queue)
 		void addBuffer( size_t task_id , network::WorkerDataExchange& workerDataExchange , engine::Buffer* buffer );
@@ -63,9 +59,7 @@ namespace samson {
 	
         // Notification from the engine about finished tasks
         void notify( engine::Notification* notification );
-        
-        virtual bool acceptNotification( engine::Notification* notification );
-        
+                
 	};
 	 
 }

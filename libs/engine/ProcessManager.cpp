@@ -42,92 +42,53 @@ namespace engine
         atexit(destroy_process_manager);
         
     }
-
-        
-    ProcessManager::ProcessManager( int _num_processes )
+    ProcessManager* ProcessManager::shared()
     {
-        pthread_mutex_init(&mutex, 0);			// Mutex to protect elements
+        if( !processManager )
+            LM_X(1, ("ProcessManager not initialiazed"));
         
+        return processManager;
+    }
+
+    ProcessManager::ProcessManager( int _num_processes ) : token("engine::ProcessManager")
+    {
         // By default only one process at a time
         num_processes = _num_processes;  
         
 		// Add the processManager as a listener for process request
-        listen( notification_process_request );
         listen( notification_process_manager_check_background_process );
-        
+     
+        // Check every second if we should start a new process item
+        engine::Engine::add( new Notification( notification_process_manager_check_background_process ) , 1 );
     }
     
     ProcessManager::~ProcessManager()
     {
-        pthread_mutex_destroy(&mutex);			// Mutex to protect elements
     }
     
     void ProcessManager::notify( Notification* notification )
     {
-        pthread_mutex_lock(&mutex);
-
-        if( notification->isName( notification_process_request ) )                 
-        {
-            if( !notification->containsObject() )
-                LM_X(1,("ProcessManager received a notification_process_request without an object"));
-            
-            ProcessItem *item = (ProcessItem*) notification->extractObject();
-            
-            item->environment.copyFrom( &notification->environment );
-            _addProcessItem( item );
-        }
-        else if( notification->isName( notification_process_manager_check_background_process ) )                 
-                _checkBackgroundProcesses();
-        else if( notification->isName( notification_process_cancel ) )
-        {
-            // Cancel process
-            if( !notification->containsObject() )
-                LM_X(1,("ProcessManager received a notification_process_cancel without an object"));
-            
-            ProcessItem *item = (ProcessItem*) notification->extractObject();
-            
-            if ( items.extractFromMap( item ) )
-                delete item;
-            else if ( running_items.extractFromMap( item ) )
-            {
-                //item->cancel();
-                canceled_items.insert( item );
-            }
-            else if ( halted_items.extractFromMap( item ) )
-            {
-                //item->cancel();
-                canceled_items.insert( item );
-                
-                item->unHalt();
-                
-            }
-
-                
-            
-        }
-        else        
-                LM_X(1,("Wrong notification at ProcessManager"));
         
-        pthread_mutex_unlock(&mutex);
+        if( notification->isName( notification_process_manager_check_background_process ) )                 
+            checkBackgroundProcesses();
+        else        
+            LM_X(1,("Wrong notification at ProcessManager"));
         
     }
-
+    
     void ProcessManager::finishProcessItem( ProcessItem *item )
     {
-        pthread_mutex_lock(&mutex);
+        // Protect multi-thread access
+        au::TokenTaker tt( &token );
+        
         running_items.erase(item);
-        pthread_mutex_unlock(&mutex);
 
         // Send to me a notification to review background processes
-        {
-        Notification * notification = new Notification( notification_process_manager_check_background_process );
-        Engine::add( notification );
-        }
+        Engine::add( new Notification( notification_process_manager_check_background_process ) );
         
-        
-        // Notify this using the notification
+        // Notify this using the notification Mechanism
         {
-        Notification * notification = new Notification( notification_process_request_response , item );
+        Notification * notification = new Notification( notification_process_request_response , item , item->listenerId );
         notification->environment.copyFrom( &item->environment );
         Engine::add( notification );
         }
@@ -136,41 +97,118 @@ namespace engine
     
     void ProcessManager::haltProcessItem( ProcessItem *item )
     {
-        pthread_mutex_lock(&mutex);
+        // Protect multi-thread access
+        au::TokenTaker tt( &token );
         
         running_items.erase(item);
         halted_items.insert(item);
         
-        pthread_mutex_unlock(&mutex);
-
         {
             Notification * notification = new Notification( notification_process_manager_check_background_process );
             Engine::add( notification );
         }
         
-        
-        
     }   
     
-    void ProcessManager::_addProcessItem( ProcessItem *item )
+    void ProcessManager::add( ProcessItem *item , size_t listenerId  )
     {
+        // We mae sure, items always come with a listenerId
+        item->setListenerId( listenerId );
+        
+        // Protect multi-thread access
+        au::TokenTaker tt( &token );
+        
         LM_T( LmtProcessManager , ("Adding ProcessItem") );
         
         // set the pointer to myself
         item->processManager = this;
         
-        
         items.insert( item );
         
         LM_T( LmtProcessManager , ("Engine state for background process: Pending %u Running %u Halted %u", items.size() , running_items.size() , halted_items.size()  ) );
         
-        // Check background processes to see if it is necessary to run new stuff
-        _checkBackgroundProcesses();
-        
         LM_T( LmtProcessManager , ("Finish Adding ProcessItem") );
-        
+
+        // A notification will check if it is necessary to run a new process item
+        engine::Engine::add( new Notification( notification_process_manager_check_background_process ) );
         
     }
+    
+    void ProcessManager::cancel( ProcessItem *item )
+    {
+        // Protect multi-thread access
+        au::TokenTaker tt( &token );
+
+        //LM_M(("Removing process item %p ",item));
+        
+        if ( items.extractFromSet( item ) )
+        {
+            //LM_M(("Removing item %p since it was still in the queue",item));
+
+            // Set this process as error
+            item->error.set( "ProcessItem canceled" );
+            
+            // Notify this using the notification Mechanism
+            {
+                Notification * notification = new Notification( notification_process_request_response , item , item->listenerId );
+                notification->environment.copyFrom( &item->environment );
+                notification->environment.set("error", "Canceled" );
+                Engine::add( notification );
+            }
+            
+        }
+        else
+        {
+            //LM_M(("Flag item %p as cancel since it was NOT still in the queue",item));
+            item->setCanceled();    // Activate the canceled flag to make the process kill itself when possible
+        }
+        
+    }
+    
+    void ProcessManager::checkBackgroundProcesses()
+    {
+        // Protect multi-thread access
+        au::TokenTaker tt( &token );
+        
+        // Get the next process item to process ( if CPU slots available )
+        ProcessItem * item = NULL;
+        
+        do
+        {
+            
+            item = NULL;
+            if( (int)running_items.size() < num_processes )
+            {
+                // Space for another process running... get the item to be executed or continued
+                item = _getNextItemToRun();
+            }
+            
+            if( item )
+            {
+                running_items.insert( item );	// Insert in the set of running processes
+                
+                switch (item->state) {
+                    case ProcessItem::queued:
+                        item->state = ProcessItem::running;
+                        item->runInBackground();
+                        break;
+                    case ProcessItem::halted:
+                        item->state = ProcessItem::running;
+                        item->unHalt();
+                        break;
+                    default:
+                        LM_X(1,("Unexpected state running item at Engine"));
+                        break;
+                }
+            }
+            
+        } while ( item != NULL);
+        
+        LM_T( LmtEngine , ("Engine state for background process: Pending %u Running %u Halted %u", items.size() , running_items.size() , halted_items.size()  ) );
+        
+    }
+    
+    // Function ONLY used inside checkBackgroundProcesses, so it is protected by the its token taker
     
     ProcessItem* ProcessManager::_getNextItemToRun()
     {
@@ -213,47 +251,6 @@ namespace engine
         return item;
         
     }	
-    
-    void ProcessManager::_checkBackgroundProcesses()
-    {
-        
-        // Get the next process item to process ( if CPU slots available )
-        ProcessItem * item = NULL;
-        
-        do
-        {
-            
-            item = NULL;
-            if( (int)running_items.size() < num_processes )
-            {
-                // Space for another process running... get the item to be executed or continued
-                item = _getNextItemToRun();
-            }
-            
-            if( item )
-            {
-                running_items.insert( item );	// Insert in the set of running processes
-                
-                switch (item->state) {
-                    case ProcessItem::queued:
-                        item->state = ProcessItem::running;
-                        item->runInBackground();
-                        break;
-                    case ProcessItem::halted:
-                        item->state = ProcessItem::running;
-                        item->unHalt();
-                        break;
-                    default:
-                        LM_X(1,("Unexpected state running item at Engine"));
-                        break;
-                }
-            }
-            
-        } while ( item != NULL);
-        
-        LM_T( LmtEngine , ("Engine state for background process: Pending %u Running %u Halted %u", items.size() , running_items.size() , halted_items.size()  ) );
-        
-    }
 
     std::string ProcessManager::str()
     {
@@ -285,9 +282,8 @@ namespace engine
     
     std::string ProcessManager::_str()
     {
-        
-        pthread_mutex_lock(&mutex);
-
+        // Protect multi-thread access
+        au::TokenTaker tt( &token );
         
         // Process Manager Status
         // ----------------------------------------------------------------------------
@@ -315,7 +311,6 @@ namespace engine
                 descriptors.add( (*i)->getStatus() );
             process_manager_status << descriptors.str();
         }
-        pthread_mutex_unlock(&mutex);
         
         return process_manager_status.str();
         

@@ -34,7 +34,7 @@ namespace engine {
     }
 	
     
-	DiskOperation* DiskOperation::newReadOperation( char *data , std::string fileName , size_t offset , size_t size  )
+	DiskOperation* DiskOperation::newReadOperation( char *data , std::string fileName , size_t offset , size_t size , size_t _listenerId  )
 	{
 		
 		DiskOperation *o = new DiskOperation();
@@ -45,11 +45,12 @@ namespace engine {
 		o->size = size;
 		o->offset = offset;
 		o->setDevice();
+        o->listenerId = _listenerId;
 		
 		return o;
 	}
 	
-	DiskOperation * DiskOperation::newReadOperation( std::string fileName , size_t offset , size_t size ,  SimpleBuffer simpleBuffer )
+	DiskOperation * DiskOperation::newReadOperation( std::string fileName , size_t offset , size_t size ,  SimpleBuffer simpleBuffer , size_t _listenerId)
 	{
 		
 		DiskOperation *o = new DiskOperation();
@@ -60,13 +61,14 @@ namespace engine {
 		o->size = size;
 		o->offset = offset;
 		o->setDevice();
+        o->listenerId = _listenerId;
 		
 		return o;
 	}
 	
 	
 	
-	DiskOperation* DiskOperation::newWriteOperation( Buffer* buffer ,  std::string fileName  )
+	DiskOperation* DiskOperation::newWriteOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId )
 	{
 		DiskOperation *o = new DiskOperation();
 		
@@ -76,12 +78,13 @@ namespace engine {
 		o->size = buffer->getSize();
 		o->offset = 0;
 		o->setDevice();
+        o->listenerId = _listenerId;
 		
 		return o;
 	}
 
 	
-	DiskOperation* DiskOperation::newAppendOperation( Buffer* buffer ,  std::string fileName )
+	DiskOperation* DiskOperation::newAppendOperation( Buffer* buffer ,  std::string fileName, size_t _listenerId )
 	{
 		DiskOperation *o = new DiskOperation();
 		
@@ -91,11 +94,12 @@ namespace engine {
 		o->size = buffer->getSize();
 		o->offset = 0;
 		o->setDevice();
+        o->listenerId = _listenerId;
 		
 		return o;
 	}	
     
-	DiskOperation* DiskOperation::newRemoveOperation( std::string fileName )
+	DiskOperation* DiskOperation::newRemoveOperation( std::string fileName , size_t _listenerId )
 	{
 		DiskOperation *o = new DiskOperation();
 		
@@ -103,7 +107,8 @@ namespace engine {
 		o->type = DiskOperation::remove;
 		o->setDevice();
         o->size = 0;
-		
+        o->listenerId = _listenerId;
+        
 		return o;
 	}
 	

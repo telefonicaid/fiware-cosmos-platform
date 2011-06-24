@@ -30,6 +30,24 @@ namespace au {
 			}
 		}
 		
+		V* extractFromList(  V* v )
+		{
+			typename std::list<V*>::iterator iter;
+            
+            for (iter = std::list<V*>::begin() ;  iter != std::list<V*>::end() ; iter++ )
+                if( *iter == v )
+                    break;
+			
+			if( iter == std::list<V*>::end() )
+				return NULL;
+			else
+			{
+				std::list<V*>::erase(iter);
+				return v;
+			}
+			
+		}	        
+        
 		V* extractBack()
 		{
 			if( std::list<V*>::size() == 0)

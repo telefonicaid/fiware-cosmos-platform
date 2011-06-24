@@ -38,6 +38,10 @@ namespace engine {
 	class ProcessItem  : public Object
 	{
 
+        size_t listenerId;  // Identifier of the listener that should be notified when operation is finished
+        
+        friend class ProcessManager;
+        
 	public:
 		
 		typedef enum 
@@ -46,9 +50,10 @@ namespace engine {
 			queued,         // In the queu waiting to be executed
 			running,        // Running in a background process
 			halted,         // temporary halted, when a slot is ready, read() function is evaluated to see if it can countinue
-            canceled,       // The process has been canceled at ProcessManager, so it should finish as soon as possible   
 		} ProcessItemStatus;
 		        
+        bool canceled;      // Flag to indicate that this process has been canceled ( not forced exit )
+        
         // Internal state of the process
 		ProcessItemStatus  state;
 		
@@ -61,13 +66,16 @@ namespace engine {
 		
 	private:
 		
-		au::Stopper stopper;	// Stopper to block the main thread until ready() returns true
+        // Stopper to block the main thread until ready() returns true
+        // Also protects the state variable
+        
+		au::Stopper stopper;	
 		
 	protected:
 
 		// Information about the status of this process
-		std::string operation_name;			// Name of the operation
         
+		std::string operation_name;			// Name of the operation
 		double progress;					// Progress of the operation ( if internally reported somehow )
 		std::string sub_status;				// Letter describing internal status
 		
@@ -103,15 +111,6 @@ namespace engine {
 
 		// Function to check if the process if ready to be executed ( usually after calling halt )
 		virtual bool isReady(){ return true; };
-
-    protected:
-        
-        // Function used indide _run to evaluate if the ProcessItem has been canceled. If so, it shoudl return assap in the _run
-        bool isProcessItemCanceled();      
-
-    private:
-        
-        void cancel();
         
 	protected:
 		
@@ -121,7 +120,15 @@ namespace engine {
 		
 		void unHalt();			// Method to unhalt the process ( executed from the ProcessManager when ready() returns true )
 
+
+        void setCanceled();
+        bool isProcessItemCanceled();
 		
+        
+    public:
+        
+        void setListenerId( size_t _listenerId );
+        
 	};
 	
 

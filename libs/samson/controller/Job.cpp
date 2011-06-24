@@ -218,67 +218,7 @@ namespace samson {
 			if( operation )
 			{
 				
-/*
-				
-				// Spetial case if -c flag is activated and -nc is not pressent (it is like a script)
-				if( commandLine.get_flag_bool("create") && (!commandLine.get_flag_bool("ncreate")) )
-				{
-					// Add comment to data manager to log that a script is initiated
-					jobManager->controller->data.addComment(id, std::string("Expanding -c option of: ") + command );
-					
-					// Create a JobItem for this script, push into the task and return true to continue
-					JobItem jobItem( command );
-					
-					// Create all the output queues if necessary ( -f flag used to avoid errors )
-
-					for (int i = 0 ; i < operation->getNumOutputs() ; i++)
-					{
-						KVFormat format = operation->getOutputFormat(i);
-						std::ostringstream local_command;
-						local_command << "add " << commandLine.get_argument(1 + operation->getNumInputs() + i);
-						local_command << " " << format.keyFormat << " " << format.valueFormat << " -f";
-						jobItem.addCommand( local_command.str() );
-					}
-					
-					jobItem.addCommand( command + " -ncreate" );
-					items.push_back(jobItem);
-					
-					return true;
-				}
-
-				// Spetial case if -clear flag is activated and -nclear is not pressent (it is like a script)
-				if( commandLine.get_flag_bool("clear") && (!commandLine.get_flag_bool("nclear")) )
-				{
-					// Add comment to data manager to log that a script is initiated
-					jobManager->controller->data.addComment(id, std::string("Expanding -clear option of: ") + command );
-					
-					// Create a JobItem for this script, push into the task and return true to continue
-					JobItem jobItem( command );
-					
-					// Create all the output queues if necessary ( -f flag used to avoid errors )
-					
-					for (int i = 0 ; i < operation->getNumOutputs() ; i++)
-					{
-						{
-							std::ostringstream local_command;
-							local_command << "add  " << commandLine.get_argument(1 + operation->getNumInputs() + i);
-							KVFormat format = operation->getOutputFormat(i);
-							local_command << " " << format.keyFormat << " " << format.valueFormat << " -f";
-							jobItem.addCommand( local_command.str() );
-						}
-						{
-							std::ostringstream local_command;
-							local_command << "clear " << commandLine.get_argument(1 + operation->getNumInputs() + i);
-							jobItem.addCommand( local_command.str() );
-						}
-					}
-					
-					jobItem.addCommand( command + " -nclear" );
-					items.push_back(jobItem);
-					
-					return true;
-				}
-*/				
+			
 				ControllerTaskInfo *task_info = new ControllerTaskInfo( this, command  );
                 
                 if( task_info->error.isActivated() )
@@ -444,23 +384,28 @@ namespace samson {
 	
 	void Job::setError( std::string agent ,  std::string txt )
 	{
-		error_line = txt;			// error line
-		
-		// String with the error
-		std::ostringstream output;
+        
+        if ( _status != error ) // Keep only the first error message for this job
+        {
+            error_line = txt;			// error line
+            
+            // String with the error
+            std::ostringstream output;
 
-		output << "Error detected by " << agent << " at..." << std::endl;
-		std::list<JobItem>::iterator i;
-		for (i = items.begin() ; i != items.end() ; i++)
-			output << ">> " << i->parent_command << std::endl;
-		
-		// Current line in the current item
-		JobItem& item = items.back();
-		output << ">> " << item.getLastCommand() << std::endl;		
-		output << "\n>>>> Error: " << txt << std::endl;
+            output << "Error detected by " << agent << " at..." << std::endl;
+            std::list<JobItem>::iterator i;
+            for (i = items.begin() ; i != items.end() ; i++)
+                output << ">> " << i->parent_command << std::endl;
+            
+            // Current line in the current item
+            JobItem& item = items.back();
+            output << ">> " << item.getLastCommand() << std::endl;		
+            output << "\n>>>> Error: " << txt << std::endl;
 
-		// Set the error status 
-		error_message = output.str();
+            // Set the error status 
+            error_message = output.str();
+        }
+        
 		setStatus( error );
 	}
 	
@@ -491,6 +436,8 @@ namespace samson {
 					j->set_command( currenTask->info->operation_name );
 					j->set_line( 0 );
 					j->set_num_lines( 0 );
+                    currenTask->fill( j->mutable_controller_task() );
+                    
 				}
 			}
 		}
@@ -499,20 +446,20 @@ namespace samson {
 	std::string Job::getStatus()
 	{
 		std::ostringstream output;
-        output << "id " << id << " ";
+        output << "id " << au::Format::string("%05lu", id ) << " ";
         
 		switch (_status) {
 			case error:
-				output << "Error";
+				output << "Error     ";
 				break;
 			case saving:
-				output << "Writing";
+				output << "Writing   ";
 				break;
 			case running:
-				output << "Running " << au::Format::time_string( difftime( time(NULL), time_init ) );
+				output << "Running   " << au::Format::time_string( difftime( time(NULL), time_init ) );
 				break;
 			case finish:
-				output << "Finished";
+				output << "Finished  ";
 		}
 		
 		return output.str();
@@ -521,11 +468,10 @@ namespace samson {
 
 	void Job::kill()
 	{
-		// Set the error status 
-		error_message = "Killed by user";
-		setStatus( error );
+		// Set as an error 
+        setError("System", "Killed by user");
 		
-		// Send a kill worker task to each worker for each task (only one is active )
+		// Send a kill worker task to each worker for each task ( only one is active )
 		for ( std::set<size_t>::iterator t =  all_tasks.begin() ; t != all_tasks.end() ; t++)
 			for (int i = 0 ; i < jobManager->controller->num_workers ; i++ )
 			{

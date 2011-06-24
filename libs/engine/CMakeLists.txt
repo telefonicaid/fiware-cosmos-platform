@@ -1,4 +1,5 @@
 SET (HEADERS
+Object.h
 Buffer.h
 SimpleBuffer.h
 Engine.h
@@ -14,6 +15,7 @@ ReadFileManager.h
 DiskManager.h
 DiskOperation.h
 DiskStatistics.h
+EngineOperationsContainer.h	
 )
 
 SET (SOURCES
@@ -31,6 +33,7 @@ ReadFileManager.cpp
 DiskManager.cpp
 DiskOperation.cpp
 DiskStatistics.cpp
+EngineOperationsContainer.cpp
 )
 
 # Inclue directories

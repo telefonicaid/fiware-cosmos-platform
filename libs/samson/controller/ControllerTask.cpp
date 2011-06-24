@@ -299,24 +299,6 @@ namespace samson {
         for (int i = 0 ; i < num_workers ; i++)
             sendWorkerTask( i );
     }	
-
-    
-    void ControllerTask::sendRemoveMessageToWorkers()
-    {
-        for (int i = 0 ; i < num_workers ; i++)
-        {
-            // Get status of controller
-            Packet *p2 = new Packet( Message::WorkerTaskRemove );
-
-            // Set the task id
-            network::WorkerTaskRemove *t = p2->message->mutable_worker_task_remove();
-            t->set_task_id( id );
-            
-            taskManager->controller->network->sendToWorker( i ,  p2);
-            
-        }
-        
-    }
     
     /* ****************************************************************************
      *

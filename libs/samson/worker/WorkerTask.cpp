@@ -45,8 +45,6 @@ namespace samson
         
         // Add as a listener for notification_sub_task_finished
         listen( notification_sub_task_finished );
-        listen( notification_process_request_response);
-        listen( notification_disk_operation_request_response );
 	}
 	
 	WorkerTask::~WorkerTask()
@@ -56,7 +54,6 @@ namespace samson
 		
 		if( complete_message )
 			delete complete_message;
-
         
         // Remove pending tasks ( if canceled before any of them finish )
         subTasks.clearMap();
@@ -67,7 +64,6 @@ namespace samson
         // Clear colection of output files ( delete is called for each one )
         outputFiles.clearMap(); 
         outputRemoveFiles.clearMap();
-        
 	}
 	
 	
@@ -318,14 +314,6 @@ namespace samson
 				sendCompleteTaskMessageToController();
 				
 			}
-        
-        if( status == completed )
-        {
-            engine::Notification *notification = new engine::Notification( notification_task_finished );
-            notification->environment.setSizeT("task_id", task_id);
-            notification->environment.setInt("worker", taskManager->worker->network->getWorkerId());
-            engine::Engine::add(notification);
-        }
 		
 	}
 		
@@ -387,6 +375,9 @@ namespace samson
         output << " ]";
         
         
+        if( canBeRemoved() )
+            output << "[ TO BE REMOVED ]";
+        
 		output << "\n\t\t\t Subtasks:";
 
         
@@ -396,7 +387,7 @@ namespace samson
 
         output << descriptors.str();
 		
-        output << "\nNum pending disk operations: " << num_disk_operations;
+        output << "\n\t\t\t Pending: " << num_disk_operations << " disk operations and " << num_process_items << " process items ";
         
 		return output.str();
 	}
@@ -476,7 +467,7 @@ namespace samson
         addFile( fileName , queue , info );
 
 		// Submit the operation
-        engine::DiskOperation *operation = engine::DiskOperation::newAppendOperation(  buffer ,  SamsonSetup::dataFile( fileName ) );
+        engine::DiskOperation *operation = engine::DiskOperation::newAppendOperation(  buffer ,  SamsonSetup::dataFile( fileName ) , getListenerId() );
         addDiskOperation(operation);
 	}
 	
@@ -641,41 +632,21 @@ namespace samson
 	
 #pragma mark KILL	
 	
-	void WorkerTask::kill()
+	void WorkerTask::kill( std::string message )
 	{
-        LM_W(("Kill task &l" , task_id ));
-        error.set("Killed by user");
-        check();
-        
-		/*
-         
-         // Revove the subtasks
-         for ( au::map<size_t , WorkerSubTask>::iterator i = subTasksWaitingForMemory.begin() ; i != subTasksWaitingForMemory.end() ; i++)
-         delete i->second;
-         subTasksWaitingForMemory.clear();
-         
-         for ( au::map<size_t , WorkerSubTask>::iterator i = subTasksWaitingForReadItems.begin() ; i != subTasksWaitingForReadItems.end() ; i++)
-         delete i->second;
-         subTasksWaitingForReadItems.clear();
+        //LM_W(("Kill task %lu: (%s)" , task_id , message.c_str() ));
 
-		for ( au::map<size_t , WorkerSubTask>::iterator i = subTasksWaitingForProcess.begin() ; i != subTasksWaitingForProcess.end() ; i++)
-			delete i->second;
-		subTasksWaitingForProcess.clear();
-		
-		
-		
-		// Remove the output buffers
-		for ( au::map<std::string , QueueuBufferVector>::iterator i =  queueBufferVectors.begin() ; i != queueBufferVectors.end() ; i++ )
-		{
-			QueueuBufferVector* qbv = i->second;
-			qbv->clear();
-			delete qbv;
-		}
-		
-		queueBufferVectors.clear();
-         
-         */
-		
+        // Cancel my own tasks
+        cancelEngineOperations();
+        
+        // Remove all subtasks
+        au::map<size_t,WorkerSubTask>::iterator s;
+        for ( s = subTasks.begin() ; s != subTasks.end() ; s++ )
+        {
+            WorkerSubTask *subTask = s->second;
+            subTask->cancelEngineOperations();
+        }
+ 		
 	}
     
     void WorkerTask::setError(std::string _error_message)
@@ -695,22 +666,39 @@ namespace samson
         check();
     }
     
+    bool WorkerTask::canBeRemoved()
+    {
+        if( status != completed )
+            return false;
+        
+        if( hasPendingEngineOperations() )
+            return false;
+        
+        // Remove all subtasks
+        au::map<size_t,WorkerSubTask>::iterator s;
+        for ( s = subTasks.begin() ; s != subTasks.end() ; s++ )
+        {
+            WorkerSubTask *subTask = s->second;
+            if (subTask->hasPendingEngineOperations() )
+                return false;
+        }
+     
+        return true;
+    }
+    
+    
 #pragma Notifications
     
     void WorkerTask::addDiskOperation( engine::DiskOperation *operation )
     {
-        engine::Notification *notification = new engine::Notification( notification_disk_operation_request , operation );
-        setNotificationCommonEnvironment( notification );
         num_disk_operations++;
-        engine::Engine::add( notification );
+        engine::DiskManager::shared()->add( operation );
     }
 
     void WorkerTask::addProcessItem( engine::ProcessItem *item )
     {
-        engine::Notification *notification = new engine::Notification( notification_process_request , item );
-        setNotificationCommonEnvironment( notification );
         num_process_items++;
-        engine::Engine::add( notification );
+        engine::ProcessManager::shared()->add( item , getListenerId() );
     }
     
     

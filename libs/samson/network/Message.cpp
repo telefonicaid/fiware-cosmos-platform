@@ -27,7 +27,6 @@ char* messageCode(MessageCode code)
 	case WorkerVector:                     return (char*) "WorkerVector";
 	case WorkerTask:                       return (char*) "WorkerTask";
 	case WorkerTaskKill:                   return (char*) "WorkerTaskKill";
-    case WorkerTaskRemove:                 return (char*) "WorkerTaskRemove";
 	case WorkerTaskFinish:                 return (char*) "WorkerTaskFinish";
 	case WorkerStatus:                     return (char*) "WorkerStatus";
 	case Command:                          return (char*) "Command";

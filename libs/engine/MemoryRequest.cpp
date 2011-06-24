@@ -1,20 +1,20 @@
 
 
+#include "logMsg/logMsg.h"				// LM_X
+
 #include "engine/MemoryRequest.h"		// Own interface
 #include "engine/Buffer.h"				// samson::Buffer
-#include "logMsg/logMsg.h"				// LM_X
 
 namespace engine
 {
 
 	
-    MemoryRequest::MemoryRequest( au::Environment *_environment )
+    MemoryRequest::MemoryRequest( size_t _size , size_t _listener_id )
     {
-        if( !_environment->isSet("size") )
-            LM_X(1,("MemoryRequest without size parameter"));
+        size = _size;
+        listner_id = _listener_id;
         
-        copyFrom( _environment );
-        size = getSizeT("size", 0);
+        buffer = NULL;
     }
 
 	

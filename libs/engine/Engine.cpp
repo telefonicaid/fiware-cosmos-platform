@@ -177,6 +177,27 @@ namespace engine
         
     }
     
+         // Add a listener ( give unique id )
+    void Engine::add( NotificationListener*listener )
+    {
+        if( engine )
+            engine->notificationSystem.add( listener );
+        else
+        {
+            LM_X(1,("Not adding a listener since engine is not initialized" ));
+        }
+    }
+    
+    void Engine::remove( NotificationListener*listener )
+    {
+        if( engine )
+        {
+            engine->notificationSystem.remove( listener );
+        }
+        else
+            LM_W(("Not removing a listener since engine is not initialized"));
+    }
+    
     void Engine::add( const char* name , NotificationListener*listener)
     {
         if( engine )

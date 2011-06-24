@@ -17,10 +17,7 @@ namespace samson {
         BlockManager::BlockManager()
         {
             id = 0;
-            
-            // Add this object as a listener of notification_disk_operation_request_response
-            listen( notification_disk_operation_request_response );
-
+ 
             num_writing_operations=0;     // Number of writing operations ( low priority blocks )
             num_reading_operations=0;     // Number of reading operations ( high priority blocks )
         
@@ -181,16 +178,6 @@ namespace samson {
             }                
             
         }
-        
-        bool BlockManager::acceptNotification( engine::Notification* notification )
-        {
-            if( notification->isName(notification_disk_operation_request_response) )
-                if( notification->environment.get("target", "") == "Block")
-                    return true;
-            
-            return true;
-        }
-
         
         
     }

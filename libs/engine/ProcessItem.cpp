@@ -33,6 +33,10 @@ namespace engine
 		operation_name = "unknown";	// Default message for the status
 		progress = 0;		// Initial progress to "0"
 		state = queued;
+        
+        canceled = false;   // By default it is not canceled
+        
+        listenerId = 0; // By default, nobody is notified when finished
 	}
 	
 	
@@ -50,9 +54,6 @@ namespace engine
 				break;
 			case halted:
 				o << "H";
-				break;
-			case canceled:
-				o << "C";
 				break;
 		}
 		
@@ -94,8 +95,15 @@ namespace engine
 		
 		// Stop this thread in the stopper loop
 		stopper.stop_finish( 0 );
-		
-		state = running;
+
+		// Change the state variable to running
+        stopper.lock();
+
+        // come back to the running state
+        state = running;
+        
+        stopper.unlock();
+        
 	}
 	
 	void ProcessItem::unHalt()
@@ -103,19 +111,21 @@ namespace engine
 		// Wake up this process
 		stopper.wakeUp();
 	}
-	
+    
+    void ProcessItem::setCanceled()
+    {
+        canceled = true;    
+    }
     
     bool ProcessItem::isProcessItemCanceled()
     {
-        return (state == canceled);
+        return canceled;
     }
-
-    void ProcessItem::cancel()
+    
+    void ProcessItem::setListenerId( size_t _listenerId )
     {
-        // switch to state canceled
-        state =  canceled;
+        listenerId = _listenerId;
     }
-	
     
     
 	

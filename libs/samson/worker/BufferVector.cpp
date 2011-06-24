@@ -14,11 +14,11 @@ namespace samson {
     BufferVector::~BufferVector()
     {
         // Clear the buffer if there is any buffer inside ( only in killed jobs )
-        clear();
+        clearBufferVector();
     }
 
     
-    void BufferVector::clear()
+    void BufferVector::clearBufferVector()
     {
         for (std::list<engine::Buffer*>::iterator i = buffers.begin() ; i != buffers.end() ; i++)
             engine::MemoryManager::shared()->destroyBuffer( *i );
@@ -140,7 +140,7 @@ namespace samson {
             LM_X(1, ("size matters"));
 
         // Remove the used buffers
-        clear();
+        clearBufferVector();
         
         return b;
     }
@@ -232,7 +232,7 @@ namespace samson {
         b->setSize(offset);
         
         // Remove the used buffers
-        clear();
+        clearBufferVector();
         
         // Return the new buffer with the content reordered
         return b;      

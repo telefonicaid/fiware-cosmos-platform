@@ -60,12 +60,8 @@ namespace engine
 	
 	MemoryManager::MemoryManager( size_t _memory ) : token("Memory Manager")
 	{
-		
 		// Total available memory
         memory = _memory;
-        
-		// Add the MemoryManager as a listner for the memory_request channel
-        listen( notification_memory_request );
 	
     }
 	
@@ -118,35 +114,43 @@ namespace engine
         Engine::add( new Notification( notification_process_manager_check_background_process ) );
 		
 	}
-	    
-    void MemoryManager::notify( Notification* notification )
+    
+    void MemoryManager::add( MemoryRequest *request )
     {
-        if ( notification->isName(notification_memory_request) )
-        {
-                //LM_M(("Memory manager received a notification for memory"));
-               
-                MemoryRequest *request = new MemoryRequest( &notification->environment );
-                
-                if( request->size > memory )
-                    LM_X(-1,("Error managing memory: excesive memory request"));	
-                
-                LM_T( LmtMemory , ("Adding memory request for %s" , au::Format::string( request->size , "B" ).c_str() ));
-                
-                token.retain();
-                memoryRequests.push_back( request );
-                token.release();
-                
-                LM_T( LmtMemory , ("[DONE] Adding memory request for %s" , au::Format::string( request->size , "B" ).c_str() ));
-                
-                checkMemoryRequests();
-            
-        } 
-        else 
-            LM_X(1,("Memory manager received a wrong notification"));
+        
+        if( request->size > memory )
+            LM_X(-1,("Error managing memory: excesive memory request"));	
+        
+        LM_T( LmtMemory , ("Adding memory request for %s" , au::Format::string( request->size , "B" ).c_str() ));
+        
+        token.retain();
+        memoryRequests.push_back( request );
+        token.release();
+        
+        LM_T( LmtMemory , ("[DONE] Adding memory request for %s" , au::Format::string( request->size , "B" ).c_str() ));
+        
+        checkMemoryRequests();
         
     }
-
-    	
+    
+    void MemoryManager::cancel( MemoryRequest *request )
+    {
+        token.retain();
+        
+        if( memoryRequests.extractFromList( request ) )
+        {
+            // Get the buffer
+            request->buffer = NULL;
+            
+            // Send the answer with a notification
+            Engine::add( new Notification( notification_memory_request_response , request , request->listner_id ) );
+            
+        }
+        
+        token.release();
+        
+    }
+    
 	 
 	// Function to check memory requests and notify using Engine if necessary
 	void MemoryManager::checkMemoryRequests()
@@ -172,12 +176,11 @@ namespace engine
 			}
 			else
 			{
-				Buffer *buffer = _newBuffer("Buffer from request", r->size , 0 );   // By default ( tag == 0 )
-                Notification *notification  = new Notification( notification_memory_request_response , buffer  );
-                notification->environment.copyFrom( r );
-                Engine::add(notification);
-                
-                delete r; // Remove the memory request ( only used internally )
+                // Get the buffer
+				r->buffer = _newBuffer("Buffer from request", r->size , 0 );   // By default ( tag == 0 )
+
+                // Send the answer with a notification
+                Engine::add( new Notification( notification_memory_request_response , r , r->listner_id ) );
 			}
 			
 		}

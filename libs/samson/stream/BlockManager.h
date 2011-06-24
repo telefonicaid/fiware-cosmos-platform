@@ -183,7 +183,6 @@ namespace samson {
         public:
             
             virtual void notify( engine::Notification* notification );
-            virtual bool acceptNotification( engine::Notification* notification );
             
             
         private:

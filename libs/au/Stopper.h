@@ -32,6 +32,10 @@ namespace au
 		void wakeUp();
 		
         
+        // Simple lock and unlock
+        void lock();
+        void unlock();
+        
 	};
 	
 }

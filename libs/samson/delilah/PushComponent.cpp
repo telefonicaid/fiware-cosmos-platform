@@ -1,7 +1,10 @@
 
 
 #include "PushComponent.h"                      // Own interface
+
 #include "engine/MemoryManager.h"					// samson::MemoryManager
+#include "engine/MemoryRequest.h"
+
 #include "engine/Buffer.h"							// samson::Buffer
 #include "samson/network/Packet.h"							// samson::Packet
 #include "samson/network/Message.h"						// samson::Message
@@ -32,9 +35,6 @@ namespace samson
         
         // Set this to false ( true will be the end of processing data )
         finish_process = false;
-        
-        // Add myself as a receiver for notifications
-        listen( notification_memory_request_response );
         
 		
 	}	
@@ -71,12 +71,8 @@ namespace samson
     
     void PushComponent::requestMemoryBuffer()
     {
-        // Ask for a memory buffer of 64 Mb
-        engine::Notification *notification = new engine::Notification( notification_memory_request );
-        notification->environment.setSizeT( "size", 64*1024*1024 );
-        notification->environment.set("target", "PushComponent");
-        notification->environment.setSizeT("id", id);
-        engine::Engine::add( notification );
+        // Add a memory request to be responded to me
+        engine::MemoryManager::shared()->add( new engine::MemoryRequest( 64*1024*1024 , getListenerId() ) );
     }
 
     // Receive packets
@@ -107,9 +103,17 @@ namespace samson
         if( notification->isName( notification_memory_request_response ) )
         {
             // New buffer to be used to send data to the workers
-            engine::Buffer *buffer = (engine::Buffer *) notification->extractObject();
-            if( !buffer )
+            engine::MemoryRequest *memoryRequest = (engine::MemoryRequest *) notification->extractObject();
+
+            if( !memoryRequest )
                 LM_X(1, ("Internal error: Memory request returnes without a buffer"));
+
+            if ( !memoryRequest->buffer )
+                LM_X(1, ("Memory request returned without the allocated buffer"));
+            
+            engine::Buffer *buffer = memoryRequest->buffer;
+            delete memoryRequest;
+            
             
             // Full the buffer with the content from the files
             fileSet.fill( buffer );

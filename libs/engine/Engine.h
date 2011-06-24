@@ -83,7 +83,11 @@ namespace engine
 
         // Add and remove listeners
     private:
+        
         friend class NotificationListener;
+        static void add( NotificationListener*listener );     // Add a listener ( give unique id )
+        static void remove( NotificationListener*listener );    // Remove a listener
+        
         static void add( const char* name , NotificationListener*listener);
         static void remove( const char* name , NotificationListener* listener );
     public:

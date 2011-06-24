@@ -12,18 +12,12 @@
 
 #include "logMsg/traceLevels.h"                // LmtEngine
 
+#include "engine/Object.h"                  // engine::Object
+
 namespace engine
 {
     
-    /**
-     Base class for all the objects that goes in a notification
-     */
-    
-    class Object
-    {
-    public:        
-        virtual ~Object(){};      // Force virtual destrutor for correct release of memory at the end of the notification
-    };
+
     
         
     /**
@@ -32,8 +26,12 @@ namespace engine
     
     class Notification
     {
+        friend class EngineNotificationSystem;
+        
         const char* name;                       // Name of the notification
         Object* object;                         // Single object to be used as parameter
+        
+        std::set<size_t> listener_id;           // Identifiers that should receive this notification
         
     public:
 
@@ -54,6 +52,9 @@ namespace engine
         
         // Constructor with one object as "main"
         Notification( const char* _name , Object * _object );
+
+        // Constructor with one object and a target listener
+        Notification( const char* _name , Object * _object , size_t _listener_id );
         
         // Get a string for debug
         std::string getDescription();
@@ -76,10 +77,17 @@ namespace engine
     
     class NotificationListener
     {
+        friend class EngineNotificationSystem;
+        
         // Set of notifications we are currently listening
         std::set< const char* , au::strCompare > notification_names;
         
+        // Unique identifier of this listener
+        size_t listener_id;
+        
     public:
+        
+        NotificationListener();
         
         ~NotificationListener();
         
@@ -93,6 +101,11 @@ namespace engine
         // Start listening a particular notification
         void listen( const char* notification_name );
         
+        // Get my id as listener
+        size_t getListenerId()
+        {
+            return listener_id;
+        }
         
     };
     
@@ -102,46 +115,20 @@ namespace engine
     
     class NotificationListenerSet
     {
-        std::set<NotificationListener*> listeners;
-        const char* name;   // Name of the notification we are listening
         
     public:
         
-        NotificationListenerSet( const char* _name )
-        {
-            name = _name;
-        }
+        std::set<size_t> listener_ids;
+        
         
         void add( NotificationListener* listener )
         {
-            listeners.insert( listener );
+            listener_ids.insert( listener->getListenerId() );
         }
         
         void remove( NotificationListener* listener )
         {
-            listeners.erase( listener );
-        }
-        
-        void notify( Notification* notification )
-        {
-
-            LM_T(LmtEngineNotification, ("Delivering notification [%s] to %d listeners" , notification->getDescription().c_str() , (int) listeners.size() ));
-            
-            for ( std::set<NotificationListener*>::iterator i = listeners.begin() ; i != listeners.end() ; i++)
-            {
-                LM_T(LmtEngineNotification, ("Delibering notification [%s] to listener %p " , notification->getDescription().c_str() , *i ));
-                
-                if ( (*i)->acceptNotification( notification ) )
-                    (*i)->notify( notification );
-            }
-
-            notification->destroyObjects();
-            
-        }
-        
-        int getNumListeners()
-        {
-            return listeners.size();
+            listener_ids.erase( listener->getListenerId() );
         }
         
     };
@@ -149,6 +136,10 @@ namespace engine
 
     class EngineNotificationSystem
     {
+        size_t listener_id;
+        // Map of all the listeners by id
+        au::map < size_t , NotificationListener > listeners;
+        
         // Map of deliveries per channel
         au::map< const char* , NotificationListenerSet , au::strCompare > listenersSets;
         
@@ -157,9 +148,24 @@ namespace engine
         ~EngineNotificationSystem()
         {
             
+            listener_id = 1;
+            
             // Destroy all the Enginedelivery elements ( delete is called for each one )
             listenersSets.clearMap(); 
             
+        }
+        void add( NotificationListener* listener )
+        {
+            LM_T(LmtEngineNotification, ("Add listener %p", listener ));
+            listener->listener_id = listener_id++;
+            
+            listeners.insertInMap( listener->listener_id , listener );
+        }
+        
+        void remove( NotificationListener* listener )
+        {
+            LM_T(LmtEngineNotification, ("Remove listener %p", listener  ));
+            listeners.extractFromMap( listener->listener_id );
         }
         
         void add( const char* name , NotificationListener* listener )
@@ -176,13 +182,38 @@ namespace engine
         
         void notify( Notification* notification )
         {
-            NotificationListenerSet *set = get( notification->getName() );
-
-            LM_T(LmtEngineNotification, ("Notifying %s ( Current set of listeners %d ) ", notification->getDescription().c_str() , set->getNumListeners() ));
             
-            set->notify( notification );
+            // Send to each listener contained in listner_id in Notification
+            std::set<size_t>::iterator iterator_listener_id;
+            for( iterator_listener_id = notification->listener_id.begin() ; iterator_listener_id != notification->listener_id.end() ; iterator_listener_id++ )
+            {
+                
+                size_t _listener_id = *iterator_listener_id;
+                NotificationListener* listener = listeners.findInMap( _listener_id );
+                if( listener )
+                    listener->notify( notification );
+            }
+            
+            // Send to the globally added as listeners
+            NotificationListenerSet *set = get( notification->getName() );
+            
+            LM_T(LmtEngineNotification, ("Delivering notification [%s] to %d listeners" , notification->getDescription().c_str() , (int) listeners.size() ));
+            
+            for ( std::set<size_t>::iterator i = set->listener_ids.begin() ; i != set->listener_ids.end() ; i++ )
+            {
+                size_t _listener_id = *i;
+                NotificationListener* listener = listeners.findInMap( _listener_id );
+                
+                if( !listener )
+                    LM_X(1, ("Major error in engine. A listener is registered as global listener and is not defined as individual listner"));
+                
+                if ( listener->acceptNotification( notification ) )
+                    listener->notify( notification );
+            }
+            
+            notification->destroyObjects();
+            
         }
-        
         
     private:
         
@@ -194,7 +225,7 @@ namespace engine
             
             if( !delivery )
             {
-                delivery = new NotificationListenerSet(name);
+                delivery = new NotificationListenerSet();
                 listenersSets.insertInMap( name, delivery );
             }
             return delivery;

@@ -320,19 +320,6 @@ namespace samson {
 			taskManager.killTask( packet->message->worker_task_kill() );
 			return;
 		}
-
-		if (msgCode == Message::WorkerTaskRemove)
-		{
-            
-            size_t task_id = packet->message->worker_task_remove().task_id();
-			// A packet with a particular command is received (controller expect to send a confirmation message)
-			LM_T(LmtTask, ("Got a WorkerTaskRemove message with task id %lu", task_id));
-			
-			// add task to the task manager
-			taskManager.removeTask( task_id  );
-			return;
-		}
-		
         
 		// List of local file ( remove unnecessary files )
 		if (msgCode == Message::CommandResponse)
@@ -567,11 +554,9 @@ namespace samson {
 		// Remove the selected files
 		for ( std::set< std::string >::iterator f = remove_files.begin() ; f != remove_files.end() ; f++)
 		{
-			// Add a remove opertion to the engine
-            engine::DiskOperation * operation =  engine::DiskOperation::newRemoveOperation(  SamsonSetup::dataFile(*f) );
-            engine::Notification *notification = new engine::Notification( notification_disk_operation_request , operation );
-            notification->environment.set("target","no-where");
-			engine::Engine::add( notification );
+			// Add a remove opertion to the engine ( target 0 means no specific listener to be notified )
+            engine::DiskOperation * operation =  engine::DiskOperation::newRemoveOperation(  SamsonSetup::dataFile(*f) , 0 );
+            engine::DiskManager::shared()->add( operation );
 		}
 		
 		

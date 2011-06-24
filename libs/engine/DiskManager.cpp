@@ -61,10 +61,6 @@ namespace engine
         
         // Number of parallel disk operations
         num_disk_operations = _num_disk_operations;
-        
-		// Add the diskManager as a listener for disk operations
-        listen( notification_disk_operation_request );
-        
     }
     
     DiskManager::~DiskManager()
@@ -72,39 +68,42 @@ namespace engine
 		pthread_mutex_destroy(&mutex);			// Mutex to protect elements
     }
     
-    void DiskManager::notify( Notification* notification )
-    {
-        if( ! notification->isName(notification_disk_operation_request) )
-            LM_X(1,("DiskManager received a wrong notification"));
-        
-        if ( !notification->containsObject() )
-            LM_X(1,("DiskManager received a notification without object" ));
-        
-        // Get the objecy ( not leave in the vector since it would be automatically deleted by engine )
-        DiskOperation *diskOperation = (DiskOperation*) notification->extractObject();
-        
-        // Copy all the environment variables for the notification comming back
-        diskOperation->environment.copyFrom( &notification->environment );    
-        
-        // add the operation to the queue
-        add( diskOperation );
-    }
-    
-    
 	void DiskManager::add( DiskOperation *operation )
 	{
         // Set the pointer to myself
         operation->diskManager = this;
         
 		pthread_mutex_lock(&mutex);
-		//pending_operations.push_back( operation );
+        
+		// Insert the operation in the queue of pending operations
         pending_operations.insert( _find_pos(operation), operation );
+        
+		pthread_mutex_unlock(&mutex);
+        
+		// Check if we can start this operation
+		checkDiskOperations();
+	}
+
+	void DiskManager::cancel( DiskOperation *operation )
+	{
+        
+		pthread_mutex_lock(&mutex);
+
+        if( pending_operations.extractFromList( operation ) )
+        {
+            // Add a notification for this operation ( removed when delegate is notified )
+            Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listenerId );
+            notification->environment.copyFrom( &operation->environment );        // Recover the environment variables to identify this request
+            Engine::add(notification);            
+        }
+        
 		pthread_mutex_unlock(&mutex);
         
 		// Check if we can start this operation
 		checkDiskOperations();
 	}
 	
+    
 	void DiskManager::finishDiskOperation( DiskOperation *operation )
 	{
         // Callback received from background process
@@ -116,9 +115,8 @@ namespace engine
 		
 		pthread_mutex_unlock(&mutex);
 		
-		// Add a notification for this operation ( removed when delegate is notified )
-        Notification *notification = new Notification( notification_disk_operation_request_response , operation );
-        notification->environment.copyFrom( &operation->environment );        // Recover the environment variables to identify this request
+		// Add a notification for this operation to the required target listener
+        Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listenerId );
         Engine::add(notification);    
 		
 		// Check if there are more operation to be executed
@@ -173,10 +171,6 @@ namespace engine
         
         return rate;
     }
-
-    
-    
-    
     
     std::string DiskManager::str()
 	{

@@ -14,9 +14,6 @@ namespace samson {
         QueueTaskManager::QueueTaskManager( QueuesManager* _qm )
         {
             id = 1;
-            // Ready to receive notifications
-            listen( notification_process_request_response );    
-            
             qm = _qm;
         }
         
@@ -78,12 +75,8 @@ namespace samson {
                     // Insert in the running vector
                     runningTasks.insertInMap( _task->id , _task ); 
 
-                    // Notify to run this process item
-                    engine::Notification *notification = new engine::Notification( notification_process_request , _task->getStreamProcess() );
-                    notification->environment.set("target", "QueueTaskManager");
-                    notification->environment.setSizeT("id", _task->id );
-                    notification->environment.set("queue", _task->queue_name );
-                    engine::Engine::add( notification );
+                    // Add this process item ( note that a notification will be used to notify when finished )
+                    engine::ProcessManager::shared()->add( _task->getStreamProcess() , getListenerId() );
                 }
                 
             }

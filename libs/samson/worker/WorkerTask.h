@@ -2,20 +2,28 @@
 #ifndef _H_WORKER_TASK
 #define _H_WORKER_TASK
 
-#include "au/map.h"				// au::map
 #include <cstring>				// size_t
 #include <string>				// std::string
-#include "samson/module/Operation.h"	// samson::Operation
-#include "samson/common/samson.pb.h"			// samson::network::...
-#include "samson/module/Environment.h"	// samson::Environment
 #include <set>					// std::set
-#include "au/Error.h"				// au::Error
+
+#include "au/map.h"				// au::map
+#include "au/Error.h"			// au::Error
+#include "au/Token.h"			// au::token
+
 #include "engine/EngineNotification.h" // samson::EngineNotificationListener
-#include "samson/common/coding.h"             // samson::KVInfo
 #include "engine/Buffer.h"
 #include "engine/MemoryRequest.h"  
 #include "engine/DiskOperation.h"  
 #include "engine/ProcessItem.h"
+
+#include "engine/EngineOperationsContainer.h"       // engine::OperationsContainer
+
+
+#include "samson/common/samson.pb.h"			// samson::network::...
+#include "samson/common/coding.h"             // samson::KVInfo
+
+#include "samson/module/Operation.h"	// samson::Operation
+#include "samson/module/Environment.h"	// samson::Environment
 
 #define notification_sub_task_finished      "notification_sub_task_finished"
 
@@ -65,8 +73,8 @@ namespace samson {
         }
         
     };
-        
-	class WorkerTask : public engine::NotificationListener
+    
+	class WorkerTask : public engine::NotificationListener , public engine::OperationsContainer
 	{
 		
         
@@ -139,7 +147,7 @@ namespace samson {
 		void setError(std::string _error_message);
 		
 		// Kill( from a message from the controller )
-		void kill();
+		void kill( std::string message );
 		
 		// Processign income buffers
 		void addBuffer( network::WorkerDataExchange& workerDataExchange , engine::Buffer *buffer );
@@ -175,6 +183,10 @@ namespace samson {
         
         void setNotificationCommonEnvironment( engine::Notification*notification );
         bool acceptNotification( engine::Notification* notification );
+        
+    public:
+        
+        bool canBeRemoved();
         
 #pragma mark Messages
 		

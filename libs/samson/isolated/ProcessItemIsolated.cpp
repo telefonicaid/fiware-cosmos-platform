@@ -173,7 +173,7 @@ namespace samson
         {
             error.set( "ProcessItem canceled" );
             
-            // Send an kill message and finish
+            // Send a kill message and finish
             samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
             response->set_code( samson::network::MessagePlatformProcess_Code_code_kill );
             au::writeGPB(pipeFdPair2[1], response);

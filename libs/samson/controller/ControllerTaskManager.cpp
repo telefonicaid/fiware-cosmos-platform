@@ -55,10 +55,7 @@ namespace samson
 		ControllerTask * t = task.extractFromMap( task_id );
 
 		if(t)
-        {
-            t->sendRemoveMessageToWorkers();
 			delete t;
-        }
 	}
 	
 	

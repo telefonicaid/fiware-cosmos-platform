@@ -627,7 +627,7 @@ namespace samson {
 		{            
             // Update the progress of this report
             double p = (double) hg / (double) num_hash_groups;
-            LM_M(("Reduce reporting progress %f",p));
+            //LM_M(("Reduce reporting progress %f",p));
             reportProgress(p,"Running");
 			
 			// Counte the number of key-values I will have in this round

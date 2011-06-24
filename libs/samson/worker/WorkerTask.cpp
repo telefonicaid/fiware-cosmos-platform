@@ -388,7 +388,6 @@ namespace samson
         output << descriptors.str();
 		
         output << "\n\t\t\t Pending: " << num_disk_operations << " disk operations and " << num_process_items << " process items ";
-        
 		return output.str();
 	}
 	

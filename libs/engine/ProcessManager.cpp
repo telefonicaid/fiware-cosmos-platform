@@ -72,7 +72,7 @@ namespace engine
         if( notification->isName( notification_process_manager_check_background_process ) )                 
             checkBackgroundProcesses();
         else        
-            LM_X(1,("Wrong notification at ProcessManager"));
+	  LM_X(1,("Wrong notification at ProcessManager [Listener %lu] %s" , getListenerId() , notification->getDescription().c_str()));
         
     }
     

@@ -19,7 +19,7 @@
 
 #ifdef __linux__
 
-#include <stropts.h>
+//#include <stropts.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <linux/netdevice.h>

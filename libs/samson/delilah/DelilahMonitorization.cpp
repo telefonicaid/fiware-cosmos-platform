@@ -269,7 +269,7 @@ namespace samson
                 txt << au::Format::string( task.processed_info().size() );
                 txt << " / " << au::Format::string( task.running_info().size() );
                 txt << "/" << au::Format::string( task.total_info().size() ) << " ";
-                txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', ' ' , cols - 50  );
+                txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', ' ' , cols - 55  );
                 
                 printLine( txt.str().c_str() );
                 

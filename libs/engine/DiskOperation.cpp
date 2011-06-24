@@ -376,7 +376,7 @@ namespace engine {
     bool DiskOperation::compare( DiskOperation *operation )
     {
         // Priority to append and write operations
-        if( ( type == append ) && ( type == write ) )
+        if( ( type == append ) || ( type == write ) )
             if( ( operation->type != append ) && ( operation->type != write ) )
                 return true;
         

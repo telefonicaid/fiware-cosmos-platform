@@ -1088,9 +1088,6 @@ namespace samson
                         txt << "Error: (" << task.error().message() <<  ")";
                     
                     txt << "\n";                    
-                    // Current task running
-                    txt << "XXX";
-                    
                     
                 }
                 else

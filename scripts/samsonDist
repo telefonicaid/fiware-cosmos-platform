@@ -1,0 +1,26 @@
+if [ "$#" == 0 ]
+then
+	echo "Error - no host list for distribuition"
+	exit 1
+fi
+
+localMachine=$(uname -n)
+echo "Distributing from $localMachine to $*" 
+
+for mach in $*
+do
+	ping -c 1 $mach > /dev/null 2>&1
+	if [ "$?" != 0 ]
+	then
+		echo No ping to $mach
+		exit 1
+	fi
+done
+
+for mach in $*
+do
+	echo Installing samson in $mach
+	rsync -r /opt/samson/etc             samson@$mach:/opt/samson
+	rsync -r /opt/samson/modules         samson@$mach:/opt/samson
+	rsync -r /usr/local/bin  		      samson@$mach:/usr/local/
+done

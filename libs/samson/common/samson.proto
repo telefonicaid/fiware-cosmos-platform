@@ -165,6 +165,7 @@ message ControllerTaskManagerStatus
 
 }
 
+
 message ControllerStatus
 {
 	optional uint64 up_time = 8;					// Time since the the worker started
@@ -334,7 +335,7 @@ message Command
 
 message CommandResponse
 {
-	required string command	       = 1;	    // Copy of the original command
+	required Command command= 1;		    // Copy of the original command message
 
 	optional uint64 new_job_id     = 2;         // Id of the new job ( if a new job is created )
 	optional uint64 finish_job_id  = 11;        // Id of the job that has finished 

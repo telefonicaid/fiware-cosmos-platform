@@ -146,6 +146,8 @@ namespace samson {
 		// List of all tasks ( all of them have to be completed before considering the job completed)
 		std::set<size_t> all_tasks;
 		
+        network::Command *command;      // Copy of the original message sent from a delilah
+        
 		std::string mainCommand;		// Main command that originated this job
 		
 	public:
@@ -155,7 +157,8 @@ namespace samson {
 		// Constructor used for top-level jobs form delilah direct message
 		
 		Job( JobManager * _jobManager , size_t _id, int fromId, const network::Command &command , size_t _sender_id  );
-		
+		~Job();
+        
 		/**
 		 Main routine to run commands until waiting for task confirmation or the job finishs
 		 */
@@ -189,7 +192,7 @@ namespace samson {
 		
 		std::string getStatus();
 		
-		void kill();	// Kill this job ( similar to error )
+		void kill(std::string message);	// Kill this job ( similar to error )
 
 	private:
 		void setError( std::string agent , std::string txt );

@@ -20,6 +20,10 @@
 #include "engine/Engine.h"					// samson::Engine
 #include "engine/DiskStatistics.h"			// samson::DiskStatistics
 
+
+// Global periodic notification to check for the entire system ( disconected workers )
+#define notification_check_controller  "notification_check_controller"      
+
 namespace samson {
 
 	/* ****************************************************************************
@@ -62,13 +66,12 @@ namespace samson {
 		
         // Add as a listener to notifications    
         listen( notification_monitorization );
-
-        {
-            engine::Notification *notification = new engine::Notification( notification_monitorization );
-            notification->environment.set("target", "SamsonController" );
-            engine::Engine::add( notification , 5  );
-        }
-		
+        engine::Engine::add( new engine::Notification( notification_monitorization ) , 5  );
+        
+        // receive notification to check the entire controller system
+        listen( notification_check_controller );
+        engine::Engine::add( new engine::Notification( notification_check_controller ) , 5  );
+        
 	}	
 	
 	SamsonController::~SamsonController()
@@ -84,22 +87,37 @@ namespace samson {
     
     void SamsonController::notify( engine::Notification* notification )
     {
+        //LM_M(("Controller received a notification  %s " , notification->getName() ));
+        
         if( notification->isName(notification_monitorization) )
             monitor.takeSamples();
+        else if( notification->isName(notification_check_controller) )
+        {
+            // Check controller
+            
+            size_t last_update = 0;
+
+            for ( int w = 0 ; w < num_workers ; w++)
+            {
+                size_t tmp_time = worker_status_cronometer[w].diffTimeInSeconds();
+                if( tmp_time > last_update )
+                    last_update = tmp_time;
+            }
+        
+            //LM_M(("Max time disconected... %lu", last_update));
+            
+            if( last_update > 10 )
+            {
+                // More than 10 seconds, kill all the tasks
+                LM_W(("Killed all task sicne there is a worker that has been %lu seconds disconnected"));
+                jobManager.killAll( au::Format::string("Error since a worker has been %lu seconds disconnected", last_update ) );
+            }
+        }
         else
-            LM_X(1,("Unexpected notification channel at SamsonController"));
+            LM_X(1,("Unexpected notification channel at SamsonController (%s)" , notification->getName() ));
         
     }
     
-    bool SamsonController::acceptNotification( engine::Notification* notification )
-    {
-        if( notification->environment.get("target","") != "SamsonController" )
-            return false;
-        
-        return true;
-        
-        
-    }
 
 	/* ****************************************************************************
 	*
@@ -350,6 +368,34 @@ namespace samson {
 				if( cmdLine.get_num_arguments() == 0)
 					return;
 
+                if( command == "hello" )
+                {
+                    
+                    // Only valid from workers
+                    int worker = network->getWorkerFromIdentifier( packet->fromId );
+                    
+                    if( worker == -1 )
+                    {
+                        Packet *p2 = new Packet(Message::CommandResponse);
+                        network::CommandResponse *response = p2->message->mutable_command_response();
+                        response->mutable_command()->CopyFrom(  packet->message->command() );
+                        response->set_finish_command(true);
+                        p2->message->set_delilah_id( packet->message->delilah_id() );
+
+                        response->set_error_message("Error. Command \"hello\" is not valid from a delilah client.");
+                        
+                        network->send( fromId,  p2);
+                        
+                    }
+                    else
+                    {
+                        // Kill all current tasks
+                        jobManager.killAll( au::Format::string("Worker %d restarted", worker )  );
+                    }
+                    
+                    return;
+                }
+                
 				// Spetial commands
 				if( cmdLine.isArgumentValue( 0 , "ls" , "ls" ) )
 				{
@@ -358,7 +404,7 @@ namespace samson {
 					Packet *p2 = new Packet(Message::CommandResponse);
 					network::CommandResponse *response = p2->message->mutable_command_response();
                     response->set_finish_command(true);
-					response->set_command( command );
+					response->mutable_command()->CopyFrom(packet->message->command());
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 
 					samson::network::QueueList *ql = response->mutable_queue_list();
@@ -379,7 +425,7 @@ namespace samson {
 					Packet *p2 = new Packet(Message::CommandResponse);
 					network::CommandResponse *response = p2->message->mutable_command_response();
                     response->set_finish_command(true);
-					response->set_command( command );
+					response->mutable_command()->CopyFrom(packet->message->command());
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					ModulesManager::shared()->fill( response->mutable_data_list() , command );
 					network->send(fromId, p2);
@@ -394,7 +440,7 @@ namespace samson {
 					Packet *p2 = new Packet(Message::CommandResponse);
 					network::CommandResponse *response = p2->message->mutable_command_response();
                     response->set_finish_command(true);
-					response->set_command( command );
+					response->mutable_command()->CopyFrom(packet->message->command());
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					ModulesManager::shared()->fill( response->mutable_operation_list() , command );
 					network->send( fromId, p2);
@@ -409,7 +455,7 @@ namespace samson {
 					Packet *p2 = new Packet(Message::CommandResponse);
 					network::CommandResponse *response = p2->message->mutable_command_response();
                     response->set_finish_command(true);
-					response->set_command( command );
+					response->mutable_command()->CopyFrom(packet->message->command());
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					jobManager.fill( response->mutable_job_list() , command );
 					network->send( fromId, p2);
@@ -425,13 +471,13 @@ namespace samson {
 						// Get the number of the job
 						size_t job_id = atoll( cmdLine.get_argument(1).c_str() );
 					
-						jobManager.kill( job_id );
+						jobManager.kill( job_id , "Killed by used" );
 						
 						// Send a message to delilah to confirm this operation ?
 						
 						Packet *p2 = new Packet(Message::CommandResponse);
 						network::CommandResponse *response = p2->message->mutable_command_response();;
-						response->set_command( command );
+                        response->mutable_command()->CopyFrom(packet->message->command());
                         response->set_finish_command(true);
 						p2->message->set_delilah_id( packet->message->delilah_id() );
 						network->send( fromId, p2);
@@ -449,7 +495,7 @@ namespace samson {
 					Packet *p2 = new Packet(Message::CommandResponse);
 					network::CommandResponse *response = p2->message->mutable_command_response();
                     response->set_finish_command(true);
-					response->set_command( command );
+					response->mutable_command()->CopyFrom(packet->message->command());
 					p2->message->set_delilah_id( packet->message->delilah_id() );
 					
                     network::SamsonStatus *samsonStatus = response->mutable_samson_status();
@@ -479,7 +525,7 @@ namespace samson {
 					
                     Packet *p2 = new Packet( Message::CommandResponse);
                     network::CommandResponse *response = p2->message->mutable_command_response();;
-                    response->set_command( command );
+					response->mutable_command()->CopyFrom(packet->message->command());
                     response->set_finish_command(true);
                     p2->message->set_delilah_id( packet->message->delilah_id() );
                     network->send( fromId, p2);
@@ -507,7 +553,7 @@ namespace samson {
 
                     Packet *p2 = new Packet(Message::CommandResponse);
                     network::CommandResponse *response = p2->message->mutable_command_response();;
-                    response->set_command( command );
+					response->mutable_command()->CopyFrom(packet->message->command());
                     response->set_finish_command(true);
                     p2->message->set_delilah_id( packet->message->delilah_id() );
                     network->send( fromId, p2);

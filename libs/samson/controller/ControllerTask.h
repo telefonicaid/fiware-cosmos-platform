@@ -35,18 +35,21 @@ namespace samson {
 		friend class JobManager;
 		friend class Job;
 
-		ControllerTaskInfo *info;			// Information for this task ( extracted from DataManager )
-		
-        ControllerTaskManager *taskManager; // Pointer to the taskManager
+		ControllerTaskInfo *info;               // Information for this task ( extracted from DataManager )
+        ControllerTaskManager *taskManager;     // Pointer to the taskManager
         
-		Job *job;							// Pointer to the job we belong
-		size_t id;							// Id of the task ( shared by all the workers )
+		Job *job;                               // Pointer to the job we belong
+		size_t id;                              // Id of the task ( shared by all the workers )
 
-		int num_workers;					// Total workers that have to confirm the task
-		int finished_workers;				// List of worker ids that have reported finish
-		int complete_workers;				// List of worker ids that have reported complete	
+        std::set<int> workers;                  // Identifiers of all the workers involved in this task
+        std::set<int> workers_finished;         // Identifiers of the workers that have finished producing data
+        std::set<int> workers_completed;        // Identifiers of all the workers that have completed the operation
+        
+		int num_workers;                        // Total workers that have to confirm the task
+		int finished_workers;                   // List of worker ids that have reported finish
+		int complete_workers;                   // List of worker ids that have reported complete	
 		
-		int generator;						// Spetial flag to be removed from here ;)
+		int generator;                          // Spetial flag to be removed from here ;)
 		
 		// Error management
         au::Error error;

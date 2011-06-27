@@ -803,7 +803,7 @@ namespace samson
 				{
 					std::ostringstream message;
 					message << "Job scheduled [" << packet->message->command_response().new_job_id() << "] ";
-					message << " ( " << packet->message->command_response().command() << ")";
+					message << " ( " << packet->message->command_response().command().command() << ")";
 					writeWarningOnConsole( message.str() );
 					return 0;
 				}
@@ -812,7 +812,7 @@ namespace samson
 				{
 					std::ostringstream message;
 					message << "Job finished  [" << packet->message->command_response().finish_job_id() << "] ";
-					message << " ( " << packet->message->command_response().command() << ")";
+					message << " ( " << packet->message->command_response().command().command() << ")";
 					message << " ["<< au::Format::time_string( packet->message->command_response().ellapsed_seconds() ) << "] ";
 					writeWarningOnConsole( message.str() );
 					return 0;
@@ -822,7 +822,7 @@ namespace samson
 				{
 					std::ostringstream message;
 					message << "Job finished with error [" << packet->message->command_response().error_job_id() << "] ";
-					message << " ( " << packet->message->command_response().command() << ")\n\n";
+					message << " ( " << packet->message->command_response().command().command() << ")\n\n";
 					
 					if( packet->message->command_response().has_error_message() )
 						message <<  packet->message->command_response().error_message();
@@ -839,7 +839,7 @@ namespace samson
 					// Check if it is a -all command
 					au::CommandLine cmdLine;
 					cmdLine.set_flag_boolean("all");
-					cmdLine.parse(packet->message->command_response().command() );
+					cmdLine.parse(packet->message->command_response().command().command() );
 					
 					if( cmdLine.get_flag_bool("all") )
 					{

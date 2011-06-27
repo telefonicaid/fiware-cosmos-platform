@@ -90,6 +90,14 @@ namespace samson {
             notification->environment.setInt("worker", network->getWorkerId() );
             engine::Engine::add( notification, worker_update_files_period );
         }
+     
+        
+        
+        // Send a "hello" command message just to notify the controller about me
+        Packet *p = new Packet( Message::Command );
+        network::Command *command = p->message->mutable_command();
+        command->set_command("hello");
+        network->sendToController(p);
         
         
 	}

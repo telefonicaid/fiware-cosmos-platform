@@ -203,6 +203,9 @@ int Network2::getWorkerFromIdentifier(int endpointIx)
 	if (ep == NULL)
 		return -1;
 
+    if( ep->typeGet() != Endpoint2::Worker )
+        return -1;
+    
 	id = ep->idGet();
 
 	LM_T(LmtIdIx, ("returning worker id %d for endpointIx %d", id, endpointIx));

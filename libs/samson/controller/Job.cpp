@@ -12,8 +12,13 @@ namespace samson {
 	
 #pragma mark Job
 
-	Job::Job( JobManager * _jobManager , size_t _id, int fromId, const network::Command &command , size_t _sender_id  )
+	Job::Job( JobManager * _jobManager , size_t _id, int fromId, const network::Command &_command , size_t _sender_id  )
 	{
+        
+        // copy the original message
+        command = new network::Command(); 
+        command->CopyFrom( _command );
+
 		// By default no current task
 		currenTask = NULL;
 		
@@ -24,7 +29,7 @@ namespace samson {
 		jobManager = _jobManager;
 		
 		// Get the main command
-		mainCommand = command.command();
+		mainCommand = command->command();
 		
 		// Keep the id of the job
 		id = _id;
@@ -33,17 +38,22 @@ namespace samson {
 		sender_id = _sender_id;
 		
 		// Get the environment variables
-		copyEnviroment( command.environment() , &environment );
+		copyEnviroment( command->environment() , &environment );
 		
 		// Create the first item of this job
 		JobItem j("TOP");
-		j.addCommand(command.command());
+		j.addCommand(command->command());
 		items.push_back( j );
 		
 		// Default value for the internal flags
 		_status = running;
 	}
-	
+
+    Job::~Job()
+	{
+        // Remove the copy of the command
+        delete command;
+    }
 	
 	void Job::run()
 	{
@@ -360,7 +370,7 @@ namespace samson {
         Packet *p2 = new Packet( Message::CommandResponse );
         
         network::CommandResponse *response = p2->message->mutable_command_response();
-        response->set_command(mainCommand);
+        response->mutable_command()->CopyFrom(*command);
         
         if( _status == error )
         {
@@ -466,10 +476,10 @@ namespace samson {
 	}
 	
 
-	void Job::kill()
+	void Job::kill( std::string message )
 	{
 		// Set as an error 
-        setError("System", "Killed by user");
+        setError("System", message );
 		
 		// Send a kill worker task to each worker for each task ( only one is active )
 		for ( std::set<size_t>::iterator t =  all_tasks.begin() ; t != all_tasks.end() ; t++)

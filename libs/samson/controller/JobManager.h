@@ -52,8 +52,11 @@ namespace samson {
 		void addJob(int fromId , const network::Command &command , size_t sender_id  );
 	
 		// Kill a particular job
-		void kill( size_t job_id );
+		void kill( size_t job_id , std::string message  );
 		
+        // Kill all current jobs with this error message
+        void killAll( std::string message );
+        
 		// Notification from the network( workers ) about a particular task
 		void notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage );
 		

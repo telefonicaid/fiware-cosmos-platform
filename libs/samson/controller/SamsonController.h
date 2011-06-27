@@ -93,7 +93,6 @@ namespace samson {
         
         // Notifications
         void notify( engine::Notification* notification );
-        bool acceptNotification( engine::Notification* notification );
 		
 	};
 	

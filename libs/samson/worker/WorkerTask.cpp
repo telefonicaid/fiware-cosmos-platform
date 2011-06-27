@@ -685,7 +685,6 @@ namespace samson
         return true;
     }
     
-    
 #pragma Notifications
     
     void WorkerTask::addDiskOperation( engine::DiskOperation *operation )

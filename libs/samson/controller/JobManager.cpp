@@ -18,7 +18,7 @@ namespace samson {
 			// Send a message to delilah to confirm this new job
 			Packet *p2 = new Packet(Message::CommandResponse);
 			network::CommandResponse *response = p2->message->mutable_command_response();
-			response->set_command(command.command());
+			response->mutable_command()->CopyFrom( command );
 			response->set_new_job_id( job_id );
 			p2->message->set_delilah_id( sender_id );
 			controller->network->send( fromId, p2 );
@@ -46,16 +46,30 @@ namespace samson {
     
     
 	// Kill a particular job
-	void JobManager::kill( size_t job_id )
+	void JobManager::kill( size_t job_id ,  std::string message  )
 	{
         
 		Job* j = job.findInMap( job_id );
 		if( j )
-			j->kill();
+			j->kill( message );
 		
 	}
 	
+    // Kill all current jobs with this error message
+    void JobManager::killAll( std::string message )
+    {
+		au::map<size_t ,Job>::iterator j;
+        for (j = job.begin() ; j != job.end() ; j++)
+        {
+            Job* _job = j->second;
+            if( _job->status() == Job::running )
+                kill( _job->getId() , message );
+        }
+        
+    }
 	
+    
+    
 	void JobManager::notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage  )
 	{
         

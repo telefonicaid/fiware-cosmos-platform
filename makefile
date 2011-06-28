@@ -131,3 +131,5 @@ clear_ipcs:
 	echo $(for i in `ipcs -m | grep $USER | awk '{print $2}'`; do ipcrm -m $i; done)
 
 
+rpm:	 install
+		 scripts/samsonRpm 0.6 1

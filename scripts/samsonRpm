@@ -1,0 +1,90 @@
+#
+# Command line options
+#
+version=$1
+release=$2
+
+if [ "$#" != 2 ]
+then
+	echo 'samsonRpm: Bad parameters'
+	echo 'Usage: samsonRpm <Version (e.g. 0.5)> <Release (e.g. 3)>'
+	exit 1
+fi
+
+vr=$version.$release
+
+
+
+#
+# Preparing HOME directory for RPM
+#
+echo "%_topdir $HOME/rpm" > ~/.rpmmacros
+rm -rf $HOME/rpm
+mkdir $HOME/rpm
+cd $HOME/rpm
+mkdir SOURCES SPECS BUILD SRPMS
+cd -
+
+
+
+#
+# Creating the SPEC file
+#
+echo "Summary:   Samson Map Reduce Platform"             > $HOME/rpm/SPECS/samson-$vr.spec
+echo "Name:      samson"                                >> $HOME/rpm/SPECS/samson-$vr.spec
+echo "Version:   " $version                             >> $HOME/rpm/SPECS/samson-$vr.spec
+echo "Release:   " $release                             >> $HOME/rpm/SPECS/samson-$vr.spec
+echo "License:   commercial"                            >> $HOME/rpm/SPECS/samson-$vr.spec
+echo "Group:     Applications/Engineering"              >> $HOME/rpm/SPECS/samson-$vr.spec
+echo "Source:    http://www.tid.es/samson-$vr.tar.gz"   >> $HOME/rpm/SPECS/samson-$vr.spec
+echo "BuildRoot: /var/tmp/%{name}-buildroot"            >> $HOME/rpm/SPECS/samson-$vr.spec
+echo                                                    >> $HOME/rpm/SPECS/samson-$vr.spec
+cat etc/samson.rpm.spec                                 >> $HOME/rpm/SPECS/samson-$vr.spec
+
+
+
+#
+# Preparing the directory with the RPM contents
+#
+rdir=samson-$vr
+rm -rf ~/$rdir
+mkdir ~/$rdir
+mkdir ~/$rdir/lib
+mkdir ~/$rdir/include
+mkdir ~/$rdir/bin
+mkdir ~/$rdir/etc
+mkdir ~/$rdir/man
+mkdir ~/$rdir/man/man1
+mkdir ~/$rdir/man/man3
+cp /usr/local/bin/samsonCat              ~/$rdir/bin
+cp /usr/local/bin/samsonController       ~/$rdir/bin
+cp /usr/local/bin/samsonData             ~/$rdir/bin
+cp /usr/local/bin/samsonKiller           ~/$rdir/bin
+cp /usr/local/bin/samsonLocal            ~/$rdir/bin
+cp /usr/local/bin/samsonModuleParser     ~/$rdir/bin
+cp /usr/local/bin/samsonRun              ~/$rdir/bin
+cp /usr/local/bin/samsonSetup            ~/$rdir/bin
+cp /usr/local/bin/samsonSpawner          ~/$rdir/bin
+cp /usr/local/bin/samsonWorker           ~/$rdir/bin
+cp /usr/local/bin/delilah                ~/$rdir/bin
+cp /usr/local/lib/libsamsonCore.*        ~/$rdir/lib
+cp -R /usr/local/include/samson          ~/$rdir/include/
+
+
+
+#
+# Create the tar file
+#
+cd
+tar cvfz $rdir.tar.gz $rdir
+mv $rdir.tar.gz ~/rpm/SOURCES
+cd -
+
+
+
+#
+# And finally, create the RPM
+#
+cd ~/rpm/SPECS
+rpmbuild -ba $rdir.spec
+cd -

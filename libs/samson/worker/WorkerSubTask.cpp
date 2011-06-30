@@ -5,7 +5,7 @@
 #include "engine/DiskManager.h"            // Notifications
 #include "engine/ProcessManager.h"         // Notifications
 #include "engine/MemoryManager.h"          // Notifications
-#include "engine/Notification.H"            // ENGINE::Notification
+#include "engine/Notification.h"            // ENGINE::Notification
 
 
 #include "WorkerSubTask.h"			// Own interface

@@ -41,13 +41,14 @@ namespace cdr{
 					
 					for (int k = 0 ; k < rand()%10 ; k++)
 					{
-						cdr.date.day	= rand()%30;
-						cdr.date.month	= rand()%12;
-						cdr.date.year	= 10;
-						cdr.date.week_day = rand()%7;
+						cdr.date.day.value	= rand()%30;
+						cdr.date.month.value	= rand()%12;
+						cdr.date.year.value	= 10;
+						cdr.date.week_day.value = rand()%7;
+						cdr.date.week_day_SetAssigned(true);
 						
-						cdr.time.hour = rand()%23;
-						cdr.time.minute = rand()%60;
+						cdr.time.hour.value = rand()%23;
+						cdr.time.minute.value = rand()%60;
 						
 						cdr.duration = rand()%100;
 						

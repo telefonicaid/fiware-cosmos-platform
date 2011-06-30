@@ -90,7 +90,7 @@ bool mobGetCdrInfo_MX( char *line, mobCdr *cdr )
       cdrGetNextField( line, &_pos, &_pos_field );
       cdrStrTimeToStructure( line+_pos_field, &timeExpanded );
 
-      cdr->timeDate.getTimeUTCFromCalendar(&timeExpanded);
+      cdr->timeUnix.getTimeUTCFromCalendar(&timeExpanded);
 
       // Absolute day
       cdr->absDay = 0;

@@ -27,23 +27,25 @@ namespace cdr{
 	#define GET_CDRS_NEXT_FIELD pos_field=pos; while( line[pos] != '|' ) pos++; line[pos]='\0'; pos++;
 	#define GET_CDRS_GET_NUMBER		 atoll( &line[pos_field] );
 	
-bool parseDate_TME (char *dateTxt, Date *date, Time *time)
+bool parseDate_TME (char *dateTxt, samson::system::Date *date, samson::system::Time *time)
 {
 
         if (strlen(dateTxt) != 17) return false;
 
-        date->day           = CHAR_TO_INT( dateTxt[0] ) *10 + CHAR_TO_INT( dateTxt[1] );
-        date->month         = CHAR_TO_INT( dateTxt[3] ) *10 + CHAR_TO_INT( dateTxt[4] );
-        date->year          = CHAR_TO_INT( dateTxt[6] ) *10 + CHAR_TO_INT( dateTxt[7] );
+	date->unassignAllOptionals();
 
-        time->hour          = CHAR_TO_INT( dateTxt[9] ) *10 + CHAR_TO_INT( dateTxt[10] );
-        time->minute        = CHAR_TO_INT( dateTxt[12] ) *10 + CHAR_TO_INT( dateTxt[13] );
-        time->seconds       = CHAR_TO_INT( dateTxt[15] ) *10 + CHAR_TO_INT( dateTxt[16] );
+        date->day.value           = CHAR_TO_INT( dateTxt[0] ) *10 + CHAR_TO_INT( dateTxt[1] );
+        date->month.value         = CHAR_TO_INT( dateTxt[3] ) *10 + CHAR_TO_INT( dateTxt[4] );
+        date->year.value          = CHAR_TO_INT( dateTxt[6] ) *10 + CHAR_TO_INT( dateTxt[7] );
+
+        time->hour.value          = CHAR_TO_INT( dateTxt[9] ) *10 + CHAR_TO_INT( dateTxt[10] );
+        time->minute.value        = CHAR_TO_INT( dateTxt[12] ) *10 + CHAR_TO_INT( dateTxt[13] );
+        time->seconds.value       = CHAR_TO_INT( dateTxt[15] ) *10 + CHAR_TO_INT( dateTxt[16] );
 
         return true;
 }
 
-bool parseDate_O2UK (char *dateTxt, Date *date, Time *time)
+bool parseDate_O2UK (char *dateTxt, samson::system::Date *date, samson::system::Time *time)
 {
         if (strlen(dateTxt) != 14)
         {
@@ -62,104 +64,25 @@ bool parseDate_O2UK (char *dateTxt, Date *date, Time *time)
 
         const int YEAR_2000 = 2000;
 
-        date->year          = (CHAR_TO_INT( dateTxt[0] ) *1000 + CHAR_TO_INT( dateTxt[1] ) *100 + CHAR_TO_INT( dateTxt[2] ) *10 + CHAR_TO_INT( dateTxt[3] )) - YEAR_2000;
-        date->month         = CHAR_TO_INT( dateTxt[4] ) *10 + CHAR_TO_INT( dateTxt[5] );
-        date->day           = CHAR_TO_INT( dateTxt[6] ) *10 + CHAR_TO_INT( dateTxt[7] );
+	date->unassignAllOptionals();
+
+        date->year.value          = (CHAR_TO_INT( dateTxt[0] ) *1000 + CHAR_TO_INT( dateTxt[1] ) *100 + CHAR_TO_INT( dateTxt[2] ) *10 + CHAR_TO_INT( dateTxt[3] )) - YEAR_2000;
+        date->month.value         = CHAR_TO_INT( dateTxt[4] ) *10 + CHAR_TO_INT( dateTxt[5] );
+        date->day.value           = CHAR_TO_INT( dateTxt[6] ) *10 + CHAR_TO_INT( dateTxt[7] );
 
 
-        time->hour          = CHAR_TO_INT( dateTxt[8] ) *10 + CHAR_TO_INT( dateTxt[9] );
-        time->minute        = CHAR_TO_INT( dateTxt[10] ) *10 + CHAR_TO_INT( dateTxt[11] );
-        time->seconds       = CHAR_TO_INT( dateTxt[12] ) *10 + CHAR_TO_INT( dateTxt[13] );
+        time->hour.value          = CHAR_TO_INT( dateTxt[8] ) *10 + CHAR_TO_INT( dateTxt[9] );
+        time->minute.value        = CHAR_TO_INT( dateTxt[10] ) *10 + CHAR_TO_INT( dateTxt[11] );
+        time->seconds.value       = CHAR_TO_INT( dateTxt[12] ) *10 + CHAR_TO_INT( dateTxt[13] );
         return true;
 }
 
 
-int daysFrom2000_01_01(Date date)
+int secsFrom2000_01_01(samson::system::Date *date, samson::system::Time *time)
 {
-	/* As a side effect, computes and stores the days_2000 and week_day fields */
+        int duration_secs = time->seconds.value + 60 * time->minute.value + 3600 * time->hour.value;
 
-        int duration_days = int(date.day.value);
-        int offsetBisiesto = 0;
-
-#ifdef CALCULO_EXACTO
-        if ((date.year.toInt()%4 == 0) && ((date.year.toInt()%100 != 0) || (date.year.toInt()%400 == 0)))
-#else
-                // OK if we start from 2000 year, and expect to last no more than one 99 years
-                if (date.year.toInt()%4 == 0)
-#endif // de CALCULO_EXACTO
-                {
-                        offsetBisiesto = 1;
-                }
-
-        switch (date.month.toInt())
-        {
-        case 1:
-                break;
-        case 2:
-                duration_days += 31;
-                break;
-        case 3:
-                duration_days += 59 + offsetBisiesto;
-                break;
-        case 4:
-                duration_days += 90 + offsetBisiesto;
-                break;
-        case 5:
-                duration_days += 120 + offsetBisiesto;
-                break;
-        case 6:
-                duration_days += 151 + offsetBisiesto;
-                break;
-        case 7:
-                duration_days += 181 + offsetBisiesto;
-                break;
-        case 8:
-                duration_days += 212 + offsetBisiesto;
-                break;
-        case 9:
-                duration_days += 243 + offsetBisiesto;
-                break;
-        case 10:
-                duration_days += 273 + offsetBisiesto;
-                break;
-        case 11:
-                duration_days += 304 + offsetBisiesto;
-                break;
-        case 12:
-                duration_days += 334 + offsetBisiesto;
-                break;
-        }
-        const int YEAR_2000 = 2000;
-        const int DAYS_PER_YEAR = 365;
-        const int SECS_PER_DAY = 86400;
-
-        duration_days += DAYS_PER_YEAR * (date.year.toInt()) + ((date.year.toInt() - 1) / 4) + 1;
-	duration_days--; // In order to not include the present day
-
-	date.days_2000 = duration_days;
-
-	const int DAYS_PER_WEEK = 7;
-	const int DAYWEEK_20000101 = 6; // The 01-01-2000 was Saturday; we take Sunday as 0
-
-	date.week_day = (duration_days + DAYWEEK_20000101)%DAYS_PER_WEEK;
-
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-			{
-                        std::string filename = "/tmp/parser_cdrs.log";
-                        std::ofstream fs(filename.c_str(), std::ios::app);
-                        fs << "WeekDay: " << int(date.week_day.value) << ", for year: " << int(date.year.value) << ", month: " << int(date.month.value) << ", day: " << int(date.day.value) << ", Total: " << int(date.days_2000.value) << std::endl;
-                        fs.close();
-			}
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
-}
-
-int secsFrom2000_01_01(Date date, Time time)
-{
-        int duration_secs = time.seconds.toInt()+ 60 * time.minute.toInt() + 3600 * time.hour.toInt();
-
-        int duration_days = daysFrom2000_01_01(date); // As a side effect, computes and stores the days_2000 and week_day fields
+        int duration_days = date->daysFrom2000_01_01(); // As a side effect, computes and stores the days_2000 and week_day fields
 
         const int SECS_PER_DAY = 86400;
 
@@ -184,13 +107,13 @@ int secsFrom2000_01_01(Date date, Time time)
 		
 		
 		GET_CDRS_NEXT_FIELD
-		cdr->date.day		= CHAR_TO_INT( line[pos_field+0] ) *10 + CHAR_TO_INT( line[pos_field+1] );
-		cdr->date.month		= CHAR_TO_INT( line[pos_field+3] ) *10 + CHAR_TO_INT( line[pos_field+4] );
-		cdr->date.year		= CHAR_TO_INT( line[pos_field+6] ) *10 + CHAR_TO_INT( line[pos_field+7] );
+		cdr->date.day.value		= CHAR_TO_INT( line[pos_field+0] ) *10 + CHAR_TO_INT( line[pos_field+1] );
+		cdr->date.month.value		= CHAR_TO_INT( line[pos_field+3] ) *10 + CHAR_TO_INT( line[pos_field+4] );
+		cdr->date.year.value		= CHAR_TO_INT( line[pos_field+6] ) *10 + CHAR_TO_INT( line[pos_field+7] );
 		
-		cdr->time.hour		= CHAR_TO_INT( line[pos_field+9] ) *10 + CHAR_TO_INT( line[pos_field+10] );
-		cdr->time.minute	= CHAR_TO_INT( line[pos_field+12] ) *10 + CHAR_TO_INT( line[pos_field+13] );
-		cdr->time.seconds	= CHAR_TO_INT( line[pos_field+15] ) *10 + CHAR_TO_INT( line[pos_field+16] );
+		cdr->time.hour.value		= CHAR_TO_INT( line[pos_field+9] ) *10 + CHAR_TO_INT( line[pos_field+10] );
+		cdr->time.minute.value	= CHAR_TO_INT( line[pos_field+12] ) *10 + CHAR_TO_INT( line[pos_field+13] );
+		cdr->time.seconds.value	= CHAR_TO_INT( line[pos_field+15] ) *10 + CHAR_TO_INT( line[pos_field+16] );
 		
 		GET_CDRS_NEXT_FIELD
 		cdr->duration = (size_t) GET_CDRS_GET_NUMBER;
@@ -291,8 +214,8 @@ bool getCDRFromLine_O2UK_p2p( char *line, samson::system::UInt* node, samson::cd
 
         char *pDateSubmit = field[SUBMIT_DATE_FIELD - 1];
         char *pDateDone = field[DONE_DATE_FIELD - 1];
-        samson::cdr::Date dateDone;
-        samson::cdr::Time timeDone;
+        samson::system::Date dateDone;
+        samson::system::Time timeDone;
 
         if (!parseDate_O2UK(pDateSubmit, &(cdr->date), &(cdr->time)))
         {
@@ -323,8 +246,8 @@ bool getCDRFromLine_O2UK_p2p( char *line, samson::system::UInt* node, samson::cd
                 return false;
         }
 
-        int secsSubmit = secsFrom2000_01_01(cdr->date, cdr->time);
-        int secsDone = secsFrom2000_01_01(dateDone, timeDone);
+        int secsSubmit = secsFrom2000_01_01(&(cdr->date), &(cdr->time));
+        int secsDone = secsFrom2000_01_01(&(dateDone), &(timeDone));
 
         cdr->duration = secsDone - secsSubmit;
 
@@ -480,8 +403,8 @@ bool getCDRFromLine_O2UK_smsc( char *line, samson::system::UInt* node, samson::c
 
         char *pDateSubmit = field[SUBMIT_DATE_FIELD - 1];
         char *pDateDone = field[DONE_DATE_FIELD - 1];
-        samson::cdr::Date dateDone;
-        samson::cdr::Time timeDone;
+        samson::system::Date dateDone;
+        samson::system::Time timeDone;
 
         if (!parseDate_O2UK(pDateSubmit, &(cdr->date), &(cdr->time)))
         {
@@ -512,8 +435,8 @@ bool getCDRFromLine_O2UK_smsc( char *line, samson::system::UInt* node, samson::c
                 return false;
         }
 
-        int secsSubmit = secsFrom2000_01_01(cdr->date, cdr->time);
-        int secsDone = secsFrom2000_01_01(dateDone, timeDone);
+        int secsSubmit = secsFrom2000_01_01(&(cdr->date), &(cdr->time));
+        int secsDone = secsFrom2000_01_01(&(dateDone), &(timeDone));
 
         cdr->duration = secsDone - secsSubmit;
 
@@ -679,8 +602,8 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
 #ifdef DATES_KNOWN
         char *pDateSubmit = field[SUBMIT_DATE_FIELD - 1];
         char *pDateDone = field[DONE_DATE_FIELD - 1];
-        samson::cdr::Date dateDone;
-        samson::cdr::Time timeDone;
+        samson::system::Date dateDone;
+        samson::system::Time timeDone;
 
         if (!parseDate_O2UK(pDateSubmit, &(cdr->date), &(cdr->time)))
         {
@@ -711,8 +634,8 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
                 return false;
         }
 
-        int secsSubmit = secsFrom2000_01_01(cdr->date, cdr->time);
-        int secsDone = secsFrom2000_01_01(dateDone, timeDone);
+        int secsSubmit = secsFrom2000_01_01(&(cdr->date), &(cdr->time));
+        int secsDone = secsFrom2000_01_01(&(dateDone), &(timeDone));
 
         cdr->duration = secsDone - secsSubmit;
 

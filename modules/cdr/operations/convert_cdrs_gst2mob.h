@@ -58,7 +58,7 @@ extendedHelp: 		Convert CDRs from Gasset format to Mob format.
 				cdr_out.lacId = 0;
 				cdr_out.stateId = 0;
 
-				cdr_out.timeDate = cdr.timeDate;
+				cdr_out.timeUnix = cdr.timeUnix;
 
 				cdr_out.absDay = 0;
 

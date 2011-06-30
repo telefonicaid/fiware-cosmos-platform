@@ -78,7 +78,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 			timeExpanded.tm_min = CHAR_TO_INT( line[pos_field+12] ) *10 + CHAR_TO_INT( line[pos_field+13] );
 			timeExpanded.tm_sec = CHAR_TO_INT( line[pos_field+15] ) *10 + CHAR_TO_INT( line[pos_field+16] );
 
-			cdr->timeDate.getTimeUTCFromCalendar(&timeExpanded);
+			cdr->timeUnix.getTimeUTCFromCalendar(&timeExpanded);
 			//cdr->week_day.value = timeExpanded.tm_wday;
 
 
@@ -150,7 +150,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 				    cdrGetNextField(line, &_pos, &_pos_field);
 				    cdrStrTimeToStructure( line+_pos_field, &timeExpanded );
 
-					cdr->timeDate.getTimeUTCFromCalendar(&timeExpanded);
+					cdr->timeUnix.getTimeUTCFromCalendar(&timeExpanded);
 					//cdr->week_day.value = timeExpanded.tm_wday;
 
 
@@ -249,7 +249,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 			timeExpanded.tm_min  = CHAR_TO_INT( line[pos_field+3] ) *10 + CHAR_TO_INT( line[pos_field+4] );
 			timeExpanded.tm_sec = CHAR_TO_INT( line[pos_field+6] ) *10 + CHAR_TO_INT( line[pos_field+7] );
 
-			cdr->timeDate.getTimeUTCFromCalendar(&timeExpanded);
+			cdr->timeUnix.getTimeUTCFromCalendar(&timeExpanded);
 			//cdr->week_day.value = timeExpanded.tm_wday;
 
 			GET_CDRS_NEXT_FIELD
@@ -316,7 +316,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 			    cdrGetNextField(line, &_pos, &_pos_field);
 			    cdrStrTimeToStructure( line+_pos_field, &timeExpanded );
 
-				cdr->timeDate.getTimeUTCFromCalendar(&timeExpanded);
+				cdr->timeUnix.getTimeUTCFromCalendar(&timeExpanded);
 				//cdr->week_day.value = timeExpanded.tm_wday;
 
 			    cdr->duration.value = 0;
@@ -374,7 +374,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 			    cdrGetNextField(line, &_pos, &_pos_field);
 			    cdrStrTimeToStructure( line+_pos_field, &timeExpanded );
 
-				cdr->timeDate.getTimeUTCFromCalendar(&timeExpanded);
+				cdr->timeUnix.getTimeUTCFromCalendar(&timeExpanded);
 				//cdr->week_day.value = timeExpanded.tm_wday;
 
 			    cdr->duration.value = 0;
@@ -432,7 +432,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 			timeExpanded.tm_min  = CHAR_TO_INT( line[pos_field+3] ) *10 + CHAR_TO_INT( line[pos_field+4] );
 			timeExpanded.tm_sec = CHAR_TO_INT( line[pos_field+6] ) *10 + CHAR_TO_INT( line[pos_field+7] );
 
-			cdr->timeDate.getTimeUTCFromCalendar(&timeExpanded);
+			cdr->timeUnix.getTimeUTCFromCalendar(&timeExpanded);
 			//cdr->week_day.value = timeExpanded.tm_wday;
 
 			GET_CDRS_NEXT_FIELD
@@ -485,7 +485,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 			timeExpanded.tm_min  = CHAR_TO_INT( line[pos_field+14] ) *10 + CHAR_TO_INT( line[pos_field+15] );
 			timeExpanded.tm_sec = CHAR_TO_INT( line[pos_field+17] ) *10 + CHAR_TO_INT( line[pos_field+18] );
 
-			cdr->timeDate.getTimeUTCFromCalendar(&timeExpanded);
+			cdr->timeUnix.getTimeUTCFromCalendar(&timeExpanded);
 			//cdr->week_day.value = timeExpanded.tm_wday;
 
 
@@ -526,7 +526,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 			timeExpanded.tm_min  = 0 ;
 			timeExpanded.tm_sec = 0 ;
 
-			cdr->timeDate.getTimeUTCFromCalendar(&timeExpanded);
+			cdr->timeUnix.getTimeUTCFromCalendar(&timeExpanded);
 			//cdr->week_day.value = timeExpanded.tm_wday;
 
 
@@ -590,7 +590,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 
 #define MAX_STR_LEN 1024
 				//char output[MAX_STR_LEN];
-				//ctime_r(&(cdr.timeDate.value), output);
+				//ctime_r(&(cdr.timeUnix.value), output);
 				//output[strlen(output)-1] = '\0';
 				//OLM_T(LMT_User06, ("cdr: time: '%s', week_day: %d\n", output, int(cdr.week_day.value)));
 

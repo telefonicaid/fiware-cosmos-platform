@@ -11,27 +11,11 @@ Module cdr
 # datas
 # ---------------------------------------------------------------------------
 
-data Date
-{
-     system.UInt8 year;
-     system.UInt8 month;
-     system.UInt8 day;
-     system.UInt days_2000;
-     system.UInt8 week_day; 
-}
-
-data Time
-{
-     system.UInt8 hour;
-     system.UInt8 minute;
-     system.UInt8 seconds;
-}
-
 data CDR
 {
      system.UInt node;
-     cdr.Date date;
-     cdr.Time time;
+     system.Date date;
+     system.Time time;
      system.UInt duration;
 }
 
@@ -41,19 +25,19 @@ data User
      system.UInt id;
      system.UInt titularId;
      system.UInt8 type;
-     system.Time activationDate;
+     system.TimeUnix activationDate;
      system.UInt8 activationCode;
      system.UInt8 age;
      system.UInt8 province;
      system.UInt8 sex;
-     system.Time churnDate;
+     system.TimeUnix churnDate;
      system.UInt8 churnCode;
 }
 
 data gstCdr
 {
      system.UInt phone;
-     system.Time timeDate;
+     system.TimeUnix timeUnix;
      system.UInt duration;
      system.UInt type;  # 0=voice; 1=sms; 2=mms;
      system.UInt dir;
@@ -82,7 +66,7 @@ data mobCdr
    system.UInt btsId;
    system.UInt lacId;
    system.UInt stateId;
-   system.Time timeDate;
+   system.TimeUnix timeUnix;
    system.UInt absDay;
    system.UInt mobScope;
 }
@@ -338,4 +322,11 @@ parserOut select_cdrs
 	in system.UInt cdr.CDR
 
 	helpLine "Export cdrs in txt format"
+}
+
+parserOut export_mob_cdrs
+{
+	in system.UInt64 cdr.mobCdr
+
+	helpLine "Export mobility cdrs in txt format"
 }

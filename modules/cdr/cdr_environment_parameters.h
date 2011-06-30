@@ -9,21 +9,40 @@
 #define GST_ENVIRONMENT_PARAMETERS_H_
 
 
-                // Possible mobility scopes
-                typedef enum {
-                   LOC_NO_INFORMADO = 0,
-                   LOC_NO_APLICA,
-                   LOC_GENERICO,
-                   LOC_OTRO,
-                   LOC_NO_ROAMING,
-                   LOC_ROAMING_VISITANTE,
-                   LOC_ROAMING_INTRARREGIONAL,
-                   LOC_ROAMING_INTERREGIONAL,
-                   LOC_ROAMING_NACIONAL,
-                   LOC_ROAMING_INTERNACIONAL,
-                   LOC_ROAMING_MUNDIAL,
-                   LOC_MOB_SCOPES_NUMBER
-                } enumScopes_MX;
+// Possible mobility scopes
+typedef enum {
+	LOC_NO_INFORMADO = 0,
+	LOC_NO_APLICA,
+	LOC_GENERICO,
+	LOC_OTRO,
+	LOC_NO_ROAMING,
+	LOC_ROAMING_VISITANTE,
+	LOC_ROAMING_INTRARREGIONAL,
+	LOC_ROAMING_INTERREGIONAL,
+	LOC_ROAMING_NACIONAL,
+	LOC_ROAMING_INTERNACIONAL,
+	LOC_ROAMING_MUNDIAL,
+	LOC_MOB_SCOPES_NUMBER
+} enumScopes_MX;
+
+
+//
+// MEXICO
+//
+
+
+
+// Possible mobility degrees
+typedef enum
+{
+   MD_UNKNOWN = 0,
+   MD_REDUCED,
+   MD_PROVINCIAL,
+   MD_NATIONAL,
+   MD_INTERNATIONAL,
+   MD_MIXED,
+   MD_NUMBER_OF_DEGREES
+} enumMobDegrees_MX;
 
 
 #define CONF_MOB_CELL_LENGTH        8

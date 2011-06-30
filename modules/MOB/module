@@ -11,6 +11,7 @@ Module MOB
 # datas
 # ---------------------------------------------------------------------------
 
+
 # Generic data type to store
 # a phone number and a location
 # (either cell, BTS, LAC or state).
@@ -18,6 +19,16 @@ data PhoneLoc
 {
    system.UInt64 phone;
    system.UInt loc;
+}
+
+# Specific data type to store
+# a cell location info and a number
+# (usually calls or days with
+# calls).
+data CellCounter
+{
+   cdr.Cell cell;
+   system.UInt count;
 }
 
 # Generic data type to store
@@ -144,65 +155,6 @@ data Levels
 # Operations with data
 # -------------------------------------------------
 
-# Parse CDR files. Get only
-# fields necessary fo Mobility.
-
-parser parse_cdrs
-{
-   out system.UInt64 cdr.mobCdr
-
-   #extern mobGetCdrInfo _mobGetCdrInfo;
-   #extern MRData_Uint64 phone;
-   #extern MRData_MOB.Cdr cdr;
-
-   helpLine "Parse CDR files to obtain the mobility imformation associated to each phone."
-
-   help
-   {
-      "Parse CDR files to obtain the mobility imformation associated to each phone."
-   }
-}
-
-
-# Parse client sample. So far,
-# only the phone number is necessary,
-# since we assume that in this sample
-# only clients whose mobility pattern
-# wants to be known are included.
-
-parser parse_clients
-{
-   out system.UInt64 system.Void
-
-   #extern MRData_Uint64 phone;
-   #extern MRData_Void void_data;
-   
-   helpLine "Parse the clients sample."
-
-   help
-   {
-      "Parse the clients sample."
-   }
-}
-
-
-# Parse cell catalogue.
-
-parser parse_cell_catalogue
-{
-   out system.UInt cdr.Cell
-
-   #extern mobGetCellInfo _mobGetCellInfo;
-   #extern MRData_UInt cellId;
-   #extern MRData_MOB.Cell cell;
-
-   helpLine "Parse the cell catalogue."
-
-   help
-   {
-      "Parse the cell catalogue."
-   }
-}
 
 # ----------------------------------------------------------------
 # PARSEROUT OPERATONS
@@ -234,7 +186,7 @@ parserOut parse_out_results
 # a readable file
 parserOut parse_out_month
 {
-   in system.Time system.Void
+   in system.Date system.Void
 
    #extern MRData_Date date;
 
@@ -276,7 +228,7 @@ map map_stat_days
 # Gets month being processed.
 map map_get_month
 {
-   in system.Time system.Void
+   in system.Date system.Void
    out system.Void system.Void
 
    #extern MRData_Date month;
@@ -344,18 +296,22 @@ reduce reduce_add_cell_info
    in system.UInt cdr.mobCdr
    in system.UInt cdr.Cell
    out system.UInt64 cdr.mobCdr # CDR's
-   out MOB.PhoneLoc system.Void # Mobility degree - cell level
-   out MOB.PhoneLoc system.Void # Mobility degree - bts level
-   out MOB.PhoneLoc system.Void # Mobility degree - lac level
-   out MOB.PhoneLoc system.Void # Mobility degree - state level
-   out MOB.PhoneLocCounter system.Void # Home - cell level
-   out MOB.PhoneLocCounter system.Void # Home - bts level
-   out MOB.PhoneLocCounter system.Void # Home - lac level
-   out MOB.PhoneLocCounter system.Void # Home - state level
-   out MOB.PhoneLocCounter system.Void # Work - cell level
-   out MOB.PhoneLocCounter system.Void # Work - bts level
-   out MOB.PhoneLocCounter system.Void # Work - lac level
-   out MOB.PhoneLocCounter system.Void # Work - state level
+   out system.UInt64 cdr.Cell # Mobility degree cell info
+   out system.UInt64 CellCounter # Home cell info
+   out system.UInt64 CellCounter # Work cell info
+   
+   #out MOB.PhoneLoc system.Void # Mobility degree - cell level
+   #out MOB.PhoneLoc system.Void # Mobility degree - bts level
+   #out MOB.PhoneLoc system.Void # Mobility degree - lac level
+   #out MOB.PhoneLoc system.Void # Mobility degree - state level
+   #out MOB.PhoneLocCounter system.Void # Home - cell level
+   #out MOB.PhoneLocCounter system.Void # Home - bts level
+   #out MOB.PhoneLocCounter system.Void # Home - lac level
+   #out MOB.PhoneLocCounter system.Void # Home - state level
+   #out MOB.PhoneLocCounter system.Void # Work - cell level
+   #out MOB.PhoneLocCounter system.Void # Work - bts level
+   #out MOB.PhoneLocCounter system.Void # Work - lac level
+   #out MOB.PhoneLocCounter system.Void # Work - state level
 
    #extern MRData_MOB.Cdr cdr;
    #extern MRData_MOB.Cell cell;
@@ -372,6 +328,33 @@ reduce reduce_add_cell_info
    }
 }
 
+# Map to distribute the location information in the cell
+# to 4 different datasets with different level
+# (In MACRO, previous reduce_add_cell_info had 16 
+# outputs, one per location and level combination;
+# these are too manys) 
+map map_distribute_cell_info_location
+{
+	in system.UInt64 cdr.Cell # cell info
+	out MOB.PhoneLoc system.Void # info cell level
+	out MOB.PhoneLoc system.Void # info bts level
+	out MOB.PhoneLoc system.Void # info lac level
+	out MOB.PhoneLoc system.Void # info state level
+}
+
+# Map to distribute the location information (with a counter) in the cell
+# to 4 different datasets with different level
+# (In MACRO, previous reduce_add_cell_info had 16 
+# outputs, one per location and level combination;
+# these are too manys) 
+map map_distribute_cellCounter_info_location
+{
+	in system.UInt64 CellCounter # cell info
+	out MOB.PhoneLoc system.Void # info cell level
+	out MOB.PhoneLoc system.Void # info bts level
+	out MOB.PhoneLoc system.Void # info lac level
+	out MOB.PhoneLoc system.Void # info state level
+}
 
 # Count number of calls sent/received inside
 # a certain location (i.e. cell, BTS, LAC

@@ -9,6 +9,7 @@
 #include <time.h>
 #include <limits.h>
 
+#include <samson/modules/system/FixedLengthDataInstance.h>
 #include <samson/modules/system/Date.h>
 #include <samson/modules/system/Time.h>
 
@@ -20,7 +21,7 @@ namespace system{
 		 TimeUnix  Data Instance 
  */
 
-class TimeUnix : public samson::DataInstance{
+class TimeUnix : public FixedLengthDataInstance<time_t>{
 
 	inline int tmcomp(register const struct tm * const atmp,
 			register const struct tm * const btmp)
@@ -40,6 +41,7 @@ public:
 
 	time_t value;
 
+#ifdef VAR_SIZE
 	TimeUnix() : samson::DataInstance(){
 	}
 
@@ -53,12 +55,13 @@ public:
 	int serialize(char *data){
 		return samson::staticVarIntSerialize( data , value);
 	}
+#endif // de VAR_SIZE
 
 	int hash(int max_num_partitions){
 		return value%max_num_partitions;
 	}
 
-
+#ifdef VAR_SIZE
 	static int size(char *data){
 		time_t _value;
 		return samson::staticVarIntParse( data , (size_t *)&_value);
@@ -88,6 +91,7 @@ public:
 		size_t offset_2=0;
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
+#endif // de VAR_SIZE
 
 	int *getDataPath(const std::string &dataPathString){
 		return(getDataPathStatic(dataPathString));
@@ -183,7 +187,7 @@ public:
 		};
 	}
 
-
+#ifdef VAR_SIZE
 	void copyFrom( TimeUnix *other ){
 		value = other->value;
 	};
@@ -275,6 +279,7 @@ public:
 	bool operator>= (TimeUnix& o) {
 		return ( value >= o.value);
 	}
+#endif // de VAR_SIZE
 
 	void getTimeFromCalendar (struct tm *tm)
 	{

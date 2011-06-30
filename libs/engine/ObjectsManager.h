@@ -55,6 +55,7 @@ namespace engine {
     public:
         
         ObjectsManager();
+        ~ObjectsManager();
 
         // Add and remove Objects
         void add( Object* o );

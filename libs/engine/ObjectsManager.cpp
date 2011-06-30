@@ -15,6 +15,12 @@ namespace engine {
         engine_id = 1;            
     }
     
+    ObjectsManager::~ObjectsManager()
+    {
+        // Remove the vectors with ids for each channel
+        channels.clearMap();
+    }
+    
     void ObjectsManager::add( Object* o )
     {
         

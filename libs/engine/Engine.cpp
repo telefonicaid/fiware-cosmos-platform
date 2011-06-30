@@ -150,6 +150,10 @@ namespace engine
             
             // Mark as quit
             engine->flag_quit = true;
+            
+            // Remove all pending elements
+            engine->elements.clearList();
+            
         }
         
         while( true )

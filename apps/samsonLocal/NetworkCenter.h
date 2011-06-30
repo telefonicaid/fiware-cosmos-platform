@@ -39,11 +39,11 @@ namespace samson {
 		
 		~NetworkFakeCenterPacket()
 		{
-			// Not remove the packet since it is responsability of the delegate
-			/*
+            // If the packet has been finally sent, this should be NULL
+			// Remove the packet since it is responsability of the delegate
+            
 			if( packet)
 				delete packet;
-			 */
 		}
 								 
 	};
@@ -148,6 +148,7 @@ namespace samson {
 					{
 						NetworkFakeCenterPacket* pp = *p;
 						processPendingPacket(pp);
+                        pp->packet = NULL;
 						delete pp;
 					}
 				}

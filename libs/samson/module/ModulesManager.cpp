@@ -61,6 +61,8 @@ namespace samson
 	
 	ModulesManager::~ModulesManager()
 	{
+        // Remove the main instances of the modules created while loading from disk
+        modules.clearMap();
         LM_T(LmtModuleManager,("Destroying ModulesManager"));
 	}
     

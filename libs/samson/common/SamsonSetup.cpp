@@ -115,7 +115,7 @@ namespace samson
 		FILE *file = fopen( setupFile.c_str()  ,"r");
 		if (!file)
 		{
-			std::cerr << "Warning: Setup file "<< setupFile <<" not found\n";
+            LM_W(("Warning: Setup file %s not found\n" , setupFile.c_str() ));
 		}
 		else
 		{

@@ -120,8 +120,8 @@ clean_qt:
 	make -C build/apps/delilahQt clean
 
 
-v: debug
-	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  ./BUILD_DEBUG/apps/samsonLocal/samsonLocal  2> output_valgrind_samsonLocal
+v: di
+	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  samsonLocal  2> output_valgrind_samsonLocal
 
 
 coverage: debug

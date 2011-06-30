@@ -86,6 +86,10 @@ void *run_DelilahConsole(void* d)
 	return NULL;
 }
 
+// Network center
+samson::NetworkFakeCenter *center;
+
+// Vector with the workers
 std::vector< samson::SamsonWorker* > _workers;
 
 void deleteWorkers()
@@ -95,6 +99,15 @@ void deleteWorkers()
         delete _workers[i];
 }
 
+
+void deleteNetworkCenter()
+{
+    if ( center )
+    {
+        delete center;
+        center = NULL;
+    }
+}
 
 int main(int argC, const char *argV[])
 {
@@ -145,26 +158,27 @@ int main(int argC, const char *argV[])
 	LM_M(("samsonLocal started with memory=%s and #processors=%d", au::Format::string( samson::SamsonSetup::shared()->memory, "B").c_str() , samson::SamsonSetup::shared()->num_processes ));
 	
 	// Fake network element with N workers
-	samson::NetworkFakeCenter center(workers);		
+    center = new samson::NetworkFakeCenter(workers);
+    atexit(deleteNetworkCenter);
 	
 	// Create one controller, one dalilah and N workers
-	samson::SamsonController controller( center.getNetwork(-1) );
+	samson::SamsonController controller( center->getNetwork(-1) );
 	
 	samson::DelilahConsole* delilahConsole = NULL;
     
-    delilahConsole = new samson::DelilahConsole( center.getNetwork(-2) );
+    delilahConsole = new samson::DelilahConsole( center->getNetwork(-2) );
 	
 	LM_T(LmtInit, ("SamsonLocal start"));
 	LM_D(("Starting samson demo (logFd == %d)", ::logFd));
 
 	for (int i = 0 ; i < workers ; i ++ )
 	{
-		samson::SamsonWorker *w = new samson::SamsonWorker( center.getNetwork(i) );
+		samson::SamsonWorker *w = new samson::SamsonWorker( center->getNetwork(i) );
 		_workers.push_back(w);
 	}
 	
 	// Run the network center in background
-	center.runInBackground();
+	center->runInBackground();
 
     // Set the command file name
     if( delilahConsole )

@@ -4,14 +4,14 @@
 
 #include <string>
 #include <sstream>
-#include "au/Error.h"                  // au::Error
+
 #include "au/Stopper.h"                // au::Stopper
 #include "au/Environment.h"            // au::Environment
-
 #include "au/Token.h"                  // au::Token
 
-#include "engine/EngineNotification.h"  // engine::EngineNotification
+#include "au/ErrorManager.h"           // au::ErrorManager
 
+#include "engine/Object.h"              // engine::Object
 
 #define PI_PRIORITY_NORMAL_OPERATION	1
 #define PI_PRIORITY_NORMAL_COMPACT		5		// Compact operation
@@ -27,6 +27,10 @@
 	An item is a task to do without any IO operation in the middle.
 	It only requires processing time
  */
+
+namespace au {
+    class Error;
+}
 
 namespace engine {
 
@@ -66,10 +70,8 @@ namespace engine {
 		
 	private:
 		
-        // Stopper to block the main thread until ready() returns true
-        // Also protects the state variable
-        
-		au::Stopper stopper;	
+        // Token used to protect state and block main thread when necessary
+		au::Token token;	
 		
 	protected:
 
@@ -81,7 +83,7 @@ namespace engine {
 		
 	public:
 		
-		au::Error error;                    // Error management
+		au::ErrorManager error;                    // Error management
 		
 		int priority;                       // Priority level ( 0 = low priority ,  10 = high priority )
 		
@@ -93,7 +95,8 @@ namespace engine {
 		// Constructor with or without a delegate
 		
 		ProcessItem( int _priority );
-		
+		~ProcessItem();
+        
 		// Status management
 		std::string getStatus();
 		

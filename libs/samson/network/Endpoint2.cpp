@@ -82,9 +82,13 @@ void* writerThread(void* vP)
 	{
 		Packet* packetP;
 
-		ep->jobQueueSem->retain();
-		packetP = ep->jobQueue.extractFront();
-		ep->jobQueueSem->release();
+        {
+            // Protect the access with a TokenTaker
+            au::TokenTaker tk( ep->jobQueueSem );
+            
+            packetP = ep->jobQueue.extractFront();
+        }
+        
 		LM_T(LmtThreads, ("Writer thread(%s) packetP: %p, jobs remaining: %d, my thread id: 0x%x", ep->name(), packetP, ep->jobQueue.size(), pthread_self()));
 		if (packetP != NULL)
 		{
@@ -102,7 +106,10 @@ void* writerThread(void* vP)
 			}
 		}
 		else
-			ep->jobQueueStopper->stop(-1);  // wait forever
+        {
+            au::TokenTaker tk( ep->jobQueueSem );
+            tk.stop(-1);// wait forever
+        }
 	}
 
 	return NULL;
@@ -139,7 +146,6 @@ Endpoint2::Endpoint2
 	readerId            = 0;
 	writerId            = 0;
 	jobQueueSem         = NULL;
-	jobQueueStopper     = NULL;
 
 	nameSet(type, id, host);
 	memset(&sockin, 0, sizeof(sockin));
@@ -167,8 +173,6 @@ Endpoint2::~Endpoint2()
 
 	if (jobQueueSem != NULL)
 		delete jobQueueSem;
-	if (jobQueueStopper != NULL)
-		delete jobQueueStopper;
 
 	nameidhost = NULL;
 }
@@ -551,10 +555,10 @@ void Endpoint2::send(Packet* packetP)
 			}
 			else
 			{
-				jobQueueSem->retain();
+                au::TokenTaker tk( jobQueueSem );
 				jobQueue.push_back(packetP);
-				jobQueueSem->release();
-				jobQueueStopper->wakeUp();
+                
+                tk.wakeUp();
 			}
 		}
 		else
@@ -1070,7 +1074,6 @@ Status Endpoint2::msgTreat(void)
 			snprintf(semName, sizeof(semName), "jobQueue-%s", name());
 
 			jobQueueSem     = new au::Token(semName);
-			jobQueueStopper = new au::Stopper();
 
 			LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s (plus jobQueueSem and jobQueueStopper)", name()));
 

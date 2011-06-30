@@ -3,7 +3,10 @@
 
 #include "Block.h"                      // samson::stream::Block
 #include "au/set.h"                     // au::set
-#include "engine/EngineNotification.h"  // engien::EngineListener
+
+#include "engine/Object.h"  // engien::EngineListener
+#include "engine/Object.h"              // engine::Object
+
 #include <vector>
 
 namespace samson {
@@ -13,7 +16,7 @@ namespace samson {
          Manager of all the blocks running on the system
          */
         
-        class BlockManager : public engine::NotificationListener
+        class BlockManager : public engine::Object
         {
             
             std::list<Block*> blocks;       // List of blocks in the system ( ordered by priority )

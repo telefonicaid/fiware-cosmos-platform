@@ -8,15 +8,20 @@
 * DESCRIPTION				Definition of the packet to be exchanged in the samson-ecosystem
 *
 */
+#include "easyzlib.h"                    // zlib utility library
+
 #include "logMsg/logMsg.h"               // LM_TODO()
 
 #include "samson/common/samson.pb.h"     // google protocol buffers
+
+
+#include "samson/common/EnvironmentOperations.h"        // str( network::Message* )
+
 #include "engine/MemoryManager.h"        // MemoryManager
+#include "engine/Object.h"
 #include "engine/Engine.h"               // engine::Engine
 #include "engine/Buffer.h"               // engine::Buffer
-#include "easyzlib.h"                    // zlib utility library
 #include "Message.h"                     // samson::MessageType 
-#include "samson/common/EnvironmentOperations.h"        // str( network::Message* )
 
 
 namespace samson

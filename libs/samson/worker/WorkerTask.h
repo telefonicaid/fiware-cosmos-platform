@@ -7,10 +7,10 @@
 #include <set>					// std::set
 
 #include "au/map.h"				// au::map
-#include "au/Error.h"			// au::Error
+#include "au/ErrorManager.h"			// au::ErrorManager
 #include "au/Token.h"			// au::token
 
-#include "engine/EngineNotification.h" // samson::EngineNotificationListener
+#include "engine/Object.h" // samson::EngineNotificationListener
 #include "engine/Buffer.h"
 #include "engine/MemoryRequest.h"  
 #include "engine/DiskOperation.h"  
@@ -74,7 +74,7 @@ namespace samson {
         
     };
     
-	class WorkerTask : public engine::NotificationListener , public engine::OperationsContainer
+	class WorkerTask : public engine::Object , public engine::OperationsContainer
 	{
 		
         
@@ -82,7 +82,7 @@ namespace samson {
         au::map<size_t,WorkerSubTask> subTasks;
         
 		// Error management
-		au::Error error;
+		au::ErrorManager error;
         
 	public:
 		
@@ -182,7 +182,6 @@ namespace samson {
         void addProcessItem( engine::ProcessItem *item );
         
         void setNotificationCommonEnvironment( engine::Notification*notification );
-        bool acceptNotification( engine::Notification* notification );
         
     public:
         

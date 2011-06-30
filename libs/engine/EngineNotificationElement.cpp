@@ -1,7 +1,10 @@
 
-#include "engine/EngineNotificationElement.h"      // Own interface
 #include "engine/Engine.h"                         // engine::Engine
-#include "engine/EngineNotification.h"             // engine::EngineNotification
+#include "engine/Object.h"             // engine::EngineNotification
+#include "engine/Notification.h"                    // engine::Notification
+
+#include "engine/EngineNotificationElement.h"      // Own interface
+
 
 namespace engine
 {
@@ -28,7 +31,7 @@ namespace engine
     void NotificationElement::run()
     {
         LM_T(LmtEngineNotification, ("Running notification %s", notification->getDescription().c_str() ));
-        Engine::_notify( notification );
+        Engine::send( notification );
     }
     
 }

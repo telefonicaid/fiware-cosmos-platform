@@ -1,15 +1,22 @@
 #include "logMsg/logMsg.h"               // LM_*
 #include "logMsg/traceLevels.h"          // Trace Levels
 
-#include "samson/network/iomMsgSend.h"           // iomMsgSend
 #include "au/CommandLine.h"                     // au::CommandLine
-#include "samson/worker/SamsonWorker.h"         // SamsonWorker
-#include "WorkerTaskManager.h"                  // Own interface
-#include "samson/network/Packet.h"              // samson::Packet
-#include "WorkerTask.h"                         // samson::WorkerTask
+
+#include "engine/DiskOperation.h"               // engine::DiskOperation
+#include "engine/Notification.h"                // engine::Notification
+
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
-#include "engine/DiskOperation.h"               // samson::DiskOperation
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
+
+#include "samson/network/iomMsgSend.h"           // iomMsgSend
+#include "samson/network/Packet.h"              // samson::Packet
+
+#include "samson/worker/SamsonWorker.h"         // SamsonWorker
+
+#include "WorkerTask.h"                         // samson::WorkerTask
+
+#include "WorkerTaskManager.h"                  // Own interface
 
 #define notification_samson_worker_remove_old_tasks "notification_samson_worker_remove_old_tasks"
 
@@ -25,7 +32,7 @@ namespace samson {
 
         // Run this notification every 5 second
         engine::Notification* notification =  new engine::Notification( notification_samson_worker_remove_old_tasks );
-        engine::Engine::add( notification , 5 );
+        engine::Engine::notify( notification , 5 );
         
 	}
     

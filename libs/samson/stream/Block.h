@@ -14,8 +14,11 @@
 
 #include "engine/MemoryManager.h"
 #include "samson/common/coding.h"
+
 #include "engine/DiskOperation.h"       // engine::DiskOperation
-#include "engine/EngineNotification.h"  // engien::EngineListener
+#include "engine/Object.h"  // engien::EngineListener
+#include "engine/Object.h"              // engine::Object
+
 #include "samson/module/KVSetStruct.h"	// samson::KVSetStruct
 
 #include <set>
@@ -29,7 +32,7 @@ namespace samson {
          Main class to hold a block on memory
          */
         
-        class Block :  public engine::NotificationListener
+        class Block :  public engine::Object
         {
             
             friend class BlockList;     // List of blocks

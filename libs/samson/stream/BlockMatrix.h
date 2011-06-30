@@ -16,12 +16,13 @@
 #include <string>       // std::string
 
 #include "au/list.h"      // au::list
+#include "au/map.h"         // au::map
 #include "au/Cronometer.h"              // au::cronometer
 
 #include "samson/common/coding.h"           // FullKVInfo
 
 #include "samson/common/samson.pb.h"    // network::
-#include "engine/EngineNotification.h"        // engine::NotificationListener
+#include "engine/Object.h"        // engine::Object
 
 #define notification_review_task_for_queue "notification_review_task_for_queue"
 

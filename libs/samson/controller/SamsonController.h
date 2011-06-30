@@ -12,22 +12,28 @@
 
 #include "logMsg/logMsg.h"                     // lmInit, LM_*
 
+#include "au/CommandLine.h"                // au::CommandLine
+#include "au/Cronometer.h"              // au::Cronometer
+
+#include "engine/Object.h"         // samson::EngineNotificationListener
+#include "engine/Object.h"                  // engine::Object
+
 #include "samson/common/Macros.h"                     // EXIT, ...
+#include "samson/common/samsonDirectories.h"          // File to load setup
+#include "samson/module/ModulesManager.h"             // samson::ModulesManager
+
 #include "samson/network/Network.h"                    // NetworkInterface
 #include "samson/network/Endpoint.h"                   // Endpoint
-#include "au/CommandLine.h"                // au::CommandLine
-#include "samson/common/samsonDirectories.h"          // File to load setup
+#include "samson/network/NetworkNode.h" // samson::NetworkNode
+
 #include "ControllerDataManager.h"      // samson::ControllerDataManager
-#include "samson/module/ModulesManager.h"             // samson::ModulesManager
 #include "ControllerTaskManager.h"      // samson::ControllerTaskManager
 #include "samson/common/samson.pb.h"                  // network::...
+
 #include "JobManager.h"                 // samson::JobManager
 #include "Monitor.h"                    // samson::Monitor
 #include "ControllerLoadManager.h"		// samson::ControllerLoadManager
 #include "engine/EngineElement.h"				// samson::EngineElement
-#include "engine/EngineNotification.h"         // samson::EngineNotificationListener
-#include "au/Cronometer.h"              // au::Cronometer
-#include "samson/network/NetworkNode.h" // samson::NetworkNode
 
 #define notification_monitorization                 "notification_monitorization"
 
@@ -37,7 +43,7 @@ namespace samson {
 	 Main class for Samson Controller
 	 */
 	
-	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface , public engine::NotificationListener
+	class SamsonController : public PacketReceiverInterface , public PacketSenderInterface , public engine::Object
 	{
         // Network interface used by this element
         NetworkInterface*  network;

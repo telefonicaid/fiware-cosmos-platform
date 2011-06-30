@@ -140,7 +140,7 @@ namespace samson {
         selectCommandLine.parse( command );
         if( ( selectCommandLine.get_argument(0) == "select" ) && !selectCommandLine.get_flag_bool("select_complete") )
         {
-            au::Error select_error;
+            au::ErrorManager select_error;
             jobManager->controller->data.completeSelect( command , select_error);
             
             if( select_error.isActivated() )

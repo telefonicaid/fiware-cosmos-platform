@@ -18,7 +18,7 @@
 #include <string>
 #include "samson/common/samson.pb.h"        // network::...
 #include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager
-#include "engine/EngineNotification.h"            // engine::NotificationListener
+#include "engine/Object.h"            // engine::Object
 
 
 namespace samson {

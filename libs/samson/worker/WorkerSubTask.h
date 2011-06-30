@@ -5,9 +5,9 @@
 #include <vector>                   // std::vector
 #include <string>                   // std::string
 
-#include "au/Error.h"                  // au::Error
+#include "au/ErrorManager.h"                  // au::ErrorManager
 
-#include "engine/EngineNotification.h"     // samson::EngineNotificationListener
+#include "engine/Object.h"     // samson::EngineNotificationListener
 #include "engine/Buffer.h"                 // engine::Buffer
 #include "engine/MemoryRequest.h"
 #include "engine/DiskOperation.h"
@@ -39,7 +39,7 @@ namespace samson
 	 ------------------------------------------------------------------------------------------------
 	 */
 	
-	class WorkerSubTask : public engine::NotificationListener , public engine::OperationsContainer
+	class WorkerSubTask : public engine::Object , public engine::OperationsContainer
 	{
 
 		int num_read_operations;            // Read operations
@@ -53,7 +53,7 @@ namespace samson
         engine::Buffer *buffer;             // Buffer memory obtained from Memory Manager
         
         // Error management
-        au::Error error;
+        au::ErrorManager error;
         
         FullKVInfo info;                    // Input data used in this task ( used to report progress to controller )
         
@@ -113,7 +113,6 @@ namespace samson
     private:
         
         // Function to check if a particular notification is for me
-        bool acceptNotification( engine::Notification *notification );
         void setNotificationCommandEnvironment( engine::Notification *notification);
 
 	};

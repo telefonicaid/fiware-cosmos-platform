@@ -60,7 +60,6 @@ namespace samson {
 		std::map<int,FakeEndpoint*> endpoint; 
 
 		au::Token token;			// Lock to protect the pending packet list
-		au::Stopper stopper;	// Main stoplock to wait main thread
 		
 		std::vector<NetworkFakeCenterPacket*> pendingPackets;
 		
@@ -131,15 +130,16 @@ namespace samson {
 			while( true )
 			{
 				// Send packets to the rigth directions
-		
-				
-				token.retain();
-				
-				std::vector<NetworkFakeCenterPacket*> sendingPackets;
-				sendingPackets.insert( sendingPackets.end() , pendingPackets.begin() , pendingPackets.end() );
-				pendingPackets.clear();
-				
-				token.release();
+                std::vector<NetworkFakeCenterPacket*> sendingPackets;
+                
+                {
+                    // Protect retaining the token
+                    au::TokenTaker tt( &token );
+                    
+                    sendingPackets.insert( sendingPackets.end() , pendingPackets.begin() , pendingPackets.end() );
+                    pendingPackets.clear();
+                    
+                }
 				
 				if( sendingPackets.size() > 0 )
 				{
@@ -152,18 +152,22 @@ namespace samson {
 					}
 				}
 				else
-					stopper.stop(0);
+                {
+                    au::TokenTaker tt(&token);
+                    tt.stop(0);
+                }
 			}
 		}
 		
 		void addPacket(NetworkFakeCenterPacket *p)
 		{
-			token.retain();
-			pendingPackets.push_back(p);
-			token.release();
+            au::TokenTaker tt( &token );
 
+			pendingPackets.push_back(p);
+
+            
 			// Wake up the background thread to process this packages
-			stopper.wakeUpAll();
+			tt.wakeUpAll();
 			
 		}
 		

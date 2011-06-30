@@ -87,7 +87,7 @@ namespace samson {
 	};
 	
 	
-	class LoadDataManager : public engine::NotificationListener
+	class LoadDataManager : public engine::Object
 	{
 		friend class UploadItem;
 		friend class DownloadItem;
@@ -117,7 +117,6 @@ namespace samson {
 		
 		// Notifications
         void notify( engine::Notification* notification );
-        bool acceptNotification( engine::Notification* notification );
         void setNotificationCommonEnvironment( engine::Notification* notification );
 
 		// Fill status information	

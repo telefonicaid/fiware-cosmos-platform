@@ -1,8 +1,14 @@
 
 
-#include "ProcessIsolated.h"
+
+#include "engine/ProcessItem.h"				// engine::ProcessItem
+#include "engine/Engine.h"					// engine::Engine
+#include "engine/ProcessManager.h"          // engine::ProcessManager
+
+#include "ProcessIsolated.h"                // Own interface
 #include "ProcessWriter.h"
 #include "SharedMemoryManager.h"
+
 
 namespace samson
 {

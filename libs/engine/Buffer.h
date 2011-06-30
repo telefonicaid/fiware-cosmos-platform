@@ -15,7 +15,7 @@
 #include <cstdlib>			// malloc, ...
 #include <fstream>			// std::ifstream
 #include "engine/SimpleBuffer.h"        // engine::SimpleBuffer
-#include "engine/EngineNotification.h"  // engine::EngineNotificationObject
+#include "engine/Object.h"  // engine::EngineNotificationObject
 
 namespace engine {
 	

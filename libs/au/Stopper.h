@@ -7,6 +7,7 @@
 namespace au
 {
 	
+    /*
 	class Stopper
 	{
 		int num_threads_stopped;		// Counter of elements stopped here
@@ -36,7 +37,35 @@ namespace au
         void lock();
         void unlock();
         
+        
+        // Stop 
+        void stopWhileLock( int max_seconds );
+        
+        // Wake up command while locked
+        void wakeUpWhileLock();
+        void wakeUpAllWhileLock();
+        
 	};
-	
+    
+    class StopperTaker
+    {
+        
+        Stopper* stopper;
+    public:
+        
+        StopperTaker( Stopper* _stopper )
+        {
+            stopper = _stopper;
+            stopper->lock();
+        }
+        
+        ~StopperTaker()
+        {
+            stopper->unlock();
+        }
+        
+    };
+    
+	*/
 }
 #endif

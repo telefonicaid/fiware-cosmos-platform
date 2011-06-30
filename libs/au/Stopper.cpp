@@ -2,7 +2,7 @@
 #include <sys/time.h>            // struct timeval
 #include "logMsg/logMsg.h"					 // LM_M()
 
-
+/*
 namespace au
 {
 	Stopper::Stopper()
@@ -121,6 +121,16 @@ namespace au
 		pthread_mutex_unlock(&_lock);
 	}	
 	
+    void Stopper::wakeUpWhileLock()
+    {
+		pthread_cond_signal(&_condition);
+    }
+    
+    void Stopper::wakeUpAllWhileLock()
+    {
+		pthread_cond_broadcast(&_condition);
+    }
+    
     void Stopper::lock()
     {
 		int ans;
@@ -135,8 +145,35 @@ namespace au
 		ans = pthread_mutex_unlock(&_lock);
 		if ( ans )
 			LM_X(1,("pthread_mutex_unlock return an error"));
-        
     }
-   
+    
+    void Stopper::stopWhileLock( int max_seconds )
+    {
+        
+        if( max_seconds < 0 )
+            max_seconds = 0;
+        
+        if( max_seconds == 0)
+        {
+            // This unlock the mutex and froze the process in the condition
+            pthread_cond_wait(&_condition, &_lock);
+        }
+        else
+        {
+            struct timeval tv;
+            struct timespec ts;
+            gettimeofday(&tv, NULL);
+            ts.tv_sec = tv.tv_sec + max_seconds;
+            ts.tv_nsec = 0;
+            
+            
+            // This unlock the mutex and froze the process in the condition
+            pthread_cond_timedwait(&_condition, &_lock , &ts);
+        }
+		
+    }
+    
     
 }
+
+*/

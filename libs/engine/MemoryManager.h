@@ -28,15 +28,11 @@
 #include "au/Format.h"                      // au::Format
 
 
-#include "engine/EngineNotification.h"          // engine:EngineNotificationListener
-
 #define notification_memory_request_response    "notification_memory_request_response"
 
 namespace engine {
 
-
     class MemoryRequest;
-    class NotificationListener;
     
 	/**
 	 

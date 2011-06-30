@@ -155,7 +155,8 @@ int main(int argC, const char *argV[])
     else
         delilahMonitorization = new samson::DelilahMonitorization(networkP);
 	
-	engine::Engine::runInBackground();
+    // Not necessary anymore. Engine automatically starts with "init" call
+	//engine::Engine::runInBackground();
 	
     // Special mode for file-based commands
     // ----------------------------------------------------------------

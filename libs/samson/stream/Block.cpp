@@ -1,13 +1,19 @@
 
-#include "Block.h"                      // Own interface
-#include "BlockManager.h"               // BlockManager
-#include "samson/common/SamsonSetup.h"                // samson::SamsonSetup
+#include "logMsg/logMsg.h"                     // LM_W
+
+
 #include "engine/DiskOperation.h"       // engine::DiskOperation
 #include "engine/DiskManager.h"        // notification_disk_operation_request_response
 #include "engine/Engine.h"              // engine::Engine
-#include "logMsg/logMsg.h"                     // LM_W
+#include "engine/Notification.h"       // engine::Notification
+
 #include "engine/MemoryManager.h"       // engine::MemoryManager
 #include "samson/common/MemoryTags.h"                 // MemoryBlocks
+
+
+#include "Block.h"                      // Own interface
+#include "BlockManager.h"               // BlockManager
+#include "samson/common/SamsonSetup.h"                // samson::SamsonSetup
 
 namespace samson {
     namespace stream
@@ -157,7 +163,7 @@ namespace samson {
             if( !buffer )
                 LM_X(1,("Not possible to get write operation over a block that it is not in memory"));
             
-            return engine::DiskOperation::newWriteOperation( buffer ,  getFileName() , getListenerId()  );
+            return engine::DiskOperation::newWriteOperation( buffer ,  getFileName() , getEngineId()  );
         }
 
         ::engine::DiskOperation* Block::getReadOperation()
@@ -165,7 +171,7 @@ namespace samson {
             if( !buffer )
                 LM_X(1,("Not possible to get a read operation over a block that has not a buffer  in memory"));
             
-            return engine::DiskOperation::newReadOperation( getFileName(), 0, size, buffer->getSimpleBuffer() , getListenerId() );
+            return engine::DiskOperation::newReadOperation( getFileName(), 0, size, buffer->getSimpleBuffer() , getEngineId() );
         }
         
         std::string Block::getFileName()

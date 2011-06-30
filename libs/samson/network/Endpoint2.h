@@ -116,7 +116,6 @@ public:
 	const char*          stateName(void);
 
 	au::Token*           jobQueueSem;
-	au::Stopper*         jobQueueStopper;
 	au::list<Packet>     jobQueue;
 
 private:

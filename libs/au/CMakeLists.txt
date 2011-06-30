@@ -5,7 +5,7 @@ gpb.h
 Environment.h
 CommandLine.h
 Console.h
-Error.h
+ErrorManager.h
 Format.h
 Lock.h
 LockDebugger.h
@@ -26,7 +26,7 @@ SET (SOURCES
 Descriptors.cpp
 CommandLine.cpp
 Console.cpp
-Error.cpp
+ErrorManager.cpp
 Format.cpp
 Lock.cpp
 LockDebugger.cpp

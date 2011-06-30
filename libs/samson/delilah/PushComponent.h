@@ -1,21 +1,27 @@
 #ifndef _H_DELILAH_PUSH_COMPONENT
 #define _H_DELILAH_PUSH_COMPONENT
 
-#include "au/Lock.h"				// au::Lock
 #include <fstream>				// ifstream
 #include <vector>				// std::vector
 #include <set>				// std::vector
 #include <iostream>			// std::cout
-#include "samson/common/samson.pb.h"		// samson::network
-#include "DelilahComponent.h"			// samson::DelilahComponent
-#include "samson/delilah/Delilah.h"			// samson::Delilah
-
 #include <sstream>			// std::ostringstream
-#include "au/Format.h"			// au::Format
 #include <list>				// std::list
-#include "TXTFileSet.h"		// samson::TXTFileSet
-#include "au/Error.h"			// au::Error
+
+#include "au/Format.h"			// au::Format
+#include "au/ErrorManager.h"			// au::ErrorManager
 #include "au/Cronometer.h"      // au::Cronometer
+#include "au/Lock.h"				// au::Lock
+
+#include "engine/Engine.h"          // engine::Object
+
+#include "samson/common/samson.pb.h"		// samson::network
+
+#include "samson/delilah/Delilah.h"			// samson::Delilah
+#include "DelilahComponent.h"			// samson::DelilahComponent
+
+#include "TXTFileSet.h"		// samson::TXTFileSet
+
 
 namespace samson {
 
@@ -25,7 +31,7 @@ namespace samson {
 	
 	
 	// All the information related with a load process
-	class PushComponent : public DelilahComponent , engine::NotificationListener
+	class PushComponent : public DelilahComponent , engine::Object
 	{
 		
 		int num_workers;				// Total number of workers
@@ -53,7 +59,7 @@ namespace samson {
 	public:
 
 		// Error log ( public since it is access from delilah )
-		au::Error error;
+		au::ErrorManager error;
 		
 		
 		PushComponent( std::vector<std::string> &fileNames , std::string _queue  );		
@@ -71,7 +77,6 @@ namespace samson {
         
         // Notifications
         void notify( engine::Notification* notification );
-        bool acceptNotification( engine::Notification* notification );
 
         
     private:

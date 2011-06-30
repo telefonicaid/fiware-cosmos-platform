@@ -50,6 +50,11 @@
 
 #include "logMsg/logMsg.h"             /* Own interface                             */
 
+#undef NDEBUG
+#include <assert.h>
+
+#define ASSERT_FOR_EXIT
+
 extern "C" pid_t gettid(void);
 
 
@@ -1725,11 +1730,16 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 	}
 	else if ((type == 'X') || (type == 'x'))
 	{
+        //#ifdef ASSERT_FOR_EXIT
+        assert(false);
+        //#else
+        
 		if (exitFunction != NULL)
 			exitFunction(tLev, exitInput, text, (char*) stre);
 
 		/* exit here, just in case */
 		exit(tLev);
+        
 	}
 	
 	if ((doClear == true) && (logLines >= atLines))
@@ -2318,9 +2328,15 @@ void lmShowLog(int logFd)
 */
 void lmExitForced(int c)
 {
+//#ifdef ASSERT_FOR_EXIT
+    assert(false);
+//#else
+    
 	if (exitFunction != NULL)
 		exitFunction(c, exitInput, (char*) "exit forced", NULL);
-	exit(c);
+    
+    exit(c);
+    
 }
 
 

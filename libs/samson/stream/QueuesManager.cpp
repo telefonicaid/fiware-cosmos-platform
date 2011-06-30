@@ -8,6 +8,8 @@
 
 #include "engine/Engine.h"              // engine::Engine
 #include "engine/MemoryManager.h"
+#include "engine/Notification.h"
+
 #include "samson/worker/SamsonWorker.h"
 
 #include "samson/stream/Queue.h"
@@ -21,7 +23,7 @@ namespace samson {
             
             // add a generic periodic notification to check tasks for stream queues
             engine::Notification *notification = new engine::Notification( notification_review_task_for_queue );
-            engine::Engine::add( notification , 1 );
+            engine::Engine::notify( notification , 1 );
             
         }
         

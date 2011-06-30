@@ -60,23 +60,20 @@ namespace samson
       
     void addUpload( size_t task_id )
     {
-		token.retain();
-
+        au::TokenTaker tk( &token );
 
 		// Create the upload operation
 		ControllerUploadOperation * uploadOperation = new ControllerUploadOperation( task_id );
 
 		// Add to out local map
 		uploads.insertInMap( task_id , uploadOperation );
-
-		token.release();
 		
 
     }
 
     void addDownload( size_t task_id )
     {
-		token.retain();
+        au::TokenTaker tk( &token );
 		
 		// Create the upload operation
 		ControllerDownloadOperation * downloadOperation = new ControllerDownloadOperation( task_id );
@@ -84,38 +81,30 @@ namespace samson
 		// Add to out local map
 		downloads.insertInMap( task_id , downloadOperation );
 
-		token.release();    
 		
 	}
 
 	ControllerUploadOperation* extractUploadOperation( size_t load_id )
 	{
-		token.retain();
-		ControllerUploadOperation*tmp =  uploads.extractFromMap( load_id );
-		token.release();
-		
-		return tmp;
+        au::TokenTaker tk( &token );
+		return  uploads.extractFromMap( load_id );
 	}
 	
 	ControllerDownloadOperation* extractDownloadOperation( size_t load_id )
 	{
-		token.retain();
-		ControllerDownloadOperation*tmp = downloads.extractFromMap( load_id );
-		token.release();
-		
-		return tmp;
+        au::TokenTaker tk( &token );
+		return downloads.extractFromMap( load_id );
 	}
 	  
 	  
 	  // Fill the active upload / download operation to avoid removing files
 	  void fill( samson::network::QueueList *ql )
 	  {
-		  token.retain();
+          au::TokenTaker tk( &token );
 		  
 		  for ( au::map< size_t , ControllerUploadOperation >::iterator i = uploads.begin() ; i != uploads.end() ; i++)
 			  ql->add_load_id ( i->first );	 // get the id of the operation
 		  
-		  token.release();
 	  }
 	  
   };

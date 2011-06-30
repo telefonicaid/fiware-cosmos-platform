@@ -1,12 +1,12 @@
 
 #include <sstream>       
 
-#include "Queue.h"          // Own interface
-#include "QueuesManager.h"  // samson::stream::QueuesManager
-#include "Block.h"          // samson::stream::Block
-#include "BlockManager.h"   // samson::stream::BlockManager
+#include "QueuesManager.h"              // samson::stream::QueuesManager
+#include "Block.h"                      // samson::stream::Block
+#include "BlockManager.h"               // samson::stream::BlockManager
 
 #include "engine/ProcessManager.h"      // engine::ProcessManager
+#include "engine/Notification.h"        // engine::Notification
 
 #include "samson/common/EnvironmentOperations.h"    // getStatus()
 #include "samson/module/ModulesManager.h"           
@@ -14,6 +14,8 @@
 #include "samson/network/NetworkInterface.h"
 #include "samson/worker/SamsonWorker.h"
 #include "samson/stream/ParserQueueTask.h"          // samson::stream::ParserQueueTask
+
+#include "Queue.h"          // Own interface
 
 
 namespace samson {

@@ -28,7 +28,8 @@ namespace samson
             packet = _packet; 
             
             std::ostringstream txt;
-            txt << "PacketReceivedNotification ( Receiver: " << receiver->packetReceiverDescription << " Packet: " << messageCode( packet->msgCode ) << ")";
+            txt << "PacketReceivedNotification ( Receiver: " << receiver->packetReceiverDescription;
+            txt << " Packet: " << messageCode( packet->msgCode ) << ")";
             description = txt.str();
             
             shortDescription = "Packet";

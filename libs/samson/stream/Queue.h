@@ -21,7 +21,8 @@
 #include "samson/common/coding.h"           // FullKVInfo
 
 #include "samson/common/samson.pb.h"    // network::
-#include "engine/EngineNotification.h"        // engine::NotificationListener
+
+#include "engine/Object.h"        // engine::Object
 
 #include "samson/stream/BlockMatrix.h"      // samson::Stream::BlockMatrix
 
@@ -36,7 +37,7 @@ namespace samson {
         class Block;
         class QueuesManager;
         
-        class Queue : engine::NotificationListener
+        class Queue : engine::Object
         {
             QueuesManager * qm;
 
@@ -86,10 +87,6 @@ namespace samson {
             
             // Notifications    
             void notify( engine::Notification* notification );
-            bool acceptNotification( engine::Notification* notification )
-            {
-                return true;
-            }
             
             void notifyFinishTask( size_t task_id );
             

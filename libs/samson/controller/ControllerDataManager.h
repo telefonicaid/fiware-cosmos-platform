@@ -4,7 +4,7 @@
 #include "au/Lock.h"				// au::Lock
 #include "au/Format.h"				// au::Format
 #include "au/map.h"				// au::map
-#include "au/Error.h"
+#include "au/ErrorManager.h"
 
 #include <sstream>				// std::ostringstream
 #include "samson/module/KVFormat.h"	// samson:: KVFormat
@@ -76,7 +76,7 @@ namespace samson {
 		
 		void retreveInfoForTask( size_t job_id , ControllerTaskInfo *info );		
 		
-        void completeSelect( std::string& command , au::Error& error );
+        void completeSelect( std::string& command , au::ErrorManager& error );
         
 		static std::string getAddFileCommand(int worker , std::string fileName , size_t size , size_t kvs , std::string queue )
 		{

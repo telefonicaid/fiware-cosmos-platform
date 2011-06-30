@@ -2,20 +2,32 @@
 #include <iostream>                 // std::cerr
 #include <signal.h>                 // kill(.)
 #include <stdlib.h>                 // exit()
-#include "logMsg/logMsg.h"                 // LM_*
-#include "logMsg/traceLevels.h"            // LmtIsolated, etc. 
-#include "samson/network/iomMsgAwait.h"            // iomMsgAwait
-#include "samson/common/SamsonSetup.h"                // Goyo: ss:SamsonSetup
 #include <sys/types.h>      
 #include <sys/wait.h>               // waitpid()
-#include "samson/isolated/ProcessItemIsolated.h"    // Own interface
-#include "engine/MemoryManager.h"			// samson::MemoryManager
-#include "SharedMemoryItem.h"           // engine::SharedMemoryItem
-#include "samson/isolated/SharedMemoryManager.h"    
+
+#include "logMsg/logMsg.h"                 // LM_*
+#include "logMsg/traceLevels.h"            // LmtIsolated, etc. 
+
 #include "au/gpb.h"                     // au::readGPB & au::writeGPB
-#include "samson/network/Packet.h"                     // samson::Packet
-#include "samson/worker/SamsonWorker.h"               // notification_samson_worker_send_trace
+#include "au/ErrorManager.h"
+
+#include "engine/MemoryManager.h"			// engine::MemoryManager
+#include "engine/Notification.h"            // engine::Notification
+
+#include "samson/common/traces.h"                       // logFd
+#include "samson/common/SamsonSetup.h"                // Goyo: ss:SamsonSetup
+#include "samson/common/NotificationMessages.h"     // notification_samson_worker_send_trace
 #include "samson/common/MemoryTags.h"                 // MemoryInput , MemoryOutputNetwork, ...
+
+#include "samson/network/iomMsgAwait.h"            // iomMsgAwait
+#include "samson/network/Packet.h"                     // samson::Packet
+
+
+#include "samson/isolated/ProcessItemIsolated.h"    // Own interface
+#include "samson/isolated/SharedMemoryManager.h"    
+
+#include "SharedMemoryItem.h"           // engine::SharedMemoryItem
+
 
 namespace samson
 {
@@ -225,7 +237,7 @@ namespace samson
                 p->message->mutable_trace()->CopyFrom( message->trace() );
                 p->message->set_delilah_id( 0xFFFFFFFF );
 #endif
-                engine::Engine::add( new engine::Notification( notification_samson_worker_send_trace , p ) );
+                engine::Engine::notify( new engine::Notification( notification_samson_worker_send_trace , p ) );
                 //LM_M(("Notifying a trace to the engine"));
                 
                 // Old trace system, tracing here... to be removed

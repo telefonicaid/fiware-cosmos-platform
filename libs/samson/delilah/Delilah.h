@@ -9,22 +9,28 @@
 *
 */
 #include <iostream>				// std::cout
+#include <set>					// std::set
 
 #include "logMsg/logMsg.h"             // lmInit, LM_*
 
+#include "au/Token.h"				// au::Lock
+#include "au/map.h"				// au::map
+#include "au/Cronometer.h"      // au::Cronometer
+
+#include "samson/module/Environment.h"	// samson::Environment
+#include "samson/common/samson.pb.h"			// samson::network::..
+
+#include "engine/Object.h" // engine::Object
+#include "engine/Object.h"          // engine::Object
+
 #include "samson/common/Macros.h"             // EXIT, ...
+#include "samson/common/traces.h"				// TRACE_DALILAH
+
 #include "samson/network/Network.h"			// NetworkInterface
 #include "samson/network/Message.h"            // Message::MessageCode
 #include "samson/network/Endpoint.h"			// Endpoint
-#include "samson/common/traces.h"				// TRACE_DALILAH
-#include <set>					// std::set
-#include "au/Token.h"				// au::Lock
-#include "au/map.h"				// au::map
-#include "samson/module/Environment.h"	// samson::Environment
-#include "samson/common/samson.pb.h"			// samson::network::..
-#include "au/map.h"				// au::simple_map
-#include "engine/EngineNotification.h" // engine::NotificationListener
-#include "au/Cronometer.h"      // au::Cronometer
+
+
 
 namespace  engine {
     class Buffer;
@@ -52,7 +58,7 @@ namespace samson {
 	   Main class for the samson client element
 	 */
 
-	class Delilah : public PacketReceiverInterface, public PacketSenderInterface , public engine::NotificationListener
+	class Delilah : public PacketReceiverInterface, public PacketSenderInterface , public engine::Object
 	{
 		// Id counter of the command - messages sent to controller ( commands / upload/ download )
 		size_t id;												

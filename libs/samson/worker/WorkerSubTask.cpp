@@ -1,5 +1,13 @@
 
 
+
+#include "engine/DiskOperation.h"					// samson::DiskOperation
+#include "engine/DiskManager.h"            // Notifications
+#include "engine/ProcessManager.h"         // Notifications
+#include "engine/MemoryManager.h"          // Notifications
+#include "engine/Notification.H"            // ENGINE::Notification
+
+
 #include "WorkerSubTask.h"			// Own interface
 #include "WorkerTaskManager.h"		// samson::WorkerTaskManager
 #include "WorkerTask.h"				// samson::WorkerTask
@@ -11,12 +19,8 @@
 #include "samson/common/SamsonSetup.h"					// samson::SamsonSetup
 #include "ProcessOperation.h"				// samson::ProcessOperation
 #include "ProcessParser.h"					// samson::ProcessParser
-#include "engine/DiskOperation.h"					// samson::DiskOperation
-#include "samson/worker/SamsonWorker.h"                   // samson::SamsonWorker
 
-#include "engine/DiskManager.h"            // Notifications
-#include "engine/ProcessManager.h"         // Notifications
-#include "engine/MemoryManager.h"          // Notifications
+#include "samson/worker/SamsonWorker.h"                   // samson::SamsonWorker
 
 namespace samson
 {
@@ -135,10 +139,10 @@ namespace samson
             status = finished;
             
             // Notification that this sub-task is finished
-            engine::Notification * notification  = new engine::Notification( notification_sub_task_finished );
+            engine::Notification * notification  = new engine::Notification( notification_sub_task_finished ,NULL, task->getEngineId() );
             setNotificationCommandEnvironment(notification);
             notification->environment.set("target", "WorkerTask");      // Modify to "send" this notification to the worker task
-            engine::Engine::add( notification );
+            engine::Engine::notify( notification );
             return;
         }
         
@@ -198,10 +202,10 @@ namespace samson
                     task->sendUpdateMessageToController( FullKVInfo(0,0) , info );
                     
                     // Notification that this sub-task is finished
-                    engine::Notification * notification  = new engine::Notification( notification_sub_task_finished );
+                    engine::Notification * notification  = new engine::Notification( notification_sub_task_finished ,NULL, task->getEngineId() );
                     setNotificationCommandEnvironment(notification);
                     notification->environment.set("target", "WorkerTask");      // Modify to "send" this notification to the worker task
-                    engine::Engine::add( notification );
+                    engine::Engine::notify( notification );
                 }
                 break;
             }
@@ -218,24 +222,6 @@ namespace samson
 
     }
 
-    bool WorkerSubTask::acceptNotification( engine::Notification *notification )
-    {
-        //LM_M(("WorkerSubTask: Accept %s" , notification->getDescription().c_str() ));
-        
-        if( notification->environment.get( "target" , "" ) != "WorkerSubTask" )
-            return false;
-        
-        if( notification->environment.getInt("worker", -1) != task->taskManager->worker->network->getWorkerId() )
-            return false;
-        
-        if( notification->environment.getSizeT( "task_id" , 0 ) != task_id  )
-            return false;
-        
-        if( notification->environment.getSizeT( "sub_task_id" , 0 ) != sub_task_id  )
-            return false;
-
-        return true;
-    }
     
     void WorkerSubTask::setNotificationCommandEnvironment( engine::Notification *notification)
     {
@@ -249,7 +235,7 @@ namespace samson
     void WorkerSubTask::addMemoryRequest( size_t size )
     {
         
-        engine::MemoryRequest *memoryRequest = new engine::MemoryRequest( size , getListenerId() );
+        engine::MemoryRequest *memoryRequest = new engine::MemoryRequest( size , getEngineId() );
         
         // add to the engine::OperationsContainer
         add( memoryRequest );
@@ -279,7 +265,7 @@ namespace samson
         num_processes++;
         
         // Set myself as the target listener
-        engine::ProcessManager::shared()->add( processItem , getListenerId() ) ;
+        engine::ProcessManager::shared()->add( processItem , getEngineId() ) ;
         
     }
     
@@ -419,7 +405,7 @@ namespace samson
 		size_t offset			= sizeof( KVHeader );					// We skip the file header
 		size_t size				= sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
 		
-		engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::dataFile( file->fileName ) , offset , size , file->getSimpleBufferForInfo() , getListenerId() );
+		engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::dataFile( file->fileName ) , offset , size , file->getSimpleBufferForInfo() , getEngineId() );
 		return item;
 	}	
 	
@@ -491,7 +477,7 @@ namespace samson
 									  reduceInformation->file[f]->getFileOffset( hg_begin ), \
 									  header.info.size, \
 									  buffer->getSimpleBufferAtOffset(offset),\
-                                       getListenerId()               
+                                       getEngineId()               
                                                       );
 			
 			addReadOperation( item );
@@ -553,7 +539,7 @@ namespace samson
             if( !buffer )
                 LM_X(1,("Intern error: No buffer in read operations of task"));
             // Single file to be parsed
-            engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::dataFile(fileName) , 0, fileSize, buffer->getSimpleBuffer() , getListenerId() );
+            engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::dataFile(fileName) , 0, fileSize, buffer->getSimpleBuffer() , getEngineId() );
             addReadOperation(item);
         }
 		
@@ -645,7 +631,7 @@ namespace samson
 		size_t offset			= sizeof( KVHeader );					// We skip the file header
 		size_t size				= sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
 		
-		engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::dataFile(file->fileName) , offset , size , file->getSimpleBufferForInfo() , getListenerId() );
+		engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::dataFile(file->fileName) , offset , size , file->getSimpleBufferForInfo() , getEngineId() );
 		//item->tag = task->task_id;
 		return item;
 	}		
@@ -715,7 +701,7 @@ namespace samson
 									  reduceInformation->file[f]->getFileOffset( hg_begin ), \
 									  header.info.size, \
 									  buffer->getSimpleBufferAtOffset(offset) , \
-                                      getListenerId()
+                                      getEngineId()
                                                       );
 			
             // Add this item to be read

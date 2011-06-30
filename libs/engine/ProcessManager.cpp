@@ -10,6 +10,7 @@
 
 #include "au/Descriptors.h"                         // au::Descriptors
 
+#include "engine/Notification.h"                    // engine::Notification
 #include "engine/ProcessManager.h"                  // engine::Process
 #include "engine/Engine.h"							// engine::Engine
 #include "engine/EngineElement.h"					// engine::EngineElement
@@ -59,7 +60,7 @@ namespace engine
         listen( notification_process_manager_check_background_process );
      
         // Check every second if we should start a new process item
-        engine::Engine::add( new Notification( notification_process_manager_check_background_process ) , 1 );
+        engine::Engine::notify( new Notification( notification_process_manager_check_background_process ) , 1 );
     }
     
     ProcessManager::~ProcessManager()
@@ -72,7 +73,7 @@ namespace engine
         if( notification->isName( notification_process_manager_check_background_process ) )                 
             checkBackgroundProcesses();
         else        
-	  LM_X(1,("Wrong notification at ProcessManager [Listener %lu] %s" , getListenerId() , notification->getDescription().c_str()));
+	  LM_X(1,("Wrong notification at ProcessManager [Listener %lu] %s" , getEngineId() , notification->getDescription().c_str()));
         
     }
     
@@ -84,13 +85,13 @@ namespace engine
         running_items.erase(item);
 
         // Send to me a notification to review background processes
-        Engine::add( new Notification( notification_process_manager_check_background_process ) );
+        Engine::notify( new Notification( notification_process_manager_check_background_process ) );
         
         // Notify this using the notification Mechanism
         {
         Notification * notification = new Notification( notification_process_request_response , item , item->listenerId );
         notification->environment.copyFrom( &item->environment );
-        Engine::add( notification );
+        Engine::notify( notification );
         }
         
     }
@@ -105,7 +106,7 @@ namespace engine
         
         {
             Notification * notification = new Notification( notification_process_manager_check_background_process );
-            Engine::add( notification );
+            Engine::notify( notification );
         }
         
     }   
@@ -130,7 +131,7 @@ namespace engine
         LM_T( LmtProcessManager , ("Finish Adding ProcessItem") );
 
         // A notification will check if it is necessary to run a new process item
-        engine::Engine::add( new Notification( notification_process_manager_check_background_process ) );
+        engine::Engine::notify( new Notification( notification_process_manager_check_background_process ) );
         
     }
     
@@ -153,7 +154,7 @@ namespace engine
                 Notification * notification = new Notification( notification_process_request_response , item , item->listenerId );
                 notification->environment.copyFrom( &item->environment );
                 notification->environment.set("error", "Canceled" );
-                Engine::add( notification );
+                Engine::notify( notification );
             }
             
         }

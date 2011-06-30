@@ -25,15 +25,13 @@
 #include "samson/stream/QueuesManager.h"        // samson::stream::QueuesManager
 #include "samson/stream/QueueTaskManager.h"     // samson::stream::QueueTaskManager
 
-#define notification_samson_worker_send_status_update "notification_samson_worker_send_status_update"
-#define notification_samson_worker_send_trace "notification_samson_worker_send_trace"
-#define notification_send_to_worker "notification_send_to_worker"
+#include "samson/common/NotificationMessages.h"
 
 namespace samson {
 	
     class NetworkInterface;
     
-	class SamsonWorker :  public PacketReceiverInterface, public PacketSenderInterface, public engine::NotificationListener
+	class SamsonWorker :  public PacketReceiverInterface, public PacketSenderInterface, public engine::Object
 	{
 		
 		// Initial time stamp 
@@ -69,7 +67,6 @@ namespace samson {
 		
         // Notification from the engine about finished tasks
         void notify( engine::Notification* notification );
-        bool acceptNotification( engine::Notification* notification );
 
         
 	private:

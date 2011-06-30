@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "au/CommandLine.h"			// au::CommandLine
-#include "au/Error.h"               // au::Error
+#include "au/ErrorManager.h"               // au::ErrorManager
 
 #include "samson/common/samson.pb.h"
 #include "samson/module/Environment.h"				// samson::Environment
@@ -44,7 +44,7 @@ namespace samson {
 		std::vector<network::FullQueue*> output_queues;		
 
 		// Error management
-        au::Error error;
+        au::ErrorManager error;
 		
 	};
 	

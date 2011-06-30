@@ -1,15 +1,22 @@
 
 
-#include "StreamProcessBase.h"			// Own interface
+#include "logMsg/logMsg.h"                 // LM_X
+
+
+#include "engine/Object.h"              // engine::Object
+#include "engine/Notification.h"      // engine::Notification
+
 #include "samson/common/coding.h"					// All data definitions
 #include "samson/network/Packet.h"					// samson::Packet
 #include "samson/common/EnvironmentOperations.h"	// copyEnviroment
 #include "samson/worker/SamsonWorker.h"			// samson::SamsonWorker
 #include "samson/isolated/SharedMemoryItem.h"       // samson::SharedMemoryItem
-#include "logMsg/logMsg.h"                 // LM_X
 #include "samson/common/MemoryTags.h"             // MemoryOutputNetwork
 
-#include "engine/EngineNotification.h"      // engine::Notification...
+
+#include "StreamProcessBase.h"			// Own interface
+
+
 namespace samson {
     
     namespace stream {
@@ -90,7 +97,7 @@ namespace samson {
             // Send the packet using the "notification_send_to_worker"
             engine::Notification *notification = new engine::Notification( notification_send_to_worker , packet );
             notification->environment.setInt("outputWorker", outputWorker );
-            engine::Engine::add( notification );
+            engine::Engine::notify( notification );
             
         }
         

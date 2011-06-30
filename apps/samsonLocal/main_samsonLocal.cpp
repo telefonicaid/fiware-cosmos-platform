@@ -81,11 +81,18 @@ void *run_DelilahConsole(void* d)
 	samson::DelilahConsole* delilahConsole = (samson::DelilahConsole*) d;
 	delilahConsole->run();
 
-    // When finishing this thread, exit que engine to finish the app
-    engine::Engine::quit();         // Quit the engine
-
+    exit(0);
     
 	return NULL;
+}
+
+std::vector< samson::SamsonWorker* > _workers;
+
+void deleteWorkers()
+{
+    LM_M(("Removing workers"));
+    for ( size_t i = 0 ; i < _workers.size() ; i++)
+        delete _workers[i];
 }
 
 
@@ -124,7 +131,6 @@ int main(int argC, const char *argV[])
     // engine::Engine::add( new engine::EngineElementSleepTest() );
     
 	samson::ModulesManager::init();		// Init the modules manager
-
 	engine::SharedMemoryManager::init( samson::SamsonSetup::shared()->num_processes , samson::SamsonSetup::shared()->shared_memory_size_per_buffer );
 	engine::DiskManager::init( 1 );
 	engine::ProcessManager::init( samson::SamsonSetup::shared()->num_processes );
@@ -151,7 +157,6 @@ int main(int argC, const char *argV[])
 	LM_T(LmtInit, ("SamsonLocal start"));
 	LM_D(("Starting samson demo (logFd == %d)", ::logFd));
 
-	std::vector< samson::SamsonWorker* > _workers;
 	for (int i = 0 ; i < workers ; i ++ )
 	{
 		samson::SamsonWorker *w = new samson::SamsonWorker( center.getNetwork(i) );
@@ -171,24 +176,14 @@ int main(int argC, const char *argV[])
         pthread_create(&t, 0, run_DelilahConsole, delilahConsole);
     }
         
-	// Run the samson engine
-	engine::Engine::run();
-		
-    // Destroying workwers
-    for ( size_t i = 0 ; i < _workers.size() ; i++)
-        delete _workers[i];
-    _workers.clear();
-    
+	// Not necessary anymore since engine starts automatically with the init call
+	// engine::Engine::run();
 
-    LM_M(("Destroying BlockManager"));
-    samson::stream::BlockManager::destroy();
+    atexit(deleteWorkers);
     
-    LM_M(("Destroying Memory manager"));
-    engine::MemoryManager::destroy();
-    
-	LM_M(("Destroying engine"));
-    engine::Engine::destroy();
-    
+    while( true )
+        sleep(10);
+   
 }
 
 

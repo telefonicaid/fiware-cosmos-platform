@@ -1,16 +1,20 @@
 #include "engine/Buffer.h"					// samson::Buffer
-#include "samson/worker/SamsonWorker.h"			// samson::SamsonWorker
-#include "samson/network/Packet.h"					// samson::Packet
-#include "engine/Buffer.h"					// samson::Buffer
-#include "LoadDataManager.h"		// Own interface
-#include "samson/common/MessagesOperations.h"		// setErrorMessage
-#include "samson/common/SamsonSetup.h"			// samson::SamsonSetup
 #include "engine/DiskOperation.h"			// samson::DiskOperation
 #include "engine/Engine.h"                 // samson::Engine
 #include "engine/DiskManager.h"            // Notifications
-#include "engine/EngineNotification.h"      // engine::NotificationListener
+#include "engine/Object.h"      // engine::Object
+#include "engine/Buffer.h"					// samson::Buffer
+#include "engine/Notification.h"            // engine::Notification
 
+#include "samson/common/MessagesOperations.h"		// setErrorMessage
+#include "samson/common/SamsonSetup.h"			// samson::SamsonSetup
 #include "samson/common/MemoryTags.h"                 // MemoryOuputNetwork
+
+#include "samson/worker/SamsonWorker.h"			// samson::SamsonWorker
+#include "samson/network/Packet.h"					// samson::Packet
+
+#include "LoadDataManager.h"		// Own interface
+
 
 namespace samson
 {
@@ -61,7 +65,7 @@ namespace samson
 	void UploadItem::submitToFileManager()
 	{
 		// Add to the file manager to be stored on disk
-        engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( buffer , SamsonSetup::dataFile( fileName ) , dataManager->getListenerId() );
+        engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( buffer , SamsonSetup::dataFile( fileName ) , dataManager->getEngineId() );
         operation->environment.setSizeT("id", id);
         
         
@@ -131,7 +135,7 @@ namespace samson
 		buffer->setSize( size );
 
         engine::DiskOperation *operation 
-            = engine::DiskOperation::newReadOperation( buffer->getData() ,  SamsonSetup::dataFile(fileName) , 0 , size , dataManager->getListenerId() );
+            = engine::DiskOperation::newReadOperation( buffer->getData() ,  SamsonSetup::dataFile(fileName) , 0 , size , dataManager->getEngineId() );
 
         operation->environment.setSizeT("id", id);
         engine::DiskManager::shared()->add( operation );
@@ -217,16 +221,6 @@ namespace samson
         notification->environment.setInt("worker", worker->network->getWorkerId());
     }
     
-    bool LoadDataManager::acceptNotification( engine::Notification* notification )
-    {
-        if( notification->environment.get("target","") != "LoadDataManager" )
-            return false;
-        
-        if( notification->environment.getInt("worker", -1) != worker->network->getWorkerId() )
-            return false;
-        
-        return  true;
-    }
     
     void LoadDataManager::notify( engine::Notification* notification )
     {

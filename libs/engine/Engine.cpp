@@ -1,56 +1,100 @@
 
 
-#include "logMsg/logMsg.h"				// LM_X
+
 #include <time.h>
 #include <sys/time.h>
 #include <signal.h>   // SIGKILL
 
-#include "engine/Engine.h"							// Own interface
+#include "logMsg/logMsg.h"                          // LM_X
+
+#include "au/Stopper.h"                             // au::Stopper
+#include "au/ErrorManager.h"                       // au::ErrorManager
+
+
+#include "Notification.h"                           // engine::Notification
+
 #include "engine/EngineElement.h"					// engine::EngineElement
 #include "engine/ProcessItem.h"                     // engine::ProcessItem
 #include "engine/DiskOperation.h"					// engine::DiskOperation
 #include "engine/EngineNotificationElement.h"       // engine::EngineNotificationElement
+
+#include "engine/Engine.h"							// Own interface
 
 #define ENGINE_MAX_RUNNING_TIME     60
 
 namespace engine
 {
 
+    // Thread stuff
+    // ---------------------------------------------------------------------------
+    
+    // General mutex to protect global variable engine and block the main thread if necessary
+    au::Token engine_token("EngineToken");         
     
 #pragma mark ENGINE
 	
 	Engine *engine = NULL;		// Static singlelton for thir worker
 	
-	void*runEngineBakground(void*e)
-	{
-        Engine::run();
-		return NULL;
-	}
 
-	void*runEngineCheck(void*e)
-	{
-        if( engine )
-            engine->_check();   // Quit if still not quited
-        else
-			LM_X(1,("Please, init the engine"));
-        
-		return NULL;
-	}
-	
+    // Thread creation functions
+    // ---------------------------------------------------------------------------
     
+    
+	void* runEngineBakground(void* e )
+	{
+        engine->run();
+		return NULL;
+	}
 
+	void* runEngineCheckBakground(void* e)
+	{
+        while( true )
+        {
+            bool valid = false;
+            
+            {
+                au::TokenTaker tt(&engine_token);
+                
+                if( !engine )
+                {
+                    LM_M(("Background thread for engine cheking ended since engine is not active anymore"));
+                    return NULL; // No more check necessary
+                }
+                
+                valid =  engine->check();
+            }
+            
+            if ( !valid )
+                LM_X(1, ("Error in the check-engine"));
+            else
+                sleep( ENGINE_MAX_RUNNING_TIME /2 );
+
+        }
+		return NULL;
+	}
+    
+    void destroyEngine()
+    {
+        // When finishing this thread, exit que engine to finish the app
+        engine::Engine::destroy();
+    }
+
+    bool isEngineInitialized()
+    {
+        // Mutex protection
+        au::TokenTaker tt(&engine_token);
+        return ( engine != NULL );
+    }
+    
+	
 	Engine::Engine()
 	{
-		flag_quit = false;					       // By default, this flag is false
-		flag_running =  false;				       // Not running until "run" method is called
+		flag_quit = false;                          // By default, this flag is false
+		flag_running =  true;                       // The run method is automatically called 
 		
-		_sleeping_seconds = 0;
-    
-        running_element = NULL;
-        
-		pthread_mutex_init(&elements_mutex, 0);			// Mutex to protect elements
-		pthread_cond_init(&elements_cond, 0) ;			// Conditional to block the thread while waiting the next event
-        
+		sleeping_time_seconds = 0;                  // Init the sleep time variable
+        running_element = NULL;                     // Initially, no running element
+
 	}
 	
 	Engine::~Engine()
@@ -61,365 +105,229 @@ namespace engine
         // clear the pending elements to be executed
         elements.clearList();
         
-		pthread_mutex_destroy(&elements_mutex);			// Mutex to protect elements
-		pthread_cond_destroy(&elements_cond) ;			// Conditional to block the thread while waiting the next event
-        
-        
 	}
 	
 	void Engine::init()
 	{
+        // Mutex protection
+        au::TokenTaker tt(&engine_token);
+        
 		if( engine )
-			LM_X(1,("Please, init the engine only once "));
-		
-		LM_T( LmtEngine , ("Engine init"));
+        {
+			LM_W(("Please, init the engine only once "));
+            return;
+        }
+		else
+        {
+            
+            atexit( destroyEngine );
+            
+            LM_T( LmtEngine , ("Engine init"));
+            engine = new Engine();
 
-		engine = new Engine();
-	
+            // Add a simple periodic element to not die inmediatelly
+            EngineElement *element = new NotificationElement( new Notification("alive") , 10 );
+            engine->elements.push_back( element );
+            
+            LM_T( LmtEngine , ("Running engine in background...") );
+            pthread_create(&engine->t, 0, runEngineBakground, NULL);
+            
+            //LM_T( LmtEngine , ("Running paralel thread to check engine"));
+            //pthread_create(&engine->t_check, NULL, runEngineCheck, NULL);
+        }	
 	}
-
-    void Engine::run()
-    {
-        if (!engine)
-            LM_X(1, ("Please init engine before executing"));
-        
-        engine->_run();
-    }
-    
-    void Engine::quit()
-    {
-        if (!engine)
-            LM_X(1, ("Please init engine before quiting"));
-
-        engine->_quit();
-        
-    }
-    
     
     void Engine::destroy()
     {
-        if ( engine )
+        LM_M(("Destroying engine"));
+        
         {
-            engine->_quit();   // Quit
+            // Mutex protection
+            au::TokenTaker tt(&engine_token);
             
-            delete engine;
-            engine = NULL;
+            if ( !engine )
+                return;
+            
+            // Mark as quit
+            engine->flag_quit = true;
         }
-        else
-            LM_W(("Trying to destroy Engine, but it is not initialized"));
-    }
-    
-    // ------------------------------------------------------------------------------------------------------------------------------
-    
-    
-    void Engine::runInBackground()
-    {
-        if (!engine)
-            LM_X(1, ("Please init engine before executing"));
-
-		pthread_create(&engine->t, 0, runEngineBakground, NULL);	
-        
-    }
-        
-    void Engine::add( EngineElement *element )
-    {
-        if (engine)
-            engine->_add( element );
-        else
-        {
-            LM_W(("Not adding an EngineElement since Engine is not initialized"));
-            delete element;
-        }
-        
-    }
-    
-    void Engine::add( Notification*  notification )
-    {
-        if (engine)
-        {
-            // Add an element to notify latter
-            engine->add( new NotificationElement( notification ) );
-        }
-        else
-        {
-            LM_W(("Removing a Notification since engine is not initialized"));
-            delete notification;
-        }
-        
-    }
-
-    void Engine::_notify( Notification*  notification )
-    {
-        if ( engine )
-        {
-            // Add an element to notify latter
-            engine->notificationSystem.notify( notification );
-        }
-        else
-        {
-            LM_W(("Removing a Notification since engine is not initialized"));
-            delete notification;
-        }
-        
-    }
-    
-    
-    
-    void Engine::add( Notification*  notification , int seconds )
-    {
-        if (engine)
-            engine->add( new NotificationElement( notification, seconds ) );
-        else
-        {
-            LM_W(("Removing a Notification since engine is not initialized"));
-            delete notification;
-        }
-        
-    }
-    
-         // Add a listener ( give unique id )
-    void Engine::add( NotificationListener*listener )
-    {
-        if( engine )
-            engine->notificationSystem.add( listener );
-        else
-        {
-            LM_X(1,("Not adding a listener since engine is not initialized" ));
-        }
-    }
-    
-    void Engine::remove( NotificationListener*listener )
-    {
-        if( engine )
-        {
-            engine->notificationSystem.remove( listener );
-        }
-        else
-            LM_W(("Not removing a listener since engine is not initialized"));
-    }
-    
-    void Engine::add( const char* name , NotificationListener*listener)
-    {
-        if( engine )
-            engine->notificationSystem.add( name , listener );
-        else
-            LM_W(("Not adding a listener to '%s' since engine is not initialized" , name ));
-    }
-
-    void Engine::remove( const char* name ,NotificationListener* listener )
-    {
-        if( engine )
-            engine->notificationSystem.remove( name , listener );
-        else
-            LM_W(("Not removing a listener since engine is not initialized"));
-        
-    }
-
-    std::string Engine::str()
-    {
-        if( engine )
-            return engine->_str();
-        else
-            return "Engine not initialized";
-        
-    }
-
-    
-    
-    // ------------------------------------------------------------------------------------------------------------------------------
-	
-    void Engine::_check()
-    {
         
         while( true )
         {
-            time_t time_in_seconds = cronometer.diffTimeInSeconds();
-
-            /*
-            if( running_element )
-                LM_M(("Checking running task... %s %d " , running_element->getDescription().c_str(),  time_in_seconds));
-            else
-                LM_M(("Checking running task but there is no runnign task"));
-            */
             
-            if( running_element && (time_in_seconds> ENGINE_MAX_RUNNING_TIME  ) )
-                LM_X(1, ("Excesive time (%d secs, max %d secs) for engine Element '%s'." , 
-                         time_in_seconds , ENGINE_MAX_RUNNING_TIME, running_element->getDescription().c_str() ));
-            
-            sleep( ENGINE_MAX_RUNNING_TIME /2 );
-            
+            {
+                // Mutex protection
+                au::TokenTaker tt(&engine_token);
+                
+                if( !engine->flag_running )
+                {
+                    // Destoy engine element
+                    delete engine;
+                    
+                    // Put the global variable to NULL to avoid more adds...
+                    engine = NULL;
+                    
+                    return;
+                }
+                
+                LM_M(("Waiting engine main thread to finish"));
+                sleep(1);
+            }
         }
     }
-
-	void Engine::_run()
+    
+    // ------------------------------------------------------------------------------------------------------------------------------
+    
+	bool Engine::check(  )
 	{
+        time_t time_in_seconds = cronometer.diffTimeInSeconds();
         
-        // Init the check thread to check exesive time threads
-        pthread_create(&t_check, NULL, runEngineCheck, NULL);
+        if( running_element && ( time_in_seconds > ENGINE_MAX_RUNNING_TIME  ) )
+        {
+            LM_W(("Excesive time (%d secs, max %d secs) for engine Element '%s'." ,  
+                  time_in_seconds , ENGINE_MAX_RUNNING_TIME, running_element->getDescription().c_str() ));
+            return false;
+        }
         
-		// Keep the thread for not calling quit from the same thread
-		t = pthread_self();	
+        return true;
+	}
+    
+    std::string Engine::str()
+    {
+        // Mutex protection
+        au::TokenTaker tt(&engine_token);
+        
+        if( engine )
+            return engine->_str();
+        else
+            return "Engine is not initialized";
+        
+    }
+    
+    void Engine::getNextElement( )
+    {
 
-		// Repeated notification for not ending the loop of the engine
-		add( new Notification( "endless loop notification" ) , 5 );
-		
-		LM_T( LmtEngine , ("Engine run"));
-		flag_running =  true;
-		
-		counter = 0;    // Init the counter to elements managed by this run-time
-		while( true )
-		{
-			counter++;  // Keep a total counter of loops
+        // Mutex protection
+        au::TokenTaker tt(&engine_token , "Engine::getNextElement");
+        
+        // Defauly values
+        running_element = NULL;
+        sleeping_time_seconds = 0;
+        
+        while( true )
+        {
             
-			pthread_mutex_lock(&elements_mutex);
-
-			time_t now = time(NULL);
-			//LM_M(("Loop of the engine time: %u elements: %d", now , elements.size() ));
-			
-			if( elements.size() == 0)
-			{
-				// No more things to do
-				LM_T( LmtEngine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
-				pthread_mutex_unlock(&elements_mutex);
-
-				flag_running = false;	// Flag to indicate that the engine is not running any more
-				
-				return;
-			}
-
-			if( now >= elements.front()->getThriggerTime() )
-			{
-				//LM_M(("Something to execute...."));
-				
-				running_element = elements.front();
-				elements.pop_front();
-
-				// Unlock the thread
-				pthread_mutex_unlock(&elements_mutex);
-				
-				// Execute the item
-
-				LM_T( LmtEngine, ("[START] Engine executing %s" , running_element->getDescription().c_str()));
-
-                cronometer.reset();
+            if( elements.size() == 0)
+            {
+                // No more things to do
+                LM_T( LmtEngine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
+                flag_quit = true;       // Flag this engine as to be finished
+                return; // Return with default values
+            }
+            
+            // Keep a total counter of loops
+            counter++;  
+            
+            time_t now = time(NULL);
+            
+            if( now >= elements.front()->getThriggerTime() )
+            {
+                running_element = elements.front();
+                elements.pop_front();
                 
-				running_element->run();
-
-                time_t t = cronometer.diffTimeInSeconds();
-
-                //LM_M(("Task %s spent %d seconds.", running_element->getDescription().c_str() , (int)t ));
                 
-                if( t > 60 )
-                    LM_W(("Task %s spent %d seconds. This should not be more than 60", running_element->getDescription().c_str() , (int)t ));
-                
-				LM_T( LmtEngine, ("[DONE] Engine executing %s" , running_element->getDescription().c_str()));
-                    
-                EngineElement * _running_element = running_element;
-
-                running_element = NULL; // Put running element to NULL for the str function
-                
-				if( _running_element->isRepeated() )
-				{
-					// Insert again
-					_running_element->Reschedule();
-					add( _running_element );
-				}
-				else
-					delete _running_element;
-				
-			}
-			else
-			{
+                return;
+            }
+            else
+            {
                 
                 time_t trigger_time = elements.front()->getThriggerTime();
                 
                 if( trigger_time > now )
-                    _sleeping_seconds =  trigger_time - now;
+                    sleeping_time_seconds =  trigger_time - now;
                 else
                     LM_X(1,("Time triggered is not greater than now..."));
-				
+                
                 // LM_M(("Sleeping time in seconds %d" , _sleeping_seconds ));
                 
-				struct timeval tv;
-				struct timespec ts;
-				gettimeofday(&tv, NULL);
-				ts.tv_sec = tv.tv_sec + _sleeping_seconds;
-				ts.tv_nsec = 0;
-				
-				//LM_M(("Sleeping %d seconds",  _sleeping_seconds ));
-				
-				pthread_cond_timedwait(&elements_cond, &elements_mutex , &ts );
-				pthread_mutex_unlock(&elements_mutex);
-				
-				//LM_M(("Waking up after (theoretically ) sleeping %d seconds",  _sleeping_seconds ));
-				
-			}
-		}
-		
-	}
-	
-	void Engine::_quit()
-	{
-        
-	   //LM_M(("Quitting samson engine...."));
-        
-       if( ! flag_running )
-            return; // Not necessary to quit anything.
-
-		// Flag to avoid more "adds"
-		flag_quit = true;	
-        
-		pthread_mutex_lock(&elements_mutex);
-
-		// Remove All elements
-		elements.clearList();		
-		
-		// Wake up the main thread to process this element if necessary	
-		pthread_cond_signal(&elements_cond);
-		
-		pthread_mutex_unlock(&elements_mutex);
-        
-		// If we are calling quit from another thread, we will wait until the main thead is finished
-        if( pthread_self() != t_check )
-        {
-
-            LM_M(("Engine: Waiting main thread to finish..,"));
-            int r2 = pthread_join( t,NULL);
-            if( r2 )
-                LM_W(("Error while canceling main thread of Engine"));
+                struct timeval tv;
+                struct timespec ts;
+                gettimeofday(&tv, NULL);
+                ts.tv_sec = tv.tv_sec + sleeping_time_seconds;
+                ts.tv_nsec = 0;
+                
+                // Sleep a bit
+                if( sleeping_time_seconds > 0 )
+                {
+                    tt.stop(sleeping_time_seconds);
+                }
+                else
+                    LM_W(("Error in sleeping time at Engine"));
+                
+            }
         }
+    }
+    
+	void Engine::run()
+	{
+		
+		LM_T( LmtEngine , ("Engine run"));
 
-		if( pthread_self() == t_check )
-            LM_X(1, ("Internal error"));
+		flag_running =  true;   // Make sure we activate this flag ( is also initialized as true )
+		counter = 0;            // Init the counter to elements managed by this run-time
+        
+		while( true )
+		{
+            // Get next element or sleep time
+            getNextElement( );
             
-        {
-            LM_M(("Engine: Waiting check thread to finish"));
-            int r2 = pthread_join( t_check ,NULL);
-            if( r2 )
-                LM_W(("Error while canceling check-thread of Engine"));
-        }
-        
-		
-	}
-			
-	void Engine::_add( EngineElement *element )
-	{
-		pthread_mutex_lock(&elements_mutex);
-		
-		if( flag_quit )
-		{
-			// Not adding this element
-			delete element;
-		}
-		else
-		{
-			elements.insert( _find_pos( element ) ,  element );
+            if( flag_quit )
+            {
+                flag_running = false;	// Flag to indicate that the engine is not running any more
+                return;                 // If flagged as quit, just return to finish this main thread
+            }
 
-			// Wake up the main thread to process this element if necessary	
-			pthread_cond_signal(&elements_cond);
+            // Run or sleep
+            
+            if ( !running_element )
+                LM_X(1,("Internal errro at Engine"));
+            
+            
+            {
+                // Execute the item selectd as running_element
+                
+                LM_T( LmtEngine, ("[START] Engine executing %s" , running_element->getDescription().c_str()));
+                
+                // Reset cronometer for this particular task
+                cronometer.reset();
+                
+                running_element->run();
+                
+                // Compute the time spent in this element
+                time_t t = cronometer.diffTimeInSeconds();
+                if( t > 60 )
+                    LM_W(("Task %s spent %d seconds. This should not be more than 60", running_element->getDescription().c_str() , (int)t ));
+                
+                LM_T( LmtEngine, ("[DONE] Engine executing %s" , running_element->getDescription().c_str()));
+                
+                EngineElement * _running_element = running_element;
+                
+                running_element = NULL; // Put running element to NULL
+                
+                if( _running_element->isRepeated() )
+                {
+                    // Insert again
+                    _running_element->Reschedule();
+                    add( _running_element );
+                }
+                else
+                    delete _running_element;
+                
+            }
+            
+                
+            
 		}
-		
-		pthread_mutex_unlock(&elements_mutex);
 		
 	}
 	
@@ -443,7 +351,6 @@ namespace engine
 	{
 		// Fill the memory manager stuff
 		
-		pthread_mutex_lock(&elements_mutex);
         
         std::ostringstream engine_state;
         
@@ -452,16 +359,107 @@ namespace engine
         if( running_element )
             engine_state << "\t\t\tCurrent:\n\t\t\t\t" << running_element->getDescription() << "\n";
         else
-            engine_state << "( Sleeping for " << _sleeping_seconds << ")\n";
+            engine_state << "( Sleeping for " << sleeping_time_seconds << ")\n";
         
         engine_state <<  "\t\t\tQueue: " << elements.size() << "\n";
         for ( au::list<EngineElement>::iterator el = elements.begin() ; el != elements.end() ; el++)
             engine_state << "\t\t\t\t[" << (*el)->getShortDescription() <<"]\n";
-        
-		pthread_mutex_unlock(&elements_mutex);
-        
+                
         return engine_state.str();
         
         
 	}	
+    
+    // Functions to register objects ( general and for a particular notification )
+    void Engine::register_object( Object* object )
+    {
+        // Mutex protection
+        au::TokenTaker tt(&engine_token , "Engine::register_object" );
+        
+        if (engine)
+            engine->objectsManager.add( object );
+        else
+            LM_W(("Not adding an Object since Engine is not initialized."));
+        
+    }
+    
+    void Engine::register_object_for_channel( Object* object, const char* channel )
+    {
+        // Mutex protection
+        au::TokenTaker tt(&engine_token);
+        
+        if (engine)
+            engine->objectsManager.add( object , channel );
+        else
+            LM_W(("Not adding an Object for channel %s since Engine is not initialized." , channel ));
+    }
+
+    
+    // Generic method to unregister an object
+    void Engine::unregister_object( Object* object )
+    {
+        // Mutex protection
+        au::TokenTaker tt(&engine_token);
+        
+        if (engine)
+            engine->objectsManager.remove( object );
+        else
+            LM_W(("Not adding an Object since Engine is not initialized."));
+    }
+
+    
+    // Run a particular notification
+    void Engine::send( Notification * notification )
+    {
+        
+        if (!engine)
+            LM_X(1,("Internal error at Engine"));
+        
+        engine->objectsManager.send( notification );
+    }
+
+    
+    // Add a notification
+    void Engine::notify( Notification*  notification )
+    {
+        // Push a notification element with the notification
+        add( new NotificationElement( notification ) );
+    }
+
+    void Engine::notify( Notification*  notification , int seconds )
+    {
+        // Push a notification element with the notification ( in this case with periodic time )
+        add( new NotificationElement( notification , seconds ) );
+    }
+    
+    // Function to add a simple foreground tasks 
+    void Engine::add( EngineElement *element )
+    {
+        // Mutex protection
+        au::TokenTaker tt(&engine_token);
+
+        if( !engine )
+        {
+            LM_W(("Not adding EngineElement since it is not activated" ));
+            delete element;
+            return;
+        }
+        
+        if( engine->flag_quit )
+        {
+            LM_W(("Not adding EngineElement since it is flagged as \"quit\"" ));
+            delete element;
+            return;
+        }
+        
+        engine->elements.insert( engine->_find_pos( element ) ,  element );
+
+        // Wake up all the process from lock
+        tt.wakeUp();
+        
+    }
+    
+    
+    
+    
 }

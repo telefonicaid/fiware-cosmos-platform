@@ -75,7 +75,6 @@ namespace au {
 		// We do not autoblock
 		if (locksVector->find( new_lock ) !=  locksVector->end() )
 		{
-            assert( false );
 			LM_X(1,("Autolock detected"));
             
 		}

@@ -10,7 +10,13 @@
 #include <set>                              // std::set
 #include "au/list.h"                        // au::list
 #include "au/Cronometer.h"                  // au::Cronometer
-#include "engine/EngineNotification.h"      // engine::EngineNotification
+
+#include "engine/Object.h"      // engine::EngineNotification
+#include "engine/ObjectsManager.h"          // engine::ObjectsManager
+
+namespace au {
+    class Error;
+}
 
 namespace engine
 {
@@ -32,28 +38,24 @@ namespace engine
 		
 		au::list<EngineElement> elements;               // Elements of the samson engine
 		EngineElement *running_element;                 // Element that is currently running
-		int _sleeping_seconds;                          // Time of sleep in the last call
+		int sleeping_time_seconds;                          // Time of sleep in the last call
 		
 		// Engine Status Flags 
 		// ---------------------------------------------------------------------------
 		bool flag_quit;									// Flag to indicate that a quit has been called, so no more tasks can be added
 		bool flag_running;								// Flag to indicate that the main-thread for the Engine is working
-		
-		// Thread stuff
-		// ---------------------------------------------------------------------------
-		pthread_mutex_t elements_mutex;                 // Mutex to protect elements
-		pthread_cond_t elements_cond;                   // Conditional to block the thread while waiting the next event
 
 		pthread_t t;                                    // Thread to run the engine in background ( if necessary )
         pthread_t t_check;                              // Secondary thread to check that an "element" in the Engine take execessive time
 		
-        size_t counter;                                 // Counter
+        size_t counter;                                 // Counter of EngineElement processed
 
         au::Cronometer cronometer;                      // Cronometer to count the time spend by the current element ( maximum 60 seconds )
         
         friend class NotificationElement;
                 
-        EngineNotificationSystem notificationSystem;    // Notification system
+        ObjectsManager objectsManager;                  // Management of objects ( notification )
+        
 		Engine();
         
 	public:
@@ -64,52 +66,30 @@ namespace engine
 		 Singleton management
 		 */
 		static void init();
-		static void quit();
 		static void destroy();
 
-		/*
-		 Main run methonds
-		 */
-		
-		static void run();
-		static void runInBackground();
-		
-        // Function to add a simple foreground tasks 
-		static void add( EngineElement *element );	
-
-        // Methods to add notifications
-        static void add( Notification*  notification );
-        static void add( Notification*  notification , int seconds ); // Repeated notification
-
-        // Add and remove listeners
     private:
         
         friend class NotificationListener;
-        static void add( NotificationListener*listener );     // Add a listener ( give unique id )
-        static void remove( NotificationListener*listener );    // Remove a listener
         
-        static void add( const char* name , NotificationListener*listener);
-        static void remove( const char* name , NotificationListener* listener );
     public:
+        
         // Debug string
         static std::string str();
+
+        
+		// Methods only executed from the thread-creation-functions ( never use directly )
+        void run();
+        bool check(  );
         
 	private:
 
 		// Find the position in the list to inser a new element
 		std::list<EngineElement*>::iterator _find_pos( EngineElement *e);
-
-		// Internal run function
-        void _run();
-      
-		// Function to add an element in the system ( inside or not )
-		
-        void _add( EngineElement *element );	// Function to add a simple foreground tasks 
         
-
-        // real call to the notification ( only from NotificationElement )
-        static void _notify( Notification *notification );
-                     
+        // Internal function to get the next element to be processed or the sleep time until the next one.
+        // Return NULL & 0 if no more element to process
+        void getNextElement( );
         
         /*
          Debug string
@@ -118,14 +98,29 @@ namespace engine
         
 
     public:
-        
-        // Only used internally
-        void _quit();
 
-        // Used internally for debugging
-        void _check();
+        // Functions to register objects ( general and for a particular notification )
+        static void register_object( Object* object );
+        static void register_object_for_channel( Object* object, const char* channel );
         
-	};
+        // Generic method to unregister an object
+        static void unregister_object( Object* object );
+        
+        // Add a notification
+        static void notify( Notification*  notification );
+        static void notify( Notification*  notification , int seconds ); // Repeated notification
+        
+        // Function to add a simple foreground tasks 
+		static void add( EngineElement *element );	
+
+    private:
+        
+        // Run a particular notification
+        static void send( Notification * notification );
+        
+    };
+    
+    
 	
 };
 

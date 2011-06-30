@@ -3,20 +3,30 @@
 #include "logMsg/logMsg.h"                 // lmInit, LM_*
 #include "logMsg/traceLevels.h"            // Trace Levels
 
-#include "samson/network/Message.h"                // Message::WorkerStatus, ...
+#include "au/CommandLine.h"            // CommandLine
+#include "au/ErrorManager.h"					// au::ErrorManager
+
+#include "engine/Notification.h"
+
 #include "samson/common/Macros.h"                 // EXIT, ...
+#include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
+
+
+#include "samson/network/Message.h"                // Message::WorkerStatus, ...
 #include "samson/network/Packet.h"                 // samson::Packet
 #include "samson/network/Network.h"                // NetworkInterface
 #include "samson/network/Endpoint.h"               // EndPoint
-#include "au/CommandLine.h"            // CommandLine
+
 #include "samson/module/ModulesManager.h"         // ss:ModulesManager
+
 #include "ControllerTaskManager.h"  // ss:ControllerTaskManager
 #include "ControllerTask.h"         // ss:ControllerTask
 #include "samson/controller/SamsonController.h"       // Own interface samson::SamsonController
-#include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
+
+
+
 #include "engine/Buffer.h"                 // samson::Buffer
 #include "engine/MemoryManager.h"          // samson::MemoryManager
-#include "au/Error.h"					// au::Error
 #include "engine/Engine.h"					// samson::Engine
 #include "engine/DiskStatistics.h"			// samson::DiskStatistics
 
@@ -66,11 +76,11 @@ namespace samson {
 		
         // Add as a listener to notifications    
         listen( notification_monitorization );
-        engine::Engine::add( new engine::Notification( notification_monitorization ) , 5  );
+        engine::Engine::notify( new engine::Notification( notification_monitorization ) , 5  );
         
         // receive notification to check the entire controller system
         listen( notification_check_controller );
-        engine::Engine::add( new engine::Notification( notification_check_controller ) , 5  );
+        engine::Engine::notify( new engine::Notification( notification_check_controller ) , 5  );
         
 	}	
 	
@@ -304,7 +314,7 @@ namespace samson {
 				
 			case Message::UploadDataFinish:
 			{
-				au::Error error;	// Error estructure for the entire process
+				au::ErrorManager error;	// Error estructure for the entire process
 				
 				// Final message of the upload proces
 				const network::UploadDataFinish& upload_data_finish = packet->message->upload_data_finish();

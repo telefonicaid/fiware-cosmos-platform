@@ -9,39 +9,46 @@ namespace au
 
 	class Token
 	{
-        const char * name;
-        
-		bool taken;						// Flag to indicate if the token is taken
+        const char * name;              // Name of the token
 
 		pthread_mutex_t _lock;			// Mutex to protect this tocken
-		pthread_cond_t _condition;		// Condition to block threads that did not get the tocken
-	  
+		pthread_cond_t _block;          // Condition to block threads that call stop
+        
 	 public:
 	  
 		Token( const char * name );
 		~Token();
 	  
+    private:
+
+        // It is only possible to retain teh token with the class TokenTaker
+        friend class TokenTaker;
+        
 		void retain();
 		void release();
 	  
 	};
 	
     // Class to hold the lock during the life-span
+    
     class TokenTaker
     {
+        const char* name;
         Token* token;
+        
     public:
         
-        TokenTaker( Token* _token )
-        {
-            token = _token;
-            token->retain();
-        }
+        TokenTaker( Token* _token );
+        TokenTaker( Token* _token, const char* name );
+        ~TokenTaker();
         
-        ~TokenTaker()
-        {
-            token->release();
-        }
+        void stop( int time_out );
+        
+        void wakeUp();
+        void wakeUpAll();
+
+        
+        
     };
     
     

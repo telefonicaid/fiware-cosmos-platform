@@ -6,17 +6,21 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include "au/CommandLine.h"                // CommandLine
+#include "au/Format.h"						// au::Format
+
+#include "engine/Notification.h"            // engine::Notification
+
+
 #include "samson/common/SamsonSetup.h"                  // samson::SamsonSetup
+#include "samson/common/Macros.h"                     // EXIT, ...
+#include "samson/common/SamsonSetup.h"				// samson::SamsonSetup
 
 #include "samson/network/Message.h"                    // Message
-#include "samson/common/Macros.h"                     // EXIT, ...
 #include "samson/network/Packet.h"                     // samson::Packet
 #include "samson/network/Network.h"                    // NetworkInterface
 #include "samson/network/Endpoint.h"                   // Endpoint
-#include "au/CommandLine.h"                // CommandLine
 #include "samson/worker/SamsonWorker.h"               // Own interfce
-#include "samson/common/SamsonSetup.h"				// samson::SamsonSetup
-#include "au/Format.h"						// au::Format
 
 #include "engine/MemoryManager.h"				// samson::SharedMemory
 
@@ -79,7 +83,7 @@ namespace samson {
             engine::Notification *notification = new engine::Notification(notification_worker_update_files);
             notification->environment.set("target", "SamsonWorker");
             notification->environment.setInt("worker", network->getWorkerId() );
-            engine::Engine::add( notification, worker_update_files_period );
+            engine::Engine::notify( notification, worker_update_files_period );
         }
         
         // Notification to update state
@@ -88,7 +92,7 @@ namespace samson {
             engine::Notification *notification = new engine::Notification(notification_samson_worker_send_status_update);
             notification->environment.set("target", "SamsonWorker");
             notification->environment.setInt("worker", network->getWorkerId() );
-            engine::Engine::add( notification, worker_update_files_period );
+            engine::Engine::notify( notification, worker_update_files_period );
         }
      
         
@@ -431,26 +435,7 @@ namespace samson {
             LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
     }
     
-    bool SamsonWorker::acceptNotification( engine::Notification* notification )
-    {
-        // Spetial case: Accept always
-        if( notification->isName(notification_samson_worker_send_trace) )
-            return true;
-        
-        if( notification->isName( notification_send_to_worker ) )
-            return true;
-        
-        // Only accept notifications for my worker. This is only necessary when testing samsonLocal with multiple workers
-        
-        if( notification->environment.get("target","") != "SamsonWorker" )
-            return  false;
-        
-        if( notification->environment.getInt("worker", -1) != network->getWorkerId() )
-            return false;
-        
-        return true;
-        
-    }    
+ 
 	
 	/**
 	 Process the list of files removing unnecessary files

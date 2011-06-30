@@ -917,7 +917,7 @@ namespace samson {
     
     // Take a select stament and complete with -key_format XXX -value_format XXX acording to the input queue 
     
-    void ControllerDataManager::completeSelect( std::string& command , au::Error& error )
+    void ControllerDataManager::completeSelect( std::string& command , au::ErrorManager& error )
     {
         // this retains the locker
         au::Locker locker( &lock );

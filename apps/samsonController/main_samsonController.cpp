@@ -122,5 +122,6 @@ int main(int argC, const char* argV[])
    	samson::SamsonController controller(networkP);
 
 	// Run the engine function
-	engine::Engine::run();
+    while( true )
+        sleep(10);
 }

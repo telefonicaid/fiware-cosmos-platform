@@ -38,10 +38,12 @@
 #include "au/Lock.h"			// au::Lock
 #include "au/StopLock.h"		// au::StopLock
 #include "au/Format.h"			// au::Format
-#include "au/Error.h"			// samson::Error
+#include "au/ErrorManager.h"			// samson::Error
+#include "au/Environment.h"     // au::Environment
 
 #include "engine/Buffer.h"              // engine::Buffer
-#include "engine/EngineNotification.h"  // engine::EngineNotification
+#include "engine/Object.h"  // engine::EngineNotification
+#include "engine/Object.h"              // engine::Object
 
 #define destroy_buffer_after_write    "destroy_buffer_after_write"
 
@@ -91,7 +93,7 @@ namespace engine {
         
         //int tag;                          // General tag to identify the operation
         
-		au::Error error;					// Management of the error during this operation
+		au::ErrorManager error;					// Management of the error during this operation
 		size_t operation_time;				// Time spend in this operation for performance estimation
 		
 		// Constructors used to create Disk Operations ( to be submitted to Engine )

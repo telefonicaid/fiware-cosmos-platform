@@ -8,7 +8,7 @@
 #include "samson/delilah/Delilah.h"					// samson::Delilah
 #include "DelilahClient.h"				// samson::DelilahClient
 #include <list>							// std::list
-#include "au/Error.h"						// au::Error
+#include "au/ErrorManager.h"						// au::ErrorManager
 
 namespace samson {
 
@@ -60,7 +60,7 @@ namespace samson {
 		
 	public:
 		
-		au::Error error;	// Error management
+		au::ErrorManager error;	// Error management
 		
 		DelilahDownloadDataProcess( std::string _queue , std::string _fileName , bool show_on_screen );
 

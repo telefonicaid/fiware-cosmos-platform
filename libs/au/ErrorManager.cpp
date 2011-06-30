@@ -1,37 +1,37 @@
 
-#include "Error.h"      // Own interface
+#include "au/ErrorManager.h"      // Own interface
 
 
 namespace au {
 
-    Error::Error()
+    ErrorManager::ErrorManager()
     {
         error = false;
     }
     
-    void Error::set( std::string _message )
+    void ErrorManager::set( std::string _message )
     {
         error = true;
         message = _message;
     }
     
-    bool Error::isActivated()
+    bool ErrorManager::isActivated()
     {
         return error;
     }
     
-    std::string Error::getMessage()
+    std::string ErrorManager::getMessage()
     {
         return message;
     }
     
-    void Error::set( Error *otherError )
+    void ErrorManager::set( ErrorManager *otherError )
     {
         if( otherError->isActivated() )
             set( otherError->getMessage() );
     }
     
-    std::string Error::str()
+    std::string ErrorManager::str()
     {
         if( !error )
             return "No error";

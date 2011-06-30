@@ -13,7 +13,7 @@
 #include "au/list.h"                 // au::list
 #include "au/ListMap.h"              // au::ListMap
 
-#include "engine/EngineNotification.h"     // engine::EngineNotification
+#include "engine/Object.h"     // engine::EngineNotification
 #include "engine/MemoryManager.h"          // engine::MemoryManager
 #include "engine/DiskStatistics.h"         // engine::DiskStatistics
 

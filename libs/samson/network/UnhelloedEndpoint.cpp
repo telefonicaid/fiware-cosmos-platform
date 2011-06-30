@@ -149,7 +149,6 @@ Status UnhelloedEndpoint::msgTreat2(Packet* packetP)
 
 				snprintf(semName, sizeof(semName), "jobQueue-%s", ep->name());
 				ep->jobQueueSem      = new au::Token(semName);
-				ep->jobQueueStopper  = new au::Stopper();
 				ep->threaded         = true;
 
 				LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s (plus jobQueueSem and jobQueueStopper)", name()));

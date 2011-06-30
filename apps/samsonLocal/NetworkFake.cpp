@@ -9,6 +9,7 @@ namespace samson {
 	{
 		worker_id = _worker_id;
 		center = _center;
+        receiver = NULL;
 	}
 	
 	void NetworkFake::initAsSamsonController(void)

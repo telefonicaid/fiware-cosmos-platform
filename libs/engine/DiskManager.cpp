@@ -4,13 +4,15 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include "engine/DiskManager.h"                    // Own interface
 #include "engine/Engine.h"							// engine::Engine
 #include "engine/EngineElement.h"					// engine::EngineElement
+#include "engine/Notification.h"                    // engine::Notification
 #include "engine/ProcessItem.h"                     // engine::ProcessItem
 #include "engine/DiskOperation.h"					// engine::DiskOperation
 #include "engine/EngineNotificationElement.h"      // engine::EngineNotificationElement
 #include "au/Descriptors.h"                         // au::Descriptors
+
+#include "engine/DiskManager.h"                    // Own interface
 
 
 namespace engine
@@ -94,7 +96,7 @@ namespace engine
             // Add a notification for this operation ( removed when delegate is notified )
             Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listenerId );
             notification->environment.copyFrom( &operation->environment );        // Recover the environment variables to identify this request
-            Engine::add(notification);            
+            Engine::notify(notification);            
         }
         
 		pthread_mutex_unlock(&mutex);
@@ -117,7 +119,7 @@ namespace engine
 		
 		// Add a notification for this operation to the required target listener
         Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listenerId );
-        Engine::add(notification);    
+        Engine::notify(notification);    
 		
 		// Check if there are more operation to be executed
 		checkDiskOperations();

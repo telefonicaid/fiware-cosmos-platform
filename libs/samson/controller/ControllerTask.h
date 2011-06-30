@@ -15,7 +15,7 @@
 #include "Job.h"							// samson::Job
 #include "samson/common/coding.h"                         // KVInfo
 #include "samson/common/samson.pb.h"                      // network::
-#include "au/Error.h"                       // au::Error
+#include "au/ErrorManager.h"                       // au::ErrorManager
 
 namespace samson {
 	
@@ -52,7 +52,7 @@ namespace samson {
 		int generator;                          // Spetial flag to be removed from here ;)
 		
 		// Error management
-        au::Error error;
+        au::ErrorManager error;
 
         
         // Information about progress

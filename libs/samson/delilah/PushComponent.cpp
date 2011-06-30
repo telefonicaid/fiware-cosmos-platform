@@ -1,9 +1,9 @@
 
 
-#include "PushComponent.h"                      // Own interface
 
 #include "engine/MemoryManager.h"					// samson::MemoryManager
 #include "engine/MemoryRequest.h"
+#include "engine/Notification.h"                // engine::Notification
 
 #include "engine/Buffer.h"							// samson::Buffer
 #include "samson/network/Packet.h"							// samson::Packet
@@ -13,6 +13,9 @@
 #include "DelilahClient.h"					// samson::DelilahClient
 #include "samson/common/SamsonSetup.h"					// samson::SamsonSetup
 #include "samson/common/MemoryTags.h"                     // samson::MemoryInput , samson::MemoryOutput...
+
+#include "PushComponent.h"                      // Own interface
+
 
 namespace samson
 {
@@ -72,7 +75,7 @@ namespace samson
     void PushComponent::requestMemoryBuffer()
     {
         // Add a memory request to be responded to me
-        engine::MemoryManager::shared()->add( new engine::MemoryRequest( 64*1024*1024 , getListenerId() ) );
+        engine::MemoryManager::shared()->add( new engine::MemoryRequest( 64*1024*1024 , getEngineId() ) );
     }
 
     // Receive packets
@@ -150,13 +153,6 @@ namespace samson
         
     }
     
-    bool PushComponent::acceptNotification( engine::Notification* notification )
-    {
-        if( notification->environment.get("target", "") == "PushComponent" )
-            if( notification->environment.getSizeT("id", 0) == id )
-                return true;
-        return false;
-    }
 
     
     std::string PushComponent::getStatus()

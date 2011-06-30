@@ -5,7 +5,7 @@
 #include "au/list.h"        // au::list
 #include "au/map.h"         // au::map
 
-#include "engine/EngineNotification.h"  // engine::NotificationListener
+#include "engine/Object.h"  // engine::Object
 
 #include <string>           // std::string
 
@@ -15,7 +15,7 @@ namespace samson {
         class QueueTask;
         class QueuesManager;
         
-        class QueueTaskManager : public ::engine::NotificationListener
+        class QueueTaskManager : public ::engine::Object
         {
             size_t id;                              // Id of the current task
 
@@ -38,7 +38,6 @@ namespace samson {
             
             // Notifications
             void notify( engine::Notification* notification );
-            bool acceptNotification( engine::Notification* notification );
             
             
         };

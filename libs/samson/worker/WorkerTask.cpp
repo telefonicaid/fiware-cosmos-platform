@@ -1,4 +1,15 @@
 
+#include "au/Descriptors.h"         // au::Descriptors
+
+
+#include "engine/MemoryManager.h"				// samson::MemoryRequest
+#include "engine/Engine.h"						// samson::Engine
+#include "engine/DiskOperation.h"				// samson::DiskOperation
+#include "engine/Buffer.h"                     // engine::Buffer
+#include "engine/ProcessManager.h"             // Notifications
+#include "engine/DiskManager.h"                // Notifications
+#include "engine/Notification.h"                // engine::Notification
+
 
 #include "WorkerTask.h"			// OwnInterface
 #include "WorkerTaskManager.h"			// samson::WorkerTaskManager
@@ -7,13 +18,6 @@
 #include "BufferVector.h"
 #include "samson/worker/SamsonWorker.h"				// samson::SamsonWorker
 #include "DataBufferProcessItem.h"		// samson::DataBufferProcessItem
-#include "engine/MemoryManager.h"				// samson::MemoryRequest
-#include "engine/Engine.h"						// samson::Engine
-#include "engine/DiskOperation.h"				// samson::DiskOperation
-#include "engine/Buffer.h"                     // engine::Buffer
-#include "engine/ProcessManager.h"             // Notifications
-#include "engine/DiskManager.h"                // Notifications
-#include "au/Descriptors.h"         // au::Descriptors
 
 namespace samson
 {
@@ -42,9 +46,8 @@ namespace samson
         
 		complete_message = NULL;
         
-        
         // Add as a listener for notification_sub_task_finished
-        listen( notification_sub_task_finished );
+        // listen( notification_sub_task_finished );
 	}
 	
 	WorkerTask::~WorkerTask()
@@ -202,9 +205,11 @@ namespace samson
         }
         else if( notification->isName(notification_sub_task_finished) )
         {
+            
             size_t sub_task_id = notification->environment.getSizeT("sub_task_id", 0);
             WorkerSubTask *subTask = subTasks.findInMap( sub_task_id );
 
+            //LM_M(("Subtask finished notification %lu %lu. Pending subtasks %d", task_id , sub_task_id , num_subtasks));
             
             if( subTask )
             {
@@ -466,7 +471,7 @@ namespace samson
         addFile( fileName , queue , info );
 
 		// Submit the operation
-        engine::DiskOperation *operation = engine::DiskOperation::newAppendOperation(  buffer ,  SamsonSetup::dataFile( fileName ) , getListenerId() );
+        engine::DiskOperation *operation = engine::DiskOperation::newAppendOperation(  buffer ,  SamsonSetup::dataFile( fileName ) , getEngineId() );
         addDiskOperation(operation);
 	}
 	
@@ -696,7 +701,7 @@ namespace samson
     void WorkerTask::addProcessItem( engine::ProcessItem *item )
     {
         num_process_items++;
-        engine::ProcessManager::shared()->add( item , getListenerId() );
+        engine::ProcessManager::shared()->add( item , getEngineId() );
     }
     
     
@@ -709,20 +714,6 @@ namespace samson
         notification->environment.setInt("worker",  taskManager->worker->network->getWorkerId() );
         
     }    
-        
-    bool WorkerTask::acceptNotification( engine::Notification* notification )
-    {
-        //LM_M(("WorkerTask accept? %s", notification->getDescription().c_str() ));
-        
-        if( notification->environment.get("target","") != "WorkerTask" )
-            return false;
-        if( notification->environment.getSizeT("task_id", 0) != task_id )
-            return false;
-        if( notification->environment.getInt("worker", -1) != taskManager->worker->network->getWorkerId() )
-            return false;
-        
-        return  true;
-    }
 
     
 

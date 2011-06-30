@@ -184,17 +184,15 @@ namespace engine
 	
 	int SharedMemoryManager::retainSharedMemoryArea()
 	{
-		token.retain();
+        au::TokenTaker tk( &token );
 		
 		for (int i = 0  ; i < shared_memory_num_buffers ; i++)
 			if ( !shared_memory_used_buffers[i] )
 			{
 				shared_memory_used_buffers[i] = true;
-				token.release();
 				return i;
 			}
 		
-		token.release();
 		
 		return -1;	// There are no available memory buffers, so we will never get this point
 	}
@@ -203,15 +201,13 @@ namespace engine
 	
 	void SharedMemoryManager::releaseSharedMemoryArea( int id )
 	{
+        au::TokenTaker tk( &token );
+        
+        
 		if( (id < 0) || ( id > shared_memory_num_buffers) )
 			LM_X(1, ("Releaseing a wrong Shared Memory Id %d",id));
 		
-		token.retain();
-		
 		shared_memory_used_buffers[id] = false;
-		
-		token.release();
-		
 	}	
 	
 

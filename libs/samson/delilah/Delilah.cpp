@@ -6,7 +6,7 @@
 #include "au/Cronometer.h"      // au::Cronometer
 
 #include "engine/Buffer.h"      // engine::Buffer
-
+#include "engine/Notification.h"    // engine::Notificaiton
 
 #include "samson/common/Macros.h"             // EXIT, ...
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
@@ -63,7 +63,7 @@ namespace samson {
         
         // Emit a periodic notification
         int delilah_automatic_update_period = samson::SamsonSetup::shared()->getInt( "delilah.automatic_update_period" , 2 );
-        engine::Engine::add( new engine::Notification( notification_delilah_automatic_update ) , delilah_automatic_update_period );
+        engine::Engine::notify( new engine::Notification( notification_delilah_automatic_update ) , delilah_automatic_update_period );
 
     }
     
@@ -86,7 +86,7 @@ namespace samson {
             
             {
 				// Message to update the local list of queues
-				Packet*           p = new Packet(Message::Command);
+				Packet*           p = new Packet( Message::Command );
 				network::Command* c = p->message->mutable_command();
 				c->set_command( "ls -global_update" );
 				p->message->set_delilah_id( 1 );    // Spetial id for global update
@@ -143,18 +143,21 @@ namespace samson {
         int fromId = packet->fromId;
         Message::MessageCode msgCode = packet->msgCode;
         
-        token.retain();
+        DelilahComponent *component = NULL;
         
-        size_t sender_id = packet->message->delilah_id();
-        DelilahComponent *component = components.findInMap( sender_id );
+        {
+            au::TokenTaker tk( &token );
+            
+            size_t sender_id = packet->message->delilah_id();
+            component = components.findInMap( sender_id );
+            
+            //LM_M(("Received with sender_id %lu (component %p)", sender_id , component));
+            
+            if ( component )
+                component->receive( fromId, msgCode, packet );
+            
+        }
         
-		//LM_M(("Received with sender_id %lu (component %p)", sender_id , component));
-        
-        if ( component )
-            component->receive( fromId, msgCode, packet );
-        
-        token.release();
-
         // spetial case for global_update messages
         
         if( (msgCode == Message::CommandResponse) && (packet->message->delilah_id() == 1 ))
@@ -283,23 +286,22 @@ namespace samson {
 	
 	size_t Delilah::addComponent( DelilahComponent* component )
 	{
-		token.retain();
+        au::TokenTaker tk( &token );
+        
         
 		size_t tmp_id = id++;
 		component->setId(this, tmp_id);
 		components.insertInMap( tmp_id , component );
-        
-		token.release();
 		
 		return tmp_id;
 	}
 	
 	void Delilah::clearComponents()
 	{
+        au::TokenTaker tk( &token );
         
 		std::vector<size_t> components_to_remove;
 		
-		token.retain();
 		
 		for ( au::map<size_t , DelilahComponent>::iterator c =  components.begin() ;  c != components.end() ; c++)
 			if ( c->second->component_finished )
@@ -312,15 +314,14 @@ namespace samson {
 				delete component;
 		}
         
-		token.release();
 	}
     
 	void Delilah::clearAllComponents()
 	{
+        au::TokenTaker tk( &token );
         
 		std::vector<size_t> components_to_remove;
 		
-		token.retain();
 		
 		for ( au::map<size_t , DelilahComponent>::iterator c =  components.begin() ;  c != components.end() ; c++)
             components_to_remove.push_back( c->first );
@@ -332,7 +333,6 @@ namespace samson {
 				delete component;
 		}
         
-		token.release();
 	}
 	
     
@@ -404,15 +404,14 @@ namespace samson {
 	
 	bool Delilah::isActive( size_t id )
 	{
+        au::TokenTaker tk( &token );
+        
 		bool ans = false;
 		
-		token.retain();
 		
 		DelilahComponent *c = components.findInMap( id );
 		if( c && !c->component_finished )
 			ans = true;
-		
-		token.release();
 		
 		return ans;
 	}

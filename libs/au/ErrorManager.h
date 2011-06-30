@@ -7,14 +7,14 @@
 namespace au 
 {
 
-	class Error
+	class ErrorManager
 	{
 		bool error;
 		std::string message;
 		
 	public:
 		
-		Error();
+		ErrorManager();
 		
 		void set( std::string _message );
 		
@@ -22,7 +22,7 @@ namespace au
 		
 		std::string getMessage(); 
 		
-        void set( Error *otherError );
+        void set( ErrorManager *otherError );
         
         std::string str(); 
         

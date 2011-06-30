@@ -6,7 +6,7 @@
 
 
 #include "au/Lock.h"                /* Lock                            */
-#include "au/Error.h"                /* Lock                            */
+#include "au/ErrorManager.h"                /* Lock                            */
 #include "au/CommandLine.h"			/* AUCommandLine                            */
 #include "au/map.h"                 // au::map
 

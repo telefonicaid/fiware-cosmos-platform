@@ -14,7 +14,7 @@
 #include "au/Format.h"			// au::Format
 #include <list>				// std::list
 #include "TXTFileSet.h"		// samson::TXTFileSet
-#include "au/Error.h"			// au::Error
+#include "au/ErrorManager.h"			// au::ErrorManager
 
 namespace samson {
 
@@ -85,7 +85,7 @@ namespace samson {
 	public:
 
 		// Error log ( public since it is access from delilah )
-		au::Error error;
+		au::ErrorManager error;
 		
         // Public since it has to be accessible from the thread
 		bool compression;	

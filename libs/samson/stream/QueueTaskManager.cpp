@@ -4,7 +4,12 @@
 #include "QueueTask.h"          // samson::stream::QueueTask
 #include <sstream>              // std::ostringstream
 
-#include "engine/ProcessManager.h"  // notification_process_request
+
+#include "engine/Notification.h"        // engine::Notification
+#include "engine/ProcessManager.h"      // engine::ProcessManager
+
+#include "samson/common/NotificationMessages.h"         // notification_process_request
+
 
 #include "QueuesManager.h"   // QueueManager
 
@@ -76,7 +81,7 @@ namespace samson {
                     runningTasks.insertInMap( _task->id , _task ); 
 
                     // Add this process item ( note that a notification will be used to notify when finished )
-                    engine::ProcessManager::shared()->add( _task->getStreamProcess() , getListenerId() );
+                    engine::ProcessManager::shared()->add( _task->getStreamProcess() , getEngineId() );
                 }
                 
             }
@@ -115,14 +120,6 @@ namespace samson {
             }
         }
         
-        bool QueueTaskManager::acceptNotification( engine::Notification* notification )
-        {
-            if ( notification->environment.get("target", "") != "QueueTaskManager" )
-                return false;
-            
-            return true;
-            
-        }
 
         
         

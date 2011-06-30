@@ -1,8 +1,9 @@
 
+#include "au/ErrorManager.h"                  // au::ErrorManager
 
-#include "engine/ProcessItem.h"				// engine::ProcessItem
 #include "engine/Engine.h"					// engine::Engine
 #include "engine/ProcessManager.h"          // engine::ProcessManager
+#include "engine/ProcessItem.h"				// Own interface
 
 namespace engine
 {
@@ -26,7 +27,7 @@ namespace engine
 	
 #pragma mark ----
 
-	ProcessItem::ProcessItem(  int _priority )
+	ProcessItem::ProcessItem(  int _priority ) :token( "ProcessItem" )
 	{
 
 		priority = _priority;
@@ -37,7 +38,13 @@ namespace engine
         canceled = false;   // By default it is not canceled
         
         listenerId = 0; // By default, nobody is notified when finished
+        
+        
 	}
+    
+    ProcessItem::~ProcessItem()
+    {
+    }
 	
 	
 	std::string ProcessItem::getStatus()
@@ -86,7 +93,7 @@ namespace engine
 	
 	void ProcessItem::halt()
 	{
-		stopper.stop_begin();
+        au::TokenTaker tt( &token );
         
 		state = halted;
         
@@ -94,22 +101,18 @@ namespace engine
 		processManager->haltProcessItem(this);
 		
 		// Stop this thread in the stopper loop
-		stopper.stop_finish( 0 );
-
-		// Change the state variable to running
-        stopper.lock();
-
+        tt.stop(0);
+        
         // come back to the running state
         state = running;
-        
-        stopper.unlock();
-        
 	}
 	
 	void ProcessItem::unHalt()
 	{
+        au::TokenTaker tt( &token );
+        
 		// Wake up this process
-		stopper.wakeUp();
+        tt.wakeUp();
 	}
     
     void ProcessItem::setCanceled()

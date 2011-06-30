@@ -5,7 +5,7 @@
 
 #include "au/Token.h"           // au::Token
 
-#include "EngineNotification.h" // engine::NotificationListener
+#include "EngineNotification.h" // engine::Object
 
 namespace engine{
 

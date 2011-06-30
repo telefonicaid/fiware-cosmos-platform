@@ -1,8 +1,11 @@
 SET (HEADERS
 Object.h
+ObjectsManager.h
 Buffer.h
 SimpleBuffer.h
 Engine.h
+Notification.h
+NotificationSystem.h
 EngineNotification.h
 EngineNotificationElement.h
 EngineElement.h
@@ -19,8 +22,12 @@ EngineOperationsContainer.h
 )
 
 SET (SOURCES
+Object.cpp
+ObjectsManager.cpp
 Buffer.cpp
 Engine.cpp
+Notification.cpp
+NotificationSystem.cpp
 EngineNotification.cpp
 EngineNotificationElement.cpp
 EngineElement.cpp
@@ -40,7 +47,6 @@ EngineOperationsContainer.cpp
 # -----------------------------------------------------------------
 
 include_directories("${PROJECT_SOURCE_DIR}/libs")
-include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
 
 
 # Library declaration

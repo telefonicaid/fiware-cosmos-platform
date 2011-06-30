@@ -13,9 +13,10 @@
 #include "au/set.h"                 // au::set
 #include "au/Token.h"               // au::Token
 
-#include "engine/EngineNotification.h"     // engine::EngineNotification
+#include "engine/Object.h"     // engine::EngineNotification
 #include "engine/MemoryManager.h"          // engine::MemoryManager
 #include "engine/DiskStatistics.h"         // engine::DiskStatistics
+#include "engine/Object.h"                  // engine::Object
 
 #define notification_process_request_response                   "notification_process_request_response"
 #define notification_process_manager_check_background_process   "notification_process_manager_check_background_process"
@@ -32,7 +33,7 @@ namespace engine
      Class to manage background jobs
      */
     
-    class ProcessManager  : public engine::NotificationListener
+    class ProcessManager  : public engine::Object
     {
 
         // Mutex to protect differnt queues

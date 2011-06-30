@@ -9,7 +9,7 @@
 #include "engine/ProcessItem.h"				// samson::ProcessManagerDelegate
 #include "engine/Buffer.h"						// samson::Buffer
 #include "engine/MemoryRequest.h"				// samson::MemoryRequest & MemoryRequestDelegate
-#include "engine/EngineNotification.h"         // samson::EngineNotification
+#include "engine/Object.h"         // samson::EngineNotification
 
 namespace samson {
 
@@ -19,7 +19,7 @@ namespace samson {
 	class WorkerTask;
 	class NetworkInterface;
 	    
-	class WorkerTaskManager : public engine::NotificationListener 		// Receive notifications from the process manager
+	class WorkerTaskManager : public engine::Object 		// Receive notifications from the process manager
 	{
 		
 	public:

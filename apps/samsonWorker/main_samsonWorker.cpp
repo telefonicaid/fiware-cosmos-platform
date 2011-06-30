@@ -134,6 +134,9 @@ int main(int argC, const char *argV[])
 	
 	worker = new samson::SamsonWorker(networkP);
 
-	// Run the main engine
-	engine::Engine::run();
+	// Not necessary anymore. Engine automatically starts with "init" call
+	// engine::Engine::run();
+    
+    while( true )
+        sleep(10);
 }

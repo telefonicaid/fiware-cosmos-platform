@@ -112,10 +112,10 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 			//LINE   --> "33F43052167D16|2221435146|33F43052167D16|0442221472843|2|04/01/2010|17:21:07|22"
 			//Note: multithread save implementation
 
-			  uint _pos=0;
-			  uint _pos_field=0;
-			  uint _cellId = 0;
-			  uint _mobScope;
+			  unsigned int _pos=0;
+			  unsigned int _pos_field=0;
+			  unsigned int _cellId = 0;
+			  unsigned int _mobScope;
 
 			  struct tm timeExpanded;
 
@@ -163,7 +163,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 				    cdrStrScopeToInt_MX( line+_pos_field, &(cdr->mobScope.value) );
 
 				    //Global Checking...
-				    uint min_digit_count_mask = GST_calculate_mask(min_digit);
+				    unsigned int min_digit_count_mask = GST_calculate_mask(min_digit);
 				    if(cdr->phone.value <= min_digit_count_mask)    throw false;
 				    if(node->value <= min_digit_count_mask)  throw false;
 				    if(node->value == cdr->phone.value)             throw false;
@@ -291,8 +291,8 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 			//Note: multithread save implementation
 			struct tm timeExpanded;
 
-			  uint _pos=0;
-			  uint _pos_field=0;
+			  unsigned int _pos=0;
+			  unsigned int _pos_field=0;
 
 			  try {
 
@@ -326,7 +326,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 			    cdr->mobScope.value = 0;
 
 			    //Global Checking...(10 digits)
-			    uint min_digit_count_mask = GST_calculate_mask(min_digit);
+			    unsigned int min_digit_count_mask = GST_calculate_mask(min_digit);
 			    if(cdr->phone.value   <= min_digit_count_mask ) throw false;
 			    if(node->value <= min_digit_count_mask ) throw false;
 			    if(node->value == cdr->phone.value)      throw false;
@@ -350,8 +350,8 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 			  //Note: multithread save implementation
 			struct tm timeExpanded;
 
-			  uint _pos=0;
-			  uint _pos_field=0;
+			  unsigned int _pos=0;
+			  unsigned int _pos_field=0;
 
 			  try{
 
@@ -384,7 +384,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 			    cdr->mobScope.value = 0;
 
 			    //Global Checking...
-			    uint min_digit_count_mask = GST_calculate_mask(min_digit);
+			    unsigned int min_digit_count_mask = GST_calculate_mask(min_digit);
 			    if(cdr->phone.value <= min_digit_count_mask)   throw false;
 			    if(node->value <= min_digit_count_mask) throw false;
 			    if(node->value == cdr->phone.value)            throw false;

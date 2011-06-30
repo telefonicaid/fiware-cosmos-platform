@@ -71,9 +71,9 @@
 		///@param old Flag to decide the date format
 		void cdrStrDateTimeToStructure( char *strTime, struct tm *time , bool old);
 
-		inline uint GST_calculate_mask(int digit)
+		inline unsigned int GST_calculate_mask(int digit)
 		{
-			return (uint(pow(10,(digit -1))) - 1);
+			return (int(pow(10,(digit -1))) - 1);
 		}
 
 

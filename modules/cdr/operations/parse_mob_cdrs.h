@@ -36,10 +36,10 @@ extendedHelp: 		Parse CDR files to obtain the mobility imformation associated to
 bool mobGetCdrInfo_MX( char *line, mobCdr *cdr )
 {
    unsigned long _phone = 0L;
-   uint _cellId = 0;
+   unsigned int _cellId = 0;
    size_t _mobScope;
-   uint _pos = 0;
-   uint _pos_field = 0;
+   unsigned int _pos = 0;
+   unsigned int _pos_field = 0;
 
    struct tm timeExpanded;
 

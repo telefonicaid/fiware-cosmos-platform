@@ -51,7 +51,7 @@ const char *cdrScopes_MX [] =
 ///@param pos Pointer to the las position of the former field.
 ///@param pos_field Pointer to the first position of the next field.
 ///
-void cdrGetNextField(char *line, uint *pos, uint *pos_field){
+void cdrGetNextField(char *line, unsigned int *pos, unsigned int *pos_field){
 	*pos_field = *pos;
 	while( line[*pos] != CONF_SEP && line[*pos] != '\0' ){
 		(*pos)++;
@@ -69,7 +69,7 @@ void cdrGetNextField(char *line, uint *pos, uint *pos_field){
 ///
 ///@param strCellId Pointer to the string cell id.
 ///@param cellId Pointer to the integer cell id.
-void cdrStrCellToInt( char *strCellId, uint *cellId ){
+void cdrStrCellToInt( char *strCellId, unsigned int *cellId ){
 	int _cellLength = 0;
 	char *_endptr;
 
@@ -186,7 +186,7 @@ void cdrPhoneToNumber (char *line, size_t *phone, int max_client ){
 ///@param strMobScope Pointer to the string mobility scope.
 ///@param mobScope Pointer to the integer mobility scope.
 void cdrStrScopeToInt_MX( char *strMobScope, size_t *mobScope ){
-	uint _scope;
+	unsigned int _scope;
 
 	for( _scope=0; _scope<LOC_MOB_SCOPES_NUMBER; _scope++ ){
 		if( strcmp( strMobScope, cdrScopes_MX[_scope] ) == 0 ){

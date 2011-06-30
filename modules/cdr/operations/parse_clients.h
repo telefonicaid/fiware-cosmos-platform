@@ -43,8 +43,8 @@ public:
 	///@return TRUE if successful parsing, FALSE in case
 	///   of error.
 	bool gstGetClientPhone( char *line, samson::system::UInt *phone, User *user ){
-		uint _pos = 0;
-		uint _pos_field = 0;
+		unsigned int _pos = 0;
+		unsigned int _pos_field = 0;
 
 		try{
 			// Client phone number

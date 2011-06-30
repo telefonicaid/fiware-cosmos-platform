@@ -47,13 +47,13 @@ extendedHelp: 		Parse the cell catalogue.
 ///@return TRUE if successful parsing, FALSE in case
 ///   of error.
 bool gstGetCellInfo_MX( char *line, Cell *cell ){
-  uint _cellId;
-  uint _btsId;
-  uint _lacId;
-  uint _stateId;
+  unsigned int _cellId;
+  unsigned int _btsId;
+  unsigned int _lacId;
+  unsigned int _stateId;
   char *_endptr;
-  uint _pos = 0;
-  uint _pos_field = 0;
+  unsigned int _pos = 0;
+  unsigned int _pos_field = 0;
 
   try{
     // cell id
@@ -67,7 +67,7 @@ bool gstGetCellInfo_MX( char *line, Cell *cell ){
 
     // BTS id
     cdrGetNextField( line, &_pos, &_pos_field );
-    _btsId = (uint)strtoul( line+_pos_field, &_endptr, 10 );
+    _btsId = (unsigned int)strtoul( line+_pos_field, &_endptr, 10 );
     if( strcmp( "", _endptr ) == 0 ){
       cell->btsId.value = _btsId;
     }else{
@@ -76,7 +76,7 @@ bool gstGetCellInfo_MX( char *line, Cell *cell ){
 
     // council id
     cdrGetNextField( line, &_pos, &_pos_field );
-    _lacId = (uint)strtoul( line+_pos_field, &_endptr, 10 );
+    _lacId = (unsigned int)strtoul( line+_pos_field, &_endptr, 10 );
     if( strcmp( "", _endptr ) == 0 ){
       cell->lacId.value = _lacId;
     }else{
@@ -85,7 +85,7 @@ bool gstGetCellInfo_MX( char *line, Cell *cell ){
 
     // state id
     cdrGetNextField( line, &_pos, &_pos_field );
-    _stateId = (uint)strtoul( line+_pos_field, &_endptr, 10 );
+    _stateId = (unsigned int)strtoul( line+_pos_field, &_endptr, 10 );
     if( strcmp( "", _endptr ) == 0 ){
       cell->stateId.value = _stateId;
     }else{

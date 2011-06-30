@@ -21,101 +21,9 @@ namespace samson{
 namespace osn{
 
 
-int daysFrom2000_01_01(Date date)
-{
-	/* As a side effect, computes and stores the days_2000 and week_day fields */
-
-        int duration_days = int(date.day.value);
-        int offsetBisiesto = 0;
-
-#ifdef CALCULO_EXACTO
-        if ((date.year.toInt()%4 == 0) && ((date.year.toInt()%100 != 0) || (date.year.toInt()%400 == 0)))
-#else
-                // OK if we start from 2000 year, and expect to last no more than one 99 years
-                if (date.year.toInt()%4 == 0)
-#endif // de CALCULO_EXACTO
-                {
-                        offsetBisiesto = 1;
-                }
-
-        switch (date.month.toInt())
-        {
-        case 1:
-                break;
-        case 2:
-                duration_days += 31;
-                break;
-        case 3:
-                duration_days += 59 + offsetBisiesto;
-                break;
-        case 4:
-                duration_days += 90 + offsetBisiesto;
-                break;
-        case 5:
-                duration_days += 120 + offsetBisiesto;
-                break;
-        case 6:
-                duration_days += 151 + offsetBisiesto;
-                break;
-        case 7:
-                duration_days += 181 + offsetBisiesto;
-                break;
-        case 8:
-                duration_days += 212 + offsetBisiesto;
-                break;
-        case 9:
-                duration_days += 243 + offsetBisiesto;
-                break;
-        case 10:
-                duration_days += 273 + offsetBisiesto;
-                break;
-        case 11:
-                duration_days += 304 + offsetBisiesto;
-                break;
-        case 12:
-                duration_days += 334 + offsetBisiesto;
-                break;
-        }
-        const int YEAR_2000 = 2000;
-        const int DAYS_PER_YEAR = 365;
-        const int SECS_PER_DAY = 86400;
-
-        duration_days += DAYS_PER_YEAR * (date.year.toInt()) + ((date.year.toInt() - 1) / 4) + 1;
-        duration_days--; // In order to not include the present day
-
-        date.days_2000 = duration_days;
-
-        const int DAYS_PER_WEEK = 7;
-        const int DAYWEEK_20000101 = 6; // The 01-01-2000 was Saturday; we take Sunday as 0
-
-        date.week_day = (duration_days + DAYWEEK_20000101)%DAYS_PER_WEEK;
-
-#ifdef DEBUG_FILES
-                        {
-                        std::string filename = "/tmp/parser_urls.log";
-                        std::ofstream fs(filename.c_str(), std::ios::app);
-                        fs << "WeekDay: " << int(date.week_day.value) << ", for year: " << int(date.year.value) << ", month: " << int(date.month.value) << ", day: " << int(date.day.value) << ", Total: " << int(date.days_2000.value) << std::endl;
-                        fs.close();
-                        }
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
-}
-
-int secsFrom2000_01_01(Date date, Time time)
-{
-        int duration_secs = time.seconds.toInt()+ 60 * time.minute.toInt() + 3600 * time.hour.toInt();
-        int duration_days = daysFrom2000_01_01(date);
-
-        const int SECS_PER_DAY = 86400;
-
-        duration_secs += SECS_PER_DAY * duration_days;
-}
-
-
-
 #define CHAR_TO_INT(v) (v-48)
 
-	bool parseDate_O2UK_osn (char *dateTxt, Date *date, Time *time)
+	bool parseDate_O2UK_osn (char *dateTxt, samson::system::Date *date, samson::system::Time *time)
 	{
 		if ((strlen(dateTxt) != 14) && (strlen(dateTxt) != 15))
 		{
@@ -133,64 +41,66 @@ int secsFrom2000_01_01(Date date, Time time)
 			return false;
 		}
 
+		date->unassignAllOptionals();
+
 		if (isdigit(dateTxt[1]))
 		{
-			date->day = CHAR_TO_INT( dateTxt[0] ) *10 + CHAR_TO_INT( dateTxt[1] );
+			date->day.value = CHAR_TO_INT( dateTxt[0] ) *10 + CHAR_TO_INT( dateTxt[1] );
 			dateTxt += 2;
 		}
 		else
 		{
-			date->day = CHAR_TO_INT( dateTxt[0] );
+			date->day.value = CHAR_TO_INT( dateTxt[0] );
 			dateTxt++;
 		}
 
 		if (!strncmp(dateTxt, "Jan", 3))
 		{
-			date->month = 1;
+			date->month.value = 1;
 		}
 		else if (!strncmp(dateTxt, "Feb", 3))
 		{
-			date->month = 2;
+			date->month.value = 2;
 		}
 		else if (!strncmp(dateTxt, "Mar", 3))
 		{
-			date->month = 3;
+			date->month.value = 3;
 		}
 		else if (!strncmp(dateTxt, "Apr", 3))
 		{
-			date->month = 4;
+			date->month.value = 4;
 		}
 		else if (!strncmp(dateTxt, "May", 3))
 		{
-			date->month = 5;
+			date->month.value = 5;
 		}
 		else if (!strncmp(dateTxt, "Jun", 3))
 		{
-			date->month = 6;
+			date->month.value = 6;
 		}
 		else if (!strncmp(dateTxt, "Jul", 3))
 		{
-			date->month = 7;
+			date->month.value = 7;
 		}
 		else if (!strncmp(dateTxt, "Aug", 3))
 		{
-			date->month = 8;
+			date->month.value = 8;
 		}
 		else if (!strncmp(dateTxt, "Sep", 3))
 		{
-			date->month = 9;
+			date->month.value = 9;
 		}
 		else if (!strncmp(dateTxt, "Oct", 3))
 		{
-			date->month = 10;
+			date->month.value = 10;
 		}
 		else if (!strncmp(dateTxt, "Nov", 3))
 		{
-			date->month = 11;
+			date->month.value = 11;
 		}
 		else if (!strncmp(dateTxt, "Dec", 3))
 		{
-			date->month = 12;
+			date->month.value = 12;
 		}
 		else
 		{
@@ -208,10 +118,10 @@ int secsFrom2000_01_01(Date date, Time time)
 		dateTxt += 3;
 
 		const int YEAR_2000 = 2000;
-		date->year          = (CHAR_TO_INT( dateTxt[0] ) *1000 + CHAR_TO_INT( dateTxt[1] ) *100 + CHAR_TO_INT( dateTxt[2] ) *10 + CHAR_TO_INT( dateTxt[3] )) - YEAR_2000;
+		date->year.value          = (CHAR_TO_INT( dateTxt[0] ) *1000 + CHAR_TO_INT( dateTxt[1] ) *100 + CHAR_TO_INT( dateTxt[2] ) *10 + CHAR_TO_INT( dateTxt[3] )) - YEAR_2000;
 		dateTxt += 4;
 
-		time->hour          = CHAR_TO_INT( dateTxt[0] ) *10 + CHAR_TO_INT( dateTxt[1] );
+		time->hour.value          = CHAR_TO_INT( dateTxt[0] ) *10 + CHAR_TO_INT( dateTxt[1] );
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_urls.log";
@@ -221,10 +131,10 @@ int secsFrom2000_01_01(Date date, Time time)
 		}
 #endif /* de DEBUG_FILES */
 #undef DEBUG_FILES
-		time->minute        = CHAR_TO_INT( dateTxt[2] ) *10 + CHAR_TO_INT( dateTxt[3] );
-		time->seconds       = CHAR_TO_INT( dateTxt[4] ) *10 + CHAR_TO_INT( dateTxt[5] );
+		time->minute.value        = CHAR_TO_INT( dateTxt[2] ) *10 + CHAR_TO_INT( dateTxt[3] );
+		time->seconds.value       = CHAR_TO_INT( dateTxt[4] ) *10 + CHAR_TO_INT( dateTxt[5] );
 
-		daysFrom2000_01_01(*date); //As a side effect, computes and stores the days_2000 and week_day fields
+		date->daysFrom2000_01_01(); //As a side effect, computes and stores the days_2000 and week_day fields
 		return true;
 	}
 

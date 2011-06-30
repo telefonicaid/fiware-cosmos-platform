@@ -8,7 +8,7 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/system/Time.h>
+#include <samson/modules/system/TimeUnix.h>
 #include <samson/modules/system/UInt.h>
 
 
@@ -26,7 +26,7 @@ namespace time_test{
 
 		void run( samson::KVWriter *writer )
 		{
-			samson::system::Time tm;
+			samson::system::TimeUnix tm;
 			struct tm timep;
 			samson::system::UInt amount;
 

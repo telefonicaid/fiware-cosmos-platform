@@ -703,8 +703,8 @@ public:
 	void run( char *data , size_t length , samson::KVWriter *writer )
 	{
 		//Datas to emit
-		samson::system::UInt number;
-		CDR cdr;
+		//samson::system::UInt number;
+		//CDR cdr;
 
 		//ss:cdr::Date previous_date;    //Date of the last CDR
 		//previous_date.day = 0;      //Make sure it is not the same as anything
@@ -735,8 +735,6 @@ public:
 			exit(1);
 		}
 		********************************************/
-
-		bool first = true;
 
 		while( offset < length )
 		{

@@ -11,22 +11,6 @@ Module osn
 # datas
 # ---------------------------------------------------------------------------
 
-data Date
-{
-     system.UInt8 year;
-     system.UInt8 month;
-     system.UInt8 day;
-     system.UInt days_2000;
-     system.UInt8 week_day;
-}
-
-data Time
-{
-     system.UInt8 hour;
-     system.UInt8 minute;
-     system.UInt8 seconds;
-}
-
 data URL
 {
      system.String completeURL;
@@ -41,8 +25,8 @@ data URLConnection
 {
 	system.UInt64 msisdn;
 	osn.URL url;
-	osn.Date date;
-	osn.Time time;
+	system.Date date;
+	system.Time time;
 	system.UInt16 status;
 	system.String MIMEcontent;
 	system.String userAgent;

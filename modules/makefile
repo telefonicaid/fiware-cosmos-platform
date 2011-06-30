@@ -3,7 +3,7 @@ all:
 	make -C txt
 	make -C example
 	make -C tienda
-#	make -C cdr
+	make -C cdr
 	make -C graph
 	make -C sna
 #	make -C sna_light

@@ -18,7 +18,7 @@ Module time_test
 
 generator fake_purchases
 {
-	out	system.Time system.UInt
+	out	system.TimeUnix system.UInt
 
 	helpLine "Generate a random set of timestamps where random purchases have been made"
 
@@ -30,7 +30,7 @@ generator fake_purchases
 
 map map_by_day
 {
-	in	system.Time system.UInt
+	in	system.TimeUnix system.UInt
 	out 	system.UInt8 system.UInt
 
 	helpLine "Converts from timestamp to day of the weeek, and emits purchases"

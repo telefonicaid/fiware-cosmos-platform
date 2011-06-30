@@ -34,7 +34,7 @@
 // Global periodic notification to check for the entire system ( disconected workers )
 #define notification_check_controller  "notification_check_controller"      
 
-#define MAX_NON_RESPONDING_TIME_FOR_WORKER 10
+#define MAX_NON_RESPONDING_TIME_FOR_WORKER 60
 
 namespace samson {
 

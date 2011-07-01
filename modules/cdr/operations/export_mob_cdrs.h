@@ -44,7 +44,7 @@ helpLine: Export mobility cdrs in txt format
 
 				  if (i%1000 == 0)
 				  {
-					  OLM_T(LMT_User06, ("ParsingOut cdr:%lu, key:%lu, value:'%s'\n", i, key.value, value.str().c_str()));
+					  OLM_T(LMT_User06, ("ParsingOut cdr:%lu, key:%lu, value:'%s' with timeUnix:%lu\n", i, key.value, value.str().c_str(), value.timeUnix.value));
 				  }
 
 				  snprintf(output, MAX_STR_LEN, "%lu %s\n", key.value, value.str().c_str());

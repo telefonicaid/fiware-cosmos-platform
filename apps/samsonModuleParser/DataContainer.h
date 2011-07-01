@@ -41,12 +41,15 @@ namespace samson
         bool verbose;
         
 		std::set<std::string> includes;		// List of includes necessary for the system
+
+		size_t hashTypeItems;
 			
 		DataContainer( std::string _module, std::string _name , bool  _verbose)
 		{
 			module = _module;
 			name = _name; 
 			any_optional = false;
+			hashTypeItems = 0;
             
             verbose = _verbose;    // No verbose by default
 		}
@@ -98,6 +101,23 @@ namespace samson
 
 			std::ofstream file( fileName.str().c_str() );
 			
+			// Computing hashTypeItems
+			std::string acumItems = "";
+			for (vector <DataType>::iterator field =items.begin() ; field != items.end() ; field++)
+			{
+				if ((*field).optional)
+				{
+					acumItems += "opt";
+				}
+				if ((*field).vector)
+				{
+					acumItems += "vect";
+				}
+				acumItems += (*field).fullType;
+			}
+			hashTypeItems = functHashTypeItems(acumItems);
+
+
 			//Fields to control optional serializing
 			if (any_optional)
 			{
@@ -368,6 +388,8 @@ namespace samson
 			file << "\tstatic std::string getTypeFromPathStatic(const char * dataPathCharP){\n";
 			file << "\t\tif (*dataPathCharP == 0)\n\t\t{\n";
 			file << "\t\t\treturn (\"" << module << "." << name << "\");\n\t\t}\n\n";
+			file << "\t\tif (strcmp(dataPathCharP, \".\") == 0)\n\t\t{\n";
+			file << "\t\t\treturn (\"" << module << "." << name << "\");\n\t\t}\n\n";
 			file << "\t\tif (strcmp(dataPathCharP, \"" << name << "\") == 0)\n\t\t{\n";
 			file << "\t\t\treturn (\"" << module << "." << name << "\");\n\t\t}\n\n";
 			file << "\t\tif (strncmp(dataPathCharP, \"" << name << ".\", strlen(\"" << name << ".\")) == 0)\n\t\t{\n";
@@ -410,6 +432,55 @@ namespace samson
 			file << "\t\t\t\tbreak;\n";
 			file << "\t\t};\n";
 			file << "\t}\n\n";
+
+			// API to get the Type from static
+			file << "\tstatic const char *getTypeStatic(){\n";
+			file << "\t\treturn(\"" << module << "." << name << "\");\n";
+			file << "\t}\n\n";
+
+			// API to get the Type from instance
+			file << "\tconst char *getType(){\n";
+			file << "\t\treturn(\"" << module << "." << name << "\");\n";
+			file << "\t}\n\n";
+
+			// API to check the Type from static
+			file << "\tstatic bool checkTypeStatic(const char *type){\n";
+			file << "\t\tif (strcmp(type, \"" << module << "." << name << "\") == 0)\n\t\t{\n";
+			file << "\t\t\treturn true;\n\t\t}";
+			file << "\t\treturn false;\n";
+			file << "\t}\n\n";
+
+			// API to check the Type from instance
+			file << "\tbool checkType(const char *type){\n";
+			file << "\t\tif (strcmp(type, \"" << module << "." << name << "\") == 0)\n\t\t{\n";
+			file << "\t\t\treturn true;\n\t\t}";
+			file << "\t\treturn false;\n";
+			file << "\t}\n\n";
+
+			// API to get the hashType from static
+			file << "\tstatic size_t getHashTypeStatic(){\n";
+			file << "\t\treturn(" << hashTypeItems << "ULL);\n";
+			file << "\t}\n\n";
+
+			// API to get the hashType from instance
+			file << "\tsize_t getHashType(){\n";
+			file << "\t\treturn(" << hashTypeItems << "ULL);\n";
+			file << "\t}\n\n";
+
+			// API to check the hashType from static
+			file << "\tstatic bool checkHashTypeStatic(size_t valType){\n";
+			file << "\t\tif (valType == " << hashTypeItems << "ULL)\n\t\t{\n";
+			file << "\t\t\treturn true;\n\t\t}";
+			file << "\t\treturn false;\n";
+			file << "\t}\n\n";
+
+			// API to check the hashType from instance
+			file << "\t bool checkHashType(size_t valType){\n";
+			file << "\t\tif (valType == " << hashTypeItems << "ULL)\n\t\t{\n";
+			file << "\t\t\treturn true;\n\t\t}";
+			file << "\t\treturn false;\n";
+			file << "\t}\n\n";
+
 
 			// API to get an instance from the int* path
 			file << "\tDataInstance * getDataInstanceFromPath(const int *dataPathIntP){\n";
@@ -567,6 +638,20 @@ namespace samson
 
 		}
 		
+		size_t functHashTypeItems(std::string acumItems)
+		{
+			static const size_t InitialFNV = 2166136261U;
+			static const size_t FNVMultiple = 16777619;
+
+			size_t hash = InitialFNV;
+			for(size_t i = 0; i < acumItems.length(); i++)
+			{
+				hash = hash ^ (acumItems[i]);       /* xor  the low 8 bits */
+				hash = hash * FNVMultiple;      /* multiply by the magic number */
+			}
+			return hash;
+		}
+
 	};
 
 }

@@ -13,6 +13,14 @@
 #include <samson/modules/system/Date.h>
 #include <samson/modules/system/Time.h>
 
+#undef DEBUG_FILES
+#ifdef DEBUG_FILES
+#include <iostream>
+#include <fstream>
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
+
 namespace samson{
 namespace system{
 
@@ -39,59 +47,11 @@ class TimeUnix : public FixedLengthDataInstance<time_t>{
 
 public:
 
-	time_t value;
-
-#ifdef VAR_SIZE
-	TimeUnix() : samson::DataInstance(){
-	}
-
-	~TimeUnix() {
-	}
-
-	int parse(char *data){
-		return samson::staticVarIntParse( data , (size_t *)&value);
-	}
-
-	int serialize(char *data){
-		return samson::staticVarIntSerialize( data , value);
-	}
-#endif // de VAR_SIZE
 
 	int hash(int max_num_partitions){
 		return value%max_num_partitions;
 	}
 
-#ifdef VAR_SIZE
-	static int size(char *data){
-		time_t _value;
-		return samson::staticVarIntParse( data , (size_t *)&_value);
-	}
-
-	int toInt()
-	{
-		return (value);
-	}
-
-	inline static int compare(char * data1 , char *data2 , size_t *offset1 , size_t *offset2 ){
-		{ // comparing b
-			size_t _value1;
-		size_t _value2;
-		*offset1 += samson::staticVarIntParse(data1 + (*offset1), &_value1);
-		*offset2 += samson::staticVarIntParse(data2 + (*offset2), &_value2);
-		if( _value1 < _value2 ) return -1;
-		if( _value1 > _value2 ) return  1;
-		return 0;
-		}
-		return 0; //If everything is equal
-	}
-
-	inline static int compare( char* data1 , char* data2 )
-	{
-		size_t offset_1=0;
-		size_t offset_2=0;
-		return compare( data1 , data2 , &offset_1 , &offset_2 );
-	}
-#endif // de VAR_SIZE
 
 	int *getDataPath(const std::string &dataPathString){
 		return(getDataPathStatic(dataPathString));
@@ -152,6 +112,11 @@ public:
 			return ("system.TimeUnix");
 		}
 
+		if (strcmp(dataPathCharP, ".") == 0)
+		{
+			return ("system.TimeUnix");
+		}
+
 		if (strcmp(dataPathCharP, "TimeUnix") == 0)
 		{
 			return ("system.TimeUnix");
@@ -175,6 +140,57 @@ public:
 		};
 	}
 
+	static const char *getTypeStatic()
+	{
+		return ("system.TimeUnix");
+	}
+
+	const char *getType()
+	{
+		return ("system.TimeUnix");
+	}
+
+	static bool checkTypeStatic(const char *type)
+	{
+		if (strcmp(type, "system.TimeUnix") == 0)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	bool checkType(const char *type)
+	{
+		if (strcmp(type, "system.TimeUnix") == 0)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	static size_t getHashTypeStatic(){
+		return(7071866688332326601ULL);
+	}
+
+	size_t getHashType(){
+		return(7071866688332326601ULL);
+	}
+
+	static bool checkHashTypeStatic(size_t valType){
+		if (valType == 7071866688332326601ULL)
+		{
+			return true;
+		}		return false;
+	}
+
+	 bool checkHashType(size_t valType){
+		if (valType == 7071866688332326601ULL)
+		{
+			return true;
+		}		return false;
+	}
+
+
 	DataInstance * getDataInstanceFromPath(const int *dataPathIntP){
 		switch(*dataPathIntP)
 		{
@@ -187,99 +203,14 @@ public:
 		};
 	}
 
-#ifdef VAR_SIZE
-	void copyFrom( TimeUnix *other ){
-		value = other->value;
-	};
-
-	std::string str(){
+	std::string str()
+	{
 		std::ostringstream o;
-		o << value;
+		std::string _str = ctime(&value);
+		_str.erase(_str.end()-1);
+		o << _str << " ";
 		return o.str();
 	}
-	/*
-			void operator= (int _value) {
-				value = _value;
-			}			
-	 */
-
-	// Comparation with size_t
-
-	void operator= (time_t _value) {
-		value = _value;
-	}
-
-	bool operator< (time_t _value) {
-		return ( value < _value);
-	}
-
-	bool operator> (time_t _value) {
-		return ( value > _value);
-	}
-
-	bool operator<= (time_t _value) {
-		return ( value <= _value);
-	}
-
-	bool operator>= (time_t _value) {
-		return ( value >= _value);
-	}
-
-	bool operator== (time_t _value) {
-		return ( value == _value);
-	}
-
-	bool operator!= (time_t _value) {
-		return ( value != _value);
-	}
-
-	TimeUnix& operator+=(time_t _value) {
-		value+=_value;
-		return *this;
-	}
-
-	TimeUnix& operator-=(time_t _value) {
-		value-=_value;
-		return *this;
-	}
-
-
-	// Self comparison
-
-	TimeUnix& operator+=(const TimeUnix &o) {
-		value+=o.value;
-		return *this;
-	}
-
-	TimeUnix& operator=(const TimeUnix &o) {
-		value=o.value;
-		return *this;
-	}
-
-	bool operator== (TimeUnix& o) {
-		return ( value == o.value);
-	}
-
-	bool operator!= (TimeUnix& o) {
-		return ( value != o.value);
-	}
-
-	bool operator< (TimeUnix& o) {
-		return ( value < o.value);
-	}
-
-	bool operator> (TimeUnix& o) {
-		return ( value > o.value);
-	}
-
-	bool operator<= (TimeUnix& o) {
-		return ( value <= o.value);
-	}
-
-	bool operator>= (TimeUnix& o) {
-		return ( value >= o.value);
-	}
-#endif // de VAR_SIZE
 
 	void getTimeFromCalendar (struct tm *tm)
 	{
@@ -431,7 +362,7 @@ public:
 
 		yday += (tm->tm_mday - 1);
 		//				if (day + yday < 0)
-			//					overflow++;
+		//					overflow++;
 		day += yday;
 
 		tm->tm_yday = yday;

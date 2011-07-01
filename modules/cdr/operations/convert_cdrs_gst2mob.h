@@ -8,6 +8,7 @@
 
 
 #include <samson/module/samson.h>
+#include <samson/modules/system/UInt64.h>
 
 
 namespace samson{

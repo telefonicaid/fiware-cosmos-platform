@@ -127,7 +127,7 @@ namespace samson
 		
 		// Make sure the parsing is OK!
 		if( offset != info.size )
-			LM_X(1,("Error adding key-values to a KVInputVector"));
+			LM_X(1,("Error adding key-values to a KVInputVector, with file.hg:%d, info.kvs:%lu, offset(%lu) != info.size(%lu)\n", file.hg, info.kvs, offset, info.size));
 		
 		// update the  file for the next round
 		file.hg++;

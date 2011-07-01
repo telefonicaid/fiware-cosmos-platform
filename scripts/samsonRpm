@@ -1,22 +1,30 @@
 #
-# Command line options
+# Checking command line options
 #
-version=$1
-release=$2
-vr=$version.$release
-
-tarfile=samson-$version.tar.gz
-specfile=samson-$vr.spec
-rdir=samson-$version
-
-
-
 if [ "$#" != 2 ]
 then
 	echo 'samsonRpm: Bad parameters'
 	echo 'Usage: samsonRpm <Version (e.g. 0.5)> <Release (e.g. 3)>'
 	exit 1
 fi
+
+
+
+#
+# Using command line options
+#
+version=$1
+release=$2
+
+
+
+#
+# Help variables
+#
+vr=$version.$release
+tarfile=samson-$version.tar.gz
+specfile=samson-$vr.spec
+rdir=samson-$version
 
 
 
@@ -33,10 +41,13 @@ mkdir SOURCES SPECS BUILD SRPMS BUILDROOT
 cd -
 
 
+
 #
 # Creating link for 'compiled stuff' ...
 #
-ln -s ${HOME}rpm/BUILD/samson-$version ${HOME}rpm/BUILDROOT/samson-$version-$release.i386
+arch=$(uname -p)
+ln -s $HOME/rpm/BUILD/samson-$version $HOME/rpm/BUILDROOT/samson-$version-$release.$arch
+
 
 
 #
@@ -70,7 +81,6 @@ echo '/usr/local/man/man3/*'                                 >> $HOME/rpm/SPECS/
 echo '/opt/samson/etc/setup.txt'                             >> $HOME/rpm/SPECS/$specfile
 echo "%changelog"                                            >> $HOME/rpm/SPECS/$specfile
 echo                                                         >> $HOME/rpm/SPECS/$specfile
-
 
 
 

@@ -70,6 +70,14 @@ data UInt2
 	system.UInt value_2;
 }
 
+
+data HitCount
+{
+	system.UInt   current_time;	# TimeStamp
+	system.UInt   current_hits;	# Hits during current slot
+	system.UInt   hits;		# Hits during previous slot ( really used to detect maximums )   	
+}
+
 parser parse_id_id
 {
 	out system.UInt2 system.Void

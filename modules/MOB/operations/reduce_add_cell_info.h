@@ -60,6 +60,8 @@ public:
 		// Mon-Fri from 09:00:00 to 14:59:59
 		std::string conf_timeslot_work = environment->get(MOB_PARAMETER_CONF_TIMESLOT_WORK, MOB_PARAMETER_CONF_TIMESLOT_WORK_DEFAULT);
 		ctsW.set( conf_timeslot_work );
+
+		OLM_T(LMT_User06, ("init with '%s' and '%s'\n", conf_timeslot_home.c_str(), conf_timeslot_work.c_str()));
 	}
 
 	/**
@@ -154,25 +156,28 @@ public:
 
 				writer->emit(1, &phone, &cell);
 
-
 				// for place of home and work, we can do nothing if
 				// we do not have cell information
 				if( cdr.cellId > 0 )
 				{
-					samson::system::Date date;
-					samson::system::Time time;
-
-					cdr.timeUnix.getDateTimeFromTimeUTC(&date, &time);
+					samson::system::Date lDate;
+					samson::system::Time lTime;
 
 					cellCounter.cell = cell;
-					if (date.days_2000_GetAssigned() == false)
+
+					OLM_T(LMT_User06, ("timeUnix :%s", cdr.timeUnix.str().c_str()));
+
+					cdr.timeUnix.getDateTimeFromTimeUTC(&lDate, &lTime);
+
+					if (lDate.days_2000_GetAssigned() == false)
 					{
-						date.daysFrom2000_01_01();
+						lDate.daysFrom2000_01_01();
 					}
-					cellCounter.count = date.days_2000;
+					cellCounter.count = lDate.days_2000;
+
 
 					// emit CDR's for the place of home
-					if( ctsH.includes( &date, &time ) == true )
+					if( ctsH.includes( &lDate, &lTime ) == true )
 					{
 
 #ifdef PARA_LUEGO
@@ -196,7 +201,7 @@ public:
 					}
 
 					// emit CDR's for the place of work
-					if( ctsW.includes( &date, &time ) == true )
+					if( ctsW.includes( &lDate, &lTime ) == true )
 					{
 #ifdef PARA_LUEGO
 						phoneLocCounter.phone.value = phone.value;
@@ -218,6 +223,10 @@ public:
 
 						writer->emit(3, &phone, &cellCounter);
 					}
+				}
+				else
+				{
+					OLM_T(LMT_User06, ("No cell info for key:%lu", phone.value));
 				}
 			}
 		}

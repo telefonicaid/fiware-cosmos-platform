@@ -429,8 +429,8 @@ public:
 
 		gmtime_r(&value,&timeCalendar);
 
-		date->year.value = timeCalendar.tm_year;
-		date->month.value = timeCalendar.tm_mon;
+		date->year.value = timeCalendar.tm_year - 100;
+		date->month.value = timeCalendar.tm_mon + 1;
 		date->day.value = timeCalendar.tm_mday;
 		date->week_day.value = timeCalendar.tm_wday;
 		date->week_day_SetAssigned(true);

@@ -7,10 +7,19 @@
 #define _H_SAMSON_system_TimeSlot
 
 
+
+
 #include <samson/modules/system/TimeSlot_base.h>
 #include <samson/modules/system/Date.h>
 #include <samson/modules/system/Time.h>
 #include <samson/modules/system/TimeUnix.h>
+
+#undef DEBUG_FILES
+#ifdef DEBUG_FILES
+#include <iostream>
+#include <fstream>
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
 
 
 namespace samson{
@@ -37,13 +46,13 @@ namespace system{
  */
 char weekDayMask [] = {
 		WDAY_NONE,
+		WDAY_SUN,
 		WDAY_MON,
 		WDAY_TUE,
 		WDAY_WED,
 		WDAY_THU,
 		WDAY_FRI,
 		WDAY_SAT,
-		WDAY_SUN,
 		WDAY_ALL
 };
 
@@ -65,10 +74,33 @@ public:
 		// check lenght of the remaining substring
 		// before inserting timeslot strings
 		// into the array
-		if (strlen(str) != 26)
+		if (strlen(str) != 25)
 		{
+
+#undef DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                        std::string filename = "/tmp/debug_TimeSlot.log";
+                        std::ofstream fs(filename.c_str(), std::ios::app);
+                        fs << "Error with timespec: '" << str << "'" << std::endl;
+                        fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
 			return;
 		}
+
+#undef DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                        std::string filename = "/tmp/debug_TimeSlot.log";
+                        std::ofstream fs(filename.c_str(), std::ios::app);
+                        fs << "ok timespec: '" << str << "'" << std::endl;
+                        fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
 
 		// Example of TimeSlot string format for working time: "0011111 09:00:00 14:59:59"
 
@@ -83,9 +115,32 @@ public:
 		if( str[5] == '1' ) wdaysMask.value |= WDAY_TUE;
 		if( str[6] == '1' ) wdaysMask.value |= WDAY_MON;
 
+#undef DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                        std::string filename = "/tmp/debug_TimeSlot.log";
+                        std::ofstream fs(filename.c_str(), std::ios::app);
+                        fs << "dayMask: '" << wdaysMask.value << "'" << std::endl;
+                        fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
+
 #define CHAR_TO_INT(v) (v-48)
 		initSec.value = 36000*CHAR_TO_INT(str[8]) + 3600*CHAR_TO_INT(str[9]) + 600*CHAR_TO_INT(str[11]) + 60*CHAR_TO_INT(str[12]) + 10*CHAR_TO_INT(str[14]) + CHAR_TO_INT(str[15]);
 		finalSec.value = 36000*CHAR_TO_INT(str[17]) + 3600*CHAR_TO_INT(str[18]) + 600*CHAR_TO_INT(str[20]) + 60*CHAR_TO_INT(str[21]) + 10*CHAR_TO_INT(str[23]) + CHAR_TO_INT(str[24]);
+
+#undef DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                        std::string filename = "/tmp/debug_TimeSlot.log";
+                        std::ofstream fs(filename.c_str(), std::ios::app);
+                        fs << "ok initSec: '" << initSec.value << "' finalsec:" <<  finalSec.value << std::endl;
+                        fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
 
 
 	}
@@ -108,14 +163,57 @@ public:
 		_sec = 3600*(int)(time->hour.value) + 60*(int)(time->minute.value) + (int)time->seconds.value;
 		if( (_sec < initSec.value) || (_sec > finalSec.value) )
 		{
+#undef DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                        std::string filename = "/tmp/debug_TimeSlot.log";
+                        std::ofstream fs(filename.c_str(), std::ios::app);
+                        fs << "check returns false: _sec:" << _sec << " initSec: "<< initSec.value << "' finalsec:" <<  finalSec.value << std::endl;
+                        fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
 			return false;
 		}
+
+#undef DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                        std::string filename = "/tmp/debug_TimeSlot.log";
+                        std::ofstream fs(filename.c_str(), std::ios::app);
+                        fs << "check returns true: _sec:" << _sec << " initSec: "<< initSec.value << "' finalsec:" <<  finalSec.value << std::endl;
+                        fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
 
 		// check weekday
 		if( (weekDayMask[date->week_day.value+1] & wdaysMask.value) == 0 )
 		{
+#undef DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                        std::string filename = "/tmp/debug_TimeSlot.log";
+                        std::ofstream fs(filename.c_str(), std::ios::app);
+                        fs << "check (weekDayMask[date->week_day.value(%d)+1] & wdaysMask.value) == 0 ) returns false: date->week_day:" << int(date->week_day.value) << " weekDayMask[date->week_day.value(%d)+1]:" << std::hex << int(weekDayMask[date->week_day.value+1]) << " en wdaysMask:" << std::hex << int(wdaysMask.value) << std::endl;
+                        fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
 			return false;
 		}
+#undef DEBUG_FILES
+#ifdef DEBUG_FILES
+                {
+                        std::string filename = "/tmp/debug_TimeSlot.log";
+                        std::ofstream fs(filename.c_str(), std::ios::app);
+                        fs << "check (weekDayMask[date->week_day.value(%d)+1] & wdaysMask.value) == 0 ) returns true: date->week_day:" << int(date->week_day.value) << " weekDayMask[date->week_day.value(%d)+1]:" << std::hex << int(weekDayMask[date->week_day.value+1]) << " en wdaysMask:" << std::hex << int(wdaysMask.value) << std::endl;
+                        fs.close();
+                }
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
 
 		return true;
 	}

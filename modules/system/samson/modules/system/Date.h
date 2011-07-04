@@ -42,7 +42,11 @@ public:
 		o << "/";
 		o << std::setw(2) << std::setfill('0') << (int) month.value;
 		o << "/";
-		o << std::setw(2) << std::setfill('0') << (int) year.value;
+		o << std::setw(2) << std::setfill('0') << (int) (2000 + year.value);
+		if (week_day_GetAssigned())
+		{
+			o << "(" << (int)week_day.value << ")";
+		}
 		return o.str();
 	}
 
@@ -155,12 +159,16 @@ public:
 
 		days_2000_SetAssigned(true);
 
-		const int DAYS_PER_WEEK = 7;
-		const int DAYWEEK_20000101 = 6; // The 01-01-2000 was Saturday; we take Sunday as 0
+		if (week_day_GetAssigned() == false)
+		{
 
-		week_day.value = (duration_days + DAYWEEK_20000101)%DAYS_PER_WEEK;
+			const int DAYS_PER_WEEK = 7;
+			const int DAYWEEK_20000101 = 6; // The 01-01-2000 was Saturday; we take Sunday as 0
 
-		week_day_SetAssigned(true);
+			week_day.value = (duration_days + DAYWEEK_20000101)%DAYS_PER_WEEK;
+
+			week_day_SetAssigned(true);
+		}
 
 		return duration_days;
 	}

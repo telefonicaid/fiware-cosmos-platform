@@ -84,7 +84,7 @@ public:
 
 			// Date
 			cdrGetNextField( line, &_pos, &_pos_field );
-			int old_date = 0;
+			bool old_date = true;
 			cdrStrDateToStructure( line+_pos_field, &timeExpanded, old_date );
 
 
@@ -92,6 +92,8 @@ public:
 			// Time
 			cdrGetNextField( line, &_pos, &_pos_field );
 			cdrStrTimeToStructure( line+_pos_field, &timeExpanded );
+
+			//OLM_T(LMT_User06, ("timeExpanded->tm_year:%d timeExpanded->tm_mon:%d timeExpanded->tm_mday:%d\n", timeExpanded.tm_year, timeExpanded.tm_mon, timeExpanded.tm_mday));
 
 			cdr->timeUnix.getTimeUTCFromCalendar(&timeExpanded);
 

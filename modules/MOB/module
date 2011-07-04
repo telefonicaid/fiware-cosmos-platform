@@ -297,8 +297,8 @@ reduce reduce_add_cell_info
    in system.UInt cdr.Cell
    out system.UInt64 cdr.mobCdr # CDR's
    out system.UInt64 cdr.Cell # Mobility degree cell info
-   out system.UInt64 CellCounter # Home cell info
-   out system.UInt64 CellCounter # Work cell info
+   out system.UInt64 MOB.CellCounter # Home cell info
+   out system.UInt64 MOB.CellCounter # Work cell info
    
    #out MOB.PhoneLoc system.Void # Mobility degree - cell level
    #out MOB.PhoneLoc system.Void # Mobility degree - bts level

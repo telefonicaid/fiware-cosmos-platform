@@ -133,3 +133,18 @@ clear_ipcs:
 
 rpm:	 install
 		 scripts/samsonRpm 0.6 1
+		 cd modules/cdr;                   ../../scripts/samsonModuleRpm cdr 0.6 1
+		 cd modules/example;               ../../scripts/samsonModuleRpm example 0.6 1
+		 cd modules/graph;                 ../../scripts/samsonModuleRpm graph 0.6 1
+		 cd modules/osn;                   ../../scripts/samsonModuleRpm osn 0.6 1
+		 cd modules/sna;                   ../../scripts/samsonModuleRpm sna 0.6 1
+		 cd modules/sort;                  ../../scripts/samsonModuleRpm sort 0.6 1
+		 cd modules/system;                ../../scripts/samsonModuleRpm system 0.6 1
+		 cd modules/terasort;              ../../scripts/samsonModuleRpm terasort 0.6 1
+		 cd modules/test_compareFunctions; ../../scripts/samsonModuleRpm test_compareFunctions 0.6 1
+		 cd modules/tienda;                ../../scripts/samsonModuleRpm tienda 0.6 1
+		 cd modules/txt;                   ../../scripts/samsonModuleRpm txt 0.6 1
+		 cd modules/url;                   ../../scripts/samsonModuleRpm url 0.6 1
+		 cd modules/url_benchmark;         ../../scripts/samsonModuleRpm url_benchmark 0.6 1
+		 # cd modules/sna_light;             ../../scripts/samsonModuleRpm sna_light 0.6 1
+		 

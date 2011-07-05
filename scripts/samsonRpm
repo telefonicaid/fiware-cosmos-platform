@@ -75,7 +75,6 @@ echo                                                         >> $HOME/rpm/SPECS/
 echo "%files"                                                >> $HOME/rpm/SPECS/$specfile
 echo '/usr/local/bin/samson*'                                >> $HOME/rpm/SPECS/$specfile
 echo '/usr/local/bin/delilah'                                >> $HOME/rpm/SPECS/$specfile
-echo '/usr/local/include/samson/module/*.h'                  >> $HOME/rpm/SPECS/$specfile
 echo '/usr/local/man/man1/*'                                 >> $HOME/rpm/SPECS/$specfile
 echo '/usr/local/man/man3/*'                                 >> $HOME/rpm/SPECS/$specfile
 echo '/opt/samson/etc/setup.txt'                             >> $HOME/rpm/SPECS/$specfile
@@ -89,7 +88,6 @@ echo                                                         >> $HOME/rpm/SPECS/
 #
 rm -rf ~/$rdir
 mkdir -p ~/$rdir/usr/local
-mkdir -p ~/$rdir/usr/local/include/samson
 mkdir ~/$rdir/usr/local/bin
 mkdir -p ~/$rdir/opt/samson/etc
 mkdir ~/$rdir/usr/local/man
@@ -106,7 +104,6 @@ cp /usr/local/bin/samsonSetup            ~/$rdir/usr/local/bin
 cp /usr/local/bin/samsonSpawner          ~/$rdir/usr/local/bin
 cp /usr/local/bin/samsonWorker           ~/$rdir/usr/local/bin
 cp /usr/local/bin/delilah                ~/$rdir/usr/local/bin
-cp -R /usr/local/include/samson/module/  ~/$rdir/usr/local/include/samson/
 cp /opt/samson/etc/setup.txt             ~/$rdir/opt/samson/etc/
 cp -R /usr/local/man/                    ~/$rdir/usr/local/
 
@@ -128,3 +125,4 @@ cd -
 cd ~/rpm/SPECS
 rpmbuild -ba $specfile
 cd -
+mv ~/rpm/RPMS/$arch/samson-$version-$release.$arch.rpm .

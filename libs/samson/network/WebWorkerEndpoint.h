@@ -39,8 +39,8 @@ public:
 	);
 	~WebWorkerEndpoint();
 
-	void  msgTreat(void);
-	void  run(void);
+	Status  msgTreat2(void);
+	void    run(void);
 };
 
 }

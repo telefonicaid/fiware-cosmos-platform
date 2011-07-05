@@ -21,7 +21,7 @@ namespace samson
 {
 
 
-class UnhelloedEndpoint;
+class WebWorkerEndpoint;
 
 
 
@@ -43,8 +43,8 @@ public:
 	);
 	~WebListenerEndpoint();
 
-	UnhelloedEndpoint*  accept(void);
-	virtual void        msgTreat(void);
+	WebWorkerEndpoint*  accept(void);
+	virtual Status      msgTreat2(void);
 
 private:
 	Status              init(void);

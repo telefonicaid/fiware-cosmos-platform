@@ -14,7 +14,7 @@
 
 #include "samson/common/status.h"
 #include "samson/network/EndpointManager.h"    // EndpointManager
-#include "UnhelloedEndpoint.h"                 // UnhelloedEndpoint
+#include "WebWorkerEndpoint.h"                 // WebWorkerEndpoint
 #include "WebListenerEndpoint.h"               // Own interface
 
 
@@ -123,14 +123,14 @@ Status WebListenerEndpoint::init(void)
 *
 * accept - 
 */
-UnhelloedEndpoint* WebListenerEndpoint::accept(void)
+WebWorkerEndpoint* WebListenerEndpoint::accept(void)
 {
 	int                 fd;
 	struct sockaddr_in  sin;
 	char                hostName[64];
 	unsigned int        len         = sizeof(sin);
 	int                 hostNameLen = sizeof(hostName);
-	UnhelloedEndpoint*  ep          = NULL;
+	WebWorkerEndpoint*  ep          = NULL;
 
 	memset((char*) &sin, 0, len);
 
@@ -143,7 +143,7 @@ UnhelloedEndpoint* WebListenerEndpoint::accept(void)
 	if (hostP == NULL)
 		hostP = epMgr->hostMgr->insert(NULL, hostName);
 
-	ep = new UnhelloedEndpoint(epMgr, hostP, 0, fd, fd);
+	ep = new WebWorkerEndpoint(epMgr, 0, hostP, 0, fd, fd);
 	epMgr->add(ep);
 
 	return ep;
@@ -153,17 +153,17 @@ UnhelloedEndpoint* WebListenerEndpoint::accept(void)
 
 /* ****************************************************************************
 *
-* msgTreat - 
+* msgTreat2 - 
 */
-void WebListenerEndpoint::msgTreat(void)
+Status WebListenerEndpoint::msgTreat2(void)
 {
-	UnhelloedEndpoint* ep;
+	WebWorkerEndpoint* ep;
 
 	ep = accept();
 	if (ep == NULL)
-		LM_RVE(("Endpoint2::accept returned NULL"));
+		LM_RE(AcceptError, ("Endpoint2::accept returned NULL"));
 
-	ep->helloSend(Message::Msg);
+	return OK;
 }
 
 }

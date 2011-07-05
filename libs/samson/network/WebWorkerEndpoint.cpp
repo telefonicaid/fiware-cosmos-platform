@@ -54,7 +54,7 @@ WebWorkerEndpoint::~WebWorkerEndpoint() // : ~Endpoint2()
 *
 * msgTreat
 */
-void WebWorkerEndpoint::msgTreat(void)
+Status WebWorkerEndpoint::msgTreat2(void)
 {
 	char buf[1024];
 	int  nb;
@@ -63,13 +63,13 @@ void WebWorkerEndpoint::msgTreat(void)
 	if (nb == -1)
 	{
 		msgsInErrors += 1;
-		LM_RVE(("error reading web service request: %s", strerror(errno)));
+		LM_RE(ReadError, ("error reading web service request: %s", strerror(errno)));
 	}
 
 	if (nb == 0)
 	{
 		msgsInErrors += 1;
-		LM_RVE(("read ZERO bytes of web service request"));
+		LM_RE(ReadError, ("read ZERO bytes of web service request"));
 	}
 
 	ssize_t s;
@@ -84,6 +84,8 @@ void WebWorkerEndpoint::msgTreat(void)
 		LM_W(("written only %d bytes (wanted to write %d)", s, commandLen));
 
 	state = ScheduledForRemoval;
+
+	return OK;
 }
 
 

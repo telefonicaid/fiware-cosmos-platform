@@ -21,18 +21,7 @@ release=$2
 #
 # Help variables
 #
-arch1=$(uname -p)
-
-if [ "$arch1" = "x86_64" ]
-then
-  arch=amd64
-elif [ "$arch1" = "i386" ]
-then
-  arch=m32r   # Don't know which to use ...
-else
-  echo "architecture $arch1 not supported, sorry ..."
-  exit 1
-fi
+arch=$(dpkg --print-architecture)
 
 
 

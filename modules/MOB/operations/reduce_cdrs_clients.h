@@ -38,6 +38,7 @@ public:
 	 */
 	void ResetFakeCellId()
 	{
+		OLM_T(LMT_User06, ("ResetFakeCellId"));
 		seqFakeCellId = 0;
 	}
 
@@ -110,6 +111,7 @@ public:
 				if( cdr.cellId.value == 0 )
 				{
 					GetFakeCellId( &(cellId) );
+					OLM_T(LMT_User06, ("For cdr.phone:%lu cdr without cellId, assigns cellId:%lu", cdr.phone.value, cellId.value));
 				}
 				else
 				{
@@ -133,6 +135,7 @@ public:
 					writer->emit(1, &mob_month, &void_data );
 					hasMonth = true;
 				}
+				//OLM_T(LMT_User06, ("For cdr.phone:%lu emits cdr with cellId:%lu", cdr.phone.value, cellId.value));
 				writer->emit(0, &cellId, &cdr );
 			}
 		}

@@ -206,9 +206,12 @@ public:
 	std::string str()
 	{
 		std::ostringstream o;
-		std::string _str = ctime(&value);
-		_str.erase(_str.end()-1);
-		o << _str << " ";
+		char buffAscTime[27];
+		struct tm timeExpanded;
+		getCalendarFromTimeUTC(&timeExpanded);
+		asctime_r(&timeExpanded, buffAscTime);
+		buffAscTime[strlen(buffAscTime) - 1] = '\0';
+		o << buffAscTime << " ";
 		return o.str();
 	}
 

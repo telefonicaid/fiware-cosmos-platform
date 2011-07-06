@@ -24,6 +24,17 @@ class reduce_add_cell_info : public samson::Reduce
 
 	samson::system::ComplexTimeSlot ctsH;
 	samson::system::ComplexTimeSlot ctsW;
+
+	samson::system::UInt key;
+	samson::system::UInt64 phone;
+	samson::cdr::mobCdr cdr;
+	samson::cdr::Cell cell;
+	CellCounter cellCounter;
+
+	samson::system::Date lDate;
+	samson::system::Time lTime;
+
+
 public:
 
 
@@ -70,10 +81,7 @@ public:
 	 */
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		samson::system::UInt64 phone;
-		samson::cdr::mobCdr cdr;
-		samson::cdr::Cell cell;
-		CellCounter cellCounter;
+
 
 		if( inputs[0].num_kvs > 0 )
 		{
@@ -92,6 +100,9 @@ public:
 				cell.stateId = 0;
 			}
 
+			key.parse(inputs[0].kvs[0]->key);
+
+			//OLM_T(LMT_User06, ("Process key:0x%0x with cell:0x%0x with inputs[0].num_kvs:%lu", key.value, cell.cellId.value, inputs[0].num_kvs))
 			for( int i=0; i<inputs[0].num_kvs; i++ )
 			{
 				cdr.parse( inputs[0].kvs[i]->value );
@@ -160,18 +171,18 @@ public:
 				// we do not have cell information
 				if( cdr.cellId > 0 )
 				{
-					samson::system::Date lDate;
-					samson::system::Time lTime;
 
 					cellCounter.cell = cell;
 
-					OLM_T(LMT_User06, ("timeUnix :%s", cdr.timeUnix.str().c_str()));
+					//OLM_T(LMT_User06, ("timeUnix :%s", cdr.timeUnix.str().c_str()));
 
 					cdr.timeUnix.getDateTimeFromTimeUTC(&lDate, &lTime);
 
 					if (lDate.days_2000_GetAssigned() == false)
 					{
 						lDate.daysFrom2000_01_01();
+						//OLM_T(LMT_User06, ("For key:0x%0x computes days_2000", key.value));
+
 					}
 					cellCounter.count = lDate.days_2000;
 
@@ -198,6 +209,7 @@ public:
 						writer[8]->emit( &phoneLocCounter, &void_data );
 #endif // de PARA_LUEGO
 						writer->emit(2, &phone, &cellCounter);
+						OLM_T(LMT_User06, ("For key:0x%0x time:'%s' detects home", key.value, cdr.timeUnix.str().c_str()));
 					}
 
 					// emit CDR's for the place of work
@@ -222,11 +234,13 @@ public:
 #endif // de PARA_LUEGO
 
 						writer->emit(3, &phone, &cellCounter);
+						OLM_T(LMT_User06, ("For key:0x%0x time:'%s' detects work", key.value, cdr.timeUnix.str().c_str()));
+
 					}
 				}
 				else
 				{
-					OLM_T(LMT_User06, ("No cell info for key:%lu", phone.value));
+					//OLM_T(LMT_User06, ("No cell info for key:0x%0x, phone:%lu", key.value, phone.value));
 				}
 			}
 		}

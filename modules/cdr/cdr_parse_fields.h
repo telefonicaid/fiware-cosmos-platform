@@ -56,6 +56,7 @@
 		///@param old Flag to decide the date format
 		void cdrStrDateToStructure( char *strDate, struct tm *date , bool old);
 
+
 		///Function to translate a string time
 		///into a time structure.
 		///

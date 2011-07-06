@@ -109,6 +109,8 @@ void cdrStrDateToStructure( char *strDate, struct tm *date , bool old){
 	}
 }
 
+
+
 ///Function to translate a string time
 ///into a time structure.
 ///
@@ -119,6 +121,8 @@ void cdrStrTimeToStructure( char *strTime, struct tm *time ){
 	time->tm_min = GST_char_to_int( strTime[3] )*10 + GST_char_to_int( strTime[4] );
 	time->tm_sec = GST_char_to_int( strTime[6] )*10 + GST_char_to_int( strTime[7] );
 }
+
+
 
 ///Function to translate a string date time
 ///into a date structure.
@@ -150,6 +154,7 @@ void cdrStrDateTimeToStructure( char *strTime, struct tm *time , bool old){
 		time->tm_sec = GST_char_to_int( strTime[15] )*10 + GST_char_to_int( strTime[16] );
 	}
 }
+
 
 
 ///Function to translate a string phone number

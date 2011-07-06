@@ -152,8 +152,7 @@ public:
 		const int DAYS_PER_YEAR = 365;
 		const int SECS_PER_DAY = 86400;
 
-		duration_days += DAYS_PER_YEAR * (year.value) + ((year.value - 1) / 4) + 1;
-		duration_days--; // In order to not include the present day
+		duration_days += DAYS_PER_YEAR * (year.value) + ((year.value - 1) / 4);
 
 		days_2000.value = duration_days;
 

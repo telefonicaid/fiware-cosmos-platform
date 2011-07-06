@@ -147,4 +147,6 @@ rpm:	 install
 		 cd modules/url;                   ../../scripts/samsonModuleRpm url 0.6 1
 		 cd modules/url_benchmark;         ../../scripts/samsonModuleRpm url_benchmark 0.6 1
 		 # cd modules/sna_light;             ../../scripts/samsonModuleRpm sna_light 0.6 1
-		 
+
+deb:	 install
+		 scripts/samsonDeb 0.6 1

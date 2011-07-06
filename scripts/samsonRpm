@@ -123,4 +123,5 @@ cd -
 cd ~/rpm/SPECS
 rpmbuild -ba $specfile
 cd -
-mv ~/rpm/RPMS/$arch/samson-$version-$release.$arch.rpm .
+mkdir -p package/rpm
+mv ~/rpm/RPMS/$arch/samson-$version-$release.$arch.rpm package/rpm/

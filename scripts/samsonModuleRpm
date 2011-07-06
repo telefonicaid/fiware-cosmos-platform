@@ -88,7 +88,7 @@ rm -rf ~/$rdir
 mkdir -p ~/$rdir/usr/local/include/samson/modules/$module
 mkdir -p ~/$rdir/opt/samson/modules
 cp /usr/local/include/samson/modules/$module/*.h   ~/$rdir/usr/local/include/samson/modules/$module/
-cp /opt/samson/modules/lib$module.so ~/$rdir/opt/samson/modules/
+cp /opt/samson/modules/lib$module.so               ~/$rdir/opt/samson/modules/
 
 
 #
@@ -107,4 +107,5 @@ cd -
 cd ~/rpm/SPECS
 rpmbuild -ba $specfile
 cd -
-mv ~/rpm/RPMS/$arch/samson-$module-$version-$release.$arch.rpm ../..
+mkdir -p ../../package/rpm
+mv ~/rpm/RPMS/$arch/samson-$module-$version-$release.$arch.rpm ../../package/rpm/

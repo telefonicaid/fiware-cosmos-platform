@@ -62,4 +62,5 @@ cp -R /usr/local/man/                    $HOME/debian/usr/local/
 cd
 dpkg-deb --build debian
 cd -
-mv ~/debian.deb samson-$version.$release.deb
+mkdir -p package/deb
+mv ~/debian.deb package/deb/samson_$version-${release}_$arch.deb

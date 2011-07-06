@@ -1,0 +1,57 @@
+#
+# Checking command line options
+#
+if [ "$#" != 3 ]
+then
+	echo 'samsonModuleDeb: Bad parameters'
+	echo 'Usage: samsonModuleDeb <Module Name> <Version (e.g. 0.5)> <Release (e.g. 3)>'
+	exit 1
+fi
+
+
+
+#
+# Using command line options
+#
+module=$1
+lowercase_module=$(echo $module | tr 'A-Z' 'a-z' | sed 's/_/\-/g')
+version=$2
+release=$3
+
+
+
+#
+# Help variables
+#
+arch=$(dpkg --print-architecture)
+
+
+
+#
+# Populating $HOME/debian
+#
+rm -rf $HOME/debian
+
+mkdir -p $HOME/debian/DEBIAN
+mkdir -p $HOME/debian/usr/local/include/samson/modules/$lowercase_module
+mkdir -p $HOME/debian/opt/samson/modules
+
+echo "Package: samson-$lowercase_module"                 > $HOME/debian/DEBIAN/control
+echo "Version: $version"                                >> $HOME/debian/DEBIAN/control
+echo "Architecture: $arch"                              >> $HOME/debian/DEBIAN/control
+echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> $HOME/debian/DEBIAN/control
+echo "Description: The Samson Map Reduce Platform ..."  >> $HOME/debian/DEBIAN/control
+
+cp /usr/local/include/samson/modules/$module/*.h   $HOME/debian/usr/local/include/samson/modules/$lowercase_module/
+cp /opt/samson/modules/lib$module.so               $HOME/debian/opt/samson/modules/
+
+
+
+#
+# Create package
+#
+cd
+dpkg-deb --build debian
+cd -
+mkdir -p ../../package/deb
+mv ~/debian.deb ../../package/deb/samson-${lowercase_module}_$version-${release}_$arch.deb

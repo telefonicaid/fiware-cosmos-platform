@@ -150,3 +150,18 @@ rpm:	 install
 
 deb:	 install
 		 scripts/samsonDeb 0.6 1
+		 cd modules/cdr;                   ../../scripts/samsonModuleDeb cdr 0.6 1
+		 cd modules/example;               ../../scripts/samsonModuleDeb example 0.6 1
+		 cd modules/graph;                 ../../scripts/samsonModuleDeb graph 0.6 1
+		 cd modules/osn;                   ../../scripts/samsonModuleDeb osn 0.6 1
+		 cd modules/sna;                   ../../scripts/samsonModuleDeb sna 0.6 1
+		 cd modules/sort;                  ../../scripts/samsonModuleDeb sort 0.6 1
+		 cd modules/system;                ../../scripts/samsonModuleDeb system 0.6 1
+		 cd modules/terasort;              ../../scripts/samsonModuleDeb terasort 0.6 1
+		 cd modules/test_compareFunctions; ../../scripts/samsonModuleDeb test_compareFunctions 0.6 1
+		 cd modules/tienda;                ../../scripts/samsonModuleDeb tienda 0.6 1
+		 cd modules/txt;                   ../../scripts/samsonModuleDeb txt 0.6 1
+		 cd modules/url;                   ../../scripts/samsonModuleDeb url 0.6 1
+		 cd modules/url_benchmark;         ../../scripts/samsonModuleDeb url_benchmark 0.6 1
+
+packages: rpm deb

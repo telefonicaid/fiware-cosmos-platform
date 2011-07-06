@@ -11,7 +11,7 @@
 #include <samson/module/samson.h>
 #include "CliquesSolver.h"
 
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 #include <stdio.h>
 #endif /* de DEBUG_FILES */
@@ -70,7 +70,7 @@ void CliquesSolver::solveCliques( )
 	
 	num_solutions = 0;
 
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 FILE *fp = fopen("/tmp/cliquesSolver.log", "a");
@@ -84,7 +84,7 @@ void CliquesSolver::solveCliques( )
 	if ( num_nodes == 0 )
 	{
 
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 FILE *fp = fopen("/tmp/cliquesSolver.log", "a");
@@ -98,7 +98,7 @@ void CliquesSolver::solveCliques( )
 		return;
 	}
 	
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 FILE *fp = fopen("/tmp/cliquesSolver.log", "a");
@@ -118,7 +118,7 @@ void CliquesSolver::solveCliques( )
 	if ( num_nodes > MAX_NODES )
 	{
 
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 FILE *fp = fopen("/tmp/cliquesSolver.log", "a");
@@ -149,7 +149,7 @@ void CliquesSolver::solveCliques( )
 			//Remove perfect nodes from the list of nodes
 			infoAtLevel[level].removePerfectoNodes();
 			
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 FILE *fp = fopen("/tmp/cliquesSolver.log", "a");
@@ -274,7 +274,7 @@ void CliquesSolver::solveCliques( )
 		}			
 	}
 	
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 FILE *fp = fopen("/tmp/cliquesSolver.log", "a");

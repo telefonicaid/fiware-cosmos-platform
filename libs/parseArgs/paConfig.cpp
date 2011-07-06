@@ -9,17 +9,17 @@
 *
 *
 */
-#include <stdlib.h>             /* free, ...                                  */
-#include <string.h>             /* strdup, ...                                */
+#include <stdlib.h>             /* free, ...                                 */
+#include <string.h>             /* strdup, ...                               */
 
-#include "logMsg/logMsg.h"             /* lmTraceSet                                */
+#include "logMsg/logMsg.h"      /* lmTraceSet                                */
 
 #include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
 #include "paTraceLevels.h"      /* LmtPaDefaultValues, ...                   */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paBuiltin.h"          /* paBuiltinRemove                           */
 #include "paLog.h"              /* log macros to debug paConfig              */
-#include "parseArgs/paConfig.h"           /* Own interface                             */
+#include "parseArgs/paConfig.h" /* Own interface                             */
 
 
 
@@ -187,6 +187,8 @@ int paConfig(const char* item, void* value)
 
 	if (strcmp(item, "help file") == 0)
 		paHelpFile = strdup((char*) val);
+	else if (strcmp(item, "help text") == 0)
+		paHelpText = strdup((char*) val);
 	else if (strcmp(item, "msgs to stdout") == 0)
 		paMsgsToStdout = (bool) val;
 	else if (strcmp(item, "msgs to stderr") == 0)

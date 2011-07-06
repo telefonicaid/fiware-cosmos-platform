@@ -131,7 +131,7 @@ clear_ipcs:
 	echo $(for i in `ipcs -m | grep $USER | awk '{print $2}'`; do ipcrm -m $i; done)
 
 
-rpm:	 install
+rpm:
 		 scripts/samsonRpm 0.6 1
 		 cd modules/cdr;                   ../../scripts/samsonModuleRpm cdr 0.6 1
 		 cd modules/example;               ../../scripts/samsonModuleRpm example 0.6 1
@@ -148,7 +148,7 @@ rpm:	 install
 		 cd modules/url_benchmark;         ../../scripts/samsonModuleRpm url_benchmark 0.6 1
 		 # cd modules/sna_light;             ../../scripts/samsonModuleRpm sna_light 0.6 1
 
-deb:	 install
+deb:
 		 scripts/samsonDeb 0.6 1
 		 cd modules/cdr;                   ../../scripts/samsonModuleDeb cdr 0.6 1
 		 cd modules/example;               ../../scripts/samsonModuleDeb example 0.6 1
@@ -164,4 +164,7 @@ deb:	 install
 		 cd modules/url;                   ../../scripts/samsonModuleDeb url 0.6 1
 		 cd modules/url_benchmark;         ../../scripts/samsonModuleDeb url_benchmark 0.6 1
 
-packages: rpm deb
+man: 
+	 help2man --name=samsonController --section=1 --manual=Smaosn samsonController > /usr/local/man/man1/samsonController.1
+
+packages: install man rpm deb

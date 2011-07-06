@@ -2,19 +2,19 @@
 #include <unistd.h>             /* getpid                                    */
 
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg/logMsg.h"             /* lmVerbose, lmDebug, ...                   */
+#include "logMsg/logMsg.h"      /* lmVerbose, lmDebug, ...                   */
 
-#include "parseArgs/parseArgs.h"          /* PaArgument                                */
+#include "parseArgs.h"          /* PaArgument                                */
 #include "paPrivate.h"          /* PaTypeUnion, paBuiltins, ...              */
 #include "paTraceLevels.h"      /* LmtPaApVals, LmtPaUsage, ...              */
 #include "paFrom.h"             /* paFrom, paFromName                        */
-#include "parseArgs/paConfig.h"           /* paHelpFile, paHelpText                    */
+#include "paConfig.h"           /* paHelpFile, paHelpText                    */
 #include "paFullName.h"         /* paFullName                                */
 #include "paBuiltin.h"          /* paBuiltin, paBuiltinNoOf                  */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paEnvVals.h"          /* paEnvName                                 */
 #include "paParse.h"            /* progNameV                                 */
-#include "parseArgs/paUsage.h"            /* Own interface                             */
+#include "paUsage.h"            /* Own interface                             */
 
 
 
@@ -389,10 +389,21 @@ HelpVar helpVar[] =
 */
 void paHelp(PaArgument* paList)
 {
-	char   s[60000];
 	pid_t  pid   = getpid();   
 
 	LM_ENTRY();
+
+	if (paHelpText != NULL)
+	{
+		paExitOnUsage = false;
+
+		paUsage(paList);
+		printf("%s\n\n", paResultString);
+		printf("%s\n", paHelpText);
+		fflush(stdout);
+		exit(19);
+	}
+
 	sprintf(paPid, "%d", pid);
 
 	memset(paResultString, 0, sizeof(paResultString));
@@ -401,17 +412,7 @@ void paHelp(PaArgument* paList)
 	strncpy(usageString, paResultString, sizeof(usageString));
 	memset(paResultString, 0, sizeof(paResultString));
 	
-	if (paHelpText != NULL)
-	{
-		LM_T(LmtHelp, ("Got a help text"));
-
-		sprintf(s, "----- %s Help -----\n", progName);
-		strncat(paResultString, s, sizeof(paResultString) - 1);
-
-		sprintf(s, "%s\n---------------------------------------------\n", paHelpText);
-		strncat(paResultString, s, sizeof(paResultString) - 1);
-	}
-	else if (paHelpFile != NULL)
+	if (paHelpFile != NULL)
 	{
 		char  s[512];
 		FILE* fP;
@@ -466,7 +467,7 @@ void paHelp(PaArgument* paList)
 		fclose(fP);
 		strncat(paResultString, 
 				"\n---------------------------------------------\n",
-~				sizeof(paResultString) - 1);
+				sizeof(paResultString) - 1);
 	}
 	else
 		paUsage(paList);

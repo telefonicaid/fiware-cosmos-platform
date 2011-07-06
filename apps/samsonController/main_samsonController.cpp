@@ -30,6 +30,7 @@
 * Option variables
 */
 char workingDir[1024];
+bool version;
 
 
 
@@ -40,7 +41,8 @@ char workingDir[1024];
 */
 PaArgument paArgs[] =
 {
-	{ "-working", workingDir, "WORKING", PaString, PaOpt, DEF_WD,  PaNL,  PaNL, "working directory" },
+	{ "-working",  workingDir, "WORKING", PaString, PaOpt, DEF_WD,  PaNL,  PaNL, "working directory" },
+	{ "--version", &version,   "VERSION", PaBool,   PaOpt, false,   false, true, "show version"      }, 
 
 	PA_END_OF_ARGS
 };
@@ -83,6 +85,16 @@ void exitFunction(void)
 
 /* ****************************************************************************
 *
+* helpText - 
+*/
+static const char* helpText = 
+   "samsonController is the main process in the samson cluster,\n"
+   "which consists of one or more workers and ONE controller ...\n";
+
+
+
+/* ****************************************************************************
+*
 * main - main routine for the samsonController
 */
 int main(int argC, const char* argV[])
@@ -95,8 +107,15 @@ int main(int argC, const char* argV[])
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC/FILE[LINE] FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
 	paConfig("log to file",                   (void*) true);
+	paConfig("help text",                     (void*) helpText);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
+
+	if (version)
+	{
+		printf("0.6\n");
+		exit(1);
+	}
 
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)

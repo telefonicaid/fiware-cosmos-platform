@@ -2,9 +2,9 @@ add cdrstxt -txt
 add userstxt -txt
 add cellstxt -txt
 
-upload callsTxt cdrstxt
-upload GASSET_CLIENTE_20100630.dat userstxt
-upload GASSET_CELDAS_RED_OCT2009.dat cellstxt
+upload callsTxt cdrstxt -clear
+upload GASSET_CLIENTE_20100630.dat userstxt -clear
+upload GASSET_CELDAS_RED_OCT2009.dat cellstxt -clear
 
 
 cdr.parse_mob_cdrs cdrstxt cdrs -clear -create

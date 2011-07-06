@@ -36,8 +36,8 @@ debug:
 	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG
 	make -j 4 -C BUILD_DEBUG 
 
-# ------------------------------------------------                                                                                                           
-# DEBUG Version                                                                                                                                             
+# ------------------------------------------------
+# DEBUG Version
 # ------------------------------------------------
 
 debug_coverage:
@@ -45,7 +45,7 @@ debug_coverage:
 	cd BUILD_DEBUG_COVERAGE; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True
 	make -C BUILD_DEBUG_COVERAGE -j8
 
-# ------------------------------------------------                                                                                                           
+# ------------------------------------------------
 # Testing
 # ------------------------------------------------
 
@@ -57,10 +57,10 @@ ctest: debug
 test_local_processes:
 	./scripts/test_local_processes
 
-package: release
-	make -C BUILD_RELEASE package 
+# package: release
+#	make -C BUILD_RELEASE package 
 
-# ------------------------------------------------                                                                                                           
+# ------------------------------------------------
 # Debug Install / Distribute
 # ------------------------------------------------
 
@@ -84,7 +84,7 @@ testdistribute: install
 	./scripts/samsonTestDistributer
 
 
-# ------------------------------------------------                                                                                                           
+# ------------------------------------------------
 # Other
 # ------------------------------------------------
 

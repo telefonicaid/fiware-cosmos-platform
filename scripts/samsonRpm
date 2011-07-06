@@ -96,10 +96,8 @@ mkdir ~/$rdir/usr/local/man/man3
 cp /usr/local/bin/samsonCat              ~/$rdir/usr/local/bin
 cp /usr/local/bin/samsonController       ~/$rdir/usr/local/bin
 cp /usr/local/bin/samsonData             ~/$rdir/usr/local/bin
-cp /usr/local/bin/samsonKiller           ~/$rdir/usr/local/bin
 cp /usr/local/bin/samsonLocal            ~/$rdir/usr/local/bin
 cp /usr/local/bin/samsonModuleParser     ~/$rdir/usr/local/bin
-cp /usr/local/bin/samsonRun              ~/$rdir/usr/local/bin
 cp /usr/local/bin/samsonSetup            ~/$rdir/usr/local/bin
 cp /usr/local/bin/samsonSpawner          ~/$rdir/usr/local/bin
 cp /usr/local/bin/samsonWorker           ~/$rdir/usr/local/bin

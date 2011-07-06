@@ -36,19 +36,17 @@ mkdir -p $HOME/debian/usr/local/include
 mkdir -p $HOME/debian/
 mkdir -p $HOME/debian/opt/samson/etc
 
-echo "Package: samson"                                > $HOME/debian/DEBIAN/control
-echo "Version: $version"                             >> $HOME/debian/DEBIAN/control
-echo "Architecture: $arch"                           >> $HOME/debian/DEBIAN/control
-echo "Maintainer: Andreu Urruela <andreu@tid.es>"    >> $HOME/debian/DEBIAN/control
-echo "Description: Samson is a ..."                  >> $HOME/debian/DEBIAN/control
+echo "Package: samson"                                   > $HOME/debian/DEBIAN/control
+echo "Version: $version"                                >> $HOME/debian/DEBIAN/control
+echo "Architecture: $arch"                              >> $HOME/debian/DEBIAN/control
+echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> $HOME/debian/DEBIAN/control
+echo "Description: The Samson Map Reduce Platform ..."  >> $HOME/debian/DEBIAN/control
 
 cp /usr/local/bin/samsonCat              $HOME/debian/usr/local/bin
 cp /usr/local/bin/samsonController       $HOME/debian/usr/local/bin
 cp /usr/local/bin/samsonData             $HOME/debian/usr/local/bin
-cp /usr/local/bin/samsonKiller           $HOME/debian/usr/local/bin
 cp /usr/local/bin/samsonLocal            $HOME/debian/usr/local/bin
 cp /usr/local/bin/samsonModuleParser     $HOME/debian/usr/local/bin
-cp /usr/local/bin/samsonRun              $HOME/debian/usr/local/bin
 cp /usr/local/bin/samsonSetup            $HOME/debian/usr/local/bin
 cp /usr/local/bin/samsonSpawner          $HOME/debian/usr/local/bin
 cp /usr/local/bin/samsonWorker           $HOME/debian/usr/local/bin

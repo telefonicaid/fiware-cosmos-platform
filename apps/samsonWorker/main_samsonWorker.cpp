@@ -11,6 +11,8 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
+#include "au/LockDebugger.h"            // au::LockDebugger
+
 #include "engine/MemoryManager.h"
 #include "engine/Engine.h"
 #include "engine/DiskManager.h"
@@ -132,6 +134,9 @@ int main(int argC, const char *argV[])
 
 	logFd = lmFirstDiskFileDescriptor();
 
+    // Make sure this singlelton is created just once
+    au::LockDebugger::shared();
+    
 	samson::SamsonSetup::init();  // Load setup and create default directories
     samson::SamsonSetup::shared()->setWorkingDirectory(workingDir);
     

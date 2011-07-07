@@ -11,6 +11,8 @@
 #include <fcntl.h>                 // open, O_RDONLY, ...
 #include <sys/stat.h>              // struct stat
 
+#include "au/LockDebugger.h"            // au::LockDebugger
+
 #include "parseArgs/parseArgs.h"
 #include "au/LockDebugger.h"
 #include "engine/MemoryManager.h"
@@ -140,6 +142,9 @@ int main(int argC, const char* argV[])
 	atexit(exitFunction);
 	atexit(google::protobuf::ShutdownProtobufLibrary);
 
+    // Make sure this singlelton is created just once
+    au::LockDebugger::shared();
+    
 	// Init singletons
 	au::LockDebugger::shared();             // Lock usage debugging (necessary here where there is only one thread)
 	samson::SamsonSetup::init();  // Load setup and create all directories

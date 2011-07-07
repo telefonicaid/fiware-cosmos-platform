@@ -14,6 +14,8 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
+#include "au/LockDebugger.h"            // au::LockDebugger
+
 #include "engine/MemoryManager.h"
 #include "engine/Engine.h"
 
@@ -137,7 +139,11 @@ int main(int argC, const char *argV[])
 		daemonize();
 
 	atexit(exitFunction);
+
+    // Make sure this singlelton is created just once
+    au::LockDebugger::shared();
 	
+    
 	samson::SamsonSetup::init();
     samson::SamsonSetup::shared()->setWorkingDirectory(workingDir);
     

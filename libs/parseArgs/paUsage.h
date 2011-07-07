@@ -24,6 +24,14 @@ void paUsage(PaArgument* paList);
 
 /* ****************************************************************************
 *
+* paVersionPrint - print synopsis
+*/
+void paVersionPrint(void);
+
+
+
+/* ****************************************************************************
+*
 * paExtendedUsage - print extended synopsis
 */
 void paExtendedUsage(PaArgument* paList);

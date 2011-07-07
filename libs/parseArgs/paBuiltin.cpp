@@ -11,6 +11,7 @@
 #include <cstdlib>				/* C++ free(.)								 */
 
 
+
 /* ****************************************************************************
 *
 * option variables
@@ -18,6 +19,7 @@
 bool        paUsageVar;     /* the -u options (-u, -h, -?, -help) */
 bool        paEUsageVar;    /* the -U option                      */
 bool        paHelpVar;      /* the -help option                   */
+bool        paVersion;
 char        paHome[512];
 bool        paNoClear;
 bool        paClearAt;
@@ -61,41 +63,42 @@ PaArgument paBuiltin[] =
     "X delimiter"
  },
 
- { "-U",    &paEUsageVar, NULL,         PaBool,PaOpt,  F,    T,    F, "extended usage"       },
- { "-u",    &paUsageVar,  NULL,         PaBool,PaOpt,  F,    T,    F, "usage"                },
- { "-h",    &paUsageVar,  NULL,         PaBool,PaOpt,  F,    T,    F, "usage"                },
- { "-help", &paHelpVar,   NULL,         PaBool,PaOpt,  F,    T,    F, "show help"            },
- { "--help",&paHelpVar,   NULL,         PaBool,PaOpt,  F,    T,    F, "show help"            },
- { "-home", paHome,       "!HOME",      PaStr, PaHid,  0, PaNL, PaNL, "home directory"       },
- { "",      paUserName,   "!USER",      PaStr, PaHid,  0, PaNL, PaNL, "user name"            },
- { "",      paPwd,        "!PWD",       PaStr, PaHid,  0, PaNL, PaNL, "current dir"          },
- { "",      paColumns,    "!COLUMNS",   PaStr, PaHid,  0, PaNL, PaNL, "columns"              },
- { "",      paRows,       "!ROWS",      PaStr, PaHid,  0, PaNL, PaNL, "rows"                 },
- { "",      paDisplay,    "!DISPLAY",   PaStr, PaHid,  0, PaNL, PaNL, "display"              },
- { "",      paEditor,     "!EDITOR",    PaStr, PaHid,  0, PaNL, PaNL, "editor"               },
- { "",      paLang,       "!LANG",      PaStr, PaHid,  0, PaNL, PaNL, "language"             },
- { "",      paPager,      "!PAGER",     PaStr, PaHid,  0, PaNL, PaNL, "pager"                },
- { "",      paPpid,       "!PPID",      PaStr, PaHid,  0, PaNL, PaNL, "parent process id"    },
- { "",      paPrinter,    "!PRINTER",   PaStr, PaHid,  0, PaNL, PaNL, "printer"              },
- { "",      paShell,      "!SHELL",     PaStr, PaHid,  0, PaNL, PaNL, "shell"                },
- { "",      paTerm,       "!TERM",      PaStr, PaHid,  0, PaNL, PaNL, "terminal"             },
- { "",      paSystem,     "!SYSTEM",    PaStr, PaHid,  0, PaNL, PaNL, "system"               },
- { "",      paVisual,     "!VISUAL",    PaStr, PaHid,  0, PaNL, PaNL, "visual"               },
- { "-t",    paTraceV,     "TRACE",      PaStr, PaOpt,  0, PaNL, PaNL, "trace level"          },
- { "-v",    &paVerbose,   "VERBOSE",    PaBool,PaOpt,  F,    T,    F, "verbose mode"         },
- { "-d",    &paDebug,     "DEBUG",      PaBool,PaOpt,  F,    T,    F, "debug mode"           },
- { "-H",    &paHidden,    "HIDDEN",     PaBool,PaOpt,  F,    T,    F, "hidden mode - not sent to Supervisor" },
- { "-toDo", &paToDo,      "TODO",       PaBool,PaOpt,  F,    T,    F, "toDo mode" },
- { "-r",    &paReads,     "READS",      PaBool,PaOpt,  F,    T,    F, "reads mode"           },
- { "-w",    &paWrites,    "WRITES",     PaBool,PaOpt,  F,    T,    F, "writes mode"          },
- { "-F",    &paFix,       "FIX",        PaBool,PaOpt,  F,    T,    F, "fixes mode"           },
- { "-B",    &paBug,       "BUGS",       PaBool,PaOpt,  F,    T,    F, "bugs mode"            },
- { "-b",    &paBuf,       "BUFS",       PaBool,PaOpt,  F,    T,    F, "buf mode"             },
- { "-?",    &paDoubt,     "DOUBT",      PaBool,PaOpt,  F,    T,    F, "doubts mode"          },
- { "-lmnc", &paNoClear,   "NO_CLEAR",   PaBool,PaOpt,  F,    T,    F, "don't clear log file" },
- { "-lmca", &paClearAt,   "CLEAR_AT",   PaInt, PaOpt, -1, PaNL, PaNL, "clear at lines"       },
- { "-lmkl", &paKeepLines, "KEEP_LINES", PaInt, PaOpt, -1, PaNL, PaNL, "clear 'keep lines'"   },
- { "-lmll", &paLastLines, "LAST_LINES", PaInt, PaOpt, -1, PaNL, PaNL, "clear 'last lines'"   },
+ { "-U",        &paEUsageVar, NULL,         PaBool,PaOpt,  F,    T,    F, "extended usage"       },
+ { "-u",        &paUsageVar,  NULL,         PaBool,PaOpt,  F,    T,    F, "usage"                },
+ { "-h",        &paUsageVar,  NULL,         PaBool,PaOpt,  F,    T,    F, "usage"                },
+ { "-help",     &paHelpVar,   NULL,         PaBool,PaOpt,  F,    T,    F, "show help"            },
+ { "--help",    &paHelpVar,   NULL,         PaBool,PaOpt,  F,    T,    F, "show help"            },
+ { "--version", &paVersion,   NULL,         PaBool,PaOpt,  F,    T,    F, "show version"         },
+ { "-home",     paHome,       "!HOME",      PaStr, PaHid,  0, PaNL, PaNL, "home directory"       },
+ { "",          paUserName,   "!USER",      PaStr, PaHid,  0, PaNL, PaNL, "user name"            },
+ { "",          paPwd,        "!PWD",       PaStr, PaHid,  0, PaNL, PaNL, "current dir"          },
+ { "",          paColumns,    "!COLUMNS",   PaStr, PaHid,  0, PaNL, PaNL, "columns"              },
+ { "",          paRows,       "!ROWS",      PaStr, PaHid,  0, PaNL, PaNL, "rows"                 },
+ { "",          paDisplay,    "!DISPLAY",   PaStr, PaHid,  0, PaNL, PaNL, "display"              },
+ { "",          paEditor,     "!EDITOR",    PaStr, PaHid,  0, PaNL, PaNL, "editor"               },
+ { "",          paLang,       "!LANG",      PaStr, PaHid,  0, PaNL, PaNL, "language"             },
+ { "",          paPager,      "!PAGER",     PaStr, PaHid,  0, PaNL, PaNL, "pager"                },
+ { "",          paPpid,       "!PPID",      PaStr, PaHid,  0, PaNL, PaNL, "parent process id"    },
+ { "",          paPrinter,    "!PRINTER",   PaStr, PaHid,  0, PaNL, PaNL, "printer"              },
+ { "",          paShell,      "!SHELL",     PaStr, PaHid,  0, PaNL, PaNL, "shell"                },
+ { "",          paTerm,       "!TERM",      PaStr, PaHid,  0, PaNL, PaNL, "terminal"             },
+ { "",          paSystem,     "!SYSTEM",    PaStr, PaHid,  0, PaNL, PaNL, "system"               },
+ { "",          paVisual,     "!VISUAL",    PaStr, PaHid,  0, PaNL, PaNL, "visual"               },
+ { "-t",        paTraceV,     "TRACE",      PaStr, PaOpt,  0, PaNL, PaNL, "trace level"          },
+ { "-v",        &paVerbose,   "VERBOSE",    PaBool,PaOpt,  F,    T,    F, "verbose mode"         },
+ { "-d",        &paDebug,     "DEBUG",      PaBool,PaOpt,  F,    T,    F, "debug mode"           },
+ { "-H",        &paHidden,    "HIDDEN",     PaBool,PaOpt,  F,    T,    F, "hidden mode - not sent to Supervisor" },
+ { "-toDo",     &paToDo,      "TODO",       PaBool,PaOpt,  F,    T,    F, "toDo mode" },
+ { "-r",        &paReads,     "READS",      PaBool,PaOpt,  F,    T,    F, "reads mode"           },
+ { "-w",        &paWrites,    "WRITES",     PaBool,PaOpt,  F,    T,    F, "writes mode"          },
+ { "-F",        &paFix,       "FIX",        PaBool,PaOpt,  F,    T,    F, "fixes mode"           },
+ { "-B",        &paBug,       "BUGS",       PaBool,PaOpt,  F,    T,    F, "bugs mode"            },
+ { "-b",        &paBuf,       "BUFS",       PaBool,PaOpt,  F,    T,    F, "buf mode"             },
+ { "-?",        &paDoubt,     "DOUBT",      PaBool,PaOpt,  F,    T,    F, "doubts mode"          },
+ { "-lmnc",     &paNoClear,   "NO_CLEAR",   PaBool,PaOpt,  F,    T,    F, "don't clear log file" },
+ { "-lmca",     &paClearAt,   "CLEAR_AT",   PaInt, PaOpt, -1, PaNL, PaNL, "clear at lines"       },
+ { "-lmkl",     &paKeepLines, "KEEP_LINES", PaInt, PaOpt, -1, PaNL, PaNL, "clear 'keep lines'"   },
+ { "-lmll",     &paLastLines, "LAST_LINES", PaInt, PaOpt, -1, PaNL, PaNL, "clear 'last lines'"   },
 
  PA_END_OF_ARGS
 };

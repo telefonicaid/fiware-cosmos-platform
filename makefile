@@ -165,6 +165,6 @@ deb:
 		 cd modules/url_benchmark;         ../../scripts/samsonModuleDeb url_benchmark 0.6 1
 
 man: 
-	 help2man --name=samsonController --section=1 --manual=Smaosn samsonController > /usr/local/man/man1/samsonController.1
+	 help2man --name="samson controller" --section=1 --manual=Samson samsonController > /usr/local/man/man1/samsonController.1
 
 packages: install man rpm deb

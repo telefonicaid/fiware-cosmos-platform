@@ -38,7 +38,6 @@ bool       paExitOnError         = true;
 bool       paExitOnUsage         = true;
 bool       paPrintErrorsOnStderr = true;
 char*      paPrefix              = NULL;
-int        paVersion             = 0;
 char*      paVersionString       = NULL;
 char*      paExecVersion         = NULL;
 char*      paTraceInfoAtEol      = NULL;
@@ -60,10 +59,19 @@ char*      paLogScreenLineFormat = NULL;
 char*      paLogScreenTimeFormat = NULL;
 
 bool       paLogClearing         = false;
+bool       paUsageOnAnyWarning   = false;
 char*      paHelpFile            = NULL;
 char*      paHelpText            = NULL;
-bool       paUsageOnAnyWarning   = false;
 
+char*      paManSynopsis         = NULL;
+char*      paManShortDescription = NULL;
+char*      paManDescription      = NULL;
+char*      paManExitStatus       = NULL;
+char*      paManReportingBugs    = NULL;
+
+char*      paManCopyright        = NULL;
+char*      paManVersion          = NULL;
+char*      paManAuthor           = NULL;
 
 
 /* Debug setting variables */
@@ -133,6 +141,23 @@ static void paConfigInit(void)
 	if (paTracelevels)
 		paTracelevels         = strdup(paTracelevels);
 
+	if (paManSynopsis)
+		paManSynopsis         = strdup(paManSynopsis);
+	if (paManShortDescription)
+		paManShortDescription = strdup(paManShortDescription);
+	if (paManDescription)
+		paManDescription      = strdup(paManDescription);
+	if (paManExitStatus)
+		paManExitStatus       = strdup(paManExitStatus);
+	if (paManAuthor)
+		paManAuthor           = strdup(paManAuthor);
+	if (paManReportingBugs)
+		paManReportingBugs    = strdup(paManReportingBugs);
+	if (paManCopyright)
+		paManCopyright        = strdup(paManCopyright);
+	if (paManVersion)
+		paManVersion          = strdup(paManVersion);
+	
 
 	if (paTraceInfoAtEol)
 		paTraceInfoAtEol      = strdup(paTraceInfoAtEol);
@@ -189,6 +214,24 @@ int paConfig(const char* item, void* value)
 		paHelpFile = strdup((char*) val);
 	else if (strcmp(item, "help text") == 0)
 		paHelpText = strdup((char*) val);
+
+	else if (strcmp(item, "man synopsis") == 0)
+		paManSynopsis = strdup((char*) val);
+	else if (strcmp(item, "man shortdescription") == 0)
+		paManShortDescription = strdup((char*) val);
+	else if (strcmp(item, "man description") == 0)
+	   paManDescription = strdup((char*) val);
+	else if (strcmp(item, "man exitstatus") == 0)
+	   paManExitStatus = strdup((char*) val);
+	else if (strcmp(item, "man author") == 0)
+	   paManAuthor = strdup((char*) val);
+	else if (strcmp(item, "man reportingbugs") == 0)
+	   paManReportingBugs = strdup((char*) val);
+	else if (strcmp(item, "man copyright") == 0)
+	   paManCopyright = strdup((char*) val);
+	else if (strcmp(item, "man version") == 0)
+	   paManVersion = strdup((char*) val);
+
 	else if (strcmp(item, "msgs to stdout") == 0)
 		paMsgsToStdout = (bool) val;
 	else if (strcmp(item, "msgs to stderr") == 0)

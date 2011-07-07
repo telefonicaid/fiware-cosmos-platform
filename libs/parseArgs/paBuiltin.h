@@ -24,6 +24,7 @@ extern int         paLastLines;
 extern bool        paUsageVar;
 extern bool        paEUsageVar;
 extern bool        paHelpVar;
+extern bool        paVersion;
 extern char        paUserName[64];
 extern char        paPwd[512];
 extern char        paColumns[128];

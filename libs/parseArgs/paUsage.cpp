@@ -385,24 +385,105 @@ HelpVar helpVar[] =
 
 /* ****************************************************************************
 *
+* paVersionPrint - 
+*/
+void paVersionPrint(void)
+{
+	if (paManVersion)
+		printf("%s\n", paManVersion);
+	else
+		printf("No MAN version\n");
+
+	if (paManCopyright)
+		printf("%s\n\n", paManCopyright);
+	else
+		printf("No MAN Copyright\n");
+
+	if (paManAuthor)
+		printf("%s\n", paManAuthor);
+	else
+		printf("No MAN Author\n");
+}
+
+
+
+/* ****************************************************************************
+*
+* paManUsage - 
+*/
+static void paManUsage(PaArgument* paList)
+{
+	PaArgument*  aP;
+
+	paIterateInit();
+
+    while ((aP = paIterateNext(paList)) != NULL)
+	{
+		if (aP->sort == PaHid)
+			continue;
+		if ((aP->what & PawOption) == 0)
+		{
+			printf("Skipping '%s' (what == %d)\n", aP->option, aP->what);
+			continue;
+		}
+
+		printf("%-20s %s\n\n", aP->option, aP->description);
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* paManHelp - 
+*/
+static void paManHelp(PaArgument* paList)
+{
+	paExitOnUsage = false;
+
+	if (paManSynopsis)
+		printf("Usage: %s %s\n", paProgName, paManSynopsis);
+	else
+		printf("Usage: %s <no synopsis available>\n", paProgName);
+
+	if (paManShortDescription)
+		printf("%s\n", paManShortDescription);
+	else
+		printf("%s (short description) ...\n", paProgName);
+
+	paManUsage(paList);
+
+	if (paManDescription)
+		printf("%s\n", paManDescription);
+	else
+		printf("<No man description available>\n");
+
+	if (paManExitStatus)
+		printf("Exit status:\n %s\n", paManExitStatus);
+	else
+		printf("Exit status:\n <no exit status available>\n");
+
+	if (paManReportingBugs)
+		printf("Report %s %s\n", paProgName, paManReportingBugs);
+		
+	fflush(stdout);
+}
+
+
+
+/* ****************************************************************************
+*
 * paHelp - print help text
 */
 void paHelp(PaArgument* paList)
 {
-	pid_t  pid   = getpid();   
-
 	LM_ENTRY();
 
-	if (paHelpText != NULL)
-	{
-		paExitOnUsage = false;
+	paManHelp(paList);
+	exit(1);
 
-		paUsage(paList);
-		printf("%s\n\n", paResultString);
-		printf("%s\n", paHelpText);
-		fflush(stdout);
-		exit(19);
-	}
+#if 0
+	pid_t  pid   = getpid();   
 
 	sprintf(paPid, "%d", pid);
 
@@ -471,4 +552,5 @@ void paHelp(PaArgument* paList)
 	}
 	else
 		paUsage(paList);
+#endif
 }

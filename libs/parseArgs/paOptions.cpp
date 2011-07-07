@@ -1,7 +1,7 @@
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg/logMsg.h"             /* LM_ENTRY, LM_EXIT, ...                    */
+#include "logMsg/logMsg.h"      /* LM_ENTRY, LM_EXIT, ...                    */
 
-#include "parseArgs/parseArgs.h"          /* PaArgument                                */
+#include "parseArgs.h"          /* PaArgument                                */
 #include "paBuiltin.h"          /* paBuiltin, paBuiltinNoOf                  */
 #include "paOptions.h"          /* Own interface                             */
 

@@ -18,19 +18,29 @@
 *
 * Configurable variables
 */
-extern bool      paUseBuiltins;
-extern bool      paExitOnError;
-extern bool      paExitOnUsage;
-extern bool      paPrintErrorsOnStderr;
-extern char*     paPrefix;
-extern char*     paRcFileName;
-extern char*     paRcFileDir;
-extern char*     paGenericRcDir;
-extern char*     paProgName;
-extern char      paTraceV[1024];
+extern bool       paUseBuiltins;
+extern bool       paExitOnError;
+extern bool       paExitOnUsage;
+extern bool       paPrintErrorsOnStderr;
+extern char*      paPrefix;
+extern char*      paRcFileName;
+extern char*      paRcFileDir;
+extern char*      paGenericRcDir;
+extern char*      paProgName;
+extern char       paTraceV[1024];
 
 extern char*      paHelpFile;
 extern char*      paHelpText;
+
+extern char*      paManSynopsis;
+extern char*      paManShortDescription;
+extern char*      paManDescription;
+extern char*      paManExitStatus;
+extern char*      paManReportingBugs;
+
+extern char*      paManCopyright;
+extern char*      paManVersion;
+extern char*      paManAuthor;
 
 extern bool       paUsageOnAnyWarning;
 

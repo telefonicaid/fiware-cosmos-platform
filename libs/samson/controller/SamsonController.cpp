@@ -117,7 +117,7 @@ namespace samson {
         
             //LM_M(("Max time disconected... %lu", last_update));
             
-            if( last_update > (size_t)SamsonSetup::shared()->getInt("max_worker_disconnected_time") )
+            if( last_update > (size_t)SamsonSetup::shared()->getInt("controller.max_worker_disconnected_time") )
             {
                 // If execessive time .... kill all the tasks
                 LM_W(("Killed all task since there is a worker that has been %lu seconds disconnected" , last_update ));

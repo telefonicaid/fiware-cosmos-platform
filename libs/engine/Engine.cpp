@@ -113,6 +113,8 @@ namespace engine
         
         time_t time_in_seconds = cronometer.diffTimeInSeconds();
         
+        LM_M(("Checking engine: Time %lu....", time_in_seconds ));
+        
         if( running_element && ( time_in_seconds > ENGINE_MAX_RUNNING_TIME  ) )
         {
             LM_X(1,("Excesive time for and engine simple task (%d secs, max %d secs) for engine Element '%s'." ,  

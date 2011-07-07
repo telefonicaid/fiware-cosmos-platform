@@ -18,6 +18,8 @@
 #include "logMsg/traceLevels.h"
 
 #include "engine/MemoryManager.h"
+#include "engine/Engine.h"
+
 #include "samson/common/status.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/network/Endpoint2.h"
@@ -203,6 +205,9 @@ int main(int argC, const char *argV[])
 
 	samson::SamsonSetup::init();
 
+    // Init the engine
+    engine::Engine::init();
+    
 	engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
 
 	samsonStarter = new SamsonStarter();

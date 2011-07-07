@@ -173,6 +173,8 @@ message ControllerStatus
 	optional string job_manager_status=1;				// Status of the job manager
 	optional string network_status=3;				// Information about the network connections
 
+	optional string setup_status=6;					// Information avout setup
+
 	optional string modules_manager_status = 4;			// Information about the modules
 
 	optional ControllerTaskManagerStatus task_manager_status = 5;	// Status of the task manager
@@ -195,6 +197,8 @@ message WorkerStatus
 	optional string queues_tasks_status=26;				// Information about queue tasks
 
 	optional string modules_manager_status=28;			// Information about modules manager
+
+	optional string setup_status = 40;				// Information about the current setup
 
 	// Numerical values for quick system evaluation
 

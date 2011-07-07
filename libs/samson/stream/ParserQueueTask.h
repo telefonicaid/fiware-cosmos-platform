@@ -13,12 +13,12 @@ namespace samson
     {
         // Parser QueueTask ( at the same time is the ProcessItem in the engine library to be executed )
         
-        class ParserQueueTask : public stream::QueueTask , public StreamProcessBase
+        class ParserQueueTask : public stream::QueueTask 
         {
             
         public:
             
-            ParserQueueTask( size_t id , std::string queue_name , network::StreamQueue * streamQueue  ) : stream::QueueTask(id,  queue_name), StreamProcessBase( key_value , streamQueue )
+            ParserQueueTask( size_t id , std::string queue_name , network::StreamQueue * streamQueue  ) : stream::QueueTask(id,  queue_name , streamQueue )
             {
                 operation_name = "stream:" + streamQueue->operation();
             }
@@ -47,12 +47,12 @@ namespace samson
 
         // Parser QueueTask ( at the same time is the ProcessItem in the engine library to be executed )
         
-        class MapQueueTask : public stream::QueueTask , public StreamProcessBase
+        class MapQueueTask : public stream::QueueTask 
         {
             
         public:
             
-            MapQueueTask( size_t id , std::string queue_name , network::StreamQueue * streamQueue  ) : stream::QueueTask(id , queue_name), StreamProcessBase( key_value , streamQueue )
+            MapQueueTask( size_t id , std::string queue_name , network::StreamQueue * streamQueue  ) :stream::QueueTask(id,  queue_name , streamQueue )
             {
                 operation_name = "stream:" + streamQueue->operation();
             }
@@ -81,14 +81,14 @@ namespace samson
 
         // Parser QueueTask ( at the same time is the ProcessItem in the engine library to be executed )
         
-        class ReduceQueueTask : public stream::QueueTask , public StreamProcessBase
+        class ReduceQueueTask : public stream::QueueTask 
         {
             int hg_begin;
             int hg_end;
             
         public:
             
-            ReduceQueueTask( size_t id , std::string queue_name , network::StreamQueue * streamQueue  ) : stream::QueueTask(id , queue_name) , StreamProcessBase( key_value , streamQueue )
+            ReduceQueueTask( size_t id , std::string queue_name , network::StreamQueue * streamQueue  ) : stream::QueueTask(id,  queue_name , streamQueue )
             {
                 operation_name = "stream:" + streamQueue->operation();
                 hg_begin = -1;

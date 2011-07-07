@@ -81,6 +81,7 @@ namespace samson {
                     runningTasks.insertInMap( _task->id , _task ); 
 
                     // Add this process item ( note that a notification will be used to notify when finished )
+                    
                     engine::ProcessManager::shared()->add( _task->getStreamProcess() , getEngineId() );
                 }
                 
@@ -95,6 +96,7 @@ namespace samson {
                 size_t _id = notification->environment.getSizeT("id", 0);
                 std::string queue_name = notification->environment.get("queue","--");
                 
+                LM_M(("Notified finish task queue_name=%s // id=%lu" , queue_name.c_str() , _id));
                 
                 // Extract the object to not be automatically removed
                 notification->extractObject();
@@ -110,12 +112,13 @@ namespace samson {
                     //LM_M(("Destroying task"));
                     delete _task;
                     
+                    // Notify that this stream task is finished
+                    qm->notifyFinishTask(queue_name, _id);
+                    
                 }
                 else
                     LM_W(("Notification of a finish item at QueueTaskManager, but task %lu not found in the running task list " , _id));
                 
-                // Notify that this stream task is finished
-                qm->notifyFinishTask(queue_name, _id);
                 
             }
         }

@@ -134,17 +134,25 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 	
-	samson::SamsonSetup::load();			// Load the main setup file
+	samson::SamsonSetup::init();			// Load the main setup file
 	
 	// Setup parameters from command line ( this is delilah so memory and load buffer size are configurable from command line )
-	samson::SamsonSetup::shared()->memory			= (size_t) memory_gb * (size_t) (1024*1024*1024);
-	samson::SamsonSetup::shared()->load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
+    size_t _memory = (size_t) memory_gb * (size_t) (1024*1024*1024);
+    std::stringstream memory;
+    memory << _memory;
+
+    size_t _load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
+    std::stringstream load_buffer_size;
+    load_buffer_size << _load_buffer_size;
+    
+	samson::SamsonSetup::shared()->setValueForParameter("general.memory", memory.str() );
+    samson::SamsonSetup::shared()->setValueForParameter("load.buffer_size",  load_buffer_size.str() );
 
 	std::cout << "Waiting for network connection ...";
 
 	engine::Engine::init();
 	// Goyo. Groping in the dark (blind sticks for an easier translation)
-	engine::MemoryManager::init(  samson::SamsonSetup::shared()->memory );
+	engine::MemoryManager::init(  samson::SamsonSetup::getUInt64("general.memory") );
 	// Goyo. End of groping in the dark
 
 	

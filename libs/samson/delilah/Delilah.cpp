@@ -62,8 +62,8 @@ namespace samson {
         listen( notification_delilah_automatic_update );
         
         // Emit a periodic notification
-        int delilah_automatic_update_period = samson::SamsonSetup::shared()->getInt( "delilah.automatic_update_period" , 2 );
-        engine::Engine::notify( new engine::Notification( notification_delilah_automatic_update ) , delilah_automatic_update_period );
+        int delilah_automatic_update_period = samson::SamsonSetup::getInt( "delilah.automatic_update_period" );
+        engine::Engine::shared()->notify( new engine::Notification( notification_delilah_automatic_update ) , delilah_automatic_update_period );
 
     }
     

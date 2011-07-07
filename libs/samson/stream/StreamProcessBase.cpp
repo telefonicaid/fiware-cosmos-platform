@@ -97,7 +97,7 @@ namespace samson {
             // Send the packet using the "notification_send_to_worker"
             engine::Notification *notification = new engine::Notification( notification_send_to_worker , packet );
             notification->environment.setInt("outputWorker", outputWorker );
-            engine::Engine::notify( notification );
+            engine::Engine::shared()->notify( notification );
             
         }
         

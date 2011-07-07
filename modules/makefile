@@ -14,6 +14,7 @@ all:
 	make -C terasort
 	make -C testtime
 	make -C testcomparefunctions
+	make -C string
 
 reset:
 	make reset -C system 
@@ -31,6 +32,7 @@ reset:
 	make reset -C terasort
 	make reset -C testtime
 	make reset -C testcomparefunctions
+	make reset -C string
 
 eclipse:
 	make eclipse -C system

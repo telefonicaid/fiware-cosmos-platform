@@ -17,7 +17,7 @@ namespace engine
     Object::Object()
     {
         // Add myself as an engine_objects receiving my id
-        Engine::register_object( this );
+        Engine::shared()->register_object( this );
         
         if( engine_id == 0)
             LM_X(1,("Wrong notification listener id"));
@@ -26,7 +26,7 @@ namespace engine
     Object::~Object()
     {
         // Unregister this object
-        Engine::unregister_object(this);
+        Engine::shared()->unregister_object(this);
     }
 
     void Object::notify( Notification* notification )
@@ -37,7 +37,7 @@ namespace engine
     
     void Object::listen( const char* notification_name )
     {
-        Engine::register_object_for_channel( this,  notification_name );
+        Engine::shared()->register_object_for_channel( this,  notification_name );
     }
     
 

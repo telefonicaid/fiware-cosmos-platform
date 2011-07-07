@@ -74,7 +74,17 @@ namespace samson {
 		// Serialize to the minibuffer
 		
 		size_t key_size		= key->serialize( miniBuffer );
+        size_t key_size_theoretical = key->parse( miniBuffer );
+        
+        if( key_size != key_size_theoretical  )
+            LM_W(("Error serializing data. Different ky size serialzing key %lu sv %lu"  , key_size , key_size_theoretical));
+        
 		size_t value_size	= value->serialize( miniBuffer + key_size );
+		size_t value_size_theoretical	= value->parse( miniBuffer + key_size );
+        
+        if( value_size != value_size_theoretical )
+            LM_W(("Error serializing data. Different ky size serialzing value %lu sv %lu"  , value_size , value_size_theoretical));
+        
 		miniBufferSize		= key_size + value_size;
 		
 		// Emit the miniBuffer to the rigth place

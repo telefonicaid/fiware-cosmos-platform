@@ -31,7 +31,7 @@ namespace engine
     void NotificationElement::run()
     {
         LM_T(LmtEngineNotification, ("Running notification %s", notification->getDescription().c_str() ));
-        Engine::send( notification );
+        Engine::shared()->send( notification );
     }
     
 }

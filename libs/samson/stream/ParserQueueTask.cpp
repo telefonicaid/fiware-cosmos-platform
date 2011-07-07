@@ -55,7 +55,7 @@ namespace samson {
                 return;
             }
             
-            parser->environment = &environment;
+            parser->environment = &operation_environment;
             parser->tracer = this;
             parser->operationController = this;
 
@@ -145,7 +145,7 @@ namespace samson {
                 return;
             }
             
-            map->environment = &environment;
+            map->environment = &operation_environment;
             map->tracer = this;
             map->operationController = this;
             
@@ -316,7 +316,7 @@ namespace samson {
             // Get the operation instance 
             Reduce *reduce = (Reduce*) operation->getInstance();
             
-            reduce->environment = &environment;
+            reduce->environment = &operation_environment;
             reduce->tracer = this;
             reduce->operationController = this;
             

@@ -6,6 +6,7 @@ ADD_SUBDIRECTORY(delilah)
 ADD_SUBDIRECTORY(samsonLocal)
 ADD_SUBDIRECTORY(samsonModuleParser)
 ADD_SUBDIRECTORY(samsonCat)
+ADD_SUBDIRECTORY(samsonConfig)
 ADD_SUBDIRECTORY(samsonData)
 ADD_SUBDIRECTORY(samsonKiller)
 

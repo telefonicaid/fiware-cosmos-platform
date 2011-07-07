@@ -142,12 +142,15 @@ int main(int argC, const char* argV[])
 
 	// Init singletons
 	au::LockDebugger::shared();             // Lock usage debugging (necessary here where there is only one thread)
-	samson::SamsonSetup::load(workingDir);  // Load setup and create all directories
+	samson::SamsonSetup::init();  // Load setup and create all directories
+    samson::SamsonSetup::shared()->setWorkingDirectory(workingDir);
+    
+    
 	engine::Engine::init();                 // Init the SamsonEngine
 	samson::ModulesManager::init();         // Init the modules manager
 
 	// Goyo. Groping in the dark (blind sticks for an easier translation)
-	engine::MemoryManager::init(samson::SamsonSetup::shared()->memory);
+	engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
 	// Goyo. End of groping in the dark
 
 	epMgr     = new samson::EndpointManager(samson::Endpoint2::Controller);

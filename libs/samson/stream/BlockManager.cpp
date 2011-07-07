@@ -26,7 +26,7 @@ namespace samson {
         
             memory = 0;
             
-            max_memory = SamsonSetup::shared()->memory; //Use all the memory for stream processing
+            max_memory = SamsonSetup::getUInt64("general.memory");
         }
         
         void BlockManager::init()

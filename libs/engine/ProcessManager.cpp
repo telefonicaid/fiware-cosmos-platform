@@ -60,7 +60,7 @@ namespace engine
         listen( notification_process_manager_check_background_process );
      
         // Check every second if we should start a new process item
-        engine::Engine::notify( new Notification( notification_process_manager_check_background_process ) , 1 );
+        engine::Engine::shared()->notify( new Notification( notification_process_manager_check_background_process ) , 1 );
     }
     
     ProcessManager::~ProcessManager()
@@ -85,13 +85,13 @@ namespace engine
         running_items.erase(item);
 
         // Send to me a notification to review background processes
-        Engine::notify( new Notification( notification_process_manager_check_background_process ) );
+        Engine::shared()->notify( new Notification( notification_process_manager_check_background_process ) );
         
         // Notify this using the notification Mechanism
         {
         Notification * notification = new Notification( notification_process_request_response , item , item->listenerId );
         notification->environment.copyFrom( &item->environment );
-        Engine::notify( notification );
+        Engine::shared()->notify( notification );
         }
         
     }
@@ -106,7 +106,7 @@ namespace engine
         
         {
             Notification * notification = new Notification( notification_process_manager_check_background_process );
-            Engine::notify( notification );
+            Engine::shared()->notify( notification );
         }
         
     }   
@@ -131,7 +131,7 @@ namespace engine
         LM_T( LmtProcessManager , ("Finish Adding ProcessItem") );
 
         // A notification will check if it is necessary to run a new process item
-        engine::Engine::notify( new Notification( notification_process_manager_check_background_process ) );
+        engine::Engine::shared()->notify( new Notification( notification_process_manager_check_background_process ) );
         
     }
     
@@ -154,7 +154,7 @@ namespace engine
                 Notification * notification = new Notification( notification_process_request_response , item , item->listenerId );
                 notification->environment.copyFrom( &item->environment );
                 notification->environment.set("error", "Canceled" );
-                Engine::notify( notification );
+                Engine::shared()->notify( notification );
             }
             
         }

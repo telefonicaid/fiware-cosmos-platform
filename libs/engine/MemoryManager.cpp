@@ -114,7 +114,7 @@ namespace engine
 		checkMemoryRequests();
 		
 		// Check process halted in the Engine
-        Engine::notify( new Notification( notification_process_manager_check_background_process ) );
+        Engine::shared()->notify( new Notification( notification_process_manager_check_background_process ) );
 		
 	}
     
@@ -146,7 +146,7 @@ namespace engine
             request->buffer = NULL;
             
             // Send the answer with a notification
-            Engine::notify( new Notification( notification_memory_request_response , request , request->listner_id ) );
+            Engine::shared()->notify( new Notification( notification_memory_request_response , request , request->listner_id ) );
             
         }
         
@@ -182,7 +182,7 @@ namespace engine
 				r->buffer = _newBuffer("Buffer from request", r->size , 0 );   // By default ( tag == 0 )
 
                 // Send the answer with a notification
-                Engine::notify( new Notification( notification_memory_request_response , r , r->listner_id ) );
+                Engine::shared()->notify( new Notification( notification_memory_request_response , r , r->listner_id ) );
 			}
 			
 		}

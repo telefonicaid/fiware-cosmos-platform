@@ -79,20 +79,20 @@ namespace samson {
         
         // Notification of the files
         {
-            int worker_update_files_period = samson::SamsonSetup::shared()->getInt("worker.update_files_period" , 5 );
+            int worker_update_files_period = samson::SamsonSetup::getInt("worker.update_files_period");
             engine::Notification *notification = new engine::Notification(notification_worker_update_files);
             notification->environment.set("target", "SamsonWorker");
             notification->environment.setInt("worker", network->getWorkerId() );
-            engine::Engine::notify( notification, worker_update_files_period );
+            engine::Engine::shared()->notify( notification, worker_update_files_period );
         }
         
         // Notification to update state
         {
-            int worker_update_files_period = samson::SamsonSetup::shared()->getInt("worker.update_status_period" , 3 );
+            int worker_update_files_period = samson::SamsonSetup::getInt("worker.update_status_period" );
             engine::Notification *notification = new engine::Notification(notification_samson_worker_send_status_update);
             notification->environment.set("target", "SamsonWorker");
             notification->environment.setInt("worker", network->getWorkerId() );
-            engine::Engine::notify( notification, worker_update_files_period );
+            engine::Engine::shared()->notify( notification, worker_update_files_period );
         }
      
         
@@ -143,7 +143,7 @@ namespace samson {
 		taskManager.fill(ws);
 		
 		// Fill information related with file manager and disk manager
-        ws->set_engine_status( engine::Engine::str() );
+        ws->set_engine_status( engine::Engine::shared()->str() );
 
         // Modules manager
         ModulesManager::shared()->fill( ws );
@@ -185,6 +185,9 @@ namespace samson {
         
         ws->set_memory_status( memory_status.str() );
 
+        //Setup
+        ws->set_setup_status( SamsonSetup::shared()->str() );
+        
         // Process manager
         ws->set_process_manager_status( engine::ProcessManager::str() );
 
@@ -284,6 +287,9 @@ namespace samson {
             {
                 std::string queue = packet->message->push_block().target(i).queue();
                 int _channel = (int)packet->message->push_block().target(i).channel();
+                
+                LM_M(("Adding a block to queue %s", queue.c_str()));
+                
                 queuesManager.addBlock(queue, _channel , block  );
             }
 

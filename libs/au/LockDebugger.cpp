@@ -37,7 +37,9 @@ namespace au {
 	LockDebugger* LockDebugger::shared()
 	{
 		if( !lockDebugger)
+        {
 			lockDebugger = new LockDebugger();	
+        }
 		return lockDebugger;
 	}
 	
@@ -86,12 +88,16 @@ namespace au {
 			LM_X(1,("Cross lock detected"));
 		}
 		
+        //LM_M(("Adding lock %p to lockVector %p" , new_lock , locksVector ));
+        
+        
 		// Add the new lock
 		locksVector->insert( new_lock );
 				
 		// Unlock
 		pthread_mutex_unlock(&_lock);
 		
+        
 	}
 	
 	void LockDebugger::remove_lock(  void* new_lock )
@@ -108,6 +114,8 @@ namespace au {
 		
 		std::set<void*> *locksVector = _getLocksVector();
 
+        //LM_M(("Removing lock %p from lockVector %p" , new_lock , locksVector ));
+        
 #ifdef FULL_DEBUG_AU_THREADS
 		std::ostringstream o;
 		o << "Removing thread \"" << getTitle() << "\" [LOCKS: " << locksVector->size() << "] to lock \"" << new_lock->description << "\"" <<std::endl;
@@ -115,7 +123,7 @@ namespace au {
 #endif		
 		// Make sure it was there
 		if( locksVector->find( new_lock ) == locksVector->end() )
-			LM_X(1,("Error debugging locks. Removing a lock that was not previously defined"));
+			LM_X(1,("Error debugging locks. Removing a lock that was not previously defined. List of %d locks" , locksVector->size() ));
 		
 		locksVector->erase( new_lock );
 		

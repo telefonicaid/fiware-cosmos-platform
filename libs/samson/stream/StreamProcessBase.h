@@ -50,7 +50,7 @@ namespace samson
             size_t task_id;                         // Id of the operation
             size_t task_order;                      // Order of the task
             
-            Environment environment;                // Environment of the operation
+            Environment operation_environment;                // Environment of the operation
             
             // Information about how to process this queue ( from controller )
             network::StreamQueue *streamQueue;

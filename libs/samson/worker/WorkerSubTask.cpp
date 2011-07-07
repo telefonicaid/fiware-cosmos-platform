@@ -142,7 +142,7 @@ namespace samson
             engine::Notification * notification  = new engine::Notification( notification_sub_task_finished ,NULL, task->getEngineId() );
             setNotificationCommandEnvironment(notification);
             notification->environment.set("target", "WorkerTask");      // Modify to "send" this notification to the worker task
-            engine::Engine::notify( notification );
+            engine::Engine::shared()->notify( notification );
             return;
         }
         
@@ -205,7 +205,7 @@ namespace samson
                     engine::Notification * notification  = new engine::Notification( notification_sub_task_finished ,NULL, task->getEngineId() );
                     setNotificationCommandEnvironment(notification);
                     notification->environment.set("target", "WorkerTask");      // Modify to "send" this notification to the worker task
-                    engine::Engine::notify( notification );
+                    engine::Engine::shared()->notify( notification );
                 }
                 break;
             }
@@ -343,13 +343,13 @@ namespace samson
 		// Division is done in such a way that any of the parts do not get overloaded
 		
 		// Number of paralel processes in this system
-		int num_process = SamsonSetup::shared()->num_processes;
+		int num_process = SamsonSetup::getInt("general.num_processess");
 		
 		// Maximum size per hash-group
 		size_t max_size_per_group = reduceInformation->total_size / ( 4 * num_process );
 		
 		// Another limit for memory reasons
-		size_t max_size_per_group2 = (SamsonSetup::shared()->memory/4) - reduceInformation->total_num_input_files*KVFILE_NUM_HASHGROUPS*sizeof(KVInfo) - sizeof(KVHeader);
+		size_t max_size_per_group2 = ( SamsonSetup::getUInt64("general.memory") /4) - reduceInformation->total_num_input_files*KVFILE_NUM_HASHGROUPS*sizeof(KVInfo) - sizeof(KVHeader);
 		if( max_size_per_group2 < max_size_per_group)
 			max_size_per_group = max_size_per_group2;
 		
@@ -592,7 +592,7 @@ namespace samson
 		reduceInformation->setup();
 		
 		// Organize the content so, that we generate necessary files
-		size_t max_item_content_size = SamsonSetup::shared()->max_file_size;
+		size_t max_item_content_size = SamsonSetup::getUInt64("general.max_file_size");
 		
 		// Create necessary reduce operations
 		int hg = 1;												// Evaluating current hash group	

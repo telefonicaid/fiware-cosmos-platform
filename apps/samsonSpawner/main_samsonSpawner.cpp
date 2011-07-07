@@ -138,9 +138,11 @@ int main(int argC, const char *argV[])
 
 	atexit(exitFunction);
 	
-	samson::SamsonSetup::load(workingDir);
+	samson::SamsonSetup::init();
+    samson::SamsonSetup::shared()->setWorkingDirectory(workingDir);
+    
 	engine::Engine::init();
-	engine::MemoryManager::init(samson::SamsonSetup::shared()->memory);
+	engine::MemoryManager::init( samson::SamsonSetup::getUInt64("general.memory") );
 
 	spawnerP = new samson::SamsonSpawner();
 	spawnerP->init();	

@@ -61,7 +61,8 @@ namespace samson
 	
 	void ControllerTaskManager::reviewTasks()
 	{
-		int max_num_paralell_outputs =  SamsonSetup::shared()->num_paralell_outputs;
+        int max_num_paralell_outputs = SamsonSetup::getInt("general.max_parallel_outputs");
+        
 		int num_paralell_outputs = 0;
 
 		// Count the number of paralel outputs used in active operations over the cluster

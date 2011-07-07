@@ -3,7 +3,7 @@ Module cdr
 
 	title	"CDR  module"
 	author 	"Andreu Urruela (andreu@tid.es), Miguel Santos (masp20@tid.es) for the GASSET data"
-	version "1.0.0"
+	version "1.0.1"
 	
 }
 

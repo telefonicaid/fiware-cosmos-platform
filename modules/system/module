@@ -78,6 +78,13 @@ data HitCount
 	system.UInt   hits;		# Hits during previous slot ( really used to detect maximums )   	
 }
 
+data Hit
+{
+	system.UInt time;
+	system.UInt hits;
+	system.String concept;
+}
+
 parser parse_id_id
 {
 	out system.UInt2 system.Void

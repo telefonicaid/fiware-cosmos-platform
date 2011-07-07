@@ -23,7 +23,7 @@ namespace samson {
             
             // add a generic periodic notification to check tasks for stream queues
             engine::Notification *notification = new engine::Notification( notification_review_task_for_queue );
-            engine::Engine::notify( notification , 1 );
+            engine::Engine::shared()->notify( notification , 1 );
             
         }
         

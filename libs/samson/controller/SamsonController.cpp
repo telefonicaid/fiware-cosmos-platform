@@ -34,7 +34,6 @@
 // Global periodic notification to check for the entire system ( disconected workers )
 #define notification_check_controller  "notification_check_controller"      
 
-#define MAX_NON_RESPONDING_TIME_FOR_WORKER 60
 
 namespace samson {
 
@@ -78,11 +77,11 @@ namespace samson {
 		
         // Add as a listener to notifications    
         listen( notification_monitorization );
-        engine::Engine::notify( new engine::Notification( notification_monitorization ) , 5  );
+        engine::Engine::shared()->notify( new engine::Notification( notification_monitorization ) , 5  );
         
         // receive notification to check the entire controller system
         listen( notification_check_controller );
-        engine::Engine::notify( new engine::Notification( notification_check_controller ) , 5  );
+        engine::Engine::shared()->notify( new engine::Notification( notification_check_controller ) , 5  );
         
 	}	
 	
@@ -118,10 +117,10 @@ namespace samson {
         
             //LM_M(("Max time disconected... %lu", last_update));
             
-            if( last_update > MAX_NON_RESPONDING_TIME_FOR_WORKER )
+            if( last_update > (size_t)SamsonSetup::shared()->getInt("max_worker_disconnected_time") )
             {
-                // More than 10 seconds, kill all the tasks
-                LM_W(("Killed all task sicne there is a worker that has been %lu seconds disconnected"));
+                // If execessive time .... kill all the tasks
+                LM_W(("Killed all task since there is a worker that has been %lu seconds disconnected" , last_update ));
                 jobManager.killAll( au::Format::string("Error since a worker has been %lu seconds disconnected", last_update ) );
             }
         }
@@ -594,6 +593,9 @@ namespace samson {
 		{
 			jobManager.fill( status );
             status->set_network_status(network->getState(""));
+
+            //Setup status
+            status->set_setup_status( SamsonSetup::shared()->str() );
             
             ModulesManager::shared()->fill( status );
             

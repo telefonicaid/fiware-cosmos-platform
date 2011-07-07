@@ -132,13 +132,14 @@ int main(int argC, const char *argV[])
 
 	logFd = lmFirstDiskFileDescriptor();
 
-	samson::SamsonSetup::load(workingDir);  // Load setup and create default directories
+	samson::SamsonSetup::init();  // Load setup and create default directories
+    samson::SamsonSetup::shared()->setWorkingDirectory(workingDir);
     
-	engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->num_processes , samson::SamsonSetup::shared()->shared_memory_size_per_buffer);
+	engine::SharedMemoryManager::init(samson::SamsonSetup::getInt("general.num_processess") , samson::SamsonSetup::getUInt64("general.shared_memory_size_per_buffer"));
 	engine::Engine::init();
 	engine::DiskManager::init(1);
-	engine::ProcessManager::init(samson::SamsonSetup::shared()->num_processes);
-	engine::MemoryManager::init(samson::SamsonSetup::shared()->memory);
+	engine::ProcessManager::init(samson::SamsonSetup::getInt("general.num_processess"));
+	engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
 	samson::ModulesManager::init();
     samson::stream::BlockManager::init();
 

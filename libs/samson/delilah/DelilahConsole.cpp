@@ -5,22 +5,30 @@
 * DESCRIPTION			   Console terminal for delilah
 *
 */
+
+#include <iostream>
+#include <iomanip>
+#include <sys/stat.h>					// stat(.)
+#include <dirent.h>						// DIR directory header	
+
+
+#include "au/CommandLine.h"				// au::CommandLine
+#include "au/Format.h"						// au::Format
+
+#include "samson/network/Packet.h"						// ss:Packet
+
 #include "samson/delilah/Delilah.h"					// samson::Delailh
 #include "samson/delilah/DelilahConsole.h"				// Own interface
-#include "samson/network/Packet.h"						// ss:Packet
-#include "au/Format.h"						// au::Format
+
 #include "DelilahUploadDataProcess.h"		// samson::DelilahUpLoadDataProcess
 #include "DelilahDownloadDataProcess.h"		// samson::DelilahDownLoadDataProcess
 #include "engine/MemoryManager.h"				// samson::MemoryManager
-#include <iostream>
-#include <iomanip>
 #include "samson/common/EnvironmentOperations.h"						// Environment operations (CopyFrom)
-#include <iomanip>
 #include "samson/module/samsonVersion.h"		// SAMSON_VERSION
-#include <sys/stat.h>					// stat(.)
-#include <dirent.h>						// DIR directory header	
-#include "au/CommandLine.h"				// au::CommandLine
+
+
 #include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
+
 #include "PushComponent.h"  
 
 #define DEF1             "TYPE:EXEC/FUNC: TEXT"
@@ -1144,6 +1152,9 @@ namespace samson
         
         if( (command == "info_modules" ) )
             txt << "** Modules:\n" << samsonStatus->controller_status().modules_manager_status() << "\n";
+
+        if( ( command == "info_full" ) || ( command == "info_setup" ))
+            txt << samsonStatus->controller_status().setup_status() << "\n";
         
         if( ( command == "info_full" ) || ( command == "info_task_manager" ))
         {
@@ -1242,6 +1253,10 @@ namespace samson
                 txt << "\tShared Memory Manager:    " << worker_status.shared_memory_status() << "\n";
             }
 
+            if( ( command == "info_full" ) || ( command == "info_setup" ))
+                txt << worker_status.setup_status() << "\n";
+            
+            
             if( (command == "info_modules" ) )
                 txt << "** Modules:\n" << worker_status.modules_manager_status() << "\n";
             

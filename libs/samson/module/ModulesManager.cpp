@@ -54,7 +54,7 @@ namespace samson
 	
 	static ModulesManager *modulesManager=NULL;
 	
-	ModulesManager::ModulesManager()
+	ModulesManager::ModulesManager() : token("ModulesManager")
 	{
 		reloadModules();
 	}
@@ -127,9 +127,10 @@ namespace samson
 	
 	void ModulesManager::reloadModules()
 	{
+        au::TokenTaker tt( &token , "ModulesManager::reloadModules");
+        
 		LM_T(LmtModuleManager,("Reloading modules"));
 		
-		lock.lock();
 		
 		clearModule();  		// Clear this module itself (operations and datas)
         
@@ -160,7 +161,6 @@ namespace samson
 		compact->inputFormats.push_back( samson::KVFormat::format("*" ,"*") );
 		add( compact );
 		
-		lock.unlock();
 	}
 	
 	typedef Module*(*moduleFactory)();
@@ -236,6 +236,8 @@ namespace samson
 	
 	void ModulesManager::fill( network::OperationList *ol , std::string command  )
 	{
+        au::TokenTaker tt( &token , "ModulesManager::fill");
+        
 		au::CommandLine cmdLine;
 		cmdLine.set_flag_string("begin" , "");
 		cmdLine.set_flag_string("end" , "");
@@ -245,7 +247,6 @@ namespace samson
 		std::string end = cmdLine.get_flag_string("end");
 		
 		
-		lock.lock();
 		
 		{
 			for (std::map<std::string , Operation*>::iterator j = operations.begin() ; j != operations.end() ; j++ )
@@ -274,11 +275,12 @@ namespace samson
 			}
 		}
 		
-		lock.unlock();		
 	}
 	
 	void ModulesManager::fill( network::DataList *dl, std::string command  )
 	{
+        au::TokenTaker tt( &token , "ModulesManager::fill");
+        
 		au::CommandLine cmdLine;
 		cmdLine.set_flag_string("begin" , "");
 		cmdLine.set_flag_string("end" , "");
@@ -288,7 +290,6 @@ namespace samson
 		std::string end = cmdLine.get_flag_string("end");
 		
 		
-		lock.lock();
 		
 		{
 			for (std::map<std::string , Data*>::iterator j = datas.begin() ; j != datas.end() ; j++ )
@@ -305,7 +306,6 @@ namespace samson
 			}
 		}
 		
-		lock.unlock();		
 	}
 	
     

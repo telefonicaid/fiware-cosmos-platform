@@ -100,12 +100,6 @@ namespace engine {
 		// Status management
 		std::string getStatus();
 		
-		// Assign the delegate begore constructor
-		void setProcessManagerDelegate( );
-		
-		// Notify delegate if any
-		void notifyFinishToDelegate();		
-		
 		// What to do when processor is available
 		virtual void run()=0;
 

@@ -84,6 +84,7 @@ namespace samson {
             addOption("info_load_data_manager");
             addOption("info_queues");
             addOption("info_engine");
+            addOption("info_setup");
             addOption("add_queue");
         }
         

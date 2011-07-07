@@ -237,7 +237,7 @@ namespace samson
                 p->message->mutable_trace()->CopyFrom( message->trace() );
                 p->message->set_delilah_id( 0xFFFFFFFF );
 #endif
-                engine::Engine::notify( new engine::Notification( notification_samson_worker_send_trace , p ) );
+                engine::Engine::shared()->notify( new engine::Notification( notification_samson_worker_send_trace , p ) );
                 //LM_M(("Notifying a trace to the engine"));
                 
                 // Old trace system, tracing here... to be removed
@@ -406,7 +406,7 @@ namespace samson
             
             
 			// Take the timeout for reading operations from the other site
-			int timeout_setup = SamsonSetup::shared()->timeout_secs_isolatedProcess;
+			int timeout_setup = SamsonSetup::getInt("isolated.timeout");
             
 			LM_T(LmtIsolated, ("Isolated process %s: Reading a new message with timeout %d", getStatus().c_str() , timeout_setup));
             

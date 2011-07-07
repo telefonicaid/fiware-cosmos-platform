@@ -32,7 +32,7 @@ namespace samson {
 
         // Run this notification every 5 second
         engine::Notification* notification =  new engine::Notification( notification_samson_worker_remove_old_tasks );
-        engine::Engine::notify( notification , 5 );
+        engine::Engine::shared()->notify( notification , 5 );
         
 	}
     

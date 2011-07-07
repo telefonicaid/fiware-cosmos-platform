@@ -23,7 +23,8 @@ int main(int argc, const char *argv[])
 	cmdLine.set_flag_string("working",SAMSON_DEFAULT_WORKING_DIRECTORY);
 	cmdLine.parse(argc , argv);
 
-	samson::SamsonSetup::load( cmdLine.get_flag_string("working") );
+	samson::SamsonSetup::init(  );
+    samson::SamsonSetup::shared()->setWorkingDirectory(cmdLine.get_flag_string("working"));
 	
 	bool debug = cmdLine.get_flag_bool("debug");
 	int limit = cmdLine.get_flag_int("limit");
@@ -90,10 +91,11 @@ int main(int argc, const char *argv[])
 	if( cmdLine.get_flag_bool("header") )
 		std::cout << "Format: " << format.str() << "\n";
 
-	samson::ModulesManager modulesManager;
+    samson::ModulesManager::init();
+    samson::ModulesManager* modulesManager = samson::ModulesManager::shared();
 
-	samson::Data *keyData = modulesManager.getData(format.keyFormat);
-	samson::Data *valueData = modulesManager.getData(format.valueFormat);
+	samson::Data *keyData = modulesManager->getData(format.keyFormat);
+	samson::Data *valueData = modulesManager->getData(format.valueFormat);
 	
 	if(!keyData )
 	{

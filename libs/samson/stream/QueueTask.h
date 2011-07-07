@@ -20,7 +20,7 @@ namespace samson {
         
         // Base class for all the stream tasks ( parser , map , reduce , parseOut )
         
-        class QueueTask
+        class QueueTask : public StreamProcessBase
         {
             
         public:
@@ -30,10 +30,15 @@ namespace samson {
             
             BlockMatrix matrix;                 // Matrix of blocks involved in this operation
             
-            QueueTask( size_t _id , std::string _queue_name )
+            QueueTask( size_t _id , std::string _queue_name , network::StreamQueue * streamQueue ) : StreamProcessBase( key_value , streamQueue )
             {
                 id = _id;
                 queue_name = _queue_name;
+                
+                
+                // Set in the environemtn variables
+                environment.setSizeT("id",id);
+                environment.set("queue" , queue_name );
             }
             
             virtual ~QueueTask()

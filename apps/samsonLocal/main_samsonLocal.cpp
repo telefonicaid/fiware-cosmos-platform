@@ -2,43 +2,45 @@
 
 #include <vector>				// std::vector
 #include <sstream>				// std::ostringstream
+#include <string.h>                 // strcmp
+#include <signal.h>                 // signal(.)
+
+#include "au/LockDebugger.h"            // au::LockDebugger
+
+#include "engine/Engine.h"                 // engine::Engine
+#include "engine/EngineElement.h"          // engine::EngineElement
+#include "engine/DiskManager.h"            // engine::DiskManager
+#include "engine/ProcessManager.h"         // engine::ProcessManager
 
 #include "logMsg/logMsg.h"             // LM_*
 #include "logMsg/traceLevels.h"        // Trace Levels
+
 #include "samson/common/traces.h"				// Traces stuff: samsonInitTrace(.) , ...
+#include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
+#include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
+
+#include "samson/module/ModulesManager.h"		// samson::ModulesManager
+#include "samson/module/Operation.h"	// samson::Operation
+
+
+#include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
+
+#include "samson/isolated/ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
+#include "samson/isolated/SharedMemoryManager.h"    // samson::SharedMemoryManager
 
 #include "samson/network/Endpoint.h"			// samson::EndPoint
-#include "FakeEndpoint.h"
-#include "NetworkFake.h"
-#include "NetworkCenter.h"
 #include "samson/network/NetworkInterface.h"
 
 #include "samson/worker/SamsonWorker.h"		// samson::SamsonWorker
+
 #include "samson/controller/SamsonController.h"	// samson:: SasonController
-#include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
 
 #include "samson/delilah/DelilahConsole.h"              // ss:DelilahConsole
 #include "samson/delilah/DelilahMonitorization.h"		// ss:DelilahMonitorization
 
-
-#include "samson/module/ModulesManager.h"		// samson::ModulesManager
-#include "samson/module/Operation.h"	// samson::Operation
-#include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
-
-#include <string.h>                 // strcmp
-#include <signal.h>                 // signal(.)
-
-#include "engine/Engine.h"                 // engine::Engine
-#include "engine/EngineElement.h"          // engine::EngineElement
-
-#include "samson/isolated/ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
-
-#include "samson/isolated/SharedMemoryManager.h"    // samson::SharedMemoryManager
-
-#include "engine/DiskManager.h"            // engine::DiskManager
-#include "engine/ProcessManager.h"         // engine::ProcessManager
-
-#include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
+#include "FakeEndpoint.h"
+#include "NetworkFake.h"
+#include "NetworkCenter.h"
 
 
 /* ****************************************************************************
@@ -111,7 +113,7 @@ void deleteNetworkCenter()
 
 int main(int argC, const char *argV[])
 {
-    
+        
 	paConfig("prefix",                        (void*) "SSL_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
@@ -135,8 +137,12 @@ int main(int argC, const char *argV[])
         samson::ProcessItemIsolated::isolated_process_as_tread = true;
     }
     
+    // Make sure this singlelton is created just once
+    au::LockDebugger::shared();
+    
     LM_M(("samsonLocal: Seting working directory as %s", workingDir ));
-	samson::SamsonSetup::load( workingDir );		// Load setup and create default directories
+	samson::SamsonSetup::init(  );		// Load setup and create default directories
+    samson::SamsonSetup::shared()->setWorkingDirectory(workingDir);
 
 	engine::Engine::init();
     
@@ -144,10 +150,10 @@ int main(int argC, const char *argV[])
     // engine::Engine::add( new engine::EngineElementSleepTest() );
     
 	samson::ModulesManager::init();		// Init the modules manager
-	engine::SharedMemoryManager::init( samson::SamsonSetup::shared()->num_processes , samson::SamsonSetup::shared()->shared_memory_size_per_buffer );
+	engine::SharedMemoryManager::init( samson::SamsonSetup::getInt("general.num_processess") , samson::SamsonSetup::getUInt64("general.shared_memory_size_per_buffer"));
 	engine::DiskManager::init( 1 );
-	engine::ProcessManager::init( samson::SamsonSetup::shared()->num_processes );
-	engine::MemoryManager::init(  samson::SamsonSetup::shared()->memory );    
+	engine::ProcessManager::init( samson::SamsonSetup::getInt("general.num_processess") );
+	engine::MemoryManager::init(  samson::SamsonSetup::getUInt64("general.memory") );    
 	
     // Block Manager
     samson::stream::BlockManager::init();
@@ -155,7 +161,7 @@ int main(int argC, const char *argV[])
 	// Google protocol buffer deallocation
 	atexit(	google::protobuf::ShutdownProtobufLibrary );
 	
-	LM_M(("samsonLocal started with memory=%s and #processors=%d", au::Format::string( samson::SamsonSetup::shared()->memory, "B").c_str() , samson::SamsonSetup::shared()->num_processes ));
+	LM_M(("samsonLocal started with memory=%s and #processors=%d", au::Format::string( samson::SamsonSetup::getUInt64("general.memory") , "B").c_str() , samson::SamsonSetup::getInt("general.num_processess") ));
 	
 	// Fake network element with N workers
     center = new samson::NetworkFakeCenter(workers);

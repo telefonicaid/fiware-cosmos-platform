@@ -136,7 +136,8 @@ namespace samson
             }
 			
 			// Create a buffer
-            engine::Buffer *b = engine::MemoryManager::shared()->newBuffer( "Loading buffer" , samson::SamsonSetup::shared()->load_buffer_size , MemoryOutputNetwork );
+            size_t load_size_buffer = samson::SamsonSetup::getUInt64("load.buffer_siz");
+            engine::Buffer *b = engine::MemoryManager::shared()->newBuffer( "Loading buffer" , load_size_buffer , MemoryOutputNetwork );
 			
 			// Fill the buffer with the contents from the file
 			fileSet.fill( b );

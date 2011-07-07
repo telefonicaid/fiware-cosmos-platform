@@ -5,7 +5,7 @@
 #include <string>				/* std::string */
 
 
-#include "au/Lock.h"                /* Lock                            */
+#include "au/Token.h"                /* Lock                            */
 #include "au/ErrorManager.h"                /* Lock                            */
 #include "au/CommandLine.h"			/* AUCommandLine                            */
 #include "au/map.h"                 // au::map
@@ -26,13 +26,14 @@ namespace samson {
 	class ModulesManager : public Module
 	{
 		
-		au::Lock lock;			//!< General lock for modules access
+		au::Token token;			//!< General lock for modules access
 
         au::map< std::string  , Module > modules;  // Individual modules ( just for listing )
         
+		ModulesManager();		//!< Private constructor to implement singleton
+        
 	public:
 
-		ModulesManager();		//!< Private constructor to implement singleton
 		~ModulesManager();
 		
 		static void init();

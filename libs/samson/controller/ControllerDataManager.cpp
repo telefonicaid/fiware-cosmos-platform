@@ -1077,10 +1077,12 @@ namespace samson {
 		}
 
 		// Check too many outputs error
+        int max_num_outputs = SamsonSetup::getInt("general.max_parallel_outputs"); 
+        
 		if( info->operation->getType() != Operation::script )
-			if( (int)info->outputs.size() > SamsonSetup::shared()->num_paralell_outputs )
+			if( (int)info->outputs.size() > max_num_outputs )
 			{
-				error_message << "Operation with too many outputs ( " << info->outputs.size() << " ). The limit in this SAMSON cluster is " << SamsonSetup::shared()->num_paralell_outputs;
+				error_message << "Operation with too many outputs ( " << info->outputs.size() << " ). The limit in this SAMSON cluster is " << max_num_outputs;
 				info->error.set( error_message.str() );
 				return; 
 			}

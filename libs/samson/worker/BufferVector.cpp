@@ -86,8 +86,10 @@ namespace samson {
 
 			file_size += (*iter)->getSize();
         }
+     
+        size_t max_file_size = SamsonSetup::getUInt64("general.max_file_size");
         
-        if( file_size > SamsonSetup::shared()->max_file_size )
+        if( file_size > max_file_size )
         {
             QueueuBufferVector* qbv = new QueueuBufferVector( this );
             
@@ -107,7 +109,9 @@ namespace samson {
         for (  au::list<engine::Buffer>::iterator iter = buffers.begin() ; iter != buffers.end() ; iter++)
 			file_size += (*iter)->getSize();
         
-        if( file_size > SamsonSetup::shared()->max_file_size )
+        size_t max_file_size = SamsonSetup::getUInt64("general.max_file_size");
+        
+        if( file_size > max_file_size )
         {
             QueueuBufferVector* qbv = new QueueuBufferVector( this );
             

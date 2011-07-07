@@ -1,121 +1,52 @@
 #include <stdio.h>
 #include <iostream>				// std::cerr
+#include <iomanip>              // std::setw
 
-#include "samson/common/samsonDirectories.h"	// SAMSON_SETUP_FILE
-#include "au/CommandLine.h"		// au::CommandLine
-#include "samson/common/SamsonSetup.h"		// Own interface
 #include <errno.h>
-#include "au/Format.h"             // au::Format
 
 #include "logMsg/logMsg.h"				// LM_X
 
+#include "au/Format.h"             // au::Format
+#include "au/CommandLine.h"		// au::CommandLine
+#include "au/ErrorManager.h"           // au::ErrorManager
 
-#define SETUP_num_io_threads_per_device					"num_io_threads_per_device"
-#define SETUP_DEFAULT_num_io_threads_per_device			1
-
-#define SETUP_max_file_size								"max_file_size"
-#define SETUP_DEFAULT_max_file_size						104857600	// 100Mb
-
-#define SETUP_num_processes								"num_processes"
-#define SETUP_DEFAULT_num_processes						2
-
-#define SETUP_memory									"memory"
-#ifdef __LP64__
-#define SETUP_DEFAULT_memory							2147483648 // 2Gb
-#else
-#define SETUP_DEFAULT_memory							0x6fffffff // 1Gb
-#endif
-
-#define SETUP_shared_memory_size_per_buffer						"shm_size_per_buffer"
-#define SETUP_DEFAULT_shared_memory_size_per_buffer				67108864	// 64 Mb
-
-#define SETUP_DEFAULT_load_buffer_size							67108864	// 64 Mb
-
-#define SETUP_num_paralell_outputs                              "num_paralell_outputs"
-#define SETUP_DEFAULT_num_paralell_outputs                      2
-
-#define SETUP_timeout_secs_isolatedProcess						"timeout_secs_isolatedProcess"
-#define SETUP_DEFAULT_timeout_secs_isolatedProcess				300
+#include "samson/common/samsonDirectories.h"	// SAMSON_SETUP_FILE
+#include "samson/common/SamsonSetup.h"		// Own interface
 
 namespace samson
 {
-	static SamsonSetup *samsonSetup = NULL;
-	
-	SamsonSetup *SamsonSetup::shared()
-	{
-		if( !samsonSetup)
-			LM_X(1,("SamsonSetup not loaded. It should be initizalized at the begining of the main process"));
-		
-		return samsonSetup;
-	}
-	
-    void destroy_samson_setup()
-    {
-        if( samsonSetup )
-        {
-            delete samsonSetup;
-            samsonSetup = NULL;
-        }
-        
-    }
     
-	void SamsonSetup::load()
+	void createDirectory( std::string path )
 	{
-		samsonSetup = new SamsonSetup( );
-	}
-	
-	void SamsonSetup::load( std::string workingDirectory )
-	{
-		samsonSetup = new SamsonSetup( workingDirectory );
-        
-        atexit(destroy_samson_setup);
-	}
-
-	
-	void SamsonSetup::createDirectory( std::string path )
-	{
-		
 		if( mkdir(path.c_str()	, 0755) == -1 )
 		{
 			if( errno != EEXIST )
 				LM_X(1,("Error creating directory %s", path.c_str()));
 		}
 	}
-												   
-
-	SamsonSetup::SamsonSetup( )
-	{
-		init(  );
-	}
-	
-	SamsonSetup::SamsonSetup( std::string workingDirectory )
-	{
-
-		baseDirectory = workingDirectory;
-
-		controllerDirectory = workingDirectory + "/controller";
-		dataDirectory		= workingDirectory + "/data";
-        blocksDirectory     = workingDirectory + "/blocks";
-		modulesDirectory	= workingDirectory + "/modules";
-		setupDirectory		= workingDirectory + "/etc";
-		setupFile			= setupDirectory   + "/setup.txt";
-		configDirectory			= workingDirectory + "/config";
-				
-		// Create directories if necessary
-		createDirectory( workingDirectory );
-		createDirectory( controllerDirectory );
-		createDirectory( dataDirectory );
-		createDirectory( blocksDirectory );
-        createDirectory( modulesDirectory );        
-		createDirectory( setupDirectory );			
-		createDirectory( configDirectory );			
-		
-		// Load values from file ( if exist )
-		
-		FILE *file = fopen( setupFile.c_str()  ,"r");
+    
+    
+#pragma mark SetupItemCollection
+    
+    void  SetupItemCollection::add( std::string _name , std::string _default_value , std::string _description )
+    {
+        if( items.findInMap(_name) != NULL )
+        {
+            LM_W(("Item %s already added to setup... ignoring" , _name.c_str() ));
+            return;
+        }
+        
+        items.insertInMap( _name , new SetupItem( _name , _default_value , _description) );
+        
+    }
+    
+    
+    void SetupItemCollection::load( std::string fileName )
+    {
+		FILE *file = fopen( fileName.c_str()  ,"r");
 		if (!file)
 		{
-            LM_W(("Warning: Setup file %s not found\n" , setupFile.c_str() ));
+            LM_W(("Warning: Setup file %s not found\n" , fileName.c_str() ));
 		}
 		else
 		{
@@ -138,94 +69,231 @@ namespace samson
 				{
 					std::string name = c.get_argument(0);
 					std::string value =  c.get_argument(1);
-
-					set( name , value );
+                    
+                    SetupItem*item = items.findInMap(name);
+                    
+                    if( item )
+                        item->setValue(value);
+                    else
+                        LM_W(("Parameter %s found in setup file %s not included since it is not defined." , name.c_str() , fileName.c_str() ));
+                    
 				}
 			}
-		
+            
 			fclose(file);
-		}
-		
-		init( );
-		
+		}        
+    }
+
+    std::string SetupItemCollection::getValueForParameter( std::string name )
+    {
+        SetupItem*item = items.findInMap(name);
+        
+        if( !item )
+            LM_X(1, ("Parameter %s not defined in the setup. This is not acceptable", name.c_str()));
+        
+        return item->getValue();
+        
+    }
+    
+    void SetupItemCollection::setValueForParameter( std::string name ,std::string value )
+    {
+        SetupItem*item = items.findInMap(name);
+        
+        if( !item )
+            LM_X(1, ("Parameter %s not defined in the setup. This is not acceptable", name.c_str()));
+        
+        item->setValue( value );
+    }
+    
+    std::string SetupItemCollection::str()
+    {
+        std::ostringstream output;
+        output << "Samson setup parameters:\n";
+        output << "---------------------------------------------------------------------------------------------------\n";
+
+        output << std::left;
+        
+        // Heder
+        output << "\n";
+        output << std::setw(40) << "Parameter" << " ";
+        output << std::setw(20) << "Default value" << " ";
+        output << std::setw(20) << "Value at setup.txt" << " ";
+        output << std::setw(20) << "Help" << " ";
+        output << "\n";
+        
+        output << "---------------------------------------------------------------------------------------------------\n";
+        output << "\n";
+
+        
+        au::map< std::string , SetupItem >::iterator i;
+
+        std::string previous_concept;
+        
+        for (i = items.begin() ; i != items.end() ; i++)
+        {
+            std::string name = i->first;  
+            std::string concept = name.substr(0, name.find(".",0 ) );
+            if( concept != previous_concept )
+                output << "\n";
+            previous_concept = concept;
+            
+            output << std::setw(40) << i->first << " ";
+            output << std::setw(20) << i->second->getDefaultValue() << " ";
+            output << std::setw(20) << i->second->getSetValue() << " ";
+            output << std::setw(20) << i->second->getDescription() << " ";
+            output << "\n";
+        }
+        
+        return output.str();
+    }
+    
+    
+    
+#pragma mark SamsonSetup
+    
+	static SamsonSetup *samsonSetup = NULL;
+	
+	SamsonSetup *SamsonSetup::shared()
+	{
+		if( !samsonSetup)
+			LM_X(1,("Please, init SamsonSetup with SamsonSetup::init()"));
+		return samsonSetup;
 	}
 	
-	void SamsonSetup::init( )
+    void destroy_samson_setup()
+    {
+        if( samsonSetup )
+        {
+            delete samsonSetup;
+            samsonSetup = NULL;
+        }
+        
+    }
+    
+	void SamsonSetup::init()
 	{
-		
-		// General setup
-		num_processes	= getInt( SETUP_num_processes , SETUP_DEFAULT_num_processes );
-		
-		// Disk management
-		num_io_threads_per_device = getInt( SETUP_num_io_threads_per_device , SETUP_DEFAULT_num_io_threads_per_device );
-		max_file_size = getSizeT( SETUP_max_file_size, SETUP_DEFAULT_max_file_size);
-		
-		//  Memory - System
-		memory = getSizeT( SETUP_memory , SETUP_DEFAULT_memory);
+        if( samsonSetup )
+        {
+            LM_W(("Init SamsonSetup twice... ignoring"));
+            return;
+        }
+        
+		samsonSetup = new SamsonSetup( );
+        atexit(destroy_samson_setup);
+        
+	}
+	
+    void SamsonSetup::setWorkingDirectory( std::string workingDirectory )
+	{
 
-		shared_memory_size_per_buffer	= getSizeT( SETUP_shared_memory_size_per_buffer , SETUP_DEFAULT_shared_memory_size_per_buffer );
+		baseDirectory = workingDirectory;
+
+		controllerDirectory = workingDirectory + "/controller";
+		dataDirectory		= workingDirectory + "/data";
+        blocksDirectory     = workingDirectory + "/blocks";
+		modulesDirectory	= workingDirectory + "/modules";
+		setupDirectory		= workingDirectory + "/etc";
+		setupFile			= setupDirectory   + "/setup.txt";
+		configDirectory			= workingDirectory + "/config";
+				
+		// Create directories if necessary
+		createDirectory( workingDirectory );
+		createDirectory( controllerDirectory );
+		createDirectory( dataDirectory );
+		createDirectory( blocksDirectory );
+        createDirectory( modulesDirectory );        
+		createDirectory( setupDirectory );			
+		createDirectory( configDirectory );			
 		
-		// IsolatedProcess timeout
-		timeout_secs_isolatedProcess	= getInt( SETUP_timeout_secs_isolatedProcess , SETUP_DEFAULT_timeout_secs_isolatedProcess );
-		
-		// Default value for other fields
-		load_buffer_size = SETUP_DEFAULT_load_buffer_size;
-		
-		// Derived parameters
-		num_paralell_outputs = getInt( SETUP_num_paralell_outputs , SETUP_DEFAULT_num_paralell_outputs );
-		
-		if( !check() )
-		{
-			std::cerr << "Error in setup file " << setupFile << "\n";
-			exit(0);
-		}
-		
+		// Load values from file ( if exist )
+		load( setupFile );
+        
+        // Check everything looks ok
+        au::ErrorManager errorManager;
+        check(&errorManager);
+        
+        if( errorManager.isActivated() ) 
+        {
+            LM_X(1, ("Error checking setup: %s" , errorManager.getMessage().c_str() ));
+        }
+	}
+	
+	SamsonSetup::SamsonSetup( )
+	{
+        
+        add( "general.memory" , "2147483648" , "Global available memory " );                                    // Memory 2G
+        add( "general.num_processess" , "2" , "Number of cores" );                                              // Number of cores 2
+        add( "general.max_file_size" , "104857600" , "Max size for generated files" );                          // Max file size 100 Mb
+        add( "general.shared_memory_size_per_buffer" , "67108864" , "Size of the shared memory segments" );            // Shared memory suze 64Mb
+
+		add( "general.max_parallel_outputs" , "2" , "Max number of parallel outputs");
+        
+		add( "isolated.timeout" , "300" , "Timeout for all 3rd partty operations" );                            // Max time isolated
+
+		add( "load.buffer_size" , "67108864" , "Size of the data block for load operations" );                  // Load in blocks of 64 Mbytes
+        
+        add("delilah.automatic_update_period" , "2" , "Period for the automatic update of information from the samson cluster" );                          // Seconds to update delilah
+        
+        
+        add("worker.update_files_period" ,"5" , "Period for the automatic update of files for each worker" );
+        add("worker.update_status_period", "3" , "Period for the automatic update from workers to controller" );        
+        
+        
+        add("controller.max_worker_disconnected_time", "120" , "Maximum acceptable time for a worker to be disconnected. All task will be killed is larger disconnected-time is observed" );
 	}
 
+    std::string SamsonSetup::get( std::string name )
+    {
+        if( !samsonSetup )
+            LM_X(1, ("Please init SamsonSetup with SamsonSetup::init()"));
+
+        return samsonSetup->getValueForParameter( name );
+    }
+    
+    size_t SamsonSetup::getUInt64( std::string name )
+    {
+        if( !samsonSetup )
+            LM_X(1, ("Please init SamsonSetup with SamsonSetup::init()"));
+     
+        std::string value = samsonSetup->getValueForParameter( name );
+        
+        return atoll( value.c_str() );
+    }
+
+    int SamsonSetup::getInt( std::string name )
+    {
+        if( !samsonSetup )
+            LM_X(1, ("Please init SamsonSetup with SamsonSetup::init()"));
+        
+        std::string value = samsonSetup->getValueForParameter( name );
+        
+        return atoi( value.c_str() );
+    }
+    
 	
-	bool SamsonSetup::check()
+    
+    void SamsonSetup::check( au::ErrorManager *error )
 	{
-		/*
-		if ( memory < 1024*1024*1024 )
-		{
-			std::cerr << "Memory should be at least 1Gb\n";
-			return false;
-		}
-		 */
-		
-		if ( num_io_threads_per_device < 1)
-		{
-			std::cerr << "Minimum number of threads per device 1.\n";
-			return false;
-		}
-		if ( num_io_threads_per_device > 10)
-		{
-			std::cerr << "Maximum number of threads per device 10.\n";
-			return false;
-		}
-		
-		int max_num_paralell_outputs =  ssize_t( ssize_t(memory) - ssize_t(num_processes*shared_memory_size_per_buffer) ) / ssize_t(2*max_file_size);
+        
+        size_t memory = getUInt64("general.memory");
+        int num_processes = getInt("general.num_processess");
+        size_t shared_memory_size_per_buffer = getUInt64("general.shared_memory_size_per_buffer");
+        size_t max_file_size = getUInt64("general.max_file_size");
+        
+        int num_paralell_outputs = getInt("general.max_parallel_outputs");
+        
+		int max_num_paralell_outputs =  ( memory - num_processes*shared_memory_size_per_buffer ) / ( 2 * max_file_size);
 		if( num_paralell_outputs > max_num_paralell_outputs )
 		{
-			LM_W(("Num of maximum paralell outputs is too high to the current memory setup. Review num_paralell_outputs in setup.txt file. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (2*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size ));
-			return false;
+            char line[1024];
+            sprintf(line, "Num of maximum paralell outputs is too high to the current memory setup. Review num_paralell_outputs in setup.txt file. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (2*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size  );
+            
+            error->set( line );
 		}
-		else
-		{
-			///LM_W(("Num of maximum paralell outputs is OK. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (2*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size ));
-		}
-
 		
 		if ( num_paralell_outputs < 2 )
-		{
-			std::cerr << "Error in the memory setup. Please, review setup since the maximum number of outputs has to be at least 2\n";
-			std::cerr << "Memory: " << au::Format::string( memory , "B" ) << "\n";
-		    std::cerr << "Shared memory: " << au::Format::string( num_processes*shared_memory_size_per_buffer , "B" ) << "\n";
-			std::cerr << "Max file size: " << au::Format::string( max_file_size , "B" ) << "\n";
-			return false;
-		}
-		
-		return true;
+            error->set(  au::Format::string("Num  of paralell outputs is lower than 2. Please review property 'general.max_parallel_outputs'" ) );
+        
 	}
 
     std::string SamsonSetup::dataFile( std::string filename )
@@ -233,4 +301,99 @@ namespace samson
         return samsonSetup->dataDirectory + "/" + filename;
     }
 	
+    
+    void SamsonSetup::edit()
+    {
+        // Edit all the inputs
+        
+        // First concept
+        std::string concept = "Z";
+        
+        au::map< std::string , SetupItem >::iterator i;
+        for ( i = items.begin() ; i != items.end() ; i++)
+        {
+            
+            std::string tmp_concept = i->second->getConcept();
+            
+            if( tmp_concept != concept )
+            {
+                std::cout << "\n";
+                std::cout << "----------------------------------------------------------------------------------------\n";
+                std::cout << "Seting up parameters for " << tmp_concept << "\n";
+                std::cout << "----------------------------------------------------------------------------------------\n";
+                std::cout << "\n";
+                concept = tmp_concept;
+            }
+
+            std::cout << "\n";
+            std::cout << "Parameter       : " << i->first << "\n";
+            std::cout << "Default value   : " << i->second->getDefaultValue()<< "\n";;
+            std::cout << "SetupFile value : " << i->second->getSetValue()<< "\n";;
+            std::cout << "Current value   : " << i->second->getValue()<< "\n";;
+            std::cout << "\n";
+            std::cout << "Press (enter) to use current value, (d) to use default value or a new value: ";
+            char line[1024];
+            fgets(line, 1024, stdin);
+            
+            // Remove the "\n";
+            line[ strlen(line)-1 ] = '\0'; 
+            
+            if( strcmp(line, "") == 0 )
+            {
+                std::cout << "Using current value " << i->second->getValue() << "\n";
+            } 
+            else if ( strcmp(line, "d") == 0 )
+            {
+                std::cout << "Using deafult value " << i->second->getDefaultValue() << "\n";
+                i->second->setValue( i->second->getDefaultValue() );
+            } else
+            {
+                std::cout << "Using new value " << line << "\n";
+                i->second->setValue( line );
+            }
+            
+        }
+        
+    }
+    
+    void SamsonSetup::save()
+    {
+        FILE *file = fopen( setupFile.c_str() , "w" );
+        if( !file )
+        {
+            LM_W(("Impossible to open setup file %s" , setupFile.c_str() ));
+            return;
+        }
+
+        fprintf(file, "----------------------------------------------------------------------------------------\n");
+        fprintf(file, "SAMSON SETUP\n");
+        fprintf(file, "----------------------------------------------------------------------------------------\n");
+        fprintf(file, "File auto-generated with samsonConfig tool.\n");
+        fprintf(file, "You can edit manually or use samsonConfig to regenetare it\n\n\n");
+        
+
+        
+        au::map< std::string , SetupItem >::iterator i;
+
+        // First concept
+        std::string concept = "Z";
+        
+        for ( i = items.begin() ; i != items.end() ; i++)
+        {
+            
+            std::string tmp_concept = i->second->getConcept();
+            
+            if( tmp_concept != concept )
+            {
+                fprintf(file, "# ------------------------------------------------------------------------ \n" );
+                fprintf(file, "# SECTION: %s\n" , tmp_concept.c_str());
+                fprintf(file, "# ------------------------------------------------------------------------ \n\n" );
+                concept = tmp_concept;
+            }
+            
+            fprintf(file, "%-40s\t%-20s # %s\n" , i->first.c_str() , i->second->getValue().c_str() , i->second->getDescription().c_str()  );
+        }
+    }
+    
+    
 }

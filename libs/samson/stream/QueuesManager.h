@@ -39,7 +39,7 @@ namespace samson {
             
             friend class Queue;
             
-            ::samson::SamsonWorker* worker;       // Pointer to the controller to send messages
+            ::samson::SamsonWorker* worker;         // Pointer to the controller to send messages
             
         public:
             

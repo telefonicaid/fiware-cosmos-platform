@@ -59,7 +59,6 @@ extern char*      paTracelevels;
 
 extern bool       paVerbose;
 extern bool       paDebug;
-extern bool       paHidden;
 extern bool       paToDo;
 extern bool       paReads;
 extern bool       paWrites;

@@ -87,7 +87,6 @@ PaArgument paBuiltin[] =
  { "-t",        paTraceV,     "TRACE",      PaStr, PaOpt,  0, PaNL, PaNL, "trace level"          },
  { "-v",        &paVerbose,   "VERBOSE",    PaBool,PaOpt,  F,    T,    F, "verbose mode"         },
  { "-d",        &paDebug,     "DEBUG",      PaBool,PaOpt,  F,    T,    F, "debug mode"           },
- { "-H",        &paHidden,    "HIDDEN",     PaBool,PaOpt,  F,    T,    F, "hidden mode - not sent to Supervisor" },
  { "-toDo",     &paToDo,      "TODO",       PaBool,PaOpt,  F,    T,    F, "toDo mode" },
  { "-r",        &paReads,     "READS",      PaBool,PaOpt,  F,    T,    F, "reads mode"           },
  { "-w",        &paWrites,    "WRITES",     PaBool,PaOpt,  F,    T,    F, "writes mode"          },

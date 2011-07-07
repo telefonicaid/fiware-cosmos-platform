@@ -91,7 +91,6 @@ int paLogSetup(void)
 		lmToDo    = false;
 		lmVerbose = false;
 		lmDebug   = false;
-		lmHidden  = false;
 		/* lmBug     = false; */
 		lmReads   = false;
 		lmWrites  = false;

@@ -80,6 +80,25 @@ void exitFunction(void)
 
 /* ****************************************************************************
 *
+* manDescription -
+*/
+static const char* manSynopsis         = " [OPTION]";
+static const char* manShortDescription = "samsonWorker is the worker process of the samson platform, ...\n\n"
+   "Complete list of options:\n";
+static const char* manDescription      =
+   "samsonWorker is the worker process in the samson cluster,\n"
+   "which consists of one or more workers and ONE controller ...\n";
+
+static const char* manExitStatus    = "0      if OK\n 1-255  error\n";
+static const char* manAuthor        = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
+static const char* manReportingBugs = "bugs to samson-bug-report@tid.es\nSamson home page: <http://www.tid.es/products/samson>";
+static const char* manCopyright     = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
+static const char* manVersion       = "0.6-1";
+
+
+
+/* ****************************************************************************
+*
 * main - 
 */
 int main(int argC, const char *argV[])
@@ -90,6 +109,15 @@ int main(int argC, const char *argV[])
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
 	paConfig("log to file",                   (void*) true);
+
+	paConfig("man synopsis",                  (void*) manSynopsis);
+	paConfig("man shortdescription",          (void*) manShortDescription);
+	paConfig("man description",               (void*) manDescription);
+	paConfig("man exitstatus",                (void*) manExitStatus);
+	paConfig("man author",                    (void*) manAuthor);
+	paConfig("man reportingbugs",             (void*) manReportingBugs);
+	paConfig("man copyright",                 (void*) manCopyright);
+	paConfig("man version",                   (void*) manVersion);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 

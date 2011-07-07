@@ -1,0 +1,125 @@
+Module moduletemplate
+{
+
+	title	"moduletemplate  module"
+	author 	"Andreu Urruela (andreu@tid.es)"
+	version "0.1"
+	
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+data Data1
+{
+     system.String data_string;
+     system.UInt8 data_char;
+     system.UInt data_ulong;
+     system.Double data_long;
+}
+
+data Data2
+{
+     system.UInt id;
+     moduletemplate.Data1 data_cplex;
+}
+
+
+# -------------------------------------------------
+# Operations with data
+# -------------------------------------------------
+
+generator fake_moduletemplate
+{
+	out	system.UInt moduletemplate.Data1
+
+	helpLine "Generate a random set of key-values of type (system.UInt moduletemplate.Data1). Number of key-values can be read from environment"
+
+	help
+	{
+		"Generate a random set of key-values of type (system.UInt moduletemplate.Data1)." 
+		"Number of key-values can be read from environment"
+		"Help can be made as complete as needed"
+	}
+}
+
+parser parse_example
+{
+        out	system.UInt moduletemplate.Data1
+        
+        helpLine "key-values can also be generated from a text dataset from uploaded data files."
+        
+        help
+        {
+        	"key-values can also be generated from a text dataset from uploaded data files."
+        	"Help can be made as complete as needed"
+        }
+}
+
+map map_example
+{
+	in	system.UInt moduletemplate.Data1
+	out system.UInt moduletemplate.Data2
+
+	helpLine "Example of map operation"
+
+	help
+	{
+		"Example of map operation"
+		"Help can be made as complete as needed"
+	}	
+}
+
+reduce reduce_example
+{
+	in 	system.UInt moduletemplate.Data2
+	in	system.UInt system.UInt	
+	out	system.UInt system.UInt	
+
+	helpLine "Example of reduce operation. In this case, we have 2 input datasets"
+
+	help
+	{
+		"Example of reduce operation"
+	}
+	
+}
+
+parserOut parserOut_example
+{
+	in	system.UInt system.UInt
+
+	helpLine "Example of parserOut operation."
+	
+	help
+	{
+		"Example of parserOut operation."
+		"Transforms input dataset to a text dataset, that can be downloaded to the file system".
+	}
+}
+
+script script_example
+{
+	in 	txt txt
+	in  system.UInt system.UInt	
+	out txt txt
+
+	helpLine "Script example"
+
+	help
+	{
+		"help1"
+		"help2"
+	}
+
+	code
+	{
+		clear $3;	# Clear the output queue
+		moduletemplate.parse_example $1 $1.kv -create -clear;         #parse text input (already uploaded)
+		moduletemplate.map_example $1.kv $1.kv_mapped -create -clear; #map key-values
+		moduletemplate.reduce_example $1.kv_mapped $2 $3.reduced -create -clear;    #reduce key-values
+		moduletemplate.parserOut_example $3.reduced $3 -create -clear;    #reduce key-values
+	}
+}
+

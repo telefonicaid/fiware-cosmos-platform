@@ -1,3 +1,0 @@
-#remove_all
-time_test.test_1 out.txt -clear -create
-download out.txt out.txt

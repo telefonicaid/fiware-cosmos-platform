@@ -79,7 +79,7 @@ namespace au
 			fflush(stderr);
 			std::cout.flush();
 			std::cerr.flush();
-			
+			fprintf(stdout, "\n");
 			char *line = readline(getPrompt().c_str());
 			
 			if (line)

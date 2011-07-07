@@ -10,7 +10,7 @@
 #include <samson/module/samson.h>
 
 #include "samson/modules/string/HitsState.h"
-#include "samson/modules/system/Uint.h"
+#include "samson/modules/system/UInt.h"
 #include "samson/modules/system/UInt.h"
 
 #include "ContinuousTopList.h"

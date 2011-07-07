@@ -334,7 +334,12 @@ namespace samson
             std::cout << "\n";
             std::cout << "Press (enter) to use current value, (d) to use default value or a new value: ";
             char line[1024];
-            fgets(line, 1024, stdin);
+            char *l = fgets(line, 1024, stdin);
+
+			if( l == NULL )
+			{
+			   LM_W(("Invalid entry..."));
+	     	  }
             
             // Remove the "\n";
             line[ strlen(line)-1 ] = '\0'; 

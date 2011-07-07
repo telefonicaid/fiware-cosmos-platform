@@ -1730,9 +1730,9 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 	}
 	else if ((type == 'X') || (type == 'x'))
 	{
-        //#ifdef ASSERT_FOR_EXIT
+#ifdef ASSERT_FOR_EXIT
         assert(false);
-        //#else
+#endif
         
 		if (exitFunction != NULL)
 			exitFunction(tLev, exitInput, text, (char*) stre);
@@ -2328,9 +2328,9 @@ void lmShowLog(int logFd)
 */
 void lmExitForced(int c)
 {
-//#ifdef ASSERT_FOR_EXIT
+#ifdef ASSERT_FOR_EXIT
     assert(false);
-//#else
+#endif
     
 	if (exitFunction != NULL)
 		exitFunction(c, exitInput, (char*) "exit forced", NULL);

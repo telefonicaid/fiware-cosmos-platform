@@ -327,6 +327,7 @@ namespace samson
 
             std::cout << "\n";
             std::cout << "Parameter       : " << i->first << "\n";
+            std::cout << "Definition      : " << i->second->getDescription()<< "\n";
             std::cout << "Default value   : " << i->second->getDefaultValue()<< "\n";;
             std::cout << "SetupFile value : " << i->second->getSetValue()<< "\n";;
             std::cout << "Current value   : " << i->second->getValue()<< "\n";;

@@ -427,7 +427,7 @@ static void paManUsage(PaArgument* paList)
 			continue;
 		}
 
-		printf("%-20s %s\n\n", aP->option, aP->description);
+		printf("  %-20s %s\n", aP->option, aP->description);
 	}
 }
 

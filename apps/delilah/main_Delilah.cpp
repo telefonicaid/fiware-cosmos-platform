@@ -1,6 +1,7 @@
 #include "parseArgs/parseArgs.h"
 
 #include "au/Format.h"
+#include "au/LockDebugger.h"            // au::LockDebugger
 
 
 #include "engine/MemoryManager.h"
@@ -134,6 +135,10 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 	
+    // Make sure this singlelton is created just once
+    au::LockDebugger::shared();
+    
+    
 	samson::SamsonSetup::init();			// Load the main setup file
 	
 	// Setup parameters from command line ( this is delilah so memory and load buffer size are configurable from command line )

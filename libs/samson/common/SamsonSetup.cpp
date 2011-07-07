@@ -226,7 +226,7 @@ namespace samson
         add( "general.max_file_size" , "1000000000" , "Max size for generated files" );                          // Max file size 100 Mb
         add( "general.shared_memory_size_per_buffer" , "268435456" , "Size of the shared memory segments" );            // Shared memory suze 64Mb
 
-		add( "general.max_parallel_outputs" , "4" , "Max number of parallel outputs");
+		add( "general.max_parallel_outputs" , "2" , "Max number of parallel outputs");
         
 		add( "isolated.timeout" , "300" , "Timeout for all 3rd partty operations" );                            // Max time isolated
 

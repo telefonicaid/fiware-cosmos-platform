@@ -80,7 +80,7 @@ void exitFunction(void)
 
 /* ****************************************************************************
 *
-* manDescription -
+* man texts -
 */
 static const char* manSynopsis         = " [OPTION]";
 static const char* manShortDescription = "samsonWorker is the worker process of the samson platform, ...\n\n"

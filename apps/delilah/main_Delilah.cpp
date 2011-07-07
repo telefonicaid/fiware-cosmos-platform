@@ -92,6 +92,25 @@ int logFd = -1;
 
 /* ****************************************************************************
 *
+* man texts -
+*/
+static const char* manSynopsis         = " [OPTION]";
+static const char* manShortDescription = "delilah is the user scripting environment of the samson platform, ...\n\n"
+   "Complete list of options:\n";
+static const char* manDescription      =
+   "delilah is used to interact with the samson platform.\n"
+   "An impressive number of commands are available in delilah ...\n";
+
+static const char* manExitStatus    = "0      if OK\n 1-255  error\n";
+static const char* manAuthor        = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
+static const char* manReportingBugs = "bugs to samson-bug-report@tid.es\nSamson home page: <http://www.tid.es/products/samson>";
+static const char* manCopyright     = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
+static const char* manVersion       = "0.6-1";
+
+
+
+/* ****************************************************************************
+*
 * main - 
 */
 int main(int argC, const char *argV[])
@@ -101,6 +120,15 @@ int main(int argC, const char *argV[])
 	paConfig("log to screen",                 (void*) false);
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
 	paConfig("log to file",                   (void*) true);
+
+    paConfig("man synopsis",                  (void*) manSynopsis);
+    paConfig("man shortdescription",          (void*) manShortDescription);
+    paConfig("man description",               (void*) manDescription);
+    paConfig("man exitstatus",                (void*) manExitStatus);
+    paConfig("man author",                    (void*) manAuthor);
+    paConfig("man reportingbugs",             (void*) manReportingBugs);
+    paConfig("man copyright",                 (void*) manCopyright);
+    paConfig("man version",                   (void*) manVersion);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 	lmAux((char*) "father");

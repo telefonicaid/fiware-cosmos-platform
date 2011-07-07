@@ -167,5 +167,6 @@ deb:
 man: 
 	 help2man --name="samson controller" --section=1 --manual=Samson samsonController > /usr/local/man/man1/samsonController.1
 	 help2man --name="samson worker" --section=1 --manual=Samson samsonWorker > /usr/local/man/man1/samsonWorker.1
+	 help2man --name="samson platform interaction shell" --section=1 --manual=Samson delilah > /usr/local/man/man1/delilah.1
 
 packages: install man rpm deb

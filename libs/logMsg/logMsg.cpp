@@ -53,7 +53,7 @@
 #undef NDEBUG
 #include <assert.h>
 
-#define ASSERT_FOR_EXIT
+//#define ASSERT_FOR_EXIT
 
 extern "C" pid_t gettid(void);
 

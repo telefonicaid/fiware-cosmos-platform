@@ -221,12 +221,12 @@ namespace samson
 	SamsonSetup::SamsonSetup( )
 	{
         
-        add( "general.memory" , "2147483648" , "Global available memory " );                                    // Memory 2G
-        add( "general.num_processess" , "2" , "Number of cores" );                                              // Number of cores 2
-        add( "general.max_file_size" , "104857600" , "Max size for generated files" );                          // Max file size 100 Mb
-        add( "general.shared_memory_size_per_buffer" , "67108864" , "Size of the shared memory segments" );            // Shared memory suze 64Mb
+        add( "general.memory" , "10000000000" , "Global available memory " );                                    // Memory 2G
+        add( "general.num_processess" , "16" , "Number of cores" );                                              // Number of cores 2
+        add( "general.max_file_size" , "1000000000" , "Max size for generated files" );                          // Max file size 100 Mb
+        add( "general.shared_memory_size_per_buffer" , "268435456" , "Size of the shared memory segments" );            // Shared memory suze 64Mb
 
-		add( "general.max_parallel_outputs" , "2" , "Max number of parallel outputs");
+		add( "general.max_parallel_outputs" , "4" , "Max number of parallel outputs");
         
 		add( "isolated.timeout" , "300" , "Timeout for all 3rd partty operations" );                            // Max time isolated
 
@@ -366,11 +366,11 @@ namespace samson
             return;
         }
 
-        fprintf(file, "----------------------------------------------------------------------------------------\n");
-        fprintf(file, "SAMSON SETUP\n");
-        fprintf(file, "----------------------------------------------------------------------------------------\n");
-        fprintf(file, "File auto-generated with samsonConfig tool.\n");
-        fprintf(file, "You can edit manually or use samsonConfig to regenetare it\n\n\n");
+        fprintf(file, "# ----------------------------------------------------------------------------------------\n");
+        fprintf(file, "# SAMSON SETUP\n");
+        fprintf(file, "# ----------------------------------------------------------------------------------------\n");
+        fprintf(file, "# File auto-generated with samsonConfig tool.\n");
+        fprintf(file, "# You can edit manually or use samsonConfig to regenetare it\n\n\n");
         
 
         

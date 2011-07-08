@@ -1,0 +1,19 @@
+.TH SAMSON\-GRAPH 7 2011-07-08 "Samson" "Samson Module Libraries"
+.SH NAME
+samson\-graph \- 
+.SH DESCRIPTION
+The samson GRAPH library is
+
+.SH DATA TYPES
+
+.SH FUNCTIONS
+
+.SH SCRIPTS
+
+.SH SEE ALSO
+.BR samson (1),
+.BR samson-cdr (7),
+.BR samson-system (7),
+.BR samson-sort (7)
+.BR samson-test (7)
+.BR samson-cdr (7)

@@ -320,10 +320,11 @@ namespace samson
 			file << "\n";
 			file << "\n";
 			
-			// End of namspace
-			file << "} // end of namespace samson\n";
+			// End of namespace
 			file << "} // end of namespace " << module << "\n";
+			file << "} // end of namespace samson\n";
 			
+
 			file << "\n";
 			
 			file << "#endif\n";

@@ -529,8 +529,9 @@ namespace samson
 
 			// End of namspace
 			
-			file << "} // end of namespace samson\n";
+
 			file << "} // end of namespace " << module << "\n";
+			file << "} // end of namespace samson\n";
 
 			file << "\n";
 			

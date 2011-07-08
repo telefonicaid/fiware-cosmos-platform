@@ -86,6 +86,10 @@ namespace engine
         // Information string for debugging
         std::string str();
 
+   private:
+
+        std::string _str();
+
     public:
 
         // Functions to register objects ( general and for a particular notification )

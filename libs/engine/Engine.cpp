@@ -112,9 +112,7 @@ namespace engine
         au::TokenTaker tt(token , "Engine::getNextElement");
         
         time_t time_in_seconds = cronometer.diffTimeInSeconds();
-        
-        LM_M(("Checking engine: Time %lu....", time_in_seconds ));
-        
+
         if( running_element && ( time_in_seconds > ENGINE_MAX_RUNNING_TIME  ) )
         {
             LM_X(1,("Excesive time for and engine simple task (%d secs, max %d secs) for engine Element '%s'." ,  
@@ -261,6 +259,13 @@ namespace engine
 	{
         // Mutex protection
         au::TokenTaker tt(token , "Engine::str");
+
+	return _str();
+
+	}
+
+    std::string Engine::_str()
+	{
 		
         std::ostringstream engine_state;
         

@@ -9,7 +9,7 @@
 
 #include <samson/module/samson.h>
 
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 #include <iostream>
 #include <fstream>
@@ -49,7 +49,7 @@ bool parseDate_O2UK (char *dateTxt, samson::system::Date *date, samson::system::
 {
         if (strlen(dateTxt) != 14)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -145,7 +145,7 @@ bool getCDRFromLine_O2UK_p2p( char *line, samson::system::UInt* node, samson::cd
         {
                 if (nField >= nMaxFields)
                 {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                         std::string filename = "/tmp/parser_cdrs.log";
@@ -159,7 +159,7 @@ bool getCDRFromLine_O2UK_p2p( char *line, samson::system::UInt* node, samson::cd
                 }
                 if ((pSep - pField) > (lMaxField - 1))
                 {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                         std::string filename = "/tmp/parser_cdrs.log";
@@ -182,7 +182,7 @@ bool getCDRFromLine_O2UK_p2p( char *line, samson::system::UInt* node, samson::cd
         }
         if (nField >= nMaxFields)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -219,7 +219,7 @@ bool getCDRFromLine_O2UK_p2p( char *line, samson::system::UInt* node, samson::cd
 
         if (!parseDate_O2UK(pDateSubmit, &(cdr->date), &(cdr->time)))
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -233,7 +233,7 @@ bool getCDRFromLine_O2UK_p2p( char *line, samson::system::UInt* node, samson::cd
         }
         if (!parseDate_O2UK(pDateDone, &(dateDone), &(timeDone)))
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -253,7 +253,7 @@ bool getCDRFromLine_O2UK_p2p( char *line, samson::system::UInt* node, samson::cd
 
         if (cdr->duration < 0)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -269,7 +269,7 @@ bool getCDRFromLine_O2UK_p2p( char *line, samson::system::UInt* node, samson::cd
         //Global Checking...
         if(cdr->node <= 0)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -284,7 +284,7 @@ bool getCDRFromLine_O2UK_p2p( char *line, samson::system::UInt* node, samson::cd
         }
         if(node->value <= 0)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -299,7 +299,7 @@ bool getCDRFromLine_O2UK_p2p( char *line, samson::system::UInt* node, samson::cd
         }
         if(node->value == cdr->node.value)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -334,7 +334,7 @@ bool getCDRFromLine_O2UK_smsc( char *line, samson::system::UInt* node, samson::c
         {
                 if (nField >= nMaxFields)
                 {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                         std::string filename = "/tmp/parser_cdrs.log";
@@ -348,7 +348,7 @@ bool getCDRFromLine_O2UK_smsc( char *line, samson::system::UInt* node, samson::c
                 }
                 if ((pSep - pField) > (lMaxField - 1))
                 {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                         std::string filename = "/tmp/parser_cdrs.log";
@@ -371,7 +371,7 @@ bool getCDRFromLine_O2UK_smsc( char *line, samson::system::UInt* node, samson::c
         }
         if (nField >= nMaxFields)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -408,7 +408,7 @@ bool getCDRFromLine_O2UK_smsc( char *line, samson::system::UInt* node, samson::c
 
         if (!parseDate_O2UK(pDateSubmit, &(cdr->date), &(cdr->time)))
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -422,7 +422,7 @@ bool getCDRFromLine_O2UK_smsc( char *line, samson::system::UInt* node, samson::c
         }
         if (!parseDate_O2UK(pDateDone, &(dateDone), &(timeDone)))
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -442,7 +442,7 @@ bool getCDRFromLine_O2UK_smsc( char *line, samson::system::UInt* node, samson::c
 
         if (cdr->duration < 0)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -458,7 +458,7 @@ bool getCDRFromLine_O2UK_smsc( char *line, samson::system::UInt* node, samson::c
         //Global Checking...
         if(cdr->node <= 0)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -473,7 +473,7 @@ bool getCDRFromLine_O2UK_smsc( char *line, samson::system::UInt* node, samson::c
         }
         if(node->value <= 0)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -488,7 +488,7 @@ bool getCDRFromLine_O2UK_smsc( char *line, samson::system::UInt* node, samson::c
         }
         if(node->value == cdr->node.value)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -522,7 +522,7 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
         {
                 if (nField >= nMaxFields)
                 {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                         std::string filename = "/tmp/parser_cdrs.log";
@@ -536,7 +536,7 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
                 }
                 if ((pSep - pField) > (lMaxField - 1))
                 {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                         std::string filename = "/tmp/parser_cdrs.log";
@@ -559,7 +559,7 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
         }
         if (nField >= nMaxFields)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -607,7 +607,7 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
 
         if (!parseDate_O2UK(pDateSubmit, &(cdr->date), &(cdr->time)))
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -621,7 +621,7 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
         }
         if (!parseDate_O2UK(pDateDone, &(dateDone), &(timeDone)))
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -641,7 +641,7 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
 
         if (cdr->duration < 0)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -659,7 +659,7 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
         //Global Checking...
         if(cdr->node <= 0)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -674,7 +674,7 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
         }
         if(node->value <= 0)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -689,7 +689,7 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
         }
         if(node->value == cdr->node.value)
         {
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -725,7 +725,7 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
 
 			std::string source = environment->get( "cdr.CDRs_source", "TME");
 			
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";
@@ -754,7 +754,7 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
 			}
 
 
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 			{
                 std::string filename = "/tmp/parser_cdrs.log";

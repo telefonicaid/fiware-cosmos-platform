@@ -9,11 +9,7 @@
 
 #include <samson/module/samson.h>
 #include <string>
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-#include <iostream>
-#include <fstream>
-#endif /* de DEBUG_FILES */
+
 
 
 
@@ -35,16 +31,7 @@ namespace osn{
 			samson::system::UInt16 status;
 			status.value = environment->getInt("osn.status_query", 200);
 
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-                {
-                std::string filename = "/tmp/map_filter_out_by_status.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Maps urls with status: " << status.value  << " for " << inputs[0].num_kvs << " logs " << std::endl;
-                fs.close();
-                }
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
+
 
 			for (size_t i=0; (i < inputs[0].num_kvs); i++)
 			{
@@ -53,31 +40,13 @@ namespace osn{
 
 				if (connect.status.value != status.value)
 				{
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-                {
-                std::string filename = "/tmp/map_filter_out_by_status.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Emit: key: " << key.value << " status: " << connect.status.value << std::endl;
-                fs.close();
-                }
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
+
 
 					writer->emit(0, &key, &connect);
 				}
 				else
 				{
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-                {
-                std::string filename = "/tmp/map_filter_out_by_status.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Not: key: " << key.value << " status: " << connect.status.value << std::endl;
-                fs.close();
-                }
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
+					;
 				}
 
 			}

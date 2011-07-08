@@ -8,11 +8,6 @@
 
 
 #include <samson/module/samson.h>
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-#include <iostream>
-#include <fstream>
-#endif /* de DEBUG_FILES */
 
 
 
@@ -35,15 +30,7 @@ namespace osn{
 			std::string total_visits_str = environment->get ("osn.total_count", "1");
 			int total_visits = strtol(total_visits_str.c_str(), NULL, 10);
 
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-		{
-                std::string filename = "/tmp/red_select_N_sites.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Select num_sites:" << num_sites << " from inputs[0].num_kvs: " << inputs[0].num_kvs << " total_logs: " << total_visits << std::endl;
-                fs.close();
-		}
-#endif /* de DEBUG_FILES */
+
 
 
 
@@ -52,27 +39,10 @@ namespace osn{
 				key_in.parse(inputs[0].kvs[i]->key);
 				count.parse(inputs[0].kvs[i]->value);
 
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-		{
-                std::string filename = "/tmp/red_select_N_sites.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "i: " << i << " j: " << j << " count: " << count.count.value << " frec: " << 100.0 * float(count.count.value) / float(total_visits) << " element: " << count.element.value << std::endl;
-                fs.close();
-		}
-#endif /* de DEBUG_FILES */
 
 				writer->emit(0, &count, &value_out);
 			}
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-		{
-                std::string filename = "/tmp/red_select_N_sites.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Exits " << std::endl;
-                fs.close();
-		}
-#endif /* de DEBUG_FILES */
+
 		}
 	};
 

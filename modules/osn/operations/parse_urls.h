@@ -9,7 +9,7 @@
 
 #include <samson/module/samson.h>
 
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 #include <iostream>
 #include <fstream>
@@ -28,7 +28,7 @@ namespace osn{
 		if ((strlen(dateTxt) != 14) && (strlen(dateTxt) != 15))
 		{
 			// In the test logs, we have found "30Nov2010133246" and "1Dec2010000000"
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
 		std::string filename = "/tmp/parser_urls.log";
@@ -104,7 +104,7 @@ namespace osn{
 		}
 		else
 		{
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_urls.log";
@@ -162,7 +162,7 @@ namespace osn{
 		}
 		else
 		{
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_urls.log";
@@ -269,7 +269,7 @@ fs.close();
 			}
 			else
 			{
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_urls.log";
@@ -286,7 +286,7 @@ fs.close();
 		}
 		else
 		{
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_urls.log";
@@ -304,7 +304,7 @@ fs.close();
 			*pSep = '\0';
 			if (!parseDate_O2UK_osn(pLine, &(URLConnection->date), &(URLConnection->time)))
 			{
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_urls.log";
@@ -320,7 +320,7 @@ fs.close();
 		}
 		else
 		{
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_urls.log";
@@ -341,7 +341,7 @@ fs.close();
 		}
 		else
 		{
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_urls.log";
@@ -362,7 +362,7 @@ fs.close();
 		}
 		else
 		{
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_urls.log";
@@ -383,7 +383,7 @@ fs.close();
 		}
 		else
 		{
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_urls.log";
@@ -413,7 +413,7 @@ fs.close();
 			char *pData;
 			char *pDataBegin;
 			char *pDataEnd;
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_urls.log";
@@ -446,7 +446,7 @@ fs.close();
 					}
 					else
 					{
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 		{
                 std::string filename = "/tmp/parser_urls.log";
@@ -471,7 +471,7 @@ fs.close();
 				}
 				else
 				{
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 	{
 	std::string filename = "/tmp/parser_urls.log";

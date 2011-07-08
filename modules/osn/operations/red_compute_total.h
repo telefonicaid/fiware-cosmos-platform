@@ -8,11 +8,6 @@
 
 
 #include <samson/module/samson.h>
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-#include <iostream>
-#include <fstream>
-#endif /* de DEBUG_FILES */
 
 
 
@@ -33,15 +28,6 @@ namespace osn{
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-                {
-                std::string filename = "/tmp/red_compute_total.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Select from inputs[0].num_kvs: " << inputs[0].num_kvs << std::endl;
-                fs.close();
-                }
-#endif /* de DEBUG_FILES */
 
 			total_out.value = 0;
                         for (size_t i = 0; (i < inputs[0].num_kvs); i++)

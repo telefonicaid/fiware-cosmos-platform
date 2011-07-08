@@ -9,11 +9,7 @@
 
 #include <samson/module/samson.h>
 #include <string>
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-#include <iostream>
-#include <fstream>
-#endif /* de DEBUG_FILES */
+
 
 
 
@@ -47,16 +43,7 @@ namespace osn{
 			const char *p_application_Maps = application_Maps.c_str();
 			const char *p_application_iTunes = application_iTunes.c_str();
 
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-                {
-                std::string filename = "/tmp/map_applications.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Maps urls looking for Apple applications  for " << inputs[0].num_kvs << " logs " << std::endl;
-                fs.close();
-                }
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
+
 
 			for (size_t i=0; (i < inputs[0].num_kvs); i++)
 			{
@@ -67,16 +54,7 @@ namespace osn{
 
 				if (strstr(p_userAgent, p_Apple))
 				{
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-                {
-                std::string filename = "/tmp/map_applications.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Detect: " << connect.userAgent.value << std::endl;
-                fs.close();
-                }
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
+
 
 					if (strstr(p_userAgent, p_application_Weather))
 					{
@@ -120,30 +98,12 @@ namespace osn{
 					}
 					else
 					{
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-                {
-                std::string filename = "/tmp/map_applications.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Other: " << connect.userAgent.value << std::endl;
-                fs.close();
-                }
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
+
 					}
 				}
 				else
 				{
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-                {
-                std::string filename = "/tmp/map_applications.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Not: " << connect.userAgent.value << std::endl;
-                fs.close();
-                }
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
+
 				}
 			}
 			samson::system::UInt key_total;

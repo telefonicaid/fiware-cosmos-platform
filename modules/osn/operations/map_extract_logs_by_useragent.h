@@ -9,11 +9,7 @@
 
 #include <samson/module/samson.h>
 #include <string>
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-#include <iostream>
-#include <fstream>
-#endif /* de DEBUG_FILES */
+
 
 
 
@@ -36,16 +32,6 @@ namespace osn{
 			std::string user_agent = environment->get("osn.user_agent_query", "NokiaN95");
 
 			const char *p_user_agent = user_agent.c_str();
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-                {
-                std::string filename = "/tmp/map_extract_logs_by_useragent.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Maps urls with user_agent: " << user_agent  << " for " << inputs[0].num_kvs << " logs " << std::endl;
-                fs.close();
-                }
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
 
 			for (size_t i=0; (i < inputs[0].num_kvs); i++)
 			{
@@ -54,32 +40,14 @@ namespace osn{
 
 				if (strcasestr(connect.userAgent.value.c_str(), p_user_agent))
 				{
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-                {
-                std::string filename = "/tmp/map_extract_logs_by_useragent.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Emit: user_agent: " << connect.userAgent.value << std::endl;
-                fs.close();
-                }
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
+
 
 					key_out.value.assign(connect.userAgent.value);
 					writer->emit(0, &key_out, &connect);
 				}
 				else
 				{
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-                {
-                std::string filename = "/tmp/map_extract_logs_by_useragent.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Not: user_agent: " << connect.userAgent.value << std::endl;
-                fs.close();
-                }
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
+
 				}
 
 			}

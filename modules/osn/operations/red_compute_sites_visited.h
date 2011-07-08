@@ -10,11 +10,6 @@
 #include <samson/module/samson.h>
 #include <samson/modules/system/Void.h>
 
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-#include <iostream>
-#include <fstream>
-#endif /* de DEBUG_FILES */
 
 
 
@@ -44,16 +39,7 @@ namespace osn{
 			url.parse(inputs[0].kvs[0]->key );
 
 			total.value = 0;
-#define DEBUG_FILES
-#ifdef DEBUG_FILES
-                {
-                std::string filename = "/tmp/red_compute_sites_visited.log";
-                std::ofstream fs(filename.c_str(), std::ios::app);
-                fs << "Count urls with key: " << url.value << std::endl;
-                fs.close();
-                }
-#endif /* de DEBUG_FILES */
-#undef DEBUG_FILES
+
 
 			for (size_t i=0; (i < inputs[0].num_kvs); i++)
 			{

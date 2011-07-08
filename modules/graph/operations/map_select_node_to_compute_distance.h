@@ -9,7 +9,7 @@
 
 #include <samson/module/samson.h>
 
-#define DEBUG_FILES
+#undef DEBUG_FILES
 #ifdef DEBUG_FILES
 #include <iostream>
 #include <fstream>

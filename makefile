@@ -128,7 +128,7 @@ coverage: debug
 	cd BUILD_DEBUG ; ../scripts/samsonCoverage
 
 clear_ipcs:
-	echo $(for i in `ipcs -m | grep $USER | awk '{print $2}'`; do ipcrm -m $i; done)
+	for i in `ipcs -m | grep $USER | awk '{print $2}'`; do ipcrm -m $i; done
 
 
 rpm:

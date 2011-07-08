@@ -10,7 +10,12 @@
 #include "engine/MemoryManager.h"
 #include "engine/Notification.h"
 
+#include "samson/stream/PopQueue.h" // stream::PopQueue
+
 #include "samson/worker/SamsonWorker.h"
+
+#include "samson/stream/QueueTask.h"
+
 
 #include "samson/stream/Queue.h"
 
@@ -40,7 +45,10 @@ namespace samson {
 
             // Queue task Manager status
             output << queueTaskManager.getStatus();
-           
+
+            // Queue pop quuee
+            output << popQueueManager.getStatus();
+            
             return output.str();
             
         }
@@ -80,13 +88,39 @@ namespace samson {
             
         }
 
-        void QueuesManager::notifyFinishTask( std::string queue , size_t task )
+        void QueuesManager::notifyFinishTask( QueueTask *task )
         {
             
-            LM_M(("Notifying finish task %s %lu", queue.c_str() , task));
-            getQueue( queue )->notifyFinishTask( task );
+            std::string queue  = task->environment.get("queue","--");
+            size_t task_id = task->id;
+            
+            //LM_M(("Operation %lu finished for queue %s", task_id, queue.c_str() ));
+            
+            if( queue != "--" )
+                getQueue( queue )->notifyFinishTask( task_id );
+            
+            
+            // Notify to the popQueue operations
+            size_t pop_queue_id = task->environment.getSizeT("pop_queue_id", 0);
+            
+            //LM_M(("notify finish task for pop_queue_id %lu" , pop_queue_id));
+            
+            if( pop_queue_id != 0 )
+                popQueueManager.notifyFinishTask( pop_queue_id , task_id , &task->error );
+            
         }
 
+        void QueuesManager::addPopQueue(const network::PopQueue& pq , size_t delilahId, int fromId )
+        {
+            std::string queue_name = pq.target().queue();
+            Queue* q = queues.findInMap( queue_name );
+            
+            PopQueue *popQueue = new PopQueue( pq , delilahId, fromId );
+            popQueueManager.add( popQueue );
+            
+            // Run the pop queue operation with the current queue information
+            popQueue->run( q );
+        }
         
 
         

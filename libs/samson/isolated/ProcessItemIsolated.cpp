@@ -46,8 +46,9 @@ namespace samson
 		return NULL;
 	}
 	
-	ProcessItemIsolated::ProcessItemIsolated() : ProcessItem( PI_PRIORITY_NORMAL_OPERATION ) 	
+	ProcessItemIsolated::ProcessItemIsolated( std::string _description ) : ProcessItem( PI_PRIORITY_NORMAL_OPERATION ) 	
 	{
+        processItemIsolated_description = _description;
 	}	
 
 	ProcessItemIsolated::~ProcessItemIsolated()
@@ -419,7 +420,7 @@ namespace samson
                 // Not possible to read the message for any reason
 				LM_T(LmtIsolated, ("Isolated process %s: Not possible to read a message with error_code' %s'", getStatus().c_str() , au::status(c) ));
                 
-				error.set( au::Format::string( "Operation has crashed - [ Error code %s ]", au::status(c) ) );
+				error.set( au::Format::string( "Third party operation '%s' has crashed - [ Error code %s ]", processItemIsolated_description.c_str() ,  au::status(c) ) );
                 return;
             }
             

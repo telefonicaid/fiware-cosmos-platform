@@ -9,8 +9,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>					// exit()
-#include "AUTockenizer.h"			// Own interface
 #include <sstream>					// std::ostringstream
+
+#include "logMsg/logMsg.h"          // LM_X
+
+#include "AUTockenizer.h"			// Own interface
 
 namespace samson
 {
@@ -243,10 +246,11 @@ namespace samson
 	
 	AUToken AUTockenizer::itemAtPos( unsigned int pos )
 	{
-		if( ( pos < 0 )  || ( pos >= items.size() ) )
+		if( pos >= items.size() )
 		{
 			fprintf(stderr,"samsonModuleParser: Error accessing a wrong position(%d) inside the AUTockenizer element (items.size():%d) (coming from reference:'%s', line:%d)\n", pos, int(items.size()), items[reference_pos].str.c_str(), items[reference_pos].line);
-			exit (1);
+            
+            LM_X(1,("Error at AUTockenizer"));
 		}
 
 		//fprintf(stdout, "returning items[%d].str:'%s'\n", pos, items[pos].str.c_str());
@@ -287,7 +291,7 @@ namespace samson
 		if( !isOpenSet(pos) )
 		{
 			fprintf(stderr, "samsonModuleParser: Error in format while parsing the document at line:%d\n", itemAtPos(pos).line);
-			exit(1);
+            LM_X(1,("Error at AUTockenizer"));
 		}
 		reference_pos = pos;
 		pos++;
@@ -353,7 +357,7 @@ namespace samson
 		{
 			fprintf(stderr, "samsonModuleParser: Error, expected ';' in the lines of a block. Reference line:%d\n", items[reference_pos].line);
 			//fprintf(stderr, "samsonModuleParser: Error, expected ';' in the lines of a block. Reference line:%d, between pos_begin:%d, pos_end:%d\n", items[reference_pos].line, pos, pos2);
-			exit(1);
+            LM_X(1,("Error at AUTockenizer"));
 		}
 		return o.str();
 	}
@@ -408,7 +412,7 @@ namespace samson
 		{
 			fprintf(stderr,"samsonModuleParser: Error getting the limits in scope of a {  } while parsing the document, from reference:'%s' line:%d\n", items[reference_pos].str.c_str(), items[reference_pos].line);
 			fprintf(stderr,"\t\tgetScopeLimits called from non OpenSet position:'%s'\n", itemAtPos(*pos).str.c_str());
-			exit(1);
+            LM_X(1,("Error at AUTockenizer"));
 		}
 
 		*begin = *pos + 1;

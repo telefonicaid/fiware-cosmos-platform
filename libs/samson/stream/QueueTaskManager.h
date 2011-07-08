@@ -40,6 +40,7 @@ namespace samson {
             void notify( engine::Notification* notification );
             
             
+            
         };
         
     }

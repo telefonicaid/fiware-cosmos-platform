@@ -272,6 +272,7 @@ namespace samson
 			if( packet->message->upload_data_init_response().has_error() )
 			{
 				error.set(  packet->message->upload_data_init_response().error().message() );
+                component_finished = true;
 				status = finish_with_error;
 				
 				lock.unlock();
@@ -423,6 +424,48 @@ namespace samson
 		return output.str();
 	}
 	
+    std::string DelilahUploadDataProcess::getShortStatus()
+    {
+		std::ostringstream output;
+		
+		int seconds = au::Format::ellapsedSeconds(&init_time);
+		
+		output << "Uploading " << au::Format::string( totalSize ,"B" ) << " to queue: " << queue << " ( Status ";
+        
+		switch (status) {
+			case uninitialized:
+				output << "Uninitialized";
+				break;
+			case waiting_controller_init_response:
+				output << "Waiting controller response to our init message";
+				break;
+			case sending_files_to_workers:
+				output << "Sending data";
+				break;
+			case waiting_file_upload_confirmations:
+				output << "Waiting confirmation of received data";
+				break;
+			case waiting_controller_finish_response:
+				output << "Waiting final message confirmation from controller";
+				break;
+			case finish_with_error:
+				output << "ERROR: " << error.getMessage();
+				break;
+			case finish:
+				output << "Finished correctly";
+				break;
+		}
+		output << " )";
+        
+        if ( ( status == finish ) || ( status == finish_with_error) )
+            output << " [ " << au::Format::time_string( final_time_in_seconds ) << " ] ";
+        
+		if( status == sending_files_to_workers )
+			output << " Running time: " << au::Format::time_string(seconds) << " " ;
+        
+		return output.str();        
+    }
+    
 	std::string DelilahUploadDataProcess::getStatus()
 	{
 		

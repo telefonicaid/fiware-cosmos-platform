@@ -36,6 +36,7 @@ namespace samson {
     {
         class Block;
         class QueuesManager;
+        class PopQueue;
         
         class Queue : engine::Object
         {
@@ -43,12 +44,10 @@ namespace samson {
 
             friend class QueuesManager;
             
-            std::string name;               // Name of the queue
-            au::Cronometer cronometer;      // Time since the last command execution
+            std::string name;                   // Name of the queue
+            au::Cronometer cronometer;          // Time since the last command execution
             
-            BlockMatrix matrix;             // Matrix of blocks ( one list per input channel )
-            
-
+            BlockMatrix matrix;                 // Matrix of blocks ( one list per input channel )
             
             std::set<size_t> running_tasks;     // Tasks currently running 
             
@@ -82,6 +81,11 @@ namespace samson {
 
             // Create new tasks if necessary
             void scheduleNewTasksIfNecessary();
+
+            // Create tasks if necessary for a pop-queue operation ( from delilah )
+            void scheduleTasksForPopQueue( PopQueue *popQueue );
+           
+            
             
             std::string getStatus();
             
@@ -89,6 +93,7 @@ namespace samson {
             void notify( engine::Notification* notification );
             
             void notifyFinishTask( size_t task_id );
+
             
         };
         

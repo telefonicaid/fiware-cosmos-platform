@@ -65,6 +65,7 @@ namespace samson {
             addOption("workers");
             addOption("upload");
             addOption("push");
+            addOption("pop");
             addOption("download");
             addOption("load");
             addOption("load_clear");
@@ -277,8 +278,9 @@ namespace samson {
 		void uploadDataConfirmation( DelilahUploadDataProcess *process);
 		void downloadDataConfirmation( DelilahDownloadDataProcess *process );
 		
-        // confirmation that a push operation has finished
+        // confirmation that a push/pop operation has finished
 		void pushConfirmation( PushComponent *process );
+		void popConfirmation( PopComponent *process );
 
         
 		// Function to process messages from network elements not handled by Delila class

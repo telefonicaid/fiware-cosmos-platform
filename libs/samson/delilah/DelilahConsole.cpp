@@ -499,6 +499,9 @@ namespace samson
 		{
 			// Clear completed upload and download process
 			clearComponents();
+            
+            writeOnConsole("Clear components OK");
+            
 			return 0;
 		}
 		
@@ -750,6 +753,30 @@ namespace samson
 			return id;
 		}
         
+
+        // Push data to a queue
+        
+        if( mainCommand == "pop" )
+		{
+			if( commandLine.get_num_arguments() < 5 )
+			{
+				writeErrorOnConsole("Usage: pop queue channel parserOut fileName");
+				return 0;
+			}
+            
+            std::string queue_name = commandLine.get_argument(1);
+            int channel = atoi( commandLine.get_argument(2).c_str() );
+            std::string parserOut = commandLine.get_argument(3);
+            std::string fileName = commandLine.get_argument(4);
+            
+			size_t id = addPopData( queue_name , channel , parserOut , fileName );
+			
+			std::ostringstream o;
+			o << "[ " << id << " ] Pop from queue " << queue_name << ":" << channel << " started. ParserOut " << parserOut << " LocalFile: " << fileName;
+			writeWarningOnConsole(o.str());
+			return id;
+		}
+        
         
 		// Normal command send to the controller
 		return sendCommand( command , NULL );
@@ -883,7 +910,8 @@ namespace samson
 				
 			default:
 				txt << "Unknwn packet received\n";
-				exit(1);
+
+                LM_X(1, ("Unknown packet received at delilahConsole"));
 				break;
 		}
 		
@@ -941,7 +969,26 @@ namespace samson
 		}
         
     }
+
+    void DelilahConsole::popConfirmation( PopComponent *process )
+    {
+		if( process->error.isActivated() )
+		{
+			std::ostringstream o;
+			o << "[ " << process->id << " ] Pop process finished with error ( " << process->getStatus() << " )\n";
+			o << "\tERROR: " << process->error.getMessage();
+			writeErrorOnConsole(o.str());
+		}
+		else
+		{
+			std::ostringstream o;
+			o << "[ " << process->id << " ] Pop  process finished correctly ( " << process->getStatus() << " )";
+			writeWarningOnConsole(o.str());
+		}
+        
+    }
 	
+    
 	void DelilahConsole::showQueues( const network::QueueList ql)
 	{
 		std::ostringstream txt;

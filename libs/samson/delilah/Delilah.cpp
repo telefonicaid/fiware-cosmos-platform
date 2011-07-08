@@ -281,6 +281,21 @@ namespace samson {
         
 		return tmp_id;
 	}
+
+	/* ****************************************************************************
+     *
+     * popData - 
+     */
+	size_t Delilah::addPopData( std::string queue , int channel, std::string parserOut , std::string fileName )
+	{
+		PopComponent * d = new PopComponent( queue , channel , parserOut , fileName );
+		size_t tmp_id = addComponent(d);	
+        
+		d->run();
+        
+		return tmp_id;
+	}
+    
     
 	
 	
@@ -368,13 +383,20 @@ namespace samson {
 		std::stringstream output;
 		bool present = false;
 		output << "-----------------------------------------------------------------\n";
-		output << "List of delilah processes....\n";
+		output << "List of delilah processes\n";
 		output << "-----------------------------------------------------------------\n";
 		output << "\n";
 		std::map<size_t,DelilahComponent*>::iterator iter;
 		for (iter = components.begin() ; iter != components.end() ; iter++)
 		{
-            output << iter->second->getStatus() << "\n";
+            output << "[ " << iter->second->id << " ] ";
+            output << iter->second->getCodeName();
+            if( iter->second->component_finished )
+                output << " [ FINISHED ] ";
+            else
+                output << "              ";
+            
+            output << iter->second->getShortStatus() << "\n";
             present = true;
 		}
 		

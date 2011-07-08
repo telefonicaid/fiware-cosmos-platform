@@ -76,6 +76,8 @@ namespace samson {
         // add to listen messages to send a packet to a worker
         listen( notification_send_to_worker );
         
+        // Listen this notification to send packets
+        listen( notification_samson_worker_send_packet );
         
         // Notification of the files
         {
@@ -288,7 +290,7 @@ namespace samson {
                 std::string queue = packet->message->push_block().target(i).queue();
                 int _channel = (int)packet->message->push_block().target(i).channel();
                 
-                LM_M(("Adding a block to queue %s", queue.c_str()));
+                //LM_M(("Adding a block to queue %s", queue.c_str()));
                 
                 queuesManager.addBlock(queue, _channel , block  );
             }
@@ -392,6 +394,17 @@ namespace samson {
             
 			return;
 		}
+        
+        if( msgCode == Message::PopQueue )
+        {
+            
+            size_t delilah_id = packet->message->delilah_id();
+            queuesManager.addPopQueue( packet->message->pop_queue() , delilah_id , packet->fromId );
+            
+            return;
+        }
+        
+        LM_W((" Received a message with type %s. Just ignoring...", messageCode( msgCode )  ));
 		
 		
 	}
@@ -435,6 +448,27 @@ namespace samson {
                 //LM_M(("SamsonWorking sending a trace to all delilahs..."));
                 Packet *p = (Packet*) notification->extractObject();
                 network->delilahSend( this , p );
+            }
+        }
+        else if( notification->isName( notification_samson_worker_send_packet ) )
+        {
+            if ( !notification->containsObject() )
+            {
+                LM_W(("SamsonWorker: received a notification_samson_worker_send_packet without an object"));
+                return;
+            }
+            else
+            {
+                Packet *packet = (Packet *) notification->extractObject();
+                
+                int endpointId = notification->environment.getInt( "toId" , -1 );
+                if( endpointId == -1 )
+                {
+                    LM_W(("No endpoint specified. Ignoring notification..."));
+                    delete packet;
+                }
+                else
+                    network->send( endpointId , packet);
             }
         }
         else

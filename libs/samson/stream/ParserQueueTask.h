@@ -6,6 +6,7 @@
 #include "samson/stream/StreamProcessBase.h"        // parent class 
 #include "samson/stream/QueueTask.h"                // parent class 
 
+
 namespace samson
 {
     
@@ -18,7 +19,7 @@ namespace samson
             
         public:
             
-            ParserQueueTask( size_t id , std::string queue_name , network::StreamQueue * streamQueue  ) : stream::QueueTask(id,  queue_name , streamQueue )
+            ParserQueueTask( size_t id  , network::StreamQueue * streamQueue  ) : stream::QueueTask(id , streamQueue )
             {
                 operation_name = "stream:" + streamQueue->operation();
             }
@@ -43,6 +44,38 @@ namespace samson
             }
             
         };
+
+        // ParserOut task is used only in popQueue operations
+        
+        
+        class ParserOutQueueTask : public stream::QueueTask 
+        {
+            
+        public:
+            
+            ParserOutQueueTask( size_t id , PopQueue* pq  );
+            
+            ~ParserOutQueueTask()
+            {
+            }
+            
+            // Get the required blocks to process
+            void getBlocks( BlockList *matrix );
+            
+            // Function to generate output key-values
+            void generateTXT( TXTWriter *writer );
+            
+            // Get a string with the status of this task
+            virtual std::string getStatus();
+            
+            
+            StreamProcessBase* getStreamProcess()
+            {
+                return this;
+            }
+            
+        };
+        
         
 
         // Parser QueueTask ( at the same time is the ProcessItem in the engine library to be executed )
@@ -52,7 +85,7 @@ namespace samson
             
         public:
             
-            MapQueueTask( size_t id , std::string queue_name , network::StreamQueue * streamQueue  ) :stream::QueueTask(id,  queue_name , streamQueue )
+            MapQueueTask( size_t id , network::StreamQueue * streamQueue  ) :stream::QueueTask(id , streamQueue )
             {
                 operation_name = "stream:" + streamQueue->operation();
             }
@@ -88,7 +121,7 @@ namespace samson
             
         public:
             
-            ReduceQueueTask( size_t id , std::string queue_name , network::StreamQueue * streamQueue  ) : stream::QueueTask(id,  queue_name , streamQueue )
+            ReduceQueueTask( size_t id , network::StreamQueue * streamQueue  ) : stream::QueueTask(id , streamQueue )
             {
                 operation_name = "stream:" + streamQueue->operation();
                 hg_begin = -1;

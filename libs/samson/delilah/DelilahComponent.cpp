@@ -29,6 +29,21 @@ namespace samson {
 	}
 	
     
+    std::string DelilahComponent::getCodeName()
+    {
+        switch (type) {
+            case command:   return "[ Command ]";
+            case load:      return "[ Load    ]";
+            case updater:   return "[ Updater ]";
+            case push:      return "[ Push    ]";
+            case pop:       return "[ Pop     ]";
+        }
+        
+        LM_X(1, ("Impossible error"));
+        return "";
+    }
+    
+    
 #pragma mark ----
     
     bool isOneOf( char c , std::string s )
@@ -147,6 +162,13 @@ namespace samson {
 	}		
 	
 	std::string CommandDelilahComponent::getStatus()
+	{
+		std::ostringstream o;
+		o << "Command Component: " << command;
+		return o.str();
+	}
+    
+	std::string CommandDelilahComponent::getShortStatus()
 	{
 		std::ostringstream o;
 		o << "Command Component: " << command;

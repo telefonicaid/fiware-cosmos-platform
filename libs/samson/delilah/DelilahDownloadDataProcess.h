@@ -70,7 +70,8 @@ namespace samson {
 		
 		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 		
-		virtual std::string getStatus();
+		std::string getStatus();
+        std::string getShortStatus();
 
 		std::string getDescription(); 
 		

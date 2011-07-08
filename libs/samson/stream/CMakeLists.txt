@@ -9,6 +9,8 @@ SET (HEADERS
     QueueTaskManager.h
     StreamProcessBase.h
     ParserQueueTask.h
+    PopQueue.h
+    PopQueueManager.h
 )
 
 SET (SOURCES
@@ -21,6 +23,8 @@ SET (SOURCES
     QueueTaskManager.cpp    
     StreamProcessBase.cpp
     ParserQueueTask.cpp
+    PopQueueManager.cpp
+    PopQueue.cpp
 )
 
 
@@ -32,6 +36,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(samsonStream STATIC ${SOURCES} ${HEADERS} )
+
 
 
 

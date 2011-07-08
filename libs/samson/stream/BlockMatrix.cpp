@@ -30,10 +30,8 @@ namespace samson {
             // blocks.push_back( block ); // Old push back mechanism
             blocks.insert( _find_pos(block ) , block );
             
-            if( block->header )
-                accumulated_info.append( block->header->info );
-            else
-                accumulated_info.append( block->getSize() , 1 );
+            // Accumulated information
+            accumulated_info.append( block->getInfo() );
         }
         
         Block* BlockList::extract( )
@@ -49,11 +47,33 @@ namespace samson {
             return total;
         }
         
+        void BlockList::copyFrom( BlockMatrix* matrix , int channel )
+        {
+            BlockList *bl = matrix->channels.findInMap( channel );
+            if( !bl )
+                return; // Nothing to copy because there is not such a channel
+            
+            // Copy all the blocks from another
+            copyFrom( bl );
+        }
+        
+        
+        void BlockList::copyFrom( BlockList* list )
+        {
+            au::list< Block >::iterator b;
+            for (b = list->blocks.begin() ;  b != list->blocks.end() ; b++)
+                add( *b );
+                
+        }
+
+        
         std::string BlockList::str()
         {
-            size_t size=0;
-            size_t size_on_memory=0;
-            size_t size_on_disk=0;
+            size_t size             =0;
+            size_t size_on_memory   =0;
+            size_t size_on_disk     =0;
+            
+            FullKVInfo info;
             
             std::ostringstream output;
             std::list<Block*>::iterator b;
@@ -64,19 +84,31 @@ namespace samson {
                 size_on_memory += (*b)->getSizeOnMemory();
                 size_on_disk += (*b)->getSizeOnDisk();
                 
-                output << (*b)->str();
+                info.append( (*b)->getInfo() );
+                
             }
+            
+            /*
+            output << "\tBlocks: ";
+            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
+                output << (*b)->str();
+            output << "\n";
+            */
             
             if( blocks.size() == 0 )
-                output << "[ No content ]";
+            {
+                output << "\n\tTotal info          " << "[ No content ]";
+                output << "\n\tAccumulated info    " << accumulated_info.str() << " ]";
+            }
             else
             {
-                output << "[ " << blocks.size() << " blocks with " << au::Format::string( size, "Bytes" );
+                output << "\n\tTotal info          " << info.str();
+                output << "\n\tAccumulated info    " << accumulated_info.str();
+                output << "\n\tBlock information   " << "( " << blocks.size() << " blocks with " << au::Format::string( size, "Bytes" );
                 output << " " << au::Format::percentage_string(size_on_memory, size) << " on memory";
-                output << " & " << au::Format::percentage_string(size_on_disk, size) << " on disk ]";
+                output << " & " << au::Format::percentage_string(size_on_disk, size) << " on disk )";
             }
             
-            output << "[ Accumulatd " << accumulated_info.str() << " ]";
             
             return output.str();
         }
@@ -153,7 +185,6 @@ namespace samson {
             for ( b = blocks.begin() ; b != blocks.end() ; b++ )
                 info.append( ( *b )->getInfo() );
             return info;
-            
         }
         
         size_t BlockList::getNumBlocks()
@@ -165,11 +196,11 @@ namespace samson {
         {
             for (au::list< Block >::iterator i = blocks.begin() ; i != blocks.end() ; i++)
             {
-                if( (*i)->task_id < b->task_id )
+                if( (*i)->task_id > b->task_id )
                     return i;
                 
                 if( (*i)->task_id == b->task_id )
-                    if( (*i)->task_order < b->task_order )
+                    if( (*i)->task_order > b->task_order )
                         return i;
             }
             

@@ -33,7 +33,7 @@ namespace engine {
 #else
 			   fprintf(stderr,"Error allocating memory for %d bytes", max_size);
 #endif
-			   exit(1);
+                exit(1);
 			}
 		}
 		else

@@ -12,7 +12,7 @@
 
 namespace samson
 {
-    ProcessIsolated::ProcessIsolated( ProcessBaseType _type , int _num_outputs , int _num_workers )
+    ProcessIsolated::ProcessIsolated( std::string description, ProcessBaseType _type , int _num_outputs , int _num_workers ) : ProcessItemIsolated( description )
     {
         num_outputs = _num_outputs;
         num_workers = _num_workers;

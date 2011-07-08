@@ -283,5 +283,41 @@ namespace samson {
 		output << "\n\tTotal files: " << num_files_downloaded << "/" << num_files_to_download;
 		output << " Buffers: " << buffers.size() << "\n";
 		return output.str();
-	}	
+	}
+	
+	std::string DelilahDownloadDataProcess::getShortStatus()
+	{
+		std::ostringstream output;
+		output << "Downloading queue " << queue << " to " << fileName << " ( STATE: ";
+		
+		switch (status) {
+			case uninitialized:
+				output << "Uninitialized";
+				break;
+			case waiting_controller_init_response:
+				output << "Waiting controller response to our init message";
+				break;
+			case downloading_files_from_workers:
+				output << "Downloading data";
+				break;
+			case waiting_file_downloads_confirmations:
+				output << "Waiting confirmation of downloaded data";
+				break;
+			case waiting_controller_finish_response:
+				output << "Waiting final message confirmation from controller";
+				break;
+			case finish_with_error:
+				output << "ERROR: " << error.getMessage();
+				break;
+			case finish:
+				output << "Finished correctly";
+				break;
+		}
+		output << " )";
+		
+		
+		output << " Total files: " << num_files_downloaded << "/" << num_files_to_download;
+		output << " Buffers: " << buffers.size() << "\n";
+		return output.str();
+	}    
 }

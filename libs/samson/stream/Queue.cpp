@@ -15,6 +15,8 @@
 #include "samson/worker/SamsonWorker.h"
 #include "samson/stream/ParserQueueTask.h"          // samson::stream::ParserQueueTask
 
+#include "PopQueue.h"       // samson::stream::PopQueue
+
 #include "Queue.h"          // Own interface
 
 
@@ -47,11 +49,47 @@ namespace samson {
             //printf("After Adding block to channel %d in queue %s" , channel , getStatus().c_str() );
             
         }
+
+        void Queue::scheduleTasksForPopQueue( PopQueue *popQueue )
+        {
+
+
+            BlockList blockList;
+
+            // Copy all the blocks from the selected channel
+            blockList.copyFrom( &matrix , popQueue->getChannel() );
+            
+            LM_M(("Processing %d blocks for pop-queue operation" , blockList.getNumBlocks() ));
+            
+            while( !blockList.isEmpty() )
+            {
+                // Creating a parserOut operation
+
+                ParserOutQueueTask *tmp = new ParserOutQueueTask( qm->queueTaskManager.getNewId() , popQueue ); 
+                tmp->getBlocks( &blockList );
+                
+                // Retain blocs by the task and release the one form the queue
+                tmp->retain();
+                
+                // add the id of this task in the list of running tasks of the popQueue operation
+                popQueue->running_tasks.insert( tmp->id );
+                
+                tmp->environment.setSizeT("pop_queue_id", popQueue->id );
+                
+                // Schedule tmp task into QueueTaskManager
+                qm->queueTaskManager.add( tmp );
+                
+            }
+            
+        }
         
         void Queue::scheduleNewTasksIfNecessary()
         {
             if( !streamQueue )
                 return;     // No information about how to process data
+            
+            // Get a copy of the blocks for a particular channel
+            
             
             if( matrix.isEmpty() )
             {
@@ -82,7 +120,9 @@ namespace samson {
                     {
                         //LM_M(("Creating a new parser operation over %s" , matrix.str().c_str() ));
                         
-                        ParserQueueTask *tmp = new ParserQueueTask( qm->queueTaskManager.getNewId() , name ,   streamQueue ); 
+                        ParserQueueTask *tmp = new ParserQueueTask( qm->queueTaskManager.getNewId() ,   streamQueue ); 
+                        tmp->environment.set("queue" , name );
+                        
                         tmp->getBlocks( &matrix );
                         
                         // Reatin blocs by the task and release the one form the queue
@@ -114,7 +154,8 @@ namespace samson {
                     {
                         //LM_M(("Scheduling a new map operation"));
                         
-                        MapQueueTask *tmp = new MapQueueTask( qm->queueTaskManager.getNewId() , name , streamQueue ); 
+                        MapQueueTask *tmp = new MapQueueTask( qm->queueTaskManager.getNewId() , streamQueue ); 
+                        tmp->environment.set("queue" , name );
                         
                         // Extract the necessary blocks
                         tmp->getBlocks( &matrix );
@@ -175,7 +216,9 @@ namespace samson {
                             hg_end = KVFILE_NUM_HASHGROUPS;
                         
                         // Create the reduce operation
-                        ReduceQueueTask *tmp = new ReduceQueueTask( qm->queueTaskManager.getNewId() ,name ,  streamQueue ); 
+                        ReduceQueueTask *tmp = new ReduceQueueTask( qm->queueTaskManager.getNewId() ,  streamQueue ); 
+                        tmp->environment.set("queue" , name );
+                        
                         tmp->setHashGroups( hg_begin , hg_end );
                         
                         // add input blocks to the task that fits 
@@ -190,7 +233,7 @@ namespace samson {
                         // Retain blocks with the task id
                         tmp->retain();
                         
-                        LM_M(("Adding a reduce task with %lu blocks containing %s bytes" , tmp->matrix.getNumBlocks() , tmp->matrix.getInfo().str().c_str() ));
+                        //LM_M(("Adding a reduce task with %lu blocks containing %s bytes" , tmp->matrix.getNumBlocks() , tmp->matrix.getInfo().str().c_str() ));
                         
                         // Schedule tmp task into QueueTaskManager
                         qm->queueTaskManager.add( tmp );

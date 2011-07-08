@@ -55,9 +55,13 @@ namespace samson
             // Information about how to process this queue ( from controller )
             network::StreamQueue *streamQueue;
             
+            // Information about pop queue operation( parser Out from delilah )
+            PopQueue *pq;
+            
         public:
             
-            StreamProcessBase( ProcessBaseType type , network::StreamQueue *streamQueue );
+            StreamProcessBase( size_t _task_id , network::StreamQueue *streamQueue );
+            StreamProcessBase( size_t _task_id , PopQueue *pq );
             virtual ~StreamProcessBase();
             
             

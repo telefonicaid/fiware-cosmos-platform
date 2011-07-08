@@ -69,6 +69,8 @@ char* messageCode(MessageCode code)
 	case ProcessList:                      return (char*) "ProcessList";
     case PushBlock:                        return (char*) "PushBlock";
     case PushBlockResponse:                return (char*) "PushBlockResponse";
+    case PopQueue:                         return (char*) "PopQueue";
+    case PopQueueResponse:                 return (char*) "PopQueueResponse";
 	case Id:                               return (char*) "Id";
 	case Ping:                             return (char*) "Ping";
 	case Unknown:                          return (char*) "Unknown";

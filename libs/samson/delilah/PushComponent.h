@@ -14,6 +14,8 @@
 #include "au/Lock.h"				// au::Lock
 
 #include "engine/Engine.h"          // engine::Object
+#include "engine/Object.h"          // engine::Object
+#include "engine/DiskManager.h"     // engine::DiskManager
 
 #include "samson/common/samson.pb.h"		// samson::network
 
@@ -73,6 +75,7 @@ namespace samson {
 
 		// Function to get the status
 		std::string getStatus();		
+        std::string getShortStatus();
 		
         
         // Notifications
@@ -84,6 +87,97 @@ namespace samson {
         void requestMemoryBuffer();
 
 	};	
+    
+    
+    class PopComponent : public DelilahComponent , public engine::Object
+    {
+        network::QueueChannel *qc;          // Information about the queue we are recovering
+        std::string fileName;               // Name of the file to create
+        
+        std::string parserOut;              // Operation used to transform binary data into txt
+        
+        int num_workers;                    // Number of workers ( where we have send the request )
+        int num_finish_worker;              // Number of workers that have confirmed that everything has been sent
+        
+        int num_write_operations;           // Number of pending local write operations
+        
+    public:
+        
+		// Error log ( public since it is access from delilah )
+		au::ErrorManager error;
+        
+        PopComponent( std::string queue , int channel , std::string _parserOut, std::string _fileName ) : DelilahComponent( DelilahComponent::pop )
+        {
+            qc = new network::QueueChannel();
+            qc->set_queue(queue);
+            qc->set_channel( channel );
+
+            parserOut = _parserOut;
+            fileName = _fileName;
+            
+            num_write_operations = 0;
+            
+        }
+        
+        ~PopComponent()
+        {
+            delete qc;
+        }
+        
+        void run()
+        {
+            // Send to all the workers a message to pop a queue
+            num_workers = delilah->network->getNumWorkers();
+            num_finish_worker = 0;
+            
+            for ( int w = 0 ; w < num_workers ; w++ )
+            {
+                Packet *p = new Packet( Message::PopQueue );
+                
+                network::PopQueue *pq = p->message->mutable_pop_queue();
+                
+                pq->mutable_target()->CopyFrom( *qc );       // Target queue channel
+                pq->set_parserout( parserOut );             // Name of the operation to parseOut content
+                
+                
+                p->message->set_delilah_id(id);             // Identifier of the component at this delilah
+                
+                delilah->network->sendToWorker( w, p);
+            }
+            
+        }
+        
+        // Function to receive packets
+		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
+ 
+        std::string getShortStatus()
+        {
+            std::string queue = qc->queue();
+            int channel = qc->channel();
+            
+            if ( error.isActivated() )
+            {
+                return au::Format::string("Poppping from queue %s:%d to file %s. ERROR: %s" , queue.c_str() , channel ,fileName.c_str(), error.getMessage().c_str() );
+            }
+            else
+                return au::Format::string("Poppping from queue %s:%d to file %s. Completed %d / %d workers" , queue.c_str() , channel ,fileName.c_str(), num_finish_worker , num_workers );
+        }
+        
+		// Function to get the status
+		std::string getStatus()
+        {
+            std::string queue = qc->queue();
+            int channel = qc->channel();
+            return au::Format::string("Poppping from queue %s:%d to file %s. Completed %d / %d workers" , queue.c_str() , channel ,fileName.c_str(), num_finish_worker , num_workers );
+        }
+
+        // Function to send a notification to this object
+        void notify( engine::Notification* notification );
+    
+        void check();
+        
+    };
+    
 	
 	
 }

@@ -93,18 +93,21 @@ namespace samson {
         {
             if ( notification->isName(notification_process_request_response) )
             {
-                size_t _id = notification->environment.getSizeT("id", 0);
-                std::string queue_name = notification->environment.get("queue","--");
                 
-                LM_M(("Notified finish task queue_name=%s // id=%lu" , queue_name.c_str() , _id));
+                //LM_M(("Notified finish task queue_name=%s // id=%lu" , queue_name.c_str() , _id));
                 
                 // Extract the object to not be automatically removed
                 notification->extractObject();
                 
+                size_t _id       = notification->environment.getSizeT("id", 0);
                 QueueTask *_task = runningTasks.extractFromMap(_id);
                 
                 if( _task )
                 {
+                    
+                    // Notify that this stream task is finished
+                    qm->notifyFinishTask( _task );
+
                     //LM_M(("StreamTask with id %lu finished", _id));
                     _task->unlock();
                     _task->release();
@@ -112,8 +115,6 @@ namespace samson {
                     //LM_M(("Destroying task"));
                     delete _task;
                     
-                    // Notify that this stream task is finished
-                    qm->notifyFinishTask(queue_name, _id);
                     
                 }
                 else

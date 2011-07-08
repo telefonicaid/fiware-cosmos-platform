@@ -1,9 +1,12 @@
 
 
-#include "ParserQueueTask.h"        // Own interface
 
 #include "samson/module/ModulesManager.h"      // samson::module::ModulesManager
 #include "samson/common/KVInputVector.h"        // samson::KVInputVector
+
+#include "PopQueue.h"               // engine::PopQueue
+
+#include "ParserQueueTask.h"        // Own interface
 
 namespace samson {
     namespace stream {
@@ -90,6 +93,135 @@ namespace samson {
             return output.str();
         }
         
+
+#pragma mark ParserOutQueueTask
+
+        ParserOutQueueTask::ParserOutQueueTask( size_t id , PopQueue* pq  ) : stream::QueueTask(id , pq )
+        {
+            operation_name = "stream:" + pq->getParserOut();
+        }
+        
+        std::string ParserOutQueueTask::getStatus()
+        {
+            std::ostringstream output;
+            output << "[" << id << "] ";
+            output << "Parserout " << streamQueue->operation() << " processing " << matrix.str();
+            return output.str();
+        }
+        
+        // Get the required blocks to process
+        void ParserOutQueueTask::getBlocks( BlockList * input_list )
+        {
+            size_t total_size = 0 ;
+            
+            while( ( total_size < 100000000 ) )
+            {                
+                Block * block = input_list->extract(  );
+                
+                if( !block )
+                {
+                    return;
+                }
+                
+                total_size += block->getSize();
+                matrix.add(0, block);
+            }
+            
+        }
+
+        void ParserOutQueueTask::generateTXT( TXTWriter *writer )
+        {
+            LM_M(("Running a stream ParserOutQueueTask with %d blocks" , matrix.getNumBlocks()));
+
+            // Get the operation
+            Operation *operation = ModulesManager::shared()->getOperation( pq->getParserOut() );
+            
+            // Type of inputs ( for slecting key-values )
+            std::vector<KVFormat> inputFormats =  operation->getInputFormats();
+            
+            if( inputFormats.size() != 1 )
+            {
+                LM_W(("Parser with more that one input... that is not valid!"));
+                return;
+            }
+            
+            KVInputVector inputVector( operation );
+            
+            
+            // Get the list of blocks to process
+            int channel = 0;
+            BlockList* list = matrix.channels.findInMap( channel );
+            
+            // Run the generator over the ProcessWriter to emit all key-values
+            ParserOut *parserOut = (ParserOut*) operation->getInstance();
+            
+            if( !parserOut )
+            {
+                setUserError("Error getting an instance of this operation");
+                return;
+            }
+            
+            parserOut->environment = &operation_environment;
+            parserOut->tracer = this;
+            parserOut->operationController = this;
+            
+            parserOut->init(writer);
+            
+            std::list< Block* >::iterator b;
+            for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++)
+            {
+                
+                Block* block = (*b);
+                
+                KVHeader *header = (KVHeader *)block->getData();
+                
+                if( !header->check() )
+                {
+                    LM_W(("Not valid header maping a block"));
+                    return;
+                }
+                
+                KVInfo* info = (KVInfo*) ( block->getData() + sizeof(KVHeader) );
+                
+                LM_M(("Stream Mapping a block of size %s with %s kvs in %s ", 
+                      au::Format::string( (*b)->getSize() ).c_str() ,  
+                      au::Format::string(header->info.kvs).c_str()  ,
+                      au::Format::string(header->info.size,"Bytes").c_str()  
+                      ));
+                
+                char *data = block->getData() + KVFILE_TOTAL_HEADER_SIZE;
+                
+                for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
+                {
+                    if( info[hg].size > 0 )
+                    {
+                        //LM_M(("Stream Mapping a block of size %s hasg group %d %s ", au::Format::string( (*b)->getSize() ).c_str() , hg , info[hg].str().c_str() ));
+                        
+                        inputVector.prepareInput( info[hg].kvs );
+                        inputVector.addKVs( 0 , info[hg] , data );
+                        
+                        KVSetStruct inputStruct;
+                        inputStruct.num_kvs = inputVector.num_kvs;
+                        inputStruct.kvs = inputVector._kv;
+                        
+                        parserOut->run( &inputStruct , writer );
+                        
+                        // Update the data pointer    
+                        data +=  info[hg].size;
+                        
+                    }
+                }
+                
+                
+            }
+            
+            parserOut->finish(writer);
+            
+            // Detele the created instance
+            delete parserOut;
+            
+            
+        }
         
 #pragma mark MapQueueTask
 

@@ -32,7 +32,8 @@ namespace samson {
     {
         class Block;
         class QueuesManager;
-
+        class BlockMatrix;
+        
         class BlockList
         {
             friend class BlockMatrix;
@@ -40,11 +41,13 @@ namespace samson {
             friend class ParserQueueTask;
             friend class MapQueueTask;
             friend class ReduceQueueTask;
+            friend class ParserOutQueueTask;
+
             
             // Blocks currently in the input queue
             au::list< Block > blocks;
             
-            FullKVInfo accumulated_info;
+            FullKVInfo accumulated_info;            // Accumulated transit information
             
         public:
             
@@ -70,9 +73,12 @@ namespace samson {
             
             bool isContentOnMemory();
             
-            // Get information
-            FullKVInfo getInfo();
             size_t getNumBlocks();
+            
+            FullKVInfo getInfo();
+            
+            void copyFrom( BlockMatrix* matrix , int channel );
+            void copyFrom( BlockList* list );
             
         private:
             
@@ -83,6 +89,7 @@ namespace samson {
         
         class BlockMatrix
         {
+            friend class BlockList;
             
             // A list for each channel
             au::map<int , BlockList> channels;
@@ -90,6 +97,7 @@ namespace samson {
             friend class ParserQueueTask;
             friend class MapQueueTask;
             friend class ReduceQueueTask;
+            friend class ParserOutQueueTask;
             friend class Queue;
             
         public:

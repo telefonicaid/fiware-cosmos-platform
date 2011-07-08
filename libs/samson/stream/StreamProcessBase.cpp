@@ -13,6 +13,7 @@
 #include "samson/isolated/SharedMemoryItem.h"       // samson::SharedMemoryItem
 #include "samson/common/MemoryTags.h"             // MemoryOutputNetwork
 
+#include "PopQueue.h"                   // samson::stream::PopQueue
 
 #include "StreamProcessBase.h"			// Own interface
 
@@ -23,11 +24,12 @@ namespace samson {
         
 #pragma mark ProcessItemKVGenerator
         
-        StreamProcessBase::StreamProcessBase( ProcessBaseType type , network::StreamQueue *_streamQueue ) : ProcessIsolated( type , _streamQueue->output_size() , _streamQueue->num_workers() )
+        StreamProcessBase::StreamProcessBase( size_t _task_id , network::StreamQueue *_streamQueue ) 
+        : ProcessIsolated( _streamQueue->operation() , ProcessIsolated::key_value , _streamQueue->output_size() , _streamQueue->num_workers() )
         {
             
             // Get the task_id
-            task_id = 0;
+            task_id = _task_id;
             
             // Set the order of the task
             task_order = 0;
@@ -36,14 +38,42 @@ namespace samson {
             //copyEnviroment( task->workerTask.environment() , &environment ); 
             
             // Copy queue information for this task
-            streamQueue = new network::StreamQueue();
-            streamQueue->CopyFrom( *_streamQueue );
-            
+            if( _streamQueue )
+            {
+                streamQueue = new network::StreamQueue();
+                streamQueue->CopyFrom( *_streamQueue );
+            }
+            else
+                streamQueue = NULL;
+
+                
         }
+
+        StreamProcessBase::StreamProcessBase( size_t _task_id , PopQueue * _pq  ) 
+                : ProcessIsolated( _pq->getParserOut() , ProcessIsolated::txt , 0 , 0 )
+        {
+            
+            // Get the task_id
+            task_id = _task_id;
+            
+            // Set the order of the task
+            task_order = 0;
+            
+            // Copy environemnt
+            //copyEnviroment( task->workerTask.environment() , &environment ); 
+            
+            // Copy queue information for this task
+            streamQueue = NULL;
+            
+            // Keep here to decide
+            pq = _pq;
+        }
+        
         
         StreamProcessBase::~StreamProcessBase()
         {
-            delete streamQueue;
+            if( streamQueue )
+                delete streamQueue;
         }
         
         void StreamProcessBase::runIsolated()
@@ -67,6 +97,7 @@ namespace samson {
         
         void StreamProcessBase::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
         {
+            //LM_M(("Emiting a buffer for task %lu:%lu", task_id , task_order));
             
             //LM_M(("Processing an output buffer of stream operation buffer_size=%s output=%d outputWorker=%d " , au::Format::string(buffer->getSize()).c_str() , output , outputWorker ));
             
@@ -103,9 +134,10 @@ namespace samson {
         
         void StreamProcessBase::processOutputTXTBuffer( engine::Buffer *buffer , bool finish )
         {
+            if( !pq )
+                LM_X(1, ("PopQueue is not present. This is not acceptable..."));
             
-            LM_X(1, ("Unimplemented section"));
-            
+            pq->sendMessage( buffer );
             
         }
         

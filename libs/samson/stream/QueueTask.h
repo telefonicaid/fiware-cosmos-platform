@@ -26,20 +26,32 @@ namespace samson {
         public:
             
             size_t id;                          // Id of the operation
-            std::string queue_name;             // Name of the queue to work on
+            //std::string queue_name;             // Name of the queue to work on
             
             BlockMatrix matrix;                 // Matrix of blocks involved in this operation
             
-            QueueTask( size_t _id , std::string _queue_name , network::StreamQueue * streamQueue ) : StreamProcessBase( key_value , streamQueue )
+            QueueTask( size_t _id , network::StreamQueue * streamQueue  ) : StreamProcessBase( _id , streamQueue )
             {
                 id = _id;
-                queue_name = _queue_name;
+                //queue_name = _queue_name;
                 
                 
                 // Set in the environemtn variables
                 environment.setSizeT("id",id);
-                environment.set("queue" , queue_name );
+                //environment.set("queue" , queue_name );
             }
+
+            QueueTask( size_t _id , PopQueue *_pq ) : StreamProcessBase( _id , _pq )
+            {
+                id = _id;
+
+                // Keep this to run the operation and send results back to delilah
+                pq = _pq;
+                
+                // Set in the environemtn variables
+                environment.setSizeT("id",id);
+            }
+            
             
             virtual ~QueueTask()
             {

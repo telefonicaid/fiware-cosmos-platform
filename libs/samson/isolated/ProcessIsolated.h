@@ -57,7 +57,7 @@ namespace samson {
         
     public:
         
-        ProcessIsolated( ProcessBaseType _type , int _num_outputs , int _num_workers );
+        ProcessIsolated( std::string description,  ProcessBaseType _type , int _num_outputs , int _num_workers );
         virtual ~ProcessIsolated();
 
         // Chage the type of usage

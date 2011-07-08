@@ -274,7 +274,7 @@ namespace samson {
             if( header )
                 return header->info;
             else
-                return KVInfo( 0 , size );
+                return KVInfo( size , 0 );
         }
         
         size_t getSize( std::set<Block*> &blocks )
@@ -288,6 +288,16 @@ namespace samson {
             return total;
         }
         
+        std::string Block::str()
+        {
+            std::ostringstream output;
+            output << "[ ";
+            //output << "Task:" << task_id << " order: " << task_order << " ";
+            if( header )
+                output << "HG: " << header->hg_begin << "-" << header->hg_end;
+            output << " ]";
+            return output.str();
+        }
         
         
         

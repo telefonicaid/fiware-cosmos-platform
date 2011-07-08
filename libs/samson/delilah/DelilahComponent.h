@@ -25,7 +25,9 @@ namespace samson {
 			command,
 			load,
 			updater,
-            push
+            push,
+            pop,
+            
 		}DelilaComponentType;
 		
 		DelilaComponentType type;
@@ -39,9 +41,16 @@ namespace samson {
 		
 		void setId( Delilah * _delilah ,  size_t _id );
 		virtual void receive(int fromId, Message::MessageCode msgCode, Packet* packet)=0;
-		
+
+        // General function to give one-line description
+        virtual std::string getShortStatus()=0;
+        
+		// General function to give a long description status
 		virtual std::string getStatus()=0;
-		
+	
+        // Get main code name ( dependent on type )
+        std::string getCodeName();
+        
 	};
 	
 	
@@ -63,6 +72,7 @@ namespace samson {
 		void run();
 		
 		std::string getStatus();
+		std::string getShortStatus();
 		
 	};
 	

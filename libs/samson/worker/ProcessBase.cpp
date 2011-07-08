@@ -18,7 +18,7 @@ namespace samson {
 #pragma mark ProcessItemKVGenerator
 	
 	ProcessBase::ProcessBase( WorkerTask *task , ProcessBaseType _type ) 
-        : ProcessIsolated( _type , task->workerTask.output_queue_size() , task->workerTask.servers() )
+        : ProcessIsolated( task->operation, _type , task->workerTask.output_queue_size() , task->workerTask.servers() )
 	{
 		
 		// copy the message received from the controller

@@ -5,7 +5,9 @@
 #include "engine/MemoryRequest.h"
 #include "engine/Notification.h"                // engine::Notification
 
-#include "engine/Buffer.h"							// samson::Buffer
+#include "engine/Buffer.h"							// engine::Buffer
+#include "engine/Notification.h"                    // engine::Notificaiton
+
 #include "samson/network/Packet.h"							// samson::Packet
 #include "samson/network/Message.h"						// samson::Message
 #include "samson/delilah/Delilah.h"						// samson::Delilah
@@ -38,6 +40,8 @@ namespace samson
         
         // Set this to false ( true will be the end of processing data )
         finish_process = false;
+        
+        
         
 		
 	}	
@@ -161,6 +165,82 @@ namespace samson
         output << "Pushing " << au::Format::string( totalSize , "Bytes" ) << " to queue " << queue;
         output << " ( " << au::Format::percentage_string(processedSize, totalSize) << " ) "; 
         return output.str();
+    }
+    
+    std::string PushComponent::getShortStatus()
+    {
+        std::ostringstream output;
+        output << "Pushing " << au::Format::string( totalSize , "Bytes" ) << " to queue " << queue;
+        output << " ( " << au::Format::percentage_string(processedSize, totalSize) << " ) "; 
+        return output.str();
+    }
+    
+    
+    
+#pragma mark pop
+    
+    
+    void PopComponent::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+    {
+        if( msgCode != Message::PopQueueResponse )
+        {
+            LM_M(("Received an unexpected message of type %s. Ignoring... ", messageCode(msgCode ) ));
+            delete packet;
+            return;
+        }
+        
+        
+        if( packet->buffer )
+        {
+            LM_M(("Received a pop queue response with buffer %lu" , packet->buffer->getSize() ));
+            
+            num_write_operations++;
+            
+            engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( packet->buffer , fileName , getEngineId() );
+            engine::DiskManager::shared()->add( operation );                
+            
+        }
+        else
+            LM_M(("Received a pop queue response without buffer "));
+        
+        // If finished,
+        if( packet->message->pop_queue_response().finish() )
+            num_finish_worker++;
+        
+        // Check errors
+        if( packet->message->pop_queue_response().has_error() )
+            error.set( packet->message->pop_queue_response().error().message() );
+        
+
+        check();
+    }
+    
+    
+    void PopComponent::notify( engine::Notification* notification )
+    {
+        if( notification->isName(notification_disk_operation_request_response) )
+        {
+            LM_M(("Received a disk operation notification"));
+            num_write_operations--;
+            check();
+        }
+        else
+            LM_W(("Unexpected notification %s" , notification->getName() ));
+            
+    }
+    
+    void PopComponent::check()
+    {
+        if ( error.isActivated() )
+            component_finished = true;
+        
+        if( ( num_finish_worker == num_workers ) && (num_write_operations==0) )
+        {
+            // Finish operation
+            delilah->popConfirmation( this );
+            component_finished = true;
+        }
+        
     }
 
     

@@ -579,6 +579,29 @@ message PushBlockResponse
 	required PushBlock request 	= 2;	// Original request
 }
 
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Message to pop  a particular queue from a worker
+//
+
+
+message PopQueue
+{
+	required QueueChannel target	= 1;	// Channel to extract information
+	required string parserOut	= 2;	// Name of the parser out to transform internal binary data into txt
+}
+
+
+message PopQueueResponse
+{
+	required PopQueue request	= 1;	// Original request message
+
+	required bool finish		= 2;	// Flag to indicate that this operation is finished
+	optional Error error		= 3;	// Optional flag to notify errors
+}
+
+
 // ////////////////////////////////////////////////////////////////////////////
 //
 // General message
@@ -627,6 +650,9 @@ message Message
 
 	optional PushBlock			push_block			= 123;	// Push a block into a queue ( stream processing )
 	optional PushBlockResponse		push_block_response		= 124;	// Response from a block push
+
+	optional PopQueue			pop_queue			= 125;	// Pop content of a queue
+	optional PopQueueResponse		pop_queue_response		= 126;	// Response message from the worker
 
 	optional WorkerStatus worker_status = 170;			// Worker status update
 

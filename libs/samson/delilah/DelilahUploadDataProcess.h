@@ -104,6 +104,7 @@ namespace samson {
 		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 		
 		std::string getStatus();		
+        std::string getShortStatus();
 		
 		void _runCompressThread();	// Method executed by all the compression threads
 		

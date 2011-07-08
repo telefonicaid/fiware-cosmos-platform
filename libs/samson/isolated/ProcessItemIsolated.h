@@ -16,6 +16,8 @@ namespace samson {
 	class ProcessItemIsolated : public  engine::ProcessItem, public Tracer , public OperationController
 	{
 		
+        std::string processItemIsolated_description;
+        
 		// Pipes used between two process
 		int pipeFdPair1[2];
 		int pipeFdPair2[2];
@@ -35,7 +37,7 @@ namespace samson {
 		
 		
 		// Constructor
-		ProcessItemIsolated();
+		ProcessItemIsolated( std::string _description );
 		
         // Destructor ( free the shared memory segment used internally )
         ~ProcessItemIsolated();

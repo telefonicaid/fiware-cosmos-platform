@@ -1,3 +1,19 @@
+/* ****************************************************************************
+ *
+ * FILE            ProcessItem
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * ProcessItem defined the task to be executed by ProcessManager
+ * It should be an indepenent task ( no external access while running )
+ * It is managed by the process manager
+ *
+ * ****************************************************************************/
+
 #ifndef _H_PROCESS_ITEM
 #define _H_PROCESS_ITEM
 

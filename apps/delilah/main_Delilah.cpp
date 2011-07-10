@@ -1,3 +1,18 @@
+
+/* ****************************************************************************
+ *
+ * FILE            main_Delilah.cpp
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * Main file for the "delilah" console app
+ *
+ * ****************************************************************************/
+
 #include "parseArgs/parseArgs.h"
 
 #include "au/Format.h"
@@ -16,8 +31,6 @@
 
 #include "samson/delilah/DelilahConsole.h"
 #include "samson/delilah/DelilahMonitorization.h"
-
-
 
 
 /* ****************************************************************************
@@ -116,6 +129,7 @@ static const char* manVersion       = "0.6-1";
 */
 int main(int argC, const char *argV[])
 {
+    
 	paConfig("prefix",                        (void*) "SSW_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) false);
@@ -137,8 +151,7 @@ int main(int argC, const char *argV[])
 	
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();
-    
-    
+
 	samson::SamsonSetup::init();			// Load the main setup file
 	
 	// Setup parameters from command line ( this is delilah so memory and load buffer size are configurable from command line )

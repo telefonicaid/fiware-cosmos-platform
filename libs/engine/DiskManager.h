@@ -1,4 +1,16 @@
-
+/* ****************************************************************************
+ *
+ * FILE            DiskManager
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * DiskManager is the entity in charge of schedulling all the read/write/remove acetions over file system
+ *
+ * ****************************************************************************/
 
 #ifndef _H_SAMSON_DISK_MANAGER
 #define _H_SAMSON_DISK_MANAGER

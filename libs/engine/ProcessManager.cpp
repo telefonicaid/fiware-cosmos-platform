@@ -16,7 +16,7 @@
 #include "engine/EngineElement.h"					// engine::EngineElement
 #include "engine/ProcessItem.h"                     // engine::ProcessItem
 #include "engine/DiskOperation.h"					// engine::DiskOperation
-#include "engine/EngineNotificationElement.h"       // engine::EngineNotificationElement
+#include "engine/NotificationElement.h"       // engine::EngineNotificationElement
 
 namespace engine
 {

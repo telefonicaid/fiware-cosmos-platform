@@ -8,7 +8,7 @@
 #include "DiskManager.h"                    // notification_disk_operation_cancel
 #include "ProcessManager.h"                 // notification_process_cancel
 
-#include "EngineOperationsContainer.h"      // Own interface
+#include "OperationsContainer.h"      // Own interface
 
 
 namespace engine{

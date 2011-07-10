@@ -17,7 +17,7 @@
 #include "engine/EngineElement.h"					// engine::EngineElement
 #include "engine/ProcessItem.h"                     // engine::ProcessItem
 #include "engine/DiskOperation.h"					// engine::DiskOperation
-#include "engine/EngineNotificationElement.h"       // engine::EngineNotificationElement
+#include "engine/NotificationElement.h"       // engine::EngineNotificationElement
 
 #include "engine/Engine.h"							// Own interface
 
@@ -303,6 +303,7 @@ namespace engine
     }
 
     
+    
     // Generic method to unregister an object
     void Engine::unregister_object( Object* object )
     {
@@ -345,5 +346,16 @@ namespace engine
         // Wake up main thread if sleeping
         tt.wakeUp();
     }
+    
+    // Get an object by its registry names
+    Object* Engine::getObjectByName( const char *name )
+    {
+        // Mutex protection
+        au::TokenTaker tt(token);
+
+        return objectsManager.getObjectByName(name);
+        
+    }
+    
     
 }

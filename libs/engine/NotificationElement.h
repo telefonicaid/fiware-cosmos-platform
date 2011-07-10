@@ -1,3 +1,17 @@
+/* ****************************************************************************
+ *
+ * FILE            EngineNotificationElement
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * EngineElement that encapsulated the delivery of a notification
+ *
+ * ****************************************************************************/
+
 #ifndef _H_ENGINE_NOTIFICATION_ELEMENT
 #define  _H_ENGINE_NOTIFICATION_ELEMENT
 

@@ -1,4 +1,17 @@
-
+/* ****************************************************************************
+ *
+ * FILE            ProcessManager
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * Manager of background tasks to be executed by a set of cores.
+ * It creates a separate thread for each task and controlls them.
+ *
+ * ****************************************************************************/
 
 #ifndef _H_SAMSON_PROCESS_MANAGER
 #define _H_SAMSON_PROCESS_MANAGER

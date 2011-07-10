@@ -1,4 +1,17 @@
 
+/* ****************************************************************************
+ *
+ * FILE            Engine.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * Engine: Singlenton object with all the main funcitonalities of the engine library
+ *
+ * ****************************************************************************/
 
 #ifndef _H_SAMSON_ENGINE
 #define _H_SAMSON_ENGINE
@@ -36,7 +49,6 @@ namespace engine
 	class Engine
 	{
 		
-        friend class NotificationElement;
         friend class NotificationListener;
         
 		// List of engine elements
@@ -90,14 +102,18 @@ namespace engine
 
         std::string _str();
 
-    public:
+    private:
 
+        friend class Object;
+        
         // Functions to register objects ( general and for a particular notification )
         void register_object( Object* object );
         void register_object_for_channel( Object* object, const char* channel );
         
         // Generic method to unregister an object
         void unregister_object( Object* object );
+
+    public:
         
         // Add a notification
         void notify( Notification*  notification );
@@ -106,7 +122,13 @@ namespace engine
         // Function to add a simple foreground tasks 
 		void add( EngineElement *element );	
 
+        // Get an object by its registry names
+        Object* getObjectByName( const char *name );
+        
+        
     private:
+        
+        friend class NotificationElement;
         
         // Run a particular notification
         // Only executed from friend class "NotificationElement"

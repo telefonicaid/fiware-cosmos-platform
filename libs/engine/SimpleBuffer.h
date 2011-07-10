@@ -1,12 +1,17 @@
+
 /* ****************************************************************************
  *
- * FILE                     SimpleBuffer.h
+ * FILE            SimpleBuffer.h
  *
- * AUTHOR                   Andreu Urruela
+ * AUTHOR          Andreu Urruela
  *
- * CREATION DATE            2010
+ * DATE            July 2011
  *
- */
+ * DESCRIPTION
+ *
+ * Simple struct containg information for a memory buffer
+ *
+ * ****************************************************************************/
 
 #ifndef _H_SIMPLE_BUFFER
 #define _H_SIMPLE_BUFFER

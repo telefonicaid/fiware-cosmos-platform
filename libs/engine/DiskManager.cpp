@@ -9,7 +9,7 @@
 #include "engine/Notification.h"                    // engine::Notification
 #include "engine/ProcessItem.h"                     // engine::ProcessItem
 #include "engine/DiskOperation.h"					// engine::DiskOperation
-#include "engine/EngineNotificationElement.h"      // engine::EngineNotificationElement
+#include "engine/NotificationElement.h"      // engine::EngineNotificationElement
 #include "au/Descriptors.h"                         // au::Descriptors
 
 #include "engine/DiskManager.h"                    // Own interface

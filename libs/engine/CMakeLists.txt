@@ -5,9 +5,7 @@ Buffer.h
 SimpleBuffer.h
 Engine.h
 Notification.h
-NotificationSystem.h
-EngineNotification.h
-EngineNotificationElement.h
+NotificationElement.h
 EngineElement.h
 MemoryManager.h
 MemoryRequest.h
@@ -18,7 +16,7 @@ ReadFileManager.h
 DiskManager.h
 DiskOperation.h
 DiskStatistics.h
-EngineOperationsContainer.h	
+OperationsContainer.h	
 )
 
 SET (SOURCES
@@ -27,9 +25,7 @@ ObjectsManager.cpp
 Buffer.cpp
 Engine.cpp
 Notification.cpp
-NotificationSystem.cpp
-EngineNotification.cpp
-EngineNotificationElement.cpp
+NotificationElement.cpp
 EngineElement.cpp
 MemoryManager.cpp
 MemoryRequest.cpp
@@ -40,7 +36,7 @@ ReadFileManager.cpp
 DiskManager.cpp
 DiskOperation.cpp
 DiskStatistics.cpp
-EngineOperationsContainer.cpp
+OperationsContainer.cpp
 )
 
 # Inclue directories

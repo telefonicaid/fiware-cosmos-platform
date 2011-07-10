@@ -1,6 +1,6 @@
 /* ****************************************************************************
  *
- * FILE                     DiskManagerOperation.h
+ * FILE                     DiskOperation.h
  *
  * AUTHOR                   Andreu Urruela
  *
@@ -12,11 +12,11 @@
  
  Note:
  
- DiskManagerOperation is the class that contains all the information for a particular operation
+ DiskOperation is the class that contains all the information for a particular operation on disk
  
  It should contain the name of the file, the size, the offset, etc. ( basically all the information needed for the operation )
  It shouls also contain the buffer where data is writed or readed from
- It finally contains a pointer to the delegate to notify when finished
+ It finally contains a engine id of the object that should be notified when finished
 
  */
 

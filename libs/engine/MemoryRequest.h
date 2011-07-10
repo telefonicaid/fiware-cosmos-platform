@@ -1,3 +1,18 @@
+/* ****************************************************************************
+ *
+ * FILE            MemoryRequest
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * Request to be delivered to MemoryManager.
+ * It is used where we want to allocate a buffer of memory when available.
+ *
+ * ****************************************************************************/
+
 #ifndef _H_MEMORY_REQUEST
 #define _H_MEMORY_REQUEST
 

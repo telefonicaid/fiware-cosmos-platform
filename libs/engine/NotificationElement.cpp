@@ -3,7 +3,7 @@
 #include "engine/Object.h"             // engine::EngineNotification
 #include "engine/Notification.h"                    // engine::Notification
 
-#include "engine/EngineNotificationElement.h"      // Own interface
+#include "engine/NotificationElement.h"      // Own interface
 
 
 namespace engine

@@ -1,7 +1,0 @@
-#ifndef _H_ENGINE_NOTIFICATION_SYSTEM
-#define _H_ENGINE_NOTIFICATION_SYSTEM
-
-
-
-
-#endif

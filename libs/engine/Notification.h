@@ -1,3 +1,24 @@
+/* ****************************************************************************
+ *
+ * FILE            Notification.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * Notification message in the engine library
+ * It is basically an "object-C" message kind of thing
+ *
+ *
+ * --> A notification is a "message" sent in the main-thread runloop to a set of objects ( targets )
+ * --> The notification is also delivered to all the objects that "listen" 
+ *     the notification chanel ( defined by notification's name)
+ * --> Internall information is contained in environemnt variable and the optional object parameter
+ *
+ * ****************************************************************************/
+
 #ifndef _H_ENGINE_NOTIFICATION
 #define _H_ENGINE_NOTIFICATION
 

@@ -1,3 +1,18 @@
+/* ****************************************************************************
+ *
+ * FILE            DiskStatistics
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * Information about the statustics for all the input / output statistics on disk 
+ * Also used to monitorize network traffic
+ *
+ * ****************************************************************************/
+
 #ifndef _H_DISK_STATISTICS
 #define _H_DISK_STATISTICS
 

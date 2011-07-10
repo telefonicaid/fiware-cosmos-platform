@@ -1,3 +1,18 @@
+/* ****************************************************************************
+ *
+ * FILE            Object.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * Object is the top class element in the engine libreary
+ *      It can receive notifications
+ *      It can be used as argument in a notification
+ *
+ * ****************************************************************************/
 
 #ifndef _H_ENGINE_OBJECT
 #define _H_ENGINE_OBJECT
@@ -17,15 +32,20 @@ namespace engine
     
     class Object
     {
+        
         // Class the managers this objects
         friend class ObjectsManager;
         
         // Unique identifier of this listener
         size_t engine_id;
         
+        // Unique name
+        const char *engine_name;
+        
     public:        
         
-        Object();                   // Constructor
+        Object();                       // Simple constructor ( object has an id )
+        Object( const char* engine_name);      // Object can be accessed by this name anywhere
         virtual ~Object();          // Destructor. ( virtual destructor is mandatory for generic remov
 
     public:
@@ -41,6 +61,7 @@ namespace engine
 
         // Function to send a notification to this object
         virtual void notify( Notification* notification );
+ 
         
     };
     

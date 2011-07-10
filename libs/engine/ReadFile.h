@@ -1,4 +1,18 @@
 
+/* ****************************************************************************
+ *
+ * FILE            ReadFile
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * ReadFile describes an open file to be read
+ * It is managed by ReadFileManager inside DiskManager
+ *
+ * ****************************************************************************/
 
 #ifndef _H_ENGINE_READFILE
 #define _H_ENGINE_READFILE

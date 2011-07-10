@@ -1,3 +1,18 @@
+/* ****************************************************************************
+ *
+ * FILE            ObjectsManager
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * Managert of all the objets in engine library
+ *   It keep tracks of all the objects with a map for fast notification delivery
+ *
+ * ****************************************************************************/
+
 #ifndef _H_ENGINE_OBJECTS_MANAGER
 #define _H_ENGINE_OBJECTS_MANAGER
 
@@ -51,6 +66,8 @@ namespace engine {
         // Map of ids object per notification channel
         au::map< const char* , IdsCollection , au::strCompare > channels;
 
+        // Map of objects by name
+        au::map< const char* , Object , au::strCompare > objects_by_name;
         
     public:
         
@@ -67,6 +84,9 @@ namespace engine {
 
         // Send a notification
         void send( Notification* notification ); 
+
+        // Get the object registered with this name
+        Object* getObjectByName( const char *name );
         
     private:
         

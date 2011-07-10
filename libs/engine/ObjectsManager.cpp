@@ -23,10 +23,23 @@ namespace engine {
     
     void ObjectsManager::add( Object* o )
     {
-        
+        // Give a global id to this object    
         o->engine_id = engine_id++;
-        LM_T(LmtEngineNotification, ("Add object %p for id %lu", o , o->engine_id ));
+        
+        // Try to register with the provided name if possible
+        if ( o->engine_name )
+        {
+            if( objects_by_name.extractFromMap(o->engine_name) == NULL )
+                objects_by_name.insertInMap(o->engine_name, o);
+            else
+                LM_W(("Not possible to register object with name %s. It was previously used..." , o->engine_name));
+        }
+
+        // Adding object to the general map by id
         objects.insertInMap( o->engine_id , o );
+        
+        LM_T(LmtEngineNotification, ("Add object %p for id %lu", o , o->engine_id ));
+        
     }
     
     void ObjectsManager::remove( Object* o )
@@ -34,6 +47,10 @@ namespace engine {
         
         LM_T(LmtEngineNotification, ("Remove completelly object %lu", o  , o->engine_id  ));
         objects.extractFromMap( o->engine_id );
+
+        // Remove from the vector of objects by name
+        if( o->engine_name )
+            objects_by_name.extractFromMap(o->engine_name);
         
         // Remove from all constans listeners
         au::map< const char* , IdsCollection , au::strCompare >::iterator c;
@@ -101,5 +118,12 @@ namespace engine {
             o->notify( notification );
     }
 
+    // Get the object registered with this name
+    Object* ObjectsManager::getObjectByName( const char *name )
+    {
+        return objects_by_name.findInMap(name);
+    }
+    
+    
     
 }

@@ -1,12 +1,29 @@
 
+/* ****************************************************************************
+ *
+ * FILE            EngineElement
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * Element defining a simple foreground task to be executed in the main thread
+ * This is the basic elements of the Engine library and can be scheduled using engine::Engine::shared()->add( . )
+ *
+ * ****************************************************************************/
+
 #ifndef _H_ENGINE_ELEMENT
 #define _H_ENGINE_ELEMENT
 
-#include <sstream>			// std::ostringstream 
+#include <sstream>                      // std::ostringstream 
 #include <string>
-#include "logMsg/logMsg.h"			// Lmt
-#include "logMsg/traceLevels.h"	// LmtEngine
-#include "au/Format.h"         // au::Format
+
+#include "logMsg/logMsg.h"              // Lmt
+#include "logMsg/traceLevels.h"         // LmtEngine
+
+#include "au/Format.h"                  // au::Format
 
 namespace engine
 {

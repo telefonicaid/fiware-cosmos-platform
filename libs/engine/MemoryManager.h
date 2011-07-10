@@ -1,12 +1,20 @@
 /* ****************************************************************************
  *
- * FILE                     MemoryManager.h
+ * FILE            MemoryManager
  *
- * AUTHOR                   Andreu Urruela
+ * AUTHOR          Andreu Urruela
  *
- * CREATION DATE            2010
+ * DATE            July 2011
  *
- */
+ * DESCRIPTION
+ *
+ * MemoryManager is the controller of the "big" blocks of memory used by the app
+ * Buffers can be allocated directly using newBuffer.
+ * Buffers can be allocated with add( MemoryRequest* ) to be served when memory is available
+ * A Notification ( using engine mechanism ) is sent when memory is available
+ *
+ * ****************************************************************************/
+
 
 #ifndef _H_MEMORY_MANAGER
 #define _H_MEMORY_MANAGER

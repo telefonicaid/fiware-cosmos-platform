@@ -459,7 +459,12 @@ namespace samson {
 		return ans;
 	}
     
-    
+
+        int Delilah::_receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+        {
+	  delete packet;
+            return 0;
+        }    
 	
 }
 

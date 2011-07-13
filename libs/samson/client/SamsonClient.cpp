@@ -27,7 +27,7 @@
 #include "samson/network/EndpointManager.h"
 #include "samson/network/Packet.h"
 
-#include "samson/Delilah/Delilah.h"             // samson::Delilah
+#include "samson/delilah/Delilah.h"             // samson::Delilah
 
 #include "SamsonClient.h"                       // Own interface
 
@@ -35,7 +35,7 @@ namespace samson {
     
     samson::EndpointManager* epMgr     = NULL;
     samson::Network2*        networkP  = NULL;
-    Delilah* delilah = NULL;    
+    samson::Delilah* delilah = NULL;    
     
     SamsonClient::SamsonClient()
     {

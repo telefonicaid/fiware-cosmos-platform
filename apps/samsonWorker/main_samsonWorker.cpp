@@ -11,6 +11,9 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
+#include <signal.h>
+
+
 #include "au/LockDebugger.h"            // au::LockDebugger
 
 #include "engine/MemoryManager.h"

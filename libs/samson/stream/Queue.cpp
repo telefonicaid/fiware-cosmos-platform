@@ -145,35 +145,24 @@ namespace samson {
                             return;
                         }
                         
-                        LM_M(("Creating a new parser operation from a matrix of %s" , au::Format::string( matrix.getSizeOfChannel(0) ).c_str() ));
-                        
                         ParserQueueTask *tmp = new ParserQueueTask( qm->queueTaskManager.getNewId() ,   streamQueue ); 
                         tmp->environment.set("queue" , name );
 
-                        LM_M(("Getting blocks..."));
                         tmp->getBlocks( &matrix );
 
-                        LM_M(("Steps..."));
                         
                         // Reatin blocs by the task and release the one form the queue
                         tmp->retain();
                         
-                        LM_M(("Steps..."));
                         
                         // Release the elements since there are not in the queue any more
                         tmp->matrix.release();  
                         
-                        LM_M(("Steps..."));
-                        
                         // add the id of this task in the list of running tasks
                         running_tasks.insert( tmp->id );
-
-                        LM_M(("Steps..."));
                         
                         // Schedule tmp task into QueueTaskManager
                         qm->queueTaskManager.add( tmp );
-                        
-                        LM_M(("End creating parser..."));
                         
                     }
                     

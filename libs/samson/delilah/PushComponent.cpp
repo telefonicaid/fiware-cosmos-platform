@@ -162,7 +162,8 @@ namespace samson
     {
         std::ostringstream output;
         output << "Pushing " << au::Format::string( totalSize , "Bytes" ) << " to queue " << queue;
-        output << " ( " << au::Format::percentage_string(processedSize, totalSize) << " ) "; 
+        output << " ( Processed " << au::Format::percentage_string(processedSize, totalSize) << " ) "; 
+        output << " ( Uploaded  " << au::Format::percentage_string(uploadedSize, totalSize) << " ) "; 
         return output.str();
     }
     
@@ -170,7 +171,8 @@ namespace samson
     {
         std::ostringstream output;
         output << "Pushing " << au::Format::string( totalSize , "Bytes" ) << " to queue " << queue;
-        output << " ( " << au::Format::percentage_string(processedSize, totalSize) << " ) "; 
+        output << " ( Processed " << au::Format::percentage_string(processedSize, totalSize) << " ) "; 
+        output << " ( Uploaded  " << au::Format::percentage_string(uploadedSize, totalSize) << " ) "; 
         return output.str();
     }
     

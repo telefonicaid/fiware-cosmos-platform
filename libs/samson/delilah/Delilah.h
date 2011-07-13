@@ -124,7 +124,11 @@ namespace samson {
 		 */
 		
 		// Function to be implemented by sub-classes to process packets ( not handled by this class )
-		virtual int _receive(int fromId, Message::MessageCode msgCode, Packet* packet)=0;
+		virtual int _receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+        {
+            delete packet;
+            return 0;
+        }
 
 		// A load data process has finished
 		virtual void pushConfirmation( PushComponent *process ){};
@@ -139,13 +143,17 @@ namespace samson {
 		virtual void downloadDataConfirmation( DelilahDownloadDataProcess *process ){};
 		
 		// Write something on screen
-		virtual void showMessage( std::string message)=0;
+		virtual void showMessage( std::string message)
+        {
+        }
 
 		// Show traces  ( by default it does nothing )
 		virtual void showTrace( std::string message){};
 		
 		// Callback to notify that a particular operation has finished
-		virtual void notifyFinishOperation( size_t )=0;
+		virtual void notifyFinishOperation( size_t )
+        {
+        }
 		
 		// Get info about the list of loads
 		std::string getListOfLoads();

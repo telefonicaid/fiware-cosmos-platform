@@ -105,6 +105,9 @@ namespace samson {
         // Set manualy a particular parameter ( special case )
         void setValueForParameter( std::string name ,std::string value );
     
+        // Check if a particular property if defined
+        bool isParameterDefined( std::string name );
+        
         std::string str();
         
     };

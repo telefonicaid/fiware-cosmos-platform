@@ -95,12 +95,21 @@ namespace samson
         
     }
     
+    bool SetupItemCollection::isParameterDefined( std::string name )
+    {
+        return ( items.findInMap(name) != NULL);
+    }
+    
+    
     void SetupItemCollection::setValueForParameter( std::string name ,std::string value )
     {
         SetupItem*item = items.findInMap(name);
         
         if( !item )
-            LM_X(1, ("Parameter %s not defined in the setup. This is not acceptable", name.c_str()));
+        {
+            LM_W(("Parameter %s not defined in the setup. This is not acceptable", name.c_str()));
+            return;
+        }
         
         item->setValue( value );
     }
@@ -241,7 +250,7 @@ namespace samson
         add("worker.period_check_finish_tasks", "5", "Period to review finished tasks in samsonWorker, to be clean from memory" );
         
         
-        add("controller.max_worker_disconnected_time", "120" , "Maximum acceptable time for a worker to be disconnected. All task will be killed is larger disconnected-time is observed" );
+        add("controller.max_worker_disconnected_time", "120" , "Maximum acceptable time for a worker to be disconnected." );
 	}
 
     std::string SamsonSetup::get( std::string name )

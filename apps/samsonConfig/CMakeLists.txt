@@ -12,6 +12,7 @@ SET( STATIC_LIBS
      samsonCommon
      protobuf
      pthread
+     readline
      au
      dl
      lm

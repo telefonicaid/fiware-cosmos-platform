@@ -86,7 +86,9 @@ namespace samson {
             addOption("info_queues");
             addOption("info_engine");
             addOption("info_setup");
+            addOption("info_global");
             addOption("add_queue");
+            addOption("set_queue_property");
         }
         
         void addOperations()

@@ -8,6 +8,7 @@
 #include "engine/Buffer.h"      // engine::Buffer
 #include "engine/Notification.h"    // engine::Notificaiton
 
+#include "samson/common/Info.h"                 // samson::Info
 #include "samson/common/Macros.h"             // EXIT, ...
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
 
@@ -34,6 +35,7 @@ namespace samson {
 	network::OperationList *ol = NULL;              // List of operations ( for auto-completion )
 	network::QueueList *ql = NULL;                  // List of queues ( for auto-completion )
     network::SamsonStatus *samsonStatus=NULL;       // Information about workers ( updated continuously )
+    
     au::Cronometer cronometer_samsonStatus;      // Cronometer for this updated message
     
     /* ****************************************************************************
@@ -45,7 +47,6 @@ namespace samson {
 		
         // Description for the PacketReceiver
         packetReceiverDescription = "delilah";
-        
         
         network = _network;		// Keep a pointer to our network interface element
         network->setPacketReceiver(this);
@@ -65,6 +66,8 @@ namespace samson {
         int delilah_automatic_update_period = samson::SamsonSetup::getInt( "delilah.automatic_update_period" );
         engine::Engine::shared()->notify( new engine::Notification( notification_delilah_automatic_update ) , delilah_automatic_update_period );
 
+        // Global info at delilah ( controller / worker / etc.. )
+        info = new Info();                              
     }
     
     
@@ -222,6 +225,24 @@ namespace samson {
             samsonStatus->CopyFrom( packet->message->command_response().samson_status() );
             
             info_lock.unlock();
+        }
+        
+        
+        if( packet->message->has_info() )
+        {
+            
+            info_lock.lock();
+            
+            info->clear();
+            info->get( packet->message->info() );
+
+            
+            std::string path = au::Format::string("worker.*.queues_manager.queues.%s.matrix.0.size", "entries" );
+            size_t size_1 = info->getValues( path ).sumSizeT();
+            size_1 = 0;
+            
+            info_lock.unlock();
+
         }
         
     }        

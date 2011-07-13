@@ -36,7 +36,8 @@ namespace samson {
     typedef enum 
     {
         general,
-        task
+        task,
+        queues
     } DelilahMonitorizationType;
 
     
@@ -127,12 +128,16 @@ namespace samson {
 		   
         DelilahMonitorizationType  type;
         
+        size_t reference;
+        
 	public:
         
 		DelilahMonitorization( NetworkInterface *network ) : Delilah( network , true )
 		{
 			trace_on = true;
             type =  general;
+            
+            reference = 1024*1024*1024;
 		}
 		
 		~DelilahMonitorization()
@@ -174,6 +179,7 @@ namespace samson {
 
         void printGeneral();
         void printTask();
+        void printQueues();
         
         
 	};

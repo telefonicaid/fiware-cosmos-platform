@@ -43,8 +43,8 @@ namespace samson {
 
     public:
         
-        int shm_id;// Shared memory area used in this operation
-        engine::SharedMemoryItem *item;// Share memory item
+        int shm_id;                     // Shared memory area used in this operation
+        engine::SharedMemoryItem *item; // Share memory item
         
         
         ProcessWriter *writer;

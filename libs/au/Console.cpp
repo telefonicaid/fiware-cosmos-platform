@@ -45,7 +45,10 @@ namespace au
 
 	void Console::writeOnConsole( std::string message )
 	{
-		write( message );
+        if( pthread_self() == t )
+            write( message );
+        else
+            write2( message );
 	}
 
 
@@ -60,6 +63,15 @@ namespace au
 		rl_redisplay();
 	}
 
+	void Console::write2( std::string message )
+	{
+		std::ostringstream output;
+		output << "\r" << message << "\n";
+		std::cerr << output.str();
+		std::cerr.flush();
+        
+	}
+    
 
 	void Console::quitConsole()
 	{
@@ -71,6 +83,9 @@ namespace au
 
 	void Console::runConsole()
 	{
+        // Keep the identifier of the thread
+        t = pthread_self();
+        
 		quit_console = false;
 		
 		while ( !quit_console )
@@ -89,7 +104,7 @@ namespace au
 				evalCommand(line);
 				free(line);
 			}
-
+            
 			// rl_line_buffer[0] = '\0';
 		}
 

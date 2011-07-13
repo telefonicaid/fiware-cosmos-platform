@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <cstring>
 #include <stdlib.h>
+#include <time.h>
 
 size_t randNumber()
 {
@@ -17,6 +18,7 @@ size_t randNumber()
 
 int main( int argC, char *argV[] )
 {
+  srand( time(NULL) );
 
   if( argC < 2 )
     {
@@ -36,7 +38,7 @@ int main( int argC, char *argV[] )
     // 6 letter words
     int line_length = 6;
     for (int i = 0 ; i < line_length ; i++ )
-      line[i] = 97 + rand()%5;
+      line[i] = 97 + rand()%20;
     line[line_length]='\0';
 
     total_size += printf("%s\n", line );   

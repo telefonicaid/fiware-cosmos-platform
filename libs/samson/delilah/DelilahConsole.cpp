@@ -17,6 +17,8 @@
 
 #include "samson/network/Packet.h"						// ss:Packet
 
+#include "samson/common/Info.h"                     // samson::Info
+
 #include "samson/delilah/Delilah.h"					// samson::Delailh
 #include "samson/delilah/DelilahConsole.h"				// Own interface
 
@@ -563,6 +565,29 @@ namespace samson
             return 0;
         }
         
+        if ( mainCommand == "info_sum" )
+        {
+            ValuesCollection values = info->getValues( commandLine.get_argument(1) );
+            writeOnConsole( au::Format::string( "Got %d results with sum %lu" , (int) values.size() , values.sumSizeT() ) );
+        }
+        
+        if( mainCommand == "info_global" )
+        {
+            info_lock.lock();
+
+            if( commandLine.get_num_arguments() >= 2 )
+            {
+                writeOnConsole( info->get( commandLine.get_argument(1) )->str() );
+            }
+            else
+                writeOnConsole( info->str()  );
+            
+            
+            info_lock.unlock();
+            
+            return 0;
+        }
+        
         if( strncmp(mainCommand.c_str(), "info", 4) == 0)
         {
             showInfo( mainCommand );
@@ -978,12 +1003,31 @@ namespace samson
 			o << "[ " << process->id << " ] Pop process finished with error ( " << process->getStatus() << " )\n";
 			o << "\tERROR: " << process->error.getMessage();
 			writeErrorOnConsole(o.str());
+            
 		}
 		else
 		{
 			std::ostringstream o;
 			o << "[ " << process->id << " ] Pop  process finished correctly ( " << process->getStatus() << " )";
 			writeWarningOnConsole(o.str());
+            
+            size_t file_size = au::Format::sizeOfFile( process->fileName );
+            
+            if( file_size < 10000 )
+            {
+                writeOnConsole("Content: --------------------------------------------------------------");
+                FILE *file = fopen( process->fileName.c_str() , "r" );
+                char * buffer = (char*) malloc( file_size );
+                fread( buffer , file_size , 1 , file );
+                
+                writeOnConsole( buffer );
+                
+                writeOnConsole("End of Content: -------------------------------------------------------");
+                free( buffer );
+            }
+            else
+                writeWarningOnConsole("Not showing on screen since file is too large ( " + au::Format::string(file_size) + " )" );
+            
 		}
         
     }

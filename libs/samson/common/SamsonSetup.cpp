@@ -237,6 +237,8 @@ namespace samson
         
         add("worker.update_files_period" ,"5" , "Period for the automatic update of files for each worker" );
         add("worker.update_status_period", "3" , "Period for the automatic update from workers to controller" );        
+
+        add("worker.period_check_finish_tasks", "5", "Period to review finished tasks in samsonWorker, to be clean from memory" );
         
         
         add("controller.max_worker_disconnected_time", "120" , "Maximum acceptable time for a worker to be disconnected. All task will be killed is larger disconnected-time is observed" );

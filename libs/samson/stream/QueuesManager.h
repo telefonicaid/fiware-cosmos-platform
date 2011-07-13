@@ -28,6 +28,7 @@
 namespace samson {
     
     class SamsonWorker;
+    class Info;
     
     namespace stream
     {
@@ -63,6 +64,9 @@ namespace samson {
             
             // Add a pop queue operation
             void addPopQueue(const network::PopQueue& pq , size_t delilahId, int fromId );
+            
+            // Get information for monitorization
+            Info* getInfo();
             
         private:
             

@@ -45,8 +45,10 @@ namespace engine {
 		o->size = size;
 		o->offset = offset;
 		o->setDevice();
-        o->listenerId = _listenerId;
+        o->addListener( _listenerId );
 		
+        o->environment.set("type","read");
+        
 		return o;
 	}
 	
@@ -61,7 +63,9 @@ namespace engine {
 		o->size = size;
 		o->offset = offset;
 		o->setDevice();
-        o->listenerId = _listenerId;
+        o->addListener( _listenerId );
+
+        o->environment.set("type","read");
 		
 		return o;
 	}
@@ -78,8 +82,10 @@ namespace engine {
 		o->size = buffer->getSize();
 		o->offset = 0;
 		o->setDevice();
-        o->listenerId = _listenerId;
-		
+        o->addListener( _listenerId );
+	
+        o->environment.set("type","write");
+        
 		return o;
 	}
 
@@ -94,8 +100,10 @@ namespace engine {
 		o->size = buffer->getSize();
 		o->offset = 0;
 		o->setDevice();
-        o->listenerId = _listenerId;
-		
+        o->addListener( _listenerId );
+
+        o->environment.set("type","append");
+        
 		return o;
 	}	
     
@@ -107,7 +115,9 @@ namespace engine {
 		o->type = DiskOperation::remove;
 		o->setDevice();
         o->size = 0;
-        o->listenerId = _listenerId;
+        o->addListener( _listenerId );
+
+        o->environment.set("type","remove");
         
 		return o;
 	}

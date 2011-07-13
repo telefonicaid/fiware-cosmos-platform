@@ -31,6 +31,7 @@
 namespace samson {
     
     class NetworkInterface;
+    class Info;
     
     namespace stream
     {
@@ -50,8 +51,7 @@ namespace samson {
             BlockMatrix matrix;                 // Matrix of blocks ( one list per input channel )
             
             std::set<size_t> running_tasks;     // Tasks currently running 
-            
-            
+                        
         public:
             
             // Information about how to process this queue ( from controller )
@@ -66,27 +66,26 @@ namespace samson {
                 
             }
             
-            void setStreamQueue( network::StreamQueue& _streamQueue )
+            void setStreamQueue( network::StreamQueue& new_streamQueue )
             {
-                // Only if not set before
-                if( ! streamQueue )
-                {
-                    streamQueue = new network::StreamQueue();
-                    streamQueue->CopyFrom(_streamQueue);
-                }
+                
+                if( streamQueue )
+                    delete streamQueue;
+                
+                streamQueue = new network::StreamQueue();
+                streamQueue->CopyFrom(new_streamQueue);
+                
             }
             
             void add( int channel , Block *block );
-        
-
+            
+            
             // Create new tasks if necessary
             void scheduleNewTasksIfNecessary();
 
             // Create tasks if necessary for a pop-queue operation ( from delilah )
             void scheduleTasksForPopQueue( PopQueue *popQueue );
            
-            
-            
             std::string getStatus();
             
             // Notifications    
@@ -94,6 +93,11 @@ namespace samson {
             
             void notifyFinishTask( size_t task_id );
 
+            
+            // Get information for monitorization
+            
+            Info* getInfo();
+            
             
         };
         

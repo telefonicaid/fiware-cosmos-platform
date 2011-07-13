@@ -27,6 +27,8 @@
 #define notification_review_task_for_queue "notification_review_task_for_queue"
 
 namespace samson {
+
+    class Info;
     
     namespace stream
     {
@@ -75,7 +77,7 @@ namespace samson {
             
             size_t getNumBlocks();
             
-            FullKVInfo getInfo();
+            FullKVInfo getFullKVInfo();
             
             void copyFrom( BlockMatrix* matrix , int channel );
             void copyFrom( BlockList* list );
@@ -84,6 +86,8 @@ namespace samson {
             
             au::list< Block >::iterator _find_pos( Block *b );
             
+            // Get information for monitorization
+            Info* getInfo();
             
         };
         
@@ -139,8 +143,31 @@ namespace samson {
             void copyFrom( BlockMatrix* _matrix , int hg_begin , int hg_end );
           
             // Get information
-            FullKVInfo getInfo();
+            FullKVInfo getFullKVInfo();
             size_t getNumBlocks();
+            
+            
+            // Get the Channel BlobkList
+            BlockList* getChannel( int c )
+            {
+                return channels.findInMap(c);
+            }
+            
+            size_t getSizeOfChannel( int c )
+            {
+                BlockList *channel = channels.findInMap(c);
+                if( !channel )
+                    return 0;
+                else
+                    return channel->getSize();
+            }
+            
+            
+        public:
+            
+            // Get information for monitorization
+            Info* getInfo();
+            
         };
         
     }

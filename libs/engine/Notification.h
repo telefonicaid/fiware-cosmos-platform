@@ -68,6 +68,9 @@ namespace engine
         // Constructor with one object and a target listener
         Notification( const char* _name , Object * _object , size_t _listener_id );
         
+        // Constructor with one object and a multiple targets listener
+        Notification( const char* _name , Object * _object , std::set<size_t>& _listeners_id );
+        
         // Get a string for debug
         std::string getDescription();
         std::string getShortDescription();

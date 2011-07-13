@@ -94,7 +94,7 @@ namespace engine
         if( pending_operations.extractFromList( operation ) )
         {
             // Add a notification for this operation ( removed when delegate is notified )
-            Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listenerId );
+            Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listeners );
             notification->environment.copyFrom( &operation->environment );        // Recover the environment variables to identify this request
             Engine::shared()->notify(notification);            
         }
@@ -118,7 +118,8 @@ namespace engine
 		pthread_mutex_unlock(&mutex);
 		
 		// Add a notification for this operation to the required target listener
-        Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listenerId );
+        Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listeners );
+        notification->environment.copyFrom( &operation->environment );        // Recover the environment variables to identify this request
         Engine::shared()->notify(notification);    
 		
 		// Check if there are more operation to be executed

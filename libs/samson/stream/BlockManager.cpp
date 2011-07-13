@@ -26,7 +26,7 @@ namespace samson {
         
             memory = 0;
             
-            max_memory = SamsonSetup::getUInt64("general.memory");
+            max_memory = SamsonSetup::getUInt64("general.memory")/2;
         }
         
         void BlockManager::init()
@@ -58,12 +58,16 @@ namespace samson {
         
         void BlockManager::notify( engine::Notification* notification )
         {
-            if( notification->environment.get("type", "-") == "write" )
+            std::string type = notification->environment.get("type", "-");
+            
+            //LM_M(("Received a notification with type %s" , type.c_str() ));
+            
+            if(  type == "write" )
             {
                 num_writing_operations--;
                 _review();
             }
-            if( notification->environment.get("type", "-") == "read" )
+            if( type == "read" )
             {
                 num_reading_operations--;
                 _review();
@@ -180,6 +184,13 @@ namespace samson {
                 }
             }                
             
+        }
+        
+        Info* BlockManager::getInfo()
+        {
+            Info *tmp = new Info();
+            tmp->set("description" , str() );
+            return tmp;
         }
         
         

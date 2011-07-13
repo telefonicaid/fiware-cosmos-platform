@@ -93,7 +93,7 @@ namespace samson {
         std::string PopQueue::getStatus()
         {
             std::ostringstream output;
-            output << getQueue() << ":" << getChannel() << " --> Pending " << running_tasks.size();
+            output << getQueue() << ":" << getChannel() << " --> Pending " << running_tasks.size() << " tasks";
             return output.str();
         }
         

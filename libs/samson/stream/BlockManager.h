@@ -4,6 +4,8 @@
 #include "Block.h"                      // samson::stream::Block
 #include "au/set.h"                     // au::set
 
+#include "samson/common/Info.h"         // samson::Info
+
 #include "engine/Object.h"  // engien::EngineListener
 #include "engine/Object.h"              // engine::Object
 
@@ -107,6 +109,10 @@ namespace samson {
                         memory -= b->size;
                     
                     blocks.remove( b );
+                    
+                    if( b->isWriting() || b->isReading() )
+                        LM_X(1,("Not allowed to remove an object that is reading..."));
+                    
                     delete b;
                 }
                 
@@ -154,7 +160,7 @@ namespace samson {
             std::string str()
             {
                 std::ostringstream output;
-                output <<"BLockManager: [ " << au::Format::string( memory ) << " / " << au::Format::string(max_memory) << " ] " ;
+                output <<"BLockManager: <Reads: " << num_reading_operations << " // Writes: " << num_writing_operations << " > [ " << au::Format::string( memory ) << " / " << au::Format::string(max_memory) << " ] " ;
                 for (std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; )
                 {
                     output << *(*i);
@@ -192,6 +198,11 @@ namespace samson {
             
             void _freeMemoryWithLowerPriorityBLocks( Block *b );
 
+            
+        public:
+            
+            Info* getInfo();
+            
             
         };
     }

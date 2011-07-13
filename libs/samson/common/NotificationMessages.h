@@ -9,6 +9,10 @@
 #define notification_samson_worker_send_trace           "notification_samson_worker_send_trace"
 #define notification_send_to_worker                     "notification_send_to_worker"
 
+
+#define notification_samson_worker_check_finish_tasks   "notification_samson_worker_check_finish_tasks"
+
+
 #define notification_samson_worker_send_packet          "notification_samson_worker_send_packet"
 
 #endif

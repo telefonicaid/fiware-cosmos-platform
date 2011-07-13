@@ -46,6 +46,8 @@ namespace samson {
 	class DelilahDownloadDataProcess;
     class PushComponent;
     class PopComponent;
+    class Info;
+    
 	extern au::Lock info_lock;						// Lock to protect the information provided here
     
 	extern network::OperationList *ol;              // List of available opertions ( updated periodically for autocompletion )
@@ -54,6 +56,7 @@ namespace samson {
     extern network::SamsonStatus *samsonStatus;     // Global status information of the platform            
     extern au::Cronometer cronometer_samsonStatus;  // Cronometer for this updated message
 	
+    
 	/**
 	   Main class for the samson client element
 	 */
@@ -73,6 +76,8 @@ namespace samson {
         
         bool trace_on;
 
+        Info* info;  // Global info from SAMSON SYSTEM
+        
 	public:
 		
 		Environment environment;								// Environment properties to be sent in the next job

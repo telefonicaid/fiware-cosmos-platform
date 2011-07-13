@@ -163,7 +163,10 @@ namespace samson {
             if( !buffer )
                 LM_X(1,("Not possible to get write operation over a block that it is not in memory"));
             
-            return engine::DiskOperation::newWriteOperation( buffer ,  getFileName() , getEngineId()  );
+            engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer ,  getFileName() , getEngineId()  );
+            operation->addListener( BlockManager::shared()->getEngineId() );
+            return operation;
+            
         }
 
         ::engine::DiskOperation* Block::getReadOperation()
@@ -171,7 +174,9 @@ namespace samson {
             if( !buffer )
                 LM_X(1,("Not possible to get a read operation over a block that has not a buffer  in memory"));
             
-            return engine::DiskOperation::newReadOperation( getFileName(), 0, size, buffer->getSimpleBuffer() , getEngineId() );
+            engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( getFileName(), 0, size, buffer->getSimpleBuffer() , getEngineId() );
+            operation->addListener( BlockManager::shared()->getEngineId() );
+            return operation;
         }
         
         std::string Block::getFileName()

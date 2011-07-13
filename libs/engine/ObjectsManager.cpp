@@ -10,7 +10,7 @@
 
 namespace engine {
 
-    ObjectsManager::ObjectsManager() 
+    ObjectsManager::ObjectsManager() //: token("engine::ObjectsManager")
     {
         engine_id = 1;            
     }
@@ -23,6 +23,8 @@ namespace engine {
     
     void ObjectsManager::add( Object* o )
     {
+        //au::TokenTaker tt( &token );
+        
         // Give a global id to this object    
         o->engine_id = engine_id++;
         
@@ -44,6 +46,7 @@ namespace engine {
     
     void ObjectsManager::remove( Object* o )
     {
+        //au::TokenTaker tt( &token );
         
         LM_T(LmtEngineNotification, ("Remove completelly object %lu", o  , o->engine_id  ));
         objects.extractFromMap( o->engine_id );
@@ -60,6 +63,7 @@ namespace engine {
     
     void ObjectsManager::add( Object* o , const char* name )
     {
+        //au::TokenTaker tt( &token );
         
         LM_T(LmtEngineNotification, ("Add object %lu to channel %s", o->engine_id , name ));
         get(name)->add( o->engine_id );
@@ -67,6 +71,7 @@ namespace engine {
     
     void ObjectsManager::remove(Object* o , const char* name )
     {
+        //au::TokenTaker tt( &token );
         
         LM_T(LmtEngineNotification, ("Remove object %lu to channel %s", o->engine_id , name ));
         get(name)->remove( o->engine_id );
@@ -90,7 +95,7 @@ namespace engine {
     
     void ObjectsManager::send( Notification* notification )
     {
-        
+                
         // Send to each listener contained in listner_id in Notification
         std::set<size_t>::iterator t;
         for( t = notification->targets.begin() ; t != notification->targets.end() ; t++ )
@@ -113,7 +118,12 @@ namespace engine {
     // Run a notification in an object
     void ObjectsManager::send( Notification *notification, size_t target)
     {
-        Object* o = objects.findInMap( target );
+        Object* o;
+        {
+            //au::TokenTaker tt( &token );
+            o = objects.findInMap( target );
+        }
+        
         if( o )
             o->notify( notification );
     }

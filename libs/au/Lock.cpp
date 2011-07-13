@@ -15,7 +15,7 @@
 #include "au/Lock.h"                // Own interface
 #include "LockDebugger.h"		// au:;:LockDebugger
 
-#define DEBUG_SS_THREADS
+//#define DEBUG_SS_THREADS
 
 
 namespace au

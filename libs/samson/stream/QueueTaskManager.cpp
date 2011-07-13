@@ -84,6 +84,8 @@ namespace samson {
                     
                     engine::ProcessManager::shared()->add( _task->getStreamProcess() , getEngineId() );
                 }
+                else
+                    return;
                 
             }
             

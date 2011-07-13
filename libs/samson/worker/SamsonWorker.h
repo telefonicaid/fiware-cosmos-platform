@@ -30,6 +30,7 @@
 namespace samson {
 	
     class NetworkInterface;
+    class Info;
     
 	class SamsonWorker :  public PacketReceiverInterface, public PacketSenderInterface, public engine::Object
 	{
@@ -68,6 +69,8 @@ namespace samson {
         // Notification from the engine about finished tasks
         void notify( engine::Notification* notification );
 
+        // Get information for monitorization
+        Info* getInfo();
         
 	private:
 		

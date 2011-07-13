@@ -627,7 +627,9 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int _id, int* ixP)
 		}
 	}
 
-	LM_W(("No %s endpoint with id %d found", Endpoint2::typeName(typ), _id));
+    // andreu: Converted to a trace ( not a warning anymore )
+    // Not a warning since a loopup is perform averytime and unhelloed connection send a hellp to make sure we do not duplicate...
+	LM_T( LmtEndpointLookup ,("No %s endpoint with id %d found", Endpoint2::typeName(typ), _id));
 
 	if (ixP != NULL)
 	{

@@ -8,7 +8,7 @@
 
 #include "au/Token.h"				// Own interface
 
-#define DEBUG_AU_TOKEN
+//#define DEBUG_AU_TOKEN
 
 namespace au
 {

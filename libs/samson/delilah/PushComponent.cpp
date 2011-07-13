@@ -37,7 +37,6 @@ namespace samson
 		for ( size_t i =  0 ; i < fileNames.size() ; i++)
 			totalSize += au::Format::sizeOfFile( fileNames[i] );
         
-        
         // Set this to false ( true will be the end of processing data )
         finish_process = false;
         

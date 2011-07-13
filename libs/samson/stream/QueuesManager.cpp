@@ -10,6 +10,8 @@
 #include "engine/MemoryManager.h"
 #include "engine/Notification.h"
 
+#include "samson/common/Info.h"     // samson::Info
+
 #include "samson/stream/PopQueue.h" // stream::PopQueue
 
 #include "samson/worker/SamsonWorker.h"
@@ -123,6 +125,23 @@ namespace samson {
         }
         
 
+        // Get information for monitorization
+        Info* QueuesManager::getInfo()
+        {
+            
+            Info *info = new Info();
+            
+            Info* queues_info = new Info();
+            
+            au::map< std::string , Queue >::iterator q;
+            for ( q = queues.begin() ; q != queues.end() ; q++ )
+                queues_info->set( q->first , q->second->getInfo() );
+
+            info->set("queues", queues_info );
+            
+            
+            return info;
+        }
         
     }
 

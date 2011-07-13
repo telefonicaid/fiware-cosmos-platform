@@ -10,7 +10,7 @@
 
 #include "samson/common/Macros.h"                 // EXIT, ...
 #include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
-
+#include "samson/common/Info.h"                 // samson::Info
 
 #include "samson/network/Message.h"                // Message::WorkerStatus, ...
 #include "samson/network/Packet.h"                 // samson::Packet
@@ -82,6 +82,9 @@ namespace samson {
         // receive notification to check the entire controller system
         listen( notification_check_controller );
         engine::Engine::shared()->notify( new engine::Notification( notification_check_controller ) , 5  );
+        
+        // Create the 
+        info = new Info();
         
 	}	
 	
@@ -164,6 +167,17 @@ namespace samson {
 				{
 					worker_status[workerId]->CopyFrom( packet->message->worker_status() );
                     worker_status_cronometer[workerId].reset();
+                    
+                    if( packet->message->has_info() )
+                    {
+                        
+                        Info *tmp = new Info();
+                        tmp->get(packet->message->info());
+                        
+                        Info *worker_info = info->get("worker");
+                        worker_info->set( au::Format::string("worker_%d" , workerId ), tmp);
+                    }
+                    
 				}
                 else
                 {
@@ -522,7 +536,10 @@ namespace samson {
 					}
 					
 					fill( samsonStatus->mutable_controller_status() );
-					
+
+                    // Fill all the information of the "info" structure
+                    info->fill( "samson",  p2->message->mutable_info() );
+                    
 					network->send( fromId, p2);
 					
 					return;

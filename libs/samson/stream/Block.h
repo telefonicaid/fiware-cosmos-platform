@@ -112,6 +112,11 @@ namespace samson {
                 return ( state == writing );
             }
             
+            bool isReading()
+            {
+                return ( state == reading );
+            }
+            
             bool isOnMemory()
             {
                 return (state == on_memory);

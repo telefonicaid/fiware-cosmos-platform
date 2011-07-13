@@ -91,6 +91,8 @@ namespace samson {
     
     class PopComponent : public DelilahComponent , public engine::Object
     {
+    public:
+        
         network::QueueChannel *qc;          // Information about the queue we are recovering
         std::string fileName;               // Name of the file to create
         
@@ -101,7 +103,6 @@ namespace samson {
         
         int num_write_operations;           // Number of pending local write operations
         
-    public:
         
 		// Error log ( public since it is access from delilah )
 		au::ErrorManager error;
@@ -126,6 +127,11 @@ namespace samson {
         
         void run()
         {
+            
+            // Remove the output file
+            engine::DiskOperation *operation = engine::DiskOperation::newRemoveOperation(fileName, 0); 
+            engine::DiskManager::shared()->add( operation );                
+            
             // Send to all the workers a message to pop a queue
             num_workers = delilah->network->getNumWorkers();
             num_finish_worker = 0;

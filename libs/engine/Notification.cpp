@@ -31,6 +31,16 @@ namespace engine {
         // Insert this as the first listener to receive this notification
         targets.insert( _listener_id );
     }
+
+    Notification::Notification( const char* _name , Object * _object , std::set<size_t>& _listeners_id )
+    {
+        name = _name;
+        object = _object;
+
+        // Insert this as the first listener to receive this notification
+        targets.insert( _listeners_id.begin() , _listeners_id.end() );
+    }
+    
     
     
     std::string Notification::getDescription()

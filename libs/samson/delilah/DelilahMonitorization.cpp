@@ -7,27 +7,33 @@
  */
 
 #include <ncurses.h>
-
-#include "samson/delilah/Delilah.h"					// samson::Delailh
-#include "samson/network/Packet.h"						// ss:Packet
-#include "au/Format.h"						// au::Format
-#include "DelilahUploadDataProcess.h"		// samson::DelilahUpLoadDataProcess
-#include "DelilahDownloadDataProcess.h"		// samson::DelilahDownLoadDataProcess
-#include "engine/MemoryManager.h"				// samson::MemoryManager
-#include <iostream>
-#include <iomanip>
-#include "samson/common/EnvironmentOperations.h"						// Environment operations (CopyFrom)
-#include <iomanip>
-#include "samson/module/samsonVersion.h"		// SAMSON_VERSION
 #include <sys/stat.h>					// stat(.)
 #include <dirent.h>						// DIR directory header	
-#include "au/CommandLine.h"				// au::CommandLine
-#include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
-#include "PushComponent.h"  
+#include <iostream>
+#include <iomanip>
 
+#include "au/Format.h"						// au::Format
+#include "au/CommandLine.h"				// au::CommandLine
+
+#include "engine/MemoryManager.h"				// samson::MemoryManager
+
+#include "samson/common/EnvironmentOperations.h"						// Environment operations (CopyFrom)
+#include "samson/common/Info.h"                             // samson::Info
+
+#include "samson/network/Packet.h"						// ss:Packet
+
+#include "samson/module/samsonVersion.h"		// SAMSON_VERSION
+#include "samson/module/samsonVersion.h"
+
+#include "samson/delilah/Delilah.h"					// samson::Delailh
+
+#include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
+#include "DelilahUploadDataProcess.h"		// samson::DelilahUpLoadDataProcess
+#include "DelilahDownloadDataProcess.h"		// samson::DelilahDownLoadDataProcess
+
+#include "PushComponent.h"  
 #include "DelilahMonitorization.h"				// Own interface
 
-#include "samson/module/samsonVersion.h"
 
 namespace samson
 {	
@@ -88,6 +94,10 @@ namespace samson
                 case task:
                     printTask();
                     break;
+                    
+                case queues:
+                    printQueues();
+                    break;
             }
 
             
@@ -112,6 +122,19 @@ namespace samson
                 
                 if( ch == 't' )
                     type = task;
+                
+                if( ch == 's' )
+                    type = queues;
+        
+                if( ch == '+' )
+                    reference *= 2;
+                
+                if( ch == '-' )
+                {
+                    reference /= 2;
+                    if( reference == 0)
+                        reference = 1;
+                }
                 
             }
         }
@@ -281,5 +304,61 @@ namespace samson
         info_lock.unlock();
         
     }
+
+    void DelilahMonitorization::printQueues()
+    {
+        
+        info_lock.lock();
+
+
+        printLine("");
+        printLine("Stream Queues");
+        printLine();
+        printLine("");
+        
+        ValuesCollection queue_names = info->getValues( "worker.*.queues_manager.queues.*.name"  );
+                
+        for ( int i = 0 ; i < (int) queue_names.size() ; i++)
+        {
+            ValuesCollection channel_names = info->getValues( au::Format::string("worker.*.queues_manager.queues.%s.matrix.*", queue_names[i].c_str()));
+            
+            std::ostringstream num_operations_path;
+            num_operations_path << "worker.*.queues_manager.queues." << queue_names[i] << ".num_operations";
+            size_t num_operations = info->getValues( num_operations_path.str() ).sumSizeT();
+            
+            std::stringstream txt;
+            txt << au::Format::string("   %-20s : Running operations %s ", queue_names[i].c_str() , au::Format::string( num_operations ).c_str() );
+            printLine( txt.str().c_str() );
+            
+            for (int channel = 0 ; channel < (int)channel_names.size() ; channel++)
+            {
+                
+                std::ostringstream size_path;
+                size_path << "worker.*.queues_manager.queues." << queue_names[i] << ".matrix." << channel_names[channel] << ".size";
+                size_t size = info->getValues( size_path.str() ).sumSizeT();
+                
+                std::ostringstream num_kvs_path;
+                num_kvs_path << "worker.*.queues_manager.queues." << queue_names[i] << ".matrix." << channel_names[channel] << ".kvs";
+                size_t num_kvs = info->getValues( num_kvs_path.str() ).sumSizeT();
+
+                
+                
+                std::stringstream txt;
+                txt << au::Format::string("   \tChannel %s : " ,  channel_names[channel].c_str() );
+                txt << au::Format::string( size ) << "( #kvs: " << au::Format::string( num_kvs ) << " ) ";
+                txt << au::Format::progress_bar( (double)size / (double) reference , cols - 65  );
+                printLine( txt.str().c_str() );
+            }
+            printLine(" ");
+            
+        }
+        
+        
+        
+        // Unlock the common information lock    
+        info_lock.unlock();
+        
+    }
+    
     
 }

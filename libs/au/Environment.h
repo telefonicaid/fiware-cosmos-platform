@@ -19,6 +19,11 @@ namespace au {
 		
 		std::map<std::string,std::string> environment;	
 		
+        void clearEnvironment()
+        {
+            environment.clear();
+        }
+        
 		std::string get( std::string name , std::string default_value )
 		{
 			std::map<std::string, std::string>::iterator iter = environment.find(name);

@@ -23,31 +23,28 @@ namespace samson {
         class QueueTask : public StreamProcessBase
         {
             
+            FullKVInfo queue_task_info;         // total information covered by this task
+            
         public:
             
             size_t id;                          // Id of the operation
-            //std::string queue_name;             // Name of the queue to work on
             
             BlockMatrix matrix;                 // Matrix of blocks involved in this operation
             
             QueueTask( size_t _id , network::StreamQueue * streamQueue  ) : StreamProcessBase( _id , streamQueue )
             {
+                // Set the id of this task
                 id = _id;
-                //queue_name = _queue_name;
-                
                 
                 // Set in the environemtn variables
                 environment.setSizeT("id",id);
-                //environment.set("queue" , queue_name );
             }
 
             QueueTask( size_t _id , PopQueue *_pq ) : StreamProcessBase( _id , _pq )
             {
+                // Set the id of this task
                 id = _id;
 
-                // Keep this to run the operation and send results back to delilah
-                pq = _pq;
-                
                 // Set in the environemtn variables
                 environment.setSizeT("id",id);
             }

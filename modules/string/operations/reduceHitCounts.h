@@ -39,21 +39,29 @@ input: system.String system.HitCount
 output: system.String system.HitCount
 
 helpLine: Aggregation of the hits per string
-#endif // de INFO_COMMENT
+#endif // de INFO_COMMENT 
 
 		void init(samson::KVWriter *writer )
 		{
-		  current_time = time(NULL)%60;// Blocks of one minute ( to be selected with environment variable)
+		  current_time = time(NULL)/60;// Blocks of one minute ( to be selected with environment variable)
+		  int period = time(NULL)%60;
+
+		  current_time = 0;// Only for testing, hits are accumulated continuously...
+
+		  OLM_M(("Current time %lu [Next in %d ]" , current_time , 60 - period  ));
 		}
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-		  if( inputs[0].num_kvs > 0)
+		  if( inputs[0].num_kvs > 0 )
 		    key.parse( inputs[0].kvs[0]->key );
 	          else if( inputs[1].num_kvs > 0)
-		    key.parse( inputs[0].kvs[0]->key );
+		    key.parse( inputs[1].kvs[0]->key );
 		  else
 		    tracer->setUserError("Running operation with any key-value at input 0 or input 1");
+
+		  //OLM_M(("Running reduce hits for %s with %lu / %lu kvs", key.value.c_str() , inputs[0].num_kvs , inputs[1].num_kvs ));
+		  //return;		  
 
 		  // Get the number of hits
 		  num_hits = 0;

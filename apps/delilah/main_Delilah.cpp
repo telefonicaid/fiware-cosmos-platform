@@ -21,6 +21,7 @@
 
 #include "engine/MemoryManager.h"
 #include "engine/Engine.h"
+#include "engine/DiskManager.h"
 
 #include "samson/common/SamsonSetup.h"
 
@@ -173,6 +174,9 @@ int main(int argC, const char *argV[])
 	engine::MemoryManager::init(  samson::SamsonSetup::getUInt64("general.memory") );
 	// Goyo. End of groping in the dark
 
+    // Init the disk manager for the popQueue operations
+    engine::DiskManager::init( 1 );
+    
 	
 	// Initialize the network element for delilah
 	samson::EndpointManager* epMgr     = new samson::EndpointManager(samson::Endpoint2::Delilah, controller);

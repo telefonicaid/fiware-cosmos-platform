@@ -9,6 +9,8 @@
 #include "engine/Notification.h"        // engine::Notification
 
 #include "samson/common/EnvironmentOperations.h"    // getStatus()
+#include "samson/common/Info.h"                     // samson::Info
+
 #include "samson/module/ModulesManager.h"           
 #include "QueueTask.h"
 #include "samson/network/NetworkInterface.h"
@@ -96,15 +98,32 @@ namespace samson {
                 //LM_M(("Not run operation since no data" ));
                 return;
             }
+
+            samson::Environment environment;
+            if( streamQueue )
+                copyEnviroment(streamQueue->environment(), &environment);
+
+            // Get limits to consider
+            size_t max_time     = environment.getSizeT("max_time", 0);
+            size_t max_size     = environment.getSizeT("max_size", 0);
+            size_t max_num_operations = environment.getSizeT("max_num_operations" , 0 );             // Only for parser / map operations
             
-            /*                        
-             int total_time      = cronometer.diffTimeInSeconds();
-             if( total_time < 3 )
-             {
-             //LM_M(("Not run operation since time  is time=%s", au::Format::time_string( total_time).c_str()  ));
-             return;
-             }
-             */
+            size_t current_time      = cronometer.diffTimeInSeconds();
+            size_t current_size      = matrix.getSizeOfChannel( 0 );
+            
+            
+            if ( ( current_size <= max_size ) && ( current_time <= max_time ) )
+            {
+                /*
+                LM_M((" Queue %s not running since values are still under limits size: %s/%s time: %s/%s  ", 
+                      name.c_str(),
+                      au::Format::string( current_size ).c_str(),
+                      au::Format::string( max_size ).c_str() ,
+                 au::Format::time_string( current_time ).c_str(),
+                 au::Format::time_string( max_time ).c_str()   )); 
+                 */
+                return;
+            }
             
             Operation* op = samson::ModulesManager::shared()->getOperation( streamQueue->operation() );
             
@@ -113,29 +132,48 @@ namespace samson {
                     
                 {
                     
+                    
                     // Clear all the packets accumulated outputside the main channel
                     // TODO:  matrix.clearBlocksOutputsideChannel( 0 );
                     
                     while( !matrix.isEmpty() )
                     {
-                        //LM_M(("Creating a new parser operation over %s" , matrix.str().c_str() ));
+                        
+                        if( ( max_num_operations >0 ) && ( running_tasks.size() >= max_num_operations ) )
+                        {
+                            // Not running new operations since we are in the limit
+                            return;
+                        }
+                        
+                        LM_M(("Creating a new parser operation from a matrix of %s" , au::Format::string( matrix.getSizeOfChannel(0) ).c_str() ));
                         
                         ParserQueueTask *tmp = new ParserQueueTask( qm->queueTaskManager.getNewId() ,   streamQueue ); 
                         tmp->environment.set("queue" , name );
-                        
+
+                        LM_M(("Getting blocks..."));
                         tmp->getBlocks( &matrix );
+
+                        LM_M(("Steps..."));
                         
                         // Reatin blocs by the task and release the one form the queue
                         tmp->retain();
                         
+                        LM_M(("Steps..."));
+                        
                         // Release the elements since there are not in the queue any more
                         tmp->matrix.release();  
                         
+                        LM_M(("Steps..."));
+                        
                         // add the id of this task in the list of running tasks
                         running_tasks.insert( tmp->id );
+
+                        LM_M(("Steps..."));
                         
                         // Schedule tmp task into QueueTaskManager
                         qm->queueTaskManager.add( tmp );
+                        
+                        LM_M(("End creating parser..."));
                         
                     }
                     
@@ -149,26 +187,35 @@ namespace samson {
                 {
                     // Clear all the packets accumulated outputside the main channel
                     // TODO:  matrix.clearBlocksOutputsideChannel( 0 );
+
+                    if( ( max_num_operations >0 ) && ( running_tasks.size() >= max_num_operations ) )
+                    {
+                        // Not running new operations since we are in the limit
+                        return;
+                    }
                     
                     while( !matrix.isEmpty() )
                     {
-                        //LM_M(("Scheduling a new map operation"));
                         
                         MapQueueTask *tmp = new MapQueueTask( qm->queueTaskManager.getNewId() , streamQueue ); 
                         tmp->environment.set("queue" , name );
+
                         
                         // Extract the necessary blocks
                         tmp->getBlocks( &matrix );
                         
+                        
                         // Reatin blocs by the task and release the one form the queue
                         tmp->retain();
+
                         
                         // Release the elements since there are not in the queue any more
                         tmp->matrix.release();  
+
                         
                         // add the id of this task in the list of running tasks
                         running_tasks.insert( tmp->id );
-                        
+
                         // Schedule tmp task into QueueTaskManager
                         qm->queueTaskManager.add( tmp );
                         
@@ -314,7 +361,26 @@ namespace samson {
         {
             running_tasks.erase( task_id );
         }
-        
+
+        Info* Queue::getInfo()
+        {
+            Info *tmp = new Info( );
+            
+            tmp->set( "name"    , name );
+            tmp->set( "matrix"  , matrix.getInfo() );
+            tmp->set( "num_operations" , running_tasks.size() );
+         
+            if( streamQueue )
+            {
+                // Enviroment information
+                Environment _environment;
+                copyEnviroment(streamQueue->environment(), &_environment);
+                tmp->set("environment" , _environment.toString() );
+            }
+            
+            return tmp;
+        }
+  
         
         
     }

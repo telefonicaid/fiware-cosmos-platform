@@ -39,6 +39,8 @@
 
 namespace samson {
 	
+    
+    class Info;
 	/**
 	 Main class for Samson Controller
 	 */
@@ -68,7 +70,10 @@ namespace samson {
 		network::WorkerStatus** worker_status;				// Status of the workers reported periodically
         au::Cronometer *worker_status_cronometer;           // Cronometer to count the last update from workers
 		int num_workers;
-				
+
+        // Unified information ( updated with information comming from workers )
+        Info *info;
+        
 		friend class Job;
 		friend class JobManager;
 		friend class ControllerDataManager;

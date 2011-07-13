@@ -9,6 +9,9 @@
 #include "engine/ProcessManager.h"      // engine::ProcessManager
 
 #include "samson/common/EnvironmentOperations.h"    // getStatus()
+#include "samson/common/Info.h"                     // samson::Info
+#include "samson/common/coding.h"                   // KVInfo
+
 #include "samson/module/ModulesManager.h"           
 #include "QueueTask.h"
 #include "samson/network/NetworkInterface.h"
@@ -178,7 +181,7 @@ namespace samson {
         }
         
         // Get information
-        FullKVInfo BlockList::getInfo()
+        FullKVInfo BlockList::getFullKVInfo()
         {
             FullKVInfo info;
             std::list<Block*>::iterator b;
@@ -207,6 +210,18 @@ namespace samson {
             return blocks.end();
         }
 
+        Info* BlockList::getInfo()
+        {
+            Info *tmp = new Info();
+            
+            FullKVInfo info = getFullKVInfo();
+            
+            tmp->set( "size" , info.size );
+            tmp->set( "kvs"  , info.kvs );
+            
+            return tmp;
+        }
+        
 
         
 #pragma mark BlockMatrix
@@ -377,7 +392,7 @@ namespace samson {
         }
         
         
-        FullKVInfo BlockMatrix::getInfo()
+        FullKVInfo BlockMatrix::getFullKVInfo()
         {
             FullKVInfo info;
             info.clear();
@@ -386,7 +401,7 @@ namespace samson {
             for ( c = channels.begin() ; c!= channels.end() ; c++ )
             {
                 BlockList *list = c->second;
-                info.append( list->getInfo() );
+                info.append( list->getFullKVInfo() );
             }
             
             return info;
@@ -406,6 +421,20 @@ namespace samson {
             return num;
         }
 
+        Info* BlockMatrix::getInfo()
+        {
+            Info *tmp = new Info();
+            
+            au::map<int , BlockList>::iterator c;
+            for ( c = channels.begin() ; c != channels.end() ; c++ )
+            {
+                std::string name = au::Format::string("%d", c->first);
+                Info*info = c->second->getInfo();
+                tmp->set( name , info );
+            }
+            
+            return tmp;
+        }
 
         
 

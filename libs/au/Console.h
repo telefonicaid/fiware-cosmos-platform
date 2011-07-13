@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <deque>
+#include <list>
 
 #include "au/Lock.h"             /* Lock                            */
 
@@ -36,6 +37,7 @@ namespace au {
 		Lock lock;				//!< Lock as a control mechanism to log things into the console
 		bool quit_console;		//!< Flag to indicate that we want the console to quit ( can be set from outside the class with quit )
         
+        pthread_t t;
 	public:		
         
 		Console();
@@ -48,7 +50,7 @@ namespace au {
 		void writeWarningOnConsole( std::string message );
 		void writeErrorOnConsole( std::string message );
 		void writeOnConsole( std::string message );
-
+        
 		void quitConsole(); // Set the console to quit
 		
 		
@@ -60,6 +62,7 @@ namespace au {
 		void print();
 		
         void write( std::string message );
+        void write2( std::string message );
         
 	public:
 

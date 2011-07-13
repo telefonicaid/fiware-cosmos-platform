@@ -58,6 +58,9 @@ namespace samson
     
 	void ProcessItemIsolated::run()
 	{
+        LM_T( LmtIsolated , ("Isolated process %s: start ******************************************************************************************* ",getStatus().c_str()));
+        
+        
         if( isolated_process_as_tread )
             LM_T( LmtIsolated , ("Isolated process %s start in thread mode",getStatus().c_str()));
         else
@@ -173,7 +176,7 @@ namespace samson
             } while (p != pid);
         }
 		
-		LM_T( LmtIsolated , ("Isolated process %s: finish and children process killed ",getStatus().c_str()));
+        LM_T( LmtIsolated , ("Isolated process %s: Finish ******************************************************************************************* ",getStatus().c_str()));
         
 	}
     

@@ -86,7 +86,9 @@ void NetworkInterface::sendToWorker(int workerId, Packet* p)
 */
 void NetworkInterface::sendToController( Packet *p)
 {
+    //LM_M(("Sending message to controller"));
 	int endPoint = controllerGetIdentifier();
+    //LM_M(("End sending message to controller"));
 	send(endPoint, p);
 }
 

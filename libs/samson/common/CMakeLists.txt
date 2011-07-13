@@ -1,4 +1,5 @@
 SET (HEADERS
+    Info.h
     NotificationMessages.h
 	samson.pb.h
 	status.h
@@ -19,6 +20,7 @@ SET (HEADERS
 )
 
 SET (SOURCES
+    Info.cpp
 	samson.pb.cc
 	SamsonSetup.cpp
 	traces.cpp

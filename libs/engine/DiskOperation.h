@@ -34,6 +34,7 @@
 #include <iostream>			// std::cout
 #include <sstream>			// std::ostringstream
 #include <time.h>			// clock(.)
+#include <set>           // std::set
 
 #include "au/Lock.h"			// au::Lock
 #include "au/StopLock.h"		// au::StopLock
@@ -76,7 +77,7 @@ namespace engine {
 		size_t offset;						// Offset inside the file ( only for read operations )
 		dev_t st_dev;						// Device where this file is stored
 		
-        size_t listenerId;                  // Id of the listener to notify when operation is completed
+        std::set<size_t> listeners;      // Collection of Ids of the listener to notify when operation is completed
         
 		friend class DiskManagerNotification;
         friend class DiskManager;
@@ -158,6 +159,11 @@ namespace engine {
     public:
         
         bool compare( DiskOperation *operation );
+        
+        void addListener( size_t id )
+        {
+            listeners.insert( id );
+        }
         
 		
 	};

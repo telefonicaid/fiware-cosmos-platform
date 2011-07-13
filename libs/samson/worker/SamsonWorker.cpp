@@ -15,6 +15,7 @@
 #include "samson/common/SamsonSetup.h"                  // samson::SamsonSetup
 #include "samson/common/Macros.h"                     // EXIT, ...
 #include "samson/common/SamsonSetup.h"				// samson::SamsonSetup
+#include "samson/common/Info.h"                     // samson::Info
 
 #include "samson/network/Message.h"                    // Message
 #include "samson/network/Packet.h"                     // samson::Packet
@@ -96,7 +97,16 @@ namespace samson {
             notification->environment.setInt("worker", network->getWorkerId() );
             engine::Engine::shared()->notify( notification, worker_update_files_period );
         }
-     
+
+        
+        {
+            int check_finish_tasks_period = samson::SamsonSetup::getInt("worker.period_check_finish_tasks" );
+            engine::Notification *notification = new engine::Notification(notification_samson_worker_check_finish_tasks);
+            engine::Engine::shared()->notify( notification, check_finish_tasks_period );
+            
+        }
+        
+        
         
         
         // Send a "hello" command message just to notify the controller about me
@@ -230,6 +240,11 @@ namespace samson {
 
         ws->set_network_read_rate( network->statistics->item_read.getLastMinuteRate() );
         ws->set_network_write_rate( network->statistics->item_write.getLastMinuteRate() );
+     
+        // Include generic informaiton about this worker
+        Info* info = getInfo();
+        info->fill( "worker" , p->message->mutable_info() );
+        delete info;
         
 		// Send the message
 		network->sendToController( p );
@@ -595,6 +610,14 @@ namespace samson {
 		
 	}
     
+    // Get information for monitorization
+    Info* SamsonWorker::getInfo()
+    {
+        Info *info = new Info();
+        info->set("queues_manager" , queuesManager.getInfo() );
+        info->set("block_manager" , stream::BlockManager::shared()->getInfo() );
+        return info;
+    }
 
 	
 }

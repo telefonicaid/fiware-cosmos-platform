@@ -18,6 +18,14 @@ message Environment
 }
 
 
+message Info
+{
+	required string name			=1;	// Name of this entity
+	required string value			=2;	// Value of this property
+
+	repeated Info info   			=3;	// Children elements
+}
+
 message KVInfo
 {
 	required uint64 size=1;		// Size in bytes
@@ -57,6 +65,10 @@ message StreamQueue
 	required string operation	= 3;	// Name of the operation to process this queue ( parser , map , reduce with 2 inputs )
 	required uint32 num_workers	= 4;	// Number of workers involved in this operation
 	repeated StreamQueueOutput output = 6;	// Outputs to send the packets
+
+	optional Environment environment = 5;	// Environment properties
+
+
 
 }
 
@@ -149,7 +161,7 @@ message ControllerTask
 	required int64 job_id = 2;
 	required int64 task_id = 3;
 
-	required string task_description = 11;		// Information about the task running
+	required string task_description = 11;		// Irmation about the task running
 
 	optional Error error = 10;			// Optional error only activated if state = completed
 
@@ -179,6 +191,9 @@ message ControllerStatus
 
 	optional ControllerTaskManagerStatus task_manager_status = 5;	// Status of the task manager
 }
+
+
+
 
 message WorkerStatus
 {
@@ -215,6 +230,7 @@ message WorkerStatus
 
 	optional uint64 network_read_rate=32;
 	optional uint64 network_write_rate=33;
+
 
 }
 
@@ -595,7 +611,7 @@ message PopQueue
 
 message PopQueueResponse
 {
-	required PopQueue request	= 1;	// Original request message
+	optional PopQueue request	= 1;	// Original request message
 
 	required bool finish		= 2;	// Flag to indicate that this operation is finished
 	optional Error error		= 3;	// Optional flag to notify errors
@@ -657,6 +673,8 @@ message Message
 	optional WorkerStatus worker_status = 170;			// Worker status update
 
 	optional Trace trace = 171;	      				// optional trace to all delilahs;
+
+	optional Info info = 172;					// General information messages included in Message::WorkerStatus
 
 	// Common information	
 	optional uint64  delilah_id = 300;				// Used in commands , upload and download process with delilah

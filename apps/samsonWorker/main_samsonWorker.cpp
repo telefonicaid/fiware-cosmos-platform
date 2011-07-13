@@ -99,6 +99,12 @@ static const char* manVersion       = "0.6-1";
 
 
 
+void captureSIGPIPE( int s )
+{
+    LM_M(("Capturing SIGPIPE"));
+}
+
+
 /* ****************************************************************************
 *
 * main - 
@@ -108,7 +114,7 @@ int main(int argC, const char *argV[])
 	paConfig("prefix",                        (void*) "SSW_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
-	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
+	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID) FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
 	paConfig("log to file",                   (void*) true);
 
@@ -121,6 +127,7 @@ int main(int argC, const char *argV[])
 	paConfig("man copyright",                 (void*) manCopyright);
 	paConfig("man version",                   (void*) manVersion);
 
+    
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
 	lmAux((char*) "father");
@@ -133,7 +140,11 @@ int main(int argC, const char *argV[])
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
 	logFd = lmFirstDiskFileDescriptor();
-
+    
+    // Capturing SIGPIPE
+    if( signal( SIGPIPE , captureSIGPIPE ) == SIG_ERR )
+        LM_W(("SIGPIPE cannot be handled"));
+    
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();
     

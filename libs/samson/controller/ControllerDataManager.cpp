@@ -400,6 +400,10 @@ namespace samson {
                     }
                 }                
             }
+
+            
+            // copy the environemnt properties
+
             
             // Insert the queue in the global list of stream-queues
 			stream_queues.insertInMap( name , tmp );
@@ -409,6 +413,43 @@ namespace samson {
 			return response;
 		}
 
+        if( commandLine.get_argument(0) == "set_queue_property" )
+		{
+			
+			
+			if( commandLine.get_num_arguments() < 4 )
+			{
+				response.output = "Usage: set_queue_property queue_name property value";
+				response.error = true;
+				return response;
+			}
+            
+			std::string name            = commandLine.get_argument( 1 );
+			std::string property        = commandLine.get_argument( 2 );
+			std::string value           = commandLine.get_argument( 3 );
+            
+            
+            // Check it the queue already exists
+            network::StreamQueue *_queue = stream_queues.findInMap( name );
+			
+			// Check if queue exist
+			if( _queue == NULL )
+			{
+                std::ostringstream output;
+                output << "Queue " + name + " not found";
+                response.output = output.str();
+                response.error = true;
+                return response;
+			}			
+
+            // Add a propery here
+            network::EnvironmentVariable* ev = _queue->mutable_environment()->add_variable();
+            ev->set_name( property );
+            ev->set_value( value );
+            
+			response.output = "OK";
+			return response;
+		}
 		
 
 

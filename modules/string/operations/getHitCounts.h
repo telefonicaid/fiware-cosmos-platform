@@ -45,7 +45,7 @@ helpLine: Just get the current hits per word
 		    value.parse( inputs[0].kvs[i]->value );
 
 		    char line[1024];
-		    sprintf(line, "%s %lu %lu\n" , key.value.c_str() , value.current_hits.value , value.hits.value );
+		    sprintf(line, "%s [T:%lu] %lu %lu\n" , key.value.c_str() , value.current_time.value , value.current_hits.value , value.hits.value );
 		      
 		    writer->emit( line );
 		  }

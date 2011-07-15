@@ -126,7 +126,10 @@ public:
             {
                 std::cout << "Setup file modified.... save (y/n)? ";
                 char line[1024];
-                fgets(line, 1024, stdin);
+                if (fgets(line, 1024, stdin)== NULL)
+		{
+			writeWarningOnConsole("Read nothing");
+		}
                 if( strcmp(line, "y") || strcmp(line, "Y") )
                 {
                     samson::SamsonSetup::shared()->save();  // Save a new file with the current setup

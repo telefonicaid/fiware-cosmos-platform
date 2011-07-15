@@ -1016,7 +1016,11 @@ namespace samson
                 writeOnConsole("Content: --------------------------------------------------------------");
                 FILE *file = fopen( process->fileName.c_str() , "r" );
                 char * buffer = (char*) malloc( file_size );
-                fread( buffer , file_size , 1 , file );
+                int nb = fread( buffer , file_size , 1 , file );
+		if (nb == 0)
+		{
+			writeWarningOnConsole("fread reads 0 instead of " + au::Format::string(file_size));	
+		}
                 
                 writeOnConsole( buffer );
                 

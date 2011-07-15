@@ -3,7 +3,7 @@
 
 /* ****************************************************************************
  *
- * FILE            Pugi.cpp
+ * FILE            pugi.cpp
  *
  * AUTHOR          Andreu Urruela
  *
@@ -17,7 +17,7 @@
  *
  * ****************************************************************************/
 
-#include "Pugi.h"			// Own interface
+#include "pugi.h"			// Own interface
 
 
 namespace pugi

@@ -20,6 +20,7 @@ varint.h
 Cronometer.h
 Rate.h
 Object.h
+Info.h
 )
 
 SET (SOURCES
@@ -35,6 +36,7 @@ Token.cpp
 Cronometer.cpp
 Rate.cpp
 Object.cpp
+Info.cpp
 )
 
 

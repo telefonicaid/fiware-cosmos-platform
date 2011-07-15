@@ -210,9 +210,9 @@ namespace samson {
             return blocks.end();
         }
 
-        Info* BlockList::getInfo()
+        au::Info* BlockList::getInfo()
         {
-            Info *tmp = new Info();
+            au::Info *tmp = new au::Info();
             
             FullKVInfo info = getFullKVInfo();
             
@@ -421,15 +421,15 @@ namespace samson {
             return num;
         }
 
-        Info* BlockMatrix::getInfo()
+        au::Info* BlockMatrix::getInfo()
         {
-            Info *tmp = new Info();
+            au::Info *tmp = new au::Info();
             
             au::map<int , BlockList>::iterator c;
             for ( c = channels.begin() ; c != channels.end() ; c++ )
             {
                 std::string name = au::Format::string("%d", c->first);
-                Info*info = c->second->getInfo();
+                au::Info*info = c->second->getInfo();
                 tmp->set( name , info );
             }
             

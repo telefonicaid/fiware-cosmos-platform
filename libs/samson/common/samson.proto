@@ -21,9 +21,8 @@ message Environment
 message Info
 {
 	required string name			=1;	// Name of this entity
-	required string value			=2;	// Value of this property
 
-	repeated Info info   			=3;	// Children elements
+	repeated Info info   			=2;	// Children elements
 }
 
 message KVInfo

@@ -16,6 +16,7 @@
 #include <sstream>
 
 #include "au/map.h"     // au::map
+#include "au/Info.h"     // au::Info
 #include "au/Format.h"  // au::Format
 
 #include <string>
@@ -66,7 +67,7 @@ namespace samson {
             void addPopQueue(const network::PopQueue& pq , size_t delilahId, int fromId );
             
             // Get information for monitorization
-            Info* getInfo();
+            au::Info* getInfo();
             
         private:
             

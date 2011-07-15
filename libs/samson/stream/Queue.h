@@ -16,6 +16,7 @@
 #include <string>       // std::string
 
 #include "au/list.h"      // au::list
+#include "au/Info.h"      // au::Info
 #include "au/Cronometer.h"              // au::cronometer
 
 #include "samson/common/coding.h"           // FullKVInfo
@@ -96,7 +97,7 @@ namespace samson {
             
             // Get information for monitorization
             
-            Info* getInfo();
+            au::Info* getInfo();
             
             
         };

@@ -14,6 +14,7 @@
 
 #include "au/CommandLine.h"                // au::CommandLine
 #include "au/Cronometer.h"              // au::Cronometer
+#include "au/Info.h"                    // au::Info
 
 #include "engine/Object.h"         // samson::EngineNotificationListener
 #include "engine/Object.h"                  // engine::Object
@@ -40,7 +41,6 @@
 namespace samson {
 	
     
-    class Info;
 	/**
 	 Main class for Samson Controller
 	 */
@@ -72,7 +72,7 @@ namespace samson {
 		int num_workers;
 
         // Unified information ( updated with information comming from workers )
-        Info *info;
+        au::Info *info;
         
 		friend class Job;
 		friend class JobManager;

@@ -186,9 +186,9 @@ namespace samson {
             
         }
         
-        Info* BlockManager::getInfo()
+        au::Info* BlockManager::getInfo()
         {
-            Info *tmp = new Info();
+            au::Info *tmp = new au::Info();
             tmp->set("description" , str() );
             return tmp;
         }

@@ -14,6 +14,7 @@
 
 #include "au/Format.h"						// au::Format
 #include "au/CommandLine.h"				// au::CommandLine
+#include "au/Info.h"                    // au::Info
 
 #include "engine/MemoryManager.h"				// samson::MemoryManager
 
@@ -310,17 +311,17 @@ namespace samson
         
         info_lock.lock();
 
-
         printLine("");
-        printLine("Stream Queues");
+        printLine("Stream Queues ( under construction ) ");
         printLine();
         printLine("");
         
-        ValuesCollection queue_names = info->getValues( "worker.*.queues_manager.queues.*.name"  );
+        /*
+        au::ValuesCollection queue_names = info->getValues( "worker.*.queues_manager.queues.*.name"  );
                 
         for ( int i = 0 ; i < (int) queue_names.size() ; i++)
         {
-            ValuesCollection channel_names = info->getValues( au::Format::string("worker.*.queues_manager.queues.%s.matrix.*", queue_names[i].c_str()));
+            au::ValuesCollection channel_names = info->getValues( au::Format::string("worker.*.queues_manager.queues.%s.matrix.*", queue_names[i].c_str()));
             
             std::ostringstream num_operations_path;
             num_operations_path << "worker.*.queues_manager.queues." << queue_names[i] << ".num_operations";
@@ -353,7 +354,7 @@ namespace samson
             
         }
         
-        
+*/        
         
         // Unlock the common information lock    
         info_lock.unlock();

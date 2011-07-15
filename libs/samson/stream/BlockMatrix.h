@@ -16,6 +16,7 @@
 #include <string>       // std::string
 
 #include "au/list.h"      // au::list
+#include "au/Info.h"      // au::Info
 #include "au/map.h"         // au::map
 #include "au/Cronometer.h"              // au::cronometer
 
@@ -87,7 +88,7 @@ namespace samson {
             au::list< Block >::iterator _find_pos( Block *b );
             
             // Get information for monitorization
-            Info* getInfo();
+            au::Info* getInfo();
             
         };
         
@@ -166,7 +167,7 @@ namespace samson {
         public:
             
             // Get information for monitorization
-            Info* getInfo();
+            au::Info* getInfo();
             
         };
         

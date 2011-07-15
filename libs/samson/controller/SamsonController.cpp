@@ -84,7 +84,7 @@ namespace samson {
         engine::Engine::shared()->notify( new engine::Notification( notification_check_controller ) , 5  );
         
         // Create the 
-        info = new Info();
+        info = new au::Info();
         
 	}	
 	
@@ -96,7 +96,9 @@ namespace samson {
         
 		free(worker_status);
         delete[] worker_status_cronometer;
-		
+
+		delete info;
+        
 	}
     
     void SamsonController::notify( engine::Notification* notification )
@@ -171,10 +173,10 @@ namespace samson {
                     if( packet->message->has_info() )
                     {
                         
-                        Info *tmp = new Info();
-                        tmp->get(packet->message->info());
+                        au::Info *tmp = new au::Info();
+                        samson::Info::get( tmp ,packet->message->info());
                         
-                        Info *worker_info = info->get("worker");
+                        au::Info *worker_info = info->get("worker");
                         worker_info->set( au::Format::string("worker_%d" , workerId ), tmp);
                     }
                     
@@ -538,7 +540,7 @@ namespace samson {
 					fill( samsonStatus->mutable_controller_status() );
 
                     // Fill all the information of the "info" structure
-                    info->fill( "samson",  p2->message->mutable_info() );
+                    samson::Info::fill(info, "samson",  p2->message->mutable_info() );
                     
 					network->send( fromId, p2);
 					

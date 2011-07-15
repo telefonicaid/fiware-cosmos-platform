@@ -67,13 +67,15 @@ namespace samson {
         engine::Engine::shared()->notify( new engine::Notification( notification_delilah_automatic_update ) , delilah_automatic_update_period );
 
         // Global info at delilah ( controller / worker / etc.. )
-        info = new Info();                              
+        info = new au::Info("samson");                              
     }
     
     
     Delilah::~Delilah()
     {
         clearAllComponents();
+        
+        delete info;
     }
 
     
@@ -234,12 +236,7 @@ namespace samson {
             info_lock.lock();
             
             info->clear();
-            info->get( packet->message->info() );
-
-            
-            std::string path = au::Format::string("worker.*.queues_manager.queues.%s.matrix.0.size", "entries" );
-            size_t size_1 = info->getValues( path ).sumSizeT();
-            size_1 = 0;
+            samson::Info::get(info, packet->message->info() );
             
             info_lock.unlock();
 

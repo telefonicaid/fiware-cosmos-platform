@@ -16,6 +16,7 @@
 #include "au/Token.h"				// au::Lock
 #include "au/map.h"				// au::map
 #include "au/Cronometer.h"      // au::Cronometer
+#include "au/Info.h"                // au::Info
 
 #include "samson/module/Environment.h"	// samson::Environment
 #include "samson/common/samson.pb.h"			// samson::network::..
@@ -46,7 +47,6 @@ namespace samson {
 	class DelilahDownloadDataProcess;
     class PushComponent;
     class PopComponent;
-    class Info;
     
 	extern au::Lock info_lock;						// Lock to protect the information provided here
     
@@ -76,7 +76,7 @@ namespace samson {
         
         bool trace_on;
 
-        Info* info;  // Global info from SAMSON SYSTEM
+        au::Info* info;  // Global info from SAMSON SYSTEM
         
 	public:
 		

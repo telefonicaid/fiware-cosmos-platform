@@ -111,6 +111,16 @@ namespace au {
 			std::map<K, V* ,_Compare>::clear();
 		}
 		
+        
+        /* Funtion to get the keys */
+        
+        void getKeys( std::set<K>& childrens )
+        {
+			typename std::map<K, V*,_Compare >::iterator iter;
+			for (iter = std::map<K,V*,_Compare>::begin() ; iter != std::map<K,V*,_Compare>::end() ; iter++)
+                childrens.insert( iter->first );
+        }
+
 		
 	};
 	

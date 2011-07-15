@@ -564,20 +564,18 @@ namespace samson
             showInfo("info_full");
             return 0;
         }
-        
-        if ( mainCommand == "info_sum" )
-        {
-            ValuesCollection values = info->getValues( commandLine.get_argument(1) );
-            writeOnConsole( au::Format::string( "Got %d results with sum %lu" , (int) values.size() , values.sumSizeT() ) );
-        }
-        
+                
         if( mainCommand == "info_global" )
         {
             info_lock.lock();
-
+            
             if( commandLine.get_num_arguments() >= 2 )
             {
-                writeOnConsole( info->get( commandLine.get_argument(1) )->str() );
+                
+                
+                au::Info *result = info->query( commandLine.get_argument(1) );
+                writeOnConsole( result->str() );
+                delete result;
             }
             else
                 writeOnConsole( info->str()  );

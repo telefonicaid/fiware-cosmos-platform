@@ -201,7 +201,7 @@ namespace samson {
             
         public:
             
-            Info* getInfo();
+            au::Info* getInfo();
             
             
         };

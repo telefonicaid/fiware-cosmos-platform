@@ -351,9 +351,9 @@ namespace samson {
             running_tasks.erase( task_id );
         }
 
-        Info* Queue::getInfo()
+        au::Info* Queue::getInfo()
         {
-            Info *tmp = new Info( );
+            au::Info *tmp = new au::Info( );
             
             tmp->set( "name"    , name );
             tmp->set( "matrix"  , matrix.getInfo() );

@@ -12,18 +12,24 @@
 #include <iostream>				// std::cout
 
 #include "logMsg/logMsg.h"				// 
-#include "samson/common/traces.h"				// Trace levels
-#include "samson/common/Macros.h"				// exit(.)
-#include "samson/common/samsonDirectories.h"  // SAMSON_WORKER_DEFAULT_PORT
-#include "WorkerTaskManager.h"	// samson::WorkerTaskManager
-#include "LoadDataManager.h"	// samson::LoadDataManager
-#include "samson/common/samson.pb.h"			// samson::network::
+
+#include "au/Info.h"                        // au::Info
+
 #include "engine/EngineElement.h"               // samson::EngineElement
 
 #include "samson/network/NetworkNode.h"     // samson::NetworkNode
 
 #include "samson/stream/QueuesManager.h"        // samson::stream::QueuesManager
 #include "samson/stream/QueueTaskManager.h"     // samson::stream::QueueTaskManager
+
+#include "samson/common/traces.h"				// Trace levels
+#include "samson/common/Macros.h"				// exit(.)
+#include "samson/common/samsonDirectories.h"  // SAMSON_WORKER_DEFAULT_PORT
+#include "samson/common/samson.pb.h"			// samson::network::
+
+
+#include "WorkerTaskManager.h"	// samson::WorkerTaskManager
+#include "LoadDataManager.h"	// samson::LoadDataManager
 
 #include "samson/common/NotificationMessages.h"
 
@@ -70,7 +76,7 @@ namespace samson {
         void notify( engine::Notification* notification );
 
         // Get information for monitorization
-        Info* getInfo();
+        au::Info* getInfo();
         
 	private:
 		

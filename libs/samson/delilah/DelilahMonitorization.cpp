@@ -316,7 +316,10 @@ namespace samson
         pugi::xml_parse_result result = doc.load( is_xml_document );
         
         printLine("");
-        printLine("Stream Queues ( under construction ) ");
+	std::ostringstream header;
+	header << "Stream Queues          ";
+	header << "( Reference " << au::Format::string( reference ) << " )";
+        printLine( header.str() );
         printLine();
         printLine("");
 
@@ -333,13 +336,13 @@ namespace samson
             printLine( txt.str().c_str() );
             
 
-            pugi::ValuesCollection channels = pugi::values( doc, "//queue[@name='" + queues[i] + "']/channel/attribute::name");
+            pugi::ValuesCollection channels = pugi::values( doc, "//queue[@name='" + queues[i] + "']/channel/attribute::name").uniq();
             
             for (int c = 0 ; c < (int)channels.size() ; c++)
             {
                 
-                size_t size = pugi::UInt64(doc, "//queue[@name='" + queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/size" );
-                size_t kvs  = pugi::UInt64(doc, "//queue[@name='" + queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/kvs" );
+	      size_t size = pugi::UInt64(doc, "sum(//queue[@name='" + queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/size)" );
+	      size_t kvs  = pugi::UInt64(doc, "sum(//queue[@name='" + queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/kvs)" );
                 
                 std::stringstream txt;
                 txt << au::Format::string("   \tChannel %s : " ,  channels[c].c_str() );

@@ -185,12 +185,13 @@ namespace samson {
             }                
             
         }
-        
-        au::Info* BlockManager::getInfo()
+
+        void BlockManager::getInfo( std::ostringstream& output)
         {
-            au::Info *tmp = new au::Info();
-            tmp->set("description" , str() );
-            return tmp;
+            output << "<block_manager>\n";
+            
+            output << "<block_manager>\n";
+            
         }
         
         

@@ -63,10 +63,10 @@ namespace samson {
 		if( num_workers <= 0)
 			LM_X(1,("Internal error: SamsonController starts with %d workers",num_workers));
 		
-		worker_status		= (network::WorkerStatus**) malloc( sizeof(network::WorkerStatus*) * num_workers);
-        worker_status_cronometer = new au::Cronometer[ num_workers ];  // Cronometer to count the last update from workers
+		worker_status               = (network::WorkerStatus**) malloc( sizeof(network::WorkerStatus*) * num_workers);
+        worker_xml_info             = new std::string[num_workers];
+        worker_status_cronometer    = new au::Cronometer[ num_workers ];  // Cronometer to count the last update from workers
 
-		
 		for (int i = 0 ; i < num_workers ; i++ )
 		{
 			worker_status[i] = new network::WorkerStatus();
@@ -83,8 +83,6 @@ namespace samson {
         listen( notification_check_controller );
         engine::Engine::shared()->notify( new engine::Notification( notification_check_controller ) , 5  );
         
-        // Create the 
-        info = new au::Info();
         
 	}	
 	
@@ -96,8 +94,7 @@ namespace samson {
         
 		free(worker_status);
         delete[] worker_status_cronometer;
-
-		delete info;
+        delete[] worker_xml_info;
         
 	}
     
@@ -172,12 +169,7 @@ namespace samson {
                     
                     if( packet->message->has_info() )
                     {
-                        
-                        au::Info *tmp = new au::Info();
-                        samson::Info::get( tmp ,packet->message->info());
-                        
-                        au::Info *worker_info = info->get("worker");
-                        worker_info->set( au::Format::string("worker_%d" , workerId ), tmp);
+                        worker_xml_info[workerId] = packet->message->info();
                     }
                     
 				}
@@ -540,7 +532,25 @@ namespace samson {
 					fill( samsonStatus->mutable_controller_status() );
 
                     // Fill all the information of the "info" structure
-                    samson::Info::fill(info, "samson",  p2->message->mutable_info() );
+                    std::ostringstream output;
+                    
+                    output << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
+                    output << "<samson>\n";
+                    
+                    output << "<controller>\n";
+                    getInfo( output );
+                    output << "</controller>\n";
+                    
+                    for (int i = 0 ; i < num_workers ; i++ )
+                    {
+                        output << "<worker id=\"" << i << "\">\n";
+                        output << worker_xml_info[i];
+                        output << "</worker>\n";
+                    }
+
+                    output << "</samson>\n";
+                    
+                    p2->message->set_info( output.str() );                    
                     
 					network->send( fromId, p2);
 					
@@ -681,6 +691,10 @@ namespace samson {
 	}
 
 	
+    void SamsonController::getInfo( std::ostringstream& output )
+    {
+        // Nothing at the moment
+    }
 
 
 	

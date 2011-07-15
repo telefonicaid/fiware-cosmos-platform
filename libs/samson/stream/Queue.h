@@ -97,7 +97,7 @@ namespace samson {
             
             // Get information for monitorization
             
-            au::Info* getInfo();
+            void getInfo( std::ostringstream& output);
             
             
         };

@@ -15,6 +15,9 @@
 #include "au/CommandLine.h"				// au::CommandLine
 #include "au/Format.h"						// au::Format
 
+#include "pugi/pugi.h"                  // pugi::Pugi
+#include "pugi/pugixml.hpp"             // pugi:...
+
 #include "samson/network/Packet.h"						// ss:Packet
 
 #include "samson/common/Info.h"                     // samson::Info
@@ -558,34 +561,141 @@ namespace samson
         
         // Show info based of the periodically received information about status
         // ------------------------------------------------------------------------------------
-
+        
         if( mainCommand == "w" )
         {
             showInfo("info_full");
             return 0;
         }
-                
-        if( mainCommand == "info_global" )
+        
+        if( mainCommand == "info" )
         {
-            info_lock.lock();
+            au::TokenTaker tt( &info_lock );
             
-            if( commandLine.get_num_arguments() >= 2 )
+            
+            if( commandLine.get_num_arguments() == 1 )
             {
-                
-                
-                au::Info *result = info->query( commandLine.get_argument(1) );
-                writeOnConsole( result->str() );
-                delete result;
+                writeErrorOnConsole("Usage: info txt/xml/select/values/num/str [options]");
+                return 0;
             }
-            else
-                writeOnConsole( info->str()  );
             
             
-            info_lock.unlock();
+            std::istringstream is_xml_document( xml_info );
+            pugi::xml_document doc;
+            pugi::xml_parse_result result = doc.load( is_xml_document );
+            
+            if (!result)
+            {
+                writeErrorOnConsole( au::Format::string("Error parsing xml from samson platform %s", result.description() ) );
+                return 0;
+            }
+            
+            
+            std::string command = commandLine.get_argument(1);
+            
+            if( command == "xml" )
+            {
+                writeOnConsole( pugi::str( doc ) );
+                return 0;
+            }
+            
+            if ( command == "txt" )
+            {
+                writeOnConsole(  xml_info );
+                return 0;
+            }
+            
+            if ( command == "select")
+            {
+                if( commandLine.get_num_arguments() < 3 )
+                {
+                    writeErrorOnConsole("Usage info_query select select-query");
+                    return 0;
+                }
+                
+                std::string query = commandLine.get_argument(2);
+                writeWarningOnConsole(au::Format::string("Running select %s" , query.c_str()));
+                
+                pugi::xpath_node_set result;
+                try {
+                    result = doc.select_nodes( query.c_str() );
+                } catch (pugi::xpath_exception& ex) 
+                {
+                    writeErrorOnConsole( au::Format::string( "Error in xpath query: %s" , ex.what() ) );
+                    return 0;
+                }
+                
+                // Transform the results into a string
+                std::ostringstream result_txt;
+                pugi::str( result , result_txt );
+                
+                writeOnConsole(result_txt.str());
+                
+                return 0;
+                
+            }
+            
+            if( command == "values" )
+            {
+                if( commandLine.get_num_arguments() < 3 )
+                {
+                    writeErrorOnConsole("Usage info_query select select-query");
+                    return 0;
+                }
+                
+                std::string query = commandLine.get_argument(2);
+                writeWarningOnConsole(au::Format::string("Running select %s" , query.c_str()));
+                
+                pugi::ValuesCollection vc = pugi::values(doc, query);
+                
+                writeWarningOnConsole( "Values: " + vc.str() );
+
+                return 0;
+                
+            }
+            
+            if ( command == "num" )
+            {
+                if( commandLine.get_num_arguments() < 3 )
+                {
+                    writeErrorOnConsole("Usage info_query num query");
+                    return 0;
+                }
+                
+                std::string query_str = commandLine.get_argument(2);
+
+                size_t result = pugi::UInt64( doc , query_str );
+
+                writeWarningOnConsole(au::Format::string("Running query %s wiht result %lu" , query_str.c_str() , result ) );
+                
+                return 0;
+            }            
+
+            if ( command == "str" )
+            {
+                if( commandLine.get_num_arguments() < 3 )
+                {
+                    writeErrorOnConsole("Usage info_query num query");
+                    return 0;
+                }
+                
+                std::string query_str = commandLine.get_argument(2);
+                
+                std::string result = pugi::String( doc , query_str );
+                
+                writeWarningOnConsole(au::Format::string("Running query %s wiht result %s" , query_str.c_str() , result.c_str() ) );
+                
+                return 0;
+            }            
+            
+            
+            writeWarningOnConsole("Non implemented option");
             
             return 0;
         }
         
+        
+        // Rest of info stuff
         if( strncmp(mainCommand.c_str(), "info", 4) == 0)
         {
             showInfo( mainCommand );
@@ -902,14 +1012,13 @@ namespace samson
 					if( cmdLine.get_flag_bool("all") )
 					{
 						// Copy the list of queues for auto-completion
-						info_lock.lock();
+                        au::TokenTaker tt( &info_lock );
 						
 						if( ql )
 							delete ql;
 						ql = new network::QueueList();
 						ql->CopyFrom( packet->message->command_response().queue_list() );
 						
-						info_lock.unlock();
 						
 					}
 					else
@@ -1227,7 +1336,7 @@ namespace samson
         }
         
         // Lock the info vector to avoid other thread access this information
-        info_lock.lock();
+        au::TokenTaker tt( &info_lock );
         
         // Common string buffer to accumulate the output of the info message        
         std::ostringstream txt;
@@ -1414,7 +1523,5 @@ namespace samson
         // Send to the console screen
         writeOnConsole( txt.str() );
         
-        // Unlock the common information lock    
-        info_lock.unlock();
     }
 }

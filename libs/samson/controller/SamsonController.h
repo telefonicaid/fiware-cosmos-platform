@@ -68,11 +68,11 @@ namespace samson {
 		
 		// Status information of the workers
 		network::WorkerStatus** worker_status;				// Status of the workers reported periodically
+        std::string* worker_xml_info;                              // XML version of the worker related information
         au::Cronometer *worker_status_cronometer;           // Cronometer to count the last update from workers
 		int num_workers;
 
         // Unified information ( updated with information comming from workers )
-        au::Info *info;
         
 		friend class Job;
 		friend class JobManager;
@@ -104,7 +104,11 @@ namespace samson {
         
         // Notifications
         void notify( engine::Notification* notification );
-		
+
+        // get xml information
+        void getInfo( std::ostringstream& output);
+        
+        
 	};
 	
 	

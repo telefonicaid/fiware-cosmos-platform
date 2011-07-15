@@ -136,7 +136,7 @@ namespace au
 		command = _command;
 		
 		std::string delimiters = " \t\n";					//All possible delimiters
-		std::string delimiters_and_literal = " \t\n\"'";		
+		std::string delimiters_and_literal = " \t\n";		
 		
 		std::string::size_type pos = 0;
 		while( pos < command.length() )

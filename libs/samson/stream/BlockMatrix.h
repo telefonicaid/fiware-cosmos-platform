@@ -88,7 +88,7 @@ namespace samson {
             au::list< Block >::iterator _find_pos( Block *b );
             
             // Get information for monitorization
-            au::Info* getInfo();
+            void getInfo( std::ostringstream& output);
             
         };
         
@@ -167,7 +167,7 @@ namespace samson {
         public:
             
             // Get information for monitorization
-            au::Info* getInfo();
+            void getInfo( std::ostringstream& output);
             
         };
         

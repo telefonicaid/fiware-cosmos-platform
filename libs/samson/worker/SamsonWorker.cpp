@@ -241,10 +241,10 @@ namespace samson {
         ws->set_network_read_rate( network->statistics->item_read.getLastMinuteRate() );
         ws->set_network_write_rate( network->statistics->item_write.getLastMinuteRate() );
      
-        // Include generic informaiton about this worker
-        au::Info* info = getInfo();
-        samson::Info::fill(info, "worker" , p->message->mutable_info() );
-        delete info;
+        // Include generic information about this worker
+        std::ostringstream info_str;
+        getInfo( info_str );
+        p->message->set_info(info_str.str() );
         
 		// Send the message
 		network->sendToController( p );
@@ -611,12 +611,10 @@ namespace samson {
 	}
     
     // Get information for monitorization
-    au::Info* SamsonWorker::getInfo()
+    void SamsonWorker::getInfo( std::ostringstream& output)
     {
-        au::Info *info = new au::Info();
-        info->set("queues_manager" , queuesManager.getInfo() );
-        info->set("block_manager" , stream::BlockManager::shared()->getInfo() );
-        return info;
+        // Queues manager information
+        queuesManager.getInfo(output);
     }
 
 	

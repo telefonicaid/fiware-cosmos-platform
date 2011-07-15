@@ -17,14 +17,6 @@ message Environment
 	repeated EnvironmentVariable variable=1;	// List of enrivonment variables
 }
 
-
-message Info
-{
-	required string name			=1;	// Name of this entity
-
-	repeated Info info   			=2;	// Children elements
-}
-
 message KVInfo
 {
 	required uint64 size=1;		// Size in bytes
@@ -673,7 +665,7 @@ message Message
 
 	optional Trace trace = 171;	      				// optional trace to all delilahs;
 
-	optional Info info = 172;					// General information messages included in Message::WorkerStatus
+	optional string info = 172;					// General information in XML form
 
 	// Common information	
 	optional uint64  delilah_id = 300;				// Used in commands , upload and download process with delilah

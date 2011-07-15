@@ -76,7 +76,7 @@ namespace samson {
         void notify( engine::Notification* notification );
 
         // Get information for monitorization
-        au::Info* getInfo();
+        void getInfo( std::ostringstream& output);
         
 	private:
 		

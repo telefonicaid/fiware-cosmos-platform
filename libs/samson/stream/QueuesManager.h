@@ -67,7 +67,7 @@ namespace samson {
             void addPopQueue(const network::PopQueue& pq , size_t delilahId, int fromId );
             
             // Get information for monitorization
-            au::Info* getInfo();
+            void getInfo( std::ostringstream& output);
             
         private:
             

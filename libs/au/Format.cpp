@@ -7,6 +7,16 @@
 
 namespace au
 {
+    
+    std::string F::tabs(int t)
+    {
+        std::ostringstream output;
+        for ( int i = 0 ; i < t ; i ++)
+            output << "\t";
+        return output.str();
+    }
+   
+    
 	std::string Format::percentage_string( double value , double total )
 	{
 		if ( total == 0)

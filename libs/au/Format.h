@@ -8,6 +8,16 @@
 
 namespace au {
 
+    // Fase methods
+    class F
+    {
+        
+    public:
+        
+        static std::string tabs(int t);
+        
+    };
+    
 
 	/**
 	 Class to help the format of strings

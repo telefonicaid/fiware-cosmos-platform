@@ -31,7 +31,7 @@
 
 namespace samson {
     
-	au::Lock info_lock;
+	au::Token info_lock("info_lock");
 	network::OperationList *ol = NULL;              // List of operations ( for auto-completion )
 	network::QueueList *ql = NULL;                  // List of queues ( for auto-completion )
     network::SamsonStatus *samsonStatus=NULL;       // Information about workers ( updated continuously )
@@ -66,16 +66,12 @@ namespace samson {
         int delilah_automatic_update_period = samson::SamsonSetup::getInt( "delilah.automatic_update_period" );
         engine::Engine::shared()->notify( new engine::Notification( notification_delilah_automatic_update ) , delilah_automatic_update_period );
 
-        // Global info at delilah ( controller / worker / etc.. )
-        info = new au::Info("samson");                              
     }
     
     
     Delilah::~Delilah()
     {
         clearAllComponents();
-        
-        delete info;
     }
 
     
@@ -190,27 +186,25 @@ namespace samson {
         if( packet->message->command_response().has_queue_list() )
         {
             // Copy the list of queues for auto-completion
-            info_lock.lock();
+            au::TokenTaker tt( &info_lock );
             
             if( ql )
                 delete ql;
             ql = new network::QueueList();
             ql->CopyFrom( packet->message->command_response().queue_list() );
             
-            info_lock.unlock();
             
         }
         
         if( packet->message->command_response().has_operation_list() )
         {
-            info_lock.lock();
+            au::TokenTaker tt( &info_lock );
             
             if( ol )
                 delete ol;
             ol = new network::OperationList();
             ol->CopyFrom( packet->message->command_response().operation_list() );
             
-            info_lock.unlock();
         }
         
         // Update of the samson status
@@ -219,26 +213,23 @@ namespace samson {
             // Reset the cronometer of the samsonStatus report
             cronometer_samsonStatus.reset();
             
-            info_lock.lock();
+            au::TokenTaker tt( &info_lock );
             
             if( samsonStatus )
                 delete samsonStatus;
             samsonStatus = new network::SamsonStatus();
             samsonStatus->CopyFrom( packet->message->command_response().samson_status() );
             
-            info_lock.unlock();
         }
         
         
         if( packet->message->has_info() )
         {
             
-            info_lock.lock();
+            au::TokenTaker tt( &info_lock );
+
+            xml_info = packet->message->info();
             
-            info->clear();
-            samson::Info::get(info, packet->message->info() );
-            
-            info_lock.unlock();
 
         }
         

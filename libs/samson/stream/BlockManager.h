@@ -201,7 +201,7 @@ namespace samson {
             
         public:
             
-            au::Info* getInfo();
+            void getInfo( std::ostringstream& output);
             
             
         };

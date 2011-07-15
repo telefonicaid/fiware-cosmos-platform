@@ -16,6 +16,9 @@
 #include "au/CommandLine.h"				// au::CommandLine
 #include "au/Info.h"                    // au::Info
 
+
+#include "pugi/pugi.h"                      // pugi::Pugi
+
 #include "engine/MemoryManager.h"				// samson::MemoryManager
 
 #include "samson/common/EnvironmentOperations.h"						// Environment operations (CopyFrom)
@@ -236,7 +239,7 @@ namespace samson
         if ( !samsonStatus )
             return;
         
-        info_lock.lock();
+        au::TokenTaker tt( &info_lock );
         
         printLine("");
         printLine("Tasks");
@@ -301,63 +304,55 @@ namespace samson
             
         }
         
-        // Unlock the common information lock    
-        info_lock.unlock();
-        
     }
 
     void DelilahMonitorization::printQueues()
     {
-        
-        info_lock.lock();
+        au::TokenTaker tt( &info_lock );
 
+        
+        std::istringstream is_xml_document( xml_info );
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load( is_xml_document );
+        
         printLine("");
         printLine("Stream Queues ( under construction ) ");
         printLine();
         printLine("");
+
+        pugi::ValuesCollection queues = pugi::values(doc, "//queue/name" ).uniq();
         
-        /*
-        au::ValuesCollection queue_names = info->getValues( "worker.*.queues_manager.queues.*.name"  );
-                
-        for ( int i = 0 ; i < (int) queue_names.size() ; i++)
+        for ( int i = 0 ; i < (int) queues.size() ; i++)
         {
-            au::ValuesCollection channel_names = info->getValues( au::Format::string("worker.*.queues_manager.queues.%s.matrix.*", queue_names[i].c_str()));
-            
-            std::ostringstream num_operations_path;
-            num_operations_path << "worker.*.queues_manager.queues." << queue_names[i] << ".num_operations";
-            size_t num_operations = info->getValues( num_operations_path.str() ).sumSizeT();
+            std::string queue_name = queues[i];
+
+            std::string running_operations = pugi::String( doc, "//queue[@name='" + queues[i] + "']/running_tasks");
             
             std::stringstream txt;
-            txt << au::Format::string("   %-20s : Running operations %s ", queue_names[i].c_str() , au::Format::string( num_operations ).c_str() );
+            txt << au::Format::string("   %s : (running %s operations) ", queues[i].c_str() , running_operations.c_str() );
             printLine( txt.str().c_str() );
             
-            for (int channel = 0 ; channel < (int)channel_names.size() ; channel++)
+
+            pugi::ValuesCollection channels = pugi::values( doc, "//queue[@name='" + queues[i] + "']/channel/attribute::name");
+            
+            for (int c = 0 ; c < (int)channels.size() ; c++)
             {
                 
-                std::ostringstream size_path;
-                size_path << "worker.*.queues_manager.queues." << queue_names[i] << ".matrix." << channel_names[channel] << ".size";
-                size_t size = info->getValues( size_path.str() ).sumSizeT();
-                
-                std::ostringstream num_kvs_path;
-                num_kvs_path << "worker.*.queues_manager.queues." << queue_names[i] << ".matrix." << channel_names[channel] << ".kvs";
-                size_t num_kvs = info->getValues( num_kvs_path.str() ).sumSizeT();
-
-                
+                size_t size = pugi::UInt64(doc, "//queue[@name='" + queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/size" );
+                size_t kvs  = pugi::UInt64(doc, "//queue[@name='" + queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/kvs" );
                 
                 std::stringstream txt;
-                txt << au::Format::string("   \tChannel %s : " ,  channel_names[channel].c_str() );
-                txt << au::Format::string( size ) << "( #kvs: " << au::Format::string( num_kvs ) << " ) ";
+                txt << au::Format::string("   \tChannel %s : " ,  channels[c].c_str() );
+                txt << au::Format::string( size ) << "( #kvs: " << au::Format::string( kvs ) << " ) ";
                 txt << au::Format::progress_bar( (double)size / (double) reference , cols - 65  );
                 printLine( txt.str().c_str() );
-            }
-            printLine(" ");
             
+            }
+             
+            printLine(" ");
+             
         }
         
-*/        
-        
-        // Unlock the common information lock    
-        info_lock.unlock();
         
     }
     

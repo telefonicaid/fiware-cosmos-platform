@@ -86,27 +86,27 @@ namespace samson {
             addOption("info_queues");
             addOption("info_engine");
             addOption("info_setup");
-            addOption("info_global");
+            addOption("info_query");
             addOption("add_queue");
             addOption("set_queue_property");
         }
         
         void addOperations()
         {
-            info_lock.lock();
+            au::TokenTaker tt( &info_lock );
+            
             
             if( ol )
                 for (int i = 0 ; i < ol->operation_size()  ; i++)
                     addOption( ol->operation(i).name() );
             
-            info_lock.unlock();
         }
         
         void addQueueOptions( network::KVFormat *format )
         {
                         
             // add available queues...
-            info_lock.lock();
+            au::TokenTaker tt( &info_lock );
             
             if( ql )
                 for (int i = 0 ; i < ql->queue_size()  ; i++)
@@ -131,7 +131,6 @@ namespace samson {
                     }
                 }
             
-            info_lock.unlock();
             
         }        
         
@@ -139,34 +138,35 @@ namespace samson {
         void addQueueForOperation( std::string mainCommand , int argument_pos )
         {
             network::KVFormat *format = NULL;
-
-            // If it is a particular operation... lock for the rigth queue
-            info_lock.lock();
             
-            if( ol )
-                for (int i = 0 ; i < ol->operation_size() ; i++)
-                    if( ol->operation(i).name() == mainCommand )
-                    {
-                        //std::cout << "op found " << ol->operation(i).input_size() << "/" << ol->operation(i).output_size() <<  " ("<< argument_pos << ")\n";
-                        
-                        if( argument_pos < ol->operation(i).input_size() )
+            {
+                // If it is a particular operation... lock for the rigth queue
+                au::TokenTaker tt( &info_lock );
+                
+                if( ol )
+                    for (int i = 0 ; i < ol->operation_size() ; i++)
+                        if( ol->operation(i).name() == mainCommand )
                         {
-                            format = new network::KVFormat();
-                            format->CopyFrom( ol->operation(i).input(argument_pos) );
-                        }
-                        else
-                        {
-                            argument_pos -= ol->operation(i).input_size();
-                            if( argument_pos < ol->operation(i).output_size() )
+                            //std::cout << "op found " << ol->operation(i).input_size() << "/" << ol->operation(i).output_size() <<  " ("<< argument_pos << ")\n";
+                            
+                            if( argument_pos < ol->operation(i).input_size() )
                             {
                                 format = new network::KVFormat();
-                                format->CopyFrom( ol->operation(i).output(argument_pos) );
+                                format->CopyFrom( ol->operation(i).input(argument_pos) );
                             }
+                            else
+                            {
+                                argument_pos -= ol->operation(i).input_size();
+                                if( argument_pos < ol->operation(i).output_size() )
+                                {
+                                    format = new network::KVFormat();
+                                    format->CopyFrom( ol->operation(i).output(argument_pos) );
+                                }
+                            }
+                            break; // No more for...
                         }
-                        break; // No more for...
-                    }
-            
-            info_lock.unlock();
+                
+            }
             
             addQueueOptions(format);
             

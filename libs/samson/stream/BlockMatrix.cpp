@@ -210,16 +210,15 @@ namespace samson {
             return blocks.end();
         }
 
-        au::Info* BlockList::getInfo()
+        void BlockList::getInfo( std::ostringstream& output)
         {
-            au::Info *tmp = new au::Info();
-            
             FullKVInfo info = getFullKVInfo();
+            output << "<block_list>\n";
+
+            output << "<size>" << info.size << "</size>\n";
+            output << "<kvs>" << info.kvs << "</kvs>\n";
             
-            tmp->set( "size" , info.size );
-            tmp->set( "kvs"  , info.kvs );
-            
-            return tmp;
+            output << "</block_list>\n";
         }
         
 
@@ -421,19 +420,20 @@ namespace samson {
             return num;
         }
 
-        au::Info* BlockMatrix::getInfo()
+        void BlockMatrix::getInfo( std::ostringstream& output)
         {
-            au::Info *tmp = new au::Info();
+            //output << "<block_matrix>\n";
             
             au::map<int , BlockList>::iterator c;
             for ( c = channels.begin() ; c != channels.end() ; c++ )
-            {
-                std::string name = au::Format::string("%d", c->first);
-                au::Info*info = c->second->getInfo();
-                tmp->set( name , info );
+            {                
+                output << "<channel name=\"" << c->first << "\">\n";
+                c->second->getInfo(output);
+                output << "</channel>\n";
             }
             
-            return tmp;
+            //output << "</block_matrix>\n";
+            
         }
 
         

@@ -351,23 +351,44 @@ namespace samson {
             running_tasks.erase( task_id );
         }
 
-        au::Info* Queue::getInfo()
+        void Queue::getInfo( std::ostringstream& output)
         {
-            au::Info *tmp = new au::Info( );
             
-            tmp->set( "name"    , name );
-            tmp->set( "matrix"  , matrix.getInfo() );
-            tmp->set( "num_operations" , running_tasks.size() );
+            output << "<queue name=\"" << name << "\">\n"; 
+
+            output << "<name>" << name << "</name>\n";
+            output << "<running_tasks>" << running_tasks.size() << "</running_tasks>\n";
+            
+            // Put the matrix information here
+            matrix.getInfo(output);
          
             if( streamQueue )
             {
-                // Enviroment information
-                Environment _environment;
-                copyEnviroment(streamQueue->environment(), &_environment);
-                tmp->set("environment" , _environment.toString() );
+                output << "<description>";
+                
+                output << "Process with " << streamQueue->operation() << " to " ;
+                
+                for (int i = 0 ; i < streamQueue->output_size() ; i++)
+                {
+                    for (int j=0; j < streamQueue->output(i).target_size() ; j++)
+                    {
+                        output << streamQueue->output(i).target(j).queue() << ":" << streamQueue->output(i).target(j).channel();
+                        if( j != (streamQueue->output(i).target_size() - 1) )
+                        {
+                            output << ",";
+                        }
+                    }
+                    
+                    output << " ";
+                }
+                
+                output << "</description>\n";
             }
+            else
+                output << "<description>No information about how to process</description>\n";
             
-            return tmp;
+            output << "</queue>\n";
+            
         }
   
         

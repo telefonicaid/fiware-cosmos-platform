@@ -25,15 +25,16 @@ SET( STATIC_LIBS
 
 	samsonNetwork
 	samsonCommon
-au
-lm
-pa
-protobuf
-dl
-pthread
-readline
-curses
-${COMMON_SAMSON_LIBS}
+	pugi
+	au
+	lm
+	pa
+	protobuf
+	dl
+	pthread
+	readline
+	curses
+	${COMMON_SAMSON_LIBS}
 )
 
 # Include directories

@@ -126,21 +126,15 @@ namespace samson {
         
 
         // Get information for monitorization
-        au::Info* QueuesManager::getInfo()
+        void QueuesManager::getInfo( std::ostringstream& output)
         {
-            
-            au::Info *info = new au::Info();
-            
-            au::Info* queues_info = new au::Info();
-            
+            output << "<queues_manager>\n";
+
             au::map< std::string , Queue >::iterator q;
             for ( q = queues.begin() ; q != queues.end() ; q++ )
-                queues_info->set( q->first , q->second->getInfo() );
+                q->second->getInfo(output);
 
-            info->set("queues", queues_info );
-            
-            
-            return info;
+            output << "</queues_manager>\n";
         }
         
     }

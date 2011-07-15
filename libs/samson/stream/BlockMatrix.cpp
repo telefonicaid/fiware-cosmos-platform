@@ -72,9 +72,9 @@ namespace samson {
         
         std::string BlockList::str()
         {
-            size_t size             =0;
-            size_t size_on_memory   =0;
-            size_t size_on_disk     =0;
+            size_t size             = 0;
+            size_t size_on_memory   = 0;
+            size_t size_on_disk     = 0;
             
             FullKVInfo info;
             
@@ -83,10 +83,9 @@ namespace samson {
             
             for ( b = blocks.begin() ; b != blocks.end() ; b++ )
             {
-                size += (*b)->getSize();
-                size_on_memory += (*b)->getSizeOnMemory();
-                size_on_disk += (*b)->getSizeOnDisk();
-                
+                size            += (*b)->getSize();
+                size_on_memory  += (*b)->getSizeOnMemory();
+                size_on_disk    += (*b)->getSizeOnDisk();
                 info.append( (*b)->getInfo() );
                 
             }
@@ -212,9 +211,29 @@ namespace samson {
 
         void BlockList::getInfo( std::ostringstream& output)
         {
-            FullKVInfo info = getFullKVInfo();
+            
+            size_t size_total       = 0;
+            size_t size_on_memory   = 0;
+            size_t size_on_disk     = 0;
+            
+            FullKVInfo info;
+            
+            std::list<Block*>::iterator b;            
+            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
+            {
+                size_total      += (*b)->getSize();
+                size_on_memory  += (*b)->getSizeOnMemory();
+                size_on_disk    += (*b)->getSizeOnDisk();
+                info.append( (*b)->getInfo() );
+                
+            }
+            
             output << "<block_list>\n";
 
+            output << "<size_total>"        << size_total        << "</size_total>\n";
+            output << "<size_on_memory>"    << size_on_memory    << "</size_on_memory>\n";
+            output << "<size_on_disk>"      << size_on_disk      << "</size_on_disk>\n";
+            
             output << "<size>" << info.size << "</size>\n";
             output << "<kvs>" << info.kvs << "</kvs>\n";
             

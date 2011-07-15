@@ -172,14 +172,14 @@ namespace samson
 		void *hndl = dlopen(path.c_str(), RTLD_NOW);
 		if(hndl == NULL)
         {
-            LM_W(("Not possible to dlopen for file %s", path.c_str() ));
+            LM_W(("Not possible to dlopen for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
 			return;
 		}
         
 		void *mkr = dlsym(hndl, "moduleCreator");		
 		if(mkr == NULL)
         {
-            LM_W(("Not possible to dlsym for file %s", path.c_str() ));
+            LM_W(("Not possible to dlsym for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
 			dlclose(hndl);
 			return;
 		}
@@ -187,7 +187,7 @@ namespace samson
 		void *getVersionPointer = dlsym(hndl, "getSamsonVersion");
 		if(getVersionPointer == NULL)
         {
-            LM_W(("Not possible to dlsym for file %s", path.c_str() ));
+            LM_W(("Not possible to dlsym for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
 			dlclose(hndl);
 			return;
 		}

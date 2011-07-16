@@ -135,6 +135,14 @@ namespace samson {
                 q->second->getInfo(output);
 
             output << "</queues_manager>\n";
+            
+            output << "<queues_task_manager>\n";
+
+            queueTaskManager.getInfo( output );
+            
+            output << "</queues_task_manager>\n";
+
+            
         }
         
     }

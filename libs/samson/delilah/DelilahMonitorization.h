@@ -37,7 +37,8 @@ namespace samson {
     {
         general,
         task,
-        queues
+        queues,
+        queues_tasks,
     } DelilahMonitorizationType;
 
     
@@ -180,6 +181,7 @@ namespace samson {
         void printGeneral();
         void printTask();
         void printQueues();
+        void printQueuesTasks();
         
         
 	};

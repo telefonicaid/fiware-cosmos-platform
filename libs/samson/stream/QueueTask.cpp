@@ -37,6 +37,16 @@ namespace samson {
             matrix.unlock();
         }
         
+        void QueueTask::getInfo( std::ostringstream& output)
+        {
+            output << "<queue_task>\n";
+            
+            output << "<id>" << id << "</id>\n";
+            
+            matrix.getInfo( output );
+            
+            output << "</queue_task>\n";
+        }
         
         
         

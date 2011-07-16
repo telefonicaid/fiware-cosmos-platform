@@ -39,6 +39,8 @@ namespace samson {
             // Notifications
             void notify( engine::Notification* notification );
             
+            // Get information for monitorization
+            void getInfo( std::ostringstream& output);
             
             
         };

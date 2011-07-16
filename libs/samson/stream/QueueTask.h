@@ -74,6 +74,9 @@ namespace samson {
             // Function to return the process to be executed
             virtual StreamProcessBase* getStreamProcess()=0;
 
+            // Get information for monitorization
+            void getInfo( std::ostringstream& output);
+            
         };
  
         

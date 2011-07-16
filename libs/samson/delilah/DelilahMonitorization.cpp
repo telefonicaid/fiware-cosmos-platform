@@ -367,7 +367,7 @@ namespace samson
                 // Size total
                 {
                     std::stringstream txt;
-                    txt << au::Format::string("   \t\tSize     %ul : ", s_total );
+                    txt << au::Format::string("   \t\tSize      %s : ", au::Format::string(s_total).c_str() );
                     txt << au::Format::progress_bar( (double)s_total / (double) reference , cols - 65  );
                     printLine( txt.str().c_str() );
                 }
@@ -375,7 +375,7 @@ namespace samson
                 // Size on memory 
                 {
                     std::stringstream txt;
-                    txt << au::Format::string("   \t\tOn memory %ul : ", s_memory );
+                    txt << au::Format::string("   \t\tOn memory %s : ", au::Format::string(s_memory).c_str() );
                     txt << au::Format::progress_bar( (double)s_memory / (double) reference , cols - 65  );
                     printLine( txt.str().c_str() );
                 }
@@ -383,7 +383,7 @@ namespace samson
                 // Size on disk
                 {
                     std::stringstream txt;
-                    txt << au::Format::string("   \t\tOn disk   %ul : ", s_disk );
+                    txt << au::Format::string("   \t\tOn disk   %s : ", au::Format::string(s_disk).c_str() );
                     txt << au::Format::progress_bar( (double)s_disk / (double) reference , cols - 65  );
                     printLine( txt.str().c_str() );
                 }

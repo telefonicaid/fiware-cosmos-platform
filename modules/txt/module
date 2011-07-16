@@ -2,7 +2,7 @@ Module txt
 {
 	title	"Basic txt manipulation"
 	author	"Andreu Urruela"
-	version "0.1"
+	version "0.1.1"
 }
 
 data Collocation
@@ -35,6 +35,13 @@ parser parser_words
 	out system.String system.UInt
 
 	helpLine "Parse a txt files emiting words at the output (value is always one)"
+}
+
+parser parser_lines
+{
+	out system.String system.UInt
+
+	helpLine "Parse a txt file emiting every line as an independent string ( return character not included )"
 }
 
 parser parser_collocations_pairs

@@ -322,38 +322,70 @@ namespace samson
         printLine( header.str() );
         printLine();
         printLine("");
-
+        
         pugi::ValuesCollection queues = pugi::values(doc, "//queue/name" ).uniq();
         
         for ( int i = 0 ; i < (int) queues.size() ; i++)
         {
             std::string queue_name = queues[i];
-
+            
             std::string running_operations = pugi::String( doc, "//queue[@name='" + queues[i] + "']/running_tasks");
             
             std::stringstream txt;
             txt << au::Format::string("   %s : (running %s operations) ", queues[i].c_str() , running_operations.c_str() );
             printLine( txt.str().c_str() );
             
-
+            
             pugi::ValuesCollection channels = pugi::values( doc, "//queue[@name='" + queues[i] + "']/channel/attribute::name").uniq();
             
             for (int c = 0 ; c < (int)channels.size() ; c++)
             {
                 
-	      size_t size = pugi::UInt64(doc, "sum(//queue[@name='" + queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/size)" );
-	      size_t kvs  = pugi::UInt64(doc, "sum(//queue[@name='" + queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/kvs)" );
+                size_t size = pugi::UInt64(doc, "sum(//queue[@name='" + queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/size)" );
+                size_t kvs  = pugi::UInt64(doc, "sum(//queue[@name='" + queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/kvs)" );
                 
-                std::stringstream txt;
-                txt << au::Format::string("   \tChannel %s : " ,  channels[c].c_str() );
-                txt << au::Format::string( size ) << "( #kvs: " << au::Format::string( kvs ) << " ) ";
-                txt << au::Format::progress_bar( (double)size / (double) reference , cols - 65  );
-                printLine( txt.str().c_str() );
-            
+                size_t s_total  = pugi::UInt64(doc, "sum(//queue[@name='"+queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/size_total)" );
+                size_t s_memory = pugi::UInt64(doc, "sum(//queue[@name='"+queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/size_on_memory)" );
+                size_t s_disk   = pugi::UInt64(doc, "sum(//queue[@name='"+queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/size_on_disk)" );
+                
+                {
+                    std::stringstream txt;
+                    txt << au::Format::string("   \tChannel %s : " ,  channels[c].c_str() );
+                    txt << au::Format::string( size ) << "( #kvs: " << au::Format::string( kvs ) << " ) ";
+                    printLine( txt.str().c_str() );
+                }
+                
+                // Size total
+                {
+                    std::stringstream txt;
+                    txt << au::Format::string("   \t\tSize     %ul : ", s_total );
+                    txt << au::Format::progress_bar( (double)s_total / (double) reference , cols - 65  );
+                    printLine( txt.str().c_str() );
+                }
+                
+                // Size on memory 
+                {
+                    std::stringstream txt;
+                    txt << au::Format::string("   \t\tOn memory %ul : ", s_memory );
+                    txt << au::Format::progress_bar( (double)s_memory / (double) reference , cols - 65  );
+                    printLine( txt.str().c_str() );
+                }
+                
+                // Size on disk
+                {
+                    std::stringstream txt;
+                    txt << au::Format::string("   \t\tOn disk   %ul : ", s_disk );
+                    txt << au::Format::progress_bar( (double)s_disk / (double) reference , cols - 65  );
+                    printLine( txt.str().c_str() );
+                }
+                
+                
+                
+                
             }
-             
+            
             printLine(" ");
-             
+            
         }
         
         

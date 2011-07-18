@@ -388,8 +388,7 @@ namespace samson {
                     return; // No more packets
             }
             
-            LM_M(("Total size extracted %lu (max: %lu)", total_size , max_size));
-            
+            LM_M(("Total size extracted %lu (max: %lu)", total_size , max_size));            
             
         }
         

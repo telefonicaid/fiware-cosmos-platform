@@ -71,10 +71,15 @@ namespace samson
                 LM_X(1, ("Internal error: Memory request returnes without a buffer"));
             
             if ( !memoryRequest->buffer )
-                LM_X(1, ("Memory request returned without the allocated buffer"));
-         
-            // collect the buffer
-            buffer = memoryRequest->buffer;
+            {
+                error.set( "Memory request returned without the allocated buffer. This can be caused by a 'kill' command.");
+            }
+            else
+            {
+                // collect the buffer
+                buffer = memoryRequest->buffer;
+            }
+            
             delete memoryRequest;
             
             run();

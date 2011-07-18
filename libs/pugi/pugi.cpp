@@ -102,6 +102,19 @@ namespace pugi
             return 0;
         
     }
+
+    double Double( const xml_document & doc , std::string query_str )
+    {
+        
+        pugi::xpath_query query( query_str.c_str()  );                    
+        double result = query.evaluate_number( doc );
+        
+        if( query.result() )
+            return result;
+        else
+            return 0;
+        
+    }
     
     
     std::string String( const xml_document & doc , std::string query_str )

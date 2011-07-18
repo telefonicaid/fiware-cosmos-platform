@@ -130,19 +130,15 @@ namespace samson {
         void QueueTaskManager::getInfo( std::ostringstream& output)
         {
             {
-                output << "<running>\n";
                 au::map< size_t , QueueTask >::iterator q;
                 for (q = runningTasks.begin() ; q != runningTasks.end() ; q++)
                     q->second->getInfo( output );
-                output << "</running>\n";
             }
             
             {
-                output << "<pending>\n";
                 au::list< QueueTask >::iterator q;
                 for (q = queueTasks.begin() ; q!= queueTasks.end() ; q++)
                     (*q)->getInfo(output);
-                output << "</pending>\n";
             }
             
             

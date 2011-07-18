@@ -234,10 +234,12 @@ namespace samson {
                     BlockMatrix _matrix_status;        // Matrix of blocs to process status
                     
                     // Extract the blocks from inputs necessary until a maximum size of 1G
+                    LM_M(("Original input channel 0 : %s " , matrix.getChannel(0)->getSummary().c_str() ));
                     matrix.extract( &_matrix , 0 , num_inputs-1 , 1000000000 );
+                    LM_M(("Rest of input channel 0 : %s " , matrix.getChannel(0)->getSummary().c_str() ));
                     
                     // Extract blocks of the status ( without limit of size )
-                    matrix.extract( &_matrix_status , num_inputs-1, num_inputs-1 );
+                    matrix.extract( &_matrix_status , num_inputs-1, num_inputs );
                     
                     // Create all the task for this reduce based on the blocks in the state
                     int num_tasks = 20; // At the moment 20 operation for the reduce are created ( this should be adapted to the size of input/data data )

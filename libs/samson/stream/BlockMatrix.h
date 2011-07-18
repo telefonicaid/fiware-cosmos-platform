@@ -83,6 +83,15 @@ namespace samson {
             void copyFrom( BlockMatrix* matrix , int channel );
             void copyFrom( BlockList* list );
             
+            std::string getSummary()
+            {
+                FullKVInfo info =  getFullKVInfo();
+                size_t num_blocks = getNumBlocks();
+                
+                return au::Format::string("BlockList with %s containing %s" , au::Format::string(num_blocks ,"Blocks").c_str() , info.str().c_str() );
+            }
+            
+            
         private:
             
             au::list< Block >::iterator _find_pos( Block *b );
@@ -161,6 +170,14 @@ namespace samson {
                     return 0;
                 else
                     return channel->getSize();
+            }
+            
+            std::string getSummary()
+            {
+                FullKVInfo info =  getFullKVInfo();
+                size_t num_blocks = getNumBlocks();
+                
+                return au::Format::string("Matrix with %s containing %s" , au::Format::string(num_blocks ,"Blocks").c_str() , info.str().c_str() );
             }
             
             

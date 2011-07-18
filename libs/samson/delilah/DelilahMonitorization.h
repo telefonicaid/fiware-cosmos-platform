@@ -9,127 +9,49 @@
  *
  */
 
-#include <ncurses.h>
-
-#include <cstdlib>				// atexit
-
-#include "logMsg/logMsg.h"				
-
-#include "au/Console.h"			// au::Console
-#include "DelilahClient.h"      // ss:DelilahClient
-#include "samson/delilah/Delilah.h"			// samson::Delilah
-#include <sstream>                  // std::ostringstream
+#include <cstdlib>                      // atexit
+#include <sstream>                      // std::ostringstream
 #include <time.h>
-
-#include <readline/readline.h>
-#include <readline/history.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
+#include <algorithm>
+
 #include <readline/readline.h>
 #include <readline/history.h>
-#include <algorithm>
+
+#include "logMsg/logMsg.h"				// LM_M
+
+#include "samson/delilah/Delilah.h"		// samson::Delilah
+
+#include "DelilahClient.h"              // ss:DelilahClient
+
+#include "au/CursesConsole.h"			// au::CursesConsole
+
 
 namespace samson {
 	
-	
     typedef enum 
     {
+        
         general,
         task,
         queues,
         queues_tasks,
+        
     } DelilahMonitorizationType;
-
-    
-    class CursesPanel
-    {
-        int current_row;
-        
-    public:
-        
-        int rows,cols;
-        
-        void setRowsAndCols()
-        {
-            getmaxyx(stdscr,rows,cols);
-        }
-        
-        void printLine( int r )
-        {
-            move(r,0);
-            for ( int i = 0 ; i < cols-1 ; i++)
-                printw("-");
-        }
-
-        void printLine( int r , std::string left_line ,std::string rigth_line )
-        {
-		   if( r >= rows )
-			  return;
-
-            move( r , 0 );
-            printw("%s",left_line.c_str());
-            
-            move( r , cols-1 - strlen( rigth_line.c_str() ) );
-            printw("%s",rigth_line.c_str());
-        }
-        
-        void clear()
-        {
-            std::string white_line;
-            for (int i = 0 ; i < cols ; i++)
-                white_line.append(" ");
-            
-            for (int i = 0 ; i < rows ; i++)
-            {
-                move( i , 0 );
-                printw(  white_line.c_str() );
-            }
-
-                
-            current_row = 0;
-
-        }
-
-        void printLine(  std::string left_line ,std::string rigth_line  )
-        {
-		   if( current_row >= (rows-3) )
-			  return;
-
-            printLine( current_row++ , left_line, rigth_line );
-        }
-        
-        void printLine( std::string line )
-        {
-		   if( current_row >= (rows-3) )
-			  return;
-
-            printLine( current_row++ , line, "" );
-        }
-        
-        void printLine()
-        {
-		   if( current_row >= (rows-3) )
-			  return;
-
-            printLine( current_row++ );
-        }
-        
-        
-        
-    };
-    
-        
+       
 	/**
 	 Main class for the DelilahConsole program
 	 */
 	
-	class DelilahMonitorization : public Delilah , public CursesPanel
+	class DelilahMonitorization : public Delilah , public au::CursesConsole
 	{
 		   
         DelilahMonitorizationType  type;
-        
         size_t reference;
+
+        std::vector<std::string>  main_commands;
         
 	public:
         
@@ -139,6 +61,13 @@ namespace samson {
             type =  general;
             
             reference = 1024*1024*1024;
+            
+            
+            // Main commands
+            main_commands.push_back("show_general");
+            main_commands.push_back("show_tasks");
+            main_commands.push_back("show_queues");
+            main_commands.push_back("show_queues_tasks");
 		}
 		
 		~DelilahMonitorization()
@@ -147,8 +76,8 @@ namespace samson {
 		
         void runInBackground();
         
-        // Main run command to start the show
-        void run();
+        // Function to print content
+        void printContent();
         
 		// Notifications from delilah
 		void uploadDataConfirmation( DelilahUploadDataProcess *process ){};
@@ -175,6 +104,22 @@ namespace samson {
 				writeWarningOnConsole( message );
              */
 		}
+        
+        // Eval commnad
+        void evalComamnd( );
+        
+        void evalRealTimeComamnd( )
+        {
+            // do something with the command
+        }
+        
+
+        // Get header information
+        std::string getHeaderLeft();
+        std::string getHeaderRight();
+
+        // Autocompletion function
+        void auto_complete( std::vector<std::string>& previous_words , std::string& current_word ,std::vector<std::string>& command_options );
         
     private:
 

@@ -39,11 +39,24 @@ namespace samson {
         
         void QueueTask::getInfo( std::ostringstream& output)
         {
-            output << "<queue_task>\n";
+            output << "<queue_task id=\"" << id << "\">\n";
             
             output << "<id>" << id << "</id>\n";
             
             matrix.getInfo( output );
+
+            if( streamQueue )
+            {
+                output << "<description>" << streamQueue->operation() << "</description>\n";
+            }
+            
+            // Information about pop queue operation( parser Out from delilah )
+            if ( pq )
+            {
+            }
+            
+            // Get all process item related information ( like progress )
+            ProcessItem::getInfo( output );
             
             output << "</queue_task>\n";
         }

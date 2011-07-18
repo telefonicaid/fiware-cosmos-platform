@@ -142,7 +142,12 @@ namespace engine {
         
         void setListenerId( size_t _listenerId );
         
-	};
+    public:
+        // Get information for xml monitorization
+        void getInfo( std::ostringstream& output);
+
+	
+    };
 	
 
 }

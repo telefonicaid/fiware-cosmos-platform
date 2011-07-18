@@ -49,6 +49,14 @@ helpLine: Parse a txt file emiting every line as an independent string ( return 
 			while( pos_begin < length )
 			{
 
+			  if( (pos_begin%100000) == 0 )
+			  {
+			        // Report progress
+    			        operationController->reportProgress( (double) pos_begin / (double) length );
+			        
+			  }
+
+
 			  pos_end = pos_begin; // Allow empty words if \n is found
 
 			  while( (pos_end < (length-1) ) && ( data[pos_end] != '\n' ) && ( data[pos_end] != '\0') )

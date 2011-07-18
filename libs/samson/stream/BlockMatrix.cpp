@@ -362,7 +362,7 @@ namespace samson {
             
             size_t total_size = 0;
             int current_channel = channel_begin;
-            int num_channels_without_block=0;
+            int num_channels_without_block = 0;
             
             while( ( total_size < max_size ) || ( max_size == 0 ) ) // No limit if max_size == 0
             {
@@ -379,15 +379,16 @@ namespace samson {
                 if( current_channel >= channel_end )
                     current_channel = channel_begin;
                 
-                if( block )
+                if( !block )
                     num_channels_without_block++;
                 else
                     num_channels_without_block=0;
                 
                 if( num_channels_without_block == (channel_end - channel_begin) )
                     return; // No more packets
-                
             }
+            
+            LM_M(("Total size extracted %lu (max: %lu)", total_size , max_size));
             
             
         }

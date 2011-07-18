@@ -107,6 +107,7 @@ namespace pugi
     ValuesCollection values( const xml_document & doc , std::string query );
     size_t UInt64( const xml_document & doc , std::string query_str );
     std::string String( const xml_document & doc , std::string query_str );
+    double Double( const xml_document & doc , std::string query_str );
     
 }
 #endif

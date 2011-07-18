@@ -42,126 +42,111 @@
 namespace samson
 {	
     
-    void ncurses_atexit(void) 
-    {                     
-        endwin();
-    }  
-
-    void DelilahMonitorization::run()
+    std::string DelilahMonitorization::getHeaderLeft()
     {
-
-        LM_M(("Delilah monitorization"));
-        
-        atexit(ncurses_atexit);
-        
-        srand(time(NULL));
-
-        WINDOW *w = initscr(); /* Start curses mode   */
-        cbreak();
-        nodelay(w, TRUE);        
-        
-        keypad(stdscr, TRUE);		/* We get F1, F2 etc..              */
-        noecho();                   /* Don't echo() while we do getch   */
-        //raw();                    /* Line buffering disabled          */
-
-        
-        while( true )
-        {
-            setRowsAndCols();
-            
-            clear();
-            
-            // au::Format::string("Version %s " , SAMSON_VERSION ).c_str()
-            printLine( );            
-            
-
-            if ( samsonStatus )
-            {
+        switch (type) {
+            case general:
+                return "General information";
+                break;
                 
-                std::ostringstream txt;
-                txt << "( Controller Uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )";
-                txt << " ( Updated: " << cronometer_samsonStatus.str() <<  " )";
+            case task:
+                return "Tasks";
+                break;
                 
-                printLine( " SAMSON MONITORIZATION PANEL", txt.str().c_str()  );
+            case queues:
+                return "Stream queues information";
+                break;
                 
-            }
-            else
-                printLine( " SAMSON MONITORIZATION PANEL", "Waiting info..."  );
-            
-            printLine( );            
-
-            switch (type) {
-                case general:
-                    printGeneral();
-                    break;
-                    
-                case task:
-                    printTask();
-                    break;
-                    
-                case queues:
-                    printQueues();
-                    break;
-                    
-                case queues_tasks:
-                    printQueuesTasks();
-                    break;
-                    
-            }
-
-            
-            printLine(rows-2);          
-            printLine(rows-1 , "" , au::Format::string("Version %s", SAMSON_VERSION ).c_str());
-            move( rows-1 , 0 );
-            
-            refresh();/* Print it on to the real screen */
-            
-            usleep( 10000 );
-
-            
-            int ch = getch();
-            if( ch != ERR )
-            {
-                // Do something
-                if( ch == 'q' )
-                    exit(0);
-                
-                if( ch == 'g' )
-                    type = general;
-                
-                if( ch == 't' )
-                    type = task;
-                
-                if( ch == 's' )
-                    type = queues;
-
-                if( ch == 'a' )
-                    type = queues_tasks;
-                
-                
-                if( ch == '+' )
-                    reference *= 2;
-                
-                if( ch == '-' )
-                {
-                    reference /= 2;
-                    if( reference == 0)
-                        reference = 1;
-                }
-                
-            }
+            case queues_tasks:
+                return "Stream queue tasks";
+                break;
         }
         
-
-    }
-
-    void DelilahMonitorization::printGeneral()
-    {
+        return "Unknown information";
         
-        if( !samsonStatus )
+    }
+    
+    std::string DelilahMonitorization::getHeaderRight()
+    {
+        std::ostringstream txt;
+        txt << " ( Updated: " << cronometer_samsonStatus.str() <<  " )";
+        return txt.str();
+    }
+    
+    
+    void DelilahMonitorization::evalComamnd( )
+    {
+        if( command == "show_tasks" )
         {
+            type = task;
             return;
         }
+        
+        if( command == "show_general" )
+        {
+            type = general;
+            return;
+        }
+        
+        if( command == "show_queues" )
+        {
+            type = queues;
+            return;
+        }
+        
+        if( command == "show_queues_tasks" )
+        {
+            type = queues_tasks;
+            return;
+        }
+
+        if( command == "quit" )
+        {
+            quitConsole = true;
+            return;
+        }
+        
+        
+    }
+    
+    
+    void DelilahMonitorization::printContent()
+    {
+        if ( !samsonStatus )
+        {
+            print( "" );
+            print( " Waiting for information from SAMSON platform.... " );
+            return;
+        }
+
+        print("");
+        
+        switch (type) {
+            case general:
+                printGeneral();
+                break;
+                
+            case task:
+                printTask();
+                break;
+                
+            case queues:
+                printQueues();
+                break;
+                
+            case queues_tasks:
+                printQueuesTasks();
+                break;
+                
+        }
+
+    }
+    
+    
+    void DelilahMonitorization::printGeneral()
+    {
+        if( !samsonStatus )
+            return;
         
         for (int i = 0 ; i < samsonStatus->worker_status_size() ; i++)
         {
@@ -191,53 +176,52 @@ namespace samson
             txt << "  ( uptime: " << au::Format::time_string( worker_status.up_time() ) << " )";
             txt << " ( updated: " << au::Format::time_string( cronometer_samsonStatus.diffTimeInSeconds() + worker_status.update_time() ) << " ) ]";
 
-            printLine("");
-            printLine( au::Format::string("Worker %03d %s", i , txt.str().c_str()) );           
-            printLine("");
+            print("");
+            print( au::Format::string("Worker %03d %s", i , txt.str().c_str()) );           
+            print("");
             
 
-            printLine( au::Format::string("\tCores  [ %s ] %s / %s : %s" , 
+            print( au::Format::string("\tCores  [ %s ] %s / %s : %s" , 
                                       au::Format::percentage_string(per_cores).c_str() , 
                                       au::Format::string(used_cores).c_str() , 
                                       au::Format::string(total_cores).c_str(),      
-                                      au::Format::progress_bar( per_cores , cols - 50 ).c_str()
+                                      au::Format::progress_bar( per_cores , getCols() - 50 ).c_str()
                       ));
             
-            printLine( au::Format::string("\tMemory [ %s ] %s / %s : %s" , 
+            print( au::Format::string("\tMemory [ %s ] %s / %s : %s" , 
                                       au::Format::percentage_string(per_memory).c_str() , 
                                       au::Format::string(used_memory).c_str() , 
                                       au::Format::string(total_memory).c_str(),     
-                                      au::Format::progress_bar( per_memory , cols - 50 ).c_str()
+                                      au::Format::progress_bar( per_memory , getCols() - 50 ).c_str()
                       ));
                         
             // Disk operations
             
-            printLine( au::Format::string("\tDisk                      %s : %s" , 
+            print( au::Format::string("\tDisk                      %s : %s" , 
                                         au::Format::string(disk_pending_operations).c_str() ,
-                                        au::Format::progress_bar( per_disk , cols - 50 ).c_str() ));
+                                        au::Format::progress_bar( per_disk , getCols() - 50 ).c_str() ));
 
-            printLine( au::Format::string("\t                  Read   %s: %s  " , 
+            print( au::Format::string("\t                  Read   %s: %s  " , 
                                           au::Format::string(read_rate,"Bs").c_str() ,
-                                          au::Format::progress_bar( (double)read_rate /(double) (200*(1024*1024)) , cols - 50 ).c_str() ));
+                                          au::Format::progress_bar( (double)read_rate /(double) (200*(1024*1024)) , getCols() - 50 ).c_str() ));
 
-            printLine( au::Format::string("\t                  Write  %s: %s  " , 
+            print( au::Format::string("\t                  Write  %s: %s  " , 
                                           au::Format::string(write_rate,"Bs").c_str() ,
-                                          au::Format::progress_bar( (double)write_rate /(double) (200*(1024*1024)) , cols - 50 ).c_str() ));
+                                          au::Format::progress_bar( (double)write_rate /(double) (200*(1024*1024)) , getCols() - 50 ).c_str() ));
 
             
-            printLine( au::Format::string("\tNetwork                 " )); 
+            print( au::Format::string("\tNetwork                 " )); 
             
-            printLine( au::Format::string("\t                  Read   %s: %s  " , 
+            print( au::Format::string("\t                  Read   %s: %s  " , 
                                           au::Format::string(network_read_rate,"Bs").c_str() ,
-                                          au::Format::progress_bar( (double)network_read_rate /(double) (200*(1024*1024)) , cols - 50 ).c_str() ));
+                                          au::Format::progress_bar( (double)network_read_rate /(double) (200*(1024*1024)) , getCols() - 50 ).c_str() ));
             
-            printLine( au::Format::string("\t                  Write  %s: %s  " , 
+            print( au::Format::string("\t                  Write  %s: %s  " , 
                                           au::Format::string(network_write_rate,"Bs").c_str() ,
-                                          au::Format::progress_bar( (double)network_write_rate /(double) (200*(1024*1024)) , cols - 50 ).c_str() ));
+                                          au::Format::progress_bar( (double)network_write_rate /(double) (200*(1024*1024)) , getCols() - 50 ).c_str() ));
             
             
         }        
-        
         
     }
  
@@ -250,9 +234,9 @@ namespace samson
         
         au::TokenTaker tt( &info_lock );
         
-        printLine("");
-        printLine("Tasks");
-        printLine("");
+        print("");
+        print("Tasks");
+        print("");
 
         
         for ( int i = 0 ; i < samsonStatus->controller_status().task_manager_status().task_size() ; i++)
@@ -278,11 +262,11 @@ namespace samson
                     break;
             }
  
-            printLine( txt.str().c_str() );
+            print( txt.str().c_str() );
             
             if( task.has_error() )
             {
-                printLine( au::Format::string( "  --> Error: ( %s )" ,  task.error().message().c_str() ) );
+                print( au::Format::string( "  --> Error: ( %s )" ,  task.error().message().c_str() ) );
             }
            
             if( task.state() == network::ControllerTask_ControllerTaskState_ControllerTaskRunning )
@@ -305,18 +289,19 @@ namespace samson
                 txt << au::Format::string( task.processed_info().size() );
                 txt << " / " << au::Format::string( task.running_info().size() );
                 txt << "/" << au::Format::string( task.total_info().size() ) << " ";
-                txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', ' ' , cols - 55  );
+                txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', ' ' , getCols() - 55  );
                 
-                printLine( txt.str().c_str() );
+                print( txt.str().c_str() );
                 
             }
             
         }
-        
+
     }
 
     void DelilahMonitorization::printQueues()
     {
+        
         au::TokenTaker tt( &info_lock );
 
         
@@ -324,13 +309,13 @@ namespace samson
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load( is_xml_document );
         
-        printLine("");
-	std::ostringstream header;
-	header << "Stream Queues          ";
-	header << "( Reference " << au::Format::string( reference ) << " )";
-        printLine( header.str() );
-        printLine();
-        printLine("");
+        print("");
+        std::ostringstream header;
+        header << "Stream Queues          ";
+        header << "( Reference " << au::Format::string( reference ) << " )";
+        print( header.str() );
+        print("");
+        print("");
         
         pugi::ValuesCollection queues = pugi::values(doc, "//queue/name" ).uniq();
         
@@ -342,7 +327,7 @@ namespace samson
             
             std::stringstream txt;
             txt << au::Format::string("   %s : (running %s operations) ", queues[i].c_str() , running_operations.c_str() );
-            printLine( txt.str().c_str() );
+            print( txt.str().c_str() );
             
             
             pugi::ValuesCollection channels = pugi::values( doc, "//queue[@name='" + queues[i] + "']/channel/attribute::name").uniq();
@@ -361,130 +346,108 @@ namespace samson
                     std::stringstream txt;
                     txt << au::Format::string("   \tChannel %s : " ,  channels[c].c_str() );
                     txt << au::Format::string( size ) << "( #kvs: " << au::Format::string( kvs ) << " ) ";
-                    printLine( txt.str().c_str() );
+                    print( txt.str().c_str() );
                 }
                 
                 // Size total
                 {
                     std::stringstream txt;
                     txt << au::Format::string("   \t\tSize      %s : ", au::Format::string(s_total).c_str() );
-                    txt << au::Format::progress_bar( (double)s_total / (double) reference , cols - 65  );
-                    printLine( txt.str().c_str() );
+                    txt << au::Format::progress_bar( (double)s_total / (double) reference , getCols() - 65  );
+                    print( txt.str().c_str() );
                 }
                 
                 // Size on memory 
                 {
                     std::stringstream txt;
                     txt << au::Format::string("   \t\tOn memory %s : ", au::Format::string(s_memory).c_str() );
-                    txt << au::Format::progress_bar( (double)s_memory / (double) reference , cols - 65  );
-                    printLine( txt.str().c_str() );
+                    txt << au::Format::progress_bar( (double)s_memory / (double) reference , getCols() - 65  );
+                    print( txt.str().c_str() );
                 }
                 
                 // Size on disk
                 {
                     std::stringstream txt;
                     txt << au::Format::string("   \t\tOn disk   %s : ", au::Format::string(s_disk).c_str() );
-                    txt << au::Format::progress_bar( (double)s_disk / (double) reference , cols - 65  );
-                    printLine( txt.str().c_str() );
+                    txt << au::Format::progress_bar( (double)s_disk / (double) reference , getCols() - 65  );
+                    print( txt.str().c_str() );
                 }
-                
-                
-                
-                
             }
             
-            printLine(" ");
+            print(" ");
             
         }
-        
+
     }
 
     void DelilahMonitorization::printQueuesTasks()
     {
+
         au::TokenTaker tt( &info_lock );
-        
+
         std::istringstream is_xml_document( xml_info );
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load( is_xml_document );
         
-        printLine("");
+        print("");
         std::ostringstream header;
-        header << "Stream Queues          ";
+        header << "Stream Queue Tasks          ";
         header << "( Reference " << au::Format::string( reference ) << " )";
-        printLine( header.str() );
-        printLine();
-        printLine("");
+        print( header.str() );
+        print("");
+        print("");
+
         
-        pugi::ValuesCollection queues = pugi::values(doc, "//queue/name" ).uniq();
+        pugi::ValuesCollection workers = pugi::values(doc, "//worker/attribute::id" ).uniq();
         
-        for ( int i = 0 ; i < (int) queues.size() ; i++)
+        for ( int i = 0 ; i < (int) workers.size() ; i++)
         {
-            std::string queue_name = queues[i];
+            std::string q_worker = "//worker[@id='" + workers[i] + "']";
+
+            // Get the collection of tasks
+            pugi::ValuesCollection tasks = pugi::values(doc, q_worker + "//queues_task_manager/queue_task/attribute::id" ).uniq();
+           
+            print(au::Format::string("Worker %s:     %lu queue-tasks " , workers[i].c_str() , tasks.size() ) );
             
-            std::string running_operations = pugi::String( doc, "//queue[@name='" + queues[i] + "']/running_tasks");
-            
-            std::stringstream txt;
-            txt << au::Format::string("   %s : (running %s operations) ", queues[i].c_str() , running_operations.c_str() );
-            printLine( txt.str().c_str() );
-            
-            
-            pugi::ValuesCollection channels = pugi::values( doc, "//queue[@name='" + queues[i] + "']/channel/attribute::name").uniq();
-            
-            for (int c = 0 ; c < (int)channels.size() ; c++)
+            for ( size_t t = 0 ; t < tasks.size() ; t++ )
             {
+                std::string q_task = q_worker + "//queues_task_manager/queue_task[id='" + tasks[t] + "']";
+
+                std::string description     = pugi::String( doc , q_task + "/description" );
                 
-                size_t size = pugi::UInt64(doc, "sum(//queue[@name='" + queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/size)" );
-                size_t kvs  = pugi::UInt64(doc, "sum(//queue[@name='" + queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/kvs)" );
+                size_t size_total           = pugi::UInt64(doc, "sum(" + q_task + "//size_total)" );
+                size_t size_on_memory       = pugi::UInt64(doc, "sum(" + q_task + "//size_on_memory)" );
+                size_t size_on_disk         = pugi::UInt64(doc, "sum(" + q_task + "//size_on_disk)" );
+
+                double progress = pugi::Double( doc , q_task + "/progress" );
+                //double progress = 0.5;
                 
-                size_t s_total  = pugi::UInt64(doc, "sum(//queue[@name='"+queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/size_total)" );
-                size_t s_memory = pugi::UInt64(doc, "sum(//queue[@name='"+queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/size_on_memory)" );
-                size_t s_disk   = pugi::UInt64(doc, "sum(//queue[@name='"+queues[i] + "']/channel[@name='"+channels[c]+"']/block_list/size_on_disk)" );
+                std::string line = au::Format::string("     Task %5s %s :" , tasks[t].c_str(), description.c_str() );
+                line += "[ Size " +  au::Format::string(size_total);
+                line += " Memory: " + au::Format::percentage_string(size_on_memory, size_total);
+                line += " Disk: "   + au::Format::percentage_string(size_on_disk, size_total);
+                line += " ] ";
                 
-                {
-                    std::stringstream txt;
-                    txt << au::Format::string("   \tChannel %s : " ,  channels[c].c_str() );
-                    txt << au::Format::string( size ) << "( #kvs: " << au::Format::string( kvs ) << " ) ";
-                    printLine( txt.str().c_str() );
-                }
+                line += au::Format::progress_bar( progress , getCols() - line.length() - 8 );
                 
-                // Size total
-                {
-                    std::stringstream txt;
-                    txt << au::Format::string("   \t\tSize     %ul : ", s_total );
-                    txt << au::Format::progress_bar( (double)s_total / (double) reference , cols - 65  );
-                    printLine( txt.str().c_str() );
-                }
-                
-                // Size on memory 
-                {
-                    std::stringstream txt;
-                    txt << au::Format::string("   \t\tOn memory %ul : ", s_memory );
-                    txt << au::Format::progress_bar( (double)s_memory / (double) reference , cols - 65  );
-                    printLine( txt.str().c_str() );
-                }
-                
-                // Size on disk
-                {
-                    std::stringstream txt;
-                    txt << au::Format::string("   \t\tOn disk   %ul : ", s_disk );
-                    txt << au::Format::progress_bar( (double)s_disk / (double) reference , cols - 65  );
-                    printLine( txt.str().c_str() );
-                }
-                
-                
-                
-                
+                print( line );
             }
-            
-            printLine(" ");
             
         }
         
-        void printQueuesTasks();
-        
-        
-        
     }    
+    
+    void DelilahMonitorization::auto_complete
+        ( std::vector<std::string>& previous_words , std::string& current_word ,std::vector<std::string>& command_options )
+    {
+        // If no previous command, just main commands
+        if( previous_words.size() == 0)
+        {
+            command_options.insert( command_options.end() , main_commands.begin() ,  main_commands.end() );
+            return;
+        }
+    }
+
     
     
 }

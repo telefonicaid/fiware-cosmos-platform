@@ -21,6 +21,7 @@ Cronometer.h
 Rate.h
 Object.h
 Info.h
+CursesConsole.h
 )
 
 SET (SOURCES
@@ -37,6 +38,7 @@ Cronometer.cpp
 Rate.cpp
 Object.cpp
 Info.cpp
+CursesConsole.cpp
 )
 
 

@@ -575,7 +575,7 @@ namespace samson
             
             if( commandLine.get_num_arguments() == 1 )
             {
-                writeErrorOnConsole("Usage: info txt/xml/select/values/num/str [options]");
+                writeErrorOnConsole("Usage: info txt/xml/select/values/num/str/double [options]");
                 return 0;
             }
             
@@ -667,6 +667,23 @@ namespace samson
                 size_t result = pugi::UInt64( doc , query_str );
 
                 writeWarningOnConsole(au::Format::string("Running query %s wiht result %lu" , query_str.c_str() , result ) );
+                
+                return 0;
+            }            
+            
+            if ( command == "double" )
+            {
+                if( commandLine.get_num_arguments() < 3 )
+                {
+                    writeErrorOnConsole("Usage info double query");
+                    return 0;
+                }
+                
+                std::string query_str = commandLine.get_argument(2);
+                
+                double result = pugi::Double( doc , query_str );
+                
+                writeWarningOnConsole(au::Format::string("Running query %s wiht result %f" , query_str.c_str() , result ) );
                 
                 return 0;
             }            

@@ -130,6 +130,12 @@ namespace engine
         listenerId = _listenerId;
     }
     
+    void ProcessItem::getInfo( std::ostringstream& output)
+    {
+        output << "<operation_name>" << operation_name  << "</operation_name>\n";
+        output << "<progress>"      << progress         << "</progress>\n";
+        output << "<sub_status>"    << sub_status       << "</sub_status>\n";
+    }
     
 	
 }

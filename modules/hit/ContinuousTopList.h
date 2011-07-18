@@ -2,7 +2,7 @@
 #include <list>
 #include <sstream>
 
-#include "samson/modules/string/HitsState.h"
+#include "samson/modules/hit/HitsState.h"
 
 namespace au
 {
@@ -40,12 +40,12 @@ public:
         max_num_elements = _max_num_elements;
     }
 
-    void fill( unsigned long time ,  samson::string::HitsState* state )
+    void fill( unsigned long time ,  samson::hit::HitsState* state )
     {
       std::list< TopElement >::iterator i;
       for ( i = elements.begin() ; i != elements.end() ; i++)
       {
-	::samson::system::Hit*hit =  state->hitsAdd();
+	::samson::hit::Hit*hit =  state->hitsAdd();
 
 	hit->time.value = time;
 	hit->concept.value = i->concept;
@@ -183,7 +183,7 @@ class ContinuousTopList
         
     }
 
-    void fill( samson::string::HitsState* state )
+    void fill( samson::hit::HitsState* state )
     {
       current_top_list.fill(  time , state );
       top_list.fill(  time - 1 , state );

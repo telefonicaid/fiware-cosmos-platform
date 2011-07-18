@@ -1,0 +1,60 @@
+
+
+
+Module hit
+{
+	title	"Hit manipulation"
+	author	"Andreu Urruela"
+	version "0.1"
+}
+
+data Hit
+{
+        system.UInt time;
+	system.UInt hits;
+        system.String concept;
+}
+
+
+data HitCount
+{
+	system.UInt   current_time;     # TimeStamp
+        system.UInt   current_hits;     # Hits during current slot
+        system.UInt   hits;             # Hits during previous slot ( really used to detect maximums )
+}
+
+data HitsState
+{
+	vector hit.Hit hits;			# Top hits associated with the previous one  
+}
+
+reduce reduceHitCounts
+{
+	in system.String system.UInt		# Input concepts and number of hits
+	in system.String hit.HitCount		# State for each string
+
+	out system.UInt hit.Hit			# Output top entries during this operation
+	out system.String hit.HitCount		# Output state for each string
+
+	helpLine "Aggregation of the hits per string"
+}
+
+parserOut getHitCounts
+{
+	in system.String hit.HitCount
+
+	helpLine "Just get the current hits per word"
+}
+
+
+
+reduce reduceHits
+{
+	in system.UInt hit.Hit
+	in system.UInt hit.HitsState
+
+	out system.UInt hit.HitsState
+
+	helpLine "Reduce to accumulate top entries"
+
+}

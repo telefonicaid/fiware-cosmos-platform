@@ -6,7 +6,7 @@ all:
 	make -C cdr
 	make -C graph
 	make -C sna
-	make -C snalight
+#	make -C snalight
 	make -C osn
 	make -C url
 	make -C urlbenchmark
@@ -14,7 +14,7 @@ all:
 	make -C terasort
 	make -C testtime
 	make -C testcomparefunctions
-	make -C string
+	make -C hit
 
 reset:
 	make reset -C system 
@@ -32,7 +32,7 @@ reset:
 	make reset -C terasort
 	make reset -C testtime
 	make reset -C testcomparefunctions
-	make reset -C string
+	make reset -C hit
 
 eclipse:
 	make eclipse -C system

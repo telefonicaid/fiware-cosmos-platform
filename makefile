@@ -170,6 +170,7 @@ manpages:
 	 mkdir -p /usr/local/man/man7
 	 help2man --name="samson controller"                 --no-info --section=1 --manual=Samson samsonController       > /usr/local/man/man1/samsonController.1
 	 help2man --name="samson worker"                     --no-info --section=1 --manual=Samson samsonWorker           > /usr/local/man/man1/samsonWorker.1
+	 help2man --name="samson setup"                      --no-info --section=1 --manual=Samson samsonSetup            > /usr/local/man/man1/samsonSetup.1
 	 help2man --name="samson platform interaction shell" --no-info --section=1 --manual=Samson delilah                > /usr/local/man/man1/delilah.1
 	 cp man/samson-*.7 /usr/local/man/man7
 

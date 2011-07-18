@@ -21,6 +21,7 @@
 #include "engine/DiskManager.h"
 #include "engine/ProcessManager.h"
 
+#include "samson/common/samsonVersion.h"
 #include "samson/network/Network2.h"
 #include "samson/network/Endpoint2.h"
 #include "samson/network/EndpointManager.h"
@@ -98,7 +99,7 @@ static const char* manExitStatus    = "0      if OK\n 1-255  error\n";
 static const char* manAuthor        = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
 static const char* manReportingBugs = "bugs to samson-bug-report@tid.es\nSamson home page: <http://www.tid.es/products/samson>";
 static const char* manCopyright     = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
-static const char* manVersion       = "0.6-1";
+static const char* manVersion       = SAMSON_VERSION;
 
 
 

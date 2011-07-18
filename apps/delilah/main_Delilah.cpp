@@ -1,18 +1,16 @@
-
 /* ****************************************************************************
- *
- * FILE            main_Delilah.cpp
- *
- * AUTHOR          Andreu Urruela
- *
- * DATE            July 2011
- *
- * DESCRIPTION
- *
- * Main file for the "delilah" console app
- *
- * ****************************************************************************/
-
+*
+* FILE            main_Delilah.cpp
+*
+* AUTHOR          Andreu Urruela
+*
+* DATE            July 2011
+*
+* DESCRIPTION
+*
+* Main file for the "delilah" console app
+*
+*/
 #include "parseArgs/parseArgs.h"
 
 #include "au/Format.h"
@@ -23,6 +21,7 @@
 #include "engine/Engine.h"
 #include "engine/DiskManager.h"
 
+#include "samson/common/samsonVersion.h"
 #include "samson/common/SamsonSetup.h"
 
 #include "samson/network/Network2.h"
@@ -120,7 +119,7 @@ static const char* manExitStatus    = "0      if OK\n 1-255  error\n";
 static const char* manAuthor        = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
 static const char* manReportingBugs = "bugs to samson-bug-report@tid.es\nSamson home page: <http://www.tid.es/products/samson>";
 static const char* manCopyright     = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
-static const char* manVersion       = "0.6-1";
+static const char* manVersion       = SAMSON_VERSION;
 
 
 

@@ -20,6 +20,7 @@
 #include "engine/MemoryManager.h"
 #include "engine/Engine.h"
 
+#include "samson/common/samsonVersion.h"
 #include "samson/common/status.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/network/Endpoint2.h"
@@ -172,6 +173,25 @@ void readyCheck(void* callbackData, void* userParam)
 
 /* ****************************************************************************
 *
+* man texts -
+*/
+static const char* manSynopsis         = " [OPTION]";
+static const char* manShortDescription = "samsonSetup is a tool to configure/start/stop a samson cluster ...\n\n"
+   "Complete list of options:\n";
+static const char* manDescription      =
+   "samsonSetup is used for setting up the samson platform.\n"
+   "The main purpose is to create a cluster for the samson platform, but it can also be used to stop the platform and even to change a running cluster ...\n";
+
+static const char* manExitStatus    = "0      if OK\n 1-255  error\n";
+static const char* manAuthor        = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
+static const char* manReportingBugs = "bugs to samson-bug-report@tid.es\nSamson home page: <http://www.tid.es/products/samson>";
+static const char* manCopyright     = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
+static const char* manVersion       = SAMSON_VERSION;
+
+
+
+/* ****************************************************************************
+*
 * main - 
 */
 int main(int argC, const char *argV[])
@@ -184,6 +204,15 @@ int main(int argC, const char *argV[])
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT (FUNC)");
 	paConfig("log to file",                   (void*) true);
+
+    paConfig("man synopsis",                  (void*) manSynopsis);
+    paConfig("man shortdescription",          (void*) manShortDescription);
+    paConfig("man description",               (void*) manDescription);
+    paConfig("man exitstatus",                (void*) manExitStatus);
+    paConfig("man author",                    (void*) manAuthor);
+    paConfig("man reportingbugs",             (void*) manReportingBugs);
+    paConfig("man copyright",                 (void*) manCopyright);
+    paConfig("man version",                   (void*) manVersion);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 

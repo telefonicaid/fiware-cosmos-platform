@@ -1177,10 +1177,9 @@ int EndpointManager::multiSend(Endpoint2::Type typ, Packet* packetP)
 	  if (endpoint[ix]->type != typ)
 		 continue;
 
-	  //LM_M(("Sending a packet in a multiSend message %s", messageCode( packetP->msgCode ) ));
-	  send(ix, new Packet( packetP ) ); // Probably need to 'new' packetP so it wont be deleted before used by all ...
-	  ++sends;
-   }
+		send(ix, new Packet(packetP));
+		++sends;
+	}
 
    delete packetP;
     

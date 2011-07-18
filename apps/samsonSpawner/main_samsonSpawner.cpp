@@ -106,7 +106,20 @@ void exitFunction(void)
 static const char* manSynopsis         = " [OPTION]";
 static const char* manShortDescription = "samsonSpawner is the process in charge of starting other processes in the samson cluster\n\n"
    "Complete list of options:\n";
-static const char* manDescription      = "samsonSpawner ...\n\n";
+static const char* manDescription      = 
+"The samsonSpawner process, as its name indicates, is in charge of starting\n"
+"all samson processes in the samson cluster.\n"
+"A samsonSpawner process must be running in a computer that is to be used as a samson node.\n"
+"It is seen to that this process is started automatically, so a node prepared to work as\n"
+"a samson node shouldn't have a problem with this, but in case 'samsonSetup' is reporting\n"
+"problems connecting to a samson node, at setting up the cluster (or at resetting it),\n"
+"the first thing to do is of course to see whether an IP connection exists, trying with 'ping',\n"
+"and the next step would be to log into the node and use 'ps' to see whether the samsonSpawner\n"
+"process is up and running:\n"
+"\n"
+"  % ping <node>\n"
+"  % ssh samson@<node>\n"
+"  % ps aux | grep samsonSpawner\n\n";
 
 static const char* manExitStatus       = "0      if OK\n 1-255  error\n";
 static const char* manAuthor           = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";

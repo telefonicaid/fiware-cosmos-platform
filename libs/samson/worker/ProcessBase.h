@@ -44,7 +44,6 @@ namespace samson
 		
 
 		size_t task_id;                         
-        int worker;                             // Information about the my worker id
 		int hg_set;                             // Inormation about the hash-group of this process
         
 		network::WorkerTask *workerTask;		// Message received from the controller
@@ -53,7 +52,13 @@ namespace samson
 		
 		
 		Environment environment;			// Environment of the operation
-		
+
+
+    protected:
+        
+        int worker;                             // Information about the my worker id
+        int num_workers;                        // Information about the total number of workers
+        
 	public:
 		
 		ProcessBase( WorkerTask *task , ProcessBaseType type );

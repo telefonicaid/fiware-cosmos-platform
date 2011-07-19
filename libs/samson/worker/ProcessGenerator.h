@@ -16,8 +16,11 @@ namespace samson {
 		
 		std::string generator;		// Generator we will use
 
+        int num_operation;
+        int num_operations;
+        
 		// Constructor
-		ProcessGenerator( WorkerTask *task );
+		ProcessGenerator( WorkerTask *task , int num_operation , int num_operations );
 		
 		// Function to generate key-values
 		void generateKeyValues( KVWriter *writer );

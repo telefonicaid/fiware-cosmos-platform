@@ -30,6 +30,18 @@ data Stripe
 }
 
 
+generator import_from_mongo
+{
+	out system.String system.UInt
+	helpLine "Import data from a mongoDb server at 'txt.mongo' from table 'txt.mongo_table'"
+}
+
+map export_to_mongo
+{
+	in system.String system.UInt
+	helpLine "Export data to a mongoDb server at 'txt.mongo' to table 'txt.mongo_table'"
+}
+
 parser parser_words
 {
 	out system.String system.UInt
@@ -37,12 +49,28 @@ parser parser_words
 	helpLine "Parse a txt files emiting words at the output (value is always one)"
 }
 
+#
+# Generic parser where each line is translated into a system.String key and value is a system.UInt with value=1
+#
+
 parser parser_lines
 {
 	out system.String system.UInt
 
 	helpLine "Parse a txt file emiting every line as an independent string ( return character not included )"
 }
+
+#
+# Simple generator to create "txt.num_samples" random strings at the output
+#
+
+generator generate_words
+{
+	out system.String system.UInt
+
+	helpLine "Generate 'txt.num_samples' random words with 'txt.word_length' chars. By default it generates 1M words with 6 letters"
+}
+
 
 parser parser_collocations_pairs
 {
@@ -131,11 +159,15 @@ reduce word_count_accumulate
 	helpLine "Accumulation function of work count."
 }
 
+#
+# Simple parserOut to export strings contained as "key" and it companion number as value
+#
+
 parserOut export_words
 {
 	in system.String system.UInt
 
-	helpLine "Export words and counter"	
+	helpLine "Export words and counter"
 }
 
 parserOut export_collocations

@@ -20,6 +20,7 @@
 #define _H_Samson_SamsonClient
 
 #include <string>       // std::string
+#include <vector>       // std::vector
 
 namespace  samson {
     
@@ -32,6 +33,9 @@ namespace  samson {
         
         std::string error_message;  // Error message if a particular operation fails
         
+        
+        std::vector<size_t> delilah_ids;
+        
 	public:
         
         // Default constructor
@@ -42,6 +46,15 @@ namespace  samson {
         
         // Init the connection with a SAMSON cluster
         bool init( std::string controller );
+        
+        // Push content to a particular queue
+        size_t push( std::string queue , int channel , char *data , size_t length );
+        
+        // Get error message
+        std::string getErrorMessage();
+        
+        // Wait until all operations are finished
+        void waitUntilFinish();
         
     };
     

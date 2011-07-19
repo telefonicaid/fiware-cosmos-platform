@@ -303,14 +303,18 @@ namespace samson
 	
 #pragma mark GeneratorSubTask
 	
-	GeneratorSubTask::GeneratorSubTask(WorkerTask * task ) : WorkerSubTask( task  )
+	GeneratorSubTask::GeneratorSubTask(WorkerTask * task , int _num_operation , int _num_operations ) : WorkerSubTask( task  )
 	{
 		description = "Generator ";
+        
+        num_operation = _num_operation;
+        num_operations = _num_operations;
+        
 	}
 	
 	void GeneratorSubTask::run_process()
 	{
-		addProcess( new ProcessGenerator( task ) );
+		addProcess( new ProcessGenerator( task , num_operation , num_operations ) );
 	}
 	
 	

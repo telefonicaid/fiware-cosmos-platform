@@ -31,6 +31,8 @@
 
 #include "SamsonClient.h"                       // Own interface
 
+#include "samson/delilah/TXTFileSet.h"                         // samson::DataSource
+
 namespace samson {
     
     samson::EndpointManager* epMgr     = NULL;
@@ -106,5 +108,46 @@ namespace samson {
         return true;
         
     }
+    
+    size_t SamsonClient::push( std::string queue , int channel , char *data , size_t length )
+    {
+        // Do something
+        
+        samson::BufferDataSource * ds = new samson::BufferDataSource( data , length );
+        
+        size_t id = delilah->addPushData( ds , queue );
+
+        // Save the id to make sure it is finish before quiting...
+        delilah_ids.push_back( id );
+        
+        return id;
+    }
+    
+    
+    std::string SamsonClient::getErrorMessage()
+    {
+        return error_message;
+    }
+    
+    void SamsonClient::waitUntilFinish()
+    {
+        
+        for ( size_t i = 0 ; i < delilah_ids.size() ; i++)
+        {
+            size_t id = delilah_ids[i];
+            
+            while (delilah->isActive( id ) )
+            {
+                //std::string description =  delilah->getDescription( id );
+                printf("Waiting %lu" , id );
+                
+                sleep(1);
+            }
+        }
+        
+    }
+
+
+    
     
 }

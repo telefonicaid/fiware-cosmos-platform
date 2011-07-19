@@ -283,13 +283,21 @@ namespace samson {
      */
 	size_t Delilah::addPushData( std::vector<std::string> fileNames , std::string queue )
 	{
-		PushComponent * d = new PushComponent( fileNames , queue );
+        TXTFileSet *txtFileSet = new TXTFileSet( fileNames );
+        return addPushData( txtFileSet , queue );
+	}
+    
+    size_t Delilah::addPushData( DataSource* dataSource , std::string queue )
+    {
+		PushComponent * d = new PushComponent( dataSource , queue );
 		size_t tmp_id = addComponent(d);	
-
+        
 		d->run();
         
 		return tmp_id;
-	}
+        
+    }
+    
 
 	/* ****************************************************************************
      *
@@ -437,15 +445,14 @@ namespace samson {
 	{
         au::TokenTaker tk( &token );
         
-		bool ans = false;
-		
-		
 		DelilahComponent *c = components.findInMap( id );
-		if( c && !c->component_finished )
-			ans = true;
-		
-		return ans;
-	}
+        
+        if( !c )
+            return false;
+        
+		return( !c->component_finished );
+
+    }
     
 
         int Delilah::_receive(int fromId, Message::MessageCode msgCode, Packet* packet)

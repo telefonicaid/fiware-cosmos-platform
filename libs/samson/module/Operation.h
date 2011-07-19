@@ -364,6 +364,9 @@ namespace samson {
 		
 		virtual void init(KVWriter *writer){};      //Called once before running any operation
 
+        // Called once to inform the generator about how many different generators will run in paralel in the cluster
+        virtual void setup( int worker , int num_workers, int process , int num_processes ){};
+        
 		virtual void run( KVWriter *writer )=0;
 		
 		virtual void finish(KVWriter *writer){};	//Called once after all operations are executed

@@ -280,7 +280,9 @@ message WorkerTask
 
 	optional int32 servers		  = 6;	// Number of servers ( all the workers )
 
-	optional bool generator		  = 7;	// Optional flag only used in the generator operations ( only one generator generates data )
+	optional uint32 worker		  = 11;	// Worker id ( only used in generator operations )
+	optional uint32 num_workers	  = 12;	// Nuber of workers involved in the generator operation
+
 
 	optional Environment environment  = 8;	// Environment operations for this task
 }

@@ -36,7 +36,8 @@ namespace samson {
 		
 		
 		workerTaskManager = task->taskManager;
-        worker = task->taskManager->worker->network->getWorkerId();    // Get the worker id information
+        worker      = task->taskManager->worker->network->getWorkerId();        // Get the worker id information
+        num_workers = task->taskManager->worker->network->getNumWorkers();      // Get the total number of workers
         hg_set = 0; // Default hg_set
         
 	}

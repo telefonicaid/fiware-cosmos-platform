@@ -40,7 +40,8 @@ namespace system{
 				
 				output.str("");	// Clear content
 				
-				output << key.str() << separator << value.str() << std::endl;
+				//output << key.str() << separator << value.str() << std::endl;
+				output << key.str() << " " << value.str() << std::endl;
 				
 				writer->emit(output.str());
 			}			

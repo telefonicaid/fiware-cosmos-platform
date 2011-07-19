@@ -48,9 +48,7 @@ namespace samson {
 		int num_workers;                        // Total workers that have to confirm the task
 		int finished_workers;                   // List of worker ids that have reported finish
 		int complete_workers;                   // List of worker ids that have reported complete	
-		
-		int generator;                          // Spetial flag to be removed from here ;)
-		
+				
 		// Error management
         au::ErrorManager error;
 

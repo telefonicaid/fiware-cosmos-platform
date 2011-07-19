@@ -7,8 +7,79 @@ namespace samson {
 	class Delilah;
 	class Buffer;
 	
+    class DataSource
+    {
+        
+    public:
+        
+		virtual bool isFinish()=0;
+		virtual void fill( engine::Buffer *b )=0;
+        virtual size_t getTotalSize()=0;
+        
+    };
+    
+    
+    class BufferDataSource : public DataSource
+    {
+        char *data;
+        size_t size;
+        size_t pos;
+        
+    public:
+        
+        BufferDataSource( char *_data , size_t _size )
+        {
+            data = _data;
+            size = _size;
+            pos = 0;
+        }
+        
+        ~BufferDataSource()
+        {
+            if( data )
+                delete data;
+        }
+        
+		bool isFinish()
+        {
+            return (pos>=size);
+        }
+		
+        void fill( engine::Buffer *b )
+        {
+            size_t available_size = b->getAvailableWrite();
+            
+            if( available_size > (size-pos) )
+            {
+                b->write( &data[pos] , size-pos );
+                pos = size;
+                return;
+            }
+            else
+            {
+                // Search the last return 
+                size_t pos2 = pos + available_size;
+                
+                while( (pos2 > pos) && (data[pos2] != '\n') )
+                    pos2--;
+                
+                
+                b->write( &data[pos] , pos2 - pos );
+                pos = pos2;
+            }
+            
+        }
+        
+        size_t getTotalSize()
+        {
+            return size;
+        }
+        
+        
+    };
+    
 	
-	class TXTFileSet
+	class TXTFileSet : public DataSource
 	{
 		
 		std::vector<std::string> fileNames;		// List of files to read
@@ -81,7 +152,18 @@ namespace samson {
                 output << " running: " << fileNames.size() << " pending files and " << failedFiles.size() << " failed files";
             return  output.str();
         }
-                            
+        
+        
+        size_t getTotalSize()
+        {
+            size_t totalSize = 0;
+            
+            // Compute the total size for all the files
+            for ( size_t i =  0 ; i < fileNames.size() ; i++)
+                totalSize += au::Format::sizeOfFile( fileNames[i] );
+
+            return totalSize;
+        }
         
 		
 	};

@@ -55,8 +55,10 @@ namespace samson {
 		// Worker to send the next packet
 		int worker;
 		
+        DataSource *dataSource;
+        
         // Input txt files
-        TXTFileSet fileSet;				
+        //TXTFileSet fileSet;				
         
 	public:
 
@@ -64,7 +66,7 @@ namespace samson {
 		au::ErrorManager error;
 		
 		
-		PushComponent( std::vector<std::string> &fileNames , std::string _queue  );		
+		PushComponent( DataSource * _dataSource , std::string _queue  );		
 		~PushComponent();
 		
         // Function to start running

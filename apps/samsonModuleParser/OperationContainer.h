@@ -145,12 +145,15 @@ namespace samson
         void check()
         {
             // Check everything is correct
+            // Andreu: Now operation can have no output to export data to other system ( i.e. mongoDb )
+            /*
             if ( ( type == "map" ) || ( type == "reduce" ) || ( type == "parser" ) )
                 if (outputs.size() == 0)
                 {
                     std::cerr << "samsonModuleParser: Error in operation " << name << ": Operation needs an output\n";
                     exit(1);
                 }
+            */
             
             if ( ( type == "map" ) || ( type == "reduce" ) || ( type == "parserOut" ) || ( type == "parserOutReduce" ) )
                 if (inputs.size() == 0)
@@ -293,6 +296,8 @@ namespace samson
 				if( type == "generator" )
 				{
 					file << "\t\tvoid init( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+                    file << "\t\tvoid setup( int worker , int num_workers, int process , int num_processes )\n\t\t{\n\t\t}\n\n";
+
 					file << "\t\tvoid run( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
 					file << "\t\tvoid finish( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
 				}

@@ -9,6 +9,7 @@ ADD_SUBDIRECTORY(samsonCat)
 ADD_SUBDIRECTORY(samsonConfig)
 ADD_SUBDIRECTORY(samsonData)
 ADD_SUBDIRECTORY(samsonKiller)
+ADD_SUBDIRECTORY(samsonPush)
 
 #On hold
 #ADD_SUBDIRECTORY(samsonSupervisor)

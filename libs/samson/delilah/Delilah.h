@@ -47,6 +47,7 @@ namespace samson {
 	class DelilahDownloadDataProcess;
     class PushComponent;
     class PopComponent;
+    class DataSource;
     
 	extern au::Token info_lock;						// Lock to protect the information provided here
     
@@ -110,6 +111,7 @@ namespace samson {
 		size_t addUploadData( std::vector<std::string> fileNames , std::string queue , bool compresion, int _max_num_threads);
 		size_t addDownloadProcess( std::string queue , std::string fileName , bool show_on_screen );
         size_t addPushData( std::vector<std::string> fileNames , std::string queue );
+        size_t addPushData( DataSource* dataSource , std::string queue );
         size_t addPopData( std::string queue , int channel, std::string parserOut , std::string fileName );
 
 		size_t sendCommand( std::string command , engine::Buffer *buffer );
@@ -117,7 +119,8 @@ namespace samson {
 		
 		// Check a particular if
 		bool isActive( size_t id );
-		
+        std::string getDescription( size_t id );
+        
 	public:
 				
 		/** 

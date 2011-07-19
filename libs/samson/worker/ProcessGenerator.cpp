@@ -6,11 +6,15 @@
 
 namespace samson {
 	
-	ProcessGenerator::ProcessGenerator( WorkerTask *task ) : ProcessBase( task , ProcessBase::key_value  )
+	ProcessGenerator::ProcessGenerator( WorkerTask *task , int _num_operation , int _num_operations ) : ProcessBase( task , ProcessBase::key_value  )
 	{
 		// Name of the generator
 		generator = task->workerTask.operation();	
 		
+        // Operation number and total number of operations
+        num_operation = _num_operation;
+        num_operations = _num_operations;
+        
 		// Description with the name of the generator
 		operation_name =  std::string("G:") + generator;
 	}
@@ -32,8 +36,11 @@ namespace samson {
 		generator->environment = &environment;			// To be able to access environment
 		generator->tracer = this;						// To be able to send traces
 		generator->operationController = this;
-
+        
 		generator->init(writer);
+        
+        generator->setup( worker , num_workers , num_operation , num_operations );
+        
 		generator->run( writer );
 		generator->finish(writer);
 		

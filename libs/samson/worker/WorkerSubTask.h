@@ -128,10 +128,12 @@ namespace samson
 	
 	class GeneratorSubTask : public WorkerSubTask
 	{
+        int num_operation;
+        int num_operations;
 		
 	public:
 		
-		GeneratorSubTask( WorkerTask * task  );
+		GeneratorSubTask( WorkerTask * task , int num_operation , int num_operations );
 		
 		void run_process();
 	};

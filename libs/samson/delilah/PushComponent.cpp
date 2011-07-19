@@ -22,20 +22,21 @@
 namespace samson
 {
 
-	PushComponent::PushComponent( std::vector<std::string> &fileNames , std::string _queue  ) : 
-            DelilahComponent(DelilahComponent::push) , fileSet( fileNames ) 
+	PushComponent::PushComponent( DataSource * _dataSource , std::string _queue  ) : DelilahComponent(DelilahComponent::push) 
 	{
 		
 		// Queue name 
 		queue = _queue;
 
+        // Data source
+        dataSource = _dataSource;
+        
 		uploadedSize = 0;
 		processedSize = 0;
 		totalSize = 0;	
 		
-		// Compute the total size for all the files
-		for ( size_t i =  0 ; i < fileNames.size() ; i++)
-			totalSize += au::Format::sizeOfFile( fileNames[i] );
+
+        totalSize = dataSource->getTotalSize();
         
         // Set this to false ( true will be the end of processing data )
         finish_process = false;
@@ -66,12 +67,11 @@ namespace samson
         }
         
     }
-    
 	
 	PushComponent::~PushComponent()
 	{
+        delete dataSource;
 	}
-	
     
     // Request a memory buffer to upload the next packet...
     
@@ -95,6 +95,7 @@ namespace samson
             if( totalSize == uploadedSize )
             {
                 // Set this flag to indicate that the process has finished
+                component_finished = true;
                 finish_process = true;
                 delilah->pushConfirmation(this);
             }
@@ -122,7 +123,7 @@ namespace samson
             
             
             // Full the buffer with the content from the files
-            fileSet.fill( buffer );
+            dataSource->fill( buffer );
             
             // Get the size to update the total process info
             processedSize += buffer->getSize();
@@ -147,7 +148,7 @@ namespace samson
                 worker = 0;
             
             
-            if( !fileSet.isFinish() )
+            if( !dataSource->isFinish() )
                 requestMemoryBuffer();  // Request the next element
             else
                 finish_process = true;  // Mark as finished

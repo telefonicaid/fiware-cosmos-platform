@@ -30,9 +30,6 @@ namespace samson {
         // Initial status 
 		state = init;
 		
-		// In generators, this is used to determine how is the active user
-		generator = rand()%num_workers;
-        
         // Init the total amount of information to be process
         if( info )
         {
@@ -318,7 +315,8 @@ namespace samson {
         fillInfo( t , workerIdentifier );
         
         // special flag used in generators
-        t->set_generator( generator == workerIdentifier );	
+        t->set_worker( workerIdentifier );
+        t->set_num_workers( num_workers );
         
         taskManager->controller->network->sendToWorker( workerIdentifier, p2 );
     }

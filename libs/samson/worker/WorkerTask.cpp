@@ -98,12 +98,17 @@ namespace samson
 		switch (type) {
 				
 			case Operation::generator :
-				if( workerTask.generator() )
+            {
+                // Generate num_cors generators
+                size_t num_generator_operations = SamsonSetup::shared()->getInt("general.num_processess");
+                
+                for ( size_t i = 0 ; i < num_generator_operations ; i++)
 				{
-					GeneratorSubTask * tmp = new GeneratorSubTask( this );
+					GeneratorSubTask * tmp = new GeneratorSubTask( this , i , num_generator_operations );
 					addSubTask( tmp );
 				}
 				break;
+            }
 				
 			case Operation::parser:
 			{

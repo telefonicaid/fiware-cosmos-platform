@@ -7,8 +7,25 @@ SET (HEADERS
 
 SET( STATIC_LIBS
      samsonClient
-     protobuf
+     samsonWorkerLib
+     samsonControllerLib
+     delilahLib
+     engine
+     samsonModule
+     samsonDataLib
+     samsonStream
+     samsonIsolated
+     samsonNetwork
+     samsonCommon
+     pugi
      au
+     lm
+     pa
+     protobuf
+     dl
+     pthread
+     readline
+     curses
 )
 
 # Include directories

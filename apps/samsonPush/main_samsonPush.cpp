@@ -13,6 +13,7 @@
 
 #include <stdio.h>      // printf
 #include <stdlib.h>     // exit
+#include <string.h>     // memcpy
 
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
 

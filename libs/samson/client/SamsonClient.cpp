@@ -138,8 +138,8 @@ namespace samson {
             
             while (delilah->isActive( id ) )
             {
-                //std::string description =  delilah->getDescription( id );
-                printf("Waiting %lu" , id );
+                std::string description =  delilah->getDescription( id );
+                printf("Waiting %lu: %s\n" , id , description.c_str() );
                 
                 sleep(1);
             }

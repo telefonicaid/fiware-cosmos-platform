@@ -43,7 +43,7 @@ namespace engine {
         
         void remove( size_t id )
         {
-            ids.insert( id );
+            ids.erase( id );
         }
         
     };

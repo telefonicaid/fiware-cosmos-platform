@@ -25,8 +25,15 @@ namespace au {
     {
         time_t t =  time(NULL);
         
-        while( (values.size()>0) && (t - values.front().time ) > max_time )
+        
+        while( true )
         {
+            if( values.size() ==0 )
+                return;
+            
+            if ( ( t - values.front().time ) < max_time )
+                return;
+            
             total_size -= values.front().value;
             values.pop_front();
         }

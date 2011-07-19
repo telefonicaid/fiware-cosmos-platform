@@ -451,15 +451,28 @@ namespace samson {
             return false;
         
 		return( !c->component_finished );
-
+        
     }
     
-
-        int Delilah::_receive(int fromId, Message::MessageCode msgCode, Packet* packet)
-        {
-	  delete packet;
-            return 0;
-        }    
+    std::string Delilah::getDescription( size_t id )
+    {
+        au::TokenTaker tk( &token );
+        
+		DelilahComponent *c = components.findInMap( id );
+        
+        if (!c)
+            return "No process with this id";
+        else
+            return c->getStatus();
+    }
+    
+    
+    
+    int Delilah::_receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+    {
+        delete packet;
+        return 0;
+    }    
 	
 }
 

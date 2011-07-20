@@ -139,7 +139,11 @@ namespace samson {
             while (delilah->isActive( id ) )
             {
                 std::string description =  delilah->getDescription( id );
+#ifdef __LP64__
                 printf("Waiting %lu: %s\n" , id , description.c_str() );
+#else
+                printf("Waiting %d: %s\n" , id , description.c_str() );
+#endif
                 
                 sleep(1);
             }

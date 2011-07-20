@@ -58,7 +58,7 @@ int main( int argc , char *argv[] )
         if( (size + line_length ) > BUFFER_SIZE )
         {
             // Process buffer
-            fprintf(stderr , "Flushing %lu bytes to queue %s\n", size , argv[2] );
+		    fprintf(stderr , "Flushing %lu bytes to queue %s\n", (unsigned long int) size , argv[2]);
             client.push(  argv[2]  , 0 , buffer, size );
             
             // Process buffer
@@ -71,7 +71,7 @@ int main( int argc , char *argv[] )
     }
     
     // Process last buffer
-    fprintf(stderr , "Flushing %lu bytes to queue %s\n", size , argv[2] );
+    fprintf(stderr , "Flushing %lu bytes to queue %s\n", (unsigned long int) size , argv[2] );
     client.push(  argv[2]  , 0 , buffer, size );
     
     // Wait until all operations are complete

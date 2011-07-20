@@ -72,8 +72,7 @@ helpLine: Export data to a mongoDb server at 'mongo.ip' to table 'mongo.table'
 				key.parse(inputs[0].kvs[i]->key);
 				value.parse(inputs[0].kvs[i]->value);
 
-				// bo = BSON("key" << key.value << "value" << (int) value.value);
-				bo = BSON(key.value << (int) value.value);
+				bo = BSON("key" << key.value << "value" << (long long) value.value);
 
 				mdbConnection->insert(mongo_table, bo);
 			}

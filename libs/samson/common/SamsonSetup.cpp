@@ -297,8 +297,11 @@ namespace samson
 		if( num_paralell_outputs > max_num_paralell_outputs )
 		{
             char line[1024];
+#ifdef __LP64__
             sprintf(line, "Num of maximum paralell outputs is too high to the current memory setup. Review num_paralell_outputs in setup.txt file. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (2*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size  );
-            
+#else
+            sprintf(line, "Num of maximum paralell outputs is too high to the current memory setup. Review num_paralell_outputs in setup.txt file. Current value %d Max value %d (memory(%d) - num_processes(%d)*shared_memory_size_per_buffer(%d) ) / (2*max_file_size(%d))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size);
+#endif            
             error->set( line );
 		}
 		

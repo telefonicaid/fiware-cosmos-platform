@@ -109,8 +109,8 @@ reset:
 	sudo rm -f testing/module_test/Module.*
 	make reset -C modules
 
-module:
-	make -C build/apps/samsonModuleParser
+modules:
+	make -C modules
 
 
 qt:
@@ -164,7 +164,7 @@ deb:
 		 cd modules/url;                   ../../scripts/samsonModuleDeb url 0.6 1
 		 cd modules/url_benchmark;         ../../scripts/samsonModuleDeb url_benchmark 0.6 1
 
-manpages:
+man:
 	 mkdir -p /usr/local/man/man1
 	 mkdir -p /usr/local/man/man7
 	 help2man --name="samson controller"                 --no-info --section=1 --manual=Samson samsonController       > /usr/local/man/man1/samsonController.1
@@ -175,3 +175,6 @@ manpages:
 	 cp man/samson-*.7 /usr/local/man/man7
 
 packages: install man rpm deb
+
+.PHONY : modules
+.PHONY : man

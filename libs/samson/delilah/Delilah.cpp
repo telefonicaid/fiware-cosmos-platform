@@ -470,7 +470,9 @@ namespace samson {
     
     int Delilah::_receive(int fromId, Message::MessageCode msgCode, Packet* packet)
     {
-        delete packet;
+        if( packet->buffer )
+            engine::MemoryManager::shared()->destroyBuffer( packet->buffer );
+
         return 0;
     }    
 	

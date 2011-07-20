@@ -628,10 +628,10 @@ Status Endpoint2::realsend
 	s = partWrite(&header, sizeof(header), "header");
 	if (s != OK)
 	{
-		if (packetP != NULL)
-			delete packetP;
 		if (packetP->buffer != NULL)
 			engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
+		if (packetP != NULL)
+			delete packetP;
 		LM_RE(s, ("partWrite:header(%s): %s", name(), status(s)));
 	}
 
@@ -648,10 +648,11 @@ Status Endpoint2::realsend
 		if (s != OK)
 		{
 #if 0
-			if (packetP != NULL)
-				delete packetP;
 			if (packetP->buffer != NULL)
 				engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
+			if (packetP != NULL)
+				delete packetP;
+            
 #endif
 			LM_RE(s, ("partWrite:data(%s): %s", name(), status(s)));
 		}
@@ -678,10 +679,11 @@ Status Endpoint2::realsend
 		if (s != OK)
 		{
 #if 0
-			if (packetP != NULL)
-				delete packetP;
 			if (packetP->buffer != NULL)
 				engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
+            if (packetP != NULL)
+				delete packetP;
+
 #endif
 			LM_RE(s, ("partWrite:GoogleProtocolBuffer(): %s", status(s)));
 		}
@@ -693,10 +695,10 @@ Status Endpoint2::realsend
 		if (s != OK)
 		{
 #if 0
-			if (packetP != NULL)
-				delete packetP;
 			if (packetP->buffer != NULL)
 				engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
+			if (packetP != NULL)
+				delete packetP;
 #endif
 			LM_RE(s, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
 		}

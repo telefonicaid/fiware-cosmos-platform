@@ -166,7 +166,6 @@ deb:
 
 manpages:
 	 mkdir -p /usr/local/man/man1
-	 mkdir -p /usr/local/man/man3
 	 mkdir -p /usr/local/man/man7
 	 help2man --name="samson controller"                 --no-info --section=1 --manual=Samson samsonController       > /usr/local/man/man1/samsonController.1
 	 help2man --name="samson worker"                     --no-info --section=1 --manual=Samson samsonWorker           > /usr/local/man/man1/samsonWorker.1

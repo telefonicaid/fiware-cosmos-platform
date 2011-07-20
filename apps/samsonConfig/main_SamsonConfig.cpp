@@ -127,9 +127,9 @@ public:
                 std::cout << "Setup file modified.... save (y/n)? ";
                 char line[1024];
                 if (fgets(line, 1024, stdin)== NULL)
-		{
-			writeWarningOnConsole("Read nothing");
-		}
+                {
+                    writeWarningOnConsole("Read nothing");
+                }
                 if( strcmp(line, "y") || strcmp(line, "Y") )
                 {
                     samson::SamsonSetup::shared()->save();  // Save a new file with the current setup
@@ -148,6 +148,15 @@ public:
             std::cout << samson::SamsonSetup::shared()->str();
             return;
         }
+        
+        if ( main_command == "edit" )
+        {
+            modified = true;
+            samson::SamsonSetup::shared()->edit();  // Enter in edit mode from command line
+            return;
+        }
+        
+        
         
         writeErrorOnConsole(au::Format::string("Unknown command '%s'" , main_command.c_str() ));
         

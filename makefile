@@ -130,6 +130,8 @@ coverage: debug
 clear_ipcs:
 	for i in `ipcs -m | grep $USER | awk '{print $2}'`; do ipcrm -m $i; done
 
+set_ssm_linux:
+	sudo sysctl -w kernel.shmmax=64000000
 
 rpm:
 		 scripts/samsonRpm 0.6 1

@@ -22,8 +22,7 @@ MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
+target_link_libraries(${MODULE_NAME} /opt/mongodb/mongo-cxx-driver-v1.8/libmongoclient.a -lboost_thread -lboost_filesystem)
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION /opt/samson/modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
-
-

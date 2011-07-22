@@ -35,6 +35,7 @@ namespace samson
 */
 HostMgr::HostMgr(unsigned int size)
 {
+	LM_M(("Creating Host Manager of size %d", size));
 	this->size = size;
 
 	hostV = (Host**) calloc(size, sizeof(Host*));
@@ -386,7 +387,7 @@ void HostMgr::aliasAdd(Host* host, const char* alias)
 		return;
 	}
 
-	for (unsigned int ix = 0; ix < sizeof(alias) / sizeof(alias[0]); ix++)
+	for (unsigned int ix = 0; ix < sizeof(host->alias) / sizeof(host->alias[0]); ix++)
 	{
 		if (host->alias[ix] == NULL)
 			continue;
@@ -398,16 +399,17 @@ void HostMgr::aliasAdd(Host* host, const char* alias)
 		}
 	}
 
-	for (unsigned int ix = 0; ix < sizeof(alias) / sizeof(alias[0]); ix++)
+	for (unsigned int ix = 0; ix < sizeof(host->alias) / sizeof(host->alias[0]); ix++)
 	{
 		if (host->alias[ix] == NULL)
 		{
+			LM_T(LmtHost, ("Added alias %d '%s' for host '%s'", ix, alias, host->name));
 			host->alias[ix] = strdup(alias);
 			return;
 		}
 	}
 
-	LM_W(("Unable to add alias '%s' to host '%s' - no room in alias vector", alias, host->name));
+	LM_W(("Unable to add alias '%s' to host '%s' - no room in alias vector (max slots %d)", alias, host->name, sizeof(alias) / sizeof(alias[0])));
 }
 
 

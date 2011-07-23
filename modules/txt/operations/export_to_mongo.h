@@ -12,8 +12,10 @@
 
 using namespace mongo;
 
-namespace samson{
-namespace txt{
+namespace samson
+{
+namespace txt
+{
 
 
 class export_to_mongo : public samson::Map

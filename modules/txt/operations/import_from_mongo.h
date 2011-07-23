@@ -7,66 +7,114 @@
 #define _H_SAMSON_txt_import_from_mongo
 
 
+#include <iostream>
 #include <samson/module/samson.h>
+#include "mongo/client/dbclient.h"
+#include "mongo/client/dbclientcursor.h"
+
+using namespace mongo;
 
 
-namespace samson{
-namespace txt{
+namespace samson
+{
+namespace txt
+{
 
 
-	class import_from_mongo : public samson::Generator
-	{
+class import_from_mongo : public samson::Generator
+{
+	std::string          mongo_ip;
+	std::string          mongo_table;
+	std::string          mongo_db_path;
+	DBClientConnection*  mdbConnection;
 
-	  std::string mongo_ip;
-	  std::string mongo_table;
-
-	public:
-
-
+public:
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
 output: system.String system.UInt
-
-helpLine: Import data from a mongoDb server at 'txt.mongo' from table 'txt.mongo_table'
+helpLine: Import data from a mongoDb server at 'mongo.ip' from table 'mongo.table'
 #endif // de INFO_COMMENT
 
-		void init( samson::KVWriter *writer )
-		{
-                  // recover parameter from enviroment                                                                                                        
-                  mongo_ip =  environment->get( "mongo.ip" ,  "no-mongo-ip" );
-                  mongo_table =  environment->get( "mongo.table" ,  "no-mongo-table" );
-		}
 
-		void setup( int worker , int num_workers, int process , int num_processes )
-		{
-		  // Remeber that num_workers * num_processes operation will be executed in parallel
-		}
 
-		void run( samson::KVWriter *writer )
-		{
-                  if( mongo_ip == "no-mongo-ip" )
-		    {
-		      tracer->setUserError("No mongo ip is specified. Please specify mongo ip with 'mongo.ip' environment variable");
-		      return;
-		    }
+/* ****************************************************************************
+*
+* init - 
+*/
+void init(samson::KVWriter* writer)
+{
+	mongo_ip    =  environment->get( "mongo.ip" ,  "no-mongo-ip" );
+	mongo_table =  environment->get( "mongo.table" ,  "no-mongo-table" );
+	
+	if (strstr(mongo_table.c_str(), ".") != NULL)
+		mongo_db_path = mongo_table;
+	else
+		mongo_db_path = "samson." + mongo_table;
 
-                  if( mongo_table == "no-mongo-table" )
-		    {
-		      tracer->setUserError("No table is specified. Please specify mongo table with 'mongo.table' environment variable");
-		      return;
-		    }
-
-                  // Access data and emit with "writter" objetc     
-		}
-
-		void finish( samson::KVWriter *writer )
-		{
-		}
+	mdbConnection = new DBClientConnection();
+	mdbConnection->connect(mongo_ip);
+}
 
 
 
-	};
+/* ****************************************************************************
+*
+* setup - 
+*/
+void setup(int worker, int num_workers, int process, int num_processes)
+{
+	// Remember that num_workers * num_processes operation will be executed in parallel
+}
+
+
+
+/* ****************************************************************************
+*
+* run - 
+*/
+void run(samson::KVWriter* writer)
+{
+	if (mongo_ip == "no-mongo-ip")
+	{
+		tracer->setUserError("No mongo ip is specified. Please specify mongo ip with 'mongo.ip' environment variable");
+		return;
+	}
+
+	if (mongo_table == "no-mongo-table")
+	{
+		tracer->setUserError("No table is specified. Please specify mongo table with 'mongo.table' environment variable");
+		return;
+	}
+
+	// Access data and emit with "writer" object
+	BSONObj                 bo;
+	samson::system::String  K;
+	samson::system::UInt    V;
+
+	auto_ptr<DBClientCursor> cursor = mdbConnection->query(mongo_db_path);
+
+	while (cursor->more())
+	{
+		bo       = cursor->next();
+		K.value  = bo.getStringField("K");
+		V.value  = bo.getIntField("V");
+
+		writer->emit(0, &K, &V);
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* finish - 
+*/
+void finish(samson::KVWriter* writer)
+{
+}
+
+};
 
 
 } // end of namespace txt

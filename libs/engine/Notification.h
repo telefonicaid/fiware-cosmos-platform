@@ -25,6 +25,7 @@
 #include <set>                  // std::set
 
 #include "au/Environment.h"     // au::Enrivonment
+#include <string.h>
 
 namespace engine
 {
